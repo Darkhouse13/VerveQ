@@ -1,0 +1,26 @@
+[
+    {
+        "Season": "2023-2024",
+        "Player": "Harry Kane",
+        "Nation": "ENG",
+        "Age": "30",
+        "Squad": "Bayern Munich",
+        "Pos": "FW"
+    },
+    {
+        "Season": "2022-2023",
+        "Player": "Niclas Füllkrug",
+        "Nation": "GER",
+        "Age": "29",
+        "Squad": "Werder Bremen",
+        "Pos": "FW"
+    },
+    {
+        "Season": "2021-2022",
+        "Player": "Robert Lewandowski",
+        "Nation": "POL",
+        "Age": "33",
+        "Squad": "Bayern Munich",
+        "Pos": "FW"
+    }
+]

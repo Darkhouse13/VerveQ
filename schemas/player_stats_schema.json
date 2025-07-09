@@ -1,0 +1,23 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Player Stats",
+  "type": "array",
+  "items": {
+    "type": "object",
+    "properties": {
+      "stat_name": {
+        "type": "string"
+      },
+      "player_name": {
+        "type": "string"
+      },
+      "team_name": {
+        "type": "string"
+      },
+      "stat_value": {
+        "type": "string"
+      }
+    },
+    "required": ["stat_name", "player_name", "team_name", "stat_value"]
+  }
+}

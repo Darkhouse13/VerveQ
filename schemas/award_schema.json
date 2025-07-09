@@ -1,0 +1,29 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Player Award",
+  "type": "array",
+  "items": {
+    "type": "object",
+    "properties": {
+      "Season": {
+        "type": "string"
+      },
+      "Player": {
+        "type": "string"
+      },
+      "Nation": {
+        "type": "string"
+      },
+      "Age": {
+        "type": "string"
+      },
+      "Squad": {
+        "type": "string"
+      },
+      "Pos": {
+        "type": "string"
+      }
+    },
+    "required": ["Season", "Player", "Nation", "Age", "Squad", "Pos"]
+  }
+}

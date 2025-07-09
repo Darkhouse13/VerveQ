@@ -1,0 +1,26 @@
+{
+  "weights": {
+    "player_obscurity": 0.25,
+    "time_period_distance": 0.20,
+    "statistical_complexity": 0.15,
+    "answer_ambiguity": 0.15,
+    "historical_significance": 0.10,
+    "user_familiarity": 0.15
+  },
+  "levels": {
+    "beginner": {
+      "min": 0.0,
+      "max": 0.3
+    },
+    "intermediate": {
+      "min": 0.3,
+      "max": 0.7
+    },
+    "advanced": {
+      "min": 0.7,
+      "max": 1.0
+    }
+  },
+  "adaptation_factor": 0.1,
+  "time_decay_factor": 0.05
+}

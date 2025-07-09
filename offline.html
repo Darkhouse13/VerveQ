@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#0d1421">
+    <title>FootQuizz - Offline</title>
+    <link rel="stylesheet" href="/static/dark_football_theme.css">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚽</text></svg>">
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background: var(--dark-primary);
+            color: var(--text-primary);
+            text-align: center;
+            font-family: var(--font-primary);
+        }
+        .offline-container {
+            max-width: 500px;
+            padding: 40px;
+            background: var(--dark-secondary);
+            border-radius: 20px;
+            box-shadow: var(--shadow-heavy);
+            border: 1px solid rgba(59, 130, 246, 0.2);
+        }
+        .offline-icon {
+            font-size: 4rem;
+            margin-bottom: 20px;
+            filter: drop-shadow(0 0 10px rgba(59, 130, 246, 0.3));
+        }
+        h1 {
+            font-family: var(--font-heading);
+            font-size: 2rem;
+            margin-bottom: 16px;
+            color: var(--text-primary);
+        }
+        p {
+            color: var(--text-secondary);
+            margin-bottom: 32px;
+        }
+        .offline-actions .btn {
+            margin: 0 10px;
+            padding: 12px 24px;
+            border-radius: 25px;
+            font-weight: 600;
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+        .home-btn {
+            background: var(--electric-blue);
+            color: white;
+        }
+        .reload-btn {
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+        }
+    </style>
+</head>
+<body>
+    <div class="offline-container">
+        <div class="offline-icon">🔌</div>
+        <h1>You're Offline</h1>
+        <p>It seems you've lost your connection. Don't worry, you can still access cached content or try reloading when you're back online.</p>
+        <div class="offline-actions">
+            <button class="btn home-btn" onclick="window.location.href='/'">Go to Home</button>
+            <button class="btn reload-btn" onclick="window.location.reload()">Try Reloading</button>
+        </div>
+    </div>
+</body>
+</html>

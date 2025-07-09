@@ -1,0 +1,22 @@
+
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Player",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string"
+    },
+    "position": {
+      "type": "string"
+    },
+    "dob": {
+      "type": "string",
+      "format": "date"
+    },
+    "birth_place": {
+      "type": ["string", "null"]
+    }
+  },
+  "required": ["name", "position", "dob", "birth_place"]
+}

@@ -1,0 +1,14 @@
+{
+    "rule_based_weights": {
+        "position": 0.2,
+        "era": 0.15,
+        "nationality": 0.15,
+        "team": 0.1,
+        "performance": 0.2,
+        "achievements": 0.2
+    },
+    "ml_model_path": "models/player_embedding_model",
+    "cache_dir": "cache/embeddings",
+    "embedding_dimension": 128,
+    "update_frequency_hours": 24
+}

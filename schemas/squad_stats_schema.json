@@ -1,0 +1,100 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Squad Stats",
+  "type": "array",
+  "items": {
+    "type": "object",
+    "properties": {
+      "squad": {
+        "type": "string"
+      },
+      "num_players": {
+        "type": "string"
+      },
+      "age": {
+        "type": "string"
+      },
+      "poss": {
+        "type": "string"
+      },
+      "gls": {
+        "type": "string"
+      },
+      "ast": {
+        "type": "string"
+      },
+      "np_gls": {
+        "type": "string"
+      },
+      "p_gls": {
+        "type": "string"
+      },
+      "p_att": {
+        "type": "string"
+      },
+      "crd_y": {
+        "type": "string"
+      },
+      "crd_r": {
+        "type": "string"
+      },
+      "xG": {
+        "type": "string"
+      },
+      "npxG": {
+        "type": "string"
+      },
+      "xAG": {
+        "type": "string"
+      },
+      "prgC": {
+        "type": "string"
+      },
+      "prgP": {
+        "type": "string"
+      },
+      "gls_per_game": {
+        "type": "string"
+      },
+      "ast_per_game": {
+        "type": "string"
+      },
+      "np_gls_per_game": {
+        "type": "string"
+      },
+      "xG_per_game": {
+        "type": "string"
+      },
+      "xAG_per_game": {
+        "type": "string"
+      },
+      "npxG_per_game": {
+        "type": "string"
+      }
+    },
+    "required": [
+      "squad",
+      "num_players",
+      "age",
+      "poss",
+      "gls",
+      "ast",
+      "np_gls",
+      "p_gls",
+      "p_att",
+      "crd_y",
+      "crd_r",
+      "xG",
+      "npxG",
+      "xAG",
+      "prgC",
+      "prgP",
+      "gls_per_game",
+      "ast_per_game",
+      "np_gls_per_game",
+      "xG_per_game",
+      "xAG_per_game",
+      "npxG_per_game"
+    ]
+  }
+}

@@ -1,0 +1,151 @@
+# =====================================================
+# FootQuizz .gitignore - Based on Actual Project Files
+# =====================================================
+
+# === EXISTING PATTERNS (Keep these) ===
+
+# --- Python Generated Files ---
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# --- Virtual Environment ---
+venv/
+.venv/
+env/
+
+# --- IDE & Editor Config ---
+.vscode/
+.idea/
+.DS_Store
+.claude/
+.clinerules/
+
+# --- Large Datasets & Data Files ---
+# These should be hosted in cloud storage
+/Matches.csv
+/EloRatings.csv
+/data.csv/
+/survival_player_data.json
+
+# --- Databases ---
+*.db
+*.sqlite3
+
+# --- Logs & Outputs ---
+*.log
+monitoring_logs.jsonl
+
+# --- Jupyter Notebooks & Checkpoints ---
+.ipynb_checkpoints/
+model_evaluation.ipynb
+
+# --- Local Scripts & Installers ---
+get-pip.py
+restart_server.bat
+start_server_fixed.bat
+
+# === NEW PATTERNS BASED ON ACTUAL FILES ===
+
+# --- Test Files ---
+test_*.py
+quick_test.py
+simple_test.py
+data_loader_test.py
+
+# --- Debug & Diagnostic Files ---
+debug_*.py
+debug.html
+diagnose.py
+
+# --- Fallback/Alternative Servers ---
+# (Used as fallbacks by run_server.py, not primary servers)
+simple_server.py
+minimal_server.py
+
+# --- One-off Scripts & Utilities ---
+process_players.py
+update_survival.py
+demo_consolidated.py
+data_typo_correction
+excel_to_json_converter
+
+# --- ML/Training Scripts ---
+# (No saved models found in project, so these are development scripts)
+train_model.py
+model_training.py
+feature_extraction.py
+
+# --- Implementation Documentation ---
+# These appear to be development notes, not user documentation
+*_REPORT.md
+*_FIX.md
+*_IMPLEMENTATION.md
+*_COMPLETE.md
+*_SUMMARY.md
+TROUBLESHOOTING.md
+QUICK_FIX.md
+PROJECT_ANALYSIS.md
+README_newdataset.md
+PHASE_*_*.md
+data_pipeline_enhancement_plan.md
+CLAUDE.md
+
+# --- Cache Directory ---
+cache/
+
+# --- User-Generated Data ---
+feedback.json
+
+# --- Archive Directory ---
+archive/
+
+# --- Old/Backup Files ---
+old_styles.css
+*_old.*
+*_backup.*
+
+# --- Performance Schema ---
+performance_schema.sql
+
+# --- Other Development Files ---
+data_pipeline_coordinator.py
+performance_database.py
+difficulty_feedback_database.py
+
+# === IMPORTANT FILES TO KEEP ===
+# The following are explicitly NOT ignored:
+# - main.py (alternative FastAPI server)
+# - web_server.py (primary FastAPI server)
+# - run_server.py (universal launcher)
+# - Data.py (core data handler)
+# - QuizGenerator.py (core quiz logic)
+# - SurvivalDataHandler.py (survival mode handler)
+# - Stats.py (statistics module)
+# - All HTML files except debug.html
+# - All files imported by the core application:
+#   - monitoring.py, error_tracking.py, rate_limiter.py
+#   - analytics.py, analytics_dashboard.py
+#   - smart_distractor_generator.py
+#   - adaptive_difficulty.py
+#   - user_performance_tracker.py
+#   - question_analytics.py
+#   - enhanced_difficulty_calculator.py
+#   - question_validator.py
+#   - question_quality_scorer.py
+# - Configuration files:
+#   - difficulty_config.json
+#   - embedding_config.json
+#   - quality_config.json
+# - Player data files:
+#   - players.json
+#   - player_names.json
+#   - full_players.js
+# - Frontend assets:
+#   - service-worker.js
+#   - accessibility.js
+#   - static/ directory
+# - API schemas in schemas/
+# - requirements.txt
+# - README.md (main documentation)

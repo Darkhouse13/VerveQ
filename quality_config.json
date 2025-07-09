@@ -1,0 +1,22 @@
+{
+  "weights": {
+    "distractor_plausibility": 0.30,
+    "question_clarity": 0.20,
+    "answer_uniqueness": 0.20,
+    "difficulty_appropriateness": 0.10,
+    "factual_correctness": 0.15,
+    "overall_coherence": 0.05
+  },
+  "thresholds": {
+    "composite_score": 0.70,
+    "min_distractor_plausibility": 0.60,
+    "min_question_clarity": 0.70,
+    "min_answer_uniqueness": 0.80
+  },
+  "scoring_options": {
+    "enable_fact_checking": true,
+    "fact_checking_api": "http://api.factcheck.example.com/verify",
+    "require_contextual_distractors": true,
+    "reject_generic_fallbacks": true
+  }
+}

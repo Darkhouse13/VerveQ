@@ -1,0 +1,717 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#0d1421">
+    <title>FootQuizz - Enhanced Quiz Mode</title>
+    <link rel="stylesheet" href="/static/dark_football_theme.css">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚽</text></svg>">
+</head>
+<body>
+    <!-- Global Navigation -->
+    <nav class="global-nav">
+        <div class="nav-container">
+            <a href="/" class="nav-brand">
+                <span class="emoji">⚽</span>
+                FootQuizz
+            </a>
+            <div class="nav-links">
+                <a href="/" class="nav-link">Home</a>
+                <a href="/leaderboard.html" class="nav-link">🏆 Leaderboard</a>
+                <a href="/admin/dashboard" class="nav-link admin-only">Admin</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loading-overlay">
+        <div class="loading-spinner"></div>
+    </div>
+
+    <!-- Offline Indicator -->
+    <div class="offline-indicator" id="offline-indicator">
+        <p>You are currently offline. Some features may be unavailable.</p>
+    </div>
+
+    <div class="quiz-container enhanced" role="main">
+        <!-- Progress Bar -->
+        <div class="progress-bar-container">
+            <div class="progress-bar" id="progress-bar"></div>
+            <div class="progress-text">
+                <span id="question-number">1</span> / <span id="total-questions">10</span>
+            </div>
+        </div>
+
+        <div class="quiz-content">
+            <!-- Enhanced Quiz Header -->
+            <div class="quiz-header enhanced" id="quiz-header">
+                <div class="score-section">
+                    <div class="score-display" aria-live="polite">
+                        <div class="score-label">Score</div>
+                        <div class="score-value" id="score">0</div>
+                    </div>
+                    <div class="streak-display" id="streak-display" aria-live="polite">
+                        <div class="streak-icon">🔥</div>
+                        <div class="streak-count" id="streak-count">0</div>
+                    </div>
+                </div>
+                
+                <div class="difficulty-badge" id="difficulty-badge">
+                    <span class="difficulty-icon">🎯</span>
+                    <span class="difficulty-text" id="difficulty-text">Casual</span>
+                </div>
+                
+                <div class="timer-section" aria-live="assertive" aria-atomic="true">
+                    <div class="timer-circle" id="timer-circle">
+                        <div class="timer-value" id="timer-value">10</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Enhanced Quiz Questions -->
+            <div id="quiz-container" class="hidden">
+                <div class="question-card enhanced slide-up">
+                    <div class="question-header">
+                        <div class="question-category" id="question-category">Football Knowledge</div>
+                        <div class="question-points" id="question-points">+100 pts</div>
+                    </div>
+                    
+                    <div class="question-content">
+                        <p class="question-text" id="question-text">Loading your question...</p>
+                        
+                        <div class="options-container enhanced" id="options-container">
+                            <!-- Options will be dynamically added here -->
+                        </div>
+                        
+                        <div class="question-feedback" id="question-feedback">
+                            <!-- Feedback will appear here -->
+                        </div>
+                        
+                        <!-- Difficulty Feedback Section -->
+                        <div class="difficulty-feedback hidden" id="difficulty-feedback">
+                            <div class="feedback-header">
+                                <h4>How was this question's difficulty?</h4>
+                                <p class="feedback-subtitle">Help us improve the quiz experience</p>
+                            </div>
+                            <div class="feedback-buttons">
+                                <button class="feedback-btn easy" onclick="submitDifficultyFeedback('too_easy')">
+                                    <span class="feedback-icon">😴</span>
+                                    <span>Too Easy</span>
+                                </button>
+                                <button class="feedback-btn perfect" onclick="submitDifficultyFeedback('just_right')">
+                                    <span class="feedback-icon">🎯</span>
+                                    <span>Just Right</span>
+                                </button>
+                                <button class="feedback-btn hard" onclick="submitDifficultyFeedback('too_hard')">
+                                    <span class="feedback-icon">🤯</span>
+                                    <span>Too Hard</span>
+                                </button>
+                            </div>
+                            <button class="skip-feedback" onclick="skipDifficultyFeedback()">
+                                Skip feedback
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="quiz-controls">
+                        <button id="next-question-btn" class="next-btn enhanced hidden">
+                            <span>Next Question</span>
+                            <span class="btn-arrow">→</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Enhanced Final Score Screen -->
+            <div id="final-score-container" class="final-score-container enhanced hidden">
+                <div class="completion-animation">
+                    <div class="trophy-animation" id="trophy-animation">🏆</div>
+                    <div class="confetti" id="confetti"></div>
+                </div>
+                
+                <h2 class="final-title">Quiz Complete!</h2>
+                <p class="final-subtitle">Amazing performance! Here's how you did:</p>
+                
+                <div class="score-summary">
+                    <div class="final-score-display">
+                        <div class="final-score-value" id="final-score">850</div>
+                        <div class="final-score-label">Total Points</div>
+                    </div>
+                    
+                    <div class="performance-metrics">
+                        <div class="metric-item">
+                            <div class="metric-icon">🎯</div>
+                            <div class="metric-info">
+                                <div class="metric-value" id="accuracy-value">80%</div>
+                                <div class="metric-label">Accuracy</div>
+                            </div>
+                        </div>
+                        
+                        <div class="metric-item">
+                            <div class="metric-icon">⚡</div>
+                            <div class="metric-info">
+                                <div class="metric-value" id="speed-value">7.2s</div>
+                                <div class="metric-label">Avg Speed</div>
+                            </div>
+                        </div>
+                        
+                        <div class="metric-item">
+                            <div class="metric-icon">🔥</div>
+                            <div class="metric-info">
+                                <div class="metric-value" id="max-streak-value">5</div>
+                                <div class="metric-label">Best Streak</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="achievement-section" id="achievement-section">
+                    <!-- Achievements will be added here -->
+                </div>
+                
+                <div class="final-actions enhanced">
+                    <button id="restart-btn" class="restart-btn enhanced">
+                        <span class="btn-icon">🔄</span>
+                        <span>Play Again</span>
+                    </button>
+                    <button id="share-btn" class="share-btn">
+                        <span class="btn-icon">📤</span>
+                        <span>Share Score</span>
+                    </button>
+                    <button id="home-btn" class="home-btn enhanced">
+                        <span class="btn-icon">🏠</span>
+                        <span>Back to Menu</span>
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Enhanced Loading State -->
+            <div id="loading" class="loading enhanced">
+                <div class="loading-animation">
+                    <div class="football-loader">⚽</div>
+                    <div class="loading-text">
+                        <h3>Preparing Your Quiz</h3>
+                        <p id="loading-status">Loading questions...</p>
+                    </div>
+                    <div class="loading-progress">
+                        <div class="loading-bar" id="loading-bar"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- Define the base URL for all API requests ---
+            const API_BASE_URL = 'http://127.0.0.1:8008';
+            // ------------------------------------------------
+
+            // Corrected and consolidated element selectors
+            const quizContent = document.querySelector('.quiz-content');
+            const loadingIndicator = document.getElementById('loading');
+            
+            // Question elements
+            const questionCard = document.getElementById('quiz-container');
+            const questionText = document.getElementById('question-text');
+            const questionCategory = document.getElementById('question-category');
+            const optionsContainer = document.getElementById('options-container');
+            const nextButton = document.getElementById('next-question-btn');
+
+            // Header elements
+            const scoreDisplay = document.getElementById('score');
+            const streakDisplay = document.getElementById('streak-count');
+            const timerValue = document.getElementById('timer-value');
+            const questionNumberDisplay = document.getElementById('question-number');
+            const totalQuestionsDisplay = document.getElementById('total-questions');
+            const difficultyBadge = document.getElementById('difficulty-text');
+
+            // Final score screen elements
+            const finalScoreContainer = document.getElementById('final-score-container');
+            const finalScoreDisplay = document.getElementById('final-score');
+            const accuracyDisplay = document.getElementById('accuracy-value');
+            const speedDisplay = document.getElementById('speed-value');
+            const maxStreakDisplay = document.getElementById('max-streak-value');
+            const restartButton = document.getElementById('restart-btn');
+            const homeButton = document.getElementById('home-btn');
+
+            let quizData = [];
+            let currentQuestionIndex = 0;
+            let score = 0;
+            let streak = 0;
+            let correctAnswers = 0;
+            let totalTime = 0;
+            let questionStartTime;
+            let player_id = localStorage.getItem('footquizz_player_id') || `guest_${Date.now()}`;
+            localStorage.setItem('footquizz_player_id', player_id); // Persist player ID
+
+            let timer;
+            const QUESTION_TIME = 15; // seconds
+
+            function startTimer() {
+                let timeLeft = QUESTION_TIME;
+                timerValue.textContent = timeLeft;
+                questionStartTime = Date.now();
+
+                clearInterval(timer); // Clear any existing timers
+                timer = setInterval(() => {
+                    timeLeft--;
+                    timerValue.textContent = timeLeft;
+                    if (timeLeft <= 0) {
+                        clearInterval(timer);
+                        handleAnswer(null); // Timeout
+                    }
+                }, 1000);
+            }
+
+            async function fetchQuestions() {
+                const loadingOverlay = document.getElementById('loading-overlay');
+                loadingOverlay.classList.add('show');
+                
+                const difficulty = new URLSearchParams(window.location.search).get('difficulty') || 'casual';
+                const apiUrl = `${API_BASE_URL}/quiz?difficulty=${difficulty}&num_questions=10`;
+                difficultyBadge.textContent = difficulty.charAt(0).toUpperCase() + difficulty.slice(1);
+                
+                try {
+                    const response = await fetch(apiUrl);
+                    if (!response.ok) {
+                        // If the network fails, we'll rely on the service worker's cache.
+                        // The service worker will either return a cached response or throw an error.
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    const data = await response.json();
+                    quizData = data.quiz;
+                    totalQuestionsDisplay.textContent = quizData.length;
+                    startQuiz();
+                } catch (error) {
+                    console.warn("Network fetch failed, trying cache...", error);
+                    // Try to get the data from the cache via the service worker
+                    const cacheResponse = await caches.match(apiUrl);
+                    if (cacheResponse) {
+                        console.log("Found response in cache!");
+                        const data = await cacheResponse.json();
+                        quizData = data.quiz;
+                        totalQuestionsDisplay.textContent = quizData.length;
+                        startQuiz();
+                    } else {
+                        console.error("Failed to load quiz from network and cache.");
+                        const errorContainer = document.getElementById('loading');
+                        errorContainer.innerHTML = `
+                            <div class="error-state">
+                                <div class="error-icon">😕</div>
+                                <h3>Could Not Load Quiz</h3>
+                                <p>Please check your network connection and try again. If you're offline, cached content might be available next time.</p>
+                                <button class="error-btn" onclick="location.reload()">Retry</button>
+                            </div>
+                        `;
+                        errorContainer.classList.remove('hidden');
+                        quizContent.classList.add('hidden');
+                    }
+                } finally {
+                    loadingOverlay.classList.remove('show');
+                }
+            }
+
+            function startQuiz() {
+                currentQuestionIndex = 0;
+                score = 0;
+                streak = 0;
+                correctAnswers = 0;
+                totalTime = 0;
+                scoreDisplay.textContent = score;
+                streakDisplay.textContent = streak;
+                
+                loadingIndicator.classList.add('hidden');
+                quizContent.classList.remove('hidden');
+                finalScoreContainer.classList.add('hidden');
+                questionCard.classList.remove('hidden');
+
+                displayQuestion();
+            }
+
+            function displayQuestion() {
+                if (currentQuestionIndex >= quizData.length) {
+                    endQuiz();
+                    return;
+                }
+
+                questionNumberDisplay.textContent = currentQuestionIndex + 1;
+                nextButton.classList.add('hidden');
+                
+                const question = quizData[currentQuestionIndex];
+                questionText.textContent = question.question;
+                questionText.setAttribute('aria-live', 'assertive');
+                questionCategory.textContent = question.type ? question.type.replace(/_/g, ' ') : 'General'; // Handle undefined type
+                optionsContainer.innerHTML = ''; // Clear previous options/input
+                optionsContainer.className = 'options-container enhanced'; // Reset classes
+                optionsContainer.setAttribute('role', 'list');
+                
+                // ---- ADDED LOGIC FOR INPUT TEXT ----
+                if (question.type === 'input_text') {
+                    optionsContainer.classList.add('text-input-mode'); // Add specific class for styling
+                    questionCategory.textContent = "Free Text Input";
+
+                    const inputGroup = document.createElement('div');
+                    inputGroup.className = 'input-group';
+
+                    const input = document.createElement('input');
+                    input.type = 'text';
+                    input.placeholder = 'Type your answer here...';
+                    input.className = 'text-input';
+                    input.id = 'text-answer-input';
+                    input.setAttribute('aria-label', 'Your answer');
+
+                    const submitBtn = document.createElement('button');
+                    submitBtn.textContent = 'Submit';
+                    submitBtn.className = 'submit-btn';
+                    submitBtn.onclick = () => {
+                        handleAnswer(input.value.trim(), submitBtn);
+                    };
+
+                    inputGroup.appendChild(input);
+                    inputGroup.appendChild(submitBtn);
+                    optionsContainer.appendChild(inputGroup);
+
+                    // Allow submission on Enter key press
+                    input.addEventListener('keyup', (event) => {
+                        if (event.key === 'Enter') {
+                            submitBtn.click();
+                        }
+                    });
+
+                } else {
+                // ---- EXISTING LOGIC FOR BUTTONS ----
+                    const shuffledOptions = [...question.options].sort(() => Math.random() - 0.5);
+                    shuffledOptions.forEach((option, index) => {
+                        const button = document.createElement('button');
+                        button.textContent = option;
+                        button.classList.add('option-btn');
+                        button.setAttribute('role', 'listitem');
+                        button.setAttribute('aria-label', `Answer ${index + 1}: ${option}`);
+                        button.onclick = () => handleAnswer(option, button);
+                        optionsContainer.appendChild(button);
+                    });
+                }
+
+                startTimer();
+            }
+
+            function handleAnswer(selectedOption, buttonElement) {
+                clearInterval(timer);
+                const timeTaken = (Date.now() - questionStartTime) / 1000;
+                totalTime += timeTaken;
+
+                const question = quizData[currentQuestionIndex];
+                const correctAnswer = question.answer;
+
+                // --- MODIFIED TO HANDLE BOTH INPUT AND BUTTONS ---
+                if (question.type === 'input_text') {
+                    const isCorrect = selectedOption.toLowerCase() === correctAnswer.toLowerCase();
+                    const inputField = document.getElementById('text-answer-input');
+                    
+                    if (isCorrect) {
+                        inputField.classList.add('correct');
+                    } else {
+                        inputField.classList.add('incorrect');
+                        // Show the correct answer
+                        const correctAnswerDisplay = document.createElement('p');
+                        correctAnswerDisplay.className = 'correct-answer-text';
+                        correctAnswerDisplay.textContent = `Correct answer: ${correctAnswer}`;
+                        optionsContainer.appendChild(correctAnswerDisplay);
+                    }
+                    buttonElement.disabled = true; // Disable submit button
+                    inputField.disabled = true; // Disable input field
+
+                } else {
+                    Array.from(optionsContainer.children).forEach(btn => {
+                        btn.disabled = true;
+                        if (btn.textContent === correctAnswer) {
+                            btn.classList.add('correct');
+                        } else if (btn.textContent === selectedOption) {
+                            btn.classList.add('incorrect');
+                        }
+                    });
+                }
+                
+                const isCorrect = (selectedOption && selectedOption.toLowerCase() === correctAnswer.toLowerCase());
+
+                if (isCorrect) {
+                    correctAnswers++;
+                    streak++;
+                    const points = 100 + Math.max(0, (10 - Math.floor(timeTaken)) * 5);
+                    score += points;
+                    scoreDisplay.textContent = score;
+                    streakDisplay.textContent = streak;
+                } else {
+                    streak = 0;
+                    streakDisplay.textContent = streak;
+                }
+
+                // Record analytics event
+                recordAnalyticsEvent({
+                    player_id: player_id,
+                    quiz_mode: "enhanced_quiz",
+                    question_type: question.type || 'unknown', // Use 'unknown' if type is not defined
+                    question_id: question.question_id || `q_${currentQuestionIndex}`, // Use question_id if available, otherwise generate
+                    is_correct: isCorrect ? 1 : 0,
+                    time_taken_ms: Math.round(timeTaken * 1000),
+                    attempt_number: 1, // Assuming first attempt for now
+                    score_at_event: score,
+                    total_questions_answered: currentQuestionIndex + 1
+                });
+
+                // Store current question for difficulty feedback
+                setCurrentQuestionData({
+                    id: question.question_id || `q_${currentQuestionIndex}`,
+                    question: question.question,
+                    answer: question.answer,
+                    enhanced_difficulty: question.difficulty_score || 0.5,
+                    difficulty_category: question.difficulty_level || 'unknown'
+                });
+
+                // Show difficulty feedback after a short delay
+                setTimeout(() => {
+                    showDifficultyFeedback();
+                }, 1000);
+
+                nextButton.classList.remove('hidden');
+            }
+
+            async function recordAnalyticsEvent(eventData) {
+                try {
+                    const response = await fetch(`${API_BASE_URL}/api/analytics/record`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify(eventData),
+                    });
+                    if (!response.ok) {
+                        console.error('Failed to record analytics event:', response.statusText);
+                    }
+                } catch (error) {
+                    console.error('Error sending analytics event:', error);
+                }
+            }
+
+            function endQuiz() {
+                questionCard.classList.add('hidden');
+                finalScoreContainer.classList.remove('hidden');
+
+                finalScoreDisplay.textContent = score;
+                const accuracy = quizData.length > 0 ? (correctAnswers / quizData.length) * 100 : 0;
+                accuracyDisplay.textContent = `${accuracy.toFixed(0)}%`;
+                const avgSpeed = correctAnswers > 0 ? (totalTime / correctAnswers).toFixed(1) : 0;
+                speedDisplay.textContent = `${avgSpeed}s`;
+                // You would need to track max streak separately if you want to display it
+                maxStreakDisplay.textContent = 'N/A';
+            }
+            
+            nextButton.addEventListener('click', () => {
+                // Hide difficulty feedback when moving to next question
+                hideDifficultyFeedback();
+                currentQuestionIndex++;
+                displayQuestion();
+            });
+
+            restartButton.addEventListener('click', fetchQuestions);
+            homeButton.addEventListener('click', () => {
+                // Set flag to indicate game was completed
+                sessionStorage.setItem('gameCompleted', 'true');
+                window.location.href = '/?from=quiz';
+            });
+            
+            // --- This was the missing part ---
+            // Initial call to start the quiz process
+            fetchQuestions();
+            // ---------------------------------
+            
+            // --- DIFFICULTY FEEDBACK FUNCTIONS ---
+            let currentQuestionData = null;
+            let feedbackCollected = false;
+            
+            // Store current question data for feedback
+            function setCurrentQuestionData(questionData) {
+                currentQuestionData = questionData;
+                feedbackCollected = false;
+            }
+            
+            // Show difficulty feedback after answering
+            function showDifficultyFeedback() {
+                if (feedbackCollected) return; // Don't show if already collected
+                
+                const feedbackElement = document.getElementById('difficulty-feedback');
+                if (feedbackElement) {
+                    feedbackElement.classList.remove('hidden');
+                    feedbackElement.classList.add('show');
+                }
+            }
+            
+            // Hide difficulty feedback
+            function hideDifficultyFeedback() {
+                const feedbackElement = document.getElementById('difficulty-feedback');
+                if (feedbackElement) {
+                    feedbackElement.classList.add('hidden');
+                    feedbackElement.classList.remove('show');
+                }
+            }
+            
+            // Submit difficulty feedback
+            window.submitDifficultyFeedback = function(feedback) {
+                if (!currentQuestionData || feedbackCollected) return;
+                
+                feedbackCollected = true;
+                
+                const feedbackData = {
+                    question_id: currentQuestionData.id || 'unknown',
+                    question_text: currentQuestionData.question,
+                    answer: currentQuestionData.answer,
+                    user_feedback: feedback,
+                    original_difficulty: currentQuestionData.enhanced_difficulty || 0.5,
+                    difficulty_category: currentQuestionData.difficulty_category || 'unknown',
+                    user_id: 'quiz_user_' + Date.now(), // Generate unique user ID
+                    timestamp: new Date().toISOString(),
+                    quiz_mode: new URLSearchParams(window.location.search).get('difficulty') || 'casual'
+                };
+                
+                // Send feedback to server
+                sendDifficultyFeedback(feedbackData);
+                
+                // Visual feedback for user
+                const clickedButton = event.target.closest('.feedback-btn');
+                if (clickedButton) {
+                    clickedButton.style.transform = 'scale(0.95)';
+                    clickedButton.style.opacity = '0.7';
+                    
+                    // Show thank you message
+                    setTimeout(() => {
+                        const feedbackHeader = document.querySelector('.feedback-header h4');
+                        if (feedbackHeader) {
+                            feedbackHeader.textContent = '✅ Thank you for your feedback!';
+                            feedbackHeader.style.color = 'var(--electric-blue)';
+                        }
+                    }, 200);
+                }
+                
+                // Hide feedback after short delay
+                setTimeout(() => {
+                    hideDifficultyFeedback();
+                }, 1500);
+            };
+            
+            // Skip difficulty feedback
+            window.skipDifficultyFeedback = function() {
+                feedbackCollected = true;
+                hideDifficultyFeedback();
+            };
+            
+            // Send feedback to server
+            async function sendDifficultyFeedback(feedbackData) {
+                try {
+                    const response = await fetch(`${API_BASE_URL}/api/question/feedback`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify(feedbackData)
+                    });
+                    
+                    if (response.ok) {
+                        console.log('Difficulty feedback sent successfully');
+                    } else {
+                        console.error('Failed to send difficulty feedback:', response.statusText);
+                    }
+                } catch (error) {
+                    console.error('Error sending difficulty feedback:', error);
+                    // Store feedback locally if server is unavailable
+                    storeFeedbackLocally(feedbackData);
+                }
+            }
+            
+            // Store feedback locally as fallback
+            function storeFeedbackLocally(feedbackData) {
+                try {
+                    const localFeedback = JSON.parse(localStorage.getItem('difficulty_feedback') || '[]');
+                    localFeedback.push(feedbackData);
+                    localStorage.setItem('difficulty_feedback', JSON.stringify(localFeedback));
+                    console.log('Feedback stored locally');
+                } catch (error) {
+                    console.error('Error storing feedback locally:', error);
+                }
+            }
+
+            // --- TOUCH & VIBRATION FEEDBACK ---
+            function setupTouchGestures() {
+                let touchStartX = 0;
+                let touchEndX = 0;
+                const swipeThreshold = 50; // Minimum distance for a swipe
+
+                quizContent.addEventListener('touchstart', (e) => {
+                    touchStartX = e.changedTouches[0].screenX;
+                }, { passive: true });
+
+                quizContent.addEventListener('touchend', (e) => {
+                    touchEndX = e.changedTouches[0].screenX;
+                    handleSwipe();
+                });
+
+                function handleSwipe() {
+                    const swipeDistance = touchEndX - touchStartX;
+                    if (swipeDistance < -swipeThreshold) {
+                        // Swiped left
+                        if (!nextButton.classList.contains('hidden')) {
+                            nextButton.click();
+                        }
+                    }
+                }
+            }
+
+            function addVibrationFeedback() {
+                const buttons = document.querySelectorAll('.option-btn, .next-btn, .restart-btn, .home-btn, .submit-btn, .share-btn');
+                buttons.forEach(button => {
+                    button.addEventListener('click', () => {
+                        if (navigator.vibrate) {
+                            navigator.vibrate(50); // Vibrate for 50ms
+                        }
+                    });
+                });
+            }
+
+            setupTouchGestures();
+            addVibrationFeedback();
+        });
+    </script>
+    <script>
+        // --- Service Worker and Network Status ---
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/static/service-worker.js')
+                    .then(registration => {
+                        console.log('ServiceWorker registration successful with scope: ', registration.scope);
+                    })
+                    .catch(error => {
+                        console.log('ServiceWorker registration failed: ', error);
+                    });
+            });
+        }
+
+        const offlineIndicator = document.getElementById('offline-indicator');
+
+        function updateOnlineStatus() {
+            if (navigator.onLine) {
+                offlineIndicator.classList.remove('show');
+            } else {
+                offlineIndicator.classList.add('show');
+            }
+        }
+
+        window.addEventListener('online', updateOnlineStatus);
+        window.addEventListener('offline', updateOnlineStatus);
+
+        // Initial check
+        updateOnlineStatus();
+    </script>
+    <script src="/static/accessibility.js" defer></script>
+</body>
+</html>
