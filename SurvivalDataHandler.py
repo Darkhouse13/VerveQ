@@ -12,12 +12,12 @@ class SurvivalDataHandler:
     This handler is designed for fast random access and efficient memory usage.
     """
     
-    def __init__(self, data_file="survival_player_data.json"):
+    def __init__(self, data_file="survival_initials_map.json"):
         self.data_file = data_file
         self.total_players = 0
         self.unique_initials = 0
-        self.players = []
-        self.initials_map = {}
+        self.cached_initials = {}
+        self.initials_map = None
         self.loaded = False
         self.loading_progress = 0
         self.loading_lock = threading.Lock()
@@ -49,8 +49,8 @@ class SurvivalDataHandler:
                     
                     self.total_players = data.get('total_players', 0)
                     self.unique_initials = data.get('unique_initials', 0)
-                    self.players = data.get('players', [])
                     self.initials_map = data.get('initials_map', {})
+                    print(f"📊 Loaded {len(self.initials_map)} initials groups")
                     
                     self.loading_progress = 90
                     
@@ -83,11 +83,15 @@ class SurvivalDataHandler:
         return {"progress": self.loading_progress, "loaded": self.loaded}
 
     def get_all_players(self):
-        """Get all unique player names"""
+        """Get all unique player names from initials map"""
         self.ensure_loaded()
-        if not self.is_loaded():
+        if not self.is_loaded() or not self.initials_map:
             return []
-        return self.players.copy()
+        
+        all_players = []
+        for players in self.initials_map.values():
+            all_players.extend(players)
+        return sorted(list(set(all_players)))
     
     def get_random_initials(self):
         """Get random initials that have multiple valid answers"""
@@ -105,12 +109,23 @@ class SurvivalDataHandler:
         return random_initials, possible_players
     
     def get_players_by_initials(self, initials):
-        """Get all players that match the given initials"""
+        """Get all players that match the given initials with caching"""
         self.ensure_loaded()
-        if not self.is_loaded():
+        if not self.is_loaded() or not self.initials_map:
             return []
         
-        return self.initials_map.get(initials, [])
+        initials = initials.upper()
+        
+        # Check cache first
+        if initials in self.cached_initials:
+            return self.cached_initials[initials].copy()
+        
+        # Get from initials map and cache
+        players = self.initials_map.get(initials, [])
+        if players:
+            self.cached_initials[initials] = players.copy()
+        
+        return players.copy()
     
     def validate_answer(self, answer, valid_initials, max_spelling_mistakes=2):
         """
@@ -179,6 +194,7 @@ class SurvivalDataHandler:
         return {
             'total_players': self.total_players,
             'unique_initials': self.unique_initials,
+            'cached_initials': len(self.cached_initials),
             'most_common_initials': [(initials, len(players)) for initials, players in most_common],
             'least_common_initials': [(initials, len(players)) for initials, players in least_common],
             'initials_distribution': initials_distribution
@@ -193,11 +209,14 @@ class SurvivalDataHandler:
         query_lower = query.lower()
         matches = []
         
-        for player in self.players:
-            if query_lower in player.lower():
-                matches.append(player)
-                if len(matches) >= limit:
-                    break
+        for players in self.initials_map.values():
+            for player in players:
+                if query_lower in player.lower():
+                    matches.append(player)
+                    if len(matches) >= limit:
+                        break
+            if len(matches) >= limit:
+                break
         
         return matches
     
@@ -218,6 +237,25 @@ class SurvivalDataHandler:
             'sample_answers': possible_players[:5],  # Show first 5 as examples
             'all_answers': possible_players  # For validation
         }
+    
+    def preload_popular_initials(self):
+        """Preload commonly used initials for better performance"""
+        self.ensure_loaded()
+        if not self.is_loaded() or not self.initials_map:
+            return
+        
+        popular_initials = ['CR', 'LM', 'NM', 'KM', 'SM', 'AM', 'JM', 'MM', 'RM', 'TM', 'DM', 'CM', 'BM', 'GM', 'PM']
+        preloaded = 0
+        
+        for initials in popular_initials:
+            if initials in self.initials_map:
+                players = self.get_players_by_initials(initials)
+                if players:
+                    preloaded += 1
+                    print(f"✅ Preloaded {initials}: {len(players)} players")
+        
+        print(f"🚀 Preloaded {preloaded} popular initials")
+        return preloaded
 
 # Quick test function
 def test_survival_data_handler():

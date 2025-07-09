@@ -747,6 +747,90 @@ async def get_survival_loading_status():
     survival_handler.ensure_loaded()
     return survival_handler.get_loading_status()
 
+@app.get("/api/survival/initials/{initials}")
+async def get_players_by_initials(initials: str):
+    """
+    Get players for specific initials - replaces massive array lookup.
+    This is the core endpoint that eliminates the 744KB hardcoded array.
+    """
+    monitor.track_usage("survival_initials_request", initials)
+    try:
+        if not survival_handler:
+            raise HTTPException(status_code=503, detail="Survival mode not available")
+        
+        # Validate initials format
+        if len(initials) != 2 or not initials.isalpha():
+            raise HTTPException(status_code=400, detail="Invalid initials format")
+        
+        players = survival_handler.get_players_by_initials(initials.upper())
+        
+        return {
+            "initials": initials.upper(),
+            "players": players,
+            "count": len(players),
+            "cached": initials.upper() in survival_handler.cached_initials
+        }
+    
+    except Exception as e:
+        error_tracker.capture_exception(e)
+        raise HTTPException(status_code=500, detail=f"Failed to get players for {initials}")
+
+@app.get("/api/survival/preload")
+async def preload_popular_initials():
+    """
+    Preload commonly used initials for better performance.
+    Can be called during application startup or maintenance.
+    """
+    monitor.track_usage("survival_preload", "popular_initials")
+    try:
+        if not survival_handler:
+            raise HTTPException(status_code=503, detail="Survival mode not available")
+        
+        preloaded_count = survival_handler.preload_popular_initials()
+        stats = survival_handler.get_statistics()
+        
+        return {
+            "message": "Popular initials preloaded successfully",
+            "preloaded_count": preloaded_count,
+            "cached_initials": stats["cached_initials"],
+            "total_initials": stats["unique_initials"]
+        }
+    
+    except Exception as e:
+        error_tracker.capture_exception(e)
+        raise HTTPException(status_code=500, detail="Failed to preload initials")
+
+@app.post("/api/survival/validate")
+async def validate_survival_answer(request: dict):
+    """
+    Validate survival answer using initials_map lookup.
+    Much faster than searching through 30,883 names.
+    """
+    monitor.track_usage("survival_validate", "initials_based")
+    try:
+        if not survival_handler:
+            raise HTTPException(status_code=503, detail="Survival mode not available")
+        
+        answer = request.get("answer", "").strip()
+        initials = request.get("initials", "").strip().upper()
+        
+        if not answer or not initials:
+            raise HTTPException(status_code=400, detail="Answer and initials required")
+        
+        is_valid, matched_player = survival_handler.validate_answer(answer, initials)
+        
+        return {
+            "valid": is_valid,
+            "matched_player": matched_player,
+            "original_answer": answer,
+            "initials": initials,
+            "method": "initials_map_lookup"
+        }
+    
+    except Exception as e:
+        error_tracker.capture_exception(e)
+        raise HTTPException(status_code=500, detail="Failed to validate answer")
+
 @app.get("/survival/round")
 async def get_survival_round():
     """Get a new survival mode round with initials and possible answers"""
