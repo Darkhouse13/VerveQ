@@ -1,5 +1,6 @@
 from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
+from starlette.middleware.sessions import SessionMiddleware
 import uvicorn
 import random
 from typing import List
@@ -22,6 +23,17 @@ app = FastAPI(
     description="API for Football Quiz and Survival Modes.",
     version="3.0.0",
 )
+
+# --- Session Middleware ---
+SECRET_KEY = os.environ.get("SECRET_KEY")
+if SECRET_KEY:
+    app.add_middleware(
+        SessionMiddleware,
+        secret_key=SECRET_KEY,
+    )
+    print("✅ SessionMiddleware enabled with SECRET_KEY")
+else:
+    print("WARNING: SECRET_KEY not found. Session middleware not enabled.")
 
 # --- CORS Middleware ---
 app.add_middleware(

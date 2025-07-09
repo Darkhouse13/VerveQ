@@ -112,7 +112,6 @@ performance_schema.sql
 # --- Other Development Files ---
 data_pipeline_coordinator.py
 performance_database.py
-difficulty_feedback_database.py
 
 # === IMPORTANT FILES TO KEEP ===
 # The following are explicitly NOT ignored:

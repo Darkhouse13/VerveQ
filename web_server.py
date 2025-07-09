@@ -3,6 +3,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
+from starlette.middleware.sessions import SessionMiddleware
 from typing import List, Dict, Any, Optional
 import uvicorn
 import random
@@ -24,6 +25,17 @@ from difficulty_feedback_database import DifficultyFeedbackDatabase
 from enhanced_difficulty_calculator import EnhancedDifficultyCalculator
 
 app = FastAPI()
+
+# Add SessionMiddleware if SECRET_KEY is available
+SECRET_KEY = os.environ.get("SECRET_KEY")
+if SECRET_KEY:
+    app.add_middleware(
+        SessionMiddleware,
+        secret_key=SECRET_KEY,
+    )
+    print("✅ SessionMiddleware enabled with SECRET_KEY")
+else:
+    print("WARNING: SECRET_KEY not found. Session middleware not enabled.")
 
 # Add GZip middleware for response compression
 app.add_middleware(GZipMiddleware, minimum_size=1000)
