@@ -1,0 +1,48 @@
+# VerveQ Development Dependencies (Source File)
+# This file contains high-level development dependencies without version pins
+# Use pip-tools to generate requirements-dev.txt with pinned versions:
+# pip-compile requirements-dev.in
+
+# Include production dependencies
+-r requirements.in
+
+# Code formatting and linting
+black
+isort
+flake8
+flake8-docstrings
+flake8-import-order
+
+# Type checking
+mypy
+types-requests
+
+# Security scanning
+bandit
+safety
+
+# Documentation
+sphinx
+sphinx-rtd-theme
+sphinx-autodoc-typehints
+
+# Development utilities
+python-dotenv
+ipython
+jupyter
+
+# Environment management
+pip-tools
+
+# Git hooks and pre-commit
+pre-commit
+
+# Performance profiling
+py-spy
+memory-profiler
+
+# Database development tools
+alembic
+
+# API documentation and testing
+httpx

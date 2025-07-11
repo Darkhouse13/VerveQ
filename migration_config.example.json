@@ -1,0 +1,49 @@
+{
+  "database_url": "postgresql://username:password@host:port/database?sslmode=require",
+  "redis_url": "redis://localhost:6379/0",
+  "migration_settings": {
+    "batch_size": 1000,
+    "enable_validation": true,
+    "backup_json_files": true,
+    "backup_directory": "./backups",
+    "log_level": "INFO",
+    "dry_run": false
+  },
+  "database_settings": {
+    "pool_size": 10,
+    "max_overflow": 20,
+    "pool_timeout": 30,
+    "pool_recycle": 3600
+  },
+  "cache_settings": {
+    "enable_caching": true,
+    "cache_ttl": 3600,
+    "cache_type": "redis"
+  },
+  "data_sources": {
+    "json_data_root": "data",
+    "processed_tennis_root": "processed_tennis",
+    "survival_data_file": "survival_initials_map.json",
+    "tennis_survival_data_file": "survival_initials_map_tennis.json",
+    "schemas_root": "schemas"
+  },
+  "validation_rules": {
+    "min_player_name_length": 2,
+    "max_player_name_length": 200,
+    "required_award_fields": [
+      "Player",
+      "Season"
+    ],
+    "required_stat_fields": [
+      "stat_name",
+      "player_name",
+      "stat_value"
+    ]
+  },
+  "performance_settings": {
+    "query_timeout": 30,
+    "connection_timeout": 10,
+    "enable_query_logging": false,
+    "slow_query_threshold": 1.0
+  }
+}

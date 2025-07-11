@@ -113,38 +113,109 @@ performance_schema.sql
 data_pipeline_coordinator.py
 performance_database.py
 
-# === IMPORTANT FILES TO KEEP ===
-# The following are explicitly NOT ignored:
-# - main.py (alternative FastAPI server)
-# - web_server.py (primary FastAPI server)
-# - run_server.py (universal launcher)
-# - Data.py (core data handler)
-# - QuizGenerator.py (core quiz logic)
-# - SurvivalDataHandler.py (survival mode handler)
-# - Stats.py (statistics module)
-# - All HTML files except debug.html
-# - All files imported by the core application:
-#   - monitoring.py, error_tracking.py, rate_limiter.py
-#   - analytics.py, analytics_dashboard.py
-#   - smart_distractor_generator.py
-#   - adaptive_difficulty.py
-#   - user_performance_tracker.py
-#   - question_analytics.py
-#   - enhanced_difficulty_calculator.py
-#   - question_validator.py
-#   - question_quality_scorer.py
-# - Configuration files:
-#   - difficulty_config.json
-#   - embedding_config.json
-#   - quality_config.json
-# - Player data files:
-#   - players.json
-#   - player_names.json
-#   - full_players.js
-# - Frontend assets:
-#   - service-worker.js
-#   - accessibility.js
-#   - static/ directory
-# - API schemas in schemas/
-# - requirements.txt
-# - README.md (main documentation)
+# === FRONTEND BUILD PROCESS ===
+
+# --- Node.js Dependencies ---
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# --- Build Outputs ---
+# Track dist folder but exclude map files and vite cache
+dist/*.map
+dist/.vite/
+build/
+.vite/
+
+# --- Environment Files ---
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# --- Frontend Cache ---
+.eslintcache
+.parcel-cache
+
+# === PRODUCTION DEPLOYMENT EXCLUSIONS ===
+
+# --- Production Environment Files ---
+.env.production
+.env.local
+production_config.json
+migration_config.json
+
+# --- Development/Debug Files ---
+debug.html
+debug_*.py
+start_server_fixed.bat
+tox.ini
+*.ipynb
+model_evaluation.ipynb
+test_*.py
+*_test.py
+diagnose*.py
+quick_test.py
+simple_server.py
+minimal_server.py
+main.py
+web_server.py
+run_server.py
+
+# --- Migration & Setup Scripts ---
+*migration*.py
+*troubleshoot*.py
+create_essential_tables.py
+setup_db_commands.sh
+setup_database.sh
+quick_db_setup.sql
+
+# --- Development Documentation ---
+CLAUDE.md
+TROUBLESHOOTING.md
+*_IMPLEMENTATION.md
+*_ANALYSIS.md
+*_REPORT.md
+data_pipeline_enhancement_plan.md
+postgresql_migration_analysis.md
+
+# --- Data Processing Scripts ---
+process_players.py
+tennis_data_processor.py
+universal_data_processor.py
+excel_to_json_converter
+data_typo_correction
+
+# --- ML/Training Scripts ---
+train_model.py
+model_training.py
+feature_extraction.py
+ml_difficulty_predictor.py
+
+# --- Utility/Demo Scripts ---
+demo_*.py
+update_survival.py
+
+# --- Server Logs & Runtime Data ---
+server.log
+server_test.log
+migration.log
+migration_output.log
+monitoring_logs.jsonl
+alerts.log
+
+# --- Build & Deployment Artifacts ---
+screen_db.png
+manual_setup_commands.txt
+
+# === IMPORTANT PRODUCTION FILES ===
+# Core server: multi_sport_web_server.py, unified_server.py
+# Data handlers: Data.py, postgresql_data_handler.py, data_handler_factory.py
+# Sport managers: sports/ directory
+# Frontend: multi_sport_index.html, enhanced_quiz.html, survival.html
+# Static assets: static/, src/
+# Configuration: config.py, requirements.txt, package.json
+# Database: difficulty_feedback_database.py, multi_sport_elo_system.py

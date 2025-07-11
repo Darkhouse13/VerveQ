@@ -1,0 +1,233 @@
+2025-07-09T19:50:09.160370310Z [2025-07-09 19:50:09 +0000] [1] [INFO] Starting gunicorn 23.0.0
+2025-07-09T19:50:09.162779372Z [2025-07-09 19:50:09 +0000] [1] [INFO] Listening at: http://0.0.0.0:8080 (1)
+2025-07-09T19:50:09.162930104Z [2025-07-09 19:50:09 +0000] [1] [INFO] Using worker: uvicorn.workers.UvicornWorker
+2025-07-09T19:50:09.198049623Z [2025-07-09 19:50:09 +0000] [14] [INFO] Booting worker with pid: 14
+2025-07-09T19:50:09.357770602Z [2025-07-09 19:50:09 +0000] [15] [INFO] Booting worker with pid: 15
+2025-07-09T19:50:09.558770454Z [2025-07-09 19:50:09 +0000] [16] [INFO] Booting worker with pid: 16
+2025-07-09T19:50:09.849937013Z [2025-07-09 19:50:09 +0000] [17] [INFO] Booting worker with pid: 17
+2025-07-09T19:50:17.061788841Z [2025-07-09 19:50:17 +0000] [16] [ERROR] Exception in worker process
+2025-07-09T19:50:17.061813228Z Traceback (most recent call last):
+2025-07-09T19:50:17.061818773Z   File "/workspace/.heroku/python/lib/python3.13/site-packages/gunicorn/arbiter.py", line 608, in spawn_worker
+2025-07-09T19:50:17.061826611Z     worker.init_process()
+2025-07-09T19:50:17.061845464Z     ~~~~~~~~~~~~~~~~~~~^^
+2025-07-09T19:50:17.061849950Z   File "/workspace/.heroku/python/lib/python3.13/site-packages/uvicorn/workers.py", line 75, in init_process
+2025-07-09T19:50:17.061854131Z     super().init_process()
+2025-07-09T19:50:17.061858469Z     ~~~~~~~~~~~~~~~~~~~~^^
+2025-07-09T19:50:17.061863450Z   File "/workspace/.heroku/python/lib/python3.13/site-packages/gunicorn/workers/base.py", line 135, in init_process
+2025-07-09T19:50:17.061868425Z     self.load_wsgi()
+2025-07-09T19:50:17.061872544Z     ~~~~~~~~~~~~~~^^
+2025-07-09T19:50:17.061876748Z   File "/workspace/.heroku/python/lib/python3.13/site-packages/gunicorn/workers/base.py", line 147, in load_wsgi
+2025-07-09T19:50:17.061880904Z     self.wsgi = self.app.wsgi()
+2025-07-09T19:50:17.061884657Z                 ~~~~~~~~~~~~~^^
+2025-07-09T19:50:17.061888307Z   File "/workspace/.heroku/python/lib/python3.13/site-packages/gunicorn/app/base.py", line 66, in wsgi
+2025-07-09T19:50:17.061900762Z     self.callable = self.load()
+2025-07-09T19:50:17.061904968Z                     ~~~~~~~~~^^
+2025-07-09T19:50:17.061909307Z   File "/workspace/.heroku/python/lib/python3.13/site-packages/gunicorn/app/wsgiapp.py", line 57, in load
+2025-07-09T19:50:17.061913905Z     return self.load_wsgiapp()
+2025-07-09T19:50:17.061918118Z            ~~~~~~~~~~~~~~~~~^^
+2025-07-09T19:50:17.061922316Z   File "/workspace/.heroku/python/lib/python3.13/site-packages/gunicorn/app/wsgiapp.py", line 47, in load_wsgiapp
+2025-07-09T19:50:17.061926554Z     return util.import_app(self.app_uri)
+2025-07-09T19:50:17.061930580Z            ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^
+2025-07-09T19:50:17.061934644Z   File "/workspace/.heroku/python/lib/python3.13/site-packages/gunicorn/util.py", line 370, in import_app
+2025-07-09T19:50:17.061938419Z     mod = importlib.import_module(module)
+2025-07-09T19:50:17.061942980Z   File "/workspace/.heroku/python/lib/python3.13/importlib/__init__.py", line 88, in import_module
+2025-07-09T19:50:17.061948028Z     return _bootstrap._gcd_import(name[level:], package, level)
+2025-07-09T19:50:17.061951788Z            ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2025-07-09T19:50:17.061955629Z   File "<frozen importlib._bootstrap>", line 1387, in _gcd_import
+2025-07-09T19:50:17.061959404Z   File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+2025-07-09T19:50:17.061963114Z   File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
+2025-07-09T19:50:17.061967215Z   File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+2025-07-09T19:50:17.061971998Z   File "<frozen importlib._bootstrap_external>", line 1026, in exec_module
+2025-07-09T19:50:17.061989083Z   File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+2025-07-09T19:50:17.061993166Z   File "/workspace/main.py", line 3, in <module>
+2025-07-09T19:50:17.061997050Z     from starlette.middleware.sessions import SessionMiddleware
+2025-07-09T19:50:17.062001696Z   File "/workspace/.heroku/python/lib/python3.13/site-packages/starlette/middleware/sessions.py", line 7, in <module>
+2025-07-09T19:50:17.062005798Z     import itsdangerous
+2025-07-09T19:50:17.062009936Z ModuleNotFoundError: No module named 'itsdangerous'
+2025-07-09T19:50:17.062013983Z [2025-07-09 19:50:17 +0000] [14] [ERROR] Exception in worker process
+2025-07-09T19:50:17.062018025Z Traceback (most recent call last):
+2025-07-09T19:50:17.062022122Z   File "/workspace/.heroku/python/lib/python3.13/site-packages/gunicorn/arbiter.py", line 608, in spawn_worker
+2025-07-09T19:50:17.062026098Z     worker.init_process()
+2025-07-09T19:50:17.062030279Z     ~~~~~~~~~~~~~~~~~~~^^
+2025-07-09T19:50:17.062034405Z   File "/workspace/.heroku/python/lib/python3.13/site-packages/uvicorn/workers.py", line 75, in init_process
+2025-07-09T19:50:17.062038334Z     super().init_process()
+2025-07-09T19:50:17.062042940Z     ~~~~~~~~~~~~~~~~~~~~^^
+2025-07-09T19:50:17.062047065Z   File "/workspace/.heroku/python/lib/python3.13/site-packages/gunicorn/workers/base.py", line 135, in init_process
+2025-07-09T19:50:17.062051977Z     self.load_wsgi()
+2025-07-09T19:50:17.062056186Z     ~~~~~~~~~~~~~~^^
+2025-07-09T19:50:17.062059721Z   File "/workspace/.heroku/python/lib/python3.13/site-packages/gunicorn/workers/base.py", line 147, in load_wsgi
+2025-07-09T19:50:17.062063906Z     self.wsgi = self.app.wsgi()
+2025-07-09T19:50:17.062068026Z                 ~~~~~~~~~~~~~^^
+2025-07-09T19:50:17.062072152Z   File "/workspace/.heroku/python/lib/python3.13/site-packages/gunicorn/app/base.py", line 66, in wsgi
+2025-07-09T19:50:17.062076400Z     self.callable = self.load()
+2025-07-09T19:50:17.062079935Z                     ~~~~~~~~~^^
+2025-07-09T19:50:17.062089494Z   File "/workspace/.heroku/python/lib/python3.13/site-packages/gunicorn/app/wsgiapp.py", line 57, in load
+2025-07-09T19:50:17.062093798Z     return self.load_wsgiapp()
+2025-07-09T19:50:17.062097433Z            ~~~~~~~~~~~~~~~~~^^
+2025-07-09T19:50:17.062101632Z   File "/workspace/.heroku/python/lib/python3.13/site-packages/gunicorn/app/wsgiapp.py", line 47, in load_wsgiapp
+2025-07-09T19:50:17.062106119Z     return util.import_app(self.app_uri)
+2025-07-09T19:50:17.062110078Z            ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^
+2025-07-09T19:50:17.062114259Z   File "/workspace/.heroku/python/lib/python3.13/site-packages/gunicorn/util.py", line 370, in import_app
+2025-07-09T19:50:17.062118476Z     mod = importlib.import_module(module)
+2025-07-09T19:50:17.062122643Z   File "/workspace/.heroku/python/lib/python3.13/importlib/__init__.py", line 88, in import_module
+2025-07-09T19:50:17.062126767Z     return _bootstrap._gcd_import(name[level:], package, level)
+2025-07-09T19:50:17.062130821Z            ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2025-07-09T19:50:17.062151312Z   File "<frozen importlib._bootstrap>", line 1387, in _gcd_import
+2025-07-09T19:50:17.062155799Z   File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+2025-07-09T19:50:17.062159936Z   File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
+2025-07-09T19:50:17.062164039Z   File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+2025-07-09T19:50:17.062168188Z   File "<frozen importlib._bootstrap_external>", line 1026, in exec_module
+2025-07-09T19:50:17.062172239Z   File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+2025-07-09T19:50:17.062181982Z   File "/workspace/main.py", line 3, in <module>
+2025-07-09T19:50:17.062186177Z     from starlette.middleware.sessions import SessionMiddleware
+2025-07-09T19:50:17.062190208Z   File "/workspace/.heroku/python/lib/python3.13/site-packages/starlette/middleware/sessions.py", line 7, in <module>
+2025-07-09T19:50:17.062198212Z     import itsdangerous
+2025-07-09T19:50:17.062202320Z ModuleNotFoundError: No module named 'itsdangerous'
+2025-07-09T19:50:17.062216359Z [2025-07-09 19:50:17 +0000] [14] [INFO] Worker exiting (pid: 14)
+2025-07-09T19:50:17.062220826Z [2025-07-09 19:50:17 +0000] [16] [INFO] Worker exiting (pid: 16)
+2025-07-09T19:50:17.062379095Z [2025-07-09 19:50:17 +0000] [15] [ERROR] Exception in worker process
+2025-07-09T19:50:17.062397470Z Traceback (most recent call last):
+2025-07-09T19:50:17.062402141Z   File "/workspace/.heroku/python/lib/python3.13/site-packages/gunicorn/arbiter.py", line 608, in spawn_worker
+2025-07-09T19:50:17.062406507Z     worker.init_process()
+2025-07-09T19:50:17.062410154Z     ~~~~~~~~~~~~~~~~~~~^^
+2025-07-09T19:50:17.062413621Z   File "/workspace/.heroku/python/lib/python3.13/site-packages/uvicorn/workers.py", line 75, in init_process
+2025-07-09T19:50:17.062417252Z     super().init_process()
+2025-07-09T19:50:17.062420790Z     ~~~~~~~~~~~~~~~~~~~~^^
+2025-07-09T19:50:17.062426162Z   File "/workspace/.heroku/python/lib/python3.13/site-packages/gunicorn/workers/base.py", line 135, in init_process
+2025-07-09T19:50:17.062430571Z     self.load_wsgi()
+2025-07-09T19:50:17.062434323Z     ~~~~~~~~~~~~~~^^
+2025-07-09T19:50:17.062438443Z   File "/workspace/.heroku/python/lib/python3.13/site-packages/gunicorn/workers/base.py", line 147, in load_wsgi
+2025-07-09T19:50:17.062443270Z     self.wsgi = self.app.wsgi()
+2025-07-09T19:50:17.062447725Z                 ~~~~~~~~~~~~~^^
+2025-07-09T19:50:17.062452223Z   File "/workspace/.heroku/python/lib/python3.13/site-packages/gunicorn/app/base.py", line 66, in wsgi
+2025-07-09T19:50:17.062456259Z     self.callable = self.load()
+2025-07-09T19:50:17.062460078Z                     ~~~~~~~~~^^
+2025-07-09T19:50:17.062463794Z   File "/workspace/.heroku/python/lib/python3.13/site-packages/gunicorn/app/wsgiapp.py", line 57, in load
+2025-07-09T19:50:17.062467406Z     return self.load_wsgiapp()
+2025-07-09T19:50:17.062470789Z            ~~~~~~~~~~~~~~~~~^^
+2025-07-09T19:50:17.062486767Z   File "/workspace/.heroku/python/lib/python3.13/site-packages/gunicorn/app/wsgiapp.py", line 47, in load_wsgiapp
+2025-07-09T19:50:17.062490993Z     return util.import_app(self.app_uri)
+2025-07-09T19:50:17.062498178Z            ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^
+2025-07-09T19:50:17.062501764Z   File "/workspace/.heroku/python/lib/python3.13/site-packages/gunicorn/util.py", line 370, in import_app
+2025-07-09T19:50:17.062505628Z     mod = importlib.import_module(module)
+2025-07-09T19:50:17.062509478Z   File "/workspace/.heroku/python/lib/python3.13/importlib/__init__.py", line 88, in import_module
+2025-07-09T19:50:17.062514098Z     return _bootstrap._gcd_import(name[level:], package, level)
+2025-07-09T19:50:17.062518183Z            ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2025-07-09T19:50:17.062522591Z   File "<frozen importlib._bootstrap>", line 1387, in _gcd_import
+2025-07-09T19:50:17.062526909Z   File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+2025-07-09T19:50:17.062531101Z   File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
+2025-07-09T19:50:17.062535461Z   File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+2025-07-09T19:50:17.062539124Z   File "<frozen importlib._bootstrap_external>", line 1026, in exec_module
+2025-07-09T19:50:17.062542982Z   File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+2025-07-09T19:50:17.062557348Z   File "/workspace/main.py", line 3, in <module>
+2025-07-09T19:50:17.062561068Z     from starlette.middleware.sessions import SessionMiddleware
+2025-07-09T19:50:17.062564834Z   File "/workspace/.heroku/python/lib/python3.13/site-packages/starlette/middleware/sessions.py", line 7, in <module>
+2025-07-09T19:50:17.062568584Z     import itsdangerous
+2025-07-09T19:50:17.062572282Z ModuleNotFoundError: No module named 'itsdangerous'
+2025-07-09T19:50:17.062850641Z [2025-07-09 19:50:17 +0000] [15] [INFO] Worker exiting (pid: 15)
+2025-07-09T19:50:17.063167104Z [2025-07-09 19:50:17 +0000] [17] [ERROR] Exception in worker process
+2025-07-09T19:50:17.063179886Z Traceback (most recent call last):
+2025-07-09T19:50:17.063184920Z   File "/workspace/.heroku/python/lib/python3.13/site-packages/gunicorn/arbiter.py", line 608, in spawn_worker
+2025-07-09T19:50:17.063189651Z     worker.init_process()
+2025-07-09T19:50:17.063193890Z     ~~~~~~~~~~~~~~~~~~~^^
+2025-07-09T19:50:17.063198000Z   File "/workspace/.heroku/python/lib/python3.13/site-packages/uvicorn/workers.py", line 75, in init_process
+2025-07-09T19:50:17.063202386Z     super().init_process()
+2025-07-09T19:50:17.063206612Z     ~~~~~~~~~~~~~~~~~~~~^^
+2025-07-09T19:50:17.063211667Z   File "/workspace/.heroku/python/lib/python3.13/site-packages/gunicorn/workers/base.py", line 135, in init_process
+2025-07-09T19:50:17.063216337Z     self.load_wsgi()
+2025-07-09T19:50:17.063220021Z     ~~~~~~~~~~~~~~^^
+2025-07-09T19:50:17.063228885Z   File "/workspace/.heroku/python/lib/python3.13/site-packages/gunicorn/workers/base.py", line 147, in load_wsgi
+2025-07-09T19:50:17.063233032Z     self.wsgi = self.app.wsgi()
+2025-07-09T19:50:17.063236896Z                 ~~~~~~~~~~~~~^^
+2025-07-09T19:50:17.063241394Z   File "/workspace/.heroku/python/lib/python3.13/site-packages/gunicorn/app/base.py", line 66, in wsgi
+2025-07-09T19:50:17.063245367Z     self.callable = self.load()
+2025-07-09T19:50:17.063249558Z                     ~~~~~~~~~^^
+2025-07-09T19:50:17.063253748Z   File "/workspace/.heroku/python/lib/python3.13/site-packages/gunicorn/app/wsgiapp.py", line 57, in load
+2025-07-09T19:50:17.063257945Z     return self.load_wsgiapp()
+2025-07-09T19:50:17.063261912Z            ~~~~~~~~~~~~~~~~~^^
+2025-07-09T19:50:17.063266492Z   File "/workspace/.heroku/python/lib/python3.13/site-packages/gunicorn/app/wsgiapp.py", line 47, in load_wsgiapp
+2025-07-09T19:50:17.063270386Z     return util.import_app(self.app_uri)
+2025-07-09T19:50:17.063274739Z            ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^
+2025-07-09T19:50:17.063278926Z   File "/workspace/.heroku/python/lib/python3.13/site-packages/gunicorn/util.py", line 370, in import_app
+2025-07-09T19:50:17.063283230Z     mod = importlib.import_module(module)
+2025-07-09T19:50:17.063287126Z   File "/workspace/.heroku/python/lib/python3.13/importlib/__init__.py", line 88, in import_module
+2025-07-09T19:50:17.063291750Z     return _bootstrap._gcd_import(name[level:], package, level)
+2025-07-09T19:50:17.063295865Z            ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2025-07-09T19:50:17.063299905Z   File "<frozen importlib._bootstrap>", line 1387, in _gcd_import
+2025-07-09T19:50:17.063304391Z   File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+2025-07-09T19:50:17.063308225Z   File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
+2025-07-09T19:50:17.063312506Z   File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+2025-07-09T19:50:17.063316371Z   File "<frozen importlib._bootstrap_external>", line 1026, in exec_module
+2025-07-09T19:50:17.063320932Z   File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+2025-07-09T19:50:17.063339574Z   File "/workspace/main.py", line 3, in <module>
+2025-07-09T19:50:17.063343622Z     from starlette.middleware.sessions import SessionMiddleware
+2025-07-09T19:50:17.063347940Z   File "/workspace/.heroku/python/lib/python3.13/site-packages/starlette/middleware/sessions.py", line 7, in <module>
+2025-07-09T19:50:17.063352196Z     import itsdangerous
+2025-07-09T19:50:17.063360906Z ModuleNotFoundError: No module named 'itsdangerous'
+2025-07-09T19:50:17.063551455Z [2025-07-09 19:50:17 +0000] [17] [INFO] Worker exiting (pid: 17)
+2025-07-09T19:50:17.662218754Z [2025-07-09 19:50:17 +0000] [1] [ERROR] Worker (pid:15) exited with code 3
+2025-07-09T19:50:17.740898982Z [2025-07-09 19:50:17 +0000] [1] [ERROR] Worker (pid:16) exited with code 3
+2025-07-09T19:50:17.744763973Z Traceback (most recent call last):
+2025-07-09T19:50:17.748234789Z   File "/workspace/.heroku/python/lib/python3.13/site-packages/gunicorn/arbiter.py", line 208, in run
+2025-07-09T19:50:17.748250234Z     self.sleep()
+2025-07-09T19:50:17.748254770Z     ~~~~~~~~~~^^
+2025-07-09T19:50:17.748259232Z   File "/workspace/.heroku/python/lib/python3.13/site-packages/gunicorn/arbiter.py", line 359, in sleep
+2025-07-09T19:50:17.748264360Z     ready = select.select([self.PIPE[0]], [], [], 1.0)
+2025-07-09T19:50:17.748369635Z   File "/workspace/.heroku/python/lib/python3.13/site-packages/gunicorn/arbiter.py", line 241, in handle_chld
+2025-07-09T19:50:17.748386952Z     self.reap_workers()
+2025-07-09T19:50:17.748391691Z     ~~~~~~~~~~~~~~~~~^^
+2025-07-09T19:50:17.748395946Z   File "/workspace/.heroku/python/lib/python3.13/site-packages/gunicorn/arbiter.py", line 515, in reap_workers
+2025-07-09T19:50:17.748401066Z     wpid, status = os.waitpid(-1, os.WNOHANG)
+2025-07-09T19:50:17.748405156Z                    ~~~~~~~~~~^^^^^^^^^^^^^^^^
+2025-07-09T19:50:17.748409256Z   File "/workspace/.heroku/python/lib/python3.13/site-packages/gunicorn/arbiter.py", line 241, in handle_chld
+2025-07-09T19:50:17.748414015Z     self.reap_workers()
+2025-07-09T19:50:17.748428648Z     ~~~~~~~~~~~~~~~~~^^
+2025-07-09T19:50:17.748448841Z   File "/workspace/.heroku/python/lib/python3.13/site-packages/gunicorn/arbiter.py", line 529, in reap_workers
+2025-07-09T19:50:17.748457406Z     raise HaltServer(reason, self.WORKER_BOOT_ERROR)
+2025-07-09T19:50:17.748562269Z gunicorn.errors.HaltServer: <HaltServer 'Worker failed to boot.' 3>
+2025-07-09T19:50:17.748676932Z 
+2025-07-09T19:50:17.748685548Z During handling of the above exception, another exception occurred:
+2025-07-09T19:50:17.748690156Z 
+2025-07-09T19:50:17.748694652Z Traceback (most recent call last):
+2025-07-09T19:50:17.748954564Z   File "/workspace/.heroku/python/lib/python3.13/site-packages/gunicorn/arbiter.py", line 661, in kill_worker
+2025-07-09T19:50:17.748971585Z     os.kill(pid, sig)
+2025-07-09T19:50:17.748975977Z     ~~~~~~~^^^^^^^^^^
+2025-07-09T19:50:17.748980909Z ProcessLookupError: [Errno 3] No such process
+2025-07-09T19:50:17.748995542Z 
+2025-07-09T19:50:17.749000375Z During handling of the above exception, another exception occurred:
+2025-07-09T19:50:17.749004220Z 
+2025-07-09T19:50:17.749168275Z Traceback (most recent call last):
+2025-07-09T19:50:17.750978886Z   File "/workspace/.heroku/python/bin/gunicorn", line 8, in <module>
+2025-07-09T19:50:17.750994992Z     sys.exit(run())
+2025-07-09T19:50:17.750999996Z              ~~~^^
+2025-07-09T19:50:17.751005077Z   File "/workspace/.heroku/python/lib/python3.13/site-packages/gunicorn/app/wsgiapp.py", line 66, in run
+2025-07-09T19:50:17.751009345Z     WSGIApplication("%(prog)s [OPTIONS] [APP_MODULE]", prog=prog).run()
+2025-07-09T19:50:17.751013400Z     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+2025-07-09T19:50:17.751030341Z   File "/workspace/.heroku/python/lib/python3.13/site-packages/gunicorn/app/base.py", line 235, in run
+2025-07-09T19:50:17.751034642Z     super().run()
+2025-07-09T19:50:17.751038802Z     ~~~~~~~~~~~^^
+2025-07-09T19:50:17.751047639Z   File "/workspace/.heroku/python/lib/python3.13/site-packages/gunicorn/app/base.py", line 71, in run
+2025-07-09T19:50:17.751051911Z     Arbiter(self).run()
+2025-07-09T19:50:17.751056125Z     ~~~~~~~~~~~~~~~~~^^
+2025-07-09T19:50:17.751073786Z   File "/workspace/.heroku/python/lib/python3.13/site-packages/gunicorn/arbiter.py", line 228, in run
+2025-07-09T19:50:17.751079101Z     self.halt(reason=inst.reason, exit_status=inst.exit_status)
+2025-07-09T19:50:17.751083277Z     ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+2025-07-09T19:50:17.751087400Z   File "/workspace/.heroku/python/lib/python3.13/site-packages/gunicorn/arbiter.py", line 341, in halt
+2025-07-09T19:50:17.751091622Z     self.stop()
+2025-07-09T19:50:17.751095754Z     ~~~~~~~~~^^
+2025-07-09T19:50:17.751100256Z   File "/workspace/.heroku/python/lib/python3.13/site-packages/gunicorn/arbiter.py", line 392, in stop
+2025-07-09T19:50:17.751105058Z     self.kill_workers(sig)
+2025-07-09T19:50:17.751109423Z     ~~~~~~~~~~~~~~~~~^^^^^
+2025-07-09T19:50:17.751123223Z   File "/workspace/.heroku/python/lib/python3.13/site-packages/gunicorn/arbiter.py", line 651, in kill_workers
+2025-07-09T19:50:17.751127502Z     self.kill_worker(pid, sig)
+2025-07-09T19:50:17.751131639Z     ~~~~~~~~~~~~~~~~^^^^^^^^^^
+2025-07-09T19:50:17.751135911Z   File "/workspace/.heroku/python/lib/python3.13/site-packages/gunicorn/arbiter.py", line 665, in kill_worker
+2025-07-09T19:50:17.751140174Z     worker = self.WORKERS.pop(pid)
+2025-07-09T19:50:17.751144293Z   File "/workspace/.heroku/python/lib/python3.13/site-packages/gunicorn/arbiter.py", line 241, in handle_chld
+2025-07-09T19:50:17.751150454Z     self.reap_workers()
+2025-07-09T19:50:17.751154710Z     ~~~~~~~~~~~~~~~~~^^
+2025-07-09T19:50:17.751159090Z   File "/workspace/.heroku/python/lib/python3.13/site-packages/gunicorn/arbiter.py", line 529, in reap_workers
+2025-07-09T19:50:17.751163145Z     raise HaltServer(reason, self.WORKER_BOOT_ERROR)
+2025-07-09T19:50:17.751176137Z gunicorn.errors.HaltServer: <HaltServer 'Worker failed to boot.' 3>
+2025-07-09T19:50:08Z ERROR failed health checks after 5 attempts with error Readiness probe failed: dial tcp 10.244.11.50:8080: connect: connection refused
+2025-07-09T19:50:17Z ERROR component terminated with non-zero exit code: 1,

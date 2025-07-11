@@ -1,0 +1,44 @@
+{
+  "name": "footquizz-frontend",
+  "version": "1.0.0",
+  "description": "Modern frontend build process for FootQuizz application using Vite",
+  "type": "module",
+  "scripts": {
+    "setup": "node setup-frontend.js",
+    "dev": "vite",
+    "build": "vite build",
+    "build:prod": "NODE_ENV=production vite build --mode production",
+    "preview": "vite preview",
+    "build:analyze": "vite build --mode analyze",
+    "clean": "rimraf dist",
+    "type-check": "tsc --noEmit",
+    "test:build": "node test-build.js",
+    "clean:console": "node scripts/clean-build.js",
+    "deploy:build": "npm run clean && npm run build:prod && npm run clean:console",
+    "postinstall": "echo '✅ Frontend dependencies installed. Run npm run setup for initial setup.'"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "vite": "5.4.8",
+    "@vitejs/plugin-legacy": "5.4.2",
+    "autoprefixer": "10.4.20",
+    "postcss": "8.4.47",
+    "sass": "1.79.4",
+    "terser": "5.34.1",
+    "typescript": "5.6.2",
+    "rollup-plugin-visualizer": "5.12.0",
+    "rimraf": "6.0.1",
+    "vite-plugin-html": "3.2.2",
+    "lightningcss": "1.27.0"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
+  },
+  "browserslist": [
+    "> 1%",
+    "last 2 versions",
+    "not dead",
+    "not ie 11"
+  ]
+}

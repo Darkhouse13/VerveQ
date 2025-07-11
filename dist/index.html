@@ -1,0 +1,232 @@
+<!doctype html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#0d1421"><title>VerveQ - Ultimate Football Knowledge Challenge</title><link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚽</text></svg>"><meta property="og:title" content="VerveQ - Ultimate Football Knowledge Challenge"><meta property="og:description" content="Test your football knowledge with our ultimate quiz featuring questions about players, teams, and football history."><meta property="og:image" content="/static/verveq-social.png"><meta property="og:type" content="website"><script type="module" crossorigin src="/assets/js/main-n1lypp_z.js"></script><link rel="stylesheet" crossorigin href="/assets/css/main-CHT9ypyH.css"><script type="module">import.meta.url;import("_").catch(()=>1);(async function*(){})().next();if(location.protocol!="file:"){window.__vite_is_modern_browser=true}</script><script type="module">!function(){if(window.__vite_is_modern_browser)return;var e=document.getElementById("vite-legacy-polyfill"),n=document.createElement("script");n.src=e.src,n.onload=function(){System.import(document.getElementById('vite-legacy-entry').getAttribute('data-src'))},document.body.appendChild(n)}();</script></head><body><nav class="global-nav"><div class="nav-container"><a href="/" class="nav-brand"><span class="emoji">⚽</span> VerveQ</a><div class="nav-links"><a href="/" class="nav-link active">Home</a> <a href="/leaderboard.html" class="nav-link">🏆 Leaderboard</a> <a href="/admin/dashboard" class="nav-link admin-only">Admin</a></div></div></nav><div class="loading-overlay" id="loading-overlay"><div class="loading-spinner"></div></div><div class="quiz-container"><section class="header"><h1>VerveQ</h1><p class="subtitle">Ultimate Football Knowledge Challenge</p></section><section class="game-modes"><div class="mode-card" onclick="openQuizModeModal()"><span class="mode-icon">🎯</span><h2 class="mode-title">Quiz Mode</h2><p class="mode-description">Test your football knowledge with our comprehensive quiz system. Choose between casual and die-hard difficulty levels.</p><ul class="mode-features"><li>🎮 Casual Mode - Perfect for all football fans</li><li>🔥 Die-Hard Mode - For true football experts</li><li>📊 Adaptive difficulty system</li><li>⚡ Instant feedback and scoring</li><li>🏆 Achievement tracking</li></ul><button class="primary-btn">🎮 Start Quiz <span class="btn-arrow">→</span></button></div><div class="mode-card" onclick="window.location.href='survival.html'"><span class="mode-icon">⚔️</span><h2 class="mode-title">Survival Mode</h2><p class="mode-description">Two-player competitive battle! Name football players based on their initials. Make three mistakes and you're eliminated.</p><ul class="mode-features"><li>⚔️ Real-time two-player battles</li><li>👥 30,000+ player database</li><li>🎯 Fuzzy name matching system</li><li>💀 Lives system (3 strikes out)</li><li>🏁 Instant winner determination</li></ul><button class="primary-btn">⚔️ Enter Arena <span class="btn-arrow">→</span></button></div></section><section class="leaderboard-tab" onclick="window.location.href='leaderboard.html'"><h2 class="leaderboard-title">🏆 View Leaderboard</h2><p class="leaderboard-subtitle">Check out the top performers and see how you rank against other football trivia masters</p></section><section class="stats-section"><h2 class="stats-title">📊 Platform Statistics</h2><div class="stats-grid"><div class="stat-card"><div class="stat-value" id="total-players">30K+</div><div class="stat-label">Football Players</div></div><div class="stat-card"><div class="stat-value" id="total-competitions">9</div><div class="stat-label">Competitions</div></div><div class="stat-card"><div class="stat-value" id="question-count">1000+</div><div class="stat-label">Unique Questions</div></div><div class="stat-card"><div class="stat-value" id="quiz-taken">∞</div><div class="stat-label">Quizzes Available</div></div></div></section></div><div id="quiz-mode-modal" class="modal"><div class="modal-content"><div class="modal-header"><h2>Choose Your Quiz Challenge</h2><button class="close-modal" onclick="closeQuizModeModal()">&times;</button></div><div class="modal-body"><div class="difficulty-options"><div class="difficulty-option" onclick="startQuiz('casual')"><div class="difficulty-icon">🎯</div><div class="difficulty-name">Casual Mode</div><div class="difficulty-desc">Perfect for all football fans - beginner friendly questions</div><div class="difficulty-stats">10 questions • Multiple choice • Moderate difficulty</div></div><div class="difficulty-option" onclick="startQuiz('diehard')"><div class="difficulty-icon">🔥</div><div class="difficulty-name">Die-Hard Mode</div><div class="difficulty-desc">For true football experts - challenging questions</div><div class="difficulty-stats">15 questions • Expert level • Advanced trivia</div></div></div></div></div></div><style>#quiz-mode-modal{position:fixed!important;top:0!important;left:0!important;right:0!important;bottom:0!important;background:rgba(13,20,33,.95)!important;backdrop-filter:blur(15px)!important;display:flex!important;align-items:center!important;justify-content:center!important;z-index:1000!important;opacity:0;visibility:hidden;transition:all .3s ease}#quiz-mode-modal.show{opacity:1!important;visibility:visible!important}.modal-content{background:var(--dark-secondary);border-radius:25px;padding:40px;max-width:600px;width:90%;border:2px solid rgba(59,130,246,.3);box-shadow:0 8px 32px rgba(0,0,0,.45);transform:scale(.8);transition:transform .3s ease}.modal.show .modal-content{transform:scale(1)}.modal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:30px}.modal-header h2{font-family:var(--font-heading);color:var(--text-primary);font-size:1.8rem;margin:0}.close-modal{background:0 0;border:none;color:var(--text-secondary);font-size:2rem;cursor:pointer;padding:5px;width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;transition:all .2s ease}.close-modal:hover{background:rgba(220,38,38,.2);color:var(--red-card)}.modal-body{margin:0}.difficulty-options{display:grid;gap:20px}.difficulty-option{background:var(--dark-accent);border:2px solid rgba(59,130,246,.3);border-radius:15px;padding:25px;text-align:center;cursor:pointer;transition:all .3s ease}.difficulty-option:hover{border-color:var(--electric-blue);background:rgba(59,130,246,.1);transform:translateY(-3px);box-shadow:var(--glow-blue)}.difficulty-icon{font-size:3rem;margin-bottom:15px;filter:drop-shadow(0 0 10px rgba(59, 130, 246, .3))}.difficulty-name{font-family:var(--font-heading);font-size:1.5rem;color:var(--text-primary);margin-bottom:10px;font-weight:600}.difficulty-desc{color:var(--text-secondary);font-size:1rem;margin-bottom:15px;line-height:1.4}.difficulty-stats{color:var(--text-muted);font-size:.9rem;font-style:italic}.stats-section{background:var(--dark-secondary);border-radius:25px;padding:40px;margin:40px 0;border:1px solid rgba(59,130,246,.2);box-shadow:var(--shadow-medium)}.stats-title{font-family:var(--font-heading);font-size:2.2rem;text-align:center;color:var(--text-primary);margin-bottom:30px}.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:25px}.stat-card{background:var(--accent-gradient);border-radius:15px;padding:25px;text-align:center;border:1px solid rgba(255,255,255,.1);box-shadow:var(--shadow-medium);transition:transform .3s ease}.stat-card:hover{transform:translateY(-5px)}.stat-value{font-family:var(--font-display);font-size:2.5rem;font-weight:900;color:var(--gold-accent);text-shadow:var(--glow-gold);margin-bottom:8px}.stat-label{color:var(--text-secondary);font-size:1rem;font-weight:600;text-transform:uppercase;letter-spacing:1px}.admin-only{display:none}body.admin-user .admin-only{display:flex}</style><script>// Global variables
+        const API_BASE_URL = window.location.origin;
+        
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', function() {
+            // Load platform statistics
+            loadPlatformStats();
+            
+            // Add interactive effects
+            addInteractiveEffects();
+            
+            // Check if user is admin
+            checkAdminStatus();
+            
+            // Preload pages for better performance
+            preloadPages();
+        });
+        
+        // Quiz Mode Modal Functions
+        function openQuizModeModal() {
+            const modal = document.getElementById('quiz-mode-modal');
+            modal.classList.add('show');
+            
+            // Add escape key listener
+            document.addEventListener('keydown', handleModalEscape);
+        }
+        
+        function closeQuizModeModal() {
+            const modal = document.getElementById('quiz-mode-modal');
+            modal.classList.remove('show');
+            
+            // Remove escape key listener
+            document.removeEventListener('keydown', handleModalEscape);
+        }
+        
+        function handleModalEscape(e) {
+            if (e.key === 'Escape') {
+                closeQuizModeModal();
+            }
+        }
+        
+        function startQuiz(difficulty) {
+            // Store selected difficulty
+            localStorage.setItem('quiz_difficulty', difficulty);
+            
+            // Add loading effect
+            const option = event.target.closest('.difficulty-option');
+            if (option) {
+                option.style.transform = 'scale(0.95)';
+                option.style.opacity = '0.7';
+            }
+            
+            // Show loading overlay
+            document.getElementById('loading-overlay').classList.add('show');
+            
+            // Navigate to quiz
+            setTimeout(() => {
+                const params = new URLSearchParams({ difficulty: difficulty });
+                window.location.href = `enhanced_quiz.html?${params.toString()}`;
+            }, 300);
+        }
+        
+        // Platform Statistics
+        async function loadPlatformStats() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/health`);
+                if (response.ok) {
+                    const data = await response.json();
+                    updateStatistic('total-competitions', data.available_competitions || 9);
+                }
+            } catch (error) {
+            }
+            
+            // Animate counters
+            animateCounters();
+        }
+        
+        function updateStatistic(elementId, value) {
+            const element = document.getElementById(elementId);
+            if (element) {
+                element.textContent = value;
+            }
+        }
+        
+        function animateCounters() {
+            const counters = document.querySelectorAll('.stat-value');
+            
+            counters.forEach(counter => {
+                const text = counter.textContent;
+                const target = parseInt(text.replace(/[^0-9]/g, '')) || 0;
+                
+                if (target > 0) {
+                    let current = 0;
+                    const increment = target / 80;
+                    const timer = setInterval(() => {
+                        current += increment;
+                        if (current >= target) {
+                            counter.textContent = text; // Restore original text
+                            clearInterval(timer);
+                        } else {
+                            counter.textContent = text.replace(/[0-9]+/, Math.floor(current));
+                        }
+                    }, 25);
+                }
+            });
+        }
+        
+        // Interactive Effects
+        function addInteractiveEffects() {
+            // Add hover effects to mode cards
+            const modeCards = document.querySelectorAll('.mode-card');
+            modeCards.forEach(card => {
+                card.addEventListener('mouseenter', function() {
+                    this.style.boxShadow = '0 20px 40px rgba(59, 130, 246, 0.3)';
+                });
+                
+                card.addEventListener('mouseleave', function() {
+                    this.style.boxShadow = '';
+                });
+            });
+            
+            // Add click ripple effects
+            const buttons = document.querySelectorAll('.primary-btn, .difficulty-option');
+            buttons.forEach(button => {
+                button.addEventListener('click', function(e) {
+                    createRippleEffect(e, this);
+                });
+            });
+        }
+        
+        function createRippleEffect(event, element) {
+            const ripple = document.createElement('span');
+            const rect = element.getBoundingClientRect();
+            const size = Math.max(rect.width, rect.height);
+            const x = event.clientX - rect.left - size / 2;
+            const y = event.clientY - rect.top - size / 2;
+            
+            ripple.style.width = ripple.style.height = size + 'px';
+            ripple.style.left = x + 'px';
+            ripple.style.top = y + 'px';
+            ripple.classList.add('ripple');
+            
+            element.style.position = 'relative';
+            element.style.overflow = 'hidden';
+            element.appendChild(ripple);
+            
+            setTimeout(() => {
+                ripple.remove();
+            }, 600);
+        }
+        
+        // Admin Status Check
+        function checkAdminStatus() {
+            // Check if user has admin privileges
+            const isAdmin = localStorage.getItem('verveq_admin') === 'true' || 
+                           window.location.search.includes('admin=true');
+            
+            if (isAdmin) {
+                document.body.classList.add('admin-user');
+            }
+        }
+        
+        // Page Preloading
+        function preloadPages() {
+            const pagesToPreload = [
+                'enhanced_quiz.html',
+                'survival.html',
+                'leaderboard.html'
+            ];
+            
+            pagesToPreload.forEach(page => {
+                const link = document.createElement('link');
+                link.rel = 'prefetch';
+                link.href = page;
+                document.head.appendChild(link);
+            });
+        }
+        
+        // Keyboard Shortcuts
+        document.addEventListener('keydown', function(e) {
+            // Don't trigger shortcuts if modal is open
+            if (document.querySelector('.modal.show')) return;
+            
+            switch(e.key) {
+                case '1':
+                    openQuizModeModal();
+                    break;
+                case '2':
+                    window.location.href = 'survival.html';
+                    break;
+                case '3':
+                    window.location.href = 'leaderboard.html';
+                    break;
+                case 'h':
+                case 'H':
+                    if (e.ctrlKey || e.metaKey) {
+                        e.preventDefault();
+                        window.location.href = '/';
+                    }
+                    break;
+            }
+        });
+        
+        // Modal click outside to close
+        document.addEventListener('click', function(e) {
+            const modal = document.getElementById('quiz-mode-modal');
+            if (e.target === modal) {
+                closeQuizModeModal();
+            }
+        });
+        
+        // Add ripple effect styles
+        const rippleStyle = document.createElement('style');
+        rippleStyle.textContent = `
+            .ripple {
+                position: absolute;
+                border-radius: 50%;
+                background: rgba(59, 130, 246, 0.6);
+                transform: scale(0);
+                animation: rippleEffect 0.6s linear;
+                pointer-events: none;
+                z-index: 1;
+            }
+            
+            @keyframes rippleEffect {
+                to {
+                    transform: scale(4);
+                    opacity: 0;
+                }
+            }
+        `;
+        document.head.appendChild(rippleStyle);</script><script nomodule>!function(){var e=document,t=e.createElement("script");if(!("noModule"in t)&&"onbeforeload"in t){var n=!1;e.addEventListener("beforeload",(function(e){if(e.target===t)n=!0;else if(!e.target.hasAttribute("nomodule")||!n)return;e.preventDefault()}),!0),t.type="module",t.src=".",e.head.appendChild(t),t.remove()}}();</script><script nomodule crossorigin id="vite-legacy-polyfill" src="/assets/js/polyfills-legacy-DMrMt_pQ.js"></script><script nomodule crossorigin id="vite-legacy-entry" data-src="/assets/js/main-legacy-CW4eqK8f.js">System.import(document.getElementById('vite-legacy-entry').getAttribute('data-src'))</script></body></html>

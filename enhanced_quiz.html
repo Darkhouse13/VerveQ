@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="theme-color" content="#0d1421">
-    <title>FootQuizz - Enhanced Quiz Mode</title>
+    <title>VerveQ - Enhanced Quiz Mode</title>
     <link rel="stylesheet" href="/static/dark_football_theme.css">
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚽</text></svg>">
 </head>
@@ -14,7 +14,7 @@
         <div class="nav-container">
             <a href="/" class="nav-brand">
                 <span class="emoji">⚽</span>
-                FootQuizz
+                VerveQ
             </a>
             <div class="nav-links">
                 <a href="/" class="nav-link">Home</a>
@@ -205,7 +205,7 @@
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             // --- Define the base URL for all API requests ---
-            const API_BASE_URL = 'http://127.0.0.1:8008';
+            const API_BASE_URL = window.location.origin;
             // ------------------------------------------------
 
             // Corrected and consolidated element selectors
@@ -243,8 +243,8 @@
             let correctAnswers = 0;
             let totalTime = 0;
             let questionStartTime;
-            let player_id = localStorage.getItem('footquizz_player_id') || `guest_${Date.now()}`;
-            localStorage.setItem('footquizz_player_id', player_id); // Persist player ID
+            let player_id = localStorage.getItem('verveq_player_id') || `guest_${Date.now()}`;
+            localStorage.setItem('verveq_player_id', player_id); // Persist player ID
 
             let timer;
             const QUESTION_TIME = 15; // seconds
@@ -265,12 +265,59 @@
                 }, 1000);
             }
 
+            // Parameter validation functions
+            function validateDifficulty(difficulty) {
+                const validDifficulties = ['casual', 'diehard'];
+                return validDifficulties.includes(difficulty);
+            }
+
+            function validateSport(sport) {
+                const validSports = ['football', 'tennis'];
+                return validSports.includes(sport);
+            }
+
+            function validateNumQuestions(numQuestions) {
+                const num = parseInt(numQuestions);
+                return Number.isInteger(num) && num >= 5 && num <= 50;
+            }
+
+            function sanitizeParameters() {
+                const urlParams = new URLSearchParams(window.location.search);
+                let difficulty = urlParams.get('difficulty') || 'casual';
+                let sport = urlParams.get('sport') || 'football';
+                let numQuestions = urlParams.get('questions') || '10';
+
+                // Validate and sanitize difficulty
+                if (!validateDifficulty(difficulty)) {
+                    difficulty = 'casual';
+                }
+
+                // Validate and sanitize sport
+                if (!validateSport(sport)) {
+                    sport = 'football';
+                }
+
+                // Validate and sanitize numQuestions
+                if (!validateNumQuestions(numQuestions)) {
+                    numQuestions = '10';
+                }
+
+                return { difficulty, sport, numQuestions };
+            }
+
             async function fetchQuestions() {
                 const loadingOverlay = document.getElementById('loading-overlay');
                 loadingOverlay.classList.add('show');
                 
-                const difficulty = new URLSearchParams(window.location.search).get('difficulty') || 'casual';
-                const apiUrl = `${API_BASE_URL}/quiz?difficulty=${difficulty}&num_questions=10`;
+                // Get validated and sanitized parameters
+                const { difficulty, sport, numQuestions } = sanitizeParameters();
+                
+                // Use URLSearchParams for proper encoding
+                const params = new URLSearchParams({
+                    difficulty: difficulty,
+                    num_questions: numQuestions
+                });
+                const apiUrl = `${API_BASE_URL}/api/${encodeURIComponent(sport)}/quiz?${params.toString()}`;
                 difficultyBadge.textContent = difficulty.charAt(0).toUpperCase() + difficulty.slice(1);
                 
                 try {
@@ -285,17 +332,14 @@
                     totalQuestionsDisplay.textContent = quizData.length;
                     startQuiz();
                 } catch (error) {
-                    console.warn("Network fetch failed, trying cache...", error);
                     // Try to get the data from the cache via the service worker
                     const cacheResponse = await caches.match(apiUrl);
                     if (cacheResponse) {
-                        console.log("Found response in cache!");
                         const data = await cacheResponse.json();
                         quizData = data.quiz;
                         totalQuestionsDisplay.textContent = quizData.length;
                         startQuiz();
                     } else {
-                        console.error("Failed to load quiz from network and cache.");
                         const errorContainer = document.getElementById('loading');
                         errorContainer.innerHTML = `
                             <div class="error-state">
@@ -449,9 +493,13 @@
                 }
 
                 // Record analytics event
+                const urlParams = new URLSearchParams(window.location.search);
+                const sport = urlParams.get('sport') || 'football';
+                
                 recordAnalyticsEvent({
                     player_id: player_id,
                     quiz_mode: "enhanced_quiz",
+                    sport: sport,
                     question_type: question.type || 'unknown', // Use 'unknown' if type is not defined
                     question_id: question.question_id || `q_${currentQuestionIndex}`, // Use question_id if available, otherwise generate
                     is_correct: isCorrect ? 1 : 0,
@@ -488,10 +536,8 @@
                         body: JSON.stringify(eventData),
                     });
                     if (!response.ok) {
-                        console.error('Failed to record analytics event:', response.statusText);
                     }
                 } catch (error) {
-                    console.error('Error sending analytics event:', error);
                 }
             }
 
@@ -563,6 +609,7 @@
                 
                 feedbackCollected = true;
                 
+                const urlParams = new URLSearchParams(window.location.search);
                 const feedbackData = {
                     question_id: currentQuestionData.id || 'unknown',
                     question_text: currentQuestionData.question,
@@ -572,7 +619,8 @@
                     difficulty_category: currentQuestionData.difficulty_category || 'unknown',
                     user_id: 'quiz_user_' + Date.now(), // Generate unique user ID
                     timestamp: new Date().toISOString(),
-                    quiz_mode: new URLSearchParams(window.location.search).get('difficulty') || 'casual'
+                    quiz_mode: urlParams.get('difficulty') || 'casual',
+                    sport: urlParams.get('sport') || 'football'
                 };
                 
                 // Send feedback to server
@@ -618,12 +666,9 @@
                     });
                     
                     if (response.ok) {
-                        console.log('Difficulty feedback sent successfully');
                     } else {
-                        console.error('Failed to send difficulty feedback:', response.statusText);
                     }
                 } catch (error) {
-                    console.error('Error sending difficulty feedback:', error);
                     // Store feedback locally if server is unavailable
                     storeFeedbackLocally(feedbackData);
                 }
@@ -635,9 +680,7 @@
                     const localFeedback = JSON.parse(localStorage.getItem('difficulty_feedback') || '[]');
                     localFeedback.push(feedbackData);
                     localStorage.setItem('difficulty_feedback', JSON.stringify(localFeedback));
-                    console.log('Feedback stored locally');
                 } catch (error) {
-                    console.error('Error storing feedback locally:', error);
                 }
             }
 
@@ -688,10 +731,8 @@
             window.addEventListener('load', () => {
                 navigator.serviceWorker.register('/static/service-worker.js')
                     .then(registration => {
-                        console.log('ServiceWorker registration successful with scope: ', registration.scope);
                     })
                     .catch(error => {
-                        console.log('ServiceWorker registration failed: ', error);
                     });
             });
         }

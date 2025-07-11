@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#0d1421">
+    <title>Admin Monitoring Dashboard - VerveQ</title>
+    <link rel="stylesheet" href="/static/dark_football_theme.css">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚽</text></svg>">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        /* Admin Dashboard specific styles */
+        .admin-header {
+            background: var(--dark-secondary);
+            padding: 30px;
+            border-radius: 20px;
+            margin-bottom: 30px;
+            border: 1px solid rgba(59, 130, 246, 0.2);
+            box-shadow: var(--shadow-medium);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .admin-header h1 {
+            margin: 0;
+            font-family: var(--font-heading);
+            font-size: 2.2rem;
+            color: var(--text-primary);
+            font-weight: 700;
+        }
+        
+        .status {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: var(--dark-accent);
+            padding: 12px 20px;
+            border-radius: 15px;
+            border: 1px solid rgba(59, 130, 246, 0.2);
+        }
+        
+        .status-light {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background-color: var(--red-card);
+            animation: pulse 2s infinite;
+        }
+        
+        .status-light.connected {
+            background-color: var(--field-green);
+            animation: none;
+            box-shadow: 0 0 10px rgba(45, 90, 45, 0.5);
+        }
+        
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(220, 38, 38, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0); }
+        }
+        
+        #status-text {
+            color: var(--text-secondary);
+            font-weight: 600;
+        }
+        
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+        
+        .card {
+            background: var(--dark-secondary);
+            border-radius: 20px;
+            padding: 30px;
+            border: 1px solid rgba(59, 130, 246, 0.2);
+            box-shadow: var(--shadow-medium);
+            transition: all var(--transition-medium);
+        }
+        
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-heavy);
+        }
+        
+        .card h2 {
+            margin-top: 0;
+            font-family: var(--font-heading);
+            font-size: 1.4rem;
+            color: var(--text-primary);
+            border-bottom: 2px solid rgba(59, 130, 246, 0.3);
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+        
+        .metric {
+            font-family: var(--font-display);
+            font-size: 2.5rem;
+            font-weight: 900;
+            color: var(--gold-accent);
+            text-shadow: var(--glow-gold);
+        }
+        
+        .metric-label {
+            font-size: 1rem;
+            color: var(--text-secondary);
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .chart-wrapper {
+            position: relative;
+            height: 280px;
+            overflow-x: auto;
+            background: var(--dark-accent);
+            border-radius: 15px;
+            padding: 15px;
+        }
+        
+        #error-log {
+            max-height: 400px;
+            overflow-y: auto;
+            font-size: 0.9rem;
+            background: var(--dark-accent);
+            border-radius: 15px;
+            padding: 20px;
+        }
+        
+        .error-item {
+            border-bottom: 1px solid rgba(59, 130, 246, 0.2);
+            padding: 15px 0;
+        }
+        
+        .error-item:last-child {
+            border-bottom: none;
+        }
+        
+        .error-message {
+            font-weight: 600;
+            color: var(--red-card);
+            margin-bottom: 8px;
+        }
+        
+        .error-stack {
+            white-space: pre-wrap;
+            background: var(--dark-primary);
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 10px;
+            font-family: var(--font-display);
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            border: 1px solid rgba(59, 130, 246, 0.2);
+        }
+        
+        #usage-analytics {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+        
+        .usage-item {
+            background: var(--accent-gradient);
+            padding: 12px 18px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            color: var(--text-primary);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .usage-key {
+            font-weight: 600;
+            color: var(--gold-accent);
+        }
+        
+        /* Responsive design */
+        @media (max-width: 768px) {
+            .admin-header {
+                flex-direction: column;
+                gap: 20px;
+                text-align: center;
+            }
+            
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+            
+            .card {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Global Navigation -->
+    <nav class="global-nav">
+        <div class="nav-container">
+            <a href="/" class="nav-brand">
+                <span class="emoji">⚽</span>
+                VerveQ
+            </a>
+            <div class="nav-links">
+                <a href="/" class="nav-link">Home</a>
+                <a href="/leaderboard.html" class="nav-link">🏆 Leaderboard</a>
+                <a href="/admin/dashboard" class="nav-link active">Admin</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="quiz-container">
+        <header class="admin-header">
+            <h1>🔧 Admin Dashboard</h1>
+            <div class="status">
+                <div id="status-light" class="status-light"></div>
+                <span id="status-text">Connecting...</span>
+            </div>
+        </header>
+
+    <div class="dashboard-grid">
+        <div class="card">
+            <h2>System Health</h2>
+            <div class="chart-wrapper">
+                <canvas id="system-chart"></canvas>
+            </div>
+        </div>
+        <div class="card">
+            <h2>Request Performance</h2>
+            <div class="chart-wrapper">
+                <canvas id="requests-chart"></canvas>
+            </div>
+        </div>
+        <div class="card">
+            <h2>Request Volume</h2>
+            <p><span id="rps" class="metric">0.0</span> <span class="metric-label">Requests/sec</span></p>
+            <p><span id="total-requests" class="metric">0</span> <span class="metric-label">Total Requests</span></p>
+        </div>
+        <div class="card">
+            <h2>Usage Analytics</h2>
+            <div id="usage-analytics"></div>
+        </div>
+    </div>
+
+    <div class="card" style="margin-top: 20px;">
+        <h2>Error Log</h2>
+        <div id="error-log">
+            <p>No errors reported yet.</p>
+        </div>
+    </div>
+
+    <script>
+        const API_ENDPOINT = '/api/monitoring/metrics';
+        const STATUS_LIGHT = document.getElementById('status-light');
+        const STATUS_TEXT = document.getElementById('status-text');
+
+        let systemChart, requestsChart;
+
+        function initializeCharts() {
+            const systemCtx = document.getElementById('system-chart').getContext('2d');
+            systemChart = new Chart(systemCtx, {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: 'CPU Usage (%)',
+                        data: [],
+                        borderColor: 'rgb(59, 130, 246)',
+                        tension: 0.1
+                    }, {
+                        label: 'Memory Usage (%)',
+                        data: [],
+                        borderColor: 'rgb(16, 185, 129)',
+                        tension: 0.1
+                    }]
+                },
+                options: { responsive: true, maintainAspectRatio: false }
+            });
+
+            const requestsCtx = document.getElementById('requests-chart').getContext('2d');
+            requestsChart = new Chart(requestsCtx, {
+                type: 'bar',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: 'Avg. Response Time (ms)',
+                        data: [],
+                        backgroundColor: 'rgba(239, 68, 68, 0.6)'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: {
+                            ticks: {
+                                maxRotation: 90,
+                                minRotation: 45,
+                                font: {
+                                    size: 10
+                                }
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: true
+                        }
+                    }
+                }
+            });
+        }
+
+        async function fetchData() {
+            try {
+                const response = await fetch(API_ENDPOINT);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const data = await response.json();
+                
+                STATUS_LIGHT.classList.add('connected');
+                STATUS_TEXT.textContent = 'Connected';
+
+                updateUI(data);
+
+            } catch (error) {
+                STATUS_LIGHT.classList.remove('connected');
+                STATUS_TEXT.textContent = 'Disconnected';
+            }
+        }
+
+        function updateUI(data) {
+            // System Metrics
+            if (data.system && data.system.length > 0) {
+                const recentSystemData = data.system.slice(-60); // Limit to last 60 entries (5 minutes of data)
+                const labels = recentSystemData.map(s => new Date(s.timestamp * 1000).toLocaleTimeString());
+                const cpuData = recentSystemData.map(s => s.cpu_usage);
+                const memData = recentSystemData.map(s => s.memory_usage_percent);
+                updateChart(systemChart, labels, [cpuData, memData]);
+            }
+
+            // Request Metrics
+            if (data.requests && data.requests.length > 0) {
+                const requestsByPath = data.requests.reduce((acc, req) => {
+                    if (!acc[req.path]) {
+                        acc[req.path] = { times: [], count: 0 };
+                    }
+                    acc[req.path].times.push(req.duration_ms);
+                    acc[req.path].count++;
+                    return acc;
+                }, {});
+
+                let paths = Object.keys(requestsByPath).map(path => {
+                    const sum = requestsByPath[path].times.reduce((a, b) => a + b, 0);
+                    const avg = sum / requestsByPath[path].times.length;
+                    return { path, avg, count: requestsByPath[path].count };
+                });
+
+                // Sort by average response time (slowest first) and limit to top 10
+                paths.sort((a, b) => b.avg - a.avg);
+                const topPaths = paths.slice(0, 10);
+
+                const pathLabels = topPaths.map(p => p.path);
+                const avgTimes = topPaths.map(p => p.avg);
+                
+                updateChart(requestsChart, pathLabels, [avgTimes]);
+
+                const totalRequests = data.requests.length;
+                document.getElementById('total-requests').textContent = totalRequests;
+                const timeSpan = data.requests[totalRequests - 1].timestamp - data.requests[0].timestamp;
+                document.getElementById('rps').textContent = timeSpan > 0 ? (totalRequests / timeSpan).toFixed(1) : '0.0';
+            }
+
+            // Error Log
+            const errorLog = document.getElementById('error-log');
+            if (data.errors && data.errors.length > 0) {
+                errorLog.innerHTML = '';
+                data.errors.slice().reverse().forEach(err => {
+                    const item = document.createElement('div');
+                    item.className = 'error-item';
+                    item.innerHTML = `
+                        <div><strong>Timestamp:</strong> ${new Date(err.timestamp * 1000).toLocaleString()}</div>
+                        <div class="error-message"><strong>${err.type}:</strong> ${err.message}</div>
+                        ${err.request ? `<div><strong>Path:</strong> ${err.request.method} ${err.request.path}</div>` : ''}
+                        <details>
+                            <summary>Stack Trace</summary>
+                            <pre class="error-stack">${err.stack_trace}</pre>
+                        </details>
+                    `;
+                    errorLog.appendChild(item);
+                });
+            } else {
+                errorLog.innerHTML = '<p>No errors reported yet.</p>';
+            }
+
+            // Usage Analytics
+            const usageAnalytics = document.getElementById('usage-analytics');
+            if (data.usage_analytics) {
+                usageAnalytics.innerHTML = '';
+                for (const [type, keys] of Object.entries(data.usage_analytics)) {
+                    for (const [key, count] of Object.entries(keys)) {
+                        const item = document.createElement('div');
+                        item.className = 'usage-item';
+                        item.innerHTML = `${type}: <span class="usage-key">${key}</span> (${count})`;
+                        usageAnalytics.appendChild(item);
+                    }
+                }
+            }
+        }
+
+        function updateChart(chart, labels, datasetsData) {
+            chart.data.labels = labels;
+            datasetsData.forEach((data, index) => {
+                chart.data.datasets[index].data = data;
+            });
+            chart.update();
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            initializeCharts();
+            fetchData();
+            setInterval(fetchData, 5000); // Refresh every 5 seconds
+        });
+    </script>
+
+    </div> <!-- End quiz-container -->
+</body>
+</html>

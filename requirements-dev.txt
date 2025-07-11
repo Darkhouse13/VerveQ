@@ -1,0 +1,48 @@
+# VerveQ Development Dependencies
+# Dependencies needed only for development, not production
+# Last updated: 2025-07-11
+# Python version: 3.13.1
+
+# Include production dependencies
+-r requirements.txt
+
+# Code formatting and linting
+black==24.10.0
+isort==5.13.2
+flake8==7.1.1
+flake8-docstrings==1.7.0
+flake8-import-order==0.18.2
+
+# Type checking
+mypy==1.13.0
+types-requests==2.32.0.20241016
+
+# Security scanning
+bandit==1.8.0
+safety==3.2.11
+
+# Documentation
+sphinx==8.1.3
+sphinx-rtd-theme==3.0.2
+sphinx-autodoc-typehints==2.4.4
+
+# Development utilities
+python-dotenv==1.0.1
+ipython==8.30.0
+jupyter==1.1.1
+
+# Environment management
+pip-tools==7.4.1
+
+# Git hooks and pre-commit
+pre-commit==4.0.1
+
+# Performance profiling
+py-spy==0.3.14
+memory-profiler==0.61.0
+
+# Database development tools
+alembic==1.14.0
+
+# API documentation and testing
+httpx==0.28.1

@@ -1,0 +1,86 @@
+/**
+ * VerveQ SCSS Variables
+ * Centralized design system variables for consistent theming
+ */
+
+// Primary Dark Colors
+$dark-primary: #0d1421;        // Deep navy background
+$dark-secondary: #1a2332;      // Card/container background
+$dark-accent: #242938;         // Subtle accent background
+$dark-elevated: #2d3748;       // Elevated elements
+
+// Football Field Colors - Muted & Reduced
+$field-green: #2d5a2d;         // Darker, muted field green
+$grass-accent: #3a6b3a;        // Subtle grass accent
+$field-lines: #4a7c4a;         // Field line color
+
+// Stadium Colors - Primary Theme
+$stadium-blue: #1e3a8a;        // Deep stadium blue
+$electric-blue: #3b82f6;       // Bright electric blue
+$sky-blue: #60a5fa;           // Lighter sky blue
+$navy-blue: #1e40af;          // Navy blue accents
+
+// Highlight & Accent Colors
+$gold-accent: #fbbf24;         // Warm gold for highlights
+$silver-accent: #e5e7eb;       // Cool silver
+$orange-accent: #f97316;       // Energy orange for CTAs
+$yellow-card: #eab308;         // Warning yellow
+$red-card: #dc2626;           // Error/danger red
+
+// Text Colors
+$text-primary: #f8fafc;        // Primary white text
+$text-secondary: #cbd5e1;      // Secondary light gray
+$text-muted: #64748b;          // Muted gray text
+$text-dark: #1e293b;          // Dark text for light backgrounds
+
+// Gradients
+$primary-gradient: linear-gradient(135deg, $dark-primary 0%, $dark-secondary 100%);
+$stadium-gradient: linear-gradient(135deg, $stadium-blue 0%, $electric-blue 100%);
+$accent-gradient: linear-gradient(135deg, $electric-blue 0%, $navy-blue 100%);
+$field-gradient: linear-gradient(135deg, $dark-secondary 0%, $field-green 20%, $dark-secondary 100%);
+
+// Typography
+$font-family-primary: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+$font-family-heading: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+
+// Spacing
+$spacing-xs: 0.25rem;   // 4px
+$spacing-sm: 0.5rem;    // 8px
+$spacing-md: 1rem;      // 16px
+$spacing-lg: 1.5rem;    // 24px
+$spacing-xl: 2rem;      // 32px
+$spacing-2xl: 3rem;     // 48px
+$spacing-3xl: 4rem;     // 64px
+
+// Border Radius
+$border-radius-sm: 0.25rem;   // 4px
+$border-radius-md: 0.5rem;    // 8px
+$border-radius-lg: 0.75rem;   // 12px
+$border-radius-xl: 1rem;      // 16px
+
+// Shadows
+$shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+$shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+$shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+$shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+
+// Breakpoints
+$breakpoint-sm: 640px;
+$breakpoint-md: 768px;
+$breakpoint-lg: 1024px;
+$breakpoint-xl: 1280px;
+$breakpoint-2xl: 1536px;
+
+// Z-index layers
+$z-dropdown: 1000;
+$z-sticky: 1020;
+$z-fixed: 1030;
+$z-modal-backdrop: 1040;
+$z-modal: 1050;
+$z-popover: 1060;
+$z-tooltip: 1070;
+
+// Transitions
+$transition-fast: 150ms ease-in-out;
+$transition-normal: 300ms ease-in-out;
+$transition-slow: 500ms ease-in-out;

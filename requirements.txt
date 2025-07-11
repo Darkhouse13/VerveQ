@@ -1,21 +1,47 @@
-fastapi>=0.115.14
-uvicorn[standard]>=0.35.0
-python-multipart>=0.0.6
-jsonschema>=3.2.0
-scikit-learn>=1.7.0
-numpy>=2.2.6
-sentence-transformers>=5.0.0
-pandas>=2.3.0
-psutil>=5.9.8
-typing-extensions>=4.8.0
-pydantic>=2.11.0
-psycopg2-binary>=2.9.9
-sqlalchemy>=2.0.0
-gunicorn
-# Session middleware dependencies
-itsdangerous>=2.1.2
-starlette>=0.27.0
-# HTTP client for testing and integrations
-requests>=2.31.0
-# ML model persistence
-joblib>=1.3.0
+# VerveQ Production Dependencies
+# All dependencies are pinned to exact versions for reproducible builds
+# Last updated: 2025-07-11
+# Python version: 3.13.1
+
+# Core FastAPI and ASGI server
+fastapi==0.115.14
+uvicorn[standard]==0.35.0
+
+# HTTP and form handling
+python-multipart==0.0.6
+requests==2.32.3
+
+# Data validation and serialization
+pydantic==2.11.0
+jsonschema==4.24.0
+
+# Machine Learning and Data Science
+scikit-learn==1.6.1
+numpy==2.2.3
+pandas==2.2.3
+sentence-transformers==5.0.0
+joblib==1.4.2
+
+# Database and ORM
+sqlalchemy==2.0.41
+# PostgreSQL adapter - using modern psycopg for Python 3.13 compatibility
+psycopg[binary]==3.2.3  # Modern PostgreSQL adapter with binary package
+# Note: For Python < 3.13, you can use psycopg2-binary==2.9.9 instead
+
+# System monitoring and utilities
+psutil==5.9.8
+typing-extensions==4.12.2
+
+# Web server for production deployment
+gunicorn==23.0.0
+
+# Session and security middleware
+itsdangerous==2.2.0
+starlette==0.27.0
+
+# Note: Testing dependencies moved to requirements-test.txt
+# Development dependencies moved to requirements-dev.txt
+
+redis==5.0.1
+cachetools==5.3.2
+alembic==1.13.1

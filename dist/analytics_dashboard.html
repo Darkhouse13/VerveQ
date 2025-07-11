@@ -1,0 +1,181 @@
+<!doctype html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#0d1421"><title>VerveQ Player Analytics Dashboard</title><link rel="stylesheet" href="/static/dark_football_theme.css"><link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚽</text></svg>"><style>.analytics-container{min-height:calc(100vh - 70px);padding:30px 20px}.dashboard-container{background:var(--dark-secondary);border-radius:25px;padding:40px;border:1px solid rgba(59,130,246,.2);box-shadow:var(--shadow-heavy);max-width:1200px;margin:0 auto;position:relative;overflow:hidden}.dashboard-container::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--stadium-gradient);background-size:200% 100%;animation:gradient-flow 3s ease infinite}h1{font-family:var(--font-heading);color:var(--text-primary);text-align:center;margin-bottom:30px;font-size:2.5rem;font-weight:700}h2{font-family:var(--font-heading);color:var(--text-primary);margin-bottom:20px;font-weight:600}.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:25px;margin-bottom:40px}.stat-card{background:var(--accent-gradient);padding:30px;border-radius:20px;text-align:center;border:1px solid rgba(255,255,255,.1);box-shadow:var(--shadow-medium);transition:all var(--transition-medium)}.stat-card:hover{transform:translateY(-5px);box-shadow:var(--shadow-heavy)}.stat-card h3{margin-top:0;margin-bottom:15px;color:var(--text-secondary);font-family:var(--font-heading);font-size:1.1rem;font-weight:600;text-transform:uppercase;letter-spacing:1px}.stat-card p{font-family:var(--font-display);font-size:2.5rem;font-weight:900;color:var(--gold-accent);text-shadow:var(--glow-gold);margin:0}.chart-section{background:var(--dark-accent);border-radius:20px;padding:30px;margin-bottom:30px;border:1px solid rgba(59,130,246,.2)}.chart-section h2{text-align:left;border-bottom:2px solid rgba(59,130,246,.3);padding-bottom:15px;margin-bottom:25px;font-size:1.5rem}.chart-placeholder{background:var(--dark-primary);border:2px dashed rgba(59,130,246,.3);min-height:300px;display:flex;justify-content:center;align-items:center;color:var(--text-muted);font-style:italic;border-radius:15px;font-size:1.1rem}.privacy-controls{background:var(--dark-accent);border-radius:20px;padding:30px;margin-top:40px;border:1px solid rgba(59,130,246,.2)}.privacy-controls h2{text-align:left;margin-bottom:20px}.privacy-controls label{display:flex;align-items:center;gap:12px;margin-bottom:15px;color:var(--text-secondary);font-size:1.1rem;cursor:pointer}.privacy-controls input[type=checkbox]{width:18px;height:18px;accent-color:var(--electric-blue)}.privacy-controls p{color:var(--text-muted);font-size:.95rem;line-height:1.5;margin-top:15px}@media (max-width:768px){.analytics-container{padding:20px 15px}.dashboard-container{padding:25px 20px}.stats-grid{grid-template-columns:1fr;gap:20px}.chart-section{padding:20px}}</style><script async type="module" crossorigin src="/assets/js/analytics-DndlFdxW.js"></script><script type="module">import.meta.url;import("_").catch(()=>1);(async function*(){})().next();if(location.protocol!="file:"){window.__vite_is_modern_browser=true}</script><script type="module">!function(){if(window.__vite_is_modern_browser)return;var e=document.getElementById("vite-legacy-polyfill"),n=document.createElement("script");n.src=e.src,n.onload=function(){System.import(document.getElementById('vite-legacy-entry').getAttribute('data-src'))},document.body.appendChild(n)}();</script></head><body><nav class="global-nav"><div class="nav-container"><a href="/" class="nav-brand"><span class="emoji">⚽</span> VerveQ</a><div class="nav-links"><a href="/" class="nav-link">Home</a> <a href="/leaderboard.html" class="nav-link">🏆 Leaderboard</a> <a href="/admin/dashboard" class="nav-link admin-only">Admin</a></div></div></nav><div class="analytics-container"><div class="dashboard-container"><h1>📊 Player Analytics</h1><div class="stats-grid"><div class="stat-card"><h3>Total Quizzes Played</h3><p id="totalQuizzes">--</p></div><div class="stat-card"><h3>Average Score</h3><p id="averageScore">--</p></div><div class="stat-card"><h3>Overall Accuracy</h3><p id="overallAccuracy">--</p></div><div class="stat-card"><h3>Favorite Mode</h3><p id="favoriteMode">--</p></div></div><div class="chart-section"><h2>Accuracy by Question Type</h2><div class="chart-placeholder" id="accuracyByTypeChart">[Chart: Accuracy by Question Type will be rendered here]</div></div><div class="chart-section"><h2>Learning Curve Over Time</h2><div class="chart-placeholder" id="learningCurveChart">[Chart: Learning Curve will be rendered here]</div></div><div class="chart-section"><h2>Recent Quiz Performance</h2><div class="chart-placeholder" id="recentPerformanceChart">[Chart: Recent Quiz Performance will be rendered here]</div></div><div class="privacy-controls"><h2>Privacy Controls</h2><label><input type="checkbox" id="dataCollectionToggle" checked="checked"> Allow data collection for personalized analytics</label><p>Your data helps us improve your VerveQ experience. You can opt-out at any time.</p></div></div><script src="https://cdn.jsdelivr.net/npm/chart.js"></script><script>document.addEventListener('DOMContentLoaded', () => {
+            fetchPlayerAnalytics();
+
+            document.getElementById('dataCollectionToggle').addEventListener('change', (event) => {
+                const isChecked = event.target.checked;
+                alert(`Data collection ${isChecked ? 'enabled' : 'disabled'}. This change would typically be saved on the server.`);
+            });
+        });
+
+        async function fetchPlayerAnalytics() {
+            const dummyData = {
+                player_id: "current_player",
+                total_quizzes: 45,
+                average_score: 82,
+                overall_accuracy: 0.78,
+                favorite_mode: "enhanced_quiz",
+                accuracy_by_question_type: {
+                    "player_name": 0.85,
+                    "club": 0.70,
+                    "nationality": 0.90,
+                    "league": 0.75
+                },
+                recent_performance: [
+                    { quiz_mode: "enhanced_quiz", score: 75, date: "2024-06-10" },
+                    { quiz_mode: "survival", score: 80, date: "2024-06-15" },
+                    { quiz_mode: "enhanced_quiz", score: 85, date: "2024-06-20" },
+                    { quiz_mode: "survival", score: 78, date: "2024-06-25" },
+                    { quiz_mode: "enhanced_quiz", score: 90, date: "2024-07-01" }
+                ]
+            };
+
+            document.getElementById('totalQuizzes').textContent = dummyData.total_quizzes;
+            document.getElementById('averageScore').textContent = dummyData.average_score + '%';
+            document.getElementById('overallAccuracy').textContent = (dummyData.overall_accuracy * 100).toFixed(1) + '%';
+            document.getElementById('favoriteMode').textContent = dummyData.favorite_mode.replace('_', ' ').toUpperCase();
+
+            renderAccuracyByTypeChart(dummyData.accuracy_by_question_type);
+            renderLearningCurveChart(dummyData.recent_performance);
+            renderRecentPerformanceChart(dummyData.recent_performance);
+        }
+
+        function renderAccuracyByTypeChart(data) {
+            const ctx = document.getElementById('accuracyByTypeChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: Object.keys(data),
+                    datasets: [{
+                        label: 'Accuracy',
+                        data: Object.values(data).map(val => val * 100),
+                        backgroundColor: [
+                            'rgba(255, 99, 132, 0.6)',
+                            'rgba(54, 162, 235, 0.6)',
+                            'rgba(255, 206, 86, 0.6)',
+                            'rgba(75, 192, 192, 0.6)'
+                        ],
+                        borderColor: [
+                            'rgba(255, 99, 132, 1)',
+                            'rgba(54, 162, 235, 1)',
+                            'rgba(255, 206, 86, 1)',
+                            'rgba(75, 192, 192, 1)'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100,
+                            title: {
+                                display: true,
+                                text: 'Accuracy (%)'
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        title: {
+                            display: true,
+                            text: 'Accuracy by Question Type'
+                        }
+                    }
+                }
+            });
+        }
+
+        function renderLearningCurveChart(data) {
+            const ctx = document.getElementById('learningCurveChart').getContext('2d');
+            const labels = data.map(d => d.date);
+            const scores = data.map(d => d.score);
+
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Score',
+                        data: scores,
+                        borderColor: 'rgba(153, 102, 255, 1)',
+                        backgroundColor: 'rgba(153, 102, 255, 0.2)',
+                        tension: 0.1,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Score'
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Date'
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        title: {
+                            display: true,
+                            text: 'Learning Curve Over Time'
+                        }
+                    }
+                }
+            });
+        }
+
+        function renderRecentPerformanceChart(data) {
+            const ctx = document.getElementById('recentPerformanceChart').getContext('2d');
+            const labels = data.map(d => `${d.date} (${d.quiz_mode})`);
+            const scores = data.map(d => d.score);
+
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Score',
+                        data: scores,
+                        backgroundColor: 'rgba(255, 159, 64, 0.6)',
+                        borderColor: 'rgba(255, 159, 64, 1)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Score'
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        title: {
+                            display: true,
+                            text: 'Recent Quiz Performance'
+                        }
+                    }
+                }
+            });
+        }</script></div><script nomodule>!function(){var e=document,t=e.createElement("script");if(!("noModule"in t)&&"onbeforeload"in t){var n=!1;e.addEventListener("beforeload",(function(e){if(e.target===t)n=!0;else if(!e.target.hasAttribute("nomodule")||!n)return;e.preventDefault()}),!0),t.type="module",t.src=".",e.head.appendChild(t),t.remove()}}();</script><script nomodule crossorigin id="vite-legacy-polyfill" src="/assets/js/polyfills-legacy-DMrMt_pQ.js"></script><script nomodule crossorigin id="vite-legacy-entry" data-src="/assets/js/analytics-legacy-thrsW4a0.js">System.import(document.getElementById('vite-legacy-entry').getAttribute('data-src'))</script></body></html>

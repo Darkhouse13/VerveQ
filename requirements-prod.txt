@@ -1,0 +1,47 @@
+# VerveQ Production Dependencies - Optimized for Deployment
+# All dependencies are pinned to exact versions for reproducible builds
+# Last updated: 2025-07-11
+# Python version: 3.11+ (DigitalOcean App Platform compatible)
+
+# === CORE WEB FRAMEWORK ===
+fastapi==0.115.14
+uvicorn[standard]==0.35.0
+gunicorn==23.0.0
+
+# === HTTP AND REQUEST HANDLING ===
+python-multipart==0.0.6
+requests==2.32.3
+
+# === DATA VALIDATION ===
+pydantic==2.11.0
+jsonschema==4.24.0
+
+# === DATABASE ===
+sqlalchemy==2.0.41
+psycopg[binary]==3.2.3  # PostgreSQL adapter
+alembic==1.13.1  # Database migrations
+
+# === CACHING ===
+redis==5.0.1
+cachetools==5.3.2
+
+# === SECURITY & SESSIONS ===
+itsdangerous==2.2.0
+starlette==0.27.0
+
+# === SYSTEM MONITORING ===
+psutil==5.9.8
+
+# === UTILITIES ===
+typing-extensions==4.12.2
+
+# === OPTIONAL: MACHINE LEARNING (Remove if not used in production) ===
+# Uncomment only if ML features are actively used:
+# scikit-learn==1.6.1
+# numpy==2.2.3
+# pandas==2.2.3
+# sentence-transformers==5.0.0
+# joblib==1.4.2
+
+# Note: Development dependencies are in requirements-dev.txt
+# Note: Testing dependencies are in requirements-test.txt

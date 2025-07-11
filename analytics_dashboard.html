@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="theme-color" content="#0d1421">
-    <title>FootQuizz Player Analytics Dashboard</title>
+    <title>VerveQ Player Analytics Dashboard</title>
     <link rel="stylesheet" href="/static/dark_football_theme.css">
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚽</text></svg>">
     <style>
@@ -188,7 +188,7 @@
         <div class="nav-container">
             <a href="/" class="nav-brand">
                 <span class="emoji">⚽</span>
-                FootQuizz
+                VerveQ
             </a>
             <div class="nav-links">
                 <a href="/" class="nav-link">Home</a>
@@ -248,7 +248,7 @@
                 <input type="checkbox" id="dataCollectionToggle" checked>
                 Allow data collection for personalized analytics
             </label>
-            <p>Your data helps us improve your FootQuizz experience. You can opt-out at any time.</p>
+            <p>Your data helps us improve your VerveQ experience. You can opt-out at any time.</p>
         </div>
     </div>
 
@@ -259,7 +259,6 @@
 
             document.getElementById('dataCollectionToggle').addEventListener('change', (event) => {
                 const isChecked = event.target.checked;
-                console.log('Data collection preference changed:', isChecked);
                 alert(`Data collection ${isChecked ? 'enabled' : 'disabled'}. This change would typically be saved on the server.`);
             });
         });

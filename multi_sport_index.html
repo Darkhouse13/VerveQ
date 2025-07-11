@@ -1,0 +1,717 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#0d1421">
+    <title>VerveQ - Ultimate Multi-Sport Knowledge Challenge</title>
+    <link rel="stylesheet" href="/static/dark_football_theme.css">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏆</text></svg>">
+    
+    <!-- Meta Tags for Social Sharing -->
+    <meta property="og:title" content="VerveQ - Ultimate Multi-Sport Knowledge Challenge">
+    <meta property="og:description" content="Test your sports knowledge with our multi-sport quiz platform featuring football, tennis, and more.">
+    <meta property="og:image" content="/static/verveq-social.png">
+    <meta property="og:type" content="website">
+</head>
+<body>
+    <!-- Global Navigation -->
+    <nav class="global-nav">
+        <div class="nav-container">
+            <a href="/" class="nav-brand">
+                <span class="emoji" id="nav-sport-icon">🏆</span>
+                VerveQ
+            </a>
+            <div class="nav-links">
+                <a href="/" class="nav-link active">Home</a>
+                <a href="/leaderboard.html" class="nav-link">🏆 Leaderboard</a>
+                <a href="/admin/dashboard" class="nav-link admin-only">Admin</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loading-overlay">
+        <div class="loading-spinner"></div>
+    </div>
+
+    <div class="quiz-container">
+        <!-- Hero Section -->
+        <section class="header">
+            <h1>VerveQ</h1>
+            <p class="subtitle" id="main-subtitle">Ultimate Multi-Sport Knowledge Challenge</p>
+        </section>
+
+        <!-- Sport Selection Section -->
+        <section class="sport-selection">
+            <h2 class="sport-title">Choose Your Sport</h2>
+            <div class="sport-cards" id="sport-cards">
+                <!-- Sports will be loaded dynamically -->
+            </div>
+        </section>
+
+        <!-- Main Game Modes - Hidden until sport is selected -->
+        <section class="game-modes" id="game-modes" style="display: none;">
+            <!-- Quiz Mode -->
+            <div class="mode-card" onclick="openQuizModeModal()">
+                <span class="mode-icon">🎯</span>
+                <h2 class="mode-title">Quiz Mode</h2>
+                <p class="mode-description" id="quiz-mode-description">
+                    Test your sports knowledge with our comprehensive quiz system. 
+                    Choose between casual and die-hard difficulty levels.
+                </p>
+                <ul class="mode-features" id="quiz-mode-features">
+                    <li>🎮 Casual Mode - Perfect for all sports fans</li>
+                    <li>🔥 Die-Hard Mode - For true sports experts</li>
+                    <li>📊 Adaptive difficulty system</li>
+                    <li>⚡ Instant feedback and scoring</li>
+                    <li>🏆 Achievement tracking</li>
+                </ul>
+                <button class="primary-btn">
+                    🎮 Start Quiz
+                    <span class="btn-arrow">→</span>
+                </button>
+            </div>
+
+            <!-- Survival Mode -->
+            <div class="mode-card" onclick="startSurvivalMode()">
+                <span class="mode-icon">⚔️</span>
+                <h2 class="mode-title">Survival Mode</h2>
+                <p class="mode-description" id="survival-mode-description">
+                    Two-player competitive battle! Name players based on their initials. 
+                    Make three mistakes and you're eliminated.
+                </p>
+                <ul class="mode-features" id="survival-mode-features">
+                    <li>⚔️ Real-time two-player battles</li>
+                    <li>👥 Massive player database</li>
+                    <li>🎯 Fuzzy name matching system</li>
+                    <li>💀 Lives system (3 strikes out)</li>
+                    <li>🏁 Instant winner determination</li>
+                </ul>
+                <button class="primary-btn">
+                    ⚔️ Enter Arena
+                    <span class="btn-arrow">→</span>
+                </button>
+            </div>
+        </section>
+
+        <!-- Leaderboard Tab -->
+        <section class="leaderboard-tab" id="leaderboard-tab" style="display: none;" onclick="window.location.href='leaderboard.html'">
+            <h2 class="leaderboard-title">🏆 View Leaderboard</h2>
+            <p class="leaderboard-subtitle" id="leaderboard-subtitle">
+                Check out the top performers and see how you rank against other sports trivia masters
+            </p>
+        </section>
+
+        <!-- Platform Statistics -->
+        <section class="stats-section" id="stats-section">
+            <h2 class="stats-title">📊 Platform Statistics</h2>
+            <div class="stats-grid" id="stats-grid">
+                <!-- Stats will be loaded dynamically -->
+            </div>
+        </section>
+    </div>
+
+    <!-- Quiz Mode Selection Modal -->
+    <div id="quiz-mode-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="quiz-modal-title">Choose Your Quiz Challenge</h2>
+                <button class="close-modal" onclick="closeQuizModeModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="difficulty-options">
+                    <div class="difficulty-option" onclick="startQuiz('casual')">
+                        <div class="difficulty-icon">🎯</div>
+                        <div class="difficulty-name">Casual Mode</div>
+                        <div class="difficulty-desc" id="casual-desc">Perfect for all sports fans - beginner friendly questions</div>
+                        <div class="difficulty-stats">10 questions • Multiple choice • Moderate difficulty</div>
+                    </div>
+                    <div class="difficulty-option" onclick="startQuiz('diehard')">
+                        <div class="difficulty-icon">🔥</div>
+                        <div class="difficulty-name">Die-Hard Mode</div>
+                        <div class="difficulty-desc" id="diehard-desc">For true sports experts - challenging questions</div>
+                        <div class="difficulty-stats">15 questions • Expert level • Advanced trivia</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        /* Sport Selection Styles */
+        .sport-selection {
+            margin: 2rem 0;
+            text-align: center;
+        }
+
+        .sport-title {
+            font-size: 2rem;
+            color: var(--text-primary);
+            margin-bottom: 2rem;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+        }
+
+        .sport-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .sport-card {
+            background: var(--card-bg);
+            border: 2px solid var(--card-border);
+            border-radius: 1rem;
+            padding: 2rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .sport-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--accent-color);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+
+        .sport-card.selected {
+            border-color: var(--accent-color);
+            background: linear-gradient(135deg, var(--card-bg) 0%, rgba(255,255,255,0.1) 100%);
+        }
+
+        .sport-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            display: block;
+        }
+
+        .sport-name {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .sport-description {
+            color: var(--text-secondary);
+            margin-bottom: 1rem;
+            line-height: 1.5;
+        }
+
+        .sport-stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .sport-stat {
+            text-align: center;
+        }
+
+        .sport-stat-value {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: var(--accent-color);
+        }
+
+        .sport-stat-label {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+
+        /* Dynamic theme variables */
+        body.football-theme {
+            --accent-color: #4CAF50;
+            --card-bg: rgba(45, 90, 61, 0.1);
+            --card-border: rgba(76, 175, 80, 0.3);
+        }
+
+        body.tennis-theme {
+            --accent-color: #FF9800;
+            --card-bg: rgba(45, 90, 135, 0.1);
+            --card-border: rgba(255, 152, 0, 0.3);
+        }
+
+        /* Loading states */
+        .loading-stat {
+            background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+            background-size: 200% 100%;
+            animation: loading 1.5s infinite;
+            border-radius: 4px;
+            height: 20px;
+        }
+
+        @keyframes loading {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+
+        /* Modal styles */
+        #quiz-mode-modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.8);
+            backdrop-filter: blur(5px);
+        }
+
+        .modal-content {
+            background: var(--background-dark);
+            margin: 5% auto;
+            padding: 0;
+            border-radius: 1rem;
+            width: 90%;
+            max-width: 600px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+            animation: modalSlideIn 0.3s ease;
+        }
+
+        @keyframes modalSlideIn {
+            from { transform: translateY(-50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .modal-header {
+            padding: 2rem 2rem 1rem;
+            border-bottom: 1px solid var(--card-border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-header h2 {
+            color: var(--text-primary);
+            margin: 0;
+        }
+
+        .close-modal {
+            background: none;
+            border: none;
+            font-size: 2rem;
+            color: var(--text-secondary);
+            cursor: pointer;
+            padding: 0;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: all 0.3s ease;
+        }
+
+        .close-modal:hover {
+            background: rgba(255,255,255,0.1);
+            color: var(--text-primary);
+        }
+
+        .modal-body {
+            padding: 1rem 2rem 2rem;
+        }
+
+        .difficulty-options {
+            display: grid;
+            gap: 1rem;
+        }
+
+        .difficulty-option {
+            background: var(--card-bg);
+            border: 2px solid var(--card-border);
+            border-radius: 0.5rem;
+            padding: 1.5rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .difficulty-option:hover {
+            border-color: var(--accent-color);
+            transform: translateY(-2px);
+        }
+
+        .difficulty-icon {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .difficulty-name {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .difficulty-desc {
+            color: var(--text-secondary);
+            margin-bottom: 0.5rem;
+            line-height: 1.4;
+        }
+
+        .difficulty-stats {
+            font-size: 0.9rem;
+            color: var(--accent-color);
+            font-weight: 500;
+        }
+
+        /* Responsive design */
+        @media (max-width: 768px) {
+            .sport-cards {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+            
+            .sport-card {
+                padding: 1.5rem;
+            }
+            
+            .sport-icon {
+                font-size: 3rem;
+            }
+            
+            .modal-content {
+                width: 95%;
+                margin: 10% auto;
+            }
+        }
+    </style>
+
+    <script>
+        // API Base URL for dynamic deployment
+        const API_BASE_URL = window.location.origin;
+        
+        // Multi-Sport JavaScript
+        let currentSport = localStorage.getItem('selectedSport') || null;
+        let sportsConfig = {};
+        let platformStats = {};
+
+        // Initialize the application
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeMultiSport();
+        });
+
+        async function initializeMultiSport() {
+            showLoading(true);
+            
+            try {
+                // Load sports configuration
+                await loadSportsConfig();
+                
+                // Load platform statistics
+                await loadPlatformStats();
+                
+                // Render sport selection
+                renderSportCards();
+                
+                // If a sport was previously selected, auto-select it
+                if (currentSport && sportsConfig[currentSport]) {
+                    selectSport(currentSport);
+                } else {
+                    renderPlatformStats();
+                }
+                
+            } catch (error) {
+                showError('Failed to load sports data. Please refresh the page.');
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        async function loadSportsConfig() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/sports`);
+                const data = await response.json();
+                sportsConfig = data.sports_configs;
+            } catch (error) {
+                throw error;
+            }
+        }
+
+        async function loadPlatformStats() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/stats`);
+                const data = await response.json();
+                platformStats = data;
+            } catch (error) {
+                // Don't throw error, stats are not critical
+            }
+        }
+
+        function renderSportCards() {
+            const container = document.getElementById('sport-cards');
+            container.innerHTML = '';
+
+            for (const [sportName, config] of Object.entries(sportsConfig)) {
+                const sportCard = createSportCard(sportName, config);
+                container.appendChild(sportCard);
+            }
+        }
+
+        function createSportCard(sportName, config) {
+            const card = document.createElement('div');
+            card.className = `sport-card ${currentSport === sportName ? 'selected' : ''}`;
+            card.onclick = () => selectSport(sportName);
+
+            const stats = platformStats.sports && platformStats.sports[sportName] ? platformStats.sports[sportName] : {};
+
+            card.innerHTML = `
+                <div class="sport-icon">${config.icon}</div>
+                <div class="sport-name">${config.display_name}</div>
+                <div class="sport-description">
+                    Experience the thrill of ${config.display_name.toLowerCase()} trivia with our comprehensive question database.
+                </div>
+                <div class="sport-stats">
+                    <div class="sport-stat">
+                        <div class="sport-stat-value">${formatNumber(stats.survival_players || 0)}</div>
+                        <div class="sport-stat-label">${config.terminology.athletes}</div>
+                    </div>
+                    <div class="sport-stat">
+                        <div class="sport-stat-value">${stats.competitions || 0}</div>
+                        <div class="sport-stat-label">${config.terminology.competitions}</div>
+                    </div>
+                </div>
+            `;
+
+            return card;
+        }
+
+        function selectSport(sportName) {
+            if (!sportsConfig[sportName]) {
+                return;
+            }
+
+            currentSport = sportName;
+            localStorage.setItem('selectedSport', sportName);
+
+            // Update selected card appearance
+            document.querySelectorAll('.sport-card').forEach(card => {
+                card.classList.remove('selected');
+            });
+            event.target.closest('.sport-card').classList.add('selected');
+
+            // Apply sport theme
+            applySportTheme(sportName);
+
+            // Update UI content
+            updateUIForSport(sportName);
+
+            // Show game modes
+            showGameModes();
+
+        }
+
+        function applySportTheme(sportName) {
+            const config = sportsConfig[sportName];
+            const body = document.body;
+
+            // Remove existing theme classes
+            body.className = body.className.replace(/\w+-theme/g, '');
+            
+            // Add new theme class
+            body.classList.add(`${sportName}-theme`);
+
+            // Update CSS variables
+            const root = document.documentElement;
+            const colors = config.theme_colors;
+            root.style.setProperty('--accent-color', colors.accent || colors.primary);
+            root.style.setProperty('--card-bg', colors.background + '20'); // Add transparency
+            root.style.setProperty('--card-border', colors.accent + '50'); // Add transparency
+
+            // Update navigation icon
+            document.getElementById('nav-sport-icon').textContent = config.icon;
+        }
+
+        function updateUIForSport(sportName) {
+            const config = sportsConfig[sportName];
+            const terminology = config.terminology;
+
+            // Update titles and descriptions
+            document.getElementById('main-subtitle').textContent = `Ultimate ${config.display_name} Knowledge Challenge`;
+            
+            document.getElementById('quiz-mode-description').innerHTML = `
+                Test your ${config.display_name.toLowerCase()} knowledge with our comprehensive quiz system. 
+                Choose between casual and die-hard difficulty levels.
+            `;
+
+            document.getElementById('survival-mode-description').innerHTML = `
+                Two-player competitive battle! Name ${terminology.athletes} based on their initials. 
+                Make three mistakes and you're eliminated.
+            `;
+
+            document.getElementById('leaderboard-subtitle').innerHTML = `
+                Check out the top performers and see how you rank against other ${config.display_name.toLowerCase()} trivia masters
+            `;
+
+            document.getElementById('quiz-modal-title').textContent = `Choose Your ${config.display_name} Quiz Challenge`;
+            document.getElementById('casual-desc').textContent = `Perfect for all ${config.display_name.toLowerCase()} fans - beginner friendly questions`;
+            document.getElementById('diehard-desc').textContent = `For true ${config.display_name.toLowerCase()} experts - challenging questions`;
+
+            // Update features lists
+            const quizFeatures = document.getElementById('quiz-mode-features');
+            quizFeatures.innerHTML = `
+                <li>🎮 Casual Mode - Perfect for all ${config.display_name.toLowerCase()} fans</li>
+                <li>🔥 Die-Hard Mode - For true ${config.display_name.toLowerCase()} experts</li>
+                <li>📊 Adaptive difficulty system</li>
+                <li>⚡ Instant feedback and scoring</li>
+                <li>🏆 Achievement tracking</li>
+            `;
+
+            const survivalFeatures = document.getElementById('survival-mode-features');
+            const stats = platformStats.sports && platformStats.sports[sportName] ? platformStats.sports[sportName] : {};
+            survivalFeatures.innerHTML = `
+                <li>⚔️ Real-time two-player battles</li>
+                <li>👥 ${formatNumber(stats.survival_players || 0)} ${terminology.athlete} database</li>
+                <li>🎯 Fuzzy name matching system</li>
+                <li>💀 Lives system (3 strikes out)</li>
+                <li>🏁 Instant winner determination</li>
+            `;
+        }
+
+        function showGameModes() {
+            document.getElementById('game-modes').style.display = 'block';
+            document.getElementById('leaderboard-tab').style.display = 'block';
+            
+            // Render sport-specific stats
+            renderSportStats();
+        }
+
+        function renderSportStats() {
+            const container = document.getElementById('stats-grid');
+            const stats = platformStats.sports && platformStats.sports[currentSport] ? platformStats.sports[currentSport] : {};
+            const config = sportsConfig[currentSport];
+
+            container.innerHTML = `
+                <div class="stat-card">
+                    <div class="stat-value">${formatNumber(stats.survival_players || 0)}</div>
+                    <div class="stat-label">${config.terminology.athletes}</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">${stats.competitions || 0}</div>
+                    <div class="stat-label">${config.terminology.competitions}</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">1000+</div>
+                    <div class="stat-label">Unique Questions</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">∞</div>
+                    <div class="stat-label">Quizzes Available</div>
+                </div>
+            `;
+        }
+
+        function renderPlatformStats() {
+            const container = document.getElementById('stats-grid');
+            let totalPlayers = 0;
+            let totalCompetitions = 0;
+
+            for (const [sportName, stats] of Object.entries(platformStats.sports || {})) {
+                totalPlayers += stats.survival_players || 0;
+                totalCompetitions += stats.competitions || 0;
+            }
+
+            container.innerHTML = `
+                <div class="stat-card">
+                    <div class="stat-value">${Object.keys(sportsConfig).length}</div>
+                    <div class="stat-label">Sports Supported</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">${formatNumber(totalPlayers)}</div>
+                    <div class="stat-label">Total Athletes</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">${totalCompetitions}</div>
+                    <div class="stat-label">Total Competitions</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value">∞</div>
+                    <div class="stat-label">Quiz Combinations</div>
+                </div>
+            `;
+        }
+
+        // Game mode functions
+        function openQuizModeModal() {
+            if (!currentSport) {
+                alert('Please select a sport first!');
+                return;
+            }
+            document.getElementById('quiz-mode-modal').style.display = 'block';
+        }
+
+        function closeQuizModeModal() {
+            document.getElementById('quiz-mode-modal').style.display = 'none';
+        }
+
+        function startQuiz(difficulty) {
+            if (!currentSport) {
+                alert('Please select a sport first!');
+                return;
+            }
+
+            showLoading(true);
+            closeQuizModeModal();
+
+            // Redirect to quiz page with sport and difficulty parameters
+            const numQuestions = difficulty === 'diehard' ? 15 : 10;
+            const params = new URLSearchParams({
+                sport: currentSport,
+                difficulty: difficulty,
+                questions: numQuestions
+            });
+            window.location.href = `enhanced_quiz.html?${params.toString()}`;
+        }
+
+        function startSurvivalMode() {
+            if (!currentSport) {
+                alert('Please select a sport first!');
+                return;
+            }
+
+            // Redirect to survival page with sport parameter
+            const params = new URLSearchParams({ sport: currentSport });
+            window.location.href = `survival.html?${params.toString()}`;
+        }
+
+        // Utility functions
+        function formatNumber(num) {
+            if (num >= 1000000) {
+                return (num / 1000000).toFixed(1) + 'M';
+            } else if (num >= 1000) {
+                return (num / 1000).toFixed(0) + 'K';
+            }
+            return num.toString();
+        }
+
+        function showLoading(show) {
+            const overlay = document.getElementById('loading-overlay');
+            overlay.style.display = show ? 'flex' : 'none';
+        }
+
+        function showError(message) {
+            alert('Error: ' + message);
+        }
+
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            const modal = document.getElementById('quiz-mode-modal');
+            if (event.target === modal) {
+                closeQuizModeModal();
+            }
+        }
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape') {
+                closeQuizModeModal();
+            }
+        });
+    </script>
+</body>
+</html>

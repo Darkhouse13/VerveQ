@@ -91,7 +91,7 @@ class AnalyticsDashboard:
 
     def run_dashboard(self):
         """Runs the interactive dashboard display."""
-        print("--- FootQuizz Question Performance Dashboard ---")
+        print("--- VerveQ Question Performance Dashboard ---")
         self.display_overall_summary()
         self.display_question_level_metrics()
         self.display_problematic_questions()

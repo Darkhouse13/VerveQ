@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="theme-color" content="#0d1421">
-    <title>FootQuizz - Leaderboard</title>
+    <title>VerveQ - Leaderboard</title>
     <link rel="stylesheet" href="/static/dark_football_theme.css">
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚽</text></svg>">
 </head>
@@ -14,7 +14,7 @@
         <div class="nav-container">
             <a href="/" class="nav-brand">
                 <span class="emoji">⚽</span>
-                FootQuizz
+                VerveQ
             </a>
             <div class="nav-links">
                 <a href="/" class="nav-link">Home</a>
@@ -33,7 +33,7 @@
         <!-- Header -->
         <section class="header">
             <h1>🏆 Leaderboard</h1>
-            <p class="subtitle">Top performers in FootQuizz challenges</p>
+            <p class="subtitle">Top performers in VerveQ challenges</p>
         </section>
 
         <!-- Leaderboard Filter Tabs -->
@@ -445,7 +445,7 @@
 
     <script>
         // Global variables
-        const API_BASE_URL = 'http://127.0.0.1:8008';
+        const API_BASE_URL = window.location.origin;
         let currentFilter = 'all';
         let leaderboardData = {};
         
@@ -494,7 +494,6 @@
                 loadPersonalStats();
                 
             } catch (error) {
-                console.log('API not available, using mock data');
                 leaderboardData = generateMockData();
                 displayLeaderboard();
                 loadPersonalStats();
@@ -620,7 +619,7 @@
         
         // Load personal stats
         function loadPersonalStats() {
-            const userId = localStorage.getItem('footquizz_player_id') || 'guest';
+            const userId = localStorage.getItem('verveq_player_id') || 'guest';
             
             // Mock personal stats
             const personalStats = {
@@ -668,7 +667,7 @@
         
         // Admin status check
         function checkAdminStatus() {
-            const isAdmin = localStorage.getItem('footquizz_admin') === 'true' || 
+            const isAdmin = localStorage.getItem('verveq_admin') === 'true' || 
                            window.location.search.includes('admin=true');
             
             if (isAdmin) {

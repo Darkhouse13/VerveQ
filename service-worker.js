@@ -1,5 +1,5 @@
-const CACHE_NAME = 'footquizz-cache-v3';
-const API_CACHE_NAME = 'footquizz-api-cache-v2';
+const CACHE_NAME = 'verveq-cache-v3';
+const API_CACHE_NAME = 'verveq-api-cache-v2';
 const urlsToCache = [
     '/',
     '/index.html',

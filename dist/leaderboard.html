@@ -1,0 +1,255 @@
+<!doctype html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#0d1421"><title>VerveQ - Leaderboard</title><link rel="stylesheet" href="/static/dark_football_theme.css"><link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚽</text></svg>"><script async type="module" crossorigin src="/assets/js/leaderboard-DndlFdxW.js"></script><script type="module">import.meta.url;import("_").catch(()=>1);(async function*(){})().next();if(location.protocol!="file:"){window.__vite_is_modern_browser=true}</script><script type="module">!function(){if(window.__vite_is_modern_browser)return;var e=document.getElementById("vite-legacy-polyfill"),n=document.createElement("script");n.src=e.src,n.onload=function(){System.import(document.getElementById('vite-legacy-entry').getAttribute('data-src'))},document.body.appendChild(n)}();</script></head><body><nav class="global-nav"><div class="nav-container"><a href="/" class="nav-brand"><span class="emoji">⚽</span> VerveQ</a><div class="nav-links"><a href="/" class="nav-link">Home</a> <a href="/leaderboard.html" class="nav-link active">🏆 Leaderboard</a> <a href="/admin/dashboard" class="nav-link admin-only">Admin</a></div></div></nav><div class="loading-overlay" id="loading-overlay"><div class="loading-spinner"></div></div><div class="quiz-container"><section class="header"><h1>🏆 Leaderboard</h1><p class="subtitle">Top performers in VerveQ challenges</p></section><div class="filter-tabs"><button class="filter-tab active" data-filter="all" onclick="switchFilter('all')">📊 All Time</button> <button class="filter-tab" data-filter="casual" onclick="switchFilter('casual')">🎯 Casual Mode</button> <button class="filter-tab" data-filter="diehard" onclick="switchFilter('diehard')">🔥 Die-Hard Mode</button> <button class="filter-tab" data-filter="survival" onclick="switchFilter('survival')">⚔️ Survival Mode</button></div><div class="leaderboard-content"><div class="podium-section" id="podium-section"><h2 class="section-title">🥇 Top Champions</h2><div class="podium"><div class="podium-place second" id="second-place"><div class="podium-trophy">🥈</div><div class="podium-info"><div class="podium-name">Loading...</div><div class="podium-score">---</div></div><div class="podium-rank">2nd</div></div><div class="podium-place first" id="first-place"><div class="podium-trophy">🥇</div><div class="podium-info"><div class="podium-name">Loading...</div><div class="podium-score">---</div></div><div class="podium-rank">1st</div></div><div class="podium-place third" id="third-place"><div class="podium-trophy">🥉</div><div class="podium-info"><div class="podium-name">Loading...</div><div class="podium-score">---</div></div><div class="podium-rank">3rd</div></div></div></div><div class="leaderboard-table-section"><h2 class="section-title">📋 Full Rankings</h2><div class="leaderboard-table" id="leaderboard-table"><div class="table-header"><div class="table-cell rank-cell">Rank</div><div class="table-cell player-cell">Player</div><div class="table-cell score-cell">Score</div><div class="table-cell accuracy-cell">Accuracy</div><div class="table-cell date-cell">Date</div></div><div class="table-body" id="table-body"><div class="loading-row"><div class="loading-text">🔄 Loading leaderboard data...</div></div></div></div></div><div class="personal-stats-section" id="personal-stats"><h2 class="section-title">📈 Your Statistics</h2><div class="stats-grid"><div class="stat-card"><div class="stat-value" id="user-best-score">---</div><div class="stat-label">Best Score</div></div><div class="stat-card"><div class="stat-value" id="user-avg-accuracy">---%</div><div class="stat-label">Average Accuracy</div></div><div class="stat-card"><div class="stat-value" id="user-games-played">---</div><div class="stat-label">Games Played</div></div><div class="stat-card"><div class="stat-value" id="user-rank">---</div><div class="stat-label">Current Rank</div></div></div></div></div><div class="error-state hidden" id="error-state"><div class="error-icon">⚠️</div><h3 class="error-title">Unable to Load Leaderboard</h3><p class="error-message">Please check your connection and try again.</p><button class="primary-btn" onclick="loadLeaderboard()">🔄 Retry</button></div></div><style>.filter-tabs{display:flex;gap:15px;margin-bottom:40px;justify-content:center;flex-wrap:wrap}.filter-tab{background:var(--dark-accent);border:2px solid rgba(59,130,246,.3);border-radius:25px;padding:12px 24px;font-size:1rem;font-weight:600;color:var(--text-secondary);cursor:pointer;transition:all var(--transition-medium);display:flex;align-items:center;gap:8px}.filter-tab.active,.filter-tab:hover{border-color:var(--electric-blue);background:rgba(59,130,246,.1);color:var(--text-primary);transform:translateY(-2px);box-shadow:var(--glow-blue)}.leaderboard-content{display:grid;gap:40px}.section-title{font-family:var(--font-heading);font-size:1.8rem;color:var(--text-primary);margin-bottom:25px;text-align:center}.podium-section{background:var(--dark-secondary);border-radius:25px;padding:40px;border:1px solid rgba(59,130,246,.2);box-shadow:var(--shadow-medium)}.podium{display:grid;grid-template-columns:1fr 1.2fr 1fr;gap:20px;align-items:end;max-width:600px;margin:0 auto}.podium-place{background:var(--dark-accent);border-radius:20px;padding:25px 20px;text-align:center;border:2px solid rgba(59,130,246,.3);transition:all var(--transition-medium);position:relative}.podium-place.first{border-color:var(--gold-accent);background:linear-gradient(135deg,var(--dark-accent),rgba(251,191,36,.1));transform:scale(1.05)}.podium-place.second{border-color:var(--silver-accent);background:linear-gradient(135deg,var(--dark-accent),rgba(229,231,235,.1))}.podium-place.third{border-color:#cd7f32;background:linear-gradient(135deg,var(--dark-accent),rgba(205,127,50,.1))}.podium-trophy{font-size:3rem;margin-bottom:15px;filter:drop-shadow(0 0 15px rgba(251, 191, 36, .3))}.podium-name{font-family:var(--font-heading);font-size:1.2rem;font-weight:600;color:var(--text-primary);margin-bottom:8px}.podium-score{font-family:var(--font-display);font-size:1.5rem;font-weight:900;color:var(--gold-accent);margin-bottom:10px}.podium-rank{font-size:.9rem;color:var(--text-muted);font-weight:600;text-transform:uppercase;letter-spacing:1px}.leaderboard-table-section{background:var(--dark-secondary);border-radius:25px;padding:40px;border:1px solid rgba(59,130,246,.2);box-shadow:var(--shadow-medium)}.leaderboard-table{width:100%;border-radius:15px;overflow:hidden;background:var(--dark-accent)}.table-header{display:grid;grid-template-columns:80px 1fr 120px 120px 120px;background:var(--stadium-gradient);padding:20px;font-weight:600;font-size:.9rem;text-transform:uppercase;letter-spacing:1px}.table-cell{color:var(--text-primary);display:flex;align-items:center;justify-content:center}.player-cell{justify-content:flex-start}.table-body{min-height:200px}.table-row{display:grid;grid-template-columns:80px 1fr 120px 120px 120px;padding:15px 20px;border-bottom:1px solid rgba(59,130,246,.1);transition:all var(--transition-fast)}.table-row:hover{background:rgba(59,130,246,.05)}.table-row:last-child{border-bottom:none}.rank-badge{background:var(--electric-blue);color:var(--text-primary);padding:6px 12px;border-radius:12px;font-weight:600;font-size:.9rem}.rank-badge.top-3{background:var(--gold-accent);color:var(--text-dark)}.player-name{font-weight:600;color:var(--text-primary)}.score-value{font-family:var(--font-display);font-weight:700;color:var(--gold-accent)}.accuracy-value{color:var(--text-secondary)}.date-value{color:var(--text-muted);font-size:.9rem}.loading-row{display:flex;justify-content:center;align-items:center;height:200px}.loading-text{color:var(--text-muted);font-size:1.1rem}.personal-stats-section{background:var(--dark-secondary);border-radius:25px;padding:40px;border:1px solid rgba(59,130,246,.2);box-shadow:var(--shadow-medium)}.error-state{text-align:center;padding:60px 40px;background:var(--dark-secondary);border-radius:25px;border:1px solid rgba(220,38,38,.3)}.error-icon{font-size:4rem;margin-bottom:20px}.error-title{font-family:var(--font-heading);font-size:1.8rem;color:var(--text-primary);margin-bottom:15px}.error-message{color:var(--text-secondary);font-size:1.1rem;margin-bottom:30px}@media (max-width:768px){.podium{grid-template-columns:1fr;gap:15px;align-items:stretch}.podium-place.first{order:-1;transform:none}.table-header,.table-row{grid-template-columns:60px 1fr 80px;font-size:.8rem}.accuracy-cell,.date-cell{display:none}.filter-tabs{gap:10px}.filter-tab{padding:10px 16px;font-size:.9rem}}@media (max-width:480px){.quiz-container{padding:20px 10px}.leaderboard-table-section,.personal-stats-section,.podium-section{padding:25px 20px}}</style><script>// Global variables
+        const API_BASE_URL = window.location.origin;
+        let currentFilter = 'all';
+        let leaderboardData = {};
+        
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', function() {
+            checkAdminStatus();
+            loadLeaderboard();
+        });
+        
+        // Filter functions
+        function switchFilter(filter) {
+            currentFilter = filter;
+            
+            // Update active tab
+            document.querySelectorAll('.filter-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.querySelector(`[data-filter="${filter}"]`).classList.add('active');
+            
+            // Update display
+            displayLeaderboard();
+        }
+        
+        // Load leaderboard data
+        async function loadLeaderboard() {
+            const loadingOverlay = document.getElementById('loading-overlay');
+            const errorState = document.getElementById('error-state');
+            const leaderboardContent = document.querySelector('.leaderboard-content');
+            
+            loadingOverlay.classList.add('show');
+            errorState.classList.add('hidden');
+            leaderboardContent.style.display = 'grid';
+            
+            try {
+                // Try to load from API
+                const response = await fetch(`${API_BASE_URL}/api/leaderboard`);
+                
+                if (response.ok) {
+                    leaderboardData = await response.json();
+                } else {
+                    // If API fails, use mock data
+                    leaderboardData = generateMockData();
+                }
+                
+                displayLeaderboard();
+                loadPersonalStats();
+                
+            } catch (error) {
+                leaderboardData = generateMockData();
+                displayLeaderboard();
+                loadPersonalStats();
+            } finally {
+                loadingOverlay.classList.remove('show');
+            }
+        }
+        
+        // Generate mock leaderboard data
+        function generateMockData() {
+            const players = [
+                'FootballFan23', 'SoccerMaster', 'QuizChampion', 'TriviaNinja', 'GoalScorer',
+                'MidFieldMaestro', 'DefenderPro', 'StrikerLegend', 'KeeperExpert', 'CoachWisdom',
+                'TacticalGenius', 'FootyAddict', 'BallControl', 'SkillMaster', 'GameChanger'
+            ];
+            
+            const modes = ['casual', 'diehard', 'survival'];
+            const mockData = {
+                all: [],
+                casual: [],
+                diehard: [],
+                survival: []
+            };
+            
+            // Generate mock entries
+            for (let i = 0; i < 50; i++) {
+                const mode = modes[Math.floor(Math.random() * modes.length)];
+                const player = players[Math.floor(Math.random() * players.length)] + 
+                             (Math.random() > 0.7 ? Math.floor(Math.random() * 100) : '');
+                
+                const entry = {
+                    rank: i + 1,
+                    player: player,
+                    score: Math.floor(Math.random() * 1000) + 100,
+                    accuracy: Math.floor(Math.random() * 40) + 60,
+                    mode: mode,
+                    date: new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000).toLocaleDateString()
+                };
+                
+                mockData[mode].push(entry);
+                mockData.all.push(entry);
+            }
+            
+            // Sort by score
+            Object.keys(mockData).forEach(key => {
+                mockData[key].sort((a, b) => b.score - a.score);
+                mockData[key].forEach((entry, index) => {
+                    entry.rank = index + 1;
+                });
+            });
+            
+            return mockData;
+        }
+        
+        // Display leaderboard
+        function displayLeaderboard() {
+            const data = leaderboardData[currentFilter] || [];
+            
+            // Update podium
+            updatePodium(data.slice(0, 3));
+            
+            // Update table
+            updateTable(data);
+        }
+        
+        // Update podium
+        function updatePodium(topThree) {
+            const positions = ['second', 'first', 'third'];
+            const indices = [1, 0, 2]; // Second, First, Third
+            
+            positions.forEach((position, i) => {
+                const element = document.getElementById(`${position}-place`);
+                const dataIndex = indices[i];
+                const player = topThree[dataIndex];
+                
+                if (player) {
+                    element.querySelector('.podium-name').textContent = player.player;
+                    element.querySelector('.podium-score').textContent = player.score.toLocaleString();
+                    element.style.opacity = '1';
+                } else {
+                    element.querySelector('.podium-name').textContent = '---';
+                    element.querySelector('.podium-score').textContent = '---';
+                    element.style.opacity = '0.5';
+                }
+            });
+        }
+        
+        // Update table
+        function updateTable(data) {
+            const tableBody = document.getElementById('table-body');
+            
+            if (data.length === 0) {
+                tableBody.innerHTML = `
+                    <div class="loading-row">
+                        <div class="loading-text">📭 No data available for this category</div>
+                    </div>
+                `;
+                return;
+            }
+            
+            const rows = data.slice(0, 20).map(player => `
+                <div class="table-row">
+                    <div class="table-cell rank-cell">
+                        <span class="rank-badge ${player.rank <= 3 ? 'top-3' : ''}">${player.rank}</span>
+                    </div>
+                    <div class="table-cell player-cell">
+                        <span class="player-name">${player.player}</span>
+                    </div>
+                    <div class="table-cell score-cell">
+                        <span class="score-value">${player.score.toLocaleString()}</span>
+                    </div>
+                    <div class="table-cell accuracy-cell">
+                        <span class="accuracy-value">${player.accuracy}%</span>
+                    </div>
+                    <div class="table-cell date-cell">
+                        <span class="date-value">${player.date}</span>
+                    </div>
+                </div>
+            `).join('');
+            
+            tableBody.innerHTML = rows;
+        }
+        
+        // Load personal stats
+        function loadPersonalStats() {
+            const userId = localStorage.getItem('verveq_player_id') || 'guest';
+            
+            // Mock personal stats
+            const personalStats = {
+                bestScore: Math.floor(Math.random() * 500) + 200,
+                avgAccuracy: Math.floor(Math.random() * 30) + 65,
+                gamesPlayed: Math.floor(Math.random() * 50) + 5,
+                currentRank: Math.floor(Math.random() * 100) + 10
+            };
+            
+            document.getElementById('user-best-score').textContent = personalStats.bestScore.toLocaleString();
+            document.getElementById('user-avg-accuracy').textContent = personalStats.avgAccuracy + '%';
+            document.getElementById('user-games-played').textContent = personalStats.gamesPlayed;
+            document.getElementById('user-rank').textContent = '#' + personalStats.currentRank;
+            
+            // Animate the numbers
+            animatePersonalStats();
+        }
+        
+        // Animate personal stats
+        function animatePersonalStats() {
+            const statValues = document.querySelectorAll('#personal-stats .stat-value');
+            
+            statValues.forEach(stat => {
+                const finalText = stat.textContent;
+                const finalValue = parseInt(finalText.replace(/[^0-9]/g, ''));
+                
+                if (finalValue > 0) {
+                    let current = 0;
+                    const increment = finalValue / 50;
+                    
+                    const timer = setInterval(() => {
+                        current += increment;
+                        if (current >= finalValue) {
+                            stat.textContent = finalText;
+                            clearInterval(timer);
+                        } else {
+                            const prefix = finalText.includes('#') ? '#' : '';
+                            const suffix = finalText.includes('%') ? '%' : '';
+                            stat.textContent = prefix + Math.floor(current).toLocaleString() + suffix;
+                        }
+                    }, 20);
+                }
+            });
+        }
+        
+        // Admin status check
+        function checkAdminStatus() {
+            const isAdmin = localStorage.getItem('verveq_admin') === 'true' || 
+                           window.location.search.includes('admin=true');
+            
+            if (isAdmin) {
+                document.body.classList.add('admin-user');
+            }
+        }
+        
+        // Keyboard shortcuts
+        document.addEventListener('keydown', function(e) {
+            switch(e.key) {
+                case '1':
+                    switchFilter('all');
+                    break;
+                case '2':
+                    switchFilter('casual');
+                    break;
+                case '3':
+                    switchFilter('diehard');
+                    break;
+                case '4':
+                    switchFilter('survival');
+                    break;
+                case 'r':
+                case 'R':
+                    if (e.ctrlKey || e.metaKey) {
+                        e.preventDefault();
+                        loadLeaderboard();
+                    }
+                    break;
+            }
+        });</script><script nomodule>!function(){var e=document,t=e.createElement("script");if(!("noModule"in t)&&"onbeforeload"in t){var n=!1;e.addEventListener("beforeload",(function(e){if(e.target===t)n=!0;else if(!e.target.hasAttribute("nomodule")||!n)return;e.preventDefault()}),!0),t.type="module",t.src=".",e.head.appendChild(t),t.remove()}}();</script><script nomodule crossorigin id="vite-legacy-polyfill" src="/assets/js/polyfills-legacy-DMrMt_pQ.js"></script><script nomodule crossorigin id="vite-legacy-entry" data-src="/assets/js/leaderboard-legacy-thrsW4a0.js">System.import(document.getElementById('vite-legacy-entry').getAttribute('data-src'))</script></body></html>

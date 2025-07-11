@@ -52,10 +52,21 @@ class DifficultyFeedbackDatabase:
     def init_database(self):
         """Create the database tables if they don't exist"""
         with self.engine.connect() as conn:
+            # Determine if we're using PostgreSQL or SQLite
+            is_postgresql = 'postgresql' in self.database_url.lower()
+            
+            # Choose appropriate syntax for auto-increment primary key
+            if is_postgresql:
+                pk_syntax = "id SERIAL PRIMARY KEY"
+                timestamp_default = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP"
+            else:
+                pk_syntax = "id INTEGER PRIMARY KEY AUTOINCREMENT"
+                timestamp_default = "DATETIME DEFAULT CURRENT_TIMESTAMP"
+            
             # Main feedback table
-            conn.execute(text('''
+            conn.execute(text(f'''
                 CREATE TABLE IF NOT EXISTS question_difficulty_feedback (
-                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    {pk_syntax},
                     question_id TEXT NOT NULL,
                     question_text TEXT NOT NULL,
                     answer TEXT,
@@ -66,36 +77,78 @@ class DifficultyFeedbackDatabase:
                     user_id TEXT,
                     quiz_mode TEXT,
                     user_performance_context TEXT,
-                    timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
-                    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+                    timestamp {timestamp_default},
+                    created_at {timestamp_default}
                 )
             '''))
             
             # Admin difficulty adjustments table
-            conn.execute(text('''
+            conn.execute(text(f'''
                 CREATE TABLE IF NOT EXISTS admin_difficulty_adjustments (
-                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    {pk_syntax},
                     question_id TEXT NOT NULL,
                     old_difficulty REAL NOT NULL,
                     new_difficulty REAL NOT NULL,
                     new_category TEXT,
                     admin_user TEXT NOT NULL,
                     reason TEXT,
-                    timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
+                    timestamp {timestamp_default}
                 )
             '''))
             
             # Question difficulty history table (tracks changes over time)
-            conn.execute(text('''
+            conn.execute(text(f'''
                 CREATE TABLE IF NOT EXISTS difficulty_history (
-                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    {pk_syntax},
                     question_id TEXT NOT NULL,
                     difficulty_score REAL NOT NULL,
                     category TEXT NOT NULL,
                     calculation_method TEXT NOT NULL,
                     confidence_score REAL,
                     feedback_count INTEGER DEFAULT 0,
-                    last_updated DATETIME DEFAULT CURRENT_TIMESTAMP
+                    last_updated {timestamp_default}
+                )
+            '''))
+            
+            # Elo rating system tables
+            conn.execute(text(f'''
+                CREATE TABLE IF NOT EXISTS survival_players (
+                    {pk_syntax},
+                    player_name VARCHAR(100) NOT NULL UNIQUE,
+                    current_elo INTEGER DEFAULT 1200,
+                    games_played INTEGER DEFAULT 0,
+                    wins INTEGER DEFAULT 0,
+                    losses INTEGER DEFAULT 0,
+                    draws INTEGER DEFAULT 0,
+                    created_at {timestamp_default},
+                    last_played {timestamp_default}
+                )
+            '''))
+            
+            conn.execute(text(f'''
+                CREATE TABLE IF NOT EXISTS survival_matches (
+                    {pk_syntax},
+                    player1_id INTEGER NOT NULL,
+                    player2_id INTEGER NOT NULL,
+                    winner_id INTEGER,
+                    initials VARCHAR(10) NOT NULL,
+                    rounds_played INTEGER DEFAULT 0,
+                    match_duration INTEGER,
+                    player1_lives_lost INTEGER DEFAULT 0,
+                    player2_lives_lost INTEGER DEFAULT 0,
+                    timestamp {timestamp_default}
+                )
+            '''))
+            
+            conn.execute(text(f'''
+                CREATE TABLE IF NOT EXISTS elo_history (
+                    {pk_syntax},
+                    player_id INTEGER NOT NULL,
+                    old_elo INTEGER NOT NULL,
+                    new_elo INTEGER NOT NULL,
+                    elo_change INTEGER NOT NULL,
+                    match_id INTEGER NOT NULL,
+                    timestamp {timestamp_default}
                 )
             '''))
             
@@ -105,8 +158,16 @@ class DifficultyFeedbackDatabase:
             conn.execute(text('CREATE INDEX IF NOT EXISTS idx_user_feedback ON question_difficulty_feedback(user_feedback)'))
             conn.execute(text('CREATE INDEX IF NOT EXISTS idx_difficulty_history_question ON difficulty_history(question_id)'))
             
+            # Elo system indexes
+            conn.execute(text('CREATE INDEX IF NOT EXISTS idx_survival_players_name ON survival_players(player_name)'))
+            conn.execute(text('CREATE INDEX IF NOT EXISTS idx_survival_players_elo ON survival_players(current_elo DESC)'))
+            conn.execute(text('CREATE INDEX IF NOT EXISTS idx_survival_matches_timestamp ON survival_matches(timestamp)'))
+            conn.execute(text('CREATE INDEX IF NOT EXISTS idx_survival_matches_players ON survival_matches(player1_id, player2_id)'))
+            conn.execute(text('CREATE INDEX IF NOT EXISTS idx_elo_history_player ON elo_history(player_id)'))
+            conn.execute(text('CREATE INDEX IF NOT EXISTS idx_elo_history_match ON elo_history(match_id)'))
+            
             conn.commit()
-            logger.info(f"Database initialized")
+            logger.info(f"Database initialized with Elo rating system")
     
     def submit_user_feedback(self, feedback_data: Dict[str, Any]) -> bool:
         """
@@ -426,6 +487,336 @@ class DifficultyFeedbackDatabase:
         except Exception as e:
             logger.error(f"Error exporting feedback data: {e}")
             return False
+
+    # Elo Rating System Methods
+    def get_or_create_player(self, player_name: str) -> Optional[int]:
+        """
+        Get existing player or create new one with default Elo rating.
+        
+        Args:
+            player_name: Name of the player
+            
+        Returns:
+            Player ID or None if error
+        """
+        try:
+            with self.engine.connect() as conn:
+                # First try to get existing player
+                result = conn.execute(text('''
+                    SELECT id FROM survival_players WHERE player_name = :player_name
+                '''), {'player_name': player_name})
+                
+                player_row = result.fetchone()
+                if player_row:
+                    return player_row[0]
+                
+                # Create new player with default Elo
+                conn.execute(text('''
+                    INSERT INTO survival_players (player_name, current_elo, games_played, wins, losses, draws)
+                    VALUES (:player_name, 1200, 0, 0, 0, 0)
+                '''), {'player_name': player_name})
+                
+                # Get the new player ID
+                result = conn.execute(text('''
+                    SELECT id FROM survival_players WHERE player_name = :player_name
+                '''), {'player_name': player_name})
+                
+                new_player_row = result.fetchone()
+                conn.commit()
+                
+                logger.info(f"Created new player: {player_name} (ID: {new_player_row[0]})")
+                return new_player_row[0]
+                
+        except Exception as e:
+            logger.error(f"Error getting/creating player {player_name}: {e}")
+            return None
+
+    def get_player_stats(self, player_name: str) -> Optional[Dict[str, Any]]:
+        """
+        Get player statistics including Elo rating.
+        
+        Args:
+            player_name: Name of the player
+            
+        Returns:
+            Player statistics or None if not found
+        """
+        try:
+            with self.engine.connect() as conn:
+                result = conn.execute(text('''
+                    SELECT id, player_name, current_elo, games_played, wins, losses, draws,
+                           created_at, last_played
+                    FROM survival_players 
+                    WHERE player_name = :player_name
+                '''), {'player_name': player_name})
+                
+                player_row = result.fetchone()
+                if not player_row:
+                    return None
+                
+                columns = result.keys()
+                player_data = dict(zip(columns, player_row))
+                
+                # Calculate win percentage
+                total_games = player_data['games_played']
+                if total_games > 0:
+                    player_data['win_percentage'] = (player_data['wins'] / total_games) * 100
+                    player_data['loss_percentage'] = (player_data['losses'] / total_games) * 100
+                    player_data['draw_percentage'] = (player_data['draws'] / total_games) * 100
+                else:
+                    player_data['win_percentage'] = 0
+                    player_data['loss_percentage'] = 0
+                    player_data['draw_percentage'] = 0
+                
+                return player_data
+                
+        except Exception as e:
+            logger.error(f"Error getting player stats for {player_name}: {e}")
+            return None
+
+    def create_match(self, player1_name: str, player2_name: str, initials: str) -> Optional[int]:
+        """
+        Create a new survival match between two players.
+        
+        Args:
+            player1_name: Name of first player
+            player2_name: Name of second player
+            initials: The initials being played
+            
+        Returns:
+            Match ID or None if error
+        """
+        try:
+            # Get or create players
+            player1_id = self.get_or_create_player(player1_name)
+            player2_id = self.get_or_create_player(player2_name)
+            
+            if not player1_id or not player2_id:
+                logger.error("Failed to get/create players for match")
+                return None
+            
+            with self.engine.connect() as conn:
+                conn.execute(text('''
+                    INSERT INTO survival_matches (player1_id, player2_id, initials, rounds_played, match_duration)
+                    VALUES (:player1_id, :player2_id, :initials, 0, 0)
+                '''), {
+                    'player1_id': player1_id,
+                    'player2_id': player2_id,
+                    'initials': initials
+                })
+                
+                # Get the new match ID
+                result = conn.execute(text('SELECT last_insert_rowid()'))
+                match_row = result.fetchone()
+                conn.commit()
+                
+                match_id = match_row[0]
+                logger.info(f"Created match {match_id}: {player1_name} vs {player2_name} ({initials})")
+                return match_id
+                
+        except Exception as e:
+            logger.error(f"Error creating match: {e}")
+            return None
+
+    def finish_match(self, match_id: int, winner_id: Optional[int], rounds_played: int, 
+                    match_duration: int, player1_lives_lost: int, player2_lives_lost: int) -> bool:
+        """
+        Finish a match and update Elo ratings.
+        
+        Args:
+            match_id: ID of the match
+            winner_id: ID of winning player (None for draw)
+            rounds_played: Number of rounds played
+            match_duration: Duration in seconds
+            player1_lives_lost: Lives lost by player 1
+            player2_lives_lost: Lives lost by player 2
+            
+        Returns:
+            True if successful, False otherwise
+        """
+        try:
+            with self.engine.connect() as conn:
+                # Get match details
+                result = conn.execute(text('''
+                    SELECT player1_id, player2_id FROM survival_matches WHERE id = :match_id
+                '''), {'match_id': match_id})
+                
+                match_row = result.fetchone()
+                if not match_row:
+                    logger.error(f"Match {match_id} not found")
+                    return False
+                
+                player1_id, player2_id = match_row
+                
+                # Get current Elo ratings
+                result = conn.execute(text('''
+                    SELECT id, current_elo, games_played FROM survival_players 
+                    WHERE id IN (:player1_id, :player2_id)
+                '''), {'player1_id': player1_id, 'player2_id': player2_id})
+                
+                players = {row[0]: {'elo': row[1], 'games': row[2]} for row in result.fetchall()}
+                
+                # Calculate new Elo ratings
+                player1_elo = players[player1_id]['elo']
+                player2_elo = players[player2_id]['elo']
+                
+                # Determine result (1 = player1 wins, 0 = player2 wins, 0.5 = draw)
+                if winner_id == player1_id:
+                    player1_score = 1.0
+                    player2_score = 0.0
+                elif winner_id == player2_id:
+                    player1_score = 0.0
+                    player2_score = 1.0
+                else:
+                    player1_score = 0.5
+                    player2_score = 0.5
+                
+                # Calculate Elo changes
+                player1_new_elo, player2_new_elo = self._calculate_elo_changes(
+                    player1_elo, player2_elo, player1_score, players[player1_id]['games'], players[player2_id]['games']
+                )
+                
+                # Update match record
+                conn.execute(text('''
+                    UPDATE survival_matches 
+                    SET winner_id = :winner_id, rounds_played = :rounds_played, 
+                        match_duration = :match_duration, player1_lives_lost = :player1_lives_lost,
+                        player2_lives_lost = :player2_lives_lost
+                    WHERE id = :match_id
+                '''), {
+                    'match_id': match_id,
+                    'winner_id': winner_id,
+                    'rounds_played': rounds_played,
+                    'match_duration': match_duration,
+                    'player1_lives_lost': player1_lives_lost,
+                    'player2_lives_lost': player2_lives_lost
+                })
+                
+                # Update player stats
+                for player_id, new_elo, score in [(player1_id, player1_new_elo, player1_score), 
+                                                  (player2_id, player2_new_elo, player2_score)]:
+                    if score == 1.0:
+                        wins_inc, losses_inc, draws_inc = 1, 0, 0
+                    elif score == 0.0:
+                        wins_inc, losses_inc, draws_inc = 0, 1, 0
+                    else:
+                        wins_inc, losses_inc, draws_inc = 0, 0, 1
+                    
+                    conn.execute(text('''
+                        UPDATE survival_players 
+                        SET current_elo = :new_elo, games_played = games_played + 1,
+                            wins = wins + :wins_inc, losses = losses + :losses_inc, 
+                            draws = draws + :draws_inc, last_played = CURRENT_TIMESTAMP
+                        WHERE id = :player_id
+                    '''), {
+                        'player_id': player_id,
+                        'new_elo': new_elo,
+                        'wins_inc': wins_inc,
+                        'losses_inc': losses_inc,
+                        'draws_inc': draws_inc
+                    })
+                
+                # Record Elo history
+                for player_id, old_elo, new_elo in [(player1_id, player1_elo, player1_new_elo),
+                                                    (player2_id, player2_elo, player2_new_elo)]:
+                    conn.execute(text('''
+                        INSERT INTO elo_history (player_id, old_elo, new_elo, elo_change, match_id)
+                        VALUES (:player_id, :old_elo, :new_elo, :elo_change, :match_id)
+                    '''), {
+                        'player_id': player_id,
+                        'old_elo': old_elo,
+                        'new_elo': new_elo,
+                        'elo_change': new_elo - old_elo,
+                        'match_id': match_id
+                    })
+                
+                conn.commit()
+                logger.info(f"Match {match_id} finished. Elo changes: {player1_new_elo - player1_elo:+d}, {player2_new_elo - player2_elo:+d}")
+                return True
+                
+        except Exception as e:
+            logger.error(f"Error finishing match {match_id}: {e}")
+            return False
+
+    def get_leaderboard(self, limit: int = 10) -> List[Dict[str, Any]]:
+        """
+        Get leaderboard of top players by Elo rating.
+        
+        Args:
+            limit: Number of players to return
+            
+        Returns:
+            List of player records sorted by Elo rating
+        """
+        try:
+            with self.engine.connect() as conn:
+                result = conn.execute(text('''
+                    SELECT player_name, current_elo, games_played, wins, losses, draws,
+                           CASE 
+                               WHEN games_played > 0 THEN ROUND((wins * 100.0 / games_played), 1)
+                               ELSE 0 
+                           END as win_percentage,
+                           last_played
+                    FROM survival_players
+                    WHERE games_played > 0
+                    ORDER BY current_elo DESC
+                    LIMIT :limit
+                '''), {'limit': limit})
+                
+                columns = result.keys()
+                return [dict(zip(columns, row)) for row in result.fetchall()]
+                
+        except Exception as e:
+            logger.error(f"Error getting leaderboard: {e}")
+            return []
+
+    def _calculate_elo_changes(self, player1_elo: int, player2_elo: int, player1_score: float,
+                              player1_games: int, player2_games: int) -> tuple[int, int]:
+        """
+        Calculate new Elo ratings after a match.
+        
+        Args:
+            player1_elo: Current Elo of player 1
+            player2_elo: Current Elo of player 2
+            player1_score: Score of player 1 (1.0 = win, 0.5 = draw, 0.0 = loss)
+            player1_games: Games played by player 1
+            player2_games: Games played by player 2
+            
+        Returns:
+            Tuple of (new_player1_elo, new_player2_elo)
+        """
+        # K-factor based on games played
+        def get_k_factor(games_played: int) -> int:
+            if games_played < 10:
+                return 32  # New players get higher K-factor for faster calibration
+            elif games_played < 30:
+                return 24  # Intermediate players
+            else:
+                return 16  # Experienced players
+        
+        k1 = get_k_factor(player1_games)
+        k2 = get_k_factor(player2_games)
+        
+        # Expected scores
+        expected1 = 1 / (1 + 10 ** ((player2_elo - player1_elo) / 400))
+        expected2 = 1 / (1 + 10 ** ((player1_elo - player2_elo) / 400))
+        
+        # Calculate new ratings
+        new_elo1 = player1_elo + k1 * (player1_score - expected1)
+        new_elo2 = player2_elo + k2 * ((1 - player1_score) - expected2)
+        
+        # Apply rating floor and ceiling
+        new_elo1 = max(800, min(3000, int(round(new_elo1))))
+        new_elo2 = max(800, min(3000, int(round(new_elo2))))
+        
+        # Apply maximum change limit per match
+        max_change = 50
+        if abs(new_elo1 - player1_elo) > max_change:
+            new_elo1 = player1_elo + (max_change if new_elo1 > player1_elo else -max_change)
+        if abs(new_elo2 - player2_elo) > max_change:
+            new_elo2 = player2_elo + (max_change if new_elo2 > player2_elo else -max_change)
+        
+        return new_elo1, new_elo2
 
 
 if __name__ == "__main__":

@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="theme-color" content="#0d1421">
-    <title>Admin Monitoring Dashboard - FootQuizz</title>
+    <title>Admin Monitoring Dashboard - VerveQ</title>
     <link rel="stylesheet" href="/static/dark_football_theme.css">
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚽</text></svg>">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -203,7 +203,7 @@
         <div class="nav-container">
             <a href="/" class="nav-brand">
                 <span class="emoji">⚽</span>
-                FootQuizz
+                VerveQ
             </a>
             <div class="nav-links">
                 <a href="/" class="nav-link">Home</a>
@@ -331,7 +331,6 @@
             } catch (error) {
                 STATUS_LIGHT.classList.remove('connected');
                 STATUS_TEXT.textContent = 'Disconnected';
-                console.error("Failed to fetch monitoring data:", error);
             }
         }
 
