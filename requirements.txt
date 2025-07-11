@@ -1,6 +1,6 @@
 # VerveQ Production Dependencies
 # All dependencies are pinned to exact versions for reproducible builds
-# Last updated: 2025-07-11
+# Last updated: 2025-07-11 (Fixed starlette compatibility with FastAPI)
 # Python version: 3.13.1
 
 # Core FastAPI and ASGI server
@@ -37,7 +37,7 @@ gunicorn==23.0.0
 
 # Session and security middleware
 itsdangerous==2.2.0
-starlette==0.27.0
+starlette==0.46.1
 
 # Note: Testing dependencies moved to requirements-test.txt
 # Development dependencies moved to requirements-dev.txt
