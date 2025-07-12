@@ -107,7 +107,7 @@ old_styles.css
 *_backup.*
 
 # --- Performance Schema ---
-performance_schema.sql
+# performance_schema.sql - REMOVED: Required for production database initialization
 
 # --- Other Development Files ---
 data_pipeline_coordinator.py
