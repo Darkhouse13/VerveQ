@@ -14,8 +14,15 @@ class PerformanceDatabase:
         try:
             conn = sqlite3.connect(self.db_path)
             cursor = conn.cursor()
-            with open(self.schema_path, 'r') as f:
-                schema_sql = f.read()
+            
+            # Try to load schema from file
+            try:
+                with open(self.schema_path, 'r') as f:
+                    schema_sql = f.read()
+            except FileNotFoundError:
+                print(f"Warning: Schema file {self.schema_path} not found. Using embedded schema.")
+                schema_sql = self._get_embedded_schema()
+            
             cursor.executescript(schema_sql)
             conn.commit()
             print(f"Database initialized at {self.db_path}")
@@ -24,6 +31,29 @@ class PerformanceDatabase:
         finally:
             if conn:
                 conn.close()
+
+    def _get_embedded_schema(self):
+        """Returns embedded SQL schema as fallback when schema file is missing."""
+        return '''
+        CREATE TABLE IF NOT EXISTS question_performance (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            question_id TEXT NOT NULL,
+            question_version TEXT,
+            user_id TEXT,
+            session_id TEXT,
+            is_correct BOOLEAN NOT NULL,
+            selected_answer TEXT,
+            correct_answer TEXT,
+            response_time REAL,
+            user_difficulty_level TEXT,
+            user_feedback TEXT,
+            timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
+        );
+        
+        CREATE INDEX IF NOT EXISTS idx_question_id ON question_performance(question_id);
+        CREATE INDEX IF NOT EXISTS idx_user_id ON question_performance(user_id);
+        CREATE INDEX IF NOT EXISTS idx_timestamp ON question_performance(timestamp);
+        '''
 
     def insert_performance_data(self, data: dict):
         """
