@@ -111,7 +111,7 @@ performance_schema.sql
 
 # --- Other Development Files ---
 data_pipeline_coordinator.py
-performance_database.py
+# performance_database.py - REMOVED: Required for production
 
 # === FRONTEND BUILD PROCESS ===
 
