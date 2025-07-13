@@ -287,10 +287,21 @@ def register_routes():
 def mount_static_files():
     """Mount static file directories with Vite build support"""
     try:
-        # Custom StaticFiles class for cache control
+        # Custom StaticFiles class for cache control and multi-sport support
         class ViteStaticFiles(StaticFiles):
             def __init__(self, *args, **kwargs):
                 super().__init__(*args, **kwargs)
+
+            async def get_response(self, path: str, scope):
+                # Handle root index.html request based on multi-sport configuration
+                if path == "." or path == "index.html":
+                    if config.enable_multi_sport:
+                        # Check if multi_sport_index.html exists
+                        multi_sport_path = Path(self.directory) / "multi_sport_index.html"
+                        if multi_sport_path.exists():
+                            path = "multi_sport_index.html"
+                
+                return await super().get_response(path, scope)
 
             def file_response(self, *args, **kwargs):
                 response = super().file_response(*args, **kwargs)
@@ -327,6 +338,17 @@ def mount_static_files():
 
             # Fallback to legacy static files for development
             class NoCacheStaticFiles(StaticFiles):
+                async def get_response(self, path: str, scope):
+                    # Handle root index.html request based on multi-sport configuration
+                    if path == "." or path == "index.html":
+                        if config.enable_multi_sport:
+                            # Check if multi_sport_index.html exists
+                            multi_sport_path = Path(self.directory) / "multi_sport_index.html"
+                            if multi_sport_path.exists():
+                                path = "multi_sport_index.html"
+                    
+                    return await super().get_response(path, scope)
+                
                 def file_response(self, *args, **kwargs):
                     response = super().file_response(*args, **kwargs)
                     response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
@@ -356,9 +378,12 @@ def mount_static_files():
 def register_basic_routes():
     """Register basic routes available in all server modes"""
 
-    @app.get("/")
-    async def read_root():
-        """Welcome message and API information"""
+    # Root route removed to allow static file serving
+    # The static file mount will handle serving index.html or multi_sport_index.html
+    
+    @app.get("/api")
+    async def read_api_root():
+        """API welcome message and information"""
         if config.enable_multi_sport and sport_factory:
             return {
                 "message": "Welcome to VerveQ Multi-Sport API",
