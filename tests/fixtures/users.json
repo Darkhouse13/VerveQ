@@ -1,0 +1,72 @@
+{
+  "test_users": [
+    {
+      "id": "user-001",
+      "username": "pro_player",
+      "email": "pro@example.com",
+      "display_name": "Pro Player",
+      "elo_rating": 1800,
+      "games_played": 100,
+      "is_guest": false
+    },
+    {
+      "id": "user-002",
+      "username": "beginner",
+      "email": "beginner@example.com",
+      "display_name": "Beginner Player",
+      "elo_rating": 1200,
+      "games_played": 5,
+      "is_guest": false
+    },
+    {
+      "id": "user-003",
+      "username": "expert_player",
+      "email": "expert@example.com",
+      "display_name": "Expert Player",
+      "elo_rating": 1600,
+      "games_played": 50,
+      "is_guest": false
+    },
+    {
+      "id": "guest-001",
+      "username": "guest_abc123",
+      "email": null,
+      "display_name": "Guest Player",
+      "elo_rating": 1200,
+      "games_played": 0,
+      "is_guest": true
+    }
+  ],
+  "user_ratings": [
+    {
+      "user_id": "user-001",
+      "sport": "football",
+      "mode": "quiz",
+      "rating": 1850,
+      "games_played": 60,
+      "wins": 45,
+      "losses": 15,
+      "peak_rating": 1900
+    },
+    {
+      "user_id": "user-001",
+      "sport": "football",
+      "mode": "survival",
+      "rating": 1750,
+      "games_played": 40,
+      "wins": 28,
+      "losses": 12,
+      "peak_rating": 1800
+    },
+    {
+      "user_id": "user-002",
+      "sport": "football",
+      "mode": "quiz",
+      "rating": 1200,
+      "games_played": 5,
+      "wins": 2,
+      "losses": 3,
+      "peak_rating": 1250
+    }
+  ]
+}

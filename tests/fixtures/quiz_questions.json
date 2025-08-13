@@ -1,0 +1,70 @@
+{
+  "football": [
+    {
+      "id": 1,
+      "question": "Who won the 2022 Ballon d'Or?",
+      "options": ["Lionel Messi", "Karim Benzema", "Kylian Mbappe", "Erling Haaland"],
+      "correct_answer": "Karim Benzema",
+      "explanation": "Karim Benzema won the 2022 Ballon d'Or after an exceptional season with Real Madrid.",
+      "difficulty": "medium"
+    },
+    {
+      "id": 2,
+      "question": "Which team won the 2021 Premier League?",
+      "options": ["Manchester City", "Manchester United", "Liverpool", "Chelsea"],
+      "correct_answer": "Manchester City",
+      "explanation": "Manchester City won the 2020-21 Premier League title.",
+      "difficulty": "easy"
+    },
+    {
+      "id": 3,
+      "question": "Who is the all-time top scorer in the Champions League?",
+      "options": ["Cristiano Ronaldo", "Lionel Messi", "Robert Lewandowski", "Karim Benzema"],
+      "correct_answer": "Cristiano Ronaldo",
+      "explanation": "Cristiano Ronaldo is the all-time leading scorer in Champions League history.",
+      "difficulty": "easy"
+    },
+    {
+      "id": 4,
+      "question": "Which player has won the most World Cup titles?",
+      "options": ["Pele", "Diego Maradona", "Zinedine Zidane", "Ronaldo Nazario"],
+      "correct_answer": "Pele",
+      "explanation": "Pele won three World Cup titles with Brazil (1958, 1962, 1970).",
+      "difficulty": "medium"
+    },
+    {
+      "id": 5,
+      "question": "Who scored the fastest goal in Premier League history?",
+      "options": ["Shane Long", "Ledley King", "Alan Shearer", "Sadio Mane"],
+      "correct_answer": "Shane Long",
+      "explanation": "Shane Long scored after 7.69 seconds for Southampton against Watford in 2019.",
+      "difficulty": "hard"
+    }
+  ],
+  "tennis": [
+    {
+      "id": 101,
+      "question": "Who has won the most Grand Slam singles titles in men's tennis?",
+      "options": ["Novak Djokovic", "Rafael Nadal", "Roger Federer", "Pete Sampras"],
+      "correct_answer": "Novak Djokovic",
+      "explanation": "Novak Djokovic holds the record for most Grand Slam singles titles in men's tennis.",
+      "difficulty": "medium"
+    },
+    {
+      "id": 102,
+      "question": "Which tournament is played on clay courts?",
+      "options": ["Wimbledon", "US Open", "French Open", "Australian Open"],
+      "correct_answer": "French Open",
+      "explanation": "The French Open (Roland Garros) is the only Grand Slam played on clay courts.",
+      "difficulty": "easy"
+    },
+    {
+      "id": 103,
+      "question": "Who won the most consecutive Wimbledon titles?",
+      "options": ["Roger Federer", "Bjorn Borg", "Pete Sampras", "Novak Djokovic"],
+      "correct_answer": "Roger Federer",
+      "explanation": "Roger Federer won five consecutive Wimbledon titles from 2003 to 2007.",
+      "difficulty": "hard"
+    }
+  ]
+}

@@ -1,0 +1,41 @@
+# Testing Dependencies for VerveQ Backend
+# Install with: pip install -r requirements-dev.txt
+
+# Core Testing Framework
+pytest>=7.4.0
+pytest_asyncio>=0.21.0
+pytest-cov>=4.1.0
+
+# HTTP Testing
+httpx>=0.24.0
+
+# Test Data Generation
+factory-boy>=3.3.0
+faker>=19.0.0
+
+# Database Testing
+sqlalchemy-utils>=0.41.0
+aiosqlite>=0.19.0
+
+# Time-based Testing
+freezegun>=1.2.0
+
+# Mocking
+pytest-mock>=3.11.0
+
+# Code Quality
+black>=23.0.0
+flake8>=6.0.0
+isort>=5.12.0
+
+# Type Checking
+mypy>=1.4.0
+types-requests>=2.31.0
+
+# Performance Testing
+pytest-benchmark>=4.0.0
+
+# Test Reporting
+pytest-html>=3.2.0
+pytest-json-report>=1.5.0
+pytest-asyncio
