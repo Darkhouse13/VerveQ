@@ -1,4 +1,4 @@
-# VerveQ Platform v3.0 - Competitive Sports Gaming Platform
+# VerveQ Platform v1.0 - Competitive Sports Gaming Platform
 
 A comprehensive competitive sports gaming platform with ELO rankings, global leaderboards, and social features.
 
@@ -251,7 +251,7 @@ nano .env  # or your preferred editor
 
 #### API Configuration
 - `API_TITLE`: API title (default: VerveQ Platform API)
-- `API_VERSION`: API version (default: 3.0.0)
+- `API_VERSION`: API version (default: 1.0.0)
 - `API_DESCRIPTION`: API description
 
 #### Rate Limiting
