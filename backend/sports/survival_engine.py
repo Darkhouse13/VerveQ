@@ -31,7 +31,6 @@ class SurvivalEngine:
     def __init__(self):
         """Initialize survival engine"""
         self.data_loader = get_data_loader()
-        self.used_initials: Set[str] = set()
         
         # Initialize helper components
         self.fame_calculator = FameCalculator()
@@ -49,7 +48,7 @@ class SurvivalEngine:
             8: DifficultyLevel("Expert", 2, 3, 0.2, True),     # Round 8+: 2-3 letters, very uncommon
         }
     
-    def generate_challenge(self, round_number: int, sport: str = "football") -> Optional[Dict]:
+    def generate_challenge(self, round_number: int, sport: str, used_initials: Set[str]) -> Optional[Dict]:
         """Generate a survival challenge for given round"""
         difficulty = self._get_difficulty_for_round(round_number)
         
@@ -78,19 +77,19 @@ class SurvivalEngine:
         initials = get_player_initials(player_name)
         
         # Check if initials already used and find alternative if needed
-        if initials in self.used_initials:
+        if initials in used_initials:
             for _ in range(5):
                 alt_player = PlayerSelector.select_player_by_difficulty(player_candidates, difficulty)
                 if alt_player:
                     alt_name, _ = alt_player
                     alt_initials = get_player_initials(alt_name)
-                    if alt_initials not in self.used_initials:
+                    if alt_initials not in used_initials:
                         player_name, fame_score = alt_name, _
                         initials = alt_initials
                         break
         
         # Mark initials as used
-        self.used_initials.add(initials)
+        used_initials.add(initials)
         
         # Get additional info for the player
         player_info = self.info_extractor.get_player_info(player_name, sport)

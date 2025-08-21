@@ -125,11 +125,20 @@ export const apiConfig = {
       quiz: {
         question: (sport) => `/${sport}/quiz/question`,
         check: (sport) => `/${sport}/quiz/check`,
+        complete: (sport) => `/${sport}/quiz/complete`,
       },
       survival: {
         initials: (sport) => `/${sport}/survival/initials`,
         guess: (sport) => `/${sport}/survival/guess`,
         reveal: (sport, initials) => `/${sport}/survival/reveal/${initials}`,
+        complete: (sport) => `/${sport}/survival/complete`,
+        // New session-based endpoints
+        start: '/survival/start',
+        sessionGuess: '/survival/guess',
+        sessionHint: (sessionId) => `/survival/session/${sessionId}/hint`,
+        sessionSkip: (sessionId) => `/survival/session/${sessionId}/skip`,
+        sessionStatus: (sessionId) => `/survival/session/${sessionId}`,
+        sessionEnd: (sessionId) => `/survival/session/${sessionId}`,
       },
     },
     

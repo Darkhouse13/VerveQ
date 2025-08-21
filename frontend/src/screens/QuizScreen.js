@@ -9,10 +9,12 @@ import {
   Alert,
 } from 'react-native';
 import { useSession } from '../context/SessionContext';
+import { useAuth } from '../context/AuthContext';
 import { apiConfig, buildUrl, logApiCall, logApiResponse } from '../config/api';
 
 const QuizScreen = ({ navigation, route }) => {
   const { sport, theme, reset, difficulty = 'intermediate' } = route.params || { sport: 'football', theme: null, reset: false, difficulty: 'intermediate' };
+  const { user } = useAuth();
   const { updateScore, loadSportTheme, currentTheme } = useSession();
   const [question, setQuestion] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -28,6 +30,12 @@ const QuizScreen = ({ navigation, route }) => {
   
   // Quiz configuration - will be set by API response
   const [maxQuestions, setMaxQuestions] = useState(10); // Default fallback
+  
+  // ELO tracking state
+  const [correctAnswers, setCorrectAnswers] = useState(0);
+  const [totalAnsweredQuestions, setTotalAnsweredQuestions] = useState(0);
+  const [totalTimeTaken, setTotalTimeTaken] = useState(0);
+  const [gameStartTime, setGameStartTime] = useState(null);
 
   // Use ref to track component mount status
   const isMountedRef = useRef(true);
@@ -87,6 +95,12 @@ const QuizScreen = ({ navigation, route }) => {
     setSelectedAnswer(null);
     setShowResult(false);
     setIsCorrect(false);
+    
+    // Reset ELO tracking
+    setCorrectAnswers(0);
+    setTotalAnsweredQuestions(0);
+    setTotalTimeTaken(0);
+    setGameStartTime(Date.now());
 
     try {
       const url = buildUrl(`/games/${sport}/quiz/session`);
@@ -281,8 +295,13 @@ const QuizScreen = ({ navigation, route }) => {
         setIsCorrect(result.correct);
         setShowResult(true);
         
+        // Track statistics for ELO
+        setTotalAnsweredQuestions(prev => prev + 1);
+        setTotalTimeTaken(prev => prev + timeTaken);
+        
         if (result.correct) {
           setScore(prev => prev + result.score);
+          setCorrectAnswers(prev => prev + 1);
         }
       }
     } catch (error) {
@@ -301,6 +320,44 @@ const QuizScreen = ({ navigation, route }) => {
     }
   }, [selectedAnswer, question, sport]);
 
+  const submitQuizResult = async () => {
+    try {
+      const accuracy = totalAnsweredQuestions > 0 ? correctAnswers / totalAnsweredQuestions : 0;
+      const avgTime = totalAnsweredQuestions > 0 ? totalTimeTaken / totalAnsweredQuestions : 0;
+      
+      const resultData = {
+        user_id: user?.id || `guest_${Date.now()}`,
+        score: correctAnswers,
+        total_questions: totalAnsweredQuestions,
+        accuracy: accuracy,
+        average_time: avgTime,
+        difficulty: difficulty || 'intermediate'
+      };
+      
+      const url = buildUrl(apiConfig.endpoints.games.quiz.complete(sport));
+      logApiCall('POST', url, resultData);
+      
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: apiConfig.headers,
+        body: JSON.stringify(resultData)
+      });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+      
+      const result = await response.json();
+      logApiResponse('POST', url, result);
+      
+      return result;
+    } catch (error) {
+      console.error('Failed to submit quiz result:', error);
+      logApiResponse('POST', buildUrl(apiConfig.endpoints.games.quiz.complete(sport)), null, error);
+      throw error;
+    }
+  };
+
   const handleNextQuestion = useCallback(async () => {
     if (!isMountedRef.current) return;
     
@@ -310,13 +367,28 @@ const QuizScreen = ({ navigation, route }) => {
     
     if (questionCount >= maxQuestions) {
       try {
+        // Submit quiz result to backend
+        let submissionResult = null;
+        try {
+          submissionResult = await submitQuizResult();
+        } catch (submissionError) {
+          console.warn('Quiz submission failed, but continuing:', submissionError);
+          // Continue to navigation even if submission fails
+        }
+        
         // End session before navigating
         await endQuizSession();
+        
         navigation.navigate('Result', {
           score,
           total: questionCount * 100, // Maximum possible score (100 points per question)
           mode: 'quiz',
-          sport
+          sport,
+          newEloRating: submissionResult?.new_elo_rating,
+          eloChange: submissionResult?.elo_change,
+          correctAnswers,
+          totalQuestions: totalAnsweredQuestions,
+          accuracy: totalAnsweredQuestions > 0 ? (correctAnswers / totalAnsweredQuestions * 100) : 0
         });
       } catch (error) {
         console.error('Navigation error:', error);

@@ -35,12 +35,32 @@ async def get_global_leaderboard(
     limit: int = Query(10, description="Number of entries to return", ge=1, le=100)
 ) -> LeaderboardResponse:
     """Get global leaderboard across all sports and game modes"""
+    from services.leaderboard_service import LeaderboardService
+    
+    leaderboard_data = LeaderboardService.get_leaderboard(
+        sport=None,
+        mode=None,
+        period=period,
+        limit=limit
+    )
+    
+    entries = [
+        LeaderboardEntry(
+            rank=entry["rank"],
+            user_id=entry["user_id"],
+            username=entry["username"],
+            score=entry["score"],
+            elo_rating=entry["elo_rating"]
+        )
+        for entry in leaderboard_data
+    ]
+    
     return LeaderboardResponse(
         sport=None,
         game_mode=None,
         period=period,
-        entries=[],
-        total_entries=0
+        entries=entries,
+        total_entries=len(entries)
     )
 
 @router.get("/{sport}/{game_mode}")
@@ -53,10 +73,30 @@ async def get_sport_leaderboard(
     limit: int = Query(10, description="Number of entries to return", ge=1, le=100)
 ) -> LeaderboardResponse:
     """Get leaderboard for specific sport and game mode"""
+    from services.leaderboard_service import LeaderboardService
+    
+    leaderboard_data = LeaderboardService.get_leaderboard(
+        sport=sport,
+        mode=game_mode,
+        period=period,
+        limit=limit
+    )
+    
+    entries = [
+        LeaderboardEntry(
+            rank=entry["rank"],
+            user_id=entry["user_id"],
+            username=entry["username"],
+            score=entry["score"],
+            elo_rating=entry["elo_rating"]
+        )
+        for entry in leaderboard_data
+    ]
+    
     return LeaderboardResponse(
         sport=sport,
         game_mode=game_mode,
         period=period,
-        entries=[],
-        total_entries=0
+        entries=entries,
+        total_entries=len(entries)
     )

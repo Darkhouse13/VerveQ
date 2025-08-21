@@ -21,6 +21,7 @@ class SurvivalSession:
         self.lives = 3
         self.used_initials = set()
         self.current_challenge = None
+        self.hint_used = False  # Track if hint has been used for this game session
         self.created_at = time.time()
         self.last_activity = time.time()
     
@@ -33,6 +34,7 @@ class SurvivalSession:
             'score': self.score,
             'lives': self.lives,
             'current_challenge': self.current_challenge,
+            'hint_available': not self.hint_used,
             'created_at': self.created_at,
             'last_activity': self.last_activity
         }
@@ -55,10 +57,9 @@ class SurvivalSessionManager:
             self._sessions[session.session_id] = session
             
             # Generate first challenge
-            challenge = self._survival_engine.generate_challenge(session.round, sport)
+            challenge = self._survival_engine.generate_challenge(session.round, sport, session.used_initials)
             if challenge:
                 session.current_challenge = challenge
-                session.used_initials.add(challenge['initials'])
             
             session.last_activity = time.time()
             return session
@@ -81,19 +82,11 @@ class SurvivalSessionManager:
             session.round += 1
             
             # Generate new challenge
-            challenge = self._survival_engine.generate_challenge(session.round, session.sport)
+            challenge = self._survival_engine.generate_challenge(session.round, session.sport, session.used_initials)
             if challenge:
-                # Ensure we don't repeat initials within the session
-                attempts = 0
-                while challenge['initials'] in session.used_initials and attempts < 10:
-                    challenge = self._survival_engine.generate_challenge(session.round, session.sport)
-                    attempts += 1
-                
-                if challenge and challenge['initials'] not in session.used_initials:
-                    session.current_challenge = challenge
-                    session.used_initials.add(challenge['initials'])
-                    session.last_activity = time.time()
-                    return challenge
+                session.current_challenge = challenge
+                session.last_activity = time.time()
+                return challenge
             
             return None
     
@@ -189,6 +182,64 @@ class SurvivalSessionManager:
                 result['next_initials'] = next_challenge['initials']
         
         return result
+
+    def use_hint(self, session_id: str) -> bool:
+        """Mark hint as used for session and return success status"""
+        with self._lock:
+            session = self._sessions.get(session_id)
+            if not session:
+                return False
+            
+            if session.hint_used:
+                return False  # Hint already used
+            
+            session.hint_used = True
+            session.last_activity = time.time()
+            return True
+    
+    def can_use_hint(self, session_id: str) -> bool:
+        """Check if hint is available for session"""
+        with self._lock:
+            session = self._sessions.get(session_id)
+            if not session:
+                return False
+            return not session.hint_used
+
+    def skip_challenge(self, session_id: str) -> Dict[str, Any]:
+        """Skip current challenge and lose a life"""
+        with self._lock:
+            session = self._sessions.get(session_id)
+            if not session:
+                return {"error": "Session not found"}
+            
+            # Decrement life
+            session.lives -= 1
+            session.last_activity = time.time()
+            
+            # Check game over
+            if session.lives <= 0:
+                session.current_challenge = None
+                return {
+                    "game_over": True,
+                    "lives": 0,
+                    "score": session.score,
+                    "round": session.round
+                }
+            
+            # Generate new challenge with session's used_initials
+            challenge = self._survival_engine.generate_challenge(
+                session.round, session.sport, session.used_initials
+            )
+            
+            if challenge:
+                session.current_challenge = challenge
+                return {
+                    "lives": session.lives,
+                    "challenge": challenge,
+                    "skipped": True
+                }
+            
+            return {"error": "Failed to generate new challenge"}
 
     def get_session_stats(self) -> Dict[str, Any]:
         """Get manager statistics"""

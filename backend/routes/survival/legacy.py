@@ -1,37 +1,16 @@
 """
-Survival mode routes for VerveQ Platform API
+Legacy survival mode routes for VerveQ Platform API
+Backward compatibility endpoints
 """
 from fastapi import APIRouter, HTTPException, Request, Response
 from pydantic import BaseModel, Field, validator
-from typing import Literal, Optional
+from typing import Literal
 from slowapi import Limiter
 from slowapi.util import get_remote_address
-from services.survival_session import get_survival_session_manager
 import random
 
-router = APIRouter(tags=["survival"])
+router = APIRouter()
 limiter = Limiter(key_func=get_remote_address)
-
-class SurvivalGuessRequest(BaseModel):
-    guess: str = Field(
-        ..., 
-        min_length=1, 
-        max_length=100,
-        pattern=r'^[a-zA-Z0-9\s\-_\.\']+$',
-        description="Player name guess (alphanumeric, spaces, hyphens, underscores, dots, apostrophes only)"
-    )
-    session_id: str = Field(
-        ...,
-        min_length=1,
-        max_length=50,
-        description="Survival session ID"
-    )
-    
-    @validator('guess')
-    def validate_guess(cls, v):
-        if v and len(v.strip()) == 0:
-            raise ValueError('Guess cannot be empty or whitespace only')
-        return v.strip()
 
 class SurvivalGuessLegacyRequest(BaseModel):
     guess: str = Field(
@@ -61,152 +40,8 @@ class SurvivalGuessLegacyRequest(BaseModel):
             raise ValueError('Initials cannot be empty or whitespace only')
         return v.strip().upper()
 
-class SurvivalStartRequest(BaseModel):
-    sport: str = Field(
-        ...,
-        min_length=1,
-        max_length=20,
-        description="Sport for survival mode"
-    )
-
 # Sport validation  
 ALLOWED_SPORTS = Literal["football", "tennis", "basketball", "soccer", "baseball", "hockey"]
-
-@router.post("/start")
-async def start_survival_game(start_data: SurvivalStartRequest):
-    """Start a new survival game session"""
-    sport = start_data.sport
-    
-    if sport not in ["football", "tennis", "basketball"]:
-        raise HTTPException(status_code=400, detail=f"Sport '{sport}' not supported")
-    
-    try:
-        session_manager = get_survival_session_manager()
-        session = session_manager.create_session(sport)
-        
-        if not session.current_challenge:
-            raise HTTPException(status_code=500, detail=f"Failed to generate initial challenge for {sport}")
-        
-        return {
-            "session_id": session.session_id,
-            "sport": session.sport,
-            "round": session.round,
-            "lives": session.lives,
-            "score": session.score,
-            "challenge": {
-                "initials": session.current_challenge["initials"],
-                "round": session.current_challenge["round"],
-                "difficulty": session.current_challenge["difficulty"],
-                "hint": f"Find a {sport} player with initials {session.current_challenge['initials']}"
-            }
-        }
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Failed to start survival game: {str(e)}")
-
-@router.post("/guess")
-@limiter.limit("30/minute")
-async def submit_survival_guess(request: Request, guess_data: SurvivalGuessRequest):
-    """Submit a guess for survival mode"""
-    try:
-        session_manager = get_survival_session_manager()
-        session = session_manager.get_session(guess_data.session_id)
-        
-        if not session:
-            raise HTTPException(status_code=404, detail="Session not found or expired")
-        
-        if session.lives <= 0:
-            raise HTTPException(status_code=400, detail="Game over - no lives remaining")
-        
-        # Submit answer
-        result = session_manager.submit_answer(guess_data.session_id, guess_data.guess)
-        
-        if not result:
-            raise HTTPException(status_code=500, detail="Failed to process guess")
-        
-        response = {
-            "correct": result["is_correct"],
-            "guess": guess_data.guess,
-            "correct_answer": result["correct_answer"],
-            "similarity": result.get("similarity", 0),
-            "lives": session.lives,
-            "score": session.score,
-            "round": session.round
-        }
-        
-        # If correct and game continues, get next challenge
-        if result["is_correct"] and result.get("next_round", False):
-            next_challenge = session_manager.next_challenge(guess_data.session_id)
-            if next_challenge:
-                response["next_challenge"] = {
-                    "initials": next_challenge["initials"],
-                    "round": next_challenge["round"],
-                    "difficulty": next_challenge["difficulty"],
-                    "hint": f"Find a {session.sport} player with initials {next_challenge['initials']}"
-                }
-        
-        # Check if game over
-        if result.get("game_over", False):
-            response["game_over"] = True
-            response["final_score"] = session.score
-            response["final_round"] = session.round
-        
-        return response
-        
-    except HTTPException:
-        raise
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Failed to process guess: {str(e)}")
-
-@router.get("/session/{session_id}")
-async def get_session_status(session_id: str):
-    """Get current session status"""
-    try:
-        session_manager = get_survival_session_manager()
-        session = session_manager.get_session(session_id)
-        
-        if not session:
-            raise HTTPException(status_code=404, detail="Session not found or expired")
-        
-        response = {
-            "session_id": session.session_id,
-            "sport": session.sport,
-            "round": session.round,
-            "lives": session.lives,
-            "score": session.score,
-            "game_over": session.lives <= 0
-        }
-        
-        if session.current_challenge and session.lives > 0:
-            response["current_challenge"] = {
-                "initials": session.current_challenge["initials"],
-                "round": session.current_challenge["round"],
-                "difficulty": session.current_challenge["difficulty"],
-                "hint": f"Find a {session.sport} player with initials {session.current_challenge['initials']}"
-            }
-        
-        return response
-        
-    except HTTPException:
-        raise
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Failed to get session status: {str(e)}")
-
-@router.delete("/session/{session_id}")
-async def end_survival_game(session_id: str):
-    """End a survival game session"""
-    try:
-        session_manager = get_survival_session_manager()
-        success = session_manager.end_session(session_id)
-        
-        if not success:
-            raise HTTPException(status_code=404, detail="Session not found")
-        
-        return {"message": "Session ended successfully"}
-        
-    except HTTPException:
-        raise
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Failed to end session: {str(e)}")
 
 # Legacy endpoints for backward compatibility
 @router.options("/{sport}/survival/initials")
@@ -253,7 +88,6 @@ async def get_survival_initials_legacy(request: Request, sport: ALLOWED_SPORTS):
                 logger.error(f"   ❌ No survival data available for {sport}")
                 # Return fallback data instead of failing
                 fallback_initials = ["CR", "LM", "KM", "VV", "KD", "EM", "RS", "NG", "RB", "MR"]
-                import random
                 selected = random.choice(fallback_initials)
                 logger.info(f"   🔄 Using fallback initials: {selected}")
                 return {
@@ -279,7 +113,6 @@ async def get_survival_initials_legacy(request: Request, sport: ALLOWED_SPORTS):
             if not two_letter_initials:
                 # Fallback to hardcoded initials
                 fallback_initials = ["CR", "LM", "KM", "VV", "KD"]
-                import random
                 selected = random.choice(fallback_initials)
                 logger.info(f"   🔄 No 2-letter initials found, using fallback: {selected}")
                 return {
@@ -288,7 +121,6 @@ async def get_survival_initials_legacy(request: Request, sport: ALLOWED_SPORTS):
                     "sport": sport
                 }
             
-            import random
             initials = random.choice(two_letter_initials)
             
             logger.info(f"   🎲 Selected initials: {initials}")
@@ -310,7 +142,6 @@ async def get_survival_initials_legacy(request: Request, sport: ALLOWED_SPORTS):
             logger.error(f"   ⏰ Request timed out after 5 seconds")
             # Return hardcoded fallback on timeout
             fallback_initials = ["CR", "LM", "KM", "VV", "KD", "EM", "RS", "NG", "RB", "MR"]
-            import random
             selected = random.choice(fallback_initials)
             return {
                 "initials": selected,
@@ -329,7 +160,6 @@ async def get_survival_initials_legacy(request: Request, sport: ALLOWED_SPORTS):
         
         # Return fallback response instead of crashing
         fallback_initials = ["CR", "LM", "KM", "VV", "KD", "EM", "RS", "NG", "RB", "MR"]
-        import random
         selected = random.choice(fallback_initials)
         logger.info(f"   🔄 Returning fallback response due to error: {selected}")
         return {
@@ -418,7 +248,6 @@ async def reveal_survival_hints_legacy(sport: ALLOWED_SPORTS, initials: str):
         players = survival_data[initials]
         
         # Return a sample of players as hints (limit to 3)
-        import random
         sample_players = random.sample(players, min(3, len(players)))
         
         return {

@@ -19,13 +19,15 @@ from database.connection import init_db
 # Route modules (following CLAUDE.md modular structure)
 from routes.auth import router as auth_router
 from routes.quiz import router as quiz_router
-from routes.survival import router as survival_router
+from routes.survival.session import router as survival_session_router
+from routes.survival.legacy import router as survival_legacy_router
 from routes.sports import router as sports_router
 from routes.simple import router as simple_router
 from routes.leaderboards import router as leaderboards_router
 from routes.profile import router as profile_router
 from routes.challenges import router as challenges_router
 from routes.achievements import router as achievements_router
+from routes.games import router as games_router
 
 # Create rate limiter instance
 limiter = Limiter(key_func=get_remote_address)
@@ -108,12 +110,15 @@ app.state.limiter = limiter
 app.include_router(simple_router)
 app.include_router(auth_router)
 app.include_router(quiz_router)
-app.include_router(survival_router)
+# Survival routers: session-based with prefix, legacy without prefix
+app.include_router(survival_session_router, prefix="/survival", tags=["survival"])
+app.include_router(survival_legacy_router, tags=["survival"])
 app.include_router(sports_router)
 app.include_router(leaderboards_router)
 app.include_router(profile_router)
 app.include_router(challenges_router)
 app.include_router(achievements_router)
+app.include_router(games_router)
 
 @app.on_event("startup")
 async def startup_event():
