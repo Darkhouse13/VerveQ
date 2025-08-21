@@ -12,7 +12,7 @@ import { useSession } from '../context/SessionContext';
 import { apiConfig, buildUrl, logApiCall, logApiResponse } from '../config/api';
 
 const QuizScreen = ({ navigation, route }) => {
-  const { sport, theme, reset } = route.params || { sport: 'football', theme: null, reset: false }; // Destructure reset
+  const { sport, theme, reset, difficulty = 'intermediate' } = route.params || { sport: 'football', theme: null, reset: false, difficulty: 'intermediate' };
   const { updateScore, loadSportTheme, currentTheme } = useSession();
   const [question, setQuestion] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -26,8 +26,8 @@ const QuizScreen = ({ navigation, route }) => {
   const [elapsedTime, setElapsedTime] = useState(0);
   const [timerActive, setTimerActive] = useState(false);
   
-  // Quiz configuration
-  const MAX_QUESTIONS = 20; // Prevent infinite quiz sessions
+  // Quiz configuration - will be set by API response
+  const [maxQuestions, setMaxQuestions] = useState(10); // Default fallback
 
   // Use ref to track component mount status
   const isMountedRef = useRef(true);
@@ -108,6 +108,10 @@ const QuizScreen = ({ navigation, route }) => {
       
       if (data.session_id) {
         setSessionId(data.session_id);
+        // Set max questions from API response
+        if (data.max_questions) {
+          setMaxQuestions(data.max_questions);
+        }
         // Now load the first question
         await loadNewQuestion(data.session_id);
       }
@@ -142,7 +146,14 @@ const QuizScreen = ({ navigation, route }) => {
       
       // Use passed session ID or state session ID
       const currentSessionId = sessionIdParam || sessionId;
-      const queryParams = currentSessionId ? `?session_id=${currentSessionId}` : '';
+      const params = new URLSearchParams();
+      if (currentSessionId) {
+        params.append('session_id', currentSessionId);
+      }
+      if (difficulty) {
+        params.append('difficulty', difficulty);
+      }
+      const queryParams = params.toString() ? `?${params.toString()}` : '';
       const url = buildUrl(apiConfig.endpoints.games.quiz.question(sport) + queryParams);
       logApiCall('GET', url);
       
@@ -297,7 +308,7 @@ const QuizScreen = ({ navigation, route }) => {
     setTimerActive(false);
     setElapsedTime(0);
     
-    if (questionCount >= MAX_QUESTIONS) {
+    if (questionCount >= maxQuestions) {
       try {
         // End session before navigating
         await endQuizSession();
@@ -319,7 +330,7 @@ const QuizScreen = ({ navigation, route }) => {
         Alert.alert('Error', 'Failed to load next question. Please try again.');
       }
     }
-  }, [questionCount, MAX_QUESTIONS, navigation, score, sport, loadNewQuestion, endQuizSession]);
+  }, [questionCount, maxQuestions, navigation, score, sport, loadNewQuestion, endQuizSession]);
 
   const handleFinishQuiz = useCallback(async () => {
     if (!isMountedRef.current) return;
@@ -383,6 +394,12 @@ const QuizScreen = ({ navigation, route }) => {
           <Text style={styles.questionNumber}>Question {questionCount}</Text>
           <Text style={styles.timerText}>Time: {elapsedTime.toFixed(1)}s</Text>
         </View>
+        
+        <View style={styles.difficultyHeader}>
+          <Text style={styles.difficultyText}>
+            {difficulty.charAt(0).toUpperCase() + difficulty.slice(1)} Mode
+          </Text>
+        </View>
 
         {question && (
           <View style={styles.questionContainer}>
@@ -439,7 +456,7 @@ const QuizScreen = ({ navigation, route }) => {
                 onPress={handleNextQuestion}
               >
                 <Text style={styles.nextButtonText}>
-                  {questionCount >= MAX_QUESTIONS ? 'View Results' : 'Next Question'}
+                  {questionCount >= maxQuestions ? 'View Results' : 'Next Question'}
                 </Text>
               </TouchableOpacity>
               
@@ -485,6 +502,20 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     marginBottom: 20,
+  },
+  difficultyHeader: {
+    alignItems: 'center',
+    marginBottom: 15,
+  },
+  difficultyText: {
+    fontSize: 14,
+    color: '#666',
+    fontWeight: '500',
+    backgroundColor: '#e8f4fd',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 16,
+    overflow: 'hidden',
   },
   scoreText: {
     fontSize: 18,

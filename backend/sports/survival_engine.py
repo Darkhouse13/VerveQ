@@ -37,15 +37,16 @@ class SurvivalEngine:
         self.fame_calculator = FameCalculator()
         self.info_extractor = PlayerInfoExtractor()
         
-        # Define difficulty progression
+        # Define difficulty progression - 2-letter initials only for rounds 1-7
         self.difficulty_levels = {
             1: DifficultyLevel("Easy", 2, 2, 1.0, False),      # Round 1: 2-letter initials, famous only
             2: DifficultyLevel("Easy", 2, 2, 1.0, False),      # Round 2: 2-letter initials, famous only
-            3: DifficultyLevel("Medium", 2, 3, 0.8, False),    # Round 3: 2-3 letters, mostly famous
-            4: DifficultyLevel("Medium", 2, 3, 0.6, True),     # Round 4: 2-3 letters, some uncommon
-            5: DifficultyLevel("Hard", 3, 3, 0.4, True),       # Round 5: 3 letters, more uncommon
-            6: DifficultyLevel("Hard", 3, 4, 0.3, True),       # Round 6: 3-4 letters, mostly uncommon
-            7: DifficultyLevel("Expert", 4, 4, 0.2, True),     # Round 7+: 4 letters, very uncommon
+            3: DifficultyLevel("Easy", 2, 2, 0.8, False),      # Round 3: 2-letter initials, mostly famous
+            4: DifficultyLevel("Medium", 2, 2, 0.6, True),     # Round 4: 2-letter initials, some uncommon
+            5: DifficultyLevel("Medium", 2, 2, 0.4, True),     # Round 5: 2-letter initials, more uncommon
+            6: DifficultyLevel("Hard", 2, 2, 0.3, True),       # Round 6: 2-letter initials, mostly uncommon
+            7: DifficultyLevel("Hard", 2, 2, 0.2, True),       # Round 7: 2-letter initials, very uncommon
+            8: DifficultyLevel("Expert", 2, 3, 0.2, True),     # Round 8+: 2-3 letters, very uncommon
         }
     
     def generate_challenge(self, round_number: int, sport: str = "football") -> Optional[Dict]:
@@ -150,11 +151,11 @@ class SurvivalEngine:
     
     def _get_difficulty_for_round(self, round_number: int) -> DifficultyLevel:
         """Get difficulty level for given round"""
-        if round_number <= 7:
+        if round_number <= 8:
             return self.difficulty_levels[round_number]
         else:
-            # Beyond round 7, use expert difficulty
-            return self.difficulty_levels[7]
+            # Beyond round 8, use expert difficulty
+            return self.difficulty_levels[8]
 
 
 # Global survival engine instance

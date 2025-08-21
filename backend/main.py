@@ -18,12 +18,14 @@ from database.connection import init_db
 
 # Route modules (following CLAUDE.md modular structure)
 from routes.auth import router as auth_router
-from routes.games import router as games_router
+from routes.quiz import router as quiz_router
+from routes.survival import router as survival_router
 from routes.sports import router as sports_router
 from routes.simple import router as simple_router
 from routes.leaderboards import router as leaderboards_router
 from routes.profile import router as profile_router
 from routes.challenges import router as challenges_router
+from routes.achievements import router as achievements_router
 
 # Create rate limiter instance
 limiter = Limiter(key_func=get_remote_address)
@@ -37,7 +39,7 @@ app = FastAPI(
 )
 
 # Configure logging
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=getattr(logging, settings.log_level.upper()))
 logger = logging.getLogger(__name__)
 
 # Add comprehensive request logging middleware for debugging
@@ -105,17 +107,50 @@ app.state.limiter = limiter
 # Include route modules
 app.include_router(simple_router)
 app.include_router(auth_router)
-app.include_router(games_router)
+app.include_router(quiz_router)
+app.include_router(survival_router)
 app.include_router(sports_router)
 app.include_router(leaderboards_router)
 app.include_router(profile_router)
 app.include_router(challenges_router)
+app.include_router(achievements_router)
 
 @app.on_event("startup")
 async def startup_event():
     """Initialize database and default data"""
     init_db()
     settings.print_config_summary()
+    
+    # Print connection information for development
+    print("\n🌐 VerveQ Platform API Server")
+    print("=" * 40)
+    print(f"🚀 Server starting on: http://{settings.host}:{settings.port}")
+    print(f"📚 API Documentation: http://{settings.host}:{settings.port}/docs")
+    print(f"🔄 Health Check: http://{settings.host}:{settings.port}/")
+    
+    # Show network access information
+    import socket
+    try:
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        s.connect(("8.8.8.8", 80))
+        local_ip = s.getsockname()[0]
+        s.close()
+        
+        if local_ip and local_ip != "127.0.0.1":
+            print(f"\n📱 Mobile Development URLs:")
+            print(f"   Android Emulator: http://10.0.2.2:{settings.port}")
+            print(f"   iOS Simulator: http://localhost:{settings.port}")
+            print(f"   Physical Device: http://{local_ip}:{settings.port}")
+            print(f"   Network Access: http://{local_ip}:{settings.port}")
+            
+            print(f"\n🧪 Test Endpoints:")
+            print(f"   curl http://{local_ip}:{settings.port}/")
+            print(f"   curl http://{local_ip}:{settings.port}/football/survival/initials")
+    except Exception:
+        print(f"\n📱 Local Development: http://localhost:{settings.port}")
+    
+    print(f"\n✅ Server ready for connections!")
+    print("=" * 40)
 
 if __name__ == "__main__":
     import uvicorn

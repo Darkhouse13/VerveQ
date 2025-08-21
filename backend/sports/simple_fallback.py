@@ -5,7 +5,6 @@ CLAUDE.md compliant fallback for when database is unavailable
 
 import random
 from typing import Dict, Any, List
-from .fallback_questions import FallbackQuestions
 
 
 class SimpleFallbackGenerator:
@@ -15,21 +14,8 @@ class SimpleFallbackGenerator:
         self.sport_name = sport_name
     
     def get_quiz_question(self) -> Dict[str, Any]:
-        """Get a random fallback question"""
-        try:
-            question_data = FallbackQuestions.get_fallback_question()
-            return {
-                "question": question_data["question"],
-                "options": question_data["options"],
-                "correct_answer": question_data["correct_answer"],
-                "explanation": question_data.get("explanation", ""),
-                "category": question_data.get("category", "football_basics"),
-                "difficulty": question_data.get("difficulty", "beginner"),
-                "source": "fallback",
-                "sport": self.sport_name
-            }
-        except:
-            return self._basic_fallback()
+        """Get a basic fallback question"""
+        return self._basic_fallback()
     
     def _basic_fallback(self) -> Dict[str, Any]:
         """Ultimate fallback question"""

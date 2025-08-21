@@ -57,6 +57,9 @@ class SportDataFactory:
     @classmethod
     def get_generator(cls, sport_name: str) -> Optional[SportQuestionGenerator]:
         """Get generator for a specific sport"""
+        # Ensure sports are initialized before accessing generators
+        cls._ensure_initialized()
+        
         generator_class = cls._generators.get(sport_name.lower())
         if generator_class:
             return generator_class(sport_name)
@@ -65,4 +68,17 @@ class SportDataFactory:
     @classmethod
     def get_available_sports(cls) -> List[str]:
         """Get list of available sports"""
+        # Ensure sports are initialized before listing
+        cls._ensure_initialized()
         return list(cls._generators.keys())
+    
+    @classmethod
+    def _ensure_initialized(cls):
+        """Ensure sports generators are initialized"""
+        try:
+            # Import and call initialization function
+            from . import _initialize_sports
+            _initialize_sports()
+        except ImportError:
+            # Fallback if initialization function is not available
+            pass

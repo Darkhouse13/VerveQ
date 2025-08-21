@@ -53,7 +53,7 @@ const SportSelectionScreen = ({ navigation, route }) => {
       
       // Navigate to the appropriate game mode with sport and theme
       if (mode === 'quiz') {
-        navigation.navigate('Quiz', { sport, theme });
+        navigation.navigate('DifficultySelection', { sport, theme });
       } else {
         navigation.navigate('Survival', { sport, theme });
       }

@@ -24,6 +24,25 @@ export const AuthProvider = ({ children }) => {
 
   const checkExistingAuth = async () => {
     try {
+      // In development mode, allow bypassing login for testing
+      if (__DEV__ && process.env.NODE_ENV === 'development') {
+        // Check if there's a bypass flag
+        const bypass = await AsyncStorage.getItem('verveq_dev_bypass');
+        if (bypass === 'true') {
+          // Create a mock user for development
+          const mockUser = {
+            id: 'dev-user-123',
+            display_name: 'Dev User',
+            email: null,
+            is_guest: true
+          };
+          setUser(mockUser);
+          console.log('🔧 Development mode: Using mock user');
+          setLoading(false);
+          return;
+        }
+      }
+
       // Clear any existing auth for demo purposes (force login screen)
       await AsyncStorage.removeItem('verveq_token');
       setToken(null);
@@ -172,6 +191,23 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  const enableDevMode = async () => {
+    if (__DEV__) {
+      await AsyncStorage.setItem('verveq_dev_bypass', 'true');
+      console.log('🔧 Development mode enabled - app will bypass login');
+      // Restart auth check
+      checkExistingAuth();
+    }
+  };
+
+  const disableDevMode = async () => {
+    if (__DEV__) {
+      await AsyncStorage.removeItem('verveq_dev_bypass');
+      setUser(null);
+      console.log('🔧 Development mode disabled - login required');
+    }
+  };
+
   const apiCall = async (endpoint, options = {}) => {
     const headers = {
       'Content-Type': 'application/json',
@@ -212,6 +248,8 @@ export const AuthProvider = ({ children }) => {
       updateUserStats,
       createGuestSession,
       apiCall,
+      enableDevMode,
+      disableDevMode,
       isAuthenticated: !!user,
       isGuest: !!guestSession,
     }}>

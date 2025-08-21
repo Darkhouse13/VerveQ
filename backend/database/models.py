@@ -3,6 +3,7 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 from datetime import datetime
 import uuid
+import hashlib
 
 Base = declarative_base()
 
@@ -159,3 +160,45 @@ class Challenge(Base):
     challenger = relationship("User", foreign_keys=[challenger_id])
     challenged = relationship("User", foreign_keys=[challenged_id])
     winner = relationship("User", foreign_keys=[winner_id])
+
+class QuizQuestion(Base):
+    __tablename__ = "quiz_questions"
+    
+    id = Column(Integer, primary_key=True)
+    sport = Column(String(50), nullable=False)
+    category = Column(String(100), nullable=False)
+    question = Column(Text, nullable=False)
+    options = Column(JSON, nullable=False)  # List of 4 options
+    correct_answer = Column(String(200), nullable=False)
+    explanation = Column(Text, nullable=True)
+    difficulty = Column(String(20), default="intermediate")  # easy/intermediate/hard
+    bucket = Column(String(100), nullable=False)  # For ID buckets
+    checksum = Column(String(32), nullable=False, unique=True)  # MD5 hash
+    
+    # Difficulty feedback tracking
+    difficulty_votes = Column(Integer, default=0)
+    difficulty_score = Column(Float, default=0.5)  # 0-1 scale (0=easy, 1=hard)
+    times_answered = Column(Integer, default=0)
+    times_correct = Column(Integer, default=0)
+    
+    # Performance tracking
+    usage_count = Column(Integer, default=0)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    __table_args__ = (
+        Index('ix_quiz_questions_bucket', 'sport', 'difficulty', 'bucket'),
+        Index('ix_quiz_questions_checksum', 'checksum'),
+        Index('ix_quiz_questions_sport_difficulty', 'sport', 'difficulty'),
+    )
+    
+    @staticmethod
+    def generate_checksum(question: str, correct_answer: str) -> str:
+        """Generate MD5 checksum for question deduplication"""
+        content = f"{question}|{correct_answer}".lower().strip()
+        return hashlib.md5(content.encode()).hexdigest()[:16]
+    
+    @staticmethod
+    def generate_bucket_name(sport: str, difficulty: str, category: str, index: int) -> str:
+        """Generate bucket name for ID organization"""
+        return f"{sport}_{difficulty}_{category}_{index}".replace(" ", "_").lower()

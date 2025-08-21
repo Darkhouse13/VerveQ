@@ -10,14 +10,17 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { useAuth } from '../context/AuthContext';
+import { apiConfig, buildUrl } from '../config/api';
 
 const LoginScreen = ({ navigation }) => {
   const [displayName, setDisplayName] = useState('');
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
   const [isAnonymous, setIsAnonymous] = useState(true);
+  const [connectionStatus, setConnectionStatus] = useState('');
+  const [testingConnection, setTestingConnection] = useState(false);
 
-  const { login } = useAuth();
+  const { login, enableDevMode } = useAuth();
 
   const handleLogin = async () => {
     if (!displayName.trim()) {
@@ -75,6 +78,74 @@ const LoginScreen = ({ navigation }) => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const testConnection = async () => {
+    setTestingConnection(true);
+    setConnectionStatus('Testing connection...');
+    
+    try {
+      console.log('🔧 Testing connection to:', apiConfig.baseURL);
+      
+      // Test basic health endpoint first
+      const healthUrl = buildUrl('/');
+      console.log('🔧 Testing health endpoint:', healthUrl);
+      
+      const response = await fetch(healthUrl, {
+        method: 'GET',
+        timeout: 10000,
+      });
+      
+      if (response.ok) {
+        const data = await response.text();
+        setConnectionStatus(`✅ Connected! Server responded: ${response.status}`);
+        console.log('✅ Health check passed:', data);
+        
+        // Test survival endpoint
+        try {
+          const survivalUrl = buildUrl('/football/survival/initials');
+          console.log('🔧 Testing survival endpoint:', survivalUrl);
+          const survivalResponse = await fetch(survivalUrl);
+          
+          if (survivalResponse.ok) {
+            const survivalData = await survivalResponse.json();
+            setConnectionStatus(`✅ All endpoints working! Got initials: ${survivalData.initials || 'N/A'}`);
+          } else {
+            setConnectionStatus(`⚠️ Health OK (${response.status}) but survival endpoint failed (${survivalResponse.status})`);
+          }
+        } catch (survivalError) {
+          setConnectionStatus(`⚠️ Health OK but survival endpoint error: ${survivalError.message}`);
+        }
+      } else {
+        setConnectionStatus(`❌ Server error: ${response.status} ${response.statusText}`);
+      }
+    } catch (error) {
+      console.error('🔧 Connection test failed:', error);
+      let errorMsg = `❌ Connection failed: ${error.message}`;
+      if (error.message.includes('Network request failed') || error.name === 'TypeError') {
+        errorMsg = `❌ Cannot reach server at ${apiConfig.baseURL}\nCheck if backend is running and IP is correct`;
+      }
+      setConnectionStatus(errorMsg);
+    } finally {
+      setTestingConnection(false);
+    }
+  };
+
+  const handleDevModeEnable = async () => {
+    Alert.alert(
+      'Enable Development Mode',
+      'This will bypass login for testing. You can navigate the app without a backend connection.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        { 
+          text: 'Enable', 
+          onPress: async () => {
+            await enableDevMode();
+            Alert.alert('Dev Mode Enabled', 'App will now bypass login for testing');
+          }
+        }
+      ]
+    );
   };
 
   return (
@@ -163,6 +234,40 @@ const LoginScreen = ({ navigation }) => {
             <Text style={styles.quickButtonText}>Quick Start (Random Name)</Text>
           </TouchableOpacity>
         </View>
+
+        {/* Development Tools */}
+        {__DEV__ && (
+          <View style={styles.devTools}>
+            <Text style={styles.devToolsTitle}>🔧 Development Tools</Text>
+            
+            <TouchableOpacity
+              style={styles.testButton}
+              onPress={testConnection}
+              disabled={testingConnection}
+            >
+              {testingConnection ? (
+                <ActivityIndicator color="#fff" size="small" />
+              ) : (
+                <Text style={styles.testButtonText}>Test Connection</Text>
+              )}
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.devModeButton}
+              onPress={handleDevModeEnable}
+            >
+              <Text style={styles.devModeButtonText}>Enable Dev Mode (Skip Login)</Text>
+            </TouchableOpacity>
+
+            {connectionStatus ? (
+              <View style={styles.statusContainer}>
+                <Text style={styles.statusTitle}>Connection Status:</Text>
+                <Text style={styles.statusText}>{connectionStatus}</Text>
+                <Text style={styles.statusInfo}>API URL: {apiConfig.baseURL}</Text>
+              </View>
+            ) : null}
+          </View>
+        )}
 
         <View style={styles.features}>
           <Text style={styles.featuresTitle}>Platform Features:</Text>
@@ -322,6 +427,69 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#666',
     textAlign: 'center',
+  },
+  devTools: {
+    backgroundColor: '#fff3cd',
+    borderRadius: 12,
+    padding: 20,
+    marginBottom: 20,
+    borderWidth: 1,
+    borderColor: '#ffeaa7',
+  },
+  devToolsTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#856404',
+    marginBottom: 16,
+    textAlign: 'center',
+  },
+  testButton: {
+    backgroundColor: '#17a2b8',
+    padding: 12,
+    borderRadius: 8,
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  testButtonText: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: 'bold',
+  },
+  devModeButton: {
+    backgroundColor: '#28a745',
+    padding: 12,
+    borderRadius: 8,
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  devModeButtonText: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: 'bold',
+  },
+  statusContainer: {
+    backgroundColor: '#f8f9fa',
+    padding: 12,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#e9ecef',
+  },
+  statusTitle: {
+    fontSize: 12,
+    fontWeight: 'bold',
+    color: '#495057',
+    marginBottom: 4,
+  },
+  statusText: {
+    fontSize: 12,
+    color: '#212529',
+    marginBottom: 4,
+    fontFamily: 'monospace',
+  },
+  statusInfo: {
+    fontSize: 10,
+    color: '#6c757d',
+    fontFamily: 'monospace',
   },
 });
 

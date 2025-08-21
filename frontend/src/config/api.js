@@ -3,6 +3,18 @@
  * Centralized API configuration with environment detection
  */
 
+// Import Constants for proper Expo environment variable handling
+import { Platform } from 'react-native';
+
+// Safely import Constants with fallback
+let Constants;
+try {
+  Constants = require('expo-constants').default;
+} catch (error) {
+  console.warn('expo-constants not available, using fallbacks');
+  Constants = { expoConfig: null, manifest: null };
+}
+
 // Environment detection
 const getEnvironment = () => {
   // Check if we're in Expo development
@@ -19,23 +31,56 @@ const getEnvironment = () => {
   return 'production';
 };
 
+// Helper to get API URL with platform-specific defaults
+const getApiUrl = () => {
+  // First check for explicitly set environment variable
+  const envApiUrl = Constants?.expoConfig?.extra?.apiUrl || Constants?.manifest?.extra?.apiUrl;
+  if (envApiUrl && envApiUrl !== "${API_URL}") {
+    console.log('📍 Using API URL from config:', envApiUrl);
+    return envApiUrl;
+  }
+
+  // Platform-specific defaults for development
+  if (__DEV__) {
+    let defaultUrl;
+    if (Platform.OS === 'android') {
+      // Android emulator uses 10.0.2.2 to access host machine
+      defaultUrl = 'http://10.0.2.2:8000';
+    } else if (Platform.OS === 'ios') {
+      // iOS simulator can use localhost
+      defaultUrl = 'http://localhost:8000';
+    } else if (Platform.OS === 'web') {
+      // Web can use localhost
+      defaultUrl = 'http://localhost:8000';
+    } else {
+      // Physical device - use current network IP from backend
+      defaultUrl = 'http://172.28.209.59:8000';
+    }
+    console.log(`📍 Using platform default for ${Platform.OS}:`, defaultUrl);
+    return defaultUrl;
+  }
+  
+  // Production default
+  return 'https://api.verveq.com';
+};
+
 // Environment-specific configuration
 const environments = {
   development: {
-    // Development API URL - replace with your local IP
-    apiUrl: process.env.REACT_APP_API_URL || 'http://192.168.1.174:8000',
+    // Development API URL with platform detection
+    apiUrl: getApiUrl(),
     debug: true,
     logLevel: 'debug',
   },
   staging: {
     // Staging API URL
-    apiUrl: process.env.REACT_APP_API_URL || 'https://staging-api.verveq.com',
+    apiUrl: Constants?.expoConfig?.extra?.apiUrl || Constants?.manifest?.extra?.apiUrl || 'https://staging-api.verveq.com',
     debug: false,
     logLevel: 'warn',
   },
   production: {
     // Production API URL
-    apiUrl: process.env.REACT_APP_API_URL || 'https://api.verveq.com',
+    apiUrl: Constants?.expoConfig?.extra?.apiUrl || Constants?.manifest?.extra?.apiUrl || 'https://api.verveq.com',
     debug: false,
     logLevel: 'error',
   },
@@ -208,9 +253,14 @@ export const validateConfig = () => {
 export const printConfigSummary = () => {
   console.log('📱 VerveQ Frontend Configuration:');
   console.log(`   Environment: ${apiConfig.environment}`);
+  console.log(`   Platform: ${Platform.OS}`);
   console.log(`   API URL: ${apiConfig.baseURL}`);
   console.log(`   Debug: ${apiConfig.debug ? 'Enabled' : 'Disabled'}`);
   console.log(`   Timeout: ${apiConfig.timeout}ms`);
+  
+  // Show environment variable status
+  const envApiUrl = Constants?.expoConfig?.extra?.apiUrl || Constants?.manifest?.extra?.apiUrl;
+  console.log(`   Environment API URL: ${envApiUrl || 'Not set (using default)'}`);
   
   // Validate configuration
   validateConfig();

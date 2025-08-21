@@ -28,6 +28,88 @@ async def root():
         "available_sports": SportDataFactory.get_available_sports()
     }
 
+@router.get("/health")
+async def health_check():
+    """Health check endpoint to verify all subsystems"""
+    import time
+    start_time = time.time()
+    
+    health_status = {
+        "status": "healthy",
+        "timestamp": time.time(),
+        "checks": {},
+        "response_time_ms": 0
+    }
+    
+    try:
+        # Check SportDataFactory initialization
+        try:
+            available_sports = SportDataFactory.get_available_sports()
+            health_status["checks"]["sport_factory"] = {
+                "status": "healthy",
+                "available_sports": available_sports,
+                "count": len(available_sports)
+            }
+        except Exception as e:
+            health_status["checks"]["sport_factory"] = {
+                "status": "unhealthy",
+                "error": str(e)
+            }
+            health_status["status"] = "degraded"
+        
+        # Check football survival data
+        try:
+            generator = SportDataFactory.get_generator("football")
+            if generator:
+                survival_data = generator.get_survival_data()
+                health_status["checks"]["football_survival"] = {
+                    "status": "healthy",
+                    "data_available": bool(survival_data),
+                    "initials_count": len(survival_data) if survival_data else 0
+                }
+            else:
+                health_status["checks"]["football_survival"] = {
+                    "status": "unhealthy",
+                    "error": "Football generator not found"
+                }
+                health_status["status"] = "degraded"
+        except Exception as e:
+            health_status["checks"]["football_survival"] = {
+                "status": "unhealthy",
+                "error": str(e)
+            }
+            health_status["status"] = "degraded"
+        
+        # Check database connectivity (if applicable)
+        try:
+            from pathlib import Path
+            db_paths = [
+                "/mnt/c/Users/hamza/OneDrive/Python_Scripts/VerveQ/data_cleaning/football_comprehensive.db",
+                "data_cleaning/football_comprehensive.db",
+                "../data_cleaning/football_comprehensive.db"
+            ]
+            db_available = any(Path(p).exists() for p in db_paths)
+            health_status["checks"]["database"] = {
+                "status": "healthy" if db_available else "warning",
+                "database_available": db_available,
+                "note": "Using fallback data" if not db_available else "Database connected"
+            }
+        except Exception as e:
+            health_status["checks"]["database"] = {
+                "status": "warning",
+                "error": str(e),
+                "note": "Database check failed, using fallback"
+            }
+        
+    except Exception as e:
+        health_status["status"] = "unhealthy"
+        health_status["error"] = str(e)
+    
+    finally:
+        health_status["response_time_ms"] = round((time.time() - start_time) * 1000, 2)
+    
+    return health_status
+
 @router.options("/api/guest-session")
 async def guest_session_options(response: Response):
     """Handle OPTIONS request for guest session endpoint"""

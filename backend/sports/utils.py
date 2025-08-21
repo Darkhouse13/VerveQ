@@ -5,7 +5,9 @@ Simple, focused helpers that support the core game functionality.
 
 import random
 import re
-from typing import List, Dict, Any, Optional
+import sqlite3
+from functools import lru_cache
+from typing import List, Dict, Any, Optional, Tuple
 
 
 def clean_string(text: str) -> str:
@@ -299,3 +301,147 @@ def deduplicate_preserving_order(items: List[str]) -> List[str]:
             seen.add(item)
             result.append(item)
     return result
+
+
+@lru_cache(maxsize=128)
+def get_competition_teams(competition_id: int, season: int, min_count: int = 10) -> List[Tuple[int, str]]:
+    """
+    Get teams from specific competition/season with fallback logic.
+    Returns list of (team_id, team_name) tuples.
+    
+    Fallback hierarchy:
+    1. Same competition, same season (preferred)
+    2. Same competition, adjacent seasons (±1 year) 
+    3. Same country/tier competitions
+    4. Global pool (last resort)
+    """
+    try:
+        db_path = "/mnt/c/Users/hamza/OneDrive/Python_Scripts/VerveQ/data_cleaning/football_comprehensive.db"
+        conn = sqlite3.connect(db_path)
+        cursor = conn.cursor()
+        
+        # Try 1: Same competition, same season
+        cursor.execute('''
+            SELECT DISTINCT c.club_id, c.name
+            FROM clubs c
+            JOIN games g ON (c.club_id = g.home_club_id OR c.club_id = g.away_club_id)
+            WHERE g.competition_id = ? AND g.season = ?
+            AND c.name IS NOT NULL
+            ORDER BY c.name
+        ''', (competition_id, season))
+        
+        teams = cursor.fetchall()
+        if len(teams) >= min_count:
+            conn.close()
+            return teams
+        
+        # Try 2: Same competition, adjacent seasons
+        cursor.execute('''
+            SELECT DISTINCT c.club_id, c.name
+            FROM clubs c
+            JOIN games g ON (c.club_id = g.home_club_id OR c.club_id = g.away_club_id)
+            WHERE g.competition_id = ? AND g.season BETWEEN ? AND ?
+            AND c.name IS NOT NULL
+            ORDER BY c.name
+        ''', (competition_id, season - 1, season + 1))
+        
+        teams = cursor.fetchall()
+        if len(teams) >= min_count:
+            conn.close()
+            return teams
+        
+        # Try 3: Same competition, broader season range
+        cursor.execute('''
+            SELECT DISTINCT c.club_id, c.name
+            FROM clubs c
+            JOIN games g ON (c.club_id = g.home_club_id OR c.club_id = g.away_club_id)
+            WHERE g.competition_id = ?
+            AND c.name IS NOT NULL
+            ORDER BY c.name
+        ''', (competition_id,))
+        
+        teams = cursor.fetchall()
+        if len(teams) >= min_count:
+            conn.close()
+            return teams
+        
+        # Try 4: Global pool (last resort)
+        cursor.execute('''
+            SELECT DISTINCT c.club_id, c.name
+            FROM clubs c
+            JOIN games g ON (c.club_id = g.home_club_id OR c.club_id = g.away_club_id)
+            WHERE c.name IS NOT NULL
+            ORDER BY RANDOM()
+            LIMIT 50
+        ''')
+        
+        teams = cursor.fetchall()
+        conn.close()
+        return teams
+        
+    except Exception as e:
+        log_simple(f"Error fetching competition teams: {e}", "ERROR")
+        # Return empty list on error
+        return []
+
+
+def get_league_aware_distractors(correct_team: str, competition_id: int, season: int, 
+                                count: int = 3, db_conn=None) -> List[str]:
+    """
+    Get distractors from same competition, with fallback logic.
+    - Never includes correct team
+    - Deduplicates results  
+    - Falls back to broader pools if needed
+    """
+    try:
+        # Get teams from the competition
+        competition_teams = get_competition_teams(competition_id, season, min_count=count + 1)
+        
+        # Filter out correct team and extract names
+        team_names = []
+        correct_normalized = normalize_name(correct_team)
+        
+        for team_id, team_name in competition_teams:
+            if team_name and normalize_name(team_name) != correct_normalized:
+                team_names.append(team_name)
+        
+        # Deduplicate while preserving order
+        unique_names = deduplicate_preserving_order(team_names)
+        
+        # Return requested count
+        if len(unique_names) >= count:
+            return random.sample(unique_names, count)
+        
+        # If not enough, supplement with famous clubs but try to avoid obvious mismatches
+        famous_clubs = [
+            "Manchester United", "Real Madrid", "Barcelona", "Bayern Munich",
+            "Liverpool", "Chelsea", "Arsenal", "Manchester City", "Juventus",
+            "Paris Saint-Germain", "AC Milan", "Inter Milan", "Atletico Madrid",
+            "Borussia Dortmund", "Tottenham", "Ajax", "Porto", "Benfica"
+        ]
+        
+        # Filter out correct team from famous clubs too
+        filtered_famous = [club for club in famous_clubs 
+                          if normalize_name(club) != correct_normalized]
+        
+        # Add more teams from famous clubs if needed
+        remaining_needed = count - len(unique_names)
+        if remaining_needed > 0 and filtered_famous:
+            additional = random.sample(filtered_famous, min(remaining_needed, len(filtered_famous)))
+            unique_names.extend(additional)
+        
+        return unique_names[:count]
+        
+    except Exception as e:
+        log_simple(f"Error getting league-aware distractors: {e}", "ERROR")
+        
+        # Fallback to basic famous clubs
+        famous_clubs = [
+            "Manchester United", "Real Madrid", "Barcelona", "Bayern Munich",
+            "Liverpool", "Chelsea", "Arsenal", "Manchester City"
+        ]
+        correct_normalized = normalize_name(correct_team)
+        filtered = [club for club in famous_clubs 
+                   if normalize_name(club) != correct_normalized]
+        
+        return random.sample(filtered, min(count, len(filtered)))

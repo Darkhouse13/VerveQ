@@ -9,6 +9,7 @@ import {
   ActivityIndicator,
   Alert,
   Keyboard,
+  Platform,
 } from 'react-native';
 import { apiConfig, buildUrl, logApiCall, logApiResponse } from '../config/api';
 
@@ -26,6 +27,119 @@ const SurvivalScreen = ({ navigation, route }) => {
   
   // Component mount tracking
   const isMountedRef = useRef(true);
+  const abortControllerRef = useRef(null);
+
+  const loadNewChallenge = useCallback(async () => {
+    console.log('Loading new challenge for sport:', sport);
+    if (!isMountedRef.current) return;
+    
+    // Mock data for offline testing
+    const mockInitials = ['CR7', 'LM10', 'KMB', 'VVD', 'KDB', 'EM4', 'LM7', 'RS9', 'NG11', 'RB9'];
+    const mockChallenge = {
+      initials: mockInitials[Math.floor(Math.random() * mockInitials.length)]
+    };
+    
+    // Cancel any existing request
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
+    
+    // Create new controller for this request
+    abortControllerRef.current = new AbortController();
+    
+    try {
+      setLoading(true);
+      setGuess('');
+      setShowHint(false);
+      setHintPlayers([]);
+      setLastResult(null);
+      
+      const url = buildUrl(apiConfig.endpoints.games.survival.initials(sport));
+      console.log('🌐 Network Diagnostics:');
+      console.log(`   Base URL: ${apiConfig.baseURL}`);
+      console.log(`   Full URL: ${url}`);
+      console.log(`   Platform: ${Platform.OS}`);
+      
+      logApiCall('GET', url);
+      
+      // Add network connectivity check
+      try {
+        const response = await fetch(url, {
+          signal: abortControllerRef.current.signal,
+          timeout: 10000, // 10 second timeout
+        });
+        
+        console.log(`📡 Response status: ${response.status} ${response.statusText}`);
+        
+        if (!response.ok) {
+          const errorBody = await response.text().catch(() => 'Unable to read error response');
+          console.error(`❌ HTTP Error Details:`, {
+            status: response.status,
+            statusText: response.statusText,
+            url: url,
+            body: errorBody
+          });
+          throw new Error(`HTTP ${response.status}: ${response.statusText}${errorBody ? '\nDetails: ' + errorBody : ''}`);
+        }
+      
+      const data = await response.json();
+      
+      // Validate response
+      if (!data || typeof data !== 'object') {
+        throw new Error('Invalid challenge response');
+      }
+      
+      if (!data.initials || typeof data.initials !== 'string') {
+        throw new Error('Invalid challenge response: missing initials');
+      }
+      
+      if (isMountedRef.current) {
+        logApiResponse('GET', url, data);
+        setCurrentInitials(data.initials);
+        console.log('✅ Initials set successfully:', data.initials);
+      }
+      } catch (networkError) {
+        throw networkError;
+      }
+    } catch (error) {
+      if (isMountedRef.current && error.name !== 'AbortError') {
+        console.error('🚨 Survival challenge loading error:', error);
+        console.error('🔍 Error details:', {
+          name: error.name,
+          message: error.message,
+          stack: error.stack,
+          url: buildUrl(apiConfig.endpoints.games.survival.initials(sport)),
+          baseURL: apiConfig.baseURL,
+          platform: Platform.OS
+        });
+        
+        logApiResponse('GET', buildUrl(apiConfig.endpoints.games.survival.initials(sport)), null, error);
+        
+        // Show more detailed error message based on error type
+        let errorMessage = 'Failed to load challenge. Please try again.';
+        if (error.message.includes('Network request failed') || error.name === 'TypeError') {
+          errorMessage = `Network Error: Cannot connect to server at ${apiConfig.baseURL}.\n\nPlease check:\n• Backend server is running\n• Correct IP address in configuration\n• Device is on same network`;
+        } else if (error.message.includes('404')) {
+          errorMessage = 'API endpoint not found. Please check the server configuration.';
+        } else if (error.message.includes('500')) {
+          errorMessage = 'Server error. Please check the backend logs.';
+        }
+        
+        // In development mode, use mock data as fallback
+        if (__DEV__) {
+          console.log('🔧 Using mock data as fallback');
+          setCurrentInitials(mockChallenge.initials);
+          console.log('✅ Mock initials set:', mockChallenge.initials);
+        } else {
+          Alert.alert('Connection Error', errorMessage);
+        }
+      }
+    } finally {
+      if (isMountedRef.current) {
+        setLoading(false);
+      }
+    }
+  }, [sport]);
 
   useEffect(() => {
     let mounted = true;
@@ -42,60 +156,12 @@ const SurvivalScreen = ({ navigation, route }) => {
     return () => {
       mounted = false;
       isMountedRef.current = false;
+      // Cancel any pending request when component unmounts
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
     };
-  }, [sport]);
-
-  const loadNewChallenge = useCallback(async () => {
-    if (!isMountedRef.current) return;
-    
-    const abortController = new AbortController();
-    
-    try {
-      setLoading(true);
-      setGuess('');
-      setShowHint(false);
-      setHintPlayers([]);
-      setLastResult(null);
-      
-      const url = buildUrl(apiConfig.endpoints.games.survival.initials(sport));
-      logApiCall('GET', url);
-      
-      const response = await fetch(url, {
-        signal: abortController.signal
-      });
-      
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-      }
-      
-      const data = await response.json();
-      
-      // Validate response
-      if (!data || typeof data !== 'object') {
-        throw new Error('Invalid challenge response');
-      }
-      
-      if (!data.initials || typeof data.initials !== 'string') {
-        throw new Error('Invalid challenge response: missing initials');
-      }
-      
-      if (isMountedRef.current) {
-        logApiResponse('GET', url, data);
-        setCurrentInitials(data.initials);
-      }
-    } catch (error) {
-      if (isMountedRef.current && error.name !== 'AbortError') {
-        console.error('Survival challenge loading error:', error);
-        logApiResponse('GET', buildUrl(apiConfig.endpoints.games.survival.initials(sport)), null, error);
-        Alert.alert('Error', 'Failed to load challenge. Please try again.');
-      }
-    } finally {
-      if (isMountedRef.current) {
-        setLoading(false);
-      }
-      abortController.abort();
-    }
-  }, [sport]);
+  }, [sport, loadNewChallenge]);
 
   const submitGuess = async () => {
     if (!guess.trim()) {
@@ -176,6 +242,12 @@ const SurvivalScreen = ({ navigation, route }) => {
   };
 
   const showHintFunction = async () => {
+    // Don't show hint if no initials are loaded
+    if (!currentInitials || currentInitials.length === 0) {
+      Alert.alert('Error', 'No challenge loaded. Please wait for initials to appear.');
+      return;
+    }
+
     try {
       const url = buildUrl(apiConfig.endpoints.games.survival.reveal(sport, currentInitials));
       logApiCall('GET', url);
@@ -219,7 +291,7 @@ const SurvivalScreen = ({ navigation, route }) => {
         Alert.alert('Error', 'Failed to load next challenge.');
       }
     }
-  }, [lives, score, sport, navigation, loadNewChallenge]);
+  }, [lives, score, sport, navigation]);
 
   const getLivesDisplay = () => {
     return '❤️'.repeat(lives) + '🤍'.repeat(3 - lives);
@@ -235,6 +307,9 @@ const SurvivalScreen = ({ navigation, route }) => {
       </SafeAreaView>
     );
   }
+
+  // Debug log to check render value
+  console.log('🔍 Render - currentInitials value:', currentInitials, 'loading:', loading);
 
   return (
     <SafeAreaView style={styles.container}>
@@ -302,15 +377,17 @@ const SurvivalScreen = ({ navigation, route }) => {
             </TouchableOpacity>
 
             <View style={styles.actionButtons}>
-              <TouchableOpacity
-                style={styles.hintButton}
-                onPress={showHintFunction}
-                disabled={showHint}
-              >
-                <Text style={styles.hintButtonText}>
-                  {showHint ? 'Hint Shown' : 'Show Hint'}
-                </Text>
-              </TouchableOpacity>
+              {currentInitials && currentInitials.length > 0 && (
+                <TouchableOpacity
+                  style={styles.hintButton}
+                  onPress={showHintFunction}
+                  disabled={showHint}
+                >
+                  <Text style={styles.hintButtonText}>
+                    {showHint ? 'Hint Shown' : 'Show Hint'}
+                  </Text>
+                </TouchableOpacity>
+              )}
 
               <TouchableOpacity
                 style={styles.skipButton}

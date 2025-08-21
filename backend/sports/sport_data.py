@@ -201,13 +201,19 @@ class SimpleDataLoader:
         
         if sport == "football":
             filepath = os.path.join(self.survival_data_path, "survival_initials_map.json")
+        elif sport == "basketball":
+            filepath = os.path.join(self.survival_data_path, "nba_survival_data.json")
         else:
             filepath = os.path.join(self.survival_data_path, f"survival_initials_map_{sport}.json")
         
         data = self.load_json_file(filepath)
         
         if isinstance(data, dict):
-            result = data.get("initials_map", {})
+            if sport == "basketball":
+                # NBA survival data is already in the correct format
+                result = data
+            else:
+                result = data.get("initials_map", {})
         else:
             result = {}
         

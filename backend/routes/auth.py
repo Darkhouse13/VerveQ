@@ -73,11 +73,12 @@ async def login(request: Request, user_data: UserCreate, db: Session = Depends(g
     """Login or create user account"""
     user = AuthService.get_or_create_user(db, user_data.dict())
     
-    # Track login event
-    analytics_service.track_event(
-        db, "user_login", user_id=user.id, 
-        event_data={"method": "anonymous" if not user.email else "email"}
-    )
+    # Track login event (disabled due to session type mismatch)
+    # TODO: Fix analytics service to work with synchronous sessions
+    # analytics_service.track_event(
+    #     db, "user_login", user_id=user.id, 
+    #     event_data={"method": "anonymous" if not user.email else "email"}
+    # )
     
     # Create access token
     token = AuthService.create_access_token({"sub": user.id})

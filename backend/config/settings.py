@@ -105,19 +105,35 @@ class Settings:
                 )
             
             # Development fallback with comprehensive mobile app support
-            return [
+            development_origins = [
+                # Standard web origins
                 "http://localhost:3000",
                 "http://localhost:19006",  # Expo web
                 "http://localhost:8081",  # React Native Web
+                "http://127.0.0.1:3000",
+                "http://127.0.0.1:19006",
+                "http://127.0.0.1:8081",
+                
+                # Network origins for physical devices
                 "http://192.168.1.174:19006",  # Local network
                 "exp://192.168.1.174:19000",  # Expo development
                 "exp://localhost:19000",  # Expo localhost
-                "http://127.0.0.1:19006",  # IPv4 localhost
-                "http://0.0.0.0:19006",  # All interfaces
+                
+                # Mobile app protocols
                 "capacitor://localhost",  # Capacitor iOS/Android
                 "ionic://localhost",  # Ionic
                 "file://",  # File protocol for mobile apps
+                
+                # React Native specific
+                "*",  # Allow all origins in development for React Native
             ]
+            
+            # Add wildcard patterns for common development networks
+            for i in range(2, 255):
+                development_origins.append(f"http://192.168.1.{i}:19006")
+                development_origins.append(f"http://192.168.0.{i}:19006")
+            
+            return development_origins
         
         return [origin.strip() for origin in origins_str.split(",")]
     
@@ -159,6 +175,11 @@ class Settings:
     def api_description(self) -> str:
         """API description"""
         return os.getenv("API_DESCRIPTION", "Competitive Sports Gaming Platform API")
+    
+    @property
+    def default_question_difficulty(self) -> str:
+        """Default question difficulty when not specified"""
+        return os.getenv("DEFAULT_QUESTION_DIFFICULTY", "intermediate").lower()
     
     def _validate_required_env_vars(self):
         """Validate required environment variables for production"""

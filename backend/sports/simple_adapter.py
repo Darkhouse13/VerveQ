@@ -7,7 +7,6 @@ import random
 import logging
 from typing import Dict, Any, List
 from pathlib import Path
-from .football_questions import FootballQuestionGenerators
 
 
 class SimpleFootballAdapter:
@@ -26,8 +25,6 @@ class SimpleFootballAdapter:
         from .sport_data import SimpleDataLoader
         self.data_loader = SimpleDataLoader()
         
-        # Initialize question generators
-        self.question_generators = FootballQuestionGenerators(self.conn, self.sport_name)
     
     def _find_database(self) -> str:
         """Find the football database"""
@@ -43,45 +40,8 @@ class SimpleFootballAdapter:
         return None
     
     def get_quiz_question(self) -> Dict[str, Any]:
-        """Generate a random quiz question from the database"""
-        if not self.conn:
-            return self.question_generators.fallback_question()
-        
-        # Choose random question type
-        question_types = [
-            # Existing methods
-            self.question_generators.high_scoring_match_question,
-            self.question_generators.stadium_attendance_question,
-            self.question_generators.player_goals_question,
-            self.question_generators.high_stakes_match_question,
-            self.question_generators.late_goal_question,
-            self.question_generators.player_hat_trick_question,
-            self.question_generators.team_biggest_win_question,
-            # New Transfer Market methods
-            self.question_generators.transfer_record_signing_question,
-            self.question_generators.transfer_profit_question,
-            self.question_generators.market_value_fluctuation_question,
-            # New Managerial methods
-            self.question_generators.manager_head_to_head_question,
-            self.question_generators.giant_killing_question,
-            self.question_generators.formation_tactics_question,
-            # New Player Deep Dive methods
-            self.question_generators.playmaker_assist_question,
-            self.question_generators.super_sub_question,
-            self.question_generators.team_captain_question
-        ]
-        
-        # Try up to 3 times to generate a question
-        for _ in range(3):
-            try:
-                generator = random.choice(question_types)
-                question = generator()
-                if question:
-                    return question
-            except Exception as e:
-                self.logger.debug(f"Question generation attempt failed: {e}")
-        
-        return self.question_generators.fallback_question()
+        """Dynamic quiz question generation is no longer supported"""
+        raise NotImplementedError("Dynamic quiz question generation has been removed. Use database-only approach.")
     
     def get_survival_data(self) -> Dict[str, List[str]]:
         """Get survival initials mapping for football from JSON data"""

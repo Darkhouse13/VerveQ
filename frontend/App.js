@@ -12,6 +12,7 @@ import ErrorBoundary from './src/components/ErrorBoundary';
 import LoginScreen from './src/screens/LoginScreen';
 import HomeScreen from './src/screens/HomeScreen';
 import SportSelectionScreen from './src/screens/SportSelectionScreen';
+import DifficultySelectionScreen from './src/screens/DifficultySelectionScreen';
 import QuizScreen from './src/screens/QuizScreen';
 import SurvivalScreen from './src/screens/SurvivalScreen';
 import ResultScreen from './src/screens/ResultScreen';
@@ -112,6 +113,13 @@ function AuthenticatedApp() {
         name="SportSelection" 
         component={SportSelectionScreen} 
         options={{ title: 'Choose Sport' }}
+      />
+      <Stack.Screen 
+        name="DifficultySelection" 
+        component={DifficultySelectionScreen} 
+        options={({ route }) => ({ 
+          title: `${route.params?.sport ? route.params.sport.charAt(0).toUpperCase() + route.params.sport.slice(1) : 'Sports'} Difficulty` 
+        })}
       />
       <Stack.Screen 
         name="Dashboard" 

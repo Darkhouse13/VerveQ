@@ -41,6 +41,7 @@ if __name__ == "__main__":
             host=settings.host, 
             port=settings.port,
             reload=settings.debug,
+            reload_excludes=["*.db", "*.db-journal", "*.pyc", "__pycache__"],
             log_level=settings.log_level.lower(),
             access_log=True,
             workers=1
