@@ -25,9 +25,20 @@ def normalize_name(name: str) -> str:
     if not name:
         return ""
     
-    # Convert to lowercase and remove special characters for matching
-    normalized = re.sub(r'[^\w\s]', '', name.lower())
+    # Convert to lowercase first
+    normalized = name.lower().strip()
+    
+    # Replace special characters with spaces instead of removing them
+    # This handles cases like "Al-Farouq Aminu" -> "al farouq aminu"
+    # instead of "alfarouq aminu" which caused matching issues
+    normalized = re.sub(r'[-._\'`]', ' ', normalized)
+    
+    # Remove any remaining non-alphanumeric characters except spaces
+    normalized = re.sub(r'[^\w\s]', '', normalized)
+    
+    # Normalize multiple spaces to single spaces
     normalized = re.sub(r'\s+', ' ', normalized.strip())
+    
     return normalized
 
 
@@ -43,7 +54,7 @@ def get_player_initials(name: str) -> str:
 
 
 def calculate_similarity(text1: str, text2: str) -> float:
-    """Calculate simple similarity score between two strings"""
+    """Calculate enhanced similarity score between two strings"""
     if not text1 or not text2:
         return 0.0
     
@@ -54,20 +65,46 @@ def calculate_similarity(text1: str, text2: str) -> float:
     if norm1 == norm2:
         return 1.0
     
-    # Check if one contains the other
-    if norm1 in norm2 or norm2 in norm1:
-        shorter = min(len(norm1), len(norm2))
-        longer = max(len(norm1), len(norm2))
-        return shorter / longer
+    # Remove spaces for alternative comparison (handles spacing variations)
+    no_space1 = norm1.replace(' ', '')
+    no_space2 = norm2.replace(' ', '')
     
-    # Check for word overlap
+    # Exact match without spaces (handles "Al Farouq" vs "AlFarouq")
+    if no_space1 == no_space2:
+        return 1.0
+    
+    # Check for word-order independent matching (all words present)
     words1 = set(norm1.split())
     words2 = set(norm2.split())
     
     if words1 and words2:
+        # If all words from the shorter name are in the longer name
+        shorter_words = words1 if len(words1) <= len(words2) else words2
+        longer_words = words2 if len(words1) <= len(words2) else words1
+        
+        if shorter_words.issubset(longer_words):
+            # High similarity if all words match
+            return 0.9
+        
+        # Calculate word overlap similarity
         overlap = len(words1.intersection(words2))
         total = len(words1.union(words2))
-        return overlap / total if total > 0 else 0.0
+        word_similarity = overlap / total if total > 0 else 0.0
+        
+        # Boost similarity if names have same number of words
+        if len(words1) == len(words2) and word_similarity > 0.5:
+            word_similarity = min(1.0, word_similarity + 0.1)
+        
+        return word_similarity
+    
+    # Fallback to character-level similarity for single words
+    if ' ' not in norm1 and ' ' not in norm2:
+        # Simple character overlap for single words
+        chars1 = set(norm1)
+        chars2 = set(norm2)
+        char_overlap = len(chars1.intersection(chars2))
+        total_chars = len(chars1.union(chars2))
+        return char_overlap / total_chars if total_chars > 0 else 0.0
     
     return 0.0
 

@@ -110,14 +110,6 @@ async def health_check():
     
     return health_status
 
-@router.options("/api/guest-session")
-async def guest_session_options(response: Response):
-    """Handle OPTIONS request for guest session endpoint"""
-    response.headers["Access-Control-Allow-Origin"] = "*"
-    response.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, OPTIONS"
-    response.headers["Access-Control-Allow-Headers"] = "*"
-    response.headers["Access-Control-Max-Age"] = "86400"
-    return {"message": "OK"}
 
 @router.post("/api/guest-session")
 async def create_guest_session():
@@ -153,14 +145,6 @@ async def debug_cors(request: Request):
     }
 
 
-@router.options("/session")
-async def session_options(response: Response):
-    """Handle OPTIONS request for session endpoint"""
-    response.headers["Access-Control-Allow-Origin"] = "*"
-    response.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, OPTIONS"
-    response.headers["Access-Control-Allow-Headers"] = "*"
-    response.headers["Access-Control-Max-Age"] = "86400"
-    return {"message": "OK"}
 
 @router.post("/session")
 async def create_session():
@@ -169,14 +153,6 @@ async def create_session():
     session_id = str(uuid.uuid4())
     return {"session_id": session_id, "created_at": "2024-01-01T00:00:00Z"}
 
-@router.options("/session/{session_id}/dashboard")
-async def session_dashboard_options(response: Response, session_id: str):
-    """Handle OPTIONS request for session dashboard endpoint"""
-    response.headers["Access-Control-Allow-Origin"] = "*"
-    response.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, OPTIONS"
-    response.headers["Access-Control-Allow-Headers"] = "*"
-    response.headers["Access-Control-Max-Age"] = "86400"
-    return {"message": "OK"}
 
 @router.get("/session/{session_id}/dashboard")
 async def get_session_dashboard(session_id: str):
@@ -192,14 +168,6 @@ async def get_session_dashboard(session_id: str):
         }
     }
 
-@router.options("/session/{session_id}/score")
-async def session_score_options(response: Response, session_id: str):
-    """Handle OPTIONS request for session score endpoint"""
-    response.headers["Access-Control-Allow-Origin"] = "*"
-    response.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, OPTIONS"
-    response.headers["Access-Control-Allow-Headers"] = "*"
-    response.headers["Access-Control-Max-Age"] = "86400"
-    return {"message": "OK"}
 
 @router.post("/session/{session_id}/score")
 @limiter.limit("20/minute")

@@ -58,14 +58,6 @@ class UserCreate(BaseModel):
             raise ValueError('Avatar URL cannot be empty string')
         return v.strip() if v else None
 
-@router.options("/login")
-async def login_options(response: Response):
-    """Handle OPTIONS request for login endpoint"""
-    response.headers["Access-Control-Allow-Origin"] = "*"
-    response.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, OPTIONS"
-    response.headers["Access-Control-Allow-Headers"] = "*"
-    response.headers["Access-Control-Max-Age"] = "86400"
-    return {"message": "OK"}
 
 @router.post("/login")
 @limiter.limit("10/minute")
@@ -96,14 +88,6 @@ async def login(request: Request, user_data: UserCreate, db: Session = Depends(g
         }
     }
 
-@router.options("/guest-session")
-async def guest_session_options(response: Response):
-    """Handle OPTIONS request for guest session endpoint"""
-    response.headers["Access-Control-Allow-Origin"] = "*"
-    response.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, OPTIONS"
-    response.headers["Access-Control-Allow-Headers"] = "*"
-    response.headers["Access-Control-Max-Age"] = "86400"
-    return {"message": "OK"}
 
 @router.post("/guest-session")
 async def create_guest_session():

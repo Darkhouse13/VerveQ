@@ -1,0 +1,49 @@
+[Unit]
+Description=VerveQ Platform Backend API
+Documentation=https://github.com/Darkhouse13/VerveQ
+After=network.target postgresql.service redis.service
+Wants=postgresql.service redis.service
+
+[Service]
+Type=simple
+User=verveq
+Group=verveq
+WorkingDirectory=/var/www/verveq/backend
+
+# Environment configuration
+Environment=PYTHONPATH=/var/www/verveq/backend
+Environment=PYTHONUNBUFFERED=1
+EnvironmentFile=/var/www/verveq/.env.production
+
+# Virtual environment activation and service start
+ExecStartPre=/bin/bash -c 'source venv/bin/activate'
+ExecStart=/var/www/verveq/backend/venv/bin/python -m uvicorn main:app --host 0.0.0.0 --port 8000 --workers 1
+ExecReload=/bin/kill -HUP $MAINPID
+
+# Resource limits
+LimitNOFILE=65536
+LimitNPROC=4096
+
+# Security settings
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/var/www/verveq /var/log/verveq /tmp
+
+# Restart configuration
+Restart=always
+RestartSec=10
+StartLimitInterval=60
+StartLimitBurst=3
+
+# Health checking
+WatchdogSec=30
+
+# Logging
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=verveq-backend
+
+[Install]
+WantedBy=multi-user.target

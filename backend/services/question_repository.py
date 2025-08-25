@@ -213,9 +213,20 @@ class QuestionRepository:
     
     def _format_question(self, question: QuizQuestion) -> Dict:
         """Format QuizQuestion model to API response format"""
+        import json
+        
+        # Parse options from JSON string to list for frontend compatibility
+        options = question.options
+        if isinstance(options, str):
+            try:
+                options = json.loads(options)
+            except (json.JSONDecodeError, TypeError):
+                # Fallback if parsing fails - assume it's already a list or handle gracefully
+                options = []
+        
         return {
             "question": question.question,
-            "options": question.options,
+            "options": options,
             "correct_answer": question.correct_answer,
             "explanation": question.explanation,
             "category": question.category,

@@ -13,9 +13,10 @@ import {
 } from 'react-native';
 import { apiConfig, buildUrl, logApiCall, logApiResponse } from '../config/api';
 import { useAuth } from '../context/AuthContext';
+import { isDevelopment } from '../utils/environment';
 
 const SurvivalScreen = ({ navigation, route }) => {
-  const { sport } = route.params || { sport: 'football' };
+  const { sport, reset, difficulty = 'intermediate' } = route.params || { sport: 'football', reset: false, difficulty: 'intermediate' };
   const { user } = useAuth();
   const [currentInitials, setCurrentInitials] = useState('');
   const [guess, setGuess] = useState('');
@@ -33,6 +34,8 @@ const SurvivalScreen = ({ navigation, route }) => {
   // Component mount tracking
   const isMountedRef = useRef(true);
   const abortControllerRef = useRef(null);
+  const navigationTimeoutRef = useRef(null);
+  const nextChallengeTimeoutRef = useRef(null);
 
   const startNewGame = useCallback(async () => {
     console.log('Starting new survival game for sport:', sport);
@@ -48,6 +51,7 @@ const SurvivalScreen = ({ navigation, route }) => {
     
     try {
       setLoading(true);
+      setSessionId(null);  // Clear any existing session
       setGuess('');
       setShowHint(false);
       setHintPlayers([]);
@@ -60,13 +64,24 @@ const SurvivalScreen = ({ navigation, route }) => {
       console.log('🌐 Starting new survival session:', { sport, url });
       logApiCall('POST', url, requestData);
       
-      const response = await fetch(url, {
-        method: 'POST',
-        headers: apiConfig.headers,
-        body: JSON.stringify(requestData),
-        signal: abortControllerRef.current.signal,
-        timeout: 10000
-      });
+      // Set up timeout for the fetch request
+      const timeoutId = setTimeout(() => {
+        abortControllerRef.current.abort();
+      }, 10000);
+
+      let response;
+      try {
+        response = await fetch(url, {
+          method: 'POST',
+          headers: apiConfig.headers,
+          body: JSON.stringify(requestData),
+          signal: abortControllerRef.current.signal
+        });
+        clearTimeout(timeoutId); // Clear timeout on successful response
+      } catch (error) {
+        clearTimeout(timeoutId); // Ensure cleanup on error
+        throw error;
+      }
       
       console.log(`📡 Response status: ${response.status} ${response.statusText}`);
       
@@ -104,17 +119,45 @@ const SurvivalScreen = ({ navigation, route }) => {
       if (isMountedRef.current && error.name !== 'AbortError') {
         console.error('🚨 Game start error:', error);
         
-        // In development mode, use fallback to legacy approach
-        if (__DEV__) {
-          console.log('🔧 Falling back to legacy approach');
-          const mockInitials = ['CR7', 'LM10', 'KMB', 'VVD', 'KDB'];
+        // Try to fall back to using legacy endpoints but still create a pseudo-session
+        try {
+          console.log('🔧 Attempting fallback to legacy initials endpoint');
+          const legacyUrl = buildUrl(apiConfig.endpoints.games.survival.initials(sport));
+          
+          const legacyResponse = await fetch(legacyUrl, {
+            method: 'GET',
+            headers: apiConfig.headers,
+            signal: abortControllerRef.current.signal,
+          });
+          
+          if (legacyResponse.ok) {
+            const legacyData = await legacyResponse.json();
+            if (legacyData.initials) {
+              setCurrentInitials(legacyData.initials);
+              setLives(3);
+              setScore(0);
+              setHintUsedForGame(false);
+              // Create a pseudo session ID for tracking
+              setSessionId(`legacy-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`);
+              console.log('✅ Fallback game started with legacy initials:', legacyData.initials);
+              return;
+            }
+          }
+        } catch (legacyError) {
+          console.error('🚨 Legacy fallback also failed:', legacyError);
+        }
+        
+        // Final fallback to mock data in development
+        if (isDevelopment()) {
+          console.log('🔧 Using mock data as final fallback');
+          const mockInitials = ['CR', 'LM', 'KM', 'VV', 'KD'];
           const selected = mockInitials[Math.floor(Math.random() * mockInitials.length)];
           setCurrentInitials(selected);
           setLives(3);
           setScore(0);
           setHintUsedForGame(false);
-          setSessionId(null); // No session for legacy mode
-          console.log('✅ Fallback game started with:', selected);
+          setSessionId(`mock-${Date.now()}`);
+          console.log('✅ Mock game started with:', selected);
         } else {
           Alert.alert('Connection Error', 'Failed to start new game. Please check your connection and try again.');
         }
@@ -132,6 +175,10 @@ const SurvivalScreen = ({ navigation, route }) => {
     
     const initializeSurvival = async () => {
       if (mounted && isMountedRef.current) {
+        // Clear any existing session if reset is true
+        if (reset) {
+          setSessionId(null);
+        }
         setGameStartTime(Date.now());
         await startNewGame();
       }
@@ -146,10 +193,19 @@ const SurvivalScreen = ({ navigation, route }) => {
       if (abortControllerRef.current) {
         abortControllerRef.current.abort();
       }
+      // Clear any pending timeouts
+      if (navigationTimeoutRef.current) {
+        clearTimeout(navigationTimeoutRef.current);
+        navigationTimeoutRef.current = null;
+      }
+      if (nextChallengeTimeoutRef.current) {
+        clearTimeout(nextChallengeTimeoutRef.current);
+        nextChallengeTimeoutRef.current = null;
+      }
     };
-  }, [sport, startNewGame]);
+  }, [sport, reset, startNewGame]);
 
-  const submitSurvivalResult = async () => {
+  const submitSurvivalResult = useCallback(async () => {
     try {
       const duration = gameStartTime ? Math.floor((Date.now() - gameStartTime) / 1000) : 0;
       
@@ -181,7 +237,7 @@ const SurvivalScreen = ({ navigation, route }) => {
       logApiResponse('POST', buildUrl(apiConfig.endpoints.games.survival.complete(sport)), null, error);
       throw error;
     }
-  };
+  }, [user, score, gameStartTime, sport]);
 
   const submitGuess = async () => {
     if (!guess.trim()) {
@@ -195,15 +251,15 @@ const SurvivalScreen = ({ navigation, route }) => {
       
       let url, requestData;
       
-      // Use session-based endpoint if we have a session ID
-      if (sessionId) {
+      // Use session-based endpoint if we have a real session ID (not pseudo)
+      if (sessionId && !sessionId.startsWith('legacy-') && !sessionId.startsWith('mock-')) {
         url = buildUrl(apiConfig.endpoints.games.survival.sessionGuess);
         requestData = {
           session_id: sessionId,
           guess: guess.trim(),
         };
       } else {
-        // Fallback to legacy endpoint
+        // Use legacy endpoint (includes pseudo-sessions)
         url = buildUrl(apiConfig.endpoints.games.survival.guess(sport));
         requestData = {
           initials: currentInitials,
@@ -224,66 +280,78 @@ const SurvivalScreen = ({ navigation, route }) => {
       logApiResponse('POST', url, result);
       setLastResult(result);
       
+      // Update score and lives based on result
       if (result.correct) {
         setScore(prev => prev + 1);
-        
-        // For session-based mode, check if there's a next challenge
-        if (sessionId && result.next_challenge) {
-          const timeoutId = setTimeout(() => {
-            if (isMountedRef.current) {
-              try {
-                // Reset round state but keep hint status 
-                setCurrentInitials(result.next_challenge.initials);
-                setGuess('');
-                setShowHint(false);
-                setHintPlayers([]);
-                setLastResult(null);
-                console.log('✅ Next challenge loaded:', result.next_challenge.initials);
-              } catch (error) {
-                console.error('Next challenge error:', error);
-                Alert.alert('Error', 'Failed to load next challenge.');
-              }
-            }
-          }, 2000);
-          
-          return () => clearTimeout(timeoutId);
-        }
       } else {
-        const newLives = lives - 1;
-        setLives(newLives);
-        
-        if (newLives <= 0 || result.game_over) {
-          const timeoutId = setTimeout(async () => {
-            if (isMountedRef.current) {
+        setLives(result.lives);
+      }
+      
+      // Clear any existing navigation timeout
+      if (navigationTimeoutRef.current) {
+        clearTimeout(navigationTimeoutRef.current);
+        navigationTimeoutRef.current = null;
+      }
+
+      // Check if game over
+      if (result.game_over) {
+        navigationTimeoutRef.current = setTimeout(async () => {
+          if (isMountedRef.current) {
+            try {
+              // Submit survival result to backend
+              let submissionResult = null;
               try {
-                // Submit survival result to backend
-                let submissionResult = null;
-                try {
-                  submissionResult = await submitSurvivalResult();
-                } catch (submissionError) {
-                  console.warn('Survival submission failed, but continuing:', submissionError);
-                  // Continue to navigation even if submission fails
-                }
-                
-                navigation.navigate('Result', {
-                  score,
-                  total: score,
-                  mode: 'survival',
-                  sport,
-                  lives: 0,
-                  newEloRating: submissionResult?.new_elo_rating,
-                  eloChange: submissionResult?.elo_change,
-                  gameDuration: gameStartTime ? Math.floor((Date.now() - gameStartTime) / 1000) : 0
-                });
-              } catch (error) {
-                console.error('Navigation error:', error);
-                Alert.alert('Error', 'Navigation failed. Please try again.');
+                submissionResult = await submitSurvivalResult();
+              } catch (submissionError) {
+                console.warn('Survival submission failed, but continuing:', submissionError);
+                // Continue to navigation even if submission fails
               }
+              
+              navigation.navigate('Result', {
+                score,
+                total: score,
+                mode: 'survival',
+                sport,
+                difficulty,
+                lives: 0,
+                newEloRating: submissionResult?.new_elo_rating,
+                eloChange: submissionResult?.elo_change,
+                gameDuration: gameStartTime ? Math.floor((Date.now() - gameStartTime) / 1000) : 0
+              });
+            } catch (error) {
+              console.error('Navigation error:', error);
+              Alert.alert('Error', 'Navigation failed. Please try again.');
             }
-          }, 2000);
-          
-          return () => clearTimeout(timeoutId);
-        }
+          }
+          navigationTimeoutRef.current = null; // Clear ref after execution
+        }, 2000);
+      }
+      
+      // Clear any existing next challenge timeout
+      if (nextChallengeTimeoutRef.current) {
+        clearTimeout(nextChallengeTimeoutRef.current);
+        nextChallengeTimeoutRef.current = null;
+      }
+
+      // Always handle next challenge for multiplayer sync (both correct and wrong answers)
+      if (sessionId && result.next_challenge) {
+        nextChallengeTimeoutRef.current = setTimeout(() => {
+          if (isMountedRef.current) {
+            try {
+              // Reset round state but keep hint status 
+              setCurrentInitials(result.next_challenge.initials);
+              setGuess('');
+              setShowHint(false);
+              setHintPlayers([]);
+              setLastResult(null);
+              console.log('✅ Next challenge loaded:', result.next_challenge.initials);
+            } catch (error) {
+              console.error('Next challenge error:', error);
+              Alert.alert('Error', 'Failed to load next challenge.');
+            }
+          }
+          nextChallengeTimeoutRef.current = null; // Clear ref after execution
+        }, 2000);
       }
     } catch (error) {
       logApiResponse('POST', url || buildUrl(apiConfig.endpoints.games.survival.guess(sport)), null, error);
@@ -392,6 +460,7 @@ const SurvivalScreen = ({ navigation, route }) => {
               total: result.score || score,
               mode: 'survival',
               sport,
+              difficulty,
               lives: 0,
               newEloRating: submissionResult?.new_elo_rating,
               eloChange: submissionResult?.elo_change,
@@ -405,6 +474,7 @@ const SurvivalScreen = ({ navigation, route }) => {
               total: result.score || score,
               mode: 'survival',
               sport,
+              difficulty,
               lives: 0,
               gameDuration: gameStartTime ? Math.floor((Date.now() - gameStartTime) / 1000) : 0
             });
@@ -438,6 +508,7 @@ const SurvivalScreen = ({ navigation, route }) => {
             total: score,
             mode: 'survival',
             sport,
+            difficulty,
             lives: 0,
             newEloRating: submissionResult?.new_elo_rating,
             eloChange: submissionResult?.elo_change,
@@ -450,6 +521,7 @@ const SurvivalScreen = ({ navigation, route }) => {
             total: score,
             mode: 'survival',
             sport,
+            difficulty,
             lives: 0,
             gameDuration: gameStartTime ? Math.floor((Date.now() - gameStartTime) / 1000) : 0
           });
@@ -458,7 +530,7 @@ const SurvivalScreen = ({ navigation, route }) => {
         console.log('Life lost in legacy mode, continuing game...');
       }
     }
-  }, [sessionId, lives, score, sport, navigation, gameStartTime, submitSurvivalResult]);
+  }, [sessionId, lives, score, sport, difficulty, navigation, gameStartTime, submitSurvivalResult]);
 
   const getLivesDisplay = () => {
     return '❤️'.repeat(lives) + '🤍'.repeat(3 - lives);

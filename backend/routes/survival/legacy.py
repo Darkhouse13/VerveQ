@@ -44,14 +44,6 @@ class SurvivalGuessLegacyRequest(BaseModel):
 ALLOWED_SPORTS = Literal["football", "tennis", "basketball", "soccer", "baseball", "hockey"]
 
 # Legacy endpoints for backward compatibility
-@router.options("/{sport}/survival/initials")
-async def survival_initials_options(response: Response, sport: ALLOWED_SPORTS):
-    """Handle OPTIONS request for survival initials endpoint"""
-    response.headers["Access-Control-Allow-Origin"] = "*"
-    response.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, OPTIONS"
-    response.headers["Access-Control-Allow-Headers"] = "*"
-    response.headers["Access-Control-Max-Age"] = "86400"
-    return {"message": "OK"}
 
 @router.get("/{sport}/survival/initials")
 async def get_survival_initials_legacy(request: Request, sport: ALLOWED_SPORTS):
@@ -168,42 +160,63 @@ async def get_survival_initials_legacy(request: Request, sport: ALLOWED_SPORTS):
             "sport": sport
         }
 
-@router.options("/{sport}/survival/guess")
-async def survival_guess_options(response: Response, sport: ALLOWED_SPORTS):
-    """Handle OPTIONS request for survival guess endpoint"""
-    response.headers["Access-Control-Allow-Origin"] = "*"
-    response.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, OPTIONS"
-    response.headers["Access-Control-Allow-Headers"] = "*"
-    response.headers["Access-Control-Max-Age"] = "86400"
-    return {"message": "OK"}
 
 @router.post("/{sport}/survival/guess")
 @limiter.limit("30/minute")
 async def submit_survival_guess_legacy(request: Request, sport: ALLOWED_SPORTS, guess_data: SurvivalGuessLegacyRequest):
-    """Legacy endpoint - Submit guess using simple direct validation"""
+    """Legacy endpoint - Submit guess using proper validation logic"""
     try:
-        # Fallback to direct SportDataFactory approach for immediate compatibility
+        # Use proper survival engine validation instead of broken substring matching
         from sports import SportDataFactory
+        from sports.survival_engine import get_survival_engine
+        
         generator = SportDataFactory.get_generator(sport)
         if not generator:
             raise HTTPException(status_code=404, detail=f"Sport '{sport}' not found")
         
-        guess = guess_data.guess.lower()
         initials = guess_data.initials.upper()
+        user_guess = guess_data.guess.strip()
         
         survival_data = generator.get_survival_data()
         if not survival_data or initials not in survival_data:
             raise HTTPException(status_code=400, detail="Invalid initials")
         
-        # Check if guess matches any player with these initials
+        # Find the best matching player name for these initials
         players = survival_data[initials]
-        is_correct = any(guess in player.lower() for player in players)
+        survival_engine = get_survival_engine()
+        
+        best_match = None
+        best_similarity = 0.0
+        is_correct = False
+        
+        # Test the guess against all players with these initials
+        for player_name in players:
+            # Create a mock challenge for validation
+            challenge = {
+                "initials": initials,
+                "correct_answer": player_name,
+                "sport": sport
+            }
+            
+            # Use the survival engine's proper validation
+            result = survival_engine.validate_answer(challenge, user_guess)
+            
+            if result["similarity"] > best_similarity:
+                best_similarity = result["similarity"]
+                best_match = player_name
+                
+            if result["is_correct"]:
+                is_correct = True
+                best_match = player_name
+                break
         
         return {
             "correct": is_correct,
-            "guess": guess_data.guess,
+            "guess": user_guess,
             "initials": initials,
-            "message": "Correct!" if is_correct else "Try again!"
+            "similarity": best_similarity,
+            "closest_match": best_match,
+            "message": "Correct!" if is_correct else f"Try again! Closest match: {best_match}"
         }
         
     except HTTPException:

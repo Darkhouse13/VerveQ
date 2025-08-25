@@ -60,6 +60,8 @@ class SurvivalSessionManager:
             challenge = self._survival_engine.generate_challenge(session.round, sport, session.used_initials)
             if challenge:
                 session.current_challenge = challenge
+                # Track used initials to avoid duplicates
+                session.used_initials.add(challenge['initials'])
             
             session.last_activity = time.time()
             return session
@@ -85,6 +87,8 @@ class SurvivalSessionManager:
             challenge = self._survival_engine.generate_challenge(session.round, session.sport, session.used_initials)
             if challenge:
                 session.current_challenge = challenge
+                # Track used initials to avoid duplicates
+                session.used_initials.add(challenge['initials'])
                 session.last_activity = time.time()
                 return challenge
             
@@ -97,15 +101,58 @@ class SurvivalSessionManager:
             if not session or not session.current_challenge:
                 return None
             
-            # Validate answer using survival engine
-            result = self._survival_engine.validate_answer(session.current_challenge, user_answer)
+            # Get all valid players for these initials (survival mode should accept ANY valid player)
+            from sports import SportDataFactory
+            generator = SportDataFactory.get_generator(session.sport)
+            if not generator:
+                return None
+                
+            survival_data = generator.get_survival_data()
+            initials = session.current_challenge['initials']
+            
+            # Check if user answer matches ANY valid player with these initials
+            result = None
+            best_similarity = 0.0
+            matching_player = None
+            
+            if initials in survival_data:
+                valid_players = survival_data[initials]
+                
+                for valid_player in valid_players:
+                    # Create a test challenge with this valid player
+                    test_challenge = {
+                        'initials': initials,
+                        'correct_answer': valid_player,
+                        'sport': session.sport
+                    }
+                    
+                    # Test if user answer matches this player
+                    test_result = self._survival_engine.validate_answer(test_challenge, user_answer)
+                    
+                    # Track best similarity for feedback
+                    if test_result['similarity'] > best_similarity:
+                        best_similarity = test_result['similarity']
+                        matching_player = valid_player
+                    
+                    # If we found a match, use this result
+                    if test_result['is_correct']:
+                        result = test_result
+                        matching_player = valid_player
+                        break
+            
+            # If no match found, create a result showing the best match
+            if not result:
+                result = {
+                    'is_correct': False,
+                    'similarity': best_similarity,
+                    'correct_answer': matching_player or session.current_challenge['correct_answer'],
+                    'user_answer': user_answer
+                }
             
             if result['is_correct']:
                 session.score += 1
-                result['next_round'] = True
             else:
                 session.lives -= 1
-                result['next_round'] = False
                 result['lives_remaining'] = session.lives
                 
                 # Check if game over
@@ -113,6 +160,20 @@ class SurvivalSessionManager:
                     result['game_over'] = True
                     # Keep session for final score display but mark as ended
                     session.current_challenge = None
+                    session.last_activity = time.time()
+                    return result
+            
+            # Always advance to next round for multiplayer sync (unless game over)
+            session.round += 1
+            result['next_round'] = True
+            
+            # Generate new challenge for next round
+            challenge = self._survival_engine.generate_challenge(session.round, session.sport, session.used_initials)
+            if challenge:
+                session.current_challenge = challenge
+                result['next_challenge'] = challenge
+                # Track used initials to avoid duplicates
+                session.used_initials.add(challenge['initials'])
             
             session.last_activity = time.time()
             return result
@@ -175,9 +236,10 @@ class SurvivalSessionManager:
         # Submit the answer
         result = self.submit_answer(session.session_id, guess)
         
-        # If correct, generate next challenge for stateless operation
+        # If correct, use next challenge already generated by submit_answer
         if result and result.get('is_correct') and result.get('next_round'):
-            next_challenge = self.next_challenge(session.session_id)
+            # Use the next_challenge already generated by submit_answer
+            next_challenge = result.get('next_challenge')
             if next_challenge:
                 result['next_initials'] = next_challenge['initials']
         
@@ -226,7 +288,10 @@ class SurvivalSessionManager:
                     "round": session.round
                 }
             
-            # Generate new challenge with session's used_initials
+            # Advance to next round for multiplayer sync
+            session.round += 1
+            
+            # Generate new challenge for next round
             challenge = self._survival_engine.generate_challenge(
                 session.round, session.sport, session.used_initials
             )
@@ -235,6 +300,8 @@ class SurvivalSessionManager:
                 session.current_challenge = challenge
                 return {
                     "lives": session.lives,
+                    "score": session.score,
+                    "round": session.round,
                     "challenge": challenge,
                     "skipped": True
                 }
@@ -255,10 +322,18 @@ class SurvivalSessionManager:
 
 # Global session manager instance
 _session_manager = None
+_session_manager_lock = Lock()
 
 def get_survival_session_manager() -> SurvivalSessionManager:
-    """Get global survival session manager instance"""
+    """Get global survival session manager instance (thread-safe)"""
     global _session_manager
+    
+    # First check without lock (performance optimization)
     if _session_manager is None:
-        _session_manager = SurvivalSessionManager()
+        # Acquire lock for thread safety
+        with _session_manager_lock:
+            # Double-check inside lock (another thread may have created it)
+            if _session_manager is None:
+                _session_manager = SurvivalSessionManager()
+    
     return _session_manager

@@ -103,22 +103,22 @@ async def submit_survival_guess(request: Request, guess_data: SurvivalGuessReque
             "round": session.round
         }
         
-        # If correct and game continues, get next challenge
-        if result["is_correct"] and result.get("next_round", False):
-            next_challenge = session_manager.next_challenge(guess_data.session_id)
-            if next_challenge:
-                response["next_challenge"] = {
-                    "initials": next_challenge["initials"],
-                    "round": next_challenge["round"],
-                    "difficulty": next_challenge["difficulty"],
-                    "hint": f"Find a {session.sport} player with initials {next_challenge['initials']}"
-                }
-        
-        # Check if game over
+        # Check if game over first
         if result.get("game_over", False):
             response["game_over"] = True
             response["final_score"] = session.score
             response["final_round"] = session.round
+            return response
+        
+        # Always include next challenge for multiplayer sync (from submit_answer result)
+        if result.get("next_challenge"):
+            next_challenge = result["next_challenge"]
+            response["next_challenge"] = {
+                "initials": next_challenge["initials"],
+                "round": next_challenge["round"],
+                "difficulty": next_challenge["difficulty"],
+                "hint": f"Find a {session.sport} player with initials {next_challenge['initials']}"
+            }
         
         return response
         

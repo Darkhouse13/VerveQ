@@ -40,9 +40,39 @@ const ResultScreen = ({ route, navigation }) => {
 
   const playAgain = () => {
     if (mode === 'quiz') {
-      navigation.navigate('Quiz', { sport: route.params.sport, reset: true });
+      // Force new instance with navigation.reset to ensure component remounts
+      navigation.reset({
+        index: 1,
+        routes: [
+          { name: 'MainTabs' },
+          {
+            name: 'Quiz',
+            params: {
+              sport: route.params.sport,
+              difficulty: route.params.difficulty,
+              reset: true,
+              key: `quiz-${Date.now()}` // Unique key forces remount
+            }
+          }
+        ]
+      });
     } else {
-      navigation.navigate('Survival', { sport: route.params.sport, reset: true });
+      // Force new instance for Survival mode
+      navigation.reset({
+        index: 1,
+        routes: [
+          { name: 'MainTabs' },
+          {
+            name: 'Survival',
+            params: {
+              sport: route.params.sport,
+              difficulty: route.params.difficulty,
+              reset: true,
+              key: `survival-${Date.now()}` // Unique key forces remount
+            }
+          }
+        ]
+      });
     }
   };
 

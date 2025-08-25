@@ -1,0 +1,46 @@
+[Unit]
+Description=VerveQ Platform Frontend Web Service
+Documentation=https://github.com/Darkhouse13/VerveQ
+After=network.target verveq-backend.service
+Requires=verveq-backend.service
+
+[Service]
+Type=simple
+User=verveq
+Group=verveq
+WorkingDirectory=/var/www/verveq/frontend
+
+# Environment configuration
+Environment=NODE_ENV=production
+Environment=PORT=3000
+EnvironmentFile=/var/www/verveq/.env.production
+
+# Service start (using serve package for production)
+ExecStartPre=/usr/bin/npm install -g serve
+ExecStart=/usr/bin/serve -s dist -l 3000
+ExecReload=/bin/kill -HUP $MAINPID
+
+# Resource limits
+LimitNOFILE=65536
+LimitNPROC=2048
+
+# Security settings
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/var/www/verveq /var/log/verveq
+
+# Restart configuration
+Restart=always
+RestartSec=10
+StartLimitInterval=60
+StartLimitBurst=3
+
+# Logging
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=verveq-frontend
+
+[Install]
+WantedBy=multi-user.target

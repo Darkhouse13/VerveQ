@@ -36,6 +36,7 @@ const QuizScreen = ({ navigation, route }) => {
   const [totalAnsweredQuestions, setTotalAnsweredQuestions] = useState(0);
   const [totalTimeTaken, setTotalTimeTaken] = useState(0);
   const [gameStartTime, setGameStartTime] = useState(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Use ref to track component mount status
   const isMountedRef = useRef(true);
@@ -65,8 +66,9 @@ const QuizScreen = ({ navigation, route }) => {
     
     const initializeQuiz = async () => {
       if (mounted && isMountedRef.current) {
-        // Only create a new session if it's a fresh start or explicitly reset
-        if (reset || !sessionId) { // Check for reset flag or if no session exists
+        // Force new session on reset or first load
+        if (reset || !sessionId) {
+          setSessionId(null);  // Clear any stale session
           await createQuizSession();
         } else {
           // If not resetting and session exists, just load a new question for the current session
@@ -79,22 +81,28 @@ const QuizScreen = ({ navigation, route }) => {
     
     // Cleanup function
     return () => {
+      const currentSessionId = sessionId;
       mounted = false;
       isMountedRef.current = false;
       // End session if it exists
-      if (sessionId && isMountedRef.current) {
+      if (currentSessionId) {
         endQuizSession();
       }
     };
-  }, [sport, reset]); // Add reset as dependency
+  }, [sport, reset, difficulty]); // Add difficulty to dependencies
 
   const createQuizSession = async () => {
+    // Clear any existing session first
+    setSessionId(null);
+    
     // Reset local states before creating a new session
     setScore(0);
     setQuestionCount(0);
     setSelectedAnswer(null);
     setShowResult(false);
     setIsCorrect(false);
+    setQuestion(null);  // Clear old question to prevent display
+    setLoading(true);   // Ensure loading shows
     
     // Reset ELO tracking
     setCorrectAnswers(0);
@@ -144,6 +152,8 @@ const QuizScreen = ({ navigation, route }) => {
       await fetch(url, { method: 'DELETE' });
     } catch (error) {
       console.error('Failed to end session:', error);
+    } finally {
+      setSessionId(null);  // Clear session from state
     }
   };
 
@@ -227,7 +237,7 @@ const QuizScreen = ({ navigation, route }) => {
       // Cleanup abort controller
       abortController.abort();
     }
-  }, [sport, sessionId]);
+  }, [sport, sessionId, difficulty]);
 
   const handleAnswerSelect = useCallback((answer) => {
     if (showResult) return;
@@ -235,13 +245,20 @@ const QuizScreen = ({ navigation, route }) => {
   }, [showResult]);
 
   const submitAnswer = useCallback(async () => {
-    if (!selectedAnswer || !question || !isMountedRef.current) return;
+    if (!selectedAnswer || !question || !isMountedRef.current || isSubmitting) return;
+
+    setIsSubmitting(true);
 
     // Stop timer and calculate time taken
     setTimerActive(false);
     const timeTaken = elapsedTime;
 
     const abortController = new AbortController();
+    
+    // Add timeout to prevent hanging requests
+    const timeoutId = setTimeout(() => {
+      abortController.abort();
+    }, apiConfig.timeout || 10000);
     
     try {
       // Sanitize the answer to match backend regex requirements
@@ -310,15 +327,18 @@ const QuizScreen = ({ navigation, route }) => {
         // Handle validation errors specifically
         if (error.message && error.message.includes('422')) {
           Alert.alert('Error', 'Invalid request. Please check your answer and try again.');
+        } else if (error.message && error.message.includes('429')) {
+          Alert.alert('Too Many Attempts', 'Please wait a moment before trying again.');
         } else {
           Alert.alert('Error', 'Failed to submit answer. Please try again.');
         }
       }
     } finally {
-      // Cleanup abort controller
-      abortController.abort();
+      // Clear timeout and cleanup
+      clearTimeout(timeoutId);
+      setIsSubmitting(false);
     }
-  }, [selectedAnswer, question, sport]);
+  }, [selectedAnswer, question, sport, isSubmitting]);
 
   const submitQuizResult = async () => {
     try {
@@ -384,6 +404,7 @@ const QuizScreen = ({ navigation, route }) => {
           total: questionCount * 100, // Maximum possible score (100 points per question)
           mode: 'quiz',
           sport,
+          difficulty,
           newEloRating: submissionResult?.new_elo_rating,
           eloChange: submissionResult?.elo_change,
           correctAnswers,
@@ -423,7 +444,8 @@ const QuizScreen = ({ navigation, route }) => {
         score,
         total: questionCount * 100, // Maximum possible score (100 points per question)
         mode: 'quiz',
-        sport
+        sport,
+        difficulty
       });
     } catch (error) {
       console.error('Finish quiz error:', error);
@@ -517,9 +539,11 @@ const QuizScreen = ({ navigation, route }) => {
                 !selectedAnswer && styles.disabledButton
               ]}
               onPress={submitAnswer}
-              disabled={!selectedAnswer}
+              disabled={!selectedAnswer || isSubmitting}
             >
-              <Text style={styles.submitButtonText}>Submit Answer</Text>
+              <Text style={styles.submitButtonText}>
+                {isSubmitting ? 'Submitting...' : 'Submit Answer'}
+              </Text>
             </TouchableOpacity>
           ) : (
             <View style={styles.actionButtons}>

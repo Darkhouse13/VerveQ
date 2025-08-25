@@ -298,14 +298,6 @@ async def end_survival_game(session_id: str):
         raise HTTPException(status_code=500, detail=f"Failed to end session: {str(e)}")
 
 # Legacy endpoints for backward compatibility
-@router.options("/{sport}/survival/initials")
-async def survival_initials_options(response: Response, sport: ALLOWED_SPORTS):
-    """Handle OPTIONS request for survival initials endpoint"""
-    response.headers["Access-Control-Allow-Origin"] = "*"
-    response.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, OPTIONS"
-    response.headers["Access-Control-Allow-Headers"] = "*"
-    response.headers["Access-Control-Max-Age"] = "86400"
-    return {"message": "OK"}
 
 @router.get("/{sport}/survival/initials")
 async def get_survival_initials_legacy(request: Request, sport: ALLOWED_SPORTS):
@@ -427,14 +419,6 @@ async def get_survival_initials_legacy(request: Request, sport: ALLOWED_SPORTS):
             "sport": sport
         }
 
-@router.options("/{sport}/survival/guess")
-async def survival_guess_options(response: Response, sport: ALLOWED_SPORTS):
-    """Handle OPTIONS request for survival guess endpoint"""
-    response.headers["Access-Control-Allow-Origin"] = "*"
-    response.headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, DELETE, OPTIONS"
-    response.headers["Access-Control-Allow-Headers"] = "*"
-    response.headers["Access-Control-Max-Age"] = "86400"
-    return {"message": "OK"}
 
 @router.post("/{sport}/survival/guess")
 @limiter.limit("30/minute")

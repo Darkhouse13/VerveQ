@@ -144,8 +144,19 @@ Thumbs.db
 
 # VerveQ Platform Specific
 
-# Sensitive configuration
+# Environment files - NEVER commit these
 .env
+.env.*
+!.env.example
+!.env.*.example
+*.env
+*.env.*
+.env.backup
+.env.*.backup
+.env.production
+.env.production.backup
+.env.development
+.env.test
 .env.local
 .env.*.local
 

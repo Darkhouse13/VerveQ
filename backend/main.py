@@ -28,6 +28,7 @@ from routes.profile import router as profile_router
 from routes.challenges import router as challenges_router
 from routes.achievements import router as achievements_router
 from routes.games import router as games_router
+from routes.health import router as health_router
 
 # Create rate limiter instance
 limiter = Limiter(key_func=get_remote_address)
@@ -55,10 +56,17 @@ app.add_middleware(
 )
 
 # Add rate limiter middleware (AFTER CORS to allow OPTIONS preflight)
-# TEMPORARILY DISABLED: SlowAPI middleware was intercepting OPTIONS requests
-# causing 400 errors. Re-enable after implementing proper OPTIONS handling.
-# from slowapi.middleware import SlowAPIMiddleware
-# app.add_middleware(SlowAPIMiddleware)
+from slowapi.middleware import SlowAPIMiddleware
+app.add_middleware(SlowAPIMiddleware)
+
+# Add middleware to skip OPTIONS for rate limiting (prevents 400 errors)
+@app.middleware("http")
+async def skip_options_for_rate_limiting(request: Request, call_next):
+    if request.method == "OPTIONS":
+        # Initialize empty state for OPTIONS to prevent rate limiting errors
+        request.state.view_rate_limit = None
+    response = await call_next(request)
+    return response
 
 # Add comprehensive request logging middleware for debugging
 @app.middleware("http")
@@ -107,6 +115,7 @@ app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 app.state.limiter = limiter
 
 # Include route modules
+app.include_router(health_router)
 app.include_router(simple_router)
 app.include_router(auth_router)
 app.include_router(quiz_router)
