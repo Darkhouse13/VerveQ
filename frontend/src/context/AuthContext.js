@@ -12,6 +12,9 @@ export const useAuth = () => {
   return context;
 };
 
+// Toggle this to force clearing auth every mount (debug only)
+const FORCE_LOGOUT_ON_START = false;
+
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [token, setToken] = useState(null);
@@ -42,11 +45,19 @@ export const AuthProvider = ({ children }) => {
           return;
         }
       }
-
-      // Clear any existing auth for demo purposes (force login screen)
-      await AsyncStorage.removeItem('verveq_token');
-      setToken(null);
-      setUser(null);
+      // Attempt to restore token
+      if (!FORCE_LOGOUT_ON_START) {
+        const storedToken = await AsyncStorage.getItem('verveq_token');
+        if (storedToken) {
+          setToken(storedToken);
+          // Try to fetch current user silently
+          await getCurrentUser(storedToken);
+        }
+      } else {
+        await AsyncStorage.removeItem('verveq_token');
+        setToken(null);
+        setUser(null);
+      }
     } catch (error) {
       console.warn('Failed to clear auth:', error);
     } finally {
@@ -94,30 +105,37 @@ export const AuthProvider = ({ children }) => {
       };
       
       logApiCall('POST', url, requestData);
-      
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 10000);
       const response = await fetch(url, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(requestData),
+        signal: controller.signal,
       });
+      clearTimeout(timeout);
 
       if (response.ok) {
-        const data = await response.json();
-        const { access_token, user: userData } = data;
-        
-        logApiResponse('POST', url, { user: userData });
-        
-        // Store token
-        await AsyncStorage.setItem('verveq_token', access_token);
-        setToken(access_token);
-        setUser(userData);
-
-        return { success: true, user: userData };
+        let data = null;
+        try { data = await response.json(); } catch (e) { data = {}; }
+        const access_token = data.access_token || data.token || null;
+        const userData = data.user || data;
+        logApiResponse('POST', url, { user: userData, hasToken: !!access_token });
+        if (access_token) {
+          await AsyncStorage.setItem('verveq_token', access_token);
+          setToken(access_token);
+        }
+        if (userData && userData.id) {
+          setUser(userData);
+          return { success: true, user: userData };
+        }
+        return { success: false, error: 'Malformed auth response' };
       } else {
-        const error = await response.json();
-        logApiResponse('POST', url, null, error);
+        let errorBody = null;
+        try { errorBody = await response.json(); } catch (e) { /* ignore */ }
+        logApiResponse('POST', url, null, { status: response.status, body: errorBody });
         
         // Provide more descriptive error messages
         let errorMessage = 'Authentication failed';
@@ -127,8 +145,8 @@ export const AuthProvider = ({ children }) => {
           errorMessage = 'Too many login attempts. Please wait a moment and try again.';
         } else if (response.status >= 500) {
           errorMessage = 'Server error. Please try again in a moment.';
-        } else if (error.detail) {
-          errorMessage = error.detail;
+        } else if (errorBody?.detail) {
+          errorMessage = errorBody.detail;
         }
         
         return { success: false, error: errorMessage };
@@ -139,10 +157,10 @@ export const AuthProvider = ({ children }) => {
       
       // Provide more descriptive network error messages
       let errorMessage = 'Network error';
-      if (error.name === 'TypeError' && error.message.includes('Network request failed')) {
+      if (error.name === 'AbortError') {
+        errorMessage = 'Request timed out.';
+      } else if (error.name === 'TypeError' && error.message.includes('Network request failed')) {
         errorMessage = 'Unable to connect to server. Please check your internet connection.';
-      } else if (error.name === 'AbortError') {
-        errorMessage = 'Request timeout. Please try again.';
       } else if (error.message.includes('fetch')) {
         errorMessage = 'Connection failed. Please check your internet and try again.';
       }

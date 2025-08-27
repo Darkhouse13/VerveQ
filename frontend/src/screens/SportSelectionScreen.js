@@ -22,7 +22,7 @@ const SportSelectionScreen = ({ navigation, route }) => {
 
   const loadAvailableSports = async () => {
     try {
-      const url = buildUrl('/sports');
+      const url = buildUrl(apiConfig.endpoints.sports.list);
       logApiCall('GET', url);
       
       const response = await fetch(url);
@@ -31,7 +31,7 @@ const SportSelectionScreen = ({ navigation, route }) => {
       logApiResponse('GET', url, data);
       setSports(data.sports);
     } catch (error) {
-      logApiResponse('GET', buildUrl('/sports'), null, error);
+      logApiResponse('GET', buildUrl(apiConfig.endpoints.sports.list), null, error);
       Alert.alert('Error', 'Failed to load sports. Please try again.');
     } finally {
       setLoading(false);
@@ -43,7 +43,7 @@ const SportSelectionScreen = ({ navigation, route }) => {
       setSelectedSport(sport);
       
       // Get sport theme
-      const url = buildUrl(`/sports/${sport}/theme`);
+      const url = buildUrl(apiConfig.endpoints.sports.theme(sport));
       logApiCall('GET', url);
       
       const themeResponse = await fetch(url);
@@ -58,7 +58,7 @@ const SportSelectionScreen = ({ navigation, route }) => {
         navigation.navigate('Survival', { sport, theme });
       }
     } catch (error) {
-      logApiResponse('GET', buildUrl(`/sports/${sport}/theme`), null, error);
+      logApiResponse('GET', buildUrl(apiConfig.endpoints.sports.theme(sport)), null, error);
       Alert.alert('Error', 'Failed to load sport theme. Please try again.');
       setSelectedSport(null);
     }

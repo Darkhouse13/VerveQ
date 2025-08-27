@@ -70,7 +70,9 @@ class QuizSessionManager:
         
         session_data = {
             'sport': sport,
-            'used_questions': [],  # Use list for JSON serialization
+            # Store as a set for efficient membership and add operations
+            # If a cache backend requires serialization, it should handle conversion
+            'used_questions': set(),
             'question_count': 0,
             'created_at': time.time(),
             'expires_at': time.time() + self.session_ttl
@@ -102,11 +104,20 @@ class QuizSessionManager:
             if not session or time.time() > session['expires_at']:
                 return False
             
-            if question_key in session['used_questions']:
+            # Normalize container to a set if legacy sessions used a list
+            uq = session.get('used_questions')
+            if isinstance(uq, list):
+                uq = set(uq)
+                session['used_questions'] = uq
+            elif uq is None:
+                uq = set()
+                session['used_questions'] = uq
+
+            if question_key in uq:
                 logger.info(f"🔄 Skipping duplicate question: {question_key[:12]}... for session {session_id[:8]}... (already used {len(session['used_questions'])} questions)")
                 return False
             
-            session['used_questions'].add(question_key)
+            uq.add(question_key)
             session['question_count'] += 1
             logger.debug(f"✅ Added question {question_key[:12]}... to session {session_id[:8]}... (total: {session['question_count']})")
             return True
@@ -142,7 +153,11 @@ class QuizSessionManager:
             if not session or time.time() > session['expires_at']:
                 return set()
             
-            return session['used_questions'].copy()
+            uq = session['used_questions']
+            if isinstance(uq, list):
+                return set(uq)
+            # uq is a set; return a shallow copy as a set
+            return set(uq)
     
     def get_session_info(self, session_id: str) -> Optional[Dict]:
         """Get session information

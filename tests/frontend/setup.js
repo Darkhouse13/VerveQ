@@ -17,6 +17,24 @@ jest.mock('react-native', () => ({
   Alert: {
     alert: jest.fn(),
   },
+  Appearance: {
+    getColorScheme: jest.fn(() => 'light'),
+    addChangeListener: jest.fn(() => ({
+      remove: jest.fn(),
+    })),
+  },
+  Animated: {
+    Value: jest.fn(() => ({ 
+      interpolate: jest.fn(() => ({})), 
+      setValue: jest.fn(),
+      addListener: jest.fn(),
+      removeListener: jest.fn(),
+    })),
+    timing: jest.fn(() => ({ start: jest.fn() })),
+    spring: jest.fn(() => ({ start: jest.fn() })),
+    View: 'Animated.View',
+    Text: 'Animated.Text',
+  },
   ActivityIndicator: 'ActivityIndicator',
   Text: 'Text',
   View: 'View',

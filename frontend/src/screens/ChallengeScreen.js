@@ -12,6 +12,7 @@ import {
   Share,
 } from 'react-native';
 import { useAuth } from '../context/AuthContext';
+import { apiConfig } from '../config/api';
 
 const ChallengeScreen = ({ navigation }) => {
   const { apiCall, user } = useAuth();
@@ -32,7 +33,7 @@ const ChallengeScreen = ({ navigation }) => {
 
   const loadPendingChallenges = async () => {
     try {
-      const response = await apiCall('/challenges/pending');
+      const response = await apiCall(apiConfig.endpoints.challenges.pending);
       if (response.ok) {
         const data = await response.json();
         setPendingChallenges(data.challenges);
@@ -53,7 +54,7 @@ const ChallengeScreen = ({ navigation }) => {
     setCreating(true);
     
     try {
-      const response = await apiCall('/challenges/create', {
+      const response = await apiCall(apiConfig.endpoints.challenges.create, {
         method: 'POST',
         body: JSON.stringify({
           challenged_username: challengeUsername.trim(),
@@ -511,5 +512,8 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
 });
+
+const sports = ['football', 'tennis', 'basketball'];
+const modes = ['quiz', 'survival'];
 
 export default ChallengeScreen;

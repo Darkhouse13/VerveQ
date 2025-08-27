@@ -1,285 +1,208 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   View,
   Text,
-  TextInput,
-  TouchableOpacity,
   StyleSheet,
   SafeAreaView,
   Alert,
-  ActivityIndicator,
+  KeyboardAvoidingView,
+  Platform,
+  Dimensions,
+  ScrollView,
+  TouchableOpacity,
+  TextInput,
 } from 'react-native';
 import { useAuth } from '../context/AuthContext';
-import { apiConfig, buildUrl } from '../config/api';
+import { useTheme } from '../context/ThemeContext';
+
+const { width } = Dimensions.get('window');
 
 const LoginScreen = ({ navigation }) => {
   const [displayName, setDisplayName] = useState('');
-  const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
-  const [isAnonymous, setIsAnonymous] = useState(true);
-  const [connectionStatus, setConnectionStatus] = useState('');
-  const [testingConnection, setTestingConnection] = useState(false);
+  const [displayNameError, setDisplayNameError] = useState('');
 
-  const { login, enableDevMode } = useAuth();
+  const displayNameRef = useRef(null);
+  const { login } = useAuth();
+  const { theme } = useTheme();
 
-  const handleLogin = async () => {
-    if (!displayName.trim()) {
-      Alert.alert('Error', 'Please enter a display name');
-      return;
-    }
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      displayNameRef.current?.focus?.();
+    }, 500);
+    return () => clearTimeout(timer);
+  }, []);
 
-    if (!isAnonymous && email.trim() && !isValidEmail(email.trim())) {
-      Alert.alert('Invalid Email', 'Please enter a valid email address');
+  const validateDisplayName = (name) => {
+    if (!name.trim()) return 'Display name is required';
+    if (name.length < 2) return 'Name must be at least 2 characters';
+    if (name.length > 30) return 'Name must be less than 30 characters';
+    return '';
+  };
+
+  const handleDisplayNameChange = (text) => {
+    setDisplayName(text);
+    setDisplayNameError('');
+  };
+
+  const handleCreateAccount = async () => {
+    const error = validateDisplayName(displayName);
+    if (error) {
+      setDisplayNameError(error);
       return;
     }
 
     setLoading(true);
-    
     try {
-      const result = await login(
-        displayName.trim(),
-        isAnonymous ? null : email.trim() || null
-      );
-
+      const result = await login(displayName.trim());
       if (result.success) {
-        const action = isAnonymous ? 'Logged in as guest!' : 
-                      email.trim() ? 'Account created/logged in successfully!' : 'Account created successfully!';
-        Alert.alert('Success', action);
+        Alert.alert('Welcome!', `Account created successfully for ${displayName}!`);
       } else {
         Alert.alert('Login Failed', result.error || 'Please check your connection and try again');
       }
     } catch (error) {
-      Alert.alert('Connection Error', 'Failed to connect to server. Please check your internet connection and try again.');
+      Alert.alert('Connection Error', 'Failed to connect to server. Please try again.');
     } finally {
       setLoading(false);
     }
-  };
-
-  const isValidEmail = (email) => {
-    const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-    return emailRegex.test(email);
   };
 
   const handleGuestLogin = async () => {
     const guestName = `Guest${Math.floor(Math.random() * 10000)}`;
-    setDisplayName(guestName);
-    setIsAnonymous(true);
-    
     setLoading(true);
     try {
       const result = await login(guestName);
       if (result.success) {
-        Alert.alert('Success', `Welcome ${guestName}! You're now logged in as a guest.`);
+        // Success handled by AuthContext
       } else {
         Alert.alert('Login Failed', result.error || 'Failed to create guest session');
       }
     } catch (error) {
-      Alert.alert('Connection Error', 'Failed to connect to server. Please check your internet connection and try again.');
+      Alert.alert('Connection Error', 'Failed to connect to server. Please try again.');
     } finally {
       setLoading(false);
     }
   };
 
-  const testConnection = async () => {
-    setTestingConnection(true);
-    setConnectionStatus('Testing connection...');
+  const handleQuickStart = async () => {
+    const randomNames = ['Phoenix', 'Thunder', 'Blaze', 'Storm', 'Ace', 'Nova'];
+    const randomName = `${randomNames[Math.floor(Math.random() * randomNames.length)]}${Math.floor(Math.random() * 999)}`;
     
+    setLoading(true);
     try {
-      console.log('🔧 Testing connection to:', apiConfig.baseURL);
-      
-      // Test basic health endpoint first
-      const healthUrl = buildUrl('/');
-      console.log('🔧 Testing health endpoint:', healthUrl);
-      
-      const response = await fetch(healthUrl, {
-        method: 'GET',
-        timeout: 10000,
-      });
-      
-      if (response.ok) {
-        const data = await response.text();
-        setConnectionStatus(`✅ Connected! Server responded: ${response.status}`);
-        console.log('✅ Health check passed:', data);
-        
-        // Test survival endpoint
-        try {
-          const survivalUrl = buildUrl('/football/survival/initials');
-          console.log('🔧 Testing survival endpoint:', survivalUrl);
-          const survivalResponse = await fetch(survivalUrl);
-          
-          if (survivalResponse.ok) {
-            const survivalData = await survivalResponse.json();
-            setConnectionStatus(`✅ All endpoints working! Got initials: ${survivalData.initials || 'N/A'}`);
-          } else {
-            setConnectionStatus(`⚠️ Health OK (${response.status}) but survival endpoint failed (${survivalResponse.status})`);
-          }
-        } catch (survivalError) {
-          setConnectionStatus(`⚠️ Health OK but survival endpoint error: ${survivalError.message}`);
-        }
-      } else {
-        setConnectionStatus(`❌ Server error: ${response.status} ${response.statusText}`);
+      const result = await login(randomName);
+      if (!result.success) {
+        Alert.alert('Login Failed', result.error || 'Failed to create quick start session');
       }
     } catch (error) {
-      console.error('🔧 Connection test failed:', error);
-      let errorMsg = `❌ Connection failed: ${error.message}`;
-      if (error.message.includes('Network request failed') || error.name === 'TypeError') {
-        errorMsg = `❌ Cannot reach server at ${apiConfig.baseURL}\nCheck if backend is running and IP is correct`;
-      }
-      setConnectionStatus(errorMsg);
+      Alert.alert('Connection Error', 'Failed to connect to server. Please try again.');
     } finally {
-      setTestingConnection(false);
+      setLoading(false);
     }
-  };
-
-  const handleDevModeEnable = async () => {
-    Alert.alert(
-      'Enable Development Mode',
-      'This will bypass login for testing. You can navigate the app without a backend connection.',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        { 
-          text: 'Enable', 
-          onPress: async () => {
-            await enableDevMode();
-            Alert.alert('Dev Mode Enabled', 'App will now bypass login for testing');
-          }
-        }
-      ]
-    );
   };
 
   return (
     <SafeAreaView style={styles.container}>
-      <View style={styles.content}>
-        <View style={styles.header}>
-          <Text style={styles.title}>🏆 VerveQ Sports</Text>
-          <Text style={styles.subtitle}>Join the global competition!</Text>
-        </View>
-
-        <View style={styles.form}>
-          <Text style={styles.label}>Display Name *</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="Enter your display name"
-            value={displayName}
-            onChangeText={setDisplayName}
-            autoCapitalize="words"
-            maxLength={30}
-          />
-
-          <View style={styles.toggleContainer}>
-            <TouchableOpacity
-              style={[styles.toggleButton, isAnonymous && styles.toggleActive]}
-              onPress={() => setIsAnonymous(true)}
-            >
-              <Text style={[styles.toggleText, isAnonymous && styles.toggleTextActive]}>
-                Play as Guest
-              </Text>
-            </TouchableOpacity>
-            
-            <TouchableOpacity
-              style={[styles.toggleButton, !isAnonymous && styles.toggleActive]}
-              onPress={() => setIsAnonymous(false)}
-            >
-              <Text style={[styles.toggleText, !isAnonymous && styles.toggleTextActive]}>
-                Create Account
-              </Text>
-            </TouchableOpacity>
-          </View>
-
-          {!isAnonymous && (
-            <View style={styles.emailContainer}>
-              <Text style={styles.label}>Email (optional)</Text>
-              <TextInput
-                style={[
-                  styles.input,
-                  email.trim() && !isValidEmail(email.trim()) ? styles.inputError : null
-                ]}
-                placeholder="Enter your email"
-                value={email}
-                onChangeText={setEmail}
-                keyboardType="email-address"
-                autoCapitalize="none"
-              />
-              {email.trim() && !isValidEmail(email.trim()) && (
-                <Text style={styles.errorText}>
-                  Please enter a valid email address
-                </Text>
-              )}
-              <Text style={styles.helpText}>
-                Email helps recover your account and connect with friends
-              </Text>
-            </View>
-          )}
-
-          <TouchableOpacity
-            style={[styles.loginButton, loading && styles.loginButtonDisabled]}
-            onPress={handleLogin}
-            disabled={loading}
-          >
-            {loading ? (
-              <ActivityIndicator color="#fff" />
-            ) : (
-              <Text style={styles.loginButtonText}>
-                {isAnonymous ? 'Play as Guest' : 'Create Account & Play'}
-              </Text>
-            )}
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={styles.quickButton}
-            onPress={handleGuestLogin}
-            disabled={loading}
-          >
-            <Text style={styles.quickButtonText}>Quick Start (Random Name)</Text>
-          </TouchableOpacity>
-        </View>
-
-        {/* Development Tools */}
-        {__DEV__ && (
-          <View style={styles.devTools}>
-            <Text style={styles.devToolsTitle}>🔧 Development Tools</Text>
-            
-            <TouchableOpacity
-              style={styles.testButton}
-              onPress={testConnection}
-              disabled={testingConnection}
-            >
-              {testingConnection ? (
-                <ActivityIndicator color="#fff" size="small" />
-              ) : (
-                <Text style={styles.testButtonText}>Test Connection</Text>
-              )}
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={styles.devModeButton}
-              onPress={handleDevModeEnable}
-            >
-              <Text style={styles.devModeButtonText}>Enable Dev Mode (Skip Login)</Text>
-            </TouchableOpacity>
-
-            {connectionStatus ? (
-              <View style={styles.statusContainer}>
-                <Text style={styles.statusTitle}>Connection Status:</Text>
-                <Text style={styles.statusText}>{connectionStatus}</Text>
-                <Text style={styles.statusInfo}>API URL: {apiConfig.baseURL}</Text>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        style={styles.keyboardView}
+      >
+        <ScrollView 
+          contentContainerStyle={styles.scrollContent}
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+        >
+          <View style={styles.content}>
+            {/* Logo and Branding */}
+            <View style={styles.logoSection}>
+              <View style={styles.logo}>
+                <Text style={styles.logoText}>VQ</Text>
               </View>
-            ) : null}
-          </View>
-        )}
+              <Text style={styles.appTitle}>VerveQ Sports</Text>
+              <Text style={styles.appSubtitle}>Compete in sports trivia worldwide</Text>
+            </View>
 
-        <View style={styles.features}>
-          <Text style={styles.featuresTitle}>Platform Features:</Text>
-          <View style={styles.featuresList}>
-            <Text style={styles.feature}>🎯 ELO Rating System</Text>
-            <Text style={styles.feature}>🏅 Global Leaderboards</Text>
-            <Text style={styles.feature}>⚡ Friend Challenges</Text>
-            <Text style={styles.feature}>🏆 Achievements</Text>
-            <Text style={styles.feature}>📊 Detailed Analytics</Text>
+            {/* Main Form */}
+            <View style={styles.formSection}>
+              <View style={styles.inputGroup}>
+                <Text style={styles.inputLabel}>Display Name</Text>
+                <TextInput
+                  ref={displayNameRef}
+                  style={[
+                    styles.inputField,
+                    displayNameError ? styles.inputError : null
+                  ]}
+                  placeholder="Enter your name"
+                  value={displayName}
+                  onChangeText={handleDisplayNameChange}
+                  maxLength={30}
+                  autoCorrect={false}
+                  autoCapitalize="words"
+                  editable={!loading}
+                />
+                {displayNameError ? (
+                  <Text style={styles.errorText}>{displayNameError}</Text>
+                ) : null}
+              </View>
+
+              <View style={styles.buttonGroup}>
+                <TouchableOpacity
+                  style={[
+                    styles.btn,
+                    styles.btnPrimary,
+                    loading ? styles.btnDisabled : null
+                  ]}
+                  onPress={handleCreateAccount}
+                  disabled={loading}
+                  activeOpacity={0.8}
+                >
+                  <Text style={[styles.btnText, styles.btnPrimaryText]}>
+                    {loading ? 'Creating Account...' : 'Create Account & Play'}
+                  </Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  style={[
+                    styles.btn,
+                    styles.btnSecondary,
+                    loading ? styles.btnDisabled : null
+                  ]}
+                  onPress={handleGuestLogin}
+                  disabled={loading}
+                  activeOpacity={0.8}
+                >
+                  <Text style={[styles.btnText, styles.btnSecondaryText]}>
+                    Play as Guest
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+
+            {/* Divider */}
+            <View style={styles.divider}>
+              <View style={styles.dividerLine} />
+              <Text style={styles.dividerText}>or</Text>
+              <View style={styles.dividerLine} />
+            </View>
+
+            {/* Quick Action */}
+            <View style={styles.quickAction}>
+              <TouchableOpacity
+                onPress={handleQuickStart}
+                disabled={loading}
+                activeOpacity={0.7}
+              >
+                <Text style={[
+                  styles.linkButton,
+                  loading ? styles.linkButtonDisabled : null
+                ]}>
+                  Quick Start with Random Name →
+                </Text>
+              </TouchableOpacity>
+            </View>
           </View>
-        </View>
-      </View>
+        </ScrollView>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 };
@@ -287,209 +210,146 @@ const LoginScreen = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: '#F5F5F5',
+  },
+  keyboardView: {
+    flex: 1,
+  },
+  scrollContent: {
+    flexGrow: 1,
+    justifyContent: 'center',
+    paddingVertical: 40,
   },
   content: {
-    flex: 1,
-    padding: 20,
-    justifyContent: 'center',
+    paddingHorizontal: 20,
+    maxWidth: 400,
+    width: '100%',
+    alignSelf: 'center',
   },
-  header: {
+  logoSection: {
     alignItems: 'center',
     marginBottom: 40,
   },
-  title: {
-    fontSize: 32,
-    fontWeight: 'bold',
-    color: '#1a237e',
-    marginBottom: 8,
+  logo: {
+    width: 60,
+    height: 60,
+    backgroundColor: '#1A237E',
+    borderRadius: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 20,
   },
-  subtitle: {
-    fontSize: 18,
-    color: '#666',
+  logoText: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#FFFFFF',
+  },
+  appTitle: {
+    fontSize: 28,
+    fontWeight: '700',
+    color: '#1A237E',
+    marginBottom: 8,
     textAlign: 'center',
   },
-  form: {
-    backgroundColor: '#fff',
-    borderRadius: 16,
-    padding: 24,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+  appSubtitle: {
+    fontSize: 16,
+    color: '#666666',
+    fontWeight: '400',
+    textAlign: 'center',
+  },
+  formSection: {
+    marginBottom: 32,
+  },
+  inputGroup: {
     marginBottom: 24,
   },
-  label: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: '#333',
+  inputLabel: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#333333',
     marginBottom: 8,
   },
-  input: {
-    borderWidth: 2,
-    borderColor: '#e9ecef',
-    borderRadius: 8,
-    padding: 12,
+  inputField: {
+    width: '100%',
+    paddingVertical: 14,
+    paddingHorizontal: 16,
     fontSize: 16,
-    marginBottom: 16,
-  },
-  toggleContainer: {
-    flexDirection: 'row',
-    marginBottom: 20,
-    backgroundColor: '#f8f9fa',
-    borderRadius: 8,
-    padding: 4,
-  },
-  toggleButton: {
-    flex: 1,
-    paddingVertical: 12,
-    alignItems: 'center',
-    borderRadius: 6,
-  },
-  toggleActive: {
-    backgroundColor: '#1a237e',
-  },
-  toggleText: {
-    fontSize: 14,
-    fontWeight: 'bold',
-    color: '#666',
-  },
-  toggleTextActive: {
-    color: '#fff',
-  },
-  emailContainer: {
-    marginTop: 8,
-  },
-  helpText: {
-    fontSize: 12,
-    color: '#888',
-    marginTop: -8,
-    marginBottom: 16,
+    borderWidth: 2,
+    borderColor: '#E5E7EB',
+    borderRadius: 12,
+    backgroundColor: '#FAFAFA',
+    color: '#333333',
   },
   inputError: {
-    borderColor: '#dc3545',
-    borderWidth: 2,
+    borderColor: '#EF4444',
+    backgroundColor: '#FFFFFF',
   },
   errorText: {
     fontSize: 12,
-    color: '#dc3545',
-    marginTop: -12,
-    marginBottom: 8,
+    color: '#EF4444',
+    marginTop: 4,
   },
-  loginButton: {
-    backgroundColor: '#1a237e',
-    padding: 16,
-    borderRadius: 8,
-    alignItems: 'center',
-    marginBottom: 12,
+  buttonGroup: {
+    marginBottom: 24,
   },
-  loginButtonDisabled: {
-    backgroundColor: '#ccc',
-  },
-  loginButtonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
-  quickButton: {
-    backgroundColor: '#6c757d',
-    padding: 12,
-    borderRadius: 8,
-    alignItems: 'center',
-  },
-  quickButtonText: {
-    color: '#fff',
-    fontSize: 14,
-    fontWeight: 'bold',
-  },
-  features: {
-    backgroundColor: '#fff',
+  btn: {
+    width: '100%',
+    paddingVertical: 16,
+    paddingHorizontal: 16,
     borderRadius: 12,
-    padding: 20,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-    elevation: 2,
-  },
-  featuresTitle: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: '#333',
-    marginBottom: 12,
-    textAlign: 'center',
-  },
-  featuresList: {
-    gap: 8,
-  },
-  feature: {
-    fontSize: 14,
-    color: '#666',
-    textAlign: 'center',
-  },
-  devTools: {
-    backgroundColor: '#fff3cd',
-    borderRadius: 12,
-    padding: 20,
-    marginBottom: 20,
-    borderWidth: 1,
-    borderColor: '#ffeaa7',
-  },
-  devToolsTitle: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: '#856404',
-    marginBottom: 16,
-    textAlign: 'center',
-  },
-  testButton: {
-    backgroundColor: '#17a2b8',
-    padding: 12,
-    borderRadius: 8,
     alignItems: 'center',
-    marginBottom: 12,
+    justifyContent: 'center',
   },
-  testButtonText: {
-    color: '#fff',
-    fontSize: 14,
-    fontWeight: 'bold',
+  btnPrimary: {
+    backgroundColor: '#1A237E',
   },
-  devModeButton: {
-    backgroundColor: '#28a745',
-    padding: 12,
-    borderRadius: 8,
+  btnSecondary: {
+    backgroundColor: 'transparent',
+    borderWidth: 2,
+    borderColor: '#1A237E',
+    marginTop: 12,
+  },
+  btnDisabled: {
+    backgroundColor: '#CCCCCC',
+    borderColor: '#CCCCCC',
+  },
+  btnText: {
+    fontSize: 16,
+    fontWeight: '600',
+    textAlign: 'center',
+  },
+  btnPrimaryText: {
+    color: '#FFFFFF',
+  },
+  btnSecondaryText: {
+    color: '#1A237E',
+  },
+  divider: {
+    flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 12,
+    marginVertical: 32,
   },
-  devModeButtonText: {
-    color: '#fff',
+  dividerLine: {
+    flex: 1,
+    height: 1,
+    backgroundColor: '#E5E7EB',
+  },
+  dividerText: {
+    backgroundColor: '#F5F5F5',
+    paddingHorizontal: 16,
+    color: '#9CA3AF',
     fontSize: 14,
-    fontWeight: 'bold',
   },
-  statusContainer: {
-    backgroundColor: '#f8f9fa',
-    padding: 12,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: '#e9ecef',
+  quickAction: {
+    alignItems: 'center',
   },
-  statusTitle: {
-    fontSize: 12,
-    fontWeight: 'bold',
-    color: '#495057',
-    marginBottom: 4,
+  linkButton: {
+    color: '#1A237E',
+    fontSize: 14,
+    fontWeight: '500',
   },
-  statusText: {
-    fontSize: 12,
-    color: '#212529',
-    marginBottom: 4,
-    fontFamily: 'monospace',
-  },
-  statusInfo: {
-    fontSize: 10,
-    color: '#6c757d',
-    fontFamily: 'monospace',
+  linkButtonDisabled: {
+    color: '#9CA3AF',
   },
 });
 

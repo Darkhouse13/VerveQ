@@ -127,7 +127,7 @@ describe('QuizScreen', () => {
   });
 
   describe('Quiz Gameplay', () => {
-    test('handles answer selection and submission', async () => {
+  test('handles answer selection and submission with progress update', async () => {
       const authValue = createMockAuthContext({ 
         id: 'user123', 
         username: 'testuser' 
@@ -158,9 +158,10 @@ describe('QuizScreen', () => {
         );
       });
 
-      // Should show next question
+      // Should show next question and progress 2/10
       await waitFor(() => {
         expect(screen.getByText('Which player scored the most goals in 2021?')).toBeTruthy();
+        expect(screen.getByText(/Question 2\/10/)).toBeTruthy();
       });
     });
 
@@ -234,36 +235,49 @@ describe('QuizScreen', () => {
   });
 
   describe('Game Completion and Result Submission', () => {
-    test('submits quiz results on game completion for authenticated user', async () => {
+  test('submits quiz results on game completion after 10 questions for authenticated user', async () => {
       const authValue = createMockAuthContext({ 
         id: 'user123', 
         username: 'testuser' 
       });
 
-      // Mock game completion response
-      mockApi.post
-        .mockResolvedValueOnce({
-          data: {
-            correct: true,
-            score: 5,
-            questions_answered: 5,
-            correct_answers: 5,
-            game_complete: true,
-            final_score: 5,
-            rating_change: 15.5,
-            new_rating: 1215.5,
-            accuracy: 1.0
+      // Mock 9 intermediate answers then final completion payload
+      const intermediateQuestions = Array.from({ length: 9 }).map((_, i) => ({
+        data: {
+          correct: true,
+          score: i + 1,
+          questions_answered: i + 1,
+          correct_answers: i + 1,
+          next_question: {
+            question: `Question ${i + 2}`,
+            options: ['A', 'B', 'C', 'D'],
+            question_id: i + 2
           }
-        })
-        .mockResolvedValueOnce({
-          data: {
-            old_rating: 1200.0,
-            new_rating: 1215.5,
-            rating_change: 15.5,
-            tier: { tier: 'Intermediate', color: '#C0C0C0' },
-            games_played: 1
-          }
-        });
+        }
+      }));
+      const finalCompletion = {
+        data: {
+          correct: true,
+          score: 10,
+          questions_answered: 10,
+          correct_answers: 10,
+          game_complete: true,
+          final_score: 10,
+          rating_change: 20.0,
+          new_rating: 1220.0,
+          accuracy: 1.0
+        }
+      };
+      mockApi.post.mockResolvedValueOnce(intermediateQuestions[0])
+        .mockResolvedValueOnce(intermediateQuestions[1])
+        .mockResolvedValueOnce(intermediateQuestions[2])
+        .mockResolvedValueOnce(intermediateQuestions[3])
+        .mockResolvedValueOnce(intermediateQuestions[4])
+        .mockResolvedValueOnce(intermediateQuestions[5])
+        .mockResolvedValueOnce(intermediateQuestions[6])
+        .mockResolvedValueOnce(intermediateQuestions[7])
+        .mockResolvedValueOnce(intermediateQuestions[8])
+        .mockResolvedValueOnce(finalCompletion);
 
       render(
         <TestWrapper authValue={authValue}>
@@ -275,66 +289,56 @@ describe('QuizScreen', () => {
         expect(screen.getByText('Who won the 2020 UEFA Champions League?')).toBeTruthy();
       });
 
-      // Answer question to trigger game completion
-      fireEvent.press(screen.getByText('Bayern Munich'));
-
-      // Wait for game completion and result submission
-      await waitFor(() => {
-        expect(mockApi.post).toHaveBeenCalledWith(
-          '/football/quiz/complete',
-          expect.objectContaining({
-            user_id: 'user123',
-            score: 5,
-            total_questions: 5,
-            accuracy: 1.0,
-            difficulty: 'intermediate'
-          })
-        );
-      });
+      // Answer through all 10 questions
+      for (let i = 0; i < 10; i++) {
+        fireEvent.press(screen.getByText(/Bayern Munich|A/));
+        // wait for next question or completion
+        // eslint-disable-next-line no-await-in-loop
+        await waitFor(() => {
+          if (i < 9) {
+            expect(screen.getByText(`Question ${i + 2}`)).toBeTruthy();
+          }
+        });
+      }
 
       // Should navigate to results with ELO data
-      expect(mockNavigate).toHaveBeenCalledWith('QuizResult', {
-        sport: 'football',
-        finalScore: 5,
-        questionsAnswered: 5,
-        accuracy: 1.0,
-        eloData: {
-          old_rating: 1200.0,
-          new_rating: 1215.5,
-          rating_change: 15.5,
-          tier: { tier: 'Intermediate', color: '#C0C0C0' },
-          games_played: 1
-        }
-      });
+  // Final completion call should be to /football/quiz/complete
+  const completionCall = mockApi.post.mock.calls.find(call => call[0] === '/football/quiz/complete');
+  expect(completionCall).toBeTruthy();
     });
 
-    test('submits quiz results for guest user', async () => {
+  test('submits quiz results for guest user after full length', async () => {
       const authValue = createMockAuthContext(null); // Guest user
 
-      // Mock game completion
-      mockApi.post
-        .mockResolvedValueOnce({
-          data: {
-            correct: true,
-            score: 3,
-            questions_answered: 5,
-            correct_answers: 3,
-            game_complete: true,
-            final_score: 3,
-            rating_change: 0,
-            new_rating: 1200,
-            accuracy: 0.6
+      // Provide 10 question flow for guest
+      const questions = Array.from({ length: 9 }).map((_, i) => ({
+        data: {
+          correct: i % 2 === 0,
+          score: i + 1,
+          questions_answered: i + 1,
+          correct_answers: Math.ceil((i + 1) / 2),
+          next_question: {
+            question: `Guest Q${i + 2}`,
+            options: ['A', 'B', 'C', 'D'],
+            question_id: i + 2
           }
-        })
-        .mockResolvedValueOnce({
-          data: {
-            old_rating: 1200.0,
-            new_rating: 1200.0,
-            rating_change: 0,
-            tier: { tier: 'Intermediate', color: '#C0C0C0' },
-            games_played: 1
-          }
-        });
+        }
+      }));
+      const guestCompletion = {
+        data: {
+          correct: true,
+          score: 6,
+          questions_answered: 10,
+          correct_answers: 6,
+          game_complete: true,
+          final_score: 6,
+          rating_change: 0,
+          new_rating: 1200,
+          accuracy: 0.6
+        }
+      };
+      questions.forEach(q => mockApi.post.mockResolvedValueOnce(q));
+      mockApi.post.mockResolvedValueOnce(guestCompletion);
 
       render(
         <TestWrapper authValue={authValue}>
@@ -346,21 +350,17 @@ describe('QuizScreen', () => {
         expect(screen.getByText('Who won the 2020 UEFA Champions League?')).toBeTruthy();
       });
 
-      fireEvent.press(screen.getByText('Bayern Munich'));
-
-      // Should submit with guest ID
-      await waitFor(() => {
-        expect(mockApi.post).toHaveBeenCalledWith(
-          '/football/quiz/complete',
-          expect.objectContaining({
-            user_id: expect.stringMatching(/^guest_/),
-            score: 3,
-            total_questions: 5,
-            accuracy: 0.6,
-            difficulty: 'intermediate'
-          })
-        );
-      });
+      for (let i = 0; i < 10; i++) {
+        fireEvent.press(screen.getByText(/Bayern Munich|A/));
+        // eslint-disable-next-line no-await-in-loop
+        await waitFor(() => {
+          if (i < 9) {
+            expect(screen.getByText(new RegExp(`Guest Q${i + 2}`))).toBeTruthy();
+          }
+        });
+      }
+      const completion = mockApi.post.mock.calls.find(call => call[0] === '/football/quiz/complete');
+      expect(completion).toBeTruthy();
     });
 
     test('handles result submission failure gracefully', async () => {

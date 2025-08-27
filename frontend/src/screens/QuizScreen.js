@@ -7,15 +7,32 @@ import {
   SafeAreaView,
   ActivityIndicator,
   Alert,
+  Pressable,
+  LayoutAnimation,
+  Platform,
+  UIManager,
+  Animated,
 } from 'react-native';
 import { useSession } from '../context/SessionContext';
 import { useAuth } from '../context/AuthContext';
+import { useTheme } from '../context/ThemeContext';
 import { apiConfig, buildUrl, logApiCall, logApiResponse } from '../config/api';
+import useDynamicSizing from '../hooks/useDynamicSizing';
+import useOrientation from '../hooks/useOrientation';
+import { QuizSkeleton } from '../components/ui/ContentSkeletons';
+import ErrorFallback from '../components/ui/ErrorFallback';
+import { GameStateAnnouncer } from '../components/a11y/ScreenReaderAnnouncer';
+import { haptics } from '../utils/haptics';
+import GestureControls from '../components/game/GestureControls';
+import DynamicText from '../components/ui/DynamicText';
 
 const QuizScreen = ({ navigation, route }) => {
-  const { sport, theme, reset, difficulty = 'intermediate' } = route.params || { sport: 'football', theme: null, reset: false, difficulty: 'intermediate' };
+  const { sport, theme: routeTheme, reset, difficulty = 'intermediate' } = route.params || { sport: 'football', theme: null, reset: false, difficulty: 'intermediate' };
   const { user } = useAuth();
+  const { theme, styles: themeStyles } = useTheme();
   const { updateScore, loadSportTheme, currentTheme } = useSession();
+  const { isTablet, deviceType, getContentWidth, getResponsiveFontSize } = useDynamicSizing();
+  const { orientation, isLandscape, getLayoutDimensions } = useOrientation();
   const [question, setQuestion] = useState(null);
   const [loading, setLoading] = useState(true);
   const [selectedAnswer, setSelectedAnswer] = useState(null);
@@ -27,6 +44,9 @@ const QuizScreen = ({ navigation, route }) => {
   const [questionStartTime, setQuestionStartTime] = useState(null);
   const [elapsedTime, setElapsedTime] = useState(0);
   const [timerActive, setTimerActive] = useState(false);
+  // Control initial full-screen skeleton vs. subsequent inline loading
+  const [showFullSkeleton, setShowFullSkeleton] = useState(true);
+  const [initializing, setInitializing] = useState(true);
   
   // Quiz configuration - will be set by API response
   const [maxQuestions, setMaxQuestions] = useState(10); // Default fallback
@@ -37,27 +57,32 @@ const QuizScreen = ({ navigation, route }) => {
   const [totalTimeTaken, setTotalTimeTaken] = useState(0);
   const [gameStartTime, setGameStartTime] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState(null);
+  const [gestureControlsEnabled, setGestureControlsEnabled] = useState(isTablet);
 
   // Use ref to track component mount status
   const isMountedRef = useRef(true);
+
+  // IMPORTANT: All hooks must execute on every render. The previous implementation
+  // placed the responsiveStyles useMemo AFTER early returns (error/loading skeleton),
+  // causing the first render (when loading/showFullSkeleton were true) to skip the
+  // useMemo, then a later render (when loading became false) to execute one extra
+  // hook at position 77 -> React error: "Rendered more hooks than during the previous render".
+  // By moving this useMemo above any conditional early returns, hook order is stable.
+  const responsiveStyles = useMemo(
+    () => styles(theme, { isTablet, isLandscape }),
+    [theme, isTablet, isLandscape]
+  );
   
-  // Timer effect
+  // Timer effect (interval based, throttled to 300ms, avoids per-frame churn)
   useEffect(() => {
-    let interval = null;
-    
-    if (timerActive && questionStartTime) {
-      interval = setInterval(() => {
-        const currentTime = Date.now();
-        const elapsed = (currentTime - questionStartTime) / 1000; // Convert to seconds
-        setElapsedTime(elapsed);
-      }, 100); // Update every 100ms for smooth display
-    }
-    
-    return () => {
-      if (interval) {
-        clearInterval(interval);
-      }
-    };
+    if (!timerActive || !questionStartTime) return;
+    const interval = setInterval(() => {
+      const now = Date.now();
+      const elapsed = (now - questionStartTime) / 1000;
+      setElapsedTime(prev => (Math.abs(elapsed - prev) >= 0.3 ? elapsed : prev));
+    }, 300);
+    return () => clearInterval(interval);
   }, [timerActive, questionStartTime]);
   
   useEffect(() => {
@@ -103,6 +128,8 @@ const QuizScreen = ({ navigation, route }) => {
     setIsCorrect(false);
     setQuestion(null);  // Clear old question to prevent display
     setLoading(true);   // Ensure loading shows
+    setShowFullSkeleton(true);
+    setInitializing(true);
     
     // Reset ELO tracking
     setCorrectAnswers(0);
@@ -111,7 +138,10 @@ const QuizScreen = ({ navigation, route }) => {
     setGameStartTime(Date.now());
 
     try {
-      const url = buildUrl(`/games/${sport}/quiz/session`);
+      // Explicitly set max questions on session creation to 10 (or current state)
+  // Provide multiple compatible query params (limit & count) for backend versions
+  const desiredMax = maxQuestions || 10;
+  const url = buildUrl(`${apiConfig.endpoints.games.quiz.session(sport)}?limit=${desiredMax}&count=${desiredMax}`);
       logApiCall('POST', url);
       
       const response = await fetch(url, {
@@ -130,12 +160,17 @@ const QuizScreen = ({ navigation, route }) => {
       
       if (data.session_id) {
         setSessionId(data.session_id);
-        // Set max questions from API response
-        if (data.max_questions) {
-          setMaxQuestions(data.max_questions);
+        // Accept various field names from backend for maximum compatibility
+        const serverMax = data.max_questions || data.maxQuestions || data.limit || data.count;
+        if (typeof serverMax === 'number' && serverMax > 0) {
+          setMaxQuestions(serverMax);
+        } else {
+          setMaxQuestions(desiredMax);
         }
-        // Now load the first question
         await loadNewQuestion(data.session_id);
+      } else {
+        // Fallback: still attempt question load without session
+        await loadNewQuestion();
       }
     } catch (error) {
       console.error('Failed to create quiz session:', error);
@@ -148,7 +183,7 @@ const QuizScreen = ({ navigation, route }) => {
     if (!sessionId) return;
     
     try {
-      const url = buildUrl(`/games/${sport}/quiz/session/${sessionId}`);
+      const url = buildUrl(apiConfig.endpoints.games.quiz.endSession(sport, sessionId));
       await fetch(url, { method: 'DELETE' });
     } catch (error) {
       console.error('Failed to end session:', error);
@@ -216,7 +251,16 @@ const QuizScreen = ({ navigation, route }) => {
       if (isMountedRef.current) {
         logApiResponse('GET', url, data);
         setQuestion(data);
-        setQuestionCount(prev => prev + 1);
+        setQuestionCount(prev => {
+          const next = prev + 1;
+          console.log(`[Quiz] Loaded question ${next}/${maxQuestions} for ${sport} (${difficulty})`);
+          return next;
+        });
+        // On first successful question load, stop using full-screen skeleton
+        if (showFullSkeleton) {
+          setShowFullSkeleton(false);
+          setInitializing(false);
+        }
         // Start timer for new question
         setQuestionStartTime(Date.now());
         setTimerActive(true);
@@ -239,8 +283,18 @@ const QuizScreen = ({ navigation, route }) => {
     }
   }, [sport, sessionId, difficulty]);
 
+  // Enable LayoutAnimation on Android
+  useEffect(() => {
+    if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
+      UIManager.setLayoutAnimationEnabledExperimental(true);
+    }
+  }, []);
+
   const handleAnswerSelect = useCallback((answer) => {
     if (showResult) return;
+    // Haptic selection feedback
+    if (Platform.OS !== 'web') { haptics.selection(); }
+    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
     setSelectedAnswer(answer);
   }, [showResult]);
 
@@ -310,6 +364,11 @@ const QuizScreen = ({ navigation, route }) => {
       if (isMountedRef.current) {
         logApiResponse('POST', url, result);
         setIsCorrect(result.correct);
+        // Haptic impact based on correctness
+        if (Platform.OS !== 'web') {
+          if (result.correct) { haptics.impact('Light'); } else { haptics.impact('Medium'); }
+        }
+        LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
         setShowResult(true);
         
         // Track statistics for ELO
@@ -425,326 +484,416 @@ const QuizScreen = ({ navigation, route }) => {
     }
   }, [questionCount, maxQuestions, navigation, score, sport, loadNewQuestion, endQuizSession]);
 
-  const handleFinishQuiz = useCallback(async () => {
-    if (!isMountedRef.current) return;
-    
-    // Reset timer
-    setTimerActive(false);
-    setElapsedTime(0);
-    
-    try {
-      // End session before finishing
-      await endQuizSession();
-      
-      if (updateScore) {
-        await updateScore(sport, 'quiz', score, questionCount);
-      }
-      
-      navigation.navigate('Result', {
-        score,
-        total: questionCount * 100, // Maximum possible score (100 points per question)
-        mode: 'quiz',
-        sport,
-        difficulty
-      });
-    } catch (error) {
-      console.error('Finish quiz error:', error);
-      Alert.alert('Error', 'Failed to finish quiz. Please try again.');
-    }
-  }, [updateScore, sport, score, questionCount, navigation, endQuizSession]);
+  // handleFinishQuiz removed – flow now advances exclusively by tapping the card after showing result.
 
-  const getAnswerButtonStyle = useCallback((option) => {
+  const getAnswerVisualState = useCallback((option) => {
     if (!showResult) {
-      return selectedAnswer === option ? styles.selectedOption : styles.option;
+      return selectedAnswer === option ? 'selected' : 'default';
     }
-    
-    if (option === question?.correct_answer) {
-      return styles.correctOption;
-    }
-    
-    if (selectedAnswer === option && !isCorrect) {
-      return styles.incorrectOption;
-    }
-    
-    return styles.disabledOption;
+    if (option === question?.correct_answer) return 'correct';
+    if (selectedAnswer === option && !isCorrect) return 'incorrect';
+    return 'disabled';
   }, [showResult, selectedAnswer, question?.correct_answer, isCorrect]);
 
-  if (loading) {
+  // OptionButton component encapsulates press feedback & animated state
+  const OptionButton = useCallback(({ option, index }) => {
+    const state = getAnswerVisualState(option);
+    const animated = useRef(new Animated.Value(1)).current;
+
+    const onPressIn = () => {
+      if (showResult) return;
+      Animated.spring(animated, { toValue: 0.97, useNativeDriver: true, speed: 25, bounciness: 6 }).start();
+    };
+    const onPressOut = () => {
+      if (showResult) return;
+      Animated.spring(animated, { toValue: 1, useNativeDriver: true, speed: 25, bounciness: 6 }).start();
+    };
+
+    const handlePress = () => handleAnswerSelect(option);
+
+    let containerStyle = [responsiveStyles.optionBase];
+    switch (state) {
+      case 'selected':
+        containerStyle.push(responsiveStyles.optionSelected);
+        break;
+      case 'correct':
+        containerStyle.push(responsiveStyles.optionCorrect);
+        break;
+      case 'incorrect':
+        containerStyle.push(responsiveStyles.optionIncorrect);
+        break;
+      case 'disabled':
+        containerStyle.push(responsiveStyles.optionDisabled);
+        break;
+    }
+
     return (
-      <SafeAreaView style={styles.container}>
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#1a237e" />
-          <Text style={styles.loadingText}>Loading question...</Text>
+      <Animated.View style={{ transform: [{ scale: animated }] }}>
+        <Pressable
+          key={index}
+            onPress={handlePress}
+            onPressIn={onPressIn}
+            onPressOut={onPressOut}
+            disabled={showResult}
+            hitSlop={8}
+            accessibilityLabel={`Option ${String.fromCharCode(65 + index)}: ${option}`}
+            accessibilityState={{ selected: selectedAnswer === option, disabled: showResult }}
+            style={containerStyle}
+        >
+          <DynamicText 
+            variant="body" 
+            style={responsiveStyles.optionText}
+            maxLines={3}
+            adjustsFontSizeToFit={isTablet}
+          >
+            {option}
+          </DynamicText>
+        </Pressable>
+      </Animated.View>
+    );
+  }, [getAnswerVisualState, handleAnswerSelect, showResult, selectedAnswer, isTablet, responsiveStyles.optionBase, responsiveStyles.optionSelected, responsiveStyles.optionCorrect, responsiveStyles.optionIncorrect, responsiveStyles.optionDisabled]);
+
+  // Error state (must be below all hooks to avoid hook order changes)
+  if (error) {
+    return (
+      <ErrorFallback
+        error={error}
+        resetError={() => setError(null)}
+        context="quiz"
+        retryAction={createQuizSession}
+      />
+    );
+  }
+
+  // Loading state with enhanced skeleton (only show full-screen skeleton on initial load)
+  if (loading && showFullSkeleton) {
+    return (
+      <SafeAreaView style={[themeStyles.container, responsiveStyles.container]}>
+        <View style={responsiveStyles.loadingContainer}>
+          <QuizSkeleton />
         </View>
       </SafeAreaView>
     );
   }
 
-  return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.content}>
-        <View style={styles.header}>
-          <Text style={styles.scoreText}>Score: {score}</Text>
-          <Text style={styles.questionNumber}>Question {questionCount}</Text>
-          <Text style={styles.timerText}>Time: {elapsedTime.toFixed(1)}s</Text>
-        </View>
-        
-        <View style={styles.difficultyHeader}>
-          <Text style={styles.difficultyText}>
-            {difficulty.charAt(0).toUpperCase() + difficulty.slice(1)} Mode
+  const QuizContent = () => (
+    <View style={responsiveStyles.content}>
+      {/* Accessibility announcer for game state */}
+      <GameStateAnnouncer
+        score={score}
+        question={question?.question}
+        timeRemaining={30 - elapsedTime} // Assuming 30s per question
+      />
+
+      {/* Header */}
+      <View style={responsiveStyles.header}>
+        <DynamicText variant="h6" style={responsiveStyles.scoreText}>
+          Score: {score}
+        </DynamicText>
+        <DynamicText variant="body" style={responsiveStyles.questionNumber}>
+          Question {questionCount}/{maxQuestions}
+        </DynamicText>
+        <DynamicText variant="body" style={responsiveStyles.timerText}>
+          Time: {Math.floor(elapsedTime).toString().padStart(2,'0')}s
+        </DynamicText>
+      </View>
+      
+      {/* Difficulty Badge */}
+      <View style={responsiveStyles.difficultyHeader}>
+        <DynamicText variant="caption" style={responsiveStyles.difficultyText}>
+          {difficulty.charAt(0).toUpperCase() + difficulty.slice(1)} Mode
+        </DynamicText>
+      </View>
+
+      {question && (
+        <View
+          style={responsiveStyles.questionContainer}
+          // Allow tapping anywhere in the question card to proceed once result is shown
+          onStartShouldSetResponder={() => showResult}
+          onResponderRelease={() => {
+            if (showResult && !isSubmitting) {
+              handleNextQuestion();
+            }
+          }}
+        >
+          <Text
+            testID="QuestionText"
+            accessibilityRole="header"
+            style={responsiveStyles.questionPlainText}
+            numberOfLines={8}
+          >
+            {question.question}
           </Text>
-        </View>
-
-        {question && (
-          <View style={styles.questionContainer}>
-            <Text style={styles.category}>{question.category}</Text>
-            <Text style={styles.questionText}>{question.question}</Text>
-            
-            <View style={styles.optionsContainer}>
-              {question.options.map((option, index) => (
-                <TouchableOpacity
-                  key={index}
-                  style={getAnswerButtonStyle(option)}
-                  onPress={() => handleAnswerSelect(option)}
-                  disabled={showResult}
-                >
-                  <Text style={styles.optionText}>{option}</Text>
-                </TouchableOpacity>
-              ))}
-            </View>
-
-            {showResult && (
-              <View style={styles.resultContainer}>
-                <Text style={[
-                  styles.resultText,
-                  { color: isCorrect ? '#4caf50' : '#f44336' }
-                ]}>
-                  {isCorrect ? '✅ Correct!' : '❌ Incorrect'}
-                </Text>
-                {!isCorrect && (
-                  <Text style={styles.correctAnswerText}>
-                    Correct answer: {question.correct_answer}
-                  </Text>
-                )}
-              </View>
-            )}
+          <View style={[
+            responsiveStyles.optionsContainer,
+            isLandscape && isTablet && responsiveStyles.optionsContainerLandscape
+          ]}>
+            {question.options.map((option, index) => (
+              <OptionButton option={option} index={index} key={option + index} />
+            ))}
           </View>
-        )}
-
-        <View style={styles.buttonContainer}>
-          {!showResult ? (
-            <TouchableOpacity
-              style={[
-                styles.submitButton,
-                !selectedAnswer && styles.disabledButton
-              ]}
-              onPress={submitAnswer}
-              disabled={!selectedAnswer || isSubmitting}
+          {showResult && (
+            <DynamicText
+              variant="caption"
+              style={responsiveStyles.postRevealHint}
+              accessibilityLiveRegion="polite"
             >
-              <Text style={styles.submitButtonText}>
-                {isSubmitting ? 'Submitting...' : 'Submit Answer'}
-              </Text>
-            </TouchableOpacity>
-          ) : (
-            <View style={styles.actionButtons}>
-              <TouchableOpacity
-                style={styles.nextButton}
-                onPress={handleNextQuestion}
-              >
-                <Text style={styles.nextButtonText}>
-                  {questionCount >= maxQuestions ? 'View Results' : 'Next Question'}
-                </Text>
-              </TouchableOpacity>
-              
-              <TouchableOpacity
-                style={styles.finishButton}
-                onPress={handleFinishQuiz}
-              >
-                <Text style={styles.finishButtonText}>Finish Quiz</Text>
-              </TouchableOpacity>
-            </View>
+              {questionCount >= maxQuestions
+                ? (isCorrect ? 'Correct! Tap to finish.' : `Incorrect. Correct answer: ${question.correct_answer}. Tap to finish.`)
+                : (isCorrect ? 'Correct! Tap to continue.' : `Incorrect. Correct answer: ${question.correct_answer}. Tap to continue.`)}
+            </DynamicText>
           )}
         </View>
-      </View>
+      )}
+    </View>
+  );
+
+  return (
+    <SafeAreaView style={[themeStyles.container, responsiveStyles.container]}>
+      {gestureControlsEnabled ? (
+        <GestureControls
+          onSwipeAnswer={(answerIndex, answer) => {
+            if (!showResult && question?.options[answerIndex]) {
+              handleAnswerSelect(question.options[answerIndex]);
+            }
+          }}
+          onDoubleTapAnswer={(answerIndex) => {
+            if (!showResult && question?.options[answerIndex]) {
+              handleAnswerSelect(question.options[answerIndex]);
+              setTimeout(submitAnswer, 300); // Auto-submit after selection
+            }
+          }}
+          answers={question?.options || []}
+          disabled={showResult || !question}
+          showGestureGuide={false} // ensure overlay never obscures question by default
+          overlayPassive
+        >
+          <QuizContent />
+        </GestureControls>
+      ) : (
+        <QuizContent />
+      )}
+
+  <View style={responsiveStyles.buttonContainer}>
+    {!showResult && (
+      <TouchableOpacity
+        style={[
+          responsiveStyles.submitButton,
+          !selectedAnswer && responsiveStyles.disabledButton
+        ]}
+        onPress={submitAnswer}
+        disabled={!selectedAnswer || isSubmitting}
+        accessibilityLabel={isSubmitting ? 'Submitting answer' : 'Submit answer'}
+      >
+        <DynamicText variant="button" style={responsiveStyles.submitButtonText}>
+          {isSubmitting ? 'Submitting...' : 'Submit Answer'}
+        </DynamicText>
+      </TouchableOpacity>
+    )}
+  </View>
     </SafeAreaView>
   );
 };
 
-const styles = StyleSheet.create({
+const styles = (theme, { isTablet, isLandscape } = {}) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
-  },
-  content: {
-    flex: 1,
-    padding: 20,
+    backgroundColor: theme.colors.mode.background,
   },
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+    padding: theme.spacing.xl,
   },
-  loadingText: {
-    marginTop: 10,
-    fontSize: 16,
-    color: '#666',
-  },
-  timerText: {
-    fontSize: 16,
-    color: '#1a237e',
-    fontWeight: 'bold',
+  content: {
+    flexGrow: 1,
+    flexShrink: 0,
+    padding: isTablet ? theme.spacing.xl : theme.spacing.lg,
+    maxWidth: isTablet ? 1200 : undefined,
+    alignSelf: 'center',
+    width: '100%',
   },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginBottom: 20,
+    alignItems: 'center',
+    marginBottom: theme.spacing.lg,
+    paddingHorizontal: isTablet ? theme.spacing.lg : 0,
+  },
+  scoreText: {
+    color: theme.colors.primary[600],
+    fontWeight: theme.typography.weights.bold,
+  },
+  questionNumber: {
+    color: theme.colors.mode.textSecondary,
+  },
+  timerText: {
+    color: theme.colors.primary[500],
+    fontWeight: theme.typography.weights.bold,
+    minWidth: 80, // prevent header layout jitter during timer updates
+    textAlign: 'right',
   },
   difficultyHeader: {
     alignItems: 'center',
-    marginBottom: 15,
+    marginBottom: theme.spacing.lg,
   },
   difficultyText: {
-    fontSize: 14,
-    color: '#666',
-    fontWeight: '500',
-    backgroundColor: '#e8f4fd',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 16,
-    overflow: 'hidden',
-  },
-  scoreText: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#1a237e',
-  },
-  questionNumber: {
-    fontSize: 16,
-    color: '#666',
+    backgroundColor: theme.colors.primary[100],
+    color: theme.colors.primary[700],
+    paddingHorizontal: theme.spacing.md,
+    paddingVertical: theme.spacing.sm,
+    borderRadius: theme.borderRadius.full,
+    fontWeight: theme.typography.weights.medium,
   },
   questionContainer: {
-    flex: 1,
-    backgroundColor: '#fff',
-    borderRadius: 12,
-    padding: 20,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  category: {
-    fontSize: 14,
-    color: '#666',
-    marginBottom: 10,
-    textTransform: 'uppercase',
-    letterSpacing: 1,
+  // Removed flex:1 to prevent options pushing question text off-screen on some layouts
+    backgroundColor: theme.colors.mode.surface,
+    borderRadius: theme.borderRadius.xl,
+    padding: isTablet ? theme.spacing.xl : theme.spacing.lg,
+    marginBottom: theme.spacing.lg,
+    ...theme.elevation.md,
+    maxWidth: isTablet ? 800 : undefined,
+    alignSelf: 'center',
+    width: '100%',
+  minHeight: 200,
   },
   questionText: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#333',
-    marginBottom: 20,
-    lineHeight: 28,
+    color: theme.colors.mode.text,
+    marginBottom: theme.spacing.lg,
+  lineHeight: theme.typography.lineHeights.relaxed,
+  // Ensure question text allocates space even if font calc fails
+  minHeight: 60,
+  // Fallback font size in case DynamicText scaling collapses size
+  fontSize: theme.typography.sizes.lg,
+  },
+  questionPlainText: {
+    color: theme.colors.mode.text,
+    marginBottom: theme.spacing.lg,
+    fontSize: theme.typography.sizes.lg,
+    fontWeight: theme.typography.weights.semibold,
+    lineHeight: Math.round(theme.typography.sizes.lg * theme.typography.lineHeights.relaxed),
+    minHeight: 60,
   },
   optionsContainer: {
-    gap: 12,
+    gap: isTablet ? theme.spacing.lg : theme.spacing.md,
+    ...(isLandscape && isTablet && {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+    }),
   },
+  optionsContainerLandscape: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: theme.spacing.md,
+  },
+  // Legacy base option style (kept for compatibility)
   option: {
-    backgroundColor: '#f8f9fa',
-    padding: 16,
-    borderRadius: 8,
+    backgroundColor: theme.colors.mode.background,
+    padding: isTablet ? theme.spacing.lg : theme.spacing.md,
+    borderRadius: theme.borderRadius.lg,
     borderWidth: 2,
-    borderColor: '#e9ecef',
+    borderColor: theme.colors.mode.border,
+    ...(isLandscape && isTablet && {
+      width: '48%',
+    }),
+  },
+  // New naming for OptionButton component
+  optionBase: {
+    backgroundColor: theme.colors.mode.background,
+    padding: isTablet ? theme.spacing.lg : theme.spacing.md,
+    borderRadius: theme.borderRadius.lg,
+    borderWidth: 2,
+    borderColor: theme.colors.mode.border,
+    ...(isLandscape && isTablet && {
+      width: '48%',
+    }),
+  },
+  optionTablet: {
+    minHeight: 60,
+    justifyContent: 'center',
   },
   selectedOption: {
-    backgroundColor: '#e3f2fd',
-    padding: 16,
-    borderRadius: 8,
-    borderWidth: 2,
-    borderColor: '#1a237e',
+    backgroundColor: theme.colors.primary[50],
+    borderColor: theme.colors.primary[500],
   },
   correctOption: {
-    backgroundColor: '#e8f5e8',
-    padding: 16,
-    borderRadius: 8,
-    borderWidth: 2,
-    borderColor: '#4caf50',
+    backgroundColor: theme.colors.success.light,
+    borderColor: theme.colors.success.main,
   },
   incorrectOption: {
-    backgroundColor: '#ffebee',
-    padding: 16,
-    borderRadius: 8,
-    borderWidth: 2,
-    borderColor: '#f44336',
+    backgroundColor: theme.colors.error.light,
+    borderColor: theme.colors.error.main,
   },
   disabledOption: {
-    backgroundColor: '#f5f5f5',
-    padding: 16,
-    borderRadius: 8,
-    borderWidth: 2,
-    borderColor: '#ddd',
+    backgroundColor: theme.colors.mode.disabled,
+    borderColor: theme.colors.mode.border,
     opacity: 0.6,
   },
+  // New naming variants mapped to legacy styles
+  optionSelected: {
+    backgroundColor: theme.colors.primary[100],
+    borderColor: theme.colors.primary[600],
+  },
+  optionCorrect: {
+    backgroundColor: theme.colors.success.light,
+    borderColor: theme.colors.success.main,
+  },
+  optionIncorrect: {
+    backgroundColor: theme.colors.error.light,
+    borderColor: theme.colors.error.main,
+  },
+  optionDisabled: {
+    backgroundColor: theme.colors.mode.disabled,
+    borderColor: theme.colors.mode.border,
+    opacity: 0.55,
+  },
   optionText: {
-    fontSize: 16,
-    color: '#333',
+    color: theme.colors.mode.text,
     textAlign: 'center',
   },
+  postRevealHint: {
+    marginTop: theme.spacing.lg,
+    textAlign: 'center',
+    color: theme.colors.mode.textSecondary,
+  },
   resultContainer: {
-    marginTop: 20,
+    marginTop: theme.spacing.lg,
     alignItems: 'center',
+    paddingTop: theme.spacing.md,
+    borderTopWidth: 1,
+    borderTopColor: theme.colors.mode.border,
   },
   resultText: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginBottom: 8,
+    fontWeight: theme.typography.weights.bold,
+    marginBottom: theme.spacing.sm,
   },
   correctAnswerText: {
-    fontSize: 16,
-    color: '#666',
+    color: theme.colors.mode.textSecondary,
+    textAlign: 'center',
+  },
+  tapHint: {
+    marginTop: theme.spacing.sm,
+    color: theme.colors.mode.textSecondary,
+    textAlign: 'center',
   },
   buttonContainer: {
-    marginTop: 20,
+    paddingHorizontal: isTablet ? theme.spacing.xl : 0,
+    paddingBottom: theme.spacing.lg,
   },
   submitButton: {
-    backgroundColor: '#1a237e',
-    padding: 16,
-    borderRadius: 8,
+    backgroundColor: theme.colors.primary[500],
+    padding: isTablet ? theme.spacing.lg : theme.spacing.md,
+    borderRadius: theme.borderRadius.lg,
     alignItems: 'center',
+    minHeight: 48,
   },
   disabledButton: {
-    backgroundColor: '#ccc',
+    backgroundColor: theme.colors.mode.disabled,
   },
   submitButtonText: {
-    color: '#fff',
-    fontSize: 18,
-    fontWeight: 'bold',
-  },
-  actionButtons: {
-    gap: 12,
-  },
-  nextButton: {
-    backgroundColor: '#4caf50',
-    padding: 16,
-    borderRadius: 8,
-    alignItems: 'center',
-  },
-  nextButtonText: {
-    color: '#fff',
-    fontSize: 18,
-    fontWeight: 'bold',
-  },
-  finishButton: {
-    backgroundColor: '#ff9800',
-    padding: 16,
-    borderRadius: 8,
-    alignItems: 'center',
-  },
-  finishButtonText: {
-    color: '#fff',
-    fontSize: 18,
-    fontWeight: 'bold',
+    color: '#ffffff',
+    fontWeight: theme.typography.weights.bold,
   },
 });
 

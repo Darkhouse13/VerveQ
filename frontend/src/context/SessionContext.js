@@ -61,6 +61,15 @@ export const SessionProvider = ({ children }) => {
     } catch (error) {
       logApiResponse('POST', `${apiConfig.baseURL}/session`, null, error);
       console.warn('Failed to initialize session:', error);
+      
+      // Provide helpful debugging information for WSL2 users
+      if (error.name === 'TypeError' && error.message.includes('Network request failed')) {
+        console.warn('💡 Network troubleshooting tips:');
+        console.warn('   - For iOS Simulator on WSL2: Ensure API URL uses WSL2 IP address');
+        console.warn('   - Check if backend server is running on WSL2');
+        console.warn('   - Current API URL:', apiConfig.baseURL);
+      }
+      
       // Continue without session - app still works
     }
   };
@@ -83,13 +92,18 @@ export const SessionProvider = ({ children }) => {
   };
 
   const updateScore = async (sport, mode, score, total = null) => {
-    if (!sessionId) return;
-    
+    // Allow posting even without session (guest / degraded mode)
     try {
-      const url = `${apiConfig.baseURL}/session/${sessionId}/score`;
-      const requestData = { sport, mode, score, total };
+      const endpoint = apiConfig.endpoints.games.quiz.complete(sport);
+      const url = `${apiConfig.baseURL}${endpoint}`;
+      const requestData = {
+        sport,
+        mode,
+        score,
+        total_questions: total ?? undefined,
+        session_id: sessionId ?? undefined,
+      };
       logApiCall('POST', url, requestData);
-      
       await fetch(url, {
         method: 'POST',
         headers: {
@@ -97,14 +111,12 @@ export const SessionProvider = ({ children }) => {
         },
         body: JSON.stringify(requestData),
       });
-      
       logApiResponse('POST', url, 'Success');
-      
-      // Reload dashboard to get updated scores
-      await loadDashboard();
-      
+      if (sessionId) {
+        await loadDashboard();
+      }
     } catch (error) {
-      logApiResponse('POST', `${apiConfig.baseURL}/session/${sessionId}/score`, null, error);
+      logApiResponse('POST', `${apiConfig.baseURL}${apiConfig.endpoints.games.quiz.complete(sport)}`, null, error);
       console.warn('Failed to update score:', error);
     }
   };

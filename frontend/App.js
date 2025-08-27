@@ -3,13 +3,18 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { StatusBar } from 'expo-status-bar';
+import { Text } from 'react-native';
 
 import { AuthProvider, useAuth } from './src/context/AuthContext';
 import { SessionProvider } from './src/context/SessionContext';
+import { ThemeProvider, useTheme } from './src/context/ThemeContext';
+import { useOnboarding } from './src/hooks/useOnboarding';
 import ErrorBoundary from './src/components/ErrorBoundary';
+import ConnectionStatus from './src/components/ui/ConnectionStatus';
 
 // Screens
 import LoginScreen from './src/screens/LoginScreen';
+import OnboardingScreen from './src/screens/OnboardingScreen';
 import HomeScreen from './src/screens/HomeScreen';
 import SportSelectionScreen from './src/screens/SportSelectionScreen';
 import DifficultySelectionScreen from './src/screens/DifficultySelectionScreen';
@@ -25,39 +30,48 @@ const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
 
 const getTabBarIcon = (routeName, focused) => {
+  // Modern text-based icons instead of emojis for professional look
   const icons = {
-    Home: focused ? '🏠' : '🏡',
-    Leaderboards: focused ? '🏆' : '🏅',
-    Challenges: focused ? '⚡' : '⚪',
-    Profile: focused ? '👤' : '👥',
+    Home: focused ? 'HOME' : 'Home',
+    Leaderboards: focused ? 'RANKS' : 'Ranks', 
+    Challenges: focused ? 'SOCIAL' : 'Social',
+    Profile: focused ? 'PROFILE' : 'Profile',
   };
-  return icons[routeName] || '📱';
+  return icons[routeName] || 'App';
 };
 
 function MainTabs() {
+  const { theme } = useTheme();
+  
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
         tabBarIcon: ({ focused, color, size }) => {
           const icon = getTabBarIcon(route.name, focused);
-          return <span style={{ fontSize: 24 }}>{icon}</span>;
+          return <Text style={{ 
+            fontSize: 10,
+            fontWeight: focused ? 'bold' : 'normal',
+            color: color
+          }}>{icon}</Text>;
         },
-        tabBarActiveTintColor: '#1a237e',
-        tabBarInactiveTintColor: '#666',
+        tabBarActiveTintColor: theme.colors.primary[500],
+        tabBarInactiveTintColor: theme.colors.mode.textSecondary,
         tabBarStyle: {
-          backgroundColor: '#fff',
+          backgroundColor: theme.colors.mode.background,
           borderTopWidth: 1,
-          borderTopColor: '#e9ecef',
+          borderTopColor: theme.colors.mode.border,
           paddingTop: 8,
           paddingBottom: 8,
           height: 60,
+          ...theme.elevation.sm
         },
         tabBarLabelStyle: {
-          fontSize: 12,
-          fontWeight: 'bold',
+          fontSize: 11,
+          fontWeight: '600',
         },
         headerStyle: {
-          backgroundColor: '#1a237e',
+          backgroundColor: theme.colors.primary[500],
+          ...theme.elevation.md
         },
         headerTintColor: '#fff',
         headerTitleStyle: {
@@ -91,11 +105,14 @@ function MainTabs() {
 }
 
 function AuthenticatedApp() {
+  const { theme } = useTheme();
+  
   return (
     <Stack.Navigator
       screenOptions={{
         headerStyle: {
-          backgroundColor: '#1a237e',
+          backgroundColor: theme.colors.primary[500],
+          ...theme.elevation.md
         },
         headerTintColor: '#fff',
         headerTitleStyle: {
@@ -160,11 +177,20 @@ function AuthenticatedApp() {
 }
 
 function UnauthenticatedApp() {
+  const { theme } = useTheme();
+  const { isOnboardingComplete, loading: onboardingLoading } = useOnboarding();
+  
+  if (onboardingLoading) {
+    return null; // Could show splash screen here
+  }
+  
   return (
     <Stack.Navigator
+      initialRouteName={isOnboardingComplete ? "Login" : "Onboarding"}
       screenOptions={{
         headerStyle: {
-          backgroundColor: '#1a237e',
+          backgroundColor: theme.colors.primary[500],
+          ...theme.elevation.md
         },
         headerTintColor: '#fff',
         headerTitleStyle: {
@@ -173,6 +199,14 @@ function UnauthenticatedApp() {
         },
       }}
     >
+      <Stack.Screen 
+        name="Onboarding" 
+        component={OnboardingScreen} 
+        options={{ 
+          title: 'Welcome',
+          headerShown: false 
+        }}
+      />
       <Stack.Screen 
         name="Login" 
         component={LoginScreen} 
@@ -197,13 +231,16 @@ function AppContent() {
 
 export default function App() {
   return (
-    <AuthProvider>
-      <SessionProvider>
-        <NavigationContainer>
-          <StatusBar style="light" />
-          <AppContent />
-        </NavigationContainer>
-      </SessionProvider>
-    </AuthProvider>
+    <ThemeProvider>
+      <AuthProvider>
+        <SessionProvider>
+          <NavigationContainer>
+            <StatusBar style="light" />
+            <ConnectionStatus />
+            <AppContent />
+          </NavigationContainer>
+        </SessionProvider>
+      </AuthProvider>
+    </ThemeProvider>
   );
 }
