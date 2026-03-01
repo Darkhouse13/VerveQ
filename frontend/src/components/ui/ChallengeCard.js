@@ -336,7 +336,7 @@ const styles = (theme) => StyleSheet.create({
     marginRight: theme.spacing.md,
   },
   avatarText: {
-    color: '#ffffff',
+    color: theme.colors.onPrimary,
     fontSize: theme.typography.sizes.md,
     fontWeight: theme.typography.weights.bold,
   },

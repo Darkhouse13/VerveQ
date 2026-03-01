@@ -49,7 +49,7 @@ const styles = (theme) => StyleSheet.create({
     fontWeight: theme.typography.weights.medium,
   },
   labelSelected: {
-    color: '#ffffff',
+    color: theme.colors.onPrimary,
   },
 });
 

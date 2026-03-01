@@ -527,6 +527,12 @@ const QuizScreen = ({ navigation, route }) => {
         break;
     }
 
+    // Choose text style to maintain contrast on different states
+    const textStyle = [responsiveStyles.optionText];
+    if (state === 'selected') {
+      textStyle.push(responsiveStyles.optionTextSelected);
+    }
+
     return (
       <Animated.View style={{ transform: [{ scale: animated }] }}>
         <Pressable
@@ -542,7 +548,7 @@ const QuizScreen = ({ navigation, route }) => {
         >
           <DynamicText 
             variant="body" 
-            style={responsiveStyles.optionText}
+            style={textStyle}
             maxLines={3}
             adjustsFontSizeToFit={isTablet}
           >
@@ -852,6 +858,11 @@ const styles = (theme, { isTablet, isLandscape } = {}) => StyleSheet.create({
     color: theme.colors.mode.text,
     textAlign: 'center',
   },
+  optionTextSelected: {
+    // Improve contrast on light selection background
+    color: theme.colors.primary[800],
+    fontWeight: theme.typography.weights.semibold,
+  },
   postRevealHint: {
     marginTop: theme.spacing.lg,
     textAlign: 'center',
@@ -892,7 +903,7 @@ const styles = (theme, { isTablet, isLandscape } = {}) => StyleSheet.create({
     backgroundColor: theme.colors.mode.disabled,
   },
   submitButtonText: {
-    color: '#ffffff',
+    color: theme.colors.onPrimary,
     fontWeight: theme.typography.weights.bold,
   },
 });

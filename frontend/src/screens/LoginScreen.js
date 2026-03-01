@@ -102,35 +102,35 @@ const LoginScreen = ({ navigation }) => {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={styles(theme).container}>
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        style={styles.keyboardView}
+        style={styles(theme).keyboardView}
       >
         <ScrollView 
-          contentContainerStyle={styles.scrollContent}
+          contentContainerStyle={styles(theme).scrollContent}
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
         >
-          <View style={styles.content}>
+          <View style={styles(theme).content}>
             {/* Logo and Branding */}
-            <View style={styles.logoSection}>
-              <View style={styles.logo}>
-                <Text style={styles.logoText}>VQ</Text>
+            <View style={styles(theme).logoSection}>
+              <View style={styles(theme).logo}>
+                <Text style={styles(theme).logoText}>VQ</Text>
               </View>
-              <Text style={styles.appTitle}>VerveQ Sports</Text>
-              <Text style={styles.appSubtitle}>Compete in sports trivia worldwide</Text>
+              <Text style={styles(theme).appTitle}>VerveQ Sports</Text>
+              <Text style={styles(theme).appSubtitle}>Compete in sports trivia worldwide</Text>
             </View>
 
             {/* Main Form */}
-            <View style={styles.formSection}>
-              <View style={styles.inputGroup}>
-                <Text style={styles.inputLabel}>Display Name</Text>
+            <View style={styles(theme).formSection}>
+              <View style={styles(theme).inputGroup}>
+                <Text style={styles(theme).inputLabel}>Display Name</Text>
                 <TextInput
                   ref={displayNameRef}
                   style={[
-                    styles.inputField,
-                    displayNameError ? styles.inputError : null
+                    styles(theme).inputField,
+                    displayNameError ? styles(theme).inputError : null
                   ]}
                   placeholder="Enter your name"
                   value={displayName}
@@ -141,37 +141,37 @@ const LoginScreen = ({ navigation }) => {
                   editable={!loading}
                 />
                 {displayNameError ? (
-                  <Text style={styles.errorText}>{displayNameError}</Text>
+                  <Text style={styles(theme).errorText}>{displayNameError}</Text>
                 ) : null}
               </View>
 
-              <View style={styles.buttonGroup}>
+              <View style={styles(theme).buttonGroup}>
                 <TouchableOpacity
                   style={[
-                    styles.btn,
-                    styles.btnPrimary,
-                    loading ? styles.btnDisabled : null
+                    styles(theme).btn,
+                    styles(theme).btnPrimary,
+                    loading ? styles(theme).btnDisabled : null
                   ]}
                   onPress={handleCreateAccount}
                   disabled={loading}
                   activeOpacity={0.8}
                 >
-                  <Text style={[styles.btnText, styles.btnPrimaryText]}>
+                  <Text style={[styles(theme).btnText, styles(theme).btnPrimaryText]}>
                     {loading ? 'Creating Account...' : 'Create Account & Play'}
                   </Text>
                 </TouchableOpacity>
 
                 <TouchableOpacity
                   style={[
-                    styles.btn,
-                    styles.btnSecondary,
-                    loading ? styles.btnDisabled : null
+                    styles(theme).btn,
+                    styles(theme).btnSecondary,
+                    loading ? styles(theme).btnDisabled : null
                   ]}
                   onPress={handleGuestLogin}
                   disabled={loading}
                   activeOpacity={0.8}
                 >
-                  <Text style={[styles.btnText, styles.btnSecondaryText]}>
+                  <Text style={[styles(theme).btnText, styles(theme).btnSecondaryText]}>
                     Play as Guest
                   </Text>
                 </TouchableOpacity>
@@ -179,22 +179,22 @@ const LoginScreen = ({ navigation }) => {
             </View>
 
             {/* Divider */}
-            <View style={styles.divider}>
-              <View style={styles.dividerLine} />
-              <Text style={styles.dividerText}>or</Text>
-              <View style={styles.dividerLine} />
+            <View style={styles(theme).divider}>
+              <View style={styles(theme).dividerLine} />
+              <Text style={styles(theme).dividerText}>or</Text>
+              <View style={styles(theme).dividerLine} />
             </View>
 
             {/* Quick Action */}
-            <View style={styles.quickAction}>
+            <View style={styles(theme).quickAction}>
               <TouchableOpacity
                 onPress={handleQuickStart}
                 disabled={loading}
                 activeOpacity={0.7}
               >
                 <Text style={[
-                  styles.linkButton,
-                  loading ? styles.linkButtonDisabled : null
+                  styles(theme).linkButton,
+                  loading ? styles(theme).linkButtonDisabled : null
                 ]}>
                   Quick Start with Random Name →
                 </Text>
@@ -207,10 +207,10 @@ const LoginScreen = ({ navigation }) => {
   );
 };
 
-const styles = StyleSheet.create({
+const styles = (theme) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F5F5F5',
+    backgroundColor: theme.colors.mode.background,
   },
   keyboardView: {
     flex: 1,
@@ -233,7 +233,7 @@ const styles = StyleSheet.create({
   logo: {
     width: 60,
     height: 60,
-    backgroundColor: '#1A237E',
+    backgroundColor: theme.colors.primary[500],
     borderRadius: 16,
     alignItems: 'center',
     justifyContent: 'center',
@@ -242,18 +242,18 @@ const styles = StyleSheet.create({
   logoText: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: '#FFFFFF',
+    color: theme.colors.onPrimary,
   },
   appTitle: {
     fontSize: 28,
     fontWeight: '700',
-    color: '#1A237E',
+    color: theme.colors.primary[500],
     marginBottom: 8,
     textAlign: 'center',
   },
   appSubtitle: {
     fontSize: 16,
-    color: '#666666',
+    color: theme.colors.mode.textSecondary,
     fontWeight: '400',
     textAlign: 'center',
   },
@@ -266,7 +266,7 @@ const styles = StyleSheet.create({
   inputLabel: {
     fontSize: 14,
     fontWeight: '600',
-    color: '#333333',
+    color: theme.colors.mode.text,
     marginBottom: 8,
   },
   inputField: {
@@ -275,18 +275,18 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     fontSize: 16,
     borderWidth: 2,
-    borderColor: '#E5E7EB',
+    borderColor: theme.colors.mode.border,
     borderRadius: 12,
-    backgroundColor: '#FAFAFA',
-    color: '#333333',
+    backgroundColor: theme.colors.mode.surfaceVariant,
+    color: theme.colors.mode.text,
   },
   inputError: {
-    borderColor: '#EF4444',
-    backgroundColor: '#FFFFFF',
+    borderColor: theme.colors.error.light,
+    backgroundColor: theme.colors.mode.surface,
   },
   errorText: {
     fontSize: 12,
-    color: '#EF4444',
+    color: theme.colors.error.light,
     marginTop: 4,
   },
   buttonGroup: {
@@ -301,17 +301,17 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   btnPrimary: {
-    backgroundColor: '#1A237E',
+    backgroundColor: theme.colors.primary[500],
   },
   btnSecondary: {
     backgroundColor: 'transparent',
     borderWidth: 2,
-    borderColor: '#1A237E',
+    borderColor: theme.colors.primary[500],
     marginTop: 12,
   },
   btnDisabled: {
-    backgroundColor: '#CCCCCC',
-    borderColor: '#CCCCCC',
+    backgroundColor: theme.colors.neutral[400],
+    borderColor: theme.colors.neutral[400],
   },
   btnText: {
     fontSize: 16,
@@ -319,10 +319,10 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
   btnPrimaryText: {
-    color: '#FFFFFF',
+    color: theme.colors.onPrimary,
   },
   btnSecondaryText: {
-    color: '#1A237E',
+    color: theme.colors.primary[500],
   },
   divider: {
     flexDirection: 'row',
@@ -332,24 +332,24 @@ const styles = StyleSheet.create({
   dividerLine: {
     flex: 1,
     height: 1,
-    backgroundColor: '#E5E7EB',
+    backgroundColor: theme.colors.mode.border,
   },
   dividerText: {
-    backgroundColor: '#F5F5F5',
+    backgroundColor: theme.colors.mode.background,
     paddingHorizontal: 16,
-    color: '#9CA3AF',
+    color: theme.colors.mode.textTertiary,
     fontSize: 14,
   },
   quickAction: {
     alignItems: 'center',
   },
   linkButton: {
-    color: '#1A237E',
+    color: theme.colors.primary[500],
     fontSize: 14,
     fontWeight: '500',
   },
   linkButtonDisabled: {
-    color: '#9CA3AF',
+    color: theme.colors.mode.textTertiary,
   },
 });
 

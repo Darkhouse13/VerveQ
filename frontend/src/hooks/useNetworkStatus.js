@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { apiConfig } from '../config/api';
 
 const OFFLINE_QUEUE_KEY = '@verveq_offline_queue';
 const NETWORK_CHECK_INTERVAL = 5000;
@@ -35,33 +36,38 @@ export const useNetworkStatus = () => {
   }, []);
 
   const testConnection = useCallback(async () => {
-    try {
+    const wasConnected = isConnected && isInternetReachable;
+
+    // Prefer checking the app backend health endpoint
+    const backendHealthUrl = `${apiConfig.baseURL.replace(/\/$/, '')}/health`;
+
+    const ping = async (url, method = 'GET', timeoutMs = 5000) => {
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 5000);
-
-      const response = await fetch('https://httpbin.org/status/200', {
-        method: 'HEAD',
-        signal: controller.signal,
-        cache: 'no-cache',
-      });
-
-      clearTimeout(timeoutId);
-
-      const wasConnected = isConnected && isInternetReachable;
-      const nowConnected = response.ok;
-
-      setIsConnected(nowConnected);
-      setIsInternetReachable(nowConnected);
-      setConnectionType(nowConnected ? 'wifi' : 'none');
-
-      // Process offline queue when connection is restored
-      if (!wasConnected && nowConnected) {
-        processOfflineQueue();
+      const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+      try {
+        const res = await fetch(url, { method, signal: controller.signal, cache: 'no-cache' });
+        return res.ok;
+      } catch (_) {
+        return false;
+      } finally {
+        clearTimeout(timeoutId);
       }
-    } catch (error) {
-      setIsConnected(false);
-      setIsInternetReachable(false);
-      setConnectionType('none');
+    };
+
+    let nowConnected = await ping(backendHealthUrl, 'GET', 4000);
+
+    // Fallback to public endpoint if backend is unreachable (useful when dev server is off)
+    if (!nowConnected) {
+      nowConnected = await ping('https://httpbin.org/status/200', 'HEAD', 3000);
+    }
+
+    setIsConnected(nowConnected);
+    setIsInternetReachable(nowConnected);
+    setConnectionType(nowConnected ? 'wifi' : 'none');
+
+    // Process offline queue when connection is restored
+    if (!wasConnected && nowConnected) {
+      processOfflineQueue();
     }
   }, [isConnected, isInternetReachable, processOfflineQueue]);
 
@@ -76,25 +82,21 @@ export const useNetworkStatus = () => {
     if (!isConnected) return;
 
     try {
+      const url = `${apiConfig.baseURL.replace(/\/$/, '')}/health`;
       const start = Date.now();
-      const response = await fetch('https://httpbin.org/json', {
-        method: 'GET',
-        cache: 'no-cache',
-      });
-      
+      const response = await fetch(url, { method: 'GET', cache: 'no-cache' });
       if (response.ok) {
-        const end = Date.now();
-        const duration = end - start;
-        const size = JSON.stringify(await response.json()).length;
-        const speedKbps = (size * 8) / (duration / 1000) / 1024;
-
-        if (speedKbps > 1000) {
+        const duration = Date.now() - start;
+        // Simple thresholds based on latency
+        if (duration < 200) {
           setConnectionSpeed('fast');
-        } else if (speedKbps > 100) {
+        } else if (duration < 800) {
           setConnectionSpeed('medium');
         } else {
           setConnectionSpeed('slow');
         }
+      } else {
+        setConnectionSpeed('unknown');
       }
     } catch (error) {
       setConnectionSpeed('unknown');
@@ -180,16 +182,26 @@ export const useNetworkStatus = () => {
     try {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 3000);
-
-      const response = await fetch('https://httpbin.org/status/200', {
+      const res = await fetch(`${apiConfig.baseURL.replace(/\/$/, '')}/health`, {
+        method: 'GET',
+        signal: controller.signal,
+        cache: 'no-cache',
+      });
+      clearTimeout(timeoutId);
+      if (res.ok) return true;
+    } catch (_) {}
+    // Fallback: public check
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 3000);
+      const res = await fetch('https://httpbin.org/status/200', {
         method: 'HEAD',
         signal: controller.signal,
         cache: 'no-cache',
       });
-
       clearTimeout(timeoutId);
-      return response.ok;
-    } catch (error) {
+      return res.ok;
+    } catch (_) {
       return false;
     }
   }, []);

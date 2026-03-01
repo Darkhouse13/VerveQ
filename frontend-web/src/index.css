@@ -1,0 +1,162 @@
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 30 100% 97%;
+    --foreground: 0 0% 7%;
+
+    --card: 30 100% 97%;
+    --card-foreground: 0 0% 7%;
+
+    --popover: 30 100% 97%;
+    --popover-foreground: 0 0% 7%;
+
+    --primary: 25 100% 50%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 0 0% 7%;
+    --secondary-foreground: 30 100% 97%;
+
+    --muted: 30 18% 88%;
+    --muted-foreground: 0 0% 18%;
+
+    --accent: 75 100% 55%;
+    --accent-foreground: 0 0% 7%;
+
+    --destructive: 1 100% 60%;
+    --destructive-foreground: 0 0% 100%;
+
+    --success: 152 100% 41%;
+    --success-foreground: 0 0% 100%;
+
+    --hot-pink: 318 100% 62%;
+    --hot-pink-foreground: 0 0% 100%;
+
+    --electric-blue: 209 100% 50%;
+    --electric-blue-foreground: 0 0% 100%;
+
+    --border: 0 0% 7%;
+    --input: 0 0% 7%;
+    --ring: 25 100% 50%;
+
+    --radius: 8px;
+
+    --neo-border: 2px;
+    --neo-shadow-x: 4px;
+    --neo-shadow-y: 4px;
+    --neo-shadow-color: 0 0% 7%;
+
+    --sidebar-background: 30 100% 97%;
+    --sidebar-foreground: 0 0% 7%;
+    --sidebar-primary: 25 100% 50%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 75 100% 55%;
+    --sidebar-accent-foreground: 0 0% 7%;
+    --sidebar-border: 0 0% 7%;
+    --sidebar-ring: 25 100% 50%;
+  }
+
+  .dark {
+    --background: 0 0% 8%;
+    --foreground: 30 100% 97%;
+
+    --card: 0 0% 11%;
+    --card-foreground: 30 100% 97%;
+
+    --popover: 0 0% 11%;
+    --popover-foreground: 30 100% 97%;
+
+    --primary: 25 100% 50%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 30 100% 97%;
+    --secondary-foreground: 0 0% 7%;
+
+    --muted: 0 0% 18%;
+    --muted-foreground: 30 18% 75%;
+
+    --accent: 75 100% 55%;
+    --accent-foreground: 0 0% 7%;
+
+    --destructive: 1 100% 60%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 0 0% 80%;
+    --input: 0 0% 80%;
+    --ring: 25 100% 50%;
+
+    --neo-shadow-color: 0 0% 80%;
+
+    --sidebar-background: 0 0% 8%;
+    --sidebar-foreground: 30 100% 97%;
+    --sidebar-primary: 25 100% 50%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 75 100% 55%;
+    --sidebar-accent-foreground: 0 0% 7%;
+    --sidebar-border: 0 0% 80%;
+    --sidebar-ring: 25 100% 50%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground font-body;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-heading font-bold;
+  }
+}
+
+@layer utilities {
+  .neo-border {
+    border: var(--neo-border) solid hsl(var(--border));
+  }
+
+  .neo-shadow {
+    box-shadow: var(--neo-shadow-x) var(--neo-shadow-y) 0px 0px hsl(var(--neo-shadow-color));
+  }
+
+  .neo-shadow-lg {
+    box-shadow: 6px 6px 0px 0px hsl(var(--neo-shadow-color));
+  }
+
+  .neo-shadow-pressed {
+    box-shadow: 0px 0px 0px 0px hsl(var(--neo-shadow-color));
+    transform: translate(var(--neo-shadow-x), var(--neo-shadow-y));
+  }
+
+  .neo-card {
+    @apply neo-border neo-shadow rounded-lg;
+  }
+
+  .font-heading {
+    font-family: 'Space Grotesk', sans-serif;
+  }
+
+  .font-body {
+    font-family: 'Inter', sans-serif;
+  }
+
+  .font-mono {
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  .sticker {
+    @apply neo-border neo-shadow rounded-full px-3 py-1 font-heading font-bold text-xs uppercase;
+  }
+
+  .sticker-rotated {
+    @apply sticker;
+    transform: rotate(-2deg);
+  }
+}

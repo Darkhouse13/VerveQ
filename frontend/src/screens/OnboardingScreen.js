@@ -353,7 +353,7 @@ const styles = (theme) => StyleSheet.create({
     alignItems: 'center',
   },
   checkmark: {
-    color: '#ffffff',
+    color: theme.colors.onPrimary,
     fontSize: 14,
     fontWeight: 'bold',
   },

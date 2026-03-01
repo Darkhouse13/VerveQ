@@ -4,6 +4,13 @@ from sqlalchemy.pool import StaticPool
 import os
 from .models import Base
 
+# Environment detection
+ENVIRONMENT = os.getenv("ENVIRONMENT", "development").lower()
+
+# In production, require explicit DATABASE_URL (no SQLite fallback)
+if ENVIRONMENT == "production" and not os.getenv("DATABASE_URL"):
+    raise RuntimeError("DATABASE_URL environment variable is required in production")
+
 # Database configuration - default to SQLite for easy development
 DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./verveq_platform.db")
 
@@ -29,6 +36,10 @@ if DATABASE_URL.startswith("postgresql"):
         print(f"⚠️  PostgreSQL connection failed: {e}")
         print("⚠️  Falling back to SQLite for development")
         DATABASE_URL = "sqlite:///./verveq_platform.db"
+
+# Prevent SQLite fallback in production
+if ENVIRONMENT == "production" and DATABASE_URL.startswith("sqlite"):
+    raise RuntimeError("SQLite fallback is not allowed in production. Please configure a PostgreSQL DATABASE_URL.")
 
 # Create engine
 if DATABASE_URL.startswith("sqlite"):

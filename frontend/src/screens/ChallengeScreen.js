@@ -13,9 +13,11 @@ import {
 } from 'react-native';
 import { useAuth } from '../context/AuthContext';
 import { apiConfig } from '../config/api';
+import { useTheme } from '../context/ThemeContext';
 
 const ChallengeScreen = ({ navigation }) => {
   const { apiCall, user } = useAuth();
+  const { theme } = useTheme();
   
   const [pendingChallenges, setPendingChallenges] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -129,37 +131,37 @@ const ChallengeScreen = ({ navigation }) => {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
-      <ScrollView style={styles.scrollView}>
-        <View style={styles.content}>
+    <SafeAreaView style={styles(theme).container}>
+      <ScrollView style={styles(theme).scrollView}>
+        <View style={styles(theme).content}>
           {/* Create Challenge Section */}
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>⚡ Create Challenge</Text>
+          <View style={styles(theme).section}>
+            <Text style={styles(theme).sectionTitle}>⚡ Create Challenge</Text>
             
-            <View style={styles.form}>
-              <Text style={styles.label}>Challenge Player:</Text>
+            <View style={styles(theme).form}>
+              <Text style={styles(theme).label}>Challenge Player:</Text>
               <TextInput
-                style={styles.input}
+                style={styles(theme).input}
                 placeholder="Enter username (e.g., player123)"
                 value={challengeUsername}
                 onChangeText={setChallengeUsername}
                 autoCapitalize="none"
               />
 
-              <Text style={styles.label}>Sport:</Text>
-              <View style={styles.optionButtons}>
+              <Text style={styles(theme).label}>Sport:</Text>
+              <View style={styles(theme).optionButtons}>
                 {sports.map(sport => (
                   <TouchableOpacity
                     key={sport}
                     style={[
-                      styles.optionButton,
-                      selectedSport === sport && styles.optionButtonActive
+                      styles(theme).optionButton,
+                      selectedSport === sport && styles(theme).optionButtonActive
                     ]}
                     onPress={() => setSelectedSport(sport)}
                   >
                     <Text style={[
-                      styles.optionButtonText,
-                      selectedSport === sport && styles.optionButtonTextActive
+                      styles(theme).optionButtonText,
+                      selectedSport === sport && styles(theme).optionButtonTextActive
                     ]}>
                       {sport === 'football' ? '⚽ Football' : '🎾 Tennis'}
                     </Text>
@@ -167,20 +169,20 @@ const ChallengeScreen = ({ navigation }) => {
                 ))}
               </View>
 
-              <Text style={styles.label}>Mode:</Text>
-              <View style={styles.optionButtons}>
+              <Text style={styles(theme).label}>Mode:</Text>
+              <View style={styles(theme).optionButtons}>
                 {modes.map(mode => (
                   <TouchableOpacity
                     key={mode}
                     style={[
-                      styles.optionButton,
-                      selectedMode === mode && styles.optionButtonActive
+                      styles(theme).optionButton,
+                      selectedMode === mode && styles(theme).optionButtonActive
                     ]}
                     onPress={() => setSelectedMode(mode)}
                   >
                     <Text style={[
-                      styles.optionButtonText,
-                      selectedMode === mode && styles.optionButtonTextActive
+                      styles(theme).optionButtonText,
+                      selectedMode === mode && styles(theme).optionButtonTextActive
                     ]}>
                       {mode === 'quiz' ? '🧠 Quiz' : '⚡ Survival'}
                     </Text>
@@ -189,88 +191,88 @@ const ChallengeScreen = ({ navigation }) => {
               </View>
 
               <TouchableOpacity
-                style={[styles.createButton, creating && styles.createButtonDisabled]}
+                style={[styles(theme).createButton, creating && styles(theme).createButtonDisabled]}
                 onPress={createChallenge}
                 disabled={creating}
               >
                 {creating ? (
-                  <ActivityIndicator color="#fff" />
+                  <ActivityIndicator color={theme.colors.onPrimary} />
                 ) : (
-                  <Text style={styles.createButtonText}>Send Challenge</Text>
+                  <Text style={styles(theme).createButtonText}>Send Challenge</Text>
                 )}
               </TouchableOpacity>
             </View>
           </View>
 
           {/* Share Score Section */}
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>📱 Share Your Score</Text>
-            <Text style={styles.sectionDescription}>
+          <View style={styles(theme).section}>
+            <Text style={styles(theme).sectionTitle}>📱 Share Your Score</Text>
+            <Text style={styles(theme).sectionDescription}>
               Share your best scores to challenge friends on social media
             </Text>
             
-            <View style={styles.shareButtons}>
+            <View style={styles(theme).shareButtons}>
               <TouchableOpacity
-                style={styles.shareButton}
+                style={styles(theme).shareButton}
                 onPress={() => shareScore(25, 'Football', 'Quiz')}
               >
-                <Text style={styles.shareButtonText}>📊 Share Quiz Score</Text>
+                <Text style={styles(theme).shareButtonText}>📊 Share Quiz Score</Text>
               </TouchableOpacity>
               
               <TouchableOpacity
-                style={styles.shareButton}
+                style={styles(theme).shareButton}
                 onPress={() => shareScore(15, 'Football', 'Survival')}
               >
-                <Text style={styles.shareButtonText}>⚡ Share Survival Score</Text>
+                <Text style={styles(theme).shareButtonText}>⚡ Share Survival Score</Text>
               </TouchableOpacity>
             </View>
           </View>
 
           {/* Pending Challenges */}
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>📬 Pending Challenges</Text>
+          <View style={styles(theme).section}>
+            <Text style={styles(theme).sectionTitle}>📬 Pending Challenges</Text>
             
             {loading ? (
-              <ActivityIndicator size="large" color="#1a237e" style={styles.loader} />
+              <ActivityIndicator size="large" color={theme.colors.primary[500]} style={styles(theme).loader} />
             ) : pendingChallenges.length > 0 ? (
-              <View style={styles.challengesList}>
+              <View style={styles(theme).challengesList}>
                 {pendingChallenges.map((challenge, index) => (
-                  <View key={challenge.id} style={styles.challengeCard}>
-                    <View style={styles.challengeHeader}>
-                      <Text style={styles.challengerName}>
+                  <View key={challenge.id} style={styles(theme).challengeCard}>
+                    <View style={styles(theme).challengeHeader}>
+                      <Text style={styles(theme).challengerName}>
                         {challenge.challenger.display_name}
                       </Text>
-                      <Text style={styles.challengeTime}>
+                      <Text style={styles(theme).challengeTime}>
                         {new Date(challenge.created_at).toLocaleDateString()}
                       </Text>
                     </View>
                     
-                    <Text style={styles.challengeDetails}>
+                    <Text style={styles(theme).challengeDetails}>
                       {challenge.sport === 'football' ? '⚽' : '🎾'} {challenge.sport.charAt(0).toUpperCase() + challenge.sport.slice(1)} - {challenge.mode === 'quiz' ? '🧠' : '⚡'} {challenge.mode.charAt(0).toUpperCase() + challenge.mode.slice(1)}
                     </Text>
                     
-                    <View style={styles.challengeActions}>
+                    <View style={styles(theme).challengeActions}>
                       <TouchableOpacity
-                        style={styles.acceptButton}
+                        style={styles(theme).acceptButton}
                         onPress={() => acceptChallenge(challenge.id)}
                       >
-                        <Text style={styles.acceptButtonText}>✅ Accept</Text>
+                        <Text style={styles(theme).acceptButtonText}>✅ Accept</Text>
                       </TouchableOpacity>
                       
                       <TouchableOpacity
-                        style={styles.declineButton}
+                        style={styles(theme).declineButton}
                         onPress={() => declineChallenge(challenge.id)}
                       >
-                        <Text style={styles.declineButtonText}>❌ Decline</Text>
+                        <Text style={styles(theme).declineButtonText}>❌ Decline</Text>
                       </TouchableOpacity>
                     </View>
                   </View>
                 ))}
               </View>
             ) : (
-              <View style={styles.emptyContainer}>
-                <Text style={styles.emptyText}>No pending challenges</Text>
-                <Text style={styles.emptySubtext}>
+              <View style={styles(theme).emptyContainer}>
+                <Text style={styles(theme).emptyText}>No pending challenges</Text>
+                <Text style={styles(theme).emptySubtext}>
                   Challenge friends or wait for them to challenge you!
                 </Text>
               </View>
@@ -278,32 +280,32 @@ const ChallengeScreen = ({ navigation }) => {
           </View>
 
           {/* Quick Actions */}
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>🚀 Quick Actions</Text>
+          <View style={styles(theme).section}>
+            <Text style={styles(theme).sectionTitle}>🚀 Quick Actions</Text>
             
-            <View style={styles.quickActions}>
+            <View style={styles(theme).quickActions}>
               <TouchableOpacity
-                style={styles.quickAction}
+                style={styles(theme).quickAction}
                 onPress={() => navigation.navigate('Leaderboards')}
               >
-                <Text style={styles.quickActionIcon}>🏆</Text>
-                <Text style={styles.quickActionText}>View Leaderboards</Text>
+                <Text style={styles(theme).quickActionIcon}>🏆</Text>
+                <Text style={styles(theme).quickActionText}>View Leaderboards</Text>
               </TouchableOpacity>
               
               <TouchableOpacity
-                style={styles.quickAction}
+                style={styles(theme).quickAction}
                 onPress={() => navigation.navigate('Profile', { userId: user?.id })}
               >
-                <Text style={styles.quickActionIcon}>👤</Text>
-                <Text style={styles.quickActionText}>My Profile</Text>
+                <Text style={styles(theme).quickActionIcon}>👤</Text>
+                <Text style={styles(theme).quickActionText}>My Profile</Text>
               </TouchableOpacity>
               
               <TouchableOpacity
-                style={styles.quickAction}
+                style={styles(theme).quickAction}
                 onPress={() => navigation.navigate('SportSelection', { mode: 'quiz' })}
               >
-                <Text style={styles.quickActionIcon}>🎯</Text>
-                <Text style={styles.quickActionText}>Play Quiz</Text>
+                <Text style={styles(theme).quickActionIcon}>🎯</Text>
+                <Text style={styles(theme).quickActionText}>Play Quiz</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -313,10 +315,10 @@ const ChallengeScreen = ({ navigation }) => {
   );
 };
 
-const styles = StyleSheet.create({
+const styles = (theme) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: theme.colors.mode.background,
   },
   scrollView: {
     flex: 1,
@@ -325,7 +327,7 @@ const styles = StyleSheet.create({
     padding: 16,
   },
   section: {
-    backgroundColor: '#fff',
+    backgroundColor: theme.colors.mode.surface,
     borderRadius: 16,
     padding: 20,
     marginBottom: 16,
@@ -338,12 +340,12 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: '#333',
+    color: theme.colors.mode.text,
     marginBottom: 12,
   },
   sectionDescription: {
     fontSize: 14,
-    color: '#666',
+    color: theme.colors.mode.textSecondary,
     marginBottom: 16,
   },
   form: {
@@ -352,14 +354,16 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: '#333',
+    color: theme.colors.mode.text,
   },
   input: {
     borderWidth: 2,
-    borderColor: '#e9ecef',
+    borderColor: theme.colors.mode.border,
     borderRadius: 8,
     padding: 12,
     fontSize: 16,
+    color: theme.colors.mode.text,
+    backgroundColor: theme.colors.mode.surfaceVariant,
   },
   optionButtons: {
     flexDirection: 'row',
@@ -370,34 +374,34 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     paddingHorizontal: 16,
     borderRadius: 8,
-    backgroundColor: '#f8f9fa',
+    backgroundColor: theme.colors.mode.surfaceVariant,
     borderWidth: 2,
-    borderColor: '#e9ecef',
+    borderColor: theme.colors.mode.border,
     alignItems: 'center',
   },
   optionButtonActive: {
-    backgroundColor: '#1a237e',
-    borderColor: '#1a237e',
+    backgroundColor: theme.colors.primary[500],
+    borderColor: theme.colors.primary[500],
   },
   optionButtonText: {
     fontSize: 14,
     fontWeight: 'bold',
-    color: '#666',
+    color: theme.colors.mode.textSecondary,
   },
   optionButtonTextActive: {
-    color: '#fff',
+    color: theme.colors.onPrimary,
   },
   createButton: {
-    backgroundColor: '#1a237e',
+    backgroundColor: theme.colors.primary[500],
     padding: 16,
     borderRadius: 8,
     alignItems: 'center',
   },
   createButtonDisabled: {
-    backgroundColor: '#ccc',
+    backgroundColor: theme.colors.neutral[400],
   },
   createButtonText: {
-    color: '#fff',
+    color: theme.colors.onPrimary,
     fontSize: 16,
     fontWeight: 'bold',
   },
@@ -405,13 +409,13 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   shareButton: {
-    backgroundColor: '#4ecdc4',
+    backgroundColor: theme.colors.secondary.emerald,
     padding: 16,
     borderRadius: 8,
     alignItems: 'center',
   },
   shareButtonText: {
-    color: '#fff',
+    color: theme.colors.onPrimary,
     fontSize: 16,
     fontWeight: 'bold',
   },
@@ -423,7 +427,7 @@ const styles = StyleSheet.create({
   },
   challengeCard: {
     borderWidth: 1,
-    borderColor: '#e9ecef',
+    borderColor: theme.colors.mode.border,
     borderRadius: 12,
     padding: 16,
   },
@@ -436,15 +440,15 @@ const styles = StyleSheet.create({
   challengerName: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: '#333',
+    color: theme.colors.mode.text,
   },
   challengeTime: {
     fontSize: 12,
-    color: '#888',
+    color: theme.colors.mode.textTertiary,
   },
   challengeDetails: {
     fontSize: 14,
-    color: '#666',
+    color: theme.colors.mode.textSecondary,
     marginBottom: 12,
   },
   challengeActions: {
@@ -453,25 +457,25 @@ const styles = StyleSheet.create({
   },
   acceptButton: {
     flex: 1,
-    backgroundColor: '#28a745',
+    backgroundColor: theme.colors.success.dark,
     padding: 12,
     borderRadius: 8,
     alignItems: 'center',
   },
   acceptButtonText: {
-    color: '#fff',
+    color: theme.colors.onPrimary,
     fontSize: 14,
     fontWeight: 'bold',
   },
   declineButton: {
     flex: 1,
-    backgroundColor: '#dc3545',
+    backgroundColor: theme.colors.error.light,
     padding: 12,
     borderRadius: 8,
     alignItems: 'center',
   },
   declineButtonText: {
-    color: '#fff',
+    color: theme.colors.onPrimary,
     fontSize: 14,
     fontWeight: 'bold',
   },
@@ -482,12 +486,12 @@ const styles = StyleSheet.create({
   emptyText: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: '#666',
+    color: theme.colors.mode.textSecondary,
     marginBottom: 8,
   },
   emptySubtext: {
     fontSize: 14,
-    color: '#888',
+    color: theme.colors.mode.textTertiary,
     textAlign: 'center',
   },
   quickActions: {
@@ -498,7 +502,7 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     padding: 16,
-    backgroundColor: '#f8f9fa',
+    backgroundColor: theme.colors.mode.surfaceVariant,
     borderRadius: 12,
   },
   quickActionIcon: {
@@ -508,7 +512,7 @@ const styles = StyleSheet.create({
   quickActionText: {
     fontSize: 12,
     fontWeight: 'bold',
-    color: '#333',
+    color: theme.colors.mode.text,
     textAlign: 'center',
   },
 });

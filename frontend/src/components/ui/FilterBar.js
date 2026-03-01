@@ -230,7 +230,7 @@ const styles = (theme) => StyleSheet.create({
     color: theme.colors.mode.textSecondary,
   },
   toggleTextActive: {
-    color: '#ffffff',
+    color: theme.colors.onPrimary,
   },
   filterGroup: {
     marginBottom: theme.spacing.lg,
@@ -273,7 +273,7 @@ const styles = (theme) => StyleSheet.create({
     color: theme.colors.mode.text,
   },
   filterOptionTextActive: {
-    color: '#ffffff',
+    color: theme.colors.onPrimary,
     fontWeight: theme.typography.weights.bold,
   },
 });

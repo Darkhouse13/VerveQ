@@ -1,4 +1,4 @@
-"""
+﻿"""
 Global pytest configuration and fixtures for VerveQ tests.
 """
 import asyncio
@@ -10,10 +10,11 @@ from datetime import datetime, timedelta
 
 import pytest
 import pytest_asyncio
-from httpx import AsyncClient
+from unittest.mock import MagicMock
+from httpx import AsyncClient, ASGITransport
 from sqlalchemy import create_engine
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm import sessionmaker, Session
 from sqlalchemy.pool import StaticPool
 
 # Add backend to Python path
@@ -63,7 +64,7 @@ async def test_db():
                 id="first_win",
                 name="First Victory",
                 description="Win your first game",
-                icon="🏆",
+                icon="trophy",
                 requirement_type="wins",
                 requirement_value=1,
                 points=10
@@ -72,7 +73,7 @@ async def test_db():
                 id="quiz_master",
                 name="Quiz Master",
                 description="Score 100% in a quiz",
-                icon="🎯",
+                icon="target",
                 requirement_type="perfect_score",
                 requirement_value=1,
                 points=50
@@ -81,7 +82,7 @@ async def test_db():
                 id="survival_expert",
                 name="Survival Expert",
                 description="Survive 20 rounds",
-                icon="💪",
+                icon="flex",
                 requirement_type="survival_rounds",
                 requirement_value=20,
                 points=30
@@ -123,11 +124,20 @@ async def client(test_db):
             yield session
     
     app.dependency_overrides[get_db] = override_get_db
-    
-    async with AsyncClient(app=app, base_url="http://test") as ac:
-        yield ac
-    
-    app.dependency_overrides.clear()
+
+    transport = ASGITransport(app=app)
+    started = False
+
+    try:
+        await app.router.startup()
+        started = True
+        async with AsyncClient(transport=transport, base_url="http://test") as ac:
+            yield ac
+    finally:
+        await transport.aclose()
+        if started:
+            await app.router.shutdown()
+        app.dependency_overrides.clear()
 
 
 @pytest.fixture
@@ -219,6 +229,54 @@ def quiz_questions():
     ]
 
 
+
+
+
+
+@pytest.fixture
+def sample_leaderboard_data():
+    """Sample leaderboard entries for rank/order assertions."""
+    return [
+        {
+            "user_id": "user_a",
+            "username": "Alpha",
+            "elo_rating": 2200.0,
+            "games_played": 40,
+            "wins": 30,
+            "losses": 10,
+            "best_score": 12,
+            "average_score": 9.1,
+        },
+        {
+            "user_id": "user_b",
+            "username": "Bravo",
+            "elo_rating": 2050.0,
+            "games_played": 32,
+            "wins": 20,
+            "losses": 12,
+            "best_score": 11,
+            "average_score": 8.4,
+        },
+        {
+            "user_id": "user_c",
+            "username": "Charlie",
+            "elo_rating": 1980.0,
+            "games_played": 28,
+            "wins": 18,
+            "losses": 10,
+            "best_score": 9,
+            "average_score": 7.8,
+        },
+    ]
+
+
+
+@pytest.fixture
+def leaderboard_session(mock_db, monkeypatch):
+    """Patch SessionLocal to return the provided mock session."""
+    factory = MagicMock(return_value=mock_db)
+    monkeypatch.setattr('backend.services.leaderboard_service.SessionLocal', factory)
+    return mock_db
 @pytest.fixture
 def survival_data():
     """Sample survival game data for testing."""
@@ -243,3 +301,11 @@ def mock_datetime(monkeypatch):
     
     monkeypatch.setattr("datetime.datetime", MockDatetime)
     return MockDatetime
+
+
+@pytest.fixture
+def mock_db():
+    """Lightweight mock session for service unit tests."""
+    mock = MagicMock(spec=Session)
+    mock.close = MagicMock()
+    return mock

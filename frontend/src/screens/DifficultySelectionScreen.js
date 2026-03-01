@@ -7,30 +7,32 @@ import {
   SafeAreaView,
   Alert
 } from 'react-native';
+import { useTheme } from '../context/ThemeContext';
 
 const DifficultySelectionScreen = ({ navigation, route }) => {
-  const { sport, theme } = route.params;
+  const { sport, theme: sportTheme } = route.params;
+  const { theme } = useTheme();
 
   const difficulties = [
     {
       level: 'easy',
       title: 'Easy',
       description: 'Perfect for beginners',
-      color: '#4CAF50',
+      color: theme.colors.success.light,
       icon: '🌟'
     },
     {
       level: 'intermediate',
       title: 'Medium',
       description: 'Good challenge for most players',
-      color: '#FF9800',
+      color: theme.colors.warning.light,
       icon: '🏆'
     },
     {
       level: 'hard',
       title: 'Hard',
       description: 'For true experts',
-      color: '#F44336',
+      color: theme.colors.error.light,
       icon: '🔥'
     }
   ];
@@ -40,7 +42,7 @@ const DifficultySelectionScreen = ({ navigation, route }) => {
     
     navigation.navigate('Quiz', {
       sport,
-      theme,
+      theme: sportTheme,
       difficulty,
       reset: true // Ensure fresh quiz session
     });
@@ -51,42 +53,42 @@ const DifficultySelectionScreen = ({ navigation, route }) => {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
-        <TouchableOpacity style={styles.backButton} onPress={handleGoBack}>
-          <Text style={styles.backButtonText}>← Back</Text>
+    <SafeAreaView style={styles(theme).container}>
+      <View style={styles(theme).header}>
+        <TouchableOpacity style={styles(theme).backButton} onPress={handleGoBack}>
+          <Text style={styles(theme).backButtonText}>← Back</Text>
         </TouchableOpacity>
         
-        <Text style={styles.title}>Select Difficulty</Text>
-        <Text style={styles.subtitle}>Choose your challenge level for {sport}</Text>
+        <Text style={styles(theme).title}>Select Difficulty</Text>
+        <Text style={styles(theme).subtitle}>Choose your challenge level for {sport}</Text>
       </View>
 
-      <View style={styles.difficultiesContainer}>
+      <View style={styles(theme).difficultiesContainer}>
         {difficulties.map((diff, index) => (
           <TouchableOpacity
             key={diff.level}
-            style={[styles.difficultyCard, { borderLeftColor: diff.color }]}
+            style={[styles(theme).difficultyCard, { borderLeftColor: diff.color }]}
             onPress={() => handleDifficultySelect(diff.level)}
             activeOpacity={0.8}
           >
-            <View style={styles.difficultyContent}>
-              <Text style={styles.difficultyIcon}>{diff.icon}</Text>
-              <View style={styles.difficultyText}>
-                <Text style={[styles.difficultyTitle, { color: diff.color }]}>
+            <View style={styles(theme).difficultyContent}>
+              <Text style={styles(theme).difficultyIcon}>{diff.icon}</Text>
+              <View style={styles(theme).difficultyText}>
+                <Text style={[styles(theme).difficultyTitle, { color: diff.color }]}>
                   {diff.title}
                 </Text>
-                <Text style={styles.difficultyDescription}>
+                <Text style={styles(theme).difficultyDescription}>
                   {diff.description}
                 </Text>
               </View>
-              <Text style={styles.arrow}>→</Text>
+              <Text style={styles(theme).arrow}>→</Text>
             </View>
           </TouchableOpacity>
         ))}
       </View>
 
-      <View style={styles.footer}>
-        <Text style={styles.footerText}>
+      <View style={styles(theme).footer}>
+        <Text style={styles(theme).footerText}>
           You can change difficulty anytime by starting a new quiz
         </Text>
       </View>
@@ -94,40 +96,40 @@ const DifficultySelectionScreen = ({ navigation, route }) => {
   );
 };
 
-const styles = StyleSheet.create({
+const styles = (theme) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8f9fa',
+    backgroundColor: theme.colors.mode.background,
   },
   header: {
     padding: 20,
-    backgroundColor: 'white',
+    backgroundColor: theme.colors.mode.surface,
     borderBottomWidth: 1,
-    borderBottomColor: '#e9ecef',
+    borderBottomColor: theme.colors.mode.border,
   },
   backButton: {
     alignSelf: 'flex-start',
     paddingVertical: 8,
     paddingHorizontal: 12,
-    backgroundColor: '#f8f9fa',
+    backgroundColor: theme.colors.mode.surfaceVariant,
     borderRadius: 8,
     marginBottom: 20,
   },
   backButtonText: {
     fontSize: 16,
-    color: '#1a237e',
+    color: theme.colors.primary[500],
     fontWeight: '500',
   },
   title: {
     fontSize: 28,
     fontWeight: 'bold',
-    color: '#1a237e',
+    color: theme.colors.primary[500],
     marginBottom: 8,
     textAlign: 'center',
   },
   subtitle: {
     fontSize: 16,
-    color: '#6c757d',
+    color: theme.colors.mode.textSecondary,
     textAlign: 'center',
     textTransform: 'capitalize',
   },
@@ -137,7 +139,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   difficultyCard: {
-    backgroundColor: 'white',
+    backgroundColor: theme.colors.mode.surface,
     borderRadius: 12,
     padding: 20,
     marginBottom: 16,
@@ -169,11 +171,11 @@ const styles = StyleSheet.create({
   },
   difficultyDescription: {
     fontSize: 16,
-    color: '#6c757d',
+    color: theme.colors.mode.textSecondary,
   },
   arrow: {
     fontSize: 20,
-    color: '#dee2e6',
+    color: theme.colors.mode.border,
     fontWeight: 'bold',
   },
   footer: {
@@ -182,7 +184,7 @@ const styles = StyleSheet.create({
   },
   footerText: {
     fontSize: 14,
-    color: '#6c757d',
+    color: theme.colors.mode.textSecondary,
     textAlign: 'center',
     fontStyle: 'italic',
   },

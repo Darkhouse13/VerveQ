@@ -59,7 +59,7 @@ const styles = (theme) => StyleSheet.create({
     letterSpacing: 0.5,
   },
   labelActive: {
-    color: '#ffffff',
+    color: theme.colors.onPrimary,
   },
   first: {
     borderTopLeftRadius: theme.borderRadius.xl,

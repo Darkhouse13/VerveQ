@@ -9,12 +9,14 @@ import {
   Alert,
 } from 'react-native';
 import { apiConfig, buildUrl, logApiCall, logApiResponse } from '../config/api';
+import { useTheme } from '../context/ThemeContext';
 
 const SportSelectionScreen = ({ navigation, route }) => {
   const [sports, setSports] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedSport, setSelectedSport] = useState(null);
   const { mode } = route.params || { mode: 'quiz' };
+  const { theme } = useTheme();
 
   useEffect(() => {
     loadAvailableSports();
@@ -81,57 +83,57 @@ const SportSelectionScreen = ({ navigation, route }) => {
 
   if (loading) {
     return (
-      <SafeAreaView style={styles.container}>
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#1a237e" />
-          <Text style={styles.loadingText}>Loading sports...</Text>
+      <SafeAreaView style={styles(theme).container}>
+        <View style={styles(theme).loadingContainer}>
+          <ActivityIndicator size="large" color={theme.colors.primary[500]} />
+          <Text style={styles(theme).loadingText}>Loading sports...</Text>
         </View>
       </SafeAreaView>
     );
   }
 
   return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.content}>
-        <Text style={styles.title}>Choose Your Sport</Text>
-        <Text style={styles.subtitle}>
+    <SafeAreaView style={styles(theme).container}>
+      <View style={styles(theme).content}>
+        <Text style={styles(theme).title}>Choose Your Sport</Text>
+        <Text style={styles(theme).subtitle}>
           Select a sport for {mode === 'quiz' ? 'Quiz' : 'Survival'} mode
         </Text>
         
-        <View style={styles.sportsContainer}>
+        <View style={styles(theme).sportsContainer}>
           {sports.map((sport) => (
             <TouchableOpacity
               key={sport}
               style={[
-                styles.sportButton,
-                selectedSport === sport && styles.selectedSport
+                styles(theme).sportButton,
+                selectedSport === sport && styles(theme).selectedSport
               ]}
               onPress={() => selectSport(sport)}
               disabled={selectedSport !== null}
               activeOpacity={0.8}
             >
-              <Text style={styles.sportIcon}>
+              <Text style={styles(theme).sportIcon}>
                 {getSportIcon(sport)}
               </Text>
-              <Text style={styles.sportName}>
+              <Text style={styles(theme).sportName}>
                 {getSportDisplayName(sport)}
               </Text>
               {selectedSport === sport && (
-                <ActivityIndicator size="small" color="#fff" style={styles.loader} />
+                <ActivityIndicator size="small" color={theme.colors.onPrimary} style={styles(theme).loader} />
               )}
             </TouchableOpacity>
           ))}
         </View>
 
-        <View style={styles.footer}>
+        <View style={styles(theme).footer}>
           <TouchableOpacity
-            style={styles.backButton}
+            style={styles(theme).backButton}
             onPress={() => navigation.goBack()}
           >
-            <Text style={styles.backButtonText}>← Back to Modes</Text>
+            <Text style={styles(theme).backButtonText}>← Back to Modes</Text>
           </TouchableOpacity>
           
-          <Text style={styles.footerText}>
+          <Text style={styles(theme).footerText}>
             More sports coming soon!
           </Text>
         </View>
@@ -140,10 +142,10 @@ const SportSelectionScreen = ({ navigation, route }) => {
   );
 };
 
-const styles = StyleSheet.create({
+const styles = (theme) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: theme.colors.mode.background,
   },
   content: {
     flex: 1,
@@ -158,18 +160,18 @@ const styles = StyleSheet.create({
   loadingText: {
     marginTop: 10,
     fontSize: 16,
-    color: '#666',
+    color: theme.colors.mode.textSecondary,
   },
   title: {
     fontSize: 28,
     fontWeight: 'bold',
-    color: '#1a237e',
+    color: theme.colors.primary[500],
     textAlign: 'center',
     marginBottom: 8,
   },
   subtitle: {
     fontSize: 16,
-    color: '#666',
+    color: theme.colors.mode.textSecondary,
     textAlign: 'center',
     marginBottom: 40,
   },
@@ -177,7 +179,7 @@ const styles = StyleSheet.create({
     gap: 16,
   },
   sportButton: {
-    backgroundColor: '#fff',
+    backgroundColor: theme.colors.mode.surface,
     borderRadius: 16,
     padding: 24,
     alignItems: 'center',
@@ -195,8 +197,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   selectedSport: {
-    backgroundColor: '#1a237e',
-    borderColor: '#1a237e',
+    backgroundColor: theme.colors.primary[500],
+    borderColor: theme.colors.primary[500],
   },
   sportIcon: {
     fontSize: 40,
@@ -205,7 +207,7 @@ const styles = StyleSheet.create({
   sportName: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: '#333',
+    color: theme.colors.mode.text,
     flex: 1,
   },
   loader: {
@@ -217,19 +219,19 @@ const styles = StyleSheet.create({
     gap: 16,
   },
   backButton: {
-    backgroundColor: '#666',
+    backgroundColor: theme.colors.neutral[700],
     paddingHorizontal: 20,
     paddingVertical: 12,
     borderRadius: 8,
   },
   backButtonText: {
-    color: '#fff',
+    color: theme.colors.onPrimary,
     fontSize: 16,
     fontWeight: 'bold',
   },
   footerText: {
     fontSize: 14,
-    color: '#888',
+    color: theme.colors.mode.textSecondary,
     fontStyle: 'italic',
   },
 });

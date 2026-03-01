@@ -6,9 +6,11 @@ import {
   StyleSheet,
   SafeAreaView,
 } from 'react-native';
+import { useTheme } from '../context/ThemeContext';
 
 const ResultScreen = ({ route, navigation }) => {
   const { score, total, mode, lives } = route.params;
+  const { theme } = useTheme();
   
   const getScoreMessage = () => {
     if (mode === 'quiz') {
@@ -28,13 +30,13 @@ const ResultScreen = ({ route, navigation }) => {
   const getScoreColor = () => {
     if (mode === 'quiz') {
       const percentage = Math.round((score / total) * 100);
-      if (percentage >= 80) return '#4caf50';
-      if (percentage >= 60) return '#ff9800';
-      return '#f44336';
+      if (percentage >= 80) return theme.colors.success.light;
+      if (percentage >= 60) return theme.colors.warning.light;
+      return theme.colors.error.light;
     } else {
-      if (score >= 10) return '#4caf50';
-      if (score >= 5) return '#ff9800';
-      return '#f44336';
+      if (score >= 10) return theme.colors.success.light;
+      if (score >= 5) return theme.colors.warning.light;
+      return theme.colors.error.light;
     }
   };
 
@@ -81,83 +83,83 @@ const ResultScreen = ({ route, navigation }) => {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.content}>
-        <View style={styles.resultContainer}>
-          <Text style={styles.title}>
+    <SafeAreaView style={styles(theme).container}>
+      <View style={styles(theme).content}>
+        <View style={styles(theme).resultContainer}>
+          <Text style={styles(theme).title}>
             {mode === 'quiz' ? 'Quiz Complete!' : 'Game Over!'}
           </Text>
           
-          <View style={styles.scoreContainer}>
-            <Text style={[styles.scoreText, { color: getScoreColor() }]}>
+          <View style={styles(theme).scoreContainer}>
+            <Text style={[styles(theme).scoreText, { color: getScoreColor() }]}>
               {score}
             </Text>
           </View>
           
-          <Text style={[styles.messageText, { color: getScoreColor() }]}>
+          <Text style={[styles(theme).messageText, { color: getScoreColor() }]}>
             {getScoreMessage()}
           </Text>
 
           {mode === 'quiz' && (
-            <View style={styles.statsContainer}>
-              <Text style={styles.statsTitle}>Your Stats:</Text>
-              <Text style={styles.statsText}>
+            <View style={styles(theme).statsContainer}>
+              <Text style={styles(theme).statsTitle}>Your Stats:</Text>
+              <Text style={styles(theme).statsText}>
                 Score: {score} / {total}
               </Text>
-              <Text style={styles.statsText}>
+              <Text style={styles(theme).statsText}>
                 Questions Answered: {total / 100}
               </Text>
-              <Text style={styles.statsText}>
+              <Text style={styles(theme).statsText}>
                 Points Per Question: {score > 0 ? Math.round(score / (total / 100)) : 0}
               </Text>
             </View>
           )}
 
           {mode === 'survival' && (
-            <View style={styles.statsContainer}>
-              <Text style={styles.statsTitle}>Your Stats:</Text>
-              <Text style={styles.statsText}>
+            <View style={styles(theme).statsContainer}>
+              <Text style={styles(theme).statsTitle}>Your Stats:</Text>
+              <Text style={styles(theme).statsText}>
                 Players guessed: {score}
               </Text>
-              <Text style={styles.statsText}>
+              <Text style={styles(theme).statsText}>
                 Lives remaining: {lives || 0} ❤️
               </Text>
-              <Text style={styles.statsText}>
+              <Text style={styles(theme).statsText}>
                 Status: {lives > 0 ? 'Survived!' : 'Eliminated'}
               </Text>
             </View>
           )}
         </View>
 
-        <View style={styles.buttonContainer}>
+        <View style={styles(theme).buttonContainer}>
           <TouchableOpacity
-            style={styles.playAgainButton}
+            style={styles(theme).playAgainButton}
             onPress={playAgain}
           >
-            <Text style={styles.playAgainButtonText}>
+            <Text style={styles(theme).playAgainButtonText}>
               {mode === 'quiz' ? 'Quiz Again' : 'Play Again'}
             </Text>
           </TouchableOpacity>
 
           <TouchableOpacity
-            style={styles.homeButton}
+            style={styles(theme).homeButton}
             onPress={goHome}
           >
-            <Text style={styles.homeButtonText}>Back to Home</Text>
+            <Text style={styles(theme).homeButtonText}>Back to Home</Text>
           </TouchableOpacity>
 
           <TouchableOpacity
-            style={styles.modeButton}
+            style={styles(theme).modeButton}
             onPress={() => navigation.navigate(mode === 'quiz' ? 'Survival' : 'Quiz')}
           >
-            <Text style={styles.modeButtonText}>
+            <Text style={styles(theme).modeButtonText}>
               Try {mode === 'quiz' ? 'Survival Mode' : 'Quiz Mode'}
             </Text>
           </TouchableOpacity>
         </View>
 
-        <View style={styles.footer}>
-          <Text style={styles.footerText}>
+        <View style={styles(theme).footer}>
+          <Text style={styles(theme).footerText}>
             {mode === 'quiz' 
               ? 'Challenge yourself with more questions!' 
               : 'See how many players you can guess!'}
@@ -168,10 +170,10 @@ const ResultScreen = ({ route, navigation }) => {
   );
 };
 
-const styles = StyleSheet.create({
+const styles = (theme) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: theme.colors.mode.background,
   },
   content: {
     flex: 1,
@@ -179,7 +181,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   resultContainer: {
-    backgroundColor: '#fff',
+    backgroundColor: theme.colors.mode.surface,
     borderRadius: 16,
     padding: 30,
     alignItems: 'center',
@@ -193,7 +195,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 28,
     fontWeight: 'bold',
-    color: '#333',
+    color: theme.colors.mode.text,
     marginBottom: 20,
   },
   scoreContainer: {
@@ -207,7 +209,7 @@ const styles = StyleSheet.create({
   },
   totalText: {
     fontSize: 32,
-    color: '#666',
+    color: theme.colors.mode.textSecondary,
     marginLeft: 5,
   },
   messageText: {
@@ -217,20 +219,20 @@ const styles = StyleSheet.create({
   },
   statsContainer: {
     width: '100%',
-    backgroundColor: '#f8f9fa',
+    backgroundColor: theme.colors.mode.surfaceVariant,
     borderRadius: 8,
     padding: 15,
   },
   statsTitle: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: '#333',
+    color: theme.colors.mode.text,
     marginBottom: 10,
     textAlign: 'center',
   },
   statsText: {
     fontSize: 14,
-    color: '#666',
+    color: theme.colors.mode.textSecondary,
     marginBottom: 5,
     textAlign: 'center',
   },
@@ -238,35 +240,35 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   playAgainButton: {
-    backgroundColor: '#1a237e',
+    backgroundColor: theme.colors.primary[500],
     padding: 16,
     borderRadius: 8,
     alignItems: 'center',
   },
   playAgainButtonText: {
-    color: '#fff',
+    color: theme.colors.onPrimary,
     fontSize: 18,
     fontWeight: 'bold',
   },
   homeButton: {
-    backgroundColor: '#4caf50',
+    backgroundColor: theme.colors.success.light,
     padding: 16,
     borderRadius: 8,
     alignItems: 'center',
   },
   homeButtonText: {
-    color: '#fff',
+    color: theme.colors.onPrimary,
     fontSize: 18,
     fontWeight: 'bold',
   },
   modeButton: {
-    backgroundColor: '#ff9800',
+    backgroundColor: theme.colors.warning.light,
     padding: 16,
     borderRadius: 8,
     alignItems: 'center',
   },
   modeButtonText: {
-    color: '#fff',
+    color: theme.colors.onPrimary,
     fontSize: 18,
     fontWeight: 'bold',
   },
@@ -276,7 +278,7 @@ const styles = StyleSheet.create({
   },
   footerText: {
     fontSize: 14,
-    color: '#888',
+    color: theme.colors.mode.textTertiary,
     textAlign: 'center',
     fontStyle: 'italic',
   },

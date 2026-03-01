@@ -6,21 +6,21 @@
 
 // Core Color System
 export const colors = {
-  // Primary Brand Colors - Professional indigo gradient
+  // Primary Brand Colors – Sport Night palette (orange as brand)
   primary: {
-    50: '#e8eaf6',
-    100: '#c5cae9', 
-    200: '#9fa8da',
-    300: '#7986cb',
-    400: '#5c6bc0',
-    500: '#1a237e', // Current primary
-    600: '#303f9f',
-    700: '#3949ab',
-    800: '#3f51b5',
-    900: '#1a237e'
+    50: '#FFF3E9',
+    100: '#FFE2CC',
+    200: '#FFC499',
+    300: '#FFA366',
+    400: '#FF8C3A',
+    500: '#FF7A1C', // Brand primary (CTA)
+    600: '#E96910',
+    700: '#CC570B',
+    800: '#A94408',
+    900: '#7A3006'
   },
 
-  // Secondary Accent Colors
+  // Legacy Secondary Accent Colors (kept for compatibility)
   secondary: {
     emerald: '#10b981',
     emeraldDark: '#059669',
@@ -30,15 +30,33 @@ export const colors = {
     coralDark: '#ea580c'
   },
 
+  // New Accent Set (optional, forward-looking)
+  accent: {
+    teal: '#2EE6D2',
+    tealDark: '#14B8A6',
+    lime: '#A3E635',
+    limeDark: '#65A30D',
+    purple: '#7C3AED',
+    purpleDark: '#5B21B6'
+  },
+
+  // Role tokens for actions and overlays
+  action: {
+    cta: {
+      bg: '#FF7A1C',
+      pressed: '#E96910'
+    }
+  },
+
   // Semantic Colors
   success: {
     light: '#4caf50',
-    dark: '#2e7d32',
+    dark: '#15803D',
     background: '#e8f5e8'
   },
   warning: {
     light: '#ff9800',
-    dark: '#ef6c00',
+    dark: '#D97706',
     background: '#fff3e0'
   },
   error: {
@@ -74,23 +92,26 @@ export const colors = {
     surface: '#f5f5f5',
     surfaceVariant: '#ffffff',
     text: '#212121',
-    textSecondary: '#666666',
+    textSecondary: '#4B5563',
     textTertiary: '#9e9e9e',
     border: '#e0e0e0',
     borderLight: '#eeeeee',
     shadow: 'rgba(0, 0, 0, 0.1)'
   },
   dark: {
-    background: '#121212',
-    surface: '#1e1e1e',
-    surfaceVariant: '#2d2d2d',
-    text: '#ffffff',
-    textSecondary: '#b3b3b3',
-    textTertiary: '#666666',
-    border: '#404040',
-    borderLight: '#2d2d2d',
+    background: '#0F1115',
+    surface: '#171A21',
+    surfaceVariant: '#1B212C',
+    text: '#E8EDF2',
+    textSecondary: '#AAB2BE',
+    textTertiary: '#6B7280',
+    border: '#2B3039',
+    borderLight: '#20262F',
     shadow: 'rgba(0, 0, 0, 0.3)'
-  }
+  },
+
+  // "On" colors used on top of solid fills
+  onPrimary: '#FFFFFF'
 };
 
 // Typography System

@@ -4,6 +4,7 @@ import { createStackNavigator } from '@react-navigation/stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { StatusBar } from 'expo-status-bar';
 import { Text } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 
 import { AuthProvider, useAuth } from './src/context/AuthContext';
 import { SessionProvider } from './src/context/SessionContext';
@@ -29,15 +30,20 @@ import ChallengeScreen from './src/screens/ChallengeScreen';
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
 
+function ThemedStatusBar() {
+  const { theme } = useTheme();
+  return <StatusBar style={theme.isDark ? 'light' : 'dark'} />;
+}
+
 const getTabBarIcon = (routeName, focused) => {
-  // Modern text-based icons instead of emojis for professional look
+  // Ionicons mapping for better readability & consistency
   const icons = {
-    Home: focused ? 'HOME' : 'Home',
-    Leaderboards: focused ? 'RANKS' : 'Ranks', 
-    Challenges: focused ? 'SOCIAL' : 'Social',
-    Profile: focused ? 'PROFILE' : 'Profile',
+    Home: focused ? 'home' : 'home-outline',
+    Leaderboards: focused ? 'trophy' : 'trophy-outline',
+    Challenges: focused ? 'people' : 'people-outline',
+    Profile: focused ? 'person' : 'person-outline',
   };
-  return icons[routeName] || 'App';
+  return icons[routeName] || (focused ? 'ellipse' : 'ellipse-outline');
 };
 
 function MainTabs() {
@@ -46,13 +52,9 @@ function MainTabs() {
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
-        tabBarIcon: ({ focused, color, size }) => {
-          const icon = getTabBarIcon(route.name, focused);
-          return <Text style={{ 
-            fontSize: 10,
-            fontWeight: focused ? 'bold' : 'normal',
-            color: color
-          }}>{icon}</Text>;
+        tabBarIcon: ({ focused, color }) => {
+          const iconName = getTabBarIcon(route.name, focused);
+          return <Ionicons name={iconName} size={22} color={color} />;
         },
         tabBarActiveTintColor: theme.colors.primary[500],
         tabBarInactiveTintColor: theme.colors.mode.textSecondary,
@@ -70,10 +72,10 @@ function MainTabs() {
           fontWeight: '600',
         },
         headerStyle: {
-          backgroundColor: theme.colors.primary[500],
+          backgroundColor: theme.colors.mode.surface,
           ...theme.elevation.md
         },
-        headerTintColor: '#fff',
+        headerTintColor: theme.colors.mode.text,
         headerTitleStyle: {
           fontWeight: 'bold',
           fontSize: 18,
@@ -83,22 +85,22 @@ function MainTabs() {
       <Tab.Screen 
         name="Home" 
         component={HomeScreen}
-        options={{ title: 'VerveQ Platform' }}
+        options={{ title: 'VerveQ Platform', tabBarLabel: 'Home' }}
       />
       <Tab.Screen 
         name="Leaderboards" 
         component={LeaderboardScreen}
-        options={{ title: 'Rankings' }}
+        options={{ title: 'Rankings', tabBarLabel: 'Ranks' }}
       />
       <Tab.Screen 
         name="Challenges" 
         component={ChallengeScreen}
-        options={{ title: 'Social' }}
+        options={{ title: 'Social', tabBarLabel: 'Social' }}
       />
       <Tab.Screen 
         name="Profile" 
         component={ProfileScreen}
-        options={{ title: 'Profile' }}
+        options={{ title: 'Profile', tabBarLabel: 'Profile' }}
       />
     </Tab.Navigator>
   );
@@ -111,10 +113,10 @@ function AuthenticatedApp() {
     <Stack.Navigator
       screenOptions={{
         headerStyle: {
-          backgroundColor: theme.colors.primary[500],
+          backgroundColor: theme.colors.mode.surface,
           ...theme.elevation.md
         },
-        headerTintColor: '#fff',
+        headerTintColor: theme.colors.mode.text,
         headerTitleStyle: {
           fontWeight: 'bold',
           fontSize: 18,
@@ -189,10 +191,10 @@ function UnauthenticatedApp() {
       initialRouteName={isOnboardingComplete ? "Login" : "Onboarding"}
       screenOptions={{
         headerStyle: {
-          backgroundColor: theme.colors.primary[500],
+          backgroundColor: theme.colors.mode.surface,
           ...theme.elevation.md
         },
-        headerTintColor: '#fff',
+        headerTintColor: theme.colors.mode.text,
         headerTitleStyle: {
           fontWeight: 'bold',
           fontSize: 18,
@@ -235,7 +237,7 @@ export default function App() {
       <AuthProvider>
         <SessionProvider>
           <NavigationContainer>
-            <StatusBar style="light" />
+            <ThemedStatusBar />
             <ConnectionStatus />
             <AppContent />
           </NavigationContainer>

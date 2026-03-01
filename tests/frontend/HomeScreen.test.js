@@ -27,7 +27,18 @@ jest.mock('react-native/Libraries/Animated/NativeAnimatedHelper');
 
 import HomeScreen from '../../frontend/src/screens/HomeScreen';
 
-it('renders HomeScreen skeleton structure (Phase 2+)', () => {
-  const tree = renderer.create(<HomeScreen navigation={{ navigate: jest.fn() }} />).toJSON();
-  expect(tree).toMatchSnapshot();
+describe('HomeScreen', () => {
+  it('renders without Speed mode and shows Quiz/Survival', () => {
+    const testInstance = renderer.create(
+      <HomeScreen navigation={{ navigate: jest.fn() }} />
+    );
+    const tree = testInstance.toJSON();
+    const serialized = JSON.stringify(tree);
+
+    // Removed Speed mode from chips and mode cards
+    expect(serialized).not.toMatch(/Speed/i);
+    // Keep core modes visible somewhere in the tree
+    expect(serialized).toMatch(/Quiz/);
+    expect(serialized).toMatch(/Survival/);
+  });
 });

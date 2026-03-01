@@ -200,7 +200,7 @@ const styles = (theme) => StyleSheet.create({
   gradeText: {
     fontSize: theme.typography.sizes.xs,
     fontWeight: theme.typography.weights.bold,
-    color: '#ffffff',
+    color: theme.colors.onPrimary,
   },
   progressContainer: {
     marginTop: theme.spacing.md,

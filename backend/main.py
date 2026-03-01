@@ -1,4 +1,4 @@
-"""
+﻿"""
 VerveQ Platform API v3.0 - Main application file (CLAUDE.md compliant)
 Simplified orchestrator under 300 lines per CLAUDE.md guidelines
 """
@@ -24,11 +24,13 @@ from routes.survival.legacy import router as survival_legacy_router
 from routes.sports import router as sports_router
 from routes.simple import router as simple_router
 from routes.leaderboards import router as leaderboards_router
+from routes.health import router as health_router
 from routes.profile import router as profile_router
 from routes.challenges import router as challenges_router
 from routes.achievements import router as achievements_router
 from routes.games import router as games_router
-from routes.health import router as health_router
+
+from routes.clerk_demo import router as clerk_router
 
 # Create rate limiter instance
 limiter = Limiter(key_func=get_remote_address)
@@ -75,13 +77,20 @@ async def debug_request_middleware(request: Request, call_next):
     start_time = time.time()
     
     # Log incoming request details
-    logger.info(f"🔍 REQUEST: {request.method} {request.url}")
-    logger.info(f"   Headers: {dict(request.headers)}")
+    logger.info(f"ðŸ” REQUEST: {request.method} {request.url}")
+    # Do not log headers in production; sanitize in non-production
+    if not settings.is_production:
+        headers = dict(request.headers)
+        for k in list(headers.keys()):
+            kl = k.lower()
+            if kl in {"authorization", "cookie", "set-cookie", "x-api-key"}:
+                headers[k] = "[REDACTED]"
+        logger.info(f"   Headers: {headers}")
     logger.info(f"   Client: {request.client}")
     
-    # Special handling for OPTIONS requests
-    if request.method == "OPTIONS":
-        logger.info("🚨 OPTIONS REQUEST DETECTED")
+    # Special handling for OPTIONS requests (disabled in production)
+    if request.method == "OPTIONS" and not settings.is_production:
+        logger.info("ðŸš¨ OPTIONS REQUEST DETECTED")
         logger.info(f"   Origin: {request.headers.get('origin', 'NOT_SET')}")
         logger.info(f"   Access-Control-Request-Method: {request.headers.get('access-control-request-method', 'NOT_SET')}")
         logger.info(f"   Access-Control-Request-Headers: {request.headers.get('access-control-request-headers', 'NOT_SET')}")
@@ -92,11 +101,11 @@ async def debug_request_middleware(request: Request, call_next):
         
         # Log response details
         process_time = time.time() - start_time
-        logger.info(f"✅ RESPONSE: {request.method} {request.url} - Status: {response.status_code} - Time: {process_time:.4f}s")
+        logger.info(f"âœ… RESPONSE: {request.method} {request.url} - Status: {response.status_code} - Time: {process_time:.4f}s")
         
-        # Log response headers for OPTIONS requests
-        if request.method == "OPTIONS":
-            logger.info("🔄 OPTIONS RESPONSE HEADERS:")
+        # Log response headers for OPTIONS requests (disabled in production)
+        if request.method == "OPTIONS" and not settings.is_production:
+            logger.info("ðŸ”„ OPTIONS RESPONSE HEADERS:")
             for header, value in response.headers.items():
                 if header.lower().startswith('access-control'):
                     logger.info(f"   {header}: {value}")
@@ -105,7 +114,7 @@ async def debug_request_middleware(request: Request, call_next):
         
     except Exception as e:
         process_time = time.time() - start_time
-        logger.error(f"❌ ERROR: {request.method} {request.url} - Error: {str(e)} - Time: {process_time:.4f}s")
+        logger.error(f"âŒ ERROR: {request.method} {request.url} - Error: {str(e)} - Time: {process_time:.4f}s")
         raise
 
 # Add rate limit exceeded handler
@@ -129,6 +138,8 @@ app.include_router(challenges_router)
 app.include_router(achievements_router)
 app.include_router(games_router)
 
+app.include_router(clerk_router)
+
 @app.on_event("startup")
 async def startup_event():
     """Initialize database and default data"""
@@ -136,11 +147,11 @@ async def startup_event():
     settings.print_config_summary()
     
     # Print connection information for development
-    print("\n🌐 VerveQ Platform API Server")
+    print("\nðŸŒ VerveQ Platform API Server")
     print("=" * 40)
-    print(f"🚀 Server starting on: http://{settings.host}:{settings.port}")
-    print(f"📚 API Documentation: http://{settings.host}:{settings.port}/docs")
-    print(f"🔄 Health Check: http://{settings.host}:{settings.port}/")
+    print(f"ðŸš€ Server starting on: http://{settings.host}:{settings.port}")
+    print(f"ðŸ“š API Documentation: http://{settings.host}:{settings.port}/docs")
+    print(f"ðŸ”„ Health Check: http://{settings.host}:{settings.port}/")
     
     # Show network access information
     import socket
@@ -151,19 +162,19 @@ async def startup_event():
         s.close()
         
         if local_ip and local_ip != "127.0.0.1":
-            print(f"\n📱 Mobile Development URLs:")
+            print(f"\nðŸ“± Mobile Development URLs:")
             print(f"   Android Emulator: http://10.0.2.2:{settings.port}")
             print(f"   iOS Simulator: http://localhost:{settings.port}")
             print(f"   Physical Device: http://{local_ip}:{settings.port}")
             print(f"   Network Access: http://{local_ip}:{settings.port}")
             
-            print(f"\n🧪 Test Endpoints:")
+            print(f"\nðŸ§ª Test Endpoints:")
             print(f"   curl http://{local_ip}:{settings.port}/")
             print(f"   curl http://{local_ip}:{settings.port}/football/survival/initials")
     except Exception:
-        print(f"\n📱 Local Development: http://localhost:{settings.port}")
+        print(f"\nðŸ“± Local Development: http://localhost:{settings.port}")
     
-    print(f"\n✅ Server ready for connections!")
+    print(f"\nâœ… Server ready for connections!")
     print("=" * 40)
 
 if __name__ == "__main__":

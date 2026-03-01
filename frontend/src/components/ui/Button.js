@@ -80,7 +80,7 @@ const Button = ({
         {loading ? (
           <ActivityIndicator 
             size="small" 
-            color={variant === 'outline' ? theme.colors.primary[500] : '#ffffff'} 
+            color={variant === 'outline' ? theme.colors.primary[500] : theme.colors.onPrimary} 
           />
         ) : (
           <Text style={getTextStyle()}>{title}</Text>
@@ -144,11 +144,11 @@ const styles = (theme) => StyleSheet.create({
 
   // Text variants
   primaryButtonText: {
-    color: '#ffffff',
+    color: theme.colors.onPrimary,
     fontSize: theme.typography.sizes.md,
   },
   secondaryButtonText: {
-    color: '#ffffff',
+    color: theme.colors.onPrimary,
     fontSize: theme.typography.sizes.md,
   },
   outlineButtonText: {

@@ -6,6 +6,7 @@ import pytest
 from unittest.mock import MagicMock, Mock, patch
 from sqlalchemy.orm import Session
 from sqlalchemy import desc
+from types import SimpleNamespace
 
 from backend.services.leaderboard_service import LeaderboardService
 from backend.database.models import User, UserRating
@@ -52,7 +53,7 @@ class TestLeaderboardService:
         assert result[0]['username'] == 'champion'
         assert result[0]['elo_rating'] == 2100
         assert result[0]['rank'] == 1
-        assert result[0]['win_rate'] == 70.0  # 35/50 * 100
+        assert result[0]['win_rate'] == 0.7  # 35/50
         
         # Verify database was closed
         mock_db.close.assert_called_once()
@@ -72,7 +73,8 @@ class TestLeaderboardService:
         LeaderboardService.get_leaderboard(db=mock_db, sport='football')
         
         # Verify sport filter was applied
-        mock_query.filter.assert_called_once()
+        filter_calls = [call.args[0] for call in mock_query.filter.call_args_list]
+        assert any('sport' in str(arg) for arg in filter_calls)
     
     def test_get_leaderboard_with_mode_filter(self, mock_db):
         """Test getting leaderboard filtered by game mode."""
@@ -89,7 +91,8 @@ class TestLeaderboardService:
         LeaderboardService.get_leaderboard(db=mock_db, mode='quiz')
         
         # Verify mode filter was applied
-        mock_query.filter.assert_called_once()
+        filter_calls = [call.args[0] for call in mock_query.filter.call_args_list]
+        assert any('mode' in str(arg) for arg in filter_calls)
     
     def test_get_leaderboard_with_both_filters(self, mock_db):
         """Test getting leaderboard filtered by both sport and mode."""
@@ -105,8 +108,10 @@ class TestLeaderboardService:
         # Call with both filters
         LeaderboardService.get_leaderboard(db=mock_db, sport='football', mode='survival')
         
-        # Verify both filters were applied (filter called twice)
-        assert mock_query.filter.call_count == 2
+        # Verify both filters were applied
+        filter_calls = [call.args[0] for call in mock_query.filter.call_args_list]
+        assert any('sport' in str(arg) for arg in filter_calls)
+        assert any('mode' in str(arg) for arg in filter_calls)
     
     def test_get_leaderboard_custom_limit(self, mock_db):
         """Test getting leaderboard with custom limit."""
@@ -131,11 +136,7 @@ class TestLeaderboardService:
         mock_query.join.return_value = mock_query
         mock_query.order_by.return_value = mock_query
         mock_query.limit.return_value = mock_query
-        mock_query.all.return_value = [(
-            item['user_id'], item['username'], item['elo_rating'],
-            item['games_played'], item['wins'], item['losses'],
-            item['best_score'], item['average_score']
-        ) for item in sample_leaderboard_data]
+        mock_query.all.return_value = [SimpleNamespace(**item) for item in sample_leaderboard_data]
         
         mock_db.query.return_value = mock_query
         
@@ -152,9 +153,9 @@ class TestLeaderboardService:
     def test_get_leaderboard_win_rate_calculation(self, mock_db):
         """Test that win rates are calculated correctly."""
         mock_data = [
-            ('user1', 'winner', 1500.0, 20, 15, 5, 10, 8.0),  # 15/20 = 0.75
-            ('user2', 'average', 1400.0, 10, 5, 5, 9, 7.0),   # 5/10 = 0.5
-            ('user3', 'newbie', 1300.0, 2, 1, 1, 8, 6.0),     # 1/2 = 0.5
+            SimpleNamespace(user_id='user1', username='winner', display_name=None, elo_rating=1500.0, games_played=20, wins=15, losses=5, best_score=10, average_score=8.0, sport='football', mode='quiz'),
+            SimpleNamespace(user_id='user2', username='average', display_name=None, elo_rating=1400.0, games_played=10, wins=5, losses=5, best_score=9, average_score=7.0, sport='football', mode='quiz'),
+            SimpleNamespace(user_id='user3', username='newbie', display_name=None, elo_rating=1300.0, games_played=2, wins=1, losses=1, best_score=8, average_score=6.0, sport='football', mode='quiz'),
         ]
         
         mock_query = MagicMock()
@@ -278,7 +279,7 @@ class TestLeaderboardServiceEdgeCases:
     def test_get_leaderboard_zero_games_played(self, mock_db):
         """Test leaderboard entry with zero games played."""
         mock_data = [
-            ('user1', 'inactive', 1200.0, 0, 0, 0, 0, 0.0)
+            SimpleNamespace(user_id='user1', username='inactive', display_name=None, elo_rating=1200.0, games_played=0, wins=0, losses=0, best_score=0, average_score=0.0, sport='football', mode='quiz')
         ]
         
         mock_query = MagicMock()
@@ -298,9 +299,9 @@ class TestLeaderboardServiceEdgeCases:
     def test_get_leaderboard_same_elo_ratings(self, mock_db):
         """Test leaderboard with users having same ELO ratings."""
         mock_data = [
-            ('user1', 'tied1', 1500.0, 10, 8, 2, 10, 8.0),
-            ('user2', 'tied2', 1500.0, 8, 6, 2, 9, 7.5),
-            ('user3', 'tied3', 1500.0, 12, 9, 3, 10, 8.5),
+            SimpleNamespace(user_id='user1', username='tied1', display_name=None, elo_rating=1500.0, games_played=10, wins=8, losses=2, best_score=10, average_score=8.0, sport='football', mode='quiz'),
+            SimpleNamespace(user_id='user2', username='tied2', display_name=None, elo_rating=1500.0, games_played=8, wins=6, losses=2, best_score=9, average_score=7.5, sport='football', mode='quiz'),
+            SimpleNamespace(user_id='user3', username='tied3', display_name=None, elo_rating=1500.0, games_played=12, wins=9, losses=3, best_score=10, average_score=8.5, sport='football', mode='quiz'),
         ]
         
         mock_query = MagicMock()
@@ -355,8 +356,8 @@ class TestLeaderboardServiceEdgeCases:
         mock_db.query.side_effect = Exception("Database connection failed")
         
         # Should handle database errors gracefully
-        with pytest.raises(Exception):
-            LeaderboardService.get_user_rank(db=mock_db, user_id='test_user')
+        result = LeaderboardService.get_user_rank(db=mock_db, user_id='test_user')
+        assert result is None
 
 
 class TestLeaderboardServiceIntegration:
@@ -370,12 +371,12 @@ class TestLeaderboardServiceIntegration:
         """Test leaderboard for a competitive season scenario."""
         # Realistic competitive season data
         season_data = [
-            ('pro1', 'ChampionMaster', 2250.0, 100, 75, 25, 10, 9.2),
-            ('pro2', 'SkillfulPlayer', 2100.0, 95, 65, 30, 10, 8.8),  
-            ('expert1', 'TalentedUser', 1950.0, 80, 52, 28, 10, 8.1),
-            ('expert2', 'ConsistentWin', 1900.0, 85, 55, 30, 9, 7.9),
-            ('casual1', 'WeekendWarrior', 1400.0, 40, 20, 20, 8, 6.5),
-            ('new1', 'FreshPlayer', 1200.0, 10, 4, 6, 7, 5.2),
+            SimpleNamespace(user_id='pro1', username='ChampionMaster', display_name='ChampionMaster', elo_rating=2250.0, games_played=100, wins=75, losses=25, best_score=10, average_score=9.2, sport='football', mode='quiz'),
+            SimpleNamespace(user_id='pro2', username='SkillfulPlayer', display_name='SkillfulPlayer', elo_rating=2100.0, games_played=95, wins=65, losses=30, best_score=10, average_score=8.8, sport='football', mode='quiz'),
+            SimpleNamespace(user_id='expert1', username='TalentedUser', display_name='TalentedUser', elo_rating=1950.0, games_played=80, wins=52, losses=28, best_score=10, average_score=8.1, sport='football', mode='quiz'),
+            SimpleNamespace(user_id='expert2', username='ConsistentWin', display_name='ConsistentWin', elo_rating=1900.0, games_played=85, wins=55, losses=30, best_score=9, average_score=7.9, sport='football', mode='quiz'),
+            SimpleNamespace(user_id='casual1', username='WeekendWarrior', display_name='WeekendWarrior', elo_rating=1400.0, games_played=40, wins=20, losses=20, best_score=8, average_score=6.5, sport='football', mode='quiz'),
+            SimpleNamespace(user_id='new1', username='FreshPlayer', display_name='FreshPlayer', elo_rating=1200.0, games_played=10, wins=4, losses=6, best_score=7, average_score=5.2, sport='football', mode='quiz'),
         ]
         
         mock_query = MagicMock()

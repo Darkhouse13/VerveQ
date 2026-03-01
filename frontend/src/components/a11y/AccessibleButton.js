@@ -62,7 +62,7 @@ const AccessibleButton = ({
         backgroundColor: disabled 
           ? theme.colors.mode.border 
           : theme.colors.primary[500],
-        textColor: '#ffffff',
+        textColor: theme.colors.onPrimary,
         borderColor: 'transparent',
       },
       secondary: {
@@ -96,7 +96,7 @@ const AccessibleButton = ({
         backgroundColor: disabled 
           ? theme.colors.mode.border 
           : theme.colors.error.main,
-        textColor: '#ffffff',
+        textColor: theme.colors.onPrimary,
         borderColor: 'transparent',
       },
     };

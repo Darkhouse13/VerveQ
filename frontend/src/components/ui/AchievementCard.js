@@ -247,7 +247,7 @@ const styles = (theme, config = {}) => StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
-    backgroundColor: '#ffffff',
+    backgroundColor: theme.colors.mode.surfaceVariant,
     zIndex: 1,
   },
   content: {
@@ -284,7 +284,7 @@ const styles = (theme, config = {}) => StyleSheet.create({
   rarityText: {
     fontSize: theme.typography.sizes.xs,
     fontWeight: theme.typography.weights.bold,
-    color: '#ffffff',
+    color: theme.colors.onPrimary,
     textTransform: 'uppercase',
     letterSpacing: 0.5,
   },
@@ -343,7 +343,7 @@ const styles = (theme, config = {}) => StyleSheet.create({
   shareText: {
     fontSize: theme.typography.sizes.sm,
     fontWeight: theme.typography.weights.bold,
-    color: '#ffffff',
+    color: theme.colors.onPrimary,
   },
 });
 

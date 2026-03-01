@@ -13,11 +13,13 @@ import {
 } from 'react-native';
 import { apiConfig, buildUrl, logApiCall, logApiResponse } from '../config/api';
 import { useAuth } from '../context/AuthContext';
+import { useTheme } from '../context/ThemeContext';
 import { isDevelopment } from '../utils/environment';
 
 const SurvivalScreen = ({ navigation, route }) => {
   const { sport, reset, difficulty = 'intermediate' } = route.params || { sport: 'football', reset: false, difficulty: 'intermediate' };
   const { user } = useAuth();
+  const { theme } = useTheme();
   const [currentInitials, setCurrentInitials] = useState('');
   const [guess, setGuess] = useState('');
   const [loading, setLoading] = useState(true);
@@ -538,10 +540,10 @@ const SurvivalScreen = ({ navigation, route }) => {
 
   if (loading) {
     return (
-      <SafeAreaView style={styles.container}>
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#ff9800" />
-          <Text style={styles.loadingText}>Loading challenge...</Text>
+      <SafeAreaView style={styles(theme).container}>
+        <View style={styles(theme).loadingContainer}>
+          <ActivityIndicator size="large" color={theme.colors.warning.light} />
+          <Text style={styles(theme).loadingText}>Loading challenge...</Text>
         </View>
       </SafeAreaView>
     );
@@ -551,38 +553,39 @@ const SurvivalScreen = ({ navigation, route }) => {
   console.log('🔍 Render - currentInitials value:', currentInitials, 'loading:', loading);
 
   return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.content}>
-        <View style={styles.header}>
-          <Text style={styles.livesText}>{getLivesDisplay()}</Text>
-          <Text style={styles.scoreText}>Score: {score}</Text>
+    <SafeAreaView style={styles(theme).container}>
+      <View style={styles(theme).content}>
+        <View style={styles(theme).header}>
+          <Text style={styles(theme).livesText}>{getLivesDisplay()}</Text>
+          <Text style={styles(theme).scoreText}>Score: {score}</Text>
         </View>
 
-        <View style={styles.challengeContainer}>
-          <Text style={styles.challengeTitle}>Find a player with initials:</Text>
-          <Text style={styles.initials}>{currentInitials}</Text>
+        <View style={styles(theme).challengeContainer}>
+          <Text style={styles(theme).challengeTitle}>Find a player with initials:</Text>
+          <Text style={styles(theme).initials}>{currentInitials}</Text>
           
           {lastResult && (
-            <View style={styles.resultContainer}>
+            <View style={styles(theme).resultContainer}>
               <Text style={[
-                styles.resultText,
-                { color: lastResult.correct ? '#4caf50' : '#f44336' }
+                styles(theme).resultText,
+                { color: lastResult.correct ? theme.colors.success.light : theme.colors.error.light }
               ]}>
                 {lastResult.correct ? '✅ Correct!' : '❌ Wrong!'}
               </Text>
-              <Text style={styles.resultMessage}>{lastResult.message}</Text>
+              <Text style={styles(theme).resultMessage}>{lastResult.message}</Text>
               {lastResult.matches && lastResult.matches.length > 0 && (
-                <Text style={styles.matchText}>
+                <Text style={styles(theme).matchText}>
                   Matches: {lastResult.matches.join(', ')}
                 </Text>
               )}
             </View>
           )}
 
-          <View style={styles.inputContainer}>
+          <View style={styles(theme).inputContainer}>
             <TextInput
-              style={styles.input}
+              style={styles(theme).input}
               placeholder="Enter player name..."
+              placeholderTextColor={theme.colors.mode.textSecondary}
               value={guess}
               onChangeText={setGuess}
               autoCorrect={false}
@@ -593,56 +596,56 @@ const SurvivalScreen = ({ navigation, route }) => {
           </View>
 
           {showHint && (
-            <View style={styles.hintContainer}>
-              <Text style={styles.hintTitle}>Hint - Some players with {currentInitials}:</Text>
+            <View style={styles(theme).hintContainer}>
+              <Text style={styles(theme).hintTitle}>Hint - Some players with {currentInitials}:</Text>
               {hintPlayers.map((player, index) => (
-                <Text key={index} style={styles.hintPlayer}>• {player}</Text>
+                <Text key={index} style={styles(theme).hintPlayer}>• {player}</Text>
               ))}
             </View>
           )}
 
-          <View style={styles.buttonContainer}>
+          <View style={styles(theme).buttonContainer}>
             <TouchableOpacity
               style={[
-                styles.submitButton,
-                (submitting || !guess.trim()) && styles.disabledButton
+                styles(theme).submitButton,
+                (submitting || !guess.trim()) && styles(theme).disabledButton
               ]}
               onPress={submitGuess}
               disabled={submitting || !guess.trim()}
             >
-              <Text style={styles.submitButtonText}>
+              <Text style={styles(theme).submitButtonText}>
                 {submitting ? 'Checking...' : 'Submit Guess'}
               </Text>
             </TouchableOpacity>
 
-            <View style={styles.actionButtons}>
+            <View style={styles(theme).actionButtons}>
               {currentInitials && currentInitials.length > 0 && (
                 <TouchableOpacity
                   style={[
-                    styles.hintButton,
-                    hintUsedForGame && styles.disabledButton
+                    styles(theme).hintButton,
+                    hintUsedForGame && styles(theme).disabledButton
                   ]}
                   onPress={showHintFunction}
                   disabled={hintUsedForGame}
                 >
-                  <Text style={styles.hintButtonText}>
+                  <Text style={styles(theme).hintButtonText}>
                     {hintUsedForGame ? 'Hint Used' : showHint ? 'Hint Shown' : 'Show Hint (1 available)'}
                   </Text>
                 </TouchableOpacity>
               )}
 
               <TouchableOpacity
-                style={styles.skipButton}
+                style={styles(theme).skipButton}
                 onPress={skipChallenge}
               >
-                <Text style={styles.skipButtonText}>Skip (-1 ❤️)</Text>
+                <Text style={styles(theme).skipButtonText}>Skip (-1 ❤️)</Text>
               </TouchableOpacity>
             </View>
           </View>
         </View>
 
-        <View style={styles.footer}>
-          <Text style={styles.footerText}>
+        <View style={styles(theme).footer}>
+          <Text style={styles(theme).footerText}>
             Guess any football player with these initials to continue!
           </Text>
         </View>
@@ -651,10 +654,10 @@ const SurvivalScreen = ({ navigation, route }) => {
   );
 };
 
-const styles = StyleSheet.create({
+const styles = (theme) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: theme.colors.mode.background,
   },
   content: {
     flex: 1,
@@ -668,7 +671,7 @@ const styles = StyleSheet.create({
   loadingText: {
     marginTop: 10,
     fontSize: 16,
-    color: '#666',
+    color: theme.colors.mode.textSecondary,
   },
   header: {
     flexDirection: 'row',
@@ -682,11 +685,11 @@ const styles = StyleSheet.create({
   scoreText: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#ff9800',
+    color: theme.colors.warning.light,
   },
   challengeContainer: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: theme.colors.mode.surface,
     borderRadius: 12,
     padding: 20,
     shadowColor: '#000',
@@ -697,20 +700,20 @@ const styles = StyleSheet.create({
   },
   challengeTitle: {
     fontSize: 18,
-    color: '#666',
+    color: theme.colors.mode.textSecondary,
     textAlign: 'center',
     marginBottom: 10,
   },
   initials: {
     fontSize: 48,
     fontWeight: 'bold',
-    color: '#ff9800',
+    color: theme.colors.warning.light,
     textAlign: 'center',
     marginBottom: 20,
     letterSpacing: 8,
   },
   resultContainer: {
-    backgroundColor: '#f8f9fa',
+    backgroundColor: theme.colors.mode.surfaceVariant,
     padding: 15,
     borderRadius: 8,
     marginBottom: 20,
@@ -723,12 +726,12 @@ const styles = StyleSheet.create({
   },
   resultMessage: {
     fontSize: 14,
-    color: '#666',
+    color: theme.colors.mode.textSecondary,
     textAlign: 'center',
   },
   matchText: {
     fontSize: 14,
-    color: '#4caf50',
+    color: theme.colors.success.light,
     marginTop: 5,
     textAlign: 'center',
   },
@@ -737,45 +740,46 @@ const styles = StyleSheet.create({
   },
   input: {
     borderWidth: 2,
-    borderColor: '#e9ecef',
+    borderColor: theme.colors.mode.border,
     borderRadius: 8,
     padding: 16,
     fontSize: 18,
-    backgroundColor: '#fff',
+    backgroundColor: theme.colors.mode.surface,
+    color: theme.colors.mode.text,
   },
   hintContainer: {
-    backgroundColor: '#fff3cd',
+    backgroundColor: theme.colors.warning.background,
     padding: 15,
     borderRadius: 8,
     marginBottom: 20,
     borderLeftWidth: 4,
-    borderLeftColor: '#ffc107',
+    borderLeftColor: theme.colors.warning.light,
   },
   hintTitle: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: '#856404',
+    color: theme.colors.warning.dark,
     marginBottom: 10,
   },
   hintPlayer: {
     fontSize: 14,
-    color: '#856404',
+    color: theme.colors.warning.dark,
     marginBottom: 5,
   },
   buttonContainer: {
     gap: 15,
   },
   submitButton: {
-    backgroundColor: '#ff9800',
+    backgroundColor: theme.colors.warning.light,
     padding: 16,
     borderRadius: 8,
     alignItems: 'center',
   },
   disabledButton: {
-    backgroundColor: '#ccc',
+    backgroundColor: theme.colors.neutral[400],
   },
   submitButtonText: {
-    color: '#fff',
+    color: theme.colors.onPrimary,
     fontSize: 18,
     fontWeight: 'bold',
   },
@@ -785,25 +789,25 @@ const styles = StyleSheet.create({
   },
   hintButton: {
     flex: 1,
-    backgroundColor: '#17a2b8',
+    backgroundColor: theme.colors.info.dark,
     padding: 12,
     borderRadius: 8,
     alignItems: 'center',
   },
   hintButtonText: {
-    color: '#fff',
+    color: theme.colors.onPrimary,
     fontSize: 16,
     fontWeight: 'bold',
   },
   skipButton: {
     flex: 1,
-    backgroundColor: '#6c757d',
+    backgroundColor: theme.colors.neutral[700],
     padding: 12,
     borderRadius: 8,
     alignItems: 'center',
   },
   skipButtonText: {
-    color: '#fff',
+    color: theme.colors.onPrimary,
     fontSize: 16,
     fontWeight: 'bold',
   },
@@ -813,7 +817,7 @@ const styles = StyleSheet.create({
   },
   footerText: {
     fontSize: 14,
-    color: '#888',
+    color: theme.colors.mode.textSecondary,
     textAlign: 'center',
     fontStyle: 'italic',
   },

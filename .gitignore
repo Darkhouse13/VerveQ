@@ -178,6 +178,9 @@ archive/cleaned/**/*.csv
 cleanup_archive/
 processed_tennis/
 
+# Test coverage output
+coverage/
+
 # Frontend development
 frontend/.expo/
 frontend/node_modules/
@@ -198,11 +201,7 @@ development_files/
 # Ignore all markdown files by default, then re-include essential ones
 *.md
 !README.md
-!CONTRIBUTING.md
-!CODE_OF_CONDUCT.md
-!SECURITY.md
-!DEPLOYMENT.md
-!docs/*.md
+!docs/**/*.md
 !.github/ISSUE_TEMPLATE/bug_report.md
 !.github/ISSUE_TEMPLATE/feature_request.md
 !.github/pull_request_template.md

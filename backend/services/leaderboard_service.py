@@ -14,181 +14,161 @@ class LeaderboardService:
     
     @staticmethod
     def get_leaderboard(
-        sport: Optional[str] = None, 
-        mode: Optional[str] = None, 
+        sport: Optional[str] = None,
+        mode: Optional[str] = None,
         period: str = "all_time",
-        limit: int = 10
+        limit: int = 10,
+        db: Optional[Session] = None
     ) -> List[Dict]:
-        """
-        Get leaderboard entries
-        
-        Args:
-            sport: Sport filter (None for global)
-            mode: Game mode filter (None for all modes)
-            period: Time period (only all_time supported for now)
-            limit: Number of entries to return
-            
-        Returns:
-            List of leaderboard entries
-        """
-        db = SessionLocal()
-        
+        """Return leaderboard entries with optional filtering."""
+        session = db or SessionLocal()
+        created_session = db is None
+
         try:
-            # Base query joining users and ratings
-            query = db.query(
-                User.id.label('user_id'),
-                User.username,
-                User.display_name,
-                UserRating.elo_rating,
-                UserRating.sport,
-                UserRating.mode,
-                UserRating.games_played,
-                UserRating.wins,
-                UserRating.losses,
-                UserRating.best_score,
-                UserRating.average_score
-            ).join(UserRating, User.id == UserRating.user_id)
-            
-            # Apply filters
+            query = (
+                session.query(
+                    User.id.label("user_id"),
+                    User.username,
+                    User.display_name,
+                    UserRating.elo_rating,
+                    UserRating.sport,
+                    UserRating.mode,
+                    UserRating.games_played,
+                    UserRating.wins,
+                    UserRating.losses,
+                    UserRating.best_score,
+                    UserRating.average_score,
+                )
+                .join(UserRating, User.id == UserRating.user_id)
+            )
+
             if sport:
                 query = query.filter(UserRating.sport == sport)
             if mode:
                 query = query.filter(UserRating.mode == mode)
-            
-            # Only include players who have played games
+
             query = query.filter(UserRating.games_played > 0)
-            
-            # Order by ELO rating descending
             query = query.order_by(desc(UserRating.elo_rating))
-            
-            # Apply limit
-            query = query.limit(limit)
-            
-            # Execute query
+
+            effective_limit = limit if isinstance(limit, int) and limit > 0 else 10
+            query = query.limit(effective_limit)
+
             results = query.all()
-            
-            # Format results
-            leaderboard = []
+
+            leaderboard: List[Dict] = []
             for rank, result in enumerate(results, 1):
+                games_played = result.games_played or 0
+                wins = result.wins or 0
+                win_rate = round(wins / games_played, 2) if games_played else 0.0
+                elo_value = float(result.elo_rating or 0)
+
                 entry = {
                     "rank": rank,
                     "user_id": result.user_id,
                     "username": result.username,
                     "display_name": result.display_name or result.username,
-                    "elo_rating": int(result.elo_rating),
-                    "score": int(result.elo_rating),  # For compatibility
-                    "games_played": result.games_played,
-                    "wins": result.wins,
-                    "losses": result.losses,
-                    "win_rate": round(result.wins / result.games_played * 100, 1) if result.games_played > 0 else 0,
-                    "best_score": result.best_score,
-                    "average_score": round(result.average_score, 1),
+                    "elo_rating": int(round(elo_value)),
+                    "score": int(round(elo_value)),
+                    "games_played": games_played,
+                    "wins": wins,
+                    "losses": result.losses or 0,
+                    "win_rate": win_rate,
+                    "best_score": result.best_score or 0,
+                    "average_score": round(float(result.average_score or 0.0), 1),
                     "sport": result.sport,
-                    "mode": result.mode
+                    "mode": result.mode,
                 }
                 leaderboard.append(entry)
-            
+
             return leaderboard
-            
-        except Exception as e:
-            print(f"Error getting leaderboard: {e}")
+
+        except Exception as exc:
+            print(f"Error getting leaderboard: {exc}")
             return []
         finally:
-            db.close()
-    
+            if created_session:
+                session.close()
+
     @staticmethod
-    def get_user_rank(user_id: str, sport: Optional[str] = None, mode: Optional[str] = None) -> Optional[int]:
-        """
-        Get user's rank in leaderboard
-        
-        Args:
-            user_id: User ID to get rank for
-            sport: Sport filter
-            mode: Mode filter
-            
-        Returns:
-            User's rank (1-based) or None if not found
-        """
-        db = SessionLocal()
-        
+    def get_user_rank(
+        user_id: str,
+        sport: Optional[str] = None,
+        mode: Optional[str] = None,
+        db: Optional[Session] = None
+    ) -> Optional[int]:
+        """Return the 1-based rank for a user, or None if not ranked."""
+        session = db or SessionLocal()
+        created_session = db is None
+
         try:
-            # Get user's rating
-            user_rating_query = db.query(UserRating).filter(UserRating.user_id == user_id)
+            user_rating_query = session.query(UserRating).filter(UserRating.user_id == user_id)
             if sport:
                 user_rating_query = user_rating_query.filter(UserRating.sport == sport)
             if mode:
                 user_rating_query = user_rating_query.filter(UserRating.mode == mode)
-            
+
             user_rating = user_rating_query.first()
-            if not user_rating:
+            if not user_rating or not user_rating.games_played:
                 return None
-            
-            # Count users with higher ratings
-            count_query = db.query(UserRating).filter(
+
+            count_query = session.query(UserRating).filter(
                 UserRating.elo_rating > user_rating.elo_rating,
-                UserRating.games_played > 0
+                UserRating.games_played > 0,
             )
             if sport:
                 count_query = count_query.filter(UserRating.sport == sport)
             if mode:
                 count_query = count_query.filter(UserRating.mode == mode)
-            
+
             higher_ratings_count = count_query.count()
-            
-            # Rank is count of higher ratings + 1
             return higher_ratings_count + 1
-            
-        except Exception as e:
-            print(f"Error getting user rank: {e}")
+
+        except Exception as exc:
+            print(f"Error getting user rank: {exc}")
             return None
         finally:
-            db.close()
-    
+            if created_session:
+                session.close()
+
     @staticmethod
-    def get_leaderboard_stats(sport: Optional[str] = None, mode: Optional[str] = None) -> Dict:
-        """
-        Get leaderboard statistics
-        
-        Args:
-            sport: Sport filter
-            mode: Mode filter
-            
-        Returns:
-            Dictionary with leaderboard stats
-        """
-        db = SessionLocal()
-        
+    def get_leaderboard_stats(
+        sport: Optional[str] = None,
+        mode: Optional[str] = None,
+        db: Optional[Session] = None
+    ) -> Dict:
+        """Return aggregate stats for the requested leaderboard slice."""
+        session = db or SessionLocal()
+        created_session = db is None
+
         try:
-            query = db.query(UserRating).filter(UserRating.games_played > 0)
-            
+            query = session.query(UserRating).filter(UserRating.games_played > 0)
             if sport:
                 query = query.filter(UserRating.sport == sport)
             if mode:
                 query = query.filter(UserRating.mode == mode)
-            
-            total_players = query.count()
-            
-            if total_players == 0:
+
+            ratings = query.all()
+            if not ratings:
                 return {
                     "total_players": 0,
                     "average_elo": 0,
                     "highest_elo": 0,
-                    "total_games": 0
+                    "total_games": 0,
                 }
-            
-            # Get statistics
-            ratings = [r.elo_rating for r in query.all()]
-            total_games = sum(r.games_played for r in query.all())
-            
+
+            elo_values = [float(r.elo_rating or 0.0) for r in ratings]
+            total_games = sum(r.games_played or 0 for r in ratings)
+
             return {
-                "total_players": total_players,
-                "average_elo": round(sum(ratings) / len(ratings), 1),
-                "highest_elo": round(max(ratings), 1),
-                "total_games": total_games
+                "total_players": len(ratings),
+                "average_elo": round(sum(elo_values) / len(elo_values), 1),
+                "highest_elo": round(max(elo_values), 1),
+                "total_games": total_games,
             }
-            
-        except Exception as e:
-            print(f"Error getting leaderboard stats: {e}")
-            return {"error": str(e)}
+
+        except Exception as exc:
+            print(f"Error getting leaderboard stats: {exc}")
+            return {"error": str(exc)}
         finally:
-            db.close()
+            if created_session:
+                session.close()

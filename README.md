@@ -1,8 +1,8 @@
 # VerveQ Platform v3.0.0 - Production-Ready Competitive Sports Gaming Platform
 
-[![Deployment Ready](https://img.shields.io/badge/Deployment-Ready-brightgreen.svg)](PM2_DEPLOYMENT_GUIDE.md)
+[![Deployment Ready](https://img.shields.io/badge/Deployment-Ready-brightgreen.svg)](docs/PM2_DEPLOYMENT_GUIDE.md)
 [![PM2 Compatible](https://img.shields.io/badge/PM2-Compatible-blue.svg)](ecosystem.config.js)
-[![Production Ready](https://img.shields.io/badge/Production-Ready-success.svg)](DEPLOYMENT_CHECKLIST.md)
+[![Production Ready](https://img.shields.io/badge/Production-Ready-success.svg)](docs/DEPLOYMENT_CHECKLIST.md)
 [![Health Monitoring](https://img.shields.io/badge/Health-Monitoring-green.svg)](#health-monitoring)
 
 A comprehensive, production-ready competitive sports gaming platform with ELO rankings, global leaderboards, social features, and complete deployment infrastructure.
@@ -66,8 +66,7 @@ verveq-platform/
 ├── ecosystem.config.js           # PM2 process configuration
 ├── .env.production              # Production environment template
 ├── setup_postgres.sql           # PostgreSQL database setup
-├── PM2_DEPLOYMENT_GUIDE.md     # Complete deployment guide
-├── DEPLOYMENT_CHECKLIST.md     # Deployment tracking checklist
+├── docs/                        # All project documentation
 ├── backend/                     # FastAPI backend
 │   ├── main.py                 # API entry point with middleware
 │   ├── run.py                  # Development server
@@ -553,15 +552,16 @@ tail -f logs/verveq-backend-error.log
 4. Run the test suite
 5. Submit a pull request
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) for detailed guidelines.
+See [CONTRIBUTING.md](docs/CONTRIBUTING.md) for detailed guidelines.
 
 ## 📚 Documentation
 
-- **[PM2 Deployment Guide](PM2_DEPLOYMENT_GUIDE.md)**: Complete deployment documentation
-- **[Deployment Checklist](DEPLOYMENT_CHECKLIST.md)**: Production readiness checklist
-- **[Code of Conduct](CODE_OF_CONDUCT.md)**: Community guidelines
-- **[Security Policy](SECURITY.md)**: Security practices and reporting
-- **[Contributing Guide](CONTRIBUTING.md)**: Development and contribution guidelines
+- **[PM2 Deployment Guide](docs/PM2_DEPLOYMENT_GUIDE.md)**: Complete deployment documentation
+- **[Deployment Checklist](docs/DEPLOYMENT_CHECKLIST.md)**: Production readiness checklist
+- **[Code of Conduct](docs/CODE_OF_CONDUCT.md)**: Community guidelines
+- **[Security Policy](docs/SECURITY.md)**: Security practices and reporting
+- **[Contributing Guide](docs/CONTRIBUTING.md)**: Development and contribution guidelines
+- **[API Routes](docs/API_ROUTES.md)**: Complete API endpoint reference
 
 ## 🆘 Support & Troubleshooting
 

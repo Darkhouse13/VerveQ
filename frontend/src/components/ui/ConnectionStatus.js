@@ -90,8 +90,8 @@ const ConnectionStatus = ({
         icon: '📶',
         title: 'You\'re Offline',
         message: 'Check your connection and try again',
-        backgroundColor: theme.colors.error.main,
-        textColor: '#ffffff',
+        backgroundColor: theme.colors.error.dark,
+        textColor: theme.colors.onPrimary,
         showRetry: true,
       };
     }
@@ -103,7 +103,7 @@ const ConnectionStatus = ({
         title: 'Syncing Changes',
         message: `${offlineActionCount} pending action${offlineActionCount !== 1 ? 's' : ''}`,
         backgroundColor: theme.colors.secondary.amber,
-        textColor: '#ffffff',
+        textColor: theme.colors.onPrimary,
         showRetry: true,
       };
     }
@@ -123,8 +123,8 @@ const ConnectionStatus = ({
         icon: config.icon,
         title: 'Online',
         message: config.message,
-        backgroundColor: theme.colors.success.main,
-        textColor: '#ffffff',
+        backgroundColor: theme.colors.success.dark,
+        textColor: theme.colors.onPrimary,
         showRetry: false,
       };
     }
@@ -272,7 +272,7 @@ const styles = (theme, config = {}) => StyleSheet.create({
     color: config.textColor || theme.colors.mode.text,
   },
   offlineIndicator: {
-    backgroundColor: theme.colors.error.main,
+    backgroundColor: theme.colors.error.dark,
     paddingHorizontal: theme.spacing.sm,
     paddingVertical: theme.spacing.xs,
     borderRadius: theme.borderRadius.sm,
@@ -281,7 +281,7 @@ const styles = (theme, config = {}) => StyleSheet.create({
   offlineText: {
     fontSize: theme.typography.sizes.xs,
     fontWeight: theme.typography.weights.bold,
-    color: '#ffffff',
+    color: theme.colors.onPrimary,
   },
 });
 

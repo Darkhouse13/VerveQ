@@ -7,8 +7,13 @@ import secrets
 from typing import List, Optional
 from dotenv import load_dotenv
 
-# Load environment variables from .env file
-load_dotenv()
+# Load environment variables, honoring ENV_FILE when provided
+ENV_FILE = os.getenv("ENV_FILE")
+if ENV_FILE:
+    # Do not override already-set environment variables
+    load_dotenv(ENV_FILE)
+else:
+    load_dotenv()
 
 class Settings:
     """
@@ -136,6 +141,38 @@ class Settings:
             return development_origins
         
         return [origin.strip() for origin in origins_str.split(",")]
+
+    # Clerk Configuration (Identity Platform)
+    @property
+    def clerk_secret_key(self) -> Optional[str]:
+        """Clerk backend secret key (required in production)"""
+        key = os.getenv("CLERK_SECRET_KEY")
+        if self.is_production and not key:
+            raise ValueError("CLERK_SECRET_KEY is required in production")
+        return key
+
+    @property
+    def clerk_issuer(self) -> Optional[str]:
+        """Expected JWT issuer (iss) from Clerk"""
+        issuer = os.getenv("CLERK_ISSUER")
+        if self.is_production and not issuer:
+            raise ValueError("CLERK_ISSUER is required in production")
+        return issuer
+
+    @property
+    def clerk_jwt_audience(self) -> Optional[str]:
+        """Expected JWT audience (aud) claim"""
+        aud = os.getenv("CLERK_JWT_AUDIENCE")
+        if self.is_production and not aud:
+            raise ValueError("CLERK_JWT_AUDIENCE is required in production")
+        return aud
+
+    @property
+    def clerk_webhook_secret(self) -> Optional[str]:
+        """Svix webhook signing secret (verify webhooks)"""
+        secret = os.getenv("CLERK_WEBHOOK_SECRET")
+        # Not strictly needed until webhooks are enabled
+        return secret
     
     @property
     def cors_allow_credentials(self) -> bool:

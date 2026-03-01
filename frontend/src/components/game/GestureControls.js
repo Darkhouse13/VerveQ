@@ -422,12 +422,12 @@ const styles = (theme) => StyleSheet.create({
   },
   indicatorIcon: {
     fontSize: 24,
-    color: '#ffffff',
+    color: theme.colors.onPrimary,
     fontWeight: 'bold',
   },
   indicatorLabel: {
     fontSize: theme.typography.sizes.sm,
-    color: '#ffffff',
+    color: theme.colors.onPrimary,
     fontWeight: theme.typography.weights.bold,
     marginTop: theme.spacing.xs,
   },

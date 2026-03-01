@@ -121,7 +121,6 @@ const HomeScreen = ({ navigation }) => {
       suggested: { tag: 'Quiz', title: 'Fast Quiz', subtitle: 'Sharpen your knowledge in a quick 10-question run', mode: 'quiz' },
       quiz: { tag: 'Quiz', title: 'Challenge Quiz', subtitle: 'Higher difficulty. Bigger rewards.', mode: 'quiz' },
       survival: { tag: 'Survival', title: 'Endless Survival', subtitle: 'How many players can you guess in a row?', mode: 'survival' },
-      speed: { tag: 'Speed', title: 'Time Attack', subtitle: 'Beat the clock. Accuracy under pressure.', mode: 'quiz' },
       archives: { tag: 'Archives', title: 'Historic Quiz', subtitle: 'Classic questions from past seasons.', mode: 'quiz' },
     };
     setFeaturedMode(base[filter] || base.suggested);
@@ -258,7 +257,7 @@ const HomeScreen = ({ navigation }) => {
             style={styles(theme).filtersRow}
             contentContainerStyle={styles(theme).filtersContent}
           >
-            {['suggested','quiz','survival','speed','archives'].map(f => (
+            {['suggested','quiz','survival','archives'].map(f => (
               <FilterChip
                 key={f}
                 label={f.charAt(0).toUpperCase() + f.slice(1)}
@@ -311,7 +310,7 @@ const HomeScreen = ({ navigation }) => {
           {/* Stats Dashboard */}
           {/* StatsCard removed (metrics row replaces) */}
 
-          {/* Modes Grid Placeholder (reuse existing two modes for now) */}
+          {/* Modes Grid – show supported modes only */}
           <AnimatedSection delay={440} style={styles(theme).modesGridWrapper}>
             <Text style={[themeStyles.heading3, styles(theme).sectionHeading]}>All Modes</Text>
             <View style={[styles(theme).modesGrid, isTablet && styles(theme).modesGridTablet]}>              
@@ -323,7 +322,6 @@ const HomeScreen = ({ navigation }) => {
                 style={[styles(theme).modeCardSmall, styles(theme).quizModeCard]}
               >
                 <View style={styles(theme).modeCardContentSmall}>
-                  <Text style={styles(theme).modeSmallTag}>QUIZ</Text>
                   <Text style={styles(theme).modeSmallTitle}>Quiz</Text>
                 </View>
               </Card>
@@ -335,20 +333,7 @@ const HomeScreen = ({ navigation }) => {
                 style={[styles(theme).modeCardSmall, styles(theme).survivalModeCard]}
               >
                 <View style={styles(theme).modeCardContentSmall}>
-                  <Text style={styles(theme).modeSmallTag}>SURVIVAL</Text>
                   <Text style={styles(theme).modeSmallTitle}>Survival</Text>
-                </View>
-              </Card>
-              <Card
-                variant="default"
-                elevation="lg"
-                pressable
-                onPress={() => navigation.navigate('SportSelection', { mode: 'quiz', speed: true })}
-                style={[styles(theme).modeCardSmall, styles(theme).speedModeCard]}
-              >
-                <View style={styles(theme).modeCardContentSmall}>
-                  <Text style={styles(theme).modeSmallTag}>SPEED</Text>
-                  <Text style={styles(theme).modeSmallTitle}>Speed</Text>
                 </View>
               </Card>
             </View>
@@ -484,7 +469,7 @@ const styles = (theme) => StyleSheet.create({
     color: theme.colors.mode.textSecondary,
   },
   segmentTextActive: {
-    color: '#ffffff',
+    color: theme.colors.onPrimary,
   },
   metricsRow: {
     flexDirection: 'row',
@@ -548,6 +533,7 @@ const styles = (theme) => StyleSheet.create({
   modesGrid: {
     flexDirection: 'row',
     gap: theme.spacing.md,
+    justifyContent: 'space-between',
   },
   modesGridTablet: {
     flexWrap: 'wrap',
@@ -568,9 +554,10 @@ const styles = (theme) => StyleSheet.create({
     color: theme.colors.mode.textSecondary,
   },
   modeSmallTitle: {
-    fontSize: theme.typography.sizes.md,
+    fontSize: theme.typography.sizes.lg,
     fontWeight: theme.typography.weights.bold,
     color: theme.colors.mode.text,
+    textAlign: 'center',
   },
   statsCard: {
     marginBottom: theme.spacing.lg,

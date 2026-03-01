@@ -179,7 +179,7 @@ const styles = (theme) => StyleSheet.create({
     borderRadius: theme.borderRadius.md,
   },
   backButtonText: {
-    color: '#ffffff',
+    color: theme.colors.onPrimary,
     fontSize: theme.typography.sizes.md,
     fontWeight: theme.typography.weights.bold,
   },

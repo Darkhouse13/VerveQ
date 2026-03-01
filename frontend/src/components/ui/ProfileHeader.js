@@ -239,7 +239,7 @@ const styles = (theme) => StyleSheet.create({
     height: 80,
     borderRadius: 40,
     backgroundColor: theme.colors.primary[500],
-    color: '#ffffff',
+    color: theme.colors.onPrimary,
     fontSize: theme.typography.sizes['2xl'],
     fontWeight: theme.typography.weights.bold,
     textAlign: 'center',

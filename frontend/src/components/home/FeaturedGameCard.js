@@ -81,7 +81,7 @@ const styles = (theme) => StyleSheet.create({
     alignItems: 'center',
   },
   ctaText: {
-    color: '#ffffff',
+    color: theme.colors.onPrimary,
     fontSize: theme.typography.sizes.md,
     fontWeight: theme.typography.weights.semibold,
   },

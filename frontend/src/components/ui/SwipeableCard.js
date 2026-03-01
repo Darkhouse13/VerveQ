@@ -315,7 +315,7 @@ const styles = (theme) => StyleSheet.create({
   actionText: {
     fontSize: theme.typography.sizes.sm,
     fontWeight: theme.typography.weights.bold,
-    color: '#ffffff',
+    color: theme.colors.onPrimary,
   },
   card: {
     backgroundColor: theme.colors.mode.surface,

@@ -1,4 +1,4 @@
-/**
+﻿/**
  * VerveQ Platform Frontend Configuration
  * Centralized API configuration with environment detection
  */
@@ -15,10 +15,12 @@ try {
   Constants = { expoConfig: null, manifest: null };
 }
 
+const isExpoDev = (typeof __DEV__ !== 'undefined' && __DEV__);
+
 // Environment detection
 const getEnvironment = () => {
   // Check if we're in Expo development
-  if (__DEV__) {
+  if (isExpoDev) {
     return 'development';
   }
   
@@ -65,12 +67,12 @@ const getApiUrl = () => {
   // First check for explicitly set environment variable
   const envApiUrl = Constants?.expoConfig?.extra?.apiUrl || Constants?.manifest?.extra?.apiUrl;
   if (envApiUrl && envApiUrl !== "${API_URL}") {
-    console.log('📍 Using API URL from config:', envApiUrl);
+    console.log('ðŸ“ Using API URL from config:', envApiUrl);
     return envApiUrl;
   }
 
   // Development auto-detection
-  if (__DEV__) {
+  if (isExpoDev) {
     const host = resolveExpoDevHost();
 
     // If we resolved a LAN host from Expo, prefer it
@@ -78,30 +80,30 @@ const getApiUrl = () => {
       // Android emulator special-case when host resolves to localhost/127.0.0.1
       if (Platform.OS === 'android' && (host === 'localhost' || host === '127.0.0.1')) {
         const url = 'http://10.0.2.2:8000';
-        console.log('📍 Using Android emulator host:', url);
+        console.log('ðŸ“ Using Android emulator host:', url);
         return url;
       }
       // Use detected host for device/simulator
       const url = buildLanUrl(host, '8000');
-      console.log(`📍 Using resolved Expo dev host for ${Platform.OS}:`, url);
+      console.log(`ðŸ“ Using resolved Expo dev host for ${Platform.OS}:`, url);
       return url;
     }
 
     // Fallbacks when host could not be resolved
     if (Platform.OS === 'android') {
       const url = 'http://10.0.2.2:8000';
-      console.log('📍 Using Android emulator fallback:', url);
+      console.log('ðŸ“ Using Android emulator fallback:', url);
       return url;
     }
     if (Platform.OS === 'web') {
       const url = 'http://localhost:8000';
-      console.log('📍 Using web fallback:', url);
+      console.log('ðŸ“ Using web fallback:', url);
       return url;
     }
 
     // Last resort: instruct to set expo.extra.apiUrl
     const url = 'http://localhost:8000';
-    console.warn('⚠️ Could not resolve LAN host. Consider setting expo.extra.apiUrl in app.json. Falling back to:', url);
+    console.warn('âš ï¸ Could not resolve LAN host. Consider setting expo.extra.apiUrl in app.json. Falling back to:', url);
     return url;
   }
   
@@ -276,9 +278,9 @@ export const getEndpoint = (category, method, ...params) => {
 // Helper function to log API calls (development only)
 export const logApiCall = (method, url, data = null) => {
   if (apiConfig.debug) {
-    console.log(`🌐 API ${method.toUpperCase()}: ${url}`);
+    console.log(`ðŸŒ API ${method.toUpperCase()}: ${url}`);
     if (data) {
-      console.log('📤 Request data:', data);
+      console.log('ðŸ“¤ Request data:', data);
     }
   }
 };
@@ -287,10 +289,10 @@ export const logApiCall = (method, url, data = null) => {
 export const logApiResponse = (method, url, response, error = null) => {
   if (apiConfig.debug) {
     if (error) {
-      console.error(`❌ API ${method.toUpperCase()} ERROR: ${url}`, error);
+      console.error(`âŒ API ${method.toUpperCase()} ERROR: ${url}`, error);
     } else {
-      console.log(`✅ API ${method.toUpperCase()} SUCCESS: ${url}`);
-      console.log('📥 Response data:', response);
+      console.log(`âœ… API ${method.toUpperCase()} SUCCESS: ${url}`);
+      console.log('ðŸ“¥ Response data:', response);
     }
   }
 };
@@ -306,17 +308,17 @@ export const probeApiReachability = (baseURL, timeoutMs = 1500) => {
       .then(res => {
         if (id) clearTimeout(id);
         if (res.ok) {
-          console.log('🔌 API reachable:', url);
+          console.log('ðŸ”Œ API reachable:', url);
         } else {
-          console.warn(`⚠️ API responded with status ${res.status}:`, url);
+          console.warn(`âš ï¸ API responded with status ${res.status}:`, url);
         }
       })
       .catch(err => {
         if (id) clearTimeout(id);
-        console.warn('❌ API unreachable:', url, err?.message || err);
+        console.warn('âŒ API unreachable:', url, err?.message || err);
       });
   } catch (e) {
-    console.warn('❌ API probe failed to start:', e?.message || e);
+    console.warn('âŒ API probe failed to start:', e?.message || e);
     return Promise.resolve();
   }
 };
@@ -342,7 +344,7 @@ export const validateConfig = () => {
   }
   
   if (errors.length > 0) {
-    console.error('❌ Configuration validation errors:');
+    console.error('âŒ Configuration validation errors:');
     errors.forEach(error => console.error(`   - ${error}`));
     
     if (apiConfig.isProduction) {
@@ -355,7 +357,7 @@ export const validateConfig = () => {
 
 // Print configuration summary
 export const printConfigSummary = () => {
-  console.log('📱 VerveQ Frontend Configuration:');
+  console.log('ðŸ“± VerveQ Frontend Configuration:');
   console.log(`   Environment: ${apiConfig.environment}`);
   console.log(`   Platform: ${Platform.OS}`);
   console.log(`   API URL: ${apiConfig.baseURL}`);
@@ -367,7 +369,7 @@ export const printConfigSummary = () => {
   console.log(`   Environment API URL: ${envApiUrl || 'Not set (using default)'}`);
 
   // Show resolved Expo dev host when available
-  if (__DEV__) {
+  if (isExpoDev) {
     const host = resolveExpoDevHost();
     console.log(`   Resolved Expo host: ${host || 'Not resolved'}`);
   }
@@ -384,3 +386,4 @@ if (apiConfig.isDevelopment) {
 }
 
 export default apiConfig;
+

@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { useTheme } from '../context/ThemeContext';
 import { safeNavigate, resetNavigationStack } from '../utils/navigationUtils';
 
 class ErrorBoundary extends React.Component {
@@ -30,35 +31,36 @@ class ErrorBoundary extends React.Component {
 
   render() {
     if (this.state.hasError) {
+      const { theme } = this.props;
       return (
-        <View style={styles.container}>
-          <View style={styles.errorContainer}>
-            <Text style={styles.title}>Something went wrong</Text>
-            <Text style={styles.subtitle}>
+        <View style={styles(theme).container}>
+          <View style={styles(theme).errorContainer}>
+            <Text style={styles(theme).title}>Something went wrong</Text>
+            <Text style={styles(theme).subtitle}>
               The app encountered an unexpected error
             </Text>
             
             {__DEV__ && this.state.error && (
-              <View style={styles.debugContainer}>
-                <Text style={styles.debugTitle}>Debug Information:</Text>
-                <Text style={styles.debugText}>
+              <View style={styles(theme).debugContainer}>
+                <Text style={styles(theme).debugTitle}>Debug Information:</Text>
+                <Text style={styles(theme).debugText}>
                   {this.state.error.toString()}
                 </Text>
                 {this.state.errorInfo && (
-                  <Text style={styles.debugText}>
+                  <Text style={styles(theme).debugText}>
                     {this.state.errorInfo.componentStack}
                   </Text>
                 )}
               </View>
             )}
             
-            <TouchableOpacity style={styles.resetButton} onPress={this.handleReset}>
-              <Text style={styles.resetButtonText}>Try Again</Text>
+            <TouchableOpacity style={styles(theme).resetButton} onPress={this.handleReset}>
+              <Text style={styles(theme).resetButtonText}>Try Again</Text>
             </TouchableOpacity>
             
             {this.props.navigation && (
               <TouchableOpacity 
-                style={styles.homeButton} 
+                style={styles(theme).homeButton} 
                 onPress={() => {
                   this.handleReset();
                   if (!safeNavigate(this.props.navigation, 'Home')) {
@@ -66,7 +68,7 @@ class ErrorBoundary extends React.Component {
                   }
                 }}
               >
-                <Text style={styles.homeButtonText}>Go to Home</Text>
+                <Text style={styles(theme).homeButtonText}>Go to Home</Text>
               </TouchableOpacity>
             )}
           </View>
@@ -78,41 +80,39 @@ class ErrorBoundary extends React.Component {
   }
 }
 
-const styles = StyleSheet.create({
+const styles = (theme) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: theme.colors.mode.background,
     justifyContent: 'center',
     alignItems: 'center',
     padding: 20,
   },
   errorContainer: {
-    backgroundColor: '#fff',
+    backgroundColor: theme.colors.mode.surface,
     borderRadius: 12,
     padding: 24,
     alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+    ...theme.elevation.sm,
+    borderWidth: 1,
+    borderColor: theme.colors.mode.border,
     maxWidth: '100%',
   },
   title: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: '#1a237e',
+    color: theme.colors.mode.text,
     marginBottom: 8,
     textAlign: 'center',
   },
   subtitle: {
     fontSize: 16,
-    color: '#666',
+    color: theme.colors.mode.textSecondary,
     marginBottom: 20,
     textAlign: 'center',
   },
   debugContainer: {
-    backgroundColor: '#f8f9fa',
+    backgroundColor: theme.colors.mode.surfaceVariant,
     borderRadius: 8,
     padding: 12,
     marginBottom: 20,
@@ -122,37 +122,43 @@ const styles = StyleSheet.create({
   debugTitle: {
     fontSize: 14,
     fontWeight: 'bold',
-    color: '#e74c3c',
+    color: theme.colors.error.dark,
     marginBottom: 8,
   },
   debugText: {
     fontSize: 12,
-    color: '#666',
+    color: theme.colors.mode.textSecondary,
     fontFamily: 'monospace',
   },
   resetButton: {
-    backgroundColor: '#1a237e',
+    backgroundColor: theme.colors.primary[500],
     paddingHorizontal: 24,
     paddingVertical: 12,
     borderRadius: 8,
     marginBottom: 12,
   },
   resetButtonText: {
-    color: '#fff',
+    color: theme.colors.onPrimary,
     fontSize: 16,
     fontWeight: 'bold',
   },
   homeButton: {
-    backgroundColor: '#4caf50',
+    backgroundColor: theme.colors.success.dark,
     paddingHorizontal: 24,
     paddingVertical: 12,
     borderRadius: 8,
   },
   homeButtonText: {
-    color: '#fff',
+    color: theme.colors.onPrimary,
     fontSize: 16,
     fontWeight: 'bold',
   },
 });
 
-export default ErrorBoundary;
+// Functional wrapper to inject theme into the class component
+const ThemedErrorBoundary = (props) => {
+  const { theme } = useTheme();
+  return <ErrorBoundary {...props} theme={theme} />;
+};
+
+export default ThemedErrorBoundary;

@@ -6,6 +6,7 @@ import {
   Dimensions
 } from 'react-native';
 import { useTheme } from '../../context/ThemeContext';
+import { colors as themeColors } from '../../design/theme';
 
 const { width: screenWidth } = Dimensions.get('window');
 
@@ -208,7 +209,7 @@ const styles = (theme = {}) => StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
-    backgroundColor: theme.colors?.mode?.surface || '#ffffff',
+    backgroundColor: theme.colors?.mode?.surface || themeColors.light.surface,
     opacity: 0.3,
   },
   textContainer: {
