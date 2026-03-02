@@ -14,6 +14,7 @@ export default defineSchema({
     isGuest: v.optional(v.boolean()),
     isAnonymous: v.optional(v.boolean()),
     totalGames: v.optional(v.number()),
+    approvedQuestionsCount: v.optional(v.number()),
     // Convex Auth fields
     email: v.optional(v.string()),
     emailVerificationTime: v.optional(v.number()),
@@ -31,6 +32,8 @@ export default defineSchema({
     bestScore: v.number(),
     averageScore: v.number(),
     lastPlayed: v.number(),
+    lastDecayAt: v.optional(v.number()),
+    decayWarningShown: v.optional(v.boolean()),
   })
     .index("by_user_sport_mode", ["userId", "sport", "mode"])
     .index("by_sport_mode_elo", ["sport", "mode", "eloRating"]),
@@ -50,6 +53,9 @@ export default defineSchema({
     eloAfter: v.number(),
     eloChange: v.number(),
     endedAt: v.optional(v.number()),
+    sessionType: v.optional(v.string()),
+    kFactor: v.optional(v.number()),
+    kFactorLabel: v.optional(v.string()),
   }).index("by_user", ["userId"]),
 
   achievements: defineTable({
@@ -112,6 +118,7 @@ export default defineSchema({
     timesAnswered: v.number(),
     timesCorrect: v.number(),
     usageCount: v.number(),
+    imageId: v.optional(v.id("_storage")),
   })
     .index("by_sport_difficulty", ["sport", "difficulty"])
     .index("by_checksum", ["checksum"]),
@@ -142,5 +149,178 @@ export default defineSchema({
         validPlayers: v.array(v.string()),
       }),
     ),
+    // Anti-cheat: track which round was last penalized
+    lastPenalizedRound: v.optional(v.number()),
+    // Speed-streak tracking
+    speedStreak: v.optional(v.number()),
+    lastAnswerAt: v.optional(v.number()),
+    performanceBonus: v.optional(v.number()),
+    // Tiered hint system
+    hintTokensLeft: v.optional(v.number()),
+    currentHintStage: v.optional(v.number()),
   }),
+
+  // ── Daily Challenge ──
+  dailyChallenges: defineTable({
+    date: v.string(),
+    sport: v.string(),
+    mode: v.union(v.literal("quiz"), v.literal("survival")),
+    questionChecksums: v.array(v.string()),
+    survivalInitials: v.array(v.string()),
+    createdAt: v.number(),
+  }).index("by_date_sport_mode", ["date", "sport", "mode"]),
+
+  dailyAttempts: defineTable({
+    userId: v.id("users"),
+    date: v.string(),
+    sport: v.string(),
+    mode: v.union(v.literal("quiz"), v.literal("survival")),
+    score: v.number(),
+    completed: v.boolean(),
+    forfeited: v.boolean(),
+    results: v.any(),
+    startedAt: v.number(),
+    completedAt: v.optional(v.number()),
+  })
+    .index("by_user_date_sport_mode", ["userId", "date", "sport", "mode"])
+    .index("by_date_sport_mode_score", ["date", "sport", "mode", "score"]),
+
+  // ── Live Head-to-Head ──
+  liveMatches: defineTable({
+    player1Id: v.id("users"),
+    player2Id: v.id("users"),
+    sport: v.string(),
+    status: v.union(
+      v.literal("waiting"),
+      v.literal("countdown"),
+      v.literal("question"),
+      v.literal("roundResult"),
+      v.literal("completed"),
+      v.literal("forfeited"),
+    ),
+    currentQuestion: v.number(),
+    totalQuestions: v.number(),
+    questions: v.any(),
+    player1Answers: v.any(),
+    player2Answers: v.any(),
+    player1Score: v.number(),
+    player2Score: v.number(),
+    player1Ready: v.boolean(),
+    player2Ready: v.boolean(),
+    player1LastSeen: v.number(),
+    player2LastSeen: v.number(),
+    winnerId: v.optional(v.id("users")),
+    questionStartedAt: v.optional(v.number()),
+    roundResultUntil: v.optional(v.number()),
+    createdAt: v.number(),
+    completedAt: v.optional(v.number()),
+    challengeId: v.optional(v.id("challenges")),
+  })
+    .index("by_player1", ["player1Id", "status"])
+    .index("by_player2", ["player2Id", "status"]),
+
+  // ── Blitz Mode ──
+  blitzSessions: defineTable({
+    userId: v.id("users"),
+    sport: v.string(),
+    score: v.number(),
+    correctCount: v.number(),
+    wrongCount: v.number(),
+    usedChecksums: v.array(v.string()),
+    gameOver: v.boolean(),
+    startedAt: v.number(),
+    endTimeMs: v.number(),
+    endedAt: v.optional(v.number()),
+  }).index("by_user", ["userId"]),
+
+  blitzScores: defineTable({
+    userId: v.id("users"),
+    sport: v.string(),
+    score: v.number(),
+    correctCount: v.number(),
+    wrongCount: v.number(),
+    playedAt: v.number(),
+  })
+    .index("by_sport_score", ["sport", "score"])
+    .index("by_user", ["userId"]),
+
+  // ── Seasons ──
+  seasons: defineTable({
+    seasonNumber: v.number(),
+    startDate: v.number(),
+    endDate: v.number(),
+    isActive: v.boolean(),
+    resetCompletedAt: v.optional(v.number()),
+  })
+    .index("by_active", ["isActive"])
+    .index("by_season_number", ["seasonNumber"]),
+
+  seasonHistory: defineTable({
+    userId: v.id("users"),
+    seasonNumber: v.number(),
+    sport: v.string(),
+    mode: v.string(),
+    finalElo: v.number(),
+    rank: v.number(),
+    tier: v.string(),
+    badge: v.optional(v.string()),
+    gamesPlayed: v.number(),
+    wins: v.number(),
+    archivedAt: v.number(),
+  })
+    .index("by_user", ["userId"])
+    .index("by_user_season", ["userId", "seasonNumber"])
+    .index("by_season_sport_mode_rank", ["seasonNumber", "sport", "mode", "rank"]),
+
+  // ── ELO Decay ──
+  decayNotifications: defineTable({
+    userId: v.id("users"),
+    sport: v.string(),
+    mode: v.string(),
+    decayDate: v.number(),
+    dismissed: v.boolean(),
+    createdAt: v.number(),
+  })
+    .index("by_user_dismissed", ["userId", "dismissed"])
+    .index("by_user_sport_mode", ["userId", "sport", "mode"]),
+
+  // ── The Forge (Community Question Sourcing) ──
+  questionSubmissions: defineTable({
+    authorId: v.id("users"),
+    sport: v.string(),
+    category: v.string(),
+    question: v.string(),
+    options: v.array(v.string()),
+    correctAnswer: v.string(),
+    explanation: v.optional(v.string()),
+    difficulty: v.union(
+      v.literal("easy"),
+      v.literal("intermediate"),
+      v.literal("hard"),
+    ),
+    checksum: v.string(),
+    imageId: v.optional(v.id("_storage")),
+    status: v.union(
+      v.literal("pending"),
+      v.literal("approved"),
+      v.literal("rejected"),
+    ),
+    approveCount: v.number(),
+    rejectCount: v.number(),
+    netVotes: v.number(),
+    createdAt: v.number(),
+    resolvedAt: v.optional(v.number()),
+  })
+    .index("by_checksum", ["checksum"])
+    .index("by_author", ["authorId"])
+    .index("by_status", ["status"]),
+
+  submissionVotes: defineTable({
+    submissionId: v.id("questionSubmissions"),
+    voterId: v.id("users"),
+    vote: v.union(v.literal("approve"), v.literal("reject")),
+    createdAt: v.number(),
+  })
+    .index("by_submission_voter", ["submissionId", "voterId"])
+    .index("by_voter", ["voterId"]),
 });

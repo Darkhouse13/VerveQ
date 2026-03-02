@@ -4,7 +4,10 @@ import { NeoBadge } from "@/components/neo/NeoBadge";
 import { NeoAvatar } from "@/components/neo/NeoAvatar";
 import { BottomNav } from "@/components/neo/BottomNav";
 import { useNavigate } from "react-router-dom";
-import { Timer, Heart, Zap, Brain, Flame, Target, Trophy } from "lucide-react";
+import { Timer, Heart, Zap, Brain, Flame, Target, Trophy, Hammer } from "lucide-react";
+import { DailyBanner } from "@/components/DailyBanner";
+import { SeasonBanner } from "@/components/SeasonBanner";
+import { DecayWarningBanner } from "@/components/DecayWarningBanner";
 import { useAuth } from "@/contexts/AuthContext";
 import { useQuery } from "convex/react";
 import { api } from "../../convex/_generated/api";
@@ -44,6 +47,10 @@ export default function HomeScreen() {
       </div>
 
       <div className="px-5 space-y-5">
+        <DailyBanner />
+        <SeasonBanner />
+        <DecayWarningBanner />
+
         <div className="grid grid-cols-3 gap-2.5">
           <NeoCard color="primary" className="text-center py-3 px-2">
             <Flame size={18} strokeWidth={2.5} className="mx-auto mb-1" />
@@ -141,6 +148,50 @@ export default function HomeScreen() {
               </div>
               <NeoButton variant="primary" size="sm">
                 Play
+              </NeoButton>
+            </NeoCard>
+            <NeoCard
+              shadow="lg"
+              className="flex items-center gap-4 cursor-pointer bg-hot-pink text-hot-pink-foreground"
+              onClick={() => navigate("/sport-select?mode=blitz")}
+            >
+              <div className="neo-border rounded-xl bg-background p-3">
+                <Zap
+                  size={28}
+                  strokeWidth={2.5}
+                  className="text-foreground"
+                />
+              </div>
+              <div className="flex-1">
+                <p className="font-heading font-bold text-lg">Blitz Mode</p>
+                <p className="text-xs opacity-80">
+                  60s speed round
+                </p>
+              </div>
+              <NeoButton variant="primary" size="sm">
+                Play
+              </NeoButton>
+            </NeoCard>
+            <NeoCard
+              shadow="lg"
+              className="flex items-center gap-4 cursor-pointer bg-primary text-primary-foreground"
+              onClick={() => navigate("/forge")}
+            >
+              <div className="neo-border rounded-xl bg-background p-3">
+                <Hammer
+                  size={28}
+                  strokeWidth={2.5}
+                  className="text-foreground"
+                />
+              </div>
+              <div className="flex-1">
+                <p className="font-heading font-bold text-lg">The Forge</p>
+                <p className="text-xs opacity-80">
+                  Create & review questions
+                </p>
+              </div>
+              <NeoButton variant="accent" size="sm">
+                Enter
               </NeoButton>
             </NeoCard>
           </div>

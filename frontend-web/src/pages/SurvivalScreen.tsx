@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { NeoCard } from "@/components/neo/NeoCard";
 import { NeoButton } from "@/components/neo/NeoButton";
 import { NeoInput } from "@/components/neo/NeoInput";
@@ -8,9 +8,17 @@ import { Heart } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useMutation } from "convex/react";
 import { api } from "../../convex/_generated/api";
+import { useAntiCheat } from "@/hooks/useAntiCheat";
 import { toast } from "sonner";
 import type { Id } from "../../convex/_generated/dataModel";
 import type { GameResultState } from "@/types/api";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
 
 interface ChallengeData {
   initials: string;
@@ -36,10 +44,22 @@ export default function SurvivalScreen() {
     correct: boolean;
     answer: string;
   } | null>(null);
-  const [hintPlayers, setHintPlayers] = useState<string[] | null>(null);
-  const [hintUsed, setHintUsed] = useState(false);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+
+  // Tiered hint state
+  const [hints, setHints] = useState<string[]>([]);
+  const [hintStage, setHintStage] = useState(0);
+  const [hintTokens, setHintTokens] = useState(3);
+
+  // Speed streak state
+  const [speedStreak, setSpeedStreak] = useState(0);
+  const [isOnFire, setIsOnFire] = useState(false);
+  const performanceBonusRef = useRef(0);
+
+  // Anti-cheat state
+  const [showCheatModal, setShowCheatModal] = useState(false);
+  const [shakeKey, setShakeKey] = useState(0);
 
   const startTime = useRef(Date.now());
 
@@ -48,6 +68,9 @@ export default function SurvivalScreen() {
   const useHintMut = useMutation(api.survivalSessions.useHint);
   const skipMut = useMutation(api.survivalSessions.skipChallenge);
   const completeSurvivalMut = useMutation(api.games.completeSurvival);
+  const penalizeTabSwitchMut = useMutation(
+    api.survivalSessions.penalizeTabSwitch,
+  );
 
   useEffect(() => {
     (async () => {
@@ -58,6 +81,7 @@ export default function SurvivalScreen() {
         setScore(data.score);
         setRound(data.round);
         setChallenge(data.challenge);
+        setHintTokens(data.hintTokensLeft);
         setLoading(false);
         startTime.current = Date.now();
       } catch {
@@ -68,9 +92,29 @@ export default function SurvivalScreen() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Anti-cheat: penalize tab switching
+  useAntiCheat(
+    useCallback(() => {
+      if (!sessionId || !challenge) return;
+      penalizeTabSwitchMut({ sessionId, currentRound: round }).then((res) => {
+        if (res.penalized) {
+          setLives(res.lives);
+          setShakeKey((k) => k + 1);
+          setShowCheatModal(true);
+          if (res.gameOver) {
+            setTimeout(() => goToResults(score, round), 2000);
+          }
+        }
+      });
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [sessionId, round, challenge]),
+  );
+
   const goToResults = async (finalScore: number, finalRound: number) => {
     let eloChange: number | null = null;
     let newElo: number | null = null;
+    let kFactor: number | undefined;
+    let kFactorLabel: string | undefined;
     if (user) {
       try {
         const dur = Math.round((Date.now() - startTime.current) / 1000);
@@ -78,9 +122,12 @@ export default function SurvivalScreen() {
           sport,
           score: finalScore,
           durationSeconds: dur,
+          performanceBonus: performanceBonusRef.current,
         });
         eloChange = res.eloChange;
         newElo = res.newElo;
+        kFactor = res.kFactor;
+        kFactorLabel = res.kFactorLabel;
       } catch {
         /* continue */
       }
@@ -94,6 +141,8 @@ export default function SurvivalScreen() {
       newElo,
       sport,
       mode: "survival",
+      kFactor,
+      kFactorLabel,
     };
     navigate("/results", { state });
   };
@@ -111,13 +160,31 @@ export default function SurvivalScreen() {
       setScore(res.score);
       setRound(res.round);
       setGuess("");
+
+      if (res.correct) {
+        setSpeedStreak(res.speedStreak ?? 0);
+        setIsOnFire(res.isOnFire ?? false);
+        if (res.isOnFire) {
+          performanceBonusRef.current += 0.1;
+        }
+        if (res.typoAccepted) {
+          toast.warning(`TYPO ACCEPTED: Did you mean ${res.correctAnswer}?`, {
+            duration: 3000,
+          });
+        }
+      } else {
+        setSpeedStreak(0);
+        setIsOnFire(false);
+      }
+
       if (res.gameOver) {
         goToResults(res.score, res.round);
       } else if (res.nextChallenge) {
         setTimeout(() => {
           setChallenge(res.nextChallenge!);
           setFeedback(null);
-          setHintPlayers(null);
+          setHints([]);
+          setHintStage(0);
         }, 1500);
       }
     } catch {
@@ -128,11 +195,13 @@ export default function SurvivalScreen() {
   };
 
   const handleHint = async () => {
-    if (!sessionId || hintUsed) return;
+    if (!sessionId || hintTokens <= 0 || hintStage >= 3) return;
     try {
-      const res = await useHintMut({ sessionId });
-      setHintPlayers(res.samplePlayers);
-      setHintUsed(true);
+      const nextStage = hintStage + 1;
+      const res = await useHintMut({ sessionId, stage: nextStage });
+      setHints((prev) => [...prev, res.hintText]);
+      setHintStage(res.stage);
+      setHintTokens(res.tokensLeft);
     } catch {
       toast.error("Failed to get hint");
     }
@@ -144,7 +213,10 @@ export default function SurvivalScreen() {
       const res = await skipMut({ sessionId });
       setLives(res.lives);
       setFeedback(null);
-      setHintPlayers(null);
+      setHints([]);
+      setHintStage(0);
+      setSpeedStreak(0);
+      setIsOnFire(false);
       if (res.gameOver) {
         goToResults(res.score, res.round);
       } else if (res.challenge) {
@@ -167,9 +239,14 @@ export default function SurvivalScreen() {
   }
 
   const initials = challenge?.initials.split("") || [];
+  const hintsAvailable = sport === "football";
 
   return (
-    <div className="min-h-screen bg-background px-5 py-5 flex flex-col">
+    <div
+      key={shakeKey}
+      className={`min-h-screen bg-background px-5 py-5 flex flex-col ${shakeKey > 0 ? "animate-shake" : ""} ${isOnFire ? "on-fire-bg" : ""}`}
+    >
+      {/* Header: Lives / Streak / Score */}
       <div className="flex items-center justify-between mb-4">
         <div className="flex gap-1.5">
           {Array.from({ length: 3 }).map((_, i) => (
@@ -181,9 +258,19 @@ export default function SurvivalScreen() {
             />
           ))}
         </div>
+        {speedStreak >= 2 && (
+          <div
+            className={`neo-border rounded px-2 py-1 ${isOnFire ? "bg-destructive text-destructive-foreground animate-pulse-urgent" : "bg-primary text-primary-foreground"}`}
+          >
+            <span className="font-heading font-bold text-xs uppercase">
+              {isOnFire ? "\u{1F525} ON FIRE" : `\u26A1 STREAK: x${speedStreak}`}
+            </span>
+          </div>
+        )}
         <p className="font-mono font-bold text-lg">Score: {score}</p>
       </div>
 
+      {/* Feedback banner */}
       {feedback && (
         <div
           className={`neo-border rounded-lg p-3 mb-5 flex items-center gap-2 ${feedback.correct ? "bg-success text-success-foreground" : "bg-destructive text-destructive-foreground"}`}
@@ -196,6 +283,7 @@ export default function SurvivalScreen() {
         </div>
       )}
 
+      {/* Initials card */}
       <NeoCard shadow="lg" className="flex flex-col items-center py-10 mb-5">
         <p className="text-sm text-muted-foreground font-heading mb-4">
           Who has these initials?
@@ -215,22 +303,33 @@ export default function SurvivalScreen() {
         </NeoBadge>
       </NeoCard>
 
-      {hintPlayers && (
-        <NeoCard color="blue" className="mb-4 animate-slide-up">
-          <p className="text-xs font-body">
-            <strong>Hint:</strong> Some players: {hintPlayers.join(", ")}
-          </p>
-        </NeoCard>
+      {/* Hints tracker */}
+      {hints.length > 0 && (
+        <div className="space-y-2 mb-4">
+          {hints.map((h, i) => (
+            <NeoCard
+              key={i}
+              color={i === 0 ? "blue" : i === 1 ? "accent" : "primary"}
+              className="animate-slide-up"
+            >
+              <p className="text-xs font-body">
+                <strong>Hint {i + 1}:</strong> {h}
+              </p>
+            </NeoCard>
+          ))}
+        </div>
       )}
 
+      {/* Input */}
       <NeoInput
         placeholder="Type player name..."
         value={guess}
         onChange={(e) => setGuess(e.target.value)}
         onKeyDown={(e) => e.key === "Enter" && handleGuess()}
-        className="mb-4"
+        className={`mb-4 ${isOnFire ? "on-fire-input" : ""}`}
       />
 
+      {/* Submit */}
       <NeoButton
         variant="primary"
         size="full"
@@ -241,19 +340,46 @@ export default function SurvivalScreen() {
         {submitting ? "Checking..." : "Submit Guess"}
       </NeoButton>
 
+      {/* Hint + Skip */}
       <div className="grid grid-cols-2 gap-3">
         <NeoButton
           variant="blue"
           size="md"
           onClick={handleHint}
-          disabled={hintUsed}
+          disabled={!hintsAvailable || hintTokens <= 0 || hintStage >= 3}
         >
-          {hintUsed ? "Hint Used" : "Use Hint"}
+          {!hintsAvailable
+            ? "Hints N/A"
+            : hintTokens <= 0
+              ? "No Hints Left"
+              : `\u{1F4A1} Hint (${hintTokens})`}
         </NeoButton>
         <NeoButton variant="secondary" size="md" onClick={handleSkip}>
           Skip
         </NeoButton>
       </div>
+
+      {/* Anti-cheat modal */}
+      <Dialog open={showCheatModal} onOpenChange={setShowCheatModal}>
+        <DialogContent className="neo-border neo-shadow-lg bg-destructive text-destructive-foreground max-w-sm">
+          <DialogHeader>
+            <DialogTitle className="font-heading text-xl text-center">
+              {"\u{1F6A8}"} CHEATING DETECTED {"\u{1F6A8}"}
+            </DialogTitle>
+            <DialogDescription className="text-destructive-foreground/90 text-center text-sm mt-2">
+              You lost focus on the game window. 1 Life deducted.
+            </DialogDescription>
+          </DialogHeader>
+          <NeoButton
+            variant="secondary"
+            size="full"
+            onClick={() => setShowCheatModal(false)}
+            className="mt-2"
+          >
+            I UNDERSTAND
+          </NeoButton>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

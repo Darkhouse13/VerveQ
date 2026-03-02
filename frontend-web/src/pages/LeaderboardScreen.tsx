@@ -6,10 +6,11 @@ import { useState } from "react";
 import { Crown } from "lucide-react";
 import { useQuery } from "convex/react";
 import { api } from "../../convex/_generated/api";
+import type { Id } from "../../convex/_generated/dataModel";
 
 const filters = {
   sport: ["All", "Football", "Tennis"],
-  mode: ["Quiz", "Survival"],
+  mode: ["Quiz", "Survival", "Blitz"],
   period: ["Daily", "Weekly", "All Time"],
 };
 
@@ -27,21 +28,88 @@ export default function LeaderboardScreen() {
     mode: "Quiz",
     period: "Weekly",
   });
+  const [selectedSeason, setSelectedSeason] = useState<"current" | number>(
+    "current",
+  );
+
+  const currentSeason = useQuery(api.seasonManager.getCurrentSeason);
+  const pastSeasons = useQuery(api.seasonManager.getPastSeasons);
 
   const sportParam =
     activeFilters.sport === "All"
       ? undefined
       : activeFilters.sport.toLowerCase();
   const modeParam = sportParam ? activeFilters.mode.toLowerCase() : undefined;
+  const isBlitz = activeFilters.mode === "Blitz";
+  const isPastSeason = selectedSeason !== "current";
 
-  const data = useQuery(api.leaderboards.getLeaderboard, {
-    sport: sportParam,
-    mode: modeParam,
-    limit: 20,
-  });
+  const eloData = useQuery(
+    api.leaderboards.getLeaderboard,
+    !isBlitz && !isPastSeason
+      ? { sport: sportParam, mode: modeParam, limit: 20 }
+      : "skip",
+  );
+  const blitzData = useQuery(
+    api.blitz.getHighScores,
+    isBlitz && !isPastSeason ? { sport: sportParam, limit: 20 } : "skip",
+  );
+  const seasonHistoryData = useQuery(
+    api.seasonManager.getSeasonHistory,
+    isPastSeason
+      ? {
+          seasonNumber: selectedSeason as number,
+          sport: sportParam,
+          mode: modeParam,
+          limit: 20,
+        }
+      : "skip",
+  );
 
-  const isLoading = data === undefined;
-  const entries = data?.entries ?? [];
+  const isLoading = isPastSeason
+    ? seasonHistoryData === undefined
+    : isBlitz
+      ? blitzData === undefined
+      : eloData === undefined;
+
+  // Normalize entries
+  let entries: Array<{
+    rank: number;
+    userId: Id<"users">;
+    username: string;
+    score: number;
+    elo_rating: number | null;
+    gamesPlayed: number;
+    wins: number;
+    tier?: string;
+    badge?: string;
+  }>;
+
+  if (isPastSeason) {
+    entries = (seasonHistoryData ?? []).map((e, idx) => ({
+      rank: e.rank ?? idx + 1,
+      userId: e.userId as Id<"users">,
+      username: e.username,
+      score: 0,
+      elo_rating: e.finalElo,
+      gamesPlayed: e.gamesPlayed,
+      wins: e.wins,
+      tier: e.tier,
+      badge: e.badge ?? undefined,
+    }));
+  } else if (isBlitz) {
+    entries = (blitzData?.entries ?? []).map((e) => ({
+      rank: e.rank,
+      userId: e.userId as Id<"users">,
+      username: e.username,
+      score: e.score,
+      elo_rating: null as number | null,
+      gamesPlayed: 0,
+      wins: 0,
+    }));
+  } else {
+    entries = eloData?.entries ?? [];
+  }
+
   const podiumEntries = entries.slice(0, 3);
   const podiumOrder =
     podiumEntries.length >= 3
@@ -59,6 +127,30 @@ export default function LeaderboardScreen() {
     <div className="min-h-screen bg-background pb-20">
       <div className="px-5 pt-6 pb-4">
         <h1 className="text-2xl font-heading font-bold mb-4">Leaderboard</h1>
+
+        {/* Season dropdown */}
+        <div className="mb-4">
+          <select
+            value={selectedSeason === "current" ? "current" : String(selectedSeason)}
+            onChange={(e) =>
+              setSelectedSeason(
+                e.target.value === "current"
+                  ? "current"
+                  : Number(e.target.value),
+              )
+            }
+            className="w-full neo-border neo-shadow rounded-lg px-4 py-2.5 bg-background text-foreground font-heading font-bold text-sm uppercase cursor-pointer"
+          >
+            <option value="current">
+              Current Season{currentSeason ? ` (S${currentSeason.seasonNumber})` : ""}
+            </option>
+            {(pastSeasons ?? []).map((s) => (
+              <option key={s.seasonNumber} value={String(s.seasonNumber)}>
+                Season {s.seasonNumber}
+              </option>
+            ))}
+          </select>
+        </div>
 
         <div className="flex flex-wrap gap-2 mb-6">
           {Object.entries(filters).map(([key, values]) =>
@@ -115,6 +207,11 @@ export default function LeaderboardScreen() {
                     <p className="font-mono text-[10px] text-muted-foreground">
                       {p.elo_rating ?? p.score}
                     </p>
+                    {isPastSeason && p.tier && (
+                      <NeoBadge color={getTier(p.elo_rating).color} rotated>
+                        {p.tier}
+                      </NeoBadge>
+                    )}
                     <div
                       className={`neo-border rounded-t-lg w-16 mt-2 ${height} ${p.rank === 1 ? "bg-primary" : p.rank === 2 ? "bg-muted" : "bg-accent"}`}
                     >
@@ -129,7 +226,9 @@ export default function LeaderboardScreen() {
 
             <div className="space-y-2">
               {rankingsEntries.map((r) => {
-                const tier = getTier(r.elo_rating);
+                const tier = isPastSeason && r.tier
+                  ? { name: r.tier, color: getTier(r.elo_rating).color }
+                  : getTier(r.elo_rating);
                 return (
                   <NeoCard
                     key={r.rank}
@@ -147,9 +246,16 @@ export default function LeaderboardScreen() {
                         {r.elo_rating ?? r.score} ELO
                       </p>
                     </div>
-                    <NeoBadge color={tier.color} rotated>
-                      {tier.name}
-                    </NeoBadge>
+                    <div className="flex gap-1">
+                      <NeoBadge color={tier.color} rotated>
+                        {tier.name}
+                      </NeoBadge>
+                      {isPastSeason && r.badge && (
+                        <NeoBadge color="primary" rotated>
+                          {r.badge}
+                        </NeoBadge>
+                      )}
+                    </div>
                   </NeoCard>
                 );
               })}

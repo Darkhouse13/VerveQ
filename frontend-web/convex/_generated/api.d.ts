@@ -10,18 +10,28 @@
 
 import type * as achievements from "../achievements.js";
 import type * as auth from "../auth.js";
+import type * as blitz from "../blitz.js";
 import type * as challenges from "../challenges.js";
+import type * as crons from "../crons.js";
+import type * as dailyChallenge from "../dailyChallenge.js";
+import type * as dailyLeaderboard from "../dailyLeaderboard.js";
+import type * as eloDecay from "../eloDecay.js";
+import type * as forge from "../forge.js";
 import type * as games from "../games.js";
 import type * as http from "../http.js";
 import type * as leaderboards from "../leaderboards.js";
+import type * as lib_daily from "../lib/daily.js";
 import type * as lib_elo from "../lib/elo.js";
 import type * as lib_fuzzy from "../lib/fuzzy.js";
 import type * as lib_scoring from "../lib/scoring.js";
+import type * as liveMatches from "../liveMatches.js";
 import type * as profile from "../profile.js";
 import type * as quizSessions from "../quizSessions.js";
+import type * as seasonManager from "../seasonManager.js";
 import type * as seedAchievements from "../seedAchievements.js";
 import type * as seedQuestions from "../seedQuestions.js";
 import type * as sports from "../sports.js";
+import type * as storage from "../storage.js";
 import type * as survivalSessions from "../survivalSessions.js";
 import type * as users from "../users.js";
 
@@ -34,18 +44,28 @@ import type {
 declare const fullApi: ApiFromModules<{
   achievements: typeof achievements;
   auth: typeof auth;
+  blitz: typeof blitz;
   challenges: typeof challenges;
+  crons: typeof crons;
+  dailyChallenge: typeof dailyChallenge;
+  dailyLeaderboard: typeof dailyLeaderboard;
+  eloDecay: typeof eloDecay;
+  forge: typeof forge;
   games: typeof games;
   http: typeof http;
   leaderboards: typeof leaderboards;
+  "lib/daily": typeof lib_daily;
   "lib/elo": typeof lib_elo;
   "lib/fuzzy": typeof lib_fuzzy;
   "lib/scoring": typeof lib_scoring;
+  liveMatches: typeof liveMatches;
   profile: typeof profile;
   quizSessions: typeof quizSessions;
+  seasonManager: typeof seasonManager;
   seedAchievements: typeof seedAchievements;
   seedQuestions: typeof seedQuestions;
   sports: typeof sports;
+  storage: typeof storage;
   survivalSessions: typeof survivalSessions;
   users: typeof users;
 }>;

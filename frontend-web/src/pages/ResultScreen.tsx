@@ -129,6 +129,18 @@ export default function ResultScreen() {
         </div>
       )}
 
+      {state.kFactorLabel && state.kFactorLabel !== "Standard" && (
+        <div className="mb-6">
+          <NeoBadge
+            color={state.kFactorLabel === "Placement Match" ? "blue" : "accent"}
+            rotated
+            size="md"
+          >
+            {state.kFactorLabel}
+          </NeoBadge>
+        </div>
+      )}
+
       <div className="grid grid-cols-2 gap-2.5 w-full mb-8">
         {stats.map((s) => (
           <NeoCard

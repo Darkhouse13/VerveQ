@@ -8,6 +8,7 @@ const DEFAULT_ACHIEVEMENTS = [
   { achievementId: "multi_sport_athlete", name: "Multi-Sport Athlete", description: "Play 2+ different sports", category: "general", icon: "⚡", points: 25, requirementType: "sports_played", requirementValue: 2, isHidden: false },
   { achievementId: "dedicated_player", name: "Dedicated Player", description: "Play 50 total games", category: "general", icon: "💪", points: 30, requirementType: "total_games", requirementValue: 50, isHidden: false },
   { achievementId: "elo_champion", name: "ELO Champion", description: "Reach 1500 ELO rating", category: "general", icon: "👑", points: 100, requirementType: "max_elo", requirementValue: 1500, isHidden: false },
+  { achievementId: "the_architect", name: "The Architect", description: "Get your first community question approved in The Forge", category: "community", icon: "🛠️", points: 75, requirementType: "approved_questions", requirementValue: 1, isHidden: false },
 ];
 
 export const seed = mutation({

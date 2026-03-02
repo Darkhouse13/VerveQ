@@ -74,6 +74,9 @@ export const checkAndUnlock = mutation({
     const maxElo = ratings.reduce((m, r) => Math.max(m, r.eloRating), 0);
     const sportsPlayed = new Set(ratings.map((r) => r.sport)).size;
 
+    const user = await ctx.db.get(userId);
+    const approvedQuestions = user?.approvedQuestionsCount ?? 0;
+
     const checks: [string, boolean][] = [
       ["first_quiz", quizGames >= 1],
       ["first_survival", survivalGames >= 1],
@@ -81,6 +84,7 @@ export const checkAndUnlock = mutation({
       ["multi_sport_athlete", sportsPlayed >= 2],
       ["dedicated_player", totalGames >= 50],
       ["elo_champion", maxElo >= 1500],
+      ["the_architect", approvedQuestions >= 1],
     ];
 
     const newlyUnlocked: string[] = [];

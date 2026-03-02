@@ -55,7 +55,9 @@ export default function SportSelectScreen() {
           size="full"
           disabled={!selected}
           onClick={() => {
-            if (mode === "survival") {
+            if (mode === "blitz") {
+              navigate(`/blitz?sport=${selected}`);
+            } else if (mode === "survival") {
               navigate(`/survival?sport=${selected}`);
             } else {
               navigate(`/difficulty?sport=${selected}&mode=${mode}`);

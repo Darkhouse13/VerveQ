@@ -6,6 +6,7 @@ import {
   getQuizPerformance,
   getSurvivalPerformance,
   clampRating,
+  getKFactor,
 } from "./lib/elo";
 
 export const completeQuiz = mutation({
@@ -29,12 +30,16 @@ export const completeQuiz = mutation({
       .first();
 
     const currentElo = rating?.eloRating ?? 1200;
+    const { k, label: kFactorLabel } = getKFactor(
+      rating?.gamesPlayed ?? 0,
+      currentElo,
+    );
     const perf = getQuizPerformance(
       args.score,
       args.totalQuestions,
       args.averageTime,
     );
-    const eloChange = calculateEloChange(currentElo, perf, args.difficulty);
+    const eloChange = calculateEloChange(currentElo, perf, args.difficulty, k);
     const newElo = clampRating(currentElo + eloChange);
     const isWin = args.accuracy >= 0.8;
 
@@ -50,6 +55,8 @@ export const completeQuiz = mutation({
         averageScore:
           (rating.averageScore * (newGames - 1) + args.score) / newGames,
         lastPlayed: Date.now(),
+        lastDecayAt: 0,
+        decayWarningShown: false,
       });
     } else {
       await ctx.db.insert("userRatings", {
@@ -64,6 +71,8 @@ export const completeQuiz = mutation({
         bestScore: args.score,
         averageScore: args.score,
         lastPlayed: Date.now(),
+        lastDecayAt: 0,
+        decayWarningShown: false,
       });
     }
 
@@ -80,6 +89,9 @@ export const completeQuiz = mutation({
       eloAfter: newElo,
       eloChange,
       endedAt: Date.now(),
+      sessionType: "game",
+      kFactor: k,
+      kFactorLabel,
     });
 
     // Increment total games on user
@@ -88,7 +100,7 @@ export const completeQuiz = mutation({
       await ctx.db.patch(userId, { totalGames: (user.totalGames ?? 0) + 1 });
     }
 
-    return { eloChange, newElo };
+    return { eloChange, newElo, kFactor: k, kFactorLabel };
   },
 });
 
@@ -97,6 +109,7 @@ export const completeSurvival = mutation({
     sport: v.string(),
     score: v.number(),
     durationSeconds: v.number(),
+    performanceBonus: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
     const userId = await getAuthUserId(ctx);
@@ -110,10 +123,15 @@ export const completeSurvival = mutation({
       .first();
 
     const currentElo = rating?.eloRating ?? 1200;
-    const perf = getSurvivalPerformance(args.score);
+    const { k, label: kFactorLabel } = getKFactor(
+      rating?.gamesPlayed ?? 0,
+      currentElo,
+    );
+    const basePerf = getSurvivalPerformance(args.score);
+    const perf = Math.min(1.0, basePerf + (args.performanceBonus ?? 0));
     const difficulty =
       args.score >= 10 ? "hard" : args.score >= 5 ? "intermediate" : "easy";
-    const eloChange = calculateEloChange(currentElo, perf, difficulty);
+    const eloChange = calculateEloChange(currentElo, perf, difficulty, k);
     const newElo = clampRating(currentElo + eloChange);
     const isWin = args.score >= 10;
 
@@ -129,6 +147,8 @@ export const completeSurvival = mutation({
         averageScore:
           (rating.averageScore * (newGames - 1) + args.score) / newGames,
         lastPlayed: Date.now(),
+        lastDecayAt: 0,
+        decayWarningShown: false,
       });
     } else {
       await ctx.db.insert("userRatings", {
@@ -143,6 +163,8 @@ export const completeSurvival = mutation({
         bestScore: args.score,
         averageScore: args.score,
         lastPlayed: Date.now(),
+        lastDecayAt: 0,
+        decayWarningShown: false,
       });
     }
 
@@ -156,6 +178,9 @@ export const completeSurvival = mutation({
       eloAfter: newElo,
       eloChange,
       endedAt: Date.now(),
+      sessionType: "game",
+      kFactor: k,
+      kFactorLabel,
     });
 
     const user = await ctx.db.get(userId);
@@ -163,6 +188,6 @@ export const completeSurvival = mutation({
       await ctx.db.patch(userId, { totalGames: (user.totalGames ?? 0) + 1 });
     }
 
-    return { eloChange, newElo };
+    return { eloChange, newElo, kFactor: k, kFactorLabel };
   },
 });

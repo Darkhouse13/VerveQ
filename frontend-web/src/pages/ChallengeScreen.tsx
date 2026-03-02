@@ -25,6 +25,7 @@ export default function ChallengeScreen() {
   const createChallengeMut = useMutation(api.challenges.create);
   const acceptMut = useMutation(api.challenges.accept);
   const declineMut = useMutation(api.challenges.decline);
+  const createLiveMatchMut = useMutation(api.liveMatches.createFromChallenge);
 
   const handleSend = async () => {
     if (!username.trim()) {
@@ -149,7 +150,15 @@ export default function ChallengeScreen() {
                       size="sm"
                       onClick={async () => {
                         await acceptMut({ challengeId: c.challengeId });
-                        toast.success("Accepted!");
+                        try {
+                          const { matchId } = await createLiveMatchMut({
+                            challengeId: c.challengeId,
+                          });
+                          toast.success("Match created!");
+                          navigate(`/waiting-room?matchId=${matchId}`);
+                        } catch {
+                          toast.success("Accepted!");
+                        }
                       }}
                     >
                       Accept

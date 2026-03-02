@@ -6,6 +6,8 @@ import { NeoCard } from "@/components/neo/NeoCard";
 import { NeoButton } from "@/components/neo/NeoButton";
 import { NeoBadge } from "@/components/neo/NeoBadge";
 import { Check, X } from "lucide-react";
+import { QuestionImage } from "@/components/QuestionImage";
+import { ImageZoomModal } from "@/components/ImageZoomModal";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import type { Id } from "../../convex/_generated/dataModel";
@@ -21,6 +23,7 @@ interface QuestionData {
   difficulty: string;
   checksum: string;
   category: string;
+  imageUrl?: string | null;
 }
 
 export default function QuizScreen() {
@@ -45,6 +48,7 @@ export default function QuizScreen() {
   const [timer, setTimer] = useState(0);
   const [loading, setLoading] = useState(true);
   const [checking, setChecking] = useState(false);
+  const [zoomImage, setZoomImage] = useState<string | null>(null);
 
   const startTime = useRef(Date.now());
 
@@ -127,6 +131,8 @@ export default function QuizScreen() {
         : 0;
       let eloChange: number | null = null;
       let newElo: number | null = null;
+      let kFactor: number | undefined;
+      let kFactorLabel: string | undefined;
       if (user) {
         try {
           const res = await completeQuizMut({
@@ -139,6 +145,8 @@ export default function QuizScreen() {
           });
           eloChange = res.eloChange;
           newElo = res.newElo;
+          kFactor = res.kFactor;
+          kFactorLabel = res.kFactorLabel;
         } catch {
           /* continue to results */
         }
@@ -152,6 +160,8 @@ export default function QuizScreen() {
         newElo,
         sport,
         mode: "quiz",
+        kFactor,
+        kFactorLabel,
       };
       navigate("/results", { state });
     } else {
@@ -206,6 +216,15 @@ export default function QuizScreen() {
       </div>
 
       <NeoCard shadow="lg" className="mb-5">
+        {question?.imageUrl && (
+          <div className="mb-3">
+            <QuestionImage
+              imageUrl={question.imageUrl}
+              alt="Question image"
+              onZoom={() => setZoomImage(question.imageUrl!)}
+            />
+          </div>
+        )}
         <p className="font-heading font-bold text-xl leading-tight">
           {question?.question}
         </p>
@@ -233,15 +252,6 @@ export default function QuizScreen() {
         ))}
       </div>
 
-      {revealed && checkResult && (
-        <NeoCard
-          color={checkResult.correct ? "success" : "destructive"}
-          className="mt-4 animate-slide-up"
-        >
-          <p className="text-xs font-body">{checkResult.explanation}</p>
-        </NeoCard>
-      )}
-
       <div className="mt-5">
         {!revealed ? (
           <NeoButton
@@ -258,6 +268,14 @@ export default function QuizScreen() {
           </NeoButton>
         )}
       </div>
+
+      {zoomImage && (
+        <ImageZoomModal
+          imageUrl={zoomImage}
+          open={!!zoomImage}
+          onClose={() => setZoomImage(null)}
+        />
+      )}
     </div>
   );
 }

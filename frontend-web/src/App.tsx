@@ -17,6 +17,14 @@ import LeaderboardScreen from "./pages/LeaderboardScreen";
 import ProfileScreen from "./pages/ProfileScreen";
 import ChallengeScreen from "./pages/ChallengeScreen";
 import DashboardScreen from "./pages/DashboardScreen";
+import DailyQuizScreen from "./pages/DailyQuizScreen";
+import DailySurvivalScreen from "./pages/DailySurvivalScreen";
+import DailyResultScreen from "./pages/DailyResultScreen";
+import BlitzScreen from "./pages/BlitzScreen";
+import BlitzResultScreen from "./pages/BlitzResultScreen";
+import WaitingRoomScreen from "./pages/WaitingRoomScreen";
+import LiveMatchScreen from "./pages/LiveMatchScreen";
+import ForgeScreen from "./pages/ForgeScreen";
 import NotFound from "./pages/NotFound";
 
 const convex = new ConvexReactClient(
@@ -46,6 +54,14 @@ const App = () => (
               <Route path="/profile" element={<ProfileScreen />} />
               <Route path="/challenge" element={<ChallengeScreen />} />
               <Route path="/dashboard" element={<DashboardScreen />} />
+              <Route path="/daily-quiz" element={<DailyQuizScreen />} />
+              <Route path="/daily-survival" element={<DailySurvivalScreen />} />
+              <Route path="/daily-results" element={<DailyResultScreen />} />
+              <Route path="/blitz" element={<BlitzScreen />} />
+              <Route path="/blitz-results" element={<BlitzResultScreen />} />
+              <Route path="/waiting-room" element={<WaitingRoomScreen />} />
+              <Route path="/live-match" element={<LiveMatchScreen />} />
+              <Route path="/forge" element={<ForgeScreen />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </div>

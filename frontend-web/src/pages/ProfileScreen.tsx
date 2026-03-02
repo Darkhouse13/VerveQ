@@ -3,7 +3,7 @@ import { NeoButton } from "@/components/neo/NeoButton";
 import { NeoAvatar } from "@/components/neo/NeoAvatar";
 import { NeoBadge } from "@/components/neo/NeoBadge";
 import { BottomNav } from "@/components/neo/BottomNav";
-import { Lock, Trophy, Zap, Target, Flame, Star } from "lucide-react";
+import { Lock, Trophy, Zap, Target, Flame, Star, Calendar } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useQuery } from "convex/react";
 import { api } from "../../convex/_generated/api";
@@ -34,6 +34,10 @@ export default function ProfileScreen() {
   const allAchievements = useQuery(api.achievements.list);
   const userAchs = useQuery(
     api.achievements.userAchievements,
+    userId ? { userId } : "skip",
+  );
+  const seasonHistory = useQuery(
+    api.seasonManager.getUserSeasonHistory,
     userId ? { userId } : "skip",
   );
 
@@ -186,12 +190,22 @@ export default function ProfileScreen() {
                   </span>
                   <div className="flex-1">
                     <p className="font-heading font-bold text-sm capitalize">
-                      {g.gameMode}
+                      {g.sessionType === "decay"
+                        ? "Decay"
+                        : g.sessionType === "seasonReset"
+                          ? "Season Reset"
+                          : g.gameMode}
                     </p>
                     <p className="text-xs text-muted-foreground">
                       {new Date(g.playedAt).toLocaleDateString()}
                     </p>
                   </div>
+                  {g.sessionType === "decay" && (
+                    <NeoBadge color="destructive" rotated>DECAY</NeoBadge>
+                  )}
+                  {g.sessionType === "seasonReset" && (
+                    <NeoBadge color="blue" rotated>RESET</NeoBadge>
+                  )}
                   <p className="font-mono font-bold text-sm">{g.score}</p>
                   <p
                     className={`font-mono font-bold text-sm ${g.eloChange >= 0 ? "text-success" : "text-destructive"}`}
@@ -199,6 +213,42 @@ export default function ProfileScreen() {
                     {g.eloChange >= 0 ? "+" : ""}
                     {Math.round(g.eloChange)}
                   </p>
+                </NeoCard>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {(seasonHistory ?? []).length > 0 && (
+          <div>
+            <h3 className="font-heading font-bold text-lg mb-3">
+              Past Seasons
+            </h3>
+            <div className="space-y-2">
+              {(seasonHistory ?? []).map((s) => (
+                <NeoCard
+                  key={`${s.seasonNumber}-${s.sport}-${s.mode}`}
+                  className="flex items-center gap-3 py-3"
+                >
+                  <Calendar size={20} strokeWidth={2.5} className="text-muted-foreground shrink-0" />
+                  <div className="flex-1">
+                    <p className="font-heading font-bold text-sm">
+                      Season {s.seasonNumber}
+                    </p>
+                    <p className="text-xs text-muted-foreground capitalize">
+                      {s.sport} · {s.mode}
+                    </p>
+                  </div>
+                  <div className="text-right">
+                    <p className="font-mono font-bold text-sm">{s.finalElo} ELO</p>
+                    <p className="text-xs text-muted-foreground">Rank #{s.rank}</p>
+                  </div>
+                  <NeoBadge color={
+                    s.tier === "Platinum" ? "accent" :
+                    s.tier === "Gold" ? "primary" : "muted"
+                  } rotated>
+                    {s.tier}
+                  </NeoBadge>
                 </NeoCard>
               ))}
             </div>

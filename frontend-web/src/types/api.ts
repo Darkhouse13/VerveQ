@@ -55,6 +55,7 @@ export interface QuizQuestion {
   explanation: string | null;
   difficulty: string;
   checksum: string;
+  imageUrl?: string | null;
 }
 
 export interface QuizCheckRequest {
@@ -118,6 +119,8 @@ export interface SurvivalGuessResponse {
   guess: string;
   correct_answer: string;
   similarity: number;
+  typoAccepted?: boolean;
+  matchDistance?: number;
   lives: number;
   score: number;
   round: number;
@@ -125,6 +128,8 @@ export interface SurvivalGuessResponse {
   final_score?: number;
   final_round?: number;
   next_challenge?: SurvivalChallenge;
+  speedStreak?: number;
+  isOnFire?: boolean;
 }
 
 export interface SurvivalHintResponse {
@@ -265,5 +270,9 @@ export interface GameResultState {
   eloChange: number | null;
   newElo: number | null;
   sport: string;
-  mode: "quiz" | "survival";
+  mode: "quiz" | "survival" | "daily-quiz" | "daily-survival" | "blitz";
+  shareString?: string;
+  wrongCount?: number;
+  kFactor?: number;
+  kFactorLabel?: string;
 }

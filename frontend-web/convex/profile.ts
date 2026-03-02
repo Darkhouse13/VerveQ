@@ -40,6 +40,8 @@ export const get = query({
       score: g.score ?? 0,
       eloChange: g.eloChange,
       playedAt: g.endedAt ?? g._creationTime,
+      sessionType: g.sessionType,
+      kFactorLabel: g.kFactorLabel,
     }));
 
     return {

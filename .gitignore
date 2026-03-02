@@ -2,6 +2,10 @@
 archive_nba.zip
 *.zip
 
+# Seed data (already in Convex)
+questions.json
+complete_image_seed_data.json
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

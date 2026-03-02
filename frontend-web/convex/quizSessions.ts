@@ -32,6 +32,8 @@ export const getQuestion = mutation({
       throw new Error("Session expired");
     }
 
+    const MAX_IMAGE_QUESTIONS = 3;
+
     const candidates = await ctx.db
       .query("quizQuestions")
       .withIndex("by_sport_difficulty", (q) =>
@@ -43,13 +45,34 @@ export const getQuestion = mutation({
     const available = candidates.filter((q) => !usedSet.has(q.checksum));
     if (!available.length) throw new Error("No questions available");
 
-    const picked = available[Math.floor(Math.random() * available.length)];
+    // Cap image questions per session and prevent consecutive images
+    const usedImageCount = candidates.filter(
+      (c) => usedSet.has(c.checksum) && c.imageId,
+    ).length;
+
+    const lastChecksum =
+      session.usedChecksums[session.usedChecksums.length - 1];
+    const lastWasImage = lastChecksum
+      ? candidates.some((c) => c.checksum === lastChecksum && c.imageId)
+      : false;
+
+    let pool = available;
+    if (usedImageCount >= MAX_IMAGE_QUESTIONS || lastWasImage) {
+      const textOnly = available.filter((q) => !q.imageId);
+      if (textOnly.length > 0) pool = textOnly;
+    }
+
+    const picked = pool[Math.floor(Math.random() * pool.length)];
     await ctx.db.patch(sessionId, {
       usedChecksums: [...session.usedChecksums, picked.checksum],
     });
 
     // Update usage count
     await ctx.db.patch(picked._id, { usageCount: picked.usageCount + 1 });
+
+    const imageUrl = picked.imageId
+      ? await ctx.storage.getUrl(picked.imageId)
+      : null;
 
     return {
       question: picked.question,
@@ -59,6 +82,7 @@ export const getQuestion = mutation({
       difficulty: picked.difficulty,
       checksum: picked.checksum,
       category: picked.category,
+      imageUrl,
     };
   },
 });
