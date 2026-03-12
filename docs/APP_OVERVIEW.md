@@ -2,7 +2,7 @@
 
 ## What is VerveQ?
 
-VerveQ is a competitive sports trivia platform where players test and prove their sports knowledge through two distinct game modes: **Quiz** and **Survival**. Players earn ELO ratings, climb leaderboards, unlock achievements, and challenge friends — all across three supported sports.
+VerveQ is a competitive sports trivia platform where players test and prove their sports knowledge through multiple game modes: **Quiz**, **Survival**, **Blitz**, **Daily Challenge**, and **Live Match**. Players earn ELO ratings, climb leaderboards, unlock achievements, contribute community questions via **The Forge**, and challenge friends — all across three supported sports.
 
 The platform targets sports enthusiasts who want more than casual trivia. VerveQ's ELO rating system, borrowed from competitive chess, provides a meaningful measure of sports knowledge that evolves with every game played.
 
@@ -10,14 +10,16 @@ The platform targets sports enthusiasts who want more than casual trivia. VerveQ
 
 ## Supported Sports
 
-| Sport | Emoji | Quiz Questions | Survival Players |
-|-------|-------|---------------|-----------------|
-| Football | ⚽ | 301 | 30,913 |
-| Basketball | 🏀 | 285 | 3,608 |
-| Tennis | 🎾 | 274 | 1,156 |
-| **Total** | | **860** | **35,677** |
+| Sport | Emoji | Text Questions | Image Questions | Survival Players |
+|-------|-------|---------------|----------------|-----------------|
+| Football | ⚽ | 411 | 2,066 | 30,913 |
+| Basketball | 🏀 | 285 | 448 | 3,608 |
+| Tennis | 🎾 | 274 | — | 1,156 |
+| **Total** | | **970** | **2,514** | **35,677** |
 
-Each sport supports both Quiz and Survival modes. More sports are planned for future releases.
+**Grand total: 3,484 quiz questions** (970 text + 2,514 image).
+
+Each sport supports all game modes. More sports are planned for future releases.
 
 ---
 
@@ -45,6 +47,11 @@ A timed multiple-choice trivia game with 10 questions per session.
 - **Medium (Intermediate)** — Balanced challenge. Requires solid sports knowledge.
 - **Hard** — Expert level, no mercy. Deep trivia for hardcore fans.
 
+**Image-based questions:**
+- Some questions include images: stadium identification, team badge recognition, and player silhouettes
+- Maximum 3 image questions per session, with no consecutive image questions
+- Images support tap-to-zoom for better visibility
+
 **Question deduplication:**
 - Each question has a unique checksum (content hash)
 - The session tracks all served checksums to prevent repeats within a game
@@ -70,14 +77,23 @@ A timed multiple-choice trivia game with 10 questions per session.
 | Transfer Records | | |
 | International | | |
 
-**Question count by difficulty:**
+**Text question count by difficulty:**
 
 | Difficulty | Football | Basketball | Tennis | Total |
 |-----------|----------|-----------|--------|-------|
-| Easy | 68 | 82 | 72 | 222 |
-| Intermediate | 132 | 159 | 141 | 432 |
-| Hard | 101 | 44 | 61 | 206 |
-| **Total** | **301** | **285** | **274** | **860** |
+| Easy | 110 | 82 | 72 | 264 |
+| Intermediate | 177 | 159 | 141 | 477 |
+| Hard | 124 | 44 | 61 | 229 |
+| **Total** | **411** | **285** | **274** | **970** |
+
+**Image question count by category:**
+
+| Category | Football | Basketball | Total |
+|----------|----------|-----------|-------|
+| Player Silhouette | — | — | 2,018 |
+| Badge Identification | — | — | 268 |
+| Stadium Identification | — | — | 228 |
+| **Total** | **2,066** | **448** | **2,514** |
 
 ---
 
@@ -89,24 +105,41 @@ A progressive challenge where players guess sports player names from their initi
 1. Player selects a sport (no difficulty selection — difficulty scales automatically)
 2. The game presents 2-letter initials (e.g., "MK") and the player must name a player with those initials
 3. Player types a name and submits their guess
-4. The system uses fuzzy string matching (Jaro-Winkler algorithm, threshold >= 0.8) to validate the answer
+4. The system uses fuzzy string matching (Levenshtein edit distance) to validate the answer
 5. Correct guesses advance to the next round; wrong guesses cost a life
 6. The game ends when all 3 lives are lost
 
 **Lives system:**
 - Players start with 3 lives (displayed as hearts)
-- Wrong guesses and skips each cost 1 life
+- Wrong guesses cost 1 life
 - Game over at 0 lives
 
 **Hint system:**
-- One hint available per game
-- Using a hint reveals up to 3 sample player names that match the current initials
-- Strategic resource — use it wisely on harder rounds
+- 3 hint tokens available per game, with 3 progressive stages per challenge
+- **Stage 1:** Nationality and club/team information
+- **Stage 2:** Position, era, or handedness details
+- **Stage 3:** First name of a matching player
+- Hints must be used in order (Stage 1 before Stage 2, etc.)
+- Each stage consumes 1 hint token — strategic use is key
 
 **Skip mechanic:**
-- Players can skip a challenge they're stuck on
-- Skipping costs 1 life (same penalty as a wrong answer)
+- 1 free skip per game (no life cost)
+- Additional skips cost 1 life each
 - A new challenge is generated for the next round
+
+**Speed streak / "On Fire" system:**
+- Fast answers (under 4 seconds) build a speed streak counter
+- Reaching a streak of 5 triggers "On Fire" status
+- While "On Fire," each correct answer adds +0.1 to the performance bonus
+- Hitting exactly a 5-streak with fewer than 3 lives grants +1 life (earn-a-life)
+
+**Hidden answer bonus:**
+- Players earn a bonus for finding valid players who are not the primary (most famous) player for those initials
+
+**Anti-cheat:**
+- Tab-switch detection penalizes players who leave the game
+- Standard survival: -1 life per tab switch
+- Daily survival: Instant forfeit
 
 **Difficulty progression by round:**
 
@@ -120,10 +153,13 @@ A progressive challenge where players guess sports player names from their initi
 | 8+ | 2-3 letters | Obscure players (20%) | Expert |
 
 **Fuzzy matching:**
-- Uses the Jaro-Winkler distance algorithm
-- A guess is accepted if the similarity score is >= 0.8
+- Uses the Levenshtein edit distance algorithm
+- Dynamic tolerance based on player name length:
+  - Short names (<8 chars): max 1 edit allowed
+  - Medium names (8-14 chars): max 2 edits allowed
+  - Long names (>14 chars): max 3 edits allowed
 - This allows for minor typos and spelling variations
-- The system tracks the best similarity score for feedback even on incorrect guesses
+- Close calls (within 1-2 edits beyond the threshold) are flagged as near misses
 
 **Survival data by sport:**
 
@@ -135,13 +171,168 @@ A progressive challenge where players guess sports player names from their initi
 
 ---
 
+### Blitz Mode
+
+A 60-second rapid-fire quiz that tests speed and accuracy under pressure.
+
+**How it works:**
+1. Player selects a sport
+2. A 60-second countdown begins immediately
+3. Intermediate difficulty questions are served one at a time
+4. Player selects an answer; result flashes briefly (400ms correct, 800ms incorrect) then auto-advances
+5. Game ends when the timer expires or no more questions are available
+
+**Scoring:**
+- 100 points per correct answer
+- Wrong answers impose a -3 second time penalty (reduces remaining time)
+- No per-question time limit — the global 60-second timer is the constraint
+
+**Special mechanics:**
+- Image question limits apply (max 3 per session, no consecutive)
+- Anti-cheat: Tab-switching auto-marks the current answer as wrong
+- High scores are tracked globally and per-sport via the `blitzScores` table
+
+---
+
+### Higher or Lower
+
+A streak-based guessing game comparing player or team statistics.
+
+**How it works:**
+1. Player selects a sport
+2. An initial player/team is shown with a specific stat value (e.g., "Goals Scored")
+3. A second player/team is shown with their value hidden
+4. Player guesses if the hidden value is "Higher" or "Lower"
+5. Correct guesses increment the streak and score, and the current target becomes the new baseline
+6. Wrong guesses immediately end the game
+
+**Scoring:**
+- 1 point per correct guess
+- Final score equals the longest streak
+
+---
+
+### VerveGrid
+
+A 3x3 grid intersection challenge testing deep sports knowledge.
+
+**How it works:**
+1. Player selects a sport
+2. A 3x3 grid is presented with row headers (e.g., Teams) and column headers (e.g., Nationalities or Positions)
+3. Player clicks an empty cell and searches for an athlete who matches both the row and column criteria
+4. Players have exactly 9 total guesses for the 9 cells
+5. A correctly guessed player cannot be reused in another cell
+6. Game ends when all 9 guesses are used or the grid is perfectly filled
+
+**Scoring:**
+- Grid completion out of 9 possible correct answers
+
+---
+
+### Who Am I
+
+A progressive clue-based trivia game where more information costs points.
+
+**How it works:**
+1. Player selects a sport
+2. Game starts with a maximum potential score of 1,000 points
+3. Clue 1 is revealed (usually Nationality + Position)
+4. Player can make a guess or choose to reveal the next clue (up to 4 total clues)
+5. Revealing a clue reduces the potential score by 25% (e.g., 1000 → 750 → 562 → 421)
+6. Fuzzy matching allows for minor typos, giving players a "Close call" without ending the game
+7. A definitive wrong guess ends the game with 0 points
+
+---
+
+### Daily Challenge
+
+A once-per-day quiz or survival challenge with a shared question set and daily leaderboard.
+
+**How it works:**
+1. Each day (UTC-based), a unique set of questions is generated per sport using seeded shuffling
+2. All players receive the same questions on the same day
+3. Player selects a sport and mode (Daily Quiz or Daily Survival)
+4. Only one attempt per player per day per mode is allowed
+5. Results contribute to a daily leaderboard
+
+**Daily Quiz:**
+- 10 questions at intermediate difficulty
+- Same scoring as standard quiz (100 points base + time bonus)
+- Maximum possible score: 1,000 points
+
+**Daily Survival:**
+- Standard survival mechanics with 3 lives
+- Anti-cheat: Tab-switching triggers instant forfeit (stricter than standard survival)
+- Speed streaks and hint system available
+
+**Special mechanics:**
+- Seeded shuffling ensures fairness — every player faces the same challenge
+- Once attempted, results are final until the next UTC day
+- Image question limits apply (max 3, no consecutive)
+
+---
+
+### Live Match
+
+Real-time head-to-head competitive quiz between two players.
+
+**How it works:**
+1. A challenge is accepted between two players
+2. Both players enter a waiting room and mark themselves as "Ready"
+3. A 3-second countdown begins once both are ready
+4. 10 intermediate questions are served simultaneously to both players
+5. Each question has a 10-second timer
+6. After both answer (or timeout), a 2-second round result display shows both answers
+7. After 10 questions, the winner is determined by higher total score
+
+**Scoring (Cutthroat system):**
+- Base: 100 points per correct answer
+- Time bonus: 10 points per second saved (e.g., answering in 2s = +80 bonus)
+- **First correct** gets full base (100) + time bonus
+- **Second correct** (opponent already answered correctly) gets half base (50) + time bonus
+- Both wrong: 0 points each
+- Maximum per question: ~190 points (correct in <1s, opponent wrong)
+
+**Special mechanics:**
+- Opponent status visible during questions: "thinking," "locked in," or "answered incorrectly"
+- Heartbeat system: players must ping every 5 seconds; 15 seconds of inactivity = automatic forfeit
+- Manual forfeit option available at any time
+- ELO ratings are updated for both players after match completion
+- Ties are possible when both players achieve equal scores
+
+---
+
+### The Forge
+
+A community-driven question creation and curation system. Not a playable game mode.
+
+**Access requirement:** 1,500+ ELO (Gold tier)
+
+**Three activities:**
+
+1. **Submit** — Create a new multiple-choice question (sport, category, difficulty, 4 options, correct answer, optional explanation and image). Duplicate detection via checksum prevents re-submissions.
+
+2. **Review** — Vote to approve or reject pending questions from other players. Players cannot vote on their own submissions. One vote per reviewer per submission.
+
+3. **My Submissions** — Track the status of submitted questions (pending, approved, rejected) with vote counts.
+
+**Approval system:**
+- +5 net votes (approvals minus rejections) = question is approved and auto-inserted into the quiz pool
+- -3 net votes = question is rejected
+- Approved questions earn the "The Architect" achievement on first approval
+
+---
+
 ## ELO Rating System
 
 VerveQ uses an ELO-based rating system inspired by competitive chess to track player skill.
 
 **Core parameters:**
 - **Starting ELO:** 1,200
-- **K-Factor:** 32 (controls rating volatility per game)
+- **K-Factor:** Dynamic based on experience and rating:
+  - **40** — Placement matches (fewer than 30 games played)
+  - **32** — Standard (default for most players)
+  - **16** — High-tier protection (players rated 2,000+)
 - **Rating range:** 800 (floor) to 2,400 (ceiling)
 - **Tracked per:** sport + mode combination (e.g., football/quiz, basketball/survival)
 
@@ -183,6 +374,19 @@ A survival score of 15 represents perfect performance.
 | Gold | 1,500 - 1,999 | Primary |
 | Platinum | 2,000+ | Accent |
 
+**ELO decay (inactivity penalty):**
+- Applies to players at 1,500+ ELO (Gold tier and above)
+- After 14 days of inactivity: -25 ELO, then -25 every 7 days thereafter
+- Decay floor: Cannot drop below 1,499 via decay
+- Players receive a warning notification 3 days before decay triggers
+- Playing any game resets the decay timer
+
+**Seasonal reset:**
+- Seasons last 90 days
+- At season end, all ratings receive a soft reset: `newElo = (currentElo + 1200) / 2`
+- Final standings are archived with rank, tier, ELO, games played, and wins
+- New season begins automatically
+
 ---
 
 ## Result Grading
@@ -207,7 +411,7 @@ The results screen also displays:
 
 ## Achievement System
 
-7 achievements are available, each with point values and unlock criteria:
+8 achievements are available, each with point values and unlock criteria:
 
 | Achievement | Category | Points | Unlock Criteria |
 |------------|----------|--------|----------------|
@@ -218,8 +422,9 @@ The results screen also displays:
 | ⚡ Multi-Sport Athlete | General | 25 | Play 2+ different sports |
 | 💪 Dedicated Player | General | 30 | Play 50 total games |
 | 👑 ELO Champion | General | 100 | Reach 1,500 ELO rating |
+| 🛠️ The Architect | Community | 75 | Get your first community question approved in The Forge |
 
-**Maximum achievable points:** 275
+**Maximum achievable points:** 350
 
 Achievements are automatically checked after each game completion. Newly unlocked achievements are displayed on the results screen and visible in the profile.
 
@@ -252,6 +457,7 @@ Players can challenge friends to compete head-to-head.
 3. Send the challenge
 4. The challenged player sees it in their pending challenges
 5. They can accept or decline
+6. Accepted challenges can lead to a Live Match
 
 **Challenge states:**
 - **Pending** — Waiting for the challenged player's response
@@ -312,6 +518,10 @@ Login Screen
 Home Screen
   ├── Quiz Mode ────── Sport Select ── Difficulty Select ──── Quiz (10 Qs) ── Results
   ├── Survival Mode ── Sport Select ───────────────────────── Survival ─────── Results
+  ├── Daily Challenge ─ Sport Select ── Mode Select ────────── Daily Quiz/Survival ── Daily Results
+  ├── Blitz Mode ───── Sport Select ───────────────────────── Blitz (60s) ─── Blitz Results
+  ├── Live Match ───── Challenge Accept ── Waiting Room ───── Live Match ──── Results
+  ├── Forge ─────────── Submit / Review / My Submissions
   ├── Leaderboard (bottom nav)
   ├── Challenge (bottom nav)
   └── Profile (bottom nav)
@@ -345,6 +555,14 @@ Results Screen
 | 10 | Profile | `/profile` | Personal stats, achievements, history |
 | 11 | Challenge | `/challenge` | Send/receive player challenges |
 | 12 | Dashboard | `/dashboard` | Quick-start games by sport |
+| 13 | Daily Quiz | `/daily-quiz` | Daily quiz challenge |
+| 14 | Daily Survival | `/daily-survival` | Daily survival challenge |
+| 15 | Daily Results | `/daily-results` | Daily challenge results |
+| 16 | Blitz | `/blitz` | 60-second speed quiz |
+| 17 | Blitz Results | `/blitz-results` | Blitz mode results |
+| 18 | Waiting Room | `/waiting-room` | Live match matchmaking lobby |
+| 19 | Live Match | `/live-match` | Head-to-head real-time gameplay |
+| 20 | Forge | `/forge` | Community question editor and reviewer |
 
 ---
 
@@ -361,8 +579,8 @@ Results Screen
 | Design System | Neo-brutalism (thick borders, bold shadows, vibrant colors) |
 | Routing | React Router v6 |
 | Notifications | Sonner toast library |
-| String Matching | Custom Jaro-Winkler implementation |
-| Rating System | Custom ELO implementation (K=32) |
+| String Matching | Custom Levenshtein distance implementation |
+| Rating System | Custom ELO implementation (dynamic K-factor) |
 
 ---
 
@@ -401,12 +619,22 @@ VerveQ uses a **neo-brutalism** design language characterized by:
 | `users` | User identity and profile | by_username |
 | `userRatings` | ELO ratings per sport/mode | by_user_sport_mode, by_sport_mode_elo |
 | `gameSessions` | Historical game records | by_user |
-| `quizQuestions` | 860 quiz questions | by_sport_difficulty, by_checksum |
+| `quizQuestions` | 3,484 quiz questions (970 text + 2,514 image) | by_sport_difficulty, by_checksum |
 | `quizSessions` | Active quiz game state (30-min TTL) | — |
 | `survivalSessions` | Active survival game state (1-hr TTL) | — |
-| `achievements` | Achievement definitions (7 total) | by_achievement_id |
+| `achievements` | Achievement definitions (8 total) | by_achievement_id |
 | `userAchievements` | Unlocked achievements per user | by_user, by_user_achievement |
 | `challenges` | Player-vs-player challenges | by_challenged_status, by_challenger |
+| `dailyChallenges` | Daily challenge definitions | by_date_sport_mode |
+| `dailyAttempts` | User attempts at daily challenges | by_user_date_sport_mode, by_date_sport_mode_score |
+| `liveMatches` | Real-time PvP match state | by_player1, by_player2 |
+| `blitzSessions` | Active blitz game state | by_user |
+| `blitzScores` | Blitz high scores | by_sport_score, by_user |
+| `seasons` | Seasonal ranking periods | by_active, by_season_number |
+| `seasonHistory` | Historical season results | by_user, by_user_season, by_season_sport_mode_rank |
+| `decayNotifications` | ELO decay warnings | by_user_dismissed, by_user_sport_mode |
+| `questionSubmissions` | Community question proposals (Forge) | by_checksum, by_author, by_status |
+| `submissionVotes` | Votes on community questions | by_submission_voter, by_voter |
 
 ### Session Management
 - **Quiz sessions** expire after 30 minutes
@@ -446,14 +674,51 @@ VerveQ uses a **neo-brutalism** design language characterized by:
 | `survivalSessions.startGame` | Mutation | Start survival game, get first challenge |
 | `survivalSessions.getSession` | Query | Get current session state |
 | `survivalSessions.submitGuess` | Mutation | Submit a player name guess |
-| `survivalSessions.useHint` | Mutation | Reveal sample players (one-time) |
-| `survivalSessions.skipChallenge` | Mutation | Skip current challenge (-1 life) |
+| `survivalSessions.useHint` | Mutation | Reveal progressive hint (costs 1 token) |
+| `survivalSessions.skipChallenge` | Mutation | Skip current challenge (free or -1 life) |
+| `survivalSessions.penalizeTabSwitch` | Mutation | Apply anti-cheat tab-switch penalty |
 
 ### Games
 | Function | Type | Description |
 |----------|------|-------------|
 | `games.completeQuiz` | Mutation | Record quiz result, update ELO |
 | `games.completeSurvival` | Mutation | Record survival result, update ELO |
+
+### Blitz
+| Function | Type | Description |
+|----------|------|-------------|
+| `blitz.start` | Mutation | Start a 60-second blitz session |
+| `blitz.getQuestion` | Mutation | Fetch next blitz question |
+| `blitz.submitAnswer` | Mutation | Submit answer, apply time penalty if wrong |
+| `blitz.end` | Mutation | End blitz session, save score |
+| `blitz.getScore` | Query | Get blitz high scores |
+
+### Daily Challenge
+| Function | Type | Description |
+|----------|------|-------------|
+| `dailyChallenge.getOrCreateChallenge` | Mutation | Get or generate today's daily challenge |
+
+### Live Matches
+| Function | Type | Description |
+|----------|------|-------------|
+| `liveMatches.createFromChallenge` | Mutation | Create a live match from an accepted challenge |
+
+### Forge
+| Function | Type | Description |
+|----------|------|-------------|
+| `forge.submit` | Mutation | Submit a community question |
+| `forge.vote` | Mutation | Vote to approve or reject a submission |
+| `forge.getPending` | Query | Get pending questions for review |
+
+### Seasons
+| Function | Type | Description |
+|----------|------|-------------|
+| `seasonManager.getCurrentSeason` | Query | Get active season info |
+
+### ELO Decay
+| Function | Type | Description |
+|----------|------|-------------|
+| `eloDecay.checkDecay` | Mutation | Check and apply ELO decay for inactive players |
 
 ### Leaderboards
 | Function | Type | Description |

@@ -59,6 +59,12 @@ export default function SportSelectScreen() {
               navigate(`/blitz?sport=${selected}`);
             } else if (mode === "survival") {
               navigate(`/survival?sport=${selected}`);
+            } else if (mode === "higher-lower") {
+              navigate(`/higher-lower?sport=${selected}`);
+            } else if (mode === "verve-grid") {
+              navigate(`/verve-grid?sport=${selected}`);
+            } else if (mode === "who-am-i") {
+              navigate(`/who-am-i?sport=${selected}`);
             } else {
               navigate(`/difficulty?sport=${selected}&mode=${mode}`);
             }

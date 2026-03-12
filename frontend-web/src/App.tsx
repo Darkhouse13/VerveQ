@@ -25,6 +25,9 @@ import BlitzResultScreen from "./pages/BlitzResultScreen";
 import WaitingRoomScreen from "./pages/WaitingRoomScreen";
 import LiveMatchScreen from "./pages/LiveMatchScreen";
 import ForgeScreen from "./pages/ForgeScreen";
+import HigherLowerScreen from "./pages/HigherLowerScreen";
+import VerveGridScreen from "./pages/VerveGridScreen";
+import WhoAmIScreen from "./pages/WhoAmIScreen";
 import NotFound from "./pages/NotFound";
 
 const convex = new ConvexReactClient(
@@ -62,6 +65,9 @@ const App = () => (
               <Route path="/waiting-room" element={<WaitingRoomScreen />} />
               <Route path="/live-match" element={<LiveMatchScreen />} />
               <Route path="/forge" element={<ForgeScreen />} />
+              <Route path="/higher-lower" element={<HigherLowerScreen />} />
+              <Route path="/verve-grid" element={<VerveGridScreen />} />
+              <Route path="/who-am-i" element={<WhoAmIScreen />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </div>

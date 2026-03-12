@@ -18,6 +18,7 @@ import type * as dailyLeaderboard from "../dailyLeaderboard.js";
 import type * as eloDecay from "../eloDecay.js";
 import type * as forge from "../forge.js";
 import type * as games from "../games.js";
+import type * as higherLower from "../higherLower.js";
 import type * as http from "../http.js";
 import type * as leaderboards from "../leaderboards.js";
 import type * as lib_daily from "../lib/daily.js";
@@ -30,10 +31,13 @@ import type * as quizSessions from "../quizSessions.js";
 import type * as seasonManager from "../seasonManager.js";
 import type * as seedAchievements from "../seedAchievements.js";
 import type * as seedQuestions from "../seedQuestions.js";
+import type * as seedSportsData from "../seedSportsData.js";
 import type * as sports from "../sports.js";
 import type * as storage from "../storage.js";
 import type * as survivalSessions from "../survivalSessions.js";
 import type * as users from "../users.js";
+import type * as verveGrid from "../verveGrid.js";
+import type * as whoAmI from "../whoAmI.js";
 
 import type {
   ApiFromModules,
@@ -52,6 +56,7 @@ declare const fullApi: ApiFromModules<{
   eloDecay: typeof eloDecay;
   forge: typeof forge;
   games: typeof games;
+  higherLower: typeof higherLower;
   http: typeof http;
   leaderboards: typeof leaderboards;
   "lib/daily": typeof lib_daily;
@@ -64,10 +69,13 @@ declare const fullApi: ApiFromModules<{
   seasonManager: typeof seasonManager;
   seedAchievements: typeof seedAchievements;
   seedQuestions: typeof seedQuestions;
+  seedSportsData: typeof seedSportsData;
   sports: typeof sports;
   storage: typeof storage;
   survivalSessions: typeof survivalSessions;
   users: typeof users;
+  verveGrid: typeof verveGrid;
+  whoAmI: typeof whoAmI;
 }>;
 
 /**

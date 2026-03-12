@@ -4,7 +4,7 @@ import { NeoBadge } from "@/components/neo/NeoBadge";
 import { NeoAvatar } from "@/components/neo/NeoAvatar";
 import { BottomNav } from "@/components/neo/BottomNav";
 import { useNavigate } from "react-router-dom";
-import { Timer, Heart, Zap, Brain, Flame, Target, Trophy, Hammer } from "lucide-react";
+import { Timer, Heart, Zap, Brain, Flame, Target, Trophy, Hammer, TrendingUp, Grid3X3, HelpCircle } from "lucide-react";
 import { DailyBanner } from "@/components/DailyBanner";
 import { SeasonBanner } from "@/components/SeasonBanner";
 import { DecayWarningBanner } from "@/components/DecayWarningBanner";
@@ -166,6 +166,74 @@ export default function HomeScreen() {
                 <p className="font-heading font-bold text-lg">Blitz Mode</p>
                 <p className="text-xs opacity-80">
                   60s speed round
+                </p>
+              </div>
+              <NeoButton variant="primary" size="sm">
+                Play
+              </NeoButton>
+            </NeoCard>
+            <NeoCard
+              shadow="lg"
+              className="flex items-center gap-4 cursor-pointer bg-success text-success-foreground"
+              onClick={() => navigate("/higher-lower")}
+            >
+              <div className="neo-border rounded-xl bg-background p-3">
+                <TrendingUp
+                  size={28}
+                  strokeWidth={2.5}
+                  className="text-foreground"
+                />
+              </div>
+              <div className="flex-1">
+                <p className="font-heading font-bold text-lg">
+                  Higher or Lower
+                </p>
+                <p className="text-xs opacity-80">
+                  Compare player stats
+                </p>
+              </div>
+              <NeoButton variant="primary" size="sm">
+                Play
+              </NeoButton>
+            </NeoCard>
+            <NeoCard
+              shadow="lg"
+              className="flex items-center gap-4 cursor-pointer bg-electric-blue text-electric-blue-foreground"
+              onClick={() => navigate("/verve-grid")}
+            >
+              <div className="neo-border rounded-xl bg-background p-3">
+                <Grid3X3
+                  size={28}
+                  strokeWidth={2.5}
+                  className="text-foreground"
+                />
+              </div>
+              <div className="flex-1">
+                <p className="font-heading font-bold text-lg">VerveGrid</p>
+                <p className="text-xs opacity-80">
+                  Fill the 3x3 player grid
+                </p>
+              </div>
+              <NeoButton variant="primary" size="sm">
+                Play
+              </NeoButton>
+            </NeoCard>
+            <NeoCard
+              shadow="lg"
+              className="flex items-center gap-4 cursor-pointer bg-hot-pink text-hot-pink-foreground"
+              onClick={() => navigate("/who-am-i")}
+            >
+              <div className="neo-border rounded-xl bg-background p-3">
+                <HelpCircle
+                  size={28}
+                  strokeWidth={2.5}
+                  className="text-foreground"
+                />
+              </div>
+              <div className="flex-1">
+                <p className="font-heading font-bold text-lg">Who Am I?</p>
+                <p className="text-xs opacity-80">
+                  Guess the player from clues
                 </p>
               </div>
               <NeoButton variant="primary" size="sm">

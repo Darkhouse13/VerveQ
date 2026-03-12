@@ -1,0 +1,48 @@
+{
+  "football": {
+    "enabled": true,
+    "leagues": [
+      { "id": 39,  "name": "Premier League",       "country": "England" },
+      { "id": 140, "name": "La Liga",              "country": "Spain" },
+      { "id": 135, "name": "Serie A",              "country": "Italy" },
+      { "id": 78,  "name": "Bundesliga",           "country": "Germany" },
+      { "id": 61,  "name": "Ligue 1",              "country": "France" },
+      { "id": 2,   "name": "Champions League",     "country": "World" },
+      { "id": 3,   "name": "Europa League",        "country": "World" },
+      { "id": 1,   "name": "World Cup",            "country": "World",
+        "topPlayerSeasons": [1998, 2002, 2006, 2010, 2014, 2018, 2022] },
+      { "id": 4,   "name": "Euro Championship",    "country": "World",
+        "topPlayerSeasons": [2000, 2004, 2008, 2012, 2016, 2020, 2024] },
+      { "id": 9,   "name": "Copa America",         "country": "World",
+        "topPlayerSeasons": [1999, 2001, 2004, 2007, 2011, 2015, 2016, 2019, 2021, 2024] }
+    ],
+    "seasons": [1998,1999,2000,2001,2002,2003,2004,2005,2006,2007,2008,2009,2010,2011,2012,2013,2014,2015,2016,2017,2018,2019,2020,2021,2022,2023,2024],
+    "topPlayerSeasons": [1998,1999,2000,2001,2002,2003,2004,2005,2006,2007,2008,2009,2010,2011,2012,2013,2014,2015,2016,2017,2018,2019,2020,2021,2022,2023,2024],
+    "squadSeasons": [1998,1999,2000,2001,2002,2003,2004,2005,2006,2007,2008,2009,2010,2011,2012,2013,2014,2015,2016,2017,2018,2019,2020,2021,2022,2023,2024],
+    "domesticLeagueIds": [39, 140, 135, 78, 61],
+    "enrichmentCount": 500,
+    "topPlayersForEnrichment": 2500,
+    "fetchTrophies": true,
+    "fetchTransfers": true,
+    "fetchFixtures": false,
+    "fetchTeamStats": true,
+    "fixturesStatuses": "FT-AET-PEN",
+    "dailyBudget": 7500,
+    "reserveBudget": 100,
+    "rateLimitMs": 300
+  },
+  "nba": {
+    "enabled": true,
+    "seasons": [2024],
+    "teamsPerDay": 5,
+    "headlinePlayerCount": 10,
+    "dailyBudget": 95,
+    "reserveBudget": 5,
+    "rateLimitMs": 8000
+  },
+  "features": {
+    "buildGridIndex": true,
+    "buildStatFacts": true,
+    "buildWhoAmIClues": true
+  }
+}

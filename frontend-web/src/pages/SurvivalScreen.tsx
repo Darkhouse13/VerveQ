@@ -24,6 +24,7 @@ interface ChallengeData {
   initials: string;
   difficulty: string;
   hint: string;
+  maskedName?: string;
 }
 
 export default function SurvivalScreen() {
@@ -57,6 +58,15 @@ export default function SurvivalScreen() {
   const [isOnFire, setIsOnFire] = useState(false);
   const performanceBonusRef = useRef(0);
 
+  // Free skip state
+  const [freeSkipsLeft, setFreeSkipsLeft] = useState(1);
+
+  // Close call state
+  const [closeCallShake, setCloseCallShake] = useState(false);
+
+  // Earn-a-life animation
+  const [showEarnedLife, setShowEarnedLife] = useState(false);
+
   // Anti-cheat state
   const [showCheatModal, setShowCheatModal] = useState(false);
   const [shakeKey, setShakeKey] = useState(0);
@@ -82,6 +92,7 @@ export default function SurvivalScreen() {
         setRound(data.round);
         setChallenge(data.challenge);
         setHintTokens(data.hintTokensLeft);
+        setFreeSkipsLeft(data.freeSkipsLeft);
         setLoading(false);
         startTime.current = Date.now();
       } catch {
@@ -155,6 +166,16 @@ export default function SurvivalScreen() {
         sessionId,
         guess: guess.trim(),
       });
+
+      // Close call: shake input, don't clear, don't set feedback
+      if (res.closeCall) {
+        setCloseCallShake(true);
+        setTimeout(() => setCloseCallShake(false), 600);
+        toast.warning("CLOSE! Check your spelling.", { duration: 3000 });
+        setSubmitting(false);
+        return;
+      }
+
       setFeedback({ correct: res.correct, answer: res.correctAnswer });
       setLives(res.lives);
       setScore(res.score);
@@ -171,6 +192,14 @@ export default function SurvivalScreen() {
           toast.warning(`TYPO ACCEPTED: Did you mean ${res.correctAnswer}?`, {
             duration: 3000,
           });
+        }
+        if (res.isHiddenAnswer) {
+          toast.success("HIDDEN ANSWER FOUND! +BONUS", { duration: 4000 });
+        }
+        if (res.earnedLife) {
+          setShowEarnedLife(true);
+          setTimeout(() => setShowEarnedLife(false), 1500);
+          toast.success("+1 LIFE", { duration: 3000 });
         }
       } else {
         setSpeedStreak(0);
@@ -212,6 +241,7 @@ export default function SurvivalScreen() {
     try {
       const res = await skipMut({ sessionId });
       setLives(res.lives);
+      setFreeSkipsLeft(res.freeSkipsLeft);
       setFeedback(null);
       setHints([]);
       setHintStage(0);
@@ -239,7 +269,6 @@ export default function SurvivalScreen() {
   }
 
   const initials = challenge?.initials.split("") || [];
-  const hintsAvailable = sport === "football";
 
   return (
     <div
@@ -248,15 +277,22 @@ export default function SurvivalScreen() {
     >
       {/* Header: Lives / Streak / Score */}
       <div className="flex items-center justify-between mb-4">
-        <div className="flex gap-1.5">
-          {Array.from({ length: 3 }).map((_, i) => (
-            <Heart
-              key={i}
-              size={24}
-              strokeWidth={2.5}
-              className={`neo-border rounded ${i < lives ? "fill-destructive text-destructive" : "text-muted"}`}
-            />
-          ))}
+        <div className="relative">
+          <div className={`flex gap-1.5 ${lives === 1 ? "animate-pulse" : ""}`}>
+            {Array.from({ length: 3 }).map((_, i) => (
+              <Heart
+                key={i}
+                size={24}
+                strokeWidth={2.5}
+                className={`neo-border rounded ${i < lives ? "fill-destructive text-destructive" : "text-muted"}`}
+              />
+            ))}
+          </div>
+          {showEarnedLife && (
+            <span className="absolute -top-2 left-1/2 -translate-x-1/2 text-success font-heading font-bold text-sm animate-float-up pointer-events-none">
+              +1 LIFE
+            </span>
+          )}
         </div>
         {speedStreak >= 2 && (
           <div
@@ -283,8 +319,13 @@ export default function SurvivalScreen() {
         </div>
       )}
 
-      {/* Initials card */}
-      <NeoCard shadow="lg" className="flex flex-col items-center py-10 mb-5">
+      {/* Initials card — panic state when 1 life */}
+      <NeoCard
+        shadow="lg"
+        className={`flex flex-col items-center py-10 mb-5 ${
+          lives === 1 ? "border-red-600 border-4 animate-pulse" : ""
+        }`}
+      >
         <p className="text-sm text-muted-foreground font-heading mb-4">
           Who has these initials?
         </p>
@@ -298,6 +339,22 @@ export default function SurvivalScreen() {
             </div>
           ))}
         </div>
+
+        {/* Masked name boxes */}
+        {challenge?.maskedName && (
+          <div className="flex flex-wrap justify-center gap-1.5 mb-5">
+            {challenge.maskedName.split("").map((ch, i) =>
+              ch === " " ? (
+                <div key={i} className="w-3" />
+              ) : (
+                <div key={i} className="neo-border w-8 h-10 flex items-center justify-center bg-muted">
+                  <span className="font-mono font-bold text-lg">_</span>
+                </div>
+              )
+            )}
+          </div>
+        )}
+
         <NeoBadge color="blue" rotated>
           Round {round}
         </NeoBadge>
@@ -320,13 +377,13 @@ export default function SurvivalScreen() {
         </div>
       )}
 
-      {/* Input */}
+      {/* Input — close call shake + panic glow */}
       <NeoInput
         placeholder="Type player name..."
         value={guess}
         onChange={(e) => setGuess(e.target.value)}
         onKeyDown={(e) => e.key === "Enter" && handleGuess()}
-        className={`mb-4 ${isOnFire ? "on-fire-input" : ""}`}
+        className={`mb-4 ${isOnFire ? "on-fire-input" : ""} ${closeCallShake ? "border-yellow-400 border-4 animate-shake-horizontal" : ""}`}
       />
 
       {/* Submit */}
@@ -346,16 +403,18 @@ export default function SurvivalScreen() {
           variant="blue"
           size="md"
           onClick={handleHint}
-          disabled={!hintsAvailable || hintTokens <= 0 || hintStage >= 3}
+          disabled={hintTokens <= 0 || hintStage >= 3}
         >
-          {!hintsAvailable
-            ? "Hints N/A"
-            : hintTokens <= 0
-              ? "No Hints Left"
-              : `\u{1F4A1} Hint (${hintTokens})`}
+          {hintTokens <= 0
+            ? "No Hints Left"
+            : `\u{1F4A1} Hint (${hintTokens})`}
         </NeoButton>
-        <NeoButton variant="secondary" size="md" onClick={handleSkip}>
-          Skip
+        <NeoButton
+          variant={freeSkipsLeft > 0 ? "secondary" : "danger"}
+          size="md"
+          onClick={handleSkip}
+        >
+          {freeSkipsLeft > 0 ? `SKIP (${freeSkipsLeft} FREE)` : "SKIP (-1 LIFE)"}
         </NeoButton>
       </div>
 

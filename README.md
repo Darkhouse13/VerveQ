@@ -8,6 +8,9 @@ A competitive sports trivia platform where players test their knowledge through 
 - **Quiz Mode** — 10-question timed multiple-choice trivia with 3 difficulty levels (Easy, Intermediate, Hard). Mixes text and image-based questions (max 3 image questions per session, never consecutive).
 - **Survival Mode** — Guess player names from initials. 3 lives, progressive difficulty, fuzzy matching, hint system.
 - **Blitz Mode** — 60-second rapid-fire quiz. Answer as many as possible before time runs out. Wrong answers cost 3 seconds.
+- **Higher or Lower** — Guess whether a player or team's stat is higher or lower than the current target to build the longest streak possible.
+- **VerveGrid** — A 3x3 grid intersection challenge. Search and place players who match both row and column criteria.
+- **Who Am I** — Guess the mystery athlete using progressively revealing clues. Revealing more clues reduces potential score payout.
 - **Daily Challenge** — A fresh set of 10 questions every day, same for all players per sport. Complete for daily leaderboard rankings.
 - **The Forge** — Community question creation. Submit new questions, vote on submissions, and earn contributor badges.
 - **Live Match** — Head-to-head multiplayer trivia with ELO-based matchmaking.

@@ -141,12 +141,15 @@ export default defineSchema({
     usedInitials: v.array(v.string()),
     gameOver: v.boolean(),
     expiresAt: v.number(),
+    freeSkipsLeft: v.optional(v.number()),
     currentChallenge: v.optional(
       v.object({
         initials: v.string(),
         round: v.number(),
         difficulty: v.string(),
         validPlayers: v.array(v.string()),
+        maskedName: v.optional(v.string()),
+        primaryPlayer: v.optional(v.string()),
       }),
     ),
     // Anti-cheat: track which round was last penalized
@@ -323,4 +326,155 @@ export default defineSchema({
   })
     .index("by_submission_voter", ["submissionId", "voterId"])
     .index("by_voter", ["voterId"]),
+
+  // ── Sports Data Tables ──
+
+  sportsPlayers: defineTable({
+    externalId: v.string(),
+    sport: v.string(),
+    apiId: v.number(),
+    name: v.string(),
+    firstName: v.optional(v.string()),
+    lastName: v.optional(v.string()),
+    nationality: v.optional(v.string()),
+    birthDate: v.optional(v.string()),
+    birthCountry: v.optional(v.string()),
+    age: v.optional(v.number()),
+    height: v.optional(v.string()),
+    weight: v.optional(v.string()),
+    position: v.optional(v.string()),
+    photo: v.optional(v.string()),
+    injured: v.optional(v.boolean()),
+  })
+    .index("by_external_id", ["externalId"])
+    .index("by_sport_name", ["sport", "name"]),
+
+  sportsTeams: defineTable({
+    externalId: v.string(),
+    sport: v.string(),
+    apiId: v.number(),
+    name: v.string(),
+    shortName: v.optional(v.string()),
+    logo: v.optional(v.string()),
+    country: v.optional(v.string()),
+    leagueId: v.optional(v.string()),
+    season: v.optional(v.number()),
+    founded: v.optional(v.number()),
+    venue: v.optional(v.string()),
+  }).index("by_external_id", ["externalId"]),
+
+  statFacts: defineTable({
+    externalId: v.string(),
+    sport: v.string(),
+    entityType: v.string(),
+    entityId: v.string(),
+    entityName: v.string(),
+    statKey: v.string(),
+    contextKey: v.string(),
+    value: v.number(),
+    season: v.optional(v.number()),
+  })
+    .index("by_external_id", ["externalId"])
+    .index("by_stat_key_sport", ["statKey", "sport"]),
+
+  gridIndex: defineTable({
+    externalId: v.string(),
+    sport: v.string(),
+    rowType: v.string(),
+    rowKey: v.string(),
+    rowLabel: v.string(),
+    colType: v.string(),
+    colKey: v.string(),
+    colLabel: v.string(),
+    playerIds: v.array(v.string()),
+    difficulty: v.string(),
+  })
+    .index("by_external_id", ["externalId"])
+    .index("by_sport_difficulty", ["sport", "difficulty"]),
+
+  whoAmIClues: defineTable({
+    externalId: v.string(),
+    sport: v.string(),
+    playerId: v.string(),
+    clue1: v.string(),
+    clue2: v.string(),
+    clue3: v.string(),
+    clue4: v.string(),
+    answerName: v.string(),
+    difficulty: v.string(),
+  })
+    .index("by_external_id", ["externalId"])
+    .index("by_sport_difficulty", ["sport", "difficulty"]),
+
+  // ── New Game Mode Sessions ──
+
+  higherLowerSessions: defineTable({
+    userId: v.optional(v.id("users")),
+    sport: v.string(),
+    score: v.number(),
+    streak: v.number(),
+    currentFactAId: v.string(),
+    currentFactBId: v.string(),
+    currentStatKey: v.string(),
+    currentContext: v.string(),
+    currentEntityType: v.optional(v.string()),
+    currentSeason: v.optional(v.number()),
+    currentFullContextKey: v.optional(v.string()),
+    playerAName: v.string(),
+    playerBName: v.string(),
+    playerAValue: v.number(),
+    playerBValue: v.number(),
+    playerAPhoto: v.optional(v.string()),
+    playerBPhoto: v.optional(v.string()),
+    status: v.union(v.literal("active"), v.literal("game_over")),
+    expiresAt: v.number(),
+  }).index("by_user", ["userId"]),
+
+  verveGridSessions: defineTable({
+    userId: v.optional(v.id("users")),
+    sport: v.string(),
+    rows: v.array(
+      v.object({
+        type: v.string(),
+        key: v.string(),
+        label: v.string(),
+      }),
+    ),
+    cols: v.array(
+      v.object({
+        type: v.string(),
+        key: v.string(),
+        label: v.string(),
+      }),
+    ),
+    cells: v.array(
+      v.object({
+        rowIdx: v.number(),
+        colIdx: v.number(),
+        validPlayerIds: v.array(v.string()),
+        guessedPlayerId: v.optional(v.string()),
+        guessedPlayerName: v.optional(v.string()),
+        correct: v.optional(v.boolean()),
+      }),
+    ),
+    remainingGuesses: v.number(),
+    correctCount: v.number(),
+    status: v.union(v.literal("active"), v.literal("completed")),
+    expiresAt: v.number(),
+  }).index("by_user", ["userId"]),
+
+  whoAmISessions: defineTable({
+    userId: v.optional(v.id("users")),
+    sport: v.string(),
+    clueExternalId: v.string(),
+    answerName: v.string(),
+    currentStage: v.number(),
+    score: v.number(),
+    status: v.union(
+      v.literal("active"),
+      v.literal("correct"),
+      v.literal("failed"),
+    ),
+    expiresAt: v.number(),
+  }).index("by_user", ["userId"]),
 });

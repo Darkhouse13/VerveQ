@@ -5,6 +5,13 @@ archive_nba.zip
 # Seed data (already in Convex)
 questions.json
 complete_image_seed_data.json
+verveq_seed_data.json
+
+# Data pipeline cache
+scripts/cache/
+
+# Sports data pipeline output
+scripts/data/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
