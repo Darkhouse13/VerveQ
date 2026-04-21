@@ -5,6 +5,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ConvexReactClient } from "convex/react";
 import { ConvexAuthProvider } from "@convex-dev/auth/react";
 import { AuthProvider } from "./contexts/AuthContext";
+import { ProtectedRoute } from "./components/ProtectedRoute";
 import LoginScreen from "./pages/LoginScreen";
 import OnboardingScreen from "./pages/OnboardingScreen";
 import HomeScreen from "./pages/HomeScreen";
@@ -46,28 +47,168 @@ const App = () => (
           <div className="max-w-md mx-auto min-h-screen relative">
             <Routes>
               <Route path="/" element={<LoginScreen />} />
-              <Route path="/onboarding" element={<OnboardingScreen />} />
-              <Route path="/home" element={<HomeScreen />} />
-              <Route path="/sport-select" element={<SportSelectScreen />} />
-              <Route path="/difficulty" element={<DifficultyScreen />} />
-              <Route path="/quiz" element={<QuizScreen />} />
-              <Route path="/survival" element={<SurvivalScreen />} />
-              <Route path="/results" element={<ResultScreen />} />
               <Route path="/leaderboard" element={<LeaderboardScreen />} />
-              <Route path="/profile" element={<ProfileScreen />} />
-              <Route path="/challenge" element={<ChallengeScreen />} />
-              <Route path="/dashboard" element={<DashboardScreen />} />
-              <Route path="/daily-quiz" element={<DailyQuizScreen />} />
-              <Route path="/daily-survival" element={<DailySurvivalScreen />} />
-              <Route path="/daily-results" element={<DailyResultScreen />} />
-              <Route path="/blitz" element={<BlitzScreen />} />
-              <Route path="/blitz-results" element={<BlitzResultScreen />} />
-              <Route path="/waiting-room" element={<WaitingRoomScreen />} />
-              <Route path="/live-match" element={<LiveMatchScreen />} />
-              <Route path="/forge" element={<ForgeScreen />} />
-              <Route path="/higher-lower" element={<HigherLowerScreen />} />
-              <Route path="/verve-grid" element={<VerveGridScreen />} />
-              <Route path="/who-am-i" element={<WhoAmIScreen />} />
+              <Route path="/home" element={<HomeScreen />} />
+              <Route
+                path="/onboarding"
+                element={
+                  <ProtectedRoute>
+                    <OnboardingScreen />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/sport-select"
+                element={
+                  <ProtectedRoute>
+                    <SportSelectScreen />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/difficulty"
+                element={
+                  <ProtectedRoute>
+                    <DifficultyScreen />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/quiz"
+                element={
+                  <ProtectedRoute>
+                    <QuizScreen />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/survival"
+                element={
+                  <ProtectedRoute>
+                    <SurvivalScreen />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/results"
+                element={
+                  <ProtectedRoute>
+                    <ResultScreen />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/profile"
+                element={
+                  <ProtectedRoute>
+                    <ProfileScreen />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/challenge"
+                element={
+                  <ProtectedRoute>
+                    <ChallengeScreen />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/dashboard"
+                element={
+                  <ProtectedRoute>
+                    <DashboardScreen />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/daily-quiz"
+                element={
+                  <ProtectedRoute>
+                    <DailyQuizScreen />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/daily-survival"
+                element={
+                  <ProtectedRoute>
+                    <DailySurvivalScreen />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/daily-results"
+                element={
+                  <ProtectedRoute>
+                    <DailyResultScreen />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/blitz"
+                element={
+                  <ProtectedRoute>
+                    <BlitzScreen />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/blitz-results"
+                element={
+                  <ProtectedRoute>
+                    <BlitzResultScreen />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/waiting-room"
+                element={
+                  <ProtectedRoute>
+                    <WaitingRoomScreen />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/live-match"
+                element={
+                  <ProtectedRoute>
+                    <LiveMatchScreen />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/forge"
+                element={
+                  <ProtectedRoute>
+                    <ForgeScreen />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/higher-lower"
+                element={
+                  <ProtectedRoute>
+                    <HigherLowerScreen />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/verve-grid"
+                element={
+                  <ProtectedRoute>
+                    <VerveGridScreen />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/who-am-i"
+                element={
+                  <ProtectedRoute>
+                    <WhoAmIScreen />
+                  </ProtectedRoute>
+                }
+              />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </div>

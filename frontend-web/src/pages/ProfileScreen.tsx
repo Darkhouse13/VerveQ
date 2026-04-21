@@ -53,14 +53,21 @@ export default function ProfileScreen() {
     userId ? { userId } : "skip",
   );
 
-  const isLoading = profile === undefined;
-
-  if (isLoading || !profile) {
+  if (profile === undefined) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center pb-20">
         <p className="font-heading font-bold animate-pulse">
           Loading profile...
         </p>
+        <BottomNav />
+      </div>
+    );
+  }
+
+  if (profile === null) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center pb-20">
+        <p className="font-heading font-bold">No profile data</p>
         <BottomNav />
       </div>
     );
