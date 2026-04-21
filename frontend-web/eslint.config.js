@@ -23,4 +23,25 @@ export default tseslint.config(
       "@typescript-eslint/no-unused-vars": "off",
     },
   },
+  {
+    files: [
+      "src/test/**/*.ts",
+      "src/test/**/*.tsx",
+      "eslint-fixtures/**/*.ts",
+      "eslint-fixtures/**/*.tsx",
+    ],
+    rules: {
+      "no-restricted-syntax": [
+        "error",
+        {
+          "selector": "TSTypeReference[typeName.name='Parameters']",
+          "message": "Prefer explicit named testing seams (exported interfaces/types) over brittle 'Parameters<typeof ...>' inference in test code. See curatedParityFixtures.ts for a reference example."
+        },
+        {
+          "selector": "TSTypeReference[typeName.name='ReturnType']",
+          "message": "Prefer explicit named testing seams (exported interfaces/types) over brittle 'ReturnType<typeof ...>' inference in test code. See curatedParityFixtures.ts for a reference example."
+        }
+      ]
+    }
+  }
 );

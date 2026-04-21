@@ -150,8 +150,6 @@ Data pipeline and curated-parity tooling.
 | `runCuratedGameplayWorkflow.ts` | Unified regenerate / build / seed workflow for curated modes. |
 | `runCuratedParityWorkflow.ts` | Destructive curated-parity reseed workflow (status/inspect/approve/apply). |
 | `seedSportsDatabase.ts` | HTTP-client bulk seeder for Convex sports data from `scripts/data/*`. |
-| `dev_up.py` | Legacy launcher for deleted FastAPI backend + Expo frontend — see Findings. |
-| `generators/` | Legacy Python question-generator stubs referenced only by deleted tests — see Findings. |
 | `cache/` | Gitignored API fetch cache (`scripts/cache/`). |
 | `data/` | Gitignored curated-parity seed artifacts (`scripts/data/*`). |
 
@@ -188,9 +186,6 @@ Not auto-removed in Stage 1 because they were not in the task's explicit candida
 
 ### Dead imports / dangling references
 
-- `frontend-web/src/types/api.ts` still defines the full set of REST-era response types (`SportsResponse`, `QuizQuestion`, `QuizCheckResponse`, `SurvivalStartResponse`, …). Live code only imports `GameResultState` from this module (`SurvivalScreen.tsx:14`, `QuizScreen.tsx:14`, `ResultScreen.tsx:10`). Everything else in the file is dead.
-- `scripts/dev_up.py` hard-codes `backend_cwd = os.path.join(root, "backend")` and `frontend_cwd = os.path.join(root, "frontend")`. Both paths were deleted in Stage 1, so the script will fail on first run. Not in the candidate list; left in place for explicit user decision.
-- `scripts/generators/` (Python: `base_generator.py`, `historical_generator.py`, `season_generator.py`) exists solely to back the deleted `tests/backend/` suite. Nothing in the current stack imports from it. Left for explicit user decision.
 - `scripts/generate_football_metadata.js` reads `archive/players.csv`. The CSV is gitignored and may not exist on a fresh clone.
 - Top-level `node_modules/` is an empty directory — an artefact of prior tooling; no `package.json` at repo root. Safe to delete.
 - Stray top-level files left behind by the deleted stack: `verveq_platform.db` (SQLite, was written by the Python backend), `complete_image_seed_data.json`, `questions.json`, `verveq_seed_data.json`. All gitignored, none referenced by live code.
@@ -198,7 +193,6 @@ Not auto-removed in Stage 1 because they were not in the task's explicit candida
 
 ### Tests that silently skip, no longer run, or reference deleted paths
 
-- `frontend-web/src/test/lintTest.test.ts` is not a real Vitest spec — it exists to exercise a custom ESLint rule on the `Parameters<typeof ...>` pattern. Vitest fails the file because no `describe`/`test` block is present. Currently blocks `npm test` from reporting a clean exit. Either rename it to `.lint-fixture.ts` (and reference from an ESLint test runner) or exclude from Vitest's glob.
 - The legacy `.github/workflows/tests.yml` was removed in Stage 1. No replacement CI workflow exists yet for the frontend-web stack.
 
 ### Docs still describing deleted surfaces
