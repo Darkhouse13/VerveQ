@@ -3,11 +3,12 @@ import { NeoButton } from "@/components/neo/NeoButton";
 import { NeoAvatar } from "@/components/neo/NeoAvatar";
 import { NeoBadge } from "@/components/neo/NeoBadge";
 import { BottomNav } from "@/components/neo/BottomNav";
-import { Lock, Trophy, Zap, Target, Flame, Star, Calendar } from "lucide-react";
+import { Lock, Trophy, Zap, Target, Flame, Star, Calendar, UserPlus } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useQuery } from "convex/react";
 import { api } from "../../convex/_generated/api";
 import { toast } from "sonner";
+import { useNavigate } from "react-router-dom";
 import type { Id } from "../../convex/_generated/dataModel";
 
 const sportEmojis: Record<string, string> = {
@@ -27,8 +28,19 @@ function getTier(elo: number) {
 }
 
 export default function ProfileScreen() {
-  const { user } = useAuth();
+  const navigate = useNavigate();
+  const { user, isGuest, logout } = useAuth();
   const userId = user?._id as Id<"users"> | undefined;
+
+  const handleCreateAccount = async () => {
+    await logout();
+    navigate("/?mode=signup&from=guest");
+  };
+
+  const handleSignOut = async () => {
+    await logout();
+    navigate("/");
+  };
 
   const profile = useQuery(api.profile.get, userId ? { userId } : "skip");
   const allAchievements = useQuery(api.achievements.list);
@@ -255,7 +267,7 @@ export default function ProfileScreen() {
           </div>
         )}
 
-        <div className="grid grid-cols-2 gap-3 pb-4">
+        <div className="grid grid-cols-2 gap-3">
           <NeoButton
             variant="secondary"
             size="md"
@@ -272,6 +284,41 @@ export default function ProfileScreen() {
             }}
           >
             Share Profile
+          </NeoButton>
+        </div>
+
+        {isGuest && (
+          <NeoCard
+            data-testid="guest-upgrade-cta"
+            color="primary"
+            shadow="lg"
+            className="text-center py-5"
+          >
+            <UserPlus size={24} strokeWidth={2.5} className="mx-auto mb-2" />
+            <p className="font-heading font-bold text-lg">
+              Create an account
+            </p>
+            <p className="text-xs opacity-90 mt-1 px-3">
+              Save your ELO, achievements, and compete on the leaderboard.
+            </p>
+            <NeoButton
+              variant="secondary"
+              size="md"
+              className="mt-4"
+              onClick={handleCreateAccount}
+            >
+              Create Account
+            </NeoButton>
+          </NeoCard>
+        )}
+
+        <div className="pb-4">
+          <NeoButton
+            variant="ghost"
+            size="full"
+            onClick={handleSignOut}
+          >
+            Sign Out
           </NeoButton>
         </div>
       </div>

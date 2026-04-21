@@ -15,7 +15,13 @@ const modePills = ["quiz", "survival"];
 
 export default function ChallengeScreen() {
   const navigate = useNavigate();
-  const { isGuest } = useAuth();
+  const { isGuest, logout } = useAuth();
+
+  const handleCreateAccount = async () => {
+    await logout();
+    navigate("/?mode=signup&from=guest");
+  };
+
   const [username, setUsername] = useState("");
   const [selectedSport, setSelectedSport] = useState("football");
   const [selectedMode, setSelectedMode] = useState("quiz");
@@ -60,9 +66,16 @@ export default function ChallengeScreen() {
             <p className="font-heading font-bold text-lg">
               Login to challenge friends
             </p>
-            <p className="text-sm text-muted-foreground mt-1">
+            <p className="text-sm text-muted-foreground mt-1 mb-4">
               Create an account to send challenges
             </p>
+            <NeoButton
+              variant="primary"
+              size="md"
+              onClick={handleCreateAccount}
+            >
+              Create an account to unlock
+            </NeoButton>
           </NeoCard>
         ) : (
           <NeoCard shadow="lg">
