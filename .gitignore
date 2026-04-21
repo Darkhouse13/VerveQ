@@ -192,13 +192,10 @@ archive/cleaned/**/*.csv
 .claude/tasks/
 cleanup_archive/
 processed_tennis/
+.ops/curated-parity/
 
 # Test coverage output
 coverage/
-
-# Frontend development
-frontend/.expo/
-frontend/node_modules/
 
 # Test databases
 */test*/**/*.db
@@ -222,4 +219,7 @@ development_files/
 !.github/pull_request_template.md
 # Data and temporary data cleaning folders
 data/
+!frontend-web/convex/data/
+frontend-web/convex/data/*
+!frontend-web/convex/data/football_survival_index.json
 data_cleaning/
