@@ -10,6 +10,7 @@
 
 import type * as achievements from "../achievements.js";
 import type * as auth from "../auth.js";
+import type * as authEmail from "../authEmail.js";
 import type * as blitz from "../blitz.js";
 import type * as challenges from "../challenges.js";
 import type * as crons from "../crons.js";
@@ -24,8 +25,10 @@ import type * as leaderboards from "../leaderboards.js";
 import type * as lib_daily from "../lib/daily.js";
 import type * as lib_elo from "../lib/elo.js";
 import type * as lib_fuzzy from "../lib/fuzzy.js";
+import type * as lib_passwordPolicy from "../lib/passwordPolicy.js";
 import type * as lib_scoring from "../lib/scoring.js";
 import type * as liveMatches from "../liveMatches.js";
+import type * as migrations_invalidateLegacyAuth from "../migrations/invalidateLegacyAuth.js";
 import type * as profile from "../profile.js";
 import type * as quizSessions from "../quizSessions.js";
 import type * as seasonManager from "../seasonManager.js";
@@ -48,6 +51,7 @@ import type {
 declare const fullApi: ApiFromModules<{
   achievements: typeof achievements;
   auth: typeof auth;
+  authEmail: typeof authEmail;
   blitz: typeof blitz;
   challenges: typeof challenges;
   crons: typeof crons;
@@ -62,8 +66,10 @@ declare const fullApi: ApiFromModules<{
   "lib/daily": typeof lib_daily;
   "lib/elo": typeof lib_elo;
   "lib/fuzzy": typeof lib_fuzzy;
+  "lib/passwordPolicy": typeof lib_passwordPolicy;
   "lib/scoring": typeof lib_scoring;
   liveMatches: typeof liveMatches;
+  "migrations/invalidateLegacyAuth": typeof migrations_invalidateLegacyAuth;
   profile: typeof profile;
   quizSessions: typeof quizSessions;
   seasonManager: typeof seasonManager;

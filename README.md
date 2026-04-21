@@ -130,8 +130,22 @@ That serves a production bundle locally against the configured dev Convex backen
 - Reachable static-target frontend validation is available from this workspace.
 - Separate remote frontend rollout is not currently available from this workspace when deploy access/config is missing. Treat that as an external operational blocker, not a repo gameplay bug.
 
+## Auth
+
+Auth uses Convex Auth with a Password provider (real email + password,
+12-char minimum, OTP-based password reset via Resend) plus an Anonymous
+provider for guest play. Signup, signin, and reset flows live in
+`frontend-web/src/pages/LoginScreen.tsx` and
+`frontend-web/src/contexts/AuthContext.tsx`.
+
+See [`docs/AUTH.md`](docs/AUTH.md) for the full flow, the password
+policy, the required Convex dashboard env vars
+(`RESEND_API_KEY`, `EMAIL_FROM`, `CONVEX_SITE_URL`), and the one-shot
+migration that invalidates legacy `@verveq.local` accounts.
+
 ## Current docs to trust
 
+- `docs/AUTH.md` - current source of truth for authentication
 - `docs/NEW_GAME_MODES.md` - current source of truth for Higher or Lower, VerveGrid, and Who Am I
 - `docs/SURVIVAL_MODE_AUDIT.md` - source of truth for Survival gameplay
 - `docs/DEPLOYMENT.md` - current deployment and validation reality

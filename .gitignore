@@ -31,6 +31,12 @@ eggs/
 .eggs/
 lib/
 lib64/
+# `lib/` above is meant for Python build output, but it also matches our
+# TypeScript source directories. Re-include those explicitly.
+!frontend-web/src/lib/
+!frontend-web/src/lib/**
+!frontend-web/convex/lib/
+!frontend-web/convex/lib/**
 parts/
 sdist/
 var/

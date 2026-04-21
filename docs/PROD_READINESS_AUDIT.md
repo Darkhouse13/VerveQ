@@ -18,10 +18,10 @@ Severity ladder:
 
 ## Blockers
 
-### BLOCKER-1 — Password == username in cleartext account creation
+### BLOCKER-1 — Password == username in cleartext account creation — **RESOLVED**
 **File:** `frontend-web/src/contexts/AuthContext.tsx:42-54` (login flow)
 
-Every password-flow signup is:
+Every password-flow signup was:
 
 ```ts
 const username = displayName.toLowerCase().replace(/\s+/g, "_");
@@ -33,20 +33,23 @@ await signIn("password", {
 });
 ```
 
-The password for any account is a deterministic lowercase-and-underscore
-transform of the public display name. Anyone who knows a public display name
-can log in as that account with no additional information — then play games,
-cast Forge votes, forfeit daily attempts, create challenges, and pollute
-the leaderboard under that identity.
+The password for any account was a deterministic lowercase-and-underscore
+transform of the public display name. Anyone who knew a public display name
+could log in as that account with no additional information — then play
+games, cast Forge votes, forfeit daily attempts, create challenges, and
+pollute the leaderboard under that identity.
 
-**Why it matters:** account takeover at zero cost. Leaderboards, ELO, Forge
-contributions all become untrustworthy the moment the app is public.
+**Why it mattered:** account takeover at zero cost. Leaderboards, ELO, Forge
+contributions all became untrustworthy the moment the app went public.
 
-**Suggested fix direction:** take a real password input on signup, enforce a
-minimum length and complexity, store nothing client-side beyond Convex Auth's
-normal session. If the flow is meant to be "displayName = username, no
-password," use the Anonymous provider instead (already wired) and do not
-create a password-backed user at all.
+**Resolution:** Auth now uses Convex Auth's Password provider with real
+email + password (12–72 chars, common-password deny list, Scrypt hashing),
+plus OTP-based password reset (6 digits, 10-minute expiry) delivered via
+Resend. The old deterministic signup path is gone. Legacy
+`@verveq.local` accounts are invalidated by the one-shot
+`migrations/invalidateLegacyAuth` internal mutation (see
+[docs/AUTH.md](AUTH.md)). The related audit finding HIGH-2 (ensureProfile
+short-circuit) was folded into the same fix.
 
 ---
 
@@ -187,29 +190,14 @@ notice; it's a credibility hit.
 
 ---
 
-### HIGH-2 — `ensureProfile` short-circuits before setting the username
+### HIGH-2 — `ensureProfile` short-circuits before setting the username — **RESOLVED**
 **File:** `frontend-web/convex/users.ts:14-38`
 
-```ts
-const existing = await ctx.db.get(userId);
-if (existing) return userId;   // <-- always truthy: Convex Auth created the doc
-// Never reached:
-await ctx.db.patch(userId, { username: args.username, ... });
-```
-
-Convex Auth inserts the `users` row before `ensureProfile` runs, so
-`existing` is always non-null and the patch branch is dead code. First-time
-users have no username / displayName set; the fallback `user?.username ?? ""`
-in AuthContext hides the symptom in the UI.
-
-**Why it matters:** `users.getByUsername` never finds anyone by real
-username; Forge author names, challenge targeting, leaderboard display all
-fall back to "" or "Unknown". Downstream features that depend on username
-(challenges by username — `challenges.create:46-51`) silently break.
-
-**Suggested fix direction:** change the guard to `if (existing?.username)
-return userId;` so the patch runs exactly once when the username is still
-missing.
+Old handler returned early on any existing user doc, so the patch branch
+setting `username` was dead code. Fixed alongside BLOCKER-1: the guard now
+keys on whether `existing.username` is present, not whether the doc exists,
+so first-time users receive a derived username exactly once and subsequent
+calls remain no-ops.
 
 ---
 
