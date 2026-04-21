@@ -126,15 +126,9 @@ export default function SurvivalScreen() {
     let newElo: number | null = null;
     let kFactor: number | undefined;
     let kFactorLabel: string | undefined;
-    if (user) {
+    if (user && sessionId) {
       try {
-        const dur = Math.round((Date.now() - startTime.current) / 1000);
-        const res = await completeSurvivalMut({
-          sport,
-          score: finalScore,
-          durationSeconds: dur,
-          performanceBonus: performanceBonusRef.current,
-        });
+        const res = await completeSurvivalMut({ sessionId });
         eloChange = res.eloChange;
         newElo = res.newElo;
         kFactor = res.kFactor;

@@ -18,8 +18,6 @@ const MAX_QUESTIONS = 10;
 interface QuestionData {
   question: string;
   options: string[];
-  correctAnswer: string;
-  explanation?: string;
   difficulty: string;
   checksum: string;
   category: string;
@@ -35,6 +33,7 @@ export default function QuizScreen() {
 
   const [sessionId, setSessionId] = useState<Id<"quizSessions"> | null>(null);
   const [question, setQuestion] = useState<QuestionData | null>(null);
+  const [revealedAnswer, setRevealedAnswer] = useState<string | null>(null);
   const [questionNum, setQuestionNum] = useState(1);
   const [totalScore, setTotalScore] = useState(0);
   const [correctCount, setCorrectCount] = useState(0);
@@ -43,7 +42,7 @@ export default function QuizScreen() {
   const [revealed, setRevealed] = useState(false);
   const [checkResult, setCheckResult] = useState<{
     correct: boolean;
-    explanation?: string;
+    explanation?: string | null;
   } | null>(null);
   const [timer, setTimer] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -61,8 +60,9 @@ export default function QuizScreen() {
     async (sid: Id<"quizSessions">) => {
       setLoading(true);
       try {
-        const q = await getQuestionMut({ sessionId: sid, sport, difficulty });
+        const q = await getQuestionMut({ sessionId: sid });
         setQuestion(q);
+        setRevealedAnswer(null);
         setSelected(null);
         setRevealed(false);
         setCheckResult(null);
@@ -74,7 +74,7 @@ export default function QuizScreen() {
         setLoading(false);
       }
     },
-    [getQuestionMut, sport, difficulty],
+    [getQuestionMut],
   );
 
   useEffect(() => {
@@ -100,19 +100,19 @@ export default function QuizScreen() {
   }, [revealed, loading]);
 
   const handleCheck = async () => {
-    if (selected === null || !question) return;
+    if (selected === null || !question || !sessionId) return;
     setChecking(true);
     const timeTaken = (Date.now() - startTime.current) / 1000;
     try {
       const res = await checkAnswerMut({
+        sessionId,
         answer: question.options[selected],
-        correctAnswer: question.correctAnswer,
-        timeTaken,
       });
+      setRevealedAnswer(res.correctAnswer);
       setRevealed(true);
       setCheckResult({
         correct: res.correct,
-        explanation: question.explanation,
+        explanation: res.explanation,
       });
       setTotalScore((s) => s + res.score);
       if (res.correct) setCorrectCount((c) => c + 1);
@@ -133,28 +133,25 @@ export default function QuizScreen() {
       let newElo: number | null = null;
       let kFactor: number | undefined;
       let kFactorLabel: string | undefined;
-      if (user) {
+      let serverScore = totalScore;
+      let serverCorrectCount = correctCount;
+      if (user && sessionId) {
         try {
-          const res = await completeQuizMut({
-            sport,
-            score: correctCount,
-            totalQuestions: MAX_QUESTIONS,
-            accuracy: correctCount / MAX_QUESTIONS,
-            averageTime: avgTime,
-            difficulty,
-          });
+          const res = await completeQuizMut({ sessionId });
           eloChange = res.eloChange;
           newElo = res.newElo;
           kFactor = res.kFactor;
           kFactorLabel = res.kFactorLabel;
+          serverScore = res.score;
+          serverCorrectCount = res.correctCount;
         } catch {
           /* continue to results */
         }
       }
       const state: GameResultState = {
-        score: totalScore,
+        score: serverScore,
         total: MAX_QUESTIONS,
-        correctCount,
+        correctCount: serverCorrectCount,
         avgTime,
         eloChange,
         newElo,
@@ -170,9 +167,10 @@ export default function QuizScreen() {
     }
   };
 
-  const correctIdx = question
-    ? question.options.indexOf(question.correctAnswer)
-    : -1;
+  const correctIdx =
+    question && revealedAnswer
+      ? question.options.indexOf(revealedAnswer)
+      : -1;
 
   const getOptionStyle = (idx: number) => {
     if (!revealed)

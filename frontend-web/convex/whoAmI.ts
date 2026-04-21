@@ -1,9 +1,45 @@
-import { mutation, query } from "./_generated/server";
+import { mutation, query, type MutationCtx } from "./_generated/server";
 import { v } from "convex/values";
 import { findBestMatch } from "./lib/fuzzy";
 
 const SESSION_TTL_MS = 60 * 60 * 1000; // 1 hour
 const BASE_SCORE = 1000;
+const DEFAULT_DIFFICULTY_WEIGHTS = [
+  { difficulty: "easy", weight: 0.3 },
+  { difficulty: "medium", weight: 0.5 },
+  { difficulty: "hard", weight: 0.2 },
+] as const;
+
+async function getApprovedWhoAmICluesForDifficulty(
+  ctx: MutationCtx,
+  sport: string,
+  difficulty: string,
+) {
+  return ctx.db
+    .query("whoAmIApprovedClues")
+    .withIndex("by_sport_difficulty", (q) =>
+      q.eq("sport", sport).eq("difficulty", difficulty),
+    )
+    .collect();
+}
+
+function chooseWeightedDifficultyPool<
+  T extends { difficulty: string; weight: number; clues: unknown[] },
+>(pools: T[]): T | null {
+  const availablePools = pools.filter((pool) => pool.clues.length > 0);
+  if (availablePools.length === 0) return null;
+
+  const totalWeight = availablePools.reduce((sum, pool) => sum + pool.weight, 0);
+  let roll = Math.random() * totalWeight;
+  for (const pool of availablePools) {
+    roll -= pool.weight;
+    if (roll <= 0) {
+      return pool;
+    }
+  }
+
+  return availablePools[availablePools.length - 1];
+}
 
 export const startChallenge = mutation({
   args: {
@@ -11,49 +47,32 @@ export const startChallenge = mutation({
     difficulty: v.optional(v.string()),
   },
   handler: async (ctx, { sport, difficulty }) => {
-    // Fetch clues filtered by sport (and optionally difficulty)
     let clues;
+
     if (difficulty) {
-      // Explicit difficulty — use as-is
-      clues = await ctx.db
-        .query("whoAmIClues")
-        .withIndex("by_sport_difficulty", (q) =>
-          q.eq("sport", sport).eq("difficulty", difficulty),
-        )
-        .collect();
-    } else {
-      // No difficulty specified: weighted random, excluding "hard"
-      const easyClues = await ctx.db
-        .query("whoAmIClues")
-        .withIndex("by_sport_difficulty", (q) =>
-          q.eq("sport", sport).eq("difficulty", "easy"),
-        )
-        .collect();
-
-      const mediumClues = await ctx.db
-        .query("whoAmIClues")
-        .withIndex("by_sport_difficulty", (q) =>
-          q.eq("sport", sport).eq("difficulty", "medium"),
-        )
-        .collect();
-
-      // Weighted selection: 70% easy, 30% medium
-      const roll = Math.random();
-      if (roll < 0.7 && easyClues.length > 0) {
-        clues = easyClues;
-      } else if (mediumClues.length > 0) {
-        clues = mediumClues;
-      } else {
-        // Fallback: use whichever pool is non-empty
-        clues = easyClues.length > 0 ? easyClues : mediumClues;
+      clues = await getApprovedWhoAmICluesForDifficulty(ctx, sport, difficulty);
+      if (clues.length === 0) {
+        throw new Error("No approved clues available for this sport and difficulty");
       }
+    } else {
+      const difficultyPools = await Promise.all(
+        DEFAULT_DIFFICULTY_WEIGHTS.map(async ({ difficulty: poolDifficulty, weight }) => ({
+          difficulty: poolDifficulty,
+          weight,
+          clues: await getApprovedWhoAmICluesForDifficulty(ctx, sport, poolDifficulty),
+        })),
+      );
+      const selectedPool = chooseWeightedDifficultyPool(difficultyPools);
+      if (!selectedPool) {
+        throw new Error("Who Am I is not available for this sport");
+      }
+      clues = selectedPool.clues;
     }
 
     if (!clues || clues.length === 0) {
-      throw new Error("No clues available for this sport");
+      throw new Error("Who Am I is not available for this sport");
     }
 
-    // Pick a random clue from the selected pool
     const clue = clues[Math.floor(Math.random() * clues.length)];
 
     const sessionId = await ctx.db.insert("whoAmISessions", {
@@ -87,12 +106,10 @@ export const revealNextClue = mutation({
     if (session.currentStage >= 4) throw new Error("All clues already revealed");
 
     const newStage = session.currentStage + 1;
-    // Each reveal reduces score by 25%
     const newScore = Math.floor(session.score * 0.75);
 
-    // Fetch the clue data
     const clue = await ctx.db
-      .query("whoAmIClues")
+      .query("whoAmIApprovedClues")
       .withIndex("by_external_id", (q) => q.eq("externalId", session.clueExternalId))
       .first();
 
@@ -146,7 +163,6 @@ export const submitGuess = mutation({
       };
     }
 
-    // Wrong guess — game over
     await ctx.db.patch(sessionId, { status: "failed" });
     return {
       correct: false,
@@ -165,25 +181,32 @@ export const getSession = query({
     const session = await ctx.db.get(sessionId);
     if (!session) return null;
 
-    // Fetch clue data to return revealed clues
     const clue = await ctx.db
-      .query("whoAmIClues")
+      .query("whoAmIApprovedClues")
       .withIndex("by_external_id", (q) => q.eq("externalId", session.clueExternalId))
       .first();
 
     if (!clue) return null;
 
-    // Only return clues up to currentStage
     const clues: string[] = [];
     for (let i = 1; i <= session.currentStage; i++) {
       const key = `clue${i}` as keyof typeof clue;
       clues.push(clue[key] as string);
     }
 
+    // answerName is the hidden truth. Only expose it once the game ends
+    // — submitGuess already reveals it in its response on correct/failed.
+    const revealed = session.status !== "active";
     return {
-      ...session,
+      _id: session._id,
+      sport: session.sport,
+      currentStage: session.currentStage,
+      score: session.score,
+      status: session.status,
+      expiresAt: session.expiresAt,
       clues,
       difficulty: clue.difficulty,
+      answerName: revealed ? session.answerName : null,
     };
   },
 });

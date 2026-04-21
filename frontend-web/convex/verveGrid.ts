@@ -3,151 +3,34 @@ import { v } from "convex/values";
 
 const SESSION_TTL_MS = 60 * 60 * 1000; // 1 hour
 const MAX_GUESSES = 9;
-
-// Only allow these nationalities as grid axes to prevent obscure/impossible cells
-const ALLOWED_NATIONALITIES = new Set([
-  "Argentina",
-  "Brazil",
-  "England",
-  "France",
-  "Spain",
-  "Germany",
-  "Italy",
-  "Portugal",
-  "Netherlands",
-  "Belgium",
-  "Uruguay",
-  "Colombia",
-]);
+const MIN_QUERY_LENGTH = 2;
 
 export const startSession = mutation({
   args: { sport: v.string() },
   handler: async (ctx, { sport }) => {
-    // Only fetch "easy" and "medium" grid entries — exclude "hard" (1-2 players)
-    const easyEntries = await ctx.db
-      .query("gridIndex")
-      .withIndex("by_sport_difficulty", (q) =>
-        q.eq("sport", sport).eq("difficulty", "easy"),
-      )
+    if (sport !== "football") {
+      throw new Error("VerveGrid is currently available for football only");
+    }
+
+    const boards = await ctx.db
+      .query("verveGridBoards")
+      .withIndex("by_sport", (q) => q.eq("sport", sport))
       .collect();
 
-    const mediumEntries = await ctx.db
-      .query("gridIndex")
-      .withIndex("by_sport_difficulty", (q) =>
-        q.eq("sport", sport).eq("difficulty", "medium"),
-      )
-      .collect();
-
-    const allEntries = [...easyEntries, ...mediumEntries];
-
-    if (allEntries.length < 9) {
-      throw new Error("Not enough grid data for this sport");
+    if (boards.length === 0) {
+      throw new Error("No curated VerveGrid boards are available for this sport");
     }
 
-    // Collect unique row and col criteria
-    const rowMap = new Map<string, { type: string; key: string; label: string }>();
-    const colMap = new Map<string, { type: string; key: string; label: string }>();
-
-    for (const entry of allEntries) {
-      const rowId = `${entry.rowType}:${entry.rowKey}`;
-      const colId = `${entry.colType}:${entry.colKey}`;
-      if (!rowMap.has(rowId)) {
-        rowMap.set(rowId, { type: entry.rowType, key: entry.rowKey, label: entry.rowLabel });
-      }
-      if (!colMap.has(colId)) {
-        colMap.set(colId, { type: entry.colType, key: entry.colKey, label: entry.colLabel });
-      }
-    }
-
-    // Filter out obscure nationalities from row and col candidates
-    for (const [id, val] of rowMap) {
-      if (val.type === "nationality" && !ALLOWED_NATIONALITIES.has(val.key)) {
-        rowMap.delete(id);
-      }
-    }
-    for (const [id, val] of colMap) {
-      if (val.type === "nationality" && !ALLOWED_NATIONALITIES.has(val.key)) {
-        colMap.delete(id);
-      }
-    }
-
-    // Build a lookup: "rowType:rowKey|colType:colKey" → playerIds
-    const cellLookup = new Map<string, string[]>();
-    for (const entry of allEntries) {
-      const key = `${entry.rowType}:${entry.rowKey}|${entry.colType}:${entry.colKey}`;
-      cellLookup.set(key, entry.playerIds);
-    }
-
-    // Try to find a valid 3x3 grid
-    const rowCandidates = Array.from(rowMap.entries()).sort(() => Math.random() - 0.5);
-    const colCandidates = Array.from(colMap.entries()).sort(() => Math.random() - 0.5);
-
-    let chosenRows: { type: string; key: string; label: string }[] = [];
-    let chosenCols: { type: string; key: string; label: string }[] = [];
-    let cells: {
-      rowIdx: number;
-      colIdx: number;
-      validPlayerIds: string[];
-    }[] = [];
-    let found = false;
-
-    // Brute-force search for a valid 3x3 combination
-    for (let ri = 0; ri < rowCandidates.length - 2 && !found; ri++) {
-      for (let rj = ri + 1; rj < rowCandidates.length - 1 && !found; rj++) {
-        for (let rk = rj + 1; rk < rowCandidates.length && !found; rk++) {
-          const testRows = [rowCandidates[ri], rowCandidates[rj], rowCandidates[rk]];
-
-          for (let ci = 0; ci < colCandidates.length - 2 && !found; ci++) {
-            for (let cj = ci + 1; cj < colCandidates.length - 1 && !found; cj++) {
-              for (let ck = cj + 1; ck < colCandidates.length && !found; ck++) {
-                const testCols = [colCandidates[ci], colCandidates[cj], colCandidates[ck]];
-
-                // Check all 9 cells have valid players
-                const testCells: typeof cells = [];
-                let allValid = true;
-
-                for (let r = 0; r < 3 && allValid; r++) {
-                  for (let c = 0; c < 3 && allValid; c++) {
-                    const row = testRows[r][1];
-                    const col = testCols[c][1];
-                    const key = `${row.type}:${row.key}|${col.type}:${col.key}`;
-                    const playerIds = cellLookup.get(key);
-
-                    if (!playerIds || playerIds.length === 0) {
-                      allValid = false;
-                    } else {
-                      testCells.push({
-                        rowIdx: r,
-                        colIdx: c,
-                        validPlayerIds: playerIds,
-                      });
-                    }
-                  }
-                }
-
-                if (allValid && testCells.length === 9) {
-                  chosenRows = testRows.map(([, v]) => v);
-                  chosenCols = testCols.map(([, v]) => v);
-                  cells = testCells;
-                  found = true;
-                }
-              }
-            }
-          }
-        }
-      }
-    }
-
-    if (!found) {
-      throw new Error("Could not generate a valid 3x3 grid — not enough overlapping data");
-    }
+    const chosenBoard = boards[Math.floor(Math.random() * boards.length)];
 
     const sessionId = await ctx.db.insert("verveGridSessions", {
       sport,
-      rows: chosenRows,
-      cols: chosenCols,
-      cells: cells.map((c) => ({
-        ...c,
+      boardTemplateId: chosenBoard.templateId,
+      boardAxisFamily: chosenBoard.axisFamily,
+      rows: chosenBoard.rows,
+      cols: chosenBoard.cols,
+      cells: chosenBoard.cells.map((cell) => ({
+        ...cell,
         guessedPlayerId: undefined,
         guessedPlayerName: undefined,
         correct: undefined,
@@ -160,8 +43,10 @@ export const startSession = mutation({
 
     return {
       sessionId,
-      rows: chosenRows,
-      cols: chosenCols,
+      boardTemplateId: chosenBoard.templateId,
+      boardAxisFamily: chosenBoard.axisFamily,
+      rows: chosenBoard.rows,
+      cols: chosenBoard.cols,
       remainingGuesses: MAX_GUESSES,
       correctCount: 0,
     };
@@ -172,30 +57,83 @@ export const searchPlayers = query({
   args: {
     queryText: v.string(),
     sport: v.string(),
+    sessionId: v.optional(v.id("verveGridSessions")),
+    cellIndex: v.optional(v.number()),
   },
-  handler: async (ctx, { queryText, sport }) => {
-    if (queryText.length < 2) return [];
+  handler: async (ctx, { queryText, sport, sessionId, cellIndex }) => {
+    if (queryText.length < MIN_QUERY_LENGTH) {
+      return [];
+    }
 
     const normalized = queryText.toLowerCase();
 
-    // Query by sport and scan for name prefix match
+    if (sessionId !== undefined && cellIndex !== undefined) {
+      const session = await ctx.db.get(sessionId);
+      if (!session || session.sport !== sport) {
+        return [];
+      }
+
+      const cell = session.cells[cellIndex];
+      if (!cell) {
+        return [];
+      }
+
+      const usedPlayerIds = new Set(
+        session.cells
+          .filter((gridCell, index) => index !== cellIndex && gridCell.correct === true)
+          .map((gridCell) => gridCell.guessedPlayerId)
+          .filter((playerId): playerId is string => typeof playerId === "string"),
+      );
+
+      return (
+        await Promise.all(
+          cell.validPlayerIds.map((externalId) =>
+            ctx.db
+              .query("sportsPlayers")
+              .withIndex("by_external_id", (q) => q.eq("externalId", externalId))
+              .first(),
+          ),
+        )
+      )
+        .filter((player): player is NonNullable<typeof player> => player !== null)
+        .filter(
+          (player) =>
+            !usedPlayerIds.has(player.externalId) &&
+            player.name.toLowerCase().includes(normalized),
+        )
+        .sort((a, b) => {
+          const aStarts = a.name.toLowerCase().startsWith(normalized) ? 0 : 1;
+          const bStarts = b.name.toLowerCase().startsWith(normalized) ? 0 : 1;
+          if (aStarts !== bStarts) {
+            return aStarts - bStarts;
+          }
+          return a.name.localeCompare(b.name);
+        })
+        .slice(0, 10)
+        .map((player) => ({
+          externalId: player.externalId,
+          name: player.name,
+          photo: player.photo,
+          position: player.position,
+          nationality: player.nationality,
+        }));
+    }
+
     const players = await ctx.db
       .query("sportsPlayers")
       .withIndex("by_sport_name", (q) => q.eq("sport", sport))
       .collect();
 
-    const matches = players
-      .filter((p) => p.name.toLowerCase().includes(normalized))
+    return players
+      .filter((player) => player.name.toLowerCase().includes(normalized))
       .slice(0, 10)
-      .map((p) => ({
-        externalId: p.externalId,
-        name: p.name,
-        photo: p.photo,
-        position: p.position,
-        nationality: p.nationality,
+      .map((player) => ({
+        externalId: player.externalId,
+        name: player.name,
+        photo: player.photo,
+        position: player.position,
+        nationality: player.nationality,
       }));
-
-    return matches;
   },
 });
 
@@ -217,9 +155,11 @@ export const submitGuess = mutation({
     if (!cell) throw new Error("Invalid cell index");
     if (cell.correct === true) throw new Error("Cell already solved");
 
-    // Check if player was already used in another cell
     const alreadyUsed = cells.some(
-      (c, i) => i !== cellIndex && c.guessedPlayerId === playerExternalId && c.correct === true,
+      (gridCell, index) =>
+        index !== cellIndex &&
+        gridCell.guessedPlayerId === playerExternalId &&
+        gridCell.correct === true,
     );
     if (alreadyUsed) {
       return { correct: false, alreadyUsed: true, remainingGuesses: session.remainingGuesses };
@@ -261,6 +201,29 @@ export const submitGuess = mutation({
 export const getSession = query({
   args: { sessionId: v.id("verveGridSessions") },
   handler: async (ctx, { sessionId }) => {
-    return await ctx.db.get(sessionId);
+    const session = await ctx.db.get(sessionId);
+    if (!session) return null;
+
+    // validPlayerIds per cell is the answer pool — never return it.
+    // Clients only need to know what they've guessed so far.
+    return {
+      _id: session._id,
+      sport: session.sport,
+      boardTemplateId: session.boardTemplateId,
+      boardAxisFamily: session.boardAxisFamily,
+      rows: session.rows,
+      cols: session.cols,
+      cells: session.cells.map((cell) => ({
+        rowIdx: cell.rowIdx,
+        colIdx: cell.colIdx,
+        guessedPlayerId: cell.guessedPlayerId,
+        guessedPlayerName: cell.guessedPlayerName,
+        correct: cell.correct,
+      })),
+      remainingGuesses: session.remainingGuesses,
+      correctCount: session.correctCount,
+      status: session.status,
+      expiresAt: session.expiresAt,
+    };
   },
 });

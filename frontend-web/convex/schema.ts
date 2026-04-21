@@ -129,6 +129,15 @@ export default defineSchema({
     difficulty: v.optional(v.string()),
     usedChecksums: v.array(v.string()),
     expiresAt: v.number(),
+    // Server-authoritative scoring state. Populated from createSession
+    // onward; remain optional so pre-existing rows stay schema-valid.
+    score: v.optional(v.number()),
+    correctCount: v.optional(v.number()),
+    totalAnswers: v.optional(v.number()),
+    sumAnswerTimeMs: v.optional(v.number()),
+    currentChecksum: v.optional(v.string()),
+    questionStartedAt: v.optional(v.number()),
+    completed: v.optional(v.boolean()),
   }),
 
   survivalSessions: defineTable({
@@ -161,6 +170,9 @@ export default defineSchema({
     // Tiered hint system
     hintTokensLeft: v.optional(v.number()),
     currentHintStage: v.optional(v.number()),
+    // Server-side idempotency marker for completeSurvival — set once ELO
+    // has been recorded so a replayed call doesn't double-update the rating.
+    completedAt: v.optional(v.number()),
   }),
 
   // ── Daily Challenge ──
@@ -184,6 +196,9 @@ export default defineSchema({
     results: v.any(),
     startedAt: v.number(),
     completedAt: v.optional(v.number()),
+    // Server clock for the next expected submitAnswer — used to derive
+    // timeTaken without trusting the client. Reset on each submit.
+    currentQuestionStartedAt: v.optional(v.number()),
   })
     .index("by_user_date_sport_mode", ["userId", "date", "sport", "mode"])
     .index("by_date_sport_mode_score", ["date", "sport", "mode", "score"]),
@@ -331,6 +346,7 @@ export default defineSchema({
 
   sportsPlayers: defineTable({
     externalId: v.string(),
+    seedVersion: v.optional(v.string()),
     sport: v.string(),
     apiId: v.number(),
     name: v.string(),
@@ -347,10 +363,12 @@ export default defineSchema({
     injured: v.optional(v.boolean()),
   })
     .index("by_external_id", ["externalId"])
+    .index("by_sport", ["sport"])
     .index("by_sport_name", ["sport", "name"]),
 
   sportsTeams: defineTable({
     externalId: v.string(),
+    seedVersion: v.optional(v.string()),
     sport: v.string(),
     apiId: v.number(),
     name: v.string(),
@@ -361,10 +379,13 @@ export default defineSchema({
     season: v.optional(v.number()),
     founded: v.optional(v.number()),
     venue: v.optional(v.string()),
-  }).index("by_external_id", ["externalId"]),
+  })
+    .index("by_external_id", ["externalId"])
+    .index("by_sport", ["sport"]),
 
   statFacts: defineTable({
     externalId: v.string(),
+    seedVersion: v.optional(v.string()),
     sport: v.string(),
     entityType: v.string(),
     entityId: v.string(),
@@ -377,8 +398,45 @@ export default defineSchema({
     .index("by_external_id", ["externalId"])
     .index("by_stat_key_sport", ["statKey", "sport"]),
 
+  higherLowerPools: defineTable({
+    externalId: v.string(),
+    seedVersion: v.optional(v.string()),
+    sport: v.string(),
+    entityType: v.string(),
+    statKey: v.string(),
+    contextKey: v.string(),
+    contextLabel: v.string(),
+    factCount: v.number(),
+    distinctValueCount: v.number(),
+    minValue: v.number(),
+    maxValue: v.number(),
+    season: v.optional(v.number()),
+  })
+    .index("by_external_id", ["externalId"])
+    .index("by_sport", ["sport"]),
+
+  higherLowerFacts: defineTable({
+    externalId: v.string(),
+    seedVersion: v.optional(v.string()),
+    sport: v.string(),
+    poolKey: v.string(),
+    entityType: v.string(),
+    entityId: v.string(),
+    entityName: v.string(),
+    statKey: v.string(),
+    contextKey: v.string(),
+    value: v.number(),
+    season: v.optional(v.number()),
+  })
+    .index("by_external_id", ["externalId"])
+    .index("by_pool_key", ["poolKey"])
+    .index("by_sport", ["sport"]),
+
+  // Legacy VerveGrid raw table kept for pipeline/audit visibility.
+  // Live VerveGrid runtime starts from curated boards, not this table.
   gridIndex: defineTable({
     externalId: v.string(),
+    seedVersion: v.optional(v.string()),
     sport: v.string(),
     rowType: v.string(),
     rowKey: v.string(),
@@ -392,8 +450,61 @@ export default defineSchema({
     .index("by_external_id", ["externalId"])
     .index("by_sport_difficulty", ["sport", "difficulty"]),
 
+  verveGridApprovedIndex: defineTable({
+    externalId: v.string(),
+    seedVersion: v.optional(v.string()),
+    sourceGridId: v.string(),
+    axisFamily: v.string(),
+    sport: v.string(),
+    rowType: v.string(),
+    rowKey: v.string(),
+    rowLabel: v.string(),
+    colType: v.string(),
+    colKey: v.string(),
+    colLabel: v.string(),
+    playerIds: v.array(v.string()),
+    difficulty: v.string(),
+  })
+    .index("by_external_id", ["externalId"])
+    .index("by_sport", ["sport"])
+    .index("by_sport_axis_family", ["sport", "axisFamily"]),
+
+  verveGridBoards: defineTable({
+    externalId: v.string(),
+    seedVersion: v.optional(v.string()),
+    sport: v.string(),
+    templateId: v.string(),
+    axisFamily: v.string(),
+    score: v.number(),
+    rows: v.array(
+      v.object({
+        type: v.string(),
+        key: v.string(),
+        label: v.string(),
+      }),
+    ),
+    cols: v.array(
+      v.object({
+        type: v.string(),
+        key: v.string(),
+        label: v.string(),
+      }),
+    ),
+    cells: v.array(
+      v.object({
+        rowIdx: v.number(),
+        colIdx: v.number(),
+        validPlayerIds: v.array(v.string()),
+      }),
+    ),
+  })
+    .index("by_external_id", ["externalId"])
+    .index("by_sport", ["sport"])
+    .index("by_sport_template", ["sport", "templateId"]),
+
   whoAmIClues: defineTable({
     externalId: v.string(),
+    seedVersion: v.optional(v.string()),
     sport: v.string(),
     playerId: v.string(),
     clue1: v.string(),
@@ -406,6 +517,49 @@ export default defineSchema({
     .index("by_external_id", ["externalId"])
     .index("by_sport_difficulty", ["sport", "difficulty"]),
 
+  whoAmIApprovedClues: defineTable({
+    externalId: v.string(),
+    seedVersion: v.optional(v.string()),
+    sourceClueId: v.string(),
+    sport: v.string(),
+    playerId: v.string(),
+    clue1: v.string(),
+    clue2: v.string(),
+    clue3: v.string(),
+    clue4: v.string(),
+    answerName: v.string(),
+    difficulty: v.string(),
+    rawDifficulty: v.string(),
+    qualityScore: v.number(),
+    isHeadlineSeed: v.boolean(),
+    isManualLegend: v.boolean(),
+    teamLabels: v.array(v.string()),
+    approvalReasons: v.array(v.string()),
+    curationFlags: v.array(v.string()),
+  })
+    .index("by_external_id", ["externalId"])
+    .index("by_sport", ["sport"])
+    .index("by_sport_difficulty", ["sport", "difficulty"]),
+
+  curatedSeedMetadata: defineTable({
+    scopeKey: v.string(),
+    tableName: v.string(),
+    sport: v.string(),
+    mode: v.string(),
+    artifactPath: v.string(),
+    seedVersion: v.string(),
+    artifactHash: v.string(),
+    recordCount: v.number(),
+    insertedCount: v.number(),
+    replacedCount: v.number(),
+    deletedCount: v.number(),
+    generatedAt: v.string(),
+    appliedAt: v.number(),
+    replaceStrategy: v.string(),
+  })
+    .index("by_scope", ["scopeKey"])
+    .index("by_scope_table", ["scopeKey", "tableName"]),
+
   // ── New Game Mode Sessions ──
 
   higherLowerSessions: defineTable({
@@ -413,6 +567,8 @@ export default defineSchema({
     sport: v.string(),
     score: v.number(),
     streak: v.number(),
+    seenFactIds: v.optional(v.array(v.string())),
+    seenEntityIds: v.optional(v.array(v.string())),
     currentFactAId: v.string(),
     currentFactBId: v.string(),
     currentStatKey: v.string(),
@@ -433,6 +589,8 @@ export default defineSchema({
   verveGridSessions: defineTable({
     userId: v.optional(v.id("users")),
     sport: v.string(),
+    boardTemplateId: v.optional(v.string()),
+    boardAxisFamily: v.optional(v.string()),
     rows: v.array(
       v.object({
         type: v.string(),

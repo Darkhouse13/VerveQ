@@ -17,8 +17,6 @@ const MAX_QUESTIONS = 10;
 interface QuestionData {
   question: string;
   options: string[];
-  correctAnswer: string;
-  explanation: string | null;
   checksum: string;
   category: string;
   imageUrl?: string | null;
@@ -46,6 +44,7 @@ export default function DailyQuizScreen() {
   const [checking, setChecking] = useState(false);
   const [forfeited, setForfeited] = useState(false);
   const [zoomImage, setZoomImage] = useState<string | null>(null);
+  const [revealedAnswer, setRevealedAnswer] = useState<string | null>(null);
 
   const startTime = useRef(Date.now());
 
@@ -88,6 +87,7 @@ export default function DailyQuizScreen() {
   useEffect(() => {
     if (dailyQuestion && !forfeited) {
       setQuestion(dailyQuestion);
+      setRevealedAnswer(null);
       setSelected(null);
       setRevealed(false);
       setCheckResult(null);
@@ -124,13 +124,13 @@ export default function DailyQuizScreen() {
       const res = await submitAnswerMut({
         attemptId,
         answer: question.options[selected],
-        correctAnswer: question.correctAnswer,
-        timeTaken,
+        questionIndex: questionNum,
       });
+      setRevealedAnswer(res.correctAnswer);
       setRevealed(true);
       setCheckResult({
         correct: res.correct,
-        explanation: question.explanation,
+        explanation: res.explanation,
       });
       setTotalScore(res.totalScore);
       if (res.correct) setCorrectCount((c) => c + 1);
@@ -189,9 +189,10 @@ export default function DailyQuizScreen() {
     }
   };
 
-  const correctIdx = question
-    ? question.options.indexOf(question.correctAnswer)
-    : -1;
+  const correctIdx =
+    question && revealedAnswer
+      ? question.options.indexOf(revealedAnswer)
+      : -1;
 
   const getOptionStyle = (idx: number) => {
     if (!revealed)

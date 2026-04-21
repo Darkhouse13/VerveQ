@@ -14,8 +14,6 @@ import type { Id } from "../../convex/_generated/dataModel";
 interface QuestionData {
   question: string;
   options: string[];
-  correctAnswer: string;
-  explanation: string | null;
   checksum: string;
   imageUrl?: string | null;
 }
@@ -37,6 +35,7 @@ export default function BlitzScreen() {
   const [shaking, setShaking] = useState(false);
   const [gameOver, setGameOver] = useState(false);
   const [zoomImage, setZoomImage] = useState<string | null>(null);
+  const [revealedAnswer, setRevealedAnswer] = useState<string | null>(null);
 
   const sessionRef = useRef<Id<"blitzSessions"> | null>(null);
 
@@ -71,6 +70,7 @@ export default function BlitzScreen() {
       try {
         const q = await getQuestionMut({ sessionId: sid });
         setQuestion(q);
+        setRevealedAnswer(null);
         setSelected(null);
         setRevealed(false);
         setIsCorrect(false);
@@ -105,11 +105,11 @@ export default function BlitzScreen() {
   useAntiCheat(
     useCallback(() => {
       if (!gameOver && question && sessionId && !revealed) {
-        // Submit wrong answer
+        // Submit a guaranteed-wrong guess; server still decides correctness.
         submitAnswerMut({
           sessionId,
           answer: "__tabbed_away__",
-          correctAnswer: question.correctAnswer,
+          checksum: question.checksum,
         }).then((res) => {
           setEndTimeMs(res.endTimeMs);
           if (res.gameOver) finishGame();
@@ -124,20 +124,20 @@ export default function BlitzScreen() {
     setRevealed(true);
 
     const answer = question.options[idx];
-    const correct = answer === question.correctAnswer;
-    setIsCorrect(correct);
 
     try {
       const res = await submitAnswerMut({
         sessionId,
         answer,
-        correctAnswer: question.correctAnswer,
+        checksum: question.checksum,
       });
 
       setScore(res.score);
       setEndTimeMs(res.endTimeMs);
+      setRevealedAnswer(res.correctAnswer);
+      setIsCorrect(res.correct);
 
-      if (!correct) {
+      if (!res.correct) {
         setPenaltyFlash(true);
         setShaking(true);
         setTimeout(() => setPenaltyFlash(false), 300);
@@ -152,7 +152,7 @@ export default function BlitzScreen() {
       // Auto-advance after brief reveal
       setTimeout(() => {
         fetchQuestion(sessionId);
-      }, correct ? 400 : 800);
+      }, res.correct ? 400 : 800);
     } catch {
       finishGame();
     }
@@ -168,9 +168,10 @@ export default function BlitzScreen() {
     );
   }
 
-  const correctIdx = question
-    ? question.options.indexOf(question.correctAnswer)
-    : -1;
+  const correctIdx =
+    question && revealedAnswer
+      ? question.options.indexOf(revealedAnswer)
+      : -1;
 
   const getOptionStyle = (idx: number) => {
     if (!revealed) return "bg-card text-card-foreground";

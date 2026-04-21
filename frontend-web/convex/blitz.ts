@@ -32,8 +32,13 @@ export const start = mutation({
 export const getQuestion = mutation({
   args: { sessionId: v.id("blitzSessions") },
   handler: async (ctx, { sessionId }) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) throw new Error("Not authenticated");
     const session = await ctx.db.get(sessionId);
     if (!session) throw new Error("Session not found");
+    if (session.userId !== userId) {
+      throw new Error("Not authorized for this session");
+    }
     if (session.gameOver) throw new Error("Game is over");
 
     // Check if time expired
@@ -88,11 +93,11 @@ export const getQuestion = mutation({
       ? await ctx.storage.getUrl(pick.imageId)
       : null;
 
+    // correctAnswer + explanation are withheld; they come back in the
+    // submitAnswer response after server-side validation.
     return {
       question: pick.question,
       options: pick.options,
-      correctAnswer: pick.correctAnswer,
-      explanation: pick.explanation ?? null,
       checksum: pick.checksum,
       imageUrl,
     };
@@ -103,14 +108,41 @@ export const submitAnswer = mutation({
   args: {
     sessionId: v.id("blitzSessions"),
     answer: v.string(),
-    correctAnswer: v.string(),
+    checksum: v.string(),
   },
-  handler: async (ctx, { sessionId, answer, correctAnswer }) => {
+  handler: async (ctx, { sessionId, answer, checksum }) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) throw new Error("Not authenticated");
+
     const session = await ctx.db.get(sessionId);
     if (!session) throw new Error("Session not found");
-    if (session.gameOver) return { correct: false, gameOver: true, score: session.score, endTimeMs: session.endTimeMs };
+    if (session.userId !== userId) {
+      throw new Error("Not authorized for this session");
+    }
+    if (session.gameOver) {
+      return {
+        correct: false,
+        gameOver: true,
+        score: session.score,
+        endTimeMs: session.endTimeMs,
+        correctAnswer: null as string | null,
+        explanation: null as string | null,
+      };
+    }
 
-    const isCorrect = answer === correctAnswer;
+    // Only questions the server actually delivered to this session are
+    // valid submit targets — ignore anything else the client claims.
+    if (!session.usedChecksums.includes(checksum)) {
+      throw new Error("Question not active for this session");
+    }
+
+    const question = await ctx.db
+      .query("quizQuestions")
+      .withIndex("by_checksum", (q) => q.eq("checksum", checksum))
+      .first();
+    if (!question) throw new Error("Question not found");
+
+    const isCorrect = answer === question.correctAnswer;
     let { score, correctCount, wrongCount, endTimeMs } = session;
 
     if (isCorrect) {
@@ -132,15 +164,27 @@ export const submitAnswer = mutation({
       ...(gameOver ? { endedAt: Date.now() } : {}),
     });
 
-    return { correct: isCorrect, gameOver, score, endTimeMs };
+    return {
+      correct: isCorrect,
+      gameOver,
+      score,
+      endTimeMs,
+      correctAnswer: question.correctAnswer,
+      explanation: question.explanation ?? null,
+    };
   },
 });
 
 export const endGame = mutation({
   args: { sessionId: v.id("blitzSessions") },
   handler: async (ctx, { sessionId }) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) throw new Error("Not authenticated");
     const session = await ctx.db.get(sessionId);
     if (!session) throw new Error("Session not found");
+    if (session.userId !== userId) {
+      throw new Error("Not authorized for this session");
+    }
 
     if (!session.gameOver) {
       await ctx.db.patch(sessionId, { gameOver: true, endedAt: Date.now() });
@@ -175,7 +219,12 @@ export const endGame = mutation({
 export const getSession = query({
   args: { sessionId: v.id("blitzSessions") },
   handler: async (ctx, { sessionId }) => {
-    return await ctx.db.get(sessionId);
+    const userId = await getAuthUserId(ctx);
+    if (!userId) return null;
+    const session = await ctx.db.get(sessionId);
+    if (!session) return null;
+    if (session.userId !== userId) return null;
+    return session;
   },
 });
 

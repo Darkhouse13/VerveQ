@@ -1,24 +1,9 @@
-import { mutation, query } from "./_generated/server";
+import { mutation, query, type MutationCtx } from "./_generated/server";
 import { v } from "convex/values";
 
 const SESSION_TTL_MS = 60 * 60 * 1000; // 1 hour
 
-// Known stat keys to sample from (avoids fetching all 32K+ facts at once)
-const KNOWN_STAT_KEYS = [
-  "goalsFor",
-  "goalsAgainst",
-  "cleanSheets",
-  "assists",
-  "appearances",
-  "yellowCards",
-  "redCards",
-  "wins",
-  "losses",
-  "draws",
-  "points",
-];
-
-// Human-readable labels for context keys (league IDs → display names)
+// Human-readable labels for context keys (league IDs -> display names)
 const CONTEXT_KEY_LABELS: Record<string, string> = {
   "league:fb_39": "Premier League",
   "league:fb_140": "La Liga",
@@ -32,21 +17,38 @@ const CONTEXT_KEY_LABELS: Record<string, string> = {
   "league:fb_4": "Euro Championship",
   "league:fb_9": "Copa America",
   "league:fb_15": "FIFA Club World Cup",
-  "career": "Career",
+  career: "Career",
+};
+
+type HigherLowerPoolDoc = {
+  externalId: string;
+  sport: string;
+  entityType: string;
+  statKey: string;
+  contextKey: string;
+  contextLabel: string;
+  factCount: number;
+  distinctValueCount: number;
+  minValue: number;
+  maxValue: number;
+  season?: number;
+};
+
+type HigherLowerFactDoc = {
+  externalId: string;
+  sport: string;
+  poolKey: string;
+  entityType: string;
+  entityId: string;
+  entityName: string;
+  statKey: string;
+  contextKey: string;
+  value: number;
+  season?: number;
 };
 
 function getContextLabel(contextKey: string): string {
   return CONTEXT_KEY_LABELS[contextKey] || contextKey;
-}
-
-/** Build a strict context key that groups only comparable facts together. */
-function buildFullContextKey(fact: {
-  entityType: string;
-  statKey: string;
-  contextKey: string;
-  season?: number;
-}): string {
-  return `${fact.entityType}_${fact.statKey}_${fact.contextKey}_${fact.season ?? "career"}`;
 }
 
 /** Shuffle an array in place (Fisher-Yates). */
@@ -58,131 +60,132 @@ function shuffle<T>(arr: T[]): T[] {
   return arr;
 }
 
+function pickDifferentValuePair(
+  facts: HigherLowerFactDoc[],
+): [HigherLowerFactDoc, HigherLowerFactDoc] | null {
+  if (facts.length < 2) return null;
+
+  const shuffled = shuffle([...facts]);
+  const factA = shuffled[0];
+  const differentValueFacts = shuffled.filter(
+    (fact) => fact.externalId !== factA.externalId && fact.value !== factA.value,
+  );
+  if (differentValueFacts.length === 0) return null;
+
+  const factB =
+    differentValueFacts[Math.floor(Math.random() * differentValueFacts.length)];
+  return [factA, factB];
+}
+
+function buildSeenFactIds(
+  session: {
+    currentFactAId: string;
+    currentFactBId: string;
+    seenFactIds?: string[];
+  },
+): Set<string> {
+  return new Set([
+    ...(session.seenFactIds ?? []),
+    session.currentFactAId,
+    session.currentFactBId,
+  ]);
+}
+
+function buildSeenEntityIds(
+  session: {
+    currentFactAId: string;
+    currentFactBId: string;
+    seenEntityIds?: string[];
+  },
+  facts: HigherLowerFactDoc[],
+): Set<string> {
+  const seenEntityIds = new Set(session.seenEntityIds ?? []);
+  const factById = new Map(facts.map((fact) => [fact.externalId, fact]));
+  const currentFactA = factById.get(session.currentFactAId);
+  const currentFactB = factById.get(session.currentFactBId);
+
+  if (currentFactA) seenEntityIds.add(currentFactA.entityId);
+  if (currentFactB) seenEntityIds.add(currentFactB.entityId);
+
+  return seenEntityIds;
+}
+
+async function getEntityImage(
+  ctx: MutationCtx,
+  fact: { entityType: string; entityId: string },
+): Promise<string | undefined> {
+  if (fact.entityType === "player") {
+    const player = await ctx.db
+      .query("sportsPlayers")
+      .withIndex("by_external_id", (q) => q.eq("externalId", fact.entityId))
+      .first();
+    return player?.photo ?? undefined;
+  }
+
+  if (fact.entityType === "team") {
+    const team = await ctx.db
+      .query("sportsTeams")
+      .withIndex("by_external_id", (q) => q.eq("externalId", fact.entityId))
+      .first();
+    return team?.logo ?? undefined;
+  }
+
+  return undefined;
+}
+
 export const startSession = mutation({
   args: { sport: v.string() },
   handler: async (ctx, { sport }) => {
-    // Try each stat key (in random order) to find a valid context group.
-    // Each by_stat_key_sport query returns ~1-3K docs, well under the 32K limit.
-    const statKeysToTry = shuffle([...KNOWN_STAT_KEYS]);
-
-    type FactDoc = {
-      _id: any;
-      externalId: string;
-      sport: string;
-      entityType: string;
-      entityId: string;
-      entityName: string;
-      statKey: string;
-      contextKey: string;
-      value: number;
-      season?: number;
-    };
-
-    let bestGroup: FactDoc[] | null = null;
-    let bestFullKey = "";
-    let bestMinSize = 0;
-
-    // Try thresholds in descending order: 5, 3, 2
-    for (const minSize of [5, 3, 2]) {
-      if (bestGroup) break;
-
-      for (const statKey of statKeysToTry) {
-        const facts = await ctx.db
-          .query("statFacts")
-          .withIndex("by_stat_key_sport", (q) =>
-            q.eq("statKey", statKey).eq("sport", sport),
-          )
-          .collect();
-
-        if (facts.length < 2) continue;
-
-        // Group by full context key within this statKey
-        const byFullKey = new Map<string, typeof facts>();
-        for (const fact of facts) {
-          const key = buildFullContextKey(fact);
-          const group = byFullKey.get(key);
-          if (group) {
-            group.push(fact);
-          } else {
-            byFullKey.set(key, [fact]);
-          }
-        }
-
-        // Find groups meeting the minimum size
-        const validGroups = Array.from(byFullKey.entries()).filter(
-          ([, g]) => g.length >= minSize,
-        );
-
-        if (validGroups.length > 0) {
-          const [fullKey, groupFacts] =
-            validGroups[Math.floor(Math.random() * validGroups.length)];
-          bestGroup = groupFacts;
-          bestFullKey = fullKey;
-          bestMinSize = minSize;
-          break;
-        }
-      }
+    if (sport !== "football") {
+      throw new Error("Higher or Lower is currently available for football only");
     }
 
-    if (!bestGroup) {
-      throw new Error("No stat groups with enough entries for a game");
+    const approvedPools = await ctx.db
+      .query("higherLowerPools")
+      .withIndex("by_sport", (q) => q.eq("sport", sport))
+      .collect();
+
+    if (approvedPools.length === 0) {
+      throw new Error("No approved Higher or Lower pools available");
     }
 
-    // Pick 2 random facts with different values
-    const shuffled = shuffle([...bestGroup]);
-    let factA = shuffled[0];
-    let factB = shuffled[1];
+    let selectedPool: HigherLowerPoolDoc | null = null;
+    let factA: HigherLowerFactDoc | null = null;
+    let factB: HigherLowerFactDoc | null = null;
 
-    for (let i = 1; i < shuffled.length; i++) {
-      if (shuffled[i].value !== factA.value) {
-        factB = shuffled[i];
-        break;
-      }
+    for (const pool of shuffle([...approvedPools])) {
+      const facts = await ctx.db
+        .query("higherLowerFacts")
+        .withIndex("by_pool_key", (q) => q.eq("poolKey", pool.externalId))
+        .collect();
+      const pair = pickDifferentValuePair(facts);
+      if (!pair) continue;
+
+      selectedPool = pool;
+      [factA, factB] = pair;
+      break;
     }
 
-    // Look up photos/logos
-    let playerAPhoto: string | undefined;
-    let playerBPhoto: string | undefined;
-
-    if (factA.entityType === "player") {
-      const playerA = await ctx.db
-        .query("sportsPlayers")
-        .withIndex("by_external_id", (q) => q.eq("externalId", factA.entityId))
-        .first();
-      playerAPhoto = playerA?.photo ?? undefined;
-    } else if (factA.entityType === "team") {
-      const teamA = await ctx.db
-        .query("sportsTeams")
-        .withIndex("by_external_id", (q) => q.eq("externalId", factA.entityId))
-        .first();
-      playerAPhoto = teamA?.logo ?? undefined;
+    if (!selectedPool || !factA || !factB) {
+      throw new Error("No approved Higher or Lower pools with non-tie pairs");
     }
 
-    if (factB.entityType === "player") {
-      const playerB = await ctx.db
-        .query("sportsPlayers")
-        .withIndex("by_external_id", (q) => q.eq("externalId", factB.entityId))
-        .first();
-      playerBPhoto = playerB?.photo ?? undefined;
-    } else if (factB.entityType === "team") {
-      const teamB = await ctx.db
-        .query("sportsTeams")
-        .withIndex("by_external_id", (q) => q.eq("externalId", factB.entityId))
-        .first();
-      playerBPhoto = teamB?.logo ?? undefined;
-    }
+    const playerAPhoto = await getEntityImage(ctx, factA);
+    const playerBPhoto = await getEntityImage(ctx, factB);
 
     const sessionId = await ctx.db.insert("higherLowerSessions", {
       sport,
       score: 0,
       streak: 0,
+      seenFactIds: [factA.externalId, factB.externalId],
+      seenEntityIds: [factA.entityId, factB.entityId],
       currentFactAId: factA.externalId,
       currentFactBId: factB.externalId,
       currentStatKey: factA.statKey,
       currentContext: factA.contextKey,
       currentEntityType: factA.entityType,
       currentSeason: factA.season ?? undefined,
-      currentFullContextKey: bestFullKey,
+      currentFullContextKey: selectedPool.externalId,
       playerAName: factA.entityName,
       playerBName: factB.entityName,
       playerAValue: factA.value,
@@ -197,7 +200,7 @@ export const startSession = mutation({
       sessionId,
       statKey: factA.statKey,
       context: factA.contextKey,
-      contextLabel: getContextLabel(factA.contextKey),
+      contextLabel: selectedPool.contextLabel || getContextLabel(factA.contextKey),
       entityType: factA.entityType,
       season: factA.season ?? undefined,
       playerAName: factA.entityName,
@@ -223,8 +226,7 @@ export const makeGuess = mutation({
 
     const { playerAValue, playerBValue } = session;
     const isHigher = playerBValue > playerAValue;
-    const isEqual = playerBValue === playerAValue;
-    const correct = isEqual || (guess === "higher" ? isHigher : !isHigher);
+    const correct = guess === "higher" ? isHigher : !isHigher;
 
     if (!correct) {
       await ctx.db.patch(sessionId, { status: "game_over" });
@@ -237,37 +239,42 @@ export const makeGuess = mutation({
       };
     }
 
-    // Correct — B becomes A, pick new B
+    // Correct - B becomes A, pick new B
     const newScore = session.score + 1;
     const newStreak = session.streak + 1;
 
-    // Query by statKey+sport (selective index), then filter by full context key
+    const poolKey = session.currentFullContextKey;
+    if (!poolKey) {
+      throw new Error("Session is missing an approved Higher or Lower pool");
+    }
+
+    const pool = await ctx.db
+      .query("higherLowerPools")
+      .withIndex("by_external_id", (q) => q.eq("externalId", poolKey))
+      .first();
+    if (!pool) {
+      throw new Error("Approved Higher or Lower pool not found");
+    }
+
     const candidates = await ctx.db
-      .query("statFacts")
-      .withIndex("by_stat_key_sport", (q) =>
-        q.eq("statKey", session.currentStatKey).eq("sport", session.sport),
-      )
+      .query("higherLowerFacts")
+      .withIndex("by_pool_key", (q) => q.eq("poolKey", poolKey))
       .collect();
 
-    const fullKey = session.currentFullContextKey;
-    const filtered = candidates.filter((f) => {
-      if (!fullKey) {
-        // Backward compat: old sessions without fullContextKey fall back to statKey match
-        return (
-          f.externalId !== session.currentFactBId &&
-          f.externalId !== session.currentFactAId
-        );
-      }
-      const fKey = buildFullContextKey(f);
-      return (
-        fKey === fullKey &&
-        f.externalId !== session.currentFactBId &&
-        f.externalId !== session.currentFactAId
-      );
-    });
+    const seenFactIds = buildSeenFactIds(session);
+    const seenEntityIds = buildSeenEntityIds(session, candidates);
 
-    if (filtered.length === 0) {
-      // No more facts — end game as a win
+    const unseenValidCandidates = candidates.filter(
+      (fact) =>
+        fact.externalId !== session.currentFactBId &&
+        fact.externalId !== session.currentFactAId &&
+        !seenFactIds.has(fact.externalId) &&
+        !seenEntityIds.has(fact.entityId) &&
+        fact.value !== session.playerBValue,
+    );
+
+    if (unseenValidCandidates.length === 0) {
+      // Pool exhausted without a valid unseen non-tie candidate.
       await ctx.db.patch(sessionId, {
         score: newScore,
         streak: newStreak,
@@ -282,27 +289,17 @@ export const makeGuess = mutation({
       };
     }
 
-    const newFactB = filtered[Math.floor(Math.random() * filtered.length)];
-
-    // Look up photo for new fact B
-    let newBPhoto: string | undefined;
-    if (newFactB.entityType === "player") {
-      const player = await ctx.db
-        .query("sportsPlayers")
-        .withIndex("by_external_id", (q) => q.eq("externalId", newFactB.entityId))
-        .first();
-      newBPhoto = player?.photo ?? undefined;
-    } else if (newFactB.entityType === "team") {
-      const team = await ctx.db
-        .query("sportsTeams")
-        .withIndex("by_external_id", (q) => q.eq("externalId", newFactB.entityId))
-        .first();
-      newBPhoto = team?.logo ?? undefined;
-    }
+    const newFactB =
+      unseenValidCandidates[
+        Math.floor(Math.random() * unseenValidCandidates.length)
+      ];
+    const newBPhoto = await getEntityImage(ctx, newFactB);
 
     await ctx.db.patch(sessionId, {
       score: newScore,
       streak: newStreak,
+      seenFactIds: [...seenFactIds, newFactB.externalId],
+      seenEntityIds: [...seenEntityIds, newFactB.entityId],
       currentFactAId: session.currentFactBId,
       currentFactBId: newFactB.externalId,
       playerAName: session.playerBName,
@@ -327,7 +324,7 @@ export const makeGuess = mutation({
       nextPlayerBPhoto: newBPhoto,
       statKey: session.currentStatKey,
       context: newFactB.contextKey,
-      contextLabel: getContextLabel(newFactB.contextKey),
+      contextLabel: pool.contextLabel || getContextLabel(newFactB.contextKey),
       entityType: session.currentEntityType,
       season: session.currentSeason,
     };
@@ -337,6 +334,29 @@ export const makeGuess = mutation({
 export const getSession = query({
   args: { sessionId: v.id("higherLowerSessions") },
   handler: async (ctx, { sessionId }) => {
-    return await ctx.db.get(sessionId);
+    const session = await ctx.db.get(sessionId);
+    if (!session) return null;
+
+    // Player B's value is the hidden answer until the user guesses.
+    // Reveal it only once the game is over.
+    const revealed = session.status === "game_over";
+    return {
+      _id: session._id,
+      sport: session.sport,
+      score: session.score,
+      streak: session.streak,
+      status: session.status,
+      playerAName: session.playerAName,
+      playerAValue: session.playerAValue,
+      playerAPhoto: session.playerAPhoto,
+      playerBName: session.playerBName,
+      playerBPhoto: session.playerBPhoto,
+      playerBValue: revealed ? session.playerBValue : null,
+      currentStatKey: session.currentStatKey,
+      currentContext: session.currentContext,
+      currentEntityType: session.currentEntityType,
+      currentSeason: session.currentSeason,
+      expiresAt: session.expiresAt,
+    };
   },
 });
