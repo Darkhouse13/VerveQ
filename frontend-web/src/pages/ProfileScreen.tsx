@@ -29,7 +29,7 @@ function getTier(elo: number) {
 
 export default function ProfileScreen() {
   const navigate = useNavigate();
-  const { user, isGuest, logout } = useAuth();
+  const { user, isGuest, logout, signOutToGuest } = useAuth();
   const userId = user?._id as Id<"users"> | undefined;
 
   const handleCreateAccount = async () => {
@@ -38,8 +38,11 @@ export default function ProfileScreen() {
   };
 
   const handleSignOut = async () => {
-    await logout();
-    navigate("/");
+    await signOutToGuest();
+  };
+
+  const handleSignIn = () => {
+    navigate("/?mode=signin");
   };
 
   const profile = useQuery(api.profile.get, userId ? { userId } : "skip");
@@ -320,13 +323,23 @@ export default function ProfileScreen() {
         )}
 
         <div className="pb-4">
-          <NeoButton
-            variant="ghost"
-            size="full"
-            onClick={handleSignOut}
-          >
-            Sign Out
-          </NeoButton>
+          {isGuest ? (
+            <NeoButton
+              variant="primary"
+              size="full"
+              onClick={handleSignIn}
+            >
+              Sign In
+            </NeoButton>
+          ) : (
+            <NeoButton
+              variant="ghost"
+              size="full"
+              onClick={handleSignOut}
+            >
+              Sign Out
+            </NeoButton>
+          )}
         </div>
       </div>
 

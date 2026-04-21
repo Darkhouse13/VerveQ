@@ -55,6 +55,7 @@ interface AuthContextValue {
   ) => Promise<void>;
   loginAsGuest: () => Promise<void>;
   logout: () => Promise<void>;
+  signOutToGuest: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -248,6 +249,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     await convexSignOut();
   }, [convexSignOut]);
 
+  const signOutToGuest = useCallback(async () => {
+    await convexSignOut();
+    await convexSignIn("anonymous");
+    const guestId = `guest_${Date.now()}`;
+    await ensureProfile({
+      username: guestId,
+      displayName: "Guest",
+      isGuest: true,
+    });
+  }, [convexSignOut, convexSignIn, ensureProfile]);
+
   const authUser: AuthUser | null = user
     ? {
         _id: user._id,
@@ -272,6 +284,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         confirmPasswordReset,
         loginAsGuest,
         logout,
+        signOutToGuest,
       }}
     >
       {children}

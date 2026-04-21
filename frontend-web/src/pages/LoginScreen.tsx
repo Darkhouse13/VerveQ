@@ -35,6 +35,7 @@ export default function LoginScreen() {
     confirmPasswordReset,
     loginAsGuest,
     isAuthenticated,
+    isGuest,
     isLoading: authLoading,
   } = useAuth();
 
@@ -53,8 +54,10 @@ export default function LoginScreen() {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (!authLoading && isAuthenticated) navigate("/home", { replace: true });
-  }, [authLoading, isAuthenticated, navigate]);
+    if (!authLoading && isAuthenticated && !isGuest) {
+      navigate("/home", { replace: true });
+    }
+  }, [authLoading, isAuthenticated, isGuest, navigate]);
 
   const switchMode = (next: Mode) => {
     setMode(next);
@@ -250,14 +253,16 @@ export default function LoginScreen() {
                   Forgot password?
                 </button>
               </div>
-              <NeoButton
-                variant="secondary"
-                size="full"
-                onClick={handleGuest}
-                disabled={loading}
-              >
-                Play as Guest
-              </NeoButton>
+              {!isGuest && (
+                <NeoButton
+                  variant="secondary"
+                  size="full"
+                  onClick={handleGuest}
+                  disabled={loading}
+                >
+                  Play as Guest
+                </NeoButton>
+              )}
             </div>
           </>
         )}

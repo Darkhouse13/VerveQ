@@ -1,14 +1,16 @@
 /**
- * Guest → account upgrade UX contract.
+ * Guest ↔ account UX contract.
  *
- * Locks in the two surfaces that let a guest reach the signup screen
- * without signing out through a discouraging "Sign out" button:
- *   1. ProfileScreen — renders a "Create an account" CTA for guests
- *      (and only guests). Clicking it signs the guest out and navigates
- *      to the LoginScreen with mode=signup.
- *   2. LoginScreen — honors `?mode=signup` in the URL on first mount and
- *      renders the "Guest progress is not carried over." notice only
- *      when arriving via the guest-upgrade path (`?from=guest`).
+ * Two surfaces:
+ *   1. ProfileScreen — button matrix
+ *        non-guest: "Sign Out" → signOutToGuest (stay on page, no navigate)
+ *        guest:     "Sign In"  → navigate("/?mode=signin") (no auth call)
+ *                   plus a separate "Create an account" CTA card.
+ *   2. LoginScreen — honors `?mode=signup|signin` in the URL on first mount
+ *      and renders the "Guest progress is not carried over." notice only
+ *      when arriving via the guest-upgrade path (`?from=guest`). It also
+ *      tolerates an existing anonymous (guest) session without redirecting
+ *      to /home — only a real password session is auto-redirected.
  */
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import React from "react";
@@ -18,6 +20,7 @@ import { MemoryRouter } from "react-router-dom";
 // ─── Shared mocks ────────────────────────────────────────────────────────────
 const navigateSpy = vi.fn();
 const logoutSpy = vi.fn(async () => {});
+const signOutToGuestSpy = vi.fn(async () => {});
 
 vi.mock("react-router-dom", async () => {
   const actual =
@@ -84,11 +87,13 @@ function mockProfileQueries(convexReact: {
 }
 
 // ─── 1. ProfileScreen ────────────────────────────────────────────────────────
-describe("ProfileScreen — guest-upgrade CTA", () => {
+describe("ProfileScreen — sign-in/sign-out button matrix", () => {
   beforeEach(() => {
     navigateSpy.mockReset();
     logoutSpy.mockReset();
     logoutSpy.mockResolvedValue(undefined);
+    signOutToGuestSpy.mockReset();
+    signOutToGuestSpy.mockResolvedValue(undefined);
     vi.resetModules();
   });
 
@@ -98,6 +103,7 @@ describe("ProfileScreen — guest-upgrade CTA", () => {
         user: { _id: "u1", username: "guestplayer", isGuest, totalGames: 0 },
         isGuest,
         logout: logoutSpy,
+        signOutToGuest: signOutToGuestSpy,
       }),
     }));
     const convexReact = await import("convex/react");
@@ -131,15 +137,30 @@ describe("ProfileScreen — guest-upgrade CTA", () => {
     expect(screen.queryByTestId("guest-upgrade-cta")).not.toBeInTheDocument();
   });
 
-  it("always renders Sign Out on ProfileScreen", async () => {
+  it("renders 'Sign Out' for non-guest users", async () => {
     await renderProfile(false);
-    expect(await screen.findByRole("button", { name: /sign out/i })).toBeInTheDocument();
+    expect(
+      await screen.findByRole("button", { name: /^sign out$/i }),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: /^sign in$/i }),
+    ).not.toBeInTheDocument();
+  });
+
+  it("renders 'Sign In' for guest users (instead of 'Sign Out')", async () => {
+    await renderProfile(true);
+    expect(
+      await screen.findByRole("button", { name: /^sign in$/i }),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: /^sign out$/i }),
+    ).not.toBeInTheDocument();
   });
 
   it("clicking the CTA logs the guest out and navigates to /?mode=signup&from=guest", async () => {
     await renderProfile(true);
     const button = await screen.findByRole("button", {
-      name: /create account/i,
+      name: /^create account$/i,
     });
     fireEvent.click(button);
 
@@ -148,15 +169,29 @@ describe("ProfileScreen — guest-upgrade CTA", () => {
     expect(navigateSpy).toHaveBeenCalledWith("/?mode=signup&from=guest");
   });
 
-  it("clicking Sign Out logs the user out and navigates to /", async () => {
+  it("clicking 'Sign Out' (non-guest) downgrades to a guest and does NOT navigate", async () => {
     await renderProfile(false);
     const signOut = await screen.findByRole("button", {
-      name: /sign out/i,
+      name: /^sign out$/i,
     });
     fireEvent.click(signOut);
 
-    await waitFor(() => expect(logoutSpy).toHaveBeenCalledTimes(1));
-    await waitFor(() => expect(navigateSpy).toHaveBeenCalledWith("/"));
+    await waitFor(() => expect(signOutToGuestSpy).toHaveBeenCalledTimes(1));
+    expect(logoutSpy).not.toHaveBeenCalled();
+    expect(navigateSpy).not.toHaveBeenCalled();
+  });
+
+  it("clicking 'Sign In' (guest) navigates to /?mode=signin with no auth calls", async () => {
+    await renderProfile(true);
+    const signIn = await screen.findByRole("button", {
+      name: /^sign in$/i,
+    });
+    fireEvent.click(signIn);
+
+    await waitFor(() => expect(navigateSpy).toHaveBeenCalledTimes(1));
+    expect(navigateSpy).toHaveBeenCalledWith("/?mode=signin");
+    expect(signOutToGuestSpy).not.toHaveBeenCalled();
+    expect(logoutSpy).not.toHaveBeenCalled();
   });
 });
 
@@ -168,7 +203,19 @@ describe("LoginScreen — mode override + guest notice", () => {
     vi.resetModules();
   });
 
-  async function renderLogin(initialEntry: string) {
+  async function renderLogin(
+    initialEntry: string,
+    auth: {
+      isAuthenticated?: boolean;
+      isGuest?: boolean;
+      isLoading?: boolean;
+    } = {},
+  ) {
+    const {
+      isAuthenticated = false,
+      isGuest = false,
+      isLoading = false,
+    } = auth;
     vi.doMock("@/contexts/AuthContext", () => ({
       useAuth: () => ({
         signIn: vi.fn(),
@@ -176,8 +223,9 @@ describe("LoginScreen — mode override + guest notice", () => {
         requestPasswordReset: vi.fn(),
         confirmPasswordReset: vi.fn(),
         loginAsGuest: vi.fn(),
-        isAuthenticated: false,
-        isLoading: false,
+        isAuthenticated,
+        isGuest,
+        isLoading,
       }),
       AuthError: class AuthError extends Error {},
     }));
@@ -231,5 +279,45 @@ describe("LoginScreen — mode override + guest notice", () => {
     expect(
       await screen.findByRole("button", { name: /^sign in$/i }),
     ).toBeInTheDocument();
+  });
+
+  it("stays on the login screen when the user is already signed in as a guest", async () => {
+    await renderLogin("/?mode=signin", {
+      isAuthenticated: true,
+      isGuest: true,
+    });
+    expect(
+      await screen.findByRole("button", { name: /^sign in$/i }),
+    ).toBeInTheDocument();
+    // No redirect was issued.
+    expect(navigateSpy).not.toHaveBeenCalled();
+  });
+
+  it("hides 'Play as Guest' when the user is already a guest", async () => {
+    await renderLogin("/?mode=signin", {
+      isAuthenticated: true,
+      isGuest: true,
+    });
+    await screen.findByRole("button", { name: /^sign in$/i });
+    expect(
+      screen.queryByRole("button", { name: /play as guest/i }),
+    ).not.toBeInTheDocument();
+  });
+
+  it("still shows 'Play as Guest' for a plain unauthenticated visit", async () => {
+    await renderLogin("/?mode=signin");
+    expect(
+      await screen.findByRole("button", { name: /play as guest/i }),
+    ).toBeInTheDocument();
+  });
+
+  it("redirects to /home when the user is authenticated with a password session", async () => {
+    await renderLogin("/?mode=signin", {
+      isAuthenticated: true,
+      isGuest: false,
+    });
+    await waitFor(() =>
+      expect(navigateSpy).toHaveBeenCalledWith("/home", { replace: true }),
+    );
   });
 });

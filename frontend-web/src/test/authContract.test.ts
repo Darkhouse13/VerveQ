@@ -330,3 +330,54 @@ describe("AuthError", () => {
     expect(err.message).toBe("bad email");
   });
 });
+
+describe("AuthContext.signOutToGuest", () => {
+  it("signs out, then signs in anonymously, then writes a guest profile", async () => {
+    const ensureProfile = vi.fn(async () => "user_id");
+    authMock.useMutation.mockReturnValue(ensureProfile);
+
+    const { result } = renderHook(() => useAuth(), { wrapper });
+    await act(async () => {
+      await result.current.signOutToGuest();
+    });
+
+    expect(authMock.signOut).toHaveBeenCalledTimes(1);
+    expect(authMock.signIn).toHaveBeenCalledTimes(1);
+    expect(authMock.signIn.mock.calls[0][0]).toBe("anonymous");
+
+    expect(ensureProfile).toHaveBeenCalledTimes(1);
+    const args = ensureProfile.mock.calls[0][0] as Record<string, unknown>;
+    expect(args.isGuest).toBe(true);
+    expect(args.displayName).toBe("Guest");
+    expect(String(args.username)).toMatch(/^guest_\d+$/);
+  });
+
+  it("orders signOut before signIn(anonymous)", async () => {
+    const order: string[] = [];
+    authMock.signOut.mockImplementationOnce(async () => {
+      order.push("signOut");
+    });
+    authMock.signIn.mockImplementationOnce(async (provider: unknown) => {
+      order.push(`signIn:${String(provider)}`);
+      return { signingIn: true };
+    });
+
+    const { result } = renderHook(() => useAuth(), { wrapper });
+    await act(async () => {
+      await result.current.signOutToGuest();
+    });
+
+    expect(order).toEqual(["signOut", "signIn:anonymous"]);
+  });
+
+  it("keeps the original logout() method on the context surface", async () => {
+    const { result } = renderHook(() => useAuth(), { wrapper });
+    expect(typeof result.current.logout).toBe("function");
+    await act(async () => {
+      await result.current.logout();
+    });
+    expect(authMock.signOut).toHaveBeenCalled();
+    // logout alone does NOT re-sign-in.
+    expect(authMock.signIn).not.toHaveBeenCalled();
+  });
+});
