@@ -181,3 +181,53 @@ Searched `frontend-web/src/**`, `frontend-web/convex/**`, `frontend-web/tailwind
 - `zod` — no import site.
 
 Not auto-removed in Stage 1 because they were not in the task's explicit candidate list. Verified to have zero direct imports; safe to drop in a follow-up after one more sanity check in CI.
+
+---
+
+## Findings
+
+### Dead imports / dangling references
+
+- `frontend-web/src/types/api.ts` still defines the full set of REST-era response types (`SportsResponse`, `QuizQuestion`, `QuizCheckResponse`, `SurvivalStartResponse`, …). Live code only imports `GameResultState` from this module (`SurvivalScreen.tsx:14`, `QuizScreen.tsx:14`, `ResultScreen.tsx:10`). Everything else in the file is dead.
+- `scripts/dev_up.py` hard-codes `backend_cwd = os.path.join(root, "backend")` and `frontend_cwd = os.path.join(root, "frontend")`. Both paths were deleted in Stage 1, so the script will fail on first run. Not in the candidate list; left in place for explicit user decision.
+- `scripts/generators/` (Python: `base_generator.py`, `historical_generator.py`, `season_generator.py`) exists solely to back the deleted `tests/backend/` suite. Nothing in the current stack imports from it. Left for explicit user decision.
+- `scripts/generate_football_metadata.js` reads `archive/players.csv`. The CSV is gitignored and may not exist on a fresh clone.
+- Top-level `node_modules/` is an empty directory — an artefact of prior tooling; no `package.json` at repo root. Safe to delete.
+- Stray top-level files left behind by the deleted stack: `verveq_platform.db` (SQLite, was written by the Python backend), `complete_image_seed_data.json`, `questions.json`, `verveq_seed_data.json`. All gitignored, none referenced by live code.
+- `coverage/` at repo root is leftover output from the deleted Jest/Pytest suites.
+
+### Tests that silently skip, no longer run, or reference deleted paths
+
+- `frontend-web/src/test/lintTest.test.ts` is not a real Vitest spec — it exists to exercise a custom ESLint rule on the `Parameters<typeof ...>` pattern. Vitest fails the file because no `describe`/`test` block is present. Currently blocks `npm test` from reporting a clean exit. Either rename it to `.lint-fixture.ts` (and reference from an ESLint test runner) or exclude from Vitest's glob.
+- The legacy `.github/workflows/tests.yml` was removed in Stage 1. No replacement CI workflow exists yet for the frontend-web stack.
+
+### Docs still describing deleted surfaces
+
+- `README.md` — current content is Convex-focused and accurate after Stage 1, but nothing describes the Live Match, Quiz, Blitz, Daily, or Forge modes that still ship in `frontend-web/convex/`. The coverage table only lists Survival, Higher/Lower, VerveGrid, and Who Am I. Accurate but incomplete.
+- `docs/APP_OVERVIEW.md` — accurate high-level product overview, no references to deleted surfaces.
+- `docs/CONTRIBUTING.md` — "Project Structure" section still claims `backend/` (FastAPI), `frontend/` (React Native), and `tests/` exist. All three were deleted in Stage 1. Refresh this file.
+- `docs/DESIGN_PROMPT.md` — framed explicitly around "Platform: React Native + Expo (iOS, Android, Web from one codebase)". The repo has been web-only (Vite) for some time.
+- `docs/SECURITY.md` — lists JWT tokens and "configurable period" expiry as the auth model. Current auth is Convex Auth (Password + Anonymous); JWT claims are not the primary story.
+- `docs/SURVIVAL_MODE_AUDIT.md` — Sections 2, 4, 5, and 15 explicitly document the deleted Python backend files (`backend/sports/survival_engine.py`, `backend/services/survival_session.py`, `backend/routes/survival/*`, `backend/sports/utils.py`). The Convex half of the audit is still accurate and is the source of truth for Survival; the Python-side tables are now historical/archival.
+
+### .env samples that drifted from actual env usage
+
+- `.env.example` and `.env.production.example` were deleted in Stage 1. No replacement exists. The live runtime expects `CONVEX_DEPLOYMENT` and `VITE_CONVEX_URL` in `frontend-web/.env.local` (plus optional API-FOOTBALL / TheSportsDB keys read by `scripts/fetchSportsData.ts` and `scripts/fetchData.ts`). A fresh `frontend-web/.env.local.example` documenting the current variables would close this gap.
+- Root `.env` is gitignored but still present and contains stale values for the deleted stack. Worth a manual audit before deleting.
+
+### TODO / FIXME on live code paths
+
+- `frontend-web/convex/survivalSessions.ts:~126` — `famousWeight` is stored on the session but never used for weighted selection (noted in `SURVIVAL_MODE_AUDIT.md:§4`). Protected scope — do not reopen without a concrete blocker.
+- `frontend-web/src/pages/SurvivalScreen.tsx:230` and `frontend-web/src/pages/DailySurvivalScreen.tsx:193` — ESLint flags `useHintMut` being called inside a non-hook handler (`react-hooks/rules-of-hooks`). Protected Survival scope, not touched by cleanup.
+- `frontend-web/tailwind.config.ts:120` — `require()` call triggers `@typescript-eslint/no-require-imports`. Pre-existing.
+- `frontend-web/src/components/ui/{command,textarea}.tsx` — empty interface lint errors (`@typescript-eslint/no-empty-object-type`). shadcn/ui template leftovers.
+
+### Things that look stale but are not safe to delete without confirmation
+
+- `verify-no-secrets.sh` at repo root. Written for the old deployment model; still runs `git ls-files` style checks that remain partially valid, but it references the deleted FastAPI assumptions. Keep or replace rather than silently delete.
+- `archive/` (CSV dumps), `archive_nba.zip` (730 MB), `nba.sqlite` (2.2 GB), `processed_tennis/`, `data_cleaning/` — all historical pipeline inputs referenced by non-destructive fetch scripts. Gitignored. Keep as local-only working data.
+- `frontend-web/scripts/` is now an empty directory (both seed scripts removed in Stage 1). Harmless but could be deleted for cleanliness.
+- `frontend-web/vite-*.log`, `frontend-web/vite-preview-*.log`, `frontend-web/serve-phase3*.log` — leftover ad-hoc log files from Phase 3 validation. Gitignored via `*.log`, safe to delete locally.
+- `docs/CURATED_GAMEPLAY_REACHABLE_TARGET_CHECKLIST.md` is currently untracked (never committed). Decide whether to commit or delete.
+- `convex_function_spec.txt` (163 KB, untracked) — a Convex API dump snapshot. Not referenced by any tooling. Either commit as an audit artefact or delete.
+- Dependencies `@auth/core`, `@hookform/resolvers`, `date-fns`, `zod` are unused (see above). Not auto-removed because they were not in the task's explicit candidate list.
