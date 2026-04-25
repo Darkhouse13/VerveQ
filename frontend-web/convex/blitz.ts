@@ -1,4 +1,5 @@
 import { mutation, query } from "./_generated/server";
+import type { Doc } from "./_generated/dataModel";
 import { v } from "convex/values";
 import { getAuthUserId } from "@convex-dev/auth/server";
 
@@ -40,10 +41,17 @@ export const getQuestion = mutation({
       throw new Error("Not authorized for this session");
     }
     if (session.gameOver) throw new Error("Game is over");
+    if (session.currentChecksum) {
+      throw new Error("Answer the current question before requesting another");
+    }
 
     // Check if time expired
     if (Date.now() >= session.endTimeMs) {
-      await ctx.db.patch(sessionId, { gameOver: true, endedAt: Date.now() });
+      await ctx.db.patch(sessionId, {
+        gameOver: true,
+        endedAt: Date.now(),
+        currentChecksum: undefined,
+      });
       throw new Error("Time expired");
     }
 
@@ -61,7 +69,11 @@ export const getQuestion = mutation({
     const available = allQuestions.filter((q) => !usedSet.has(q.checksum));
 
     if (available.length === 0) {
-      await ctx.db.patch(sessionId, { gameOver: true, endedAt: Date.now() });
+      await ctx.db.patch(sessionId, {
+        gameOver: true,
+        endedAt: Date.now(),
+        currentChecksum: undefined,
+      });
       throw new Error("No more questions");
     }
 
@@ -87,6 +99,7 @@ export const getQuestion = mutation({
     // Track used checksum
     await ctx.db.patch(sessionId, {
       usedChecksums: [...session.usedChecksums, pick.checksum],
+      currentChecksum: pick.checksum,
     });
 
     const imageUrl = pick.imageId
@@ -130,9 +143,11 @@ export const submitAnswer = mutation({
       };
     }
 
-    // Only questions the server actually delivered to this session are
-    // valid submit targets — ignore anything else the client claims.
-    if (!session.usedChecksums.includes(checksum)) {
+    // Only the current server-delivered question is valid.
+    if (!session.currentChecksum) {
+      throw new Error("No active question for this session");
+    }
+    if (checksum !== session.currentChecksum) {
       throw new Error("Question not active for this session");
     }
 
@@ -161,6 +176,7 @@ export const submitAnswer = mutation({
       wrongCount,
       endTimeMs,
       gameOver,
+      currentChecksum: undefined,
       ...(gameOver ? { endedAt: Date.now() } : {}),
     });
 
@@ -186,8 +202,28 @@ export const endGame = mutation({
       throw new Error("Not authorized for this session");
     }
 
+    if (session.scoreSavedAt) {
+      return {
+        score: session.score,
+        correctCount: session.correctCount,
+        wrongCount: session.wrongCount,
+      };
+    }
+
+    const now = Date.now();
+
     if (!session.gameOver) {
-      await ctx.db.patch(sessionId, { gameOver: true, endedAt: Date.now() });
+      await ctx.db.patch(sessionId, {
+        gameOver: true,
+        endedAt: now,
+        currentChecksum: undefined,
+        scoreSavedAt: now,
+      });
+    } else {
+      await ctx.db.patch(sessionId, {
+        currentChecksum: undefined,
+        scoreSavedAt: now,
+      });
     }
 
     // Save to blitzScores
@@ -197,7 +233,7 @@ export const endGame = mutation({
       score: session.score,
       correctCount: session.correctCount,
       wrongCount: session.wrongCount,
-      playedAt: Date.now(),
+      playedAt: now,
     });
 
     // Increment total games
@@ -234,7 +270,7 @@ export const getHighScores = query({
     limit: v.optional(v.number()),
   },
   handler: async (ctx, { sport, limit = 20 }) => {
-    let scores;
+    let scores: Doc<"blitzScores">[];
     if (sport) {
       scores = await ctx.db
         .query("blitzScores")

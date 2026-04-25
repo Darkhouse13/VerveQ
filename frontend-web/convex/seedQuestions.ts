@@ -1,8 +1,8 @@
-import { mutation, internalMutation, action } from "./_generated/server";
+import { internalMutation, internalAction } from "./_generated/server";
 import { internal } from "./_generated/api";
 import { v } from "convex/values";
 
-export const clearAll = mutation({
+export const clearAll = internalMutation({
   args: {},
   handler: async (ctx) => {
     const questions = await ctx.db.query("quizQuestions").collect();
@@ -13,7 +13,7 @@ export const clearAll = mutation({
   },
 });
 
-export const seedBatch = mutation({
+export const seedBatch = internalMutation({
   args: {
     questions: v.array(
       v.object({
@@ -96,7 +96,7 @@ export const insertImageQuestion = internalMutation({
   },
 });
 
-export const seedImageBatch = action({
+export const seedImageBatch = internalAction({
   args: {
     questions: v.array(
       v.object({
@@ -153,7 +153,7 @@ export const seedImageBatch = action({
 // ── One-time migration mutations ─────────────────────────────────────────────
 
 /** Set all badge_identification questions to difficulty "easy". Run once. */
-export const fixBadgeDifficulty = mutation({
+export const fixBadgeDifficulty = internalMutation({
   args: {},
   handler: async (ctx) => {
     const questions = await ctx.db.query("quizQuestions").collect();
@@ -172,7 +172,7 @@ export const fixBadgeDifficulty = mutation({
 });
 
 /** Clear explanation from all image questions. Run once. */
-export const clearImageExplanations = mutation({
+export const clearImageExplanations = internalMutation({
   args: {},
   handler: async (ctx) => {
     const questions = await ctx.db.query("quizQuestions").collect();

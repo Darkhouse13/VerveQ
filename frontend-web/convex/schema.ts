@@ -126,7 +126,9 @@ export default defineSchema({
   quizSessions: defineTable({
     userId: v.optional(v.id("users")),
     sport: v.string(),
-    difficulty: v.optional(v.string()),
+    difficulty: v.optional(
+      v.union(v.literal("easy"), v.literal("intermediate"), v.literal("hard")),
+    ),
     usedChecksums: v.array(v.string()),
     expiresAt: v.number(),
     // Server-authoritative scoring state. Populated from createSession
@@ -245,10 +247,12 @@ export default defineSchema({
     correctCount: v.number(),
     wrongCount: v.number(),
     usedChecksums: v.array(v.string()),
+    currentChecksum: v.optional(v.string()),
     gameOver: v.boolean(),
     startedAt: v.number(),
     endTimeMs: v.number(),
     endedAt: v.optional(v.number()),
+    scoreSavedAt: v.optional(v.number()),
   }).index("by_user", ["userId"]),
 
   blitzScores: defineTable({

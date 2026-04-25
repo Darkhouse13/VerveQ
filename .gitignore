@@ -24,6 +24,7 @@ __pycache__/
 # Distribution / packaging
 .Python
 build/
+node_modules/
 develop-eggs/
 dist/
 downloads/
@@ -197,6 +198,7 @@ archive/cleaned/**/*.csv
 .benchmarks/
 .claude/tasks/
 cleanup_archive/
+convex_function_spec.txt
 processed_tennis/
 .ops/curated-parity/
 
@@ -227,5 +229,11 @@ development_files/
 data/
 !frontend-web/convex/data/
 frontend-web/convex/data/*
+!frontend-web/convex/data/football_player_metadata.json
 !frontend-web/convex/data/football_survival_index.json
+!frontend-web/convex/data/nba_player_metadata.json
+!frontend-web/convex/data/nba_survival_data.json
+!frontend-web/convex/data/survival_initials_map.json
+!frontend-web/convex/data/survival_initials_map_tennis.json
+!frontend-web/convex/data/tennis_player_metadata.json
 data_cleaning/

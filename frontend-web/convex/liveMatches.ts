@@ -1,4 +1,5 @@
-import { mutation, query, internalMutation } from "./_generated/server";
+import { mutation, query, internalMutation, type MutationCtx } from "./_generated/server";
+import type { Doc, Id } from "./_generated/dataModel";
 import { v } from "convex/values";
 import { getAuthUserId } from "@convex-dev/auth/server";
 import { internal } from "./_generated/api";
@@ -10,6 +11,20 @@ const ROUND_RESULT_DURATION_MS = 2_000;
 const HEARTBEAT_TIMEOUT_MS = 15_000;
 const BASE_SCORE = 100;
 
+type StoredLiveQuestion = {
+  question: string;
+  options: string[];
+  correctAnswer?: string;
+  explanation?: string | null;
+};
+
+function sanitizeQuestion(question: StoredLiveQuestion) {
+  return {
+    question: question.question,
+    options: question.options,
+  };
+}
+
 // ── Mutations ──
 
 export const createFromChallenge = mutation({
@@ -20,6 +35,12 @@ export const createFromChallenge = mutation({
 
     const challenge = await ctx.db.get(challengeId);
     if (!challenge) throw new Error("Challenge not found");
+    if (
+      challenge.challengerId !== userId &&
+      challenge.challengedId !== userId
+    ) {
+      throw new Error("Not authorized");
+    }
 
     // Pick 10 random questions for this sport
     const allQuestions = await ctx.db
@@ -223,6 +244,8 @@ export const forfeit = mutation({
     if (!match) throw new Error("Match not found");
 
     const isP1 = match.player1Id === userId;
+    const isP2 = match.player2Id === userId;
+    if (!isP1 && !isP2) throw new Error("Not authorized");
     const winnerId = isP1 ? match.player2Id : match.player1Id;
 
     await ctx.db.patch(matchId, {
@@ -241,30 +264,36 @@ export const getMatch = query({
   args: { matchId: v.id("liveMatches") },
   handler: async (ctx, { matchId }) => {
     const userId = await getAuthUserId(ctx);
+    if (!userId) return null;
     const match = await ctx.db.get(matchId);
     if (!match) return null;
+    if (userId !== match.player1Id && userId !== match.player2Id) {
+      return null;
+    }
 
     const p1 = await ctx.db.get(match.player1Id);
     const p2 = await ctx.db.get(match.player2Id);
 
     const isP1 = userId === match.player1Id;
 
-    // Sanitize: don't reveal opponent's specific answer during active question
-    const questions = (match.questions as Array<Record<string, unknown>>).map(
-      (q, idx) => {
-        if (
-          match.status === "question" &&
-          idx === match.currentQuestion
-        ) {
-          // During active question, return question without correct answer
-          return {
-            question: (q as { question: string }).question,
-            options: (q as { options: string[] }).options,
-          };
-        }
-        return q;
-      },
-    );
+    // Never expose correctAnswer/explanation through the public match view.
+    // Future questions stay hidden entirely; the current/past display shape is
+    // question text + options only.
+    const questions = (match.questions as StoredLiveQuestion[]).map((q, idx) => {
+      const isCurrent = idx === match.currentQuestion;
+      const isPast = idx < match.currentQuestion;
+      if (
+        isPast ||
+        (isCurrent &&
+          (match.status === "question" ||
+            match.status === "roundResult" ||
+            match.status === "completed" ||
+            match.status === "forfeited"))
+      ) {
+        return sanitizeQuestion(q);
+      }
+      return null;
+    });
 
     // Opponent status for current question
     const opponentAnswers = isP1
@@ -493,24 +522,24 @@ export const checkDisconnect = internalMutation({
 // ── ELO Update Helper ──
 
 async function updateMatchElo(
-  ctx: { db: { query: Function; patch: Function; insert: Function; get: Function } },
-  match: Record<string, unknown>,
-  winnerId: string | undefined,
+  ctx: Pick<MutationCtx, "db">,
+  match: Pick<Doc<"liveMatches">, "player1Id" | "player2Id" | "sport">,
+  winnerId: Id<"users"> | undefined,
 ) {
-  const player1Id = match.player1Id as string;
-  const player2Id = match.player2Id as string;
+  const player1Id = match.player1Id;
+  const player2Id = match.player2Id;
 
   // Get ratings
-  const p1Rating = await (ctx.db as any)
+  const p1Rating = await ctx.db
     .query("userRatings")
-    .withIndex("by_user_sport_mode", (q: any) =>
+    .withIndex("by_user_sport_mode", (q) =>
       q.eq("userId", player1Id).eq("sport", match.sport).eq("mode", "quiz"),
     )
     .first();
 
-  const p2Rating = await (ctx.db as any)
+  const p2Rating = await ctx.db
     .query("userRatings")
-    .withIndex("by_user_sport_mode", (q: any) =>
+    .withIndex("by_user_sport_mode", (q) =>
       q.eq("userId", player2Id).eq("sport", match.sport).eq("mode", "quiz"),
     )
     .first();
@@ -537,7 +566,7 @@ async function updateMatchElo(
 
   // Update P1
   if (p1Rating) {
-    await (ctx.db as any).patch(p1Rating._id, {
+    await ctx.db.patch(p1Rating._id, {
       eloRating: newP1Elo,
       peakRating: Math.max(p1Rating.peakRating, newP1Elo),
       gamesPlayed: p1Rating.gamesPlayed + 1,
@@ -551,7 +580,7 @@ async function updateMatchElo(
 
   // Update P2
   if (p2Rating) {
-    await (ctx.db as any).patch(p2Rating._id, {
+    await ctx.db.patch(p2Rating._id, {
       eloRating: newP2Elo,
       peakRating: Math.max(p2Rating.peakRating, newP2Elo),
       gamesPlayed: p2Rating.gamesPlayed + 1,

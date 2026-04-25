@@ -1,0 +1,2120 @@
+{
+  "initials_map": {
+    "RF": [
+      "Roger Federer",
+      "Richard Fromberg",
+      "Renzo Furlan"
+    ],
+    "ND": [
+      "Novak Djokovic",
+      "Nikolay Davydenko",
+      "Nicolas Devilder"
+    ],
+    "RN": [
+      "Rafael Nadal"
+    ],
+    "PS": [
+      "Pete Sampras",
+      "Paradorn Srichaphan",
+      "Potito Starace",
+      "Pedro Sousa"
+    ],
+    "AA": [
+      "Andre Agassi",
+      "Alex Antonitsch",
+      "Andrea Arnaboldi"
+    ],
+    "AM": [
+      "Andy Murray",
+      "Andrei Medvedev",
+      "Albert Montanes",
+      "Adrian Mannarino",
+      "Alberto Martin",
+      "Amos Mansdorf",
+      "Alexander Mronz",
+      "Alberto Mancini",
+      "Andrei Merinov",
+      "Alejo Mancisidor",
+      "Alan Mackin",
+      "Andrej Martin",
+      "Alexandre Muller",
+      "Alex Molcan",
+      "Alex Michelsen"
+    ],
+    "TM": [
+      "Thomas Muster",
+      "Todd Martin",
+      "Tim Mayotte",
+      "Thiago Monteiro",
+      "Tomas Machac"
+    ],
+    "MC": [
+      "Michael Chang",
+      "Marin Cilic",
+      "Marco Cecchinato",
+      "Maxime Cressy",
+      "Massimo Cierro",
+      "Marcelo Charpentier",
+      "Marcio Carlsson",
+      "Marcello Craca",
+      "Marco Chiudinelli",
+      "Marius Copil"
+    ],
+    "AR": [
+      "Andy Roddick",
+      "Andrey Rublev",
+      "Albert Ramos",
+      "Aki Rahunen",
+      "Alexander Reichel",
+      "Andrew Richardson",
+      "Alex Radulescu",
+      "Arthur Rinderknech",
+      "Alexander Ritschard"
+    ],
+    "LH": [
+      "Lleyton Hewitt",
+      "Luis Horna",
+      "Luis Herrera",
+      "Lloyd Harris"
+    ],
+    "YK": [
+      "Yevgeny Kafelnikov"
+    ],
+    "DF": [
+      "David Ferrer",
+      "Doug Flach"
+    ],
+    "BB": [
+      "Boris Becker",
+      "Byron Black",
+      "Benjamin Becker",
+      "Benjamin Bonzi",
+      "Bjorn Borg",
+      "Bob Bryan",
+      "Brian Baker",
+      "Benjamin Balleret"
+    ],
+    "GI": [
+      "Goran Ivanisevic"
+    ],
+    "AZ": [
+      "Alexander Zverev"
+    ],
+    "SE": [
+      "Stefan Edberg"
+    ],
+    "JC": [
+      "Jim Courier",
+      "Jeremy Chardy",
+      "Jimmy Connors",
+      "Johan Carlsson",
+      "Jonathan Canter",
+      "Jan Choinski",
+      "Jay Clarke"
+    ],
+    "JMDP": [
+      "Juan Martin del Potro"
+    ],
+    "DM": [
+      "Daniil Medvedev",
+      "Danilo Marcelino",
+      "Daniele Musa",
+      "Dominik Meffert"
+    ],
+    "CM": [
+      "Carlos Moya",
+      "Christian Miniussi",
+      "Cassio Motta",
+      "Claudio Mezzadri",
+      "Cecil Mamiit",
+      "Corentin Moutet"
+    ],
+    "GK": [
+      "Gustavo Kuerten"
+    ],
+    "MS": [
+      "Michael Stich",
+      "Marat Safin",
+      "Martin Sinner",
+      "Michiel Schapers",
+      "Milan Srejber",
+      "Martin Strelba",
+      "Martin Stringari",
+      "Michael Sell",
+      "Mohamed Safwat"
+    ],
+    "TE": [
+      "Thomas Enqvist"
+    ],
+    "JS": [
+      "Jannik Sinner",
+      "Jason Stoltenberg",
+      "Jan Siemerink",
+      "Joao Sousa",
+      "Jack Sock",
+      "Javier Sanchez",
+      "Jonas Svensson",
+      "Jonathan Stark",
+      "Juncheng Shang",
+      "James Sekulov",
+      "Jeff Salzenstein",
+      "Jimy Szymanski",
+      "Joseph Sirianni",
+      "Julio Silva",
+      "Joao Souza"
+    ],
+    "MR": [
+      "Marcelo Rios",
+      "Marc Rosset",
+      "Milos Raonic",
+      "Mario Rincon",
+      "Maurice Ruah",
+      "Martin Rodriguez",
+      "Michael Russell",
+      "Michael Ryderstedt"
+    ],
+    "JT": [
+      "Jo-Wilfried Tsonga",
+      "Janko Tipsarevic",
+      "Jeff Tarango",
+      "Jordan Thompson"
+    ],
+    "RK": [
+      "Richard Krajicek",
+      "Ramesh Krishnan",
+      "Robbie Koenig",
+      "Robert Kendrick",
+      "Roko Karanusic"
+    ],
+    "AC": [
+      "Alex Corretja",
+      "Albert Costa",
+      "Arnaud Clement",
+      "Andrei Chesnokov",
+      "Agustin Calleri",
+      "Andrei Cherkasov",
+      "Alex Calatrava",
+      "Andrew Castle",
+      "Albert Chang",
+      "Arthur Cazaux"
+    ],
+    "TH": [
+      "Tommy Haas",
+      "Tim Henman",
+      "Thomas Hogstedt",
+      "Tommy Ho"
+    ],
+    "DT": [
+      "Dominic Thiem",
+      "Dmitry Tursunov"
+    ],
+    "CA": [
+      "Carlos Alcaraz",
+      "Chuck Adams",
+      "Carsten Arriens"
+    ],
+    "JCF": [
+      "Juan Carlos Ferrero"
+    ],
+    "RG": [
+      "Richard Gasquet",
+      "Robby Ginepri",
+      "Rodolphe Gilbert"
+    ],
+    "SW": [
+      "Stan Wawrinka",
+      "Sam Warburg"
+    ],
+    "JI": [
+      "John Isner"
+    ],
+    "SB": [
+      "Sergi Bruguera",
+      "Sebastian Baez",
+      "Steve Bryan",
+      "Stephane Bohli",
+      "Simone Bolelli",
+      "Sergei Bubka"
+    ],
+    "MG": [
+      "Magnus Gustafsson",
+      "Marcel Granollers",
+      "Marcos Giron",
+      "Marc Gicquel",
+      "Maximo Gonzalez",
+      "Manuel Guinard"
+    ],
+    "WF": [
+      "Wayne Ferreira"
+    ],
+    "GR": [
+      "Greg Rusedski",
+      "Guillaume Raoux",
+      "Guillaume Rufin"
+    ],
+    "AB": [
+      "Alberto Berasategui",
+      "Alexander Bublik",
+      "Arnaud Boetsch",
+      "Alex Bogdanovic",
+      "Andreas Beck",
+      "Aljaz Bedene",
+      "Attila Balazs",
+      "Alex Bolt"
+    ],
+    "TB": [
+      "Tomas Berdych",
+      "Thomaz Bellucci",
+      "Tarik Benhabiles",
+      "Thomas Buchmayer",
+      "Tomas Behrend"
+    ],
+    "GS": [
+      "Gilles Simon",
+      "Gilbert Schaller",
+      "Grant Stafford",
+      "Gerard Solves",
+      "Gabriel Silberstein",
+      "Go Soeda"
+    ],
+    "FG": [
+      "Fernando Gonzalez",
+      "Frederico Gil",
+      "Federico Gaio"
+    ],
+    "NA": [
+      "Nicolas Almagro"
+    ],
+    "RBA": [
+      "Roberto Bautista Agut"
+    ],
+    "PR": [
+      "Patrick Rafter",
+      "Pedro Rebolledo",
+      "Pere Riba"
+    ],
+    "MN": [
+      "Magnus Norman",
+      "Miguel Nido",
+      "Markus Naewie",
+      "Mose Navarra",
+      "Mark Nielsen",
+      "Mariano Navone"
+    ],
+    "TR": [
+      "Tommy Robredo",
+      "Todd Reid"
+    ],
+    "GM": [
+      "Gael Monfils",
+      "Gilles Muller",
+      "Gabriel Markus",
+      "Gary Muller",
+      "Glenn Michibata",
+      "Gerald Mandl",
+      "Gouichi Motomura",
+      "Gerald Melzer",
+      "Gianluca Mager"
+    ],
+    "KN": [
+      "Kei Nishikori",
+      "Karel Novacek"
+    ],
+    "CR": [
+      "Casper Ruud",
+      "Christian Ruud",
+      "Christophe Rochus"
+    ],
+    "ST": [
+      "Stefanos Tsitsipas",
+      "Stefano Travaglia"
+    ],
+    "PK": [
+      "Petr Korda",
+      "Philipp Kohlschreiber",
+      "Patrik Kuhnen",
+      "Paul Kilderry",
+      "Phillip King",
+      "Pavel Kotov"
+    ],
+    "IL": [
+      "Ivan Lendl",
+      "Ivan Ljubicic",
+      "Irakli Labadze"
+    ],
+    "MP": [
+      "Mark Philippoussis",
+      "Mariano Puerta",
+      "Mikael Pernfors",
+      "Mark Petchey",
+      "Michal Przysiezny",
+      "Mate Pavic",
+      "Marc Polmans",
+      "Max Purcell",
+      "Michail Pervolarakis"
+    ],
+    "FM": [
+      "Felix Mantilla",
+      "Fernando Meligeni",
+      "Florian Mayer",
+      "Francisco Montana",
+      "Filip Misolic",
+      "Fabian Marozsan"
+    ],
+    "DN": [
+      "David Nalbandian",
+      "Diego Nargiso",
+      "Daniel Nestor",
+      "David Nainkin",
+      "Dick Norman",
+      "Dennis Novikov",
+      "Dennis Novak"
+    ],
+    "RS": [
+      "Robin Soderling",
+      "Radek Stepanek",
+      "Rainer Schuettler",
+      "Ryan Sweeting",
+      "Roger Smith",
+      "Razvan Sabau",
+      "Raemon Sluiter",
+      "Roman Safiullin"
+    ],
+    "JB": [
+      "James Blake",
+      "Jonas Bjorkman",
+      "Jeremy Bates",
+      "Jordi Burillo",
+      "Julien Boutter",
+      "Juan Balcells",
+      "Jimmy Brown",
+      "Jay Berger",
+      "Julien Benneteau",
+      "Jack Brasington",
+      "Jamie Baker",
+      "Jenson Brooksby"
+    ],
+    "MY": [
+      "Mikhail Youzhny",
+      "Michael Yani",
+      "Mikael Ymer"
+    ],
+    "GC": [
+      "Guillermo Coria",
+      "Guillermo Canas",
+      "Grant Connell",
+      "Gregory Carraz",
+      "Guilherme Clezar"
+    ],
+    "JM": [
+      "Juan Monaco",
+      "Jurgen Melzer",
+      "John McEnroe",
+      "John Millman",
+      "Jamie Morgan",
+      "Jeff Morrison",
+      "Jonathan Marray",
+      "Javier Marti",
+      "Jaume Munar",
+      "Jakub Mensik"
+    ],
+    "SQ": [
+      "Sam Querrey"
+    ],
+    "MB": [
+      "Matteo Berrettini",
+      "Marcos Baghdatis",
+      "Mirza Basic",
+      "Mahesh Bhupathi",
+      "Mike Bryan",
+      "Michael Berrer",
+      "Matthias Bachinger",
+      "Mattia Bellucci"
+    ],
+    "GF": [
+      "Guy Forget"
+    ],
+    "TJ": [
+      "Thomas Johansson"
+    ],
+    "SS": [
+      "Sjeng Schalken",
+      "Sergiy Stakhovsky",
+      "Sargis Sargsian",
+      "Sandon Stolle",
+      "Stephane Simian",
+      "Simon Stadler"
+    ],
+    "IK": [
+      "Ivo Karlovic",
+      "Igor Kunitsyn"
+    ],
+    "FF": [
+      "Fabio Fognini",
+      "Frederic Fontang",
+      "Frederik Fetterlein"
+    ],
+    "GD": [
+      "Grigor Dimitrov",
+      "Girts Dzelde",
+      "Grant Doyle",
+      "Gabriel Diallo"
+    ],
+    "TF": [
+      "Taylor Fritz",
+      "Thomas Fabbiano"
+    ],
+    "ADM": [
+      "Alex De Minaur",
+      "Alessio Di Mauro"
+    ],
+    "FC": [
+      "Francisco Clavet",
+      "Francisco Cerundolo",
+      "Francesco Cancellotti",
+      "Frantisek Cermak",
+      "Flavio Cipolla",
+      "Federico Coria",
+      "Flavio Cobolli",
+      "Francisco Comesana"
+    ],
+    "GG": [
+      "Gaston Gaudio",
+      "Giorgio Galimberti",
+      "Geoff Grant"
+    ],
+    "HH": [
+      "Hubert Hurkacz",
+      "Henrik Holm"
+    ],
+    "ES": [
+      "Emilio Sanchez",
+      "Eduardo Schwank"
+    ],
+    "ML": [
+      "Magnus Larsson",
+      "Michael Llodra",
+      "Martin Laurendeau",
+      "Martin Lee",
+      "Marc Lopez",
+      "Michael Lammer",
+      "Mikhail Ledovskikh"
+    ],
+    "CC": [
+      "Carlos Costa",
+      "Cristiano Caratti"
+    ],
+    "KK": [
+      "Karol Kucera",
+      "Karen Khachanov",
+      "Kent Kinnear",
+      "Kevin Kim",
+      "Konstantin Kravchuk"
+    ],
+    "JN": [
+      "Jiri Novak",
+      "Jarkko Nieminen"
+    ],
+    "NK": [
+      "Nicolas Kiefer",
+      "Nick Kyrgios",
+      "Nicklas Kulti",
+      "Nicklas Kroon",
+      "Nicolas Kicker",
+      "Nicola Kuhn"
+    ],
+    "DH": [
+      "Dominik Hrbaty",
+      "Diego Hartfield"
+    ],
+    "NM": [
+      "Nicolas Massu",
+      "Nicolas Mahut",
+      "Nuno Marques",
+      "Nikola Milojevic"
+    ],
+    "FL": [
+      "Feliciano Lopez",
+      "Fernando Luna",
+      "Federico Luzzi"
+    ],
+    "JIC": [
+      "Juan Ignacio Chela"
+    ],
+    "FV": [
+      "Fernando Verdasco",
+      "Fernando Vicente",
+      "Filippo Volandri",
+      "Frederic Vitoux"
+    ],
+    "KA": [
+      "Kevin Anderson",
+      "Karim Alami"
+    ],
+    "PCB": [
+      "Pablo Carreno Busta"
+    ],
+    "JA": [
+      "Jordi Arrese",
+      "Jose Acasuso",
+      "Juan Aguilera",
+      "Julian Alonso",
+      "Jimmy Arias",
+      "Johan Anderson",
+      "Jan Apell"
+    ],
+    "FS": [
+      "Fabrice Santoro",
+      "Franco Squillari",
+      "Florent Serra",
+      "Federico Sanchez",
+      "Flavio Saretta",
+      "Franko Skugor"
+    ],
+    "MF": [
+      "Mardy Fish",
+      "Marcelo Filippini",
+      "Marton Fucsovics",
+      "Martin Fischer"
+    ],
+    "EG": [
+      "Ernests Gulbis",
+      "Emilio Gomez",
+      "Egor Gerasimov"
+    ],
+    "MK": [
+      "Martin Klizan",
+      "Mark Koevermans",
+      "Mikhail Kukushkin",
+      "Miomir Kecmanovic",
+      "Mark Kratzmann",
+      "Mark Kaplan",
+      "Mark Keil",
+      "Mark Knowles",
+      "Michael Kohlmann",
+      "Michel Kratochvil",
+      "Mitchell Krueger"
+    ],
+    "PC": [
+      "Pablo Cuevas",
+      "Paolo Cane",
+      "Pat Cash",
+      "Pedro Cachin",
+      "Paul Chamberlin",
+      "Paul Capdeville"
+    ],
+    "DG": [
+      "David Goffin",
+      "Dan Goldie",
+      "Denis Gremelmayr",
+      "David Guez"
+    ],
+    "FAA": [
+      "Felix Auger Aliassime"
+    ],
+    "UH": [
+      "Ugo Humbert"
+    ],
+    "CP": [
+      "Cedric Pioline",
+      "Claudio Pistolesi",
+      "Chris Pridham"
+    ],
+    "JY": [
+      "Jaime Yzaga"
+    ],
+    "YEA": [
+      "Younes El Aynaoui"
+    ],
+    "NL": [
+      "Nicolas Lapentti"
+    ],
+    "GGL": [
+      "Guillermo Garcia Lopez"
+    ],
+    "VT": [
+      "Viktor Troicki"
+    ],
+    "LP": [
+      "Lucas Pouille",
+      "Leander Paes"
+    ],
+    "CG": [
+      "Cristian Garin",
+      "Chris Garner",
+      "Chris Guccione"
+    ],
+    "NB": [
+      "Nikoloz Basilashvili",
+      "Nuno Borges",
+      "Nick Brown",
+      "Neil Borwick",
+      "Noam Behr"
+    ],
+    "CN": [
+      "Cameron Norrie"
+    ],
+    "AG": [
+      "Andres Gomez",
+      "Andrea Gaudenzi",
+      "Andrey Golubev",
+      "Adrian Garcia",
+      "Alessandro Giannessi",
+      "Alejandro Gonzalez"
+    ],
+    "MW": [
+      "Malivai Washington",
+      "Mark Woodforde",
+      "Mats Wilander",
+      "Martin Wostenholme",
+      "Mashiska Washington"
+    ],
+    "GPR": [
+      "Guillermo Perez Roldan"
+    ],
+    "JE": [
+      "Jacco Eltingh",
+      "Joshua Eagle",
+      "Jonathan Erlich"
+    ],
+    "NE": [
+      "Nicolas Escude"
+    ],
+    "SG": [
+      "Sebastien Grosjean",
+      "Sander Groen",
+      "Stefano Galvani",
+      "Simon Greul",
+      "Santiago Giraldo",
+      "Sam Groth"
+    ],
+    "TD": [
+      "Taylor Dent",
+      "Taro Daniel"
+    ],
+    "PHM": [
+      "Paul Henri Mathieu"
+    ],
+    "IA": [
+      "Igor Andreev"
+    ],
+    "PA": [
+      "Pablo Andujar",
+      "Pieter Aldrich",
+      "Paul Annacone",
+      "Pablo Albano",
+      "Pablo Arraya",
+      "Prakash Amritraj"
+    ],
+    "BT": [
+      "Bernard Tomic"
+    ],
+    "SJ": [
+      "Steve Johnson",
+      "Scoville Jenkins"
+    ],
+    "DS": [
+      "Diego Schwartzman",
+      "Denis Shapovalov",
+      "Davide Sanguinetti",
+      "David Sanchez",
+      "Danny Sapsford",
+      "David Skoch",
+      "Davide Scala",
+      "Dudi Sela",
+      "Dominic Stricker"
+    ],
+    "FT": [
+      "Frances Tiafoe"
+    ],
+    "TP": [
+      "Tommy Paul"
+    ],
+    "RO": [
+      "Reilly Opelka",
+      "Renzo Olivo"
+    ],
+    "LS": [
+      "Lorenzo Sonego",
+      "Leif Shiras",
+      "Luke Saville"
+    ],
+    "HR": [
+      "Holger Rune"
+    ],
+    "AV": [
+      "Alexander Volkov",
+      "Adrian Voinea",
+      "Andreas Vinciguerra",
+      "Andres Vysand",
+      "Antonio Veic",
+      "Aleksandar Vukic",
+      "Andrea Vavassori"
+    ],
+    "RR": [
+      "Richey Reneberg",
+      "Rajeev Ram",
+      "Ramkumar Ramanathan"
+    ],
+    "DW": [
+      "David Wheaton",
+      "David Witt",
+      "Di Wu"
+    ],
+    "LM": [
+      "Luiz Mattar",
+      "Leonardo Mayer",
+      "Lorenzo Musetti",
+      "Lorenzo Manta",
+      "Luke Milligan"
+    ],
+    "MJ": [
+      "Martin Jaite",
+      "Michael Joyce",
+      "Malek Jaziri"
+    ],
+    "JF": [
+      "Javier Frana",
+      "Joao Fonseca",
+      "John Fitzgerald"
+    ],
+    "BG": [
+      "Brad Gilbert",
+      "Brian Garrow",
+      "Bret Garnett",
+      "Borna Gojo"
+    ],
+    "SD": [
+      "Slava Dosedel",
+      "Steve Darcis",
+      "Scott Davis",
+      "Scott Draper",
+      "Somdev Devvarman",
+      "Steven Diez"
+    ],
+    "DP": [
+      "David Prinosil",
+      "Dimitri Poliakov",
+      "Diego Perez",
+      "David Pate",
+      "Dinu Pescariu"
+    ],
+    "KC": [
+      "Kenneth Carlsen",
+      "Kevin Curren",
+      "Kimmer Coppejans"
+    ],
+    "AP": [
+      "Andrei Pavel",
+      "Alexei Popyrin",
+      "Albert Portas",
+      "Axel Pretzsch",
+      "Arvind Parmar",
+      "Alexander Popp",
+      "Alexander Peya",
+      "Ante Pavic",
+      "Adam Pavlasek"
+    ],
+    "BU": [
+      "Bohdan Ulihrach"
+    ],
+    "SK": [
+      "Stefan Koubek",
+      "Sebastian Korda",
+      "Stefan Kozlov"
+    ],
+    "MZ": [
+      "Mariano Zabaleta",
+      "Markus Zoecke",
+      "Mischa Zverev",
+      "Markus Zillner"
+    ],
+    "JMG": [
+      "Jan Michael Gambill"
+    ],
+    "XM": [
+      "Xavier Malisse"
+    ],
+    "JJ": [
+      "Joachim Johansson",
+      "Jerzy Janowicz",
+      "Jason Jung"
+    ],
+    "MA": [
+      "Mario Ancic",
+      "Martin Alund",
+      "Matteo Arnaldi"
+    ],
+    "AS": [
+      "Andreas Seppi",
+      "Andrew Sznajder",
+      "Andrei Stoliarov",
+      "Andre Sa",
+      "Attila Savolt",
+      "Alexandre Simoni",
+      "Andrea Stoppini",
+      "Alexandre Sidorenko",
+      "Alexander Shevchenko",
+      "Abedallah Shelbayh"
+    ],
+    "AD": [
+      "Alexandr Dolgopolov",
+      "Antony Dupuis",
+      "Amer Delic"
+    ],
+    "VE": [
+      "Victor Estrella"
+    ],
+    "BP": [
+      "Benoit Paire",
+      "Brad Pearce",
+      "Bing Pan",
+      "Bjorn Phau",
+      "Boris Pashanski"
+    ],
+    "BC": [
+      "Borna Coric",
+      "Barry Cowan"
+    ],
+    "AK": [
+      "Aslan Karatsev",
+      "Aaron Krickstein",
+      "Alex Kim",
+      "Alex Kuznetsov",
+      "Alexander Kudryavtsev",
+      "Austin Krajicek",
+      "Andrey Kuznetsov",
+      "Aleksandar Kovacevic"
+    ],
+    "DD": [
+      "Damir Dzumhur",
+      "Dirk Dier",
+      "David Dilucia"
+    ],
+    "YN": [
+      "Yoshihito Nishioka",
+      "Yannick Noah"
+    ],
+    "NJ": [
+      "Nicolas Jarry"
+    ],
+    "AF": [
+      "Arthur Fils",
+      "Andrew Foster",
+      "Alejandro Falla"
+    ],
+    "TW": [
+      "Todd Woodbridge",
+      "Tim Wilkison",
+      "Todd Witsken",
+      "Todd Widom"
+    ],
+    "RA": [
+      "Ronald Agenor",
+      "Radu Albot",
+      "Roberto Azar"
+    ],
+    "OC": [
+      "Omar Camporese"
+    ],
+    "CUS": [
+      "Carl Uwe Steeb"
+    ],
+    "GP": [
+      "Goran Prpic",
+      "Gianluca Pozzi",
+      "Guido Pella",
+      "German Puentes"
+    ],
+    "TC": [
+      "Tomas Carbonell",
+      "Thierry Champion",
+      "Tomas Cakl"
+    ],
+    "NP": [
+      "Nicolas Pereira"
+    ],
+    "JH": [
+      "Jakob Hlasek",
+      "Jerome Haehnel",
+      "Jan Hernych",
+      "Jan Hajek"
+    ],
+    "HDLP": [
+      "Horacio De La Pena"
+    ],
+    "SP": [
+      "Stefano Pescosolido",
+      "Sebastian Prieto"
+    ],
+    "JO": [
+      "Jaime Oncins",
+      "Josselin Ouanna"
+    ],
+    "AJ": [
+      "Anders Jarryd",
+      "Alun Jones"
+    ],
+    "HS": [
+      "Horst Skoff"
+    ],
+    "BS": [
+      "Bryan Shelton",
+      "Ben Shelton",
+      "Brett Steven",
+      "Brayden Schnur"
+    ],
+    "FD": [
+      "Franco Davin",
+      "Filip Dewulf",
+      "Federico Delbonis",
+      "Frank Dancevic"
+    ],
+    "PB": [
+      "Patrick Baur",
+      "Paul Baccanello"
+    ],
+    "AO": [
+      "Andrei Olhovskiy",
+      "Alex Obrien",
+      "Albano Olivetti"
+    ],
+    "BK": [
+      "Bernd Karbacher",
+      "Blaz Kavcic",
+      "Brydan Klein",
+      "Bradley Klahn"
+    ],
+    "MKG": [
+      "Marc Kevin Goellner"
+    ],
+    "CW": [
+      "Chris Woodruff",
+      "Chris Wilkinson"
+    ],
+    "JG": [
+      "Jerome Golmard",
+      "Jim Grabb",
+      "Jan Gunnarsson",
+      "Justin Gimelstob",
+      "Josh Goodall"
+    ],
+    "JK": [
+      "Jan Kroslak",
+      "Johan Kriek",
+      "Julian Knowle",
+      "Jozsef Krocsko",
+      "Jens Knippschild",
+      "Jason Kubler",
+      "Jozef Kovalik"
+    ],
+    "AI": [
+      "Andrew Ilie"
+    ],
+    "MV": [
+      "Martin Verkerk",
+      "Marian Vajda",
+      "Milen Velev",
+      "Massimo Valeri",
+      "Michael Venus",
+      "Matteo Viola"
+    ],
+    "OR": [
+      "Olivier Rochus"
+    ],
+    "CB": [
+      "Carlos Berlocq",
+      "Christian Bergstrom",
+      "Chris Bailey",
+      "Carsten Ball"
+    ],
+    "RH": [
+      "Robin Haase",
+      "Ryan Harrison",
+      "Rinky Hijikata"
+    ],
+    "DI": [
+      "Denis Istomin"
+    ],
+    "LR": [
+      "Lukas Rosol",
+      "Lionel Roux",
+      "Lars Rehmann",
+      "Laurent Recouderc"
+    ],
+    "DE": [
+      "Daniel Evans",
+      "David Engel",
+      "Daniel Elsner"
+    ],
+    "HZ": [
+      "Horacio Zeballos"
+    ],
+    "DL": [
+      "Dusan Lajovic"
+    ],
+    "RCB": [
+      "Roberto Carballes Baena"
+    ],
+    "JV": [
+      "Jiri Vesely",
+      "Jan Vacek",
+      "Jiri Vanek",
+      "Julien Varlet"
+    ],
+    "KE": [
+      "Kyle Edmund",
+      "Kelly Evernden",
+      "Konstantinos Economidis"
+    ],
+    "LD": [
+      "Laslo Djere",
+      "Luciano Darderi",
+      "Lawson Duncan",
+      "Lukas Dlouhy"
+    ],
+    "TG": [
+      "Tallon Griekspoor",
+      "Thierry Guardiola",
+      "Thomas Gollwitzer",
+      "Teymuraz Gabashvili"
+    ],
+    "SWK": [
+      "Soon Woo Kwon"
+    ],
+    "AT": [
+      "Alejandro Tabilo",
+      "Arne Thoms"
+    ],
+    "BN": [
+      "Brandon Nakashima"
+    ],
+    "JD": [
+      "Jack Draper",
+      "Jacobo Diaz",
+      "Jamie Delgado",
+      "James Duckworth",
+      "Jared Donaldson",
+      "Joao Domingues"
+    ],
+    "GMP": [
+      "Giovanni Mpetshi Perricard"
+    ],
+    "PH": [
+      "Paul Haarhuis"
+    ],
+    "SM": [
+      "Shuzo Matsuoka",
+      "Shintaro Mochizuki"
+    ],
+    "KJ": [
+      "Kelly Jones"
+    ],
+    "LL": [
+      "Leonardo Lavalle",
+      "Lukas Lacko"
+    ],
+    "SY": [
+      "Simon Youl"
+    ],
+    "DC": [
+      "Darren Cahill",
+      "David Caldwell"
+    ],
+    "HL": [
+      "Henri Leconte",
+      "Harel Levy",
+      "Henri Laaksonen"
+    ],
+    "CS": [
+      "Christian Saceanu",
+      "Cyril Suk",
+      "Cyril Saulnier"
+    ],
+    "DR": [
+      "Derrick Rostagno",
+      "David Rikl",
+      "Dave Randall"
+    ],
+    "PM": [
+      "Patrick McEnroe",
+      "Pedro Martinez"
+    ],
+    "JP": [
+      "Jared Palmer",
+      "Jerome Potier",
+      "Jim Pugh"
+    ],
+    "RW": [
+      "Robbie Weiss",
+      "Rogier Wassen",
+      "Rhyne Williams"
+    ],
+    "YD": [
+      "Yahiya Doumbia"
+    ],
+    "NG": [
+      "Neville Godwin",
+      "Norbert Gombos"
+    ],
+    "MT": [
+      "Mikael Tillstrom",
+      "Michal Tabara",
+      "Michael Tauson",
+      "Michael Tebbutt",
+      "Mehdi Tahiri",
+      "Miguel Tobon",
+      "Marco Trungelliti"
+    ],
+    "VS": [
+      "Vincent Spadea",
+      "Vincenzo Santopadre"
+    ],
+    "RC": [
+      "Roberto Carretero"
+    ],
+    "MH": [
+      "Mauricio Hadad",
+      "Markus Hipfl",
+      "Mariano Hood",
+      "Markus Hantschk"
+    ],
+    "LB": [
+      "Lars Burgsmuller",
+      "Lionel Barthez",
+      "Liam Broady"
+    ],
+    "HA": [
+      "Hicham Arazi",
+      "Hugo Armando"
+    ],
+    "HG": [
+      "Hernan Gumy",
+      "Hugo Gaston",
+      "Hugo Grenier"
+    ],
+    "GB": [
+      "Galo Blanco",
+      "Gilad Bloom",
+      "George Bastl",
+      "Gregoire Barrere",
+      "Gijs Brouwer"
+    ],
+    "HTL": [
+      "Hyung Taik Lee"
+    ],
+    "DB": [
+      "Daniele Bracciali",
+      "Dustin Brown",
+      "Daniel Brands"
+    ],
+    "JAM": [
+      "Juan Antonio Marin"
+    ],
+    "WA": [
+      "Wayne Arthurs"
+    ],
+    "MM": [
+      "Max Mirnyi",
+      "Miloslav Mecir",
+      "Miles Maclagan",
+      "Marco Meneschincheri",
+      "Mark Merklein",
+      "Marzio Martelli",
+      "Michal Mertinak",
+      "Mathieu Montcourt",
+      "Marinko Matosevic",
+      "Mackenzie Mcdonald",
+      "Maximilian Marterer",
+      "Michael Mmoh"
+    ],
+    "PW": [
+      "Peter Wessels",
+      "Paul Wekesa"
+    ],
+    "ADP": [
+      "Arnaud Di Pasquale"
+    ],
+    "RM": [
+      "Ricardo Mello",
+      "Richard Matuszewski",
+      "Rui Machado",
+      "Rudolf Molleker"
+    ],
+    "VH": [
+      "Victor Hanescu"
+    ],
+    "WM": [
+      "Wesley Moodie",
+      "Wally Masur",
+      "Wade Mcguire"
+    ],
+    "PP": [
+      "Philipp Petzschner",
+      "Peter Polansky"
+    ],
+    "SV": [
+      "Santiago Ventura",
+      "Simone Vagnozzi"
+    ],
+    "PL": [
+      "Paolo Lorenzi",
+      "Peter Lundgren",
+      "Petr Luxa",
+      "Peter Luczak"
+    ],
+    "YS": [
+      "Yuichi Sugita",
+      "Yuri Schukin"
+    ],
+    "ID": [
+      "Ivan Dodig"
+    ],
+    "PG": [
+      "Peter Gojowczyk",
+      "Paul Goldstein",
+      "Prajnesh Gunneswaran"
+    ],
+    "JLS": [
+      "Jan Lennard Struff"
+    ],
+    "JIL": [
+      "Juan Ignacio Londero"
+    ],
+    "HC": [
+      "Hyeon Chung"
+    ],
+    "TK": [
+      "Thanasi Kokkinakis",
+      "Tuomas Ketola",
+      "Tobias Kamke"
+    ],
+    "CE": [
+      "Christopher Eubanks"
+    ],
+    "TVR": [
+      "Tim Van Rijthoven"
+    ],
+    "II": [
+      "Ilya Ivashka"
+    ],
+    "TS": [
+      "Tennys Sandgren",
+      "Takao Suzuki",
+      "Thomas Schiessling",
+      "Tim Smyczek",
+      "Timofey Skatov"
+    ],
+    "YW": [
+      "Yibing Wu",
+      "Yosuke Watanuki"
+    ],
+    "TSW": [
+      "Thiago Seyboth Wild"
+    ],
+    "MAH": [
+      "Marc Andrea Huesler"
+    ],
+    "FDA": [
+      "Facundo Diaz Acosta"
+    ],
+    "JMC": [
+      "Juan Manuel Cerundolo"
+    ],
+    "HM": [
+      "Hamad Medjedovic",
+      "Hiroki Moriya",
+      "Harold Mayot"
+    ],
+    "JL": [
+      "Jiri Lehecka",
+      "Jesse Levine"
+    ],
+    "BD": [
+      "Broderick Dyke",
+      "Bruce Derlin",
+      "Brian Devening",
+      "Brian Dunn",
+      "Brian Dabul"
+    ],
+    "XD": [
+      "Xavier Daufresne"
+    ],
+    "BO": [
+      "Bruno Oresar"
+    ],
+    "SZ": [
+      "Slobodan Zivojinovic"
+    ],
+    "JPF": [
+      "Jean Philippe Fleurian"
+    ],
+    "TN": [
+      "Tom Nijssen",
+      "Todd Nelson",
+      "Tomas Nydahl"
+    ],
+    "UR": [
+      "Udo Riglewski"
+    ],
+    "LJ": [
+      "Lars Jonsson",
+      "Luke Jensen"
+    ],
+    "OD": [
+      "Olivier Delaitre"
+    ],
+    "JW": [
+      "Jens Woehrmann",
+      "Joost Winnink",
+      "Jimmy Wang",
+      "Jesse Witten",
+      "James Ward"
+    ],
+    "VP": [
+      "Veli Paloheimo",
+      "Vasek Pospisil"
+    ],
+    "LAW": [
+      "Lars Anders Wahlgren"
+    ],
+    "SC": [
+      "Sergio Casal",
+      "Sergio Cortes",
+      "Steve Campbell",
+      "Salvatore Caruso"
+    ],
+    "GL": [
+      "Glenn Layendecker",
+      "German Lopez",
+      "Giovanni Lapentti"
+    ],
+    "CVR": [
+      "Christo Van Rensburg"
+    ],
+    "EW": [
+      "Eric Winogradsky"
+    ],
+    "PV": [
+      "Paul Vojtischek"
+    ],
+    "TT": [
+      "Thierry Tulasne",
+      "Takahiro Terachi"
+    ],
+    "FR": [
+      "Francisco Roig",
+      "Fernando Roese",
+      "Felipe Rivera"
+    ],
+    "JFA": [
+      "Jose Francisco Altur",
+      "Jan Frode Andersen"
+    ],
+    "NO": [
+      "Nduka Odizor",
+      "Noam Okun"
+    ],
+    "EJ": [
+      "Eric Jelen"
+    ],
+    "LN": [
+      "Libor Nemecek",
+      "Luca Nardi"
+    ],
+    "FY": [
+      "Francisco Yunis"
+    ],
+    "EB": [
+      "Eduardo Bengoechea"
+    ],
+    "JR": [
+      "Joey Rive",
+      "Joern Renzenbrink",
+      "Julian Reister",
+      "Jurij Rodionov"
+    ],
+    "BW": [
+      "Bart Wuyts"
+    ],
+    "KF": [
+      "Ken Flach"
+    ],
+    "RL": [
+      "Rick Leach"
+    ],
+    "DV": [
+      "Danie Visser",
+      "Daniel Vacek",
+      "Dusan Vemic"
+    ],
+    "PN": [
+      "Peter Nyborg"
+    ],
+    "NU": [
+      "Nicklas Utgren"
+    ],
+    "KT": [
+      "Kenny Thorne"
+    ],
+    "JCS": [
+      "Joao Cunha Silva"
+    ],
+    "MI": [
+      "Marcelo Ingaramo",
+      "Marsel Ilhan"
+    ],
+    "JLTR": [
+      "Juan Luis Tati Rascon"
+    ],
+    "MAG": [
+      "Marcos Aurelio Gorriz"
+    ],
+    "EM": [
+      "Eduardo Masso",
+      "Edgardo Massa"
+    ],
+    "SH": [
+      "Sasa Hirszon",
+      "Stephane Huet",
+      "Scott Humphries"
+    ],
+    "MO": [
+      "Marcos Ondruska"
+    ],
+    "KB": [
+      "Karsten Braasch",
+      "Karol Beck"
+    ],
+    "MDS": [
+      "Martin Damm Sr"
+    ],
+    "IB": [
+      "Ivan Baron",
+      "Ilija Bozoljac"
+    ],
+    "CL": [
+      "Carl Limberger",
+      "Christian Lindell",
+      "Constant Lestienne"
+    ],
+    "DO": [
+      "Daniel Orsanic"
+    ],
+    "JAPC": [
+      "Jose Antonio Pepe Conde"
+    ],
+    "ER": [
+      "Eyal Ran",
+      "Edouard Roger-Vasselin",
+      "Emil Ruusuvuori"
+    ],
+    "RT": [
+      "Ryuso Tsujino"
+    ],
+    "TA": [
+      "Tomas Anzari",
+      "Thiago Alves",
+      "Thierry Ascione",
+      "Terence Atmane"
+    ],
+    "EC": [
+      "Emanuel Couto",
+      "Enzo Couacaud"
+    ],
+    "YY": [
+      "Yasufumi Yamamoto"
+    ],
+    "EJC": [
+      "Eui Jong Chang"
+    ],
+    "HJD": [
+      "Hendrik Jan Davids"
+    ],
+    "SN": [
+      "Sandor Noszaly",
+      "Salvador Navarro",
+      "Stefano Napolitano",
+      "Sumit Nagal"
+    ],
+    "RJ": [
+      "Roberto Jabali"
+    ],
+    "LK": [
+      "Lars Koslowski",
+      "Lukasz Kubot",
+      "Lukas Klein"
+    ],
+    "SL": [
+      "Sebastien Lareau",
+      "Simon Larose"
+    ],
+    "WK": [
+      "Wojtek Kowalski"
+    ],
+    "RV": [
+      "Radomir Vasek",
+      "Robin Vik"
+    ],
+    "DA": [
+      "David Adams",
+      "Daniel Altmaier",
+      "Duje Ajdukovic"
+    ],
+    "OF": [
+      "Oliver Fernandez",
+      "Ota Fukarek"
+    ],
+    "JGJ": [
+      "Juan Gisbert Jr"
+    ],
+    "JVH": [
+      "Johan Van Herck"
+    ],
+    "BM": [
+      "Brian Macphie",
+      "Bernardo Mota"
+    ],
+    "KU": [
+      "Kevin Ullyett"
+    ],
+    "JAVP": [
+      "Juan Albert Viloca Puig"
+    ],
+    "FW": [
+      "Fernon Wibier"
+    ],
+    "DVS": [
+      "Dennis Van Scheppingen"
+    ],
+    "EF": [
+      "Ellis Ferreira"
+    ],
+    "HK": [
+      "Hideki Kaneko"
+    ],
+    "WB": [
+      "Wayne Black"
+    ],
+    "HD": [
+      "Hendrik Dreekmann",
+      "Hugo Dellien"
+    ],
+    "EBA": [
+      "Emilio Benfele Alvarez"
+    ],
+    "YIY": [
+      "Yong Il Yoon"
+    ],
+    "LT": [
+      "Laurence Tieleman",
+      "Li Tu",
+      "Learner Tien"
+    ],
+    "LG": [
+      "Louis Gloria",
+      "Luka Gregorc"
+    ],
+    "HW": [
+      "Herbert Wiltschnig"
+    ],
+    "DJ": [
+      "Donald Johnson",
+      "Diego Junqueira"
+    ],
+    "EE": [
+      "Eyal Erlich",
+      "Ervin Eleskovic",
+      "Ernesto Escobedo"
+    ],
+    "SI": [
+      "Satoshi Iwabuchi"
+    ],
+    "OG": [
+      "Oliver Gross"
+    ],
+    "PT": [
+      "Peter Tramacchi"
+    ],
+    "CV": [
+      "Christian Vinck"
+    ],
+    "BL": [
+      "Brent Larkham"
+    ],
+    "OO": [
+      "Oscar Ortiz",
+      "Oleg Ogorodov",
+      "Oscar Otte"
+    ],
+    "GE": [
+      "Gaston Etlis",
+      "Gilles Elseneer",
+      "Gastao Elias"
+    ],
+    "OM": [
+      "Oscar Martinez",
+      "Olivier Mutis",
+      "Oliver Marach"
+    ],
+    "TES": [
+      "Tamer El Sawy"
+    ],
+    "WS": [
+      "Wolfgang Schranz"
+    ],
+    "CVG": [
+      "Christophe Van Garsse"
+    ],
+    "ALM": [
+      "Alex Lopez Moron"
+    ],
+    "LAM": [
+      "Luis Adrian Morejon"
+    ],
+    "BE": [
+      "Ben Ellwood",
+      "Brendan Evans"
+    ],
+    "FB": [
+      "Federico Browne",
+      "Facundo Bagnis"
+    ],
+    "AH": [
+      "Alejandro Hernandez",
+      "Antoine Hoang"
+    ],
+    "KG": [
+      "Kris Goossens"
+    ],
+    "PF": [
+      "Patrik Fredriksson"
+    ],
+    "VV": [
+      "Vladimir Voltchkov"
+    ],
+    "TL": [
+      "Todd Larkham"
+    ],
+    "JVL": [
+      "John Van Lottum"
+    ],
+    "IT": [
+      "Ignacio Truyol"
+    ],
+    "BR": [
+      "Bjorn Rehnquist",
+      "Bobby Reynolds",
+      "Blaz Rola"
+    ],
+    "FJ": [
+      "Fredrik Jonsson"
+    ],
+    "GW": [
+      "Glenn Weiner"
+    ],
+    "RD": [
+      "Ramon Delgado"
+    ],
+    "LAK": [
+      "Lucas Arnold Ker"
+    ],
+    "GT": [
+      "Gabriel Trifu"
+    ],
+    "IM": [
+      "Ion Moldovan",
+      "Ivan Miranda",
+      "Ivo Minar",
+      "Illya Marchenko"
+    ],
+    "OS": [
+      "Orlin Stanoytchev",
+      "Oscar Serrano"
+    ],
+    "OB": [
+      "Oscar Burrieza"
+    ],
+    "MEA": [
+      "Mounir El Aarej"
+    ],
+    "IH": [
+      "Ivo Heuberger"
+    ],
+    "WE": [
+      "Werner Eschauer"
+    ],
+    "ZK": [
+      "Zeljko Krajan"
+    ],
+    "FN": [
+      "Frederic Niemeyer",
+      "Frederik Nielsen"
+    ],
+    "NT": [
+      "Nicolas Thomann"
+    ],
+    "JFB": [
+      "Jean Francois Bachelot"
+    ],
+    "WW": [
+      "Wesley Whitehouse"
+    ],
+    "TZ": [
+      "Tomas Zib"
+    ],
+    "VK": [
+      "Vadim Kutsenko",
+      "Vit Kopriva"
+    ],
+    "EK": [
+      "Edwin Kempes",
+      "Evgeny Korolev"
+    ],
+    "KP": [
+      "Kristian Pless"
+    ],
+    "VL": [
+      "Ville Liukko"
+    ],
+    "JRL": [
+      "Jean Rene Lisnard"
+    ],
+    "NZ": [
+      "Nenad Zimonjic"
+    ],
+    "ET": [
+      "Eric Taino"
+    ],
+    "LZ": [
+      "Lovro Zovko"
+    ],
+    "SR": [
+      "Sergio Roitman",
+      "Stephane Robert"
+    ],
+    "NC": [
+      "Nicolas Coutelot"
+    ],
+    "EP": [
+      "Eric Prodon"
+    ],
+    "LC": [
+      "Lee Childs"
+    ],
+    "DU": [
+      "Danai Udomchoke"
+    ],
+    "ZF": [
+      "Zack Fleishman"
+    ],
+    "YA": [
+      "Yves Allegro"
+    ],
+    "OA": [
+      "Omar Awadhy"
+    ],
+    "ABJ": [
+      "Alex Bogomolov Jr"
+    ],
+    "SDC": [
+      "Sebastien De Chaunac"
+    ],
+    "ME": [
+      "Mikhail Elgin",
+      "Matthew Ebden"
+    ],
+    "RRH": [
+      "Ruben Ramirez Hidalgo"
+    ],
+    "MVA": [
+      "Martin Vassallo Arguello"
+    ],
+    "BV": [
+      "Brian Vahaly"
+    ],
+    "FP": [
+      "Filip Prpic",
+      "Francesco Passaro"
+    ],
+    "AW": [
+      "Alexander Waske",
+      "Adam Walton"
+    ],
+    "MD": [
+      "Marcos Daniel",
+      "Mate Delic"
+    ],
+    "JPG": [
+      "Juan Pablo Guzman"
+    ],
+    "OP": [
+      "Olivier Patience"
+    ],
+    "RDV": [
+      "Rik De Voest"
+    ],
+    "KV": [
+      "Kristof Vliegen"
+    ],
+    "OH": [
+      "Oscar Hernandez"
+    ],
+    "DK": [
+      "Daniel Koellerer",
+      "Dieter Kindlmann",
+      "Denis Kudla",
+      "Darian King",
+      "Dimitar Kuzmanov",
+      "Dominik Koepfer"
+    ],
+    "RB": [
+      "Richard Bloomfield",
+      "Rohan Bopanna",
+      "Ricardas Berankis",
+      "Ruben Bemelmans"
+    ],
+    "YHL": [
+      "Yen Hsun Lu"
+    ],
+    "MVG": [
+      "Melle Van Gemerden"
+    ],
+    "DGT": [
+      "Daniel Gimeno Traver"
+    ],
+    "ERV": [
+      "Edouard Roger Vasselin"
+    ],
+    "WO": [
+      "Wayne Odesnik"
+    ],
+    "IN": [
+      "Ivan Navarro"
+    ],
+    "AUHQ": [
+      "Aisam Ul Haq Qureshi"
+    ],
+    "NH": [
+      "Nathan Healey"
+    ],
+    "LO": [
+      "Lamine Ouahab"
+    ],
+    "JPB": [
+      "Juan Pablo Brzezicki"
+    ],
+    "GN": [
+      "Gianluca Naso"
+    ],
+    "DY": [
+      "Donald Young"
+    ],
+    "VC": [
+      "Victor Crivoi"
+    ],
+    "IS": [
+      "Igor Sijsling"
+    ],
+    "TDB": [
+      "Thiemo De Bakker"
+    ],
+    "AHM": [
+      "Andreas Haider Maurer"
+    ],
+    "JHG": [
+      "Jesse Huta Galung"
+    ],
+    "RDS": [
+      "Rogerio Dutra Silva"
+    ],
+    "TI": [
+      "Tatsuma Ito"
+    ],
+    "ED": [
+      "Evgeny Donskoy"
+    ],
+    "DMDLN": [
+      "Daniel Munoz de la Nava"
+    ],
+    "IVDM": [
+      "Izak Van Der Merwe"
+    ],
+    "VM": [
+      "Vincent Millot"
+    ],
+    "YB": [
+      "Yuki Bhambri"
+    ],
+    "GZ": [
+      "Grega Zemlja",
+      "Giulio Zeppieri"
+    ],
+    "FK": [
+      "Filip Krajinovic"
+    ],
+    "ICH": [
+      "Inigo Cervantes Huegun"
+    ],
+    "AU": [
+      "Adrian Ungur"
+    ],
+    "ZZ": [
+      "Ze Zhang",
+      "Zhizhen Zhang"
+    ],
+    "CMS": [
+      "Cedrik Marcel Stebe"
+    ],
+    "KDS": [
+      "Kenny De Schepper"
+    ],
+    "ZL": [
+      "Zhe Li"
+    ],
+    "JZ": [
+      "Jurgen Zopp"
+    ],
+    "AMM": [
+      "Adrian Menendez Maceiras"
+    ],
+    "GA": [
+      "Guido Andreozzi"
+    ],
+    "JPS": [
+      "John Patrick Smith"
+    ],
+    "FA": [
+      "Facundo Arguello"
+    ],
+    "EY": [
+      "Elias Ymer"
+    ],
+    "CH": [
+      "Christian Harrison",
+      "Calvin Hemery"
+    ],
+    "PHH": [
+      "Pierre Hugues Herbert"
+    ],
+    "AN": [
+      "Aleksandr Nedovyesov"
+    ],
+    "NR": [
+      "Noah Rubin"
+    ],
+    "LV": [
+      "Luca Vanni"
+    ],
+    "CI": [
+      "Cem Ilkel"
+    ],
+    "QH": [
+      "Quentin Halys"
+    ],
+    "DEG": [
+      "Daniel Elahi Galan"
+    ],
+    "BF": [
+      "Bjorn Fratangelo"
+    ],
+    "YU": [
+      "Yasutaka Uchiyama"
+    ],
+    "YM": [
+      "Yannick Maden"
+    ],
+    "CO": [
+      "Christopher Oconnell"
+    ],
+    "YH": [
+      "Yannick Hanfmann"
+    ],
+    "KM": [
+      "Kamil Majchrzak"
+    ],
+    "SO": [
+      "Sebastian Ofner"
+    ],
+    "CT": [
+      "Carlos Taberner"
+    ],
+    "BZM": [
+      "Bernabe Zapata Miralles"
+    ],
+    "CHT": [
+      "Chun Hsin Tseng"
+    ],
+    "EN": [
+      "Emilio Nava"
+    ],
+    "ADF": [
+      "Alejandro Davidovich Fokina"
+    ],
+    "ZS": [
+      "Zachary Svajda"
+    ],
+    "VD": [
+      "Viktor Durasovic"
+    ],
+    "MVM": [
+      "Mario Vilella Martinez"
+    ],
+    "FMA": [
+      "Felipe Meligeni Alves"
+    ],
+    "TBV": [
+      "Tomas Barrios Vera"
+    ],
+    "JPV": [
+      "Juan Pablo Varillas"
+    ],
+    "JJW": [
+      "J J Wolf"
+    ],
+    "ZB": [
+      "Zizou Bergs"
+    ],
+    "BVDZ": [
+      "Botic Van De Zandschulp"
+    ],
+    "TME": [
+      "Tomas Martin Etcheverry"
+    ],
+    "TAT": [
+      "Thiago Agustin Tirante"
+    ],
+    "CUC": [
+      "Camilo Ugo Carabelli"
+    ],
+    "JDJ": [
+      "Jesper De Jong"
+    ],
+    "RP": [
+      "Ryan Peniston"
+    ],
+    "LVA": [
+      "Luca Van Assche"
+    ],
+    "OV": [
+      "Otto Virtanen"
+    ],
+    "NMDA": [
+      "Nicolas Moreno De Alboran"
+    ],
+    "BY": [
+      "Bu Yunchaokete"
+    ],
+    "BH": [
+      "Billy Harris"
+    ]
+  },
+  "metadata": {
+    "total_initials": 476,
+    "total_players": 1156,
+    "files_processed": 3,
+    "source": "tennis JSON files",
+    "sport": "tennis",
+    "generated_at": "2025-08-14"
+  }
+}

@@ -1,4 +1,4 @@
-import { mutation } from "./_generated/server";
+import { internalMutation } from "./_generated/server";
 
 const DEFAULT_ACHIEVEMENTS = [
   { achievementId: "first_quiz", name: "Quiz Rookie", description: "Complete your first quiz", category: "quiz", icon: "🎯", points: 10, requirementType: "quiz_games", requirementValue: 1, isHidden: false },
@@ -11,7 +11,7 @@ const DEFAULT_ACHIEVEMENTS = [
   { achievementId: "the_architect", name: "The Architect", description: "Get your first community question approved in The Forge", category: "community", icon: "🛠️", points: 75, requirementType: "approved_questions", requirementValue: 1, isHidden: false },
 ];
 
-export const seed = mutation({
+export const seed = internalMutation({
   args: {},
   handler: async (ctx) => {
     let count = 0;
