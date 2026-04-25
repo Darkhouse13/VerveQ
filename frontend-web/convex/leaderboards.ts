@@ -1,4 +1,5 @@
 import { query } from "./_generated/server";
+import type { Doc } from "./_generated/dataModel";
 import { v } from "convex/values";
 
 export const getLeaderboard = query({
@@ -8,7 +9,7 @@ export const getLeaderboard = query({
     limit: v.optional(v.number()),
   },
   handler: async (ctx, { sport, mode, limit = 20 }) => {
-    let ratings;
+    let ratings: Doc<"userRatings">[];
     if (sport && mode) {
       ratings = await ctx.db
         .query("userRatings")

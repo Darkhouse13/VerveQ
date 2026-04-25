@@ -12,7 +12,7 @@
  *      tolerates an existing anonymous (guest) session without redirecting
  *      to /home — only a real password session is auto-redirected.
  */
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, type Mock } from "vitest";
 import React from "react";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
@@ -68,7 +68,7 @@ const profileFixture = {
 };
 
 function mockProfileQueries(convexReact: {
-  useQuery: ReturnType<typeof vi.fn>;
+  useQuery: Mock;
 }) {
   convexReact.useQuery.mockImplementation((name: string) => {
     switch (name) {
@@ -108,7 +108,7 @@ describe("ProfileScreen — sign-in/sign-out button matrix", () => {
     }));
     const convexReact = await import("convex/react");
     mockProfileQueries(
-      convexReact as unknown as { useQuery: ReturnType<typeof vi.fn> },
+      convexReact as unknown as { useQuery: Mock },
     );
     const { default: ProfileScreen } = await import(
       "../pages/ProfileScreen"

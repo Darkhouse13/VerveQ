@@ -11,7 +11,7 @@
  *   2. !isAuthenticated && !isLoading → redirect to "/".
  *   3. isAuthenticated → render children (regardless of isGuest).
  */
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, type Mock } from "vitest";
 import React from "react";
 import { render, screen } from "@testing-library/react";
 import { MemoryRouter, Routes, Route, useLocation } from "react-router-dom";
@@ -23,7 +23,7 @@ vi.mock("@/contexts/AuthContext", () => ({
 import { useAuth } from "@/contexts/AuthContext";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 
-const useAuthMock = useAuth as unknown as ReturnType<typeof vi.fn>;
+const useAuthMock = useAuth as unknown as Mock;
 
 function LocationProbe() {
   const loc = useLocation();

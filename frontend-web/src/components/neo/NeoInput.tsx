@@ -1,7 +1,7 @@
 import { cn } from "@/lib/utils";
 import { forwardRef } from "react";
 
-interface NeoInputProps extends React.InputHTMLAttributes<HTMLInputElement> {}
+type NeoInputProps = React.InputHTMLAttributes<HTMLInputElement>;
 
 const NeoInput = forwardRef<HTMLInputElement, NeoInputProps>(
   ({ className, ...props }, ref) => (

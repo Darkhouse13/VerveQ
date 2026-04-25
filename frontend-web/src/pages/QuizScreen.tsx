@@ -14,6 +14,11 @@ import type { Id } from "../../convex/_generated/dataModel";
 import type { GameResultState } from "@/types/api";
 
 const MAX_QUESTIONS = 10;
+type QuizDifficulty = "easy" | "intermediate" | "hard";
+
+function parseDifficulty(value: string | null): QuizDifficulty {
+  return value === "easy" || value === "hard" ? value : "intermediate";
+}
 
 interface QuestionData {
   question: string;
@@ -28,7 +33,7 @@ export default function QuizScreen() {
   const navigate = useNavigate();
   const [params] = useSearchParams();
   const sport = params.get("sport") || "football";
-  const difficulty = params.get("difficulty") || "intermediate";
+  const difficulty = parseDifficulty(params.get("difficulty"));
   const { user } = useAuth();
 
   const [sessionId, setSessionId] = useState<Id<"quizSessions"> | null>(null);

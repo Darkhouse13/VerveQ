@@ -144,7 +144,7 @@ describe("AuthContext — isLegacyVerveqEmail", () => {
 
 describe("AuthContext.signUp", () => {
   it("calls convex signIn with flow=signUp and ensureProfile afterwards", async () => {
-    const ensureProfile = vi.fn(async () => "user_id");
+    const ensureProfile = vi.fn(async (_args?: Record<string, unknown>) => "user_id");
     authMock.useMutation.mockReturnValue(ensureProfile);
 
     const { result } = renderHook(() => useAuth(), { wrapper });
@@ -346,7 +346,9 @@ describe("AuthContext.signOutToGuest", () => {
     expect(authMock.signIn.mock.calls[0][0]).toBe("anonymous");
 
     expect(ensureProfile).toHaveBeenCalledTimes(1);
-    const args = ensureProfile.mock.calls[0][0] as Record<string, unknown>;
+    const [[args]] = ensureProfile.mock.calls as unknown as Array<[
+      Record<string, unknown>,
+    ]>;
     expect(args.isGuest).toBe(true);
     expect(args.displayName).toBe("Guest");
     expect(String(args.username)).toMatch(/^guest_\d+$/);

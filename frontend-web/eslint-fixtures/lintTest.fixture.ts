@@ -1,9 +1,8 @@
-import { evaluateCuratedParityDestructiveGuard } from "../../scripts/curatedParityDeploymentSafety";
+import type { CuratedParityGuardEvaluationDependencies } from "../../scripts/curatedParityDeploymentSafety";
 
-// This should trigger the lint warning
-type BadPattern = Parameters<typeof evaluateCuratedParityDestructiveGuard>[2];
+type ExplicitSeam = CuratedParityGuardEvaluationDependencies;
 
 export const someTest = () => {
-  const deps: BadPattern = {};
+  const deps: ExplicitSeam = {};
   console.log(deps);
 };

@@ -1,4 +1,5 @@
 import { internalMutation, query } from "./_generated/server";
+import type { Doc } from "./_generated/dataModel";
 import { v } from "convex/values";
 import { clampRating, getTierName } from "./lib/elo";
 
@@ -130,7 +131,7 @@ export const getSeasonHistory = query({
     limit: v.optional(v.number()),
   },
   handler: async (ctx, { seasonNumber, sport, mode, limit = 20 }) => {
-    let entries;
+    let entries: Doc<"seasonHistory">[];
     if (sport && mode) {
       entries = await ctx.db
         .query("seasonHistory")
