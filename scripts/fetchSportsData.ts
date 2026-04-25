@@ -69,6 +69,9 @@ interface FootballConfig {
   dailyBudget: number;
   reserveBudget: number;
   rateLimitMs: number;
+  enableHeadlineGapFill?: boolean;
+  headlineGapFillLimit?: number;
+  headlineProfilesMaxPages?: number;
 }
 
 interface NbaConfig {
@@ -85,6 +88,9 @@ interface FeaturesConfig {
   buildGridIndex: boolean;
   buildStatFacts: boolean;
   buildWhoAmIClues: boolean;
+  buildPlayerQualityProfiles?: boolean;
+  buildFootballSurvivalIndex?: boolean;
+  buildFootballCoverageReport?: boolean;
 }
 
 interface PipelineConfig {
@@ -219,6 +225,12 @@ interface GridIndexEntry {
   difficulty: "easy" | "medium" | "hard";
 }
 
+interface VerveGridApprovedEntry extends GridIndexEntry {
+  sport: "football";
+  sourceGridId: string;
+  axisFamily: string;
+}
+
 interface StatFact {
   id: string;
   sport: "football" | "nba";
@@ -228,6 +240,33 @@ interface StatFact {
   statKey: string;
   contextKey: string;
   value: number;
+  season: number | null;
+}
+
+interface HigherLowerFact {
+  id: string;
+  sport: "football" | "nba";
+  poolKey: string;
+  entityType: "player" | "team";
+  entityId: string;
+  entityName: string;
+  statKey: string;
+  contextKey: string;
+  value: number;
+  season: number | null;
+}
+
+interface HigherLowerPool {
+  id: string;
+  sport: "football" | "nba";
+  entityType: "player" | "team";
+  statKey: string;
+  contextKey: string;
+  contextLabel: string;
+  factCount: number;
+  distinctValueCount: number;
+  minValue: number;
+  maxValue: number;
   season: number | null;
 }
 
@@ -241,6 +280,342 @@ interface WhoAmIClue {
   clue4: string;
   answerName: string;
   difficulty: "easy" | "medium" | "hard";
+}
+
+interface WhoAmIApprovedClue {
+  id: string;
+  sourceClueId: string;
+  sport: "football";
+  playerId: string;
+  clue1: string;
+  clue2: string;
+  clue3: string;
+  clue4: string;
+  answerName: string;
+  difficulty: "easy" | "medium" | "hard";
+  rawDifficulty: "easy" | "medium" | "hard";
+  qualityScore: number;
+  isHeadlineSeed: boolean;
+  isManualLegend: boolean;
+  teamLabels: string[];
+  approvalReasons: string[];
+  curationFlags: string[];
+}
+
+interface PlayerQualityProfile {
+  id: string;
+  sport: "football";
+  playerId: string;
+  playerName: string;
+  normalizedName: string;
+  initials2: string | null;
+  initials3: string | null;
+
+  fameScore: number;
+  playabilityScore: number;
+  clueRichnessScore: number;
+  metadataCompletenessScore: number;
+  recentPresenceScore: number;
+  eliteCompetitionScore: number;
+  transferScore: number;
+  trophyScore: number;
+
+  totalAppearances: number;
+  totalMinutes: number;
+  totalGoals: number;
+  totalAssists: number;
+  teamCount: number;
+  leagueCount: number;
+  trophyWins: number;
+  transferCount: number;
+  hasPhoto: boolean;
+  hasNationality: boolean;
+  hasPosition: boolean;
+  hasFirstName: boolean;
+
+  isHeadlineSeed: boolean;
+  wasGapFilled: boolean;
+  matchedViaProfilesEndpoint: boolean;
+
+  survivalTier: "A" | "B" | "C" | "D";
+  survivalEligible: boolean;
+  whoAmIEligible: boolean;
+  higherLowerEligible: boolean;
+  gridEligible: boolean;
+
+  reasons: string[];
+}
+
+interface SurvivalInitialsBucket {
+  id: string;
+  sport: "football";
+  initials: string;
+  initialsLength: number;
+
+  playerIds: string[];
+  playerNames: string[];
+  totalPlayers: number;
+
+  playablePlayerIds: string[];
+  headlinePlayerIds: string[];
+  famousCount: number;
+  playableCount: number;
+  playableRatio: number;
+
+  topPlayerId: string | null;
+  topPlayerName: string | null;
+  topPlayabilityScore: number;
+
+  bucketScore: number;
+  recommendedTier: "easy" | "medium" | "hard" | "expert";
+  eligibleEarlyRounds: boolean;
+  eligibleMidRounds: boolean;
+  eligibleLateRounds: boolean;
+}
+
+interface HeadlineCoverageEntry {
+  seedName: string;
+  normalizedSeedName: string;
+  status:
+    | "matched_existing"
+    | "matched_manual_layer"
+    | "gap_filled"
+    | "ambiguous"
+    | "missing";
+  matchedPlayerId: string | null;
+  matchedPlayerName: string | null;
+  notes: string | null;
+  priority: CoveragePriority;
+  coverageBucket: CoverageBucket;
+  matchConfidence?: MatchConfidence | null;
+  matchedAlias?: string | null;
+  overrideUsed?: boolean;
+}
+
+type CoveragePriority = "critical" | "high" | "medium" | "low";
+type CoverageBucket =
+  | "matched_existing"
+  | "matched_manual_layer"
+  | "matched_override"
+  | "ambiguous_mononym"
+  | "ambiguous_duplicate_legend"
+  | "missing_current_star"
+  | "missing_recent_star"
+  | "missing_historical_legend"
+  | "missing_out_of_scope"
+  | "missing_unresolved";
+
+type HeadlineSeedEra = "current" | "recent" | "historical";
+
+interface ManualFootballLegend {
+  canonicalName: string;
+  aliases?: string[];
+  nationality?: string;
+  position?: string;
+  era?: string;
+  clubs?: string[];
+  notableTeams?: string[];
+  trophies?: string[];
+  achievements?: string[];
+  firstName?: string;
+  lastName?: string;
+  initials2?: string | null;
+  initials3?: string | null;
+  survivalTier?: "A" | "B";
+  whoAmIEligible?: boolean;
+  notes?: string;
+}
+
+interface NormalizedManualFootballLegend {
+  id: string;
+  sport: "football";
+  canonicalName: string;
+  aliases: string[];
+  nationality: string | null;
+  position: string | null;
+  era: string | null;
+  clubs: string[];
+  notableTeams: string[];
+  trophies: string[];
+  achievements: string[];
+  firstName: string | null;
+  lastName: string | null;
+  initials2: string | null;
+  initials3: string | null;
+  survivalTier: "A" | "B";
+  whoAmIEligibleHint: boolean;
+  notes: string | null;
+  player: Player;
+}
+
+interface FinalIdentityResolution {
+  canonicalName: string;
+  resolutionType: "preferred_existing" | "manual_layer";
+  preferredApiId?: number;
+  preferredExactName?: string;
+  notes?: string;
+}
+
+interface FootballHeadlineSeed {
+  canonicalName: string;
+  aliases: string[];
+  allowMononym?: boolean;
+  requiredTokens?: string[];
+  forbiddenTokens?: string[];
+  era?: HeadlineSeedEra;
+  priority?: CoveragePriority;
+}
+
+interface HeadlineSeedOverride {
+  canonicalName: string;
+  preferredApiId?: number;
+  preferredExactName?: string;
+  allowedExactNames?: string[];
+  allowedAliases?: string[];
+  notes?: string;
+}
+
+type MatchConfidence = "exact" | "alias" | "strong" | "weak" | "reject";
+
+interface NameMatchFeatures {
+  candidateName: string;
+  candidateNormalized: string;
+  candidateTokens: string[];
+  matchedAlias: string;
+  matchedAliasNormalized: string;
+  exactNormalizedEquality: boolean;
+  exactAliasEquality: boolean;
+  tokenOverlapRatio: number;
+  orderedTokenContainment: boolean;
+  initialsCompatibility: boolean;
+  abbreviationCompatibility: boolean;
+  extraTokenPenalty: number;
+  extraUnrelatedTokens: string[];
+  mononymStrictness: boolean;
+  forbiddenTokenHit: boolean;
+  requiredTokensSatisfied: boolean;
+  falsePositiveSafetyRejected: boolean;
+  confidence: MatchConfidence;
+  score: number;
+}
+
+interface FootballCoverageReport {
+  generatedAt: string;
+  totalFootballPlayers: number;
+  totalFootballPlayerTeamSeasons: number;
+
+  playersWithRecentStats: number;
+  playersWithPhotos: number;
+  playersWithPosition: number;
+  playersWithNationality: number;
+  playersWithTrophies: number;
+  playersWithTransfers: number;
+
+  headlinerSeedsTotal: number;
+  headlinerSeedsMatchedExisting: number;
+  headlinerSeedsMatchedManualLayer: number;
+  headlinerSeedsGapFilled: number;
+  headlinerSeedsAmbiguous: number;
+  headlinerSeedsMissing: number;
+
+  tierCounts: {
+    A: number;
+    B: number;
+    C: number;
+    D: number;
+  };
+
+  recoveryCandidates: {
+    criticalCurrentMissing: string[];
+    highPriorityMissing: string[];
+    ambiguousNeedsOverride: string[];
+    historicalManualLayerCandidates: string[];
+  };
+
+  manualLayerRecommendation: {
+    recommended: boolean;
+    reasons: string[];
+    candidateCount: number;
+    candidateNames: string[];
+  };
+
+  manualLayerImpact: {
+    legendsLoaded: number;
+    seedsResolvedByManualLayer: number;
+    survivalEligibleLegends: number;
+    whoAmIEligibleLegends: number;
+    unresolvedHistoricalSeedsAfterManualLayer: string[];
+  };
+
+  headlineGameplayCoverage: {
+    survivalEligible: number;
+    whoAmIEligible: number;
+    bothEligible: number;
+    neitherEligible: number;
+  };
+
+  coverage: HeadlineCoverageEntry[];
+  missingSeedNames: string[];
+}
+
+interface FootballGameplayQaReport {
+  generatedAt: string;
+  survival: {
+    totalBuckets: number;
+    buckets2Letters: number;
+    buckets3Letters: number;
+    easyBuckets: number;
+    mediumBuckets: number;
+    hardBuckets: number;
+    expertBuckets: number;
+    earlyEligibleBuckets: number;
+    midEligibleBuckets: number;
+    lateEligibleBuckets: number;
+    bucketsWithHeadlinePlayer: number;
+    bucketsWithManualLegendTopPlayer: number;
+    top20EarlyBuckets: Array<{
+      initials: string;
+      topPlayerName: string | null;
+      bucketScore: number;
+      recommendedTier: string;
+      totalPlayers: number;
+      playableCount: number;
+      famousCount: number;
+    }>;
+    suspiciousBuckets: Array<{
+      initials: string;
+      reason: string;
+      totalPlayers: number;
+      playableCount: number;
+      topPlayerName: string | null;
+      bucketScore: number;
+    }>;
+  };
+  whoAmI: {
+    totalClueSets: number;
+    headlineClueSets: number;
+    manualLegendClueSets: number;
+    easy: number;
+    medium: number;
+    hard: number;
+    lowSignalClueSets: Array<{
+      playerId: string;
+      answerName: string;
+      reasons: string[];
+    }>;
+  };
+  quality: {
+    tierA: number;
+    tierB: number;
+    tierC: number;
+    tierD: number;
+    headlineTierBreakdown: {
+      A: number;
+      B: number;
+      C: number;
+      D: number;
+    };
+  };
 }
 
 // --- Resume State ---
@@ -257,6 +632,7 @@ type PhaseName =
   | "footballTopScorers"
   | "footballTopAssists"
   | "footballSquadPlayers"
+  | "footballHeadlineGapFill"
   | "footballTrophies"
   | "footballTransfers"
   | "footballFixtures"
@@ -266,7 +642,8 @@ type PhaseName =
   | "nbaStandings"
   | "nbaPlayers"
   | "nbaStats"
-  | "indexBuilding";
+  | "indexBuilding"
+  | "qualityIndexBuilding";
 
 interface PipelineState {
   version: 2;
@@ -275,6 +652,7 @@ interface PipelineState {
   footballCallsUsed: number;
   nbaCallsUsed: number;
   phases: Record<PhaseName, PhaseState>;
+  footballHeadlineCoverage: HeadlineCoverageEntry[];
 }
 
 // --- CLI Flags ---
@@ -297,6 +675,727 @@ const RETRY_BACKOFF_MS = 5000;
 const CACHE_DIR = path.join(__dirname, "cache");
 const DATA_DIR = path.join(__dirname, "data");
 const STATE_PATH = path.join(DATA_DIR, ".pipeline-state.json");
+const MANUAL_FOOTBALL_LEGENDS_PATH = path.join(
+  DATA_DIR,
+  "manual_football_legends.json",
+);
+
+const FOOTBALL_ELITE_COMPETITION_IDS = new Set([1, 2, 3, 4, 9]);
+const FOOTBALL_RECENT_SEASONS_COUNT = 3;
+const FOOTBALL_WHO_AM_I_MIN_SIGNAL_COUNT = 3;
+const FOOTBALL_WHO_AM_I_MIN_PLAYABILITY_SCORE = 45;
+const FOOTBALL_WHO_AM_I_MIN_CLUE_RICHNESS_SCORE = 12;
+const FOOTBALL_SURVIVAL_EASY_MIN_TOP_SCORE = 150;
+const FOOTBALL_SURVIVAL_EASY_MIN_BUCKET_SCORE = 250;
+const FOOTBALL_SURVIVAL_EASY_MIN_PLAYABLE_RATIO = 0.18;
+const FOOTBALL_SURVIVAL_MEDIUM_MIN_TOP_SCORE = 100;
+const FOOTBALL_SURVIVAL_MEDIUM_MIN_BUCKET_SCORE = 140;
+const FOOTBALL_SURVIVAL_MEDIUM_MIN_PLAYABLE_RATIO = 0.12;
+const FOOTBALL_SURVIVAL_HARD_MIN_TOP_SCORE = 60;
+const FOOTBALL_SURVIVAL_EARLY_MIN_FAMOUS_COUNT = 2;
+const FOOTBALL_SURVIVAL_EARLY_MIN_PLAYABLE_COUNT = 3;
+const FOOTBALL_SURVIVAL_EARLY_MIN_PLAYABLE_RATIO = 0.22;
+const FOOTBALL_SURVIVAL_EARLY_MIN_TOP_SCORE = 180;
+const FOOTBALL_SURVIVAL_EARLY_MIN_BUCKET_SCORE = 400;
+const FOOTBALL_SURVIVAL_MID_MIN_PLAYABLE_COUNT = 2;
+const FOOTBALL_SURVIVAL_MID_MIN_PLAYABLE_RATIO = 0.15;
+const FOOTBALL_SURVIVAL_MID_MIN_TOP_SCORE = 120;
+const FOOTBALL_SURVIVAL_MID_MIN_BUCKET_SCORE = 180;
+
+const FOOTBALL_HEADLINE_SEED_NAMES = [
+  "Lionel Messi",
+  "Cristiano Ronaldo",
+  "Kylian Mbappé",
+  "David Beckham",
+  "Karim Benzema",
+  "Luka Modric",
+  "Robert Lewandowski",
+  "Mohamed Salah",
+  "Erling Haaland",
+  "Kevin De Bruyne",
+  "Sergio Ramos",
+  "Andrés Iniesta",
+  "Gerard Piqué",
+  "Gianluigi Buffon",
+  "Andrea Pirlo",
+  "Zlatan Ibrahimović",
+  "Wayne Rooney",
+  "Frank Lampard",
+  "Steven Gerrard",
+  "Didier Drogba",
+  "Samuel Eto'o",
+  "Virgil van Dijk",
+  "Toni Kroos",
+  "Gareth Bale",
+  "Antoine Griezmann",
+  "Sadio Mané",
+  "Jude Bellingham",
+  "Vinicius Junior",
+  "Pelé",
+  "Diego Maradona",
+  "Johan Cruyff",
+  "Ronaldo Nazário",
+  "Ronaldinho",
+  "Zinedine Zidane",
+  "Thierry Henry",
+  "Xavi",
+  "Iker Casillas",
+  "Paolo Maldini",
+  "Franz Beckenbauer",
+  "Michel Platini",
+  "George Best",
+  "Lev Yashin",
+  "Alfredo Di Stéfano",
+  "Ferenc Puskás",
+  "Roberto Baggio",
+  "Romário",
+  "Rivaldo",
+  "Kaká",
+  "Luis Figo",
+  "Carles Puyol",
+  "Roberto Carlos",
+  "Cafu",
+  "Philipp Lahm",
+  "Manuel Neuer",
+  "Bastian Schweinsteiger",
+  "Thomas Müller",
+  "Neymar",
+  "Luis Suárez",
+  "Sergio Agüero",
+  "Eden Hazard",
+  "Harry Kane",
+  "Son Heung-min",
+  "N'Golo Kanté",
+  "Paul Pogba",
+  "Raheem Sterling",
+  "Bernardo Silva",
+  "Phil Foden",
+  "Bukayo Saka",
+  "Declan Rice",
+  "Rodri",
+  "Bruno Fernandes",
+  "Marcus Rashford",
+  "Trent Alexander-Arnold",
+  "Alisson Becker",
+  "Ederson",
+  "Thibaut Courtois",
+  "Marc-André ter Stegen",
+  "Jan Oblak",
+  "Ruben Dias",
+  "Marquinhos",
+  "Thiago Silva",
+  "Casemiro",
+  "Fede Valverde",
+  "Pedri",
+  "Gavi",
+  "Lamine Yamal",
+  "Jamal Musiala",
+  "Florian Wirtz",
+  "Victor Osimhen",
+  "Rafael Leão",
+  "Lautaro Martínez",
+  "Julian Alvarez",
+  "Enzo Fernández",
+  "Emiliano Martínez",
+  "Alessandro Del Piero",
+  "Francesco Totti",
+  "Ryan Giggs",
+  "Paul Scholes",
+  "Roy Keane",
+  "Eric Cantona",
+  "Alan Shearer",
+  "Ruud van Nistelrooy",
+  "Dennis Bergkamp",
+  "Patrick Vieira",
+  "Claude Makélélé",
+  "Ashley Cole",
+  "John Terry",
+  "Rio Ferdinand",
+  "Nemanja Vidić",
+  "Petr Čech",
+  "Arjen Robben",
+  "Franck Ribéry",
+  "Xabi Alonso",
+  "Mesut Özil",
+  "Angel Di María",
+  "Ángel Correa",
+  "Cesc Fàbregas",
+  "David Villa",
+  "Fernando Torres",
+  "Raúl",
+  "Sergio Busquets",
+  "Javier Zanetti",
+  "Fabio Cannavaro",
+  "Clarence Seedorf",
+  "Edgar Davids",
+  "Ruud Gullit",
+  "Marco van Basten",
+  "Frank Rijkaard",
+  "Andrea Barzagli",
+  "Leonardo Bonucci",
+  "Giorgio Chiellini",
+  "Franco Baresi",
+  "Gaetano Scirea",
+  "Dani Alves",
+  "Riyad Mahrez",
+  "Yaya Touré",
+  "Vincent Kompany",
+  "Miroslav Klose",
+  "Robin van Persie",
+  "Dirk Kuyt",
+  "Wesley Sneijder",
+  "Edwin van der Sar",
+  "Michael Ballack",
+  "Bobby Charlton",
+  "Kenny Dalglish",
+  "Kevin Keegan",
+  "Bobby Moore",
+  "Gerd Müller",
+  "Oliver Kahn",
+  "Lothar Matthäus",
+  "Davor Šuker",
+  "Hristo Stoichkov",
+  "Roberto Bettega",
+  "Gheorghe Hagi",
+  "Carlos Valderrama",
+  "James Rodríguez",
+  "Alexis Sánchez",
+  "Arturo Vidal",
+  "Luis Díaz",
+  "Achraf Hakimi",
+  "Khvicha Kvaratskhelia",
+] as const;
+
+const FOOTBALL_RECENT_HEADLINE_SEEDS = new Set([
+  "David Beckham",
+  "Sergio Ramos",
+  "Andrés Iniesta",
+  "Gerard Piqué",
+  "Gianluigi Buffon",
+  "Andrea Pirlo",
+  "Zlatan Ibrahimović",
+  "Wayne Rooney",
+  "Frank Lampard",
+  "Steven Gerrard",
+  "Didier Drogba",
+  "Samuel Eto'o",
+  "Toni Kroos",
+  "Gareth Bale",
+  "Antoine Griezmann",
+  "Sadio Mané",
+  "Luka Modric",
+  "Karim Benzema",
+  "Iker Casillas",
+  "Paolo Maldini",
+  "Ronaldo Nazário",
+  "Ronaldinho",
+  "Thierry Henry",
+  "Xavi",
+  "Romário",
+  "Rivaldo",
+  "Kaká",
+  "Luis Figo",
+  "Carles Puyol",
+  "Cafu",
+  "Philipp Lahm",
+  "Manuel Neuer",
+  "Bastian Schweinsteiger",
+  "Thomas Müller",
+  "Neymar",
+  "Luis Suárez",
+  "Sergio Agüero",
+  "Eden Hazard",
+  "N'Golo Kanté",
+  "Paul Pogba",
+  "Alessandro Del Piero",
+  "Francesco Totti",
+  "Ryan Giggs",
+  "Paul Scholes",
+  "Roy Keane",
+  "Eric Cantona",
+  "Alan Shearer",
+  "Ruud van Nistelrooy",
+  "Dennis Bergkamp",
+  "Patrick Vieira",
+  "Claude Makélélé",
+  "Ashley Cole",
+  "John Terry",
+  "Rio Ferdinand",
+  "Nemanja Vidić",
+  "Petr Čech",
+  "Arjen Robben",
+  "Franck Ribéry",
+  "Xabi Alonso",
+  "Mesut Özil",
+  "Angel Di María",
+  "Ángel Correa",
+  "Cesc Fàbregas",
+  "David Villa",
+  "Fernando Torres",
+  "Raúl",
+  "Sergio Busquets",
+  "Javier Zanetti",
+  "Fabio Cannavaro",
+  "Clarence Seedorf",
+  "Andrea Barzagli",
+  "Leonardo Bonucci",
+  "Giorgio Chiellini",
+  "Dani Alves",
+  "Yaya Touré",
+  "Vincent Kompany",
+  "Miroslav Klose",
+  "Robin van Persie",
+  "Dirk Kuyt",
+  "Wesley Sneijder",
+  "Edwin van der Sar",
+  "Michael Ballack",
+  "James Rodríguez",
+  "Alexis Sánchez",
+  "Arturo Vidal",
+]);
+
+const FOOTBALL_HISTORICAL_HEADLINE_SEEDS = new Set([
+  "Pelé",
+  "Diego Maradona",
+  "Johan Cruyff",
+  "Franz Beckenbauer",
+  "Michel Platini",
+  "George Best",
+  "Lev Yashin",
+  "Alfredo Di Stéfano",
+  "Ferenc Puskás",
+  "Roberto Baggio",
+  "Franco Baresi",
+  "Gaetano Scirea",
+  "Edgar Davids",
+  "Ruud Gullit",
+  "Marco van Basten",
+  "Frank Rijkaard",
+  "Bobby Charlton",
+  "Kenny Dalglish",
+  "Kevin Keegan",
+  "Bobby Moore",
+  "Gerd Müller",
+  "Oliver Kahn",
+  "Lothar Matthäus",
+  "Davor Šuker",
+  "Hristo Stoichkov",
+  "Roberto Bettega",
+  "Gheorghe Hagi",
+  "Carlos Valderrama",
+]);
+
+const FOOTBALL_CRITICAL_HEADLINE_SEEDS = new Set([
+  "Lionel Messi",
+  "Cristiano Ronaldo",
+  "Kylian Mbappé",
+  "Erling Haaland",
+  "Kevin De Bruyne",
+  "Jude Bellingham",
+  "Harry Kane",
+  "Virgil van Dijk",
+  "Bukayo Saka",
+  "Trent Alexander-Arnold",
+  "Florian Wirtz",
+  "Jamal Musiala",
+  "Victor Osimhen",
+  "Achraf Hakimi",
+]);
+
+const FOOTBALL_HIGH_PRIORITY_HEADLINE_SEEDS = new Set([
+  "Robert Lewandowski",
+  "Mohamed Salah",
+  "Karim Benzema",
+  "Luka Modric",
+  "Toni Kroos",
+  "Gareth Bale",
+  "Eden Hazard",
+  "Sergio Agüero",
+  "Gerard Piqué",
+  "Didier Drogba",
+  "Samuel Eto'o",
+  "Iker Casillas",
+  "Carles Puyol",
+  "Luis Suárez",
+  "Rodri",
+  "Ederson",
+  "Marquinhos",
+  "Pedri",
+  "Gavi",
+  "Lamine Yamal",
+  "Phil Foden",
+  "Ruben Dias",
+  "James Rodríguez",
+  "Ronaldinho",
+  "Xavi",
+  "Neymar",
+  "Luis Díaz",
+  "Khvicha Kvaratskhelia",
+]);
+
+const FOOTBALL_LOW_PRIORITY_HEADLINE_SEEDS = new Set([
+  "George Best",
+  "Lev Yashin",
+  "Ferenc Puskás",
+  "Gaetano Scirea",
+  "Bobby Charlton",
+  "Gerd Müller",
+  "Kenny Dalglish",
+  "Kevin Keegan",
+  "Alfredo Di Stéfano",
+  "Roberto Bettega",
+]);
+
+const FOOTBALL_HEADLINE_SEED_CONFIG: Record<
+  string,
+  Partial<Omit<FootballHeadlineSeed, "canonicalName">>
+> = {
+  "Lionel Messi": {
+    aliases: ["Leo Messi", "L. Messi"],
+    requiredTokens: ["messi"],
+  },
+  "Cristiano Ronaldo": {
+    aliases: ["Cristiano Ronaldo dos Santos Aveiro", "C. Ronaldo"],
+    requiredTokens: ["ronaldo"],
+  },
+  "Kylian Mbappé": {
+    aliases: ["Kylian Mbappe", "K. Mbappé", "K. Mbappe"],
+    requiredTokens: ["mbappe"],
+  },
+  "Karim Benzema": {
+    aliases: ["K. Benzema"],
+    requiredTokens: ["benzema"],
+  },
+  "Luka Modric": {
+    aliases: ["Luka Modrić", "L. Modric", "L. Modrić"],
+    requiredTokens: ["modric"],
+  },
+  "Kevin De Bruyne": {
+    aliases: ["K. De Bruyne"],
+    requiredTokens: ["bruyne"],
+  },
+  "Virgil van Dijk": {
+    aliases: ["V. van Dijk"],
+    requiredTokens: ["dijk"],
+  },
+  "Trent Alexander-Arnold": {
+    aliases: [
+      "Trent Alexander Arnold",
+      "T. Alexander-Arnold",
+      "T. Alexander Arnold",
+    ],
+    requiredTokens: ["alexander", "arnold"],
+  },
+  "N'Golo Kanté": {
+    aliases: ["Ngolo Kante", "N. Kante", "N Golo Kante"],
+    requiredTokens: ["kante"],
+  },
+  "Son Heung-min": {
+    aliases: ["Son Heung Min"],
+    requiredTokens: ["son", "heung", "min"],
+  },
+  "Luis Suárez": {
+    aliases: ["Luis Suarez", "L. Suárez", "L. Suarez"],
+    requiredTokens: ["suarez"],
+  },
+  "Angel Di María": {
+    aliases: ["Ángel Di María", "Angel Di Maria", "A. Di María", "A. Di Maria"],
+    requiredTokens: ["maria"],
+  },
+  "Rafael Leão": {
+    aliases: ["Rafael Leao", "R. Leão", "R. Leao"],
+    requiredTokens: ["leao"],
+  },
+  "Lautaro Martínez": {
+    aliases: ["Lautaro Martinez", "L. Martínez", "L. Martinez"],
+    requiredTokens: ["lautaro", "martinez"],
+  },
+  "Vinicius Junior": {
+    aliases: ["Vinícius Júnior", "V. Junior", "V. Júnior"],
+    requiredTokens: ["junior"],
+  },
+  "Erling Haaland": {
+    aliases: ["E. Haaland"],
+    requiredTokens: ["haaland"],
+  },
+  "Harry Kane": {
+    aliases: ["H. Kane"],
+    requiredTokens: ["kane"],
+  },
+  "Jude Bellingham": {
+    aliases: ["J. Bellingham"],
+    requiredTokens: ["bellingham"],
+  },
+  Xavi: {
+    aliases: ["Xavi Hernandez", "Xavier Hernández Creus", "Xavier Hernandez Creus"],
+    allowMononym: true,
+  },
+  Ronaldinho: {
+    aliases: ["Ronaldinho Gaúcho", "Ronaldinho Gaucho"],
+    allowMononym: true,
+  },
+  Kaká: {
+    aliases: ["Kaka", "Ricardo Kaká", "Ricardo Kaka", "Ricardo Izecson dos Santos Leite"],
+    allowMononym: true,
+  },
+  Rivaldo: {
+    aliases: ["Rivaldo Vítor Borba Ferreira", "Rivaldo Vitor Borba Ferreira"],
+    allowMononym: true,
+  },
+  Cafu: {
+    aliases: ["Marcos Evangelista de Morais"],
+    allowMononym: true,
+  },
+  Neymar: {
+    aliases: [
+      "Neymar Jr",
+      "Neymar Júnior",
+      "Neymar Junior",
+      "Neymar da Silva Santos Júnior",
+      "Neymar da Silva Santos Junior",
+    ],
+    allowMononym: true,
+  },
+  Rodri: {
+    aliases: ["Rodrigo Hernández Cascante", "Rodrigo Hernandez Cascante", "Rodrigo Hernández", "Rodrigo Hernandez"],
+    allowMononym: true,
+  },
+  Pedri: {
+    aliases: ["Pedro González López", "Pedro Gonzalez Lopez"],
+    allowMononym: true,
+  },
+  Gavi: {
+    aliases: ["Pablo Martín Páez Gavira", "Pablo Martin Paez Gavira"],
+    allowMononym: true,
+  },
+  Ederson: {
+    aliases: ["Ederson Santana de Moraes"],
+    allowMononym: true,
+  },
+  Casemiro: {
+    aliases: ["Carlos Henrique Casemiro", "Carlos Henrique Casimiro"],
+    allowMononym: true,
+  },
+  Marquinhos: {
+    aliases: ["Marcos Aoás Corrêa", "Marcos Aoas Correa"],
+    allowMononym: true,
+  },
+  "Alessandro Del Piero": {
+    aliases: ["A. Del Piero"],
+    requiredTokens: ["piero"],
+  },
+  "Michel Platini": {
+    requiredTokens: ["platini"],
+  },
+};
+
+const FOOTBALL_HEADLINE_SEEDS: FootballHeadlineSeed[] = FOOTBALL_HEADLINE_SEED_NAMES.map(
+  (canonicalName) =>
+    buildFootballHeadlineSeed(
+      canonicalName,
+      FOOTBALL_HEADLINE_SEED_CONFIG[canonicalName],
+    ),
+);
+
+const FOOTBALL_HEADLINE_SEED_OVERRIDES: HeadlineSeedOverride[] = [
+  {
+    canonicalName: "Xavi",
+    preferredApiId: 42041,
+    allowedAliases: ["Xavi", "Xavi Hernandez", "Xavier Hernández Creus"],
+    notes: "Resolve mononym collision to the Barcelona/Spain legend record.",
+  },
+  {
+    canonicalName: "Rodri",
+    preferredApiId: 44,
+    allowedAliases: ["Rodri", "Rodrigo Hernández Cascante", "Rodrigo Hernandez Cascante"],
+    notes: "Resolve the modern Ballon d'Or contender rather than other Rodrigo variants.",
+  },
+  {
+    canonicalName: "Ederson",
+    preferredApiId: 617,
+    allowedAliases: ["Ederson", "Ederson Santana de Moraes"],
+    notes: "Resolve the Manchester City/Brazil goalkeeper over the older namesake.",
+  },
+  {
+    canonicalName: "Marquinhos",
+    preferredApiId: 257,
+    allowedAliases: ["Marquinhos", "Marcos Aoás Corrêa", "Marcos Aoas Correa"],
+    notes: "Resolve the PSG/Brazil defender over the younger namesake.",
+  },
+  {
+    canonicalName: "Ronaldinho",
+    preferredApiId: 114413,
+    allowedAliases: ["Ronaldinho", "Ronaldinho Gaúcho", "Ronaldinho Gaucho"],
+    notes: "Resolve the Brazilian legend record for the mononym.",
+  },
+  {
+    canonicalName: "Carles Puyol",
+    preferredApiId: 116880,
+    allowedExactNames: ["Carles Puyol i Saforcada"],
+    allowedAliases: ["Carles Puyol"],
+    notes: "Accept the existing player record with the Catalan compound surname.",
+  },
+  {
+    canonicalName: "Didier Drogba",
+    preferredApiId: 102731,
+    allowedExactNames: ["Didier Yves Drogba Tébily", "Didier Drogba Tébily"],
+    allowedAliases: ["Didier Drogba", "D. Drogba"],
+    notes: "Accept the existing full-name record for Drogba.",
+  },
+  {
+    canonicalName: "Gerard Piqué",
+    preferredApiId: 136,
+    allowedExactNames: ["Piqué", "Gerard Piqué"],
+    allowedAliases: ["Gerard Piqué", "Gerard Pique"],
+    notes: "Resolve the surname-only display record back to Gerard Piqué.",
+  },
+  {
+    canonicalName: "Iker Casillas",
+    preferredApiId: 367,
+    allowedExactNames: ["Iker Casillas Fernández", "Iker Casillas Fernandez"],
+    allowedAliases: ["Iker Casillas", "I. Casillas"],
+    notes: "Accept the existing two-surname Casillas record.",
+  },
+  {
+    canonicalName: "Samuel Eto'o",
+    preferredApiId: 42432,
+    allowedExactNames: ["Samuel Eto'o Fils", "Samuel Etoo Fils"],
+    allowedAliases: ["Samuel Eto'o", "Samuel Etoo"],
+    notes: "Accept the existing Eto'o Fils record for the headline seed.",
+  },
+  {
+    canonicalName: "Robert Lewandowski",
+    preferredApiId: 521,
+    allowedAliases: ["Robert Lewandowski", "R. Lewandowski"],
+    notes: "Resolve duplicate Lewandowski records to the established current-star profile.",
+  },
+  {
+    canonicalName: "James Rodríguez",
+    preferredApiId: 517,
+    allowedAliases: ["James Rodríguez", "James Rodriguez", "J. Rodríguez", "J. Rodriguez"],
+    notes: "Resolve James Rodríguez to the Colombian attacking midfielder profile.",
+  },
+  {
+    canonicalName: "Luis Suárez",
+    preferredApiId: 157,
+    allowedAliases: ["Luis Suárez", "Luis Suarez", "L. Suárez", "L. Suarez"],
+    notes: "Resolve Luis Suárez to the Uruguayan striker over other Suárez players.",
+  },
+  {
+    canonicalName: "Kaká",
+    preferredApiId: 105404,
+    allowedAliases: ["Kaká", "Kaka", "Ricardo Kaká", "Ricardo Kaka"],
+    notes: "Resolve Kaká to Ricardo Izecson dos Santos Leite.",
+  },
+];
+
+const FOOTBALL_HEADLINE_SEED_OVERRIDE_MAP = new Map(
+  FOOTBALL_HEADLINE_SEED_OVERRIDES.map((override) => [
+    normalizeNameForMatch(override.canonicalName),
+    override,
+  ]),
+);
+
+const FINAL_FOOTBALL_IDENTITY_RESOLUTIONS: FinalIdentityResolution[] = [
+  {
+    canonicalName: "Rivaldo",
+    resolutionType: "manual_layer",
+    notes:
+      "resolved via manual legends layer; preferred over persistent mononym ambiguity in provider data",
+  },
+  {
+    canonicalName: "Bobby Moore",
+    resolutionType: "manual_layer",
+    notes:
+      "resolved via manual legends layer; preferred over ambiguous duplicate provider identities",
+  },
+  {
+    canonicalName: "Diego Maradona",
+    resolutionType: "manual_layer",
+    notes:
+      "resolved via manual legends layer; preferred over ambiguous duplicate provider identities",
+  },
+];
+
+const FINAL_FOOTBALL_IDENTITY_RESOLUTION_MAP = new Map(
+  FINAL_FOOTBALL_IDENTITY_RESOLUTIONS.map((resolution) => [
+    normalizeNameForMatch(resolution.canonicalName),
+    resolution,
+  ]),
+);
+
+const DEFAULT_FOOTBALL_CONFIG_FIELDS = {
+  enableHeadlineGapFill: true,
+  headlineGapFillLimit: 40,
+  headlineProfilesMaxPages: 2,
+} as const;
+
+const DEFAULT_FEATURE_CONFIG_FIELDS = {
+  buildPlayerQualityProfiles: true,
+  buildFootballSurvivalIndex: true,
+  buildFootballCoverageReport: true,
+} as const;
+
+const HIGHER_LOWER_APPROVED_CONTEXT_LABELS: Record<string, string> = {
+  "league:fb_39": "Premier League",
+  "league:fb_140": "La Liga",
+  "league:fb_135": "Serie A",
+  "league:fb_78": "Bundesliga",
+  "league:fb_61": "Ligue 1",
+  "league:fb_2": "Champions League",
+  "league:fb_3": "Europa League",
+  "league:fb_848": "Conference League",
+  "league:fb_1": "World Cup",
+  "league:fb_4": "Euro Championship",
+  "league:fb_9": "Copa America",
+  "league:fb_15": "FIFA Club World Cup",
+  career: "Career",
+};
+
+const HIGHER_LOWER_APPROVED_CONTEXT_KEYS = new Set(
+  Object.keys(HIGHER_LOWER_APPROVED_CONTEXT_LABELS),
+);
+const HIGHER_LOWER_APPROVED_STAT_KEYS = new Set([
+  "goalsFor",
+  "goalsAgainst",
+  "assists",
+  "appearances",
+  "wins",
+  "losses",
+  "draws",
+  "points",
+]);
+const HIGHER_LOWER_DISABLED_STAT_KEYS = new Set(["cleanSheets"]);
+const HIGHER_LOWER_MIN_GROUP_SIZE = 5;
+const HIGHER_LOWER_MIN_DISTINCT_VALUES = 3;
+const VERVE_GRID_APPROVED_NATIONALITIES = new Set([
+  "Argentina",
+  "Belgium",
+  "Brazil",
+  "Colombia",
+  "England",
+  "France",
+  "Germany",
+  "Italy",
+  "Netherlands",
+  "Portugal",
+  "Spain",
+  "Uruguay",
+]);
+const VERVE_GRID_NATIONAL_TEAM_LEAGUE_IDS = new Set(["fb_1", "fb_4", "fb_9"]);
+const VERVE_GRID_POSITION_NORMALIZATION: Record<string, string> = {
+  Forward: "Attacker",
+};
+
+interface FootballSeasonCoverage {
+  players?: boolean;
+  topScorers?: boolean;
+  topAssists?: boolean;
+  standings?: boolean;
+  fixtures?: boolean;
+}
+
+type FootballCoverageRequirement = keyof FootballSeasonCoverage;
 
 // ─── CLI Argument Parsing ───────────────────────────────────────────────────
 
@@ -345,28 +1444,818 @@ function chunk<T>(arr: T[], size: number): T[][] {
   return chunks;
 }
 
-function calculateFameScores(
-  allPts: PlayerTeamSeason[],
-  limit: number,
-): [string, number][] {
-  const playerFame = new Map<string, number>();
-  for (const pts of allPts) {
-    if (!pts.playerId.startsWith("fb_")) continue;
-    let score = (pts.appearances || 0) * 1;
-    score += (pts.goals || 0) * 3;
-    score += (pts.assists || 0) * 2;
-    // Elite competition multiplier: UCL (2), World Cup (1), Euros (4)
-    if (pts.leagueId === "fb_2" || pts.leagueId === "fb_1" || pts.leagueId === "fb_4") {
-      score *= 2.5;
+function roundScore(value: number): number {
+  return Math.round(value * 100) / 100;
+}
+
+function normalizeVerveGridPositionLabel(position: string | null): string | null {
+  if (!position) return null;
+  return VERVE_GRID_POSITION_NORMALIZATION[position] || position;
+}
+
+function getVerveGridAxisFamily(entry: {
+  rowType: string;
+  colType: string;
+}): string {
+  return `${entry.rowType}x${entry.colType}`;
+}
+
+function buildVerveGridCellStats(counts: number[]): VerveGridQaCellStats {
+  if (counts.length === 0) {
+    return { count: 0, min: 0, median: 0, max: 0 };
+  }
+
+  const sorted = [...counts].sort((a, b) => a - b);
+  return {
+    count: counts.length,
+    min: sorted[0],
+    median: sorted[Math.floor(sorted.length / 2)],
+    max: sorted[sorted.length - 1],
+  };
+}
+
+function normalizeNameForMatch(name: string): string {
+  return name
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/&[a-z]+;/gi, " ")
+    .replace(/[’'`´-]+/g, " ")
+    .replace(/[.,/#!$%^&*;:{}=_~()\[\]\\|+?<>]/g, " ")
+    .replace(/[^a-zA-Z\s]/g, " ")
+    .toLowerCase()
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+const NAME_PARTICLE_TOKENS = new Set([
+  "al",
+  "bin",
+  "da",
+  "das",
+  "de",
+  "del",
+  "der",
+  "di",
+  "do",
+  "dos",
+  "du",
+  "el",
+  "la",
+  "le",
+  "los",
+  "san",
+  "santa",
+  "st",
+  "ter",
+  "van",
+  "von",
+  "y",
+]);
+
+function tokenizeNormalizedName(name: string): string[] {
+  return normalizeNameForMatch(name)
+    .split(" ")
+    .filter((token) => /^[a-z]+$/.test(token));
+}
+
+function buildInitialTokenSet(name: string): Set<string> {
+  return new Set(
+    tokenizeNormalizedName(name)
+      .map((token) => token[0])
+      .filter((token): token is string => Boolean(token)),
+  );
+}
+
+function isAbbreviatedName(name: string): boolean {
+  return /\b[A-Za-z]\./.test(name) || tokenizeNormalizedName(name).some((token) => token.length === 1);
+}
+
+function buildDefaultHeadlineAliases(canonicalName: string): string[] {
+  const tokens = tokenizeNormalizedName(canonicalName);
+  if (tokens.length < 2) {
+    return [];
+  }
+
+  return [[`${tokens[0][0]}.`, ...tokens.slice(1)].join(" ")];
+}
+
+function getDefaultFootballHeadlineSeedEra(
+  canonicalName: string,
+): HeadlineSeedEra {
+  if (FOOTBALL_HISTORICAL_HEADLINE_SEEDS.has(canonicalName)) {
+    return "historical";
+  }
+
+  if (FOOTBALL_RECENT_HEADLINE_SEEDS.has(canonicalName)) {
+    return "recent";
+  }
+
+  return "current";
+}
+
+function getDefaultFootballHeadlineSeedPriority(
+  canonicalName: string,
+): CoveragePriority {
+  if (FOOTBALL_CRITICAL_HEADLINE_SEEDS.has(canonicalName)) {
+    return "critical";
+  }
+
+  if (FOOTBALL_HIGH_PRIORITY_HEADLINE_SEEDS.has(canonicalName)) {
+    return "high";
+  }
+
+  if (FOOTBALL_LOW_PRIORITY_HEADLINE_SEEDS.has(canonicalName)) {
+    return "low";
+  }
+
+  return "medium";
+}
+
+function buildFootballHeadlineSeed(
+  canonicalName: string,
+  config: Partial<Omit<FootballHeadlineSeed, "canonicalName">> = {},
+): FootballHeadlineSeed {
+  const aliases = Array.from(
+    new Set([
+      canonicalName,
+      ...buildDefaultHeadlineAliases(canonicalName),
+      ...(config.aliases || []),
+    ]),
+  );
+
+  return {
+    canonicalName,
+    aliases,
+    allowMononym: config.allowMononym ?? tokenizeNormalizedName(canonicalName).length === 1,
+    requiredTokens: config.requiredTokens || [],
+    forbiddenTokens: config.forbiddenTokens || [],
+    era: config.era ?? getDefaultFootballHeadlineSeedEra(canonicalName),
+    priority: config.priority ?? getDefaultFootballHeadlineSeedPriority(canonicalName),
+  };
+}
+
+function getHeadlineSeedOverride(
+  seed: FootballHeadlineSeed,
+): HeadlineSeedOverride | undefined {
+  return FOOTBALL_HEADLINE_SEED_OVERRIDE_MAP.get(
+    normalizeNameForMatch(seed.canonicalName),
+  );
+}
+
+function getHeadlineSeedAliasVariants(seed: FootballHeadlineSeed): string[] {
+  const aliases = Array.from(new Set([seed.canonicalName, ...seed.aliases]));
+  return aliases.filter((alias) => tokenizeNormalizedName(alias).length > 0);
+}
+
+function areOrderedTokensContained(
+  referenceTokens: string[],
+  candidateTokens: string[],
+): boolean {
+  if (referenceTokens.length === 0) {
+    return false;
+  }
+
+  let referenceIndex = 0;
+  for (const candidateToken of candidateTokens) {
+    if (candidateToken === referenceTokens[referenceIndex]) {
+      referenceIndex++;
     }
-    playerFame.set(
-      pts.playerId,
-      (playerFame.get(pts.playerId) || 0) + score,
+    if (referenceIndex === referenceTokens.length) {
+      return true;
+    }
+  }
+
+  return referenceIndex === referenceTokens.length;
+}
+
+function areAbbreviationCompatibleTokens(
+  referenceTokens: string[],
+  candidateTokens: string[],
+): boolean {
+  if (referenceTokens.length !== candidateTokens.length) {
+    return false;
+  }
+
+  let foundAbbreviation = false;
+
+  for (let index = 0; index < referenceTokens.length; index++) {
+    const referenceToken = referenceTokens[index];
+    const candidateToken = candidateTokens[index];
+
+    if (referenceToken === candidateToken) {
+      continue;
+    }
+
+    const compatible =
+      (referenceToken.length === 1 && candidateToken.startsWith(referenceToken)) ||
+      (candidateToken.length === 1 && referenceToken.startsWith(candidateToken));
+
+    if (!compatible) {
+      return false;
+    }
+
+    foundAbbreviation = true;
+  }
+
+  return foundAbbreviation;
+}
+
+function isSafeAliasExtraToken(token: string): boolean {
+  return NAME_PARTICLE_TOKENS.has(token);
+}
+
+function getExtraUnrelatedTokens(
+  referenceTokens: string[],
+  candidateTokens: string[],
+): string[] {
+  const remainingReferenceTokens = [...referenceTokens];
+  const extraTokens: string[] = [];
+
+  for (const candidateToken of candidateTokens) {
+    const matchingIndex = remainingReferenceTokens.indexOf(candidateToken);
+    if (matchingIndex >= 0) {
+      remainingReferenceTokens.splice(matchingIndex, 1);
+      continue;
+    }
+
+    if (!isSafeAliasExtraToken(candidateToken)) {
+      extraTokens.push(candidateToken);
+    }
+  }
+
+  return extraTokens;
+}
+
+function getMatchConfidenceRank(confidence: MatchConfidence): number {
+  switch (confidence) {
+    case "exact":
+      return 4;
+    case "alias":
+      return 3;
+    case "strong":
+      return 2;
+    case "weak":
+      return 1;
+    default:
+      return 0;
+  }
+}
+
+function computeAliasMatchFeatures(
+  seed: FootballHeadlineSeed,
+  alias: string,
+  candidateName: string,
+): NameMatchFeatures {
+  const canonicalNormalized = normalizeNameForMatch(seed.canonicalName);
+  const aliasNormalized = normalizeNameForMatch(alias);
+  const candidateNormalized = normalizeNameForMatch(candidateName);
+  const aliasTokens = tokenizeNormalizedName(alias);
+  const candidateTokens = tokenizeNormalizedName(candidateName);
+  const aliasInitials = buildInitialTokenSet(alias);
+  const candidateInitials = buildInitialTokenSet(candidateName);
+  const overlapCount = aliasTokens.filter((token) => candidateTokens.includes(token)).length;
+  const tokenOverlapRatio = aliasTokens.length > 0 ? overlapCount / aliasTokens.length : 0;
+  const orderedTokenContainment = areOrderedTokensContained(aliasTokens, candidateTokens);
+  const abbreviationCompatibility = areAbbreviationCompatibleTokens(aliasTokens, candidateTokens);
+  const initialsCompatibility =
+    aliasInitials.size > 0 &&
+    candidateInitials.size > 0 &&
+    Array.from(aliasInitials).every((initial) => candidateInitials.has(initial));
+  const extraUnrelatedTokens = getExtraUnrelatedTokens(aliasTokens, candidateTokens);
+  const extraTokenPenalty = extraUnrelatedTokens.length * 25;
+  const requiredTokens = (seed.requiredTokens || []).flatMap(tokenizeNormalizedName);
+  const forbiddenTokens = (seed.forbiddenTokens || []).flatMap(tokenizeNormalizedName);
+  const requiredTokensSatisfied = requiredTokens.every((token) => candidateTokens.includes(token));
+  const forbiddenTokenHit = forbiddenTokens.some((token) => candidateTokens.includes(token));
+  const exactNormalizedEquality = candidateNormalized === canonicalNormalized;
+  const exactAliasEquality = candidateNormalized === aliasNormalized;
+  const mononymStrictness =
+    !seed.allowMononym ||
+    aliasTokens.length > 1 ||
+    candidateTokens.length === 1 ||
+    exactAliasEquality ||
+    exactNormalizedEquality;
+  const falsePositiveSafetyRejected =
+    !exactAliasEquality &&
+    !exactNormalizedEquality &&
+    orderedTokenContainment &&
+    extraUnrelatedTokens.length > 0 &&
+    !abbreviationCompatibility;
+
+  let confidence: MatchConfidence = "reject";
+  let score = 0;
+
+  if (exactNormalizedEquality) {
+    confidence = "exact";
+    score = 300;
+  } else if (exactAliasEquality) {
+    confidence = "alias";
+    score = 280;
+  } else if (
+    forbiddenTokenHit ||
+    !requiredTokensSatisfied ||
+    !mononymStrictness ||
+    falsePositiveSafetyRejected
+  ) {
+    confidence = "reject";
+    score = 0;
+  } else if (
+    tokenOverlapRatio >= 1 &&
+    (orderedTokenContainment || abbreviationCompatibility) &&
+    extraUnrelatedTokens.length === 0
+  ) {
+    confidence = "strong";
+    score = 190;
+  } else if (
+    tokenOverlapRatio >= 0.67 &&
+    (abbreviationCompatibility || orderedTokenContainment || initialsCompatibility) &&
+    extraUnrelatedTokens.length === 0
+  ) {
+    confidence = "strong";
+    score = 160;
+  } else if (
+    tokenOverlapRatio >= 0.5 &&
+    (orderedTokenContainment || abbreviationCompatibility || initialsCompatibility)
+  ) {
+    confidence = "weak";
+    score = 90;
+  }
+
+  score += Math.round(tokenOverlapRatio * 50);
+  if (orderedTokenContainment) score += 15;
+  if (abbreviationCompatibility) score += 20;
+  if (initialsCompatibility) score += 10;
+  if (seed.allowMononym && aliasTokens.length === 1 && candidateTokens.length === 1) {
+    score += 10;
+  }
+  score -= extraTokenPenalty;
+
+  return {
+    candidateName,
+    candidateNormalized,
+    candidateTokens,
+    matchedAlias: alias,
+    matchedAliasNormalized: aliasNormalized,
+    exactNormalizedEquality,
+    exactAliasEquality,
+    tokenOverlapRatio: roundScore(tokenOverlapRatio),
+    orderedTokenContainment,
+    initialsCompatibility,
+    abbreviationCompatibility,
+    extraTokenPenalty,
+    extraUnrelatedTokens,
+    mononymStrictness,
+    forbiddenTokenHit,
+    requiredTokensSatisfied,
+    falsePositiveSafetyRejected,
+    confidence,
+    score,
+  };
+}
+
+function computeNameMatchFeatures(
+  seed: FootballHeadlineSeed,
+  candidateName: string,
+): NameMatchFeatures {
+  return getHeadlineSeedAliasVariants(seed)
+    .map((alias) => computeAliasMatchFeatures(seed, alias, candidateName))
+    .sort(
+      (a, b) =>
+        getMatchConfidenceRank(b.confidence) - getMatchConfidenceRank(a.confidence) ||
+        b.score - a.score ||
+        a.candidateName.localeCompare(b.candidateName),
+    )[0];
+}
+
+function getPlayerInitials(name: string, len: 2 | 3): string | null {
+  const tokens = tokenizeNormalizedName(name);
+
+  if (tokens.length < len) {
+    return null;
+  }
+
+  const initials = tokens
+    .slice(0, len)
+    .map((token) => token[0]?.toUpperCase() || "")
+    .join("");
+
+  return /^[A-Z]+$/.test(initials) ? initials : null;
+}
+
+function isManualLegendPlayerId(playerId: string): boolean {
+  return playerId.startsWith("fb_manual_legend_");
+}
+
+function slugifyManualLegendName(name: string): string {
+  return normalizeNameForMatch(name).replace(/\s+/g, "_");
+}
+
+function hashStringToStableNegativeInt(value: string): number {
+  let hash = 0;
+  for (const char of value) {
+    hash = (hash * 31 + char.charCodeAt(0)) | 0;
+  }
+
+  const normalizedHash = Math.abs(hash) || 1;
+  return normalizedHash * -1;
+}
+
+function sanitizeManualLegendStringArray(value: unknown): string[] {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+
+  return Array.from(
+    new Set(
+      value
+        .filter((item): item is string => typeof item === "string")
+        .map((item) => item.trim())
+        .filter(Boolean),
+    ),
+  );
+}
+
+function normalizeManualFootballLegend(
+  rawLegend: ManualFootballLegend,
+): NormalizedManualFootballLegend | null {
+  if (!rawLegend || typeof rawLegend.canonicalName !== "string") {
+    return null;
+  }
+
+  const canonicalName = rawLegend.canonicalName.trim();
+  if (!canonicalName) {
+    return null;
+  }
+
+  const firstName = rawLegend.firstName?.trim() || null;
+  const lastName = rawLegend.lastName?.trim() || null;
+  const aliases = Array.from(
+    new Set([
+      canonicalName,
+      ...sanitizeManualLegendStringArray(rawLegend.aliases),
+    ]),
+  );
+  const clubs = sanitizeManualLegendStringArray(rawLegend.clubs);
+  const notableTeams = sanitizeManualLegendStringArray(rawLegend.notableTeams);
+  const trophies = sanitizeManualLegendStringArray(rawLegend.trophies);
+  const achievements = sanitizeManualLegendStringArray(rawLegend.achievements);
+  const slug = slugifyManualLegendName(canonicalName);
+  const id = `fb_manual_legend_${slug}`;
+
+  const player: Player = {
+    id,
+    sport: "football",
+    apiId: hashStringToStableNegativeInt(slug),
+    name: canonicalName,
+    firstName,
+    lastName,
+    nationality: rawLegend.nationality?.trim() || null,
+    birthDate: null,
+    birthCountry: rawLegend.nationality?.trim() || null,
+    age: null,
+    height: null,
+    weight: null,
+    position: rawLegend.position?.trim() || null,
+    photo: null,
+    injured: false,
+  };
+
+  return {
+    id,
+    sport: "football",
+    canonicalName,
+    aliases,
+    nationality: player.nationality,
+    position: player.position,
+    era: rawLegend.era?.trim() || null,
+    clubs,
+    notableTeams,
+    trophies,
+    achievements,
+    firstName,
+    lastName,
+    initials2: rawLegend.initials2 ?? getPlayerInitials(canonicalName, 2),
+    initials3: rawLegend.initials3 ?? getPlayerInitials(canonicalName, 3),
+    survivalTier: rawLegend.survivalTier === "B" ? "B" : "A",
+    whoAmIEligibleHint: rawLegend.whoAmIEligible ?? true,
+    notes: rawLegend.notes?.trim() || null,
+    player,
+  };
+}
+
+function loadManualFootballLegends(): NormalizedManualFootballLegend[] {
+  if (!fs.existsSync(MANUAL_FOOTBALL_LEGENDS_PATH)) {
+    return [];
+  }
+
+  try {
+    const raw = JSON.parse(
+      fs.readFileSync(MANUAL_FOOTBALL_LEGENDS_PATH, "utf-8"),
+    ) as unknown;
+    if (!Array.isArray(raw)) {
+      return [];
+    }
+
+    return raw
+      .map((entry) => normalizeManualFootballLegend(entry as ManualFootballLegend))
+      .filter(
+        (legend): legend is NormalizedManualFootballLegend => legend !== null,
+      )
+      .sort((a, b) => a.canonicalName.localeCompare(b.canonicalName));
+  } catch (error) {
+    console.warn(
+      `Warning: failed to load manual football legends from ${MANUAL_FOOTBALL_LEGENDS_PATH}: ${
+        error instanceof Error ? error.message : String(error)
+      }`,
+    );
+    return [];
+  }
+}
+
+function getFinalFootballIdentityResolution(
+  seedName: string,
+): FinalIdentityResolution | undefined {
+  return FINAL_FOOTBALL_IDENTITY_RESOLUTION_MAP.get(
+    normalizeNameForMatch(seedName),
+  );
+}
+
+function findPreferredExistingPlayerForFinalResolution(
+  resolution: FinalIdentityResolution,
+  footballPlayers: Player[],
+): Player | null {
+  let candidates = [...footballPlayers];
+
+  if (resolution.preferredApiId != null) {
+    candidates = candidates.filter(
+      (player) => player.apiId === resolution.preferredApiId,
     );
   }
-  return [...playerFame.entries()]
-    .sort((a, b) => b[1] - a[1])
-    .slice(0, limit);
+
+  if (resolution.preferredExactName) {
+    const normalizedPreferredExactName = normalizeNameForMatch(
+      resolution.preferredExactName,
+    );
+    candidates = candidates.filter((player) =>
+      getExistingPlayerCandidateNames(player).some(
+        (candidateName) =>
+          normalizeNameForMatch(candidateName) === normalizedPreferredExactName,
+      ),
+    );
+  }
+
+  return candidates.length === 1 ? candidates[0] : null;
+}
+
+function resolveCoverageWithManualFootballLegends(
+  coverage: HeadlineCoverageEntry[],
+  footballPlayers: Player[],
+  manualLegends: NormalizedManualFootballLegend[],
+): HeadlineCoverageEntry[] {
+  const manualLegendByNormalizedName = new Map<string, NormalizedManualFootballLegend>();
+  for (const legend of manualLegends) {
+    for (const alias of [legend.canonicalName, ...legend.aliases]) {
+      const normalizedAlias = normalizeNameForMatch(alias);
+      if (normalizedAlias && !manualLegendByNormalizedName.has(normalizedAlias)) {
+        manualLegendByNormalizedName.set(normalizedAlias, legend);
+      }
+    }
+  }
+
+  return coverage.map((entry) => {
+    const annotatedEntry = annotateHeadlineCoverageEntry(entry);
+    const seed = getFootballHeadlineSeedByName(annotatedEntry.seedName);
+
+    if (annotatedEntry.status !== "missing" && annotatedEntry.status !== "ambiguous") {
+      return annotatedEntry;
+    }
+
+    const finalIdentityResolution = getFinalFootballIdentityResolution(
+      annotatedEntry.seedName,
+    );
+    if (finalIdentityResolution) {
+      if (finalIdentityResolution.resolutionType === "preferred_existing") {
+        const preferredPlayer = findPreferredExistingPlayerForFinalResolution(
+          finalIdentityResolution,
+          footballPlayers,
+        );
+
+        if (preferredPlayer) {
+          return annotateHeadlineCoverageEntry({
+            ...annotatedEntry,
+            status: "matched_existing",
+            matchedPlayerId: preferredPlayer.id,
+            matchedPlayerName: preferredPlayer.name,
+            notes:
+              finalIdentityResolution.notes ||
+              "resolved via preferred existing identity",
+            matchConfidence: null,
+            matchedAlias: finalIdentityResolution.preferredExactName || preferredPlayer.name,
+            overrideUsed: true,
+          });
+        }
+      }
+
+      if (finalIdentityResolution.resolutionType === "manual_layer") {
+        const manualLegend = manualLegendByNormalizedName.get(
+          annotatedEntry.normalizedSeedName,
+        );
+
+        if (manualLegend) {
+          return annotateHeadlineCoverageEntry({
+            ...annotatedEntry,
+            status: "matched_manual_layer",
+            matchedPlayerId: manualLegend.id,
+            matchedPlayerName: manualLegend.canonicalName,
+            notes:
+              finalIdentityResolution.notes || "resolved via manual legends layer",
+            matchConfidence: null,
+            matchedAlias: manualLegend.canonicalName,
+            overrideUsed: false,
+          });
+        }
+      }
+    }
+
+    if (
+      !seed ||
+      seed.era !== "historical" ||
+      (annotatedEntry.status !== "missing" && annotatedEntry.status !== "ambiguous")
+    ) {
+      return annotatedEntry;
+    }
+
+    const manualLegend = manualLegendByNormalizedName.get(
+      annotatedEntry.normalizedSeedName,
+    );
+    if (!manualLegend) {
+      return annotatedEntry;
+    }
+
+    return annotateHeadlineCoverageEntry({
+      ...annotatedEntry,
+      status: "matched_manual_layer",
+      matchedPlayerId: manualLegend.id,
+      matchedPlayerName: manualLegend.canonicalName,
+      notes: "resolved via manual legends layer",
+      matchConfidence: null,
+      matchedAlias: manualLegend.canonicalName,
+      overrideUsed: false,
+    });
+  });
+}
+
+function applyConfigDefaults(config: PipelineConfig): PipelineConfig {
+  const football = config.football || ({} as FootballConfig);
+  const features = config.features || ({} as FeaturesConfig);
+
+  return {
+    ...config,
+    football: {
+      ...football,
+      enableHeadlineGapFill:
+        football.enableHeadlineGapFill ??
+        DEFAULT_FOOTBALL_CONFIG_FIELDS.enableHeadlineGapFill,
+      headlineGapFillLimit:
+        football.headlineGapFillLimit ??
+        DEFAULT_FOOTBALL_CONFIG_FIELDS.headlineGapFillLimit,
+      headlineProfilesMaxPages:
+        football.headlineProfilesMaxPages ??
+        DEFAULT_FOOTBALL_CONFIG_FIELDS.headlineProfilesMaxPages,
+    },
+    features: {
+      ...features,
+      buildPlayerQualityProfiles:
+        features.buildPlayerQualityProfiles ??
+        DEFAULT_FEATURE_CONFIG_FIELDS.buildPlayerQualityProfiles,
+      buildFootballSurvivalIndex:
+        features.buildFootballSurvivalIndex ??
+        DEFAULT_FEATURE_CONFIG_FIELDS.buildFootballSurvivalIndex,
+      buildFootballCoverageReport:
+        features.buildFootballCoverageReport ??
+        DEFAULT_FEATURE_CONFIG_FIELDS.buildFootballCoverageReport,
+    },
+  };
+}
+
+function isEliteCompetitionLeagueId(leagueId: string): boolean {
+  const numericLeagueId = parseInt(leagueId.replace(/^fb_/, ""), 10);
+  return FOOTBALL_ELITE_COMPETITION_IDS.has(numericLeagueId);
+}
+
+function getRecentFootballSeasons(config: FootballConfig): number[] {
+  return Array.from(
+    new Set([
+      ...config.seasons,
+      ...config.topPlayerSeasons,
+      ...config.squadSeasons,
+    ]),
+  )
+    .sort((a, b) => b - a)
+    .slice(0, FOOTBALL_RECENT_SEASONS_COUNT);
+}
+
+function extractFootballLeagueCoverage(rawLeague: any): Map<number, FootballSeasonCoverage> {
+  const seasonCoverage = new Map<number, FootballSeasonCoverage>();
+
+  for (const season of rawLeague?.seasons || []) {
+    if (!season?.year) continue;
+    const coverage = season.coverage || {};
+    seasonCoverage.set(season.year, {
+      players:
+        typeof coverage.players === "boolean" ? coverage.players : undefined,
+      topScorers:
+        typeof coverage.top_scorers === "boolean"
+          ? coverage.top_scorers
+          : undefined,
+      topAssists:
+        typeof coverage.top_assists === "boolean"
+          ? coverage.top_assists
+          : undefined,
+      standings:
+        typeof coverage.standings === "boolean"
+          ? coverage.standings
+          : undefined,
+      fixtures:
+        typeof coverage.fixtures?.events === "boolean"
+          ? coverage.fixtures.events
+          : typeof coverage.fixtures === "boolean"
+            ? coverage.fixtures
+            : undefined,
+    });
+  }
+
+  return seasonCoverage;
+}
+
+function canUseLeagueCoverage(
+  coverageByLeague: Map<number, Map<number, FootballSeasonCoverage>>,
+  leagueId: number,
+  season: number,
+  requirement: FootballCoverageRequirement,
+): boolean {
+  const seasonCoverage = coverageByLeague.get(leagueId)?.get(season);
+  const allowed = seasonCoverage?.[requirement];
+  return allowed !== false;
+}
+
+function upsertRecordsById<T extends { id: string }>(records: T[]): T[] {
+  const byId = new Map<string, T>();
+  for (const record of records) {
+    byId.set(record.id, record);
+  }
+  return Array.from(byId.values());
+}
+
+function scorePlayerTeamSeasonCompleteness(record: PlayerTeamSeason): number {
+  const fields = [
+    record.position,
+    record.appearances,
+    record.minutes,
+    record.goals,
+    record.assists,
+    record.cardsYellow,
+    record.cardsRed,
+    record.rating,
+    record.points,
+    record.rebounds,
+    record.steals,
+    record.blocks,
+  ];
+  return fields.filter((value) => value !== null && value !== undefined).length;
+}
+
+function mergePlayerTeamSeasonRecords(
+  records: PlayerTeamSeason[],
+): PlayerTeamSeason[] {
+  const byId = new Map<string, PlayerTeamSeason>();
+  for (const record of records) {
+    const existing = byId.get(record.id);
+    if (
+      !existing ||
+      scorePlayerTeamSeasonCompleteness(record) >=
+        scorePlayerTeamSeasonCompleteness(existing)
+    ) {
+      byId.set(record.id, record);
+    }
+  }
+  return Array.from(byId.values());
+}
+
+function scoreTeamCompleteness(team: Team): number {
+  const fields = [team.shortName, team.logo, team.country, team.founded, team.venue];
+  return fields.filter((value) => value !== null && value !== undefined).length;
+}
+
+function mergeTeamsByQuality(teams: Team[]): Team[] {
+  const byId = new Map<string, Team>();
+  for (const team of teams) {
+    const existing = byId.get(team.id);
+    if (!existing || scoreTeamCompleteness(team) >= scoreTeamCompleteness(existing)) {
+      byId.set(team.id, team);
+    }
+  }
+  return Array.from(byId.values());
 }
 
 // ─── Budget Tracker ─────────────────────────────────────────────────────────
@@ -721,6 +2610,23 @@ async function fetchFootballTransfers(
     }
   }
   return allTransfers;
+}
+
+async function fetchFootballPlayerProfiles(
+  client: ApiClient,
+  search: string,
+  page: number = 1,
+): Promise<any | null> {
+  return client.get("/players/profiles", { search, page });
+}
+
+async function fetchFootballPlayerTeams(
+  client: ApiClient,
+  playerId: number,
+): Promise<any[]> {
+  const data = await client.get("/players/teams", { player: playerId });
+  if (!data?.response) return [];
+  return data.response;
 }
 
 async function fetchFootballFixtureIds(
@@ -1097,6 +3003,1993 @@ function normalizeFootballStanding(
   return facts;
 }
 
+function extractFootballTeamSeasons(raw: any): number[] {
+  const seasonValues = new Set<number>();
+  const candidates = [
+    ...(Array.isArray(raw?.seasons) ? raw.seasons : []),
+    ...(Array.isArray(raw?.statistics) ? raw.statistics : []),
+    ...(Array.isArray(raw?.leagues) ? raw.leagues : []),
+    raw?.season,
+  ];
+
+  for (const candidate of candidates) {
+    const rawSeason =
+      typeof candidate === "number"
+        ? candidate
+        : candidate?.year ?? candidate?.season ?? candidate?.league?.season;
+    if (typeof rawSeason === "number" && Number.isFinite(rawSeason)) {
+      seasonValues.add(rawSeason);
+    }
+  }
+
+  return Array.from(seasonValues).sort((a, b) => a - b);
+}
+
+function normalizeFootballPlayerTeamsResponse(
+  player: Player,
+  rawTeams: any[],
+): { pts: PlayerTeamSeason[]; discoveredTeams: Team[] } {
+  const pts: PlayerTeamSeason[] = [];
+  const discoveredTeams: Team[] = [];
+
+  for (const raw of rawTeams) {
+    const team = raw?.team || raw;
+    if (!team?.id || !team?.name) continue;
+
+    const seasons = extractFootballTeamSeasons(raw);
+    const leagueId = raw?.league?.id ? `fb_${raw.league.id}` : "";
+
+    if (seasons.length === 0) {
+      discoveredTeams.push({
+        id: `fb_team_${team.id}`,
+        sport: "football",
+        apiId: team.id,
+        name: team.name,
+        shortName: team.code || null,
+        logo: team.logo || null,
+        country: team.country || null,
+        leagueId,
+        season: 0,
+        founded: null,
+        venue: null,
+      });
+      continue;
+    }
+
+    for (const season of seasons) {
+      discoveredTeams.push({
+        id: `fb_team_${team.id}`,
+        sport: "football",
+        apiId: team.id,
+        name: team.name,
+        shortName: team.code || null,
+        logo: team.logo || null,
+        country: team.country || null,
+        leagueId,
+        season,
+        founded: null,
+        venue: null,
+      });
+
+      pts.push({
+        id: `${player.id}_team_${team.id}_${season}`,
+        playerId: player.id,
+        teamId: `fb_team_${team.id}`,
+        leagueId,
+        season,
+        position: player.position,
+        appearances: null,
+        minutes: null,
+        goals: null,
+        assists: null,
+        cardsYellow: null,
+        cardsRed: null,
+        rating: null,
+        points: null,
+        rebounds: null,
+        steals: null,
+        blocks: null,
+      });
+    }
+  }
+
+  return {
+    pts: mergePlayerTeamSeasonRecords(pts),
+    discoveredTeams: mergeTeamsByQuality(discoveredTeams),
+  };
+}
+
+interface HeadlineCandidateEvaluation<T> {
+  item: T;
+  candidateNames: string[];
+  displayName: string;
+  apiId: number | null;
+  features: NameMatchFeatures;
+  overrideUsed: boolean;
+  overrideNotes?: string | null;
+}
+
+function buildAbbreviationExpandedNameVariant(
+  displayName: string | null | undefined,
+  firstName: string | null | undefined,
+  lastName: string | null | undefined,
+): string {
+  if (!displayName || !firstName || !lastName) {
+    return "";
+  }
+
+  const normalizedDisplayTokens = tokenizeNormalizedName(displayName);
+  const shouldExpand =
+    isAbbreviatedName(displayName) || normalizedDisplayTokens.length <= 1;
+
+  if (!shouldExpand) {
+    return "";
+  }
+
+  const firstToken = firstName.trim().split(/\s+/)[0];
+  const lastNameTokens = lastName.trim().split(/\s+/).filter(Boolean);
+  if (!firstToken || lastNameTokens.length === 0) {
+    return "";
+  }
+
+  const condensedLastNameTokens = [lastNameTokens[0]];
+  const normalizedFirstLastToken = normalizeNameForMatch(lastNameTokens[0]);
+  if (
+    NAME_PARTICLE_TOKENS.has(normalizedFirstLastToken) &&
+    lastNameTokens.length > 1
+  ) {
+    condensedLastNameTokens.push(lastNameTokens[1]);
+  }
+
+  return `${firstToken} ${condensedLastNameTokens.join(" ")}`.trim();
+}
+
+function getExistingPlayerCandidateNames(player: Player): string[] {
+  const firstNameTokens = tokenizeNormalizedName(player.firstName || "");
+  const primaryFirstName = firstNameTokens[0]
+    ? `${player.firstName!.trim().split(/\s+/)[0]} ${player.lastName || ""}`.trim()
+    : "";
+  const abbreviationExpandedName = buildAbbreviationExpandedNameVariant(
+    player.name,
+    player.firstName,
+    player.lastName,
+  );
+
+  return Array.from(
+    new Set(
+      [
+        player.name,
+        `${player.firstName || ""} ${player.lastName || ""}`.trim(),
+        primaryFirstName,
+        abbreviationExpandedName,
+      ].filter((name): name is string => Boolean(name && name.trim())),
+    ),
+  );
+}
+
+function getFootballProfileCandidateNames(rawProfile: any): string[] {
+  const player = rawProfile?.player || rawProfile || {};
+  const firstNameTokens = tokenizeNormalizedName(player.firstname || "");
+  const primaryFirstName = firstNameTokens[0]
+    ? `${String(player.firstname).trim().split(/\s+/)[0]} ${player.lastname || ""}`.trim()
+    : "";
+  const abbreviationExpandedName = buildAbbreviationExpandedNameVariant(
+    player.name,
+    player.firstname,
+    player.lastname,
+  );
+  return Array.from(
+    new Set(
+      [
+        player.name || "",
+        `${player.firstname || ""} ${player.lastname || ""}`.trim(),
+        primaryFirstName,
+        abbreviationExpandedName,
+      ].filter((name): name is string => Boolean(name && name.trim())),
+    ),
+  );
+}
+
+function isAcceptableHeadlineMatch(
+  features: NameMatchFeatures,
+  source: "existing" | "profiles",
+): boolean {
+  if (features.confidence === "exact" || features.confidence === "alias") {
+    return true;
+  }
+
+  if (features.confidence !== "strong") {
+    return false;
+  }
+
+  return (
+    !features.falsePositiveSafetyRejected &&
+    features.extraUnrelatedTokens.length === 0 &&
+    features.score >= (source === "profiles" ? 185 : 170)
+  );
+}
+
+function describeRejectedHeadlineCandidate(
+  features: NameMatchFeatures | null,
+  seed: FootballHeadlineSeed,
+): string | null {
+  if (!features) {
+    return "No plausible candidate found";
+  }
+
+  if (features.falsePositiveSafetyRejected || features.extraUnrelatedTokens.length > 0) {
+    return `rejected candidate due to extra unrelated tokens: ${features.candidateName}`;
+  }
+
+  if (features.forbiddenTokenHit) {
+    return `rejected candidate due to forbidden tokens: ${features.candidateName}`;
+  }
+
+  if (!features.requiredTokensSatisfied) {
+    return `required tokens not satisfied for ${seed.canonicalName}`;
+  }
+
+  if (seed.allowMononym && tokenizeNormalizedName(seed.canonicalName).length === 1) {
+    return "ambiguous mononym";
+  }
+
+  if (features.confidence === "weak") {
+    return `candidate too weak for safe acceptance: ${features.candidateName}`;
+  }
+
+  return "No safe headline match found";
+}
+
+function buildAcceptedHeadlineMatchNote(
+  evaluation: HeadlineCandidateEvaluation<any>,
+  source: "existing" | "profiles",
+): string {
+  const sourceLabel = source === "existing" ? "matched existing" : "matched profile";
+
+  if (evaluation.overrideUsed) {
+    if (evaluation.overrideNotes) {
+      return `override used (${evaluation.displayName}): ${evaluation.overrideNotes}`;
+    }
+    return `override used (${evaluation.displayName})`;
+  }
+
+  if (evaluation.features.confidence === "alias") {
+    return `matched via alias: ${evaluation.displayName}`;
+  }
+
+  if (evaluation.features.abbreviationCompatibility || isAbbreviatedName(evaluation.displayName)) {
+    return `${sourceLabel} via abbreviation-compatible candidate: ${evaluation.displayName}`;
+  }
+
+  if (normalizeNameForMatch(evaluation.displayName) !== evaluation.features.candidateNormalized) {
+    return `${sourceLabel} via full-name fields: ${evaluation.displayName}`;
+  }
+
+  return `${sourceLabel} via ${evaluation.features.confidence} candidate: ${evaluation.displayName}`;
+}
+
+function applyHeadlineSeedOverride<T>(
+  seed: FootballHeadlineSeed,
+  evaluations: HeadlineCandidateEvaluation<T>[],
+): HeadlineCandidateEvaluation<T> | null {
+  const override = getHeadlineSeedOverride(seed);
+  if (!override) {
+    return null;
+  }
+
+  const preferredExactName = override.preferredExactName
+    ? normalizeNameForMatch(override.preferredExactName)
+    : null;
+  const allowedExactNames = new Set(
+    (override.allowedExactNames || []).map((name) => normalizeNameForMatch(name)),
+  );
+  const allowedAliases = new Set(
+    (override.allowedAliases || []).map((alias) => normalizeNameForMatch(alias)),
+  );
+
+  const doesEvaluationMatchOverride = (
+    evaluation: HeadlineCandidateEvaluation<T>,
+  ): boolean => {
+    if (override.preferredApiId != null && evaluation.apiId !== override.preferredApiId) {
+      return false;
+    }
+
+    const normalizedCandidateNames = evaluation.candidateNames.map((candidateName) =>
+      normalizeNameForMatch(candidateName),
+    );
+    const matchedAlias = normalizeNameForMatch(evaluation.features.matchedAlias);
+
+    if (
+      preferredExactName &&
+      normalizedCandidateNames.includes(preferredExactName)
+    ) {
+      return true;
+    }
+
+    if (
+      allowedExactNames.size > 0 &&
+      normalizedCandidateNames.some((candidateName) => allowedExactNames.has(candidateName))
+    ) {
+      return true;
+    }
+
+    if (allowedAliases.size > 0 && allowedAliases.has(matchedAlias)) {
+      return true;
+    }
+
+    return (
+      override.preferredApiId != null &&
+      !preferredExactName &&
+      allowedExactNames.size === 0 &&
+      allowedAliases.size === 0
+    );
+  };
+
+  for (const evaluation of evaluations) {
+    if (doesEvaluationMatchOverride(evaluation)) {
+      evaluation.overrideUsed = true;
+      evaluation.overrideNotes = override.notes || null;
+      return evaluation;
+    }
+  }
+
+  return null;
+}
+
+function resolveHeadlineSeedMatch<T>(params: {
+  seed: FootballHeadlineSeed;
+  items: T[];
+  source: "existing" | "profiles";
+  getCandidateNames: (item: T) => string[];
+  getDisplayName: (item: T) => string;
+  getApiId: (item: T) => number | null;
+}): {
+  status: "matched" | "ambiguous" | "missing";
+  evaluation: HeadlineCandidateEvaluation<T> | null;
+  notes: string | null;
+} {
+  const allEvaluations = params.items
+    .map((item) => {
+      const candidateNames = params.getCandidateNames(item);
+      const bestFeatures = candidateNames
+        .map((candidateName) => computeNameMatchFeatures(params.seed, candidateName))
+        .sort(
+          (a, b) =>
+            getMatchConfidenceRank(b.confidence) - getMatchConfidenceRank(a.confidence) ||
+            b.score - a.score ||
+            a.candidateName.localeCompare(b.candidateName),
+        )[0];
+
+      if (!bestFeatures) {
+        return null;
+      }
+
+      return {
+        item,
+        candidateNames,
+        displayName: params.getDisplayName(item),
+        apiId: params.getApiId(item),
+        features: bestFeatures,
+        overrideUsed: false,
+      };
+    })
+    .filter(
+      (evaluation): evaluation is HeadlineCandidateEvaluation<T> => evaluation !== null,
+    )
+    .sort(
+      (a, b) =>
+        getMatchConfidenceRank(b.features.confidence) - getMatchConfidenceRank(a.features.confidence) ||
+        b.features.score - a.features.score ||
+        a.displayName.localeCompare(b.displayName),
+    );
+
+  const acceptedEvaluations = allEvaluations.filter((evaluation) =>
+    isAcceptableHeadlineMatch(evaluation.features, params.source),
+  );
+
+  const overrideEvaluation = applyHeadlineSeedOverride(
+    params.seed,
+    acceptedEvaluations,
+  );
+  if (overrideEvaluation) {
+    return {
+      status: "matched",
+      evaluation: overrideEvaluation,
+      notes: buildAcceptedHeadlineMatchNote(overrideEvaluation, params.source),
+    };
+  }
+
+  const targetedRecoveryEvaluation = applyHeadlineSeedOverride(
+    params.seed,
+    allEvaluations,
+  );
+  if (targetedRecoveryEvaluation) {
+    return {
+      status: "matched",
+      evaluation: targetedRecoveryEvaluation,
+      notes: buildAcceptedHeadlineMatchNote(
+        targetedRecoveryEvaluation,
+        params.source,
+      ),
+    };
+  }
+
+  if (acceptedEvaluations.length === 0) {
+    return {
+      status: "missing",
+      evaluation: null,
+      notes: describeRejectedHeadlineCandidate(
+        allEvaluations[0]?.features ?? null,
+        params.seed,
+      ),
+    };
+  }
+
+  const topEvaluation = acceptedEvaluations[0];
+  const secondEvaluation = acceptedEvaluations[1];
+
+  if (secondEvaluation) {
+    const topRank = getMatchConfidenceRank(topEvaluation.features.confidence);
+    const secondRank = getMatchConfidenceRank(secondEvaluation.features.confidence);
+    const scoreGap = topEvaluation.features.score - secondEvaluation.features.score;
+
+    if (
+      (topRank === secondRank && scoreGap < 15) ||
+      (topEvaluation.features.confidence === "strong" && scoreGap < 25)
+    ) {
+      return {
+        status: "ambiguous",
+        evaluation: null,
+        notes: params.seed.allowMononym && tokenizeNormalizedName(params.seed.canonicalName).length === 1
+          ? "ambiguous mononym"
+          : `candidate score too close to second best (${topEvaluation.displayName} vs ${secondEvaluation.displayName})`,
+      };
+    }
+  }
+
+  return {
+    status: "matched",
+    evaluation: topEvaluation,
+    notes: buildAcceptedHeadlineMatchNote(topEvaluation, params.source),
+  };
+}
+
+function buildInitialHeadlineCoverage(
+  footballPlayers: Player[],
+): HeadlineCoverageEntry[] {
+  return FOOTBALL_HEADLINE_SEEDS.map((seed) => {
+    const resolution = resolveHeadlineSeedMatch({
+      seed,
+      items: footballPlayers,
+      source: "existing",
+      getCandidateNames: getExistingPlayerCandidateNames,
+      getDisplayName: (player) => player.name,
+      getApiId: (player) => player.apiId,
+    });
+
+    if (resolution.status === "matched" && resolution.evaluation) {
+      return annotateHeadlineCoverageEntry({
+        seedName: seed.canonicalName,
+        normalizedSeedName: normalizeNameForMatch(seed.canonicalName),
+        status: "matched_existing",
+        matchedPlayerId: resolution.evaluation.item.id,
+        matchedPlayerName: resolution.evaluation.item.name,
+        notes: resolution.notes,
+        matchConfidence: resolution.evaluation.features.confidence,
+        matchedAlias: resolution.evaluation.features.matchedAlias,
+        overrideUsed: resolution.evaluation.overrideUsed,
+      });
+    }
+
+    return annotateHeadlineCoverageEntry({
+      seedName: seed.canonicalName,
+      normalizedSeedName: normalizeNameForMatch(seed.canonicalName),
+      status: resolution.status === "ambiguous" ? "ambiguous" : "missing",
+      matchedPlayerId: null,
+      matchedPlayerName: null,
+      notes: resolution.notes,
+      matchConfidence: null,
+      matchedAlias: null,
+      overrideUsed: false,
+    });
+  });
+}
+
+function getFootballHeadlineSeedByName(
+  seedName: string,
+): FootballHeadlineSeed | undefined {
+  const normalizedSeedName = normalizeNameForMatch(seedName);
+  return FOOTBALL_HEADLINE_SEEDS.find(
+    (seed) => normalizeNameForMatch(seed.canonicalName) === normalizedSeedName,
+  );
+}
+
+function getHeadlineCoveragePriorityRank(priority: CoveragePriority): number {
+  switch (priority) {
+    case "critical":
+      return 0;
+    case "high":
+      return 1;
+    case "medium":
+      return 2;
+    case "low":
+      return 3;
+    default:
+      return 4;
+  }
+}
+
+function getHeadlineSeedEraRank(era: HeadlineSeedEra): number {
+  switch (era) {
+    case "current":
+      return 0;
+    case "recent":
+      return 1;
+    case "historical":
+      return 2;
+    default:
+      return 3;
+  }
+}
+
+function classifyFootballCoverageBucket(
+  entry: Pick<
+    HeadlineCoverageEntry,
+    "status" | "notes" | "overrideUsed"
+  >,
+  seed?: FootballHeadlineSeed,
+): CoverageBucket {
+  if (entry.status === "matched_manual_layer") {
+    return "matched_manual_layer";
+  }
+
+  if (entry.overrideUsed) {
+    return "matched_override";
+  }
+
+  if (entry.status === "matched_existing" || entry.status === "gap_filled") {
+    return "matched_existing";
+  }
+
+  if (entry.status === "ambiguous") {
+    if (seed?.allowMononym || entry.notes === "ambiguous mononym") {
+      return "ambiguous_mononym";
+    }
+
+    return "ambiguous_duplicate_legend";
+  }
+
+  if (seed?.era === "current" && (seed.priority === "critical" || seed.priority === "high")) {
+    return "missing_current_star";
+  }
+
+  if (seed?.era === "recent") {
+    return "missing_recent_star";
+  }
+
+  if (seed?.era === "historical") {
+    if (
+      seed.priority === "low" &&
+      (!entry.notes || entry.notes === "No plausible candidate found")
+    ) {
+      return "missing_out_of_scope";
+    }
+
+    return "missing_historical_legend";
+  }
+
+  return "missing_unresolved";
+}
+
+function annotateHeadlineCoverageEntry(
+  entry: Omit<HeadlineCoverageEntry, "priority" | "coverageBucket"> &
+    Partial<Pick<HeadlineCoverageEntry, "priority" | "coverageBucket">>,
+): HeadlineCoverageEntry {
+  const seed = getFootballHeadlineSeedByName(entry.seedName);
+  const priority = entry.priority ?? seed?.priority ?? "medium";
+  const coverageBucket = classifyFootballCoverageBucket(entry, seed);
+
+  return {
+    ...entry,
+    priority,
+    coverageBucket,
+  };
+}
+
+function sortHeadlineCoverageEntries(
+  coverage: HeadlineCoverageEntry[],
+): HeadlineCoverageEntry[] {
+  return [...coverage].sort((a, b) => {
+    const seedA = getFootballHeadlineSeedByName(a.seedName);
+    const seedB = getFootballHeadlineSeedByName(b.seedName);
+
+    const groupA =
+      a.coverageBucket === "missing_current_star"
+        ? 0
+        : a.status === "ambiguous" && seedA?.era !== "historical"
+          ? 1
+          : a.coverageBucket === "missing_recent_star"
+            ? 2
+            : a.coverageBucket === "missing_historical_legend" ||
+                a.coverageBucket === "missing_out_of_scope"
+              ? 3
+              : a.coverageBucket === "matched_existing" ||
+                  a.coverageBucket === "matched_override" ||
+                  a.coverageBucket === "matched_manual_layer"
+                ? 4
+                : 5;
+
+    const groupB =
+      b.coverageBucket === "missing_current_star"
+        ? 0
+        : b.status === "ambiguous" && seedB?.era !== "historical"
+          ? 1
+          : b.coverageBucket === "missing_recent_star"
+            ? 2
+            : b.coverageBucket === "missing_historical_legend" ||
+                b.coverageBucket === "missing_out_of_scope"
+              ? 3
+              : b.coverageBucket === "matched_existing" ||
+                  b.coverageBucket === "matched_override" ||
+                  b.coverageBucket === "matched_manual_layer"
+                ? 4
+                : 5;
+
+    return (
+      groupA - groupB ||
+      getHeadlineCoveragePriorityRank(a.priority) -
+        getHeadlineCoveragePriorityRank(b.priority) ||
+      getHeadlineSeedEraRank(seedA?.era ?? "historical") -
+        getHeadlineSeedEraRank(seedB?.era ?? "historical") ||
+      a.seedName.localeCompare(b.seedName)
+    );
+  });
+}
+
+function buildSortedCoverageNameList(
+  coverage: HeadlineCoverageEntry[],
+): string[] {
+  return sortHeadlineCoverageEntries(coverage).map((entry) => entry.seedName);
+}
+
+function getHeadlineSeedSearchQueries(seed: FootballHeadlineSeed): string[] {
+  const uniqueQueries = Array.from(new Set([seed.canonicalName, ...seed.aliases]));
+  const multiTokenQueries = uniqueQueries.filter(
+    (query) => tokenizeNormalizedName(query).length > 1 && !isAbbreviatedName(query),
+  );
+  const abbreviatedQueries = uniqueQueries.filter(
+    (query) => isAbbreviatedName(query),
+  );
+  const mononymQueries = uniqueQueries.filter(
+    (query) => tokenizeNormalizedName(query).length === 1,
+  );
+
+  return Array.from(
+    new Set([
+      ...multiTokenQueries,
+      ...abbreviatedQueries.slice(0, 1),
+      ...(seed.allowMononym ? mononymQueries : []),
+    ]),
+  ).slice(0, 3);
+}
+
+function rankFootballPlayersForEnrichment(
+  footballPlayers: Player[],
+  footballPts: PlayerTeamSeason[],
+  config: FootballConfig,
+  coverage: HeadlineCoverageEntry[],
+  limit: number,
+): [string, number][] {
+  const profiles = buildFootballPlayerQualityProfiles(
+    footballPlayers,
+    footballPts,
+    [],
+    [],
+    [],
+    [],
+    config,
+    coverage,
+  );
+
+  return profiles
+    .sort((a, b) => b.playabilityScore - a.playabilityScore)
+    .slice(0, limit)
+    .map((profile) => [profile.playerId, profile.playabilityScore]);
+}
+
+async function runFootballHeadlineGapFill(params: {
+  client: ApiClient;
+  footballPlayers: Player[];
+  footballPts: PlayerTeamSeason[];
+  footballTeams: Team[];
+  config: FootballConfig;
+  coverage: HeadlineCoverageEntry[];
+  dryRun: boolean;
+}): Promise<{
+  players: Player[];
+  pts: PlayerTeamSeason[];
+  teams: Team[];
+  coverage: HeadlineCoverageEntry[];
+}> {
+  const coverage = params.coverage.map((entry) => ({ ...annotateHeadlineCoverageEntry(entry) }));
+  let players = [...params.footballPlayers];
+  let pts = [...params.footballPts];
+  let teams = [...params.footballTeams];
+
+  if (!params.config.enableHeadlineGapFill) {
+    return {
+      players,
+      pts,
+      teams,
+      coverage: coverage.map((entry) => annotateHeadlineCoverageEntry(entry)),
+    };
+  }
+
+  let gapFillCount = 0;
+  const gapFillLimit = params.config.headlineGapFillLimit ?? 0;
+  const maxPages = Math.max(1, params.config.headlineProfilesMaxPages ?? 1);
+
+  for (const entry of coverage) {
+    if (entry.status !== "missing") continue;
+    if (gapFillCount >= gapFillLimit) {
+      entry.notes = entry.notes || "Gap-fill limit reached";
+      continue;
+    }
+
+    const seed = getFootballHeadlineSeedByName(entry.seedName);
+    if (!seed) {
+      entry.notes = entry.notes || "Missing headline seed config";
+      continue;
+    }
+
+    const searchResultsByApiId = new Map<number | string, any>();
+
+    for (const query of getHeadlineSeedSearchQueries(seed)) {
+      let totalPages = 1;
+
+      for (let page = 1; page <= totalPages && page <= maxPages; page++) {
+        if (!params.dryRun && !params.client.getBudget().canMakeCall()) {
+          entry.notes = "Budget exhausted before gap-fill lookup";
+          return {
+            players,
+            pts,
+            teams,
+            coverage: coverage.map((item) => annotateHeadlineCoverageEntry(item)),
+          };
+        }
+
+        const data = await fetchFootballPlayerProfiles(params.client, query, page);
+
+        if (!data) {
+          break;
+        }
+
+        totalPages = Math.min(maxPages, data?.paging?.total || 1);
+        if (Array.isArray(data.response)) {
+          for (const rawProfile of data.response) {
+            const apiId = rawProfile?.player?.id || rawProfile?.id || `${query}:${page}:${searchResultsByApiId.size}`;
+            if (!searchResultsByApiId.has(apiId)) {
+              searchResultsByApiId.set(apiId, rawProfile);
+            }
+          }
+        }
+      }
+    }
+
+    const selection = resolveHeadlineSeedMatch({
+      seed,
+      items: Array.from(searchResultsByApiId.values()),
+      source: "profiles",
+      getCandidateNames: getFootballProfileCandidateNames,
+      getDisplayName: (rawProfile) => rawProfile?.player?.name || rawProfile?.name || "Unknown",
+      getApiId: (rawProfile) => rawProfile?.player?.id || rawProfile?.id || null,
+    });
+
+    if (selection.status === "missing") {
+      entry.notes = selection.notes;
+      continue;
+    }
+
+    if (selection.status === "ambiguous") {
+      entry.status = "ambiguous";
+      entry.notes = selection.notes;
+      continue;
+    }
+
+    const selectedRawProfile = selection.evaluation?.item;
+    if (!selectedRawProfile) {
+      entry.notes = selection.notes || "No selected profile candidate";
+      continue;
+    }
+
+    const normalized = normalizeFootballPlayer(selectedRawProfile);
+    players = upsertRecordsById([...players, normalized.player]);
+    pts = mergePlayerTeamSeasonRecords([...pts, ...normalized.pts]);
+    teams = mergeTeamsByQuality([...teams, ...normalized.discoveredTeams]);
+
+    if (!params.dryRun && !params.client.getBudget().canMakeCall()) {
+      entry.status = "gap_filled";
+      entry.matchedPlayerId = normalized.player.id;
+      entry.matchedPlayerName = normalized.player.name;
+      entry.notes = `${selection.notes}; teams lookup skipped due to budget`;
+      entry.matchConfidence = selection.evaluation?.features.confidence || null;
+      entry.matchedAlias = selection.evaluation?.features.matchedAlias || null;
+      entry.overrideUsed = selection.evaluation?.overrideUsed || false;
+      gapFillCount++;
+      continue;
+    }
+
+    const rawTeams = await fetchFootballPlayerTeams(
+      params.client,
+      normalized.player.apiId,
+    );
+    const playerTeams = normalizeFootballPlayerTeamsResponse(
+      normalized.player,
+      rawTeams,
+    );
+
+    pts = mergePlayerTeamSeasonRecords([...pts, ...playerTeams.pts]);
+    teams = mergeTeamsByQuality([...teams, ...playerTeams.discoveredTeams]);
+
+    entry.status = "gap_filled";
+    entry.matchedPlayerId = normalized.player.id;
+    entry.matchedPlayerName = normalized.player.name;
+    entry.notes = selection.notes;
+    entry.matchConfidence = selection.evaluation?.features.confidence || null;
+    entry.matchedAlias = selection.evaluation?.features.matchedAlias || null;
+    entry.overrideUsed = selection.evaluation?.overrideUsed || false;
+    gapFillCount++;
+  }
+
+  return {
+    players,
+    pts,
+    teams,
+    coverage: coverage.map((entry) => annotateHeadlineCoverageEntry(entry)),
+  };
+}
+
+function getFootballBucketSizeScore(totalPlayers: number): number {
+  if (totalPlayers === 1) return -15;
+  if (totalPlayers >= 2 && totalPlayers <= 12) return 15;
+  if (totalPlayers >= 13 && totalPlayers <= 25) return 10;
+  if (totalPlayers >= 26 && totalPlayers <= 50) return 5;
+  if (totalPlayers >= 51 && totalPlayers <= 75) return 0;
+  return -10;
+}
+
+function getFootballBucketNoisePenalty(
+  totalPlayers: number,
+  topPlayabilityScore: number,
+  famousCount: number,
+  playableRatio: number,
+): number {
+  if (totalPlayers >= 250 && topPlayabilityScore < 170) return -55;
+  if (totalPlayers >= 150 && topPlayabilityScore < 150) return -35;
+  if (totalPlayers >= 100 && famousCount === 0) return -25;
+  if (totalPlayers >= 80 && playableRatio < 0.08) return -20;
+  return 0;
+}
+
+function hasMeaningfulFootballStats(
+  totalAppearances: number,
+  totalMinutes: number,
+  totalGoals: number,
+  totalAssists: number,
+): boolean {
+  return (
+    totalAppearances >= 15 ||
+    totalMinutes >= 900 ||
+    totalGoals >= 10 ||
+    totalAssists >= 8 ||
+    totalGoals + totalAssists >= 12
+  );
+}
+
+function getFootballWhoAmISignalStrength(params: {
+  playabilityScore: number;
+  clueRichnessScore: number;
+  metadataCompletenessScore: number;
+  teamCount: number;
+  trophyWins: number;
+  transferCount: number;
+  meaningfulStats: boolean;
+  hasNationality: boolean;
+  hasPosition: boolean;
+  isHeadlineSeed: boolean;
+  eliteCompetitionScore: number;
+}): {
+  signalCount: number;
+  hasIdentitySignal: boolean;
+  hasTeamSignal: boolean;
+  hasTrophySignal: boolean;
+  hasTransferSignal: boolean;
+  hasStatSignal: boolean;
+  qualifiesBase: boolean;
+  qualifiesHeadlineFallback: boolean;
+} {
+  const hasIdentitySignal = params.hasNationality && params.hasPosition;
+  const hasTeamSignal = params.teamCount >= 2;
+  const hasTrophySignal = params.trophyWins > 0;
+  const hasTransferSignal = params.transferCount > 0;
+  const hasStatSignal = params.meaningfulStats;
+  const signalCount = [
+    hasIdentitySignal,
+    hasTeamSignal,
+    hasTrophySignal,
+    hasTransferSignal,
+    hasStatSignal,
+  ].filter(Boolean).length;
+  const qualifiesBase =
+    params.playabilityScore >= FOOTBALL_WHO_AM_I_MIN_PLAYABILITY_SCORE &&
+    params.clueRichnessScore >= FOOTBALL_WHO_AM_I_MIN_CLUE_RICHNESS_SCORE &&
+    params.metadataCompletenessScore >= 8 &&
+    hasTeamSignal &&
+    (
+      hasTrophySignal ||
+      hasTransferSignal ||
+      (hasStatSignal &&
+        params.eliteCompetitionScore > 0 &&
+        params.playabilityScore >= 90)
+    );
+  const qualifiesHeadlineFallback =
+    !qualifiesBase &&
+    params.isHeadlineSeed &&
+    params.playabilityScore >= 120 &&
+    params.clueRichnessScore >= FOOTBALL_WHO_AM_I_MIN_CLUE_RICHNESS_SCORE &&
+    params.metadataCompletenessScore >= 8 &&
+    signalCount >= FOOTBALL_WHO_AM_I_MIN_SIGNAL_COUNT &&
+    (params.eliteCompetitionScore > 0 || hasTrophySignal || hasStatSignal);
+
+  return {
+    signalCount,
+    hasIdentitySignal,
+    hasTeamSignal,
+    hasTrophySignal,
+    hasTransferSignal,
+    hasStatSignal,
+    qualifiesBase,
+    qualifiesHeadlineFallback,
+  };
+}
+
+interface VerveGridQaCellStats {
+  count: number;
+  min: number;
+  median: number;
+  max: number;
+}
+
+interface VerveGridQaTemplateSummary {
+  rowTripletsWithThreePlusSharedCols: number;
+  distinctColumnTypeMixes: number;
+}
+
+interface VerveGridQaReport {
+  generatedAt: string;
+  sport: "football";
+  raw: {
+    totalEntries: number;
+    easyEntries: number;
+    mediumEntries: number;
+    hardEntries: number;
+    sameLabelCollisionCount: number;
+  };
+  approved: {
+    totalEntries: number;
+    sameLabelCollisionCount: number;
+    axisFamilyCounts: Record<string, number>;
+    cellSizeStatsByAxisFamily: Record<string, VerveGridQaCellStats>;
+    templateCountsByRowTypeMix: Record<string, VerveGridQaTemplateSummary>;
+  };
+  curationImpact: {
+    nationalityEntriesRemoved: number;
+    nationalityLabelsRemoved: string[];
+    nationalTeamEntriesRemoved: number;
+    nationalTeamSameLabelCollisionsRemoved: number;
+    positionNormalization: {
+      entriesCollapsed: number;
+      beforeCounts: Record<string, number>;
+      afterCounts: Record<string, number>;
+      mapping: Record<string, string>;
+    };
+  };
+}
+
+interface WhoAmIRejectedClue {
+  sourceClueId: string;
+  playerId: string;
+  answerName: string;
+  rawDifficulty: "easy" | "medium" | "hard";
+  reasons: string[];
+}
+
+interface WhoAmIQaExample {
+  playerId: string;
+  answerName: string;
+  rawDifficulty: "easy" | "medium" | "hard";
+  approvedDifficulty?: "easy" | "medium" | "hard";
+  reasons?: string[];
+  rawClue1?: string;
+  rawClue2?: string;
+  rawClue3?: string;
+  rawClue4?: string;
+  approvedClue1?: string;
+  approvedClue2?: string;
+  approvedClue3?: string;
+  approvedClue4?: string;
+}
+
+interface WhoAmIQaReport {
+  generatedAt: string;
+  sport: "football";
+  raw: {
+    totalClueSets: number;
+    countsBySport: Record<string, number>;
+    countsByDifficulty: Record<string, number>;
+    lowSignalClueSets: number;
+    nationalTeamLeakyClueSets: number;
+    attackerGrammarIssues: number;
+    trophyWordingIssues: number;
+    transferClueSets: number;
+    firstNameClueSets: number;
+  };
+  approved: {
+    totalClueSets: number;
+    countsBySport: Record<string, number>;
+    countsByDifficulty: Record<string, number>;
+    headlineClueSets: number;
+    manualLegendClueSets: number;
+    nationalTeamLeakyClueSets: number;
+  };
+  rejections: {
+    totalRejected: number;
+    byReason: Record<string, number>;
+  };
+  curationImpact: {
+    approvedFromRawRate: number;
+    rejectedFromRawRate: number;
+    difficultyChangedCount: number;
+    nationalTeamLabelsRemovedCount: number;
+    transferClueReplacedCount: number;
+    trophyTextNormalizedCount: number;
+    attackerGrammarFixedCount: number;
+  };
+  examples: {
+    rejected: WhoAmIQaExample[];
+    difficultyChanged: WhoAmIQaExample[];
+    textAdjusted: WhoAmIQaExample[];
+  };
+}
+
+function getManualLegendTeamLabels(
+  legend: NormalizedManualFootballLegend,
+): string[] {
+  return Array.from(new Set([...legend.clubs, ...legend.notableTeams]));
+}
+
+function getManualLegendClueDimensionCount(
+  legend: NormalizedManualFootballLegend,
+): number {
+  return [
+    Boolean(legend.nationality && legend.position),
+    getManualLegendTeamLabels(legend).length > 0,
+    legend.trophies.length > 0,
+    legend.achievements.length > 0,
+    Boolean(legend.era),
+    Boolean(legend.firstName),
+  ].filter(Boolean).length;
+}
+
+function buildManualFootballLegendQualityProfiles(
+  manualLegends: NormalizedManualFootballLegend[],
+  coverageByPlayerId: Map<string, HeadlineCoverageEntry>,
+): PlayerQualityProfile[] {
+  return manualLegends
+    .map((legend) => {
+      const coverageEntry = coverageByPlayerId.get(legend.id);
+      const isHeadlineSeed = Boolean(coverageEntry);
+      const teamLabels = getManualLegendTeamLabels(legend);
+      const metadataCompletenessScore =
+        (legend.firstName ? 4 : 0) +
+        (legend.nationality ? 4 : 0) +
+        (legend.position ? 4 : 0) +
+        (teamLabels.length > 0 ? 3 : 0);
+      const clueRichnessScore =
+        (teamLabels.length >= 2 ? 8 : teamLabels.length === 1 ? 4 : 0) +
+        (legend.trophies.length > 0 ? 6 : 0) +
+        (legend.achievements.length > 0 ? 6 : 0) +
+        (legend.era ? 4 : 0);
+      const trophyScore = roundScore(legend.trophies.length * 8);
+      const eliteCompetitionScore = roundScore(teamLabels.length * 4);
+      const fameScore = roundScore(
+        (legend.survivalTier === "A" ? 140 : 110) +
+          trophyScore +
+          eliteCompetitionScore +
+          legend.achievements.length * 6 +
+          (isHeadlineSeed ? 25 : 0),
+      );
+      const playabilityScore = roundScore(
+        fameScore + metadataCompletenessScore + clueRichnessScore,
+      );
+      const whoAmIEligible =
+        legend.whoAmIEligibleHint &&
+        getManualLegendClueDimensionCount(legend) >= 3 &&
+        metadataCompletenessScore >= 8;
+
+      const reasons = ["manual_legend", "manual_layer", `tier_${legend.survivalTier.toLowerCase()}`];
+      if (isHeadlineSeed) {
+        reasons.push("headline_seed", "manual_layer_resolved");
+      }
+      if (whoAmIEligible) {
+        reasons.push("whoami_curated");
+      }
+
+      return {
+        id: `quality_${legend.id}`,
+        sport: "football" as const,
+        playerId: legend.id,
+        playerName: legend.canonicalName,
+        normalizedName: normalizeNameForMatch(legend.canonicalName),
+        initials2: legend.initials2,
+        initials3: legend.initials3,
+        fameScore,
+        playabilityScore,
+        clueRichnessScore: roundScore(clueRichnessScore),
+        metadataCompletenessScore: roundScore(metadataCompletenessScore),
+        recentPresenceScore: 0,
+        eliteCompetitionScore,
+        transferScore: 0,
+        trophyScore,
+        totalAppearances: 0,
+        totalMinutes: 0,
+        totalGoals: 0,
+        totalAssists: 0,
+        teamCount: teamLabels.length,
+        leagueCount: teamLabels.length > 0 ? 1 : 0,
+        trophyWins: legend.trophies.length,
+        transferCount: 0,
+        hasPhoto: false,
+        hasNationality: Boolean(legend.nationality),
+        hasPosition: Boolean(legend.position),
+        hasFirstName: Boolean(legend.firstName),
+        isHeadlineSeed,
+        wasGapFilled: false,
+        matchedViaProfilesEndpoint: false,
+        survivalTier: legend.survivalTier,
+        survivalEligible: true,
+        whoAmIEligible,
+        higherLowerEligible: false,
+        gridEligible: false,
+        reasons,
+      };
+    })
+    .sort(
+      (a, b) =>
+        b.playabilityScore - a.playabilityScore ||
+        a.playerName.localeCompare(b.playerName),
+    );
+}
+
+function buildFootballPlayerQualityProfiles(
+  footballPlayers: Player[],
+  footballPts: PlayerTeamSeason[],
+  footballTrophies: PlayerTrophy[],
+  footballTransfers: PlayerTransfer[],
+  footballFixtures: Fixture[],
+  footballFixtureParticipants: FixtureParticipant[],
+  config: FootballConfig,
+  coverage: HeadlineCoverageEntry[],
+  manualLegends: NormalizedManualFootballLegend[] = [],
+): PlayerQualityProfile[] {
+  const qualityProfiles: PlayerQualityProfile[] = [];
+  const recentSeasons = new Set(getRecentFootballSeasons(config));
+  const coverageByPlayerId = new Map<string, HeadlineCoverageEntry>();
+  const normalizedCoverage = coverage.map((entry) => annotateHeadlineCoverageEntry(entry));
+
+  for (const entry of normalizedCoverage) {
+    if (entry.matchedPlayerId) {
+      coverageByPlayerId.set(entry.matchedPlayerId, entry);
+    }
+  }
+
+  const ptsByPlayerId = new Map<string, PlayerTeamSeason[]>();
+  for (const pts of footballPts) {
+    if (!ptsByPlayerId.has(pts.playerId)) {
+      ptsByPlayerId.set(pts.playerId, []);
+    }
+    ptsByPlayerId.get(pts.playerId)!.push(pts);
+  }
+
+  const trophiesByPlayerId = new Map<string, PlayerTrophy[]>();
+  for (const trophy of footballTrophies) {
+    if (!trophiesByPlayerId.has(trophy.playerId)) {
+      trophiesByPlayerId.set(trophy.playerId, []);
+    }
+    trophiesByPlayerId.get(trophy.playerId)!.push(trophy);
+  }
+
+  const transfersByPlayerId = new Map<string, PlayerTransfer[]>();
+  for (const transfer of footballTransfers) {
+    if (!transfersByPlayerId.has(transfer.playerId)) {
+      transfersByPlayerId.set(transfer.playerId, []);
+    }
+    transfersByPlayerId.get(transfer.playerId)!.push(transfer);
+  }
+
+  const fixtureSeasonById = new Map<string, number>();
+  for (const fixture of footballFixtures) {
+    fixtureSeasonById.set(fixture.id, fixture.season);
+  }
+
+  const recentFixturePresenceByPlayerId = new Map<string, number>();
+  for (const participant of footballFixtureParticipants) {
+    const fixtureSeason = fixtureSeasonById.get(participant.fixtureId);
+    if (!fixtureSeason || !recentSeasons.has(fixtureSeason)) continue;
+    recentFixturePresenceByPlayerId.set(
+      participant.playerId,
+      (recentFixturePresenceByPlayerId.get(participant.playerId) || 0) + 1,
+    );
+  }
+
+  for (const player of footballPlayers) {
+    const playerPts = ptsByPlayerId.get(player.id) || [];
+    const playerTrophies = trophiesByPlayerId.get(player.id) || [];
+    const playerTransfers = transfersByPlayerId.get(player.id) || [];
+    const winningTrophies = playerTrophies.filter(
+      (trophy) => trophy.place?.toLowerCase() === "winner",
+    );
+    const normalizedName = normalizeNameForMatch(player.name);
+    const coverageEntry = coverageByPlayerId.get(player.id);
+    const isHeadlineSeed = Boolean(coverageEntry);
+
+    const totalAppearances = playerPts.reduce(
+      (sum, pts) => sum + (pts.appearances || 0),
+      0,
+    );
+    const totalMinutes = playerPts.reduce(
+      (sum, pts) => sum + (pts.minutes || 0),
+      0,
+    );
+    const totalGoals = playerPts.reduce(
+      (sum, pts) => sum + (pts.goals || 0),
+      0,
+    );
+    const totalAssists = playerPts.reduce(
+      (sum, pts) => sum + (pts.assists || 0),
+      0,
+    );
+    const teamCount = new Set(
+      playerPts.map((pts) => pts.teamId).filter(Boolean),
+    ).size;
+    const leagueCount = new Set(
+      playerPts.map((pts) => pts.leagueId).filter(Boolean),
+    ).size;
+    const trophyWins = winningTrophies.length;
+    const transferCount = playerTransfers.length;
+    const hasPhoto = Boolean(player.photo);
+    const hasNationality = Boolean(player.nationality);
+    const hasPosition = Boolean(player.position);
+    const hasFirstName = Boolean(player.firstName);
+
+    const eliteCompetitionAppearances = playerPts.reduce(
+      (sum, pts) =>
+        sum +
+        (isEliteCompetitionLeagueId(pts.leagueId) ? pts.appearances || 0 : 0),
+      0,
+    );
+    const recentAppearances = playerPts.reduce(
+      (sum, pts) =>
+        sum + (recentSeasons.has(pts.season) ? pts.appearances || 0 : 0),
+      0,
+    );
+    const recentMinutes = playerPts.reduce(
+      (sum, pts) =>
+        sum + (recentSeasons.has(pts.season) ? pts.minutes || 0 : 0),
+      0,
+    );
+    const recentFixturePresence =
+      recentFixturePresenceByPlayerId.get(player.id) || 0;
+
+    const metadataCompletenessScore =
+      (hasFirstName ? 4 : 0) +
+      (hasNationality ? 4 : 0) +
+      (hasPosition ? 4 : 0) +
+      (hasPhoto ? 3 : 0);
+
+    const clueRichnessScore =
+      (teamCount >= 2 ? 8 : teamCount === 1 ? 3 : 0) +
+      (trophyWins > 0 ? 6 : 0) +
+      (totalGoals > 0 ? 4 : 0) +
+      (transferCount > 0 ? 4 : 0);
+
+    const recentPresenceScore = roundScore(
+      recentAppearances * 0.5 + recentMinutes / 300,
+    );
+    const eliteCompetitionScore = roundScore(eliteCompetitionAppearances * 2);
+    const transferScore = roundScore(transferCount * 2);
+    const trophyScore = roundScore(trophyWins * 8);
+
+    const fameScore = roundScore(
+      totalAppearances * 1 +
+        Math.floor(totalMinutes / 90) * 0.25 +
+        totalGoals * 4 +
+        totalAssists * 3 +
+        trophyWins * 8 +
+        transferCount * 2 +
+        eliteCompetitionAppearances * 2 +
+        recentFixturePresence * 2 +
+        (isHeadlineSeed ? 25 : 0),
+    );
+
+    const playabilityScore = roundScore(
+      fameScore +
+        metadataCompletenessScore +
+        clueRichnessScore +
+        recentPresenceScore,
+    );
+    const meaningfulStats = hasMeaningfulFootballStats(
+      totalAppearances,
+      totalMinutes,
+      totalGoals,
+      totalAssists,
+    );
+    const whoAmISignal = getFootballWhoAmISignalStrength({
+      playabilityScore,
+      clueRichnessScore,
+      metadataCompletenessScore,
+      teamCount,
+      trophyWins,
+      transferCount,
+      meaningfulStats,
+      hasNationality,
+      hasPosition,
+      isHeadlineSeed,
+      eliteCompetitionScore,
+    });
+
+    const survivalTier: PlayerQualityProfile["survivalTier"] =
+      playabilityScore >= 120
+        ? "A"
+        : playabilityScore >= 70
+          ? "B"
+          : playabilityScore >= 35
+            ? "C"
+            : "D";
+
+    const survivalEligible = survivalTier !== "D";
+    const whoAmIEligible =
+      whoAmISignal.qualifiesBase || whoAmISignal.qualifiesHeadlineFallback;
+    const higherLowerEligible = playabilityScore >= 50;
+    const gridEligible = teamCount >= 1 && metadataCompletenessScore >= 4;
+
+    const reasons: string[] = [];
+    if (isHeadlineSeed) {
+      reasons.push("headline_seed");
+      if (coverageEntry?.overrideUsed) {
+        reasons.push("headline_seed_override");
+      } else if (coverageEntry?.status === "matched_manual_layer") {
+        reasons.push("headline_seed_manual_layer");
+      } else if (coverageEntry?.matchConfidence === "exact") {
+        reasons.push("headline_seed_exact");
+      } else if (
+        coverageEntry?.matchConfidence === "alias" ||
+        coverageEntry?.matchConfidence === "strong"
+      ) {
+        reasons.push("headline_seed_alias");
+      }
+    }
+    if (coverageEntry?.status === "gap_filled") reasons.push("gap_filled");
+    if (eliteCompetitionAppearances > 0) reasons.push("elite_competition_presence");
+    if (recentPresenceScore > 0) reasons.push("recent_presence");
+    if (metadataCompletenessScore >= 8) reasons.push("metadata_complete");
+    if (clueRichnessScore >= 10) reasons.push("clue_rich");
+    if (whoAmISignal.hasTeamSignal) reasons.push("whoami_team_signal");
+    if (trophyWins > 0) reasons.push("trophy_winner");
+    if (transferCount > 0) reasons.push("transfer_history");
+    if (meaningfulStats) {
+      reasons.push("meaningful_stats");
+    }
+    if (whoAmISignal.qualifiesHeadlineFallback) {
+      reasons.push("whoami_headline_fallback");
+    }
+    reasons.push(`tier_${survivalTier.toLowerCase()}`);
+
+    qualityProfiles.push({
+      id: `quality_${player.id}`,
+      sport: "football",
+      playerId: player.id,
+      playerName: player.name,
+      normalizedName,
+      initials2: getPlayerInitials(player.name, 2),
+      initials3: getPlayerInitials(player.name, 3),
+      fameScore,
+      playabilityScore,
+      clueRichnessScore: roundScore(clueRichnessScore),
+      metadataCompletenessScore: roundScore(metadataCompletenessScore),
+      recentPresenceScore,
+      eliteCompetitionScore,
+      transferScore,
+      trophyScore,
+      totalAppearances,
+      totalMinutes,
+      totalGoals,
+      totalAssists,
+      teamCount,
+      leagueCount,
+      trophyWins,
+      transferCount,
+      hasPhoto,
+      hasNationality,
+      hasPosition,
+      hasFirstName,
+      isHeadlineSeed,
+      wasGapFilled: coverageEntry?.status === "gap_filled",
+      matchedViaProfilesEndpoint: coverageEntry?.status === "gap_filled",
+      survivalTier,
+      survivalEligible,
+      whoAmIEligible,
+      higherLowerEligible,
+      gridEligible,
+      reasons,
+    });
+  }
+
+  qualityProfiles.push(
+    ...buildManualFootballLegendQualityProfiles(manualLegends, coverageByPlayerId),
+  );
+
+  return qualityProfiles.sort(
+    (a, b) => b.playabilityScore - a.playabilityScore || a.playerName.localeCompare(b.playerName),
+  );
+}
+
+function buildFootballSurvivalIndex(
+  footballPlayers: Player[],
+  qualityProfiles: PlayerQualityProfile[],
+): SurvivalInitialsBucket[] {
+  const profilesByPlayerId = new Map(
+    qualityProfiles.map((profile) => [profile.playerId, profile]),
+  );
+  const buckets = new Map<
+    string,
+    { players: Player[]; profiles: PlayerQualityProfile[] }
+  >();
+
+  for (const player of footballPlayers) {
+    const profile = profilesByPlayerId.get(player.id);
+    if (!player.name) continue;
+
+    for (const initialsLength of [2, 3] as const) {
+      const initials = getPlayerInitials(player.name, initialsLength);
+      if (!initials) continue;
+      if (!buckets.has(initials)) {
+        buckets.set(initials, { players: [], profiles: [] });
+      }
+      const bucket = buckets.get(initials)!;
+      if (!bucket.players.some((existing) => existing.id === player.id)) {
+        bucket.players.push(player);
+      }
+      if (profile && !bucket.profiles.some((existing) => existing.playerId === profile.playerId)) {
+        bucket.profiles.push(profile);
+      }
+    }
+  }
+
+  return Array.from(buckets.entries())
+    .map(([initials, bucket]) => {
+      const bucketPlayers = [...bucket.players].sort(
+        (a, b) => a.name.localeCompare(b.name),
+      );
+      const totalPlayers = bucket.players.length;
+      const playableProfiles = bucket.profiles.filter(
+        (profile) => profile.survivalEligible,
+      );
+      const headlineProfiles = bucket.profiles.filter(
+        (profile) => profile.survivalTier === "A" || profile.isHeadlineSeed,
+      );
+      const playableHeadlineProfiles = playableProfiles.filter(
+        (profile) => profile.survivalTier === "A" || profile.isHeadlineSeed,
+      );
+      const topProfilePool =
+        playableHeadlineProfiles.length > 0
+          ? playableHeadlineProfiles
+          : playableProfiles.length > 0
+            ? playableProfiles
+            : [];
+      const topProfile =
+        topProfilePool.length > 0
+          ? [...topProfilePool].sort(
+              (a, b) =>
+                Number(b.isHeadlineSeed) - Number(a.isHeadlineSeed) ||
+                b.playabilityScore - a.playabilityScore ||
+                a.playerName.localeCompare(b.playerName),
+            )[0]
+          : undefined;
+      const playableCount = playableProfiles.length;
+      const famousCount = headlineProfiles.length;
+      const playableRatio = totalPlayers > 0 ? playableCount / totalPlayers : 0;
+      const topPlayabilityScore = topProfile?.playabilityScore || 0;
+      const hasSurvivalEligibleTopPlayer = Boolean(topProfile?.survivalEligible);
+      const bucketNoisePenalty = getFootballBucketNoisePenalty(
+        totalPlayers,
+        topPlayabilityScore,
+        famousCount,
+        playableRatio,
+      );
+      const bucketScore = roundScore(
+        famousCount * 100 +
+          playableCount * 15 +
+          playableRatio * 80 +
+          topPlayabilityScore * 0.6 +
+          getFootballBucketSizeScore(totalPlayers) +
+          bucketNoisePenalty,
+      );
+
+      const recommendedTier: SurvivalInitialsBucket["recommendedTier"] =
+        famousCount >= 1 &&
+        playableCount >= 2 &&
+        playableRatio >= FOOTBALL_SURVIVAL_EASY_MIN_PLAYABLE_RATIO &&
+        topPlayabilityScore >= FOOTBALL_SURVIVAL_EASY_MIN_TOP_SCORE &&
+        bucketScore >= FOOTBALL_SURVIVAL_EASY_MIN_BUCKET_SCORE
+          ? "easy"
+          : playableCount >= 2 &&
+              playableRatio >= FOOTBALL_SURVIVAL_MEDIUM_MIN_PLAYABLE_RATIO &&
+              topPlayabilityScore >= FOOTBALL_SURVIVAL_MEDIUM_MIN_TOP_SCORE &&
+              bucketScore >= FOOTBALL_SURVIVAL_MEDIUM_MIN_BUCKET_SCORE
+            ? "medium"
+            : playableCount >= 1 && topPlayabilityScore >= FOOTBALL_SURVIVAL_HARD_MIN_TOP_SCORE
+              ? "hard"
+              : "expert";
+
+      return {
+        id: `surv_bucket_${initials.toLowerCase()}`,
+        sport: "football" as const,
+        initials,
+        initialsLength: initials.length,
+        playerIds: bucketPlayers.map((player) => player.id),
+        playerNames: bucketPlayers.map((player) => player.name),
+        totalPlayers,
+        playablePlayerIds: playableProfiles.map((profile) => profile.playerId),
+        headlinePlayerIds: headlineProfiles.map((profile) => profile.playerId),
+        famousCount,
+        playableCount,
+        playableRatio: roundScore(playableRatio),
+        topPlayerId: topProfile?.playerId || null,
+        topPlayerName: topProfile?.playerName || null,
+        topPlayabilityScore: roundScore(topPlayabilityScore),
+        bucketScore,
+        recommendedTier,
+        eligibleEarlyRounds:
+          recommendedTier === "easy" &&
+          hasSurvivalEligibleTopPlayer &&
+          famousCount >= FOOTBALL_SURVIVAL_EARLY_MIN_FAMOUS_COUNT &&
+          playableCount >= FOOTBALL_SURVIVAL_EARLY_MIN_PLAYABLE_COUNT &&
+          playableRatio >= FOOTBALL_SURVIVAL_EARLY_MIN_PLAYABLE_RATIO &&
+          topPlayabilityScore >= FOOTBALL_SURVIVAL_EARLY_MIN_TOP_SCORE &&
+          bucketScore >= FOOTBALL_SURVIVAL_EARLY_MIN_BUCKET_SCORE,
+        eligibleMidRounds:
+          (recommendedTier === "easy" || recommendedTier === "medium") &&
+          hasSurvivalEligibleTopPlayer &&
+          playableCount >= FOOTBALL_SURVIVAL_MID_MIN_PLAYABLE_COUNT &&
+          playableRatio >= FOOTBALL_SURVIVAL_MID_MIN_PLAYABLE_RATIO &&
+          topPlayabilityScore >= FOOTBALL_SURVIVAL_MID_MIN_TOP_SCORE &&
+          bucketScore >= FOOTBALL_SURVIVAL_MID_MIN_BUCKET_SCORE,
+        eligibleLateRounds:
+          hasSurvivalEligibleTopPlayer &&
+          playableCount >= 1 &&
+          topPlayabilityScore >= FOOTBALL_SURVIVAL_HARD_MIN_TOP_SCORE &&
+          (initials.length === 2 || playableCount >= 2 || famousCount >= 1),
+      };
+    })
+    .sort((a, b) => b.bucketScore - a.bucketScore || a.initials.localeCompare(b.initials));
+}
+
+function buildFootballCoverageReport(
+  footballPlayers: Player[],
+  footballPts: PlayerTeamSeason[],
+  footballTrophies: PlayerTrophy[],
+  footballTransfers: PlayerTransfer[],
+  qualityProfiles: PlayerQualityProfile[],
+  coverage: HeadlineCoverageEntry[],
+  config: FootballConfig,
+  manualLegends: NormalizedManualFootballLegend[] = [],
+): FootballCoverageReport {
+  const recentSeasons = new Set(getRecentFootballSeasons(config));
+  const annotatedCoverage = sortHeadlineCoverageEntries(
+    coverage.map((entry) => annotateHeadlineCoverageEntry(entry)),
+  );
+  const qualityProfilesByPlayerId = new Map(
+    qualityProfiles.map((profile) => [profile.playerId, profile]),
+  );
+  const manualLegendProfiles = qualityProfiles.filter((profile) =>
+    isManualLegendPlayerId(profile.playerId),
+  );
+  const playersWithRecentStats = new Set(
+    footballPts
+      .filter((pts) => recentSeasons.has(pts.season))
+      .map((pts) => pts.playerId),
+  ).size;
+  const playersWithTrophies = new Set(
+    footballTrophies
+      .filter((trophy) => trophy.place?.toLowerCase() === "winner")
+      .map((trophy) => trophy.playerId),
+  ).size;
+  const playersWithTransfers = new Set(
+    footballTransfers.map((transfer) => transfer.playerId),
+  ).size;
+
+  const tierCounts = qualityProfiles.reduce(
+    (counts, profile) => {
+      counts[profile.survivalTier]++;
+      return counts;
+    },
+    { A: 0, B: 0, C: 0, D: 0 },
+  );
+
+  const headlineGameplayCoverage = annotatedCoverage
+    .filter((entry) => Boolean(entry.matchedPlayerId))
+    .reduce(
+      (counts, entry) => {
+        const profile = entry.matchedPlayerId
+          ? qualityProfilesByPlayerId.get(entry.matchedPlayerId)
+          : undefined;
+        const survivalEligible = Boolean(profile?.survivalEligible);
+        const whoAmIEligible = Boolean(profile?.whoAmIEligible);
+
+        if (survivalEligible) counts.survivalEligible++;
+        if (whoAmIEligible) counts.whoAmIEligible++;
+        if (survivalEligible && whoAmIEligible) counts.bothEligible++;
+        if (!survivalEligible && !whoAmIEligible) counts.neitherEligible++;
+
+        return counts;
+      },
+      {
+        survivalEligible: 0,
+        whoAmIEligible: 0,
+        bothEligible: 0,
+        neitherEligible: 0,
+      },
+    );
+
+  const criticalCurrentMissingEntries = annotatedCoverage.filter(
+    (entry) =>
+      entry.coverageBucket === "missing_current_star" &&
+      entry.priority === "critical",
+  );
+  const highPriorityMissingEntries = annotatedCoverage.filter(
+    (entry) => entry.status === "missing" && entry.priority === "high",
+  );
+  const ambiguousNeedsOverrideEntries = annotatedCoverage.filter(
+    (entry) => {
+      const seed = getFootballHeadlineSeedByName(entry.seedName);
+      return (
+        entry.status === "ambiguous" &&
+        !entry.overrideUsed &&
+        seed?.era !== "historical"
+      );
+    },
+  );
+  const historicalManualLayerEntries = annotatedCoverage.filter((entry) => {
+    const seed = getFootballHeadlineSeedByName(entry.seedName);
+    return (
+      seed?.era === "historical" &&
+      (entry.coverageBucket === "missing_historical_legend" ||
+        entry.coverageBucket === "missing_out_of_scope" ||
+        entry.coverageBucket === "ambiguous_duplicate_legend")
+    );
+  });
+
+  const unresolvedHistoricalSeedsAfterManualLayer = buildSortedCoverageNameList(
+    historicalManualLayerEntries,
+  );
+
+  const manualLayerCandidateNames = buildSortedCoverageNameList(
+    historicalManualLayerEntries,
+  );
+  const unresolvedEntries = annotatedCoverage.filter(
+    (entry) => entry.status === "missing" || entry.status === "ambiguous",
+  );
+  const historicalMissingCount = annotatedCoverage.filter(
+    (entry) => entry.coverageBucket === "missing_historical_legend",
+  ).length;
+  const outOfScopeCount = annotatedCoverage.filter(
+    (entry) => entry.coverageBucket === "missing_out_of_scope",
+  ).length;
+  const ambiguousHistoricalCount = annotatedCoverage.filter((entry) => {
+    const seed = getFootballHeadlineSeedByName(entry.seedName);
+    return (
+      entry.coverageBucket === "ambiguous_duplicate_legend" &&
+      seed?.era === "historical"
+    );
+  }).length;
+
+  const manualLayerReasons: string[] = [];
+  if (historicalMissingCount >= 8) {
+    manualLayerReasons.push(
+      "Many unresolved headline seeds are historical legends with weak provider coverage.",
+    );
+  }
+  if (outOfScopeCount >= 3) {
+    manualLayerReasons.push(
+      "Several unresolved legends appear effectively out of provider scope for API-driven recovery.",
+    );
+  }
+  if (ambiguousHistoricalCount >= 2) {
+    manualLayerReasons.push(
+      "Historical duplicate-name collisions still need curated disambiguation or manual sourcing.",
+    );
+  }
+  if (
+    manualLayerCandidateNames.length >= 6 &&
+    manualLayerCandidateNames.length >= Math.ceil(unresolvedEntries.length / 2)
+  ) {
+    manualLayerReasons.push(
+      "Historical legends make up a large share of the remaining unresolved headline set.",
+    );
+  }
+
+  const manualLayerRecommendation = {
+    recommended: manualLayerReasons.length > 0,
+    reasons: manualLayerReasons,
+    candidateCount: manualLayerCandidateNames.length,
+    candidateNames: manualLayerCandidateNames,
+  };
+
+  const manualLayerImpact = {
+    legendsLoaded: manualLegends.length,
+    seedsResolvedByManualLayer: annotatedCoverage.filter(
+      (entry) => entry.status === "matched_manual_layer",
+    ).length,
+    survivalEligibleLegends: manualLegendProfiles.filter(
+      (profile) => profile.survivalEligible,
+    ).length,
+    whoAmIEligibleLegends: manualLegendProfiles.filter(
+      (profile) => profile.whoAmIEligible,
+    ).length,
+    unresolvedHistoricalSeedsAfterManualLayer,
+  };
+
+  return {
+    generatedAt: new Date().toISOString(),
+    totalFootballPlayers: footballPlayers.length,
+    totalFootballPlayerTeamSeasons: footballPts.length,
+    playersWithRecentStats,
+    playersWithPhotos: footballPlayers.filter((player) => Boolean(player.photo)).length,
+    playersWithPosition: footballPlayers.filter((player) => Boolean(player.position)).length,
+    playersWithNationality: footballPlayers.filter((player) => Boolean(player.nationality)).length,
+    playersWithTrophies,
+    playersWithTransfers,
+    headlinerSeedsTotal: annotatedCoverage.length,
+    headlinerSeedsMatchedExisting: annotatedCoverage.filter((entry) => entry.status === "matched_existing").length,
+    headlinerSeedsMatchedManualLayer: annotatedCoverage.filter((entry) => entry.status === "matched_manual_layer").length,
+    headlinerSeedsGapFilled: annotatedCoverage.filter((entry) => entry.status === "gap_filled").length,
+    headlinerSeedsAmbiguous: annotatedCoverage.filter((entry) => entry.status === "ambiguous").length,
+    headlinerSeedsMissing: annotatedCoverage.filter((entry) => entry.status === "missing").length,
+    tierCounts,
+    recoveryCandidates: {
+      criticalCurrentMissing: buildSortedCoverageNameList(
+        criticalCurrentMissingEntries,
+      ),
+      highPriorityMissing: buildSortedCoverageNameList(highPriorityMissingEntries),
+      ambiguousNeedsOverride: buildSortedCoverageNameList(
+        ambiguousNeedsOverrideEntries,
+      ),
+      historicalManualLayerCandidates: manualLayerCandidateNames,
+    },
+    manualLayerRecommendation,
+    manualLayerImpact,
+    headlineGameplayCoverage,
+    coverage: annotatedCoverage,
+    missingSeedNames: annotatedCoverage
+      .filter((entry) => entry.status === "missing")
+      .map((entry) => entry.seedName),
+  };
+}
+
+function buildFootballGameplayQaReport(
+  survivalIndex: SurvivalInitialsBucket[],
+  whoAmIClues: WhoAmIClue[],
+  qualityProfiles: PlayerQualityProfile[],
+): FootballGameplayQaReport {
+  const qualityProfilesByPlayerId = new Map(
+    qualityProfiles.map((profile) => [profile.playerId, profile]),
+  );
+  const footballWhoAmIClues = whoAmIClues.filter((clue) => clue.sport === "football");
+
+  const suspiciousBuckets = survivalIndex.flatMap((bucket) => {
+    const topProfile = bucket.topPlayerId
+      ? qualityProfilesByPlayerId.get(bucket.topPlayerId)
+      : undefined;
+    const reasons: string[] = [];
+    const manualPlayableCount = bucket.playablePlayerIds.filter((playerId) =>
+      isManualLegendPlayerId(playerId),
+    ).length;
+
+    if (
+      (bucket.totalPlayers >= 250 && bucket.topPlayabilityScore < 170) ||
+      (bucket.totalPlayers >= 150 && bucket.topPlayabilityScore < 150)
+    ) {
+      reasons.push("large_bucket_with_weak_top_player");
+    }
+    if (
+      bucket.recommendedTier === "easy" &&
+      bucket.playableRatio < FOOTBALL_SURVIVAL_EASY_MIN_PLAYABLE_RATIO
+    ) {
+      reasons.push("easy_bucket_low_playable_ratio");
+    }
+    if (bucket.totalPlayers >= 100 && bucket.famousCount === 0) {
+      reasons.push("huge_bucket_without_headline_player");
+    }
+    if (
+      bucket.initialsLength === 3 &&
+      bucket.recommendedTier === "expert" &&
+      bucket.totalPlayers >= 5 &&
+      (bucket.topPlayabilityScore < FOOTBALL_SURVIVAL_HARD_MIN_TOP_SCORE ||
+        bucket.playableCount === 0)
+    ) {
+      reasons.push("three_letter_bucket_too_weak_for_expert_rounds");
+    }
+    if (topProfile && !topProfile.survivalEligible) {
+      reasons.push("top_player_not_survival_eligible");
+    }
+    if (
+      bucket.totalPlayers >= 5 &&
+      bucket.playableCount > 0 &&
+      manualPlayableCount > bucket.playableCount / 2
+    ) {
+      reasons.push("manual_legend_heavy_bucket");
+    }
+
+    return reasons.length > 0
+      ? [
+          {
+            initials: bucket.initials,
+            reason: reasons.join(", "),
+            totalPlayers: bucket.totalPlayers,
+            playableCount: bucket.playableCount,
+            topPlayerName: bucket.topPlayerName,
+            bucketScore: bucket.bucketScore,
+          },
+        ]
+      : [];
+  });
+
+  const lowSignalClueSets = footballWhoAmIClues
+    .flatMap((clue) => {
+      const profile = qualityProfilesByPlayerId.get(clue.playerId);
+      if (!profile) {
+        return [
+          {
+            playerId: clue.playerId,
+            answerName: clue.answerName,
+            reasons: ["missing_quality_profile"],
+          },
+        ];
+      }
+
+      const reasons: string[] = [];
+      const isManualLegend = isManualLegendPlayerId(clue.playerId);
+      const meaningfulStats = profile.reasons.includes("meaningful_stats");
+      const whoAmISignal = getFootballWhoAmISignalStrength({
+        playabilityScore: profile.playabilityScore,
+        clueRichnessScore: profile.clueRichnessScore,
+        metadataCompletenessScore: profile.metadataCompletenessScore,
+        teamCount: profile.teamCount,
+        trophyWins: profile.trophyWins,
+        transferCount: profile.transferCount,
+        meaningfulStats,
+        hasNationality: profile.hasNationality,
+        hasPosition: profile.hasPosition,
+        isHeadlineSeed: profile.isHeadlineSeed,
+        eliteCompetitionScore: profile.eliteCompetitionScore,
+      });
+
+      if (profile.reasons.includes("whoami_headline_fallback")) {
+        reasons.push("headline_fallback_path");
+      }
+      if (!isManualLegend && whoAmISignal.signalCount === FOOTBALL_WHO_AM_I_MIN_SIGNAL_COUNT) {
+        reasons.push("minimum_signal_shape");
+      }
+      if (
+        !isManualLegend &&
+        profile.teamCount === 2 &&
+        profile.trophyWins === 0 &&
+        profile.transferCount === 0 &&
+        meaningfulStats
+      ) {
+        reasons.push("two_club_stats_only_signal");
+      }
+      if (
+        !isManualLegend &&
+        profile.trophyWins === 0 &&
+        profile.transferCount === 0 &&
+        meaningfulStats &&
+        profile.teamCount <= 3 &&
+        profile.clueRichnessScore <= FOOTBALL_WHO_AM_I_MIN_CLUE_RICHNESS_SCORE
+      ) {
+        reasons.push("stats_only_weak_diversity");
+      }
+
+      return reasons.length > 0
+        ? [
+            {
+              playerId: clue.playerId,
+              answerName: clue.answerName,
+              reasons,
+            },
+          ]
+        : [];
+    })
+    .sort(
+      (a, b) =>
+        b.reasons.length - a.reasons.length ||
+        a.answerName.localeCompare(b.answerName),
+    );
+
+  const headlineTierBreakdown = qualityProfiles
+    .filter((profile) => profile.isHeadlineSeed)
+    .reduce(
+      (counts, profile) => {
+        counts[profile.survivalTier]++;
+        return counts;
+      },
+      { A: 0, B: 0, C: 0, D: 0 },
+    );
+
+  return {
+    generatedAt: new Date().toISOString(),
+    survival: {
+      totalBuckets: survivalIndex.length,
+      buckets2Letters: survivalIndex.filter((bucket) => bucket.initialsLength === 2).length,
+      buckets3Letters: survivalIndex.filter((bucket) => bucket.initialsLength === 3).length,
+      easyBuckets: survivalIndex.filter((bucket) => bucket.recommendedTier === "easy").length,
+      mediumBuckets: survivalIndex.filter((bucket) => bucket.recommendedTier === "medium").length,
+      hardBuckets: survivalIndex.filter((bucket) => bucket.recommendedTier === "hard").length,
+      expertBuckets: survivalIndex.filter((bucket) => bucket.recommendedTier === "expert").length,
+      earlyEligibleBuckets: survivalIndex.filter((bucket) => bucket.eligibleEarlyRounds).length,
+      midEligibleBuckets: survivalIndex.filter((bucket) => bucket.eligibleMidRounds).length,
+      lateEligibleBuckets: survivalIndex.filter((bucket) => bucket.eligibleLateRounds).length,
+      bucketsWithHeadlinePlayer: survivalIndex.filter((bucket) => bucket.headlinePlayerIds.length > 0).length,
+      bucketsWithManualLegendTopPlayer: survivalIndex.filter(
+        (bucket) => Boolean(bucket.topPlayerId && isManualLegendPlayerId(bucket.topPlayerId)),
+      ).length,
+      top20EarlyBuckets: survivalIndex
+        .filter((bucket) => bucket.eligibleEarlyRounds)
+        .slice(0, 20)
+        .map((bucket) => ({
+          initials: bucket.initials,
+          topPlayerName: bucket.topPlayerName,
+          bucketScore: bucket.bucketScore,
+          recommendedTier: bucket.recommendedTier,
+          totalPlayers: bucket.totalPlayers,
+          playableCount: bucket.playableCount,
+          famousCount: bucket.famousCount,
+        })),
+      suspiciousBuckets,
+    },
+    whoAmI: {
+      totalClueSets: footballWhoAmIClues.length,
+      headlineClueSets: footballWhoAmIClues.filter((clue) => {
+        const profile = qualityProfilesByPlayerId.get(clue.playerId);
+        return Boolean(profile?.isHeadlineSeed);
+      }).length,
+      manualLegendClueSets: footballWhoAmIClues.filter((clue) => isManualLegendPlayerId(clue.playerId)).length,
+      easy: footballWhoAmIClues.filter((clue) => clue.difficulty === "easy").length,
+      medium: footballWhoAmIClues.filter((clue) => clue.difficulty === "medium").length,
+      hard: footballWhoAmIClues.filter((clue) => clue.difficulty === "hard").length,
+      lowSignalClueSets,
+    },
+    quality: {
+      tierA: qualityProfiles.filter((profile) => profile.survivalTier === "A").length,
+      tierB: qualityProfiles.filter((profile) => profile.survivalTier === "B").length,
+      tierC: qualityProfiles.filter((profile) => profile.survivalTier === "C").length,
+      tierD: qualityProfiles.filter((profile) => profile.survivalTier === "D").length,
+      headlineTierBreakdown,
+    },
+  };
+}
+
 // --- NBA Normalizers ---
 
 function normalizeNbaTeam(raw: any, season: number): Team {
@@ -1400,6 +5293,324 @@ function buildGridIndex(
   return entries;
 }
 
+function buildFootballVerveGridApprovedData(
+  rawGridIndex: GridIndexEntry[],
+  teams: Team[],
+): {
+  approvedEntries: VerveGridApprovedEntry[];
+  qaReport: VerveGridQaReport;
+} {
+  const footballEntries = rawGridIndex.filter((entry) => entry.sport === "football");
+  const rawPlayableEntries = footballEntries.filter(
+    (entry) => entry.difficulty === "easy" || entry.difficulty === "medium",
+  );
+  const teamById = new Map(
+    teams
+      .filter((team) => team.sport === "football")
+      .map((team) => [team.id, team]),
+  );
+  const rawSameLabelCollisionCount = rawPlayableEntries.filter(
+    (entry) =>
+      normalizeNameForMatch(entry.rowLabel) === normalizeNameForMatch(entry.colLabel),
+  ).length;
+  const rawPositionCounts = rawPlayableEntries.reduce<Record<string, number>>(
+    (acc, entry) => {
+      if (entry.rowType === "position") {
+        acc[entry.rowKey] = (acc[entry.rowKey] || 0) + 1;
+      }
+      if (entry.colType === "position") {
+        acc[entry.colKey] = (acc[entry.colKey] || 0) + 1;
+      }
+      return acc;
+    },
+    {},
+  );
+
+  let nationalityEntriesRemoved = 0;
+  let nationalTeamEntriesRemoved = 0;
+  let nationalTeamSameLabelCollisionsRemoved = 0;
+  let positionEntriesCollapsed = 0;
+  const removedNationalities = new Set<string>();
+
+  const mergedEntries = new Map<
+    string,
+    {
+      entry: VerveGridApprovedEntry;
+      playerIds: Set<string>;
+      sourceIds: string[];
+    }
+  >();
+
+  for (const entry of rawPlayableEntries) {
+    if (
+      entry.rowType === "nationality" &&
+      !VERVE_GRID_APPROVED_NATIONALITIES.has(entry.rowKey)
+    ) {
+      nationalityEntriesRemoved += 1;
+      removedNationalities.add(entry.rowKey);
+      continue;
+    }
+    if (
+      entry.colType === "nationality" &&
+      !VERVE_GRID_APPROVED_NATIONALITIES.has(entry.colKey)
+    ) {
+      nationalityEntriesRemoved += 1;
+      removedNationalities.add(entry.colKey);
+      continue;
+    }
+
+    const rowTeam = entry.rowType === "team" ? teamById.get(entry.rowKey) : null;
+    const colTeam = entry.colType === "team" ? teamById.get(entry.colKey) : null;
+    const rowIsNationalTeam =
+      rowTeam != null && VERVE_GRID_NATIONAL_TEAM_LEAGUE_IDS.has(rowTeam.leagueId);
+    const colIsNationalTeam =
+      colTeam != null && VERVE_GRID_NATIONAL_TEAM_LEAGUE_IDS.has(colTeam.leagueId);
+
+    if (rowIsNationalTeam || colIsNationalTeam) {
+      nationalTeamEntriesRemoved += 1;
+      if (
+        normalizeNameForMatch(entry.rowLabel) === normalizeNameForMatch(entry.colLabel)
+      ) {
+        nationalTeamSameLabelCollisionsRemoved += 1;
+      }
+      continue;
+    }
+
+    const normalizedRowKey =
+      entry.rowType === "position"
+        ? normalizeVerveGridPositionLabel(entry.rowKey) ?? entry.rowKey
+        : entry.rowKey;
+    const normalizedColKey =
+      entry.colType === "position"
+        ? normalizeVerveGridPositionLabel(entry.colKey) ?? entry.colKey
+        : entry.colKey;
+    const normalizedRowLabel =
+      entry.rowType === "position"
+        ? normalizeVerveGridPositionLabel(entry.rowLabel) ?? entry.rowLabel
+        : entry.rowLabel;
+    const normalizedColLabel =
+      entry.colType === "position"
+        ? normalizeVerveGridPositionLabel(entry.colLabel) ?? entry.colLabel
+        : entry.colLabel;
+
+    if (
+      (entry.rowType === "position" && normalizedRowKey !== entry.rowKey) ||
+      (entry.colType === "position" && normalizedColKey !== entry.colKey)
+    ) {
+      positionEntriesCollapsed += 1;
+    }
+
+    const mergedId = `approved_grid_${sanitizeCacheKey(entry.rowType)}_${sanitizeCacheKey(normalizedRowKey)}_${sanitizeCacheKey(entry.colType)}_${sanitizeCacheKey(normalizedColKey)}`;
+    const axisFamily = getVerveGridAxisFamily(entry);
+    const playerIds = new Set(entry.playerIds);
+    const existing = mergedEntries.get(mergedId);
+
+    if (existing) {
+      for (const playerId of entry.playerIds) {
+        existing.playerIds.add(playerId);
+      }
+      existing.sourceIds.push(entry.id);
+    } else {
+      mergedEntries.set(mergedId, {
+        entry: {
+          id: mergedId,
+          sourceGridId: entry.id,
+          axisFamily,
+          sport: "football",
+          rowType: entry.rowType,
+          rowKey: normalizedRowKey,
+          rowLabel: normalizedRowLabel,
+          colType: entry.colType,
+          colKey: normalizedColKey,
+          colLabel: normalizedColLabel,
+          playerIds: entry.playerIds,
+          difficulty: entry.difficulty,
+        },
+        playerIds,
+        sourceIds: [entry.id],
+      });
+    }
+  }
+
+  const approvedEntries = Array.from(mergedEntries.values())
+    .map(({ entry, playerIds }) => {
+      const dedupedPlayerIds = Array.from(playerIds);
+      const count = dedupedPlayerIds.length;
+      const difficulty: "easy" | "medium" | "hard" =
+        count >= 6 ? "easy" : count >= 3 ? "medium" : "hard";
+      return {
+        ...entry,
+        playerIds: dedupedPlayerIds,
+        difficulty,
+      };
+    })
+    .filter((entry) => entry.playerIds.length >= 3)
+    .sort((a, b) => a.id.localeCompare(b.id));
+
+  const approvedSameLabelCollisionCount = approvedEntries.filter(
+    (entry) =>
+      normalizeNameForMatch(entry.rowLabel) === normalizeNameForMatch(entry.colLabel),
+  ).length;
+  const approvedAxisFamilyCounts = approvedEntries.reduce<Record<string, number>>(
+    (acc, entry) => {
+      acc[entry.axisFamily] = (acc[entry.axisFamily] || 0) + 1;
+      return acc;
+    },
+    {},
+  );
+  const approvedCellCountsByAxisFamily = approvedEntries.reduce<
+    Record<string, number[]>
+  >((acc, entry) => {
+    if (!acc[entry.axisFamily]) acc[entry.axisFamily] = [];
+    acc[entry.axisFamily].push(entry.playerIds.length);
+    return acc;
+  }, {});
+  const approvedCellSizeStatsByAxisFamily = Object.fromEntries(
+    Object.entries(approvedCellCountsByAxisFamily).map(([axisFamily, counts]) => [
+      axisFamily,
+      buildVerveGridCellStats(counts),
+    ]),
+  );
+  const approvedPositionCounts = approvedEntries.reduce<Record<string, number>>(
+    (acc, entry) => {
+      if (entry.rowType === "position") {
+        acc[entry.rowKey] = (acc[entry.rowKey] || 0) + 1;
+      }
+      if (entry.colType === "position") {
+        acc[entry.colKey] = (acc[entry.colKey] || 0) + 1;
+      }
+      return acc;
+    },
+    {},
+  );
+
+  const rowToCols = new Map<string, Set<string>>();
+  const rowTypeById = new Map<string, string>();
+  const colTypeById = new Map<string, string>();
+  for (const entry of approvedEntries) {
+    const rowId = `${entry.rowType}:${entry.rowKey}`;
+    const colId = `${entry.colType}:${entry.colKey}`;
+    rowTypeById.set(rowId, entry.rowType);
+    colTypeById.set(colId, entry.colType);
+    if (!rowToCols.has(rowId)) rowToCols.set(rowId, new Set());
+    rowToCols.get(rowId)!.add(colId);
+  }
+
+  const rowIds = Array.from(rowToCols.keys());
+  const templateCountsByRowTypeMix = new Map<
+    string,
+    { rowTripletsWithThreePlusSharedCols: number; columnTypeMixes: Set<string> }
+  >();
+
+  for (let i = 0; i < rowIds.length - 2; i++) {
+    for (let j = i + 1; j < rowIds.length - 1; j++) {
+      for (let k = j + 1; k < rowIds.length; k++) {
+        const rowIdA = rowIds[i];
+        const rowIdB = rowIds[j];
+        const rowIdC = rowIds[k];
+        const sharedCols = Array.from(rowToCols.get(rowIdA)!).filter(
+          (colId) =>
+            rowToCols.get(rowIdB)!.has(colId) && rowToCols.get(rowIdC)!.has(colId),
+        );
+
+        if (sharedCols.length < 3) continue;
+
+        const rowTypeMix = [
+          rowTypeById.get(rowIdA)!,
+          rowTypeById.get(rowIdB)!,
+          rowTypeById.get(rowIdC)!,
+        ]
+          .sort()
+          .join(",");
+        const summary =
+          templateCountsByRowTypeMix.get(rowTypeMix) || {
+            rowTripletsWithThreePlusSharedCols: 0,
+            columnTypeMixes: new Set<string>(),
+          };
+        summary.rowTripletsWithThreePlusSharedCols += 1;
+
+        const sharedColTypeCounts = sharedCols.reduce<Record<string, number>>(
+          (acc, colId) => {
+            const colType = colTypeById.get(colId)!;
+            acc[colType] = (acc[colType] || 0) + 1;
+            return acc;
+          },
+          {},
+        );
+        const signatures = new Set<string>();
+        const columnTypes = Object.keys(sharedColTypeCounts).sort();
+        for (let a = 0; a < columnTypes.length; a++) {
+          for (let b = a; b < columnTypes.length; b++) {
+            for (let c = b; c < columnTypes.length; c++) {
+              const counts = new Map<string, number>();
+              for (const colType of [columnTypes[a], columnTypes[b], columnTypes[c]]) {
+                counts.set(colType, (counts.get(colType) || 0) + 1);
+              }
+              const isValid = Array.from(counts.entries()).every(
+                ([colType, needed]) => (sharedColTypeCounts[colType] || 0) >= needed,
+              );
+              if (isValid) {
+                signatures.add([columnTypes[a], columnTypes[b], columnTypes[c]].join(","));
+              }
+            }
+          }
+        }
+
+        for (const signature of signatures) {
+          summary.columnTypeMixes.add(signature);
+        }
+        templateCountsByRowTypeMix.set(rowTypeMix, summary);
+      }
+    }
+  }
+
+  const approvedTemplateCountsByRowTypeMix = Object.fromEntries(
+    Array.from(templateCountsByRowTypeMix.entries())
+      .sort((a, b) => a[0].localeCompare(b[0]))
+      .map(([rowTypeMix, summary]) => [
+        rowTypeMix,
+        {
+          rowTripletsWithThreePlusSharedCols: summary.rowTripletsWithThreePlusSharedCols,
+          distinctColumnTypeMixes: summary.columnTypeMixes.size,
+        },
+      ]),
+  );
+
+  return {
+    approvedEntries,
+    qaReport: {
+      generatedAt: new Date().toISOString(),
+      sport: "football",
+      raw: {
+        totalEntries: footballEntries.length,
+        easyEntries: footballEntries.filter((entry) => entry.difficulty === "easy").length,
+        mediumEntries: footballEntries.filter((entry) => entry.difficulty === "medium").length,
+        hardEntries: footballEntries.filter((entry) => entry.difficulty === "hard").length,
+        sameLabelCollisionCount: rawSameLabelCollisionCount,
+      },
+      approved: {
+        totalEntries: approvedEntries.length,
+        sameLabelCollisionCount: approvedSameLabelCollisionCount,
+        axisFamilyCounts: approvedAxisFamilyCounts,
+        cellSizeStatsByAxisFamily: approvedCellSizeStatsByAxisFamily,
+        templateCountsByRowTypeMix: approvedTemplateCountsByRowTypeMix,
+      },
+      curationImpact: {
+        nationalityEntriesRemoved,
+        nationalityLabelsRemoved: Array.from(removedNationalities).sort(),
+        nationalTeamEntriesRemoved,
+        nationalTeamSameLabelCollisionsRemoved,
+        positionNormalization: {
+          entriesCollapsed: positionEntriesCollapsed,
+          beforeCounts: rawPositionCounts,
+          afterCounts: approvedPositionCounts,
+          mapping: VERVE_GRID_POSITION_NORMALIZATION,
+        },
+      },
+    },
+  };
+}
+
 function buildStatFacts(
   players: Player[],
   ptsList: PlayerTeamSeason[],
@@ -1543,12 +5754,779 @@ function buildStatFacts(
   return facts;
 }
 
+function buildHigherLowerPoolKey(fact: {
+  entityType: string;
+  statKey: string;
+  contextKey: string;
+  season: number | null;
+}): string {
+  return `${fact.entityType}_${fact.statKey}_${fact.contextKey}_${fact.season ?? "career"}`;
+}
+
+function buildFootballHigherLowerData(
+  statFacts: StatFact[],
+  qualityProfiles: PlayerQualityProfile[],
+): { facts: HigherLowerFact[]; pools: HigherLowerPool[] } {
+  const eligiblePlayerIds = new Set(
+    qualityProfiles
+      .filter((profile) => profile.sport === "football" && profile.higherLowerEligible)
+      .map((profile) => profile.playerId),
+  );
+
+  const candidateFacts = statFacts.filter((fact) => {
+    if (fact.sport !== "football") return false;
+    if (!HIGHER_LOWER_APPROVED_STAT_KEYS.has(fact.statKey)) return false;
+    if (HIGHER_LOWER_DISABLED_STAT_KEYS.has(fact.statKey)) return false;
+    if (!HIGHER_LOWER_APPROVED_CONTEXT_KEYS.has(fact.contextKey)) return false;
+    if (fact.entityType === "player" && !eligiblePlayerIds.has(fact.entityId)) {
+      return false;
+    }
+    return fact.entityType === "player" || fact.entityType === "team";
+  });
+
+  const groupedFacts = new Map<string, StatFact[]>();
+  for (const fact of candidateFacts) {
+    const poolKey = buildHigherLowerPoolKey(fact);
+    const group = groupedFacts.get(poolKey);
+    if (group) {
+      group.push(fact);
+    } else {
+      groupedFacts.set(poolKey, [fact]);
+    }
+  }
+
+  const approvedFacts: HigherLowerFact[] = [];
+  const approvedPools: HigherLowerPool[] = [];
+
+  for (const [poolKey, facts] of groupedFacts.entries()) {
+    if (facts.length < HIGHER_LOWER_MIN_GROUP_SIZE) continue;
+
+    const distinctValues = new Set(facts.map((fact) => fact.value));
+    if (distinctValues.size < HIGHER_LOWER_MIN_DISTINCT_VALUES) continue;
+
+    const sortedFacts = [...facts].sort(
+      (a, b) =>
+        a.value - b.value ||
+        a.entityName.localeCompare(b.entityName) ||
+        a.entityId.localeCompare(b.entityId),
+    );
+    const [firstFact] = sortedFacts;
+    const minValue = sortedFacts[0]?.value ?? 0;
+    const maxValue = sortedFacts[sortedFacts.length - 1]?.value ?? 0;
+
+    approvedPools.push({
+      id: poolKey,
+      sport: "football",
+      entityType: firstFact.entityType,
+      statKey: firstFact.statKey,
+      contextKey: firstFact.contextKey,
+      contextLabel:
+        HIGHER_LOWER_APPROVED_CONTEXT_LABELS[firstFact.contextKey] || firstFact.contextKey,
+      factCount: sortedFacts.length,
+      distinctValueCount: distinctValues.size,
+      minValue,
+      maxValue,
+      season: firstFact.season,
+    });
+
+    approvedFacts.push(
+      ...sortedFacts.map((fact) => ({
+        id: fact.id,
+        sport: fact.sport,
+        poolKey,
+        entityType: fact.entityType,
+        entityId: fact.entityId,
+        entityName: fact.entityName,
+        statKey: fact.statKey,
+        contextKey: fact.contextKey,
+        value: fact.value,
+        season: fact.season,
+      })),
+    );
+  }
+
+  approvedPools.sort(
+    (a, b) =>
+      a.statKey.localeCompare(b.statKey) ||
+      a.contextKey.localeCompare(b.contextKey) ||
+      (a.season ?? 0) - (b.season ?? 0) ||
+      a.entityType.localeCompare(b.entityType),
+  );
+  approvedFacts.sort(
+    (a, b) =>
+      a.poolKey.localeCompare(b.poolKey) ||
+      a.value - b.value ||
+      a.entityName.localeCompare(b.entityName) ||
+      a.entityId.localeCompare(b.entityId),
+  );
+
+  console.log(
+    `  Built ${approvedPools.length} Higher or Lower pools and ${approvedFacts.length} approved facts`,
+  );
+
+  return { facts: approvedFacts, pools: approvedPools };
+}
+
+function getPreferredWhoAmITeamLabels(
+  pts: PlayerTeamSeason[],
+  teamNames: Map<string, string>,
+): string[] {
+  const appearancesByTeam = new Map<string, number>();
+
+  for (const entry of pts) {
+    const label = teamNames.get(entry.teamId) || "";
+    if (!label || label.startsWith("fb_team_")) continue;
+    appearancesByTeam.set(
+      label,
+      (appearancesByTeam.get(label) || 0) + (entry.appearances || 0),
+    );
+  }
+
+  return Array.from(appearancesByTeam.entries())
+    .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
+    .map(([label]) => label)
+    .filter((label, index, labels) => labels.indexOf(label) === index);
+}
+
+function getApprovedWhoAmITeamLabels(
+  pts: PlayerTeamSeason[],
+  teamsById: Map<string, Team>,
+): string[] {
+  const appearancesByTeam = new Map<string, number>();
+
+  for (const entry of pts) {
+    const team = teamsById.get(entry.teamId);
+    const label = team?.name || "";
+    if (!label || label.startsWith("fb_team_")) continue;
+    if (team && VERVE_GRID_NATIONAL_TEAM_LEAGUE_IDS.has(team.leagueId)) continue;
+
+    appearancesByTeam.set(
+      label,
+      (appearancesByTeam.get(label) || 0) + (entry.appearances || 0),
+    );
+  }
+
+  return Array.from(appearancesByTeam.entries())
+    .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
+    .map(([label]) => label)
+    .filter((label, index, labels) => labels.indexOf(label) === index);
+}
+
+function withIndefiniteArticle(label: string): string {
+  const trimmed = label.trim();
+  if (!trimmed) return trimmed;
+
+  const lower = trimmed.toLowerCase();
+  const article = /^[aeiou]/.test(lower) ? "an" : "a";
+  return `${article} ${trimmed}`;
+}
+
+function formatWhoAmIIdentityClue(params: {
+  nationality: string | null;
+  position: string | null;
+  pastTense?: boolean;
+}): string | null {
+  const parts: string[] = [];
+  if (params.nationality) {
+    parts.push(`I am from ${params.nationality}`);
+  }
+  if (params.position) {
+    const verb = params.pastTense ? "played as" : "play as";
+    parts.push(`I ${verb} ${withIndefiniteArticle(params.position)}`);
+  }
+
+  return parts.length > 0 ? `${parts.join(". ")}.` : null;
+}
+
+function formatWhoAmITrophyClue(
+  wins: PlayerTrophy[],
+): { clue: string; trophyNames: string[] } | null {
+  if (wins.length === 0) return null;
+
+  const trophyNames = wins
+    .map((trophy) => trophy.trophyName.trim())
+    .filter(Boolean)
+    .filter((name, index, names) => names.indexOf(name) === index)
+    .slice(0, 3);
+
+  const trophyWord = wins.length === 1 ? "trophy" : "trophies";
+  return {
+    clue: `I have won ${wins.length} ${trophyWord}, including ${trophyNames.join(", ")}.`,
+    trophyNames,
+  };
+}
+
+function getFootballWhoAmILowSignalReasons(
+  profile: PlayerQualityProfile,
+  isManualLegend: boolean,
+): string[] {
+  const reasons: string[] = [];
+  const meaningfulStats = profile.reasons.includes("meaningful_stats");
+  const whoAmISignal = getFootballWhoAmISignalStrength({
+    playabilityScore: profile.playabilityScore,
+    clueRichnessScore: profile.clueRichnessScore,
+    metadataCompletenessScore: profile.metadataCompletenessScore,
+    teamCount: profile.teamCount,
+    trophyWins: profile.trophyWins,
+    transferCount: profile.transferCount,
+    meaningfulStats,
+    hasNationality: profile.hasNationality,
+    hasPosition: profile.hasPosition,
+    isHeadlineSeed: profile.isHeadlineSeed,
+    eliteCompetitionScore: profile.eliteCompetitionScore,
+  });
+
+  if (profile.reasons.includes("whoami_headline_fallback")) {
+    reasons.push("headline_fallback_path");
+  }
+  if (
+    !isManualLegend &&
+    whoAmISignal.signalCount === FOOTBALL_WHO_AM_I_MIN_SIGNAL_COUNT
+  ) {
+    reasons.push("minimum_signal_shape");
+  }
+  if (
+    !isManualLegend &&
+    profile.teamCount === 2 &&
+    profile.trophyWins === 0 &&
+    profile.transferCount === 0 &&
+    meaningfulStats
+  ) {
+    reasons.push("two_club_stats_only_signal");
+  }
+  if (
+    !isManualLegend &&
+    profile.trophyWins === 0 &&
+    profile.transferCount === 0 &&
+    meaningfulStats &&
+    profile.teamCount <= 3 &&
+    profile.clueRichnessScore <= FOOTBALL_WHO_AM_I_MIN_CLUE_RICHNESS_SCORE
+  ) {
+    reasons.push("stats_only_weak_diversity");
+  }
+
+  return reasons;
+}
+
+function getApprovedWhoAmIDifficulty(params: {
+  rawDifficulty: "easy" | "medium" | "hard";
+  profile: PlayerQualityProfile;
+  isManualLegend: boolean;
+}): "easy" | "medium" | "hard" {
+  const { rawDifficulty, profile, isManualLegend } = params;
+
+  if (isManualLegend) {
+    return rawDifficulty === "hard" ? "medium" : rawDifficulty;
+  }
+
+  if (rawDifficulty === "easy") {
+    return profile.playabilityScore < 220 && !profile.isHeadlineSeed
+      ? "medium"
+      : "easy";
+  }
+
+  if (rawDifficulty === "medium") {
+    if (
+      (profile.isHeadlineSeed && profile.playabilityScore >= 350) ||
+      profile.playabilityScore >= 700 ||
+      (profile.teamCount >= 5 && profile.trophyWins >= 15)
+    ) {
+      return "easy";
+    }
+    return "medium";
+  }
+
+  if (
+    (profile.isHeadlineSeed && profile.playabilityScore >= 350) ||
+    profile.playabilityScore >= 650
+  ) {
+    return "easy";
+  }
+  if (
+    profile.playabilityScore >= 350 ||
+    profile.trophyWins > 0 ||
+    profile.transferCount >= 5 ||
+    (profile.teamCount >= 4 && profile.playabilityScore >= 250)
+  ) {
+    return "medium";
+  }
+  return "hard";
+}
+
+function buildFootballWhoAmIApprovedData(params: {
+  rawClues: WhoAmIClue[];
+  players: Player[];
+  ptsList: PlayerTeamSeason[];
+  teams: Team[];
+  trophies: PlayerTrophy[];
+  transfers: PlayerTransfer[];
+  qualityProfiles: PlayerQualityProfile[];
+}): {
+  approvedClues: WhoAmIApprovedClue[];
+  qaReport: WhoAmIQaReport;
+} {
+  const footballRawClues = params.rawClues.filter((clue) => clue.sport === "football");
+  const footballPlayers = params.players.filter((player) => player.sport === "football");
+  const footballPts = params.ptsList.filter((pts) => pts.leagueId.startsWith("fb_"));
+  const footballTeams = params.teams.filter((team) => team.sport === "football");
+  const footballTrophies = params.trophies.filter((trophy) => trophy.sport === "football");
+  const footballTransfers = params.transfers.filter((transfer) => transfer.sport === "football");
+  const qualityProfilesByPlayerId = new Map(
+    params.qualityProfiles.map((profile) => [profile.playerId, profile]),
+  );
+  const playerById = new Map(footballPlayers.map((player) => [player.id, player]));
+  const teamsById = new Map(footballTeams.map((team) => [team.id, team]));
+  const teamNames = new Map(footballTeams.map((team) => [team.id, team.name]));
+  const nationalTeamNames = new Set(
+    footballTeams
+      .filter((team) => VERVE_GRID_NATIONAL_TEAM_LEAGUE_IDS.has(team.leagueId))
+      .map((team) => team.name),
+  );
+
+  const playerPts = new Map<string, PlayerTeamSeason[]>();
+  for (const pts of footballPts) {
+    if (!playerPts.has(pts.playerId)) playerPts.set(pts.playerId, []);
+    playerPts.get(pts.playerId)!.push(pts);
+  }
+
+  const playerTrophies = new Map<string, PlayerTrophy[]>();
+  for (const trophy of footballTrophies) {
+    if (!playerTrophies.has(trophy.playerId)) playerTrophies.set(trophy.playerId, []);
+    playerTrophies.get(trophy.playerId)!.push(trophy);
+  }
+
+  const playerTransfers = new Map<string, PlayerTransfer[]>();
+  for (const transfer of footballTransfers) {
+    if (!playerTransfers.has(transfer.playerId)) {
+      playerTransfers.set(transfer.playerId, []);
+    }
+    playerTransfers.get(transfer.playerId)!.push(transfer);
+  }
+
+  const countsBySport = footballRawClues.reduce<Record<string, number>>((acc, clue) => {
+    acc[clue.sport] = (acc[clue.sport] || 0) + 1;
+    return acc;
+  }, {});
+  const rawCountsByDifficulty = footballRawClues.reduce<Record<string, number>>(
+    (acc, clue) => {
+      acc[clue.difficulty] = (acc[clue.difficulty] || 0) + 1;
+      return acc;
+    },
+    {},
+  );
+
+  const approvedClues: WhoAmIApprovedClue[] = [];
+  const rejectedClues: WhoAmIRejectedClue[] = [];
+  const difficultyChangedExamples: WhoAmIQaExample[] = [];
+  const rejectedExamples: WhoAmIQaExample[] = [];
+  const textAdjustedExamples: WhoAmIQaExample[] = [];
+
+  let nationalTeamLeakyRawCount = 0;
+  let nationalTeamLabelsRemovedCount = 0;
+  let trophyTextNormalizedCount = 0;
+  let transferClueReplacedCount = 0;
+  let attackerGrammarFixedCount = 0;
+
+  for (const rawClue of footballRawClues) {
+    const profile = qualityProfilesByPlayerId.get(rawClue.playerId);
+    const isManualLegend = isManualLegendPlayerId(rawClue.playerId);
+    const rejections: string[] = [];
+
+    if (!profile) {
+      rejections.push("missing_quality_profile");
+    } else if (!profile.whoAmIEligible) {
+      rejections.push("quality_profile_ineligible");
+    }
+
+    const pts = playerPts.get(rawClue.playerId) || [];
+    const wins = (playerTrophies.get(rawClue.playerId) || []).filter(
+      (trophy) => trophy.place?.toLowerCase() === "winner",
+    );
+    const transfers = playerTransfers.get(rawClue.playerId) || [];
+    const player = playerById.get(rawClue.playerId) || null;
+    const rawTeamLabels = !isManualLegend
+      ? getPreferredWhoAmITeamLabels(pts, teamNames)
+      : [];
+    const approvedTeamLabels = !isManualLegend
+      ? getApprovedWhoAmITeamLabels(pts, teamsById)
+      : [];
+
+    if (
+      rawTeamLabels.length > approvedTeamLabels.length &&
+      rawTeamLabels.length > 0
+    ) {
+      nationalTeamLabelsRemovedCount += rawTeamLabels.length - approvedTeamLabels.length;
+      nationalTeamLeakyRawCount += 1;
+    }
+
+    if (profile) {
+      rejections.push(...getFootballWhoAmILowSignalReasons(profile, isManualLegend));
+
+      if (
+        !isManualLegend &&
+        approvedTeamLabels.length < 2 &&
+        profile.trophyWins === 0 &&
+        profile.transferCount === 0 &&
+        !profile.isHeadlineSeed
+      ) {
+        rejections.push("insufficient_club_signal_after_curation");
+      }
+
+      if (
+        rejections.includes("stats_only_weak_diversity") &&
+        !profile.isHeadlineSeed &&
+        profile.playabilityScore < 300
+      ) {
+        rejections.push("reject_stats_only_weak_diversity");
+      }
+      if (
+        rejections.includes("minimum_signal_shape") &&
+        !profile.isHeadlineSeed &&
+        profile.playabilityScore < 180
+      ) {
+        rejections.push("reject_minimum_signal_shape");
+      }
+      if (rejections.includes("two_club_stats_only_signal")) {
+        rejections.push("reject_two_club_stats_only_signal");
+      }
+    }
+
+    const rejectionReasons = Array.from(new Set(rejections.filter((reason) => reason.startsWith("reject_") || reason === "missing_quality_profile" || reason === "quality_profile_ineligible" || reason === "insufficient_club_signal_after_curation")));
+    if (rejectionReasons.length > 0) {
+      rejectedClues.push({
+        sourceClueId: rawClue.id,
+        playerId: rawClue.playerId,
+        answerName: rawClue.answerName,
+        rawDifficulty: rawClue.difficulty,
+        reasons: rejectionReasons,
+      });
+      if (rejectedExamples.length < 12) {
+        rejectedExamples.push({
+          playerId: rawClue.playerId,
+          answerName: rawClue.answerName,
+          rawDifficulty: rawClue.difficulty,
+          reasons: rejectionReasons,
+          rawClue1: rawClue.clue1,
+          rawClue2: rawClue.clue2,
+          rawClue3: rawClue.clue3,
+          rawClue4: rawClue.clue4,
+        });
+      }
+      continue;
+    }
+
+    if (!profile) {
+      continue;
+    }
+
+    let approvedClue1 = rawClue.clue1;
+    let approvedClue2 = rawClue.clue2;
+    let approvedClue3 = rawClue.clue3;
+    let approvedClue4 = rawClue.clue4;
+    const curationFlags: string[] = [];
+
+    if (isManualLegend) {
+      const manualClue1 = formatWhoAmIIdentityClue({
+        nationality: rawClue.clue1.match(/^I am from (.+?)\./)?.[1] || null,
+        position: rawClue.clue1.match(/I played as (?:a|an) (.+?)\./)?.[1] || null,
+        pastTense: true,
+      });
+      if (manualClue1 && manualClue1 !== rawClue.clue1) {
+        approvedClue1 = manualClue1;
+        curationFlags.push("identity_clue_normalized");
+      }
+    } else if (player) {
+      const identityClue = formatWhoAmIIdentityClue({
+        nationality: player.nationality,
+        position: player.position,
+      });
+      if (identityClue) {
+        approvedClue1 = identityClue;
+      }
+      if (
+        rawClue.clue1.includes("I play as a Attacker.") &&
+        approvedClue1 !== rawClue.clue1
+      ) {
+        attackerGrammarFixedCount += 1;
+        curationFlags.push("attacker_article_fixed");
+      }
+
+      if (approvedTeamLabels.length >= 2) {
+        approvedClue2 = `I have played for ${approvedTeamLabels.slice(0, 4).join(", ")}.`;
+      } else if (approvedTeamLabels.length === 1) {
+        approvedClue2 = `I have played for ${approvedTeamLabels[0]}.`;
+      }
+      if (approvedClue2 !== rawClue.clue2) {
+        curationFlags.push("team_labels_curated");
+      }
+
+      const trophyClue = formatWhoAmITrophyClue(wins);
+      const totalGoals = pts.reduce((sum, entry) => sum + (entry.goals || 0), 0);
+      const totalAssists = pts.reduce((sum, entry) => sum + (entry.assists || 0), 0);
+      const totalAppearances = pts.reduce(
+        (sum, entry) => sum + (entry.appearances || 0),
+        0,
+      );
+
+      if (trophyClue) {
+        approvedClue3 = trophyClue.clue;
+      } else if (totalGoals > 0 && totalAssists >= 8 && totalGoals < 10) {
+        approvedClue3 = `I have produced ${totalGoals} goals and ${totalAssists} assists across ${totalAppearances} appearances.`;
+      } else if (totalGoals > 0) {
+        const goalWord = totalGoals === 1 ? "goal" : "goals";
+        approvedClue3 = `I have scored ${totalGoals} ${goalWord} across ${totalAppearances} appearances.`;
+      } else {
+        approvedClue3 = `I have made ${totalAppearances} appearances in my career.`;
+      }
+      if (approvedClue3 !== rawClue.clue3) {
+        trophyTextNormalizedCount += 1;
+        curationFlags.push("achievement_clue_normalized");
+      }
+
+      const distinctTransfers = transfers
+        .map((transfer) => `${transfer.fromTeamName} to ${transfer.toTeamName}`)
+        .filter((label, index, labels) => labels.indexOf(label) === index)
+        .slice(0, 2);
+      if (
+        distinctTransfers.length > 0 &&
+        (profile.transferCount >= 5 ||
+          (profile.teamCount >= 4 && profile.playabilityScore >= 300))
+      ) {
+        approvedClue4 = `My transfers include: ${distinctTransfers.join("; ")}.`;
+      } else if (player.firstName) {
+        approvedClue4 = `My first name is ${player.firstName}.`;
+        if (rawClue.clue4 !== approvedClue4 && rawClue.clue4.startsWith("My transfers include:")) {
+          transferClueReplacedCount += 1;
+          curationFlags.push("transfer_clue_replaced");
+        }
+      }
+    }
+
+    const approvedDifficulty = getApprovedWhoAmIDifficulty({
+      rawDifficulty: rawClue.difficulty,
+      profile,
+      isManualLegend,
+    });
+    if (approvedDifficulty !== rawClue.difficulty && difficultyChangedExamples.length < 12) {
+      difficultyChangedExamples.push({
+        playerId: rawClue.playerId,
+        answerName: rawClue.answerName,
+        rawDifficulty: rawClue.difficulty,
+        approvedDifficulty,
+        rawClue1: rawClue.clue1,
+        rawClue2: rawClue.clue2,
+        rawClue3: rawClue.clue3,
+        rawClue4: rawClue.clue4,
+      });
+    }
+    if (
+      (approvedClue1 !== rawClue.clue1 ||
+        approvedClue2 !== rawClue.clue2 ||
+        approvedClue3 !== rawClue.clue3 ||
+        approvedClue4 !== rawClue.clue4) &&
+      textAdjustedExamples.length < 12
+    ) {
+      textAdjustedExamples.push({
+        playerId: rawClue.playerId,
+        answerName: rawClue.answerName,
+        rawDifficulty: rawClue.difficulty,
+        approvedDifficulty,
+        rawClue1: rawClue.clue1,
+        rawClue2: rawClue.clue2,
+        rawClue3: rawClue.clue3,
+        rawClue4: rawClue.clue4,
+        approvedClue1,
+        approvedClue2,
+        approvedClue3,
+        approvedClue4,
+      });
+    }
+
+    const approvalReasons = [
+      "curated_upstream",
+      profile.isHeadlineSeed ? "headline_seed" : null,
+      isManualLegend ? "manual_legend" : null,
+      profile.playabilityScore >= 350 ? "high_playability" : null,
+      profile.trophyWins > 0 ? "trophy_signal" : null,
+      profile.transferCount > 0 ? "transfer_signal" : null,
+      approvedTeamLabels.length >= 3 ? "broad_club_history" : null,
+    ].filter((reason): reason is string => Boolean(reason));
+
+    approvedClues.push({
+      id: `whoami_approved_${rawClue.playerId}`,
+      sourceClueId: rawClue.id,
+      sport: "football",
+      playerId: rawClue.playerId,
+      clue1: approvedClue1,
+      clue2: approvedClue2,
+      clue3: approvedClue3,
+      clue4: approvedClue4,
+      answerName: rawClue.answerName,
+      difficulty: approvedDifficulty,
+      rawDifficulty: rawClue.difficulty,
+      qualityScore: Number(profile.playabilityScore.toFixed(2)),
+      isHeadlineSeed: profile.isHeadlineSeed,
+      isManualLegend,
+      teamLabels: approvedTeamLabels,
+      approvalReasons,
+      curationFlags: Array.from(new Set(curationFlags)),
+    });
+  }
+
+  const approvedCountsByDifficulty = approvedClues.reduce<Record<string, number>>(
+    (acc, clue) => {
+      acc[clue.difficulty] = (acc[clue.difficulty] || 0) + 1;
+      return acc;
+    },
+    {},
+  );
+  const rejectionReasonCounts = rejectedClues.reduce<Record<string, number>>(
+    (acc, clue) => {
+      for (const reason of clue.reasons) {
+        acc[reason] = (acc[reason] || 0) + 1;
+      }
+      return acc;
+    },
+    {},
+  );
+
+  return {
+    approvedClues: approvedClues.sort((a, b) => a.answerName.localeCompare(b.answerName)),
+    qaReport: {
+      generatedAt: new Date().toISOString(),
+      sport: "football",
+      raw: {
+        totalClueSets: footballRawClues.length,
+        countsBySport,
+        countsByDifficulty: rawCountsByDifficulty,
+        lowSignalClueSets: footballRawClues.filter((clue) => {
+          const profile = qualityProfilesByPlayerId.get(clue.playerId);
+          return profile
+            ? getFootballWhoAmILowSignalReasons(
+                profile,
+                isManualLegendPlayerId(clue.playerId),
+              ).length > 0
+            : true;
+        }).length,
+        nationalTeamLeakyClueSets: nationalTeamLeakyRawCount,
+        attackerGrammarIssues: footballRawClues.filter((clue) =>
+          clue.clue1.includes("I play as a Attacker."),
+        ).length,
+        trophyWordingIssues: footballRawClues.filter((clue) =>
+          clue.clue3.includes("trophy/trophies"),
+        ).length,
+        transferClueSets: footballRawClues.filter((clue) =>
+          clue.clue4.startsWith("My transfers include:"),
+        ).length,
+        firstNameClueSets: footballRawClues.filter((clue) =>
+          clue.clue4.startsWith("My first name is "),
+        ).length,
+      },
+      approved: {
+        totalClueSets: approvedClues.length,
+        countsBySport: { football: approvedClues.length },
+        countsByDifficulty: approvedCountsByDifficulty,
+        headlineClueSets: approvedClues.filter((clue) => clue.isHeadlineSeed).length,
+        manualLegendClueSets: approvedClues.filter((clue) => clue.isManualLegend).length,
+        nationalTeamLeakyClueSets: approvedClues.filter((clue) =>
+          clue.teamLabels.some((label) => nationalTeamNames.has(label)),
+        ).length,
+      },
+      rejections: {
+        totalRejected: rejectedClues.length,
+        byReason: rejectionReasonCounts,
+      },
+      curationImpact: {
+        approvedFromRawRate: Number(
+          (approvedClues.length / Math.max(1, footballRawClues.length)).toFixed(4),
+        ),
+        rejectedFromRawRate: Number(
+          (rejectedClues.length / Math.max(1, footballRawClues.length)).toFixed(4),
+        ),
+        difficultyChangedCount: approvedClues.filter(
+          (clue) => clue.difficulty !== clue.rawDifficulty,
+        ).length,
+        nationalTeamLabelsRemovedCount,
+        transferClueReplacedCount,
+        trophyTextNormalizedCount,
+        attackerGrammarFixedCount,
+      },
+      examples: {
+        rejected: rejectedExamples,
+        difficultyChanged: difficultyChangedExamples,
+        textAdjusted: textAdjustedExamples,
+      },
+    },
+  };
+}
+
+function buildManualFootballLegendWhoAmIClues(
+  manualLegends: NormalizedManualFootballLegend[],
+  qualityProfilesByPlayerId?: Map<string, PlayerQualityProfile>,
+): WhoAmIClue[] {
+  return manualLegends
+    .flatMap((legend) => {
+      const qualityProfile = qualityProfilesByPlayerId?.get(legend.id);
+      if (qualityProfile && !qualityProfile.whoAmIEligible) {
+        return [];
+      }
+
+      const teamLabels = getManualLegendTeamLabels(legend);
+      const clue1Parts: string[] = [];
+      if (legend.nationality) clue1Parts.push(`I am from ${legend.nationality}`);
+      if (legend.position) clue1Parts.push(`I played as a ${legend.position}`);
+      if (clue1Parts.length === 0) {
+        return [];
+      }
+
+      const clue1 = clue1Parts.join(". ") + ".";
+      const clue2 =
+        teamLabels.length > 0
+          ? `I am associated with ${teamLabels.slice(0, 4).join(", ")}.`
+          : `I am associated with the ${legend.era || "classic"} era of football.`;
+
+      let clue3 = "";
+      if (legend.trophies.length > 0) {
+        clue3 = `I won honors such as ${legend.trophies.slice(0, 3).join(", ")}.`;
+      } else if (legend.achievements.length > 0) {
+        clue3 = `I am known for ${legend.achievements.slice(0, 2).join(" and ")}.`;
+      } else {
+        clue3 = `I am remembered as a football icon of the ${legend.era || "classic"} era.`;
+      }
+
+      const clue4 = legend.firstName
+        ? `My first name is ${legend.firstName}.`
+        : legend.era
+          ? `I am strongly associated with the ${legend.era}.`
+          : `I am remembered as one of football's historic greats.`;
+      const difficulty: WhoAmIClue["difficulty"] =
+        legend.survivalTier === "A" ? "easy" : "medium";
+
+      return [
+        {
+          id: `whoami_${legend.id}`,
+          sport: "football" as const,
+          playerId: legend.id,
+          clue1,
+          clue2,
+          clue3,
+          clue4,
+          answerName: legend.canonicalName,
+          difficulty,
+        },
+      ];
+    })
+    .sort((a, b) => a.answerName.localeCompare(b.answerName));
+}
+
 function buildWhoAmIClues(
   players: Player[],
   ptsList: PlayerTeamSeason[],
   teams: Team[],
   trophies: PlayerTrophy[],
   transfers: PlayerTransfer[],
+  qualityProfilesByPlayerId?: Map<string, PlayerQualityProfile>,
+  manualFootballLegends: NormalizedManualFootballLegend[] = [],
 ): WhoAmIClue[] {
   const clues: WhoAmIClue[] = [];
   const teamNames = new Map<string, string>();
@@ -1589,9 +6567,74 @@ function buildWhoAmIClues(
     const pts = playerPts.get(player.id) || [];
     const troph = playerTrophies.get(player.id) || [];
     const trans = playerTransfers.get(player.id) || [];
+    const qualityProfile = qualityProfilesByPlayerId?.get(player.id);
 
     // Need at least some data to make clues
     if (pts.length === 0) continue;
+
+    if (player.sport === "football" && qualityProfile && !qualityProfile.whoAmIEligible) {
+      continue;
+    }
+
+    const wins = troph.filter(
+      (t) => t.place?.toLowerCase() === "winner",
+    );
+    const totalGoals = pts.reduce(
+      (sum, p) => sum + (p.goals || 0),
+      0,
+    );
+    const totalApps = pts.reduce(
+      (sum, p) => sum + (p.appearances || 0),
+      0,
+    );
+    const totalMinutes = pts.reduce(
+      (sum, p) => sum + (p.minutes || 0),
+      0,
+    );
+
+    const teamLabels = getPreferredWhoAmITeamLabels(pts, teamNames);
+    const meaningfulStats = hasMeaningfulFootballStats(
+      totalApps,
+      totalMinutes,
+      totalGoals,
+      pts.reduce((sum, p) => sum + (p.assists || 0), 0),
+    );
+
+    if (player.sport === "football") {
+      const metadataCompletenessScore =
+        (player.firstName ? 4 : 0) +
+        (player.nationality ? 4 : 0) +
+        (player.position ? 4 : 0) +
+        (player.photo ? 3 : 0);
+      const clueRichnessScore =
+        (teamLabels.length >= 2 ? 8 : teamLabels.length === 1 ? 3 : 0) +
+        (wins.length > 0 ? 6 : 0) +
+        (totalGoals > 0 ? 4 : 0) +
+        (trans.length > 0 ? 4 : 0);
+      const whoAmISignal = getFootballWhoAmISignalStrength({
+        playabilityScore: qualityProfile?.playabilityScore || 0,
+        clueRichnessScore:
+          qualityProfile?.clueRichnessScore ?? clueRichnessScore,
+        metadataCompletenessScore:
+          qualityProfile?.metadataCompletenessScore ?? metadataCompletenessScore,
+        teamCount: qualityProfile?.teamCount ?? teamLabels.length,
+        trophyWins: qualityProfile?.trophyWins ?? wins.length,
+        transferCount: qualityProfile?.transferCount ?? trans.length,
+        meaningfulStats,
+        hasNationality: qualityProfile?.hasNationality ?? Boolean(player.nationality),
+        hasPosition: qualityProfile?.hasPosition ?? Boolean(player.position),
+        isHeadlineSeed: qualityProfile?.isHeadlineSeed ?? false,
+        eliteCompetitionScore: qualityProfile?.eliteCompetitionScore ?? 0,
+      });
+
+      if (
+        !qualityProfile &&
+        !whoAmISignal.qualifiesBase &&
+        !whoAmISignal.qualifiesHeadlineFallback
+      ) {
+        continue;
+      }
+    }
 
     // Clue 1: Nationality + position
     const clue1Parts: string[] = [];
@@ -1600,11 +6643,7 @@ function buildWhoAmIClues(
     if (clue1Parts.length === 0) continue;
     const clue1 = clue1Parts.join(". ") + ".";
 
-    // Clue 2: Teams played for (2-4 clubs, excluding most recent if possible)
-    const teamIds = [...new Set(pts.map((p) => p.teamId))];
-    const teamLabels = teamIds
-      .map((tid) => teamNames.get(tid) || tid)
-      .filter(Boolean);
+    // Clue 2: Teams played for (distinct recognizable teams)
     let clue2 = "";
     if (teamLabels.length >= 2) {
       const displayed = teamLabels.slice(0, 4);
@@ -1616,23 +6655,12 @@ function buildWhoAmIClues(
     }
 
     // Clue 3: Trophies / achievements
-    const wins = troph.filter(
-      (t) => t.place?.toLowerCase() === "winner",
-    );
     let clue3 = "";
     if (wins.length > 0) {
       const topTrophies = wins.slice(0, 3).map((t) => t.trophyName);
       clue3 = `I have won ${wins.length} trophy/trophies, including ${topTrophies.join(", ")}.`;
     } else {
       // Fallback: notable stats
-      const totalGoals = pts.reduce(
-        (sum, p) => sum + (p.goals || 0),
-        0,
-      );
-      const totalApps = pts.reduce(
-        (sum, p) => sum + (p.appearances || 0),
-        0,
-      );
       if (totalGoals > 0) {
         clue3 = `I have scored ${totalGoals} goals across ${totalApps} appearances.`;
       } else if (pts[0]?.points != null) {
@@ -1679,6 +6707,13 @@ function buildWhoAmIClues(
     });
   }
 
+  clues.push(
+    ...buildManualFootballLegendWhoAmIClues(
+      manualFootballLegends,
+      qualityProfilesByPlayerId,
+    ),
+  );
+
   console.log(`  Built ${clues.length} Who Am I clue sets`);
   return clues;
 }
@@ -1713,6 +6748,16 @@ function persistTable<T extends { id: string }>(
   );
 }
 
+function persistReplaceTable<T extends { id: string }>(
+  tableName: string,
+  records: T[],
+): void {
+  ensureDir(DATA_DIR);
+  const filePath = path.join(DATA_DIR, `${tableName}.json`);
+  fs.writeFileSync(filePath, JSON.stringify(records, null, 2));
+  console.log(`  Persisted ${tableName}: ${records.length} total`);
+}
+
 function loadTable<T>(tableName: string): T[] {
   const filePath = path.join(DATA_DIR, `${tableName}.json`);
   if (!fs.existsSync(filePath)) return [];
@@ -1720,6 +6765,23 @@ function loadTable<T>(tableName: string): T[] {
     return JSON.parse(fs.readFileSync(filePath, "utf-8"));
   } catch {
     return [];
+  }
+}
+
+function persistJsonFile<T>(fileName: string, data: T): void {
+  ensureDir(DATA_DIR);
+  const filePath = path.join(DATA_DIR, `${fileName}.json`);
+  fs.writeFileSync(filePath, JSON.stringify(data, null, 2));
+  console.log(`  Persisted ${fileName}`);
+}
+
+function loadJsonFile<T>(fileName: string): T | null {
+  const filePath = path.join(DATA_DIR, `${fileName}.json`);
+  if (!fs.existsSync(filePath)) return null;
+  try {
+    return JSON.parse(fs.readFileSync(filePath, "utf-8")) as T;
+  } catch {
+    return null;
   }
 }
 
@@ -1733,6 +6795,7 @@ function createFreshState(): PipelineState {
     "footballTopScorers",
     "footballTopAssists",
     "footballSquadPlayers",
+    "footballHeadlineGapFill",
     "footballTrophies",
     "footballTransfers",
     "footballFixtures",
@@ -1743,6 +6806,7 @@ function createFreshState(): PipelineState {
     "nbaPlayers",
     "nbaStats",
     "indexBuilding",
+    "qualityIndexBuilding",
   ];
   for (const name of names) {
     phases[name] = { status: "pending", lastKey: null, processedKeys: [] };
@@ -1754,15 +6818,26 @@ function createFreshState(): PipelineState {
     footballCallsUsed: 0,
     nbaCallsUsed: 0,
     phases,
+    footballHeadlineCoverage: [],
   };
 }
 
 function loadPipelineState(): PipelineState | null {
   if (!fs.existsSync(STATE_PATH)) return null;
   try {
-    const data = JSON.parse(fs.readFileSync(STATE_PATH, "utf-8"));
+    const data = JSON.parse(fs.readFileSync(STATE_PATH, "utf-8")) as Partial<PipelineState>;
     if (data.version !== 2) return null;
-    return data;
+
+    const freshState = createFreshState();
+    return {
+      ...freshState,
+      ...data,
+      phases: {
+        ...freshState.phases,
+        ...(data.phases || {}),
+      },
+      footballHeadlineCoverage: data.footballHeadlineCoverage || [],
+    };
   } catch {
     return null;
   }
@@ -1859,6 +6934,7 @@ async function runPipeline(
   let allFixtures: Fixture[] = [];
   let allFixtureParticipants: FixtureParticipant[] = [];
   let allStatFacts: StatFact[] = [];
+  const footballLeagueCoverage = new Map<number, Map<number, FootballSeasonCoverage>>();
 
   // ─── FOOTBALL PHASES ───
 
@@ -1880,6 +6956,7 @@ async function runPipeline(
         const raw = await fetchFootballLeague(fbClient, lc.id);
         if (raw) {
           allLeagues.push(normalizeFootballLeague(raw));
+          footballLeagueCoverage.set(lc.id, extractFootballLeagueCoverage(raw));
         }
 
         state.phases.footballLeagues.processedKeys.push(key);
@@ -1893,6 +6970,19 @@ async function runPipeline(
       savePipelineState(state);
     } else {
       allLeagues = loadTable<League>("leagues");
+    }
+
+    if (!flags.dryRun) {
+      for (const lc of config.football.leagues) {
+        if (footballLeagueCoverage.has(lc.id)) continue;
+        const rawLeague = await fetchFootballLeague(fbClient, lc.id);
+        if (rawLeague) {
+          footballLeagueCoverage.set(
+            lc.id,
+            extractFootballLeagueCoverage(rawLeague),
+          );
+        }
+      }
     }
 
     // Phase 2: Teams
@@ -1937,6 +7027,21 @@ async function runPipeline(
           const key = `topscorers_${lc.id}_${season}`;
           if (state.phases.footballTopScorers.processedKeys.includes(key)) continue;
 
+          if (
+            !canUseLeagueCoverage(
+              footballLeagueCoverage,
+              lc.id,
+              season,
+              "topScorers",
+            )
+          ) {
+            console.log(`  Skipping top scorers: ${lc.name} ${season} (coverage unavailable)`);
+            state.phases.footballTopScorers.processedKeys.push(key);
+            state.phases.footballTopScorers.lastKey = key;
+            savePipelineState(state);
+            continue;
+          }
+
           if (!fbBudget.canMakeCall() && !flags.dryRun) {
             console.warn(`  Budget exhausted, stopping top scorers phase`);
             break;
@@ -1974,6 +7079,21 @@ async function runPipeline(
         for (const season of seasons) {
           const key = `topassists_${lc.id}_${season}`;
           if (state.phases.footballTopAssists.processedKeys.includes(key)) continue;
+
+          if (
+            !canUseLeagueCoverage(
+              footballLeagueCoverage,
+              lc.id,
+              season,
+              "topAssists",
+            )
+          ) {
+            console.log(`  Skipping top assists: ${lc.name} ${season} (coverage unavailable)`);
+            state.phases.footballTopAssists.processedKeys.push(key);
+            state.phases.footballTopAssists.lastKey = key;
+            savePipelineState(state);
+            continue;
+          }
 
           if (!fbBudget.canMakeCall() && !flags.dryRun) {
             console.warn(`  Budget exhausted, stopping top assists phase`);
@@ -2015,6 +7135,18 @@ async function runPipeline(
           if (budgetExhausted) break;
 
           // Get teams for this league-season from allTeams
+          if (
+            !canUseLeagueCoverage(
+              footballLeagueCoverage,
+              domesticId,
+              season,
+              "players",
+            )
+          ) {
+            console.log(`  Skipping squad players: league ${domesticId} ${season} (coverage unavailable)`);
+            continue;
+          }
+
           const leagueTeams = allTeams.filter(
             (t) => t.leagueId === `fb_${domesticId}` && t.season === season,
           );
@@ -2060,33 +7192,74 @@ async function runPipeline(
       if (flags.resume) {
         const existingPlayers = loadTable<Player>("players");
         const existingPts = loadTable<PlayerTeamSeason>("playerTeamSeason");
+        const existingTeams = loadTable<Team>("teams");
         allPlayers.push(...existingPlayers);
         allPts.push(...existingPts);
+        allTeams.push(...existingTeams);
       }
 
-      const playerMap = new Map<string, Player>();
-      for (const p of allPlayers) playerMap.set(p.id, p);
-      allPlayers = Array.from(playerMap.values());
-
-      const ptsMap = new Map<string, PlayerTeamSeason>();
-      for (const p of allPts) ptsMap.set(p.id, p);
-      allPts = Array.from(ptsMap.values());
-
-      // Dedup teams: prefer Phase 2 entries (have founded/venue/country) over stubs
-      const teamMap = new Map<string, Team>();
-      for (const t of allTeams) {
-        const existing = teamMap.get(t.id);
-        if (!existing || (t.founded != null && existing.founded == null)) {
-          teamMap.set(t.id, t);
-        }
-      }
-      allTeams = Array.from(teamMap.values());
+      allPlayers = upsertRecordsById(allPlayers);
+      allPts = mergePlayerTeamSeasonRecords(allPts);
+      allTeams = mergeTeamsByQuality(allTeams);
 
       if (!flags.dryRun) {
         persistTable("players", allPlayers);
         persistTable("playerTeamSeason", allPts);
         persistTable("teams", allTeams);
       }
+    }
+
+    // Phase 3d: Headline gap-fill (targeted, football-only)
+    if (state.phases.footballHeadlineGapFill.status !== "completed") {
+      console.log("\n--- Phase 3d: Football Headline Gap-Fill ---");
+      state.phases.footballHeadlineGapFill.status = "in_progress";
+      savePipelineState(state);
+
+      const currentFootballPlayers = allPlayers.filter(
+        (player) => player.sport === "football",
+      );
+      const currentFootballPts = allPts.filter((pts) => pts.playerId.startsWith("fb_"));
+      const currentFootballTeams = allTeams.filter((team) => team.sport === "football");
+      const initialCoverage =
+        state.footballHeadlineCoverage.length > 0
+          ? state.footballHeadlineCoverage
+          : buildInitialHeadlineCoverage(currentFootballPlayers);
+
+      const gapFillResult = await runFootballHeadlineGapFill({
+        client: fbClient,
+        footballPlayers: currentFootballPlayers,
+        footballPts: currentFootballPts,
+        footballTeams: currentFootballTeams,
+        config: config.football,
+        coverage: initialCoverage,
+        dryRun: flags.dryRun,
+      });
+
+      const nonFootballPlayers = allPlayers.filter(
+        (player) => player.sport !== "football",
+      );
+      const nonFootballTeams = allTeams.filter((team) => team.sport !== "football");
+      const nonFootballPts = allPts.filter((pts) => !pts.playerId.startsWith("fb_"));
+
+      allPlayers = upsertRecordsById([...gapFillResult.players, ...nonFootballPlayers]);
+      allTeams = mergeTeamsByQuality([...gapFillResult.teams, ...nonFootballTeams]);
+      allPts = mergePlayerTeamSeasonRecords([...gapFillResult.pts, ...nonFootballPts]);
+
+      state.footballHeadlineCoverage = gapFillResult.coverage;
+      state.phases.footballHeadlineGapFill.status = "completed";
+      state.footballCallsUsed = fbBudget.callsUsed;
+      savePipelineState(state);
+
+      if (!flags.dryRun) {
+        persistTable("players", allPlayers);
+        persistTable("playerTeamSeason", allPts);
+        persistTable("teams", allTeams);
+      }
+    } else if (state.footballHeadlineCoverage.length === 0) {
+      state.footballHeadlineCoverage = buildInitialHeadlineCoverage(
+        allPlayers.filter((player) => player.sport === "football"),
+      );
+      savePipelineState(state);
     }
 
     // Phase 4: Trophies (curated subset)
@@ -2099,7 +7272,13 @@ async function runPipeline(
       savePipelineState(state);
 
       const enrichLimit = config.football.enrichmentCount || config.football.topPlayersForEnrichment;
-      const topPlayers = calculateFameScores(allPts, enrichLimit);
+      const topPlayers = rankFootballPlayersForEnrichment(
+        allPlayers.filter((player) => player.sport === "football"),
+        allPts.filter((pts) => pts.playerId.startsWith("fb_")),
+        config.football,
+        state.footballHeadlineCoverage,
+        enrichLimit,
+      );
 
       for (const [playerId] of topPlayers) {
         const key = `trophies_${playerId}`;
@@ -2140,7 +7319,13 @@ async function runPipeline(
       savePipelineState(state);
 
       const enrichLimit = config.football.enrichmentCount || config.football.topPlayersForEnrichment;
-      const topPlayers = calculateFameScores(allPts, enrichLimit);
+      const topPlayers = rankFootballPlayersForEnrichment(
+        allPlayers.filter((player) => player.sport === "football"),
+        allPts.filter((pts) => pts.playerId.startsWith("fb_")),
+        config.football,
+        state.footballHeadlineCoverage,
+        enrichLimit,
+      );
 
       for (const [playerId] of topPlayers) {
         const key = `transfers_${playerId}`;
@@ -2186,6 +7371,21 @@ async function runPipeline(
           const key = `fixtures_${lc.id}_${season}`;
           if (state.phases.footballFixtures.processedKeys.includes(key))
             continue;
+
+          if (
+            !canUseLeagueCoverage(
+              footballLeagueCoverage,
+              lc.id,
+              season,
+              "fixtures",
+            )
+          ) {
+            console.log(`  Skipping fixtures: ${lc.name} ${season} (coverage unavailable)`);
+            state.phases.footballFixtures.processedKeys.push(key);
+            state.phases.footballFixtures.lastKey = key;
+            savePipelineState(state);
+            continue;
+          }
 
           if (!fbBudget.canMakeCall() && !flags.dryRun) {
             console.warn("  Budget exhausted, stopping fixtures phase");
@@ -2341,6 +7541,21 @@ async function runPipeline(
           if (state.phases.footballStandings.processedKeys.includes(key))
             continue;
 
+          if (
+            !canUseLeagueCoverage(
+              footballLeagueCoverage,
+              lc.id,
+              season,
+              "standings",
+            )
+          ) {
+            console.log(`  Skipping standings: ${lc.name} ${season} (coverage unavailable)`);
+            state.phases.footballStandings.processedKeys.push(key);
+            state.phases.footballStandings.lastKey = key;
+            savePipelineState(state);
+            continue;
+          }
+
           if (!fbBudget.canMakeCall() && !flags.dryRun) break;
 
           const rawStandings = await fetchFootballStandings(
@@ -2469,9 +7684,7 @@ async function runPipeline(
       }
 
       // Deduplicate
-      const playerMap = new Map<string, Player>();
-      for (const p of allPlayers) playerMap.set(p.id, p);
-      allPlayers = Array.from(playerMap.values());
+      allPlayers = upsertRecordsById(allPlayers);
 
       if (!flags.dryRun) persistTable("players", allPlayers);
 
@@ -2537,10 +7750,7 @@ async function runPipeline(
 
   // ─── INDEX BUILDING PHASE ───
 
-  if (
-    !flags.dryRun &&
-    state.phases.indexBuilding.status !== "completed"
-  ) {
+  if (!flags.dryRun) {
     console.log("\n--- Phase 11: Building Game Indexes ---");
     state.phases.indexBuilding.status = "in_progress";
     savePipelineState(state);
@@ -2551,6 +7761,47 @@ async function runPipeline(
     allTeams = loadTable<Team>("teams");
     allTrophies = loadTable<PlayerTrophy>("playerTrophies");
     allTransfers = loadTable<PlayerTransfer>("playerTransfers");
+    allFixtures = loadTable<Fixture>("fixtures");
+    allFixtureParticipants = loadTable<FixtureParticipant>("fixtureParticipants");
+
+    const footballPlayers = allPlayers.filter((player) => player.sport === "football");
+    const footballPts = allPts.filter((pts) => pts.playerId.startsWith("fb_"));
+    const footballTrophies = allTrophies.filter((trophy) => trophy.sport === "football");
+    const footballTransfers = allTransfers.filter((transfer) => transfer.sport === "football");
+    const footballFixtures = allFixtures.filter((fixture) => fixture.sport === "football");
+    const footballWhoAmIClues = loadTable<WhoAmIClue>("whoAmIClues").filter(
+      (clue) => clue.sport === "football",
+    );
+    const manualFootballLegends = loadManualFootballLegends();
+    const derivedFootballPlayers = [
+      ...footballPlayers,
+      ...manualFootballLegends.map((legend) => legend.player),
+    ];
+    const resolvedFootballCoverage = resolveCoverageWithManualFootballLegends(
+      state.footballHeadlineCoverage,
+      footballPlayers,
+      manualFootballLegends,
+    );
+    const footballQualityProfiles =
+      config.features.buildWhoAmIClues ||
+      config.features.buildPlayerQualityProfiles ||
+      config.features.buildFootballSurvivalIndex ||
+      config.features.buildFootballCoverageReport
+        ? buildFootballPlayerQualityProfiles(
+            footballPlayers,
+            footballPts,
+            footballTrophies,
+            footballTransfers,
+            footballFixtures,
+            allFixtureParticipants,
+            config.football,
+            resolvedFootballCoverage,
+            manualFootballLegends,
+          )
+        : [];
+    const footballQualityLookup = new Map(
+      footballQualityProfiles.map((profile) => [profile.playerId, profile]),
+    );
 
     if (config.features.buildGridIndex) {
       console.log("  Building grid index...");
@@ -2582,11 +7833,131 @@ async function runPipeline(
         allTeams,
         allTrophies,
         allTransfers,
+        footballQualityLookup,
+        manualFootballLegends,
       );
-      persistTable("whoAmIClues", whoAmI);
+      persistReplaceTable("whoAmIClues", whoAmI);
     }
 
     state.phases.indexBuilding.status = "completed";
+    savePipelineState(state);
+  }
+
+  if (!flags.dryRun) {
+    console.log("\n--- Phase 12: Building Football Quality Indexes ---");
+    state.phases.qualityIndexBuilding.status = "in_progress";
+    savePipelineState(state);
+
+    allPlayers = loadTable<Player>("players");
+    allPts = loadTable<PlayerTeamSeason>("playerTeamSeason");
+    allTrophies = loadTable<PlayerTrophy>("playerTrophies");
+    allTransfers = loadTable<PlayerTransfer>("playerTransfers");
+    allFixtures = loadTable<Fixture>("fixtures");
+    allFixtureParticipants = loadTable<FixtureParticipant>("fixtureParticipants");
+
+    const footballPlayers = allPlayers.filter((player) => player.sport === "football");
+    const footballPts = allPts.filter((pts) => pts.playerId.startsWith("fb_"));
+    const footballTrophies = allTrophies.filter((trophy) => trophy.sport === "football");
+    const footballTransfers = allTransfers.filter((transfer) => transfer.sport === "football");
+    const footballFixtures = allFixtures.filter((fixture) => fixture.sport === "football");
+    const footballWhoAmIClues = loadTable<WhoAmIClue>("whoAmIClues").filter(
+      (clue) => clue.sport === "football",
+    );
+    const manualFootballLegends = loadManualFootballLegends();
+    const derivedFootballPlayers = [
+      ...footballPlayers,
+      ...manualFootballLegends.map((legend) => legend.player),
+    ];
+    const resolvedFootballCoverage = resolveCoverageWithManualFootballLegends(
+      state.footballHeadlineCoverage,
+      footballPlayers,
+      manualFootballLegends,
+    );
+
+    const footballQualityProfiles = buildFootballPlayerQualityProfiles(
+      footballPlayers,
+      footballPts,
+      footballTrophies,
+      footballTransfers,
+      footballFixtures,
+      allFixtureParticipants,
+      config.football,
+      resolvedFootballCoverage,
+      manualFootballLegends,
+    );
+
+    if (config.features.buildPlayerQualityProfiles) {
+      console.log("  Building football player quality profiles...");
+      persistReplaceTable("playerQualityProfiles", footballQualityProfiles);
+    }
+
+    console.log("  Building approved VerveGrid football index...");
+    const verveGridData = buildFootballVerveGridApprovedData(
+      loadTable<GridIndexEntry>("gridIndex"),
+      loadTable<Team>("teams"),
+    );
+    persistReplaceTable("verveGridApprovedIndex", verveGridData.approvedEntries);
+    persistJsonFile("verveGridQaReport", verveGridData.qaReport);
+
+    console.log("  Building Higher or Lower football pools...");
+    const higherLowerData = buildFootballHigherLowerData(
+      loadTable<StatFact>("statFacts"),
+      footballQualityProfiles,
+    );
+    persistReplaceTable("higherLowerPools", higherLowerData.pools);
+    persistReplaceTable("higherLowerFacts", higherLowerData.facts);
+
+    const footballSurvivalIndex =
+      config.features.buildFootballSurvivalIndex ||
+      config.features.buildFootballCoverageReport
+        ? buildFootballSurvivalIndex(
+            derivedFootballPlayers,
+            footballQualityProfiles,
+          )
+        : [];
+
+    if (config.features.buildFootballSurvivalIndex) {
+      console.log("  Building football survival index...");
+      persistReplaceTable("footballSurvivalIndex", footballSurvivalIndex);
+    }
+
+    console.log("  Building approved Who Am I football clues...");
+    const approvedWhoAmIData = buildFootballWhoAmIApprovedData({
+      rawClues: loadTable<WhoAmIClue>("whoAmIClues"),
+      players: allPlayers,
+      ptsList: allPts,
+      teams: allTeams,
+      trophies: allTrophies,
+      transfers: allTransfers,
+      qualityProfiles: footballQualityProfiles,
+    });
+    persistReplaceTable("whoAmIApprovedClues", approvedWhoAmIData.approvedClues);
+    persistJsonFile("whoAmIQaReport", approvedWhoAmIData.qaReport);
+
+    if (config.features.buildFootballCoverageReport) {
+      console.log("  Building football coverage report...");
+      const footballCoverageReport = buildFootballCoverageReport(
+        footballPlayers,
+        footballPts,
+        footballTrophies,
+        footballTransfers,
+        footballQualityProfiles,
+        resolvedFootballCoverage,
+        config.football,
+        manualFootballLegends,
+      );
+      persistJsonFile("footballCoverageReport", footballCoverageReport);
+
+      console.log("  Building football gameplay QA report...");
+      const footballGameplayQaReport = buildFootballGameplayQaReport(
+        footballSurvivalIndex,
+        footballWhoAmIClues,
+        footballQualityProfiles,
+      );
+      persistJsonFile("footballGameplayQaReport", footballGameplayQaReport);
+    }
+
+    state.phases.qualityIndexBuilding.status = "completed";
     savePipelineState(state);
   }
 
@@ -2641,7 +8012,12 @@ async function runPipeline(
       "fixtureParticipants",
       "gridIndex",
       "statFacts",
+      "higherLowerPools",
+      "higherLowerFacts",
       "whoAmIClues",
+      "whoAmIApprovedClues",
+      "playerQualityProfiles",
+      "footballSurvivalIndex",
     ];
     console.log(`\nOutput records:`);
     for (const table of tables) {
@@ -2649,6 +8025,47 @@ async function runPipeline(
       if (records.length > 0) {
         console.log(`  ${table}: ${records.length}`);
       }
+    }
+
+    const footballCoverageReport = loadJsonFile<FootballCoverageReport>(
+      "footballCoverageReport",
+    );
+    if (footballCoverageReport) {
+      console.log(
+        `  footballCoverageReport: ${footballCoverageReport.coverage.length} seed entries`,
+      );
+    }
+
+    const footballGameplayQaReport = loadJsonFile<FootballGameplayQaReport>(
+      "footballGameplayQaReport",
+    );
+    if (footballGameplayQaReport) {
+      console.log(
+        `  footballGameplayQaReport: ${footballGameplayQaReport.survival.totalBuckets} survival buckets, ${footballGameplayQaReport.whoAmI.totalClueSets} football clue sets`,
+      );
+    }
+
+    const verveGridApprovedIndex = loadTable<VerveGridApprovedEntry>(
+      "verveGridApprovedIndex",
+    );
+    if (verveGridApprovedIndex.length > 0) {
+      console.log(
+        `  verveGridApprovedIndex: ${verveGridApprovedIndex.length} approved football entries`,
+      );
+    }
+
+    const verveGridQaReport = loadJsonFile<VerveGridQaReport>("verveGridQaReport");
+    if (verveGridQaReport) {
+      console.log(
+        `  verveGridQaReport: ${verveGridQaReport.approved.totalEntries} approved entries, ${Object.keys(verveGridQaReport.approved.templateCountsByRowTypeMix).length} row type mixes`,
+      );
+    }
+
+    const whoAmIQaReport = loadJsonFile<WhoAmIQaReport>("whoAmIQaReport");
+    if (whoAmIQaReport) {
+      console.log(
+        `  whoAmIQaReport: ${whoAmIQaReport.approved.totalClueSets} approved clue sets, ${whoAmIQaReport.rejections.totalRejected} rejected`,
+      );
     }
   }
 
@@ -2659,13 +8076,23 @@ async function runPipeline(
 
 function validateOutput(): string[] {
   const errors: string[] = [];
+  const manualLegendIds = new Set(
+    loadManualFootballLegends().map((legend) => legend.id),
+  );
 
   const players = loadTable<Player>("players");
   const teams = loadTable<Team>("teams");
   const pts = loadTable<PlayerTeamSeason>("playerTeamSeason");
 
   const playerIds = new Set(players.map((p) => p.id));
+  const derivedPlayerIds = new Set([...playerIds, ...manualLegendIds]);
   const teamIds = new Set(teams.map((t) => t.id));
+  const teamsById = new Map(teams.map((team) => [team.id, team]));
+  const nationalTeamNames = new Set(
+    teams
+      .filter((team) => VERVE_GRID_NATIONAL_TEAM_LEAGUE_IDS.has(team.leagueId))
+      .map((team) => team.name),
+  );
 
   // Check for duplicate IDs
   const playerIdCounts = new Map<string, number>();
@@ -2702,6 +8129,238 @@ function validateOutput(): string[] {
     }
   }
 
+  const qualityProfilesPath = path.join(DATA_DIR, "playerQualityProfiles.json");
+  if (fs.existsSync(qualityProfilesPath)) {
+    const qualityProfiles = loadTable<PlayerQualityProfile>("playerQualityProfiles");
+    const qualityProfileIds = new Map<string, number>();
+
+    for (const profile of qualityProfiles) {
+      qualityProfileIds.set(profile.id, (qualityProfileIds.get(profile.id) || 0) + 1);
+      if (!derivedPlayerIds.has(profile.playerId)) {
+        errors.push(`Quality profile FK: playerId ${profile.playerId} not in players`);
+      }
+    }
+
+    for (const [id, count] of qualityProfileIds) {
+      if (count > 1) {
+        errors.push(`Duplicate quality profile ID: ${id} (${count}x)`);
+      }
+    }
+  }
+
+  const survivalIndexPath = path.join(DATA_DIR, "footballSurvivalIndex.json");
+  if (fs.existsSync(survivalIndexPath)) {
+    const survivalIndex = loadTable<SurvivalInitialsBucket>("footballSurvivalIndex");
+    const survivalBucketIds = new Map<string, number>();
+
+    for (const bucket of survivalIndex) {
+      survivalBucketIds.set(bucket.id, (survivalBucketIds.get(bucket.id) || 0) + 1);
+
+      for (const playerId of bucket.playerIds) {
+        if (!derivedPlayerIds.has(playerId)) {
+          errors.push(`Survival bucket FK: playerId ${playerId} not in players`);
+        }
+      }
+
+      if (bucket.topPlayerId && !derivedPlayerIds.has(bucket.topPlayerId)) {
+        errors.push(`Survival bucket topPlayerId ${bucket.topPlayerId} not in players`);
+      }
+    }
+
+    for (const [id, count] of survivalBucketIds) {
+      if (count > 1) {
+        errors.push(`Duplicate survival bucket ID: ${id} (${count}x)`);
+      }
+    }
+  }
+
+  const higherLowerPoolsPath = path.join(DATA_DIR, "higherLowerPools.json");
+  if (fs.existsSync(higherLowerPoolsPath)) {
+    const higherLowerPools = loadTable<HigherLowerPool>("higherLowerPools");
+    const higherLowerFacts = loadTable<HigherLowerFact>("higherLowerFacts");
+    const poolIds = new Map<string, number>();
+    const availablePoolIds = new Set<string>();
+    const eligiblePlayerIds = new Set(
+      loadTable<PlayerQualityProfile>("playerQualityProfiles")
+        .filter((profile) => profile.sport === "football" && profile.higherLowerEligible)
+        .map((profile) => profile.playerId),
+    );
+
+    for (const pool of higherLowerPools) {
+      poolIds.set(pool.id, (poolIds.get(pool.id) || 0) + 1);
+      availablePoolIds.add(pool.id);
+
+      if (!HIGHER_LOWER_APPROVED_CONTEXT_KEYS.has(pool.contextKey)) {
+        errors.push(`HigherLower pool ${pool.id} uses unapproved context ${pool.contextKey}`);
+      }
+      if (HIGHER_LOWER_DISABLED_STAT_KEYS.has(pool.statKey)) {
+        errors.push(`HigherLower pool ${pool.id} uses disabled stat ${pool.statKey}`);
+      }
+      if (!HIGHER_LOWER_APPROVED_STAT_KEYS.has(pool.statKey)) {
+        errors.push(`HigherLower pool ${pool.id} uses unapproved stat ${pool.statKey}`);
+      }
+      if (pool.factCount < HIGHER_LOWER_MIN_GROUP_SIZE) {
+        errors.push(`HigherLower pool ${pool.id} is smaller than minimum size`);
+      }
+      if (pool.distinctValueCount < HIGHER_LOWER_MIN_DISTINCT_VALUES) {
+        errors.push(`HigherLower pool ${pool.id} has too few distinct values`);
+      }
+    }
+
+    for (const [id, count] of poolIds) {
+      if (count > 1) {
+        errors.push(`Duplicate HigherLower pool ID: ${id} (${count}x)`);
+      }
+    }
+
+    for (const fact of higherLowerFacts) {
+      if (!availablePoolIds.has(fact.poolKey)) {
+        errors.push(`HigherLower fact ${fact.id} references missing pool ${fact.poolKey}`);
+      }
+      if (!HIGHER_LOWER_APPROVED_CONTEXT_KEYS.has(fact.contextKey)) {
+        errors.push(`HigherLower fact ${fact.id} uses unapproved context ${fact.contextKey}`);
+      }
+      if (fact.entityType === "player" && !eligiblePlayerIds.has(fact.entityId)) {
+        errors.push(`HigherLower fact ${fact.id} uses ineligible player ${fact.entityId}`);
+      }
+      if (HIGHER_LOWER_DISABLED_STAT_KEYS.has(fact.statKey)) {
+        errors.push(`HigherLower fact ${fact.id} uses disabled stat ${fact.statKey}`);
+      }
+      if (!HIGHER_LOWER_APPROVED_STAT_KEYS.has(fact.statKey)) {
+        errors.push(`HigherLower fact ${fact.id} uses unapproved stat ${fact.statKey}`);
+      }
+      if (fact.entityType === "player" && !playerIds.has(fact.entityId)) {
+        errors.push(`HigherLower fact ${fact.id} playerId ${fact.entityId} not in players`);
+      }
+      if (fact.entityType === "team" && !teamIds.has(fact.entityId)) {
+        errors.push(`HigherLower fact ${fact.id} teamId ${fact.entityId} not in teams`);
+      }
+    }
+  }
+
+  const whoAmIApprovedPath = path.join(DATA_DIR, "whoAmIApprovedClues.json");
+  if (fs.existsSync(whoAmIApprovedPath)) {
+    const rawWhoAmIClues = loadTable<WhoAmIClue>("whoAmIClues");
+    const approvedWhoAmIClues = loadTable<WhoAmIApprovedClue>("whoAmIApprovedClues");
+    const qaReport = loadJsonFile<WhoAmIQaReport>("whoAmIQaReport");
+    const rawClueIds = new Set(rawWhoAmIClues.map((clue) => clue.id));
+    const approvedIds = new Map<string, number>();
+
+    for (const clue of approvedWhoAmIClues) {
+      approvedIds.set(clue.id, (approvedIds.get(clue.id) || 0) + 1);
+
+      if (clue.sport !== "football") {
+        errors.push(`WhoAmI approved clue ${clue.id} is not football-only`);
+      }
+      if (!derivedPlayerIds.has(clue.playerId)) {
+        errors.push(`WhoAmI approved clue ${clue.id} playerId ${clue.playerId} not in players`);
+      }
+      if (!rawClueIds.has(clue.sourceClueId)) {
+        errors.push(`WhoAmI approved clue ${clue.id} source ${clue.sourceClueId} missing from raw clues`);
+      }
+      if (!clue.clue1 || !clue.clue2 || !clue.clue3 || !clue.clue4) {
+        errors.push(`WhoAmI approved clue ${clue.id} has an empty clue stage`);
+      }
+      if (clue.clue1.includes("I play as a Attacker.")) {
+        errors.push(`WhoAmI approved clue ${clue.id} still has attacker grammar issue`);
+      }
+      if (clue.clue3.includes("trophy/trophies")) {
+        errors.push(`WhoAmI approved clue ${clue.id} still has trophy wording issue`);
+      }
+      if (clue.teamLabels.some((label) => nationalTeamNames.has(label))) {
+        errors.push(`WhoAmI approved clue ${clue.id} still exposes national team labels`);
+      }
+    }
+
+    for (const [id, count] of approvedIds) {
+      if (count > 1) {
+        errors.push(`Duplicate approved WhoAmI clue ID: ${id} (${count}x)`);
+      }
+    }
+
+    if (qaReport) {
+      if (qaReport.approved.totalClueSets !== approvedWhoAmIClues.length) {
+        errors.push(
+          `WhoAmIQaReport approved count ${qaReport.approved.totalClueSets} does not match approved clues ${approvedWhoAmIClues.length}`,
+        );
+      }
+      if (qaReport.approved.nationalTeamLeakyClueSets !== 0) {
+        errors.push(
+          `WhoAmIQaReport still reports ${qaReport.approved.nationalTeamLeakyClueSets} national-team-leaky approved clue sets`,
+        );
+      }
+    }
+  }
+
+  const verveGridApprovedPath = path.join(DATA_DIR, "verveGridApprovedIndex.json");
+  if (fs.existsSync(verveGridApprovedPath)) {
+    const approvedGridEntries = loadTable<VerveGridApprovedEntry>(
+      "verveGridApprovedIndex",
+    );
+    const approvedIds = new Map<string, number>();
+
+    for (const entry of approvedGridEntries) {
+      approvedIds.set(entry.id, (approvedIds.get(entry.id) || 0) + 1);
+
+      if (entry.sport !== "football") {
+        errors.push(`VerveGrid approved entry ${entry.id} is not football-only`);
+      }
+      if (entry.playerIds.length < 3) {
+        errors.push(`VerveGrid approved entry ${entry.id} has fewer than 3 players`);
+      }
+      if (
+        entry.rowType === "nationality" &&
+        !VERVE_GRID_APPROVED_NATIONALITIES.has(entry.rowKey)
+      ) {
+        errors.push(`VerveGrid approved entry ${entry.id} uses unapproved row nationality ${entry.rowKey}`);
+      }
+      if (
+        entry.colType === "nationality" &&
+        !VERVE_GRID_APPROVED_NATIONALITIES.has(entry.colKey)
+      ) {
+        errors.push(`VerveGrid approved entry ${entry.id} uses unapproved col nationality ${entry.colKey}`);
+      }
+      if (
+        entry.rowType === "position" &&
+        normalizeVerveGridPositionLabel(entry.rowKey) !== entry.rowKey
+      ) {
+        errors.push(`VerveGrid approved entry ${entry.id} uses unnormalized row position ${entry.rowKey}`);
+      }
+      if (
+        entry.colType === "position" &&
+        normalizeVerveGridPositionLabel(entry.colKey) !== entry.colKey
+      ) {
+        errors.push(`VerveGrid approved entry ${entry.id} uses unnormalized col position ${entry.colKey}`);
+      }
+      if (
+        normalizeNameForMatch(entry.rowLabel) === normalizeNameForMatch(entry.colLabel)
+      ) {
+        errors.push(`VerveGrid approved entry ${entry.id} still has same-label collision`);
+      }
+
+      const rowTeam = entry.rowType === "team" ? teamsById.get(entry.rowKey) : null;
+      const colTeam = entry.colType === "team" ? teamsById.get(entry.colKey) : null;
+      if (
+        rowTeam &&
+        VERVE_GRID_NATIONAL_TEAM_LEAGUE_IDS.has(rowTeam.leagueId)
+      ) {
+        errors.push(`VerveGrid approved entry ${entry.id} keeps national-team row ${entry.rowKey}`);
+      }
+      if (
+        colTeam &&
+        VERVE_GRID_NATIONAL_TEAM_LEAGUE_IDS.has(colTeam.leagueId)
+      ) {
+        errors.push(`VerveGrid approved entry ${entry.id} keeps national-team col ${entry.colKey}`);
+      }
+    }
+
+    for (const [id, count] of approvedIds) {
+      if (count > 1) {
+        errors.push(`Duplicate VerveGrid approved entry ID: ${id} (${count}x)`);
+      }
+    }
+  }
+
   return errors;
 }
 
@@ -2714,7 +8373,7 @@ async function main(): Promise<void> {
   let config: PipelineConfig;
   try {
     const raw = fs.readFileSync(flags.configPath, "utf-8");
-    config = JSON.parse(raw);
+    config = applyConfigDefaults(JSON.parse(raw) as PipelineConfig);
   } catch (err: any) {
     console.error(`Failed to load config from ${flags.configPath}: ${err.message}`);
     process.exit(1);

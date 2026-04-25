@@ -11,12 +11,25 @@ const sportMeta: Record<string, { emoji: string; color: "success" | "accent" | "
 };
 
 export default function SportSelectScreen() {
-  const [selected, setSelected] = useState<string | null>(null);
   const navigate = useNavigate();
   const [params] = useSearchParams();
   const mode = params.get("mode") || "quiz";
+  const isHigherLowerMode = mode === "higher-lower";
+  const isVerveGridMode = mode === "verve-grid";
+  const isWhoAmIMode = mode === "who-am-i";
+  const isFootballOnlyMode = isHigherLowerMode || isVerveGridMode || isWhoAmIMode;
+  const availableSports = isFootballOnlyMode ? ["football"] : Object.keys(sportMeta);
+  const [selected, setSelected] = useState<string | null>(
+    isFootballOnlyMode ? "football" : null,
+  );
 
-  const availableSports = Object.keys(sportMeta);
+  const subtitle = isHigherLowerMode
+    ? "Higher or Lower is currently available for football only"
+    : isVerveGridMode
+      ? "VerveGrid is currently available for football only"
+      : isWhoAmIMode
+        ? "Who Am I is currently available for football only"
+      : "Choose your arena";
 
   return (
     <div className="min-h-screen bg-background px-5 py-6">
@@ -28,7 +41,7 @@ export default function SportSelectScreen() {
       </button>
 
       <h1 className="text-3xl font-heading font-bold mb-1">Pick a Sport</h1>
-      <p className="text-muted-foreground font-body mb-6">Choose your arena</p>
+      <p className="text-muted-foreground font-body mb-6">{subtitle}</p>
 
       <div className="grid grid-cols-2 gap-3">
         {availableSports.map((sport) => {

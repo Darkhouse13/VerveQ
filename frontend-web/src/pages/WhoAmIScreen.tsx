@@ -9,6 +9,27 @@ import { NeoInput } from "@/components/neo/NeoInput";
 import { NeoBadge } from "@/components/neo/NeoBadge";
 import { ArrowLeft, Eye, User, AlertTriangle } from "lucide-react";
 
+const SUPPORTED_WHO_AM_I_SPORTS = new Set(["football"]);
+const START_CHALLENGE_TIMEOUT_MS = 8000;
+
+function withTimeout<T>(promise: Promise<T>, timeoutMs: number): Promise<T> {
+  return new Promise((resolve, reject) => {
+    const timeoutId = window.setTimeout(() => {
+      reject(new Error("Who Am I start timed out"));
+    }, timeoutMs);
+
+    promise
+      .then((value) => {
+        window.clearTimeout(timeoutId);
+        resolve(value);
+      })
+      .catch((error) => {
+        window.clearTimeout(timeoutId);
+        reject(error);
+      });
+  });
+}
+
 export default function WhoAmIScreen() {
   const navigate = useNavigate();
   const [params] = useSearchParams();
@@ -31,6 +52,11 @@ export default function WhoAmIScreen() {
     answerName?: string;
     score: number;
   } | null>(null);
+  const [startupState, setStartupState] = useState<{
+    kind: "unsupported" | "start_failed";
+    title: string;
+    message: string;
+  } | null>(null);
   const [closeCallShake, setCloseCallShake] = useState(false);
   const [revealing, setRevealing] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -39,8 +65,22 @@ export default function WhoAmIScreen() {
 
   const startGame = useCallback(async () => {
     setLoading(true);
+    setStartupState(null);
+
+    if (!SUPPORTED_WHO_AM_I_SPORTS.has(sport)) {
+      setSessionId(null);
+      setClues([]);
+      setStartupState({
+        kind: "unsupported",
+        title: "Football Only For Now",
+        message: "Who Am I is currently available for football only. Pick football to start an approved-clue round.",
+      });
+      setLoading(false);
+      return;
+    }
+
     try {
-      const res = await startChallengeMut({ sport });
+      const res = await withTimeout(startChallengeMut({ sport }), START_CHALLENGE_TIMEOUT_MS);
       setSessionId(res.sessionId);
       setClues([res.clue1]);
       setCurrentStage(res.currentStage);
@@ -52,6 +92,13 @@ export default function WhoAmIScreen() {
       setCloseCallShake(false);
     } catch (err) {
       console.error("Failed to start challenge:", err);
+      setSessionId(null);
+      setClues([]);
+      setStartupState({
+        kind: "start_failed",
+        title: "Couldn't Start A Round",
+        message: "We couldn't start a Who Am I challenge right now. Try again or head back to sport select.",
+      });
     } finally {
       setLoading(false);
     }
@@ -108,7 +155,69 @@ export default function WhoAmIScreen() {
   if (loading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
-        <p className="font-heading text-lg animate-pulse">Loading...</p>
+        <p className="font-heading text-lg animate-pulse">Loading clue set...</p>
+      </div>
+    );
+  }
+
+  if (startupState) {
+    return (
+      <div className="min-h-screen bg-background px-5 py-5 flex flex-col">
+        <div className="flex items-center justify-between mb-4">
+          <button
+            onClick={() => navigate("/home")}
+            className="neo-border neo-shadow rounded-lg p-2 bg-background cursor-pointer active:neo-shadow-pressed transition-all"
+          >
+            <ArrowLeft size={20} strokeWidth={2.5} />
+          </button>
+        </div>
+
+        <div className="flex-1 flex items-center justify-center">
+          <NeoCard color="accent" className="w-full max-w-md text-center py-8 px-6">
+            <p className="font-heading font-bold text-2xl">{startupState.title}</p>
+            <p className="font-body text-sm mt-3 text-muted-foreground leading-relaxed">
+              {startupState.message}
+            </p>
+
+            <div className="mt-6 grid grid-cols-1 gap-3">
+              {startupState.kind === "unsupported" ? (
+                <>
+                  <NeoButton
+                    variant="primary"
+                    size="lg"
+                    onClick={() => navigate("/who-am-i?sport=football")}
+                  >
+                    Play Football
+                  </NeoButton>
+                  <NeoButton
+                    variant="secondary"
+                    size="lg"
+                    onClick={() => navigate("/sport-select?mode=who-am-i")}
+                  >
+                    Back To Sport Select
+                  </NeoButton>
+                </>
+              ) : (
+                <>
+                  <NeoButton
+                    variant="primary"
+                    size="lg"
+                    onClick={startGame}
+                  >
+                    Try Again
+                  </NeoButton>
+                  <NeoButton
+                    variant="secondary"
+                    size="lg"
+                    onClick={() => navigate("/sport-select?mode=who-am-i")}
+                  >
+                    Back To Sport Select
+                  </NeoButton>
+                </>
+              )}
+            </div>
+          </NeoCard>
+        </div>
       </div>
     );
   }
@@ -137,6 +246,9 @@ export default function WhoAmIScreen() {
       {/* Title */}
       <div className="text-center mb-5">
         <h2 className="font-heading font-bold text-2xl">Who Am I?</h2>
+        <p className="text-xs text-muted-foreground mt-1">
+          Curated football clue sets
+        </p>
         <div className="flex items-center justify-center gap-2 mt-1">
           <NeoBadge
             color={difficulty === "easy" ? "success" : difficulty === "medium" ? "accent" : "pink"}

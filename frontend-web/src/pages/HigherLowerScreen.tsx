@@ -27,10 +27,25 @@ function formatStatKey(key: string): string {
   return STAT_LABELS[key] || key.replace(/([A-Z])/g, " $1").replace(/^./, (s) => s.toUpperCase());
 }
 
+const SUPPORTED_HIGHER_LOWER_SPORTS = new Set(["football"]);
+const START_SESSION_TIMEOUT_MS = 8000;
+
+function withTimeout<T>(promise: Promise<T>, timeoutMs: number): Promise<T> {
+  return Promise.race([
+    promise,
+    new Promise<T>((_, reject) => {
+      window.setTimeout(() => {
+        reject(new Error("Higher or Lower startup timed out"));
+      }, timeoutMs);
+    }),
+  ]);
+}
+
 export default function HigherLowerScreen() {
   const navigate = useNavigate();
   const [params] = useSearchParams();
   const sport = params.get("sport") || "football";
+  const isSupportedSport = SUPPORTED_HIGHER_LOWER_SPORTS.has(sport);
 
   const startSessionMut = useMutation(api.higherLower.startSession);
   const makeGuessMut = useMutation(api.higherLower.makeGuess);
@@ -59,11 +74,31 @@ export default function HigherLowerScreen() {
   const [animating, setAnimating] = useState(false);
   const [shakeB, setShakeB] = useState(false);
   const [slideIn, setSlideIn] = useState(false);
+  const [startupState, setStartupState] = useState<{
+    kind: "unsupported" | "start_failed";
+    title: string;
+    message: string;
+  } | null>(null);
 
   const startGame = useCallback(async () => {
+    if (!isSupportedSport) {
+      setStartupState({
+        kind: "unsupported",
+        title: "Football Only For Now",
+        message:
+          "Higher or Lower is currently available for football only. Pick football to start a round.",
+      });
+      setLoading(false);
+      return;
+    }
+
     setLoading(true);
+    setStartupState(null);
     try {
-      const result = await startSessionMut({ sport });
+      const result = await withTimeout(
+        startSessionMut({ sport }),
+        START_SESSION_TIMEOUT_MS,
+      );
       setSessionId(result.sessionId);
       setStatKey(result.statKey);
       setContext(result.context);
@@ -79,12 +114,20 @@ export default function HigherLowerScreen() {
       setStreak(0);
       setGameOver(false);
       setFeedback(null);
+      setStartupState(null);
     } catch (err) {
       console.error("Failed to start session:", err);
+      setSessionId(null);
+      setStartupState({
+        kind: "start_failed",
+        title: "Couldn't Start A Round",
+        message:
+          "Higher or Lower couldn't load right now. Try again, or go back and retry from sport select.",
+      });
     } finally {
       setLoading(false);
     }
-  }, [startSessionMut, sport]);
+  }, [isSupportedSport, sport, startSessionMut]);
 
   useEffect(() => {
     startGame();
@@ -150,6 +193,62 @@ export default function HigherLowerScreen() {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <p className="font-heading text-lg animate-pulse">Loading...</p>
+      </div>
+    );
+  }
+
+  if (startupState) {
+    return (
+      <div className="min-h-screen bg-background px-5 py-5 flex flex-col">
+        <div className="flex items-center justify-between mb-4">
+          <button
+            onClick={() => navigate("/home")}
+            className="neo-border neo-shadow rounded-lg p-2 bg-background cursor-pointer active:neo-shadow-pressed transition-all"
+          >
+            <ArrowLeft size={20} strokeWidth={2.5} />
+          </button>
+        </div>
+
+        <div className="flex-1 flex items-center justify-center">
+          <NeoCard color="primary" shadow="lg" className="w-full max-w-md text-center py-8 px-5">
+            <p className="font-heading font-bold text-2xl">{startupState.title}</p>
+            <p className="text-sm text-muted-foreground mt-3">{startupState.message}</p>
+
+            <div className="grid grid-cols-1 gap-3 mt-6">
+              {startupState.kind === "unsupported" ? (
+                <>
+                  <NeoButton
+                    variant="primary"
+                    size="lg"
+                    onClick={() => navigate("/higher-lower?sport=football")}
+                  >
+                    Play Football
+                  </NeoButton>
+                  <NeoButton
+                    variant="secondary"
+                    size="lg"
+                    onClick={() => navigate("/sport-select?mode=higher-lower")}
+                  >
+                    Back To Sport Select
+                  </NeoButton>
+                </>
+              ) : (
+                <>
+                  <NeoButton variant="primary" size="lg" onClick={startGame}>
+                    Try Again
+                  </NeoButton>
+                  <NeoButton
+                    variant="secondary"
+                    size="lg"
+                    onClick={() => navigate("/sport-select?mode=higher-lower")}
+                  >
+                    Back To Sport Select
+                  </NeoButton>
+                </>
+              )}
+            </div>
+          </NeoCard>
+        </div>
       </div>
     );
   }

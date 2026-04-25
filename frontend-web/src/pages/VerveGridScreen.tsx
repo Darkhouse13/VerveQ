@@ -15,6 +15,20 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 
+const SUPPORTED_VERVE_GRID_SPORTS = new Set(["football"]);
+const START_SESSION_TIMEOUT_MS = 8000;
+
+function withTimeout<T>(promise: Promise<T>, timeoutMs: number): Promise<T> {
+  return Promise.race([
+    promise,
+    new Promise<T>((_, reject) => {
+      window.setTimeout(() => {
+        reject(new Error("VerveGrid startup timed out"));
+      }, timeoutMs);
+    }),
+  ]);
+}
+
 interface CellState {
   rowIdx: number;
   colIdx: number;
@@ -26,6 +40,7 @@ export default function VerveGridScreen() {
   const navigate = useNavigate();
   const [params] = useSearchParams();
   const sport = params.get("sport") || "football";
+  const isSupportedSport = SUPPORTED_VERVE_GRID_SPORTS.has(sport);
 
   const startSessionMut = useMutation(api.verveGrid.startSession);
   const submitGuessMut = useMutation(api.verveGrid.submitGuess);
@@ -39,6 +54,11 @@ export default function VerveGridScreen() {
   const [correctCount, setCorrectCount] = useState(0);
   const [gameOver, setGameOver] = useState(false);
   const [allSolved, setAllSolved] = useState(false);
+  const [startupState, setStartupState] = useState<{
+    kind: "unsupported" | "start_failed";
+    title: string;
+    message: string;
+  } | null>(null);
 
   // Search modal state
   const [searchOpen, setSearchOpen] = useState(false);
@@ -57,13 +77,35 @@ export default function VerveGridScreen() {
 
   const searchResults = useQuery(
     api.verveGrid.searchPlayers,
-    debouncedQuery.length >= 2 ? { queryText: debouncedQuery, sport } : "skip",
+    debouncedQuery.length >= 2 && sessionId && activeCellIndex !== null
+      ? {
+          queryText: debouncedQuery,
+          sport,
+          sessionId,
+          cellIndex: activeCellIndex,
+        }
+      : "skip",
   );
 
   const startGame = useCallback(async () => {
+    if (!isSupportedSport) {
+      setStartupState({
+        kind: "unsupported",
+        title: "Football Only For Now",
+        message:
+          "VerveGrid is currently available for football only. Pick football to load a curated grid.",
+      });
+      setLoading(false);
+      return;
+    }
+
     setLoading(true);
+    setStartupState(null);
     try {
-      const result = await startSessionMut({ sport });
+      const result = await withTimeout(
+        startSessionMut({ sport }),
+        START_SESSION_TIMEOUT_MS,
+      );
       setSessionId(result.sessionId);
       setRows(result.rows);
       setCols(result.cols);
@@ -77,12 +119,23 @@ export default function VerveGridScreen() {
       setCorrectCount(0);
       setGameOver(false);
       setAllSolved(false);
+      setStartupState(null);
     } catch (err) {
       console.error("Failed to start grid session:", err);
+      setSessionId(null);
+      setRows([]);
+      setCols([]);
+      setCells([]);
+      setStartupState({
+        kind: "start_failed",
+        title: "Couldn't Start A Grid",
+        message:
+          "VerveGrid couldn't load right now. Try again, or go back and retry from sport select.",
+      });
     } finally {
       setLoading(false);
     }
-  }, [startSessionMut, sport]);
+  }, [isSupportedSport, startSessionMut, sport]);
 
   useEffect(() => {
     startGame();
@@ -149,6 +202,62 @@ export default function VerveGridScreen() {
     );
   }
 
+  if (startupState) {
+    return (
+      <div className="min-h-screen bg-background px-4 py-5 flex flex-col">
+        <div className="flex items-center justify-between mb-4">
+          <button
+            onClick={() => navigate("/home")}
+            className="neo-border neo-shadow rounded-lg p-2 bg-background cursor-pointer active:neo-shadow-pressed transition-all"
+          >
+            <ArrowLeft size={20} strokeWidth={2.5} />
+          </button>
+        </div>
+
+        <div className="flex-1 flex items-center justify-center">
+          <NeoCard color="primary" shadow="lg" className="w-full max-w-md text-center py-8 px-5">
+            <p className="font-heading font-bold text-2xl">{startupState.title}</p>
+            <p className="text-sm text-muted-foreground mt-3">{startupState.message}</p>
+
+            <div className="grid grid-cols-1 gap-3 mt-6">
+              {startupState.kind === "unsupported" ? (
+                <>
+                  <NeoButton
+                    variant="primary"
+                    size="lg"
+                    onClick={() => navigate("/verve-grid?sport=football")}
+                  >
+                    Play Football
+                  </NeoButton>
+                  <NeoButton
+                    variant="secondary"
+                    size="lg"
+                    onClick={() => navigate("/sport-select?mode=verve-grid")}
+                  >
+                    Back To Sport Select
+                  </NeoButton>
+                </>
+              ) : (
+                <>
+                  <NeoButton variant="primary" size="lg" onClick={startGame}>
+                    Try Again
+                  </NeoButton>
+                  <NeoButton
+                    variant="secondary"
+                    size="lg"
+                    onClick={() => navigate("/sport-select?mode=verve-grid")}
+                  >
+                    Back To Sport Select
+                  </NeoButton>
+                </>
+              )}
+            </div>
+          </NeoCard>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-background px-4 py-5 flex flex-col">
       {/* Header */}
@@ -172,7 +281,7 @@ export default function VerveGridScreen() {
 
       <h2 className="font-heading font-bold text-lg text-center mb-1">VerveGrid</h2>
       <p className="text-[10px] text-muted-foreground text-center mb-4">
-        * Currently restricted to active players (2022-2024)
+        Curated football boards
       </p>
 
       {/* 4x4 Grid: 1 header row + 1 header col + 3x3 cells */}

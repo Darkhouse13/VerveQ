@@ -199,7 +199,7 @@ export default function HomeScreen() {
             <NeoCard
               shadow="lg"
               className="flex items-center gap-4 cursor-pointer bg-electric-blue text-electric-blue-foreground"
-              onClick={() => navigate("/verve-grid")}
+              onClick={() => navigate("/sport-select?mode=verve-grid")}
             >
               <div className="neo-border rounded-xl bg-background p-3">
                 <Grid3X3
@@ -211,7 +211,7 @@ export default function HomeScreen() {
               <div className="flex-1">
                 <p className="font-heading font-bold text-lg">VerveGrid</p>
                 <p className="text-xs opacity-80">
-                  Fill the 3x3 player grid
+                  Curated football 3x3 grid
                 </p>
               </div>
               <NeoButton variant="primary" size="sm">
@@ -221,7 +221,7 @@ export default function HomeScreen() {
             <NeoCard
               shadow="lg"
               className="flex items-center gap-4 cursor-pointer bg-hot-pink text-hot-pink-foreground"
-              onClick={() => navigate("/who-am-i")}
+              onClick={() => navigate("/sport-select?mode=who-am-i")}
             >
               <div className="neo-border rounded-xl bg-background p-3">
                 <HelpCircle
@@ -233,7 +233,7 @@ export default function HomeScreen() {
               <div className="flex-1">
                 <p className="font-heading font-bold text-lg">Who Am I?</p>
                 <p className="text-xs opacity-80">
-                  Guess the player from clues
+                  Curated football player clues
                 </p>
               </div>
               <NeoButton variant="primary" size="sm">

@@ -2,7 +2,7 @@
 
 ## What is VerveQ?
 
-VerveQ is a competitive sports trivia platform where players test and prove their sports knowledge through multiple game modes: **Quiz**, **Survival**, **Blitz**, **Daily Challenge**, and **Live Match**. Players earn ELO ratings, climb leaderboards, unlock achievements, contribute community questions via **The Forge**, and challenge friends — all across three supported sports.
+VerveQ is a competitive sports trivia platform where players test and prove their sports knowledge through multiple game modes: **Quiz**, **Survival**, **Blitz**, **Higher or Lower**, **VerveGrid**, **Who Am I**, **Daily Challenge**, and **Live Match**. Players earn ELO ratings, climb leaderboards, unlock achievements, contribute community questions via **The Forge**, and challenge friends — all across three supported sports.
 
 The platform targets sports enthusiasts who want more than casual trivia. VerveQ's ELO rating system, borrowed from competitive chess, provides a meaningful measure of sports knowledge that evolves with every game played.
 
@@ -19,7 +19,12 @@ The platform targets sports enthusiasts who want more than casual trivia. VerveQ
 
 **Grand total: 3,484 quiz questions** (970 text + 2,514 image).
 
-Each sport supports all game modes. More sports are planned for future releases.
+Current mode availability is mixed:
+
+- Survival remains multi-sport in current runtime.
+- Higher or Lower is currently football-only in frontend and backend.
+- VerveGrid is currently football-only in frontend and backend.
+- Who Am I is currently football-only in frontend and backend.
 
 ---
 
@@ -198,8 +203,12 @@ A 60-second rapid-fire quiz that tests speed and accuracy under pressure.
 
 A streak-based guessing game comparing player or team statistics.
 
+**Current availability:** Football-only.
+
+**Current runtime layer:** Approved `higherLowerPools` + `higherLowerFacts`.
+
 **How it works:**
-1. Player selects a sport
+1. Player selects football
 2. An initial player/team is shown with a specific stat value (e.g., "Goals Scored")
 3. A second player/team is shown with their value hidden
 4. Player guesses if the hidden value is "Higher" or "Lower"
@@ -216,8 +225,12 @@ A streak-based guessing game comparing player or team statistics.
 
 A 3x3 grid intersection challenge testing deep sports knowledge.
 
+**Current availability:** Football-only.
+
+**Current runtime layer:** Curated `verveGridBoards` derived from `verveGridApprovedIndex`.
+
 **How it works:**
-1. Player selects a sport
+1. Player selects football
 2. A 3x3 grid is presented with row headers (e.g., Teams) and column headers (e.g., Nationalities or Positions)
 3. Player clicks an empty cell and searches for an athlete who matches both the row and column criteria
 4. Players have exactly 9 total guesses for the 9 cells
@@ -233,8 +246,12 @@ A 3x3 grid intersection challenge testing deep sports knowledge.
 
 A progressive clue-based trivia game where more information costs points.
 
+**Current availability:** Football-only.
+
+**Current runtime layer:** Approved `whoAmIApprovedClues`.
+
 **How it works:**
-1. Player selects a sport
+1. Player selects football
 2. Game starts with a maximum potential score of 1,000 points
 3. Clue 1 is revealed (usually Nationality + Position)
 4. Player can make a guess or choose to reveal the next clue (up to 4 total clues)
@@ -521,6 +538,9 @@ Home Screen
   ├── Daily Challenge ─ Sport Select ── Mode Select ────────── Daily Quiz/Survival ── Daily Results
   ├── Blitz Mode ───── Sport Select ───────────────────────── Blitz (60s) ─── Blitz Results
   ├── Live Match ───── Challenge Accept ── Waiting Room ───── Live Match ──── Results
+  ├── Higher/Lower ── Sport Select ───────────────────────── Higher or Lower ── Results
+  ├── VerveGrid ───── Sport Select ───────────────────────── VerveGrid ──────── Results
+  ├── Who Am I ────── Sport Select ───────────────────────── Who Am I ────────── Results
   ├── Forge ─────────── Submit / Review / My Submissions
   ├── Leaderboard (bottom nav)
   ├── Challenge (bottom nav)
@@ -563,6 +583,9 @@ Results Screen
 | 18 | Waiting Room | `/waiting-room` | Live match matchmaking lobby |
 | 19 | Live Match | `/live-match` | Head-to-head real-time gameplay |
 | 20 | Forge | `/forge` | Community question editor and reviewer |
+| 21 | Higher or Lower | `/higher-lower` | Streak-based stat comparison gameplay |
+| 22 | VerveGrid | `/verve-grid` | 3x3 grid intersection challenge |
+| 23 | Who Am I | `/who-am-i` | Progressive clue guessing gameplay |
 
 ---
 
@@ -744,6 +767,29 @@ VerveQ uses a **neo-brutalism** design language characterized by:
 | Function | Type | Description |
 |----------|------|-------------|
 | `profile.get` | Query | Get aggregated player profile and stats |
+
+### Higher or Lower
+| Function | Type | Description |
+|----------|------|-------------|
+| `higherLower.startSession` | Mutation | Start a new Higher or Lower session |
+| `higherLower.makeGuess` | Mutation | Guess higher or lower for the current comparison |
+| `higherLower.getSession` | Query | Get current session state |
+
+### VerveGrid
+| Function | Type | Description |
+|----------|------|-------------|
+| `verveGrid.startSession` | Mutation | Start a new VerveGrid session with a curated board |
+| `verveGrid.searchPlayers` | Query | Search for players matching grid criteria |
+| `verveGrid.submitGuess` | Mutation | Submit a player guess for a grid cell |
+| `verveGrid.getSession` | Query | Get current session state |
+
+### Who Am I
+| Function | Type | Description |
+|----------|------|-------------|
+| `whoAmI.startChallenge` | Mutation | Start a new Who Am I challenge |
+| `whoAmI.revealNextClue` | Mutation | Reveal the next clue (reduces potential score) |
+| `whoAmI.submitGuess` | Mutation | Submit a player name guess with fuzzy matching |
+| `whoAmI.getSession` | Query | Get current session state |
 
 ### Sports
 | Function | Type | Description |
