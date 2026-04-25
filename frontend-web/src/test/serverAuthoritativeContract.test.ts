@@ -13,7 +13,24 @@
  * load-bearing contract; once the server controls the schema, the
  * client cannot send what the schema disallows.
  */
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi } from "vitest";
+
+// Stub Convex Auth so handlers that call getAuthUserId during read-only
+// projection tests don't crash on an empty ctx. Sessions in these fixtures
+// deliberately have no `userId` field — the permissive-branch ownership
+// guard lets the fixture through while the hidden-answer projection remains
+// the load-bearing assertion.
+vi.mock("@convex-dev/auth/server", () => ({
+  getAuthUserId: vi.fn(async () => "stub_user"),
+  convexAuth: () => ({
+    auth: {},
+    signIn: () => {},
+    signOut: () => {},
+    store: {},
+    isAuthenticated: () => false,
+  }),
+}));
+
 import * as quizSessions from "../../convex/quizSessions";
 import * as blitz from "../../convex/blitz";
 import * as dailyChallenge from "../../convex/dailyChallenge";

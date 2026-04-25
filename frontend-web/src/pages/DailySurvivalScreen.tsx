@@ -22,7 +22,7 @@ export default function DailySurvivalScreen() {
   const navigate = useNavigate();
   const [params] = useSearchParams();
   const sport = params.get("sport") || "football";
-  const { user } = useAuth();
+  const { user, isLoading: authLoading, isAuthenticated } = useAuth();
 
   const [sessionId, setSessionId] = useState<Id<"survivalSessions"> | null>(null);
   const [attemptId, setAttemptId] = useState<Id<"dailyAttempts"> | null>(null);
@@ -57,11 +57,16 @@ export default function DailySurvivalScreen() {
   const completeAttemptMut = useMutation(api.dailyChallenge.completeAttempt);
   const startGameMut = useMutation(api.survivalSessions.startGame);
   const submitGuessMut = useMutation(api.survivalSessions.submitGuess);
-  const useHintMut = useMutation(api.survivalSessions.useHint);
+  const hintMutation = useMutation(api.survivalSessions.useHint);
   const skipMut = useMutation(api.survivalSessions.skipChallenge);
   const completeSurvivalMut = useMutation(api.games.completeSurvival);
 
   useEffect(() => {
+    if (authLoading) return;
+    if (!isAuthenticated) {
+      navigate("/", { replace: true });
+      return;
+    }
     (async () => {
       try {
         await getOrCreateChallengeMut({ sport, mode: "survival" });
@@ -90,7 +95,7 @@ export default function DailySurvivalScreen() {
       }
     })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [authLoading, isAuthenticated]);
 
   // Anti-cheat: forfeit on tab switch (daily mode is strict)
   useAntiCheat(
@@ -184,7 +189,7 @@ export default function DailySurvivalScreen() {
     if (!sessionId || hintTokens <= 0 || hintStage >= 3) return;
     try {
       const nextStage = hintStage + 1;
-      const res = await useHintMut({ sessionId, stage: nextStage });
+      const res = await hintMutation({ sessionId, stage: nextStage });
       setHints((prev) => [...prev, res.hintText]);
       setHintStage(res.stage);
       setHintTokens(res.tokensLeft);

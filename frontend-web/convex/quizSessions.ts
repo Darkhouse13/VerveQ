@@ -10,7 +10,9 @@ const QUESTION_BASE_POINTS = 100;
 export const createSession = mutation({
   args: {
     sport: v.string(),
-    difficulty: v.optional(v.string()),
+    difficulty: v.optional(
+      v.union(v.literal("easy"), v.literal("intermediate"), v.literal("hard")),
+    ),
   },
   handler: async (ctx, { sport, difficulty }) => {
     const userId = await getAuthUserId(ctx);
@@ -196,6 +198,8 @@ export const submitFeedback = mutation({
     votedDifficulty: v.string(),
   },
   handler: async (ctx, { checksum, votedDifficulty }) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) throw new Error("Not authenticated");
     const question = await ctx.db
       .query("quizQuestions")
       .withIndex("by_checksum", (q) => q.eq("checksum", checksum))

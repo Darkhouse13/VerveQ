@@ -793,8 +793,11 @@ export const startGame = mutation({
 export const getSession = query({
   args: { sessionId: v.id("survivalSessions") },
   handler: async (ctx, { sessionId }) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) return null;
     const session = await ctx.db.get(sessionId);
     if (!session) return null;
+    if (session.userId && session.userId !== userId) return null;
     return {
       round: session.round,
       score: session.score,
@@ -818,8 +821,14 @@ export const submitGuess = mutation({
     guess: v.string(),
   },
   handler: async (ctx, { sessionId, guess }) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) throw new Error("Not authenticated");
     const session = await ctx.db.get(sessionId);
-    if (!session || session.gameOver) throw new Error("Invalid session");
+    if (!session) throw new Error("Not found");
+    if (session.userId && session.userId !== userId) {
+      throw new Error("Not authorized");
+    }
+    if (session.gameOver) throw new Error("Invalid session");
 
     const challenge = session.currentChallenge;
     if (!challenge) throw new Error("No active challenge");
@@ -964,8 +973,14 @@ export const useHint = mutation({
     stage: v.number(),
   },
   handler: async (ctx, { sessionId, stage }) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) throw new Error("Not authenticated");
     const session = await ctx.db.get(sessionId);
-    if (!session || session.gameOver) throw new Error("Invalid session");
+    if (!session) throw new Error("Not found");
+    if (session.userId && session.userId !== userId) {
+      throw new Error("Not authorized");
+    }
+    if (session.gameOver) throw new Error("Invalid session");
 
     const tokensLeft = session.hintTokensLeft ?? 0;
     const currentStage = session.currentHintStage ?? 0;
@@ -1054,8 +1069,14 @@ export const useHint = mutation({
 export const skipChallenge = mutation({
   args: { sessionId: v.id("survivalSessions") },
   handler: async (ctx, { sessionId }) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) throw new Error("Not authenticated");
     const session = await ctx.db.get(sessionId);
-    if (!session || session.gameOver) throw new Error("Invalid session");
+    if (!session) throw new Error("Not found");
+    if (session.userId && session.userId !== userId) {
+      throw new Error("Not authorized");
+    }
+    if (session.gameOver) throw new Error("Invalid session");
 
     const freeSkips = session.freeSkipsLeft ?? 0;
     let newLives: number;
@@ -1119,8 +1140,14 @@ export const penalizeTabSwitch = mutation({
     currentRound: v.number(),
   },
   handler: async (ctx, { sessionId, currentRound }) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) throw new Error("Not authenticated");
     const session = await ctx.db.get(sessionId);
-    if (!session || session.gameOver) {
+    if (!session) throw new Error("Not found");
+    if (session.userId && session.userId !== userId) {
+      throw new Error("Not authorized");
+    }
+    if (session.gameOver) {
       return { penalized: false, lives: 0, gameOver: true };
     }
 

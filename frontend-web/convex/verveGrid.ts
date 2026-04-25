@@ -1,5 +1,6 @@
 import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
+import { getAuthUserId } from "@convex-dev/auth/server";
 
 const SESSION_TTL_MS = 60 * 60 * 1000; // 1 hour
 const MAX_GUESSES = 9;
@@ -8,6 +9,8 @@ const MIN_QUERY_LENGTH = 2;
 export const startSession = mutation({
   args: { sport: v.string() },
   handler: async (ctx, { sport }) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) throw new Error("Not authenticated");
     if (sport !== "football") {
       throw new Error("VerveGrid is currently available for football only");
     }
@@ -24,6 +27,7 @@ export const startSession = mutation({
     const chosenBoard = boards[Math.floor(Math.random() * boards.length)];
 
     const sessionId = await ctx.db.insert("verveGridSessions", {
+      userId,
       sport,
       boardTemplateId: chosenBoard.templateId,
       boardAxisFamily: chosenBoard.axisFamily,
@@ -68,8 +72,13 @@ export const searchPlayers = query({
     const normalized = queryText.toLowerCase();
 
     if (sessionId !== undefined && cellIndex !== undefined) {
+      const userId = await getAuthUserId(ctx);
+      if (!userId) return [];
       const session = await ctx.db.get(sessionId);
       if (!session || session.sport !== sport) {
+        return [];
+      }
+      if (session.userId && session.userId !== userId) {
         return [];
       }
 
@@ -145,8 +154,13 @@ export const submitGuess = mutation({
     playerName: v.string(),
   },
   handler: async (ctx, { sessionId, cellIndex, playerExternalId, playerName }) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) throw new Error("Not authenticated");
     const session = await ctx.db.get(sessionId);
     if (!session) throw new Error("Session not found");
+    if (session.userId && session.userId !== userId) {
+      throw new Error("Not authorized");
+    }
     if (session.status !== "active") throw new Error("Game is not active");
     if (session.remainingGuesses <= 0) throw new Error("No guesses remaining");
 
@@ -201,8 +215,11 @@ export const submitGuess = mutation({
 export const getSession = query({
   args: { sessionId: v.id("verveGridSessions") },
   handler: async (ctx, { sessionId }) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) return null;
     const session = await ctx.db.get(sessionId);
     if (!session) return null;
+    if (session.userId && session.userId !== userId) return null;
 
     // validPlayerIds per cell is the answer pool — never return it.
     // Clients only need to know what they've guessed so far.

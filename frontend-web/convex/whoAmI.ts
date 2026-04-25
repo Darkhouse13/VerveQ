@@ -1,5 +1,6 @@
 import { mutation, query, type MutationCtx } from "./_generated/server";
 import { v } from "convex/values";
+import { getAuthUserId } from "@convex-dev/auth/server";
 import { findBestMatch } from "./lib/fuzzy";
 
 const SESSION_TTL_MS = 60 * 60 * 1000; // 1 hour
@@ -47,6 +48,8 @@ export const startChallenge = mutation({
     difficulty: v.optional(v.string()),
   },
   handler: async (ctx, { sport, difficulty }) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) throw new Error("Not authenticated");
     let clues;
 
     if (difficulty) {
@@ -76,6 +79,7 @@ export const startChallenge = mutation({
     const clue = clues[Math.floor(Math.random() * clues.length)];
 
     const sessionId = await ctx.db.insert("whoAmISessions", {
+      userId,
       sport,
       clueExternalId: clue.externalId,
       answerName: clue.answerName,
@@ -100,8 +104,13 @@ export const revealNextClue = mutation({
     sessionId: v.id("whoAmISessions"),
   },
   handler: async (ctx, { sessionId }) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) throw new Error("Not authenticated");
     const session = await ctx.db.get(sessionId);
     if (!session) throw new Error("Session not found");
+    if (session.userId && session.userId !== userId) {
+      throw new Error("Not authorized");
+    }
     if (session.status !== "active") throw new Error("Game is not active");
     if (session.currentStage >= 4) throw new Error("All clues already revealed");
 
@@ -135,8 +144,13 @@ export const submitGuess = mutation({
     guess: v.string(),
   },
   handler: async (ctx, { sessionId, guess }) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) throw new Error("Not authenticated");
     const session = await ctx.db.get(sessionId);
     if (!session) throw new Error("Session not found");
+    if (session.userId && session.userId !== userId) {
+      throw new Error("Not authorized");
+    }
     if (session.status !== "active") throw new Error("Game is not active");
 
     const result = findBestMatch(guess, [session.answerName]);
@@ -178,8 +192,11 @@ export const submitGuess = mutation({
 export const getSession = query({
   args: { sessionId: v.id("whoAmISessions") },
   handler: async (ctx, { sessionId }) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) return null;
     const session = await ctx.db.get(sessionId);
     if (!session) return null;
+    if (session.userId && session.userId !== userId) return null;
 
     const clue = await ctx.db
       .query("whoAmIApprovedClues")

@@ -1,5 +1,6 @@
 import { mutation, query, type MutationCtx } from "./_generated/server";
 import { v } from "convex/values";
+import { getAuthUserId } from "@convex-dev/auth/server";
 
 const SESSION_TTL_MS = 60 * 60 * 1000; // 1 hour
 
@@ -136,6 +137,8 @@ async function getEntityImage(
 export const startSession = mutation({
   args: { sport: v.string() },
   handler: async (ctx, { sport }) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) throw new Error("Not authenticated");
     if (sport !== "football") {
       throw new Error("Higher or Lower is currently available for football only");
     }
@@ -174,6 +177,7 @@ export const startSession = mutation({
     const playerBPhoto = await getEntityImage(ctx, factB);
 
     const sessionId = await ctx.db.insert("higherLowerSessions", {
+      userId,
       sport,
       score: 0,
       streak: 0,
@@ -220,8 +224,13 @@ export const makeGuess = mutation({
     guess: v.union(v.literal("higher"), v.literal("lower")),
   },
   handler: async (ctx, { sessionId, guess }) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) throw new Error("Not authenticated");
     const session = await ctx.db.get(sessionId);
     if (!session) throw new Error("Session not found");
+    if (session.userId && session.userId !== userId) {
+      throw new Error("Not authorized");
+    }
     if (session.status === "game_over") throw new Error("Game is over");
 
     const { playerAValue, playerBValue } = session;
@@ -334,8 +343,11 @@ export const makeGuess = mutation({
 export const getSession = query({
   args: { sessionId: v.id("higherLowerSessions") },
   handler: async (ctx, { sessionId }) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) return null;
     const session = await ctx.db.get(sessionId);
     if (!session) return null;
+    if (session.userId && session.userId !== userId) return null;
 
     // Player B's value is the hidden answer until the user guesses.
     // Reveal it only once the game is over.

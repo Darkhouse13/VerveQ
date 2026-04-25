@@ -31,7 +31,7 @@ export default function SurvivalScreen() {
   const navigate = useNavigate();
   const [params] = useSearchParams();
   const sport = params.get("sport") || "football";
-  const { user } = useAuth();
+  const { user, isLoading: authLoading, isAuthenticated } = useAuth();
 
   const [sessionId, setSessionId] = useState<Id<"survivalSessions"> | null>(
     null,
@@ -75,7 +75,7 @@ export default function SurvivalScreen() {
 
   const startGameMut = useMutation(api.survivalSessions.startGame);
   const submitGuessMut = useMutation(api.survivalSessions.submitGuess);
-  const useHintMut = useMutation(api.survivalSessions.useHint);
+  const hintMutation = useMutation(api.survivalSessions.useHint);
   const skipMut = useMutation(api.survivalSessions.skipChallenge);
   const completeSurvivalMut = useMutation(api.games.completeSurvival);
   const penalizeTabSwitchMut = useMutation(
@@ -83,6 +83,11 @@ export default function SurvivalScreen() {
   );
 
   useEffect(() => {
+    if (authLoading) return;
+    if (!isAuthenticated) {
+      navigate("/", { replace: true });
+      return;
+    }
     (async () => {
       try {
         const data = await startGameMut({ sport });
@@ -101,7 +106,7 @@ export default function SurvivalScreen() {
       }
     })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [authLoading, isAuthenticated]);
 
   // Anti-cheat: penalize tab switching
   useAntiCheat(
@@ -221,7 +226,7 @@ export default function SurvivalScreen() {
     if (!sessionId || hintTokens <= 0 || hintStage >= 3) return;
     try {
       const nextStage = hintStage + 1;
-      const res = await useHintMut({ sessionId, stage: nextStage });
+      const res = await hintMutation({ sessionId, stage: nextStage });
       setHints((prev) => [...prev, res.hintText]);
       setHintStage(res.stage);
       setHintTokens(res.tokensLeft);
