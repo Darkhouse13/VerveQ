@@ -2,6 +2,7 @@ import { mutation, query } from "./_generated/server";
 import type { Doc } from "./_generated/dataModel";
 import { v } from "convex/values";
 import { getAuthUserId } from "@convex-dev/auth/server";
+import { pickQuestionPool } from "./lib/imageQuestions";
 
 const BLITZ_DURATION_MS = 60_000; // 60 seconds
 const WRONG_PENALTY_MS = 3_000;   // -3s on wrong
@@ -55,8 +56,6 @@ export const getQuestion = mutation({
       throw new Error("Time expired");
     }
 
-    const MAX_IMAGE_QUESTIONS = 3;
-
     // Get a random unused question
     const allQuestions = await ctx.db
       .query("quizQuestions")
@@ -65,33 +64,15 @@ export const getQuestion = mutation({
       )
       .take(200);
 
-    const usedSet = new Set(session.usedChecksums);
-    const available = allQuestions.filter((q) => !usedSet.has(q.checksum));
+    const pool = pickQuestionPool(allQuestions, session.usedChecksums);
 
-    if (available.length === 0) {
+    if (pool.length === 0) {
       await ctx.db.patch(sessionId, {
         gameOver: true,
         endedAt: Date.now(),
         currentChecksum: undefined,
       });
       throw new Error("No more questions");
-    }
-
-    // Cap image questions per session and prevent consecutive images
-    const usedImageCount = allQuestions.filter(
-      (q) => usedSet.has(q.checksum) && q.imageId,
-    ).length;
-
-    const lastChecksum =
-      session.usedChecksums[session.usedChecksums.length - 1];
-    const lastWasImage = lastChecksum
-      ? allQuestions.some((q) => q.checksum === lastChecksum && q.imageId)
-      : false;
-
-    let pool = available;
-    if (usedImageCount >= MAX_IMAGE_QUESTIONS || lastWasImage) {
-      const textOnly = available.filter((q) => !q.imageId);
-      if (textOnly.length > 0) pool = textOnly;
     }
 
     const pick = pool[Math.floor(Math.random() * pool.length)];
@@ -249,18 +230,6 @@ export const endGame = mutation({
       correctCount: session.correctCount,
       wrongCount: session.wrongCount,
     };
-  },
-});
-
-export const getSession = query({
-  args: { sessionId: v.id("blitzSessions") },
-  handler: async (ctx, { sessionId }) => {
-    const userId = await getAuthUserId(ctx);
-    if (!userId) return null;
-    const session = await ctx.db.get(sessionId);
-    if (!session) return null;
-    if (session.userId !== userId) return null;
-    return session;
   },
 });
 

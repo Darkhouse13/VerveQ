@@ -10,7 +10,7 @@ import { api } from "../../convex/_generated/api";
 import {
   validatePassword,
   describePasswordReason,
-} from "@/lib/password";
+} from "../../convex/lib/passwordPolicy";
 
 interface AuthUser {
   _id: string;

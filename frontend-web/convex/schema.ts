@@ -96,8 +96,7 @@ export default defineSchema({
     winnerId: v.optional(v.id("users")),
     completedAt: v.optional(v.number()),
   })
-    .index("by_challenged_status", ["challengedId", "status"])
-    .index("by_challenger", ["challengerId"]),
+    .index("by_challenged_status", ["challengedId", "status"]),
 
   quizQuestions: defineTable({
     sport: v.string(),
@@ -274,8 +273,7 @@ export default defineSchema({
     isActive: v.boolean(),
     resetCompletedAt: v.optional(v.number()),
   })
-    .index("by_active", ["isActive"])
-    .index("by_season_number", ["seasonNumber"]),
+    .index("by_active", ["isActive"]),
 
   seasonHistory: defineTable({
     userId: v.id("users"),
@@ -291,7 +289,6 @@ export default defineSchema({
     archivedAt: v.number(),
   })
     .index("by_user", ["userId"])
-    .index("by_user_season", ["userId", "seasonNumber"])
     .index("by_season_sport_mode_rank", ["seasonNumber", "sport", "mode", "rank"]),
 
   // ── ELO Decay ──
@@ -343,8 +340,7 @@ export default defineSchema({
     vote: v.union(v.literal("approve"), v.literal("reject")),
     createdAt: v.number(),
   })
-    .index("by_submission_voter", ["submissionId", "voterId"])
-    .index("by_voter", ["voterId"]),
+    .index("by_submission_voter", ["submissionId", "voterId"]),
 
   // ── Sports Data Tables ──
 
@@ -399,8 +395,7 @@ export default defineSchema({
     value: v.number(),
     season: v.optional(v.number()),
   })
-    .index("by_external_id", ["externalId"])
-    .index("by_stat_key_sport", ["statKey", "sport"]),
+    .index("by_external_id", ["externalId"]),
 
   higherLowerPools: defineTable({
     externalId: v.string(),
@@ -470,8 +465,7 @@ export default defineSchema({
     difficulty: v.string(),
   })
     .index("by_external_id", ["externalId"])
-    .index("by_sport", ["sport"])
-    .index("by_sport_axis_family", ["sport", "axisFamily"]),
+    .index("by_sport", ["sport"]),
 
   verveGridBoards: defineTable({
     externalId: v.string(),
@@ -503,8 +497,7 @@ export default defineSchema({
     ),
   })
     .index("by_external_id", ["externalId"])
-    .index("by_sport", ["sport"])
-    .index("by_sport_template", ["sport", "templateId"]),
+    .index("by_sport", ["sport"]),
 
   whoAmIClues: defineTable({
     externalId: v.string(),
@@ -561,7 +554,6 @@ export default defineSchema({
     appliedAt: v.number(),
     replaceStrategy: v.string(),
   })
-    .index("by_scope", ["scopeKey"])
     .index("by_scope_table", ["scopeKey", "tableName"]),
 
   // ── New Game Mode Sessions ──

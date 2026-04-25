@@ -9,7 +9,7 @@ import {
   PASSWORD_MAX_LENGTH,
   validatePassword,
   describePasswordReason,
-} from "@/lib/password";
+} from "../../convex/lib/passwordPolicy";
 import { toast } from "sonner";
 
 type Mode = "signin" | "signup" | "reset-request" | "reset-confirm";

@@ -2,9 +2,9 @@ import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
 import { getAuthUserId } from "@convex-dev/auth/server";
 import { calculateTimeScore, normalizeAnswer } from "./lib/scoring";
+import { pickQuestionPool } from "./lib/imageQuestions";
 
 const SESSION_TTL_MS = 30 * 60 * 1000; // 30 minutes
-const MAX_IMAGE_QUESTIONS = 3;
 const QUESTION_BASE_POINTS = 100;
 
 export const createSession = mutation({
@@ -61,25 +61,8 @@ export const getQuestion = mutation({
       )
       .collect();
 
-    const usedSet = new Set(session.usedChecksums);
-    const available = candidates.filter((q) => !usedSet.has(q.checksum));
-    if (!available.length) throw new Error("No questions available");
-
-    const usedImageCount = candidates.filter(
-      (c) => usedSet.has(c.checksum) && c.imageId,
-    ).length;
-
-    const lastChecksum =
-      session.usedChecksums[session.usedChecksums.length - 1];
-    const lastWasImage = lastChecksum
-      ? candidates.some((c) => c.checksum === lastChecksum && c.imageId)
-      : false;
-
-    let pool = available;
-    if (usedImageCount >= MAX_IMAGE_QUESTIONS || lastWasImage) {
-      const textOnly = available.filter((q) => !q.imageId);
-      if (textOnly.length > 0) pool = textOnly;
-    }
+    const pool = pickQuestionPool(candidates, session.usedChecksums);
+    if (!pool.length) throw new Error("No questions available");
 
     const picked = pool[Math.floor(Math.random() * pool.length)];
     const now = Date.now();

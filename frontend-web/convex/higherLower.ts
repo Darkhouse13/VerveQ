@@ -48,10 +48,6 @@ type HigherLowerFactDoc = {
   season?: number;
 };
 
-function getContextLabel(contextKey: string): string {
-  return CONTEXT_KEY_LABELS[contextKey] || contextKey;
-}
-
 /** Shuffle an array in place (Fisher-Yates). */
 function shuffle<T>(arr: T[]): T[] {
   for (let i = arr.length - 1; i > 0; i--) {
@@ -204,7 +200,10 @@ export const startSession = mutation({
       sessionId,
       statKey: factA.statKey,
       context: factA.contextKey,
-      contextLabel: selectedPool.contextLabel || getContextLabel(factA.contextKey),
+      contextLabel:
+        selectedPool.contextLabel ||
+        CONTEXT_KEY_LABELS[factA.contextKey] ||
+        factA.contextKey,
       entityType: factA.entityType,
       season: factA.season ?? undefined,
       playerAName: factA.entityName,
@@ -333,7 +332,10 @@ export const makeGuess = mutation({
       nextPlayerBPhoto: newBPhoto,
       statKey: session.currentStatKey,
       context: newFactB.contextKey,
-      contextLabel: pool.contextLabel || getContextLabel(newFactB.contextKey),
+      contextLabel:
+        pool.contextLabel ||
+        CONTEXT_KEY_LABELS[newFactB.contextKey] ||
+        newFactB.contextKey,
       entityType: session.currentEntityType,
       season: session.currentSeason,
     };

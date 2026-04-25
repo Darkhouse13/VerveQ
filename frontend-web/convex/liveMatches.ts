@@ -497,28 +497,6 @@ export const checkTimeout = internalMutation({
   },
 });
 
-export const checkDisconnect = internalMutation({
-  args: { matchId: v.id("liveMatches") },
-  handler: async (ctx, { matchId }) => {
-    const match = await ctx.db.get(matchId);
-    if (!match) return;
-    if (match.status === "completed" || match.status === "forfeited") return;
-
-    const now = Date.now();
-    const p1Stale = now - match.player1LastSeen > HEARTBEAT_TIMEOUT_MS;
-    const p2Stale = now - match.player2LastSeen > HEARTBEAT_TIMEOUT_MS;
-
-    if (p1Stale || p2Stale) {
-      const winnerId = p1Stale ? match.player2Id : match.player1Id;
-      await ctx.db.patch(matchId, {
-        status: "forfeited",
-        winnerId,
-        completedAt: now,
-      });
-    }
-  },
-});
-
 // ── ELO Update Helper ──
 
 async function updateMatchElo(

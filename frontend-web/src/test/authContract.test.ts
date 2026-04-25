@@ -22,7 +22,7 @@ import {
   PASSWORD_MIN_LENGTH,
   PASSWORD_MAX_LENGTH,
   COMMON_PASSWORDS,
-} from "@/lib/password";
+} from "../../convex/lib/passwordPolicy";
 
 // Hoisted mocks for the Convex Auth + Convex React hooks consumed by
 // AuthContext. We wire them before importing AuthContext so the module
