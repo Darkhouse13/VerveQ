@@ -14,9 +14,9 @@
  *      auto-redirected. Guest users still get an explicit "Play as Guest"
  *      route back into the app.
  */
-import { describe, it, expect, vi, beforeEach, type Mock } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach, type Mock } from "vitest";
 import React from "react";
-import { render, screen, fireEvent, waitFor, within } from "@testing-library/react";
+import { cleanup, render, screen, fireEvent, waitFor, within } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 
 // ─── Shared mocks ────────────────────────────────────────────────────────────
@@ -53,6 +53,10 @@ vi.mock("../../convex/_generated/api", () => ({
     users: { me: "users.me", ensureProfile: "users.ensureProfile" },
   },
 }));
+
+afterEach(() => {
+  cleanup();
+});
 
 // Profile fixture — enough to get past the "Loading profile..." guard.
 const profileFixture = {

@@ -25,8 +25,8 @@ import {
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = path.resolve(__dirname, "..");
-const FRONTEND_WEB_DIR = path.join(REPO_ROOT, "frontend-web");
-const CONVEX_ESM_DIR = path.join(FRONTEND_WEB_DIR, "node_modules", "convex", "dist", "esm");
+const APP_DIR = path.join(REPO_ROOT, "app");
+const CONVEX_ESM_DIR = path.join(APP_DIR, "node_modules", "convex", "dist", "esm");
 
 // ── Config ──────────────────────────────────────────────────────────────────
 
@@ -298,10 +298,10 @@ function getGuardReportMode(): GuardReportMode {
 
 function printDirectDestructiveEntryPointGuidance(): void {
   console.log(
-    "[next] Direct destructive seed entry points stay blocked by default. Start with: cd frontend-web && npm run gameplay:curated-parity:status",
+    "[next] Direct destructive seed entry points stay blocked by default. Start with: cd app && npm run gameplay:curated-parity:status",
   );
   console.log(
-    "[next] If the target is ready, run the wrapper flow instead: cd frontend-web && npm run gameplay:curated-parity",
+    "[next] If the target is ready, run the wrapper flow instead: cd app && npm run gameplay:curated-parity",
   );
 }
 

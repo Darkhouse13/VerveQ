@@ -35,7 +35,7 @@ specification.
 │   ├── REPO_INVENTORY.md               (this file)
 │   ├── SECURITY.md
 │   └── SURVIVAL_MODE_AUDIT.md
-├── frontend-web/
+├── app/
 │   ├── convex/                         (Convex backend — see table below)
 │   ├── public/
 │   ├── scripts/                        (empty after cleanup)
@@ -61,7 +61,7 @@ specification.
 └── verveq_seed_data.json               (gitignored one-shot seed artifact)
 ```
 
-## frontend-web/package.json scripts
+## app/package.json scripts
 
 | Script | Purpose |
 | --- | --- |
@@ -79,7 +79,7 @@ specification.
 | `test` | Vitest run (single-shot). |
 | `test:watch` | Vitest in watch mode. |
 
-## frontend-web/convex/ files
+## app/convex/ files
 
 Live Convex backend surface. Session-based server-authoritative game logic.
 
@@ -161,7 +161,7 @@ Data pipeline and curated-parity tooling.
 | `CODE_OF_CONDUCT.md` | Standard contributor Code of Conduct. |
 | `CONTRIBUTING.md` | Contribution guide. Needs refresh — see Findings. |
 | `CURATED_GAMEPLAY_REACHABLE_TARGET_CHECKLIST.md` | Closeout checklist for Higher/Lower, VerveGrid, Who Am I. |
-| `DEPLOYMENT.md` | Current deployment + validation reality (frontend-web + Convex + curated parity). |
+| `DEPLOYMENT.md` | Current deployment + validation reality (app + Convex + curated parity). |
 | `DEPLOYMENT_CHECKLIST.md` | Current operational rollout checklist. |
 | `DESIGN_PROMPT.md` | UI redesign brief. References deleted React Native stack — see Findings. |
 | `NEW_GAME_MODES.md` | Source of truth for Higher/Lower, VerveGrid, Who Am I. |
@@ -169,9 +169,9 @@ Data pipeline and curated-parity tooling.
 | `SECURITY.md` | Security disclosure policy. Describes JWT-era auth — see Findings. |
 | `SURVIVAL_MODE_AUDIT.md` | Full Survival mode technical audit. References deleted Python backend files — see Findings. |
 
-## Dependencies declared in frontend-web/package.json with zero imports in the repo
+## Dependencies declared in app/package.json with zero imports in the repo
 
-Searched `frontend-web/src/**`, `frontend-web/convex/**`, `frontend-web/tailwind.config.ts`, `frontend-web/vite.config.ts`, `frontend-web/postcss.config.js` and repo-wide for `from "<pkg>"` / `from "<pkg>/..."` / `require("<pkg>")`.
+Searched `app/src/**`, `app/convex/**`, `app/tailwind.config.ts`, `app/vite.config.ts`, `app/postcss.config.js` and repo-wide for `from "<pkg>"` / `from "<pkg>/..."` / `require("<pkg>")`.
 
 - `@auth/core` — no import site. Transitive of `@convex-dev/auth` but not directly used by first-party code.
 - `@hookform/resolvers` — no import site. `react-hook-form` is also declared but used only via `components/ui/form.tsx`.
@@ -193,11 +193,11 @@ Not auto-removed in Stage 1 because they were not in the task's explicit candida
 
 ### Tests that silently skip, no longer run, or reference deleted paths
 
-- The legacy `.github/workflows/tests.yml` was removed in Stage 1. No replacement CI workflow exists yet for the frontend-web stack.
+- The legacy `.github/workflows/tests.yml` was removed in Stage 1. No replacement CI workflow exists yet for the app stack.
 
 ### Docs still describing deleted surfaces
 
-- `README.md` — current content is Convex-focused and accurate after Stage 1, but nothing describes the Live Match, Quiz, Blitz, Daily, or Forge modes that still ship in `frontend-web/convex/`. The coverage table only lists Survival, Higher/Lower, VerveGrid, and Who Am I. Accurate but incomplete.
+- `README.md` — current content is Convex-focused and accurate after Stage 1, but nothing describes the Live Match, Quiz, Blitz, Daily, or Forge modes that still ship in `app/convex/`. The coverage table only lists Survival, Higher/Lower, VerveGrid, and Who Am I. Accurate but incomplete.
 - `docs/APP_OVERVIEW.md` — accurate high-level product overview, no references to deleted surfaces.
 - `docs/CONTRIBUTING.md` — "Project Structure" section still claims `backend/` (FastAPI), `frontend/` (React Native), and `tests/` exist. All three were deleted in Stage 1. Refresh this file.
 - `docs/DESIGN_PROMPT.md` — framed explicitly around "Platform: React Native + Expo (iOS, Android, Web from one codebase)". The repo has been web-only (Vite) for some time.
@@ -206,22 +206,22 @@ Not auto-removed in Stage 1 because they were not in the task's explicit candida
 
 ### .env samples that drifted from actual env usage
 
-- `.env.example` and `.env.production.example` were deleted in Stage 1. No replacement exists. The live runtime expects `CONVEX_DEPLOYMENT` and `VITE_CONVEX_URL` in `frontend-web/.env.local` (plus optional API-FOOTBALL / TheSportsDB keys read by `scripts/fetchSportsData.ts` and `scripts/fetchData.ts`). A fresh `frontend-web/.env.local.example` documenting the current variables would close this gap.
+- `.env.example` and `.env.production.example` were deleted in Stage 1. No replacement exists. The live runtime expects `CONVEX_DEPLOYMENT` and `VITE_CONVEX_URL` in `app/.env.local` (plus optional API-FOOTBALL / TheSportsDB keys read by `scripts/fetchSportsData.ts` and `scripts/fetchData.ts`). A fresh `app/.env.local.example` documenting the current variables would close this gap.
 - Root `.env` is gitignored but still present and contains stale values for the deleted stack. Worth a manual audit before deleting.
 
 ### TODO / FIXME on live code paths
 
-- `frontend-web/convex/survivalSessions.ts:~126` — `famousWeight` is stored on the session but never used for weighted selection (noted in `SURVIVAL_MODE_AUDIT.md:§4`). Protected scope — do not reopen without a concrete blocker.
-- `frontend-web/src/pages/SurvivalScreen.tsx:230` and `frontend-web/src/pages/DailySurvivalScreen.tsx:193` — ESLint flags `useHintMut` being called inside a non-hook handler (`react-hooks/rules-of-hooks`). Protected Survival scope, not touched by cleanup.
-- `frontend-web/tailwind.config.ts:120` — `require()` call triggers `@typescript-eslint/no-require-imports`. Pre-existing.
-- `frontend-web/src/components/ui/{command,textarea}.tsx` — empty interface lint errors (`@typescript-eslint/no-empty-object-type`). shadcn/ui template leftovers.
+- `app/convex/survivalSessions.ts:~126` — `famousWeight` is stored on the session but never used for weighted selection (noted in `SURVIVAL_MODE_AUDIT.md:§4`). Protected scope — do not reopen without a concrete blocker.
+- `app/src/pages/SurvivalScreen.tsx:230` and `app/src/pages/DailySurvivalScreen.tsx:193` — ESLint flags `useHintMut` being called inside a non-hook handler (`react-hooks/rules-of-hooks`). Protected Survival scope, not touched by cleanup.
+- `app/tailwind.config.ts:120` — `require()` call triggers `@typescript-eslint/no-require-imports`. Pre-existing.
+- `app/src/components/ui/{command,textarea}.tsx` — empty interface lint errors (`@typescript-eslint/no-empty-object-type`). shadcn/ui template leftovers.
 
 ### Things that look stale but are not safe to delete without confirmation
 
 - `verify-no-secrets.sh` at repo root. Written for the old deployment model; still runs `git ls-files` style checks that remain partially valid, but it references the deleted FastAPI assumptions. Keep or replace rather than silently delete.
 - `archive/` (CSV dumps), `archive_nba.zip` (730 MB), `nba.sqlite` (2.2 GB), `processed_tennis/`, `data_cleaning/` — all historical pipeline inputs referenced by non-destructive fetch scripts. Gitignored. Keep as local-only working data.
-- `frontend-web/scripts/` is now an empty directory (both seed scripts removed in Stage 1). Harmless but could be deleted for cleanliness.
-- `frontend-web/vite-*.log`, `frontend-web/vite-preview-*.log`, `frontend-web/serve-phase3*.log` — leftover ad-hoc log files from Phase 3 validation. Gitignored via `*.log`, safe to delete locally.
+- `app/scripts/` is now an empty directory (both seed scripts removed in Stage 1). Harmless but could be deleted for cleanliness.
+- `app/vite-*.log`, `app/vite-preview-*.log`, `app/serve-phase3*.log` — leftover ad-hoc log files from Phase 3 validation. Gitignored via `*.log`, safe to delete locally.
 - `docs/CURATED_GAMEPLAY_REACHABLE_TARGET_CHECKLIST.md` is currently untracked (never committed). Decide whether to commit or delete.
 - `convex_function_spec.txt` (163 KB, untracked) — a Convex API dump snapshot. Not referenced by any tooling. Either commit as an audit artefact or delete.
 - Dependencies `@auth/core`, `@hookform/resolvers`, `date-fns`, `zod` are unused (see above). Not auto-removed because they were not in the task's explicit candidate list.

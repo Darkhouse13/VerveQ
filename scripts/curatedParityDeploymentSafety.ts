@@ -12,7 +12,7 @@ import {
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = path.resolve(__dirname, "..");
 
-export const FRONTEND_ENV_PATH = path.resolve(REPO_ROOT, "frontend-web", ".env.local");
+export const FRONTEND_ENV_PATH = path.resolve(REPO_ROOT, "app", ".env.local");
 export const CURATED_PARITY_LOCAL_OPS_DIR = path.resolve(REPO_ROOT, ".ops", "curated-parity");
 export const CURATED_PARITY_LOCAL_CONFIG_PATH = path.resolve(
   CURATED_PARITY_LOCAL_OPS_DIR,
@@ -264,7 +264,7 @@ function normalizeEnvValue(rawValue: string): string {
 
 function readEnvFile(envPath: string): Record<string, string> {
   if (!fs.existsSync(envPath)) {
-    throw new Error(`Missing ${envPath} — run 'npx convex dev' in frontend-web first`);
+    throw new Error(`Missing ${envPath} — run 'npx convex dev' in app first`);
   }
 
   const values: Record<string, string> = {};
@@ -309,7 +309,7 @@ function parseUrlSlug(convexUrl: string): string {
     parsed = new URL(convexUrl);
   } catch (error) {
     throw new Error(
-      `Invalid VITE_CONVEX_URL in frontend-web/.env.local: ${convexUrl}${
+      `Invalid VITE_CONVEX_URL in app/.env.local: ${convexUrl}${
         error instanceof Error ? ` (${error.message})` : ""
       }`,
     );
@@ -826,12 +826,12 @@ export function resolveConvexTarget(): ConvexTarget {
   const convexUrl = getRequiredEnvValue(
     envValues,
     "VITE_CONVEX_URL",
-    "VITE_CONVEX_URL not found in frontend-web/.env.local",
+    "VITE_CONVEX_URL not found in app/.env.local",
   );
   const deploymentName = getRequiredEnvValue(
     envValues,
     "CONVEX_DEPLOYMENT",
-    "CONVEX_DEPLOYMENT not found in frontend-web/.env.local",
+    "CONVEX_DEPLOYMENT not found in app/.env.local",
   );
   const { deploymentKind, deploymentSlug } = parseDeploymentName(deploymentName);
   const urlSlug = parseUrlSlug(convexUrl);
@@ -908,7 +908,7 @@ export function evaluateCuratedParityDestructiveGuard(
 
   if (target.deploymentKind === "dev" && target.deploymentSlug !== target.urlSlug) {
     reasons.push(
-      `frontend-web/.env.local is inconsistent: CONVEX_DEPLOYMENT resolves to slug "${target.deploymentSlug}" but VITE_CONVEX_URL resolves to "${target.urlSlug}".`,
+      `app/.env.local is inconsistent: CONVEX_DEPLOYMENT resolves to slug "${target.deploymentSlug}" but VITE_CONVEX_URL resolves to "${target.urlSlug}".`,
     );
   } else if (target.deploymentSlug !== target.urlSlug) {
     notes.push(
@@ -1452,10 +1452,10 @@ export function getCuratedParityNextSteps(
   },
 ): string[] {
   const lines: string[] = [];
-  const statusCommand = "cd frontend-web && npm run gameplay:curated-parity:status";
-  const inspectCommand = "cd frontend-web && npm run gameplay:curated-parity:inspect";
-  const approveCommand = "cd frontend-web && npm run gameplay:curated-parity:approve";
-  const applyCommand = "cd frontend-web && npm run gameplay:curated-parity";
+  const statusCommand = "cd app && npm run gameplay:curated-parity:status";
+  const inspectCommand = "cd app && npm run gameplay:curated-parity:inspect";
+  const approveCommand = "cd app && npm run gameplay:curated-parity:approve";
+  const applyCommand = "cd app && npm run gameplay:curated-parity";
   const localAllowlistPath = path.relative(REPO_ROOT, report.localConfigPath);
 
   if (

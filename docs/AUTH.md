@@ -6,7 +6,7 @@ accounts).
 
 ## Providers
 
-Configured in [`frontend-web/convex/auth.ts`](../frontend-web/convex/auth.ts):
+Configured in [`app/convex/auth.ts`](../app/convex/auth.ts):
 
 - **Anonymous** — guest play. The "Play as guest" button on the login
   screen uses this. No account takeover vector: guests cannot receive
@@ -22,8 +22,8 @@ see "Known gaps" below.
 ## Signup / signin flows
 
 Frontend surface lives in
-[`frontend-web/src/contexts/AuthContext.tsx`](../frontend-web/src/contexts/AuthContext.tsx)
-and [`frontend-web/src/pages/LoginScreen.tsx`](../frontend-web/src/pages/LoginScreen.tsx).
+[`app/src/contexts/AuthContext.tsx`](../app/src/contexts/AuthContext.tsx)
+and [`app/src/pages/LoginScreen.tsx`](../app/src/pages/LoginScreen.tsx).
 
 | Flow | AuthContext method | Convex `signIn` flow arg |
 |------|--------------------|--------------------------|
@@ -47,7 +47,7 @@ calls are no-ops for users that already have one.
 
 ## Password reset (OTP)
 
-Configured in [`frontend-web/convex/authEmail.ts`](../frontend-web/convex/authEmail.ts).
+Configured in [`app/convex/authEmail.ts`](../app/convex/authEmail.ts).
 
 - 6-digit numeric code generated with `crypto.getRandomValues`.
 - Valid for 10 minutes (`maxAge: 600`).
@@ -63,14 +63,14 @@ clear error instead of silently pretending to have sent the email.
 ## Password policy
 
 Shared between client and server via
-[`frontend-web/convex/lib/passwordPolicy.ts`](../frontend-web/convex/lib/passwordPolicy.ts)
+[`app/convex/lib/passwordPolicy.ts`](../app/convex/lib/passwordPolicy.ts)
 (re-exported for the frontend as `@/lib/password`).
 
 - Length: 12–72 characters.
 - No character-class rules (no forced mixed case / digits / symbols).
 - Case-insensitive rejection against a small bundled list of common
   leaked passwords (see
-  [`passwordPolicy.ts#COMMON_PASSWORDS`](../frontend-web/convex/lib/passwordPolicy.ts)).
+  [`passwordPolicy.ts#COMMON_PASSWORDS`](../app/convex/lib/passwordPolicy.ts)).
   Not an exhaustive deny list — the goal is to block the obvious hits,
   not compete with haveibeenpwned.
 
@@ -112,7 +112,7 @@ credentials.
 ## Required Convex env vars
 
 Set on the Convex dashboard (Settings → Environment Variables), **not**
-in `frontend-web/.env.local`. The frontend bundle must not see them.
+in `app/.env.local`. The frontend bundle must not see them.
 
 | Var | Purpose | Example |
 |-----|---------|---------|

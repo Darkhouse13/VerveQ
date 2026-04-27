@@ -1,6 +1,6 @@
 # Production Readiness Audit
 
-Read-only audit of the live surface (frontend-web + Convex) performed 2026-04-21.
+Read-only audit of the live surface (app + Convex) performed 2026-04-21.
 Findings only — nothing fixed. Each item has a severity, a file+line pointer,
 what the issue is, why it matters on a public production URL, and a suggested
 fix direction.
@@ -19,7 +19,7 @@ Severity ladder:
 ## Blockers
 
 ### BLOCKER-1 — Password == username in cleartext account creation — **RESOLVED**
-**File:** `frontend-web/src/contexts/AuthContext.tsx:42-54` (login flow)
+**File:** `app/src/contexts/AuthContext.tsx:42-54` (login flow)
 
 Every password-flow signup was:
 
@@ -55,9 +55,9 @@ short-circuit) was folded into the same fix.
 
 ### BLOCKER-2 — Client-trusted `correctAnswer` on every quiz / blitz / daily path
 **Files:**
-- `frontend-web/convex/quizSessions.ts:90-107` (`checkAnswer`)
-- `frontend-web/convex/blitz.ts:102-137` (`submitAnswer`)
-- `frontend-web/convex/dailyChallenge.ts:197-230` (`submitAnswer`)
+- `app/convex/quizSessions.ts:90-107` (`checkAnswer`)
+- `app/convex/blitz.ts:102-137` (`submitAnswer`)
+- `app/convex/dailyChallenge.ts:197-230` (`submitAnswer`)
 
 All three mutations accept `correctAnswer` as an **argument from the client**
 and compute correctness by comparing `answer === correctAnswer`. The server
@@ -80,7 +80,7 @@ needs it for the reveal, return it only after a successful submit.
 ---
 
 ### BLOCKER-3 — `completeQuiz` / `completeSurvival` trust client-supplied score/accuracy/averageTime/performanceBonus
-**File:** `frontend-web/convex/games.ts:12-104` (`completeQuiz`), `107-193` (`completeSurvival`)
+**File:** `app/convex/games.ts:12-104` (`completeQuiz`), `107-193` (`completeSurvival`)
 
 ```ts
 export const completeQuiz = mutation({
@@ -109,9 +109,9 @@ entirely from `survivalSessions.performanceBonus` on the server row.
 
 ### BLOCKER-4 — `getSession` queries leak the answer for Higher/Lower, VerveGrid, and Who Am I
 **Files:**
-- `frontend-web/convex/higherLower.ts:334-339` — returns full session including `playerBValue`
-- `frontend-web/convex/verveGrid.ts:201-206` — returns full session including `cells[].validPlayerIds`
-- `frontend-web/convex/whoAmI.ts:178-203` — returns `{...session}` which includes `answerName`
+- `app/convex/higherLower.ts:334-339` — returns full session including `playerBValue`
+- `app/convex/verveGrid.ts:201-206` — returns full session including `cells[].validPlayerIds`
+- `app/convex/whoAmI.ts:178-203` — returns `{...session}` which includes `answerName`
 
 All three are public queries. Any authenticated (or anonymous) client with a
 valid Convex deployment URL can call `api.higherLower.getSession({sessionId})`
@@ -134,7 +134,7 @@ question).
 ---
 
 ### BLOCKER-5 — Daily challenge `submitAnswer` has no attempt-ownership check and trusts `timeTaken`
-**File:** `frontend-web/convex/dailyChallenge.ts:197-230`
+**File:** `app/convex/dailyChallenge.ts:197-230`
 
 ```ts
 export const submitAnswer = mutation({
@@ -167,7 +167,7 @@ question start timestamps in the attempt row).
 ## High-severity
 
 ### HIGH-1 — Global leaderboard (`getLeaderboard` with no sport/mode) is not actually ranked by ELO
-**File:** `frontend-web/convex/leaderboards.ts:11-53`
+**File:** `app/convex/leaderboards.ts:11-53`
 
 When `sport`/`mode` are absent, the fallback is:
 
@@ -191,7 +191,7 @@ notice; it's a credibility hit.
 ---
 
 ### HIGH-2 — `ensureProfile` short-circuits before setting the username — **RESOLVED**
-**File:** `frontend-web/convex/users.ts:14-38`
+**File:** `app/convex/users.ts:14-38`
 
 Old handler returned early on any existing user doc, so the patch branch
 setting `username` was dead code. Fixed alongside BLOCKER-1: the guard now
@@ -202,7 +202,7 @@ calls remain no-ops.
 ---
 
 ### HIGH-3 — Username uniqueness is not enforced on profile create
-**File:** `frontend-web/convex/users.ts:14-38`, schema at `schema.ts:8-21`
+**File:** `app/convex/users.ts:14-38`, schema at `schema.ts:8-21`
 
 `ensureProfile` does no uniqueness check. Even after HIGH-2 is fixed, two
 users can sign up with the same display name and end up both patched to the
@@ -220,7 +220,7 @@ and throw if non-empty. Force the UI to let the user pick again.
 ---
 
 ### HIGH-4 — No React ErrorBoundary anywhere in the tree
-**File:** `frontend-web/src/App.tsx:37-78`; grep for `ErrorBoundary` returns zero hits.
+**File:** `app/src/App.tsx:37-78`; grep for `ErrorBoundary` returns zero hits.
 
 Any uncaught throw inside any screen — a Convex mutation error not wrapped
 in try/catch, a parse error on route state, a missing asset — white-screens
@@ -238,8 +238,8 @@ to Sentry/equivalent and renders a recovery screen.
 
 ### HIGH-5 — `eloDecay.runDecay` and `seasonManager.checkSeason` scan all user ratings in one mutation
 **Files:**
-- `frontend-web/convex/eloDecay.ts:11-70` — `const allRatings = await ctx.db.query("userRatings").collect();`
-- `frontend-web/convex/seasonManager.ts:35` — same, then iterates inserts into `seasonHistory`
+- `app/convex/eloDecay.ts:11-70` — `const allRatings = await ctx.db.query("userRatings").collect();`
+- `app/convex/seasonManager.ts:35` — same, then iterates inserts into `seasonHistory`
 
 Convex mutations have a hard per-transaction cost ceiling. A single `collect()`
 on `userRatings` with N users × M modes of data loads the whole table into
@@ -259,7 +259,7 @@ step should likewise be chunked, not a single transaction.
 ---
 
 ### HIGH-6 — No TTL sweeper for expired game sessions
-**Files:** `frontend-web/convex/schema.ts` — `quizSessions` (30m), `survivalSessions`
+**Files:** `app/convex/schema.ts` — `quizSessions` (30m), `survivalSessions`
 (1h), `higherLowerSessions`/`verveGridSessions`/`whoAmISessions` (1h),
 `blitzSessions` (60s window). `crons.ts` only registers `season-check` and
 `elo-decay-check`.
@@ -279,7 +279,7 @@ deletes in chunks of 100-500 to stay inside transaction limits.
 ---
 
 ### HIGH-7 — `verveGrid.searchPlayers` global fallback scans all football players on every keystroke
-**File:** `frontend-web/convex/verveGrid.ts:122-136`
+**File:** `app/convex/verveGrid.ts:122-136`
 
 When `sessionId` or `cellIndex` is missing:
 
@@ -308,8 +308,8 @@ to search outside the active cell's eligible list.
 ## Medium-severity
 
 ### MED-1 — `quizSessions.getQuestion` and `blitz.getQuestion` collect entire question pools per request
-**Files:** `frontend-web/convex/quizSessions.ts:37-42` (`collect()` with no
-`.take()`), `frontend-web/convex/blitz.ts:48-53` (`take(200)`).
+**Files:** `app/convex/quizSessions.ts:37-42` (`collect()` with no
+`.take()`), `app/convex/blitz.ts:48-53` (`take(200)`).
 
 Every question request loads either the entire sport+difficulty slice (quiz)
 or up to 200 questions (blitz), then filters in memory. Football at current
@@ -326,7 +326,7 @@ under-used questions without scanning.
 ---
 
 ### MED-2 — `forge.vote` has a race at the approval threshold
-**File:** `frontend-web/convex/forge.ts:196-307`
+**File:** `app/convex/forge.ts:196-307`
 
 If two voters flip net from 4 → 5 simultaneously, both reads see
 `approveCount=4`, both insert a vote, both compute `newNet=5`, both enter
@@ -364,7 +364,7 @@ for non-login routes. One-evening change.
 ---
 
 ### MED-4 — `useAntiCheat` fires on every `visibilitychange` hidden event without a grace period
-**File:** `frontend-web/src/hooks/useAntiCheat.ts:7-17`
+**File:** `app/src/hooks/useAntiCheat.ts:7-17`
 
 In daily modes (`DailySurvivalScreen.tsx:95-106`) a single tab hide triggers
 an immediate forfeit. On mobile Safari, the OS sends `visibilitychange
@@ -383,7 +383,7 @@ but the current implementation is too trigger-happy for mobile.
 ---
 
 ### MED-5 — `auth.config.ts` silently succeeds when `CONVEX_SITE_URL` is undefined
-**File:** `frontend-web/convex/auth.config.ts:1-8`
+**File:** `app/convex/auth.config.ts:1-8`
 
 ```ts
 export default {
@@ -405,7 +405,7 @@ file and throw a loud error. Deployment docs should call it out.
 ---
 
 ### MED-6 — `@convex-dev/auth` pinned at pre-1.0 (0.0.91)
-**File:** `frontend-web/package.json:23`
+**File:** `app/package.json:23`
 
 Pre-1.0 libraries can break across patch versions. The ecosystem around
 Convex Auth is still stabilizing. This is acceptable today but warrants
@@ -417,7 +417,7 @@ locking to an exact version, not a `^0.0.91` range.
 ---
 
 ### MED-7 — `getMatch` has no player-in-match gate
-**File:** `frontend-web/convex/liveMatches.ts:240-302`
+**File:** `app/convex/liveMatches.ts:240-302`
 
 `getMatch` returns the full sanitized match view to any authenticated caller
 who knows the `matchId`. During an active question the current
@@ -491,14 +491,14 @@ Each bumps install size and audit surface.
 
 ### LOW-9 — Fuzzy-match threshold drift between doc and code
 **File:** `docs/SURVIVAL_MODE_AUDIT.md:§5` says "distance ≤ 1 accepted" but
-`frontend-web/convex/lib/fuzzy.ts:39-44` uses dynamic thresholds (1 / 2 / 3
+`app/convex/lib/fuzzy.ts:39-44` uses dynamic thresholds (1 / 2 / 3
 based on target length). Protected scope — don't touch the code — but the
 doc should be updated to reflect the actual behavior.
 
 ---
 
 ### LOW-10 — `package.json` has no script to run lint/typecheck in CI
-**File:** `frontend-web/package.json:6-20`. `npm run lint` exists but no
+**File:** `app/package.json:6-20`. `npm run lint` exists but no
 combined `npm run check` or `npm run ci` that gates build+lint+test in one
 step. The old `.github/workflows/tests.yml` was removed; no replacement.
 
@@ -521,8 +521,8 @@ skew `difficultyScore` / `difficultyVotes` on any question. Not a blocker
 - `pipeline-config.json` is committed and used by `scripts/fetchSportsData.ts`
   and `scripts/fetchData.ts`. No hardcoded secrets; API keys are read from
   `process.env`.
-- Sports list is hardcoded in `frontend-web/convex/sports.ts:3-7` and again
-  in `frontend-web/src/pages/HomeScreen.tsx:214,236` (copy strings like
+- Sports list is hardcoded in `app/convex/sports.ts:3-7` and again
+  in `app/src/pages/HomeScreen.tsx:214,236` (copy strings like
   "Curated football 3x3 grid"). Duplicating the "football-only for three
   modes" story across server + client is fine short-term but will need a
   source-of-truth when adding a second curated sport.
@@ -531,10 +531,10 @@ skew `difficultyScore` / `difficultyVotes` on any question. Not a blocker
 
 ## What I deliberately did not flag
 
-- Survival fuzzy-match logic (`frontend-web/convex/lib/fuzzy.ts`) —
+- Survival fuzzy-match logic (`app/convex/lib/fuzzy.ts`) —
   protected scope.
-- Survival valid-answer data (`frontend-web/convex/data/**`) — protected.
-- Schema shape (`frontend-web/convex/schema.ts`) — protected; index gaps are
+- Survival valid-answer data (`app/convex/data/**`) — protected.
+- Schema shape (`app/convex/schema.ts`) — protected; index gaps are
   flagged but no schema changes suggested.
 - Curated-parity trust-anchor design — intentionally out of scope.
 

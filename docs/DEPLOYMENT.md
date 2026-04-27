@@ -2,14 +2,14 @@
 
 This document is the current source of truth for how deployment and validation work in this repo today.
 
-It intentionally describes the real `frontend-web` + Convex + static bundle workflow used from this workspace. It does not describe the older FastAPI/PostgreSQL deployment model.
+It intentionally describes the real `app` + Convex + static bundle workflow used from this workspace. It does not describe the older FastAPI/PostgreSQL deployment model.
 
 ## Current stack that matters
 
-- Frontend app: `frontend-web`
-- Backend/runtime: Convex functions in `frontend-web/convex`
-- Configured dev backend: `frontend-web/.env.local`
-- Destructive curated parity target identity: exact `CONVEX_DEPLOYMENT` + `VITE_CONVEX_URL` pair from `frontend-web/.env.local`
+- Frontend app: `app`
+- Backend/runtime: Convex functions in `app/convex`
+- Configured dev backend: `app/.env.local`
+- Destructive curated parity target identity: exact `CONVEX_DEPLOYMENT` + `VITE_CONVEX_URL` pair from `app/.env.local`
 - Local ops approval files: `.ops/curated-parity/approved-targets.local.json`, `.ops/curated-parity/destructive-approval.local.json`, `.ops/curated-parity/apply-session.local.json`, and `.ops/curated-parity/approval-history.local.json`
 - Local trust anchor for destructive curated parity:
   - Windows: `%LOCALAPPDATA%\VerveQ\curated-parity\trust-anchor.current-user.dpapi`
@@ -19,7 +19,7 @@ It intentionally describes the real `frontend-web` + Convex + static bundle work
 
 ## Current backend deployment flow
 
-From `frontend-web`:
+From `app`:
 
 ```bash
 npx convex dev
@@ -36,7 +36,7 @@ That deploys the current Convex function bundle and schema to the configured dev
 For curated football runtime parity after the backend code/schema is deployed, start with the safe self-check:
 
 ```bash
-cd frontend-web
+cd app
 npm run gameplay:curated-parity:status
 ```
 
@@ -45,7 +45,7 @@ That command is read-only. It prints a compact readiness header plus the current
 If you also want the current curated manifest in the same read-only flow, run:
 
 ```bash
-cd frontend-web
+cd app
 npm run gameplay:curated-parity:inspect
 ```
 
@@ -60,7 +60,7 @@ If the inspect output says the target must be approved, create or update the git
 Then generate a short-lived local approval artifact:
 
 ```bash
-cd frontend-web
+cd app
 npm run gameplay:curated-parity:approve
 ```
 
@@ -74,7 +74,7 @@ If the trust anchor backend is unavailable, locked, unreadable, or unsupported o
 If the target is approved and the short-lived artifact exists, run the destructive apply:
 
 ```bash
-cd frontend-web
+cd app
 npm run gameplay:curated-parity
 ```
 
@@ -86,7 +86,7 @@ Destructive curated parity is now blocked by default.
 
 It only proceeds when all of these are true:
 
-1. `frontend-web/.env.local` contains both `CONVEX_DEPLOYMENT` and `VITE_CONVEX_URL`
+1. `app/.env.local` contains both `CONVEX_DEPLOYMENT` and `VITE_CONVEX_URL`
 2. the resolved deployment kind is `dev` or `preview`
 3. `.ops/curated-parity/approved-targets.local.json` contains the exact current target pair
 4. the current platform has a supported non-repo-local curated parity trust-anchor backend and it is available/usable for signing and validation
@@ -158,7 +158,7 @@ Current platform note:
 The reliable reachable-target validation flow from this workspace is:
 
 ```bash
-cd frontend-web
+cd app
 npm run build
 npx serve -s dist -l 3000
 ```
@@ -185,7 +185,7 @@ That serves a production bundle locally against the configured dev Convex backen
 After `npm run gameplay:curated-parity`, verify both parity metadata and runtime startup behavior with:
 
 ```bash
-cd frontend-web
+cd app
 npm run gameplay:smoke -- all
 ```
 

@@ -289,7 +289,7 @@ async function main(): Promise<void> {
       console.log("[cleanup] replaced the previous unconsumed approval with a fresh single-use approval");
     }
     console.log(
-      `[next] Run: cd frontend-web && npm run gameplay:curated-parity`,
+      `[next] Run: cd app && npm run gameplay:curated-parity`,
     );
     return;
   }

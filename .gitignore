@@ -34,10 +34,10 @@ lib/
 lib64/
 # `lib/` above is meant for Python build output, but it also matches our
 # TypeScript source directories. Re-include those explicitly.
-!frontend-web/src/lib/
-!frontend-web/src/lib/**
-!frontend-web/convex/lib/
-!frontend-web/convex/lib/**
+!app/src/lib/
+!app/src/lib/**
+!app/convex/lib/
+!app/convex/lib/**
 parts/
 sdist/
 var/
@@ -227,13 +227,13 @@ development_files/
 !.github/pull_request_template.md
 # Data and temporary data cleaning folders
 data/
-!frontend-web/convex/data/
-frontend-web/convex/data/*
-!frontend-web/convex/data/football_player_metadata.json
-!frontend-web/convex/data/football_survival_index.json
-!frontend-web/convex/data/nba_player_metadata.json
-!frontend-web/convex/data/nba_survival_data.json
-!frontend-web/convex/data/survival_initials_map.json
-!frontend-web/convex/data/survival_initials_map_tennis.json
-!frontend-web/convex/data/tennis_player_metadata.json
+!app/convex/data/
+app/convex/data/*
+!app/convex/data/football_player_metadata.json
+!app/convex/data/football_survival_index.json
+!app/convex/data/nba_player_metadata.json
+!app/convex/data/nba_survival_data.json
+!app/convex/data/survival_initials_map.json
+!app/convex/data/survival_initials_map_tennis.json
+!app/convex/data/tennis_player_metadata.json
 data_cleaning/

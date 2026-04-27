@@ -22,16 +22,16 @@ The system has a **Convex implementation** (active, used by the web frontend) an
 
 | File | Role |
 |------|------|
-| `frontend-web/convex/survivalSessions.ts` | All mutations/queries: `startGame`, `submitGuess`, `useHint`, `skipChallenge`, `penalizeTabSwitch`, `getSession` |
-| `frontend-web/convex/lib/fuzzy.ts` | Levenshtein distance + `findBestMatch()` for answer validation |
-| `frontend-web/convex/lib/scoring.ts` | `normalizeAnswer()` used by fuzzy matching |
-| `frontend-web/convex/lib/elo.ts` | `getSurvivalPerformance()`, `calculateEloChange()`, `getKFactor()`, `clampRating()`, `getTierName()` |
-| `frontend-web/convex/games.ts` | `completeSurvival` mutation — ELO update + game history insertion |
-| `frontend-web/convex/schema.ts` | `survivalSessions` table definition |
-| `frontend-web/convex/dailyChallenge.ts` | Daily attempt tracking, forfeit, completion |
-| `frontend-web/src/pages/SurvivalScreen.tsx` | Standard survival UI — state management, guess submission, hints, anti-cheat modal |
-| `frontend-web/src/pages/DailySurvivalScreen.tsx` | Daily variant UI — same gameplay, stricter anti-cheat, daily attempt gating |
-| `frontend-web/src/hooks/useAntiCheat.ts` | `visibilitychange` listener that fires callback on tab-away |
+| `app/convex/survivalSessions.ts` | All mutations/queries: `startGame`, `submitGuess`, `useHint`, `skipChallenge`, `penalizeTabSwitch`, `getSession` |
+| `app/convex/lib/fuzzy.ts` | Levenshtein distance + `findBestMatch()` for answer validation |
+| `app/convex/lib/scoring.ts` | `normalizeAnswer()` used by fuzzy matching |
+| `app/convex/lib/elo.ts` | `getSurvivalPerformance()`, `calculateEloChange()`, `getKFactor()`, `clampRating()`, `getTierName()` |
+| `app/convex/games.ts` | `completeSurvival` mutation — ELO update + game history insertion |
+| `app/convex/schema.ts` | `survivalSessions` table definition |
+| `app/convex/dailyChallenge.ts` | Daily attempt tracking, forfeit, completion |
+| `app/src/pages/SurvivalScreen.tsx` | Standard survival UI — state management, guess submission, hints, anti-cheat modal |
+| `app/src/pages/DailySurvivalScreen.tsx` | Daily variant UI — same gameplay, stricter anti-cheat, daily attempt gating |
+| `app/src/hooks/useAntiCheat.ts` | `visibilitychange` listener that fires callback on tab-away |
 
 ### Python Backend (Legacy)
 
@@ -48,10 +48,10 @@ The system has a **Convex implementation** (active, used by the web frontend) an
 
 | File | Sport | Scale |
 |------|-------|-------|
-| `frontend-web/convex/data/survival_initials_map.json` | Football | ~1,957 initials → ~30,913 players |
-| `frontend-web/convex/data/survival_initials_map_tennis.json` | Tennis | ~476 initials → ~1,156 players |
-| `frontend-web/convex/data/nba_survival_data.json` | Basketball | ~558 initials → ~3,608 players |
-| `frontend-web/convex/data/football_player_metadata.json` | Football | Club, position, nationality, era per player (used for hints) |
+| `app/convex/data/survival_initials_map.json` | Football | ~1,957 initials → ~30,913 players |
+| `app/convex/data/survival_initials_map_tennis.json` | Tennis | ~476 initials → ~1,156 players |
+| `app/convex/data/nba_survival_data.json` | Basketball | ~558 initials → ~3,608 players |
+| `app/convex/data/football_player_metadata.json` | Football | Club, position, nationality, era per player (used for hints) |
 
 ---
 
@@ -565,20 +565,20 @@ Navigate to /results with score, round, ELO data
 
 | File Path | Purpose |
 |-----------|---------|
-| `frontend-web/convex/survivalSessions.ts` | Core game mutations: start, guess, hint, skip, penalize |
-| `frontend-web/convex/games.ts` | `completeSurvival` — ELO calculation and game history |
-| `frontend-web/convex/lib/fuzzy.ts` | `levenshteinDistance`, `isMatch`, `findBestMatch` |
-| `frontend-web/convex/lib/scoring.ts` | `normalizeAnswer` (used by fuzzy) |
-| `frontend-web/convex/lib/elo.ts` | ELO math: performance, change, K-factor, clamp, tiers |
-| `frontend-web/convex/schema.ts` | `survivalSessions` table definition |
-| `frontend-web/convex/dailyChallenge.ts` | Daily challenge creation, attempt gating, forfeit |
-| `frontend-web/convex/data/survival_initials_map.json` | Football initials → players mapping |
-| `frontend-web/convex/data/survival_initials_map_tennis.json` | Tennis initials → players mapping |
-| `frontend-web/convex/data/nba_survival_data.json` | NBA initials → players mapping |
-| `frontend-web/convex/data/football_player_metadata.json` | Player metadata for hints (club, position, nationality, era) |
-| `frontend-web/src/pages/SurvivalScreen.tsx` | Standard survival UI component |
-| `frontend-web/src/pages/DailySurvivalScreen.tsx` | Daily survival UI component |
-| `frontend-web/src/hooks/useAntiCheat.ts` | Tab visibility change detection hook |
+| `app/convex/survivalSessions.ts` | Core game mutations: start, guess, hint, skip, penalize |
+| `app/convex/games.ts` | `completeSurvival` — ELO calculation and game history |
+| `app/convex/lib/fuzzy.ts` | `levenshteinDistance`, `isMatch`, `findBestMatch` |
+| `app/convex/lib/scoring.ts` | `normalizeAnswer` (used by fuzzy) |
+| `app/convex/lib/elo.ts` | ELO math: performance, change, K-factor, clamp, tiers |
+| `app/convex/schema.ts` | `survivalSessions` table definition |
+| `app/convex/dailyChallenge.ts` | Daily challenge creation, attempt gating, forfeit |
+| `app/convex/data/survival_initials_map.json` | Football initials → players mapping |
+| `app/convex/data/survival_initials_map_tennis.json` | Tennis initials → players mapping |
+| `app/convex/data/nba_survival_data.json` | NBA initials → players mapping |
+| `app/convex/data/football_player_metadata.json` | Player metadata for hints (club, position, nationality, era) |
+| `app/src/pages/SurvivalScreen.tsx` | Standard survival UI component |
+| `app/src/pages/DailySurvivalScreen.tsx` | Daily survival UI component |
+| `app/src/hooks/useAntiCheat.ts` | Tab visibility change detection hook |
 | `backend/sports/survival_engine.py` | Legacy: `SurvivalEngine` class |
 | `backend/sports/survival_helpers.py` | Legacy: `FameCalculator`, `PlayerSelector`, `PlayerInfoExtractor` |
 | `backend/sports/utils.py` | Legacy: `normalize_name`, `calculate_similarity`, `get_player_initials` |

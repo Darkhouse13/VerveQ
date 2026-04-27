@@ -42,9 +42,9 @@ function readRepoFile(relativePath: string) {
 
 describe("weekend stabilization admin surface", () => {
   it("seed/admin writers are internal Convex functions", () => {
-    const seedSportsData = readRepoFile("frontend-web/convex/seedSportsData.ts");
-    const seedQuestions = readRepoFile("frontend-web/convex/seedQuestions.ts");
-    const seedAchievements = readRepoFile("frontend-web/convex/seedAchievements.ts");
+    const seedSportsData = readRepoFile("app/convex/seedSportsData.ts");
+    const seedQuestions = readRepoFile("app/convex/seedQuestions.ts");
+    const seedAchievements = readRepoFile("app/convex/seedAchievements.ts");
 
     const publicAdminPatterns = [
       /export const seed[A-Za-z0-9_]* = mutation\(/,
@@ -908,17 +908,17 @@ describe("weekend stabilization blitz", () => {
 describe("weekend stabilization deploy assets", () => {
   it("tracks Convex runtime assets required by a clean checkout", () => {
     const requiredFiles = [
-      "frontend-web/convex/data/football_player_metadata.json",
-      "frontend-web/convex/data/football_survival_index.json",
-      "frontend-web/convex/data/nba_player_metadata.json",
-      "frontend-web/convex/data/nba_survival_data.json",
-      "frontend-web/convex/data/survival_initials_map.json",
-      "frontend-web/convex/data/survival_initials_map_tennis.json",
-      "frontend-web/convex/data/tennis_player_metadata.json",
-      "frontend-web/convex/lib/daily.ts",
-      "frontend-web/convex/lib/elo.ts",
-      "frontend-web/convex/lib/fuzzy.ts",
-      "frontend-web/convex/lib/scoring.ts",
+      "app/convex/data/football_player_metadata.json",
+      "app/convex/data/football_survival_index.json",
+      "app/convex/data/nba_player_metadata.json",
+      "app/convex/data/nba_survival_data.json",
+      "app/convex/data/survival_initials_map.json",
+      "app/convex/data/survival_initials_map_tennis.json",
+      "app/convex/data/tennis_player_metadata.json",
+      "app/convex/lib/daily.ts",
+      "app/convex/lib/elo.ts",
+      "app/convex/lib/fuzzy.ts",
+      "app/convex/lib/scoring.ts",
     ];
 
     const tracked = new Set(

@@ -23,7 +23,7 @@ const BASE_APPROVED_TARGET: CuratedParityApprovedTarget = {
 };
 
 export const BASE_TARGET: ConvexTarget = {
-  envPath: "C:\\repo\\frontend-web\\.env.local",
+  envPath: "C:\\repo\\app\\.env.local",
   deploymentName: BASE_APPROVED_TARGET.deploymentName,
   deploymentKind: "dev",
   deploymentSlug: "verveq-local",

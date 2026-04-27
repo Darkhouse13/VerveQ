@@ -29,7 +29,7 @@ It documents the runtime layers that are actually in use today, the current avai
 
 - Approved pools: `higherLowerPools`
 - Approved facts: `higherLowerFacts`
-- Session backend: `frontend-web/convex/higherLower.ts`
+- Session backend: `app/convex/higherLower.ts`
 
 ### What this replaced
 
@@ -52,7 +52,7 @@ It documents the runtime layers that are actually in use today, the current avai
 
 - Approved cell layer: `verveGridApprovedIndex`
 - Curated live boards: `verveGridBoards`
-- Session backend: `frontend-web/convex/verveGrid.ts`
+- Session backend: `app/convex/verveGrid.ts`
 
 ### What this replaced
 
@@ -83,7 +83,7 @@ Raw `gridIndex` remains a local pipeline/audit artifact and is no longer part of
 ### Live runtime layer
 
 - Approved clue layer: `whoAmIApprovedClues`
-- Session backend: `frontend-web/convex/whoAmI.ts`
+- Session backend: `app/convex/whoAmI.ts`
 
 ### What this replaced
 
@@ -114,12 +114,12 @@ From this workspace, there are two distinct validation levels:
 
 ### Dev backend
 
-- Convex functions and schema can be deployed to the configured dev deployment from `frontend-web`.
+- Convex functions and schema can be deployed to the configured dev deployment from `app`.
 - The curated mode backends above are live in that dev backend.
 - Exact curated runtime parity is now applied from committed repo artifacts with:
 
 ```bash
-cd frontend-web
+cd app
 npm run gameplay:curated-parity:status
 ```
 
@@ -127,14 +127,14 @@ npm run gameplay:curated-parity:status
 - If you also want the current curated manifest in the same read-only flow, run:
 
 ```bash
-cd frontend-web
+cd app
 npm run gameplay:curated-parity:inspect
 ```
 
-- The inspect command is the safe preflight. It resolves the current Convex target from `frontend-web/.env.local`, prints the detected deployment identity, and tells the operator exactly what to do next.
+- The inspect command is the safe preflight. It resolves the current Convex target from `app/.env.local`, prints the detected deployment identity, and tells the operator exactly what to do next.
 - Destructive parity is fail-closed by default.
 - Authoritative apply now uses a local ops workflow:
-  - `CONVEX_DEPLOYMENT` + `VITE_CONVEX_URL` still identify the target in `frontend-web/.env.local`
+  - `CONVEX_DEPLOYMENT` + `VITE_CONVEX_URL` still identify the target in `app/.env.local`
   - approved destructive targets live in the gitignored local file `.ops/curated-parity/approved-targets.local.json`
   - a separate `npm run gameplay:curated-parity:approve` step writes a signed single-use approval artifact for the exact resolved target and current manifest seed version
   - approval signatures and apply-session signatures now come from a supported platform trust anchor outside the repo:
@@ -146,14 +146,14 @@ npm run gameplay:curated-parity:inspect
 - After the target is deliberately allowlisted, generate approval with:
 
 ```bash
-cd frontend-web
+cd app
 npm run gameplay:curated-parity:approve
 ```
 
 - Then apply with:
 
 ```bash
-cd frontend-web
+cd app
 npm run gameplay:curated-parity
 ```
 
@@ -182,10 +182,10 @@ npm run gameplay:curated-parity
 
 ## Files that now matter most
 
-- `frontend-web/convex/higherLower.ts`
-- `frontend-web/convex/verveGrid.ts`
-- `frontend-web/convex/whoAmI.ts`
-- `frontend-web/convex/schema.ts`
+- `app/convex/higherLower.ts`
+- `app/convex/verveGrid.ts`
+- `app/convex/whoAmI.ts`
+- `app/convex/schema.ts`
 - `scripts/seedSportsDatabase.ts`
 - `scripts/runCuratedParityWorkflow.ts`
 - `scripts/curatedSeedManifest.ts`

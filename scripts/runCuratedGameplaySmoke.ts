@@ -334,7 +334,7 @@ async function printManualChecklist(mode: ModeName): Promise<void> {
   const modes =
     mode === "all" ? ["higher-lower", "verve-grid", "who-am-i"] : [mode];
   const checklistPath = "docs/CURATED_GAMEPLAY_REACHABLE_TARGET_CHECKLIST.md";
-  console.log("[serve] cd frontend-web && npm run build && npx serve -s dist -l 3000");
+  console.log("[serve] cd app && npm run build && npx serve -s dist -l 3000");
   console.log(
     `[checklist] ${checklistPath} (${modes.join(", ")})`,
   );
