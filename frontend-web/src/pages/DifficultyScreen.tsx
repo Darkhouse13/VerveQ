@@ -15,16 +15,11 @@ export default function DifficultyScreen() {
   const navigate = useNavigate();
   const [params] = useSearchParams();
   const sport = params.get("sport") || "football";
-  const mode = params.get("mode") || "quiz";
 
   const handleStart = () => {
     if (!selected) return;
     const diff = difficulties.find((d) => d.name === selected)!.apiValue;
-    if (mode === "survival") {
-      navigate(`/survival?sport=${sport}`);
-    } else {
-      navigate(`/quiz?sport=${sport}&difficulty=${diff}`);
-    }
+    navigate(`/quiz?sport=${sport}&difficulty=${diff}`);
   };
 
   return (

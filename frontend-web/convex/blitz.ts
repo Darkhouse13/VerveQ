@@ -3,6 +3,7 @@ import type { Doc } from "./_generated/dataModel";
 import { v } from "convex/values";
 import { getAuthUserId } from "@convex-dev/auth/server";
 import { pickQuestionPool } from "./lib/imageQuestions";
+import { normalizeAnswer } from "./lib/scoring";
 
 const BLITZ_DURATION_MS = 60_000; // 60 seconds
 const WRONG_PENALTY_MS = 3_000;   // -3s on wrong
@@ -27,7 +28,7 @@ export const start = mutation({
       endTimeMs: now + BLITZ_DURATION_MS,
     });
 
-    return { sessionId };
+    return { sessionId, endTimeMs: now + BLITZ_DURATION_MS };
   },
 });
 
@@ -41,11 +42,6 @@ export const getQuestion = mutation({
     if (session.userId !== userId) {
       throw new Error("Not authorized for this session");
     }
-    if (session.gameOver) throw new Error("Game is over");
-    if (session.currentChecksum) {
-      throw new Error("Answer the current question before requesting another");
-    }
-
     // Check if time expired
     if (Date.now() >= session.endTimeMs) {
       await ctx.db.patch(sessionId, {
@@ -54,6 +50,10 @@ export const getQuestion = mutation({
         currentChecksum: undefined,
       });
       throw new Error("Time expired");
+    }
+    if (session.gameOver) throw new Error("Game is over");
+    if (session.currentChecksum) {
+      throw new Error("Answer the current question before requesting another");
     }
 
     // Get a random unused question
@@ -138,7 +138,8 @@ export const submitAnswer = mutation({
       .first();
     if (!question) throw new Error("Question not found");
 
-    const isCorrect = answer === question.correctAnswer;
+    const isCorrect =
+      normalizeAnswer(answer) === normalizeAnswer(question.correctAnswer);
     let { score, correctCount, wrongCount, endTimeMs } = session;
 
     if (isCorrect) {
@@ -193,18 +194,9 @@ export const endGame = mutation({
 
     const now = Date.now();
 
-    if (!session.gameOver) {
-      await ctx.db.patch(sessionId, {
-        gameOver: true,
-        endedAt: now,
-        currentChecksum: undefined,
-        scoreSavedAt: now,
-      });
-    } else {
-      await ctx.db.patch(sessionId, {
-        currentChecksum: undefined,
-        scoreSavedAt: now,
-      });
+    const timeExpired = now >= session.endTimeMs;
+    if (!session.gameOver && !timeExpired) {
+      throw new Error("Cannot save an unfinished Blitz session");
     }
 
     // Save to blitzScores
@@ -215,6 +207,13 @@ export const endGame = mutation({
       correctCount: session.correctCount,
       wrongCount: session.wrongCount,
       playedAt: now,
+    });
+
+    await ctx.db.patch(sessionId, {
+      gameOver: true,
+      endedAt: session.endedAt ?? now,
+      currentChecksum: undefined,
+      scoreSavedAt: now,
     });
 
     // Increment total games
@@ -239,19 +238,15 @@ export const getHighScores = query({
     limit: v.optional(v.number()),
   },
   handler: async (ctx, { sport, limit = 20 }) => {
-    let scores: Doc<"blitzScores">[];
-    if (sport) {
-      scores = await ctx.db
-        .query("blitzScores")
-        .withIndex("by_sport_score", (q) => q.eq("sport", sport))
-        .order("desc")
-        .take(limit);
-    } else {
-      scores = await ctx.db
-        .query("blitzScores")
-        .order("desc")
-        .take(200);
+    if (!sport) {
+      throw new Error("Sport is required for Blitz leaderboards");
     }
+
+    const scores: Doc<"blitzScores">[] = await ctx.db
+      .query("blitzScores")
+      .withIndex("by_sport_score", (q) => q.eq("sport", sport))
+      .order("desc")
+      .take(limit);
 
     // Sort by score descending
     scores.sort((a, b) => b.score - a.score);

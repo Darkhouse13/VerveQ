@@ -14,6 +14,8 @@ export function calculateTimeScore(
 export function normalizeAnswer(answer: string): string {
   return answer
     .trim()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
     .toLowerCase()
     .replace(/[^a-z0-9\s]/g, "");
 }

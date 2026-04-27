@@ -3,18 +3,20 @@
  *
  * Two surfaces:
  *   1. ProfileScreen — button matrix
- *        non-guest: "Sign Out" → signOutToGuest (stay on page, no navigate)
+ *        non-guest: "Sign Out" → logout + navigate("/?mode=signin")
  *        guest:     "Sign In"  → navigate("/?mode=signin") (no auth call)
  *                   plus a separate "Create an account" CTA card.
  *   2. LoginScreen — honors `?mode=signup|signin` in the URL on first mount
  *      and renders the "Guest progress is not carried over." notice only
  *      when arriving via the guest-upgrade path (`?from=guest`). It also
  *      tolerates an existing anonymous (guest) session without redirecting
- *      to /home — only a real password session is auto-redirected.
+ *      to /home automatically — only a real password session is
+ *      auto-redirected. Guest users still get an explicit "Play as Guest"
+ *      route back into the app.
  */
 import { describe, it, expect, vi, beforeEach, type Mock } from "vitest";
 import React from "react";
-import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+import { render, screen, fireEvent, waitFor, within } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
 
 // ─── Shared mocks ────────────────────────────────────────────────────────────
@@ -169,16 +171,28 @@ describe("ProfileScreen — sign-in/sign-out button matrix", () => {
     expect(navigateSpy).toHaveBeenCalledWith("/?mode=signup&from=guest");
   });
 
-  it("clicking 'Sign Out' (non-guest) downgrades to a guest and does NOT navigate", async () => {
+  it("clicking 'Sign Out' (non-guest) opens confirm, then confirming logs out and navigates to sign in", async () => {
     await renderProfile(false);
     const signOut = await screen.findByRole("button", {
       name: /^sign out$/i,
     });
     fireEvent.click(signOut);
 
-    await waitFor(() => expect(signOutToGuestSpy).toHaveBeenCalledTimes(1));
+    // The trigger does NOT call logout directly — it opens a confirm dialog.
+    // Wait for the dialog title, then click the confirm button inside.
     expect(logoutSpy).not.toHaveBeenCalled();
-    expect(navigateSpy).not.toHaveBeenCalled();
+    expect(signOutToGuestSpy).not.toHaveBeenCalled();
+
+    const dialog = await screen.findByRole("dialog");
+    const confirm = await within(dialog).findByRole("button", {
+      name: /^sign out$/i,
+    });
+    fireEvent.click(confirm);
+
+    await waitFor(() => expect(logoutSpy).toHaveBeenCalledTimes(1));
+    await waitFor(() => expect(navigateSpy).toHaveBeenCalledTimes(1));
+    expect(navigateSpy).toHaveBeenCalledWith("/?mode=signin");
+    expect(signOutToGuestSpy).not.toHaveBeenCalled();
   });
 
   it("clicking 'Sign In' (guest) navigates to /?mode=signin with no auth calls", async () => {
@@ -293,15 +307,15 @@ describe("LoginScreen — mode override + guest notice", () => {
     expect(navigateSpy).not.toHaveBeenCalled();
   });
 
-  it("hides 'Play as Guest' when the user is already a guest", async () => {
+  it("still shows 'Play as Guest' when the user is already a guest", async () => {
     await renderLogin("/?mode=signin", {
       isAuthenticated: true,
       isGuest: true,
     });
     await screen.findByRole("button", { name: /^sign in$/i });
     expect(
-      screen.queryByRole("button", { name: /play as guest/i }),
-    ).not.toBeInTheDocument();
+      screen.getByRole("button", { name: /play as guest/i }),
+    ).toBeInTheDocument();
   });
 
   it("still shows 'Play as Guest' for a plain unauthenticated visit", async () => {

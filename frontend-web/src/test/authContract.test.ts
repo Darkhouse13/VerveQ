@@ -142,6 +142,23 @@ describe("AuthContext — isLegacyVerveqEmail", () => {
   });
 });
 
+describe("AuthContext session classification", () => {
+  it("treats Convex anonymous users as guests even before isGuest is patched", () => {
+    authMock.useQuery.mockReturnValue({
+      _id: "anon_user",
+      username: "guest_123",
+      isAnonymous: true,
+      totalGames: 0,
+    });
+
+    const { result } = renderHook(() => useAuth(), { wrapper });
+
+    expect(result.current.isAuthenticated).toBe(true);
+    expect(result.current.isGuest).toBe(true);
+    expect(result.current.user?.isGuest).toBe(true);
+  });
+});
+
 describe("AuthContext.signUp", () => {
   it("calls convex signIn with flow=signUp and ensureProfile afterwards", async () => {
     const ensureProfile = vi.fn(async (_args?: Record<string, unknown>) => "user_id");

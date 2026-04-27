@@ -168,6 +168,10 @@ export default function LoginScreen() {
 
   const handleGuest = async () => {
     setError(null);
+    if (isAuthenticated && isGuest) {
+      navigate("/home");
+      return;
+    }
     setLoading(true);
     try {
       await loginAsGuest();
@@ -253,16 +257,14 @@ export default function LoginScreen() {
                   Forgot password?
                 </button>
               </div>
-              {!isGuest && (
-                <NeoButton
-                  variant="secondary"
-                  size="full"
-                  onClick={handleGuest}
-                  disabled={loading}
-                >
-                  Play as Guest
-                </NeoButton>
-              )}
+              <NeoButton
+                variant="secondary"
+                size="full"
+                onClick={handleGuest}
+                disabled={loading}
+              >
+                Play as Guest
+              </NeoButton>
             </div>
           </>
         )}

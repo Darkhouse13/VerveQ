@@ -1,4 +1,5 @@
-import { mutation } from "./_generated/server";
+import { mutation, type MutationCtx } from "./_generated/server";
+import type { Id } from "./_generated/dataModel";
 import { v } from "convex/values";
 import { getAuthUserId } from "@convex-dev/auth/server";
 import {
@@ -8,6 +9,26 @@ import {
   clampRating,
   getKFactor,
 } from "./lib/elo";
+
+async function dismissOutstandingDecayNotifications(
+  ctx: MutationCtx,
+  userId: Id<"users">,
+  sport: string,
+  mode: string,
+) {
+  const notifications = await ctx.db
+    .query("decayNotifications")
+    .withIndex("by_user_sport_mode", (q) =>
+      q.eq("userId", userId).eq("sport", sport).eq("mode", mode),
+    )
+    .collect();
+
+  for (const notification of notifications) {
+    if (!notification.dismissed) {
+      await ctx.db.patch(notification._id, { dismissed: true });
+    }
+  }
+}
 
 export const completeQuiz = mutation({
   args: {
@@ -19,11 +40,14 @@ export const completeQuiz = mutation({
 
     const session = await ctx.db.get(sessionId);
     if (!session) throw new Error("Session not found");
-    if (session.userId && session.userId !== userId) {
+    if (!session.userId || session.userId !== userId) {
       throw new Error("Not authorized for this session");
     }
     if (session.completed) {
       throw new Error("Session already completed");
+    }
+    if (Date.now() > session.expiresAt) {
+      throw new Error("Session expired");
     }
 
     const totalAnswers = session.totalAnswers ?? 0;
@@ -67,9 +91,9 @@ export const completeQuiz = mutation({
         averageScore:
           (rating.averageScore * (newGames - 1) + correctCount) / newGames,
         lastPlayed: Date.now(),
-        lastDecayAt: 0,
         decayWarningShown: false,
       });
+      await dismissOutstandingDecayNotifications(ctx, userId, sport, "quiz");
     } else {
       await ctx.db.insert("userRatings", {
         userId,
@@ -138,7 +162,7 @@ export const completeSurvival = mutation({
 
     const session = await ctx.db.get(sessionId);
     if (!session) throw new Error("Session not found");
-    if (session.userId && session.userId !== userId) {
+    if (!session.userId || session.userId !== userId) {
       throw new Error("Not authorized for this session");
     }
     if (!session.gameOver) {
@@ -147,13 +171,16 @@ export const completeSurvival = mutation({
     if (session.completedAt) {
       throw new Error("Session already completed");
     }
+    if (Date.now() > session.expiresAt) {
+      throw new Error("Session expired");
+    }
 
     const sport = session.sport;
     const score = session.score;
     const performanceBonus = session.performanceBonus ?? 0;
     const durationSeconds = Math.max(
       0,
-      Math.round((Date.now() - session._creationTime) / 1000),
+      Math.round((Date.now() - (session.startedAt ?? session._creationTime)) / 1000),
     );
 
     const rating = await ctx.db
@@ -188,9 +215,9 @@ export const completeSurvival = mutation({
         averageScore:
           (rating.averageScore * (newGames - 1) + score) / newGames,
         lastPlayed: Date.now(),
-        lastDecayAt: 0,
         decayWarningShown: false,
       });
+      await dismissOutstandingDecayNotifications(ctx, userId, sport, "survival");
     } else {
       await ctx.db.insert("userRatings", {
         userId,

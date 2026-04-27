@@ -9,6 +9,7 @@ import { Check, X } from "lucide-react";
 import { QuestionImage } from "@/components/QuestionImage";
 import { ImageZoomModal } from "@/components/ImageZoomModal";
 import { useAntiCheat } from "@/hooks/useAntiCheat";
+import { ExitGameButton } from "@/components/ExitGameButton";
 import { toast } from "sonner";
 import type { Id } from "../../convex/_generated/dataModel";
 
@@ -20,6 +21,7 @@ interface QuestionData {
   checksum: string;
   category: string;
   imageUrl?: string | null;
+  questionStartedAt: number;
 }
 
 export default function DailyQuizScreen() {
@@ -31,13 +33,14 @@ export default function DailyQuizScreen() {
   const [question, setQuestion] = useState<QuestionData | null>(null);
   const [questionNum, setQuestionNum] = useState(0);
   const [totalScore, setTotalScore] = useState(0);
-  const [correctCount, setCorrectCount] = useState(0);
   const [results, setResults] = useState<Array<{ correct: boolean; timeTaken: number; score: number }>>([]);
   const [selected, setSelected] = useState<number | null>(null);
   const [revealed, setRevealed] = useState(false);
   const [checkResult, setCheckResult] = useState<{
     correct: boolean;
     explanation?: string | null;
+    score: number;
+    timeTaken: number;
   } | null>(null);
   const [timer, setTimer] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -91,15 +94,23 @@ export default function DailyQuizScreen() {
       setSelected(null);
       setRevealed(false);
       setCheckResult(null);
-      startTime.current = Date.now();
-      setTimer(0);
+      startTime.current = dailyQuestion.questionStartedAt ?? Date.now();
+      setTimer(
+        Math.max(0, Math.floor((Date.now() - startTime.current) / 1000)),
+      );
     }
   }, [dailyQuestion, forfeited]);
 
   // Timer
   useEffect(() => {
     if (revealed || loading || !question) return;
-    const id = setInterval(() => setTimer((t) => t + 1), 1000);
+    const updateTimer = () => {
+      setTimer(
+        Math.max(0, Math.floor((Date.now() - startTime.current) / 1000)),
+      );
+    };
+    updateTimer();
+    const id = setInterval(updateTimer, 250);
     return () => clearInterval(id);
   }, [revealed, loading, question]);
 
@@ -114,12 +125,12 @@ export default function DailyQuizScreen() {
         });
       }
     }, [attemptId, forfeited, forfeitMut, navigate]),
+    { warningMessage: "Don't switch tabs — daily challenge will be forfeited" },
   );
 
   const handleCheck = async () => {
     if (selected === null || !question || !attemptId) return;
     setChecking(true);
-    const timeTaken = (Date.now() - startTime.current) / 1000;
     try {
       const res = await submitAnswerMut({
         attemptId,
@@ -131,12 +142,13 @@ export default function DailyQuizScreen() {
       setCheckResult({
         correct: res.correct,
         explanation: res.explanation,
+        score: res.score,
+        timeTaken: res.timeTaken,
       });
       setTotalScore(res.totalScore);
-      if (res.correct) setCorrectCount((c) => c + 1);
       setResults((r) => [
         ...r,
-        { correct: res.correct, timeTaken, score: res.score },
+        { correct: res.correct, timeTaken: res.timeTaken, score: res.score },
       ]);
     } catch {
       toast.error("Failed to check answer");
@@ -155,33 +167,35 @@ export default function DailyQuizScreen() {
           /* continue to results */
         }
       }
+      const finalResults =
+        results.length > questionNum || !checkResult
+          ? results
+          : [
+              ...results,
+              {
+                correct: checkResult.correct,
+                timeTaken: checkResult.timeTaken,
+                score: checkResult.score,
+              },
+            ];
       // Build share string
-      const shareEmojis = results
+      const shareEmojis = finalResults
         .map((r) => {
           if (!r.correct) return "\uD83D\uDFE5"; // red
           if (r.timeTaken <= 3) return "\uD83D\uDFE9"; // green (fast)
           return "\uD83D\uDFE8"; // yellow (slow)
         })
         .join("");
-      // Add the last answer
-      const lastCorrect = checkResult?.correct ?? false;
-      const lastTimeTaken = (Date.now() - startTime.current) / 1000;
-      const fullEmojis =
-        shareEmojis +
-        (lastCorrect
-          ? lastTimeTaken <= 3
-            ? "\uD83D\uDFE9"
-            : "\uD83D\uDFE8"
-          : "\uD83D\uDFE5");
 
       navigate("/daily-results", {
         state: {
           score: totalScore,
           total: MAX_QUESTIONS,
-          correctCount: correctCount + (lastCorrect ? 1 : 0),
+          correctCount: finalResults.filter((r) => r.correct).length,
           sport,
-          shareString: fullEmojis,
+          shareString: shareEmojis,
           mode: "daily-quiz" as const,
+          scoreBreakdown: finalResults,
         },
       });
     } else {
@@ -215,16 +229,24 @@ export default function DailyQuizScreen() {
   }
 
   const letters = ["A", "B", "C", "D"];
+  const timerMinutes = Math.floor(timer / 60);
+  const timerSeconds = timer % 60;
 
   return (
     <div className="min-h-screen bg-background px-5 py-5 flex flex-col">
+      <div className="flex items-center justify-between mb-3">
+        <ExitGameButton
+          title="Quit daily challenge?"
+          description="Quitting will forfeit today's daily — you can't retry until tomorrow."
+        />
+        <p className="font-mono font-bold text-lg">
+          {timerMinutes}:{timerSeconds.toString().padStart(2, "0")}
+        </p>
+      </div>
       <div className="flex items-center justify-between mb-5">
         <p className="font-mono font-bold text-sm">Score: {totalScore}</p>
         <p className="font-heading font-bold text-sm">
           Q {questionNum + 1}/{MAX_QUESTIONS}
-        </p>
-        <p className="font-mono font-bold text-lg">
-          0:{timer.toString().padStart(2, "0")}
         </p>
       </div>
 
@@ -239,7 +261,7 @@ export default function DailyQuizScreen() {
           <div className="mb-3">
             <QuestionImage
               imageUrl={question.imageUrl}
-              alt="Question image"
+              alt={`Image for: ${question.question}`}
               onZoom={() => setZoomImage(question.imageUrl!)}
             />
           </div>
@@ -270,6 +292,15 @@ export default function DailyQuizScreen() {
           </button>
         ))}
       </div>
+
+      {revealed && checkResult?.explanation && (
+        <NeoCard
+          color={checkResult.correct ? "success" : "default"}
+          className="mt-4 text-sm leading-snug"
+        >
+          {checkResult.explanation}
+        </NeoCard>
+      )}
 
       <div className="mt-5">
         {!revealed ? (

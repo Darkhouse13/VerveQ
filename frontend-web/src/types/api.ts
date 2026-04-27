@@ -11,4 +11,9 @@ export interface GameResultState {
   wrongCount?: number;
   kFactor?: number;
   kFactorLabel?: string;
+  scoreBreakdown?: Array<{
+    correct: boolean;
+    timeTaken: number;
+    score: number;
+  }>;
 }

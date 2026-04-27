@@ -6,7 +6,10 @@ import type { Id } from "../../convex/_generated/dataModel";
 import { NeoCard } from "@/components/neo/NeoCard";
 import { NeoButton } from "@/components/neo/NeoButton";
 import { NeoBadge } from "@/components/neo/NeoBadge";
-import { ArrowLeft, TrendingUp, TrendingDown, Flame } from "lucide-react";
+import { TrendingUp, TrendingDown, Flame } from "lucide-react";
+import { ExitGameButton } from "@/components/ExitGameButton";
+import { useAntiCheat } from "@/hooks/useAntiCheat";
+import { toast } from "sonner";
 
 // Human-readable stat key labels
 const STAT_LABELS: Record<string, string> = {
@@ -49,6 +52,7 @@ export default function HigherLowerScreen() {
 
   const startSessionMut = useMutation(api.higherLower.startSession);
   const makeGuessMut = useMutation(api.higherLower.makeGuess);
+  const penalizeTabSwitchMut = useMutation(api.higherLower.penalizeTabSwitch);
 
   const [sessionId, setSessionId] = useState<Id<"higherLowerSessions"> | null>(null);
   const [loading, setLoading] = useState(true);
@@ -71,6 +75,7 @@ export default function HigherLowerScreen() {
   const [streak, setStreak] = useState(0);
   const [gameOver, setGameOver] = useState(false);
   const [feedback, setFeedback] = useState<{ correct: boolean; value: number } | null>(null);
+  const [endReason, setEndReason] = useState<string | null>(null);
   const [animating, setAnimating] = useState(false);
   const [shakeB, setShakeB] = useState(false);
   const [slideIn, setSlideIn] = useState(false);
@@ -114,6 +119,7 @@ export default function HigherLowerScreen() {
       setStreak(0);
       setGameOver(false);
       setFeedback(null);
+      setEndReason(null);
       setStartupState(null);
     } catch (err) {
       console.error("Failed to start session:", err);
@@ -133,6 +139,20 @@ export default function HigherLowerScreen() {
     startGame();
   }, [startGame]);
 
+  useAntiCheat(
+    useCallback(() => {
+      if (!sessionId || gameOver || loading || startupState) return;
+      penalizeTabSwitchMut({ sessionId }).then((res) => {
+        if (res.penalized) {
+          setGameOver(true);
+          setScore(res.score);
+          toast.error("Run ended — you switched tabs");
+        }
+      });
+    }, [sessionId, gameOver, loading, startupState, penalizeTabSwitchMut]),
+    { warningMessage: "Don't switch tabs — your run will end" },
+  );
+
   const handleGuess = async (guess: "higher" | "lower") => {
     if (!sessionId || animating || gameOver) return;
     setAnimating(true);
@@ -146,6 +166,7 @@ export default function HigherLowerScreen() {
         setStreak(result.streak);
 
         if (result.gameOver) {
+          setEndReason(result.endReason ?? null);
           setGameOver(true);
         } else {
           // Animate transition: slide B → A, new B slides in
@@ -169,6 +190,7 @@ export default function HigherLowerScreen() {
         setTimeout(() => setShakeB(false), 600);
         setScore(result.score);
         setStreak(result.streak);
+        setEndReason(null);
         setGameOver(true);
       }
     } catch (err) {
@@ -201,12 +223,7 @@ export default function HigherLowerScreen() {
     return (
       <div className="min-h-screen bg-background px-5 py-5 flex flex-col">
         <div className="flex items-center justify-between mb-4">
-          <button
-            onClick={() => navigate("/home")}
-            className="neo-border neo-shadow rounded-lg p-2 bg-background cursor-pointer active:neo-shadow-pressed transition-all"
-          >
-            <ArrowLeft size={20} strokeWidth={2.5} />
-          </button>
+          <ExitGameButton title="Quit Higher or Lower?" description="Your current run will end and the streak will reset." />
         </div>
 
         <div className="flex-1 flex items-center justify-center">
@@ -257,12 +274,7 @@ export default function HigherLowerScreen() {
     <div className="min-h-screen bg-background px-5 py-5 flex flex-col">
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
-        <button
-          onClick={() => navigate("/home")}
-          className="neo-border neo-shadow rounded-lg p-2 bg-background cursor-pointer active:neo-shadow-pressed transition-all"
-        >
-          <ArrowLeft size={20} strokeWidth={2.5} />
-        </button>
+        <ExitGameButton title="Quit Higher or Lower?" description="Your current run will end and the streak will reset." />
 
         <div className="flex items-center gap-2">
           {streak >= 3 && (
@@ -387,6 +399,11 @@ export default function HigherLowerScreen() {
             <p className="font-heading font-bold text-xl">Game Over!</p>
             <p className="font-mono font-bold text-3xl mt-1">{score}</p>
             <p className="text-xs opacity-80 mt-1">Final Score</p>
+            {endReason === "pool_exhausted" && (
+              <p className="text-xs opacity-80 mt-2">
+                Perfect run: this stat pool is exhausted.
+              </p>
+            )}
           </NeoCard>
           <div className="grid grid-cols-2 gap-3">
             <NeoButton variant="primary" size="lg" onClick={startGame}>

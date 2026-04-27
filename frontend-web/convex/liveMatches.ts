@@ -4,12 +4,20 @@ import { v } from "convex/values";
 import { getAuthUserId } from "@convex-dev/auth/server";
 import { internal } from "./_generated/api";
 import { clampRating, getKFactor } from "./lib/elo";
+import { normalizeAnswer } from "./lib/scoring";
 
 const TOTAL_QUESTIONS = 10;
 const QUESTION_TIME_LIMIT_MS = 10_000;
 const ROUND_RESULT_DURATION_MS = 2_000;
 const HEARTBEAT_TIMEOUT_MS = 15_000;
 const BASE_SCORE = 100;
+const QUESTION_TIME_LIMIT_SECONDS = QUESTION_TIME_LIMIT_MS / 1000;
+const ACTIVE_MATCH_STATUSES = [
+  "waiting",
+  "countdown",
+  "question",
+  "roundResult",
+] as const;
 
 type StoredLiveQuestion = {
   question: string;
@@ -18,11 +26,115 @@ type StoredLiveQuestion = {
   explanation?: string | null;
 };
 
+type LiveAnswer = {
+  answer: string | null;
+  timeTaken: number;
+  correct: boolean;
+  score: number;
+  answeredAt: number;
+};
+
 function sanitizeQuestion(question: StoredLiveQuestion) {
   return {
     question: question.question,
     options: question.options,
   };
+}
+
+function isActiveMatchStatus(status: Doc<"liveMatches">["status"]): boolean {
+  return (ACTIVE_MATCH_STATUSES as readonly string[]).includes(status);
+}
+
+function clampQuestionTime(timeTaken: number): number {
+  return Math.max(0, Math.min(QUESTION_TIME_LIMIT_SECONDS, timeTaken));
+}
+
+function getTimeBonus(timeTaken: number): number {
+  return Math.max(
+    0,
+    Math.floor((QUESTION_TIME_LIMIT_SECONDS - clampQuestionTime(timeTaken)) * 10),
+  );
+}
+
+function fullCorrectScore(answer: LiveAnswer): number {
+  return BASE_SCORE + getTimeBonus(answer.timeTaken);
+}
+
+function secondaryCorrectScore(answer: LiveAnswer): number {
+  return Math.floor(BASE_SCORE / 2) + getTimeBonus(answer.timeTaken);
+}
+
+function scoreRound(
+  player1Answer: LiveAnswer,
+  player2Answer: LiveAnswer,
+): { player1Score: number; player2Score: number } {
+  if (player1Answer.correct && player2Answer.correct) {
+    if (player1Answer.timeTaken < player2Answer.timeTaken) {
+      return {
+        player1Score: fullCorrectScore(player1Answer),
+        player2Score: secondaryCorrectScore(player2Answer),
+      };
+    }
+    if (player2Answer.timeTaken < player1Answer.timeTaken) {
+      return {
+        player1Score: secondaryCorrectScore(player1Answer),
+        player2Score: fullCorrectScore(player2Answer),
+      };
+    }
+    return {
+      player1Score: fullCorrectScore(player1Answer),
+      player2Score: fullCorrectScore(player2Answer),
+    };
+  }
+
+  return {
+    player1Score: player1Answer.correct ? fullCorrectScore(player1Answer) : 0,
+    player2Score: player2Answer.correct ? fullCorrectScore(player2Answer) : 0,
+  };
+}
+
+function sanitizeRoundAnswer(answer: LiveAnswer | undefined) {
+  if (!answer) return null;
+  return {
+    correct: answer.correct,
+    score: answer.score,
+    timeTaken: answer.timeTaken,
+  };
+}
+
+function missedAnswer(now: number): LiveAnswer {
+  return {
+    answer: null,
+    timeTaken: QUESTION_TIME_LIMIT_SECONDS,
+    correct: false,
+    score: 0,
+    answeredAt: now,
+  };
+}
+
+async function findActiveMatchForUser(
+  ctx: Pick<MutationCtx, "db">,
+  userId: Id<"users">,
+) {
+  for (const status of ACTIVE_MATCH_STATUSES) {
+    const asP1 = await ctx.db
+      .query("liveMatches")
+      .withIndex("by_player1", (q) =>
+        q.eq("player1Id", userId).eq("status", status),
+      )
+      .first();
+    if (asP1) return asP1;
+
+    const asP2 = await ctx.db
+      .query("liveMatches")
+      .withIndex("by_player2", (q) =>
+        q.eq("player2Id", userId).eq("status", status),
+      )
+      .first();
+    if (asP2) return asP2;
+  }
+
+  return null;
 }
 
 // ── Mutations ──
@@ -35,11 +147,26 @@ export const createFromChallenge = mutation({
 
     const challenge = await ctx.db.get(challengeId);
     if (!challenge) throw new Error("Challenge not found");
+    if (challenge.status !== "active") {
+      throw new Error("Challenge is not active");
+    }
     if (
       challenge.challengerId !== userId &&
       challenge.challengedId !== userId
     ) {
       throw new Error("Not authorized");
+    }
+
+    const challengerActive = await findActiveMatchForUser(
+      ctx,
+      challenge.challengerId,
+    );
+    const challengedActive = await findActiveMatchForUser(
+      ctx,
+      challenge.challengedId,
+    );
+    if (challengerActive || challengedActive) {
+      throw new Error("One of the players already has an active match");
     }
 
     // Pick 10 random questions for this sport
@@ -97,7 +224,7 @@ export const setReady = mutation({
     const isP2 = match.player2Id === userId;
     if (!isP1 && !isP2) throw new Error("Not a player in this match");
 
-    const updates: Record<string, boolean> = {};
+    const updates: Record<string, boolean | number> = {};
     if (isP1) updates.player1Ready = true;
     if (isP2) updates.player2Ready = true;
 
@@ -109,6 +236,7 @@ export const setReady = mutation({
       await ctx.db.patch(matchId, {
         ...updates,
         status: "countdown",
+        countdownStartedAt: Date.now(),
       });
       // Schedule transition to question after 3s countdown
       await ctx.scheduler.runAfter(3000, internal.liveMatches.startQuestion, {
@@ -141,69 +269,68 @@ export const submitAnswer = mutation({
     if (!isP1 && !isP2) throw new Error("Not a player in this match");
 
     const answersKey = isP1 ? "player1Answers" : "player2Answers";
-    const answers = [...(match[answersKey] as Array<Record<string, unknown>>)];
+    const answers = [...(match[answersKey] as LiveAnswer[])];
 
     // Check if already answered this question
     if (answers.length > match.currentQuestion) {
       throw new Error("Already answered this question");
     }
 
+    const now = Date.now();
+    const questionStartedAt = match.questionStartedAt ?? now;
+    if (now >= questionStartedAt + QUESTION_TIME_LIMIT_MS) {
+      await completeTimedOutRound(ctx, match, match.currentQuestion, now);
+      throw new Error("Question timed out");
+    }
+
     const currentQ = (match.questions as Array<{ correctAnswer: string }>)[
       match.currentQuestion
     ];
-    const correct = answer === currentQ.correctAnswer;
-    const timeTaken = match.questionStartedAt
-      ? (Date.now() - match.questionStartedAt) / 1000
-      : 10;
+    const correct =
+      normalizeAnswer(answer) === normalizeAnswer(currentQ.correctAnswer);
+    const timeTaken = clampQuestionTime((now - questionStartedAt) / 1000);
 
-    // Cutthroat scoring
     const otherAnswers = isP1
-      ? (match.player2Answers as Array<Record<string, unknown>>)
-      : (match.player1Answers as Array<Record<string, unknown>>);
+      ? (match.player2Answers as LiveAnswer[])
+      : (match.player1Answers as LiveAnswer[]);
     const otherAnsweredThisQ = otherAnswers.length > match.currentQuestion;
-    const otherCorrect = otherAnsweredThisQ
-      ? (otherAnswers[match.currentQuestion] as { correct: boolean }).correct
-      : false;
-
-    let score = 0;
-    if (correct) {
-      // Time bonus: faster = more points
-      const timeBonus = Math.max(0, Math.floor((10 - timeTaken) * 10));
-      if (!otherAnsweredThisQ || !otherCorrect) {
-        // First correct or opponent wrong → full base + time bonus
-        score = BASE_SCORE + timeBonus;
-      } else {
-        // Second correct → 50% base + time bonus
-        score = Math.floor(BASE_SCORE / 2) + timeBonus;
-      }
-    }
 
     answers.push({
       answer,
       timeTaken,
       correct,
-      score,
-      answeredAt: Date.now(),
+      score: 0,
+      answeredAt: now,
     });
-
-    const scoreKey = isP1 ? "player1Score" : "player2Score";
-    const newScore = (match[scoreKey] as number) + score;
 
     const updates: Record<string, unknown> = {
       [answersKey]: answers,
-      [scoreKey]: newScore,
     };
 
-    // Check if both have answered
-    const otherLen = otherAnswers.length;
-    const bothAnswered = otherLen > match.currentQuestion;
+    const bothAnswered = otherAnsweredThisQ;
 
     if (bothAnswered) {
-      // Move to round result
-      updates.status = "roundResult";
-      updates.roundResultUntil = Date.now() + ROUND_RESULT_DURATION_MS;
+      const player1Answers = isP1
+        ? answers
+        : [...(match.player1Answers as LiveAnswer[])];
+      const player2Answers = isP2
+        ? answers
+        : [...(match.player2Answers as LiveAnswer[])];
 
-      // Schedule advance to next question
+      Object.assign(
+        updates,
+        buildFinalizedRoundPatch(
+          match,
+          match.currentQuestion,
+          player1Answers,
+          player2Answers,
+        ),
+        {
+          status: "roundResult",
+          roundResultUntil: now + ROUND_RESULT_DURATION_MS,
+        },
+      );
+
       await ctx.scheduler.runAfter(
         ROUND_RESULT_DURATION_MS,
         internal.liveMatches.advanceQuestion,
@@ -213,7 +340,16 @@ export const submitAnswer = mutation({
 
     await ctx.db.patch(matchId, updates);
 
-    return { correct, score };
+    const currentAnswers = isP1
+      ? (updates.player1Answers as LiveAnswer[] | undefined)
+      : (updates.player2Answers as LiveAnswer[] | undefined);
+    const finalAnswer = currentAnswers?.[match.currentQuestion];
+
+    return {
+      correct,
+      score: finalAnswer?.score ?? 0,
+      pendingScore: !bothAnswered,
+    };
   },
 });
 
@@ -246,13 +382,19 @@ export const forfeit = mutation({
     const isP1 = match.player1Id === userId;
     const isP2 = match.player2Id === userId;
     if (!isP1 && !isP2) throw new Error("Not authorized");
+    if (match.status === "completed" || match.status === "forfeited") {
+      return { winnerId: match.winnerId };
+    }
+
     const winnerId = isP1 ? match.player2Id : match.player1Id;
 
-    await ctx.db.patch(matchId, {
-      status: "forfeited",
+    await finishMatch(
+      ctx,
+      match,
+      "forfeited",
       winnerId,
-      completedAt: Date.now(),
-    });
+      match.status !== "waiting",
+    );
 
     return { winnerId };
   },
@@ -302,8 +444,17 @@ export const getMatch = query({
     let opponentStatus: "thinking" | "lockedIn" | "answeredIncorrectly" = "thinking";
     if (opponentAnswers.length > match.currentQuestion) {
       const oppAnswer = opponentAnswers[match.currentQuestion] as { correct: boolean };
-      opponentStatus = oppAnswer.correct ? "lockedIn" : "answeredIncorrectly";
+      const revealCorrectness = match.status !== "question";
+      opponentStatus =
+        revealCorrectness && !oppAnswer.correct
+          ? "answeredIncorrectly"
+          : "lockedIn";
     }
+
+    const revealRoundAnswers =
+      match.status === "roundResult" || match.status === "completed";
+    const player1Answers = match.player1Answers as LiveAnswer[];
+    const player2Answers = match.player2Answers as LiveAnswer[];
 
     return {
       _id: match._id,
@@ -319,9 +470,16 @@ export const getMatch = query({
       player1Ready: match.player1Ready,
       player2Ready: match.player2Ready,
       winnerId: match.winnerId,
+      countdownStartedAt: match.countdownStartedAt,
       questionStartedAt: match.questionStartedAt,
       roundResultUntil: match.roundResultUntil,
       opponentStatus,
+      roundAnswers: revealRoundAnswers
+        ? {
+            player1: sanitizeRoundAnswer(player1Answers[match.currentQuestion]),
+            player2: sanitizeRoundAnswer(player2Answers[match.currentQuestion]),
+          }
+        : null,
       isPlayer1: isP1,
       myAnswers: isP1
         ? (match.player1Answers as unknown[])
@@ -336,39 +494,23 @@ export const getActiveMatch = query({
     const userId = await getAuthUserId(ctx);
     if (!userId) return null;
 
-    // Check as player1
-    const asP1 = await ctx.db
-      .query("liveMatches")
-      .withIndex("by_player1", (q) =>
-        q.eq("player1Id", userId).eq("status", "waiting"),
-      )
-      .first();
-    if (asP1) return asP1._id;
+    for (const status of ACTIVE_MATCH_STATUSES) {
+      const asP1 = await ctx.db
+        .query("liveMatches")
+        .withIndex("by_player1", (q) =>
+          q.eq("player1Id", userId).eq("status", status),
+        )
+        .first();
+      if (asP1) return asP1._id;
 
-    const asP1q = await ctx.db
-      .query("liveMatches")
-      .withIndex("by_player1", (q) =>
-        q.eq("player1Id", userId).eq("status", "question"),
-      )
-      .first();
-    if (asP1q) return asP1q._id;
-
-    // Check as player2
-    const asP2 = await ctx.db
-      .query("liveMatches")
-      .withIndex("by_player2", (q) =>
-        q.eq("player2Id", userId).eq("status", "waiting"),
-      )
-      .first();
-    if (asP2) return asP2._id;
-
-    const asP2q = await ctx.db
-      .query("liveMatches")
-      .withIndex("by_player2", (q) =>
-        q.eq("player2Id", userId).eq("status", "question"),
-      )
-      .first();
-    if (asP2q) return asP2q._id;
+      const asP2 = await ctx.db
+        .query("liveMatches")
+        .withIndex("by_player2", (q) =>
+          q.eq("player2Id", userId).eq("status", status),
+        )
+        .first();
+      if (asP2) return asP2._id;
+    }
 
     return null;
   },
@@ -385,11 +527,13 @@ export const startQuestion = internalMutation({
     const match = await ctx.db.get(matchId);
     if (!match) return;
     if (match.status === "completed" || match.status === "forfeited") return;
+    if (match.status !== "countdown") return;
 
     const now = Date.now();
     await ctx.db.patch(matchId, {
       status: "question",
       currentQuestion: questionIdx,
+      countdownStartedAt: undefined,
       questionStartedAt: now,
     });
 
@@ -408,6 +552,7 @@ export const advanceQuestion = internalMutation({
     const match = await ctx.db.get(matchId);
     if (!match) return;
     if (match.status === "completed" || match.status === "forfeited") return;
+    if (match.status !== "roundResult") return;
 
     const nextQ = match.currentQuestion + 1;
 
@@ -420,14 +565,7 @@ export const advanceQuestion = internalMutation({
             ? match.player2Id
             : undefined;
 
-      await ctx.db.patch(matchId, {
-        status: "completed",
-        winnerId,
-        completedAt: Date.now(),
-      });
-
-      // Update ELO for both players
-      await updateMatchElo(ctx, match, winnerId);
+      await finishMatch(ctx, match, "completed", winnerId, true);
       return;
     }
 
@@ -437,6 +575,7 @@ export const advanceQuestion = internalMutation({
       status: "question",
       currentQuestion: nextQ,
       questionStartedAt: now,
+      roundResultUntil: undefined,
     });
 
     // Schedule timeout
@@ -460,49 +599,146 @@ export const checkTimeout = internalMutation({
     if (match.currentQuestion !== questionIdx) return;
 
     // Auto-advance — fill in missed answers with zero score
-    const p1Answers = [...(match.player1Answers as Array<Record<string, unknown>>)];
-    const p2Answers = [...(match.player2Answers as Array<Record<string, unknown>>)];
+    await completeTimedOutRound(ctx, match, questionIdx, Date.now());
+    return;
 
-    if (p1Answers.length <= questionIdx) {
-      p1Answers.push({
-        answer: null,
-        timeTaken: 10,
-        correct: false,
-        score: 0,
-        answeredAt: Date.now(),
-      });
-    }
-    if (p2Answers.length <= questionIdx) {
-      p2Answers.push({
-        answer: null,
-        timeTaken: 10,
-        correct: false,
-        score: 0,
-        answeredAt: Date.now(),
-      });
-    }
-
-    await ctx.db.patch(matchId, {
-      player1Answers: p1Answers,
-      player2Answers: p2Answers,
-      status: "roundResult",
-      roundResultUntil: Date.now() + ROUND_RESULT_DURATION_MS,
-    });
-
-    await ctx.scheduler.runAfter(
-      ROUND_RESULT_DURATION_MS,
-      internal.liveMatches.advanceQuestion,
-      { matchId },
-    );
   },
 });
 
 // ── ELO Update Helper ──
 
+function buildFinalizedRoundPatch(
+  match: Doc<"liveMatches">,
+  questionIdx: number,
+  player1Answers: LiveAnswer[],
+  player2Answers: LiveAnswer[],
+) {
+  const player1Answer = player1Answers[questionIdx] ?? missedAnswer(Date.now());
+  const player2Answer = player2Answers[questionIdx] ?? missedAnswer(Date.now());
+  const previousPlayer1Score = player1Answer.score ?? 0;
+  const previousPlayer2Score = player2Answer.score ?? 0;
+  const roundScores = scoreRound(player1Answer, player2Answer);
+
+  player1Answers[questionIdx] = {
+    ...player1Answer,
+    timeTaken: clampQuestionTime(player1Answer.timeTaken),
+    score: roundScores.player1Score,
+  };
+  player2Answers[questionIdx] = {
+    ...player2Answer,
+    timeTaken: clampQuestionTime(player2Answer.timeTaken),
+    score: roundScores.player2Score,
+  };
+
+  return {
+    player1Answers,
+    player2Answers,
+    player1Score:
+      match.player1Score - previousPlayer1Score + roundScores.player1Score,
+    player2Score:
+      match.player2Score - previousPlayer2Score + roundScores.player2Score,
+  };
+}
+
+async function completeTimedOutRound(
+  ctx: Pick<MutationCtx, "db" | "scheduler">,
+  match: Doc<"liveMatches">,
+  questionIdx: number,
+  now: number,
+) {
+  const player1Answers = [...(match.player1Answers as LiveAnswer[])];
+  const player2Answers = [...(match.player2Answers as LiveAnswer[])];
+
+  if (player1Answers.length <= questionIdx) {
+    player1Answers.push(missedAnswer(now));
+  }
+  if (player2Answers.length <= questionIdx) {
+    player2Answers.push(missedAnswer(now));
+  }
+
+  await ctx.db.patch(match._id, {
+    ...buildFinalizedRoundPatch(
+      match,
+      questionIdx,
+      player1Answers,
+      player2Answers,
+    ),
+    status: "roundResult",
+    roundResultUntil: now + ROUND_RESULT_DURATION_MS,
+  });
+
+  await ctx.scheduler.runAfter(
+    ROUND_RESULT_DURATION_MS,
+    internal.liveMatches.advanceQuestion,
+    { matchId: match._id },
+  );
+}
+
+export const reapStaleMatches = internalMutation({
+  args: {},
+  handler: async (ctx) => {
+    const now = Date.now();
+    const matches = await ctx.db.query("liveMatches").collect();
+
+    for (const match of matches) {
+      if (!isActiveMatchStatus(match.status)) continue;
+
+      const player1Stale = now - match.player1LastSeen > HEARTBEAT_TIMEOUT_MS;
+      const player2Stale = now - match.player2LastSeen > HEARTBEAT_TIMEOUT_MS;
+      if (!player1Stale && !player2Stale) continue;
+
+      const winnerId =
+        player1Stale && !player2Stale
+          ? match.player2Id
+          : player2Stale && !player1Stale
+            ? match.player1Id
+            : undefined;
+
+      await finishMatch(
+        ctx,
+        match,
+        "forfeited",
+        winnerId,
+        match.status !== "waiting",
+      );
+    }
+  },
+});
+
+async function finishMatch(
+  ctx: Pick<MutationCtx, "db">,
+  match: Doc<"liveMatches">,
+  status: "completed" | "forfeited",
+  winnerId: Id<"users"> | undefined,
+  applyElo: boolean,
+) {
+  const now = Date.now();
+  if (match.eloAppliedAt) {
+    await ctx.db.patch(match._id, {
+      status,
+      winnerId,
+      completedAt: match.completedAt ?? now,
+    });
+    return;
+  }
+
+  if (applyElo) {
+    await updateMatchElo(ctx, match, winnerId, now);
+  }
+
+  await ctx.db.patch(match._id, {
+    status,
+    winnerId,
+    completedAt: now,
+    ...(applyElo ? { eloAppliedAt: now } : {}),
+  });
+}
+
 async function updateMatchElo(
   ctx: Pick<MutationCtx, "db">,
   match: Pick<Doc<"liveMatches">, "player1Id" | "player2Id" | "sport">,
   winnerId: Id<"users"> | undefined,
+  now: number,
 ) {
   const player1Id = match.player1Id;
   const player2Id = match.player2Id;
@@ -550,8 +786,7 @@ async function updateMatchElo(
       gamesPlayed: p1Rating.gamesPlayed + 1,
       wins: p1Rating.wins + (winnerId === player1Id ? 1 : 0),
       losses: p1Rating.losses + (winnerId === player2Id ? 1 : 0),
-      lastPlayed: Date.now(),
-      lastDecayAt: 0,
+      lastPlayed: now,
       decayWarningShown: false,
     });
   }
@@ -564,9 +799,22 @@ async function updateMatchElo(
       gamesPlayed: p2Rating.gamesPlayed + 1,
       wins: p2Rating.wins + (winnerId === player2Id ? 1 : 0),
       losses: p2Rating.losses + (winnerId === player1Id ? 1 : 0),
-      lastPlayed: Date.now(),
-      lastDecayAt: 0,
+      lastPlayed: now,
       decayWarningShown: false,
     });
+  }
+
+  for (const userId of [player1Id, player2Id]) {
+    const notifications = await ctx.db
+      .query("decayNotifications")
+      .withIndex("by_user_sport_mode", (q) =>
+        q.eq("userId", userId).eq("sport", match.sport).eq("mode", "quiz"),
+      )
+      .collect();
+    for (const notification of notifications) {
+      if (!notification.dismissed) {
+        await ctx.db.patch(notification._id, { dismissed: true });
+      }
+    }
   }
 }

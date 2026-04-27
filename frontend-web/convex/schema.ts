@@ -34,6 +34,7 @@ export default defineSchema({
     lastPlayed: v.number(),
     lastDecayAt: v.optional(v.number()),
     decayWarningShown: v.optional(v.boolean()),
+    seasonResetAppliedFor: v.optional(v.number()),
   })
     .index("by_user_sport_mode", ["userId", "sport", "mode"])
     .index("by_sport_mode_elo", ["sport", "mode", "eloRating"]),
@@ -139,6 +140,7 @@ export default defineSchema({
     currentChecksum: v.optional(v.string()),
     questionStartedAt: v.optional(v.number()),
     completed: v.optional(v.boolean()),
+    abandonedAt: v.optional(v.number()),
   }),
 
   survivalSessions: defineTable({
@@ -151,6 +153,7 @@ export default defineSchema({
     usedInitials: v.array(v.string()),
     gameOver: v.boolean(),
     expiresAt: v.number(),
+    startedAt: v.optional(v.number()),
     freeSkipsLeft: v.optional(v.number()),
     currentChallenge: v.optional(
       v.object({
@@ -168,6 +171,8 @@ export default defineSchema({
     speedStreak: v.optional(v.number()),
     lastAnswerAt: v.optional(v.number()),
     performanceBonus: v.optional(v.number()),
+    closeCallRound: v.optional(v.number()),
+    closeCallCount: v.optional(v.number()),
     // Tiered hint system
     hintTokensLeft: v.optional(v.number()),
     currentHintStage: v.optional(v.number()),
@@ -182,6 +187,19 @@ export default defineSchema({
     sport: v.string(),
     mode: v.union(v.literal("quiz"), v.literal("survival")),
     questionChecksums: v.array(v.string()),
+    questionSnapshots: v.optional(
+      v.array(
+        v.object({
+          checksum: v.string(),
+          question: v.string(),
+          options: v.array(v.string()),
+          correctAnswer: v.string(),
+          explanation: v.optional(v.string()),
+          category: v.string(),
+          imageId: v.optional(v.id("_storage")),
+        }),
+      ),
+    ),
     survivalInitials: v.array(v.string()),
     createdAt: v.number(),
   }).index("by_date_sport_mode", ["date", "sport", "mode"]),
@@ -197,6 +215,7 @@ export default defineSchema({
     results: v.any(),
     startedAt: v.number(),
     completedAt: v.optional(v.number()),
+    expiresAt: v.optional(v.number()),
     // Server clock for the next expected submitAnswer — used to derive
     // timeTaken without trusting the client. Reset on each submit.
     currentQuestionStartedAt: v.optional(v.number()),
@@ -229,10 +248,12 @@ export default defineSchema({
     player1LastSeen: v.number(),
     player2LastSeen: v.number(),
     winnerId: v.optional(v.id("users")),
+    countdownStartedAt: v.optional(v.number()),
     questionStartedAt: v.optional(v.number()),
     roundResultUntil: v.optional(v.number()),
     createdAt: v.number(),
     completedAt: v.optional(v.number()),
+    eloAppliedAt: v.optional(v.number()),
     challengeId: v.optional(v.id("challenges")),
   })
     .index("by_player1", ["player1Id", "status"])
@@ -271,9 +292,11 @@ export default defineSchema({
     startDate: v.number(),
     endDate: v.number(),
     isActive: v.boolean(),
+    resetStartedAt: v.optional(v.number()),
     resetCompletedAt: v.optional(v.number()),
   })
-    .index("by_active", ["isActive"]),
+    .index("by_active", ["isActive"])
+    .index("by_season_number", ["seasonNumber"]),
 
   seasonHistory: defineTable({
     userId: v.id("users"),
@@ -289,6 +312,12 @@ export default defineSchema({
     archivedAt: v.number(),
   })
     .index("by_user", ["userId"])
+    .index("by_season_user_sport_mode", [
+      "seasonNumber",
+      "userId",
+      "sport",
+      "mode",
+    ])
     .index("by_season_sport_mode_rank", ["seasonNumber", "sport", "mode", "rank"]),
 
   // ── ELO Decay ──
@@ -630,5 +659,6 @@ export default defineSchema({
       v.literal("failed"),
     ),
     expiresAt: v.number(),
+    closeCallCount: v.optional(v.number()),
   }).index("by_user", ["userId"]),
 });

@@ -219,7 +219,7 @@ describe("BLOCKER-4 — public getSession queries must not leak the hidden answe
     expect(Array.isArray(result.clues)).toBe(true);
   });
 
-  it("whoAmI.getSession reveals answerName once the session ends", async () => {
+  it("whoAmI.getSession keeps answerName hidden after an early failed guess", async () => {
     const endedSession = {
       _id: "wai_2",
       sport: "football",
@@ -248,6 +248,39 @@ describe("BLOCKER-4 — public getSession queries must not leak the hidden answe
     };
     const result = (await handlerOf(whoAmI.getSession)(ctx, {
       sessionId: "wai_2",
+    })) as Record<string, unknown>;
+    expect(result.answerName).toBeNull();
+  });
+
+  it("whoAmI.getSession reveals answerName after a fully revealed failed guess", async () => {
+    const endedSession = {
+      _id: "wai_3",
+      sport: "football",
+      clueExternalId: "clue_y",
+      answerName: "Thierry Henry",
+      currentStage: 4,
+      score: 0,
+      status: "failed",
+      expiresAt: Date.now() + 60_000,
+    };
+    const clue = {
+      externalId: "clue_y",
+      clue1: "a",
+      clue2: "b",
+      clue3: "c",
+      clue4: "d",
+      difficulty: "medium",
+    };
+    const ctx = {
+      db: {
+        get: async () => endedSession,
+        query: () => ({
+          withIndex: () => ({ first: async () => clue }),
+        }),
+      },
+    };
+    const result = (await handlerOf(whoAmI.getSession)(ctx, {
+      sessionId: "wai_3",
     })) as Record<string, unknown>;
     expect(result.answerName).toBe("Thierry Henry");
   });

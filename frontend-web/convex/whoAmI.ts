@@ -5,6 +5,7 @@ import { findBestMatch } from "./lib/fuzzy";
 
 const SESSION_TTL_MS = 60 * 60 * 1000; // 1 hour
 const BASE_SCORE = 1000;
+const CLOSE_CALL_SCORE_MULTIPLIER = 0.9;
 const DEFAULT_DIFFICULTY_WEIGHTS = [
   { difficulty: "easy", weight: 0.3 },
   { difficulty: "medium", weight: 0.5 },
@@ -40,6 +41,17 @@ function chooseWeightedDifficultyPool<
   }
 
   return availablePools[availablePools.length - 1];
+}
+
+function buildAnswerAliases(answerName: string): string[] {
+  const parts = answerName.split(/\s+/).filter(Boolean);
+  const aliases = new Set([answerName]);
+  if (parts.length >= 2) {
+    aliases.add(`${parts[0][0]} ${parts[parts.length - 1]}`);
+    aliases.add(`${parts[0][0]}. ${parts[parts.length - 1]}`);
+    aliases.add(parts.map((part) => part[0]).join(""));
+  }
+  return [...aliases];
 }
 
 export const startChallenge = mutation({
@@ -87,6 +99,7 @@ export const startChallenge = mutation({
       score: BASE_SCORE,
       status: "active",
       expiresAt: Date.now() + SESSION_TTL_MS,
+      closeCallCount: 0,
     });
 
     return {
@@ -112,6 +125,10 @@ export const revealNextClue = mutation({
       throw new Error("Not authorized");
     }
     if (session.status !== "active") throw new Error("Game is not active");
+    if (Date.now() > session.expiresAt) {
+      await ctx.db.patch(sessionId, { status: "failed", score: 0 });
+      throw new Error("Session expired");
+    }
     if (session.currentStage >= 4) throw new Error("All clues already revealed");
 
     const newStage = session.currentStage + 1;
@@ -152,8 +169,12 @@ export const submitGuess = mutation({
       throw new Error("Not authorized");
     }
     if (session.status !== "active") throw new Error("Game is not active");
+    if (Date.now() > session.expiresAt) {
+      await ctx.db.patch(sessionId, { status: "failed", score: 0 });
+      throw new Error("Session expired");
+    }
 
-    const result = findBestMatch(guess, [session.answerName]);
+    const result = findBestMatch(guess, buildAnswerAliases(session.answerName));
 
     if (result.matched) {
       await ctx.db.patch(sessionId, { status: "correct" });
@@ -168,24 +189,48 @@ export const submitGuess = mutation({
     }
 
     if (result.closeCall) {
+      const newScore = Math.floor(session.score * CLOSE_CALL_SCORE_MULTIPLIER);
+      await ctx.db.patch(sessionId, {
+        score: newScore,
+        closeCallCount: (session.closeCallCount ?? 0) + 1,
+      });
       return {
         correct: false,
         closeCall: true,
         typoAccepted: false,
-        score: session.score,
+        score: newScore,
         gameOver: false,
       };
     }
 
-    await ctx.db.patch(sessionId, { status: "failed" });
+    await ctx.db.patch(sessionId, { status: "failed", score: 0 });
     return {
       correct: false,
       closeCall: false,
       typoAccepted: false,
-      answerName: session.answerName,
+      answerName: session.currentStage >= 4 ? session.answerName : undefined,
       score: 0,
       gameOver: true,
     };
+  },
+});
+
+export const penalizeTabSwitch = mutation({
+  args: { sessionId: v.id("whoAmISessions") },
+  handler: async (ctx, { sessionId }) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) throw new Error("Not authenticated");
+    const session = await ctx.db.get(sessionId);
+    if (!session) throw new Error("Session not found");
+    if (session.userId && session.userId !== userId) {
+      throw new Error("Not authorized");
+    }
+    if (session.status !== "active") {
+      return { penalized: false, gameOver: true, score: session.score };
+    }
+
+    await ctx.db.patch(sessionId, { status: "failed", score: 0 });
+    return { penalized: true, gameOver: true, score: 0 };
   },
 });
 
@@ -213,7 +258,9 @@ export const getSession = query({
 
     // answerName is the hidden truth. Only expose it once the game ends
     // — submitGuess already reveals it in its response on correct/failed.
-    const revealed = session.status !== "active";
+    const revealed =
+      session.status === "correct" ||
+      (session.status === "failed" && session.currentStage >= 4);
     return {
       _id: session._id,
       sport: session.sport,

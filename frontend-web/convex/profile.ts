@@ -20,14 +20,21 @@ export const get = query({
       .order("desc")
       .take(10);
 
-    const totalGames = ratings.reduce((s, r) => s + r.gamesPlayed, 0);
-    const totalWins = ratings.reduce((s, r) => s + r.wins, 0);
+    const rankedRatings = ratings.filter(
+      (r) => r.mode === "quiz" || r.mode === "survival",
+    );
+
+    const totalGames = rankedRatings.reduce((s, r) => s + r.gamesPlayed, 0);
+    const totalWins = rankedRatings.reduce((s, r) => s + r.wins, 0);
     const winRate = totalGames > 0 ? (totalWins / totalGames) * 100 : 0;
-    const maxElo = ratings.reduce((m, r) => Math.max(m, r.eloRating), 1200);
+    const currentElo =
+      rankedRatings.length > 0
+        ? Math.round(Math.max(...rankedRatings.map((r) => r.eloRating)))
+        : 1200;
 
     // Find favorite sport (most games played)
     const sportGames: Record<string, number> = {};
-    for (const r of ratings) {
+    for (const r of rankedRatings) {
       sportGames[r.sport] = (sportGames[r.sport] ?? 0) + r.gamesPlayed;
     }
     const favSport =
@@ -49,7 +56,7 @@ export const get = query({
       username: user.username ?? "",
       displayName: user.displayName,
       avatarUrl: user.avatarUrl,
-      eloRating: maxElo,
+      eloRating: currentElo,
       createdAt: user._creationTime,
       stats: {
         totalGames,

@@ -5,13 +5,28 @@ import { clampRating } from "./lib/elo";
 
 const MS_PER_DAY = 24 * 60 * 60 * 1000;
 const DECAY_AMOUNT = 25;
-const DECAY_FLOOR = 1499;
+const DECAY_FLOOR = 1500;
 const DECAY_THRESHOLD_ELO = 1500;
 
 export const runDecay = internalMutation({
   args: {},
   handler: async (ctx) => {
     const now = Date.now();
+    const activeSeasons = await ctx.db
+      .query("seasons")
+      .withIndex("by_active", (q) => q.eq("isActive", true))
+      .collect();
+    const seasonBoundaryPending =
+      activeSeasons.length === 0 ||
+      activeSeasons.some(
+        (season) =>
+          season.endDate <= now ||
+          (season.resetStartedAt && !season.resetCompletedAt),
+      );
+    if (seasonBoundaryPending) {
+      return { status: "season_reset_pending" };
+    }
+
     const allRatings = await ctx.db.query("userRatings").collect();
 
     for (const rating of allRatings) {
@@ -66,6 +81,8 @@ export const runDecay = internalMutation({
         });
       }
     }
+
+    return { status: "completed" };
   },
 });
 

@@ -21,6 +21,17 @@ function getGrade(accuracy: number) {
   return { letter: "F", color: "destructive" as const, stars: 0 };
 }
 
+function getKFactorExplanation(label?: string, k?: number) {
+  if (!label || !k) return null;
+  if (label === "Placement Match") {
+    return `K=${k}: early games move faster while your rating settles.`;
+  }
+  if (label === "High-Tier Protection") {
+    return `K=${k}: rating moves slower above 2000 ELO.`;
+  }
+  return `K=${k}: standard rating movement.`;
+}
+
 export default function ResultScreen() {
   const navigate = useNavigate();
   const location = useLocation();
@@ -57,6 +68,10 @@ export default function ResultScreen() {
   const grade = getGrade(accuracy);
   const eloChange = state.eloChange;
   const eloPositive = eloChange !== null && eloChange >= 0;
+  const kFactorExplanation = getKFactorExplanation(
+    state.kFactorLabel,
+    state.kFactor,
+  );
 
   const stats = isQuiz
     ? [
@@ -130,7 +145,7 @@ export default function ResultScreen() {
       )}
 
       {state.kFactorLabel && state.kFactorLabel !== "Standard" && (
-        <div className="mb-6">
+        <div className="mb-6 text-center">
           <NeoBadge
             color={state.kFactorLabel === "Placement Match" ? "blue" : "accent"}
             rotated
@@ -138,6 +153,11 @@ export default function ResultScreen() {
           >
             {state.kFactorLabel}
           </NeoBadge>
+          {kFactorExplanation && (
+            <p className="text-xs text-muted-foreground mt-3 max-w-xs">
+              {kFactorExplanation}
+            </p>
+          )}
         </div>
       )}
 
@@ -155,6 +175,30 @@ export default function ResultScreen() {
           </NeoCard>
         ))}
       </div>
+
+      {isQuiz && state.scoreBreakdown && state.scoreBreakdown.length > 0 && (
+        <NeoCard className="w-full mb-8 py-4">
+          <p className="font-heading font-bold text-sm text-center mb-3">
+            Score Breakdown
+          </p>
+          <div className="grid grid-cols-5 gap-2">
+            {state.scoreBreakdown.map((item, index) => (
+              <div
+                key={index}
+                className={`neo-border rounded-md px-2 py-2 text-center ${
+                  item.correct ? "bg-success text-success-foreground" : "bg-muted"
+                }`}
+              >
+                <p className="font-mono font-bold text-xs">Q{index + 1}</p>
+                <p className="font-mono font-bold text-sm">{item.score}</p>
+                <p className="text-[9px] opacity-80">
+                  {item.timeTaken.toFixed(1)}s
+                </p>
+              </div>
+            ))}
+          </div>
+        </NeoCard>
+      )}
 
       <div className="w-full space-y-3">
         <NeoButton

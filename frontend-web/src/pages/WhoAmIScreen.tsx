@@ -7,7 +7,10 @@ import { NeoCard } from "@/components/neo/NeoCard";
 import { NeoButton } from "@/components/neo/NeoButton";
 import { NeoInput } from "@/components/neo/NeoInput";
 import { NeoBadge } from "@/components/neo/NeoBadge";
-import { ArrowLeft, Eye, User, AlertTriangle } from "lucide-react";
+import { Eye, User, AlertTriangle } from "lucide-react";
+import { ExitGameButton } from "@/components/ExitGameButton";
+import { useAntiCheat } from "@/hooks/useAntiCheat";
+import { toast } from "sonner";
 
 const SUPPORTED_WHO_AM_I_SPORTS = new Set(["football"]);
 const START_CHALLENGE_TIMEOUT_MS = 8000;
@@ -38,6 +41,7 @@ export default function WhoAmIScreen() {
   const startChallengeMut = useMutation(api.whoAmI.startChallenge);
   const revealNextClueMut = useMutation(api.whoAmI.revealNextClue);
   const submitGuessMut = useMutation(api.whoAmI.submitGuess);
+  const penalizeTabSwitchMut = useMutation(api.whoAmI.penalizeTabSwitch);
 
   const [sessionId, setSessionId] = useState<Id<"whoAmISessions"> | null>(null);
   const [loading, setLoading] = useState(true);
@@ -108,6 +112,21 @@ export default function WhoAmIScreen() {
     startGame();
   }, [startGame]);
 
+  useAntiCheat(
+    useCallback(() => {
+      if (!sessionId || gameOver || loading || startupState) return;
+      penalizeTabSwitchMut({ sessionId }).then((res) => {
+        if (res.penalized) {
+          setScore(res.score);
+          setResult({ correct: false, score: res.score });
+          setGameOver(true);
+          toast.error("Attempt ended — you switched tabs");
+        }
+      });
+    }, [sessionId, gameOver, loading, startupState, penalizeTabSwitchMut]),
+    { warningMessage: "Don't switch tabs — your attempt will end" },
+  );
+
   const handleRevealClue = async () => {
     if (!sessionId || currentStage >= 4 || revealing || gameOver) return;
     setRevealing(true);
@@ -164,12 +183,7 @@ export default function WhoAmIScreen() {
     return (
       <div className="min-h-screen bg-background px-5 py-5 flex flex-col">
         <div className="flex items-center justify-between mb-4">
-          <button
-            onClick={() => navigate("/home")}
-            className="neo-border neo-shadow rounded-lg p-2 bg-background cursor-pointer active:neo-shadow-pressed transition-all"
-          >
-            <ArrowLeft size={20} strokeWidth={2.5} />
-          </button>
+          <ExitGameButton title="Quit Who Am I?" description="Your current attempt will end and no points will be saved." />
         </div>
 
         <div className="flex-1 flex items-center justify-center">
@@ -226,12 +240,7 @@ export default function WhoAmIScreen() {
     <div className="min-h-screen bg-background px-5 py-5 flex flex-col">
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
-        <button
-          onClick={() => navigate("/home")}
-          className="neo-border neo-shadow rounded-lg p-2 bg-background cursor-pointer active:neo-shadow-pressed transition-all"
-        >
-          <ArrowLeft size={20} strokeWidth={2.5} />
-        </button>
+        <ExitGameButton title="Quit Who Am I?" description="Your current attempt will end and no points will be saved." />
 
         <div className="flex items-center gap-2">
           <NeoBadge color="accent" size="sm">

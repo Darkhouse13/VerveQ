@@ -8,6 +8,7 @@ import { useAntiCheat } from "@/hooks/useAntiCheat";
 import { Check, X } from "lucide-react";
 import { QuestionImage } from "@/components/QuestionImage";
 import { ImageZoomModal } from "@/components/ImageZoomModal";
+import { ExitGameButton } from "@/components/ExitGameButton";
 import { toast } from "sonner";
 import type { Id } from "../../convex/_generated/dataModel";
 
@@ -85,13 +86,12 @@ export default function BlitzScreen() {
   useEffect(() => {
     (async () => {
       try {
-        const { sessionId: sid } = await startMut({ sport });
+        const { sessionId: sid, endTimeMs: serverEndTimeMs } = await startMut({ sport });
         setSessionId(sid);
         sessionRef.current = sid;
         const q = await getQuestionMut({ sessionId: sid });
         setQuestion(q);
-        // Calculate endTimeMs: start + 60s
-        setEndTimeMs(Date.now() + 60_000);
+        setEndTimeMs(serverEndTimeMs);
         setLoading(false);
       } catch {
         toast.error("Failed to start blitz");
@@ -114,8 +114,10 @@ export default function BlitzScreen() {
           setEndTimeMs(res.endTimeMs);
           if (res.gameOver) finishGame();
         });
+        toast.error("Tab switch — counted as a wrong answer (-3s)");
       }
     }, [gameOver, question, sessionId, revealed, submitAnswerMut, finishGame]),
+    { warningMessage: "Don't switch tabs — it counts as a wrong answer (-3s)" },
   );
 
   const handleSelect = async (idx: number) => {
@@ -184,6 +186,9 @@ export default function BlitzScreen() {
 
   return (
     <div className="min-h-screen bg-background px-5 py-5 flex flex-col">
+      <div className="mb-3">
+        <ExitGameButton title="Quit Blitz?" description="Your run will end and the score won't be saved." />
+      </div>
       {/* Clock */}
       <div className="mb-4">
         <BlitzClock
@@ -207,7 +212,7 @@ export default function BlitzScreen() {
           <div className="mb-3">
             <QuestionImage
               imageUrl={question.imageUrl}
-              alt="Question image"
+              alt={`Image for: ${question?.question ?? "question"}`}
               onZoom={() => setZoomImage(question.imageUrl!)}
             />
           </div>

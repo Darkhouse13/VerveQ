@@ -15,6 +15,11 @@ interface DailyResultState {
   mode: "daily-quiz" | "daily-survival";
   eloChange?: number | null;
   newElo?: number | null;
+  scoreBreakdown?: Array<{
+    correct: boolean;
+    timeTaken: number;
+    score: number;
+  }>;
 }
 
 export default function DailyResultScreen() {
@@ -105,6 +110,30 @@ export default function DailyResultScreen() {
           </NeoCard>
         ))}
       </div>
+
+      {isQuiz && state.scoreBreakdown && state.scoreBreakdown.length > 0 && (
+        <NeoCard className="w-full mb-8 py-4">
+          <p className="font-heading font-bold text-sm text-center mb-3">
+            Score Breakdown
+          </p>
+          <div className="grid grid-cols-5 gap-2">
+            {state.scoreBreakdown.map((item, index) => (
+              <div
+                key={index}
+                className={`neo-border rounded-md px-2 py-2 text-center ${
+                  item.correct ? "bg-success text-success-foreground" : "bg-muted"
+                }`}
+              >
+                <p className="font-mono font-bold text-xs">Q{index + 1}</p>
+                <p className="font-mono font-bold text-sm">{item.score}</p>
+                <p className="text-[9px] opacity-80">
+                  {item.timeTaken.toFixed(1)}s
+                </p>
+              </div>
+            ))}
+          </div>
+        </NeoCard>
+      )}
 
       <div className="w-full space-y-3">
         <NeoButton

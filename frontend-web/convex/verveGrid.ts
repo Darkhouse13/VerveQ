@@ -1,10 +1,43 @@
 import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
 import { getAuthUserId } from "@convex-dev/auth/server";
+import { normalizeAnswer } from "./lib/scoring";
+import { levenshteinDistance } from "./lib/fuzzy";
 
 const SESSION_TTL_MS = 60 * 60 * 1000; // 1 hour
 const MAX_GUESSES = 9;
 const MIN_QUERY_LENGTH = 2;
+
+function matchesPlayerSearch(name: string, queryText: string): boolean {
+  const query = normalizeAnswer(queryText);
+  const normalizedName = normalizeAnswer(name);
+  if (normalizedName.includes(query)) return true;
+
+  const maxDistance = query.length < 5 ? 1 : 2;
+  return normalizedName
+    .split(/\s+/)
+    .some((token) => levenshteinDistance(query, token) <= maxDistance);
+}
+
+function getCellRarity(validAnswerCount: number) {
+  if (validAnswerCount <= 3) {
+    return { rarityTier: "rare", points: 3 };
+  }
+  if (validAnswerCount <= 10) {
+    return { rarityTier: "uncommon", points: 2 };
+  }
+  return { rarityTier: "common", points: 1 };
+}
+
+function publicCellMetadata(cell: { rowIdx: number; colIdx: number; validPlayerIds: string[] }) {
+  const validAnswerCount = cell.validPlayerIds.length;
+  return {
+    rowIdx: cell.rowIdx,
+    colIdx: cell.colIdx,
+    validAnswerCount,
+    ...getCellRarity(validAnswerCount),
+  };
+}
 
 export const startSession = mutation({
   args: { sport: v.string() },
@@ -24,7 +57,18 @@ export const startSession = mutation({
       throw new Error("No curated VerveGrid boards are available for this sport");
     }
 
-    const chosenBoard = boards[Math.floor(Math.random() * boards.length)];
+    const playableBoards = boards.filter(
+      (board) =>
+        board.cells.length === 9 &&
+        board.cells.every((cell) => cell.validPlayerIds.length > 0),
+    );
+
+    if (playableBoards.length === 0) {
+      throw new Error("No playable VerveGrid boards are available for this sport");
+    }
+
+    const chosenBoard =
+      playableBoards[Math.floor(Math.random() * playableBoards.length)];
 
     const sessionId = await ctx.db.insert("verveGridSessions", {
       userId,
@@ -51,6 +95,7 @@ export const startSession = mutation({
       boardAxisFamily: chosenBoard.axisFamily,
       rows: chosenBoard.rows,
       cols: chosenBoard.cols,
+      cells: chosenBoard.cells.map(publicCellMetadata),
       remainingGuesses: MAX_GUESSES,
       correctCount: 0,
     };
@@ -69,7 +114,7 @@ export const searchPlayers = query({
       return [];
     }
 
-    const normalized = queryText.toLowerCase();
+    const normalized = normalizeAnswer(queryText);
 
     if (sessionId !== undefined && cellIndex !== undefined) {
       const userId = await getAuthUserId(ctx);
@@ -79,6 +124,9 @@ export const searchPlayers = query({
         return [];
       }
       if (session.userId && session.userId !== userId) {
+        return [];
+      }
+      if (Date.now() > session.expiresAt || session.status !== "active") {
         return [];
       }
 
@@ -108,11 +156,11 @@ export const searchPlayers = query({
         .filter(
           (player) =>
             !usedPlayerIds.has(player.externalId) &&
-            player.name.toLowerCase().includes(normalized),
+            matchesPlayerSearch(player.name, normalized),
         )
         .sort((a, b) => {
-          const aStarts = a.name.toLowerCase().startsWith(normalized) ? 0 : 1;
-          const bStarts = b.name.toLowerCase().startsWith(normalized) ? 0 : 1;
+          const aStarts = normalizeAnswer(a.name).startsWith(normalized) ? 0 : 1;
+          const bStarts = normalizeAnswer(b.name).startsWith(normalized) ? 0 : 1;
           if (aStarts !== bStarts) {
             return aStarts - bStarts;
           }
@@ -128,21 +176,7 @@ export const searchPlayers = query({
         }));
     }
 
-    const players = await ctx.db
-      .query("sportsPlayers")
-      .withIndex("by_sport_name", (q) => q.eq("sport", sport))
-      .collect();
-
-    return players
-      .filter((player) => player.name.toLowerCase().includes(normalized))
-      .slice(0, 10)
-      .map((player) => ({
-        externalId: player.externalId,
-        name: player.name,
-        photo: player.photo,
-        position: player.position,
-        nationality: player.nationality,
-      }));
+    return [];
   },
 });
 
@@ -162,6 +196,10 @@ export const submitGuess = mutation({
       throw new Error("Not authorized");
     }
     if (session.status !== "active") throw new Error("Game is not active");
+    if (Date.now() > session.expiresAt) {
+      await ctx.db.patch(sessionId, { status: "completed" });
+      throw new Error("Session expired");
+    }
     if (session.remainingGuesses <= 0) throw new Error("No guesses remaining");
 
     const cells = [...session.cells];
@@ -212,6 +250,33 @@ export const submitGuess = mutation({
   },
 });
 
+export const penalizeTabSwitch = mutation({
+  args: { sessionId: v.id("verveGridSessions") },
+  handler: async (ctx, { sessionId }) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) throw new Error("Not authenticated");
+    const session = await ctx.db.get(sessionId);
+    if (!session) throw new Error("Session not found");
+    if (session.userId && session.userId !== userId) {
+      throw new Error("Not authorized");
+    }
+    if (session.status !== "active") {
+      return {
+        penalized: false,
+        gameOver: true,
+        correctCount: session.correctCount,
+      };
+    }
+
+    await ctx.db.patch(sessionId, { status: "completed" });
+    return {
+      penalized: true,
+      gameOver: true,
+      correctCount: session.correctCount,
+    };
+  },
+});
+
 export const getSession = query({
   args: { sessionId: v.id("verveGridSessions") },
   handler: async (ctx, { sessionId }) => {
@@ -233,13 +298,18 @@ export const getSession = query({
       cells: session.cells.map((cell) => ({
         rowIdx: cell.rowIdx,
         colIdx: cell.colIdx,
+        validAnswerCount: cell.validPlayerIds.length,
+        ...getCellRarity(cell.validPlayerIds.length),
         guessedPlayerId: cell.guessedPlayerId,
         guessedPlayerName: cell.guessedPlayerName,
         correct: cell.correct,
       })),
       remainingGuesses: session.remainingGuesses,
       correctCount: session.correctCount,
-      status: session.status,
+      status:
+        session.status === "active" && Date.now() > session.expiresAt
+          ? "completed"
+          : session.status,
       expiresAt: session.expiresAt,
     };
   },

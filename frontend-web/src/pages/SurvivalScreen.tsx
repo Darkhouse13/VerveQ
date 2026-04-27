@@ -9,6 +9,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useMutation } from "convex/react";
 import { api } from "../../convex/_generated/api";
 import { useAntiCheat } from "@/hooks/useAntiCheat";
+import { ExitGameButton } from "@/components/ExitGameButton";
 import { toast } from "sonner";
 import type { Id } from "../../convex/_generated/dataModel";
 import type { GameResultState } from "@/types/api";
@@ -124,6 +125,7 @@ export default function SurvivalScreen() {
       });
       // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [sessionId, round, challenge]),
+    { warningMessage: "Don't switch tabs — you'll lose a life" },
   );
 
   const goToResults = async (finalScore: number, finalRound: number) => {
@@ -274,6 +276,9 @@ export default function SurvivalScreen() {
       key={shakeKey}
       className={`min-h-screen bg-background px-5 py-5 flex flex-col ${shakeKey > 0 ? "animate-shake" : ""} ${isOnFire ? "on-fire-bg" : ""}`}
     >
+      <div className="mb-3">
+        <ExitGameButton title="Quit survival run?" description="Your current score and streak will end." />
+      </div>
       {/* Header: Lives / Streak / Score */}
       <div className="flex items-center justify-between mb-4">
         <div className="relative">

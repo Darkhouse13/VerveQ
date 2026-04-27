@@ -23,8 +23,7 @@ export function pickQuestionPool<T extends ImageQuestion>(
     : false;
 
   if (usedImageCount >= MAX_IMAGE_QUESTIONS || lastWasImage) {
-    const textOnly = available.filter((q) => !q.imageId);
-    if (textOnly.length > 0) return textOnly;
+    return available.filter((q) => !q.imageId);
   }
   return available;
 }

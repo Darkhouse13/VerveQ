@@ -6,6 +6,7 @@ import { NeoCard } from "@/components/neo/NeoCard";
 import { CountdownOverlay } from "@/components/CountdownOverlay";
 import { RoundResult } from "@/components/RoundResult";
 import { useAntiCheat } from "@/hooks/useAntiCheat";
+import { ExitGameButton } from "@/components/ExitGameButton";
 import { Check, X } from "lucide-react";
 import type { Id } from "../../convex/_generated/dataModel";
 
@@ -14,7 +15,6 @@ export default function LiveMatchScreen() {
   const [params] = useSearchParams();
   const matchId = params.get("matchId") as Id<"liveMatches"> | null;
 
-  const [showCountdown, setShowCountdown] = useState(true);
   const [selected, setSelected] = useState<number | null>(null);
   const [revealed, setRevealed] = useState(false);
   const [myResult, setMyResult] = useState<{
@@ -24,11 +24,21 @@ export default function LiveMatchScreen() {
   const [shaking, setShaking] = useState(false);
   const [questionTimer, setQuestionTimer] = useState(10);
   const prevQuestionRef = useRef(-1);
+  const updateQuestionTimer = useCallback((questionStartedAt?: number) => {
+    if (!questionStartedAt) {
+      setQuestionTimer(10);
+      return;
+    }
+    const elapsed = (Date.now() - questionStartedAt) / 1000;
+    setQuestionTimer(Math.max(0, Math.ceil(10 - elapsed)));
+  }, []);
 
   const match = useQuery(
     api.liveMatches.getMatch,
     matchId ? { matchId } : "skip",
   );
+  const matchStatus = match?.status;
+  const questionStartedAt = match?.questionStartedAt;
 
   const submitAnswerMut = useMutation(api.liveMatches.submitAnswer);
   const heartbeatMut = useMutation(api.liveMatches.heartbeat);
@@ -48,6 +58,7 @@ export default function LiveMatchScreen() {
         forfeitMut({ matchId });
       }
     }, [matchId, match, forfeitMut]),
+    { warningMessage: "Don't switch tabs — you'll forfeit the match" },
   );
 
   // Reset state when question changes
@@ -64,15 +75,13 @@ export default function LiveMatchScreen() {
 
   // Question countdown timer
   useEffect(() => {
-    if (!match || match.status !== "question") return;
+    if (matchStatus !== "question") return;
+    updateQuestionTimer(questionStartedAt);
     const id = setInterval(() => {
-      if (match.questionStartedAt) {
-        const elapsed = (Date.now() - match.questionStartedAt) / 1000;
-        setQuestionTimer(Math.max(0, Math.ceil(10 - elapsed)));
-      }
+      updateQuestionTimer(questionStartedAt);
     }, 100);
     return () => clearInterval(id);
-  }, [match?.status, match?.questionStartedAt, match]);
+  }, [matchStatus, questionStartedAt, updateQuestionTimer]);
 
   // Handle match completion
   useEffect(() => {
@@ -134,22 +143,25 @@ export default function LiveMatchScreen() {
   }
 
   // Show countdown overlay
-  if (showCountdown && match.status === "countdown") {
-    return <CountdownOverlay onComplete={() => setShowCountdown(false)} />;
+  if (match.status === "countdown") {
+    const endsAt = match.countdownStartedAt
+      ? match.countdownStartedAt + 3000
+      : undefined;
+    return <CountdownOverlay endsAt={endsAt} onComplete={() => undefined} />;
   }
 
   // Show round result
   if (match.status === "roundResult") {
-    const p1Answers = match.isPlayer1
-      ? (match.myAnswers as Array<{ correct: boolean; score: number; timeTaken: number }>)
-      : [];
-    const p2Answers = !match.isPlayer1
-      ? (match.myAnswers as Array<{ correct: boolean; score: number; timeTaken: number }>)
-      : [];
-
-    const qIdx = match.currentQuestion;
-    const p1Answer = p1Answers[qIdx] || { correct: false, score: 0, timeTaken: 10 };
-    const p2Answer = p2Answers[qIdx] || { correct: false, score: 0, timeTaken: 10 };
+    const roundAnswers = match.roundAnswers as
+      | {
+          player1: { correct: boolean; score: number; timeTaken: number } | null;
+          player2: { correct: boolean; score: number; timeTaken: number } | null;
+        }
+      | null;
+    const p1Answer =
+      roundAnswers?.player1 || { correct: false, score: 0, timeTaken: 10 };
+    const p2Answer =
+      roundAnswers?.player2 || { correct: false, score: 0, timeTaken: 10 };
 
     return (
       <RoundResult
@@ -217,6 +229,20 @@ export default function LiveMatchScreen() {
 
   return (
     <div className="min-h-screen bg-background px-5 py-5 flex flex-col">
+      <div className="mb-3">
+        <ExitGameButton
+          title="Forfeit match?"
+          description="Quitting now counts as a forfeit and your opponent wins."
+          onConfirm={() =>
+            matchId &&
+            match &&
+            match.status !== "completed" &&
+            match.status !== "forfeited"
+              ? forfeitMut({ matchId })
+              : undefined
+          }
+        />
+      </div>
       {/* Top bar */}
       <div className="flex items-center justify-between mb-4">
         <div className="text-center">

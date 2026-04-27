@@ -1,8 +1,16 @@
+import { useState } from "react";
 import { NeoCard } from "@/components/neo/NeoCard";
 import { NeoButton } from "@/components/neo/NeoButton";
 import { NeoAvatar } from "@/components/neo/NeoAvatar";
 import { NeoBadge } from "@/components/neo/NeoBadge";
 import { BottomNav } from "@/components/neo/BottomNav";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
 import { Lock, Trophy, Zap, Target, Flame, Star, Calendar, UserPlus } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useQuery } from "convex/react";
@@ -29,8 +37,9 @@ function getTier(elo: number) {
 
 export default function ProfileScreen() {
   const navigate = useNavigate();
-  const { user, isGuest, logout, signOutToGuest } = useAuth();
+  const { user, isGuest, logout } = useAuth();
   const userId = user?._id as Id<"users"> | undefined;
+  const [signOutConfirmOpen, setSignOutConfirmOpen] = useState(false);
 
   const handleCreateAccount = async () => {
     await logout();
@@ -38,7 +47,9 @@ export default function ProfileScreen() {
   };
 
   const handleSignOut = async () => {
-    await signOutToGuest();
+    setSignOutConfirmOpen(false);
+    await logout();
+    navigate("/?mode=signin");
   };
 
   const handleSignIn = () => {
@@ -76,7 +87,7 @@ export default function ProfileScreen() {
     );
   }
 
-  const elo = profile.eloRating;
+  const elo = Math.round(profile.eloRating);
   const tier = getTier(elo);
   const unlockedIds = new Set(
     (userAchs ?? []).map((a) => a.achievementId),
@@ -335,13 +346,38 @@ export default function ProfileScreen() {
             <NeoButton
               variant="ghost"
               size="full"
-              onClick={handleSignOut}
+              onClick={() => setSignOutConfirmOpen(true)}
             >
               Sign Out
             </NeoButton>
           )}
         </div>
       </div>
+
+      <Dialog open={signOutConfirmOpen} onOpenChange={setSignOutConfirmOpen}>
+        <DialogContent className="neo-border bg-card">
+          <DialogHeader>
+            <DialogTitle className="font-heading uppercase">Sign out?</DialogTitle>
+            <DialogDescription className="text-sm">
+              You'll return to the sign-in screen. Your account is saved, and
+              you can sign back in anytime to see your ELO, achievements, and
+              ranks.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex gap-3 mt-4">
+            <NeoButton
+              variant="secondary"
+              size="full"
+              onClick={() => setSignOutConfirmOpen(false)}
+            >
+              Cancel
+            </NeoButton>
+            <NeoButton variant="danger" size="full" onClick={handleSignOut}>
+              Sign Out
+            </NeoButton>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       <BottomNav />
     </div>

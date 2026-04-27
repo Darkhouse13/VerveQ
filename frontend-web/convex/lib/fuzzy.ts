@@ -63,6 +63,15 @@ export function findBestMatch(
   validPlayers: string[],
 ): MatchResult {
   const normalizedGuess = normalizeAnswer(guess);
+  if (!normalizedGuess) {
+    return {
+      matched: false,
+      distance: Infinity,
+      matchedPlayer: validPlayers[0] || guess,
+      closeCall: false,
+      typoAccepted: false,
+    };
+  }
   let bestDistance = Infinity;
   let bestPlayer = validPlayers[0] || guess;
   let bestMaxDistance = 1;

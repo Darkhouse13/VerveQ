@@ -231,6 +231,10 @@ export const makeGuess = mutation({
       throw new Error("Not authorized");
     }
     if (session.status === "game_over") throw new Error("Game is over");
+    if (Date.now() > session.expiresAt) {
+      await ctx.db.patch(sessionId, { status: "game_over" });
+      throw new Error("Session expired");
+    }
 
     const { playerAValue, playerBValue } = session;
     const isHigher = playerBValue > playerAValue;
@@ -294,6 +298,7 @@ export const makeGuess = mutation({
         score: newScore,
         streak: newStreak,
         gameOver: true,
+        endReason: "pool_exhausted",
       };
     }
 
@@ -342,6 +347,25 @@ export const makeGuess = mutation({
   },
 });
 
+export const penalizeTabSwitch = mutation({
+  args: { sessionId: v.id("higherLowerSessions") },
+  handler: async (ctx, { sessionId }) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) throw new Error("Not authenticated");
+    const session = await ctx.db.get(sessionId);
+    if (!session) throw new Error("Session not found");
+    if (session.userId && session.userId !== userId) {
+      throw new Error("Not authorized");
+    }
+    if (session.status === "game_over") {
+      return { penalized: false, gameOver: true, score: session.score };
+    }
+
+    await ctx.db.patch(sessionId, { status: "game_over" });
+    return { penalized: true, gameOver: true, score: session.score };
+  },
+});
+
 export const getSession = query({
   args: { sessionId: v.id("higherLowerSessions") },
   handler: async (ctx, { sessionId }) => {
@@ -353,13 +377,14 @@ export const getSession = query({
 
     // Player B's value is the hidden answer until the user guesses.
     // Reveal it only once the game is over.
-    const revealed = session.status === "game_over";
+    const expired = Date.now() > session.expiresAt;
+    const revealed = session.status === "game_over" || expired;
     return {
       _id: session._id,
       sport: session.sport,
       score: session.score,
       streak: session.streak,
-      status: session.status,
+      status: expired ? "game_over" : session.status,
       playerAName: session.playerAName,
       playerAValue: session.playerAValue,
       playerAPhoto: session.playerAPhoto,

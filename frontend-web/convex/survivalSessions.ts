@@ -14,6 +14,8 @@ import nbaMetadata from "./data/nba_player_metadata.json";
 import tennisMetadata from "./data/tennis_player_metadata.json";
 
 const SESSION_TTL_MS = 60 * 60 * 1000; // 1 hour
+const FREE_CLOSE_CALLS_PER_ROUND = 1;
+const PERFORMANCE_BONUS_CAP = 0.3;
 
 type InitialsMap = Record<string, string[]>;
 
@@ -768,10 +770,13 @@ export const startGame = mutation({
       usedInitials: [challenge.initials],
       gameOver: false,
       expiresAt: Date.now() + SESSION_TTL_MS,
+      startedAt: Date.now(),
       currentChallenge: challenge,
       speedStreak: 0,
       lastAnswerAt: 0,
       performanceBonus: 0,
+      closeCallRound: 1,
+      closeCallCount: 0,
       hintTokensLeft: 3,
       currentHintStage: 0,
       freeSkipsLeft: 1,
@@ -798,16 +803,17 @@ export const getSession = query({
     const session = await ctx.db.get(sessionId);
     if (!session) return null;
     if (session.userId && session.userId !== userId) return null;
+    const expired = Date.now() > session.expiresAt;
     return {
       round: session.round,
       score: session.score,
       lives: session.lives,
       hintUsed: session.hintUsed,
-      gameOver: session.gameOver,
-      hintTokensLeft: session.hintTokensLeft ?? 0,
+      gameOver: session.gameOver || expired,
+      hintTokensLeft: session.hintTokensLeft ?? 3,
       currentHintStage: session.currentHintStage ?? 0,
       speedStreak: session.speedStreak ?? 0,
-      freeSkipsLeft: session.freeSkipsLeft ?? 0,
+      freeSkipsLeft: session.freeSkipsLeft ?? 1,
       challenge: session.currentChallenge
         ? buildChallengeResponse(session.currentChallenge, session.sport)
         : null,
@@ -829,6 +835,10 @@ export const submitGuess = mutation({
       throw new Error("Not authorized");
     }
     if (session.gameOver) throw new Error("Invalid session");
+    if (Date.now() > session.expiresAt) {
+      await ctx.db.patch(sessionId, { gameOver: true });
+      throw new Error("Session expired");
+    }
 
     const challenge = session.currentChallenge;
     if (!challenge) throw new Error("No active challenge");
@@ -838,24 +848,38 @@ export const submitGuess = mutation({
       challenge.validPlayers,
     );
 
-    // Close call: don't penalize, let user retry
+    // Close call: one free retry per round, then it counts as a miss.
     if (!correct && closeCall) {
-      return {
-        correct: false,
-        closeCall: true,
-        typoAccepted: false,
-        matchDistance: distance,
-        correctAnswer: matchedPlayer,
-        lives: session.lives,
-        score: session.score,
-        round: session.round,
-        gameOver: false,
-        speedStreak: session.speedStreak ?? 0,
-        isOnFire: (session.speedStreak ?? 0) >= 5,
-        earnedLife: false,
-        isHiddenAnswer: false,
-        nextChallenge: null,
-      };
+      const closeCallsThisRound =
+        session.closeCallRound === session.round
+          ? (session.closeCallCount ?? 0)
+          : 0;
+
+      if (closeCallsThisRound < FREE_CLOSE_CALLS_PER_ROUND) {
+        await ctx.db.patch(sessionId, {
+          closeCallRound: session.round,
+          closeCallCount: closeCallsThisRound + 1,
+          speedStreak: 0,
+          lastAnswerAt: Date.now(),
+        });
+
+        return {
+          correct: false,
+          closeCall: true,
+          typoAccepted: false,
+          matchDistance: distance,
+          correctAnswer: matchedPlayer,
+          lives: session.lives,
+          score: session.score,
+          round: session.round,
+          gameOver: false,
+          speedStreak: 0,
+          isOnFire: false,
+          earnedLife: false,
+          isHiddenAnswer: false,
+          nextChallenge: null,
+        };
+      }
     }
 
     if (correct) {
@@ -870,7 +894,7 @@ export const submitGuess = mutation({
       // Hidden answer detection
       const primaryPlayer = getChallengePrimaryPlayer(session.sport, challenge);
       const isHiddenAnswer = matchedPlayer !== primaryPlayer;
-      const hiddenBonus = isHiddenAnswer ? 0.2 : 0;
+      const hiddenBonus = 0;
 
       // Earn-a-life: exactly hitting "On Fire" threshold with < 3 lives
       const earnedLife = newStreak === 5 && session.lives < 3;
@@ -895,7 +919,12 @@ export const submitGuess = mutation({
         gameOver: !next,
         speedStreak: newStreak,
         lastAnswerAt: now,
-        performanceBonus: (session.performanceBonus ?? 0) + bonusIncrement + hiddenBonus,
+        performanceBonus: Math.min(
+          PERFORMANCE_BONUS_CAP,
+          (session.performanceBonus ?? 0) + bonusIncrement + hiddenBonus,
+        ),
+        closeCallRound: newRound,
+        closeCallCount: 0,
         currentHintStage: 0,
       });
 
@@ -935,6 +964,8 @@ export const submitGuess = mutation({
         gameOver: isGameOver,
         speedStreak: 0,
         lastAnswerAt: 0,
+        closeCallRound: next ? session.round + 1 : session.round,
+        closeCallCount: 0,
         currentHintStage: 0,
         ...(next
           ? {
@@ -981,8 +1012,12 @@ export const useHint = mutation({
       throw new Error("Not authorized");
     }
     if (session.gameOver) throw new Error("Invalid session");
+    if (Date.now() > session.expiresAt) {
+      await ctx.db.patch(sessionId, { gameOver: true });
+      throw new Error("Session expired");
+    }
 
-    const tokensLeft = session.hintTokensLeft ?? 0;
+    const tokensLeft = session.hintTokensLeft ?? 3;
     const currentStage = session.currentHintStage ?? 0;
 
     if (stage !== currentStage + 1) {
@@ -1077,8 +1112,12 @@ export const skipChallenge = mutation({
       throw new Error("Not authorized");
     }
     if (session.gameOver) throw new Error("Invalid session");
+    if (Date.now() > session.expiresAt) {
+      await ctx.db.patch(sessionId, { gameOver: true });
+      throw new Error("Session expired");
+    }
 
-    const freeSkips = session.freeSkipsLeft ?? 0;
+    const freeSkips = session.freeSkipsLeft ?? 1;
     let newLives: number;
     let newFreeSkips: number;
 
@@ -1149,6 +1188,10 @@ export const penalizeTabSwitch = mutation({
     }
     if (session.gameOver) {
       return { penalized: false, lives: 0, gameOver: true };
+    }
+    if (Date.now() > session.expiresAt) {
+      await ctx.db.patch(sessionId, { gameOver: true });
+      return { penalized: false, lives: session.lives, gameOver: true };
     }
 
     if (session.lastPenalizedRound === currentRound) {

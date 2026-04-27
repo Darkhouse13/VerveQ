@@ -34,7 +34,26 @@ export const ensureProfile = mutation({
       !!existing &&
       typeof existing.username === "string" &&
       existing.username.trim().length > 0;
-    if (hasUsername) return userId;
+    if (hasUsername) {
+      const updates: {
+        displayName?: string;
+        isGuest?: boolean;
+        totalGames?: number;
+      } = {};
+      if (existing?.isGuest !== args.isGuest) {
+        updates.isGuest = args.isGuest;
+      }
+      if (!existing?.displayName && args.displayName) {
+        updates.displayName = args.displayName;
+      }
+      if (existing?.totalGames === undefined) {
+        updates.totalGames = 0;
+      }
+      if (Object.keys(updates).length > 0) {
+        await ctx.db.patch(userId, updates);
+      }
+      return userId;
+    }
 
     // Pick a unique candidate. We only try a few deterministic variants
     // before giving up — full uniqueness enforcement is tracked separately

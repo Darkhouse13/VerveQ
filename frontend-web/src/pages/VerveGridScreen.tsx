@@ -7,7 +7,10 @@ import { NeoCard } from "@/components/neo/NeoCard";
 import { NeoButton } from "@/components/neo/NeoButton";
 import { NeoInput } from "@/components/neo/NeoInput";
 import { NeoBadge } from "@/components/neo/NeoBadge";
-import { ArrowLeft, Search, X, Check, XCircle } from "lucide-react";
+import { Search, X, Check, XCircle } from "lucide-react";
+import { ExitGameButton } from "@/components/ExitGameButton";
+import { useAntiCheat } from "@/hooks/useAntiCheat";
+import { toast } from "sonner";
 import {
   Dialog,
   DialogContent,
@@ -32,6 +35,9 @@ function withTimeout<T>(promise: Promise<T>, timeoutMs: number): Promise<T> {
 interface CellState {
   rowIdx: number;
   colIdx: number;
+  validAnswerCount?: number;
+  rarityTier?: string;
+  points?: number;
   guessedPlayerName?: string;
   correct?: boolean;
 }
@@ -44,6 +50,7 @@ export default function VerveGridScreen() {
 
   const startSessionMut = useMutation(api.verveGrid.startSession);
   const submitGuessMut = useMutation(api.verveGrid.submitGuess);
+  const penalizeTabSwitchMut = useMutation(api.verveGrid.penalizeTabSwitch);
 
   const [sessionId, setSessionId] = useState<Id<"verveGridSessions"> | null>(null);
   const [loading, setLoading] = useState(true);
@@ -109,12 +116,7 @@ export default function VerveGridScreen() {
       setSessionId(result.sessionId);
       setRows(result.rows);
       setCols(result.cols);
-      setCells(
-        Array.from({ length: 9 }, (_, i) => ({
-          rowIdx: Math.floor(i / 3),
-          colIdx: i % 3,
-        })),
-      );
+      setCells(result.cells);
       setRemainingGuesses(result.remainingGuesses);
       setCorrectCount(0);
       setGameOver(false);
@@ -140,6 +142,21 @@ export default function VerveGridScreen() {
   useEffect(() => {
     startGame();
   }, [startGame]);
+
+  useAntiCheat(
+    useCallback(() => {
+      if (!sessionId || gameOver || loading || startupState) return;
+      penalizeTabSwitchMut({ sessionId }).then((res) => {
+        if (res.penalized) {
+          setGameOver(true);
+          setAllSolved(false);
+          setCorrectCount(res.correctCount);
+          toast.error("Grid ended — you switched tabs");
+        }
+      });
+    }, [sessionId, gameOver, loading, startupState, penalizeTabSwitchMut]),
+    { warningMessage: "Don't switch tabs — your grid will end" },
+  );
 
   const openSearch = (cellIndex: number) => {
     if (gameOver || cells[cellIndex]?.correct) return;
@@ -167,6 +184,7 @@ export default function VerveGridScreen() {
       if (result.alreadyUsed) {
         setShakeCell(activeCellIndex);
         setTimeout(() => setShakeCell(null), 600);
+        toast.warning("Already used in another cell");
         return;
       }
 
@@ -206,12 +224,7 @@ export default function VerveGridScreen() {
     return (
       <div className="min-h-screen bg-background px-4 py-5 flex flex-col">
         <div className="flex items-center justify-between mb-4">
-          <button
-            onClick={() => navigate("/home")}
-            className="neo-border neo-shadow rounded-lg p-2 bg-background cursor-pointer active:neo-shadow-pressed transition-all"
-          >
-            <ArrowLeft size={20} strokeWidth={2.5} />
-          </button>
+          <ExitGameButton title="Quit VerveGrid?" description="Your guesses on this board will be lost." />
         </div>
 
         <div className="flex-1 flex items-center justify-center">
@@ -262,12 +275,7 @@ export default function VerveGridScreen() {
     <div className="min-h-screen bg-background px-4 py-5 flex flex-col">
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
-        <button
-          onClick={() => navigate("/home")}
-          className="neo-border neo-shadow rounded-lg p-2 bg-background cursor-pointer active:neo-shadow-pressed transition-all"
-        >
-          <ArrowLeft size={20} strokeWidth={2.5} />
-        </button>
+        <ExitGameButton title="Quit VerveGrid?" description="Your guesses on this board will be lost." />
 
         <div className="flex items-center gap-2">
           <NeoBadge color="accent" size="md">
@@ -321,6 +329,12 @@ export default function VerveGridScreen() {
               const isSolved = cell?.correct === true;
               const isWrong = cell?.correct === false;
               const isShaking = shakeCell === cellIdx;
+              const rarityLabel =
+                cell?.rarityTier === "rare"
+                  ? "Rare"
+                  : cell?.rarityTier === "uncommon"
+                    ? "Uncommon"
+                    : "Common";
 
               return (
                 <div
@@ -351,7 +365,14 @@ export default function VerveGridScreen() {
                       </p>
                     </div>
                   ) : (
-                    <Search size={16} className="text-muted-foreground" />
+                    <div className="text-center">
+                      <Search size={16} className="mx-auto text-muted-foreground" />
+                      {cell?.validAnswerCount !== undefined && (
+                        <p className="font-mono text-[8px] mt-1 text-muted-foreground">
+                          {rarityLabel} | {cell.points}pt | {cell.validAnswerCount}
+                        </p>
+                      )}
+                    </div>
                   )}
                 </div>
               );

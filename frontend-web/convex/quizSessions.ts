@@ -44,7 +44,7 @@ export const getQuestion = mutation({
 
     const session = await ctx.db.get(sessionId);
     if (!session) throw new Error("Session not found");
-    if (session.userId && session.userId !== userId) {
+    if (!session.userId || session.userId !== userId) {
       throw new Error("Not authorized for this session");
     }
     if (Date.now() > session.expiresAt) {
@@ -71,8 +71,6 @@ export const getQuestion = mutation({
       currentChecksum: picked.checksum,
       questionStartedAt: now,
     });
-
-    await ctx.db.patch(picked._id, { usageCount: picked.usageCount + 1 });
 
     const imageUrl = picked.imageId
       ? await ctx.storage.getUrl(picked.imageId)
@@ -102,7 +100,7 @@ export const checkAnswer = mutation({
 
     const session = await ctx.db.get(sessionId);
     if (!session) throw new Error("Session not found");
-    if (session.userId && session.userId !== userId) {
+    if (!session.userId || session.userId !== userId) {
       throw new Error("Not authorized for this session");
     }
     if (Date.now() > session.expiresAt) {
@@ -147,6 +145,7 @@ export const checkAnswer = mutation({
     });
 
     await ctx.db.patch(question._id, {
+      usageCount: question.usageCount + 1,
       timesAnswered: question.timesAnswered + 1,
       timesCorrect: question.timesCorrect + (isCorrect ? 1 : 0),
     });
@@ -154,6 +153,7 @@ export const checkAnswer = mutation({
     return {
       correct: isCorrect,
       score,
+      timeTaken: timeTakenSec,
       correctAnswer: question.correctAnswer,
       explanation: question.explanation ?? null,
     };
@@ -168,10 +168,45 @@ export const endSession = mutation({
 
     const session = await ctx.db.get(sessionId);
     if (!session) return;
-    if (session.userId && session.userId !== userId) {
+    if (!session.userId || session.userId !== userId) {
       throw new Error("Not authorized for this session");
     }
+    if ((session.totalAnswers ?? 0) > 0 || session.currentChecksum) {
+      await ctx.db.patch(sessionId, {
+        completed: true,
+        currentChecksum: undefined,
+        questionStartedAt: undefined,
+        abandonedAt: Date.now(),
+      });
+      return;
+    }
     await ctx.db.delete(sessionId);
+  },
+});
+
+export const penalizeTabSwitch = mutation({
+  args: { sessionId: v.id("quizSessions") },
+  handler: async (ctx, { sessionId }) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) throw new Error("Not authenticated");
+
+    const session = await ctx.db.get(sessionId);
+    if (!session) throw new Error("Session not found");
+    if (!session.userId || session.userId !== userId) {
+      throw new Error("Not authorized for this session");
+    }
+    if (session.completed) {
+      return { penalized: false };
+    }
+
+    await ctx.db.patch(sessionId, {
+      completed: true,
+      currentChecksum: undefined,
+      questionStartedAt: undefined,
+      abandonedAt: Date.now(),
+    });
+
+    return { penalized: true };
   },
 });
 
@@ -214,7 +249,7 @@ export const getSession = query({
     if (!userId) return null;
     const session = await ctx.db.get(sessionId);
     if (!session) return null;
-    if (session.userId && session.userId !== userId) return null;
+    if (!session.userId || session.userId !== userId) return null;
     return {
       sport: session.sport,
       difficulty: session.difficulty,

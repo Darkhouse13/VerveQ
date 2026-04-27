@@ -117,7 +117,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const isLoading = user === undefined;
   const isAuthenticated = !!user;
-  const isGuest = !!user?.isGuest;
+  const isGuest = !!(user?.isGuest ?? user?.isAnonymous);
 
   const signUp = useCallback(
     async (email: string, password: string, displayName?: string) => {
@@ -265,7 +265,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         _id: user._id,
         username: user.username ?? "",
         displayName: user.displayName,
-        isGuest: user.isGuest ?? false,
+        isGuest: user.isGuest ?? user.isAnonymous ?? false,
         totalGames: user.totalGames ?? 0,
         avatarUrl: user.avatarUrl,
       }

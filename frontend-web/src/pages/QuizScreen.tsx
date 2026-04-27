@@ -8,6 +8,8 @@ import { NeoBadge } from "@/components/neo/NeoBadge";
 import { Check, X } from "lucide-react";
 import { QuestionImage } from "@/components/QuestionImage";
 import { ImageZoomModal } from "@/components/ImageZoomModal";
+import { ExitGameButton } from "@/components/ExitGameButton";
+import { useAntiCheat } from "@/hooks/useAntiCheat";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
 import type { Id } from "../../convex/_generated/dataModel";
@@ -43,6 +45,11 @@ export default function QuizScreen() {
   const [totalScore, setTotalScore] = useState(0);
   const [correctCount, setCorrectCount] = useState(0);
   const [times, setTimes] = useState<number[]>([]);
+  const [scoreBreakdown, setScoreBreakdown] = useState<Array<{
+    correct: boolean;
+    timeTaken: number;
+    score: number;
+  }>>([]);
   const [selected, setSelected] = useState<number | null>(null);
   const [revealed, setRevealed] = useState(false);
   const [checkResult, setCheckResult] = useState<{
@@ -60,6 +67,7 @@ export default function QuizScreen() {
   const getQuestionMut = useMutation(api.quizSessions.getQuestion);
   const checkAnswerMut = useMutation(api.quizSessions.checkAnswer);
   const completeQuizMut = useMutation(api.games.completeQuiz);
+  const penalizeTabSwitchMut = useMutation(api.quizSessions.penalizeTabSwitch);
 
   const fetchQuestion = useCallback(
     async (sid: Id<"quizSessions">) => {
@@ -104,10 +112,22 @@ export default function QuizScreen() {
     return () => clearInterval(id);
   }, [revealed, loading]);
 
+  useAntiCheat(
+    useCallback(() => {
+      if (!sessionId || revealed) return;
+      penalizeTabSwitchMut({ sessionId }).then((res) => {
+        if (res.penalized) {
+          toast.error("Quiz ended — you switched tabs");
+          navigate("/home", { replace: true });
+        }
+      });
+    }, [sessionId, revealed, penalizeTabSwitchMut, navigate]),
+    { warningMessage: "Don't switch tabs — your quiz will end" },
+  );
+
   const handleCheck = async () => {
     if (selected === null || !question || !sessionId) return;
     setChecking(true);
-    const timeTaken = (Date.now() - startTime.current) / 1000;
     try {
       const res = await checkAnswerMut({
         sessionId,
@@ -121,7 +141,15 @@ export default function QuizScreen() {
       });
       setTotalScore((s) => s + res.score);
       if (res.correct) setCorrectCount((c) => c + 1);
-      setTimes((t) => [...t, timeTaken]);
+      setTimes((t) => [...t, res.timeTaken]);
+      setScoreBreakdown((items) => [
+        ...items,
+        {
+          correct: res.correct,
+          timeTaken: res.timeTaken,
+          score: res.score,
+        },
+      ]);
     } catch {
       toast.error("Failed to check answer");
     } finally {
@@ -164,6 +192,7 @@ export default function QuizScreen() {
         mode: "quiz",
         kFactor,
         kFactorLabel,
+        scoreBreakdown,
       };
       navigate("/results", { state });
     } else {
@@ -202,13 +231,16 @@ export default function QuizScreen() {
 
   return (
     <div className="min-h-screen bg-background px-5 py-5 flex flex-col">
+      <div className="flex items-center justify-between mb-3">
+        <ExitGameButton title="Quit quiz?" description="Your progress in this quiz will be lost." />
+        <p className="font-mono font-bold text-lg">
+          0:{timer.toString().padStart(2, "0")}
+        </p>
+      </div>
       <div className="flex items-center justify-between mb-5">
         <p className="font-mono font-bold text-sm">Score: {totalScore}</p>
         <p className="font-heading font-bold text-sm">
           Q {questionNum}/{MAX_QUESTIONS}
-        </p>
-        <p className="font-mono font-bold text-lg">
-          0:{timer.toString().padStart(2, "0")}
         </p>
       </div>
 
@@ -223,7 +255,7 @@ export default function QuizScreen() {
           <div className="mb-3">
             <QuestionImage
               imageUrl={question.imageUrl}
-              alt="Question image"
+              alt={`Image for: ${question.question}`}
               onZoom={() => setZoomImage(question.imageUrl!)}
             />
           </div>
@@ -254,6 +286,15 @@ export default function QuizScreen() {
           </button>
         ))}
       </div>
+
+      {revealed && checkResult?.explanation && (
+        <NeoCard
+          color={checkResult.correct ? "success" : "default"}
+          className="mt-4 text-sm leading-snug"
+        >
+          {checkResult.explanation}
+        </NeoCard>
+      )}
 
       <div className="mt-5">
         {!revealed ? (
