@@ -1,6 +1,46 @@
 import { query, mutation } from "./_generated/server";
 import { v } from "convex/values";
 import { getAuthUserId } from "@convex-dev/auth/server";
+import type { Doc } from "./_generated/dataModel";
+
+function normalizeHandle(value: string): string {
+  return value.trim().toLowerCase();
+}
+
+async function findChallengeTarget(
+  ctx: { db: { query: (table: "users") => unknown } },
+  rawIdentifier: string,
+): Promise<Doc<"users"> | null> {
+  const identifier = rawIdentifier.trim();
+  if (!identifier) return null;
+
+  const usersQuery = ctx.db.query("users") as {
+    withIndex: (
+      indexName: "by_username",
+      rangeBuilder: (q: { eq: (field: "username", value: string) => unknown }) => unknown,
+    ) => { first: () => Promise<Doc<"users"> | null> };
+    collect: () => Promise<Array<Doc<"users">>>;
+  };
+
+  const exactUsernameMatch = await usersQuery
+    .withIndex("by_username", (q) => q.eq("username", identifier))
+    .first();
+  if (exactUsernameMatch) return exactUsernameMatch;
+
+  const normalizedIdentifier = normalizeHandle(identifier);
+  const users = await usersQuery.collect();
+  return (
+    users.find((user) => {
+      const username = typeof user.username === "string" ? user.username : "";
+      const displayName =
+        typeof user.displayName === "string" ? user.displayName : "";
+      return (
+        normalizeHandle(username) === normalizedIdentifier ||
+        normalizeHandle(displayName) === normalizedIdentifier
+      );
+    }) ?? null
+  );
+}
 
 export const getPending = query({
   args: {},
@@ -43,12 +83,13 @@ export const create = mutation({
     const userId = await getAuthUserId(ctx);
     if (!userId) throw new Error("Not authenticated");
 
-    const challenged = await ctx.db
-      .query("users")
-      .withIndex("by_username", (q) => q.eq("username", challengedUsername))
-      .first();
+    const challenged = await findChallengeTarget(ctx, challengedUsername);
 
-    if (!challenged) throw new Error("User not found");
+    if (!challenged) {
+      throw new Error(
+        `User not found: ${challengedUsername.trim()}. Try the exact @username shown on their profile.`,
+      );
+    }
     if (challenged._id === userId) throw new Error("Cannot challenge yourself");
 
     const challengeId = await ctx.db.insert("challenges", {
