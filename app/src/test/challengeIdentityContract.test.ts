@@ -53,4 +53,74 @@ describe("challenge identity lookup", () => {
       status: "pending",
     });
   });
+
+  it("rejects ambiguous display-name challenge targets instead of silently sending to the wrong duplicate", async () => {
+    const duplicateTargets = [
+      { _id: "target_old", username: "darkhouse13", displayName: "DarkHouse13" },
+      { _id: "target_current", username: "hamza", displayName: "DarkHouse13" },
+    ];
+    const inserted = vi.fn(async () => "challenge_1");
+
+    const ctx = {
+      db: {
+        query: (table: string) => {
+          expect(table).toBe("users");
+          return {
+            withIndex: (_indexName: string, _builder: unknown) => ({
+              first: async () => null,
+            }),
+            collect: async () => duplicateTargets,
+          };
+        },
+        insert: inserted,
+      },
+    };
+
+    await expect(
+      handlerOf(challenges.create)(ctx, {
+        challengedUsername: "DarkHouse13",
+        sport: "football",
+        mode: "quiz",
+      }),
+    ).rejects.toThrow(/multiple users match/i);
+    expect(inserted).not.toHaveBeenCalled();
+  });
+
+  it("prefers an exact username over duplicate display-name matches", async () => {
+    const exactUsernameTarget = {
+      _id: "target_exact",
+      username: "DarkHouse13",
+      displayName: "Old Display",
+    };
+    const inserted = vi.fn(async () => "challenge_1");
+
+    const ctx = {
+      db: {
+        query: (table: string) => {
+          expect(table).toBe("users");
+          return {
+            withIndex: (_indexName: string, _builder: unknown) => ({
+              first: async () => exactUsernameTarget,
+            }),
+            collect: async () => {
+              throw new Error("should not scan display names after exact username match");
+            },
+          };
+        },
+        insert: inserted,
+      },
+    };
+
+    await expect(
+      handlerOf(challenges.create)(ctx, {
+        challengedUsername: "DarkHouse13",
+        sport: "football",
+        mode: "quiz",
+      }),
+    ).resolves.toEqual({ challengeId: "challenge_1" });
+    expect(inserted).toHaveBeenCalledWith(
+      "challenges",
+      expect.objectContaining({ challengedId: "target_exact" }),
+    );
+  });
 });

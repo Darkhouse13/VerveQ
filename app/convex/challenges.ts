@@ -7,6 +7,18 @@ function normalizeHandle(value: string): string {
   return value.trim().toLowerCase();
 }
 
+function oneOrAmbiguous(
+  matches: Array<Doc<"users">>,
+  identifier: string,
+  matchType: "username" | "display name",
+): Doc<"users"> | null {
+  if (matches.length === 0) return null;
+  if (matches.length === 1) return matches[0];
+  throw new Error(
+    `Multiple users match ${identifier.trim()} by ${matchType}. Ask them for their exact @username.`,
+  );
+}
+
 async function findChallengeTarget(
   ctx: { db: { query: (table: "users") => unknown } },
   rawIdentifier: string,
@@ -29,17 +41,17 @@ async function findChallengeTarget(
 
   const normalizedIdentifier = normalizeHandle(identifier);
   const users = await usersQuery.collect();
-  return (
-    users.find((user) => {
-      const username = typeof user.username === "string" ? user.username : "";
-      const displayName =
-        typeof user.displayName === "string" ? user.displayName : "";
-      return (
-        normalizeHandle(username) === normalizedIdentifier ||
-        normalizeHandle(displayName) === normalizedIdentifier
-      );
-    }) ?? null
-  );
+
+  const identityMatches = users.filter((user) => {
+    const username = typeof user.username === "string" ? user.username : "";
+    const displayName =
+      typeof user.displayName === "string" ? user.displayName : "";
+    return (
+      normalizeHandle(username) === normalizedIdentifier ||
+      normalizeHandle(displayName) === normalizedIdentifier
+    );
+  });
+  return oneOrAmbiguous(identityMatches, identifier, "username or display name");
 }
 
 export const getPending = query({
@@ -60,7 +72,7 @@ export const getPending = query({
         const challenger = await ctx.db.get(c.challengerId);
         return {
           challengeId: c._id,
-          challenger: challenger?.username ?? "Unknown",
+          challenger: challenger?.displayName ?? challenger?.username ?? "Unknown",
           sport: c.sport,
           mode: c.mode,
           createdAt: c._creationTime,
@@ -87,7 +99,7 @@ export const create = mutation({
 
     if (!challenged) {
       throw new Error(
-        `User not found: ${challengedUsername.trim()}. Try the exact @username shown on their profile.`,
+        `User not found: ${challengedUsername.trim()}. Ask them for their exact @username from Profile.`,
       );
     }
     if (challenged._id === userId) throw new Error("Cannot challenge yourself");

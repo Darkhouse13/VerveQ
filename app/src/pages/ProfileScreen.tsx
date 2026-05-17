@@ -116,6 +116,11 @@ export default function ProfileScreen() {
           <h2 className="font-heading font-bold text-2xl mt-3">
             {profile.displayName || profile.username}
           </h2>
+          {profile.username && (
+            <p className="text-sm font-mono font-bold text-muted-foreground mt-1">
+              @{profile.username}
+            </p>
+          )}
           <p className="text-xs text-muted-foreground">
             Member since{" "}
             {new Date(profile.createdAt).toLocaleDateString("en-US", {

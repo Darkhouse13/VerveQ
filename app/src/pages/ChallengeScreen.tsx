@@ -83,7 +83,7 @@ export default function ChallengeScreen() {
               Challenge a Friend
             </h3>
             <NeoInput
-              placeholder="Enter username"
+              placeholder="Enter exact @username"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               className="mb-3"

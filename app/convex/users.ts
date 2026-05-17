@@ -2,6 +2,63 @@ import { query, mutation } from "./_generated/server";
 import { v } from "convex/values";
 import { getAuthUserId } from "@convex-dev/auth/server";
 
+function normalizeUsername(value: string): string {
+  const normalized = value
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9_]/g, "")
+    .slice(0, 24);
+  return normalized || "user";
+}
+
+async function usernameExistsCaseInsensitive(
+  ctx: { db: { query: (table: "users") => unknown } },
+  username: string,
+  currentUserId: string,
+): Promise<boolean> {
+  const usersQuery = ctx.db.query("users") as {
+    withIndex: (
+      indexName: "by_username",
+      rangeBuilder: (q: { eq: (field: "username", value: string) => unknown }) => unknown,
+    ) => { first: () => Promise<{ _id: string } | null> };
+    collect?: () => Promise<Array<{ _id: string; username?: string }>>;
+  };
+
+  const exact = await usersQuery
+    .withIndex("by_username", (q) => q.eq("username", username))
+    .first();
+  if (exact && exact._id !== currentUserId) return true;
+
+  if (typeof usersQuery.collect === "function") {
+    const normalized = username.toLowerCase();
+    const users = await usersQuery.collect();
+    return users.some(
+      (user) =>
+        user._id !== currentUserId &&
+        typeof user.username === "string" &&
+        user.username.trim().toLowerCase() === normalized,
+    );
+  }
+
+  return false;
+}
+
+async function pickUniqueUsername(
+  ctx: { db: { query: (table: "users") => unknown } },
+  rawUsername: string,
+  currentUserId: string,
+): Promise<string> {
+  const baseCandidate = normalizeUsername(rawUsername);
+  let candidate = baseCandidate;
+  for (let attempt = 0; attempt < 8; attempt++) {
+    const collision = await usernameExistsCaseInsensitive(ctx, candidate, currentUserId);
+    if (!collision) return candidate;
+    const suffix = Math.random().toString(36).slice(2, 6);
+    candidate = `${baseCandidate}_${suffix}`;
+  }
+  throw new Error("Could not allocate a unique username. Please try again.");
+}
+
 export const me = query({
   args: {},
   handler: async (ctx) => {
@@ -55,20 +112,7 @@ export const ensureProfile = mutation({
       return userId;
     }
 
-    // Pick a unique candidate. We only try a few deterministic variants
-    // before giving up — full uniqueness enforcement is tracked separately
-    // (audit HIGH-3).
-    const baseCandidate = args.username.trim() || "user";
-    let candidate = baseCandidate;
-    for (let attempt = 0; attempt < 5; attempt++) {
-      const collision = await ctx.db
-        .query("users")
-        .withIndex("by_username", (q) => q.eq("username", candidate))
-        .first();
-      if (!collision || collision._id === userId) break;
-      const suffix = Math.random().toString(36).slice(2, 6);
-      candidate = `${baseCandidate}_${suffix}`;
-    }
+    const candidate = await pickUniqueUsername(ctx, args.username, userId);
 
     await ctx.db.patch(userId, {
       username: candidate,
