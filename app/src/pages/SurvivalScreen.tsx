@@ -53,6 +53,7 @@ export default function SurvivalScreen() {
   const [hints, setHints] = useState<string[]>([]);
   const [hintStage, setHintStage] = useState(0);
   const [hintTokens, setHintTokens] = useState(3);
+  const [hintLoading, setHintLoading] = useState(false);
 
   // Speed streak state
   const [speedStreak, setSpeedStreak] = useState(0);
@@ -225,7 +226,8 @@ export default function SurvivalScreen() {
   };
 
   const handleHint = async () => {
-    if (!sessionId || hintTokens <= 0 || hintStage >= 3) return;
+    if (!sessionId || hintTokens <= 0 || hintStage >= 3 || hintLoading) return;
+    setHintLoading(true);
     try {
       const nextStage = hintStage + 1;
       const res = await hintMutation({ sessionId, stage: nextStage });
@@ -234,6 +236,8 @@ export default function SurvivalScreen() {
       setHintTokens(res.tokensLeft);
     } catch {
       toast.error("Failed to get hint");
+    } finally {
+      setHintLoading(false);
     }
   };
 
@@ -407,11 +411,13 @@ export default function SurvivalScreen() {
           variant="blue"
           size="md"
           onClick={handleHint}
-          disabled={hintTokens <= 0 || hintStage >= 3}
+          disabled={hintTokens <= 0 || hintStage >= 3 || hintLoading}
         >
-          {hintTokens <= 0
-            ? "No Hints Left"
-            : `\u{1F4A1} Hint (${hintTokens})`}
+          {hintLoading
+            ? "Fetching Hint..."
+            : hintTokens <= 0
+              ? "No Hints Left"
+              : `\u{1F4A1} Hint (${hintTokens})`}
         </NeoButton>
         <NeoButton
           variant={freeSkipsLeft > 0 ? "secondary" : "danger"}

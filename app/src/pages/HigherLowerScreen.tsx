@@ -77,6 +77,7 @@ export default function HigherLowerScreen() {
   const [feedback, setFeedback] = useState<{ correct: boolean; value: number } | null>(null);
   const [endReason, setEndReason] = useState<string | null>(null);
   const [animating, setAnimating] = useState(false);
+  const [pendingGuess, setPendingGuess] = useState<"higher" | "lower" | null>(null);
   const [shakeB, setShakeB] = useState(false);
   const [slideIn, setSlideIn] = useState(false);
   const [startupState, setStartupState] = useState<{
@@ -156,6 +157,7 @@ export default function HigherLowerScreen() {
   const handleGuess = async (guess: "higher" | "lower") => {
     if (!sessionId || animating || gameOver) return;
     setAnimating(true);
+    setPendingGuess(guess);
 
     try {
       const result = await makeGuessMut({ sessionId, guess });
@@ -196,7 +198,10 @@ export default function HigherLowerScreen() {
     } catch (err) {
       console.error("Guess error:", err);
     } finally {
-      setTimeout(() => setAnimating(false), 1300);
+      setTimeout(() => {
+        setAnimating(false);
+        setPendingGuess(null);
+      }, 1300);
     }
   };
 
@@ -378,7 +383,7 @@ export default function HigherLowerScreen() {
             disabled={animating}
           >
             <TrendingUp size={20} className="mr-1" />
-            Higher
+            {pendingGuess === "higher" ? "Checking..." : "Higher"}
           </NeoButton>
           <NeoButton
             variant="pink"
@@ -387,7 +392,7 @@ export default function HigherLowerScreen() {
             disabled={animating}
           >
             <TrendingDown size={20} className="mr-1" />
-            Lower
+            {pendingGuess === "lower" ? "Checking..." : "Lower"}
           </NeoButton>
         </div>
       )}

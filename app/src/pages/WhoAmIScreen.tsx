@@ -335,7 +335,7 @@ export default function WhoAmIScreen() {
               disabled={!guess.trim() || submitting}
             >
               <User size={16} className="mr-1" />
-              Guess
+              {submitting ? "Checking..." : "Guess"}
             </NeoButton>
             <NeoButton
               variant="accent"
@@ -344,7 +344,9 @@ export default function WhoAmIScreen() {
               disabled={currentStage >= 4 || revealing}
             >
               <Eye size={16} className="mr-1" />
-              Reveal ({currentStage >= 4 ? "Max" : "-25%"})
+              {revealing
+                ? "Revealing..."
+                : `Reveal (${currentStage >= 4 ? "Max" : "-25%"})`}
             </NeoButton>
           </div>
         </div>
