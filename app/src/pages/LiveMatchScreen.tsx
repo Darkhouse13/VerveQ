@@ -8,6 +8,8 @@ import { RoundResult } from "@/components/RoundResult";
 import { useAntiCheat } from "@/hooks/useAntiCheat";
 import { ExitGameButton } from "@/components/ExitGameButton";
 import { Check, X } from "lucide-react";
+import { QuestionImage } from "@/components/QuestionImage";
+import { ImageZoomModal } from "@/components/ImageZoomModal";
 import type { Id } from "../../convex/_generated/dataModel";
 
 export default function LiveMatchScreen() {
@@ -23,6 +25,7 @@ export default function LiveMatchScreen() {
   } | null>(null);
   const [shaking, setShaking] = useState(false);
   const [questionTimer, setQuestionTimer] = useState(10);
+  const [zoomImage, setZoomImage] = useState<string | null>(null);
   const prevQuestionRef = useRef(-1);
   const updateQuestionTimer = useCallback((questionStartedAt?: number) => {
     if (!questionStartedAt) {
@@ -87,17 +90,33 @@ export default function LiveMatchScreen() {
   useEffect(() => {
     if (!match) return;
     if (match.status === "completed" || match.status === "forfeited") {
-      const isWinner = match.winnerId === (match.isPlayer1 ? match.player1.id : match.player2.id);
+      const myId = match.isPlayer1 ? match.player1.id : match.player2.id;
+      const opponent = match.isPlayer1 ? match.player2 : match.player1;
+      const myScore = match.isPlayer1 ? match.player1Score : match.player2Score;
+      const opponentScore = match.isPlayer1 ? match.player2Score : match.player1Score;
+      const outcome =
+        match.status === "forfeited"
+          ? match.winnerId === myId
+            ? "forfeitWin"
+            : "forfeitLoss"
+          : match.winnerId === undefined
+            ? "draw"
+            : match.winnerId === myId
+              ? "win"
+              : "loss";
       navigate("/results", {
         state: {
-          score: match.isPlayer1 ? match.player1Score : match.player2Score,
+          score: myScore,
+          opponentScore,
           total: match.totalQuestions,
           correctCount: (match.myAnswers as Array<{ correct: boolean }>).filter((a) => a?.correct).length,
           avgTime: 0,
           eloChange: null,
           newElo: null,
           sport: match.sport,
-          mode: "quiz" as const,
+          mode: "challenge" as const,
+          outcome,
+          opponentName: opponent.username,
         },
         replace: true,
       });
@@ -187,6 +206,7 @@ export default function LiveMatchScreen() {
   const currentQ = match.questions[match.currentQuestion] as {
     question: string;
     options: string[];
+    imageUrl?: string | null;
   } | undefined;
 
   if (!currentQ) {
@@ -283,6 +303,15 @@ export default function LiveMatchScreen() {
         shadow="lg"
         className={`mb-5 ${shaking ? "animate-shake" : ""}`}
       >
+        {currentQ.imageUrl && (
+          <div className="mb-3">
+            <QuestionImage
+              imageUrl={currentQ.imageUrl}
+              alt={currentQ.question}
+              onZoom={() => setZoomImage(currentQ.imageUrl!)}
+            />
+          </div>
+        )}
         <p className="font-heading font-bold text-xl leading-tight">
           {currentQ.question}
         </p>
@@ -310,6 +339,13 @@ export default function LiveMatchScreen() {
           </button>
         ))}
       </div>
+      {zoomImage && (
+        <ImageZoomModal
+          imageUrl={zoomImage}
+          open={!!zoomImage}
+          onClose={() => setZoomImage(null)}
+        />
+      )}
     </div>
   );
 }

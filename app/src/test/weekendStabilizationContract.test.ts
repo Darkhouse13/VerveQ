@@ -698,6 +698,38 @@ describe("weekend stabilization live matches", () => {
     }
   });
 
+  it("includes storage image URLs for visible live-match image questions without leaking answers", async () => {
+    const match = makeMatch("question", 0);
+    match.questions = [
+      {
+        question: "Identify the stadium",
+        options: ["A", "B", "C", "D"],
+        correctAnswer: "A",
+        explanation: "Hidden explanation",
+        imageId: "storage_image_1",
+      },
+    ];
+    match.totalQuestions = 1;
+    const ctx = {
+      db: makeCtx(match).db,
+      storage: {
+        getUrl: async (imageId: string) => `https://cdn.example/${imageId}.jpg`,
+      },
+    };
+
+    const result = (await handlerOf(liveMatches.getMatch)(ctx, {
+      matchId: "match_1",
+    })) as { questions: Array<Record<string, unknown> | null> };
+
+    expect(result.questions[0]).toEqual({
+      question: "Identify the stadium",
+      options: ["A", "B", "C", "D"],
+      imageUrl: "https://cdn.example/storage_image_1.jpg",
+    });
+    expect(result.questions[0]).not.toHaveProperty("correctAnswer");
+    expect(result.questions[0]).not.toHaveProperty("explanation");
+  });
+
   it("does not leak opponent correctness while the question is live", async () => {
     const match = makeMatch("question", 0);
     match.player2Answers = [

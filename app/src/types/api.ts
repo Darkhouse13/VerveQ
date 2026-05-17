@@ -6,7 +6,7 @@ export interface GameResultState {
   eloChange: number | null;
   newElo: number | null;
   sport: string;
-  mode: "quiz" | "survival" | "daily-quiz" | "daily-survival" | "blitz";
+  mode: "quiz" | "survival" | "daily-quiz" | "daily-survival" | "blitz" | "challenge";
   shareString?: string;
   wrongCount?: number;
   kFactor?: number;
@@ -16,4 +16,7 @@ export interface GameResultState {
     timeTaken: number;
     score: number;
   }>;
+  opponentScore?: number;
+  outcome?: "win" | "loss" | "draw" | "forfeitWin" | "forfeitLoss";
+  opponentName?: string;
 }

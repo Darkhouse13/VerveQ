@@ -24,6 +24,7 @@ type StoredLiveQuestion = {
   options: string[];
   correctAnswer?: string;
   explanation?: string | null;
+  imageId?: Id<"_storage"> | null;
 };
 
 type LiveAnswer = {
@@ -34,10 +35,17 @@ type LiveAnswer = {
   answeredAt: number;
 };
 
-function sanitizeQuestion(question: StoredLiveQuestion) {
+async function sanitizeQuestion(
+  ctx: { storage?: { getUrl: (id: Id<"_storage">) => Promise<string | null> } },
+  question: StoredLiveQuestion,
+) {
+  const imageUrl = question.imageId && ctx.storage
+    ? await ctx.storage.getUrl(question.imageId)
+    : null;
   return {
     question: question.question,
     options: question.options,
+    ...(imageUrl ? { imageUrl } : {}),
   };
 }
 
@@ -183,6 +191,7 @@ export const createFromChallenge = mutation({
       options: q.options,
       correctAnswer: q.correctAnswer,
       explanation: q.explanation ?? null,
+      imageId: q.imageId ?? null,
     }));
 
     const now = Date.now();
@@ -421,21 +430,23 @@ export const getMatch = query({
     // Never expose correctAnswer/explanation through the public match view.
     // Future questions stay hidden entirely; the current/past display shape is
     // question text + options only.
-    const questions = (match.questions as StoredLiveQuestion[]).map((q, idx) => {
-      const isCurrent = idx === match.currentQuestion;
-      const isPast = idx < match.currentQuestion;
-      if (
-        isPast ||
-        (isCurrent &&
-          (match.status === "question" ||
-            match.status === "roundResult" ||
-            match.status === "completed" ||
-            match.status === "forfeited"))
-      ) {
-        return sanitizeQuestion(q);
-      }
-      return null;
-    });
+    const questions = await Promise.all(
+      (match.questions as StoredLiveQuestion[]).map(async (q, idx) => {
+        const isCurrent = idx === match.currentQuestion;
+        const isPast = idx < match.currentQuestion;
+        if (
+          isPast ||
+          (isCurrent &&
+            (match.status === "question" ||
+              match.status === "roundResult" ||
+              match.status === "completed" ||
+              match.status === "forfeited"))
+        ) {
+          return sanitizeQuestion(ctx, q);
+        }
+        return null;
+      }),
+    );
 
     // Opponent status for current question
     const opponentAnswers = isP1

@@ -61,11 +61,24 @@ export default function ResultScreen() {
 
   if (!state) return null;
 
-  const isQuiz = state.mode === "quiz";
+  const isChallenge = state.mode === "challenge";
+  const isQuiz = state.mode === "quiz" || isChallenge;
   const accuracy = isQuiz
     ? state.correctCount / state.total
     : state.score / Math.max(state.total, 1);
   const grade = getGrade(accuracy);
+  const challengeTitle =
+    state.outcome === "win"
+      ? "You Won"
+      : state.outcome === "loss"
+        ? "You Lost"
+        : state.outcome === "draw"
+          ? "Draw"
+          : state.outcome === "forfeitWin"
+            ? "Opponent Forfeited"
+            : state.outcome === "forfeitLoss"
+              ? "Forfeit"
+              : "Match Result";
   const eloChange = state.eloChange;
   const eloPositive = eloChange !== null && eloChange >= 0;
   const kFactorExplanation = getKFactorExplanation(
@@ -73,14 +86,21 @@ export default function ResultScreen() {
     state.kFactor,
   );
 
-  const stats = isQuiz
+  const stats = isChallenge
     ? [
-        { label: "Correct", value: `${state.correctCount}`, color: "success" as const },
-        { label: "Avg Time", value: `${state.avgTime.toFixed(1)}s`, color: "blue" as const },
-        { label: "Accuracy", value: `${Math.round(accuracy * 100)}%`, color: "accent" as const },
-        { label: "Score", value: `${state.score}`, color: "primary" as const },
+        { label: "Your Score", value: `${state.score}`, color: "primary" as const },
+        { label: "Opponent", value: `${state.opponentScore ?? 0}`, color: "accent" as const },
+        { label: "Correct", value: `${state.correctCount}/${state.total}`, color: "success" as const },
+        { label: "Sport", value: state.sport, color: "blue" as const },
       ]
-    : [
+    : isQuiz
+      ? [
+          { label: "Correct", value: `${state.correctCount}`, color: "success" as const },
+          { label: "Avg Time", value: `${state.avgTime.toFixed(1)}s`, color: "blue" as const },
+          { label: "Accuracy", value: `${Math.round(accuracy * 100)}%`, color: "accent" as const },
+          { label: "Score", value: `${state.score}`, color: "primary" as const },
+        ]
+      : [
         { label: "Rounds", value: `${state.total}`, color: "success" as const },
         { label: "Score", value: `${state.score}`, color: "primary" as const },
         { label: "Sport", value: state.sport, color: "blue" as const },
@@ -94,31 +114,51 @@ export default function ResultScreen() {
           {isQuiz ? `${state.correctCount}/${state.total}` : state.score}
         </p>
         <p className="font-heading text-sm text-muted-foreground mt-2">
-          Final Score
+          {isChallenge ? "Match Result" : "Final Score"}
         </p>
       </NeoCard>
 
-      <div className="mb-4 animate-badge-land">
-        <NeoBadge
-          color={grade.color}
-          rotated
-          size="md"
-          className="text-2xl px-6 py-2"
-        >
-          {grade.letter}
-        </NeoBadge>
-      </div>
+      {isChallenge ? (
+        <div className="mb-6 animate-badge-land text-center">
+          <NeoBadge
+            color={state.outcome === "win" || state.outcome === "forfeitWin" ? "success" : state.outcome === "draw" ? "blue" : "destructive"}
+            rotated
+            size="md"
+            className="text-xl px-6 py-2"
+          >
+            {challengeTitle}
+          </NeoBadge>
+          {state.opponentName && (
+            <p className="text-xs text-muted-foreground mt-3">
+              vs @{state.opponentName}
+            </p>
+          )}
+        </div>
+      ) : (
+        <>
+          <div className="mb-4 animate-badge-land">
+            <NeoBadge
+              color={grade.color}
+              rotated
+              size="md"
+              className="text-2xl px-6 py-2"
+            >
+              {grade.letter}
+            </NeoBadge>
+          </div>
 
-      <div className="flex gap-2 mb-6">
-        {[1, 2, 3].map((s) => (
-          <Star
-            key={s}
-            size={32}
-            strokeWidth={2.5}
-            className={`neo-border rounded ${s <= grade.stars ? "fill-primary text-primary" : "text-muted"}`}
-          />
-        ))}
-      </div>
+          <div className="flex gap-2 mb-6">
+            {[1, 2, 3].map((s) => (
+              <Star
+                key={s}
+                size={32}
+                strokeWidth={2.5}
+                className={`neo-border rounded ${s <= grade.stars ? "fill-primary text-primary" : "text-muted"}`}
+              />
+            ))}
+          </div>
+        </>
+      )}
 
       {eloChange !== null && (
         <div className="flex items-center gap-2 mb-6">
@@ -204,21 +244,23 @@ export default function ResultScreen() {
         <NeoButton
           variant="primary"
           size="full"
-          onClick={() => navigate(`/sport-select?mode=${state.mode}`)}
+          onClick={() => isChallenge ? navigate("/challenge") : navigate(`/sport-select?mode=${state.mode}`)}
         >
-          Play Again
+          {isChallenge ? "Challenge Again" : "Play Again"}
         </NeoButton>
-        <NeoButton
-          variant="secondary"
-          size="full"
-          onClick={() =>
-            navigate(
-              `/sport-select?mode=${isQuiz ? "survival" : "quiz"}`,
-            )
-          }
-        >
-          Try Other Mode
-        </NeoButton>
+        {!isChallenge && (
+          <NeoButton
+            variant="secondary"
+            size="full"
+            onClick={() =>
+              navigate(
+                `/sport-select?mode=${isQuiz ? "survival" : "quiz"}`,
+              )
+            }
+          >
+            Try Other Mode
+          </NeoButton>
+        )}
         <button
           className="w-full text-center text-sm text-muted-foreground font-heading underline underline-offset-4 cursor-pointer"
           onClick={() => navigate("/home")}
