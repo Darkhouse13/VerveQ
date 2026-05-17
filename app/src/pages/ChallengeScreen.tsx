@@ -2,7 +2,7 @@ import { NeoCard } from "@/components/neo/NeoCard";
 import { NeoButton } from "@/components/neo/NeoButton";
 import { NeoInput } from "@/components/neo/NeoInput";
 import { BottomNav } from "@/components/neo/BottomNav";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Trophy, User, Gamepad2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
@@ -32,6 +32,13 @@ export default function ChallengeScreen() {
   const acceptMut = useMutation(api.challenges.accept);
   const declineMut = useMutation(api.challenges.decline);
   const createLiveMatchMut = useMutation(api.liveMatches.createFromChallenge);
+  const activeMatchId = useQuery(api.liveMatches.getActiveMatch);
+
+  useEffect(() => {
+    if (activeMatchId) {
+      navigate(`/waiting-room?matchId=${activeMatchId}`, { replace: true });
+    }
+  }, [activeMatchId, navigate]);
 
   const handleSend = async () => {
     if (!username.trim()) {
