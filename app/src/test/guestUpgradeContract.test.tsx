@@ -270,6 +270,9 @@ describe("LoginScreen — mode override + guest notice", () => {
     ).toBeInTheDocument();
     // Signup-only fields
     expect(
+      screen.getByPlaceholderText(/^username/i),
+    ).toBeInTheDocument();
+    expect(
       screen.getByPlaceholderText(/display name/i),
     ).toBeInTheDocument();
     expect(

@@ -25,6 +25,8 @@ export type AuthErrorCode =
   | "invalid_email"
   | "legacy_email"
   | "weak_password"
+  | "invalid_username"
+  | "username_taken"
   | "password_mismatch"
   | "invalid_credentials"
   | "invalid_code"
@@ -45,7 +47,12 @@ interface AuthContextValue {
   isAuthenticated: boolean;
   isGuest: boolean;
   isLoading: boolean;
-  signUp: (email: string, password: string, displayName?: string) => Promise<void>;
+  signUp: (
+    email: string,
+    password: string,
+    username: string,
+    displayName?: string,
+  ) => Promise<void>;
   signIn: (email: string, password: string) => Promise<void>;
   requestPasswordReset: (email: string) => Promise<void>;
   confirmPasswordReset: (
@@ -72,10 +79,24 @@ export function isLegacyVerveqEmail(email: string): boolean {
   return normalizeEmail(email).endsWith("@verveq.local");
 }
 
-function deriveUsernameFromEmail(email: string): string {
-  const localPart = email.split("@")[0] ?? "";
-  const sanitized = localPart.replace(/[^a-z0-9_]/g, "").slice(0, 24);
-  return sanitized || "user";
+const USERNAME_RE = /^[a-z0-9_]{3,24}$/;
+
+function normalizeUsernameInput(username: string): string {
+  return username.trim().toLowerCase();
+}
+
+function isValidUsername(username: string): boolean {
+  return USERNAME_RE.test(username);
+}
+
+
+function isTransientAuthPropagationError(err: unknown): boolean {
+  const message = err instanceof Error ? err.message : String(err);
+  return message.toLowerCase().includes("not authenticated");
+}
+
+function wait(ms: number): Promise<void> {
+  return new Promise((resolve) => window.setTimeout(resolve, ms));
 }
 
 function mapAuthError(err: unknown, fallbackCode: AuthErrorCode): AuthError {
@@ -100,6 +121,15 @@ function mapAuthError(err: unknown, fallbackCode: AuthErrorCode): AuthError {
       "Password reset is temporarily unavailable. Please try again later.",
     );
   }
+  if (lower.includes("username is already taken")) {
+    return new AuthError(
+      "username_taken",
+      "Username is already taken. Choose another one.",
+    );
+  }
+  if (lower.includes("username must")) {
+    return new AuthError("invalid_username", message);
+  }
   if (
     lower.includes("password must be") ||
     lower.includes("too common") ||
@@ -119,9 +149,29 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const isAuthenticated = !!user;
   const isGuest = !!(user?.isGuest ?? user?.isAnonymous);
 
+  const ensureProfileAfterAuth = useCallback(
+    async (args: { username: string; displayName?: string; isGuest: boolean }) => {
+      const delays = [0, 150, 350, 750, 1500];
+      let lastError: unknown;
+      for (const delay of delays) {
+        if (delay > 0) await wait(delay);
+        try {
+          await ensureProfile(args);
+          return;
+        } catch (err) {
+          lastError = err;
+          if (!isTransientAuthPropagationError(err)) throw err;
+        }
+      }
+      throw lastError;
+    },
+    [ensureProfile],
+  );
+
   const signUp = useCallback(
-    async (email: string, password: string, displayName?: string) => {
+    async (email: string, password: string, username: string, displayName?: string) => {
       const normalized = normalizeEmail(email);
+      const normalizedUsername = normalizeUsernameInput(username);
       if (!EMAIL_RE.test(normalized)) {
         throw new AuthError("invalid_email", "Please enter a valid email address.");
       }
@@ -129,6 +179,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         throw new AuthError(
           "legacy_email",
           "That email domain is reserved. Please use your real email address.",
+        );
+      }
+      if (!isValidUsername(normalizedUsername)) {
+        throw new AuthError(
+          "invalid_username",
+          "Username must be 3-24 lowercase letters, numbers, or underscores.",
         );
       }
       const pwResult = validatePassword(password);
@@ -146,8 +202,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         throw mapAuthError(err, "unknown");
       }
       try {
-        await ensureProfile({
-          username: deriveUsernameFromEmail(normalized),
+        await ensureProfileAfterAuth({
+          username: normalizedUsername,
           displayName: displayName?.trim() || undefined,
           isGuest: false,
         });
@@ -155,7 +211,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         throw mapAuthError(err, "unknown");
       }
     },
-    [convexSignIn, ensureProfile],
+    [convexSignIn, ensureProfileAfterAuth],
   );
 
   const signIn = useCallback(
@@ -238,12 +294,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const loginAsGuest = useCallback(async () => {
     await convexSignIn("anonymous");
     const guestId = `guest_${Date.now()}`;
-    await ensureProfile({
+    await ensureProfileAfterAuth({
       username: guestId,
       displayName: "Guest",
       isGuest: true,
     });
-  }, [convexSignIn, ensureProfile]);
+  }, [convexSignIn, ensureProfileAfterAuth]);
 
   const logout = useCallback(async () => {
     await convexSignOut();
@@ -253,12 +309,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     await convexSignOut();
     await convexSignIn("anonymous");
     const guestId = `guest_${Date.now()}`;
-    await ensureProfile({
+    await ensureProfileAfterAuth({
       username: guestId,
       displayName: "Guest",
       isGuest: true,
     });
-  }, [convexSignOut, convexSignIn, ensureProfile]);
+  }, [convexSignOut, convexSignIn, ensureProfileAfterAuth]);
 
   const authUser: AuthUser | null = user
     ? {

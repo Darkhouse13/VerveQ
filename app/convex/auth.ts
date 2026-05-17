@@ -37,10 +37,8 @@ export const { auth, signIn, signOut, store } = convexAuth({
         const email = rawEmail.toLowerCase().trim();
         const rawDisplayName =
           typeof params.displayName === "string" ? params.displayName.trim() : "";
-        const username = deriveUsernameFromEmail(email);
         return {
           email,
-          username,
           displayName: rawDisplayName || undefined,
           isGuest: false,
           totalGames: 0,

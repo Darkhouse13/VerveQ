@@ -39,7 +39,7 @@ describe("user identity uniqueness", () => {
     );
   });
 
-  it("does not allow a case-insensitive duplicate username to keep the same handle", async () => {
+  it("rejects a case-insensitive duplicate username instead of auto-suffixing", async () => {
     const patch = vi.fn(async () => undefined);
     let attemptedUsername = "";
     const ctx = {
@@ -60,14 +60,13 @@ describe("user identity uniqueness", () => {
       },
     };
 
-    await handlerOf(users.ensureProfile)(ctx, {
-      username: "DarkHouse13",
-      displayName: "DarkHouse13",
-      isGuest: false,
-    });
-
-    const saved = patch.mock.calls[0]?.[1] as { username?: string };
-    expect(saved.username).toMatch(/^darkhouse13_[a-z0-9]{4}$/);
-    expect(saved.username).not.toBe("darkhouse13");
+    await expect(
+      handlerOf(users.ensureProfile)(ctx, {
+        username: "DarkHouse13",
+        displayName: "DarkHouse13",
+        isGuest: false,
+      }),
+    ).rejects.toThrow(/username is already taken/i);
+    expect(patch).not.toHaveBeenCalled();
   });
 });

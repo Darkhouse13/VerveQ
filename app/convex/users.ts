@@ -43,20 +43,20 @@ async function usernameExistsCaseInsensitive(
   return false;
 }
 
-async function pickUniqueUsername(
+async function validateAvailableUsername(
   ctx: { db: { query: (table: "users") => unknown } },
   rawUsername: string,
   currentUserId: string,
 ): Promise<string> {
-  const baseCandidate = normalizeUsername(rawUsername);
-  let candidate = baseCandidate;
-  for (let attempt = 0; attempt < 8; attempt++) {
-    const collision = await usernameExistsCaseInsensitive(ctx, candidate, currentUserId);
-    if (!collision) return candidate;
-    const suffix = Math.random().toString(36).slice(2, 6);
-    candidate = `${baseCandidate}_${suffix}`;
+  const candidate = normalizeUsername(rawUsername);
+  if (!/^[a-z0-9_]{3,24}$/.test(candidate)) {
+    throw new Error("Username must be 3-24 lowercase letters, numbers, or underscores.");
   }
-  throw new Error("Could not allocate a unique username. Please try again.");
+  const collision = await usernameExistsCaseInsensitive(ctx, candidate, currentUserId);
+  if (collision) {
+    throw new Error("Username is already taken. Choose another one.");
+  }
+  return candidate;
 }
 
 export const me = query({
@@ -112,7 +112,7 @@ export const ensureProfile = mutation({
       return userId;
     }
 
-    const candidate = await pickUniqueUsername(ctx, args.username, userId);
+    const candidate = await validateAvailableUsername(ctx, args.username, userId);
 
     await ctx.db.patch(userId, {
       username: candidate,

@@ -48,6 +48,7 @@ export default function LoginScreen() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPwd, setConfirmPwd] = useState("");
+  const [username, setUsername] = useState("");
   const [displayName, setDisplayName] = useState("");
   const [code, setCode] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -100,6 +101,11 @@ export default function LoginScreen() {
       setError("Please enter your email.");
       return;
     }
+    const normalizedUsername = username.trim().toLowerCase();
+    if (!/^[a-z0-9_]{3,24}$/.test(normalizedUsername)) {
+      setError("Username must be 3-24 lowercase letters, numbers, or underscores.");
+      return;
+    }
     const pw = validatePassword(password);
     if (!pw.ok && pw.reason) {
       setError(describePasswordReason(pw.reason));
@@ -111,7 +117,12 @@ export default function LoginScreen() {
     }
     setLoading(true);
     try {
-      await signUp(email, password, displayName.trim() || undefined);
+      await signUp(
+        email,
+        password,
+        normalizedUsername,
+        displayName.trim() || undefined,
+      );
       navigate("/onboarding");
     } catch (e: unknown) {
       reportError(e);
@@ -286,6 +297,16 @@ export default function LoginScreen() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
             />
+            <NeoInput
+              type="text"
+              autoComplete="username"
+              placeholder="Username"
+              value={username}
+              onChange={(e) => setUsername(e.target.value.toLowerCase())}
+            />
+            <p className="text-xs text-muted-foreground font-heading text-center -mt-1">
+              Your challenge handle: @{username.trim().toLowerCase() || "username"}
+            </p>
             <NeoInput
               type="text"
               autoComplete="nickname"

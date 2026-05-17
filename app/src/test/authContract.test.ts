@@ -169,6 +169,7 @@ describe("AuthContext.signUp", () => {
       await result.current.signUp(
         "alice@example.com",
         "Zq7$mnPkL9#r",
+        "alice_the_striker",
         "Alice",
       );
     });
@@ -182,7 +183,7 @@ describe("AuthContext.signUp", () => {
     expect(params.displayName).toBe("Alice");
 
     expect(ensureProfile).toHaveBeenCalledWith({
-      username: "alice",
+      username: "alice_the_striker",
       displayName: "Alice",
       isGuest: false,
     });
@@ -191,7 +192,7 @@ describe("AuthContext.signUp", () => {
   it("throws AuthError(weak_password) when password is too short", async () => {
     const { result } = renderHook(() => useAuth(), { wrapper });
     await expect(
-      result.current.signUp("alice@example.com", "shortpw", "Alice"),
+      result.current.signUp("alice@example.com", "shortpw", "alice", "Alice"),
     ).rejects.toMatchObject({
       name: "AuthError",
       code: "weak_password",
@@ -203,7 +204,7 @@ describe("AuthContext.signUp", () => {
     const { result } = renderHook(() => useAuth(), { wrapper });
     const common = COMMON_PASSWORDS[0];
     await expect(
-      result.current.signUp("alice@example.com", common, "Alice"),
+      result.current.signUp("alice@example.com", common, "alice", "Alice"),
     ).rejects.toMatchObject({
       name: "AuthError",
       code: "weak_password",
@@ -214,7 +215,7 @@ describe("AuthContext.signUp", () => {
   it("rejects legacy @verveq.local emails as defense-in-depth on signUp", async () => {
     const { result } = renderHook(() => useAuth(), { wrapper });
     await expect(
-      result.current.signUp("alice@verveq.local", "Zq7$mnPkL9#r", "Alice"),
+      result.current.signUp("alice@verveq.local", "Zq7$mnPkL9#r", "alice", "Alice"),
     ).rejects.toMatchObject({
       name: "AuthError",
       code: "legacy_email",
@@ -225,7 +226,7 @@ describe("AuthContext.signUp", () => {
   it("rejects malformed emails", async () => {
     const { result } = renderHook(() => useAuth(), { wrapper });
     await expect(
-      result.current.signUp("not-an-email", "Zq7$mnPkL9#r"),
+      result.current.signUp("not-an-email", "Zq7$mnPkL9#r", "alice"),
     ).rejects.toMatchObject({
       name: "AuthError",
       code: "invalid_email",
@@ -237,12 +238,39 @@ describe("AuthContext.signUp", () => {
     authMock.signIn.mockRejectedValueOnce(new Error("Invalid password"));
     const { result } = renderHook(() => useAuth(), { wrapper });
     await expect(
-      result.current.signUp("alice@example.com", "Zq7$mnPkL9#r"),
+      result.current.signUp("alice@example.com", "Zq7$mnPkL9#r", "alice"),
     ).rejects.toMatchObject({
       name: "AuthError",
       code: "weak_password",
     });
   });
+
+  it("throws AuthError(invalid_username) when username is malformed", async () => {
+    const { result } = renderHook(() => useAuth(), { wrapper });
+    await expect(
+      result.current.signUp("alice@example.com", "Zq7$mnPkL9#r", "ab"),
+    ).rejects.toMatchObject({
+      name: "AuthError",
+      code: "invalid_username",
+    });
+    expect(authMock.signIn).not.toHaveBeenCalled();
+  });
+
+  it("maps backend duplicate username rejection into AuthError(username_taken)", async () => {
+    const ensureProfile = vi.fn(async () => {
+      throw new Error("Username is already taken. Choose another one.");
+    });
+    authMock.useMutation.mockReturnValue(ensureProfile);
+
+    const { result } = renderHook(() => useAuth(), { wrapper });
+    await expect(
+      result.current.signUp("alice@example.com", "Zq7$mnPkL9#r", "darkhouse13", "Alice"),
+    ).rejects.toMatchObject({
+      name: "AuthError",
+      code: "username_taken",
+    });
+  });
+
 });
 
 describe("AuthContext.signIn", () => {
