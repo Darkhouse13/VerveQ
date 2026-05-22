@@ -183,24 +183,30 @@ export default function LiveMatchScreen() {
       roundAnswers?.player1 || { correct: false, score: 0, timeTaken: 10 };
     const p2Answer =
       roundAnswers?.player2 || { correct: false, score: 0, timeTaken: 10 };
+    const leftRoundPlayer = match.isPlayer1 ? match.player1 : match.player2;
+    const rightRoundPlayer = match.isPlayer1 ? match.player2 : match.player1;
+    const leftRoundAnswer = match.isPlayer1 ? p1Answer : p2Answer;
+    const rightRoundAnswer = match.isPlayer1 ? p2Answer : p1Answer;
+    const leftRoundTotal = match.isPlayer1 ? match.player1Score : match.player2Score;
+    const rightRoundTotal = match.isPlayer1 ? match.player2Score : match.player1Score;
 
     return (
       <RoundResult
         questionNum={match.currentQuestion + 1}
         player1={{
-          name: match.player1.username,
-          correct: p1Answer.correct,
-          score: p1Answer.score,
-          timeTaken: p1Answer.timeTaken,
+          name: leftRoundPlayer.username,
+          correct: leftRoundAnswer.correct,
+          score: leftRoundAnswer.score,
+          timeTaken: leftRoundAnswer.timeTaken,
         }}
         player2={{
-          name: match.player2.username,
-          correct: p2Answer.correct,
-          score: p2Answer.score,
-          timeTaken: p2Answer.timeTaken,
+          name: rightRoundPlayer.username,
+          correct: rightRoundAnswer.correct,
+          score: rightRoundAnswer.score,
+          timeTaken: rightRoundAnswer.timeTaken,
         }}
-        player1Total={match.player1Score}
-        player2Total={match.player2Score}
+        player1Total={leftRoundTotal}
+        player2Total={rightRoundTotal}
       />
     );
   }
@@ -221,8 +227,12 @@ export default function LiveMatchScreen() {
 
   const me = match.isPlayer1 ? match.player1 : match.player2;
   const opponent = match.isPlayer1 ? match.player2 : match.player1;
+  const leftPlayer = me;
+  const rightPlayer = opponent;
   const myScore = match.isPlayer1 ? match.player1Score : match.player2Score;
   const oppScore = match.isPlayer1 ? match.player2Score : match.player1Score;
+  const leftScore = myScore;
+  const rightScore = oppScore;
 
   const opponentStatusText =
     match.opponentStatus === "lockedIn"
@@ -269,9 +279,9 @@ export default function LiveMatchScreen() {
       <div className="flex items-center justify-between mb-4">
         <div className="text-center">
           <p className="font-heading font-bold text-xs truncate max-w-[80px]">
-            {me.username}
+            {leftPlayer.username}
           </p>
-          <p className="font-mono font-bold text-lg">{myScore}</p>
+          <p className="font-mono font-bold text-lg">{leftScore}</p>
         </div>
 
         <div className="text-center">
@@ -287,9 +297,9 @@ export default function LiveMatchScreen() {
 
         <div className="text-center">
           <p className="font-heading font-bold text-xs truncate max-w-[80px]">
-            {opponent.username}
+            {rightPlayer.username}
           </p>
-          <p className="font-mono font-bold text-lg">{oppScore}</p>
+          <p className="font-mono font-bold text-lg">{rightScore}</p>
         </div>
       </div>
 
