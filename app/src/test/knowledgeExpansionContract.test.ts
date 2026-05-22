@@ -1,6 +1,18 @@
 import { describe, expect, it } from "vitest";
 import { readFileSync } from "node:fs";
 
+const readKnowledgeSeed = () => {
+  const source = readFileSync("convex/knowledgeQuestions.ts", "utf8");
+  const declarationStart = source.indexOf("export const knowledgeQuestions");
+  const arrayStart = source.indexOf("[", source.indexOf("=", declarationStart));
+  const arrayEnd = source.lastIndexOf("];", source.length) + 1;
+  return JSON.parse(source.slice(arrayStart, arrayEnd)) as Array<{
+    options: string[];
+    correctAnswer: string;
+    checksum: string;
+  }>;
+};
+
 describe("knowledge expansion contract", () => {
   it("ships a seeded knowledge question pool across all quiz difficulties", () => {
     const seedQuestions = readFileSync("convex/seedQuestions.ts", "utf8");
@@ -13,6 +25,20 @@ describe("knowledge expansion contract", () => {
     expect(knowledgeQuestions).toContain('"difficulty": "intermediate"');
     expect(knowledgeQuestions).toContain('"difficulty": "hard"');
     expect(knowledgeQuestions.match(/knowledge_v1_/g)?.length).toBeGreaterThanOrEqual(60);
+  });
+
+  it("does not put every knowledge correct answer in the first option slot", () => {
+    const questions = readKnowledgeSeed();
+    const positionCounts = [0, 0, 0, 0];
+
+    for (const question of questions) {
+      const correctIndex = question.options.indexOf(question.correctAnswer);
+      expect(correctIndex, question.checksum).toBeGreaterThanOrEqual(0);
+      positionCounts[correctIndex] += 1;
+    }
+
+    expect(questions).toHaveLength(300);
+    expect(positionCounts).toEqual([75, 75, 75, 75]);
   });
 
   it("exposes knowledge as a first-class quiz topic without routing survival into non-sport data", () => {

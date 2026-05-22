@@ -48,8 +48,8 @@ export const knowledgeQuestions: KnowledgeQuestionSeed[] = [
     "category": "common_knowledge",
     "question": "What gas do plants absorb from the air for photosynthesis?",
     "options": [
-      "Oxygen",
       "Carbon dioxide",
+      "Oxygen",
       "Nitrogen",
       "Helium"
     ],
@@ -64,9 +64,9 @@ export const knowledgeQuestions: KnowledgeQuestionSeed[] = [
     "category": "common_knowledge",
     "question": "How many continents are usually taught in the seven-continent model?",
     "options": [
+      "7",
       "5",
       "6",
-      "7",
       "8"
     ],
     "correctAnswer": "7",
@@ -82,8 +82,8 @@ export const knowledgeQuestions: KnowledgeQuestionSeed[] = [
     "options": [
       "Kyoto",
       "Osaka",
-      "Tokyo",
-      "Sapporo"
+      "Sapporo",
+      "Tokyo"
     ],
     "correctAnswer": "Tokyo",
     "explanation": "Tokyo has been Japan's capital since the imperial court moved there in 1868.",
@@ -96,8 +96,8 @@ export const knowledgeQuestions: KnowledgeQuestionSeed[] = [
     "category": "science",
     "question": "What force keeps planets in orbit around the Sun?",
     "options": [
-      "Magnetism",
       "Gravity",
+      "Magnetism",
       "Friction",
       "Electricity"
     ],
@@ -112,8 +112,8 @@ export const knowledgeQuestions: KnowledgeQuestionSeed[] = [
     "category": "science",
     "question": "Water freezes at what temperature on the Celsius scale?",
     "options": [
-      "0°C",
       "10°C",
+      "0°C",
       "32°C",
       "100°C"
     ],
@@ -129,9 +129,9 @@ export const knowledgeQuestions: KnowledgeQuestionSeed[] = [
     "question": "Who is famous for painting the Mona Lisa?",
     "options": [
       "Michelangelo",
-      "Leonardo da Vinci",
       "Vincent van Gogh",
-      "Pablo Picasso"
+      "Pablo Picasso",
+      "Leonardo da Vinci"
     ],
     "correctAnswer": "Leonardo da Vinci",
     "explanation": "Leonardo painted the Mona Lisa during the Italian Renaissance.",
@@ -145,9 +145,9 @@ export const knowledgeQuestions: KnowledgeQuestionSeed[] = [
     "question": "Who developed the theory of general relativity?",
     "options": [
       "Isaac Newton",
-      "Albert Einstein",
       "Galileo Galilei",
-      "Niels Bohr"
+      "Niels Bohr",
+      "Albert Einstein"
     ],
     "correctAnswer": "Albert Einstein",
     "explanation": "Einstein published general relativity in 1915.",
@@ -161,8 +161,8 @@ export const knowledgeQuestions: KnowledgeQuestionSeed[] = [
     "question": "Which ancient civilization built the pyramids at Giza?",
     "options": [
       "Romans",
-      "Ancient Egyptians",
       "Aztecs",
+      "Ancient Egyptians",
       "Vikings"
     ],
     "correctAnswer": "Ancient Egyptians",
@@ -176,9 +176,9 @@ export const knowledgeQuestions: KnowledgeQuestionSeed[] = [
     "category": "history",
     "question": "The first successful airplane flight is associated with which brothers?",
     "options": [
-      "Wright brothers",
       "Montgolfier brothers",
       "Grimm brothers",
+      "Wright brothers",
       "Mayo brothers"
     ],
     "correctAnswer": "Wright brothers",
@@ -193,9 +193,9 @@ export const knowledgeQuestions: KnowledgeQuestionSeed[] = [
     "question": "Who is credited with discovering penicillin?",
     "options": [
       "Marie Curie",
-      "Alexander Fleming",
       "Louis Pasteur",
-      "Gregor Mendel"
+      "Gregor Mendel",
+      "Alexander Fleming"
     ],
     "correctAnswer": "Alexander Fleming",
     "explanation": "Fleming noticed Penicillium mold killing bacteria in 1928.",
@@ -208,8 +208,8 @@ export const knowledgeQuestions: KnowledgeQuestionSeed[] = [
     "category": "discoveries",
     "question": "Which instrument made distant stars and planets much easier to study?",
     "options": [
-      "Microscope",
       "Telescope",
+      "Microscope",
       "Barometer",
       "Compass"
     ],
@@ -225,8 +225,8 @@ export const knowledgeQuestions: KnowledgeQuestionSeed[] = [
     "question": "Newton's third law says every action has what?",
     "options": [
       "A hidden cost",
-      "An equal and opposite reaction",
       "A random outcome",
+      "An equal and opposite reaction",
       "A magnetic field"
     ],
     "correctAnswer": "An equal and opposite reaction",
@@ -240,9 +240,9 @@ export const knowledgeQuestions: KnowledgeQuestionSeed[] = [
     "category": "fun_facts",
     "question": "Which animal is known for having a very long neck?",
     "options": [
-      "Giraffe",
       "Kangaroo",
       "Penguin",
+      "Giraffe",
       "Hedgehog"
     ],
     "correctAnswer": "Giraffe",
@@ -257,9 +257,9 @@ export const knowledgeQuestions: KnowledgeQuestionSeed[] = [
     "question": "What is the hardest natural substance commonly found on Earth?",
     "options": [
       "Gold",
-      "Diamond",
       "Quartz",
-      "Granite"
+      "Granite",
+      "Diamond"
     ],
     "correctAnswer": "Diamond",
     "explanation": "Diamond's carbon crystal structure makes it extremely hard.",
@@ -273,8 +273,8 @@ export const knowledgeQuestions: KnowledgeQuestionSeed[] = [
     "question": "How many sides does a triangle have?",
     "options": [
       "2",
-      "3",
       "4",
+      "3",
       "5"
     ],
     "correctAnswer": "3",
@@ -290,8 +290,8 @@ export const knowledgeQuestions: KnowledgeQuestionSeed[] = [
     "options": [
       "Lung",
       "Brain",
-      "Heart",
-      "Liver"
+      "Liver",
+      "Heart"
     ],
     "correctAnswer": "Heart",
     "explanation": "The heart contracts rhythmically to circulate blood.",
@@ -304,8 +304,8 @@ export const knowledgeQuestions: KnowledgeQuestionSeed[] = [
     "category": "human_knowledge",
     "question": "Who wrote the play Romeo and Juliet?",
     "options": [
-      "William Shakespeare",
       "Jane Austen",
+      "William Shakespeare",
       "Charles Dickens",
       "Homer"
     ],
@@ -322,8 +322,8 @@ export const knowledgeQuestions: KnowledgeQuestionSeed[] = [
     "options": [
       "Hadrian's Wall",
       "Great Wall",
-      "Berlin Wall",
-      "Western Wall"
+      "Western Wall",
+      "Berlin Wall"
     ],
     "correctAnswer": "Berlin Wall",
     "explanation": "The Berlin Wall divided East and West Berlin from 1961 to 1989.",
@@ -336,9 +336,9 @@ export const knowledgeQuestions: KnowledgeQuestionSeed[] = [
     "category": "science",
     "question": "What molecule carries genetic instructions in most living organisms?",
     "options": [
-      "DNA",
       "ATP",
       "Insulin",
+      "DNA",
       "Chlorophyll"
     ],
     "correctAnswer": "DNA",
@@ -353,8 +353,8 @@ export const knowledgeQuestions: KnowledgeQuestionSeed[] = [
     "question": "What is the most abundant gas in Earth's atmosphere?",
     "options": [
       "Oxygen",
-      "Carbon dioxide",
       "Nitrogen",
+      "Carbon dioxide",
       "Argon"
     ],
     "correctAnswer": "Nitrogen",
@@ -368,9 +368,9 @@ export const knowledgeQuestions: KnowledgeQuestionSeed[] = [
     "category": "laws_of_universe",
     "question": "The second law of thermodynamics is closely associated with the increase of what in an isolated system?",
     "options": [
-      "Entropy",
       "Velocity",
       "Mass",
+      "Entropy",
       "Voltage"
     ],
     "correctAnswer": "Entropy",
@@ -384,10 +384,10 @@ export const knowledgeQuestions: KnowledgeQuestionSeed[] = [
     "category": "laws_of_universe",
     "question": "Ohm's law relates voltage, current, and what?",
     "options": [
-      "Resistance",
       "Mass",
       "Pressure",
-      "Frequency"
+      "Frequency",
+      "Resistance"
     ],
     "correctAnswer": "Resistance",
     "explanation": "Ohm's law is V = I × R.",
@@ -433,9 +433,9 @@ export const knowledgeQuestions: KnowledgeQuestionSeed[] = [
     "question": "Who discovered radium and polonium with Pierre Curie?",
     "options": [
       "Rosalind Franklin",
-      "Marie Curie",
       "Ada Lovelace",
-      "Lise Meitner"
+      "Lise Meitner",
+      "Marie Curie"
     ],
     "correctAnswer": "Marie Curie",
     "explanation": "Marie Curie's work pioneered radioactivity research.",
@@ -465,8 +465,8 @@ export const knowledgeQuestions: KnowledgeQuestionSeed[] = [
     "question": "Who wrote A Brief History of Time?",
     "options": [
       "Richard Feynman",
-      "Stephen Hawking",
       "Carl Sagan",
+      "Stephen Hawking",
       "Brian Greene"
     ],
     "correctAnswer": "Stephen Hawking",
@@ -497,8 +497,8 @@ export const knowledgeQuestions: KnowledgeQuestionSeed[] = [
     "question": "The Magna Carta was sealed in which country?",
     "options": [
       "France",
-      "England",
       "Spain",
+      "England",
       "Italy"
     ],
     "correctAnswer": "England",
@@ -529,8 +529,8 @@ export const knowledgeQuestions: KnowledgeQuestionSeed[] = [
     "question": "Which language has the most native speakers worldwide?",
     "options": [
       "English",
-      "Spanish",
       "Mandarin Chinese",
+      "Spanish",
       "Hindi"
     ],
     "correctAnswer": "Mandarin Chinese",
@@ -545,8 +545,8 @@ export const knowledgeQuestions: KnowledgeQuestionSeed[] = [
     "question": "What is the largest organ of the human body?",
     "options": [
       "Liver",
-      "Skin",
       "Lung",
+      "Skin",
       "Heart"
     ],
     "correctAnswer": "Skin",
@@ -576,9 +576,9 @@ export const knowledgeQuestions: KnowledgeQuestionSeed[] = [
     "category": "fun_facts",
     "question": "Which planet has the most prominent ring system visible from Earth?",
     "options": [
-      "Saturn",
       "Mars",
       "Mercury",
+      "Saturn",
       "Venus"
     ],
     "correctAnswer": "Saturn",
@@ -608,8 +608,8 @@ export const knowledgeQuestions: KnowledgeQuestionSeed[] = [
     "category": "laws_of_universe",
     "question": "What does the law of conservation of energy state?",
     "options": [
-      "Energy cannot be created or destroyed",
       "Energy is always heat",
+      "Energy cannot be created or destroyed",
       "Energy only exists in stars",
       "Energy equals gravity"
     ],
@@ -624,8 +624,8 @@ export const knowledgeQuestions: KnowledgeQuestionSeed[] = [
     "category": "discoveries",
     "question": "Who discovered the structure of DNA with Francis Crick, building on key X-ray data?",
     "options": [
-      "James Watson",
       "Gregor Mendel",
+      "James Watson",
       "Louis Pasteur",
       "Max Planck"
     ],
@@ -657,8 +657,8 @@ export const knowledgeQuestions: KnowledgeQuestionSeed[] = [
     "question": "What is the name of the boundary around a black hole beyond which light cannot escape?",
     "options": [
       "Photon belt",
-      "Event horizon",
       "Singularity shell",
+      "Event horizon",
       "Accretion edge"
     ],
     "correctAnswer": "Event horizon",
@@ -673,8 +673,8 @@ export const knowledgeQuestions: KnowledgeQuestionSeed[] = [
     "question": "Which particle is associated with the Higgs field giving mass to elementary particles?",
     "options": [
       "Gluon",
-      "Higgs boson",
       "Muon neutrino",
+      "Higgs boson",
       "Positron"
     ],
     "correctAnswer": "Higgs boson",
@@ -688,8 +688,8 @@ export const knowledgeQuestions: KnowledgeQuestionSeed[] = [
     "category": "laws_of_universe",
     "question": "Planck's constant is central to which branch of physics?",
     "options": [
-      "Quantum mechanics",
       "Classical thermodynamics",
+      "Quantum mechanics",
       "Plate tectonics",
       "Fluid statics"
     ],
@@ -704,8 +704,8 @@ export const knowledgeQuestions: KnowledgeQuestionSeed[] = [
     "category": "laws_of_universe",
     "question": "What principle says no two identical fermions can occupy the same quantum state simultaneously?",
     "options": [
-      "Pauli exclusion principle",
       "Huygens principle",
+      "Pauli exclusion principle",
       "Le Chatelier's principle",
       "Mach's principle"
     ],
@@ -736,9 +736,9 @@ export const knowledgeQuestions: KnowledgeQuestionSeed[] = [
     "category": "discoveries",
     "question": "Who identified the first pulsars with Antony Hewish's team in 1967?",
     "options": [
-      "Jocelyn Bell Burnell",
       "Vera Rubin",
       "Cecilia Payne-Gaposchkin",
+      "Jocelyn Bell Burnell",
       "Henrietta Leavitt"
     ],
     "correctAnswer": "Jocelyn Bell Burnell",
@@ -752,10 +752,10 @@ export const knowledgeQuestions: KnowledgeQuestionSeed[] = [
     "category": "discoveries",
     "question": "Which astronomer showed that certain nebulae were separate galaxies beyond the Milky Way?",
     "options": [
-      "Edwin Hubble",
       "Nicolas Copernicus",
       "Johannes Kepler",
-      "William Herschel"
+      "William Herschel",
+      "Edwin Hubble"
     ],
     "correctAnswer": "Edwin Hubble",
     "explanation": "Hubble's observations of Cepheid variables established the scale of galaxies.",
@@ -768,9 +768,9 @@ export const knowledgeQuestions: KnowledgeQuestionSeed[] = [
     "category": "human_knowledge",
     "question": "Who argued that stars are primarily made of hydrogen and helium in a landmark 1925 thesis?",
     "options": [
-      "Cecilia Payne-Gaposchkin",
       "Marie Curie",
       "Emmy Noether",
+      "Cecilia Payne-Gaposchkin",
       "Dorothy Hodgkin"
     ],
     "correctAnswer": "Cecilia Payne-Gaposchkin",
@@ -800,10 +800,10 @@ export const knowledgeQuestions: KnowledgeQuestionSeed[] = [
     "category": "history",
     "question": "Which civilization developed cuneiform writing?",
     "options": [
-      "Sumerians",
       "Phoenicians",
       "Minoans",
-      "Olmecs"
+      "Olmecs",
+      "Sumerians"
     ],
     "correctAnswer": "Sumerians",
     "explanation": "Sumerian cuneiform is among the earliest known writing systems.",
@@ -816,10 +816,10 @@ export const knowledgeQuestions: KnowledgeQuestionSeed[] = [
     "category": "history",
     "question": "The Rosetta Stone helped scholars decipher which writing system?",
     "options": [
-      "Egyptian hieroglyphs",
       "Mayan glyphs",
       "Linear B",
-      "Cuneiform"
+      "Cuneiform",
+      "Egyptian hieroglyphs"
     ],
     "correctAnswer": "Egyptian hieroglyphs",
     "explanation": "The stone contained Greek, Demotic, and hieroglyphic text.",
@@ -832,9 +832,9 @@ export const knowledgeQuestions: KnowledgeQuestionSeed[] = [
     "category": "common_knowledge",
     "question": "What is the SI unit of electric capacitance?",
     "options": [
-      "Farad",
       "Tesla",
       "Weber",
+      "Farad",
       "Ohm"
     ],
     "correctAnswer": "Farad",
@@ -848,9 +848,9 @@ export const knowledgeQuestions: KnowledgeQuestionSeed[] = [
     "category": "common_knowledge",
     "question": "Which element has the chemical symbol W?",
     "options": [
-      "Tungsten",
       "Tin",
       "Titanium",
+      "Tungsten",
       "Tellurium"
     ],
     "correctAnswer": "Tungsten",
@@ -864,9 +864,9 @@ export const knowledgeQuestions: KnowledgeQuestionSeed[] = [
     "category": "fun_facts",
     "question": "Octopuses have what color blood due to copper-based hemocyanin?",
     "options": [
-      "Blue",
       "Green",
       "Yellow",
+      "Blue",
       "Black"
     ],
     "correctAnswer": "Blue",
@@ -880,8 +880,8 @@ export const knowledgeQuestions: KnowledgeQuestionSeed[] = [
     "category": "fun_facts",
     "question": "What is the only mammal capable of sustained powered flight?",
     "options": [
-      "Bat",
       "Flying squirrel",
+      "Bat",
       "Sugar glider",
       "Colugo"
     ],
@@ -896,10 +896,10 @@ export const knowledgeQuestions: KnowledgeQuestionSeed[] = [
     "category": "science",
     "question": "What enzyme copies RNA into DNA in retroviruses?",
     "options": [
-      "Reverse transcriptase",
       "DNA ligase",
       "Amylase",
-      "Helicase"
+      "Helicase",
+      "Reverse transcriptase"
     ],
     "correctAnswer": "Reverse transcriptase",
     "explanation": "Retroviruses use reverse transcriptase to make DNA from RNA.",
@@ -912,10 +912,10 @@ export const knowledgeQuestions: KnowledgeQuestionSeed[] = [
     "category": "laws_of_universe",
     "question": "In special relativity, what remains constant for all observers in inertial frames?",
     "options": [
-      "Speed of light in vacuum",
       "Mass of a rocket fuel tank",
       "Sound speed in air",
-      "Earth's gravity"
+      "Earth's gravity",
+      "Speed of light in vacuum"
     ],
     "correctAnswer": "Speed of light in vacuum",
     "explanation": "Special relativity assumes all inertial observers measure the same vacuum light speed.",
@@ -928,9 +928,9 @@ export const knowledgeQuestions: KnowledgeQuestionSeed[] = [
     "category": "discoveries",
     "question": "Who discovered the first antibiotic effective against tuberculosis, streptomycin, with colleagues?",
     "options": [
-      "Selman Waksman",
       "Alexander Fleming",
       "Robert Koch",
+      "Selman Waksman",
       "Joseph Lister"
     ],
     "correctAnswer": "Selman Waksman",
@@ -976,9 +976,9 @@ export const knowledgeQuestions: KnowledgeQuestionSeed[] = [
     "category": "history",
     "question": "In which year did World War II end?",
     "options": [
-      "1945",
       "1939",
       "1918",
+      "1945",
       "1950"
     ],
     "correctAnswer": "1945",
@@ -1008,9 +1008,9 @@ export const knowledgeQuestions: KnowledgeQuestionSeed[] = [
     "category": "common_knowledge",
     "question": "How many sides does a hexagon have?",
     "options": [
-      "6",
       "5",
       "7",
+      "6",
       "8"
     ],
     "correctAnswer": "6",
@@ -1024,8 +1024,8 @@ export const knowledgeQuestions: KnowledgeQuestionSeed[] = [
     "category": "inventions",
     "question": "Who is commonly credited with inventing the telephone?",
     "options": [
-      "Alexander Graham Bell",
       "Thomas Edison",
+      "Alexander Graham Bell",
       "Nikola Tesla",
       "Guglielmo Marconi"
     ],
@@ -1040,8 +1040,8 @@ export const knowledgeQuestions: KnowledgeQuestionSeed[] = [
     "category": "human_knowledge",
     "question": "Which organ pumps blood through the human body?",
     "options": [
-      "Heart",
       "Liver",
+      "Heart",
       "Lung",
       "Kidney"
     ],
@@ -1056,8 +1056,8 @@ export const knowledgeQuestions: KnowledgeQuestionSeed[] = [
     "category": "fun_facts",
     "question": "Which animal is known for having black and white stripes and living in Africa?",
     "options": [
-      "Zebra",
       "Tiger",
+      "Zebra",
       "Panda",
       "Skunk"
     ],
@@ -1120,10 +1120,10 @@ export const knowledgeQuestions: KnowledgeQuestionSeed[] = [
     "category": "common_knowledge",
     "question": "How many minutes are in one hour?",
     "options": [
-      "60",
       "30",
       "90",
-      "100"
+      "100",
+      "60"
     ],
     "correctAnswer": "60",
     "explanation": "One hour is equal to 60 minutes.",
@@ -1136,8 +1136,8 @@ export const knowledgeQuestions: KnowledgeQuestionSeed[] = [
     "category": "inventions",
     "question": "Which invention is Johannes Gutenberg best known for developing in Europe?",
     "options": [
-      "Movable-type printing press",
       "Steam engine",
+      "Movable-type printing press",
       "Electric light bulb",
       "Radio transmitter"
     ],
@@ -1152,10 +1152,10 @@ export const knowledgeQuestions: KnowledgeQuestionSeed[] = [
     "category": "discoveries",
     "question": "Who proposed the theory of evolution by natural selection?",
     "options": [
-      "Charles Darwin",
       "Isaac Newton",
       "Gregor Mendel",
-      "Albert Einstein"
+      "Albert Einstein",
+      "Charles Darwin"
     ],
     "correctAnswer": "Charles Darwin",
     "explanation": "Charles Darwin presented natural selection as a mechanism of evolution.",
@@ -1184,9 +1184,9 @@ export const knowledgeQuestions: KnowledgeQuestionSeed[] = [
     "category": "fun_facts",
     "question": "Which bird is famous for being unable to fly and living naturally in Antarctica?",
     "options": [
-      "Penguin",
       "Ostrich",
       "Emu",
+      "Penguin",
       "Kiwi"
     ],
     "correctAnswer": "Penguin",
@@ -1200,9 +1200,9 @@ export const knowledgeQuestions: KnowledgeQuestionSeed[] = [
     "category": "science",
     "question": "What is the pH value of pure water at 25 degrees Celsius?",
     "options": [
-      "7",
       "0",
       "5",
+      "7",
       "14"
     ],
     "correctAnswer": "7",
@@ -1216,9 +1216,9 @@ export const knowledgeQuestions: KnowledgeQuestionSeed[] = [
     "category": "geography",
     "question": "Which river is traditionally considered the longest river in the world?",
     "options": [
-      "Nile River",
       "Amazon River",
       "Yangtze River",
+      "Nile River",
       "Mississippi River"
     ],
     "correctAnswer": "Nile River",
@@ -1232,8 +1232,8 @@ export const knowledgeQuestions: KnowledgeQuestionSeed[] = [
     "category": "history",
     "question": "The ancient city of Rome was founded on which peninsula?",
     "options": [
-      "Italian Peninsula",
       "Iberian Peninsula",
+      "Italian Peninsula",
       "Balkan Peninsula",
       "Scandinavian Peninsula"
     ],
@@ -1248,10 +1248,10 @@ export const knowledgeQuestions: KnowledgeQuestionSeed[] = [
     "category": "literature_arts",
     "question": "Which novel begins with the line 'Call me Ishmael'?",
     "options": [
-      "Moby-Dick",
       "The Great Gatsby",
       "Treasure Island",
-      "Robinson Crusoe"
+      "Robinson Crusoe",
+      "Moby-Dick"
     ],
     "correctAnswer": "Moby-Dick",
     "explanation": "Herman Melville's 'Moby-Dick' opens with the famous line 'Call me Ishmael.'",
@@ -1264,10 +1264,10 @@ export const knowledgeQuestions: KnowledgeQuestionSeed[] = [
     "category": "biology",
     "question": "Which blood cells are primarily responsible for carrying oxygen?",
     "options": [
-      "Red blood cells",
       "White blood cells",
       "Platelets",
-      "Plasma cells"
+      "Plasma cells",
+      "Red blood cells"
     ],
     "correctAnswer": "Red blood cells",
     "explanation": "Red blood cells contain hemoglobin, which transports oxygen.",
@@ -1296,8 +1296,8 @@ export const knowledgeQuestions: KnowledgeQuestionSeed[] = [
     "category": "common_knowledge",
     "question": "What is the freezing point of water at standard atmospheric pressure?",
     "options": [
-      "0 degrees Celsius",
       "10 degrees Celsius",
+      "0 degrees Celsius",
       "32 degrees Celsius",
       "100 degrees Celsius"
     ],
@@ -1312,10 +1312,10 @@ export const knowledgeQuestions: KnowledgeQuestionSeed[] = [
     "category": "inventions",
     "question": "Who invented the first practical incandescent light bulb system?",
     "options": [
-      "Thomas Edison",
       "James Watt",
       "Michael Faraday",
-      "Samuel Morse"
+      "Samuel Morse",
+      "Thomas Edison"
     ],
     "correctAnswer": "Thomas Edison",
     "explanation": "Thomas Edison developed a practical incandescent lighting system in the late 19th century.",
@@ -1328,8 +1328,8 @@ export const knowledgeQuestions: KnowledgeQuestionSeed[] = [
     "category": "discoveries",
     "question": "Who discovered the electron?",
     "options": [
-      "J. J. Thomson",
       "Ernest Rutherford",
+      "J. J. Thomson",
       "Niels Bohr",
       "James Chadwick"
     ],
@@ -1344,8 +1344,8 @@ export const knowledgeQuestions: KnowledgeQuestionSeed[] = [
     "category": "laws_of_universe",
     "question": "Which principle states that energy cannot be created or destroyed, only transformed?",
     "options": [
-      "Law of conservation of energy",
       "Law of universal gravitation",
+      "Law of conservation of energy",
       "Pauli exclusion principle",
       "Hooke's law"
     ],
@@ -1360,8 +1360,8 @@ export const knowledgeQuestions: KnowledgeQuestionSeed[] = [
     "category": "human_knowledge",
     "question": "How many bones are in the typical adult human body?",
     "options": [
-      "206",
       "180",
+      "206",
       "250",
       "300"
     ],
@@ -1376,9 +1376,9 @@ export const knowledgeQuestions: KnowledgeQuestionSeed[] = [
     "category": "fun_facts",
     "question": "Which mammal is known for laying eggs?",
     "options": [
-      "Platypus",
       "Koala",
       "Kangaroo",
+      "Platypus",
       "Otter"
     ],
     "correctAnswer": "Platypus",
@@ -1392,9 +1392,9 @@ export const knowledgeQuestions: KnowledgeQuestionSeed[] = [
     "category": "science",
     "question": "Which subatomic particle has a negative electric charge?",
     "options": [
-      "Electron",
       "Proton",
       "Neutron",
+      "Electron",
       "Photon"
     ],
     "correctAnswer": "Electron",
@@ -1408,8 +1408,8 @@ export const knowledgeQuestions: KnowledgeQuestionSeed[] = [
     "category": "geography",
     "question": "Mount Everest lies on the border between Nepal and which region of China?",
     "options": [
-      "Tibet",
       "Xinjiang",
+      "Tibet",
       "Yunnan",
       "Inner Mongolia"
     ],
@@ -1456,8 +1456,8 @@ export const knowledgeQuestions: KnowledgeQuestionSeed[] = [
     "category": "biology",
     "question": "What molecule carries genetic instructions in living organisms?",
     "options": [
-      "DNA",
       "Glucose",
+      "DNA",
       "Chlorophyll",
       "Hemoglobin"
     ],
@@ -1472,9 +1472,9 @@ export const knowledgeQuestions: KnowledgeQuestionSeed[] = [
     "category": "astronomy",
     "question": "What is the name of the galaxy that contains our solar system?",
     "options": [
-      "Milky Way",
       "Andromeda",
       "Triangulum",
+      "Milky Way",
       "Sombrero"
     ],
     "correctAnswer": "Milky Way",
@@ -1488,10 +1488,10 @@ export const knowledgeQuestions: KnowledgeQuestionSeed[] = [
     "category": "common_knowledge",
     "question": "Which language is the most widely spoken native language in the world?",
     "options": [
-      "Mandarin Chinese",
       "English",
       "Spanish",
-      "Hindi"
+      "Hindi",
+      "Mandarin Chinese"
     ],
     "correctAnswer": "Mandarin Chinese",
     "explanation": "Mandarin Chinese has the largest number of native speakers.",
@@ -1504,8 +1504,8 @@ export const knowledgeQuestions: KnowledgeQuestionSeed[] = [
     "category": "inventions",
     "question": "Who invented the World Wide Web?",
     "options": [
-      "Tim Berners-Lee",
       "Bill Gates",
+      "Tim Berners-Lee",
       "Steve Jobs",
       "Vint Cerf"
     ],
@@ -1520,8 +1520,8 @@ export const knowledgeQuestions: KnowledgeQuestionSeed[] = [
     "category": "discoveries",
     "question": "Who discovered radioactivity?",
     "options": [
-      "Henri Becquerel",
       "Marie Curie",
+      "Henri Becquerel",
       "Ernest Rutherford",
       "Wilhelm Roentgen"
     ],
@@ -1536,10 +1536,10 @@ export const knowledgeQuestions: KnowledgeQuestionSeed[] = [
     "category": "laws_of_universe",
     "question": "What does Newton's law of universal gravitation describe?",
     "options": [
-      "Attraction between masses",
       "Flow of electric current",
       "Expansion of gases",
-      "Reflection of light"
+      "Reflection of light",
+      "Attraction between masses"
     ],
     "correctAnswer": "Attraction between masses",
     "explanation": "Newton's law states that masses attract each other with a gravitational force.",
@@ -1552,10 +1552,10 @@ export const knowledgeQuestions: KnowledgeQuestionSeed[] = [
     "category": "human_knowledge",
     "question": "Which part of the brain is most associated with balance and coordination?",
     "options": [
-      "Cerebellum",
       "Cerebrum",
       "Medulla oblongata",
-      "Hypothalamus"
+      "Hypothalamus",
+      "Cerebellum"
     ],
     "correctAnswer": "Cerebellum",
     "explanation": "The cerebellum helps coordinate movement, posture, and balance.",
@@ -1632,10 +1632,10 @@ export const knowledgeQuestions: KnowledgeQuestionSeed[] = [
     "category": "common_knowledge",
     "question": "Which continent has the most countries?",
     "options": [
-      "Africa",
       "Europe",
       "Asia",
-      "South America"
+      "South America",
+      "Africa"
     ],
     "correctAnswer": "Africa",
     "explanation": "Africa has more sovereign countries than any other continent.",
@@ -1648,8 +1648,8 @@ export const knowledgeQuestions: KnowledgeQuestionSeed[] = [
     "category": "inventions",
     "question": "Who is credited with inventing the first successful airplane with powered flight?",
     "options": [
-      "The Wright brothers",
       "Charles Lindbergh",
+      "The Wright brothers",
       "Gustave Eiffel",
       "Leonardo da Vinci"
     ],
@@ -1664,10 +1664,10 @@ export const knowledgeQuestions: KnowledgeQuestionSeed[] = [
     "category": "discoveries",
     "question": "Who formulated the laws of planetary motion?",
     "options": [
-      "Johannes Kepler",
       "Galileo Galilei",
       "Isaac Newton",
-      "Tycho Brahe"
+      "Tycho Brahe",
+      "Johannes Kepler"
     ],
     "correctAnswer": "Johannes Kepler",
     "explanation": "Johannes Kepler described planetary motion using three mathematical laws.",
@@ -1680,10 +1680,10 @@ export const knowledgeQuestions: KnowledgeQuestionSeed[] = [
     "category": "laws_of_universe",
     "question": "Boyle's law describes the relationship between pressure and volume for a gas when which quantity is constant?",
     "options": [
-      "Temperature",
       "Mass density only",
       "Electric charge",
-      "Humidity"
+      "Humidity",
+      "Temperature"
     ],
     "correctAnswer": "Temperature",
     "explanation": "Boyle's law applies to a fixed amount of gas at constant temperature.",
@@ -1712,8 +1712,8 @@ export const knowledgeQuestions: KnowledgeQuestionSeed[] = [
     "category": "fun_facts",
     "question": "Which substance is harder on the Mohs scale: diamond or quartz?",
     "options": [
-      "Diamond",
       "Quartz",
+      "Diamond",
       "They are equal",
       "Neither has a Mohs hardness"
     ],
@@ -1728,8 +1728,8 @@ export const knowledgeQuestions: KnowledgeQuestionSeed[] = [
     "category": "science",
     "question": "What is the chemical formula for table salt?",
     "options": [
-      "NaCl",
       "KCl",
+      "NaCl",
       "NaOH",
       "CaCO3"
     ],
@@ -1744,9 +1744,9 @@ export const knowledgeQuestions: KnowledgeQuestionSeed[] = [
     "category": "geography",
     "question": "Which country is both a continent and a country?",
     "options": [
-      "Australia",
       "Greenland",
       "Madagascar",
+      "Australia",
       "New Zealand"
     ],
     "correctAnswer": "Australia",
@@ -1760,8 +1760,8 @@ export const knowledgeQuestions: KnowledgeQuestionSeed[] = [
     "category": "history",
     "question": "The Magna Carta was signed in which year?",
     "options": [
-      "1215",
       "1066",
+      "1215",
       "1492",
       "1776"
     ],
@@ -1792,8 +1792,8 @@ export const knowledgeQuestions: KnowledgeQuestionSeed[] = [
     "category": "biology",
     "question": "What is the basic unit of life?",
     "options": [
-      "Cell",
       "Atom",
+      "Cell",
       "Tissue",
       "Organ"
     ],
@@ -1808,8 +1808,8 @@ export const knowledgeQuestions: KnowledgeQuestionSeed[] = [
     "category": "astronomy",
     "question": "Which planet is the largest in our solar system?",
     "options": [
-      "Jupiter",
       "Saturn",
+      "Jupiter",
       "Neptune",
       "Earth"
     ],
@@ -1824,10 +1824,10 @@ export const knowledgeQuestions: KnowledgeQuestionSeed[] = [
     "category": "inventions",
     "question": "Which scientist built an early practical radio communication system?",
     "options": [
-      "Guglielmo Marconi",
       "Alexander Fleming",
       "James Clerk Maxwell",
-      "Alessandro Volta"
+      "Alessandro Volta",
+      "Guglielmo Marconi"
     ],
     "correctAnswer": "Guglielmo Marconi",
     "explanation": "Marconi is known for developing practical wireless radio communication.",
@@ -1856,8 +1856,8 @@ export const knowledgeQuestions: KnowledgeQuestionSeed[] = [
     "category": "laws_of_universe",
     "question": "What does the second law of thermodynamics say about entropy in an isolated system?",
     "options": [
-      "It tends to increase",
       "It always becomes zero",
+      "It tends to increase",
       "It turns into mass",
       "It remains negative"
     ],
@@ -1872,9 +1872,9 @@ export const knowledgeQuestions: KnowledgeQuestionSeed[] = [
     "category": "human_knowledge",
     "question": "Which vitamin is produced in human skin when exposed to sunlight?",
     "options": [
-      "Vitamin D",
       "Vitamin C",
       "Vitamin B12",
+      "Vitamin D",
       "Vitamin K"
     ],
     "correctAnswer": "Vitamin D",
@@ -1888,10 +1888,10 @@ export const knowledgeQuestions: KnowledgeQuestionSeed[] = [
     "category": "fun_facts",
     "question": "What is the only continent with no native species of ants?",
     "options": [
-      "Antarctica",
       "Europe",
       "Australia",
-      "North America"
+      "North America",
+      "Antarctica"
     ],
     "correctAnswer": "Antarctica",
     "explanation": "Antarctica has no native ant species because of its extreme cold environment.",
@@ -1920,9 +1920,9 @@ export const knowledgeQuestions: KnowledgeQuestionSeed[] = [
     "category": "geography",
     "question": "Which mountain range separates Europe and Asia in the traditional geographic boundary?",
     "options": [
-      "Ural Mountains",
       "Alps",
       "Himalayas",
+      "Ural Mountains",
       "Andes"
     ],
     "correctAnswer": "Ural Mountains",
@@ -1936,8 +1936,8 @@ export const knowledgeQuestions: KnowledgeQuestionSeed[] = [
     "category": "history",
     "question": "Which event began in 1789 and led to major political change in France?",
     "options": [
-      "French Revolution",
       "Industrial Revolution",
+      "French Revolution",
       "Russian Revolution",
       "Glorious Revolution"
     ],
@@ -1952,9 +1952,9 @@ export const knowledgeQuestions: KnowledgeQuestionSeed[] = [
     "category": "literature_arts",
     "question": "Who composed the 'Four Seasons' violin concertos?",
     "options": [
-      "Antonio Vivaldi",
       "Johann Sebastian Bach",
       "Wolfgang Amadeus Mozart",
+      "Antonio Vivaldi",
       "Ludwig van Beethoven"
     ],
     "correctAnswer": "Antonio Vivaldi",
@@ -1984,9 +1984,9 @@ export const knowledgeQuestions: KnowledgeQuestionSeed[] = [
     "category": "astronomy",
     "question": "What causes the phases of the Moon?",
     "options": [
-      "The changing view of the Moon's sunlit half",
       "Earth's shadow covering the Moon every night",
       "The Moon changing its own shape",
+      "The changing view of the Moon's sunlit half",
       "Clouds blocking part of the Moon"
     ],
     "correctAnswer": "The changing view of the Moon's sunlit half",
@@ -2000,10 +2000,10 @@ export const knowledgeQuestions: KnowledgeQuestionSeed[] = [
     "category": "common_knowledge",
     "question": "Which instrument is used to measure temperature?",
     "options": [
-      "Thermometer",
       "Barometer",
       "Hygrometer",
-      "Anemometer"
+      "Anemometer",
+      "Thermometer"
     ],
     "correctAnswer": "Thermometer",
     "explanation": "A thermometer measures temperature.",
@@ -2016,8 +2016,8 @@ export const knowledgeQuestions: KnowledgeQuestionSeed[] = [
     "category": "inventions",
     "question": "Who invented dynamite?",
     "options": [
-      "Alfred Nobel",
       "Marie Curie",
+      "Alfred Nobel",
       "Robert Fulton",
       "Eli Whitney"
     ],
@@ -2048,9 +2048,9 @@ export const knowledgeQuestions: KnowledgeQuestionSeed[] = [
     "category": "laws_of_universe",
     "question": "Hooke's law describes the force needed to extend or compress which kind of object?",
     "options": [
-      "An elastic spring",
       "A spinning planet",
       "A chemical battery",
+      "An elastic spring",
       "A sound wave"
     ],
     "correctAnswer": "An elastic spring",
@@ -2064,9 +2064,9 @@ export const knowledgeQuestions: KnowledgeQuestionSeed[] = [
     "category": "human_knowledge",
     "question": "What is the name of the pigment that gives human skin, hair, and eyes much of their color?",
     "options": [
-      "Melanin",
       "Keratin",
       "Collagen",
+      "Melanin",
       "Insulin"
     ],
     "correctAnswer": "Melanin",
@@ -2096,8 +2096,8 @@ export const knowledgeQuestions: KnowledgeQuestionSeed[] = [
     "category": "geography",
     "question": "Which country has the city of Machu Picchu?",
     "options": [
-      "Peru",
       "Mexico",
+      "Peru",
       "Chile",
       "Colombia"
     ],
@@ -2128,8 +2128,8 @@ export const knowledgeQuestions: KnowledgeQuestionSeed[] = [
     "category": "literature_arts",
     "question": "Which Spanish artist painted 'Guernica'?",
     "options": [
-      "Pablo Picasso",
       "Diego Velazquez",
+      "Pablo Picasso",
       "Francisco Goya",
       "Joan Miro"
     ],
@@ -2144,8 +2144,8 @@ export const knowledgeQuestions: KnowledgeQuestionSeed[] = [
     "category": "biology",
     "question": "Which kingdom do mushrooms belong to?",
     "options": [
-      "Fungi",
       "Plants",
+      "Fungi",
       "Animals",
       "Protists"
     ],
@@ -2160,8 +2160,8 @@ export const knowledgeQuestions: KnowledgeQuestionSeed[] = [
     "category": "astronomy",
     "question": "What is the term for a star explosion that can briefly outshine an entire galaxy?",
     "options": [
-      "Supernova",
       "Comet",
+      "Supernova",
       "Nebula",
       "Quasar"
     ],
@@ -2176,10 +2176,10 @@ export const knowledgeQuestions: KnowledgeQuestionSeed[] = [
     "category": "common_knowledge",
     "question": "Which gas do humans primarily breathe in to survive?",
     "options": [
-      "Oxygen",
       "Nitrogen",
       "Carbon dioxide",
-      "Helium"
+      "Helium",
+      "Oxygen"
     ],
     "correctAnswer": "Oxygen",
     "explanation": "Humans need oxygen for cellular respiration.",
@@ -2192,9 +2192,9 @@ export const knowledgeQuestions: KnowledgeQuestionSeed[] = [
     "category": "inventions",
     "question": "Who developed the first effective smallpox vaccine?",
     "options": [
-      "Edward Jenner",
       "Louis Pasteur",
       "Joseph Lister",
+      "Edward Jenner",
       "Alexander Fleming"
     ],
     "correctAnswer": "Edward Jenner",
@@ -2208,10 +2208,10 @@ export const knowledgeQuestions: KnowledgeQuestionSeed[] = [
     "category": "discoveries",
     "question": "Who discovered X-rays?",
     "options": [
-      "Wilhelm Roentgen",
       "Max Planck",
       "Niels Bohr",
-      "Enrico Fermi"
+      "Enrico Fermi",
+      "Wilhelm Roentgen"
     ],
     "correctAnswer": "Wilhelm Roentgen",
     "explanation": "Wilhelm Roentgen discovered X-rays in 1895.",
@@ -2224,10 +2224,10 @@ export const knowledgeQuestions: KnowledgeQuestionSeed[] = [
     "category": "laws_of_universe",
     "question": "Kepler's first law says that planets move around the Sun in what shape of orbit?",
     "options": [
-      "Ellipse",
       "Perfect circle",
       "Parabola",
-      "Straight line"
+      "Straight line",
+      "Ellipse"
     ],
     "correctAnswer": "Ellipse",
     "explanation": "Kepler's first law states that planetary orbits are ellipses with the Sun at one focus.",
@@ -2240,10 +2240,10 @@ export const knowledgeQuestions: KnowledgeQuestionSeed[] = [
     "category": "human_knowledge",
     "question": "Which type of teeth are mainly used for cutting food?",
     "options": [
-      "Incisors",
       "Molars",
       "Canines",
-      "Premolars"
+      "Premolars",
+      "Incisors"
     ],
     "correctAnswer": "Incisors",
     "explanation": "Incisors are the front teeth used mainly for cutting.",
@@ -2256,9 +2256,9 @@ export const knowledgeQuestions: KnowledgeQuestionSeed[] = [
     "category": "fun_facts",
     "question": "Which animal has a blue tongue and is the tallest living land animal?",
     "options": [
-      "Giraffe",
       "Elephant",
       "Camel",
+      "Giraffe",
       "Moose"
     ],
     "correctAnswer": "Giraffe",
@@ -2272,8 +2272,8 @@ export const knowledgeQuestions: KnowledgeQuestionSeed[] = [
     "category": "science",
     "question": "What type of energy is stored in a stretched rubber band?",
     "options": [
-      "Elastic potential energy",
       "Nuclear energy",
+      "Elastic potential energy",
       "Thermal energy",
       "Chemical energy"
     ],
@@ -2288,9 +2288,9 @@ export const knowledgeQuestions: KnowledgeQuestionSeed[] = [
     "category": "geography",
     "question": "Which strait separates Spain from Morocco?",
     "options": [
-      "Strait of Gibraltar",
       "Bering Strait",
       "Strait of Hormuz",
+      "Strait of Gibraltar",
       "Bosporus Strait"
     ],
     "correctAnswer": "Strait of Gibraltar",
@@ -2304,10 +2304,10 @@ export const knowledgeQuestions: KnowledgeQuestionSeed[] = [
     "category": "history",
     "question": "Which ancient trade route connected China with the Mediterranean world?",
     "options": [
-      "Silk Road",
       "Amber Road",
       "Appian Way",
-      "Trans-Saharan Route"
+      "Trans-Saharan Route",
+      "Silk Road"
     ],
     "correctAnswer": "Silk Road",
     "explanation": "The Silk Road was a network of trade routes linking East Asia and the Mediterranean.",
@@ -2320,10 +2320,10 @@ export const knowledgeQuestions: KnowledgeQuestionSeed[] = [
     "category": "literature_arts",
     "question": "Who wrote 'The Divine Comedy'?",
     "options": [
-      "Dante Alighieri",
       "Geoffrey Chaucer",
       "Miguel de Cervantes",
-      "John Milton"
+      "John Milton",
+      "Dante Alighieri"
     ],
     "correctAnswer": "Dante Alighieri",
     "explanation": "Dante Alighieri wrote 'The Divine Comedy' in the early 14th century.",
@@ -2336,10 +2336,10 @@ export const knowledgeQuestions: KnowledgeQuestionSeed[] = [
     "category": "biology",
     "question": "What is the largest living species of lizard?",
     "options": [
-      "Komodo dragon",
       "Iguana",
       "Gila monster",
-      "Monitor lizard"
+      "Monitor lizard",
+      "Komodo dragon"
     ],
     "correctAnswer": "Komodo dragon",
     "explanation": "The Komodo dragon is the largest living lizard species.",
@@ -2352,10 +2352,10 @@ export const knowledgeQuestions: KnowledgeQuestionSeed[] = [
     "category": "astronomy",
     "question": "Which planet is closest to the Sun?",
     "options": [
-      "Mercury",
       "Venus",
       "Earth",
-      "Mars"
+      "Mars",
+      "Mercury"
     ],
     "correctAnswer": "Mercury",
     "explanation": "Mercury is the innermost planet in the solar system.",
@@ -2368,10 +2368,10 @@ export const knowledgeQuestions: KnowledgeQuestionSeed[] = [
     "category": "common_knowledge",
     "question": "What is the Roman numeral for 50?",
     "options": [
-      "L",
       "C",
       "X",
-      "V"
+      "V",
+      "L"
     ],
     "correctAnswer": "L",
     "explanation": "In Roman numerals, L represents 50.",
@@ -2384,9 +2384,9 @@ export const knowledgeQuestions: KnowledgeQuestionSeed[] = [
     "category": "inventions",
     "question": "Which inventor is associated with the cotton gin?",
     "options": [
-      "Eli Whitney",
       "Robert Fulton",
       "Samuel Colt",
+      "Eli Whitney",
       "Cyrus McCormick"
     ],
     "correctAnswer": "Eli Whitney",
@@ -2400,8 +2400,8 @@ export const knowledgeQuestions: KnowledgeQuestionSeed[] = [
     "category": "discoveries",
     "question": "Who identified the structure of DNA with Francis Crick?",
     "options": [
-      "James Watson",
       "Linus Pauling",
+      "James Watson",
       "Gregor Mendel",
       "Louis Pasteur"
     ],
@@ -2416,9 +2416,9 @@ export const knowledgeQuestions: KnowledgeQuestionSeed[] = [
     "category": "laws_of_universe",
     "question": "In Einstein's equation E = mc^2, what does c represent?",
     "options": [
-      "Speed of light",
       "Electric charge",
       "Heat capacity",
+      "Speed of light",
       "Gravitational constant"
     ],
     "correctAnswer": "Speed of light",
@@ -2432,10 +2432,10 @@ export const knowledgeQuestions: KnowledgeQuestionSeed[] = [
     "category": "human_knowledge",
     "question": "Which human sense is primarily associated with the cochlea?",
     "options": [
-      "Hearing",
       "Taste",
       "Smell",
-      "Touch"
+      "Touch",
+      "Hearing"
     ],
     "correctAnswer": "Hearing",
     "explanation": "The cochlea is a spiral-shaped structure in the inner ear involved in hearing.",
@@ -2448,10 +2448,10 @@ export const knowledgeQuestions: KnowledgeQuestionSeed[] = [
     "category": "fun_facts",
     "question": "Which natural substance is made by bees from flower nectar?",
     "options": [
-      "Honey",
       "Maple syrup",
       "Molasses",
-      "Sap"
+      "Sap",
+      "Honey"
     ],
     "correctAnswer": "Honey",
     "explanation": "Bees convert nectar into honey and store it in honeycombs.",
@@ -2496,8 +2496,8 @@ export const knowledgeQuestions: KnowledgeQuestionSeed[] = [
     "category": "biology",
     "question": "What molecule carries genetic information in most living organisms?",
     "options": [
-      "DNA",
       "ATP",
+      "DNA",
       "Glucose",
       "Hemoglobin"
     ],
@@ -2512,10 +2512,10 @@ export const knowledgeQuestions: KnowledgeQuestionSeed[] = [
     "category": "astronomy",
     "question": "Which planet is known for its prominent ring system?",
     "options": [
-      "Saturn",
       "Mars",
       "Venus",
-      "Mercury"
+      "Mercury",
+      "Saturn"
     ],
     "correctAnswer": "Saturn",
     "explanation": "Saturn has the most extensive and easily visible ring system in the Solar System.",
@@ -2528,8 +2528,8 @@ export const knowledgeQuestions: KnowledgeQuestionSeed[] = [
     "category": "mathematics",
     "question": "What is the value of pi rounded to two decimal places?",
     "options": [
-      "3.14",
       "2.72",
+      "3.14",
       "1.62",
       "4.13"
     ],
@@ -2544,9 +2544,9 @@ export const knowledgeQuestions: KnowledgeQuestionSeed[] = [
     "category": "discoveries",
     "question": "Who is credited with discovering penicillin in 1928?",
     "options": [
-      "Alexander Fleming",
       "Louis Pasteur",
       "Robert Koch",
+      "Alexander Fleming",
       "Joseph Lister"
     ],
     "correctAnswer": "Alexander Fleming",
@@ -2576,9 +2576,9 @@ export const knowledgeQuestions: KnowledgeQuestionSeed[] = [
     "category": "science",
     "question": "What is the standard SI unit of electric current?",
     "options": [
-      "Ampere",
       "Volt",
       "Ohm",
+      "Ampere",
       "Watt"
     ],
     "correctAnswer": "Ampere",
@@ -2592,8 +2592,8 @@ export const knowledgeQuestions: KnowledgeQuestionSeed[] = [
     "category": "physics",
     "question": "What does Einstein's equation E = mc^2 express?",
     "options": [
-      "Mass-energy equivalence",
       "Universal gravitation",
+      "Mass-energy equivalence",
       "Ohm's law",
       "Thermal expansion"
     ],
@@ -2640,8 +2640,8 @@ export const knowledgeQuestions: KnowledgeQuestionSeed[] = [
     "category": "discoveries",
     "question": "Who discovered that Earth orbits the Sun as part of a heliocentric model?",
     "options": [
-      "Nicolaus Copernicus",
       "Ptolemy",
+      "Nicolaus Copernicus",
       "Tycho Brahe",
       "Aristotle"
     ],
@@ -2656,10 +2656,10 @@ export const knowledgeQuestions: KnowledgeQuestionSeed[] = [
     "category": "laws_of_universe",
     "question": "What principle states that energy cannot be created or destroyed in an isolated system?",
     "options": [
-      "Conservation of energy",
       "Pauli exclusion principle",
       "Hubble's law",
-      "Le Chatelier's principle"
+      "Le Chatelier's principle",
+      "Conservation of energy"
     ],
     "correctAnswer": "Conservation of energy",
     "explanation": "The conservation of energy says total energy remains constant in an isolated system.",
@@ -2672,9 +2672,9 @@ export const knowledgeQuestions: KnowledgeQuestionSeed[] = [
     "category": "inventions",
     "question": "Which early electronic general-purpose computer was completed in the United States in 1945?",
     "options": [
-      "ENIAC",
       "UNIVAC I",
       "Colossus",
+      "ENIAC",
       "Apple II"
     ],
     "correctAnswer": "ENIAC",
@@ -2688,10 +2688,10 @@ export const knowledgeQuestions: KnowledgeQuestionSeed[] = [
     "category": "physics",
     "question": "Which law states that the current through a conductor is proportional to the voltage across it, assuming constant temperature?",
     "options": [
-      "Ohm's law",
       "Faraday's law",
       "Boyle's law",
-      "Hooke's law"
+      "Hooke's law",
+      "Ohm's law"
     ],
     "correctAnswer": "Ohm's law",
     "explanation": "Ohm's law is commonly written as V = IR.",
@@ -2720,9 +2720,9 @@ export const knowledgeQuestions: KnowledgeQuestionSeed[] = [
     "category": "astronomy",
     "question": "Which galaxy contains our Solar System?",
     "options": [
-      "Milky Way",
       "Andromeda",
       "Triangulum",
+      "Milky Way",
       "Whirlpool"
     ],
     "correctAnswer": "Milky Way",
@@ -2768,8 +2768,8 @@ export const knowledgeQuestions: KnowledgeQuestionSeed[] = [
     "category": "discoveries",
     "question": "Which pair is credited with identifying the double-helix structure of DNA in 1953?",
     "options": [
-      "James Watson and Francis Crick",
       "Charles Darwin and Alfred Russel Wallace",
+      "James Watson and Francis Crick",
       "Marie Curie and Pierre Curie",
       "Gregor Mendel and Hugo de Vries"
     ],
@@ -2800,10 +2800,10 @@ export const knowledgeQuestions: KnowledgeQuestionSeed[] = [
     "category": "laws_of_universe",
     "question": "Which law describes the relationship between gas pressure and volume at constant temperature?",
     "options": [
-      "Boyle's law",
       "Charles's law",
       "Avogadro's law",
-      "Dalton's law"
+      "Dalton's law",
+      "Boyle's law"
     ],
     "correctAnswer": "Boyle's law",
     "explanation": "Boyle's law states that pressure and volume are inversely proportional for a fixed amount of gas at constant temperature.",
@@ -2832,8 +2832,8 @@ export const knowledgeQuestions: KnowledgeQuestionSeed[] = [
     "category": "physics",
     "question": "What type of electromagnetic radiation has the shortest wavelength among these options?",
     "options": [
-      "Gamma rays",
       "Microwaves",
+      "Gamma rays",
       "Radio waves",
       "Infrared radiation"
     ],
@@ -2848,9 +2848,9 @@ export const knowledgeQuestions: KnowledgeQuestionSeed[] = [
     "category": "chemistry",
     "question": "What is the main gas produced when an acid reacts with a carbonate?",
     "options": [
-      "Carbon dioxide",
       "Hydrogen",
       "Oxygen",
+      "Carbon dioxide",
       "Nitrogen"
     ],
     "correctAnswer": "Carbon dioxide",
@@ -2864,8 +2864,8 @@ export const knowledgeQuestions: KnowledgeQuestionSeed[] = [
     "category": "biology",
     "question": "Which scientist is known as the father of genetics for his pea plant experiments?",
     "options": [
-      "Gregor Mendel",
       "Charles Darwin",
+      "Gregor Mendel",
       "Louis Pasteur",
       "Carl Linnaeus"
     ],
@@ -2880,8 +2880,8 @@ export const knowledgeQuestions: KnowledgeQuestionSeed[] = [
     "category": "astronomy",
     "question": "Which planet is the largest in the Solar System?",
     "options": [
-      "Jupiter",
       "Saturn",
+      "Jupiter",
       "Neptune",
       "Earth"
     ],
@@ -2912,8 +2912,8 @@ export const knowledgeQuestions: KnowledgeQuestionSeed[] = [
     "category": "earth_science",
     "question": "What is the rigid outer layer of Earth called?",
     "options": [
-      "Lithosphere",
       "Asthenosphere",
+      "Lithosphere",
       "Mesosphere",
       "Outer core"
     ],
@@ -2944,8 +2944,8 @@ export const knowledgeQuestions: KnowledgeQuestionSeed[] = [
     "category": "inventions",
     "question": "Who developed the first successful polio vaccine introduced in the 1950s?",
     "options": [
-      "Jonas Salk",
       "Edward Jenner",
+      "Jonas Salk",
       "Alexander Fleming",
       "Robert Koch"
     ],
@@ -2960,10 +2960,10 @@ export const knowledgeQuestions: KnowledgeQuestionSeed[] = [
     "category": "laws_of_universe",
     "question": "Kepler's first law says that planets move around the Sun in what kind of paths?",
     "options": [
-      "Ellipses",
       "Perfect circles",
       "Parabolas only",
-      "Straight lines"
+      "Straight lines",
+      "Ellipses"
     ],
     "correctAnswer": "Ellipses",
     "explanation": "Kepler's first law states that planetary orbits are ellipses with the Sun at one focus.",
@@ -2976,10 +2976,10 @@ export const knowledgeQuestions: KnowledgeQuestionSeed[] = [
     "category": "human_knowledge",
     "question": "Which ancient Greek mathematician is associated with a theorem about right triangles?",
     "options": [
-      "Pythagoras",
       "Euclid",
       "Archimedes",
-      "Eratosthenes"
+      "Eratosthenes",
+      "Pythagoras"
     ],
     "correctAnswer": "Pythagoras",
     "explanation": "The Pythagorean theorem relates the sides of a right triangle: a^2 + b^2 = c^2.",
@@ -2992,9 +2992,9 @@ export const knowledgeQuestions: KnowledgeQuestionSeed[] = [
     "category": "physics",
     "question": "What particle has a negative electric charge and is found outside the atomic nucleus?",
     "options": [
-      "Electron",
       "Proton",
       "Neutron",
+      "Electron",
       "Alpha particle"
     ],
     "correctAnswer": "Electron",
@@ -3008,8 +3008,8 @@ export const knowledgeQuestions: KnowledgeQuestionSeed[] = [
     "category": "chemistry",
     "question": "Which scientist arranged the periodic table by atomic properties and predicted undiscovered elements?",
     "options": [
-      "Dmitri Mendeleev",
       "Antoine Lavoisier",
+      "Dmitri Mendeleev",
       "John Dalton",
       "Robert Boyle"
     ],
@@ -3024,10 +3024,10 @@ export const knowledgeQuestions: KnowledgeQuestionSeed[] = [
     "category": "mathematics",
     "question": "What branch of mathematics studies rates of change and accumulation using derivatives and integrals?",
     "options": [
-      "Calculus",
       "Geometry",
       "Number theory",
-      "Topology"
+      "Topology",
+      "Calculus"
     ],
     "correctAnswer": "Calculus",
     "explanation": "Calculus deals with derivatives, integrals, limits, and continuous change.",
@@ -3040,10 +3040,10 @@ export const knowledgeQuestions: KnowledgeQuestionSeed[] = [
     "category": "earth_science",
     "question": "What is the name of the supercontinent that existed before breaking apart into today's continents?",
     "options": [
-      "Pangaea",
       "Gondwana",
       "Laurasia",
-      "Rodinia"
+      "Rodinia",
+      "Pangaea"
     ],
     "correctAnswer": "Pangaea",
     "explanation": "Pangaea was a late Paleozoic and early Mesozoic supercontinent that later fragmented.",
@@ -3056,8 +3056,8 @@ export const knowledgeQuestions: KnowledgeQuestionSeed[] = [
     "category": "discoveries",
     "question": "Who discovered the electron in 1897?",
     "options": [
-      "J. J. Thomson",
       "Ernest Rutherford",
+      "J. J. Thomson",
       "James Chadwick",
       "Max Planck"
     ],
@@ -3072,9 +3072,9 @@ export const knowledgeQuestions: KnowledgeQuestionSeed[] = [
     "category": "inventions",
     "question": "Who is widely credited with inventing the first practical incandescent light bulb?",
     "options": [
-      "Thomas Edison",
       "Benjamin Franklin",
       "James Watt",
+      "Thomas Edison",
       "Samuel Morse"
     ],
     "correctAnswer": "Thomas Edison",
@@ -3088,9 +3088,9 @@ export const knowledgeQuestions: KnowledgeQuestionSeed[] = [
     "category": "laws_of_universe",
     "question": "The second law of thermodynamics is most closely associated with the increase of what in isolated systems?",
     "options": [
-      "Entropy",
       "Velocity",
       "Electric charge",
+      "Entropy",
       "Momentum"
     ],
     "correctAnswer": "Entropy",
@@ -3104,8 +3104,8 @@ export const knowledgeQuestions: KnowledgeQuestionSeed[] = [
     "category": "science",
     "question": "What is the scientific method's usual first step when investigating a phenomenon?",
     "options": [
-      "Make an observation",
       "Publish a conclusion",
+      "Make an observation",
       "Ignore variables",
       "Choose the desired result"
     ],
@@ -3120,8 +3120,8 @@ export const knowledgeQuestions: KnowledgeQuestionSeed[] = [
     "category": "physics",
     "question": "What is the speed of light in a vacuum approximately?",
     "options": [
-      "300,000 kilometers per second",
       "30,000 kilometers per second",
+      "300,000 kilometers per second",
       "3,000 kilometers per second",
       "300 kilometers per second"
     ],
@@ -3152,8 +3152,8 @@ export const knowledgeQuestions: KnowledgeQuestionSeed[] = [
     "category": "astronomy",
     "question": "What force primarily keeps planets in orbit around the Sun?",
     "options": [
-      "Gravity",
       "Magnetism",
+      "Gravity",
       "Friction",
       "Nuclear force"
     ],
@@ -3200,10 +3200,10 @@ export const knowledgeQuestions: KnowledgeQuestionSeed[] = [
     "category": "discoveries",
     "question": "Who discovered the neutron in 1932?",
     "options": [
-      "James Chadwick",
       "Niels Bohr",
       "Enrico Fermi",
-      "Werner Heisenberg"
+      "Werner Heisenberg",
+      "James Chadwick"
     ],
     "correctAnswer": "James Chadwick",
     "explanation": "James Chadwick discovered the neutron, a neutral particle in the atomic nucleus.",
@@ -3216,9 +3216,9 @@ export const knowledgeQuestions: KnowledgeQuestionSeed[] = [
     "category": "inventions",
     "question": "Who invented the first practical steam engine for pumping water from mines in 1712?",
     "options": [
-      "Thomas Newcomen",
       "James Watt",
       "George Stephenson",
+      "Thomas Newcomen",
       "Robert Fulton"
     ],
     "correctAnswer": "Thomas Newcomen",
@@ -3232,9 +3232,9 @@ export const knowledgeQuestions: KnowledgeQuestionSeed[] = [
     "category": "laws_of_universe",
     "question": "Which principle states that no two electrons in an atom can have the same set of four quantum numbers?",
     "options": [
-      "Pauli exclusion principle",
       "Uncertainty principle",
       "Correspondence principle",
+      "Pauli exclusion principle",
       "Equivalence principle"
     ],
     "correctAnswer": "Pauli exclusion principle",
@@ -3248,8 +3248,8 @@ export const knowledgeQuestions: KnowledgeQuestionSeed[] = [
     "category": "human_knowledge",
     "question": "Which scientist introduced the system of binomial nomenclature for naming organisms?",
     "options": [
-      "Carl Linnaeus",
       "Gregor Mendel",
+      "Carl Linnaeus",
       "Alfred Wegener",
       "Antonie van Leeuwenhoek"
     ],
@@ -3280,8 +3280,8 @@ export const knowledgeQuestions: KnowledgeQuestionSeed[] = [
     "category": "chemistry",
     "question": "What is Avogadro's number approximately?",
     "options": [
-      "6.02 × 10^23",
       "3.00 × 10^8",
+      "6.02 × 10^23",
       "9.81 × 10^0",
       "1.60 × 10^-19"
     ],
@@ -3296,10 +3296,10 @@ export const knowledgeQuestions: KnowledgeQuestionSeed[] = [
     "category": "biology",
     "question": "What is the function of ribosomes in cells?",
     "options": [
-      "Protein synthesis",
       "DNA replication only",
       "Lipid storage",
-      "Photosynthesis"
+      "Photosynthesis",
+      "Protein synthesis"
     ],
     "correctAnswer": "Protein synthesis",
     "explanation": "Ribosomes translate messenger RNA into proteins.",
@@ -3328,9 +3328,9 @@ export const knowledgeQuestions: KnowledgeQuestionSeed[] = [
     "category": "mathematics",
     "question": "What is the derivative of x^2 with respect to x?",
     "options": [
-      "2x",
       "x",
       "x^3",
+      "2x",
       "2"
     ],
     "correctAnswer": "2x",
@@ -3376,8 +3376,8 @@ export const knowledgeQuestions: KnowledgeQuestionSeed[] = [
     "category": "inventions",
     "question": "Who is credited with inventing the first successful airplane with powered, controlled, sustained flight?",
     "options": [
-      "The Wright brothers",
       "Gustave Eiffel",
+      "The Wright brothers",
       "Igor Sikorsky",
       "Alberto Santos-Dumont"
     ],
@@ -3408,10 +3408,10 @@ export const knowledgeQuestions: KnowledgeQuestionSeed[] = [
     "category": "science",
     "question": "Which field of science studies heredity and variation in organisms?",
     "options": [
-      "Genetics",
       "Geology",
       "Optics",
-      "Meteorology"
+      "Meteorology",
+      "Genetics"
     ],
     "correctAnswer": "Genetics",
     "explanation": "Genetics studies genes, heredity, and biological variation.",
@@ -3424,8 +3424,8 @@ export const knowledgeQuestions: KnowledgeQuestionSeed[] = [
     "category": "physics",
     "question": "What is the SI unit of energy?",
     "options": [
-      "Joule",
       "Newton",
+      "Joule",
       "Watt",
       "Volt"
     ],
@@ -3440,10 +3440,10 @@ export const knowledgeQuestions: KnowledgeQuestionSeed[] = [
     "category": "chemistry",
     "question": "Which subatomic particle determines the atomic number of an element?",
     "options": [
-      "Proton",
       "Neutron",
       "Electron",
-      "Photon"
+      "Photon",
+      "Proton"
     ],
     "correctAnswer": "Proton",
     "explanation": "An element's atomic number equals the number of protons in its nucleus.",
@@ -3472,10 +3472,10 @@ export const knowledgeQuestions: KnowledgeQuestionSeed[] = [
     "category": "earth_science",
     "question": "What is the study of weather called?",
     "options": [
-      "Meteorology",
       "Seismology",
       "Oceanography",
-      "Mineralogy"
+      "Mineralogy",
+      "Meteorology"
     ],
     "correctAnswer": "Meteorology",
     "explanation": "Meteorology is the scientific study of the atmosphere and weather.",
@@ -3488,9 +3488,9 @@ export const knowledgeQuestions: KnowledgeQuestionSeed[] = [
     "category": "discoveries",
     "question": "Who developed the first periodic law, showing that element properties recur periodically?",
     "options": [
-      "Dmitri Mendeleev",
       "Marie Curie",
       "Amedeo Avogadro",
+      "Dmitri Mendeleev",
       "Linus Pauling"
     ],
     "correctAnswer": "Dmitri Mendeleev",
@@ -3504,9 +3504,9 @@ export const knowledgeQuestions: KnowledgeQuestionSeed[] = [
     "category": "inventions",
     "question": "Which inventor developed the Morse code system with Alfred Vail?",
     "options": [
-      "Samuel Morse",
       "Alexander Graham Bell",
       "Guglielmo Marconi",
+      "Samuel Morse",
       "Charles Babbage"
     ],
     "correctAnswer": "Samuel Morse",
@@ -3520,8 +3520,8 @@ export const knowledgeQuestions: KnowledgeQuestionSeed[] = [
     "category": "laws_of_universe",
     "question": "Faraday's law of induction relates a changing magnetic field to what?",
     "options": [
-      "An induced electromotive force",
       "A decrease in mass",
+      "An induced electromotive force",
       "A rise in entropy only",
       "A gravitational wave"
     ],
@@ -3536,10 +3536,10 @@ export const knowledgeQuestions: KnowledgeQuestionSeed[] = [
     "category": "human_knowledge",
     "question": "Which scientist is known for developing the germ theory of disease and pasteurization?",
     "options": [
-      "Louis Pasteur",
       "Isaac Newton",
       "Niels Bohr",
-      "Edwin Hubble"
+      "Edwin Hubble",
+      "Louis Pasteur"
     ],
     "correctAnswer": "Louis Pasteur",
     "explanation": "Pasteur's work helped establish germ theory and led to pasteurization.",
@@ -3552,10 +3552,10 @@ export const knowledgeQuestions: KnowledgeQuestionSeed[] = [
     "category": "physics",
     "question": "Which physicist introduced the quantum hypothesis in 1900?",
     "options": [
-      "Max Planck",
       "Albert Einstein",
       "Richard Feynman",
-      "Erwin Schrödinger"
+      "Erwin Schrödinger",
+      "Max Planck"
     ],
     "correctAnswer": "Max Planck",
     "explanation": "Planck proposed that energy is emitted or absorbed in discrete quanta.",
@@ -3568,10 +3568,10 @@ export const knowledgeQuestions: KnowledgeQuestionSeed[] = [
     "category": "chemistry",
     "question": "What is the common name for sodium chloride?",
     "options": [
-      "Table salt",
       "Baking soda",
       "Vinegar",
-      "Bleach"
+      "Bleach",
+      "Table salt"
     ],
     "correctAnswer": "Table salt",
     "explanation": "Sodium chloride is the chemical compound commonly known as table salt.",
@@ -3584,10 +3584,10 @@ export const knowledgeQuestions: KnowledgeQuestionSeed[] = [
     "category": "biology",
     "question": "Which process produces gametes with half the usual number of chromosomes?",
     "options": [
-      "Meiosis",
       "Mitosis",
       "Binary fission",
-      "Budding"
+      "Budding",
+      "Meiosis"
     ],
     "correctAnswer": "Meiosis",
     "explanation": "Meiosis reduces chromosome number by half to form gametes.",
@@ -3616,9 +3616,9 @@ export const knowledgeQuestions: KnowledgeQuestionSeed[] = [
     "category": "earth_science",
     "question": "Which mineral is used as the reference for hardness 10 on the Mohs scale?",
     "options": [
-      "Diamond",
       "Quartz",
       "Topaz",
+      "Diamond",
       "Corundum"
     ],
     "correctAnswer": "Diamond",
@@ -3632,8 +3632,8 @@ export const knowledgeQuestions: KnowledgeQuestionSeed[] = [
     "category": "discoveries",
     "question": "Who discovered X-rays in 1895?",
     "options": [
-      "Wilhelm Röntgen",
       "Henri Becquerel",
+      "Wilhelm Röntgen",
       "Marie Curie",
       "J. J. Thomson"
     ],
@@ -3648,9 +3648,9 @@ export const knowledgeQuestions: KnowledgeQuestionSeed[] = [
     "category": "inventions",
     "question": "Which mathematician and inventor designed the Analytical Engine, an early mechanical general-purpose computer concept?",
     "options": [
-      "Charles Babbage",
       "Alan Turing",
       "Blaise Pascal",
+      "Charles Babbage",
       "John von Neumann"
     ],
     "correctAnswer": "Charles Babbage",
@@ -3680,10 +3680,10 @@ export const knowledgeQuestions: KnowledgeQuestionSeed[] = [
     "category": "science",
     "question": "What is the SI unit of power?",
     "options": [
-      "Watt",
       "Joule",
       "Ampere",
-      "Coulomb"
+      "Coulomb",
+      "Watt"
     ],
     "correctAnswer": "Watt",
     "explanation": "The watt is the SI unit of power, equal to one joule per second.",
@@ -3728,9 +3728,9 @@ export const knowledgeQuestions: KnowledgeQuestionSeed[] = [
     "category": "literature_arts",
     "question": "Who wrote the novel 'Pride and Prejudice'?",
     "options": [
-      "Jane Austen",
       "Charlotte Bronte",
       "Mary Shelley",
+      "Jane Austen",
       "George Eliot"
     ],
     "correctAnswer": "Jane Austen",
@@ -3760,10 +3760,10 @@ export const knowledgeQuestions: KnowledgeQuestionSeed[] = [
     "category": "language",
     "question": "Which language family does Spanish belong to?",
     "options": [
-      "Romance",
       "Germanic",
       "Slavic",
-      "Semitic"
+      "Semitic",
+      "Romance"
     ],
     "correctAnswer": "Romance",
     "explanation": "Spanish developed from Latin and is part of the Romance language family.",
@@ -3776,8 +3776,8 @@ export const knowledgeQuestions: KnowledgeQuestionSeed[] = [
     "category": "culture",
     "question": "The traditional Japanese tea ceremony is most closely associated with which beverage?",
     "options": [
-      "Matcha",
       "Sake",
+      "Matcha",
       "Sencha bottled tea",
       "Barley tea"
     ],
@@ -3792,10 +3792,10 @@ export const knowledgeQuestions: KnowledgeQuestionSeed[] = [
     "category": "human_knowledge",
     "question": "Which organ in the human body pumps blood through the circulatory system?",
     "options": [
-      "Heart",
       "Liver",
       "Kidney",
-      "Lung"
+      "Lung",
+      "Heart"
     ],
     "correctAnswer": "Heart",
     "explanation": "The heart is the muscular organ that pumps blood throughout the body.",
@@ -3808,9 +3808,9 @@ export const knowledgeQuestions: KnowledgeQuestionSeed[] = [
     "category": "common_knowledge",
     "question": "How many continents are commonly recognized in the seven-continent model?",
     "options": [
-      "Seven",
       "Five",
       "Six",
+      "Seven",
       "Eight"
     ],
     "correctAnswer": "Seven",
@@ -3824,9 +3824,9 @@ export const knowledgeQuestions: KnowledgeQuestionSeed[] = [
     "category": "history",
     "question": "Which empire was ruled by Augustus, its first emperor?",
     "options": [
-      "Roman Empire",
       "Byzantine Empire",
       "Persian Empire",
+      "Roman Empire",
       "Ottoman Empire"
     ],
     "correctAnswer": "Roman Empire",
@@ -3840,10 +3840,10 @@ export const knowledgeQuestions: KnowledgeQuestionSeed[] = [
     "category": "geography",
     "question": "What is the capital city of Canada?",
     "options": [
-      "Ottawa",
       "Toronto",
       "Vancouver",
-      "Montreal"
+      "Montreal",
+      "Ottawa"
     ],
     "correctAnswer": "Ottawa",
     "explanation": "Ottawa is the capital of Canada.",
@@ -3856,8 +3856,8 @@ export const knowledgeQuestions: KnowledgeQuestionSeed[] = [
     "category": "philosophy",
     "question": "The phrase 'I think, therefore I am' is associated with which philosopher?",
     "options": [
-      "Rene Descartes",
       "Immanuel Kant",
+      "Rene Descartes",
       "David Hume",
       "John Locke"
     ],
@@ -3872,9 +3872,9 @@ export const knowledgeQuestions: KnowledgeQuestionSeed[] = [
     "category": "language",
     "question": "Which writing system is used for modern standard Arabic?",
     "options": [
-      "Arabic script",
       "Cyrillic script",
       "Devanagari script",
+      "Arabic script",
       "Latin script"
     ],
     "correctAnswer": "Arabic script",
@@ -3888,9 +3888,9 @@ export const knowledgeQuestions: KnowledgeQuestionSeed[] = [
     "category": "culture",
     "question": "Diwali is a major festival associated especially with which religion?",
     "options": [
-      "Hinduism",
       "Christianity",
       "Shinto",
+      "Hinduism",
       "Judaism"
     ],
     "correctAnswer": "Hinduism",
@@ -3904,10 +3904,10 @@ export const knowledgeQuestions: KnowledgeQuestionSeed[] = [
     "category": "inventions",
     "question": "The movable-type printing press in Europe is most associated with whom?",
     "options": [
-      "Johannes Gutenberg",
       "Isaac Newton",
       "Galileo Galilei",
-      "James Watt"
+      "James Watt",
+      "Johannes Gutenberg"
     ],
     "correctAnswer": "Johannes Gutenberg",
     "explanation": "Gutenberg developed movable metal type printing in Europe in the 15th century.",
@@ -3920,8 +3920,8 @@ export const knowledgeQuestions: KnowledgeQuestionSeed[] = [
     "category": "fun_facts",
     "question": "Which animal is known for having black-and-white stripes unique to each individual?",
     "options": [
-      "Zebra",
       "Giraffe",
+      "Zebra",
       "Panda",
       "Tiger shark"
     ],
@@ -3936,9 +3936,9 @@ export const knowledgeQuestions: KnowledgeQuestionSeed[] = [
     "category": "common_knowledge",
     "question": "Which gas do plants absorb from the atmosphere during photosynthesis?",
     "options": [
-      "Carbon dioxide",
       "Oxygen",
       "Nitrogen",
+      "Carbon dioxide",
       "Helium"
     ],
     "correctAnswer": "Carbon dioxide",
@@ -3952,9 +3952,9 @@ export const knowledgeQuestions: KnowledgeQuestionSeed[] = [
     "category": "history",
     "question": "The Rosetta Stone was crucial for deciphering which ancient writing system?",
     "options": [
-      "Egyptian hieroglyphs",
       "Mayan glyphs",
       "Cuneiform",
+      "Egyptian hieroglyphs",
       "Linear B"
     ],
     "correctAnswer": "Egyptian hieroglyphs",
@@ -3968,10 +3968,10 @@ export const knowledgeQuestions: KnowledgeQuestionSeed[] = [
     "category": "literature_arts",
     "question": "Who wrote the epic poem 'The Divine Comedy'?",
     "options": [
-      "Dante Alighieri",
       "Virgil",
       "Petrarch",
-      "Giovanni Boccaccio"
+      "Giovanni Boccaccio",
+      "Dante Alighieri"
     ],
     "correctAnswer": "Dante Alighieri",
     "explanation": "Dante Alighieri wrote 'The Divine Comedy' in the early 14th century.",
@@ -3984,10 +3984,10 @@ export const knowledgeQuestions: KnowledgeQuestionSeed[] = [
     "category": "philosophy",
     "question": "Which Chinese philosopher is associated with the Analects?",
     "options": [
-      "Confucius",
       "Laozi",
       "Mencius",
-      "Mozi"
+      "Mozi",
+      "Confucius"
     ],
     "correctAnswer": "Confucius",
     "explanation": "The Analects preserve sayings and ideas attributed to Confucius and his disciples.",
@@ -4000,9 +4000,9 @@ export const knowledgeQuestions: KnowledgeQuestionSeed[] = [
     "category": "language",
     "question": "What is the term for a word that reads the same backward and forward?",
     "options": [
-      "Palindrome",
       "Homonym",
       "Acronym",
+      "Palindrome",
       "Antonym"
     ],
     "correctAnswer": "Palindrome",
@@ -4016,9 +4016,9 @@ export const knowledgeQuestions: KnowledgeQuestionSeed[] = [
     "category": "culture",
     "question": "Which country is the origin of flamenco music and dance?",
     "options": [
-      "Spain",
       "Portugal",
       "Italy",
+      "Spain",
       "Greece"
     ],
     "correctAnswer": "Spain",
@@ -4032,9 +4032,9 @@ export const knowledgeQuestions: KnowledgeQuestionSeed[] = [
     "category": "human_knowledge",
     "question": "Which scientist proposed the laws of motion and universal gravitation?",
     "options": [
-      "Isaac Newton",
       "Albert Einstein",
       "Charles Darwin",
+      "Isaac Newton",
       "Niels Bohr"
     ],
     "correctAnswer": "Isaac Newton",
@@ -4048,10 +4048,10 @@ export const knowledgeQuestions: KnowledgeQuestionSeed[] = [
     "category": "inventions",
     "question": "Who developed the first successful practical telephone exchange system in the late 19th century?",
     "options": [
-      "Tivadar Puskas",
       "Samuel Morse",
       "Eli Whitney",
-      "Alessandro Volta"
+      "Alessandro Volta",
+      "Tivadar Puskas"
     ],
     "correctAnswer": "Tivadar Puskas",
     "explanation": "Tivadar Puskas is credited with important work on the telephone exchange concept.",
@@ -4064,8 +4064,8 @@ export const knowledgeQuestions: KnowledgeQuestionSeed[] = [
     "category": "fun_facts",
     "question": "Which bird is famous for its ability to mimic human speech?",
     "options": [
-      "Parrot",
       "Penguin",
+      "Parrot",
       "Ostrich",
       "Swan"
     ],
@@ -4112,10 +4112,10 @@ export const knowledgeQuestions: KnowledgeQuestionSeed[] = [
     "category": "geography",
     "question": "Mount Kilimanjaro is located in which country?",
     "options": [
-      "Tanzania",
       "Kenya",
       "Uganda",
-      "Ethiopia"
+      "Ethiopia",
+      "Tanzania"
     ],
     "correctAnswer": "Tanzania",
     "explanation": "Mount Kilimanjaro, Africa's highest mountain, is in Tanzania.",
@@ -4128,10 +4128,10 @@ export const knowledgeQuestions: KnowledgeQuestionSeed[] = [
     "category": "literature_arts",
     "question": "Which playwright wrote 'Hamlet'?",
     "options": [
-      "William Shakespeare",
       "Christopher Marlowe",
       "Ben Jonson",
-      "Moliere"
+      "Moliere",
+      "William Shakespeare"
     ],
     "correctAnswer": "William Shakespeare",
     "explanation": "'Hamlet' is one of William Shakespeare's best-known tragedies.",
@@ -4160,9 +4160,9 @@ export const knowledgeQuestions: KnowledgeQuestionSeed[] = [
     "category": "language",
     "question": "Which language is written using the Hangul alphabet?",
     "options": [
-      "Korean",
       "Japanese",
       "Thai",
+      "Korean",
       "Vietnamese"
     ],
     "correctAnswer": "Korean",
@@ -4192,10 +4192,10 @@ export const knowledgeQuestions: KnowledgeQuestionSeed[] = [
     "category": "inventions",
     "question": "Which invention is associated with the Wright brothers in 1903?",
     "options": [
-      "Powered airplane",
       "Steam locomotive",
       "Telegraph",
-      "Electric light bulb"
+      "Electric light bulb",
+      "Powered airplane"
     ],
     "correctAnswer": "Powered airplane",
     "explanation": "The Wright brothers achieved a controlled powered flight in 1903.",
@@ -4240,8 +4240,8 @@ export const knowledgeQuestions: KnowledgeQuestionSeed[] = [
     "category": "history",
     "question": "Which ancient city was buried by the eruption of Mount Vesuvius in 79 CE?",
     "options": [
-      "Pompeii",
       "Carthage",
+      "Pompeii",
       "Troy",
       "Knossos"
     ],
@@ -4272,10 +4272,10 @@ export const knowledgeQuestions: KnowledgeQuestionSeed[] = [
     "category": "literature_arts",
     "question": "Which composer wrote the 'Moonlight Sonata'?",
     "options": [
-      "Ludwig van Beethoven",
       "Wolfgang Amadeus Mozart",
       "Johann Sebastian Bach",
-      "Franz Schubert"
+      "Franz Schubert",
+      "Ludwig van Beethoven"
     ],
     "correctAnswer": "Ludwig van Beethoven",
     "explanation": "Beethoven composed the Piano Sonata No. 14, popularly called the 'Moonlight Sonata.'",
@@ -4288,9 +4288,9 @@ export const knowledgeQuestions: KnowledgeQuestionSeed[] = [
     "category": "philosophy",
     "question": "Which philosopher wrote 'The Republic'?",
     "options": [
-      "Plato",
       "Aristotle",
       "Seneca",
+      "Plato",
       "Thales"
     ],
     "correctAnswer": "Plato",
@@ -4304,8 +4304,8 @@ export const knowledgeQuestions: KnowledgeQuestionSeed[] = [
     "category": "language",
     "question": "Which ancient language was used for most Roman inscriptions and official documents?",
     "options": [
-      "Latin",
       "Greek",
+      "Latin",
       "Aramaic",
       "Etruscan"
     ],
@@ -4320,9 +4320,9 @@ export const knowledgeQuestions: KnowledgeQuestionSeed[] = [
     "category": "culture",
     "question": "Which cuisine is traditionally associated with sushi?",
     "options": [
-      "Japanese",
       "Thai",
       "Korean",
+      "Japanese",
       "Chinese"
     ],
     "correctAnswer": "Japanese",
@@ -4336,8 +4336,8 @@ export const knowledgeQuestions: KnowledgeQuestionSeed[] = [
     "category": "human_knowledge",
     "question": "Which blood type is often called the universal red blood cell donor type?",
     "options": [
-      "O negative",
       "AB positive",
+      "O negative",
       "A positive",
       "B negative"
     ],
@@ -4384,9 +4384,9 @@ export const knowledgeQuestions: KnowledgeQuestionSeed[] = [
     "category": "philosophy",
     "question": "Which philosopher is known for the categorical imperative?",
     "options": [
-      "Immanuel Kant",
       "Friedrich Nietzsche",
       "John Stuart Mill",
+      "Immanuel Kant",
       "Thomas Hobbes"
     ],
     "correctAnswer": "Immanuel Kant",
@@ -4400,8 +4400,8 @@ export const knowledgeQuestions: KnowledgeQuestionSeed[] = [
     "category": "language",
     "question": "Which language has the most native speakers in the world?",
     "options": [
-      "Mandarin Chinese",
       "English",
+      "Mandarin Chinese",
       "Spanish",
       "Hindi"
     ],
@@ -4416,8 +4416,8 @@ export const knowledgeQuestions: KnowledgeQuestionSeed[] = [
     "category": "culture",
     "question": "Which country is famous for the traditional garment called the kimono?",
     "options": [
-      "Japan",
       "India",
+      "Japan",
       "Vietnam",
       "Mongolia"
     ],
@@ -4432,10 +4432,10 @@ export const knowledgeQuestions: KnowledgeQuestionSeed[] = [
     "category": "inventions",
     "question": "Which ancient civilization is credited with inventing paper around the 2nd century CE?",
     "options": [
-      "Chinese",
       "Roman",
       "Greek",
-      "Egyptian"
+      "Egyptian",
+      "Chinese"
     ],
     "correctAnswer": "Chinese",
     "explanation": "Paper-making was developed in ancient China, traditionally linked to Cai Lun's improvements.",
@@ -4448,9 +4448,9 @@ export const knowledgeQuestions: KnowledgeQuestionSeed[] = [
     "category": "fun_facts",
     "question": "Which natural phenomenon creates a rainbow?",
     "options": [
-      "Refraction and reflection of sunlight in water droplets",
       "Magnetism in clouds",
       "Heat rising from the ground",
+      "Refraction and reflection of sunlight in water droplets",
       "Moonlight passing through dust"
     ],
     "correctAnswer": "Refraction and reflection of sunlight in water droplets",
@@ -4464,9 +4464,9 @@ export const knowledgeQuestions: KnowledgeQuestionSeed[] = [
     "category": "common_knowledge",
     "question": "What is the main gas in Earth's atmosphere?",
     "options": [
-      "Nitrogen",
       "Oxygen",
       "Carbon dioxide",
+      "Nitrogen",
       "Argon"
     ],
     "correctAnswer": "Nitrogen",
@@ -4480,10 +4480,10 @@ export const knowledgeQuestions: KnowledgeQuestionSeed[] = [
     "category": "geography",
     "question": "Which mountain range separates Europe and Asia in the conventional geographic boundary?",
     "options": [
-      "Ural Mountains",
       "Alps",
       "Himalayas",
-      "Carpathians"
+      "Carpathians",
+      "Ural Mountains"
     ],
     "correctAnswer": "Ural Mountains",
     "explanation": "The Ural Mountains are commonly used as part of the boundary between Europe and Asia.",
@@ -4512,8 +4512,8 @@ export const knowledgeQuestions: KnowledgeQuestionSeed[] = [
     "category": "philosophy",
     "question": "Which philosopher wrote 'Leviathan'?",
     "options": [
-      "Thomas Hobbes",
       "John Locke",
+      "Thomas Hobbes",
       "Jean-Jacques Rousseau",
       "Baruch Spinoza"
     ],
@@ -4528,10 +4528,10 @@ export const knowledgeQuestions: KnowledgeQuestionSeed[] = [
     "category": "language",
     "question": "What does the prefix 'poly-' mean in words such as 'polygon' and 'polyglot'?",
     "options": [
-      "Many",
       "Small",
       "Before",
-      "Against"
+      "Against",
+      "Many"
     ],
     "correctAnswer": "Many",
     "explanation": "The prefix 'poly-' comes from Greek and means 'many.'",
@@ -4544,9 +4544,9 @@ export const knowledgeQuestions: KnowledgeQuestionSeed[] = [
     "category": "culture",
     "question": "Which traditional Polynesian navigators used stars, waves, and birds to cross the Pacific?",
     "options": [
-      "Wayfinders",
       "Samurai",
       "Bedouins",
+      "Wayfinders",
       "Vikings"
     ],
     "correctAnswer": "Wayfinders",
@@ -4560,10 +4560,10 @@ export const knowledgeQuestions: KnowledgeQuestionSeed[] = [
     "category": "human_knowledge",
     "question": "Which part of the brain is strongly associated with balance and coordination?",
     "options": [
-      "Cerebellum",
       "Hippocampus",
       "Amygdala",
-      "Medulla"
+      "Medulla",
+      "Cerebellum"
     ],
     "correctAnswer": "Cerebellum",
     "explanation": "The cerebellum helps coordinate movement and maintain balance.",
@@ -4576,8 +4576,8 @@ export const knowledgeQuestions: KnowledgeQuestionSeed[] = [
     "category": "inventions",
     "question": "Who is credited with inventing the first practical incandescent light bulb for widespread use?",
     "options": [
-      "Thomas Edison",
       "Michael Faraday",
+      "Thomas Edison",
       "James Clerk Maxwell",
       "Benjamin Franklin"
     ],
@@ -4592,9 +4592,9 @@ export const knowledgeQuestions: KnowledgeQuestionSeed[] = [
     "category": "common_knowledge",
     "question": "How many degrees are in a right angle?",
     "options": [
-      "90",
       "45",
       "180",
+      "90",
       "360"
     ],
     "correctAnswer": "90",
@@ -4608,10 +4608,10 @@ export const knowledgeQuestions: KnowledgeQuestionSeed[] = [
     "category": "history",
     "question": "Which ruler is associated with the Code of Hammurabi?",
     "options": [
-      "Hammurabi of Babylon",
       "Cyrus the Great",
       "Ramses II",
-      "Ashoka"
+      "Ashoka",
+      "Hammurabi of Babylon"
     ],
     "correctAnswer": "Hammurabi of Babylon",
     "explanation": "The Code of Hammurabi was issued by the Babylonian king Hammurabi.",
@@ -4672,8 +4672,8 @@ export const knowledgeQuestions: KnowledgeQuestionSeed[] = [
     "category": "language",
     "question": "Which language is the primary source of the English words 'ballet,' 'cafe,' and 'genre'?",
     "options": [
-      "French",
       "German",
+      "French",
       "Arabic",
       "Russian"
     ],
@@ -4688,8 +4688,8 @@ export const knowledgeQuestions: KnowledgeQuestionSeed[] = [
     "category": "culture",
     "question": "Which ancient wonder stood on the island of Pharos near Alexandria?",
     "options": [
-      "Lighthouse of Alexandria",
       "Colossus of Rhodes",
+      "Lighthouse of Alexandria",
       "Hanging Gardens of Babylon",
       "Temple of Artemis"
     ],
@@ -4704,9 +4704,9 @@ export const knowledgeQuestions: KnowledgeQuestionSeed[] = [
     "category": "inventions",
     "question": "The earliest known magnetic compass was developed in which civilization?",
     "options": [
-      "Chinese",
       "Mayan",
       "Roman",
+      "Chinese",
       "Norse"
     ],
     "correctAnswer": "Chinese",
@@ -4720,10 +4720,10 @@ export const knowledgeQuestions: KnowledgeQuestionSeed[] = [
     "category": "fun_facts",
     "question": "Which sea creature has three hearts?",
     "options": [
-      "Octopus",
       "Sea turtle",
       "Dolphin",
-      "Jellyfish"
+      "Jellyfish",
+      "Octopus"
     ],
     "correctAnswer": "Octopus",
     "explanation": "Octopuses have three hearts: two pump blood to the gills and one to the body.",
@@ -4736,9 +4736,9 @@ export const knowledgeQuestions: KnowledgeQuestionSeed[] = [
     "category": "common_knowledge",
     "question": "Which process turns a liquid into a gas at the surface of the liquid?",
     "options": [
-      "Evaporation",
       "Condensation",
       "Freezing",
+      "Evaporation",
       "Sublimation"
     ],
     "correctAnswer": "Evaporation",
@@ -4768,10 +4768,10 @@ export const knowledgeQuestions: KnowledgeQuestionSeed[] = [
     "category": "geography",
     "question": "Which country contains the ancient city of Petra?",
     "options": [
-      "Jordan",
       "Lebanon",
       "Syria",
-      "Iraq"
+      "Iraq",
+      "Jordan"
     ],
     "correctAnswer": "Jordan",
     "explanation": "Petra, the rock-cut Nabataean city, is in modern Jordan.",
@@ -4784,8 +4784,8 @@ export const knowledgeQuestions: KnowledgeQuestionSeed[] = [
     "category": "literature_arts",
     "question": "Who wrote 'One Hundred Years of Solitude'?",
     "options": [
-      "Gabriel Garcia Marquez",
       "Jorge Luis Borges",
+      "Gabriel Garcia Marquez",
       "Pablo Neruda",
       "Mario Vargas Llosa"
     ],
@@ -4800,8 +4800,8 @@ export const knowledgeQuestions: KnowledgeQuestionSeed[] = [
     "category": "philosophy",
     "question": "Which tradition is associated with the concept of the Tao or Dao?",
     "options": [
-      "Daoism",
       "Stoicism",
+      "Daoism",
       "Existentialism",
       "Utilitarianism"
     ],
