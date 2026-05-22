@@ -25,6 +25,7 @@ type StoredLiveQuestion = {
   correctAnswer?: string;
   explanation?: string | null;
   imageId?: Id<"_storage"> | null;
+  checksum?: string | null;
 };
 
 type LiveAnswer = {
@@ -195,6 +196,81 @@ async function getVersusSummary(
   return orientVersusSummary(summary, player1Id, player2Id);
 }
 
+type ChallengeQuestionCandidate = Doc<"quizQuestions"> & { _id: Id<"quizQuestions"> };
+
+function shuffleInPlace<T>(items: T[]): T[] {
+  for (let i = items.length - 1; i > 0; i -= 1) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [items[i], items[j]] = [items[j], items[i]];
+  }
+  return items;
+}
+
+function selectRotatedQuestions(
+  candidates: ChallengeQuestionCandidate[],
+  recentChecksums: Set<string>,
+) {
+  const nonRecent = candidates.filter((q) => !recentChecksums.has(q.checksum));
+  const rotationPool = nonRecent.length >= TOTAL_QUESTIONS ? nonRecent : candidates;
+
+  const leastUsedWindow = [...rotationPool]
+    .sort((a, b) => {
+      const usageDelta = a.usageCount - b.usageCount;
+      if (usageDelta !== 0) return usageDelta;
+      return a.timesAnswered - b.timesAnswered;
+    })
+    .slice(0, Math.max(TOTAL_QUESTIONS * 4, 50));
+
+  return shuffleInPlace(leastUsedWindow).slice(0, TOTAL_QUESTIONS);
+}
+
+async function getRecentChallengeQuestionChecksums(
+  ctx: Pick<MutationCtx, "db">,
+  player1Id: Id<"users">,
+  player2Id: Id<"users">,
+  sport: string,
+  mode: string,
+) {
+  const { pairKey } = getPairKey(player1Id, player2Id);
+  const recentHistory = await ctx.db
+    .query("challengeMatchHistory")
+    .withIndex("by_pair_sport_mode", (q) =>
+      q.eq("pairKey", pairKey).eq("sport", sport).eq("mode", mode),
+    )
+    .order("desc")
+    .take(5);
+
+  const recentChecksums = new Set<string>();
+  for (const history of recentHistory) {
+    const previousMatch = await ctx.db.get(history.matchId);
+    if (!previousMatch) continue;
+    for (const question of previousMatch.questions as StoredLiveQuestion[]) {
+      if (question.checksum) recentChecksums.add(question.checksum);
+    }
+  }
+  return recentChecksums;
+}
+
+async function recordChallengeQuestionUsage(
+  ctx: Pick<MutationCtx, "db">,
+  storedQuestion: StoredLiveQuestion | undefined,
+  player1Correct: boolean,
+  player2Correct: boolean,
+) {
+  if (!storedQuestion?.checksum) return;
+  const question = await ctx.db
+    .query("quizQuestions")
+    .withIndex("by_checksum", (q) => q.eq("checksum", storedQuestion.checksum!))
+    .first();
+  if (!question) return;
+
+  await ctx.db.patch(question._id, {
+    usageCount: question.usageCount + 1,
+    timesAnswered: question.timesAnswered + 2,
+    timesCorrect: question.timesCorrect + (player1Correct ? 1 : 0) + (player2Correct ? 1 : 0),
+  });
+}
+
 async function recordChallengeHistory(
   ctx: Pick<MutationCtx, "db">,
   match: Doc<"liveMatches">,
@@ -326,20 +402,28 @@ export const createFromChallenge = mutation({
       throw new Error("One of the players already has an active match");
     }
 
-    // Pick 10 random questions for this sport
+    // Pick 10 rotated intermediate questions for this sport. Challenge mode
+    // keeps difficulty fair but uses the full pool, avoids questions this pair
+    // recently saw, and prefers lower-usage questions before shuffling.
     const allQuestions = await ctx.db
       .query("quizQuestions")
       .withIndex("by_sport_difficulty", (q) =>
         q.eq("sport", challenge.sport).eq("difficulty", "intermediate"),
       )
-      .take(200);
+      .collect();
 
     const matchCandidates = challenge.mode === "came_first"
       ? allQuestions.filter((q) => q.category === "which_came_first")
       : allQuestions.filter((q) => q.category !== "which_came_first");
 
-    const shuffled = [...matchCandidates].sort(() => Math.random() - 0.5);
-    const pickedQuestions = shuffled.slice(0, TOTAL_QUESTIONS);
+    const recentChecksums = await getRecentChallengeQuestionChecksums(
+      ctx,
+      challenge.challengerId,
+      challenge.challengedId,
+      challenge.sport,
+      challenge.mode,
+    );
+    const pickedQuestions = selectRotatedQuestions(matchCandidates, recentChecksums);
     if (pickedQuestions.length < TOTAL_QUESTIONS) {
       throw new Error(
         `Not enough live match questions available for ${challenge.sport}: ${pickedQuestions.length}/${TOTAL_QUESTIONS}`,
@@ -352,6 +436,7 @@ export const createFromChallenge = mutation({
       correctAnswer: q.correctAnswer,
       explanation: q.explanation ?? null,
       imageId: q.imageId ?? null,
+      checksum: q.checksum,
     }));
 
     await declineOtherPendingChallengesForMatch(
@@ -508,6 +593,13 @@ export const submitAnswer = mutation({
           status: "roundResult",
           roundResultUntil: now + ROUND_RESULT_DURATION_MS,
         },
+      );
+
+      await recordChallengeQuestionUsage(
+        ctx,
+        (match.questions as StoredLiveQuestion[])[match.currentQuestion],
+        player1Answers[match.currentQuestion]?.correct ?? false,
+        player2Answers[match.currentQuestion]?.correct ?? false,
       );
 
       await ctx.scheduler.runAfter(
@@ -855,6 +947,13 @@ async function completeTimedOutRound(
     status: "roundResult",
     roundResultUntil: now + ROUND_RESULT_DURATION_MS,
   });
+
+  await recordChallengeQuestionUsage(
+    ctx,
+    (match.questions as StoredLiveQuestion[])[questionIdx],
+    player1Answers[questionIdx]?.correct ?? false,
+    player2Answers[questionIdx]?.correct ?? false,
+  );
 
   await ctx.scheduler.runAfter(
     ROUND_RESULT_DURATION_MS,
