@@ -118,7 +118,7 @@ export default function ResultScreen() {
         { label: "Your Score", value: `${state.score}`, color: "primary" as const },
         { label: "Opponent", value: `${state.opponentScore ?? 0}`, color: "accent" as const },
         { label: "Correct", value: `${state.correctCount}/${state.total}`, color: "success" as const },
-        { label: "Sport", value: state.sport, color: "blue" as const },
+        { label: "Topic", value: state.sport, color: "blue" as const },
       ]
     : isQuiz
       ? [
@@ -130,7 +130,7 @@ export default function ResultScreen() {
       : [
         { label: "Rounds", value: `${state.total}`, color: "success" as const },
         { label: "Score", value: `${state.score}`, color: "primary" as const },
-        { label: "Sport", value: state.sport, color: "blue" as const },
+        { label: "Topic", value: state.sport, color: "blue" as const },
         { label: "Mode", value: "Survival", color: "accent" as const },
       ];
 

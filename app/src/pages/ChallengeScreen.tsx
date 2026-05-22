@@ -10,7 +10,7 @@ import { useQuery, useMutation } from "convex/react";
 import { api } from "../../convex/_generated/api";
 import { toast } from "sonner";
 
-const sportPills = ["football", "tennis", "basketball", "knowledge"];
+const topicPills = ["football", "tennis", "basketball", "knowledge"];
 const modePills = ["quiz", "survival"];
 
 function getChallengeInitials(name: string): string {
@@ -146,10 +146,10 @@ export default function ChallengeScreen() {
             )}
 
             <p className="text-xs font-heading font-bold uppercase text-muted-foreground mb-2">
-              Sport
+              Topic
             </p>
             <div className="flex gap-2 mb-3 flex-wrap">
-              {sportPills.map((s) => (
+              {topicPills.map((s) => (
                 <button
                   key={s}
                   onClick={() => {

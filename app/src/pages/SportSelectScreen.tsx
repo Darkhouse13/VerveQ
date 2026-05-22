@@ -5,7 +5,7 @@ import { NeoButton } from "@/components/neo/NeoButton";
 import { ArrowLeft, Lock } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 
-const sportMeta: Record<string, { label: string; emoji: string; color: "success" | "accent" | "primary" }> = {
+const topicMeta: Record<string, { label: string; emoji: string; color: "success" | "accent" | "primary" }> = {
   football:   { label: "Football", emoji: "\u26BD", color: "success" },
   tennis:     { label: "Tennis", emoji: "\uD83C\uDFBE", color: "accent" },
   basketball: { label: "Basketball", emoji: "\uD83C\uDFC0", color: "primary" },
@@ -22,11 +22,11 @@ export default function SportSelectScreen() {
   const isWhoAmIMode = mode === "who-am-i";
   const isSurvivalMode = mode === "survival";
   const isFootballOnlyMode = isHigherLowerMode || isVerveGridMode || isWhoAmIMode;
-  const availableSports = isFootballOnlyMode
+  const availableTopics = isFootballOnlyMode
     ? ["football"]
     : isSurvivalMode
       ? ["football", "tennis", "basketball"]
-      : Object.keys(sportMeta);
+      : Object.keys(topicMeta);
   const [selected, setSelected] = useState<string | null>(
     isFootballOnlyMode ? "football" : null,
   );
@@ -77,8 +77,8 @@ export default function SportSelectScreen() {
       <p className="text-muted-foreground font-body mb-6">{subtitle}</p>
 
       <div className="grid grid-cols-2 gap-3">
-        {availableSports.map((sport) => {
-          const meta = sportMeta[sport] || { label: sport, emoji: "\uD83C\uDFC6", color: "primary" as const };
+        {availableTopics.map((sport) => {
+          const meta = topicMeta[sport] || { label: sport, emoji: "\uD83C\uDFC6", color: "primary" as const };
           return (
             <NeoCard
               key={sport}

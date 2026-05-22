@@ -25,7 +25,7 @@ export default function BlitzResultScreen() {
     { label: "Score", value: `${state.score}`, color: "primary" as const },
     { label: "Correct", value: `${state.correctCount}`, color: "success" as const },
     { label: "Wrong", value: `${state.wrongCount}`, color: "destructive" as const },
-    { label: "Sport", value: state.sport, color: "blue" as const },
+    { label: "Topic", value: state.sport, color: "blue" as const },
   ];
 
   return (

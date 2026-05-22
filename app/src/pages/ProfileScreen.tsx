@@ -118,7 +118,7 @@ export default function ProfileScreen() {
     { label: "Total Games", value: String(profile.stats.totalGames), icon: Zap, color: "primary" as const },
     { label: "Win Rate", value: `${Math.round(profile.stats.winRate)}%`, icon: Target, color: "success" as const },
     { label: "Best Streak", value: String(profile.stats.bestStreak), icon: Flame, color: "accent" as const },
-    { label: "Fav Sport", value: favSport ? (sportEmojis[favSport] || favSport) : "\u2014", icon: Star, color: "blue" as const },
+    { label: "Fav Topic", value: favSport ? (sportEmojis[favSport] || favSport) : "\u2014", icon: Star, color: "blue" as const },
   ];
 
   return (
