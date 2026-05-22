@@ -5650,5 +5650,2665 @@ export const knowledgeQuestions: KnowledgeQuestionSeed[] = [
     "difficulty": "intermediate",
     "bucket": "knowledge_came_first_intermediate",
     "checksum": "knowledge_came_first_v1_060"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "The Prophet Muhammad founded the community in Medina",
+      "The Buddha lived in northern India"
+    ],
+    "correctAnswer": "The Buddha lived in northern India",
+    "explanation": "The Buddha lived in northern India came first (c. 5th century BCE); The Prophet Muhammad founded the community in Medina came later (622 CE).",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_061"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "Insulin was first used to treat diabetes",
+      "Humans first landed on the Moon"
+    ],
+    "correctAnswer": "Insulin was first used to treat diabetes",
+    "explanation": "Insulin was first used to treat diabetes came first (1922); Humans first landed on the Moon came later (1969).",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_062"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "The first image of a black hole was released",
+      "Athenian democracy developed under Cleisthenes"
+    ],
+    "correctAnswer": "Athenian democracy developed under Cleisthenes",
+    "explanation": "Athenian democracy developed under Cleisthenes came first (508 BCE); The first image of a black hole was released came later (2019).",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_063"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "The Rosetta Stone was discovered",
+      "World War II began in Europe"
+    ],
+    "correctAnswer": "The Rosetta Stone was discovered",
+    "explanation": "The Rosetta Stone was discovered came first (1799); World War II began in Europe came later (1939).",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_064"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "ChatGPT was publicly released",
+      "YouTube launched"
+    ],
+    "correctAnswer": "YouTube launched",
+    "explanation": "YouTube launched came first (2005); ChatGPT was publicly released came later (2022).",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_065"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "Constantinople fell to the Ottomans",
+      "The American Civil War began"
+    ],
+    "correctAnswer": "Constantinople fell to the Ottomans",
+    "explanation": "Constantinople fell to the Ottomans came first (1453); The American Civil War began came later (1861).",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_066"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "Curiosity landed on Mars",
+      "The Berlin Wall fell"
+    ],
+    "correctAnswer": "The Berlin Wall fell",
+    "explanation": "The Berlin Wall fell came first (1989); Curiosity landed on Mars came later (2012).",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_067"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "The Colosseum opened in Rome",
+      "Newton published Principia Mathematica"
+    ],
+    "correctAnswer": "The Colosseum opened in Rome",
+    "explanation": "The Colosseum opened in Rome came first (80 CE); Newton published Principia Mathematica came later (1687).",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_068"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "Wikipedia launched",
+      "Sputnik 1 was launched"
+    ],
+    "correctAnswer": "Sputnik 1 was launched",
+    "explanation": "Sputnik 1 was launched came first (1957); Wikipedia launched came later (2001).",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_069"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "The Code of Hammurabi was created",
+      "The Black Death reached Europe"
+    ],
+    "correctAnswer": "The Code of Hammurabi was created",
+    "explanation": "The Code of Hammurabi was created came first (c. 1754 BCE); The Black Death reached Europe came later (1347).",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_070"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "The World Wide Web was proposed",
+      "Einstein published special relativity"
+    ],
+    "correctAnswer": "Einstein published special relativity",
+    "explanation": "Einstein published special relativity came first (1905); The World Wide Web was proposed came later (1989).",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_071"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "The Colosseum opened in Rome",
+      "The Higgs boson discovery was announced"
+    ],
+    "correctAnswer": "The Colosseum opened in Rome",
+    "explanation": "The Colosseum opened in Rome came first (80 CE); The Higgs boson discovery was announced came later (2012).",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_072"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "The Berlin Wall was built",
+      "The steam engine patent by James Watt was granted"
+    ],
+    "correctAnswer": "The steam engine patent by James Watt was granted",
+    "explanation": "The steam engine patent by James Watt was granted came first (1769); The Berlin Wall was built came later (1961).",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_073"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "The traditional founding of Rome occurred",
+      "Wikipedia launched"
+    ],
+    "correctAnswer": "The traditional founding of Rome occurred",
+    "explanation": "The traditional founding of Rome occurred came first (753 BCE); Wikipedia launched came later (2001).",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_074"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "Insulin was first used to treat diabetes",
+      "The Mongol Empire reached its greatest extent"
+    ],
+    "correctAnswer": "The Mongol Empire reached its greatest extent",
+    "explanation": "The Mongol Empire reached its greatest extent came first (13th century); Insulin was first used to treat diabetes came later (1922).",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_075"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "The first Space Shuttle launch occurred",
+      "The COVID-19 pandemic was declared by WHO"
+    ],
+    "correctAnswer": "The first Space Shuttle launch occurred",
+    "explanation": "The first Space Shuttle launch occurred came first (1981); The COVID-19 pandemic was declared by WHO came later (2020).",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_076"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "The first public steam railway opened",
+      "The First Emperor unified China"
+    ],
+    "correctAnswer": "The First Emperor unified China",
+    "explanation": "The First Emperor unified China came first (221 BCE); The first public steam railway opened came later (1825).",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_077"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "India became independent",
+      "Bitcoin's genesis block was mined"
+    ],
+    "correctAnswer": "India became independent",
+    "explanation": "India became independent came first (1947); Bitcoin's genesis block was mined came later (2009).",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_078"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "India's Chandrayaan-3 landed near the Moon's south pole",
+      "Shakespeare's Globe Theatre opened"
+    ],
+    "correctAnswer": "Shakespeare's Globe Theatre opened",
+    "explanation": "Shakespeare's Globe Theatre opened came first (1599); India's Chandrayaan-3 landed near the Moon's south pole came later (2023).",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_079"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "The American Civil War began",
+      "Amazon launched as an online bookstore"
+    ],
+    "correctAnswer": "The American Civil War began",
+    "explanation": "The American Civil War began came first (1861); Amazon launched as an online bookstore came later (1995).",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_080"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "Instagram launched",
+      "The Magna Carta was sealed"
+    ],
+    "correctAnswer": "The Magna Carta was sealed",
+    "explanation": "The Magna Carta was sealed came first (1215); Instagram launched came later (2010).",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_081"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "Shakespeare's Globe Theatre opened",
+      "The first Space Shuttle launch occurred"
+    ],
+    "correctAnswer": "Shakespeare's Globe Theatre opened",
+    "explanation": "Shakespeare's Globe Theatre opened came first (1599); The first Space Shuttle launch occurred came later (1981).",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_082"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "The first PlayStation was released",
+      "Julius Caesar was assassinated"
+    ],
+    "correctAnswer": "Julius Caesar was assassinated",
+    "explanation": "Julius Caesar was assassinated came first (44 BCE); The first PlayStation was released came later (1994).",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_083"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "The Vikings raided Lindisfarne",
+      "DNA's double-helix structure was described"
+    ],
+    "correctAnswer": "The Vikings raided Lindisfarne",
+    "explanation": "The Vikings raided Lindisfarne came first (793 CE); DNA's double-helix structure was described came later (1953).",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_084"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "The first email was sent on ARPANET",
+      "The Code of Hammurabi was created"
+    ],
+    "correctAnswer": "The Code of Hammurabi was created",
+    "explanation": "The Code of Hammurabi was created came first (c. 1754 BCE); The first email was sent on ARPANET came later (1971).",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_085"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "Athenian democracy developed under Cleisthenes",
+      "World War I began"
+    ],
+    "correctAnswer": "Athenian democracy developed under Cleisthenes",
+    "explanation": "Athenian democracy developed under Cleisthenes came first (508 BCE); World War I began came later (1914).",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_086"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "AlphaGo defeated Lee Sedol",
+      "The first Academy Awards ceremony was held"
+    ],
+    "correctAnswer": "The first Academy Awards ceremony was held",
+    "explanation": "The first Academy Awards ceremony was held came first (1929); AlphaGo defeated Lee Sedol came later (2016).",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_087"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "The Rosetta Stone was discovered",
+      "The COVID-19 pandemic was declared by WHO"
+    ],
+    "correctAnswer": "The Rosetta Stone was discovered",
+    "explanation": "The Rosetta Stone was discovered came first (1799); The COVID-19 pandemic was declared by WHO came later (2020).",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_088"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "Twitter launched",
+      "The Battle of Waterloo was fought"
+    ],
+    "correctAnswer": "The Battle of Waterloo was fought",
+    "explanation": "The Battle of Waterloo was fought came first (1815); Twitter launched came later (2006).",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_089"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "Michelangelo completed the Sistine Chapel ceiling",
+      "Twitter launched"
+    ],
+    "correctAnswer": "Michelangelo completed the Sistine Chapel ceiling",
+    "explanation": "Michelangelo completed the Sistine Chapel ceiling came first (1512); Twitter launched came later (2006).",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_090"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "The first text message was sent",
+      "Columbus reached the Caribbean"
+    ],
+    "correctAnswer": "Columbus reached the Caribbean",
+    "explanation": "Columbus reached the Caribbean came first (1492); The first text message was sent came later (1992).",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_091"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "The Vikings raided Lindisfarne",
+      "Nelson Mandela was released from prison"
+    ],
+    "correctAnswer": "The Vikings raided Lindisfarne",
+    "explanation": "The Vikings raided Lindisfarne came first (793 CE); Nelson Mandela was released from prison came later (1990).",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_092"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "The first handheld mobile phone call was made",
+      "The Western Roman Empire fell"
+    ],
+    "correctAnswer": "The Western Roman Empire fell",
+    "explanation": "The Western Roman Empire fell came first (476 CE); The first handheld mobile phone call was made came later (1973).",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_093"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "The Library of Alexandria was founded",
+      "The Berlin Wall was built"
+    ],
+    "correctAnswer": "The Library of Alexandria was founded",
+    "explanation": "The Library of Alexandria was founded came first (3rd century BCE); The Berlin Wall was built came later (1961).",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_094"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "India became independent",
+      "The Late Bronze Age collapse began"
+    ],
+    "correctAnswer": "The Late Bronze Age collapse began",
+    "explanation": "The Late Bronze Age collapse began came first (c. 1200 BCE); India became independent came later (1947).",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_095"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "The first known city-states emerged in Sumer",
+      "World War I began"
+    ],
+    "correctAnswer": "The first known city-states emerged in Sumer",
+    "explanation": "The first known city-states emerged in Sumer came first (c. 3500 BCE); World War I began came later (1914).",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_096"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "The Paris Agreement was adopted",
+      "The Wright brothers made their first powered flight"
+    ],
+    "correctAnswer": "The Wright brothers made their first powered flight",
+    "explanation": "The Wright brothers made their first powered flight came first (1903); The Paris Agreement was adopted came later (2015).",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_097"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "The United States Declaration of Independence was adopted",
+      "The Higgs boson discovery was announced"
+    ],
+    "correctAnswer": "The United States Declaration of Independence was adopted",
+    "explanation": "The United States Declaration of Independence was adopted came first (1776); The Higgs boson discovery was announced came later (2012).",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_098"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "The euro entered circulation as cash",
+      "The United States Declaration of Independence was adopted"
+    ],
+    "correctAnswer": "The United States Declaration of Independence was adopted",
+    "explanation": "The United States Declaration of Independence was adopted came first (1776); The euro entered circulation as cash came later (2002).",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_099"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "The Black Death reached Europe",
+      "Facebook launched"
+    ],
+    "correctAnswer": "The Black Death reached Europe",
+    "explanation": "The Black Death reached Europe came first (1347); Facebook launched came later (2004).",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_100"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "The Chernobyl nuclear disaster occurred",
+      "Constantinople fell to the Ottomans"
+    ],
+    "correctAnswer": "Constantinople fell to the Ottomans",
+    "explanation": "Constantinople fell to the Ottomans came first (1453); The Chernobyl nuclear disaster occurred came later (1986).",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_101"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "Julius Caesar was assassinated",
+      "The Mongol Empire reached its greatest extent"
+    ],
+    "correctAnswer": "Julius Caesar was assassinated",
+    "explanation": "Julius Caesar was assassinated came first (44 BCE); The Mongol Empire reached its greatest extent came later (13th century).",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_102"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "The Chernobyl nuclear disaster occurred",
+      "The first commercial jet airliner entered service"
+    ],
+    "correctAnswer": "The first commercial jet airliner entered service",
+    "explanation": "The first commercial jet airliner entered service came first (1952); The Chernobyl nuclear disaster occurred came later (1986).",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_103"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "The first known city-states emerged in Sumer",
+      "The Roman Empire began under Augustus"
+    ],
+    "correctAnswer": "The first known city-states emerged in Sumer",
+    "explanation": "The first known city-states emerged in Sumer came first (c. 3500 BCE); The Roman Empire began under Augustus came later (27 BCE).",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_104"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "Sputnik 1 was launched",
+      "The first modern Olympic Games were held"
+    ],
+    "correctAnswer": "The first modern Olympic Games were held",
+    "explanation": "The first modern Olympic Games were held came first (1896); Sputnik 1 was launched came later (1957).",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_105"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "The Late Bronze Age collapse began",
+      "Curiosity landed on Mars"
+    ],
+    "correctAnswer": "The Late Bronze Age collapse began",
+    "explanation": "The Late Bronze Age collapse began came first (c. 1200 BCE); Curiosity landed on Mars came later (2012).",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_106"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "The Russian Revolution occurred",
+      "Galileo observed Jupiter's moons"
+    ],
+    "correctAnswer": "Galileo observed Jupiter's moons",
+    "explanation": "Galileo observed Jupiter's moons came first (1610); The Russian Revolution occurred came later (1917).",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_107"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "Amazon launched as an online bookstore",
+      "The first image of a black hole was released"
+    ],
+    "correctAnswer": "Amazon launched as an online bookstore",
+    "explanation": "Amazon launched as an online bookstore came first (1995); The first image of a black hole was released came later (2019).",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_108"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "The Battle of Waterloo was fought",
+      "The Norman Conquest of England occurred"
+    ],
+    "correctAnswer": "The Norman Conquest of England occurred",
+    "explanation": "The Norman Conquest of England occurred came first (1066); The Battle of Waterloo was fought came later (1815).",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_109"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "The first handheld mobile phone call was made",
+      "The first iPhone was released"
+    ],
+    "correctAnswer": "The first handheld mobile phone call was made",
+    "explanation": "The first handheld mobile phone call was made came first (1973); The first iPhone was released came later (2007).",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_110"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "Martin Luther published the Ninety-five Theses",
+      "The Battle of Marathon was fought"
+    ],
+    "correctAnswer": "The Battle of Marathon was fought",
+    "explanation": "The Battle of Marathon was fought came first (490 BCE); Martin Luther published the Ninety-five Theses came later (1517).",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_111"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "World War II began in Europe",
+      "The first PlayStation was released"
+    ],
+    "correctAnswer": "World War II began in Europe",
+    "explanation": "World War II began in Europe came first (1939); The first PlayStation was released came later (1994).",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_112"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "The James Webb Space Telescope launched",
+      "The Norman Conquest of England occurred"
+    ],
+    "correctAnswer": "The Norman Conquest of England occurred",
+    "explanation": "The Norman Conquest of England occurred came first (1066); The James Webb Space Telescope launched came later (2021).",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_113"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "The first public steam railway opened",
+      "The Apple II computer was released"
+    ],
+    "correctAnswer": "The first public steam railway opened",
+    "explanation": "The first public steam railway opened came first (1825); The Apple II computer was released came later (1977).",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_114"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "The first iPhone was released",
+      "The First Emperor unified China"
+    ],
+    "correctAnswer": "The First Emperor unified China",
+    "explanation": "The First Emperor unified China came first (221 BCE); The first iPhone was released came later (2007).",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_115"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "Michelangelo completed the Sistine Chapel ceiling",
+      "The first commercial jet airliner entered service"
+    ],
+    "correctAnswer": "Michelangelo completed the Sistine Chapel ceiling",
+    "explanation": "Michelangelo completed the Sistine Chapel ceiling came first (1512); The first commercial jet airliner entered service came later (1952).",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_116"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "The Soviet Union dissolved",
+      "The Great Pyramid of Giza was completed"
+    ],
+    "correctAnswer": "The Great Pyramid of Giza was completed",
+    "explanation": "The Great Pyramid of Giza was completed came first (c. 2560 BCE); The Soviet Union dissolved came later (1991).",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_117"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "The Prophet Muhammad founded the community in Medina",
+      "Einstein published special relativity"
+    ],
+    "correctAnswer": "The Prophet Muhammad founded the community in Medina",
+    "explanation": "The Prophet Muhammad founded the community in Medina came first (622 CE); Einstein published special relativity came later (1905).",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_118"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "The Paris Agreement was adopted",
+      "Martin Luther King Jr. delivered the I Have a Dream speech"
+    ],
+    "correctAnswer": "Martin Luther King Jr. delivered the I Have a Dream speech",
+    "explanation": "Martin Luther King Jr. delivered the I Have a Dream speech came first (1963); The Paris Agreement was adopted came later (2015).",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_119"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "The traditional founding of Rome occurred",
+      "The French Revolution began"
+    ],
+    "correctAnswer": "The traditional founding of Rome occurred",
+    "explanation": "The traditional founding of Rome occurred came first (753 BCE); The French Revolution began came later (1789).",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_120"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "YouTube launched",
+      "The Russian Revolution occurred"
+    ],
+    "correctAnswer": "The Russian Revolution occurred",
+    "explanation": "The Russian Revolution occurred came first (1917); YouTube launched came later (2005).",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_121"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "Columbus reached the Caribbean",
+      "AlphaGo defeated Lee Sedol"
+    ],
+    "correctAnswer": "Columbus reached the Caribbean",
+    "explanation": "Columbus reached the Caribbean came first (1492); AlphaGo defeated Lee Sedol came later (2016).",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_122"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "The Soviet Union dissolved",
+      "The French Revolution began"
+    ],
+    "correctAnswer": "The French Revolution began",
+    "explanation": "The French Revolution began came first (1789); The Soviet Union dissolved came later (1991).",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_123"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "Charlemagne was crowned emperor",
+      "Facebook launched"
+    ],
+    "correctAnswer": "Charlemagne was crowned emperor",
+    "explanation": "Charlemagne was crowned emperor came first (800 CE); Facebook launched came later (2004).",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_124"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "The first email was sent on ARPANET",
+      "The printing of Gutenberg's Bible began"
+    ],
+    "correctAnswer": "The printing of Gutenberg's Bible began",
+    "explanation": "The printing of Gutenberg's Bible began came first (1450s); The first email was sent on ARPANET came later (1971).",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_125"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "The Battle of Marathon was fought",
+      "The World Wide Web was proposed"
+    ],
+    "correctAnswer": "The Battle of Marathon was fought",
+    "explanation": "The Battle of Marathon was fought came first (490 BCE); The World Wide Web was proposed came later (1989).",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_126"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "The United Nations was founded",
+      "The Roman Empire began under Augustus"
+    ],
+    "correctAnswer": "The Roman Empire began under Augustus",
+    "explanation": "The Roman Empire began under Augustus came first (27 BCE); The United Nations was founded came later (1945).",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_127"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "DNA's double-helix structure was described",
+      "India's Chandrayaan-3 landed near the Moon's south pole"
+    ],
+    "correctAnswer": "DNA's double-helix structure was described",
+    "explanation": "DNA's double-helix structure was described came first (1953); India's Chandrayaan-3 landed near the Moon's south pole came later (2023).",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_128"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "The first modern Olympic Games were held",
+      "The Great Pyramid of Giza was completed"
+    ],
+    "correctAnswer": "The Great Pyramid of Giza was completed",
+    "explanation": "The Great Pyramid of Giza was completed came first (c. 2560 BCE); The first modern Olympic Games were held came later (1896).",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_129"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "The Wright brothers made their first powered flight",
+      "CRISPR-Cas9 genome editing was demonstrated in cells"
+    ],
+    "correctAnswer": "The Wright brothers made their first powered flight",
+    "explanation": "The Wright brothers made their first powered flight came first (1903); CRISPR-Cas9 genome editing was demonstrated in cells came later (2012).",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_130"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "CRISPR-Cas9 genome editing was demonstrated in cells",
+      "The steam engine patent by James Watt was granted"
+    ],
+    "correctAnswer": "The steam engine patent by James Watt was granted",
+    "explanation": "The steam engine patent by James Watt was granted came first (1769); CRISPR-Cas9 genome editing was demonstrated in cells came later (2012).",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_131"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "Newton published Principia Mathematica",
+      "The euro entered circulation as cash"
+    ],
+    "correctAnswer": "Newton published Principia Mathematica",
+    "explanation": "Newton published Principia Mathematica came first (1687); The euro entered circulation as cash came later (2002).",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_132"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "Google was founded",
+      "The printing of Gutenberg's Bible began"
+    ],
+    "correctAnswer": "The printing of Gutenberg's Bible began",
+    "explanation": "The printing of Gutenberg's Bible began came first (1450s); Google was founded came later (1998).",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_133"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "The Magna Carta was sealed",
+      "The Berlin Wall fell"
+    ],
+    "correctAnswer": "The Magna Carta was sealed",
+    "explanation": "The Magna Carta was sealed came first (1215); The Berlin Wall fell came later (1989).",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_134"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "The Apple II computer was released",
+      "The Western Roman Empire fell"
+    ],
+    "correctAnswer": "The Western Roman Empire fell",
+    "explanation": "The Western Roman Empire fell came first (476 CE); The Apple II computer was released came later (1977).",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_135"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "The Library of Alexandria was founded",
+      "Martin Luther King Jr. delivered the I Have a Dream speech"
+    ],
+    "correctAnswer": "The Library of Alexandria was founded",
+    "explanation": "The Library of Alexandria was founded came first (3rd century BCE); Martin Luther King Jr. delivered the I Have a Dream speech came later (1963).",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_136"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "The United Nations was founded",
+      "The Buddha lived in northern India"
+    ],
+    "correctAnswer": "The Buddha lived in northern India",
+    "explanation": "The Buddha lived in northern India came first (c. 5th century BCE); The United Nations was founded came later (1945).",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_137"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "The first Academy Awards ceremony was held",
+      "ChatGPT was publicly released"
+    ],
+    "correctAnswer": "The first Academy Awards ceremony was held",
+    "explanation": "The first Academy Awards ceremony was held came first (1929); ChatGPT was publicly released came later (2022).",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_138"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "The James Webb Space Telescope launched",
+      "Darwin published On the Origin of Species"
+    ],
+    "correctAnswer": "Darwin published On the Origin of Species",
+    "explanation": "Darwin published On the Origin of Species came first (1859); The James Webb Space Telescope launched came later (2021).",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_139"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "Darwin published On the Origin of Species",
+      "Bitcoin's genesis block was mined"
+    ],
+    "correctAnswer": "Darwin published On the Origin of Species",
+    "explanation": "Darwin published On the Origin of Species came first (1859); Bitcoin's genesis block was mined came later (2009).",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_140"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "Instagram launched",
+      "Martin Luther published the Ninety-five Theses"
+    ],
+    "correctAnswer": "Martin Luther published the Ninety-five Theses",
+    "explanation": "Martin Luther published the Ninety-five Theses came first (1517); Instagram launched came later (2010).",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_141"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "Galileo observed Jupiter's moons",
+      "The first text message was sent"
+    ],
+    "correctAnswer": "Galileo observed Jupiter's moons",
+    "explanation": "Galileo observed Jupiter's moons came first (1610); The first text message was sent came later (1992).",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_142"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "Michelangelo completed the Sistine Chapel ceiling",
+      "Charlemagne was crowned emperor"
+    ],
+    "correctAnswer": "Charlemagne was crowned emperor",
+    "explanation": "Charlemagne was crowned emperor came first (800 CE); Michelangelo completed the Sistine Chapel ceiling came later (1512).",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_143"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "Humans first landed on the Moon",
+      "The first text message was sent"
+    ],
+    "correctAnswer": "Humans first landed on the Moon",
+    "explanation": "Humans first landed on the Moon came first (1969); The first text message was sent came later (1992).",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_144"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "The Vikings raided Lindisfarne",
+      "The Buddha lived in northern India"
+    ],
+    "correctAnswer": "The Buddha lived in northern India",
+    "explanation": "The Buddha lived in northern India came first (c. 5th century BCE); The Vikings raided Lindisfarne came later (793 CE).",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_145"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "Insulin was first used to treat diabetes",
+      "The first handheld mobile phone call was made"
+    ],
+    "correctAnswer": "Insulin was first used to treat diabetes",
+    "explanation": "Insulin was first used to treat diabetes came first (1922); The first handheld mobile phone call was made came later (1973).",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_146"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "The first image of a black hole was released",
+      "The Library of Alexandria was founded"
+    ],
+    "correctAnswer": "The Library of Alexandria was founded",
+    "explanation": "The Library of Alexandria was founded came first (3rd century BCE); The first image of a black hole was released came later (2019).",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_147"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "The Rosetta Stone was discovered",
+      "India became independent"
+    ],
+    "correctAnswer": "The Rosetta Stone was discovered",
+    "explanation": "The Rosetta Stone was discovered came first (1799); India became independent came later (1947).",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_148"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "YouTube launched",
+      "The first known city-states emerged in Sumer"
+    ],
+    "correctAnswer": "The first known city-states emerged in Sumer",
+    "explanation": "The first known city-states emerged in Sumer came first (c. 3500 BCE); YouTube launched came later (2005).",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_149"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "Constantinople fell to the Ottomans",
+      "The Wright brothers made their first powered flight"
+    ],
+    "correctAnswer": "Constantinople fell to the Ottomans",
+    "explanation": "Constantinople fell to the Ottomans came first (1453); The Wright brothers made their first powered flight came later (1903).",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_150"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "The Higgs boson discovery was announced",
+      "The Berlin Wall fell"
+    ],
+    "correctAnswer": "The Berlin Wall fell",
+    "explanation": "The Berlin Wall fell came first (1989); The Higgs boson discovery was announced came later (2012).",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_151"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "The Colosseum opened in Rome",
+      "The United States Declaration of Independence was adopted"
+    ],
+    "correctAnswer": "The Colosseum opened in Rome",
+    "explanation": "The Colosseum opened in Rome came first (80 CE); The United States Declaration of Independence was adopted came later (1776).",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_152"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "Facebook launched",
+      "Sputnik 1 was launched"
+    ],
+    "correctAnswer": "Sputnik 1 was launched",
+    "explanation": "Sputnik 1 was launched came first (1957); Facebook launched came later (2004).",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_153"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "The Code of Hammurabi was created",
+      "Constantinople fell to the Ottomans"
+    ],
+    "correctAnswer": "The Code of Hammurabi was created",
+    "explanation": "The Code of Hammurabi was created came first (c. 1754 BCE); Constantinople fell to the Ottomans came later (1453).",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_154"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "Nelson Mandela was released from prison",
+      "Einstein published special relativity"
+    ],
+    "correctAnswer": "Einstein published special relativity",
+    "explanation": "Einstein published special relativity came first (1905); Nelson Mandela was released from prison came later (1990).",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_155"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "The Prophet Muhammad founded the community in Medina",
+      "The Higgs boson discovery was announced"
+    ],
+    "correctAnswer": "The Prophet Muhammad founded the community in Medina",
+    "explanation": "The Prophet Muhammad founded the community in Medina came first (622 CE); The Higgs boson discovery was announced came later (2012).",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_156"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "Humans first landed on the Moon",
+      "The steam engine patent by James Watt was granted"
+    ],
+    "correctAnswer": "The steam engine patent by James Watt was granted",
+    "explanation": "The steam engine patent by James Watt was granted came first (1769); Humans first landed on the Moon came later (1969).",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_157"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "Athenian democracy developed under Cleisthenes",
+      "Wikipedia launched"
+    ],
+    "correctAnswer": "Athenian democracy developed under Cleisthenes",
+    "explanation": "Athenian democracy developed under Cleisthenes came first (508 BCE); Wikipedia launched came later (2001).",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_158"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "World War II began in Europe",
+      "The Mongol Empire reached its greatest extent"
+    ],
+    "correctAnswer": "The Mongol Empire reached its greatest extent",
+    "explanation": "The Mongol Empire reached its greatest extent came first (13th century); World War II began in Europe came later (1939).",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_159"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "The first Space Shuttle launch occurred",
+      "ChatGPT was publicly released"
+    ],
+    "correctAnswer": "The first Space Shuttle launch occurred",
+    "explanation": "The first Space Shuttle launch occurred came first (1981); ChatGPT was publicly released came later (2022).",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_160"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "The American Civil War began",
+      "The First Emperor unified China"
+    ],
+    "correctAnswer": "The First Emperor unified China",
+    "explanation": "The First Emperor unified China came first (221 BCE); The American Civil War began came later (1861).",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_161"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "India became independent",
+      "Curiosity landed on Mars"
+    ],
+    "correctAnswer": "India became independent",
+    "explanation": "India became independent came first (1947); Curiosity landed on Mars came later (2012).",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_162"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "India's Chandrayaan-3 landed near the Moon's south pole",
+      "Newton published Principia Mathematica"
+    ],
+    "correctAnswer": "Newton published Principia Mathematica",
+    "explanation": "Newton published Principia Mathematica came first (1687); India's Chandrayaan-3 landed near the Moon's south pole came later (2023).",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_163"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "The American Civil War began",
+      "Wikipedia launched"
+    ],
+    "correctAnswer": "The American Civil War began",
+    "explanation": "The American Civil War began came first (1861); Wikipedia launched came later (2001).",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_164"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "Instagram launched",
+      "The Black Death reached Europe"
+    ],
+    "correctAnswer": "The Black Death reached Europe",
+    "explanation": "The Black Death reached Europe came first (1347); Instagram launched came later (2010).",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_165"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "Shakespeare's Globe Theatre opened",
+      "The World Wide Web was proposed"
+    ],
+    "correctAnswer": "Shakespeare's Globe Theatre opened",
+    "explanation": "Shakespeare's Globe Theatre opened came first (1599); The World Wide Web was proposed came later (1989).",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_166"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "The first PlayStation was released",
+      "The Colosseum opened in Rome"
+    ],
+    "correctAnswer": "The Colosseum opened in Rome",
+    "explanation": "The Colosseum opened in Rome came first (80 CE); The first PlayStation was released came later (1994).",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_167"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "The Vikings raided Lindisfarne",
+      "The Berlin Wall was built"
+    ],
+    "correctAnswer": "The Vikings raided Lindisfarne",
+    "explanation": "The Vikings raided Lindisfarne came first (793 CE); The Berlin Wall was built came later (1961).",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_168"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "The first email was sent on ARPANET",
+      "The traditional founding of Rome occurred"
+    ],
+    "correctAnswer": "The traditional founding of Rome occurred",
+    "explanation": "The traditional founding of Rome occurred came first (753 BCE); The first email was sent on ARPANET came later (1971).",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_169"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "Athenian democracy developed under Cleisthenes",
+      "Insulin was first used to treat diabetes"
+    ],
+    "correctAnswer": "Athenian democracy developed under Cleisthenes",
+    "explanation": "Athenian democracy developed under Cleisthenes came first (508 BCE); Insulin was first used to treat diabetes came later (1922).",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_170"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "The COVID-19 pandemic was declared by WHO",
+      "The first Academy Awards ceremony was held"
+    ],
+    "correctAnswer": "The first Academy Awards ceremony was held",
+    "explanation": "The first Academy Awards ceremony was held came first (1929); The COVID-19 pandemic was declared by WHO came later (2020).",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_171"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "The first public steam railway opened",
+      "The COVID-19 pandemic was declared by WHO"
+    ],
+    "correctAnswer": "The first public steam railway opened",
+    "explanation": "The first public steam railway opened came first (1825); The COVID-19 pandemic was declared by WHO came later (2020).",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_172"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "Bitcoin's genesis block was mined",
+      "The Battle of Waterloo was fought"
+    ],
+    "correctAnswer": "The Battle of Waterloo was fought",
+    "explanation": "The Battle of Waterloo was fought came first (1815); Bitcoin's genesis block was mined came later (2009).",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_173"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "Shakespeare's Globe Theatre opened",
+      "Twitter launched"
+    ],
+    "correctAnswer": "Shakespeare's Globe Theatre opened",
+    "explanation": "Shakespeare's Globe Theatre opened came first (1599); Twitter launched came later (2006).",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_174"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "Amazon launched as an online bookstore",
+      "Columbus reached the Caribbean"
+    ],
+    "correctAnswer": "Columbus reached the Caribbean",
+    "explanation": "Columbus reached the Caribbean came first (1492); Amazon launched as an online bookstore came later (1995).",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_175"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "The Magna Carta was sealed",
+      "Nelson Mandela was released from prison"
+    ],
+    "correctAnswer": "The Magna Carta was sealed",
+    "explanation": "The Magna Carta was sealed came first (1215); Nelson Mandela was released from prison came later (1990).",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_176"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "The first Space Shuttle launch occurred",
+      "The Western Roman Empire fell"
+    ],
+    "correctAnswer": "The Western Roman Empire fell",
+    "explanation": "The Western Roman Empire fell came first (476 CE); The first Space Shuttle launch occurred came later (1981).",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_177"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "Julius Caesar was assassinated",
+      "The Berlin Wall was built"
+    ],
+    "correctAnswer": "Julius Caesar was assassinated",
+    "explanation": "Julius Caesar was assassinated came first (44 BCE); The Berlin Wall was built came later (1961).",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_178"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "DNA's double-helix structure was described",
+      "The Late Bronze Age collapse began"
+    ],
+    "correctAnswer": "The Late Bronze Age collapse began",
+    "explanation": "The Late Bronze Age collapse began came first (c. 1200 BCE); DNA's double-helix structure was described came later (1953).",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_179"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "The Code of Hammurabi was created",
+      "World War I began"
+    ],
+    "correctAnswer": "The Code of Hammurabi was created",
+    "explanation": "The Code of Hammurabi was created came first (c. 1754 BCE); World War I began came later (1914).",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_180"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "The Paris Agreement was adopted",
+      "World War I began"
+    ],
+    "correctAnswer": "World War I began",
+    "explanation": "World War I began came first (1914); The Paris Agreement was adopted came later (2015).",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_181"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "The United States Declaration of Independence was adopted",
+      "AlphaGo defeated Lee Sedol"
+    ],
+    "correctAnswer": "The United States Declaration of Independence was adopted",
+    "explanation": "The United States Declaration of Independence was adopted came first (1776); AlphaGo defeated Lee Sedol came later (2016).",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_182"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "The euro entered circulation as cash",
+      "The Rosetta Stone was discovered"
+    ],
+    "correctAnswer": "The Rosetta Stone was discovered",
+    "explanation": "The Rosetta Stone was discovered came first (1799); The euro entered circulation as cash came later (2002).",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_183"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "The Black Death reached Europe",
+      "The steam engine patent by James Watt was granted"
+    ],
+    "correctAnswer": "The Black Death reached Europe",
+    "explanation": "The Black Death reached Europe came first (1347); The steam engine patent by James Watt was granted came later (1769).",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_184"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "The euro entered circulation as cash",
+      "The Chernobyl nuclear disaster occurred"
+    ],
+    "correctAnswer": "The Chernobyl nuclear disaster occurred",
+    "explanation": "The Chernobyl nuclear disaster occurred came first (1986); The euro entered circulation as cash came later (2002).",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_185"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "Julius Caesar was assassinated",
+      "The printing of Gutenberg's Bible began"
+    ],
+    "correctAnswer": "Julius Caesar was assassinated",
+    "explanation": "Julius Caesar was assassinated came first (44 BCE); The printing of Gutenberg's Bible began came later (1450s).",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_186"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "The Berlin Wall fell",
+      "The first commercial jet airliner entered service"
+    ],
+    "correctAnswer": "The first commercial jet airliner entered service",
+    "explanation": "The first commercial jet airliner entered service came first (1952); The Berlin Wall fell came later (1989).",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_187"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "The first known city-states emerged in Sumer",
+      "The Western Roman Empire fell"
+    ],
+    "correctAnswer": "The first known city-states emerged in Sumer",
+    "explanation": "The first known city-states emerged in Sumer came first (c. 3500 BCE); The Western Roman Empire fell came later (476 CE).",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_188"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "Martin Luther King Jr. delivered the I Have a Dream speech",
+      "The first modern Olympic Games were held"
+    ],
+    "correctAnswer": "The first modern Olympic Games were held",
+    "explanation": "The first modern Olympic Games were held came first (1896); Martin Luther King Jr. delivered the I Have a Dream speech came later (1963).",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_189"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "The Buddha lived in northern India",
+      "Curiosity landed on Mars"
+    ],
+    "correctAnswer": "The Buddha lived in northern India",
+    "explanation": "The Buddha lived in northern India came first (c. 5th century BCE); Curiosity landed on Mars came later (2012).",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_190"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "The first Academy Awards ceremony was held",
+      "Galileo observed Jupiter's moons"
+    ],
+    "correctAnswer": "Galileo observed Jupiter's moons",
+    "explanation": "Galileo observed Jupiter's moons came first (1610); The first Academy Awards ceremony was held came later (1929).",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_191"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "Amazon launched as an online bookstore",
+      "The James Webb Space Telescope launched"
+    ],
+    "correctAnswer": "Amazon launched as an online bookstore",
+    "explanation": "Amazon launched as an online bookstore came first (1995); The James Webb Space Telescope launched came later (2021).",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_192"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "Darwin published On the Origin of Species",
+      "The Norman Conquest of England occurred"
+    ],
+    "correctAnswer": "The Norman Conquest of England occurred",
+    "explanation": "The Norman Conquest of England occurred came first (1066); Darwin published On the Origin of Species came later (1859).",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_193"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "The first handheld mobile phone call was made",
+      "Instagram launched"
+    ],
+    "correctAnswer": "The first handheld mobile phone call was made",
+    "explanation": "The first handheld mobile phone call was made came first (1973); Instagram launched came later (2010).",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_194"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "Galileo observed Jupiter's moons",
+      "The Battle of Marathon was fought"
+    ],
+    "correctAnswer": "The Battle of Marathon was fought",
+    "explanation": "The Battle of Marathon was fought came first (490 BCE); Galileo observed Jupiter's moons came later (1610).",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_195"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "World War II began in Europe",
+      "Google was founded"
+    ],
+    "correctAnswer": "World War II began in Europe",
+    "explanation": "World War II began in Europe came first (1939); Google was founded came later (1998).",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_196"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "The James Webb Space Telescope launched",
+      "The Mongol Empire reached its greatest extent"
+    ],
+    "correctAnswer": "The Mongol Empire reached its greatest extent",
+    "explanation": "The Mongol Empire reached its greatest extent came first (13th century); The James Webb Space Telescope launched came later (2021).",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_197"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "The first public steam railway opened",
+      "The Chernobyl nuclear disaster occurred"
+    ],
+    "correctAnswer": "The first public steam railway opened",
+    "explanation": "The first public steam railway opened came first (1825); The Chernobyl nuclear disaster occurred came later (1986).",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_198"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "The first iPhone was released",
+      "The Roman Empire began under Augustus"
+    ],
+    "correctAnswer": "The Roman Empire began under Augustus",
+    "explanation": "The Roman Empire began under Augustus came first (27 BCE); The first iPhone was released came later (2007).",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_199"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "Michelangelo completed the Sistine Chapel ceiling",
+      "Sputnik 1 was launched"
+    ],
+    "correctAnswer": "Michelangelo completed the Sistine Chapel ceiling",
+    "explanation": "Michelangelo completed the Sistine Chapel ceiling came first (1512); Sputnik 1 was launched came later (1957).",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_200"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "The Soviet Union dissolved",
+      "The Late Bronze Age collapse began"
+    ],
+    "correctAnswer": "The Late Bronze Age collapse began",
+    "explanation": "The Late Bronze Age collapse began came first (c. 1200 BCE); The Soviet Union dissolved came later (1991).",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_201"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "The Prophet Muhammad founded the community in Medina",
+      "The Russian Revolution occurred"
+    ],
+    "correctAnswer": "The Prophet Muhammad founded the community in Medina",
+    "explanation": "The Prophet Muhammad founded the community in Medina came first (622 CE); The Russian Revolution occurred came later (1917).",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_202"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "The first image of a black hole was released",
+      "Martin Luther King Jr. delivered the I Have a Dream speech"
+    ],
+    "correctAnswer": "Martin Luther King Jr. delivered the I Have a Dream speech",
+    "explanation": "Martin Luther King Jr. delivered the I Have a Dream speech came first (1963); The first image of a black hole was released came later (2019).",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_203"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "The traditional founding of Rome occurred",
+      "The Battle of Waterloo was fought"
+    ],
+    "correctAnswer": "The traditional founding of Rome occurred",
+    "explanation": "The traditional founding of Rome occurred came first (753 BCE); The Battle of Waterloo was fought came later (1815).",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_204"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "The first iPhone was released",
+      "The Russian Revolution occurred"
+    ],
+    "correctAnswer": "The Russian Revolution occurred",
+    "explanation": "The Russian Revolution occurred came first (1917); The first iPhone was released came later (2007).",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_205"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "Martin Luther published the Ninety-five Theses",
+      "AlphaGo defeated Lee Sedol"
+    ],
+    "correctAnswer": "Martin Luther published the Ninety-five Theses",
+    "explanation": "Martin Luther published the Ninety-five Theses came first (1517); AlphaGo defeated Lee Sedol came later (2016).",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_206"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "The first PlayStation was released",
+      "The French Revolution began"
+    ],
+    "correctAnswer": "The French Revolution began",
+    "explanation": "The French Revolution began came first (1789); The first PlayStation was released came later (1994).",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_207"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "The Norman Conquest of England occurred",
+      "Facebook launched"
+    ],
+    "correctAnswer": "The Norman Conquest of England occurred",
+    "explanation": "The Norman Conquest of England occurred came first (1066); Facebook launched came later (2004).",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_208"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "The Apple II computer was released",
+      "The printing of Gutenberg's Bible began"
+    ],
+    "correctAnswer": "The printing of Gutenberg's Bible began",
+    "explanation": "The printing of Gutenberg's Bible began came first (1450s); The Apple II computer was released came later (1977).",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_209"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "The First Emperor unified China",
+      "The World Wide Web was proposed"
+    ],
+    "correctAnswer": "The First Emperor unified China",
+    "explanation": "The First Emperor unified China came first (221 BCE); The World Wide Web was proposed came later (1989).",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_210"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "The first commercial jet airliner entered service",
+      "The Roman Empire began under Augustus"
+    ],
+    "correctAnswer": "The Roman Empire began under Augustus",
+    "explanation": "The Roman Empire began under Augustus came first (27 BCE); The first commercial jet airliner entered service came later (1952).",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_211"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "The Great Pyramid of Giza was completed",
+      "DNA's double-helix structure was described"
+    ],
+    "correctAnswer": "The Great Pyramid of Giza was completed",
+    "explanation": "The Great Pyramid of Giza was completed came first (c. 2560 BCE); DNA's double-helix structure was described came later (1953).",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_212"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "Einstein published special relativity",
+      "The Great Pyramid of Giza was completed"
+    ],
+    "correctAnswer": "The Great Pyramid of Giza was completed",
+    "explanation": "The Great Pyramid of Giza was completed came first (c. 2560 BCE); Einstein published special relativity came later (1905).",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_213"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "The French Revolution began",
+      "CRISPR-Cas9 genome editing was demonstrated in cells"
+    ],
+    "correctAnswer": "The French Revolution began",
+    "explanation": "The French Revolution began came first (1789); CRISPR-Cas9 genome editing was demonstrated in cells came later (2012).",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_214"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "YouTube launched",
+      "Newton published Principia Mathematica"
+    ],
+    "correctAnswer": "Newton published Principia Mathematica",
+    "explanation": "Newton published Principia Mathematica came first (1687); YouTube launched came later (2005).",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_215"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "Columbus reached the Caribbean",
+      "Google was founded"
+    ],
+    "correctAnswer": "Columbus reached the Caribbean",
+    "explanation": "Columbus reached the Caribbean came first (1492); Google was founded came later (1998).",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_216"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "The Soviet Union dissolved",
+      "The Magna Carta was sealed"
+    ],
+    "correctAnswer": "The Magna Carta was sealed",
+    "explanation": "The Magna Carta was sealed came first (1215); The Soviet Union dissolved came later (1991).",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_217"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "Charlemagne was crowned emperor",
+      "The Apple II computer was released"
+    ],
+    "correctAnswer": "Charlemagne was crowned emperor",
+    "explanation": "Charlemagne was crowned emperor came first (800 CE); The Apple II computer was released came later (1977).",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_218"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "The first email was sent on ARPANET",
+      "The Library of Alexandria was founded"
+    ],
+    "correctAnswer": "The Library of Alexandria was founded",
+    "explanation": "The Library of Alexandria was founded came first (3rd century BCE); The first email was sent on ARPANET came later (1971).",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_219"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "The Battle of Marathon was fought",
+      "The United Nations was founded"
+    ],
+    "correctAnswer": "The Battle of Marathon was fought",
+    "explanation": "The Battle of Marathon was fought came first (490 BCE); The United Nations was founded came later (1945).",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_220"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "ChatGPT was publicly released",
+      "The United Nations was founded"
+    ],
+    "correctAnswer": "The United Nations was founded",
+    "explanation": "The United Nations was founded came first (1945); ChatGPT was publicly released came later (2022).",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_221"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "Darwin published On the Origin of Species",
+      "India's Chandrayaan-3 landed near the Moon's south pole"
+    ],
+    "correctAnswer": "Darwin published On the Origin of Species",
+    "explanation": "Darwin published On the Origin of Species came first (1859); India's Chandrayaan-3 landed near the Moon's south pole came later (2023).",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_222"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "Bitcoin's genesis block was mined",
+      "The first modern Olympic Games were held"
+    ],
+    "correctAnswer": "The first modern Olympic Games were held",
+    "explanation": "The first modern Olympic Games were held came first (1896); Bitcoin's genesis block was mined came later (2009).",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_223"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "Martin Luther published the Ninety-five Theses",
+      "The first public steam railway opened"
+    ],
+    "correctAnswer": "Martin Luther published the Ninety-five Theses",
+    "explanation": "Martin Luther published the Ninety-five Theses came first (1517); The first public steam railway opened came later (1825).",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_224"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "Bitcoin's genesis block was mined",
+      "The first text message was sent"
+    ],
+    "correctAnswer": "The first text message was sent",
+    "explanation": "The first text message was sent came first (1992); Bitcoin's genesis block was mined came later (2009).",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_225"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "Charlemagne was crowned emperor",
+      "Shakespeare's Globe Theatre opened"
+    ],
+    "correctAnswer": "Charlemagne was crowned emperor",
+    "explanation": "Charlemagne was crowned emperor came first (800 CE); Shakespeare's Globe Theatre opened came later (1599).",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_226"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "Amazon launched as an online bookstore",
+      "Humans first landed on the Moon"
+    ],
+    "correctAnswer": "Humans first landed on the Moon",
+    "explanation": "Humans first landed on the Moon came first (1969); Amazon launched as an online bookstore came later (1995).",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_227"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "The Buddha lived in northern India",
+      "The Magna Carta was sealed"
+    ],
+    "correctAnswer": "The Buddha lived in northern India",
+    "explanation": "The Buddha lived in northern India came first (c. 5th century BCE); The Magna Carta was sealed came later (1215).",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_228"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "The first Space Shuttle launch occurred",
+      "Insulin was first used to treat diabetes"
+    ],
+    "correctAnswer": "Insulin was first used to treat diabetes",
+    "explanation": "Insulin was first used to treat diabetes came first (1922); The first Space Shuttle launch occurred came later (1981).",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_229"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "Julius Caesar was assassinated",
+      "The first image of a black hole was released"
+    ],
+    "correctAnswer": "Julius Caesar was assassinated",
+    "explanation": "Julius Caesar was assassinated came first (44 BCE); The first image of a black hole was released came later (2019).",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_230"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "DNA's double-helix structure was described",
+      "The Rosetta Stone was discovered"
+    ],
+    "correctAnswer": "The Rosetta Stone was discovered",
+    "explanation": "The Rosetta Stone was discovered came first (1799); DNA's double-helix structure was described came later (1953).",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_231"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "The Code of Hammurabi was created",
+      "YouTube launched"
+    ],
+    "correctAnswer": "The Code of Hammurabi was created",
+    "explanation": "The Code of Hammurabi was created came first (c. 1754 BCE); YouTube launched came later (2005).",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_232"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "World War I began",
+      "Constantinople fell to the Ottomans"
+    ],
+    "correctAnswer": "Constantinople fell to the Ottomans",
+    "explanation": "Constantinople fell to the Ottomans came first (1453); World War I began came later (1914).",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_233"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "The Berlin Wall fell",
+      "AlphaGo defeated Lee Sedol"
+    ],
+    "correctAnswer": "The Berlin Wall fell",
+    "explanation": "The Berlin Wall fell came first (1989); AlphaGo defeated Lee Sedol came later (2016).",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_234"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "The Rosetta Stone was discovered",
+      "The Colosseum opened in Rome"
+    ],
+    "correctAnswer": "The Colosseum opened in Rome",
+    "explanation": "The Colosseum opened in Rome came first (80 CE); The Rosetta Stone was discovered came later (1799).",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_235"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "Sputnik 1 was launched",
+      "Twitter launched"
+    ],
+    "correctAnswer": "Sputnik 1 was launched",
+    "explanation": "Sputnik 1 was launched came first (1957); Twitter launched came later (2006).",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_236"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "Michelangelo completed the Sistine Chapel ceiling",
+      "The Code of Hammurabi was created"
+    ],
+    "correctAnswer": "The Code of Hammurabi was created",
+    "explanation": "The Code of Hammurabi was created came first (c. 1754 BCE); Michelangelo completed the Sistine Chapel ceiling came later (1512).",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_237"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "Einstein published special relativity",
+      "The first text message was sent"
+    ],
+    "correctAnswer": "Einstein published special relativity",
+    "explanation": "Einstein published special relativity came first (1905); The first text message was sent came later (1992).",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_238"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "The Higgs boson discovery was announced",
+      "The Vikings raided Lindisfarne"
+    ],
+    "correctAnswer": "The Vikings raided Lindisfarne",
+    "explanation": "The Vikings raided Lindisfarne came first (793 CE); The Higgs boson discovery was announced came later (2012).",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_239"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "The steam engine patent by James Watt was granted",
+      "The first handheld mobile phone call was made"
+    ],
+    "correctAnswer": "The steam engine patent by James Watt was granted",
+    "explanation": "The steam engine patent by James Watt was granted came first (1769); The first handheld mobile phone call was made came later (1973).",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_240"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "Wikipedia launched",
+      "The Library of Alexandria was founded"
+    ],
+    "correctAnswer": "The Library of Alexandria was founded",
+    "explanation": "The Library of Alexandria was founded came first (3rd century BCE); Wikipedia launched came later (2001).",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_241"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "The Mongol Empire reached its greatest extent",
+      "India became independent"
+    ],
+    "correctAnswer": "The Mongol Empire reached its greatest extent",
+    "explanation": "The Mongol Empire reached its greatest extent came first (13th century); India became independent came later (1947).",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_242"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "The first Space Shuttle launch occurred",
+      "The first known city-states emerged in Sumer"
+    ],
+    "correctAnswer": "The first known city-states emerged in Sumer",
+    "explanation": "The first known city-states emerged in Sumer came first (c. 3500 BCE); The first Space Shuttle launch occurred came later (1981).",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_243"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "The First Emperor unified China",
+      "The Wright brothers made their first powered flight"
+    ],
+    "correctAnswer": "The First Emperor unified China",
+    "explanation": "The First Emperor unified China came first (221 BCE); The Wright brothers made their first powered flight came later (1903).",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_244"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "The Higgs boson discovery was announced",
+      "India became independent"
+    ],
+    "correctAnswer": "India became independent",
+    "explanation": "India became independent came first (1947); The Higgs boson discovery was announced came later (2012).",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_245"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "The United States Declaration of Independence was adopted",
+      "India's Chandrayaan-3 landed near the Moon's south pole"
+    ],
+    "correctAnswer": "The United States Declaration of Independence was adopted",
+    "explanation": "The United States Declaration of Independence was adopted came first (1776); India's Chandrayaan-3 landed near the Moon's south pole came later (2023).",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_246"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "Facebook launched",
+      "The American Civil War began"
+    ],
+    "correctAnswer": "The American Civil War began",
+    "explanation": "The American Civil War began came first (1861); Facebook launched came later (2004).",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_247"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "Constantinople fell to the Ottomans",
+      "Instagram launched"
+    ],
+    "correctAnswer": "Constantinople fell to the Ottomans",
+    "explanation": "Constantinople fell to the Ottomans came first (1453); Instagram launched came later (2010).",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_248"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "Nelson Mandela was released from prison",
+      "Shakespeare's Globe Theatre opened"
+    ],
+    "correctAnswer": "Shakespeare's Globe Theatre opened",
+    "explanation": "Shakespeare's Globe Theatre opened came first (1599); Nelson Mandela was released from prison came later (1990).",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_249"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "The Prophet Muhammad founded the community in Medina",
+      "The first PlayStation was released"
+    ],
+    "correctAnswer": "The Prophet Muhammad founded the community in Medina",
+    "explanation": "The Prophet Muhammad founded the community in Medina came first (622 CE); The first PlayStation was released came later (1994).",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_250"
   }
 ];

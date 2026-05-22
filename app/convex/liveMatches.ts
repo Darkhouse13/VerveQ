@@ -224,6 +224,36 @@ function selectRotatedQuestions(
   return shuffleInPlace(leastUsedWindow).slice(0, TOTAL_QUESTIONS);
 }
 
+async function getChallengeQuestionCandidates(
+  ctx: Pick<MutationCtx, "db">,
+  challenge: Doc<"challenges">,
+): Promise<ChallengeQuestionCandidate[]> {
+  if (challenge.sport === "knowledge" && challenge.mode !== "came_first") {
+    const knowledgeQuestions: ChallengeQuestionCandidate[] = [];
+    for (const difficulty of ["easy", "intermediate", "hard"] as const) {
+      const questions = await ctx.db
+        .query("quizQuestions")
+        .withIndex("by_sport_difficulty", (q) =>
+          q.eq("sport", challenge.sport).eq("difficulty", difficulty),
+        )
+        .collect();
+      knowledgeQuestions.push(...questions);
+    }
+    return knowledgeQuestions.filter((q) => q.category !== "which_came_first");
+  }
+
+  const allQuestions = await ctx.db
+    .query("quizQuestions")
+    .withIndex("by_sport_difficulty", (q) =>
+      q.eq("sport", challenge.sport).eq("difficulty", "intermediate"),
+    )
+    .collect();
+
+  return challenge.mode === "came_first"
+    ? allQuestions.filter((q) => q.category === "which_came_first")
+    : allQuestions.filter((q) => q.category !== "which_came_first");
+}
+
 async function getRecentChallengeQuestionChecksums(
   ctx: Pick<MutationCtx, "db">,
   player1Id: Id<"users">,
@@ -402,19 +432,10 @@ export const createFromChallenge = mutation({
       throw new Error("One of the players already has an active match");
     }
 
-    // Pick 10 rotated intermediate questions for this sport. Challenge mode
-    // keeps difficulty fair but uses the full pool, avoids questions this pair
-    // recently saw, and prefers lower-usage questions before shuffling.
-    const allQuestions = await ctx.db
-      .query("quizQuestions")
-      .withIndex("by_sport_difficulty", (q) =>
-        q.eq("sport", challenge.sport).eq("difficulty", "intermediate"),
-      )
-      .collect();
-
-    const matchCandidates = challenge.mode === "came_first"
-      ? allQuestions.filter((q) => q.category === "which_came_first")
-      : allQuestions.filter((q) => q.category !== "which_came_first");
+    // Pick 10 rotated questions for this sport/mode. Sports stay intermediate
+    // for fairness; normal Knowledge challenge quiz uses all 300 MCQs because
+    // its public difficulty labels are less relevant in head-to-head play.
+    const matchCandidates = await getChallengeQuestionCandidates(ctx, challenge);
 
     const recentChecksums = await getRecentChallengeQuestionChecksums(
       ctx,

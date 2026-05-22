@@ -24,7 +24,7 @@ describe("Knowledge Which Came First mode", () => {
       (q) => q.category === "which_came_first",
     );
 
-    expect(cameFirst.length).toBeGreaterThanOrEqual(50);
+    expect(cameFirst).toHaveLength(250);
     for (const q of cameFirst) {
       expect(q.sport).toBe("knowledge");
       expect(q.bucket).toContain("knowledge_came_first");
