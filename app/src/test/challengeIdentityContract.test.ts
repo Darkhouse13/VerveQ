@@ -27,6 +27,13 @@ describe("challenge identity lookup", () => {
       db: {
         get: vi.fn(async () => ({ _id: "challenger_user", username: "challenger", isGuest: false })),
         query: (table: string) => {
+          if (table === "challenges") {
+            return {
+              withIndex: (_indexName: string, _builder: unknown) => ({
+                collect: async () => [],
+              }),
+            };
+          }
           expect(table).toBe("users");
           return {
             withIndex: (_indexName: string, _builder: unknown) => ({
@@ -100,6 +107,13 @@ describe("challenge identity lookup", () => {
       db: {
         get: vi.fn(async () => ({ _id: "challenger_user", username: "challenger", isGuest: false })),
         query: (table: string) => {
+          if (table === "challenges") {
+            return {
+              withIndex: (_indexName: string, _builder: unknown) => ({
+                collect: async () => [],
+              }),
+            };
+          }
           expect(table).toBe("users");
           return {
             withIndex: (_indexName: string, _builder: unknown) => ({

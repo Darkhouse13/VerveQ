@@ -52,4 +52,17 @@ describe("challenge head-to-head history and rematch contract", () => {
     expect(resultScreen).toContain("opponentId: state.opponentId");
     expect(resultScreen).toContain("Rematch invite sent");
   });
+
+  it("dedupes reciprocal pending rematch invites and clears stale pending requests when a rematch starts", () => {
+    const challenges = readFileSync("convex/challenges.ts", "utf8");
+    const liveMatches = readFileSync("convex/liveMatches.ts", "utf8");
+
+    expect(challenges).toContain("findPendingChallengeBetweenPlayers");
+    expect(challenges).toContain("return { challengeId: existingPending._id, alreadyPending: true }");
+    expect(challenges).toContain("return { challengeId: reciprocalPending._id, reciprocalPending: true }");
+    expect(challenges).toContain("declineOtherPendingChallengesBetweenPlayers");
+    expect(liveMatches).toContain("declineOtherPendingChallengesForMatch");
+    expect(liveMatches).toContain("status: \"declined\"");
+  });
+
 });

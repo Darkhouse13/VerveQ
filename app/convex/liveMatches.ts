@@ -265,6 +265,36 @@ async function recordChallengeHistory(
 }
 
 // ── Mutations ──
+async function declineOtherPendingChallengesForMatch(
+  ctx: Pick<MutationCtx, "db">,
+  matchChallengeId: Id<"challenges">,
+  player1Id: Id<"users">,
+  player2Id: Id<"users">,
+  sport: string,
+  mode: string,
+) {
+  const patchIfStale = async (challengerId: Id<"users">, challengedId: Id<"users">) => {
+    const challenges = await ctx.db
+      .query("challenges")
+      .withIndex("by_challenger", (q) => q.eq("challengerId", challengerId))
+      .collect();
+
+    for (const challenge of challenges) {
+      if (
+        challenge._id !== matchChallengeId &&
+        challenge.challengedId === challengedId &&
+        challenge.sport === sport &&
+        challenge.mode === mode &&
+        challenge.status === "pending"
+      ) {
+        await ctx.db.patch(challenge._id, { status: "declined" });
+      }
+    }
+  };
+
+  await patchIfStale(player1Id, player2Id);
+  await patchIfStale(player2Id, player1Id);
+}
 
 export const createFromChallenge = mutation({
   args: { challengeId: v.id("challenges") },
@@ -319,6 +349,15 @@ export const createFromChallenge = mutation({
       explanation: q.explanation ?? null,
       imageId: q.imageId ?? null,
     }));
+
+    await declineOtherPendingChallengesForMatch(
+      ctx,
+      challengeId,
+      challenge.challengerId,
+      challenge.challengedId,
+      challenge.sport,
+      challenge.mode,
+    );
 
     const now = Date.now();
     const matchId = await ctx.db.insert("liveMatches", {

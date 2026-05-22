@@ -27,6 +27,54 @@ function oneOrAmbiguous(
   );
 }
 
+
+async function findPendingChallengeBetweenPlayers(
+  ctx: { db: { query: (table: "challenges") => unknown } },
+  challengerId: Id<"users">,
+  challengedId: Id<"users">,
+  sport: string,
+  mode: string,
+) {
+  const challengesQuery = ctx.db.query("challenges") as {
+    withIndex: (
+      indexName: "by_challenger",
+      rangeBuilder: (q: { eq: (field: "challengerId", value: Id<"users">) => unknown }) => unknown,
+    ) => { collect: () => Promise<Array<Doc<"challenges">>> };
+  };
+
+  const sent = await challengesQuery
+    .withIndex("by_challenger", (q) => q.eq("challengerId", challengerId))
+    .collect();
+
+  return sent.find(
+    (challenge) =>
+      challenge.challengedId === challengedId &&
+      challenge.sport === sport &&
+      challenge.mode === mode &&
+      challenge.status === "pending",
+  ) ?? null;
+}
+
+async function declineOtherPendingChallengesBetweenPlayers(
+  ctx: { db: { query: (table: "challenges") => unknown; patch: (id: Id<"challenges">, value: { status: "declined" }) => Promise<void> } },
+  player1Id: Id<"users">,
+  player2Id: Id<"users">,
+  sport: string,
+  mode: string,
+  keepChallengeId: Id<"challenges">,
+) {
+  const pendingBothWays = [
+    await findPendingChallengeBetweenPlayers(ctx, player1Id, player2Id, sport, mode),
+    await findPendingChallengeBetweenPlayers(ctx, player2Id, player1Id, sport, mode),
+  ];
+
+  for (const challenge of pendingBothWays) {
+    if (challenge && challenge._id !== keepChallengeId) {
+      await ctx.db.patch(challenge._id, { status: "declined" });
+    }
+  }
+}
+
 async function findChallengeTarget(
   ctx: { db: { query: (table: "users") => unknown } },
   rawIdentifier: string,
@@ -227,6 +275,28 @@ export const create = mutation({
     }
     if (challenged._id === userId) throw new Error("Cannot challenge yourself");
 
+    const existingPending = await findPendingChallengeBetweenPlayers(
+      ctx,
+      userId,
+      challenged._id,
+      sport,
+      mode,
+    );
+    if (existingPending) {
+      return { challengeId: existingPending._id, alreadyPending: true };
+    }
+
+    const reciprocalPending = await findPendingChallengeBetweenPlayers(
+      ctx,
+      challenged._id,
+      userId,
+      sport,
+      mode,
+    );
+    if (reciprocalPending) {
+      return { challengeId: reciprocalPending._id, reciprocalPending: true };
+    }
+
     const challengeId = await ctx.db.insert("challenges", {
       challengerId: userId,
       challengedId: challenged._id,
@@ -261,6 +331,28 @@ export const createRematch = mutation({
     }
     if (opponentId === userId) throw new Error("Cannot challenge yourself");
 
+    const existingPending = await findPendingChallengeBetweenPlayers(
+      ctx,
+      userId,
+      opponentId,
+      sport,
+      mode,
+    );
+    if (existingPending) {
+      return { challengeId: existingPending._id, alreadyPending: true };
+    }
+
+    const reciprocalPending = await findPendingChallengeBetweenPlayers(
+      ctx,
+      opponentId,
+      userId,
+      sport,
+      mode,
+    );
+    if (reciprocalPending) {
+      return { challengeId: reciprocalPending._id, reciprocalPending: true };
+    }
+
     const challengeId = await ctx.db.insert("challenges", {
       challengerId: userId,
       challengedId: opponentId,
@@ -284,6 +376,14 @@ export const accept = mutation({
       throw new Error("Challenge not found");
     }
 
+    await declineOtherPendingChallengesBetweenPlayers(
+      ctx,
+      challenge.challengerId,
+      challenge.challengedId,
+      challenge.sport,
+      challenge.mode,
+      challengeId,
+    );
     await ctx.db.patch(challengeId, { status: "active" });
     return { success: true };
   },
