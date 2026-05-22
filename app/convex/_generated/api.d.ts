@@ -41,6 +41,7 @@ import type * as survivalSessions from "../survivalSessions.js";
 import type * as users from "../users.js";
 import type * as verveGrid from "../verveGrid.js";
 import type * as whoAmI from "../whoAmI.js";
+import type * as whoAmIPlayerSearch from "../whoAmIPlayerSearch.js";
 
 import type {
   ApiFromModules,
@@ -82,6 +83,7 @@ declare const fullApi: ApiFromModules<{
   users: typeof users;
   verveGrid: typeof verveGrid;
   whoAmI: typeof whoAmI;
+  whoAmIPlayerSearch: typeof whoAmIPlayerSearch;
 }>;
 
 /**
