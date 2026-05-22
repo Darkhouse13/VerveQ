@@ -37,9 +37,10 @@ interface NeoButtonProps
     VariantProps<typeof neoButtonVariants> {}
 
 const NeoButton = forwardRef<HTMLButtonElement, NeoButtonProps>(
-  ({ className, variant, size, ...props }, ref) => (
+  ({ className, variant, size, type = "button", ...props }, ref) => (
     <button
       ref={ref}
+      type={type}
       className={cn(neoButtonVariants({ variant, size }), className)}
       {...props}
     />

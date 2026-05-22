@@ -205,7 +205,7 @@ export const submitGuess = mutation({
     const cells = [...session.cells];
     const cell = cells[cellIndex];
     if (!cell) throw new Error("Invalid cell index");
-    if (cell.correct === true) throw new Error("Cell already solved");
+    if (cell.correct !== undefined) throw new Error("Cell already answered");
 
     const alreadyUsed = cells.some(
       (gridCell, index) =>

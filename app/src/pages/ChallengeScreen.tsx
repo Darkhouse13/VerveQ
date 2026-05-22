@@ -13,6 +13,17 @@ import { toast } from "sonner";
 const sportPills = ["football", "tennis", "basketball"];
 const modePills = ["quiz", "survival"];
 
+function getChallengeInitials(name: string): string {
+  const normalized = name.trim();
+  if (!normalized) return "?";
+  return normalized
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0]?.toUpperCase() ?? "")
+    .join("") || normalized[0].toUpperCase();
+}
+
 export default function ChallengeScreen() {
   const navigate = useNavigate();
   const { isGuest, logout } = useAuth();
@@ -28,6 +39,7 @@ export default function ChallengeScreen() {
   const [sending, setSending] = useState(false);
 
   const pending = useQuery(api.challenges.getPending);
+  const recentOpponentsQuery = useQuery(api.challenges.getRecentOpponents);
   const createChallengeMut = useMutation(api.challenges.create);
   const acceptMut = useMutation(api.challenges.accept);
   const declineMut = useMutation(api.challenges.decline);
@@ -62,6 +74,7 @@ export default function ChallengeScreen() {
   };
 
   const challenges = pending?.challenges ?? [];
+  const recentOpponents = recentOpponentsQuery?.opponents ?? [];
 
   return (
     <div className="min-h-screen bg-background pb-20">
@@ -95,6 +108,41 @@ export default function ChallengeScreen() {
               onChange={(e) => setUsername(e.target.value)}
               className="mb-3"
             />
+
+            {recentOpponents.length > 0 && (
+              <div className="mb-4">
+                <p className="text-xs font-heading font-bold uppercase text-muted-foreground mb-2">
+                  Recent Opponents
+                </p>
+                <div className="flex gap-2 overflow-x-auto pb-1">
+                  {recentOpponents.map((opponent) => (
+                    <button
+                      key={opponent.opponentId}
+                      type="button"
+                      onClick={() => {
+                        setUsername(opponent.username);
+                        setSelectedSport(opponent.lastSport);
+                        setSelectedMode(opponent.lastMode);
+                      }}
+                      className="neo-border rounded-lg bg-background px-3 py-2 text-left shrink-0 min-w-[132px] cursor-pointer active:neo-shadow-pressed"
+                    >
+                      <p className="font-heading font-bold text-xs truncate">
+                        @{opponent.username}
+                      </p>
+                      <p className="text-[10px] text-muted-foreground capitalize">
+                        {opponent.lastSport} · {opponent.lastMode}
+                      </p>
+                      {opponent.versusSummary.totalMatches > 0 && (
+                        <p className="text-[10px] font-mono font-bold mt-1">
+                          {opponent.versusSummary.wins}-{opponent.versusSummary.losses}
+                          {opponent.versusSummary.draws ? `-${opponent.versusSummary.draws}` : ""}
+                        </p>
+                      )}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
 
             <p className="text-xs font-heading font-bold uppercase text-muted-foreground mb-2">
               Sport
@@ -153,7 +201,7 @@ export default function ChallengeScreen() {
                 <NeoCard key={c.challengeId} className="space-y-3">
                   <div className="flex items-center gap-3">
                     <div className="neo-border rounded-full w-8 h-8 bg-muted flex items-center justify-center font-heading font-bold text-xs">
-                      {c.challenger[0]}
+                      {getChallengeInitials(c.challenger)}
                     </div>
                     <div className="flex-1">
                       <p className="font-heading font-bold text-sm">

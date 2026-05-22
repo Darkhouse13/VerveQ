@@ -3,6 +3,8 @@ import { v } from "convex/values";
 import { getAuthUserId } from "@convex-dev/auth/server";
 import { Id } from "./_generated/dataModel";
 
+const DEFAULT_ELO = 1200;
+
 // ── Helpers ──
 
 function generateChecksum(question: string, options: string[]): string {
@@ -25,7 +27,7 @@ async function assertForgeAccess(
     .query("userRatings")
     .withIndex("by_user_sport_mode", (q) => q.eq("userId", userId))
     .collect();
-  const maxElo = ratings.reduce((m, r) => Math.max(m, r.eloRating), 0);
+  const maxElo = ratings.reduce((m, r) => Math.max(m, r.eloRating), DEFAULT_ELO);
   if (maxElo < 1500) {
     throw new Error("Gold tier (1500+ ELO) required to access The Forge");
   }
@@ -45,7 +47,7 @@ export const canAccess = query({
       .query("userRatings")
       .withIndex("by_user_sport_mode", (q) => q.eq("userId", userId))
       .collect();
-    const maxElo = ratings.reduce((m, r) => Math.max(m, r.eloRating), 0);
+    const maxElo = ratings.reduce((m, r) => Math.max(m, r.eloRating), DEFAULT_ELO);
 
     if (maxElo < 1500)
       return { allowed: false, reason: "Gold tier required", currentElo: maxElo };
@@ -59,6 +61,8 @@ export const getReviewQueue = query({
   handler: async (ctx, { limit }) => {
     const userId = await getAuthUserId(ctx);
     if (!userId) return [];
+    const user = await ctx.db.get(userId);
+    if (!hasPermanentUsername(user)) return [];
 
     await assertForgeAccess(ctx, userId);
 
@@ -140,8 +144,7 @@ export const submit = mutation({
     imageId: v.optional(v.id("_storage")),
   },
   handler: async (ctx, args) => {
-    const userId = await getAuthUserId(ctx);
-    if (!userId) throw new Error("Not authenticated");
+    const userId = await requireRegisteredUser(ctx);
     await assertForgeAccess(ctx, userId);
 
     if (args.options.length !== 4) {
@@ -199,8 +202,7 @@ export const vote = mutation({
     vote: v.union(v.literal("approve"), v.literal("reject")),
   },
   handler: async (ctx, args) => {
-    const userId = await getAuthUserId(ctx);
-    if (!userId) throw new Error("Not authenticated");
+    const userId = await requireRegisteredUser(ctx);
     await assertForgeAccess(ctx, userId);
 
     const submission = await ctx.db.get(args.submissionId);

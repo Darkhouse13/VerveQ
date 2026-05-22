@@ -42,6 +42,14 @@ const App = () => (
           <Routes>
             <Route path="/" element={<LoginScreen />} />
             <Route path="/leaderboard" element={<LeaderboardScreen />} />
+            <Route
+              path="/ranks"
+              element={
+                <ProtectedRoute>
+                  <LeaderboardScreen />
+                </ProtectedRoute>
+              }
+            />
             <Route path="/home" element={<HomeScreen />} />
             <Route
               path="/onboarding"

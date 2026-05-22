@@ -4,9 +4,11 @@ import { useQuery, useMutation } from "convex/react";
 import { api } from "../../convex/_generated/api";
 import { useCountdown } from "@/hooks/useCountdown";
 import { AlertTriangle } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
 
 export function DecayWarningBanner() {
-  const warnings = useQuery(api.eloDecay.getDecayWarnings);
+  const { isGuest } = useAuth();
+  const warnings = useQuery(api.eloDecay.getDecayWarnings, isGuest ? "skip" : {});
   const dismiss = useMutation(api.eloDecay.dismissDecayWarning);
 
   if (!warnings || warnings.length === 0) return null;

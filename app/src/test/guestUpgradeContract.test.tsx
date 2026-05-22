@@ -132,7 +132,7 @@ describe("ProfileScreen — sign-in/sign-out button matrix", () => {
     expect(screen.getByText(/create an account/i)).toBeInTheDocument();
     expect(
       screen.getByText(
-        /save your elo, achievements, and compete on the leaderboard\./i,
+        /create a username to save elo, achievements, forge progress, and leaderboard records\./i,
       ),
     ).toBeInTheDocument();
   });

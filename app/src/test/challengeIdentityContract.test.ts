@@ -25,6 +25,7 @@ describe("challenge identity lookup", () => {
 
     const ctx = {
       db: {
+        get: vi.fn(async () => ({ _id: "challenger_user", username: "challenger", isGuest: false })),
         query: (table: string) => {
           expect(table).toBe("users");
           return {
@@ -63,6 +64,7 @@ describe("challenge identity lookup", () => {
 
     const ctx = {
       db: {
+        get: vi.fn(async () => ({ _id: "challenger_user", username: "challenger", isGuest: false })),
         query: (table: string) => {
           expect(table).toBe("users");
           return {
@@ -89,13 +91,14 @@ describe("challenge identity lookup", () => {
   it("prefers an exact username over duplicate display-name matches", async () => {
     const exactUsernameTarget = {
       _id: "target_exact",
-      username: "DarkHouse13",
+      username: "darkhouse13",
       displayName: "Old Display",
     };
     const inserted = vi.fn(async () => "challenge_1");
 
     const ctx = {
       db: {
+        get: vi.fn(async () => ({ _id: "challenger_user", username: "challenger", isGuest: false })),
         query: (table: string) => {
           expect(table).toBe("users");
           return {
@@ -123,4 +126,51 @@ describe("challenge identity lookup", () => {
       expect.objectContaining({ challengedId: "target_exact" }),
     );
   });
+
+  it("rejects challenge creation when the challenger has no permanent username", async () => {
+    const inserted = vi.fn(async () => "challenge_1");
+    const ctx = {
+      db: {
+        get: vi.fn(async () => ({ _id: "challenger_user", isGuest: true })),
+        query: () => ({
+          withIndex: () => ({ first: async () => null }),
+          collect: async () => [{ _id: "target", username: "target_user", displayName: "Target" }],
+        }),
+        insert: inserted,
+      },
+    };
+
+    await expect(
+      handlerOf(challenges.create)(ctx, {
+        challengedUsername: "target_user",
+        sport: "football",
+        mode: "quiz",
+      }),
+    ).rejects.toThrow(/username.*required|create an account/i);
+    expect(inserted).not.toHaveBeenCalled();
+  });
+
+  it("rejects challenge targets that do not have a permanent username", async () => {
+    const inserted = vi.fn(async () => "challenge_1");
+    const ctx = {
+      db: {
+        get: vi.fn(async () => ({ _id: "challenger_user", username: "challenger", isGuest: false })),
+        query: () => ({
+          withIndex: () => ({ first: async () => null }),
+          collect: async () => [{ _id: "guest_target", username: "", displayName: "Guest", isGuest: true }],
+        }),
+        insert: inserted,
+      },
+    };
+
+    await expect(
+      handlerOf(challenges.create)(ctx, {
+        challengedUsername: "Guest",
+        sport: "football",
+        mode: "quiz",
+      }),
+    ).rejects.toThrow(/username.*required|registered account/i);
+    expect(inserted).not.toHaveBeenCalled();
+  });
+
 });

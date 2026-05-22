@@ -3,7 +3,7 @@ import { NeoButton } from "@/components/neo/NeoButton";
 import { NeoBadge } from "@/components/neo/NeoBadge";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Star, ArrowUp, ArrowDown } from "lucide-react";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useMutation } from "convex/react";
 import { api } from "../../convex/_generated/api";
 import { toast } from "sonner";
@@ -36,6 +36,8 @@ export default function ResultScreen() {
   const navigate = useNavigate();
   const location = useLocation();
   const checkAchievements = useMutation(api.achievements.checkAndUnlock);
+  const createRematch = useMutation(api.challenges.createRematch);
+  const [sendingRematch, setSendingRematch] = useState(false);
 
   const state = location.state as GameResultState | null;
 
@@ -85,6 +87,31 @@ export default function ResultScreen() {
     state.kFactorLabel,
     state.kFactor,
   );
+  const challengeScoreline = `${state.score} - ${state.opponentScore ?? 0}`;
+  const seriesLabel = state.versusScore
+    ? `${state.versusScore.player1Wins}-${state.versusScore.player2Wins}${state.versusScore.draws ? `-${state.versusScore.draws}` : ""}`
+    : null;
+
+  const handleChallengeAgain = async () => {
+    if (!state.opponentId) {
+      navigate("/challenge");
+      return;
+    }
+    setSendingRematch(true);
+    try {
+      await createRematch({
+        opponentId: state.opponentId as never,
+        sport: state.sport,
+        mode: "quiz",
+      });
+      toast.success("Rematch invite sent");
+      navigate("/challenge");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Failed to send rematch invite");
+    } finally {
+      setSendingRematch(false);
+    }
+  };
 
   const stats = isChallenge
     ? [
@@ -111,7 +138,7 @@ export default function ResultScreen() {
     <div className="min-h-screen bg-background px-5 py-8 flex flex-col items-center">
       <NeoCard shadow="lg" className="w-full text-center py-8 mb-6">
         <p className="font-mono font-bold text-6xl animate-pulse-score">
-          {isQuiz ? `${state.correctCount}/${state.total}` : state.score}
+          {state.mode === "challenge" ? challengeScoreline : isQuiz ? `${state.correctCount}/${state.total}` : state.score}
         </p>
         <p className="font-heading text-sm text-muted-foreground mt-2">
           {isChallenge ? "Match Result" : "Final Score"}
@@ -131,6 +158,11 @@ export default function ResultScreen() {
           {state.opponentName && (
             <p className="text-xs text-muted-foreground mt-3">
               vs @{state.opponentName}
+            </p>
+          )}
+          {seriesLabel && (
+            <p className="text-xs font-heading font-bold text-muted-foreground mt-2">
+              Series {seriesLabel}
             </p>
           )}
         </div>
@@ -244,9 +276,10 @@ export default function ResultScreen() {
         <NeoButton
           variant="primary"
           size="full"
-          onClick={() => isChallenge ? navigate("/challenge") : navigate(`/sport-select?mode=${state.mode}`)}
+          onClick={() => isChallenge ? handleChallengeAgain() : navigate(`/sport-select?mode=${state.mode}`)}
+          disabled={isChallenge && sendingRematch}
         >
-          {isChallenge ? "Challenge Again" : "Play Again"}
+          {isChallenge ? (sendingRematch ? "Sending..." : "Challenge Again") : "Play Again"}
         </NeoButton>
         {!isChallenge && (
           <NeoButton

@@ -20,6 +20,7 @@ import {
 
 const SUPPORTED_VERVE_GRID_SPORTS = new Set(["football"]);
 const START_SESSION_TIMEOUT_MS = 8000;
+const GRID_SEARCH_MIN_CHARS = 3;
 
 function withTimeout<T>(promise: Promise<T>, timeoutMs: number): Promise<T> {
   return Promise.race([
@@ -84,7 +85,7 @@ export default function VerveGridScreen() {
 
   const searchResults = useQuery(
     api.verveGrid.searchPlayers,
-    debouncedQuery.length >= 2 && sessionId && activeCellIndex !== null
+    debouncedQuery.length >= GRID_SEARCH_MIN_CHARS && sessionId && activeCellIndex !== null
       ? {
           queryText: debouncedQuery,
           sport,
@@ -159,7 +160,7 @@ export default function VerveGridScreen() {
   );
 
   const openSearch = (cellIndex: number) => {
-    if (gameOver || cells[cellIndex]?.correct) return;
+    if (gameOver || cells[cellIndex]?.correct !== undefined) return;
     setActiveCellIndex(cellIndex);
     setSearchQuery("");
     setSearchOpen(true);
@@ -446,14 +447,14 @@ export default function VerveGridScreen() {
                 </div>
               </div>
             ))}
-            {debouncedQuery.length >= 2 && searchResults?.length === 0 && (
+            {debouncedQuery.length >= GRID_SEARCH_MIN_CHARS && searchResults?.length === 0 && (
               <p className="text-sm text-muted-foreground text-center py-4">
                 No players found
               </p>
             )}
-            {debouncedQuery.length < 2 && (
+            {debouncedQuery.length < GRID_SEARCH_MIN_CHARS && (
               <p className="text-sm text-muted-foreground text-center py-4">
-                Type at least 2 characters
+                Type at least {GRID_SEARCH_MIN_CHARS} characters
               </p>
             )}
           </div>

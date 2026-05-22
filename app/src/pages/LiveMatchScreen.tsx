@@ -117,6 +117,8 @@ export default function LiveMatchScreen() {
           mode: "challenge" as const,
           outcome,
           opponentName: opponent.username,
+          opponentId: opponent.id,
+          versusScore: match.versusSummary,
         },
         replace: true,
       });

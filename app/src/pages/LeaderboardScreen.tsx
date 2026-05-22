@@ -14,6 +14,11 @@ const filters = {
   period: ["Daily", "Weekly", "All Time"],
 };
 
+function formatLeaderboardValue(value: number | null | undefined): string {
+  if (value === null || value === undefined) return "0";
+  return Number.isInteger(value) ? String(value) : value.toFixed(1);
+}
+
 function getTier(elo: number | null) {
   if (!elo) return { name: "Bronze", color: "muted" as const };
   if (elo >= 2000) return { name: "Platinum", color: "accent" as const };
@@ -205,7 +210,7 @@ export default function LeaderboardScreen() {
                       {p.username}
                     </p>
                     <p className="font-mono text-[10px] text-muted-foreground">
-                      {p.elo_rating ?? p.score}
+                      {formatLeaderboardValue(p.elo_rating ?? p.score)}
                     </p>
                     {isPastSeason && p.tier && (
                       <NeoBadge color={getTier(p.elo_rating).color} rotated>
@@ -243,7 +248,7 @@ export default function LeaderboardScreen() {
                         {r.username}
                       </p>
                       <p className="font-mono text-xs text-muted-foreground">
-                        {r.elo_rating ?? r.score} ELO
+                        {formatLeaderboardValue(r.elo_rating ?? r.score)} ELO
                       </p>
                     </div>
                     <div className="flex gap-1">

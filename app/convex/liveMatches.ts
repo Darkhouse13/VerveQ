@@ -145,6 +145,125 @@ async function findActiveMatchForUser(
   return null;
 }
 
+
+function getPairKey(player1Id: Id<"users">, player2Id: Id<"users">) {
+  const [playerAId, playerBId] = [player1Id, player2Id].sort() as [Id<"users">, Id<"users">];
+  return { pairKey: `${playerAId}|${playerBId}`, playerAId, playerBId };
+}
+
+function orientVersusSummary(
+  summary: Doc<"challengeHeadToHeads"> | null,
+  player1Id: Id<"users">,
+  player2Id: Id<"users">,
+) {
+  if (!summary) {
+    return {
+      player1Wins: 0,
+      player2Wins: 0,
+      draws: 0,
+      totalMatches: 0,
+    };
+  }
+  const player1IsA = summary.playerAId === player1Id;
+  const player2IsA = summary.playerAId === player2Id;
+  return {
+    player1Wins: player1IsA ? summary.playerAWins : summary.playerBWins,
+    player2Wins: player2IsA ? summary.playerAWins : summary.playerBWins,
+    draws: summary.draws,
+    totalMatches: summary.totalMatches,
+    lastPlayedAt: summary.lastPlayedAt,
+  };
+}
+
+async function getVersusSummary(
+  ctx: Pick<MutationCtx, "db">,
+  player1Id: Id<"users">,
+  player2Id: Id<"users">,
+  sport: string,
+  mode = "quiz",
+) {
+  if (typeof (ctx.db as { query?: unknown }).query !== "function") {
+    return orientVersusSummary(null, player1Id, player2Id);
+  }
+  const { pairKey } = getPairKey(player1Id, player2Id);
+  const summary = await ctx.db
+    .query("challengeHeadToHeads")
+    .withIndex("by_pair_sport_mode", (q) =>
+      q.eq("pairKey", pairKey).eq("sport", sport).eq("mode", mode),
+    )
+    .first();
+  return orientVersusSummary(summary, player1Id, player2Id);
+}
+
+async function recordChallengeHistory(
+  ctx: Pick<MutationCtx, "db">,
+  match: Doc<"liveMatches">,
+  status: "completed" | "forfeited",
+  winnerId: Id<"users"> | undefined,
+  playedAt: number,
+) {
+  const existingHistory = await ctx.db
+    .query("challengeMatchHistory")
+    .withIndex("by_match", (q) => q.eq("matchId", match._id))
+    .first();
+  if (existingHistory) return;
+
+  const { pairKey, playerAId, playerBId } = getPairKey(match.player1Id, match.player2Id);
+  const mode = "quiz";
+  const playerAWon = winnerId === playerAId;
+  const playerBWon = winnerId === playerBId;
+  const draw = !winnerId;
+
+  await ctx.db.insert("challengeMatchHistory", {
+    matchId: match._id,
+    challengeId: match.challengeId,
+    pairKey,
+    playerAId,
+    playerBId,
+    player1Id: match.player1Id,
+    player2Id: match.player2Id,
+    sport: match.sport,
+    mode,
+    player1Score: match.player1Score,
+    player2Score: match.player2Score,
+    winnerId,
+    status,
+    playedAt,
+  });
+
+  const existing = await ctx.db
+    .query("challengeHeadToHeads")
+    .withIndex("by_pair_sport_mode", (q) =>
+      q.eq("pairKey", pairKey).eq("sport", match.sport).eq("mode", mode),
+    )
+    .first();
+
+  if (existing) {
+    await ctx.db.patch(existing._id, {
+      playerAWins: existing.playerAWins + (playerAWon ? 1 : 0),
+      playerBWins: existing.playerBWins + (playerBWon ? 1 : 0),
+      draws: existing.draws + (draw ? 1 : 0),
+      totalMatches: existing.totalMatches + 1,
+      lastMatchId: match._id,
+      lastPlayedAt: playedAt,
+    });
+  } else {
+    await ctx.db.insert("challengeHeadToHeads", {
+      pairKey,
+      playerAId,
+      playerBId,
+      sport: match.sport,
+      mode,
+      playerAWins: playerAWon ? 1 : 0,
+      playerBWins: playerBWon ? 1 : 0,
+      draws: draw ? 1 : 0,
+      totalMatches: 1,
+      lastMatchId: match._id,
+      lastPlayedAt: playedAt,
+    });
+  }
+}
+
 // ── Mutations ──
 
 export const createFromChallenge = mutation({
@@ -186,7 +305,14 @@ export const createFromChallenge = mutation({
       .take(200);
 
     const shuffled = [...allQuestions].sort(() => Math.random() - 0.5);
-    const picked = shuffled.slice(0, TOTAL_QUESTIONS).map((q) => ({
+    const pickedQuestions = shuffled.slice(0, TOTAL_QUESTIONS);
+    if (pickedQuestions.length < TOTAL_QUESTIONS) {
+      throw new Error(
+        `Not enough live match questions available for ${challenge.sport}: ${pickedQuestions.length}/${TOTAL_QUESTIONS}`,
+      );
+    }
+
+    const picked = pickedQuestions.map((q) => ({
       question: q.question,
       options: q.options,
       correctAnswer: q.correctAnswer,
@@ -426,6 +552,13 @@ export const getMatch = query({
     const p2 = await ctx.db.get(match.player2Id);
 
     const isP1 = userId === match.player1Id;
+    const versusSummary = await getVersusSummary(
+      ctx,
+      match.player1Id,
+      match.player2Id,
+      match.sport,
+      "quiz",
+    );
 
     // Never expose correctAnswer/explanation through the public match view.
     // Future questions stay hidden entirely; the current/past display shape is
@@ -478,6 +611,7 @@ export const getMatch = query({
       questions,
       player1Score: match.player1Score,
       player2Score: match.player2Score,
+      versusSummary,
       player1Ready: match.player1Ready,
       player2Ready: match.player2Ready,
       winnerId: match.winnerId,
@@ -724,11 +858,27 @@ async function finishMatch(
   applyElo: boolean,
 ) {
   const now = Date.now();
+
+  if (!match.historyRecordedAt) {
+    await recordChallengeHistory(ctx, match, status, winnerId, now);
+  }
+
+  if (match.challengeId) {
+    await ctx.db.patch(match.challengeId, {
+      status: "completed",
+      challengerScore: match.player1Score,
+      challengedScore: match.player2Score,
+      winnerId,
+      completedAt: match.completedAt ?? now,
+    });
+  }
+
   if (match.eloAppliedAt) {
     await ctx.db.patch(match._id, {
       status,
       winnerId,
       completedAt: match.completedAt ?? now,
+      historyRecordedAt: match.historyRecordedAt ?? now,
     });
     return;
   }
@@ -741,6 +891,7 @@ async function finishMatch(
     status,
     winnerId,
     completedAt: now,
+    historyRecordedAt: match.historyRecordedAt ?? now,
     ...(applyElo ? { eloAppliedAt: now } : {}),
   });
 }

@@ -629,6 +629,21 @@ function getChallengePrimaryPlayer(
   return pickPrimaryPlayer(challenge.validPlayers, sport);
 }
 
+function getChallengeValidGuessPlayers(
+  sport: string,
+  challenge: Pick<SurvivalChallenge, "initials" | "validPlayers">,
+): string[] {
+  const allPlayersForInitials = getInitialsMap(sport)[challenge.initials] ?? [];
+  return Array.from(
+    new Set(
+      [...challenge.validPlayers, ...allPlayersForInitials].filter(
+        (player): player is string =>
+          typeof player === "string" && player.trim().length > 0,
+      ),
+    ),
+  );
+}
+
 function generateFootballChallengeFromCuratedIndex(
   round: number,
   usedInitials: string[],
@@ -843,9 +858,13 @@ export const submitGuess = mutation({
     const challenge = session.currentChallenge;
     if (!challenge) throw new Error("No active challenge");
 
+    const validGuessPlayers = getChallengeValidGuessPlayers(
+      session.sport,
+      challenge,
+    );
     const { matched: correct, distance, matchedPlayer, closeCall, typoAccepted } = findBestMatch(
       guess,
-      challenge.validPlayers,
+      validGuessPlayers,
     );
 
     // Close call: one free retry per round, then it counts as a miss.
@@ -948,16 +967,16 @@ export const submitGuess = mutation({
       };
     } else {
       const newLives = session.lives - 1;
-      const isGameOver = newLives <= 0;
 
       let next = null;
-      if (!isGameOver) {
+      if (newLives > 0) {
         next = generateChallenge(
           session.sport,
           session.round + 1,
           session.usedInitials,
         );
       }
+      const isGameOver = newLives <= 0 || !next;
 
       await ctx.db.patch(sessionId, {
         lives: newLives,
@@ -1131,16 +1150,15 @@ export const skipChallenge = mutation({
       newFreeSkips = 0;
     }
 
-    const isGameOver = newLives <= 0;
-
     let next = null;
-    if (!isGameOver) {
+    if (newLives > 0) {
       next = generateChallenge(
         session.sport,
         session.round + 1,
         session.usedInitials,
       );
     }
+    const isGameOver = newLives <= 0 || !next;
 
     await ctx.db.patch(sessionId, {
       lives: newLives,

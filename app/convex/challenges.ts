@@ -1,10 +1,18 @@
 import { query, mutation } from "./_generated/server";
 import { v } from "convex/values";
 import { getAuthUserId } from "@convex-dev/auth/server";
-import type { Doc } from "./_generated/dataModel";
+import type { Doc, Id } from "./_generated/dataModel";
 
 function normalizeHandle(value: string): string {
   return value.trim().toLowerCase();
+}
+
+function hasPermanentUsername(user: Pick<Doc<"users">, "username" | "isGuest" | "isAnonymous"> | null): boolean {
+  return !!user &&
+    user.isGuest !== true &&
+    user.isAnonymous !== true &&
+    typeof user.username === "string" &&
+    /^[a-z0-9_]{3,24}$/.test(user.username.trim().toLowerCase());
 }
 
 function oneOrAmbiguous(
@@ -37,12 +45,15 @@ async function findChallengeTarget(
   const exactUsernameMatch = await usersQuery
     .withIndex("by_username", (q) => q.eq("username", identifier))
     .first();
-  if (exactUsernameMatch) return exactUsernameMatch;
+  if (exactUsernameMatch) {
+    return hasPermanentUsername(exactUsernameMatch) ? exactUsernameMatch : null;
+  }
 
   const normalizedIdentifier = normalizeHandle(identifier);
   const users = await usersQuery.collect();
 
   const identityMatches = users.filter((user) => {
+    if (!hasPermanentUsername(user)) return false;
     const username = typeof user.username === "string" ? user.username : "";
     const displayName =
       typeof user.displayName === "string" ? user.displayName : "";
@@ -72,7 +83,7 @@ export const getPending = query({
         const challenger = await ctx.db.get(c.challengerId);
         return {
           challengeId: c._id,
-          challenger: challenger?.displayName ?? challenger?.username ?? "Unknown",
+          challenger: challenger?.username ?? "Unknown",
           sport: c.sport,
           mode: c.mode,
           createdAt: c._creationTime,
@@ -82,6 +93,113 @@ export const getPending = query({
     );
 
     return { total: challenges.length, challenges };
+  },
+});
+
+
+export const getRecentOpponents = query({
+  args: {},
+  handler: async (ctx) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) return { opponents: [] };
+
+    const byOpponent = new Map<
+      Id<"users">,
+      {
+        opponentId: Id<"users">;
+        lastSport: string;
+        lastMode: string;
+        lastPlayedAt: number;
+        versusSummary: {
+          wins: number;
+          losses: number;
+          draws: number;
+          totalMatches: number;
+        };
+      }
+    >();
+
+    const remember = (
+      opponentId: Id<"users">,
+      lastSport: string,
+      lastMode: string,
+      lastPlayedAt: number,
+      versusSummary = { wins: 0, losses: 0, draws: 0, totalMatches: 0 },
+    ) => {
+      const existing = byOpponent.get(opponentId);
+      if (!existing || lastPlayedAt > existing.lastPlayedAt) {
+        byOpponent.set(opponentId, {
+          opponentId,
+          lastSport,
+          lastMode,
+          lastPlayedAt,
+          versusSummary,
+        });
+      }
+    };
+
+    const asPlayerA = await ctx.db
+      .query("challengeHeadToHeads")
+      .withIndex("by_player_a", (q) => q.eq("playerAId", userId))
+      .collect();
+    const asPlayerB = await ctx.db
+      .query("challengeHeadToHeads")
+      .withIndex("by_player_b", (q) => q.eq("playerBId", userId))
+      .collect();
+
+    for (const row of asPlayerA) {
+      remember(row.playerBId, row.sport, row.mode, row.lastPlayedAt ?? row._creationTime, {
+        wins: row.playerAWins,
+        losses: row.playerBWins,
+        draws: row.draws,
+        totalMatches: row.totalMatches,
+      });
+    }
+    for (const row of asPlayerB) {
+      remember(row.playerAId, row.sport, row.mode, row.lastPlayedAt ?? row._creationTime, {
+        wins: row.playerBWins,
+        losses: row.playerAWins,
+        draws: row.draws,
+        totalMatches: row.totalMatches,
+      });
+    }
+
+    const sent = await ctx.db
+      .query("challenges")
+      .withIndex("by_challenger", (q) => q.eq("challengerId", userId))
+      .collect();
+    const received = await ctx.db
+      .query("challenges")
+      .withIndex("by_challenged", (q) => q.eq("challengedId", userId))
+      .collect();
+
+    for (const challenge of sent) {
+      remember(challenge.challengedId, challenge.sport, challenge.mode, challenge.completedAt ?? challenge._creationTime);
+    }
+    for (const challenge of received) {
+      remember(challenge.challengerId, challenge.sport, challenge.mode, challenge.completedAt ?? challenge._creationTime);
+    }
+
+    const opponents = await Promise.all(
+      Array.from(byOpponent.values())
+        .sort((a, b) => b.lastPlayedAt - a.lastPlayedAt)
+        .slice(0, 12)
+        .map(async (entry) => {
+          const user = await ctx.db.get(entry.opponentId);
+          if (!hasPermanentUsername(user)) return null;
+          return {
+            opponentId: entry.opponentId,
+            username: user.username,
+            displayName: user.displayName ?? user.username,
+            lastSport: entry.lastSport,
+            lastMode: entry.lastMode,
+            lastPlayedAt: entry.lastPlayedAt,
+            versusSummary: entry.versusSummary,
+          };
+        }),
+    );
+
+    return { opponents: opponents.filter((opponent) => opponent !== null) };
   },
 });
 
@@ -95,11 +213,16 @@ export const create = mutation({
     const userId = await getAuthUserId(ctx);
     if (!userId) throw new Error("Not authenticated");
 
+    const challenger = await ctx.db.get(userId);
+    if (!hasPermanentUsername(challenger)) {
+      throw new Error("A permanent username is required. Create an account to use challenges.");
+    }
+
     const challenged = await findChallengeTarget(ctx, challengedUsername);
 
     if (!challenged) {
       throw new Error(
-        `User not found: ${challengedUsername.trim()}. Ask them for their exact @username from Profile.`,
+        `Registered account not found: ${challengedUsername.trim()}. Ask them for their exact @username from Profile.`,
       );
     }
     if (challenged._id === userId) throw new Error("Cannot challenge yourself");
@@ -107,6 +230,40 @@ export const create = mutation({
     const challengeId = await ctx.db.insert("challenges", {
       challengerId: userId,
       challengedId: challenged._id,
+      sport,
+      mode,
+      status: "pending",
+    });
+
+    return { challengeId };
+  },
+});
+
+
+export const createRematch = mutation({
+  args: {
+    opponentId: v.id("users"),
+    sport: v.string(),
+    mode: v.string(),
+  },
+  handler: async (ctx, { opponentId, sport, mode }) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) throw new Error("Not authenticated");
+
+    const challenger = await ctx.db.get(userId);
+    if (!hasPermanentUsername(challenger)) {
+      throw new Error("A permanent username is required. Create an account to use challenges.");
+    }
+
+    const opponent = await ctx.db.get(opponentId);
+    if (!hasPermanentUsername(opponent)) {
+      throw new Error("Opponent account not found. Ask them for their exact @username from Profile.");
+    }
+    if (opponentId === userId) throw new Error("Cannot challenge yourself");
+
+    const challengeId = await ctx.db.insert("challenges", {
+      challengerId: userId,
+      challengedId: opponentId,
       sport,
       mode,
       status: "pending",

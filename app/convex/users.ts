@@ -11,6 +11,16 @@ function normalizeUsername(value: string): string {
   return normalized || "user";
 }
 
+function usernameDerivedFromEmail(email: string | undefined): string | null {
+  if (!email) return null;
+  const localPart = email.split("@")[0] ?? "";
+  const derived = localPart
+    .toLowerCase()
+    .replace(/[^a-z0-9_]/g, "")
+    .slice(0, 24);
+  return derived || null;
+}
+
 async function usernameExistsCaseInsensitive(
   ctx: { db: { query: (table: "users") => unknown } },
   username: string,
@@ -77,6 +87,9 @@ export const ensureProfile = mutation({
   handler: async (ctx, args) => {
     const userId = await getAuthUserId(ctx);
     if (!userId) throw new Error("Not authenticated");
+    if (args.isGuest) {
+      throw new Error("Guest sessions are temporary and tab-local. Create an account with a username to store data.");
+    }
 
     const existing = await ctx.db.get(userId);
     // Convex Auth creates the users doc up-front, so `existing` is always
@@ -91,12 +104,24 @@ export const ensureProfile = mutation({
       !!existing &&
       typeof existing.username === "string" &&
       existing.username.trim().length > 0;
+    const candidate = await validateAvailableUsername(ctx, args.username, userId);
+
     if (hasUsername) {
       const updates: {
+        username?: string;
         displayName?: string;
         isGuest?: boolean;
         totalGames?: number;
       } = {};
+      const existingUsername = existing.username!.trim().toLowerCase();
+      const emailDerivedUsername = usernameDerivedFromEmail(existing.email);
+      if (
+        candidate !== existingUsername &&
+        emailDerivedUsername !== null &&
+        existingUsername === emailDerivedUsername
+      ) {
+        updates.username = candidate;
+      }
       if (existing?.isGuest !== args.isGuest) {
         updates.isGuest = args.isGuest;
       }
@@ -112,7 +137,6 @@ export const ensureProfile = mutation({
       return userId;
     }
 
-    const candidate = await validateAvailableUsername(ctx, args.username, userId);
 
     await ctx.db.patch(userId, {
       username: candidate,

@@ -12,6 +12,7 @@ describe("challenge result UX contract", () => {
     expect(resultScreen).toContain("isChallenge");
     expect(resultScreen).toContain("Match Result");
     expect(resultScreen).toContain('navigate("/challenge")');
-    expect(resultScreen).toContain('isChallenge ? navigate("/challenge") : navigate(`/sport-select?mode=${state.mode}`)');
+    expect(resultScreen).toContain("handleChallengeAgain");
+    expect(resultScreen).toContain('isChallenge ? handleChallengeAgain() : navigate(`/sport-select?mode=${state.mode}`)');
   });
 });

@@ -38,7 +38,7 @@ function getTier(elo: number) {
 export default function ProfileScreen() {
   const navigate = useNavigate();
   const { user, isGuest, logout } = useAuth();
-  const userId = user?._id as Id<"users"> | undefined;
+  const userId = !isGuest && user?.username ? (user._id as Id<"users">) : undefined;
   const [signOutConfirmOpen, setSignOutConfirmOpen] = useState(false);
 
   const handleCreateAccount = async () => {
@@ -56,7 +56,7 @@ export default function ProfileScreen() {
     navigate("/?mode=signin");
   };
 
-  const profile = useQuery(api.profile.get, userId ? { userId } : "skip");
+  const persistedProfile = useQuery(api.profile.get, userId ? { userId } : "skip");
   const allAchievements = useQuery(api.achievements.list);
   const userAchs = useQuery(
     api.achievements.userAchievements,
@@ -66,6 +66,22 @@ export default function ProfileScreen() {
     api.seasonManager.getUserSeasonHistory,
     userId ? { userId } : "skip",
   );
+  const guestProfile = isGuest
+    ? {
+        username: "",
+        displayName: "Guest",
+        createdAt: Date.now(),
+        eloRating: 0,
+        stats: {
+          totalGames: 0,
+          winRate: 0,
+          bestStreak: 0,
+          favoriteSport: null as string | null,
+        },
+        recentGames: [],
+      }
+    : null;
+  const profile = guestProfile ?? persistedProfile;
 
   if (profile === undefined) {
     return (
@@ -110,11 +126,11 @@ export default function ProfileScreen() {
       <div className="px-5 pt-8 space-y-6">
         <div className="flex flex-col items-center text-center">
           <NeoAvatar
-            name={profile.displayName || profile.username}
+            name={profile.username || profile.displayName}
             size="xl"
           />
           <h2 className="font-heading font-bold text-2xl mt-3">
-            {profile.displayName || profile.username}
+            {profile.username || profile.displayName}
           </h2>
           {profile.username && (
             <p className="text-sm font-mono font-bold text-muted-foreground mt-1">
@@ -325,7 +341,7 @@ export default function ProfileScreen() {
               Create an account
             </p>
             <p className="text-xs opacity-90 mt-1 px-3">
-              Save your ELO, achievements, and compete on the leaderboard.
+              Create a username to save ELO, achievements, Forge progress, and leaderboard records.
             </p>
             <NeoButton
               variant="secondary"

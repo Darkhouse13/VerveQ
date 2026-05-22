@@ -5,7 +5,7 @@ import { X, Upload, ImageIcon } from "lucide-react";
 import type { Id } from "../../convex/_generated/dataModel";
 
 const MAX_FILE_SIZE = 2 * 1024 * 1024; // 2MB
-const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp"];
+const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp", "image/heic", "image/heif"];
 
 interface ImageDropzoneProps {
   imageId: Id<"_storage"> | null;
@@ -26,7 +26,7 @@ export function ImageDropzone({ imageId, onUpload, onRemove }: ImageDropzoneProp
     setError(null);
 
     if (!ALLOWED_TYPES.includes(file.type)) {
-      setError("Unsupported format. Use JPG, PNG, or WebP.");
+      setError("Unsupported format. Use JPG, PNG, WebP, or HEIC.");
       return;
     }
     if (file.size > MAX_FILE_SIZE) {
@@ -42,6 +42,7 @@ export function ImageDropzone({ imageId, onUpload, onRemove }: ImageDropzoneProp
         headers: { "Content-Type": file.type },
         body: file,
       });
+      if (!res.ok) throw new Error("Upload request failed");
       const { storageId } = await res.json();
       setPreview(URL.createObjectURL(file));
       onUpload(storageId);
@@ -56,7 +57,7 @@ export function ImageDropzone({ imageId, onUpload, onRemove }: ImageDropzoneProp
     e.preventDefault();
     setDragOver(false);
     const file = e.dataTransfer.files[0];
-    if (file) handleFile(file);
+    if (file) void handleFile(file);
   };
 
   const handleRemove = () => {
@@ -71,6 +72,7 @@ export function ImageDropzone({ imageId, onUpload, onRemove }: ImageDropzoneProp
       <div className="relative neo-border p-2">
         <img src={preview} alt="Upload preview" className="w-full object-contain max-h-40" />
         <button
+          type="button"
           onClick={handleRemove}
           className="absolute top-3 right-3 neo-border rounded-full w-7 h-7 flex items-center justify-center bg-destructive text-destructive-foreground cursor-pointer"
         >
@@ -83,20 +85,31 @@ export function ImageDropzone({ imageId, onUpload, onRemove }: ImageDropzoneProp
   return (
     <div>
       <div
-        onClick={() => inputRef.current?.click()}
         onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
         onDragLeave={() => setDragOver(false)}
         onDrop={handleDrop}
-        className={`neo-border border-dashed p-6 text-center cursor-pointer transition-all ${
+        className={`relative neo-border border-dashed p-6 text-center cursor-pointer transition-all ${
           dragOver ? "bg-accent/20 border-primary" : "bg-background"
         } ${uploading ? "opacity-50 pointer-events-none" : ""}`}
       >
+        <input
+          ref={inputRef}
+          type="file"
+          accept="image/*"
+          aria-label="Add a question image"
+          className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
+          disabled={uploading}
+          onChange={(e) => {
+            const file = e.target.files?.[0];
+            if (file) void handleFile(file);
+          }}
+        />
         {uploading ? (
           <p className="font-heading font-bold text-sm uppercase animate-pulse">
             UPLOADING...
           </p>
         ) : (
-          <div className="flex flex-col items-center gap-2">
+          <div className="flex flex-col items-center gap-2 pointer-events-none">
             <div className="flex items-center gap-2 text-muted-foreground">
               <ImageIcon size={20} strokeWidth={2.5} />
               <Upload size={20} strokeWidth={2.5} />
@@ -105,21 +118,11 @@ export function ImageDropzone({ imageId, onUpload, onRemove }: ImageDropzoneProp
               Drop image or tap to upload
             </p>
             <p className="text-[10px] text-muted-foreground">
-              JPG, PNG, WebP - Max 2MB
+              JPG, PNG, WebP, HEIC - Max 2MB
             </p>
           </div>
         )}
       </div>
-      <input
-        ref={inputRef}
-        type="file"
-        accept=".jpg,.jpeg,.png,.webp"
-        className="hidden"
-        onChange={(e) => {
-          const file = e.target.files?.[0];
-          if (file) handleFile(file);
-        }}
-      />
       {error && (
         <p className="text-destructive font-heading font-bold text-xs mt-2">
           {error}

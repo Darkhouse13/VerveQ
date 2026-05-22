@@ -69,4 +69,57 @@ describe("user identity uniqueness", () => {
     ).rejects.toThrow(/username is already taken/i);
     expect(patch).not.toHaveBeenCalled();
   });
+
+  it("replaces an auth-provider email-local username with the explicit signup username", async () => {
+    const patch = vi.fn(async () => undefined);
+    const ctx = {
+      db: {
+        get: vi.fn(async () => ({
+          _id: "new_user",
+          email: "mail.prefix@example.com",
+          username: "mailprefix",
+          displayName: "Mail Prefix",
+          isGuest: false,
+        })),
+        patch,
+        query: () => ({
+          withIndex: () => ({ first: async () => null }),
+        }),
+      },
+    };
+
+    await handlerOf(users.ensureProfile)(ctx, {
+      username: "chosen_handle",
+      displayName: "Chosen Handle",
+      isGuest: false,
+    });
+
+    expect(patch).toHaveBeenCalledWith(
+      "new_user",
+      expect.objectContaining({ username: "chosen_handle" }),
+    );
+  });
+
+  it("rejects backend guest profile writes because guests are tab-local only", async () => {
+    const patch = vi.fn(async () => undefined);
+    const ctx = {
+      db: {
+        get: vi.fn(async () => ({ _id: "new_user" })),
+        patch,
+        query: () => ({
+          withIndex: () => ({ first: async () => null }),
+        }),
+      },
+    };
+
+    await expect(
+      handlerOf(users.ensureProfile)(ctx, {
+        username: "guest_123",
+        displayName: "Guest",
+        isGuest: true,
+      }),
+    ).rejects.toThrow(/guest sessions are temporary/i);
+    expect(patch).not.toHaveBeenCalled();
+  });
+
 });

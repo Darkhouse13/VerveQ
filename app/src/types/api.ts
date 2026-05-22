@@ -19,4 +19,12 @@ export interface GameResultState {
   opponentScore?: number;
   outcome?: "win" | "loss" | "draw" | "forfeitWin" | "forfeitLoss";
   opponentName?: string;
+  opponentId?: string;
+  versusScore?: {
+    player1Wins: number;
+    player2Wins: number;
+    draws: number;
+    totalMatches: number;
+    lastPlayedAt?: number;
+  };
 }

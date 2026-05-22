@@ -97,7 +97,47 @@ export default defineSchema({
     winnerId: v.optional(v.id("users")),
     completedAt: v.optional(v.number()),
   })
-    .index("by_challenged_status", ["challengedId", "status"]),
+    .index("by_challenged_status", ["challengedId", "status"])
+    .index("by_challenger", ["challengerId"])
+    .index("by_challenged", ["challengedId"]),
+
+  challengeHeadToHeads: defineTable({
+    pairKey: v.string(),
+    playerAId: v.id("users"),
+    playerBId: v.id("users"),
+    sport: v.string(),
+    mode: v.string(),
+    playerAWins: v.number(),
+    playerBWins: v.number(),
+    draws: v.number(),
+    totalMatches: v.number(),
+    lastMatchId: v.optional(v.id("liveMatches")),
+    lastPlayedAt: v.optional(v.number()),
+  })
+    .index("by_pair_sport_mode", ["pairKey", "sport", "mode"])
+    .index("by_player_a", ["playerAId"])
+    .index("by_player_b", ["playerBId"]),
+
+  challengeMatchHistory: defineTable({
+    matchId: v.id("liveMatches"),
+    challengeId: v.optional(v.id("challenges")),
+    pairKey: v.string(),
+    playerAId: v.id("users"),
+    playerBId: v.id("users"),
+    player1Id: v.id("users"),
+    player2Id: v.id("users"),
+    sport: v.string(),
+    mode: v.string(),
+    player1Score: v.number(),
+    player2Score: v.number(),
+    winnerId: v.optional(v.id("users")),
+    status: v.union(v.literal("completed"), v.literal("forfeited")),
+    playedAt: v.number(),
+  })
+    .index("by_match", ["matchId"])
+    .index("by_pair_sport_mode", ["pairKey", "sport", "mode"])
+    .index("by_player_a", ["playerAId"])
+    .index("by_player_b", ["playerBId"]),
 
   quizQuestions: defineTable({
     sport: v.string(),
@@ -254,6 +294,7 @@ export default defineSchema({
     createdAt: v.number(),
     completedAt: v.optional(v.number()),
     eloAppliedAt: v.optional(v.number()),
+    historyRecordedAt: v.optional(v.number()),
     challengeId: v.optional(v.id("challenges")),
   })
     .index("by_player1", ["player1Id", "status"])
@@ -660,5 +701,21 @@ export default defineSchema({
     ),
     expiresAt: v.number(),
     closeCallCount: v.optional(v.number()),
+    guesses: v.optional(v.array(v.object({
+      guessName: v.string(),
+      correct: v.boolean(),
+      closeCall: v.boolean(),
+      scoreAfter: v.number(),
+      feedback: v.optional(v.object({
+        guessedPlayerName: v.string(),
+        nationality: v.union(v.literal("correct"), v.literal("incorrect"), v.literal("unknown")),
+        position: v.union(v.literal("correct"), v.literal("incorrect"), v.literal("unknown")),
+        team: v.union(v.literal("correct"), v.literal("incorrect"), v.literal("unknown")),
+      })),
+      createdAt: v.number(),
+    }))),
+    maxGuesses: v.optional(v.number()),
+    wrongGuessCount: v.optional(v.number()),
+    hardMode: v.optional(v.boolean()),
   }).index("by_user", ["userId"]),
 });

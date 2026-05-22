@@ -16,7 +16,15 @@ import type { Id } from "../../convex/_generated/dataModel";
 import type { GameResultState } from "@/types/api";
 
 const MAX_QUESTIONS = 10;
+const AUTO_ADVANCE_DELAY_MS = 2000;
 type QuizDifficulty = "easy" | "intermediate" | "hard";
+
+function formatElapsedTime(totalSeconds: number): string {
+  const safeSeconds = Math.max(0, Math.floor(totalSeconds));
+  const minutes = Math.floor(safeSeconds / 60);
+  const seconds = safeSeconds % 60;
+  return `${minutes}:${seconds.toString().padStart(2, "0")}`;
+}
 
 function parseDifficulty(value: string | null): QuizDifficulty {
   return value === "easy" || value === "hard" ? value : "intermediate";
@@ -62,6 +70,9 @@ export default function QuizScreen() {
   const [zoomImage, setZoomImage] = useState<string | null>(null);
 
   const startTime = useRef(Date.now());
+  const answerSubmitInFlight = useRef(false);
+  const autoAdvanceInFlight = useRef(false);
+  const autoAdvanceTimeoutRef = useRef<number | null>(null);
 
   const createSessionMut = useMutation(api.quizSessions.createSession);
   const getQuestionMut = useMutation(api.quizSessions.getQuestion);
@@ -125,13 +136,22 @@ export default function QuizScreen() {
     { warningMessage: "Don't switch tabs — your quiz will end" },
   );
 
-  const handleCheck = async () => {
-    if (selected === null || !question || !sessionId) return;
+  const handleCheck = async (optionIndex: number | null = selected) => {
+    if (
+      optionIndex === null ||
+      !question ||
+      !sessionId ||
+      checking ||
+      revealed ||
+      answerSubmitInFlight.current
+    ) return;
+    answerSubmitInFlight.current = true;
+    setSelected(optionIndex);
     setChecking(true);
     try {
       const res = await checkAnswerMut({
         sessionId,
-        answer: question.options[selected],
+        answer: question.options[optionIndex],
       });
       setRevealedAnswer(res.correctAnswer);
       setRevealed(true);
@@ -150,56 +170,87 @@ export default function QuizScreen() {
           score: res.score,
         },
       ]);
-    } catch {
-      toast.error("Failed to check answer");
+    } catch (error) {
+      console.error("Quiz answer check failed", error);
+      const message = error instanceof Error ? error.message : "Failed to check answer";
+      toast.error(message || "Failed to check answer");
     } finally {
+      answerSubmitInFlight.current = false;
       setChecking(false);
     }
   };
 
-  const handleContinue = async () => {
-    if (questionNum >= MAX_QUESTIONS) {
-      const avgTime = times.length
-        ? times.reduce((a, b) => a + b, 0) / times.length
-        : 0;
-      let eloChange: number | null = null;
-      let newElo: number | null = null;
-      let kFactor: number | undefined;
-      let kFactorLabel: string | undefined;
-      let serverScore = totalScore;
-      let serverCorrectCount = correctCount;
-      if (user && sessionId) {
-        try {
-          const res = await completeQuizMut({ sessionId });
-          eloChange = res.eloChange;
-          newElo = res.newElo;
-          kFactor = res.kFactor;
-          kFactorLabel = res.kFactorLabel;
-          serverScore = res.score;
-          serverCorrectCount = res.correctCount;
-        } catch {
-          /* continue to results */
-        }
-      }
-      const state: GameResultState = {
-        score: serverScore,
-        total: MAX_QUESTIONS,
-        correctCount: serverCorrectCount,
-        avgTime,
-        eloChange,
-        newElo,
-        sport,
-        mode: "quiz",
-        kFactor,
-        kFactorLabel,
-        scoreBreakdown,
-      };
-      navigate("/results", { state });
-    } else {
-      setQuestionNum((n) => n + 1);
-      if (sessionId) fetchQuestion(sessionId);
-    }
+  const handleOptionClick = (idx: number) => {
+    if (revealed || checking) return;
+    setSelected(idx);
   };
+
+  const advanceAfterReveal = useCallback(async () => {
+    if (autoAdvanceInFlight.current || !revealed) return;
+    autoAdvanceInFlight.current = true;
+    try {
+      if (questionNum >= MAX_QUESTIONS) {
+        const avgTime = times.length
+          ? times.reduce((a, b) => a + b, 0) / times.length
+          : 0;
+        let eloChange: number | null = null;
+        let newElo: number | null = null;
+        let kFactor: number | undefined;
+        let kFactorLabel: string | undefined;
+        let serverScore = totalScore;
+        let serverCorrectCount = correctCount;
+        if (user && sessionId) {
+          try {
+            const res = await completeQuizMut({ sessionId });
+            eloChange = res.eloChange;
+            newElo = res.newElo;
+            kFactor = res.kFactor;
+            kFactorLabel = res.kFactorLabel;
+            serverScore = res.score;
+            serverCorrectCount = res.correctCount;
+          } catch {
+            /* continue to results */
+          }
+        }
+        const state: GameResultState = {
+          score: serverScore,
+          total: MAX_QUESTIONS,
+          correctCount: serverCorrectCount,
+          avgTime,
+          eloChange,
+          newElo,
+          sport,
+          mode: "quiz",
+          kFactor,
+          kFactorLabel,
+          scoreBreakdown,
+        };
+        navigate("/results", { state });
+      } else {
+        setQuestionNum((n) => n + 1);
+        if (sessionId) await fetchQuestion(sessionId);
+      }
+    } finally {
+      autoAdvanceInFlight.current = false;
+    }
+  }, [completeQuizMut, correctCount, fetchQuestion, questionNum, revealed, scoreBreakdown, sessionId, sport, times, totalScore, user, navigate]);
+
+  useEffect(() => {
+    if (!revealed) return;
+    if (autoAdvanceTimeoutRef.current !== null) {
+      window.clearTimeout(autoAdvanceTimeoutRef.current);
+    }
+    autoAdvanceTimeoutRef.current = window.setTimeout(() => {
+      autoAdvanceTimeoutRef.current = null;
+      void advanceAfterReveal();
+    }, AUTO_ADVANCE_DELAY_MS);
+    return () => {
+      if (autoAdvanceTimeoutRef.current !== null) {
+        window.clearTimeout(autoAdvanceTimeoutRef.current);
+        autoAdvanceTimeoutRef.current = null;
+      }
+    };
+  }, [advanceAfterReveal, revealed]);
 
   const correctIdx =
     question && revealedAnswer
@@ -234,7 +285,7 @@ export default function QuizScreen() {
       <div className="flex items-center justify-between mb-3">
         <ExitGameButton title="Quit quiz?" description="Your progress in this quiz will be lost." />
         <p className="font-mono font-bold text-lg">
-          0:{timer.toString().padStart(2, "0")}
+          {formatElapsedTime(timer)}
         </p>
       </div>
       <div className="flex items-center justify-between mb-5">
@@ -269,8 +320,9 @@ export default function QuizScreen() {
         {question?.options.map((opt, idx) => (
           <button
             key={idx}
-            disabled={revealed}
-            onClick={() => setSelected(idx)}
+            type="button"
+            disabled={revealed || checking}
+            onClick={() => handleOptionClick(idx)}
             className={`w-full neo-border neo-shadow rounded-lg p-4 flex items-center gap-3 text-left transition-all cursor-pointer ${!revealed ? "active:neo-shadow-pressed" : ""} ${getOptionStyle(idx)}`}
           >
             <span className="neo-border rounded-full w-8 h-8 flex items-center justify-center font-heading font-bold text-xs bg-background text-foreground shrink-0">
@@ -297,20 +349,14 @@ export default function QuizScreen() {
       )}
 
       <div className="mt-5">
-        {!revealed ? (
-          <NeoButton
-            variant="primary"
-            size="full"
-            disabled={selected === null || checking}
-            onClick={handleCheck}
-          >
-            {checking ? "Checking..." : "Check Answer"}
-          </NeoButton>
-        ) : (
-          <NeoButton variant="primary" size="full" onClick={handleContinue}>
-            {questionNum >= MAX_QUESTIONS ? "See Results" : "Continue"}
-          </NeoButton>
-        )}
+        <NeoButton
+          variant="primary"
+          size="full"
+          disabled={selected === null || checking || revealed}
+          onClick={() => handleCheck()}
+        >
+          {checking ? "Checking..." : revealed ? "Next question loading..." : "Check Answer"}
+        </NeoButton>
       </div>
 
       {zoomImage && (

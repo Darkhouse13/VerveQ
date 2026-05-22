@@ -139,8 +139,10 @@ async function getOrCreateDailyQuizChallenge(
     selected.push(question);
   }
 
-  if (selected.length === 0) {
-    throw new Error(`No daily quiz questions available for ${sport}`);
+  if (selected.length < DAILY_QUIZ_COUNT) {
+    throw new Error(
+      `Not enough daily quiz questions available for ${sport}: ${selected.length}/${DAILY_QUIZ_COUNT}`,
+    );
   }
 
   const id = await ctx.db.insert("dailyChallenges", {
@@ -229,6 +231,12 @@ export const getOrCreateChallenge = mutation({
           imageCount++;
         }
         selected.push(q);
+      }
+
+      if (selected.length < DAILY_QUIZ_COUNT) {
+        throw new Error(
+          `Not enough daily quiz questions available for ${sport}: ${selected.length}/${DAILY_QUIZ_COUNT}`,
+        );
       }
 
       questionChecksums = selected.map((q) => q.checksum);
@@ -510,7 +518,7 @@ export const submitAnswer = mutation({
     }
 
     const results = attempt.results || [];
-    if (questionIndex !== results.length) {
+    if (questionIndex > results.length) {
       throw new Error("Out-of-order question submission");
     }
 
@@ -538,6 +546,23 @@ export const submitAnswer = mutation({
           .first();
     if (!snapshot && !liveQuestion) throw new Error("Question not found");
     const question = snapshot ?? snapshotQuestion(liveQuestion);
+
+    if (questionIndex < results.length) {
+      const previous = results[questionIndex];
+      if (!previous) throw new Error("Previous answer result not found");
+      const totalScore = results.reduce(
+        (sum: number, r: { score: number }) => sum + r.score,
+        0,
+      );
+      return {
+        correct: previous.correct,
+        score: previous.score,
+        totalScore,
+        timeTaken: previous.timeTaken,
+        correctAnswer: question.correctAnswer,
+        explanation: question.explanation ?? null,
+      };
+    }
 
     const isCorrect =
       normalizeAnswer(answer) === normalizeAnswer(question.correctAnswer);

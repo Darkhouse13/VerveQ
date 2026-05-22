@@ -319,7 +319,7 @@ describe("weekend stabilization profile", () => {
 });
 
 describe("weekend stabilization user profiles", () => {
-  it("repairs existing anonymous profiles that already have a username but no isGuest flag", async () => {
+  it("rejects anonymous guest profile writes because guests are tab-local only", async () => {
     const patch = vi.fn();
     const ctx = {
       db: {
@@ -338,18 +338,15 @@ describe("weekend stabilization user profiles", () => {
       },
     };
 
-    const result = await handlerOf(users.ensureProfile)(ctx, {
-      username: "guest_456",
-      displayName: "Guest",
-      isGuest: true,
-    });
+    await expect(
+      handlerOf(users.ensureProfile)(ctx, {
+        username: "guest_456",
+        displayName: "Guest",
+        isGuest: true,
+      }),
+    ).rejects.toThrow(/guest sessions are temporary/i);
 
-    expect(result).toBe("stub_user");
-    expect(patch).toHaveBeenCalledWith("stub_user", {
-      displayName: "Guest",
-      isGuest: true,
-      totalGames: 0,
-    });
+    expect(patch).not.toHaveBeenCalled();
   });
 });
 

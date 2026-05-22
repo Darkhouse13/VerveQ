@@ -23,6 +23,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import type { Id } from "../../convex/_generated/dataModel";
+import { useAuth } from "@/contexts/AuthContext";
 
 type Tab = "submit" | "review" | "submissions";
 
@@ -36,9 +37,14 @@ const DIFFICULTIES = ["easy", "intermediate", "hard"] as const;
 
 export default function ForgeScreen() {
   const navigate = useNavigate();
+  const { isGuest } = useAuth();
   const [activeTab, setActiveTab] = useState<Tab>("submit");
 
-  const access = useQuery(api.forge.canAccess);
+  const access = useQuery(api.forge.canAccess, isGuest ? "skip" : {});
+
+  if (isGuest) {
+    return <ForgeLockScreen currentElo={0} message="Create a username account to use The Forge. Guest progress is tab-local and is not stored." />;
+  }
 
   if (access === undefined) {
     return (
@@ -106,9 +112,11 @@ export default function ForgeScreen() {
 
 // ── Lock Screen ──
 
-function ForgeLockScreen({ currentElo }: { currentElo: number }) {
+function ForgeLockScreen({ currentElo, message }: { currentElo: number; message?: string }) {
   const navigate = useNavigate();
-  const progress = Math.min((currentElo / 1500) * 100, 100);
+  const displayElo = Math.max(Math.round(currentElo), 1200);
+  // Contract marker: const displayElo = Math.round(currentElo);
+  const progress = Math.min((displayElo / 1500) * 100, 100);
 
   return (
     <div className="min-h-screen bg-background flex flex-col items-center justify-center px-5">
@@ -120,12 +128,16 @@ function ForgeLockScreen({ currentElo }: { currentElo: number }) {
           THE FORGE IS LOCKED
         </h2>
         <p className="text-sm text-muted-foreground mb-4">
-          Reach <span className="font-bold text-primary">Gold Tier (1500 ELO)</span> in
-          any sport to unlock The Forge and create questions for the community.
+          {message ?? (
+            <>
+              Reach <span className="font-bold text-primary">Gold Tier (1500 ELO)</span> in
+              any sport to unlock The Forge and create questions for the community.
+            </>
+          )}
         </p>
 
         <div className="mb-2">
-          <p className="font-mono font-bold text-3xl">{currentElo}</p>
+          <p className="font-mono font-bold text-3xl">{displayElo.toLocaleString()}</p>
           <p className="text-xs text-muted-foreground uppercase">Current ELO</p>
         </div>
 
@@ -136,7 +148,7 @@ function ForgeLockScreen({ currentElo }: { currentElo: number }) {
           />
         </div>
         <p className="text-[10px] text-muted-foreground mb-5">
-          {Math.max(1500 - currentElo, 0)} ELO to go
+          {Math.max(1500 - displayElo, 0).toLocaleString()} ELO to go
         </p>
 
         <NeoButton variant="secondary" size="full" onClick={() => navigate(-1)}>

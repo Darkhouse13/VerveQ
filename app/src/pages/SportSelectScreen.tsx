@@ -2,7 +2,8 @@ import { useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { NeoCard } from "@/components/neo/NeoCard";
 import { NeoButton } from "@/components/neo/NeoButton";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Lock } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
 
 const sportMeta: Record<string, { emoji: string; color: "success" | "accent" | "primary" }> = {
   football:   { emoji: "\u26BD", color: "success" },
@@ -12,6 +13,7 @@ const sportMeta: Record<string, { emoji: string; color: "success" | "accent" | "
 
 export default function SportSelectScreen() {
   const navigate = useNavigate();
+  const { isGuest } = useAuth();
   const [params] = useSearchParams();
   const mode = params.get("mode") || "quiz";
   const isHigherLowerMode = mode === "higher-lower";
@@ -30,6 +32,29 @@ export default function SportSelectScreen() {
       : isWhoAmIMode
         ? "Who Am I is currently available for football only"
       : "Choose your arena";
+
+  if (isGuest) {
+    return (
+      <div className="min-h-screen bg-background px-5 py-6">
+        <button
+          onClick={() => navigate(-1)}
+          className="neo-border neo-shadow rounded-lg p-2 bg-background mb-6 cursor-pointer active:neo-shadow-pressed transition-all"
+        >
+          <ArrowLeft size={20} strokeWidth={2.5} />
+        </button>
+        <div className="neo-border neo-shadow rounded-2xl bg-card p-6 text-center mt-12">
+          <Lock size={34} strokeWidth={2.5} className="mx-auto mb-3" />
+          <h1 className="text-2xl font-heading font-bold mb-2">Username required</h1>
+          <p className="text-sm text-muted-foreground mb-5">
+            Guest play is temporary and tab-local. Create a username account before entering modes that write sessions, ELO, daily attempts, challenges, or Forge progress.
+          </p>
+          <NeoButton variant="primary" size="full" onClick={() => navigate("/?mode=signup&from=guest")}>
+            Create Account
+          </NeoButton>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background px-5 py-6">
@@ -68,7 +93,9 @@ export default function SportSelectScreen() {
           size="full"
           disabled={!selected}
           onClick={() => {
-            if (mode === "blitz") {
+            if (mode === "daily-quiz") {
+              navigate(`/daily-quiz?sport=${selected}`);
+            } else if (mode === "blitz") {
               navigate(`/blitz?sport=${selected}`);
             } else if (mode === "survival") {
               navigate(`/survival?sport=${selected}`);

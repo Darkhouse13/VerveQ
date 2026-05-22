@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { useMutation } from "convex/react";
+import { useMutation, useQuery } from "convex/react";
 import { api } from "../../convex/_generated/api";
 import type { Id } from "../../convex/_generated/dataModel";
 import { NeoCard } from "@/components/neo/NeoCard";
@@ -14,6 +14,42 @@ import { toast } from "sonner";
 
 const SUPPORTED_WHO_AM_I_SPORTS = new Set(["football"]);
 const START_CHALLENGE_TIMEOUT_MS = 8000;
+const WHO_AM_I_PLAYER_SEARCH_MIN_QUERY_LENGTH = 3;
+
+type GuessFeedback = {
+  guessedPlayerName: string;
+  nationality: "correct" | "incorrect" | "unknown";
+  position: "correct" | "incorrect" | "unknown";
+  team: "correct" | "incorrect" | "unknown";
+};
+
+type GuessHistoryItem = {
+  guessName: string;
+  correct: boolean;
+  closeCall: boolean;
+  scoreAfter: number;
+  feedback?: GuessFeedback;
+};
+
+function feedbackLabel(value: GuessFeedback[keyof Omit<GuessFeedback, "guessedPlayerName">]) {
+  if (value === "correct") return "✓";
+  if (value === "incorrect") return "×";
+  return "?";
+}
+
+function feedbackColor(value: GuessFeedback[keyof Omit<GuessFeedback, "guessedPlayerName">]) {
+  if (value === "correct") return "text-green-700";
+  if (value === "incorrect") return "text-destructive";
+  return "text-muted-foreground";
+}
+
+type PlayerSuggestion = {
+  playerId: string;
+  name: string;
+  nationality?: string;
+  team?: string;
+  position?: string;
+};
 
 function withTimeout<T>(promise: Promise<T>, timeoutMs: number): Promise<T> {
   return new Promise((resolve, reject) => {
@@ -37,6 +73,7 @@ export default function WhoAmIScreen() {
   const navigate = useNavigate();
   const [params] = useSearchParams();
   const sport = params.get("sport") || "football";
+  const hardMode = params.get("hardMode") === "true";
 
   const startChallengeMut = useMutation(api.whoAmI.startChallenge);
   const revealNextClueMut = useMutation(api.whoAmI.revealNextClue);
@@ -49,7 +86,11 @@ export default function WhoAmIScreen() {
   const [currentStage, setCurrentStage] = useState(1);
   const [score, setScore] = useState(1000);
   const [difficulty, setDifficulty] = useState("");
+  const [maxGuesses, setMaxGuesses] = useState(6);
+  const [wrongGuessCount, setWrongGuessCount] = useState(0);
+  const [guessHistory, setGuessHistory] = useState<GuessHistoryItem[]>([]);
   const [guess, setGuess] = useState("");
+  const [selectedPlayerId, setSelectedPlayerId] = useState<string | null>(null);
   const [gameOver, setGameOver] = useState(false);
   const [result, setResult] = useState<{
     correct: boolean;
@@ -66,6 +107,14 @@ export default function WhoAmIScreen() {
   const [submitting, setSubmitting] = useState(false);
 
   const inputRef = useRef<HTMLInputElement>(null);
+  const trimmedGuess = guess.trim();
+  const playerSuggestions = (useQuery(
+    api.whoAmIPlayerSearch.searchPlayers,
+    trimmedGuess.length >= WHO_AM_I_PLAYER_SEARCH_MIN_QUERY_LENGTH
+      ? { sport, query: trimmedGuess, limit: 6 }
+      : "skip",
+  ) ?? []) as PlayerSuggestion[];
+  const selectedSuggestion = playerSuggestions.find((player) => player.playerId === selectedPlayerId);
 
   const startGame = useCallback(async () => {
     setLoading(true);
@@ -84,13 +133,17 @@ export default function WhoAmIScreen() {
     }
 
     try {
-      const res = await withTimeout(startChallengeMut({ sport }), START_CHALLENGE_TIMEOUT_MS);
+      const res = await withTimeout(startChallengeMut({ sport, hardMode }), START_CHALLENGE_TIMEOUT_MS);
       setSessionId(res.sessionId);
       setClues([res.clue1]);
       setCurrentStage(res.currentStage);
       setScore(res.score);
       setDifficulty(res.difficulty);
+      setMaxGuesses(res.maxGuesses ?? 6);
+      setWrongGuessCount(res.wrongGuessCount ?? 0);
+      setGuessHistory(res.guesses ?? []);
       setGuess("");
+      setSelectedPlayerId(null);
       setGameOver(false);
       setResult(null);
       setCloseCallShake(false);
@@ -106,7 +159,7 @@ export default function WhoAmIScreen() {
     } finally {
       setLoading(false);
     }
-  }, [startChallengeMut, sport]);
+  }, [startChallengeMut, sport, hardMode]);
 
   useEffect(() => {
     startGame();
@@ -143,24 +196,40 @@ export default function WhoAmIScreen() {
   };
 
   const handleSubmitGuess = async () => {
-    if (!sessionId || !guess.trim() || submitting || gameOver) return;
+    const submittedGuess = selectedSuggestion?.name ?? guess.trim();
+    if (!sessionId || !submittedGuess || submitting || gameOver) return;
     setSubmitting(true);
     try {
-      const res = await submitGuessMut({ sessionId, guess: guess.trim() });
+      const res = await submitGuessMut({ sessionId, guess: submittedGuess });
 
       if (res.closeCall) {
+        setScore(res.score);
+        setWrongGuessCount(res.wrongGuessCount ?? wrongGuessCount);
+        setMaxGuesses(res.maxGuesses ?? maxGuesses);
+        setGuessHistory(res.guesses ?? guessHistory);
         setCloseCallShake(true);
         setTimeout(() => setCloseCallShake(false), 600);
+        setSelectedPlayerId(null);
         setSubmitting(false);
         return;
       }
 
+      setScore(res.score);
+      setWrongGuessCount(res.wrongGuessCount ?? wrongGuessCount);
+      setMaxGuesses(res.maxGuesses ?? maxGuesses);
+      setGuessHistory(res.guesses ?? guessHistory);
       setResult({
         correct: res.correct,
         answerName: res.answerName,
         score: res.score,
       });
-      setGameOver(true);
+      setGuess("");
+      setSelectedPlayerId(null);
+      if (res.gameOver) {
+        setGameOver(true);
+      } else {
+        toast.error(`Wrong — ${Math.max(0, (res.maxGuesses ?? maxGuesses) - (res.wrongGuessCount ?? wrongGuessCount))} guesses left`);
+      }
     } catch (err) {
       console.error("Submit error:", err);
     } finally {
@@ -256,7 +325,7 @@ export default function WhoAmIScreen() {
       <div className="text-center mb-5">
         <h2 className="font-heading font-bold text-2xl">Who Am I?</h2>
         <p className="text-xs text-muted-foreground mt-1">
-          Curated football clue sets
+          {hardMode ? "Hard mode: clue-only football set" : "Curated football clue sets"}
         </p>
         <div className="flex items-center justify-center gap-2 mt-1">
           <NeoBadge
@@ -266,10 +335,30 @@ export default function WhoAmIScreen() {
             {difficulty}
           </NeoBadge>
           <p className="text-xs text-muted-foreground">
-            Clue {currentStage}/4
+            Clue {currentStage}/4 · Guesses {wrongGuessCount}/{maxGuesses}
           </p>
         </div>
       </div>
+
+
+      {!hardMode && (
+        <NeoCard color="accent" className="mb-4 overflow-hidden">
+          <div className="h-28 neo-border bg-gradient-to-br from-emerald-950 via-green-800 to-yellow-500 flex items-center justify-center relative">
+            <div className="absolute inset-0 backdrop-blur-md" />
+            <div className="relative neo-border rounded-full bg-background/80 w-20 h-20 flex items-center justify-center blur-[1px]">
+              <User size={42} />
+            </div>
+          </div>
+          <p className="font-body text-xs text-muted-foreground mt-2">Blurred visual hook — identify the player from clues and deduction.</p>
+        </NeoCard>
+      )}
+
+      {hardMode && (
+        <NeoCard color="default" className="mb-4 text-center py-3">
+          <p className="font-heading font-bold text-sm">Hard Mode</p>
+          <p className="font-body text-xs text-muted-foreground">No visual aid. Pure clue deduction.</p>
+        </NeoCard>
+      )}
 
       {/* Clue stack */}
       <div className="space-y-3 flex-1">
@@ -317,22 +406,78 @@ export default function WhoAmIScreen() {
             </div>
           )}
 
+
+          {guessHistory.some((item) => item.feedback) && (
+            <NeoCard color="default" className="p-3" data-testid="whoami-deduction-feedback">
+              <p className="font-heading font-bold text-xs mb-2">Deduction board</p>
+              <div className="space-y-2">
+                {guessHistory.filter((item) => item.feedback).map((item, index) => (
+                  <div key={`${item.guessName}-${index}`} className="neo-border rounded-md bg-background p-2">
+                    <div className="flex items-center justify-between gap-2">
+                      <p className="font-heading font-bold text-xs truncate">{item.guessName}</p>
+                      <p className="font-mono text-[10px]">{item.scoreAfter} pts</p>
+                    </div>
+                    <div className="grid grid-cols-3 gap-2 mt-2 text-[11px] font-mono">
+                      <span className={feedbackColor(item.feedback!.nationality)}>Nation {feedbackLabel(item.feedback!.nationality)}</span>
+                      <span className={feedbackColor(item.feedback!.position)}>Pos {feedbackLabel(item.feedback!.position)}</span>
+                      <span className={feedbackColor(item.feedback!.team)}>Club {feedbackLabel(item.feedback!.team)}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </NeoCard>
+          )}
+
           {/* Guess input */}
           <NeoInput
             ref={inputRef}
             placeholder="Enter player name..."
             value={guess}
-            onChange={(e) => setGuess(e.target.value)}
+            onChange={(e) => {
+              setGuess(e.target.value);
+              setSelectedPlayerId(null);
+            }}
             onKeyDown={(e) => e.key === "Enter" && handleSubmitGuess()}
             className={closeCallShake ? "animate-shake-horizontal" : ""}
           />
+
+          <div className="min-h-6" data-testid="whoami-player-autocomplete">
+            {trimmedGuess.length > 0 && trimmedGuess.length < WHO_AM_I_PLAYER_SEARCH_MIN_QUERY_LENGTH && (
+              <p className="text-xs text-muted-foreground font-body">Type at least 3 letters for player suggestions.</p>
+            )}
+
+            {playerSuggestions.length > 0 && (
+              <div className="mt-2 neo-border bg-card rounded-lg overflow-hidden divide-y divide-border">
+                {playerSuggestions.map((player) => (
+                  <button
+                    key={player.playerId}
+                    type="button"
+                    className={`w-full text-left px-3 py-2 transition-colors ${
+                      selectedPlayerId === player.playerId ? "bg-primary text-primary-foreground" : "bg-card hover:bg-muted"
+                    }`}
+                    onMouseDown={(event) => event.preventDefault()}
+                    onClick={() => {
+                      setGuess(player.name);
+                      setSelectedPlayerId(player.playerId);
+                      inputRef.current?.focus();
+                    }}
+                  >
+                    <p className="font-heading font-bold text-sm">{player.name}</p>
+                    <p className="font-body text-[11px] opacity-80">
+                      {[player.position, player.nationality, player.team].filter(Boolean).join(" · ")}
+                    </p>
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
 
           <div className="grid grid-cols-2 gap-3">
             <NeoButton
               variant="primary"
               size="lg"
               onClick={handleSubmitGuess}
-              disabled={!guess.trim() || submitting}
+              disabled={!trimmedGuess || submitting}
             >
               <User size={16} className="mr-1" />
               {submitting ? "Checking..." : "Guess"}

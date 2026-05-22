@@ -14,6 +14,7 @@ import { toast } from "sonner";
 import type { Id } from "../../convex/_generated/dataModel";
 
 const MAX_QUESTIONS = 10;
+const AUTO_ADVANCE_DELAY_MS = 2000;
 
 interface QuestionData {
   question: string;
@@ -46,24 +47,26 @@ export default function DailyQuizScreen() {
   const [loading, setLoading] = useState(true);
   const [checking, setChecking] = useState(false);
   const [forfeited, setForfeited] = useState(false);
+  const [attemptFinished, setAttemptFinished] = useState(false);
   const [zoomImage, setZoomImage] = useState<string | null>(null);
   const [revealedAnswer, setRevealedAnswer] = useState<string | null>(null);
 
   const startTime = useRef(Date.now());
+  const lastDailyQuestionKey = useRef<string | null>(null);
+  const answerSubmitInFlight = useRef(false);
+  const autoAdvanceInFlight = useRef(false);
+  const autoAdvanceTimeoutRef = useRef<number | null>(null);
 
   const getOrCreateChallengeMut = useMutation(api.dailyChallenge.getOrCreateChallenge);
   const startAttemptMut = useMutation(api.dailyChallenge.startAttempt);
   const dailyQuestion = useQuery(
     api.dailyChallenge.getQuestion,
-    attemptId && questionNum < MAX_QUESTIONS
-      ? { attemptId, questionIndex: questionNum }
-      : "skip",
+    attemptId && !attemptFinished && questionNum < MAX_QUESTIONS ? { attemptId, questionIndex: questionNum } : "skip",
   );
   const submitAnswerMut = useMutation(api.dailyChallenge.submitAnswer);
   const forfeitMut = useMutation(api.dailyChallenge.forfeit);
   const completeAttemptMut = useMutation(api.dailyChallenge.completeAttempt);
 
-  // Initialize
   useEffect(() => {
     (async () => {
       try {
@@ -86,35 +89,31 @@ export default function DailyQuizScreen() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Load question from query
   useEffect(() => {
     if (dailyQuestion && !forfeited) {
+      const questionKey = `${questionNum}:${dailyQuestion.checksum}`;
+      if (lastDailyQuestionKey.current === questionKey) return;
+      lastDailyQuestionKey.current = questionKey;
       setQuestion(dailyQuestion);
       setRevealedAnswer(null);
       setSelected(null);
       setRevealed(false);
       setCheckResult(null);
       startTime.current = dailyQuestion.questionStartedAt ?? Date.now();
-      setTimer(
-        Math.max(0, Math.floor((Date.now() - startTime.current) / 1000)),
-      );
+      setTimer(Math.max(0, Math.floor((Date.now() - startTime.current) / 1000)));
     }
-  }, [dailyQuestion, forfeited]);
+  }, [dailyQuestion, forfeited, questionNum]);
 
-  // Timer
   useEffect(() => {
     if (revealed || loading || !question) return;
     const updateTimer = () => {
-      setTimer(
-        Math.max(0, Math.floor((Date.now() - startTime.current) / 1000)),
-      );
+      setTimer(Math.max(0, Math.floor((Date.now() - startTime.current) / 1000)));
     };
     updateTimer();
     const id = setInterval(updateTimer, 250);
     return () => clearInterval(id);
   }, [revealed, loading, question]);
 
-  // Anti-cheat
   useAntiCheat(
     useCallback(() => {
       if (attemptId && !forfeited) {
@@ -128,13 +127,22 @@ export default function DailyQuizScreen() {
     { warningMessage: "Don't switch tabs — daily challenge will be forfeited" },
   );
 
-  const handleCheck = async () => {
-    if (selected === null || !question || !attemptId) return;
+  const handleCheck = async (optionIndex: number | null = selected) => {
+    if (
+      optionIndex === null ||
+      !question ||
+      !attemptId ||
+      checking ||
+      answerSubmitInFlight.current ||
+      revealed
+    ) return;
+    answerSubmitInFlight.current = true;
+    setSelected(optionIndex);
     setChecking(true);
     try {
       const res = await submitAnswerMut({
         attemptId,
-        answer: question.options[selected],
+        answer: question.options[optionIndex],
         questionIndex: questionNum,
       });
       setRevealedAnswer(res.correctAnswer);
@@ -150,69 +158,94 @@ export default function DailyQuizScreen() {
         ...r,
         { correct: res.correct, timeTaken: res.timeTaken, score: res.score },
       ]);
-    } catch {
-      toast.error("Failed to check answer");
+    } catch (error) {
+      console.error("Daily challenge answer check failed", error);
+      const message = error instanceof Error ? error.message : "Failed to check answer";
+      toast.error(message || "Failed to check answer");
     } finally {
+      answerSubmitInFlight.current = false;
       setChecking(false);
     }
   };
 
-  const handleContinue = async () => {
-    if (questionNum + 1 >= MAX_QUESTIONS) {
-      // Complete
-      if (attemptId) {
-        try {
-          await completeAttemptMut({ attemptId });
-        } catch {
-          /* continue to results */
-        }
-      }
-      const finalResults =
-        results.length > questionNum || !checkResult
-          ? results
-          : [
-              ...results,
-              {
-                correct: checkResult.correct,
-                timeTaken: checkResult.timeTaken,
-                score: checkResult.score,
-              },
-            ];
-      // Build share string
-      const shareEmojis = finalResults
-        .map((r) => {
-          if (!r.correct) return "\uD83D\uDFE5"; // red
-          if (r.timeTaken <= 3) return "\uD83D\uDFE9"; // green (fast)
-          return "\uD83D\uDFE8"; // yellow (slow)
-        })
-        .join("");
-
-      navigate("/daily-results", {
-        state: {
-          score: totalScore,
-          total: MAX_QUESTIONS,
-          correctCount: finalResults.filter((r) => r.correct).length,
-          sport,
-          shareString: shareEmojis,
-          mode: "daily-quiz" as const,
-          scoreBreakdown: finalResults,
-        },
-      });
-    } else {
-      setQuestionNum((n) => n + 1);
-    }
+  const handleOptionClick = (idx: number) => {
+    if (revealed || checking) return;
+    setSelected(idx);
   };
 
-  const correctIdx =
-    question && revealedAnswer
-      ? question.options.indexOf(revealedAnswer)
-      : -1;
+  const advanceAfterReveal = useCallback(async () => {
+    if (autoAdvanceInFlight.current || !revealed) return;
+    autoAdvanceInFlight.current = true;
+    try {
+      if (questionNum + 1 >= MAX_QUESTIONS) {
+        if (attemptId) {
+          try {
+            await completeAttemptMut({ attemptId });
+          } catch {
+            /* continue to results */
+          }
+        }
+        setAttemptFinished(true);
+        setAttemptId(null);
+        const finalResults =
+          results.length > questionNum || !checkResult
+            ? results
+            : [
+                ...results,
+                {
+                  correct: checkResult.correct,
+                  timeTaken: checkResult.timeTaken,
+                  score: checkResult.score,
+                },
+              ];
+        const shareEmojis = finalResults
+          .map((r) => {
+            if (!r.correct) return "🟥";
+            if (r.timeTaken <= 3) return "🟩";
+            return "🟨";
+          })
+          .join("");
+
+        navigate("/daily-results", {
+          state: {
+            score: totalScore,
+            total: MAX_QUESTIONS,
+            correctCount: finalResults.filter((r) => r.correct).length,
+            sport,
+            shareString: shareEmojis,
+            mode: "daily-quiz" as const,
+            scoreBreakdown: finalResults,
+          },
+        });
+      } else {
+        setQuestionNum((n) => n + 1);
+      }
+    } finally {
+      autoAdvanceInFlight.current = false;
+    }
+  }, [attemptId, checkResult, completeAttemptMut, navigate, questionNum, results, revealed, sport, totalScore]);
+
+  useEffect(() => {
+    if (!revealed) return;
+    if (autoAdvanceTimeoutRef.current !== null) {
+      window.clearTimeout(autoAdvanceTimeoutRef.current);
+    }
+    autoAdvanceTimeoutRef.current = window.setTimeout(() => {
+      autoAdvanceTimeoutRef.current = null;
+      void advanceAfterReveal();
+    }, AUTO_ADVANCE_DELAY_MS);
+    return () => {
+      if (autoAdvanceTimeoutRef.current !== null) {
+        window.clearTimeout(autoAdvanceTimeoutRef.current);
+        autoAdvanceTimeoutRef.current = null;
+      }
+    };
+  }, [advanceAfterReveal, revealed]);
+
+  const correctIdx = question && revealedAnswer ? question.options.indexOf(revealedAnswer) : -1;
 
   const getOptionStyle = (idx: number) => {
-    if (!revealed)
-      return selected === idx
-        ? "bg-primary text-primary-foreground"
-        : "bg-card text-card-foreground";
+    if (!revealed) return selected === idx ? "bg-primary text-primary-foreground" : "bg-card text-card-foreground";
     if (idx === correctIdx) return "bg-success text-success-foreground";
     if (idx === selected) return "bg-destructive text-destructive-foreground";
     return "bg-muted text-muted-foreground opacity-50";
@@ -221,9 +254,7 @@ export default function DailyQuizScreen() {
   if (loading || !question) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
-        <p className="font-heading font-bold text-lg animate-pulse">
-          Loading daily challenge...
-        </p>
+        <p className="font-heading font-bold text-lg animate-pulse">Loading daily challenge...</p>
       </div>
     );
   }
@@ -238,55 +269,43 @@ export default function DailyQuizScreen() {
         <ExitGameButton
           title="Quit daily challenge?"
           description="Quitting will forfeit today's daily — you can't retry until tomorrow."
+          onConfirm={async () => {
+            if (!attemptId || forfeited) return;
+            await forfeitMut({ attemptId });
+            setForfeited(true);
+          }}
         />
-        <p className="font-mono font-bold text-lg">
-          {timerMinutes}:{timerSeconds.toString().padStart(2, "0")}
-        </p>
+        <p className="font-mono font-bold text-lg">{timerMinutes}:{timerSeconds.toString().padStart(2, "0")}</p>
       </div>
       <div className="flex items-center justify-between mb-5">
         <p className="font-mono font-bold text-sm">Score: {totalScore}</p>
-        <p className="font-heading font-bold text-sm">
-          Q {questionNum + 1}/{MAX_QUESTIONS}
-        </p>
+        <p className="font-heading font-bold text-sm">Q {questionNum + 1}/{MAX_QUESTIONS}</p>
       </div>
 
       <div className="flex justify-center mb-5">
-        <NeoBadge color="pink" rotated size="md">
-          Daily Challenge
-        </NeoBadge>
+        <NeoBadge color="pink" rotated size="md">Daily Challenge</NeoBadge>
       </div>
 
       <NeoCard shadow="lg" className="mb-5">
         {question.imageUrl && (
           <div className="mb-3">
-            <QuestionImage
-              imageUrl={question.imageUrl}
-              alt={`Image for: ${question.question}`}
-              onZoom={() => setZoomImage(question.imageUrl!)}
-            />
+            <QuestionImage imageUrl={question.imageUrl} alt={`Image for: ${question.question}`} onZoom={() => setZoomImage(question.imageUrl!)} />
           </div>
         )}
-        <p className="font-heading font-bold text-xl leading-tight">
-          {question.question}
-        </p>
+        <p className="font-heading font-bold text-xl leading-tight">{question.question}</p>
       </NeoCard>
 
       <div className="space-y-2.5 flex-1">
         {question.options.map((opt, idx) => (
           <button
             key={idx}
-            disabled={revealed}
-            onClick={() => setSelected(idx)}
+            type="button"
+            disabled={revealed || checking}
+            onClick={() => handleOptionClick(idx)}
             className={`w-full neo-border neo-shadow rounded-lg p-4 flex items-center gap-3 text-left transition-all cursor-pointer ${!revealed ? "active:neo-shadow-pressed" : ""} ${getOptionStyle(idx)}`}
           >
             <span className="neo-border rounded-full w-8 h-8 flex items-center justify-center font-heading font-bold text-xs bg-background text-foreground shrink-0">
-              {revealed && idx === correctIdx ? (
-                <Check size={16} strokeWidth={3} />
-              ) : revealed && idx === selected ? (
-                <X size={16} strokeWidth={3} />
-              ) : (
-                letters[idx]
-              )}
+              {revealed && idx === correctIdx ? <Check size={16} strokeWidth={3} /> : revealed && idx === selected ? <X size={16} strokeWidth={3} /> : letters[idx]}
             </span>
             <span className="font-heading font-bold text-sm">{opt}</span>
           </button>
@@ -294,38 +313,23 @@ export default function DailyQuizScreen() {
       </div>
 
       {revealed && checkResult?.explanation && (
-        <NeoCard
-          color={checkResult.correct ? "success" : "default"}
-          className="mt-4 text-sm leading-snug"
-        >
+        <NeoCard color={checkResult.correct ? "success" : "default"} className="mt-4 text-sm leading-snug">
           {checkResult.explanation}
         </NeoCard>
       )}
 
       <div className="mt-5">
-        {!revealed ? (
-          <NeoButton
-            variant="primary"
-            size="full"
-            disabled={selected === null || checking}
-            onClick={handleCheck}
-          >
-            {checking ? "Checking..." : "Check Answer"}
-          </NeoButton>
-        ) : (
-          <NeoButton variant="primary" size="full" onClick={handleContinue}>
-            {questionNum + 1 >= MAX_QUESTIONS ? "See Results" : "Continue"}
-          </NeoButton>
-        )}
+        <NeoButton
+          variant="primary"
+          size="full"
+          disabled={selected === null || checking || revealed}
+          onClick={() => handleCheck()}
+        >
+          {checking ? "Checking..." : revealed ? "Next question loading..." : "Check Answer"}
+        </NeoButton>
       </div>
 
-      {zoomImage && (
-        <ImageZoomModal
-          imageUrl={zoomImage}
-          open={!!zoomImage}
-          onClose={() => setZoomImage(null)}
-        />
-      )}
+      {zoomImage && <ImageZoomModal imageUrl={zoomImage} open={!!zoomImage} onClose={() => setZoomImage(null)} />}
     </div>
   );
 }

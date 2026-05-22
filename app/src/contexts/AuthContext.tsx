@@ -2,6 +2,7 @@ import {
   createContext,
   useContext,
   useCallback,
+  useState,
   type ReactNode,
 } from "react";
 import { useQuery, useMutation } from "convex/react";
@@ -80,6 +81,27 @@ export function isLegacyVerveqEmail(email: string): boolean {
 }
 
 const USERNAME_RE = /^[a-z0-9_]{3,24}$/;
+const GUEST_SESSION_KEY = "verveq_guest_session";
+const LOCAL_GUEST_USER: AuthUser = {
+  _id: "guest_tab",
+  username: "",
+  displayName: "Guest",
+  isGuest: true,
+  totalGames: 0,
+};
+
+function readTabGuestSession(): boolean {
+  return typeof window !== "undefined" && window.sessionStorage.getItem(GUEST_SESSION_KEY) === "1";
+}
+
+function setTabGuestSession(active: boolean) {
+  if (typeof window === "undefined") return;
+  if (active) {
+    window.sessionStorage.setItem(GUEST_SESSION_KEY, "1");
+  } else {
+    window.sessionStorage.removeItem(GUEST_SESSION_KEY);
+  }
+}
 
 function normalizeUsernameInput(username: string): string {
   return username.trim().toLowerCase();
@@ -144,14 +166,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const { signIn: convexSignIn, signOut: convexSignOut } = useAuthActions();
   const user = useQuery(api.users.me);
   const ensureProfile = useMutation(api.users.ensureProfile);
+  const [localGuestActive, setLocalGuestActive] = useState(readTabGuestSession);
 
-  const isLoading = user === undefined;
-  const isAuthenticated = !!user;
-  const isGuest = !!(user?.isGuest ?? user?.isAnonymous);
+  const isLoading = !localGuestActive && user === undefined;
+  const isAuthenticated = !!user || localGuestActive;
+  const isGuest = localGuestActive || !!(user?.isGuest ?? user?.isAnonymous);
 
   const ensureProfileAfterAuth = useCallback(
     async (args: { username: string; displayName?: string; isGuest: boolean }) => {
-      const delays = [0, 150, 350, 750, 1500];
+      const delays = [1000, 2000, 4000, 7000];
       let lastError: unknown;
       for (const delay of delays) {
         if (delay > 0) await wait(delay);
@@ -191,6 +214,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (!pwResult.ok && pwResult.reason) {
         throw new AuthError("weak_password", describePasswordReason(pwResult.reason));
       }
+      setTabGuestSession(false);
+      setLocalGuestActive(false);
       try {
         await convexSignIn("password", {
           email: normalized,
@@ -226,6 +251,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           "That email domain is no longer supported. Please create a new account with your real email address.",
         );
       }
+      setTabGuestSession(false);
+      setLocalGuestActive(false);
       try {
         await convexSignIn("password", {
           email: normalized,
@@ -292,40 +319,37 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   );
 
   const loginAsGuest = useCallback(async () => {
-    await convexSignIn("anonymous");
-    const guestId = `guest_${Date.now()}`;
-    await ensureProfileAfterAuth({
-      username: guestId,
-      displayName: "Guest",
-      isGuest: true,
-    });
-  }, [convexSignIn, ensureProfileAfterAuth]);
+    if (user) {
+      await convexSignOut();
+    }
+    setTabGuestSession(true);
+    setLocalGuestActive(true);
+  }, [convexSignOut, user]);
 
   const logout = useCallback(async () => {
+    setTabGuestSession(false);
+    setLocalGuestActive(false);
     await convexSignOut();
   }, [convexSignOut]);
 
   const signOutToGuest = useCallback(async () => {
     await convexSignOut();
-    await convexSignIn("anonymous");
-    const guestId = `guest_${Date.now()}`;
-    await ensureProfileAfterAuth({
-      username: guestId,
-      displayName: "Guest",
-      isGuest: true,
-    });
-  }, [convexSignOut, convexSignIn, ensureProfileAfterAuth]);
+    setTabGuestSession(true);
+    setLocalGuestActive(true);
+  }, [convexSignOut]);
 
-  const authUser: AuthUser | null = user
-    ? {
-        _id: user._id,
-        username: user.username ?? "",
-        displayName: user.displayName,
-        isGuest: user.isGuest ?? user.isAnonymous ?? false,
-        totalGames: user.totalGames ?? 0,
-        avatarUrl: user.avatarUrl,
-      }
-    : null;
+  const authUser: AuthUser | null = localGuestActive && !user
+    ? LOCAL_GUEST_USER
+    : user
+      ? {
+          _id: user._id,
+          username: user.username ?? "",
+          displayName: user.displayName,
+          isGuest: user.isGuest ?? user.isAnonymous ?? false,
+          totalGames: user.totalGames ?? 0,
+          avatarUrl: user.avatarUrl,
+        }
+      : null;
 
   return (
     <AuthContext.Provider

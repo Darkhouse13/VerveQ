@@ -1,5 +1,4 @@
 import { NeoCard } from "@/components/neo/NeoCard";
-import { NeoButton } from "@/components/neo/NeoButton";
 import { NeoBadge } from "@/components/neo/NeoBadge";
 import { NeoAvatar } from "@/components/neo/NeoAvatar";
 import { BottomNav } from "@/components/neo/BottomNav";
@@ -15,8 +14,8 @@ import type { Id } from "../../convex/_generated/dataModel";
 
 export default function HomeScreen() {
   const navigate = useNavigate();
-  const { user } = useAuth();
-  const userId = user?._id as Id<"users"> | undefined;
+  const { user, isGuest } = useAuth();
+  const userId = !isGuest && user?.username ? (user._id as Id<"users">) : undefined;
 
   const profile = useQuery(api.profile.get, userId ? { userId } : "skip");
   const userAchs = useQuery(
@@ -24,7 +23,7 @@ export default function HomeScreen() {
     userId ? { userId } : "skip",
   );
 
-  const displayName = user?.displayName || "Player";
+  const displayName = user?.username || "Player";
   const streak = profile?.stats.currentStreak ?? 0;
   const bestStreak = profile?.stats.bestStreak ?? 0;
   const totalGames = profile?.stats.totalGames ?? 0;
@@ -83,7 +82,7 @@ export default function HomeScreen() {
             <NeoCard
               color="primary"
               className="cursor-pointer"
-              onClick={() => navigate("/sport-select?mode=quiz")}
+              onClick={() => navigate("/sport-select?mode=daily-quiz")}
             >
               <Timer size={24} strokeWidth={2.5} className="mb-2" />
               <p className="font-heading font-bold text-sm">Daily Quiz</p>
@@ -122,9 +121,9 @@ export default function HomeScreen() {
                 <p className="font-heading font-bold text-lg">Quiz Mode</p>
                 <p className="text-xs opacity-80">Test your knowledge</p>
               </div>
-              <NeoButton variant="primary" size="sm">
+              <span className="neo-border font-heading font-bold uppercase tracking-wide inline-flex items-center justify-center px-3 py-1.5 text-xs rounded-md bg-primary text-primary-foreground neo-shadow select-none">
                 Play
-              </NeoButton>
+              </span>
             </NeoCard>
             <NeoCard
               shadow="lg"
@@ -146,9 +145,9 @@ export default function HomeScreen() {
                   Guess players by initials
                 </p>
               </div>
-              <NeoButton variant="primary" size="sm">
+              <span className="neo-border font-heading font-bold uppercase tracking-wide inline-flex items-center justify-center px-3 py-1.5 text-xs rounded-md bg-primary text-primary-foreground neo-shadow select-none">
                 Play
-              </NeoButton>
+              </span>
             </NeoCard>
             <NeoCard
               shadow="lg"
@@ -168,9 +167,9 @@ export default function HomeScreen() {
                   60s speed round
                 </p>
               </div>
-              <NeoButton variant="primary" size="sm">
+              <span className="neo-border font-heading font-bold uppercase tracking-wide inline-flex items-center justify-center px-3 py-1.5 text-xs rounded-md bg-primary text-primary-foreground neo-shadow select-none">
                 Play
-              </NeoButton>
+              </span>
             </NeoCard>
             <NeoCard
               shadow="lg"
@@ -192,9 +191,9 @@ export default function HomeScreen() {
                   Compare player stats
                 </p>
               </div>
-              <NeoButton variant="primary" size="sm">
+              <span className="neo-border font-heading font-bold uppercase tracking-wide inline-flex items-center justify-center px-3 py-1.5 text-xs rounded-md bg-primary text-primary-foreground neo-shadow select-none">
                 Play
-              </NeoButton>
+              </span>
             </NeoCard>
             <NeoCard
               shadow="lg"
@@ -214,9 +213,9 @@ export default function HomeScreen() {
                   Curated football 3x3 grid
                 </p>
               </div>
-              <NeoButton variant="primary" size="sm">
+              <span className="neo-border font-heading font-bold uppercase tracking-wide inline-flex items-center justify-center px-3 py-1.5 text-xs rounded-md bg-primary text-primary-foreground neo-shadow select-none">
                 Play
-              </NeoButton>
+              </span>
             </NeoCard>
             <NeoCard
               shadow="lg"
@@ -236,9 +235,9 @@ export default function HomeScreen() {
                   Curated football player clues
                 </p>
               </div>
-              <NeoButton variant="primary" size="sm">
+              <span className="neo-border font-heading font-bold uppercase tracking-wide inline-flex items-center justify-center px-3 py-1.5 text-xs rounded-md bg-primary text-primary-foreground neo-shadow select-none">
                 Play
-              </NeoButton>
+              </span>
             </NeoCard>
             <NeoCard
               shadow="lg"
@@ -258,9 +257,9 @@ export default function HomeScreen() {
                   Create & review questions
                 </p>
               </div>
-              <NeoButton variant="accent" size="sm">
+              <span className="neo-border font-heading font-bold uppercase tracking-wide inline-flex items-center justify-center px-3 py-1.5 text-xs rounded-md bg-accent text-accent-foreground neo-shadow select-none">
                 Enter
-              </NeoButton>
+              </span>
             </NeoCard>
           </div>
         </div>

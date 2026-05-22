@@ -73,7 +73,7 @@ export default function WaitingRoomScreen() {
       <div className="flex items-center gap-8 mb-8">
         {/* Me */}
         <div className="text-center">
-          <NeoAvatar name={me.displayName} size="lg" />
+          <NeoAvatar name={me.username} size="lg" />
           <p className="font-heading font-bold text-sm mt-2">{me.username}</p>
           <p className="text-xs text-muted-foreground mt-1">
             {myReady ? "Ready!" : "Not ready"}
@@ -86,7 +86,7 @@ export default function WaitingRoomScreen() {
 
         {/* Opponent */}
         <div className="text-center">
-          <NeoAvatar name={opponent.displayName} size="lg" />
+          <NeoAvatar name={opponent.username} size="lg" />
           <p className="font-heading font-bold text-sm mt-2">
             {opponent.username}
           </p>

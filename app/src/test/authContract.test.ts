@@ -377,9 +377,10 @@ describe("AuthError", () => {
 });
 
 describe("AuthContext.signOutToGuest", () => {
-  it("signs out, then signs in anonymously, then writes a guest profile", async () => {
+  it("signs out, then enters a tab-local guest session without profile writes", async () => {
     const ensureProfile = vi.fn(async () => "user_id");
     authMock.useMutation.mockReturnValue(ensureProfile);
+    window.sessionStorage.clear();
 
     const { result } = renderHook(() => useAuth(), { wrapper });
     await act(async () => {
@@ -387,34 +388,32 @@ describe("AuthContext.signOutToGuest", () => {
     });
 
     expect(authMock.signOut).toHaveBeenCalledTimes(1);
-    expect(authMock.signIn).toHaveBeenCalledTimes(1);
-    expect(authMock.signIn.mock.calls[0][0]).toBe("anonymous");
-
-    expect(ensureProfile).toHaveBeenCalledTimes(1);
-    const [[args]] = ensureProfile.mock.calls as unknown as Array<[
-      Record<string, unknown>,
-    ]>;
-    expect(args.isGuest).toBe(true);
-    expect(args.displayName).toBe("Guest");
-    expect(String(args.username)).toMatch(/^guest_\d+$/);
+    expect(authMock.signIn).not.toHaveBeenCalled();
+    expect(ensureProfile).not.toHaveBeenCalled();
+    expect(result.current.isGuest).toBe(true);
+    expect(window.sessionStorage.getItem("verveq_guest_session")).toBe("1");
   });
 
-  it("orders signOut before signIn(anonymous)", async () => {
+  it("orders signOut before enabling the local guest session", async () => {
     const order: string[] = [];
     authMock.signOut.mockImplementationOnce(async () => {
       order.push("signOut");
     });
-    authMock.signIn.mockImplementationOnce(async (provider: unknown) => {
-      order.push(`signIn:${String(provider)}`);
-      return { signingIn: true };
-    });
+    const originalSetItem = window.sessionStorage.setItem.bind(window.sessionStorage);
+    const setItemSpy = vi
+      .spyOn(Storage.prototype, "setItem")
+      .mockImplementation((key: string, value: string) => {
+        order.push(`session:${key}`);
+        return originalSetItem(key, value);
+      });
 
     const { result } = renderHook(() => useAuth(), { wrapper });
     await act(async () => {
       await result.current.signOutToGuest();
     });
 
-    expect(order).toEqual(["signOut", "signIn:anonymous"]);
+    expect(order).toEqual(["signOut", "session:verveq_guest_session"]);
+    setItemSpy.mockRestore();
   });
 
   it("keeps the original logout() method on the context surface", async () => {
@@ -423,8 +422,53 @@ describe("AuthContext.signOutToGuest", () => {
     await act(async () => {
       await result.current.logout();
     });
-    expect(authMock.signOut).toHaveBeenCalled();
-    // logout alone does NOT re-sign-in.
+    expect(authMock.signOut).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe("AuthContext temporary guest policy", () => {
+  it("creates a tab-local guest without Convex anonymous sign-in or profile writes", async () => {
+    const ensureProfile = vi.fn(async () => "user_id");
+    authMock.useMutation.mockReturnValue(ensureProfile);
+    window.sessionStorage.clear();
+
+    const { result } = renderHook(() => useAuth(), { wrapper });
+
+    await act(async () => {
+      await result.current.loginAsGuest();
+    });
+
     expect(authMock.signIn).not.toHaveBeenCalled();
+    expect(ensureProfile).not.toHaveBeenCalled();
+    expect(result.current.isAuthenticated).toBe(true);
+    expect(result.current.isGuest).toBe(true);
+    expect(result.current.user).toMatchObject({
+      _id: "guest_tab",
+      username: "",
+      displayName: "Guest",
+      isGuest: true,
+      totalGames: 0,
+    });
+    expect(window.sessionStorage.getItem("verveq_guest_session")).toBe("1");
+  });
+
+  it("clears tab-local guest state before creating a real username account", async () => {
+    window.sessionStorage.setItem("verveq_guest_session", "1");
+    const ensureProfile = vi.fn(async () => "user_id");
+    authMock.useMutation.mockReturnValue(ensureProfile);
+
+    const { result } = renderHook(() => useAuth(), { wrapper });
+    expect(result.current.isGuest).toBe(true);
+
+    await act(async () => {
+      await result.current.signUp("alice@example.com", "Zq7$mnPkL9#r", "alice", "Alice");
+    });
+
+    expect(window.sessionStorage.getItem("verveq_guest_session")).toBeNull();
+    expect(ensureProfile).toHaveBeenCalledWith({
+      username: "alice",
+      displayName: "Alice",
+      isGuest: false,
+    });
   });
 });

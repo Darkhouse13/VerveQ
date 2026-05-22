@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useMutation } from "convex/react";
 import { api } from "../../convex/_generated/api";
@@ -78,6 +78,7 @@ export default function HigherLowerScreen() {
   const [endReason, setEndReason] = useState<string | null>(null);
   const [animating, setAnimating] = useState(false);
   const [pendingGuess, setPendingGuess] = useState<"higher" | "lower" | null>(null);
+  const guessInFlight = useRef(false);
   const [shakeB, setShakeB] = useState(false);
   const [slideIn, setSlideIn] = useState(false);
   const [startupState, setStartupState] = useState<{
@@ -155,7 +156,8 @@ export default function HigherLowerScreen() {
   );
 
   const handleGuess = async (guess: "higher" | "lower") => {
-    if (!sessionId || animating || gameOver) return;
+    if (!sessionId || animating || gameOver || guessInFlight.current) return;
+    guessInFlight.current = true;
     setAnimating(true);
     setPendingGuess(guess);
 
@@ -201,6 +203,7 @@ export default function HigherLowerScreen() {
       setTimeout(() => {
         setAnimating(false);
         setPendingGuess(null);
+        guessInFlight.current = false;
       }, 1300);
     }
   };
@@ -379,6 +382,11 @@ export default function HigherLowerScreen() {
           <NeoButton
             variant="accent"
             size="lg"
+            onPointerDownCapture={(event) => {
+              if (animating || gameOver || guessInFlight.current) return;
+              event.preventDefault();
+              void handleGuess("higher");
+            }}
             onClick={() => handleGuess("higher")}
             disabled={animating}
           >
@@ -388,6 +396,11 @@ export default function HigherLowerScreen() {
           <NeoButton
             variant="pink"
             size="lg"
+            onPointerDownCapture={(event) => {
+              if (animating || gameOver || guessInFlight.current) return;
+              event.preventDefault();
+              void handleGuess("lower");
+            }}
             onClick={() => handleGuess("lower")}
             disabled={animating}
           >

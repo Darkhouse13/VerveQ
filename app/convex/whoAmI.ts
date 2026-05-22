@@ -2,10 +2,14 @@ import { mutation, query, type MutationCtx } from "./_generated/server";
 import { v } from "convex/values";
 import { getAuthUserId } from "@convex-dev/auth/server";
 import { findBestMatch } from "./lib/fuzzy";
+import { buildWhoAmIComparisonFeedback, getWhoAmIPlayerMetadata } from "./whoAmIPlayerSearch";
 
 const SESSION_TTL_MS = 60 * 60 * 1000; // 1 hour
 const BASE_SCORE = 1000;
 const CLOSE_CALL_SCORE_MULTIPLIER = 0.9;
+const WRONG_GUESS_SCORE_MULTIPLIER = 0.9;
+export const WHO_AM_I_MAX_GUESSES = 6;
+
 const DEFAULT_DIFFICULTY_WEIGHTS = [
   { difficulty: "easy", weight: 0.3 },
   { difficulty: "medium", weight: 0.5 },
@@ -54,12 +58,14 @@ function buildAnswerAliases(answerName: string): string[] {
   return [...aliases];
 }
 
+
 export const startChallenge = mutation({
   args: {
     sport: v.string(),
     difficulty: v.optional(v.string()),
+    hardMode: v.optional(v.boolean()),
   },
-  handler: async (ctx, { sport, difficulty }) => {
+  handler: async (ctx, { sport, difficulty, hardMode }) => {
     const userId = await getAuthUserId(ctx);
     if (!userId) throw new Error("Not authenticated");
     let clues;
@@ -100,6 +106,10 @@ export const startChallenge = mutation({
       status: "active",
       expiresAt: Date.now() + SESSION_TTL_MS,
       closeCallCount: 0,
+      guesses: [],
+      maxGuesses: WHO_AM_I_MAX_GUESSES,
+      wrongGuessCount: 0,
+      hardMode: hardMode ?? false,
     });
 
     return {
@@ -108,6 +118,15 @@ export const startChallenge = mutation({
       currentStage: 1,
       score: BASE_SCORE,
       difficulty: clue.difficulty,
+      maxGuesses: WHO_AM_I_MAX_GUESSES,
+      wrongGuessCount: 0,
+      guesses: [],
+      hardMode: hardMode ?? false,
+      visualHint: {
+        mode: hardMode ? "clue_only" : "silhouette",
+        photoUrl: null,
+        blurLevel: hardMode ? 0 : 18,
+      },
     };
   },
 });
@@ -193,6 +212,17 @@ export const submitGuess = mutation({
       await ctx.db.patch(sessionId, {
         score: newScore,
         closeCallCount: (session.closeCallCount ?? 0) + 1,
+        guesses: [
+          ...(session.guesses ?? []),
+          {
+            guessName: guess.trim(),
+            correct: false,
+            closeCall: true,
+            scoreAfter: newScore,
+            feedback: buildWhoAmIComparisonFeedback(getWhoAmIPlayerMetadata(), guess.trim(), session.answerName),
+            createdAt: Date.now(),
+          },
+        ],
       });
       return {
         correct: false,
@@ -200,18 +230,46 @@ export const submitGuess = mutation({
         typoAccepted: false,
         score: newScore,
         gameOver: false,
+        wrongGuessCount: session.wrongGuessCount ?? 0,
+        maxGuesses: session.maxGuesses ?? WHO_AM_I_MAX_GUESSES,
       };
     }
 
-    await ctx.db.patch(sessionId, { status: "failed", score: 0 });
-    return {
+    const maxGuesses = session.maxGuesses ?? WHO_AM_I_MAX_GUESSES;
+    const wrongGuessCount = (session.wrongGuessCount ?? 0) + 1;
+    const newScore = Math.floor(session.score * WRONG_GUESS_SCORE_MULTIPLIER);
+    const gameOver = wrongGuessCount >= maxGuesses;
+    const guesses = [
+      ...(session.guesses ?? []),
+      {
+        guessName: guess.trim(),
+        correct: false,
+        closeCall: false,
+        scoreAfter: newScore,
+        feedback: buildWhoAmIComparisonFeedback(getWhoAmIPlayerMetadata(), guess.trim(), session.answerName),
+        createdAt: Date.now(),
+      },
+    ];
+
+    await ctx.db.patch(sessionId, {
+      status: gameOver ? "failed" : "active",
+      score: newScore,
+      guesses,
+      maxGuesses,
+      wrongGuessCount,
+    });
+    const response = {
       correct: false,
       closeCall: false,
       typoAccepted: false,
-      answerName: session.currentStage >= 4 ? session.answerName : undefined,
-      score: 0,
-      gameOver: true,
+      score: newScore,
+      gameOver,
+      wrongGuessCount,
+      maxGuesses,
+      guesses,
+      feedback: guesses[guesses.length - 1]?.feedback,
     };
+    return gameOver ? { ...response, answerName: session.answerName } : response;
   },
 });
 
@@ -271,6 +329,15 @@ export const getSession = query({
       clues,
       difficulty: clue.difficulty,
       answerName: revealed ? session.answerName : null,
+      guesses: session.guesses ?? [],
+      wrongGuessCount: session.wrongGuessCount ?? 0,
+      maxGuesses: session.maxGuesses ?? WHO_AM_I_MAX_GUESSES,
+      hardMode: session.hardMode ?? false,
+      visualHint: {
+        mode: session.hardMode ? "clue_only" : "silhouette",
+        photoUrl: null,
+        blurLevel: session.hardMode ? 0 : Math.max(4, 22 - session.currentStage * 4),
+      },
     };
   },
 });
