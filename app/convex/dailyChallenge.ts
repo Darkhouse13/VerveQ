@@ -118,7 +118,7 @@ async function getOrCreateDailyQuizChallenge(
     return existing;
   }
 
-  const MAX_IMAGE_QUESTIONS = 3;
+  const MAX_IMAGE_QUESTIONS = 2;
   const questions = await ctx.db
     .query("quizQuestions")
     .withIndex("by_sport_difficulty", (q) =>
@@ -207,7 +207,7 @@ export const getOrCreateChallenge = mutation({
     let survivalInitials: string[] = [];
 
     if (mode === "quiz") {
-      const MAX_IMAGE_QUESTIONS = 3;
+      const MAX_IMAGE_QUESTIONS = 2;
 
       const questions = await ctx.db
         .query("quizQuestions")

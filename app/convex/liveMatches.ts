@@ -6,6 +6,7 @@ import { internal } from "./_generated/api";
 import { clampRating, getKFactor } from "./lib/elo";
 import { normalizeAnswer } from "./lib/scoring";
 import { orderAnswerOptions } from "./lib/answerOptions";
+import { selectQuestionsWithImageCap } from "./lib/imageQuestions";
 
 const TOTAL_QUESTIONS = 10;
 const QUESTION_TIME_LIMIT_MS = 10_000;
@@ -270,15 +271,25 @@ function selectRotatedQuestions(
   const nonRecent = candidates.filter((q) => !recentChecksums.has(q.checksum));
   const rotationPool = nonRecent.length >= TOTAL_QUESTIONS ? nonRecent : candidates;
 
-  const leastUsedWindow = [...rotationPool]
-    .sort((a, b) => {
-      const usageDelta = a.usageCount - b.usageCount;
-      if (usageDelta !== 0) return usageDelta;
-      return a.timesAnswered - b.timesAnswered;
-    })
-    .slice(0, Math.max(TOTAL_QUESTIONS * 4, 50));
+  const sortedByUsage = [...rotationPool].sort((a, b) => {
+    const usageDelta = a.usageCount - b.usageCount;
+    if (usageDelta !== 0) return usageDelta;
+    return a.timesAnswered - b.timesAnswered;
+  });
 
-  return shuffleInPlace(leastUsedWindow).slice(0, TOTAL_QUESTIONS);
+  const leastUsedWindow = sortedByUsage.slice(0, Math.max(TOTAL_QUESTIONS * 4, 50));
+  const selectedFromWindow = selectQuestionsWithImageCap(
+    shuffleInPlace(leastUsedWindow),
+    TOTAL_QUESTIONS,
+  );
+  if (selectedFromWindow.length >= TOTAL_QUESTIONS) {
+    return selectedFromWindow;
+  }
+
+  return selectQuestionsWithImageCap(
+    shuffleInPlace(sortedByUsage),
+    TOTAL_QUESTIONS,
+  );
 }
 
 async function getChallengeQuestionCandidates(

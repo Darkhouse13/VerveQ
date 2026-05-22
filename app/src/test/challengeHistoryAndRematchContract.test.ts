@@ -65,4 +65,15 @@ describe("challenge head-to-head history and rematch contract", () => {
     expect(liveMatches).toContain("status: \"declined\"");
   });
 
+  it("turns a reciprocal Play Again invite into an accepted live match instead of leaving a pending card", () => {
+    const resultScreen = readFileSync("src/pages/ResultScreen.tsx", "utf8");
+
+    expect(resultScreen).toContain("const acceptChallenge = useMutation(api.challenges.accept)");
+    expect(resultScreen).toContain("const createLiveMatch = useMutation(api.liveMatches.createFromChallenge)");
+    expect(resultScreen).toContain("reciprocalPending");
+    expect(resultScreen).toContain("await acceptChallenge({ challengeId: result.challengeId as never })");
+    expect(resultScreen).toContain("await createLiveMatch({ challengeId: result.challengeId as never })");
+    expect(resultScreen).toContain("navigate(`/waiting-room?matchId=${match.matchId}`)");
+  });
+
 });

@@ -57,6 +57,8 @@ export default function ResultScreen() {
   const location = useLocation();
   const checkAchievements = useMutation(api.achievements.checkAndUnlock);
   const createRematch = useMutation(api.challenges.createRematch);
+  const acceptChallenge = useMutation(api.challenges.accept);
+  const createLiveMatch = useMutation(api.liveMatches.createFromChallenge);
   const [sendingRematch, setSendingRematch] = useState(false);
 
   const state = location.state as GameResultState | null;
@@ -127,12 +129,19 @@ export default function ResultScreen() {
     }
     setSendingRematch(true);
     try {
-      await createRematch({
+      const result = await createRematch({
         opponentId: state.opponentId as never,
         sport: state.sport,
         mode: "quiz",
       });
-      toast.success("Rematch invite sent");
+      if (result.reciprocalPending) {
+        await acceptChallenge({ challengeId: result.challengeId as never });
+        const match = await createLiveMatch({ challengeId: result.challengeId as never });
+        toast.success("Rematch started");
+        navigate(`/waiting-room?matchId=${match.matchId}`);
+        return;
+      }
+      toast.success(result.alreadyPending ? "Rematch invite already pending" : "Rematch invite sent");
       navigate("/challenge");
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Failed to send rematch invite");
