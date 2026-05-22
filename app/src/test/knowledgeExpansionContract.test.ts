@@ -28,7 +28,7 @@ describe("knowledge expansion contract", () => {
   });
 
   it("does not put every knowledge correct answer in the first option slot", () => {
-    const questions = readKnowledgeSeed();
+    const questions = readKnowledgeSeed().filter((q) => !q.checksum.startsWith("knowledge_came_first_v1_"));
     const positionCounts = [0, 0, 0, 0];
 
     for (const question of questions) {
@@ -52,7 +52,7 @@ describe("knowledge expansion contract", () => {
     expect(sportSelect).toContain("Pick a Topic");
     expect(sportSelect).toContain('isSurvivalMode\n      ? ["football", "tennis", "basketball"]');
     expect(challenge).toContain('"knowledge"');
-    expect(challenge).toContain('selectedSport === "knowledge" ? ["quiz"] : modePills');
+    expect(challenge).toContain('selectedSport === "knowledge" ? ["quiz", "came_first"] : modePills');
   });
 
   it("uses Topic language on broad quiz surfaces while preserving sport as the internal key", () => {

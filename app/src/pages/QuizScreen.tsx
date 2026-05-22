@@ -43,6 +43,7 @@ export default function QuizScreen() {
   const navigate = useNavigate();
   const [params] = useSearchParams();
   const sport = params.get("sport") || "football";
+  const mode = params.get("mode") || "quiz";
   const difficulty = parseDifficulty(params.get("difficulty"));
   const { user } = useAuth();
 
@@ -106,6 +107,7 @@ export default function QuizScreen() {
       try {
         const { sessionId: sid } = await createSessionMut({
           sport,
+          mode: mode === "came_first" ? "came_first" : "quiz",
           difficulty,
         });
         setSessionId(sid);
@@ -220,7 +222,7 @@ export default function QuizScreen() {
           eloChange,
           newElo,
           sport,
-          mode: "quiz",
+          mode: mode === "came_first" ? "came_first" : "quiz",
           kFactor,
           kFactorLabel,
           scoreBreakdown,
@@ -233,7 +235,7 @@ export default function QuizScreen() {
     } finally {
       autoAdvanceInFlight.current = false;
     }
-  }, [completeQuizMut, correctCount, fetchQuestion, questionNum, revealed, scoreBreakdown, sessionId, sport, times, totalScore, user, navigate]);
+  }, [completeQuizMut, correctCount, fetchQuestion, mode, questionNum, revealed, scoreBreakdown, sessionId, sport, times, totalScore, user, navigate]);
 
   useEffect(() => {
     if (!revealed) return;
@@ -272,7 +274,7 @@ export default function QuizScreen() {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <p className="font-heading font-bold text-lg animate-pulse">
-          Loading quiz...
+          {mode === "came_first" ? "Loading Which Came First..." : "Loading quiz..."}
         </p>
       </div>
     );
@@ -297,7 +299,7 @@ export default function QuizScreen() {
 
       <div className="flex justify-center mb-5">
         <NeoBadge color="primary" rotated size="md">
-          {difficulty}
+          {mode === "came_first" ? "Which Came First" : difficulty}
         </NeoBadge>
       </div>
 

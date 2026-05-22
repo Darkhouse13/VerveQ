@@ -149,6 +149,28 @@ export default function HomeScreen() {
             </NeoCard>
             <NeoCard
               shadow="lg"
+              className="flex items-center gap-4 cursor-pointer bg-success text-success-foreground"
+              onClick={() => navigate("/difficulty?sport=knowledge&mode=came_first")}
+            >
+              <div className="neo-border rounded-xl bg-background p-3">
+                <Timer
+                  size={28}
+                  strokeWidth={2.5}
+                  className="text-foreground"
+                />
+              </div>
+              <div className="flex-1">
+                <p className="font-heading font-bold text-lg">Which Came First?</p>
+                <p className="text-xs opacity-80">
+                  Timeline duels for history, science & culture
+                </p>
+              </div>
+              <span className="neo-border font-heading font-bold uppercase tracking-wide inline-flex items-center justify-center px-3 py-1.5 text-xs rounded-md bg-primary text-primary-foreground neo-shadow select-none">
+                New
+              </span>
+            </NeoCard>
+            <NeoCard
+              shadow="lg"
               className="flex items-center gap-4 cursor-pointer bg-electric-blue text-electric-blue-foreground"
               onClick={() => navigate("/sport-select?mode=survival")}
             >

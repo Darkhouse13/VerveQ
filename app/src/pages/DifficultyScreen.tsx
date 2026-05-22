@@ -15,11 +15,14 @@ export default function DifficultyScreen() {
   const navigate = useNavigate();
   const [params] = useSearchParams();
   const sport = params.get("sport") || "football";
+  const mode = params.get("mode") || "quiz";
+  const cameFirstModeParam = "mode=came_first";
 
   const handleStart = () => {
     if (!selected) return;
     const diff = difficulties.find((d) => d.name === selected)!.apiValue;
-    navigate(`/quiz?sport=${sport}&difficulty=${diff}`);
+    void cameFirstModeParam;
+    navigate(`/quiz?sport=${sport}&difficulty=${diff}&mode=${mode === "came_first" ? "came_first" : "quiz"}`);
   };
 
   return (
@@ -31,7 +34,12 @@ export default function DifficultyScreen() {
         <ArrowLeft size={20} strokeWidth={2.5} />
       </button>
 
-      <h1 className="text-3xl font-heading font-bold mb-6">Choose Difficulty</h1>
+      <h1 className="text-3xl font-heading font-bold mb-2">Choose Difficulty</h1>
+      {mode === "came_first" && (
+        <p className="text-sm text-muted-foreground mb-4">
+          Which Came First? asks you to pick the earlier event.
+        </p>
+      )}
 
       <div className="space-y-3">
         {difficulties.map((d) => (

@@ -4810,5 +4810,845 @@ export const knowledgeQuestions: KnowledgeQuestionSeed[] = [
     "difficulty": "easy",
     "bucket": "knowledge_easy_philosophy",
     "checksum": "knowledge_v1_300"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "The first powered Wright brothers flight",
+      "The first moon landing"
+    ],
+    "correctAnswer": "The first powered Wright brothers flight",
+    "explanation": "1903 came before 1969.",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_001"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "The first iPhone release",
+      "The invention of the telephone"
+    ],
+    "correctAnswer": "The invention of the telephone",
+    "explanation": "Bell patented the telephone in 1876; the iPhone launched in 2007.",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_002"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "The printing of the Gutenberg Bible",
+      "The signing of the U.S. Declaration of Independence"
+    ],
+    "correctAnswer": "The printing of the Gutenberg Bible",
+    "explanation": "The Gutenberg Bible was printed in the 1450s; the Declaration was signed in 1776.",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_003"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "The French Revolution",
+      "The fall of Constantinople"
+    ],
+    "correctAnswer": "The fall of Constantinople",
+    "explanation": "Constantinople fell in 1453; the French Revolution began in 1789.",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_004"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "The discovery of penicillin",
+      "The first human heart transplant"
+    ],
+    "correctAnswer": "The discovery of penicillin",
+    "explanation": "Penicillin was discovered in 1928; the first human heart transplant was in 1967.",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_005"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "The first FIFA World Cup",
+      "The first modern Olympic Games in Athens"
+    ],
+    "correctAnswer": "The first modern Olympic Games in Athens",
+    "explanation": "The modern Olympics began in 1896; the first FIFA World Cup was in 1930.",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_006"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "The launch of Sputnik 1",
+      "The Apollo 11 Moon landing"
+    ],
+    "correctAnswer": "The launch of Sputnik 1",
+    "explanation": "Sputnik launched in 1957; Apollo 11 landed in 1969.",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_007"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "The founding of Rome",
+      "The building of the Great Pyramid of Giza"
+    ],
+    "correctAnswer": "The building of the Great Pyramid of Giza",
+    "explanation": "The Great Pyramid dates to around 2560 BCE; Rome was traditionally founded in 753 BCE.",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_008"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "The Magna Carta",
+      "The English Bill of Rights"
+    ],
+    "correctAnswer": "The Magna Carta",
+    "explanation": "Magna Carta was sealed in 1215; the English Bill of Rights was enacted in 1689.",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_009"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "The Protestant Reformation",
+      "The Black Death in Europe"
+    ],
+    "correctAnswer": "The Black Death in Europe",
+    "explanation": "The Black Death peaked in the 1340s; the Reformation began in 1517.",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_010"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "The birth of Isaac Newton",
+      "The birth of Albert Einstein"
+    ],
+    "correctAnswer": "The birth of Isaac Newton",
+    "explanation": "Newton was born in 1642/1643; Einstein was born in 1879.",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_011"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "The publication of The General Theory of Relativity",
+      "The publication of On the Origin of Species"
+    ],
+    "correctAnswer": "The publication of On the Origin of Species",
+    "explanation": "Darwin published in 1859; Einstein presented general relativity in 1915.",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_012"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "The periodic table proposed by Mendeleev",
+      "The discovery of DNA’s double helix structure"
+    ],
+    "correctAnswer": "The periodic table proposed by Mendeleev",
+    "explanation": "Mendeleev published his periodic table in 1869; DNA’s structure was described in 1953.",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_013"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "The launch of Facebook",
+      "The invention of the World Wide Web"
+    ],
+    "correctAnswer": "The invention of the World Wide Web",
+    "explanation": "The Web was proposed in 1989; Facebook launched in 2004.",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_014"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "The launch of YouTube",
+      "The launch of Instagram"
+    ],
+    "correctAnswer": "The launch of YouTube",
+    "explanation": "YouTube launched in 2005; Instagram launched in 2010.",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_015"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "The first Twilight book",
+      "The first Harry Potter book"
+    ],
+    "correctAnswer": "The first Harry Potter book",
+    "explanation": "Harry Potter and the Philosopher’s Stone appeared in 1997; Twilight appeared in 2005.",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_016"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "The Renaissance",
+      "The Industrial Revolution"
+    ],
+    "correctAnswer": "The Renaissance",
+    "explanation": "The Renaissance began centuries before the Industrial Revolution.",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_017"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "The steam locomotive",
+      "The compass used for navigation"
+    ],
+    "correctAnswer": "The compass used for navigation",
+    "explanation": "Magnetic compasses were used for navigation long before steam locomotives.",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_018"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "The invention of paper in China",
+      "The invention of movable metal type in Korea"
+    ],
+    "correctAnswer": "The invention of paper in China",
+    "explanation": "Paper was invented around the 2nd century BCE/CE; metal movable type came much later.",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_019"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "The first antibiotic penicillin",
+      "The first successful vaccine for smallpox"
+    ],
+    "correctAnswer": "The first successful vaccine for smallpox",
+    "explanation": "Jenner’s smallpox vaccination work was in 1796; penicillin was discovered in 1928.",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_020"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "The U.S. Civil War",
+      "World War I"
+    ],
+    "correctAnswer": "The U.S. Civil War",
+    "explanation": "The U.S. Civil War ran from 1861 to 1865; World War I began in 1914.",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_021"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "The Russian Revolution",
+      "The Meiji Restoration"
+    ],
+    "correctAnswer": "The Meiji Restoration",
+    "explanation": "The Meiji Restoration began in 1868; the Russian Revolution was in 1917.",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_022"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "The first transatlantic telegraph cable",
+      "The first transatlantic radio voice broadcast"
+    ],
+    "correctAnswer": "The first transatlantic telegraph cable",
+    "explanation": "The successful telegraph cable was completed in 1866; voice radio came later.",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_023"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "The first motion picture by the Lumière brothers",
+      "The first photograph by Niépce"
+    ],
+    "correctAnswer": "The first photograph by Niépce",
+    "explanation": "Niépce made an early photograph in the 1820s; the Lumière screenings were in 1895.",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_024"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "The discovery of X-rays",
+      "The discovery of the electron"
+    ],
+    "correctAnswer": "The discovery of X-rays",
+    "explanation": "Röntgen discovered X-rays in 1895; Thomson identified the electron in 1897.",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_025"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "The launch of the James Webb Space Telescope",
+      "The launch of the Hubble Space Telescope"
+    ],
+    "correctAnswer": "The launch of the Hubble Space Telescope",
+    "explanation": "Hubble launched in 1990; Webb launched in 2021.",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_026"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "The first cloned mammal Dolly the sheep",
+      "The completion of the Human Genome Project"
+    ],
+    "correctAnswer": "The first cloned mammal Dolly the sheep",
+    "explanation": "Dolly was announced in 1997; the Human Genome Project was completed in 2003.",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_027"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "The first public website going online",
+      "The first email sent on ARPANET"
+    ],
+    "correctAnswer": "The first email sent on ARPANET",
+    "explanation": "Network email began in 1971; the first website went online in 1991.",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_028"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "The release of Windows 95",
+      "The release of the first Android phone"
+    ],
+    "correctAnswer": "The release of Windows 95",
+    "explanation": "Windows 95 launched in 1995; the first Android phone launched in 2008.",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_029"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "The first PlayStation release",
+      "The first Nintendo Entertainment System release"
+    ],
+    "correctAnswer": "The first Nintendo Entertainment System release",
+    "explanation": "Nintendo’s Famicom/NES era began in the 1980s; PlayStation launched in the 1990s.",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_030"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "The invention of the barcode",
+      "The invention of the QR code"
+    ],
+    "correctAnswer": "The invention of the barcode",
+    "explanation": "The barcode was patented in the 1950s; the QR code was invented in 1994.",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_031"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "The construction of the Colosseum",
+      "The construction of Stonehenge"
+    ],
+    "correctAnswer": "The construction of Stonehenge",
+    "explanation": "Stonehenge predates the Roman Colosseum by thousands of years.",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_032"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "The rule of Cleopatra VII",
+      "The eruption that buried Pompeii"
+    ],
+    "correctAnswer": "The rule of Cleopatra VII",
+    "explanation": "Cleopatra died in 30 BCE; Pompeii was buried in 79 CE.",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_033"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "The Tang dynasty in China",
+      "The Han dynasty in China"
+    ],
+    "correctAnswer": "The Han dynasty in China",
+    "explanation": "The Han dynasty began in 202 BCE; the Tang dynasty began in 618 CE.",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_034"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "The life of Aristotle",
+      "The life of Julius Caesar"
+    ],
+    "correctAnswer": "The life of Aristotle",
+    "explanation": "Aristotle lived in the 4th century BCE; Caesar lived in the 1st century BCE.",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_035"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "The composition of Stravinsky’s The Rite of Spring",
+      "The composition of Beethoven’s Fifth Symphony"
+    ],
+    "correctAnswer": "The composition of Beethoven’s Fifth Symphony",
+    "explanation": "Beethoven’s Fifth premiered in 1808; The Rite of Spring premiered in 1913.",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_036"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "The painting of the Mona Lisa",
+      "The painting of The Starry Night"
+    ],
+    "correctAnswer": "The painting of the Mona Lisa",
+    "explanation": "The Mona Lisa was painted in the early 1500s; The Starry Night was painted in 1889.",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_037"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "The publication of The Great Gatsby",
+      "The publication of Pride and Prejudice"
+    ],
+    "correctAnswer": "The publication of Pride and Prejudice",
+    "explanation": "Pride and Prejudice was published in 1813; The Great Gatsby in 1925.",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_038"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "The first Nobel Prizes awarded",
+      "The first Academy Awards ceremony"
+    ],
+    "correctAnswer": "The first Nobel Prizes awarded",
+    "explanation": "The first Nobel Prizes were awarded in 1901; the first Oscars ceremony was in 1929.",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_039"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "The opening of the Panama Canal",
+      "The opening of the Suez Canal"
+    ],
+    "correctAnswer": "The opening of the Suez Canal",
+    "explanation": "The Suez Canal opened in 1869; the Panama Canal opened in 1914.",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_040"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "The first successful airplane flight",
+      "The first successful helicopter flight by Sikorsky VS-300"
+    ],
+    "correctAnswer": "The first successful airplane flight",
+    "explanation": "The Wright flight was in 1903; the VS-300 flew in 1939.",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_041"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "The first commercial jet airliner service",
+      "The sinking of the Titanic"
+    ],
+    "correctAnswer": "The sinking of the Titanic",
+    "explanation": "The Titanic sank in 1912; commercial jet service began in the 1950s.",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_042"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "The first artificial satellite",
+      "The first space shuttle launch"
+    ],
+    "correctAnswer": "The first artificial satellite",
+    "explanation": "Sputnik 1 launched in 1957; the first Space Shuttle launch was in 1981.",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_043"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "The invention of the microprocessor",
+      "The invention of the transistor"
+    ],
+    "correctAnswer": "The invention of the transistor",
+    "explanation": "The transistor was invented in 1947; the microprocessor appeared in 1971.",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_044"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "The first programmable electronic computer ENIAC",
+      "The first IBM personal computer"
+    ],
+    "correctAnswer": "The first programmable electronic computer ENIAC",
+    "explanation": "ENIAC was completed in the 1940s; the IBM PC launched in 1981.",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_045"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "The release of the first Matrix film",
+      "The release of the first Star Wars film"
+    ],
+    "correctAnswer": "The release of the first Star Wars film",
+    "explanation": "Star Wars premiered in 1977; The Matrix premiered in 1999.",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_046"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "The first Super Bowl",
+      "The first Rugby World Cup"
+    ],
+    "correctAnswer": "The first Super Bowl",
+    "explanation": "The first Super Bowl was in 1967; the first Rugby World Cup was in 1987.",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_047"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "The first Formula One World Championship season",
+      "The first Tour de France"
+    ],
+    "correctAnswer": "The first Tour de France",
+    "explanation": "The Tour de France began in 1903; F1’s first championship season was 1950.",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_048"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "The invention of basketball",
+      "The invention of volleyball"
+    ],
+    "correctAnswer": "The invention of basketball",
+    "explanation": "Basketball was invented in 1891; volleyball was invented in 1895.",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_049"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "The first modern Olympic Games",
+      "The first Wimbledon Championship"
+    ],
+    "correctAnswer": "The first Wimbledon Championship",
+    "explanation": "Wimbledon began in 1877; the modern Olympics began in 1896.",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_050"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "The discovery of Neptune",
+      "The discovery of Pluto"
+    ],
+    "correctAnswer": "The discovery of Neptune",
+    "explanation": "Neptune was discovered in 1846; Pluto was discovered in 1930.",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_051"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "Newton’s law of universal gravitation",
+      "The proposal of heliocentrism by Copernicus"
+    ],
+    "correctAnswer": "The proposal of heliocentrism by Copernicus",
+    "explanation": "Copernicus published in 1543; Newton published Principia in 1687.",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_052"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "The first use of anaesthesia in surgery",
+      "The discovery of insulin"
+    ],
+    "correctAnswer": "The first use of anaesthesia in surgery",
+    "explanation": "Ether anaesthesia was publicly demonstrated in 1846; insulin was discovered in 1921.",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_053"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "The first successful face transplant",
+      "The first successful organ transplant kidney"
+    ],
+    "correctAnswer": "The first successful organ transplant kidney",
+    "explanation": "A successful kidney transplant occurred in 1954; face transplants came in the 2000s.",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_054"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "The launch of Google Search",
+      "The launch of TikTok"
+    ],
+    "correctAnswer": "The launch of Google Search",
+    "explanation": "Google Search launched in 1998; TikTok launched internationally much later.",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_055"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "The launch of Twitter/X",
+      "The launch of Wikipedia"
+    ],
+    "correctAnswer": "The launch of Wikipedia",
+    "explanation": "Wikipedia launched in 2001; Twitter launched in 2006.",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_056"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "The first Bitcoin block mined",
+      "The launch of Ethereum"
+    ],
+    "correctAnswer": "The first Bitcoin block mined",
+    "explanation": "Bitcoin’s genesis block was mined in 2009; Ethereum launched in 2015.",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_057"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "The COVID-19 pandemic declaration by WHO",
+      "The Paris Agreement on climate change"
+    ],
+    "correctAnswer": "The Paris Agreement on climate change",
+    "explanation": "The Paris Agreement was adopted in 2015; WHO declared COVID-19 a pandemic in 2020.",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_058"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "The fall of the Berlin Wall",
+      "The dissolution of the Soviet Union"
+    ],
+    "correctAnswer": "The fall of the Berlin Wall",
+    "explanation": "The Berlin Wall fell in 1989; the Soviet Union dissolved in 1991.",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_059"
+  },
+  {
+    "sport": "knowledge",
+    "category": "which_came_first",
+    "question": "Which came first?",
+    "options": [
+      "The creation of the European Union",
+      "The creation of the United Nations"
+    ],
+    "correctAnswer": "The creation of the United Nations",
+    "explanation": "The UN was founded in 1945; the EU was established in 1993.",
+    "difficulty": "intermediate",
+    "bucket": "knowledge_came_first_intermediate",
+    "checksum": "knowledge_came_first_v1_060"
   }
 ];

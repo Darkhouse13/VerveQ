@@ -209,7 +209,7 @@ async function recordChallengeHistory(
   if (existingHistory) return;
 
   const { pairKey, playerAId, playerBId } = getPairKey(match.player1Id, match.player2Id);
-  const mode = "quiz";
+  const mode = match.mode ?? "quiz";
   const playerAWon = winnerId === playerAId;
   const playerBWon = winnerId === playerBId;
   const draw = !winnerId;
@@ -334,7 +334,11 @@ export const createFromChallenge = mutation({
       )
       .take(200);
 
-    const shuffled = [...allQuestions].sort(() => Math.random() - 0.5);
+    const matchCandidates = challenge.mode === "came_first"
+      ? allQuestions.filter((q) => q.category === "which_came_first")
+      : allQuestions.filter((q) => q.category !== "which_came_first");
+
+    const shuffled = [...matchCandidates].sort(() => Math.random() - 0.5);
     const pickedQuestions = shuffled.slice(0, TOTAL_QUESTIONS);
     if (pickedQuestions.length < TOTAL_QUESTIONS) {
       throw new Error(
@@ -364,6 +368,7 @@ export const createFromChallenge = mutation({
       player1Id: challenge.challengerId,
       player2Id: challenge.challengedId,
       sport: challenge.sport,
+      mode: challenge.mode,
       status: "waiting",
       currentQuestion: 0,
       totalQuestions: TOTAL_QUESTIONS,
@@ -596,7 +601,7 @@ export const getMatch = query({
       match.player1Id,
       match.player2Id,
       match.sport,
-      "quiz",
+      match.mode ?? "quiz",
     );
 
     // Never expose correctAnswer/explanation through the public match view.

@@ -10,17 +10,19 @@ const QUESTION_BASE_POINTS = 100;
 export const createSession = mutation({
   args: {
     sport: v.string(),
+    mode: v.optional(v.string()),
     difficulty: v.optional(
       v.union(v.literal("easy"), v.literal("intermediate"), v.literal("hard")),
     ),
   },
-  handler: async (ctx, { sport, difficulty }) => {
+  handler: async (ctx, { sport, mode, difficulty }) => {
     const userId = await getAuthUserId(ctx);
     if (!userId) throw new Error("Not authenticated");
 
     const sessionId = await ctx.db.insert("quizSessions", {
       userId,
       sport,
+      mode: mode === "came_first" ? "came_first" : "quiz",
       difficulty,
       usedChecksums: [],
       score: 0,
@@ -61,7 +63,11 @@ export const getQuestion = mutation({
       )
       .collect();
 
-    const pool = pickQuestionPool(candidates, session.usedChecksums);
+    const modeCandidates = session.mode === "came_first"
+      ? candidates.filter((q) => q.category === "which_came_first")
+      : candidates.filter((q) => q.category !== "which_came_first");
+
+    const pool = pickQuestionPool(modeCandidates, session.usedChecksums);
     if (!pool.length) throw new Error("No questions available");
 
     const picked = pool[Math.floor(Math.random() * pool.length)];

@@ -13,6 +13,10 @@ import { toast } from "sonner";
 const topicPills = ["football", "tennis", "basketball", "knowledge"];
 const modePills = ["quiz", "survival"];
 
+function formatModeLabel(mode: string): string {
+  return mode === "came_first" ? "Which Came First" : mode;
+}
+
 function getChallengeInitials(name: string): string {
   const normalized = name.trim();
   if (!normalized) return "?";
@@ -37,7 +41,7 @@ export default function ChallengeScreen() {
   const [selectedSport, setSelectedSport] = useState("football");
   const [selectedMode, setSelectedMode] = useState("quiz");
   const [sending, setSending] = useState(false);
-  const availableModes = selectedSport === "knowledge" ? ["quiz"] : modePills;
+  const availableModes = selectedSport === "knowledge" ? ["quiz", "came_first"] : modePills;
 
   const pending = useQuery(api.challenges.getPending);
   const recentOpponentsQuery = useQuery(api.challenges.getRecentOpponents);
@@ -123,7 +127,7 @@ export default function ChallengeScreen() {
                       onClick={() => {
                         setUsername(opponent.username);
                         setSelectedSport(opponent.lastSport);
-                        setSelectedMode(opponent.lastSport === "knowledge" ? "quiz" : opponent.lastMode);
+                        setSelectedMode(opponent.lastSport === "knowledge" ? opponent.lastMode : opponent.lastMode);
                       }}
                       className="neo-border rounded-lg bg-background px-3 py-2 text-left shrink-0 min-w-[132px] cursor-pointer active:neo-shadow-pressed"
                     >
@@ -131,7 +135,7 @@ export default function ChallengeScreen() {
                         @{opponent.username}
                       </p>
                       <p className="text-[10px] text-muted-foreground capitalize">
-                        {opponent.lastSport} · {opponent.lastMode}
+                        {opponent.lastSport} · {formatModeLabel(opponent.lastMode)}
                       </p>
                       {opponent.versusSummary.totalMatches > 0 && (
                         <p className="text-[10px] font-mono font-bold mt-1">
@@ -173,7 +177,7 @@ export default function ChallengeScreen() {
                   onClick={() => setSelectedMode(m)}
                   className={`neo-border rounded-full px-3 py-1 text-xs font-heading font-bold cursor-pointer transition-all capitalize ${selectedMode === m ? "bg-primary text-primary-foreground neo-shadow" : "bg-background"}`}
                 >
-                  {m}
+                  {formatModeLabel(m)}
                 </button>
               ))}
             </div>
@@ -212,7 +216,7 @@ export default function ChallengeScreen() {
                         {c.challenger}
                       </p>
                       <p className="text-xs text-muted-foreground capitalize">
-                        {c.sport} · {c.mode}
+                        {c.sport} · {formatModeLabel(c.mode)}
                       </p>
                     </div>
                   </div>

@@ -166,6 +166,7 @@ export default defineSchema({
   quizSessions: defineTable({
     userId: v.optional(v.id("users")),
     sport: v.string(),
+    mode: v.optional(v.string()),
     difficulty: v.optional(
       v.union(v.literal("easy"), v.literal("intermediate"), v.literal("hard")),
     ),
@@ -268,6 +269,7 @@ export default defineSchema({
     player1Id: v.id("users"),
     player2Id: v.id("users"),
     sport: v.string(),
+    mode: v.optional(v.string()),
     status: v.union(
       v.literal("waiting"),
       v.literal("countdown"),

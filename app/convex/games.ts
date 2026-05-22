@@ -60,12 +60,13 @@ export const completeQuiz = mutation({
     const averageTime = (session.sumAnswerTimeMs ?? 0) / 1000 / totalAnswers;
     const difficulty = session.difficulty ?? "intermediate";
     const sport = session.sport;
+    const mode = session.mode ?? "quiz";
     const sessionScore = session.score ?? 0;
 
     const rating = await ctx.db
       .query("userRatings")
       .withIndex("by_user_sport_mode", (q) =>
-        q.eq("userId", userId).eq("sport", sport).eq("mode", "quiz"),
+        q.eq("userId", userId).eq("sport", sport).eq("mode", mode),
       )
       .first();
 
@@ -93,12 +94,12 @@ export const completeQuiz = mutation({
         lastPlayed: Date.now(),
         decayWarningShown: false,
       });
-      await dismissOutstandingDecayNotifications(ctx, userId, sport, "quiz");
+      await dismissOutstandingDecayNotifications(ctx, userId, sport, mode);
     } else {
       await ctx.db.insert("userRatings", {
         userId,
         sport,
-        mode: "quiz",
+        mode,
         eloRating: newElo,
         peakRating: newElo,
         gamesPlayed: 1,
@@ -115,7 +116,7 @@ export const completeQuiz = mutation({
     await ctx.db.insert("gameSessions", {
       userId,
       sport,
-      mode: "quiz",
+      mode,
       score: sessionScore,
       totalQuestions: totalAnswers,
       correctAnswers: correctCount,
