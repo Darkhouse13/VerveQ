@@ -158,7 +158,6 @@ interface SurvivalChallenge {
   round: number;
   difficulty: string;
   validPlayers: string[];
-  maskedName: string;
   primaryPlayer: string;
 }
 
@@ -558,13 +557,6 @@ function pickWeightedBucket(candidates: BucketStats[]): BucketStats | null {
   );
 }
 
-function buildMaskedName(player: string): string {
-  return player
-    .split("")
-    .map((ch) => (ch === " " ? " " : "_"))
-    .join("");
-}
-
 function getFootballRoundPreferences(round: number): FootballRoundPreferences {
   if (round <= 3) {
     return {
@@ -629,6 +621,84 @@ function getChallengePrimaryPlayer(
   return pickPrimaryPlayer(challenge.validPlayers, sport);
 }
 
+function getFirstName(player: string): string {
+  return player.trim().split(/\s+/)[0] || "Unknown";
+}
+
+function getLastNameInitial(player: string): string {
+  const parts = player.trim().split(/\s+/).filter(Boolean);
+  const lastName = parts[parts.length - 1] ?? "";
+  return lastName.charAt(0).toUpperCase() || "?";
+}
+
+function getFamousPlayerFallbackHint(
+  primaryPlayer: string,
+  sport: string,
+  stage: number,
+): string {
+  const sportLabel = sport === "basketball" ? "NBA" : sport;
+  if (!primaryPlayer) {
+    return `Most famous match: known ${sportLabel} player.`;
+  }
+  if (stage === 1) {
+    return `Most famous match: ${sportLabel} player; first name has ${getFirstName(primaryPlayer).length} letters.`;
+  }
+  if (stage === 2) {
+    return `Most famous match: last name starts with ${getLastNameInitial(primaryPlayer)}.`;
+  }
+  return `Most famous match first name: ${getFirstName(primaryPlayer)}`;
+}
+
+function buildFamousPlayerHint(
+  sport: string,
+  primaryPlayer: string,
+  stage: number,
+): string {
+  if (sport === "football") {
+    const meta = primaryPlayer ? footballMetadataMap[primaryPlayer] : undefined;
+    if (stage === 1 && meta) {
+      return `Most famous match — nationality: ${meta.nationality} | club: ${meta.club}`;
+    }
+    if (stage === 2 && meta) {
+      return `Most famous match — position: ${meta.position} | era: ${meta.era}`;
+    }
+    if (stage === 3) {
+      return `Most famous match first name: ${getFirstName(primaryPlayer)}`;
+    }
+    return getFamousPlayerFallbackHint(primaryPlayer, sport, stage);
+  }
+
+  if (sport === "basketball") {
+    const meta = primaryPlayer ? nbaMetadataMap[primaryPlayer] : undefined;
+    if (stage === 1 && meta) {
+      return `Most famous match — team: ${meta.team} | nationality: ${meta.nationality}`;
+    }
+    if (stage === 2 && meta) {
+      return `Most famous match — position: ${meta.position}`;
+    }
+    if (stage === 3) {
+      return `Most famous match first name: ${getFirstName(primaryPlayer)}`;
+    }
+    return getFamousPlayerFallbackHint(primaryPlayer, sport, stage);
+  }
+
+  if (sport === "tennis") {
+    const meta = primaryPlayer ? tennisMetadataMap[primaryPlayer] : undefined;
+    if (stage === 1 && meta) {
+      return `Most famous match — nationality: ${meta.nationality}`;
+    }
+    if (stage === 2 && meta) {
+      return `Most famous match — handedness: ${meta.handedness} | highest rank: #${meta.highestRank}`;
+    }
+    if (stage === 3) {
+      return `Most famous match first name: ${getFirstName(primaryPlayer)}`;
+    }
+    return getFamousPlayerFallbackHint(primaryPlayer, sport, stage);
+  }
+
+  return getFamousPlayerFallbackHint(primaryPlayer, sport, stage);
+}
+
 function getChallengeValidGuessPlayers(
   sport: string,
   challenge: Pick<SurvivalChallenge, "initials" | "validPlayers">,
@@ -690,7 +760,6 @@ function generateFootballChallengeFromCuratedIndex(
     round,
     difficulty: diff.label,
     validPlayers: [...pickedBucket.playerNames],
-    maskedName: buildMaskedName(primaryPlayer),
     primaryPlayer,
   };
 }
@@ -718,7 +787,6 @@ function generateLegacyChallenge(
     round,
     difficulty: diff.label,
     validPlayers: [...picked.players],
-    maskedName: buildMaskedName(primaryPlayer),
     primaryPlayer,
   };
 }
@@ -753,16 +821,13 @@ function generateChallenge(
 }
 
 function buildChallengeResponse(
-  challenge: Pick<SurvivalChallenge, "initials" | "difficulty"> & {
-    maskedName?: string;
-  },
+  challenge: Pick<SurvivalChallenge, "initials" | "difficulty">,
   sport: string,
 ) {
   return {
     initials: challenge.initials,
     difficulty: challenge.difficulty,
     hint: `Find a ${sport} player with initials ${challenge.initials}`,
-    maskedName: challenge.maskedName,
   };
 }
 
@@ -1048,63 +1113,10 @@ export const useHint = mutation({
 
     const sport = session.sport;
     const challenge = session.currentChallenge;
-    const players = challenge?.validPlayers ?? [];
     const primaryPlayer = challenge
       ? getChallengePrimaryPlayer(sport, challenge)
       : "";
-    let hintText = "";
-
-    if (sport === "football") {
-      const meta = primaryPlayer ? footballMetadataMap[primaryPlayer] : undefined;
-      if (stage === 1) {
-        hintText = meta
-          ? `Nationality: ${meta.nationality} | Club: ${meta.club}`
-          : `Football player — ${players.length} possible answers`;
-      } else if (stage === 2) {
-        hintText = meta
-          ? `Position: ${meta.position} | Era: ${meta.era}`
-          : `${players.length} players match these initials`;
-      } else if (stage === 3) {
-        const firstName = primaryPlayer.split(" ")[0] || "Unknown";
-        hintText = `First name: ${firstName}`;
-      }
-    } else if (sport === "basketball") {
-      const meta = primaryPlayer ? nbaMetadataMap[primaryPlayer] : undefined;
-      if (stage === 1) {
-        hintText = meta
-          ? `Team: ${meta.team} | Nationality: ${meta.nationality}`
-          : `NBA player — ${players.length} possible answers`;
-      } else if (stage === 2) {
-        hintText = meta
-          ? `Position: ${meta.position}`
-          : `${players.length} players match these initials`;
-      } else if (stage === 3) {
-        const firstName = primaryPlayer.split(" ")[0] || "Unknown";
-        hintText = `First name: ${firstName}`;
-      }
-    } else if (sport === "tennis") {
-      const meta = primaryPlayer ? tennisMetadataMap[primaryPlayer] : undefined;
-      if (stage === 1) {
-        hintText = meta
-          ? `Nationality: ${meta.nationality}`
-          : `Tennis player — ${players.length} possible answers`;
-      } else if (stage === 2) {
-        hintText = meta
-          ? `Handedness: ${meta.handedness} | Highest Rank: #${meta.highestRank}`
-          : `${players.length} players match these initials`;
-      } else if (stage === 3) {
-        const firstName = primaryPlayer.split(" ")[0] || "Unknown";
-        hintText = `First name: ${firstName}`;
-      }
-    } else {
-      // Fallback for unknown sports
-      if (stage === 3) {
-        const firstName = primaryPlayer.split(" ")[0] || "Unknown";
-        hintText = `First name: ${firstName}`;
-      } else {
-        hintText = `${players.length} players match these initials`;
-      }
-    }
+    const hintText = buildFamousPlayerHint(sport, primaryPlayer, stage);
 
     await ctx.db.patch(sessionId, {
       hintTokensLeft: tokensLeft - 1,

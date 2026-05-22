@@ -25,7 +25,6 @@ interface ChallengeData {
   initials: string;
   difficulty: string;
   hint: string;
-  maskedName?: string;
 }
 
 export default function SurvivalScreen() {
@@ -347,21 +346,6 @@ export default function SurvivalScreen() {
             </div>
           ))}
         </div>
-
-        {/* Masked name boxes */}
-        {challenge?.maskedName && (
-          <div className="flex flex-wrap justify-center gap-1.5 mb-5">
-            {challenge.maskedName.split("").map((ch, i) =>
-              ch === " " ? (
-                <div key={i} className="w-3" />
-              ) : (
-                <div key={i} className="neo-border w-8 h-10 flex items-center justify-center bg-muted">
-                  <span className="font-mono font-bold text-lg">_</span>
-                </div>
-              )
-            )}
-          </div>
-        )}
 
         <NeoBadge color="blue" rotated>
           Round {round}
