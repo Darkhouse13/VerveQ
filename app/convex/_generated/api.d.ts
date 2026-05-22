@@ -20,6 +20,7 @@ import type * as forge from "../forge.js";
 import type * as games from "../games.js";
 import type * as higherLower from "../higherLower.js";
 import type * as http from "../http.js";
+import type * as knowledgeQuestions from "../knowledgeQuestions.js";
 import type * as leaderboards from "../leaderboards.js";
 import type * as lib_daily from "../lib/daily.js";
 import type * as lib_elo from "../lib/elo.js";
@@ -62,6 +63,7 @@ declare const fullApi: ApiFromModules<{
   games: typeof games;
   higherLower: typeof higherLower;
   http: typeof http;
+  knowledgeQuestions: typeof knowledgeQuestions;
   leaderboards: typeof leaderboards;
   "lib/daily": typeof lib_daily;
   "lib/elo": typeof lib_elo;
