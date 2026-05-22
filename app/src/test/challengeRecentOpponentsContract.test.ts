@@ -23,6 +23,6 @@ describe("challenge recent opponents contract", () => {
     expect(challengeScreen).toContain("Recent Opponents");
     expect(challengeScreen).toContain("setUsername(opponent.username)");
     expect(challengeScreen).toContain("setSelectedSport(opponent.lastSport)");
-    expect(challengeScreen).toContain("setSelectedMode(opponent.lastMode)");
+    expect(challengeScreen).toContain('setSelectedMode(opponent.lastSport === "knowledge" ? "quiz" : opponent.lastMode)');
   });
 });

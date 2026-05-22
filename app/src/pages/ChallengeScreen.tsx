@@ -10,7 +10,7 @@ import { useQuery, useMutation } from "convex/react";
 import { api } from "../../convex/_generated/api";
 import { toast } from "sonner";
 
-const sportPills = ["football", "tennis", "basketball"];
+const sportPills = ["football", "tennis", "basketball", "knowledge"];
 const modePills = ["quiz", "survival"];
 
 function getChallengeInitials(name: string): string {
@@ -37,6 +37,7 @@ export default function ChallengeScreen() {
   const [selectedSport, setSelectedSport] = useState("football");
   const [selectedMode, setSelectedMode] = useState("quiz");
   const [sending, setSending] = useState(false);
+  const availableModes = selectedSport === "knowledge" ? ["quiz"] : modePills;
 
   const pending = useQuery(api.challenges.getPending);
   const recentOpponentsQuery = useQuery(api.challenges.getRecentOpponents);
@@ -122,7 +123,7 @@ export default function ChallengeScreen() {
                       onClick={() => {
                         setUsername(opponent.username);
                         setSelectedSport(opponent.lastSport);
-                        setSelectedMode(opponent.lastMode);
+                        setSelectedMode(opponent.lastSport === "knowledge" ? "quiz" : opponent.lastMode);
                       }}
                       className="neo-border rounded-lg bg-background px-3 py-2 text-left shrink-0 min-w-[132px] cursor-pointer active:neo-shadow-pressed"
                     >
@@ -151,7 +152,10 @@ export default function ChallengeScreen() {
               {sportPills.map((s) => (
                 <button
                   key={s}
-                  onClick={() => setSelectedSport(s)}
+                  onClick={() => {
+                    setSelectedSport(s);
+                    if (s === "knowledge") setSelectedMode("quiz");
+                  }}
                   className={`neo-border rounded-full px-3 py-1 text-xs font-heading font-bold cursor-pointer transition-all capitalize ${selectedSport === s ? "bg-primary text-primary-foreground neo-shadow" : "bg-background"}`}
                 >
                   {s}
@@ -163,7 +167,7 @@ export default function ChallengeScreen() {
               Mode
             </p>
             <div className="flex gap-2 mb-4">
-              {modePills.map((m) => (
+              {availableModes.map((m) => (
                 <button
                   key={m}
                   onClick={() => setSelectedMode(m)}

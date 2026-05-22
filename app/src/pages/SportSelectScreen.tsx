@@ -5,10 +5,11 @@ import { NeoButton } from "@/components/neo/NeoButton";
 import { ArrowLeft, Lock } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 
-const sportMeta: Record<string, { emoji: string; color: "success" | "accent" | "primary" }> = {
-  football:   { emoji: "\u26BD", color: "success" },
-  tennis:     { emoji: "\uD83C\uDFBE", color: "accent" },
-  basketball: { emoji: "\uD83C\uDFC0", color: "primary" },
+const sportMeta: Record<string, { label: string; emoji: string; color: "success" | "accent" | "primary" }> = {
+  football:   { label: "Football", emoji: "\u26BD", color: "success" },
+  tennis:     { label: "Tennis", emoji: "\uD83C\uDFBE", color: "accent" },
+  basketball: { label: "Basketball", emoji: "\uD83C\uDFC0", color: "primary" },
+  knowledge:  { label: "Knowledge", emoji: "\uD83E\uDDE0", color: "primary" },
 };
 
 export default function SportSelectScreen() {
@@ -19,8 +20,13 @@ export default function SportSelectScreen() {
   const isHigherLowerMode = mode === "higher-lower";
   const isVerveGridMode = mode === "verve-grid";
   const isWhoAmIMode = mode === "who-am-i";
+  const isSurvivalMode = mode === "survival";
   const isFootballOnlyMode = isHigherLowerMode || isVerveGridMode || isWhoAmIMode;
-  const availableSports = isFootballOnlyMode ? ["football"] : Object.keys(sportMeta);
+  const availableSports = isFootballOnlyMode
+    ? ["football"]
+    : isSurvivalMode
+      ? ["football", "tennis", "basketball"]
+      : Object.keys(sportMeta);
   const [selected, setSelected] = useState<string | null>(
     isFootballOnlyMode ? "football" : null,
   );
@@ -31,7 +37,9 @@ export default function SportSelectScreen() {
       ? "VerveGrid is currently available for football only"
       : isWhoAmIMode
         ? "Who Am I is currently available for football only"
-      : "Choose your arena";
+      : isSurvivalMode
+        ? "Choose your sport"
+        : "Choose a topic";
 
   if (isGuest) {
     return (
@@ -65,12 +73,12 @@ export default function SportSelectScreen() {
         <ArrowLeft size={20} strokeWidth={2.5} />
       </button>
 
-      <h1 className="text-3xl font-heading font-bold mb-1">Pick a Sport</h1>
+      <h1 className="text-3xl font-heading font-bold mb-1">{isSurvivalMode || isFootballOnlyMode ? "Pick a Sport" : "Pick a Topic"}</h1>
       <p className="text-muted-foreground font-body mb-6">{subtitle}</p>
 
       <div className="grid grid-cols-2 gap-3">
         {availableSports.map((sport) => {
-          const meta = sportMeta[sport] || { emoji: "\uD83C\uDFC6", color: "primary" as const };
+          const meta = sportMeta[sport] || { label: sport, emoji: "\uD83C\uDFC6", color: "primary" as const };
           return (
             <NeoCard
               key={sport}
@@ -81,7 +89,7 @@ export default function SportSelectScreen() {
               onClick={() => setSelected(sport)}
             >
               <span className="text-5xl">{meta.emoji}</span>
-              <p className="font-heading font-bold capitalize">{sport}</p>
+              <p className="font-heading font-bold">{meta.label}</p>
             </NeoCard>
           );
         })}

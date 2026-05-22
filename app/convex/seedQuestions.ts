@@ -1,6 +1,7 @@
 import { internalMutation, internalAction } from "./_generated/server";
 import { internal } from "./_generated/api";
 import { v } from "convex/values";
+import { knowledgeQuestions } from "./knowledgeQuestions";
 
 export const clearAll = internalMutation({
   args: {},
@@ -54,6 +55,39 @@ export const seedBatch = internalMutation({
       }
     }
     return { inserted };
+  },
+});
+
+
+export const seedKnowledgeQuestions = internalMutation({
+  args: {},
+  handler: async (ctx) => {
+    let inserted = 0;
+    let skipped = 0;
+
+    for (const q of knowledgeQuestions) {
+      const existing = await ctx.db
+        .query("quizQuestions")
+        .withIndex("by_checksum", (qb) => qb.eq("checksum", q.checksum))
+        .first();
+
+      if (existing) {
+        skipped++;
+        continue;
+      }
+
+      await ctx.db.insert("quizQuestions", {
+        ...q,
+        difficultyVotes: 0,
+        difficultyScore: 0,
+        timesAnswered: 0,
+        timesCorrect: 0,
+        usageCount: 0,
+      });
+      inserted++;
+    }
+
+    return { inserted, skipped, total: knowledgeQuestions.length };
   },
 });
 
