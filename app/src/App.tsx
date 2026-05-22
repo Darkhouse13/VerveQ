@@ -3,7 +3,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ConvexReactClient } from "convex/react";
 import { ConvexAuthProvider } from "@convex-dev/auth/react";
 import { AuthProvider } from "./contexts/AuthContext";
-import { ProtectedRoute } from "./components/ProtectedRoute";
+import { ProtectedRoute, UsernameRequiredRoute } from "./components/ProtectedRoute";
 import LoginScreen from "./pages/LoginScreen";
 import OnboardingScreen from "./pages/OnboardingScreen";
 import HomeScreen from "./pages/HomeScreen";
@@ -70,25 +70,25 @@ const App = () => (
             <Route
               path="/difficulty"
               element={
-                <ProtectedRoute>
+                <UsernameRequiredRoute>
                   <DifficultyScreen />
-                </ProtectedRoute>
+                </UsernameRequiredRoute>
               }
             />
             <Route
               path="/quiz"
               element={
-                <ProtectedRoute>
+                <UsernameRequiredRoute>
                   <QuizScreen />
-                </ProtectedRoute>
+                </UsernameRequiredRoute>
               }
             />
             <Route
               path="/survival"
               element={
-                <ProtectedRoute>
+                <UsernameRequiredRoute>
                   <SurvivalScreen />
-                </ProtectedRoute>
+                </UsernameRequiredRoute>
               }
             />
             <Route
@@ -110,89 +110,89 @@ const App = () => (
             <Route
               path="/challenge"
               element={
-                <ProtectedRoute>
+                <UsernameRequiredRoute>
                   <ChallengeScreen />
-                </ProtectedRoute>
+                </UsernameRequiredRoute>
               }
             />
             <Route
               path="/daily-quiz"
               element={
-                <ProtectedRoute>
+                <UsernameRequiredRoute>
                   <DailyQuizScreen />
-                </ProtectedRoute>
+                </UsernameRequiredRoute>
               }
             />
             <Route
               path="/daily-results"
               element={
-                <ProtectedRoute>
+                <UsernameRequiredRoute>
                   <DailyResultScreen />
-                </ProtectedRoute>
+                </UsernameRequiredRoute>
               }
             />
             <Route
               path="/blitz"
               element={
-                <ProtectedRoute>
+                <UsernameRequiredRoute>
                   <BlitzScreen />
-                </ProtectedRoute>
+                </UsernameRequiredRoute>
               }
             />
             <Route
               path="/blitz-results"
               element={
-                <ProtectedRoute>
+                <UsernameRequiredRoute>
                   <BlitzResultScreen />
-                </ProtectedRoute>
+                </UsernameRequiredRoute>
               }
             />
             <Route
               path="/waiting-room"
               element={
-                <ProtectedRoute>
+                <UsernameRequiredRoute>
                   <WaitingRoomScreen />
-                </ProtectedRoute>
+                </UsernameRequiredRoute>
               }
             />
             <Route
               path="/live-match"
               element={
-                <ProtectedRoute>
+                <UsernameRequiredRoute>
                   <LiveMatchScreen />
-                </ProtectedRoute>
+                </UsernameRequiredRoute>
               }
             />
             <Route
               path="/forge"
               element={
-                <ProtectedRoute>
+                <UsernameRequiredRoute>
                   <ForgeScreen />
-                </ProtectedRoute>
+                </UsernameRequiredRoute>
               }
             />
             <Route
               path="/higher-lower"
               element={
-                <ProtectedRoute>
+                <UsernameRequiredRoute>
                   <HigherLowerScreen />
-                </ProtectedRoute>
+                </UsernameRequiredRoute>
               }
             />
             <Route
               path="/verve-grid"
               element={
-                <ProtectedRoute>
+                <UsernameRequiredRoute>
                   <VerveGridScreen />
-                </ProtectedRoute>
+                </UsernameRequiredRoute>
               }
             />
             <Route
               path="/who-am-i"
               element={
-                <ProtectedRoute>
+                <UsernameRequiredRoute>
                   <WhoAmIScreen />
-                </ProtectedRoute>
+                </UsernameRequiredRoute>
               }
             />
             <Route path="*" element={<NotFound />} />

@@ -36,3 +36,16 @@ describe("post-QA regression contracts", () => {
     expect(source).not.toContain("{c.challenger[0]}");
   });
 });
+
+
+it("keeps used daily attempts from advertising as new or re-calling startAttempt", async () => {
+  const fs = await import("node:fs/promises");
+  const banner = await fs.readFile(`${process.cwd()}/src/components/DailyBanner.tsx`, "utf8");
+  const daily = await fs.readFile(`${process.cwd()}/src/pages/DailyQuizScreen.tsx`, "utf8");
+
+  expect(banner).toContain("const hasPlayed = !!quizStatus");
+  expect(banner).toContain("Attempt used");
+  expect(daily).toContain("const attemptStatus = useQuery(api.dailyChallenge.getAttemptStatus");
+  expect(daily).toContain("if (attemptStatus) {");
+  expect(daily.indexOf("if (attemptStatus)")).toBeLessThan(daily.indexOf('startAttemptMut({ sport, mode: "quiz" })'));
+});

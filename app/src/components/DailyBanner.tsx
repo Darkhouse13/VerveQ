@@ -24,7 +24,7 @@ export function DailyBanner() {
     isGuest ? "skip" : { sport: "football", mode: "quiz" },
   );
 
-  const hasPlayed = quizStatus?.completed || quizStatus?.forfeited;
+  const hasPlayed = !!quizStatus;
 
   const timeStr = `${hours.toString().padStart(2, "0")}:${minutes.toString().padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`;
 
@@ -42,7 +42,7 @@ export function DailyBanner() {
           <p className="font-heading font-bold text-lg">Daily Challenge</p>
           {hasPlayed ? (
             <p className="text-xs opacity-90">
-              Score: {quizStatus?.score} | Resets in {timeStr}
+              {quizStatus?.completed ? `Score: ${quizStatus.score} | ` : "Attempt used | "}Resets in {timeStr}
             </p>
           ) : isGuest ? (
             <p className="text-xs opacity-90">Create a username to play daily challenges.</p>

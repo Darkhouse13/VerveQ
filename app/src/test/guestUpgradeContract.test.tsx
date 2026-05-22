@@ -342,3 +342,44 @@ describe("LoginScreen — mode override + guest notice", () => {
     );
   });
 });
+
+
+describe("Guest account-required route contracts", () => {
+  it("exports a UsernameRequiredRoute gate that renders the username-required guest CTA", async () => {
+    const source = await import("node:fs/promises").then((fs) =>
+      fs.readFile(`${process.cwd()}/src/components/ProtectedRoute.tsx`, "utf8"),
+    );
+
+    expect(source).toContain("export function UsernameRequiredRoute");
+    expect(source).toContain("Username required");
+    expect(source).toContain("/?mode=signup&from=guest");
+    expect(source).toContain("isGuest");
+  });
+
+  it("wraps direct session-writing game routes so guests cannot hit backend mutations directly", async () => {
+    const appSource = await import("node:fs/promises").then((fs) =>
+      fs.readFile(`${process.cwd()}/src/App.tsx`, "utf8"),
+    );
+
+    for (const screen of [
+      "DifficultyScreen",
+      "QuizScreen",
+      "SurvivalScreen",
+      "ChallengeScreen",
+      "DailyQuizScreen",
+      "DailyResultScreen",
+      "BlitzScreen",
+      "BlitzResultScreen",
+      "WaitingRoomScreen",
+      "LiveMatchScreen",
+      "ForgeScreen",
+      "HigherLowerScreen",
+      "VerveGridScreen",
+      "WhoAmIScreen",
+    ]) {
+      expect(appSource).toContain(`<UsernameRequiredRoute>
+                  <${screen} />
+                </UsernameRequiredRoute>`);
+    }
+  });
+});

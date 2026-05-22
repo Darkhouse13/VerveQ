@@ -59,6 +59,7 @@ export default function DailyQuizScreen() {
 
   const getOrCreateChallengeMut = useMutation(api.dailyChallenge.getOrCreateChallenge);
   const startAttemptMut = useMutation(api.dailyChallenge.startAttempt);
+  const attemptStatus = useQuery(api.dailyChallenge.getAttemptStatus, { sport, mode: "quiz" });
   const dailyQuestion = useQuery(
     api.dailyChallenge.getQuestion,
     attemptId && !attemptFinished && questionNum < MAX_QUESTIONS ? { attemptId, questionIndex: questionNum } : "skip",
@@ -68,6 +69,13 @@ export default function DailyQuizScreen() {
   const completeAttemptMut = useMutation(api.dailyChallenge.completeAttempt);
 
   useEffect(() => {
+    if (attemptStatus === undefined) return;
+    if (attemptStatus) {
+      toast.error("You've already played today's challenge!");
+      navigate("/home", { replace: true });
+      return;
+    }
+
     (async () => {
       try {
         await getOrCreateChallengeMut({ sport, mode: "quiz" });
@@ -86,8 +94,7 @@ export default function DailyQuizScreen() {
         }
       }
     })();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [attemptStatus, getOrCreateChallengeMut, navigate, sport, startAttemptMut]);
 
   useEffect(() => {
     if (dailyQuestion && !forfeited) {
