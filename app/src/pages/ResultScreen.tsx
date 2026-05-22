@@ -32,6 +32,26 @@ function getKFactorExplanation(label?: string, k?: number) {
   return `K=${k}: standard rating movement.`;
 }
 
+function getChallengeAgainLabel(outcome?: GameResultState["outcome"]) {
+  if (outcome === "loss" || outcome === "forfeitLoss") return "Get Revenge";
+  if (outcome === "win" || outcome === "forfeitWin") return "Defend Your Win";
+  return "Run It Back";
+}
+
+function formatRecentOutcome(
+  match: NonNullable<GameResultState["recentMatches"]>[number],
+  currentUserIsPlayer1?: boolean,
+) {
+  const myScore = currentUserIsPlayer1 ? match.player1Score : match.player2Score;
+  const opponentScore = currentUserIsPlayer1 ? match.player2Score : match.player1Score;
+  const outcome = match.outcome === "draw"
+    ? "D"
+    : currentUserIsPlayer1
+      ? match.outcome === "win" ? "W" : "L"
+      : match.outcome === "win" ? "L" : "W";
+  return `${outcome} ${myScore}-${opponentScore}`;
+}
+
 export default function ResultScreen() {
   const navigate = useNavigate();
   const location = useLocation();
@@ -91,6 +111,14 @@ export default function ResultScreen() {
   const seriesLabel = state.versusScore
     ? `${state.versusScore.player1Wins}-${state.versusScore.player2Wins}${state.versusScore.draws ? `-${state.versusScore.draws}` : ""}`
     : null;
+  const challengeAgainLabel = getChallengeAgainLabel(state.outcome);
+  const currentStreak = state.currentStreak ?? state.versusScore?.currentStreak ?? null;
+  const recentMatches = state.recentMatches ?? state.versusScore?.recentMatches ?? [];
+  const scoreGap = Math.abs(state.score - (state.opponentScore ?? 0));
+  const showBestOfThreePrompt = isChallenge && scoreGap > 0 && scoreGap <= 100;
+  const streakLabel = currentStreak
+    ? `${currentStreak.count} match ${currentStreak.owner === "you" || (currentStreak.owner === "player1" && state.currentUserIsPlayer1) || (currentStreak.owner === "player2" && !state.currentUserIsPlayer1) ? "your" : "opponent"} Streak`
+    : "No active Streak";
 
   const handleChallengeAgain = async () => {
     if (!state.opponentId) {
@@ -248,6 +276,39 @@ export default function ResultScreen() {
         ))}
       </div>
 
+      {isChallenge && (
+        <NeoCard className="w-full mb-8 py-4">
+          <div className="flex items-center justify-between mb-3">
+            <p className="font-heading font-bold text-sm uppercase">Rivalry</p>
+            {showBestOfThreePrompt && (
+              <NeoBadge color="accent" size="sm">Best of 3?</NeoBadge>
+            )}
+          </div>
+          <div className="grid grid-cols-2 gap-2 mb-3">
+            <div className="neo-border rounded-md p-3 text-center bg-muted">
+              <p className="font-mono font-bold text-lg">{seriesLabel ?? "0-0"}</p>
+              <p className="text-[10px] font-heading uppercase opacity-80">Series</p>
+            </div>
+            <div className="neo-border rounded-md p-3 text-center bg-muted">
+              <p className="font-mono font-bold text-sm">{streakLabel}</p>
+              <p className="text-[10px] font-heading uppercase opacity-80">Streak</p>
+            </div>
+          </div>
+          {recentMatches.length > 0 && (
+            <div>
+              <p className="text-[10px] font-heading uppercase text-muted-foreground mb-2">Last 5</p>
+              <div className="flex flex-wrap gap-2">
+                {recentMatches.slice(0, 5).map((match, index) => (
+                  <span key={`${match.playedAt}-${index}`} className="neo-border rounded px-2 py-1 text-[10px] font-mono font-bold bg-card">
+                    {formatRecentOutcome(match, state.currentUserIsPlayer1)}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+        </NeoCard>
+      )}
+
       {isQuiz && state.scoreBreakdown && state.scoreBreakdown.length > 0 && (
         <NeoCard className="w-full mb-8 py-4">
           <p className="font-heading font-bold text-sm text-center mb-3">
@@ -279,7 +340,7 @@ export default function ResultScreen() {
           onClick={() => isChallenge ? handleChallengeAgain() : navigate(`/sport-select?mode=${state.mode}`)}
           disabled={isChallenge && sendingRematch}
         >
-          {isChallenge ? (sendingRematch ? "Sending..." : "Challenge Again") : "Play Again"}
+          {isChallenge ? (sendingRematch ? "Sending..." : challengeAgainLabel) : "Play Again"}
         </NeoButton>
         {!isChallenge && (
           <NeoButton

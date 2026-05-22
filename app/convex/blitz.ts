@@ -4,6 +4,7 @@ import { v } from "convex/values";
 import { getAuthUserId } from "@convex-dev/auth/server";
 import { pickQuestionPool } from "./lib/imageQuestions";
 import { normalizeAnswer } from "./lib/scoring";
+import { orderAnswerOptions } from "./lib/answerOptions";
 
 const BLITZ_DURATION_MS = 60_000; // 60 seconds
 const WRONG_PENALTY_MS = 3_000;   // -3s on wrong
@@ -91,7 +92,7 @@ export const getQuestion = mutation({
     // submitAnswer response after server-side validation.
     return {
       question: pick.question,
-      options: pick.options,
+      options: orderAnswerOptions(pick.options, pick.correctAnswer, pick.checksum),
       checksum: pick.checksum,
       imageUrl,
     };

@@ -26,5 +26,28 @@ export interface GameResultState {
     draws: number;
     totalMatches: number;
     lastPlayedAt?: number;
+    currentStreak?: {
+      count: number;
+      owner: "player1" | "player2" | "you" | "opponent";
+      streakOwner?: "player1" | "player2" | "you" | "opponent";
+    } | null;
+    recentMatches?: Array<{
+      outcome: "win" | "loss" | "draw";
+      player1Score: number;
+      player2Score: number;
+      playedAt: number;
+    }>;
   };
+  currentStreak?: {
+    count: number;
+    owner: "player1" | "player2" | "you" | "opponent";
+    streakOwner?: "player1" | "player2" | "you" | "opponent";
+  } | null;
+  recentMatches?: Array<{
+    outcome: "win" | "loss" | "draw";
+    player1Score: number;
+    player2Score: number;
+    playedAt: number;
+  }>;
+  currentUserIsPlayer1?: boolean;
 }

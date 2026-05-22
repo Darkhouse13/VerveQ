@@ -681,14 +681,16 @@ describe("weekend stabilization live matches", () => {
       { matchId: "match_1" },
     )) as { questions: Array<Record<string, unknown> | null> };
 
-    expect(result.questions[0]).toEqual({
-      question: "Who won the final?",
-      options: ["A", "B", "C", "D"],
-    });
-    expect(result.questions[1]).toEqual({
-      question: "Who scored first?",
-      options: ["W", "X", "Y", "Z"],
-    });
+    expect(result.questions[0]?.question).toBe("Who won the final?");
+    expect(result.questions[0]?.options).toHaveLength(4);
+    expect(result.questions[0]?.options).toEqual(
+      expect.arrayContaining(["A", "B", "C", "D"]),
+    );
+    expect(result.questions[1]?.question).toBe("Who scored first?");
+    expect(result.questions[1]?.options).toHaveLength(4);
+    expect(result.questions[1]?.options).toEqual(
+      expect.arrayContaining(["W", "X", "Y", "Z"]),
+    );
     for (const question of result.questions.filter(Boolean)) {
       expect(question).not.toHaveProperty("correctAnswer");
       expect(question).not.toHaveProperty("explanation");
@@ -718,11 +720,12 @@ describe("weekend stabilization live matches", () => {
       matchId: "match_1",
     })) as { questions: Array<Record<string, unknown> | null> };
 
-    expect(result.questions[0]).toEqual({
-      question: "Identify the stadium",
-      options: ["A", "B", "C", "D"],
-      imageUrl: "https://cdn.example/storage_image_1.jpg",
-    });
+    expect(result.questions[0]?.question).toBe("Identify the stadium");
+    expect(result.questions[0]?.options).toHaveLength(4);
+    expect(result.questions[0]?.options).toEqual(
+      expect.arrayContaining(["A", "B", "C", "D"]),
+    );
+    expect(result.questions[0]?.imageUrl).toBe("https://cdn.example/storage_image_1.jpg");
     expect(result.questions[0]).not.toHaveProperty("correctAnswer");
     expect(result.questions[0]).not.toHaveProperty("explanation");
   });

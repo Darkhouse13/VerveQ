@@ -86,7 +86,7 @@ export const getQuestion = mutation({
     // revealed by checkAnswer after the server validates the submission.
     return {
       question: picked.question,
-      options: picked.options,
+      options: orderAnswerOptions(picked.options, picked.correctAnswer, picked.checksum),
       difficulty: picked.difficulty,
       checksum: picked.checksum,
       category: picked.category,

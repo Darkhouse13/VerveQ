@@ -119,6 +119,9 @@ export default function LiveMatchScreen() {
           opponentName: opponent.username,
           opponentId: opponent.id,
           versusScore: match.versusSummary,
+          currentStreak: match.versusSummary.currentStreak,
+          recentMatches: match.versusSummary.recentMatches,
+          currentUserIsPlayer1: match.isPlayer1,
         },
         replace: true,
       });

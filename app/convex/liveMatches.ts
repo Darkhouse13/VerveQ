@@ -5,6 +5,7 @@ import { getAuthUserId } from "@convex-dev/auth/server";
 import { internal } from "./_generated/api";
 import { clampRating, getKFactor } from "./lib/elo";
 import { normalizeAnswer } from "./lib/scoring";
+import { orderAnswerOptions } from "./lib/answerOptions";
 
 const TOTAL_QUESTIONS = 10;
 const QUESTION_TIME_LIMIT_MS = 10_000;
@@ -45,7 +46,13 @@ async function sanitizeQuestion(
     : null;
   return {
     question: question.question,
-    options: question.options,
+    options: question.correctAnswer
+      ? orderAnswerOptions(
+          question.options,
+          question.correctAnswer,
+          question.checksum ?? question.question,
+        )
+      : question.options,
     ...(imageUrl ? { imageUrl } : {}),
   };
 }
@@ -176,6 +183,52 @@ function orientVersusSummary(
   };
 }
 
+async function getRivalryDetails(
+  ctx: Pick<MutationCtx, "db">,
+  player1Id: Id<"users">,
+  player2Id: Id<"users">,
+  sport: string,
+  mode = "quiz",
+) {
+  const { pairKey } = getPairKey(player1Id, player2Id);
+  const recentHistory = await ctx.db
+    .query("challengeMatchHistory")
+    .withIndex("by_pair_sport_mode", (q) =>
+      q.eq("pairKey", pairKey).eq("sport", sport).eq("mode", mode),
+    )
+    .order("desc")
+    .take(5);
+
+  let streakOwner: "player1" | "player2" | null = null;
+  let streakWinnerId: Id<"users"> | null = null;
+  let currentStreak = 0;
+  for (const match of recentHistory) {
+    if (!match.winnerId) break;
+    if (!streakWinnerId) {
+      streakWinnerId = match.winnerId;
+      streakOwner = match.winnerId === player1Id ? "player1" : "player2";
+    }
+    if (match.winnerId !== streakWinnerId) break;
+    currentStreak += 1;
+  }
+
+  return {
+    currentStreak: currentStreak > 1 && streakOwner
+      ? { count: currentStreak, owner: streakOwner, streakOwner }
+      : null,
+    recentMatches: recentHistory.map((match) => ({
+      outcome: !match.winnerId
+        ? "draw"
+        : match.winnerId === player1Id
+          ? "win"
+          : "loss",
+      player1Score: match.player1Score,
+      player2Score: match.player2Score,
+      playedAt: match.playedAt,
+    })),
+  };
+}
+
 async function getVersusSummary(
   ctx: Pick<MutationCtx, "db">,
   player1Id: Id<"users">,
@@ -193,7 +246,11 @@ async function getVersusSummary(
       q.eq("pairKey", pairKey).eq("sport", sport).eq("mode", mode),
     )
     .first();
-  return orientVersusSummary(summary, player1Id, player2Id);
+  const rivalry = await getRivalryDetails(ctx, player1Id, player2Id, sport, mode);
+  return {
+    ...orientVersusSummary(summary, player1Id, player2Id),
+    ...rivalry,
+  };
 }
 
 type ChallengeQuestionCandidate = Doc<"quizQuestions"> & { _id: Id<"quizQuestions"> };
@@ -453,7 +510,7 @@ export const createFromChallenge = mutation({
 
     const picked = pickedQuestions.map((q) => ({
       question: q.question,
-      options: q.options,
+      options: orderAnswerOptions(q.options, q.correctAnswer, q.checksum),
       correctAnswer: q.correctAnswer,
       explanation: q.explanation ?? null,
       imageId: q.imageId ?? null,

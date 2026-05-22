@@ -3,6 +3,7 @@ import { v } from "convex/values";
 import { getAuthUserId } from "@convex-dev/auth/server";
 import { getTodayUTC, seededShuffle } from "./lib/daily";
 import { normalizeAnswer } from "./lib/scoring";
+import { orderAnswerOptions } from "./lib/answerOptions";
 import type { Id } from "./_generated/dataModel";
 
 const DAILY_QUIZ_COUNT = 10;
@@ -40,7 +41,7 @@ function snapshotQuestion(question: {
   return {
     checksum: question.checksum,
     question: question.question,
-    options: question.options,
+    options: orderAnswerOptions(question.options, question.correctAnswer, question.checksum),
     correctAnswer: question.correctAnswer,
     ...(question.explanation ? { explanation: question.explanation } : {}),
     category: question.category,
