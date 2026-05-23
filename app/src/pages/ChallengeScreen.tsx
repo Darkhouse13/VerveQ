@@ -132,6 +132,16 @@ export default function ChallengeScreen() {
           <Plus size={18} strokeWidth={3} /> New Duel
         </NeoButton>
 
+        <NeoCard onClick={() => navigate("/challenge/arena")} className="space-y-2 bg-primary text-primary-foreground">
+          <div className="flex items-center justify-between gap-3">
+            <div>
+              <p className="font-heading font-bold text-base">Arena Beta</p>
+              <p className="text-xs opacity-85">1v1, 2v2, and 3-5 player free-for-all · 5 rounds × 10 questions.</p>
+            </div>
+            <Users size={24} strokeWidth={3} />
+          </div>
+        </NeoCard>
+
         {/* Rivals strip */}
         {topRivals.length > 0 && (
           <div>

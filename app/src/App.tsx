@@ -23,6 +23,8 @@ import BlitzScreen from "./pages/BlitzScreen";
 import BlitzResultScreen from "./pages/BlitzResultScreen";
 import WaitingRoomScreen from "./pages/WaitingRoomScreen";
 import LiveMatchScreen from "./pages/LiveMatchScreen";
+import MultiplayerLobbyScreen from "./pages/MultiplayerLobbyScreen";
+import MultiplayerArenaScreen from "./pages/MultiplayerArenaScreen";
 import ForgeScreen from "./pages/ForgeScreen";
 import HigherLowerScreen from "./pages/HigherLowerScreen";
 import VerveGridScreen from "./pages/VerveGridScreen";
@@ -203,6 +205,22 @@ const AppRoutes = () => (
               element={
                 <UsernameRequiredRoute>
                   <WaitingRoomScreen />
+                </UsernameRequiredRoute>
+              }
+            />
+            <Route
+              path="/challenge/arena"
+              element={
+                <UsernameRequiredRoute>
+                  <MultiplayerLobbyScreen />
+                </UsernameRequiredRoute>
+              }
+            />
+            <Route
+              path="/challenge/arena/play"
+              element={
+                <UsernameRequiredRoute>
+                  <MultiplayerArenaScreen />
                 </UsernameRequiredRoute>
               }
             />

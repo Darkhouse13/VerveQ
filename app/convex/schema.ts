@@ -380,6 +380,46 @@ export default defineSchema({
     .index("by_date_sport_mode_score", ["date", "sport", "mode", "score"])
     .index("by_expiresAt", ["expiresAt"]),
 
+  // ── Multiplayer Challenge Arena (beta) ──
+  multiplayerMatches: defineTable({
+    hostId: v.id("users"),
+    joinCode: v.string(),
+    format: v.union(
+      v.literal("1v1"),
+      v.literal("2v2"),
+      v.literal("1v1v1"),
+      v.literal("1v1v1v1"),
+      v.literal("1v1v1v1v1"),
+    ),
+    minPlayers: v.number(),
+    maxPlayers: v.number(),
+    teamSize: v.optional(v.number()),
+    playerIds: v.array(v.id("users")),
+    teamAssignments: v.optional(v.array(v.number())),
+    readyUserIds: v.array(v.id("users")),
+    roundBreakReadyUserIds: v.array(v.id("users")),
+    status: v.union(
+      v.literal("lobby"),
+      v.literal("question"),
+      v.literal("roundBreak"),
+      v.literal("completed"),
+      v.literal("cancelled"),
+    ),
+    currentQuestion: v.number(),
+    currentRoundIndex: v.number(),
+    totalQuestions: v.number(),
+    questions: v.any(),
+    answersByUserId: v.any(),
+    scoresByUserId: v.any(),
+    questionStartedAt: v.optional(v.number()),
+    roundBreakStartedAt: v.optional(v.number()),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+    completedAt: v.optional(v.number()),
+  })
+    .index("by_joinCode", ["joinCode"])
+    .index("by_host_status", ["hostId", "status"]),
+
   // ── Live Head-to-Head ──
   liveMatches: defineTable({
     player1Id: v.id("users"),

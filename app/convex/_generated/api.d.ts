@@ -32,6 +32,8 @@ import type * as lib_passwordPolicy from "../lib/passwordPolicy.js";
 import type * as lib_scoring from "../lib/scoring.js";
 import type * as liveMatches from "../liveMatches.js";
 import type * as maintenance from "../maintenance.js";
+import type * as multiplayerMatches from "../multiplayerMatches.js";
+import type * as multiplayerQuestionBanks from "../multiplayerQuestionBanks.js";
 import type * as notifications from "../notifications.js";
 import type * as profile from "../profile.js";
 import type * as quizSessions from "../quizSessions.js";
@@ -79,6 +81,8 @@ declare const fullApi: ApiFromModules<{
   "lib/scoring": typeof lib_scoring;
   liveMatches: typeof liveMatches;
   maintenance: typeof maintenance;
+  multiplayerMatches: typeof multiplayerMatches;
+  multiplayerQuestionBanks: typeof multiplayerQuestionBanks;
   notifications: typeof notifications;
   profile: typeof profile;
   quizSessions: typeof quizSessions;
