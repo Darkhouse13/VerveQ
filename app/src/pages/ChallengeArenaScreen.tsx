@@ -30,6 +30,7 @@ import { toast } from "sonner";
 import { NeoCard } from "@/components/neo/NeoCard";
 import { NeoButton } from "@/components/neo/NeoButton";
 import { NeoBadge } from "@/components/neo/NeoBadge";
+import { NeoInput } from "@/components/neo/NeoInput";
 import { QuestionImage } from "@/components/QuestionImage";
 import { useAuth } from "@/contexts/AuthContext";
 import { api } from "../../convex/_generated/api";
@@ -883,8 +884,9 @@ function QuestionView({
   const myAnswered = room.myCurrentAnswer?.answer ?? null;
   const [pending, setPending] = useState<string | null>(null);
   const [logoGuess, setLogoGuess] = useState("");
-  const [logoCloseHint, setLogoCloseHint] = useState(false);
+  const [logoFeedback, setLogoFeedback] = useState<"wrong" | "close" | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const logoInputRef = useRef<HTMLInputElement | null>(null);
 
   // Reset local pending selection when the question changes.
   const qKey = `${room.currentRound}:${room.currentQuestionIndex}`;
@@ -894,7 +896,7 @@ function QuestionView({
       lastKey.current = qKey;
       setPending(null);
       setLogoGuess("");
-      setLogoCloseHint(false);
+      setLogoFeedback(null);
       setSubmitting(false);
     }
   }, [qKey]);
@@ -944,12 +946,15 @@ function QuestionView({
     const guess = logoGuess.trim();
     if (locked || submitting || !guess) return;
     setSubmitting(true);
-    setLogoCloseHint(false);
+    setLogoFeedback(null);
     try {
       const res = await submitAnswer({ arenaId: room.arenaId, answer: guess });
       if ("result" in res && res.result === "wrong") {
-        setLogoCloseHint(!!res.close);
+        setLogoFeedback(res.close ? "close" : "wrong");
+        setLogoGuess("");
         setSubmitting(false);
+        // Keep the keyboard up and let the player retype immediately.
+        requestAnimationFrame(() => logoInputRef.current?.focus());
         return;
       }
       setPending(guess);
@@ -1030,32 +1035,50 @@ function QuestionView({
       )}
 
       {isLogoText ? (
-        <form onSubmit={(event) => void handleLogoSubmit(event)} className="space-y-2.5">
+        <form onSubmit={(event) => void handleLogoSubmit(event)} className="space-y-2">
           <div className="flex gap-2">
-            <input
-              value={locked ? (myAnswered ?? logoGuess) : logoGuess}
+            <NeoInput
+              ref={logoInputRef}
+              value={locked ? (myAnswered ?? "") : logoGuess}
               onChange={(event) => {
                 setLogoGuess(event.target.value);
-                setLogoCloseHint(false);
+                if (logoFeedback) setLogoFeedback(null);
               }}
               disabled={locked || submitting}
               autoComplete="off"
-              className="min-w-0 flex-1 neo-border rounded-lg bg-card px-3 py-3 font-heading font-bold text-sm outline-none focus:ring-2 focus:ring-primary"
-              placeholder="Company name"
+              autoCorrect="off"
+              autoCapitalize="words"
+              spellCheck={false}
+              enterKeyHint="go"
+              autoFocus
+              placeholder="Name the company"
+              aria-label="Guess the company name"
+              className="min-w-0 flex-1 py-3 font-heading font-bold"
             />
-            <button
+            <NeoButton
               type="submit"
+              variant="primary"
+              size="md"
               disabled={locked || submitting || !logoGuess.trim()}
-              className="neo-border neo-shadow rounded-lg bg-primary text-primary-foreground px-4 py-3 font-heading font-bold text-sm active:neo-shadow-pressed disabled:opacity-60"
+              className="shrink-0 px-4 py-3 disabled:opacity-60"
+              aria-label="Submit guess"
             >
-              <Check size={16} strokeWidth={3} />
-            </button>
+              <ArrowRight size={18} strokeWidth={3} />
+            </NeoButton>
           </div>
-          {logoCloseHint && (
-            <p className="text-center text-[11px] font-heading font-bold text-accent">
-              Close
-            </p>
-          )}
+          <div className="min-h-[18px] text-center text-[11px] font-heading font-bold uppercase tracking-wide">
+            {locked ? (
+              <span className="text-success">Got it!</span>
+            ) : logoFeedback === "close" ? (
+              <span className="text-accent">So close — one letter off!</span>
+            ) : logoFeedback === "wrong" ? (
+              <span className="text-destructive">Nope — try again</span>
+            ) : (
+              <span className="text-muted-foreground normal-case">
+                Type your guess and hit enter — keep trying.
+              </span>
+            )}
+          </div>
         </form>
       ) : (
         <div
@@ -1097,7 +1120,7 @@ function QuestionView({
             ? "Locked in — waiting for the rest of the room…"
             : "Locked in — waiting for reveal…"}
         </p>
-      ) : (
+      ) : isLogoText ? null : (
         <p className="text-center text-[11px] text-muted-foreground">
           Tap an option to lock it in.
         </p>
