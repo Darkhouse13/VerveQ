@@ -42,7 +42,7 @@ export default function MultiplayerArenaScreen() {
   }
 
   if (match.status === "roundBreak") {
-    const myReady = match.roundBreakReadyUserIds.some((id) => match.players.some((p) => p.id === id));
+    const myReady = match.roundBreakReadyUserIds.some((id) => id === match.currentUserId);
     return (
       <div className="min-h-screen bg-background px-5 py-6 space-y-5">
         <NeoBadge color="blue" size="sm">Round ranking</NeoBadge>

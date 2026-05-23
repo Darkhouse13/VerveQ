@@ -71,12 +71,15 @@ describe("multiplayer challenge arena contract", () => {
   });
 
 
-  it("checks lobby readiness for the current player only", () => {
+  it("checks lobby and round-break readiness for the current player only", () => {
     const backend = read("convex/multiplayerMatches.ts");
     const lobby = read("src/pages/MultiplayerLobbyScreen.tsx");
+    const play = read("src/pages/MultiplayerArenaScreen.tsx");
 
     expect(backend).toContain("currentUserId: userId");
     expect(lobby).toContain("p.id === match.currentUserId");
     expect(lobby).not.toContain("match.players.find((p) => match.readyUserIds.includes(p.id))");
+    expect(play).toContain("id === match.currentUserId");
+    expect(play).not.toContain("match.roundBreakReadyUserIds.some((id) => match.players.some((p) => p.id === id))");
   });
 });
