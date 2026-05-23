@@ -30,10 +30,14 @@ describe("post-QA regression contracts", () => {
     expect(source).toContain("Math.max(Math.round(currentElo), 1200)");
   });
 
-  it("pending challenge avatars derive initials from the challenger name instead of leaking raw first characters", () => {
+  it("Duel Hub renders listMine buckets and shared mode labels", () => {
     const source = read("src/pages/ChallengeScreen.tsx");
-    expect(source).toContain("getChallengeInitials");
-    expect(source).not.toContain("{c.challenger[0]}");
+    expect(source).toContain("api.duels.listMine");
+    expect(source).toContain("const yourTurn = list?.yourTurn ?? []");
+    expect(source).toContain("const awaiting = list?.awaiting ?? []");
+    expect(source).toContain("const resolved = list?.resolved ?? []");
+    expect(source).toContain('title="Your turn"');
+    expect(source).toContain("formatModeLabel(d.mode)");
   });
 });
 

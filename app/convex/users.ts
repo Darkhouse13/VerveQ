@@ -21,6 +21,18 @@ function usernameDerivedFromEmail(email: string | undefined): string | null {
   return derived || null;
 }
 
+function hasPermanentUsername(user: {
+  username?: string;
+  isGuest?: boolean;
+  isAnonymous?: boolean;
+} | null): boolean {
+  return !!user &&
+    user.isGuest !== true &&
+    user.isAnonymous !== true &&
+    typeof user.username === "string" &&
+    /^[a-z0-9_]{3,24}$/.test(user.username.trim().toLowerCase());
+}
+
 async function usernameExistsCaseInsensitive(
   ctx: { db: { query: (table: "users") => unknown } },
   username: string,
@@ -152,9 +164,16 @@ export const ensureProfile = mutation({
 export const getByUsername = query({
   args: { username: v.string() },
   handler: async (ctx, { username }) => {
-    return await ctx.db
+    const normalized = normalizeUsername(username);
+    const matches = await ctx.db
       .query("users")
-      .withIndex("by_username", (q) => q.eq("username", username))
-      .first();
+      .withIndex("by_username", (q) => q.eq("username", normalized))
+      .collect();
+    const permanentMatches = matches.filter(hasPermanentUsername);
+    if (permanentMatches.length === 0) return null;
+    if (permanentMatches.length > 1) {
+      throw new Error("Username is not unique. Ask the user for their account link or user id.");
+    }
+    return permanentMatches[0];
   },
 });

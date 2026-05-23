@@ -2,8 +2,10 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ConvexReactClient } from "convex/react";
 import { ConvexAuthProvider } from "@convex-dev/auth/react";
+import { lazy, Suspense } from "react";
 import { AuthProvider } from "./contexts/AuthContext";
 import { ProtectedRoute, UsernameRequiredRoute } from "./components/ProtectedRoute";
+import { ErrorBoundary } from "./components/ErrorBoundary";
 import LoginScreen from "./pages/LoginScreen";
 import OnboardingScreen from "./pages/OnboardingScreen";
 import HomeScreen from "./pages/HomeScreen";
@@ -27,11 +29,27 @@ import VerveGridScreen from "./pages/VerveGridScreen";
 import WhoAmIScreen from "./pages/WhoAmIScreen";
 import NotFound from "./pages/NotFound";
 
+const DuelPlayScreen = lazy(() => import("./pages/DuelPlayScreen"));
+const DuelLinkScreen = lazy(() => import("./pages/DuelLinkScreen"));
+const DuelResultScreen = lazy(() => import("./pages/DuelResultScreen"));
+const RivalsListScreen = lazy(() => import("./pages/RivalsScreen"));
+const RivalDetailScreen = lazy(() =>
+  import("./pages/RivalsScreen").then((m) => ({ default: m.RivalDetailScreen })),
+);
+
 const convex = new ConvexReactClient(
   import.meta.env.VITE_CONVEX_URL as string,
 );
 
-const App = () => (
+function LazyFallback() {
+  return (
+    <div className="min-h-screen bg-background flex items-center justify-center">
+      <p className="font-heading font-bold animate-pulse">Loading…</p>
+    </div>
+  );
+}
+
+const AppRoutes = () => (
   <ConvexAuthProvider client={convex}>
     <AuthProvider>
       <Sonner />
@@ -112,6 +130,39 @@ const App = () => (
               element={
                 <UsernameRequiredRoute>
                   <ChallengeScreen />
+                </UsernameRequiredRoute>
+              }
+            />
+            <Route
+              path="/duel/play/:duelId"
+              element={
+                <UsernameRequiredRoute>
+                  <DuelPlayScreen />
+                </UsernameRequiredRoute>
+              }
+            />
+            <Route
+              path="/duel/result/:duelId"
+              element={
+                <UsernameRequiredRoute>
+                  <DuelResultScreen />
+                </UsernameRequiredRoute>
+              }
+            />
+            <Route path="/duel/:linkCode" element={<DuelLinkScreen />} />
+            <Route
+              path="/rivals"
+              element={
+                <UsernameRequiredRoute>
+                  <RivalsListScreen />
+                </UsernameRequiredRoute>
+              }
+            />
+            <Route
+              path="/rivals/:opponentUserId"
+              element={
+                <UsernameRequiredRoute>
+                  <RivalDetailScreen />
                 </UsernameRequiredRoute>
               }
             />
@@ -201,6 +252,14 @@ const App = () => (
       </BrowserRouter>
     </AuthProvider>
   </ConvexAuthProvider>
+);
+
+const App = () => (
+  <ErrorBoundary>
+    <Suspense fallback={<LazyFallback />}>
+      <AppRoutes />
+    </Suspense>
+  </ErrorBoundary>
 );
 
 export default App;

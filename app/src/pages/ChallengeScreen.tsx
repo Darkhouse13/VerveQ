@@ -1,54 +1,60 @@
-import { NeoCard } from "@/components/neo/NeoCard";
-import { NeoButton } from "@/components/neo/NeoButton";
-import { NeoInput } from "@/components/neo/NeoInput";
-import { BottomNav } from "@/components/neo/BottomNav";
-import { useEffect, useState } from "react";
-import { Trophy, User, Gamepad2 } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "@/contexts/AuthContext";
 import { useQuery, useMutation } from "convex/react";
-import { api } from "../../convex/_generated/api";
+import { Swords, Clock, Trophy, Plus, Users, Bell } from "lucide-react";
 import { toast } from "sonner";
 
-const topicPills = ["football", "tennis", "basketball", "knowledge"];
-const modePills = ["quiz", "survival"];
+import { NeoCard } from "@/components/neo/NeoCard";
+import { NeoButton } from "@/components/neo/NeoButton";
+import { NeoBadge } from "@/components/neo/NeoBadge";
+import { BottomNav } from "@/components/neo/BottomNav";
+import { useAuth } from "@/contexts/AuthContext";
+import { api } from "../../convex/_generated/api";
+import { formatModeLabel, formatCategoryLabel, formatRelativeTime } from "@/lib/duel";
+import CreateDuelModal from "./challenge/CreateDuelModal";
 
-function formatModeLabel(mode: string): string {
-  return mode === "came_first" ? "Which Came First" : mode;
+function pluralize(n: number, one: string, many: string) {
+  return n === 1 ? `1 ${one}` : `${n} ${many}`;
 }
 
-function getChallengeInitials(name: string): string {
-  const normalized = name.trim();
-  if (!normalized) return "?";
-  return normalized
-    .split(/\s+/)
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((part) => part[0]?.toUpperCase() ?? "")
-    .join("") || normalized[0].toUpperCase();
+function summaryHeadline(s: { type: string; sport: string | null; category: string | null; mode: string }) {
+  if (s.mode === "came_first") return "Which Came First";
+  if (s.type === "knowledge") {
+    return s.category ? formatCategoryLabel(s.category) : "Knowledge";
+  }
+  const sport = s.sport ?? "sport";
+  return sport.charAt(0).toUpperCase() + sport.slice(1);
+}
+
+function statusBadge(status: string, winnerForMe: boolean | "draw" | null) {
+  if (status === "awaiting_opponent") return { label: "Open", color: "blue" as const };
+  if (status === "declined") return { label: "Declined", color: "muted" as const };
+  if (status === "expired") return { label: "Expired", color: "muted" as const };
+  if (winnerForMe === true) return { label: "Win", color: "success" as const };
+  if (winnerForMe === false) return { label: "Loss", color: "destructive" as const };
+  if (winnerForMe === "draw") return { label: "Draw", color: "blue" as const };
+  return { label: "Done", color: "muted" as const };
 }
 
 export default function ChallengeScreen() {
   const navigate = useNavigate();
-  const { isGuest, logout } = useAuth();
+  const { user, isGuest, logout } = useAuth();
+  const [showCreate, setShowCreate] = useState(false);
 
-  const handleCreateAccount = async () => {
-    await logout();
-    navigate("/?mode=signup&from=guest");
-  };
-
-  const [username, setUsername] = useState("");
-  const [selectedSport, setSelectedSport] = useState("football");
-  const [selectedMode, setSelectedMode] = useState("quiz");
-  const [sending, setSending] = useState(false);
-  const availableModes = selectedSport === "knowledge" ? ["quiz", "came_first"] : modePills;
-
-  const pending = useQuery(api.challenges.getPending);
-  const recentOpponentsQuery = useQuery(api.challenges.getRecentOpponents);
-  const createChallengeMut = useMutation(api.challenges.create);
-  const acceptMut = useMutation(api.challenges.accept);
-  const declineMut = useMutation(api.challenges.decline);
-  const createLiveMatchMut = useMutation(api.liveMatches.createFromChallenge);
+  const me = user;
+  const list = useQuery(
+    api.duels.listMine,
+    !isGuest && me ? {} : "skip",
+  );
+  const rivalriesRes = useQuery(
+    api.rivalries.listMine,
+    !isGuest && me ? {} : "skip",
+  );
+  const unread = useQuery(
+    api.notifications.unreadCount,
+    !isGuest && me ? {} : "skip",
+  );
+  const markAllRead = useMutation(api.notifications.markAllRead);
   const activeMatchId = useQuery(api.liveMatches.getActiveMatch);
 
   useEffect(() => {
@@ -57,235 +63,345 @@ export default function ChallengeScreen() {
     }
   }, [activeMatchId, navigate]);
 
-  const handleSend = async () => {
-    if (!username.trim()) {
-      toast.error("Enter a username");
-      return;
+  useEffect(() => {
+    if (!isGuest && me && unread && unread.count > 0) {
+      // Mark all read when user opens the hub.
+      markAllRead().catch(() => {});
     }
-    setSending(true);
-    try {
-      await createChallengeMut({
-        challengedUsername: username.trim(),
-        sport: selectedSport,
-        mode: selectedMode,
-      });
-      toast.success("Challenge sent!");
-      setUsername("");
-    } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Failed");
-    } finally {
-      setSending(false);
-    }
+  }, [isGuest, me, unread, markAllRead]);
+
+  const handleCreateAccount = async () => {
+    await logout();
+    navigate("/?mode=signup&from=guest");
   };
 
-  const challenges = pending?.challenges ?? [];
-  const recentOpponents = recentOpponentsQuery?.opponents ?? [];
+  const topRivals = useMemo(() => {
+    const list = rivalriesRes?.rivalries ?? [];
+    return list.slice(0, 6);
+  }, [rivalriesRes]);
+
+  if (isGuest) {
+    return (
+      <div className="min-h-screen bg-background pb-20">
+        <div className="px-5 pt-6 space-y-6">
+          <h1 className="text-2xl font-heading font-bold">Challenge</h1>
+          <NeoCard shadow="lg" className="text-center py-8">
+            <Swords size={32} strokeWidth={2.5} className="mx-auto mb-3" />
+            <p className="font-heading font-bold text-lg">Async duels need an account</p>
+            <p className="text-sm text-muted-foreground mt-1 mb-4">
+              Create a username so your duels and rivalries can stick.
+            </p>
+            <NeoButton variant="primary" size="md" onClick={handleCreateAccount}>
+              Create an account
+            </NeoButton>
+          </NeoCard>
+        </div>
+        <BottomNav />
+      </div>
+    );
+  }
+
+  const loading = list === undefined;
+  const yourTurn = list?.yourTurn ?? [];
+  const awaiting = list?.awaiting ?? [];
+  const resolved = list?.resolved ?? [];
 
   return (
-    <div className="min-h-screen bg-background pb-20">
+    <div className="min-h-screen bg-background pb-24">
       <div className="px-5 pt-6 space-y-6">
-        <h1 className="text-2xl font-heading font-bold">Challenge</h1>
-
-        {isGuest ? (
-          <NeoCard shadow="lg" className="text-center py-8">
-            <p className="font-heading font-bold text-lg">
-              Login to challenge friends
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-heading font-bold">Duels</h1>
+            <p className="text-xs text-muted-foreground mt-0.5">
+              Async head-to-heads with your friends.
             </p>
-            <p className="text-sm text-muted-foreground mt-1 mb-4">
-              Create an account to send challenges
-            </p>
-            <NeoButton
-              variant="primary"
-              size="md"
-              onClick={handleCreateAccount}
-            >
-              Create an account to unlock
-            </NeoButton>
-          </NeoCard>
-        ) : (
-          <NeoCard shadow="lg">
-            <h3 className="font-heading font-bold text-sm mb-3">
-              Challenge a Friend
-            </h3>
-            <NeoInput
-              placeholder="Enter exact @username"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              className="mb-3"
-            />
-
-            {recentOpponents.length > 0 && (
-              <div className="mb-4">
-                <p className="text-xs font-heading font-bold uppercase text-muted-foreground mb-2">
-                  Recent Opponents
-                </p>
-                <div className="flex gap-2 overflow-x-auto pb-1">
-                  {recentOpponents.map((opponent) => (
-                    <button
-                      key={opponent.opponentId}
-                      type="button"
-                      onClick={() => {
-                        setUsername(opponent.username);
-                        setSelectedSport(opponent.lastSport);
-                        setSelectedMode(opponent.lastSport === "knowledge" ? opponent.lastMode : opponent.lastMode);
-                      }}
-                      className="neo-border rounded-lg bg-background px-3 py-2 text-left shrink-0 min-w-[132px] cursor-pointer active:neo-shadow-pressed"
-                    >
-                      <p className="font-heading font-bold text-xs truncate">
-                        @{opponent.username}
-                      </p>
-                      <p className="text-[10px] text-muted-foreground capitalize">
-                        {opponent.lastSport} · {formatModeLabel(opponent.lastMode)}
-                      </p>
-                      {opponent.versusSummary.totalMatches > 0 && (
-                        <p className="text-[10px] font-mono font-bold mt-1">
-                          {opponent.versusSummary.wins}-{opponent.versusSummary.losses}
-                          {opponent.versusSummary.draws ? `-${opponent.versusSummary.draws}` : ""}
-                        </p>
-                      )}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            <p className="text-xs font-heading font-bold uppercase text-muted-foreground mb-2">
-              Topic
-            </p>
-            <div className="flex gap-2 mb-3 flex-wrap">
-              {topicPills.map((s) => (
-                <button
-                  key={s}
-                  onClick={() => {
-                    setSelectedSport(s);
-                    if (s === "knowledge") setSelectedMode("quiz");
-                  }}
-                  className={`neo-border rounded-full px-3 py-1 text-xs font-heading font-bold cursor-pointer transition-all capitalize ${selectedSport === s ? "bg-primary text-primary-foreground neo-shadow" : "bg-background"}`}
-                >
-                  {s}
-                </button>
-              ))}
-            </div>
-
-            <p className="text-xs font-heading font-bold uppercase text-muted-foreground mb-2">
-              Mode
-            </p>
-            <div className="flex gap-2 mb-4">
-              {availableModes.map((m) => (
-                <button
-                  key={m}
-                  onClick={() => setSelectedMode(m)}
-                  className={`neo-border rounded-full px-3 py-1 text-xs font-heading font-bold cursor-pointer transition-all capitalize ${selectedMode === m ? "bg-primary text-primary-foreground neo-shadow" : "bg-background"}`}
-                >
-                  {formatModeLabel(m)}
-                </button>
-              ))}
-            </div>
-
-            <NeoButton
-              variant="primary"
-              size="full"
-              onClick={handleSend}
-              disabled={sending}
-            >
-              {sending ? "Sending..." : "Send Challenge"}
-            </NeoButton>
-          </NeoCard>
-        )}
-
-        <div>
-          <h3 className="font-heading font-bold text-lg mb-3">
-            Pending Challenges
-          </h3>
-          {challenges.length === 0 ? (
-            <NeoCard className="text-center py-6">
-              <p className="text-sm text-muted-foreground">
-                No pending challenges
-              </p>
-            </NeoCard>
-          ) : (
-            <div className="space-y-2.5">
-              {challenges.map((c) => (
-                <NeoCard key={c.challengeId} className="space-y-3">
-                  <div className="flex items-center gap-3">
-                    <div className="neo-border rounded-full w-8 h-8 bg-muted flex items-center justify-center font-heading font-bold text-xs">
-                      {getChallengeInitials(c.challenger)}
-                    </div>
-                    <div className="flex-1">
-                      <p className="font-heading font-bold text-sm">
-                        {c.challenger}
-                      </p>
-                      <p className="text-xs text-muted-foreground capitalize">
-                        {c.sport} · {formatModeLabel(c.mode)}
-                      </p>
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-2 gap-2">
-                    <NeoButton
-                      variant="success"
-                      size="sm"
-                      onClick={async () => {
-                        await acceptMut({ challengeId: c.challengeId });
-                        try {
-                          const { matchId } = await createLiveMatchMut({
-                            challengeId: c.challengeId,
-                          });
-                          toast.success("Match created!");
-                          navigate(`/waiting-room?matchId=${matchId}`);
-                        } catch {
-                          toast.success("Accepted!");
-                        }
-                      }}
-                    >
-                      Accept
-                    </NeoButton>
-                    <NeoButton
-                      variant="danger"
-                      size="sm"
-                      onClick={async () => {
-                        await declineMut({ challengeId: c.challengeId });
-                        toast.info("Declined");
-                      }}
-                    >
-                      Decline
-                    </NeoButton>
-                  </div>
-                </NeoCard>
-              ))}
-            </div>
+          </div>
+          {(unread?.count ?? 0) > 0 && (
+            <NeoBadge color="destructive" size="sm">
+              <Bell size={11} strokeWidth={3} className="mr-1" />
+              {unread?.count} new
+            </NeoBadge>
           )}
         </div>
 
-        <div>
-          <h3 className="font-heading font-bold text-lg mb-3">
-            Quick Actions
-          </h3>
-          <div className="grid grid-cols-3 gap-2">
-            {[
-              { icon: Trophy, label: "Ranks", path: "/leaderboard" },
-              { icon: User, label: "Profile", path: "/profile" },
-              {
-                icon: Gamepad2,
-                label: "Play Now",
-                path: "/sport-select?mode=quiz",
-              },
-            ].map((a) => (
-              <NeoCard
-                key={a.label}
-                className="flex flex-col items-center gap-1 py-4 cursor-pointer"
-                onClick={() => navigate(a.path)}
+        <NeoButton
+          variant="primary"
+          size="full"
+          onClick={() => setShowCreate(true)}
+        >
+          <Plus size={18} strokeWidth={3} /> New Duel
+        </NeoButton>
+
+        {/* Rivals strip */}
+        {topRivals.length > 0 && (
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <p className="text-xs font-heading font-bold uppercase text-muted-foreground">
+                Your Rivals
+              </p>
+              <button
+                type="button"
+                onClick={() => navigate("/rivals")}
+                className="text-xs font-heading font-bold uppercase text-primary underline underline-offset-4 cursor-pointer"
               >
-                <a.icon size={22} strokeWidth={2.5} />
-                <p className="text-[10px] font-heading font-bold uppercase">
-                  {a.label}
-                </p>
-              </NeoCard>
-            ))}
+                See all
+              </button>
+            </div>
+            <div className="flex gap-2 overflow-x-auto pb-1">
+              {topRivals.map((r) => (
+                <button
+                  key={r.opponent.userId}
+                  type="button"
+                  onClick={() => navigate(`/rivals/${r.opponent.userId}`)}
+                  className="neo-border neo-shadow rounded-lg bg-card px-3 py-2 text-left shrink-0 min-w-[140px] cursor-pointer active:neo-shadow-pressed"
+                >
+                  <p className="font-heading font-bold text-xs truncate">@{r.opponent.username}</p>
+                  <p className="text-[10px] font-mono font-bold mt-1">
+                    {r.wins}-{r.losses}
+                    {r.draws ? `-${r.draws}` : ""}
+                  </p>
+                  {r.currentStreakLen > 0 && (
+                    <p className="text-[10px] mt-0.5 text-muted-foreground">
+                      {r.currentStreakHolderId === user?._id
+                        ? `🔥 ${r.currentStreakLen}`
+                        : `↳ ${r.currentStreakLen}`}
+                    </p>
+                  )}
+                </button>
+              ))}
+            </div>
           </div>
-        </div>
+        )}
+
+        {/* Your Turn */}
+        <Section
+          title="Your turn"
+          icon={<Swords size={16} strokeWidth={3} />}
+          countLabel={pluralize(yourTurn.length, "duel waiting", "duels waiting")}
+          empty={loading ? "Loading…" : "Nothing waiting on you. Send a new duel."}
+          accent="primary"
+        >
+          {yourTurn.map((d) => {
+            const winnerForMe = null;
+            const badge = statusBadge(d.status, winnerForMe);
+            const expiresIn = formatRelativeTime(d.expiresAt);
+            return (
+              <NeoCard
+                key={d.duelId}
+                shadow="default"
+                onClick={() => navigate(`/duel/play/${d.duelId}`)}
+                className="space-y-2"
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <p className="font-heading font-bold text-sm truncate">
+                      vs @{d.opponent.username}
+                    </p>
+                    <p className="text-xs text-muted-foreground capitalize truncate">
+                      {summaryHeadline(d)} · {formatModeLabel(d.mode)} · {d.difficulty}
+                    </p>
+                  </div>
+                  <NeoBadge color={badge.color} size="sm">
+                    {badge.label}
+                  </NeoBadge>
+                </div>
+                <div className="flex items-center justify-between text-[11px]">
+                  <span className="font-mono text-muted-foreground">
+                    {d.myAnsweredCount}/{d.questionCount} answered
+                  </span>
+                  <span className="font-mono text-muted-foreground inline-flex items-center gap-1">
+                    <Clock size={11} strokeWidth={3} /> {expiresIn}
+                  </span>
+                </div>
+              </NeoCard>
+            );
+          })}
+        </Section>
+
+        {/* Awaiting opponent */}
+        <Section
+          title="Awaiting opponent"
+          icon={<Clock size={16} strokeWidth={3} />}
+          countLabel={pluralize(awaiting.length, "duel out", "duels out")}
+          empty={loading ? "Loading…" : "No duels waiting on someone else."}
+          accent="blue"
+        >
+          {awaiting.map((d) => {
+            const badge = statusBadge(d.status, null);
+            return (
+              <NeoCard
+                key={d.duelId}
+                onClick={() => navigate(`/duel/play/${d.duelId}`)}
+                className="space-y-2"
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <p className="font-heading font-bold text-sm truncate">
+                      vs @{d.opponent.username}
+                    </p>
+                    <p className="text-xs text-muted-foreground capitalize truncate">
+                      {summaryHeadline(d)} · {formatModeLabel(d.mode)} · {d.difficulty}
+                    </p>
+                  </div>
+                  <NeoBadge color={badge.color} size="sm">
+                    {badge.label}
+                  </NeoBadge>
+                </div>
+                <div className="flex items-center justify-between text-[11px]">
+                  <span className="font-mono">
+                    You: <span className="font-bold">{d.myScore}</span>
+                    {d.myCompleted ? " ✓" : ""}
+                  </span>
+                  <span className="font-mono text-muted-foreground">
+                    {d.linkCode ? "Link share" : "Waiting for opponent"}
+                  </span>
+                </div>
+                {d.linkCode && (
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      const url = `${window.location.origin}/duel/${d.linkCode}`;
+                      navigator.clipboard.writeText(url).catch(() => {});
+                      toast.success("Link copied");
+                    }}
+                    className="text-[11px] font-heading font-bold uppercase underline underline-offset-2 text-primary cursor-pointer"
+                  >
+                    Copy share link
+                  </button>
+                )}
+              </NeoCard>
+            );
+          })}
+        </Section>
+
+        {/* Resolved */}
+        <Section
+          title="Resolved"
+          icon={<Trophy size={16} strokeWidth={3} />}
+          countLabel={pluralize(resolved.length, "result", "results")}
+          empty={loading ? "Loading…" : "No resolved duels yet."}
+          accent="muted"
+        >
+          {resolved.map((d) => {
+            const winnerForMe =
+              d.winnerId === null
+                ? "draw"
+                : d.winnerId === me?._id
+                  ? true
+                  : d.winnerId
+                    ? false
+                    : "draw";
+            const badge = statusBadge(d.status, winnerForMe);
+            return (
+              <NeoCard
+                key={d.duelId}
+                onClick={() => navigate(`/duel/result/${d.duelId}`)}
+                className="space-y-2"
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <p className="font-heading font-bold text-sm truncate">
+                      vs @{d.opponent.username}
+                    </p>
+                    <p className="text-xs text-muted-foreground capitalize truncate">
+                      {summaryHeadline(d)} · {formatModeLabel(d.mode)} · {d.difficulty}
+                    </p>
+                  </div>
+                  <NeoBadge color={badge.color} size="sm">
+                    {badge.label}
+                  </NeoBadge>
+                </div>
+                <div className="flex items-center justify-between text-[11px] font-mono">
+                  <span>
+                    You <span className="font-bold">{d.myScore}</span> —{" "}
+                    <span className="font-bold">{d.opponentScore}</span> them
+                  </span>
+                  <span className="text-muted-foreground">
+                    {d.resolvedAt ? formatRelativeTime(d.resolvedAt) : ""}
+                  </span>
+                </div>
+              </NeoCard>
+            );
+          })}
+        </Section>
+
+        <NeoCard
+          onClick={() => navigate("/rivals")}
+          className="flex items-center justify-between"
+        >
+          <div className="flex items-center gap-3">
+            <Users size={22} strokeWidth={2.5} />
+            <div>
+              <p className="font-heading font-bold text-sm">Rivals</p>
+              <p className="text-xs text-muted-foreground">Head-to-head ledger</p>
+            </div>
+          </div>
+          <NeoBadge color="primary" size="sm">
+            {rivalriesRes?.rivalries.length ?? 0}
+          </NeoBadge>
+        </NeoCard>
       </div>
 
+      {showCreate && (
+        <CreateDuelModal
+          onClose={() => setShowCreate(false)}
+          onCreated={(duelId) => {
+            setShowCreate(false);
+            navigate(`/duel/play/${duelId}`);
+          }}
+        />
+      )}
+
       <BottomNav />
+    </div>
+  );
+}
+
+function Section({
+  title,
+  icon,
+  countLabel,
+  empty,
+  accent,
+  children,
+}: {
+  title: string;
+  icon: React.ReactNode;
+  countLabel: string;
+  empty: string;
+  accent: "primary" | "blue" | "muted";
+  children?: React.ReactNode;
+}) {
+  const hasChildren = Array.isArray(children) ? children.length > 0 : !!children;
+  return (
+    <div>
+      <div className="flex items-center justify-between mb-2">
+        <p className="text-xs font-heading font-bold uppercase flex items-center gap-1.5">
+          <span
+            className={`inline-flex items-center justify-center w-5 h-5 rounded-full neo-border ${
+              accent === "primary"
+                ? "bg-primary text-primary-foreground"
+                : accent === "blue"
+                  ? "bg-electric-blue text-electric-blue-foreground"
+                  : "bg-muted"
+            }`}
+          >
+            {icon}
+          </span>
+          {title}
+        </p>
+        <span className="text-[10px] font-heading uppercase text-muted-foreground">
+          {countLabel}
+        </span>
+      </div>
+      {hasChildren ? (
+        <div className="space-y-2.5">{children}</div>
+      ) : (
+        <NeoCard className="text-center py-5">
+          <p className="text-xs text-muted-foreground">{empty}</p>
+        </NeoCard>
+      )}
     </div>
   );
 }

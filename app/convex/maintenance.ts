@@ -1,18 +1,23 @@
 import { internalMutation } from "./_generated/server";
+import { v } from "convex/values";
 
 const COMPLETED_SESSION_RETENTION_MS = 7 * 24 * 60 * 60 * 1000;
+const MAX_CLEANUP_BATCH = 500;
 
 export const cleanupExpiredSessions = internalMutation({
-  args: {},
-  handler: async (ctx) => {
+  args: { limit: v.optional(v.number()) },
+  handler: async (ctx, { limit = MAX_CLEANUP_BATCH }) => {
     const now = Date.now();
+    const batchLimit = Math.min(limit, MAX_CLEANUP_BATCH);
     let removed = 0;
     let closed = 0;
 
-    const quizSessions = await ctx.db.query("quizSessions").collect();
+    const quizSessions = await ctx.db
+      .query("quizSessions")
+      .withIndex("by_expiresAt", (q) => q.lte("expiresAt", now))
+      .take(batchLimit);
     for (const session of quizSessions) {
       if (
-        session.expiresAt <= now &&
         (!(session.completed ?? false) || session.abandonedAt)
       ) {
         await ctx.db.delete(session._id);
@@ -20,7 +25,10 @@ export const cleanupExpiredSessions = internalMutation({
       }
     }
 
-    const dailyAttempts = await ctx.db.query("dailyAttempts").collect();
+    const dailyAttempts = await ctx.db
+      .query("dailyAttempts")
+      .withIndex("by_expiresAt", (q) => q.lte("expiresAt", now))
+      .take(batchLimit);
     for (const attempt of dailyAttempts) {
       const expiresAt = attempt.expiresAt ?? attempt.startedAt + 30 * 60 * 1000;
       if (!attempt.completed && !attempt.forfeited && expiresAt <= now) {
@@ -32,7 +40,10 @@ export const cleanupExpiredSessions = internalMutation({
       }
     }
 
-    const survivalSessions = await ctx.db.query("survivalSessions").collect();
+    const survivalSessions = await ctx.db
+      .query("survivalSessions")
+      .withIndex("by_expiresAt", (q) => q.lte("expiresAt", now))
+      .take(batchLimit);
     for (const session of survivalSessions) {
       if (session.expiresAt <= now && !session.gameOver) {
         await ctx.db.patch(session._id, { gameOver: true });
@@ -47,7 +58,10 @@ export const cleanupExpiredSessions = internalMutation({
       }
     }
 
-    const higherLowerSessions = await ctx.db.query("higherLowerSessions").collect();
+    const higherLowerSessions = await ctx.db
+      .query("higherLowerSessions")
+      .withIndex("by_expiresAt", (q) => q.lte("expiresAt", now))
+      .take(batchLimit);
     for (const session of higherLowerSessions) {
       if (session.expiresAt <= now && session.status === "active") {
         await ctx.db.patch(session._id, { status: "game_over" });
@@ -55,7 +69,10 @@ export const cleanupExpiredSessions = internalMutation({
       }
     }
 
-    const verveGridSessions = await ctx.db.query("verveGridSessions").collect();
+    const verveGridSessions = await ctx.db
+      .query("verveGridSessions")
+      .withIndex("by_expiresAt", (q) => q.lte("expiresAt", now))
+      .take(batchLimit);
     for (const session of verveGridSessions) {
       if (session.expiresAt <= now && session.status === "active") {
         await ctx.db.patch(session._id, { status: "completed" });
@@ -63,7 +80,10 @@ export const cleanupExpiredSessions = internalMutation({
       }
     }
 
-    const whoAmISessions = await ctx.db.query("whoAmISessions").collect();
+    const whoAmISessions = await ctx.db
+      .query("whoAmISessions")
+      .withIndex("by_expiresAt", (q) => q.lte("expiresAt", now))
+      .take(batchLimit);
     for (const session of whoAmISessions) {
       if (session.expiresAt <= now && session.status === "active") {
         await ctx.db.patch(session._id, { status: "failed", score: 0 });
@@ -71,6 +91,21 @@ export const cleanupExpiredSessions = internalMutation({
       }
     }
 
-    return { removed, closed };
+    const blitzSessions = await ctx.db
+      .query("blitzSessions")
+      .withIndex("by_endTimeMs", (q) => q.lte("endTimeMs", now))
+      .take(batchLimit);
+    for (const session of blitzSessions) {
+      if (!session.gameOver) {
+        await ctx.db.patch(session._id, {
+          gameOver: true,
+          endedAt: session.endedAt ?? now,
+          currentChecksum: undefined,
+        });
+        closed++;
+      }
+    }
+
+    return { removed, closed, batchLimit };
   },
 });

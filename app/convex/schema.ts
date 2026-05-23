@@ -139,6 +139,121 @@ export default defineSchema({
     .index("by_player_a", ["playerAId"])
     .index("by_player_b", ["playerBId"]),
 
+  duels: defineTable({
+    challengerId: v.id("users"),
+    opponentId: v.optional(v.id("users")),
+    opponentGuestTokenHash: v.optional(v.string()),
+    opponentUsernameSnapshot: v.optional(v.string()),
+    type: v.union(v.literal("sports"), v.literal("knowledge")),
+    category: v.optional(v.string()),
+    sport: v.optional(v.string()),
+    difficulty: v.union(
+      v.literal("easy"),
+      v.literal("intermediate"),
+      v.literal("hard"),
+    ),
+    mode: v.string(),
+    seed: v.string(),
+    questionChecksums: v.array(v.string()),
+    challengerServedAt: v.optional(v.array(v.number())),
+    opponentServedAt: v.optional(v.array(v.number())),
+    challengerResult: v.optional(
+      v.object({
+        score: v.number(),
+        perQuestion: v.array(
+          v.object({
+            questionIndex: v.number(),
+            checksum: v.string(),
+            answer: v.string(),
+            correct: v.boolean(),
+            score: v.number(),
+            timeTaken: v.number(),
+            servedAt: v.number(),
+            answeredAt: v.number(),
+          }),
+        ),
+        completedAt: v.optional(v.number()),
+      }),
+    ),
+    opponentResult: v.optional(
+      v.object({
+        score: v.number(),
+        perQuestion: v.array(
+          v.object({
+            questionIndex: v.number(),
+            checksum: v.string(),
+            answer: v.string(),
+            correct: v.boolean(),
+            score: v.number(),
+            timeTaken: v.number(),
+            servedAt: v.number(),
+            answeredAt: v.number(),
+          }),
+        ),
+        completedAt: v.optional(v.number()),
+      }),
+    ),
+    status: v.union(
+      v.literal("awaiting_opponent"),
+      v.literal("resolved"),
+      v.literal("expired"),
+      v.literal("declined"),
+    ),
+    winnerId: v.optional(v.id("users")),
+    linkCode: v.optional(v.string()),
+    rematchOfDuelId: v.optional(v.id("duels")),
+    createdAt: v.number(),
+    expiresAt: v.number(),
+    resolvedAt: v.optional(v.number()),
+    rivalryAppliedAt: v.optional(v.number()),
+    lastNearExpiryNotifiedAt: v.optional(v.number()),
+  })
+    .index("by_opponent_status", ["opponentId", "status"])
+    .index("by_challenger", ["challengerId"])
+    .index("by_linkCode", ["linkCode"])
+    .index("by_status_expires", ["status", "expiresAt"]),
+
+  rivalries: defineTable({
+    pairKey: v.string(),
+    userAId: v.id("users"),
+    userBId: v.id("users"),
+    aWins: v.number(),
+    bWins: v.number(),
+    draws: v.number(),
+    currentStreakHolderId: v.optional(v.id("users")),
+    currentStreakLen: v.number(),
+    lastDuelId: v.optional(v.id("duels")),
+    updatedAt: v.number(),
+  })
+    .index("by_pair", ["pairKey"])
+    .index("by_userA", ["userAId"])
+    .index("by_userB", ["userBId"]),
+
+  challengeNotifications: defineTable({
+    userId: v.id("users"),
+    kind: v.union(
+      v.literal("duel_resolved"),
+      v.literal("opponent_beat_score"),
+      v.literal("duel_near_expiry"),
+    ),
+    duelId: v.optional(v.id("duels")),
+    title: v.string(),
+    body: v.string(),
+    createdAt: v.number(),
+    readAt: v.optional(v.number()),
+    emailStatus: v.optional(
+      v.union(
+        v.literal("queued"),
+        v.literal("sent"),
+        v.literal("skipped"),
+        v.literal("failed"),
+      ),
+    ),
+    emailError: v.optional(v.string()),
+  })
+    .index("by_user_created", ["userId", "createdAt"])
+    .index("by_user_read", ["userId", "readAt"]),
+
   quizQuestions: defineTable({
     sport: v.string(),
     category: v.string(),
@@ -182,7 +297,7 @@ export default defineSchema({
     questionStartedAt: v.optional(v.number()),
     completed: v.optional(v.boolean()),
     abandonedAt: v.optional(v.number()),
-  }),
+  }).index("by_expiresAt", ["expiresAt"]),
 
   survivalSessions: defineTable({
     userId: v.optional(v.id("users")),
@@ -220,7 +335,7 @@ export default defineSchema({
     // Server-side idempotency marker for completeSurvival — set once ELO
     // has been recorded so a replayed call doesn't double-update the rating.
     completedAt: v.optional(v.number()),
-  }),
+  }).index("by_expiresAt", ["expiresAt"]),
 
   // ── Daily Challenge ──
   dailyChallenges: defineTable({
@@ -262,7 +377,8 @@ export default defineSchema({
     currentQuestionStartedAt: v.optional(v.number()),
   })
     .index("by_user_date_sport_mode", ["userId", "date", "sport", "mode"])
-    .index("by_date_sport_mode_score", ["date", "sport", "mode", "score"]),
+    .index("by_date_sport_mode_score", ["date", "sport", "mode", "score"])
+    .index("by_expiresAt", ["expiresAt"]),
 
   // ── Live Head-to-Head ──
   liveMatches: defineTable({
@@ -316,7 +432,9 @@ export default defineSchema({
     endTimeMs: v.number(),
     endedAt: v.optional(v.number()),
     scoreSavedAt: v.optional(v.number()),
-  }).index("by_user", ["userId"]),
+  })
+    .index("by_user", ["userId"])
+    .index("by_endTimeMs", ["endTimeMs"]),
 
   blitzScores: defineTable({
     userId: v.id("users"),
@@ -652,7 +770,9 @@ export default defineSchema({
     playerBPhoto: v.optional(v.string()),
     status: v.union(v.literal("active"), v.literal("game_over")),
     expiresAt: v.number(),
-  }).index("by_user", ["userId"]),
+  })
+    .index("by_user", ["userId"])
+    .index("by_expiresAt", ["expiresAt"]),
 
   verveGridSessions: defineTable({
     userId: v.optional(v.id("users")),
@@ -687,7 +807,9 @@ export default defineSchema({
     correctCount: v.number(),
     status: v.union(v.literal("active"), v.literal("completed")),
     expiresAt: v.number(),
-  }).index("by_user", ["userId"]),
+  })
+    .index("by_user", ["userId"])
+    .index("by_expiresAt", ["expiresAt"]),
 
   whoAmISessions: defineTable({
     userId: v.optional(v.id("users")),
@@ -719,5 +841,7 @@ export default defineSchema({
     maxGuesses: v.optional(v.number()),
     wrongGuessCount: v.optional(v.number()),
     hardMode: v.optional(v.boolean()),
-  }).index("by_user", ["userId"]),
+  })
+    .index("by_user", ["userId"])
+    .index("by_expiresAt", ["expiresAt"]),
 });

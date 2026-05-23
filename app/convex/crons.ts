@@ -8,5 +8,6 @@ crons.daily("daily-challenge-generator", { hourUTC: 0, minuteUTC: 1 }, internal.
 crons.daily("elo-decay-check", { hourUTC: 0, minuteUTC: 5 }, internal.eloDecay.runDecay);
 crons.interval("live-match-stale-check", { minutes: 1 }, internal.liveMatches.reapStaleMatches);
 crons.interval("expired-session-cleanup", { hours: 1 }, internal.maintenance.cleanupExpiredSessions);
+crons.interval("async-duel-expiry", { hours: 1 }, internal.duels.expireStaleDuels);
 
 export default crons;

@@ -41,6 +41,7 @@ export default function LoginScreen() {
 
   const modeParam = searchParams.get("mode");
   const fromGuestUpgrade = searchParams.get("from") === "guest";
+  const fromDuel = searchParams.get("from") === "duel";
 
   const [mode, setMode] = useState<Mode>(
     isMode(modeParam) ? modeParam : "signin",
@@ -56,9 +57,23 @@ export default function LoginScreen() {
 
   useEffect(() => {
     if (!authLoading && isAuthenticated && !isGuest) {
+      if (fromDuel) {
+        try {
+          const raw = window.localStorage.getItem("verveq_pending_duel_attach");
+          if (raw) {
+            const pending = JSON.parse(raw) as { linkCode?: string };
+            if (pending?.linkCode) {
+              navigate(`/duel/${pending.linkCode}`, { replace: true });
+              return;
+            }
+          }
+        } catch {
+          /* ignore */
+        }
+      }
       navigate("/home", { replace: true });
     }
-  }, [authLoading, isAuthenticated, isGuest, navigate]);
+  }, [authLoading, isAuthenticated, isGuest, navigate, fromDuel]);
 
   const switchMode = (next: Mode) => {
     setMode(next);

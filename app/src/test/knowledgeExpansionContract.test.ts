@@ -45,19 +45,28 @@ describe("knowledge expansion contract", () => {
     const home = readFileSync("src/pages/HomeScreen.tsx", "utf8");
     const sportSelect = readFileSync("src/pages/SportSelectScreen.tsx", "utf8");
     const challenge = readFileSync("src/pages/ChallengeScreen.tsx", "utf8");
+    const createDuel = readFileSync("src/pages/challenge/CreateDuelModal.tsx", "utf8");
 
     expect(home).toContain("Knowledge Mode");
     expect(home).toContain("/difficulty?sport=knowledge&mode=quiz");
     expect(sportSelect).toContain("knowledge:");
     expect(sportSelect).toContain("Pick a Topic");
-    expect(sportSelect).toContain('isSurvivalMode\n      ? ["football", "tennis", "basketball"]');
-    expect(challenge).toContain('"knowledge"');
-    expect(challenge).toContain('selectedSport === "knowledge" ? ["quiz", "came_first"] : modePills');
+    expect(sportSelect).toContain("const availableTopics = isFootballOnlyMode");
+    expect(sportSelect).toContain("isSurvivalMode");
+    expect(sportSelect).toContain('["football", "tennis", "basketball"]');
+    expect(challenge).toContain("api.duels.listMine");
+    expect(challenge).toContain("New Duel");
+    expect(createDuel).toContain('type DuelKind = "knowledge" | "came_first" | "sports"');
+    expect(createDuel).toContain('handleSelectKind("knowledge")');
+    expect(createDuel).toContain('mode: kind === "came_first" ? "came_first" : "quiz"');
+    expect(createDuel).toContain('type: "knowledge" as const');
+    expect(createDuel).toContain("category: category ?? undefined");
   });
 
   it("uses Topic language on broad quiz surfaces while preserving sport as the internal key", () => {
     const sportSelect = readFileSync("src/pages/SportSelectScreen.tsx", "utf8");
     const challenge = readFileSync("src/pages/ChallengeScreen.tsx", "utf8");
+    const createDuel = readFileSync("src/pages/challenge/CreateDuelModal.tsx", "utf8");
     const result = readFileSync("src/pages/ResultScreen.tsx", "utf8");
     const dailyResult = readFileSync("src/pages/DailyResultScreen.tsx", "utf8");
     const blitzResult = readFileSync("src/pages/BlitzResultScreen.tsx", "utf8");
@@ -66,8 +75,12 @@ describe("knowledge expansion contract", () => {
     expect(sportSelect).toContain("topicMeta");
     expect(sportSelect).toContain("availableTopics");
     expect(sportSelect).toContain("Pick a Topic");
-    expect(challenge).toContain("topicPills");
-    expect(challenge).toContain("Topic");
+    expect(createDuel).toContain("KNOWLEDGE_CATEGORIES");
+    expect(createDuel).toContain("Pick a category");
+    expect(createDuel).toContain("formatCategoryLabel(c)");
+    expect(challenge).toContain("summaryHeadline");
+    expect(challenge).toContain("formatCategoryLabel(s.category)");
+    expect(challenge).toContain("formatModeLabel(d.mode)");
     expect(result).toContain('{ label: "Topic", value: state.sport');
     expect(dailyResult).toContain('{ label: "Topic", value: state.sport');
     expect(blitzResult).toContain('{ label: "Topic", value: state.sport');
@@ -75,6 +88,6 @@ describe("knowledge expansion contract", () => {
 
     // Keep existing Convex/API compatibility for now; this is a user-facing rename, not a schema migration.
     expect(sportSelect).toContain('navigate(`/difficulty?sport=${selected}&mode=${mode}`)');
-    expect(challenge).toContain("sport: selectedSport");
+    expect(createDuel).toContain("sport: sport ?? undefined");
   });
 });

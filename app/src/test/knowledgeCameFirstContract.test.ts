@@ -55,10 +55,18 @@ describe("Knowledge Which Came First mode", () => {
 
   it("lets Knowledge challenges use Which Came First without enabling sport survival", () => {
     const challenge = readFileSync("src/pages/ChallengeScreen.tsx", "utf8");
+    const createDuel = readFileSync("src/pages/challenge/CreateDuelModal.tsx", "utf8");
+    const duels = readFileSync("convex/duels.ts", "utf8");
     const liveMatches = readFileSync("convex/liveMatches.ts", "utf8");
 
-    expect(challenge).toContain('selectedSport === "knowledge" ? ["quiz", "came_first"] : modePills');
     expect(challenge).toContain("formatModeLabel");
+    expect(challenge).toContain("api.duels.listMine");
+    expect(createDuel).toContain('type DuelKind = "knowledge" | "came_first" | "sports"');
+    expect(createDuel).toContain('handleSelectKind("came_first")');
+    expect(createDuel).toContain('mode: kind === "came_first" ? "came_first" : "quiz"');
+    expect(createDuel).toContain('category: "which_came_first"');
+    expect(duels).toContain('mode === "came_first"');
+    expect(duels).toContain('question.category === "which_came_first"');
     expect(liveMatches).toContain('challenge.mode === "came_first"');
     expect(liveMatches).toContain('q.category === "which_came_first"');
     expect(liveMatches).toContain("recordChallengeHistory");

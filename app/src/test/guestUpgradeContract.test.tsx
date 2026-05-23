@@ -23,6 +23,9 @@ import { MemoryRouter } from "react-router-dom";
 const navigateSpy = vi.fn();
 const logoutSpy = vi.fn(async () => {});
 const signOutToGuestSpy = vi.fn(async () => {});
+const authContextMock = vi.hoisted(() => ({
+  useAuth: vi.fn(),
+}));
 
 vi.mock("react-router-dom", async () => {
   const actual =
@@ -34,6 +37,11 @@ vi.mock("react-router-dom", async () => {
     useNavigate: () => navigateSpy,
   };
 });
+
+vi.mock("@/contexts/AuthContext", () => ({
+  useAuth: authContextMock.useAuth,
+  AuthError: class AuthError extends Error {},
+}));
 
 vi.mock("convex/react", () => ({
   useQuery: vi.fn(),
@@ -51,6 +59,7 @@ vi.mock("../../convex/_generated/api", () => ({
       getUserSeasonHistory: "seasonManager.getUserSeasonHistory",
     },
     users: { me: "users.me", ensureProfile: "users.ensureProfile" },
+    notifications: { unreadCount: "notifications.unreadCount" },
   },
 }));
 
@@ -100,18 +109,16 @@ describe("ProfileScreen — sign-in/sign-out button matrix", () => {
     logoutSpy.mockResolvedValue(undefined);
     signOutToGuestSpy.mockReset();
     signOutToGuestSpy.mockResolvedValue(undefined);
-    vi.resetModules();
+    authContextMock.useAuth.mockReset();
   });
 
   async function renderProfile(isGuest: boolean) {
-    vi.doMock("@/contexts/AuthContext", () => ({
-      useAuth: () => ({
-        user: { _id: "u1", username: "guestplayer", isGuest, totalGames: 0 },
-        isGuest,
-        logout: logoutSpy,
-        signOutToGuest: signOutToGuestSpy,
-      }),
-    }));
+    authContextMock.useAuth.mockReturnValue({
+      user: { _id: "u1", username: "guestplayer", isGuest, totalGames: 0 },
+      isGuest,
+      logout: logoutSpy,
+      signOutToGuest: signOutToGuestSpy,
+    });
     const convexReact = await import("convex/react");
     mockProfileQueries(
       convexReact as unknown as { useQuery: Mock },
@@ -218,7 +225,7 @@ describe("LoginScreen — mode override + guest notice", () => {
   beforeEach(() => {
     navigateSpy.mockReset();
     logoutSpy.mockReset();
-    vi.resetModules();
+    authContextMock.useAuth.mockReset();
   });
 
   async function renderLogin(
@@ -234,19 +241,16 @@ describe("LoginScreen — mode override + guest notice", () => {
       isGuest = false,
       isLoading = false,
     } = auth;
-    vi.doMock("@/contexts/AuthContext", () => ({
-      useAuth: () => ({
-        signIn: vi.fn(),
-        signUp: vi.fn(),
-        requestPasswordReset: vi.fn(),
-        confirmPasswordReset: vi.fn(),
-        loginAsGuest: vi.fn(),
-        isAuthenticated,
-        isGuest,
-        isLoading,
-      }),
-      AuthError: class AuthError extends Error {},
-    }));
+    authContextMock.useAuth.mockReturnValue({
+      signIn: vi.fn(),
+      signUp: vi.fn(),
+      requestPasswordReset: vi.fn(),
+      confirmPasswordReset: vi.fn(),
+      loginAsGuest: vi.fn(),
+      isAuthenticated,
+      isGuest,
+      isLoading,
+    });
     const { default: LoginScreen } = await import("../pages/LoginScreen");
     render(
       <MemoryRouter initialEntries={[initialEntry]}>

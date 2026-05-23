@@ -466,23 +466,68 @@ Rankings are sorted by ELO rating in descending order, limited to players with a
 
 ## Challenge System
 
-Players can challenge friends to compete head-to-head.
+Players can challenge friends to compete head-to-head through two backend
+paths. The Challenge tab (`/challenge`) is now an **async Duel Hub** built on
+top of `duels`, `rivalries`, and `challengeNotifications` — the old synchronous
+"send invite → live match" path is still wired through `liveMatches` but is no
+longer the default surface.
 
-**How it works:**
-1. Enter a friend's username
-2. Select a sport and mode (quiz or survival)
-3. Send the challenge
-4. The challenged player sees it in their pending challenges
-5. They can accept or decline
-6. Accepted challenges can lead to a Live Match
+**Async Duel path (primary):**
+1. From `/challenge`, tap **New Duel** to pick:
+   - **Duel kind** — Sports trivia, Knowledge, or "Which Came First"
+   - **Topic** — sport (football / basketball / tennis) or knowledge category
+   - **Difficulty** — easy / medium (intermediate) / hard
+   - **Opponent** — pick a rival, search a `@username`, or generate a share link
+2. The server creates a `duels` row, locks a seeded `questionChecksums[]` set,
+   and (for link duels) returns a `linkCode` you can share over the Web Share
+   API or copy.
+3. Each player answers in-order through `duels.submitAnswer`; the server
+   serves the current question, validates, and derives timing from per-question
+   `servedAt`.
+4. When both players complete, or expiry fires from the hourly cron, the
+   server resolves the winner and writes `rivalries`.
+5. The Duel Hub groups every duel into **Your Turn** / **Awaiting opponent** /
+   **Resolved**, with a per-card status badge and CTA. The Challenge nav icon
+   carries an unread badge from `notifications.unreadCount`.
 
-**Challenge states:**
-- **Pending** — Waiting for the challenged player's response
-- **Active** — Challenge accepted, game in progress
-- **Completed** — Both players have finished, winner determined
-- **Declined** — Challenge was rejected
+**Synchronous Live Match path (legacy):**
+Still available — `liveMatches` powers the existing real-time head-to-head and
+its waiting room. New duels do not flow through this path; live matches are now
+launched from the result-screen rematch action and from existing
+`challenges` invites.
 
-*Note: Guest users cannot send or receive challenges.*
+Async duels use the existing `quizQuestions` table. Knowledge is modeled as
+`sport: "knowledge"` with category taxonomy, including `which_came_first`;
+there is no separate knowledge table.
+
+**Duel states:**
+- **Awaiting opponent** — duel is open / in progress
+- **Resolved** — both players completed (or attached after expiry)
+- **Expired** — server resolved by `expiresAt` hourly cron
+- **Declined** — invited opponent rejected the duel
+
+**Rivals screen (`/rivals`):**
+- Lists every counterparty from `rivalries.listMine` with running W-L-D,
+  current streak, and last duel timestamp
+- Tap an opponent to open `/rivals/:opponentUserId` which shows the
+  head-to-head card and a one-tap **Rematch** that calls `duels.rematch`
+
+**Share-link landing (`/duel/:linkCode`):**
+- Anyone can open the link. A guest can play immediately using a tab-local
+  `guestToken` persisted in `localStorage` (`verveq_duel_guest_token::<code>`),
+  which the backend hashes into `opponentGuestTokenHash`.
+- After the guest finishes the duel, the UI prompts them to create an account.
+  A pending-attach hint is persisted to `localStorage` and `LoginScreen`
+  redirects back to `/duel/:linkCode` after signup; the landing then calls
+  `duels.attachGuestResult` to bind the result to the new account before
+  showing the result screen. Signup never auto-creates a Convex anonymous
+  user — guest play stays tab-local until the user explicitly registers.
+
+The Challenge Hub, async duel play, result/share card, rivals, and link
+landing routes are lazy-loaded behind a `Suspense` boundary and wrapped in a
+top-level `ErrorBoundary`. See [`docs/CHALLENGE_DUELS.md`](CHALLENGE_DUELS.md)
+for the backend state machine, scoring model, link bridge, rivalry ledger,
+and cron behavior — plus the frontend wiring notes appended at the end.
 
 ---
 
@@ -543,7 +588,13 @@ Home Screen
   ├── Who Am I ────── Sport Select ───────────────────────── Who Am I ────────── Results
   ├── Forge ─────────── Submit / Review / My Submissions
   ├── Leaderboard (bottom nav)
-  ├── Challenge (bottom nav)
+  ├── Challenge / Duel Hub (bottom nav)
+  │     ├── New Duel ── Kind ── Topic ── Difficulty ── Opponent ─┐
+  │     │                                                       ├── Duel Play ── Duel Result ── Rematch
+  │     │                                                       └── Share Link
+  │     ├── Your Turn / Awaiting / Resolved
+  │     ├── Rivals ───── Rival Detail ── Rematch
+  │     └── Share-link landing (/duel/:linkCode) — guest plays → signup → attach
   └── Profile (bottom nav)
 
 Results Screen
@@ -573,19 +624,23 @@ Results Screen
 | 8 | Results | `/results` | Post-game score, grade, ELO change |
 | 9 | Leaderboard | `/leaderboard` | Global rankings with filters |
 | 10 | Profile | `/profile` | Personal stats, achievements, history |
-| 11 | Challenge | `/challenge` | Send/receive player challenges |
-| 12 | Dashboard | `/dashboard` | Quick-start games by sport |
-| 13 | Daily Quiz | `/daily-quiz` | Daily quiz challenge |
-| 14 | Daily Survival | `/daily-survival` | Daily survival challenge |
-| 15 | Daily Results | `/daily-results` | Daily challenge results |
-| 16 | Blitz | `/blitz` | 60-second speed quiz |
-| 17 | Blitz Results | `/blitz-results` | Blitz mode results |
-| 18 | Waiting Room | `/waiting-room` | Live match matchmaking lobby |
-| 19 | Live Match | `/live-match` | Head-to-head real-time gameplay |
-| 20 | Forge | `/forge` | Community question editor and reviewer |
-| 21 | Higher or Lower | `/higher-lower` | Streak-based stat comparison gameplay |
-| 22 | VerveGrid | `/verve-grid` | 3x3 grid intersection challenge |
-| 23 | Who Am I | `/who-am-i` | Progressive clue guessing gameplay |
+| 11 | Challenge / Duel Hub | `/challenge` | Async duel inbox (Your Turn / Awaiting / Resolved) + New Duel flow |
+| 12 | Duel Play | `/duel/play/:duelId` | Async duel gameplay (MCQ + Which Came First) |
+| 13 | Duel Result | `/duel/result/:duelId` | Duel result + share card + rematch CTA |
+| 14 | Duel Link Landing | `/duel/:linkCode` | Shareable-link landing for accounts and guests, with post-play attach prompt |
+| 15 | Rivals | `/rivals` | Head-to-head ledger across all opponents |
+| 16 | Rival Detail | `/rivals/:opponentUserId` | Per-rival W-L-D, streak, one-tap rematch |
+| 17 | Daily Quiz | `/daily-quiz` | Daily quiz challenge |
+| 18 | Daily Survival | `/daily-survival` | Daily survival challenge |
+| 19 | Daily Results | `/daily-results` | Daily challenge results |
+| 20 | Blitz | `/blitz` | 60-second speed quiz |
+| 21 | Blitz Results | `/blitz-results` | Blitz mode results |
+| 22 | Waiting Room | `/waiting-room` | Live match matchmaking lobby |
+| 23 | Live Match | `/live-match` | Head-to-head real-time gameplay |
+| 24 | Forge | `/forge` | Community question editor and reviewer |
+| 25 | Higher or Lower | `/higher-lower` | Streak-based stat comparison gameplay |
+| 26 | VerveGrid | `/verve-grid` | 3x3 grid intersection challenge |
+| 27 | Who Am I | `/who-am-i` | Progressive clue guessing gameplay |
 
 ---
 
