@@ -458,6 +458,77 @@ export default defineSchema({
     .index("by_player1", ["player1Id", "status"])
     .index("by_player2", ["player2Id", "status"]),
 
+  // Challenge Arena
+  arenas: defineTable({
+    code: v.string(),
+    hostId: v.id("users"),
+    mode: v.union(
+      v.literal("1v1"),
+      v.literal("2v2"),
+      v.literal("ffa3"),
+      v.literal("ffa4"),
+      v.literal("ffa5"),
+    ),
+    status: v.union(
+      v.literal("lobby"),
+      v.literal("countdown"),
+      v.literal("active"),
+      v.literal("round_break"),
+      v.literal("final"),
+      v.literal("abandoned"),
+    ),
+    players: v.array(
+      v.object({
+        userId: v.id("users"),
+        nameSnapshot: v.string(),
+        team: v.optional(v.union(v.literal("A"), v.literal("B"))),
+        ready: v.boolean(),
+        joinedAt: v.number(),
+        lastSeenAt: v.number(),
+        left: v.boolean(),
+        totalScore: v.number(),
+      }),
+    ),
+    config: v.object({
+      rounds: v.number(),
+      perRound: v.number(),
+      categories: v.array(v.string()),
+    }),
+    currentRound: v.number(),
+    currentQuestionIndex: v.number(),
+    phase: v.union(
+      v.literal("lobby"),
+      v.literal("countdown"),
+      v.literal("question"),
+      v.literal("reveal"),
+      v.literal("round_break"),
+      v.literal("final"),
+      v.literal("abandoned"),
+    ),
+    questionStartedAt: v.optional(v.number()),
+    questionWindowMs: v.number(),
+    roundChecksums: v.array(v.array(v.string())),
+    createdAt: v.number(),
+    expiresAt: v.number(),
+  })
+    .index("by_code", ["code"])
+    .index("by_status", ["status"]),
+
+  arenaAnswers: defineTable({
+    arenaId: v.id("arenas"),
+    round: v.number(),
+    questionIndex: v.number(),
+    userId: v.id("users"),
+    answer: v.string(),
+    serverTimeMs: v.number(),
+    correct: v.boolean(),
+    points: v.number(),
+  }).index("by_arena_round_question", [
+    "arenaId",
+    "round",
+    "questionIndex",
+  ]),
+
   // ── Blitz Mode ──
   blitzSessions: defineTable({
     userId: v.id("users"),

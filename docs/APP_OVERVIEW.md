@@ -2,7 +2,7 @@
 
 ## What is VerveQ?
 
-VerveQ is a competitive sports trivia platform where players test and prove their sports knowledge through multiple game modes: **Quiz**, **Survival**, **Blitz**, **Higher or Lower**, **VerveGrid**, **Who Am I**, **Daily Challenge**, and **Live Match**. Players earn ELO ratings, climb leaderboards, unlock achievements, contribute community questions via **The Forge**, and challenge friends — all across three supported sports.
+VerveQ is a competitive sports trivia platform where players test and prove their sports knowledge through multiple game modes: **Quiz**, **Survival**, **Blitz**, **Higher or Lower**, **VerveGrid**, **Who Am I**, **Daily Challenge**, **Live Match**, and the synchronous multiplayer **Challenge Arena** rooms. Players earn ELO ratings, climb leaderboards, unlock achievements, contribute community questions via **The Forge**, and challenge friends — all across three supported sports.
 
 The platform targets sports enthusiasts who want more than casual trivia. VerveQ's ELO rating system, borrowed from competitive chess, provides a meaningful measure of sports knowledge that evolves with every game played.
 
@@ -319,6 +319,62 @@ Real-time head-to-head competitive quiz between two players.
 
 ---
 
+### Challenge Arena
+
+Synchronous, server-clocked multiplayer rooms with a mobile-first UI. Additive
+to `liveMatches` and `duels`.
+
+**Supported modes:** `1v1`, `2v2`, `ffa3`, `ffa4`, `ffa5`.
+
+**How it works (player flow):**
+1. From the Challenge tab, tap **Create Arena** (pick mode) or **Join code**.
+2. The host gets a 6-char code; share via the Web Share API or copy a
+   `/arena/<code>` link. Friends opening the link land in the same lobby.
+3. Lobby shows live roster, team picker (2v2), per-player ready state, and
+   what's blocking start. Host can **Start** when ≥2 active and everyone ready,
+   or **Force start** after a 15s grace period (drops unready non-hosts).
+4. 3-2-1 countdown previews round 1's category, then 5 rounds run automatically:
+   football quiz → general knowledge → which came first → name the logo →
+   capital cities.
+5. Each question runs on a 10-second server-clocked timer with a live progress
+   bar; submissions are locked once accepted. The reveal screen shows the
+   correct answer, every player's pick, points awarded, and your running total.
+6. Round break shows the round leaderboard (team totals in 2v2), the next
+   category, a per-player ready-up button, and an "auto-advance in ~8s" hint.
+7. Final screen shows the podium, full ranking, a share card, and one-tap
+   **Rematch — same crew** which creates a fresh lobby with everyone preloaded.
+
+**Frontend routes:**
+- `/challenge` — entry point with Create Arena / Join code buttons.
+- `/arena/:code` — single reactive arena screen that drives lobby, countdown,
+  question, reveal, round break, and final podium from one `getRoom` query.
+
+**Recovery:** Refresh, lose signal, or accidentally close the tab — re-opening
+`/arena/<code>` rejoins (`join` is idempotent for active players) and resumes
+at the room's current phase. Leave is reachable from every screen and never
+traps the user.
+
+**Rounds:**
+- Football quiz
+- General knowledge
+- Which came first
+- Name the logo, using existing badge-identification image MCQs when available
+- Capital cities, seeded idempotently from bundled public-domain factual data
+
+**Scoring:**
+- Wrong or missed answers score 0
+- Correct answers get base + time bonus + rank-order bonus
+- `2v2` leaderboards sum team-member scores
+
+Account required to host or join (MVP — anonymous play not supported here).
+ELO, matchmaking, chat, and global leaderboards are intentionally out of scope.
+
+See [`docs/CHALLENGE_ARENA.md`](CHALLENGE_ARENA.md) for state machine,
+server-authoritative guarantees, leave-safety, content fallback behavior, cron
+details, and the frontend wiring notes.
+
+---
+
 ### The Forge
 
 A community-driven question creation and curation system. Not a playable game mode.
@@ -589,6 +645,9 @@ Home Screen
   ├── Forge ─────────── Submit / Review / My Submissions
   ├── Leaderboard (bottom nav)
   ├── Challenge / Duel Hub (bottom nav)
+  │     ├── Challenge Arena
+  │     │     ├── Create Arena (mode) ── /arena/:code ── Lobby → Countdown → Question/Reveal × 50 → Round break × 4 → Final Podium ── Rematch
+  │     │     └── Join code ── /arena/:code (auto-join, then same flow)
   │     ├── New Duel ── Kind ── Topic ── Difficulty ── Opponent ─┐
   │     │                                                       ├── Duel Play ── Duel Result ── Rematch
   │     │                                                       └── Share Link
@@ -641,6 +700,7 @@ Results Screen
 | 25 | Higher or Lower | `/higher-lower` | Streak-based stat comparison gameplay |
 | 26 | VerveGrid | `/verve-grid` | 3x3 grid intersection challenge |
 | 27 | Who Am I | `/who-am-i` | Progressive clue guessing gameplay |
+| 28 | Challenge Arena | `/arena/:code` | Synchronous arena room — lobby, countdown, 5 rounds of question/reveal, round break, final podium, rematch |
 
 ---
 
@@ -780,6 +840,21 @@ VerveQ uses a **neo-brutalism** design language characterized by:
 | Function | Type | Description |
 |----------|------|-------------|
 | `liveMatches.createFromChallenge` | Mutation | Create a live match from an accepted challenge |
+
+### Challenge Arena
+| Function | Type | Description |
+|----------|------|-------------|
+| `challengeArenas.create` | Mutation | Create a lobby and return an arena code |
+| `challengeArenas.join` | Mutation | Join a lobby by code |
+| `challengeArenas.setReady` | Mutation | Toggle lobby readiness |
+| `challengeArenas.setTeam` | Mutation | Select a 2v2 team |
+| `challengeArenas.start` | Mutation | Host start; locks all round checksum sets |
+| `challengeArenas.submitAnswer` | Mutation | Submit the active answer using server timing/checksum |
+| `challengeArenas.readyNextRound` | Mutation | Ready during round break |
+| `challengeArenas.leave` | Mutation | Leave safely; transfer host or abandon if empty |
+| `challengeArenas.rematch` | Mutation | Create a new room with the same crew |
+| `challengeArenas.getRoom` | Query | Reactive sanitized room state |
+| `challengeArenas.contentStatus` | Query | Verify arena category content counts |
 
 ### Forge
 | Function | Type | Description |

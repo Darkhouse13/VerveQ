@@ -23,8 +23,6 @@ import BlitzScreen from "./pages/BlitzScreen";
 import BlitzResultScreen from "./pages/BlitzResultScreen";
 import WaitingRoomScreen from "./pages/WaitingRoomScreen";
 import LiveMatchScreen from "./pages/LiveMatchScreen";
-import MultiplayerLobbyScreen from "./pages/MultiplayerLobbyScreen";
-import MultiplayerArenaScreen from "./pages/MultiplayerArenaScreen";
 import ForgeScreen from "./pages/ForgeScreen";
 import HigherLowerScreen from "./pages/HigherLowerScreen";
 import VerveGridScreen from "./pages/VerveGridScreen";
@@ -38,6 +36,7 @@ const RivalsListScreen = lazy(() => import("./pages/RivalsScreen"));
 const RivalDetailScreen = lazy(() =>
   import("./pages/RivalsScreen").then((m) => ({ default: m.RivalDetailScreen })),
 );
+const ChallengeArenaScreen = lazy(() => import("./pages/ChallengeArenaScreen"));
 
 const convex = new ConvexReactClient(
   import.meta.env.VITE_CONVEX_URL as string,
@@ -153,6 +152,16 @@ const AppRoutes = () => (
             />
             <Route path="/duel/:linkCode" element={<DuelLinkScreen />} />
             <Route
+              path="/arena/:code"
+              element={
+                <UsernameRequiredRoute>
+                  <ErrorBoundary>
+                    <ChallengeArenaScreen />
+                  </ErrorBoundary>
+                </UsernameRequiredRoute>
+              }
+            />
+            <Route
               path="/rivals"
               element={
                 <UsernameRequiredRoute>
@@ -205,22 +214,6 @@ const AppRoutes = () => (
               element={
                 <UsernameRequiredRoute>
                   <WaitingRoomScreen />
-                </UsernameRequiredRoute>
-              }
-            />
-            <Route
-              path="/challenge/arena"
-              element={
-                <UsernameRequiredRoute>
-                  <MultiplayerLobbyScreen />
-                </UsernameRequiredRoute>
-              }
-            />
-            <Route
-              path="/challenge/arena/play"
-              element={
-                <UsernameRequiredRoute>
-                  <MultiplayerArenaScreen />
                 </UsernameRequiredRoute>
               }
             />

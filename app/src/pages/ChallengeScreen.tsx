@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery, useMutation } from "convex/react";
-import { Swords, Clock, Trophy, Plus, Users, Bell } from "lucide-react";
+import { Swords, Clock, Trophy, Plus, Users, Bell, Gamepad2, Hash } from "lucide-react";
 import { toast } from "sonner";
 
 import { NeoCard } from "@/components/neo/NeoCard";
@@ -12,6 +12,8 @@ import { useAuth } from "@/contexts/AuthContext";
 import { api } from "../../convex/_generated/api";
 import { formatModeLabel, formatCategoryLabel, formatRelativeTime } from "@/lib/duel";
 import CreateDuelModal from "./challenge/CreateDuelModal";
+import CreateArenaModal from "./arena/CreateArenaModal";
+import JoinArenaModal from "./arena/JoinArenaModal";
 
 function pluralize(n: number, one: string, many: string) {
   return n === 1 ? `1 ${one}` : `${n} ${many}`;
@@ -40,6 +42,8 @@ export default function ChallengeScreen() {
   const navigate = useNavigate();
   const { user, isGuest, logout } = useAuth();
   const [showCreate, setShowCreate] = useState(false);
+  const [showArenaCreate, setShowArenaCreate] = useState(false);
+  const [showArenaJoin, setShowArenaJoin] = useState(false);
 
   const me = user;
   const list = useQuery(
@@ -124,6 +128,37 @@ export default function ChallengeScreen() {
           )}
         </div>
 
+        <NeoCard color="accent" shadow="lg" className="space-y-3">
+          <div className="flex items-start justify-between gap-3">
+            <div className="min-w-0">
+              <p className="font-heading font-bold text-base inline-flex items-center gap-1.5">
+                <Gamepad2 size={16} strokeWidth={3} /> Challenge Arena
+              </p>
+              <p className="text-xs opacity-90">
+                Live 5-round rooms — 1v1, 2v2, or FFA. Share a code, ready up,
+                play together.
+              </p>
+            </div>
+            <NeoBadge color="primary" size="sm">New</NeoBadge>
+          </div>
+          <div className="grid grid-cols-2 gap-2">
+            <NeoButton
+              variant="primary"
+              size="md"
+              onClick={() => setShowArenaCreate(true)}
+            >
+              <Plus size={14} strokeWidth={3} /> Create
+            </NeoButton>
+            <NeoButton
+              variant="secondary"
+              size="md"
+              onClick={() => setShowArenaJoin(true)}
+            >
+              <Hash size={14} strokeWidth={3} /> Join code
+            </NeoButton>
+          </div>
+        </NeoCard>
+
         <NeoButton
           variant="primary"
           size="full"
@@ -131,16 +166,6 @@ export default function ChallengeScreen() {
         >
           <Plus size={18} strokeWidth={3} /> New Duel
         </NeoButton>
-
-        <NeoCard onClick={() => navigate("/challenge/arena")} className="space-y-2 bg-primary text-primary-foreground">
-          <div className="flex items-center justify-between gap-3">
-            <div>
-              <p className="font-heading font-bold text-base">Arena Beta</p>
-              <p className="text-xs opacity-85">1v1, 2v2, and 3-5 player free-for-all · 5 rounds × 10 questions.</p>
-            </div>
-            <Users size={24} strokeWidth={3} />
-          </div>
-        </NeoCard>
 
         {/* Rivals strip */}
         {topRivals.length > 0 && (
@@ -359,6 +384,26 @@ export default function ChallengeScreen() {
           onCreated={(duelId) => {
             setShowCreate(false);
             navigate(`/duel/play/${duelId}`);
+          }}
+        />
+      )}
+
+      {showArenaCreate && (
+        <CreateArenaModal
+          onClose={() => setShowArenaCreate(false)}
+          onCreated={(code) => {
+            setShowArenaCreate(false);
+            navigate(`/arena/${code}`);
+          }}
+        />
+      )}
+
+      {showArenaJoin && (
+        <JoinArenaModal
+          onClose={() => setShowArenaJoin(false)}
+          onJoin={(code) => {
+            setShowArenaJoin(false);
+            navigate(`/arena/${code}`);
           }}
         />
       )}
