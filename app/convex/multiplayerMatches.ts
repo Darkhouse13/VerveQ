@@ -191,6 +191,7 @@ async function publicMatch(ctx: QueryCtx | MutationCtx, match: Doc<"multiplayerM
     totalQuestions: match.totalQuestions,
     questionStartedAt: match.questionStartedAt ?? null,
     round: ARENA_ROUNDS[match.currentRoundIndex],
+    nextRound: match.status === "roundBreak" ? ARENA_ROUNDS[match.currentRoundIndex + 1] : null,
     question: current && match.status === "question" ? { question: current.question, options: current.options, roundKind: current.roundKind, roundLabel: current.roundLabel } : null,
     myAnswer: currentAnswers[userId] ?? null,
     answeredUserIds: Object.keys(currentAnswers),

@@ -95,4 +95,14 @@ describe("multiplayer challenge arena contract", () => {
     expect(lobby).toContain("handleLeave");
   });
 
+  it("shows the upcoming category on each round-break ready gate", () => {
+    const backend = read("convex/multiplayerMatches.ts");
+    const play = read("src/pages/MultiplayerArenaScreen.tsx");
+
+    expect(backend).toContain("nextRound");
+    expect(backend).toContain("ARENA_ROUNDS[match.currentRoundIndex + 1]");
+    expect(play).toContain("match.nextRound?.label");
+    expect(play).toContain("Next up");
+  });
+
 });

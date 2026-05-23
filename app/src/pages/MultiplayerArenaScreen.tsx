@@ -49,7 +49,7 @@ export default function MultiplayerArenaScreen() {
         <h1 className="font-heading font-bold text-2xl">Round {match.currentRoundIndex + 1} complete</h1>
         <Rankings rankings={match.rankings} />
         <NeoCard>
-          <p className="font-heading font-bold text-sm">Next round</p>
+          <p className="font-heading font-bold text-sm">Next up: {match.nextRound?.label ?? "Final stretch"}</p>
           <p className="text-xs text-muted-foreground mt-1">Everyone checks ready, then the next 10-question category starts.</p>
         </NeoCard>
         <NeoButton variant="primary" size="full" onClick={() => setReady({ matchId })} disabled={myReady}>{myReady ? "Waiting for players…" : "Ready for next round"}</NeoButton>
