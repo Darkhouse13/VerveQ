@@ -3,6 +3,7 @@ import { v } from "convex/values";
 import { getAuthUserId } from "@convex-dev/auth/server";
 import { calculateTimeScore, normalizeAnswer } from "./lib/scoring";
 import { pickQuestionPool } from "./lib/imageQuestions";
+import { orderAnswerOptions } from "./lib/answerOptions";
 
 const SESSION_TTL_MS = 30 * 60 * 1000; // 30 minutes
 const QUESTION_BASE_POINTS = 100;
@@ -18,12 +19,15 @@ export const createSession = mutation({
   handler: async (ctx, { sport, mode, difficulty }) => {
     const userId = await getAuthUserId(ctx);
     if (!userId) throw new Error("Not authenticated");
+    const normalizedMode = mode === "came_first" ? "came_first" : "quiz";
+    const normalizedDifficulty =
+      normalizedMode === "came_first" ? "intermediate" : difficulty;
 
     const sessionId = await ctx.db.insert("quizSessions", {
       userId,
       sport,
-      mode: mode === "came_first" ? "came_first" : "quiz",
-      difficulty,
+      mode: normalizedMode,
+      difficulty: normalizedDifficulty,
       usedChecksums: [],
       score: 0,
       correctCount: 0,
@@ -56,10 +60,15 @@ export const getQuestion = mutation({
       throw new Error("Session already completed");
     }
 
+    const difficulty =
+      session.mode === "came_first"
+        ? "intermediate"
+        : session.difficulty ?? "intermediate";
+
     const candidates = await ctx.db
       .query("quizQuestions")
       .withIndex("by_sport_difficulty", (q) =>
-        q.eq("sport", session.sport).eq("difficulty", session.difficulty ?? "intermediate"),
+        q.eq("sport", session.sport).eq("difficulty", difficulty),
       )
       .collect();
 
