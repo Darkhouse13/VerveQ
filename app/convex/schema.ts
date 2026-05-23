@@ -260,7 +260,15 @@ export default defineSchema({
     question: v.string(),
     options: v.array(v.string()),
     correctAnswer: v.string(),
+    acceptedAliases: v.optional(v.array(v.string())),
     explanation: v.optional(v.string()),
+    questionKind: v.optional(
+      v.union(
+        v.literal("mcq"),
+        v.literal("which_came_first"),
+        v.literal("logo_text"),
+      ),
+    ),
     difficulty: v.union(
       v.literal("easy"),
       v.literal("intermediate"),
@@ -274,6 +282,7 @@ export default defineSchema({
     timesCorrect: v.number(),
     usageCount: v.number(),
     imageId: v.optional(v.id("_storage")),
+    imageUrl: v.optional(v.string()),
   })
     .index("by_sport_difficulty", ["sport", "difficulty"])
     .index("by_checksum", ["checksum"]),

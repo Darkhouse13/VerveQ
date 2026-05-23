@@ -68,6 +68,7 @@ const CATEGORY_LABELS: Record<string, string> = {
   football_quiz: "Football Quiz",
   general_knowledge: "General Knowledge",
   which_came_first: "Which Came First",
+  enterprise_logos: "Enterprise Logos",
   name_the_logo: "Name the Logo",
   capital_cities: "Capital Cities",
   geography_fallback_for_logo: "Geography",
@@ -90,6 +91,8 @@ export function arenaCategoryEmoji(slug: string) {
       return "🧠";
     case "which_came_first":
       return "⏳";
+    case "enterprise_logos":
+      return "🏢";
     case "name_the_logo":
       return "🛡️";
     case "capital_cities":

@@ -4,6 +4,7 @@ import {
   useMemo,
   useRef,
   useState,
+  type FormEvent,
 } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useMutation, useQuery } from "convex/react";
@@ -881,6 +882,8 @@ function QuestionView({
   const me = userId ? room.players.find((p) => p.userId === userId) : null;
   const myAnswered = room.myCurrentAnswer?.answer ?? null;
   const [pending, setPending] = useState<string | null>(null);
+  const [logoGuess, setLogoGuess] = useState("");
+  const [logoCloseHint, setLogoCloseHint] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
   // Reset local pending selection when the question changes.
@@ -890,6 +893,8 @@ function QuestionView({
     if (lastKey.current !== qKey) {
       lastKey.current = qKey;
       setPending(null);
+      setLogoGuess("");
+      setLogoCloseHint(false);
       setSubmitting(false);
     }
   }, [qKey]);
@@ -908,11 +913,15 @@ function QuestionView({
   const pct = Math.max(0, Math.min(1, remainingMs / timer.questionWindowMs));
   const seconds = Math.ceil(remainingMs / 1000);
 
-  const isCameFirst = question.category === "which_came_first";
+  const isLogoText = question.kind === "logo_text";
+  const isCameFirst =
+    question.kind === "which_came_first" || question.category === "which_came_first";
   const isLogo = !!question.imageUrl;
   const locked = myAnswered !== null;
   const selected = pending ?? myAnswered;
   const activeCount = room.players.filter((p) => !p.left).length;
+  const options =
+    "options" in question && Array.isArray(question.options) ? question.options : [];
 
   const handleSelect = async (opt: string) => {
     if (locked || submitting) return;
@@ -925,6 +934,29 @@ function QuestionView({
       if (!/already answered/i.test(msg)) {
         toast.error(msg);
         setPending(null);
+        setSubmitting(false);
+      }
+    }
+  };
+
+  const handleLogoSubmit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const guess = logoGuess.trim();
+    if (locked || submitting || !guess) return;
+    setSubmitting(true);
+    setLogoCloseHint(false);
+    try {
+      const res = await submitAnswer({ arenaId: room.arenaId, answer: guess });
+      if ("result" in res && res.result === "wrong") {
+        setLogoCloseHint(!!res.close);
+        setSubmitting(false);
+        return;
+      }
+      setPending(guess);
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : "Submit failed";
+      if (!/already answered/i.test(msg)) {
+        toast.error(msg);
         setSubmitting(false);
       }
     }
@@ -966,7 +998,13 @@ function QuestionView({
         </span>
       </div>
 
-      {isCameFirst ? (
+      {isLogoText ? (
+        <NeoCard shadow="lg" className="text-center">
+          {question.imageUrl && (
+            <QuestionImage imageUrl={question.imageUrl} alt="Logo quiz image" />
+          )}
+        </NeoCard>
+      ) : isCameFirst ? (
         <NeoCard shadow="lg" className="text-center">
           <p className="text-[10px] font-heading uppercase text-muted-foreground mb-1">
             Which came first?
@@ -991,37 +1029,67 @@ function QuestionView({
         </NeoCard>
       )}
 
-      <div
-        className={
-          isCameFirst ? "grid grid-cols-1 gap-3" : "space-y-2.5"
-        }
-      >
-        {question.options.map((opt, idx) => {
-          const isPicked = selected === opt;
-          return (
-            <button
-              key={opt}
-              type="button"
+      {isLogoText ? (
+        <form onSubmit={(event) => void handleLogoSubmit(event)} className="space-y-2.5">
+          <div className="flex gap-2">
+            <input
+              value={locked ? (myAnswered ?? logoGuess) : logoGuess}
+              onChange={(event) => {
+                setLogoGuess(event.target.value);
+                setLogoCloseHint(false);
+              }}
               disabled={locked || submitting}
-              onClick={() => void handleSelect(opt)}
-              className={`w-full neo-border neo-shadow rounded-lg p-4 flex items-center gap-3 text-left cursor-pointer transition-all ${
-                locked && isPicked
-                  ? "bg-success text-success-foreground"
-                  : isPicked
-                    ? "bg-primary text-primary-foreground"
-                    : "bg-card text-card-foreground"
-              } ${!locked ? "active:neo-shadow-pressed" : ""}`}
+              autoComplete="off"
+              className="min-w-0 flex-1 neo-border rounded-lg bg-card px-3 py-3 font-heading font-bold text-sm outline-none focus:ring-2 focus:ring-primary"
+              placeholder="Company name"
+            />
+            <button
+              type="submit"
+              disabled={locked || submitting || !logoGuess.trim()}
+              className="neo-border neo-shadow rounded-lg bg-primary text-primary-foreground px-4 py-3 font-heading font-bold text-sm active:neo-shadow-pressed disabled:opacity-60"
             >
-              {!isCameFirst && (
-                <span className="neo-border rounded-full w-8 h-8 flex items-center justify-center font-heading font-bold text-xs bg-background text-foreground shrink-0">
-                  {letters[idx]}
-                </span>
-              )}
-              <span className="font-heading font-bold text-sm">{opt}</span>
+              <Check size={16} strokeWidth={3} />
             </button>
-          );
-        })}
-      </div>
+          </div>
+          {logoCloseHint && (
+            <p className="text-center text-[11px] font-heading font-bold text-accent">
+              Close
+            </p>
+          )}
+        </form>
+      ) : (
+        <div
+          className={
+            isCameFirst ? "grid grid-cols-1 gap-3" : "space-y-2.5"
+          }
+        >
+          {options.map((opt, idx) => {
+            const isPicked = selected === opt;
+            return (
+              <button
+                key={opt}
+                type="button"
+                disabled={locked || submitting}
+                onClick={() => void handleSelect(opt)}
+                className={`w-full neo-border neo-shadow rounded-lg p-4 flex items-center gap-3 text-left cursor-pointer transition-all ${
+                  locked && isPicked
+                    ? "bg-success text-success-foreground"
+                    : isPicked
+                      ? "bg-primary text-primary-foreground"
+                      : "bg-card text-card-foreground"
+                } ${!locked ? "active:neo-shadow-pressed" : ""}`}
+              >
+                {!isCameFirst && (
+                  <span className="neo-border rounded-full w-8 h-8 flex items-center justify-center font-heading font-bold text-xs bg-background text-foreground shrink-0">
+                    {letters[idx]}
+                  </span>
+                )}
+                <span className="font-heading font-bold text-sm">{opt}</span>
+              </button>
+            );
+          })}
+        </div>
+      )}
 
       {locked ? (
         <p className="text-center text-[11px] text-muted-foreground">
@@ -1058,6 +1126,11 @@ function RevealView({
 
   const me = userId ? room.players.find((p) => p.userId === userId) : null;
   const myAnswer = room.revealAnswers.find((a) => a.userId === userId);
+  const isLogoText = question.kind === "logo_text";
+  const questionText =
+    "question" in question && typeof question.question === "string"
+      ? question.question
+      : "Name this logo.";
   const correctAnswer =
     "correctAnswer" in question && typeof question.correctAnswer === "string"
       ? question.correctAnswer
@@ -1082,12 +1155,17 @@ function RevealView({
         </p>
         {question.imageUrl && (
           <div className="mb-3 mt-2">
-            <QuestionImage imageUrl={question.imageUrl} alt={question.question} />
+            <QuestionImage
+              imageUrl={question.imageUrl}
+              alt={isLogoText ? "Logo quiz image" : questionText}
+            />
           </div>
         )}
-        <p className="font-heading font-bold text-base leading-snug">
-          {question.question}
-        </p>
+        {!isLogoText && (
+          <p className="font-heading font-bold text-base leading-snug">
+            {questionText}
+          </p>
+        )}
         {correctAnswer && (
           <div className="mt-3 neo-border rounded-lg bg-success text-success-foreground px-3 py-2">
             <p className="text-[10px] font-heading uppercase mb-0.5">Correct</p>

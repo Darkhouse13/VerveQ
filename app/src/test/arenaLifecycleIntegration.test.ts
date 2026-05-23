@@ -16,7 +16,10 @@ vi.mock("@convex-dev/auth/server", () => ({
 }));
 
 import * as challengeArenas from "../../convex/challengeArenas";
-import { challengeArenaCapitalCityQuestions } from "../../convex/challengeArenaContent";
+import {
+  challengeArenaCapitalCityQuestions,
+  challengeArenaEnterpriseLogoQuestions,
+} from "../../convex/challengeArenaContent";
 
 type Args = { [key: string]: unknown };
 type Row = Record<string, unknown> & { _id: string };
@@ -80,6 +83,9 @@ type QuestionRow = Row & {
   bucket: string;
   checksum: string;
   imageId?: string;
+  imageUrl?: string;
+  acceptedAliases?: string[];
+  questionKind?: "mcq" | "which_came_first" | "logo_text";
   difficultyVotes: number;
   difficultyScore: number;
   timesAnswered: number;
@@ -444,6 +450,54 @@ function questionByChecksum(db: FakeDb, checksum: string) {
   return question;
 }
 
+function logoQuestionByAnswer(db: FakeDb, answer: string) {
+  const question = db
+    .all<QuestionRow>("quizQuestions")
+    .find(
+      (row) =>
+        row.category === "enterprise_logos" &&
+        row.correctAnswer.toLowerCase() === answer.toLowerCase(),
+    );
+  if (!question) throw new Error(`Missing logo question ${answer}`);
+  return question;
+}
+
+function seedActiveArena(
+  db: FakeDb,
+  arenaId: string,
+  checksum: string,
+  users: string[] = ["user_a", "user_b"],
+) {
+  db.seed("arenas", arenaId, {
+    code: arenaId.toUpperCase(),
+    hostId: users[0],
+    mode: "1v1",
+    status: "active",
+    players: users.map((userId, index) => ({
+      userId,
+      nameSnapshot: `Player ${index + 1}`,
+      ready: true,
+      joinedAt: now,
+      lastSeenAt: now,
+      left: false,
+      totalScore: 0,
+    })),
+    config: {
+      rounds: 1,
+      perRound: 1,
+      categories: ["enterprise_logos"],
+    },
+    currentRound: 0,
+    currentQuestionIndex: 0,
+    phase: "question",
+    questionStartedAt: now,
+    questionWindowMs: 10_000,
+    roundChecksums: [[checksum]],
+    createdAt: now,
+    expiresAt: now + 60_000,
+  });
+}
+
 async function createJoinedArena(db: FakeDb, mode: ArenaMode, users: string[]) {
   setAuth(users[0]);
   const created = (await handlerOf(challengeArenas.create)(makeCtx(db), {
@@ -592,7 +646,7 @@ describe("challenge arena lifecycle integration", () => {
       "football_quiz",
       "general_knowledge",
       "which_came_first",
-      "name_the_logo",
+      "enterprise_logos",
       "capital_cities",
     ]);
 
@@ -614,7 +668,9 @@ describe("challenge arena lifecycle integration", () => {
       arenaId,
     })) as RoomView;
     expect(activeRoom.phase).toBe("question");
+    expect(activeRoom.currentQuestion).toHaveProperty("kind", "mcq");
     expect(activeRoom.currentQuestion).not.toHaveProperty("correctAnswer");
+    expect(activeRoom.currentQuestion).not.toHaveProperty("acceptedAliases");
     expect(activeRoom.currentQuestion).not.toHaveProperty("checksum");
     expect(activeRoom.revealAnswers).toEqual([]);
 
@@ -941,6 +997,190 @@ describe("challenge arena lifecycle integration", () => {
     ]);
   });
 
+  it("runs logo text questions with fuzzy guesses, aliases, close hints, sanitized views, and all-correct close", async () => {
+    const db = new FakeDb();
+    seedUsers(db);
+    const seeded = (await handlerOf(challengeArenas.seedContentGaps)(
+      makeCtx(db),
+      {},
+    )) as {
+      insertedEnterpriseLogos: number;
+      enterpriseLogos: number;
+      bundledEnterpriseLogoSeeds: number;
+    };
+    expect(seeded.insertedEnterpriseLogos).toBe(
+      challengeArenaEnterpriseLogoQuestions.length,
+    );
+    expect(seeded.enterpriseLogos).toBe(challengeArenaEnterpriseLogoQuestions.length);
+    expect(seeded.bundledEnterpriseLogoSeeds).toBe(
+      challengeArenaEnterpriseLogoQuestions.length,
+    );
+
+    const question = logoQuestionByAnswer(db, "Google");
+    const arenaId = "arena_logo_text";
+    seedActiveArena(db, arenaId, question.checksum);
+
+    setAuth("user_a");
+    const activeRoom = (await handlerOf(challengeArenas.getRoom)(makeCtx(db), {
+      arenaId,
+    })) as RoomView;
+    expect(activeRoom.currentQuestion).toMatchObject({
+      kind: "logo_text",
+      category: "enterprise_logos",
+      imageUrl: "/arena-logos/simple-icons/google.svg",
+    });
+    expect(activeRoom.currentQuestion).not.toHaveProperty("question");
+    expect(activeRoom.currentQuestion).not.toHaveProperty("options");
+    expect(activeRoom.currentQuestion).not.toHaveProperty("correctAnswer");
+    expect(activeRoom.currentQuestion).not.toHaveProperty("acceptedAliases");
+
+    now += 500;
+    const closeWrong = (await handlerOf(challengeArenas.submitAnswer)(makeCtx(db), {
+      arenaId,
+      answer: "Gxoglee",
+    })) as Record<string, unknown>;
+    expect(closeWrong).toEqual({ result: "wrong", close: true });
+    expect(JSON.stringify(closeWrong).toLowerCase()).not.toContain("google");
+    expect(db.all<AnswerRow>("arenaAnswers")).toHaveLength(0);
+
+    now += 500;
+    const plainWrong = (await handlerOf(challengeArenas.submitAnswer)(makeCtx(db), {
+      arenaId,
+      answer: "Spotify",
+    })) as Record<string, unknown>;
+    expect(plainWrong).toEqual({ result: "wrong", close: false });
+    expect(db.all<AnswerRow>("arenaAnswers")).toHaveLength(0);
+
+    now = db.row<ArenaRow>(arenaId).questionStartedAt! + 2_000;
+    const fuzzyCorrect = (await handlerOf(challengeArenas.submitAnswer)(
+      makeCtx(db),
+      {
+        arenaId,
+        answer: "Gogle",
+      },
+    )) as Record<string, unknown>;
+    expect(fuzzyCorrect).toMatchObject({
+      accepted: true,
+      result: "correct",
+      serverTimeMs: 2_000,
+    });
+    expect(db.row<ArenaRow>(arenaId).phase).toBe("question");
+
+    setAuth("user_b");
+    now = db.row<ArenaRow>(arenaId).questionStartedAt! + 4_000;
+    const aliasCorrect = (await handlerOf(challengeArenas.submitAnswer)(
+      makeCtx(db),
+      {
+        arenaId,
+        answer: "Alphabet",
+      },
+    )) as Record<string, unknown>;
+    expect(aliasCorrect).toMatchObject({
+      accepted: true,
+      result: "correct",
+      serverTimeMs: 4_000,
+    });
+    expect(db.row<ArenaRow>(arenaId).phase).toBe("reveal");
+
+    const answers = db.all<AnswerRow>("arenaAnswers");
+    expect(answers).toHaveLength(2);
+    expect(answers.find((answer) => answer.userId === "user_a")).toMatchObject({
+      answer: "Gogle",
+      correct: true,
+      points: 230,
+      serverTimeMs: 2_000,
+    });
+    expect(answers.find((answer) => answer.userId === "user_b")).toMatchObject({
+      answer: "Alphabet",
+      correct: true,
+      points: 190,
+      serverTimeMs: 4_000,
+    });
+
+    setAuth("user_a");
+    const revealRoom = (await handlerOf(challengeArenas.getRoom)(makeCtx(db), {
+      arenaId,
+    })) as RoomView;
+    expect(revealRoom.currentQuestion).toMatchObject({
+      kind: "logo_text",
+      correctAnswer: "Google",
+      imageUrl: "/arena-logos/simple-icons/google.svg",
+    });
+    expect(revealRoom.currentQuestion).not.toHaveProperty("acceptedAliases");
+    expect(revealRoom.revealAnswers).toHaveLength(2);
+  });
+
+  it("closes logo text questions on timer with misses scored as zero", async () => {
+    const db = new FakeDb();
+    seedUsers(db);
+    await handlerOf(challengeArenas.seedContentGaps)(makeCtx(db), {});
+    const question = logoQuestionByAnswer(db, "Google");
+    const arenaId = "arena_logo_timer";
+    seedActiveArena(db, arenaId, question.checksum);
+
+    setAuth("user_a");
+    now = db.row<ArenaRow>(arenaId).questionStartedAt! + 1_000;
+    await handlerOf(challengeArenas.submitAnswer)(makeCtx(db), {
+      arenaId,
+      answer: "Google",
+    });
+    expect(db.row<ArenaRow>(arenaId).phase).toBe("question");
+
+    now = db.row<ArenaRow>(arenaId).questionStartedAt! + 10_000;
+    await handlerOf(challengeArenas.closeQuestion)(makeCtx(db), {
+      arenaId,
+      round: 0,
+      questionIndex: 0,
+    });
+    const arena = db.row<ArenaRow>(arenaId);
+    expect(arena.phase).toBe("reveal");
+    expect(arena.players.find((player) => player.userId === "user_a")?.totalScore).toBe(
+      240,
+    );
+    expect(arena.players.find((player) => player.userId === "user_b")?.totalScore).toBe(
+      0,
+    );
+    expect(db.all<AnswerRow>("arenaAnswers")).toHaveLength(1);
+  });
+
+  it("reports seeded logo content counts idempotently", async () => {
+    const db = new FakeDb();
+    seedUsers(db);
+
+    const first = (await handlerOf(challengeArenas.seedContentGaps)(
+      makeCtx(db),
+      {},
+    )) as {
+      insertedEnterpriseLogos: number;
+      enterpriseLogos: number;
+      bundledEnterpriseLogoSeeds: number;
+    };
+    const second = (await handlerOf(challengeArenas.seedContentGaps)(
+      makeCtx(db),
+      {},
+    )) as {
+      insertedEnterpriseLogos: number;
+      enterpriseLogos: number;
+      bundledEnterpriseLogoSeeds: number;
+    };
+    const status = (await handlerOf(challengeArenas.contentStatus)(
+      makeCtx(db),
+      {},
+    )) as {
+      enterpriseLogos: number;
+      bundledEnterpriseLogoSeeds: number;
+    };
+
+    expect(first.insertedEnterpriseLogos).toBe(
+      challengeArenaEnterpriseLogoQuestions.length,
+    );
+    expect(second.insertedEnterpriseLogos).toBe(0);
+    expect(status.enterpriseLogos).toBe(challengeArenaEnterpriseLogoQuestions.length);
+    expect(status.bundledEnterpriseLogoSeeds).toBe(
+      challengeArenaEnterpriseLogoQuestions.length,
+    );
+  });
+
   it("enforces force-start grace and the abuse contract", async () => {
     const submitArgs = argsOf(challengeArenas.submitAnswer);
     expect(JSON.stringify(submitArgs)).not.toContain("correctAnswer");
@@ -966,7 +1206,7 @@ describe("challenge arena lifecycle integration", () => {
       arenaId,
       force: true,
     })) as { categories: string[] };
-    expect(forced.categories).toContain("geography_fallback_for_logo");
+    expect(forced.categories).toContain("enterprise_logos");
     expect(
       db.row<ArenaRow>(arenaId).players.find((player) => player.userId === "user_c"),
     ).toMatchObject({ left: true });

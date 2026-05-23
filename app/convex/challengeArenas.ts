@@ -10,8 +10,16 @@ import { v } from "convex/values";
 import { getAuthUserId } from "@convex-dev/auth/server";
 import { internal } from "./_generated/api";
 import { normalizeAnswer } from "./lib/scoring";
+import {
+  findBestMatch,
+  getMaxFuzzyDistance,
+  levenshteinDistance,
+} from "./lib/fuzzy";
 import { orderAnswerOptions } from "./lib/answerOptions";
-import { challengeArenaCapitalCityQuestions } from "./challengeArenaContent";
+import {
+  challengeArenaCapitalCityQuestions,
+  challengeArenaEnterpriseLogoQuestions,
+} from "./challengeArenaContent";
 
 const ARENA_ROUNDS = 5;
 const QUESTIONS_PER_ROUND = 10;
@@ -38,7 +46,7 @@ const DEFAULT_ROUND_CATEGORIES = [
   "football_quiz",
   "general_knowledge",
   "which_came_first",
-  "name_the_logo",
+  "enterprise_logos",
   "capital_cities",
 ] as const;
 
@@ -50,6 +58,7 @@ type ArenaAnswer = Doc<"arenaAnswers">;
 type ArenaPlayer = Arena["players"][number];
 type ArenaMode = Arena["mode"];
 type Question = Doc<"quizQuestions">;
+type QuestionKind = "mcq" | "which_came_first" | "logo_text";
 type LeaderboardRow = {
   id: string;
   label: string;
@@ -168,6 +177,31 @@ function isValidLogoQuestion(question: Question) {
   );
 }
 
+function questionKind(question: Question): QuestionKind {
+  if (
+    question.questionKind === "logo_text" ||
+    question.category === "enterprise_logos"
+  ) {
+    return "logo_text";
+  }
+  if (
+    question.questionKind === "which_came_first" ||
+    question.category === "which_came_first"
+  ) {
+    return "which_came_first";
+  }
+  return "mcq";
+}
+
+function isLogoTextQuestion(question: Question) {
+  return (
+    questionKind(question) === "logo_text" &&
+    question.category === "enterprise_logos" &&
+    !!question.imageUrl &&
+    question.correctAnswer.trim().length > 0
+  );
+}
+
 async function generateUniqueCode(ctx: Pick<MutationCtx, "db">) {
   for (let attempt = 0; attempt < 12; attempt += 1) {
     const code = randomArenaCode();
@@ -243,10 +277,44 @@ async function ensureCapitalCitySeeds(ctx: Pick<MutationCtx, "db">) {
   return inserted;
 }
 
+async function ensureEnterpriseLogoSeeds(ctx: Pick<MutationCtx, "db">) {
+  let inserted = 0;
+  for (const seed of challengeArenaEnterpriseLogoQuestions) {
+    const existing = await ctx.db
+      .query("quizQuestions")
+      .withIndex("by_checksum", (q) => q.eq("checksum", seed.checksum))
+      .first();
+    if (existing) continue;
+
+    await ctx.db.insert("quizQuestions", {
+      ...seed,
+      difficultyVotes: 0,
+      difficultyScore: 0,
+      timesAnswered: 0,
+      timesCorrect: 0,
+      usageCount: 0,
+    });
+    inserted += 1;
+  }
+  return inserted;
+}
+
 function uniqueStableCandidates(questions: Question[], used: Set<string>) {
   const byChecksum = new Map<string, Question>();
   for (const question of questions) {
     if (!used.has(question.checksum) && isAnswerableMcq(question)) {
+      byChecksum.set(question.checksum, question);
+    }
+  }
+  return [...byChecksum.values()].sort((a, b) =>
+    a.checksum.localeCompare(b.checksum),
+  );
+}
+
+function uniqueStableLogoCandidates(questions: Question[], used: Set<string>) {
+  const byChecksum = new Map<string, Question>();
+  for (const question of questions) {
+    if (!used.has(question.checksum) && isLogoTextQuestion(question)) {
       byChecksum.set(question.checksum, question);
     }
   }
@@ -272,11 +340,29 @@ function pickChecksums(
   return picked.map((question) => question.checksum);
 }
 
+function pickLogoChecksums(
+  questions: Question[],
+  used: Set<string>,
+  seed: string,
+  label: string,
+) {
+  const candidates = uniqueStableLogoCandidates(questions, used);
+  const picked = seededShuffle(candidates, seed).slice(0, QUESTIONS_PER_ROUND);
+  if (picked.length < QUESTIONS_PER_ROUND) {
+    throw new Error(
+      `Not enough challenge arena questions for ${label}: ${picked.length}/${QUESTIONS_PER_ROUND}`,
+    );
+  }
+  for (const question of picked) used.add(question.checksum);
+  return picked.map((question) => question.checksum);
+}
+
 async function lockRoundQuestionSets(
   ctx: Pick<MutationCtx, "db">,
   seed: string,
 ) {
   await ensureCapitalCitySeeds(ctx);
+  await ensureEnterpriseLogoSeeds(ctx);
 
   const football = await collectQuestionsForSport(ctx, "football");
   const knowledge = await collectQuestionsForSport(ctx, "knowledge");
@@ -309,6 +395,7 @@ async function lockRoundQuestionSets(
           knowledge.filter(
             (q) =>
               q.category !== "which_came_first" &&
+              q.category !== "enterprise_logos" &&
               q.category !== "capital_cities" &&
               q.category !== "geography",
           ),
@@ -334,24 +421,16 @@ async function lockRoundQuestionSets(
       continue;
     }
 
-    if (category === "name_the_logo") {
-      const logos = all.filter(isValidLogoQuestion);
-      if (uniqueStableCandidates(logos, used).length >= QUESTIONS_PER_ROUND) {
-        rounds.push(
-          pickChecksums(logos, used, `${seed}:${category}`, "name the logo"),
-        );
-        categories.push(category);
-      } else {
-        rounds.push(
-          pickChecksums(
-            knowledge.filter((q) => q.category === "geography"),
-            used,
-            `${seed}:${category}:geography_fallback`,
-            "geography fallback for name the logo",
-          ),
-        );
-        categories.push("geography_fallback_for_logo");
-      }
+    if (category === "enterprise_logos") {
+      rounds.push(
+        pickLogoChecksums(
+          all.filter((q) => q.category === "enterprise_logos"),
+          used,
+          `${seed}:${category}`,
+          "enterprise logos",
+        ),
+      );
+      categories.push(category);
       continue;
     }
 
@@ -383,10 +462,29 @@ async function sanitizeQuestion(
   question: Question,
   includeCorrectAnswer: boolean,
 ) {
-  const imageUrl = question.imageId
+  const kind = questionKind(question);
+  const imageUrl = question.imageUrl ?? (question.imageId
     ? await ctx.storage.getUrl(question.imageId)
-    : null;
+    : null);
+
+  if (kind === "logo_text") {
+    return {
+      kind,
+      category: question.category,
+      difficulty: question.difficulty,
+      imageUrl,
+      ...(includeCorrectAnswer
+        ? {
+            question: question.question,
+            correctAnswer: question.correctAnswer,
+            explanation: question.explanation ?? null,
+          }
+        : {}),
+    };
+  }
+
   return {
+    kind,
     question: question.question,
     options: orderAnswerOptions(
       question.options,
@@ -402,6 +500,36 @@ async function sanitizeQuestion(
           explanation: question.explanation ?? null,
         }
       : {}),
+  };
+}
+
+function logoAnswerTargets(question: Question) {
+  return [...new Set([question.correctAnswer, ...(question.acceptedAliases ?? [])])]
+    .map((target) => target.trim())
+    .filter(Boolean);
+}
+
+function isWithinOneEditOfLogoAcceptance(guess: string, targets: string[]) {
+  const normalizedGuess = normalizeAnswer(guess);
+  if (!normalizedGuess) return false;
+
+  return targets.some((target) => {
+    const normalizedTarget = normalizeAnswer(target);
+    if (!normalizedTarget) return false;
+    const distance = levenshteinDistance(normalizedGuess, normalizedTarget);
+    return distance === getMaxFuzzyDistance(normalizedTarget) + 1;
+  });
+}
+
+function matchLogoGuess(guess: string, question: Question) {
+  const targets = logoAnswerTargets(question);
+  const match = findBestMatch(guess, targets);
+  if (match.matched) {
+    return { correct: true, close: false };
+  }
+  return {
+    correct: false,
+    close: isWithinOneEditOfLogoAcceptance(guess, targets),
   };
 }
 
@@ -933,6 +1061,7 @@ async function getContentCounts(ctx: Pick<QueryCtx | MutationCtx, "db">) {
     generalKnowledge: knowledge.filter(
       (q) =>
         q.category !== "which_came_first" &&
+        q.category !== "enterprise_logos" &&
         q.category !== "capital_cities" &&
         q.category !== "geography" &&
         isAnswerableMcq(q),
@@ -940,12 +1069,13 @@ async function getContentCounts(ctx: Pick<QueryCtx | MutationCtx, "db">) {
     whichCameFirst: knowledge.filter(
       (q) => q.category === "which_came_first" && isAnswerableMcq(q),
     ).length,
-    validLogoMcqImages: all.filter(isValidLogoQuestion).length,
+    enterpriseLogos: all.filter(isLogoTextQuestion).length,
+    legacyLogoMcqImages: all.filter(isValidLogoQuestion).length,
     capitalCities: knowledge.filter(
       (q) => q.category === "capital_cities" && isAnswerableMcq(q),
     ).length,
     bundledCapitalSeeds: challengeArenaCapitalCityQuestions.length,
-    logoFallbackCategory: "geography_fallback_for_logo",
+    bundledEnterpriseLogoSeeds: challengeArenaEnterpriseLogoQuestions.length,
   };
 }
 
@@ -1267,12 +1397,53 @@ export const submitAnswer = mutation({
       arena.currentRound,
       arena.currentQuestionIndex,
     );
+
+    const question = await loadCurrentQuestion(ctx, arena);
+    if (!question) throw new Error("Question not found");
+    const kind = questionKind(question);
+
+    if (kind === "logo_text") {
+      if (existingAnswers.some((row) => row.userId === userId && row.correct)) {
+        throw new Error("Already answered this question");
+      }
+
+      const result = matchLogoGuess(answer, question);
+      if (!result.correct) {
+        return {
+          result: "wrong" as const,
+          close: result.close,
+        };
+      }
+
+      await ctx.db.insert("arenaAnswers", {
+        arenaId,
+        round: arena.currentRound,
+        questionIndex: arena.currentQuestionIndex,
+        userId,
+        answer,
+        serverTimeMs,
+        correct: true,
+        points: 0,
+      });
+
+      const activeIds = new Set(activePlayers(arena).map((player) => player.userId));
+      const correctIds = new Set([
+        ...existingAnswers
+          .filter((row) => activeIds.has(row.userId) && row.correct)
+          .map((row) => row.userId),
+        userId,
+      ]);
+      if (correctIds.size >= activeIds.size) {
+        await closeQuestionNow(ctx, arena, arena.currentRound, arena.currentQuestionIndex);
+      }
+
+      return { accepted: true, result: "correct" as const, serverTimeMs };
+    }
+
     if (existingAnswers.some((row) => row.userId === userId)) {
       throw new Error("Already answered this question");
     }
 
-    const question = await loadCurrentQuestion(ctx, arena);
-    if (!question) throw new Error("Question not found");
     const correct = normalizeAnswer(answer) === normalizeAnswer(question.correctAnswer);
 
     await ctx.db.insert("arenaAnswers", {
@@ -1498,8 +1669,10 @@ export const seedContentGaps = internalMutation({
   args: {},
   handler: async (ctx) => {
     const insertedCapitalCities = await ensureCapitalCitySeeds(ctx);
+    const insertedEnterpriseLogos = await ensureEnterpriseLogoSeeds(ctx);
     return {
       insertedCapitalCities,
+      insertedEnterpriseLogos,
       ...(await getContentCounts(ctx)),
     };
   },

@@ -45,18 +45,37 @@ The room locks all five rounds when the host starts:
 - round 1: football quiz (`sport: "football"`)
 - round 2: general knowledge (`sport: "knowledge"`)
 - round 3: which came first (`category: "which_came_first"`)
-- round 4: name the logo (`category: "badge_identification"` with `imageId`)
+- round 4: enterprise logos (`category: "enterprise_logos"`, `kind: "logo_text"`)
 - round 5: capital cities (`category: "capital_cities"`)
 
 All players share the same `roundChecksums[][]`. Clients never submit
 `correctAnswer`, score, checksum, round, question index, or timing. The submit
 mutation accepts only `{ arenaId, answer }`, loads the active checksum from the
-arena row, loads the question by `quizQuestions.by_checksum`, compares the
-stored answer, and derives `serverTimeMs` from `Date.now() - questionStartedAt`.
+arena row, loads the question by `quizQuestions.by_checksum`, validates the
+answer server-side, and derives `serverTimeMs` from
+`Date.now() - questionStartedAt`.
 
 The reactive room query omits locked checksums and strips the active question's
 `correctAnswer`. Current-question answers from other players are hidden until
 the question closes.
+
+Question payloads include a `kind` discriminator:
+
+- `mcq`: standard multiple-choice questions
+- `which_came_first`: two-option which-came-first questions
+- `logo_text`: enterprise logo image with free-text guesses
+
+For `logo_text`, the active public payload exposes the logo image path only
+alongside category/difficulty metadata. It never exposes the company name,
+accepted aliases, options, checksum, or answer text before reveal.
+
+Logo guesses are infinite and unpenalized. A correct fuzzy match against the
+canonical answer or aliases records one correct answer row with server-derived
+time and locks that player. Wrong guesses return `{ result: "wrong" }`; if the
+guess is one edit beyond the accept threshold, the server also returns
+`{ close: true }` without returning the target string. Wrong guesses do not lock
+the player out. Logo questions close when the timer expires or every active
+player has a correct answer. Reveal exposes the company name and logo.
 
 ## Scoring
 
@@ -124,17 +143,24 @@ Challenge Arena uses the existing `quizQuestions` table and indexes:
 - `by_sport_difficulty`
 - `by_checksum`
 
-Capital-city questions are bundled in `challengeArenaContent.ts` and inserted
-idempotently when an arena starts if the database lacks them. Logo rounds use
-existing `badge_identification` image questions only when at least 10 valid
-MCQ-answerable rows are present. If not, the backend substitutes the bounded
-`geography_fallback_for_logo` category and records that category in the arena
-config.
+Capital-city and enterprise-logo questions are bundled in
+`challengeArenaContent.ts` and inserted idempotently when an arena starts if the
+database lacks them. Enterprise logos use the `enterprise_logos` category,
+`questionKind: "logo_text"`, local `imageUrl` asset paths, canonical answer
+names, and accepted aliases. The logo seed set has 144 entries, enough to fill
+10-question logo rounds without repeats inside a match.
+
+Logo SVG files are copied from Simple Icons 16.20.0 into
+`app/public/arena-logos/simple-icons` and served by the app as self-hosted
+assets; they are not hotlinked at runtime. Simple Icons SVG representations are
+licensed CC0-1.0. Brand names and logos may still be trademarks of their
+respective owners; the arena uses them for identification in a quiz context.
+This is not legal advice.
 
 `challengeArenas.contentStatus` reports the live content counts used for this
 decision. `internal.challengeArenas.seedContentGaps` inserts the bounded
-capital-city seed set deliberately for environments that have not started an
-arena yet.
+capital-city and enterprise-logo seed sets deliberately for environments that
+have not started an arena yet.
 
 ## Cron
 
@@ -160,7 +186,7 @@ Everything inside the room is driven by a single reactive `useQuery` on
 |-------|----------|-------|
 | `lobby` | `LobbyView` | Roster, ready toggles, team picker for 2v2, share/copy link, host start + force-start with countdown gated by `forceStartAvailableAt`. Lists explicit "waiting on" reasons (player count, team validity, unready names). |
 | `countdown` | `CountdownView` | 3-2-1 anchored to the first observed phase change (no authoritative start timestamp on the room) plus a preview chip for round 1's category. |
-| `question` | `QuestionView` | Server-clocked timer bar (`timer.questionStartedAt` + `timer.questionWindowMs`, offset corrected via `useClockOffset` against `timer.serverNow`). MCQ for football/general/logo (with `QuestionImage` for `imageUrl`), 1-column big two-option layout for `which_came_first`. **Tap-to-submit**: tapping an option calls `submitAnswer` immediately — there is no "lock in" confirm step. Locked state is read back from `room.myCurrentAnswer` so refresh resumes. Errors like "already answered" are swallowed; everything else toasts and clears the pending pick so the player can retry. |
+| `question` | `QuestionView` | Server-clocked timer bar (`timer.questionStartedAt` + `timer.questionWindowMs`, offset corrected via `useClockOffset` against `timer.serverNow`). MCQ for football/general rounds, 1-column big two-option layout for `which_came_first`, and logo image + text input for `logo_text`. MCQ uses **tap-to-submit**: tapping an option calls `submitAnswer` immediately. Logo text guesses submit from the input, wrong guesses keep the input live, and server close hints render without leaking the answer. Locked state is read back from `room.myCurrentAnswer` so refresh resumes. Errors like "already answered" are swallowed; everything else toasts and clears local pending state so the player can retry. |
 | `reveal` | `RevealView` | Correct answer banner, per-player answer list sorted by points + speed, my own verdict + running total. |
 | `round_break` | `RoundBreakView` | Round leaderboard from `room.roundLeaderboard` (team totals in 2v2 are already aggregated by the backend), preview of next category, ready button calling `readyNextRound`, a local 8s "auto-advance" hint (server schedules the real advance). |
 | `final` | `FinalView` | Subscribes to `challengeArenas.getArenaSummary({ arenaId })` and renders three sub-blocks: an orange neo-brutalist hero ("Champion" for solo modes, "Winning team" for 2v2, using `rankings.players[0]` / `rankings.teams[0]`), three award chips (`fastest` / `sharpshooter` / `hotStreak` — joining tied winners as "A & B", no diversification), and a `FinalStandingsCard` table (`# / Player / Score / Acc / Avg`). 2v2 inserts a `T-A`/`T-B` team marker row above each team's members, teams ranked by total; players are numbered 01..N across the whole list. Per-player ACC / AVG render as `—` when a player has no submitted answers or no correct answers. Actions: `REMATCH — same crew` (orange primary, calls the existing rematch flow) + `Share result` (Web Share API with copy fallback, payload tailored to solo vs. team). Loading state shows a tally placeholder; `summary === null` (not final yet, or unauthorised reader) falls back to a "results unavailable" card with the same rematch + share affordances. |

@@ -36,7 +36,7 @@ export function levenshteinDistance(a: string, b: string): number {
  * Dynamic max edit distance based on target name length.
  * Short names are strict; long names get more tolerance.
  */
-function getMaxDistance(normalizedTarget: string): number {
+export function getMaxFuzzyDistance(normalizedTarget: string): number {
   const len = normalizedTarget.length;
   if (len < 8) return 1;
   if (len <= 14) return 2;
@@ -47,7 +47,7 @@ export function isMatch(answer: string, target: string): boolean {
   const a = normalizeAnswer(answer);
   const t = normalizeAnswer(target);
   if (a === t) return true;
-  return levenshteinDistance(a, t) <= getMaxDistance(t);
+  return levenshteinDistance(a, t) <= getMaxFuzzyDistance(t);
 }
 
 export interface MatchResult {
@@ -83,7 +83,7 @@ export function findBestMatch(
     if (dist < bestDistance) {
       bestDistance = dist;
       bestPlayer = player;
-      bestMaxDistance = getMaxDistance(normalizedPlayer);
+      bestMaxDistance = getMaxFuzzyDistance(normalizedPlayer);
     }
 
     if (dist === 0) break;
