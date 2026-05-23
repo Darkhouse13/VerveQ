@@ -34,7 +34,7 @@ export default function CreateArenaModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-background overflow-hidden">
+    <div className="fixed inset-0 z-[100] bg-background overflow-hidden">
       <div className="max-w-md mx-auto h-dvh max-h-dvh flex flex-col">
         <div className="flex items-center justify-between px-5 pt-4 pb-2">
           <button
@@ -49,7 +49,7 @@ export default function CreateArenaModal({
           <div className="w-9" />
         </div>
 
-        <div className="px-5 py-4 flex-1 min-h-0 overflow-y-auto space-y-3">
+        <div className="px-5 py-4 flex-1 min-h-0 overflow-y-auto overscroll-contain space-y-3">
           <p className="text-xs text-muted-foreground">
             Pick a mode. You&apos;ll get a code to share with friends.
           </p>
@@ -75,7 +75,7 @@ export default function CreateArenaModal({
           ))}
         </div>
 
-        <div className="p-5 shrink-0 bg-background border-t-[3px] border-border">
+        <div className="sticky bottom-0 z-[110] shrink-0 bg-background border-t-[3px] border-border px-5 pt-4 pb-[calc(1rem+4.75rem+env(safe-area-inset-bottom))]">
           <NeoButton
             variant="primary"
             size="full"
