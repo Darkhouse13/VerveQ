@@ -82,4 +82,17 @@ describe("multiplayer challenge arena contract", () => {
     expect(play).toContain("id === match.currentUserId");
     expect(play).not.toContain("match.roundBreakReadyUserIds.some((id) => match.players.some((p) => p.id === id))");
   });
+
+  it("lets players escape stale arena lobbies without being auto-resumed forever", () => {
+    const backend = read("convex/multiplayerMatches.ts");
+    const lobby = read("src/pages/MultiplayerLobbyScreen.tsx");
+
+    expect(backend).toContain("export const leaveLobby");
+    expect(backend).toContain("status: \"cancelled\"");
+    expect(backend).toContain("filter((id) => id !== userId)");
+    expect(lobby).toContain("leaveLobby");
+    expect(lobby).toContain("Leave arena");
+    expect(lobby).toContain("handleLeave");
+  });
+
 });

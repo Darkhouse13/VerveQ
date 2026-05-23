@@ -261,6 +261,40 @@ export const joinByCode = mutation({
   },
 });
 
+
+export const leaveLobby = mutation({
+  args: { matchId: v.id("multiplayerMatches") },
+  handler: async (ctx, { matchId }) => {
+    const { userId } = await currentUser(ctx);
+    const match = await ctx.db.get(matchId);
+    if (!match) throw new Error("Arena not found");
+    ensureParticipant(match, userId);
+    if (match.status !== "lobby") throw new Error("Only lobby arenas can be left");
+    const now = Date.now();
+    const remainingPlayerIds = match.playerIds.filter((id) => id !== userId);
+    if (match.hostId === userId || remainingPlayerIds.length === 0) {
+      await ctx.db.patch(matchId, {
+        status: "cancelled",
+        readyUserIds: [],
+        roundBreakReadyUserIds: [],
+        updatedAt: now,
+      });
+      return { status: "cancelled" as const };
+    }
+    const remainingScores = { ...((match.scoresByUserId ?? {}) as Record<string, number>) };
+    delete remainingScores[userId];
+    await ctx.db.patch(matchId, {
+      playerIds: remainingPlayerIds,
+      teamAssignments: match.teamAssignments?.filter((_, idx) => match.playerIds[idx] !== userId),
+      readyUserIds: match.readyUserIds.filter((id) => id !== userId),
+      roundBreakReadyUserIds: match.roundBreakReadyUserIds.filter((id) => id !== userId),
+      scoresByUserId: remainingScores,
+      updatedAt: now,
+    });
+    return { status: "left" as const };
+  },
+});
+
 export const setReady = mutation({
   args: { matchId: v.id("multiplayerMatches") },
   handler: async (ctx, { matchId }) => {

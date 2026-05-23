@@ -28,6 +28,7 @@ export default function MultiplayerLobbyScreen() {
   const createLobby = useMutation(api.multiplayerMatches.createLobby);
   const joinByCode = useMutation(api.multiplayerMatches.joinByCode);
   const setReady = useMutation(api.multiplayerMatches.setReady);
+  const leaveLobby = useMutation(api.multiplayerMatches.leaveLobby);
   const match = useQuery(api.multiplayerMatches.getMatch, matchId ? { matchId } : "skip");
   const activeMatchId = useQuery(api.multiplayerMatches.getActiveMatch, {});
 
@@ -50,6 +51,17 @@ export default function MultiplayerLobbyScreen() {
     if (!joinCode.trim()) return;
     const res = await joinByCode({ joinCode: joinCode.trim() });
     setParams({ matchId: res.matchId });
+  }
+
+  async function handleLeave() {
+    if (!matchId) return;
+    try {
+      await leaveLobby({ matchId });
+      toast.success("Left arena lobby");
+      navigate("/challenge", { replace: true });
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Could not leave arena");
+    }
   }
 
   if (matchId && !match) {
@@ -87,9 +99,12 @@ export default function MultiplayerLobbyScreen() {
             </NeoCard>
           ))}
         </div>
-        <NeoButton variant="primary" size="full" onClick={() => setReady({ matchId })} disabled={myReady}>
-          {myReady ? "Waiting for everyone…" : "I'm Ready"}
-        </NeoButton>
+        <div className="space-y-2">
+          <NeoButton variant="primary" size="full" onClick={() => setReady({ matchId })} disabled={myReady}>
+            {myReady ? "Waiting for everyone…" : "I'm Ready"}
+          </NeoButton>
+          <NeoButton variant="secondary" size="full" onClick={handleLeave}>Leave arena</NeoButton>
+        </div>
       </div>
     );
   }
