@@ -42,8 +42,10 @@ client is never required to move a room forward.
 
 The room locks all five rounds when the host starts:
 
-- round 1: football quiz (`sport: "football"`)
-- round 2: general knowledge (`sport: "knowledge"`)
+- round 1: football quiz (`sport: "football"`, max 2 image questions per
+  10-question round)
+- round 2: general knowledge (`sport: "knowledge"`, sampled from the full
+  arena-eligible knowledge pool)
 - round 3: which came first (`category: "which_came_first"`)
 - round 4: enterprise logos (`category: "enterprise_logos"`, `kind: "logo_text"`)
 - round 5: capital cities (`category: "capital_cities"`)
@@ -158,24 +160,47 @@ Challenge Arena uses the existing `quizQuestions` table and indexes:
 - `by_sport_difficulty`
 - `by_checksum`
 
-Capital-city and enterprise-logo questions are bundled in
-`challengeArenaContent.ts` and inserted idempotently when an arena starts if the
-database lacks them. Enterprise logos use the `enterprise_logos` category,
-`questionKind: "logo_text"`, local `imageUrl` asset paths, canonical answer
-names, and accepted aliases. The logo seed set has 144 entries, enough to fill
-10-question logo rounds without repeats inside a match.
+Capital-city, general-knowledge, and enterprise-logo arena gap seeds are
+bundled in `challengeArenaContent.ts` and upserted idempotently when an arena
+starts if the database lacks them. `internal.challengeArenas.seedContentGaps`
+can run the same upsert deliberately for environments that have not started an
+arena yet.
 
-Logo SVG files are copied from Simple Icons 16.20.0 into
-`app/public/arena-logos/simple-icons` and served by the app as self-hosted
-assets; they are not hotlinked at runtime. Simple Icons SVG representations are
-licensed CC0-1.0. Brand names and logos may still be trademarks of their
+Capital-city coverage is 195 prompts: the 193 UN Member States plus the Holy
+See and State of Palestine observer states. The country coverage follows the
+UN membership resources and observer-state count; capital names are
+cross-checked against country profile data and special cases such as Bolivia,
+Nauru, South Africa, the Holy See, and the State of Palestine use explicit
+question wording.
+
+The arena general-knowledge seed set reuses the curated `knowledgeQuestions`
+pool, excluding only dedicated `which_came_first`, `enterprise_logos`, and
+`capital_cities` categories. `contentStatus.generalKnowledge` therefore
+includes science disciplines, history, geography, arts/culture, language,
+inventions/discoveries, and fun facts instead of being limited to a small
+common-knowledge bucket.
+
+Football quiz selection uses a seeded shuffle over the full eligible football
+pool, but caps image-bearing questions (`imageId` or `imageUrl`) at two per
+10-question football round and fills the rest from text-only football
+questions.
+
+Enterprise logos use the `enterprise_logos` category, `questionKind:
+"logo_text"`, canonical answer names, and accepted aliases. The logo seed set
+has 144 entries, enough to fill 10-question logo rounds without repeats inside
+a match. Source SVG files are copied from Simple Icons 16.20.0 into
+`app/public/arena-logos/simple-icons`, then served to clients only through
+opaque hashed copies in `app/public/arena-logos/opaque`; returned `imageUrl`
+values do not include brand slugs, so the network path does not reveal the
+answer and the frontend can preload safely. Simple Icons SVG representations
+are licensed CC0-1.0. Brand names and logos may still be trademarks of their
 respective owners; the arena uses them for identification in a quiz context.
 This is not legal advice.
 
 `challengeArenas.contentStatus` reports the live content counts used for this
-decision. `internal.challengeArenas.seedContentGaps` inserts the bounded
-capital-city and enterprise-logo seed sets deliberately for environments that
-have not started an arena yet.
+decision, including `footballQuizText`, `footballQuizImages`,
+`footballImageQuestionCap`, `generalKnowledge`, `capitalCities`, and the
+bundled seed counts.
 
 ## Cron
 

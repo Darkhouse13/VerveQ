@@ -19,6 +19,8 @@ import { orderAnswerOptions } from "./lib/answerOptions";
 import {
   challengeArenaCapitalCityQuestions,
   challengeArenaEnterpriseLogoQuestions,
+  challengeArenaGeneralKnowledgeQuestions,
+  type ChallengeArenaQuestionSeed,
 } from "./challengeArenaContent";
 
 const ARENA_ROUNDS = 5;
@@ -31,6 +33,7 @@ const FORCE_START_GRACE_MS = 15_000;
 const ARENA_TTL_MS = 3 * 60 * 60 * 1000;
 const EXPIRE_BATCH_SIZE = 50;
 const RANK_BONUS = [50, 30, 20, 10, 10] as const;
+const FOOTBALL_IMAGE_QUESTION_CAP = 2;
 
 const arenaMode = v.union(
   v.literal("1v1"),
@@ -169,6 +172,10 @@ function isAnswerableMcq(question: Question) {
   );
 }
 
+function hasQuestionImage(question: Question) {
+  return !!question.imageId || !!question.imageUrl;
+}
+
 function isValidLogoQuestion(question: Question) {
   return (
     question.category === "badge_identification" &&
@@ -255,48 +262,69 @@ async function collectAllCandidateQuestions(ctx: Pick<QueryCtx | MutationCtx, "d
   return all;
 }
 
-async function ensureCapitalCitySeeds(ctx: Pick<MutationCtx, "db">) {
-  let inserted = 0;
-  for (const seed of challengeArenaCapitalCityQuestions) {
-    const existing = await ctx.db
-      .query("quizQuestions")
-      .withIndex("by_checksum", (q) => q.eq("checksum", seed.checksum))
-      .first();
-    if (existing) continue;
+function questionSeedDocument(seed: ChallengeArenaQuestionSeed) {
+  return {
+    sport: seed.sport,
+    category: seed.category,
+    question: seed.question,
+    options: seed.options,
+    correctAnswer: seed.correctAnswer,
+    ...(seed.acceptedAliases ? { acceptedAliases: seed.acceptedAliases } : {}),
+    ...(seed.explanation ? { explanation: seed.explanation } : {}),
+    ...(seed.questionKind ? { questionKind: seed.questionKind } : {}),
+    difficulty: seed.difficulty,
+    bucket: seed.bucket,
+    checksum: seed.checksum,
+    ...(seed.imageUrl ? { imageUrl: seed.imageUrl } : {}),
+  };
+}
 
-    await ctx.db.insert("quizQuestions", {
-      ...seed,
-      difficultyVotes: 0,
-      difficultyScore: 0,
-      timesAnswered: 0,
-      timesCorrect: 0,
-      usageCount: 0,
-    });
-    inserted += 1;
+async function upsertQuestionSeed(
+  ctx: Pick<MutationCtx, "db">,
+  seed: ChallengeArenaQuestionSeed,
+) {
+  const existing = await ctx.db
+    .query("quizQuestions")
+    .withIndex("by_checksum", (q) => q.eq("checksum", seed.checksum))
+    .first();
+  const doc = questionSeedDocument(seed);
+  if (existing) {
+    await ctx.db.patch(existing._id, doc);
+    return false;
+  }
+
+  await ctx.db.insert("quizQuestions", {
+    ...doc,
+    difficultyVotes: 0,
+    difficultyScore: 0,
+    timesAnswered: 0,
+    timesCorrect: 0,
+    usageCount: 0,
+  });
+  return true;
+}
+
+async function ensureQuestionSeeds(
+  ctx: Pick<MutationCtx, "db">,
+  seeds: ChallengeArenaQuestionSeed[],
+) {
+  let inserted = 0;
+  for (const seed of seeds) {
+    if (await upsertQuestionSeed(ctx, seed)) inserted += 1;
   }
   return inserted;
 }
 
-async function ensureEnterpriseLogoSeeds(ctx: Pick<MutationCtx, "db">) {
-  let inserted = 0;
-  for (const seed of challengeArenaEnterpriseLogoQuestions) {
-    const existing = await ctx.db
-      .query("quizQuestions")
-      .withIndex("by_checksum", (q) => q.eq("checksum", seed.checksum))
-      .first();
-    if (existing) continue;
+async function ensureCapitalCitySeeds(ctx: Pick<MutationCtx, "db">) {
+  return await ensureQuestionSeeds(ctx, challengeArenaCapitalCityQuestions);
+}
 
-    await ctx.db.insert("quizQuestions", {
-      ...seed,
-      difficultyVotes: 0,
-      difficultyScore: 0,
-      timesAnswered: 0,
-      timesCorrect: 0,
-      usageCount: 0,
-    });
-    inserted += 1;
-  }
-  return inserted;
+async function ensureGeneralKnowledgeSeeds(ctx: Pick<MutationCtx, "db">) {
+  return await ensureQuestionSeeds(ctx, challengeArenaGeneralKnowledgeQuestions);
+}
+
+async function ensureEnterpriseLogoSeeds(ctx: Pick<MutationCtx, "db">) {
+  return await ensureQuestionSeeds(ctx, challengeArenaEnterpriseLogoQuestions);
 }
 
 function uniqueStableCandidates(questions: Question[], used: Set<string>) {
@@ -340,6 +368,36 @@ function pickChecksums(
   return picked.map((question) => question.checksum);
 }
 
+function pickFootballChecksums(
+  questions: Question[],
+  used: Set<string>,
+  seed: string,
+  label: string,
+) {
+  const candidates = seededShuffle(uniqueStableCandidates(questions, used), seed);
+  const imagePicked = candidates
+    .filter(hasQuestionImage)
+    .slice(0, FOOTBALL_IMAGE_QUESTION_CAP);
+  const textPicked = candidates
+    .filter((question) => !hasQuestionImage(question))
+    .slice(0, QUESTIONS_PER_ROUND - imagePicked.length);
+  const picked = seededShuffle([...imagePicked, ...textPicked], `${seed}:order`);
+
+  if (picked.length < QUESTIONS_PER_ROUND) {
+    throw new Error(
+      `Not enough challenge arena text questions for ${label}: ${textPicked.length}/${QUESTIONS_PER_ROUND - imagePicked.length}`,
+    );
+  }
+  if (picked.filter(hasQuestionImage).length > FOOTBALL_IMAGE_QUESTION_CAP) {
+    throw new Error(`Too many image questions selected for ${label}`);
+  }
+
+  for (const question of picked) {
+    used.add(question.checksum);
+  }
+  return picked.map((question) => question.checksum);
+}
+
 function pickLogoChecksums(
   questions: Question[],
   used: Set<string>,
@@ -362,6 +420,7 @@ async function lockRoundQuestionSets(
   seed: string,
 ) {
   await ensureCapitalCitySeeds(ctx);
+  await ensureGeneralKnowledgeSeeds(ctx);
   await ensureEnterpriseLogoSeeds(ctx);
 
   const football = await collectQuestionsForSport(ctx, "football");
@@ -374,7 +433,7 @@ async function lockRoundQuestionSets(
   for (const category of DEFAULT_ROUND_CATEGORIES) {
     if (category === "football_quiz") {
       rounds.push(
-        pickChecksums(
+        pickFootballChecksums(
           football.filter(
             (q) =>
               q.category !== "which_came_first" &&
@@ -396,8 +455,7 @@ async function lockRoundQuestionSets(
             (q) =>
               q.category !== "which_came_first" &&
               q.category !== "enterprise_logos" &&
-              q.category !== "capital_cities" &&
-              q.category !== "geography",
+              q.category !== "capital_cities",
           ),
           used,
           `${seed}:${category}`,
@@ -1059,21 +1117,25 @@ async function getContentCounts(ctx: Pick<QueryCtx | MutationCtx, "db">) {
   const football = await collectQuestionsForSport(ctx, "football");
   const knowledge = await collectQuestionsForSport(ctx, "knowledge");
   const all = await collectAllCandidateQuestions(ctx);
+  const footballQuiz = football.filter(
+    (q) =>
+      q.category !== "which_came_first" &&
+      q.category !== "badge_identification" &&
+      isAnswerableMcq(q),
+  );
+  const generalKnowledge = knowledge.filter(
+    (q) =>
+      q.category !== "which_came_first" &&
+      q.category !== "enterprise_logos" &&
+      q.category !== "capital_cities" &&
+      isAnswerableMcq(q),
+  );
   return {
-    footballQuiz: football.filter(
-      (q) =>
-        q.category !== "which_came_first" &&
-        q.category !== "badge_identification" &&
-        isAnswerableMcq(q),
-    ).length,
-    generalKnowledge: knowledge.filter(
-      (q) =>
-        q.category !== "which_came_first" &&
-        q.category !== "enterprise_logos" &&
-        q.category !== "capital_cities" &&
-        q.category !== "geography" &&
-        isAnswerableMcq(q),
-    ).length,
+    footballQuiz: footballQuiz.length,
+    footballQuizText: footballQuiz.filter((q) => !hasQuestionImage(q)).length,
+    footballQuizImages: footballQuiz.filter(hasQuestionImage).length,
+    footballImageQuestionCap: FOOTBALL_IMAGE_QUESTION_CAP,
+    generalKnowledge: generalKnowledge.length,
     whichCameFirst: knowledge.filter(
       (q) => q.category === "which_came_first" && isAnswerableMcq(q),
     ).length,
@@ -1083,6 +1145,7 @@ async function getContentCounts(ctx: Pick<QueryCtx | MutationCtx, "db">) {
       (q) => q.category === "capital_cities" && isAnswerableMcq(q),
     ).length,
     bundledCapitalSeeds: challengeArenaCapitalCityQuestions.length,
+    bundledGeneralKnowledgeSeeds: challengeArenaGeneralKnowledgeQuestions.length,
     bundledEnterpriseLogoSeeds: challengeArenaEnterpriseLogoQuestions.length,
   };
 }
@@ -1706,9 +1769,11 @@ export const seedContentGaps = internalMutation({
   args: {},
   handler: async (ctx) => {
     const insertedCapitalCities = await ensureCapitalCitySeeds(ctx);
+    const insertedGeneralKnowledge = await ensureGeneralKnowledgeSeeds(ctx);
     const insertedEnterpriseLogos = await ensureEnterpriseLogoSeeds(ctx);
     return {
       insertedCapitalCities,
+      insertedGeneralKnowledge,
       insertedEnterpriseLogos,
       ...(await getContentCounts(ctx)),
     };

@@ -19,6 +19,7 @@ import * as challengeArenas from "../../convex/challengeArenas";
 import {
   challengeArenaCapitalCityQuestions,
   challengeArenaEnterpriseLogoQuestions,
+  challengeArenaGeneralKnowledgeQuestions,
 } from "../../convex/challengeArenaContent";
 
 type Args = { [key: string]: unknown };
@@ -797,6 +798,67 @@ describe("challenge arena lifecycle integration", () => {
     ).toHaveLength(0);
   });
 
+  it("caps football image questions at two per locked football round", async () => {
+    const db = makeSeededDb();
+    for (let i = 0; i < 14; i += 1) {
+      const suffix = String(i).padStart(2, "0");
+      seedQuestion(db, `football_image_${suffix}`, {
+        sport: "football",
+        category: "premier_league",
+        checksum: `football_image_quiz_${suffix}`,
+        correctAnswer: `Football Image Correct ${suffix}`,
+        imageId: `football_image_${suffix}`,
+      });
+    }
+
+    const { arenaId } = await createJoinedArena(db, "ffa3", [
+      "user_a",
+      "user_b",
+      "user_c",
+    ]);
+    await readyUsers(db, arenaId, ["user_a", "user_b", "user_c"]);
+
+    setAuth("user_a");
+    await handlerOf(challengeArenas.start)(makeCtx(db), { arenaId });
+
+    const footballRound = db.row<ArenaRow>(arenaId).roundChecksums[0];
+    const imageQuestions = footballRound
+      .map((checksum) => questionByChecksum(db, checksum))
+      .filter((question) => !!question.imageId || !!question.imageUrl);
+    expect(footballRound).toHaveLength(10);
+    expect(imageQuestions.length).toBeLessThanOrEqual(2);
+    expect(footballRound.length - imageQuestions.length).toBeGreaterThanOrEqual(8);
+  });
+
+  it("samples expanded general-knowledge and capital pools across arena seeds", async () => {
+    const db = makeSeededDb();
+    await handlerOf(challengeArenas.seedContentGaps)(makeCtx(db), {});
+
+    const generalSeen = new Set<string>();
+    const capitalSeen = new Set<string>();
+    for (let i = 0; i < 24; i += 1) {
+      const { arenaId } = await createJoinedArena(db, "ffa3", [
+        "user_a",
+        "user_b",
+        "user_c",
+      ]);
+      await readyUsers(db, arenaId, ["user_a", "user_b", "user_c"]);
+      setAuth("user_a");
+      await handlerOf(challengeArenas.start)(makeCtx(db), { arenaId });
+      const arena = db.row<ArenaRow>(arenaId);
+      for (const checksum of arena.roundChecksums[1]) generalSeen.add(checksum);
+      for (const checksum of arena.roundChecksums[4]) capitalSeen.add(checksum);
+    }
+
+    expect(generalSeen.size).toBeGreaterThan(80);
+    expect(capitalSeen.size).toBeGreaterThan(70);
+    expect(
+      [...capitalSeen].filter((checksum) =>
+        checksum.startsWith("challenge_arena_capitals_v2_"),
+      ).length,
+    ).toBeGreaterThan(40);
+  });
+
   it("creates one shared rematch lobby per finished arena and propagates ready state there", async () => {
     const db = new FakeDb();
     seedUsers(db);
@@ -1111,8 +1173,10 @@ describe("challenge arena lifecycle integration", () => {
     expect(activeRoom.currentQuestion).toMatchObject({
       kind: "logo_text",
       category: "enterprise_logos",
-      imageUrl: "/arena-logos/simple-icons/google.svg",
     });
+    const activeLogoUrl = String(activeRoom.currentQuestion?.imageUrl ?? "");
+    expect(activeLogoUrl).toMatch(/^\/arena-logos\/opaque\/[a-f0-9]{20}\.svg$/);
+    expect(activeLogoUrl.toLowerCase()).not.toContain("google");
     expect(activeRoom.currentQuestion).not.toHaveProperty("question");
     expect(activeRoom.currentQuestion).not.toHaveProperty("options");
     expect(activeRoom.currentQuestion).not.toHaveProperty("correctAnswer");
@@ -1188,8 +1252,10 @@ describe("challenge arena lifecycle integration", () => {
     expect(revealRoom.currentQuestion).toMatchObject({
       kind: "logo_text",
       correctAnswer: "Google",
-      imageUrl: "/arena-logos/simple-icons/google.svg",
     });
+    const revealLogoUrl = String(revealRoom.currentQuestion?.imageUrl ?? "");
+    expect(revealLogoUrl).toBe(activeLogoUrl);
+    expect(revealLogoUrl.toLowerCase()).not.toContain("google");
     expect(revealRoom.currentQuestion).not.toHaveProperty("acceptedAliases");
     expect(revealRoom.revealAnswers).toHaveLength(2);
   });
@@ -1227,7 +1293,7 @@ describe("challenge arena lifecycle integration", () => {
     expect(db.all<AnswerRow>("arenaAnswers")).toHaveLength(1);
   });
 
-  it("reports seeded logo content counts idempotently", async () => {
+  it("reports seeded challenge arena content counts idempotently", async () => {
     const db = new FakeDb();
     seedUsers(db);
 
@@ -1235,34 +1301,76 @@ describe("challenge arena lifecycle integration", () => {
       makeCtx(db),
       {},
     )) as {
+      insertedCapitalCities: number;
+      insertedGeneralKnowledge: number;
       insertedEnterpriseLogos: number;
+      capitalCities: number;
+      generalKnowledge: number;
       enterpriseLogos: number;
+      bundledCapitalSeeds: number;
+      bundledGeneralKnowledgeSeeds: number;
       bundledEnterpriseLogoSeeds: number;
     };
     const second = (await handlerOf(challengeArenas.seedContentGaps)(
       makeCtx(db),
       {},
     )) as {
+      insertedCapitalCities: number;
+      insertedGeneralKnowledge: number;
       insertedEnterpriseLogos: number;
+      capitalCities: number;
+      generalKnowledge: number;
       enterpriseLogos: number;
+      bundledCapitalSeeds: number;
+      bundledGeneralKnowledgeSeeds: number;
       bundledEnterpriseLogoSeeds: number;
     };
     const status = (await handlerOf(challengeArenas.contentStatus)(
       makeCtx(db),
       {},
     )) as {
+      capitalCities: number;
+      generalKnowledge: number;
       enterpriseLogos: number;
+      bundledCapitalSeeds: number;
+      bundledGeneralKnowledgeSeeds: number;
       bundledEnterpriseLogoSeeds: number;
     };
 
+    expect(first.insertedCapitalCities).toBe(
+      challengeArenaCapitalCityQuestions.length,
+    );
+    expect(first.insertedGeneralKnowledge).toBe(
+      challengeArenaGeneralKnowledgeQuestions.length,
+    );
     expect(first.insertedEnterpriseLogos).toBe(
       challengeArenaEnterpriseLogoQuestions.length,
     );
+    expect(first.capitalCities).toBe(challengeArenaCapitalCityQuestions.length);
+    expect(first.generalKnowledge).toBe(
+      challengeArenaGeneralKnowledgeQuestions.length,
+    );
     expect(second.insertedEnterpriseLogos).toBe(0);
+    expect(second.insertedCapitalCities).toBe(0);
+    expect(second.insertedGeneralKnowledge).toBe(0);
+    expect(status.capitalCities).toBe(challengeArenaCapitalCityQuestions.length);
+    expect(status.generalKnowledge).toBe(
+      challengeArenaGeneralKnowledgeQuestions.length,
+    );
     expect(status.enterpriseLogos).toBe(challengeArenaEnterpriseLogoQuestions.length);
+    expect(status.bundledCapitalSeeds).toBe(
+      challengeArenaCapitalCityQuestions.length,
+    );
+    expect(status.bundledGeneralKnowledgeSeeds).toBe(
+      challengeArenaGeneralKnowledgeQuestions.length,
+    );
     expect(status.bundledEnterpriseLogoSeeds).toBe(
       challengeArenaEnterpriseLogoQuestions.length,
     );
+
+    const google = logoQuestionByAnswer(db, "Google");
+    expect(google.imageUrl).toMatch(/^\/arena-logos\/opaque\/[a-f0-9]{20}\.svg$/);
+    expect(google.imageUrl?.toLowerCase()).not.toContain("google");
   });
 
   it("enforces force-start grace and the abuse contract", async () => {
