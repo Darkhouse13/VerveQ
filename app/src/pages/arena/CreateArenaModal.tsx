@@ -36,7 +36,7 @@ export default function CreateArenaModal({
   return (
     <div className="fixed inset-0 z-[100] bg-background overflow-hidden">
       <div className="max-w-md mx-auto h-dvh max-h-dvh flex flex-col">
-        <div className="flex items-center justify-between px-5 pt-4 pb-2">
+        <div className="flex items-center justify-between px-5 pt-4 pb-3 shrink-0">
           <button
             type="button"
             onClick={onClose}
@@ -49,33 +49,37 @@ export default function CreateArenaModal({
           <div className="w-9" />
         </div>
 
-        <div className="px-5 py-4 flex-1 min-h-0 overflow-y-auto overscroll-contain space-y-3">
-          <p className="text-xs text-muted-foreground">
+        <div className="px-5 flex-1 min-h-0 overflow-y-auto overscroll-contain scrollbar-none">
+          <p className="text-xs text-muted-foreground mb-3">
             Pick a mode. You&apos;ll get a code to share with friends.
           </p>
 
-          {ARENA_MODE_OPTIONS.map((opt) => (
-            <NeoCard
-              key={opt.key}
-              color={mode === opt.key ? "primary" : "default"}
-              onClick={() => setMode(opt.key)}
-              className="flex items-center justify-between"
-            >
-              <div className="min-w-0">
-                <p className="font-heading font-bold text-base">{opt.label}</p>
-                <p className="text-xs opacity-90 truncate">{opt.description}</p>
-              </div>
-              <NeoBadge
-                color={mode === opt.key ? "accent" : "muted"}
-                size="sm"
+          <div className="space-y-2">
+            {ARENA_MODE_OPTIONS.map((opt) => (
+              <NeoCard
+                key={opt.key}
+                color={mode === opt.key ? "primary" : "default"}
+                onClick={() => setMode(opt.key)}
+                className="flex items-center justify-between !p-3"
               >
-                {opt.capacity} max
-              </NeoBadge>
-            </NeoCard>
-          ))}
+                <div className="min-w-0">
+                  <p className="font-heading font-bold text-sm leading-tight">{opt.label}</p>
+                  <p className="text-[11px] opacity-90 truncate leading-tight mt-0.5">
+                    {opt.description}
+                  </p>
+                </div>
+                <NeoBadge
+                  color={mode === opt.key ? "accent" : "muted"}
+                  size="sm"
+                >
+                  {opt.capacity} max
+                </NeoBadge>
+              </NeoCard>
+            ))}
+          </div>
         </div>
 
-        <div className="sticky bottom-0 z-[110] shrink-0 bg-background border-t-[3px] border-border px-5 pt-4 pb-[calc(1rem+4.75rem+env(safe-area-inset-bottom))]">
+        <div className="shrink-0 bg-background border-t-[3px] border-border px-5 pt-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))]">
           <NeoButton
             variant="primary"
             size="full"

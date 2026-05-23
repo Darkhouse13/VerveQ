@@ -165,6 +165,14 @@
   .animate-float-up {
     animation: float-up 1.5s ease-out forwards;
   }
+
+  .scrollbar-none {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  .scrollbar-none::-webkit-scrollbar {
+    display: none;
+  }
 }
 
 @keyframes screen-shake {
