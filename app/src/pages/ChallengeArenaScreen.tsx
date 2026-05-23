@@ -46,6 +46,7 @@ import {
   normalizeArenaCode,
   shareArenaLink,
   useClockOffset,
+  useImagePreload,
   usePhaseAnchor,
   useTick,
 } from "@/lib/arena";
@@ -237,6 +238,10 @@ function ArenaShell({
     : null;
   const meLeft = me?.left ?? false;
 
+  // Preload upcoming image-round media so the <img> tag hits a warm cache
+  // when the next question opens — critical for high-latency clients.
+  useImagePreload(room.upcomingImageUrls);
+
   // Inactive players (left, or never joined) get a soft fallback.
   if (!me || meLeft) {
     return (
@@ -261,6 +266,13 @@ function ArenaShell({
         showShare={phase === "lobby"}
       />
 
+      {phase === "final" && room.rematchArenaCode && (
+        <RematchReadyBanner
+          rematching={rematching}
+          onJoin={onRematch}
+        />
+      )}
+
       <div className="px-5 pb-6 space-y-5">
         {phase === "lobby" && <LobbyView room={room} userId={userId} />}
         {phase === "countdown" && <CountdownView room={room} />}
@@ -280,6 +292,33 @@ function ArenaShell({
           />
         )}
       </div>
+    </div>
+  );
+}
+
+function RematchReadyBanner({
+  rematching,
+  onJoin,
+}: {
+  rematching: boolean;
+  onJoin: () => void;
+}) {
+  return (
+    <div className="px-5 pt-3">
+      <button
+        type="button"
+        onClick={onJoin}
+        disabled={rematching}
+        className="w-full neo-border neo-shadow rounded-lg bg-accent text-accent-foreground px-4 py-3 flex items-center justify-between gap-3 cursor-pointer active:neo-shadow-pressed disabled:opacity-70 animate-slide-up"
+      >
+        <span className="flex items-center gap-2 min-w-0">
+          <RotateCcw size={16} strokeWidth={3} className="shrink-0" />
+          <span className="font-heading font-bold text-sm uppercase tracking-wide truncate">
+            Rematch lobby is open — join the crew
+          </span>
+        </span>
+        <ArrowRight size={16} strokeWidth={3} className="shrink-0" />
+      </button>
     </div>
   );
 }

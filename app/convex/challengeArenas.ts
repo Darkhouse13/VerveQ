@@ -515,6 +515,62 @@ async function loadCurrentQuestion(ctx: Pick<QueryCtx | MutationCtx, "db">, aren
     .first();
 }
 
+const UPCOMING_IMAGE_LOOKAHEAD = 18;
+
+async function collectUpcomingImageUrls(
+  ctx: Pick<QueryCtx | MutationCtx, "db" | "storage">,
+  arena: Arena,
+): Promise<string[]> {
+  if (
+    arena.phase === "lobby" ||
+    arena.phase === "final" ||
+    arena.phase === "abandoned"
+  ) {
+    return [];
+  }
+  if (!arena.roundChecksums.length) return [];
+
+  let startRound = arena.currentRound;
+  let startIdx = arena.currentQuestionIndex;
+  if (arena.phase === "question" || arena.phase === "reveal") {
+    startIdx += 1;
+  } else if (arena.phase === "round_break") {
+    startRound += 1;
+    startIdx = 0;
+  }
+
+  const urls: string[] = [];
+  const seen = new Set<string>();
+  for (
+    let r = startRound;
+    r < arena.roundChecksums.length && urls.length < UPCOMING_IMAGE_LOOKAHEAD;
+    r += 1
+  ) {
+    const round = arena.roundChecksums[r];
+    if (!round) continue;
+    const fromIdx = r === startRound ? startIdx : 0;
+    for (
+      let i = fromIdx;
+      i < round.length && urls.length < UPCOMING_IMAGE_LOOKAHEAD;
+      i += 1
+    ) {
+      const checksum = round[i];
+      if (!checksum || seen.has(checksum)) continue;
+      seen.add(checksum);
+      const question = await ctx.db
+        .query("quizQuestions")
+        .withIndex("by_checksum", (qb) => qb.eq("checksum", checksum))
+        .first();
+      if (!question) continue;
+      const url =
+        question.imageUrl ??
+        (question.imageId ? await ctx.storage.getUrl(question.imageId) : null);
+      if (url) urls.push(url);
+    }
+  }
+  return urls;
+}
+
 async function sanitizeQuestion(
   ctx: Pick<QueryCtx | MutationCtx, "storage">,
   question: Question,
@@ -1697,6 +1753,8 @@ export const getRoom = query({
       ? await buildRoundLeaderboard(ctx, arena, arena.currentRound)
       : null;
 
+    const upcomingImageUrls = await collectUpcomingImageUrls(ctx, arena);
+
     return {
       arenaId: arena._id,
       code: arena.code,
@@ -1706,6 +1764,7 @@ export const getRoom = query({
       phase: arena.phase,
       rematchArenaId: arena.rematchArenaId ?? null,
       rematchArenaCode: arena.rematchArenaCode ?? null,
+      upcomingImageUrls,
       config: arena.config,
       currentRound: arena.currentRound,
       currentQuestionIndex: arena.currentQuestionIndex,

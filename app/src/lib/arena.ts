@@ -170,3 +170,47 @@ export function usePhaseAnchor(key: string | null | undefined) {
 export function normalizeArenaCode(input: string) {
   return input.replace(/[^A-Z0-9]/gi, "").toUpperCase().slice(0, 12);
 }
+
+// Kick off background image fetches so they're in the browser cache by the time
+// the QuestionImage <img> mounts. Each URL is fetched once per session — repeat
+// calls with the same URL are no-ops. We also retry transient errors twice
+// (300 ms then 600 ms) before giving up silently.
+const preloadCache = new Map<string, "loading" | "ok" | "failed">();
+
+export function useImagePreload(urls: readonly string[] | undefined) {
+  const key = urls?.join("") ?? "";
+  useEffect(() => {
+    if (!urls?.length) return;
+    const handles: HTMLImageElement[] = [];
+    urls.forEach((url) => {
+      if (!url) return;
+      const cached = preloadCache.get(url);
+      if (cached === "loading" || cached === "ok") return;
+      preloadCache.set(url, "loading");
+      const tryLoad = (attempt: number) => {
+        const img = new Image();
+        img.decoding = "async";
+        img.onload = () => {
+          preloadCache.set(url, "ok");
+        };
+        img.onerror = () => {
+          if (attempt < 2) {
+            window.setTimeout(() => tryLoad(attempt + 1), 300 * (attempt + 1));
+          } else {
+            preloadCache.set(url, "failed");
+          }
+        };
+        img.src = url;
+        handles.push(img);
+      };
+      tryLoad(0);
+    });
+    return () => {
+      handles.forEach((img) => {
+        img.onload = null;
+        img.onerror = null;
+      });
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [key]);
+}

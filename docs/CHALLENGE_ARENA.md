@@ -142,6 +142,12 @@ switch their action from creating a lobby to joining the already-created
 rematch code. The new lobby uses the standard `join`, `setReady`, team, and
 start mutations.
 
+When the source arena is `final`, `ArenaShell` renders a sticky **Rematch lobby
+is open — join the crew** banner the moment `room.rematchArenaCode` reactively
+populates. Every other player still on the final screen sees that banner appear
+and taps into the same `/arena/<code>` as the initiator, so the crew always
+lands in one shared lobby (no solo rematches).
+
 ## Leave Safety
 
 Leaving marks the player `left: true` and freezes their current score. The room
@@ -252,6 +258,14 @@ Cross-cutting:
 - All countdowns use the shared helpers in `app/src/lib/arena.ts`
   (`useClockOffset`, `useTick`, `usePhaseAnchor`) so the rendering stays smooth
   without trusting client clocks.
+- Upcoming image media is preloaded into the browser cache before the question
+  opens. `getRoom` returns an `upcomingImageUrls: string[]` array (the same
+  opaque `imageUrl`/storage URLs the question payload uses, lookahead capped at
+  18 questions) and `ArenaShell` calls `useImagePreload(room.upcomingImageUrls)`
+  which kicks off background `new Image()` fetches with two retries on
+  transient failure. The `QuestionImage` component itself retries up to two
+  times on `onError` before falling back to a soft *Image unavailable* card —
+  no broken-icon glyphs on slow or flaky networks.
 - The screen is wrapped in `ErrorBoundary` at the route, lazy-loaded into its
   own bundle chunk, and styled exclusively with the Neo* primitives + tailwind
   utility classes already used by the rest of the app.
