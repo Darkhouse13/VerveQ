@@ -46,6 +46,7 @@ const DIFFICULTIES = ["intermediate", "easy", "hard"] as const;
 const CONTENT_SPORTS = ["football", "basketball", "tennis", "knowledge"] as const;
 
 type Arena = Doc<"arenas">;
+type ArenaAnswer = Doc<"arenaAnswers">;
 type ArenaPlayer = Arena["players"][number];
 type ArenaMode = Arena["mode"];
 type Question = Doc<"quizQuestions">;
@@ -54,6 +55,18 @@ type LeaderboardRow = {
   label: string;
   score: number;
   playerIds: Id<"users">[];
+};
+type ArenaSummaryPlayer = {
+  userId: Id<"users">;
+  nameSnapshot: string;
+  team: ArenaPlayer["team"] | null;
+  left: boolean;
+  totalScore: number;
+  questionsAnswered: number;
+  correctAnswers: number;
+  accuracy: number;
+  avgCorrectMs: number | null;
+  longestStreak: number;
 };
 
 function hashString(value: string) {
@@ -671,6 +684,241 @@ function buildFinalPodium(arena: Arena) {
   return aggregateScores(arena, scoreByUser);
 }
 
+function questionSlotKey(round: number, questionIndex: number) {
+  return `${round}:${questionIndex}`;
+}
+
+function isWithinArenaQuestionSet(arena: Arena, answer: ArenaAnswer) {
+  return (
+    answer.round >= 0 &&
+    answer.round < arena.config.rounds &&
+    answer.questionIndex >= 0 &&
+    answer.questionIndex < arena.config.perRound
+  );
+}
+
+function sortedArenaAnswers(answers: ArenaAnswer[]) {
+  return [...answers].sort(
+    (a, b) =>
+      a.round - b.round ||
+      a.questionIndex - b.questionIndex ||
+      String(a.userId).localeCompare(String(b.userId)) ||
+      a.serverTimeMs - b.serverTimeMs,
+  );
+}
+
+async function answersForArena(
+  ctx: Pick<QueryCtx | MutationCtx, "db">,
+  arena: Arena,
+) {
+  const answers = await ctx.db
+    .query("arenaAnswers")
+    .withIndex("by_arena_round_question", (q) => q.eq("arenaId", arena._id))
+    .collect();
+  return sortedArenaAnswers(
+    answers.filter((answer) => isWithinArenaQuestionSet(arena, answer)),
+  );
+}
+
+function buildSummaryPlayer(
+  arena: Arena,
+  player: ArenaPlayer,
+  answers: ArenaAnswer[],
+): ArenaSummaryPlayer {
+  const correctAnswers = answers.filter((answer) => answer.correct);
+  const answerBySlot = new Map<string, ArenaAnswer>();
+  for (const answer of answers) {
+    answerBySlot.set(questionSlotKey(answer.round, answer.questionIndex), answer);
+  }
+
+  let currentStreak = 0;
+  let longestStreak = 0;
+  for (let round = 0; round < arena.config.rounds; round += 1) {
+    for (let questionIndex = 0; questionIndex < arena.config.perRound; questionIndex += 1) {
+      const answer = answerBySlot.get(questionSlotKey(round, questionIndex));
+      if (answer?.correct) {
+        currentStreak += 1;
+        longestStreak = Math.max(longestStreak, currentStreak);
+      } else {
+        currentStreak = 0;
+      }
+    }
+  }
+
+  const totalCorrectTimeMs = correctAnswers.reduce(
+    (sum, answer) => sum + answer.serverTimeMs,
+    0,
+  );
+
+  return {
+    userId: player.userId,
+    nameSnapshot: player.nameSnapshot,
+    team: player.team ?? null,
+    left: player.left,
+    totalScore: answers.reduce((sum, answer) => sum + answer.points, 0),
+    questionsAnswered: answers.length,
+    correctAnswers: correctAnswers.length,
+    // Accuracy uses submitted answers as the denominator; missed questions are unanswered.
+    accuracy: answers.length === 0 ? 0 : correctAnswers.length / answers.length,
+    avgCorrectMs:
+      correctAnswers.length === 0
+        ? null
+        : totalCorrectTimeMs / correctAnswers.length,
+    longestStreak,
+  };
+}
+
+function rankedSummaryPlayers(players: ArenaSummaryPlayer[]) {
+  return [...players]
+    .sort(
+      (a, b) =>
+        b.totalScore - a.totalScore ||
+        a.nameSnapshot.localeCompare(b.nameSnapshot) ||
+        String(a.userId).localeCompare(String(b.userId)),
+    )
+    .map((player, index) => ({
+      rank: index + 1,
+      userId: player.userId,
+      nameSnapshot: player.nameSnapshot,
+      team: player.team,
+      left: player.left,
+      totalScore: player.totalScore,
+    }));
+}
+
+function rankedSummaryTeams(players: ArenaSummaryPlayer[]) {
+  const teams = new Map<
+    string,
+    {
+      id: string;
+      label: string;
+      totalScore: number;
+      playerIds: Id<"users">[];
+    }
+  >();
+
+  for (const player of players) {
+    const teamId = player.team ?? "Unassigned";
+    const team = teams.get(teamId) ?? {
+      id: teamId,
+      label: teamId === "A" || teamId === "B" ? `Team ${teamId}` : teamId,
+      totalScore: 0,
+      playerIds: [],
+    };
+    team.totalScore += player.totalScore;
+    team.playerIds.push(player.userId);
+    teams.set(teamId, team);
+  }
+
+  return [...teams.values()]
+    .sort(
+      (a, b) =>
+        b.totalScore - a.totalScore ||
+        a.label.localeCompare(b.label) ||
+        a.id.localeCompare(b.id),
+    )
+    .map((team, index) => ({
+      rank: index + 1,
+      ...team,
+    }));
+}
+
+function summaryIdentity(player: ArenaSummaryPlayer) {
+  return {
+    userId: player.userId,
+    nameSnapshot: player.nameSnapshot,
+    team: player.team,
+  };
+}
+
+function buildSummarySuperlatives(players: ArenaSummaryPlayer[]) {
+  const fastestEligible = players.filter((player) => player.avgCorrectMs !== null);
+  const fastestMs =
+    fastestEligible.length === 0
+      ? null
+      : Math.min(
+          ...fastestEligible.map(
+            (player) => player.avgCorrectMs ?? Number.POSITIVE_INFINITY,
+          ),
+        );
+
+  const sharpshooterEligible = players.filter(
+    (player) => player.questionsAnswered > 0,
+  );
+  const bestAccuracy =
+    sharpshooterEligible.length === 0
+      ? null
+      : Math.max(...sharpshooterEligible.map((player) => player.accuracy));
+
+  const hotStreakEligible = players.filter((player) => player.longestStreak > 0);
+  const bestStreak =
+    hotStreakEligible.length === 0
+      ? null
+      : Math.max(...hotStreakEligible.map((player) => player.longestStreak));
+
+  return {
+    fastest:
+      fastestMs === null
+        ? []
+        : fastestEligible
+            .filter((player) => player.avgCorrectMs === fastestMs)
+            .map((player) => ({
+              ...summaryIdentity(player),
+              avgCorrectMs: player.avgCorrectMs,
+            })),
+    sharpshooter:
+      bestAccuracy === null
+        ? []
+        : sharpshooterEligible
+            .filter((player) => player.accuracy === bestAccuracy)
+            .map((player) => ({
+              ...summaryIdentity(player),
+              accuracy: player.accuracy,
+            })),
+    hotStreak:
+      bestStreak === null
+        ? []
+        : hotStreakEligible
+            .filter((player) => player.longestStreak === bestStreak)
+            .map((player) => ({
+              ...summaryIdentity(player),
+              longestStreak: player.longestStreak,
+            })),
+  };
+}
+
+async function buildArenaSummary(
+  ctx: Pick<QueryCtx | MutationCtx, "db">,
+  arena: Arena,
+) {
+  const answers = await answersForArena(ctx, arena);
+  const answersByUser = new Map<Id<"users">, ArenaAnswer[]>();
+  for (const player of arena.players) {
+    answersByUser.set(player.userId, []);
+  }
+  for (const answer of answers) {
+    answersByUser.get(answer.userId)?.push(answer);
+  }
+
+  const players = arena.players.map((player) =>
+    buildSummaryPlayer(arena, player, answersByUser.get(player.userId) ?? []),
+  );
+  const isTeamMode = arena.mode === "2v2";
+
+  return {
+    arenaId: arena._id,
+    mode: arena.mode,
+    totalQuestions: arena.config.rounds * arena.config.perRound,
+    isTeamMode,
+    players,
+    rankings: {
+      players: rankedSummaryPlayers(players),
+      teams: isTeamMode ? rankedSummaryTeams(players) : [],
+    },
+    superlatives: buildSummarySuperlatives(players),
+  };
+}
+
 async function getContentCounts(ctx: Pick<QueryCtx | MutationCtx, "db">) {
   const football = await collectQuestionsForSport(ctx, "football");
   const knowledge = await collectQuestionsForSport(ctx, "knowledge");
@@ -1220,6 +1468,22 @@ export const getRoom = query({
       forceStartAvailableAt: arena.createdAt + FORCE_START_GRACE_MS,
       expiresAt: arena.expiresAt,
     };
+  },
+});
+
+export const getArenaSummary = query({
+  args: {
+    arenaId: v.id("arenas"),
+  },
+  handler: async (ctx, { arenaId }) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) return null;
+    const arena = await ctx.db.get(arenaId);
+    if (!arena) return null;
+    if (arena.status !== "final") return null;
+    if (findPlayerIndex(arena, userId) < 0) return null;
+
+    return await buildArenaSummary(ctx, arena);
   },
 });
 

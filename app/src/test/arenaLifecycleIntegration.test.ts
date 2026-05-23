@@ -120,6 +120,62 @@ type RoomView = {
   }>;
 };
 
+type ArenaSummary = {
+  arenaId: string;
+  mode: ArenaMode;
+  totalQuestions: number;
+  isTeamMode: boolean;
+  players: Array<{
+    userId: string;
+    nameSnapshot: string;
+    team: "A" | "B" | null;
+    left: boolean;
+    totalScore: number;
+    questionsAnswered: number;
+    correctAnswers: number;
+    accuracy: number;
+    avgCorrectMs: number | null;
+    longestStreak: number;
+  }>;
+  rankings: {
+    players: Array<{
+      rank: number;
+      userId: string;
+      nameSnapshot: string;
+      team: "A" | "B" | null;
+      left: boolean;
+      totalScore: number;
+    }>;
+    teams: Array<{
+      rank: number;
+      id: string;
+      label: string;
+      totalScore: number;
+      playerIds: string[];
+    }>;
+  };
+  superlatives: {
+    fastest: Array<{
+      userId: string;
+      nameSnapshot: string;
+      team: "A" | "B" | null;
+      avgCorrectMs: number | null;
+    }>;
+    sharpshooter: Array<{
+      userId: string;
+      nameSnapshot: string;
+      team: "A" | "B" | null;
+      accuracy: number;
+    }>;
+    hotStreak: Array<{
+      userId: string;
+      nameSnapshot: string;
+      team: "A" | "B" | null;
+      longestStreak: number;
+    }>;
+  };
+};
+
 type RegisteredFunction = {
   exportArgs?: () => string;
   _handler?: (ctx: unknown, args: unknown) => Promise<unknown>;
@@ -443,6 +499,71 @@ async function runToFinal(db: FakeDb, arenaId: string, maxSteps = 160) {
   throw new Error("Arena did not finish");
 }
 
+function seedSummaryArena(
+  db: FakeDb,
+  id: string,
+  mode: ArenaMode,
+  players: Array<{
+    userId: string;
+    nameSnapshot?: string;
+    team?: "A" | "B";
+    left?: boolean;
+  }>,
+  config = { rounds: 2, perRound: 3 },
+) {
+  db.seed("arenas", id, {
+    code: id.toUpperCase(),
+    hostId: players[0]?.userId ?? "user_a",
+    mode,
+    status: "final",
+    players: players.map((player, index) => ({
+      userId: player.userId,
+      nameSnapshot: player.nameSnapshot ?? `Player ${index + 1}`,
+      team: player.team,
+      ready: true,
+      joinedAt: now,
+      lastSeenAt: now,
+      left: player.left ?? false,
+      totalScore: 999_999,
+    })),
+    config: {
+      ...config,
+      categories: Array.from({ length: config.rounds }, (_, index) => `round_${index}`),
+    },
+    currentRound: config.rounds - 1,
+    currentQuestionIndex: config.perRound - 1,
+    phase: "final",
+    questionWindowMs: 10_000,
+    roundChecksums: Array.from({ length: config.rounds }, (_, round) =>
+      Array.from(
+        { length: config.perRound },
+        (_, questionIndex) => `summary_${round}_${questionIndex}`,
+      ),
+    ),
+    createdAt: now,
+    expiresAt: now + 60_000,
+  });
+}
+
+function seedSummaryAnswer(
+  db: FakeDb,
+  id: string,
+  answer: {
+    arenaId: string;
+    userId: string;
+    round: number;
+    questionIndex: number;
+    serverTimeMs: number;
+    correct: boolean;
+    points: number;
+  },
+) {
+  db.seed("arenaAnswers", id, {
+    ...answer,
+    answer: answer.correct ? "Correct" : "Wrong",
+  });
+}
+
 beforeEach(() => {
   now = 1_000_000;
   authMock.getAuthUserId.mockReset();
@@ -609,6 +730,215 @@ describe("challenge arena lifecycle integration", () => {
         .all<AnswerRow>("arenaAnswers")
         .filter((answer) => answer.userId === "user_d"),
     ).toHaveLength(0);
+  });
+
+  it("summarizes final solo stats from arena answers only", async () => {
+    const db = new FakeDb();
+    seedUsers(db);
+    const arenaId = "arena_summary_solo";
+    seedSummaryArena(db, arenaId, "ffa3", [
+      { userId: "user_a", nameSnapshot: "Alice" },
+      { userId: "user_b", nameSnapshot: "Blake" },
+      { userId: "user_c", nameSnapshot: "Casey" },
+    ]);
+
+    for (const [id, userId, round, questionIndex, serverTimeMs, correct, points] of [
+      ["a0", "user_a", 0, 0, 1_000, true, 10],
+      ["a1", "user_a", 0, 1, 9_000, false, 0],
+      ["a2", "user_a", 0, 2, 3_000, true, 20],
+      ["a3", "user_a", 1, 0, 2_000, true, 30],
+      ["a4", "user_a", 1, 2, 1_000, true, 40],
+      ["b0", "user_b", 0, 0, 500, true, 50],
+      ["b1", "user_b", 0, 1, 1_500, true, 60],
+      ["b2", "user_b", 1, 0, 3_000, false, 0],
+      ["b3", "user_b", 1, 1, 2_000, true, 70],
+      ["c0", "user_c", 0, 0, 800, false, 0],
+    ] as const) {
+      seedSummaryAnswer(db, id, {
+        arenaId,
+        userId,
+        round,
+        questionIndex,
+        serverTimeMs,
+        correct,
+        points,
+      });
+    }
+
+    setAuth("user_a");
+    const summary = (await handlerOf(challengeArenas.getArenaSummary)(
+      makeCtx(db),
+      { arenaId },
+    )) as ArenaSummary | null;
+
+    expect(summary).not.toBeNull();
+    if (!summary) throw new Error("summary should be available");
+    expect(summary).toMatchObject({
+      arenaId,
+      mode: "ffa3",
+      totalQuestions: 6,
+      isTeamMode: false,
+    });
+    expect(summary.rankings.teams).toEqual([]);
+
+    const alice = summary.players.find((player) => player.userId === "user_a");
+    expect(alice).toMatchObject({
+      totalScore: 100,
+      questionsAnswered: 5,
+      correctAnswers: 4,
+      avgCorrectMs: 1_750,
+      longestStreak: 2,
+    });
+    expect(alice?.accuracy).toBeCloseTo(0.8);
+
+    const casey = summary.players.find((player) => player.userId === "user_c");
+    expect(casey).toMatchObject({
+      totalScore: 0,
+      questionsAnswered: 1,
+      correctAnswers: 0,
+      accuracy: 0,
+      avgCorrectMs: null,
+      longestStreak: 0,
+    });
+
+    expect(
+      summary.rankings.players.map((player) => [player.userId, player.totalScore]),
+    ).toEqual([
+      ["user_b", 180],
+      ["user_a", 100],
+      ["user_c", 0],
+    ]);
+    expect(summary.superlatives.fastest).toHaveLength(1);
+    expect(summary.superlatives.fastest[0]).toMatchObject({ userId: "user_b" });
+    expect(summary.superlatives.fastest[0]?.avgCorrectMs).toBeCloseTo(
+      (500 + 1_500 + 2_000) / 3,
+    );
+    expect(summary.superlatives.sharpshooter).toEqual([
+      { userId: "user_a", nameSnapshot: "Alice", team: null, accuracy: 0.8 },
+    ]);
+    expect(summary.superlatives.hotStreak.map((winner) => winner.userId)).toEqual([
+      "user_a",
+      "user_b",
+    ]);
+  });
+
+  it("returns null averages and empty superlatives when no final answers are eligible", async () => {
+    const db = new FakeDb();
+    seedUsers(db);
+    const arenaId = "arena_summary_empty";
+    seedSummaryArena(db, arenaId, "1v1", [
+      { userId: "user_a", nameSnapshot: "Alice" },
+      { userId: "user_b", nameSnapshot: "Blake" },
+    ]);
+
+    setAuth("user_a");
+    const summary = (await handlerOf(challengeArenas.getArenaSummary)(
+      makeCtx(db),
+      { arenaId },
+    )) as ArenaSummary | null;
+
+    expect(summary).not.toBeNull();
+    if (!summary) throw new Error("summary should be available");
+    expect(summary.players).toHaveLength(2);
+    for (const player of summary.players) {
+      expect(player).toMatchObject({
+        totalScore: 0,
+        questionsAnswered: 0,
+        correctAnswers: 0,
+        accuracy: 0,
+        avgCorrectMs: null,
+        longestStreak: 0,
+      });
+    }
+    expect(summary.superlatives).toEqual({
+      fastest: [],
+      sharpshooter: [],
+      hotStreak: [],
+    });
+
+    const activeArenaId = "arena_summary_active";
+    seedSummaryArena(db, activeArenaId, "1v1", [
+      { userId: "user_a", nameSnapshot: "Alice" },
+      { userId: "user_b", nameSnapshot: "Blake" },
+    ]);
+    await db.patch(activeArenaId, { status: "active", phase: "question" });
+    await expect(
+      handlerOf(challengeArenas.getArenaSummary)(makeCtx(db), {
+        arenaId: activeArenaId,
+      }),
+    ).resolves.toBeNull();
+  });
+
+  it("summarizes final 2v2 player and team rankings", async () => {
+    const db = new FakeDb();
+    seedUsers(db);
+    const arenaId = "arena_summary_team";
+    seedSummaryArena(db, arenaId, "2v2", [
+      { userId: "user_a", nameSnapshot: "Alice", team: "A" },
+      { userId: "user_b", nameSnapshot: "Blake", team: "B" },
+      { userId: "user_c", nameSnapshot: "Casey", team: "A" },
+      { userId: "user_d", nameSnapshot: "Devon", team: "B" },
+    ]);
+
+    for (const [id, userId, questionIndex, correct, points] of [
+      ["ta", "user_a", 0, true, 100],
+      ["tb", "user_b", 1, true, 200],
+      ["tc", "user_c", 2, true, 50],
+      ["td", "user_d", 0, false, 0],
+    ] as const) {
+      seedSummaryAnswer(db, id, {
+        arenaId,
+        userId,
+        round: 0,
+        questionIndex,
+        serverTimeMs: 1_000,
+        correct,
+        points,
+      });
+    }
+
+    setAuth("user_b");
+    const summary = (await handlerOf(challengeArenas.getArenaSummary)(
+      makeCtx(db),
+      { arenaId },
+    )) as ArenaSummary | null;
+
+    expect(summary).not.toBeNull();
+    if (!summary) throw new Error("summary should be available");
+    expect(summary).toMatchObject({
+      mode: "2v2",
+      totalQuestions: 6,
+      isTeamMode: true,
+    });
+    expect(
+      summary.rankings.players.map((player) => [
+        player.rank,
+        player.userId,
+        player.team,
+        player.totalScore,
+      ]),
+    ).toEqual([
+      [1, "user_b", "B", 200],
+      [2, "user_a", "A", 100],
+      [3, "user_c", "A", 50],
+      [4, "user_d", "B", 0],
+    ]);
+    expect(summary.rankings.teams).toEqual([
+      {
+        rank: 1,
+        id: "B",
+        label: "Team B",
+        totalScore: 200,
+        playerIds: ["user_b", "user_d"],
+      },
+      {
+        rank: 2,
+        id: "A",
+        label: "Team A",
+        totalScore: 150,
+        playerIds: ["user_a", "user_c"],
+      },
+    ]);
   });
 
   it("enforces force-start grace and the abuse contract", async () => {

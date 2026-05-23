@@ -70,6 +70,42 @@ Individual `totalScore` is accumulated on the arena player row. In `2v2`, team
 leaderboards sum member scores. `round_break` exposes the completed round
 leaderboard; `final` exposes the final podium across all rounds.
 
+## Final Summary
+
+`challengeArenas.getArenaSummary({ arenaId })` is a read-only, player-only query
+available only after the arena status is `final`. It returns the compact stats
+needed by the Arena podium screen, derived from `arenaAnswers` instead of
+trusting client-submitted values or hardcoded match sizes.
+
+Summary meta includes `mode`, `isTeamMode`, and `totalQuestions`, where
+`totalQuestions = arena.config.rounds * arena.config.perRound`.
+
+Per-player stats:
+
+- `totalScore`: sum of that player's `arenaAnswers.points`
+- `questionsAnswered`: submitted answer rows for that player
+- `correctAnswers`: submitted answer rows with `correct: true`
+- `accuracy`: `correctAnswers / questionsAnswered`; players with no submitted
+  answers return `0` accuracy and are not eligible for the sharpshooter
+  superlative
+- `avgCorrectMs`: average `serverTimeMs` over correct answers only; `null` when
+  the player has no correct answers
+- `longestStreak`: longest run of correct answers across the whole match slot
+  order. Wrong answers and missed questions break the streak, and the streak
+  does not reset at round boundaries.
+
+Superlatives return raw tied winners as arrays. Presentation layers can decide
+later whether to spread awards:
+
+- `fastest`: lowest `avgCorrectMs` among players with at least one correct answer
+- `sharpshooter`: highest `accuracy` among players with at least one submitted
+  answer
+- `hotStreak`: highest `longestStreak` among players with a streak greater than
+  zero
+
+The summary also returns final player rankings. In `2v2`, it additionally
+returns ranked team totals computed as the sum of member answer-row scores.
+
 ## Leave Safety
 
 Leaving marks the player `left: true` and freezes their current score. The room
