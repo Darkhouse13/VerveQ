@@ -124,7 +124,7 @@ Everything inside the room is driven by a single reactive `useQuery` on
 |-------|----------|-------|
 | `lobby` | `LobbyView` | Roster, ready toggles, team picker for 2v2, share/copy link, host start + force-start with countdown gated by `forceStartAvailableAt`. Lists explicit "waiting on" reasons (player count, team validity, unready names). |
 | `countdown` | `CountdownView` | 3-2-1 anchored to the first observed phase change (no authoritative start timestamp on the room) plus a preview chip for round 1's category. |
-| `question` | `QuestionView` | Server-clocked timer bar (`timer.questionStartedAt` + `timer.questionWindowMs`, offset corrected via `useClockOffset` against `timer.serverNow`). MCQ for football/general/logo (with `QuestionImage` for `imageUrl`), 1-column big two-option layout for `which_came_first`. Pre-submit selection is local; locked state is read back from `room.myCurrentAnswer` so refresh resumes. Errors like "already answered" are swallowed; everything else toasts. |
+| `question` | `QuestionView` | Server-clocked timer bar (`timer.questionStartedAt` + `timer.questionWindowMs`, offset corrected via `useClockOffset` against `timer.serverNow`). MCQ for football/general/logo (with `QuestionImage` for `imageUrl`), 1-column big two-option layout for `which_came_first`. **Tap-to-submit**: tapping an option calls `submitAnswer` immediately — there is no "lock in" confirm step. Locked state is read back from `room.myCurrentAnswer` so refresh resumes. Errors like "already answered" are swallowed; everything else toasts and clears the pending pick so the player can retry. |
 | `reveal` | `RevealView` | Correct answer banner, per-player answer list sorted by points + speed, my own verdict + running total. |
 | `round_break` | `RoundBreakView` | Round leaderboard from `room.roundLeaderboard` (team totals in 2v2 are already aggregated by the backend), preview of next category, ready button calling `readyNextRound`, a local 8s "auto-advance" hint (server schedules the real advance). |
 | `final` | `FinalView` | Podium grid (1st on top, 2nd/3rd below), full ranking, share card via Web Share API with copy fallback, one-tap `rematch` → navigates to the new arena code. |
@@ -135,6 +135,14 @@ Cross-cutting:
   phase + round, and a **Leave** button that calls `leave` then navigates back
   to `/challenge`. Leaving never blocks; rejoining is just re-opening the same
   code.
+- During the `lobby` phase the header also surfaces a **?** help button
+  (`HelpCircle`) that opens `ArenaHelpModal`: a dismissible neo-brutalist card
+  summarising arena rules (5 rounds × 10 questions, 5 rotating categories,
+  tap-to-answer, fastest-correct scoring, ready-up start, leave anytime). The
+  modal is mobile-first (anchored bottom-sheet on small screens, centered on
+  larger), traps body scroll while open, and closes via the backdrop, the X
+  button, "Got it", or Escape. It does not block the lobby — markup is sibling
+  to the header so the underlying room state keeps updating.
 - Refresh, deep-link, and accidental tab-loss recover automatically: on mount,
   the screen reads the URL code, queries `getRoom`, and if the result is
   `null`, calls `join` once. `join` is idempotent for existing players (it

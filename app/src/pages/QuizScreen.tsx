@@ -3,7 +3,6 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { useMutation } from "convex/react";
 import { api } from "../../convex/_generated/api";
 import { NeoCard } from "@/components/neo/NeoCard";
-import { NeoButton } from "@/components/neo/NeoButton";
 import { NeoBadge } from "@/components/neo/NeoBadge";
 import { Check, X } from "lucide-react";
 import { QuestionImage } from "@/components/QuestionImage";
@@ -183,8 +182,8 @@ export default function QuizScreen() {
   };
 
   const handleOptionClick = (idx: number) => {
-    if (revealed || checking) return;
-    setSelected(idx);
+    if (revealed || checking || answerSubmitInFlight.current) return;
+    void handleCheck(idx);
   };
 
   const advanceAfterReveal = useCallback(async () => {
@@ -349,17 +348,6 @@ export default function QuizScreen() {
           {checkResult.explanation}
         </NeoCard>
       )}
-
-      <div className="mt-5">
-        <NeoButton
-          variant="primary"
-          size="full"
-          disabled={selected === null || checking || revealed}
-          onClick={() => handleCheck()}
-        >
-          {checking ? "Checking..." : revealed ? "Next question loading..." : "Check Answer"}
-        </NeoButton>
-      </div>
 
       {zoomImage && (
         <ImageZoomModal

@@ -14,6 +14,7 @@ import {
   Clock,
   Copy,
   Crown,
+  HelpCircle,
   Hourglass,
   LogOut,
   RotateCcw,
@@ -283,6 +284,8 @@ function ArenaHeader({
   leaving: boolean;
   showShare: boolean;
 }) {
+  const [showHelp, setShowHelp] = useState(false);
+  const isLobby = room.phase === "lobby";
   const handleShare = async () => {
     const res = await shareArenaLink(room.code);
     if (res === "copied") toast.success("Link copied");
@@ -319,18 +322,140 @@ function ArenaHeader({
           </p>
         </div>
 
-        {showShare ? (
+        <div className="flex items-center gap-2">
+          {isLobby && (
+            <button
+              type="button"
+              onClick={() => setShowHelp(true)}
+              aria-label="How Challenge Arena works"
+              className="neo-border neo-shadow rounded-lg w-9 h-9 bg-background cursor-pointer active:neo-shadow-pressed inline-flex items-center justify-center"
+            >
+              <HelpCircle size={16} strokeWidth={3} />
+            </button>
+          )}
+          {showShare ? (
+            <button
+              type="button"
+              onClick={handleShare}
+              className="neo-border neo-shadow rounded-lg px-3 py-2 bg-electric-blue text-electric-blue-foreground cursor-pointer active:neo-shadow-pressed inline-flex items-center gap-1.5"
+            >
+              <Share2 size={14} strokeWidth={3} />
+              <span className="text-[10px] font-heading font-bold uppercase">Share</span>
+            </button>
+          ) : (
+            <div className="w-[68px]" />
+          )}
+        </div>
+      </div>
+      {showHelp && <ArenaHelpModal onClose={() => setShowHelp(false)} />}
+    </div>
+  );
+}
+
+function ArenaHelpModal({ onClose }: { onClose: () => void }) {
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    window.addEventListener("keydown", onKey);
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [onClose]);
+
+  return (
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-label="How Challenge Arena works"
+      className="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm flex items-end sm:items-center justify-center px-4 py-6"
+      onClick={onClose}
+    >
+      <div
+        className="w-full max-w-md animate-slide-up"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <NeoCard shadow="lg" className="relative py-5">
           <button
             type="button"
-            onClick={handleShare}
-            className="neo-border neo-shadow rounded-lg px-3 py-2 bg-electric-blue text-electric-blue-foreground cursor-pointer active:neo-shadow-pressed inline-flex items-center gap-1.5"
+            onClick={onClose}
+            aria-label="Close help"
+            className="absolute top-3 right-3 neo-border neo-shadow rounded-full w-8 h-8 bg-background cursor-pointer active:neo-shadow-pressed inline-flex items-center justify-center"
           >
-            <Share2 size={14} strokeWidth={3} />
-            <span className="text-[10px] font-heading font-bold uppercase">Share</span>
+            <X size={14} strokeWidth={3} />
           </button>
-        ) : (
-          <div className="w-[68px]" />
-        )}
+          <div className="pr-8">
+            <NeoBadge color="primary" rotated size="md" className="text-base">
+              How the Arena works
+            </NeoBadge>
+          </div>
+          <ul className="mt-4 space-y-2.5 text-sm leading-snug">
+            <li className="flex items-start gap-2">
+              <span className="neo-border rounded-full w-6 h-6 shrink-0 flex items-center justify-center font-mono font-bold text-[11px] bg-card">
+                5×
+              </span>
+              <span>
+                <span className="font-heading font-bold">5 rounds × 10 questions.</span>{" "}
+                Each round runs a single category back-to-back.
+              </span>
+            </li>
+            <li className="flex items-start gap-2">
+              <span className="neo-border rounded-full w-6 h-6 shrink-0 flex items-center justify-center font-mono font-bold text-[11px] bg-card">
+                ☰
+              </span>
+              <span>
+                <span className="font-heading font-bold">5 rotating categories.</span>{" "}
+                A fresh topic each round — see the next one on the break screen.
+              </span>
+            </li>
+            <li className="flex items-start gap-2">
+              <span className="neo-border rounded-full w-6 h-6 shrink-0 flex items-center justify-center font-mono font-bold text-[11px] bg-card">
+                ☝︎
+              </span>
+              <span>
+                <span className="font-heading font-bold">Tap to answer.</span>{" "}
+                Your pick locks in the moment you tap — there's no confirm button.
+              </span>
+            </li>
+            <li className="flex items-start gap-2">
+              <span className="neo-border rounded-full w-6 h-6 shrink-0 flex items-center justify-center font-mono font-bold text-[11px] bg-card">
+                ⚡
+              </span>
+              <span>
+                <span className="font-heading font-bold">Fastest correct scores most.</span>{" "}
+                Wrong or missed answers score 0.
+              </span>
+            </li>
+            <li className="flex items-start gap-2">
+              <span className="neo-border rounded-full w-6 h-6 shrink-0 flex items-center justify-center font-mono font-bold text-[11px] bg-card">
+                ✓
+              </span>
+              <span>
+                <span className="font-heading font-bold">Ready up to start.</span>{" "}
+                The host kicks it off once everyone in the lobby is ready.
+              </span>
+            </li>
+            <li className="flex items-start gap-2">
+              <span className="neo-border rounded-full w-6 h-6 shrink-0 flex items-center justify-center font-mono font-bold text-[11px] bg-card">
+                ↩
+              </span>
+              <span>
+                <span className="font-heading font-bold">Leave anytime.</span>{" "}
+                You can drop out from the header — the rest of the room keeps playing.
+              </span>
+            </li>
+          </ul>
+          <button
+            type="button"
+            onClick={onClose}
+            className="mt-5 w-full neo-border neo-shadow rounded-lg py-2.5 bg-primary text-primary-foreground font-heading font-bold text-sm uppercase cursor-pointer active:neo-shadow-pressed"
+          >
+            Got it
+          </button>
+        </NeoCard>
       </div>
     </div>
   );
@@ -784,20 +909,17 @@ function QuestionView({
   const selected = pending ?? myAnswered;
   const activeCount = room.players.filter((p) => !p.left).length;
 
-  const handleSelect = (opt: string) => {
+  const handleSelect = async (opt: string) => {
     if (locked || submitting) return;
     setPending(opt);
-  };
-
-  const handleSubmit = async () => {
-    if (!selected || locked || submitting) return;
     setSubmitting(true);
     try {
-      await submitAnswer({ arenaId: room.arenaId, answer: selected });
+      await submitAnswer({ arenaId: room.arenaId, answer: opt });
     } catch (e) {
       const msg = e instanceof Error ? e.message : "Submit failed";
       if (!/already answered/i.test(msg)) {
         toast.error(msg);
+        setPending(null);
         setSubmitting(false);
       }
     }
@@ -876,7 +998,7 @@ function QuestionView({
               key={opt}
               type="button"
               disabled={locked || submitting}
-              onClick={() => handleSelect(opt)}
+              onClick={() => void handleSelect(opt)}
               className={`w-full neo-border neo-shadow rounded-lg p-4 flex items-center gap-3 text-left cursor-pointer transition-all ${
                 locked && isPicked
                   ? "bg-success text-success-foreground"
@@ -896,24 +1018,15 @@ function QuestionView({
         })}
       </div>
 
-      <NeoButton
-        variant="primary"
-        size="full"
-        disabled={!selected || locked || submitting}
-        onClick={() => void handleSubmit()}
-      >
-        {locked
-          ? "Locked in — wait for reveal"
-          : submitting
-            ? "Submitting…"
-            : "Lock in answer"}
-      </NeoButton>
-
-      {locked && (
+      {locked ? (
         <p className="text-center text-[11px] text-muted-foreground">
           {activeCount > 1
-            ? "Waiting for the rest of the room…"
-            : "Waiting for reveal…"}
+            ? "Locked in — waiting for the rest of the room…"
+            : "Locked in — waiting for reveal…"}
+        </p>
+      ) : (
+        <p className="text-center text-[11px] text-muted-foreground">
+          Tap an option to lock it in.
         </p>
       )}
     </div>

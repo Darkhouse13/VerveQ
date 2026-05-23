@@ -29,16 +29,16 @@ describe("ASAP bugfix contracts", () => {
     expect(source).toContain("questionNum");
   });
 
-  it("regular and daily quiz stage an answer selection before explicit confirmation", () => {
+  it("regular and daily quiz submit immediately on option tap with no confirm button", () => {
     const quizSource = read("src/pages/QuizScreen.tsx");
     const dailySource = read("src/pages/DailyQuizScreen.tsx");
 
     for (const source of [quizSource, dailySource]) {
       expect(source).toContain("const handleOptionClick = (idx: number) => {");
-      expect(source).toContain("setSelected(idx)");
-      expect(source).not.toContain("handleCheck(idx)");
+      expect(source).toContain("void handleCheck(idx)");
       expect(source).toContain("onClick={() => handleOptionClick(idx)}");
-      expect(source).toContain("onClick={() => handleCheck()}");
+      expect(source).not.toContain("onClick={() => handleCheck()}");
+      expect(source).not.toContain(">Check Answer<");
     }
   });
 
@@ -224,7 +224,7 @@ describe("ASAP bugfix contracts", () => {
   });
 
 
-  it("regular and daily quiz auto-advance two seconds after answer confirmation instead of tap-to-continue", () => {
+  it("regular and daily quiz auto-advance two seconds after the tap-submitted reveal", () => {
     const quizSource = read("src/pages/QuizScreen.tsx");
     const dailySource = read("src/pages/DailyQuizScreen.tsx");
 
@@ -233,11 +233,12 @@ describe("ASAP bugfix contracts", () => {
       expect(source).not.toContain("onPointerDownCapture={handleRevealedScreenTap}");
       expect(source).not.toContain("data-continue-control");
       expect(source).not.toContain(">Continue<");
+      expect(source).not.toContain(">Check Answer<");
+      expect(source).not.toContain(">Next question loading...<");
       expect(source).toContain("AUTO_ADVANCE_DELAY_MS = 2000");
       expect(source).toContain("autoAdvanceTimeoutRef");
       expect(source).toContain("window.setTimeout(() => {");
       expect(source).toContain("void advanceAfterReveal()");
-      expect(source).toContain("Next question loading...");
     }
   });
 
@@ -260,7 +261,7 @@ describe("ASAP bugfix contracts", () => {
   });
 
 
-  it("quiz auto-advance does not expose manual continue tap targets", () => {
+  it("quiz auto-advance does not expose manual continue or confirm tap targets", () => {
     const quizSource = read("src/pages/QuizScreen.tsx");
     const dailySource = read("src/pages/DailyQuizScreen.tsx");
 
@@ -268,8 +269,9 @@ describe("ASAP bugfix contracts", () => {
       expect(source).not.toContain("React.PointerEvent<HTMLDivElement>");
       expect(source).not.toContain("continueInFlight");
       expect(source).not.toContain("void handleContinue()");
-      expect(source).toContain("disabled={selected === null || checking || revealed}");
-      expect(source).toContain('Next question loading...');
+      expect(source).not.toContain("disabled={selected === null || checking || revealed}");
+      expect(source).not.toContain('Next question loading...');
+      expect(source).not.toContain(">Check Answer<");
     }
   });
 
@@ -280,15 +282,15 @@ describe("ASAP bugfix contracts", () => {
     expect(source).toContain('type={type}');
   });
 
-  it("quiz answer controls allow reselection until explicit check", () => {
+  it("quiz answer controls fire submission directly on tap with no confirm button", () => {
     const quizSource = read("src/pages/QuizScreen.tsx");
     const dailySource = read("src/pages/DailyQuizScreen.tsx");
 
     for (const source of [quizSource, dailySource]) {
       expect(source).toContain("handleOptionClick(idx)");
-      expect(source).toContain("setSelected(idx)");
+      expect(source).toContain("void handleCheck(idx)");
       expect(source).toContain("disabled={revealed || checking}");
-      expect(source).toContain("selected === null || checking || revealed");
+      expect(source).not.toContain("selected === null || checking || revealed");
     }
   });
 

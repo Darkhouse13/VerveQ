@@ -38,8 +38,8 @@ A timed multiple-choice trivia game with 10 questions per session.
 1. Player selects a sport and difficulty level (Easy, Medium, or Hard)
 2. A session is created and 10 unique questions are served one at a time
 3. Each question presents 4 answer options (A, B, C, D)
-4. Player selects an answer and clicks "Check Answer"
-5. The correct answer is revealed with an optional explanation
+4. Player taps an option to submit — there is no confirm button; the tap is the answer
+5. The correct answer is revealed with an optional explanation; the next question auto-advances after ~2 seconds
 6. After 10 questions, the game ends and results are displayed
 
 **Scoring:**
@@ -275,6 +275,7 @@ A once-per-day quiz or survival challenge with a shared question set and daily l
 **Daily Quiz:**
 - 10 questions at intermediate difficulty
 - Same scoring as standard quiz (100 points base + time bonus)
+- Tap-to-submit: tapping an option locks the answer instantly; the reveal auto-advances after ~2 seconds
 - Maximum possible score: 1,000 points
 
 **Daily Survival:**
@@ -299,8 +300,9 @@ Real-time head-to-head competitive quiz between two players.
 3. A 3-second countdown begins once both are ready
 4. 10 intermediate questions are served simultaneously to both players
 5. Each question has a 10-second timer
-6. After both answer (or timeout), a 2-second round result display shows both answers
-7. After 10 questions, the winner is determined by higher total score
+6. Players tap an option to submit — the tap is the answer, with no confirm step
+7. After both answer (or timeout), a 2-second round result display shows both answers
+8. After 10 questions, the winner is determined by higher total score
 
 **Scoring (Cutthroat system):**
 - Base: 100 points per correct answer
@@ -331,14 +333,17 @@ to `liveMatches` and `duels`.
 2. The host gets a 6-char code; share via the Web Share API or copy a
    `/arena/<code>` link. Friends opening the link land in the same lobby.
 3. Lobby shows live roster, team picker (2v2), per-player ready state, and
-   what's blocking start. Host can **Start** when ≥2 active and everyone ready,
-   or **Force start** after a 15s grace period (drops unready non-hosts).
+   what's blocking start. A **?** help button in the lobby header opens a
+   dismissible rules card. Host can **Start** when ≥2 active and everyone
+   ready, or **Force start** after a 15s grace period (drops unready non-hosts).
 4. 3-2-1 countdown previews round 1's category, then 5 rounds run automatically:
    football quiz → general knowledge → which came first → name the logo →
    capital cities.
 5. Each question runs on a 10-second server-clocked timer with a live progress
-   bar; submissions are locked once accepted. The reveal screen shows the
-   correct answer, every player's pick, points awarded, and your running total.
+   bar. **Tap an option to submit** — there is no separate confirm step;
+   submissions lock the moment the tap reaches the server. The reveal screen
+   shows the correct answer, every player's pick, points awarded, and your
+   running total.
 6. Round break shows the round leaderboard (team totals in 2v2), the next
    category, a per-player ready-up button, and an "auto-advance in ~8s" hint.
 7. Final screen shows the podium, full ranking, a share card, and one-tap
