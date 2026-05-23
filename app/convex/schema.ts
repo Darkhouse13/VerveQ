@@ -517,6 +517,8 @@ export default defineSchema({
     questionStartedAt: v.optional(v.number()),
     questionWindowMs: v.number(),
     roundChecksums: v.array(v.array(v.string())),
+    rematchArenaId: v.optional(v.id("arenas")),
+    rematchArenaCode: v.optional(v.string()),
     createdAt: v.number(),
     expiresAt: v.number(),
   })

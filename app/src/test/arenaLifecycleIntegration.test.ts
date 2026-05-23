@@ -68,6 +68,8 @@ type ArenaRow = Row & {
   questionStartedAt?: number;
   questionWindowMs: number;
   roundChecksums: string[][];
+  rematchArenaId?: string;
+  rematchArenaCode?: string;
   createdAt: number;
   expiresAt: number;
 };
@@ -105,8 +107,12 @@ type AnswerRow = Row & {
 };
 
 type RoomView = {
+  arenaId: string;
+  code: string;
   phase: ArenaPhase;
   status: ArenaStatus;
+  rematchArenaId: string | null;
+  rematchArenaCode: string | null;
   config: { categories: string[] };
   currentQuestion: Record<string, unknown> | null;
   revealAnswers: Array<{
@@ -121,6 +127,7 @@ type RoomView = {
   players: Array<{
     userId: string;
     team: "A" | "B" | null;
+    ready: boolean;
     left: boolean;
     totalScore: number;
   }>;
@@ -131,6 +138,8 @@ type ArenaSummary = {
   mode: ArenaMode;
   totalQuestions: number;
   isTeamMode: boolean;
+  rematchArenaId: string | null;
+  rematchArenaCode: string | null;
   players: Array<{
     userId: string;
     nameSnapshot: string;
@@ -786,6 +795,81 @@ describe("challenge arena lifecycle integration", () => {
         .all<AnswerRow>("arenaAnswers")
         .filter((answer) => answer.userId === "user_d"),
     ).toHaveLength(0);
+  });
+
+  it("creates one shared rematch lobby per finished arena and propagates ready state there", async () => {
+    const db = new FakeDb();
+    seedUsers(db);
+    const arenaId = "arena_rematch_source";
+    seedSummaryArena(db, arenaId, "ffa3", [
+      { userId: "user_a", nameSnapshot: "Alice" },
+      { userId: "user_b", nameSnapshot: "Blake" },
+      { userId: "user_c", nameSnapshot: "Casey" },
+    ]);
+
+    setAuth("user_a");
+    const first = (await handlerOf(challengeArenas.rematch)(makeCtx(db), {
+      arenaId,
+    })) as { arenaId: string; code: string };
+    setAuth("user_b");
+    const second = (await handlerOf(challengeArenas.rematch)(makeCtx(db), {
+      arenaId,
+    })) as { arenaId: string; code: string };
+    setAuth("user_c");
+    const third = (await handlerOf(challengeArenas.rematch)(makeCtx(db), {
+      arenaId,
+    })) as { arenaId: string; code: string };
+
+    expect(new Set([first.arenaId, second.arenaId, third.arenaId]).size).toBe(1);
+    expect(new Set([first.code, second.code, third.code]).size).toBe(1);
+    expect(
+      db.all<ArenaRow>("arenas").filter((arena) => arena._id !== arenaId),
+    ).toHaveLength(1);
+    expect(db.row<ArenaRow>(arenaId)).toMatchObject({
+      rematchArenaId: first.arenaId,
+      rematchArenaCode: first.code,
+    });
+
+    for (const userId of ["user_a", "user_b", "user_c"]) {
+      setAuth(userId);
+      const joined = (await handlerOf(challengeArenas.join)(makeCtx(db), {
+        code: first.code,
+      })) as { arenaId: string; code: string };
+      expect(joined).toEqual(first);
+    }
+
+    setAuth("user_a");
+    await handlerOf(challengeArenas.setReady)(makeCtx(db), {
+      arenaId: first.arenaId,
+      ready: true,
+    });
+
+    setAuth("user_b");
+    const rematchRoom = (await handlerOf(challengeArenas.getRoom)(makeCtx(db), {
+      code: first.code,
+    })) as RoomView;
+    expect(rematchRoom.arenaId).toBe(first.arenaId);
+    expect(
+      rematchRoom.players.find((player) => player.userId === "user_a"),
+    ).toMatchObject({ ready: true });
+    expect(
+      rematchRoom.players.find((player) => player.userId === "user_b"),
+    ).toMatchObject({ ready: false });
+
+    const oldRoom = (await handlerOf(challengeArenas.getRoom)(makeCtx(db), {
+      arenaId,
+    })) as RoomView;
+    expect(oldRoom.rematchArenaId).toBe(first.arenaId);
+    expect(oldRoom.rematchArenaCode).toBe(first.code);
+
+    const oldSummary = (await handlerOf(challengeArenas.getArenaSummary)(
+      makeCtx(db),
+      { arenaId },
+    )) as ArenaSummary | null;
+    expect(oldSummary).toMatchObject({
+      rematchArenaId: first.arenaId,
+      rematchArenaCode: first.code,
+    });
   });
 
   it("summarizes final solo stats from arena answers only", async () => {

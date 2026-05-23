@@ -543,6 +543,12 @@ function assertLobby(arena: Arena) {
   }
 }
 
+function assertFinal(arena: Arena) {
+  if (arena.status !== "final" || arena.phase !== "final") {
+    throw new Error("Arena is not finished");
+  }
+}
+
 function validateTwoTeamState(players: ArenaPlayer[]) {
   const teamCounts = { A: 0, B: 0 };
   for (const player of players) {
@@ -1038,6 +1044,8 @@ async function buildArenaSummary(
     mode: arena.mode,
     totalQuestions: arena.config.rounds * arena.config.perRound,
     isTeamMode,
+    rematchArenaId: arena.rematchArenaId ?? null,
+    rematchArenaCode: arena.rematchArenaCode ?? null,
     players,
     rankings: {
       players: rankedSummaryPlayers(players),
@@ -1513,6 +1521,28 @@ export const rematch = mutation({
     if (findPlayerIndex(arena, userId) < 0) {
       throw new Error("Not a player in this arena");
     }
+    assertFinal(arena);
+
+    if (arena.rematchArenaId && arena.rematchArenaCode) {
+      return {
+        arenaId: arena.rematchArenaId,
+        code: arena.rematchArenaCode,
+      };
+    }
+
+    if (arena.rematchArenaId) {
+      const rematchArena = await ctx.db.get(arena.rematchArenaId);
+      if (!rematchArena) throw new Error("Rematch arena not found");
+      await ctx.db.patch(arena._id, { rematchArenaCode: rematchArena.code });
+      return { arenaId: rematchArena._id, code: rematchArena.code };
+    }
+
+    if (arena.rematchArenaCode) {
+      const rematchArena = await getArenaByCode(ctx, arena.rematchArenaCode);
+      if (!rematchArena) throw new Error("Rematch arena not found");
+      await ctx.db.patch(arena._id, { rematchArenaId: rematchArena._id });
+      return { arenaId: rematchArena._id, code: rematchArena.code };
+    }
 
     const now = Date.now();
     const code = await generateUniqueCode(ctx);
@@ -1544,6 +1574,11 @@ export const rematch = mutation({
       roundChecksums: [],
       createdAt: now,
       expiresAt: now + ARENA_TTL_MS,
+    });
+
+    await ctx.db.patch(arena._id, {
+      rematchArenaId: rematchId,
+      rematchArenaCode: code,
     });
 
     return { arenaId: rematchId, code };
@@ -1606,6 +1641,8 @@ export const getRoom = query({
       mode: arena.mode,
       status: arena.status,
       phase: arena.phase,
+      rematchArenaId: arena.rematchArenaId ?? null,
+      rematchArenaCode: arena.rematchArenaCode ?? null,
       config: arena.config,
       currentRound: arena.currentRound,
       currentQuestionIndex: arena.currentQuestionIndex,

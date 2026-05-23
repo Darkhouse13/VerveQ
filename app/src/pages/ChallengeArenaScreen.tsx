@@ -153,6 +153,10 @@ function ChallengeArenaRoom({
 
   const handleRematch = useCallback(async () => {
     if (!room || rematching) return;
+    if (room.rematchArenaCode) {
+      navigate(`/arena/${room.rematchArenaCode}`, { replace: true });
+      return;
+    }
     setRematching(true);
     try {
       const result = await rematchMut({ arenaId: room.arenaId });
@@ -1438,7 +1442,11 @@ function FinalUnavailable({
           onClick={onRematch}
         >
           <RotateCcw size={16} strokeWidth={3} />
-          {rematching ? "Building lobby…" : "Rematch — same crew"}
+          {room.rematchArenaCode
+            ? "Join rematch lobby"
+            : rematching
+              ? "Building lobby…"
+              : "Rematch — same crew"}
         </NeoButton>
         <NeoButton
           variant="secondary"
@@ -1574,7 +1582,11 @@ function FinalSummaryView({
           onClick={onRematch}
         >
           <RotateCcw size={16} strokeWidth={3} />
-          {rematching ? "Building lobby…" : "Rematch — same crew"}
+          {room.rematchArenaCode
+            ? "Join rematch lobby"
+            : rematching
+              ? "Building lobby…"
+              : "Rematch — same crew"}
         </NeoButton>
         <NeoButton variant="secondary" size="full" onClick={handleShareCard}>
           <Share2 size={16} strokeWidth={3} />

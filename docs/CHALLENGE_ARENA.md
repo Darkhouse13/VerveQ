@@ -125,6 +125,21 @@ later whether to spread awards:
 The summary also returns final player rankings. In `2v2`, it additionally
 returns ranked team totals computed as the sum of member answer-row scores.
 
+## Rematch
+
+`challengeArenas.rematch({ arenaId })` is available only after the source arena
+has reached `final`. The first rematch call for that source arena creates one
+new normal lobby, copies the original crew with fresh `ready: false` state, and
+stamps `rematchArenaId` plus `rematchArenaCode` onto the finished arena.
+Later calls from any player in the same finished arena return that same stamped
+lobby instead of creating another room.
+
+Both `getRoom` and `getArenaSummary` expose the stamped rematch fields on the
+old final arena, so clients still viewing the results screen can reactively
+switch their action from creating a lobby to joining the already-created
+rematch code. The new lobby uses the standard `join`, `setReady`, team, and
+start mutations.
+
 ## Leave Safety
 
 Leaving marks the player `left: true` and freezes their current score. The room
