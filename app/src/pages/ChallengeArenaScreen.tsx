@@ -39,6 +39,7 @@ import {
   arenaCategoryLabel,
   arenaModeCapacity,
   arenaModeLabel,
+  arenaModeVerboseLabel,
   buildArenaUrl,
   normalizeArenaCode,
   shareArenaLink,
@@ -50,6 +51,10 @@ import {
 type Room = NonNullable<FunctionReturnType<typeof api.challengeArenas.getRoom>>;
 type RoomPlayer = Room["players"][number];
 type Phase = Room["phase"];
+type ArenaSummary = NonNullable<
+  FunctionReturnType<typeof api.challengeArenas.getArenaSummary>
+>;
+type ArenaSummaryPlayerStats = ArenaSummary["players"][number];
 
 const COUNTDOWN_MS = 3_000;
 const ROUND_BREAK_MS = 8_000;
@@ -1267,36 +1272,198 @@ function FinalView({
   rematching: boolean;
   onRematch: () => void;
 }) {
-  const podium = room.finalPodium ?? [];
-  const myRow = podium.find((row) =>
-    row.playerIds.some((id) => id === userId),
+  const summary = useQuery(api.challengeArenas.getArenaSummary, {
+    arenaId: room.arenaId,
+  });
+
+  if (summary === undefined) {
+    return (
+      <NeoCard shadow="lg" className="text-center py-10">
+        <Trophy size={24} strokeWidth={2.5} className="mx-auto mb-2 opacity-60" />
+        <p className="font-heading font-bold text-sm animate-pulse">
+          Tallying the final podium…
+        </p>
+      </NeoCard>
+    );
+  }
+
+  if (summary === null) {
+    return (
+      <FinalUnavailable
+        room={room}
+        rematching={rematching}
+        onRematch={onRematch}
+      />
+    );
+  }
+
+  return (
+    <FinalSummaryView
+      room={room}
+      summary={summary}
+      userId={userId}
+      rematching={rematching}
+      onRematch={onRematch}
+    />
   );
+}
+
+function FinalUnavailable({
+  room,
+  rematching,
+  onRematch,
+}: {
+  room: Room;
+  rematching: boolean;
+  onRematch: () => void;
+}) {
+  return (
+    <div className="space-y-5">
+      <NeoCard shadow="lg" className="text-center py-8">
+        <Trophy size={24} strokeWidth={2.5} className="mx-auto mb-3 opacity-60" />
+        <p className="font-heading font-bold text-base">
+          Final results unavailable
+        </p>
+        <p className="text-xs text-muted-foreground mt-2 max-w-xs mx-auto">
+          We couldn&apos;t load the podium for this arena yet. Try again from the
+          rematch — or head back and rejoin.
+        </p>
+      </NeoCard>
+      <div className="space-y-2.5">
+        <NeoButton
+          variant="primary"
+          size="full"
+          disabled={rematching}
+          onClick={onRematch}
+        >
+          <RotateCcw size={16} strokeWidth={3} />
+          {rematching ? "Building lobby…" : "Rematch — same crew"}
+        </NeoButton>
+        <NeoButton
+          variant="secondary"
+          size="full"
+          onClick={() => {
+            void shareArenaLink(room.code).then((res) => {
+              if (res === "copied") toast.success("Link copied");
+              if (res === "failed") toast.error("Could not share");
+            });
+          }}
+        >
+          <Share2 size={16} strokeWidth={3} />
+          Share arena
+        </NeoButton>
+      </div>
+    </div>
+  );
+}
+
+function formatSummaryNames(
+  identities: Array<{ nameSnapshot: string }> | undefined,
+  fallback: string,
+) {
+  if (!identities || identities.length === 0) return fallback;
+  if (identities.length === 1) return identities[0].nameSnapshot;
+  if (identities.length === 2) {
+    return `${identities[0].nameSnapshot} & ${identities[1].nameSnapshot}`;
+  }
+  return `${identities
+    .slice(0, -1)
+    .map((p) => p.nameSnapshot)
+    .join(", ")} & ${identities[identities.length - 1].nameSnapshot}`;
+}
+
+function formatAccuracy(stats: ArenaSummaryPlayerStats | undefined) {
+  if (!stats || stats.questionsAnswered === 0) return "—";
+  return `${Math.round(stats.accuracy * 100)}%`;
+}
+
+function formatAvgCorrect(stats: ArenaSummaryPlayerStats | undefined) {
+  if (!stats || stats.avgCorrectMs === null) return "—";
+  const seconds = stats.avgCorrectMs / 1000;
+  if (seconds >= 10) return `${seconds.toFixed(1)}s`;
+  return `${seconds.toFixed(2)}s`;
+}
+
+function formatAvgMsCompact(avgMs: number | null | undefined) {
+  if (avgMs === null || avgMs === undefined) return "—";
+  const seconds = avgMs / 1000;
+  if (seconds >= 10) return `${seconds.toFixed(1)}s`;
+  return `${seconds.toFixed(2)}s`;
+}
+
+function FinalSummaryView({
+  room,
+  summary,
+  userId,
+  rematching,
+  onRematch,
+}: {
+  room: Room;
+  summary: ArenaSummary;
+  userId: Id<"users"> | undefined;
+  rematching: boolean;
+  onRematch: () => void;
+}) {
+  const playerStatsById = useMemo(() => {
+    const map = new Map<Id<"users">, ArenaSummaryPlayerStats>();
+    for (const player of summary.players) {
+      map.set(player.userId, player);
+    }
+    return map;
+  }, [summary.players]);
+
+  const topPlayer = summary.rankings.players[0] ?? null;
+  const topTeam = summary.rankings.teams[0] ?? null;
+
+  const meAsPlayer = userId
+    ? summary.rankings.players.find((row) => row.userId === userId) ?? null
+    : null;
+  const myTeamRow =
+    summary.isTeamMode && meAsPlayer
+      ? summary.rankings.teams.find((t) =>
+          t.playerIds.some((id) => id === userId),
+        ) ?? null
+      : null;
 
   const handleShareCard = async () => {
-    const topLabel = podium[0]?.label ?? "Crew";
-    const topScore = podium[0]?.score ?? 0;
-    const myScore = myRow?.score ?? 0;
-    const text = `VerveQ arena ${room.code} — winner ${topLabel} (${topScore}). I scored ${myScore}. Rematch?`;
-    const res = await shareArenaLink(room.code, text);
+    const code = room.code;
+    let text: string;
+    if (summary.isTeamMode && topTeam) {
+      const myTeamScore = myTeamRow?.totalScore ?? 0;
+      text = `VerveQ arena ${code} — ${topTeam.label} wins (${topTeam.totalScore}). My team scored ${myTeamScore}. Rematch?`;
+    } else if (topPlayer) {
+      const myScore = meAsPlayer?.totalScore ?? 0;
+      text = `VerveQ arena ${code} — ${topPlayer.nameSnapshot} wins with ${topPlayer.totalScore}. I scored ${myScore}. Rematch?`;
+    } else {
+      text = `VerveQ arena ${code} — rematch?`;
+    }
+    const res = await shareArenaLink(code, text);
+    if (res === "shared") toast.success("Result shared");
     if (res === "copied") toast.success("Result copied");
     if (res === "failed") toast.error("Could not share");
   };
 
+  const modeLabel = arenaModeVerboseLabel(summary.mode);
+  const subTitle = `${room.config.rounds}R×${room.config.perRound}Q · ${summary.totalQuestions}Q`;
+
   return (
     <div className="space-y-5">
-      <NeoCard shadow="lg" className="text-center py-6">
-        <Trophy size={28} strokeWidth={2.5} className="mx-auto mb-2" />
-        <NeoBadge color="primary" rotated size="md" className="text-base">
-          Final
-        </NeoBadge>
-        <p className="text-xs text-muted-foreground mt-2">
-          {arenaModeLabel(room.mode)} · {room.config.rounds} rounds
-        </p>
-      </NeoCard>
+      <FinalHero
+        summary={summary}
+        topPlayer={topPlayer}
+        topTeam={topTeam}
+        playerStatsById={playerStatsById}
+      />
 
-      <PodiumGrid podium={podium} userId={userId} />
+      <FinalAwards summary={summary} />
 
-      <LeaderboardCard room={room} rows={podium} title="Final ranking" />
+      <FinalStandingsCard
+        summary={summary}
+        userId={userId}
+        playerStatsById={playerStatsById}
+        modeLabel={modeLabel}
+        subTitle={subTitle}
+      />
 
       <div className="space-y-2.5">
         <NeoButton
@@ -1317,58 +1484,384 @@ function FinalView({
   );
 }
 
-function PodiumGrid({
-  podium,
-  userId,
+function FinalHero({
+  summary,
+  topPlayer,
+  topTeam,
+  playerStatsById,
 }: {
-  podium: Array<{
-    rank: number;
-    id: string;
-    label: string;
-    score: number;
-    playerIds: Array<Id<"users">>;
-  }>;
-  userId: Id<"users"> | undefined;
+  summary: ArenaSummary;
+  topPlayer: ArenaSummary["rankings"]["players"][number] | null;
+  topTeam: ArenaSummary["rankings"]["teams"][number] | null;
+  playerStatsById: Map<Id<"users">, ArenaSummaryPlayerStats>;
 }) {
-  if (podium.length === 0) return null;
-  const top = podium.slice(0, 3);
+  if (summary.isTeamMode) {
+    if (!topTeam) {
+      return <FinalHeroEmpty />;
+    }
+    const memberNames = topTeam.playerIds
+      .map((id) => playerStatsById.get(id)?.nameSnapshot ?? "Player")
+      .join(" + ");
+    return (
+      <NeoCard
+        color="primary"
+        shadow="lg"
+        className="text-center py-7 px-5"
+      >
+        <Trophy
+          size={28}
+          strokeWidth={2.5}
+          className="mx-auto mb-2"
+        />
+        <p className="text-[10px] font-heading font-bold uppercase tracking-[0.3em] opacity-90">
+          Winning team
+        </p>
+        <p className="font-heading font-bold text-3xl mt-1 leading-tight break-words">
+          {topTeam.label}
+        </p>
+        <p className="font-mono font-bold text-5xl mt-3">
+          {topTeam.totalScore}
+        </p>
+        <p className="text-[11px] font-mono mt-2 opacity-90">
+          {memberNames}
+        </p>
+      </NeoCard>
+    );
+  }
 
-  // First place spans full width on top, then 2nd / 3rd side-by-side.
+  if (!topPlayer) {
+    return <FinalHeroEmpty />;
+  }
   return (
-    <div className="space-y-2">
-      {top[0] && <PodiumCard row={top[0]} userId={userId} accent="primary" />}
-      <div className="grid grid-cols-2 gap-2">
-        {top[1] && <PodiumCard row={top[1]} userId={userId} accent="blue" />}
-        {top[2] && <PodiumCard row={top[2]} userId={userId} accent="accent" />}
-      </div>
+    <NeoCard
+      color="primary"
+      shadow="lg"
+      className="text-center py-7 px-5"
+    >
+      <Trophy size={28} strokeWidth={2.5} className="mx-auto mb-2" />
+      <p className="text-[10px] font-heading font-bold uppercase tracking-[0.3em] opacity-90">
+        Champion
+      </p>
+      <p className="font-heading font-bold text-3xl mt-1 leading-tight break-words">
+        {topPlayer.nameSnapshot}
+      </p>
+      <p className="font-mono font-bold text-5xl mt-3">
+        {topPlayer.totalScore}
+      </p>
+      <p className="text-[11px] font-mono mt-2 opacity-90">
+        {summary.rankings.players.length} player
+        {summary.rankings.players.length === 1 ? "" : "s"}
+      </p>
+    </NeoCard>
+  );
+}
+
+function FinalHeroEmpty() {
+  return (
+    <NeoCard color="primary" shadow="lg" className="text-center py-7 px-5">
+      <Trophy size={28} strokeWidth={2.5} className="mx-auto mb-2" />
+      <p className="text-[10px] font-heading font-bold uppercase tracking-[0.3em] opacity-90">
+        Final
+      </p>
+      <p className="font-heading font-bold text-2xl mt-1">No score recorded</p>
+    </NeoCard>
+  );
+}
+
+function FinalAwards({ summary }: { summary: ArenaSummary }) {
+  const fastestNames = formatSummaryNames(summary.superlatives.fastest, "—");
+  const sharpshooterNames = formatSummaryNames(
+    summary.superlatives.sharpshooter,
+    "—",
+  );
+  const hotStreakNames = formatSummaryNames(summary.superlatives.hotStreak, "—");
+
+  const fastestStat =
+    summary.superlatives.fastest.length === 0
+      ? "—"
+      : formatAvgMsCompact(summary.superlatives.fastest[0].avgCorrectMs);
+  const sharpshooterStat =
+    summary.superlatives.sharpshooter.length === 0
+      ? "—"
+      : `${Math.round(summary.superlatives.sharpshooter[0].accuracy * 100)}%`;
+  const hotStreakStat =
+    summary.superlatives.hotStreak.length === 0
+      ? "—"
+      : `${summary.superlatives.hotStreak[0].longestStreak}🔥`;
+
+  return (
+    <div className="grid grid-cols-3 gap-2">
+      <AwardChip
+        color="success"
+        label="Fastest"
+        names={fastestNames}
+        stat={fastestStat}
+      />
+      <AwardChip
+        color="blue"
+        label="Accuracy"
+        names={sharpshooterNames}
+        stat={sharpshooterStat}
+      />
+      <AwardChip
+        color="pink"
+        label="Hot Streak"
+        names={hotStreakNames}
+        stat={hotStreakStat}
+      />
     </div>
   );
 }
 
-function PodiumCard({
-  row,
-  userId,
-  accent,
+function AwardChip({
+  color,
+  label,
+  names,
+  stat,
 }: {
-  row: {
-    rank: number;
-    label: string;
-    score: number;
-    playerIds: Array<Id<"users">>;
-  };
-  userId: Id<"users"> | undefined;
-  accent: "primary" | "blue" | "accent";
+  color: "success" | "blue" | "pink";
+  label: string;
+  names: string;
+  stat: string;
 }) {
-  const isMine = !!userId && row.playerIds.some((id) => id === userId);
   return (
-    <NeoCard color={accent} className="py-4 text-center">
-      <p className="text-[10px] font-heading uppercase opacity-80">
-        #{row.rank}
-        {isMine ? " · you" : ""}
+    <NeoCard color={color} className="py-3 px-3 text-center">
+      <p className="text-[9px] font-heading font-bold uppercase tracking-[0.2em] opacity-90">
+        {label}
       </p>
-      <p className="font-heading font-bold text-base truncate">{row.label}</p>
-      <p className="font-mono font-bold text-2xl mt-1">{row.score}</p>
+      <p className="font-mono font-bold text-base mt-1 leading-tight">{stat}</p>
+      <p
+        className="text-[10px] font-heading font-bold mt-1 leading-tight break-words"
+        title={names}
+      >
+        {names}
+      </p>
     </NeoCard>
+  );
+}
+
+function FinalStandingsCard({
+  summary,
+  userId,
+  playerStatsById,
+  modeLabel,
+  subTitle,
+}: {
+  summary: ArenaSummary;
+  userId: Id<"users"> | undefined;
+  playerStatsById: Map<Id<"users">, ArenaSummaryPlayerStats>;
+  modeLabel: string;
+  subTitle: string;
+}) {
+  const topScore = summary.isTeamMode
+    ? summary.rankings.teams[0]?.totalScore ?? null
+    : summary.rankings.players[0]?.totalScore ?? null;
+
+  return (
+    <NeoCard className="py-4">
+      <div className="flex items-baseline justify-between gap-2 mb-3">
+        <p className="font-heading font-bold uppercase text-sm tracking-wide">
+          Final Standings
+        </p>
+        <p className="font-mono text-[10px] uppercase text-muted-foreground">
+          {modeLabel} · {subTitle}
+        </p>
+      </div>
+
+      <StandingsHeader />
+
+      <div className="space-y-1">
+        {summary.isTeamMode
+          ? renderTeamStandings(summary, userId, playerStatsById, topScore)
+          : renderSoloStandings(summary, userId, playerStatsById, topScore)}
+      </div>
+    </NeoCard>
+  );
+}
+
+function StandingsHeader() {
+  return (
+    <div className="grid grid-cols-[28px_1fr_56px_44px_56px] items-center gap-2 px-2 pb-1 mb-1 border-b-[2px] border-border">
+      <span className="text-[9px] font-heading font-bold uppercase tracking-wide">
+        #
+      </span>
+      <span className="text-[9px] font-heading font-bold uppercase tracking-wide">
+        Player
+      </span>
+      <span className="text-[9px] font-heading font-bold uppercase tracking-wide text-right">
+        Score
+      </span>
+      <span className="text-[9px] font-heading font-bold uppercase tracking-wide text-right">
+        Acc
+      </span>
+      <span className="text-[9px] font-heading font-bold uppercase tracking-wide text-right">
+        Avg
+      </span>
+    </div>
+  );
+}
+
+function renderSoloStandings(
+  summary: ArenaSummary,
+  userId: Id<"users"> | undefined,
+  playerStatsById: Map<Id<"users">, ArenaSummaryPlayerStats>,
+  topScore: number | null,
+) {
+  return summary.rankings.players.map((row) => {
+    const stats = playerStatsById.get(row.userId);
+    const isMe = !!userId && row.userId === userId;
+    const isWinner = topScore !== null && row.totalScore === topScore;
+    return (
+      <StandingsRow
+        key={String(row.userId)}
+        rankBadge={String(row.rank).padStart(2, "0")}
+        rankColor="default"
+        name={row.nameSnapshot}
+        score={row.totalScore}
+        acc={formatAccuracy(stats)}
+        avg={formatAvgCorrect(stats)}
+        isMe={isMe}
+        isWinner={isWinner}
+        left={row.left}
+      />
+    );
+  });
+}
+
+function renderTeamStandings(
+  summary: ArenaSummary,
+  userId: Id<"users"> | undefined,
+  playerStatsById: Map<Id<"users">, ArenaSummaryPlayerStats>,
+  topTeamScore: number | null,
+) {
+  const rows: React.ReactNode[] = [];
+  let playerCounter = 1;
+  for (const team of summary.rankings.teams) {
+    const isTopTeam =
+      topTeamScore !== null && team.totalScore === topTeamScore;
+    rows.push(
+      <TeamHeaderRow
+        key={`team-${team.id}`}
+        teamMarker={`T-${team.id}`}
+        label={team.label}
+        score={team.totalScore}
+        isWinner={isTopTeam}
+      />,
+    );
+    const members = team.playerIds
+      .map((id) => playerStatsById.get(id))
+      .filter((p): p is ArenaSummaryPlayerStats => p !== undefined)
+      .sort(
+        (a, b) =>
+          b.totalScore - a.totalScore ||
+          a.nameSnapshot.localeCompare(b.nameSnapshot),
+      );
+    for (const member of members) {
+      const isMe = !!userId && member.userId === userId;
+      rows.push(
+        <StandingsRow
+          key={String(member.userId)}
+          rankBadge={String(playerCounter).padStart(2, "0")}
+          rankColor="default"
+          name={member.nameSnapshot}
+          score={member.totalScore}
+          acc={formatAccuracy(member)}
+          avg={formatAvgCorrect(member)}
+          isMe={isMe}
+          isWinner={false}
+          left={member.left}
+          indented
+        />,
+      );
+      playerCounter += 1;
+    }
+  }
+  return rows;
+}
+
+function TeamHeaderRow({
+  teamMarker,
+  label,
+  score,
+  isWinner,
+}: {
+  teamMarker: string;
+  label: string;
+  score: number;
+  isWinner: boolean;
+}) {
+  return (
+    <div
+      className={`grid grid-cols-[36px_1fr_56px_44px_56px] items-center gap-2 px-2 py-2 rounded-md neo-border ${
+        isWinner ? "bg-primary text-primary-foreground" : "bg-muted"
+      }`}
+    >
+      <span className="font-mono font-bold text-[10px] text-center neo-border rounded bg-background text-foreground px-1 py-0.5">
+        {teamMarker}
+      </span>
+      <span className="font-heading font-bold text-sm truncate uppercase tracking-wide">
+        {label}
+      </span>
+      <span className="font-mono font-bold text-sm text-right">{score}</span>
+      <span className="font-mono text-[10px] text-right opacity-70">team</span>
+      <span className="font-mono text-[10px] text-right opacity-70">·</span>
+    </div>
+  );
+}
+
+function StandingsRow({
+  rankBadge,
+  name,
+  score,
+  acc,
+  avg,
+  isMe,
+  isWinner,
+  left,
+  indented,
+}: {
+  rankBadge: string;
+  rankColor: "default";
+  name: string;
+  score: number;
+  acc: string;
+  avg: string;
+  isMe: boolean;
+  isWinner: boolean;
+  left: boolean;
+  indented?: boolean;
+}) {
+  const highlight = isWinner
+    ? "bg-primary text-primary-foreground"
+    : isMe
+      ? "bg-accent text-accent-foreground"
+      : "";
+  return (
+    <div
+      className={`grid grid-cols-[28px_1fr_56px_44px_56px] items-center gap-2 px-2 py-2 rounded-md ${highlight} ${
+        indented ? "pl-3" : ""
+      }`}
+    >
+      <span className="font-mono font-bold text-[11px] text-center">
+        {rankBadge}
+      </span>
+      <span className="font-heading font-bold text-sm truncate inline-flex items-center gap-1.5">
+        <span className="truncate">{name}</span>
+        {isMe && (
+          <span className="text-[9px] font-mono uppercase opacity-70">
+            you
+          </span>
+        )}
+        {left && (
+          <span className="text-[9px] font-mono uppercase opacity-70">
+            left
+          </span>
+        )}
+      </span>
+      <span className="font-mono font-bold text-sm text-right">{score}</span>
+      <span className="font-mono text-[11px] text-right">{acc}</span>
+      <span className="font-mono text-[11px] text-right">{avg}</span>
+    </div>
   );
 }
 

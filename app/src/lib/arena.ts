@@ -32,6 +32,21 @@ export function arenaModeLabel(mode: string) {
   }
 }
 
+export function arenaModeVerboseLabel(mode: string) {
+  switch (mode) {
+    case "1v1":
+      return "1V1 DUEL";
+    case "2v2":
+      return "TEAM 2V2";
+    case "ffa3":
+    case "ffa4":
+    case "ffa5":
+      return "FREE-FOR-ALL";
+    default:
+      return mode.toUpperCase();
+  }
+}
+
 export function arenaModeCapacity(mode: string) {
   switch (mode) {
     case "1v1":

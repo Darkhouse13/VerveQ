@@ -346,8 +346,13 @@ to `liveMatches` and `duels`.
    running total.
 6. Round break shows the round leaderboard (team totals in 2v2), the next
    category, a per-player ready-up button, and an "auto-advance in ~8s" hint.
-7. Final screen shows the podium, full ranking, a share card, and one-tap
-   **Rematch — same crew** which creates a fresh lobby with everyone preloaded.
+7. Final screen subscribes to `challengeArenas.getArenaSummary` and renders an
+   orange neo-brutalist **CHAMPION** (solo) or **WINNING TEAM** (2v2) hero,
+   three award chips (Fastest / Accuracy / Hot Streak — raw tied winners, no
+   spreading), and a **FINAL STANDINGS** table (`# / Player / Score / Acc / Avg`)
+   that groups members under team markers in 2v2 and highlights the winner row.
+   **Rematch — same crew** and **Share result** sit at the bottom and are
+   always visible.
 
 **Frontend routes:**
 - `/challenge` — entry point with Create Arena / Join code buttons.
