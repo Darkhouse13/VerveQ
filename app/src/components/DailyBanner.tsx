@@ -17,14 +17,16 @@ function getMidnightUTC(): number {
 export function DailyBanner() {
   const navigate = useNavigate();
   const { isGuest } = useAuth();
-  const { hours, minutes, seconds } = useCountdown(getMidnightUTC());
 
   const quizStatus = useQuery(
     api.dailyChallenge.getAttemptStatus,
     isGuest ? "skip" : { sport: "football", mode: "quiz" },
   );
 
-  const hasPlayed = !!quizStatus;
+  const statusLoading = !isGuest && quizStatus === undefined;
+  const hasPlayed = !isGuest && quizStatus !== null && quizStatus !== undefined;
+  const resetAt = quizStatus?.resetAt ?? getMidnightUTC();
+  const { hours, minutes, seconds } = useCountdown(resetAt);
 
   const timeStr = `${hours.toString().padStart(2, "0")}:${minutes.toString().padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`;
 
@@ -40,7 +42,9 @@ export function DailyBanner() {
         </div>
         <div className="flex-1">
           <p className="font-heading font-bold text-lg">Daily Challenge</p>
-          {hasPlayed ? (
+          {statusLoading ? (
+            <p className="text-xs opacity-90">Checking today's challenge...</p>
+          ) : hasPlayed ? (
             <p className="text-xs opacity-90">
               {quizStatus?.completed ? `Score: ${quizStatus.score} | ` : "Attempt used | "}Resets in {timeStr}
             </p>
@@ -56,9 +60,11 @@ export function DailyBanner() {
           <NeoButton
             variant="secondary"
             size="sm"
+            disabled={statusLoading}
+            className={statusLoading ? "opacity-70 cursor-wait" : undefined}
             onClick={() => navigate(isGuest ? "/?mode=signup&from=guest" : "/daily-quiz?sport=football")}
           >
-            {isGuest ? "Create Account" : "Play"}
+            {statusLoading ? "Checking" : isGuest ? "Create Account" : "Play"}
           </NeoButton>
         )}
       </div>

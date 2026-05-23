@@ -47,9 +47,14 @@ it("keeps used daily attempts from advertising as new or re-calling startAttempt
   const banner = await fs.readFile(`${process.cwd()}/src/components/DailyBanner.tsx`, "utf8");
   const daily = await fs.readFile(`${process.cwd()}/src/pages/DailyQuizScreen.tsx`, "utf8");
 
-  expect(banner).toContain("const hasPlayed = !!quizStatus");
+  expect(banner).toContain("const statusLoading = !isGuest && quizStatus === undefined");
+  expect(banner).toContain("const hasPlayed = !isGuest && quizStatus !== null && quizStatus !== undefined");
+  expect(banner).toContain("disabled={statusLoading}");
   expect(banner).toContain("Attempt used");
   expect(daily).toContain("const attemptStatus = useQuery(api.dailyChallenge.getAttemptStatus");
+  expect(daily).toContain("const startAttemptInFlight = useRef(false)");
+  expect(daily).toContain("const localAttemptSport = useRef<string | null>(null)");
   expect(daily).toContain("if (attemptStatus) {");
+  expect(daily).toContain("if (startAttemptInFlight.current || hasLocalAttempt) return");
   expect(daily.indexOf("if (attemptStatus)")).toBeLessThan(daily.indexOf('startAttemptMut({ sport, mode: "quiz" })'));
 });

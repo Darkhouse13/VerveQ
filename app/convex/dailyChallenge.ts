@@ -9,6 +9,7 @@ import type { Id } from "./_generated/dataModel";
 const DAILY_QUIZ_COUNT = 10;
 const MAX_TIME_SEC = 10;
 const DAILY_ATTEMPT_TTL_MS = 30 * 60 * 1000;
+const DAY_MS = 24 * 60 * 60 * 1000;
 const DAILY_GENERATOR_SPORTS = ["football", "basketball", "tennis"] as const;
 
 type DailyMode = "quiz" | "survival";
@@ -90,8 +91,30 @@ function getUTCDateStartMs(date: string): number {
   return Date.parse(date + "T00:00:00Z");
 }
 
+function getNextUTCDateStartMs(date: string): number {
+  return getUTCDateStartMs(date) + DAY_MS;
+}
+
 function getAttemptExpiresAt(attempt: { startedAt: number; expiresAt?: number }) {
   return attempt.expiresAt ?? attempt.startedAt + DAILY_ATTEMPT_TTL_MS;
+}
+
+function getAttemptResultCount(attempt: { results?: unknown }) {
+  return Array.isArray(attempt.results) ? attempt.results.length : 0;
+}
+
+function canRestartAttempt(
+  attempt: {
+    completed: boolean;
+    forfeited: boolean;
+    results?: unknown;
+    startedAt: number;
+    expiresAt?: number;
+  },
+  now: number,
+) {
+  if (attempt.completed || attempt.forfeited) return false;
+  return getAttemptResultCount(attempt) === 0 || getAttemptExpiresAt(attempt) <= now;
 }
 
 async function getOrCreateDailyQuizChallenge(
@@ -313,6 +336,7 @@ export const getAttemptStatus = query({
     if (!userId) return null;
 
     const date = getTodayUTC();
+    const now = Date.now();
     const attempt = await ctx.db
       .query("dailyAttempts")
       .withIndex("by_user_date_sport_mode", (q) =>
@@ -325,11 +349,18 @@ export const getAttemptStatus = query({
       .first();
 
     if (!attempt) return null;
+    if (canRestartAttempt(attempt, now)) return null;
+
     return {
+      attemptId: attempt._id,
       score: attempt.score,
       completed: attempt.completed,
       forfeited: attempt.forfeited,
+      answeredCount: getAttemptResultCount(attempt),
       results: attempt.results,
+      startedAt: attempt.startedAt,
+      expiresAt: getAttemptExpiresAt(attempt),
+      resetAt: getNextUTCDateStartMs(date),
     };
   },
 });
@@ -363,7 +394,8 @@ export const startAttempt = mutation({
     if (
       previousAttempt &&
       getAttemptExpiresAt(previousAttempt) > now &&
-      !previousAttempt.forfeited
+      !previousAttempt.forfeited &&
+      getAttemptResultCount(previousAttempt) > 0
     ) {
       throw new Error("Previous daily attempt is still active");
     }
@@ -387,11 +419,7 @@ export const startAttempt = mutation({
       .first();
 
     if (existing) {
-      const expired =
-        !existing.completed &&
-        !existing.forfeited &&
-        getAttemptExpiresAt(existing) <= now;
-      if (!expired) {
+      if (!canRestartAttempt(existing, now)) {
         throw new Error("Already attempted today's challenge");
       }
 

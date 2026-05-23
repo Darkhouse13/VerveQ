@@ -54,6 +54,8 @@ export default function DailyQuizScreen() {
   const startTime = useRef(Date.now());
   const lastDailyQuestionKey = useRef<string | null>(null);
   const answerSubmitInFlight = useRef(false);
+  const startAttemptInFlight = useRef(false);
+  const localAttemptSport = useRef<string | null>(null);
   const autoAdvanceInFlight = useRef(false);
   const autoAdvanceTimeoutRef = useRef<number | null>(null);
 
@@ -71,11 +73,18 @@ export default function DailyQuizScreen() {
   useEffect(() => {
     if (attemptStatus === undefined) return;
     if (attemptStatus) {
+      const hasLocalAttempt = localAttemptSport.current === sport || attemptId !== null;
+      if (startAttemptInFlight.current || hasLocalAttempt) return;
       toast.error("You've already played today's challenge!");
       navigate("/home", { replace: true });
       return;
     }
+    if (startAttemptInFlight.current || localAttemptSport.current === sport || attemptId !== null) {
+      return;
+    }
 
+    startAttemptInFlight.current = true;
+    localAttemptSport.current = sport;
     (async () => {
       try {
         await getOrCreateChallengeMut({ sport, mode: "quiz" });
@@ -92,9 +101,12 @@ export default function DailyQuizScreen() {
           toast.error(msg);
           navigate(-1);
         }
+        localAttemptSport.current = null;
+      } finally {
+        startAttemptInFlight.current = false;
       }
     })();
-  }, [attemptStatus, getOrCreateChallengeMut, navigate, sport, startAttemptMut]);
+  }, [attemptId, attemptStatus, getOrCreateChallengeMut, navigate, sport, startAttemptMut]);
 
   useEffect(() => {
     if (dailyQuestion && !forfeited) {
