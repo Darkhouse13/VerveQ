@@ -57,7 +57,8 @@ export default function MultiplayerLobbyScreen() {
   }
 
   if (match) {
-    const myPlayer = match.players.find((p) => match.readyUserIds.includes(p.id));
+    const myPlayer = match.players.find((p) => p.id === match.currentUserId);
+    const myReady = !!myPlayer?.ready;
     return (
       <div className="min-h-screen bg-background px-5 py-6 space-y-5">
         <button type="button" onClick={() => navigate("/challenge")} className="font-heading font-bold text-xs uppercase flex items-center gap-1">
@@ -86,8 +87,8 @@ export default function MultiplayerLobbyScreen() {
             </NeoCard>
           ))}
         </div>
-        <NeoButton variant="primary" size="full" onClick={() => setReady({ matchId })} disabled={!!myPlayer}>
-          {myPlayer ? "Waiting for everyone…" : "I'm Ready"}
+        <NeoButton variant="primary" size="full" onClick={() => setReady({ matchId })} disabled={myReady}>
+          {myReady ? "Waiting for everyone…" : "I'm Ready"}
         </NeoButton>
       </div>
     );

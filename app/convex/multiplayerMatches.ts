@@ -176,6 +176,7 @@ async function publicMatch(ctx: QueryCtx | MutationCtx, match: Doc<"multiplayerM
   }));
   return {
     matchId: match._id,
+    currentUserId: userId,
     joinCode: match.joinCode,
     format: match.format,
     status: match.status,

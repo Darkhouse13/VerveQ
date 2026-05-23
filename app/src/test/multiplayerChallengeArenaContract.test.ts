@@ -69,4 +69,14 @@ describe("multiplayer challenge arena contract", () => {
     expect(play).toContain("Top 3");
     expect(play).toContain("Bottom table");
   });
+
+
+  it("checks lobby readiness for the current player only", () => {
+    const backend = read("convex/multiplayerMatches.ts");
+    const lobby = read("src/pages/MultiplayerLobbyScreen.tsx");
+
+    expect(backend).toContain("currentUserId: userId");
+    expect(lobby).toContain("p.id === match.currentUserId");
+    expect(lobby).not.toContain("match.players.find((p) => match.readyUserIds.includes(p.id))");
+  });
 });
