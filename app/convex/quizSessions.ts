@@ -4,6 +4,10 @@ import { getAuthUserId } from "@convex-dev/auth/server";
 import { calculateTimeScore, normalizeAnswer } from "./lib/scoring";
 import { pickQuestionPool } from "./lib/imageQuestions";
 import { orderAnswerOptions } from "./lib/answerOptions";
+import {
+  assertStandardMcqQuestion,
+  isStandardMcqQuestion,
+} from "./lib/mcqEligibility";
 
 const SESSION_TTL_MS = 30 * 60 * 1000; // 30 minutes
 const QUESTION_BASE_POINTS = 100;
@@ -72,14 +76,19 @@ export const getQuestion = mutation({
       )
       .collect();
 
-    const modeCandidates = session.mode === "came_first"
-      ? candidates.filter((q) => q.category === "which_came_first")
-      : candidates.filter((q) => q.category !== "which_came_first");
+    const modeCandidates =
+      session.mode === "came_first"
+        ? candidates.filter((q) => q.category === "which_came_first")
+        : candidates.filter(isStandardMcqQuestion);
 
     const pool = pickQuestionPool(modeCandidates, session.usedChecksums);
     if (!pool.length) throw new Error("No questions available");
 
     const picked = pool[Math.floor(Math.random() * pool.length)];
+    if (session.mode !== "came_first") {
+      assertStandardMcqQuestion(picked);
+    }
+
     const now = Date.now();
     await ctx.db.patch(sessionId, {
       usedChecksums: [...session.usedChecksums, picked.checksum],

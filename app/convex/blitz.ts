@@ -5,6 +5,10 @@ import { getAuthUserId } from "@convex-dev/auth/server";
 import { pickQuestionPool } from "./lib/imageQuestions";
 import { normalizeAnswer } from "./lib/scoring";
 import { orderAnswerOptions } from "./lib/answerOptions";
+import {
+  assertStandardMcqQuestion,
+  isStandardMcqQuestion,
+} from "./lib/mcqEligibility";
 
 const BLITZ_DURATION_MS = 60_000; // 60 seconds
 const WRONG_PENALTY_MS = 3_000;   // -3s on wrong
@@ -65,7 +69,10 @@ export const getQuestion = mutation({
       )
       .take(200);
 
-    const pool = pickQuestionPool(allQuestions, session.usedChecksums);
+    const pool = pickQuestionPool(
+      allQuestions.filter(isStandardMcqQuestion),
+      session.usedChecksums,
+    );
 
     if (pool.length === 0) {
       await ctx.db.patch(sessionId, {
@@ -77,6 +84,7 @@ export const getQuestion = mutation({
     }
 
     const pick = pool[Math.floor(Math.random() * pool.length)];
+    assertStandardMcqQuestion(pick);
 
     // Track used checksum
     await ctx.db.patch(sessionId, {

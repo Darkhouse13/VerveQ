@@ -4,6 +4,10 @@ import { getAuthUserId } from "@convex-dev/auth/server";
 import { getTodayUTC, seededShuffle } from "./lib/daily";
 import { normalizeAnswer } from "./lib/scoring";
 import { orderAnswerOptions } from "./lib/answerOptions";
+import {
+  assertStandardMcqQuestion,
+  isStandardMcqQuestion,
+} from "./lib/mcqEligibility";
 import type { Id } from "./_generated/dataModel";
 
 const DAILY_QUIZ_COUNT = 10;
@@ -39,6 +43,8 @@ function snapshotQuestion(question: {
   category: string;
   imageId?: Id<"_storage">;
 }): QuizQuestionSnapshot {
+  assertStandardMcqQuestion(question);
+
   return {
     checksum: question.checksum,
     question: question.question,
@@ -149,7 +155,10 @@ async function getOrCreateDailyQuizChallenge(
     )
     .take(200);
 
-  const shuffled = seededShuffle(questions, `${date}-${sport}-quiz`);
+  const shuffled = seededShuffle(
+    questions.filter(isStandardMcqQuestion),
+    `${date}-${sport}-quiz`,
+  );
   const selected: typeof shuffled = [];
   let imageCount = 0;
   for (const question of shuffled) {
@@ -239,7 +248,10 @@ export const getOrCreateChallenge = mutation({
         )
         .take(200);
 
-      const shuffled = seededShuffle(questions, `${date}-${sport}-quiz`);
+      const shuffled = seededShuffle(
+        questions.filter(isStandardMcqQuestion),
+        `${date}-${sport}-quiz`,
+      );
 
       // Pick up to DAILY_QUIZ_COUNT questions, capping image questions at 3
       // and preventing consecutive image questions
@@ -501,6 +513,7 @@ export const getQuestion = query({
           .first();
     if (!snapshot && !liveQuestion) throw new Error("Question not found");
     const question = snapshot ?? snapshotQuestion(liveQuestion);
+    assertStandardMcqQuestion(question);
 
     const imageUrl = question.imageId
       ? await ctx.storage.getUrl(question.imageId)
@@ -575,6 +588,7 @@ export const submitAnswer = mutation({
           .first();
     if (!snapshot && !liveQuestion) throw new Error("Question not found");
     const question = snapshot ?? snapshotQuestion(liveQuestion);
+    assertStandardMcqQuestion(question);
 
     if (questionIndex < results.length) {
       const previous = results[questionIndex];

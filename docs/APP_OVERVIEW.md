@@ -56,6 +56,7 @@ A timed multiple-choice trivia game with 10 questions per session.
 - Some questions include images: stadium identification, team badge recognition, and player silhouettes
 - Maximum 3 image questions per session, with no consecutive image questions
 - Images support tap-to-zoom for better visibility
+- Knowledge `enterprise_logos` and `which_came_first` content is arena/duel-only and excluded from MCQ quiz, Blitz, and Daily Quiz pools.
 
 **Question deduplication:**
 - Each question has a unique checksum (content hash)
