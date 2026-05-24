@@ -16,6 +16,7 @@ import {
   challengeArenaCapitalCityQuestions,
   challengeArenaEnterpriseLogoQuestions,
   challengeArenaGeneralKnowledgeQuestions,
+  challengeArenaWhichCameFirstQuestions,
   type ChallengeArenaQuestionSeed,
 } from "./challengeArenaContent";
 
@@ -322,6 +323,10 @@ async function ensureGeneralKnowledgeSeeds(ctx: Pick<MutationCtx, "db">) {
   return await ensureQuestionSeeds(ctx, challengeArenaGeneralKnowledgeQuestions);
 }
 
+async function ensureWhichCameFirstSeeds(ctx: Pick<MutationCtx, "db">) {
+  return await ensureQuestionSeeds(ctx, challengeArenaWhichCameFirstQuestions);
+}
+
 async function ensureEnterpriseLogoSeeds(ctx: Pick<MutationCtx, "db">) {
   return await ensureQuestionSeeds(ctx, challengeArenaEnterpriseLogoQuestions);
 }
@@ -605,6 +610,7 @@ async function lockRoundQuestionSets(
 ) {
   await ensureCapitalCitySeeds(ctx);
   await ensureGeneralKnowledgeSeeds(ctx);
+  await ensureWhichCameFirstSeeds(ctx);
   await ensureEnterpriseLogoSeeds(ctx);
 
   const recentlySeen = await loadCrewRecentlySeenChecksums(ctx, playerIds, now);
@@ -1998,10 +2004,12 @@ export const seedContentGaps = internalMutation({
   handler: async (ctx) => {
     const insertedCapitalCities = await ensureCapitalCitySeeds(ctx);
     const insertedGeneralKnowledge = await ensureGeneralKnowledgeSeeds(ctx);
+    const insertedWhichCameFirst = await ensureWhichCameFirstSeeds(ctx);
     const insertedEnterpriseLogos = await ensureEnterpriseLogoSeeds(ctx);
     return {
       insertedCapitalCities,
       insertedGeneralKnowledge,
+      insertedWhichCameFirst,
       insertedEnterpriseLogos,
       ...(await getContentCounts(ctx)),
     };

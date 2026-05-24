@@ -204,11 +204,11 @@ Challenge Arena uses the existing `quizQuestions` table and indexes:
 - `by_sport_difficulty`
 - `by_checksum`
 
-Capital-city, general-knowledge, and enterprise-logo arena gap seeds are
-bundled in `challengeArenaContent.ts` and upserted idempotently when an arena
-starts if the database lacks them. `internal.challengeArenas.seedContentGaps`
-can run the same upsert deliberately for environments that have not started an
-arena yet.
+Capital-city, general-knowledge, enterprise-logo, and which-came-first arena
+gap seeds are exposed from `challengeArenaContent.ts` and upserted
+idempotently when an arena starts if the database lacks them.
+`internal.challengeArenas.seedContentGaps` runs the same idempotent seed paths
+deliberately for environments that have not started an arena yet.
 
 Capital-city coverage is 195 prompts: the 193 UN Member States plus the Holy
 See and State of Palestine observer states. The country coverage follows the
@@ -218,11 +218,16 @@ Nauru, South Africa, the Holy See, and the State of Palestine use explicit
 question wording.
 
 The arena general-knowledge seed set reuses the curated `knowledgeQuestions`
-pool, excluding only dedicated `which_came_first`, `enterprise_logos`, and
-`capital_cities` categories. `contentStatus.generalKnowledge` therefore
-includes science disciplines, history, geography, arts/culture, language,
-inventions/discoveries, and fun facts instead of being limited to a small
-common-knowledge bucket.
+pool, while still excluding dedicated `which_came_first`, `enterprise_logos`,
+and `capital_cities` categories. Those three categories have dedicated seeders,
+so `contentStatus.generalKnowledge` includes science disciplines, history,
+geography, arts/culture, language, inventions/discoveries, and fun facts
+instead of being limited to a small common-knowledge bucket.
+
+Which-came-first arena seeds use the `which_came_first` category rows from the
+knowledge bundle, including the original 250 v1 rows and the 300-row v2
+expansion. The seeder upserts by checksum, so environments that already hold v1
+content receive only the missing v2 rows.
 
 Football quiz selection uses a seeded shuffle over the full eligible football
 pool, but caps image-bearing questions (`imageId` or `imageUrl`) at two per
@@ -244,8 +249,8 @@ This is not legal advice.
 `challengeArenas.contentStatus` reports the live content counts used for this
 decision, including `footballQuizText`, `footballQuizImages`,
 `footballImageQuestionCap`, `recentlySeenWindowCount`,
-`recentlySeenWindowAgeMs`, `generalKnowledge`, `capitalCities`, and the bundled
-seed counts.
+`recentlySeenWindowAgeMs`, `generalKnowledge`, `whichCameFirst`,
+`capitalCities`, and the bundled seed counts.
 
 ## Cron
 

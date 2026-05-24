@@ -20,6 +20,8 @@ import {
   challengeArenaCapitalCityQuestions,
   challengeArenaEnterpriseLogoQuestions,
   challengeArenaGeneralKnowledgeQuestions,
+  challengeArenaWhichCameFirstQuestions,
+  type ChallengeArenaQuestionSeed,
 } from "../../convex/challengeArenaContent";
 
 type Args = { [key: string]: unknown };
@@ -138,6 +140,20 @@ type RoomView = {
     left: boolean;
     totalScore: number;
   }>;
+};
+
+type SeedContentGapsResult = {
+  insertedCapitalCities: number;
+  insertedGeneralKnowledge: number;
+  insertedWhichCameFirst: number;
+  insertedEnterpriseLogos: number;
+  capitalCities: number;
+  generalKnowledge: number;
+  whichCameFirst: number;
+  enterpriseLogos: number;
+  bundledCapitalSeeds: number;
+  bundledGeneralKnowledgeSeeds: number;
+  bundledEnterpriseLogoSeeds: number;
 };
 
 type ArenaSummary = {
@@ -416,6 +432,48 @@ function seedQuestion(
     timesCorrect: 0,
     usageCount: 0,
   });
+}
+
+function seedChallengeArenaQuestion(
+  db: FakeDb,
+  id: string,
+  seed: ChallengeArenaQuestionSeed,
+) {
+  db.seed("quizQuestions", id, {
+    sport: seed.sport,
+    category: seed.category,
+    question: seed.question,
+    options: seed.options,
+    correctAnswer: seed.correctAnswer,
+    ...(seed.acceptedAliases ? { acceptedAliases: seed.acceptedAliases } : {}),
+    ...(seed.explanation ? { explanation: seed.explanation } : {}),
+    ...(seed.questionKind ? { questionKind: seed.questionKind } : {}),
+    difficulty: seed.difficulty,
+    bucket: seed.bucket,
+    checksum: seed.checksum,
+    ...(seed.imageUrl ? { imageUrl: seed.imageUrl } : {}),
+    difficultyVotes: 0,
+    difficultyScore: 0,
+    timesAnswered: 0,
+    timesCorrect: 0,
+    usageCount: 0,
+  });
+}
+
+function seedChallengeArenaQuestions(
+  db: FakeDb,
+  prefix: string,
+  seeds: ChallengeArenaQuestionSeed[],
+) {
+  seeds.forEach((seed, index) => {
+    seedChallengeArenaQuestion(db, `${prefix}_${index}`, seed);
+  });
+}
+
+function questionCountByCategory(db: FakeDb, category: string) {
+  return db
+    .all<QuestionRow>("quizQuestions")
+    .filter((question) => question.category === category).length;
 }
 
 function seedArenaQuestionPool(db: FakeDb, includeLogos = true) {
@@ -1587,6 +1645,95 @@ describe("challenge arena lifecycle integration", () => {
       0,
     );
     expect(db.all<AnswerRow>("arenaAnswers")).toHaveLength(1);
+  });
+
+  it("seeds which-came-first rows into an empty store idempotently", async () => {
+    const db = new FakeDb();
+    seedUsers(db);
+
+    const first = (await handlerOf(challengeArenas.seedContentGaps)(
+      makeCtx(db),
+      {},
+    )) as SeedContentGapsResult;
+    const second = (await handlerOf(challengeArenas.seedContentGaps)(
+      makeCtx(db),
+      {},
+    )) as SeedContentGapsResult;
+
+    expect(first.insertedWhichCameFirst).toBe(
+      challengeArenaWhichCameFirstQuestions.length,
+    );
+    expect(first.whichCameFirst).toBe(challengeArenaWhichCameFirstQuestions.length);
+    expect(questionCountByCategory(db, "which_came_first")).toBe(
+      challengeArenaWhichCameFirstQuestions.length,
+    );
+    expect(second.insertedWhichCameFirst).toBe(0);
+    expect(second.whichCameFirst).toBe(challengeArenaWhichCameFirstQuestions.length);
+  });
+
+  it("adds which-came-first rows without changing existing dedicated seed counts", async () => {
+    const db = new FakeDb();
+    seedUsers(db);
+    seedChallengeArenaQuestions(
+      db,
+      "existing_capital",
+      challengeArenaCapitalCityQuestions,
+    );
+    seedChallengeArenaQuestions(
+      db,
+      "existing_general",
+      challengeArenaGeneralKnowledgeQuestions,
+    );
+    seedChallengeArenaQuestions(
+      db,
+      "existing_logo",
+      challengeArenaEnterpriseLogoQuestions,
+    );
+
+    const seeded = (await handlerOf(challengeArenas.seedContentGaps)(
+      makeCtx(db),
+      {},
+    )) as SeedContentGapsResult;
+
+    expect(seeded.insertedCapitalCities).toBe(0);
+    expect(seeded.insertedGeneralKnowledge).toBe(0);
+    expect(seeded.insertedEnterpriseLogos).toBe(0);
+    expect(seeded.insertedWhichCameFirst).toBe(
+      challengeArenaWhichCameFirstQuestions.length,
+    );
+    expect(seeded.capitalCities).toBe(challengeArenaCapitalCityQuestions.length);
+    expect(seeded.generalKnowledge).toBe(
+      challengeArenaGeneralKnowledgeQuestions.length,
+    );
+    expect(seeded.enterpriseLogos).toBe(
+      challengeArenaEnterpriseLogoQuestions.length,
+    );
+    expect(seeded.whichCameFirst).toBe(challengeArenaWhichCameFirstQuestions.length);
+  });
+
+  it("backfills only v2 which-came-first rows when v1 rows already exist", async () => {
+    const db = new FakeDb();
+    seedUsers(db);
+    const v1 = challengeArenaWhichCameFirstQuestions.filter((question) =>
+      question.checksum.startsWith("knowledge_came_first_v1_"),
+    );
+    const v2 = challengeArenaWhichCameFirstQuestions.filter((question) =>
+      question.checksum.startsWith("knowledge_came_first_v2_"),
+    );
+    seedChallengeArenaQuestions(db, "existing_came_first_v1", v1);
+
+    const seeded = (await handlerOf(challengeArenas.seedContentGaps)(
+      makeCtx(db),
+      {},
+    )) as SeedContentGapsResult;
+
+    expect(v1).toHaveLength(250);
+    expect(v2).toHaveLength(300);
+    expect(seeded.insertedWhichCameFirst).toBe(v2.length);
+    expect(seeded.whichCameFirst).toBe(challengeArenaWhichCameFirstQuestions.length);
+    expect(questionCountByCategory(db, "which_came_first")).toBe(
+      challengeArenaWhichCameFirstQuestions.length,
+    );
   });
 
   it("reports seeded challenge arena content counts idempotently", async () => {

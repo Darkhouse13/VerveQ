@@ -574,6 +574,10 @@ export const challengeArenaGeneralKnowledgeQuestions: ChallengeArenaQuestionSeed
     )
     .map((question) => ({ ...question }));
 
+export const challengeArenaWhichCameFirstQuestions: ChallengeArenaQuestionSeed[] =
+  knowledgeQuestions
+    .filter((question) => question.category === "which_came_first")
+    .map((question) => ({ ...question }));
 
 // Source SVGs come from Simple Icons; served URLs use opaque copies under
 // app/public/arena-logos/opaque so the request path does not reveal the answer.
