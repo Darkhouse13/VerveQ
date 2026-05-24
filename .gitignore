@@ -201,6 +201,7 @@ cleanup_archive/
 convex_function_spec.txt
 processed_tennis/
 .ops/curated-parity/
+app/convex/_generated/
 
 # Test coverage output
 coverage/

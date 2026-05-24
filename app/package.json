@@ -4,8 +4,12 @@
   "version": "0.1.0",
   "type": "module",
   "scripts": {
+    "codegen": "node scripts/ensureConvexGenerated.mjs",
+    "predev": "npm run codegen",
     "dev": "vite",
+    "prebuild": "npm run codegen",
     "build": "vite build",
+    "prebuild:dev": "npm run codegen",
     "build:dev": "vite build --mode development",
     "lint": "eslint .",
     "preview": "vite preview",

@@ -19,6 +19,18 @@ It intentionally describes the real `app` + Convex + static bundle workflow used
 
 ## Current backend deployment flow
 
+### Deploy preconditions
+
+Before pushing backend changes from an operator workspace:
+
+1. Work from the correct checkout: repo root `VerveQ`, app workspace `app`.
+2. Pull exactly to the intended target commit with `git pull --ff-only`.
+3. Confirm `CONVEX_DEPLOY_KEY` is valid for `dev:admired-warthog-495`; do not use a key for any other deployment.
+4. Regenerate generated files with `cd app && npm run codegen`; `app/convex/_generated/` is ignored build output and `git status --short` should stay clean.
+5. Run `npx convex dev --once --typecheck disable`.
+6. Run `internal.challengeArenas.seedContentGaps` only when Challenge Arena content changed.
+7. Verify `challengeArenas.contentStatus` after any content seed.
+
 From `app`:
 
 ```bash
