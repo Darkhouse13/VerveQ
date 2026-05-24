@@ -1,3 +1,5 @@
+import { knowledgeExpansionV1Questions } from "./knowledgeExpansionV1";
+
 export type KnowledgeQuestionSeed = {
   sport: string;
   category: string;
@@ -8312,3 +8314,5 @@ export const knowledgeQuestions: KnowledgeQuestionSeed[] = [
     "checksum": "knowledge_came_first_v1_250"
   }
 ];
+
+knowledgeQuestions.push(...knowledgeExpansionV1Questions);
