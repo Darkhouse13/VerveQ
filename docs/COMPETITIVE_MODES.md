@@ -108,24 +108,35 @@ Guest support: no direct guest rivalry screen. Guest link-duel results only
 enter the rivalry ledger after the guest creates/signs into an account and the
 result is attached.
 
-## Legacy Live Match and Older Challenges
+## Legacy Live Match and Older Challenges (Deprecated/Dormant)
 
-Reachable: partially. The Live Match route and waiting room still work for an
-existing active match, but the older challenge send/accept flow is not exposed
-as a normal first-entry UI today.
+Reachable: dormant legacy only. Live Match is deprecated and is not a supported
+way to start play. The route and waiting room remain so an already-active legacy
+match can resolve safely, but the older challenge send/accept flow is not
+exposed as a normal first-entry UI today.
 
 Entry point: route-level entries are `/waiting-room?matchId=...` and
 `/live-match?matchId=...`. The Challenge hub also auto-resumes an existing
-active live match through `liveMatches.getActiveMatch`. The only current
-frontend mutation path that can create a legacy live match is the `ResultScreen`
-rematch flow after a `mode: "challenge"` live-match result: it calls
-`challenges.createRematch`, and if it finds a reciprocal pending challenge it
-accepts it and calls `liveMatches.createFromChallenge`.
+active live match through `liveMatches.getActiveMatch`. There is no current
+frontend mutation path that creates a new legacy live match: the old
+`ResultScreen` rematch glue after a `mode: "challenge"` result is disabled and
+no longer calls `challenges.createRematch`, `challenges.accept`, or
+`liveMatches.createFromChallenge`.
 
 Format: synchronous 1v1 live match. It has a waiting room, both-player ready
 state, countdown, 10 live questions, 10-second question windows, round result
 screens, heartbeat/stale-player forfeit handling, and tab-switch forfeit from
 the live match UI.
+
+Make-safe behavior: `/challenge` auto-resume can still send a user into an
+already-active legacy waiting room. If the other player never appears,
+`liveMatches.reapStaleMatches` runs from the `live-match-stale-check` cron and
+finalizes stale active matches using the 15-second heartbeat cutoff. Waiting
+matches do not apply ELO. The waiting room now has an explicit exit that
+abandons an unstarted legacy match and returns home, and it sends the user home
+if the backend has already finalized the match. Once a match reaches live play,
+the Live Match UI still has manual forfeit and completed/forfeited matches still
+route to Results, which has a Home exit.
 
 Player counts: exactly 2 account players.
 
@@ -146,17 +157,23 @@ Older Challenges surfacing: hidden/superseded for normal entry. Backend
 functions still exist for `challenges.getPending`, `challenges.create`,
 `challenges.accept`, and `challenges.decline`, but `app/src` no longer renders
 a pending challenges table, a send-challenge form, or accept/decline controls
-from the Challenge tab. `ResultScreen` still contains legacy rematch glue, but
-that only matters after a user is already in the old Live Match path.
+from the Challenge tab. `ResultScreen` no longer contains legacy rematch glue,
+so a completed Live Match result cannot spawn a new un-startable Live Match.
+
+Future cleanup: remove the legacy routes, `challenges` invite lifecycle, and
+`liveMatches` creation/result plumbing once product decides the retained data
+and ELO history no longer need those code paths.
 
 ## Backend paths wired but not surfaced in current UI
 
 - `challenges.getPending`, `challenges.create`, `challenges.accept`, and
   `challenges.decline` are exported backend functions for the old challenge
   invite lifecycle, but they have no current Challenge hub UI.
-- `liveMatches.createFromChallenge` is exported and used only by the legacy
-  `ResultScreen` reciprocal-rematch path. There is no current pending-challenge
+- `liveMatches.createFromChallenge` is exported for retained legacy plumbing,
+  but there is no current frontend call site and no current pending-challenge
   inbox UI that calls it.
+- `liveMatches.abandonWaitingMatch` exists only as a safe-exit mutation for
+  unstarted legacy waiting rooms; it does not start a match or apply ELO.
 - `challengeHeadToHeads` and `challengeMatchHistory` are maintained for legacy
   live matches, but the reachable `/rivals` screens read the async duel
   `rivalries` table instead.
@@ -171,5 +188,5 @@ product call.
 | Path | Sync/async | Players | Content/format | ELO | Persistence |
 | --- | --- | --- | --- | --- | --- |
 | Arena `1v1` | Sync | 2 account players | 5 rounds x 10 shared live questions; mixed arena categories; code lobby and rematch | No | `arenas` + `arenaAnswers`; no rivalry ledger |
-| Legacy Live Match | Sync | 2 account players | 10 shared live questions from a `challenges` invite; waiting room and ready flow | Yes, backend applies it | `liveMatches`, `challenges`, `challengeMatchHistory`, `challengeHeadToHeads`, `userRatings` |
+| Legacy Live Match (deprecated/dormant) | Sync | 2 account players | 10 shared live questions from a retained `challenges` invite; no normal start path; waiting room and ready flow retained only for active legacy matches | Yes, backend applies it after start; waiting abandon/stale resolution does not | `liveMatches`, `challenges`, `challengeMatchHistory`, `challengeHeadToHeads`, `userRatings` |
 | Async Duel | Async | 2 sides; account/account or account/link guest | 10 locked questions; sports, knowledge, or Which Came First; no shared live room | No | `duels`; async `rivalries` ledger for account-backed results |

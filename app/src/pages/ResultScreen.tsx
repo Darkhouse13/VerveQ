@@ -3,7 +3,7 @@ import { NeoButton } from "@/components/neo/NeoButton";
 import { NeoBadge } from "@/components/neo/NeoBadge";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Star, ArrowUp, ArrowDown } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useMutation } from "convex/react";
 import { api } from "../../convex/_generated/api";
 import { toast } from "sonner";
@@ -32,12 +32,6 @@ function getKFactorExplanation(label?: string, k?: number) {
   return `K=${k}: standard rating movement.`;
 }
 
-function getChallengeAgainLabel(outcome?: GameResultState["outcome"]) {
-  if (outcome === "loss" || outcome === "forfeitLoss") return "Get Revenge";
-  if (outcome === "win" || outcome === "forfeitWin") return "Defend Your Win";
-  return "Run It Back";
-}
-
 function formatRecentOutcome(
   match: NonNullable<GameResultState["recentMatches"]>[number],
   currentUserIsPlayer1?: boolean,
@@ -56,10 +50,6 @@ export default function ResultScreen() {
   const navigate = useNavigate();
   const location = useLocation();
   const checkAchievements = useMutation(api.achievements.checkAndUnlock);
-  const createRematch = useMutation(api.challenges.createRematch);
-  const acceptChallenge = useMutation(api.challenges.accept);
-  const createLiveMatch = useMutation(api.liveMatches.createFromChallenge);
-  const [sendingRematch, setSendingRematch] = useState(false);
 
   const state = location.state as GameResultState | null;
 
@@ -113,42 +103,11 @@ export default function ResultScreen() {
   const seriesLabel = state.versusScore
     ? `${state.versusScore.player1Wins}-${state.versusScore.player2Wins}${state.versusScore.draws ? `-${state.versusScore.draws}` : ""}`
     : null;
-  const challengeAgainLabel = getChallengeAgainLabel(state.outcome);
   const currentStreak = state.currentStreak ?? state.versusScore?.currentStreak ?? null;
   const recentMatches = state.recentMatches ?? state.versusScore?.recentMatches ?? [];
-  const scoreGap = Math.abs(state.score - (state.opponentScore ?? 0));
-  const showBestOfThreePrompt = isChallenge && scoreGap > 0 && scoreGap <= 100;
   const streakLabel = currentStreak
     ? `${currentStreak.count} match ${currentStreak.owner === "you" || (currentStreak.owner === "player1" && state.currentUserIsPlayer1) || (currentStreak.owner === "player2" && !state.currentUserIsPlayer1) ? "your" : "opponent"} Streak`
     : "No active Streak";
-
-  const handleChallengeAgain = async () => {
-    if (!state.opponentId) {
-      navigate("/challenge");
-      return;
-    }
-    setSendingRematch(true);
-    try {
-      const result = await createRematch({
-        opponentId: state.opponentId as never,
-        sport: state.sport,
-        mode: "quiz",
-      });
-      if (result.reciprocalPending) {
-        await acceptChallenge({ challengeId: result.challengeId as never });
-        const match = await createLiveMatch({ challengeId: result.challengeId as never });
-        toast.success("Rematch started");
-        navigate(`/waiting-room?matchId=${match.matchId}`);
-        return;
-      }
-      toast.success(result.alreadyPending ? "Rematch invite already pending" : "Rematch invite sent");
-      navigate("/challenge");
-    } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Failed to send rematch invite");
-    } finally {
-      setSendingRematch(false);
-    }
-  };
 
   const stats = isChallenge
     ? [
@@ -289,9 +248,6 @@ export default function ResultScreen() {
         <NeoCard className="w-full mb-8 py-4">
           <div className="flex items-center justify-between mb-3">
             <p className="font-heading font-bold text-sm uppercase">Rivalry</p>
-            {showBestOfThreePrompt && (
-              <NeoBadge color="accent" size="sm">Best of 3?</NeoBadge>
-            )}
           </div>
           <div className="grid grid-cols-2 gap-2 mb-3">
             <div className="neo-border rounded-md p-3 text-center bg-muted">
@@ -343,33 +299,44 @@ export default function ResultScreen() {
       )}
 
       <div className="w-full space-y-3">
-        <NeoButton
-          variant="primary"
-          size="full"
-          onClick={() => isChallenge ? handleChallengeAgain() : navigate(`/sport-select?mode=${state.mode}`)}
-          disabled={isChallenge && sendingRematch}
-        >
-          {isChallenge ? (sendingRematch ? "Sending..." : challengeAgainLabel) : "Play Again"}
-        </NeoButton>
-        {!isChallenge && (
+        {isChallenge ? (
           <NeoButton
-            variant="secondary"
+            variant="primary"
             size="full"
-            onClick={() =>
-              navigate(
-                `/sport-select?mode=${isQuiz ? "survival" : "quiz"}`,
-              )
-            }
+            onClick={() => navigate("/home")}
           >
-            Try Other Mode
+            Back to Home
           </NeoButton>
+        ) : (
+          <>
+            <NeoButton
+              variant="primary"
+              size="full"
+              onClick={() => navigate(`/sport-select?mode=${state.mode}`)}
+            >
+              Play Again
+            </NeoButton>
+            <NeoButton
+              variant="secondary"
+              size="full"
+              onClick={() =>
+                navigate(
+                  `/sport-select?mode=${isQuiz ? "survival" : "quiz"}`,
+                )
+              }
+            >
+              Try Other Mode
+            </NeoButton>
+          </>
         )}
-        <button
-          className="w-full text-center text-sm text-muted-foreground font-heading underline underline-offset-4 cursor-pointer"
-          onClick={() => navigate("/home")}
-        >
-          Back to Home
-        </button>
+        {!isChallenge && (
+          <button
+            className="w-full text-center text-sm text-muted-foreground font-heading underline underline-offset-4 cursor-pointer"
+            onClick={() => navigate("/home")}
+          >
+            Back to Home
+          </button>
+        )}
       </div>
     </div>
   );

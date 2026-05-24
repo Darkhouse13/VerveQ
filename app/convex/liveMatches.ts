@@ -760,6 +760,31 @@ export const forfeit = mutation({
   },
 });
 
+export const abandonWaitingMatch = mutation({
+  args: { matchId: v.id("liveMatches") },
+  handler: async (ctx, { matchId }) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) throw new Error("Not authenticated");
+
+    const match = await ctx.db.get(matchId);
+    if (!match) throw new Error("Match not found");
+
+    const isP1 = match.player1Id === userId;
+    const isP2 = match.player2Id === userId;
+    if (!isP1 && !isP2) throw new Error("Not authorized");
+    if (match.status === "completed" || match.status === "forfeited") {
+      return { abandoned: false, winnerId: match.winnerId };
+    }
+    if (match.status !== "waiting") {
+      throw new Error("Match has already started");
+    }
+
+    await finishMatch(ctx, match, "forfeited", undefined, false);
+
+    return { abandoned: true };
+  },
+});
+
 // ── Queries ──
 
 export const getMatch = query({

@@ -667,12 +667,125 @@ describe("weekend stabilization live matches", () => {
     };
   }
 
+  function makeLiveMatchFinalizationCtx(match: Record<string, unknown>) {
+    const patch = vi.fn(async (_id: string, _value: Record<string, unknown>) => undefined);
+    const insert = vi.fn(async (_table: string, _value: Record<string, unknown>) => "inserted_id");
+    const ctx = {
+      db: {
+        get: async (id: string) => (id === "match_1" ? match : null),
+        patch,
+        insert,
+        query: (table: string) => {
+          if (table === "liveMatches") {
+            return { collect: async () => [match] };
+          }
+          if (table === "challengeMatchHistory" || table === "challengeHeadToHeads") {
+            return {
+              withIndex: () => ({
+                first: async () => null,
+              }),
+            };
+          }
+          if (table === "userRatings") {
+            throw new Error("waiting live-match exits must not apply ELO");
+          }
+          throw new Error(`unexpected table query: ${table}`);
+        },
+      },
+    };
+    return { ctx, patch, insert };
+  }
+
   it("does not return question data during waiting states", async () => {
     const result = (await handlerOf(liveMatches.getMatch)(makeCtx(makeMatch("waiting")), {
       matchId: "match_1",
     })) as { questions: unknown[] };
 
     expect(result.questions).toEqual([null, null]);
+  });
+
+  it("abandons waiting legacy live matches without applying ELO", async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-04-26T00:00:00.000Z"));
+    try {
+      const match = {
+        ...makeMatch("waiting"),
+        challengeId: "challenge_1",
+        player1LastSeen: Date.now(),
+        player2LastSeen: Date.now(),
+      };
+      const { ctx, patch, insert } = makeLiveMatchFinalizationCtx(match);
+
+      const result = await handlerOf(liveMatches.abandonWaitingMatch)(ctx, {
+        matchId: "match_1",
+      });
+
+      expect(result).toEqual({ abandoned: true });
+      expect(insert).toHaveBeenCalledWith(
+        "challengeMatchHistory",
+        expect.objectContaining({
+          matchId: "match_1",
+          status: "forfeited",
+          winnerId: undefined,
+        }),
+      );
+      expect(insert).toHaveBeenCalledWith(
+        "challengeHeadToHeads",
+        expect.objectContaining({
+          draws: 1,
+          totalMatches: 1,
+        }),
+      );
+      expect(patch).toHaveBeenCalledWith(
+        "challenge_1",
+        expect.objectContaining({
+          status: "completed",
+          winnerId: undefined,
+        }),
+      );
+      const matchPatch = patch.mock.calls.find(([id]) => id === "match_1")?.[1] as Record<string, unknown>;
+      expect(matchPatch).toMatchObject({
+        status: "forfeited",
+        winnerId: undefined,
+        completedAt: Date.now(),
+      });
+      expect(matchPatch).not.toHaveProperty("eloAppliedAt");
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it("self-resolves stale waiting live matches without ELO so auto-resume is finite", async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-04-26T00:00:20.000Z"));
+    try {
+      const match = {
+        ...makeMatch("waiting"),
+        challengeId: "challenge_1",
+        player1LastSeen: Date.now(),
+        player2LastSeen: Date.now() - 16_000,
+      };
+      const { ctx, patch } = makeLiveMatchFinalizationCtx(match);
+
+      await handlerOf(liveMatches.reapStaleMatches)(ctx, {});
+
+      const matchPatch = patch.mock.calls.find(([id]) => id === "match_1")?.[1] as Record<string, unknown>;
+      expect(matchPatch).toMatchObject({
+        status: "forfeited",
+        winnerId: "stub_user",
+        completedAt: Date.now(),
+      });
+      expect(matchPatch).not.toHaveProperty("eloAppliedAt");
+      expect(patch).toHaveBeenCalledWith(
+        "challenge_1",
+        expect.objectContaining({
+          status: "completed",
+          winnerId: "stub_user",
+        }),
+      );
+    } finally {
+      vi.useRealTimers();
+    }
   });
 
   it("sanitizes active and past questions and hides future questions", async () => {

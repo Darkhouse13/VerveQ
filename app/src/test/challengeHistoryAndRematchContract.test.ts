@@ -41,16 +41,18 @@ describe("challenge head-to-head history and rematch contract", () => {
     expect(resultScreen).toContain("Series");
   });
 
-  it("Challenge Again sends a rematch invite to the same opponent instead of immediately starting locally", () => {
+  it("keeps legacy rematch backend code dormant instead of wiring it to Live Match results", () => {
     const resultScreen = readFileSync("src/pages/ResultScreen.tsx", "utf8");
     const challenges = readFileSync("convex/challenges.ts", "utf8");
 
     expect(challenges).toContain("createRematch");
     expect(challenges).toContain("challengedId: opponentId");
-    expect(resultScreen).toContain("api.challenges.createRematch");
-    expect(resultScreen).toContain("handleChallengeAgain");
-    expect(resultScreen).toContain("opponentId: state.opponentId");
-    expect(resultScreen).toContain("Rematch invite sent");
+    expect(resultScreen).not.toContain("api.challenges.createRematch");
+    expect(resultScreen).not.toContain("api.challenges.accept");
+    expect(resultScreen).not.toContain("api.liveMatches.createFromChallenge");
+    expect(resultScreen).not.toContain("handleChallengeAgain");
+    expect(resultScreen).not.toContain("opponentId: state.opponentId");
+    expect(resultScreen).toContain('onClick={() => navigate("/home")}');
   });
 
   it("dedupes reciprocal pending rematch invites and clears stale pending requests when a rematch starts", () => {
@@ -65,15 +67,15 @@ describe("challenge head-to-head history and rematch contract", () => {
     expect(liveMatches).toContain("status: \"declined\"");
   });
 
-  it("turns a reciprocal Play Again invite into an accepted live match instead of leaving a pending card", () => {
+  it("does not turn reciprocal legacy rematch invites into new live matches from the result screen", () => {
     const resultScreen = readFileSync("src/pages/ResultScreen.tsx", "utf8");
 
-    expect(resultScreen).toContain("const acceptChallenge = useMutation(api.challenges.accept)");
-    expect(resultScreen).toContain("const createLiveMatch = useMutation(api.liveMatches.createFromChallenge)");
-    expect(resultScreen).toContain("reciprocalPending");
-    expect(resultScreen).toContain("await acceptChallenge({ challengeId: result.challengeId as never })");
-    expect(resultScreen).toContain("await createLiveMatch({ challengeId: result.challengeId as never })");
-    expect(resultScreen).toContain("navigate(`/waiting-room?matchId=${match.matchId}`)");
+    expect(resultScreen).not.toContain("const acceptChallenge = useMutation(api.challenges.accept)");
+    expect(resultScreen).not.toContain("const createLiveMatch = useMutation(api.liveMatches.createFromChallenge)");
+    expect(resultScreen).not.toContain("reciprocalPending");
+    expect(resultScreen).not.toContain("await acceptChallenge({ challengeId: result.challengeId as never })");
+    expect(resultScreen).not.toContain("await createLiveMatch({ challengeId: result.challengeId as never })");
+    expect(resultScreen).not.toContain("navigate(`/waiting-room?matchId=${match.matchId}`)");
   });
 
 });

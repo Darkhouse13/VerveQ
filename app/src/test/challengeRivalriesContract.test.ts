@@ -19,16 +19,16 @@ describe("challenge rivalries v1 contract", () => {
     expect(liveMatchScreen).toContain("recentMatches: match.versusSummary.recentMatches");
   });
 
-  it("makes the challenge result screen feel like a rivalry loop, not a generic replay", () => {
+  it("keeps historical rivalry context on challenge results without re-surfacing live rematches", () => {
     const resultScreen = readFileSync("src/pages/ResultScreen.tsx", "utf8");
 
     expect(resultScreen).toContain("Rivalry");
-    expect(resultScreen).toContain("getChallengeAgainLabel");
-    expect(resultScreen).toContain("Get Revenge");
-    expect(resultScreen).toContain("Defend Your Win");
-    expect(resultScreen).toContain("Run It Back");
     expect(resultScreen).toContain("Streak");
     expect(resultScreen).toContain("Last 5");
-    expect(resultScreen).toContain("Best of 3?");
+    expect(resultScreen).not.toContain("getChallengeAgainLabel");
+    expect(resultScreen).not.toContain("Get Revenge");
+    expect(resultScreen).not.toContain("Defend Your Win");
+    expect(resultScreen).not.toContain("Run It Back");
+    expect(resultScreen).not.toContain("Best of 3?");
   });
 });
