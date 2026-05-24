@@ -1,34 +1,18 @@
 import { describe, expect, it } from "vitest";
 import { readFileSync } from "node:fs";
-
-function readKnowledgeSeeds() {
-  const source = readFileSync("convex/knowledgeQuestions.ts", "utf8");
-  const declarationStart = source.indexOf("export const knowledgeQuestions");
-  const arrayStart = source.indexOf("[", source.indexOf("=", declarationStart));
-  const arrayEnd = source.lastIndexOf("];", source.length) + 1;
-  return JSON.parse(source.slice(arrayStart, arrayEnd)) as Array<{
-    sport: string;
-    category: string;
-    question: string;
-    options: string[];
-    correctAnswer: string;
-    difficulty: string;
-    bucket: string;
-    checksum: string;
-  }>;
-}
+import { knowledgeQuestions } from "../../convex/knowledgeQuestions";
 
 describe("Knowledge Which Came First mode", () => {
   it("ships a dedicated verified Which Came First question pool", () => {
-    const cameFirst = readKnowledgeSeeds().filter(
+    const cameFirst = knowledgeQuestions.filter(
       (q) => q.category === "which_came_first",
     );
 
-    expect(cameFirst).toHaveLength(250);
+    expect(cameFirst).toHaveLength(550);
     for (const q of cameFirst) {
       expect(q.sport).toBe("knowledge");
       expect(q.bucket).toContain("knowledge_came_first");
-      expect(q.checksum).toMatch(/^knowledge_came_first_v1_/);
+      expect(q.checksum).toMatch(/^knowledge_came_first_v[12]_/);
       expect(q.question).toMatch(/Which came first\?/);
       expect(q.options).toHaveLength(2);
       expect(q.options).toContain(q.correctAnswer);

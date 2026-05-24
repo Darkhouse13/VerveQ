@@ -1,4 +1,5 @@
 import { knowledgeExpansionV1Questions } from "./knowledgeExpansionV1";
+import { knowledgeCameFirstExpansionV2Questions } from "./knowledgeCameFirstExpansionV2";
 
 export type KnowledgeQuestionSeed = {
   sport: string;
@@ -7,6 +8,7 @@ export type KnowledgeQuestionSeed = {
   options: string[];
   correctAnswer: string;
   explanation?: string;
+  questionKind?: "mcq" | "which_came_first" | "logo_text";
   difficulty: "easy" | "intermediate" | "hard";
   bucket: string;
   checksum: string;
@@ -8316,3 +8318,4 @@ export const knowledgeQuestions: KnowledgeQuestionSeed[] = [
 ];
 
 knowledgeQuestions.push(...knowledgeExpansionV1Questions);
+knowledgeQuestions.push(...knowledgeCameFirstExpansionV2Questions);

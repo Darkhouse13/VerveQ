@@ -1,22 +1,12 @@
 import { describe, expect, it } from "vitest";
 import { readFileSync } from "node:fs";
+import { knowledgeQuestions } from "../../convex/knowledgeQuestions";
 
 describe("answer option ordering contract", () => {
   it("keeps seeded Knowledge MCQs and Which Came First answers balanced", () => {
-    const source = readFileSync("convex/knowledgeQuestions.ts", "utf8");
-    const declarationStart = source.indexOf("export const knowledgeQuestions");
-    const arrayStart = source.indexOf("[", source.indexOf("=", declarationStart));
-    const arrayEnd = source.lastIndexOf("];", source.length) + 1;
-    const questions = JSON.parse(source.slice(arrayStart, arrayEnd)) as Array<{
-      category: string;
-      options: string[];
-      correctAnswer: string;
-      checksum: string;
-    }>;
-
     const mcqCounts = [0, 0, 0, 0];
     const binaryCounts = [0, 0];
-    for (const question of questions) {
+    for (const question of knowledgeQuestions) {
       const correctIndex = question.options.indexOf(question.correctAnswer);
       expect(correctIndex, question.checksum).toBeGreaterThanOrEqual(0);
       if (question.category === "which_came_first") {
@@ -26,8 +16,8 @@ describe("answer option ordering contract", () => {
       }
     }
 
-    expect(mcqCounts).toEqual([75, 75, 75, 75]);
-    expect(binaryCounts).toEqual([125, 125]);
+    expect(mcqCounts).toEqual([140, 140, 140, 140]);
+    expect(binaryCounts).toEqual([275, 275]);
   });
 
   it("orders answer options server-side before every quiz mode returns them", () => {

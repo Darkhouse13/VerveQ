@@ -11,7 +11,7 @@ Scope:
 - `challengeArenaEnterpriseLogoQuestions` from `app/convex/challengeArenaContent.ts`.
 - No bundled offline `football_quiz` row source was found; football quiz rows remain database/runtime content outside this baseline adapter.
 
-Overall: 889 rows, 0 ERROR findings, 134 WARN findings.
+Overall: 1449 rows, 0 ERROR findings, 134 WARN findings.
 
 Content edits: none. No ERROR findings remain in this baseline.
 
@@ -19,28 +19,28 @@ Content edits: none. No ERROR findings remain in this baseline.
 
 | Category | Rows | Severity | Structural | Distractor Match | Exact Duplicate | Near Duplicate | Answer Overuse | Distractor Quality |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
-| `astronomy` | 12 | 0 ERROR / 3 WARN | 0 | 0 | 0 | 1 | 0 | 2 |
-| `biology` | 13 | 0 ERROR / 0 WARN | 0 | 0 | 0 | 0 | 0 | 0 |
+| `astronomy` | 34 | 0 ERROR / 3 WARN | 0 | 0 | 0 | 1 | 0 | 2 |
+| `biology` | 29 | 0 ERROR / 0 WARN | 0 | 0 | 0 | 0 | 0 | 0 |
 | `capital_cities` | 195 | 0 ERROR / 26 WARN | 0 | 0 | 0 | 25 | 0 | 1 |
-| `chemistry` | 7 | 0 ERROR / 0 WARN | 0 | 0 | 0 | 0 | 0 | 0 |
+| `chemistry` | 34 | 0 ERROR / 0 WARN | 0 | 0 | 0 | 0 | 0 | 0 |
 | `common_knowledge` | 25 | 0 ERROR / 1 WARN | 0 | 0 | 0 | 0 | 0 | 1 |
-| `culture` | 8 | 0 ERROR / 0 WARN | 0 | 0 | 0 | 0 | 0 | 0 |
+| `culture` | 30 | 0 ERROR / 0 WARN | 0 | 0 | 0 | 0 | 0 | 0 |
 | `discoveries` | 27 | 0 ERROR / 8 WARN | 0 | 0 | 0 | 0 | 0 | 8 |
-| `earth_science` | 8 | 0 ERROR / 0 WARN | 0 | 0 | 0 | 0 | 0 | 0 |
+| `earth_science` | 24 | 0 ERROR / 0 WARN | 0 | 0 | 0 | 0 | 0 | 0 |
 | `enterprise_logos` | 144 | 0 ERROR / 0 WARN | 0 | 0 | 0 | 0 | 0 | 0 |
-| `fun_facts` | 20 | 0 ERROR / 4 WARN | 0 | 0 | 0 | 0 | 0 | 4 |
-| `geography` | 14 | 0 ERROR / 2 WARN | 0 | 0 | 0 | 2 | 0 | 0 |
-| `history` | 24 | 0 ERROR / 5 WARN | 0 | 0 | 0 | 1 | 0 | 4 |
+| `fun_facts` | 42 | 0 ERROR / 4 WARN | 0 | 0 | 0 | 0 | 0 | 4 |
+| `geography` | 41 | 0 ERROR / 2 WARN | 0 | 0 | 0 | 2 | 0 | 0 |
+| `history` | 51 | 0 ERROR / 5 WARN | 0 | 0 | 0 | 1 | 0 | 4 |
 | `human_knowledge` | 24 | 0 ERROR / 3 WARN | 0 | 0 | 0 | 0 | 0 | 3 |
-| `inventions` | 24 | 0 ERROR / 2 WARN | 0 | 0 | 0 | 0 | 0 | 2 |
-| `language` | 8 | 0 ERROR / 0 WARN | 0 | 0 | 0 | 0 | 0 | 0 |
-| `laws_of_universe` | 25 | 0 ERROR / 1 WARN | 0 | 0 | 0 | 0 | 0 | 1 |
-| `literature_arts` | 15 | 0 ERROR / 3 WARN | 0 | 0 | 0 | 0 | 0 | 3 |
+| `inventions` | 46 | 0 ERROR / 2 WARN | 0 | 0 | 0 | 0 | 0 | 2 |
+| `language` | 30 | 0 ERROR / 0 WARN | 0 | 0 | 0 | 0 | 0 | 0 |
+| `laws_of_universe` | 40 | 0 ERROR / 1 WARN | 0 | 0 | 0 | 0 | 0 | 1 |
+| `literature_arts` | 37 | 0 ERROR / 3 WARN | 0 | 0 | 0 | 0 | 0 | 3 |
 | `mathematics` | 8 | 0 ERROR / 2 WARN | 0 | 0 | 0 | 0 | 0 | 2 |
 | `philosophy` | 9 | 0 ERROR / 0 WARN | 0 | 0 | 0 | 0 | 0 | 0 |
 | `physics` | 9 | 0 ERROR / 0 WARN | 0 | 0 | 0 | 0 | 0 | 0 |
 | `science` | 20 | 0 ERROR / 0 WARN | 0 | 0 | 0 | 0 | 0 | 0 |
-| `which_came_first` | 250 | 0 ERROR / 74 WARN | 0 | 0 | 0 | 0 | 24 | 50 |
+| `which_came_first` | 550 | 0 ERROR / 74 WARN | 0 | 0 | 0 | 0 | 24 | 50 |
 
 ## Error Findings
 
@@ -66,28 +66,28 @@ WARN findings are review prompts only. No warning was edited by this baseline ru
 
 ## Source Pools
 
-- `astronomy`: 12 rows from `challengeArenaGeneralKnowledgeQuestions`
-- `biology`: 13 rows from `challengeArenaGeneralKnowledgeQuestions`
+- `astronomy`: 34 rows from `challengeArenaGeneralKnowledgeQuestions`
+- `biology`: 29 rows from `challengeArenaGeneralKnowledgeQuestions`
 - `capital_cities`: 195 rows from `challengeArenaCapitalCityQuestions`
-- `chemistry`: 7 rows from `challengeArenaGeneralKnowledgeQuestions`
+- `chemistry`: 34 rows from `challengeArenaGeneralKnowledgeQuestions`
 - `common_knowledge`: 25 rows from `challengeArenaGeneralKnowledgeQuestions`
-- `culture`: 8 rows from `challengeArenaGeneralKnowledgeQuestions`
+- `culture`: 30 rows from `challengeArenaGeneralKnowledgeQuestions`
 - `discoveries`: 27 rows from `challengeArenaGeneralKnowledgeQuestions`
-- `earth_science`: 8 rows from `challengeArenaGeneralKnowledgeQuestions`
+- `earth_science`: 24 rows from `challengeArenaGeneralKnowledgeQuestions`
 - `enterprise_logos`: 144 rows from `challengeArenaEnterpriseLogoQuestions`
-- `fun_facts`: 20 rows from `challengeArenaGeneralKnowledgeQuestions`
-- `geography`: 14 rows from `challengeArenaGeneralKnowledgeQuestions`
-- `history`: 24 rows from `challengeArenaGeneralKnowledgeQuestions`
+- `fun_facts`: 42 rows from `challengeArenaGeneralKnowledgeQuestions`
+- `geography`: 41 rows from `challengeArenaGeneralKnowledgeQuestions`
+- `history`: 51 rows from `challengeArenaGeneralKnowledgeQuestions`
 - `human_knowledge`: 24 rows from `challengeArenaGeneralKnowledgeQuestions`
-- `inventions`: 24 rows from `challengeArenaGeneralKnowledgeQuestions`
-- `language`: 8 rows from `challengeArenaGeneralKnowledgeQuestions`
-- `laws_of_universe`: 25 rows from `challengeArenaGeneralKnowledgeQuestions`
-- `literature_arts`: 15 rows from `challengeArenaGeneralKnowledgeQuestions`
+- `inventions`: 46 rows from `challengeArenaGeneralKnowledgeQuestions`
+- `language`: 30 rows from `challengeArenaGeneralKnowledgeQuestions`
+- `laws_of_universe`: 40 rows from `challengeArenaGeneralKnowledgeQuestions`
+- `literature_arts`: 37 rows from `challengeArenaGeneralKnowledgeQuestions`
 - `mathematics`: 8 rows from `challengeArenaGeneralKnowledgeQuestions`
 - `philosophy`: 9 rows from `challengeArenaGeneralKnowledgeQuestions`
 - `physics`: 9 rows from `challengeArenaGeneralKnowledgeQuestions`
 - `science`: 20 rows from `challengeArenaGeneralKnowledgeQuestions`
-- `which_came_first`: 250 rows from `knowledgeQuestions.which_came_first`
+- `which_came_first`: 550 rows from `knowledgeQuestions.which_came_first`
 
 ## Notes
 
