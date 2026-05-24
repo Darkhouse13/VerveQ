@@ -30,6 +30,8 @@ const ARENA_TTL_MS = 3 * 60 * 60 * 1000;
 const EXPIRE_BATCH_SIZE = 50;
 const RANK_BONUS = [50, 30, 20, 10, 10] as const;
 const FOOTBALL_IMAGE_QUESTION_CAP = 2;
+const RECENTLY_SEEN_WINDOW_COUNT = ARENA_ROUNDS * QUESTIONS_PER_ROUND * 2;
+const RECENTLY_SEEN_WINDOW_AGE_MS = 14 * 24 * 60 * 60 * 1000;
 
 const arenaMode = v.union(
   v.literal("1v1"),
@@ -58,6 +60,7 @@ type ArenaPlayer = Arena["players"][number];
 type ArenaMode = Arena["mode"];
 type Question = Doc<"quizQuestions">;
 type QuestionKind = "mcq" | "which_came_first" | "logo_text";
+type RecentlySeenMap = Map<string, number>;
 type LeaderboardRow = {
   id: string;
   label: string;
@@ -347,13 +350,91 @@ function uniqueStableLogoCandidates(questions: Question[], used: Set<string>) {
   );
 }
 
+function oldestRecentlySeenCandidates<T extends { checksum: string }>(
+  candidates: T[],
+  recentlySeen: RecentlySeenMap,
+) {
+  return candidates
+    .filter((candidate) => recentlySeen.has(candidate.checksum))
+    .sort(
+      (a, b) =>
+        (recentlySeen.get(a.checksum) ?? 0) -
+          (recentlySeen.get(b.checksum) ?? 0) ||
+        a.checksum.localeCompare(b.checksum),
+    );
+}
+
+function applyRecentlySeenExclusion<T extends { checksum: string }>(
+  candidates: T[],
+  recentlySeen: RecentlySeenMap,
+  needed: number,
+) {
+  if (recentlySeen.size === 0) return candidates;
+
+  const included = candidates.filter(
+    (candidate) => !recentlySeen.has(candidate.checksum),
+  );
+  if (included.length >= needed) return included;
+
+  included.push(
+    ...oldestRecentlySeenCandidates(candidates, recentlySeen).slice(
+      0,
+      needed - included.length,
+    ),
+  );
+  const includedChecksums = new Set(
+    included.map((candidate) => candidate.checksum),
+  );
+  return candidates.filter((candidate) =>
+    includedChecksums.has(candidate.checksum),
+  );
+}
+
+function footballRoundCapacity(candidates: Question[]) {
+  const imageCount = candidates.filter(hasQuestionImage).length;
+  return (
+    candidates.length -
+    imageCount +
+    Math.min(imageCount, FOOTBALL_IMAGE_QUESTION_CAP)
+  );
+}
+
+function applyRecentlySeenFootballExclusion(
+  candidates: Question[],
+  recentlySeen: RecentlySeenMap,
+) {
+  if (recentlySeen.size === 0) return candidates;
+
+  const included = candidates.filter(
+    (candidate) => !recentlySeen.has(candidate.checksum),
+  );
+  if (footballRoundCapacity(included) >= QUESTIONS_PER_ROUND) return included;
+
+  for (const candidate of oldestRecentlySeenCandidates(candidates, recentlySeen)) {
+    included.push(candidate);
+    if (footballRoundCapacity(included) >= QUESTIONS_PER_ROUND) break;
+  }
+
+  const includedChecksums = new Set(
+    included.map((candidate) => candidate.checksum),
+  );
+  return candidates.filter((candidate) =>
+    includedChecksums.has(candidate.checksum),
+  );
+}
+
 function pickChecksums(
   questions: Question[],
   used: Set<string>,
+  recentlySeen: RecentlySeenMap,
   seed: string,
   label: string,
 ) {
-  const candidates = uniqueStableCandidates(questions, used);
+  const candidates = applyRecentlySeenExclusion(
+    uniqueStableCandidates(questions, used),
+    recentlySeen,
+    QUESTIONS_PER_ROUND,
+  );
   const picked = seededShuffle(candidates, seed).slice(0, QUESTIONS_PER_ROUND);
   if (picked.length < QUESTIONS_PER_ROUND) {
     throw new Error(
@@ -367,10 +448,17 @@ function pickChecksums(
 function pickFootballChecksums(
   questions: Question[],
   used: Set<string>,
+  recentlySeen: RecentlySeenMap,
   seed: string,
   label: string,
 ) {
-  const candidates = seededShuffle(uniqueStableCandidates(questions, used), seed);
+  const candidates = seededShuffle(
+    applyRecentlySeenFootballExclusion(
+      uniqueStableCandidates(questions, used),
+      recentlySeen,
+    ),
+    seed,
+  );
   const imagePicked = candidates
     .filter(hasQuestionImage)
     .slice(0, FOOTBALL_IMAGE_QUESTION_CAP);
@@ -397,10 +485,15 @@ function pickFootballChecksums(
 function pickLogoChecksums(
   questions: Question[],
   used: Set<string>,
+  recentlySeen: RecentlySeenMap,
   seed: string,
   label: string,
 ) {
-  const candidates = uniqueStableLogoCandidates(questions, used);
+  const candidates = applyRecentlySeenExclusion(
+    uniqueStableLogoCandidates(questions, used),
+    recentlySeen,
+    QUESTIONS_PER_ROUND,
+  );
   const picked = seededShuffle(candidates, seed).slice(0, QUESTIONS_PER_ROUND);
   if (picked.length < QUESTIONS_PER_ROUND) {
     throw new Error(
@@ -411,14 +504,110 @@ function pickLogoChecksums(
   return picked.map((question) => question.checksum);
 }
 
+async function loadCrewRecentlySeenChecksums(
+  ctx: Pick<QueryCtx | MutationCtx, "db">,
+  userIds: Id<"users">[],
+  now: number,
+) {
+  const cutoff = now - RECENTLY_SEEN_WINDOW_AGE_MS;
+  const recentlySeen: RecentlySeenMap = new Map();
+
+  for (const userId of userIds) {
+    const rows = await ctx.db
+      .query("arenaRecentlySeenQuestions")
+      .withIndex("by_user_seen_at", (q) => q.eq("userId", userId))
+      .collect();
+    const windowRows = rows
+      .filter((row) => row.seenAt >= cutoff)
+      .sort(
+        (a, b) =>
+          b.seenAt - a.seenAt ||
+          a.checksum.localeCompare(b.checksum) ||
+          String(a._id).localeCompare(String(b._id)),
+      )
+      .slice(0, RECENTLY_SEEN_WINDOW_COUNT);
+
+    for (const row of windowRows) {
+      recentlySeen.set(
+        row.checksum,
+        Math.max(recentlySeen.get(row.checksum) ?? 0, row.seenAt),
+      );
+    }
+  }
+
+  return recentlySeen;
+}
+
+async function pruneRecentlySeenForUser(
+  ctx: Pick<MutationCtx, "db">,
+  userId: Id<"users">,
+  now: number,
+) {
+  const cutoff = now - RECENTLY_SEEN_WINDOW_AGE_MS;
+  const rows = await ctx.db
+    .query("arenaRecentlySeenQuestions")
+    .withIndex("by_user_seen_at", (q) => q.eq("userId", userId))
+    .collect();
+  const keepIds = new Set(
+    rows
+      .filter((row) => row.seenAt >= cutoff)
+      .sort(
+        (a, b) =>
+          b.seenAt - a.seenAt ||
+          a.checksum.localeCompare(b.checksum) ||
+          String(a._id).localeCompare(String(b._id)),
+      )
+      .slice(0, RECENTLY_SEEN_WINDOW_COUNT)
+      .map((row) => row._id),
+  );
+
+  for (const row of rows) {
+    if (row.seenAt < cutoff || !keepIds.has(row._id)) {
+      await ctx.db.delete(row._id);
+    }
+  }
+}
+
+async function recordRecentlySeenArenaQuestions(
+  ctx: Pick<MutationCtx, "db">,
+  userIds: Id<"users">[],
+  checksums: string[],
+  seenAt: number,
+) {
+  const uniqueChecksums = [...new Set(checksums)];
+  for (const userId of userIds) {
+    for (const checksum of uniqueChecksums) {
+      const existing = await ctx.db
+        .query("arenaRecentlySeenQuestions")
+        .withIndex("by_user_checksum", (q) =>
+          q.eq("userId", userId).eq("checksum", checksum),
+        )
+        .first();
+      if (existing) {
+        await ctx.db.patch(existing._id, { seenAt });
+      } else {
+        await ctx.db.insert("arenaRecentlySeenQuestions", {
+          userId,
+          checksum,
+          seenAt,
+        });
+      }
+    }
+    await pruneRecentlySeenForUser(ctx, userId, seenAt);
+  }
+}
+
 async function lockRoundQuestionSets(
   ctx: Pick<MutationCtx, "db">,
   seed: string,
+  playerIds: Id<"users">[],
+  now: number,
 ) {
   await ensureCapitalCitySeeds(ctx);
   await ensureGeneralKnowledgeSeeds(ctx);
   await ensureEnterpriseLogoSeeds(ctx);
 
+  const recentlySeen = await loadCrewRecentlySeenChecksums(ctx, playerIds, now);
   const football = await collectQuestionsForSport(ctx, "football");
   const knowledge = await collectQuestionsForSport(ctx, "knowledge");
   const all = await collectAllCandidateQuestions(ctx);
@@ -436,6 +625,7 @@ async function lockRoundQuestionSets(
               q.category !== "badge_identification",
           ),
           used,
+          recentlySeen,
           `${seed}:${category}`,
           "football quiz",
         ),
@@ -454,6 +644,7 @@ async function lockRoundQuestionSets(
               q.category !== "capital_cities",
           ),
           used,
+          recentlySeen,
           `${seed}:${category}`,
           "general knowledge",
         ),
@@ -467,6 +658,7 @@ async function lockRoundQuestionSets(
         pickChecksums(
           knowledge.filter((q) => q.category === "which_came_first"),
           used,
+          recentlySeen,
           `${seed}:${category}`,
           "which came first",
         ),
@@ -480,6 +672,7 @@ async function lockRoundQuestionSets(
         pickLogoChecksums(
           all.filter((q) => q.category === "enterprise_logos"),
           used,
+          recentlySeen,
           `${seed}:${category}`,
           "enterprise logos",
         ),
@@ -492,6 +685,7 @@ async function lockRoundQuestionSets(
       pickChecksums(
         knowledge.filter((q) => q.category === "capital_cities"),
         used,
+        recentlySeen,
         `${seed}:${category}`,
         "capital cities",
       ),
@@ -1157,6 +1351,8 @@ async function getContentCounts(ctx: Pick<QueryCtx | MutationCtx, "db">) {
     footballQuizText: footballQuiz.filter((q) => !hasQuestionImage(q)).length,
     footballQuizImages: footballQuiz.filter(hasQuestionImage).length,
     footballImageQuestionCap: FOOTBALL_IMAGE_QUESTION_CAP,
+    recentlySeenWindowCount: RECENTLY_SEEN_WINDOW_COUNT,
+    recentlySeenWindowAgeMs: RECENTLY_SEEN_WINDOW_AGE_MS,
     generalKnowledge: generalKnowledge.length,
     whichCameFirst: knowledge.filter(
       (q) => q.category === "which_came_first" && isAnswerableMcq(q),
@@ -1429,7 +1625,14 @@ export const start = mutation({
     if (arena.mode === "2v2") validateTwoTeamState(starters);
 
     const seed = hashString(`${arena._id}:${arena.code}:${now}`);
-    const locked = await lockRoundQuestionSets(ctx, seed);
+    const starterIds = starters.map((player) => player.userId);
+    const locked = await lockRoundQuestionSets(ctx, seed, starterIds, now);
+    await recordRecentlySeenArenaQuestions(
+      ctx,
+      starterIds,
+      locked.rounds.flat(),
+      now,
+    );
     await ctx.db.patch(arenaId, {
       players,
       status: "countdown",

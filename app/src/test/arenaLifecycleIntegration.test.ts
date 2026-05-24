@@ -107,6 +107,12 @@ type AnswerRow = Row & {
   points: number;
 };
 
+type RecentlySeenRow = Row & {
+  userId: string;
+  checksum: string;
+  seenAt: number;
+};
+
 type RoomView = {
   arenaId: string;
   code: string;
@@ -269,7 +275,13 @@ class FakeDb {
   private seq = 0;
 
   constructor() {
-    for (const table of ["users", "arenas", "arenaAnswers", "quizQuestions"]) {
+    for (const table of [
+      "users",
+      "arenas",
+      "arenaAnswers",
+      "arenaRecentlySeenQuestions",
+      "quizQuestions",
+    ]) {
       this.tables.set(table, new Map());
     }
   }
@@ -292,6 +304,13 @@ class FakeDb {
     const row = this.find(id);
     if (!row) throw new Error(`Missing row ${id}`);
     Object.assign(row, cloneValue(patch));
+  }
+
+  async delete(id: string) {
+    for (const table of this.tables.values()) {
+      if (table.delete(id)) return;
+    }
+    throw new Error(`Missing row ${id}`);
   }
 
   query(table: string) {
@@ -371,6 +390,7 @@ function seedQuestion(
     correctAnswer: string;
     difficulty?: "easy" | "intermediate" | "hard";
     imageId?: string;
+    imageUrl?: string;
   },
 ) {
   db.seed("quizQuestions", id, {
@@ -389,6 +409,7 @@ function seedQuestion(
     bucket: `${partial.sport}_${partial.category}`,
     checksum: partial.checksum,
     imageId: partial.imageId,
+    imageUrl: partial.imageUrl,
     difficultyVotes: 0,
     difficultyScore: 0,
     timesAnswered: 0,
@@ -508,6 +529,67 @@ function seedActiveArena(
   });
 }
 
+function seedReadyArena(
+  db: FakeDb,
+  arenaId: string,
+  mode: ArenaMode,
+  users: string[],
+) {
+  db.seed("arenas", arenaId, {
+    code: arenaId.toUpperCase(),
+    hostId: users[0],
+    mode,
+    status: "lobby",
+    players: users.map((userId, index) => ({
+      userId,
+      nameSnapshot: `Player ${index + 1}`,
+      team:
+        mode === "2v2"
+          ? index % 2 === 0
+            ? "A"
+            : "B"
+          : undefined,
+      ready: true,
+      joinedAt: now,
+      lastSeenAt: now,
+      left: false,
+      totalScore: 0,
+    })),
+    config: {
+      rounds: 5,
+      perRound: 10,
+      categories: [
+        "football_quiz",
+        "general_knowledge",
+        "which_came_first",
+        "enterprise_logos",
+        "capital_cities",
+      ],
+    },
+    currentRound: 0,
+    currentQuestionIndex: 0,
+    phase: "lobby",
+    questionWindowMs: 10_000,
+    roundChecksums: [],
+    createdAt: now,
+    expiresAt: now + 60_000,
+  });
+}
+
+function seedRecentlySeen(
+  db: FakeDb,
+  id: string,
+  userId: string,
+  checksum: string,
+  seenAt: number,
+) {
+  db.seed("arenaRecentlySeenQuestions", id, {
+    userId,
+    checksum,
+    seenAt,
+  });
+}
+
 async function createJoinedArena(db: FakeDb, mode: ArenaMode, users: string[]) {
   setAuth(users[0]);
   const created = (await handlerOf(challengeArenas.create)(makeCtx(db), {
@@ -518,6 +600,16 @@ async function createJoinedArena(db: FakeDb, mode: ArenaMode, users: string[]) {
     await handlerOf(challengeArenas.join)(makeCtx(db), { code: created.code });
   }
   return created;
+}
+
+async function startReadyArena(
+  db: FakeDb,
+  arenaId: string,
+  users: string[] = ["user_a", "user_b", "user_c"],
+) {
+  seedReadyArena(db, arenaId, "ffa3", users);
+  setAuth(users[0]);
+  return await handlerOf(challengeArenas.start)(makeCtx(db), { arenaId });
 }
 
 async function readyUsers(db: FakeDb, arenaId: string, users: string[]) {
@@ -767,7 +859,7 @@ describe("challenge arena lifecycle integration", () => {
       ["user_a", 1_000, firstQuestion.correctAnswer],
       ["user_b", 2_000, firstQuestion.correctAnswer],
       ["user_c", 3_000, firstQuestion.correctAnswer],
-    ]) {
+    ] as Array<[string, number, string]>) {
       setAuth(userId);
       now = arena.questionStartedAt! + Number(offsetMs);
       await handlerOf(challengeArenas.submitAnswer)(makeCtx(db), {
@@ -828,6 +920,210 @@ describe("challenge arena lifecycle integration", () => {
     expect(footballRound).toHaveLength(10);
     expect(imageQuestions.length).toBeLessThanOrEqual(2);
     expect(footballRound.length - imageQuestions.length).toBeGreaterThanOrEqual(8);
+  });
+
+  it("excludes recently seen checksums within the arena novelty window", async () => {
+    const db = makeSeededDb();
+    const recent = Array.from(
+      { length: 10 },
+      (_, i) => `football_quiz_${String(i).padStart(2, "0")}`,
+    );
+    recent.forEach((checksum, index) =>
+      seedRecentlySeen(db, `recent_a_${index}`, "user_a", checksum, now - 1_000),
+    );
+
+    await startReadyArena(db, "arena_recent_window");
+
+    const footballRound = db.row<ArenaRow>("arena_recent_window").roundChecksums[0];
+    expect(footballRound).toHaveLength(10);
+    expect(footballRound.some((checksum) => recent.includes(checksum))).toBe(false);
+    expect(new Set(footballRound).size).toBe(10);
+    expect(
+      db
+        .all<RecentlySeenRow>("arenaRecentlySeenQuestions")
+        .filter((row) => row.userId === "user_a").length,
+    ).toBeLessThanOrEqual(100);
+  });
+
+  it("excludes the crew union of recently seen checksums", async () => {
+    const db = makeSeededDb();
+    const userARecent = Array.from(
+      { length: 5 },
+      (_, i) => `football_quiz_${String(i).padStart(2, "0")}`,
+    );
+    const userBRecent = Array.from(
+      { length: 5 },
+      (_, i) => `football_quiz_${String(i + 5).padStart(2, "0")}`,
+    );
+    userARecent.forEach((checksum, index) =>
+      seedRecentlySeen(db, `recent_union_a_${index}`, "user_a", checksum, now - 1_000),
+    );
+    userBRecent.forEach((checksum, index) =>
+      seedRecentlySeen(db, `recent_union_b_${index}`, "user_b", checksum, now - 1_000),
+    );
+
+    await startReadyArena(db, "arena_recent_union");
+
+    const footballRound = db.row<ArenaRow>("arena_recent_union").roundChecksums[0];
+    const crewRecent = new Set([...userARecent, ...userBRecent]);
+    expect(footballRound).toHaveLength(10);
+    expect(footballRound.some((checksum) => crewRecent.has(checksum))).toBe(false);
+  });
+
+  it("fails open on recently seen exhaustion while keeping locked checksums unique", async () => {
+    const db = makeSeededDb();
+    const recent = Array.from(
+      { length: 15 },
+      (_, i) => `football_quiz_${String(i).padStart(2, "0")}`,
+    );
+    recent.forEach((checksum, index) =>
+      seedRecentlySeen(
+        db,
+        `recent_exhaustion_${index}`,
+        "user_a",
+        checksum,
+        now - 10_000 + index,
+      ),
+    );
+
+    await startReadyArena(db, "arena_recent_exhaustion");
+
+    const arena = db.row<ArenaRow>("arena_recent_exhaustion");
+    const footballRound = arena.roundChecksums[0];
+    expect(footballRound).toHaveLength(10);
+    expect(new Set(footballRound).size).toBe(10);
+    expect(new Set(arena.roundChecksums.flat()).size).toBe(50);
+    expect(footballRound.filter((checksum) => recent.includes(checksum))).toHaveLength(5);
+  });
+
+  it("relaxes recently seen exclusions oldest-seen-first deterministically", async () => {
+    const db = makeSeededDb();
+    const recentByAge = [
+      ["football_quiz_00", now - 100],
+      ["football_quiz_01", now - 1_000],
+      ["football_quiz_02", now - 200],
+      ["football_quiz_03", now - 900],
+      ["football_quiz_04", now - 300],
+      ["football_quiz_05", now - 800],
+      ["football_quiz_06", now - 400],
+      ["football_quiz_07", now - 700],
+      ["football_quiz_08", now - 500],
+      ["football_quiz_09", now - 600],
+      ["football_quiz_10", now - 50],
+      ["football_quiz_11", now - 60],
+      ["football_quiz_12", now - 70],
+      ["football_quiz_13", now - 80],
+      ["football_quiz_14", now - 90],
+    ] as const;
+    recentByAge.forEach(([checksum, seenAt], index) =>
+      seedRecentlySeen(db, `recent_order_${index}`, "user_a", checksum, seenAt),
+    );
+
+    await startReadyArena(db, "arena_recent_order");
+
+    const footballRound = new Set(
+      db.row<ArenaRow>("arena_recent_order").roundChecksums[0],
+    );
+    for (const checksum of [
+      "football_quiz_01",
+      "football_quiz_03",
+      "football_quiz_05",
+      "football_quiz_07",
+      "football_quiz_09",
+    ]) {
+      expect(footballRound.has(checksum)).toBe(true);
+    }
+    for (const checksum of [
+      "football_quiz_00",
+      "football_quiz_02",
+      "football_quiz_04",
+      "football_quiz_06",
+      "football_quiz_08",
+      "football_quiz_10",
+      "football_quiz_11",
+      "football_quiz_12",
+      "football_quiz_13",
+      "football_quiz_14",
+    ]) {
+      expect(footballRound.has(checksum)).toBe(false);
+    }
+  });
+
+  it("keeps the football image cap after recently seen exclusion and fallback", async () => {
+    const db = makeSeededDb();
+    for (let i = 0; i < 14; i += 1) {
+      const suffix = String(i).padStart(2, "0");
+      seedQuestion(db, `football_recent_image_${suffix}`, {
+        sport: "football",
+        category: "premier_league",
+        checksum: `football_recent_image_quiz_${suffix}`,
+        correctAnswer: `Football Image Correct ${suffix}`,
+        imageId: `football_recent_image_${suffix}`,
+      });
+    }
+    for (let i = 0; i < 14; i += 1) {
+      const checksum = `football_quiz_${String(i).padStart(2, "0")}`;
+      seedRecentlySeen(db, `recent_image_cap_${i}`, "user_a", checksum, now - 1_000 + i);
+    }
+
+    await startReadyArena(db, "arena_recent_image_cap");
+
+    const footballRound = db.row<ArenaRow>("arena_recent_image_cap").roundChecksums[0];
+    const imageQuestions = footballRound
+      .map((checksum) => questionByChecksum(db, checksum))
+      .filter((question) => !!question.imageId || !!question.imageUrl);
+    expect(footballRound).toHaveLength(10);
+    expect(new Set(footballRound).size).toBe(10);
+    expect(imageQuestions.length).toBeLessThanOrEqual(2);
+  });
+
+  it("continues sampling across the full eligible football pool after exclusion", async () => {
+    const db = makeSeededDb();
+    for (let i = 0; i < 20; i += 1) {
+      const suffix = String(i).padStart(2, "0");
+      seedQuestion(db, `football_alt_${suffix}`, {
+        sport: "football",
+        category: "champions_league",
+        checksum: `football_alt_quiz_${suffix}`,
+        correctAnswer: `Alt Football Correct ${suffix}`,
+      });
+    }
+    for (let i = 0; i < 5; i += 1) {
+      seedRecentlySeen(
+        db,
+        `recent_distribution_a_${i}`,
+        "user_a",
+        `football_quiz_${String(i).padStart(2, "0")}`,
+        now - 1_000 + i,
+      );
+      seedRecentlySeen(
+        db,
+        `recent_distribution_b_${i}`,
+        "user_b",
+        `football_alt_quiz_${String(i).padStart(2, "0")}`,
+        now - 1_000 + i,
+      );
+    }
+
+    const selected = new Set<string>();
+    for (let i = 0; i < 16; i += 1) {
+      now += 1_000;
+      const arenaId = `arena_distribution_${i}`;
+      await startReadyArena(db, arenaId);
+      for (const checksum of db.row<ArenaRow>(arenaId).roundChecksums[0]) {
+        selected.add(checksum);
+      }
+    }
+
+    const baseCount = [...selected].filter((checksum) =>
+      checksum.startsWith("football_quiz_"),
+    ).length;
+    const altCount = [...selected].filter((checksum) =>
+      checksum.startsWith("football_alt_quiz_"),
+    ).length;
+    expect(selected.size).toBeGreaterThan(28);
+    expect(baseCount).toBeGreaterThan(10);
+    expect(altCount).toBeGreaterThan(10);
   });
 
   it("samples expanded general-knowledge and capital pools across arena seeds", async () => {

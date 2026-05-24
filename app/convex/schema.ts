@@ -540,6 +540,15 @@ export default defineSchema({
     "questionIndex",
   ]),
 
+  arenaRecentlySeenQuestions: defineTable({
+    userId: v.id("users"),
+    checksum: v.string(),
+    seenAt: v.number(),
+  })
+    .index("by_user_seen_at", ["userId", "seenAt"])
+    .index("by_user_checksum", ["userId", "checksum"])
+    .index("by_seen_at", ["seenAt"]),
+
   // ── Blitz Mode ──
   blitzSessions: defineTable({
     userId: v.id("users"),
