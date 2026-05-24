@@ -196,6 +196,10 @@ function renderMarkdown(categories: CategoryBaseline[]) {
     (sum, category) => sum + category.report.rollup.bySeverity.WARN,
     0,
   );
+  const contentEditNote =
+    totalErrors === 0
+      ? "Content edits: none. No ERROR findings remain in this baseline."
+      : "Content edits: none. All ERROR findings in this baseline are `DISTRACTOR_MATCHES_CORRECT` fuzzy collisions in existing rows; replacing distractors would require content judgement, so they are reported for human review.";
 
   return [
     "# Content QA Baseline",
@@ -213,7 +217,7 @@ function renderMarkdown(categories: CategoryBaseline[]) {
     "",
     `Overall: ${totalRows} rows, ${totalErrors} ERROR findings, ${totalWarnings} WARN findings.`,
     "",
-    "Content edits: none. All ERROR findings in this baseline are `DISTRACTOR_MATCHES_CORRECT` fuzzy collisions in existing rows; replacing distractors would require content judgement, so they are reported for human review.",
+    contentEditNote,
     "",
     "## Per-Category Rollup",
     "",

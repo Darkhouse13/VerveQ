@@ -113,21 +113,67 @@ describe("content QA validator", () => {
     });
   });
 
-  it("flags DISTRACTOR_MATCHES_CORRECT for fuzzy answer collisions", () => {
-    const report = expectSingleCode(
-      [
-        question("distractor_001", {
-          options: ["Chelsea", "Chelse", "Arsenal", "Tottenham"],
-        }),
-      ],
-      "DISTRACTOR_MATCHES_CORRECT",
-    );
+  it("flags DISTRACTOR_MATCHES_CORRECT for MCQ identical-variant collisions", () => {
+    const report = validateContentBatch([
+      question("distractor_001", {
+        question: "Which spelling is accepted?",
+        options: ["Color", "color.", "Blue", "Green"],
+        correctAnswer: "Color",
+      }),
+    ]);
 
     expect(report.ok).toBe(false);
-    expect(report.findings[0]).toMatchObject({
+    expect(report.findings).toContainEqual(expect.objectContaining({
+      code: "DISTRACTOR_MATCHES_CORRECT",
       severity: "ERROR",
       field: "options[1]",
-    });
+    }));
+    expect(report.findings).toContainEqual(expect.objectContaining({
+      code: "STRUCTURAL_INVALID",
+      severity: "ERROR",
+      field: "options",
+    }));
+  });
+
+  it("allows legitimate MCQ near-miss numeric distractors", () => {
+    const report = validateContentBatch([
+      question("near_miss_number_001", {
+        question: "Which year did this sample event happen?",
+        options: ["1990", "1989", "1991", "1992"],
+        correctAnswer: "1990",
+      }),
+      question("near_miss_number_002", {
+        question: "What is the sample count?",
+        options: ["12", "11", "13", "21"],
+        correctAnswer: "12",
+      }),
+    ]);
+
+    expect(report.ok).toBe(true);
+    expect(report.findings).toEqual([]);
+  });
+
+  it("keeps logo_text fuzzy distractor collisions as errors", () => {
+    const report = validateContentBatch([
+      question("logo_collision_001", {
+        sport: "knowledge",
+        category: "enterprise_logos",
+        question: "Name this company logo.",
+        options: ["Gooogle"],
+        correctAnswer: "Google",
+        acceptedAliases: ["Alphabet"],
+        bucket: "knowledge_easy_enterprise_logos",
+        imageUrl: "/arena-logos/opaque/6c0113ec444d8c6e6137.svg",
+        questionKind: "logo_text",
+      }),
+    ]);
+
+    expect(report.ok).toBe(false);
+    expect(report.findings).toContainEqual(expect.objectContaining({
+      code: "DISTRACTOR_MATCHES_CORRECT",
+      severity: "ERROR",
+      field: "options[0]",
+    }));
   });
 
   it("flags EXACT_DUPLICATE for repeated checksums", () => {

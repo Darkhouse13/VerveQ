@@ -1,4 +1,4 @@
-import { findBestMatch, levenshteinDistance } from "./fuzzy";
+import { levenshteinDistance } from "./fuzzy";
 import {
   logoAnswerTargets,
   matchLogoGuess,
@@ -200,9 +200,7 @@ function optionMatchesAnswer(
     return matchLogoGuess(option, question).correct;
   }
 
-  const targets = acceptedTargets({ correctAnswer: question.correctAnswer });
-  if (targets.length === 0) return false;
-  return findBestMatch(option, targets).matched;
+  return normalizeText(option) === normalizeText(question.correctAnswer);
 }
 
 function effectivePrompt(question: ContentQuestionSeed, kind: ContentQuestionKind) {
@@ -680,11 +678,18 @@ export function validateContentBatch(
       .filter((finding) => finding.code === "STRUCTURAL_INVALID")
       .map((finding) => finding.questionRef),
   );
+  const distractorCheckableBatch = batch.filter(
+    (question) =>
+      typeof question.category === "string" &&
+      typeof question.correctAnswer === "string" &&
+      Array.isArray(question.options) &&
+      question.options.every((option) => typeof option === "string"),
+  );
   const structurallyValidBatch = batch.filter(
     (question, index) => !structurallyInvalidRefs.has(questionRef(question, index)),
   );
 
-  validateDistractors(structurallyValidBatch, findings);
+  validateDistractors(distractorCheckableBatch, findings);
   validateExactDuplicates(
     structurallyValidBatch,
     new Set(options.existingChecksums ?? []),
