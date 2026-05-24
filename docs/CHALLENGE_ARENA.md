@@ -61,6 +61,44 @@ The reactive room query omits locked checksums and strips the active question's
 `correctAnswer`. Current-question answers from other players are hidden until
 the question closes.
 
+## Recently Seen Novelty
+
+Arena round selection uses a per-user `arenaRecentlySeenQuestions` store to
+reduce repeated questions across matches. Each row stores a `userId`, question
+`checksum`, and `seenAt` timestamp. The table is indexed by `by_seen_at`,
+`by_user_checksum`, and `by_user_seen_at`.
+
+At host start, when the server locks the shared `roundChecksums[][]`, selection
+loads the union of the current crew's recently seen checksums within the
+configured window and excludes those checksums from the eligible pool before
+running the existing seeded shuffle. The window is bounded by both count and
+age:
+
+- `recentlySeenWindowCount = 100`
+- `recentlySeenWindowAgeMs = 14 days`
+
+The server records the locked checksums for each starter after the complete
+round set is selected, then prunes each user's recent store back to the same
+bounded window. This is server-authoritative; clients do not submit or receive
+recently seen checksums.
+
+If the novelty exclusion would leave fewer eligible questions than a round
+needs, selection fails open for availability by relaxing only the recently-seen
+exclusion. Relaxation is deterministic, oldest-seen-first with checksum
+tie-breaks, until enough candidates are available. The existing match-local
+`used` set remains authoritative, so the round still locks a complete, unique
+set and never serves an in-match duplicate under recent-history exhaustion.
+
+The existing selection invariants are preserved:
+
+- in-match no-repeat across locked `roundChecksums`
+- football image cap of at most 2 image-bearing questions per 10-question
+  football round
+- seeded sampling across the full eligible pool rather than a small fixed
+  bucket
+- sanitized `getRoom` payloads that do not leak checksums or answers during
+  the active question phase
+
 Question payloads include a `kind` discriminator:
 
 - `mcq`: standard multiple-choice questions
@@ -205,8 +243,9 @@ This is not legal advice.
 
 `challengeArenas.contentStatus` reports the live content counts used for this
 decision, including `footballQuizText`, `footballQuizImages`,
-`footballImageQuestionCap`, `generalKnowledge`, `capitalCities`, and the
-bundled seed counts.
+`footballImageQuestionCap`, `recentlySeenWindowCount`,
+`recentlySeenWindowAgeMs`, `generalKnowledge`, `capitalCities`, and the bundled
+seed counts.
 
 ## Cron
 

@@ -169,7 +169,7 @@ That serves a production bundle locally against the configured dev Convex backen
 
 - It is a locally served production bundle.
 - It is reachable from this workspace.
-- It points at the live dev Convex backend configured in `.env.local`.
+- It points at the live dev Convex backend configured in `app/.env.local`.
 - It is sufficient for frontend rollout validation when no remote frontend deploy access is available.
 
 ## Current gameplay rollout truth
