@@ -10,11 +10,7 @@ import { v } from "convex/values";
 import { getAuthUserId } from "@convex-dev/auth/server";
 import { internal } from "./_generated/api";
 import { normalizeAnswer } from "./lib/scoring";
-import {
-  findBestMatch,
-  getMaxFuzzyDistance,
-  levenshteinDistance,
-} from "./lib/fuzzy";
+import { matchLogoGuess } from "./lib/logoTextAnswers";
 import { orderAnswerOptions } from "./lib/answerOptions";
 import {
   challengeArenaCapitalCityQuestions,
@@ -614,36 +610,6 @@ async function sanitizeQuestion(
           explanation: question.explanation ?? null,
         }
       : {}),
-  };
-}
-
-function logoAnswerTargets(question: Question) {
-  return [...new Set([question.correctAnswer, ...(question.acceptedAliases ?? [])])]
-    .map((target) => target.trim())
-    .filter(Boolean);
-}
-
-function isWithinOneEditOfLogoAcceptance(guess: string, targets: string[]) {
-  const normalizedGuess = normalizeAnswer(guess);
-  if (!normalizedGuess) return false;
-
-  return targets.some((target) => {
-    const normalizedTarget = normalizeAnswer(target);
-    if (!normalizedTarget) return false;
-    const distance = levenshteinDistance(normalizedGuess, normalizedTarget);
-    return distance === getMaxFuzzyDistance(normalizedTarget) + 1;
-  });
-}
-
-function matchLogoGuess(guess: string, question: Question) {
-  const targets = logoAnswerTargets(question);
-  const match = findBestMatch(guess, targets);
-  if (match.matched) {
-    return { correct: true, close: false };
-  }
-  return {
-    correct: false,
-    close: isWithinOneEditOfLogoAcceptance(guess, targets),
   };
 }
 
