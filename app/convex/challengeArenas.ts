@@ -33,6 +33,15 @@ const RANK_BONUS = [50, 30, 20, 10, 10] as const;
 const FOOTBALL_IMAGE_QUESTION_CAP = 2;
 const RECENTLY_SEEN_WINDOW_COUNT = ARENA_ROUNDS * QUESTIONS_PER_ROUND * 2;
 const RECENTLY_SEEN_WINDOW_AGE_MS = 14 * 24 * 60 * 60 * 1000;
+const INDEXED_POOL_PAGE_SIZE = 64;
+const INDEXED_POOL_MAX_READS = 192;
+const SEED_BACKED_MAX_READS = 96;
+const SEED_CONTENT_BATCH_SIZE = 250;
+const SEED_CONTENT_MAX_BATCH_SIZE = 500;
+const CONTENT_STATUS_KNOWLEDGE_READ_CAP = 3_000;
+const CONTENT_STATUS_FOOTBALL_READ_CAP = 750;
+const CHECKSUM_CURSOR_ALPHABET = "abcdefghijklmnopqrstuvwxyz0123456789_";
+const NUMERIC_CURSOR_ALPHABET = "0123456789";
 
 const arenaMode = v.union(
   v.literal("1v1"),
@@ -52,8 +61,36 @@ const DEFAULT_ROUND_CATEGORIES = [
   "capital_cities",
 ] as const;
 
-const DIFFICULTIES = ["intermediate", "easy", "hard"] as const;
-const CONTENT_SPORTS = ["football", "basketball", "tennis", "knowledge"] as const;
+const SEED_CONTENT_GROUPS: Array<{
+  key: SeedContentCategory;
+  insertedKey:
+    | "insertedCapitalCities"
+    | "insertedGeneralKnowledge"
+    | "insertedWhichCameFirst"
+    | "insertedEnterpriseLogos";
+  seeds: ChallengeArenaQuestionSeed[];
+}> = [
+  {
+    key: "capitalCities",
+    insertedKey: "insertedCapitalCities",
+    seeds: challengeArenaCapitalCityQuestions,
+  },
+  {
+    key: "generalKnowledge",
+    insertedKey: "insertedGeneralKnowledge",
+    seeds: challengeArenaGeneralKnowledgeQuestions,
+  },
+  {
+    key: "whichCameFirst",
+    insertedKey: "insertedWhichCameFirst",
+    seeds: challengeArenaWhichCameFirstQuestions,
+  },
+  {
+    key: "enterpriseLogos",
+    insertedKey: "insertedEnterpriseLogos",
+    seeds: challengeArenaEnterpriseLogoQuestions,
+  },
+];
 
 type Arena = Doc<"arenas">;
 type ArenaAnswer = Doc<"arenaAnswers">;
@@ -62,6 +99,15 @@ type ArenaMode = Arena["mode"];
 type Question = Doc<"quizQuestions">;
 type QuestionKind = "mcq" | "which_came_first" | "logo_text";
 type RecentlySeenMap = Map<string, number>;
+type SeedContentCategory =
+  | "capitalCities"
+  | "generalKnowledge"
+  | "whichCameFirst"
+  | "enterpriseLogos";
+type SeedCursor = {
+  categoryIndex: number;
+  offset: number;
+};
 type LeaderboardRow = {
   id: string;
   label: string;
@@ -237,29 +283,176 @@ async function getArenaByLocator(
   throw new Error("arenaId or code is required");
 }
 
-async function collectQuestionsForSport(
-  ctx: Pick<QueryCtx | MutationCtx, "db">,
-  sport: string,
+function checksumCursor(
+  seed: string,
+  attempt: number,
+  prefix = "",
+  alphabet = CHECKSUM_CURSOR_ALPHABET,
 ) {
-  const questions: Question[] = [];
-  for (const difficulty of DIFFICULTIES) {
-    const rows = await ctx.db
-      .query("quizQuestions")
-      .withIndex("by_sport_difficulty", (q) =>
-        q.eq("sport", sport).eq("difficulty", difficulty),
-      )
-      .collect();
-    questions.push(...rows);
+  const rand = seededRandom(`${seed}:cursor:${attempt}`);
+  let cursor = prefix;
+  for (let i = 0; i < 12; i += 1) {
+    cursor += alphabet[Math.floor(rand() * alphabet.length)];
   }
-  return questions;
+  return cursor;
 }
 
-async function collectAllCandidateQuestions(ctx: Pick<QueryCtx | MutationCtx, "db">) {
-  const all: Question[] = [];
-  for (const sport of CONTENT_SPORTS) {
-    all.push(...(await collectQuestionsForSport(ctx, sport)));
+async function takeSportChecksumWindow(
+  ctx: Pick<QueryCtx | MutationCtx, "db">,
+  sport: string,
+  cursor: string,
+  limit: number,
+) {
+  const forward = await ctx.db
+    .query("quizQuestions")
+    .withIndex("by_sport_checksum", (q) =>
+      q.eq("sport", sport).gte("checksum", cursor),
+    )
+    .take(limit);
+  if (forward.length >= limit) return forward;
+
+  const wrapped = await ctx.db
+    .query("quizQuestions")
+    .withIndex("by_sport_checksum", (q) =>
+      q.eq("sport", sport).lt("checksum", cursor),
+    )
+    .take(limit - forward.length);
+  return [...forward, ...wrapped];
+}
+
+async function takeSportCategoryChecksumWindow(
+  ctx: Pick<QueryCtx | MutationCtx, "db">,
+  sport: string,
+  category: string,
+  cursor: string,
+  limit: number,
+) {
+  const forward = await ctx.db
+    .query("quizQuestions")
+    .withIndex("by_sport_category_checksum", (q) =>
+      q.eq("sport", sport).eq("category", category).gte("checksum", cursor),
+    )
+    .take(limit);
+  if (forward.length >= limit) return forward;
+
+  const wrapped = await ctx.db
+    .query("quizQuestions")
+    .withIndex("by_sport_category_checksum", (q) =>
+      q.eq("sport", sport).eq("category", category).lt("checksum", cursor),
+    )
+    .take(limit - forward.length);
+  return [...forward, ...wrapped];
+}
+
+async function collectIndexedCandidates(
+  ctx: Pick<QueryCtx | MutationCtx, "db">,
+  scope: {
+    sport: string;
+    category?: string;
+    cursorPrefix?: string;
+    cursorAlphabet?: string;
+  },
+  seed: string,
+  used: Set<string>,
+  predicate: (question: Question) => boolean,
+  targetCandidates: number,
+) {
+  const byChecksum = new Map<string, Question>();
+  let remainingReads = INDEXED_POOL_MAX_READS;
+
+  for (
+    let attempt = 0;
+    byChecksum.size < targetCandidates && remainingReads > 0;
+    attempt += 1
+  ) {
+    const before = byChecksum.size;
+    const limit = Math.min(INDEXED_POOL_PAGE_SIZE, remainingReads);
+    const cursor = checksumCursor(
+      seed,
+      attempt,
+      scope.cursorPrefix ?? "",
+      scope.cursorAlphabet,
+    );
+    const rows = scope.category
+      ? await takeSportCategoryChecksumWindow(
+          ctx,
+          scope.sport,
+          scope.category,
+          cursor,
+          limit,
+        )
+      : await takeSportChecksumWindow(ctx, scope.sport, cursor, limit);
+    remainingReads -= rows.length;
+
+    for (const question of rows) {
+      if (!used.has(question.checksum) && predicate(question)) {
+        byChecksum.set(question.checksum, question);
+      }
+    }
+
+    if (rows.length < limit || byChecksum.size === before) break;
   }
-  return all;
+
+  return [...byChecksum.values()].sort((a, b) =>
+    a.checksum.localeCompare(b.checksum),
+  );
+}
+
+async function readQuestionByChecksum(
+  ctx: Pick<QueryCtx | MutationCtx, "db">,
+  checksum: string,
+) {
+  return await ctx.db
+    .query("quizQuestions")
+    .withIndex("by_checksum", (q) => q.eq("checksum", checksum))
+    .first();
+}
+
+function uniqueStableSeeds(
+  seeds: ChallengeArenaQuestionSeed[],
+  used: Set<string>,
+) {
+  const byChecksum = new Map<string, ChallengeArenaQuestionSeed>();
+  for (const seed of seeds) {
+    if (!used.has(seed.checksum)) byChecksum.set(seed.checksum, seed);
+  }
+  return [...byChecksum.values()].sort((a, b) =>
+    a.checksum.localeCompare(b.checksum),
+  );
+}
+
+async function collectSeedBackedCandidates(
+  ctx: Pick<QueryCtx | MutationCtx, "db">,
+  seeds: ChallengeArenaQuestionSeed[],
+  used: Set<string>,
+  recentlySeen: RecentlySeenMap,
+  seed: string,
+  predicate: (question: Question) => boolean,
+) {
+  const base = uniqueStableSeeds(seeds, used);
+  const eligible = applyRecentlySeenExclusion(
+    base,
+    recentlySeen,
+    QUESTIONS_PER_ROUND,
+  );
+  const eligibleChecksums = new Set(eligible.map((candidate) => candidate.checksum));
+  const readOrder = [
+    ...seededShuffle(eligible, seed),
+    ...seededShuffle(
+      base.filter((candidate) => !eligibleChecksums.has(candidate.checksum)),
+      `${seed}:overflow`,
+    ),
+  ].slice(0, SEED_BACKED_MAX_READS);
+
+  const questions: Question[] = [];
+  for (const candidate of readOrder) {
+    const question = await readQuestionByChecksum(ctx, candidate.checksum);
+    if (question && !used.has(question.checksum) && predicate(question)) {
+      questions.push(question);
+      if (questions.length >= QUESTIONS_PER_ROUND) break;
+    }
+  }
+  return questions;
 }
 
 function questionSeedDocument(seed: ChallengeArenaQuestionSeed) {
@@ -304,49 +497,91 @@ async function upsertQuestionSeed(
   return true;
 }
 
-async function ensureQuestionSeeds(
-  ctx: Pick<MutationCtx, "db">,
-  seeds: ChallengeArenaQuestionSeed[],
-) {
-  let inserted = 0;
-  for (const seed of seeds) {
-    if (await upsertQuestionSeed(ctx, seed)) inserted += 1;
+function parseSeedCursor(cursor: string | undefined): SeedCursor {
+  if (!cursor) return { categoryIndex: 0, offset: 0 };
+  const [categoryIndexRaw, offsetRaw] = cursor.split(":");
+  const categoryIndex = Number(categoryIndexRaw);
+  const offset = Number(offsetRaw);
+  if (
+    !Number.isInteger(categoryIndex) ||
+    !Number.isInteger(offset) ||
+    categoryIndex < 0 ||
+    categoryIndex > SEED_CONTENT_GROUPS.length ||
+    offset < 0
+  ) {
+    throw new Error("Invalid challenge arena seed cursor");
   }
-  return inserted;
+  return { categoryIndex, offset };
 }
 
-async function ensureCapitalCitySeeds(ctx: Pick<MutationCtx, "db">) {
-  return await ensureQuestionSeeds(ctx, challengeArenaCapitalCityQuestions);
+function encodeSeedCursor(cursor: SeedCursor) {
+  return `${cursor.categoryIndex}:${cursor.offset}`;
 }
 
-async function ensureGeneralKnowledgeSeeds(ctx: Pick<MutationCtx, "db">) {
-  return await ensureQuestionSeeds(ctx, challengeArenaGeneralKnowledgeQuestions);
+function emptySeedInsertCounts() {
+  return {
+    insertedCapitalCities: 0,
+    insertedGeneralKnowledge: 0,
+    insertedWhichCameFirst: 0,
+    insertedEnterpriseLogos: 0,
+  };
 }
 
-async function ensureWhichCameFirstSeeds(ctx: Pick<MutationCtx, "db">) {
-  return await ensureQuestionSeeds(ctx, challengeArenaWhichCameFirstQuestions);
-}
+async function ensureQuestionSeedBatch(
+  ctx: Pick<MutationCtx, "db">,
+  startCursor: SeedCursor,
+  batchLimit: number,
+) {
+  const inserted = emptySeedInsertCounts();
+  let processed = 0;
+  let categoryIndex = startCursor.categoryIndex;
+  let offset = startCursor.offset;
 
-async function ensureEnterpriseLogoSeeds(ctx: Pick<MutationCtx, "db">) {
-  return await ensureQuestionSeeds(ctx, challengeArenaEnterpriseLogoQuestions);
+  while (categoryIndex < SEED_CONTENT_GROUPS.length && processed < batchLimit) {
+    const group = SEED_CONTENT_GROUPS[categoryIndex];
+    if (offset >= group.seeds.length) {
+      categoryIndex += 1;
+      offset = 0;
+      continue;
+    }
+
+    const remaining = batchLimit - processed;
+    const end = Math.min(group.seeds.length, offset + remaining);
+    for (const seed of group.seeds.slice(offset, end)) {
+      if (await upsertQuestionSeed(ctx, seed)) {
+        inserted[group.insertedKey] += 1;
+      }
+    }
+
+    processed += end - offset;
+    offset = end;
+    if (offset >= group.seeds.length) {
+      categoryIndex += 1;
+      offset = 0;
+    }
+  }
+
+  const isDone = categoryIndex >= SEED_CONTENT_GROUPS.length;
+  return {
+    ...inserted,
+    processed,
+    nextCursor: isDone ? null : encodeSeedCursor({ categoryIndex, offset }),
+    isDone,
+  };
 }
 
 function uniqueStableCandidates(questions: Question[], used: Set<string>) {
-  const byChecksum = new Map<string, Question>();
-  for (const question of questions) {
-    if (!used.has(question.checksum) && isAnswerableMcq(question)) {
-      byChecksum.set(question.checksum, question);
-    }
-  }
-  return [...byChecksum.values()].sort((a, b) =>
-    a.checksum.localeCompare(b.checksum),
-  );
+  return uniqueStableQuestionCandidates(questions, used, isAnswerableMcq);
 }
 
-function uniqueStableLogoCandidates(questions: Question[], used: Set<string>) {
+function uniqueStableQuestionCandidates(
+  questions: Question[],
+  used: Set<string>,
+  predicate: (question: Question) => boolean,
+) {
   const byChecksum = new Map<string, Question>();
   for (const question of questions) {
-    if (!used.has(question.checksum) && isLogoTextQuestion(question)) {
+    if (!used.has(question.checksum) && predicate(question)) {
       byChecksum.set(question.checksum, question);
     }
   }
@@ -428,19 +663,23 @@ function applyRecentlySeenFootballExclusion(
   );
 }
 
-function pickChecksums(
-  questions: Question[],
+async function pickSeedBackedChecksums(
+  ctx: Pick<QueryCtx | MutationCtx, "db">,
+  seeds: ChallengeArenaQuestionSeed[],
   used: Set<string>,
   recentlySeen: RecentlySeenMap,
   seed: string,
   label: string,
+  predicate: (question: Question) => boolean = isAnswerableMcq,
 ) {
-  const candidates = applyRecentlySeenExclusion(
-    uniqueStableCandidates(questions, used),
+  const picked = await collectSeedBackedCandidates(
+    ctx,
+    seeds,
+    used,
     recentlySeen,
-    QUESTIONS_PER_ROUND,
+    seed,
+    predicate,
   );
-  const picked = seededShuffle(candidates, seed).slice(0, QUESTIONS_PER_ROUND);
   if (picked.length < QUESTIONS_PER_ROUND) {
     throw new Error(
       `Not enough challenge arena questions for ${label}: ${picked.length}/${QUESTIONS_PER_ROUND}`,
@@ -450,13 +689,82 @@ function pickChecksums(
   return picked.map((question) => question.checksum);
 }
 
-function pickFootballChecksums(
-  questions: Question[],
+async function pickIndexedChecksums(
+  ctx: Pick<QueryCtx | MutationCtx, "db">,
+  scope: {
+    sport: string;
+    category?: string;
+    cursorPrefix?: string;
+    cursorAlphabet?: string;
+  },
+  used: Set<string>,
+  recentlySeen: RecentlySeenMap,
+  seed: string,
+  label: string,
+  predicate: (question: Question) => boolean,
+  fallbackSeeds?: ChallengeArenaQuestionSeed[],
+) {
+  const targetCandidates =
+    QUESTIONS_PER_ROUND + Math.min(recentlySeen.size, 40) + 32;
+  const questions = await collectIndexedCandidates(
+    ctx,
+    scope,
+    seed,
+    used,
+    predicate,
+    targetCandidates,
+  );
+  const candidates = applyRecentlySeenExclusion(
+    uniqueStableQuestionCandidates(questions, used, predicate),
+    recentlySeen,
+    QUESTIONS_PER_ROUND,
+  );
+  const picked = seededShuffle(candidates, seed).slice(0, QUESTIONS_PER_ROUND);
+  if (picked.length >= QUESTIONS_PER_ROUND) {
+    for (const question of picked) used.add(question.checksum);
+    return picked.map((question) => question.checksum);
+  }
+
+  if (fallbackSeeds) {
+    return await pickSeedBackedChecksums(
+      ctx,
+      fallbackSeeds,
+      used,
+      recentlySeen,
+      `${seed}:seedFallback`,
+      label,
+      predicate,
+    );
+  }
+
+  throw new Error(
+    `Not enough challenge arena questions for ${label}: ${picked.length}/${QUESTIONS_PER_ROUND}`,
+  );
+}
+
+async function pickFootballChecksums(
+  ctx: Pick<QueryCtx | MutationCtx, "db">,
   used: Set<string>,
   recentlySeen: RecentlySeenMap,
   seed: string,
   label: string,
 ) {
+  const targetCandidates =
+    QUESTIONS_PER_ROUND +
+    Math.min(recentlySeen.size, 40) +
+    FOOTBALL_IMAGE_QUESTION_CAP +
+    32;
+  const questions = await collectIndexedCandidates(
+    ctx,
+    { sport: "football", cursorPrefix: "football_" },
+    seed,
+    used,
+    (question) =>
+      question.category !== "which_came_first" &&
+      question.category !== "badge_identification" &&
+      isAnswerableMcq(question),
+    targetCandidates,
+  );
   const candidates = seededShuffle(
     applyRecentlySeenFootballExclusion(
       uniqueStableCandidates(questions, used),
@@ -487,28 +795,6 @@ function pickFootballChecksums(
   return picked.map((question) => question.checksum);
 }
 
-function pickLogoChecksums(
-  questions: Question[],
-  used: Set<string>,
-  recentlySeen: RecentlySeenMap,
-  seed: string,
-  label: string,
-) {
-  const candidates = applyRecentlySeenExclusion(
-    uniqueStableLogoCandidates(questions, used),
-    recentlySeen,
-    QUESTIONS_PER_ROUND,
-  );
-  const picked = seededShuffle(candidates, seed).slice(0, QUESTIONS_PER_ROUND);
-  if (picked.length < QUESTIONS_PER_ROUND) {
-    throw new Error(
-      `Not enough challenge arena questions for ${label}: ${picked.length}/${QUESTIONS_PER_ROUND}`,
-    );
-  }
-  for (const question of picked) used.add(question.checksum);
-  return picked.map((question) => question.checksum);
-}
-
 async function loadCrewRecentlySeenChecksums(
   ctx: Pick<QueryCtx | MutationCtx, "db">,
   userIds: Id<"users">[],
@@ -521,7 +807,8 @@ async function loadCrewRecentlySeenChecksums(
     const rows = await ctx.db
       .query("arenaRecentlySeenQuestions")
       .withIndex("by_user_seen_at", (q) => q.eq("userId", userId))
-      .collect();
+      .order("desc")
+      .take(RECENTLY_SEEN_WINDOW_COUNT);
     const windowRows = rows
       .filter((row) => row.seenAt >= cutoff)
       .sort(
@@ -546,16 +833,15 @@ async function loadCrewRecentlySeenChecksums(
 async function pruneRecentlySeenForUser(
   ctx: Pick<MutationCtx, "db">,
   userId: Id<"users">,
-  now: number,
+  _now: number,
 ) {
-  const cutoff = now - RECENTLY_SEEN_WINDOW_AGE_MS;
   const rows = await ctx.db
     .query("arenaRecentlySeenQuestions")
     .withIndex("by_user_seen_at", (q) => q.eq("userId", userId))
-    .collect();
+    .order("desc")
+    .take(RECENTLY_SEEN_WINDOW_COUNT + QUESTIONS_PER_ROUND + 1);
   const keepIds = new Set(
     rows
-      .filter((row) => row.seenAt >= cutoff)
       .sort(
         (a, b) =>
           b.seenAt - a.seenAt ||
@@ -567,7 +853,7 @@ async function pruneRecentlySeenForUser(
   );
 
   for (const row of rows) {
-    if (row.seenAt < cutoff || !keepIds.has(row._id)) {
+    if (!keepIds.has(row._id)) {
       await ctx.db.delete(row._id);
     }
   }
@@ -608,15 +894,7 @@ async function lockRoundQuestionSets(
   playerIds: Id<"users">[],
   now: number,
 ) {
-  await ensureCapitalCitySeeds(ctx);
-  await ensureGeneralKnowledgeSeeds(ctx);
-  await ensureWhichCameFirstSeeds(ctx);
-  await ensureEnterpriseLogoSeeds(ctx);
-
   const recentlySeen = await loadCrewRecentlySeenChecksums(ctx, playerIds, now);
-  const football = await collectQuestionsForSport(ctx, "football");
-  const knowledge = await collectQuestionsForSport(ctx, "knowledge");
-  const all = await collectAllCandidateQuestions(ctx);
   const used = new Set<string>();
   const categories: string[] = [];
   const rounds: string[][] = [];
@@ -624,12 +902,8 @@ async function lockRoundQuestionSets(
   for (const category of DEFAULT_ROUND_CATEGORIES) {
     if (category === "football_quiz") {
       rounds.push(
-        pickFootballChecksums(
-          football.filter(
-            (q) =>
-              q.category !== "which_came_first" &&
-              q.category !== "badge_identification",
-          ),
+        await pickFootballChecksums(
+          ctx,
           used,
           recentlySeen,
           `${seed}:${category}`,
@@ -642,17 +916,19 @@ async function lockRoundQuestionSets(
 
     if (category === "general_knowledge") {
       rounds.push(
-        pickChecksums(
-          knowledge.filter(
-            (q) =>
-              q.category !== "which_came_first" &&
-              q.category !== "enterprise_logos" &&
-              q.category !== "capital_cities",
-          ),
+        await pickIndexedChecksums(
+          ctx,
+          { sport: "knowledge", cursorPrefix: "knowledge_" },
           used,
           recentlySeen,
           `${seed}:${category}`,
           "general knowledge",
+          (question) =>
+            question.category !== "which_came_first" &&
+            question.category !== "enterprise_logos" &&
+            question.category !== "capital_cities" &&
+            isAnswerableMcq(question),
+          challengeArenaGeneralKnowledgeQuestions,
         ),
       );
       categories.push(category);
@@ -661,12 +937,22 @@ async function lockRoundQuestionSets(
 
     if (category === "which_came_first") {
       rounds.push(
-        pickChecksums(
-          knowledge.filter((q) => q.category === "which_came_first"),
+        await pickIndexedChecksums(
+          ctx,
+          {
+            sport: "knowledge",
+            category: "which_came_first",
+            cursorPrefix: "knowledge_came_first_v",
+            cursorAlphabet: NUMERIC_CURSOR_ALPHABET,
+          },
           used,
           recentlySeen,
           `${seed}:${category}`,
           "which came first",
+          (question) =>
+            question.category === "which_came_first" &&
+            isAnswerableMcq(question),
+          challengeArenaWhichCameFirstQuestions,
         ),
       );
       categories.push(category);
@@ -675,12 +961,20 @@ async function lockRoundQuestionSets(
 
     if (category === "enterprise_logos") {
       rounds.push(
-        pickLogoChecksums(
-          all.filter((q) => q.category === "enterprise_logos"),
+        await pickIndexedChecksums(
+          ctx,
+          {
+            sport: "knowledge",
+            category: "enterprise_logos",
+            cursorPrefix: "challenge_arena_enterprise_logos_v1_",
+            cursorAlphabet: NUMERIC_CURSOR_ALPHABET,
+          },
           used,
           recentlySeen,
           `${seed}:${category}`,
           "enterprise logos",
+          isLogoTextQuestion,
+          challengeArenaEnterpriseLogoQuestions,
         ),
       );
       categories.push(category);
@@ -688,12 +982,21 @@ async function lockRoundQuestionSets(
     }
 
     rounds.push(
-      pickChecksums(
-        knowledge.filter((q) => q.category === "capital_cities"),
+      await pickIndexedChecksums(
+        ctx,
+        {
+          sport: "knowledge",
+          category: "capital_cities",
+          cursorPrefix: "challenge_arena_capitals_v",
+          cursorAlphabet: NUMERIC_CURSOR_ALPHABET,
+        },
         used,
         recentlySeen,
         `${seed}:${category}`,
         "capital cities",
+        (question) =>
+          question.category === "capital_cities" && isAnswerableMcq(question),
+        challengeArenaCapitalCityQuestions,
       ),
     );
     categories.push(category);
@@ -1336,9 +1639,18 @@ async function buildArenaSummary(
 }
 
 async function getContentCounts(ctx: Pick<QueryCtx | MutationCtx, "db">) {
-  const football = await collectQuestionsForSport(ctx, "football");
-  const knowledge = await collectQuestionsForSport(ctx, "knowledge");
-  const all = await collectAllCandidateQuestions(ctx);
+  const footballRows = await ctx.db
+    .query("quizQuestions")
+    .withIndex("by_sport_checksum", (q) => q.eq("sport", "football"))
+    .take(CONTENT_STATUS_FOOTBALL_READ_CAP + 1);
+  const knowledgeRows = await ctx.db
+    .query("quizQuestions")
+    .withIndex("by_sport_checksum", (q) => q.eq("sport", "knowledge"))
+    .take(CONTENT_STATUS_KNOWLEDGE_READ_CAP + 1);
+  const footballCapped = footballRows.length > CONTENT_STATUS_FOOTBALL_READ_CAP;
+  const knowledgeCapped = knowledgeRows.length > CONTENT_STATUS_KNOWLEDGE_READ_CAP;
+  const football = footballRows.slice(0, CONTENT_STATUS_FOOTBALL_READ_CAP);
+  const knowledge = knowledgeRows.slice(0, CONTENT_STATUS_KNOWLEDGE_READ_CAP);
   const footballQuiz = football.filter(
     (q) =>
       q.category !== "which_came_first" &&
@@ -1363,13 +1675,19 @@ async function getContentCounts(ctx: Pick<QueryCtx | MutationCtx, "db">) {
     whichCameFirst: knowledge.filter(
       (q) => q.category === "which_came_first" && isAnswerableMcq(q),
     ).length,
-    enterpriseLogos: all.filter(isLogoTextQuestion).length,
-    legacyLogoMcqImages: all.filter(isValidLogoQuestion).length,
+    enterpriseLogos: knowledge.filter(isLogoTextQuestion).length,
+    legacyLogoMcqImages: football.filter(isValidLogoQuestion).length,
     capitalCities: knowledge.filter(
       (q) => q.category === "capital_cities" && isAnswerableMcq(q),
     ).length,
+    countsCapped: footballCapped || knowledgeCapped,
+    contentStatusReadCaps: {
+      football: CONTENT_STATUS_FOOTBALL_READ_CAP,
+      knowledge: CONTENT_STATUS_KNOWLEDGE_READ_CAP,
+    },
     bundledCapitalSeeds: challengeArenaCapitalCityQuestions.length,
     bundledGeneralKnowledgeSeeds: challengeArenaGeneralKnowledgeQuestions.length,
+    bundledWhichCameFirstSeeds: challengeArenaWhichCameFirstQuestions.length,
     bundledEnterpriseLogoSeeds: challengeArenaEnterpriseLogoQuestions.length,
   };
 }
@@ -2000,18 +2318,27 @@ export const contentStatus = query({
 });
 
 export const seedContentGaps = internalMutation({
-  args: {},
-  handler: async (ctx) => {
-    const insertedCapitalCities = await ensureCapitalCitySeeds(ctx);
-    const insertedGeneralKnowledge = await ensureGeneralKnowledgeSeeds(ctx);
-    const insertedWhichCameFirst = await ensureWhichCameFirstSeeds(ctx);
-    const insertedEnterpriseLogos = await ensureEnterpriseLogoSeeds(ctx);
+  args: {
+    cursor: v.optional(v.string()),
+    limit: v.optional(v.number()),
+  },
+  handler: async (ctx, { cursor, limit }) => {
+    const batchLimit = Math.max(
+      1,
+      Math.min(Math.floor(limit ?? SEED_CONTENT_BATCH_SIZE), SEED_CONTENT_MAX_BATCH_SIZE),
+    );
+    const seeded = await ensureQuestionSeedBatch(
+      ctx,
+      parseSeedCursor(cursor),
+      batchLimit,
+    );
     return {
-      insertedCapitalCities,
-      insertedGeneralKnowledge,
-      insertedWhichCameFirst,
-      insertedEnterpriseLogos,
-      ...(await getContentCounts(ctx)),
+      ...seeded,
+      batchLimit,
+      bundledCapitalSeeds: challengeArenaCapitalCityQuestions.length,
+      bundledGeneralKnowledgeSeeds: challengeArenaGeneralKnowledgeQuestions.length,
+      bundledWhichCameFirstSeeds: challengeArenaWhichCameFirstQuestions.length,
+      bundledEnterpriseLogoSeeds: challengeArenaEnterpriseLogoQuestions.length,
     };
   },
 });

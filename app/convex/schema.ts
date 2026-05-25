@@ -285,6 +285,8 @@ export default defineSchema({
     imageUrl: v.optional(v.string()),
   })
     .index("by_sport_difficulty", ["sport", "difficulty"])
+    .index("by_sport_checksum", ["sport", "checksum"])
+    .index("by_sport_category_checksum", ["sport", "category", "checksum"])
     .index("by_checksum", ["checksum"]),
 
   quizSessions: defineTable({

@@ -156,6 +156,13 @@ type SeedContentGapsResult = {
   bundledEnterpriseLogoSeeds: number;
 };
 
+type SeedContentGapsBatchResult = SeedContentGapsResult & {
+  processed: number;
+  batchLimit: number;
+  nextCursor: string | null;
+  isDone: boolean;
+};
+
 type ArenaSummary = {
   arenaId: string;
   mode: ArenaMode;
@@ -256,39 +263,106 @@ class IndexPredicateBuilder {
     return this;
   }
 
+  gte(field: string, value: unknown) {
+    this.predicates.push((row) => compareIndexValue(row[field], value) >= 0);
+    return this;
+  }
+
+  gt(field: string, value: unknown) {
+    this.predicates.push((row) => compareIndexValue(row[field], value) > 0);
+    return this;
+  }
+
+  lte(field: string, value: unknown) {
+    this.predicates.push((row) => compareIndexValue(row[field], value) <= 0);
+    return this;
+  }
+
+  lt(field: string, value: unknown) {
+    this.predicates.push((row) => compareIndexValue(row[field], value) < 0);
+    return this;
+  }
+
   matches(row: Row) {
     return this.predicates.every((predicate) => predicate(row));
   }
 }
 
+const INDEX_FIELDS: Record<string, string[]> = {
+  by_code: ["code"],
+  by_status: ["status"],
+  by_arena_round_question: ["arenaId", "round", "questionIndex"],
+  by_user_seen_at: ["userId", "seenAt"],
+  by_user_checksum: ["userId", "checksum"],
+  by_sport_difficulty: ["sport", "difficulty"],
+  by_sport_checksum: ["sport", "checksum"],
+  by_sport_category_checksum: ["sport", "category", "checksum"],
+  by_checksum: ["checksum"],
+};
+
+function compareIndexValue(a: unknown, b: unknown) {
+  if (typeof a === "number" && typeof b === "number") return a - b;
+  return String(a ?? "").localeCompare(String(b ?? ""));
+}
+
+function compareRowsByIndex(fields: string[]) {
+  return (a: Row, b: Row) => {
+    for (const field of fields) {
+      const compared = compareIndexValue(a[field], b[field]);
+      if (compared !== 0) return compared;
+    }
+    return String(a._id).localeCompare(String(b._id));
+  };
+}
+
 class FakeQuery {
-  constructor(private rows: Row[]) {}
+  constructor(
+    private rows: Row[],
+    private recordReads: (count: number) => void,
+  ) {}
 
   withIndex(
-    _indexName: string,
+    indexName: string,
     select: (q: IndexPredicateBuilder) => IndexPredicateBuilder,
   ) {
     const builder = new IndexPredicateBuilder();
     select(builder);
-    return new FakeQuery(this.rows.filter((row) => builder.matches(row)));
+    const fields = INDEX_FIELDS[indexName] ?? ["_id"];
+    return new FakeQuery(
+      this.rows.filter((row) => builder.matches(row)).sort(compareRowsByIndex(fields)),
+      this.recordReads,
+    );
+  }
+
+  order(direction: "asc" | "desc") {
+    return new FakeQuery(
+      direction === "desc" ? [...this.rows].reverse() : [...this.rows],
+      this.recordReads,
+    );
   }
 
   async collect() {
+    this.recordReads(this.rows.length);
     return cloneValue(this.rows);
   }
 
   async first() {
-    return cloneValue(this.rows[0] ?? null);
+    const row = this.rows[0] ?? null;
+    this.recordReads(row ? 1 : 0);
+    return cloneValue(row);
   }
 
   async take(limit: number) {
-    return cloneValue(this.rows.slice(0, limit));
+    const rows = this.rows.slice(0, limit);
+    this.recordReads(rows.length);
+    return cloneValue(rows);
   }
 }
 
 class FakeDb {
   private tables = new Map<string, Map<string, Row>>();
   private seq = 0;
+  readCount = 0;
 
   constructor() {
     for (const table of [
@@ -313,7 +387,9 @@ class FakeDb {
   }
 
   async get(id: string) {
-    return cloneValue(this.find(id) ?? null);
+    const row = this.find(id) ?? null;
+    this.readCount += row ? 1 : 0;
+    return cloneValue(row);
   }
 
   async patch(id: string, patch: Record<string, unknown>) {
@@ -330,7 +406,13 @@ class FakeDb {
   }
 
   query(table: string) {
-    return new FakeQuery([...this.table(table).values()]);
+    return new FakeQuery([...this.table(table).values()], (count) => {
+      this.readCount += count;
+    });
+  }
+
+  resetReadCount() {
+    this.readCount = 0;
   }
 
   all<T extends Row>(table: string): T[] {
@@ -528,7 +610,91 @@ function makeSeededDb(includeLogos = true) {
   const db = new FakeDb();
   seedUsers(db);
   seedArenaQuestionPool(db, includeLogos);
+  seedChallengeArenaQuestions(
+    db,
+    "arena_seed_capital",
+    challengeArenaCapitalCityQuestions,
+  );
+  seedChallengeArenaQuestions(
+    db,
+    "arena_seed_general",
+    challengeArenaGeneralKnowledgeQuestions,
+  );
+  seedChallengeArenaQuestions(
+    db,
+    "arena_seed_came_first",
+    challengeArenaWhichCameFirstQuestions,
+  );
+  seedChallengeArenaQuestions(
+    db,
+    "arena_seed_logo",
+    challengeArenaEnterpriseLogoQuestions,
+  );
   return db;
+}
+
+function seedLargeArenaScaleContent(
+  db: FakeDb,
+  generalCount = 2_200,
+  footballCount = 900,
+) {
+  for (let i = 0; i < generalCount; i += 1) {
+    const suffix = String(i).padStart(4, "0");
+    seedQuestion(db, `scale_general_${suffix}`, {
+      sport: "knowledge",
+      category: "scale_general",
+      checksum: `scale_general_${suffix}`,
+      correctAnswer: `Scale General ${suffix}`,
+    });
+  }
+
+  for (let i = 0; i < footballCount; i += 1) {
+    const suffix = String(i).padStart(4, "0");
+    seedQuestion(db, `scale_football_${suffix}`, {
+      sport: "football",
+      category: "scale_football",
+      checksum: `football_scale_${suffix}`,
+      correctAnswer: `Scale Football ${suffix}`,
+    });
+  }
+}
+
+async function seedAllContentGaps(db: FakeDb, limit = 250) {
+  const totals: SeedContentGapsResult = {
+    insertedCapitalCities: 0,
+    insertedGeneralKnowledge: 0,
+    insertedWhichCameFirst: 0,
+    insertedEnterpriseLogos: 0,
+    capitalCities: 0,
+    generalKnowledge: 0,
+    whichCameFirst: 0,
+    enterpriseLogos: 0,
+    bundledCapitalSeeds: 0,
+    bundledGeneralKnowledgeSeeds: 0,
+    bundledEnterpriseLogoSeeds: 0,
+  };
+  let cursor: string | undefined;
+  for (let i = 0; i < 20; i += 1) {
+    const result = (await handlerOf(challengeArenas.seedContentGaps)(
+      makeCtx(db),
+      { cursor, limit },
+    )) as SeedContentGapsBatchResult;
+    totals.insertedCapitalCities += result.insertedCapitalCities;
+    totals.insertedGeneralKnowledge += result.insertedGeneralKnowledge;
+    totals.insertedWhichCameFirst += result.insertedWhichCameFirst;
+    totals.insertedEnterpriseLogos += result.insertedEnterpriseLogos;
+    totals.bundledCapitalSeeds = result.bundledCapitalSeeds;
+    totals.bundledGeneralKnowledgeSeeds = result.bundledGeneralKnowledgeSeeds;
+    totals.bundledEnterpriseLogoSeeds = result.bundledEnterpriseLogoSeeds;
+    if (result.isDone) break;
+    cursor = result.nextCursor ?? undefined;
+  }
+
+  const status = (await handlerOf(challengeArenas.contentStatus)(
+    makeCtx(db),
+    {},
+  )) as SeedContentGapsResult;
+  return { ...totals, ...status };
 }
 
 function questionByChecksum(db: FakeDb, checksum: string) {
@@ -1186,7 +1352,6 @@ describe("challenge arena lifecycle integration", () => {
 
   it("samples expanded general-knowledge and capital pools across arena seeds", async () => {
     const db = makeSeededDb();
-    await handlerOf(challengeArenas.seedContentGaps)(makeCtx(db), {});
 
     const generalSeen = new Set<string>();
     const capitalSeen = new Set<string>();
@@ -1211,6 +1376,63 @@ describe("challenge arena lifecycle integration", () => {
         checksum.startsWith("challenge_arena_capitals_v2_"),
       ).length,
     ).toBeGreaterThan(40);
+  }, 30_000);
+
+  it("starts with bounded reads under large arena content scale", async () => {
+    const db = makeSeededDb();
+    seedUsers(db, ["user_e"]);
+    seedLargeArenaScaleContent(db);
+    const users = ["user_a", "user_b", "user_c", "user_d", "user_e"];
+    for (const userId of users) {
+      for (let i = 0; i < 100; i += 1) {
+        seedRecentlySeen(
+          db,
+          `scale_recent_${userId}_${i}`,
+          userId,
+          `football_scale_${String(i).padStart(4, "0")}`,
+          now - i,
+        );
+      }
+    }
+
+    const { arenaId } = await createJoinedArena(db, "ffa5", users);
+    await readyUsers(db, arenaId, users);
+
+    db.resetReadCount();
+    setAuth("user_a");
+    const result = (await handlerOf(challengeArenas.start)(makeCtx(db), {
+      arenaId,
+    })) as { questionSetSizes: number[] };
+    const arena = db.row<ArenaRow>(arenaId);
+
+    expect(result.questionSetSizes).toEqual([10, 10, 10, 10, 10]);
+    expect(arena.roundChecksums).toHaveLength(5);
+    expect(new Set(arena.roundChecksums.flat()).size).toBe(50);
+    expect(db.readCount).toBeLessThan(1_800);
+  }, 30_000);
+
+  it("paginates seedContentGaps without scanning large existing content", async () => {
+    const db = makeSeededDb();
+    seedLargeArenaScaleContent(db);
+
+    db.resetReadCount();
+    const first = (await handlerOf(challengeArenas.seedContentGaps)(
+      makeCtx(db),
+      { limit: 75 },
+    )) as SeedContentGapsBatchResult;
+    expect(first.processed).toBe(75);
+    expect(first.isDone).toBe(false);
+    expect(first.nextCursor).toBeTruthy();
+    expect(db.readCount).toBeLessThanOrEqual(75);
+
+    db.resetReadCount();
+    const second = (await handlerOf(challengeArenas.seedContentGaps)(
+      makeCtx(db),
+      { cursor: first.nextCursor ?? undefined, limit: 75 },
+    )) as SeedContentGapsBatchResult;
+    expect(second.processed).toBe(75);
+    expect(second.isDone).toBe(false);
+    expect(db.readCount).toBeLessThanOrEqual(75);
   }, 30_000);
 
   it("creates one shared rematch lobby per finished arena and propagates ready state there", async () => {
@@ -1500,10 +1722,7 @@ describe("challenge arena lifecycle integration", () => {
   it("runs logo text questions with fuzzy guesses, aliases, close hints, sanitized views, and all-correct close", async () => {
     const db = new FakeDb();
     seedUsers(db);
-    const seeded = (await handlerOf(challengeArenas.seedContentGaps)(
-      makeCtx(db),
-      {},
-    )) as {
+    const seeded = (await seedAllContentGaps(db)) as {
       insertedEnterpriseLogos: number;
       enterpriseLogos: number;
       bundledEnterpriseLogoSeeds: number;
@@ -1617,7 +1836,7 @@ describe("challenge arena lifecycle integration", () => {
   it("closes logo text questions on timer with misses scored as zero", async () => {
     const db = new FakeDb();
     seedUsers(db);
-    await handlerOf(challengeArenas.seedContentGaps)(makeCtx(db), {});
+    await seedAllContentGaps(db);
     const question = logoQuestionByAnswer(db, "Google");
     const arenaId = "arena_logo_timer";
     seedActiveArena(db, arenaId, question.checksum);
@@ -1651,14 +1870,8 @@ describe("challenge arena lifecycle integration", () => {
     const db = new FakeDb();
     seedUsers(db);
 
-    const first = (await handlerOf(challengeArenas.seedContentGaps)(
-      makeCtx(db),
-      {},
-    )) as SeedContentGapsResult;
-    const second = (await handlerOf(challengeArenas.seedContentGaps)(
-      makeCtx(db),
-      {},
-    )) as SeedContentGapsResult;
+    const first = await seedAllContentGaps(db);
+    const second = await seedAllContentGaps(db);
 
     expect(first.insertedWhichCameFirst).toBe(
       challengeArenaWhichCameFirstQuestions.length,
@@ -1690,10 +1903,7 @@ describe("challenge arena lifecycle integration", () => {
       challengeArenaEnterpriseLogoQuestions,
     );
 
-    const seeded = (await handlerOf(challengeArenas.seedContentGaps)(
-      makeCtx(db),
-      {},
-    )) as SeedContentGapsResult;
+    const seeded = await seedAllContentGaps(db);
 
     expect(seeded.insertedCapitalCities).toBe(0);
     expect(seeded.insertedGeneralKnowledge).toBe(0);
@@ -1722,10 +1932,7 @@ describe("challenge arena lifecycle integration", () => {
     );
     seedChallengeArenaQuestions(db, "existing_came_first_v1", v1);
 
-    const seeded = (await handlerOf(challengeArenas.seedContentGaps)(
-      makeCtx(db),
-      {},
-    )) as SeedContentGapsResult;
+    const seeded = await seedAllContentGaps(db);
 
     expect(v1).toHaveLength(250);
     expect(v2).toHaveLength(300);
@@ -1740,10 +1947,7 @@ describe("challenge arena lifecycle integration", () => {
     const db = new FakeDb();
     seedUsers(db);
 
-    const first = (await handlerOf(challengeArenas.seedContentGaps)(
-      makeCtx(db),
-      {},
-    )) as {
+    const first = (await seedAllContentGaps(db)) as {
       insertedCapitalCities: number;
       insertedGeneralKnowledge: number;
       insertedEnterpriseLogos: number;
@@ -1754,10 +1958,7 @@ describe("challenge arena lifecycle integration", () => {
       bundledGeneralKnowledgeSeeds: number;
       bundledEnterpriseLogoSeeds: number;
     };
-    const second = (await handlerOf(challengeArenas.seedContentGaps)(
-      makeCtx(db),
-      {},
-    )) as {
+    const second = (await seedAllContentGaps(db)) as {
       insertedCapitalCities: number;
       insertedGeneralKnowledge: number;
       insertedEnterpriseLogos: number;
