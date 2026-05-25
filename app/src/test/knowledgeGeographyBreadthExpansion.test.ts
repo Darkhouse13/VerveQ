@@ -1,15 +1,15 @@
 import { describe, expect, it } from "vitest";
 import { knowledgeQuestions } from "../../convex/knowledgeQuestions";
 import {
-  knowledgeExpansionV2Provenance,
-  knowledgeExpansionV2Questions,
-  knowledgeExpansionV2ReviewRows,
-  type KnowledgeExpansionV2Shape,
-} from "../../convex/knowledgeExpansionV2";
+  knowledgeGeographyBreadthProvenance,
+  knowledgeGeographyBreadthQuestions,
+  knowledgeGeographyBreadthReviewRows,
+  type KnowledgeGeographyBreadthShape,
+} from "../../convex/knowledgeGeographyBreadthExpansion";
 import { validateContentBatch } from "../../convex/lib/contentQa";
 import { isStandardMcqQuestion } from "../../convex/lib/mcqEligibility";
 
-const expectedShapeCounts: Record<KnowledgeExpansionV2Shape, number> = {
+const expectedShapeCounts: Record<KnowledgeGeographyBreadthShape, number> = {
   standard_recall: 90,
   odd_one_out: 60,
   negative_exception: 40,
@@ -19,16 +19,11 @@ const expectedShapeCounts: Record<KnowledgeExpansionV2Shape, number> = {
 };
 
 const expectedCategories = [
-  "chemistry",
-  "astronomy",
-  "biology",
-  "earth_science",
-  "geography",
-  "history",
-  "inventions",
-  "language",
-  "literature_arts",
-  "fun_facts",
+  "currencies",
+  "largest_cities",
+  "landmarks",
+  "physical_geography",
+  "country_facts",
 ];
 
 function countBy<T extends string>(values: T[]) {
@@ -41,37 +36,44 @@ function countBy<T extends string>(values: T[]) {
   );
 }
 
-describe("knowledge expansion v2 varied MCQ batch", () => {
-  it("stays a bounded additive standard-MCQ batch with locked shape variety", () => {
-    expect(knowledgeExpansionV2Questions).toHaveLength(300);
-    expect(knowledgeExpansionV2ReviewRows).toHaveLength(300);
+describe("knowledge geography breadth batch", () => {
+  it("stays a bounded text-only standard-MCQ geography batch with locked shape variety", () => {
+    expect(knowledgeGeographyBreadthQuestions).toHaveLength(300);
+    expect(knowledgeGeographyBreadthReviewRows).toHaveLength(300);
 
-    for (const question of knowledgeExpansionV2Questions) {
+    for (const question of knowledgeGeographyBreadthQuestions) {
       expect(question.sport).toBe("knowledge");
       expect(isStandardMcqQuestion(question), question.checksum).toBe(true);
+      expect(question.category).not.toBe("capital_cities");
       expect(question.category).not.toBe("which_came_first");
       expect(question.category).not.toBe("enterprise_logos");
+      expect("imageId" in question).toBe(false);
+      expect("imageUrl" in question).toBe(false);
       expect(question.options).toHaveLength(4);
       expect(question.options).toContain(question.correctAnswer);
     }
 
-    const shapeCounts = countBy(knowledgeExpansionV2ReviewRows.map((row) => row.shape));
+    const shapeCounts = countBy(
+      knowledgeGeographyBreadthReviewRows.map((row) => row.shape),
+    );
     expect(shapeCounts).toEqual(expectedShapeCounts);
     expect(shapeCounts.standard_recall).toBeLessThanOrEqual(
-      knowledgeExpansionV2Questions.length / 2,
+      knowledgeGeographyBreadthQuestions.length / 2,
     );
 
-    const categoryCounts = countBy(knowledgeExpansionV2Questions.map((row) => row.category));
+    const categoryCounts = countBy(
+      knowledgeGeographyBreadthQuestions.map((row) => row.category),
+    );
     expect(categoryCounts).toEqual(
-      Object.fromEntries(expectedCategories.map((category) => [category, 30])),
+      Object.fromEntries(expectedCategories.map((category) => [category, 60])),
     );
   });
 
   it("keeps review metadata aligned to seeded rows and declared provenance", () => {
-    const provenanceKeys = Object.keys(knowledgeExpansionV2Provenance);
+    const provenanceKeys = Object.keys(knowledgeGeographyBreadthProvenance);
 
-    knowledgeExpansionV2ReviewRows.forEach((reviewRow, index) => {
-      const question = knowledgeExpansionV2Questions[index];
+    knowledgeGeographyBreadthReviewRows.forEach((reviewRow, index) => {
+      const question = knowledgeGeographyBreadthQuestions[index];
       expect(reviewRow.ref).toBe(question.checksum);
       expect(reviewRow.category).toBe(question.category);
       expect(reviewRow.difficulty).toBe(question.difficulty);
@@ -83,10 +85,13 @@ describe("knowledge expansion v2 varied MCQ batch", () => {
 
   it("passes content QA against existing bundled checksums without errors", () => {
     const existingChecksums = knowledgeQuestions
-      .filter((question) => !question.checksum.startsWith("knowledge_expansion_v2_"))
+      .filter(
+        (question) =>
+          !question.checksum.startsWith("knowledge_geography_breadth_v1_"),
+      )
       .map((question) => question.checksum);
 
-    const report = validateContentBatch(knowledgeExpansionV2Questions, {
+    const report = validateContentBatch(knowledgeGeographyBreadthQuestions, {
       existingChecksums,
     });
 
@@ -96,7 +101,7 @@ describe("knowledge expansion v2 varied MCQ batch", () => {
 
   it("keeps correct-answer option positions balanced", () => {
     const counts = [0, 0, 0, 0];
-    for (const question of knowledgeExpansionV2Questions) {
+    for (const question of knowledgeGeographyBreadthQuestions) {
       counts[question.options.indexOf(question.correctAnswer)] += 1;
     }
 

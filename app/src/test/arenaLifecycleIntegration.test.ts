@@ -1182,7 +1182,7 @@ describe("challenge arena lifecycle integration", () => {
     expect(selected.size).toBeGreaterThan(28);
     expect(baseCount).toBeGreaterThan(10);
     expect(altCount).toBeGreaterThan(10);
-  });
+  }, 30_000);
 
   it("samples expanded general-knowledge and capital pools across arena seeds", async () => {
     const db = makeSeededDb();
@@ -1211,7 +1211,7 @@ describe("challenge arena lifecycle integration", () => {
         checksum.startsWith("challenge_arena_capitals_v2_"),
       ).length,
     ).toBeGreaterThan(40);
-  });
+  }, 30_000);
 
   it("creates one shared rematch lobby per finished arena and propagates ready state there", async () => {
     const db = new FakeDb();

@@ -1,6 +1,7 @@
 import { knowledgeExpansionV1Questions } from "./knowledgeExpansionV1";
 import { knowledgeCameFirstExpansionV2Questions } from "./knowledgeCameFirstExpansionV2";
 import { knowledgeExpansionV2Questions } from "./knowledgeExpansionV2";
+import { knowledgeGeographyBreadthQuestions } from "./knowledgeGeographyBreadthExpansion";
 
 export type KnowledgeQuestionSeed = {
   sport: string;
@@ -8321,3 +8322,4 @@ export const knowledgeQuestions: KnowledgeQuestionSeed[] = [
 knowledgeQuestions.push(...knowledgeExpansionV1Questions);
 knowledgeQuestions.push(...knowledgeCameFirstExpansionV2Questions);
 knowledgeQuestions.push(...knowledgeExpansionV2Questions);
+knowledgeQuestions.push(...knowledgeGeographyBreadthQuestions);

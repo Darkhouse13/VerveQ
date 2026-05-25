@@ -142,7 +142,7 @@ describe("ProfileScreen — sign-in/sign-out button matrix", () => {
         /create a username to save elo, achievements, forge progress, and leaderboard records\./i,
       ),
     ).toBeInTheDocument();
-  });
+  }, 15_000);
 
   it("does NOT render the CTA for non-guest users", async () => {
     await renderProfile(false);

@@ -16,7 +16,7 @@ describe("answer option ordering contract", () => {
       }
     }
 
-    expect(mcqCounts).toEqual([215, 215, 215, 215]);
+    expect(mcqCounts).toEqual([290, 290, 290, 290]);
     expect(binaryCounts).toEqual([275, 275]);
   });
 
