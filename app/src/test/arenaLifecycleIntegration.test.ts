@@ -297,6 +297,12 @@ const INDEX_FIELDS: Record<string, string[]> = {
   by_sport_difficulty: ["sport", "difficulty"],
   by_sport_checksum: ["sport", "checksum"],
   by_sport_category_checksum: ["sport", "category", "checksum"],
+  by_sport_imageId_imageUrl_checksum: [
+    "sport",
+    "imageId",
+    "imageUrl",
+    "checksum",
+  ],
   by_checksum: ["checksum"],
 };
 
@@ -636,7 +642,8 @@ function makeSeededDb(includeLogos = true) {
 function seedLargeArenaScaleContent(
   db: FakeDb,
   generalCount = 2_200,
-  footballCount = 900,
+  footballTextCount = 900,
+  footballImageCount = 0,
 ) {
   for (let i = 0; i < generalCount; i += 1) {
     const suffix = String(i).padStart(4, "0");
@@ -648,13 +655,51 @@ function seedLargeArenaScaleContent(
     });
   }
 
-  for (let i = 0; i < footballCount; i += 1) {
+  for (let i = 0; i < footballImageCount; i += 1) {
+    const suffix = String(i).padStart(4, "0");
+    seedQuestion(db, `scale_football_image_${suffix}`, {
+      sport: "football",
+      category: "scale_football",
+      checksum: `football_image_scale_${suffix}`,
+      correctAnswer: `Scale Football Image ${suffix}`,
+      imageId: `football_image_scale_${suffix}`,
+    });
+  }
+
+  for (let i = 0; i < footballTextCount; i += 1) {
     const suffix = String(i).padStart(4, "0");
     seedQuestion(db, `scale_football_${suffix}`, {
       sport: "football",
       category: "scale_football",
       checksum: `football_scale_${suffix}`,
       correctAnswer: `Scale Football ${suffix}`,
+    });
+  }
+}
+
+function seedMajorityImageFootballContent(
+  db: FakeDb,
+  imageCount = 1_846,
+  textCount = 450,
+) {
+  for (let i = 0; i < imageCount; i += 1) {
+    const suffix = String(i).padStart(4, "0");
+    seedQuestion(db, `majority_football_image_${suffix}`, {
+      sport: "football",
+      category: "premier_league",
+      checksum: `football_image_majority_${suffix}`,
+      correctAnswer: `Majority Football Image ${suffix}`,
+      imageId: `majority_football_image_${suffix}`,
+    });
+  }
+
+  for (let i = 0; i < textCount; i += 1) {
+    const suffix = String(i).padStart(4, "0");
+    seedQuestion(db, `majority_football_text_${suffix}`, {
+      sport: "football",
+      category: "premier_league",
+      checksum: `football_text_majority_${suffix}`,
+      correctAnswer: `Majority Football Text ${suffix}`,
     });
   }
 }
@@ -703,6 +748,10 @@ function questionByChecksum(db: FakeDb, checksum: string) {
     .find((row) => row.checksum === checksum);
   if (!question) throw new Error(`Missing question ${checksum}`);
   return question;
+}
+
+function hasQuestionImage(question: QuestionRow) {
+  return !!question.imageId || !!question.imageUrl;
 }
 
 function logoQuestionByAnswer(db: FakeDb, answer: string) {
@@ -1408,6 +1457,64 @@ describe("challenge arena lifecycle integration", () => {
     expect(result.questionSetSizes).toEqual([10, 10, 10, 10, 10]);
     expect(arena.roundChecksums).toHaveLength(5);
     expect(new Set(arena.roundChecksums.flat()).size).toBe(50);
+    expect(db.readCount).toBeLessThan(1_800);
+  }, 30_000);
+
+  it("locks every arena round under budget when football content is majority image", async () => {
+    const db = makeSeededDb();
+    seedMajorityImageFootballContent(db);
+    const users = ["user_a", "user_b", "user_c"];
+    const arenaId = "arena_majority_image";
+
+    seedReadyArena(db, arenaId, "ffa3", users);
+
+    db.resetReadCount();
+    setAuth("user_a");
+    const result = (await handlerOf(challengeArenas.start)(makeCtx(db), {
+      arenaId,
+    })) as { questionSetSizes: number[] };
+    const arena = db.row<ArenaRow>(arenaId);
+    const rounds = arena.roundChecksums.map((round) =>
+      round.map((checksum) => questionByChecksum(db, checksum)),
+    );
+
+    expect(result.questionSetSizes).toEqual([10, 10, 10, 10, 10]);
+    expect(arena.roundChecksums).toHaveLength(5);
+    for (const round of arena.roundChecksums) {
+      expect(round).toHaveLength(10);
+    }
+    expect(new Set(arena.roundChecksums.flat()).size).toBe(50);
+
+    const footballText = rounds[0].filter((question) => !hasQuestionImage(question));
+    const footballImages = rounds[0].filter(hasQuestionImage);
+    expect(footballText).toHaveLength(8);
+    expect(footballImages).toHaveLength(2);
+    expect(
+      rounds[0].every(
+        (question) =>
+          question.sport === "football" &&
+          question.category !== "which_came_first" &&
+          question.category !== "badge_identification",
+      ),
+    ).toBe(true);
+    expect(
+      rounds[1].every(
+        (question) =>
+          question.sport === "knowledge" &&
+          question.category !== "which_came_first" &&
+          question.category !== "enterprise_logos" &&
+          question.category !== "capital_cities",
+      ),
+    ).toBe(true);
+    expect(rounds[2].every((question) => question.category === "which_came_first")).toBe(
+      true,
+    );
+    expect(rounds[3].every((question) => question.category === "enterprise_logos")).toBe(
+      true,
+    );
+    expect(rounds[4].every((question) => question.category === "capital_cities")).toBe(
+      true,
+    );
     expect(db.readCount).toBeLessThan(1_800);
   }, 30_000);
 

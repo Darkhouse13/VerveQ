@@ -35,6 +35,7 @@ const RECENTLY_SEEN_WINDOW_COUNT = ARENA_ROUNDS * QUESTIONS_PER_ROUND * 2;
 const RECENTLY_SEEN_WINDOW_AGE_MS = 14 * 24 * 60 * 60 * 1000;
 const INDEXED_POOL_PAGE_SIZE = 64;
 const INDEXED_POOL_MAX_READS = 192;
+const FOOTBALL_IMAGE_CANDIDATE_MAX_READS = 16;
 const SEED_BACKED_MAX_READS = 96;
 const SEED_CONTENT_BATCH_SIZE = 250;
 const SEED_CONTENT_MAX_BATCH_SIZE = 500;
@@ -107,6 +108,16 @@ type SeedContentCategory =
 type SeedCursor = {
   categoryIndex: number;
   offset: number;
+};
+type IndexedCandidateScope = {
+  sport: string;
+  category?: string;
+  media?: "text" | "imageId" | "imageUrl";
+  cursorPrefix?: string;
+  cursorAlphabet?: string;
+};
+type IndexedCandidateOptions = {
+  maxReads?: number;
 };
 type LeaderboardRow = {
   id: string;
@@ -255,6 +266,22 @@ function isLogoTextQuestion(question: Question) {
   );
 }
 
+function isFootballQuizQuestion(question: Question) {
+  return (
+    question.category !== "which_came_first" &&
+    question.category !== "badge_identification" &&
+    isAnswerableMcq(question)
+  );
+}
+
+function isFootballTextQuestion(question: Question) {
+  return isFootballQuizQuestion(question) && !hasQuestionImage(question);
+}
+
+function isFootballImageQuestion(question: Question) {
+  return isFootballQuizQuestion(question) && hasQuestionImage(question);
+}
+
 async function generateUniqueCode(ctx: Pick<MutationCtx, "db">) {
   for (let attempt = 0; attempt < 12; attempt += 1) {
     const code = randomArenaCode();
@@ -344,21 +371,103 @@ async function takeSportCategoryChecksumWindow(
   return [...forward, ...wrapped];
 }
 
+async function takeSportTextChecksumWindow(
+  ctx: Pick<QueryCtx | MutationCtx, "db">,
+  sport: string,
+  cursor: string,
+  limit: number,
+) {
+  const forward = await ctx.db
+    .query("quizQuestions")
+    .withIndex("by_sport_imageId_imageUrl_checksum", (q) =>
+      q
+        .eq("sport", sport)
+        .eq("imageId", undefined)
+        .eq("imageUrl", undefined)
+        .gte("checksum", cursor),
+    )
+    .take(limit);
+  if (forward.length >= limit) return forward;
+
+  const wrapped = await ctx.db
+    .query("quizQuestions")
+    .withIndex("by_sport_imageId_imageUrl_checksum", (q) =>
+      q
+        .eq("sport", sport)
+        .eq("imageId", undefined)
+        .eq("imageUrl", undefined)
+        .lt("checksum", cursor),
+    )
+    .take(limit - forward.length);
+  return [...forward, ...wrapped];
+}
+
+async function takeSportImageIdWindow(
+  ctx: Pick<QueryCtx | MutationCtx, "db">,
+  sport: string,
+  cursor: string,
+  limit: number,
+) {
+  const imageIdCursor = cursor as Id<"_storage">;
+  const minImageId = "" as Id<"_storage">;
+  const forward = await ctx.db
+    .query("quizQuestions")
+    .withIndex("by_sport_imageId_imageUrl_checksum", (q) =>
+      q.eq("sport", sport).gt("imageId", imageIdCursor),
+    )
+    .take(limit);
+  if (forward.length >= limit) return forward;
+
+  const wrapped = await ctx.db
+    .query("quizQuestions")
+    .withIndex("by_sport_imageId_imageUrl_checksum", (q) =>
+      q
+        .eq("sport", sport)
+        .gt("imageId", minImageId)
+        .lt("imageId", imageIdCursor),
+    )
+    .take(limit - forward.length);
+  return [...forward, ...wrapped];
+}
+
+async function takeSportImageUrlWindow(
+  ctx: Pick<QueryCtx | MutationCtx, "db">,
+  sport: string,
+  cursor: string,
+  limit: number,
+) {
+  const forward = await ctx.db
+    .query("quizQuestions")
+    .withIndex("by_sport_imageId_imageUrl_checksum", (q) =>
+      q.eq("sport", sport).eq("imageId", undefined).gt("imageUrl", cursor),
+    )
+    .take(limit);
+  if (forward.length >= limit) return forward;
+
+  const wrapped = await ctx.db
+    .query("quizQuestions")
+    .withIndex("by_sport_imageId_imageUrl_checksum", (q) =>
+      q
+        .eq("sport", sport)
+        .eq("imageId", undefined)
+        .gt("imageUrl", "")
+        .lt("imageUrl", cursor),
+    )
+    .take(limit - forward.length);
+  return [...forward, ...wrapped];
+}
+
 async function collectIndexedCandidates(
   ctx: Pick<QueryCtx | MutationCtx, "db">,
-  scope: {
-    sport: string;
-    category?: string;
-    cursorPrefix?: string;
-    cursorAlphabet?: string;
-  },
+  scope: IndexedCandidateScope,
   seed: string,
   used: Set<string>,
   predicate: (question: Question) => boolean,
   targetCandidates: number,
+  options: IndexedCandidateOptions = {},
 ) {
   const byChecksum = new Map<string, Question>();
-  let remainingReads = INDEXED_POOL_MAX_READS;
+  let remainingReads = options.maxReads ?? INDEXED_POOL_MAX_READS;
 
   for (
     let attempt = 0;
@@ -373,15 +482,22 @@ async function collectIndexedCandidates(
       scope.cursorPrefix ?? "",
       scope.cursorAlphabet,
     );
-    const rows = scope.category
-      ? await takeSportCategoryChecksumWindow(
-          ctx,
-          scope.sport,
-          scope.category,
-          cursor,
-          limit,
-        )
-      : await takeSportChecksumWindow(ctx, scope.sport, cursor, limit);
+    const rows =
+      scope.media === "text"
+        ? await takeSportTextChecksumWindow(ctx, scope.sport, cursor, limit)
+        : scope.media === "imageId"
+          ? await takeSportImageIdWindow(ctx, scope.sport, cursor, limit)
+          : scope.media === "imageUrl"
+            ? await takeSportImageUrlWindow(ctx, scope.sport, cursor, limit)
+        : scope.category
+          ? await takeSportCategoryChecksumWindow(
+              ctx,
+              scope.sport,
+              scope.category,
+              cursor,
+              limit,
+            )
+          : await takeSportChecksumWindow(ctx, scope.sport, cursor, limit);
     remainingReads -= rows.length;
 
     for (const question of rows) {
@@ -570,10 +686,6 @@ async function ensureQuestionSeedBatch(
   };
 }
 
-function uniqueStableCandidates(questions: Question[], used: Set<string>) {
-  return uniqueStableQuestionCandidates(questions, used, isAnswerableMcq);
-}
-
 function uniqueStableQuestionCandidates(
   questions: Question[],
   used: Set<string>,
@@ -628,6 +740,28 @@ function applyRecentlySeenExclusion<T extends { checksum: string }>(
   return candidates.filter((candidate) =>
     includedChecksums.has(candidate.checksum),
   );
+}
+
+function recentlySeenCountForScope(
+  recentlySeen: RecentlySeenMap,
+  scope: IndexedCandidateScope,
+  fallbackSeeds?: ChallengeArenaQuestionSeed[],
+) {
+  if (recentlySeen.size === 0) return 0;
+
+  const fallbackChecksums = fallbackSeeds
+    ? new Set(fallbackSeeds.map((seed) => seed.checksum))
+    : null;
+  let count = 0;
+  for (const checksum of recentlySeen.keys()) {
+    if (
+      fallbackChecksums?.has(checksum) ||
+      (scope.cursorPrefix && checksum.startsWith(scope.cursorPrefix))
+    ) {
+      count += 1;
+    }
+  }
+  return count;
 }
 
 function footballRoundCapacity(candidates: Question[]) {
@@ -691,12 +825,7 @@ async function pickSeedBackedChecksums(
 
 async function pickIndexedChecksums(
   ctx: Pick<QueryCtx | MutationCtx, "db">,
-  scope: {
-    sport: string;
-    category?: string;
-    cursorPrefix?: string;
-    cursorAlphabet?: string;
-  },
+  scope: IndexedCandidateScope,
   used: Set<string>,
   recentlySeen: RecentlySeenMap,
   seed: string,
@@ -704,8 +833,13 @@ async function pickIndexedChecksums(
   predicate: (question: Question) => boolean,
   fallbackSeeds?: ChallengeArenaQuestionSeed[],
 ) {
+  const relevantRecentlySeen = recentlySeenCountForScope(
+    recentlySeen,
+    scope,
+    fallbackSeeds,
+  );
   const targetCandidates =
-    QUESTIONS_PER_ROUND + Math.min(recentlySeen.size, 40) + 32;
+    QUESTIONS_PER_ROUND + Math.min(relevantRecentlySeen, 40) + 32;
   const questions = await collectIndexedCandidates(
     ctx,
     scope,
@@ -749,25 +883,53 @@ async function pickFootballChecksums(
   seed: string,
   label: string,
 ) {
-  const targetCandidates =
-    QUESTIONS_PER_ROUND +
-    Math.min(recentlySeen.size, 40) +
-    FOOTBALL_IMAGE_QUESTION_CAP +
-    32;
-  const questions = await collectIndexedCandidates(
-    ctx,
-    { sport: "football", cursorPrefix: "football_" },
-    seed,
-    used,
-    (question) =>
-      question.category !== "which_came_first" &&
-      question.category !== "badge_identification" &&
-      isAnswerableMcq(question),
-    targetCandidates,
+  const footballScope = { sport: "football", cursorPrefix: "football_" };
+  const relevantRecentlySeen = recentlySeenCountForScope(
+    recentlySeen,
+    footballScope,
   );
+  const targetTextCandidates =
+    QUESTIONS_PER_ROUND +
+    Math.min(relevantRecentlySeen, 40) +
+    32;
+  const targetImageCandidates =
+    FOOTBALL_IMAGE_QUESTION_CAP + Math.min(relevantRecentlySeen, 8) + 8;
+  const textQuestions = await collectIndexedCandidates(
+    ctx,
+    { sport: "football", media: "text", cursorPrefix: "football_" },
+    `${seed}:text`,
+    used,
+    isFootballTextQuestion,
+    targetTextCandidates,
+  );
+  const imageIdQuestions = await collectIndexedCandidates(
+    ctx,
+    { sport: "football", media: "imageId" },
+    `${seed}:imageId`,
+    used,
+    isFootballImageQuestion,
+    targetImageCandidates,
+    { maxReads: FOOTBALL_IMAGE_CANDIDATE_MAX_READS },
+  );
+  const imageUrlQuestions =
+    imageIdQuestions.length >= FOOTBALL_IMAGE_QUESTION_CAP
+      ? []
+      : await collectIndexedCandidates(
+          ctx,
+          { sport: "football", media: "imageUrl" },
+          `${seed}:imageUrl`,
+          used,
+          isFootballImageQuestion,
+          targetImageCandidates,
+          { maxReads: FOOTBALL_IMAGE_CANDIDATE_MAX_READS },
+        );
   const candidates = seededShuffle(
     applyRecentlySeenFootballExclusion(
-      uniqueStableCandidates(questions, used),
+      uniqueStableQuestionCandidates(
+        [...textQuestions, ...imageIdQuestions, ...imageUrlQuestions],
+        used,
+        isFootballQuizQuestion,
+      ),
       recentlySeen,
     ),
     seed,
