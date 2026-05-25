@@ -5,6 +5,7 @@
  * Usage:
  *   npx tsx scripts/runCieValidation.ts
  *   npx tsx scripts/runCieValidation.ts --k 5 --timeout-ms 60000
+ *   npx tsx scripts/runCieValidation.ts --families glm,minimax --k 5
  */
 
 import * as fs from "fs";
@@ -22,7 +23,8 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = path.join(__dirname, "..");
 const DEFAULT_OUTPUT_ROOT = path.join(__dirname, "data", "cie-validation");
 
-type FamilyName = "openai" | "anthropic";
+const SUPPORTED_FAMILIES = ["openai", "anthropic", "glm", "minimax"] as const;
+type FamilyName = (typeof SUPPORTED_FAMILIES)[number];
 type Verdict = "agree" | "disagree" | "flag" | "error" | "missing";
 
 type FamilyConfig = {
@@ -39,6 +41,12 @@ type CliArgs = {
   timeoutMs: number;
   outputRoot: string;
   skipPreflight: boolean;
+  selectedFamilies: readonly [FamilyName, FamilyName];
+};
+
+type FamilyOrdering = {
+  authorFamily: FamilyName;
+  verifierFamily: FamilyName;
 };
 
 type ParsedVerifierOutput = {
@@ -104,6 +112,7 @@ function parseArgs(): CliArgs {
   const timeoutMs = Number(readValue("--timeout-ms") ?? "60000");
   const outputRoot = readValue("--output-root") ?? DEFAULT_OUTPUT_ROOT;
   const skipPreflight = args.includes("--skip-preflight");
+  const selectedFamilies = parseSelectedFamilies(readValue);
 
   if (!Number.isInteger(k) || k <= 0) {
     throw new Error(`Invalid --k value "${k}". Expected a positive integer.`);
@@ -114,7 +123,88 @@ function parseArgs(): CliArgs {
     );
   }
 
-  return { k, timeoutMs, outputRoot, skipPreflight };
+  return { k, timeoutMs, outputRoot, skipPreflight, selectedFamilies };
+}
+
+function parseSelectedFamilies(
+  readValue: (name: string) => string | undefined,
+): readonly [FamilyName, FamilyName] {
+  const familiesValue = readValue("--families") ?? process.env.CIE_FAMILIES;
+  const authorFamily = readValue("--author-family") ?? process.env.CIE_AUTHOR_FAMILY;
+  const verifierFamily =
+    readValue("--verifier-family") ?? process.env.CIE_VERIFIER_FAMILY;
+
+  if (familiesValue && (authorFamily || verifierFamily)) {
+    throw new Error(
+      "Use either --families/CIE_FAMILIES or --author-family plus --verifier-family, not both.",
+    );
+  }
+
+  if (familiesValue) {
+    const parsed = familiesValue
+      .split(/[,\s]+/)
+      .map((family) => family.trim())
+      .filter(Boolean)
+      .map(parseFamilyName);
+    if (parsed.length !== 2) {
+      throw new Error(
+        `Invalid family selection "${familiesValue}". Expected exactly two comma-separated families.`,
+      );
+    }
+    return assertDistinctFamilyPair(parsed[0], parsed[1]);
+  }
+
+  if (authorFamily || verifierFamily) {
+    if (!authorFamily || !verifierFamily) {
+      throw new Error(
+        "Both --author-family/CIE_AUTHOR_FAMILY and --verifier-family/CIE_VERIFIER_FAMILY are required when selecting by role.",
+      );
+    }
+    return assertDistinctFamilyPair(
+      parseFamilyName(authorFamily),
+      parseFamilyName(verifierFamily),
+    );
+  }
+
+  return ["openai", "anthropic"];
+}
+
+function parseFamilyName(value: string): FamilyName {
+  const normalized = value.trim().toLowerCase();
+  if (normalized === "zai" || normalized === "z.ai" || normalized === "zhipu") {
+    return "glm";
+  }
+  if (normalized === "mini-max" || normalized === "mini_max") {
+    return "minimax";
+  }
+  if ((SUPPORTED_FAMILIES as readonly string[]).includes(normalized)) {
+    return normalized as FamilyName;
+  }
+  throw new Error(
+    `Unsupported family "${value}". Supported families: ${SUPPORTED_FAMILIES.join(", ")}.`,
+  );
+}
+
+function assertDistinctFamilyPair(
+  first: FamilyName,
+  second: FamilyName,
+): readonly [FamilyName, FamilyName] {
+  if (first === second) {
+    throw new Error(
+      `CIE validation requires two distinct model families; received "${first}" twice.`,
+    );
+  }
+  return [first, second];
+}
+
+function buildOrderings(
+  selectedFamilies: readonly [FamilyName, FamilyName],
+): FamilyOrdering[] {
+  const [first, second] = selectedFamilies;
+  return [
+    { authorFamily: first, verifierFamily: second },
+    { authorFamily: second, verifierFamily: first },
+  ];
 }
 
 function getFamilyConfigs(): Record<FamilyName, FamilyConfig> {
@@ -122,6 +212,9 @@ function getFamilyConfigs(): Record<FamilyName, FamilyConfig> {
     process.env.CIE_OPENAI_MODEL?.trim() || "gpt-4o-2024-08-06";
   const anthropicModel =
     process.env.CIE_ANTHROPIC_MODEL?.trim() || "claude-3-5-sonnet-20241022";
+  const glmModel = process.env.CIE_GLM_MODEL?.trim() || "glm-5.1";
+  const minimaxModel =
+    process.env.CIE_MINIMAX_MODEL?.trim() || "MiniMax-M2.7";
 
   return {
     openai: {
@@ -140,13 +233,35 @@ function getFamilyConfigs(): Record<FamilyName, FamilyConfig> {
       model: anthropicModel,
       apiKey: process.env.ANTHROPIC_API_KEY,
     },
+    glm: {
+      family: "glm",
+      apiKeyEnv: "ZHIPUAI_API_KEY",
+      modelEnv: "CIE_GLM_MODEL",
+      defaultModel: "glm-5.1",
+      model: glmModel,
+      apiKey:
+        process.env.ZHIPUAI_API_KEY ??
+        process.env.ZHIPU_API_KEY ??
+        process.env.ZAI_API_KEY,
+    },
+    minimax: {
+      family: "minimax",
+      apiKeyEnv: "MINIMAX_API_KEY",
+      modelEnv: "CIE_MINIMAX_MODEL",
+      defaultModel: "MiniMax-M2.7",
+      model: minimaxModel,
+      apiKey: process.env.MINIMAX_API_KEY,
+    },
   };
 }
 
-function assertTwoCredentialedFamilies(
+function assertSelectedCredentialedFamilies(
   configs: Record<FamilyName, FamilyConfig>,
+  selectedFamilies: readonly [FamilyName, FamilyName],
 ): void {
-  const missing = Object.values(configs).filter((config) => !config.apiKey);
+  const missing = selectedFamilies
+    .map((family) => configs[family])
+    .filter((config) => !config.apiKey);
   if (missing.length > 0) {
     throw new Error(
       [
@@ -357,6 +472,108 @@ async function callAnthropic(
   return { raw, text };
 }
 
+async function callGlm(
+  config: FamilyConfig,
+  systemPrompt: string,
+  userPayload: unknown,
+  timeoutMs: number,
+): Promise<{ raw: unknown; text: string }> {
+  const raw = await fetchJsonWithTimeout(
+    "https://open.bigmodel.cn/api/paas/v4/chat/completions",
+    {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${config.apiKey}`,
+        "Accept-Language": "en-US,en",
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model: config.model,
+        temperature: 0,
+        do_sample: false,
+        max_tokens: 900,
+        thinking: { type: "disabled" },
+        messages: [
+          { role: "system", content: systemPrompt },
+          { role: "user", content: JSON.stringify(userPayload) },
+        ],
+      }),
+    },
+    timeoutMs,
+  );
+
+  const choices = (raw as { choices?: Array<{ message?: { content?: string } }> })
+    .choices;
+  const text = choices?.[0]?.message?.content;
+  if (typeof text !== "string") {
+    throw new Error("GLM/Zhipu response did not include message content.");
+  }
+
+  return { raw, text };
+}
+
+async function callMiniMax(
+  config: FamilyConfig,
+  systemPrompt: string,
+  userPayload: unknown,
+  timeoutMs: number,
+): Promise<{ raw: unknown; text: string }> {
+  const raw = await fetchJsonWithTimeout(
+    "https://api.minimax.io/v1/chat/completions",
+    {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${config.apiKey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model: config.model,
+        temperature: 0.1,
+        top_p: 0.95,
+        max_completion_tokens: 900,
+        reasoning_split: true,
+        messages: [
+          { role: "system", name: "VerveQ", content: systemPrompt },
+          {
+            role: "user",
+            name: "User",
+            content: JSON.stringify(userPayload),
+          },
+        ],
+      }),
+    },
+    timeoutMs,
+  );
+
+  const choices = (raw as { choices?: Array<{ message?: { content?: string } }> })
+    .choices;
+  const text = choices?.[0]?.message?.content;
+  if (typeof text !== "string") {
+    throw new Error("MiniMax response did not include message content.");
+  }
+
+  return { raw, text };
+}
+
+async function callProvider(
+  family: FamilyName,
+  config: FamilyConfig,
+  systemPrompt: string,
+  userPayload: unknown,
+  timeoutMs: number,
+): Promise<{ raw: unknown; text: string }> {
+  switch (family) {
+    case "openai":
+      return callOpenAI(config, systemPrompt, userPayload, timeoutMs);
+    case "anthropic":
+      return callAnthropic(config, systemPrompt, userPayload, timeoutMs);
+    case "glm":
+      return callGlm(config, systemPrompt, userPayload, timeoutMs);
+    case "minimax":
+      return callMiniMax(config, systemPrompt, userPayload, timeoutMs);
+  }
+}
+
 function extractJsonObject(text: string): unknown {
   try {
     return JSON.parse(text);
@@ -418,15 +635,13 @@ async function verifyAttempt(
   let errorRecord: AttemptRecord["error"] | undefined;
 
   try {
-    const result =
-      verifierFamily === "openai"
-        ? await callOpenAI(verifierConfig, SYSTEM_PROMPT, userPayload, timeoutMs)
-        : await callAnthropic(
-            verifierConfig,
-            SYSTEM_PROMPT,
-            userPayload,
-            timeoutMs,
-          );
+    const result = await callProvider(
+      verifierFamily,
+      verifierConfig,
+      SYSTEM_PROMPT,
+      userPayload,
+      timeoutMs,
+    );
     rawOutput = result.raw;
     parsed = parseVerifierText(result.text);
   } catch (error) {
@@ -473,6 +688,7 @@ async function verifyAttempt(
 
 async function preflightFamilies(
   configs: Record<FamilyName, FamilyConfig>,
+  selectedFamilies: readonly [FamilyName, FamilyName],
   timeoutMs: number,
 ): Promise<void> {
   const preflightSystem =
@@ -482,18 +698,16 @@ async function preflightFamilies(
     instruction: "Return the exact JSON shape requested by the system prompt.",
   };
 
-  for (const family of ["openai", "anthropic"] as FamilyName[]) {
+  for (const family of selectedFamilies) {
     const config = configs[family];
     try {
-      const result =
-        family === "openai"
-          ? await callOpenAI(config, preflightSystem, preflightPayload, timeoutMs)
-          : await callAnthropic(
-              config,
-              preflightSystem,
-              preflightPayload,
-              timeoutMs,
-            );
+      const result = await callProvider(
+        family,
+        config,
+        preflightSystem,
+        preflightPayload,
+        timeoutMs,
+      );
       const parsed = parseVerifierText(result.text);
       if (parsed.verdict !== "agree") {
         throw new Error(
@@ -513,11 +727,12 @@ async function main(): Promise<void> {
   loadRootEnv();
   const args = parseArgs();
   const configs = getFamilyConfigs();
+  const orderings = buildOrderings(args.selectedFamilies);
 
-  assertTwoCredentialedFamilies(configs);
+  assertSelectedCredentialedFamilies(configs, args.selectedFamilies);
   validateGoldenSet();
   if (!args.skipPreflight) {
-    await preflightFamilies(configs, args.timeoutMs);
+    await preflightFamilies(configs, args.selectedFamilies, args.timeoutMs);
   }
 
   const branch = getGitValue(["branch", "--show-current"]);
@@ -530,6 +745,12 @@ async function main(): Promise<void> {
   fs.mkdirSync(outputDir, { recursive: true });
 
   const attemptsPath = path.join(outputDir, "attempts.jsonl");
+  const selectedModels: Partial<Record<FamilyName, string>> = {};
+  const selectedCredentialEnvVars: Partial<Record<FamilyName, string>> = {};
+  for (const family of args.selectedFamilies) {
+    selectedModels[family] = configs[family].model;
+    selectedCredentialEnvVars[family] = configs[family].apiKeyEnv;
+  }
   const manifest = {
     runId,
     startedAt: new Date().toISOString(),
@@ -537,18 +758,10 @@ async function main(): Promise<void> {
     commit: getGitValue(["rev-parse", "HEAD"]),
     k: args.k,
     itemCount: GOLDEN_GEOGRAPHY_ITEMS.length,
-    orderings: [
-      { authorFamily: "anthropic", verifierFamily: "openai" },
-      { authorFamily: "openai", verifierFamily: "anthropic" },
-    ],
-    models: {
-      openai: configs.openai.model,
-      anthropic: configs.anthropic.model,
-    },
-    credentialEnvVars: {
-      openai: configs.openai.apiKeyEnv,
-      anthropic: configs.anthropic.apiKeyEnv,
-    },
+    selectedFamilies: args.selectedFamilies,
+    orderings,
+    models: selectedModels,
+    credentialEnvVars: selectedCredentialEnvVars,
     outputFiles: {
       attempts: attemptsPath,
     },
@@ -560,16 +773,15 @@ async function main(): Promise<void> {
   console.log(`CIE validation run ${runId}`);
   console.log(`Branch: ${branch}`);
   console.log(
-    `Models: openai=${configs.openai.model}, anthropic=${configs.anthropic.model}`,
+    `Models: ${args.selectedFamilies
+      .map((family) => `${family}=${configs[family].model}`)
+      .join(", ")}`,
   );
   console.log(`Attempts: ${totalAttempts} (${args.k} trials x 2 orderings x 30 items)`);
   console.log(`Output: ${outputDir}`);
 
   for (let trial = 1; trial <= args.k; trial++) {
-    for (const ordering of [
-      { authorFamily: "anthropic" as const, verifierFamily: "openai" as const },
-      { authorFamily: "openai" as const, verifierFamily: "anthropic" as const },
-    ]) {
+    for (const ordering of orderings) {
       for (const item of GOLDEN_GEOGRAPHY_ITEMS) {
         const attempt = await verifyAttempt(
           runId,

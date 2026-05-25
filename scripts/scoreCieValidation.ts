@@ -17,7 +17,7 @@ const DEFAULT_OUTPUT_ROOT = path.join(__dirname, "data", "cie-validation");
 type Label = "clean" | "corrupted";
 type CorruptionType = 1 | 2 | 3 | 4 | 5;
 type Verdict = "agree" | "disagree" | "flag" | "error" | "missing";
-type FamilyName = "openai" | "anthropic";
+type FamilyName = string;
 
 type AttemptRecord = {
   runId: string;
@@ -170,6 +170,66 @@ function stringifyDistribution(
     .join(", ");
 }
 
+function getManifestOrderings(
+  manifest: Record<string, unknown>,
+  attempts: AttemptRecord[],
+): Array<{ authorFamily: FamilyName; verifierFamily: FamilyName }> {
+  const manifestOrderings = manifest.orderings;
+  if (Array.isArray(manifestOrderings)) {
+    const parsed = manifestOrderings
+      .map((entry) => {
+        if (
+          entry &&
+          typeof entry === "object" &&
+          "authorFamily" in entry &&
+          "verifierFamily" in entry
+        ) {
+          const authorFamily = (entry as { authorFamily?: unknown }).authorFamily;
+          const verifierFamily = (entry as { verifierFamily?: unknown })
+            .verifierFamily;
+          if (
+            typeof authorFamily === "string" &&
+            typeof verifierFamily === "string"
+          ) {
+            return { authorFamily, verifierFamily };
+          }
+        }
+        return undefined;
+      })
+      .filter(
+        (
+          entry,
+        ): entry is { authorFamily: FamilyName; verifierFamily: FamilyName } =>
+          Boolean(entry),
+      );
+    if (parsed.length > 0) return parsed;
+  }
+
+  const seen = new Set<string>();
+  const derived: Array<{ authorFamily: FamilyName; verifierFamily: FamilyName }> =
+    [];
+  for (const attempt of attempts) {
+    const key = `${attempt.authorFamily}->${attempt.verifierFamily}`;
+    if (!seen.has(key)) {
+      seen.add(key);
+      derived.push({
+        authorFamily: attempt.authorFamily,
+        verifierFamily: attempt.verifierFamily,
+      });
+    }
+  }
+  return derived;
+}
+
+function stringifyModels(models: unknown): string {
+  if (!models || typeof models !== "object") return "unknown";
+  const entries = Object.entries(models as Record<string, unknown>);
+  if (entries.length === 0) return "unknown";
+  return entries
+    .map(([family, model]) => `${family} ${String(model)}`)
+    .join(" / ");
+}
+
 function buildReport(runDir: string, attempts: AttemptRecord[]): {
   summary: Record<string, unknown>;
   markdown: string;
@@ -220,10 +280,7 @@ function buildReport(runDir: string, attempts: AttemptRecord[]): {
     };
   });
 
-  const perOrdering = ([
-    { authorFamily: "anthropic" as const, verifierFamily: "openai" as const },
-    { authorFamily: "openai" as const, verifierFamily: "anthropic" as const },
-  ]).map((ordering) => {
+  const perOrdering = getManifestOrderings(manifest, attempts).map((ordering) => {
     const orderingAttempts = attempts.filter(
       (attempt) =>
         attempt.authorFamily === ordering.authorFamily &&
@@ -283,9 +340,7 @@ function buildReport(runDir: string, attempts: AttemptRecord[]): {
   lines.push(`Run directory: ${runDir}`);
   lines.push(`Run ID: ${String(manifest.runId ?? "unknown")}`);
   lines.push(`Branch: ${String(manifest.branch ?? "unknown")}`);
-  lines.push(
-    `Models: OpenAI ${String((manifest.models as Record<string, unknown> | undefined)?.openai ?? "unknown")} / Anthropic ${String((manifest.models as Record<string, unknown> | undefined)?.anthropic ?? "unknown")}`,
-  );
+  lines.push(`Models: ${stringifyModels(manifest.models)}`);
   lines.push("");
   lines.push("## Core metrics");
   lines.push("");
