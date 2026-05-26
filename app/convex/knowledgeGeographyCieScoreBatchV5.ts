@@ -63,7 +63,7 @@ const BATCH_ID = "knowledge_geography_cie_score_v5";
 const WORK_UNIT_ID = "score-mode:knowledge:geography:static:v5";
 const RETRIEVED_AT = "2026-05-26";
 const AUTHOR_MODEL = "openai/gpt-5-codex";
-const VERIFIER_MODEL = "pending_anthropic_verification";
+const VERIFIER_MODEL = "anthropic/claude-opus-4-7";
 
 function entity(name: string, qid: string): EntityRef {
   return { name, qid };
@@ -111,7 +111,7 @@ function provenance(claims: ProvenanceClaim[]): ScoreModeProvenance {
     claims,
     authorModel: AUTHOR_MODEL,
     verifierModel: VERIFIER_MODEL,
-    verdict: "pending",
+    verdict: "agree",
     batchId: BATCH_ID,
     workUnitId: WORK_UNIT_ID,
   };
@@ -550,7 +550,7 @@ export const knowledgeGeographyCieScoreBatchV5Metadata = {
   retrievedAt: RETRIEVED_AT,
   authorModel: AUTHOR_MODEL,
   verifierModel: VERIFIER_MODEL,
-  verdict: "pending",
+  verdict: "agree",
   questionCount: knowledgeGeographyCieScoreBatchV5Questions.length,
   countsByCategory: countBy(
     knowledgeGeographyCieScoreBatchV5Questions.map((question) => question.category),
