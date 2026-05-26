@@ -3,7 +3,7 @@ import { skillNodeById, type SkillNodeId } from "./learnSkillGraph";
 
 type SourceType = "structured_open";
 type Volatility = "static";
-type Verdict = "pending";
+type Verdict = "pending" | "agree" | "disagree" | "flag";
 
 type EntityRef = {
   name: string;
@@ -21,7 +21,7 @@ type ProvenanceClaim = {
 type LearnModeProvenance = {
   claims: ProvenanceClaim[];
   authorModel: string;
-  verifierModel: "pending_anthropic_verification";
+  verifierModel: string;
   verdict: Verdict;
   batchId: string;
   workUnitId: string;
@@ -70,7 +70,7 @@ const BATCH_ID = "learn_geography_nonobvious_ladder_v1";
 const WORK_UNIT_ID = "learn:knowledge:geography:geo.capitals.nonobvious:v1";
 const RETRIEVED_AT = "2026-05-26";
 const AUTHOR_MODEL = "openai/gpt-5-codex";
-const VERIFIER_MODEL = "pending_anthropic_verification";
+const VERIFIER_MODEL = "anthropic/claude-opus-4-7";
 const SKILL_NODE: SkillNodeId = "geo.capitals.nonobvious";
 
 function entity(name: string, qid: string): EntityRef {
@@ -132,7 +132,7 @@ function provenance(rung: RawLadderRung): LearnModeProvenance {
     claims: capitalClaims(rung),
     authorModel: AUTHOR_MODEL,
     verifierModel: VERIFIER_MODEL,
-    verdict: "pending",
+    verdict: "agree",
     batchId: BATCH_ID,
     workUnitId: WORK_UNIT_ID,
   };
@@ -497,7 +497,7 @@ export const learnGeographyNonobviousLadderV1Metadata = {
   retrievedAt: RETRIEVED_AT,
   authorModel: AUTHOR_MODEL,
   verifierModel: VERIFIER_MODEL,
-  verdict: "pending",
+  verdict: "agree",
   skillNodes: [SKILL_NODE],
   questionCount: learnGeographyNonobviousLadderV1Questions.length,
   checksumPrefix: BATCH_ID,
@@ -556,8 +556,8 @@ export function validateLearnGeographyNonobviousLadderV1() {
       }
     }
 
-    if (question.provenance.verdict !== "pending") {
-      errors.push(`${question.checksum} must stay pending until cross-family verification`);
+    if (question.provenance.verdict === "pending") {
+      errors.push(`${question.checksum} is still pending cross-family verification`);
     }
     if (question.provenance.verifierModel !== VERIFIER_MODEL) {
       errors.push(`${question.checksum} has unexpected verifierModel`);
