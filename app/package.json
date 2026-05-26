@@ -21,6 +21,7 @@
     "gameplay:smoke": "npx tsx ../scripts/runCuratedGameplaySmoke.ts",
     "content:qa": "npx tsx scripts/contentQaCli.ts",
     "content:qa:baseline": "npx tsx scripts/contentQaBaseline.ts",
+    "learn:graph:validate": "npx tsx scripts/validateLearnSkillGraph.ts",
     "test": "vitest run",
     "test:watch": "vitest"
   },
