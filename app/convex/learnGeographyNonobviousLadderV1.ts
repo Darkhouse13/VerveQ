@@ -80,7 +80,7 @@ const BATCH_ID = "learn_geography_nonobvious_ladder_v1";
 const WORK_UNIT_ID = "learn:knowledge:geography:geo.capitals.nonobvious:v1";
 const RETRIEVED_AT = "2026-05-26";
 const AUTHOR_MODEL = "openai/gpt-5-codex";
-const VERIFIER_MODEL = "pending_anthropic_verification";
+const VERIFIER_MODEL = "anthropic/claude-opus-4-7";
 const SKILL_NODE: SkillNodeId = "geo.capitals.nonobvious";
 
 function entity(name: string, qid: string): EntityRef {
@@ -187,7 +187,7 @@ function provenance(rung: RawLadderRung): LearnModeProvenance {
     claims: capitalClaims(rung),
     authorModel: AUTHOR_MODEL,
     verifierModel: VERIFIER_MODEL,
-    verdict: "pending",
+    verdict: "agree",
     batchId: BATCH_ID,
     workUnitId: WORK_UNIT_ID,
   };
@@ -735,7 +735,7 @@ export const learnGeographyNonobviousLadderV1Metadata = {
   retrievedAt: RETRIEVED_AT,
   authorModel: AUTHOR_MODEL,
   verifierModel: VERIFIER_MODEL,
-  verdict: "pending",
+  verdict: "agree",
   skillNodes: [SKILL_NODE],
   questionCount: learnGeographyNonobviousLadderV1Questions.length,
   checksumPrefix: BATCH_ID,
