@@ -387,23 +387,23 @@ const RAW_RUNGS: RawLadderRung[] = [
         lyon,
         "major city in the country = capital",
         "It is a city in France, so it can feel plausible before the learner checks the capital fact.",
-        "Lyon is a French-city recognition trap; this baseline rung expects Paris before the later non-obvious capitals.",
+        "Lyon is a country-city trap: being a French city is not enough to make it the capital.",
       ),
       d(
         toulouse,
         "important regional city = capital",
         "It is a city in France, which makes it a plausible but unchecked substitute.",
-        "Toulouse is a French-city trap; this baseline rung expects Paris before the later non-obvious capitals.",
+        "Toulouse is a regional-city trap: a real French city can still be the wrong capital choice.",
       ),
       d(
         bordeaux,
         "recognizable city name = capital",
         "It is a city in France, so recognition can pull the learner away from the sourced capital.",
-        "Bordeaux is a French-city trap; this baseline rung expects Paris before the later non-obvious capitals.",
+        "Bordeaux is a recognition trap: a familiar French city name is not evidence of capital status.",
       ),
     ],
     correctReveal:
-      "Paris is the baseline because, in this first rung, the expected capital is correct before the ladder starts breaking the famous-city shortcut.",
+      "Paris is both France's capital and its most famous city, the case where the obvious guess is right before the pattern flips.",
   },
   {
     ladderIndex: 2,
@@ -614,23 +614,23 @@ const RAW_RUNGS: RawLadderRung[] = [
         casablanca,
         "famous city = capital",
         "It is a city in Morocco and the recognition trap this synthesis rung expects the learner to resist.",
-        "Casablanca is the larger-city trap; Rabat is Morocco's capital.",
+        "Casablanca is the larger-city trap: Morocco's administrative capital is not its biggest city.",
       ),
       d(
         tangier,
         "recognizable city = capital",
         "It is a city in Morocco, so recognition can make it feel like the capital.",
-        "Tangier is a recognition trap; Rabat is Morocco's capital.",
+        "Tangier is a recognition trap: knowing a Moroccan city name is not the same as knowing the administrative capital.",
       ),
       d(
         fez,
         "historic city = capital",
         "It is a city in Morocco, which can tempt a learner who is matching the country to a familiar place.",
-        "Fez is a recognition trap; Rabat is Morocco's capital.",
+        "Fez is a historic-city trap: history and familiarity are not the same as current administrative-capital status.",
       ),
     ],
     correctReveal:
-      "Rabat is the answer because Morocco's capital role belongs to Rabat even though Casablanca is the much larger city-name trap.",
+      "Rabat is Morocco's political and administrative capital while Casablanca is the country's largest city, matching the pattern that the capital can differ from the obvious city.",
     teachingSources: [
       cityCapitalOfSource(rabat, morocco, "+1956-00-00T00:00:00Z"),
       populationSource(
