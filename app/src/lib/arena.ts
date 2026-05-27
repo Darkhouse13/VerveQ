@@ -168,7 +168,23 @@ export function usePhaseAnchor(key: string | null | undefined) {
 }
 
 export function normalizeArenaCode(input: string) {
-  return input.replace(/[^A-Z0-9]/gi, "").toUpperCase().slice(0, 12);
+  const raw = input.trim();
+  const arenaPathMatch = raw.match(/(?:^|\s|["'(<])(?:https?:\/\/\S+)?\/arena\/([A-Z0-9]+)/i);
+  if (arenaPathMatch?.[1]) {
+    return arenaPathMatch[1].replace(/[^A-Z0-9]/gi, "").toUpperCase().slice(0, 12);
+  }
+
+  try {
+    const parsed = new URL(raw);
+    const queryCode = parsed.searchParams.get("code");
+    if (queryCode) {
+      return queryCode.replace(/[^A-Z0-9]/gi, "").toUpperCase().slice(0, 12);
+    }
+  } catch {
+    // Not a standalone URL; fall back to plain code normalization below.
+  }
+
+  return raw.replace(/[^A-Z0-9]/gi, "").toUpperCase().slice(0, 12);
 }
 
 // Kick off background image fetches so they're in the browser cache by the time
