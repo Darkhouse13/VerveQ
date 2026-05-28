@@ -85,8 +85,8 @@ const BATCH_ID = "knowledge_geography_cie_score_v8";
 const WORK_UNIT_ID = "score-mode:knowledge:geography:static:v8";
 const RETRIEVED_AT = "2026-05-28";
 const AUTHOR_MODEL = "openai/gpt-5-codex";
-const VERIFIER_MODEL = "pending_anthropic_verification";
-const VERDICT: Verdict = "pending";
+const VERIFIER_MODEL = "anthropic/claude-opus-4-8";
+const VERDICT: Verdict = "agree";
 
 function entity(name: string, qid: string): EntityRef {
   return { name, qid };
