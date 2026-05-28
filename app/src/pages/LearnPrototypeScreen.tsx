@@ -5,27 +5,29 @@ import { NeoButton } from "@/components/neo/NeoButton";
 import { NeoBadge } from "@/components/neo/NeoBadge";
 import { Check, Lightbulb, ArrowRight, Compass } from "lucide-react";
 import {
-  learnGeographyNonobviousLadderV1Questions,
-  type LearnGeographyNonobviousLadderQuestion,
-} from "../../convex/learnGeographyNonobviousLadderV1";
+  buildLadder,
+  type BuiltLadder,
+  type BuiltLadderQuestion,
+} from "../../convex/learnLadderBuilder";
 
-// PROTOTYPE ONLY — Learn-loop feel test on the verified non-obvious capitals ladder.
+// PROTOTYPE ONLY — Learn-loop feel test, now graph-driven: the loop renders a
+// ladder built for a skill node (node -> builder -> loop), not a hardcoded one.
 // Answer-checking and reveal-gating happen client-side here purely to keep the
 // prototype thin. Production Learn MUST move both server-side to honor the repo's
 // server-authoritative game-state invariant (see CLAUDE.md "Session-based game state").
 
-const LADDER: LearnGeographyNonobviousLadderQuestion[] = [
-  ...learnGeographyNonobviousLadderV1Questions,
-].sort((a, b) => a.ladderIndex - b.ladderIndex);
-
-const CONCEPT_LINE =
-  "A country's capital is often not its biggest or most famous city — it's frequently planned or relocated.";
-
 type Phase = "question" | "reveal" | "end";
 
-export default function LearnPrototypeScreen() {
+export function LearnLoop({
+  ladder,
+  backTo = "/home",
+}: {
+  ladder: BuiltLadder;
+  backTo?: string;
+}) {
   const navigate = useNavigate();
-  const total = LADDER.length;
+  const rungs: BuiltLadderQuestion[] = ladder.questions;
+  const total = rungs.length;
 
   const [index, setIndex] = useState(0);
   const [phase, setPhase] = useState<Phase>("question");
@@ -33,7 +35,7 @@ export default function LearnPrototypeScreen() {
   // First-look correctness per rung — the only "score" we keep, and only to be honest in the summary.
   const [correctFlags, setCorrectFlags] = useState<boolean[]>([]);
 
-  const rung = LADDER[index];
+  const rung = rungs[index];
   const isCorrect = picked === rung?.correctAnswer;
   const pickedDistractor = useMemo(
     () => rung?.distractors.find((d) => d.text === picked) ?? null,
@@ -76,7 +78,7 @@ export default function LearnPrototypeScreen() {
 
         <NeoCard shadow="lg" color="blue" className="mb-5 animate-slide-up">
           <p className="font-heading font-bold text-xl leading-snug">
-            {CONCEPT_LINE}
+            {ladder.conceptLine}
           </p>
         </NeoCard>
 
@@ -96,7 +98,7 @@ export default function LearnPrototypeScreen() {
           <NeoButton size="full" variant="primary" onClick={handlePlayAgain}>
             Play again
           </NeoButton>
-          <NeoButton size="full" variant="secondary" onClick={() => navigate("/home")}>
+          <NeoButton size="full" variant="secondary" onClick={() => navigate(backTo)}>
             Back
           </NeoButton>
         </div>
@@ -129,7 +131,7 @@ export default function LearnPrototypeScreen() {
         </NeoBadge>
       </div>
       <div className="flex gap-1.5 mb-6">
-        {LADDER.map((_, i) => (
+        {rungs.map((_, i) => (
           <div
             key={i}
             className={`h-1.5 flex-1 rounded-full neo-border ${
@@ -218,4 +220,12 @@ export default function LearnPrototypeScreen() {
       <div className="h-4" />
     </div>
   );
+}
+
+// Kept so the original /learn/prototype link still works — but it now routes the
+// non-obvious capitals ladder through the builder (node -> builder -> loop)
+// rather than importing a hardcoded ladder.
+export default function LearnPrototypeScreen() {
+  const ladder = useMemo(() => buildLadder("geo.capitals.nonobvious"), []);
+  return <LearnLoop ladder={ladder} backTo="/learn/geography" />;
 }
