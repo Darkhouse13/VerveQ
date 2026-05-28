@@ -1,101 +1,211 @@
-import { useMemo, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useMutation } from "convex/react";
+import { api } from "../../convex/_generated/api";
+import type { Id } from "../../convex/_generated/dataModel";
 import { NeoCard } from "@/components/neo/NeoCard";
 import { NeoButton } from "@/components/neo/NeoButton";
 import { NeoBadge } from "@/components/neo/NeoBadge";
-import { Check, Lightbulb, ArrowRight, Compass } from "lucide-react";
-import {
-  buildLadder,
-  type BuiltLadder,
-  type BuiltLadderQuestion,
-} from "../../convex/learnLadderBuilder";
+import { Check, Lightbulb, ArrowRight, Compass, CalendarClock, Trophy } from "lucide-react";
 
-// PROTOTYPE ONLY — Learn-loop feel test, now graph-driven: the loop renders a
-// ladder built for a skill node (node -> builder -> loop), not a hardcoded one.
-// Answer-checking and reveal-gating happen client-side here purely to keep the
-// prototype thin. Production Learn MUST move both server-side to honor the repo's
-// server-authoritative game-state invariant (see CLAUDE.md "Session-based game state").
+// PROTOTYPE ONLY — Learn-loop feel test, now SERVER-AUTHORITATIVE: the loop plays
+// a sanitized ladder (stems + options, no answers) fetched from the server, asks
+// the server to grade every pick (submitLearnRung), and drives its end card from
+// the server's mastery transition (completeLearnLadder). The client never decides
+// right/wrong — it only renders what the server returns. Not wired into home, nav,
+// or any scored mode.
 
 type Phase = "question" | "reveal" | "end";
 
+// Sanitized rung shape returned by getLearnLadder — carries NO answers.
+export type LearnRung = {
+  rungId: string;
+  stem: string;
+  options: string[];
+};
+
+// Verdict returned by submitLearnRung — the server's grading of one pick.
+type RungVerdict = {
+  correct: boolean;
+  correctAnswer: string;
+  reveal: string;
+};
+
+// Mastery transition returned by completeLearnLadder — drives the end card.
+type CompletionResult = {
+  state: "untouched" | "learning" | "proficient" | "mastered";
+  justChanged: boolean;
+  reviewDueAt?: number;
+  masteredAt?: number;
+  firstTryCorrect: number;
+  total: number;
+};
+
+function formatReviewDay(reviewDueAt: number | undefined): string {
+  if (!reviewDueAt) return "soon";
+  const now = Date.now();
+  const dayMs = 24 * 60 * 60 * 1000;
+  const startOfToday = now - (now % dayMs);
+  const days = Math.round((reviewDueAt - startOfToday) / dayMs);
+  if (days <= 0) return "today";
+  if (days === 1) return "tomorrow";
+  return `in ${days} days`;
+}
+
 export function LearnLoop({
-  ladder,
+  sessionId,
+  rungs,
+  conceptLine,
   backTo = "/home",
+  onPlayAgain,
 }: {
-  ladder: BuiltLadder;
+  sessionId: Id<"learnSessions">;
+  rungs: LearnRung[];
+  conceptLine: string;
   backTo?: string;
+  onPlayAgain: () => void;
 }) {
   const navigate = useNavigate();
-  const rungs: BuiltLadderQuestion[] = ladder.questions;
+  const submitRung = useMutation(api.learn.submitLearnRung);
+  const completeLadder = useMutation(api.learn.completeLearnLadder);
   const total = rungs.length;
 
   const [index, setIndex] = useState(0);
   const [phase, setPhase] = useState<Phase>("question");
   const [picked, setPicked] = useState<string | null>(null);
-  // First-look correctness per rung — the only "score" we keep, and only to be honest in the summary.
-  const [correctFlags, setCorrectFlags] = useState<boolean[]>([]);
+  const [verdict, setVerdict] = useState<RungVerdict | null>(null);
+  const [busy, setBusy] = useState(false);
+  const [completion, setCompletion] = useState<CompletionResult | null>(null);
+
+  // A fresh session (play-again) resets the loop to the first rung.
+  useEffect(() => {
+    setIndex(0);
+    setPhase("question");
+    setPicked(null);
+    setVerdict(null);
+    setBusy(false);
+    setCompletion(null);
+  }, [sessionId]);
 
   const rung = rungs[index];
-  const isCorrect = picked === rung?.correctAnswer;
-  const pickedDistractor = useMemo(
-    () => rung?.distractors.find((d) => d.text === picked) ?? null,
-    [rung, picked],
-  );
 
-  const handlePick = (option: string) => {
-    if (phase !== "question") return;
-    setPicked(option);
-    setCorrectFlags((flags) => [...flags, option === rung.correctAnswer]);
-    setPhase("reveal");
+  const handlePick = async (option: string) => {
+    if (phase !== "question" || busy) return;
+    setBusy(true);
+    try {
+      const result = await submitRung({
+        sessionId,
+        rungId: rung.rungId,
+        chosenOption: option,
+      });
+      setPicked(option);
+      setVerdict(result);
+      setPhase("reveal");
+    } catch (err) {
+      console.error("Failed to submit Learn rung:", err);
+    } finally {
+      setBusy(false);
+    }
   };
 
-  const handleContinue = () => {
+  const handleContinue = async () => {
+    if (busy) return;
     if (index + 1 >= total) {
-      setPhase("end");
+      setBusy(true);
+      try {
+        const result = await completeLadder({ sessionId });
+        setCompletion(result);
+        setPhase("end");
+      } catch (err) {
+        console.error("Failed to complete Learn ladder:", err);
+      } finally {
+        setBusy(false);
+      }
       return;
     }
     setIndex((i) => i + 1);
     setPicked(null);
-    setPhase("question");
-  };
-
-  const handlePlayAgain = () => {
-    setIndex(0);
-    setPicked(null);
-    setCorrectFlags([]);
+    setVerdict(null);
     setPhase("question");
   };
 
   if (phase === "end") {
-    const correctCount = correctFlags.filter(Boolean).length;
+    const justMastered = completion?.state === "mastered" && completion.justChanged;
+    const justProficient =
+      completion?.state === "proficient" && completion.justChanged;
+    const firstTryCorrect = completion?.firstTryCorrect ?? 0;
+    const completedTotal = completion?.total ?? total;
+
     return (
       <div className="min-h-screen bg-background px-5 py-8 flex flex-col">
         <div className="flex justify-center mb-6">
-          <NeoBadge color="blue" rotated size="md" className="animate-badge-land">
-            <Compass size={14} className="mr-1.5" /> What you learned
+          <NeoBadge
+            color={justMastered ? "success" : "blue"}
+            rotated
+            size="md"
+            className="animate-badge-land"
+          >
+            {justMastered ? (
+              <Trophy size={14} className="mr-1.5" />
+            ) : (
+              <Compass size={14} className="mr-1.5" />
+            )}
+            {justMastered ? "Mastered" : "What you learned"}
           </NeoBadge>
         </div>
 
-        <NeoCard shadow="lg" color="blue" className="mb-5 animate-slide-up">
-          <p className="font-heading font-bold text-xl leading-snug">
-            {ladder.conceptLine}
+        <NeoCard
+          shadow="lg"
+          color={justMastered ? "success" : "blue"}
+          className="mb-5 animate-slide-up"
+        >
+          <p className="font-heading font-bold text-xl leading-snug">{conceptLine}</p>
+        </NeoCard>
+
+        <NeoCard className="mb-4">
+          <p className="font-heading font-bold text-base">
+            You spotted {firstTryCorrect} of {completedTotal} on your first look.
+          </p>
+          <p className="text-sm text-muted-foreground mt-1 leading-snug">
+            {completedTotal - firstTryCorrect === 0
+              ? "Clean run — you had every one of them first try."
+              : "The misses were the interesting ones — the cases that look one way but aren't."}
           </p>
         </NeoCard>
 
-        <NeoCard className="mb-6">
-          <p className="font-heading font-bold text-base">
-            You spotted {correctCount} of {total} on your first look.
-          </p>
-          <p className="text-sm text-muted-foreground mt-1 leading-snug">
-            The other {total - correctCount === 0 ? "none" : total - correctCount} were the
-            interesting ones — the cities that look like capitals but aren't.
-          </p>
-        </NeoCard>
+        {/* Honest spacing line — driven entirely by the server's mastery transition. */}
+        {justProficient && (
+          <NeoCard color="blue" className="mb-4 animate-slide-up">
+            <div className="flex items-center gap-2 mb-1.5">
+              <CalendarClock size={18} strokeWidth={2.5} />
+              <span className="font-heading font-bold uppercase tracking-wide text-sm">
+                You've got the pattern
+              </span>
+            </div>
+            <p className="text-sm leading-snug opacity-95">
+              Come back {formatReviewDay(completion?.reviewDueAt)} to lock it in.
+            </p>
+          </NeoCard>
+        )}
+
+        {justMastered && (
+          <NeoCard color="success" className="mb-4 animate-slide-up">
+            <div className="flex items-center gap-2 mb-1.5">
+              <Trophy size={18} strokeWidth={2.5} />
+              <span className="font-heading font-bold uppercase tracking-wide text-sm">
+                Locked in
+              </span>
+            </div>
+            <p className="text-sm leading-snug opacity-95">
+              You came back and nailed it again. This one's yours.
+            </p>
+          </NeoCard>
+        )}
 
         <div className="flex-1" />
 
         <div className="space-y-2.5">
-          <NeoButton size="full" variant="primary" onClick={handlePlayAgain}>
+          <NeoButton size="full" variant="primary" onClick={onPlayAgain}>
             Play again
           </NeoButton>
           <NeoButton size="full" variant="secondary" onClick={() => navigate(backTo)}>
@@ -108,10 +218,13 @@ export function LearnLoop({
 
   const revealed = phase === "reveal";
   const isLast = index + 1 >= total;
+  const isCorrect = verdict?.correct ?? false;
 
   const optionClasses = (option: string) => {
-    if (!revealed) return "bg-card text-card-foreground active:neo-shadow-pressed";
-    if (option === rung.correctAnswer) return "bg-success text-success-foreground";
+    if (!revealed || !verdict)
+      return "bg-card text-card-foreground active:neo-shadow-pressed";
+    if (option === verdict.correctAnswer)
+      return "bg-success text-success-foreground";
     // The picked-but-wrong option is framed as "your guess", not flagged red — this is a
     // discovery, not a penalty. The correct answer (green) is where the eye should land.
     if (option === picked)
@@ -146,9 +259,7 @@ export function LearnLoop({
       </div>
 
       <NeoCard shadow="lg" className="mb-5">
-        <p className="font-heading font-bold text-xl leading-tight">
-          {rung.question}
-        </p>
+        <p className="font-heading font-bold text-xl leading-tight">{rung.stem}</p>
       </NeoCard>
 
       <div className="space-y-2.5">
@@ -156,26 +267,29 @@ export function LearnLoop({
           <button
             key={option}
             type="button"
-            disabled={revealed}
+            disabled={revealed || busy}
             onClick={() => handlePick(option)}
             className={`w-full neo-border neo-shadow rounded-lg p-4 flex items-center gap-3 text-left transition-all ${
               revealed ? "cursor-default" : "cursor-pointer"
             } ${optionClasses(option)}`}
           >
             <span className="font-heading font-bold text-base flex-1">{option}</span>
-            {revealed && option === rung.correctAnswer && (
+            {revealed && verdict && option === verdict.correctAnswer && (
               <Check size={20} strokeWidth={3} className="shrink-0" />
             )}
-            {revealed && option === picked && option !== rung.correctAnswer && (
-              <span className="text-[10px] font-heading font-bold uppercase tracking-wide text-electric-blue shrink-0">
-                You picked
-              </span>
-            )}
+            {revealed &&
+              verdict &&
+              option === picked &&
+              option !== verdict.correctAnswer && (
+                <span className="text-[10px] font-heading font-bold uppercase tracking-wide text-electric-blue shrink-0">
+                  You picked
+                </span>
+              )}
           </button>
         ))}
       </div>
 
-      {revealed && (
+      {revealed && verdict && (
         <NeoCard
           shadow="lg"
           color={isCorrect ? "success" : "blue"}
@@ -192,25 +306,20 @@ export function LearnLoop({
             </span>
           </div>
 
-          {!isCorrect && pickedDistractor && (
-            <p className="font-heading font-bold text-base leading-snug mb-3">
-              {pickedDistractor.reveal}
-            </p>
-          )}
-
-          <p
-            className={`leading-snug ${
-              isCorrect ? "font-heading font-bold text-base" : "text-sm opacity-95"
-            }`}
-          >
-            {rung.correctReveal}
+          <p className="font-heading font-bold text-base leading-snug">
+            {verdict.reveal}
           </p>
         </NeoCard>
       )}
 
       {revealed && (
         <div className="mt-5">
-          <NeoButton size="full" variant="primary" onClick={handleContinue}>
+          <NeoButton
+            size="full"
+            variant="primary"
+            disabled={busy}
+            onClick={handleContinue}
+          >
             {isLast ? "See what you learned" : "Continue"}
             <ArrowRight size={18} strokeWidth={3} />
           </NeoButton>
@@ -222,10 +331,94 @@ export function LearnLoop({
   );
 }
 
-// Kept so the original /learn/prototype link still works — but it now routes the
-// non-obvious capitals ladder through the builder (node -> builder -> loop)
-// rather than importing a hardcoded ladder.
+// Owns the server session lifecycle for one playable node: starts a session via
+// getLearnLadder (a mutation — it inserts the session), plays it through LearnLoop,
+// and restarts a fresh session on "play again". Assumes the node is playable; the
+// route screen handles coming-soon / not-found before mounting this.
+export function LearnLadderHost({
+  nodeId,
+  backTo = "/learn/geography",
+}: {
+  nodeId: string;
+  backTo?: string;
+}) {
+  const navigate = useNavigate();
+  const getLadder = useMutation(api.learn.getLearnLadder);
+  const [session, setSession] = useState<{
+    sessionId: Id<"learnSessions">;
+    rungs: LearnRung[];
+    conceptLine: string;
+  } | null>(null);
+  const [failed, setFailed] = useState(false);
+
+  const startSession = useCallback(async () => {
+    setFailed(false);
+    setSession(null);
+    try {
+      const res = await getLadder({ nodeId });
+      setSession({
+        sessionId: res.sessionId,
+        rungs: res.rungs,
+        conceptLine: res.conceptLine,
+      });
+    } catch (err) {
+      console.error("Failed to start Learn session:", err);
+      setFailed(true);
+    }
+  }, [getLadder, nodeId]);
+
+  useEffect(() => {
+    startSession();
+  }, [startSession]);
+
+  if (failed) {
+    return (
+      <div className="min-h-screen bg-background px-5 py-8 flex flex-col">
+        <NeoCard shadow="lg" className="mb-6">
+          <p className="font-heading font-bold text-xl leading-snug">
+            Couldn't start this lesson right now.
+          </p>
+          <p className="text-sm text-muted-foreground mt-2 leading-snug">
+            Try again, or head back to the node list.
+          </p>
+        </NeoCard>
+        <div className="flex-1" />
+        <div className="space-y-2.5">
+          <NeoButton size="full" variant="primary" onClick={startSession}>
+            Try again
+          </NeoButton>
+          <NeoButton size="full" variant="secondary" onClick={() => navigate(backTo)}>
+            Back to nodes
+          </NeoButton>
+        </div>
+      </div>
+    );
+  }
+
+  if (!session) {
+    return (
+      <div className="min-h-screen bg-background px-5 py-8 flex items-center justify-center">
+        <NeoBadge color="muted" size="md">
+          <Compass size={14} className="mr-1.5" /> Loading lesson…
+        </NeoBadge>
+      </div>
+    );
+  }
+
+  return (
+    <LearnLoop
+      key={session.sessionId}
+      sessionId={session.sessionId}
+      rungs={session.rungs}
+      conceptLine={session.conceptLine}
+      backTo={backTo}
+      onPlayAgain={startSession}
+    />
+  );
+}
+
+// Kept so the original /learn/prototype link still works — it now starts a real
+// server session for the non-obvious capitals ladder and plays it server-side.
 export default function LearnPrototypeScreen() {
-  const ladder = useMemo(() => buildLadder("geo.capitals.nonobvious"), []);
-  return <LearnLoop ladder={ladder} backTo="/learn/geography" />;
+  return <LearnLadderHost nodeId="geo.capitals.nonobvious" backTo="/learn/geography" />;
 }

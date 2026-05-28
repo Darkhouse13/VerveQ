@@ -277,6 +277,8 @@ export const getLearnLadder = mutation({
     return {
       nodeId: skillNodeId,
       sessionId,
+      // Display-only teaching headline for the end card — carries no answers.
+      conceptLine: ladder.conceptLine,
       rungs: ladder.questions.map(sanitizeRung),
     };
   },

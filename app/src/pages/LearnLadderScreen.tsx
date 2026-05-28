@@ -4,15 +4,15 @@ import { NeoCard } from "@/components/neo/NeoCard";
 import { NeoButton } from "@/components/neo/NeoButton";
 import { NeoBadge } from "@/components/neo/NeoBadge";
 import { Clock } from "lucide-react";
-import { LearnLoop } from "./LearnPrototypeScreen";
-import {
-  buildLadder,
-  getLearnNodeSummary,
-} from "../../convex/learnLadderBuilder";
+import { LearnLadderHost } from "./LearnPrototypeScreen";
+import { getLearnNodeSummary } from "../../convex/learnLadderBuilder";
 import { skillNodeIds, type SkillNodeId } from "../../convex/learnSkillGraph";
 
-// Dev/preview wrapper: resolve a skill node from the route, build its ladder
-// (node -> builder -> loop), and either play it or show a "coming soon" card.
+// Dev/preview route wrapper. Resolves a skill node from the URL and decides what
+// to show: a playable node hands off to LearnLadderHost, which starts a SERVER
+// session and plays it server-side (no client-side answer checking). Non-playable
+// or unknown nodes get a "coming soon" / "not found" card. The graph summary used
+// here is display metadata only (name + tagged count) — it carries no answers.
 
 const PICKER_PATH = "/learn/geography";
 
@@ -28,13 +28,9 @@ export default function LearnLadderScreen() {
     () => (isSkillNodeId(nodeId) ? getLearnNodeSummary(nodeId) : null),
     [nodeId],
   );
-  const ladder = useMemo(
-    () => (summary?.playable ? buildLadder(summary.nodeId) : null),
-    [summary],
-  );
 
-  if (ladder && summary?.playable) {
-    return <LearnLoop ladder={ladder} backTo={PICKER_PATH} />;
+  if (summary?.playable) {
+    return <LearnLadderHost nodeId={summary.nodeId} backTo={PICKER_PATH} />;
   }
 
   return (
