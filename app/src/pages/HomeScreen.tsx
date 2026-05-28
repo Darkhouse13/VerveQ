@@ -3,7 +3,8 @@ import { NeoBadge } from "@/components/neo/NeoBadge";
 import { NeoAvatar } from "@/components/neo/NeoAvatar";
 import { BottomNav } from "@/components/neo/BottomNav";
 import { useNavigate } from "react-router-dom";
-import { Timer, Heart, Zap, Brain, Flame, Target, Trophy, Hammer, TrendingUp, Grid3X3, HelpCircle, Lightbulb } from "lucide-react";
+import { Timer, Heart, Zap, Brain, Flame, Target, Trophy, Hammer, TrendingUp, Grid3X3, HelpCircle, Lightbulb, GraduationCap } from "lucide-react";
+import { LEARN_ENABLED } from "@/lib/flags";
 import { DailyBanner } from "@/components/DailyBanner";
 import { SeasonBanner } from "@/components/SeasonBanner";
 import { DecayWarningBanner } from "@/components/DecayWarningBanner";
@@ -305,6 +306,30 @@ export default function HomeScreen() {
                 Enter
               </span>
             </NeoCard>
+            {LEARN_ENABLED && (
+              <NeoCard
+                shadow="lg"
+                className="flex items-center gap-4 cursor-pointer bg-electric-blue text-electric-blue-foreground"
+                onClick={() => navigate("/learn")}
+              >
+                <div className="neo-border rounded-xl bg-background p-3">
+                  <GraduationCap
+                    size={28}
+                    strokeWidth={2.5}
+                    className="text-foreground"
+                  />
+                </div>
+                <div className="flex-1">
+                  <p className="font-heading font-bold text-lg">Learn</p>
+                  <p className="text-xs opacity-80">
+                    Build mastery node by node
+                  </p>
+                </div>
+                <span className="neo-border font-heading font-bold uppercase tracking-wide inline-flex items-center justify-center px-3 py-1.5 text-xs rounded-md bg-accent text-accent-foreground neo-shadow select-none">
+                  New
+                </span>
+              </NeoCard>
+            )}
           </div>
         </div>
 
