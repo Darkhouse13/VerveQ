@@ -302,6 +302,7 @@ const serbianDinar = entity("Serbian dinar", "Q172524");
 const swedishKrona = entity("Swedish krona", "Q122922");
 
 const kyrgyz = entity("Kyrgyz", "Q9255");
+const french = entity("French", "Q150");
 const lao = entity("Lao", "Q9211");
 const malay = entity("Malay", "Q9237");
 const romanian = entity("Romanian", "Q7913");
@@ -420,10 +421,10 @@ const RAW_FACTS: RawFact[] = [
     moldovanLeu,
     serbianDinar,
   ]),
-  l("hard", "Which official language is listed for Kyrgyzstan?", entity("Kyrgyzstan", "Q813"), kyrgyz, [
-    lao,
-    nepali,
-    latvian,
+  l("hard", "Which official language is listed for France?", entity("France", "Q142"), french, [
+    swedish,
+    polish,
+    turkish,
   ]),
   l("hard", "Laos has which official language?", entity("Laos", "Q819"), lao, [
     thai,
