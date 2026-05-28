@@ -38,6 +38,8 @@ lib64/
 !app/src/lib/**
 !app/convex/lib/
 !app/convex/lib/**
+!app/scripts/lib/
+!app/scripts/lib/**
 parts/
 sdist/
 var/
