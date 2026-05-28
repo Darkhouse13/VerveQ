@@ -13,6 +13,10 @@ import {
   learnGeographyNonobviousLadderV1Questions,
   type LearnModeDistractor,
 } from "./learnGeographyNonobviousLadderV1";
+import {
+  learnGeographyBorderReasoningLadderV1ByChecksum,
+  learnGeographyBorderReasoningLadderV1Questions,
+} from "./learnGeographyBorderReasoningLadderV1";
 
 // Graph-driven Learn ladder builder.
 //
@@ -89,15 +93,23 @@ type LadderCandidate = {
   ladderIndex?: number;
 };
 
-// Reveal metadata keyed by checksum. Currently only the non-obvious capitals
-// ladder is enriched; other sources resolve to `undefined` here and stay
-// reveal-less until they're authored.
-const revealByChecksum = learnGeographyNonobviousLadderV1ByChecksum;
+// Reveal metadata keyed by checksum. The enriched ladder modules (non-obvious
+// capitals + border reasoning) each carry per-distractor reveals; other sources
+// resolve to `undefined` here and stay reveal-less until they're authored.
+const revealByChecksum = {
+  ...learnGeographyNonobviousLadderV1ByChecksum,
+  ...learnGeographyBorderReasoningLadderV1ByChecksum,
+};
 
-// Candidate pool = every learn-eligible question we can tag, from both the
-// enriched ladder module and the verified CIE batches. Reveals are looked up
-// separately by checksum so the pool stays source-agnostic.
-const ladderCandidates: LadderCandidate[] = learnGeographyNonobviousLadderV1Questions.map(
+// Candidate pool = every learn-eligible question we can tag, from the enriched
+// ladder modules and the verified CIE batches. Reveals are looked up separately
+// by checksum so the pool stays source-agnostic.
+const enrichedLadderQuestions = [
+  ...learnGeographyNonobviousLadderV1Questions,
+  ...learnGeographyBorderReasoningLadderV1Questions,
+];
+
+const ladderCandidates: LadderCandidate[] = enrichedLadderQuestions.map(
   (question) => ({
     checksum: question.checksum,
     question: question.question,

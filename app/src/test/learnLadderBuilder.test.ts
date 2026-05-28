@@ -6,6 +6,7 @@ import {
   listGeographyNodeSummaries,
 } from "../../convex/learnLadderBuilder";
 import { learnGeographyNonobviousLadderV1Questions } from "../../convex/learnGeographyNonobviousLadderV1";
+import { learnGeographyBorderReasoningLadderV1Questions } from "../../convex/learnGeographyBorderReasoningLadderV1";
 
 const DIFFICULTY_RANK = { easy: 0, intermediate: 1, hard: 2 } as const;
 
@@ -30,6 +31,18 @@ describe("learn ladder builder", () => {
     }
   });
 
+  it("builds the border-reasoning ladder from its graph node, with reveals", () => {
+    const ladder = buildLadder("geo.borders.reasoning");
+    expect(ladder.questions.length).toBe(
+      learnGeographyBorderReasoningLadderV1Questions.length,
+    );
+    expect(ladder.questions.length).toBeLessThanOrEqual(MAX_LADDER_RUNGS);
+    for (const rung of ladder.questions) {
+      expect(rung.correctReveal.trim().length).toBeGreaterThan(0);
+      expect(rung.distractors.length).toBe(3);
+    }
+  });
+
   it("orders rungs easy -> intermediate -> hard and re-indexes sequentially", () => {
     const ladder = buildLadder("geo.capitals.nonobvious");
     for (let i = 1; i < ladder.questions.length; i += 1) {
@@ -44,9 +57,10 @@ describe("learn ladder builder", () => {
     const summaries = listGeographyNodeSummaries();
     const playable = summaries.filter((summary) => summary.playable);
 
-    // Today only the enriched non-obvious ladder qualifies.
+    // The two enriched ladders (non-obvious capitals + border reasoning) qualify.
     expect(playable.map((summary) => summary.nodeId)).toEqual([
       "geo.capitals.nonobvious",
+      "geo.borders.reasoning",
     ]);
 
     for (const summary of summaries) {
