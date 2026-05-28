@@ -71,14 +71,58 @@ const BATCH_ID = "learn_geography_capitals_recall_reveals_v1";
 const WORK_UNIT_ID = "learn:knowledge:geography:capital-recall:v1";
 const RETRIEVED_AT = "2026-05-28";
 const AUTHOR_MODEL = "openai/gpt-5-codex";
-const VERIFIER_MODEL = "pending_anthropic_verification";
-const VERDICT: Verdict = "pending";
+const VERIFIER_MODEL = "anthropic/claude-opus-4-8";
+const VERIFIED_AT = "2026-05-28";
 const RECALL_NODE_IDS = [
   "geo.capitals.core",
   "geo.capitals.europe",
   "geo.capitals.asia",
   "geo.capitals.other",
 ] as const satisfies readonly SkillNodeId[];
+
+// Independent Anthropic verification of the NEW reveal facts (correctReveal hooks
+// and per-distractor capital claims) keyed by the already-verified CIE checksum.
+// Each correctReveal hook was fact-checked against its cited Wikidata claim, each
+// distractor capital was confirmed correct, and no correctReveal restates the
+// answer as a tautology. Fail-closed: any checksum without an explicit "agree"
+// (i.e. pending/flag/disagree) is treated as not shippable by the validator.
+const VERDICTS_BY_CHECKSUM: Record<string, Verdict> = {
+  knowledge_geography_cie_score_v1_001: "agree",
+  knowledge_geography_cie_score_v1_002: "agree",
+  knowledge_geography_cie_score_v1_003: "agree",
+  knowledge_geography_cie_score_v1_004: "agree",
+  knowledge_geography_cie_score_v1_005: "agree",
+  knowledge_geography_cie_score_v1_007: "agree",
+  knowledge_geography_cie_score_v1_010: "agree",
+  knowledge_geography_cie_score_v1_011: "agree",
+  knowledge_geography_cie_score_v1_012: "agree",
+  knowledge_geography_cie_score_v1_013: "agree",
+  knowledge_geography_cie_score_v1_014: "agree",
+  knowledge_geography_cie_score_v1_015: "agree",
+  knowledge_geography_cie_score_v1_016: "agree",
+  knowledge_geography_cie_score_v1_018: "agree",
+  knowledge_geography_cie_score_v1_019: "agree",
+  knowledge_geography_cie_score_v1_021: "agree",
+  knowledge_geography_cie_score_v1_022: "agree",
+  knowledge_geography_cie_score_v2_003: "agree",
+  knowledge_geography_cie_score_v2_005: "agree",
+  knowledge_geography_cie_score_v2_009: "agree",
+  knowledge_geography_cie_score_v2_017: "agree",
+  knowledge_geography_cie_score_v2_020: "agree",
+  knowledge_geography_cie_score_v2_023: "agree",
+  knowledge_geography_cie_score_v2_024: "agree",
+};
+
+function verdictFor(checksum: string): Verdict {
+  return VERDICTS_BY_CHECKSUM[checksum] ?? "pending";
+}
+
+function aggregateVerdict(verdicts: Verdict[]): Verdict {
+  if (verdicts.length === 0 || verdicts.some((v) => v === "pending")) return "pending";
+  if (verdicts.some((v) => v === "disagree")) return "disagree";
+  if (verdicts.some((v) => v === "flag")) return "flag";
+  return "agree";
+}
 
 function entity(name: string, qid: string): EntityRef {
   return { name, qid };
@@ -223,7 +267,7 @@ function provenance(raw: RawRecallReveal): LearnModeProvenance {
     claims: provenanceClaims(raw).map(publicClaim),
     authorModel: AUTHOR_MODEL,
     verifierModel: VERIFIER_MODEL,
-    verdict: VERDICT,
+    verdict: verdictFor(raw.checksum),
     batchId: BATCH_ID,
     workUnitId: WORK_UNIT_ID,
   };
@@ -687,7 +731,9 @@ export const learnGeographyCapitalsRecallRevealsV1Metadata = {
   retrievedAt: RETRIEVED_AT,
   authorModel: AUTHOR_MODEL,
   verifierModel: VERIFIER_MODEL,
-  verdict: VERDICT,
+  verifiedAt: VERIFIED_AT,
+  verdict: aggregateVerdict(RAW_REVEALS.map((raw) => verdictFor(raw.checksum))),
+  verdictsByChecksum: VERDICTS_BY_CHECKSUM,
   skillNodes: RECALL_NODE_IDS,
   revealCount: RAW_REVEALS.length,
   sourceRecordCount: learnGeographyCapitalsRecallRevealsV1SourceRecords.length,
@@ -714,6 +760,15 @@ export function validateLearnGeographyCapitalsRecallRevealsV1() {
     }
     if (raw.hookClaims.length === 0) {
       errors.push(`${raw.checksum} is missing an enriching sourced hook claim`);
+    }
+    const verdict = verdictFor(raw.checksum);
+    if (verdict === "pending") {
+      errors.push(`${raw.checksum} has no verifier verdict stamped`);
+    }
+    if (verdict === "flag" || verdict === "disagree") {
+      errors.push(
+        `${raw.checksum} is ${verdict} and not shippable until the reveal is fixed`,
+      );
     }
     for (const nodeId of raw.skillNodes) {
       if (!RECALL_NODE_IDS.includes(nodeId as (typeof RECALL_NODE_IDS)[number])) {

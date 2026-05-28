@@ -8,7 +8,7 @@ import {
 import { questionSkillTags } from "../../convex/learnQuestionSkillTags";
 
 describe("learn geography capital recall reveals v1", () => {
-  it("is a pending verification reveal layer over existing CIE checksums", () => {
+  it("is an Anthropic-verified reveal layer over existing CIE checksums", () => {
     const report = validateLearnGeographyCapitalsRecallRevealsV1();
 
     expect(report).toMatchObject({
@@ -19,8 +19,8 @@ describe("learn geography capital recall reveals v1", () => {
     expect(learnGeographyCapitalsRecallRevealsV1Metadata).toMatchObject({
       mode: "learn",
       layer: "checksum_reveals",
-      verdict: "pending",
-      verifierModel: "pending_anthropic_verification",
+      verdict: "agree",
+      verifierModel: "anthropic/claude-opus-4-8",
     });
   });
 
@@ -45,10 +45,8 @@ describe("learn geography capital recall reveals v1", () => {
     )) {
       expect(reveal.correctReveal).toMatch(/\.$/);
       expect(reveal.distractors).toHaveLength(3);
-      expect(reveal.provenance.verdict).toBe("pending");
-      expect(reveal.provenance.verifierModel).toBe(
-        "pending_anthropic_verification",
-      );
+      expect(reveal.provenance.verdict).toBe("agree");
+      expect(reveal.provenance.verifierModel).toBe("anthropic/claude-opus-4-8");
       expect(
         reveal.provenance.claims.some((claim) => !claim.claim.startsWith("capital_of(")),
         checksum,
