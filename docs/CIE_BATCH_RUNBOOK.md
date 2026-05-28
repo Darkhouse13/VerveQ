@@ -69,7 +69,10 @@ General rule: no distractor may also be a valid answer to the question as posed.
 - **Borders (`P47`):** no distractor is a real land neighbour of the subject. Exclude quadripoints and sea-only adjacencies as land borders (e.g. Kazungula; Bahrain–Qatar).
 - **Capitals (`P36`):** exhausted; n/a.
 - **Currency (`P38`):** author the **"currency OF {country}"** direction only, and only for **single-currency** countries. Do NOT author the reverse ("which country uses {currency}") for shared currencies — euro, CFA franc, USD, East Caribbean dollar, etc. have many correct answers. Exclude multi-currency countries. No distractor currency may also be legal tender in the subject country.
-- **Official / primary language (`P37`):** author **"official language OF {country}"** only, for countries with a **single, unambiguous** official/primary language. No distractor language may also be official in that country. Do NOT author reverse questions for widespread languages (English, French, Spanish, Arabic, Portuguese) — many correct answers. Exclude multi-official-language countries.
+- **Official / primary language (`P37`):** author **"official language OF {country}"** only. No distractor language may also be official in that country. Do NOT author reverse questions for widespread languages (English, French, Spanish, Arabic, Portuguese) — many correct answers. Eligibility (the verifier-confirmed distinction):
+  - **EXCLUDE** countries with genuine **national co-official** languages — two or more languages official at the national level (e.g. Kyrgyzstan [Kyrgyz + Russian], Belgium, Switzerland, Canada). These are not single-official and must not be authored as GREEN; route them to the excluded/AMBER backlog.
+  - **ACCEPTABLE:** countries with one unambiguous **primary** national official language plus regional / national-minority languages (e.g. Poland, Sweden) — author the primary and tag provenance honestly to that primary.
+  - **When in doubt, exclude (default-deny).**
 - **Landlocked vs coastal:** construct options so that **exactly one** option matches the asked type (one landlocked among coastal distractors, or one coastal among landlocked distractors). Static; GREEN.
 
 ---
