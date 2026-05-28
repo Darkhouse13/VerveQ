@@ -7,6 +7,7 @@ import {
 } from "../../convex/learnLadderBuilder";
 import { learnGeographyNonobviousLadderV1Questions } from "../../convex/learnGeographyNonobviousLadderV1";
 import { learnGeographyBorderReasoningLadderV1Questions } from "../../convex/learnGeographyBorderReasoningLadderV1";
+import { learnGeographyCapitalsRecallSelectedChecksumsByNode } from "../../convex/learnGeographyCapitalsRecallRevealsV1";
 
 const DIFFICULTY_RANK = { easy: 0, intermediate: 1, hard: 2 } as const;
 
@@ -43,6 +44,27 @@ describe("learn ladder builder", () => {
     }
   });
 
+  it("builds the capital recall ladders from checksum-scoped CIE reveals", () => {
+    for (const [nodeId, expectedChecksums] of Object.entries(
+      learnGeographyCapitalsRecallSelectedChecksumsByNode,
+    )) {
+      const ladder = buildLadder(nodeId as keyof typeof learnGeographyCapitalsRecallSelectedChecksumsByNode);
+
+      expect(ladder.questions.map((question) => question.checksum)).toEqual(
+        expectedChecksums,
+      );
+      expect(ladder.questions).toHaveLength(8);
+      for (const rung of ladder.questions) {
+        expect(rung.correctReveal.trim().length).toBeGreaterThan(0);
+        expect(rung.distractors).toHaveLength(3);
+        for (const distractor of rung.distractors) {
+          expect(rung.options).toContain(distractor.text);
+          expect(distractor.reveal.trim().length).toBeGreaterThan(0);
+        }
+      }
+    }
+  });
+
   it("orders rungs easy -> intermediate -> hard and re-indexes sequentially", () => {
     const ladder = buildLadder("geo.capitals.nonobvious");
     for (let i = 1; i < ladder.questions.length; i += 1) {
@@ -57,8 +79,12 @@ describe("learn ladder builder", () => {
     const summaries = listGeographyNodeSummaries();
     const playable = summaries.filter((summary) => summary.playable);
 
-    // The two enriched ladders (non-obvious capitals + border reasoning) qualify.
+    // Recall-capital nodes, non-obvious capitals, and border reasoning qualify.
     expect(playable.map((summary) => summary.nodeId)).toEqual([
+      "geo.capitals.core",
+      "geo.capitals.europe",
+      "geo.capitals.asia",
+      "geo.capitals.other",
       "geo.capitals.nonobvious",
       "geo.borders.reasoning",
     ]);

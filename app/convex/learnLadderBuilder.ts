@@ -17,6 +17,7 @@ import {
   learnGeographyBorderReasoningLadderV1ByChecksum,
   learnGeographyBorderReasoningLadderV1Questions,
 } from "./learnGeographyBorderReasoningLadderV1";
+import { learnGeographyCapitalsRecallRevealsV1ByChecksum } from "./learnGeographyCapitalsRecallRevealsV1";
 
 // Graph-driven Learn ladder builder.
 //
@@ -93,12 +94,13 @@ type LadderCandidate = {
   ladderIndex?: number;
 };
 
-// Reveal metadata keyed by checksum. The enriched ladder modules (non-obvious
-// capitals + border reasoning) each carry per-distractor reveals; other sources
-// resolve to `undefined` here and stay reveal-less until they're authored.
+// Reveal metadata keyed by checksum. A reveal also declares which node(s) it was
+// authored for, so recall-only CIE reveals do not leak into concept ladders that
+// share the same base question tags.
 const revealByChecksum = {
   ...learnGeographyNonobviousLadderV1ByChecksum,
   ...learnGeographyBorderReasoningLadderV1ByChecksum,
+  ...learnGeographyCapitalsRecallRevealsV1ByChecksum,
 };
 
 // Candidate pool = every learn-eligible question we can tag, from the enriched
@@ -148,7 +150,7 @@ export function buildLadder(nodeId: SkillNodeId): BuiltLadder {
     .map((candidate) => ({ candidate, reveal: revealByChecksum[candidate.checksum] }))
     .filter(
       (entry): entry is { candidate: LadderCandidate; reveal: NonNullable<typeof entry.reveal> } =>
-        entry.reveal != null,
+        entry.reveal != null && entry.reveal.skillNodes.includes(nodeId),
     );
 
   const ordered = enriched.sort((left, right) => {
