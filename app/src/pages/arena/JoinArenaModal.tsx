@@ -52,7 +52,7 @@ export default function JoinArenaModal({
             value={code}
             onChange={(e) => setCode(e.target.value)}
             className="tracking-[0.4em] uppercase text-center text-lg font-heading"
-            maxLength={16}
+            maxLength={128}
           />
 
           <NeoButton
