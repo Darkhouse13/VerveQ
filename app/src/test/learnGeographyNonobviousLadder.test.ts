@@ -25,8 +25,8 @@ describe("learn geography non-obvious capitals ladder v1", () => {
     });
     expect(learnGeographyNonobviousLadderV1Metadata).toMatchObject({
       mode: "learn",
-      verdict: "pending",
-      verifierModel: "pending_anthropic_verification",
+      verdict: "agree",
+      verifierModel: "anthropic/claude-opus-4-7",
       skillNodes: ["geo.capitals.nonobvious"],
     });
 

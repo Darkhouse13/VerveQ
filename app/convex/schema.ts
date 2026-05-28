@@ -316,6 +316,51 @@ export default defineSchema({
     abandonedAt: v.optional(v.number()),
   }).index("by_expiresAt", ["expiresAt"]),
 
+  learnMastery: defineTable({
+    userId: v.id("users"),
+    nodeId: v.string(),
+    subject: v.string(),
+    state: v.union(
+      v.literal("untouched"),
+      v.literal("learning"),
+      v.literal("proficient"),
+      v.literal("mastered"),
+    ),
+    startedAt: v.optional(v.number()),
+    proficientAt: v.optional(v.number()),
+    reviewDueAt: v.optional(v.number()),
+    masteredAt: v.optional(v.number()),
+    lastCompletedAt: v.optional(v.number()),
+    lastFirstTryCorrect: v.optional(v.number()),
+    lastTotal: v.optional(v.number()),
+    updatedAt: v.number(),
+  })
+    .index("by_user_node", ["userId", "nodeId"])
+    .index("by_user_subject", ["userId", "subject"]),
+
+  learnSessions: defineTable({
+    userId: v.id("users"),
+    nodeId: v.string(),
+    subject: v.string(),
+    rungIds: v.array(v.string()),
+    rungResults: v.array(
+      v.object({
+        rungId: v.string(),
+        chosenOption: v.string(),
+        correct: v.boolean(),
+        firstTry: v.boolean(),
+        answeredAt: v.number(),
+      }),
+    ),
+    startedAt: v.number(),
+    updatedAt: v.number(),
+    completedAt: v.optional(v.number()),
+    expiresAt: v.number(),
+  })
+    .index("by_user", ["userId"])
+    .index("by_user_node", ["userId", "nodeId"])
+    .index("by_expiresAt", ["expiresAt"]),
+
   survivalSessions: defineTable({
     userId: v.optional(v.id("users")),
     sport: v.string(),
