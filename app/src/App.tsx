@@ -27,6 +27,9 @@ import ForgeScreen from "./pages/ForgeScreen";
 import HigherLowerScreen from "./pages/HigherLowerScreen";
 import VerveGridScreen from "./pages/VerveGridScreen";
 import WhoAmIScreen from "./pages/WhoAmIScreen";
+import LearnPrototypeScreen from "./pages/LearnPrototypeScreen";
+import LearnNodePickerScreen from "./pages/LearnNodePickerScreen";
+import LearnLadderScreen from "./pages/LearnLadderScreen";
 import NotFound from "./pages/NotFound";
 
 const DuelPlayScreen = lazy(() => import("./pages/DuelPlayScreen"));
@@ -257,6 +260,11 @@ const AppRoutes = () => (
                 </UsernameRequiredRoute>
               }
             />
+            {/* Dev/preview only — Learn node picker + graph-built ladders. Not wired into home, nav, or any scored mode. */}
+            <Route path="/learn" element={<LearnNodePickerScreen />} />
+            <Route path="/learn/geography" element={<LearnNodePickerScreen />} />
+            <Route path="/learn/geography/:nodeId" element={<LearnLadderScreen />} />
+            <Route path="/learn/prototype" element={<LearnPrototypeScreen />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </div>
