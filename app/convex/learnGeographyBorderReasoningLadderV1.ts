@@ -73,7 +73,7 @@ const BATCH_ID = "learn_geography_border_reasoning_ladder_v1";
 const WORK_UNIT_ID = "learn:knowledge:geography:geo.borders.reasoning:v1";
 const RETRIEVED_AT = "2026-05-28";
 const AUTHOR_MODEL = "openai/gpt-5-codex";
-const VERIFIER_MODEL = "pending_anthropic_verification";
+const VERIFIER_MODEL = "anthropic/claude-opus-4-8";
 const SKILL_NODE: SkillNodeId = "geo.borders.reasoning";
 
 function entity(name: string, qid: string): EntityRef {
@@ -123,7 +123,7 @@ function provenance(rung: RawLadderRung): LearnModeProvenance {
     claims: borderClaims(rung),
     authorModel: AUTHOR_MODEL,
     verifierModel: VERIFIER_MODEL,
-    verdict: "pending",
+    verdict: "agree",
     batchId: BATCH_ID,
     workUnitId: WORK_UNIT_ID,
   };
@@ -561,7 +561,7 @@ export const learnGeographyBorderReasoningLadderV1Metadata = {
   retrievedAt: RETRIEVED_AT,
   authorModel: AUTHOR_MODEL,
   verifierModel: VERIFIER_MODEL,
-  verdict: "pending",
+  verdict: "agree",
   skillNodes: [SKILL_NODE],
   questionCount: learnGeographyBorderReasoningLadderV1Questions.length,
   checksumPrefix: BATCH_ID,
@@ -653,8 +653,8 @@ export function validateLearnGeographyBorderReasoningLadderV1() {
       }
     });
 
-    if (question.provenance.verdict !== "pending") {
-      errors.push(`${question.checksum} must stay pending cross-family verification`);
+    if (question.provenance.verdict === "pending") {
+      errors.push(`${question.checksum} must carry a cross-family verification verdict`);
     }
     if (question.provenance.verifierModel !== VERIFIER_MODEL) {
       errors.push(`${question.checksum} has unexpected verifierModel`);
