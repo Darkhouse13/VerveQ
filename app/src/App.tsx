@@ -27,6 +27,7 @@ import ForgeScreen from "./pages/ForgeScreen";
 import HigherLowerScreen from "./pages/HigherLowerScreen";
 import VerveGridScreen from "./pages/VerveGridScreen";
 import WhoAmIScreen from "./pages/WhoAmIScreen";
+import LearnPrototypeScreen from "./pages/LearnPrototypeScreen";
 import NotFound from "./pages/NotFound";
 
 const DuelPlayScreen = lazy(() => import("./pages/DuelPlayScreen"));
@@ -257,6 +258,8 @@ const AppRoutes = () => (
                 </UsernameRequiredRoute>
               }
             />
+            {/* Dev/preview only — Learn-loop feel prototype. Not wired into home, nav, or any scored mode. */}
+            <Route path="/learn/prototype" element={<LearnPrototypeScreen />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </div>
