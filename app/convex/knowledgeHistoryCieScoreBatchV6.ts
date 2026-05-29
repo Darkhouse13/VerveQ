@@ -86,8 +86,8 @@ const BATCH_ID = "knowledge_history_cie_score_v6";
 const WORK_UNIT_ID = "score-mode:knowledge:history:static:v6";
 const RETRIEVED_AT = "2026-05-29";
 const AUTHOR_MODEL = "openai/gpt-5-codex";
-const VERIFIER_MODEL = "pending_anthropic_verification";
-const VERDICT: Verdict = "pending";
+const VERIFIER_MODEL = "claude-opus-4-8";
+const VERDICT: Verdict = "agree";
 
 function historicalDate(
   name: string,
