@@ -437,6 +437,7 @@ export default defineSchema({
     // Server clock for the next expected submitAnswer — used to derive
     // timeTaken without trusting the client. Reset on each submit.
     currentQuestionStartedAt: v.optional(v.number()),
+    questionStartedAts: v.optional(v.array(v.number())),
   })
     .index("by_user_date_sport_mode", ["userId", "date", "sport", "mode"])
     .index("by_date_sport_mode_score", ["date", "sport", "mode", "score"])
