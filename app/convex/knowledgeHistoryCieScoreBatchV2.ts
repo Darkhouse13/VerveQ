@@ -80,8 +80,8 @@ const BATCH_ID = "knowledge_history_cie_score_v2";
 const WORK_UNIT_ID = "score-mode:knowledge:history:static:v2";
 const RETRIEVED_AT = "2026-05-29";
 const AUTHOR_MODEL = "openai/gpt-5-codex";
-const VERIFIER_MODEL = "pending_anthropic_verification";
-const VERDICT: Verdict = "pending";
+const VERIFIER_MODEL = "claude-opus-4-8";
+const VERDICT: Verdict = "agree";
 
 const dateFacts: Record<string, HistoricalDateFact> = {
   battleOfStamfordBridge: { name: "Battle of Stamford Bridge", qid: "Q203225", property: "P585", year: "1066", date: "+1066-09-25T00:00:00Z", precision: "day", calendar: "Gregorian", sourceRefKind: "single-event-year" },
