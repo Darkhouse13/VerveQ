@@ -538,6 +538,7 @@ export const submitAnswer = mutation({
     attemptId: v.id("dailyAttempts"),
     answer: v.string(),
     questionIndex: v.number(),
+    correctAnswer: v.optional(v.string()),
   },
   handler: async (ctx, { attemptId, answer, questionIndex }) => {
     const userId = await getAuthUserId(ctx);
