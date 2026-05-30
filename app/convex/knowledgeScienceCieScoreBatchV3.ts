@@ -114,8 +114,8 @@ const BATCH_ID = "knowledge_science_cie_score_v3";
 const WORK_UNIT_ID = "score-mode:knowledge:science:static:v3";
 const RETRIEVED_AT = "2026-05-30";
 const AUTHOR_MODEL = "openai/gpt-5-codex";
-const VERIFIER_MODEL = "pending_anthropic_verification";
-const VERDICT: Verdict = "pending";
+const VERIFIER_MODEL = "claude-opus-4-8";
+const VERDICT: Verdict = "agree";
 
 function element(
   name: string,
