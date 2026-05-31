@@ -33,6 +33,15 @@ async function dismissOutstandingDecayNotifications(
 export const completeQuiz = mutation({
   args: {
     sessionId: v.id("quizSessions"),
+    sport: v.optional(v.string()),
+    mode: v.optional(v.string()),
+    score: v.optional(v.number()),
+    totalQuestions: v.optional(v.number()),
+    accuracy: v.optional(v.number()),
+    averageTime: v.optional(v.number()),
+    difficulty: v.optional(
+      v.union(v.literal("easy"), v.literal("intermediate"), v.literal("hard")),
+    ),
   },
   handler: async (ctx, { sessionId }) => {
     const userId = await getAuthUserId(ctx);
@@ -156,6 +165,11 @@ export const completeQuiz = mutation({
 export const completeSurvival = mutation({
   args: {
     sessionId: v.id("survivalSessions"),
+    sport: v.optional(v.string()),
+    mode: v.optional(v.string()),
+    score: v.optional(v.number()),
+    durationSeconds: v.optional(v.number()),
+    performanceBonus: v.optional(v.number()),
   },
   handler: async (ctx, { sessionId }) => {
     const userId = await getAuthUserId(ctx);

@@ -111,7 +111,8 @@ export const submitAnswer = mutation({
   args: {
     sessionId: v.id("blitzSessions"),
     answer: v.string(),
-    checksum: v.string(),
+    checksum: v.optional(v.string()),
+    correctAnswer: v.optional(v.string()),
   },
   handler: async (ctx, { sessionId, answer, checksum }) => {
     const userId = await getAuthUserId(ctx);
@@ -137,13 +138,14 @@ export const submitAnswer = mutation({
     if (!session.currentChecksum) {
       throw new Error("No active question for this session");
     }
-    if (checksum !== session.currentChecksum) {
+    if (checksum !== undefined && checksum !== session.currentChecksum) {
       throw new Error("Question not active for this session");
     }
+    const activeChecksum = session.currentChecksum;
 
     const question = await ctx.db
       .query("quizQuestions")
-      .withIndex("by_checksum", (q) => q.eq("checksum", checksum))
+      .withIndex("by_checksum", (q) => q.eq("checksum", activeChecksum))
       .first();
     if (!question) throw new Error("Question not found");
 

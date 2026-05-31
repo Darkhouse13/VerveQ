@@ -1,27 +1,11 @@
-/**
- * Runtime regression tests for BLOCKER-2, BLOCKER-3, BLOCKER-4, BLOCKER-5
- * from docs/PROD_READINESS_AUDIT.md.
- *
- * We import the Convex mutation/query definitions directly and inspect
- * each one's `exportArgs()` JSON schema (a stable Convex runtime API).
- * A regression that re-adds `correctAnswer`, client-supplied `score`,
- * or client-supplied `timeTaken` to any of these surfaces will fail
- * the relevant assertion without needing a live deployment.
- *
- * The tests deliberately avoid invoking handlers — calling them would
- * require a real Convex runtime context. The public arg schema is the
- * load-bearing contract; once the server controls the schema, the
- * client cannot send what the schema disallows.
- */
-import { describe, it, expect, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
-// Stub Convex Auth so handlers that call getAuthUserId during read-only
-// projection tests don't crash on an empty ctx. Sessions in these fixtures
-// deliberately have no `userId` field — the permissive-branch ownership
-// guard lets the fixture through while the hidden-answer projection remains
-// the load-bearing assertion.
-vi.mock("@convex-dev/auth/server", () => ({
+const authMock = vi.hoisted(() => ({
   getAuthUserId: vi.fn(async () => "stub_user"),
+}));
+
+vi.mock("@convex-dev/auth/server", () => ({
+  getAuthUserId: authMock.getAuthUserId,
   convexAuth: () => ({
     auth: {},
     signIn: () => {},
@@ -31,131 +15,421 @@ vi.mock("@convex-dev/auth/server", () => ({
   }),
 }));
 
-import * as quizSessions from "../../convex/quizSessions";
 import * as blitz from "../../convex/blitz";
 import * as dailyChallenge from "../../convex/dailyChallenge";
 import * as games from "../../convex/games";
 import * as higherLower from "../../convex/higherLower";
+import * as quizSessions from "../../convex/quizSessions";
 import * as verveGrid from "../../convex/verveGrid";
 import * as whoAmI from "../../convex/whoAmI";
+import {
+  calculateEloChange,
+  getSurvivalPerformance,
+} from "../../convex/lib/elo";
 
-type Args = { [key: string]: unknown };
+type RegisteredFunction = {
+  _handler?: (ctx: unknown, args: unknown) => Promise<unknown>;
+  exportArgs?: () => string;
+};
 
-function argsOf(mutation: unknown): Args {
-  const fn = mutation as { exportArgs?: () => string };
-  if (typeof fn.exportArgs !== "function") {
-    throw new Error("not a Convex registered function");
+type Args = Record<string, unknown>;
+
+function handlerOf<T>(fn: T): (ctx: unknown, args: unknown) => Promise<unknown> {
+  const registered = fn as RegisteredFunction;
+  if (typeof registered._handler !== "function") {
+    throw new Error("not a Convex registered function with a handler");
   }
-  const raw = JSON.parse(fn.exportArgs());
-  // Convex exports args as { type: "object", value: {...} }
+  return registered._handler;
+}
+
+function argsOf(fn: unknown): Args {
+  const registered = fn as RegisteredFunction;
+  if (typeof registered.exportArgs !== "function") {
+    throw new Error("not a Convex registered function with args");
+  }
+  const raw = JSON.parse(registered.exportArgs());
   return (raw.value ?? raw) as Args;
 }
 
-describe("BLOCKER-2 — correctAnswer must never be a client-supplied arg", () => {
-  it("quizSessions.checkAnswer drops correctAnswer and timeTaken", () => {
-    const args = argsOf(quizSessions.checkAnswer);
-    expect(args).not.toHaveProperty("correctAnswer");
-    expect(args).not.toHaveProperty("timeTaken");
-    expect(args).toHaveProperty("sessionId");
-    expect(args).toHaveProperty("answer");
-  });
+function makeQuizQuestion(overrides: Partial<Record<string, unknown>> = {}) {
+  return {
+    _id: "question_1",
+    checksum: "checksum_1",
+    correctAnswer: "Stored Answer",
+    explanation: "Stored explanation",
+    usageCount: 0,
+    timesAnswered: 0,
+    timesCorrect: 0,
+    ...overrides,
+  };
+}
 
-  it("blitz.submitAnswer drops correctAnswer, keeps checksum for server lookup", () => {
-    const args = argsOf(blitz.submitAnswer);
-    expect(args).not.toHaveProperty("correctAnswer");
-    expect(args).toHaveProperty("sessionId");
-    expect(args).toHaveProperty("answer");
-    expect(args).toHaveProperty("checksum");
-  });
-
-  it("dailyChallenge.submitAnswer drops correctAnswer", () => {
-    const args = argsOf(dailyChallenge.submitAnswer);
-    expect(args).not.toHaveProperty("correctAnswer");
-    expect(args).toHaveProperty("attemptId");
-    expect(args).toHaveProperty("answer");
-    expect(args).toHaveProperty("questionIndex");
-  });
-});
-
-describe("BLOCKER-3 — ELO finalizers accept only sessionId", () => {
-  it("games.completeQuiz takes only sessionId", () => {
-    const args = argsOf(games.completeQuiz);
-    expect(Object.keys(args).sort()).toEqual(["sessionId"]);
-  });
-
-  it("games.completeSurvival takes only sessionId", () => {
-    const args = argsOf(games.completeSurvival);
-    expect(Object.keys(args).sort()).toEqual(["sessionId"]);
-  });
-});
-
-describe("BLOCKER-4 — public getSession queries must not leak the hidden answer", () => {
-  function handlerOf<T>(q: T): (ctx: unknown, args: unknown) => Promise<unknown> {
-    const fn = q as { _handler?: (ctx: unknown, args: unknown) => Promise<unknown> };
-    if (typeof fn._handler !== "function") {
-      throw new Error("not a Convex query with an accessible handler");
+function makeQuizQuestionQuery(question: Record<string, unknown>) {
+  return (table: string) => {
+    if (table !== "quizQuestions") {
+      throw new Error(`unexpected table query: ${table}`);
     }
-    return fn._handler;
-  }
+    return {
+      withIndex: () => ({
+        first: async () => question,
+      }),
+    };
+  };
+}
 
-  it("higherLower.getSession hides playerBValue while the game is active", async () => {
-    const activeSession = {
-      _id: "sess_1",
+function makeDailyQuery(challenge: Record<string, unknown>) {
+  return (table: string) => {
+    if (table !== "dailyChallenges") {
+      throw new Error(`unexpected table query: ${table}`);
+    }
+    return {
+      withIndex: () => ({
+        collect: async () => [challenge],
+      }),
+    };
+  };
+}
+
+function makeUserRatingsQuery(rating: Record<string, unknown> | null = null) {
+  return (table: string) => {
+    if (table !== "userRatings") {
+      throw new Error(`unexpected table query: ${table}`);
+    }
+    return {
+      withIndex: () => ({
+        first: async () => rating,
+      }),
+    };
+  };
+}
+
+afterEach(() => {
+  vi.useRealTimers();
+  authMock.getAuthUserId.mockReset();
+  authMock.getAuthUserId.mockResolvedValue("stub_user");
+});
+
+describe("BLOCKER-2: correctness is derived from stored answers", () => {
+  it("quizSessions.checkAnswer ignores a forged client correctAnswer", async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-05-29T12:00:04.000Z"));
+    const patch = vi.fn();
+    const session = {
+      _id: "quiz_session",
+      userId: "stub_user",
       sport: "football",
-      score: 3,
-      streak: 3,
-      status: "active",
-      playerAName: "Messi",
-      playerAValue: 100,
-      playerAPhoto: undefined,
-      playerBName: "Ronaldo",
-      playerBValue: 99, // this is the hidden truth
-      playerBPhoto: undefined,
-      currentStatKey: "goalsFor",
-      currentContext: "career",
-      currentEntityType: "player",
-      currentSeason: undefined,
+      mode: "quiz",
+      difficulty: "intermediate",
+      usedChecksums: ["checksum_1"],
       expiresAt: Date.now() + 60_000,
+      score: 0,
+      correctCount: 0,
+      totalAnswers: 0,
+      sumAnswerTimeMs: 0,
+      currentChecksum: "checksum_1",
+      questionStartedAt: Date.now() - 4_000,
+      completed: false,
     };
     const ctx = {
-      db: { get: async () => activeSession },
+      db: {
+        get: async () => session,
+        patch,
+        query: makeQuizQuestionQuery(makeQuizQuestion()),
+      },
     };
-    const result = (await handlerOf(higherLower.getSession)(ctx, {
-      sessionId: "sess_1",
+
+    const result = (await handlerOf(quizSessions.checkAnswer)(ctx, {
+      sessionId: "quiz_session",
+      answer: "Forged Answer",
+      correctAnswer: "Forged Answer",
+      timeTaken: 0.1,
     })) as Record<string, unknown>;
-    expect(result.playerBValue).toBeNull();
-    expect(result.playerAValue).toBe(100);
+
+    expect(result).toMatchObject({
+      correct: false,
+      score: 0,
+      correctAnswer: "Stored Answer",
+    });
+    expect(patch).toHaveBeenCalledWith(
+      "quiz_session",
+      expect.objectContaining({
+        correctCount: 0,
+        totalAnswers: 1,
+        currentChecksum: undefined,
+      }),
+    );
   });
 
-  it("higherLower.getSession reveals playerBValue once the game is over", async () => {
-    const overSession = {
-      _id: "sess_2",
+  it("blitz.submitAnswer ignores a forged client correctAnswer", async () => {
+    const endTimeMs = Date.now() + 60_000;
+    const patch = vi.fn();
+    const session = {
+      _id: "blitz_session",
+      userId: "stub_user",
+      sport: "football",
+      score: 0,
+      correctCount: 0,
+      wrongCount: 0,
+      usedChecksums: ["checksum_1"],
+      currentChecksum: "checksum_1",
+      gameOver: false,
+      startedAt: Date.now(),
+      endTimeMs,
+    };
+    const ctx = {
+      db: {
+        get: async () => session,
+        patch,
+        query: makeQuizQuestionQuery(makeQuizQuestion()),
+      },
+    };
+
+    const result = (await handlerOf(blitz.submitAnswer)(ctx, {
+      sessionId: "blitz_session",
+      answer: "Forged Answer",
+      checksum: "checksum_1",
+      correctAnswer: "Forged Answer",
+    })) as Record<string, unknown>;
+
+    expect(result).toMatchObject({
+      correct: false,
+      score: 0,
+      correctAnswer: "Stored Answer",
+    });
+    expect(patch).toHaveBeenCalledWith(
+      "blitz_session",
+      expect.objectContaining({
+        wrongCount: 1,
+        endTimeMs: endTimeMs - 3_000,
+        currentChecksum: undefined,
+      }),
+    );
+  });
+
+  it("dailyChallenge.submitAnswer ignores a forged client correctAnswer", async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-05-29T12:00:04.000Z"));
+    const startedAt = Date.now() - 4_000;
+    const patch = vi.fn();
+    const attempt = {
+      _id: "attempt_1",
+      userId: "stub_user",
+      date: "2026-05-29",
+      sport: "football",
+      mode: "quiz",
+      score: 0,
+      completed: false,
+      forfeited: false,
+      results: [],
+      startedAt,
+      expiresAt: Date.now() + 60_000,
+      currentQuestionStartedAt: startedAt,
+      questionStartedAts: [startedAt],
+    };
+    const challenge = {
+      _id: "challenge_1",
+      date: "2026-05-29",
+      sport: "football",
+      mode: "quiz",
+      questionChecksums: ["checksum_1"],
+      questionSnapshots: [
+        {
+          checksum: "checksum_1",
+          question: "Question?",
+          options: ["Stored Answer", "B", "C", "D"],
+          correctAnswer: "Stored Answer",
+          explanation: "Stored explanation",
+          category: "football",
+        },
+      ],
+      survivalInitials: [],
+      createdAt: 1,
+    };
+    const ctx = {
+      db: {
+        get: async () => attempt,
+        patch,
+        query: makeDailyQuery(challenge),
+      },
+    };
+
+    const result = (await handlerOf(dailyChallenge.submitAnswer)(ctx, {
+      attemptId: "attempt_1",
+      answer: "Forged Answer",
+      questionIndex: 0,
+      correctAnswer: "Forged Answer",
+      timeTaken: 0.1,
+    })) as Record<string, unknown>;
+
+    expect(result).toMatchObject({
+      correct: false,
+      score: 0,
+      totalScore: 0,
+      timeTaken: 4,
+      correctAnswer: "Stored Answer",
+    });
+    expect(patch).toHaveBeenCalledWith(
+      "attempt_1",
+      expect.objectContaining({
+        score: 0,
+        results: [{ correct: false, timeTaken: 4, score: 0 }],
+      }),
+    );
+  });
+});
+
+describe("BLOCKER-3: ELO finalizers ignore forged score fields", () => {
+  it("completeQuiz uses quizSessions scoring state, not client totals", async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-05-29T12:00:00.000Z"));
+    const session = {
+      _id: "quiz_session",
+      userId: "stub_user",
+      sport: "football",
+      mode: "quiz",
+      difficulty: "intermediate",
+      expiresAt: Date.now() + 60_000,
+      completed: false,
+      score: 37,
+      correctCount: 1,
+      totalAnswers: 2,
+      sumAnswerTimeMs: 6_000,
+    };
+    const insert = vi.fn(async () => "inserted");
+    const patch = vi.fn();
+    const ctx = {
+      db: {
+        get: async (id: string) =>
+          id === "quiz_session" ? session : { _id: "stub_user", totalGames: 0 },
+        query: makeUserRatingsQuery(null),
+        insert,
+        patch,
+      },
+    };
+
+    const result = (await handlerOf(games.completeQuiz)(ctx, {
+      sessionId: "quiz_session",
+      sport: "basketball",
+      score: 999_999,
+      totalQuestions: 10,
+      accuracy: 1,
+      averageTime: 0.1,
+      difficulty: "hard",
+    })) as Record<string, unknown>;
+
+    expect(result).toMatchObject({
+      score: 37,
+      correctCount: 1,
+      totalAnswers: 2,
+      accuracy: 0.5,
+      averageTime: 3,
+    });
+    const gameSessionInsert = insert.mock.calls.find(
+      ([table]) => table === "gameSessions",
+    )?.[1] as Record<string, unknown>;
+    expect(gameSessionInsert).toMatchObject({
+      sport: "football",
+      score: 37,
+      totalQuestions: 2,
+      correctAnswers: 1,
+      accuracy: 0.5,
+      avgAnswerTimeSecs: 3,
+    });
+  });
+
+  it("completeSurvival uses survivalSessions score and performanceBonus", async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-05-29T12:00:20.000Z"));
+    const session = {
+      _id: "survival_session",
+      userId: "stub_user",
+      sport: "football",
+      score: 4,
+      performanceBonus: 0,
+      gameOver: true,
+      expiresAt: Date.now() + 60_000,
+      startedAt: Date.now() - 20_000,
+    };
+    const insert = vi.fn(async () => "inserted");
+    const patch = vi.fn();
+    const ctx = {
+      db: {
+        get: async (id: string) =>
+          id === "survival_session"
+            ? session
+            : { _id: "stub_user", totalGames: 0 },
+        query: makeUserRatingsQuery(null),
+        insert,
+        patch,
+      },
+    };
+
+    const result = (await handlerOf(games.completeSurvival)(ctx, {
+      sessionId: "survival_session",
+      sport: "basketball",
+      score: 999,
+      durationSeconds: 1,
+      performanceBonus: 1,
+    })) as Record<string, unknown>;
+
+    const expectedEloChange = calculateEloChange(
+      1200,
+      getSurvivalPerformance(4),
+      "easy",
+      40,
+    );
+    expect(result).toMatchObject({
+      score: 4,
+      durationSeconds: 20,
+      eloChange: expectedEloChange,
+    });
+    const gameSessionInsert = insert.mock.calls.find(
+      ([table]) => table === "gameSessions",
+    )?.[1] as Record<string, unknown>;
+    expect(gameSessionInsert).toMatchObject({
+      sport: "football",
+      mode: "survival",
+      score: 4,
+      durationSeconds: 20,
+      eloChange: expectedEloChange,
+    });
+  });
+});
+
+describe("BLOCKER-4: curated getSession queries do not leak answers", () => {
+  it("higherLower.getSession strips playerBValue even after game over", async () => {
+    const session = {
+      _id: "hl_1",
+      userId: "stub_user",
       sport: "football",
       score: 3,
       streak: 0,
       status: "game_over",
-      playerAName: "Messi",
+      playerAName: "A",
       playerAValue: 100,
       playerAPhoto: undefined,
-      playerBName: "Ronaldo",
+      playerBName: "B",
       playerBValue: 99,
       playerBPhoto: undefined,
-      currentStatKey: "goalsFor",
+      currentStatKey: "goals",
       currentContext: "career",
       currentEntityType: "player",
       currentSeason: undefined,
       expiresAt: Date.now() + 60_000,
     };
-    const ctx = { db: { get: async () => overSession } };
-    const result = (await handlerOf(higherLower.getSession)(ctx, {
-      sessionId: "sess_2",
-    })) as Record<string, unknown>;
-    expect(result.playerBValue).toBe(99);
+    const result = (await handlerOf(higherLower.getSession)(
+      { db: { get: async () => session } },
+      { sessionId: "hl_1" },
+    )) as Record<string, unknown>;
+
+    expect(result).not.toHaveProperty("playerBValue");
+    expect(result.playerAValue).toBe(100);
   });
 
   it("verveGrid.getSession strips validPlayerIds from every cell", async () => {
     const session = {
       _id: "vg_1",
+      userId: "stub_user",
       sport: "football",
       boardTemplateId: "tmpl",
       boardAxisFamily: "family",
@@ -165,7 +439,7 @@ describe("BLOCKER-4 — public getSession queries must not leak the hidden answe
         {
           rowIdx: 0,
           colIdx: 0,
-          validPlayerIds: ["p1", "p2"], // answer pool — must NOT appear in result
+          validPlayerIds: ["p1", "p2"],
           guessedPlayerId: undefined,
           guessedPlayerName: undefined,
           correct: undefined,
@@ -176,129 +450,240 @@ describe("BLOCKER-4 — public getSession queries must not leak the hidden answe
       status: "active",
       expiresAt: Date.now() + 60_000,
     };
-    const ctx = { db: { get: async () => session } };
-    const result = (await handlerOf(verveGrid.getSession)(ctx, {
-      sessionId: "vg_1",
-    })) as { cells: Array<Record<string, unknown>> };
-    for (const cell of result.cells) {
-      expect(cell).not.toHaveProperty("validPlayerIds");
-    }
+    const result = (await handlerOf(verveGrid.getSession)(
+      { db: { get: async () => session } },
+      { sessionId: "vg_1" },
+    )) as { cells: Array<Record<string, unknown>> };
+
+    expect(result.cells[0]).not.toHaveProperty("validPlayerIds");
+    expect(result.cells[0].validAnswerCount).toBe(2);
   });
 
-  it("whoAmI.getSession hides answerName while session is active", async () => {
-    const activeSession = {
+  it("whoAmI.getSession strips answerName after terminal states", async () => {
+    const session = {
       _id: "wai_1",
+      userId: "stub_user",
       sport: "football",
       clueExternalId: "clue_x",
-      answerName: "Thierry Henry",
-      currentStage: 2,
-      score: 750,
-      status: "active",
-      expiresAt: Date.now() + 60_000,
-    };
-    const clue = {
-      externalId: "clue_x",
-      clue1: "Born in France",
-      clue2: "Played as a striker",
-      clue3: "Premier League legend",
-      clue4: "Double-winning Arsenal captain",
-      difficulty: "medium",
-    };
-    const ctx = {
-      db: {
-        get: async () => activeSession,
-        query: () => ({
-          withIndex: () => ({ first: async () => clue }),
-        }),
-      },
-    };
-    const result = (await handlerOf(whoAmI.getSession)(ctx, {
-      sessionId: "wai_1",
-    })) as Record<string, unknown>;
-    expect(result.answerName).toBeNull();
-    expect(Array.isArray(result.clues)).toBe(true);
-  });
-
-  it("whoAmI.getSession keeps answerName hidden after an early failed guess", async () => {
-    const endedSession = {
-      _id: "wai_2",
-      sport: "football",
-      clueExternalId: "clue_y",
-      answerName: "Thierry Henry",
-      currentStage: 3,
-      score: 0,
-      status: "failed",
-      expiresAt: Date.now() + 60_000,
-    };
-    const clue = {
-      externalId: "clue_y",
-      clue1: "a",
-      clue2: "b",
-      clue3: "c",
-      clue4: "d",
-      difficulty: "medium",
-    };
-    const ctx = {
-      db: {
-        get: async () => endedSession,
-        query: () => ({
-          withIndex: () => ({ first: async () => clue }),
-        }),
-      },
-    };
-    const result = (await handlerOf(whoAmI.getSession)(ctx, {
-      sessionId: "wai_2",
-    })) as Record<string, unknown>;
-    expect(result.answerName).toBeNull();
-  });
-
-  it("whoAmI.getSession reveals answerName after a fully revealed failed guess", async () => {
-    const endedSession = {
-      _id: "wai_3",
-      sport: "football",
-      clueExternalId: "clue_y",
-      answerName: "Thierry Henry",
+      answerName: "Hidden Player",
       currentStage: 4,
       score: 0,
       status: "failed",
       expiresAt: Date.now() + 60_000,
     };
     const clue = {
-      externalId: "clue_y",
-      clue1: "a",
-      clue2: "b",
-      clue3: "c",
-      clue4: "d",
+      externalId: "clue_x",
+      clue1: "One",
+      clue2: "Two",
+      clue3: "Three",
+      clue4: "Four",
       difficulty: "medium",
     };
     const ctx = {
       db: {
-        get: async () => endedSession,
+        get: async () => session,
         query: () => ({
           withIndex: () => ({ first: async () => clue }),
         }),
       },
     };
+
     const result = (await handlerOf(whoAmI.getSession)(ctx, {
-      sessionId: "wai_3",
+      sessionId: "wai_1",
     })) as Record<string, unknown>;
-    expect(result.answerName).toBe("Thierry Henry");
+
+    expect(result).not.toHaveProperty("answerName");
+    expect(result.clues).toEqual(["One", "Two", "Three", "Four"]);
   });
 });
 
-describe("BLOCKER-5 — daily mutations do not accept client-supplied timing", () => {
-  it("dailyChallenge.submitAnswer drops timeTaken", () => {
-    const args = argsOf(dailyChallenge.submitAnswer);
-    expect(args).not.toHaveProperty("timeTaken");
+describe("BLOCKER-5: daily attempts enforce ownership and server time", () => {
+  function makeOtherAttempt(overrides: Record<string, unknown> = {}) {
+    return {
+      _id: "attempt_1",
+      userId: "other_user",
+      date: "2026-05-29",
+      sport: "football",
+      mode: "quiz",
+      score: 0,
+      completed: false,
+      forfeited: false,
+      results: [],
+      startedAt: Date.now() - 4_000,
+      expiresAt: Date.now() + 60_000,
+      currentQuestionStartedAt: Date.now() - 4_000,
+      ...overrides,
+    };
+  }
+
+  it("refuses submitAnswer on another user's attempt", async () => {
+    const patch = vi.fn();
+    const ctx = {
+      db: {
+        get: async () => makeOtherAttempt(),
+        patch,
+      },
+    };
+
+    await expect(
+      handlerOf(dailyChallenge.submitAnswer)(ctx, {
+        attemptId: "attempt_1",
+        answer: "A",
+        questionIndex: 0,
+      }),
+    ).rejects.toThrow("Not authorized for this attempt");
+    expect(patch).not.toHaveBeenCalled();
   });
 
-  it("dailyChallenge.forfeit takes only attemptId", () => {
-    const args = argsOf(dailyChallenge.forfeit);
-    expect(Object.keys(args).sort()).toEqual(["attemptId"]);
+  it("refuses forfeit on another user's attempt", async () => {
+    const patch = vi.fn();
+    const ctx = {
+      db: {
+        get: async () => makeOtherAttempt(),
+        patch,
+      },
+    };
+
+    await expect(
+      handlerOf(dailyChallenge.forfeit)(ctx, { attemptId: "attempt_1" }),
+    ).rejects.toThrow("Not authorized for this attempt");
+    expect(patch).not.toHaveBeenCalled();
   });
 
-  it("dailyChallenge.completeAttempt takes only attemptId", () => {
-    const args = argsOf(dailyChallenge.completeAttempt);
-    expect(Object.keys(args).sort()).toEqual(["attemptId"]);
+  it("refuses completeAttempt on another user's attempt", async () => {
+    const patch = vi.fn();
+    const ctx = {
+      db: {
+        get: async () => makeOtherAttempt({
+          results: Array.from({ length: 10 }, () => ({
+            correct: true,
+            timeTaken: 1,
+            score: 100,
+          })),
+        }),
+        patch,
+      },
+    };
+
+    await expect(
+      handlerOf(dailyChallenge.completeAttempt)(ctx, { attemptId: "attempt_1" }),
+    ).rejects.toThrow("Not authorized for this attempt");
+    expect(patch).not.toHaveBeenCalled();
+  });
+
+  it("ignores client timeTaken when scoring daily answers", async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-05-29T12:00:04.000Z"));
+    const startedAt = Date.now() - 4_000;
+    const patch = vi.fn();
+    const attempt = {
+      _id: "attempt_1",
+      userId: "stub_user",
+      date: "2026-05-29",
+      sport: "football",
+      mode: "quiz",
+      score: 0,
+      completed: false,
+      forfeited: false,
+      results: [],
+      startedAt,
+      expiresAt: Date.now() + 60_000,
+      currentQuestionStartedAt: startedAt,
+      questionStartedAts: [startedAt],
+    };
+    const challenge = {
+      _id: "challenge_1",
+      date: "2026-05-29",
+      sport: "football",
+      mode: "quiz",
+      questionChecksums: ["checksum_1"],
+      questionSnapshots: [
+        {
+          checksum: "checksum_1",
+          question: "Question?",
+          options: ["A", "B", "C", "D"],
+          correctAnswer: "A",
+          explanation: "Stored explanation",
+          category: "football",
+        },
+      ],
+      survivalInitials: [],
+      createdAt: 1,
+    };
+    const ctx = {
+      db: {
+        get: async () => attempt,
+        patch,
+        query: makeDailyQuery(challenge),
+      },
+    };
+
+    const result = (await handlerOf(dailyChallenge.submitAnswer)(ctx, {
+      attemptId: "attempt_1",
+      answer: "A",
+      questionIndex: 0,
+      timeTaken: 0.1,
+    })) as Record<string, unknown>;
+
+    expect(result).toMatchObject({
+      correct: true,
+      score: 67,
+      totalScore: 67,
+      timeTaken: 4,
+    });
+    expect(patch).toHaveBeenCalledWith(
+      "attempt_1",
+      expect.objectContaining({
+        score: 67,
+        currentQuestionStartedAt: Date.now(),
+        questionStartedAts: [startedAt, Date.now()],
+      }),
+    );
+  });
+});
+
+describe("backward-compatible public arg schemas", () => {
+  it("keeps legacy client args while server handlers ignore them", () => {
+    expect(argsOf(quizSessions.checkAnswer)).toEqual(
+      expect.objectContaining({
+        sessionId: expect.anything(),
+        answer: expect.anything(),
+        correctAnswer: expect.anything(),
+        timeTaken: expect.anything(),
+      }),
+    );
+    expect(argsOf(blitz.submitAnswer)).toEqual(
+      expect.objectContaining({
+        sessionId: expect.anything(),
+        answer: expect.anything(),
+        checksum: expect.anything(),
+        correctAnswer: expect.anything(),
+      }),
+    );
+    expect(argsOf(dailyChallenge.submitAnswer)).toEqual(
+      expect.objectContaining({
+        attemptId: expect.anything(),
+        answer: expect.anything(),
+        questionIndex: expect.anything(),
+        correctAnswer: expect.anything(),
+        timeTaken: expect.anything(),
+      }),
+    );
+    expect(argsOf(games.completeQuiz)).toEqual(
+      expect.objectContaining({
+        sessionId: expect.anything(),
+        score: expect.anything(),
+        accuracy: expect.anything(),
+        averageTime: expect.anything(),
+      }),
+    );
+    expect(argsOf(games.completeSurvival)).toEqual(
+      expect.objectContaining({
+        sessionId: expect.anything(),
+        score: expect.anything(),
+        durationSeconds: expect.anything(),
+        performanceBonus: expect.anything(),
+      }),
+    );
   });
 });
