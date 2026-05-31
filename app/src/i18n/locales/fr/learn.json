@@ -1,0 +1,33 @@
+{
+  "common": {
+    "back": "Retour"
+  },
+  "type": {
+    "mcq": "Choix multiple",
+    "text": "Texte libre",
+    "numeric": "Numérique",
+    "order": "Mettre dans l'ordre"
+  },
+  "entry": {
+    "title": "Apprendre",
+    "mastery": "Maîtrise",
+    "review": "Révision",
+    "heroLine1": "Apprends-le,",
+    "heroLine2": "ne le bachote pas.",
+    "start": "Commencer →"
+  },
+  "run": {
+    "check": "Vérifier la réponse",
+    "checking": "Vérification…"
+  },
+  "branch": {
+    "title": "Attention — piège fréquent",
+    "tryAgain": "Réessayer",
+    "showWhy": "Montre-moi pourquoi →"
+  },
+  "reveal": {
+    "ideaTitle": "L'idée à retenir",
+    "next": "Question suivante →",
+    "finish": "Terminer la session →"
+  }
+}

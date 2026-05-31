@@ -14,6 +14,11 @@ export const SHELL_ROUTES = {
   /** `/compete/sport/:sport` */
   competeSportGrid: (sport: string) => `/compete/sport/${sport}`,
   ranks: "/v2/ranks",
+  /** Learn v2 (the Learn pillar) — entry, run, spaced review, mastery. */
+  learn: "/v2/learn",
+  learnRun: "/v2/learn/run",
+  learnReview: "/v2/learn/review",
+  learnMastery: "/v2/learn/mastery",
 } as const;
 
 /** Route patterns registered in App.tsx (params un-filled). */
@@ -23,6 +28,10 @@ export const SHELL_ROUTE_PATTERNS = {
   competeSport: "/compete/sport",
   competeSportGrid: "/compete/sport/:sport",
   ranks: "/v2/ranks",
+  learn: "/v2/learn",
+  learnRun: "/v2/learn/run",
+  learnReview: "/v2/learn/review",
+  learnMastery: "/v2/learn/mastery",
 } as const;
 
 /**

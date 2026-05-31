@@ -141,6 +141,10 @@
     box-shadow: 6px 6px 0px 0px hsl(var(--neo-shadow-color));
   }
 
+  .neo-shadow-sm {
+    box-shadow: 2px 2px 0px 0px hsl(var(--neo-shadow-color));
+  }
+
   .neo-shadow-pressed {
     box-shadow: 0px 0px 0px 0px hsl(var(--neo-shadow-color));
     transform: translate(var(--neo-shadow-x), var(--neo-shadow-y));

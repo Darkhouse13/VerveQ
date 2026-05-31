@@ -41,6 +41,12 @@ const CompeteSportScreen = lazy(() => import("./pages/shell/CompeteSportScreen")
 const CompeteModeGridScreen = lazy(() => import("./pages/shell/CompeteModeGridScreen"));
 const RanksPlaceholderScreen = lazy(() => import("./pages/shell/RanksPlaceholderScreen"));
 
+// Learn v2 (the Learn pillar) — additive, flag-gated, lazy.
+const LearnEntryScreen = lazy(() => import("./pages/shell/learn/LearnEntryScreen"));
+const LearnRunnerScreen = lazy(() => import("./pages/shell/learn/LearnRunnerScreen"));
+const LearnReviewScreen = lazy(() => import("./pages/shell/learn/LearnReviewScreen"));
+const LearnMasteryScreen = lazy(() => import("./pages/shell/learn/LearnMasteryScreen"));
+
 const DuelPlayScreen = lazy(() => import("./pages/DuelPlayScreen"));
 const DuelLinkScreen = lazy(() => import("./pages/DuelLinkScreen"));
 const DuelResultScreen = lazy(() => import("./pages/DuelResultScreen"));
@@ -282,6 +288,11 @@ const AppRoutes = () => (
             <Route path="/compete/sport" element={<ShellGate><CompeteSportScreen /></ShellGate>} />
             <Route path="/compete/sport/:sport" element={<ShellGate><CompeteModeGridScreen /></ShellGate>} />
             <Route path="/v2/ranks" element={<ShellGate><RanksPlaceholderScreen /></ShellGate>} />
+            {/* Learn v2 — Learn pillar (entry / run / review / mastery). */}
+            <Route path="/v2/learn" element={<ShellGate><LearnEntryScreen /></ShellGate>} />
+            <Route path="/v2/learn/run" element={<ShellGate><LearnRunnerScreen /></ShellGate>} />
+            <Route path="/v2/learn/review" element={<ShellGate><LearnReviewScreen /></ShellGate>} />
+            <Route path="/v2/learn/mastery" element={<ShellGate><LearnMasteryScreen /></ShellGate>} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </div>

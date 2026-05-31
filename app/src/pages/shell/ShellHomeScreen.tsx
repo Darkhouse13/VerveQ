@@ -59,7 +59,7 @@ export default function ShellHomeScreen() {
             color="blue"
             shadow="lg"
             className="cursor-pointer min-h-[160px] md:min-h-[260px] flex flex-col"
-            onClick={() => navigate(MODE_ROUTES.learn)}
+            onClick={() => navigate(SHELL_ROUTES.learn)}
           >
             <div className="neo-border rounded-xl bg-background w-fit p-3">
               <GraduationCap size={32} strokeWidth={2.5} className="text-foreground" />
