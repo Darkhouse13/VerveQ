@@ -31,6 +31,15 @@ import LearnPrototypeScreen from "./pages/LearnPrototypeScreen";
 import LearnNodePickerScreen from "./pages/LearnNodePickerScreen";
 import LearnLadderScreen from "./pages/LearnLadderScreen";
 import NotFound from "./pages/NotFound";
+import { ShellGate } from "./components/shell/ShellGate";
+
+// v2 unified shell (additive, flag-gated via VITE_V2_SHELL_ENABLED). Lazy so it
+// stays out of the main bundle; ShellGate redirects to /home when the flag is off.
+const ShellHomeScreen = lazy(() => import("./pages/shell/ShellHomeScreen"));
+const CompeteCategoryScreen = lazy(() => import("./pages/shell/CompeteCategoryScreen"));
+const CompeteSportScreen = lazy(() => import("./pages/shell/CompeteSportScreen"));
+const CompeteModeGridScreen = lazy(() => import("./pages/shell/CompeteModeGridScreen"));
+const RanksPlaceholderScreen = lazy(() => import("./pages/shell/RanksPlaceholderScreen"));
 
 const DuelPlayScreen = lazy(() => import("./pages/DuelPlayScreen"));
 const DuelLinkScreen = lazy(() => import("./pages/DuelLinkScreen"));
@@ -265,6 +274,14 @@ const AppRoutes = () => (
             <Route path="/learn/geography" element={<LearnNodePickerScreen />} />
             <Route path="/learn/geography/:nodeId" element={<LearnLadderScreen />} />
             <Route path="/learn/prototype" element={<LearnPrototypeScreen />} />
+            {/* v2 unified shell — additive, flag-gated. ShellGate redirects to
+                /home when VITE_V2_SHELL_ENABLED is off, so these are invisible
+                until enabled and never shadow existing routes. */}
+            <Route path="/v2" element={<ShellGate><ShellHomeScreen /></ShellGate>} />
+            <Route path="/compete" element={<ShellGate><CompeteCategoryScreen /></ShellGate>} />
+            <Route path="/compete/sport" element={<ShellGate><CompeteSportScreen /></ShellGate>} />
+            <Route path="/compete/sport/:sport" element={<ShellGate><CompeteModeGridScreen /></ShellGate>} />
+            <Route path="/v2/ranks" element={<ShellGate><RanksPlaceholderScreen /></ShellGate>} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </div>
