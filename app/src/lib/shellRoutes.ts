@@ -35,6 +35,8 @@ export const SHELL_ROUTES = {
   dailyPlay: "/v2/daily",
   /** `/v2/arena/:code` */
   arenaPlay: (code: string) => `/v2/arena/${code}`,
+  /** Live Match (1v1 realtime) on the shell — FE reskin over the existing backend. */
+  liveMatchPlay: "/v2/live-match",
 } as const;
 
 /** Route patterns registered in App.tsx (params un-filled). */
@@ -56,6 +58,7 @@ export const SHELL_ROUTE_PATTERNS = {
   verveGridPlay: "/v2/verve-grid",
   dailyPlay: "/v2/daily",
   arenaPlay: "/v2/arena/:code",
+  liveMatchPlay: "/v2/live-match",
 } as const;
 
 /**

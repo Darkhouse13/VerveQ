@@ -38,7 +38,10 @@ const MODES: ModeTile[] = [
   { key: "whoAmI", icon: HelpCircle, color: "yellow", to: (s) => `/v2/who-am-i?sport=${s}` },
   // Daily is migrated to the shell — reuses the Quiz prototype layout via the DAILY session.
   { key: "daily", icon: Timer, color: "primary", to: (s) => `/v2/daily?sport=${s}` },
-  { key: "liveMatch", icon: Radio, color: "blue", to: () => `/live-match` },
+  // Live Match (1v1 realtime) is migrated to the shell prototype layout (Arena
+  // pattern) over the existing backend. The screen resolves the active match
+  // (created via the untouched Challenge matchmaking flow) or guides there.
+  { key: "liveMatch", icon: Radio, color: "blue", to: () => `/v2/live-match` },
 ];
 
 const LIVE_SPORTS = new Set(["football"]);
