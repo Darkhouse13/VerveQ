@@ -532,7 +532,7 @@ function phaseDisplayLabel(phase: Phase) {
 
 // ───────────────────────── LOBBY ─────────────────────────
 
-function LobbyView({
+export function LobbyView({
   room,
   userId,
 }: {
@@ -882,7 +882,7 @@ function PlayerRow({
 
 // ───────────────────────── COUNTDOWN ─────────────────────────
 
-function CountdownView({ room }: { room: Room }) {
+export function CountdownView({ room }: { room: Room }) {
   const anchor = usePhaseAnchor(`${room.arenaId}:countdown`);
   const tick = useTick(120);
   const elapsed = anchor ? Math.max(0, tick - anchor) : 0;
@@ -1315,7 +1315,7 @@ function RevealView({
 
 // ───────────────────────── ROUND BREAK ─────────────────────────
 
-function RoundBreakView({
+export function RoundBreakView({
   room,
   userId,
 }: {
@@ -1405,7 +1405,7 @@ function RoundBreakView({
 
 // ───────────────────────── FINAL ─────────────────────────
 
-function FinalView({
+export function FinalView({
   room,
   userId,
   rematching,
@@ -2084,7 +2084,7 @@ function LeaderboardCard({
 
 // ───────────────────────── HELPERS ─────────────────────────
 
-function NotInRoom({
+export function NotInRoom({
   title,
   detail,
   onBack,
