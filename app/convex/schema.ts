@@ -366,6 +366,37 @@ export default defineSchema({
     .index("by_user_node", ["userId", "nodeId"])
     .index("by_expiresAt", ["expiresAt"]),
 
+  learnRungReviews: defineTable({
+    userId: v.id("users"),
+    nodeId: v.string(),
+    subject: v.string(),
+    rungId: v.string(),
+    reviewState: v.union(v.literal("learning"), v.literal("locked_in")),
+    dueAt: v.number(),
+    intervalMs: v.number(),
+    easeFactor: v.number(),
+    repetitions: v.number(),
+    lapses: v.number(),
+    lastRating: v.optional(
+      v.union(
+        v.literal("again"),
+        v.literal("hard"),
+        v.literal("good"),
+        v.literal("easy"),
+      ),
+    ),
+    lastFelt: v.optional(v.union(v.literal("learn"), v.literal("test"))),
+    lastCorrect: v.optional(v.boolean()),
+    lastAnsweredAt: v.optional(v.number()),
+    lastRatedAt: v.optional(v.number()),
+    lastFeltAt: v.optional(v.number()),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index("by_user_rung", ["userId", "rungId"])
+    .index("by_user_subject", ["userId", "subject"])
+    .index("by_user_node", ["userId", "nodeId"]),
+
   survivalSessions: defineTable({
     userId: v.optional(v.id("users")),
     sport: v.string(),

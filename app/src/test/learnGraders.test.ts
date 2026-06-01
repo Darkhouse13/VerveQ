@@ -12,16 +12,13 @@ describe("Learn graders", () => {
 
     expect(gradeLearnAnswer(question, "sao paulo")).toMatchObject({
       correct: true,
-      branchId: "São Paulo",
       teach: "Verified teaching reveal.",
     });
     expect(gradeLearnAnswer(question, "Bogota!")).toMatchObject({
       correct: true,
-      branchId: "Bogotá",
     });
     expect(gradeLearnAnswer(question, "cote-d ivoire")).toMatchObject({
       correct: true,
-      branchId: "Côte d'Ivoire",
     });
     expect(gradeLearnAnswer(question, "Medellin")).toMatchObject({
       correct: false,
@@ -45,7 +42,6 @@ describe("Learn graders", () => {
     });
     expect(gradeLearnAnswer(tolerantQuestion, "Naypyida")).toMatchObject({
       correct: true,
-      branchId: "Naypyidaw",
     });
     expect(gradeLearnAnswer(tolerantQuestion, "Nayida")).toMatchObject({
       correct: false,

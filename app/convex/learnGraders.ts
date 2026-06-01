@@ -105,7 +105,6 @@ export function gradeTextAnswer(
   if (best && best.distance <= tolerance) {
     return {
       correct: true,
-      branchId: best.form,
       teach: question.correctReveal,
     };
   }

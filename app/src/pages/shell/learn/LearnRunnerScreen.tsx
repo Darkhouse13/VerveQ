@@ -79,7 +79,12 @@ export default function LearnRunnerScreen() {
   const [params] = useSearchParams();
   const nodeId = params.get("node") ?? undefined;
   const session = useLearnSession(nodeId ? { nodeId } : undefined);
-  const { submitLearnAnswer, rateCard } = useLearnGrading(session.ref);
+  const {
+    submitLearnAnswer,
+    rateCard,
+    recordFeltSignal,
+    completeLearnSession,
+  } = useLearnGrading(session.ref);
 
   const [idx, setIdx] = useState(0);
   const [stage, setStage] = useState<Stage>("answer");
@@ -119,8 +124,13 @@ export default function LearnRunnerScreen() {
     }
   };
 
-  const next = () => {
+  const next = async () => {
     if (idx + 1 >= total) {
+      try {
+        await completeLearnSession();
+      } catch (err) {
+        console.error("Failed to complete Learn session:", err);
+      }
       setDone(true);
       return;
     }
@@ -155,9 +165,7 @@ export default function LearnRunnerScreen() {
   }
 
   const onRate = (r: LearnRating) => void rateCard(q.id, r);
-  const onFelt = (_f: LearnFelt) => {
-    /* qualitative signal — captured by the reveal; bound to the seam later */
-  };
+  const onFelt = (f: LearnFelt) => void recordFeltSignal(q.id, f);
 
   // Left context rail (desktop only).
   const rail = (
@@ -247,7 +255,7 @@ export default function LearnRunnerScreen() {
           last={idx + 1 >= total}
           onRate={onRate}
           onFelt={onFelt}
-          onContinue={next}
+          onContinue={() => void next()}
         />
       )}
     </div>

@@ -8,6 +8,7 @@ import {
   knowledgeGeographyCieScoreBatchV2Questions,
 } from "./knowledgeGeographyCieScoreBatchV2";
 import {
+  isPipelineProofNode,
   skillNodeIds,
   skillNodes,
   type SkillNode,
@@ -134,6 +135,9 @@ const nodeOrder = new Map<SkillNodeId, number>(
 );
 
 const difficultyOrder: Difficulty[] = ["easy", "intermediate", "hard"];
+const cieSkillNodeIds = skillNodes
+  .filter((node) => !isPipelineProofNode(node))
+  .map((node) => node.id);
 
 function orderedTags(tags: SkillNodeId[]) {
   return [...new Set(tags)].sort(
@@ -389,8 +393,8 @@ export function validateLearnSkillGraph(options?: { minNodePopulation?: number }
   }
 
   const cycles = findGraphCycles(skillNodes);
-  const orphanNodes = skillNodeIds.filter((id) => populationByNode[id] === 0);
-  const underpopulatedNodes = skillNodeIds
+  const orphanNodes = cieSkillNodeIds.filter((id) => populationByNode[id] === 0);
+  const underpopulatedNodes = cieSkillNodeIds
     .filter((id) => populationByNode[id] < minNodePopulation)
     .map((id) => ({
       nodeId: id,
@@ -400,7 +404,7 @@ export function validateLearnSkillGraph(options?: { minNodePopulation?: number }
           ? "orphan node with no tagged questions"
           : `below minimum node population ${minNodePopulation}`,
     }));
-  const difficultyGaps = skillNodeIds.flatMap((nodeId) =>
+  const difficultyGaps = cieSkillNodeIds.flatMap((nodeId) =>
     difficultyOrder
       .filter((difficulty) => populationByNodeDifficulty[nodeId][difficulty] === 0)
       .map((difficulty) => ({ nodeId, difficulty })),
@@ -444,7 +448,7 @@ export function formatLearnSkillGraphValidationReport(
     "|---|---:|---:|---:|---:|",
   ];
 
-  for (const nodeId of skillNodeIds) {
+  for (const nodeId of cieSkillNodeIds) {
     const byDifficulty = report.populationByNodeDifficulty[nodeId];
     lines.push(
       `| ${nodeId} | ${report.populationByNode[nodeId]} | ${byDifficulty.easy} | ${byDifficulty.intermediate} | ${byDifficulty.hard} |`,

@@ -6,9 +6,11 @@ export const skillNodeIds = [
   "geo.capitals.nonobvious",
   "geo.borders.identify",
   "geo.borders.reasoning",
+  "geo.pipeline.proof",
 ] as const;
 
 export type SkillNodeId = (typeof skillNodeIds)[number];
+export const PIPELINE_PROOF_NODE_ID = "geo.pipeline.proof" satisfies SkillNodeId;
 
 export type SkillNode = {
   id: SkillNodeId;
@@ -16,6 +18,7 @@ export type SkillNode = {
   name: string;
   description: string;
   prerequisites: SkillNodeId[];
+  contentKind?: "verified" | "pipeline_proof";
 };
 
 export const skillNodes: SkillNode[] = [
@@ -71,8 +74,21 @@ export const skillNodes: SkillNode[] = [
       "Explicit non-adjacency reasoning, including prompts asking which country does not border another.",
     prerequisites: ["geo.borders.identify"],
   },
+  {
+    id: PIPELINE_PROOF_NODE_ID,
+    subject: "geography",
+    name: "Pipeline proof fixture",
+    description:
+      "Pipeline-proof fixture only: trivial geography facts for validating live MCQ, text, numeric, and ordering rungs. Not shippable verified CIE content.",
+    prerequisites: [],
+    contentKind: "pipeline_proof",
+  },
 ];
 
 export const skillNodeById = Object.fromEntries(
   skillNodes.map((node) => [node.id, node]),
 ) as Record<SkillNodeId, SkillNode>;
+
+export function isPipelineProofNode(node: SkillNode): boolean {
+  return node.contentKind === "pipeline_proof";
+}

@@ -4,10 +4,24 @@
  */
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
+import { useQuery } from "convex/react";
+import { api } from "../../../../convex/_generated/api";
 import { LearnShell, Eyebrow, Chip, MasteryBar } from "@/components/learn/LearnPrimitives";
 import { SHELL_ROUTES } from "@/lib/shellRoutes";
 import { LEARN_FIXTURE_SUBJECTS } from "@/lib/learn/fixtures";
 import type { LearnSubjectMastery } from "@/lib/learn/contract";
+
+function dueLabel(
+  item: LearnSubjectMastery,
+  locked: boolean,
+  t: (key: string, values?: Record<string, number>) => string,
+) {
+  if (item.due > 0) return t("review.dueNow");
+  if (!item.nextReview) return locked ? t("review.reviewIn", { days: 5 }) : t("review.dueIn", { hours: 12 });
+  const hours = Math.max(1, Math.ceil((item.nextReview - Date.now()) / (60 * 60 * 1000)));
+  if (hours < 24) return t("review.dueIn", { hours });
+  return t("review.reviewIn", { days: Math.ceil(hours / 24) });
+}
 
 function Queue({
   title,
@@ -47,13 +61,7 @@ function Queue({
           >
             <div className="flex items-center justify-between">
               <div className="text-sm font-bold">{s.label}</div>
-              <Chip>
-                {locked
-                  ? t("review.reviewIn", { days: Math.round((1 - s.mastery) * 6) + 5 })
-                  : s.due > 10
-                    ? t("review.dueNow")
-                    : t("review.dueIn", { hours: s.due })}
-              </Chip>
+              <Chip>{dueLabel(s, locked, t)}</Chip>
             </div>
             <div className="mt-2">
               <MasteryBar value={s.mastery} tone={locked ? "success" : "primary"} />
@@ -72,8 +80,10 @@ function Queue({
 export default function LearnReviewScreen() {
   const navigate = useNavigate();
   const { t } = useTranslation("learn");
-  const locked = LEARN_FIXTURE_SUBJECTS.filter((s) => s.state === "locked");
-  const learning = LEARN_FIXTURE_SUBJECTS.filter((s) => s.state === "learning");
+  const plan = useQuery(api.learn.getLearnReviewPlan, { subject: "geography" });
+  const subjects = plan?.nodes ?? LEARN_FIXTURE_SUBJECTS;
+  const locked = subjects.filter((s) => s.state === "locked");
+  const learning = subjects.filter((s) => s.state === "learning");
 
   return (
     <LearnShell>

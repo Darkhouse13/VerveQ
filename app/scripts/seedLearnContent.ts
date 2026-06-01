@@ -51,10 +51,11 @@ import {
   learnGeographyNonobviousLadderV1Metadata,
   learnGeographyNonobviousLadderV1Questions,
 } from "../convex/learnGeographyNonobviousLadderV1";
-import { skillNodes } from "../convex/learnSkillGraph";
+import { isPipelineProofNode, skillNodes } from "../convex/learnSkillGraph";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const APP_DIR = path.resolve(__dirname, "..");
+const seedableSkillNodes = skillNodes.filter((node) => !isPipelineProofNode(node));
 const SCHEMA_PATH = path.join(APP_DIR, "convex", "schema.ts");
 const SCOPE_KEY = "learn:content:geography:v1";
 const SEED_VERSION = "learn-content-geography-v1";
@@ -305,7 +306,7 @@ function buildPlan() {
   const learnOverlayCount = seedSources
     .filter((source) => source.kind !== "score-batch")
     .reduce((sum, source) => sum + source.records.length, 0);
-  const nodeCount = skillNodes.length;
+  const nodeCount = seedableSkillNodes.length;
   const manifest = {
     scopeKey: SCOPE_KEY,
     seedVersion: SEED_VERSION,
@@ -318,7 +319,7 @@ function buildPlan() {
       verdict: source.metadata.verdict,
       recordCount: source.records.length,
     })),
-    skillNodes: skillNodes.map((node) => ({
+    skillNodes: seedableSkillNodes.map((node) => ({
       id: node.id,
       subject: node.subject,
       prerequisites: node.prerequisites,
@@ -339,7 +340,7 @@ function buildPlan() {
       totalPlannedRecords: questionCount + learnOverlayCount + nodeCount,
     },
     sources: manifest.sources,
-    skillNodeIds: skillNodes.map((node) => node.id),
+    skillNodeIds: seedableSkillNodes.map((node) => node.id),
   };
 }
 
