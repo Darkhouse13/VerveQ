@@ -25,6 +25,10 @@ export const SHELL_ROUTES = {
   blitzPlay: "/v2/blitz",
   /** Solo Survival on the shell prototype layout (FE reskin). */
   survivalPlay: "/v2/survival",
+  /** Solo Higher or Lower on the shell prototype layout (FE reskin). */
+  higherLowerPlay: "/v2/higher-lower",
+  /** Solo Who Am I on the shell prototype layout (FE reskin). */
+  whoAmIPlay: "/v2/who-am-i",
   /** `/v2/arena/:code` */
   arenaPlay: (code: string) => `/v2/arena/${code}`,
 } as const;
@@ -43,6 +47,8 @@ export const SHELL_ROUTE_PATTERNS = {
   quizPlay: "/v2/quiz",
   blitzPlay: "/v2/blitz",
   survivalPlay: "/v2/survival",
+  higherLowerPlay: "/v2/higher-lower",
+  whoAmIPlay: "/v2/who-am-i",
   arenaPlay: "/v2/arena/:code",
 } as const;
 
