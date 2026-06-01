@@ -53,6 +53,7 @@ const BlitzPlayScreen = lazy(() => import("./pages/shell/play/BlitzPlayScreen"))
 const SurvivalPlayScreen = lazy(() => import("./pages/shell/play/SurvivalPlayScreen"));
 const HigherLowerPlayScreen = lazy(() => import("./pages/shell/play/HigherLowerPlayScreen"));
 const WhoAmIPlayScreen = lazy(() => import("./pages/shell/play/WhoAmIPlayScreen"));
+const VerveGridPlayScreen = lazy(() => import("./pages/shell/play/VerveGridPlayScreen"));
 const DailyQuizPlayScreen = lazy(() => import("./pages/shell/play/DailyQuizPlayScreen"));
 const ArenaPlayScreen = lazy(() => import("./pages/shell/play/ArenaPlayScreen"));
 
@@ -308,6 +309,7 @@ const AppRoutes = () => (
             <Route path="/v2/survival" element={<ShellGate><SurvivalPlayScreen /></ShellGate>} />
             <Route path="/v2/higher-lower" element={<ShellGate><HigherLowerPlayScreen /></ShellGate>} />
             <Route path="/v2/who-am-i" element={<ShellGate><WhoAmIPlayScreen /></ShellGate>} />
+            <Route path="/v2/verve-grid" element={<ShellGate><VerveGridPlayScreen /></ShellGate>} />
             {/* Daily reuses the migrated Quiz view but runs the DAILY session;
                 same auth requirement as the live /daily-quiz route. */}
             <Route path="/v2/daily" element={<ShellGate><UsernameRequiredRoute><DailyQuizPlayScreen /></UsernameRequiredRoute></ShellGate>} />

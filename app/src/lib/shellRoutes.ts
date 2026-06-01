@@ -29,6 +29,8 @@ export const SHELL_ROUTES = {
   higherLowerPlay: "/v2/higher-lower",
   /** Solo Who Am I on the shell prototype layout (FE reskin). */
   whoAmIPlay: "/v2/who-am-i",
+  /** Solo VerveGrid on the bespoke GridStage (FE reskin over the existing backend). */
+  verveGridPlay: "/v2/verve-grid",
   /** Daily Challenge (quiz) on the shell — reuses QuizPlayView via the DAILY session. */
   dailyPlay: "/v2/daily",
   /** `/v2/arena/:code` */
@@ -51,6 +53,7 @@ export const SHELL_ROUTE_PATTERNS = {
   survivalPlay: "/v2/survival",
   higherLowerPlay: "/v2/higher-lower",
   whoAmIPlay: "/v2/who-am-i",
+  verveGridPlay: "/v2/verve-grid",
   dailyPlay: "/v2/daily",
   arenaPlay: "/v2/arena/:code",
 } as const;
