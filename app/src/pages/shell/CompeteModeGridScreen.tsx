@@ -35,7 +35,8 @@ const MODES: ModeTile[] = [
   { key: "higherLower", icon: TrendingUp, color: "success", to: (s) => `/v2/higher-lower?sport=${s}` },
   { key: "verveGrid", icon: Grid3X3, color: "blue", to: (s) => `/verve-grid?sport=${s}` },
   { key: "whoAmI", icon: HelpCircle, color: "yellow", to: (s) => `/v2/who-am-i?sport=${s}` },
-  { key: "daily", icon: Timer, color: "primary", to: (s) => `/daily-quiz?sport=${s}` },
+  // Daily is migrated to the shell — reuses the Quiz prototype layout via the DAILY session.
+  { key: "daily", icon: Timer, color: "primary", to: (s) => `/v2/daily?sport=${s}` },
   { key: "liveMatch", icon: Radio, color: "blue", to: () => `/live-match` },
 ];
 
