@@ -346,7 +346,12 @@ export default defineSchema({
     rungResults: v.array(
       v.object({
         rungId: v.string(),
-        chosenOption: v.string(),
+        // Legacy MCQ rows used chosenOption. New Learn graders store the
+        // sanitized submission value here so text/numeric/order can share
+        // the existing server-graded session path.
+        chosenOption: v.optional(v.string()),
+        answer: v.optional(v.any()),
+        branchId: v.optional(v.string()),
         correct: v.boolean(),
         firstTry: v.boolean(),
         answeredAt: v.number(),

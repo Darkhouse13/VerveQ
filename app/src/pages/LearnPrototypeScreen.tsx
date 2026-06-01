@@ -19,7 +19,8 @@ type Phase = "question" | "reveal" | "end";
 
 // Sanitized rung shape returned by getLearnLadder — carries NO answers.
 export type LearnRung = {
-  rungId: string;
+  questionId: string;
+  type: "mcq" | "text" | "numeric" | "order";
   stem: string;
   options: string[];
 };
@@ -27,8 +28,10 @@ export type LearnRung = {
 // Verdict returned by submitLearnRung — the server's grading of one pick.
 type RungVerdict = {
   correct: boolean;
-  correctAnswer: string;
-  reveal: string;
+  branchId?: string;
+  teach: string;
+  masteryDelta?: number;
+  nextReview?: number;
 };
 
 // Mastery transition returned by completeLearnLadder — drives the end card.
@@ -95,8 +98,8 @@ export function LearnLoop({
     try {
       const result = await submitRung({
         sessionId,
-        rungId: rung.rungId,
-        chosenOption: option,
+        questionId: rung.questionId,
+        answer: option,
       });
       setPicked(option);
       setVerdict(result);
@@ -223,10 +226,10 @@ export function LearnLoop({
   const optionClasses = (option: string) => {
     if (!revealed || !verdict)
       return "bg-card text-card-foreground active:neo-shadow-pressed";
-    if (option === verdict.correctAnswer)
+    if (option === picked && verdict.correct)
       return "bg-success text-success-foreground";
-    // The picked-but-wrong option is framed as "your guess", not flagged red — this is a
-    // discovery, not a penalty. The correct answer (green) is where the eye should land.
+    // Wrong picks are framed as "your guess", not flagged red. The server keeps
+    // the correct answer private and returns only the verified teaching reveal.
     if (option === picked)
       return "bg-card text-card-foreground ring-2 ring-electric-blue";
     return "bg-muted text-muted-foreground opacity-50";
@@ -274,13 +277,13 @@ export function LearnLoop({
             } ${optionClasses(option)}`}
           >
             <span className="font-heading font-bold text-base flex-1">{option}</span>
-            {revealed && verdict && option === verdict.correctAnswer && (
+            {revealed && verdict && option === picked && verdict.correct && (
               <Check size={20} strokeWidth={3} className="shrink-0" />
             )}
             {revealed &&
               verdict &&
               option === picked &&
-              option !== verdict.correctAnswer && (
+              !verdict.correct && (
                 <span className="text-[10px] font-heading font-bold uppercase tracking-wide text-electric-blue shrink-0">
                   You picked
                 </span>
@@ -307,7 +310,7 @@ export function LearnLoop({
           </div>
 
           <p className="font-heading font-bold text-base leading-snug">
-            {verdict.reveal}
+            {verdict.teach}
           </p>
         </NeoCard>
       )}

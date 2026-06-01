@@ -86,7 +86,8 @@ describe("learn Convex contract", () => {
     expect(result.rungs.length).toBeGreaterThan(0);
     for (const rung of result.rungs) {
       expect(rung).toEqual({
-        rungId: expect.any(String),
+        questionId: expect.any(String),
+        type: "mcq",
         stem: expect.any(String),
         options: expect.any(Array),
       });
@@ -114,7 +115,7 @@ describe("learn Convex contract", () => {
     });
   });
 
-  it("checks a submitted rung on the server and returns the chosen distractor reveal", async () => {
+  it("checks a submitted rung on the server and returns the chosen distractor teach", async () => {
     const ladder = buildLadder("geo.capitals.nonobvious");
     const rung = ladder.questions[0];
     const wrong = rung.distractors[0];
@@ -138,24 +139,79 @@ describe("learn Convex contract", () => {
 
     const result = (await handlerOf(learn.submitLearnRung)(ctx, {
       sessionId: "learn_session_1",
-      rungId: rung.checksum,
-      chosenOption: wrong.text,
+      questionId: rung.checksum,
+      answer: wrong.text,
     })) as Record<string, unknown>;
 
     expect(result).toEqual({
       correct: false,
-      correctAnswer: rung.correctAnswer,
-      reveal: wrong.reveal,
+      branchId: wrong.text,
+      teach: wrong.reveal,
     });
+    expect(result).not.toHaveProperty("correctAnswer");
+    expect(result).not.toHaveProperty("reveal");
     expect(patch).toHaveBeenCalledWith(
       "learn_session_1",
       expect.objectContaining({
         rungResults: [
           expect.objectContaining({
             rungId: rung.checksum,
-            chosenOption: wrong.text,
+            answer: wrong.text,
+            branchId: wrong.text,
             correct: false,
             firstTry: true,
+          }),
+        ],
+      }),
+    );
+  });
+
+  it("ignores forged client correctness and teaching fields on Learn submit", async () => {
+    const ladder = buildLadder("geo.capitals.nonobvious");
+    const rung = ladder.questions[0];
+    const wrong = rung.distractors[0];
+    const patch = vi.fn();
+    const ctx = {
+      db: {
+        get: vi.fn(async () => ({
+          _id: "learn_session_1",
+          userId: "user_1",
+          nodeId: "geo.capitals.nonobvious",
+          subject: "geography",
+          rungIds: ladder.questions.map((question) => question.checksum),
+          rungResults: [],
+          startedAt: Date.now(),
+          updatedAt: Date.now(),
+          expiresAt: Date.now() + 60_000,
+        })),
+        patch,
+      },
+    };
+
+    const result = (await handlerOf(learn.submitLearnRung)(ctx, {
+      sessionId: "learn_session_1",
+      questionId: rung.checksum,
+      answer: wrong.text,
+      correct: true,
+      correctAnswer: wrong.text,
+      teach: "Forged teach.",
+      reveal: "Forged reveal.",
+      masteryDelta: 999,
+      nextReview: 1,
+    })) as Record<string, unknown>;
+
+    expect(result).toEqual({
+      correct: false,
+      branchId: wrong.text,
+      teach: wrong.reveal,
+    });
+    expect(patch).toHaveBeenCalledWith(
+      "learn_session_1",
+      expect.objectContaining({
+        rungResults: [
+          expect.objectContaining({
+            answer: wrong.text,
+            correct: false,
           }),
         ],
       }),
