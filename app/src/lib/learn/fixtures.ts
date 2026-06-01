@@ -6,10 +6,8 @@
  * no correctness data (no correct key, no accepted strings, no ordering years) —
  * exactly what a sanitized server payload would send to the client.
  *
- * In production the mixed-type session comes from the server; the live MCQ
- * ladder path (`getLearnLadder`) already supplies real MCQ rungs. This fixture
- * set is the offline/showcase fallback and the seam input for the not-yet-live
- * text/numeric/order graders.
+ * In production the mixed-type session comes from the server. This fixture set
+ * is only the offline/showcase fallback.
  */
 import type { LearnQuestion, LearnSubjectMastery } from "./contract";
 

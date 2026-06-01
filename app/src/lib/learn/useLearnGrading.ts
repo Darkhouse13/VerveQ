@@ -12,15 +12,20 @@
  * itself is never returned — `teach` is the only reveal text, authored on the
  * server. There is NO client-side correctness logic anywhere in the Learn UI.
  *
- * Live content note: live ladders are MCQ-only today, so MCQ is the type
- * exercised end-to-end at runtime; text/numeric/order grade through the same
- * seam and are covered by the server grader tests until live content lands.
+ * Rating and felt signals also go to the server. The client submits the user's
+ * self-report only; scheduling is computed from server-stored outcomes.
  */
 import { useCallback } from "react";
 import { useMutation } from "convex/react";
 import { api } from "../../../convex/_generated/api";
 import type { Id } from "../../../convex/_generated/dataModel";
-import type { LearnAnswer, LearnQuestion, LearnRating, LearnVerdict } from "./contract";
+import type {
+  LearnAnswer,
+  LearnFelt,
+  LearnQuestion,
+  LearnRating,
+  LearnVerdict,
+} from "./contract";
 
 export interface LearnSessionRef {
   id: string;
@@ -29,14 +34,16 @@ export interface LearnSessionRef {
 }
 
 /** Shape the per-type answer into the raw value the server grader expects. */
-function toServerAnswer(answer: LearnAnswer): unknown {
+function toServerAnswer(question: LearnQuestion, answer: LearnAnswer): unknown {
   switch (answer.type) {
     case "mcq":
       return answer.key;
     case "text":
       return answer.text;
     case "numeric":
-      return answer.value;
+      return question.type === "numeric" && question.unit
+        ? { value: answer.value, unit: question.unit }
+        : answer.value;
     case "order":
       return answer.order;
   }
@@ -44,6 +51,9 @@ function toServerAnswer(answer: LearnAnswer): unknown {
 
 export function useLearnGrading(session: LearnSessionRef) {
   const submitRung = useMutation(api.learn.submitLearnRung);
+  const rateRung = useMutation(api.learn.rateLearnRung);
+  const recordFelt = useMutation(api.learn.recordLearnRungFelt);
+  const completeLadder = useMutation(api.learn.completeLearnLadder);
 
   const submitLearnAnswer = useCallback(
     async (question: LearnQuestion, answer: LearnAnswer): Promise<LearnVerdict> => {
@@ -51,7 +61,7 @@ export function useLearnGrading(session: LearnSessionRef) {
       const verdict = await submitRung({
         sessionId: session.id as Id<"learnSessions">,
         questionId: question.id,
-        answer: toServerAnswer(answer),
+        answer: toServerAnswer(question, answer),
       });
       return {
         correct: verdict.correct,
@@ -64,15 +74,34 @@ export function useLearnGrading(session: LearnSessionRef) {
     [submitRung, session.id],
   );
 
-  // Spaced-rep rating + felt signal have no server endpoint yet. Routed through
-  // the same seam so they swap to a real mutation in one place. Decides nothing.
   const rateCard = useCallback(
-    async (_questionId: string, _rating: LearnRating): Promise<void> => {
-      // ONE-LINE SWAP: await rateLearnCardV2({ sessionId: session.id, questionId, rating });
-      return;
+    async (questionId: string, rating: LearnRating): Promise<void> => {
+      if (!session.live) return;
+      await rateRung({
+        sessionId: session.id as Id<"learnSessions">,
+        questionId,
+        rating,
+      });
     },
-    [],
+    [rateRung, session.id, session.live],
   );
 
-  return { submitLearnAnswer, rateCard };
+  const recordFeltSignal = useCallback(
+    async (questionId: string, felt: LearnFelt): Promise<void> => {
+      if (!session.live) return;
+      await recordFelt({
+        sessionId: session.id as Id<"learnSessions">,
+        questionId,
+        felt,
+      });
+    },
+    [recordFelt, session.id, session.live],
+  );
+
+  const completeLearnSession = useCallback(async (): Promise<void> => {
+    if (!session.live) return;
+    await completeLadder({ sessionId: session.id as Id<"learnSessions"> });
+  }, [completeLadder, session.id, session.live]);
+
+  return { submitLearnAnswer, rateCard, recordFeltSignal, completeLearnSession };
 }

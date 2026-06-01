@@ -15,12 +15,12 @@
  *     `api.learn.submitLearnRung` through the single seam in `useLearnGrading.ts`.
  *     The server returns `{ correct, branchId?, teach, masteryDelta?, nextReview? }`
  *     and never the correct answer. No client-side grading remains.
- *   - Live ladders are MCQ-only today, so MCQ is exercised end-to-end at runtime;
- *     text/numeric/order grade through the same mutation and are covered by the
- *     server grader tests until live content for those types lands.
+ *   - The live ladder payload carries the real type discriminator end-to-end.
+ *     Text accepted forms, numeric answers, and correct order stay server-only.
  */
 
 export type LearnQuestionType = "mcq" | "text" | "numeric" | "order";
+export const LEARN_PIPELINE_PROOF_NODE_ID = "geo.pipeline.proof";
 
 /** Spaced-repetition self-rating (feeds the server schedule; never graded here). */
 export type LearnRating = "again" | "hard" | "good" | "easy";
@@ -63,6 +63,7 @@ export interface LearnTextQuestion extends LearnQuestionBase {
 export interface LearnNumericQuestion extends LearnQuestionBase {
   type: "numeric";
   unit?: string;
+  tolerance?: number;
 }
 
 export interface LearnOrderQuestion extends LearnQuestionBase {
@@ -126,4 +127,6 @@ export interface LearnSubjectMastery {
   /** Count of items due for review. */
   due: number;
   state: "locked" | "learning";
+  /** Next due timestamp, epoch ms. */
+  nextReview?: number;
 }

@@ -4,9 +4,12 @@
  */
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
+import { useQuery } from "convex/react";
+import { api } from "../../../../convex/_generated/api";
 import { LearnShell, Eyebrow } from "@/components/learn/LearnPrimitives";
 import { SHELL_ROUTES } from "@/lib/shellRoutes";
 import { LEARN_FIXTURE_SUBJECTS } from "@/lib/learn/fixtures";
+import { LEARN_PIPELINE_PROOF_NODE_ID } from "@/lib/learn/contract";
 
 const TYPE_KEYS = ["mcq", "text", "numeric", "order"] as const;
 const STREAK_DAYS = 9;
@@ -14,8 +17,11 @@ const STREAK_DAYS = 9;
 export default function LearnEntryScreen() {
   const navigate = useNavigate();
   const { t } = useTranslation("learn");
-  const start = () => navigate(SHELL_ROUTES.learnRun);
-  const resume = LEARN_FIXTURE_SUBJECTS.filter((s) => s.state === "learning").slice(0, 3);
+  const plan = useQuery(api.learn.getLearnReviewPlan, { subject: "geography" });
+  const subjects = plan?.nodes ?? LEARN_FIXTURE_SUBJECTS;
+  const start = () =>
+    navigate(`${SHELL_ROUTES.learnRun}?node=${LEARN_PIPELINE_PROOF_NODE_ID}`);
+  const resume = subjects.filter((s) => s.state === "learning").slice(0, 3);
 
   return (
     <LearnShell>
