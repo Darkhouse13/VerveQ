@@ -56,6 +56,7 @@ const WhoAmIPlayScreen = lazy(() => import("./pages/shell/play/WhoAmIPlayScreen"
 const VerveGridPlayScreen = lazy(() => import("./pages/shell/play/VerveGridPlayScreen"));
 const DailyQuizPlayScreen = lazy(() => import("./pages/shell/play/DailyQuizPlayScreen"));
 const ArenaPlayScreen = lazy(() => import("./pages/shell/play/ArenaPlayScreen"));
+const LiveMatchPlayScreen = lazy(() => import("./pages/shell/play/LiveMatchPlayScreen"));
 
 const DuelPlayScreen = lazy(() => import("./pages/DuelPlayScreen"));
 const DuelLinkScreen = lazy(() => import("./pages/DuelLinkScreen"));
@@ -314,6 +315,10 @@ const AppRoutes = () => (
                 same auth requirement as the live /daily-quiz route. */}
             <Route path="/v2/daily" element={<ShellGate><UsernameRequiredRoute><DailyQuizPlayScreen /></UsernameRequiredRoute></ShellGate>} />
             <Route path="/v2/arena/:code" element={<ShellGate><ArenaPlayScreen /></ShellGate>} />
+            {/* Live Match (1v1 realtime) on the shell — reskin over the existing
+                liveMatches backend; realtime/matchmaking/ELO unchanged. Same auth
+                requirement as the live /live-match route. */}
+            <Route path="/v2/live-match" element={<ShellGate><UsernameRequiredRoute><LiveMatchPlayScreen /></UsernameRequiredRoute></ShellGate>} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </div>
