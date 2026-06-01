@@ -55,7 +55,9 @@ export function useLearnSession(opts?: { nodeId?: string }): LearnSessionState {
         const ladder = await getLadder({ nodeId });
         if (cancelled) return;
         const questions: LearnQuestion[] = ladder.rungs.map((rung) => ({
-          id: rung.rungId,
+          id: rung.questionId,
+          // Live ladders are MCQ-only today; the server-graded shape carries the
+          // type discriminator, which is "mcq" for all current live content.
           type: "mcq",
           subject: ladder.conceptLine || "Learn",
           prompt: rung.stem,

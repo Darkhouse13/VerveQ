@@ -26,11 +26,6 @@ interface RendererProps {
   verdict: LearnVerdict | null;
 }
 
-function isOptionCorrect(optKey: string, optText: string, verdict: LearnVerdict | null) {
-  if (!verdict) return false;
-  return verdict.correctAnswer === optKey || verdict.correctAnswer === optText;
-}
-
 function McqRenderer({ question, draft, setDraft, reveal, verdict }: RendererProps) {
   const q = question as LearnMcqQuestion;
   const picked = typeof draft === "string" ? draft : null;
@@ -38,9 +33,11 @@ function McqRenderer({ question, draft, setDraft, reveal, verdict }: RendererPro
     <div className="flex flex-col gap-2.5">
       {q.options.map((o) => {
         const isPicked = picked === o.key;
-        const correct = reveal && isOptionCorrect(o.key, o.text, verdict);
-        const wrong = reveal && isPicked && !correct;
-        const dimmed = reveal && !correct && !wrong;
+        // De-leaked: the server keeps the correct answer private, returning only
+        // whether THIS pick was right. Colour the user's own pick; dim the rest.
+        const correct = reveal && isPicked && !!verdict?.correct;
+        const wrong = reveal && isPicked && !!verdict && !verdict.correct;
+        const dimmed = reveal && !isPicked;
         return (
           <button
             key={o.key}

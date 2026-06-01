@@ -2,35 +2,44 @@
  * Learn v2 — the SINGLE grading seam.
  *
  * Every Learn answer in the app is graded through `submitLearnAnswer` returned
- * here. The UI never decides correctness; it awaits the `LearnVerdict`.
+ * here. The UI never decides correctness; it submits `{ sessionId, questionId,
+ * answer }` and awaits the server's `LearnVerdict`.
  *
- * Dispatch:
- *   - mcq on a LIVE session → existing server path `api.learn.submitLearnRung`
- *     (server-authoritative; returns { correct, correctAnswer, reveal }).
- *   - everything else → the quarantined stub (`gradeWithStub`).
+ * All four question types (mcq | text | numeric | order) route through the one
+ * server-authoritative mutation `api.learn.submitLearnRung`. The mutation grades
+ * the submission against the committed ladder (held server-side) and returns
+ * `{ correct, branchId?, teach, masteryDelta?, nextReview? }`. The correct answer
+ * itself is never returned — `teach` is the only reveal text, authored on the
+ * server. There is NO client-side correctness logic anywhere in the Learn UI.
  *
- * ── ONE-LINE SWAP ────────────────────────────────────────────────────────────
- * When Codex's graders land on `feat/v2-learn-graders`, replace the single
- * `gradeWithStub(question, answer)` call below with the real mutation:
- *
- *     const submitV2 = useMutation(api.learn.submitLearnAnswerV2);
- *     // …
- *     return await submitV2({ sessionId: session.id, questionId: question.id, answer });
- *
- * and delete `stubGrader.ts`. No other file changes.
- * ─────────────────────────────────────────────────────────────────────────────
+ * Live content note: live ladders are MCQ-only today, so MCQ is the type
+ * exercised end-to-end at runtime; text/numeric/order grade through the same
+ * seam and are covered by the server grader tests until live content lands.
  */
 import { useCallback } from "react";
 import { useMutation } from "convex/react";
 import { api } from "../../../convex/_generated/api";
 import type { Id } from "../../../convex/_generated/dataModel";
 import type { LearnAnswer, LearnQuestion, LearnRating, LearnVerdict } from "./contract";
-import { gradeWithStub } from "./stubGrader";
 
 export interface LearnSessionRef {
   id: string;
-  /** True when `id` is a real `learnSessions` row backing the MCQ ladder path. */
+  /** True when `id` is a real `learnSessions` row (the server-graded ladder path). */
   live: boolean;
+}
+
+/** Shape the per-type answer into the raw value the server grader expects. */
+function toServerAnswer(answer: LearnAnswer): unknown {
+  switch (answer.type) {
+    case "mcq":
+      return answer.key;
+    case "text":
+      return answer.text;
+    case "numeric":
+      return answer.value;
+    case "order":
+      return answer.order;
+  }
 }
 
 export function useLearnGrading(session: LearnSessionRef) {
@@ -38,31 +47,25 @@ export function useLearnGrading(session: LearnSessionRef) {
 
   const submitLearnAnswer = useCallback(
     async (question: LearnQuestion, answer: LearnAnswer): Promise<LearnVerdict> => {
-      // MCQ on a live session → existing server-graded ladder path.
-      if (question.type === "mcq" && answer.type === "mcq" && session.live) {
-        const res = await submitRung({
-          sessionId: session.id as Id<"learnSessions">,
-          rungId: question.id,
-          chosenOption: answer.key,
-        });
-        return {
-          correct: res.correct,
-          teach: res.reveal,
-          correctAnswer: res.correctAnswer,
-          // A wrong pick with its own server reveal is, in effect, a known
-          // misconception → surface the teaching detour before the reveal.
-          branchId: res.correct ? undefined : `${question.id}:${answer.key}`,
-        };
-      }
-
-      // text | numeric | order (and offline mcq) → stub until graders land.
-      return gradeWithStub(question, answer);
+      // Server-authoritative for every type: submit the answer, render the verdict.
+      const verdict = await submitRung({
+        sessionId: session.id as Id<"learnSessions">,
+        questionId: question.id,
+        answer: toServerAnswer(answer),
+      });
+      return {
+        correct: verdict.correct,
+        teach: verdict.teach,
+        branchId: verdict.branchId,
+        masteryDelta: verdict.masteryDelta,
+        nextReview: verdict.nextReview,
+      };
     },
-    [submitRung, session.id, session.live],
+    [submitRung, session.id],
   );
 
-  // Spaced-rep rating + felt signal have no server endpoint yet (Codex's pass).
-  // Routed through the same seam so they swap to a real mutation in one place.
+  // Spaced-rep rating + felt signal have no server endpoint yet. Routed through
+  // the same seam so they swap to a real mutation in one place. Decides nothing.
   const rateCard = useCallback(
     async (_questionId: string, _rating: LearnRating): Promise<void> => {
       // ONE-LINE SWAP: await rateLearnCardV2({ sessionId: session.id, questionId, rating });

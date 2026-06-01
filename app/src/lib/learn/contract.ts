@@ -11,11 +11,13 @@
  * that would let the client grade is intentionally absent; the server holds it.
  *
  * Wiring status:
- *   - mcq  → wired to the existing server path (`api.learn.submitLearnRung`).
- *   - text | numeric | order → graded by Codex's server graders on
- *     `feat/v2-learn-graders`. Until they land, these route through a single,
- *     clearly-quarantined stub (see `stubGrader.ts`); swapping to the real
- *     mutation is a one-line change in `useLearnGrading.ts`.
+ *   - All four types (mcq | text | numeric | order) are graded server-side by
+ *     `api.learn.submitLearnRung` through the single seam in `useLearnGrading.ts`.
+ *     The server returns `{ correct, branchId?, teach, masteryDelta?, nextReview? }`
+ *     and never the correct answer. No client-side grading remains.
+ *   - Live ladders are MCQ-only today, so MCQ is exercised end-to-end at runtime;
+ *     text/numeric/order grade through the same mutation and are covered by the
+ *     server grader tests until live content for those types lands.
  */
 
 export type LearnQuestionType = "mcq" | "text" | "numeric" | "order";
