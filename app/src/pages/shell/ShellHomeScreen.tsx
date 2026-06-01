@@ -1,7 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useQuery } from "convex/react";
-import { Swords, GraduationCap, Trophy, Hammer, Flame, Zap, ChevronRight } from "lucide-react";
+import { Swords, GraduationCap, Trophy, Hammer, Flame, Zap, Timer, ChevronRight } from "lucide-react";
 import { NeoCard } from "@/components/neo/NeoCard";
 import { NeoAvatar } from "@/components/neo/NeoAvatar";
 import { ShellLayout } from "@/components/shell/ShellLayout";
@@ -101,6 +101,23 @@ export default function ShellHomeScreen() {
             </p>
           </NeoCard>
         </div>
+
+        {/* Daily hook — same questions for everyone; runs the daily-gated session. */}
+        <NeoCard
+          color="primary"
+          shadow="lg"
+          className="flex items-center gap-3 cursor-pointer"
+          onClick={() => navigate(`${SHELL_ROUTES.dailyPlay}?sport=football`)}
+        >
+          <div className="neo-border rounded-xl bg-background w-fit p-2.5">
+            <Timer size={22} strokeWidth={2.5} className="text-foreground" />
+          </div>
+          <div className="flex-1">
+            <p className="font-heading font-bold text-sm">{t("modes.daily.name")}</p>
+            <p className="text-xs opacity-80">{t("modes.daily.desc")}</p>
+          </div>
+          <ChevronRight size={18} strokeWidth={2.5} className="opacity-60" />
+        </NeoCard>
 
         {/* Secondary entries */}
         <div className="grid grid-cols-2 gap-3">

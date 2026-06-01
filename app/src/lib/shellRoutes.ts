@@ -29,6 +29,8 @@ export const SHELL_ROUTES = {
   higherLowerPlay: "/v2/higher-lower",
   /** Solo Who Am I on the shell prototype layout (FE reskin). */
   whoAmIPlay: "/v2/who-am-i",
+  /** Daily Challenge (quiz) on the shell — reuses QuizPlayView via the DAILY session. */
+  dailyPlay: "/v2/daily",
   /** `/v2/arena/:code` */
   arenaPlay: (code: string) => `/v2/arena/${code}`,
 } as const;
@@ -49,6 +51,7 @@ export const SHELL_ROUTE_PATTERNS = {
   survivalPlay: "/v2/survival",
   higherLowerPlay: "/v2/higher-lower",
   whoAmIPlay: "/v2/who-am-i",
+  dailyPlay: "/v2/daily",
   arenaPlay: "/v2/arena/:code",
 } as const;
 
