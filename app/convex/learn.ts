@@ -24,6 +24,7 @@ import {
   type LearnMasterySnapshot,
   type LearnMasteryState,
 } from "./learnMasteryLogic";
+import { gradeLearnAnswer } from "./learnGraders";
 
 const LEARN_SESSION_TTL_MS = 24 * 60 * 60 * 1000;
 
@@ -208,10 +209,35 @@ function findCommittedRung(nodeId: string, rungId: string): BuiltLadderQuestion 
 
 function sanitizeRung(rung: BuiltLadderQuestion) {
   return {
-    rungId: rung.checksum,
+    questionId: rung.checksum,
+    type: rung.type,
     stem: rung.question,
     options: rung.options,
   };
+}
+
+function sanitizeStoredAnswer(rung: BuiltLadderQuestion, answer: unknown): unknown {
+  switch (rung.type) {
+    case "order":
+      return Array.isArray(answer)
+        ? answer.filter((value): value is string => typeof value === "string")
+        : [];
+    case "numeric":
+      if (typeof answer === "number" || typeof answer === "string") return answer;
+      if (typeof answer === "object" && answer !== null && !Array.isArray(answer)) {
+        const record = answer as Record<string, unknown>;
+        return {
+          ...(typeof record.value === "number" || typeof record.value === "string"
+            ? { value: record.value }
+            : {}),
+          ...(typeof record.unit === "string" ? { unit: record.unit } : {}),
+        };
+      }
+      return null;
+    case "mcq":
+    case "text":
+      return typeof answer === "string" ? answer : "";
+  }
 }
 
 export const getLearnNodes = query({
@@ -287,10 +313,10 @@ export const getLearnLadder = mutation({
 export const submitLearnRung = mutation({
   args: {
     sessionId: v.id("learnSessions"),
-    rungId: v.string(),
-    chosenOption: v.string(),
+    questionId: v.string(),
+    answer: v.any(),
   },
-  handler: async (ctx, { sessionId, rungId, chosenOption }) => {
+  handler: async (ctx, { sessionId, questionId, answer }) => {
     const userId = await requireUserId(ctx);
     const session = await ctx.db.get(sessionId);
     if (!session) throw new Error("Session not found");
@@ -304,46 +330,32 @@ export const submitLearnRung = mutation({
     if (now > session.expiresAt) {
       throw new Error("Session expired");
     }
-    if (!session.rungIds.includes(rungId)) {
-      throw new Error("Rung not active for this session");
+    if (!session.rungIds.includes(questionId)) {
+      throw new Error("Question not active for this session");
     }
 
-    const rung = findCommittedRung(session.nodeId, rungId);
-    if (!rung.options.includes(chosenOption)) {
-      throw new Error("Chosen option is not valid for this rung");
-    }
-
-    const correct = chosenOption === rung.correctAnswer;
-    const reveal = correct
-      ? rung.correctReveal
-      : rung.distractors.find((distractor) => distractor.text === chosenOption)
-          ?.reveal;
-    if (!reveal) {
-      throw new Error("Reveal not found for chosen option");
-    }
+    const rung = findCommittedRung(session.nodeId, questionId);
+    const verdict = gradeLearnAnswer(rung, answer);
 
     const firstTry = !session.rungResults.some(
-      (result) => result.rungId === rungId,
+      (result) => result.rungId === questionId,
     );
     await ctx.db.patch(sessionId, {
       rungResults: [
         ...session.rungResults,
         {
-          rungId,
-          chosenOption,
-          correct,
+          rungId: questionId,
+          answer: sanitizeStoredAnswer(rung, answer),
+          correct: verdict.correct,
           firstTry,
           answeredAt: now,
+          ...(verdict.branchId ? { branchId: verdict.branchId } : {}),
         },
       ],
       updatedAt: now,
     });
 
-    return {
-      correct,
-      correctAnswer: rung.correctAnswer,
-      reveal,
-    };
+    return verdict;
   },
 });
 
