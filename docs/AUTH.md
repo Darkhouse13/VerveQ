@@ -135,10 +135,11 @@ fast to act on.
 - **Guest → account upgrade**: not implemented. A follow-up pass can
   add this via `linkAccount` (Convex Auth supports linking a credentials
   account to an existing user document).
-- **Username uniqueness** (audit HIGH-3): `ensureProfile` appends a
-  short suffix on collision but does not hold a lock, so two concurrent
-  first-time signups with identical email local parts could still
-  collide. Tracked separately.
+- **Username uniqueness hardening** (audit HIGH-3): `ensureProfile`
+  normalizes requested handles and rejects duplicates before patching the
+  user row. The remaining v2 hardening question is schema/database-level
+  uniqueness; the current schema has a regular `by_username` index, not a
+  unique constraint.
 - **Rate limits**: Convex Auth has a built-in `signIn.maxFailedAttempsPerHour`
   (default 10). We have not tuned it. Revisit if brute-force attempts
   show up in logs.

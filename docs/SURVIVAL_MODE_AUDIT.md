@@ -8,15 +8,19 @@ Survival Mode is an initials-based name-guessing game. The player is shown 2–3
 
 **Supported sports:** Football, Basketball (NBA), Tennis.
 
-**Two variants exist:**
+**Current playable variant:**
 - **Standard Survival** — unlimited attempts, ELO-rated
-- **Daily Survival** — one attempt per day per sport, strict anti-cheat (tab switch = forfeit)
+
+**Declared but unwired:**
+- **Daily Survival** — type-level mode exists, but the current backend rejects it with "Daily survival is not implemented yet."
 
 ---
 
-## 2. Architecture — Two Implementations
+## 2. Architecture — Active Runtime And Historical Notes
 
-The system has a **Convex implementation** (active, used by the web frontend) and a **Python backend** (legacy, same logic). The Convex version is the source of truth for the live product.
+The system has a **Convex implementation** (active, used by the web frontend)
+and historical Python backend notes. The Convex version is the source of
+truth for the live product.
 
 ### Convex (Active)
 
@@ -30,10 +34,9 @@ The system has a **Convex implementation** (active, used by the web frontend) an
 | `app/convex/schema.ts` | `survivalSessions` table definition |
 | `app/convex/dailyChallenge.ts` | Daily attempt tracking, forfeit, completion |
 | `app/src/pages/SurvivalScreen.tsx` | Standard survival UI — state management, guess submission, hints, anti-cheat modal |
-| `app/src/pages/DailySurvivalScreen.tsx` | Daily variant UI — same gameplay, stricter anti-cheat, daily attempt gating |
 | `app/src/hooks/useAntiCheat.ts` | `visibilitychange` listener that fires callback on tab-away |
 
-### Python Backend (Legacy)
+### Python Backend (Historical / Superseded)
 
 | File | Role |
 |------|------|
@@ -310,7 +313,7 @@ const bonusIncrement = isOnFire ? 0.1 : 0;
 
 ### Performance Bonus
 - Each correct answer while "on fire" adds **+0.1** to `performanceBonus`
-- This bonus is accumulated on the session and passed to `completeSurvival` at game end
+- This bonus is accumulated on the session and read by `completeSurvival` at game end
 - Used in ELO calculation: `finalPerformance = min(1.0, basePerf + performanceBonus)`
 
 ### Frontend Visuals (`SurvivalScreen.tsx`)
@@ -351,21 +354,11 @@ penalizeTabSwitch(sessionId, currentRound):
 
 Frontend shows a red modal: "CHEATING DETECTED — You lost focus on the game window. 1 Life deducted." with screen shake animation.
 
-### Daily Survival — Strict Forfeit Mode (`DailySurvivalScreen.tsx:96-106`)
+### Daily Survival
 
-```typescript
-useAntiCheat(() => {
-  if (attemptId && !forfeited) {
-    setForfeited(true);
-    forfeitMut({ attemptId }).then(() => {
-      toast.error("Challenge forfeited — you switched tabs!");
-      navigate("/home", { replace: true });
-    });
-  }
-});
-```
-
-Any tab switch immediately forfeits the entire daily challenge. No second chances. The user is redirected to home.
+Daily Survival is not currently wired into playable runtime.
+`dailyChallenge.assertDailyQuizMode` rejects survival mode, and there is no
+`DailySurvivalScreen.tsx` in `app/src/pages`.
 
 ---
 
@@ -377,7 +370,7 @@ A game ends when any of these occur:
 
 2. **No more candidates** — `generateChallenge()` returns `null` because all initials matching the difficulty filter have been used. Extremely rare given dataset sizes (1,957+ football initials).
 
-3. **Daily forfeit** — Tab switch in daily mode calls `forfeit()` mutation, ending the attempt.
+3. **Daily forfeit** — applies to daily quiz attempts; Daily Survival is not currently playable.
 
 After game over, the frontend calls `completeSurvival()` to finalize ELO, then navigates to the results screen with: score, round reached, ELO change, new ELO, K-factor info.
 
@@ -450,26 +443,10 @@ Each completed game inserts a `gameSessions` row with: userId, sport, mode="surv
 
 ## 12. Daily Survival Variant
 
-### How It Differs
-
-| Aspect | Standard | Daily |
-|--------|----------|-------|
-| Attempts | Unlimited | 1 per day per sport |
-| Anti-cheat | -1 life per tab switch | Instant forfeit |
-| Tracking | `survivalSessions` only | `dailyAttempts` + `survivalSessions` |
-| Results page | `/results` | `/daily-results` |
-| ELO | Yes | Yes (calls `completeSurvival` too) |
-
-### Flow (`DailySurvivalScreen.tsx`)
-
-1. `getOrCreateChallengeMut({ sport, mode: "survival" })` — ensures a daily challenge document exists for today
-2. `startAttemptMut({ sport, mode: "survival" })` — creates a `dailyAttempts` row; throws if already attempted today
-3. `startGameMut({ sport })` — starts a regular survival session for the actual gameplay
-4. Gameplay proceeds identically to standard survival
-5. On game over: `completeAttemptMut({ attemptId })` marks the daily attempt done, then `completeSurvivalMut()` records ELO
-6. Navigate to `/daily-results`
-
-If the user has already played today, they see "You've already played today's survival!" and are redirected home.
+Daily Survival is declared in shared types, but is not implemented as a
+playable mode today. `app/convex/dailyChallenge.ts:31-34` rejects any daily
+mode other than `"quiz"`, and `app/src/App.tsx` only defines `/daily-quiz`
+and `/daily-results` daily routes.
 
 ---
 
@@ -546,9 +523,9 @@ User sees "Correct! Cristiano Ronaldo" for 1.5s, then next initials appear
   ... (repeat until lives = 0)
   │
   ▼
-games.ts: completeSurvival({ sport, score, durationSeconds, performanceBonus })
+games.ts: completeSurvival({ sessionId })
   ├── getSurvivalPerformance(score) → min(score/15, 1.0)
-  ├── Add performanceBonus → finalPerf = min(1.0, basePerf + bonus)
+  ├── Read session.performanceBonus → finalPerf = min(1.0, basePerf + bonus)
   ├── Determine difficulty tier from score
   ├── calculateEloChange(currentElo, finalPerf, difficulty, kFactor)
   ├── Upsert userRatings row
@@ -577,7 +554,6 @@ Navigate to /results with score, round, ELO data
 | `app/convex/data/nba_survival_data.json` | NBA initials → players mapping |
 | `app/convex/data/football_player_metadata.json` | Player metadata for hints (club, position, nationality, era) |
 | `app/src/pages/SurvivalScreen.tsx` | Standard survival UI component |
-| `app/src/pages/DailySurvivalScreen.tsx` | Daily survival UI component |
 | `app/src/hooks/useAntiCheat.ts` | Tab visibility change detection hook |
 | `backend/sports/survival_engine.py` | Legacy: `SurvivalEngine` class |
 | `backend/sports/survival_helpers.py` | Legacy: `FameCalculator`, `PlayerSelector`, `PlayerInfoExtractor` |

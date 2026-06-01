@@ -159,15 +159,13 @@ Data pipeline and curated-parity tooling.
 | --- | --- |
 | `APP_OVERVIEW.md` | Comprehensive product overview of game modes, sports, data scale. |
 | `CODE_OF_CONDUCT.md` | Standard contributor Code of Conduct. |
-| `CONTRIBUTING.md` | Contribution guide. Needs refresh — see Findings. |
-| `CURATED_GAMEPLAY_REACHABLE_TARGET_CHECKLIST.md` | Closeout checklist for Higher/Lower, VerveGrid, Who Am I. |
+| `CONTRIBUTING.md` | Historical contribution guide; current repo/deployment truth is README.md + DEPLOYMENT.md. |
 | `DEPLOYMENT.md` | Current deployment + validation reality (app + Convex + curated parity). |
 | `DEPLOYMENT_CHECKLIST.md` | Current operational rollout checklist. |
-| `DESIGN_PROMPT.md` | UI redesign brief. References deleted React Native stack — see Findings. |
 | `NEW_GAME_MODES.md` | Source of truth for Higher/Lower, VerveGrid, Who Am I. |
 | `REPO_INVENTORY.md` | This inventory. |
-| `SECURITY.md` | Security disclosure policy. Describes JWT-era auth — see Findings. |
-| `SURVIVAL_MODE_AUDIT.md` | Full Survival mode technical audit. References deleted Python backend files — see Findings. |
+| `SECURITY.md` | Historical security disclosure policy. Deployment notes are superseded by DEPLOYMENT.md. |
+| `SURVIVAL_MODE_AUDIT.md` | Full Survival mode technical audit. Convex is live; Python backend rows are historical. |
 
 ## Dependencies declared in app/package.json with zero imports in the repo
 
@@ -199,10 +197,10 @@ Not auto-removed in Stage 1 because they were not in the task's explicit candida
 
 - `README.md` — current content is Convex-focused and accurate after Stage 1, but nothing describes the Live Match, Quiz, Blitz, Daily, or Forge modes that still ship in `app/convex/`. The coverage table only lists Survival, Higher/Lower, VerveGrid, and Who Am I. Accurate but incomplete.
 - `docs/APP_OVERVIEW.md` — accurate high-level product overview, no references to deleted surfaces.
-- `docs/CONTRIBUTING.md` — "Project Structure" section still claims `backend/` (FastAPI), `frontend/` (React Native), and `tests/` exist. All three were deleted in Stage 1. Refresh this file.
-- `docs/DESIGN_PROMPT.md` — framed explicitly around "Platform: React Native + Expo (iOS, Android, Web from one codebase)". The repo has been web-only (Vite) for some time.
-- `docs/SECURITY.md` — lists JWT tokens and "configurable period" expiry as the auth model. Current auth is Convex Auth (Password + Anonymous); JWT claims are not the primary story.
-- `docs/SURVIVAL_MODE_AUDIT.md` — Sections 2, 4, 5, and 15 explicitly document the deleted Python backend files (`backend/sports/survival_engine.py`, `backend/services/survival_session.py`, `backend/routes/survival/*`, `backend/sports/utils.py`). The Convex half of the audit is still accurate and is the source of truth for Survival; the Python-side tables are now historical/archival.
+- `docs/CONTRIBUTING.md` — still contains legacy FastAPI / React Native guidance, but now has a historical/superseded header pointing to README.md and `docs/DEPLOYMENT.md`.
+- `docs/DESIGN_PROMPT.md` — no longer present in the current tree.
+- `docs/SECURITY.md` — still lists JWT tokens and "configurable period" expiry as the auth model. It now has a historical/superseded deployment header and no longer recommends PostgreSQL for production.
+- `docs/SURVIVAL_MODE_AUDIT.md` — now labels deleted Python backend rows as historical and notes that Daily Survival is declared but not playable.
 
 ### .env samples that drifted from actual env usage
 
@@ -212,7 +210,7 @@ Not auto-removed in Stage 1 because they were not in the task's explicit candida
 ### TODO / FIXME on live code paths
 
 - `app/convex/survivalSessions.ts:~126` — `famousWeight` is stored on the session but never used for weighted selection (noted in `SURVIVAL_MODE_AUDIT.md:§4`). Protected scope — do not reopen without a concrete blocker.
-- `app/src/pages/SurvivalScreen.tsx:230` and `app/src/pages/DailySurvivalScreen.tsx:193` — ESLint flags `useHintMut` being called inside a non-hook handler (`react-hooks/rules-of-hooks`). Protected Survival scope, not touched by cleanup.
+- `app/src/pages/SurvivalScreen.tsx` — protected Survival scope; do not reopen implementation details without a concrete blocker.
 - `app/tailwind.config.ts:120` — `require()` call triggers `@typescript-eslint/no-require-imports`. Pre-existing.
 - `app/src/components/ui/{command,textarea}.tsx` — empty interface lint errors (`@typescript-eslint/no-empty-object-type`). shadcn/ui template leftovers.
 

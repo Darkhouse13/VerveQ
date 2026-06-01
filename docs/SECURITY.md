@@ -1,5 +1,9 @@
 # Security Policy
 
+> Historical deployment notes in this document are superseded by
+> docs/DEPLOYMENT.md. The current live stack is `app/` + Convex, not the older
+> FastAPI/PostgreSQL deployment model.
+
 ## Supported Versions
 
 The following versions of VerveQ Platform are currently being supported with security updates:
@@ -55,4 +59,4 @@ For production deployments, we recommend:
 4. Regularly update dependencies
 5. Monitor logs for suspicious activity
 6. Implement proper database backup procedures
-7. Use PostgreSQL for production
+7. Use the Convex deployment and persistence model documented in `docs/DEPLOYMENT.md` for production

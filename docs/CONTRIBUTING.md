@@ -1,5 +1,10 @@
 # Contributing to VerveQ Platform
 
+> Historical / superseded by DEPLOYMENT.md for current repo and deployment
+> truth. This document still contains legacy FastAPI / React Native guidance;
+> use README.md and docs/DEPLOYMENT.md before following setup, architecture, or
+> deployment details here.
+
 Thank you for your interest in contributing to the VerveQ Platform! We welcome contributions from the community to help improve and expand this competitive sports gaming platform.
 
 ## Code of Conduct
