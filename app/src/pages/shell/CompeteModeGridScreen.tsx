@@ -33,7 +33,8 @@ const MODES: ModeTile[] = [
   { key: "blitz", icon: Zap, color: "pink", to: (s) => `/v2/blitz?sport=${s}` },
   // Higher/Lower + Who Am I are migrated to the shell prototype layout (solo).
   { key: "higherLower", icon: TrendingUp, color: "success", to: (s) => `/v2/higher-lower?sport=${s}` },
-  { key: "verveGrid", icon: Grid3X3, color: "blue", to: (s) => `/verve-grid?sport=${s}` },
+  // VerveGrid is migrated to the bespoke v2 GridStage (solo) over the existing backend.
+  { key: "verveGrid", icon: Grid3X3, color: "blue", to: (s) => `/v2/verve-grid?sport=${s}` },
   { key: "whoAmI", icon: HelpCircle, color: "yellow", to: (s) => `/v2/who-am-i?sport=${s}` },
   // Daily is migrated to the shell — reuses the Quiz prototype layout via the DAILY session.
   { key: "daily", icon: Timer, color: "primary", to: (s) => `/v2/daily?sport=${s}` },
