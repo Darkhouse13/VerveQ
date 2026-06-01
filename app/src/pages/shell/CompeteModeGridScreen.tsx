@@ -31,9 +31,10 @@ const MODES: ModeTile[] = [
   // Survival + Blitz are migrated to the shell prototype layout (solo).
   { key: "survival", icon: Heart, color: "primary", to: (s) => `/v2/survival?sport=${s}` },
   { key: "blitz", icon: Zap, color: "pink", to: (s) => `/v2/blitz?sport=${s}` },
-  { key: "higherLower", icon: TrendingUp, color: "success", to: (s) => `/higher-lower?sport=${s}` },
+  // Higher/Lower + Who Am I are migrated to the shell prototype layout (solo).
+  { key: "higherLower", icon: TrendingUp, color: "success", to: (s) => `/v2/higher-lower?sport=${s}` },
   { key: "verveGrid", icon: Grid3X3, color: "blue", to: (s) => `/verve-grid?sport=${s}` },
-  { key: "whoAmI", icon: HelpCircle, color: "yellow", to: (s) => `/who-am-i?sport=${s}` },
+  { key: "whoAmI", icon: HelpCircle, color: "yellow", to: (s) => `/v2/who-am-i?sport=${s}` },
   { key: "daily", icon: Timer, color: "primary", to: (s) => `/daily-quiz?sport=${s}` },
   { key: "liveMatch", icon: Radio, color: "blue", to: () => `/live-match` },
 ];

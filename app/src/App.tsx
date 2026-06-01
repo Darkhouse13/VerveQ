@@ -51,6 +51,8 @@ const LearnMasteryScreen = lazy(() => import("./pages/shell/learn/LearnMasterySc
 const QuizPlayScreen = lazy(() => import("./pages/shell/play/QuizPlayScreen"));
 const BlitzPlayScreen = lazy(() => import("./pages/shell/play/BlitzPlayScreen"));
 const SurvivalPlayScreen = lazy(() => import("./pages/shell/play/SurvivalPlayScreen"));
+const HigherLowerPlayScreen = lazy(() => import("./pages/shell/play/HigherLowerPlayScreen"));
+const WhoAmIPlayScreen = lazy(() => import("./pages/shell/play/WhoAmIPlayScreen"));
 const ArenaPlayScreen = lazy(() => import("./pages/shell/play/ArenaPlayScreen"));
 
 const DuelPlayScreen = lazy(() => import("./pages/DuelPlayScreen"));
@@ -303,6 +305,8 @@ const AppRoutes = () => (
             <Route path="/v2/quiz" element={<ShellGate><QuizPlayScreen /></ShellGate>} />
             <Route path="/v2/blitz" element={<ShellGate><BlitzPlayScreen /></ShellGate>} />
             <Route path="/v2/survival" element={<ShellGate><SurvivalPlayScreen /></ShellGate>} />
+            <Route path="/v2/higher-lower" element={<ShellGate><HigherLowerPlayScreen /></ShellGate>} />
+            <Route path="/v2/who-am-i" element={<ShellGate><WhoAmIPlayScreen /></ShellGate>} />
             <Route path="/v2/arena/:code" element={<ShellGate><ArenaPlayScreen /></ShellGate>} />
             <Route path="*" element={<NotFound />} />
           </Routes>
