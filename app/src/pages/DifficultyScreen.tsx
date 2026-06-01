@@ -16,13 +16,19 @@ export default function DifficultyScreen() {
   const [params] = useSearchParams();
   const sport = params.get("sport") || "football";
   const mode = params.get("mode") || "quiz";
+  // `target=v2` routes the chosen difficulty into the v2 shell's Quiz prototype
+  // layout instead of the legacy `/quiz` screen. Additive: without it the legacy
+  // flow is unchanged, so the picker is the single difficulty source for both.
+  const target = params.get("target");
   const cameFirstModeParam = "mode=came_first";
 
   const handleStart = () => {
     if (!selected) return;
     const diff = difficulties.find((d) => d.name === selected)!.apiValue;
     void cameFirstModeParam;
-    navigate(`/quiz?sport=${sport}&difficulty=${diff}&mode=${mode === "came_first" ? "came_first" : "quiz"}`);
+    const resolvedMode = mode === "came_first" ? "came_first" : "quiz";
+    const dest = target === "v2" ? "/v2/quiz" : "/quiz";
+    navigate(`${dest}?sport=${sport}&difficulty=${diff}&mode=${resolvedMode}`);
   };
 
   return (

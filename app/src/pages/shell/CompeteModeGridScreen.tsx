@@ -21,13 +21,16 @@ interface ModeTile {
 // These targets are exactly what the existing sport-select produces for a sport,
 // so the grid skips the redundant sport re-pick and lands directly in each mode.
 const MODES: ModeTile[] = [
-  // Quiz is migrated to the v2 shell's centered-column "prototype layout".
-  { key: "quiz", icon: Brain, color: "accent", to: (s) => `/v2/quiz?sport=${s}&mode=quiz&difficulty=intermediate` },
+  // Quiz is migrated to the v2 shell's centered-column "prototype layout". It
+  // routes through the existing difficulty picker (target=v2) so the player
+  // chooses a difficulty rather than defaulting to intermediate.
+  { key: "quiz", icon: Brain, color: "accent", to: (s) => `/difficulty?sport=${s}&mode=quiz&target=v2` },
   // Arena routes through the existing Challenge hub (create/join), which lands in
   // the shell Arena prototype layout when the v2 shell is enabled.
   { key: "arena", icon: Swords, color: "pink", to: () => `/challenge` },
-  { key: "survival", icon: Heart, color: "primary", to: (s) => `/survival?sport=${s}` },
-  { key: "blitz", icon: Zap, color: "pink", to: (s) => `/blitz?sport=${s}` },
+  // Survival + Blitz are migrated to the shell prototype layout (solo).
+  { key: "survival", icon: Heart, color: "primary", to: (s) => `/v2/survival?sport=${s}` },
+  { key: "blitz", icon: Zap, color: "pink", to: (s) => `/v2/blitz?sport=${s}` },
   { key: "higherLower", icon: TrendingUp, color: "success", to: (s) => `/higher-lower?sport=${s}` },
   { key: "verveGrid", icon: Grid3X3, color: "blue", to: (s) => `/verve-grid?sport=${s}` },
   { key: "whoAmI", icon: HelpCircle, color: "yellow", to: (s) => `/who-am-i?sport=${s}` },

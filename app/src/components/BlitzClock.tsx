@@ -4,9 +4,15 @@ interface BlitzClockProps {
   endTimeMs: number;
   onExpired: () => void;
   penaltyFlash: boolean;
+  /**
+   * Optional, additive: fires every tick with the whole seconds remaining so a
+   * caller (e.g. the v2 shell's ambient rail) can mirror the countdown without
+   * running a second timer. The legacy screen omits it and is unaffected.
+   */
+  onTick?: (remaining: number) => void;
 }
 
-export function BlitzClock({ endTimeMs, onExpired, penaltyFlash }: BlitzClockProps) {
+export function BlitzClock({ endTimeMs, onExpired, penaltyFlash, onTick }: BlitzClockProps) {
   const [remaining, setRemaining] = useState(() =>
     Math.max(0, Math.ceil((endTimeMs - Date.now()) / 1000)),
   );
@@ -15,13 +21,14 @@ export function BlitzClock({ endTimeMs, onExpired, penaltyFlash }: BlitzClockPro
     const id = setInterval(() => {
       const r = Math.max(0, Math.ceil((endTimeMs - Date.now()) / 1000));
       setRemaining(r);
+      onTick?.(r);
       if (r <= 0) {
         clearInterval(id);
         onExpired();
       }
     }, 100);
     return () => clearInterval(id);
-  }, [endTimeMs, onExpired]);
+  }, [endTimeMs, onExpired, onTick]);
 
   const isUrgent = remaining <= 10;
   const mins = Math.floor(remaining / 60);
