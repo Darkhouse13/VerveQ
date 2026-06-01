@@ -21,6 +21,10 @@ export const SHELL_ROUTES = {
   learnMastery: "/v2/learn/mastery",
   /** In-game prototype layout (migrated modes). Solo Quiz + multi-user Arena. */
   quizPlay: "/v2/quiz",
+  /** Solo Blitz on the shell prototype layout. */
+  blitzPlay: "/v2/blitz",
+  /** Solo Survival on the shell prototype layout (FE reskin). */
+  survivalPlay: "/v2/survival",
   /** `/v2/arena/:code` */
   arenaPlay: (code: string) => `/v2/arena/${code}`,
 } as const;
@@ -37,6 +41,8 @@ export const SHELL_ROUTE_PATTERNS = {
   learnReview: "/v2/learn/review",
   learnMastery: "/v2/learn/mastery",
   quizPlay: "/v2/quiz",
+  blitzPlay: "/v2/blitz",
+  survivalPlay: "/v2/survival",
   arenaPlay: "/v2/arena/:code",
 } as const;
 

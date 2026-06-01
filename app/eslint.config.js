@@ -124,8 +124,11 @@ export default tseslint.config(
   {
     // Answer-leak guard scope: in-game ambient/side panels and their fixtures.
     // Wired into `npm run lint` (the CI gate, see .github/workflows/app.yml).
+    // The `**/play/ambient/**` glob covers the shared ambient dir AND any new
+    // per-mode ambient dir a migrated mode adds, so the guard travels with them.
     files: [
-      "src/components/shell/play/ambient/**/*.{ts,tsx}",
+      "src/**/play/ambient/**/*.{ts,tsx}",
+      "eslint-fixtures/**/ambientPanels/**/*.{ts,tsx}",
       "eslint-fixtures/ambientPanels/**/*.{ts,tsx}",
     ],
     rules: {
