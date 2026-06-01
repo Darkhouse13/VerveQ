@@ -47,6 +47,10 @@ const LearnRunnerScreen = lazy(() => import("./pages/shell/learn/LearnRunnerScre
 const LearnReviewScreen = lazy(() => import("./pages/shell/learn/LearnReviewScreen"));
 const LearnMasteryScreen = lazy(() => import("./pages/shell/learn/LearnMasteryScreen"));
 
+// In-game prototype layout (migrated modes) — additive, flag-gated, lazy.
+const QuizPlayScreen = lazy(() => import("./pages/shell/play/QuizPlayScreen"));
+const ArenaPlayScreen = lazy(() => import("./pages/shell/play/ArenaPlayScreen"));
+
 const DuelPlayScreen = lazy(() => import("./pages/DuelPlayScreen"));
 const DuelLinkScreen = lazy(() => import("./pages/DuelLinkScreen"));
 const DuelResultScreen = lazy(() => import("./pages/DuelResultScreen"));
@@ -293,6 +297,9 @@ const AppRoutes = () => (
             <Route path="/v2/learn/run" element={<ShellGate><LearnRunnerScreen /></ShellGate>} />
             <Route path="/v2/learn/review" element={<ShellGate><LearnReviewScreen /></ShellGate>} />
             <Route path="/v2/learn/mastery" element={<ShellGate><LearnMasteryScreen /></ShellGate>} />
+            {/* In-game prototype layout — migrated modes (solo Quiz, multi-user Arena). */}
+            <Route path="/v2/quiz" element={<ShellGate><QuizPlayScreen /></ShellGate>} />
+            <Route path="/v2/arena/:code" element={<ShellGate><ArenaPlayScreen /></ShellGate>} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </div>

@@ -19,6 +19,10 @@ export const SHELL_ROUTES = {
   learnRun: "/v2/learn/run",
   learnReview: "/v2/learn/review",
   learnMastery: "/v2/learn/mastery",
+  /** In-game prototype layout (migrated modes). Solo Quiz + multi-user Arena. */
+  quizPlay: "/v2/quiz",
+  /** `/v2/arena/:code` */
+  arenaPlay: (code: string) => `/v2/arena/${code}`,
 } as const;
 
 /** Route patterns registered in App.tsx (params un-filled). */
@@ -32,6 +36,8 @@ export const SHELL_ROUTE_PATTERNS = {
   learnRun: "/v2/learn/run",
   learnReview: "/v2/learn/review",
   learnMastery: "/v2/learn/mastery",
+  quizPlay: "/v2/quiz",
+  arenaPlay: "/v2/arena/:code",
 } as const;
 
 /**
