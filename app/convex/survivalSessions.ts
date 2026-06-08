@@ -2,6 +2,7 @@ import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
 import { getAuthUserId } from "@convex-dev/auth/server";
 import { findBestMatch } from "./lib/fuzzy";
+import { assertFullAccountUser } from "./lib/authz";
 
 // Survival data loaded inline for Convex (no filesystem access in mutations)
 // These are imported at bundle time.
@@ -836,6 +837,7 @@ export const startGame = mutation({
   handler: async (ctx, { sport }) => {
     const userId = await getAuthUserId(ctx);
     if (!userId) throw new Error("Not authenticated");
+    await assertFullAccountUser(ctx, userId);
 
     const challenge = generateChallenge(sport, 1, []);
     if (!challenge) throw new Error("No survival data available");

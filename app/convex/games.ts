@@ -2,6 +2,7 @@ import { mutation, type MutationCtx } from "./_generated/server";
 import type { Id } from "./_generated/dataModel";
 import { v } from "convex/values";
 import { getAuthUserId } from "@convex-dev/auth/server";
+import { assertRankedEligibleUser } from "./lib/authz";
 import {
   calculateEloChange,
   getQuizPerformance,
@@ -46,6 +47,7 @@ export const completeQuiz = mutation({
   handler: async (ctx, { sessionId }) => {
     const userId = await getAuthUserId(ctx);
     if (!userId) throw new Error("Not authenticated");
+    await assertRankedEligibleUser(ctx, userId);
 
     const session = await ctx.db.get(sessionId);
     if (!session) throw new Error("Session not found");
@@ -174,6 +176,7 @@ export const completeSurvival = mutation({
   handler: async (ctx, { sessionId }) => {
     const userId = await getAuthUserId(ctx);
     if (!userId) throw new Error("Not authenticated");
+    await assertRankedEligibleUser(ctx, userId);
 
     const session = await ctx.db.get(sessionId);
     if (!session) throw new Error("Session not found");

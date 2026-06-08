@@ -320,6 +320,12 @@ describe("solo Knowledge quiz question loading", () => {
     const inserts: Array<Record<string, unknown>> = [];
     const ctx = {
       db: {
+        get: async () => ({
+          _id: "user_1",
+          username: "user_1",
+          isGuest: false,
+          isAnonymous: false,
+        }),
         insert: async (_table: string, doc: Record<string, unknown>) => {
           inserts.push(doc);
           return "session_1";

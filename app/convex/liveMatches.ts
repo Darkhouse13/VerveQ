@@ -1,9 +1,14 @@
-import { mutation, query, internalMutation, type MutationCtx } from "./_generated/server";
+import { mutation, query, internalMutation, type MutationCtx, type QueryCtx } from "./_generated/server";
 import type { Doc, Id } from "./_generated/dataModel";
 import { v } from "convex/values";
 import { getAuthUserId } from "@convex-dev/auth/server";
 import { internal } from "./_generated/api";
 import { clampRating, getKFactor } from "./lib/elo";
+import {
+  areFullAccountUsers,
+  areRankedEligibleUsers,
+  FULL_ACCOUNT_REQUIRED,
+} from "./lib/authz";
 import { normalizeAnswer } from "./lib/scoring";
 import { orderAnswerOptions } from "./lib/answerOptions";
 import { selectQuestionsWithImageCap } from "./lib/imageQuestions";
@@ -185,7 +190,7 @@ function orientVersusSummary(
 }
 
 async function getRivalryDetails(
-  ctx: Pick<MutationCtx, "db">,
+  ctx: Pick<QueryCtx, "db"> | Pick<MutationCtx, "db">,
   player1Id: Id<"users">,
   player2Id: Id<"users">,
   sport: string,
@@ -231,13 +236,16 @@ async function getRivalryDetails(
 }
 
 async function getVersusSummary(
-  ctx: Pick<MutationCtx, "db">,
+  ctx: Pick<QueryCtx, "db"> | Pick<MutationCtx, "db">,
   player1Id: Id<"users">,
   player2Id: Id<"users">,
   sport: string,
   mode = "quiz",
 ) {
   if (typeof (ctx.db as { query?: unknown }).query !== "function") {
+    return orientVersusSummary(null, player1Id, player2Id);
+  }
+  if (!(await areRankedEligibleUsers(ctx, [player1Id, player2Id]))) {
     return orientVersusSummary(null, player1Id, player2Id);
   }
   const { pairKey } = getPairKey(player1Id, player2Id);
@@ -376,6 +384,10 @@ async function recordChallengeHistory(
   winnerId: Id<"users"> | undefined,
   playedAt: number,
 ) {
+  if (!(await areRankedEligibleUsers(ctx, [match.player1Id, match.player2Id]))) {
+    return;
+  }
+
   const existingHistory = await ctx.db
     .query("challengeMatchHistory")
     .withIndex("by_match", (q) => q.eq("matchId", match._id))
@@ -486,6 +498,14 @@ export const createFromChallenge = mutation({
       challenge.challengedId !== userId
     ) {
       throw new Error("Not authorized");
+    }
+    if (
+      !(await areFullAccountUsers(ctx, [
+        challenge.challengerId,
+        challenge.challengedId,
+      ]))
+    ) {
+      throw new Error(FULL_ACCOUNT_REQUIRED);
     }
 
     const challengerActive = await findActiveMatchForUser(
@@ -1115,8 +1135,12 @@ async function finishMatch(
   applyElo: boolean,
 ) {
   const now = Date.now();
+  const rankedEligible = await areRankedEligibleUsers(ctx, [
+    match.player1Id,
+    match.player2Id,
+  ]);
 
-  if (!match.historyRecordedAt) {
+  if (!match.historyRecordedAt && rankedEligible) {
     await recordChallengeHistory(ctx, match, status, winnerId, now);
   }
 
@@ -1140,7 +1164,7 @@ async function finishMatch(
     return;
   }
 
-  if (applyElo) {
+  if (applyElo && rankedEligible) {
     await updateMatchElo(ctx, match, winnerId, now);
   }
 
@@ -1149,7 +1173,7 @@ async function finishMatch(
     winnerId,
     completedAt: now,
     historyRecordedAt: match.historyRecordedAt ?? now,
-    ...(applyElo ? { eloAppliedAt: now } : {}),
+    ...(applyElo && rankedEligible ? { eloAppliedAt: now } : {}),
   });
 }
 
@@ -1159,6 +1183,10 @@ async function updateMatchElo(
   winnerId: Id<"users"> | undefined,
   now: number,
 ) {
+  if (!(await areRankedEligibleUsers(ctx, [match.player1Id, match.player2Id]))) {
+    return;
+  }
+
   const player1Id = match.player1Id;
   const player2Id = match.player2Id;
 

@@ -20,6 +20,27 @@ export default defineSchema({
     emailVerificationTime: v.optional(v.number()),
   }).index("by_username", ["username"]),
 
+  usernameClaims: defineTable({
+    key: v.string(),
+    username: v.string(),
+    userId: v.id("users"),
+    claimedAt: v.number(),
+    releasedAt: v.optional(v.number()),
+  })
+    .index("by_key", ["key"])
+    .index("by_user", ["userId"]),
+
+  anonymousOnboardingAttempts: defineTable({
+    userId: v.id("users"),
+    deviceNonce: v.optional(v.string()),
+    inviteCode: v.optional(v.string()),
+    kind: v.union(v.literal("username_claim")),
+    attemptedAt: v.number(),
+  })
+    .index("by_user_time", ["userId", "attemptedAt"])
+    .index("by_device_time", ["deviceNonce", "attemptedAt"])
+    .index("by_invite_time", ["inviteCode", "attemptedAt"]),
+
   userRatings: defineTable({
     userId: v.id("users"),
     sport: v.string(),

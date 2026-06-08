@@ -264,13 +264,15 @@ A progressive clue-based trivia game where more information costs points.
 
 ### Daily Challenge
 
-A once-per-day quiz or survival challenge with a shared question set and daily leaderboard.
+A once-per-day quiz challenge with a shared question set and daily leaderboard.
+Daily Survival is declared in type unions, but it is not wired into playable
+runtime today; `dailyChallenge.assertDailyQuizMode` rejects survival mode.
 
 **How it works:**
 1. Each day (UTC-based), a unique set of questions is generated per sport using seeded shuffling
 2. All players receive the same questions on the same day
-3. Player selects a sport and mode (Daily Quiz or Daily Survival)
-4. Only one attempt per player per day per mode is allowed
+3. Player selects a sport for Daily Quiz
+4. Only one attempt per player per day is allowed
 5. Results contribute to a daily leaderboard
 
 **Daily Quiz:**
@@ -280,9 +282,7 @@ A once-per-day quiz or survival challenge with a shared question set and daily l
 - Maximum possible score: 1,000 points
 
 **Daily Survival:**
-- Standard survival mechanics with 3 lives
-- Anti-cheat: Tab-switching triggers instant forfeit (stricter than standard survival)
-- Speed streaks and hint system available
+- Not currently playable. The backend rejects `mode: "survival"` for daily challenges with "Daily survival is not implemented yet."
 
 **Special mechanics:**
 - Seeded shuffling ensures fairness — every player faces the same challenge
@@ -701,17 +701,16 @@ Results Screen
 | 15 | Rivals | `/rivals` | Head-to-head ledger across all opponents |
 | 16 | Rival Detail | `/rivals/:opponentUserId` | Per-rival W-L-D, streak, one-tap rematch |
 | 17 | Daily Quiz | `/daily-quiz` | Daily quiz challenge |
-| 18 | Daily Survival | `/daily-survival` | Daily survival challenge |
-| 19 | Daily Results | `/daily-results` | Daily challenge results |
-| 20 | Blitz | `/blitz` | 60-second speed quiz |
-| 21 | Blitz Results | `/blitz-results` | Blitz mode results |
-| 22 | Waiting Room | `/waiting-room` | Live match matchmaking lobby |
-| 23 | Live Match | `/live-match` | Head-to-head real-time gameplay |
-| 24 | Forge | `/forge` | Community question editor and reviewer |
-| 25 | Higher or Lower | `/higher-lower` | Streak-based stat comparison gameplay |
-| 26 | VerveGrid | `/verve-grid` | 3x3 grid intersection challenge |
-| 27 | Who Am I | `/who-am-i` | Progressive clue guessing gameplay |
-| 28 | Challenge Arena | `/arena/:code` | Synchronous arena room — lobby, countdown, 5 rounds of question/reveal, round break, final podium, rematch |
+| 18 | Daily Results | `/daily-results` | Daily challenge results |
+| 19 | Blitz | `/blitz` | 60-second speed quiz |
+| 20 | Blitz Results | `/blitz-results` | Blitz mode results |
+| 21 | Waiting Room | `/waiting-room` | Live match matchmaking lobby |
+| 22 | Live Match | `/live-match` | Head-to-head real-time gameplay |
+| 23 | Forge | `/forge` | Community question editor and reviewer |
+| 24 | Higher or Lower | `/higher-lower` | Streak-based stat comparison gameplay |
+| 25 | VerveGrid | `/verve-grid` | 3x3 grid intersection challenge |
+| 26 | Who Am I | `/who-am-i` | Progressive clue guessing gameplay |
+| 27 | Challenge Arena | `/arena/:code` | Synchronous arena room — lobby, countdown, 5 rounds of question/reveal, round break, final podium, rematch |
 
 ---
 

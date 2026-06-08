@@ -9,6 +9,10 @@
  */
 export const SHELL_ROUTES = {
   home: "/v2",
+  /** Username-only onboarding (no password). Accepts ?next= and ?code=. */
+  welcome: "/v2/welcome",
+  /** Anonymous + username -> full account upgrade. Accepts ?next=. */
+  upgrade: "/v2/upgrade",
   compete: "/compete",
   competeSport: "/compete/sport",
   /** `/compete/sport/:sport` */

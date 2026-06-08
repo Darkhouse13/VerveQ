@@ -236,8 +236,8 @@ A blocked candidate is dropped or queued — never force-shipped.
   targeted.
 - **Disagreement-queue volume:** a high cross-family disagreement rate is a quality
   signal (bad source or weak family), not just a chore.
-- **Runner location** (`scripts/`) and the **`app/` vs `frontend-web/` path
-  ambiguity** must both be resolved before Codex writes anything.
+- **Runner location** (`scripts/`) and the live app path (`app/`) must both
+  be confirmed before Codex writes anything.
 
 ---
 

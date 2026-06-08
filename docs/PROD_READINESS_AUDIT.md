@@ -1,9 +1,10 @@
 # Production Readiness Audit
 
 Read-only audit of the live surface (app + Convex) performed 2026-04-21.
-Findings only — nothing fixed. Each item has a severity, a file+line pointer,
-what the issue is, why it matters on a public production URL, and a suggested
-fix direction.
+Phase 0 doc-truth pass performed 2026-05-31 against the current `app/`
+tree. Closed items below are marked with current file+line evidence; open
+scale/perf/uniqueness hardening items are deferred to the v2 hardening phase,
+not abandoned.
 
 Severity ladder:
 - **Blocker** — would allow credential theft, leaderboard fraud, data leak, or
@@ -53,120 +54,61 @@ short-circuit) was folded into the same fix.
 
 ---
 
-### BLOCKER-2 — Client-trusted `correctAnswer` on every quiz / blitz / daily path
+### BLOCKER-2 — Client-trusted `correctAnswer` on every quiz / blitz / daily path — **RESOLVED**
 **Files:**
-- `app/convex/quizSessions.ts:90-107` (`checkAnswer`)
-- `app/convex/blitz.ts:102-137` (`submitAnswer`)
-- `app/convex/dailyChallenge.ts:197-230` (`submitAnswer`)
+- `app/convex/quizSessions.ts:116-181` (`checkAnswer`)
+- `app/convex/blitz.ts:110-180` (`submitAnswer`)
+- `app/convex/dailyChallenge.ts:536-645` (`submitAnswer`)
 
-All three mutations accept `correctAnswer` as an **argument from the client**
-and compute correctness by comparing `answer === correctAnswer`. The server
-doesn't re-derive correctness from the question checksum / stored question
-row. Any client (browser devtools, curl) can submit any `answer` along with
-an identical `correctAnswer` string and be told "correct, score 100."
-
-Paired with BLOCKER-3 below, this makes the entire leaderboard and ELO graph
-fictional.
-
-**Why it matters:** leaderboard fraud, ELO inflation, Forge gold-tier gating
-bypass (Forge access gates at ELO ≥ 1500 which can be farmed instantly).
-
-**Suggested fix direction:** mutations should take the question `checksum`
-instead of `correctAnswer`. Server loads the row via `by_checksum` and
-compares `normalizeAnswer(answer)` to the stored correct answer. Do not
-return `correctAnswer` in `getQuestion` / daily `getQuestion` — or if the UI
-needs it for the reveal, return it only after a successful submit.
+Current state: these mutations no longer accept client-supplied
+`correctAnswer`. Quiz and blitz validate against the server-owned current
+checksum and load `quizQuestions` through `by_checksum` before comparing the
+submitted answer to `question.correctAnswer`. Daily challenge submission
+resolves the stored daily challenge checksum/snapshot, gates ownership with
+`attempt.userId === getAuthUserId(ctx)`, and derives `timeTaken` from server
+timestamps.
 
 ---
 
-### BLOCKER-3 — `completeQuiz` / `completeSurvival` trust client-supplied score/accuracy/averageTime/performanceBonus
-**File:** `app/convex/games.ts:12-104` (`completeQuiz`), `107-193` (`completeSurvival`)
+### BLOCKER-3 — `completeQuiz` / `completeSurvival` trust client-supplied score/accuracy/averageTime/performanceBonus — **RESOLVED**
+**File:** `app/convex/games.ts:33-129` (`completeQuiz`), `app/convex/games.ts:156-244` (`completeSurvival`)
 
-```ts
-export const completeQuiz = mutation({
-  args: { sport, score, totalQuestions, accuracy, averageTime, difficulty }, ...
-```
-
-The ELO calculation is derived from `args.score`, `args.accuracy`, and
-`args.averageTime`. Nothing ties these to a server-owned session row.
-`completeSurvival` additionally trusts `performanceBonus` (used to boost
-`finalPerformance` up to the clamp). A malicious client can claim
-`score=10, accuracy=1.0, averageTime=0.5` for any sport/difficulty and
-receive maximum ELO gain on every submit.
-
-**Why it matters:** ELO rankings are meaningless. Forge access gating,
-achievements (`elo_champion` at 1500, `survival_legend` at 15), season
-placements, decay cut-offs — all rely on ELO being honest.
-
-**Suggested fix direction:** tie each mode to a server-authoritative session
-(`quizSessions` already exists; per-answer results should accumulate
-server-side in the session row). `completeQuiz` should take only the
-`sessionId` and re-derive score/accuracy/averageTime from the session's
-answer log. Refuse `performanceBonus` as a client arg — compute it
-entirely from `survivalSessions.performanceBonus` on the server row.
+Current state: both completion mutations accept only a server-owned
+`sessionId`. `completeQuiz` re-derives `totalAnswers`, `correctCount`,
+`accuracy`, `averageTime`, and `sessionScore` from the quiz session row.
+`completeSurvival` re-derives `sport`, `score`, `durationSeconds`, and
+`performanceBonus` from the survival session row; `performanceBonus` is not
+a client argument.
 
 ---
 
-### BLOCKER-4 — `getSession` queries leak the answer for Higher/Lower, VerveGrid, and Who Am I
+### BLOCKER-4 — `getSession` queries leak the answer for Higher/Lower, VerveGrid, and Who Am I — **RESOLVED**
 **Files:**
-- `app/convex/higherLower.ts:334-339` — returns full session including `playerBValue`
-- `app/convex/verveGrid.ts:201-206` — returns full session including `cells[].validPlayerIds`
-- `app/convex/whoAmI.ts:178-203` — returns `{...session}` which includes `answerName`
+- `app/convex/higherLower.ts:369-399`
+- `app/convex/verveGrid.ts:280-315`
+- `app/convex/whoAmI.ts:295-341`
 
-All three are public queries. Any authenticated (or anonymous) client with a
-valid Convex deployment URL can call `api.higherLower.getSession({sessionId})`
-and read the opposing value, the cell answer pool, or the mystery player name
-directly from the response.
-
-These queries aren't currently called from the frontend screens (verified
-via grep), but they are exposed to the public API surface regardless.
-
-**Why it matters:** perfect-score cheating on Higher/Lower, VerveGrid, and
-Who Am I via a trivial API call. Bypasses all the curated-layer correctness
-work.
-
-**Suggested fix direction:** project each `getSession` return down to only
-the fields the UI needs — mirror the pattern already used by
-`survivalSessions.getSession` (which deliberately excludes `validPlayers`)
-and `liveMatches.getMatch` (which strips `correctAnswer` during the active
-question).
+Current state: each query returns a projected session. Higher/Lower returns
+`playerBValue: null` while active and reveals it only after game over or
+expiry. VerveGrid maps cells to UI-safe fields and exposes
+`validAnswerCount`, not `validPlayerIds`. Who Am I returns `answerName: null`
+while active/early-failed and reveals only after terminal reveal states.
 
 ---
 
-### BLOCKER-5 — Daily challenge `submitAnswer` has no attempt-ownership check and trusts `timeTaken`
-**File:** `app/convex/dailyChallenge.ts:197-230`
+### BLOCKER-5 — Daily challenge `submitAnswer` has no attempt-ownership check and trusts `timeTaken` — **RESOLVED**
+**File:** `app/convex/dailyChallenge.ts:536-645`, `app/convex/dailyChallenge.ts:650-699`
 
-```ts
-export const submitAnswer = mutation({
-  args: { attemptId, answer, correctAnswer, timeTaken },
-  handler: async (ctx, { attemptId, answer, correctAnswer, timeTaken }) => {
-    const attempt = await ctx.db.get(attemptId);
-    ...
-```
-
-1. No `getAuthUserId()` check — any caller can submit on any attempt given
-   the attemptId.
-2. `timeTaken` is client-supplied; submitting `timeTaken: 0.5` always scores
-   max (`100 * (10 - 0.5) / 9`).
-3. `correctAnswer` is client-supplied (see BLOCKER-2).
-
-`forfeit` and `completeAttempt` (same file, lines 232-260) have the same
-missing ownership check.
-
-**Why it matters:** griefing (forfeit someone else's daily attempt if you
-leak their attemptId), plus the same leaderboard-fraud vector as BLOCKER-2
-and BLOCKER-3. Daily leaderboard becomes un-curateable.
-
-**Suggested fix direction:** every daily mutation must verify
-`attempt.userId === await getAuthUserId(ctx)`. Derive `timeTaken` server-side
-from `attempt.startedAt + questionIndex * question.startedAt` (or store per-
-question start timestamps in the attempt row).
+Current state: `submitAnswer`, `forfeit`, and `completeAttempt` all require
+`attempt.userId === getAuthUserId(ctx)`. `submitAnswer` takes no client
+`timeTaken`; it derives elapsed time from `currentQuestionStartedAt` or
+`startedAt` and patches the server-owned attempt results.
 
 ---
 
 ## High-severity
 
-### HIGH-1 — Global leaderboard (`getLeaderboard` with no sport/mode) is not actually ranked by ELO
+### HIGH-1 — Global leaderboard (`getLeaderboard` with no sport/mode) is not actually ranked by ELO — **OPEN / DEFERRED TO V2 HARDENING**
 **File:** `app/convex/leaderboards.ts:11-53`
 
 When `sport`/`mode` are absent, the fallback is:
@@ -184,9 +126,9 @@ showing the real top of the ladder.
 **Why it matters:** leaderboards that claim to be global are lying. Users
 notice; it's a credibility hit.
 
-**Suggested fix direction:** either expose only sport+mode leaderboards
-(which do use `by_sport_mode_elo`), or add a new `by_elo` index on
-`userRatings` for the global case.
+**Current status:** still open in the current tree. This is a ranking/scale
+hardening item for v2: either expose only sport+mode leaderboards (which do
+use `by_sport_mode_elo`), or add a global ELO index on `userRatings`.
 
 ---
 
@@ -201,45 +143,31 @@ calls remain no-ops.
 
 ---
 
-### HIGH-3 — Username uniqueness is not enforced on profile create
-**File:** `app/convex/users.ts:14-38`, schema at `schema.ts:8-21`
+### HIGH-3 — Username uniqueness hardening — **OPEN / DEFERRED TO V2 HARDENING**
+**File:** `app/convex/users.ts:36-80`, `app/convex/users.ts:93-155`, schema at `app/convex/schema.ts:8-21`
 
-`ensureProfile` does no uniqueness check. Even after HIGH-2 is fixed, two
-users can sign up with the same display name and end up both patched to the
-same `username`. `users.getByUsername` uses `.first()` which returns an
-arbitrary match, so challenges silently target the wrong user.
-
-**Why it matters:** name collisions become a social-engineering vector
-("create account with the same name as the target, accept their challenges
-and forfeit them").
-
-**Suggested fix direction:** on first-time patch, query
-`ctx.db.query("users").withIndex("by_username", q => q.eq("username", x))`
-and throw if non-empty. Force the UI to let the user pick again.
+The original "no uniqueness check" bug is closed at the application layer:
+`ensureProfile` normalizes the requested handle, checks `by_username`, scans
+case-insensitively as a fallback, and rejects collisions before patching the
+user row. The remaining v2 hardening gap is schema/database-level uniqueness:
+the table still has a regular `by_username` index, not a uniqueness
+constraint, so production identity guarantees depend on the mutation-level
+guard and Convex transaction behavior.
 
 ---
 
-### HIGH-4 — No React ErrorBoundary anywhere in the tree
-**File:** `app/src/App.tsx:37-78`; grep for `ErrorBoundary` returns zero hits.
+### HIGH-4 — No React ErrorBoundary anywhere in the tree — **RESOLVED**
+**File:** `app/src/App.tsx:8`, `app/src/App.tsx:161-163`, `app/src/App.tsx:276-281`; component at `app/src/components/ErrorBoundary.tsx:15-26`
 
-Any uncaught throw inside any screen — a Convex mutation error not wrapped
-in try/catch, a parse error on route state, a missing asset — white-screens
-the entire app. The screens do catch known Convex errors via `toast.error`,
-but nothing catches the unexpected.
-
-**Why it matters:** one bad deploy or one unknown-shape response becomes a
-total outage for that user session. Production should degrade to a friendly
-error screen with a reset button.
-
-**Suggested fix direction:** wrap `<Routes>` in an ErrorBoundary that logs
-to Sentry/equivalent and renders a recovery screen.
+Current state: the root app is wrapped in `ErrorBoundary`, and the challenge
+arena route also has a scoped boundary around the screen component.
 
 ---
 
-### HIGH-5 — `eloDecay.runDecay` and `seasonManager.checkSeason` scan all user ratings in one mutation
+### HIGH-5 — `eloDecay.runDecay` and `seasonManager.checkSeason` scan all user ratings in one mutation — **OPEN / DEFERRED TO V2 HARDENING**
 **Files:**
-- `app/convex/eloDecay.ts:11-70` — `const allRatings = await ctx.db.query("userRatings").collect();`
-- `app/convex/seasonManager.ts:35` — same, then iterates inserts into `seasonHistory`
+- `app/convex/eloDecay.ts:11-30` — still collects all `userRatings`
+- `app/convex/seasonManager.ts:85-95` — season reset still collects all `userRatings`
 
 Convex mutations have a hard per-transaction cost ceiling. A single `collect()`
 on `userRatings` with N users × M modes of data loads the whole table into
@@ -251,57 +179,34 @@ mutation will time out, decay stops applying, season rollover fails halfway
 through and leaves some users archived and others not. Hard to detect until
 it happens.
 
-**Suggested fix direction:** paginate via `ctx.scheduler.runAfter`. Have the
-cron enqueue chunked internal mutations (e.g., 500 rows at a time, keyed by
-a cursor). Season rollover already inserts into `seasonHistory`; the reset
-step should likewise be chunked, not a single transaction.
+**Current status:** still open in the current tree. Paginate via
+`ctx.scheduler.runAfter`: enqueue chunked internal mutations (for example,
+500 rows at a time, keyed by a cursor). Season rollover already inserts into
+`seasonHistory`; the reset step should likewise be chunked, not a single
+transaction.
 
 ---
 
-### HIGH-6 — No TTL sweeper for expired game sessions
-**Files:** `app/convex/schema.ts` — `quizSessions` (30m), `survivalSessions`
-(1h), `higherLowerSessions`/`verveGridSessions`/`whoAmISessions` (1h),
-`blitzSessions` (60s window). `crons.ts` only registers `season-check` and
-`elo-decay-check`.
+### HIGH-6 — No TTL sweeper for expired game sessions — **RESOLVED**
+**Files:** `app/convex/crons.ts:10`, `app/convex/maintenance.ts:7-110`
 
-Every session mutation checks `Date.now() > session.expiresAt` and refuses
-to act on stale rows, but nothing actually deletes them. At N concurrent
-players per day × K modes the session tables grow unboundedly. Convex
-charges for storage and index size.
-
-**Why it matters:** slow storage cost creep; eventual index bloat hurts
-latency of legitimate queries against those tables.
-
-**Suggested fix direction:** add a cron (hourly is fine) that runs an
-internal mutation paginating `expiresAt < Date.now()` and deleting. Batch
-deletes in chunks of 100-500 to stay inside transaction limits.
+Current state: `expired-session-cleanup` runs hourly and calls
+`maintenance.cleanupExpiredSessions`. The cleanup mutation uses
+`by_expiresAt` / `by_endTimeMs` indexes with `take(batchLimit)` and closes or
+deletes expired quiz, daily, survival, Higher/Lower, VerveGrid, Who Am I,
+and Blitz sessions in bounded batches.
 
 ---
 
-### HIGH-7 — `verveGrid.searchPlayers` global fallback scans all football players on every keystroke
-**File:** `app/convex/verveGrid.ts:122-136`
+### HIGH-7 — `verveGrid.searchPlayers` global fallback scans all football players on every keystroke — **RESOLVED**
+**File:** `app/convex/verveGrid.ts:105-180`
 
-When `sessionId` or `cellIndex` is missing:
-
-```ts
-const players = await ctx.db
-  .query("sportsPlayers")
-  .withIndex("by_sport_name", q => q.eq("sport", sport))
-  .collect();
-```
-
-Football slice is ~30k players. `.collect()` + in-memory `.toLowerCase().includes()`
-on every character typed, for every user, for every search that loses the
-session context. At Convex query costs this will dominate the bill.
-
-**Why it matters:** latency and cost. Also, the "correct" path (with
-sessionId + cellIndex) does the same `.map → ctx.db.query().first()` fan-out
-per `validPlayerIds` which is bounded but still hot.
-
-**Suggested fix direction:** add a prefix-lowercase index (e.g.
-`by_sport_name_lower`) and use `withIndex(...).lte/gte` range for prefix
-search. Cap search to `validPlayerIds` only — there's no legitimate reason
-to search outside the active cell's eligible list.
+Current state: search requires an active, owned session and cell index. It
+limits candidate lookup to the current cell's `validPlayerIds` and returns
+`[]` when session context is missing, so the old global `sportsPlayers`
+fallback scan is gone. The remaining bounded fan-out over valid player IDs
+is a lower-priority performance consideration, not the original global-scan
+high.
 
 ---
 
@@ -366,8 +271,8 @@ for non-login routes. One-evening change.
 ### MED-4 — `useAntiCheat` fires on every `visibilitychange` hidden event without a grace period
 **File:** `app/src/hooks/useAntiCheat.ts:7-17`
 
-In daily modes (`DailySurvivalScreen.tsx:95-106`) a single tab hide triggers
-an immediate forfeit. On mobile Safari, the OS sends `visibilitychange
+In Daily Quiz (`app/src/pages/DailyQuizScreen.tsx:135-145`) a single tab hide
+triggers an immediate forfeit. On mobile Safari, the OS sends `visibilitychange
 hidden` when the user gets a notification, opens the share sheet, or when
 the network stack backgrounds the tab for any reason. In normal survival
 (`survivalSessions.penalizeTabSwitch`) it costs a life.
@@ -436,29 +341,29 @@ flag).
 
 ## Low-severity
 
-### LOW-1 — `docs/SURVIVAL_MODE_AUDIT.md` describes the deleted Python backend in §2 and §15
-Stage 1 removed `backend/`. The Survival audit's Python implementation table
-and "Complete File Reference" section still list `backend/sports/...`,
-`backend/services/survival_session.py`, etc. Protected Survival scope — don't
-change logic — but the doc should note those rows are historical/archival.
+### LOW-1 — `docs/SURVIVAL_MODE_AUDIT.md` describes the deleted Python backend in §2 and §15 — **RESOLVED**
+Stage 1 removed `backend/`. The Survival audit now labels the Python backend
+section historical/superseded and keeps the live Convex implementation as
+the source of truth. No Survival code or data changed.
 
 ---
 
-### LOW-2 — `docs/CONTRIBUTING.md` "Project Structure" still lists `backend/`, `frontend/`, `tests/`
-**File:** `docs/CONTRIBUTING.md:73-96`. All three paths were deleted in
-Stage 1. Refresh this section.
+### LOW-2 — `docs/CONTRIBUTING.md` "Project Structure" still lists `backend/`, `frontend/`, `tests/` — **PARTIALLY ADDRESSED / DEFERRED**
+**File:** `docs/CONTRIBUTING.md`. A historical/superseded header now points
+readers to README.md and `docs/DEPLOYMENT.md` for current truth. A full
+rewrite of the legacy contribution guidance remains deferred.
 
 ---
 
-### LOW-3 — `docs/DESIGN_PROMPT.md` frames the app as "React Native + Expo"
-**File:** `docs/DESIGN_PROMPT.md:6`. Repo has been Vite-only for months.
+### LOW-3 — `docs/DESIGN_PROMPT.md` frames the app as "React Native + Expo" — **NO LONGER PRESENT**
+`docs/DESIGN_PROMPT.md` is not present in the current tree.
 
 ---
 
-### LOW-4 — `docs/SECURITY.md` describes JWT auth
-**File:** `docs/SECURITY.md`. Current auth is Convex Auth (Password +
-Anonymous) — not JWT claims. Misleading to external researchers filing
-security reports.
+### LOW-4 — `docs/SECURITY.md` describes JWT auth — **PARTIALLY ADDRESSED / DEFERRED**
+**File:** `docs/SECURITY.md`. A historical/superseded header now points to
+`docs/DEPLOYMENT.md` and the stale PostgreSQL production recommendation was
+removed. A full security-policy rewrite for Convex Auth remains deferred.
 
 ---
 

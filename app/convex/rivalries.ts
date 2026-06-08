@@ -2,6 +2,7 @@ import { query } from "./_generated/server";
 import type { Doc, Id } from "./_generated/dataModel";
 import { v } from "convex/values";
 import { getAuthUserId } from "@convex-dev/auth/server";
+import { isRankedEligibleUserDoc, isRankedEligibleUserId } from "./lib/authz";
 
 function pairKeyFor(userAId: Id<"users">, userBId: Id<"users">) {
   const [a, b] = [userAId, userBId].sort() as [Id<"users">, Id<"users">];
@@ -37,9 +38,11 @@ export const get = query({
   handler: async (ctx, { opponentUserId }) => {
     const userId = await getAuthUserId(ctx);
     if (!userId) return null;
+    if (!(await isRankedEligibleUserId(ctx, userId))) return null;
     if (userId === opponentUserId) {
       throw new Error("Cannot get a rivalry with yourself");
     }
+    if (!(await isRankedEligibleUserId(ctx, opponentUserId))) return null;
 
     const { pairKey } = pairKeyFor(userId, opponentUserId);
     const row = await ctx.db
@@ -66,6 +69,7 @@ export const listMine = query({
   handler: async (ctx) => {
     const userId = await getAuthUserId(ctx);
     if (!userId) return { rivalries: [] };
+    if (!(await isRankedEligibleUserId(ctx, userId))) return { rivalries: [] };
 
     const asA = await ctx.db
       .query("rivalries")
@@ -82,6 +86,7 @@ export const listMine = query({
         .map(async (row) => {
           const opponentId = row.userAId === userId ? row.userBId : row.userAId;
           const opponent = await ctx.db.get(opponentId);
+          if (!isRankedEligibleUserDoc(opponent)) return null;
           return {
             opponent: {
               userId: opponentId,
@@ -93,6 +98,6 @@ export const listMine = query({
         }),
     );
 
-    return { rivalries };
+    return { rivalries: rivalries.filter((row) => row !== null) };
   },
 });

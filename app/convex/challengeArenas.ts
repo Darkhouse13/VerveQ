@@ -12,6 +12,7 @@ import { internal } from "./_generated/api";
 import { normalizeAnswer } from "./lib/scoring";
 import { matchLogoGuess } from "./lib/logoTextAnswers";
 import { orderAnswerOptions } from "./lib/answerOptions";
+import { assertUsernameRequiredUser } from "./lib/authz";
 import {
   challengeArenaCapitalCityQuestions,
   challengeArenaEnterpriseLogoQuestions,
@@ -1860,7 +1861,7 @@ export const create = mutation({
     const userId = await getAuthUserId(ctx);
     if (!userId) throw new Error("Not authenticated");
 
-    const user = await ctx.db.get(userId);
+    const user = await assertUsernameRequiredUser(ctx, userId);
     const now = Date.now();
     const code = await generateUniqueCode(ctx);
     const arenaId = await ctx.db.insert("arenas", {
@@ -1903,6 +1904,7 @@ export const join = mutation({
   handler: async (ctx, { code }) => {
     const userId = await getAuthUserId(ctx);
     if (!userId) throw new Error("Not authenticated");
+    const user = await assertUsernameRequiredUser(ctx, userId);
 
     const arena = await getArenaByCode(ctx, code);
     if (!arena) throw new Error("Arena not found");
@@ -1925,7 +1927,6 @@ export const join = mutation({
       throw new Error("Arena is full");
     }
 
-    const user = await ctx.db.get(userId);
     const teamCounts = { A: 0, B: 0 };
     if (arena.mode === "2v2") {
       for (const player of activePlayers(arena)) {

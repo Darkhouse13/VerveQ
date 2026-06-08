@@ -9,6 +9,11 @@ import type { Doc, Id } from "./_generated/dataModel";
 import { v } from "convex/values";
 import { getAuthUserId } from "@convex-dev/auth/server";
 import { internal } from "./_generated/api";
+import {
+  areRankedEligibleUsers,
+  isFullAccountUserDoc,
+  isUsernameRequiredUserDoc,
+} from "./lib/authz";
 import { orderAnswerOptions } from "./lib/answerOptions";
 import { calculateTimeScore, normalizeAnswer } from "./lib/scoring";
 
@@ -32,14 +37,14 @@ function normalizeMode(mode: string) {
 }
 
 function assertAccountUser(user: Doc<"users"> | null, label: string) {
-  if (
-    !user ||
-    user.isGuest === true ||
-    user.isAnonymous === true ||
-    typeof user.username !== "string" ||
-    !/^[a-z0-9_]{3,24}$/.test(user.username)
-  ) {
+  if (!isFullAccountUserDoc(user)) {
     throw new Error(`${label} must be a registered account with a username`);
+  }
+}
+
+function assertUsernameUser(user: Doc<"users"> | null, label: string) {
+  if (!isUsernameRequiredUserDoc(user)) {
+    throw new Error(`${label} must have a username`);
   }
 }
 
@@ -421,6 +426,9 @@ async function applyRivalryOnce(
   now: number,
 ) {
   if (duel.rivalryAppliedAt || !duel.opponentId) return false;
+  if (!(await areRankedEligibleUsers(ctx, [duel.challengerId, duel.opponentId]))) {
+    return true;
+  }
 
   const { pairKey, userAId, userBId } = pairKeyFor(
     duel.challengerId,
@@ -599,12 +607,17 @@ export const create = mutation({
   handler: async (ctx, args) => {
     const userId = await getAuthUserId(ctx);
     if (!userId) throw new Error("Not authenticated");
-    const challenger = await ctx.db.get(userId);
-    assertAccountUser(challenger, "Challenger");
 
     const viaLink = args.viaLink === true;
     if (viaLink === !!args.opponentUserId) {
       throw new Error("Choose either opponentUserId or viaLink");
+    }
+
+    const challenger = await ctx.db.get(userId);
+    if (viaLink) {
+      assertUsernameUser(challenger, "Challenger");
+    } else {
+      assertAccountUser(challenger, "Challenger");
     }
 
     let opponentUsernameSnapshot: string | undefined;
@@ -679,7 +692,7 @@ export const getByLinkCode = mutation({
     let updated = duel;
     if (userId) {
       const user = await ctx.db.get(userId);
-      assertAccountUser(user, "Opponent");
+      assertUsernameUser(user, "Opponent");
       if (duel.opponentId && duel.opponentId !== userId) {
         throw new Error("This link duel has already been claimed");
       }
@@ -904,7 +917,7 @@ export const attachGuestResult = mutation({
     const userId = await getAuthUserId(ctx);
     if (!userId) throw new Error("Not authenticated");
     const user = await ctx.db.get(userId);
-    assertAccountUser(user, "Opponent");
+    assertUsernameUser(user, "Opponent");
 
     const duel = await ctx.db.get(duelId);
     if (!duel) throw new Error("Duel not found");
@@ -973,6 +986,12 @@ export const rematch = mutation({
       userId === duel.challengerId ? duel.opponentId : duel.challengerId;
     const viaLink = !opponentId;
     const linkCode = viaLink ? await generateUniqueLinkCode(ctx) : undefined;
+    const user = await ctx.db.get(userId);
+    if (viaLink) {
+      assertUsernameUser(user, "Challenger");
+    } else {
+      assertAccountUser(user, "Challenger");
+    }
     const opponent = opponentId ? await ctx.db.get(opponentId) : null;
     if (opponentId) assertAccountUser(opponent, "Opponent");
 

@@ -32,6 +32,10 @@ import LearnNodePickerScreen from "./pages/LearnNodePickerScreen";
 import LearnLadderScreen from "./pages/LearnLadderScreen";
 import NotFound from "./pages/NotFound";
 import { ShellGate } from "./components/shell/ShellGate";
+import {
+  UsernameOnlyRoute,
+  FullAccountRoute,
+} from "./components/shell/ShellRouteGuards";
 
 // v2 unified shell (additive, flag-gated via VITE_V2_SHELL_ENABLED). Lazy so it
 // stays out of the main bundle; ShellGate redirects to /home when the flag is off.
@@ -40,6 +44,8 @@ const CompeteCategoryScreen = lazy(() => import("./pages/shell/CompeteCategorySc
 const CompeteSportScreen = lazy(() => import("./pages/shell/CompeteSportScreen"));
 const CompeteModeGridScreen = lazy(() => import("./pages/shell/CompeteModeGridScreen"));
 const RanksPlaceholderScreen = lazy(() => import("./pages/shell/RanksPlaceholderScreen"));
+const WelcomeScreen = lazy(() => import("./pages/shell/WelcomeScreen"));
+const UpgradeScreen = lazy(() => import("./pages/shell/UpgradeScreen"));
 
 // Learn v2 (the Learn pillar) — additive, flag-gated, lazy.
 const LearnEntryScreen = lazy(() => import("./pages/shell/learn/LearnEntryScreen"));
@@ -295,6 +301,10 @@ const AppRoutes = () => (
                 /home when VITE_V2_SHELL_ENABLED is off, so these are invisible
                 until enabled and never shadow existing routes. */}
             <Route path="/v2" element={<ShellGate><ShellHomeScreen /></ShellGate>} />
+            {/* Username-only onboarding (no password). Carries ?next= + ?code=. */}
+            <Route path="/v2/welcome" element={<ShellGate><WelcomeScreen /></ShellGate>} />
+            {/* Anonymous + username -> full account upgrade. Carries ?next=. */}
+            <Route path="/v2/upgrade" element={<ShellGate><UpgradeScreen /></ShellGate>} />
             <Route path="/compete" element={<ShellGate><CompeteCategoryScreen /></ShellGate>} />
             <Route path="/compete/sport" element={<ShellGate><CompeteSportScreen /></ShellGate>} />
             <Route path="/compete/sport/:sport" element={<ShellGate><CompeteModeGridScreen /></ShellGate>} />
@@ -304,21 +314,28 @@ const AppRoutes = () => (
             <Route path="/v2/learn/run" element={<ShellGate><LearnRunnerScreen /></ShellGate>} />
             <Route path="/v2/learn/review" element={<ShellGate><LearnReviewScreen /></ShellGate>} />
             <Route path="/v2/learn/mastery" element={<ShellGate><LearnMasteryScreen /></ShellGate>} />
-            {/* In-game prototype layout — migrated modes (solo Quiz, multi-user Arena). */}
-            <Route path="/v2/quiz" element={<ShellGate><QuizPlayScreen /></ShellGate>} />
-            <Route path="/v2/blitz" element={<ShellGate><BlitzPlayScreen /></ShellGate>} />
-            <Route path="/v2/survival" element={<ShellGate><SurvivalPlayScreen /></ShellGate>} />
-            <Route path="/v2/higher-lower" element={<ShellGate><HigherLowerPlayScreen /></ShellGate>} />
-            <Route path="/v2/who-am-i" element={<ShellGate><WhoAmIPlayScreen /></ShellGate>} />
-            <Route path="/v2/verve-grid" element={<ShellGate><VerveGridPlayScreen /></ShellGate>} />
+            {/* In-game prototype layout — migrated modes. Gating reflects the
+                server's eligibility (convex/lib/authz.ts): ranked modes require a
+                full account; casual/social modes admit anyone with a username
+                (anonymous or full). Arena self-gates inline to preserve its code. */}
+            {/* Ranked: full account required. */}
+            <Route path="/v2/quiz" element={<ShellGate><FullAccountRoute><QuizPlayScreen /></FullAccountRoute></ShellGate>} />
+            <Route path="/v2/survival" element={<ShellGate><FullAccountRoute><SurvivalPlayScreen /></FullAccountRoute></ShellGate>} />
+            {/* Casual/social: username-only playable. */}
+            <Route path="/v2/blitz" element={<ShellGate><UsernameOnlyRoute><BlitzPlayScreen /></UsernameOnlyRoute></ShellGate>} />
+            <Route path="/v2/higher-lower" element={<ShellGate><UsernameOnlyRoute><HigherLowerPlayScreen /></UsernameOnlyRoute></ShellGate>} />
+            <Route path="/v2/who-am-i" element={<ShellGate><UsernameOnlyRoute><WhoAmIPlayScreen /></UsernameOnlyRoute></ShellGate>} />
+            <Route path="/v2/verve-grid" element={<ShellGate><UsernameOnlyRoute><VerveGridPlayScreen /></UsernameOnlyRoute></ShellGate>} />
             {/* Daily reuses the migrated Quiz view but runs the DAILY session;
-                same auth requirement as the live /daily-quiz route. */}
-            <Route path="/v2/daily" element={<ShellGate><UsernameRequiredRoute><DailyQuizPlayScreen /></UsernameRequiredRoute></ShellGate>} />
+                the official daily leaderboard/streaks are full-account only. */}
+            <Route path="/v2/daily" element={<ShellGate><FullAccountRoute><DailyQuizPlayScreen /></FullAccountRoute></ShellGate>} />
+            {/* Arena (multi-user) is username-only playable; the screen onboards
+                inline so a shared invite link never drops its lobby code. */}
             <Route path="/v2/arena/:code" element={<ShellGate><ArenaPlayScreen /></ShellGate>} />
             {/* Live Match (1v1 realtime) on the shell — reskin over the existing
-                liveMatches backend; realtime/matchmaking/ELO unchanged. Same auth
-                requirement as the live /live-match route. */}
-            <Route path="/v2/live-match" element={<ShellGate><UsernameRequiredRoute><LiveMatchPlayScreen /></UsernameRequiredRoute></ShellGate>} />
+                liveMatches backend; realtime/matchmaking/ELO unchanged. Live ELO
+                is ranked, so a full account is required. */}
+            <Route path="/v2/live-match" element={<ShellGate><FullAccountRoute><LiveMatchPlayScreen /></FullAccountRoute></ShellGate>} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </div>

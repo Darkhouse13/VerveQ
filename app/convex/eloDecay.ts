@@ -2,6 +2,10 @@ import { internalMutation, query, mutation } from "./_generated/server";
 import { v } from "convex/values";
 import { getAuthUserId } from "@convex-dev/auth/server";
 import { clampRating } from "./lib/elo";
+import {
+  assertRankedEligibleUser,
+  isRankedEligibleUserId,
+} from "./lib/authz";
 
 const MS_PER_DAY = 24 * 60 * 60 * 1000;
 const DECAY_AMOUNT = 25;
@@ -30,6 +34,7 @@ export const runDecay = internalMutation({
     const allRatings = await ctx.db.query("userRatings").collect();
 
     for (const rating of allRatings) {
+      if (!(await isRankedEligibleUserId(ctx, rating.userId))) continue;
       if (rating.eloRating < DECAY_THRESHOLD_ELO) continue;
 
       const referenceTime =
@@ -91,6 +96,7 @@ export const getDecayWarnings = query({
   handler: async (ctx) => {
     const userId = await getAuthUserId(ctx);
     if (!userId) return [];
+    if (!(await isRankedEligibleUserId(ctx, userId))) return [];
 
     return await ctx.db
       .query("decayNotifications")
@@ -106,6 +112,7 @@ export const dismissDecayWarning = mutation({
   handler: async (ctx, { notificationId }) => {
     const userId = await getAuthUserId(ctx);
     if (!userId) throw new Error("Not authenticated");
+    await assertRankedEligibleUser(ctx, userId);
 
     const notification = await ctx.db.get(notificationId);
     if (!notification || notification.userId !== userId) {

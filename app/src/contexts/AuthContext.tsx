@@ -2,6 +2,8 @@ import {
   createContext,
   useContext,
   useCallback,
+  useEffect,
+  useRef,
   useState,
   type ReactNode,
 } from "react";
@@ -32,7 +34,30 @@ export type AuthErrorCode =
   | "invalid_credentials"
   | "invalid_code"
   | "reset_unavailable"
+  | "email_taken"
+  | "upgrade_unavailable"
+  | "rate_limited"
   | "unknown";
+
+/**
+ * Server-authoritative account state for the low-friction (username-only)
+ * onboarding model. Derived ONLY from the `users.me` document (never guessed
+ * client-side):
+ *
+ *  - `loading`        — the `me` query has not resolved yet.
+ *  - `loggedOut`      — no Convex session at all.
+ *  - `needsUsername`  — signed in (anonymous or password) but no usable username
+ *                       yet (e.g. just after `signIn("anonymous")`).
+ *  - `usernameOnly`   — anonymous session WITH a username: plays the
+ *                       username-only mode set, excluded from ranked.
+ *  - `fullAccount`    — non-anonymous account with a username: ranked-eligible.
+ */
+export type AccountState =
+  | "loading"
+  | "loggedOut"
+  | "needsUsername"
+  | "usernameOnly"
+  | "fullAccount";
 
 export class AuthError extends Error {
   readonly code: AuthErrorCode;
@@ -48,6 +73,40 @@ interface AuthContextValue {
   isAuthenticated: boolean;
   isGuest: boolean;
   isLoading: boolean;
+  // ── Server-authoritative low-friction onboarding model ──
+  // All derived from the `users.me` doc on the server; never client-guessed.
+  /** Coarse account state for the v2 username-only onboarding flow. */
+  accountState: AccountState;
+  /** The server says this is a Convex anonymous session (ranked-excluded). */
+  isAnonymous: boolean;
+  /** The user has a usable, server-validated username. */
+  hasUsername: boolean;
+  /** Anonymous session that has claimed a username (the username-only tier). */
+  isUsernameOnly: boolean;
+  /** Non-anonymous account with a username — eligible for ranked/full-account modes. */
+  isFullAccount: boolean;
+  /** The server-stored username (normalized), or null. */
+  username: string | null;
+  /** Start a real Convex anonymous session (replaces the tab-local guest for v2). */
+  startAnonymousSession: () => Promise<void>;
+  /**
+   * Claim a username for the current anonymous session (no password). Rejects
+   * duplicates with no auto-suffixing. Passes a persisted device nonce and the
+   * optional invite code for server-side rate limiting / scoping.
+   */
+  claimUsername: (
+    username: string,
+    opts?: { inviteCode?: string },
+  ) => Promise<void>;
+  /**
+   * Upgrade an anonymous + username user to a full (password) account, keeping
+   * the same user doc + username and casual progress. Ranked starts after this.
+   */
+  upgradeAccount: (
+    email: string,
+    password: string,
+    displayName?: string,
+  ) => Promise<void>;
   signUp: (
     email: string,
     password: string,
@@ -90,6 +149,33 @@ const LOCAL_GUEST_USER: AuthUser = {
   totalGames: 0,
 };
 
+// A durable per-browser nonce passed to the username-only claim mutation so the
+// server can rate-limit anonymous onboarding per device. Persisted in
+// localStorage (survives reloads, unlike the tab-local guest flag).
+const DEVICE_NONCE_KEY = "verveq_device_nonce";
+
+function generateDeviceNonce(): string {
+  if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
+    return crypto.randomUUID();
+  }
+  return `dn_${Math.random().toString(36).slice(2)}${Date.now().toString(36)}`;
+}
+
+function getDeviceNonce(): string | undefined {
+  if (typeof window === "undefined") return undefined;
+  try {
+    let nonce = window.localStorage.getItem(DEVICE_NONCE_KEY);
+    if (!nonce) {
+      nonce = generateDeviceNonce();
+      window.localStorage.setItem(DEVICE_NONCE_KEY, nonce);
+    }
+    return nonce;
+  } catch {
+    // Private-mode / storage-disabled: fall back to a session-only nonce.
+    return generateDeviceNonce();
+  }
+}
+
 function readTabGuestSession(): boolean {
   return typeof window !== "undefined" && window.sessionStorage.getItem(GUEST_SESSION_KEY) === "1";
 }
@@ -121,6 +207,14 @@ function wait(ms: number): Promise<void> {
   return new Promise((resolve) => window.setTimeout(resolve, ms));
 }
 
+// How long claimUsername will wait for the anonymous session to propagate to
+// the reactive `users.me` doc before giving up, and how often it re-checks.
+// This replaces a fixed-delay retry of the mutation itself: we wait on the
+// real auth state (the signal both claimUsernameOnly guards depend on) instead
+// of firing the mutation speculatively into the propagation window.
+const ANON_PROPAGATION_TIMEOUT_MS = 15000;
+const ANON_PROPAGATION_POLL_MS = 100;
+
 function mapAuthError(err: unknown, fallbackCode: AuthErrorCode): AuthError {
   if (err instanceof AuthError) return err;
   const message = err instanceof Error ? err.message : String(err);
@@ -143,7 +237,11 @@ function mapAuthError(err: unknown, fallbackCode: AuthErrorCode): AuthError {
       "Password reset is temporarily unavailable. Please try again later.",
     );
   }
-  if (lower.includes("username is already taken")) {
+  if (
+    lower.includes("username is already taken") ||
+    lower.includes("username claim is ambiguous") ||
+    lower.includes("username claim could not be made safely")
+  ) {
     return new AuthError(
       "username_taken",
       "Username is already taken. Choose another one.",
@@ -151,6 +249,15 @@ function mapAuthError(err: unknown, fallbackCode: AuthErrorCode): AuthError {
   }
   if (lower.includes("username must")) {
     return new AuthError("invalid_username", message);
+  }
+  if (lower.includes("email is already linked")) {
+    return new AuthError(
+      "email_taken",
+      "That email is already linked to an account. Sign in instead.",
+    );
+  }
+  if (lower.includes("too many")) {
+    return new AuthError("rate_limited", message);
   }
   if (
     lower.includes("password must be") ||
@@ -165,12 +272,47 @@ function mapAuthError(err: unknown, fallbackCode: AuthErrorCode): AuthError {
 export function AuthProvider({ children }: { children: ReactNode }) {
   const { signIn: convexSignIn, signOut: convexSignOut } = useAuthActions();
   const user = useQuery(api.users.me);
+  // Live mirror of the reactive `users.me` doc so async flows (claimUsername)
+  // can await auth propagation without capturing a stale closure value.
+  const userRef = useRef(user);
+  useEffect(() => {
+    userRef.current = user;
+  }, [user]);
   const ensureProfile = useMutation(api.users.ensureProfile);
+  const claimUsernameOnly = useMutation(api.users.claimUsernameOnly);
+  const upgradeUsernameOnly = useMutation(api.users.upgradeUsernameOnly);
   const [localGuestActive, setLocalGuestActive] = useState(readTabGuestSession);
 
   const isLoading = !localGuestActive && user === undefined;
   const isAuthenticated = !!user || localGuestActive;
   const isGuest = localGuestActive || !!(user?.isGuest ?? user?.isAnonymous);
+
+  // ── Server-authoritative low-friction onboarding state ──
+  // These mirror the backend's `lib/authz.ts` predicates exactly so the FE
+  // never admits a user the server would reject (and vice-versa). They read the
+  // raw `users.me` doc, NOT the narrowed `authUser`, and ignore the tab-local
+  // guest entirely (that v1 path has no server identity).
+  const serverUsername =
+    typeof user?.username === "string" &&
+    isValidUsername(user.username.trim().toLowerCase())
+      ? user.username.trim().toLowerCase()
+      : null;
+  const hasUsername = !!user && user.isGuest !== true && serverUsername !== null;
+  const isAnonymous = user?.isAnonymous === true;
+  const isUsernameOnly = !!user && isAnonymous && hasUsername;
+  const isFullAccount = !!user && !isAnonymous && hasUsername;
+  const accountState: AccountState =
+    user === undefined
+      ? localGuestActive
+        ? "loggedOut"
+        : "loading"
+      : !user
+        ? "loggedOut"
+        : isFullAccount
+          ? "fullAccount"
+          : isUsernameOnly
+            ? "usernameOnly"
+            : "needsUsername";
 
   const ensureProfileAfterAuth = useCallback(
     async (args: { username: string; displayName?: string; isGuest: boolean }) => {
@@ -189,6 +331,103 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       throw lastError;
     },
     [ensureProfile],
+  );
+
+  // Start a real Convex anonymous session (replaces the tab-local guest for the
+  // v2 onboarding). Clears any stale tab-guest flag first.
+  const startAnonymousSession = useCallback(async () => {
+    setTabGuestSession(false);
+    setLocalGuestActive(false);
+    try {
+      await convexSignIn("anonymous");
+    } catch (err) {
+      throw mapAuthError(err, "unknown");
+    }
+  }, [convexSignIn]);
+
+  // Block until the anonymous session has actually propagated to the reactive
+  // `users.me` doc — the exact state both claimUsernameOnly guards depend on
+  // (authenticated + isAnonymous). Resolves true once that doc is visible,
+  // false if some other identity is present (server will reject) or the
+  // propagation window elapses. Polls the live ref so it observes query
+  // updates that land while this promise is pending.
+  const waitForAnonymousSession = useCallback(async (): Promise<boolean> => {
+    const deadline = Date.now() + ANON_PROPAGATION_TIMEOUT_MS;
+    for (;;) {
+      const current = userRef.current;
+      // Auth has propagated to queries: either it's the anonymous session we
+      // expect, or another identity that no amount of waiting will change.
+      if (current != null) return current.isAnonymous === true;
+      if (Date.now() >= deadline) return false;
+      await wait(ANON_PROPAGATION_POLL_MS);
+    }
+  }, []);
+
+  // Claim a username for the current anonymous session. Right after
+  // signIn("anonymous") the server may not yet see the anonymous identity, so
+  // we wait on the reactive auth state (users.me) to propagate FIRST rather
+  // than firing the mutation on a fixed-delay timer. Waiting on the real
+  // propagation signal — instead of a speculative immediate attempt — is what
+  // keeps the noisy "not authenticated" console error (the asap bugfix) gone.
+  const claimUsername = useCallback(
+    async (rawUsername: string, opts?: { inviteCode?: string }) => {
+      const normalizedUsername = normalizeUsernameInput(rawUsername);
+      if (!isValidUsername(normalizedUsername)) {
+        throw new AuthError(
+          "invalid_username",
+          "Username must be 3-24 lowercase letters, numbers, or underscores.",
+        );
+      }
+      const propagated = await waitForAnonymousSession();
+      if (!propagated) {
+        throw new AuthError(
+          "unknown",
+          "Could not establish a guest session. Please try again.",
+        );
+      }
+      try {
+        await claimUsernameOnly({
+          username: normalizedUsername,
+          deviceNonce: getDeviceNonce(),
+          inviteCode: opts?.inviteCode?.trim() || undefined,
+        });
+      } catch (err) {
+        throw mapAuthError(err, "unknown");
+      }
+    },
+    [claimUsernameOnly, waitForAnonymousSession],
+  );
+
+  // Upgrade an anonymous + username user to a full password account. The server
+  // links the credential to the SAME user doc, preserving username + casual
+  // progress; ranked starts only after this completes.
+  const upgradeAccount = useCallback(
+    async (email: string, password: string, displayName?: string) => {
+      const normalized = normalizeEmail(email);
+      if (!EMAIL_RE.test(normalized)) {
+        throw new AuthError("invalid_email", "Please enter a valid email address.");
+      }
+      if (isLegacyVerveqEmail(normalized)) {
+        throw new AuthError(
+          "legacy_email",
+          "That email domain is reserved. Please use your real email address.",
+        );
+      }
+      const pwResult = validatePassword(password);
+      if (!pwResult.ok && pwResult.reason) {
+        throw new AuthError("weak_password", describePasswordReason(pwResult.reason));
+      }
+      try {
+        await upgradeUsernameOnly({
+          email: normalized,
+          password,
+          displayName: displayName?.trim() || undefined,
+        });
+      } catch (err) {
+        throw mapAuthError(err, "upgrade_unavailable");
+      }
+    },
+    [upgradeUsernameOnly],
   );
 
   const signUp = useCallback(
@@ -358,6 +597,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         isAuthenticated,
         isGuest,
         isLoading,
+        accountState,
+        isAnonymous,
+        hasUsername,
+        isUsernameOnly,
+        isFullAccount,
+        username: serverUsername,
+        startAnonymousSession,
+        claimUsername,
+        upgradeAccount,
         signUp,
         signIn,
         requestPasswordReset,

@@ -667,6 +667,42 @@ describe("duel lifecycle integration", () => {
     });
   });
 
+  it("allows username-only users to create link duels but not direct account duels", async () => {
+    const db = makeSeededDb();
+    db.seed("users", "anon_user", {
+      username: "anon_user",
+      displayName: "Anon User",
+      isGuest: false,
+      isAnonymous: true,
+    });
+
+    setAuth("anon_user");
+    const created = (await handlerOf(duels.create)(makeCtx(db), {
+      type: "knowledge",
+      category: "science",
+      difficulty: "easy",
+      mode: "quiz",
+      viaLink: true,
+    })) as { duelId: string; linkCode: string | null };
+
+    expect(created.linkCode).toEqual(expect.any(String));
+    expect(db.row<DuelRow>(created.duelId)).toMatchObject({
+      challengerId: "anon_user",
+      opponentId: undefined,
+      status: "awaiting_opponent",
+    });
+
+    await expect(
+      handlerOf(duels.create)(makeCtx(db), {
+        type: "knowledge",
+        category: "science",
+        difficulty: "easy",
+        mode: "quiz",
+        opponentUserId: "user_b",
+      }),
+    ).rejects.toThrow(/registered account/i);
+  });
+
   it("expires a half-finished duel using the stored score rule", async () => {
     const db = makeSeededDb();
     const duelId = await createKnowledgeDuel(db);
