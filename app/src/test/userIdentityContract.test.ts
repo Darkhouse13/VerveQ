@@ -192,7 +192,11 @@ describe("user identity uniqueness", () => {
     const patch = vi.fn(async () => undefined);
     const ctx = makeProfileCtx({
       patch,
-      existingUser: { _id: "new_user", isAnonymous: true },
+      existingUser: {
+        _id: "new_user",
+        isAnonymous: true,
+        anonymousOnboardingIpPermitId: "permit_1",
+      },
     });
 
     const result = await handlerOf(users.claimUsernameOnly)(ctx, {
@@ -243,7 +247,11 @@ describe("user identity uniqueness", () => {
     const now = Date.now();
     const ctx = makeProfileCtx({
       patch,
-      existingUser: { _id: "new_user", isAnonymous: true },
+      existingUser: {
+        _id: "new_user",
+        isAnonymous: true,
+        anonymousOnboardingIpPermitId: "permit_1",
+      },
       onboardingAttempts: Array.from({ length: 5 }, (_, index) => ({
         _id: `attempt_${index}`,
         userId: "new_user",
@@ -266,7 +274,11 @@ describe("user identity uniqueness", () => {
     const now = Date.now();
     const ctx = makeProfileCtx({
       patch,
-      existingUser: { _id: "new_user", isAnonymous: true },
+      existingUser: {
+        _id: "new_user",
+        isAnonymous: true,
+        anonymousOnboardingIpPermitId: "permit_1",
+      },
       onboardingAttempts: Array.from({ length: 8 }, (_, index) => ({
         _id: `attempt_${index}`,
         userId: `other_user_${index}`,
@@ -291,7 +303,11 @@ describe("user identity uniqueness", () => {
     const now = Date.now();
     const ctx = makeProfileCtx({
       patch,
-      existingUser: { _id: "new_user", isAnonymous: true },
+      existingUser: {
+        _id: "new_user",
+        isAnonymous: true,
+        anonymousOnboardingIpPermitId: "permit_1",
+      },
       onboardingAttempts: Array.from({ length: 25 }, (_, index) => ({
         _id: `attempt_${index}`,
         userId: `other_user_${index}`,
@@ -307,6 +323,22 @@ describe("user identity uniqueness", () => {
         inviteCode: "arena42",
       }),
     ).rejects.toThrow(/this invite/i);
+    expect(ctx.claims).toHaveLength(0);
+    expect(patch).not.toHaveBeenCalled();
+  });
+
+  it("rejects username-only attach when the anonymous session was not IP-checked", async () => {
+    const patch = vi.fn(async () => undefined);
+    const ctx = makeProfileCtx({
+      patch,
+      existingUser: { _id: "new_user", isAnonymous: true },
+    });
+
+    await expect(
+      handlerOf(users.claimUsernameOnly)(ctx, {
+        username: "arenaguest",
+      }),
+    ).rejects.toThrow(/ip-checked anonymous session/i);
     expect(ctx.claims).toHaveLength(0);
     expect(patch).not.toHaveBeenCalled();
   });

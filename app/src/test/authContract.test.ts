@@ -13,7 +13,7 @@
  *   3. Legacy @verveq.local emails are rejected as defense-in-depth on the
  *      client — the invalidateLegacyAuth migration covers the server side.
  */
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import React from "react";
 import { act, renderHook } from "@testing-library/react";
 import {
@@ -47,7 +47,14 @@ vi.mock("convex/react", () => ({
 }));
 
 vi.mock("../../convex/_generated/api", () => ({
-  api: { users: { me: "users.me", ensureProfile: "users.ensureProfile" } },
+  api: {
+    users: {
+      me: "users.me",
+      ensureProfile: "users.ensureProfile",
+      claimUsernameOnly: "users.claimUsernameOnly",
+      upgradeUsernameOnly: "users.upgradeUsernameOnly",
+    },
+  },
 }));
 
 import {
@@ -128,6 +135,11 @@ beforeEach(() => {
   authMock.useQuery.mockReturnValue(null);
   authMock.useMutation.mockReset();
   authMock.useMutation.mockReturnValue(vi.fn(async () => "user_id"));
+});
+
+afterEach(() => {
+  vi.unstubAllEnvs();
+  vi.unstubAllGlobals();
 });
 
 describe("AuthContext — isLegacyVerveqEmail", () => {
@@ -304,6 +316,33 @@ describe("AuthContext.signIn", () => {
       code: "legacy_email",
     });
     expect(authMock.signIn).not.toHaveBeenCalled();
+  });
+});
+
+describe("AuthContext.startAnonymousSession", () => {
+  it("gets an IP permit before calling Convex anonymous sign-in", async () => {
+    vi.stubEnv("VITE_CONVEX_SITE_URL", "https://unit-test.convex.site");
+    const fetchMock = vi.fn(async () =>
+      new Response(JSON.stringify({ permitToken: "permit_123" }), {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      }),
+    );
+    vi.stubGlobal("fetch", fetchMock);
+
+    const { result } = renderHook(() => useAuth(), { wrapper });
+
+    await act(async () => {
+      await result.current.startAnonymousSession();
+    });
+
+    expect(fetchMock).toHaveBeenCalledWith(
+      "https://unit-test.convex.site/anonymous-onboarding/ip-permit",
+      expect.objectContaining({ method: "POST" }),
+    );
+    expect(authMock.signIn).toHaveBeenCalledWith("anonymous", {
+      anonymousOnboardingIpPermit: "permit_123",
+    });
   });
 });
 
