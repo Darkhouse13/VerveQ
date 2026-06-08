@@ -40,6 +40,7 @@ const CompeteCategoryScreen = lazy(() => import("./pages/shell/CompeteCategorySc
 const CompeteSportScreen = lazy(() => import("./pages/shell/CompeteSportScreen"));
 const CompeteModeGridScreen = lazy(() => import("./pages/shell/CompeteModeGridScreen"));
 const RanksPlaceholderScreen = lazy(() => import("./pages/shell/RanksPlaceholderScreen"));
+const WelcomeScreen = lazy(() => import("./pages/shell/WelcomeScreen"));
 
 // Learn v2 (the Learn pillar) — additive, flag-gated, lazy.
 const LearnEntryScreen = lazy(() => import("./pages/shell/learn/LearnEntryScreen"));
@@ -295,6 +296,8 @@ const AppRoutes = () => (
                 /home when VITE_V2_SHELL_ENABLED is off, so these are invisible
                 until enabled and never shadow existing routes. */}
             <Route path="/v2" element={<ShellGate><ShellHomeScreen /></ShellGate>} />
+            {/* Username-only onboarding (no password). Carries ?next= + ?code=. */}
+            <Route path="/v2/welcome" element={<ShellGate><WelcomeScreen /></ShellGate>} />
             <Route path="/compete" element={<ShellGate><CompeteCategoryScreen /></ShellGate>} />
             <Route path="/compete/sport" element={<ShellGate><CompeteSportScreen /></ShellGate>} />
             <Route path="/compete/sport/:sport" element={<ShellGate><CompeteModeGridScreen /></ShellGate>} />
