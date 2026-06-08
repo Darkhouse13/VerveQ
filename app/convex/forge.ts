@@ -2,6 +2,11 @@ import { mutation, query, QueryCtx, MutationCtx } from "./_generated/server";
 import { v } from "convex/values";
 import { getAuthUserId } from "@convex-dev/auth/server";
 import { Id } from "./_generated/dataModel";
+import {
+  assertFullAccountUser,
+  FULL_ACCOUNT_REQUIRED,
+  isFullAccountUserDoc,
+} from "./lib/authz";
 
 const DEFAULT_ELO = 1200;
 
@@ -42,6 +47,10 @@ export const canAccess = query({
     const userId = await getAuthUserId(ctx);
     if (!userId)
       return { allowed: false, reason: "Not authenticated", currentElo: 0 };
+    const user = await ctx.db.get(userId);
+    if (!isFullAccountUserDoc(user)) {
+      return { allowed: false, reason: FULL_ACCOUNT_REQUIRED, currentElo: 0 };
+    }
 
     const ratings = await ctx.db
       .query("userRatings")
@@ -62,7 +71,7 @@ export const getReviewQueue = query({
     const userId = await getAuthUserId(ctx);
     if (!userId) return [];
     const user = await ctx.db.get(userId);
-    if (!hasPermanentUsername(user)) return [];
+    if (!isFullAccountUserDoc(user)) return [];
 
     await assertForgeAccess(ctx, userId);
 
@@ -144,7 +153,9 @@ export const submit = mutation({
     imageId: v.optional(v.id("_storage")),
   },
   handler: async (ctx, args) => {
-    const userId = await requireRegisteredUser(ctx);
+    const userId = await getAuthUserId(ctx);
+    if (!userId) throw new Error("Not authenticated");
+    await assertFullAccountUser(ctx, userId);
     await assertForgeAccess(ctx, userId);
 
     if (args.options.length !== 4) {
@@ -202,7 +213,9 @@ export const vote = mutation({
     vote: v.union(v.literal("approve"), v.literal("reject")),
   },
   handler: async (ctx, args) => {
-    const userId = await requireRegisteredUser(ctx);
+    const userId = await getAuthUserId(ctx);
+    if (!userId) throw new Error("Not authenticated");
+    await assertFullAccountUser(ctx, userId);
     await assertForgeAccess(ctx, userId);
 
     const submission = await ctx.db.get(args.submissionId);

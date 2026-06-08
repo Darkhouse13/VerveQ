@@ -1,6 +1,7 @@
 import { mutation, query, type MutationCtx } from "./_generated/server";
 import { v } from "convex/values";
 import { getAuthUserId } from "@convex-dev/auth/server";
+import { assertUsernameRequiredUser } from "./lib/authz";
 import { findBestMatch } from "./lib/fuzzy";
 import { buildWhoAmIComparisonFeedback, getWhoAmIPlayerMetadata } from "./whoAmIPlayerSearch";
 
@@ -68,6 +69,7 @@ export const startChallenge = mutation({
   handler: async (ctx, { sport, difficulty, hardMode }) => {
     const userId = await getAuthUserId(ctx);
     if (!userId) throw new Error("Not authenticated");
+    await assertUsernameRequiredUser(ctx, userId);
     let clues;
 
     if (difficulty) {

@@ -1,6 +1,7 @@
 import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
 import { getAuthUserId } from "@convex-dev/auth/server";
+import { assertFullAccountUser } from "./lib/authz";
 import { calculateTimeScore, normalizeAnswer } from "./lib/scoring";
 import { pickQuestionPool } from "./lib/imageQuestions";
 import { orderAnswerOptions } from "./lib/answerOptions";
@@ -23,6 +24,7 @@ export const createSession = mutation({
   handler: async (ctx, { sport, mode, difficulty }) => {
     const userId = await getAuthUserId(ctx);
     if (!userId) throw new Error("Not authenticated");
+    await assertFullAccountUser(ctx, userId);
     const normalizedMode = mode === "came_first" ? "came_first" : "quiz";
     const normalizedDifficulty =
       normalizedMode === "came_first" ? "intermediate" : difficulty;

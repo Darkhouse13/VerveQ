@@ -4,7 +4,11 @@ import { v } from "convex/values";
 import { getAuthUserId } from "@convex-dev/auth/server";
 import { internal } from "./_generated/api";
 import { clampRating, getKFactor } from "./lib/elo";
-import { areRankedEligibleUsers } from "./lib/authz";
+import {
+  areFullAccountUsers,
+  areRankedEligibleUsers,
+  FULL_ACCOUNT_REQUIRED,
+} from "./lib/authz";
 import { normalizeAnswer } from "./lib/scoring";
 import { orderAnswerOptions } from "./lib/answerOptions";
 import { selectQuestionsWithImageCap } from "./lib/imageQuestions";
@@ -494,6 +498,14 @@ export const createFromChallenge = mutation({
       challenge.challengedId !== userId
     ) {
       throw new Error("Not authorized");
+    }
+    if (
+      !(await areFullAccountUsers(ctx, [
+        challenge.challengerId,
+        challenge.challengedId,
+      ]))
+    ) {
+      throw new Error(FULL_ACCOUNT_REQUIRED);
     }
 
     const challengerActive = await findActiveMatchForUser(

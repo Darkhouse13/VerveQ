@@ -2,7 +2,11 @@ import { mutation, query } from "./_generated/server";
 import type { Doc } from "./_generated/dataModel";
 import { v } from "convex/values";
 import { getAuthUserId } from "@convex-dev/auth/server";
-import { isRankedEligibleUserDoc, isRankedEligibleUserId } from "./lib/authz";
+import {
+  assertUsernameRequiredUser,
+  isRankedEligibleUserDoc,
+  isRankedEligibleUserId,
+} from "./lib/authz";
 import { pickQuestionPool } from "./lib/imageQuestions";
 import { normalizeAnswer } from "./lib/scoring";
 import { orderAnswerOptions } from "./lib/answerOptions";
@@ -20,6 +24,7 @@ export const start = mutation({
   handler: async (ctx, { sport }) => {
     const userId = await getAuthUserId(ctx);
     if (!userId) throw new Error("Not authenticated");
+    await assertUsernameRequiredUser(ctx, userId);
 
     const now = Date.now();
     const sessionId = await ctx.db.insert("blitzSessions", {

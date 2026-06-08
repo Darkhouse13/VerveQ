@@ -1,6 +1,7 @@
 import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
 import { getAuthUserId } from "@convex-dev/auth/server";
+import { assertUsernameRequiredUser } from "./lib/authz";
 import { normalizeAnswer } from "./lib/scoring";
 import { levenshteinDistance } from "./lib/fuzzy";
 
@@ -44,6 +45,7 @@ export const startSession = mutation({
   handler: async (ctx, { sport }) => {
     const userId = await getAuthUserId(ctx);
     if (!userId) throw new Error("Not authenticated");
+    await assertUsernameRequiredUser(ctx, userId);
     if (sport !== "football") {
       throw new Error("VerveGrid is currently available for football only");
     }

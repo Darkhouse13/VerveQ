@@ -1,6 +1,7 @@
 import { mutation, query, type MutationCtx } from "./_generated/server";
 import { v } from "convex/values";
 import { getAuthUserId } from "@convex-dev/auth/server";
+import { assertUsernameRequiredUser } from "./lib/authz";
 
 const SESSION_TTL_MS = 60 * 60 * 1000; // 1 hour
 
@@ -135,6 +136,7 @@ export const startSession = mutation({
   handler: async (ctx, { sport }) => {
     const userId = await getAuthUserId(ctx);
     if (!userId) throw new Error("Not authenticated");
+    await assertUsernameRequiredUser(ctx, userId);
     if (sport !== "football") {
       throw new Error("Higher or Lower is currently available for football only");
     }
