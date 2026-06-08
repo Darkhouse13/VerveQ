@@ -120,6 +120,38 @@ export const ensureProfile = mutation({
   },
 });
 
+export const claimUsernameOnly = mutation({
+  args: {
+    username: v.string(),
+    displayName: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) throw new Error("Not authenticated");
+
+    const existing = await ctx.db.get(userId);
+    if (!existing) throw new Error("User not found");
+    if (existing.isAnonymous !== true) {
+      throw new Error("Username-only onboarding requires an anonymous session.");
+    }
+
+    const { username } = await claimUsernameForUser(ctx, args.username, userId);
+    await ctx.db.patch(userId, {
+      username,
+      displayName: args.displayName?.trim() || existing.displayName || username,
+      isGuest: false,
+      totalGames: existing.totalGames ?? 0,
+    });
+
+    return {
+      userId,
+      username,
+      isAnonymous: true,
+      isGuest: false,
+    };
+  },
+});
+
 export const getByUsername = query({
   args: { username: v.string() },
   handler: async (ctx, { username }) => {

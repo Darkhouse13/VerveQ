@@ -145,4 +145,45 @@ describe("user identity uniqueness", () => {
     expect(patch).not.toHaveBeenCalled();
   });
 
+  it("attaches a username to a real anonymous user while keeping ranked-exclusion identity", async () => {
+    const patch = vi.fn(async () => undefined);
+    const ctx = makeProfileCtx({
+      patch,
+      existingUser: { _id: "new_user", isAnonymous: true },
+    });
+
+    const result = await handlerOf(users.claimUsernameOnly)(ctx, {
+      username: " ArenaGuest ",
+      displayName: "Arena Guest",
+    });
+
+    expect(result).toMatchObject({
+      userId: "new_user",
+      username: "arenaguest",
+      isAnonymous: true,
+      isGuest: false,
+    });
+    expect(patch).toHaveBeenCalledWith(
+      "new_user",
+      expect.objectContaining({
+        username: "arenaguest",
+        displayName: "Arena Guest",
+        isGuest: false,
+        totalGames: 0,
+      }),
+    );
+  });
+
+  it("rejects username-only attach without an anonymous Convex identity", async () => {
+    const ctx = makeProfileCtx({
+      existingUser: { _id: "new_user", isAnonymous: false },
+    });
+
+    await expect(
+      handlerOf(users.claimUsernameOnly)(ctx, {
+        username: "fulluser",
+      }),
+    ).rejects.toThrow(/anonymous session/i);
+  });
+
 });
