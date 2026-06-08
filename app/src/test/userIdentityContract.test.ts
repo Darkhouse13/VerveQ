@@ -19,6 +19,7 @@ function makeProfileCtx(options?: {
   users?: Array<Record<string, unknown>>;
   claims?: Array<Record<string, unknown>>;
   authAccounts?: Array<Record<string, unknown>>;
+  onboardingAttempts?: Array<Record<string, unknown>>;
   patch?: ReturnType<typeof vi.fn>;
   insert?: ReturnType<typeof vi.fn>;
   delete?: ReturnType<typeof vi.fn>;
@@ -26,13 +27,22 @@ function makeProfileCtx(options?: {
   const patch = options?.patch ?? vi.fn(async () => undefined);
   const claims = [...(options?.claims ?? [])];
   const authAccounts = [...(options?.authAccounts ?? [])];
+  const onboardingAttempts = [...(options?.onboardingAttempts ?? [])];
   const usersTable = options?.users ?? [];
   const existingUser = options?.existingUser ?? { _id: "new_user" };
   const insert = options?.insert ?? vi.fn(async (_table: string, row: Record<string, unknown>) => {
-    const rows = _table === "authAccounts" ? authAccounts : claims;
-    const id = _table === "authAccounts"
-      ? `account_${authAccounts.length + 1}`
-      : `claim_${claims.length + 1}`;
+    const rows =
+      _table === "authAccounts"
+        ? authAccounts
+        : _table === "anonymousOnboardingAttempts"
+          ? onboardingAttempts
+          : claims;
+    const id =
+      _table === "authAccounts"
+        ? `account_${authAccounts.length + 1}`
+        : _table === "anonymousOnboardingAttempts"
+          ? `attempt_${onboardingAttempts.length + 1}`
+          : `claim_${claims.length + 1}`;
     rows.push({ _id: id, ...row });
     return id;
   });
@@ -65,7 +75,9 @@ function makeProfileCtx(options?: {
               ? claims
               : table === "authAccounts"
                 ? authAccounts
-                : usersTable;
+                : table === "anonymousOnboardingAttempts"
+                  ? onboardingAttempts
+                  : usersTable;
           const filtered = rows.filter((row) =>
             Object.entries(filters).every(([field, value]) => row[field] === value),
           );
@@ -83,11 +95,14 @@ function makeProfileCtx(options?: {
             ? claims
             : table === "authAccounts"
               ? authAccounts
-              : usersTable,
+              : table === "anonymousOnboardingAttempts"
+                ? onboardingAttempts
+                : usersTable,
       }),
     },
     claims,
     authAccounts,
+    onboardingAttempts,
     patch,
     insert,
     delete: deleteFn,
@@ -183,6 +198,8 @@ describe("user identity uniqueness", () => {
     const result = await handlerOf(users.claimUsernameOnly)(ctx, {
       username: " ArenaGuest ",
       displayName: "Arena Guest",
+      deviceNonce: " device-1 ",
+      inviteCode: " abc123 ",
     });
 
     expect(result).toMatchObject({
@@ -200,6 +217,13 @@ describe("user identity uniqueness", () => {
         totalGames: 0,
       }),
     );
+    expect(ctx.onboardingAttempts).toHaveLength(1);
+    expect(ctx.onboardingAttempts[0]).toMatchObject({
+      userId: "new_user",
+      deviceNonce: "device-1",
+      inviteCode: "ABC123",
+      kind: "username_claim",
+    });
   });
 
   it("rejects username-only attach without an anonymous Convex identity", async () => {
@@ -212,6 +236,79 @@ describe("user identity uniqueness", () => {
         username: "fulluser",
       }),
     ).rejects.toThrow(/anonymous session/i);
+  });
+
+  it("rate-limits username-only claims per anonymous user before username writes", async () => {
+    const patch = vi.fn(async () => undefined);
+    const now = Date.now();
+    const ctx = makeProfileCtx({
+      patch,
+      existingUser: { _id: "new_user", isAnonymous: true },
+      onboardingAttempts: Array.from({ length: 5 }, (_, index) => ({
+        _id: `attempt_${index}`,
+        userId: "new_user",
+        kind: "username_claim",
+        attemptedAt: now - 60_000,
+      })),
+    });
+
+    await expect(
+      handlerOf(users.claimUsernameOnly)(ctx, {
+        username: "arenaguest",
+      }),
+    ).rejects.toThrow(/too many username attempts/i);
+    expect(ctx.claims).toHaveLength(0);
+    expect(patch).not.toHaveBeenCalled();
+  });
+
+  it("rate-limits username-only claims per browser nonce across anonymous users", async () => {
+    const patch = vi.fn(async () => undefined);
+    const now = Date.now();
+    const ctx = makeProfileCtx({
+      patch,
+      existingUser: { _id: "new_user", isAnonymous: true },
+      onboardingAttempts: Array.from({ length: 8 }, (_, index) => ({
+        _id: `attempt_${index}`,
+        userId: `other_user_${index}`,
+        deviceNonce: "device-1",
+        kind: "username_claim",
+        attemptedAt: now - 60_000,
+      })),
+    });
+
+    await expect(
+      handlerOf(users.claimUsernameOnly)(ctx, {
+        username: "arenaguest",
+        deviceNonce: "device-1",
+      }),
+    ).rejects.toThrow(/this device/i);
+    expect(ctx.claims).toHaveLength(0);
+    expect(patch).not.toHaveBeenCalled();
+  });
+
+  it("rate-limits username-only claims per invite code after a friend-group burst", async () => {
+    const patch = vi.fn(async () => undefined);
+    const now = Date.now();
+    const ctx = makeProfileCtx({
+      patch,
+      existingUser: { _id: "new_user", isAnonymous: true },
+      onboardingAttempts: Array.from({ length: 25 }, (_, index) => ({
+        _id: `attempt_${index}`,
+        userId: `other_user_${index}`,
+        inviteCode: "ARENA42",
+        kind: "username_claim",
+        attemptedAt: now - 60_000,
+      })),
+    });
+
+    await expect(
+      handlerOf(users.claimUsernameOnly)(ctx, {
+        username: "arenaguest",
+        inviteCode: "arena42",
+      }),
+    ).rejects.toThrow(/this invite/i);
+    expect(ctx.claims).toHaveLength(0);
+    expect(patch).not.toHaveBeenCalled();
   });
 
   it("upgrades a username-only anonymous user by linking a password account to the same user id", async () => {

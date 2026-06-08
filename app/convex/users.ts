@@ -1,4 +1,5 @@
-import { query, mutation } from "./_generated/server";
+import { query, mutation, type MutationCtx } from "./_generated/server";
+import type { Id } from "./_generated/dataModel";
 import { v } from "convex/values";
 import { getAuthUserId } from "@convex-dev/auth/server";
 import { Scrypt } from "lucia";
@@ -12,6 +13,16 @@ import {
 import { describePasswordReason, validatePassword } from "./lib/passwordPolicy";
 
 const PASSWORD_PROVIDER_ID = "password";
+const USERNAME_ONLY_ATTEMPT_KIND = "username_claim";
+const MINUTE_MS = 60 * 1000;
+const DAY_MS = 24 * 60 * 60 * 1000;
+const USERNAME_ONLY_RATE_LIMITS = {
+  perUserTenMinutes: { max: 5, windowMs: 10 * MINUTE_MS },
+  perUserDay: { max: 20, windowMs: DAY_MS },
+  perDeviceHour: { max: 8, windowMs: 60 * MINUTE_MS },
+  perDeviceDay: { max: 30, windowMs: DAY_MS },
+  perInviteTenMinutes: { max: 25, windowMs: 10 * MINUTE_MS },
+} as const;
 
 function usernameDerivedFromEmail(email: string | undefined): string | null {
   if (!email) return null;
@@ -128,6 +139,8 @@ export const claimUsernameOnly = mutation({
   args: {
     username: v.string(),
     displayName: v.optional(v.string()),
+    deviceNonce: v.optional(v.string()),
+    inviteCode: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     const userId = await getAuthUserId(ctx);
@@ -138,6 +151,23 @@ export const claimUsernameOnly = mutation({
     if (existing.isAnonymous !== true) {
       throw new Error("Username-only onboarding requires an anonymous session.");
     }
+
+    const now = Date.now();
+    const deviceNonce = normalizeDeviceNonce(args.deviceNonce);
+    const inviteCode = normalizeInviteCode(args.inviteCode);
+    await assertUsernameOnlyRateLimits(ctx, {
+      userId,
+      deviceNonce,
+      inviteCode,
+      now,
+    });
+    await ctx.db.insert("anonymousOnboardingAttempts", {
+      userId,
+      deviceNonce,
+      inviteCode,
+      kind: USERNAME_ONLY_ATTEMPT_KIND,
+      attemptedAt: now,
+    });
 
     const { username } = await claimUsernameForUser(ctx, args.username, userId);
     await ctx.db.patch(userId, {
@@ -155,6 +185,123 @@ export const claimUsernameOnly = mutation({
     };
   },
 });
+
+function normalizeDeviceNonce(value: string | undefined): string | undefined {
+  const trimmed = value?.trim();
+  return trimmed ? trimmed.slice(0, 128) : undefined;
+}
+
+function normalizeInviteCode(value: string | undefined): string | undefined {
+  const trimmed = value?.trim();
+  return trimmed ? trimmed.toUpperCase().slice(0, 64) : undefined;
+}
+
+function countAttemptsSince(
+  attempts: Array<{ kind?: string; attemptedAt?: number }>,
+  since: number,
+) {
+  return attempts.filter(
+    (attempt) =>
+      attempt.kind === USERNAME_ONLY_ATTEMPT_KIND &&
+      typeof attempt.attemptedAt === "number" &&
+      attempt.attemptedAt >= since,
+  ).length;
+}
+
+async function countRecentUserAttempts(
+  ctx: Pick<MutationCtx, "db">,
+  userId: Id<"users">,
+  since: number,
+) {
+  const attempts = await ctx.db
+    .query("anonymousOnboardingAttempts")
+    .withIndex("by_user_time", (q) => q.eq("userId", userId))
+    .collect();
+  return countAttemptsSince(attempts, since);
+}
+
+async function countRecentDeviceAttempts(
+  ctx: Pick<MutationCtx, "db">,
+  deviceNonce: string,
+  since: number,
+) {
+  const attempts = await ctx.db
+    .query("anonymousOnboardingAttempts")
+    .withIndex("by_device_time", (q) => q.eq("deviceNonce", deviceNonce))
+    .collect();
+  return countAttemptsSince(attempts, since);
+}
+
+async function countRecentInviteAttempts(
+  ctx: Pick<MutationCtx, "db">,
+  inviteCode: string,
+  since: number,
+) {
+  const attempts = await ctx.db
+    .query("anonymousOnboardingAttempts")
+    .withIndex("by_invite_time", (q) => q.eq("inviteCode", inviteCode))
+    .collect();
+  return countAttemptsSince(attempts, since);
+}
+
+async function assertUsernameOnlyRateLimits(
+  ctx: Pick<MutationCtx, "db">,
+  args: {
+    userId: Id<"users">;
+    deviceNonce?: string;
+    inviteCode?: string;
+    now: number;
+  },
+) {
+  const userTenMinuteCount = await countRecentUserAttempts(
+    ctx,
+    args.userId,
+    args.now - USERNAME_ONLY_RATE_LIMITS.perUserTenMinutes.windowMs,
+  );
+  if (userTenMinuteCount >= USERNAME_ONLY_RATE_LIMITS.perUserTenMinutes.max) {
+    throw new Error("Too many username attempts. Try again later.");
+  }
+
+  const userDayCount = await countRecentUserAttempts(
+    ctx,
+    args.userId,
+    args.now - USERNAME_ONLY_RATE_LIMITS.perUserDay.windowMs,
+  );
+  if (userDayCount >= USERNAME_ONLY_RATE_LIMITS.perUserDay.max) {
+    throw new Error("Too many username attempts today. Try again later.");
+  }
+
+  if (args.deviceNonce) {
+    const deviceHourCount = await countRecentDeviceAttempts(
+      ctx,
+      args.deviceNonce,
+      args.now - USERNAME_ONLY_RATE_LIMITS.perDeviceHour.windowMs,
+    );
+    if (deviceHourCount >= USERNAME_ONLY_RATE_LIMITS.perDeviceHour.max) {
+      throw new Error("Too many username attempts from this device. Try again later.");
+    }
+
+    const deviceDayCount = await countRecentDeviceAttempts(
+      ctx,
+      args.deviceNonce,
+      args.now - USERNAME_ONLY_RATE_LIMITS.perDeviceDay.windowMs,
+    );
+    if (deviceDayCount >= USERNAME_ONLY_RATE_LIMITS.perDeviceDay.max) {
+      throw new Error("Too many username attempts from this device today. Try again later.");
+    }
+  }
+
+  if (args.inviteCode) {
+    const inviteTenMinuteCount = await countRecentInviteAttempts(
+      ctx,
+      args.inviteCode,
+      args.now - USERNAME_ONLY_RATE_LIMITS.perInviteTenMinutes.windowMs,
+    );
+    if (inviteTenMinuteCount >= USERNAME_ONLY_RATE_LIMITS.perInviteTenMinutes.max) {
+      throw new Error("Too many username attempts for this invite. Try again later.");
+    }
+  }
+}
 
 function normalizeEmail(value: string): string {
   return value.trim().toLowerCase();
