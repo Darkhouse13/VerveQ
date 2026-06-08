@@ -119,6 +119,8 @@ export const checkAnswer = mutation({
   args: {
     sessionId: v.id("quizSessions"),
     answer: v.string(),
+    correctAnswer: v.optional(v.string()),
+    timeTaken: v.optional(v.number()),
   },
   handler: async (ctx, { sessionId, answer }) => {
     const userId = await getAuthUserId(ctx);

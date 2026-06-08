@@ -10,7 +10,16 @@ import { NeoBadge } from "@/components/neo/NeoBadge";
 import { BottomNav } from "@/components/neo/BottomNav";
 import { useAuth } from "@/contexts/AuthContext";
 import { api } from "../../convex/_generated/api";
+import { V2_SHELL_ENABLED } from "@/lib/flags";
 import { formatModeLabel, formatCategoryLabel, formatRelativeTime } from "@/lib/duel";
+
+/**
+ * Arena deep link. When the v2 shell is enabled, create/join land in the new
+ * shell Arena (prototype layout); otherwise the existing `/arena/:code` screen.
+ * Same room, same server-authority — only the presentation differs.
+ */
+const arenaPath = (code: string) =>
+  `${V2_SHELL_ENABLED ? "/v2/arena" : "/arena"}/${code}`;
 import CreateDuelModal from "./challenge/CreateDuelModal";
 import CreateArenaModal from "./arena/CreateArenaModal";
 import JoinArenaModal from "./arena/JoinArenaModal";
@@ -393,7 +402,7 @@ export default function ChallengeScreen() {
           onClose={() => setShowArenaCreate(false)}
           onCreated={(code) => {
             setShowArenaCreate(false);
-            navigate(`/arena/${code}`);
+            navigate(arenaPath(code));
           }}
         />
       )}
@@ -403,7 +412,7 @@ export default function ChallengeScreen() {
           onClose={() => setShowArenaJoin(false)}
           onJoin={(code) => {
             setShowArenaJoin(false);
-            navigate(`/arena/${code}`);
+            navigate(arenaPath(code));
           }}
         />
       )}

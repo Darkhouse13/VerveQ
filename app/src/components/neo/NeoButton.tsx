@@ -15,6 +15,7 @@ const neoButtonVariants = cva(
         accent: "bg-accent text-accent-foreground neo-shadow hover:brightness-110",
         blue: "bg-electric-blue text-electric-blue-foreground neo-shadow hover:brightness-110",
         pink: "bg-hot-pink text-hot-pink-foreground neo-shadow hover:brightness-110",
+        yellow: "bg-yellow text-yellow-foreground neo-shadow hover:brightness-110",
         ghost: "border-0 shadow-none text-foreground hover:bg-muted",
       },
       size: {

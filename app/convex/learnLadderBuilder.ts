@@ -1,4 +1,5 @@
 import {
+  isPipelineProofNode,
   skillNodeById,
   skillNodes,
   type SkillNode,
@@ -18,6 +19,13 @@ import {
   learnGeographyBorderReasoningLadderV1Questions,
 } from "./learnGeographyBorderReasoningLadderV1";
 import { learnGeographyCapitalsRecallRevealsV1ByChecksum } from "./learnGeographyCapitalsRecallRevealsV1";
+import {
+  LEARN_GEOGRAPHY_PIPELINE_PROOF_CONCEPT,
+  learnGeographyPipelineProofLadderV1ByChecksum,
+  learnGeographyPipelineProofLadderV1Questions,
+  type LearnOrderRenderItem,
+} from "./learnGeographyPipelineProofLadderV1";
+import type { LearnQuestionType } from "./learnGraders";
 
 // Graph-driven Learn ladder builder.
 //
@@ -49,6 +57,7 @@ export const MAX_LADDER_RUNGS = 8;
 
 export type BuiltLadderQuestion = {
   checksum: string;
+  type: LearnQuestionType;
   question: string;
   options: string[];
   correctAnswer: string;
@@ -56,6 +65,14 @@ export type BuiltLadderQuestion = {
   ladderIndex: number;
   distractors: LearnModeDistractor[];
   correctReveal: string;
+  acceptedAnswers?: string[];
+  textEditDistance?: number;
+  numericAnswer?: number;
+  numericTolerance?: number;
+  numericUnit?: string;
+  acceptedUnits?: string[];
+  items?: LearnOrderRenderItem[];
+  correctOrder?: string[];
 };
 
 export type BuiltLadder = {
@@ -78,6 +95,7 @@ export type LearnNodeSummary = {
 const CONCEPT_LINE_BY_NODE: Partial<Record<SkillNodeId, string>> = {
   "geo.capitals.nonobvious":
     "A country's capital is often not its biggest or most famous city — it's frequently planned or relocated.",
+  "geo.pipeline.proof": LEARN_GEOGRAPHY_PIPELINE_PROOF_CONCEPT,
 };
 
 function conceptLineFor(node: SkillNode): string {
@@ -86,13 +104,57 @@ function conceptLineFor(node: SkillNode): string {
 
 type LadderCandidate = {
   checksum: string;
+  type?: LearnQuestionType;
   question: string;
   options: string[];
   correctAnswer: string;
   difficulty: Difficulty;
   tags: SkillNodeId[];
   ladderIndex?: number;
+  acceptedAnswers?: string[];
+  textEditDistance?: number;
+  numericAnswer?: number;
+  numericTolerance?: number;
+  numericUnit?: string;
+  acceptedUnits?: string[];
+  items?: LearnOrderRenderItem[];
+  correctOrder?: string[];
 };
+
+type LearnQuestionGradingMetadata = Pick<
+  LadderCandidate,
+  | "type"
+  | "acceptedAnswers"
+  | "textEditDistance"
+  | "numericAnswer"
+  | "numericTolerance"
+  | "numericUnit"
+  | "acceptedUnits"
+  | "items"
+  | "correctOrder"
+>;
+
+function gradingMetadata(
+  question: Partial<LearnQuestionGradingMetadata>,
+): LearnQuestionGradingMetadata {
+  return {
+    ...(question.type ? { type: question.type } : {}),
+    ...(question.acceptedAnswers ? { acceptedAnswers: question.acceptedAnswers } : {}),
+    ...(question.textEditDistance !== undefined
+      ? { textEditDistance: question.textEditDistance }
+      : {}),
+    ...(question.numericAnswer !== undefined
+      ? { numericAnswer: question.numericAnswer }
+      : {}),
+    ...(question.numericTolerance !== undefined
+      ? { numericTolerance: question.numericTolerance }
+      : {}),
+    ...(question.numericUnit ? { numericUnit: question.numericUnit } : {}),
+    ...(question.acceptedUnits ? { acceptedUnits: question.acceptedUnits } : {}),
+    ...(question.items ? { items: question.items } : {}),
+    ...(question.correctOrder ? { correctOrder: question.correctOrder } : {}),
+  };
+}
 
 // Reveal metadata keyed by checksum. A reveal also declares which node(s) it was
 // authored for, so recall-only CIE reveals do not leak into concept ladders that
@@ -101,6 +163,7 @@ const revealByChecksum = {
   ...learnGeographyNonobviousLadderV1ByChecksum,
   ...learnGeographyBorderReasoningLadderV1ByChecksum,
   ...learnGeographyCapitalsRecallRevealsV1ByChecksum,
+  ...learnGeographyPipelineProofLadderV1ByChecksum,
 };
 
 // Candidate pool = every learn-eligible question we can tag, from the enriched
@@ -109,11 +172,13 @@ const revealByChecksum = {
 const enrichedLadderQuestions = [
   ...learnGeographyNonobviousLadderV1Questions,
   ...learnGeographyBorderReasoningLadderV1Questions,
+  ...learnGeographyPipelineProofLadderV1Questions,
 ];
 
 const ladderCandidates: LadderCandidate[] = enrichedLadderQuestions.map(
   (question) => ({
     checksum: question.checksum,
+    ...gradingMetadata(question as Partial<LearnQuestionGradingMetadata>),
     question: question.question,
     options: question.options,
     correctAnswer: question.correctAnswer,
@@ -126,6 +191,7 @@ const ladderCandidates: LadderCandidate[] = enrichedLadderQuestions.map(
 const cieCandidates: LadderCandidate[] = verifiedGeographyCieScoreQuestions.map(
   (question) => ({
     checksum: question.checksum,
+    ...gradingMetadata(question as Partial<LearnQuestionGradingMetadata>),
     question: question.question,
     options: question.options,
     correctAnswer: question.correctAnswer,
@@ -162,9 +228,10 @@ export function buildLadder(nodeId: SkillNodeId): BuiltLadder {
   });
 
   const questions: BuiltLadderQuestion[] = ordered
-    .slice(0, MAX_LADDER_RUNGS)
+    .slice(0, isPipelineProofNode(node) ? ordered.length : MAX_LADDER_RUNGS)
     .map((entry, index) => ({
       checksum: entry.candidate.checksum,
+      type: entry.candidate.type ?? "mcq",
       question: entry.candidate.question,
       options: entry.candidate.options,
       correctAnswer: entry.candidate.correctAnswer,
@@ -173,6 +240,30 @@ export function buildLadder(nodeId: SkillNodeId): BuiltLadder {
       ladderIndex: index + 1,
       distractors: entry.reveal.distractors,
       correctReveal: entry.reveal.correctReveal,
+      ...(entry.candidate.acceptedAnswers
+        ? { acceptedAnswers: entry.candidate.acceptedAnswers }
+        : {}),
+      ...(entry.candidate.textEditDistance !== undefined
+        ? { textEditDistance: entry.candidate.textEditDistance }
+        : {}),
+      ...(entry.candidate.numericAnswer !== undefined
+        ? { numericAnswer: entry.candidate.numericAnswer }
+        : {}),
+      ...(entry.candidate.numericTolerance !== undefined
+        ? { numericTolerance: entry.candidate.numericTolerance }
+        : {}),
+      ...(entry.candidate.numericUnit
+        ? { numericUnit: entry.candidate.numericUnit }
+        : {}),
+      ...(entry.candidate.acceptedUnits
+        ? { acceptedUnits: entry.candidate.acceptedUnits }
+        : {}),
+      ...(entry.candidate.items
+        ? { items: entry.candidate.items }
+        : {}),
+      ...(entry.candidate.correctOrder
+        ? { correctOrder: entry.candidate.correctOrder }
+        : {}),
     }));
 
   return {
@@ -201,6 +292,6 @@ export function getLearnNodeSummary(nodeId: SkillNodeId): LearnNodeSummary {
 // Geography is the only subject in the graph today; the picker reads this list.
 export function listGeographyNodeSummaries(): LearnNodeSummary[] {
   return skillNodes
-    .filter((node) => node.subject === "geography")
+    .filter((node) => node.subject === "geography" && !isPipelineProofNode(node))
     .map((node) => getLearnNodeSummary(node.id));
 }

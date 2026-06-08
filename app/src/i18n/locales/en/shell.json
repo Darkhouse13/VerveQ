@@ -1,0 +1,100 @@
+{
+  "common": {
+    "back": "Back",
+    "play": "Play",
+    "new": "New",
+    "soon": "Soon",
+    "comingSoon": "Coming soon",
+    "enter": "Enter",
+    "cancel": "Cancel",
+    "inLearn": "In Learn"
+  },
+  "nav": {
+    "home": "Home",
+    "compete": "Compete",
+    "ranks": "Ranks",
+    "learn": "Learn",
+    "profile": "Profile"
+  },
+  "home": {
+    "greeting": "Hey, {{name}}!",
+    "tagline": "Pick your path",
+    "pillars": {
+      "competeTitle": "Compete",
+      "competeSubtitle": "Climb the ranks across every mode",
+      "learnTitle": "Learn",
+      "learnSubtitle": "Build mastery node by node"
+    },
+    "stats": {
+      "rank": "Rank",
+      "streak": "Streak",
+      "plays": "Plays",
+      "unranked": "Unranked"
+    }
+  },
+  "compete": {
+    "title": "Compete",
+    "chooseCategory": "Choose a category",
+    "categoryHint": "Sport is live. History, Geography & Science live in Learn for now.",
+    "categories": {
+      "sport": "Sport",
+      "sportDesc": "Football, basketball & tennis",
+      "history": "History",
+      "geography": "Geography",
+      "science": "Science"
+    },
+    "chooseSport": "Choose a sport",
+    "sports": {
+      "football": "Football",
+      "basketball": "Basketball",
+      "tennis": "Tennis"
+    },
+    "chooseMode": "Choose a mode",
+    "modeGridHint": "{{sport}} · pick how you want to play"
+  },
+  "modes": {
+    "quiz": { "name": "Quiz", "desc": "10 questions, time-based scoring" },
+    "survival": { "name": "Survival", "desc": "Guess players by initials" },
+    "blitz": { "name": "Blitz", "desc": "60-second speed round" },
+    "higherLower": { "name": "Higher or Lower", "desc": "Compare player stats" },
+    "verveGrid": { "name": "VerveGrid", "desc": "Fill the 3x3 grid" },
+    "whoAmI": { "name": "Who Am I?", "desc": "Four progressive clues" },
+    "daily": { "name": "Daily Challenge", "desc": "Same questions for everyone" },
+    "liveMatch": { "name": "Live Match", "desc": "Real-time 1v1, ELO matched" },
+    "arena": { "name": "Arena", "desc": "Group challenge rooms" },
+    "duel": { "name": "Duels", "desc": "Head-to-head, send a link" }
+  },
+  "drawer": {
+    "title": "Choose a category",
+    "subtitle": "Pick what you'll be tested on",
+    "categories": {
+      "whichCameFirst": "Which Came First",
+      "whichCameFirstDesc": "Order events on the timeline",
+      "knowledge": "Knowledge",
+      "knowledgeDesc": "Science, history & discoveries",
+      "mixedBag": "Mixed Bag",
+      "mixedBagDesc": "A bit of everything"
+    }
+  },
+  "ranks": {
+    "title": "Ranks",
+    "wip": "UX rework in progress",
+    "subtitle": "A redesigned tiers & leaderboard screen is on the way.",
+    "yourTier": "Your tier",
+    "yourElo": "Your ELO",
+    "unranked": "Unranked",
+    "tiers": {
+      "bronze": "Bronze",
+      "silver": "Silver",
+      "gold": "Gold",
+      "platinum": "Platinum"
+    },
+    "tierRange": "{{min}}–{{max}}",
+    "viewFullBoard": "View current leaderboard"
+  },
+  "forge": {
+    "title": "The Forge",
+    "subtitle": "Create & review questions",
+    "enter": "Enter the Forge"
+  }
+}

@@ -31,6 +31,32 @@ import LearnPrototypeScreen from "./pages/LearnPrototypeScreen";
 import LearnNodePickerScreen from "./pages/LearnNodePickerScreen";
 import LearnLadderScreen from "./pages/LearnLadderScreen";
 import NotFound from "./pages/NotFound";
+import { ShellGate } from "./components/shell/ShellGate";
+
+// v2 unified shell (additive, flag-gated via VITE_V2_SHELL_ENABLED). Lazy so it
+// stays out of the main bundle; ShellGate redirects to /home when the flag is off.
+const ShellHomeScreen = lazy(() => import("./pages/shell/ShellHomeScreen"));
+const CompeteCategoryScreen = lazy(() => import("./pages/shell/CompeteCategoryScreen"));
+const CompeteSportScreen = lazy(() => import("./pages/shell/CompeteSportScreen"));
+const CompeteModeGridScreen = lazy(() => import("./pages/shell/CompeteModeGridScreen"));
+const RanksPlaceholderScreen = lazy(() => import("./pages/shell/RanksPlaceholderScreen"));
+
+// Learn v2 (the Learn pillar) — additive, flag-gated, lazy.
+const LearnEntryScreen = lazy(() => import("./pages/shell/learn/LearnEntryScreen"));
+const LearnRunnerScreen = lazy(() => import("./pages/shell/learn/LearnRunnerScreen"));
+const LearnReviewScreen = lazy(() => import("./pages/shell/learn/LearnReviewScreen"));
+const LearnMasteryScreen = lazy(() => import("./pages/shell/learn/LearnMasteryScreen"));
+
+// In-game prototype layout (migrated modes) — additive, flag-gated, lazy.
+const QuizPlayScreen = lazy(() => import("./pages/shell/play/QuizPlayScreen"));
+const BlitzPlayScreen = lazy(() => import("./pages/shell/play/BlitzPlayScreen"));
+const SurvivalPlayScreen = lazy(() => import("./pages/shell/play/SurvivalPlayScreen"));
+const HigherLowerPlayScreen = lazy(() => import("./pages/shell/play/HigherLowerPlayScreen"));
+const WhoAmIPlayScreen = lazy(() => import("./pages/shell/play/WhoAmIPlayScreen"));
+const VerveGridPlayScreen = lazy(() => import("./pages/shell/play/VerveGridPlayScreen"));
+const DailyQuizPlayScreen = lazy(() => import("./pages/shell/play/DailyQuizPlayScreen"));
+const ArenaPlayScreen = lazy(() => import("./pages/shell/play/ArenaPlayScreen"));
+const LiveMatchPlayScreen = lazy(() => import("./pages/shell/play/LiveMatchPlayScreen"));
 
 const DuelPlayScreen = lazy(() => import("./pages/DuelPlayScreen"));
 const DuelLinkScreen = lazy(() => import("./pages/DuelLinkScreen"));
@@ -265,6 +291,34 @@ const AppRoutes = () => (
             <Route path="/learn/geography" element={<LearnNodePickerScreen />} />
             <Route path="/learn/geography/:nodeId" element={<LearnLadderScreen />} />
             <Route path="/learn/prototype" element={<LearnPrototypeScreen />} />
+            {/* v2 unified shell — additive, flag-gated. ShellGate redirects to
+                /home when VITE_V2_SHELL_ENABLED is off, so these are invisible
+                until enabled and never shadow existing routes. */}
+            <Route path="/v2" element={<ShellGate><ShellHomeScreen /></ShellGate>} />
+            <Route path="/compete" element={<ShellGate><CompeteCategoryScreen /></ShellGate>} />
+            <Route path="/compete/sport" element={<ShellGate><CompeteSportScreen /></ShellGate>} />
+            <Route path="/compete/sport/:sport" element={<ShellGate><CompeteModeGridScreen /></ShellGate>} />
+            <Route path="/v2/ranks" element={<ShellGate><RanksPlaceholderScreen /></ShellGate>} />
+            {/* Learn v2 — Learn pillar (entry / run / review / mastery). */}
+            <Route path="/v2/learn" element={<ShellGate><LearnEntryScreen /></ShellGate>} />
+            <Route path="/v2/learn/run" element={<ShellGate><LearnRunnerScreen /></ShellGate>} />
+            <Route path="/v2/learn/review" element={<ShellGate><LearnReviewScreen /></ShellGate>} />
+            <Route path="/v2/learn/mastery" element={<ShellGate><LearnMasteryScreen /></ShellGate>} />
+            {/* In-game prototype layout — migrated modes (solo Quiz, multi-user Arena). */}
+            <Route path="/v2/quiz" element={<ShellGate><QuizPlayScreen /></ShellGate>} />
+            <Route path="/v2/blitz" element={<ShellGate><BlitzPlayScreen /></ShellGate>} />
+            <Route path="/v2/survival" element={<ShellGate><SurvivalPlayScreen /></ShellGate>} />
+            <Route path="/v2/higher-lower" element={<ShellGate><HigherLowerPlayScreen /></ShellGate>} />
+            <Route path="/v2/who-am-i" element={<ShellGate><WhoAmIPlayScreen /></ShellGate>} />
+            <Route path="/v2/verve-grid" element={<ShellGate><VerveGridPlayScreen /></ShellGate>} />
+            {/* Daily reuses the migrated Quiz view but runs the DAILY session;
+                same auth requirement as the live /daily-quiz route. */}
+            <Route path="/v2/daily" element={<ShellGate><UsernameRequiredRoute><DailyQuizPlayScreen /></UsernameRequiredRoute></ShellGate>} />
+            <Route path="/v2/arena/:code" element={<ShellGate><ArenaPlayScreen /></ShellGate>} />
+            {/* Live Match (1v1 realtime) on the shell — reskin over the existing
+                liveMatches backend; realtime/matchmaking/ELO unchanged. Same auth
+                requirement as the live /live-match route. */}
+            <Route path="/v2/live-match" element={<ShellGate><UsernameRequiredRoute><LiveMatchPlayScreen /></UsernameRequiredRoute></ShellGate>} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </div>

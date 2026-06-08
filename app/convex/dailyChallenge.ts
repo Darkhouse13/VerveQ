@@ -113,6 +113,48 @@ function getAttemptResultCount(attempt: { results?: unknown }) {
   return Array.isArray(attempt.results) ? attempt.results.length : 0;
 }
 
+function getQuestionStartedAts(attempt: {
+  questionStartedAts?: number[];
+}): number[] {
+  return Array.isArray(attempt.questionStartedAts)
+    ? attempt.questionStartedAts
+    : [];
+}
+
+function getDailyQuestionStartedAt(
+  attempt: {
+    startedAt: number;
+    currentQuestionStartedAt?: number;
+    questionStartedAts?: number[];
+  },
+  questionIndex: number,
+): number {
+  return (
+    getQuestionStartedAts(attempt)[questionIndex] ??
+    attempt.currentQuestionStartedAt ??
+    attempt.startedAt
+  );
+}
+
+function setDailyQuestionStartedAt(
+  attempt: {
+    startedAt: number;
+    currentQuestionStartedAt?: number;
+    questionStartedAts?: number[];
+  },
+  questionIndex: number,
+  startedAt: number,
+  nextStartedAt: number,
+): number[] {
+  const startedAts = [...getQuestionStartedAts(attempt)];
+  while (startedAts.length <= questionIndex) {
+    startedAts.push(startedAt);
+  }
+  startedAts[questionIndex] = startedAt;
+  startedAts[questionIndex + 1] = nextStartedAt;
+  return startedAts;
+}
+
 function canRestartAttempt(
   attempt: {
     completed: boolean;
@@ -449,6 +491,7 @@ export const startAttempt = mutation({
         startedAt: now,
         completedAt: undefined,
         currentQuestionStartedAt: now,
+        questionStartedAts: [now],
         expiresAt: now + DAILY_ATTEMPT_TTL_MS,
       });
 
@@ -467,6 +510,7 @@ export const startAttempt = mutation({
       startedAt: now,
       expiresAt: now + DAILY_ATTEMPT_TTL_MS,
       currentQuestionStartedAt: now,
+      questionStartedAts: [now],
     });
 
     return { attemptId };
@@ -534,8 +578,7 @@ export const getQuestion = query({
       checksum: question.checksum,
       category: question.category,
       imageUrl,
-      questionStartedAt:
-        attempt.currentQuestionStartedAt ?? attempt.startedAt,
+      questionStartedAt: getDailyQuestionStartedAt(attempt, questionIndex),
     };
   },
 });
@@ -545,6 +588,8 @@ export const submitAnswer = mutation({
     attemptId: v.id("dailyAttempts"),
     answer: v.string(),
     questionIndex: v.number(),
+    correctAnswer: v.optional(v.string()),
+    timeTaken: v.optional(v.number()),
   },
   handler: async (ctx, { attemptId, answer, questionIndex }) => {
     const userId = await getAuthUserId(ctx);
@@ -618,8 +663,7 @@ export const submitAnswer = mutation({
     const isCorrect =
       normalizeAnswer(answer) === normalizeAnswer(question.correctAnswer);
     const now = Date.now();
-    const startedAt =
-      attempt.currentQuestionStartedAt ?? attempt.startedAt;
+    const startedAt = getDailyQuestionStartedAt(attempt, questionIndex);
     const timeTaken = Math.max(0, (now - startedAt) / 1000);
 
     let score = 0;
@@ -642,6 +686,12 @@ export const submitAnswer = mutation({
       results: newResults,
       score: totalScore,
       currentQuestionStartedAt: now,
+      questionStartedAts: setDailyQuestionStartedAt(
+        attempt,
+        questionIndex,
+        startedAt,
+        now,
+      ),
     });
 
     return {
@@ -696,15 +746,22 @@ export const completeAttempt = mutation({
       });
       throw new Error("Attempt expired");
     }
-    if ((attempt.results as unknown[]).length < DAILY_QUIZ_COUNT) {
+    const results = Array.isArray(attempt.results) ? attempt.results : [];
+    if (results.length < DAILY_QUIZ_COUNT) {
       throw new Error("Attempt is not complete");
     }
+    const totalScore = results.reduce(
+      (sum: number, result: { score?: unknown }) =>
+        sum + (typeof result.score === "number" ? result.score : 0),
+      0,
+    );
 
     await ctx.db.patch(attemptId, {
       completed: true,
+      score: totalScore,
       completedAt: Date.now(),
     });
 
-    return { score: attempt.score, results: attempt.results };
+    return { score: totalScore, results };
   },
 });

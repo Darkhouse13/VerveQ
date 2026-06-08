@@ -3,6 +3,7 @@ import {
   contentQaSummary,
   validateContentBatch,
   type ContentQaFindingCode,
+  type ContentQaOptions,
   type ContentQuestionSeed,
 } from "../../convex/lib/contentQa";
 
@@ -27,7 +28,7 @@ function question(
 function expectSingleCode(
   batch: unknown,
   code: ContentQaFindingCode,
-  options?: Parameters<typeof validateContentBatch>[1],
+  options?: ContentQaOptions,
 ) {
   const report = validateContentBatch(batch, options);
   expect(report.ok).toBe(!report.findings.some((finding) => finding.severity === "ERROR"));

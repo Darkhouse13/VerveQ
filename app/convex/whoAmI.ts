@@ -316,11 +316,6 @@ export const getSession = query({
       clues.push(clue[key] as string);
     }
 
-    // answerName is the hidden truth. Only expose it once the game ends
-    // — submitGuess already reveals it in its response on correct/failed.
-    const revealed =
-      session.status === "correct" ||
-      (session.status === "failed" && session.currentStage >= 4);
     return {
       _id: session._id,
       sport: session.sport,
@@ -330,7 +325,6 @@ export const getSession = query({
       expiresAt: session.expiresAt,
       clues,
       difficulty: clue.difficulty,
-      answerName: revealed ? session.answerName : null,
       guesses: session.guesses ?? [],
       wrongGuessCount: session.wrongGuessCount ?? 0,
       maxGuesses: session.maxGuesses ?? WHO_AM_I_MAX_GUESSES,

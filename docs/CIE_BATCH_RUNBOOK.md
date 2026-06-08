@@ -8,7 +8,7 @@ Companion policy: `docs/CONTENT_INGESTION.md` (process), `docs/CIE_SOURCING_POLI
 
 ## 1. Scope and invariants
 
-- **Branch:** `feat/learn-mode`, which is **local-only** today. Do NOT pull / fetch-and-reset / resync — `origin/feat/learn-mode` does not exist and that is expected. Confirm local state only (on branch, clean tree).
+- **Branch:** content authoring continues on `feat/v2`, the v2 base created from `feat/learn-mode` with `master` hardening/tooling merged. `origin/feat/learn-mode` exists; syncs are deliberate orchestrator work, never an automatic authoring step. Do NOT pull / fetch-and-reset / auto-resync. Confirm local state only (on `feat/v2`, clean tree).
 - **Content:** GREEN / static facts only. AMBER and any new question shape go to the orchestrator and are never authored here.
 - **Question shape:** standard MCQ only. (The "ladder" teaching-object tier is a difficulty-ordered container over standard MCQs — not a new shape.)
 - **Single shared working copy:** Codex and Claude Code operate on the same local repo, so stamps land on top of batches without any remote.

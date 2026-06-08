@@ -9,6 +9,7 @@ import {
   type BuiltLadderQuestion,
 } from "./learnLadderBuilder";
 import {
+  isPipelineProofNode,
   skillNodeById,
   skillNodeIds,
   skillNodes,
@@ -20,14 +21,33 @@ import {
   calculateLearnProgressPct,
   isLearnReviewDue,
   markLearnAttemptStarted,
+  LEARN_STATE_WEIGHTS,
   type LearnCompletionStats,
   type LearnMasterySnapshot,
   type LearnMasteryState,
 } from "./learnMasteryLogic";
+import { gradeLearnAnswer } from "./learnGraders";
+import {
+  DEFAULT_LEARN_EASE_FACTOR,
+  applyLearnRungRating,
+  type LearnFelt,
+  type LearnRating,
+  type LearnRungReviewSnapshot,
+} from "./learnSpacingLogic";
 
 const LEARN_SESSION_TTL_MS = 24 * 60 * 60 * 1000;
 
 type LearnRungResult = Doc<"learnSessions">["rungResults"][number];
+type LearnRungReview = Doc<"learnRungReviews">;
+
+const learnRatingValidator = v.union(
+  v.literal("again"),
+  v.literal("hard"),
+  v.literal("good"),
+  v.literal("easy"),
+);
+
+const learnFeltValidator = v.union(v.literal("learn"), v.literal("test"));
 
 function assertSkillNodeId(nodeId: string): SkillNodeId {
   if (!(skillNodeIds as readonly string[]).includes(nodeId)) {
@@ -85,6 +105,90 @@ async function getMasteryForNode(
     )
     .collect();
   return latestMasteryByNode(rows).get(nodeId) ?? null;
+}
+
+function snapshotFromRungReview(
+  review: LearnRungReview | null | undefined,
+): LearnRungReviewSnapshot | null {
+  if (!review) return null;
+  return {
+    reviewState: review.reviewState,
+    intervalMs: review.intervalMs,
+    easeFactor: review.easeFactor,
+    repetitions: review.repetitions,
+    lapses: review.lapses,
+  };
+}
+
+async function getRungReview(
+  ctx: QueryCtx | MutationCtx,
+  userId: Id<"users">,
+  rungId: string,
+): Promise<LearnRungReview | null> {
+  const rows = await ctx.db
+    .query("learnRungReviews")
+    .withIndex("by_user_rung", (q) =>
+      q.eq("userId", userId).eq("rungId", rungId),
+    )
+    .collect();
+
+  return rows.reduce<LearnRungReview | null>((latest, row) => {
+    if (!latest || row.updatedAt > latest.updatedAt) return row;
+    return latest;
+  }, null);
+}
+
+function latestRungResult(
+  results: LearnRungResult[],
+  rungId: string,
+): LearnRungResult | null {
+  for (let index = results.length - 1; index >= 0; index -= 1) {
+    const result = results[index];
+    if (result.rungId === rungId) return result;
+  }
+  return null;
+}
+
+async function requireOwnedSession(
+  ctx: QueryCtx | MutationCtx,
+  sessionId: Id<"learnSessions">,
+  userId: Id<"users">,
+) {
+  const session = await ctx.db.get(sessionId);
+  if (!session) throw new Error("Session not found");
+  if (session.userId !== userId) {
+    throw new Error("Not authorized for this session");
+  }
+  return session;
+}
+
+async function patchOrInsertRungReview(
+  ctx: MutationCtx,
+  existing: LearnRungReview | null,
+  value: Omit<LearnRungReview, "_id" | "_creationTime">,
+) {
+  if (existing) {
+    await ctx.db.patch(existing._id, {
+      nodeId: value.nodeId,
+      subject: value.subject,
+      reviewState: value.reviewState,
+      dueAt: value.dueAt,
+      intervalMs: value.intervalMs,
+      easeFactor: value.easeFactor,
+      repetitions: value.repetitions,
+      lapses: value.lapses,
+      lastRating: value.lastRating,
+      lastFelt: value.lastFelt,
+      lastCorrect: value.lastCorrect,
+      lastAnsweredAt: value.lastAnsweredAt,
+      lastRatedAt: value.lastRatedAt,
+      lastFeltAt: value.lastFeltAt,
+      updatedAt: value.updatedAt,
+    });
+    return existing._id;
+  }
+
+  return await ctx.db.insert("learnRungReviews", value);
 }
 
 async function patchOrInsertMastery(
@@ -207,11 +311,59 @@ function findCommittedRung(nodeId: string, rungId: string): BuiltLadderQuestion 
 }
 
 function sanitizeRung(rung: BuiltLadderQuestion) {
-  return {
-    rungId: rung.checksum,
+  const base = {
+    questionId: rung.checksum,
+    type: rung.type,
     stem: rung.question,
     options: rung.options,
   };
+  switch (rung.type) {
+    case "mcq":
+    case "text":
+      return base;
+    case "numeric":
+      return {
+        ...base,
+        ...(rung.numericUnit ? { unit: rung.numericUnit } : {}),
+        ...(rung.numericTolerance !== undefined
+          ? { tolerance: rung.numericTolerance }
+          : {}),
+      };
+    case "order":
+      return {
+        ...base,
+        items:
+          rung.items ??
+          rung.options.map((text) => ({
+            id: text,
+            text,
+          })),
+      };
+  }
+}
+
+function sanitizeStoredAnswer(rung: BuiltLadderQuestion, answer: unknown): unknown {
+  switch (rung.type) {
+    case "order":
+      return Array.isArray(answer)
+        ? answer.filter((value): value is string => typeof value === "string")
+        : [];
+    case "numeric":
+      if (typeof answer === "number" || typeof answer === "string") return answer;
+      if (typeof answer === "object" && answer !== null && !Array.isArray(answer)) {
+        const record = answer as Record<string, unknown>;
+        return {
+          ...(typeof record.value === "number" || typeof record.value === "string"
+            ? { value: record.value }
+            : {}),
+          ...(typeof record.unit === "string" ? { unit: record.unit } : {}),
+        };
+      }
+      return null;
+    case "mcq":
+    case "text":
+      return typeof answer === "string" ? answer : "";
+  }
 }
 
 export const getLearnNodes = query({
@@ -287,10 +439,10 @@ export const getLearnLadder = mutation({
 export const submitLearnRung = mutation({
   args: {
     sessionId: v.id("learnSessions"),
-    rungId: v.string(),
-    chosenOption: v.string(),
+    questionId: v.string(),
+    answer: v.any(),
   },
-  handler: async (ctx, { sessionId, rungId, chosenOption }) => {
+  handler: async (ctx, { sessionId, questionId, answer }) => {
     const userId = await requireUserId(ctx);
     const session = await ctx.db.get(sessionId);
     if (!session) throw new Error("Session not found");
@@ -304,45 +456,142 @@ export const submitLearnRung = mutation({
     if (now > session.expiresAt) {
       throw new Error("Session expired");
     }
-    if (!session.rungIds.includes(rungId)) {
-      throw new Error("Rung not active for this session");
+    if (!session.rungIds.includes(questionId)) {
+      throw new Error("Question not active for this session");
     }
 
-    const rung = findCommittedRung(session.nodeId, rungId);
-    if (!rung.options.includes(chosenOption)) {
-      throw new Error("Chosen option is not valid for this rung");
-    }
-
-    const correct = chosenOption === rung.correctAnswer;
-    const reveal = correct
-      ? rung.correctReveal
-      : rung.distractors.find((distractor) => distractor.text === chosenOption)
-          ?.reveal;
-    if (!reveal) {
-      throw new Error("Reveal not found for chosen option");
-    }
+    const rung = findCommittedRung(session.nodeId, questionId);
+    const verdict = gradeLearnAnswer(rung, answer);
 
     const firstTry = !session.rungResults.some(
-      (result) => result.rungId === rungId,
+      (result) => result.rungId === questionId,
     );
     await ctx.db.patch(sessionId, {
       rungResults: [
         ...session.rungResults,
         {
-          rungId,
-          chosenOption,
-          correct,
+          rungId: questionId,
+          answer: sanitizeStoredAnswer(rung, answer),
+          correct: verdict.correct,
           firstTry,
           answeredAt: now,
+          ...(verdict.branchId ? { branchId: verdict.branchId } : {}),
         },
       ],
       updatedAt: now,
     });
 
+    return verdict;
+  },
+});
+
+export const rateLearnRung = mutation({
+  args: {
+    sessionId: v.id("learnSessions"),
+    questionId: v.string(),
+    rating: learnRatingValidator,
+  },
+  handler: async (ctx, { sessionId, questionId, rating }) => {
+    const userId = await requireUserId(ctx);
+    const session = await requireOwnedSession(ctx, sessionId, userId);
+    const now = Date.now();
+    if (now > session.expiresAt) {
+      throw new Error("Session expired");
+    }
+    if (!session.rungIds.includes(questionId)) {
+      throw new Error("Question not active for this session");
+    }
+
+    const result = latestRungResult(session.rungResults, questionId);
+    if (!result) {
+      throw new Error("Cannot rate a rung before it is answered");
+    }
+
+    const existing = await getRungReview(ctx, userId, questionId);
+    const schedule = applyLearnRungRating(
+      snapshotFromRungReview(existing),
+      rating as LearnRating,
+      result.correct,
+      now,
+    );
+
+    await patchOrInsertRungReview(ctx, existing, {
+      userId,
+      nodeId: session.nodeId,
+      subject: session.subject,
+      rungId: questionId,
+      reviewState: schedule.reviewState,
+      dueAt: schedule.dueAt,
+      intervalMs: schedule.intervalMs,
+      easeFactor: schedule.easeFactor,
+      repetitions: schedule.repetitions,
+      lapses: schedule.lapses,
+      lastRating: rating as LearnRating,
+      ...(existing?.lastFelt ? { lastFelt: existing.lastFelt } : {}),
+      lastCorrect: result.correct,
+      lastAnsweredAt: result.answeredAt,
+      lastRatedAt: now,
+      ...(existing?.lastFeltAt ? { lastFeltAt: existing.lastFeltAt } : {}),
+      createdAt: existing?.createdAt ?? now,
+      updatedAt: now,
+    });
+
     return {
-      correct,
-      correctAnswer: rung.correctAnswer,
-      reveal,
+      reviewState: schedule.reviewState,
+      nextReview: schedule.nextReview,
+      intervalMs: schedule.intervalMs,
+      masteryDelta: schedule.masteryDelta,
+    };
+  },
+});
+
+export const recordLearnRungFelt = mutation({
+  args: {
+    sessionId: v.id("learnSessions"),
+    questionId: v.string(),
+    felt: learnFeltValidator,
+  },
+  handler: async (ctx, { sessionId, questionId, felt }) => {
+    const userId = await requireUserId(ctx);
+    const session = await requireOwnedSession(ctx, sessionId, userId);
+    const now = Date.now();
+    if (now > session.expiresAt) {
+      throw new Error("Session expired");
+    }
+    if (!session.rungIds.includes(questionId)) {
+      throw new Error("Question not active for this session");
+    }
+
+    const result = latestRungResult(session.rungResults, questionId);
+    if (!result) {
+      throw new Error("Cannot record felt signal before the rung is answered");
+    }
+
+    const existing = await getRungReview(ctx, userId, questionId);
+    await patchOrInsertRungReview(ctx, existing, {
+      userId,
+      nodeId: session.nodeId,
+      subject: session.subject,
+      rungId: questionId,
+      reviewState: existing?.reviewState ?? "learning",
+      dueAt: existing?.dueAt ?? now,
+      intervalMs: existing?.intervalMs ?? 0,
+      easeFactor: existing?.easeFactor ?? DEFAULT_LEARN_EASE_FACTOR,
+      repetitions: existing?.repetitions ?? 0,
+      lapses: existing?.lapses ?? 0,
+      ...(existing?.lastRating ? { lastRating: existing.lastRating } : {}),
+      lastFelt: felt as LearnFelt,
+      lastCorrect: result.correct,
+      lastAnsweredAt: result.answeredAt,
+      ...(existing?.lastRatedAt ? { lastRatedAt: existing.lastRatedAt } : {}),
+      lastFeltAt: now,
+      createdAt: existing?.createdAt ?? now,
+      updatedAt: now,
+    });
+
+    return {
+      felt,
+      recordedAt: now,
     };
   },
 });
@@ -413,11 +662,104 @@ export const completeLearnLadder = mutation({
   },
 });
 
+function reviewMasteryValue(review: LearnRungReview): number {
+  if (review.reviewState === "locked_in") {
+    return Math.min(1, 0.75 + Math.min(review.repetitions, 5) * 0.04);
+  }
+  return Math.min(0.6, 0.25 + Math.min(review.repetitions, 3) * 0.08);
+}
+
+function reviewPlanState(
+  masteryState: LearnMasteryState,
+  reviews: LearnRungReview[],
+): "locked" | "learning" {
+  if (reviews.some((review) => review.reviewState === "learning")) {
+    return "learning";
+  }
+  if (
+    reviews.length > 0 ||
+    masteryState === "proficient" ||
+    masteryState === "mastered"
+  ) {
+    return "locked";
+  }
+  return "learning";
+}
+
+export const getLearnReviewPlan = query({
+  args: { subject: v.string() },
+  handler: async (ctx, { subject }) => {
+    const userId = await requireUserId(ctx);
+    const now = Date.now();
+    const summaries = subjectNodeSummaries(subject);
+    const masteryRows = await ctx.db
+      .query("learnMastery")
+      .withIndex("by_user_subject", (q) =>
+        q.eq("userId", userId).eq("subject", subject),
+      )
+      .collect();
+    const reviewRows = await ctx.db
+      .query("learnRungReviews")
+      .withIndex("by_user_subject", (q) =>
+        q.eq("userId", userId).eq("subject", subject),
+      )
+      .collect();
+
+    const masteryByNodeId = latestMasteryByNode(masteryRows);
+    const reviewsByNodeId = new Map<string, LearnRungReview[]>();
+    for (const row of reviewRows) {
+      const current = reviewsByNodeId.get(row.nodeId) ?? [];
+      current.push(row);
+      reviewsByNodeId.set(row.nodeId, current);
+    }
+
+    const nodes = summaries.map((summary) => {
+      const masteryState = stateFromMastery(
+        masteryByNodeId.get(summary.nodeId),
+      );
+      const nodeReviews = reviewsByNodeId.get(summary.nodeId) ?? [];
+      const due = nodeReviews.filter((review) => review.dueAt <= now).length;
+      const nextReview =
+        nodeReviews.length > 0
+          ? Math.min(...nodeReviews.map((review) => review.dueAt))
+          : undefined;
+      const mastery =
+        nodeReviews.length > 0
+          ? nodeReviews.reduce(
+              (sum, review) => sum + reviewMasteryValue(review),
+              0,
+            ) / nodeReviews.length
+          : LEARN_STATE_WEIGHTS[masteryState];
+
+      return {
+        id: summary.nodeId,
+        label: summary.node.name,
+        mastery,
+        due,
+        state: reviewPlanState(masteryState, nodeReviews),
+        ...(nextReview !== undefined ? { nextReview } : {}),
+      };
+    });
+
+    return {
+      subject,
+      generatedAt: now,
+      progressPct: subjectProgress(
+        summaries.map((summary) => summary.node),
+        masteryByNodeId,
+      ),
+      nodes,
+    };
+  },
+});
+
 export const getSubjectProgress = query({
   args: { subject: v.string() },
   handler: async (ctx, { subject }) => {
     const userId = await requireUserId(ctx);
-    const nodes = skillNodes.filter((node) => node.subject === subject);
+    const nodes = skillNodes.filter(
+      (node) => node.subject === subject && !isPipelineProofNode(node),
+    );
     const rows = await ctx.db
       .query("learnMastery")
       .withIndex("by_user_subject", (q) =>

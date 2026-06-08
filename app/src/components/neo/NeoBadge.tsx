@@ -1,7 +1,7 @@
 import { cn } from "@/lib/utils";
 
 interface NeoBadgeProps extends React.HTMLAttributes<HTMLSpanElement> {
-  color?: "primary" | "accent" | "blue" | "pink" | "success" | "destructive" | "muted";
+  color?: "primary" | "accent" | "blue" | "pink" | "yellow" | "success" | "destructive" | "muted";
   rotated?: boolean;
   size?: "sm" | "md";
 }
@@ -11,6 +11,7 @@ const colorMap = {
   accent: "bg-accent text-accent-foreground",
   blue: "bg-electric-blue text-electric-blue-foreground",
   pink: "bg-hot-pink text-hot-pink-foreground",
+  yellow: "bg-yellow text-yellow-foreground",
   success: "bg-success text-success-foreground",
   destructive: "bg-destructive text-destructive-foreground",
   muted: "bg-muted text-muted-foreground",

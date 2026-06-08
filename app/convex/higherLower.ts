@@ -377,10 +377,7 @@ export const getSession = query({
     if (!session) return null;
     if (session.userId && session.userId !== userId) return null;
 
-    // Player B's value is the hidden answer until the user guesses.
-    // Reveal it only once the game is over.
     const expired = Date.now() > session.expiresAt;
-    const revealed = session.status === "game_over" || expired;
     return {
       _id: session._id,
       sport: session.sport,
@@ -392,7 +389,6 @@ export const getSession = query({
       playerAPhoto: session.playerAPhoto,
       playerBName: session.playerBName,
       playerBPhoto: session.playerBPhoto,
-      playerBValue: revealed ? session.playerBValue : null,
       currentStatKey: session.currentStatKey,
       currentContext: session.currentContext,
       currentEntityType: session.currentEntityType,
