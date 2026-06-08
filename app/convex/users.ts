@@ -1,6 +1,7 @@
 import { query, mutation } from "./_generated/server";
 import { v } from "convex/values";
 import { getAuthUserId } from "@convex-dev/auth/server";
+import { Scrypt } from "lucia";
 import {
   auditUsernameDuplicates as auditDuplicateUsernames,
   claimUsernameForUser,
@@ -8,6 +9,9 @@ import {
   isValidUsername,
   normalizeUsername,
 } from "./lib/usernames";
+import { describePasswordReason, validatePassword } from "./lib/passwordPolicy";
+
+const PASSWORD_PROVIDER_ID = "password";
 
 function usernameDerivedFromEmail(email: string | undefined): string | null {
   if (!email) return null;
@@ -147,6 +151,90 @@ export const claimUsernameOnly = mutation({
       userId,
       username,
       isAnonymous: true,
+      isGuest: false,
+    };
+  },
+});
+
+function normalizeEmail(value: string): string {
+  return value.trim().toLowerCase();
+}
+
+function isValidEmail(value: string): boolean {
+  return /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(value);
+}
+
+export const upgradeUsernameOnly = mutation({
+  args: {
+    email: v.string(),
+    password: v.string(),
+    displayName: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) throw new Error("Not authenticated");
+
+    const existing = await ctx.db.get(userId);
+    if (!existing) throw new Error("User not found");
+    if (existing.isAnonymous !== true || !hasUsableUsername(existing)) {
+      throw new Error("Username-only upgrade requires an anonymous user with a username.");
+    }
+
+    const email = normalizeEmail(args.email);
+    if (!isValidEmail(email)) {
+      throw new Error("Enter a valid email address.");
+    }
+    const passwordResult = validatePassword(args.password);
+    if (!passwordResult.ok && passwordResult.reason) {
+      throw new Error(describePasswordReason(passwordResult.reason));
+    }
+
+    const existingAccount = await ctx.db
+      .query("authAccounts")
+      .withIndex("providerAndAccountId", (q) =>
+        q.eq("provider", PASSWORD_PROVIDER_ID).eq("providerAccountId", email),
+      )
+      .unique();
+    if (existingAccount) {
+      throw new Error("Email is already linked to an account. Sign in instead.");
+    }
+
+    const secret = await new Scrypt().hash(args.password);
+    const accountId = await ctx.db.insert("authAccounts", {
+      userId,
+      provider: PASSWORD_PROVIDER_ID,
+      providerAccountId: email,
+      secret,
+    });
+
+    const accountsAfterInsert = await ctx.db
+      .query("authAccounts")
+      .withIndex("providerAndAccountId", (q) =>
+        q.eq("provider", PASSWORD_PROVIDER_ID).eq("providerAccountId", email),
+      )
+      .collect();
+    if (
+      accountsAfterInsert.length !== 1 ||
+      accountsAfterInsert[0]._id !== accountId ||
+      accountsAfterInsert[0].userId !== userId
+    ) {
+      await ctx.db.delete(accountId);
+      throw new Error("Account upgrade could not be made safely. Sign in instead.");
+    }
+
+    await ctx.db.patch(userId, {
+      email,
+      displayName: args.displayName?.trim() || existing.displayName || existing.username,
+      isGuest: false,
+      isAnonymous: false,
+      totalGames: existing.totalGames ?? 0,
+    });
+
+    return {
+      userId,
+      email,
+      username: existing.username,
+      isAnonymous: false,
       isGuest: false,
     };
   },

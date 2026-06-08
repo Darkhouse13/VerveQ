@@ -18,17 +18,27 @@ function makeProfileCtx(options?: {
   existingUser?: Record<string, unknown>;
   users?: Array<Record<string, unknown>>;
   claims?: Array<Record<string, unknown>>;
+  authAccounts?: Array<Record<string, unknown>>;
   patch?: ReturnType<typeof vi.fn>;
   insert?: ReturnType<typeof vi.fn>;
+  delete?: ReturnType<typeof vi.fn>;
 }) {
   const patch = options?.patch ?? vi.fn(async () => undefined);
   const claims = [...(options?.claims ?? [])];
+  const authAccounts = [...(options?.authAccounts ?? [])];
   const usersTable = options?.users ?? [];
   const existingUser = options?.existingUser ?? { _id: "new_user" };
   const insert = options?.insert ?? vi.fn(async (_table: string, row: Record<string, unknown>) => {
-    const id = `claim_${claims.length + 1}`;
-    claims.push({ _id: id, ...row });
+    const rows = _table === "authAccounts" ? authAccounts : claims;
+    const id = _table === "authAccounts"
+      ? `account_${authAccounts.length + 1}`
+      : `claim_${claims.length + 1}`;
+    rows.push({ _id: id, ...row });
     return id;
+  });
+  const deleteFn = options?.delete ?? vi.fn(async (id: string) => {
+    const index = authAccounts.findIndex((row) => row._id === id);
+    if (index >= 0) authAccounts.splice(index, 1);
   });
 
   return {
@@ -36,33 +46,51 @@ function makeProfileCtx(options?: {
       get: vi.fn(async () => existingUser),
       patch,
       insert,
+      delete: deleteFn,
       query: (table: string) => ({
         withIndex: (
           _indexName: string,
           builder: (q: { eq: (field: string, value: unknown) => unknown }) => unknown,
         ) => {
-          let field = "";
-          let value: unknown;
-          builder({
+          const filters: Record<string, unknown> = {};
+          const q = {
             eq: (nextField, nextValue) => {
-              field = nextField;
-              value = nextValue;
-              return {};
+              filters[nextField] = nextValue;
+              return q;
             },
-          });
-          const rows = table === "usernameClaims" ? claims : usersTable;
-          const filtered = rows.filter((row) => row[field] === value);
+          };
+          builder(q);
+          const rows =
+            table === "usernameClaims"
+              ? claims
+              : table === "authAccounts"
+                ? authAccounts
+                : usersTable;
+          const filtered = rows.filter((row) =>
+            Object.entries(filters).every(([field, value]) => row[field] === value),
+          );
           return {
             first: async () => filtered[0] ?? null,
             collect: async () => filtered,
+            unique: async () => {
+              if (filtered.length > 1) throw new Error("not unique");
+              return filtered[0] ?? null;
+            },
           };
         },
-        collect: async () => (table === "usernameClaims" ? claims : usersTable),
+        collect: async () =>
+          table === "usernameClaims"
+            ? claims
+            : table === "authAccounts"
+              ? authAccounts
+              : usersTable,
       }),
     },
     claims,
+    authAccounts,
     patch,
     insert,
+    delete: deleteFn,
   };
 }
 
@@ -184,6 +212,103 @@ describe("user identity uniqueness", () => {
         username: "fulluser",
       }),
     ).rejects.toThrow(/anonymous session/i);
+  });
+
+  it("upgrades a username-only anonymous user by linking a password account to the same user id", async () => {
+    const patch = vi.fn(async () => undefined);
+    const ctx = makeProfileCtx({
+      patch,
+      existingUser: {
+        _id: "new_user",
+        username: "arenaguest",
+        displayName: "Arena Guest",
+        isGuest: false,
+        isAnonymous: true,
+        totalGames: 3,
+      },
+    });
+
+    const result = await handlerOf(users.upgradeUsernameOnly)(ctx, {
+      email: " ArenaGuest@Example.COM ",
+      password: "Zq7$mnPkL9#r",
+      displayName: "Arena Guest Pro",
+    });
+
+    expect(result).toMatchObject({
+      userId: "new_user",
+      email: "arenaguest@example.com",
+      username: "arenaguest",
+      isAnonymous: false,
+      isGuest: false,
+    });
+    expect(ctx.authAccounts).toHaveLength(1);
+    expect(ctx.authAccounts[0]).toMatchObject({
+      userId: "new_user",
+      provider: "password",
+      providerAccountId: "arenaguest@example.com",
+    });
+    expect(ctx.authAccounts[0].secret).toEqual(expect.any(String));
+    expect(ctx.authAccounts[0].secret).not.toBe("Zq7$mnPkL9#r");
+    expect(patch).toHaveBeenCalledWith(
+      "new_user",
+      expect.objectContaining({
+        email: "arenaguest@example.com",
+        displayName: "Arena Guest Pro",
+        isGuest: false,
+        isAnonymous: false,
+        totalGames: 3,
+      }),
+    );
+  });
+
+  it("rejects username-only upgrade when the email is already linked", async () => {
+    const patch = vi.fn(async () => undefined);
+    const insert = vi.fn();
+    const ctx = makeProfileCtx({
+      patch,
+      insert,
+      existingUser: {
+        _id: "new_user",
+        username: "arenaguest",
+        isGuest: false,
+        isAnonymous: true,
+      },
+      authAccounts: [
+        {
+          _id: "account_existing",
+          userId: "other_user",
+          provider: "password",
+          providerAccountId: "taken@example.com",
+        },
+      ],
+    });
+
+    await expect(
+      handlerOf(users.upgradeUsernameOnly)(ctx, {
+        email: "taken@example.com",
+        password: "Zq7$mnPkL9#r",
+      }),
+    ).rejects.toThrow(/already linked/i);
+    expect(insert).not.toHaveBeenCalled();
+    expect(patch).not.toHaveBeenCalled();
+  });
+
+  it("rejects username-only upgrade for non-anonymous accounts", async () => {
+    const ctx = makeProfileCtx({
+      existingUser: {
+        _id: "new_user",
+        username: "fulluser",
+        isGuest: false,
+        isAnonymous: false,
+      },
+    });
+
+    await expect(
+      handlerOf(users.upgradeUsernameOnly)(ctx, {
+        email: "full@example.com",
+        password: "Zq7$mnPkL9#r",
+      }),
+    ).rejects.toThrow(/anonymous user with a username/i);
   });
 
 });
