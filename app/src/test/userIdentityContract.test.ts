@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from "vitest";
+import { describe, expect, it, vi, type Mock } from "vitest";
 
 vi.mock("@convex-dev/auth/server", () => ({
   getAuthUserId: vi.fn(async () => "new_user"),
@@ -20,9 +20,9 @@ function makeProfileCtx(options?: {
   claims?: Array<Record<string, unknown>>;
   authAccounts?: Array<Record<string, unknown>>;
   onboardingAttempts?: Array<Record<string, unknown>>;
-  patch?: ReturnType<typeof vi.fn>;
-  insert?: ReturnType<typeof vi.fn>;
-  delete?: ReturnType<typeof vi.fn>;
+  patch?: Mock;
+  insert?: Mock;
+  delete?: Mock;
 }) {
   const patch = options?.patch ?? vi.fn(async () => undefined);
   const claims = [...(options?.claims ?? [])];

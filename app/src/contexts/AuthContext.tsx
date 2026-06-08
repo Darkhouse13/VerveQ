@@ -2,6 +2,8 @@ import {
   createContext,
   useContext,
   useCallback,
+  useEffect,
+  useRef,
   useState,
   type ReactNode,
 } from "react";
@@ -205,6 +207,14 @@ function wait(ms: number): Promise<void> {
   return new Promise((resolve) => window.setTimeout(resolve, ms));
 }
 
+// How long claimUsername will wait for the anonymous session to propagate to
+// the reactive `users.me` doc before giving up, and how often it re-checks.
+// This replaces a fixed-delay retry of the mutation itself: we wait on the
+// real auth state (the signal both claimUsernameOnly guards depend on) instead
+// of firing the mutation speculatively into the propagation window.
+const ANON_PROPAGATION_TIMEOUT_MS = 15000;
+const ANON_PROPAGATION_POLL_MS = 100;
+
 function mapAuthError(err: unknown, fallbackCode: AuthErrorCode): AuthError {
   if (err instanceof AuthError) return err;
   const message = err instanceof Error ? err.message : String(err);
@@ -262,6 +272,12 @@ function mapAuthError(err: unknown, fallbackCode: AuthErrorCode): AuthError {
 export function AuthProvider({ children }: { children: ReactNode }) {
   const { signIn: convexSignIn, signOut: convexSignOut } = useAuthActions();
   const user = useQuery(api.users.me);
+  // Live mirror of the reactive `users.me` doc so async flows (claimUsername)
+  // can await auth propagation without capturing a stale closure value.
+  const userRef = useRef(user);
+  useEffect(() => {
+    userRef.current = user;
+  }, [user]);
   const ensureProfile = useMutation(api.users.ensureProfile);
   const claimUsernameOnly = useMutation(api.users.claimUsernameOnly);
   const upgradeUsernameOnly = useMutation(api.users.upgradeUsernameOnly);
@@ -329,10 +345,30 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, [convexSignIn]);
 
-  // Claim a username for the current anonymous session. Retries through the same
-  // brief auth-propagation window as ensureProfile: right after signIn the
-  // server may not yet see the anonymous identity, surfacing as either "not
-  // authenticated" or "requires an anonymous session".
+  // Block until the anonymous session has actually propagated to the reactive
+  // `users.me` doc — the exact state both claimUsernameOnly guards depend on
+  // (authenticated + isAnonymous). Resolves true once that doc is visible,
+  // false if some other identity is present (server will reject) or the
+  // propagation window elapses. Polls the live ref so it observes query
+  // updates that land while this promise is pending.
+  const waitForAnonymousSession = useCallback(async (): Promise<boolean> => {
+    const deadline = Date.now() + ANON_PROPAGATION_TIMEOUT_MS;
+    for (;;) {
+      const current = userRef.current;
+      // Auth has propagated to queries: either it's the anonymous session we
+      // expect, or another identity that no amount of waiting will change.
+      if (current != null) return current.isAnonymous === true;
+      if (Date.now() >= deadline) return false;
+      await wait(ANON_PROPAGATION_POLL_MS);
+    }
+  }, []);
+
+  // Claim a username for the current anonymous session. Right after
+  // signIn("anonymous") the server may not yet see the anonymous identity, so
+  // we wait on the reactive auth state (users.me) to propagate FIRST rather
+  // than firing the mutation on a fixed-delay timer. Waiting on the real
+  // propagation signal — instead of a speculative immediate attempt — is what
+  // keeps the noisy "not authenticated" console error (the asap bugfix) gone.
   const claimUsername = useCallback(
     async (rawUsername: string, opts?: { inviteCode?: string }) => {
       const normalizedUsername = normalizeUsernameInput(rawUsername);
@@ -342,30 +378,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           "Username must be 3-24 lowercase letters, numbers, or underscores.",
         );
       }
-      const args = {
-        username: normalizedUsername,
-        deviceNonce: getDeviceNonce(),
-        inviteCode: opts?.inviteCode?.trim() || undefined,
-      };
-      const delays = [0, 1000, 2000, 4000, 7000];
-      let lastError: unknown;
-      for (const delay of delays) {
-        if (delay > 0) await wait(delay);
-        try {
-          await claimUsernameOnly(args);
-          return;
-        } catch (err) {
-          lastError = err;
-          const msg = (err instanceof Error ? err.message : String(err)).toLowerCase();
-          const transient =
-            isTransientAuthPropagationError(err) ||
-            msg.includes("requires an anonymous session");
-          if (!transient) throw mapAuthError(err, "unknown");
-        }
+      const propagated = await waitForAnonymousSession();
+      if (!propagated) {
+        throw new AuthError(
+          "unknown",
+          "Could not establish a guest session. Please try again.",
+        );
       }
-      throw mapAuthError(lastError, "unknown");
+      try {
+        await claimUsernameOnly({
+          username: normalizedUsername,
+          deviceNonce: getDeviceNonce(),
+          inviteCode: opts?.inviteCode?.trim() || undefined,
+        });
+      } catch (err) {
+        throw mapAuthError(err, "unknown");
+      }
     },
-    [claimUsernameOnly],
+    [claimUsernameOnly, waitForAnonymousSession],
   );
 
   // Upgrade an anonymous + username user to a full password account. The server
