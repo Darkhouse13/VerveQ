@@ -1,10 +1,10 @@
 import { httpRouter } from "convex/server";
 import { auth } from "./auth";
-import { httpAction } from "./_generated/server";
+import { httpAction, type ActionCtx } from "./_generated/server";
 import { internal } from "./_generated/api";
 import {
   createAnonymousOnboardingIpPermitToken,
-  deriveAnonymousOnboardingIpKey,
+  deriveAnonymousOnboardingIpKeyFromMetadata,
 } from "./anonymousOnboardingIp";
 
 const http = httpRouter();
@@ -28,6 +28,43 @@ function jsonResponse(body: unknown, status: number) {
   });
 }
 
+export type AnonymousOnboardingIpPermitActionCtx = Pick<
+  ActionCtx,
+  "meta" | "runMutation"
+>;
+
+export async function handleAnonymousOnboardingIpPermitRequest(
+  ctx: AnonymousOnboardingIpPermitActionCtx,
+  _request: Request,
+) {
+  const ipKey = await deriveAnonymousOnboardingIpKeyFromMetadata(ctx);
+  if (!ipKey) {
+    return jsonResponse({ error: "ip_required" }, 403);
+  }
+
+  try {
+    const permit = await ctx.runMutation(
+      internal.anonymousOnboardingIp.issueAnonymousOnboardingIpPermit,
+      {
+        ipKey,
+        now: Date.now(),
+        permitToken: createAnonymousOnboardingIpPermitToken(),
+      },
+    );
+    return jsonResponse(
+      {
+        permitToken: permit.permitToken,
+        expiresAt: permit.expiresAt,
+      },
+      200,
+    );
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
+    const status = message.toLowerCase().includes("too many") ? 429 : 500;
+    return jsonResponse({ error: message }, status);
+  }
+}
+
 http.route({
   path: "/anonymous-onboarding/ip-permit",
   method: "OPTIONS",
@@ -43,32 +80,7 @@ http.route({
   path: "/anonymous-onboarding/ip-permit",
   method: "POST",
   handler: httpAction(async (ctx, request) => {
-    const ipKey = deriveAnonymousOnboardingIpKey(request.headers);
-    if (!ipKey) {
-      return jsonResponse({ error: "ip_required" }, 403);
-    }
-
-    try {
-      const permit = await ctx.runMutation(
-        internal.anonymousOnboardingIp.issueAnonymousOnboardingIpPermit,
-        {
-          ipKey,
-          now: Date.now(),
-          permitToken: createAnonymousOnboardingIpPermitToken(),
-        },
-      );
-      return jsonResponse(
-        {
-          permitToken: permit.permitToken,
-          expiresAt: permit.expiresAt,
-        },
-        200,
-      );
-    } catch (err) {
-      const message = err instanceof Error ? err.message : String(err);
-      const status = message.toLowerCase().includes("too many") ? 429 : 500;
-      return jsonResponse({ error: message }, status);
-    }
+    return await handleAnonymousOnboardingIpPermitRequest(ctx, request);
   }),
 });
 

@@ -30,30 +30,16 @@ export function getAnonymousOnboardingIpPermitParam(
   return trimmed.length > 0 ? trimmed : null;
 }
 
-export function deriveAnonymousOnboardingIpKey(headers: Headers): string | null {
-  const candidates = [
-    headers.get("cf-connecting-ip"),
-    headers.get("true-client-ip"),
-    headers.get("x-real-ip"),
-    parseForwardedHeader(headers.get("forwarded")),
-    parseXForwardedFor(headers.get("x-forwarded-for")),
-  ];
-  const ip = candidates
-    .map((candidate) => normalizeClientIp(candidate))
-    .find((candidate): candidate is string => candidate !== null);
-  return ip ? `ip:${ip}` : null;
+export function deriveAnonymousOnboardingIpKey(ip: string | null): string | null {
+  const normalizedIp = normalizeClientIp(ip);
+  return normalizedIp ? `ip:${normalizedIp}` : null;
 }
 
-function parseXForwardedFor(value: string | null): string | null {
-  if (!value) return null;
-  return value.split(",")[0]?.trim() ?? null;
-}
-
-function parseForwardedHeader(value: string | null): string | null {
-  if (!value) return null;
-  const firstEntry = value.split(",")[0];
-  const match = firstEntry?.match(/(?:^|;)\s*for=("[^"]+"|[^;]+)/i);
-  return match?.[1]?.trim() ?? null;
+export async function deriveAnonymousOnboardingIpKeyFromMetadata(ctx: {
+  meta: { getRequestMetadata(): Promise<{ ip: string | null }> };
+}): Promise<string | null> {
+  const { ip } = await ctx.meta.getRequestMetadata();
+  return deriveAnonymousOnboardingIpKey(ip);
 }
 
 function normalizeClientIp(value: string | null | undefined): string | null {

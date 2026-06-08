@@ -1,5 +1,7 @@
 import { describe, expect, it, vi, type Mock } from "vitest";
 import * as ipLimiter from "../../convex/anonymousOnboardingIp";
+import { handleAnonymousOnboardingIpPermitRequest } from "../../convex/http";
+import type { AnonymousOnboardingIpPermitActionCtx } from "../../convex/http";
 
 function handlerOf<T>(mutation: T): (ctx: unknown, args: unknown) => Promise<unknown> {
   const fn = mutation as { _handler?: (ctx: unknown, args: unknown) => Promise<unknown> };
@@ -84,15 +86,61 @@ function makeIpPermitCtx(options?: {
 }
 
 describe("anonymous onboarding IP permits", () => {
-  it("derives an IP key from forwarded headers and fails closed when missing", () => {
-    const headers = new Headers({
-      "x-forwarded-for": "203.0.113.10, 10.0.0.1",
-    });
-
-    expect(ipLimiter.deriveAnonymousOnboardingIpKey(headers)).toBe(
+  it("derives an IP key from trusted request metadata and fails closed when missing", async () => {
+    await expect(
+      ipLimiter.deriveAnonymousOnboardingIpKeyFromMetadata({
+        meta: {
+          getRequestMetadata: async () => ({ ip: "203.0.113.10" }),
+        },
+      }),
+    ).resolves.toBe(
       "ip:203.0.113.10",
     );
-    expect(ipLimiter.deriveAnonymousOnboardingIpKey(new Headers())).toBeNull();
+    await expect(
+      ipLimiter.deriveAnonymousOnboardingIpKeyFromMetadata({
+        meta: {
+          getRequestMetadata: async () => ({ ip: null }),
+        },
+      }),
+    ).resolves.toBeNull();
+  });
+
+  it("ignores spoofed forwarding headers and keeps using the trusted metadata IP bucket", async () => {
+    const runMutation = vi.fn(
+      async (_mutation: unknown, _args: Record<string, unknown>) => ({
+        permitToken: "permit_token",
+        expiresAt: Date.now() + 60_000,
+      }),
+    );
+    const ctx = {
+      meta: {
+        getRequestMetadata: async () => ({ ip: "198.51.100.42" }),
+      },
+      runMutation,
+    } as unknown as AnonymousOnboardingIpPermitActionCtx;
+
+    await handleAnonymousOnboardingIpPermitRequest(
+      ctx,
+      new Request("https://example.test/anonymous-onboarding/ip-permit", {
+        method: "POST",
+        headers: { "x-forwarded-for": "203.0.113.1" },
+      }),
+    );
+    await handleAnonymousOnboardingIpPermitRequest(
+      ctx,
+      new Request("https://example.test/anonymous-onboarding/ip-permit", {
+        method: "POST",
+        headers: { "x-forwarded-for": "203.0.113.2" },
+      }),
+    );
+
+    expect(runMutation).toHaveBeenCalledTimes(2);
+    expect(runMutation.mock.calls[0][1]).toEqual(
+      expect.objectContaining({ ipKey: "ip:198.51.100.42" }),
+    );
+    expect(runMutation.mock.calls[1][1]).toEqual(
+      expect.objectContaining({ ipKey: "ip:198.51.100.42" }),
+    );
   });
 
   it("enforces the per-IP ten-minute limit before issuing a permit", async () => {
