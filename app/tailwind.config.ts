@@ -45,6 +45,10 @@ export default {
           DEFAULT: "hsl(var(--electric-blue))",
           foreground: "hsl(var(--electric-blue-foreground))",
         },
+        yellow: {
+          DEFAULT: "hsl(var(--yellow))",
+          foreground: "hsl(var(--yellow-foreground))",
+        },
         muted: {
           DEFAULT: "hsl(var(--muted))",
           foreground: "hsl(var(--muted-foreground))",

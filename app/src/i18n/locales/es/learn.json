@@ -1,0 +1,33 @@
+{
+  "common": {
+    "back": "Atrás"
+  },
+  "type": {
+    "mcq": "Opción múltiple",
+    "text": "Texto libre",
+    "numeric": "Numérico",
+    "order": "Ordenar"
+  },
+  "entry": {
+    "title": "Aprender",
+    "mastery": "Dominio",
+    "review": "Repaso",
+    "heroLine1": "Apréndelo,",
+    "heroLine2": "no lo memorices a presión.",
+    "start": "Empezar →"
+  },
+  "run": {
+    "check": "Comprobar respuesta",
+    "checking": "Comprobando…"
+  },
+  "branch": {
+    "title": "Espera — trampa común",
+    "tryAgain": "Inténtalo de nuevo",
+    "showWhy": "Muéstrame por qué →"
+  },
+  "reveal": {
+    "ideaTitle": "La idea para quedarte",
+    "next": "Siguiente pregunta →",
+    "finish": "Terminar la sesión →"
+  }
+}

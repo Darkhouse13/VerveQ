@@ -33,6 +33,10 @@
     --electric-blue: 209 100% 50%;
     --electric-blue-foreground: 0 0% 100%;
 
+    /* UNIFIED palette — vivid yellow accent (Compete/shell). */
+    --yellow: 47 100% 55%;
+    --yellow-foreground: 0 0% 7%;
+
     --border: 0 0% 7%;
     --input: 0 0% 7%;
     --ring: 25 100% 50%;
@@ -71,6 +75,42 @@
 
     --neo-shadow-color: 0 0% 80%;
   }
+
+  /*
+   * WARM Learn sub-palette. Applied via a container class (`.theme-learn`) so
+   * only the Learn pillar reskins — Compete/shell keep the UNIFIED palette.
+   * Overrides the same HSL token slots the Neo* components already read, so
+   * every primitive (NeoCard/NeoButton/NeoBadge) reskins for free. The
+   * neo-brutalist language (black borders, hard offset shadow) is unchanged —
+   * only the hues shift to cream / warm-orange / lime-green / coral.
+   */
+  .theme-learn {
+    --background: 40 80% 94%;        /* cream */
+    --foreground: 20 30% 14%;
+
+    --card: 40 86% 97%;             /* lighter cream */
+    --card-foreground: 20 30% 14%;
+
+    --primary: 22 95% 54%;          /* warm orange */
+    --primary-foreground: 0 0% 100%;
+
+    --accent: 92 60% 50%;           /* lime green */
+    --accent-foreground: 20 30% 14%;
+
+    --success: 92 60% 46%;          /* lime green (deeper) */
+    --success-foreground: 0 0% 100%;
+
+    --hot-pink: 8 88% 66%;          /* coral occupies the "pink" slot */
+    --hot-pink-foreground: 0 0% 100%;
+
+    --destructive: 8 88% 60%;       /* coral */
+    --destructive-foreground: 0 0% 100%;
+
+    --muted: 38 40% 86%;
+    --muted-foreground: 22 18% 32%;
+
+    --ring: 22 95% 54%;
+  }
 }
 
 @layer base {
@@ -99,6 +139,10 @@
 
   .neo-shadow-lg {
     box-shadow: 6px 6px 0px 0px hsl(var(--neo-shadow-color));
+  }
+
+  .neo-shadow-sm {
+    box-shadow: 2px 2px 0px 0px hsl(var(--neo-shadow-color));
   }
 
   .neo-shadow-pressed {

@@ -65,6 +65,39 @@ describe("learn ladder builder", () => {
     }
   });
 
+  it("builds the clearly marked pipeline-proof ladder with all four rung types", () => {
+    const ladder = buildLadder("geo.pipeline.proof");
+
+    expect(ladder.conceptLine).toContain("Pipeline-proof fixture");
+    expect(ladder.questions.map((question) => question.type)).toEqual([
+      "mcq",
+      "text",
+      "text",
+      "text",
+      "numeric",
+      "numeric",
+      "numeric",
+      "order",
+      "order",
+      "order",
+    ]);
+    expect(ladder.questions.filter((question) => question.type === "text")).toHaveLength(3);
+    expect(ladder.questions.filter((question) => question.type === "numeric")).toHaveLength(3);
+    expect(ladder.questions.filter((question) => question.type === "order")).toHaveLength(3);
+    expect(ladder.questions.find((question) => question.type === "order")).toEqual(
+      expect.objectContaining({
+        items: expect.any(Array),
+        correctOrder: expect.any(Array),
+      }),
+    );
+  });
+
+  it("keeps the pipeline-proof fixture out of normal geography node lists", () => {
+    expect(
+      listGeographyNodeSummaries().map((summary) => summary.nodeId),
+    ).not.toContain("geo.pipeline.proof");
+  });
+
   it("orders rungs easy -> intermediate -> hard and re-indexes sequentially", () => {
     const ladder = buildLadder("geo.capitals.nonobvious");
     for (let i = 1; i < ladder.questions.length; i += 1) {

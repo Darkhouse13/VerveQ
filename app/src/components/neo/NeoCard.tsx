@@ -3,7 +3,7 @@ import { forwardRef } from "react";
 
 type NeoCardCommonProps = {
   active?: boolean;
-  color?: "default" | "primary" | "accent" | "blue" | "pink" | "success" | "destructive";
+  color?: "default" | "primary" | "accent" | "blue" | "pink" | "yellow" | "success" | "destructive";
   shadow?: "default" | "lg" | "none";
 };
 
@@ -24,6 +24,7 @@ const colorMap = {
   accent: "bg-accent text-accent-foreground",
   blue: "bg-electric-blue text-electric-blue-foreground",
   pink: "bg-hot-pink text-hot-pink-foreground",
+  yellow: "bg-yellow text-yellow-foreground",
   success: "bg-success text-success-foreground",
   destructive: "bg-destructive text-destructive-foreground",
 };
