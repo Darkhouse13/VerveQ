@@ -14,18 +14,61 @@ function handlerOf<T>(mutation: T): (ctx: unknown, args: unknown) => Promise<unk
   return fn._handler;
 }
 
+function makeProfileCtx(options?: {
+  existingUser?: Record<string, unknown>;
+  users?: Array<Record<string, unknown>>;
+  claims?: Array<Record<string, unknown>>;
+  patch?: ReturnType<typeof vi.fn>;
+  insert?: ReturnType<typeof vi.fn>;
+}) {
+  const patch = options?.patch ?? vi.fn(async () => undefined);
+  const claims = [...(options?.claims ?? [])];
+  const usersTable = options?.users ?? [];
+  const existingUser = options?.existingUser ?? { _id: "new_user" };
+  const insert = options?.insert ?? vi.fn(async (_table: string, row: Record<string, unknown>) => {
+    const id = `claim_${claims.length + 1}`;
+    claims.push({ _id: id, ...row });
+    return id;
+  });
+
+  return {
+    db: {
+      get: vi.fn(async () => existingUser),
+      patch,
+      insert,
+      query: (table: string) => ({
+        withIndex: (
+          _indexName: string,
+          builder: (q: { eq: (field: string, value: unknown) => unknown }) => unknown,
+        ) => {
+          let field = "";
+          let value: unknown;
+          builder({
+            eq: (nextField, nextValue) => {
+              field = nextField;
+              value = nextValue;
+              return {};
+            },
+          });
+          const rows = table === "usernameClaims" ? claims : usersTable;
+          const filtered = rows.filter((row) => row[field] === value);
+          return {
+            first: async () => filtered[0] ?? null,
+            collect: async () => filtered,
+          };
+        },
+        collect: async () => (table === "usernameClaims" ? claims : usersTable),
+      }),
+    },
+    claims,
+    patch,
+    insert,
+  };
+}
+
 describe("user identity uniqueness", () => {
   it("normalizes new usernames to lowercase safe handles before saving", async () => {
-    const patch = vi.fn(async () => undefined);
-    const ctx = {
-      db: {
-        get: vi.fn(async () => ({ _id: "new_user" })),
-        patch,
-        query: () => ({
-          withIndex: () => ({ first: async () => null }),
-        }),
-      },
-    };
+    const ctx = makeProfileCtx();
 
     await handlerOf(users.ensureProfile)(ctx, {
       username: " DarkHouse13!! ",
@@ -33,32 +76,24 @@ describe("user identity uniqueness", () => {
       isGuest: false,
     });
 
-    expect(patch).toHaveBeenCalledWith(
+    expect(ctx.patch).toHaveBeenCalledWith(
       "new_user",
       expect.objectContaining({ username: "darkhouse13" }),
     );
+    expect(ctx.claims).toHaveLength(1);
+    expect(ctx.claims[0]).toMatchObject({
+      key: "darkhouse13",
+      username: "darkhouse13",
+      userId: "new_user",
+    });
   });
 
   it("rejects a case-insensitive duplicate username instead of auto-suffixing", async () => {
     const patch = vi.fn(async () => undefined);
-    let attemptedUsername = "";
-    const ctx = {
-      db: {
-        get: vi.fn(async () => ({ _id: "new_user" })),
-        patch,
-        query: () => ({
-          withIndex: (_indexName: string, builder: (q: { eq: (field: string, value: string) => unknown }) => unknown) => {
-            builder({ eq: (_field, value) => { attemptedUsername = value; return {}; } });
-            return {
-              first: async () =>
-                attemptedUsername === "darkhouse13"
-                  ? { _id: "existing_user", username: "darkhouse13" }
-                  : null,
-            };
-          },
-        }),
-      },
-    };
+    const ctx = makeProfileCtx({
+      patch,
+      users: [{ _id: "existing_user", username: "darkhouse13" }],
+    });
 
     await expect(
       handlerOf(users.ensureProfile)(ctx, {
@@ -72,21 +107,17 @@ describe("user identity uniqueness", () => {
 
   it("replaces an auth-provider email-local username with the explicit signup username", async () => {
     const patch = vi.fn(async () => undefined);
-    const ctx = {
-      db: {
-        get: vi.fn(async () => ({
+    const ctx = makeProfileCtx({
+      patch,
+      existingUser: {
           _id: "new_user",
           email: "mail.prefix@example.com",
           username: "mailprefix",
           displayName: "Mail Prefix",
           isGuest: false,
-        })),
-        patch,
-        query: () => ({
-          withIndex: () => ({ first: async () => null }),
-        }),
       },
-    };
+      users: [{ _id: "new_user", username: "mailprefix" }],
+    });
 
     await handlerOf(users.ensureProfile)(ctx, {
       username: "chosen_handle",
@@ -102,15 +133,7 @@ describe("user identity uniqueness", () => {
 
   it("rejects backend guest profile writes because guests are tab-local only", async () => {
     const patch = vi.fn(async () => undefined);
-    const ctx = {
-      db: {
-        get: vi.fn(async () => ({ _id: "new_user" })),
-        patch,
-        query: () => ({
-          withIndex: () => ({ first: async () => null }),
-        }),
-      },
-    };
+    const ctx = makeProfileCtx({ patch });
 
     await expect(
       handlerOf(users.ensureProfile)(ctx, {

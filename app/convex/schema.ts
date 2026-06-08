@@ -20,6 +20,16 @@ export default defineSchema({
     emailVerificationTime: v.optional(v.number()),
   }).index("by_username", ["username"]),
 
+  usernameClaims: defineTable({
+    key: v.string(),
+    username: v.string(),
+    userId: v.id("users"),
+    claimedAt: v.number(),
+    releasedAt: v.optional(v.number()),
+  })
+    .index("by_key", ["key"])
+    .index("by_user", ["userId"]),
+
   userRatings: defineTable({
     userId: v.id("users"),
     sport: v.string(),

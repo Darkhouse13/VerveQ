@@ -1,15 +1,13 @@
 import { query, mutation } from "./_generated/server";
 import { v } from "convex/values";
 import { getAuthUserId } from "@convex-dev/auth/server";
-
-function normalizeUsername(value: string): string {
-  const normalized = value
-    .trim()
-    .toLowerCase()
-    .replace(/[^a-z0-9_]/g, "")
-    .slice(0, 24);
-  return normalized || "user";
-}
+import {
+  auditUsernameDuplicates as auditDuplicateUsernames,
+  claimUsernameForUser,
+  hasUsableUsername,
+  isValidUsername,
+  normalizeUsername,
+} from "./lib/usernames";
 
 function usernameDerivedFromEmail(email: string | undefined): string | null {
   if (!email) return null;
@@ -30,55 +28,7 @@ function hasPermanentUsername(user: {
     user.isGuest !== true &&
     user.isAnonymous !== true &&
     typeof user.username === "string" &&
-    /^[a-z0-9_]{3,24}$/.test(user.username.trim().toLowerCase());
-}
-
-async function usernameExistsCaseInsensitive(
-  ctx: { db: { query: (table: "users") => unknown } },
-  username: string,
-  currentUserId: string,
-): Promise<boolean> {
-  const usersQuery = ctx.db.query("users") as {
-    withIndex: (
-      indexName: "by_username",
-      rangeBuilder: (q: { eq: (field: "username", value: string) => unknown }) => unknown,
-    ) => { first: () => Promise<{ _id: string } | null> };
-    collect?: () => Promise<Array<{ _id: string; username?: string }>>;
-  };
-
-  const exact = await usersQuery
-    .withIndex("by_username", (q) => q.eq("username", username))
-    .first();
-  if (exact && exact._id !== currentUserId) return true;
-
-  if (typeof usersQuery.collect === "function") {
-    const normalized = username.toLowerCase();
-    const users = await usersQuery.collect();
-    return users.some(
-      (user) =>
-        user._id !== currentUserId &&
-        typeof user.username === "string" &&
-        user.username.trim().toLowerCase() === normalized,
-    );
-  }
-
-  return false;
-}
-
-async function validateAvailableUsername(
-  ctx: { db: { query: (table: "users") => unknown } },
-  rawUsername: string,
-  currentUserId: string,
-): Promise<string> {
-  const candidate = normalizeUsername(rawUsername);
-  if (!/^[a-z0-9_]{3,24}$/.test(candidate)) {
-    throw new Error("Username must be 3-24 lowercase letters, numbers, or underscores.");
-  }
-  const collision = await usernameExistsCaseInsensitive(ctx, candidate, currentUserId);
-  if (collision) {
-    throw new Error("Username is already taken. Choose another one.");
-  }
-  return candidate;
+    isValidUsername(user.username.trim().toLowerCase());
 }
 
 export const me = query({
@@ -112,11 +62,26 @@ export const ensureProfile = mutation({
     // New behavior: patch the username only when it is missing or empty;
     // leave already-set usernames alone so this stays idempotent across
     // subsequent signIn / ensureProfile calls.
-    const hasUsername =
-      !!existing &&
-      typeof existing.username === "string" &&
-      existing.username.trim().length > 0;
-    const candidate = await validateAvailableUsername(ctx, args.username, userId);
+    const hasUsername = hasUsableUsername(existing);
+    const requestedCandidate = normalizeUsername(args.username);
+    const existingUsername = hasUsername
+      ? normalizeUsername(existing.username)
+      : null;
+    const emailDerivedUsername = usernameDerivedFromEmail(existing?.email);
+    const shouldReplaceExistingUsername =
+      hasUsername &&
+      requestedCandidate !== existingUsername &&
+      emailDerivedUsername !== null &&
+      existingUsername === emailDerivedUsername;
+    const claimTarget =
+      hasUsername && !shouldReplaceExistingUsername
+        ? existing.username
+        : args.username;
+    const { username: candidate } = await claimUsernameForUser(
+      ctx,
+      claimTarget,
+      userId,
+    );
 
     if (hasUsername) {
       const updates: {
@@ -125,13 +90,7 @@ export const ensureProfile = mutation({
         isGuest?: boolean;
         totalGames?: number;
       } = {};
-      const existingUsername = existing.username!.trim().toLowerCase();
-      const emailDerivedUsername = usernameDerivedFromEmail(existing.email);
-      if (
-        candidate !== existingUsername &&
-        emailDerivedUsername !== null &&
-        existingUsername === emailDerivedUsername
-      ) {
+      if (shouldReplaceExistingUsername || candidate !== existingUsername) {
         updates.username = candidate;
       }
       if (existing?.isGuest !== args.isGuest) {
@@ -175,5 +134,12 @@ export const getByUsername = query({
       throw new Error("Username is not unique. Ask the user for their account link or user id.");
     }
     return permanentMatches[0];
+  },
+});
+
+export const auditUsernameDuplicates = query({
+  args: {},
+  handler: async (ctx) => {
+    return await auditDuplicateUsernames(ctx);
   },
 });
