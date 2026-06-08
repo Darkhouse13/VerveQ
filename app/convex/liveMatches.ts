@@ -190,7 +190,7 @@ function orientVersusSummary(
 }
 
 async function getRivalryDetails(
-  ctx: Pick<MutationCtx, "db">,
+  ctx: Pick<QueryCtx, "db"> | Pick<MutationCtx, "db">,
   player1Id: Id<"users">,
   player2Id: Id<"users">,
   sport: string,
