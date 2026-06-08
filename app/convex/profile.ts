@@ -1,5 +1,6 @@
 import { query } from "./_generated/server";
 import { v } from "convex/values";
+import { isRankedEligibleUserDoc } from "./lib/authz";
 
 export const get = query({
   args: { userId: v.optional(v.id("users")) },
@@ -8,17 +9,22 @@ export const get = query({
 
     const user = await ctx.db.get(userId);
     if (!user) return null;
+    const rankedEligible = isRankedEligibleUserDoc(user);
 
-    const ratings = await ctx.db
-      .query("userRatings")
-      .withIndex("by_user_sport_mode", (q) => q.eq("userId", userId))
-      .collect();
+    const ratings = rankedEligible
+      ? await ctx.db
+          .query("userRatings")
+          .withIndex("by_user_sport_mode", (q) => q.eq("userId", userId))
+          .collect()
+      : [];
 
-    const games = await ctx.db
-      .query("gameSessions")
-      .withIndex("by_user", (q) => q.eq("userId", userId))
-      .order("desc")
-      .take(10);
+    const games = rankedEligible
+      ? await ctx.db
+          .query("gameSessions")
+          .withIndex("by_user", (q) => q.eq("userId", userId))
+          .order("desc")
+          .take(10)
+      : [];
 
     const rankedRatings = ratings.filter(
       (r) => r.mode === "quiz" || r.mode === "survival",

@@ -3,6 +3,7 @@ import type { Doc } from "./_generated/dataModel";
 import { v } from "convex/values";
 import { internal } from "./_generated/api";
 import { clampRating, getTierName } from "./lib/elo";
+import { isRankedEligibleUserDoc, isRankedEligibleUserId } from "./lib/authz";
 
 const SEASON_DURATION_MS = 90 * 24 * 60 * 60 * 1000; // 90 days
 const RESET_STALE_MS = 30 * 60 * 1000;
@@ -92,7 +93,14 @@ export const runSeasonReset = internalMutation({
       return { status: "already_completed" };
     }
 
-    const allRatings = await ctx.db.query("userRatings").collect();
+    const allRatingsRaw = await ctx.db.query("userRatings").collect();
+    const allRatings = [];
+    for (const rating of allRatingsRaw) {
+      const user = await ctx.db.get(rating.userId);
+      if (isRankedEligibleUserDoc(user)) {
+        allRatings.push(rating);
+      }
+    }
 
     const groups: Record<string, typeof allRatings> = {};
     for (const rating of allRatings) {
@@ -240,15 +248,15 @@ export const getSeasonHistory = query({
         .slice(0, limit);
     }
 
-    const enriched = await Promise.all(
-      entries.map(async (entry) => {
-        const user = await ctx.db.get(entry.userId);
-        return {
-          ...entry,
-          username: user?.username ?? "Unknown",
-        };
-      }),
-    );
+    const enriched = [];
+    for (const entry of entries) {
+      const user = await ctx.db.get(entry.userId);
+      if (!isRankedEligibleUserDoc(user)) continue;
+      enriched.push({
+        ...entry,
+        username: user?.username ?? "Unknown",
+      });
+    }
 
     return enriched;
   },
@@ -257,6 +265,7 @@ export const getSeasonHistory = query({
 export const getUserSeasonHistory = query({
   args: { userId: v.id("users") },
   handler: async (ctx, { userId }) => {
+    if (!(await isRankedEligibleUserId(ctx, userId))) return [];
     return await ctx.db
       .query("seasonHistory")
       .withIndex("by_user", (q) => q.eq("userId", userId))

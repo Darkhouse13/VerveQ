@@ -1,6 +1,7 @@
 import { query } from "./_generated/server";
 import type { Doc } from "./_generated/dataModel";
 import { v } from "convex/values";
+import { isRankedEligibleUserDoc } from "./lib/authz";
 
 export const getLeaderboard = query({
   args: {
@@ -22,24 +23,22 @@ export const getLeaderboard = query({
       ratings = await ctx.db.query("userRatings").order("desc").take(200);
     }
 
-    // Filter to only users with games played
-    const filtered = ratings.filter((r) => r.gamesPlayed > 0);
-
-    // Get user info for each entry
-    const entries = await Promise.all(
-      filtered.slice(0, limit).map(async (r, idx) => {
-        const user = await ctx.db.get(r.userId);
-        return {
-          rank: idx + 1,
-          userId: r.userId,
-          username: user?.username ?? "Unknown",
-          score: r.bestScore,
-          elo_rating: r.eloRating,
-          gamesPlayed: r.gamesPlayed,
-          wins: r.wins,
-        };
-      }),
-    );
+    const entries = [];
+    for (const r of ratings) {
+      if (r.gamesPlayed <= 0) continue;
+      const user = await ctx.db.get(r.userId);
+      if (!isRankedEligibleUserDoc(user)) continue;
+      entries.push({
+        rank: entries.length + 1,
+        userId: r.userId,
+        username: user?.username ?? "Unknown",
+        score: r.bestScore,
+        elo_rating: r.eloRating,
+        gamesPlayed: r.gamesPlayed,
+        wins: r.wins,
+      });
+      if (entries.length >= limit) break;
+    }
 
     // Sort by ELO descending and re-rank
     entries.sort((a, b) => (b.elo_rating ?? 0) - (a.elo_rating ?? 0));

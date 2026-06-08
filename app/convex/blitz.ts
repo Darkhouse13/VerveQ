@@ -2,6 +2,7 @@ import { mutation, query } from "./_generated/server";
 import type { Doc } from "./_generated/dataModel";
 import { v } from "convex/values";
 import { getAuthUserId } from "@convex-dev/auth/server";
+import { isRankedEligibleUserDoc, isRankedEligibleUserId } from "./lib/authz";
 import { pickQuestionPool } from "./lib/imageQuestions";
 import { normalizeAnswer } from "./lib/scoring";
 import { orderAnswerOptions } from "./lib/answerOptions";
@@ -208,15 +209,16 @@ export const endGame = mutation({
       throw new Error("Cannot save an unfinished Blitz session");
     }
 
-    // Save to blitzScores
-    await ctx.db.insert("blitzScores", {
-      userId: session.userId,
-      sport: session.sport,
-      score: session.score,
-      correctCount: session.correctCount,
-      wrongCount: session.wrongCount,
-      playedAt: now,
-    });
+    if (await isRankedEligibleUserId(ctx, session.userId)) {
+      await ctx.db.insert("blitzScores", {
+        userId: session.userId,
+        sport: session.sport,
+        score: session.score,
+        correctCount: session.correctCount,
+        wrongCount: session.wrongCount,
+        playedAt: now,
+      });
+    }
 
     await ctx.db.patch(sessionId, {
       gameOver: true,
@@ -260,20 +262,21 @@ export const getHighScores = query({
     // Sort by score descending
     scores.sort((a, b) => b.score - a.score);
 
-    const entries = await Promise.all(
-      scores.slice(0, limit).map(async (s, idx) => {
-        const user = await ctx.db.get(s.userId);
-        return {
-          rank: idx + 1,
-          userId: s.userId,
-          username: user?.username ?? "Unknown",
-          score: s.score,
-          correctCount: s.correctCount,
-          wrongCount: s.wrongCount,
-          playedAt: s.playedAt,
-        };
-      }),
-    );
+    const entries = [];
+    for (const s of scores) {
+      const user = await ctx.db.get(s.userId);
+      if (!isRankedEligibleUserDoc(user)) continue;
+      entries.push({
+        rank: entries.length + 1,
+        userId: s.userId,
+        username: user?.username ?? "Unknown",
+        score: s.score,
+        correctCount: s.correctCount,
+        wrongCount: s.wrongCount,
+        playedAt: s.playedAt,
+      });
+      if (entries.length >= limit) break;
+    }
 
     return { entries, totalEntries: entries.length };
   },

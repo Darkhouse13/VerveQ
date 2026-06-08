@@ -9,6 +9,7 @@ import type { Doc, Id } from "./_generated/dataModel";
 import { v } from "convex/values";
 import { getAuthUserId } from "@convex-dev/auth/server";
 import { internal } from "./_generated/api";
+import { areRankedEligibleUsers } from "./lib/authz";
 import { orderAnswerOptions } from "./lib/answerOptions";
 import { calculateTimeScore, normalizeAnswer } from "./lib/scoring";
 
@@ -421,6 +422,9 @@ async function applyRivalryOnce(
   now: number,
 ) {
   if (duel.rivalryAppliedAt || !duel.opponentId) return false;
+  if (!(await areRankedEligibleUsers(ctx, [duel.challengerId, duel.opponentId]))) {
+    return true;
+  }
 
   const { pairKey, userAId, userBId } = pairKeyFor(
     duel.challengerId,

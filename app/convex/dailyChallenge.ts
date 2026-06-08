@@ -1,6 +1,10 @@
 import { internalMutation, mutation, query, type MutationCtx } from "./_generated/server";
 import { v } from "convex/values";
 import { getAuthUserId } from "@convex-dev/auth/server";
+import {
+  assertRankedEligibleUser,
+  isRankedEligibleUserId,
+} from "./lib/authz";
 import { getTodayUTC, seededShuffle } from "./lib/daily";
 import { normalizeAnswer } from "./lib/scoring";
 import { orderAnswerOptions } from "./lib/answerOptions";
@@ -346,6 +350,7 @@ export const getAttemptStatus = query({
 
     const userId = await getAuthUserId(ctx);
     if (!userId) return null;
+    if (!(await isRankedEligibleUserId(ctx, userId))) return null;
 
     const date = getTodayUTC();
     const now = Date.now();
@@ -387,6 +392,7 @@ export const startAttempt = mutation({
 
     const userId = await getAuthUserId(ctx);
     if (!userId) throw new Error("Not authenticated");
+    await assertRankedEligibleUser(ctx, userId);
 
     const date = getTodayUTC();
     const now = Date.now();
@@ -475,6 +481,7 @@ export const getQuestion = query({
   handler: async (ctx, { attemptId, questionIndex }) => {
     const userId = await getAuthUserId(ctx);
     if (!userId) throw new Error("Not authenticated");
+    await assertRankedEligibleUser(ctx, userId);
     const attempt = await ctx.db.get(attemptId);
     if (!attempt) throw new Error("Attempt not found");
     assertDailyQuizMode(attempt.mode);
@@ -542,6 +549,7 @@ export const submitAnswer = mutation({
   handler: async (ctx, { attemptId, answer, questionIndex }) => {
     const userId = await getAuthUserId(ctx);
     if (!userId) throw new Error("Not authenticated");
+    await assertRankedEligibleUser(ctx, userId);
     const attempt = await ctx.db.get(attemptId);
     if (!attempt) throw new Error("Attempt not found");
     assertDailyQuizMode(attempt.mode);
@@ -652,6 +660,7 @@ export const forfeit = mutation({
   handler: async (ctx, { attemptId }) => {
     const userId = await getAuthUserId(ctx);
     if (!userId) throw new Error("Not authenticated");
+    await assertRankedEligibleUser(ctx, userId);
     const attempt = await ctx.db.get(attemptId);
     if (!attempt) throw new Error("Attempt not found");
     if (attempt.userId !== userId) {
@@ -672,6 +681,7 @@ export const completeAttempt = mutation({
   handler: async (ctx, { attemptId }) => {
     const userId = await getAuthUserId(ctx);
     if (!userId) throw new Error("Not authenticated");
+    await assertRankedEligibleUser(ctx, userId);
     const attempt = await ctx.db.get(attemptId);
     if (!attempt) throw new Error("Attempt not found");
     if (attempt.userId !== userId) {

@@ -672,7 +672,12 @@ describe("weekend stabilization live matches", () => {
     const insert = vi.fn(async (_table: string, _value: Record<string, unknown>) => "inserted_id");
     const ctx = {
       db: {
-        get: async (id: string) => (id === "match_1" ? match : null),
+        get: async (id: string) => {
+          if (id === "match_1") return match;
+          if (id === "stub_user") return { username: "p1", displayName: "P1", isAnonymous: false };
+          if (id === "opponent_user") return { username: "p2", displayName: "P2", isAnonymous: false };
+          return null;
+        },
         patch,
         insert,
         query: (table: string) => {
