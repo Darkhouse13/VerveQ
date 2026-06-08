@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { V2_SHELL_ENABLED } from "@/lib/flags";
 
 export type ArenaMode = "1v1" | "2v2" | "ffa3" | "ffa4" | "ffa5";
 
@@ -105,8 +106,12 @@ export function arenaCategoryEmoji(slug: string) {
 }
 
 export function buildArenaUrl(code: string) {
-  if (typeof window === "undefined") return `/arena/${code}`;
-  return `${window.location.origin}/arena/${code}`;
+  // When the v2 shell is enabled, shared invite links route to the shell Arena
+  // (/v2/arena/:code), whose gate onboards code-preserving username-only users.
+  // Flag-off keeps the original /arena/:code link verbatim.
+  const path = V2_SHELL_ENABLED ? `/v2/arena/${code}` : `/arena/${code}`;
+  if (typeof window === "undefined") return path;
+  return `${window.location.origin}${path}`;
 }
 
 export async function shareArenaLink(

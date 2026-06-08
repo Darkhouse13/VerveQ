@@ -46,6 +46,7 @@ import {
   useTick,
 } from "@/lib/arena";
 import { PlayStage } from "@/components/shell/play/PlayStage";
+import { UsernameOnlyOnboarding } from "@/components/shell/onboarding/UsernameOnlyOnboarding";
 import {
   RosterPanel,
   StandingsPanel,
@@ -83,28 +84,43 @@ const PHASE_LABEL: Record<Phase, string> = {
 
 export default function ArenaPlayScreen() {
   const params = useParams<{ code: string }>();
-  const navigate = useNavigate();
-  const { user, isAuthenticated, isGuest, isLoading } = useAuth();
+  const { user, accountState, hasUsername } = useAuth();
 
   const rawCode = params.code ?? "";
   const code = useMemo(() => normalizeArenaCode(rawCode), [rawCode]);
 
-  useEffect(() => {
-    if (isLoading) return;
-    if (!isAuthenticated) {
-      navigate(`/?from=arena&code=${encodeURIComponent(code)}`, { replace: true });
-    } else if (isGuest) {
-      navigate("/?mode=signup&from=arena", { replace: true });
-    }
-  }, [isAuthenticated, isGuest, isLoading, navigate, code]);
-
   if (!code) {
     return <NotInRoom title="Missing arena code" detail="The link you followed didn't include an arena code." />;
   }
-  if (isLoading || !isAuthenticated || isGuest) {
+  if (accountState === "loading") {
     return <CenteredMessage>Loading…</CenteredMessage>;
   }
+  // No session, or a session without a username yet: onboard RIGHT HERE so the
+  // lobby code is never dropped. Arena is in the username-only mode set, so any
+  // user with a username (anonymous or full) may join — the gate is `hasUsername`.
+  // On a successful claim, `hasUsername` flips and this re-renders into the room,
+  // whose existing effect auto-joins by code.
+  if (!hasUsername) {
+    return <ArenaOnboardingGate code={code} />;
+  }
   return <ArenaPlayRoom code={code} userId={user?._id as Id<"users"> | undefined} />;
+}
+
+function ArenaOnboardingGate({ code }: { code: string }) {
+  // No-op: the username claim flips `hasUsername` in AuthContext, which swaps
+  // ArenaPlayScreen into ArenaPlayRoom. We never navigate, so the code survives.
+  const noop = useCallback(() => {}, []);
+  return (
+    <div className="min-h-[100dvh] bg-background flex flex-col items-center justify-center px-5 py-8">
+      <UsernameOnlyOnboarding
+        inviteCode={code}
+        heading="Join the arena"
+        subheading={`Pick a username to join lobby ${code}. No email or password needed.`}
+        submitLabel="Join the arena"
+        onComplete={noop}
+      />
+    </div>
+  );
 }
 
 function CenteredMessage({ children }: { children: string }) {
