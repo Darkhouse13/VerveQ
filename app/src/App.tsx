@@ -1,5 +1,5 @@
 import { Toaster as Sonner } from "@/components/ui/sonner";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { ConvexReactClient } from "convex/react";
 import { ConvexAuthProvider } from "@convex-dev/auth/react";
 import { lazy, Suspense } from "react";
@@ -43,8 +43,8 @@ import {
 // v2 unified shell (additive, flag-gated via VITE_V2_SHELL_ENABLED). Lazy so it
 // stays out of the main bundle; ShellGate redirects to /home when the flag is off.
 const ShellHomeScreen = lazy(() => import("./pages/shell/ShellHomeScreen"));
-const CompeteCategoryScreen = lazy(() => import("./pages/shell/CompeteCategoryScreen"));
-const CompeteSportScreen = lazy(() => import("./pages/shell/CompeteSportScreen"));
+// CompeteCategoryScreen / CompeteSportScreen are parked (see their files): with
+// Sport→Football the only live path, /compete lands directly on the mode grid.
 const CompeteModeGridScreen = lazy(() => import("./pages/shell/CompeteModeGridScreen"));
 const RanksPlaceholderScreen = lazy(() => import("./pages/shell/RanksPlaceholderScreen"));
 const WelcomeScreen = lazy(() => import("./pages/shell/WelcomeScreen"));
@@ -308,9 +308,13 @@ const AppRoutes = () => (
             <Route path="/v2/welcome" element={<ShellGate><WelcomeScreen /></ShellGate>} />
             {/* Anonymous + username -> full account upgrade. Carries ?next=. */}
             <Route path="/v2/upgrade" element={<ShellGate><UpgradeScreen /></ShellGate>} />
-            <Route path="/compete" element={<ShellGate><CompeteCategoryScreen /></ShellGate>} />
-            <Route path="/compete/sport" element={<ShellGate><CompeteSportScreen /></ShellGate>} />
-            <Route path="/compete/sport/:sport" element={<ShellGate><CompeteModeGridScreen /></ShellGate>} />
+            {/* Compete lands DIRECTLY on the (football) mode grid — the category
+                and sport steps are collapsed while Sport/Football is the only
+                live path. The old step URLs redirect so deep links keep working
+                and reintroducing a category/sport step later is cheap. */}
+            <Route path="/compete" element={<ShellGate><CompeteModeGridScreen /></ShellGate>} />
+            <Route path="/compete/sport" element={<ShellGate><Navigate to="/compete" replace /></ShellGate>} />
+            <Route path="/compete/sport/:sport" element={<ShellGate><Navigate to="/compete" replace /></ShellGate>} />
             <Route path="/v2/ranks" element={<ShellGate><RanksPlaceholderScreen /></ShellGate>} />
             {/* Contained legacy surfaces — the existing v1 screens embedded in
                 the shell chrome (v2 nav retained, v1 bottom nav suppressed) so a

@@ -12,7 +12,12 @@ const SPORTS: { key: "football" | "basketball" | "tennis"; live: boolean }[] = [
   { key: "tennis", live: false },
 ];
 
-/** Compete → sport select. Football is live; others are clearly "coming soon". */
+/**
+ * Compete sport step — PARKED (not routed). With Football the only live sport,
+ * /compete collapses straight to the mode grid and /compete/sport redirects
+ * there (see App.tsx). Re-register this screen when a second sport goes live.
+ * Football is live; others are clearly "coming soon".
+ */
 export default function CompeteSportScreen() {
   const navigate = useNavigate();
   const { t } = useTranslation();

@@ -13,9 +13,15 @@ export const SHELL_ROUTES = {
   welcome: "/v2/welcome",
   /** Anonymous + username -> full account upgrade. Accepts ?next=. */
   upgrade: "/v2/upgrade",
+  /**
+   * Compete lands DIRECTLY on the (football) mode grid. The category and sport
+   * steps are collapsed while Sport→Football is the only live path; their
+   * screens are parked in pages/shell/ and the step URLs below redirect here.
+   */
   compete: "/compete",
+  /** Legacy step URL — redirects to `compete`. Kept for cheap reintroduction. */
   competeSport: "/compete/sport",
-  /** `/compete/sport/:sport` */
+  /** `/compete/sport/:sport` — legacy step URL, redirects to `compete`. */
   competeSportGrid: (sport: string) => `/compete/sport/${sport}`,
   ranks: "/v2/ranks",
   /**

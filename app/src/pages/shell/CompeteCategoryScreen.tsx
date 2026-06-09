@@ -10,10 +10,16 @@ import { SHELL_ROUTES } from "@/lib/shellRoutes";
 type DrawerTarget = "arena" | "duel" | null;
 
 /**
- * Compete category step. Per the operator decision, Sport is the only live
- * category this pass; History/Geography/Science stay under the Learn pillar.
- * Arena & Duels tiles open the category drawer, then route to the existing
- * challenge entry — the shell never reimplements those modes.
+ * Compete category step — PARKED (not routed). With Sport the only live
+ * category, /compete collapses straight to the mode grid (see App.tsx and
+ * CompeteModeGridScreen); the grid carries this screen's Arena/Duels tiles and
+ * its "History, Geography & Science live in Learn" pointer. Re-register this
+ * screen at /compete when a second category goes live.
+ *
+ * Per the operator decision, Sport is the only live category this pass;
+ * History/Geography/Science stay under the Learn pillar. Arena & Duels tiles
+ * open the category drawer, then route to the existing challenge entry — the
+ * shell never reimplements those modes.
  */
 export default function CompeteCategoryScreen() {
   const navigate = useNavigate();
