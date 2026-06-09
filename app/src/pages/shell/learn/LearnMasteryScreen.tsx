@@ -48,7 +48,7 @@ export default function LearnMasteryScreen() {
         </button>
       </div>
 
-      <div className="grid flex-1 min-h-0 gap-4 px-4 pb-6 md:px-6 md:pb-6 md:grid-cols-[300px_1fr] overflow-y-auto md:overflow-hidden">
+      <div className="grid flex-1 min-h-0 gap-4 px-4 pb-6 md:px-6 md:pb-6 md:grid-cols-[300px_1fr] overflow-y-auto scrollbar-none md:overflow-hidden">
         {/* Summary card */}
         <div className="neo-border neo-shadow rounded-xl bg-card p-4 md:p-5 flex flex-col gap-3.5 min-h-0">
           <Eyebrow>{t("mastery.overall")}</Eyebrow>
@@ -90,7 +90,7 @@ export default function LearnMasteryScreen() {
         </div>
 
         {/* Per-subject */}
-        <div className="flex flex-col gap-3 min-h-0 md:overflow-y-auto">
+        <div className="flex flex-col gap-3 min-h-0 md:overflow-y-auto scrollbar-none">
           {subjects.map((s) => (
             <div
               key={s.id}

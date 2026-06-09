@@ -53,7 +53,7 @@ function Queue({
       <p className="my-2 flex-none text-[12.5px] text-muted-foreground">
         {locked ? t("review.lockedBlurb") : t("review.learningBlurb")}
       </p>
-      <div className="flex flex-1 flex-col gap-2.5 overflow-y-auto">
+      <div className="flex flex-1 flex-col gap-2.5 overflow-y-auto scrollbar-none">
         {items.map((s) => (
           <div
             key={s.id}
@@ -111,7 +111,7 @@ export default function LearnReviewScreen() {
         </button>
       </div>
 
-      <div className="grid flex-1 min-h-0 gap-3 px-4 pb-6 md:gap-4 md:px-6 md:pb-6 md:grid-cols-2 md:grid-rows-1 overflow-y-auto md:overflow-hidden auto-rows-[minmax(0,46%)] md:auto-rows-auto">
+      <div className="grid flex-1 min-h-0 gap-3 px-4 pb-6 md:gap-4 md:px-6 md:pb-6 md:grid-cols-2 md:grid-rows-1 overflow-y-auto scrollbar-none md:overflow-hidden auto-rows-[minmax(0,46%)] md:auto-rows-auto">
         <Queue title={t("review.resting")} items={locked} locked />
         <Queue title={t("review.active")} items={learning} locked={false} />
       </div>

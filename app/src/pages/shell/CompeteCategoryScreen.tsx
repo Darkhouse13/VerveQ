@@ -5,7 +5,7 @@ import { Dribbble, Swords, Users, ChevronRight } from "lucide-react";
 import { NeoCard } from "@/components/neo/NeoCard";
 import { ShellLayout } from "@/components/shell/ShellLayout";
 import { CategoryDrawer, type ArenaCategory } from "@/components/shell/CategoryDrawer";
-import { SHELL_ROUTES, MODE_ROUTES } from "@/lib/shellRoutes";
+import { SHELL_ROUTES } from "@/lib/shellRoutes";
 
 type DrawerTarget = "arena" | "duel" | null;
 
@@ -21,19 +21,23 @@ export default function CompeteCategoryScreen() {
   const [drawer, setDrawer] = useState<DrawerTarget>(null);
 
   const handleSelect = (_category: ArenaCategory) => {
-    // Category selection is carried into the existing challenge/arena entry.
+    // Category selection is carried into the challenge/arena entry, embedded in
+    // the shell (v2 nav retained) so the user stays inside the shell.
     // (The entry screen owns category handling; the shell just routes there.)
     setDrawer(null);
-    navigate(MODE_ROUTES.challenge);
+    navigate(SHELL_ROUTES.duels);
   };
 
   return (
     <ShellLayout title={t("compete.title")} subtitle={t("compete.chooseCategory")} back>
-      <div className="flex flex-col gap-4 md:h-full md:justify-center">
+      {/* On desktop the Sport card and the Arena/Duel row grow to fill the
+          never-scroll column (md:flex-1) so the layout reads balanced instead
+          of leaving a large empty gap above a vertically-centered group. */}
+      <div className="flex flex-col gap-4 pt-2 md:h-full md:pt-4">
         <NeoCard
           color="yellow"
           shadow="lg"
-          className="flex items-center gap-4 cursor-pointer"
+          className="flex items-center gap-4 cursor-pointer md:flex-1"
           onClick={() => navigate(SHELL_ROUTES.competeSport)}
         >
           <div className="neo-border rounded-xl bg-background p-3">
@@ -50,10 +54,10 @@ export default function CompeteCategoryScreen() {
           <ChevronRight size={22} strokeWidth={2.5} />
         </NeoCard>
 
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-2 gap-3 md:flex-1">
           <NeoCard
             color="blue"
-            className="flex flex-col gap-2 cursor-pointer min-h-[120px]"
+            className="flex flex-col gap-2 cursor-pointer min-h-[120px] md:min-h-0"
             onClick={() => setDrawer("arena")}
           >
             <Swords size={24} strokeWidth={2.5} />
@@ -66,7 +70,7 @@ export default function CompeteCategoryScreen() {
           </NeoCard>
           <NeoCard
             color="pink"
-            className="flex flex-col gap-2 cursor-pointer min-h-[120px]"
+            className="flex flex-col gap-2 cursor-pointer min-h-[120px] md:min-h-0"
             onClick={() => setDrawer("duel")}
           >
             <Users size={24} strokeWidth={2.5} />
