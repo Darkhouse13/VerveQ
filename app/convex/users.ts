@@ -151,6 +151,9 @@ export const claimUsernameOnly = mutation({
     if (existing.isAnonymous !== true) {
       throw new Error("Username-only onboarding requires an anonymous session.");
     }
+    if (!existing.anonymousOnboardingIpPermitId) {
+      throw new Error("Username-only onboarding requires an IP-checked anonymous session.");
+    }
 
     const now = Date.now();
     const deviceNonce = normalizeDeviceNonce(args.deviceNonce);

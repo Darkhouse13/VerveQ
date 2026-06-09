@@ -13,12 +13,23 @@ export default defineSchema({
     avatarUrl: v.optional(v.string()),
     isGuest: v.optional(v.boolean()),
     isAnonymous: v.optional(v.boolean()),
+    anonymousOnboardingIpPermitId: v.optional(v.id("anonymousOnboardingIpPermits")),
     totalGames: v.optional(v.number()),
     approvedQuestionsCount: v.optional(v.number()),
     // Convex Auth fields
     email: v.optional(v.string()),
     emailVerificationTime: v.optional(v.number()),
   }).index("by_username", ["username"]),
+
+  anonymousOnboardingIpPermits: defineTable({
+    ipKey: v.string(),
+    permitToken: v.string(),
+    issuedAt: v.number(),
+    expiresAt: v.number(),
+    consumedAt: v.optional(v.number()),
+  })
+    .index("by_ip_time", ["ipKey", "issuedAt"])
+    .index("by_permit_token", ["permitToken"]),
 
   usernameClaims: defineTable({
     key: v.string(),

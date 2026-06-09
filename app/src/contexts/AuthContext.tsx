@@ -153,6 +153,8 @@ const LOCAL_GUEST_USER: AuthUser = {
 // server can rate-limit anonymous onboarding per device. Persisted in
 // localStorage (survives reloads, unlike the tab-local guest flag).
 const DEVICE_NONCE_KEY = "verveq_device_nonce";
+const ANONYMOUS_ONBOARDING_IP_PERMIT_PARAM =
+  "anonymousOnboardingIpPermit";
 
 function generateDeviceNonce(): string {
   if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
@@ -205,6 +207,47 @@ function isTransientAuthPropagationError(err: unknown): boolean {
 
 function wait(ms: number): Promise<void> {
   return new Promise((resolve) => window.setTimeout(resolve, ms));
+}
+
+function getConvexSiteUrl(): string {
+  const configured = import.meta.env.VITE_CONVEX_SITE_URL?.trim();
+  if (configured) return configured.replace(/\/$/, "");
+  const convexUrl = import.meta.env.VITE_CONVEX_URL?.trim();
+  if (!convexUrl) {
+    throw new Error("VITE_CONVEX_URL is not configured.");
+  }
+  if (convexUrl.includes(".convex.cloud")) {
+    return convexUrl.replace(".convex.cloud", ".convex.site").replace(/\/$/, "");
+  }
+  return convexUrl.replace(/\/$/, "");
+}
+
+async function requestAnonymousOnboardingIpPermit(): Promise<string> {
+  const response = await fetch(
+    `${getConvexSiteUrl()}/anonymous-onboarding/ip-permit`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: "{}",
+    },
+  );
+  let body: { permitToken?: unknown; error?: unknown } | null = null;
+  try {
+    body = (await response.json()) as { permitToken?: unknown; error?: unknown };
+  } catch {
+    body = null;
+  }
+  if (!response.ok) {
+    const message =
+      typeof body?.error === "string"
+        ? body.error
+        : "Could not verify your network. Try again later.";
+    throw new Error(message);
+  }
+  if (!body || typeof body.permitToken !== "string" || !body.permitToken.trim()) {
+    throw new Error("Could not verify your network. Try again later.");
+  }
+  return body.permitToken;
 }
 
 // How long claimUsername will wait for the anonymous session to propagate to
@@ -339,7 +382,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setTabGuestSession(false);
     setLocalGuestActive(false);
     try {
-      await convexSignIn("anonymous");
+      const permitToken = await requestAnonymousOnboardingIpPermit();
+      await convexSignIn("anonymous", {
+        [ANONYMOUS_ONBOARDING_IP_PERMIT_PARAM]: permitToken,
+      });
     } catch (err) {
       throw mapAuthError(err, "unknown");
     }

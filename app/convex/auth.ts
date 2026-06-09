@@ -1,11 +1,13 @@
 import { Password } from "@convex-dev/auth/providers/Password";
-import { Anonymous } from "@convex-dev/auth/providers/Anonymous";
-import { convexAuth } from "@convex-dev/auth/server";
+import { ConvexCredentials } from "@convex-dev/auth/providers/ConvexCredentials";
+import { convexAuth, createAccount } from "@convex-dev/auth/server";
+import { internal } from "./_generated/api";
 import { ResendOTPPasswordReset } from "./authEmail";
 import {
   validatePassword,
   describePasswordReason,
 } from "./lib/passwordPolicy";
+import { getAnonymousOnboardingIpPermitParam } from "./anonymousOnboardingIp";
 
 // Derive a username suggestion from an email address. Final uniqueness is
 // handled in users.ensureProfile after signUp; this helper only guarantees
@@ -21,7 +23,28 @@ function deriveUsernameFromEmail(email: string): string {
 
 export const { auth, signIn, signOut, store } = convexAuth({
   providers: [
-    Anonymous,
+    ConvexCredentials({
+      id: "anonymous",
+      authorize: async (params, ctx) => {
+        const permitToken = getAnonymousOnboardingIpPermitParam(params);
+        if (!permitToken) {
+          throw new Error("Anonymous onboarding IP check is required.");
+        }
+        const permit = await ctx.runMutation(
+          internal.anonymousOnboardingIp.consumeAnonymousOnboardingIpPermit,
+          { permitToken },
+        );
+        const { user } = await createAccount(ctx, {
+          provider: "anonymous",
+          account: { id: crypto.randomUUID() },
+          profile: {
+            isAnonymous: true,
+            anonymousOnboardingIpPermitId: permit.permitId,
+          },
+        });
+        return { userId: user._id };
+      },
+    }),
     Password({
       // Mirror the client-side password policy so a direct Convex action
       // call can't bypass it. Convex Auth calls this for "signUp" and
