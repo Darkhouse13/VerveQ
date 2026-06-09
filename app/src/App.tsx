@@ -6,9 +6,11 @@ import { lazy, Suspense } from "react";
 import { AuthProvider } from "./contexts/AuthContext";
 import { ProtectedRoute, UsernameRequiredRoute } from "./components/ProtectedRoute";
 import { ErrorBoundary } from "./components/ErrorBoundary";
-import LoginScreen from "./pages/LoginScreen";
+// Flag-gated entry routing: v1 LoginScreen/HomeScreen when off, v2 shell
+// landing when VITE_V2_SHELL_ENABLED is on. Keeps "/" and "/home" as a clean
+// rollback seam (the only routes whose default destination the flag flips).
+import { EntryRoute, HomeRoute } from "./components/EntryRoutes";
 import OnboardingScreen from "./pages/OnboardingScreen";
-import HomeScreen from "./pages/HomeScreen";
 import SportSelectScreen from "./pages/SportSelectScreen";
 import DifficultyScreen from "./pages/DifficultyScreen";
 import QuizScreen from "./pages/QuizScreen";
@@ -94,7 +96,7 @@ const AppRoutes = () => (
       >
         <div className="max-w-md mx-auto min-h-screen relative">
           <Routes>
-            <Route path="/" element={<LoginScreen />} />
+            <Route path="/" element={<EntryRoute />} />
             <Route path="/leaderboard" element={<LeaderboardScreen />} />
             <Route
               path="/ranks"
@@ -104,7 +106,7 @@ const AppRoutes = () => (
                 </ProtectedRoute>
               }
             />
-            <Route path="/home" element={<HomeScreen />} />
+            <Route path="/home" element={<HomeRoute />} />
             <Route
               path="/onboarding"
               element={

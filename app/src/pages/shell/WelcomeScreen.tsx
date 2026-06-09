@@ -11,9 +11,11 @@
  */
 import { useCallback } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { ShellLayout } from "@/components/shell/ShellLayout";
 import { UsernameOnlyOnboarding } from "@/components/shell/onboarding/UsernameOnlyOnboarding";
 import { SHELL_ROUTES } from "@/lib/shellRoutes";
+import { useAuth } from "@/contexts/AuthContext";
 
 function safeInternalPath(value: string | null): string {
   if (value && value.startsWith("/") && !value.startsWith("//")) return value;
@@ -22,6 +24,8 @@ function safeInternalPath(value: string | null): string {
 
 export default function WelcomeScreen() {
   const navigate = useNavigate();
+  const { t } = useTranslation();
+  const { accountState } = useAuth();
   const [params] = useSearchParams();
   const next = safeInternalPath(params.get("next"));
   const code = params.get("code")?.trim() || undefined;
@@ -33,6 +37,21 @@ export default function WelcomeScreen() {
   return (
     <ShellLayout hideNav center>
       <UsernameOnlyOnboarding inviteCode={code} onComplete={onComplete} />
+      {/* Returning users with a password account skip the username flow. Only
+          shown with no session — an in-progress anonymous session has nothing
+          to sign in to. */}
+      {accountState === "loggedOut" && (
+        <p className="mt-4 text-center text-sm font-heading text-muted-foreground">
+          {t("auth.haveAccount")}{" "}
+          <button
+            type="button"
+            onClick={() => navigate("/?mode=signin")}
+            className="underline underline-offset-4 hover:text-foreground"
+          >
+            {t("auth.signIn")}
+          </button>
+        </p>
+      )}
     </ShellLayout>
   );
 }

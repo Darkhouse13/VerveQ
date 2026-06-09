@@ -4,6 +4,7 @@ import { useQuery } from "convex/react";
 import { Swords, GraduationCap, Trophy, Hammer, Flame, Zap, Timer, ChevronRight } from "lucide-react";
 import { NeoCard } from "@/components/neo/NeoCard";
 import { NeoAvatar } from "@/components/neo/NeoAvatar";
+import { NeoButton } from "@/components/neo/NeoButton";
 import { ShellLayout } from "@/components/shell/ShellLayout";
 import { SHELL_ROUTES, MODE_ROUTES } from "@/lib/shellRoutes";
 import { useAuth } from "@/contexts/AuthContext";
@@ -18,8 +19,13 @@ import type { Id } from "../../../convex/_generated/dataModel";
 export default function ShellHomeScreen() {
   const navigate = useNavigate();
   const { t } = useTranslation();
-  const { user, isGuest } = useAuth();
+  const { user, isGuest, accountState } = useAuth();
   const userId = !isGuest && user?.username ? (user._id as Id<"users">) : undefined;
+  // Logged-out returning visitors land here by default (v2 is the entry); give
+  // them a visible way back to the existing password sign-in. Only shown with no
+  // session — anonymous/full accounts see their avatar (and upgrade lives in the
+  // ranked gates). `loading` keeps the avatar to avoid a sign-in flicker.
+  const showSignIn = accountState === "loggedOut";
   const profile = useQuery(api.profile.get, userId ? { userId } : "skip");
 
   const displayName = user?.username || "Player";
@@ -31,7 +37,19 @@ export default function ShellHomeScreen() {
     <ShellLayout
       title={t("home.greeting", { name: displayName })}
       subtitle={t("home.tagline")}
-      headerRight={<NeoAvatar name={displayName} size="md" />}
+      headerRight={
+        showSignIn ? (
+          <NeoButton
+            variant="secondary"
+            size="sm"
+            onClick={() => navigate("/?mode=signin")}
+          >
+            {t("auth.signIn")}
+          </NeoButton>
+        ) : (
+          <NeoAvatar name={displayName} size="md" />
+        )
+      }
     >
       <div className="flex flex-col gap-5 md:h-full md:justify-center">
         {/* Two pillars */}
