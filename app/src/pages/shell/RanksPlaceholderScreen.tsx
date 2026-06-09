@@ -6,6 +6,7 @@ import { NeoCard } from "@/components/neo/NeoCard";
 import { NeoBadge } from "@/components/neo/NeoBadge";
 import { NeoButton } from "@/components/neo/NeoButton";
 import { ShellLayout } from "@/components/shell/ShellLayout";
+import { SHELL_ROUTES } from "@/lib/shellRoutes";
 import { useAuth } from "@/contexts/AuthContext";
 import { api } from "../../../convex/_generated/api";
 import type { Id } from "../../../convex/_generated/dataModel";
@@ -44,7 +45,7 @@ export default function RanksPlaceholderScreen() {
   const currentTier = elo != null ? tierFromElo(elo) : null;
 
   return (
-    <ShellLayout title={t("ranks.title")} back theme="dark">
+    <ShellLayout title={t("ranks.title")} back>
       <div className="flex flex-col gap-5 md:h-full md:justify-center">
         <NeoCard color="primary" className="flex items-center gap-3">
           <Construction size={26} strokeWidth={2.5} className="shrink-0" />
@@ -97,7 +98,7 @@ export default function RanksPlaceholderScreen() {
           })}
         </div>
 
-        <NeoButton variant="secondary" size="full" onClick={() => navigate("/leaderboard")}>
+        <NeoButton variant="secondary" size="full" onClick={() => navigate(SHELL_ROUTES.leaderboard)}>
           {t("ranks.viewFullBoard")}
         </NeoButton>
       </div>

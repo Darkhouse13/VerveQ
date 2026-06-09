@@ -21,6 +21,13 @@ interface ShellLayoutProps {
   theme?: string;
   /** Center the main content within its max width on desktop. */
   center?: boolean;
+  /**
+   * Embed an existing (legacy) screen inside the shell chrome: keeps the v2 nav
+   * but lets the body scroll on desktop too (legacy screens are mobile-first and
+   * taller than the viewport) and drops the horizontal padding so the embedded
+   * screen keeps its own. Use for containment wrappers around v1 screens.
+   */
+  embed?: boolean;
   className?: string;
   children: ReactNode;
 }
@@ -45,6 +52,7 @@ export function ShellLayout({
   hideNav = false,
   theme,
   center = false,
+  embed = false,
   className,
   children,
 }: ShellLayoutProps) {
@@ -99,11 +107,17 @@ export function ShellLayout({
 
       <main
         className={cn(
-          "flex-1 w-full mx-auto max-w-md md:max-w-6xl",
-          "px-5 md:px-8",
-          // Mobile scrolls and clears the fixed bottom nav; desktop never scrolls.
-          "overflow-y-auto scrollbar-none md:overflow-hidden",
-          hideNav ? "pb-8" : "pb-28 md:pb-6",
+          "flex-1 w-full mx-auto",
+          embed
+            ? // Embedded legacy screen: keep the mobile column width centered,
+              // let it scroll on desktop too, and let the screen own its padding.
+              "max-w-md overflow-y-auto scrollbar-none"
+            : [
+                "max-w-md md:max-w-6xl px-5 md:px-8",
+                // Mobile scrolls and clears the fixed bottom nav; desktop never scrolls.
+                "overflow-y-auto scrollbar-none md:overflow-hidden",
+              ],
+          hideNav ? "pb-8" : embed ? "pb-28 md:pb-10" : "pb-28 md:pb-6",
           center && "flex flex-col justify-center",
           className,
         )}

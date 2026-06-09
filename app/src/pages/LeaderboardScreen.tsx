@@ -27,7 +27,7 @@ function getTier(elo: number | null) {
   return { name: "Bronze", color: "muted" as const };
 }
 
-export default function LeaderboardScreen() {
+export default function LeaderboardScreen({ embedded = false }: { embedded?: boolean } = {}) {
   const [activeFilters, setActiveFilters] = useState({
     sport: "All",
     mode: "Quiz",
@@ -129,7 +129,7 @@ export default function LeaderboardScreen() {
   };
 
   return (
-    <div className="min-h-screen bg-background pb-20">
+    <div className={embedded ? "" : "min-h-screen bg-background pb-20"}>
       <div className="px-5 pt-6 pb-4">
         <h1 className="text-2xl font-heading font-bold mb-4">Leaderboard</h1>
 
@@ -269,7 +269,7 @@ export default function LeaderboardScreen() {
         )}
       </div>
 
-      <BottomNav />
+      {!embedded && <BottomNav />}
     </div>
   );
 }

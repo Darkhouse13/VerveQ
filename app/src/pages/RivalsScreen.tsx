@@ -11,16 +11,21 @@ import { BottomNav } from "@/components/neo/BottomNav";
 import { api } from "../../convex/_generated/api";
 import type { Id } from "../../convex/_generated/dataModel";
 import { useAuth } from "@/contexts/AuthContext";
+import { SHELL_ROUTES } from "@/lib/shellRoutes";
 import { formatRelativeTime } from "@/lib/duel";
 
-export default function RivalsListScreen() {
+export default function RivalsListScreen({ embedded = false }: { embedded?: boolean } = {}) {
   const navigate = useNavigate();
   const { user, isGuest } = useAuth();
   const data = useQuery(api.rivalries.listMine, isGuest || !user ? "skip" : {});
+  // In the shell, cross-screen links resolve to contained shell routes.
+  const duelsPath = embedded ? SHELL_ROUTES.duels : "/challenge";
+  const rivalDetailPath = (id: string) =>
+    embedded ? SHELL_ROUTES.rivalDetail(id) : `/rivals/${id}`;
 
   if (isGuest) {
     return (
-      <div className="min-h-screen bg-background pb-20 px-5 pt-6">
+      <div className={embedded ? "px-5 pt-6" : "min-h-screen bg-background pb-20 px-5 pt-6"}>
         <button
           type="button"
           onClick={() => navigate(-1)}
@@ -34,7 +39,7 @@ export default function RivalsListScreen() {
             Sign up to track head-to-head records.
           </p>
         </NeoCard>
-        <BottomNav />
+        {!embedded && <BottomNav />}
       </div>
     );
   }
@@ -43,7 +48,7 @@ export default function RivalsListScreen() {
   const loading = data === undefined;
 
   return (
-    <div className="min-h-screen bg-background pb-24">
+    <div className={embedded ? "" : "min-h-screen bg-background pb-24"}>
       <div className="px-5 pt-6 space-y-4">
         <div className="flex items-center justify-between">
           <button
@@ -72,7 +77,7 @@ export default function RivalsListScreen() {
               variant="primary"
               size="md"
               className="mt-4"
-              onClick={() => navigate("/challenge")}
+              onClick={() => navigate(duelsPath)}
             >
               Send a duel
             </NeoButton>
@@ -95,7 +100,7 @@ export default function RivalsListScreen() {
               return (
                 <NeoCard
                   key={r.opponent.userId}
-                  onClick={() => navigate(`/rivals/${r.opponent.userId}`)}
+                  onClick={() => navigate(rivalDetailPath(r.opponent.userId))}
                   className="space-y-1.5"
                 >
                   <div className="flex items-center justify-between">
@@ -131,15 +136,16 @@ export default function RivalsListScreen() {
           </div>
         )}
       </div>
-      <BottomNav />
+      {!embedded && <BottomNav />}
     </div>
   );
 }
 
-export function RivalDetailScreen() {
+export function RivalDetailScreen({ embedded = false }: { embedded?: boolean } = {}) {
   const navigate = useNavigate();
   const { user, isGuest } = useAuth();
   const { opponentUserId } = useParams<{ opponentUserId: string }>();
+  const duelsPath = embedded ? SHELL_ROUTES.duels : "/challenge";
   const rivalry = useQuery(
     api.rivalries.get,
     !isGuest && user && opponentUserId
@@ -217,7 +223,7 @@ export function RivalDetailScreen() {
   };
 
   return (
-    <div className="min-h-screen bg-background pb-24">
+    <div className={embedded ? "" : "min-h-screen bg-background pb-24"}>
       <div className="px-5 pt-6 space-y-4">
         <div className="flex items-center justify-between">
           <button
@@ -283,7 +289,7 @@ export function RivalDetailScreen() {
           {rematching ? "Sending…" : "Rematch"}
         </NeoButton>
 
-        <NeoButton variant="secondary" size="full" onClick={() => navigate("/challenge")}>
+        <NeoButton variant="secondary" size="full" onClick={() => navigate(duelsPath)}>
           New custom duel
         </NeoButton>
       </div>

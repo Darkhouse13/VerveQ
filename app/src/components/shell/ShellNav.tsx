@@ -17,7 +17,7 @@ const TABS: NavTab[] = [
   { path: SHELL_ROUTES.home, match: SHELL_ROUTES.home, labelKey: "nav.home", icon: Home },
   { path: SHELL_ROUTES.compete, match: "/compete", labelKey: "nav.compete", icon: Swords },
   { path: SHELL_ROUTES.ranks, match: SHELL_ROUTES.ranks, labelKey: "nav.ranks", icon: Trophy },
-  { path: "/profile", match: "/profile", labelKey: "nav.profile", icon: User },
+  { path: SHELL_ROUTES.profile, match: SHELL_ROUTES.profile, labelKey: "nav.profile", icon: User },
 ];
 
 function useTabs() {

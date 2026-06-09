@@ -6,7 +6,7 @@ import { NeoCard } from "@/components/neo/NeoCard";
 import { NeoAvatar } from "@/components/neo/NeoAvatar";
 import { NeoButton } from "@/components/neo/NeoButton";
 import { ShellLayout } from "@/components/shell/ShellLayout";
-import { SHELL_ROUTES, MODE_ROUTES } from "@/lib/shellRoutes";
+import { SHELL_ROUTES } from "@/lib/shellRoutes";
 import { useAuth } from "@/contexts/AuthContext";
 import { api } from "../../../convex/_generated/api";
 import type { Id } from "../../../convex/_generated/dataModel";
@@ -51,13 +51,14 @@ export default function ShellHomeScreen() {
         )
       }
     >
-      <div className="flex flex-col gap-5 md:h-full md:justify-center">
-        {/* Two pillars */}
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+      <div className="flex flex-col gap-4 md:h-full">
+        {/* Two pillars — on desktop they absorb the leftover height (flex-1) so
+            the never-scroll column always fits without clipping at the top. */}
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 md:flex-1 md:min-h-0">
           <NeoCard
             color="primary"
             shadow="lg"
-            className="cursor-pointer min-h-[160px] md:min-h-[260px] flex flex-col"
+            className="cursor-pointer min-h-[150px] md:min-h-0 flex flex-col"
             onClick={() => navigate(SHELL_ROUTES.compete)}
           >
             <div className="neo-border rounded-xl bg-background w-fit p-3">
@@ -76,7 +77,7 @@ export default function ShellHomeScreen() {
           <NeoCard
             color="blue"
             shadow="lg"
-            className="cursor-pointer min-h-[160px] md:min-h-[260px] flex flex-col"
+            className="cursor-pointer min-h-[150px] md:min-h-0 flex flex-col"
             onClick={() => navigate(SHELL_ROUTES.learn)}
           >
             <div className="neo-border rounded-xl bg-background w-fit p-3">
@@ -151,7 +152,7 @@ export default function ShellHomeScreen() {
           </NeoCard>
           <NeoCard
             className="flex items-center gap-3 cursor-pointer"
-            onClick={() => navigate(MODE_ROUTES.forge)}
+            onClick={() => navigate(SHELL_ROUTES.forge)}
           >
             <Hammer size={22} strokeWidth={2.5} />
             <span className="font-heading font-bold text-sm flex-1">
