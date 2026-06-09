@@ -16,6 +16,10 @@
     "learn": "Learn",
     "profile": "Profile"
   },
+  "auth": {
+    "signIn": "Sign in",
+    "haveAccount": "Already have an account?"
+  },
   "home": {
     "greeting": "Hey, {{name}}!",
     "tagline": "Pick your path",
