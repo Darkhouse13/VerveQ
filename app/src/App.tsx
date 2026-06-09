@@ -46,7 +46,8 @@ const ShellHomeScreen = lazy(() => import("./pages/shell/ShellHomeScreen"));
 // CompeteCategoryScreen / CompeteSportScreen are parked (see their files): with
 // Sport→Football the only live path, /compete lands directly on the mode grid.
 const CompeteModeGridScreen = lazy(() => import("./pages/shell/CompeteModeGridScreen"));
-const RanksPlaceholderScreen = lazy(() => import("./pages/shell/RanksPlaceholderScreen"));
+const RanksScreen = lazy(() => import("./pages/shell/RanksScreen"));
+const ShellProfileScreen = lazy(() => import("./pages/shell/ShellProfileScreen"));
 const WelcomeScreen = lazy(() => import("./pages/shell/WelcomeScreen"));
 const UpgradeScreen = lazy(() => import("./pages/shell/UpgradeScreen"));
 
@@ -315,21 +316,24 @@ const AppRoutes = () => (
             <Route path="/compete" element={<ShellGate><CompeteModeGridScreen /></ShellGate>} />
             <Route path="/compete/sport" element={<ShellGate><Navigate to="/compete" replace /></ShellGate>} />
             <Route path="/compete/sport/:sport" element={<ShellGate><Navigate to="/compete" replace /></ShellGate>} />
-            <Route path="/v2/ranks" element={<ShellGate><RanksPlaceholderScreen /></ShellGate>} />
-            {/* Contained legacy surfaces — the existing v1 screens embedded in
-                the shell chrome (v2 nav retained, v1 bottom nav suppressed) so a
-                shell nav target or Compete tile never drops the user back into
-                the v1 app. Gating mirrors the corresponding v1 routes. */}
+            {/* Shell-native Ranks + Profile (v2 designs). Ranks is open to all
+                (username-only sees the locked ranked pitch); Profile needs a
+                server identity, so it mirrors the casual-mode gate. */}
+            <Route path="/v2/ranks" element={<ShellGate><RanksScreen /></ShellGate>} />
             <Route
               path="/v2/profile"
               element={
                 <ShellGate>
-                  <ProtectedRoute>
-                    <ShellLayout embed><ProfileScreen embedded /></ShellLayout>
-                  </ProtectedRoute>
+                  <UsernameOnlyRoute>
+                    <ShellProfileScreen />
+                  </UsernameOnlyRoute>
                 </ShellGate>
               }
             />
+            {/* Contained legacy surfaces — the existing v1 screens embedded in
+                the shell chrome (v2 nav retained, v1 bottom nav suppressed) so a
+                shell nav target or Compete tile never drops the user back into
+                the v1 app. Gating mirrors the corresponding v1 routes. */}
             <Route
               path="/v2/duels"
               element={
