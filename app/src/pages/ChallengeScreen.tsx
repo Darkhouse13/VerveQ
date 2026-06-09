@@ -11,6 +11,7 @@ import { BottomNav } from "@/components/neo/BottomNav";
 import { useAuth } from "@/contexts/AuthContext";
 import { api } from "../../convex/_generated/api";
 import { V2_SHELL_ENABLED } from "@/lib/flags";
+import { SHELL_ROUTES } from "@/lib/shellRoutes";
 import { formatModeLabel, formatCategoryLabel, formatRelativeTime } from "@/lib/duel";
 
 /**
@@ -47,9 +48,14 @@ function statusBadge(status: string, winnerForMe: boolean | "draw" | null) {
   return { label: "Done", color: "muted" as const };
 }
 
-export default function ChallengeScreen() {
+export default function ChallengeScreen({ embedded = false }: { embedded?: boolean } = {}) {
   const navigate = useNavigate();
   const { user, isGuest, logout } = useAuth();
+  // When embedded in the v2 shell, cross-screen links resolve to the contained
+  // shell routes so the user never drops into the v1 app / v1 bottom nav.
+  const rivalsPath = embedded ? SHELL_ROUTES.rivals : "/rivals";
+  const rivalDetailPath = (id: string) =>
+    embedded ? SHELL_ROUTES.rivalDetail(id) : `/rivals/${id}`;
   const [showCreate, setShowCreate] = useState(false);
   const [showArenaCreate, setShowArenaCreate] = useState(false);
   const [showArenaJoin, setShowArenaJoin] = useState(false);
@@ -95,7 +101,7 @@ export default function ChallengeScreen() {
 
   if (isGuest) {
     return (
-      <div className="min-h-screen bg-background pb-20">
+      <div className={embedded ? "" : "min-h-screen bg-background pb-20"}>
         <div className="px-5 pt-6 space-y-6">
           <h1 className="text-2xl font-heading font-bold">Challenge</h1>
           <NeoCard shadow="lg" className="text-center py-8">
@@ -109,7 +115,7 @@ export default function ChallengeScreen() {
             </NeoButton>
           </NeoCard>
         </div>
-        <BottomNav />
+        {!embedded && <BottomNav />}
       </div>
     );
   }
@@ -120,7 +126,7 @@ export default function ChallengeScreen() {
   const resolved = list?.resolved ?? [];
 
   return (
-    <div className="min-h-screen bg-background pb-24">
+    <div className={embedded ? "" : "min-h-screen bg-background pb-24"}>
       <div className="px-5 pt-6 space-y-6">
         <div className="flex items-center justify-between">
           <div>
@@ -185,7 +191,7 @@ export default function ChallengeScreen() {
               </p>
               <button
                 type="button"
-                onClick={() => navigate("/rivals")}
+                onClick={() => navigate(rivalsPath)}
                 className="text-xs font-heading font-bold uppercase text-primary underline underline-offset-4 cursor-pointer"
               >
                 See all
@@ -196,7 +202,7 @@ export default function ChallengeScreen() {
                 <button
                   key={r.opponent.userId}
                   type="button"
-                  onClick={() => navigate(`/rivals/${r.opponent.userId}`)}
+                  onClick={() => navigate(rivalDetailPath(r.opponent.userId))}
                   className="neo-border neo-shadow rounded-lg bg-card px-3 py-2 text-left shrink-0 min-w-[140px] cursor-pointer active:neo-shadow-pressed"
                 >
                   <p className="font-heading font-bold text-xs truncate">@{r.opponent.username}</p>
@@ -371,7 +377,7 @@ export default function ChallengeScreen() {
         </Section>
 
         <NeoCard
-          onClick={() => navigate("/rivals")}
+          onClick={() => navigate(rivalsPath)}
           className="flex items-center justify-between"
         >
           <div className="flex items-center gap-3">
@@ -417,7 +423,7 @@ export default function ChallengeScreen() {
         />
       )}
 
-      <BottomNav />
+      {!embedded && <BottomNav />}
     </div>
   );
 }

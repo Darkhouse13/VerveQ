@@ -34,6 +34,7 @@ import LearnNodePickerScreen from "./pages/LearnNodePickerScreen";
 import LearnLadderScreen from "./pages/LearnLadderScreen";
 import NotFound from "./pages/NotFound";
 import { ShellGate } from "./components/shell/ShellGate";
+import { ShellLayout } from "./components/shell/ShellLayout";
 import {
   UsernameOnlyRoute,
   FullAccountRoute,
@@ -311,6 +312,64 @@ const AppRoutes = () => (
             <Route path="/compete/sport" element={<ShellGate><CompeteSportScreen /></ShellGate>} />
             <Route path="/compete/sport/:sport" element={<ShellGate><CompeteModeGridScreen /></ShellGate>} />
             <Route path="/v2/ranks" element={<ShellGate><RanksPlaceholderScreen /></ShellGate>} />
+            {/* Contained legacy surfaces — the existing v1 screens embedded in
+                the shell chrome (v2 nav retained, v1 bottom nav suppressed) so a
+                shell nav target or Compete tile never drops the user back into
+                the v1 app. Gating mirrors the corresponding v1 routes. */}
+            <Route
+              path="/v2/profile"
+              element={
+                <ShellGate>
+                  <ProtectedRoute>
+                    <ShellLayout embed><ProfileScreen embedded /></ShellLayout>
+                  </ProtectedRoute>
+                </ShellGate>
+              }
+            />
+            <Route
+              path="/v2/duels"
+              element={
+                <ShellGate>
+                  <UsernameRequiredRoute>
+                    <ShellLayout embed><ChallengeScreen embedded /></ShellLayout>
+                  </UsernameRequiredRoute>
+                </ShellGate>
+              }
+            />
+            <Route
+              path="/v2/forge"
+              element={
+                <ShellGate>
+                  <UsernameRequiredRoute>
+                    <ShellLayout embed><ForgeScreen embedded /></ShellLayout>
+                  </UsernameRequiredRoute>
+                </ShellGate>
+              }
+            />
+            <Route
+              path="/v2/leaderboard"
+              element={<ShellGate><ShellLayout embed><LeaderboardScreen embedded /></ShellLayout></ShellGate>}
+            />
+            <Route
+              path="/v2/rivals"
+              element={
+                <ShellGate>
+                  <UsernameRequiredRoute>
+                    <ShellLayout embed><RivalsListScreen embedded /></ShellLayout>
+                  </UsernameRequiredRoute>
+                </ShellGate>
+              }
+            />
+            <Route
+              path="/v2/rivals/:opponentUserId"
+              element={
+                <ShellGate>
+                  <UsernameRequiredRoute>
+                    <ShellLayout embed><RivalDetailScreen embedded /></ShellLayout>
+                  </UsernameRequiredRoute>
+                </ShellGate>
+              }
+            />
             {/* Learn v2 — Learn pillar (entry / run / review / mastery). */}
             <Route path="/v2/learn" element={<ShellGate><LearnEntryScreen /></ShellGate>} />
             <Route path="/v2/learn/run" element={<ShellGate><LearnRunnerScreen /></ShellGate>} />

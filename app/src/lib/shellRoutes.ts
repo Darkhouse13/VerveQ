@@ -18,6 +18,18 @@ export const SHELL_ROUTES = {
   /** `/compete/sport/:sport` */
   competeSportGrid: (sport: string) => `/compete/sport/${sport}`,
   ranks: "/v2/ranks",
+  /**
+   * Contained legacy surfaces — the existing screens embedded in the shell
+   * chrome (v2 nav retained, v1 bottom nav suppressed) so no shell path drops
+   * the user back into the v1 app. See App.tsx and the screens' `embedded` prop.
+   */
+  profile: "/v2/profile",
+  duels: "/v2/duels",
+  forge: "/v2/forge",
+  leaderboard: "/v2/leaderboard",
+  rivals: "/v2/rivals",
+  /** `/v2/rivals/:opponentUserId` */
+  rivalDetail: (opponentUserId: string) => `/v2/rivals/${opponentUserId}`,
   /** Learn v2 (the Learn pillar) — entry, run, spaced review, mastery. */
   learn: "/v2/learn",
   learnRun: "/v2/learn/run",

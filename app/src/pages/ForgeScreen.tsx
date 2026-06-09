@@ -35,7 +35,7 @@ const SPORTS = [
 
 const DIFFICULTIES = ["easy", "intermediate", "hard"] as const;
 
-export default function ForgeScreen() {
+export default function ForgeScreen({ embedded = false }: { embedded?: boolean } = {}) {
   const navigate = useNavigate();
   const { isGuest } = useAuth();
   const [activeTab, setActiveTab] = useState<Tab>("submit");
@@ -67,7 +67,7 @@ export default function ForgeScreen() {
   ];
 
   return (
-    <div className="min-h-screen bg-background pb-20">
+    <div className={embedded ? "" : "min-h-screen bg-background pb-20"}>
       {/* Header */}
       <div className="flex items-center gap-3 px-5 pt-5 pb-3">
         <button onClick={() => navigate(-1)} className="cursor-pointer">
@@ -105,7 +105,7 @@ export default function ForgeScreen() {
         {activeTab === "submissions" && <MySubmissionsTab />}
       </div>
 
-      <BottomNav />
+      {!embedded && <BottomNav />}
     </div>
   );
 }

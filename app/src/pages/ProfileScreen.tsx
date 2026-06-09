@@ -35,7 +35,7 @@ function getTier(elo: number) {
   return { name: "Bronze", color: "muted" as const, next: "Silver", progress: (elo / 1200) * 100 };
 }
 
-export default function ProfileScreen() {
+export default function ProfileScreen({ embedded = false }: { embedded?: boolean } = {}) {
   const navigate = useNavigate();
   const { user, isGuest, logout } = useAuth();
   const userId = !isGuest && user?.username ? (user._id as Id<"users">) : undefined;
@@ -85,20 +85,20 @@ export default function ProfileScreen() {
 
   if (profile === undefined) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center pb-20">
+      <div className={embedded ? "flex items-center justify-center py-24" : "min-h-screen bg-background flex items-center justify-center pb-20"}>
         <p className="font-heading font-bold animate-pulse">
           Loading profile...
         </p>
-        <BottomNav />
+        {!embedded && <BottomNav />}
       </div>
     );
   }
 
   if (profile === null) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center pb-20">
+      <div className={embedded ? "flex items-center justify-center py-24" : "min-h-screen bg-background flex items-center justify-center pb-20"}>
         <p className="font-heading font-bold">No profile data</p>
-        <BottomNav />
+        {!embedded && <BottomNav />}
       </div>
     );
   }
@@ -122,7 +122,7 @@ export default function ProfileScreen() {
   ];
 
   return (
-    <div className="min-h-screen bg-background pb-20">
+    <div className={embedded ? "" : "min-h-screen bg-background pb-20"}>
       <div className="px-5 pt-8 space-y-6">
         <div className="flex flex-col items-center text-center">
           <NeoAvatar
@@ -400,7 +400,7 @@ export default function ProfileScreen() {
         </DialogContent>
       </Dialog>
 
-      <BottomNav />
+      {!embedded && <BottomNav />}
     </div>
   );
 }
