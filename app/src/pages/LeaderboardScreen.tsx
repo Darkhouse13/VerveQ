@@ -9,14 +9,15 @@ import { api } from "../../convex/_generated/api";
 import type { Id } from "../../convex/_generated/dataModel";
 
 const filters = {
-  sport: ["All", "Football", "Tennis"],
+  sport: ["All", "Football"],
   mode: ["Quiz", "Survival", "Blitz"],
   period: ["Daily", "Weekly", "All Time"],
 };
 
 function formatLeaderboardValue(value: number | null | undefined): string {
   if (value === null || value === undefined) return "0";
-  return Number.isInteger(value) ? String(value) : value.toFixed(1);
+  // Ratings carry fractional ELO math internally; players see whole numbers.
+  return String(Math.round(value));
 }
 
 function getTier(elo: number | null) {

@@ -8,13 +8,12 @@ import { useQuery } from "convex/react";
 import { api } from "../../../../convex/_generated/api";
 import { LearnShell, Eyebrow, Chip, MasteryBar } from "@/components/learn/LearnPrimitives";
 import { SHELL_ROUTES } from "@/lib/shellRoutes";
-import { LEARN_FIXTURE_SUBJECTS } from "@/lib/learn/fixtures";
 
 export default function LearnMasteryScreen() {
   const navigate = useNavigate();
   const { t } = useTranslation("learn");
   const plan = useQuery(api.learn.getLearnReviewPlan, { subject: "geography" });
-  const subjects = plan?.nodes ?? LEARN_FIXTURE_SUBJECTS;
+  const subjects = plan?.nodes ?? [];
   const overall = Math.round(
     (subjects.reduce((a, s) => a + s.mastery, 0) / subjects.length) * 100,
   );

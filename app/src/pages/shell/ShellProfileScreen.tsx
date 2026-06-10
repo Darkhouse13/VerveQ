@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useQuery } from "convex/react";
-import { Lock, Pencil, Share2, ArrowUp, Crown } from "lucide-react";
+import { Lock, Share2, ArrowUp, Crown } from "lucide-react";
 import { toast } from "sonner";
 import { NeoCard } from "@/components/neo/NeoCard";
 import { NeoButton } from "@/components/neo/NeoButton";
@@ -132,7 +132,9 @@ export default function ShellProfileScreen() {
   const unlocked = new Map(
     (userAchs ?? []).map((ua) => [ua.achievementId, ua.unlockedAt]),
   );
-  const badges = (allAchievements ?? []).slice(0, 6);
+  const badges = (allAchievements ?? [])
+    .filter((a) => a.achievementId !== "multi_sport_athlete") // football-only product
+    .slice(0, 6);
   const unlockedCount = badges.filter((a) => unlocked.has(a.achievementId)).length;
 
   const activity = (profile?.recentGames ?? []).slice(0, 5);
@@ -169,14 +171,6 @@ export default function ShellProfileScreen() {
         </div>
       </div>
       <div className="flex gap-2">
-        <NeoButton
-          variant="secondary"
-          size="sm"
-          className="flex-1"
-          onClick={() => toast.info(t("profile.editSoon"))}
-        >
-          <Pencil size={14} strokeWidth={2.5} /> {t("profile.edit")}
-        </NeoButton>
         <NeoButton
           variant="secondary"
           size="sm"
@@ -222,7 +216,7 @@ export default function ShellProfileScreen() {
 
   const rankCard = guest ? (
     <NeoCard
-      className="flex flex-col gap-2.5 md:flex-1 md:min-h-0 md:justify-center"
+      className="flex flex-col gap-2.5 md:flex-1 md:min-h-fit md:justify-center"
       style={{
         background:
           "repeating-linear-gradient(45deg, rgba(0,0,0,.045) 0 10px, transparent 10px 20px)",
@@ -254,7 +248,7 @@ export default function ShellProfileScreen() {
   ) : (
     <NeoCard
       shadow="lg"
-      className="bg-foreground text-background flex flex-col gap-3.5 md:flex-1 md:min-h-0 md:justify-between cursor-pointer"
+      className="bg-foreground text-background flex flex-col gap-3.5 md:flex-1 md:min-h-fit md:justify-between cursor-pointer"
       onClick={() => navigate(SHELL_ROUTES.ranks)}
     >
       <div className="flex items-center justify-between gap-2">
@@ -329,13 +323,13 @@ export default function ShellProfileScreen() {
   );
 
   const statTiles = (
-    <div className="grid grid-cols-2 gap-3 md:flex-1 md:min-h-0 md:auto-rows-fr">
+    <div className="grid grid-cols-2 gap-3 md:flex-1 md:min-h-fit md:auto-rows-fr">
       {[
         {
           label: t("profile.stats.games"),
-          value: guest
-            ? String(user?.totalGames ?? 0)
-            : String(rankedGames),
+          // Lifetime plays (casual included) — survives the upgrade, matching
+          // the "your casual progress carries over" promise and the home tile.
+          value: String(profile?.totalPlays ?? user?.totalGames ?? 0),
         },
         {
           label: t("profile.stats.winRate"),
@@ -369,7 +363,7 @@ export default function ShellProfileScreen() {
   );
 
   const badgeGrid = (
-    <div className="flex flex-col gap-2.5 md:flex-1 md:min-h-0 md:overflow-hidden">
+    <div className="flex flex-col gap-2.5 md:flex-1 md:min-h-fit">
       <div className="flex items-center justify-between">
         <span className="font-mono text-[11px] font-bold uppercase tracking-widest text-muted-foreground">
           {t("profile.achievements")}
@@ -419,7 +413,7 @@ export default function ShellProfileScreen() {
   );
 
   const activityCard = (
-    <NeoCard className="p-0 flex flex-col md:flex-1 md:min-h-0 md:overflow-hidden">
+    <NeoCard className="p-0 flex flex-col md:flex-1 md:min-h-fit">
       <div className="flex items-center justify-between px-4 pt-3 pb-2.5">
         <span className="font-mono text-[11px] font-bold uppercase tracking-widest text-muted-foreground">
           {t("profile.activity")}
@@ -554,16 +548,16 @@ export default function ShellProfileScreen() {
       <div className="hidden md:flex md:flex-col md:h-full md:min-h-0 md:gap-4">
         {upgradeBanner}
         <div className="grid grid-cols-[1.05fr_1.25fr_1.1fr] gap-4 flex-1 min-h-0">
-          <div className="flex flex-col gap-4 min-h-0">
+          <div className="flex flex-col gap-4 min-h-0 overflow-y-auto">
             {identity}
             {rankCard}
             {signOut}
           </div>
-          <div className="flex flex-col gap-4 min-h-0">
+          <div className="flex flex-col gap-4 min-h-0 overflow-y-auto">
             {statTiles}
             {badgeGrid}
           </div>
-          <div className="flex flex-col gap-4 min-h-0">
+          <div className="flex flex-col gap-4 min-h-0 overflow-y-auto">
             {activityCard}
             {seasonsCard}
           </div>

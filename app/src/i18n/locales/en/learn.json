@@ -21,13 +21,16 @@
     "heroLine1": "Learn it,",
     "heroLine2": "don't cram it.",
     "heroBody": "A short adaptive set — multiple choice, free text, numbers and ordering. Get it wrong and we teach, not just mark.",
-    "metaLine": "4 questions · ≈4 min",
+    "metaLine": "Adaptive set · ≈5 min",
     "start": "Start →",
     "resumeTitle": "Picking up where you left off",
     "allSubjects": "All subjects →",
-    "streakTitle": "Your learning streak",
-    "streakDays": "days in a row 🌱",
-    "dueNote": "{{count}} items due today · keep it alive."
+    "dueNote": "{{count}} items due today · keep it alive.",
+    "dueTitle": "Due for review",
+    "dueItems": "items ready today",
+    "rotationNote": "{{count}} subjects in rotation.",
+    "dueNoteEmpty": "Nothing due — today's session plants new seeds.",
+    "resumeEmpty": "Nothing in progress yet — start today's session."
   },
   "run": {
     "loading": "Loading session…",
@@ -94,7 +97,8 @@
     "dueNow": "Due now",
     "dueIn": "Due in {{hours}}h",
     "masteryPct": "{{pct}}% mastery",
-    "inQueue": "{{count}} items in queue"
+    "inQueue": "{{count}} items in queue",
+    "notScheduled": "Not scheduled yet"
   },
   "mastery": {
     "eyebrow": "Learn · mastery",
@@ -105,6 +109,6 @@
     "learning": "Learning",
     "due": "Due",
     "startSession": "Start session →",
-    "dueLine": "{{count}} items due · last seen 2d ago"
+    "dueLine": "{{count}} items due"
   }
 }

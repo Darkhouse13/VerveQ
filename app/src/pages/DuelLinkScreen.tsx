@@ -292,6 +292,8 @@ function IntroScreen({
   onStart: () => void;
 }) {
   const challenger = view.challenger.displayName;
+  const { isAuthenticated, isGuest } = useAuth();
+  const signedIn = isAuthenticated && !isGuest;
   return (
     <div className="min-h-screen bg-background px-5 py-8 flex flex-col items-center pb-20">
       <NeoCard shadow="lg" className="w-full max-w-md text-center py-8">
@@ -303,7 +305,7 @@ function IntroScreen({
           @{challenger} challenged you
         </h1>
         <p className="text-sm text-muted-foreground mt-2">
-          {topicLabel(view)} · {formatModeLabel(view.mode)} · {view.difficulty}
+          {topicLabel(view)} · {formatModeLabel(view.mode)} · {view.difficulty[0].toUpperCase() + view.difficulty.slice(1)}
         </p>
         <p className="text-xs text-muted-foreground mt-1">
           {view.questionCount} questions · async, no time pressure
@@ -315,9 +317,11 @@ function IntroScreen({
           <ArrowRight size={18} strokeWidth={3} />
           Play now
         </NeoButton>
-        <p className="text-[11px] text-center text-muted-foreground">
-          You can play as a guest. Sign up after to keep your score.
-        </p>
+        {!signedIn && (
+          <p className="text-[11px] text-center text-muted-foreground">
+            You can play as a guest. Sign up after to keep your score.
+          </p>
+        )}
       </div>
     </div>
   );

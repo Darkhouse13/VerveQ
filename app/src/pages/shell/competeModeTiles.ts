@@ -1,5 +1,5 @@
 import {
-  Brain, Heart, Zap, TrendingUp, Grid3X3, HelpCircle, Timer, Radio, Swords, Users,
+  Brain, Heart, Zap, TrendingUp, Grid3X3, HelpCircle, Timer, Swords, Users,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { SHELL_ROUTES } from "@/lib/shellRoutes";
@@ -40,8 +40,7 @@ export const COMPETE_MODE_TILES: ModeTile[] = [
   { key: "whoAmI", icon: HelpCircle, color: "yellow", to: (s) => `/v2/who-am-i?sport=${s}` },
   // Daily is migrated to the shell — reuses the Quiz prototype layout via the DAILY session.
   { key: "daily", icon: Timer, color: "primary", to: (s) => `/v2/daily?sport=${s}` },
-  // Live Match (1v1 realtime) is migrated to the shell prototype layout (Arena
-  // pattern) over the existing backend. The screen resolves the active match
-  // (created via the untouched Challenge matchmaking flow) or guides there.
-  { key: "liveMatch", icon: Radio, color: "blue", to: () => `/v2/live-match` },
+  // Live Match is parked: nothing in the product can create a live match any
+  // more (createFromChallenge has no callers), so the tile would advertise a
+  // dead end. /v2/live-match stays routable as a viewer for legacy matches.
 ];

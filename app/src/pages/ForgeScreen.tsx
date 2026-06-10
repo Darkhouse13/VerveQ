@@ -27,23 +27,32 @@ import { useAuth } from "@/contexts/AuthContext";
 
 type Tab = "submit" | "review" | "submissions";
 
-const SPORTS = [
-  { name: "football", emoji: "\u26BD" },
-  { name: "tennis", emoji: "\uD83C\uDFBE" },
-  { name: "basketball", emoji: "\uD83C\uDFC0" },
-];
+// Football-only: submissions target the one live sport.
+const SPORTS = [{ name: "football", emoji: "\u26BD" }];
 
 const DIFFICULTIES = ["easy", "intermediate", "hard"] as const;
 
 export default function ForgeScreen({ embedded = false }: { embedded?: boolean } = {}) {
   const navigate = useNavigate();
-  const { isGuest } = useAuth();
+  const { isGuest, isUsernameOnly } = useAuth();
   const [activeTab, setActiveTab] = useState<Tab>("submit");
 
   const access = useQuery(api.forge.canAccess, isGuest ? "skip" : {});
 
   if (isGuest) {
-    return <ForgeLockScreen currentElo={0} message="Create a username account to use The Forge. Guest progress is tab-local and is not stored." />;
+    return <ForgeLockScreen currentElo={0} hideElo message="Create a username account to use The Forge. Guest progress is tab-local and is not stored." />;
+  }
+
+  // Username-only players have no ELO yet — showing "1,200 CURRENT ELO" here
+  // would fabricate ranked depth the rest of the app deliberately withholds.
+  if (isUsernameOnly) {
+    return (
+      <ForgeLockScreen
+        currentElo={0}
+        hideElo
+        message="The Forge unlocks at Gold Tier (1500 ELO), and ELO needs a full account. Create one to start climbing."
+      />
+    );
   }
 
   if (access === undefined) {
@@ -112,7 +121,15 @@ export default function ForgeScreen({ embedded = false }: { embedded?: boolean }
 
 // ── Lock Screen ──
 
-function ForgeLockScreen({ currentElo, message }: { currentElo: number; message?: string }) {
+function ForgeLockScreen({
+  currentElo,
+  message,
+  hideElo = false,
+}: {
+  currentElo: number;
+  message?: string;
+  hideElo?: boolean;
+}) {
   const navigate = useNavigate();
   const displayElo = Math.max(Math.round(currentElo), 1200);
   // Contract marker: const displayElo = Math.round(currentElo);
@@ -136,20 +153,24 @@ function ForgeLockScreen({ currentElo, message }: { currentElo: number; message?
           )}
         </p>
 
-        <div className="mb-2">
-          <p className="font-mono font-bold text-3xl">{displayElo.toLocaleString()}</p>
-          <p className="text-xs text-muted-foreground uppercase">Current ELO</p>
-        </div>
+        {!hideElo && (
+          <>
+            <div className="mb-2">
+              <p className="font-mono font-bold text-3xl">{displayElo.toLocaleString()}</p>
+              <p className="text-xs text-muted-foreground uppercase">Current ELO</p>
+            </div>
 
-        <div className="neo-border rounded-full h-3 bg-muted mb-1">
-          <div
-            className="bg-primary h-full rounded-full transition-all"
-            style={{ width: `${progress}%` }}
-          />
-        </div>
-        <p className="text-[10px] text-muted-foreground mb-5">
-          {Math.max(1500 - displayElo, 0).toLocaleString()} ELO to go
-        </p>
+            <div className="neo-border rounded-full h-3 bg-muted mb-1">
+              <div
+                className="bg-primary h-full rounded-full transition-all"
+                style={{ width: `${progress}%` }}
+              />
+            </div>
+            <p className="text-[10px] text-muted-foreground mb-5">
+              {Math.max(1500 - displayElo, 0).toLocaleString()} ELO to go
+            </p>
+          </>
+        )}
 
         <NeoButton variant="secondary" size="full" onClick={() => navigate(-1)}>
           Go Back

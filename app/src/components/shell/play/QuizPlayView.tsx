@@ -85,6 +85,7 @@ export function QuizPlayView({ q, title, onExit, exitLabel = "Quit", loadingLabe
                 imageUrl={q.question.imageUrl}
                 alt={`Image for: ${q.question.question}`}
                 onZoom={() => q.setZoomImage(q.question!.imageUrl!)}
+                imgClassName="max-h-[38vh]"
               />
             </div>
           )}

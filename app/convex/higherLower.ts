@@ -1,5 +1,6 @@
 import { mutation, query, type MutationCtx } from "./_generated/server";
 import { v } from "convex/values";
+import { incrementTotalGames } from "./lib/playCount";
 import { getAuthUserId } from "@convex-dev/auth/server";
 import { assertUsernameRequiredUser } from "./lib/authz";
 
@@ -244,6 +245,7 @@ export const makeGuess = mutation({
 
     if (!correct) {
       await ctx.db.patch(sessionId, { status: "game_over" });
+      await incrementTotalGames(ctx, userId);
       return {
         correct: false,
         playerBValue,
@@ -294,6 +296,7 @@ export const makeGuess = mutation({
         streak: newStreak,
         status: "game_over",
       });
+      await incrementTotalGames(ctx, userId);
       return {
         correct: true,
         playerBValue,
@@ -364,6 +367,7 @@ export const penalizeTabSwitch = mutation({
     }
 
     await ctx.db.patch(sessionId, { status: "game_over" });
+    await incrementTotalGames(ctx, userId);
     return { penalized: true, gameOver: true, score: session.score };
   },
 });

@@ -31,7 +31,7 @@ function McqRenderer({ question, draft, setDraft, reveal, verdict }: RendererPro
   const picked = typeof draft === "string" ? draft : null;
   return (
     <div className="flex flex-col gap-2.5">
-      {q.options.map((o) => {
+      {q.options.map((o, index) => {
         const isPicked = picked === o.key;
         // De-leaked: the server keeps the correct answer private, returning only
         // whether THIS pick was right. Colour the user's own pick; dim the rest.
@@ -53,8 +53,10 @@ function McqRenderer({ question, draft, setDraft, reveal, verdict }: RendererPro
               dimmed && "bg-card opacity-50",
             )}
           >
+            {/* Display letter comes from position — live ladders key options by
+                their text, which would otherwise be crammed into this chip. */}
             <span className="font-heading grid place-items-center w-7 h-7 shrink-0 rounded-md border-2 border-current text-sm">
-              {o.key}
+              {String.fromCharCode(65 + index)}
             </span>
             <span className="flex-1">{o.text}</span>
             {correct && <Check size={18} strokeWidth={3} />}

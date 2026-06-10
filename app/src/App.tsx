@@ -138,9 +138,11 @@ const AppRoutes = () => (
             <Route
               path="/sport-select"
               element={
-                <ProtectedRoute>
-                  <SportSelectScreen />
-                </ProtectedRoute>
+                <V2Redirect to="/compete">
+                  <ProtectedRoute>
+                    <SportSelectScreen />
+                  </ProtectedRoute>
+                </V2Redirect>
               }
             />
             <Route
@@ -353,9 +355,9 @@ const AppRoutes = () => (
             <Route path="/whoami" element={<V2Redirect to="/v2/who-am-i?sport=football"><NotFound /></V2Redirect>} />
             {/* Dev/preview only — Learn node picker + graph-built ladders. Not wired into home, nav, or any scored mode. */}
             <Route path="/learn" element={<V2Redirect to="/v2/learn"><LearnNodePickerScreen /></V2Redirect>} />
-            <Route path="/learn/geography" element={<LearnNodePickerScreen />} />
-            <Route path="/learn/geography/:nodeId" element={<LearnLadderScreen />} />
-            <Route path="/learn/prototype" element={<LearnPrototypeScreen />} />
+            <Route path="/learn/geography" element={<V2Redirect to="/v2/learn"><LearnNodePickerScreen /></V2Redirect>} />
+            <Route path="/learn/geography/:nodeId" element={<V2Redirect to="/v2/learn"><LearnLadderScreen /></V2Redirect>} />
+            <Route path="/learn/prototype" element={<V2Redirect to="/v2/learn"><LearnPrototypeScreen /></V2Redirect>} />
             {/* v2 unified shell — additive, flag-gated. ShellGate redirects to
                 /home when VITE_V2_SHELL_ENABLED is off, so these are invisible
                 until enabled and never shadow existing routes. */}
@@ -448,10 +450,10 @@ const AppRoutes = () => (
               }
             />
             {/* Learn v2 — Learn pillar (entry / run / review / mastery). */}
-            <Route path="/v2/learn" element={<ShellGate><LearnEntryScreen /></ShellGate>} />
-            <Route path="/v2/learn/run" element={<ShellGate><LearnRunnerScreen /></ShellGate>} />
-            <Route path="/v2/learn/review" element={<ShellGate><LearnReviewScreen /></ShellGate>} />
-            <Route path="/v2/learn/mastery" element={<ShellGate><LearnMasteryScreen /></ShellGate>} />
+            <Route path="/v2/learn" element={<ShellGate><UsernameOnlyRoute><LearnEntryScreen /></UsernameOnlyRoute></ShellGate>} />
+            <Route path="/v2/learn/run" element={<ShellGate><UsernameOnlyRoute><LearnRunnerScreen /></UsernameOnlyRoute></ShellGate>} />
+            <Route path="/v2/learn/review" element={<ShellGate><UsernameOnlyRoute><LearnReviewScreen /></UsernameOnlyRoute></ShellGate>} />
+            <Route path="/v2/learn/mastery" element={<ShellGate><UsernameOnlyRoute><LearnMasteryScreen /></UsernameOnlyRoute></ShellGate>} />
             {/* In-game prototype layout — migrated modes. Gating reflects the
                 server's eligibility (convex/lib/authz.ts): ranked modes require a
                 full account; casual/social modes admit anyone with a username

@@ -8,20 +8,22 @@ import { useQuery } from "convex/react";
 import { api } from "../../../../convex/_generated/api";
 import { LearnShell, Eyebrow } from "@/components/learn/LearnPrimitives";
 import { SHELL_ROUTES } from "@/lib/shellRoutes";
-import { LEARN_FIXTURE_SUBJECTS } from "@/lib/learn/fixtures";
-import { LEARN_PIPELINE_PROOF_NODE_ID } from "@/lib/learn/contract";
+import { pickTodaysSessionNode } from "@/lib/learn/todaysSession";
 
 const TYPE_KEYS = ["mcq", "text", "numeric", "order"] as const;
-const STREAK_DAYS = 9;
 
 export default function LearnEntryScreen() {
   const navigate = useNavigate();
   const { t } = useTranslation("learn");
   const plan = useQuery(api.learn.getLearnReviewPlan, { subject: "geography" });
-  const subjects = plan?.nodes ?? LEARN_FIXTURE_SUBJECTS;
-  const start = () =>
-    navigate(`${SHELL_ROUTES.learnRun}?node=${LEARN_PIPELINE_PROOF_NODE_ID}`);
+  const subjects = plan?.nodes ?? [];
+  const todaysNode = pickTodaysSessionNode(subjects);
+  const start = () => {
+    if (todaysNode) navigate(`${SHELL_ROUTES.learnRun}?node=${todaysNode}`);
+  };
   const resume = subjects.filter((s) => s.state === "learning").slice(0, 3);
+  const dueToday = subjects.reduce((sum, s) => sum + (s.due ?? 0), 0);
+  const learningCount = subjects.filter((s) => s.state === "learning").length;
 
   return (
     <LearnShell>
@@ -89,7 +91,8 @@ export default function LearnEntryScreen() {
             <button
               type="button"
               onClick={start}
-              className="mt-auto w-full neo-border rounded-xl bg-foreground px-4 py-3 font-heading font-bold text-background"
+              disabled={!todaysNode}
+              className="mt-auto w-full neo-border rounded-xl bg-foreground px-4 py-3 font-heading font-bold text-background disabled:opacity-60"
             >
               {t("entry.start")}
             </button>
@@ -110,45 +113,40 @@ export default function LearnEntryScreen() {
               </button>
             </div>
             <div className="mt-3 flex flex-1 flex-col justify-center gap-2.5">
-              {resume.map((s) => (
-                <div key={s.id}>
-                  <div className="mb-1 flex items-center justify-between">
-                    <span className="text-sm font-semibold">{s.label}</span>
-                    <span className="font-mono text-[11px] text-muted-foreground">
-                      {Math.round(s.mastery * 100)}% · {t("state.learning")}
-                    </span>
+              {resume.length === 0 ? (
+                <p className="text-sm text-muted-foreground">{t("entry.resumeEmpty")}</p>
+              ) : (
+                resume.map((s) => (
+                  <div key={s.id}>
+                    <div className="mb-1 flex items-center justify-between">
+                      <span className="text-sm font-semibold">{s.label}</span>
+                      <span className="font-mono text-[11px] text-muted-foreground">
+                        {Math.round(s.mastery * 100)}% · {t("state.learning")}
+                      </span>
+                    </div>
+                    <div className="h-3 overflow-hidden rounded-full border-2 border-foreground bg-card">
+                      <div
+                        className="h-full bg-primary"
+                        style={{ width: `${Math.round(s.mastery * 100)}%` }}
+                      />
+                    </div>
                   </div>
-                  <div className="h-3 overflow-hidden rounded-full border-2 border-foreground bg-card">
-                    <div
-                      className="h-full bg-primary"
-                      style={{ width: `${Math.round(s.mastery * 100)}%` }}
-                    />
-                  </div>
-                </div>
-              ))}
+                ))
+              )}
             </div>
           </div>
 
           <div className="neo-border rounded-xl bg-card p-4 md:p-5 flex flex-col min-h-0">
-            <Eyebrow>{t("entry.streakTitle")}</Eyebrow>
+            <Eyebrow>{t("entry.dueTitle")}</Eyebrow>
             <div className="mt-2.5 flex items-center gap-2.5">
-              <span className="font-heading font-black text-5xl text-primary">{STREAK_DAYS}</span>
-              <span className="text-[13.5px] font-semibold">{t("entry.streakDays")}</span>
+              <span className="font-heading font-black text-5xl text-primary">{dueToday}</span>
+              <span className="text-[13.5px] font-semibold">{t("entry.dueItems")}</span>
             </div>
-            <div className="mt-3.5 flex flex-wrap gap-1.5">
-              {["M", "T", "W", "T", "F", "S", "S"].map((d, i) => (
-                <div
-                  key={i}
-                  className={`grid h-8 w-8 place-items-center rounded-md border-2 border-foreground font-mono text-[11px] font-bold ${
-                    i < 5 ? "bg-success text-success-foreground" : "bg-card"
-                  }`}
-                >
-                  {d}
-                </div>
-              ))}
-            </div>
+            <p className="mt-3.5 text-sm text-muted-foreground">
+              {t("entry.rotationNote", { count: learningCount })}
+            </p>
             <p className="mt-auto pt-3 font-mono text-[11px] text-muted-foreground">
-              {t("entry.dueNote", { count: 6 })}
+              {dueToday === 0 ? t("entry.dueNoteEmpty") : t("entry.dueNote", { count: dueToday })}
             </p>
           </div>
         </div>

@@ -2088,10 +2088,12 @@ export function NotInRoom({
   title,
   detail,
   onBack,
+  backLabel = "Back to Challenge",
 }: {
   title: string;
   detail?: string;
   onBack?: () => void;
+  backLabel?: string;
 }) {
   return (
     <div className="min-h-screen bg-background px-5 py-8 flex flex-col items-center justify-center">
@@ -2108,7 +2110,7 @@ export function NotInRoom({
           onClick={onBack ?? (() => (window.location.pathname = "/challenge"))}
         >
           <ArrowRight size={14} strokeWidth={3} />
-          Back to Challenge
+          {backLabel}
         </NeoButton>
       </NeoCard>
     </div>

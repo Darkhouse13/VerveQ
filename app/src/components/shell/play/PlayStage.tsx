@@ -109,7 +109,9 @@ export function PlayStage({
         <div className="md:h-full md:grid md:grid-cols-[1fr_28rem_1fr] md:gap-6 md:items-stretch">
           <aside className={cn(RAIL, "md:justify-self-end md:pr-1")}>{left}</aside>
 
-          <div className="w-full max-w-md mx-auto md:overflow-y-auto scrollbar-none md:py-3">
+          {/* Visible scrollbar: on short viewports the controls live below the
+              fold and a hidden-scroll column reads as a broken, unclickable game. */}
+          <div className="w-full max-w-md mx-auto md:overflow-y-auto md:py-3">
             {children}
           </div>
 

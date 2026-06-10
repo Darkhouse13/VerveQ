@@ -3,6 +3,7 @@ import { v } from "convex/values";
 import { getAuthUserId } from "@convex-dev/auth/server";
 import { assertUsernameRequiredUser } from "./lib/authz";
 import { findBestMatch } from "./lib/fuzzy";
+import { incrementTotalGames } from "./lib/playCount";
 import {
   buildWhoAmIComparisonFeedback,
   getWhoAmIPlayerMetadata,
@@ -216,6 +217,7 @@ export const submitGuess = mutation({
 
     if (result.matched) {
       await ctx.db.patch(sessionId, { status: "correct" });
+      await incrementTotalGames(ctx, userId);
       return {
         correct: true,
         closeCall: false,
@@ -277,6 +279,9 @@ export const submitGuess = mutation({
       maxGuesses,
       wrongGuessCount,
     });
+    if (gameOver) {
+      await incrementTotalGames(ctx, userId);
+    }
     const response = {
       correct: false,
       closeCall: false,

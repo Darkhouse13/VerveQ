@@ -171,8 +171,10 @@ export default function LearnRunnerScreen() {
   const rail = (
     <div className="neo-border neo-shadow rounded-xl bg-card p-5 flex flex-col gap-4 min-h-0">
       <div className="flex items-center justify-between gap-2">
-        <Chip className="bg-foreground text-background">{q.subject}</Chip>
-        <Chip>{typeLabel}</Chip>
+        <Chip className="bg-foreground text-background min-w-0 max-w-full truncate">
+          {q.subject}
+        </Chip>
+        <Chip className="shrink-0">{typeLabel}</Chip>
       </div>
       <div>
         <Eyebrow className="mb-2 block">{t("run.progress")}</Eyebrow>
@@ -204,7 +206,7 @@ export default function LearnRunnerScreen() {
         <Chip className="bg-foreground text-background">{typeLabel}</Chip>
         <LadderDots total={total} current={idx + (stage === "reveal" ? 1 : 0)} />
       </div>
-      <Eyebrow>{q.subject}</Eyebrow>
+      <Eyebrow className="truncate">{q.subject}</Eyebrow>
       <div className="font-heading text-2xl leading-tight md:text-[27px]">{q.prompt}</div>
 
       {stage !== "branch" && (

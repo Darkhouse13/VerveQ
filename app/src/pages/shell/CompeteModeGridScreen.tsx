@@ -37,7 +37,10 @@ export default function CompeteModeGridScreen() {
       // history-back could leave the shell (or the app) on a direct visit.
       onBack={() => navigate(SHELL_ROUTES.home)}
     >
-      <div className="flex flex-col gap-4 md:h-full md:justify-center">
+      {/* Auto margins center on tall screens but collapse (instead of clipping
+          the top row, like justify-center did) when the grid overflows. */}
+      <div className="flex flex-col md:h-full md:min-h-0 md:overflow-y-auto">
+        <div className="flex flex-col gap-4 md:my-auto">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           {COMPETE_MODE_TILES.map((m) => (
             <NeoCard
@@ -62,9 +65,10 @@ export default function CompeteModeGridScreen() {
           ))}
         </div>
         {/* The collapsed category step's pointer keeps its home here. */}
-        <p className="text-xs text-muted-foreground text-center px-4">
-          {t("compete.categoryHint")}
-        </p>
+          <p className="text-xs text-muted-foreground text-center px-4">
+            {t("compete.categoryHint")}
+          </p>
+        </div>
       </div>
     </ShellLayout>
   );

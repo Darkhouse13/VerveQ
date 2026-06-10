@@ -6,6 +6,8 @@ interface QuestionImageProps {
   onZoom?: () => void;
   /** Maximum retry attempts on load error. Defaults to 2 (3 total tries). */
   maxRetries?: number;
+  /** Extra classes for the <img> (e.g. a viewport-relative height clamp). */
+  imgClassName?: string;
 }
 
 export function QuestionImage({
@@ -13,6 +15,7 @@ export function QuestionImage({
   alt = "Question image",
   onZoom,
   maxRetries = 2,
+  imgClassName = "",
 }: QuestionImageProps) {
   const [loading, setLoading] = useState(true);
   const [errored, setErrored] = useState(false);
@@ -61,7 +64,7 @@ export function QuestionImage({
         alt={alt}
         decoding="async"
         loading="eager"
-        className={`w-full object-contain neo-border ${loading ? "hidden" : ""}`}
+        className={`w-full object-contain neo-border ${imgClassName} ${loading ? "hidden" : ""}`}
         style={{ borderWidth: "3px" }}
         onLoad={() => setLoading(false)}
         onError={() => {

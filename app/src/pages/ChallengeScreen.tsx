@@ -48,6 +48,12 @@ function statusBadge(status: string, winnerForMe: boolean | "draw" | null) {
   return { label: "Done", color: "muted" as const };
 }
 
+
+function opponentLabel(username: string): string {
+  // Link duels have no opponent yet; the server placeholder is "Link opponent".
+  return username === "Link opponent" ? "Open invite" : `vs @${username}`;
+}
+
 export default function ChallengeScreen({ embedded = false }: { embedded?: boolean } = {}) {
   const navigate = useNavigate();
   const { user, isGuest, logout } = useAuth();
@@ -245,7 +251,7 @@ export default function ChallengeScreen({ embedded = false }: { embedded?: boole
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
                     <p className="font-heading font-bold text-sm truncate">
-                      vs @{d.opponent.username}
+                      {opponentLabel(d.opponent.username)}
                     </p>
                     <p className="text-xs text-muted-foreground capitalize truncate">
                       {summaryHeadline(d)} · {formatModeLabel(d.mode)} · {d.difficulty}
@@ -287,7 +293,7 @@ export default function ChallengeScreen({ embedded = false }: { embedded?: boole
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
                     <p className="font-heading font-bold text-sm truncate">
-                      vs @{d.opponent.username}
+                      {opponentLabel(d.opponent.username)}
                     </p>
                     <p className="text-xs text-muted-foreground capitalize truncate">
                       {summaryHeadline(d)} · {formatModeLabel(d.mode)} · {d.difficulty}
@@ -352,7 +358,7 @@ export default function ChallengeScreen({ embedded = false }: { embedded?: boole
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
                     <p className="font-heading font-bold text-sm truncate">
-                      vs @{d.opponent.username}
+                      {opponentLabel(d.opponent.username)}
                     </p>
                     <p className="text-xs text-muted-foreground capitalize truncate">
                       {summaryHeadline(d)} · {formatModeLabel(d.mode)} · {d.difficulty}

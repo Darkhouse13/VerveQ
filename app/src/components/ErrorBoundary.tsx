@@ -1,6 +1,7 @@
 import { Component, type ErrorInfo, type ReactNode } from "react";
 import { NeoButton } from "@/components/neo/NeoButton";
 import { NeoCard } from "@/components/neo/NeoCard";
+import { humanizeServerError } from "@/lib/errors";
 
 interface ErrorBoundaryProps {
   children: ReactNode;
@@ -50,7 +51,7 @@ export class ErrorBoundary extends Component<
           </p>
           {this.state.error?.message && (
             <p className="text-xs font-mono text-destructive break-words mb-5">
-              {this.state.error.message}
+              {humanizeServerError(this.state.error)}
             </p>
           )}
           <div className="space-y-2.5">

@@ -348,21 +348,6 @@ export default function WhoAmIPlayScreen() {
           </p>
         </div>
 
-        {/* Blurred visual hook (non-hard mode) — a deliberately obscured hook, not the answer. */}
-        {!hardMode && (
-          <NeoCard color="accent" className="mb-4 overflow-hidden">
-            <div className="h-24 neo-border bg-gradient-to-br from-emerald-950 via-green-800 to-yellow-500 flex items-center justify-center relative">
-              <div className="absolute inset-0 backdrop-blur-md" />
-              <div className="relative neo-border rounded-full bg-background/80 w-16 h-16 flex items-center justify-center blur-[1px]">
-                <User size={36} />
-              </div>
-            </div>
-            <p className="font-body text-xs text-muted-foreground mt-2">
-              Blurred visual hook — identify the player from clues and deduction.
-            </p>
-          </NeoCard>
-        )}
-
         {hardMode && (
           <NeoCard color="default" className="mb-4 text-center py-3">
             <p className="font-heading font-bold text-sm">Hard Mode</p>
@@ -380,7 +365,7 @@ export default function WhoAmIPlayScreen() {
             >
               <div className="flex items-start gap-3">
                 <div className="neo-border rounded-full bg-background w-8 h-8 flex items-center justify-center shrink-0">
-                  <span className="font-mono font-bold text-sm">{i + 1}</span>
+                  <span className="font-mono font-bold text-sm text-foreground">{i + 1}</span>
                 </div>
                 <p className="font-body text-sm leading-relaxed">{clue}</p>
               </div>

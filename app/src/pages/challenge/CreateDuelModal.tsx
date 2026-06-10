@@ -16,10 +16,10 @@ type Difficulty = "easy" | "intermediate" | "hard";
 type DuelKind = "knowledge" | "came_first" | "sports";
 type OpponentMode = "rival" | "username" | "link";
 
+// Football-only: the live product ships one sport. Keep the structure so a
+// future sport is a one-line add, but never offer dead sports in the picker.
 const SPORTS: { key: string; label: string; emoji: string }[] = [
   { key: "football", label: "Football", emoji: "⚽" },
-  { key: "basketball", label: "Basketball", emoji: "🏀" },
-  { key: "tennis", label: "Tennis", emoji: "🎾" },
 ];
 
 const KNOWLEDGE_CATEGORIES = [
@@ -129,7 +129,7 @@ export default function CreateDuelModal({
     setKind(k);
     setSport(null);
     setCategory(null);
-    if (k === "came_first") {
+    if (k === "came_first" || k === "sports") {
       setSport("football");
       setStep("difficulty");
     } else {
@@ -235,7 +235,7 @@ export default function CreateDuelModal({
               >
                 <div>
                   <p className="font-heading font-bold">Sports trivia</p>
-                  <p className="text-xs opacity-90">Football · Basketball · Tennis</p>
+                  <p className="text-xs opacity-90">Football — head-to-head quiz</p>
                 </div>
                 <span className="text-2xl">🏆</span>
               </NeoCard>

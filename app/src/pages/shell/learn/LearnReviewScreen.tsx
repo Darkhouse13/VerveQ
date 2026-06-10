@@ -8,7 +8,6 @@ import { useQuery } from "convex/react";
 import { api } from "../../../../convex/_generated/api";
 import { LearnShell, Eyebrow, Chip, MasteryBar } from "@/components/learn/LearnPrimitives";
 import { SHELL_ROUTES } from "@/lib/shellRoutes";
-import { LEARN_FIXTURE_SUBJECTS } from "@/lib/learn/fixtures";
 import type { LearnSubjectMastery } from "@/lib/learn/contract";
 
 function dueLabel(
@@ -17,7 +16,7 @@ function dueLabel(
   t: (key: string, values?: Record<string, number>) => string,
 ) {
   if (item.due > 0) return t("review.dueNow");
-  if (!item.nextReview) return locked ? t("review.reviewIn", { days: 5 }) : t("review.dueIn", { hours: 12 });
+  if (!item.nextReview) return t("review.notScheduled");
   const hours = Math.max(1, Math.ceil((item.nextReview - Date.now()) / (60 * 60 * 1000)));
   if (hours < 24) return t("review.dueIn", { hours });
   return t("review.reviewIn", { days: Math.ceil(hours / 24) });
@@ -81,7 +80,7 @@ export default function LearnReviewScreen() {
   const navigate = useNavigate();
   const { t } = useTranslation("learn");
   const plan = useQuery(api.learn.getLearnReviewPlan, { subject: "geography" });
-  const subjects = plan?.nodes ?? LEARN_FIXTURE_SUBJECTS;
+  const subjects = plan?.nodes ?? [];
   const locked = subjects.filter((s) => s.state === "locked");
   const learning = subjects.filter((s) => s.state === "learning");
 

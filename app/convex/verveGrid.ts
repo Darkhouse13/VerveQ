@@ -3,6 +3,7 @@ import { v } from "convex/values";
 import { getAuthUserId } from "@convex-dev/auth/server";
 import { assertUsernameRequiredUser } from "./lib/authz";
 import { normalizeAnswer } from "./lib/scoring";
+import { incrementTotalGames } from "./lib/playCount";
 import { levenshteinDistance } from "./lib/fuzzy";
 
 const SESSION_TTL_MS = 60 * 60 * 1000; // 1 hour
@@ -277,6 +278,10 @@ export const submitGuess = mutation({
       status: newStatus,
     });
 
+    if (newStatus === "completed") {
+      await incrementTotalGames(ctx, userId);
+    }
+
     return {
       correct,
       alreadyUsed: false,
@@ -307,6 +312,7 @@ export const penalizeTabSwitch = mutation({
     }
 
     await ctx.db.patch(sessionId, { status: "completed" });
+    await incrementTotalGames(ctx, userId);
     return {
       penalized: true,
       gameOver: true,

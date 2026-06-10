@@ -12,6 +12,7 @@
  * and reuses the existing, proven Lobby/Countdown/RoundBreak/Final views for the
  * non-in-game phases. No arena backend, schema, or grading is touched.
  */
+import { humanizeServerError } from "@/lib/errors";
 import {
   useCallback,
   useEffect,
@@ -157,7 +158,7 @@ function ArenaPlayRoom({ code, userId }: { code: string; userId: Id<"users"> | u
         await joinMut({ code });
         setJoinError(null);
       } catch (e) {
-        setJoinError(e instanceof Error ? e.message : "Could not join arena");
+        setJoinError(humanizeServerError(e, "Could not join this arena. Check the code and try again."));
       }
     })();
   }, [code, joinMut, room]);
@@ -171,7 +172,7 @@ function ArenaPlayRoom({ code, userId }: { code: string; userId: Id<"users"> | u
       toast.error(e instanceof Error ? e.message : "Could not leave");
     } finally {
       setLeaving(false);
-      navigate("/challenge");
+      navigate("/v2/arena");
     }
   }, [leaveMut, leaving, navigate, room]);
 
@@ -203,13 +204,13 @@ function ArenaPlayRoom({ code, userId }: { code: string; userId: Id<"users"> | u
   if (room === undefined) return <CenteredMessage>Loading arena…</CenteredMessage>;
   if (room === null) {
     return joinError ? (
-      <NotInRoom title="Couldn't join arena" detail={joinError} onBack={() => navigate("/challenge")} />
+      <NotInRoom title="Couldn't join arena" detail={joinError} backLabel="Back to Arena" onBack={() => navigate("/v2/arena")} />
     ) : (
       <CenteredMessage>Joining…</CenteredMessage>
     );
   }
   if (room.status === "abandoned") {
-    return <NotInRoom title="Arena ended" detail="The room was abandoned or expired." onBack={() => navigate("/challenge")} />;
+    return <NotInRoom title="Arena ended" detail="The room was abandoned or expired." backLabel="Back to Arena" onBack={() => navigate("/v2/arena")} />;
   }
 
   const me = userId ? room.players.find((p) => p.userId === userId) ?? null : null;
@@ -222,7 +223,7 @@ function ArenaPlayRoom({ code, userId }: { code: string; userId: Id<"users"> | u
             ? "Rejoin from the code if the lobby is still open, or head back to the Challenge hub."
             : "Ask the host for the code, or open the share link they sent."
         }
-        onBack={() => navigate("/challenge")}
+        onBack={() => navigate("/v2/arena")}
       />
     );
   }
