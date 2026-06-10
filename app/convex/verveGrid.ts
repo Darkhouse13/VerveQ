@@ -20,6 +20,56 @@ function matchesPlayerSearch(name: string, queryText: string): boolean {
     .some((token) => levenshteinDistance(query, token) <= maxDistance);
 }
 
+/**
+ * Index-range prefixes to scan for a roster search. Stored names/surnames are
+ * capitalized ("Jack Butland", "B. Foster" / lastName "Foster"), so we probe
+ * the query as typed plus a title-cased variant.
+ */
+export function buildRosterSearchPrefixes(queryText: string): string[] {
+  const trimmed = queryText.trim().replace(/\s+/g, " ");
+  if (!trimmed) return [];
+  const titleCased = trimmed
+    .split(" ")
+    .map((word) => (word ? word[0].toUpperCase() + word.slice(1).toLowerCase() : word))
+    .join(" ");
+  return [...new Set([trimmed, titleCased])];
+}
+
+type RosterPlayer = {
+  externalId: string;
+  name: string;
+  photo?: string;
+  position?: string;
+  nationality?: string;
+};
+
+/** Rank + dedupe + cap full-roster search hits. Pure so the contract can pin it. */
+export function rankRosterSearchResults<T extends RosterPlayer>(
+  players: T[],
+  queryText: string,
+  excludedExternalIds: ReadonlySet<string> = new Set(),
+  limit = 10,
+): T[] {
+  const normalized = normalizeAnswer(queryText);
+  const seen = new Set<string>();
+  return players
+    .filter((player) => {
+      if (seen.has(player.externalId)) return false;
+      seen.add(player.externalId);
+      return (
+        !excludedExternalIds.has(player.externalId) &&
+        matchesPlayerSearch(player.name, normalized)
+      );
+    })
+    .sort((a, b) => {
+      const aStarts = normalizeAnswer(a.name).startsWith(normalized) ? 0 : 1;
+      const bStarts = normalizeAnswer(b.name).startsWith(normalized) ? 0 : 1;
+      if (aStarts !== bStarts) return aStarts - bStarts;
+      return a.name.localeCompare(b.name);
+    })
+    .slice(0, limit);
+}
+
 function getCellRarity(validAnswerCount: number) {
   if (validAnswerCount <= 3) {
     return { rarityTier: "rare", points: 3 };
@@ -116,8 +166,10 @@ export const searchPlayers = query({
       return [];
     }
 
-    const normalized = normalizeAnswer(queryText);
-
+    // Search spans the FULL roster — never the cell's valid answers. Whether a
+    // pick counts is only decided server-side on lock-in (submitGuess), so the
+    // search box can't be used as an answer oracle.
+    const usedPlayerIds = new Set<string>();
     if (sessionId !== undefined && cellIndex !== undefined) {
       const userId = await getAuthUserId(ctx);
       if (!userId) return [];
@@ -131,54 +183,38 @@ export const searchPlayers = query({
       if (Date.now() > session.expiresAt || session.status !== "active") {
         return [];
       }
-
-      const cell = session.cells[cellIndex];
-      if (!cell) {
-        return [];
+      for (const [index, gridCell] of session.cells.entries()) {
+        if (index !== cellIndex && gridCell.correct === true && typeof gridCell.guessedPlayerId === "string") {
+          usedPlayerIds.add(gridCell.guessedPlayerId);
+        }
       }
-
-      const usedPlayerIds = new Set(
-        session.cells
-          .filter((gridCell, index) => index !== cellIndex && gridCell.correct === true)
-          .map((gridCell) => gridCell.guessedPlayerId)
-          .filter((playerId): playerId is string => typeof playerId === "string"),
-      );
-
-      return (
-        await Promise.all(
-          cell.validPlayerIds.map((externalId) =>
-            ctx.db
-              .query("sportsPlayers")
-              .withIndex("by_external_id", (q) => q.eq("externalId", externalId))
-              .first(),
-          ),
-        )
-      )
-        .filter((player): player is NonNullable<typeof player> => player !== null)
-        .filter(
-          (player) =>
-            !usedPlayerIds.has(player.externalId) &&
-            matchesPlayerSearch(player.name, normalized),
-        )
-        .sort((a, b) => {
-          const aStarts = normalizeAnswer(a.name).startsWith(normalized) ? 0 : 1;
-          const bStarts = normalizeAnswer(b.name).startsWith(normalized) ? 0 : 1;
-          if (aStarts !== bStarts) {
-            return aStarts - bStarts;
-          }
-          return a.name.localeCompare(b.name);
-        })
-        .slice(0, 10)
-        .map((player) => ({
-          externalId: player.externalId,
-          name: player.name,
-          photo: player.photo,
-          position: player.position,
-          nationality: player.nationality,
-        }));
     }
 
-    return [];
+    const candidates = [];
+    for (const prefix of buildRosterSearchPrefixes(queryText)) {
+      const upperBound = `${prefix}￿`;
+      const byName = await ctx.db
+        .query("sportsPlayers")
+        .withIndex("by_sport_name", (q) =>
+          q.eq("sport", sport).gte("name", prefix).lt("name", upperBound),
+        )
+        .take(25);
+      const byLastName = await ctx.db
+        .query("sportsPlayers")
+        .withIndex("by_sport_lastName", (q) =>
+          q.eq("sport", sport).gte("lastName", prefix).lt("lastName", upperBound),
+        )
+        .take(25);
+      candidates.push(...byName, ...byLastName);
+    }
+
+    return rankRosterSearchResults(candidates, queryText, usedPlayerIds).map((player) => ({
+      externalId: player.externalId,
+      name: player.name,
+      photo: player.photo,
+      position: player.position,
+      nationality: player.nationality,
+    }));
   },
 });
 

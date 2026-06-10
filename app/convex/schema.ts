@@ -807,7 +807,8 @@ export default defineSchema({
   })
     .index("by_external_id", ["externalId"])
     .index("by_sport", ["sport"])
-    .index("by_sport_name", ["sport", "name"]),
+    .index("by_sport_name", ["sport", "name"])
+    .index("by_sport_lastName", ["sport", "lastName"]),
 
   sportsTeams: defineTable({
     externalId: v.string(),

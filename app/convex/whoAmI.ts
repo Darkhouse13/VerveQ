@@ -3,7 +3,11 @@ import { v } from "convex/values";
 import { getAuthUserId } from "@convex-dev/auth/server";
 import { assertUsernameRequiredUser } from "./lib/authz";
 import { findBestMatch } from "./lib/fuzzy";
-import { buildWhoAmIComparisonFeedback, getWhoAmIPlayerMetadata } from "./whoAmIPlayerSearch";
+import {
+  buildWhoAmIComparisonFeedback,
+  getWhoAmIPlayerMetadata,
+  resolveCanonicalPlayerName,
+} from "./whoAmIPlayerSearch";
 
 const SESSION_TTL_MS = 60 * 60 * 1000; // 1 hour
 const BASE_SCORE = 1000;
@@ -48,13 +52,21 @@ function chooseWeightedDifficultyPool<
   return availablePools[availablePools.length - 1];
 }
 
-function buildAnswerAliases(answerName: string): string[] {
-  const parts = answerName.split(/\s+/).filter(Boolean);
-  const aliases = new Set([answerName]);
-  if (parts.length >= 2) {
-    aliases.add(`${parts[0][0]} ${parts[parts.length - 1]}`);
-    aliases.add(`${parts[0][0]}. ${parts[parts.length - 1]}`);
-    aliases.add(parts.map((part) => part[0]).join(""));
+export function buildAnswerAliases(answerName: string, canonicalName?: string): string[] {
+  const aliases = new Set<string>();
+  const sources = canonicalName && canonicalName !== answerName
+    ? [answerName, canonicalName]
+    : [answerName];
+  for (const source of sources) {
+    aliases.add(source);
+    const parts = source.split(/\s+/).filter(Boolean);
+    if (parts.length >= 2) {
+      aliases.add(parts[parts.length - 1]); // bare surname — what most players type
+      aliases.add(parts.slice(1).join(" ")); // multiword surnames ("van Dijk")
+      aliases.add(`${parts[0][0]} ${parts[parts.length - 1]}`);
+      aliases.add(`${parts[0][0]}. ${parts[parts.length - 1]}`);
+      aliases.add(parts.map((part) => part[0]).join(""));
+    }
   }
   return [...aliases];
 }
@@ -195,7 +207,12 @@ export const submitGuess = mutation({
       throw new Error("Session expired");
     }
 
-    const result = findBestMatch(guess, buildAnswerAliases(session.answerName));
+    const metadata = getWhoAmIPlayerMetadata();
+    const canonicalAnswerName = resolveCanonicalPlayerName(metadata, session.answerName);
+    const result = findBestMatch(
+      guess,
+      buildAnswerAliases(session.answerName, canonicalAnswerName),
+    );
 
     if (result.matched) {
       await ctx.db.patch(sessionId, { status: "correct" });
@@ -203,7 +220,7 @@ export const submitGuess = mutation({
         correct: true,
         closeCall: false,
         typoAccepted: result.typoAccepted,
-        answerName: session.answerName,
+        answerName: canonicalAnswerName,
         score: session.score,
         gameOver: true,
       };
@@ -221,7 +238,7 @@ export const submitGuess = mutation({
             correct: false,
             closeCall: true,
             scoreAfter: newScore,
-            feedback: buildWhoAmIComparisonFeedback(getWhoAmIPlayerMetadata(), guess.trim(), session.answerName),
+            feedback: buildWhoAmIComparisonFeedback(metadata, guess.trim(), canonicalAnswerName),
             createdAt: Date.now(),
           },
         ],
@@ -248,7 +265,7 @@ export const submitGuess = mutation({
         correct: false,
         closeCall: false,
         scoreAfter: newScore,
-        feedback: buildWhoAmIComparisonFeedback(getWhoAmIPlayerMetadata(), guess.trim(), session.answerName),
+        feedback: buildWhoAmIComparisonFeedback(metadata, guess.trim(), canonicalAnswerName),
         createdAt: Date.now(),
       },
     ];
@@ -271,7 +288,7 @@ export const submitGuess = mutation({
       guesses,
       feedback: guesses[guesses.length - 1]?.feedback,
     };
-    return gameOver ? { ...response, answerName: session.answerName } : response;
+    return gameOver ? { ...response, answerName: canonicalAnswerName } : response;
   },
 });
 

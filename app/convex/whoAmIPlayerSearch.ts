@@ -37,13 +37,69 @@ function compareDimension(guessValue?: string, answerValue?: string): WhoAmIComp
   return normalizeSearchText(guessValue) === normalizeSearchText(answerValue) ? "correct" : "incorrect";
 }
 
+const ABBREVIATED_NAME_PATTERN = /^(\p{L})\.?\s+(.+)$/u;
+
+let normalizedIndexCache: {
+  source: Record<string, FootballPlayerMetadataEntry>;
+  index: Map<string, string>;
+} | null = null;
+
+function getNormalizedNameIndex(
+  metadata: Record<string, FootballPlayerMetadataEntry>,
+): Map<string, string> {
+  if (normalizedIndexCache?.source === metadata) return normalizedIndexCache.index;
+  const index = new Map<string, string>();
+  for (const key of Object.keys(metadata)) {
+    const normalized = normalizeSearchText(key);
+    if (!index.has(normalized)) index.set(normalized, key);
+  }
+  normalizedIndexCache = { source: metadata, index };
+  return index;
+}
+
+/**
+ * Curated clue sets store answers in "B. Matuidi" form while the metadata is
+ * keyed by full names. Resolve an abbreviated name to its unique full-name
+ * key; anything ambiguous or unknown comes back unchanged.
+ */
+export function resolveCanonicalPlayerName(
+  metadata: Record<string, FootballPlayerMetadataEntry>,
+  name: string,
+): string {
+  if (metadata[name]) return name;
+  const match = name.match(ABBREVIATED_NAME_PATTERN);
+  if (!match) return name;
+  const initial = normalizeSearchText(match[1]);
+  const tail = normalizeSearchText(match[2]);
+  let resolved: string | null = null;
+  for (const [normalized, key] of getNormalizedNameIndex(metadata)) {
+    if (!normalized.startsWith(initial)) continue;
+    if (normalized !== `${initial} ${tail}` && !normalized.endsWith(` ${tail}`)) continue;
+    if (resolved !== null) return name; // ambiguous — keep the stored form
+    resolved = key;
+  }
+  return resolved ?? name;
+}
+
+/** Look a player up by display name, tolerating case/diacritics and "X. Lastname" forms. */
+export function findMetadataEntryByName(
+  metadata: Record<string, FootballPlayerMetadataEntry>,
+  name: string,
+): FootballPlayerMetadataEntry | undefined {
+  if (metadata[name]) return metadata[name];
+  const byNormalized = getNormalizedNameIndex(metadata).get(normalizeSearchText(name));
+  if (byNormalized) return metadata[byNormalized];
+  const canonical = resolveCanonicalPlayerName(metadata, name);
+  return canonical === name ? undefined : metadata[canonical];
+}
+
 export function buildWhoAmIComparisonFeedback(
   metadata: Record<string, FootballPlayerMetadataEntry>,
   guessedPlayerName: string,
   answerName: string,
 ): WhoAmIComparisonFeedback {
-  const guessedMeta = metadata[guessedPlayerName];
-  const answerMeta = metadata[answerName];
+  const guessedMeta = findMetadataEntryByName(metadata, guessedPlayerName);
+  const answerMeta = findMetadataEntryByName(metadata, answerName);
   const guessedTeam = guessedMeta?.team ?? guessedMeta?.club;
   const answerTeam = answerMeta?.team ?? answerMeta?.club;
 
