@@ -308,13 +308,13 @@ export default function HigherLowerPlayScreen() {
         <NeoCard
           color="success"
           shadow="lg"
-          className="flex flex-col items-center justify-center text-center py-5"
+          className="flex flex-col items-center justify-center text-center py-3"
         >
           {playerAPhoto && (
             <img
               src={playerAPhoto}
               alt={playerAName}
-              className="w-16 h-16 rounded-full neo-border object-cover mb-2"
+              className="w-14 h-14 rounded-full neo-border object-cover mb-2"
             />
           )}
           <p className="font-heading font-bold text-lg">{playerAName}</p>
@@ -325,7 +325,7 @@ export default function HigherLowerPlayScreen() {
         </NeoCard>
 
         {/* VS divider */}
-        <div className="flex items-center justify-center my-3">
+        <div className="flex items-center justify-center my-2">
           <div className="neo-border rounded-full bg-background px-4 py-1.5 font-heading font-bold text-sm">
             VS
           </div>
@@ -334,7 +334,7 @@ export default function HigherLowerPlayScreen() {
         {/* Player B — value hidden until guess */}
         <NeoCard
           shadow="lg"
-          className={`flex flex-col items-center justify-center text-center py-5 transition-all ${
+          className={`flex flex-col items-center justify-center text-center py-3 transition-all ${
             shakeB ? "animate-shake-horizontal" : ""
           } ${slideIn ? "animate-slide-up" : ""} ${
             feedback
@@ -348,7 +348,7 @@ export default function HigherLowerPlayScreen() {
             <img
               src={playerBPhoto}
               alt={playerBName}
-              className="w-16 h-16 rounded-full neo-border object-cover mb-2"
+              className="w-14 h-14 rounded-full neo-border object-cover mb-2"
             />
           )}
           <p className="font-heading font-bold text-lg">{playerBName}</p>
@@ -358,7 +358,7 @@ export default function HigherLowerPlayScreen() {
 
         {/* Action buttons — the binary call. */}
         {!gameOver && !feedback && (
-          <div className="grid grid-cols-2 gap-3 mt-5">
+          <div className="grid grid-cols-2 gap-3 mt-4">
             <NeoButton
               variant="accent"
               size="lg"
