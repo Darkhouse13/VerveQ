@@ -14,14 +14,20 @@ export function LearnShell({ children }: { children: ReactNode }) {
   return (
     <div
       className={cn(
-        "theme-learn bg-background text-foreground flex flex-col",
+        "theme-learn bg-background text-foreground shell-canvas-bg flex flex-col",
         "min-h-[100dvh] overflow-x-hidden",
         // Desktop: break out of App's max-w-md column to fill the viewport and
         // never scroll (matches ShellLayout's discipline).
         "md:fixed md:inset-0 md:z-40 md:min-h-0 md:h-[100dvh] md:overflow-hidden",
       )}
     >
-      {children}
+      {/* Desktop canvas group (matches ShellLayout): `contents` is a no-op
+          below xl; at xl+ the Learn screens lay out inside a height-bounded,
+          centered column, with the width bounded from 1440px so ultra-wide
+          monitors don't stretch the hero bands edge-to-edge. */}
+      <div className="contents xl:flex xl:flex-col xl:w-full xl:flex-1 xl:min-h-0 xl:max-h-[50rem] xl:my-auto min-[1440px]:max-w-6xl min-[1440px]:mx-auto">
+        {children}
+      </div>
     </div>
   );
 }

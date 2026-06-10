@@ -42,6 +42,10 @@ interface ShellLayoutProps {
  *    (escaping the `max-w-md` wrapper), the header and nav are fixed-height,
  *    and `main` fills the remaining space with `overflow-hidden` — the page
  *    never scrolls. Screens lay their content out to fit.
+ *  - Large desktop (xl+): the header + main group is additionally bounded to a
+ *    laptop-equivalent height and vertically centered, so tall monitors get a
+ *    proportioned canvas instead of content stretched to fill the viewport.
+ *    The cap only bites on tall viewports — short xl windows are unchanged.
  */
 export function ShellLayout({
   title,
@@ -62,7 +66,7 @@ export function ShellLayout({
     <div
       className={cn(
         theme,
-        "relative min-h-[100dvh] w-full bg-background text-foreground",
+        "relative min-h-[100dvh] w-full bg-background text-foreground shell-canvas-bg",
         // Desktop: fill the viewport and never scroll.
         "md:fixed md:inset-0 md:z-40 md:min-h-0 md:h-[100dvh] md:overflow-hidden",
         "flex flex-col",
@@ -70,6 +74,10 @@ export function ShellLayout({
     >
       {!hideNav && <ShellTopNav />}
 
+      {/* Desktop canvas group: `contents` is a no-op below xl, keeping those
+          layouts byte-identical; at xl+ it becomes the bounded, centered
+          flex column the header and main lay out inside. */}
+      <div className="contents xl:flex xl:flex-col xl:w-full xl:flex-1 xl:min-h-0 xl:max-h-[50rem] xl:my-auto">
       {(title || back || headerRight) && (
         <header className="shrink-0 w-full">
           <div
@@ -107,7 +115,7 @@ export function ShellLayout({
 
       <main
         className={cn(
-          "flex-1 w-full mx-auto",
+          "flex-1 w-full mx-auto xl:min-h-0",
           embed
             ? // Embedded legacy screen: keep the mobile column width centered,
               // let it scroll on desktop too, and let the screen own its padding.
@@ -124,6 +132,7 @@ export function ShellLayout({
       >
         {children}
       </main>
+      </div>
 
       {!hideNav && <ShellNav />}
     </div>

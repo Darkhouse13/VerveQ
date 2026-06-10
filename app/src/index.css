@@ -154,6 +154,17 @@
     @apply neo-border neo-shadow rounded-lg;
   }
 
+  /* Big-desktop canvas backdrop (≥1440px): a faint dot grid in the foreground
+     ink so the space around the height-bounded shell reads as a designed
+     surface rather than empty background. Width-gated so phone/tablet/laptop
+     rendering stays untouched. */
+  @media (min-width: 1440px) {
+    .shell-canvas-bg {
+      background-image: radial-gradient(hsl(var(--foreground) / 0.06) 1.5px, transparent 1.5px);
+      background-size: 26px 26px;
+    }
+  }
+
   .font-heading {
     font-family: 'Space Grotesk', sans-serif;
   }

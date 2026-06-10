@@ -61,7 +61,7 @@ export function PlayStage({
     <div
       className={cn(
         theme,
-        "relative min-h-[100dvh] w-full bg-background text-foreground flex flex-col",
+        "relative min-h-[100dvh] w-full bg-background text-foreground shell-canvas-bg flex flex-col",
         // Desktop: fill the viewport and never scroll.
         "md:fixed md:inset-0 md:z-40 md:min-h-0 md:h-[100dvh] md:overflow-hidden",
       )}
@@ -102,6 +102,10 @@ export function PlayStage({
           "flex-1 min-h-0 w-full mx-auto max-w-6xl px-4 md:px-6",
           "overflow-y-auto md:overflow-hidden scrollbar-none",
           "pt-4 pb-10 md:py-0",
+          // Large desktop: bound the stage to a laptop-equivalent height and
+          // center it under the header so tall monitors don't stretch the
+          // rails/answering column. Inert on short xl viewports.
+          "xl:max-h-[48rem] xl:my-auto",
         )}
       >
         {strip && <div className="md:hidden mb-3">{strip}</div>}

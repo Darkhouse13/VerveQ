@@ -54,7 +54,7 @@ export function GridStage({ vm, subtitle, onExit, onHome }: GridStageProps) {
   const picks: GridPickItem[] = vm.picks;
 
   return (
-    <div className="relative min-h-[100dvh] w-full bg-background text-foreground flex flex-col md:fixed md:inset-0 md:z-40 md:min-h-0 md:h-[100dvh] md:overflow-hidden">
+    <div className="relative min-h-[100dvh] w-full bg-background text-foreground shell-canvas-bg flex flex-col md:fixed md:inset-0 md:z-40 md:min-h-0 md:h-[100dvh] md:overflow-hidden">
       {/* broadcast bar */}
       <header className="shrink-0 w-full bg-foreground text-background border-b-2 border-black">
         <div className="flex items-center gap-3 px-4 py-2.5 md:px-6">
@@ -76,7 +76,10 @@ export function GridStage({ vm, subtitle, onExit, onHome }: GridStageProps) {
       </header>
 
       {/* desktop: 3-col never-scroll | mobile: strip + board */}
-      <main className="flex-1 min-h-0 w-full md:grid md:grid-cols-[17rem_1fr_17rem] md:gap-5 md:p-5 flex flex-col">
+      {/* Large desktop: bound the stage to a laptop-equivalent frame and center
+          it, so the board scales like on a laptop instead of ballooning and the
+          rails stay near the board on ultra-wide screens. */}
+      <main className="flex-1 min-h-0 w-full md:grid md:grid-cols-[17rem_1fr_17rem] md:gap-5 md:p-5 flex flex-col xl:max-h-[50rem] xl:my-auto min-[1440px]:max-w-7xl min-[1440px]:mx-auto">
         {/* left rail (desktop only) */}
         <aside className="hidden md:block md:overflow-y-auto md:min-h-0 scrollbar-none">
           <GridRunPanel stats={stats} />
