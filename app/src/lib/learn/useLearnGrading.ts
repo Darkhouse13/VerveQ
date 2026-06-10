@@ -57,6 +57,11 @@ export function useLearnGrading(session: LearnSessionRef) {
 
   const submitLearnAnswer = useCallback(
     async (question: LearnQuestion, answer: LearnAnswer): Promise<LearnVerdict> => {
+      if (!session.live) {
+        // Defense-in-depth: a non-live session (e.g. the dev fixture deck) must
+        // never reach the Convex grader — its id is not a learnSessions row.
+        throw new Error("Learn session is not live; cannot grade answers");
+      }
       // Server-authoritative for every type: submit the answer, render the verdict.
       const verdict = await submitRung({
         sessionId: session.id as Id<"learnSessions">,
@@ -71,7 +76,7 @@ export function useLearnGrading(session: LearnSessionRef) {
         nextReview: verdict.nextReview,
       };
     },
-    [submitRung, session.id],
+    [submitRung, session.id, session.live],
   );
 
   const rateCard = useCallback(

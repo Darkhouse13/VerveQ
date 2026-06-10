@@ -8,6 +8,7 @@ import { useQuery } from "convex/react";
 import { api } from "../../../../convex/_generated/api";
 import { LearnShell, Eyebrow, Chip, MasteryBar } from "@/components/learn/LearnPrimitives";
 import { SHELL_ROUTES } from "@/lib/shellRoutes";
+import { pickTodaysSessionNode } from "@/lib/learn/todaysSession";
 import type { LearnSubjectMastery } from "@/lib/learn/contract";
 
 function dueLabel(
@@ -83,6 +84,10 @@ export default function LearnReviewScreen() {
   const subjects = plan?.nodes ?? [];
   const locked = subjects.filter((s) => s.state === "locked");
   const learning = subjects.filter((s) => s.state === "learning");
+  const todaysNode = pickTodaysSessionNode(subjects);
+  const reviewDue = () => {
+    if (todaysNode) navigate(`${SHELL_ROUTES.learnRun}?node=${todaysNode}`);
+  };
 
   return (
     <LearnShell>
@@ -103,8 +108,9 @@ export default function LearnReviewScreen() {
         </div>
         <button
           type="button"
-          onClick={() => navigate(SHELL_ROUTES.learnRun)}
-          className="neo-border neo-shadow rounded-xl bg-primary px-4 py-2.5 font-heading font-bold text-primary-foreground"
+          onClick={reviewDue}
+          disabled={!todaysNode}
+          className="neo-border neo-shadow rounded-xl bg-primary px-4 py-2.5 font-heading font-bold text-primary-foreground disabled:opacity-60"
         >
           {t("review.reviewDue")}
         </button>

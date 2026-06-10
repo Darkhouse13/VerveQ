@@ -6,7 +6,7 @@
  * Stage machine per question: answer → (branch) → reveal.
  */
 import { useMemo, useState } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { Navigate, useNavigate, useSearchParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { LearnShell, LadderDots, Eyebrow, Chip } from "@/components/learn/LearnPrimitives";
 import { QuestionRenderer } from "@/components/learn/QuestionTypes";
@@ -119,6 +119,8 @@ export default function LearnRunnerScreen() {
       } else {
         setStage("reveal");
       }
+    } catch (err) {
+      console.error("Failed to grade Learn answer:", err);
     } finally {
       setGrading(false);
     }
@@ -149,6 +151,38 @@ export default function LearnRunnerScreen() {
           <p className="animate-pulse font-heading font-bold uppercase tracking-wide">
             {t("run.loading")}
           </p>
+        </div>
+      </LearnShell>
+    );
+  }
+
+  // Nothing resolvable to run — back to the entry's honest "nothing due" state.
+  if (session.status === "empty") {
+    return <Navigate to={SHELL_ROUTES.learn} replace />;
+  }
+
+  if (session.status === "error") {
+    return (
+      <LearnShell>
+        <div className="flex flex-1 flex-col items-center justify-center gap-4 px-6 text-center">
+          <div className="font-heading text-2xl">{t("run.errorTitle")}</div>
+          <p className="m-0 max-w-sm text-sm text-muted-foreground">
+            {t("run.errorBody")}
+          </p>
+          <button
+            type="button"
+            onClick={session.retry}
+            className="neo-border neo-shadow rounded-xl bg-primary px-5 py-3 font-heading font-bold text-primary-foreground"
+          >
+            {t("run.retry")}
+          </button>
+          <button
+            type="button"
+            onClick={() => navigate(SHELL_ROUTES.learn)}
+            className="font-heading text-[13px] font-bold text-muted-foreground"
+          >
+            {t("run.backToLearn")}
+          </button>
         </div>
       </LearnShell>
     );

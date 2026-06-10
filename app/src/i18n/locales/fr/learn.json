@@ -18,7 +18,11 @@
   },
   "run": {
     "check": "Vérifier la réponse",
-    "checking": "Vérification…"
+    "checking": "Vérification…",
+    "errorTitle": "Impossible de démarrer votre session",
+    "errorBody": "Une erreur est survenue lors du chargement des questions du jour. Vérifiez votre connexion et réessayez.",
+    "retry": "Réessayer",
+    "backToLearn": "← Retour à Apprendre"
   },
   "branch": {
     "title": "Attention — piège fréquent",

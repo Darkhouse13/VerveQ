@@ -8,12 +8,17 @@ import { useQuery } from "convex/react";
 import { api } from "../../../../convex/_generated/api";
 import { LearnShell, Eyebrow, Chip, MasteryBar } from "@/components/learn/LearnPrimitives";
 import { SHELL_ROUTES } from "@/lib/shellRoutes";
+import { pickTodaysSessionNode } from "@/lib/learn/todaysSession";
 
 export default function LearnMasteryScreen() {
   const navigate = useNavigate();
   const { t } = useTranslation("learn");
   const plan = useQuery(api.learn.getLearnReviewPlan, { subject: "geography" });
   const subjects = plan?.nodes ?? [];
+  const todaysNode = pickTodaysSessionNode(subjects);
+  const startSession = () => {
+    if (todaysNode) navigate(`${SHELL_ROUTES.learnRun}?node=${todaysNode}`);
+  };
   const overall = Math.round(
     (subjects.reduce((a, s) => a + s.mastery, 0) / subjects.length) * 100,
   );
@@ -81,8 +86,9 @@ export default function LearnMasteryScreen() {
           </div>
           <button
             type="button"
-            onClick={() => navigate(SHELL_ROUTES.learnRun)}
-            className="mt-auto w-full neo-border neo-shadow rounded-xl bg-primary px-4 py-3 font-heading font-bold text-primary-foreground"
+            onClick={startSession}
+            disabled={!todaysNode}
+            className="mt-auto w-full neo-border neo-shadow rounded-xl bg-primary px-4 py-3 font-heading font-bold text-primary-foreground disabled:opacity-60"
           >
             {t("mastery.startSession")}
           </button>

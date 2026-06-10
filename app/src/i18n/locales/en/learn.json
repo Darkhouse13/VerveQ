@@ -45,7 +45,11 @@
     "accepted": "Accepted:",
     "correctOrder": "Correct order:",
     "moveUp": "Move up",
-    "moveDown": "Move down"
+    "moveDown": "Move down",
+    "errorTitle": "Couldn't start your session",
+    "errorBody": "Something went wrong while loading today's questions. Check your connection and try again.",
+    "retry": "Try again",
+    "backToLearn": "← Back to Learn"
   },
   "branch": {
     "title": "Hang on — common trap",

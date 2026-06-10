@@ -18,7 +18,11 @@
   },
   "run": {
     "check": "Comprobar respuesta",
-    "checking": "Comprobando…"
+    "checking": "Comprobando…",
+    "errorTitle": "No se pudo iniciar tu sesión",
+    "errorBody": "Algo falló al cargar las preguntas de hoy. Comprueba tu conexión e inténtalo de nuevo.",
+    "retry": "Reintentar",
+    "backToLearn": "← Volver a Aprender"
   },
   "branch": {
     "title": "Espera — trampa común",
