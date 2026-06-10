@@ -4,6 +4,10 @@ Branch `claude/v2-qa-loop` off master `441a777`. Discovered against local build 
 
 Severity: P0 broken/crash · P1 wrong behavior/dead end · P2 ugly/cramped/misaligned · P3 nit.
 
+**Loop result:** every logged item is FIXED on this branch (commits b27a38e → c4f36c4). Frontend fixes were re-verified in a live-data build (desktop 1280×657 + mobile 390×844, all four account states walked). Backend fixes (Who Am I matching, VerveGrid roster search + `by_sport_lastName` index, casual play counts) are pinned by vitest contracts and take effect on the next `npx convex deploy`. Gates: build ✓ lint ✓ differential tsc 0-new ✓ full vitest suite ✓ (`--pool=threads --maxWorkers=2`).
+
+**Decisions taken without asking** (details in the per-item notes): Live Match tile removed (mode is uncreatable — `createFromChallenge` has no callers); duels/arena runs deliberately NOT added to the lifetime play counter (guest participants + multi-path completion — counting added for the three solo casual modes); Who Am I's decorative "blurred visual hook" panel deleted outright; dead profile EDIT button removed rather than stubbed; football-only enforced in shared (v1+v2) surfaces on the grounds that product scope outranks flag-off pixel-freeze.
+
 | # | Sev | Where | What | Repro | Status |
 |---|-----|-------|------|-------|--------|
 | 001 | P0 | /v2/learn (signed out) | Error boundary with raw Convex error: `learn:getLearnReviewPlan` → "Not authenticated" (requireUserId convex/learn.ts:61). Learn entry route has no auth gate but its queries require identity. | Signed out → navigate /v2/learn | FIXED — /v2/learn* gated behind UsernameOnlyRoute (welcome?next=…); learnEntryHonestyContract |
