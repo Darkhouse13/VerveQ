@@ -1,5 +1,17 @@
-import { internalMutation, internalQuery } from "./_generated/server";
+import {
+  internalAction,
+  internalMutation,
+  internalQuery,
+  type ActionCtx,
+} from "./_generated/server";
+import { internal } from "./_generated/api";
 import { v } from "convex/values";
+import {
+  buildShareCardTexts,
+  cardVariantToken,
+  GENERIC_CARD_KEY,
+  type ShareCardData,
+} from "./lib/duelShareCard";
 
 // Server-side data backing the /s/d/:linkCode share route. Exposes ONLY the
 // challenger's display label and (once they've completed) their score —
@@ -87,5 +99,80 @@ export const rememberCachedCard = internalMutation({
       storageId,
       createdAt: Date.now(),
     });
+  },
+});
+
+const EMPTY_CARD_DATA: ShareCardData = {
+  found: false,
+  challengerName: null,
+  challengerScore: null,
+};
+
+// Resolve-or-render the card PNG for the link's CURRENT variant, filling the
+// storage cache on a miss. Returns the bytes (for the http route) or null if
+// the renderer is unavailable — never throws. Shared by the on-demand image
+// route and the warmCard pre-render below.
+export async function ensureShareCardCached(
+  ctx: ActionCtx,
+  linkCode: string,
+): Promise<Blob | ArrayBuffer | null> {
+  let data: ShareCardData;
+  try {
+    data = await ctx.runQuery(internal.duelShare.getShareCardData, {
+      linkCode,
+    });
+  } catch {
+    data = EMPTY_CARD_DATA;
+  }
+  const texts = buildShareCardTexts(data);
+  const cacheKey = data.found ? linkCode : GENERIC_CARD_KEY;
+  const variant = cardVariantToken(cacheKey, data.challengerScore);
+
+  try {
+    const cachedId = await ctx.runQuery(internal.duelShare.getCachedCard, {
+      linkCode: cacheKey,
+      variant,
+    });
+    if (cachedId) {
+      const blob = await ctx.storage.get(cachedId);
+      if (blob) return blob;
+    }
+  } catch {
+    // Cache miss path below regenerates.
+  }
+
+  try {
+    const png: ArrayBuffer = await ctx.runAction(
+      internal.duelShareCardNode.renderCard,
+      { line1: texts.line1, line2: texts.line2, accent: texts.accent },
+    );
+    try {
+      const storageId = await ctx.storage.store(
+        new Blob([png], { type: "image/png" }),
+      );
+      await ctx.runMutation(internal.duelShare.rememberCachedCard, {
+        linkCode: cacheKey,
+        variant,
+        storageId,
+      });
+    } catch {
+      // Serving the freshly rendered bytes matters more than caching them.
+    }
+    return png;
+  } catch {
+    return null;
+  }
+}
+
+// Pre-render the card for a link's current variant so crawler og:image
+// fetches always hit the warm cache (~150ms) instead of a cold render
+// (~3-4s, which pushes WhatsApp past its preview-fetch timeout and degrades
+// the unfurl to the small thumbnail). Scheduled fire-and-forget from duel
+// creation and challenger completion; a failure here just means the http
+// route renders on demand as before.
+export const warmCard = internalAction({
+  args: { linkCode: v.string() },
+  handler: async (ctx, { linkCode }) => {
+    await ensureShareCardCached(ctx, linkCode);
   },
 });

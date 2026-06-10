@@ -23,13 +23,17 @@ import {
   escapeHtml,
   isCrawlerUserAgent,
   parseShareRoutePath,
+  resolveSharePublicBase,
 } from "../../convex/lib/duelShareCard";
 import * as duelShare from "../../convex/duelShare";
 import {
+  isSyntheticEvent,
+  isSyntheticUsername,
   recordChallengeIssued,
   recordFirstMatchComplete,
 } from "../../convex/funnel";
 import * as funnel from "../../convex/funnel";
+import { buildShareUrl } from "../lib/duel";
 
 function handlerOf<T>(fn: T): (ctx: unknown, args: unknown) => Promise<unknown> {
   const registered = fn as {
@@ -241,6 +245,80 @@ describe("OG card content contract", () => {
     ]) {
       expect(html).not.toContain(forbidden);
     }
+  });
+});
+
+describe("share URL branding", () => {
+  it("FE share links live on the vanity host by default", () => {
+    expect(buildShareUrl("DQTESTLINK01")).toBe(
+      "https://verveq.com/s/d/DQTESTLINK01",
+    );
+  });
+
+  it("FE share base is overridable for non-prod environments", () => {
+    vi.stubEnv("VITE_SHARE_BASE_URL", "https://staging.verveq.com/");
+    expect(buildShareUrl("DQTESTLINK01")).toBe(
+      "https://staging.verveq.com/s/d/DQTESTLINK01",
+    );
+    vi.unstubAllEnvs();
+  });
+
+  it("og:image base prefers the configured public host over the request origin", () => {
+    const origin = "https://example.convex.site";
+    expect(resolveSharePublicBase("https://verveq.com", origin)).toBe(
+      "https://verveq.com",
+    );
+    expect(resolveSharePublicBase("https://verveq.com/", origin)).toBe(
+      "https://verveq.com",
+    );
+    // Unset or malformed config fails safe to the deployment's own origin.
+    expect(resolveSharePublicBase(undefined, origin)).toBe(origin);
+    expect(resolveSharePublicBase("  ", origin)).toBe(origin);
+    expect(resolveSharePublicBase("verveq.com", origin)).toBe(origin);
+    expect(resolveSharePublicBase("https://verveq.com/extra/path", origin)).toBe(
+      origin,
+    );
+  });
+});
+
+describe("synthetic test-actor exclusion", () => {
+  it("flags known smoke/QA username prefixes only", () => {
+    expect(isSyntheticUsername("drop_smoke_a_x7")).toBe(true);
+    expect(isSyntheticUsername("qa_mobile_2")).toBe(true);
+    expect(isSyntheticUsername("hamza")).toBe(false);
+    expect(isSyntheticUsername("aqa_player")).toBe(false);
+    expect(isSyntheticUsername(undefined)).toBe(false);
+  });
+
+  it("excludes events by synthetic actor and by synthetic challenger ref", () => {
+    const synthetic = new Set(["user_smoke"]);
+    // Account event from the smoke account itself.
+    expect(
+      isSyntheticEvent({ actor: "user:user_smoke" } as never, synthetic),
+    ).toBe(true);
+    // Anonymous link_tap on a smoke duel — actor carries no identity, the
+    // challenger ref is what ties it to the smoke run.
+    expect(
+      isSyntheticEvent(
+        { actor: "anon", refChallengerId: "user_smoke" } as never,
+        synthetic,
+      ),
+    ).toBe(true);
+    // Guest completion on a smoke duel.
+    expect(
+      isSyntheticEvent(
+        { actor: "guest:deadbeef", refChallengerId: "user_smoke" } as never,
+        synthetic,
+      ),
+    ).toBe(true);
+    // Real traffic survives.
+    expect(
+      isSyntheticEvent(
+        { actor: "user:user_real", refChallengerId: "user_captain" } as never,
+        synthetic,
+      ),
+    ).toBe(false);
+    expect(isSyntheticEvent({ actor: "anon" } as never, synthetic)).toBe(false);
   });
 });
 

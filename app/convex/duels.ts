@@ -669,6 +669,15 @@ export const create = mutation({
       now: Date.now(),
     });
 
+    if (linkCode) {
+      // Pre-render the share card so the first crawler og:image fetch hits
+      // the warm cache instead of a multi-second cold render (which makes
+      // WhatsApp fall back to the small thumbnail).
+      await ctx.scheduler.runAfter(0, internal.duelShare.warmCard, {
+        linkCode,
+      });
+    }
+
     return { duelId, linkCode: linkCode ?? null };
   },
 });
@@ -923,6 +932,14 @@ export const complete = mutation({
           now: Date.now(),
         });
       }
+
+      if (participant.side === "challenger" && duel.linkCode) {
+        // The challenger's score is now on the card, which mints a new
+        // og:image variant — pre-render it for the next crawler fetch.
+        await ctx.scheduler.runAfter(0, internal.duelShare.warmCard, {
+          linkCode: duel.linkCode,
+        });
+      }
     }
 
     const resolved = await resolveDuelIfReady(ctx, duelId, Date.now(), false);
@@ -1066,6 +1083,12 @@ export const rematch = mutation({
       rematchOfDuelId: duelId,
       now: Date.now(),
     });
+
+    if (linkCode) {
+      await ctx.scheduler.runAfter(0, internal.duelShare.warmCard, {
+        linkCode,
+      });
+    }
 
     return { duelId: newDuelId, linkCode: linkCode ?? null };
   },

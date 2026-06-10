@@ -12,6 +12,19 @@ export const GENERIC_CARD_KEY = "__generic__";
 export const OG_IMAGE_WIDTH = 1200;
 export const OG_IMAGE_HEIGHT = 630;
 
+// Public host for og:image (and any other share-facing URL): the configured
+// vanity base (SHARE_PUBLIC_BASE_URL, e.g. https://verveq.com — nginx proxies
+// /s/d/* through to this deployment) with the request origin as fallback so
+// un-configured deployments keep working off their own .convex.site host.
+export function resolveSharePublicBase(
+  configured: string | undefined | null,
+  requestOrigin: string,
+): string {
+  const trimmed = (configured ?? "").trim().replace(/\/+$/, "");
+  if (/^https?:\/\/[^\s/]+$/i.test(trimmed)) return trimmed;
+  return requestOrigin;
+}
+
 // Same hash family duels.ts uses for seeds and guest tokens (cyrb53-style).
 function hashString(value: string) {
   let h1 = 0xdeadbeef;

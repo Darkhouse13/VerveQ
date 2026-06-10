@@ -71,24 +71,20 @@ export function peekPendingDuelAttach(): PendingDuelAttach | null {
   }
 }
 
-function getConvexSiteUrl(): string | null {
-  const configured = import.meta.env.VITE_CONVEX_SITE_URL?.trim();
-  if (configured) return configured.replace(/\/$/, "");
-  const convexUrl = import.meta.env.VITE_CONVEX_URL?.trim();
-  if (convexUrl && convexUrl.includes(".convex.cloud")) {
-    return convexUrl.replace(".convex.cloud", ".convex.site").replace(/\/$/, "");
-  }
-  return null;
+const DEFAULT_SHARE_BASE_URL = "https://verveq.com";
+
+function getShareBaseUrl(): string {
+  const configured = import.meta.env.VITE_SHARE_BASE_URL?.trim();
+  if (configured) return configured.replace(/\/+$/, "");
+  return DEFAULT_SHARE_BASE_URL;
 }
 
-// Duel links are shared via the .site share route, which serves an OG taunt
-// card to link-preview crawlers and 302s humans to /duel/:linkCode — same
-// linkCode, so the guest bridge is untouched.
+// Duel links are shared on the vanity host: verveq.com/s/d/:linkCode, which
+// nginx proxies to the Convex .site share route — an OG taunt card for
+// link-preview crawlers, a 302 to /duel/:linkCode for humans. Same linkCode,
+// so the guest bridge is untouched.
 export function buildShareUrl(linkCode: string): string {
-  const siteUrl = getConvexSiteUrl();
-  if (siteUrl) return `${siteUrl}/s/d/${linkCode}`;
-  if (typeof window === "undefined") return `/duel/${linkCode}`;
-  return `${window.location.origin}/duel/${linkCode}`;
+  return `${getShareBaseUrl()}/s/d/${linkCode}`;
 }
 
 export function formatModeLabel(mode: string): string {

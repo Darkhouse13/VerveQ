@@ -10,6 +10,7 @@ This is the authoritative runbook for the production frontend at `verveq.com` on
 - Served docroot: `verveq-web:/usr/share/nginx/html` (container-internal; no host volume mount).
 - nginx config: `verveq-web:/etc/nginx/conf.d/default.conf`, sourced from `deploy/nginx.conf`.
 - Backend: Convex is unchanged for frontend-only releases. The current production build uses `VITE_CONVEX_URL=https://admired-warthog-495.eu-west-1.convex.cloud` and `VITE_CONVEX_SITE_URL=https://admired-warthog-495.eu-west-1.convex.site`.
+- Duel share vanity route: nginx proxies `verveq.com/s/d/*` (page + `card.png`) to the Convex `.site` httpAction (`deploy/nginx.conf` `location ^~ /s/d/`), forwarding path and `User-Agent` intact. The Convex deployment carries `SHARE_PUBLIC_BASE_URL=https://verveq.com` so `og:image` URLs are emitted on the vanity host (`npx convex env set SHARE_PUBLIC_BASE_URL https://verveq.com`).
 
 ## Build
 

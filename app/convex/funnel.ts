@@ -2,6 +2,7 @@ import {
   internalQuery,
   mutation,
   type MutationCtx,
+  type QueryCtx,
 } from "./_generated/server";
 import type { Doc, Id } from "./_generated/dataModel";
 import { v } from "convex/values";
@@ -164,21 +165,67 @@ export const sessionHeartbeat = mutation({
   },
 });
 
+// ── Synthetic test actors ──
+// Smoke runs and QA create accounts under these username prefixes; their
+// activity must never count toward Drop-Test numbers. Events are synthetic
+// when their actor is such an account OR they hang off a synthetic
+// challenger's duel (covers anon link_taps and guest-side events on smoke
+// links, whose actors carry no username).
+export const SYNTHETIC_USERNAME_PREFIXES = ["drop_smoke_", "qa_"];
+
+export function isSyntheticUsername(username: string | undefined | null) {
+  if (!username) return false;
+  return SYNTHETIC_USERNAME_PREFIXES.some((p) => username.startsWith(p));
+}
+
+type FunnelEventLike = {
+  actor: string;
+  refChallengerId?: Id<"users">;
+};
+
+export function isSyntheticEvent(
+  event: FunnelEventLike,
+  syntheticUserIds: ReadonlySet<string>,
+) {
+  if (event.actor.startsWith("user:")) {
+    if (syntheticUserIds.has(event.actor.slice("user:".length))) return true;
+  }
+  return !!event.refChallengerId && syntheticUserIds.has(event.refChallengerId);
+}
+
+async function collectSyntheticUserIds(ctx: Pick<QueryCtx, "db">) {
+  const ids = new Set<string>();
+  for (const prefix of SYNTHETIC_USERNAME_PREFIXES) {
+    const rows = await ctx.db
+      .query("users")
+      .withIndex("by_username", (q) =>
+        q.gte("username", prefix).lt("username", prefix + "\uffff"),
+      )
+      .take(1000);
+    for (const row of rows) ids.add(row._id);
+  }
+  return ids;
+}
+
 // ── Drop-Test readout ──
 // Read-only rollup of the four metrics so the Drop Test is readable without
 // log spelunking:  npx convex run funnel:dropTestMetrics '{}'
+// Synthetic test actors (drop_smoke_*, qa_*) are excluded throughout.
 export const dropTestMetrics = internalQuery({
   args: { sinceTs: v.optional(v.number()) },
   handler: async (ctx, { sinceTs }) => {
     const since = sinceTs ?? 0;
     const now = Date.now();
+    const syntheticUserIds = await collectSyntheticUserIds(ctx);
     const eventsOf = async (
       type: "link_tap" | "challenge_issued" | "first_match_complete" | "defeated_player_return",
     ) =>
-      await ctx.db
-        .query("funnelEvents")
-        .withIndex("by_type_ts", (q) => q.eq("type", type).gte("ts", since))
-        .take(10000);
+      (
+        await ctx.db
+          .query("funnelEvents")
+          .withIndex("by_type_ts", (q) => q.eq("type", type).gte("ts", since))
+          .take(10000)
+      ).filter((e) => !isSyntheticEvent(e, syntheticUserIds));
 
     const taps = await eventsOf("link_tap");
     const firstMatches = await eventsOf("first_match_complete");
@@ -207,7 +254,7 @@ export const dropTestMetrics = internalQuery({
     // 2) % of new players (accounts created in-window) issuing ≥1 challenge
     //    within 48h of account creation.
     const newUsers = (await ctx.db.query("users").take(20000)).filter(
-      (u) => u._creationTime >= since,
+      (u) => u._creationTime >= since && !isSyntheticUsername(u.username),
     );
     const firstChallengeAtByActor = new Map<string, number>();
     for (const e of challenges) {
@@ -248,7 +295,9 @@ export const dropTestMetrics = internalQuery({
     // 4) D7 retention of defeated players: of account users defeated ≥7 days
     //    ago (in-window), how many were seen again ≥7 days after the defeat.
     //    Guests are not measurable here — they leave no durable identity.
-    const allMarks = await ctx.db.query("funnelDefeatMarks").take(10000);
+    const allMarks = (await ctx.db.query("funnelDefeatMarks").take(10000)).filter(
+      (mark) => !syntheticUserIds.has(mark.userId),
+    );
     const firstDefeatByUser = new Map<Id<"users">, number>();
     for (const mark of allMarks) {
       if (mark.defeatedAt < since) continue;
@@ -271,6 +320,7 @@ export const dropTestMetrics = internalQuery({
 
     return {
       window: { sinceTs: since, now },
+      excludedSyntheticActors: syntheticUserIds.size,
       counts: {
         link_tap: taps.length,
         challenge_issued: challenges.length,

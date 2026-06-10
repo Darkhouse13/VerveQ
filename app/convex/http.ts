@@ -17,9 +17,11 @@ import {
   GENERIC_CARD_KEY,
   isCrawlerUserAgent,
   parseShareRoutePath,
+  resolveSharePublicBase,
   SHARE_ROUTE_PREFIX,
   type ShareCardData,
 } from "./lib/duelShareCard";
+import { ensureShareCardCached } from "./duelShare";
 
 const http = httpRouter();
 auth.addHttpRoutes(http);
@@ -163,7 +165,13 @@ async function serveSharePage(
   const texts = buildShareCardTexts(data);
   const cacheKey = data.found ? linkCode : GENERIC_CARD_KEY;
   const variant = cardVariantToken(cacheKey, data.challengerScore);
-  const imageUrl = `${requestUrl.origin}${SHARE_ROUTE_PREFIX}${encodeURIComponent(
+  // og:image lives on the public (vanity) host — verveq.com proxies /s/d/*
+  // to this deployment — so previews never expose the .convex.site origin.
+  const publicBase = resolveSharePublicBase(
+    process.env.SHARE_PUBLIC_BASE_URL,
+    requestUrl.origin,
+  );
+  const imageUrl = `${publicBase}${SHARE_ROUTE_PREFIX}${encodeURIComponent(
     linkCode,
   )}${CARD_IMAGE_SUFFIX}?v=${variant}`;
   const html = buildCrawlerHtml({
@@ -185,50 +193,14 @@ async function serveShareCardImage(
   ctx: ActionCtx,
   linkCode: string,
 ): Promise<Response> {
-  const data = await loadShareCardData(ctx, linkCode);
-  const texts = buildShareCardTexts(data);
-  const cacheKey = data.found ? linkCode : GENERIC_CARD_KEY;
-  const variant = cardVariantToken(cacheKey, data.challengerScore);
-
-  try {
-    const cachedId = await ctx.runQuery(internal.duelShare.getCachedCard, {
-      linkCode: cacheKey,
-      variant,
-    });
-    if (cachedId) {
-      const blob = await ctx.storage.get(cachedId);
-      if (blob) return pngResponse(blob);
-    }
-  } catch {
-    // Cache miss path below regenerates.
-  }
-
-  try {
-    const png: ArrayBuffer = await ctx.runAction(
-      internal.duelShareCardNode.renderCard,
-      { line1: texts.line1, line2: texts.line2, accent: texts.accent },
-    );
-    try {
-      const storageId = await ctx.storage.store(
-        new Blob([png], { type: "image/png" }),
-      );
-      await ctx.runMutation(internal.duelShare.rememberCachedCard, {
-        linkCode: cacheKey,
-        variant,
-        storageId,
-      });
-    } catch {
-      // Serving the freshly rendered bytes matters more than caching them.
-    }
-    return pngResponse(png);
-  } catch {
-    // Renderer unavailable: serve a tiny placeholder PNG rather than a 500
-    // (crawlers degrade to a text-only preview).
-    const fallback = Uint8Array.from(atob(FALLBACK_PNG_BASE64), (c) =>
-      c.charCodeAt(0),
-    );
-    return pngResponse(fallback);
-  }
+  const png = await ensureShareCardCached(ctx, linkCode);
+  if (png) return pngResponse(png);
+  // Renderer unavailable: serve a tiny placeholder PNG rather than a 500
+  // (crawlers degrade to a text-only preview).
+  const fallback = Uint8Array.from(atob(FALLBACK_PNG_BASE64), (c) =>
+    c.charCodeAt(0),
+  );
+  return pngResponse(fallback);
 }
 
 http.route({
