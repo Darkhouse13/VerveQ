@@ -271,16 +271,16 @@ export const submitGuess = mutation({
     const noGuesses = newRemaining <= 0;
     const newStatus = allSolved || noGuesses ? "completed" : "active";
 
+    if (newStatus === "completed") {
+      await incrementTotalGames(ctx, userId);
+    }
+
     await ctx.db.patch(sessionId, {
       cells,
       remainingGuesses: newRemaining,
       correctCount: newCorrectCount,
       status: newStatus,
     });
-
-    if (newStatus === "completed") {
-      await incrementTotalGames(ctx, userId);
-    }
 
     return {
       correct,
@@ -311,8 +311,8 @@ export const penalizeTabSwitch = mutation({
       };
     }
 
-    await ctx.db.patch(sessionId, { status: "completed" });
     await incrementTotalGames(ctx, userId);
+    await ctx.db.patch(sessionId, { status: "completed" });
     return {
       penalized: true,
       gameOver: true,

@@ -216,8 +216,8 @@ export const submitGuess = mutation({
     );
 
     if (result.matched) {
-      await ctx.db.patch(sessionId, { status: "correct" });
       await incrementTotalGames(ctx, userId);
+      await ctx.db.patch(sessionId, { status: "correct" });
       return {
         correct: true,
         closeCall: false,
@@ -272,6 +272,9 @@ export const submitGuess = mutation({
       },
     ];
 
+    if (gameOver) {
+      await incrementTotalGames(ctx, userId);
+    }
     await ctx.db.patch(sessionId, {
       status: gameOver ? "failed" : "active",
       score: newScore,
@@ -279,9 +282,6 @@ export const submitGuess = mutation({
       maxGuesses,
       wrongGuessCount,
     });
-    if (gameOver) {
-      await incrementTotalGames(ctx, userId);
-    }
     const response = {
       correct: false,
       closeCall: false,

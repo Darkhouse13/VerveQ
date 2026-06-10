@@ -244,8 +244,8 @@ export const makeGuess = mutation({
     const correct = guess === "higher" ? isHigher : !isHigher;
 
     if (!correct) {
-      await ctx.db.patch(sessionId, { status: "game_over" });
       await incrementTotalGames(ctx, userId);
+      await ctx.db.patch(sessionId, { status: "game_over" });
       return {
         correct: false,
         playerBValue,
@@ -291,12 +291,12 @@ export const makeGuess = mutation({
 
     if (unseenValidCandidates.length === 0) {
       // Pool exhausted without a valid unseen non-tie candidate.
+      await incrementTotalGames(ctx, userId);
       await ctx.db.patch(sessionId, {
         score: newScore,
         streak: newStreak,
         status: "game_over",
       });
-      await incrementTotalGames(ctx, userId);
       return {
         correct: true,
         playerBValue,
@@ -366,8 +366,8 @@ export const penalizeTabSwitch = mutation({
       return { penalized: false, gameOver: true, score: session.score };
     }
 
-    await ctx.db.patch(sessionId, { status: "game_over" });
     await incrementTotalGames(ctx, userId);
+    await ctx.db.patch(sessionId, { status: "game_over" });
     return { penalized: true, gameOver: true, score: session.score };
   },
 });
