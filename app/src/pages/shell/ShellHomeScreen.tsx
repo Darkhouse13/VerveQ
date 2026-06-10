@@ -19,8 +19,12 @@ import type { Id } from "../../../convex/_generated/dataModel";
 export default function ShellHomeScreen() {
   const navigate = useNavigate();
   const { t } = useTranslation();
-  const { user, isGuest, accountState } = useAuth();
-  const userId = !isGuest && user?.username ? (user._id as Id<"users">) : undefined;
+  const { user, hasUsername, accountState } = useAuth();
+  // Any server identity with a username — anonymous (username-only) or full —
+  // is an onboarded user whose home reflects them. `hasUsername` is the
+  // server-authoritative signal; tab-local guests have no server identity and
+  // never pass it (their `_id` isn't a real Convex id).
+  const userId = hasUsername && user?._id ? (user._id as Id<"users">) : undefined;
   // Logged-out returning visitors land here by default (v2 is the entry); give
   // them a visible way back to the existing password sign-in. Only shown with no
   // session — anonymous/full accounts see their avatar (and upgrade lives in the
@@ -30,8 +34,13 @@ export default function ShellHomeScreen() {
 
   const displayName = user?.username || "Player";
   const streak = profile?.stats.currentStreak ?? 0;
-  const plays = profile?.stats.totalGames ?? 0;
-  const elo = profile?.eloRating;
+  // All plays (casual included) — a username-only user's games are real games.
+  // Max with the ranked count: legacy accounts may predate the `totalGames`
+  // counter, and their ranked history shouldn't read as zero plays.
+  const plays = Math.max(profile?.totalPlays ?? 0, profile?.stats.totalGames ?? 0);
+  // Ranked standing only when the server says the user is ranked-eligible;
+  // username-only users see "—", never a baseline ELO they can't hold.
+  const elo = profile?.rankedEligible ? profile.eloRating : undefined;
 
   return (
     <ShellLayout

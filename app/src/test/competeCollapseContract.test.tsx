@@ -112,9 +112,10 @@ describe("compete grid tile targets (real config)", () => {
     return tile!.to("football");
   };
 
-  it("keeps Arena and Duels reachable from the landing grid", () => {
-    expect(tileTarget("arena")).toBe(SHELL_ROUTES.duels);
+  it("keeps Arena and Duels reachable — and DISTINCT (arena hub vs duels hub)", () => {
+    expect(tileTarget("arena")).toBe(SHELL_ROUTES.arena);
     expect(tileTarget("duel")).toBe(SHELL_ROUTES.duels);
+    expect(SHELL_ROUTES.arena).not.toBe(SHELL_ROUTES.duels);
   });
 
   it("routes every tile to a concrete path (no dead tiles)", () => {

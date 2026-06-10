@@ -40,6 +40,8 @@ vi.mock("convex/react", () => ({
     if (ref === "users.upgradeUsernameOnly") return authMock.upgradeUsernameOnly;
     return authMock.ensureProfile;
   },
+  // Handshake settled, no session — the neutral default for these flows.
+  useConvexAuth: () => ({ isLoading: false, isAuthenticated: false }),
 }));
 
 vi.mock("../../convex/_generated/api", () => ({

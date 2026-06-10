@@ -123,9 +123,9 @@ describe("ranked eligibility guardrail", () => {
       db: {
         query: () => ({
           withIndex: () => ({
-            order: () => ({ take: async () => ratings }),
+            order: () => ({ collect: async () => ratings }),
           }),
-          order: () => ({ take: async () => ratings }),
+          collect: async () => ratings,
         }),
         get: vi.fn(async (id: string) =>
           id === "anon_user"

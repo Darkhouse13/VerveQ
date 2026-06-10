@@ -12,6 +12,8 @@ import { NeoButton } from "@/components/neo/NeoButton";
 import { NeoInput } from "@/components/neo/NeoInput";
 import { useAuth, AuthError } from "@/contexts/AuthContext";
 import {
+  validatePassword,
+  describePasswordReason,
   PASSWORD_MIN_LENGTH,
   PASSWORD_MAX_LENGTH,
 } from "../../../../convex/lib/passwordPolicy";
@@ -21,44 +23,99 @@ interface UpgradeAccountFormProps {
   onSuccess: () => void;
 }
 
+// Mirrors AuthContext's permissive shape check; the server (and the OTP email)
+// do the real verification.
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+// Validation feedback is keyed to the field the user is acting on, so the
+// message renders directly under that input (not in a detached banner).
+type FieldErrors = {
+  email?: string;
+  password?: string;
+  confirm?: string;
+  general?: string;
+};
+
+function fieldForAuthError(err: AuthError): keyof FieldErrors {
+  switch (err.code) {
+    case "invalid_email":
+    case "legacy_email":
+    case "email_taken":
+      return "email";
+    case "weak_password":
+      return "password";
+    case "password_mismatch":
+      return "confirm";
+    default:
+      return "general";
+  }
+}
+
 export function UpgradeAccountForm({ onSuccess }: UpgradeAccountFormProps) {
   const { upgradeAccount, username } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
   const [displayName, setDisplayName] = useState("");
-  const [error, setError] = useState<string | null>(null);
+  const [errors, setErrors] = useState<FieldErrors>({});
   const [submitting, setSubmitting] = useState(false);
+
+  const clearError = useCallback((field: keyof FieldErrors) => {
+    setErrors((prev) =>
+      prev[field] || prev.general
+        ? { ...prev, [field]: undefined, general: undefined }
+        : prev,
+    );
+  }, []);
 
   const handleSubmit = useCallback(
     async (event: FormEvent) => {
       event.preventDefault();
-      setError(null);
+      // Validate with the SAME shared policy the server enforces
+      // (convex/lib/passwordPolicy) so the user sees every rule violation
+      // inline, at the field, before a network round-trip.
+      const next: FieldErrors = {};
       if (!email.trim()) {
-        setError("Please enter your email.");
-        return;
+        next.email = "Please enter your email.";
+      } else if (!EMAIL_RE.test(email.trim().toLowerCase())) {
+        next.email = "Please enter a valid email address.";
       }
-      if (password !== confirm) {
-        setError("Passwords do not match.");
-        return;
+      const pw = validatePassword(password);
+      if (!pw.ok && pw.reason) {
+        next.password = describePasswordReason(pw.reason);
       }
+      if (!next.password && password !== confirm) {
+        next.confirm = "Passwords do not match.";
+      }
+      setErrors(next);
+      if (next.email || next.password || next.confirm) return;
       setSubmitting(true);
       try {
         await upgradeAccount(email, password, displayName.trim() || undefined);
         onSuccess();
       } catch (err) {
-        const message =
-          err instanceof AuthError
-            ? err.message
-            : err instanceof Error
-              ? err.message
-              : "Could not upgrade your account. Try again.";
-        setError(message);
+        if (err instanceof AuthError) {
+          setErrors({ [fieldForAuthError(err)]: err.message });
+        } else {
+          setErrors({
+            general:
+              err instanceof Error
+                ? err.message
+                : "Could not upgrade your account. Try again.",
+          });
+        }
         setSubmitting(false);
       }
     },
     [email, password, confirm, displayName, upgradeAccount, onSuccess],
   );
+
+  const fieldError = (text: string | undefined, id: string) =>
+    text ? (
+      <p id={id} role="alert" className="text-xs text-destructive font-heading mt-1">
+        {text}
+      </p>
+    ) : null;
 
   return (
     <div className="w-full max-w-sm mx-auto">
@@ -77,18 +134,23 @@ export function UpgradeAccountForm({ onSuccess }: UpgradeAccountFormProps) {
         </div>
 
         <form onSubmit={(e) => void handleSubmit(e)} className="space-y-3">
-          <NeoInput
-            type="email"
-            autoComplete="email"
-            placeholder="Email"
-            aria-label="Email"
-            value={email}
-            onChange={(e) => {
-              setEmail(e.target.value);
-              if (error) setError(null);
-            }}
-            disabled={submitting}
-          />
+          <div>
+            <NeoInput
+              type="email"
+              autoComplete="email"
+              placeholder="Email"
+              aria-label="Email"
+              aria-invalid={!!errors.email}
+              aria-describedby={errors.email ? "upgrade-email-error" : undefined}
+              value={email}
+              onChange={(e) => {
+                setEmail(e.target.value);
+                clearError("email");
+              }}
+              disabled={submitting}
+            />
+            {fieldError(errors.email, "upgrade-email-error")}
+          </div>
           <NeoInput
             type="text"
             autoComplete="nickname"
@@ -98,37 +160,56 @@ export function UpgradeAccountForm({ onSuccess }: UpgradeAccountFormProps) {
             onChange={(e) => setDisplayName(e.target.value)}
             disabled={submitting}
           />
-          <NeoInput
-            type="password"
-            autoComplete="new-password"
-            placeholder="Password"
-            aria-label="Password"
-            value={password}
-            onChange={(e) => {
-              setPassword(e.target.value);
-              if (error) setError(null);
-            }}
-            disabled={submitting}
-          />
-          <NeoInput
-            type="password"
-            autoComplete="new-password"
-            placeholder="Confirm password"
-            aria-label="Confirm password"
-            value={confirm}
-            onChange={(e) => setConfirm(e.target.value)}
-            disabled={submitting}
-          />
-          <p className="text-xs text-muted-foreground font-heading text-center">
-            At least {PASSWORD_MIN_LENGTH} characters. Up to {PASSWORD_MAX_LENGTH}.
-          </p>
+          <div>
+            <NeoInput
+              type="password"
+              autoComplete="new-password"
+              placeholder="Password"
+              aria-label="Password"
+              aria-invalid={!!errors.password}
+              aria-describedby={
+                errors.password ? "upgrade-password-error" : "upgrade-password-hint"
+              }
+              value={password}
+              onChange={(e) => {
+                setPassword(e.target.value);
+                clearError("password");
+              }}
+              disabled={submitting}
+            />
+            <p
+              id="upgrade-password-hint"
+              className="text-xs text-muted-foreground font-heading mt-1"
+            >
+              {PASSWORD_MIN_LENGTH}–{PASSWORD_MAX_LENGTH} characters; common
+              passwords are rejected.
+            </p>
+            {fieldError(errors.password, "upgrade-password-error")}
+          </div>
+          <div>
+            <NeoInput
+              type="password"
+              autoComplete="new-password"
+              placeholder="Confirm password"
+              aria-label="Confirm password"
+              aria-invalid={!!errors.confirm}
+              aria-describedby={errors.confirm ? "upgrade-confirm-error" : undefined}
+              value={confirm}
+              onChange={(e) => {
+                setConfirm(e.target.value);
+                clearError("confirm");
+              }}
+              disabled={submitting}
+            />
+            {fieldError(errors.confirm, "upgrade-confirm-error")}
+          </div>
 
-          {error && (
+          {errors.general && (
             <div
               role="alert"
               className="text-sm text-destructive font-heading text-center"
             >
-              {error}
+              {errors.general}
             </div>
           )}
 

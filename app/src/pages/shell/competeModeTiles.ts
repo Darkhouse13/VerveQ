@@ -25,10 +25,10 @@ export const COMPETE_MODE_TILES: ModeTile[] = [
   // routes through the existing difficulty picker (target=v2) so the player
   // chooses a difficulty rather than defaulting to intermediate.
   { key: "quiz", icon: Brain, color: "accent", to: (s) => `/difficulty?sport=${s}&mode=quiz&target=v2` },
-  // Arena + Duels route through the Challenge hub (create/join) embedded in the
-  // shell (v2 nav retained). They were the category step's tiles; with that step
-  // collapsed they live on the grid so neither path is lost.
-  { key: "arena", icon: Swords, color: "pink", to: () => SHELL_ROUTES.duels },
+  // Arena and Duels are DISTINCT flows: Arena is the group-challenge-room
+  // experience (create/join a room by code — its own shell hub), Duels is
+  // head-to-head send-a-link via the Challenge hub embedded in the shell.
+  { key: "arena", icon: Swords, color: "pink", to: () => SHELL_ROUTES.arena },
   { key: "duel", icon: Users, color: "yellow", to: () => SHELL_ROUTES.duels },
   // Survival + Blitz are migrated to the shell prototype layout (solo).
   { key: "survival", icon: Heart, color: "primary", to: (s) => `/v2/survival?sport=${s}` },

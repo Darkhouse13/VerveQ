@@ -7,7 +7,7 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import { useQuery, useMutation } from "convex/react";
+import { useQuery, useMutation, useConvexAuth } from "convex/react";
 import { useAuthActions } from "@convex-dev/auth/react";
 import { api } from "../../convex/_generated/api";
 import {
@@ -326,7 +326,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const upgradeUsernameOnly = useMutation(api.users.upgradeUsernameOnly);
   const [localGuestActive, setLocalGuestActive] = useState(readTabGuestSession);
 
-  const isLoading = !localGuestActive && user === undefined;
+  // Auth is still SETTLING (not "logged out") while: the `me` query hasn't
+  // resolved; the token handshake is in flight (queries run unauthenticated
+  // until the stored token is validated, so `me` transiently resolves null on
+  // every reload of a signed-in session); or the token is validated but the
+  // user doc hasn't propagated to the reactive query yet. Treating any of
+  // these as logged out flashed SIGN IN at onboarded users and bounced
+  // guarded deep links to "/" before the session appeared.
+  const { isLoading: convexAuthInFlight, isAuthenticated: convexAuthed } =
+    useConvexAuth();
+  const authSettling =
+    user === undefined || (!user && (convexAuthInFlight || convexAuthed));
+
+  const isLoading = !localGuestActive && authSettling;
   const isAuthenticated = !!user || localGuestActive;
   const isGuest = localGuestActive || !!(user?.isGuest ?? user?.isAnonymous);
 
@@ -344,18 +356,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const isAnonymous = user?.isAnonymous === true;
   const isUsernameOnly = !!user && isAnonymous && hasUsername;
   const isFullAccount = !!user && !isAnonymous && hasUsername;
-  const accountState: AccountState =
-    user === undefined
-      ? localGuestActive
-        ? "loggedOut"
-        : "loading"
-      : !user
-        ? "loggedOut"
-        : isFullAccount
-          ? "fullAccount"
-          : isUsernameOnly
-            ? "usernameOnly"
-            : "needsUsername";
+  const accountState: AccountState = !user
+    ? localGuestActive
+      ? // Tab-local guests have no server identity — for the v2 onboarding
+        // model they are logged out (matches the previous behavior).
+        "loggedOut"
+      : authSettling
+        ? "loading"
+        : "loggedOut"
+    : isFullAccount
+      ? "fullAccount"
+      : isUsernameOnly
+        ? "usernameOnly"
+        : "needsUsername";
 
   const ensureProfileAfterAuth = useCallback(
     async (args: { username: string; displayName?: string; isGuest: boolean }) => {

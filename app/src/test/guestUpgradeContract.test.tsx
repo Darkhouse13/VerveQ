@@ -46,6 +46,7 @@ vi.mock("@/contexts/AuthContext", () => ({
 vi.mock("convex/react", () => ({
   useQuery: vi.fn(),
   useMutation: vi.fn(() => vi.fn()),
+  useConvexAuth: () => ({ isLoading: false, isAuthenticated: false }),
 }));
 
 vi.mock("../../convex/_generated/api", () => ({
@@ -381,9 +382,13 @@ describe("Guest account-required route contracts", () => {
       "VerveGridScreen",
       "WhoAmIScreen",
     ]) {
-      expect(appSource).toContain(`<UsernameRequiredRoute>
-                  <${screen} />
-                </UsernameRequiredRoute>`);
+      // Indentation-agnostic: deep-link aliasing (V2Redirect) may nest the
+      // guard one level deeper, but the guard itself must stay.
+      expect(appSource).toMatch(
+        new RegExp(
+          `<UsernameRequiredRoute>\\s*<${screen} />\\s*</UsernameRequiredRoute>`,
+        ),
+      );
     }
   });
 });

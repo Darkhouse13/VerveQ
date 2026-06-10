@@ -44,6 +44,8 @@ vi.mock("@convex-dev/auth/react", () => ({
 vi.mock("convex/react", () => ({
   useQuery: (...args: unknown[]) => authMock.useQuery(...args),
   useMutation: (...args: unknown[]) => authMock.useMutation(...args),
+  // Handshake settled, no session — the neutral default for these flows.
+  useConvexAuth: () => ({ isLoading: false, isAuthenticated: false }),
 }));
 
 vi.mock("../../convex/_generated/api", () => ({

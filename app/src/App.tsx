@@ -10,6 +10,10 @@ import { ErrorBoundary } from "./components/ErrorBoundary";
 // landing when VITE_V2_SHELL_ENABLED is on. Keeps "/" and "/home" as a clean
 // rollback seam (the only routes whose default destination the flag flips).
 import { EntryRoute, HomeRoute } from "./components/EntryRoutes";
+// Deep-link aliases: with the v2 shell live, v1 mode URLs (and spelling
+// variants like /vervegrid) forward to the v2 surface for that mode so shared
+// links land on the mode they name. Flag-off renders children unchanged.
+import { V2Redirect, V2ArenaCodeRedirect } from "./components/V2Redirect";
 import OnboardingScreen from "./pages/OnboardingScreen";
 import SportSelectScreen from "./pages/SportSelectScreen";
 import DifficultyScreen from "./pages/DifficultyScreen";
@@ -50,6 +54,11 @@ const RanksScreen = lazy(() => import("./pages/shell/RanksScreen"));
 const ShellProfileScreen = lazy(() => import("./pages/shell/ShellProfileScreen"));
 const WelcomeScreen = lazy(() => import("./pages/shell/WelcomeScreen"));
 const UpgradeScreen = lazy(() => import("./pages/shell/UpgradeScreen"));
+const ArenaHubScreen = lazy(() => import("./pages/shell/ArenaHubScreen"));
+
+// Public legal pages — flag-independent (app-store / launch necessities).
+const PrivacyScreen = lazy(() => import("./pages/legal/PrivacyScreen"));
+const TermsScreen = lazy(() => import("./pages/legal/TermsScreen"));
 
 // Learn v2 (the Learn pillar) — additive, flag-gated, lazy.
 const LearnEntryScreen = lazy(() => import("./pages/shell/learn/LearnEntryScreen"));
@@ -99,13 +108,22 @@ const AppRoutes = () => (
         <div className="max-w-md mx-auto min-h-screen relative">
           <Routes>
             <Route path="/" element={<EntryRoute />} />
-            <Route path="/leaderboard" element={<LeaderboardScreen />} />
+            <Route
+              path="/leaderboard"
+              element={
+                <V2Redirect to="/v2/leaderboard">
+                  <LeaderboardScreen />
+                </V2Redirect>
+              }
+            />
             <Route
               path="/ranks"
               element={
-                <ProtectedRoute>
-                  <LeaderboardScreen />
-                </ProtectedRoute>
+                <V2Redirect to="/v2/ranks">
+                  <ProtectedRoute>
+                    <LeaderboardScreen />
+                  </ProtectedRoute>
+                </V2Redirect>
               }
             />
             <Route path="/home" element={<HomeRoute />} />
@@ -136,17 +154,21 @@ const AppRoutes = () => (
             <Route
               path="/quiz"
               element={
-                <UsernameRequiredRoute>
-                  <QuizScreen />
-                </UsernameRequiredRoute>
+                <V2Redirect to="/v2/quiz?sport=football">
+                  <UsernameRequiredRoute>
+                    <QuizScreen />
+                  </UsernameRequiredRoute>
+                </V2Redirect>
               }
             />
             <Route
               path="/survival"
               element={
-                <UsernameRequiredRoute>
-                  <SurvivalScreen />
-                </UsernameRequiredRoute>
+                <V2Redirect to="/v2/survival?sport=football">
+                  <UsernameRequiredRoute>
+                    <SurvivalScreen />
+                  </UsernameRequiredRoute>
+                </V2Redirect>
               }
             />
             <Route
@@ -160,19 +182,27 @@ const AppRoutes = () => (
             <Route
               path="/profile"
               element={
-                <ProtectedRoute>
-                  <ProfileScreen />
-                </ProtectedRoute>
+                <V2Redirect to="/v2/profile">
+                  <ProtectedRoute>
+                    <ProfileScreen />
+                  </ProtectedRoute>
+                </V2Redirect>
               }
             />
             <Route
               path="/challenge"
               element={
-                <UsernameRequiredRoute>
-                  <ChallengeScreen />
-                </UsernameRequiredRoute>
+                <V2Redirect to="/v2/duels">
+                  <UsernameRequiredRoute>
+                    <ChallengeScreen />
+                  </UsernameRequiredRoute>
+                </V2Redirect>
               }
             />
+            {/* Bare /duel(s) name the head-to-head surface; only the deeper
+                /duel/:linkCode + play/result URLs are real v1 flows. */}
+            <Route path="/duel" element={<V2Redirect to="/v2/duels"><NotFound /></V2Redirect>} />
+            <Route path="/duels" element={<V2Redirect to="/v2/duels"><NotFound /></V2Redirect>} />
             <Route
               path="/duel/play/:duelId"
               element={
@@ -190,22 +220,28 @@ const AppRoutes = () => (
               }
             />
             <Route path="/duel/:linkCode" element={<DuelLinkScreen />} />
+            {/* Bare /arena names the group-challenge-room hub (create/join). */}
+            <Route path="/arena" element={<V2Redirect to="/v2/arena"><NotFound /></V2Redirect>} />
             <Route
               path="/arena/:code"
               element={
-                <UsernameRequiredRoute>
-                  <ErrorBoundary>
-                    <ChallengeArenaScreen />
-                  </ErrorBoundary>
-                </UsernameRequiredRoute>
+                <V2ArenaCodeRedirect>
+                  <UsernameRequiredRoute>
+                    <ErrorBoundary>
+                      <ChallengeArenaScreen />
+                    </ErrorBoundary>
+                  </UsernameRequiredRoute>
+                </V2ArenaCodeRedirect>
               }
             />
             <Route
               path="/rivals"
               element={
-                <UsernameRequiredRoute>
-                  <RivalsListScreen />
-                </UsernameRequiredRoute>
+                <V2Redirect to="/v2/rivals">
+                  <UsernameRequiredRoute>
+                    <RivalsListScreen />
+                  </UsernameRequiredRoute>
+                </V2Redirect>
               }
             />
             <Route
@@ -219,11 +255,15 @@ const AppRoutes = () => (
             <Route
               path="/daily-quiz"
               element={
-                <UsernameRequiredRoute>
-                  <DailyQuizScreen />
-                </UsernameRequiredRoute>
+                <V2Redirect to="/v2/daily?sport=football">
+                  <UsernameRequiredRoute>
+                    <DailyQuizScreen />
+                  </UsernameRequiredRoute>
+                </V2Redirect>
               }
             />
+            {/* /daily is the natural name for the Daily challenge. */}
+            <Route path="/daily" element={<V2Redirect to="/v2/daily?sport=football"><NotFound /></V2Redirect>} />
             <Route
               path="/daily-results"
               element={
@@ -235,9 +275,11 @@ const AppRoutes = () => (
             <Route
               path="/blitz"
               element={
-                <UsernameRequiredRoute>
-                  <BlitzScreen />
-                </UsernameRequiredRoute>
+                <V2Redirect to="/v2/blitz?sport=football">
+                  <UsernameRequiredRoute>
+                    <BlitzScreen />
+                  </UsernameRequiredRoute>
+                </V2Redirect>
               }
             />
             <Route
@@ -259,45 +301,58 @@ const AppRoutes = () => (
             <Route
               path="/live-match"
               element={
-                <UsernameRequiredRoute>
-                  <LiveMatchScreen />
-                </UsernameRequiredRoute>
+                <V2Redirect to="/v2/live-match">
+                  <UsernameRequiredRoute>
+                    <LiveMatchScreen />
+                  </UsernameRequiredRoute>
+                </V2Redirect>
               }
             />
             <Route
               path="/forge"
               element={
-                <UsernameRequiredRoute>
-                  <ForgeScreen />
-                </UsernameRequiredRoute>
+                <V2Redirect to="/v2/forge">
+                  <UsernameRequiredRoute>
+                    <ForgeScreen />
+                  </UsernameRequiredRoute>
+                </V2Redirect>
               }
             />
             <Route
               path="/higher-lower"
               element={
-                <UsernameRequiredRoute>
-                  <HigherLowerScreen />
-                </UsernameRequiredRoute>
+                <V2Redirect to="/v2/higher-lower?sport=football">
+                  <UsernameRequiredRoute>
+                    <HigherLowerScreen />
+                  </UsernameRequiredRoute>
+                </V2Redirect>
               }
             />
+            <Route path="/higherlower" element={<V2Redirect to="/v2/higher-lower?sport=football"><NotFound /></V2Redirect>} />
             <Route
               path="/verve-grid"
               element={
-                <UsernameRequiredRoute>
-                  <VerveGridScreen />
-                </UsernameRequiredRoute>
+                <V2Redirect to="/v2/verve-grid?sport=football">
+                  <UsernameRequiredRoute>
+                    <VerveGridScreen />
+                  </UsernameRequiredRoute>
+                </V2Redirect>
               }
             />
+            <Route path="/vervegrid" element={<V2Redirect to="/v2/verve-grid?sport=football"><NotFound /></V2Redirect>} />
             <Route
               path="/who-am-i"
               element={
-                <UsernameRequiredRoute>
-                  <WhoAmIScreen />
-                </UsernameRequiredRoute>
+                <V2Redirect to="/v2/who-am-i?sport=football">
+                  <UsernameRequiredRoute>
+                    <WhoAmIScreen />
+                  </UsernameRequiredRoute>
+                </V2Redirect>
               }
             />
+            <Route path="/whoami" element={<V2Redirect to="/v2/who-am-i?sport=football"><NotFound /></V2Redirect>} />
             {/* Dev/preview only — Learn node picker + graph-built ladders. Not wired into home, nav, or any scored mode. */}
-            <Route path="/learn" element={<LearnNodePickerScreen />} />
+            <Route path="/learn" element={<V2Redirect to="/v2/learn"><LearnNodePickerScreen /></V2Redirect>} />
             <Route path="/learn/geography" element={<LearnNodePickerScreen />} />
             <Route path="/learn/geography/:nodeId" element={<LearnLadderScreen />} />
             <Route path="/learn/prototype" element={<LearnPrototypeScreen />} />
@@ -338,9 +393,23 @@ const AppRoutes = () => (
               path="/v2/duels"
               element={
                 <ShellGate>
-                  <UsernameRequiredRoute>
+                  <UsernameOnlyRoute>
                     <ShellLayout embed><ChallengeScreen embedded /></ShellLayout>
-                  </UsernameRequiredRoute>
+                  </UsernameOnlyRoute>
+                </ShellGate>
+              }
+            />
+            {/* Arena entry hub — group challenge rooms (create / join by code),
+                distinct from Duels. Same server gate as the rooms themselves:
+                any user WITH a username (assertUsernameRequiredUser); logged-out
+                visitors onboard with ?next= back here instead of bouncing home. */}
+            <Route
+              path="/v2/arena"
+              element={
+                <ShellGate>
+                  <UsernameOnlyRoute>
+                    <ArenaHubScreen />
+                  </UsernameOnlyRoute>
                 </ShellGate>
               }
             />
@@ -348,9 +417,9 @@ const AppRoutes = () => (
               path="/v2/forge"
               element={
                 <ShellGate>
-                  <UsernameRequiredRoute>
+                  <UsernameOnlyRoute>
                     <ShellLayout embed><ForgeScreen embedded /></ShellLayout>
-                  </UsernameRequiredRoute>
+                  </UsernameOnlyRoute>
                 </ShellGate>
               }
             />
@@ -362,9 +431,9 @@ const AppRoutes = () => (
               path="/v2/rivals"
               element={
                 <ShellGate>
-                  <UsernameRequiredRoute>
+                  <UsernameOnlyRoute>
                     <ShellLayout embed><RivalsListScreen embedded /></ShellLayout>
-                  </UsernameRequiredRoute>
+                  </UsernameOnlyRoute>
                 </ShellGate>
               }
             />
@@ -372,9 +441,9 @@ const AppRoutes = () => (
               path="/v2/rivals/:opponentUserId"
               element={
                 <ShellGate>
-                  <UsernameRequiredRoute>
+                  <UsernameOnlyRoute>
                     <ShellLayout embed><RivalDetailScreen embedded /></ShellLayout>
-                  </UsernameRequiredRoute>
+                  </UsernameOnlyRoute>
                 </ShellGate>
               }
             />
@@ -405,6 +474,10 @@ const AppRoutes = () => (
                 liveMatches backend; realtime/matchmaking/ELO unchanged. Live ELO
                 is ranked, so a full account is required. */}
             <Route path="/v2/live-match" element={<ShellGate><FullAccountRoute><LiveMatchPlayScreen /></FullAccountRoute></ShellGate>} />
+            {/* Public legal pages — no auth, no flag gate (launch/app-store
+                requirements; must render regardless of rollout state). */}
+            <Route path="/privacy" element={<PrivacyScreen />} />
+            <Route path="/terms" element={<TermsScreen />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </div>

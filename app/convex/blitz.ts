@@ -260,17 +260,22 @@ export const getHighScores = query({
       throw new Error("Sport is required for Blitz leaderboards");
     }
 
+    // `blitzScores` has one row per RUN, so a hot streak by one player would
+    // otherwise fill several board slots. Walk the index in score order and
+    // keep each user's best run — the board lists users, not runs. Like the
+    // ELO board, ordering and ranks are decided here; clients never re-sort.
     const scores: Doc<"blitzScores">[] = await ctx.db
       .query("blitzScores")
       .withIndex("by_sport_score", (q) => q.eq("sport", sport))
       .order("desc")
-      .take(limit);
-
-    // Sort by score descending
-    scores.sort((a, b) => b.score - a.score);
+      .collect();
 
     const entries = [];
+    const seen = new Set<string>();
     for (const s of scores) {
+      if (entries.length >= limit) break;
+      if (seen.has(s.userId)) continue;
+      seen.add(s.userId);
       const user = await ctx.db.get(s.userId);
       if (!isRankedEligibleUserDoc(user)) continue;
       entries.push({
@@ -282,7 +287,6 @@ export const getHighScores = query({
         wrongCount: s.wrongCount,
         playedAt: s.playedAt,
       });
-      if (entries.length >= limit) break;
     }
 
     return { entries, totalEntries: entries.length };

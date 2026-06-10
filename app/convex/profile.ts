@@ -63,6 +63,13 @@ export const get = query({
       displayName: user.displayName,
       avatarUrl: user.avatarUrl,
       eloRating: currentElo,
+      // Anonymous (username-only) users are excluded from ranked, so their
+      // `eloRating` above is just the 1200 baseline — clients use this flag to
+      // show "—" instead of implying a ranked standing that doesn't exist.
+      rankedEligible,
+      // All completed plays counted on the user doc (includes casual modes),
+      // vs `stats.totalGames` which counts ranked quiz/survival only.
+      totalPlays: user.totalGames ?? 0,
       createdAt: user._creationTime,
       stats: {
         totalGames,

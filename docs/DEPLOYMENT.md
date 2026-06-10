@@ -165,6 +165,96 @@ Current platform note:
 - macOS local operator workspaces are supported via Keychain generic password storage
 - Linux and other platforms currently fail closed for approve/apply until a stronger non-repo-local backend is added
 
+## Production frontend deploy + rollback runbook (verveq.com)
+
+This is the authoritative path for publishing the static frontend to production. It has been run end-to-end twice; treat deviations from it as exceptions to call out, not alternatives.
+
+### Topology
+
+- Production host runs Docker with a Traefik reverse proxy on the `coolify` network (HTTP→HTTPS redirect, gzip, Let's Encrypt certs for `verveq.com` + `www.verveq.com`).
+- The frontend is an nginx container (`verveq-web`) built from `deploy/Dockerfile`; the **web root inside the container is `/usr/share/nginx/html`**, populated from `app/dist`.
+- nginx config is `deploy/nginx.conf`. It implements the **cache split that must never regress**:
+  - `index.html` (and every SPA-fallback response): `Cache-Control: no-cache` — the shell is what points at new hashed assets, so it must revalidate on every deploy.
+  - hashed assets (`*.js`, `*.css`, images, fonts): `expires 30d` + `Cache-Control: public, immutable`.
+  - `robots.txt` and `sitemap.xml` have explicit `location =` blocks so they are served as static files instead of falling through to the SPA fallback (which soft-404s as the app shell).
+- `GET /healthz` inside the container returns `ok` and is the post-deploy health probe.
+
+### Build environment
+
+The bundle is built on the host from the repo checkout (`/home/hermes/projects/verveq`), with the flag state baked in at build time:
+
+```bash
+export VITE_CONVEX_URL=https://admired-warthog-495.eu-west-1.convex.cloud
+export VITE_V2_SHELL_ENABLED=true   # v2 shell is the live default
+```
+
+`VITE_*` vars are compile-time: changing them requires a rebuild, not a container restart. `app/.env.local` is not read by the production build script — export explicitly.
+
+### Backup before deploy (timestamped + hashed + restore-tested)
+
+Before replacing the running container, snapshot what is currently serving:
+
+```bash
+STAMP=$(date +%Y%m%d%H%M%S)
+docker exec verveq-web sh -c 'cd /usr/share/nginx/html && tar cf - .' > /root/backups/verveq-web-${STAMP}.tar
+sha256sum /root/backups/verveq-web-${STAMP}.tar | tee -a /root/backups/MANIFEST
+# Restore-test: a backup that has not been unpacked is not a backup.
+mkdir -p /tmp/restore-test-${STAMP} && tar xf /root/backups/verveq-web-${STAMP}.tar -C /tmp/restore-test-${STAMP} \
+  && test -f /tmp/restore-test-${STAMP}/index.html && echo RESTORE-OK && rm -rf /tmp/restore-test-${STAMP}
+```
+
+Also record the currently-running image tag — it is the rollback target:
+
+```bash
+docker inspect --format '{{.Config.Image}}' verveq-web | tee -a /root/backups/MANIFEST
+```
+
+### Deploy
+
+```bash
+cd /home/hermes/projects/verveq
+export VITE_CONVEX_URL=... VITE_V2_SHELL_ENABLED=true
+./deploy/build-and-run.sh verveq.com
+```
+
+The script builds the bundle, bakes it into an image tagged `verveq-web:<git-short-sha>-<timestamp>` (every deploy is a uniquely-tagged, immutable rollback point), replaces the `verveq-web` container with full Traefik labels, and curls `/healthz` inside the container.
+
+### Post-deploy verification
+
+```bash
+curl -fsS https://verveq.com/healthz
+curl -fsSI https://verveq.com/ | grep -i cache-control          # expect no-cache
+curl -fsS https://verveq.com/robots.txt | head -2                # expect robots, not HTML
+curl -fsS https://verveq.com/sitemap.xml | head -2               # expect XML, not HTML
+curl -fsSI "https://verveq.com/assets/$(curl -fsS https://verveq.com/ | grep -o 'assets/index-[^"]*\.js' | head -1 | cut -d/ -f2)" | grep -i cache-control  # expect immutable
+```
+
+**Stale-DNS host-pin caveat:** the workstation running verification may resolve `verveq.com` to a stale IP (old A record, local cache, or VPN split-DNS). Both prior runs hit this. Pin the resolution to the production host instead of trusting the resolver:
+
+```bash
+curl --resolve verveq.com:443:<PROD_HOST_IP> -fsS https://verveq.com/healthz
+```
+
+If pinned checks pass but unpinned ones fail, it is DNS propagation/caching — do not roll back for it.
+
+### Rollback (one command)
+
+Every deploy leaves its predecessor's image intact, so rollback is re-running the previous image (look it up with `docker images "verveq-web" | head` or in `/root/backups/MANIFEST`):
+
+```bash
+docker rm -f verveq-web && docker run -d --name verveq-web --restart unless-stopped --network coolify \
+  $(docker inspect --format '{{range $k,$v := .Config.Labels}}--label {{$k}}={{$v}} {{end}}' verveq-web 2>/dev/null || echo "") \
+  verveq-web:<previous-tag>
+```
+
+In practice the proven minimal form (labels are identical across versions because they come from the run script) is to re-run `deploy/build-and-run.sh` from the previous git commit, or:
+
+```bash
+docker rm -f verveq-web && deploy/run-image.sh verveq-web:<previous-tag>   # if extracted; otherwise reuse the docker run block from build-and-run.sh with the old tag
+```
+
+Because `index.html` is served `no-cache`, clients pick up the rollback on their next request — no cache purge step exists or is needed. Verify with the same pinned `curl` checks as a deploy.
+
 ## Current frontend validation flow
 
 The reliable reachable-target validation flow from this workspace is:
@@ -214,7 +304,6 @@ These are different states and should not be collapsed together:
 
 ## What is not currently available from this workspace
 
-- A reliable remote frontend host deployment path
-- The credentials/config needed to publish the current static bundle to a separate remote frontend environment
+- The credentials/SSH access to the production host — the deploy + rollback runbook above runs ON the production host, not from a development workspace.
 
-If remote deploy access/config is missing, treat that as an external operational blocker rather than a repo bug.
+From a workspace without host access, treat "publish the bundle" as an operator handoff: point the operator at the runbook section above.

@@ -156,7 +156,12 @@ export function UsernameOnlyOnboarding({
               }}
               disabled={submitting}
             />
+            {/* The rule lives AT the field, always visible — the user learns
+                what a valid username is before the error, not from it. */}
             <p className="text-xs text-muted-foreground font-heading text-center mt-1.5">
+              3–24 characters: lowercase letters, numbers, underscores.
+            </p>
+            <p className="text-xs text-muted-foreground font-heading text-center mt-0.5">
               Your handle: @{normalized || "username"}
             </p>
           </div>

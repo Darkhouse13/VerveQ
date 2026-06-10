@@ -30,6 +30,12 @@ export const SHELL_ROUTES = {
    * the user back into the v1 app. See App.tsx and the screens' `embedded` prop.
    */
   profile: "/v2/profile",
+  /**
+   * Arena entry hub (group challenge rooms): create a room or join with a
+   * code. Distinct from `duels` (head-to-head send-a-link); play happens on
+   * `arenaPlay`.
+   */
+  arena: "/v2/arena",
   duels: "/v2/duels",
   forge: "/v2/forge",
   leaderboard: "/v2/leaderboard",
@@ -79,6 +85,7 @@ export const SHELL_ROUTE_PATTERNS = {
   whoAmIPlay: "/v2/who-am-i",
   verveGridPlay: "/v2/verve-grid",
   dailyPlay: "/v2/daily",
+  arena: "/v2/arena",
   arenaPlay: "/v2/arena/:code",
   liveMatchPlay: "/v2/live-match",
 } as const;
