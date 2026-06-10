@@ -173,6 +173,10 @@ export const sessionHeartbeat = mutation({
 // links, whose actors carry no username).
 export const SYNTHETIC_USERNAME_PREFIXES = ["drop_smoke_", "qa_"];
 
+// Exact linkCodes smoke runs probed that never belonged to any duel (the
+// deliberate bogus-code tap). Codes verbatim, never a pattern.
+export const KNOWN_SMOKE_LINKCODES = ["DQZZZZZZZZ99"];
+
 export function isSyntheticUsername(username: string | undefined | null) {
   if (!username) return false;
   return SYNTHETIC_USERNAME_PREFIXES.some((p) => username.startsWith(p));
@@ -180,6 +184,7 @@ export function isSyntheticUsername(username: string | undefined | null) {
 
 type FunnelEventLike = {
   actor: string;
+  refLinkCode?: string;
   refChallengerId?: Id<"users">;
 };
 
@@ -189,6 +194,9 @@ export function isSyntheticEvent(
 ) {
   if (event.actor.startsWith("user:")) {
     if (syntheticUserIds.has(event.actor.slice("user:".length))) return true;
+  }
+  if (event.refLinkCode && KNOWN_SMOKE_LINKCODES.includes(event.refLinkCode)) {
+    return true;
   }
   return !!event.refChallengerId && syntheticUserIds.has(event.refChallengerId);
 }

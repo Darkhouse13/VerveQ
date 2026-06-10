@@ -311,6 +311,13 @@ describe("synthetic test-actor exclusion", () => {
         synthetic,
       ),
     ).toBe(true);
+    // The smoke run's deliberate bogus-code tap (no duel, no user tie).
+    expect(
+      isSyntheticEvent(
+        { actor: "anon", refLinkCode: "DQZZZZZZZZ99" } as never,
+        synthetic,
+      ),
+    ).toBe(true);
     // Real traffic survives.
     expect(
       isSyntheticEvent(
@@ -319,6 +326,12 @@ describe("synthetic test-actor exclusion", () => {
       ),
     ).toBe(false);
     expect(isSyntheticEvent({ actor: "anon" } as never, synthetic)).toBe(false);
+    expect(
+      isSyntheticEvent(
+        { actor: "anon", refLinkCode: "DQREALCODE01" } as never,
+        synthetic,
+      ),
+    ).toBe(false);
   });
 });
 

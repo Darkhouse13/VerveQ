@@ -2,6 +2,7 @@ import { internalMutation, internalQuery } from "./_generated/server";
 import { v } from "convex/values";
 import type { Doc, Id, TableNames } from "./_generated/dataModel";
 import type { QueryCtx } from "./_generated/server";
+import { KNOWN_SMOKE_LINKCODES } from "./funnel";
 
 // ── One-off Drop-Test smoke-artifact cleanup ──
 // The Drop-Test smoke run created drop_smoke_a_*/drop_smoke_b_* accounts, two
@@ -14,10 +15,6 @@ import type { QueryCtx } from "./_generated/server";
 // provably a smoke artifact. It never deletes by pattern, only by id.
 
 const PURGE_USERNAME_PREFIXES = ["drop_smoke_a_", "drop_smoke_b_"];
-
-// Exact linkCodes the smoke run tapped that never belonged to any duel (the
-// deliberate bogus-code probe). Never a pattern — list codes verbatim.
-const KNOWN_SMOKE_LINKCODES = ["DQZZZZZZZZ99"];
 
 function isPurgeableUsername(username: string | undefined | null): boolean {
   if (!username) return false;
