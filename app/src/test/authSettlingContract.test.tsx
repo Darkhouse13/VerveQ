@@ -35,6 +35,9 @@ vi.mock("../../convex/_generated/api", () => ({
       claimUsernameOnly: "users.claimUsernameOnly",
       upgradeUsernameOnly: "users.upgradeUsernameOnly",
     },
+    funnel: {
+      sessionHeartbeat: "funnel.sessionHeartbeat",
+    },
   },
 }));
 

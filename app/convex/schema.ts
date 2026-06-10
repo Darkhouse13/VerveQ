@@ -16,10 +16,58 @@ export default defineSchema({
     anonymousOnboardingIpPermitId: v.optional(v.id("anonymousOnboardingIpPermits")),
     totalGames: v.optional(v.number()),
     approvedQuestionsCount: v.optional(v.number()),
+    // Updated (debounced) by funnel.sessionHeartbeat on app load; used for
+    // retention metrics like D7-of-defeated-players.
+    lastSeenAt: v.optional(v.number()),
     // Convex Auth fields
     email: v.optional(v.string()),
     emailVerificationTime: v.optional(v.number()),
   }).index("by_username", ["username"]),
+
+  // ── Drop-Test funnel instrumentation (insert-only, no PII) ──
+  // actor is "user:<userId>", "guest:<hashedGuestToken>" (never a raw token),
+  // or "anon" for pre-identity link taps. refChallengerId is the upstream
+  // challenger the event is attributed to: the duel's challenger for
+  // link_tap / first_match_complete / defeated_player_return, and the actor's
+  // own recruiter for challenge_issued — which is what lets a query rebuild
+  // the captain → gen1 → gen2 chain.
+  funnelEvents: defineTable({
+    type: v.union(
+      v.literal("link_tap"),
+      v.literal("challenge_issued"),
+      v.literal("first_match_complete"),
+      v.literal("defeated_player_return"),
+    ),
+    actor: v.string(),
+    refLinkCode: v.optional(v.string()),
+    refChallengerId: v.optional(v.id("users")),
+    ts: v.number(),
+    meta: v.optional(v.any()),
+  })
+    .index("by_type_ts", ["type", "ts"])
+    .index("by_actor_type", ["actor", "type"])
+    .index("by_refChallenger_type", ["refChallengerId", "type"]),
+
+  // "Was defeated" markers written at duel resolution. The
+  // defeated_player_return event fires on that user's next session start.
+  // Account-backed actors only — guests who bounce leave no durable identity
+  // to observe returning (a known limit of the loser-retention measurement).
+  funnelDefeatMarks: defineTable({
+    userId: v.id("users"),
+    duelId: v.id("duels"),
+    defeatedAt: v.number(),
+    returnFiredAt: v.optional(v.number()),
+  }).index("by_user", ["userId"]),
+
+  // Rendered OG share-card PNG cache. variant is a one-way hash of the
+  // challenger's score state, so a score change busts WhatsApp's per-URL
+  // cache without the score ever appearing in a URL.
+  duelShareCards: defineTable({
+    linkCode: v.string(),
+    variant: v.string(),
+    storageId: v.id("_storage"),
+    createdAt: v.number(),
+  }).index("by_link_variant", ["linkCode", "variant"]),
 
   anonymousOnboardingIpPermits: defineTable({
     ipKey: v.string(),

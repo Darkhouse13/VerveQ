@@ -12,6 +12,7 @@ import { api } from "../../convex/_generated/api";
 import type { Id } from "../../convex/_generated/dataModel";
 import { useAuth } from "@/contexts/AuthContext";
 import {
+  buildShareUrl,
   formatModeLabel,
   formatRelativeTime,
   readGuestDuelToken,
@@ -492,7 +493,7 @@ function WaitingForOpponent({
             variant="secondary"
             size="full"
             onClick={async () => {
-              const url = `${window.location.origin}/duel/${view.linkCode}`;
+              const url = buildShareUrl(view.linkCode!);
               try {
                 if (navigator.share) {
                   await navigator.share({ text: `Beat my ${view.myResult.score}`, url });

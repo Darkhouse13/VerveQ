@@ -11,6 +11,7 @@ import { api } from "../../convex/_generated/api";
 import type { Id } from "../../convex/_generated/dataModel";
 import { useAuth } from "@/contexts/AuthContext";
 import {
+  buildShareUrl,
   clearGuestDuelToken,
   formatCategoryLabel,
   formatModeLabel,
@@ -216,7 +217,7 @@ export default function DuelLinkScreen() {
             size="full"
             onClick={async () => {
               try {
-                await navigator.clipboard.writeText(window.location.href);
+                await navigator.clipboard.writeText(buildShareUrl(linkCode));
                 toast.success("Link copied");
               } catch {
                 toast.error("Could not copy");

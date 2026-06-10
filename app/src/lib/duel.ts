@@ -71,7 +71,22 @@ export function peekPendingDuelAttach(): PendingDuelAttach | null {
   }
 }
 
+function getConvexSiteUrl(): string | null {
+  const configured = import.meta.env.VITE_CONVEX_SITE_URL?.trim();
+  if (configured) return configured.replace(/\/$/, "");
+  const convexUrl = import.meta.env.VITE_CONVEX_URL?.trim();
+  if (convexUrl && convexUrl.includes(".convex.cloud")) {
+    return convexUrl.replace(".convex.cloud", ".convex.site").replace(/\/$/, "");
+  }
+  return null;
+}
+
+// Duel links are shared via the .site share route, which serves an OG taunt
+// card to link-preview crawlers and 302s humans to /duel/:linkCode — same
+// linkCode, so the guest bridge is untouched.
 export function buildShareUrl(linkCode: string): string {
+  const siteUrl = getConvexSiteUrl();
+  if (siteUrl) return `${siteUrl}/s/d/${linkCode}`;
   if (typeof window === "undefined") return `/duel/${linkCode}`;
   return `${window.location.origin}/duel/${linkCode}`;
 }

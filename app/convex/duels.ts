@@ -16,6 +16,13 @@ import {
 } from "./lib/authz";
 import { orderAnswerOptions } from "./lib/answerOptions";
 import { calculateTimeScore, normalizeAnswer } from "./lib/scoring";
+import {
+  guestActorKey,
+  markDefeat,
+  recordChallengeIssued,
+  recordFirstMatchComplete,
+  userActorKey,
+} from "./funnel";
 
 const TOTAL_DUEL_QUESTIONS = 10;
 const DUEL_TTL_MS = 72 * 60 * 60 * 1000;
@@ -516,6 +523,17 @@ async function resolveDuelIfReady(
     ...(rivalryApplied ? { rivalryAppliedAt: now } : {}),
   });
 
+  // Funnel: mark the losing account user as defeated so their next session
+  // start fires defeated_player_return. Guests have no durable identity to
+  // observe returning, so a guest loser is not marked.
+  if (status === "resolved" && winnerId) {
+    const loserId =
+      winnerId === duel.challengerId ? duel.opponentId : duel.challengerId;
+    if (loserId) {
+      await markDefeat(ctx, { userId: loserId, duelId, now });
+    }
+  }
+
   await queueNotification(ctx, {
     userId: duel.challengerId,
     duelId,
@@ -641,6 +659,14 @@ export const create = mutation({
       difficulty: args.difficulty,
       mode: args.mode,
       linkCode,
+    });
+
+    await recordChallengeIssued(ctx, {
+      challengerId: userId,
+      duelId,
+      linkCode,
+      viaLink,
+      now: Date.now(),
     });
 
     return { duelId, linkCode: linkCode ?? null };
@@ -881,6 +907,22 @@ export const complete = mutation({
           result: { ...result, completedAt: Date.now() },
         }),
       );
+
+      // Funnel: this side just resolved. first_match_complete fires once per
+      // actor — account users by id, guests by their stored token hash.
+      const actor = participant.userId
+        ? userActorKey(participant.userId)
+        : duel.opponentGuestTokenHash
+          ? guestActorKey(duel.opponentGuestTokenHash)
+          : null;
+      if (actor) {
+        await recordFirstMatchComplete(ctx, {
+          actor,
+          duel,
+          side: participant.side,
+          now: Date.now(),
+        });
+      }
     }
 
     const resolved = await resolveDuelIfReady(ctx, duelId, Date.now(), false);
@@ -965,6 +1007,13 @@ export const attachGuestResult = mutation({
         winnerId,
         ...(rivalryApplied ? { rivalryAppliedAt: now } : {}),
       });
+      // Funnel: a guest-side duel resolves with no winnerId (guests can't
+      // hold one), so the defeat mark for this pairing lands here, once the
+      // result is attached to a real account.
+      if (winnerId) {
+        const loserId = winnerId === updated.challengerId ? userId : updated.challengerId;
+        await markDefeat(ctx, { userId: loserId, duelId, now });
+      }
     }
 
     return { attached: true };
@@ -1007,6 +1056,15 @@ export const rematch = mutation({
       mode: duel.mode,
       linkCode,
       rematchOfDuelId: duelId,
+    });
+
+    await recordChallengeIssued(ctx, {
+      challengerId: userId,
+      duelId: newDuelId,
+      linkCode,
+      viaLink,
+      rematchOfDuelId: duelId,
+      now: Date.now(),
     });
 
     return { duelId: newDuelId, linkCode: linkCode ?? null };

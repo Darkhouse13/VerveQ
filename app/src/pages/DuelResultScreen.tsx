@@ -10,7 +10,7 @@ import { NeoBadge } from "@/components/neo/NeoBadge";
 import { api } from "../../convex/_generated/api";
 import type { Id } from "../../convex/_generated/dataModel";
 import { useAuth } from "@/contexts/AuthContext";
-import { formatModeLabel, formatCategoryLabel } from "@/lib/duel";
+import { buildShareUrl, formatModeLabel, formatCategoryLabel } from "@/lib/duel";
 
 type DuelView = {
   duelId: Id<"duels">;
@@ -145,9 +145,7 @@ export default function DuelResultScreen() {
       ? `I scored ${myScore}/${totalQ * 100} on a VerveQ duel — beat me`
       : `Final ${myScore} vs ${opponentScore} — rematch?`;
 
-  const shareUrl = view.linkCode
-    ? `${window.location.origin}/duel/${view.linkCode}`
-    : null;
+  const shareUrl = view.linkCode ? buildShareUrl(view.linkCode) : null;
 
   const handleShare = async () => {
     const payload = { title: "VerveQ duel", text: shareCardText, url: shareUrl ?? window.location.href };

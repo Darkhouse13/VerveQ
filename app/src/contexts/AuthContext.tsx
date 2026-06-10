@@ -324,7 +324,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const ensureProfile = useMutation(api.users.ensureProfile);
   const claimUsernameOnly = useMutation(api.users.claimUsernameOnly);
   const upgradeUsernameOnly = useMutation(api.users.upgradeUsernameOnly);
+  const sessionHeartbeat = useMutation(api.funnel.sessionHeartbeat);
   const [localGuestActive, setLocalGuestActive] = useState(readTabGuestSession);
+
+  // Session-start heartbeat: once per app load per signed-in identity. The
+  // server debounces lastSeenAt writes and converts pending "was defeated"
+  // marks into a defeated_player_return funnel event. Fire-and-forget.
+  const heartbeatSentForRef = useRef<string | null>(null);
+  const userId = user?._id ?? null;
+  useEffect(() => {
+    if (!userId || heartbeatSentForRef.current === userId) return;
+    heartbeatSentForRef.current = userId;
+    void (async () => {
+      try {
+        await sessionHeartbeat({});
+      } catch {
+        /* fire-and-forget */
+      }
+    })();
+  }, [userId, sessionHeartbeat]);
 
   // Auth is still SETTLING (not "logged out") while: the `me` query hasn't
   // resolved; the token handshake is in flight (queries run unauthenticated

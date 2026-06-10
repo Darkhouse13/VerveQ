@@ -9,7 +9,7 @@ import { NeoBadge } from "@/components/neo/NeoBadge";
 import { NeoInput } from "@/components/neo/NeoInput";
 import { api } from "../../../convex/_generated/api";
 import { useAuth } from "@/contexts/AuthContext";
-import { formatCategoryLabel } from "@/lib/duel";
+import { buildShareUrl, formatCategoryLabel } from "@/lib/duel";
 import type { Id } from "../../../convex/_generated/dataModel";
 
 type Difficulty = "easy" | "intermediate" | "hard";
@@ -478,7 +478,7 @@ function ModePill({
 }
 
 function ShareResult({ linkCode, onDone }: { linkCode: string; onDone: () => void }) {
-  const url = `${window.location.origin}/duel/${linkCode}`;
+  const url = buildShareUrl(linkCode);
   const shareText = `I challenged you to a VerveQ duel — can you beat my score?`;
 
   const handleShare = async () => {
