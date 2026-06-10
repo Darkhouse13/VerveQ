@@ -19,6 +19,12 @@ import { MemoryRouter, Routes, Route, useLocation } from "react-router-dom";
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 
+// Route the path through a variable: a literal inside `new URL(..., import.meta.url)`
+// gets statically rewritten by Vite to a non-file asset URL, which breaks
+// fileURLToPath at collection time.
+const read = (rel: string) =>
+  readFileSync(fileURLToPath(new URL(rel, import.meta.url)), "utf8");
+
 const flagMock = vi.hoisted(() => ({ enabled: true }));
 vi.mock("@/lib/flags", () => ({
   get V2_SHELL_ENABLED() {
@@ -156,10 +162,7 @@ const EXPECTED_ALIASES: Array<[path: string, target: string]> = [
 ];
 
 describe("App.tsx deep-link wiring (source contract)", () => {
-  const appSource = readFileSync(
-    fileURLToPath(new URL("../App.tsx", import.meta.url)),
-    "utf8",
-  );
+  const appSource = read("../App.tsx");
 
   it.each(EXPECTED_ALIASES)("wires %s → %s", (path, target) => {
     // The Route for `path` must mount a V2Redirect to `target` (within the

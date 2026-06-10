@@ -30,7 +30,10 @@ describe("legal pages render real content", () => {
         <PrivacyScreen />
       </MemoryRouter>,
     );
-    expect(screen.getByText("Privacy Policy")).toBeTruthy();
+    // By role: "Privacy Policy" also appears as a LegalLayout footer link.
+    expect(
+      screen.getByRole("heading", { level: 1, name: "Privacy Policy" }),
+    ).toBeTruthy();
     expect(screen.getByText("Information we collect")).toBeTruthy();
     expect(screen.getByText(/Retention and deletion/)).toBeTruthy();
     expect(screen.getByText(/security@verveq\.com/)).toBeTruthy();
@@ -42,7 +45,10 @@ describe("legal pages render real content", () => {
         <TermsScreen />
       </MemoryRouter>,
     );
-    expect(screen.getByText("Terms of Service")).toBeTruthy();
+    // By role: "Terms of Service" also appears as a LegalLayout footer link.
+    expect(
+      screen.getByRole("heading", { level: 1, name: "Terms of Service" }),
+    ).toBeTruthy();
     expect(screen.getByText("Fair play")).toBeTruthy();
     expect(screen.getByText("Suspension and termination")).toBeTruthy();
     expect(screen.getByText(/security@verveq\.com/)).toBeTruthy();
