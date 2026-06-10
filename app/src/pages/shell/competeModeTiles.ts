@@ -28,7 +28,7 @@ export const COMPETE_MODE_TILES: ModeTile[] = [
   // Arena + Duels route through the Challenge hub (create/join) embedded in the
   // shell (v2 nav retained). They were the category step's tiles; with that step
   // collapsed they live on the grid so neither path is lost.
-  { key: "arena", icon: Swords, color: "pink", to: () => SHELL_ROUTES.duels },
+  { key: "arena", icon: Swords, color: "pink", to: () => SHELL_ROUTES.arena },
   { key: "duel", icon: Users, color: "yellow", to: () => SHELL_ROUTES.duels },
   // Survival + Blitz are migrated to the shell prototype layout (solo).
   { key: "survival", icon: Heart, color: "primary", to: (s) => `/v2/survival?sport=${s}` },

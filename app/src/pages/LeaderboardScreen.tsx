@@ -115,12 +115,25 @@ export default function LeaderboardScreen({ embedded = false }: { embedded?: boo
     entries = eloData?.entries ?? [];
   }
 
-  const podiumEntries = entries.slice(0, 3);
+  const rankedEntries = Object.values(
+    entries.reduce<Record<string, (typeof entries)[number]>>((acc, entry) => {
+      const key = String(entry.userId || entry.username).toLowerCase();
+      const current = acc[key];
+      const entryValue = entry.elo_rating ?? entry.score ?? 0;
+      const currentValue = current ? (current.elo_rating ?? current.score ?? 0) : -Infinity;
+      if (!current || entryValue > currentValue) acc[key] = entry;
+      return acc;
+    }, {}),
+  )
+    .sort((a, b) => (b.elo_rating ?? b.score ?? 0) - (a.elo_rating ?? a.score ?? 0))
+    .map((entry, idx) => ({ ...entry, rank: idx + 1 }));
+
+  const podiumEntries = rankedEntries.slice(0, 3);
   const podiumOrder =
     podiumEntries.length >= 3
       ? [podiumEntries[1], podiumEntries[0], podiumEntries[2]]
       : podiumEntries;
-  const rankingsEntries = entries.slice(3);
+  const rankingsEntries = rankedEntries.slice(3);
 
   const podiumHeights: Record<number, string> = {
     1: "h-28",
@@ -181,7 +194,7 @@ export default function LeaderboardScreen({ embedded = false }: { embedded?: boo
           <p className="text-center font-heading animate-pulse py-12">
             Loading...
           </p>
-        ) : entries.length === 0 ? (
+        ) : rankedEntries.length === 0 ? (
           <NeoCard className="text-center py-12">
             <p className="font-heading font-bold text-lg">No entries yet</p>
             <p className="text-sm text-muted-foreground mt-1">
@@ -194,7 +207,7 @@ export default function LeaderboardScreen({ embedded = false }: { embedded?: boo
               {podiumOrder.map((p) => {
                 const height = podiumHeights[p.rank] || "h-16";
                 return (
-                  <div key={p.rank} className="flex flex-col items-center">
+                  <div key={p.userId} className="flex flex-col items-center">
                     <NeoAvatar
                       name={p.username}
                       size={p.rank === 1 ? "lg" : "md"}
@@ -236,7 +249,7 @@ export default function LeaderboardScreen({ embedded = false }: { embedded?: boo
                   : getTier(r.elo_rating);
                 return (
                   <NeoCard
-                    key={r.rank}
+                    key={r.userId}
                     className="flex items-center gap-3 py-3"
                   >
                     <span className="font-heading font-bold text-lg w-8 text-center">

@@ -27,19 +27,19 @@ export function UpgradeAccountForm({ onSuccess }: UpgradeAccountFormProps) {
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
   const [displayName, setDisplayName] = useState("");
-  const [error, setError] = useState<string | null>(null);
+  const [fieldError, setFieldError] = useState<{ field: "email" | "password" | "confirm"; message: string } | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
   const handleSubmit = useCallback(
     async (event: FormEvent) => {
       event.preventDefault();
-      setError(null);
+      setFieldError(null);
       if (!email.trim()) {
-        setError("Please enter your email.");
+        setFieldError({ field: "email", message: "Please enter your email." });
         return;
       }
       if (password !== confirm) {
-        setError("Passwords do not match.");
+        setFieldError({ field: "confirm", message: "Passwords do not match." });
         return;
       }
       setSubmitting(true);
@@ -53,7 +53,7 @@ export function UpgradeAccountForm({ onSuccess }: UpgradeAccountFormProps) {
             : err instanceof Error
               ? err.message
               : "Could not upgrade your account. Try again.";
-        setError(message);
+        setFieldError({ field: "password", message });
         setSubmitting(false);
       }
     },
@@ -77,18 +77,25 @@ export function UpgradeAccountForm({ onSuccess }: UpgradeAccountFormProps) {
         </div>
 
         <form onSubmit={(e) => void handleSubmit(e)} className="space-y-3">
-          <NeoInput
-            type="email"
-            autoComplete="email"
-            placeholder="Email"
-            aria-label="Email"
-            value={email}
-            onChange={(e) => {
-              setEmail(e.target.value);
-              if (error) setError(null);
-            }}
-            disabled={submitting}
-          />
+          <div>
+            <NeoInput
+              type="email"
+              autoComplete="email"
+              placeholder="Email"
+              aria-label="Email"
+              value={email}
+              onChange={(e) => {
+                setEmail(e.target.value);
+                if (fieldError) setFieldError(null);
+              }}
+              disabled={submitting}
+            />
+            {fieldError?.field === "email" && (
+              <p role="alert" className="mt-1 text-xs text-destructive font-heading">
+                {fieldError.message}
+              </p>
+            )}
+          </div>
           <NeoInput
             type="text"
             autoComplete="nickname"
@@ -98,39 +105,48 @@ export function UpgradeAccountForm({ onSuccess }: UpgradeAccountFormProps) {
             onChange={(e) => setDisplayName(e.target.value)}
             disabled={submitting}
           />
-          <NeoInput
-            type="password"
-            autoComplete="new-password"
-            placeholder="Password"
-            aria-label="Password"
-            value={password}
-            onChange={(e) => {
-              setPassword(e.target.value);
-              if (error) setError(null);
-            }}
-            disabled={submitting}
-          />
-          <NeoInput
-            type="password"
-            autoComplete="new-password"
-            placeholder="Confirm password"
-            aria-label="Confirm password"
-            value={confirm}
-            onChange={(e) => setConfirm(e.target.value)}
-            disabled={submitting}
-          />
+          <div>
+            <NeoInput
+              type="password"
+              autoComplete="new-password"
+              placeholder="Password"
+              aria-label="Password"
+              value={password}
+              onChange={(e) => {
+                setPassword(e.target.value);
+                if (fieldError) setFieldError(null);
+              }}
+              disabled={submitting}
+            />
+            {fieldError?.field === "password" && (
+              <p role="alert" className="mt-1 text-xs text-destructive font-heading">
+                {fieldError.message}
+              </p>
+            )}
+          </div>
+          <div>
+            <NeoInput
+              type="password"
+              autoComplete="new-password"
+              placeholder="Confirm password"
+              aria-label="Confirm password"
+              value={confirm}
+              onChange={(e) => {
+                setConfirm(e.target.value);
+                if (fieldError) setFieldError(null);
+              }}
+              disabled={submitting}
+            />
+            {fieldError?.field === "confirm" && (
+              <p role="alert" className="mt-1 text-xs text-destructive font-heading">
+                {fieldError.message}
+              </p>
+            )}
+          </div>
           <p className="text-xs text-muted-foreground font-heading text-center">
             At least {PASSWORD_MIN_LENGTH} characters. Up to {PASSWORD_MAX_LENGTH}.
           </p>
 
-          {error && (
-            <div
-              role="alert"
-              className="text-sm text-destructive font-heading text-center"
-            >
-              {error}
-            </div>
-          )}
 
           <NeoButton
             type="submit"

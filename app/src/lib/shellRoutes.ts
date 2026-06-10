@@ -55,6 +55,7 @@ export const SHELL_ROUTES = {
   verveGridPlay: "/v2/verve-grid",
   /** Daily Challenge (quiz) on the shell — reuses QuizPlayView via the DAILY session. */
   dailyPlay: "/v2/daily",
+  arena: "/v2/arena",
   /** `/v2/arena/:code` */
   arenaPlay: (code: string) => `/v2/arena/${code}`,
   /** Live Match (1v1 realtime) on the shell — FE reskin over the existing backend. */
@@ -79,6 +80,7 @@ export const SHELL_ROUTE_PATTERNS = {
   whoAmIPlay: "/v2/who-am-i",
   verveGridPlay: "/v2/verve-grid",
   dailyPlay: "/v2/daily",
+  arena: "/v2/arena",
   arenaPlay: "/v2/arena/:code",
   liveMatchPlay: "/v2/live-match",
 } as const;

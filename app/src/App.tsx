@@ -33,6 +33,8 @@ import LearnPrototypeScreen from "./pages/LearnPrototypeScreen";
 import LearnNodePickerScreen from "./pages/LearnNodePickerScreen";
 import LearnLadderScreen from "./pages/LearnLadderScreen";
 import NotFound from "./pages/NotFound";
+import LegalPage from "./pages/LegalPage";
+import { ArenaInviteRedirect, LegacyDailyRedirect, LegacyHigherLowerRedirect, LegacyVerveGridRedirect, LegacyWhoAmIRedirect } from "./components/shell/DeepLinkRedirects";
 import { ShellGate } from "./components/shell/ShellGate";
 import { ShellLayout } from "./components/shell/ShellLayout";
 import {
@@ -50,6 +52,7 @@ const RanksScreen = lazy(() => import("./pages/shell/RanksScreen"));
 const ShellProfileScreen = lazy(() => import("./pages/shell/ShellProfileScreen"));
 const WelcomeScreen = lazy(() => import("./pages/shell/WelcomeScreen"));
 const UpgradeScreen = lazy(() => import("./pages/shell/UpgradeScreen"));
+const ArenaHubScreen = lazy(() => import("./pages/shell/ArenaHubScreen"));
 
 // Learn v2 (the Learn pillar) — additive, flag-gated, lazy.
 const LearnEntryScreen = lazy(() => import("./pages/shell/learn/LearnEntryScreen"));
@@ -99,6 +102,12 @@ const AppRoutes = () => (
         <div className="max-w-md mx-auto min-h-screen relative">
           <Routes>
             <Route path="/" element={<EntryRoute />} />
+            <Route path="/privacy" element={<LegalPage kind="privacy" />} />
+            <Route path="/terms" element={<LegalPage kind="terms" />} />
+            <Route path="/daily" element={<LegacyDailyRedirect />} />
+            <Route path="/higherlower" element={<LegacyHigherLowerRedirect />} />
+            <Route path="/vervegrid" element={<LegacyVerveGridRedirect />} />
+            <Route path="/whoami" element={<LegacyWhoAmIRedirect />} />
             <Route path="/leaderboard" element={<LeaderboardScreen />} />
             <Route
               path="/ranks"
@@ -190,16 +199,7 @@ const AppRoutes = () => (
               }
             />
             <Route path="/duel/:linkCode" element={<DuelLinkScreen />} />
-            <Route
-              path="/arena/:code"
-              element={
-                <UsernameRequiredRoute>
-                  <ErrorBoundary>
-                    <ChallengeArenaScreen />
-                  </ErrorBoundary>
-                </UsernameRequiredRoute>
-              }
-            />
+            <Route path="/arena/:code" element={<ArenaInviteRedirect />} />
             <Route
               path="/rivals"
               element={
@@ -400,6 +400,7 @@ const AppRoutes = () => (
             <Route path="/v2/daily" element={<ShellGate><FullAccountRoute><DailyQuizPlayScreen /></FullAccountRoute></ShellGate>} />
             {/* Arena (multi-user) is username-only playable; the screen onboards
                 inline so a shared invite link never drops its lobby code. */}
+            <Route path="/v2/arena" element={<ShellGate><UsernameOnlyRoute><ArenaHubScreen /></UsernameOnlyRoute></ShellGate>} />
             <Route path="/v2/arena/:code" element={<ShellGate><ArenaPlayScreen /></ShellGate>} />
             {/* Live Match (1v1 realtime) on the shell — reskin over the existing
                 liveMatches backend; realtime/matchmaking/ELO unchanged. Live ELO
