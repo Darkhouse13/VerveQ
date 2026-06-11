@@ -282,6 +282,10 @@ export default defineSchema({
     winnerId: v.optional(v.id("users")),
     linkCode: v.optional(v.string()),
     rematchOfDuelId: v.optional(v.id("duels")),
+    // Forward pointer set when a rematch is created from this duel, so a
+    // second "Rematch" click (from either player) joins the same new duel
+    // instead of minting a mirrored duplicate.
+    rematchDuelId: v.optional(v.id("duels")),
     createdAt: v.number(),
     expiresAt: v.number(),
     resolvedAt: v.optional(v.number()),

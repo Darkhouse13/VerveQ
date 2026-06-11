@@ -1,7 +1,18 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery, useMutation } from "convex/react";
-import { Swords, Clock, Trophy, Plus, Users, Bell, Gamepad2, Hash } from "lucide-react";
+import {
+  Swords,
+  Clock,
+  Trophy,
+  Plus,
+  Users,
+  Bell,
+  Gamepad2,
+  Hash,
+  History,
+  ChevronRight,
+} from "lucide-react";
 import { toast } from "sonner";
 
 import { NeoCard } from "@/components/neo/NeoCard";
@@ -12,7 +23,13 @@ import { useAuth } from "@/contexts/AuthContext";
 import { api } from "../../convex/_generated/api";
 import { V2_SHELL_ENABLED } from "@/lib/flags";
 import { SHELL_ROUTES } from "@/lib/shellRoutes";
-import { formatModeLabel, formatCategoryLabel, formatRelativeTime } from "@/lib/duel";
+import {
+  formatModeLabel,
+  formatRelativeTime,
+  duelSummaryHeadline,
+  duelStatusBadge,
+  duelOpponentLabel,
+} from "@/lib/duel";
 
 /**
  * Arena deep link. When the v2 shell is enabled, create/join land in the new
@@ -29,30 +46,7 @@ function pluralize(n: number, one: string, many: string) {
   return n === 1 ? `1 ${one}` : `${n} ${many}`;
 }
 
-function summaryHeadline(s: { type: string; sport: string | null; category: string | null; mode: string }) {
-  if (s.mode === "came_first") return "Which Came First";
-  if (s.type === "knowledge") {
-    return s.category ? formatCategoryLabel(s.category) : "Knowledge";
-  }
-  const sport = s.sport ?? "sport";
-  return sport.charAt(0).toUpperCase() + sport.slice(1);
-}
-
-function statusBadge(status: string, winnerForMe: boolean | "draw" | null) {
-  if (status === "awaiting_opponent") return { label: "Open", color: "blue" as const };
-  if (status === "declined") return { label: "Declined", color: "muted" as const };
-  if (status === "expired") return { label: "Expired", color: "muted" as const };
-  if (winnerForMe === true) return { label: "Win", color: "success" as const };
-  if (winnerForMe === false) return { label: "Loss", color: "destructive" as const };
-  if (winnerForMe === "draw") return { label: "Draw", color: "blue" as const };
-  return { label: "Done", color: "muted" as const };
-}
-
-
-function opponentLabel(username: string): string {
-  // Link duels have no opponent yet; the server placeholder is "Link opponent".
-  return username === "Link opponent" ? "Open invite" : `vs @${username}`;
-}
+const RECENT_RESULTS_SHOWN = 3;
 
 export default function ChallengeScreen({ embedded = false }: { embedded?: boolean } = {}) {
   const navigate = useNavigate();
@@ -62,6 +56,7 @@ export default function ChallengeScreen({ embedded = false }: { embedded?: boole
   const rivalsPath = embedded ? SHELL_ROUTES.rivals : "/rivals";
   const rivalDetailPath = (id: string) =>
     embedded ? SHELL_ROUTES.rivalDetail(id) : `/rivals/${id}`;
+  const historyPath = embedded ? SHELL_ROUTES.duelHistory : "/duels/history";
   const [showCreate, setShowCreate] = useState(false);
   const [showArenaCreate, setShowArenaCreate] = useState(false);
   const [showArenaJoin, setShowArenaJoin] = useState(false);
@@ -105,6 +100,19 @@ export default function ChallengeScreen({ embedded = false }: { embedded?: boole
     return list.slice(0, 6);
   }, [rivalriesRes]);
 
+  // Lifetime head-to-head record, summed across the rivalry ledger.
+  const record = useMemo(() => {
+    const rows = rivalriesRes?.rivalries ?? [];
+    return rows.reduce(
+      (acc, r) => ({
+        wins: acc.wins + r.wins,
+        losses: acc.losses + r.losses,
+        draws: acc.draws + r.draws,
+      }),
+      { wins: 0, losses: 0, draws: 0 },
+    );
+  }, [rivalriesRes]);
+
   if (isGuest) {
     return (
       <div className={embedded ? "" : "min-h-screen bg-background pb-20"}>
@@ -130,6 +138,8 @@ export default function ChallengeScreen({ embedded = false }: { embedded?: boole
   const yourTurn = list?.yourTurn ?? [];
   const awaiting = list?.awaiting ?? [];
   const resolved = list?.resolved ?? [];
+  const recent = resolved.slice(0, RECENT_RESULTS_SHOWN);
+  const hasRecord = record.wins + record.losses + record.draws > 0;
 
   return (
     <div className={embedded ? "" : "min-h-screen bg-background pb-24"}>
@@ -148,6 +158,29 @@ export default function ChallengeScreen({ embedded = false }: { embedded?: boole
             </NeoBadge>
           )}
         </div>
+
+        {hasRecord && (
+          <div className="grid grid-cols-3 gap-2">
+            <NeoCard className="text-center py-2.5">
+              <p className="font-mono font-bold text-lg leading-none">{record.wins}</p>
+              <p className="text-[10px] font-heading uppercase text-muted-foreground mt-1">
+                Wins
+              </p>
+            </NeoCard>
+            <NeoCard className="text-center py-2.5">
+              <p className="font-mono font-bold text-lg leading-none">{record.losses}</p>
+              <p className="text-[10px] font-heading uppercase text-muted-foreground mt-1">
+                Losses
+              </p>
+            </NeoCard>
+            <NeoCard className="text-center py-2.5">
+              <p className="font-mono font-bold text-lg leading-none">{record.draws}</p>
+              <p className="text-[10px] font-heading uppercase text-muted-foreground mt-1">
+                Draws
+              </p>
+            </NeoCard>
+          </div>
+        )}
 
         <NeoCard color="accent" shadow="lg" className="space-y-3">
           <div className="flex items-start justify-between gap-3">
@@ -238,8 +271,9 @@ export default function ChallengeScreen({ embedded = false }: { embedded?: boole
           accent="primary"
         >
           {yourTurn.map((d) => {
-            const winnerForMe = null;
-            const badge = statusBadge(d.status, winnerForMe);
+            const badge = d.rematchOfDuelId
+              ? { label: "Rematch", color: "yellow" as const }
+              : duelStatusBadge(d.status, null);
             const expiresIn = formatRelativeTime(d.expiresAt);
             return (
               <NeoCard
@@ -251,10 +285,10 @@ export default function ChallengeScreen({ embedded = false }: { embedded?: boole
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
                     <p className="font-heading font-bold text-sm truncate">
-                      {opponentLabel(d.opponent.username)}
+                      {duelOpponentLabel(d.opponent.username)}
                     </p>
                     <p className="text-xs text-muted-foreground capitalize truncate">
-                      {summaryHeadline(d)} · {formatModeLabel(d.mode)} · {d.difficulty}
+                      {duelSummaryHeadline(d)} · {formatModeLabel(d.mode)} · {d.difficulty}
                     </p>
                   </div>
                   <NeoBadge color={badge.color} size="sm">
@@ -274,16 +308,16 @@ export default function ChallengeScreen({ embedded = false }: { embedded?: boole
           })}
         </Section>
 
-        {/* Awaiting opponent */}
+        {/* Waiting on them */}
         <Section
-          title="Awaiting opponent"
+          title="Waiting on them"
           icon={<Clock size={16} strokeWidth={3} />}
           countLabel={pluralize(awaiting.length, "duel out", "duels out")}
           empty={loading ? "Loading…" : "No duels waiting on someone else."}
           accent="blue"
         >
           {awaiting.map((d) => {
-            const badge = statusBadge(d.status, null);
+            const badge = duelStatusBadge(d.status, null);
             return (
               <NeoCard
                 key={d.duelId}
@@ -293,10 +327,10 @@ export default function ChallengeScreen({ embedded = false }: { embedded?: boole
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
                     <p className="font-heading font-bold text-sm truncate">
-                      {opponentLabel(d.opponent.username)}
+                      {duelOpponentLabel(d.opponent.username)}
                     </p>
                     <p className="text-xs text-muted-foreground capitalize truncate">
-                      {summaryHeadline(d)} · {formatModeLabel(d.mode)} · {d.difficulty}
+                      {duelSummaryHeadline(d)} · {formatModeLabel(d.mode)} · {d.difficulty}
                     </p>
                   </div>
                   <NeoBadge color={badge.color} size="sm">
@@ -331,56 +365,94 @@ export default function ChallengeScreen({ embedded = false }: { embedded?: boole
           })}
         </Section>
 
-        {/* Resolved */}
-        <Section
-          title="Resolved"
-          icon={<Trophy size={16} strokeWidth={3} />}
-          countLabel={pluralize(resolved.length, "result", "results")}
-          empty={loading ? "Loading…" : "No resolved duels yet."}
-          accent="muted"
-        >
-          {resolved.map((d) => {
-            const winnerForMe =
-              d.winnerId === null
-                ? "draw"
-                : d.winnerId === me?._id
-                  ? true
-                  : d.winnerId
-                    ? false
-                    : "draw";
-            const badge = statusBadge(d.status, winnerForMe);
-            return (
-              <NeoCard
-                key={d.duelId}
-                onClick={() => navigate(`/duel/result/${d.duelId}`)}
-                className="space-y-2"
+        {/* Recent results — the full list lives on the history page. */}
+        <div>
+          <div className="flex items-center justify-between mb-2">
+            <p className="text-xs font-heading font-bold uppercase flex items-center gap-1.5">
+              <span className="inline-flex items-center justify-center w-5 h-5 rounded-full neo-border bg-muted">
+                <Trophy size={16} strokeWidth={3} />
+              </span>
+              Recent results
+            </p>
+            {resolved.length > 0 && (
+              <button
+                type="button"
+                onClick={() => navigate(historyPath)}
+                className="text-xs font-heading font-bold uppercase text-primary underline underline-offset-4 cursor-pointer"
               >
-                <div className="flex items-start justify-between gap-3">
-                  <div className="min-w-0">
-                    <p className="font-heading font-bold text-sm truncate">
-                      {opponentLabel(d.opponent.username)}
-                    </p>
-                    <p className="text-xs text-muted-foreground capitalize truncate">
-                      {summaryHeadline(d)} · {formatModeLabel(d.mode)} · {d.difficulty}
-                    </p>
-                  </div>
-                  <NeoBadge color={badge.color} size="sm">
-                    {badge.label}
+                History
+              </button>
+            )}
+          </div>
+          {recent.length === 0 ? (
+            <NeoCard className="text-center py-5">
+              <p className="text-xs text-muted-foreground">
+                {loading ? "Loading…" : "No finished duels yet."}
+              </p>
+            </NeoCard>
+          ) : (
+            <div className="space-y-2">
+              {recent.map((d) => {
+                const winnerForMe =
+                  d.status === "resolved"
+                    ? d.winnerId
+                      ? d.winnerId === me?._id
+                      : "draw"
+                    : null;
+                const badge = duelStatusBadge(d.status, winnerForMe);
+                const rematchIncoming = d.openRematch && !d.openRematch.byMe;
+                return (
+                  <NeoCard
+                    key={d.duelId}
+                    onClick={() => navigate(`/duel/result/${d.duelId}`)}
+                    className="py-2.5 flex items-center justify-between gap-3"
+                  >
+                    <div className="flex items-center gap-2.5 min-w-0">
+                      <NeoBadge color={badge.color} size="sm" className="shrink-0">
+                        {badge.label}
+                      </NeoBadge>
+                      <div className="min-w-0">
+                        <p className="font-heading font-bold text-xs truncate">
+                          {duelOpponentLabel(d.opponent.username)}
+                        </p>
+                        <p className="text-[10px] text-muted-foreground capitalize truncate">
+                          {duelSummaryHeadline(d)}
+                          {d.resolvedAt
+                            ? ` · ${formatRelativeTime(d.resolvedAt)}`
+                            : ""}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2 shrink-0">
+                      {rematchIncoming && (
+                        <NeoBadge color="yellow" size="sm">
+                          Rematch!
+                        </NeoBadge>
+                      )}
+                      <p className="font-mono font-bold text-xs">
+                        {d.myScore}–{d.opponentScore}
+                      </p>
+                    </div>
+                  </NeoCard>
+                );
+              })}
+              <NeoCard
+                onClick={() => navigate(historyPath)}
+                className="py-3 flex items-center justify-between"
+              >
+                <p className="font-heading font-bold text-sm inline-flex items-center gap-2">
+                  <History size={16} strokeWidth={2.5} /> Duel history
+                </p>
+                <span className="inline-flex items-center gap-1.5">
+                  <NeoBadge color="muted" size="sm">
+                    {pluralize(resolved.length, "result", "results")}
                   </NeoBadge>
-                </div>
-                <div className="flex items-center justify-between text-[11px] font-mono">
-                  <span>
-                    You <span className="font-bold">{d.myScore}</span> —{" "}
-                    <span className="font-bold">{d.opponentScore}</span> them
-                  </span>
-                  <span className="text-muted-foreground">
-                    {d.resolvedAt ? formatRelativeTime(d.resolvedAt) : ""}
-                  </span>
-                </div>
+                  <ChevronRight size={16} strokeWidth={3} />
+                </span>
               </NeoCard>
-            );
-          })}
-        </Section>
+            </div>
+          )}
+        </div>
 
         <NeoCard
           onClick={() => navigate(rivalsPath)}

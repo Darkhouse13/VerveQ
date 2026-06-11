@@ -78,8 +78,11 @@ describe("knowledge expansion contract", () => {
     expect(createDuel).toContain("KNOWLEDGE_CATEGORIES");
     expect(createDuel).toContain("Pick a category");
     expect(createDuel).toContain("formatCategoryLabel(c)");
-    expect(challenge).toContain("summaryHeadline");
-    expect(challenge).toContain("formatCategoryLabel(s.category)");
+    // The duel headline helpers moved to the shared lib so the Duels page and
+    // the history page render categories identically.
+    const duelLib = readFileSync("src/lib/duel.ts", "utf8");
+    expect(challenge).toContain("duelSummaryHeadline(d)");
+    expect(duelLib).toContain("formatCategoryLabel(s.category)");
     expect(challenge).toContain("formatModeLabel(d.mode)");
     expect(result).toContain('{ label: "Topic", value: state.sport');
     expect(dailyResult).toContain('{ label: "Topic", value: state.sport');

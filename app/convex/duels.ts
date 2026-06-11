@@ -15,7 +15,7 @@ import {
   isUsernameRequiredUserDoc,
 } from "./lib/authz";
 import { orderAnswerOptions } from "./lib/answerOptions";
-import { calculateTimeScore, normalizeAnswer } from "./lib/scoring";
+import { calculateDuelTimeScore, normalizeAnswer } from "./lib/scoring";
 import {
   guestActorKey,
   markDefeat,
@@ -608,6 +608,51 @@ async function createDuelDocument(
   });
 }
 
+// One open duel per (pair, settings): an invite that is still awaiting play
+// is the same intent as a fresh one, so re-sending must reuse it instead of
+// stacking another row in the recipient's "your turn" list.
+async function findOpenDuelBetween(
+  ctx: Pick<MutationCtx, "db">,
+  args: {
+    userId: Id<"users">;
+    opponentId: Id<"users">;
+    type: "sports" | "knowledge";
+    category?: string;
+    sport?: string;
+    difficulty: "easy" | "intermediate" | "hard";
+    mode: string;
+  },
+) {
+  const sameSettings = (duel: Doc<"duels">) =>
+    duel.status === "awaiting_opponent" &&
+    duel.type === args.type &&
+    (duel.category ?? null) === (args.category ?? null) &&
+    (duel.sport ?? null) === (args.sport ?? null) &&
+    duel.difficulty === args.difficulty &&
+    duel.mode === args.mode;
+
+  const mine = await ctx.db
+    .query("duels")
+    .withIndex("by_challenger", (q) => q.eq("challengerId", args.userId))
+    .collect();
+  const sent = mine.find(
+    (duel) => duel.opponentId === args.opponentId && sameSettings(duel),
+  );
+  if (sent) return sent;
+
+  const theirs = await ctx.db
+    .query("duels")
+    .withIndex("by_opponent_status", (q) =>
+      q.eq("opponentId", args.userId).eq("status", "awaiting_opponent"),
+    )
+    .collect();
+  return (
+    theirs.find(
+      (duel) => duel.challengerId === args.opponentId && sameSettings(duel),
+    ) ?? null
+  );
+}
+
 export const create = mutation({
   args: {
     type: v.union(v.literal("sports"), v.literal("knowledge")),
@@ -646,6 +691,25 @@ export const create = mutation({
       const opponent = await ctx.db.get(args.opponentUserId);
       assertAccountUser(opponent, "Opponent");
       opponentUsernameSnapshot = opponent.username;
+
+      const mode = normalizeMode(args.mode);
+      const open = await findOpenDuelBetween(ctx, {
+        userId,
+        opponentId: args.opponentUserId,
+        type: args.type,
+        category: mode === "came_first" ? "which_came_first" : args.category,
+        sport: args.type === "knowledge" ? "knowledge" : args.sport,
+        difficulty: args.difficulty,
+        mode,
+      });
+      if (open) {
+        return {
+          duelId: open._id,
+          linkCode:
+            open.challengerId === userId ? open.linkCode ?? null : null,
+          existing: true,
+        };
+      }
     }
 
     const linkCode = viaLink ? await generateUniqueLinkCode(ctx) : undefined;
@@ -678,7 +742,7 @@ export const create = mutation({
       });
     }
 
-    return { duelId, linkCode: linkCode ?? null };
+    return { duelId, linkCode: linkCode ?? null, existing: false };
   },
 });
 
@@ -827,7 +891,7 @@ export const submitAnswer = mutation({
     const correct =
       normalizeAnswer(answer) === normalizeAnswer(question.correctAnswer);
     const score = correct
-      ? calculateTimeScore(QUESTION_BASE_POINTS, timeTaken)
+      ? calculateDuelTimeScore(QUESTION_BASE_POINTS, timeTaken)
       : 0;
     const nextPerQuestion: DuelQuestionResult[] = [
       ...result.perQuestion,
@@ -1048,6 +1112,24 @@ export const rematch = mutation({
       throw new Error("Not authorized for this duel");
     }
 
+    // Both players clicking "Rematch" must land in the same duel: if one is
+    // already open for this duel, join it instead of minting a duplicate.
+    if (duel.rematchDuelId) {
+      const open = await ctx.db.get(duel.rematchDuelId);
+      if (
+        open &&
+        open.status === "awaiting_opponent" &&
+        (open.challengerId === userId || open.opponentId === userId)
+      ) {
+        return {
+          duelId: open._id,
+          linkCode:
+            open.challengerId === userId ? open.linkCode ?? null : null,
+          existing: true,
+        };
+      }
+    }
+
     const opponentId =
       userId === duel.challengerId ? duel.opponentId : duel.challengerId;
     const viaLink = !opponentId;
@@ -1075,6 +1157,8 @@ export const rematch = mutation({
       rematchOfDuelId: duelId,
     });
 
+    await ctx.db.patch(duelId, { rematchDuelId: newDuelId });
+
     await recordChallengeIssued(ctx, {
       challengerId: userId,
       duelId: newDuelId,
@@ -1090,7 +1174,7 @@ export const rematch = mutation({
       });
     }
 
-    return { duelId: newDuelId, linkCode: linkCode ?? null };
+    return { duelId: newDuelId, linkCode: linkCode ?? null, existing: false };
   },
 });
 
@@ -1121,8 +1205,18 @@ type DuelSummary = {
   };
   winnerId: Id<"users"> | null;
   rematchOfDuelId: Id<"duels"> | null;
+  openRematch: { duelId: Id<"duels">; byMe: boolean } | null;
   bucket: "your_turn" | "awaiting_opponent" | "resolved";
 };
+
+// The still-playable rematch spawned from this duel, if any — a stale pointer
+// (declined/expired/resolved rematch) reads as "none" so a fresh one can be sent.
+async function getOpenRematch(ctx: Pick<QueryCtx, "db">, duel: Doc<"duels">) {
+  if (!duel.rematchDuelId) return null;
+  const rematch = await ctx.db.get(duel.rematchDuelId);
+  if (!rematch || rematch.status !== "awaiting_opponent") return null;
+  return rematch;
+}
 
 async function summarizeForSide(
   ctx: Pick<QueryCtx, "db">,
@@ -1137,6 +1231,9 @@ async function summarizeForSide(
   const opponentUserId =
     side === "challenger" ? duel.opponentId ?? null : duel.challengerId;
   const opponentUser = opponentUserId ? await ctx.db.get(opponentUserId) : null;
+  const viewerId =
+    side === "challenger" ? duel.challengerId : duel.opponentId ?? null;
+  const openRematchDoc = await getOpenRematch(ctx, duel);
 
   let bucket: DuelSummary["bucket"] = "awaiting_opponent";
   if (duel.status === "awaiting_opponent") {
@@ -1178,6 +1275,12 @@ async function summarizeForSide(
     },
     winnerId: duel.winnerId ?? null,
     rematchOfDuelId: duel.rematchOfDuelId ?? null,
+    openRematch: openRematchDoc
+      ? {
+          duelId: openRematchDoc._id,
+          byMe: !!viewerId && openRematchDoc.challengerId === viewerId,
+        }
+      : null,
     bucket,
   };
 }
@@ -1204,6 +1307,7 @@ async function buildDuelStatus(
       summary.status === "resolved" || summary.status === "expired"
         ? summary.winnerId
         : null,
+    openRematch: summary.openRematch,
     bucket: summary.bucket,
   };
 }

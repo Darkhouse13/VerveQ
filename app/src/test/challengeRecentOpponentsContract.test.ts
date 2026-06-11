@@ -28,10 +28,25 @@ describe("challenge duel hub contract", () => {
 
     expect(challengeScreen).toContain("api.duels.listMine");
     expect(challengeScreen).toContain('title="Your turn"');
-    expect(challengeScreen).toContain('title="Awaiting opponent"');
-    expect(challengeScreen).toContain('title="Resolved"');
+    expect(challengeScreen).toContain('title="Waiting on them"');
     expect(challengeScreen).toContain("New Duel");
     expect(challengeScreen).toContain("formatModeLabel(d.mode)");
     expect(challengeScreen).toContain("const topRivals = useMemo");
+  });
+
+  it("shows a compact recent-results strip and routes the full list to the history page", () => {
+    const challengeScreen = readFileSync("src/pages/ChallengeScreen.tsx", "utf8");
+    const historyScreen = readFileSync("src/pages/DuelHistoryScreen.tsx", "utf8");
+    const appSource = readFileSync("src/App.tsx", "utf8");
+
+    expect(challengeScreen).toContain("RECENT_RESULTS_SHOWN");
+    expect(challengeScreen).toContain("Recent results");
+    expect(challengeScreen).toContain("Duel history");
+    expect(challengeScreen).not.toContain('title="Resolved"');
+
+    expect(historyScreen).toContain("api.duels.listMine");
+    expect(historyScreen).toContain("Duel history");
+    expect(appSource).toContain('path="/duels/history"');
+    expect(appSource).toContain('path="/v2/duels/history"');
   });
 });

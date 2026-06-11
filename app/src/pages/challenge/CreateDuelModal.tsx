@@ -199,7 +199,11 @@ export default function CreateDuelModal({
         setLinkCode(result.linkCode);
         setStep("result");
       } else {
-        toast.success("Duel sent");
+        if (result.existing) {
+          toast.success("You already have an open duel together — opening it");
+        } else {
+          toast.success("Duel sent");
+        }
         onCreated(result.duelId);
       }
     } catch (e) {

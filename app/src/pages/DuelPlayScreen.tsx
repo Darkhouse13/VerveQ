@@ -74,6 +74,7 @@ type DuelStatus = {
   opponentAnsweredCount: number;
   opponentCompleted: boolean;
   winnerId: Id<"users"> | null;
+  openRematch: { duelId: Id<"duels">; byMe: boolean } | null;
   bucket: "your_turn" | "awaiting_opponent" | "resolved";
 };
 
@@ -95,7 +96,9 @@ export default function DuelPlayScreen() {
   }, [isAuthenticated, navigate]);
 
   if (!duelId || !isAuthenticated) return null;
-  return <DuelPlay duelId={duelId as Id<"duels">} />;
+  // Keyed so navigating between duels (e.g. into a rematch) remounts with
+  // fresh state instead of carrying the previous duel's view.
+  return <DuelPlay key={duelId} duelId={duelId as Id<"duels">} />;
 }
 
 export function DuelPlay({ duelId, guestToken, initialView }: DuelPlayProps) {
@@ -222,7 +225,9 @@ export function DuelPlay({ duelId, guestToken, initialView }: DuelPlayProps) {
     setRematching(true);
     try {
       const result = await rematchMut({ duelId: view.duelId });
-      if (result.linkCode) {
+      if (result.existing) {
+        toast.success("Rematch already open — joining it");
+      } else if (result.linkCode) {
         toast.success("Rematch ready");
       } else {
         toast.success("Rematch sent");
@@ -270,6 +275,9 @@ export function DuelPlay({ duelId, guestToken, initialView }: DuelPlayProps) {
   const answered = view.myResult.perQuestion.length;
   const progress = `Q ${Math.min(answered + 1, totalQ)} / ${totalQ}`;
 
+  const openRematchHandler = (rematchDuelId: Id<"duels">) =>
+    navigate(`/duel/play/${rematchDuelId}`);
+
   if (liveStatus && liveStatus.status !== "awaiting_opponent") {
     return (
       <LiveResolvedStatus
@@ -279,6 +287,7 @@ export function DuelPlay({ duelId, guestToken, initialView }: DuelPlayProps) {
         canRematch={!guestTokenForArgs && !!user?._id}
         rematching={rematching}
         onRematch={handleRematch}
+        onOpenRematch={openRematchHandler}
         onBack={() => navigate("/challenge")}
         onSeeResult={() => navigate(`/duel/result/${duelId}`)}
       />
@@ -290,6 +299,10 @@ export function DuelPlay({ duelId, guestToken, initialView }: DuelPlayProps) {
       <DuelLocked
         view={view}
         userId={user?._id ?? null}
+        openRematch={
+          !guestTokenForArgs && user?._id ? liveStatus?.openRematch ?? null : null
+        }
+        onOpenRematch={openRematchHandler}
         onBack={() => navigate("/challenge")}
         onSeeResult={() => navigate(`/duel/result/${duelId}`)}
       />
@@ -305,6 +318,7 @@ export function DuelPlay({ duelId, guestToken, initialView }: DuelPlayProps) {
         canRematch={!guestTokenForArgs && !!user?._id}
         rematching={rematching}
         onRematch={handleRematch}
+        onOpenRematch={openRematchHandler}
         onBack={() => navigate("/challenge")}
         onSeeResult={() => navigate(`/duel/result/${duelId}`)}
       />
@@ -358,12 +372,15 @@ export function DuelPlay({ duelId, guestToken, initialView }: DuelPlayProps) {
         <p className="font-heading font-bold text-xs">{progress}</p>
       </div>
 
-      <div className="flex items-center justify-between mb-5">
+      <div className="flex items-center justify-between mb-1">
         <p className="font-mono font-bold text-sm">Score: {view.myResult.score}</p>
         <NeoBadge color="primary" size="sm">
           {formatModeLabel(view.mode)}
         </NeoBadge>
       </div>
+      <p className="text-[10px] text-muted-foreground mb-4">
+        Fast answers score more — correct always counts.
+      </p>
 
       {isCameFirst ? (
         <NeoCard shadow="lg" className="mb-5 text-center">
@@ -415,12 +432,15 @@ export function DuelPlay({ duelId, guestToken, initialView }: DuelPlayProps) {
         ))}
       </div>
 
-      {revealed?.explanation && (
+      {revealed && (
         <NeoCard
           color={revealed.correct ? "success" : "default"}
           className="mt-4 text-sm leading-snug"
         >
-          {revealed.explanation}
+          <p className="font-heading font-bold text-sm">
+            {revealed.correct ? `Correct · +${revealed.score} pts` : "Wrong · no points"}
+          </p>
+          {revealed.explanation && <p className="mt-1">{revealed.explanation}</p>}
         </NeoCard>
       )}
 
@@ -438,6 +458,51 @@ export function DuelPlay({ duelId, guestToken, initialView }: DuelPlayProps) {
   );
 }
 
+function RematchPrompt({
+  openRematch,
+  opponentName,
+  onOpen,
+}: {
+  openRematch: { duelId: Id<"duels">; byMe: boolean } | null;
+  opponentName: string;
+  onOpen: (duelId: Id<"duels">) => void;
+}) {
+  if (!openRematch) return null;
+  if (openRematch.byMe) {
+    return (
+      <NeoCard className="w-full mb-3 flex items-center justify-between gap-3">
+        <div className="min-w-0">
+          <p className="font-heading font-bold text-sm">Rematch sent</p>
+          <p className="text-xs text-muted-foreground truncate">
+            Waiting for @{opponentName} to play.
+          </p>
+        </div>
+        <NeoButton
+          variant="secondary"
+          size="sm"
+          onClick={() => onOpen(openRematch.duelId)}
+        >
+          Open
+        </NeoButton>
+      </NeoCard>
+    );
+  }
+  return (
+    <NeoCard color="accent" shadow="lg" className="w-full mb-3 space-y-2">
+      <p className="font-heading font-bold text-sm inline-flex items-center gap-1.5">
+        <Swords size={14} strokeWidth={3} /> @{opponentName} wants a rematch!
+      </p>
+      <NeoButton
+        variant="primary"
+        size="full"
+        onClick={() => onOpen(openRematch.duelId)}
+      >
+        Accept rematch
+      </NeoButton>
+    </NeoCard>
+  );
+}
+
 function WaitingForOpponent({
   view,
   liveStatus,
@@ -445,6 +510,7 @@ function WaitingForOpponent({
   canRematch,
   rematching,
   onRematch,
+  onOpenRematch,
   onBack,
   onSeeResult,
 }: {
@@ -454,6 +520,7 @@ function WaitingForOpponent({
   canRematch: boolean;
   rematching: boolean;
   onRematch: () => void;
+  onOpenRematch: (duelId: Id<"duels">) => void;
   onBack: () => void;
   onSeeResult: () => void;
 }) {
@@ -466,6 +533,7 @@ function WaitingForOpponent({
         canRematch={canRematch}
         rematching={rematching}
         onRematch={onRematch}
+        onOpenRematch={onOpenRematch}
         onBack={onBack}
         onSeeResult={onSeeResult}
       />
@@ -550,6 +618,7 @@ function LiveResolvedStatus({
   canRematch,
   rematching,
   onRematch,
+  onOpenRematch,
   onBack,
   onSeeResult,
 }: {
@@ -559,12 +628,14 @@ function LiveResolvedStatus({
   canRematch: boolean;
   rematching: boolean;
   onRematch: () => void;
+  onOpenRematch: (duelId: Id<"duels">) => void;
   onBack: () => void;
   onSeeResult: () => void;
 }) {
   const headline = statusHeadline(view, status, userId);
   const opponentName =
     view.role === "challenger" ? view.opponent.displayName : view.challenger.displayName;
+  const openRematch = canRematch ? status.openRematch : null;
 
   return (
     <div className="min-h-screen bg-background px-5 py-8 flex flex-col items-center">
@@ -580,8 +651,13 @@ function LiveResolvedStatus({
           {status.myScore} — {status.opponentScore}
         </p>
       </NeoCard>
+      <RematchPrompt
+        openRematch={openRematch}
+        opponentName={opponentName}
+        onOpen={onOpenRematch}
+      />
       <div className="w-full space-y-3">
-        {canRematch && (
+        {canRematch && !openRematch && (
           <NeoButton
             variant="primary"
             size="full"
@@ -606,11 +682,15 @@ function LiveResolvedStatus({
 function DuelLocked({
   view,
   userId,
+  openRematch,
+  onOpenRematch,
   onBack,
   onSeeResult,
 }: {
   view: DuelView;
   userId: string | null;
+  openRematch: { duelId: Id<"duels">; byMe: boolean } | null;
+  onOpenRematch: (duelId: Id<"duels">) => void;
   onBack: () => void;
   onSeeResult: () => void;
 }) {
@@ -643,6 +723,15 @@ function DuelLocked({
           {view.myResult.score} — {view.opponentResult.score}
         </p>
       </NeoCard>
+      <RematchPrompt
+        openRematch={openRematch}
+        opponentName={
+          view.role === "challenger"
+            ? view.opponent.displayName
+            : view.challenger.displayName
+        }
+        onOpen={onOpenRematch}
+      />
       <div className="w-full space-y-3">
         <NeoButton variant="primary" size="full" onClick={onSeeResult}>
           See full result

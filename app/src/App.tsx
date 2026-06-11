@@ -81,6 +81,7 @@ const LiveMatchPlayScreen = lazy(() => import("./pages/shell/play/LiveMatchPlayS
 const DuelPlayScreen = lazy(() => import("./pages/DuelPlayScreen"));
 const DuelLinkScreen = lazy(() => import("./pages/DuelLinkScreen"));
 const DuelResultScreen = lazy(() => import("./pages/DuelResultScreen"));
+const DuelHistoryScreen = lazy(() => import("./pages/DuelHistoryScreen"));
 const RivalsListScreen = lazy(() => import("./pages/RivalsScreen"));
 const RivalDetailScreen = lazy(() =>
   import("./pages/RivalsScreen").then((m) => ({ default: m.RivalDetailScreen })),
@@ -220,6 +221,16 @@ const AppRoutes = () => (
                 <UsernameRequiredRoute>
                   <DuelResultScreen />
                 </UsernameRequiredRoute>
+              }
+            />
+            <Route
+              path="/duels/history"
+              element={
+                <V2Redirect to="/v2/duels/history">
+                  <UsernameRequiredRoute>
+                    <DuelHistoryScreen />
+                  </UsernameRequiredRoute>
+                </V2Redirect>
               }
             />
             <Route path="/duel/:linkCode" element={<DuelLinkScreen />} />
@@ -398,6 +409,16 @@ const AppRoutes = () => (
                 <ShellGate>
                   <UsernameOnlyRoute>
                     <ShellLayout embed><ChallengeScreen embedded /></ShellLayout>
+                  </UsernameOnlyRoute>
+                </ShellGate>
+              }
+            />
+            <Route
+              path="/v2/duels/history"
+              element={
+                <ShellGate>
+                  <UsernameOnlyRoute>
+                    <ShellLayout embed><DuelHistoryScreen embedded /></ShellLayout>
                   </UsernameOnlyRoute>
                 </ShellGate>
               }

@@ -42,6 +42,7 @@ type DuelStatus = {
   opponentAnsweredCount: number;
   opponentCompleted: boolean;
   winnerId: Id<"users"> | null;
+  openRematch: { duelId: Id<"duels">; byMe: boolean } | null;
   bucket: "your_turn" | "awaiting_opponent" | "resolved";
 };
 
@@ -60,9 +61,11 @@ export default function DuelResultScreen() {
   const { user, isAuthenticated } = useAuth();
   const getMyDuel = useMutation(api.duels.getMyDuel);
   const rematchMut = useMutation(api.duels.rematch);
+  const declineMut = useMutation(api.duels.decline);
   const [view, setView] = useState<DuelView | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [rematching, setRematching] = useState(false);
+  const [declining, setDeclining] = useState(false);
   const liveStatus = useQuery(
     api.duels.getDuelStatus,
     view ? { duelId: view.duelId } : "skip",
@@ -170,11 +173,20 @@ export default function DuelResultScreen() {
     }
   };
 
+  const openRematch = liveStatus?.openRematch ?? null;
+
   const handleRematch = async () => {
+    // An open rematch already exists (sent by either side) — just enter it.
+    if (openRematch) {
+      navigate(`/duel/play/${openRematch.duelId}`);
+      return;
+    }
     setRematching(true);
     try {
       const result = await rematchMut({ duelId: view.duelId });
-      if (result.linkCode) {
+      if (result.existing) {
+        toast.success("Rematch already open — joining it");
+      } else if (result.linkCode) {
         // It's now a link rematch (e.g. former guest); send to play screen.
         toast.success("Rematch ready — share the link");
       } else {
@@ -185,6 +197,19 @@ export default function DuelResultScreen() {
       toast.error(e instanceof Error ? e.message : "Rematch failed");
     } finally {
       setRematching(false);
+    }
+  };
+
+  const handleDeclineRematch = async () => {
+    if (!openRematch || openRematch.byMe) return;
+    setDeclining(true);
+    try {
+      await declineMut({ duelId: openRematch.duelId });
+      toast.success("Rematch declined");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Could not decline");
+    } finally {
+      setDeclining(false);
     }
   };
 
@@ -201,6 +226,50 @@ export default function DuelResultScreen() {
         <p className="font-heading font-bold text-sm uppercase">Duel result</p>
         <div className="w-9" />
       </div>
+
+      {/* Live rematch state — appears in place the moment the other player
+          (or this one, from another surface) sends a rematch. */}
+      {openRematch && !openRematch.byMe && (
+        <NeoCard color="accent" shadow="lg" className="mb-5 space-y-2">
+          <p className="font-heading font-bold text-sm inline-flex items-center gap-1.5">
+            <Swords size={14} strokeWidth={3} /> @{opponentName} wants a rematch!
+          </p>
+          <div className="grid grid-cols-2 gap-2">
+            <NeoButton
+              variant="primary"
+              size="md"
+              onClick={() => navigate(`/duel/play/${openRematch.duelId}`)}
+            >
+              Accept
+            </NeoButton>
+            <NeoButton
+              variant="ghost"
+              size="md"
+              disabled={declining}
+              onClick={handleDeclineRematch}
+            >
+              {declining ? "Declining…" : "Decline"}
+            </NeoButton>
+          </div>
+        </NeoCard>
+      )}
+      {openRematch?.byMe && (
+        <NeoCard className="mb-5 flex items-center justify-between gap-3">
+          <div className="min-w-0">
+            <p className="font-heading font-bold text-sm">Rematch sent</p>
+            <p className="text-xs text-muted-foreground truncate">
+              Waiting for @{opponentName} to play.
+            </p>
+          </div>
+          <NeoButton
+            variant="secondary"
+            size="sm"
+            onClick={() => navigate(`/duel/play/${openRematch.duelId}`)}
+          >
+            Open
+          </NeoButton>
+        </NeoCard>
+      )}
 
       {/* Share card */}
       <NeoCard shadow="lg" color={myWon ? "primary" : "default"} className="mb-5 text-center py-6">
@@ -245,7 +314,17 @@ export default function DuelResultScreen() {
         {!stillOpen && (
           <NeoButton variant="primary" size="full" disabled={rematching} onClick={handleRematch}>
             <Swords size={16} strokeWidth={3} />
-            {rematching ? "Sending…" : myLost ? "Get revenge" : myWon ? "Defend your win" : "Run it back"}
+            {rematching
+              ? "Sending…"
+              : openRematch
+                ? openRematch.byMe
+                  ? "Open your rematch"
+                  : "Accept the rematch"
+                : myLost
+                  ? "Get revenge"
+                  : myWon
+                    ? "Defend your win"
+                    : "Run it back"}
           </NeoButton>
         )}
         <NeoButton variant="secondary" size="full" onClick={handleShare}>

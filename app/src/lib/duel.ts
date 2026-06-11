@@ -112,3 +112,37 @@ export function formatRelativeTime(ms: number): string {
   const days = Math.round(hours / 24);
   return diff >= 0 ? `in ${days}d` : `${days}d ago`;
 }
+
+export type DuelOutcomeForMe = boolean | "draw" | null;
+
+export function duelSummaryHeadline(s: {
+  type: string;
+  sport: string | null;
+  category: string | null;
+  mode: string;
+}): string {
+  if (s.mode === "came_first") return "Which Came First";
+  if (s.type === "knowledge") {
+    return s.category ? formatCategoryLabel(s.category) : "Knowledge";
+  }
+  const sport = s.sport ?? "sport";
+  return sport.charAt(0).toUpperCase() + sport.slice(1);
+}
+
+export function duelStatusBadge(
+  status: string,
+  winnerForMe: DuelOutcomeForMe,
+): { label: string; color: "blue" | "muted" | "success" | "destructive" } {
+  if (status === "awaiting_opponent") return { label: "Open", color: "blue" };
+  if (status === "declined") return { label: "Declined", color: "muted" };
+  if (status === "expired") return { label: "Expired", color: "muted" };
+  if (winnerForMe === true) return { label: "Win", color: "success" };
+  if (winnerForMe === false) return { label: "Loss", color: "destructive" };
+  if (winnerForMe === "draw") return { label: "Draw", color: "blue" };
+  return { label: "Done", color: "muted" };
+}
+
+export function duelOpponentLabel(username: string): string {
+  // Link duels have no opponent yet; the server placeholder is "Link opponent".
+  return username === "Link opponent" ? "Open invite" : `vs @${username}`;
+}

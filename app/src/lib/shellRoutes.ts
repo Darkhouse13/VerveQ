@@ -37,6 +37,8 @@ export const SHELL_ROUTES = {
    */
   arena: "/v2/arena",
   duels: "/v2/duels",
+  /** Full list of finished duels; the Duels page shows only the latest few. */
+  duelHistory: "/v2/duels/history",
   forge: "/v2/forge",
   leaderboard: "/v2/leaderboard",
   rivals: "/v2/rivals",
