@@ -562,7 +562,6 @@ function ArenaRevealColumn({ room, userId }: { room: Room; userId: Id<"users"> |
     );
   }
 
-  const myAnswer = room.revealAnswers.find((a) => a.userId === userId);
   const isLogoText = question.kind === "logo_text";
   const questionText =
     "question" in question && typeof question.question === "string"
@@ -573,11 +572,21 @@ function ArenaRevealColumn({ room, userId }: { room: Room; userId: Id<"users"> |
       ? question.correctAnswer
       : null;
 
-  const verdict = !myAnswer
-    ? { label: "Missed", color: "muted" as const }
-    : myAnswer.correct
-      ? { label: `+${myAnswer.points}`, color: "success" as const }
-      : { label: "Wrong", color: "destructive" as const };
+  // Everyone's picks, banter-ordered: scorers first (fastest on top), then
+  // wrong picks, then misses. My row is highlighted instead of a separate
+  // "your answer" card so the column fits without scrolling.
+  const rows = room.players
+    .filter((p) => !p.left)
+    .map((p) => ({
+      player: p,
+      a: room.revealAnswers.find((r) => r.userId === p.userId),
+    }))
+    .sort(
+      (x, y) =>
+        (y.a?.points ?? -1) - (x.a?.points ?? -1) ||
+        (x.a?.serverTimeMs ?? Number.MAX_SAFE_INTEGER) -
+          (y.a?.serverTimeMs ?? Number.MAX_SAFE_INTEGER),
+    );
 
   return (
     <div className="space-y-4">
@@ -601,15 +610,38 @@ function ArenaRevealColumn({ room, userId }: { room: Room; userId: Id<"users"> |
         )}
       </NeoCard>
 
-      <NeoCard color={verdict.color === "success" ? "success" : "default"}>
-        <div className="flex items-center justify-between">
-          <div>
-            <p className="text-[10px] font-heading uppercase">Your answer</p>
-            <p className="font-heading font-bold text-sm">{myAnswer?.answer ?? "—"}</p>
-          </div>
-          <NeoBadge color={verdict.color} size="md">
-            {verdict.label}
-          </NeoBadge>
+      <NeoCard className="p-0 overflow-hidden">
+        <p className="text-[10px] font-heading font-bold uppercase tracking-wide px-3 pt-2.5 pb-1.5">
+          Round answers
+        </p>
+        <div className="max-h-[30dvh] overflow-y-auto scrollbar-none">
+          {rows.map(({ player, a }) => {
+            const isMe = !!userId && player.userId === userId;
+            return (
+              <div
+                key={String(player.userId)}
+                className={`border-t-2 border-border px-3 py-2 flex items-center gap-2.5 ${
+                  isMe ? "bg-primary text-primary-foreground" : ""
+                }`}
+              >
+                <div className="min-w-0 flex-1">
+                  <p className="font-heading font-bold text-xs truncate">
+                    {player.nameSnapshot}
+                    {isMe && " (you)"}
+                  </p>
+                  <p className={`text-[10px] font-mono truncate ${isMe ? "opacity-90" : "opacity-70"}`}>
+                    {a?.answer || "—"}
+                  </p>
+                </div>
+                <NeoBadge
+                  color={!a ? "muted" : a.correct ? "success" : "destructive"}
+                  size="sm"
+                >
+                  {!a ? "Missed" : a.correct ? `+${a.points}` : "Wrong"}
+                </NeoBadge>
+              </div>
+            );
+          })}
         </div>
       </NeoCard>
 

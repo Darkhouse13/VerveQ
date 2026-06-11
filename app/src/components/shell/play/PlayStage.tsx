@@ -2,12 +2,13 @@
  * PlayStage — the in-game "prototype layout" shared by every migrated game mode.
  *
  * The discipline (matches ShellLayout / LearnShell):
- *  - Mobile: normal flow inside App's `max-w-md` column. The side rails collapse
- *    to a single `strip` rendered above the answering column; the page scrolls.
- *  - Desktop (md+): breaks out to `fixed inset-0` to fill the viewport and never
- *    scroll. A 3-column grid frames a centered, phone-width answering column with
- *    ambient rails on each side. Each region can scroll internally as a safety
- *    valve, but the page itself stays locked.
+ *  - ALL devices: `fixed inset-0`, the page itself never scrolls. On mobile the
+ *    side rails collapse to a single `strip` above the answering column, which
+ *    is sized to fit the viewport (the question image box is dvh-scaled).
+ *  - Desktop (md+): a 3-column grid frames a centered, phone-width answering
+ *    column with ambient rails on each side.
+ *  - Each region can scroll internally as a safety valve on very short
+ *    viewports, but the page stays locked.
  *
  * The rails are for AMBIENT state only (roster status, standings, timer, score,
  * lives, streak, combo — and per-player picks on reveal). The answering column
@@ -61,9 +62,9 @@ export function PlayStage({
     <div
       className={cn(
         theme,
-        "relative min-h-[100dvh] w-full bg-background text-foreground shell-canvas-bg flex flex-col",
-        // Desktop: fill the viewport and never scroll.
-        "md:fixed md:inset-0 md:z-40 md:min-h-0 md:h-[100dvh] md:overflow-hidden",
+        "bg-background text-foreground shell-canvas-bg flex flex-col",
+        // Fill the viewport and never scroll — on every device.
+        "fixed inset-0 z-40 h-[100dvh] overflow-hidden",
       )}
     >
       {(title || onExit || headerRight) && (
@@ -100,22 +101,24 @@ export function PlayStage({
       <main
         className={cn(
           "flex-1 min-h-0 w-full mx-auto max-w-6xl px-4 md:px-6",
-          "overflow-y-auto md:overflow-hidden scrollbar-none",
-          "pt-4 pb-10 md:py-0",
+          "overflow-hidden flex flex-col",
+          "pt-3 md:py-0",
           // Large desktop: bound the stage to a laptop-equivalent height and
           // center it under the header so tall monitors don't stretch the
           // rails/answering column. Inert on short xl viewports.
           "xl:max-h-[48rem] xl:my-auto",
         )}
       >
-        {strip && <div className="md:hidden mb-3">{strip}</div>}
+        {strip && <div className="md:hidden shrink-0 mb-3">{strip}</div>}
 
-        <div className="md:h-full md:grid md:grid-cols-[1fr_28rem_1fr] md:gap-6 md:items-stretch">
+        <div className="flex-1 min-h-0 flex flex-col md:grid md:grid-cols-[1fr_28rem_1fr] md:gap-6 md:items-stretch">
           <aside className={cn(RAIL, "md:justify-self-end md:pr-1")}>{left}</aside>
 
           {/* Visible scrollbar: on short viewports the controls live below the
-              fold and a hidden-scroll column reads as a broken, unclickable game. */}
-          <div className="w-full max-w-md mx-auto md:overflow-y-auto md:py-3">
+              fold and a hidden-scroll column reads as a broken, unclickable game.
+              overflow-x stays clipped so the pressed-state translate never
+              spawns a horizontal scrollbar. */}
+          <div className="w-full max-w-md mx-auto flex-1 min-h-0 md:flex-none md:h-full overflow-y-auto overflow-x-hidden pb-4 md:py-3">
             {children}
           </div>
 

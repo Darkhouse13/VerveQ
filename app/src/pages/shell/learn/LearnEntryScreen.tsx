@@ -68,21 +68,33 @@ export default function LearnEntryScreen() {
             <span className="self-start rounded-full border-2 border-current bg-background/20 px-2.5 py-1 font-mono text-[11px] font-bold uppercase tracking-wider">
               {t("entry.todaysSession")}
             </span>
-            <div className="font-heading font-black text-4xl md:text-5xl leading-[0.95] mt-4 md:mt-auto">
+            <div className="font-heading font-black text-3xl md:text-5xl leading-[0.95] mt-3 md:mt-auto">
               {t("entry.heroLine1")}
               <br />
               {t("entry.heroLine2")}
             </div>
-            <p className="text-[15px] font-medium opacity-90 mt-3 md:max-w-md">
+            <p className="text-sm md:text-[15px] font-medium opacity-90 mt-2.5 md:mt-3 md:max-w-md">
               {t("entry.heroBody")}
             </p>
           </div>
-          <div className="z-10 mt-4 md:mt-0 md:w-56 flex-none flex flex-col gap-2.5">
+          <div className="z-10 mt-3 md:mt-0 md:w-56 flex-none flex flex-col gap-2.5">
             <Eyebrow className="text-primary-foreground/85">{t("entry.metaLine")}</Eyebrow>
+            {/* The four answer types: numbered rows on desktop, one compact
+                chip line on phones so the entry fits the fixed frame. */}
+            <div className="flex flex-wrap gap-1.5 md:hidden">
+              {TYPE_KEYS.map((k) => (
+                <span
+                  key={k}
+                  className="rounded-full border-2 border-current bg-background/15 px-2.5 py-1 font-bold text-[11px]"
+                >
+                  {t(`type.${k}`)}
+                </span>
+              ))}
+            </div>
             {TYPE_KEYS.map((k, i) => (
               <div
                 key={k}
-                className="flex items-center gap-2.5 rounded-xl border-2 border-current bg-background/15 px-3 py-2"
+                className="hidden md:flex items-center gap-2.5 rounded-xl border-2 border-current bg-background/15 px-3 py-2"
               >
                 <span className="font-heading text-sm w-4">{i + 1}</span>
                 <span className="font-bold text-[13.5px]">{t(`type.${k}`)}</span>

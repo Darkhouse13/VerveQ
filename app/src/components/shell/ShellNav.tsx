@@ -31,13 +31,17 @@ function useTabs() {
   return { t, tabs: TABS, isActive };
 }
 
-/** Mobile bottom bar — mirrors the existing BottomNav idiom, shell-only routes. */
+/**
+ * Mobile bottom bar — shell-only routes. An in-flow row at the foot of
+ * ShellLayout's fixed column (not position:fixed), so `main` gets exactly the
+ * remaining height and the page never scrolls.
+ */
 export function ShellNav() {
   const navigate = useNavigate();
   const { t, tabs, isActive } = useTabs();
 
   return (
-    <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 border-t-[3px] border-border bg-background">
+    <nav className="md:hidden shrink-0 border-t-[3px] border-border bg-background pb-[env(safe-area-inset-bottom)]">
       <div className="flex max-w-md mx-auto">
         {tabs.map((tab) => {
           const active = isActive(tab);

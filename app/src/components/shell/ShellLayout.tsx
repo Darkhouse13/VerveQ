@@ -36,12 +36,15 @@ interface ShellLayoutProps {
  * Shared chrome for every v2-shell screen, implementing the prototype's
  * never-scroll discipline:
  *
- *  - Mobile: lives in normal flow inside App's `max-w-md` column and scrolls
- *    vertically; the bottom nav is fixed and content clears it via padding.
- *  - Desktop (md+): breaks out to `fixed inset-0` to fill the whole viewport
- *    (escaping the `max-w-md` wrapper), the header and nav are fixed-height,
- *    and `main` fills the remaining space with `overflow-hidden` — the page
- *    never scrolls. Screens lay their content out to fit.
+ *  - ALL devices: `fixed inset-0` — the page itself never scrolls. On mobile
+ *    the bottom nav is an in-flow row at the foot of the column and `main`
+ *    gets exactly the space between header and nav; screens lay their content
+ *    out to fit. `main` keeps a vertical-scroll safety valve for content that
+ *    can't fit very short viewports (and for `embed`ded legacy screens), with
+ *    overflow-x always clipped so pressed-state translates never spawn a
+ *    horizontal scrollbar.
+ *  - Desktop (md+): the header and top nav are fixed-height and `main` is
+ *    `overflow-hidden` — never scrolls.
  *  - Large desktop (xl+): the header + main group is additionally bounded to a
  *    laptop-equivalent height and vertically centered, so tall monitors get a
  *    proportioned canvas instead of content stretched to fill the viewport.
@@ -66,9 +69,9 @@ export function ShellLayout({
     <div
       className={cn(
         theme,
-        "relative min-h-[100dvh] w-full bg-background text-foreground shell-canvas-bg",
-        // Desktop: fill the viewport and never scroll.
-        "md:fixed md:inset-0 md:z-40 md:min-h-0 md:h-[100dvh] md:overflow-hidden",
+        "w-full bg-background text-foreground shell-canvas-bg",
+        // Fill the viewport and never scroll — on every device.
+        "fixed inset-0 z-40 h-[100dvh] overflow-hidden",
         "flex flex-col",
       )}
     >
@@ -115,17 +118,20 @@ export function ShellLayout({
 
       <main
         className={cn(
-          "flex-1 w-full mx-auto xl:min-h-0",
+          "flex-1 min-h-0 w-full mx-auto",
           embed
             ? // Embedded legacy screen: keep the mobile column width centered,
-              // let it scroll on desktop too, and let the screen own its padding.
-              "max-w-md overflow-y-auto scrollbar-none"
+              // let it scroll internally on every device (the page stays
+              // fixed), and let the screen own its padding.
+              "max-w-md overflow-y-auto overflow-x-hidden scrollbar-none"
             : [
                 "max-w-md md:max-w-6xl px-5 md:px-8",
-                // Mobile scrolls and clears the fixed bottom nav; desktop never scrolls.
-                "overflow-y-auto scrollbar-none md:overflow-hidden",
+                // Internal vertical valve for content that can't fit a very
+                // short viewport; desktop never scrolls. Horizontal overflow
+                // is always clipped (pressed-state translate).
+                "overflow-y-auto overflow-x-hidden scrollbar-none md:overflow-hidden",
               ],
-          hideNav ? "pb-8" : embed ? "pb-28 md:pb-10" : "pb-28 md:pb-6",
+          hideNav ? "pb-8" : embed ? "pb-4 md:pb-10" : "pb-4 md:pb-6",
           center && "flex flex-col justify-center",
           className,
         )}

@@ -15,10 +15,9 @@ export function LearnShell({ children }: { children: ReactNode }) {
     <div
       className={cn(
         "theme-learn bg-background text-foreground shell-canvas-bg flex flex-col",
-        "min-h-[100dvh] overflow-x-hidden",
-        // Desktop: break out of App's max-w-md column to fill the viewport and
-        // never scroll (matches ShellLayout's discipline).
-        "md:fixed md:inset-0 md:z-40 md:min-h-0 md:h-[100dvh] md:overflow-hidden",
+        // Fill the viewport and never scroll — on every device (matches
+        // ShellLayout's discipline). Screens keep internal scroll valves.
+        "fixed inset-0 z-40 h-[100dvh] overflow-hidden",
       )}
     >
       {/* Desktop canvas group (matches ShellLayout): `contents` is a no-op

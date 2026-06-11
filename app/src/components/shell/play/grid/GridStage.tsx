@@ -54,7 +54,7 @@ export function GridStage({ vm, subtitle, onExit, onHome }: GridStageProps) {
   const picks: GridPickItem[] = vm.picks;
 
   return (
-    <div className="relative min-h-[100dvh] w-full bg-background text-foreground shell-canvas-bg flex flex-col md:fixed md:inset-0 md:z-40 md:min-h-0 md:h-[100dvh] md:overflow-hidden">
+    <div className="w-full bg-background text-foreground shell-canvas-bg flex flex-col fixed inset-0 z-40 h-[100dvh] overflow-hidden">
       {/* broadcast bar */}
       <header className="shrink-0 w-full bg-foreground text-background border-b-2 border-black">
         <div className="flex items-center gap-3 px-4 py-2.5 md:px-6">

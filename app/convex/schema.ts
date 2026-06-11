@@ -704,6 +704,10 @@ export default defineSchema({
     serverTimeMs: v.number(),
     correct: v.boolean(),
     points: v.number(),
+    // True when points were computed (and banked into totalScore) at submit
+    // time. Absent on rows written before at-submit scoring existed; those
+    // are settled by closeQuestionNow.
+    scoredAtSubmit: v.optional(v.boolean()),
   }).index("by_arena_round_question", [
     "arenaId",
     "round",

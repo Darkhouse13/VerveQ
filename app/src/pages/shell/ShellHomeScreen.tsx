@@ -60,24 +60,27 @@ export default function ShellHomeScreen() {
         )
       }
     >
-      <div className="flex flex-col gap-4 md:h-full">
-        {/* Two pillars — on desktop they absorb the leftover height (flex-1) so
-            the never-scroll column always fits without clipping at the top. */}
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 md:flex-1 md:min-h-0">
+      <div className="min-h-full md:min-h-0 md:h-full flex flex-col gap-3 md:gap-4">
+        {/* Two pillars — they absorb the leftover height (flex-1) so the column
+            always fits, on every device: tall phones get big pillars, and on
+            very short phones the cards keep their min height and the column
+            overflows into ShellLayout's scroll valve instead of clipping. */}
+        <div className="grid grid-cols-1 gap-3 md:gap-4 md:grid-cols-2 flex-1 md:min-h-0">
           <NeoCard
             color="primary"
             shadow="lg"
-            className="cursor-pointer min-h-[150px] md:min-h-0 flex flex-col"
+            className="cursor-pointer min-h-[132px] md:min-h-0 flex flex-col overflow-hidden"
             onClick={() => navigate(SHELL_ROUTES.compete)}
           >
-            <div className="neo-border rounded-xl bg-background w-fit p-3">
-              <Swords size={32} strokeWidth={2.5} className="text-foreground" />
+            <div className="neo-border rounded-xl bg-background w-fit p-2.5 md:p-3">
+              <Swords size={28} strokeWidth={2.5} className="text-foreground md:hidden" />
+              <Swords size={32} strokeWidth={2.5} className="text-foreground hidden md:block" />
             </div>
-            <div className="mt-auto pt-4">
-              <p className="font-heading font-bold text-2xl">
+            <div className="mt-auto pt-3 md:pt-4">
+              <p className="font-heading font-bold text-xl md:text-2xl">
                 {t("home.pillars.competeTitle")}
               </p>
-              <p className="text-sm opacity-80">
+              <p className="text-xs md:text-sm opacity-80">
                 {t("home.pillars.competeSubtitle")}
               </p>
             </div>
@@ -86,17 +89,18 @@ export default function ShellHomeScreen() {
           <NeoCard
             color="blue"
             shadow="lg"
-            className="cursor-pointer min-h-[150px] md:min-h-0 flex flex-col"
+            className="cursor-pointer min-h-[132px] md:min-h-0 flex flex-col overflow-hidden"
             onClick={() => navigate(SHELL_ROUTES.learn)}
           >
-            <div className="neo-border rounded-xl bg-background w-fit p-3">
-              <GraduationCap size={32} strokeWidth={2.5} className="text-foreground" />
+            <div className="neo-border rounded-xl bg-background w-fit p-2.5 md:p-3">
+              <GraduationCap size={28} strokeWidth={2.5} className="text-foreground md:hidden" />
+              <GraduationCap size={32} strokeWidth={2.5} className="text-foreground hidden md:block" />
             </div>
-            <div className="mt-auto pt-4">
-              <p className="font-heading font-bold text-2xl">
+            <div className="mt-auto pt-3 md:pt-4">
+              <p className="font-heading font-bold text-xl md:text-2xl">
                 {t("home.pillars.learnTitle")}
               </p>
-              <p className="text-sm opacity-80">
+              <p className="text-xs md:text-sm opacity-80">
                 {t("home.pillars.learnSubtitle")}
               </p>
             </div>
@@ -105,7 +109,7 @@ export default function ShellHomeScreen() {
 
         {/* Quick stats — read-only from profile */}
         <div className="grid grid-cols-3 gap-2.5">
-          <NeoCard color="yellow" className="text-center py-3 px-2">
+          <NeoCard color="yellow" className="text-center py-2 md:py-3 px-2">
             <Trophy size={18} strokeWidth={2.5} className="mx-auto mb-1" />
             <p className="font-mono font-bold text-lg">
               {elo ?? "—"}
@@ -114,14 +118,14 @@ export default function ShellHomeScreen() {
               {t("home.stats.rank")}
             </p>
           </NeoCard>
-          <NeoCard color="accent" className="text-center py-3 px-2">
+          <NeoCard color="accent" className="text-center py-2 md:py-3 px-2">
             <Flame size={18} strokeWidth={2.5} className="mx-auto mb-1" />
             <p className="font-mono font-bold text-lg">{streak}</p>
             <p className="text-[10px] uppercase font-heading opacity-80">
               {t("home.stats.streak")}
             </p>
           </NeoCard>
-          <NeoCard color="pink" className="text-center py-3 px-2">
+          <NeoCard color="pink" className="text-center py-2 md:py-3 px-2">
             <Zap size={18} strokeWidth={2.5} className="mx-auto mb-1" />
             <p className="font-mono font-bold text-lg">{plays}</p>
             <p className="text-[10px] uppercase font-heading opacity-80">
@@ -134,7 +138,7 @@ export default function ShellHomeScreen() {
         <NeoCard
           color="primary"
           shadow="lg"
-          className="flex items-center gap-3 cursor-pointer"
+          className="flex items-center gap-3 cursor-pointer py-2.5 md:py-4"
           onClick={() => navigate(`${SHELL_ROUTES.dailyPlay}?sport=football`)}
         >
           <div className="neo-border rounded-xl bg-background w-fit p-2.5">
@@ -150,7 +154,7 @@ export default function ShellHomeScreen() {
         {/* Secondary entries */}
         <div className="grid grid-cols-2 gap-3">
           <NeoCard
-            className="flex items-center gap-3 cursor-pointer"
+            className="flex items-center gap-3 cursor-pointer py-2.5 md:py-4"
             onClick={() => navigate(SHELL_ROUTES.ranks)}
           >
             <Trophy size={22} strokeWidth={2.5} />
@@ -160,7 +164,7 @@ export default function ShellHomeScreen() {
             <ChevronRight size={18} strokeWidth={2.5} className="opacity-60" />
           </NeoCard>
           <NeoCard
-            className="flex items-center gap-3 cursor-pointer"
+            className="flex items-center gap-3 cursor-pointer py-2.5 md:py-4"
             onClick={() => navigate(SHELL_ROUTES.forge)}
           >
             <Hammer size={22} strokeWidth={2.5} />

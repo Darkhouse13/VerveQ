@@ -1359,6 +1359,24 @@ async function answersForQuestion(
     .collect();
 }
 
+/**
+ * Points for a correct answer: base 100 + time bonus (0–100 scaled by the
+ * remaining question window) + rank bonus by correct-arrival order (0-based).
+ * Shared by at-submit scoring and the closeQuestionNow legacy settlement so
+ * both paths always agree.
+ */
+function correctAnswerPoints(
+  questionWindowMs: number,
+  serverTimeMs: number,
+  rank: number,
+): number {
+  const timeBonus = Math.round(
+    100 * Math.max(0, (questionWindowMs - serverTimeMs) / questionWindowMs),
+  );
+  const rankBonus = RANK_BONUS[Math.min(rank, RANK_BONUS.length - 1)] ?? 10;
+  return 100 + timeBonus + rankBonus;
+}
+
 async function closeQuestionNow(
   ctx: Pick<MutationCtx, "db" | "scheduler">,
   arena: Arena,
@@ -1389,21 +1407,27 @@ async function closeQuestionNow(
   const rankByUser = new Map<Id<"users">, number>();
   correctAnswers.forEach((answer, index) => rankByUser.set(answer.userId, index));
 
+  // Settlement only covers rows not already scored at submit time (answers
+  // written before at-submit scoring deployed). At-submit rows have final
+  // points and their totalScore contribution is already banked, so they must
+  // not be re-added here. Ranks are computed over the full correct ordering,
+  // which matches what at-submit scoring assigned positionally.
   const pointsByUser = new Map<Id<"users">, number>();
   for (const answer of activeAnswers) {
+    if (answer.scoredAtSubmit) continue;
     if (!answer.correct) {
       pointsByUser.set(answer.userId, 0);
       continue;
     }
     const rank = rankByUser.get(answer.userId) ?? 0;
-    const timeBonus = Math.round(
-      100 * Math.max(0, (arena.questionWindowMs - answer.serverTimeMs) / arena.questionWindowMs),
+    pointsByUser.set(
+      answer.userId,
+      correctAnswerPoints(arena.questionWindowMs, answer.serverTimeMs, rank),
     );
-    const rankBonus = RANK_BONUS[Math.min(rank, RANK_BONUS.length - 1)] ?? 10;
-    pointsByUser.set(answer.userId, 100 + timeBonus + rankBonus);
   }
 
   for (const answer of answers) {
+    if (answer.scoredAtSubmit) continue;
     await ctx.db.patch(answer._id, {
       points: pointsByUser.get(answer.userId) ?? 0,
     });
@@ -2198,6 +2222,15 @@ export const submitAnswer = mutation({
         };
       }
 
+      // Score at submit so the standings move in real time. Rank is the
+      // arrival order among correct answers so far — serverTimeMs is
+      // monotonic with mutation order, so this matches the close-time sort.
+      const activeIds = new Set(activePlayers(arena).map((player) => player.userId));
+      const correctSoFar = existingAnswers.filter(
+        (row) => activeIds.has(row.userId) && row.correct,
+      ).length;
+      const points = correctAnswerPoints(arena.questionWindowMs, serverTimeMs, correctSoFar);
+
       await ctx.db.insert("arenaAnswers", {
         arenaId,
         round: arena.currentRound,
@@ -2206,10 +2239,18 @@ export const submitAnswer = mutation({
         answer,
         serverTimeMs,
         correct: true,
-        points: 0,
+        points,
+        scoredAtSubmit: true,
       });
 
-      const activeIds = new Set(activePlayers(arena).map((player) => player.userId));
+      const scoredPlayers = arena.players.map((player) =>
+        player.userId === userId
+          ? { ...player, totalScore: player.totalScore + points }
+          : player,
+      );
+      await ctx.db.patch(arena._id, { players: scoredPlayers });
+      const scoredArena = { ...arena, players: scoredPlayers };
+
       const correctIds = new Set([
         ...existingAnswers
           .filter((row) => activeIds.has(row.userId) && row.correct)
@@ -2217,7 +2258,7 @@ export const submitAnswer = mutation({
         userId,
       ]);
       if (correctIds.size >= activeIds.size) {
-        await closeQuestionNow(ctx, arena, arena.currentRound, arena.currentQuestionIndex);
+        await closeQuestionNow(ctx, scoredArena, arena.currentRound, arena.currentQuestionIndex);
       }
 
       return { accepted: true, result: "correct" as const, serverTimeMs };
@@ -2229,6 +2270,15 @@ export const submitAnswer = mutation({
 
     const correct = normalizeAnswer(answer) === normalizeAnswer(question.correctAnswer);
 
+    // Score at submit so the standings move in real time (see logo path).
+    const activeIds = new Set(activePlayers(arena).map((player) => player.userId));
+    const correctSoFar = existingAnswers.filter(
+      (row) => activeIds.has(row.userId) && row.correct,
+    ).length;
+    const points = correct
+      ? correctAnswerPoints(arena.questionWindowMs, serverTimeMs, correctSoFar)
+      : 0;
+
     await ctx.db.insert("arenaAnswers", {
       arenaId,
       round: arena.currentRound,
@@ -2237,10 +2287,21 @@ export const submitAnswer = mutation({
       answer,
       serverTimeMs,
       correct,
-      points: 0,
+      points,
+      scoredAtSubmit: true,
     });
 
-    const activeIds = new Set(activePlayers(arena).map((player) => player.userId));
+    let scoredArena = arena;
+    if (points > 0) {
+      const scoredPlayers = arena.players.map((player) =>
+        player.userId === userId
+          ? { ...player, totalScore: player.totalScore + points }
+          : player,
+      );
+      await ctx.db.patch(arena._id, { players: scoredPlayers });
+      scoredArena = { ...arena, players: scoredPlayers };
+    }
+
     const answeredIds = new Set([
       ...existingAnswers
         .filter((row) => activeIds.has(row.userId))
@@ -2248,7 +2309,7 @@ export const submitAnswer = mutation({
       userId,
     ]);
     if (answeredIds.size >= activeIds.size) {
-      await closeQuestionNow(ctx, arena, arena.currentRound, arena.currentQuestionIndex);
+      await closeQuestionNow(ctx, scoredArena, arena.currentRound, arena.currentQuestionIndex);
     }
 
     return { accepted: true, serverTimeMs };

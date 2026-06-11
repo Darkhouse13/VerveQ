@@ -39,25 +39,25 @@ export default function CompeteModeGridScreen() {
     >
       {/* Auto margins center on tall screens but collapse (instead of clipping
           the top row, like justify-center did) when the grid overflows. */}
-      <div className="flex flex-col md:h-full md:min-h-0 md:overflow-y-auto">
-        <div className="flex flex-col gap-4 md:my-auto">
+      <div className="flex flex-col h-full min-h-0 overflow-y-auto overflow-x-hidden scrollbar-none">
+        <div className="flex flex-col gap-3 md:gap-4 my-auto">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           {COMPETE_MODE_TILES.map((m) => (
             <NeoCard
               key={m.key}
               color={m.color}
               shadow="lg"
-              className="flex flex-col gap-2 cursor-pointer min-h-[120px] md:min-h-[150px]"
+              className="flex flex-col gap-2 cursor-pointer min-h-[96px] md:min-h-[150px] py-3 md:py-4"
               onClick={() => navigate(m.to(sport))}
             >
-              <div className="neo-border rounded-xl bg-background w-fit p-2.5">
+              <div className="neo-border rounded-xl bg-background w-fit p-2 md:p-2.5">
                 <m.icon size={24} strokeWidth={2.5} className="text-foreground" />
               </div>
               <div className="mt-auto">
-                <p className="font-heading font-bold text-base leading-tight">
+                <p className="font-heading font-bold text-sm md:text-base leading-tight">
                   {t(`modes.${m.key}.name`)}
                 </p>
-                <p className="text-xs opacity-80 leading-tight mt-0.5">
+                <p className="text-[11px] md:text-xs opacity-80 leading-tight mt-0.5">
                   {t(`modes.${m.key}.desc`)}
                 </p>
               </div>

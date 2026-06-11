@@ -36,7 +36,7 @@ export default function ArenaHubScreen() {
       back
       onBack={() => navigate(SHELL_ROUTES.compete)}
     >
-      <div className="flex flex-col gap-4 md:h-full md:justify-center md:max-w-md md:mx-auto md:w-full">
+      <div className="flex flex-col gap-4 h-full justify-center md:max-w-md md:mx-auto md:w-full">
         <NeoCard color="pink" shadow="lg" className="flex flex-col gap-3">
           <div className="neo-border rounded-xl bg-background w-fit p-2.5">
             <Users size={24} strokeWidth={2.5} className="text-foreground" />

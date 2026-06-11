@@ -55,6 +55,7 @@ const ShellProfileScreen = lazy(() => import("./pages/shell/ShellProfileScreen")
 const WelcomeScreen = lazy(() => import("./pages/shell/WelcomeScreen"));
 const UpgradeScreen = lazy(() => import("./pages/shell/UpgradeScreen"));
 const ArenaHubScreen = lazy(() => import("./pages/shell/ArenaHubScreen"));
+const ShellLeaderboardScreen = lazy(() => import("./pages/shell/ShellLeaderboardScreen"));
 
 // Public legal pages — flag-independent (app-store / launch necessities).
 const PrivacyScreen = lazy(() => import("./pages/legal/PrivacyScreen"));
@@ -427,7 +428,7 @@ const AppRoutes = () => (
             />
             <Route
               path="/v2/leaderboard"
-              element={<ShellGate><ShellLayout embed><LeaderboardScreen embedded /></ShellLayout></ShellGate>}
+              element={<ShellGate><ShellLeaderboardScreen /></ShellGate>}
             />
             <Route
               path="/v2/rivals"
