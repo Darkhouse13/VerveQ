@@ -117,8 +117,9 @@ export function PlayStage({
           {/* Visible scrollbar: on short viewports the controls live below the
               fold and a hidden-scroll column reads as a broken, unclickable game.
               overflow-x stays clipped so the pressed-state translate never
-              spawns a horizontal scrollbar. */}
-          <div className="w-full max-w-md mx-auto flex-1 min-h-0 md:flex-none md:h-full overflow-y-auto overflow-x-hidden pb-4 md:py-3">
+              spawns a horizontal scrollbar — px-1.5 keeps the 4px neo shadows
+              inside the clip so cards don't look cut on the right. */}
+          <div className="w-full max-w-md mx-auto flex-1 min-h-0 md:flex-none md:h-full overflow-y-auto overflow-x-hidden px-1.5 pb-4 md:py-3">
             {children}
           </div>
 

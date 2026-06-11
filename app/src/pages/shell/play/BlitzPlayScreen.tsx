@@ -60,7 +60,7 @@ export default function BlitzPlayScreen() {
       right={<MetricsPanel metrics={metrics} />}
     >
       <div className={`flex flex-col ${b.shaking ? "animate-shake" : ""}`}>
-        <div className="mb-4">
+        <div className="mb-3">
           <BlitzClock
             endTimeMs={b.endTimeMs}
             onExpired={b.onExpired}
@@ -69,7 +69,7 @@ export default function BlitzPlayScreen() {
           />
         </div>
 
-        <NeoCard shadow="lg" className="mb-4">
+        <NeoCard shadow="lg" className="mb-3">
           {b.question?.imageUrl && (
             <div className="mb-3">
               <QuestionImage
@@ -84,7 +84,7 @@ export default function BlitzPlayScreen() {
           </p>
         </NeoCard>
 
-        <div className="space-y-2.5">
+        <div className="space-y-2">
           {b.question?.options.map((opt, idx) => (
             <button
               key={idx}

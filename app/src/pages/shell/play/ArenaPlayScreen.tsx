@@ -444,7 +444,7 @@ function ArenaQuestionColumn({ room, userId }: { room: Room; userId: Id<"users">
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-3">
       {isLogoText ? (
         <NeoCard shadow="lg" className="text-center">
           {question.imageUrl && <QuestionImage imageUrl={question.imageUrl} alt="Logo quiz image" />}
@@ -514,7 +514,7 @@ function ArenaQuestionColumn({ room, userId }: { room: Room; userId: Id<"users">
           </div>
         </form>
       ) : (
-        <div className={isCameFirst ? "grid grid-cols-1 gap-3" : "space-y-2.5"}>
+        <div className={isCameFirst ? "grid grid-cols-1 gap-3" : "space-y-2"}>
           {options.map((opt, idx) => {
             const isPicked = selected === opt;
             return (
@@ -589,7 +589,7 @@ function ArenaRevealColumn({ room, userId }: { room: Room; userId: Id<"users"> |
     );
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-3">
       <NeoCard shadow="lg">
         <p className="text-[10px] font-heading uppercase text-muted-foreground mb-1">
           {arenaCategoryEmoji(question.category)} {arenaCategoryLabel(question.category)}
@@ -614,7 +614,7 @@ function ArenaRevealColumn({ room, userId }: { room: Room; userId: Id<"users"> |
         <p className="text-[10px] font-heading font-bold uppercase tracking-wide px-3 pt-2.5 pb-1.5">
           Round answers
         </p>
-        <div className="max-h-[30dvh] overflow-y-auto scrollbar-none">
+        <div className="max-h-[26dvh] overflow-y-auto scrollbar-none">
           {rows.map(({ player, a }) => {
             const isMe = !!userId && player.userId === userId;
             return (

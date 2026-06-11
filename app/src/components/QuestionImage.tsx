@@ -25,7 +25,7 @@ export function QuestionImage({
   onZoom,
   maxRetries = 2,
   imgClassName = "",
-  boxClassName = "h-[24dvh] md:h-[28vh]",
+  boxClassName = "h-[22dvh] md:h-[clamp(140px,24vh,320px)]",
 }: QuestionImageProps) {
   const [loading, setLoading] = useState(true);
   const [errored, setErrored] = useState(false);

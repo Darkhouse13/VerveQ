@@ -72,13 +72,13 @@ export function QuizPlayView({ q, title, onExit, exitLabel = "Quit", loadingLabe
       }
     >
       <div className="flex flex-col">
-        <div className="flex justify-center mb-4">
+        <div className="flex justify-center mb-3">
           <NeoBadge color="primary" rotated size="md">
             {q.badgeLabel}
           </NeoBadge>
         </div>
 
-        <NeoCard shadow="lg" className="mb-4">
+        <NeoCard shadow="lg" className="mb-3">
           {q.question?.imageUrl && (
             <div className="mb-3">
               <QuestionImage
@@ -93,7 +93,7 @@ export function QuizPlayView({ q, title, onExit, exitLabel = "Quit", loadingLabe
           </p>
         </NeoCard>
 
-        <div className="space-y-2.5">
+        <div className="space-y-2">
           {q.question?.options.map((opt, idx) => (
             <button
               key={idx}
@@ -119,7 +119,7 @@ export function QuizPlayView({ q, title, onExit, exitLabel = "Quit", loadingLabe
         {q.revealed && q.checkResult?.explanation && (
           <NeoCard
             color={q.checkResult.correct ? "success" : "default"}
-            className="mt-4 text-sm leading-snug"
+            className="mt-3 text-sm leading-snug"
           >
             {q.checkResult.explanation}
           </NeoCard>

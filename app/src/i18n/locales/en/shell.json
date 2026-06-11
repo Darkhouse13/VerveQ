@@ -54,7 +54,11 @@
       "tennis": "Tennis"
     },
     "chooseMode": "Choose a mode",
-    "modeGridHint": "{{sport}} · pick how you want to play"
+    "modeGridHint": "{{sport}} · pick how you want to play",
+    "sections": {
+      "solo": "Solo modes",
+      "friends": "With friends"
+    }
   },
   "modes": {
     "quiz": { "name": "Quiz", "desc": "10 questions, time-based scoring" },

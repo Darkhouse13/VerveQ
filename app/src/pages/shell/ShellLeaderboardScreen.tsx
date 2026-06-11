@@ -17,8 +17,12 @@ import { useAuth } from "@/contexts/AuthContext";
 import { api } from "../../../convex/_generated/api";
 import type { Id } from "../../../convex/_generated/dataModel";
 
-const MODES = ["Quiz", "Survival", "Blitz"] as const;
-type Mode = (typeof MODES)[number];
+// Two genuinely different boards live here, and the UI must say so:
+//  - Quiz/Survival are RANKED ladders — seasonal ELO from ranked games.
+//  - Blitz is a HIGH-SCORE table — each player's best 60-second run, all-time.
+const RANKED_MODES = ["Quiz", "Survival"] as const;
+const SCORE_MODES = ["Blitz"] as const;
+type Mode = (typeof RANKED_MODES)[number] | (typeof SCORE_MODES)[number];
 
 function formatValue(value: number | null | undefined): string {
   if (value === null || value === undefined) return "0";
@@ -43,6 +47,30 @@ interface Row {
   badge?: string;
 }
 
+function ModeChip({
+  mode,
+  active,
+  onPick,
+}: {
+  mode: Mode;
+  active: boolean;
+  onPick: (m: Mode) => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={() => onPick(mode)}
+      className={`neo-border rounded-full px-3 py-1 text-[11px] font-heading font-bold uppercase cursor-pointer transition-all ${
+        active
+          ? "bg-primary text-primary-foreground neo-shadow-sm"
+          : "bg-background text-foreground"
+      }`}
+    >
+      {mode}
+    </button>
+  );
+}
+
 export default function ShellLeaderboardScreen() {
   const { user } = useAuth();
   const myId = user?._id;
@@ -53,10 +81,12 @@ export default function ShellLeaderboardScreen() {
   const pastSeasons = useQuery(api.seasonManager.getPastSeasons);
 
   const isBlitz = mode === "Blitz";
-  const isPast = season !== "current";
+  // Blitz high scores are all-time — seasons only apply to the ranked ladder.
+  const isPast = !isBlitz && season !== "current";
   // Football is the only live sport — the v1 sport filter is collapsed, like
   // the compete category/sport steps were.
   const sportParam = "football";
+  const unit = isBlitz ? "pts" : "elo";
 
   const eloData = useQuery(
     api.leaderboards.getLeaderboard,
@@ -112,40 +142,61 @@ export default function ShellLeaderboardScreen() {
   return (
     <ShellLayout title="Leaderboard" subtitle="Who runs the ladder" back>
       <div className="h-full min-h-0 flex flex-col gap-3 md:max-w-2xl md:mx-auto md:w-full">
-        {/* Filters — fixed chrome, never scrolls. */}
-        <div className="shrink-0 flex items-center gap-2">
-          <div className="flex gap-1.5 flex-1 min-w-0">
-            {MODES.map((m) => (
-              <button
-                key={m}
-                type="button"
-                onClick={() => setMode(m)}
-                className={`neo-border rounded-full px-3 py-1 text-[11px] font-heading font-bold uppercase cursor-pointer transition-all ${
-                  mode === m
-                    ? "bg-primary text-primary-foreground neo-shadow-sm"
-                    : "bg-background text-foreground"
-                }`}
-              >
-                {m}
-              </button>
-            ))}
+        {/* Filters — fixed chrome, never scrolls. The two chip clusters are
+            labeled because they are different boards, not two flavors of one:
+            ranked ELO ladders vs the all-time Blitz high-score table. */}
+        <div className="shrink-0 flex items-end gap-2">
+          <div className="flex items-end gap-3 flex-1 min-w-0">
+            <div>
+              <p className="font-mono text-[9px] font-bold uppercase tracking-[0.14em] text-muted-foreground mb-1">
+                Ranked · ELO
+              </p>
+              <div className="flex gap-1.5">
+                {RANKED_MODES.map((m) => (
+                  <ModeChip key={m} mode={m} active={mode === m} onPick={setMode} />
+                ))}
+              </div>
+            </div>
+            <div>
+              <p className="font-mono text-[9px] font-bold uppercase tracking-[0.14em] text-muted-foreground mb-1">
+                High score
+              </p>
+              <div className="flex gap-1.5">
+                {SCORE_MODES.map((m) => (
+                  <ModeChip key={m} mode={m} active={mode === m} onPick={setMode} />
+                ))}
+              </div>
+            </div>
           </div>
-          <select
-            value={season === "current" ? "current" : String(season)}
-            onChange={(e) => setSeason(e.target.value === "current" ? "current" : Number(e.target.value))}
-            aria-label="Season"
-            className="neo-border rounded-lg px-2.5 py-1 bg-background text-foreground font-heading font-bold text-[11px] uppercase cursor-pointer shrink-0"
-          >
-            <option value="current">
-              S{currentSeason ? currentSeason.seasonNumber : "—"} · Live
-            </option>
-            {(pastSeasons ?? []).map((s) => (
-              <option key={s.seasonNumber} value={String(s.seasonNumber)}>
-                Season {s.seasonNumber}
+          {isBlitz ? (
+            <span className="neo-border rounded-lg px-2.5 py-1 bg-muted/60 text-muted-foreground font-heading font-bold text-[11px] uppercase shrink-0">
+              All-time
+            </span>
+          ) : (
+            <select
+              value={season === "current" ? "current" : String(season)}
+              onChange={(e) => setSeason(e.target.value === "current" ? "current" : Number(e.target.value))}
+              aria-label="Season"
+              className="neo-border rounded-lg px-2.5 py-1 bg-background text-foreground font-heading font-bold text-[11px] uppercase cursor-pointer shrink-0"
+            >
+              <option value="current">
+                S{currentSeason ? currentSeason.seasonNumber : "—"} · Live
               </option>
-            ))}
-          </select>
+              {(pastSeasons ?? []).map((s) => (
+                <option key={s.seasonNumber} value={String(s.seasonNumber)}>
+                  Season {s.seasonNumber}
+                </option>
+              ))}
+            </select>
+          )}
         </div>
+
+        {/* One line that says what the numbers mean for this board. */}
+        <p className="shrink-0 text-[11px] text-muted-foreground leading-snug">
+          {isBlitz
+            ? "Each player's best 60-second Blitz run — all-time, not seasonal."
+            : `ELO rating from ranked ${mode} games — win to climb, Bronze to Platinum.`}
+        </p>
 
         {loading ? (
           <div className="flex-1 flex items-center justify-center">
@@ -172,7 +223,10 @@ export default function ShellLeaderboardScreen() {
                     <p className={`font-heading font-bold text-xs mt-1.5 truncate max-w-full ${isMe ? "underline underline-offset-2" : ""}`}>
                       {p.username}
                     </p>
-                    <p className="font-mono font-bold text-[11px]">{formatValue(p.value)}</p>
+                    <p className="font-mono font-bold text-[11px]">
+                      {formatValue(p.value)}{" "}
+                      <span className="opacity-60 uppercase text-[9px]">{unit}</span>
+                    </p>
                     <div
                       className={`neo-border neo-shadow rounded-t-lg w-full mt-1.5 flex items-start justify-center ${
                         first ? "h-16 bg-yellow" : p.rank === 2 ? "h-11 bg-muted" : "h-8 bg-accent"
@@ -223,7 +277,10 @@ export default function ShellLeaderboardScreen() {
                             {r.badge}
                           </NeoBadge>
                         )}
-                        <span className="font-mono font-bold text-sm shrink-0">{formatValue(r.value)}</span>
+                        <span className="font-mono font-bold text-sm shrink-0">
+                          {formatValue(r.value)}{" "}
+                          <span className="opacity-60 uppercase text-[9px]">{unit}</span>
+                        </span>
                       </div>
                     );
                   })
@@ -234,7 +291,10 @@ export default function ShellLeaderboardScreen() {
                 <div className="shrink-0 border-t-[3px] border-border bg-foreground text-background flex items-center gap-2.5 px-3.5 py-2">
                   <span className="font-mono font-bold text-sm w-7 text-right shrink-0">{myRow.rank}</span>
                   <p className="font-heading font-bold text-sm flex-1 min-w-0 truncate">You</p>
-                  <span className="font-mono font-bold text-sm">{formatValue(myRow.value)}</span>
+                  <span className="font-mono font-bold text-sm">
+                    {formatValue(myRow.value)}{" "}
+                    <span className="opacity-60 uppercase text-[9px]">{unit}</span>
+                  </span>
                 </div>
               )}
             </NeoCard>
