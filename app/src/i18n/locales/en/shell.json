@@ -21,18 +21,29 @@
     "haveAccount": "Already have an account?"
   },
   "home": {
-    "greeting": "Hey, {{name}}!",
-    "tagline": "Pick your path",
     "pillars": {
       "competeTitle": "Compete",
-      "competeSubtitle": "Climb the ranks across every mode",
+      "competeChip": "Ranked",
+      "competeBody": "Live arenas, duels and football mind-games. Pick a category, climb the ranks.",
+      "rankChip": "Rank: {{tier}}",
       "learnTitle": "Learn",
-      "learnSubtitle": "Build mastery node by node"
+      "learnChip": "Warm path",
+      "learnBody": "Build real knowledge. Adaptive questions, teaching reveals, spaced review — not a test.",
+      "lockedInChip": "{{count}} locked in",
+      "dueChip": "{{count}} due today"
+    },
+    "hooks": {
+      "eyebrow": "Daily hooks · keep the streak",
+      "eyebrowShort": "Daily hooks",
+      "resetsIn": "Resets in {{time}}",
+      "played": "Played ✓",
+      "quizSub": "10 Q · pick your level"
+    },
+    "ranksCard": {
+      "view": "View ranks"
     },
     "stats": {
-      "rank": "Rank",
       "streak": "Streak",
-      "plays": "Plays",
       "unranked": "Unranked"
     }
   },

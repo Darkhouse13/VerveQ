@@ -1,8 +1,8 @@
 /**
  * Onboarded-home contract: after username-only onboarding the v2 home must
- * read the session — greet the user by name, load their real stats, show an
- * honest "—" (not a baseline 1200) for ranked standing, and never show the
- * SIGN IN affordance.
+ * read the session — carry the user's identity (avatar), load their real
+ * stats, show an honest locked ladder ("—", not a baseline 1200) for ranked
+ * standing, and never show the SIGN IN affordance.
  *
  * The QA bug had two roots, both locked here:
  *  - the stats query keyed off the guest flag, so anonymous+username users
@@ -83,13 +83,13 @@ describe("onboarded home (username-only session)", () => {
     queryMock.calls = [];
   });
 
-  it("greets the user, hides SIGN IN, and loads their stats query", () => {
+  it("carries the user's identity, hides SIGN IN, and loads their stats query", () => {
     authMock.value = usernameOnlyAuth;
     queryMock.value = usernameOnlyProfile;
     renderHome();
 
-    // Greeting carries the onboarded username; no sign-in affordance.
-    expect(screen.getByText(/home\.greeting:zara/)).toBeTruthy();
+    // The avatar carries the onboarded username; no sign-in affordance.
+    expect(screen.getByRole("button", { name: "zara" })).toBeTruthy();
     expect(screen.queryByRole("button", { name: "auth.signIn" })).toBeNull();
 
     // The stats query runs FOR this user (not skipped as it was for guests).
@@ -97,8 +97,9 @@ describe("onboarded home (username-only session)", () => {
       typeof args === "object" && args !== null && (args as { userId?: string }).userId === "u1",
     )).toBe(true);
 
-    // Real plays show; ranked standing stays honest ("—", not baseline 1200).
-    expect(screen.getByText("7")).toBeTruthy();
+    // Ranked standing stays honest: the ladder card renders its locked state
+    // ("—", never the baseline 1200 as if it were a ranked standing).
+    expect(screen.getByText("ranks.locked.title")).toBeTruthy();
     expect(screen.getByText("—")).toBeTruthy();
     expect(screen.queryByText("1200")).toBeNull();
   });
@@ -120,9 +121,11 @@ describe("onboarded home (username-only session)", () => {
     };
     renderHome();
 
+    // The ladder card shows the real ELO and tier progress, not a locked slot.
     expect(screen.getByText("1542")).toBeTruthy();
+    expect(screen.getByText("ranks.progressTo")).toBeTruthy();
+    expect(screen.queryByText("ranks.locked.title")).toBeNull();
     expect(screen.queryByText("—")).toBeNull();
-    expect(screen.getByText("31")).toBeTruthy();
   });
 
   it("skips the stats query and shows SIGN IN only when logged out", () => {
