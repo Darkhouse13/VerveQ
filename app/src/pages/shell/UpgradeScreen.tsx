@@ -44,13 +44,12 @@ export default function UpgradeScreen() {
     );
   }
 
-  // No username yet — get one first, then come back to upgrade.
+  // No identity to upgrade yet — offer the account chooser instead of the
+  // bare username ask (a visitor here likely wants the create-account path).
   if (accountState !== "usernameOnly") {
     return (
       <Navigate
-        to={`${SHELL_ROUTES.welcome}?next=${encodeURIComponent(
-          `${SHELL_ROUTES.upgrade}?next=${encodeURIComponent(next)}`,
-        )}`}
+        to={`${SHELL_ROUTES.account}?next=${encodeURIComponent(next)}`}
         replace
       />
     );

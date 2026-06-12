@@ -42,6 +42,13 @@ export default function LoginScreen() {
   const modeParam = searchParams.get("mode");
   const fromGuestUpgrade = searchParams.get("from") === "guest";
   const fromDuel = searchParams.get("from") === "duel";
+  // Optional post-auth destination (e.g. the v2 account chooser sends the
+  // gated route the visitor was headed to). Internal single-slash paths only.
+  const nextParam = searchParams.get("next");
+  const nextPath =
+    nextParam && nextParam.startsWith("/") && !nextParam.startsWith("//")
+      ? nextParam
+      : null;
 
   const [mode, setMode] = useState<Mode>(
     isMode(modeParam) ? modeParam : "signin",
@@ -71,9 +78,9 @@ export default function LoginScreen() {
           /* ignore */
         }
       }
-      navigate("/home", { replace: true });
+      navigate(nextPath ?? "/home", { replace: true });
     }
-  }, [authLoading, isAuthenticated, isGuest, navigate, fromDuel]);
+  }, [authLoading, isAuthenticated, isGuest, navigate, fromDuel, nextPath]);
 
   const switchMode = (next: Mode) => {
     setMode(next);
@@ -102,7 +109,7 @@ export default function LoginScreen() {
     setLoading(true);
     try {
       await signIn(email, password);
-      navigate("/home");
+      navigate(nextPath ?? "/home");
     } catch (e: unknown) {
       reportError(e);
     } finally {

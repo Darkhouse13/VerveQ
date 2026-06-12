@@ -17,8 +17,9 @@
  * guest-upgrade CTA (`?mode=signup&from=guest`), and the duel attach
  * (`?from=duel`). Those keep rendering the v1 `LoginScreen` at `/`; only a
  * param-less visit (the "normal visitor") is routed into the shell. From the
- * shell, the popular modes route an account-less visitor through the
- * username-only onboarding (`/v2/welcome`) via the shell route guards.
+ * shell, gated surfaces send an account-less visitor to the account chooser
+ * (`/v2/account` — sign in / create account / play as guest) via the shell
+ * route guards; the bare username ask stays for guest play and invite flows.
  */
 import { Navigate, useSearchParams } from "react-router-dom";
 import { V2_SHELL_ENABLED } from "@/lib/flags";

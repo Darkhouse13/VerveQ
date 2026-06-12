@@ -9,6 +9,12 @@
  */
 export const SHELL_ROUTES = {
   home: "/v2",
+  /**
+   * Account chooser for logged-out visitors hitting a gated surface: sign in,
+   * create an account, or continue as guest. Accepts ?next=. The username-only
+   * ask (`welcome`) is reserved for the guest choice and invite flows.
+   */
+  account: "/v2/account",
   /** Username-only onboarding (no password). Accepts ?next= and ?code=. */
   welcome: "/v2/welcome",
   /** Anonymous + username -> full account upgrade. Accepts ?next=. */

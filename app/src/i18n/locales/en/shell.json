@@ -20,6 +20,14 @@
     "signIn": "Sign in",
     "haveAccount": "Already have an account?"
   },
+  "account": {
+    "title": "How do you want to play?",
+    "body": "Save your progress and climb the ranks with an account, or jump straight in.",
+    "create": "Create an account",
+    "signIn": "Sign in",
+    "guest": "Play as a guest",
+    "guestNote": "Guest play just needs a username — no email, no password. You can upgrade to a full account any time."
+  },
   "home": {
     "pillars": {
       "competeTitle": "Compete",

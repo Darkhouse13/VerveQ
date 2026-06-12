@@ -52,6 +52,7 @@ const ShellHomeScreen = lazy(() => import("./pages/shell/ShellHomeScreen"));
 const CompeteModeGridScreen = lazy(() => import("./pages/shell/CompeteModeGridScreen"));
 const RanksScreen = lazy(() => import("./pages/shell/RanksScreen"));
 const ShellProfileScreen = lazy(() => import("./pages/shell/ShellProfileScreen"));
+const AccountChoiceScreen = lazy(() => import("./pages/shell/AccountChoiceScreen"));
 const WelcomeScreen = lazy(() => import("./pages/shell/WelcomeScreen"));
 const UpgradeScreen = lazy(() => import("./pages/shell/UpgradeScreen"));
 const ArenaHubScreen = lazy(() => import("./pages/shell/ArenaHubScreen"));
@@ -374,7 +375,11 @@ const AppRoutes = () => (
                 /home when VITE_V2_SHELL_ENABLED is off, so these are invisible
                 until enabled and never shadow existing routes. */}
             <Route path="/v2" element={<ShellGate><ShellHomeScreen /></ShellGate>} />
-            {/* Username-only onboarding (no password). Carries ?next= + ?code=. */}
+            {/* Account chooser for logged-out visitors hitting a gated surface:
+                sign in / create account / play as guest. Carries ?next=. */}
+            <Route path="/v2/account" element={<ShellGate><AccountChoiceScreen /></ShellGate>} />
+            {/* Username-only onboarding (no password) — the guest path and the
+                invite-flow ask. Carries ?next= + ?code=. */}
             <Route path="/v2/welcome" element={<ShellGate><WelcomeScreen /></ShellGate>} />
             {/* Anonymous + username -> full account upgrade. Carries ?next=. */}
             <Route path="/v2/upgrade" element={<ShellGate><UpgradeScreen /></ShellGate>} />

@@ -5,9 +5,11 @@
  * the FE shows the same gates the backend enforces — never a client guess:
  *
  *  - {@link UsernameOnlyRoute}: the casual / social set (Blitz, Higher-Lower,
- *    VerveGrid, Who Am I). Anyone with a username — anonymous OR full — may
- *    play. Visitors without a username are sent to username-only onboarding,
- *    preserving where they were headed via `?next=`.
+ *    VerveGrid, Who Am I) plus identity surfaces like Profile. Anyone with a
+ *    username — anonymous OR full — may pass. Visitors without one land on the
+ *    ACCOUNT CHOOSER (sign in / create account / play as guest), preserving
+ *    where they were headed via `?next=`. The bare username ask is reserved
+ *    for the guest choice and invite flows (Arena codes, duel links).
  *  - {@link FullAccountRoute}: the ranked / full-account set (ranked Quiz &
  *    Survival, official Daily, live-ranked). Only non-anonymous accounts with a
  *    username pass. Anonymous + username users get a clean "create a full
@@ -38,8 +40,8 @@ function currentTarget(pathname: string, search: string): string {
   return `${pathname}${search}`;
 }
 
-function welcomeUrl(next: string): string {
-  return `${SHELL_ROUTES.welcome}?next=${encodeURIComponent(next)}`;
+function accountChoiceUrl(next: string): string {
+  return `${SHELL_ROUTES.account}?next=${encodeURIComponent(next)}`;
 }
 
 function upgradeUrl(next: string): string {
@@ -55,7 +57,7 @@ export function UsernameOnlyRoute({ children }: { children: ReactNode }) {
   if (hasUsername) return <>{children}</>;
 
   const next = currentTarget(location.pathname, location.search);
-  return <Navigate to={welcomeUrl(next)} replace />;
+  return <Navigate to={accountChoiceUrl(next)} replace />;
 }
 
 /** Ranked/full-account modes: only non-anonymous accounts with a username. */
@@ -110,7 +112,7 @@ function FullAccountGate({
             <NeoButton
               variant="primary"
               size="full"
-              onClick={() => navigate(welcomeUrl(next))}
+              onClick={() => navigate(accountChoiceUrl(next))}
             >
               Get started
             </NeoButton>

@@ -152,7 +152,7 @@ export default function RanksScreen() {
           size="full"
           onClick={() =>
             navigate(
-              `${isUsernameOnly ? SHELL_ROUTES.upgrade : SHELL_ROUTES.welcome}?next=${encodeURIComponent(SHELL_ROUTES.ranks)}`,
+              `${isUsernameOnly ? SHELL_ROUTES.upgrade : SHELL_ROUTES.account}?next=${encodeURIComponent(SHELL_ROUTES.ranks)}`,
             )
           }
         >
