@@ -7,8 +7,10 @@ import {
 } from "./learnSkillGraph";
 import {
   questionSkillTags,
-  verifiedGeographyCieScoreQuestions,
+  verifiedLearnCieScoreQuestions,
 } from "./learnQuestionSkillTags";
+import { learnHistoryDatesRevealsV1ByChecksum } from "./learnHistoryDatesRevealsV1";
+import { learnScienceRecallRevealsV1ByChecksum } from "./learnScienceRecallRevealsV1";
 import {
   learnGeographyNonobviousLadderV1ByChecksum,
   learnGeographyNonobviousLadderV1Questions,
@@ -96,6 +98,18 @@ const CONCEPT_LINE_BY_NODE: Partial<Record<SkillNodeId, string>> = {
   "geo.capitals.nonobvious":
     "A country's capital is often not its biggest or most famous city — it's frequently planned or relocated.",
   "geo.pipeline.proof": LEARN_GEOGRAPHY_PIPELINE_PROOF_CONCEPT,
+  "hist.events.dates":
+    "A year sticks when it's anchored to the exact day the event turned — not memorized as a bare number.",
+  "hist.founding.years":
+    "Institutions have birthdays: tie each founding year to its founding date and the era around it.",
+  "hist.chronology":
+    "Ordering beats memorizing — placing events relative to each other is how timelines actually stick.",
+  "sci.elements.symbols":
+    "Element symbols aren't always the English initials — pairing each symbol with its atomic number locks both in.",
+  "sci.elements.numbers":
+    "The atomic number is the element's address on the periodic table — neighbors are the classic traps.",
+  "sci.units.si":
+    "SI symbols are exact: knowing whether a unit is a base unit or a special name makes the symbol memorable.",
 };
 
 function conceptLineFor(node: SkillNode): string {
@@ -164,6 +178,8 @@ const revealByChecksum = {
   ...learnGeographyBorderReasoningLadderV1ByChecksum,
   ...learnGeographyCapitalsRecallRevealsV1ByChecksum,
   ...learnGeographyPipelineProofLadderV1ByChecksum,
+  ...learnHistoryDatesRevealsV1ByChecksum,
+  ...learnScienceRecallRevealsV1ByChecksum,
 };
 
 // Candidate pool = every learn-eligible question we can tag, from the enriched
@@ -188,7 +204,7 @@ const ladderCandidates: LadderCandidate[] = enrichedLadderQuestions.map(
   }),
 );
 
-const cieCandidates: LadderCandidate[] = verifiedGeographyCieScoreQuestions.map(
+const cieCandidates: LadderCandidate[] = verifiedLearnCieScoreQuestions.map(
   (question) => ({
     checksum: question.checksum,
     ...gradingMetadata(question as Partial<LearnQuestionGradingMetadata>),
@@ -201,6 +217,38 @@ const cieCandidates: LadderCandidate[] = verifiedGeographyCieScoreQuestions.map(
 );
 
 const candidatePool: LadderCandidate[] = [...ladderCandidates, ...cieCandidates];
+
+// When more reveal-carrying questions exist than fit one ladder, a plain
+// difficulty-sorted slice would build an all-easy session. Keep the ladder a
+// real ramp instead: a fixed easy→intermediate→hard mix, backfilled in sorted
+// order when a difficulty bucket runs short.
+const LADDER_DIFFICULTY_MIX: Record<Difficulty, number> = {
+  easy: 3,
+  intermediate: 3,
+  hard: 2,
+};
+
+function selectBalancedRungs<T extends { candidate: { difficulty: Difficulty } }>(
+  ordered: T[],
+): T[] {
+  if (ordered.length <= MAX_LADDER_RUNGS) return ordered;
+  const picked = new Set<T>();
+  for (const difficulty of ["easy", "intermediate", "hard"] as const) {
+    let remaining = LADDER_DIFFICULTY_MIX[difficulty];
+    for (const entry of ordered) {
+      if (remaining === 0) break;
+      if (entry.candidate.difficulty !== difficulty) continue;
+      picked.add(entry);
+      remaining -= 1;
+    }
+  }
+  for (const entry of ordered) {
+    if (picked.size >= MAX_LADDER_RUNGS) break;
+    picked.add(entry);
+  }
+  // Filtering `ordered` keeps the easy → hard presentation order.
+  return ordered.filter((entry) => picked.has(entry));
+}
 
 export function buildLadder(nodeId: SkillNodeId): BuiltLadder {
   const node = skillNodeById[nodeId];
@@ -227,8 +275,10 @@ export function buildLadder(nodeId: SkillNodeId): BuiltLadder {
     return (left.candidate.ladderIndex ?? 0) - (right.candidate.ladderIndex ?? 0);
   });
 
-  const questions: BuiltLadderQuestion[] = ordered
-    .slice(0, isPipelineProofNode(node) ? ordered.length : MAX_LADDER_RUNGS)
+  const selected = isPipelineProofNode(node) ? ordered : selectBalancedRungs(ordered);
+
+  const questions: BuiltLadderQuestion[] = selected
+    .slice(0, isPipelineProofNode(node) ? selected.length : MAX_LADDER_RUNGS)
     .map((entry, index) => ({
       checksum: entry.candidate.checksum,
       type: entry.candidate.type ?? "mcq",
@@ -289,9 +339,10 @@ export function getLearnNodeSummary(nodeId: SkillNodeId): LearnNodeSummary {
   };
 }
 
-// Geography is the only subject in the graph today; the picker reads this list.
-export function listGeographyNodeSummaries(): LearnNodeSummary[] {
+// Every serving surface (queries, pickers, the subject switcher) lists a
+// subject's nodes through here; pipeline-proof fixtures never leave the graph.
+export function listSubjectNodeSummaries(subject: string): LearnNodeSummary[] {
   return skillNodes
-    .filter((node) => node.subject === "geography" && !isPipelineProofNode(node))
+    .filter((node) => node.subject === subject && !isPipelineProofNode(node))
     .map((node) => getLearnNodeSummary(node.id));
 }

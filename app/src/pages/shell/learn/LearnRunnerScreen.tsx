@@ -14,6 +14,7 @@ import { canSubmit, draftToAnswer, type LearnDraft } from "@/lib/learn/draft";
 import { MistakeBranch, TeachingReveal } from "@/components/learn/TeachingReveal";
 import { useLearnSession } from "@/lib/learn/useLearnSession";
 import { useLearnGrading } from "@/lib/learn/useLearnGrading";
+import { learnPath, LEARN_SUBJECT_PARAM } from "@/lib/learn/useLearnSubject";
 import { SHELL_ROUTES } from "@/lib/shellRoutes";
 import type { LearnFelt, LearnRating, LearnVerdict } from "@/lib/learn/contract";
 
@@ -22,9 +23,11 @@ type Stage = "answer" | "branch" | "reveal";
 function SessionSummary({
   total,
   firstTry,
+  subject,
 }: {
   total: number;
   firstTry: number;
+  subject: string | undefined;
 }) {
   const navigate = useNavigate();
   const { t } = useTranslation("learn");
@@ -56,14 +59,14 @@ function SessionSummary({
       <div className="flex w-full gap-2.5">
         <button
           type="button"
-          onClick={() => navigate(SHELL_ROUTES.learnMastery)}
+          onClick={() => navigate(learnPath(SHELL_ROUTES.learnMastery, subject))}
           className="flex-1 neo-border neo-shadow-sm rounded-xl bg-card px-4 py-3 font-heading font-bold"
         >
           {t("summary.seeMastery")}
         </button>
         <button
           type="button"
-          onClick={() => navigate(SHELL_ROUTES.learnReview)}
+          onClick={() => navigate(learnPath(SHELL_ROUTES.learnReview, subject))}
           className="flex-1 neo-border neo-shadow rounded-xl bg-primary px-4 py-3 font-heading font-bold text-primary-foreground"
         >
           {t("summary.reviewPlan")}
@@ -78,7 +81,8 @@ export default function LearnRunnerScreen() {
   const { t } = useTranslation("learn");
   const [params] = useSearchParams();
   const nodeId = params.get("node") ?? undefined;
-  const session = useLearnSession(nodeId ? { nodeId } : undefined);
+  const subject = params.get(LEARN_SUBJECT_PARAM) ?? undefined;
+  const session = useLearnSession({ nodeId, subject });
   const {
     submitLearnAnswer,
     rateCard,
@@ -158,7 +162,7 @@ export default function LearnRunnerScreen() {
 
   // Nothing resolvable to run — back to the entry's honest "nothing due" state.
   if (session.status === "empty") {
-    return <Navigate to={SHELL_ROUTES.learn} replace />;
+    return <Navigate to={learnPath(SHELL_ROUTES.learn, subject)} replace />;
   }
 
   if (session.status === "error") {
@@ -178,7 +182,7 @@ export default function LearnRunnerScreen() {
           </button>
           <button
             type="button"
-            onClick={() => navigate(SHELL_ROUTES.learn)}
+            onClick={() => navigate(learnPath(SHELL_ROUTES.learn, subject))}
             className="font-heading text-[13px] font-bold text-muted-foreground"
           >
             {t("run.backToLearn")}
@@ -192,7 +196,7 @@ export default function LearnRunnerScreen() {
     return (
       <LearnShell>
         <div className="flex flex-1 items-center justify-center overflow-y-auto px-4 py-8 md:px-6">
-          <SessionSummary total={total} firstTry={firstTryCount} />
+          <SessionSummary total={total} firstTry={firstTryCount} subject={subject} />
         </div>
       </LearnShell>
     );
@@ -227,7 +231,7 @@ export default function LearnRunnerScreen() {
       </div>
       <button
         type="button"
-        onClick={() => navigate(SHELL_ROUTES.learn)}
+        onClick={() => navigate(learnPath(SHELL_ROUTES.learn, subject))}
         className="text-left font-heading text-[13px] font-bold text-muted-foreground"
       >
         {t("run.leave")}

@@ -6,14 +6,15 @@ import { NeoCard } from "@/components/neo/NeoCard";
 import { NeoButton } from "@/components/neo/NeoButton";
 import { NeoBadge } from "@/components/neo/NeoBadge";
 import { Compass, ArrowRight, Clock, Lock, RotateCcw } from "lucide-react";
-import { listGeographyNodeSummaries } from "../../convex/learnLadderBuilder";
+import { listSubjectNodeSummaries } from "../../convex/learnLadderBuilder";
+import { DEFAULT_LEARN_SUBJECT } from "../../convex/learnSkillGraph";
 
 // PROTOTYPE ONLY — Learn node picker. Mastery state, review-due flags, and the
 // subject progression bar are SERVER-AUTHORITATIVE (getLearnNodes). Static graph
 // metadata (description, tagged/rung counts) is merged in for display only. Not
 // wired into home, nav, or any scored mode.
 
-const SUBJECT = "geography";
+const SUBJECT = DEFAULT_LEARN_SUBJECT;
 
 type MasteryState = "untouched" | "learning" | "proficient" | "mastered";
 
@@ -30,7 +31,7 @@ const STATE_BADGE: Record<
 export default function LearnNodePickerScreen() {
   const navigate = useNavigate();
   // Static graph metadata (descriptions + counts) — no answers, display only.
-  const summaries = useMemo(() => listGeographyNodeSummaries(), []);
+  const summaries = useMemo(() => listSubjectNodeSummaries(SUBJECT), []);
   const summaryByNode = useMemo(
     () => new Map(summaries.map((s) => [s.nodeId, s])),
     [summaries],

@@ -8,10 +8,16 @@
     "numeric": "Numérico",
     "order": "Ordenar"
   },
+  "subjects": {
+    "geography": "Geografía",
+    "history": "Historia",
+    "science": "Ciencia"
+  },
   "entry": {
     "title": "Aprender",
     "mastery": "Dominio",
     "review": "Repaso",
+    "subjectsLabel": "Materias",
     "heroLine1": "Apréndelo,",
     "heroLine2": "no lo memorices a presión.",
     "start": "Empezar →"

@@ -1,6 +1,8 @@
 /**
  * Learn v2 — entry. Today's session hero + "pick up where you left off" +
- * learning streak. Navigation/presentation only; no scoring here.
+ * learning streak. Navigation/presentation only; no scoring here. The subject
+ * comes from the server's subjects registry (via useLearnSubject) — never
+ * hardcoded — and every served subject is offered in the switcher.
  */
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
@@ -9,21 +11,28 @@ import { api } from "../../../../convex/_generated/api";
 import { LearnShell, Eyebrow } from "@/components/learn/LearnPrimitives";
 import { SHELL_ROUTES } from "@/lib/shellRoutes";
 import { pickTodaysSessionNode } from "@/lib/learn/todaysSession";
+import { learnPath, useLearnSubject } from "@/lib/learn/useLearnSubject";
 
 const TYPE_KEYS = ["mcq", "text", "numeric", "order"] as const;
 
 export default function LearnEntryScreen() {
   const navigate = useNavigate();
   const { t } = useTranslation("learn");
-  const plan = useQuery(api.learn.getLearnReviewPlan, { subject: "geography" });
-  const subjects = plan?.nodes ?? [];
-  const todaysNode = pickTodaysSessionNode(subjects);
+  const { subject, subjects, setSubject } = useLearnSubject();
+  const plan = useQuery(
+    api.learn.getLearnReviewPlan,
+    subject ? { subject } : {},
+  );
+  const nodes = plan?.nodes ?? [];
+  const todaysNode = pickTodaysSessionNode(nodes);
   const start = () => {
-    if (todaysNode) navigate(`${SHELL_ROUTES.learnRun}?node=${todaysNode}`);
+    if (todaysNode) {
+      navigate(learnPath(SHELL_ROUTES.learnRun, subject, { node: todaysNode }));
+    }
   };
-  const resume = subjects.filter((s) => s.state === "learning").slice(0, 3);
-  const dueToday = subjects.reduce((sum, s) => sum + (s.due ?? 0), 0);
-  const learningCount = subjects.filter((s) => s.state === "learning").length;
+  const resume = nodes.filter((s) => s.state === "learning").slice(0, 3);
+  const dueToday = nodes.reduce((sum, s) => sum + (s.due ?? 0), 0);
+  const learningCount = nodes.filter((s) => s.state === "learning").length;
 
   return (
     <LearnShell>
@@ -43,20 +52,47 @@ export default function LearnEntryScreen() {
         <div className="flex gap-2">
           <button
             type="button"
-            onClick={() => navigate(SHELL_ROUTES.learnMastery)}
+            onClick={() => navigate(learnPath(SHELL_ROUTES.learnMastery, subject))}
             className="font-heading text-[13px] font-bold text-muted-foreground"
           >
             {t("entry.mastery")}
           </button>
           <button
             type="button"
-            onClick={() => navigate(SHELL_ROUTES.learnReview)}
+            onClick={() => navigate(learnPath(SHELL_ROUTES.learnReview, subject))}
             className="font-heading text-[13px] font-bold text-muted-foreground"
           >
             {t("entry.review")}
           </button>
         </div>
       </div>
+
+      {/* Subject switcher — one chip per served subject, straight from the
+          server registry. Selection rides the ?subject= param. */}
+      {subjects && subjects.length > 0 && (
+        <div
+          role="group"
+          aria-label={t("entry.subjectsLabel")}
+          className="flex flex-none flex-wrap gap-2 px-4 pb-3 md:px-6"
+        >
+          {subjects.map((s) => (
+            <button
+              key={s.subject}
+              type="button"
+              aria-pressed={s.subject === subject}
+              onClick={() => setSubject(s.subject)}
+              className={`rounded-full border-2 border-foreground px-3 py-1 font-heading text-[12px] font-bold ${
+                s.subject === subject
+                  ? "bg-foreground text-background"
+                  : "bg-card text-foreground"
+              }`}
+            >
+              {t(`subjects.${s.subject}`, { defaultValue: s.name })}
+              {s.dueCount > 0 ? ` · ${s.dueCount}` : ""}
+            </button>
+          ))}
+        </div>
+      )}
 
       <div className="flex-1 min-h-0 px-4 pb-6 md:px-6 md:pb-6 overflow-y-auto md:overflow-hidden md:grid md:grid-rows-[1.25fr_1fr] md:gap-4">
         {/* Hero band */}
@@ -118,7 +154,7 @@ export default function LearnEntryScreen() {
               <Eyebrow>{t("entry.resumeTitle")}</Eyebrow>
               <button
                 type="button"
-                onClick={() => navigate(SHELL_ROUTES.learnMastery)}
+                onClick={() => navigate(learnPath(SHELL_ROUTES.learnMastery, subject))}
                 className="font-heading text-xs font-bold text-muted-foreground"
               >
                 {t("entry.allSubjects")}

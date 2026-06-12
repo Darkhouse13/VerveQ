@@ -62,9 +62,11 @@ export default function ShellHomeScreen() {
   const showSignIn = accountState === "loggedOut";
   const profile = useQuery(api.profile.get, userId ? { userId } : "skip");
   // Identity-scoped reads; all skipped for guests/logged-out so nothing throws.
-  const learnPlan = useQuery(
-    api.learn.getLearnReviewPlan,
-    hasUsername ? { subject: "geography" } : "skip",
+  // Learn chips aggregate across every served subject (server registry), not
+  // any one hardcoded subject.
+  const learnSubjects = useQuery(
+    api.learn.getLearnSubjects,
+    hasUsername ? {} : "skip",
   );
   const dailyStatus = useQuery(
     api.dailyChallenge.getAttemptStatus,
@@ -90,9 +92,17 @@ export default function ShellHomeScreen() {
   const elo = profile?.rankedEligible ? Math.round(profile.eloRating) : null;
   const progress = elo != null ? tierProgress(elo) : null;
 
-  const learnNodes = Array.isArray(learnPlan?.nodes) ? learnPlan.nodes : [];
-  const lockedIn = learnNodes.filter((n) => n.state === "locked").length;
-  const dueToday = learnNodes.reduce((sum, n) => sum + (n.due ?? 0), 0);
+  const learnSubjectRows = Array.isArray(learnSubjects?.subjects)
+    ? learnSubjects.subjects
+    : [];
+  const lockedIn = learnSubjectRows.reduce(
+    (sum, s) => sum + (s.lockedCount ?? 0),
+    0,
+  );
+  const dueToday = learnSubjectRows.reduce(
+    (sum, s) => sum + (s.dueCount ?? 0),
+    0,
+  );
 
   const dailyPlayed = dailyStatus?.completed === true;
   const seasonNumber =

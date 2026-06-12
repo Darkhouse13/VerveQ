@@ -1,6 +1,7 @@
 /**
- * Learn v2 — subject-mastery dashboard. Overall mastery + per-subject rows with
- * state (locked-in vs learning) and due counts. Presentation only.
+ * Learn v2 — topic-mastery dashboard. Overall mastery + per-topic rows with
+ * state (locked-in vs learning) and due counts. Presentation only. The subject
+ * rides the ?subject= param (server-resolved default when absent).
  */
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
@@ -9,15 +10,22 @@ import { api } from "../../../../convex/_generated/api";
 import { LearnShell, Eyebrow, Chip, MasteryBar } from "@/components/learn/LearnPrimitives";
 import { SHELL_ROUTES } from "@/lib/shellRoutes";
 import { pickTodaysSessionNode } from "@/lib/learn/todaysSession";
+import { learnPath, useLearnSubject } from "@/lib/learn/useLearnSubject";
 
 export default function LearnMasteryScreen() {
   const navigate = useNavigate();
   const { t } = useTranslation("learn");
-  const plan = useQuery(api.learn.getLearnReviewPlan, { subject: "geography" });
+  const { subject } = useLearnSubject();
+  const plan = useQuery(
+    api.learn.getLearnReviewPlan,
+    subject ? { subject } : {},
+  );
   const subjects = plan?.nodes ?? [];
   const todaysNode = pickTodaysSessionNode(subjects);
   const startSession = () => {
-    if (todaysNode) navigate(`${SHELL_ROUTES.learnRun}?node=${todaysNode}`);
+    if (todaysNode) {
+      navigate(learnPath(SHELL_ROUTES.learnRun, subject, { node: todaysNode }));
+    }
   };
   const overall = Math.round(
     (subjects.reduce((a, s) => a + s.mastery, 0) / subjects.length) * 100,
@@ -32,7 +40,7 @@ export default function LearnMasteryScreen() {
         <div className="flex items-center gap-3">
           <button
             type="button"
-            onClick={() => navigate(SHELL_ROUTES.learn)}
+            onClick={() => navigate(learnPath(SHELL_ROUTES.learn, subject))}
             aria-label={t("common.back")}
             className="rounded-xl border-[3px] border-foreground bg-card px-3 py-1.5 font-heading font-bold"
           >
@@ -45,7 +53,7 @@ export default function LearnMasteryScreen() {
         </div>
         <button
           type="button"
-          onClick={() => navigate(SHELL_ROUTES.learnReview)}
+          onClick={() => navigate(learnPath(SHELL_ROUTES.learnReview, subject))}
           className="font-heading text-[13px] font-bold text-muted-foreground"
         >
           {t("mastery.reviewSchedule")}

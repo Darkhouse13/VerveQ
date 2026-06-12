@@ -13,10 +13,16 @@
     "learningUpper": "Learning",
     "lockedIn": "Locked in"
   },
+  "subjects": {
+    "geography": "Geography",
+    "history": "History",
+    "science": "Science"
+  },
   "entry": {
     "title": "Learn",
     "mastery": "Mastery",
     "review": "Review",
+    "subjectsLabel": "Subjects",
     "todaysSession": "Today's session",
     "heroLine1": "Learn it,",
     "heroLine2": "don't cram it.",

@@ -9,6 +9,7 @@ import { api } from "../../../../convex/_generated/api";
 import { LearnShell, Eyebrow, Chip, MasteryBar } from "@/components/learn/LearnPrimitives";
 import { SHELL_ROUTES } from "@/lib/shellRoutes";
 import { pickTodaysSessionNode } from "@/lib/learn/todaysSession";
+import { learnPath, useLearnSubject } from "@/lib/learn/useLearnSubject";
 import type { LearnSubjectMastery } from "@/lib/learn/contract";
 
 function dueLabel(
@@ -80,13 +81,19 @@ function Queue({
 export default function LearnReviewScreen() {
   const navigate = useNavigate();
   const { t } = useTranslation("learn");
-  const plan = useQuery(api.learn.getLearnReviewPlan, { subject: "geography" });
+  const { subject } = useLearnSubject();
+  const plan = useQuery(
+    api.learn.getLearnReviewPlan,
+    subject ? { subject } : {},
+  );
   const subjects = plan?.nodes ?? [];
   const locked = subjects.filter((s) => s.state === "locked");
   const learning = subjects.filter((s) => s.state === "learning");
   const todaysNode = pickTodaysSessionNode(subjects);
   const reviewDue = () => {
-    if (todaysNode) navigate(`${SHELL_ROUTES.learnRun}?node=${todaysNode}`);
+    if (todaysNode) {
+      navigate(learnPath(SHELL_ROUTES.learnRun, subject, { node: todaysNode }));
+    }
   };
 
   return (
@@ -95,7 +102,7 @@ export default function LearnReviewScreen() {
         <div className="flex items-center gap-3">
           <button
             type="button"
-            onClick={() => navigate(SHELL_ROUTES.learn)}
+            onClick={() => navigate(learnPath(SHELL_ROUTES.learn, subject))}
             aria-label={t("common.back")}
             className="rounded-xl border-[3px] border-foreground bg-card px-3 py-1.5 font-heading font-bold"
           >

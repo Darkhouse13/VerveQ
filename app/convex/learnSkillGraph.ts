@@ -1,3 +1,50 @@
+// Subjects registry — the single source of truth for which Learn subjects
+// exist. Serving surfaces (queries, pickers, the entry switcher) derive their
+// subject lists from here; nothing downstream may hardcode a subject id.
+// Adding a subject = add an entry here + author its skill nodes below.
+export type LearnSubjectMeta = {
+  id: string;
+  name: string;
+  description: string;
+};
+
+export const learnSubjects = [
+  {
+    id: "geography",
+    name: "Geography",
+    description: "Capitals, borders, and map reasoning.",
+  },
+  {
+    id: "history",
+    name: "History",
+    description: "Event dates, founding years, and chronology.",
+  },
+  {
+    id: "science",
+    name: "Science",
+    description: "Element symbols, atomic numbers, and SI units.",
+  },
+] as const satisfies readonly LearnSubjectMeta[];
+
+export type LearnSubjectId = (typeof learnSubjects)[number]["id"];
+
+export const DEFAULT_LEARN_SUBJECT: LearnSubjectId = learnSubjects[0].id;
+
+export const learnSubjectById = Object.fromEntries(
+  learnSubjects.map((subject) => [subject.id, subject]),
+) as Record<LearnSubjectId, LearnSubjectMeta>;
+
+/** Maps unknown/missing subject ids to the default rather than throwing —
+ * responses always declare which subject they resolved to. */
+export function resolveLearnSubject(subject?: string | null): LearnSubjectId {
+  if (subject && subject in learnSubjectById) return subject as LearnSubjectId;
+  return DEFAULT_LEARN_SUBJECT;
+}
+
+export function isLearnSubject(subject: string): subject is LearnSubjectId {
+  return subject in learnSubjectById;
+}
+
 export const skillNodeIds = [
   "geo.capitals.core",
   "geo.capitals.europe",
@@ -7,6 +54,12 @@ export const skillNodeIds = [
   "geo.borders.identify",
   "geo.borders.reasoning",
   "geo.pipeline.proof",
+  "hist.events.dates",
+  "hist.founding.years",
+  "hist.chronology",
+  "sci.elements.symbols",
+  "sci.elements.numbers",
+  "sci.units.si",
 ] as const;
 
 export type SkillNodeId = (typeof skillNodeIds)[number];
@@ -14,7 +67,7 @@ export const PIPELINE_PROOF_NODE_ID = "geo.pipeline.proof" satisfies SkillNodeId
 
 export type SkillNode = {
   id: SkillNodeId;
-  subject: "geography";
+  subject: LearnSubjectId;
   name: string;
   description: string;
   prerequisites: SkillNodeId[];
@@ -82,6 +135,52 @@ export const skillNodes: SkillNode[] = [
       "Pipeline-proof fixture only: trivial geography facts for validating live MCQ, text, numeric, and ordering rungs. Not shippable verified CIE content.",
     prerequisites: [],
     contentKind: "pipeline_proof",
+  },
+  {
+    id: "hist.events.dates",
+    subject: "history",
+    name: "Event dates",
+    description:
+      "Anchoring major battles, treaties, and turning points to their years.",
+    prerequisites: [],
+  },
+  {
+    id: "hist.founding.years",
+    subject: "history",
+    name: "Founding & independence",
+    description:
+      "Inception years of institutions, organizations, and newly independent states.",
+    prerequisites: [],
+  },
+  {
+    id: "hist.chronology",
+    subject: "history",
+    name: "Chronology",
+    description:
+      "Ordering events in time: which came first, which came latest, and why.",
+    prerequisites: ["hist.events.dates", "hist.founding.years"],
+  },
+  {
+    id: "sci.elements.symbols",
+    subject: "science",
+    name: "Element symbols",
+    description: "Matching chemical elements to their periodic-table symbols.",
+    prerequisites: [],
+  },
+  {
+    id: "sci.elements.numbers",
+    subject: "science",
+    name: "Atomic numbers",
+    description: "Placing elements by atomic number on the periodic table.",
+    prerequisites: ["sci.elements.symbols"],
+  },
+  {
+    id: "sci.units.si",
+    subject: "science",
+    name: "SI unit symbols",
+    description:
+      "SI base and special-named units and the symbols that stand for them.",
+    prerequisites: [],
   },
 ];
 

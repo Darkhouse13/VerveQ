@@ -8,10 +8,16 @@
     "numeric": "Numérique",
     "order": "Mettre dans l'ordre"
   },
+  "subjects": {
+    "geography": "Géographie",
+    "history": "Histoire",
+    "science": "Sciences"
+  },
   "entry": {
     "title": "Apprendre",
     "mastery": "Maîtrise",
     "review": "Révision",
+    "subjectsLabel": "Matières",
     "heroLine1": "Apprends-le,",
     "heroLine2": "ne le bachote pas.",
     "start": "Commencer →"

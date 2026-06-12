@@ -3,7 +3,7 @@ import {
   MAX_LADDER_RUNGS,
   MIN_PLAYABLE_RUNGS,
   buildLadder,
-  listGeographyNodeSummaries,
+  listSubjectNodeSummaries,
 } from "../../convex/learnLadderBuilder";
 import { learnGeographyNonobviousLadderV1Questions } from "../../convex/learnGeographyNonobviousLadderV1";
 import { learnGeographyBorderReasoningLadderV1Questions } from "../../convex/learnGeographyBorderReasoningLadderV1";
@@ -94,7 +94,7 @@ describe("learn ladder builder", () => {
 
   it("keeps the pipeline-proof fixture out of normal geography node lists", () => {
     expect(
-      listGeographyNodeSummaries().map((summary) => summary.nodeId),
+      listSubjectNodeSummaries("geography").map((summary) => summary.nodeId),
     ).not.toContain("geo.pipeline.proof");
   });
 
@@ -109,7 +109,7 @@ describe("learn ladder builder", () => {
   });
 
   it("marks only nodes with reveal-carrying questions as playable", () => {
-    const summaries = listGeographyNodeSummaries();
+    const summaries = listSubjectNodeSummaries("geography");
     const playable = summaries.filter((summary) => summary.playable);
 
     // Recall-capital nodes, non-obvious capitals, and border reasoning qualify.

@@ -8,6 +8,14 @@ import {
   knowledgeGeographyCieScoreBatchV2Questions,
 } from "./knowledgeGeographyCieScoreBatchV2";
 import {
+  knowledgeHistoryCieScoreBatchV1Metadata,
+  knowledgeHistoryCieScoreBatchV1Questions,
+} from "./knowledgeHistoryCieScoreBatchV1";
+import {
+  knowledgeScienceCieScoreBatchV1Metadata,
+  knowledgeScienceCieScoreBatchV1Questions,
+} from "./knowledgeScienceCieScoreBatchV1";
+import {
   isPipelineProofNode,
   skillNodeIds,
   skillNodes,
@@ -49,6 +57,28 @@ export const verifiedGeographyCieScoreBatches: VerifiedGeographyCieScoreBatch[] 
 
 export const verifiedGeographyCieScoreQuestions =
   verifiedGeographyCieScoreBatches.flatMap((batch) => batch.questions);
+
+// History and science wire in through the same verified-batch path. Only
+// batches whose score-mode verification verdict is "agree" may appear here.
+export const verifiedHistoryCieScoreQuestions: TaggedKnowledgeQuestion[] =
+  knowledgeHistoryCieScoreBatchV1Questions;
+
+export const verifiedScienceCieScoreQuestions: TaggedKnowledgeQuestion[] =
+  knowledgeScienceCieScoreBatchV1Questions;
+
+export const verifiedLearnCieScoreBatchIds = [
+  knowledgeGeographyCieScoreBatchV1Metadata.batchId,
+  knowledgeGeographyCieScoreBatchV2Metadata.batchId,
+  knowledgeHistoryCieScoreBatchV1Metadata.batchId,
+  knowledgeScienceCieScoreBatchV1Metadata.batchId,
+];
+
+// Every verified CIE question the Learn graph can tag, across all subjects.
+export const verifiedLearnCieScoreQuestions: TaggedKnowledgeQuestion[] = [
+  ...verifiedGeographyCieScoreQuestions,
+  ...verifiedHistoryCieScoreQuestions,
+  ...verifiedScienceCieScoreQuestions,
+];
 
 export const capitalRegionConvention =
   "Capital questions are assigned by the continent containing the capital city; under this convention Russia is Europe and Turkey is Asia.";
@@ -205,11 +235,28 @@ export function tagGeographyQuestion(question: TaggedKnowledgeQuestion): SkillNo
   return [];
 }
 
+// History and science map category → node 1:1; the batch categories were fixed
+// during cross-family verification, so no per-question heuristics are needed.
+const nodeByCategory: Partial<Record<string, SkillNodeId>> = {
+  historical_event_dates: "hist.events.dates",
+  founding_independence_years: "hist.founding.years",
+  historical_chronology: "hist.chronology",
+  chemical_element_symbols: "sci.elements.symbols",
+  chemical_element_atomic_numbers: "sci.elements.numbers",
+  si_unit_symbols: "sci.units.si",
+};
+
+export function tagLearnQuestion(question: TaggedKnowledgeQuestion): SkillNodeId[] {
+  const byCategory = nodeByCategory[question.category];
+  if (byCategory) return [byCategory];
+  return tagGeographyQuestion(question);
+}
+
 export function buildQuestionSkillTags(
-  questions: TaggedKnowledgeQuestion[] = verifiedGeographyCieScoreQuestions,
+  questions: TaggedKnowledgeQuestion[] = verifiedLearnCieScoreQuestions,
 ) {
   return Object.fromEntries(
-    questions.map((question) => [question.checksum, tagGeographyQuestion(question)]),
+    questions.map((question) => [question.checksum, tagLearnQuestion(question)]),
   ) as Record<string, SkillNodeId[]>;
 }
 
@@ -335,14 +382,14 @@ export function validateLearnSkillGraph(options?: { minNodePopulation?: number }
     }
   }
 
-  for (const question of verifiedGeographyCieScoreQuestions) {
+  for (const question of verifiedLearnCieScoreQuestions) {
     if (seenChecksums.has(question.checksum)) {
-      errors.push(`Duplicate verified geography checksum ${question.checksum}`);
+      errors.push(`Duplicate verified CIE checksum ${question.checksum}`);
     }
     seenChecksums.add(question.checksum);
 
     const tags = questionSkillTags[question.checksum] ?? [];
-    const derivedTags = tagGeographyQuestion(question);
+    const derivedTags = tagLearnQuestion(question);
     if (!sameTags(tags, derivedTags)) {
       errors.push(`Stored tags for ${question.checksum} differ from derived tags`);
     }
@@ -411,8 +458,8 @@ export function validateLearnSkillGraph(options?: { minNodePopulation?: number }
   );
 
   return {
-    batchIds: verifiedGeographyCieScoreBatches.map((batch) => batch.batchId),
-    questionCount: verifiedGeographyCieScoreQuestions.length,
+    batchIds: verifiedLearnCieScoreBatchIds,
+    questionCount: verifiedLearnCieScoreQuestions.length,
     acyclic: cycles.length === 0,
     cycles,
     errors,

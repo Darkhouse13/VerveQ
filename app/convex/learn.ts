@@ -5,11 +5,14 @@ import type { Doc, Id } from "./_generated/dataModel";
 import {
   buildLadder,
   getLearnNodeSummary,
-  listGeographyNodeSummaries,
+  listSubjectNodeSummaries,
   type BuiltLadderQuestion,
 } from "./learnLadderBuilder";
 import {
+  DEFAULT_LEARN_SUBJECT,
   isPipelineProofNode,
+  learnSubjects,
+  resolveLearnSubject,
   skillNodeById,
   skillNodeIds,
   skillNodes,
@@ -261,10 +264,7 @@ async function markNodeStarted(
 }
 
 function subjectNodeSummaries(subject: string) {
-  if (subject === "geography") return listGeographyNodeSummaries();
-  return skillNodes
-    .filter((node) => node.subject === subject)
-    .map((node) => getLearnNodeSummary(node.id));
+  return listSubjectNodeSummaries(subject);
 }
 
 function subjectProgress(
@@ -686,62 +686,67 @@ function reviewPlanState(
   return "learning";
 }
 
-export const getLearnReviewPlan = query({
-  args: { subject: v.string() },
-  handler: async (ctx, { subject }) => {
-    const userId = await requireUserId(ctx);
-    const now = Date.now();
-    const summaries = subjectNodeSummaries(subject);
-    const masteryRows = await ctx.db
-      .query("learnMastery")
-      .withIndex("by_user_subject", (q) =>
-        q.eq("userId", userId).eq("subject", subject),
-      )
-      .collect();
-    const reviewRows = await ctx.db
-      .query("learnRungReviews")
-      .withIndex("by_user_subject", (q) =>
-        q.eq("userId", userId).eq("subject", subject),
-      )
-      .collect();
+async function buildSubjectReviewPlan(
+  ctx: QueryCtx | MutationCtx,
+  userId: Id<"users">,
+  subject: string,
+  now: number,
+) {
+  const summaries = subjectNodeSummaries(subject);
+  const masteryRows = await ctx.db
+    .query("learnMastery")
+    .withIndex("by_user_subject", (q) =>
+      q.eq("userId", userId).eq("subject", subject),
+    )
+    .collect();
+  const reviewRows = await ctx.db
+    .query("learnRungReviews")
+    .withIndex("by_user_subject", (q) =>
+      q.eq("userId", userId).eq("subject", subject),
+    )
+    .collect();
 
-    const masteryByNodeId = latestMasteryByNode(masteryRows);
-    const reviewsByNodeId = new Map<string, LearnRungReview[]>();
-    for (const row of reviewRows) {
-      const current = reviewsByNodeId.get(row.nodeId) ?? [];
-      current.push(row);
-      reviewsByNodeId.set(row.nodeId, current);
-    }
+  const masteryByNodeId = latestMasteryByNode(masteryRows);
+  const reviewsByNodeId = new Map<string, LearnRungReview[]>();
+  for (const row of reviewRows) {
+    const current = reviewsByNodeId.get(row.nodeId) ?? [];
+    current.push(row);
+    reviewsByNodeId.set(row.nodeId, current);
+  }
 
-    const nodes = summaries.map((summary) => {
-      const masteryState = stateFromMastery(
-        masteryByNodeId.get(summary.nodeId),
-      );
-      const nodeReviews = reviewsByNodeId.get(summary.nodeId) ?? [];
-      const due = nodeReviews.filter((review) => review.dueAt <= now).length;
-      const nextReview =
-        nodeReviews.length > 0
-          ? Math.min(...nodeReviews.map((review) => review.dueAt))
-          : undefined;
-      const mastery =
-        nodeReviews.length > 0
-          ? nodeReviews.reduce(
-              (sum, review) => sum + reviewMasteryValue(review),
-              0,
-            ) / nodeReviews.length
-          : LEARN_STATE_WEIGHTS[masteryState];
-
-      return {
-        id: summary.nodeId,
-        label: summary.node.name,
-        mastery,
-        due,
-        state: reviewPlanState(masteryState, nodeReviews),
-        ...(nextReview !== undefined ? { nextReview } : {}),
-      };
-    });
+  const nodes = summaries.map((summary) => {
+    const masteryState = stateFromMastery(
+      masteryByNodeId.get(summary.nodeId),
+    );
+    const nodeReviews = reviewsByNodeId.get(summary.nodeId) ?? [];
+    const due = nodeReviews.filter((review) => review.dueAt <= now).length;
+    const nextReview =
+      nodeReviews.length > 0
+        ? Math.min(...nodeReviews.map((review) => review.dueAt))
+        : undefined;
+    const mastery =
+      nodeReviews.length > 0
+        ? nodeReviews.reduce(
+            (sum, review) => sum + reviewMasteryValue(review),
+            0,
+          ) / nodeReviews.length
+        : LEARN_STATE_WEIGHTS[masteryState];
 
     return {
+      id: summary.nodeId,
+      label: summary.node.name,
+      // Coming-soon nodes stay visible but must never become today's session.
+      playable: summary.playable,
+      mastery,
+      due,
+      state: reviewPlanState(masteryState, nodeReviews),
+      ...(nextReview !== undefined ? { nextReview } : {}),
+    };
+  });
+
+  return {
+    summaries,
+    plan: {
       subject,
       generatedAt: now,
       progressPct: subjectProgress(
@@ -749,6 +754,62 @@ export const getLearnReviewPlan = query({
         masteryByNodeId,
       ),
       nodes,
+    },
+  };
+}
+
+export const getLearnReviewPlan = query({
+  // No subject → the server resolves the default; the response declares which
+  // subject it resolved so callers never need a hardcoded fallback.
+  args: { subject: v.optional(v.string()) },
+  handler: async (ctx, { subject }) => {
+    const userId = await requireUserId(ctx);
+    const now = Date.now();
+    const resolved = resolveLearnSubject(subject);
+    const { plan } = await buildSubjectReviewPlan(ctx, userId, resolved, now);
+    return plan;
+  },
+});
+
+export const getLearnSubjects = query({
+  // Every subject the Learn pillar can serve, with per-user progress — the
+  // subject switcher and home pillar read this instead of assuming a subject.
+  args: {},
+  handler: async (ctx) => {
+    const userId = await requireUserId(ctx);
+    const now = Date.now();
+    const subjects = await Promise.all(
+      learnSubjects.map(async (meta) => {
+        const { summaries, plan } = await buildSubjectReviewPlan(
+          ctx,
+          userId,
+          meta.id,
+          now,
+        );
+        const playableNodes = summaries.filter(
+          (summary) => summary.playable,
+        ).length;
+        return {
+          subject: meta.id,
+          name: meta.name,
+          description: meta.description,
+          totalNodes: summaries.length,
+          playableNodes,
+          servable: playableNodes > 0,
+          progressPct: plan.progressPct,
+          dueCount: plan.nodes.reduce((sum, node) => sum + node.due, 0),
+          learningCount: plan.nodes.filter((node) => node.state === "learning")
+            .length,
+          lockedCount: plan.nodes.filter((node) => node.state === "locked")
+            .length,
+        };
+      }),
+    );
+
+    return {
+      generatedAt: now,
+      defaultSubject: DEFAULT_LEARN_SUBJECT,
+      subjects,
     };
   },
 });

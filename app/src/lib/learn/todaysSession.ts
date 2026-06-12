@@ -9,15 +9,20 @@ export interface TodaysSessionNode {
   id: string;
   due?: number;
   state?: string;
+  /** Server playability flag; "coming soon" nodes must never start a session. */
+  playable?: boolean;
 }
 
 export function pickTodaysSessionNode(nodes: readonly TodaysSessionNode[]): string | null {
-  if (!nodes.length) return null;
-  const due = [...nodes]
+  // Unplayable (coming-soon) nodes are listed for honesty but can't serve a
+  // ladder — starting one would only error server-side.
+  const startable = nodes.filter((node) => node.playable !== false);
+  if (!startable.length) return null;
+  const due = [...startable]
     .filter((node) => (node.due ?? 0) > 0)
     .sort((a, b) => (b.due ?? 0) - (a.due ?? 0));
   if (due.length) return due[0].id;
-  const learning = nodes.find((node) => node.state === "learning");
+  const learning = startable.find((node) => node.state === "learning");
   if (learning) return learning.id;
-  return nodes[0].id;
+  return startable[0].id;
 }

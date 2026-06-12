@@ -47,8 +47,6 @@ export interface LearnSessionState extends LearnSessionData {
 const LEARN_FIXTURES_ENABLED =
   import.meta.env.DEV && import.meta.env.VITE_LEARN_FIXTURES === "1";
 
-const LEARN_PLAN_SUBJECT = "geography";
-
 const NO_SESSION_REF: LearnSessionRef = { id: "", live: false };
 
 const LOADING_STATE: LearnSessionData = {
@@ -159,15 +157,22 @@ export function mapLiveRungToQuestion(
   }
 }
 
-export function useLearnSession(opts?: { nodeId?: string }): LearnSessionState {
+export function useLearnSession(opts?: {
+  nodeId?: string;
+  subject?: string;
+}): LearnSessionState {
   const requestedNodeId = opts?.nodeId;
+  const subject = opts?.subject;
   const getLadder = useMutation(api.learn.getLearnLadder);
   // Only consulted when no explicit node is requested (and fixtures are off).
+  // Without a subject the server resolves its default — never hardcoded here.
   const plan = useQuery(
     api.learn.getLearnReviewPlan,
     requestedNodeId || LEARN_FIXTURES_ENABLED
       ? "skip"
-      : { subject: LEARN_PLAN_SUBJECT },
+      : subject
+        ? { subject }
+        : {},
   );
   const source = resolveLearnSessionSource({
     requestedNodeId,
