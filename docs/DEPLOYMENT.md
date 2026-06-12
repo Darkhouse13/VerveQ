@@ -1,72 +1,56 @@
 # VerveQ Deployment Runbook
 
-This is the authoritative runbook for the production frontend at `verveq.com` on the current host. Older notes in this repo described local-only validation, immutable Docker image rollouts, or backend/curated-parity workflows; those are not the procedure used for the current static frontend publish.
+This is the authoritative runbook for the production frontend at `verveq.com`. Publishes are **image-based and durable by construction**: every release builds and tags a fresh Docker image and recreates the container from it. Never `docker cp` files into the running container — that strands the release in the container's writable layer, and the next recreate silently rolls production back to whatever the image tag holds. (This happened: the 2026-06-12 live state existed only in the writable layer of an image tagged 2026-05-27 until the durable cutover that same day.)
 
 ## Production topology
 
 - Host: `178.104.196.36` (pin this host for QA while DNS is stale).
-- Container: `verveq-web`.
-- Fronting: Traefik/Coolify routes traffic to the nginx container on port 80; nginx serves the static SPA inside the container.
-- Served docroot: `verveq-web:/usr/share/nginx/html` (container-internal; no host volume mount).
-- nginx config: `verveq-web:/etc/nginx/conf.d/default.conf`, sourced from `deploy/nginx.conf`.
-- Backend: Convex is unchanged for frontend-only releases. The current production build uses `VITE_CONVEX_URL=https://admired-warthog-495.eu-west-1.convex.cloud` and `VITE_CONVEX_SITE_URL=https://admired-warthog-495.eu-west-1.convex.site`.
+- Container: `verveq-web`, image `verveq-web:<git-sha>-<stamp>`.
+- Fronting: Traefik (`coolify-proxy`) routes `verveq.com`/`www.verveq.com` to the container's nginx on port 80. Routing and TLS come **entirely from labels passed at `docker run`** (see `deploy/recreate-from-image.sh`); TLS certs live in Traefik's acme store and survive container recreation.
+- The container is **not managed by Coolify** — nothing auto-redeploys it on git push. Recreates only happen via the scripts below.
+- Image contents: static SPA bundle at `/usr/share/nginx/html` + `deploy/nginx.conf` at `/etc/nginx/conf.d/default.conf`, baked in by `deploy/Dockerfile`. No host volume mounts.
+- Backend: Convex is unchanged for frontend-only releases. Production builds use `VITE_CONVEX_URL=https://admired-warthog-495.eu-west-1.convex.cloud` and `VITE_CONVEX_SITE_URL=https://admired-warthog-495.eu-west-1.convex.site`.
 - Duel share vanity route: nginx proxies `verveq.com/s/d/*` (page + `card.png`) to the Convex `.site` httpAction (`deploy/nginx.conf` `location ^~ /s/d/`), forwarding path and `User-Agent` intact. The Convex deployment carries `SHARE_PUBLIC_BASE_URL=https://verveq.com` so `og:image` URLs are emitted on the vanity host (`npx convex env set SHARE_PUBLIC_BASE_URL https://verveq.com`).
 
-## Build
+## Publish
 
-From the repo root on the host:
+From the repo root on the host (as root; the script drops to `hermes` for the npm build itself — root-run npm leaves root-owned files that break later hermes-side builds):
 
 ```bash
-cd /home/hermes/projects/verveq/app
-npm ci
-VITE_V2_SHELL_ENABLED=true \
-VITE_CONVEX_URL=https://admired-warthog-495.eu-west-1.convex.cloud \
-VITE_CONVEX_SITE_URL=https://admired-warthog-495.eu-west-1.convex.site \
-npm run build
+cd /home/hermes/projects/verveq
+export VITE_V2_SHELL_ENABLED=true
+export VITE_CONVEX_URL=https://admired-warthog-495.eu-west-1.convex.cloud
+export VITE_CONVEX_SITE_URL=https://admired-warthog-495.eu-west-1.convex.site
+./deploy/build-and-run.sh
 ```
 
-Package the bundle:
+This:
+1. Runs `npm ci` + `vite build` in `app/` (as `hermes`).
+2. Builds `verveq-web:<git-sha>-<stamp>` from `deploy/Dockerfile` (bundle + nginx conf baked in).
+3. Calls `deploy/recreate-from-image.sh`, which renames the running container to `verveq-web-prev-<stamp>` and keeps it **stopped** as the instant rollback, then recreates `verveq-web` from the fresh image with the full Traefik label set and `--restart unless-stopped`.
+4. Health-checks `http://127.0.0.1/healthz` inside the new container.
+
+To redeploy an already-built image (e.g. promote a verified tag, or roll forward after a host move) without rebuilding:
 
 ```bash
-tar -C /home/hermes/projects/verveq/app/dist -czf /home/hermes/backups/verveq-web/<STAMP>/candidate-dist.tgz .
-sha256sum /home/hermes/backups/verveq-web/<STAMP>/candidate-dist.tgz > /home/hermes/backups/verveq-web/<STAMP>/candidate-dist.tgz.sha256
-```
-
-## Required pre-publish backup
-
-Back up both layers before publishing: the current webroot and the current nginx config.
-
-```bash
-stamp=$(date -u +%Y%m%dT%H%M%SZ)
-backup=/home/hermes/backups/verveq-web/pre-launch-qa-$stamp
-mkdir -p "$backup"
-docker exec verveq-web sh -c 'cd /usr/share/nginx/html && tar -czf /tmp/webroot.tgz .'
-docker cp verveq-web:/tmp/webroot.tgz "$backup/webroot.tgz"
-docker exec verveq-web sh -c 'cat /etc/nginx/conf.d/default.conf' > "$backup/nginx.default.conf"
-sha256sum "$backup/webroot.tgz" "$backup/nginx.default.conf" > "$backup/SHA256SUMS"
-mkdir "$backup/restore-test" && tar -xzf "$backup/webroot.tgz" -C "$backup/restore-test" && test -s "$backup/restore-test/index.html"
-```
-
-## Publish static bundle and nginx config
-
-This deployment is not a pure static swap. Apply the bundle and nginx config together, validate nginx, then reload it.
-
-```bash
-backup=/home/hermes/backups/verveq-web/pre-launch-qa-<STAMP>
-docker cp /home/hermes/backups/verveq-web/<STAMP>/candidate-dist.tgz verveq-web:/tmp/verveq-dist.tgz
-docker cp /home/hermes/projects/verveq/deploy/nginx.conf verveq-web:/etc/nginx/conf.d/default.conf
-docker exec verveq-web sh -c 'set -e; root=/usr/share/nginx/html; find "$root" -mindepth 1 -maxdepth 1 -exec rm -rf -- {} +; tar -xzf /tmp/verveq-dist.tgz -C "$root"; find "$root" -type d -exec chmod 755 {} +; find "$root" -type f -exec chmod 644 {} +; nginx -t; nginx -s reload; wget -qO- http://127.0.0.1/healthz'
+/home/hermes/projects/verveq/deploy/recreate-from-image.sh verveq-web:<tag>
 ```
 
 ## One-command rollback
 
-Rollback covers both layers: restore the pre-deploy webroot and the pre-deploy nginx config, then validate and reload nginx.
+The previous container is kept stopped with its labels intact, so rollback is:
 
 ```bash
-backup=/home/hermes/backups/verveq-web/pre-launch-qa-<STAMP>; docker cp "$backup/webroot.tgz" verveq-web:/tmp/rollback-webroot.tgz && docker cp "$backup/nginx.default.conf" verveq-web:/etc/nginx/conf.d/default.conf && docker exec verveq-web sh -c 'set -e; root=/usr/share/nginx/html; parent=/usr/share/nginx; rm -rf "$parent/html.rollback" "$parent/html.prev"; mkdir "$parent/html.rollback"; tar -xzf /tmp/rollback-webroot.tgz -C "$parent/html.rollback"; test -s "$parent/html.rollback/index.html"; mv "$root" "$parent/html.prev"; mv "$parent/html.rollback" "$root"; rm -rf "$parent/html.prev"; nginx -t; nginx -s reload; wget -qO- http://127.0.0.1/healthz'
+docker rm -f verveq-web && docker rename verveq-web-prev-<STAMP> verveq-web && docker start verveq-web
 ```
 
-Before running rollback in production, replace `<STAMP>` with the exact backup directory from the failed publish.
+Replace `<STAMP>` with the name printed during the failed publish (`docker ps -a --filter name=verveq-web-prev` lists them). Alternatively, recreate from any previous image tag:
+
+```bash
+/home/hermes/projects/verveq/deploy/recreate-from-image.sh verveq-web:<previous-tag>
+```
+
+Prune `verveq-web-prev-*` containers and stale image tags only after the new release has soaked.
 
 ## Host-pinned verification
 
@@ -78,4 +62,12 @@ curl --resolve verveq.com:443:178.104.196.36 https://verveq.com/robots.txt
 curl --resolve verveq.com:443:178.104.196.36 https://verveq.com/sitemap.xml
 ```
 
-Browser QA should pin `verveq.com` and `www.verveq.com` to `178.104.196.36`, walk `/privacy`, `/terms`, `/daily`, `/vervegrid`, `/whoami`, `/higherlower`, `/arena/:code`, `/v2/arena`, `/v2/duels`, `/v2/leaderboard`, onboarding/upgrade validation states, and an unknown path. Capture final URL, visible content, console/page errors, failed requests, and non-2xx/3xx network responses.
+Browser QA should pin `verveq.com` and `www.verveq.com` to `178.104.196.36`, walk `/privacy`, `/terms`, `/daily`, `/vervegrid`, `/whoami`, `/higherlower`, `/arena/:code`, `/v2/arena`, `/v2/duels`, onboarding/upgrade validation states, and an unknown path. Capture final URL, visible content, console/page errors, failed requests, and non-2xx/3xx network responses.
+
+## 2026-06-12 durable-cutover artifacts
+
+Point-in-time recovery for the 7cd0687 release, in order of preference:
+
+- Running image: `verveq-web:7cd0687-durable-20260612` (clean nginx base + live webroot + repo nginx.conf).
+- Stopped previous container: `verveq-web-prev-20260612T145445Z` (the old writable-layer container; still holds 7cd0687 content).
+- Snapshot image: `verveq-web:live-7cd0687-snapshot` (`docker commit` of the pre-cutover container), also exported to `/home/hermes/backups/verveq-web/durable-cutover-20260612/live-7cd0687-snapshot.tar` (`docker load -i` to restore).
