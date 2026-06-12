@@ -1,5 +1,6 @@
 import {
   internalMutation,
+  internalQuery,
   mutation,
   query,
   type MutationCtx,
@@ -20,6 +21,12 @@ import {
   challengeArenaWhichCameFirstQuestions,
   type ChallengeArenaQuestionSeed,
 } from "./challengeArenaContent";
+import {
+  ARENA_CIE_SPORT,
+  arenaCieSeedPlan,
+  type ArenaCiePlannedRow,
+} from "./challengeArenaCieContent";
+import { contentDuplicateKey } from "./lib/contentQa";
 
 const ARENA_ROUNDS = 5;
 const QUESTIONS_PER_ROUND = 10;
@@ -42,6 +49,7 @@ const SEED_CONTENT_BATCH_SIZE = 250;
 const SEED_CONTENT_MAX_BATCH_SIZE = 500;
 const CONTENT_STATUS_KNOWLEDGE_READ_CAP = 3_000;
 const CONTENT_STATUS_FOOTBALL_READ_CAP = 750;
+const CONTENT_STATUS_CIE_READ_CAP = 3_000;
 const CHECKSUM_CURSOR_ALPHABET = "abcdefghijklmnopqrstuvwxyz0123456789_";
 const NUMERIC_CURSOR_ALPHABET = "0123456789";
 
@@ -743,9 +751,9 @@ function applyRecentlySeenExclusion<T extends { checksum: string }>(
   );
 }
 
-function recentlySeenCountForScope(
+function recentlySeenCountForScopes(
   recentlySeen: RecentlySeenMap,
-  scope: IndexedCandidateScope,
+  scopes: IndexedCandidateScope[],
   fallbackSeeds?: ChallengeArenaQuestionSeed[],
 ) {
   if (recentlySeen.size === 0) return 0;
@@ -753,11 +761,14 @@ function recentlySeenCountForScope(
   const fallbackChecksums = fallbackSeeds
     ? new Set(fallbackSeeds.map((seed) => seed.checksum))
     : null;
+  const cursorPrefixes = scopes
+    .map((scope) => scope.cursorPrefix)
+    .filter((prefix): prefix is string => !!prefix);
   let count = 0;
   for (const checksum of recentlySeen.keys()) {
     if (
       fallbackChecksums?.has(checksum) ||
-      (scope.cursorPrefix && checksum.startsWith(scope.cursorPrefix))
+      cursorPrefixes.some((prefix) => checksum.startsWith(prefix))
     ) {
       count += 1;
     }
@@ -826,7 +837,7 @@ async function pickSeedBackedChecksums(
 
 async function pickIndexedChecksums(
   ctx: Pick<QueryCtx | MutationCtx, "db">,
-  scope: IndexedCandidateScope,
+  scopes: IndexedCandidateScope[],
   used: Set<string>,
   recentlySeen: RecentlySeenMap,
   seed: string,
@@ -834,21 +845,26 @@ async function pickIndexedChecksums(
   predicate: (question: Question) => boolean,
   fallbackSeeds?: ChallengeArenaQuestionSeed[],
 ) {
-  const relevantRecentlySeen = recentlySeenCountForScope(
+  const relevantRecentlySeen = recentlySeenCountForScopes(
     recentlySeen,
-    scope,
+    scopes,
     fallbackSeeds,
   );
   const targetCandidates =
     QUESTIONS_PER_ROUND + Math.min(relevantRecentlySeen, 40) + 32;
-  const questions = await collectIndexedCandidates(
-    ctx,
-    scope,
-    seed,
-    used,
-    predicate,
-    targetCandidates,
-  );
+  const questions: Question[] = [];
+  for (const [scopeIndex, scope] of scopes.entries()) {
+    questions.push(
+      ...(await collectIndexedCandidates(
+        ctx,
+        scope,
+        scopeIndex === 0 ? seed : `${seed}:scope${scopeIndex}`,
+        used,
+        predicate,
+        targetCandidates,
+      )),
+    );
+  }
   const candidates = applyRecentlySeenExclusion(
     uniqueStableQuestionCandidates(questions, used, predicate),
     recentlySeen,
@@ -885,10 +901,9 @@ async function pickFootballChecksums(
   label: string,
 ) {
   const footballScope = { sport: "football", cursorPrefix: "football_" };
-  const relevantRecentlySeen = recentlySeenCountForScope(
-    recentlySeen,
+  const relevantRecentlySeen = recentlySeenCountForScopes(recentlySeen, [
     footballScope,
-  );
+  ]);
   const targetTextCandidates =
     QUESTIONS_PER_ROUND +
     Math.min(relevantRecentlySeen, 40) +
@@ -1081,7 +1096,10 @@ async function lockRoundQuestionSets(
       rounds.push(
         await pickIndexedChecksums(
           ctx,
-          { sport: "knowledge", cursorPrefix: "knowledge_" },
+          [
+            { sport: "knowledge", cursorPrefix: "knowledge_" },
+            { sport: ARENA_CIE_SPORT, cursorPrefix: "knowledge_" },
+          ],
           used,
           recentlySeen,
           `${seed}:${category}`,
@@ -1102,12 +1120,19 @@ async function lockRoundQuestionSets(
       rounds.push(
         await pickIndexedChecksums(
           ctx,
-          {
-            sport: "knowledge",
-            category: "which_came_first",
-            cursorPrefix: "knowledge_came_first_v",
-            cursorAlphabet: NUMERIC_CURSOR_ALPHABET,
-          },
+          [
+            {
+              sport: "knowledge",
+              category: "which_came_first",
+              cursorPrefix: "knowledge_came_first_v",
+              cursorAlphabet: NUMERIC_CURSOR_ALPHABET,
+            },
+            {
+              sport: ARENA_CIE_SPORT,
+              category: "which_came_first",
+              cursorPrefix: "knowledge_",
+            },
+          ],
           used,
           recentlySeen,
           `${seed}:${category}`,
@@ -1126,12 +1151,14 @@ async function lockRoundQuestionSets(
       rounds.push(
         await pickIndexedChecksums(
           ctx,
-          {
-            sport: "knowledge",
-            category: "enterprise_logos",
-            cursorPrefix: "challenge_arena_enterprise_logos_v1_",
-            cursorAlphabet: NUMERIC_CURSOR_ALPHABET,
-          },
+          [
+            {
+              sport: "knowledge",
+              category: "enterprise_logos",
+              cursorPrefix: "challenge_arena_enterprise_logos_v1_",
+              cursorAlphabet: NUMERIC_CURSOR_ALPHABET,
+            },
+          ],
           used,
           recentlySeen,
           `${seed}:${category}`,
@@ -1147,12 +1174,19 @@ async function lockRoundQuestionSets(
     rounds.push(
       await pickIndexedChecksums(
         ctx,
-        {
-          sport: "knowledge",
-          category: "capital_cities",
-          cursorPrefix: "challenge_arena_capitals_v",
-          cursorAlphabet: NUMERIC_CURSOR_ALPHABET,
-        },
+        [
+          {
+            sport: "knowledge",
+            category: "capital_cities",
+            cursorPrefix: "challenge_arena_capitals_v",
+            cursorAlphabet: NUMERIC_CURSOR_ALPHABET,
+          },
+          {
+            sport: ARENA_CIE_SPORT,
+            category: "capital_cities",
+            cursorPrefix: "knowledge_geography_cie_score_v",
+          },
+        ],
         used,
         recentlySeen,
         `${seed}:${category}`,
@@ -1834,10 +1868,16 @@ async function getContentCounts(ctx: Pick<QueryCtx | MutationCtx, "db">) {
     .query("quizQuestions")
     .withIndex("by_sport_checksum", (q) => q.eq("sport", "knowledge"))
     .take(CONTENT_STATUS_KNOWLEDGE_READ_CAP + 1);
+  const cieRows = await ctx.db
+    .query("quizQuestions")
+    .withIndex("by_sport_checksum", (q) => q.eq("sport", ARENA_CIE_SPORT))
+    .take(CONTENT_STATUS_CIE_READ_CAP + 1);
   const footballCapped = footballRows.length > CONTENT_STATUS_FOOTBALL_READ_CAP;
   const knowledgeCapped = knowledgeRows.length > CONTENT_STATUS_KNOWLEDGE_READ_CAP;
+  const cieCapped = cieRows.length > CONTENT_STATUS_CIE_READ_CAP;
   const football = footballRows.slice(0, CONTENT_STATUS_FOOTBALL_READ_CAP);
   const knowledge = knowledgeRows.slice(0, CONTENT_STATUS_KNOWLEDGE_READ_CAP);
+  const cie = cieRows.slice(0, CONTENT_STATUS_CIE_READ_CAP);
   const footballQuiz = football.filter(
     (q) =>
       q.category !== "which_came_first" &&
@@ -1867,15 +1907,31 @@ async function getContentCounts(ctx: Pick<QueryCtx | MutationCtx, "db">) {
     capitalCities: knowledge.filter(
       (q) => q.category === "capital_cities" && isAnswerableMcq(q),
     ).length,
-    countsCapped: footballCapped || knowledgeCapped,
+    cieTotal: cie.length,
+    cieCapitalCities: cie.filter(
+      (q) => q.category === "capital_cities" && isAnswerableMcq(q),
+    ).length,
+    cieGeneralKnowledge: cie.filter(
+      (q) =>
+        q.category !== "which_came_first" &&
+        q.category !== "enterprise_logos" &&
+        q.category !== "capital_cities" &&
+        isAnswerableMcq(q),
+    ).length,
+    cieWhichCameFirst: cie.filter(
+      (q) => q.category === "which_came_first" && isAnswerableMcq(q),
+    ).length,
+    countsCapped: footballCapped || knowledgeCapped || cieCapped,
     contentStatusReadCaps: {
       football: CONTENT_STATUS_FOOTBALL_READ_CAP,
       knowledge: CONTENT_STATUS_KNOWLEDGE_READ_CAP,
+      cie: CONTENT_STATUS_CIE_READ_CAP,
     },
     bundledCapitalSeeds: challengeArenaCapitalCityQuestions.length,
     bundledGeneralKnowledgeSeeds: challengeArenaGeneralKnowledgeQuestions.length,
     bundledWhichCameFirstSeeds: challengeArenaWhichCameFirstQuestions.length,
     bundledEnterpriseLogoSeeds: challengeArenaEnterpriseLogoQuestions.length,
+    plannedCieSeeds: arenaCieSeedPlan().totals.planned,
   };
 }
 
@@ -2563,6 +2619,220 @@ export const seedContentGaps = internalMutation({
       bundledGeneralKnowledgeSeeds: challengeArenaGeneralKnowledgeQuestions.length,
       bundledWhichCameFirstSeeds: challengeArenaWhichCameFirstQuestions.length,
       bundledEnterpriseLogoSeeds: challengeArenaEnterpriseLogoQuestions.length,
+    };
+  },
+});
+
+// Live normalized prompt+answer identities across the knowledge quiz pool;
+// CIE rows that collide with one of these are excluded from seeding (the QA
+// harness would flag the pair as an EXACT_DUPLICATE ERROR).
+async function loadLiveKnowledgeDuplicateKeys(
+  ctx: Pick<QueryCtx | MutationCtx, "db">,
+) {
+  const rows = await ctx.db
+    .query("quizQuestions")
+    .withIndex("by_sport_checksum", (q) => q.eq("sport", "knowledge"))
+    .collect();
+  return new Set(rows.map((row) => contentDuplicateKey(row)));
+}
+
+function tallyCieRows(rows: ArenaCiePlannedRow[]) {
+  const bySubject: Record<string, number> = {};
+  const byShape: Record<string, number> = {};
+  const byArenaCategory: Record<string, number> = {};
+  for (const row of rows) {
+    bySubject[row.subject] = (bySubject[row.subject] ?? 0) + 1;
+    byShape[row.shape] = (byShape[row.shape] ?? 0) + 1;
+    byArenaCategory[row.arenaCategory] =
+      (byArenaCategory[row.arenaCategory] ?? 0) + 1;
+  }
+  return { bySubject, byShape, byArenaCategory };
+}
+
+// Dry run for the CIE → Arena seed. Read-only by construction (internalQuery);
+// the returned newChecksums list is the rollback key for the matching
+// seedCieContent execution.
+export const cieContentPlan = internalQuery({
+  args: {},
+  handler: async (ctx) => {
+    const plan = arenaCieSeedPlan();
+    const liveKeys = await loadLiveKnowledgeDuplicateKeys(ctx);
+    const toSeed: ArenaCiePlannedRow[] = [];
+    const liveDuplicateChecksums: string[] = [];
+    const alreadySeededChecksums: string[] = [];
+
+    for (const row of plan.rows) {
+      if (liveKeys.has(contentDuplicateKey(row.seed))) {
+        liveDuplicateChecksums.push(row.seed.checksum);
+        continue;
+      }
+      const existing = await readQuestionByChecksum(ctx, row.seed.checksum);
+      if (existing) {
+        alreadySeededChecksums.push(row.seed.checksum);
+        continue;
+      }
+      toSeed.push(row);
+    }
+
+    return {
+      sport: ARENA_CIE_SPORT,
+      registeredQuestions: plan.totals.registeredQuestions,
+      plannedAfterStaticEligibility: plan.totals.planned,
+      staticExclusionsByReason: plan.totals.excludedByReason,
+      staticExclusions: plan.exclusions,
+      liveDuplicateChecksums,
+      alreadySeededChecksums,
+      toSeedCount: toSeed.length,
+      toSeedBreakdown: tallyCieRows(toSeed),
+      newChecksums: toSeed.map((row) => row.seed.checksum),
+    };
+  },
+});
+
+// Additive-only CIE seed: inserts new rows keyed by checksum under
+// ARENA_CIE_SPORT. Existing quizQuestions rows are never patched or deleted —
+// rows whose checksum already exists are skipped and counted.
+export const seedCieContent = internalMutation({
+  args: {
+    cursor: v.optional(v.number()),
+    limit: v.optional(v.number()),
+  },
+  handler: async (ctx, { cursor, limit }) => {
+    const batchLimit = Math.max(
+      1,
+      Math.min(Math.floor(limit ?? SEED_CONTENT_BATCH_SIZE), SEED_CONTENT_MAX_BATCH_SIZE),
+    );
+    const plan = arenaCieSeedPlan();
+    const start = Math.max(0, Math.floor(cursor ?? 0));
+    if (start > plan.rows.length) {
+      throw new Error("Invalid CIE seed cursor");
+    }
+    const page = plan.rows.slice(start, start + batchLimit);
+    const liveKeys = await loadLiveKnowledgeDuplicateKeys(ctx);
+
+    let inserted = 0;
+    let skippedExisting = 0;
+    let skippedLiveDuplicates = 0;
+    const insertedChecksums: string[] = [];
+    for (const row of page) {
+      if (liveKeys.has(contentDuplicateKey(row.seed))) {
+        skippedLiveDuplicates += 1;
+        continue;
+      }
+      const existing = await readQuestionByChecksum(ctx, row.seed.checksum);
+      if (existing) {
+        skippedExisting += 1;
+        continue;
+      }
+      await ctx.db.insert("quizQuestions", {
+        ...questionSeedDocument(row.seed),
+        provenance: row.seed.provenance,
+        difficultyVotes: 0,
+        difficultyScore: 0,
+        timesAnswered: 0,
+        timesCorrect: 0,
+        usageCount: 0,
+      });
+      inserted += 1;
+      insertedChecksums.push(row.seed.checksum);
+    }
+
+    const nextOffset = start + page.length;
+    const isDone = nextOffset >= plan.rows.length;
+    return {
+      inserted,
+      skippedExisting,
+      skippedLiveDuplicates,
+      insertedChecksums,
+      processed: page.length,
+      plannedTotal: plan.rows.length,
+      nextCursor: isDone ? null : nextOffset,
+      isDone,
+      batchLimit,
+    };
+  },
+});
+
+// Ops verification: spot-check seeded CIE rows by checksum.
+export const cieSpotCheck = internalQuery({
+  args: { checksums: v.array(v.string()) },
+  handler: async (ctx, { checksums }) => {
+    const checks = [];
+    for (const checksum of checksums.slice(0, 50)) {
+      const row = await readQuestionByChecksum(ctx, checksum);
+      checks.push(
+        row
+          ? {
+              checksum,
+              found: true,
+              sport: row.sport,
+              category: row.category,
+              difficulty: row.difficulty,
+              hasProvenance: !!row.provenance,
+              provenanceVerdict: row.provenance?.verdict ?? null,
+              provenanceBatchId: row.provenance?.batchId ?? null,
+              provenanceClaims: row.provenance?.claims.length ?? 0,
+            }
+          : { checksum, found: false },
+      );
+    }
+    return checks;
+  },
+});
+
+// Ops verification: replicate the exact non-arena knowledge selection index
+// (by_sport_difficulty, sport "knowledge" — the candidate set quiz/blitz/
+// daily/duels draw from) and prove it contains no CIE rows.
+export const cieSelectionProbe = internalQuery({
+  args: {},
+  handler: async (ctx) => {
+    const result: Record<
+      string,
+      { candidates: number; cieChecksums: number; cieSportRows: number }
+    > = {};
+    for (const difficulty of ["easy", "intermediate", "hard"] as const) {
+      const rows = await ctx.db
+        .query("quizQuestions")
+        .withIndex("by_sport_difficulty", (q) =>
+          q.eq("sport", "knowledge").eq("difficulty", difficulty),
+        )
+        .take(5000);
+      result[difficulty] = {
+        candidates: rows.length,
+        cieChecksums: rows.filter((row) =>
+          /_cie_score_v\d+_/.test(row.checksum),
+        ).length,
+        cieSportRows: rows.filter((row) => row.sport === ARENA_CIE_SPORT).length,
+      };
+    }
+    return result;
+  },
+});
+
+// Ops verification: page deterministic table-wide counts by sport.
+export const quizQuestionCountsPage = internalQuery({
+  args: { cursor: v.optional(v.string()), limit: v.optional(v.number()) },
+  handler: async (ctx, { cursor, limit }) => {
+    const pageLimit = Math.max(1, Math.min(Math.floor(limit ?? 1000), 2000));
+    const rows =
+      cursor === undefined
+        ? await ctx.db
+            .query("quizQuestions")
+            .withIndex("by_checksum")
+            .take(pageLimit)
+        : await ctx.db
+            .query("quizQuestions")
+            .withIndex("by_checksum", (q) => q.gt("checksum", cursor))
+            .take(pageLimit);
+    const bySport: Record<string, number> = {};
+    for (const row of rows) {
+      bySport[row.sport] = (bySport[row.sport] ?? 0) + 1;
+    }
+    return {
+      read: rows.length,
+      bySport,
+      nextCursor:
+        rows.length < pageLimit ? null : rows[rows.length - 1].checksum,
     };
   },
 });

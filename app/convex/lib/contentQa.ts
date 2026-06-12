@@ -145,6 +145,12 @@ function questionRef(question: Partial<ContentQuestionSeed>, index: number) {
     : `batch[${index}]`;
 }
 
+// Normalized prompt+answer identity used by EXACT_DUPLICATE detection, exposed
+// so seed planners exclude the same pairs this harness would flag as ERROR.
+export function contentDuplicateKey(question: ContentQuestionSeed) {
+  return duplicateQuestionAnswerKey(question, asQuestionKind(question));
+}
+
 function normalizeText(value: string) {
   return normalizeAnswer(value).replace(/\s+/g, " ").trim();
 }

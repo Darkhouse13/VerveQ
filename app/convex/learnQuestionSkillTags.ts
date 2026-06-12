@@ -1,20 +1,5 @@
 import type { KnowledgeQuestionSeed } from "./knowledgeQuestions";
-import {
-  knowledgeGeographyCieScoreBatchV1Metadata,
-  knowledgeGeographyCieScoreBatchV1Questions,
-} from "./knowledgeGeographyCieScoreBatchV1";
-import {
-  knowledgeGeographyCieScoreBatchV2Metadata,
-  knowledgeGeographyCieScoreBatchV2Questions,
-} from "./knowledgeGeographyCieScoreBatchV2";
-import {
-  knowledgeHistoryCieScoreBatchV1Metadata,
-  knowledgeHistoryCieScoreBatchV1Questions,
-} from "./knowledgeHistoryCieScoreBatchV1";
-import {
-  knowledgeScienceCieScoreBatchV1Metadata,
-  knowledgeScienceCieScoreBatchV1Questions,
-} from "./knowledgeScienceCieScoreBatchV1";
+import { learnTaggedCieScoreBatches } from "./knowledgeCieScoreBatchRegistry";
 import {
   isPipelineProofNode,
   skillNodeIds,
@@ -44,34 +29,36 @@ export type VerifiedGeographyCieScoreBatch = {
   questions: TaggedKnowledgeQuestion[];
 };
 
-export const verifiedGeographyCieScoreBatches: VerifiedGeographyCieScoreBatch[] = [
-  {
-    batchId: knowledgeGeographyCieScoreBatchV1Metadata.batchId,
-    questions: knowledgeGeographyCieScoreBatchV1Questions,
-  },
-  {
-    batchId: knowledgeGeographyCieScoreBatchV2Metadata.batchId,
-    questions: knowledgeGeographyCieScoreBatchV2Questions,
-  },
-];
+// The Learn tagging set is frozen by the registry's learnTagged flag — exactly
+// the batches this module imported directly before the registry existed. Only
+// batches whose score-mode verification verdict is "agree" may carry the flag.
+const learnTaggedBatches = learnTaggedCieScoreBatches;
+
+export const verifiedGeographyCieScoreBatches: VerifiedGeographyCieScoreBatch[] =
+  learnTaggedBatches
+    .filter((entry) => entry.subject === "geography")
+    .map((entry) => ({
+      batchId: entry.metadata.batchId,
+      questions: [...entry.questions],
+    }));
 
 export const verifiedGeographyCieScoreQuestions =
   verifiedGeographyCieScoreBatches.flatMap((batch) => batch.questions);
 
-// History and science wire in through the same verified-batch path. Only
-// batches whose score-mode verification verdict is "agree" may appear here.
+// History and science wire in through the same verified-batch path.
 export const verifiedHistoryCieScoreQuestions: TaggedKnowledgeQuestion[] =
-  knowledgeHistoryCieScoreBatchV1Questions;
+  learnTaggedBatches
+    .filter((entry) => entry.subject === "history")
+    .flatMap((entry) => entry.questions);
 
 export const verifiedScienceCieScoreQuestions: TaggedKnowledgeQuestion[] =
-  knowledgeScienceCieScoreBatchV1Questions;
+  learnTaggedBatches
+    .filter((entry) => entry.subject === "science")
+    .flatMap((entry) => entry.questions);
 
-export const verifiedLearnCieScoreBatchIds = [
-  knowledgeGeographyCieScoreBatchV1Metadata.batchId,
-  knowledgeGeographyCieScoreBatchV2Metadata.batchId,
-  knowledgeHistoryCieScoreBatchV1Metadata.batchId,
-  knowledgeScienceCieScoreBatchV1Metadata.batchId,
-];
+export const verifiedLearnCieScoreBatchIds = learnTaggedBatches.map(
+  (entry) => entry.metadata.batchId,
+);
 
 // Every verified CIE question the Learn graph can tag, across all subjects.
 export const verifiedLearnCieScoreQuestions: TaggedKnowledgeQuestion[] = [

@@ -3,42 +3,7 @@ import { readFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { guardTarget, LIVE_CONFIRM_ENV } from "./lib/deployTarget";
-import {
-  knowledgeGeographyCieScoreBatchV1Metadata,
-  knowledgeGeographyCieScoreBatchV1Questions,
-} from "../convex/knowledgeGeographyCieScoreBatchV1";
-import {
-  knowledgeGeographyCieScoreBatchV2Metadata,
-  knowledgeGeographyCieScoreBatchV2Questions,
-} from "../convex/knowledgeGeographyCieScoreBatchV2";
-import {
-  knowledgeGeographyCieScoreBatchV3Metadata,
-  knowledgeGeographyCieScoreBatchV3Questions,
-} from "../convex/knowledgeGeographyCieScoreBatchV3";
-import {
-  knowledgeGeographyCieScoreBatchV4Metadata,
-  knowledgeGeographyCieScoreBatchV4Questions,
-} from "../convex/knowledgeGeographyCieScoreBatchV4";
-import {
-  knowledgeGeographyCieScoreBatchV5Metadata,
-  knowledgeGeographyCieScoreBatchV5Questions,
-} from "../convex/knowledgeGeographyCieScoreBatchV5";
-import {
-  knowledgeGeographyCieScoreBatchV6Metadata,
-  knowledgeGeographyCieScoreBatchV6Questions,
-} from "../convex/knowledgeGeographyCieScoreBatchV6";
-import {
-  knowledgeGeographyCieScoreBatchV7Metadata,
-  knowledgeGeographyCieScoreBatchV7Questions,
-} from "../convex/knowledgeGeographyCieScoreBatchV7";
-import {
-  knowledgeGeographyCieScoreBatchV8Metadata,
-  knowledgeGeographyCieScoreBatchV8Questions,
-} from "../convex/knowledgeGeographyCieScoreBatchV8";
-import {
-  knowledgeGeographyCieScoreBatchV9Metadata,
-  knowledgeGeographyCieScoreBatchV9Questions,
-} from "../convex/knowledgeGeographyCieScoreBatchV9";
+import { cieScoreBatchRegistry } from "../convex/knowledgeCieScoreBatchRegistry";
 import {
   learnGeographyBorderReasoningLadderV1Metadata,
   learnGeographyBorderReasoningLadderV1Questions,
@@ -219,61 +184,19 @@ function asRevealRecords(
   }));
 }
 
+// Geography score batches come from the shared CIE registry — same modules,
+// same V1..V9 order, same metadata objects as the previous direct imports.
+const geographyScoreBatchSources: SeedSource[] = cieScoreBatchRegistry
+  .filter((entry) => entry.subject === "geography")
+  .map((entry) => ({
+    kind: "score-batch" as const,
+    file: `app/convex/${entry.batchModule}.ts`,
+    metadata: entry.metadata,
+    records: entry.questions,
+  }));
+
 const seedSources: SeedSource[] = [
-  {
-    kind: "score-batch",
-    file: "app/convex/knowledgeGeographyCieScoreBatchV1.ts",
-    metadata: knowledgeGeographyCieScoreBatchV1Metadata,
-    records: knowledgeGeographyCieScoreBatchV1Questions,
-  },
-  {
-    kind: "score-batch",
-    file: "app/convex/knowledgeGeographyCieScoreBatchV2.ts",
-    metadata: knowledgeGeographyCieScoreBatchV2Metadata,
-    records: knowledgeGeographyCieScoreBatchV2Questions,
-  },
-  {
-    kind: "score-batch",
-    file: "app/convex/knowledgeGeographyCieScoreBatchV3.ts",
-    metadata: knowledgeGeographyCieScoreBatchV3Metadata,
-    records: knowledgeGeographyCieScoreBatchV3Questions,
-  },
-  {
-    kind: "score-batch",
-    file: "app/convex/knowledgeGeographyCieScoreBatchV4.ts",
-    metadata: knowledgeGeographyCieScoreBatchV4Metadata,
-    records: knowledgeGeographyCieScoreBatchV4Questions,
-  },
-  {
-    kind: "score-batch",
-    file: "app/convex/knowledgeGeographyCieScoreBatchV5.ts",
-    metadata: knowledgeGeographyCieScoreBatchV5Metadata,
-    records: knowledgeGeographyCieScoreBatchV5Questions,
-  },
-  {
-    kind: "score-batch",
-    file: "app/convex/knowledgeGeographyCieScoreBatchV6.ts",
-    metadata: knowledgeGeographyCieScoreBatchV6Metadata,
-    records: knowledgeGeographyCieScoreBatchV6Questions,
-  },
-  {
-    kind: "score-batch",
-    file: "app/convex/knowledgeGeographyCieScoreBatchV7.ts",
-    metadata: knowledgeGeographyCieScoreBatchV7Metadata,
-    records: knowledgeGeographyCieScoreBatchV7Questions,
-  },
-  {
-    kind: "score-batch",
-    file: "app/convex/knowledgeGeographyCieScoreBatchV8.ts",
-    metadata: knowledgeGeographyCieScoreBatchV8Metadata,
-    records: knowledgeGeographyCieScoreBatchV8Questions,
-  },
-  {
-    kind: "score-batch",
-    file: "app/convex/knowledgeGeographyCieScoreBatchV9.ts",
-    metadata: knowledgeGeographyCieScoreBatchV9Metadata,
-    records: knowledgeGeographyCieScoreBatchV9Questions,
-  },
+  ...geographyScoreBatchSources,
   {
     kind: "learn-reveals",
     file: "app/convex/learnGeographyCapitalsRecallRevealsV1.ts",

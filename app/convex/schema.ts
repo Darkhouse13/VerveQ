@@ -373,6 +373,26 @@ export default defineSchema({
     usageCount: v.number(),
     imageId: v.optional(v.id("_storage")),
     imageUrl: v.optional(v.string()),
+    // Score-mode verification provenance; only present on rows seeded from
+    // CIE score batches (sport "arena_knowledge").
+    provenance: v.optional(
+      v.object({
+        batchId: v.string(),
+        workUnitId: v.string(),
+        authorModel: v.string(),
+        verifierModel: v.string(),
+        verdict: v.string(),
+        claims: v.array(
+          v.object({
+            claim: v.string(),
+            sourceType: v.string(),
+            sourceRef: v.string(),
+            retrievedAt: v.string(),
+            volatility: v.string(),
+          }),
+        ),
+      }),
+    ),
   })
     .index("by_sport_difficulty", ["sport", "difficulty"])
     .index("by_sport_checksum", ["sport", "checksum"])
