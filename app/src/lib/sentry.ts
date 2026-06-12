@@ -94,6 +94,10 @@ export function initSentry(): void {
     // Errors only: no tracing/replay/profiling integrations are registered,
     // and the explicit 0 keeps it that way if defaults ever shift.
     tracesSampleRate: 0,
+    // BrowserSession (release-health pings on every pageload) is on by
+    // default — drop it so nothing leaves the client unless an error occurs.
+    integrations: (defaults) =>
+      defaults.filter((integration) => integration.name !== "BrowserSession"),
     beforeSend: scrubEvent,
     beforeBreadcrumb: scrubBreadcrumb,
   });
