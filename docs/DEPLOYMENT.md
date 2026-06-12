@@ -4,7 +4,7 @@ This is the authoritative runbook for the production frontend at `verveq.com`. P
 
 ## Production topology
 
-- Host: `178.104.196.36` (pin this host for QA while DNS is stale).
+- Host: `178.104.196.36`. DNS verified 2026-06-12: `verveq.com` and `www.verveq.com` both resolve A-only to this IP (no AAAA/CNAME, checked against 1.1.1.1 as well as the local resolver), so QA no longer needs to pin the host.
 - Container: `verveq-web`, image `verveq-web:<git-sha>-<stamp>`.
 - Fronting: Traefik (`coolify-proxy`) routes `verveq.com`/`www.verveq.com` to the container's nginx on port 80. Routing and TLS come **entirely from labels passed at `docker run`** (see `deploy/recreate-from-image.sh`); TLS certs live in Traefik's acme store and survive container recreation.
 - The container is **not managed by Coolify** — nothing auto-redeploys it on git push. Recreates only happen via the scripts below.
@@ -54,7 +54,7 @@ Prune `verveq-web-prev-*` containers and stale image tags only after the new rel
 
 ## Host-pinned verification
 
-Use host-pinned curl/browser checks until DNS is corrected:
+DNS resolves `verveq.com`/`www.verveq.com` to the host (verified 2026-06-12), so plain `curl`/browser checks work. Keep the `--resolve` pin for checks that must hit the origin independent of DNS (e.g. mid-propagation during a future host move):
 
 ```bash
 curl --resolve verveq.com:443:178.104.196.36 https://verveq.com/ -I
@@ -62,7 +62,7 @@ curl --resolve verveq.com:443:178.104.196.36 https://verveq.com/robots.txt
 curl --resolve verveq.com:443:178.104.196.36 https://verveq.com/sitemap.xml
 ```
 
-Browser QA should pin `verveq.com` and `www.verveq.com` to `178.104.196.36`, walk `/privacy`, `/terms`, `/daily`, `/vervegrid`, `/whoami`, `/higherlower`, `/arena/:code`, `/v2/arena`, `/v2/duels`, onboarding/upgrade validation states, and an unknown path. Capture final URL, visible content, console/page errors, failed requests, and non-2xx/3xx network responses.
+Browser QA should walk `/privacy`, `/terms`, `/daily`, `/vervegrid`, `/whoami`, `/higherlower`, `/arena/:code`, `/v2/arena`, `/v2/duels`, onboarding/upgrade validation states, and an unknown path. Capture final URL, visible content, console/page errors, failed requests, and non-2xx/3xx network responses.
 
 ## 2026-06-12 durable-cutover artifacts
 
