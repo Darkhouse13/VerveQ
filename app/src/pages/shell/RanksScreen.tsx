@@ -28,10 +28,10 @@ import type { Id } from "../../../convex/_generated/dataModel";
  *  - Leaderboard: the real football·quiz ELO board, your row pinned when the
  *    server can place you in it.
  *
- * The full ranked system the design depicts (divisions, RP, promotion series,
- * global rank, per-mode ratings, season archive) is parked server-side, so all
- * of it is driven by RANKED_CAPABILITIES — structure stays in code, the UI
- * shows honest placeholders, and nothing is fabricated.
+ * The ranked system the design depicts is driven by RANKED_CAPABILITIES —
+ * global rank is live (leaderboards.getGlobalRank); divisions, RP, promotion
+ * series, per-mode ratings and season archive remain parked server-side, so
+ * their structure stays in code behind honest placeholders, never fabricated.
  */
 
 /** The one live ranked board today (indexed by ELO server-side). */
@@ -67,12 +67,20 @@ export default function RanksScreen() {
   const profile = useQuery(api.profile.get, userId ? { userId } : "skip");
   const currentSeason = useQuery(api.seasonManager.getCurrentSeason);
   // Fetch deeper than we render so a mid-table player can still be pinned with
-  // a real rank; never deep enough to claim a global position beyond it.
+  // a real rank within the board's depth.
   const board = useQuery(api.leaderboards.getLeaderboard, {
     sport: BOARD_SPORT,
     mode: BOARD_MODE,
     limit: 50,
   });
+  // True board position past the display depth — same ordering/eligibility as
+  // the board itself (leaderboards.getGlobalRank shares the computation).
+  const globalRank = useQuery(
+    api.leaderboards.getGlobalRank,
+    RANKED_CAPABILITIES.globalRank && userId
+      ? { userId, sport: BOARD_SPORT, mode: BOARD_MODE }
+      : "skip",
+  );
 
   const locked = !isFullAccount;
   const seasonNumber = currentSeason?.seasonNumber ?? null;
@@ -185,8 +193,15 @@ export default function RanksScreen() {
               {myTier ? t(`ranks.tiers.${myTier}`) : t("ranks.unranked")}
             </p>
             <p className="font-mono text-[11px] text-yellow mt-1.5 uppercase">
-              {RANKED_CAPABILITIES.globalRank && myEntry
-                ? `#${myEntry.rank}`
+              {RANKED_CAPABILITIES.globalRank
+                ? globalRank
+                  ? t("ranks.globalRankOf", {
+                      rank: globalRank.rank.toLocaleString(),
+                      total: globalRank.total.toLocaleString(),
+                    })
+                  : globalRank === null
+                    ? t("ranks.globalRankUnplaced")
+                    : "…"
                 : t("ranks.globalRankSoon")}
             </p>
           </div>

@@ -10,11 +10,10 @@
  *
  *  2. {@link RANKED_CAPABILITIES} — the honesty gate for the full ranked
  *     system the v2 designs depict (divisions, RP, promotion series, global
- *     rank, per-mode ratings, season archive). That backend is parked
- *     (RANKING_V2), so every flag is `false`: the screens keep the rich
- *     structure in code but render an explicit placeholder (or nothing)
- *     instead of fabricating numbers. When ranking ships, lighting up a flag
- *     lights up the matching UI.
+ *     rank, per-mode ratings, season archive). Flags flip to `true` only when
+ *     the backend actually serves the number; gated UI renders an explicit
+ *     placeholder (or nothing) until then, never a fabrication. First light:
+ *     `globalRank` (2026-06-12), backed by `leaderboards.getGlobalRank`.
  */
 
 export interface RankedCapabilities {
@@ -27,7 +26,7 @@ export interface RankedCapabilities {
   tierPopulation: boolean;
 }
 
-/** What the ranked backend can actually serve today. ALL parked — see above. */
+/** What the ranked backend can actually serve today — see above. */
 export const RANKED_CAPABILITIES: RankedCapabilities = {
   /** Tier sub-divisions (Gold III → I). */
   divisions: false,
@@ -35,8 +34,11 @@ export const RANKED_CAPABILITIES: RankedCapabilities = {
   rankPoints: false,
   /** Promotion series between divisions/tiers. */
   promotionSeries: false,
-  /** Your absolute global position (e.g. "#1,204 GLOBAL"). */
-  globalRank: false,
+  /**
+   * Your absolute global position (e.g. "#1,204 GLOBAL"). LIVE — served by
+   * `leaderboards.getGlobalRank` (same ordering/eligibility as the board).
+   */
+  globalRank: true,
   /** Per-mode rating breakdown cards. */
   perModeRatings: false,
   /** Browsable archive of finished seasons. */

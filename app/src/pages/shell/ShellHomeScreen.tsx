@@ -8,7 +8,7 @@ import { NeoBadge } from "@/components/neo/NeoBadge";
 import { NeoButton } from "@/components/neo/NeoButton";
 import { ShellLayout } from "@/components/shell/ShellLayout";
 import { SHELL_ROUTES } from "@/lib/shellRoutes";
-import { tierFromElo, tierProgress } from "@/lib/rankedLadder";
+import { RANKED_CAPABILITIES, tierFromElo, tierProgress } from "@/lib/rankedLadder";
 import { useAuth } from "@/contexts/AuthContext";
 import { api } from "../../../convex/_generated/api";
 import type { Id } from "../../../convex/_generated/dataModel";
@@ -73,6 +73,14 @@ export default function ShellHomeScreen() {
   const season = useQuery(
     api.seasonManager.getCurrentSeason,
     hasUsername ? {} : "skip",
+  );
+  // True position on the live ranked board (football·quiz, same scope as the
+  // Ranks screen). Only fetched once the profile confirms ranked eligibility.
+  const globalRank = useQuery(
+    api.leaderboards.getGlobalRank,
+    RANKED_CAPABILITIES.globalRank && profile?.rankedEligible && userId
+      ? { userId, sport: "football", mode: "quiz" }
+      : "skip",
   );
 
   const displayName = user?.username || "Player";
@@ -362,6 +370,11 @@ export default function ShellHomeScreen() {
 
             <div className="flex items-center justify-between mt-auto pt-3.5">
               <span className="flex items-baseline gap-1.5 font-mono text-[11px] text-background/60">
+                {typeof globalRank?.rank === "number" && (
+                  <span className="text-yellow">
+                    #{globalRank.rank.toLocaleString()} ·
+                  </span>
+                )}
                 <span>{t("ranks.eloRating")}</span>
                 <span>{elo != null ? elo : "—"}</span>
               </span>

@@ -1,35 +1,46 @@
 /**
  * Ranked-capability honesty gate.
  *
- * Backend ranking (RANKING_V2) is parked: there are no divisions, rank points,
- * promotion series, global rank numbers, per-mode rating cards, season
- * archives, or tier-population stats to show. The Ranks/Profile screens keep
- * that UI structure behind RANKED_CAPABILITIES and render placeholders
- * instead of fabricated depth. Every capability must stay OFF until the
- * backend actually ships it — flipping one here is a deliberate launch
- * decision, not a side effect.
+ * RANKED_CAPABILITIES tracks what the ranking backend actually serves. The
+ * Ranks/Profile screens keep the full designed UI structure behind these
+ * flags and render placeholders instead of fabricated depth. A flag may flip
+ * to true ONLY alongside the backend that serves the number — a deliberate
+ * launch decision, locked here:
+ *
+ *  - globalRank: LIVE since 2026-06-12, served by leaderboards.getGlobalRank
+ *    (same ordering + eligibility rules as the leaderboard itself).
+ *  - everything else (divisions, rank points, promotion series, per-mode
+ *    rating cards, season archive, tier population): still parked.
  */
 import { describe, expect, it } from "vitest";
 import { RANKED_CAPABILITIES } from "@/lib/rankedLadder";
 
-describe("RANKED_CAPABILITIES (honest while RANKING_V2 is parked)", () => {
-  it("keeps every capability off", () => {
-    for (const [capability, enabled] of Object.entries(RANKED_CAPABILITIES)) {
-      expect(enabled, `capability "${capability}" must stay false until the ranking backend ships`).toBe(false);
+const PARKED = [
+  "divisions",
+  "rankPoints",
+  "promotionSeries",
+  "perModeRatings",
+  "seasonArchive",
+  "tierPopulation",
+] as const;
+
+describe("RANKED_CAPABILITIES (honesty gate)", () => {
+  it("keeps every parked capability off", () => {
+    for (const capability of PARKED) {
+      expect(
+        RANKED_CAPABILITIES[capability],
+        `capability "${capability}" must stay false until the ranking backend ships it`,
+      ).toBe(false);
     }
+  });
+
+  it("serves globalRank — backed by leaderboards.getGlobalRank", () => {
+    expect(RANKED_CAPABILITIES.globalRank).toBe(true);
   });
 
   it("covers the full advertised capability surface", () => {
     expect(Object.keys(RANKED_CAPABILITIES).sort()).toEqual(
-      [
-        "divisions",
-        "globalRank",
-        "perModeRatings",
-        "promotionSeries",
-        "rankPoints",
-        "seasonArchive",
-        "tierPopulation",
-      ].sort(),
+      [...PARKED, "globalRank"].sort(),
     );
   });
 });

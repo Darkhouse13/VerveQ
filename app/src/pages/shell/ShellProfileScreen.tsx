@@ -102,6 +102,14 @@ export default function ShellProfileScreen() {
     isFullAccount && userId ? { userId } : "skip",
   );
   const currentSeason = useQuery(api.seasonManager.getCurrentSeason);
+  // True position on the live ranked board (football·quiz — the same scope
+  // the Ranks screen's board and global rank use).
+  const globalRank = useQuery(
+    api.leaderboards.getGlobalRank,
+    RANKED_CAPABILITIES.globalRank && isFullAccount && userId
+      ? { userId, sport: "football", mode: "quiz" }
+      : "skip",
+  );
 
   const guest = isUsernameOnly;
   const handle = username ?? user?.username ?? "";
@@ -277,7 +285,14 @@ export default function ShellProfileScreen() {
             </p>
             <p className="font-mono text-[11px] mt-1.5 text-yellow uppercase">
               {elo?.toLocaleString()} ELO
-              {RANKED_CAPABILITIES.globalRank ? null : (
+              {RANKED_CAPABILITIES.globalRank ? (
+                globalRank ? (
+                  <span className="text-background/60">
+                    {" "}
+                    · {t("ranks.globalRankShort", { rank: globalRank.rank.toLocaleString() })}
+                  </span>
+                ) : null
+              ) : (
                 <span className="text-background/60"> · {t("ranks.globalRankSoon")}</span>
               )}
             </p>
