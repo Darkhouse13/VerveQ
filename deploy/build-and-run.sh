@@ -34,10 +34,23 @@ REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 # Refuse to build from a dirty tree: build a8bb1bd shipped an uncommitted edit
 # while its Sentry release claimed a clean SHA. Only app/ (every input to the
 # vite bundle) and deploy/ (Dockerfile, nginx.conf) reach the image, so only
-# dirt there can ship; gitignored files (node_modules, dist, .env.local,
+# dirt there can ship; gitignored build outputs (node_modules, dist,
 # convex/_generated) are rebuilt or injected per-build and stay exempt.
 IMAGE_PATHS=(app deploy)
 DIRTY="$(git -C "$REPO_ROOT" status --porcelain --untracked-files=all -- "${IMAGE_PATHS[@]}")"
+
+# Gitignored vite env overrides are NOT exempt: `npm run build` is `vite
+# build` (mode=production, no envDir override in vite.config.ts), so vite
+# folds app/.env, app/.env.local, app/.env.production and
+# app/.env.production.local into the bundle — and all four are gitignored
+# (root `*.env`/`.env.production`, app `*.local`), so the status check above
+# cannot see them. Their mere existence taints the build like tree dirt.
+NL=$'\n'
+for ENV_OVERRIDE in app/.env app/.env.local app/.env.production app/.env.production.local; do
+  if [[ -e "$REPO_ROOT/$ENV_OVERRIDE" ]]; then
+    DIRTY+="${DIRTY:+$NL}!! $ENV_OVERRIDE (gitignored vite env override — delete or move it aside)"
+  fi
+done
 
 GIT_SHA="$(git -C "$REPO_ROOT" rev-parse --short HEAD)"
 
@@ -49,13 +62,13 @@ GIT_SHA="$(git -C "$REPO_ROOT" rev-parse --short HEAD)"
 RELEASE_SHA="$GIT_SHA"
 if [[ -n "$DIRTY" ]]; then
   if [[ "$ALLOW_DIRTY" -ne 1 ]]; then
-    echo "ERROR: working tree is dirty under ${IMAGE_PATHS[*]} — these files would ship under a clean SHA:" >&2
+    echo "ERROR: build inputs under ${IMAGE_PATHS[*]} are not clean — these files would ship under a clean SHA:" >&2
     echo "$DIRTY" >&2
-    echo "Commit or stash them, or rerun with --allow-dirty-build to release as ${GIT_SHA}-dirty." >&2
+    echo "Commit or stash them (delete or move aside env overrides), or rerun with --allow-dirty-build to release as ${GIT_SHA}-dirty." >&2
     exit 3
   fi
   RELEASE_SHA="${GIT_SHA}-dirty"
-  echo "WARNING: --allow-dirty-build — releasing uncommitted changes as ${RELEASE_SHA}:" >&2
+  echo "WARNING: --allow-dirty-build — releasing unclean build inputs as ${RELEASE_SHA}:" >&2
   echo "$DIRTY" >&2
 fi
 echo "release ${RELEASE_SHA} (HEAD ${GIT_SHA}, tree $([[ -n "$DIRTY" ]] && echo dirty || echo clean))"
