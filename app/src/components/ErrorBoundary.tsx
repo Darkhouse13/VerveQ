@@ -1,4 +1,5 @@
 import { Component, type ErrorInfo, type ReactNode } from "react";
+import * as Sentry from "@sentry/react";
 import { NeoButton } from "@/components/neo/NeoButton";
 import { NeoCard } from "@/components/neo/NeoCard";
 import { humanizeServerError } from "@/lib/errors";
@@ -25,6 +26,10 @@ export class ErrorBoundary extends Component<
 
   componentDidCatch(error: Error, info: ErrorInfo) {
     console.error("Route ErrorBoundary caught", error, info.componentStack);
+    // No-op unless initSentry() ran (prod build with a DSN).
+    Sentry.captureException(error, {
+      contexts: { react: { componentStack: info.componentStack ?? undefined } },
+    });
   }
 
   handleReset = () => {

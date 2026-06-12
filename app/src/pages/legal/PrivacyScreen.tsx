@@ -3,12 +3,13 @@ import { LegalLayout } from "./LegalLayout";
 /**
  * Privacy policy for verveq.com. The statements below describe what the app
  * actually does today (username-only and full accounts, gameplay stats, IP
- * checks for anonymous onboarding, Convex hosting) — keep it in sync when the
+ * checks for anonymous onboarding, Convex hosting, Sentry error monitoring —
+ * errors only, PII scrubbed in src/lib/sentry.ts) — keep it in sync when the
  * data model changes.
  */
 export default function PrivacyScreen() {
   return (
-    <LegalLayout title="Privacy Policy" lastUpdated="June 10, 2026">
+    <LegalLayout title="Privacy Policy" lastUpdated="June 12, 2026">
       <p>
         VerveQ (&quot;we&quot;, &quot;us&quot;) is a competitive sports trivia
         platform available at verveq.com. This policy explains what information
@@ -41,6 +42,17 @@ export default function PrivacyScreen() {
           <strong>Technical data.</strong> Standard web server logs (IP
           address, user agent, timestamps) kept for security and debugging.
         </li>
+        <li>
+          <strong>Error reports.</strong> If the app crashes or hits an
+          unexpected error, a technical report (the error message, a stack
+          trace, browser and operating-system version, and the app release) is
+          sent to Sentry, an error-monitoring service, so we can find and fix
+          bugs. Reports are stripped of personal data before they leave your
+          browser: no IP address is stored, no account details are attached,
+          and page addresses are removed. Error monitoring sets no cookies and
+          collects errors only — it is not analytics and does not track your
+          activity.
+        </li>
       </ul>
 
       <h2>What we do not do</h2>
@@ -50,6 +62,9 @@ export default function PrivacyScreen() {
         <li>
           We do not use third-party analytics or tracking cookies. The only
           browser storage we use keeps you signed in and rate-limits abuse.
+          Our operational error monitoring (see &quot;Error reports&quot;
+          above) is not analytics: it sets no cookies, builds no profiles, and
+          receives only scrubbed crash data.
         </li>
       </ul>
 
@@ -65,7 +80,9 @@ export default function PrivacyScreen() {
       <p>
         VerveQ runs on Convex (convex.dev), a hosted backend platform; your
         data is stored on Convex infrastructure in the United States and our
-        web servers are operated by us. Data is encrypted in transit.
+        web servers are operated by us. Scrubbed error reports are processed
+        by Sentry (sentry.io, operated by Functional Software, Inc.) in the
+        United States. Data is encrypted in transit.
       </p>
 
       <h2>Retention and deletion</h2>
