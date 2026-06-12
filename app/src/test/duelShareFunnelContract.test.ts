@@ -285,8 +285,12 @@ describe("synthetic test-actor exclusion", () => {
   it("flags known smoke/QA username prefixes only", () => {
     expect(isSyntheticUsername("drop_smoke_a_x7")).toBe(true);
     expect(isSyntheticUsername("qa_mobile_2")).toBe(true);
+    expect(isSyntheticUsername("coldqa32452")).toBe(true);
     expect(isSyntheticUsername("hamza")).toBe(false);
     expect(isSyntheticUsername("aqa_player")).toBe(false);
+    // "coldqa" must not widen to "cold" — usernames are user-chosen.
+    expect(isSyntheticUsername("colduser99")).toBe(false);
+    expect(isSyntheticUsername("cold")).toBe(false);
     expect(isSyntheticUsername(undefined)).toBe(false);
   });
 
@@ -332,6 +336,122 @@ describe("synthetic test-actor exclusion", () => {
         synthetic,
       ),
     ).toBe(false);
+  });
+
+  it("dropTestMetrics drops coldqa* actors from every aggregation but keeps cold* players", async () => {
+    const now = 10_000_000;
+    vi.spyOn(Date, "now").mockReturnValue(now);
+    const users = [
+      { _id: "user_coldqa", username: "coldqa32452", _creationTime: 1000 },
+      { _id: "user_colduser", username: "colduser99", _creationTime: 1000 },
+      { _id: "user_smoke", username: "drop_smoke_1", _creationTime: 1000 },
+      { _id: "user_qa", username: "qa_mobile_2", _creationTime: 1000 },
+    ];
+    const events = [
+      // coldqa32452's own events across all four types — all must vanish.
+      { type: "link_tap", actor: "user:user_coldqa", ts: 2000 },
+      { type: "challenge_issued", actor: "user:user_coldqa", ts: 2000 },
+      {
+        type: "first_match_complete",
+        actor: "user:user_coldqa",
+        refLinkCode: "DQCOLDQA0001",
+        ts: 2000,
+        meta: { side: "opponent" },
+      },
+      { type: "defeated_player_return", actor: "user:user_coldqa", ts: 2000 },
+      // Attribution chain: anon tap on a coldqa duel must vanish too.
+      {
+        type: "link_tap",
+        actor: "anon",
+        refLinkCode: "DQCOLDQA0001",
+        refChallengerId: "user_coldqa",
+        ts: 2000,
+      },
+      // Existing exclusions still hold.
+      { type: "link_tap", actor: "user:user_smoke", ts: 2000 },
+      { type: "challenge_issued", actor: "user:user_qa", ts: 2000 },
+      // colduser99 is a real player — their events must all survive.
+      {
+        type: "link_tap",
+        actor: "user:user_colduser",
+        refLinkCode: "DQREAL000001",
+        ts: 2000,
+      },
+      { type: "challenge_issued", actor: "user:user_colduser", ts: 2000 },
+      {
+        type: "first_match_complete",
+        actor: "user:user_colduser",
+        refLinkCode: "DQREAL000001",
+        ts: 2000,
+        meta: { side: "opponent" },
+      },
+    ];
+    const marks = [
+      { userId: "user_coldqa", duelId: "duel_c", defeatedAt: now - 1000 },
+      { userId: "user_colduser", duelId: "duel_r", defeatedAt: now - 1000 },
+    ];
+    const tableRows = (table: string) =>
+      table === "users" ? users : table === "funnelEvents" ? events : marks;
+    const db = {
+      query: (table: string) => ({
+        take: async () => tableRows(table),
+        withIndex: (
+          _name: string,
+          qb: (q: Record<string, unknown>) => unknown,
+        ) => {
+          const constraints: Array<{
+            op: "eq" | "gte" | "lt";
+            field: string;
+            value: unknown;
+          }> = [];
+          const q = {
+            eq: (field: string, value: unknown) => {
+              constraints.push({ op: "eq", field, value });
+              return q;
+            },
+            gte: (field: string, value: unknown) => {
+              constraints.push({ op: "gte", field, value });
+              return q;
+            },
+            lt: (field: string, value: unknown) => {
+              constraints.push({ op: "lt", field, value });
+              return q;
+            },
+          };
+          qb(q as never);
+          const rows = tableRows(table).filter((row) =>
+            constraints.every(({ op, field, value }) => {
+              const actual = (row as Record<string, unknown>)[field] as never;
+              if (op === "eq") return actual === value;
+              if (op === "gte") return actual >= (value as never);
+              return actual < (value as never);
+            }),
+          );
+          return { take: async () => rows };
+        },
+      }),
+      get: async (id: string) => users.find((u) => u._id === id) ?? null,
+    };
+    const metrics = (await handlerOf(funnel.dropTestMetrics)({ db }, {})) as {
+      excludedSyntheticActors: number;
+      counts: Record<string, number>;
+      linkTapToFirstMatch: { tappedLinks: number; convertedLinks: number };
+      newPlayersIssuingChallengeWithin48h: { newPlayers: number };
+    };
+    // coldqa32452, drop_smoke_1, qa_mobile_2 — but never colduser99.
+    expect(metrics.excludedSyntheticActors).toBe(3);
+    expect(metrics.counts).toMatchObject({
+      link_tap: 1,
+      challenge_issued: 1,
+      first_match_complete: 1,
+      defeated_player_return: 0,
+      defeatMarks: 1,
+    });
+    expect(metrics.linkTapToFirstMatch).toEqual({
+      tappedLinks: 1,
+      convertedLinks: 1,
+    });
+    expect(metrics.newPlayersIssuingChallengeWithin48h.newPlayers).toBe(1);
   });
 });
 

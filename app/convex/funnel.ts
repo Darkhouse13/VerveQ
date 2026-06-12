@@ -171,7 +171,9 @@ export const sessionHeartbeat = mutation({
 // when their actor is such an account OR they hang off a synthetic
 // challenger's duel (covers anon link_taps and guest-side events on smoke
 // links, whose actors carry no username).
-export const SYNTHETIC_USERNAME_PREFIXES = ["drop_smoke_", "qa_"];
+// "coldqa" deliberately stops short of the bare "cold" — usernames are
+// user-chosen and a "cold" prefix could swallow real players.
+export const SYNTHETIC_USERNAME_PREFIXES = ["drop_smoke_", "qa_", "coldqa"];
 
 // Exact linkCodes smoke runs probed that never belonged to any duel (the
 // deliberate bogus-code tap). Codes verbatim, never a pattern.
@@ -218,7 +220,7 @@ async function collectSyntheticUserIds(ctx: Pick<QueryCtx, "db">) {
 // ── Drop-Test readout ──
 // Read-only rollup of the four metrics so the Drop Test is readable without
 // log spelunking:  npx convex run funnel:dropTestMetrics '{}'
-// Synthetic test actors (drop_smoke_*, qa_*) are excluded throughout.
+// Synthetic test actors (drop_smoke_*, qa_*, coldqa*) are excluded throughout.
 export const dropTestMetrics = internalQuery({
   args: { sinceTs: v.optional(v.number()) },
   handler: async (ctx, { sinceTs }) => {
