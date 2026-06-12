@@ -15,6 +15,12 @@ export default defineSchema({
     isAnonymous: v.optional(v.boolean()),
     anonymousOnboardingIpPermitId: v.optional(v.id("anonymousOnboardingIpPermits")),
     totalGames: v.optional(v.number()),
+    // Daily play streak — consecutive UTC days with ≥1 completed run, updated
+    // at game completion via lib/streaks. `currentStreak` is only live while
+    // `lastPlayedDay` is today/yesterday; readers report 0 for older values.
+    lastPlayedDay: v.optional(v.number()),
+    currentStreak: v.optional(v.number()),
+    bestStreak: v.optional(v.number()),
     approvedQuestionsCount: v.optional(v.number()),
     // Updated (debounced) by funnel.sessionHeartbeat on app load; used for
     // retention metrics like D7-of-defeated-players.

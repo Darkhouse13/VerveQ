@@ -1,6 +1,7 @@
 import { query } from "./_generated/server";
 import { v } from "convex/values";
 import { isRankedEligibleUserDoc } from "./lib/authz";
+import { isStreakAlive, utcDayNumber } from "./lib/streaks";
 
 export const get = query({
   args: { userId: v.optional(v.id("users")) },
@@ -75,8 +76,12 @@ export const get = query({
         totalGames,
         totalWins,
         winRate,
-        currentStreak: 0,
-        bestStreak: 0,
+        // A streak is only current while unbroken (played today/yesterday);
+        // stale values report 0 instead of resurrecting an ended streak.
+        currentStreak: isStreakAlive(user.lastPlayedDay, utcDayNumber(Date.now()))
+          ? (user.currentStreak ?? 0)
+          : 0,
+        bestStreak: user.bestStreak ?? 0,
         favoriteSport: favSport,
       },
       recentGames,

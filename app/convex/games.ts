@@ -3,6 +3,7 @@ import type { Id } from "./_generated/dataModel";
 import { v } from "convex/values";
 import { getAuthUserId } from "@convex-dev/auth/server";
 import { assertRankedEligibleUser } from "./lib/authz";
+import { advanceStreak, utcDayNumber } from "./lib/streaks";
 import {
   calculateEloChange,
   getQuizPerformance,
@@ -144,10 +145,19 @@ export const completeQuiz = mutation({
 
     await ctx.db.patch(sessionId, { completed: true });
 
-    // Increment total games on user
+    // Count the play: lifetime total (legacy docs without the counter are
+    // left alone) and the daily streak (always).
     const user = await ctx.db.get(userId);
-    if (user?.totalGames !== undefined) {
-      await ctx.db.patch(userId, { totalGames: (user.totalGames ?? 0) + 1 });
+    if (user) {
+      const playPatch = {
+        ...(user.totalGames !== undefined
+          ? { totalGames: user.totalGames + 1 }
+          : {}),
+        ...(advanceStreak(user, utcDayNumber(Date.now())) ?? {}),
+      };
+      if (Object.keys(playPatch).length > 0) {
+        await ctx.db.patch(userId, playPatch);
+      }
     }
 
     return {
@@ -271,9 +281,19 @@ export const completeSurvival = mutation({
 
     await ctx.db.patch(sessionId, { completedAt: Date.now() });
 
+    // Count the play: lifetime total (legacy docs without the counter are
+    // left alone) and the daily streak (always).
     const user = await ctx.db.get(userId);
-    if (user?.totalGames !== undefined) {
-      await ctx.db.patch(userId, { totalGames: (user.totalGames ?? 0) + 1 });
+    if (user) {
+      const playPatch = {
+        ...(user.totalGames !== undefined
+          ? { totalGames: user.totalGames + 1 }
+          : {}),
+        ...(advanceStreak(user, utcDayNumber(Date.now())) ?? {}),
+      };
+      if (Object.keys(playPatch).length > 0) {
+        await ctx.db.patch(userId, playPatch);
+      }
     }
 
     return {

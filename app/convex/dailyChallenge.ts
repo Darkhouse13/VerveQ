@@ -7,6 +7,7 @@ import {
 } from "./lib/authz";
 import { getTodayUTC, seededShuffle } from "./lib/daily";
 import { normalizeAnswer } from "./lib/scoring";
+import { recordPlayForStreak } from "./lib/streaks";
 import { orderAnswerOptions } from "./lib/answerOptions";
 import {
   assertStandardMcqQuestion,
@@ -761,6 +762,9 @@ export const completeAttempt = mutation({
       score: totalScore,
       completedAt: Date.now(),
     });
+
+    // The daily IS the streak hook — a completed attempt keeps it alive.
+    await recordPlayForStreak(ctx, userId);
 
     return { score: totalScore, results };
   },

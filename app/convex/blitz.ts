@@ -9,6 +9,7 @@ import {
 } from "./lib/authz";
 import { pickQuestionPool } from "./lib/imageQuestions";
 import { normalizeAnswer } from "./lib/scoring";
+import { advanceStreak, utcDayNumber } from "./lib/streaks";
 import { orderAnswerOptions } from "./lib/answerOptions";
 import {
   assertStandardMcqQuestion,
@@ -234,12 +235,19 @@ export const endGame = mutation({
       scoreSavedAt: now,
     });
 
-    // Increment total games
+    // Count the play: lifetime total (legacy docs without the counter are
+    // left alone) and the daily streak (always).
     const user = await ctx.db.get(session.userId);
-    if (user?.totalGames !== undefined) {
-      await ctx.db.patch(session.userId, {
-        totalGames: (user.totalGames ?? 0) + 1,
-      });
+    if (user) {
+      const playPatch = {
+        ...(user.totalGames !== undefined
+          ? { totalGames: user.totalGames + 1 }
+          : {}),
+        ...(advanceStreak(user, utcDayNumber(now)) ?? {}),
+      };
+      if (Object.keys(playPatch).length > 0) {
+        await ctx.db.patch(session.userId, playPatch);
+      }
     }
 
     return {
