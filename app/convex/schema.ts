@@ -405,6 +405,16 @@ export default defineSchema({
     ])
     .index("by_checksum", ["checksum"]),
 
+  // One row per (user, question) difficulty vote. Enforces one vote per user
+  // per question in quizSessions.submitFeedback so the difficultyScore running
+  // mean cannot be inflated by repeat votes from a single identity.
+  questionFeedbackVotes: defineTable({
+    userId: v.id("users"),
+    checksum: v.string(),
+    votedDifficulty: v.string(),
+    votedAt: v.number(),
+  }).index("by_user_checksum", ["userId", "checksum"]),
+
   quizSessions: defineTable({
     userId: v.optional(v.id("users")),
     sport: v.string(),

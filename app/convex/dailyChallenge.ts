@@ -5,6 +5,7 @@ import {
   assertRankedEligibleUser,
   isRankedEligibleUserId,
 } from "./lib/authz";
+import { assertClientSport } from "./lib/sports";
 import { getTodayUTC, seededShuffle } from "./lib/daily";
 import { normalizeAnswer } from "./lib/scoring";
 import { recordPlayForStreak } from "./lib/streaks";
@@ -260,6 +261,7 @@ export const getOrCreateChallenge = mutation({
   },
   handler: async (ctx, { sport, mode }) => {
     assertDailyQuizMode(mode);
+    assertClientSport(sport);
 
     const date = getTodayUTC();
 
@@ -432,6 +434,7 @@ export const startAttempt = mutation({
   },
   handler: async (ctx, { sport, mode }) => {
     assertDailyQuizMode(mode);
+    assertClientSport(sport);
 
     const userId = await getAuthUserId(ctx);
     if (!userId) throw new Error("Not authenticated");

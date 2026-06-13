@@ -2,6 +2,7 @@ import { query, mutation } from "./_generated/server";
 import { v } from "convex/values";
 import { getAuthUserId } from "@convex-dev/auth/server";
 import type { Doc, Id } from "./_generated/dataModel";
+import { assertClientSport } from "./lib/sports";
 
 function normalizeHandle(value: string): string {
   return value.trim().toLowerCase();
@@ -260,6 +261,7 @@ export const create = mutation({
   handler: async (ctx, { challengedUsername, sport, mode }) => {
     const userId = await getAuthUserId(ctx);
     if (!userId) throw new Error("Not authenticated");
+    assertClientSport(sport);
 
     const challenger = await ctx.db.get(userId);
     if (!hasPermanentUsername(challenger)) {
@@ -319,6 +321,7 @@ export const createRematch = mutation({
   handler: async (ctx, { opponentId, sport, mode }) => {
     const userId = await getAuthUserId(ctx);
     if (!userId) throw new Error("Not authenticated");
+    assertClientSport(sport);
 
     const challenger = await ctx.db.get(userId);
     if (!hasPermanentUsername(challenger)) {

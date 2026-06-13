@@ -15,6 +15,7 @@ import {
   isUsernameRequiredUserDoc,
 } from "./lib/authz";
 import { orderAnswerOptions } from "./lib/answerOptions";
+import { assertClientSport } from "./lib/sports";
 import { calculateDuelTimeScore, normalizeAnswer } from "./lib/scoring";
 import {
   guestActorKey,
@@ -137,6 +138,10 @@ async function getQuestionChecksumsForDuel(
   if (!sportKey) {
     throw new Error("Sport is required for sports duels");
   }
+  // Single chokepoint for every duel-creation path (create + rematch). Reject
+  // any sport outside the client allowlist before it reaches the content read,
+  // which keeps arena-only CIE rows unreachable through duels.
+  assertClientSport(sportKey);
   if (args.type === "sports" && sportKey === "knowledge") {
     throw new Error("Use type=knowledge for knowledge duels");
   }

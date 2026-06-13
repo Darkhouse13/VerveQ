@@ -7,6 +7,7 @@ import {
   isRankedEligibleUserDoc,
   isRankedEligibleUserId,
 } from "./lib/authz";
+import { assertClientSport } from "./lib/sports";
 import { pickQuestionPool } from "./lib/imageQuestions";
 import { normalizeAnswer } from "./lib/scoring";
 import { advanceStreak, utcDayNumber } from "./lib/streaks";
@@ -26,6 +27,7 @@ export const start = mutation({
     const userId = await getAuthUserId(ctx);
     if (!userId) throw new Error("Not authenticated");
     await assertUsernameRequiredUser(ctx, userId);
+    assertClientSport(sport);
 
     const now = Date.now();
     const sessionId = await ctx.db.insert("blitzSessions", {

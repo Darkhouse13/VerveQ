@@ -2,6 +2,7 @@ import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
 import { getAuthUserId } from "@convex-dev/auth/server";
 import { assertFullAccountUser } from "./lib/authz";
+import { assertClientSport } from "./lib/sports";
 import { calculateTimeScore, normalizeAnswer } from "./lib/scoring";
 import { pickQuestionPool } from "./lib/imageQuestions";
 import { orderAnswerOptions } from "./lib/answerOptions";
@@ -25,6 +26,7 @@ export const createSession = mutation({
     const userId = await getAuthUserId(ctx);
     if (!userId) throw new Error("Not authenticated");
     await assertFullAccountUser(ctx, userId);
+    assertClientSport(sport);
     const normalizedMode = mode === "came_first" ? "came_first" : "quiz";
     const normalizedDifficulty =
       normalizedMode === "came_first" ? "intermediate" : difficulty;
@@ -244,6 +246,9 @@ export const submitFeedback = mutation({
     votedDifficulty: v.string(),
   },
   handler: async (ctx, { checksum, votedDifficulty }) => {
+    // An authenticated identity is required (anonymous auth counts — it still
+    // yields a stable userId). Combined with the per-user ledger below, this is
+    // what bounds the vote to one per user per question.
     const userId = await getAuthUserId(ctx);
     if (!userId) throw new Error("Not authenticated");
     const question = await ctx.db
@@ -251,6 +256,18 @@ export const submitFeedback = mutation({
       .withIndex("by_checksum", (q) => q.eq("checksum", checksum))
       .first();
     if (!question) return;
+
+    // One vote per user per question, first vote wins. difficultyScore is an
+    // increment-only running mean (sum/votes), so re-counting a user would skew
+    // it with no clean way to back the prior vote out; an existing vote is a
+    // no-op. Recording the vote first also closes the door on unlimited voting.
+    const existingVote = await ctx.db
+      .query("questionFeedbackVotes")
+      .withIndex("by_user_checksum", (q) =>
+        q.eq("userId", userId).eq("checksum", checksum),
+      )
+      .first();
+    if (existingVote) return;
 
     const diffMap: Record<string, number> = {
       easy: 1,
@@ -266,6 +283,12 @@ export const submitFeedback = mutation({
     await ctx.db.patch(question._id, {
       difficultyVotes: newVotes,
       difficultyScore: newScore,
+    });
+    await ctx.db.insert("questionFeedbackVotes", {
+      userId,
+      checksum,
+      votedDifficulty,
+      votedAt: Date.now(),
     });
   },
 });
