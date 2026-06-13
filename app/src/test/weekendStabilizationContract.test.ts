@@ -617,7 +617,13 @@ describe("weekend stabilization season and decay jobs", () => {
 });
 
 describe("weekend stabilization live matches", () => {
-  const questions = [
+  const questions: Array<{
+    question: string;
+    options: string[];
+    correctAnswer: string;
+    explanation: string;
+    imageId?: string;
+  }> = [
     {
       question: "Who won the final?",
       options: ["A", "B", "C", "D"],

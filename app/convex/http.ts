@@ -114,7 +114,7 @@ function redirectResponse(location: string) {
   });
 }
 
-function pngResponse(body: Blob | ArrayBuffer | Uint8Array) {
+function pngResponse(body: Blob | ArrayBuffer | Uint8Array<ArrayBuffer>) {
   return new Response(body, {
     status: 200,
     headers: {

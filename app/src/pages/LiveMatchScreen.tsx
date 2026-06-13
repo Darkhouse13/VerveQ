@@ -268,14 +268,16 @@ export default function LiveMatchScreen() {
         <ExitGameButton
           title="Forfeit match?"
           description="Quitting now counts as a forfeit and your opponent wins."
-          onConfirm={() =>
-            matchId &&
-            match &&
-            match.status !== "completed" &&
-            match.status !== "forfeited"
-              ? forfeitMut({ matchId })
-              : undefined
-          }
+          onConfirm={async () => {
+            if (
+              matchId &&
+              match &&
+              match.status !== "completed" &&
+              match.status !== "forfeited"
+            ) {
+              await forfeitMut({ matchId });
+            }
+          }}
         />
       </div>
       {/* Top bar */}

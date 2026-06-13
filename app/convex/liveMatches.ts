@@ -189,13 +189,37 @@ function orientVersusSummary(
   };
 }
 
+type RivalryDetails = {
+  currentStreak: {
+    count: number;
+    owner: "player1" | "player2";
+    streakOwner: "player1" | "player2";
+  } | null;
+  recentMatches: Array<{
+    outcome: "win" | "loss" | "draw";
+    player1Score: number;
+    player2Score: number;
+    playedAt: number;
+  }>;
+};
+
+// Rivalry fields are present only when head-to-head context is available, so
+// the summary type carries them as optional.
+type VersusSummary = {
+  player1Wins: number;
+  player2Wins: number;
+  draws: number;
+  totalMatches: number;
+  lastPlayedAt?: number;
+} & Partial<RivalryDetails>;
+
 async function getRivalryDetails(
   ctx: Pick<QueryCtx, "db"> | Pick<MutationCtx, "db">,
   player1Id: Id<"users">,
   player2Id: Id<"users">,
   sport: string,
   mode = "quiz",
-) {
+): Promise<RivalryDetails> {
   const { pairKey } = getPairKey(player1Id, player2Id);
   const recentHistory = await ctx.db
     .query("challengeMatchHistory")
@@ -241,7 +265,7 @@ async function getVersusSummary(
   player2Id: Id<"users">,
   sport: string,
   mode = "quiz",
-) {
+): Promise<VersusSummary> {
   if (typeof (ctx.db as { query?: unknown }).query !== "function") {
     return orientVersusSummary(null, player1Id, player2Id);
   }

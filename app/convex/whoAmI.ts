@@ -1,4 +1,5 @@
 import { mutation, query, type MutationCtx } from "./_generated/server";
+import type { Doc } from "./_generated/dataModel";
 import { v } from "convex/values";
 import { getAuthUserId } from "@convex-dev/auth/server";
 import { assertUsernameRequiredUser } from "./lib/authz";
@@ -189,12 +190,29 @@ export const revealNextClue = mutation({
   },
 });
 
+type WhoAmIGuess = NonNullable<Doc<"whoAmISessions">["guesses"]>[number];
+
+// One result shape across the correct / close-call / wrong branches; fields
+// that only some branches produce are optional.
+type SubmitGuessResult = {
+  correct: boolean;
+  closeCall: boolean;
+  typoAccepted: boolean;
+  score: number;
+  gameOver: boolean;
+  answerName?: string;
+  wrongGuessCount?: number;
+  maxGuesses?: number;
+  guesses?: WhoAmIGuess[];
+  feedback?: WhoAmIGuess["feedback"];
+};
+
 export const submitGuess = mutation({
   args: {
     sessionId: v.id("whoAmISessions"),
     guess: v.string(),
   },
-  handler: async (ctx, { sessionId, guess }) => {
+  handler: async (ctx, { sessionId, guess }): Promise<SubmitGuessResult> => {
     const userId = await getAuthUserId(ctx);
     if (!userId) throw new Error("Not authenticated");
     const session = await ctx.db.get(sessionId);

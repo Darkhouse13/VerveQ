@@ -295,7 +295,7 @@ describe("BLOCKER-3: ELO finalizers ignore forged score fields", () => {
       totalAnswers: 2,
       sumAnswerTimeMs: 6_000,
     };
-    const insert = vi.fn(async () => "inserted");
+    const insert = vi.fn(async (_table: string, _doc: Record<string, unknown>) => "inserted");
     const patch = vi.fn();
     const ctx = {
       db: {
@@ -350,7 +350,7 @@ describe("BLOCKER-3: ELO finalizers ignore forged score fields", () => {
       expiresAt: Date.now() + 60_000,
       startedAt: Date.now() - 20_000,
     };
-    const insert = vi.fn(async () => "inserted");
+    const insert = vi.fn(async (_table: string, _doc: Record<string, unknown>) => "inserted");
     const patch = vi.fn();
     const ctx = {
       db: {

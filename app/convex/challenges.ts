@@ -18,7 +18,7 @@ function hasPermanentUsername(user: Pick<Doc<"users">, "username" | "isGuest" | 
 function oneOrAmbiguous(
   matches: Array<Doc<"users">>,
   identifier: string,
-  matchType: "username" | "display name",
+  matchType: "username" | "display name" | "username or display name",
 ): Doc<"users"> | null {
   if (matches.length === 0) return null;
   if (matches.length === 1) return matches[0];

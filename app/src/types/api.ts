@@ -6,7 +6,9 @@ export interface GameResultState {
   eloChange: number | null;
   newElo: number | null;
   sport: string;
-  mode: "quiz" | "survival" | "daily-quiz" | "daily-survival" | "blitz" | "challenge";
+  // `came_first` is the "Which Came First" quiz variant; ResultScreen routes
+  // play-again through `/sport-select?mode=` so the variant must survive here.
+  mode: "quiz" | "survival" | "daily-quiz" | "daily-survival" | "blitz" | "challenge" | "came_first";
   shareString?: string;
   wrongCount?: number;
   kFactor?: number;

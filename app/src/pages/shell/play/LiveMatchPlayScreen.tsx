@@ -154,11 +154,13 @@ function LiveMatchPlayRoom({ matchId }: { matchId: Id<"liveMatches"> }) {
 
   // Leaving forfeits once the match is live, but only ABANDONS while still
   // waiting (no winner, no ELO) — exactly as the legacy screens behave.
-  const handleExit = useCallback(() => {
-    if (status === "completed" || status === "forfeited") return undefined;
-    return status === "waiting"
-      ? abandonWaitingMut({ matchId })
-      : forfeitMut({ matchId });
+  const handleExit = useCallback(async () => {
+    if (status === "completed" || status === "forfeited") return;
+    if (status === "waiting") {
+      await abandonWaitingMut({ matchId });
+    } else {
+      await forfeitMut({ matchId });
+    }
   }, [status, matchId, abandonWaitingMut, forfeitMut]);
 
   // Heartbeat — keeps the session alive (unchanged from the legacy screen).
