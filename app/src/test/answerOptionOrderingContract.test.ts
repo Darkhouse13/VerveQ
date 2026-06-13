@@ -16,7 +16,9 @@ describe("answer option ordering contract", () => {
       }
     }
 
-    expect(mcqCounts).toEqual([290, 290, 290, 290]);
+    // 11 exact-duplicate MCQ rows were removed from the bundled pool
+    // (slot removals: 4/2/1/4), shifting the previously even 290-per-slot split.
+    expect(mcqCounts).toEqual([286, 288, 289, 286]);
     expect(binaryCounts).toEqual([275, 275]);
   });
 

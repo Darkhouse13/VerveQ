@@ -83,22 +83,6 @@ export const knowledgeQuestions: KnowledgeQuestionSeed[] = [
   },
   {
     "sport": "knowledge",
-    "category": "common_knowledge",
-    "question": "What is the capital city of Japan?",
-    "options": [
-      "Kyoto",
-      "Osaka",
-      "Sapporo",
-      "Tokyo"
-    ],
-    "correctAnswer": "Tokyo",
-    "explanation": "Tokyo has been Japan's capital since the imperial court moved there in 1868.",
-    "difficulty": "easy",
-    "bucket": "knowledge_easy_common_knowledge",
-    "checksum": "knowledge_v1_005"
-  },
-  {
-    "sport": "knowledge",
     "category": "science",
     "question": "What force keeps planets in orbit around the Sun?",
     "options": [
@@ -3840,22 +3824,6 @@ export const knowledgeQuestions: KnowledgeQuestionSeed[] = [
     "difficulty": "easy",
     "bucket": "knowledge_easy_history",
     "checksum": "knowledge_v1_239"
-  },
-  {
-    "sport": "knowledge",
-    "category": "geography",
-    "question": "What is the capital city of Canada?",
-    "options": [
-      "Toronto",
-      "Vancouver",
-      "Montreal",
-      "Ottawa"
-    ],
-    "correctAnswer": "Ottawa",
-    "explanation": "Ottawa is the capital of Canada.",
-    "difficulty": "easy",
-    "bucket": "knowledge_easy_geography",
-    "checksum": "knowledge_v1_240"
   },
   {
     "sport": "knowledge",

@@ -37,8 +37,10 @@ describe("knowledge expansion contract", () => {
       positionCounts[correctIndex] += 1;
     }
 
-    expect(questions).toHaveLength(300);
-    expect(positionCounts).toEqual([75, 75, 75, 75]);
+    // knowledge_v1_005 and knowledge_v1_240 (both position-3 answers) were
+    // removed as exact duplicates of challenge_arena_capitals_v1 rows.
+    expect(questions).toHaveLength(298);
+    expect(positionCounts).toEqual([75, 75, 75, 73]);
   });
 
   it("exposes knowledge as a first-class quiz topic without routing survival into non-sport data", () => {

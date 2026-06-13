@@ -804,7 +804,7 @@ const RAW_FACTS: RawFact[] = [
   chronology(
     "easy",
     "latest",
-    "Which Cold War era milestone happened latest?",
+    "Which of these 20th-century milestones happened latest?",
     [
       chronologyOption("Doolittle Raid", doolittleRaid),
       chronologyOption("atomic bombing of Hiroshima", atomicBombingOfHiroshima),

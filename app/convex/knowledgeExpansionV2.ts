@@ -88,11 +88,14 @@ function checksum(index: number) {
   return `knowledge_expansion_v2_${String(index + 1).padStart(3, "0")}`;
 }
 
-function buildRows(facts: RawShapeFact[]) {
+function buildRows(facts: (RawShapeFact | null)[]) {
   const rows: KnowledgeQuestionSeed[] = [];
   const reviewRows: KnowledgeExpansionV2ReviewRow[] = [];
 
   facts.forEach((fact, index) => {
+    if (fact === null) {
+      return;
+    }
     const ref = checksum(index);
     rows.push({
       sport: "knowledge",
@@ -119,7 +122,10 @@ function buildRows(facts: RawShapeFact[]) {
   return { rows, reviewRows };
 }
 
-const RAW_SHAPE_FACTS: RawShapeFact[] = [
+// Checksums are positional (index + 1), so shipped rows must never be removed by
+// deleting array entries: a `null` tombstone holds the slot (emitting no row) so
+// every later row keeps its original checksum.
+const RAW_SHAPE_FACTS: (RawShapeFact | null)[] = [
   q("chemistry", "easy", "standard_recall", "What element gives table salt its metallic half?", "Sodium", ["Potassium", "Lithium", "Calcium"], "Table salt is sodium chloride, so sodium is the metallic element in it.", "science_structured"),
   q("chemistry", "easy", "standard_recall", "Which element has the chemical symbol Fe?", "Iron", ["Copper", "Tin", "Silver"], "Fe comes from ferrum, the Latin name for iron.", "science_structured"),
   q("chemistry", "easy", "standard_recall", "What type of particle has a negative electric charge?", "Electron", ["Proton", "Neutron", "Alpha particle"], "Electrons carry negative charge; protons carry positive charge.", "science_structured"),
@@ -153,7 +159,7 @@ const RAW_SHAPE_FACTS: RawShapeFact[] = [
 
   q("astronomy", "easy", "standard_recall", "Which planet is known as the Red Planet?", "The planet Mars", ["The planet Venus", "The planet Mercury", "The planet Jupiter"], "Iron-rich dust gives Mars its reddish color.", "science_structured"),
   q("astronomy", "easy", "standard_recall", "What is the closest star to Earth?", "The Sun", ["Proxima Centauri", "Sirius", "Vega"], "The Sun is the star at the center of our Solar System.", "science_structured"),
-  q("astronomy", "easy", "standard_recall", "Which planet is the largest in the Solar System?", "Jupiter", ["Saturn", "Neptune", "Earth"], "Jupiter is the Solar System's largest planet.", "science_structured"),
+  null, // was knowledge_expansion_v2_033 — removed as exact duplicate of knowledge_v1_180
   q("astronomy", "easy", "standard_recall", "Which galaxy contains the Solar System?", "Milky Way", ["Andromeda", "Triangulum", "Sombrero Galaxy"], "The Sun is one of the stars in the Milky Way.", "science_structured"),
   q("astronomy", "easy", "standard_recall", "Which planet is famous for its broad, bright ring system?", "The planet Saturn", ["The planet Mars", "The planet Venus", "The planet Mercury"], "Saturn's ring system is the most visually prominent from Earth.", "science_structured"),
   q("astronomy", "easy", "standard_recall", "Which dwarf planet was once taught as the ninth planet?", "Pluto", ["Ceres", "Eris", "Haumea"], "Pluto was reclassified as a dwarf planet in 2006.", "science_structured"),
@@ -186,10 +192,10 @@ const RAW_SHAPE_FACTS: RawShapeFact[] = [
   q("biology", "easy", "standard_recall", "Which organelles are often called the powerhouses of the cell?", "Mitochondria", ["Ribosomes", "Lysosomes", "Vacuoles"], "Mitochondria release usable energy from food molecules.", "science_structured"),
   q("biology", "easy", "standard_recall", "Which green pigment helps plants capture light for photosynthesis?", "Chlorophyll", ["Hemoglobin", "Melanin", "Keratin"], "Chlorophyll absorbs light energy used in photosynthesis.", "science_structured"),
   q("biology", "easy", "standard_recall", "Which monk is known as the father of genetics?", "Gregor Mendel", ["Charles Darwin", "Louis Pasteur", "Carl Linnaeus"], "Mendel inferred inheritance patterns from pea-plant experiments.", "history_structured"),
-  q("biology", "easy", "standard_recall", "What is the largest organ of the human body?", "Skin", ["Liver", "Brain", "Heart"], "Skin is the body's largest organ by surface area and mass.", "science_structured"),
+  null, // was knowledge_expansion_v2_065 — removed as exact duplicate of knowledge_v1_034
   q("biology", "easy", "standard_recall", "Which blood cells carry most oxygen through the human body?", "Red blood cells", ["Platelets", "White blood cells", "Stem cells"], "Red blood cells contain hemoglobin, which binds oxygen.", "science_structured"),
   q("biology", "easy", "standard_recall", "Which gas do plants absorb from the air during photosynthesis?", "Carbon dioxide", ["Oxygen", "Helium", "Nitrogen"], "Photosynthesis uses carbon dioxide and water to make sugars.", "science_structured"),
-  q("biology", "easy", "standard_recall", "What is the basic unit of life?", "Cell", ["Atom", "Organ", "Tissue"], "Cells are the smallest units considered alive.", "science_structured"),
+  null, // was knowledge_expansion_v2_068 — removed as exact duplicate of knowledge_v1_112
   q("biology", "intermediate", "standard_recall", "Which taxonomic rank usually comes directly below kingdom?", "Phylum", ["Genus", "Species", "Family"], "In standard Linnaean ranks, phylum comes below kingdom.", "science_structured"),
   q("biology", "easy", "odd_one_out", "Which of these is NOT a mammal?", "Crocodile", ["Whale", "Bat", "Dolphin"], "Whales, bats, and dolphins are mammals; crocodiles are reptiles.", "science_structured"),
   q("biology", "easy", "odd_one_out", "Which of these is NOT a bird?", "Bat", ["Eagle", "Penguin", "Ostrich"], "Eagles, penguins, and ostriches are birds; bats are mammals.", "science_structured"),
@@ -244,7 +250,7 @@ const RAW_SHAPE_FACTS: RawShapeFact[] = [
   q("earth_science", "easy", "connected_clue", "A cloud is low, gray, and blanket-like; which basic cloud type is it?", "Stratus", ["Cirrus", "Cumulus", "Cumulonimbus"], "Stratus clouds often form low, layered blankets.", "science_structured"),
   q("earth_science", "easy", "connected_clue", "Waves arrive after an undersea megathrust quake; what hazard may follow?", "Tsunami", ["Drought", "Tornado", "Heat wave"], "Undersea earthquakes can displace water and generate tsunamis.", "science_structured"),
 
-  q("geography", "easy", "standard_recall", "What is the capital city of Canada?", "Ottawa", ["Toronto", "Vancouver", "Montreal"], "Ottawa is Canada's federal capital.", "places_structured"),
+  null, // was knowledge_expansion_v2_121 — removed as exact duplicate of challenge_arena_capitals_v1_003
   q("geography", "easy", "standard_recall", "Which river flows through Egypt and into the Mediterranean Sea?", "Nile", ["Amazon", "Danube", "Mekong"], "The Nile flows north through Egypt to the Mediterranean.", "places_structured"),
   q("geography", "easy", "standard_recall", "Which country includes the island of Honshu?", "Japan", ["Indonesia", "Philippines", "New Zealand"], "Honshu is Japan's largest island.", "places_structured"),
   q("geography", "easy", "standard_recall", "Which continent contains the Andes mountain range?", "South America", ["Africa", "Europe", "Australia"], "The Andes run along western South America.", "places_structured"),
@@ -276,9 +282,9 @@ const RAW_SHAPE_FACTS: RawShapeFact[] = [
   q("geography", "hard", "connected_clue", "An Andean city sits high above sea level and serves as Bolivia's seat of government. Which city is it?", "La Paz", ["Lima", "Quito", "Bogota"], "La Paz is Bolivia's administrative seat and sits high in the Andes.", "places_structured"),
 
   q("history", "easy", "standard_recall", "In which country was the Magna Carta sealed?", "England", ["France", "Spain", "Italy"], "King John sealed Magna Carta in England in 1215.", "history_structured"),
-  q("history", "easy", "standard_recall", "Who was the first president of the United States?", "George Washington", ["Thomas Jefferson", "John Adams", "James Madison"], "George Washington served as the first U.S. president.", "history_structured"),
+  null, // was knowledge_expansion_v2_152 — removed as exact duplicate of knowledge_v1_068
   q("history", "easy", "standard_recall", "The Great Wall is most closely associated with which country?", "China", ["India", "Japan", "Mongolia"], "The Great Wall is a landmark of China.", "history_structured"),
-  q("history", "intermediate", "standard_recall", "The Rosetta Stone helped scholars decipher which writing system?", "Egyptian hieroglyphs", ["Linear B", "Cuneiform", "Classic Maya script"], "The Rosetta Stone carried parallel texts that helped decipher Egyptian hieroglyphs.", "history_structured"),
+  null, // was knowledge_expansion_v2_154 — removed as exact duplicate of knowledge_v1_051
   q("history", "easy", "standard_recall", "The Black Death devastated Europe during which century?", "14th century", ["11th century", "16th century", "19th century"], "The Black Death peaked in Europe in the mid-14th century.", "history_structured"),
   q("history", "easy", "standard_recall", "In what year did the Berlin Wall fall?", "1989", ["1961", "1979", "1991"], "The Berlin Wall opened and began falling in November 1989.", "history_structured"),
   q("history", "easy", "standard_recall", "Who is strongly associated with movable-type printing in Europe?", "Johannes Gutenberg", ["Isaac Newton", "Benjamin Franklin", "Galileo Galilei"], "Gutenberg's press transformed European printing in the 15th century.", "history_structured"),
@@ -308,9 +314,9 @@ const RAW_SHAPE_FACTS: RawShapeFact[] = [
 
   q("inventions", "easy", "standard_recall", "Who is most associated with inventing the telephone?", "Alexander Graham Bell", ["Thomas Edison", "Nikola Tesla", "Guglielmo Marconi"], "Bell received the famous early telephone patent in 1876.", "history_structured"),
   q("inventions", "easy", "standard_recall", "Who discovered penicillin in 1928?", "Alexander Fleming", ["Louis Pasteur", "Gertrude Elion", "Joseph Lister"], "Fleming observed Penicillium mold killing bacteria.", "history_structured"),
-  q("inventions", "easy", "standard_recall", "Who invented the World Wide Web?", "Tim Berners-Lee", ["Bill Gates", "Steve Jobs", "Alan Turing"], "Tim Berners-Lee proposed and built the World Wide Web at CERN.", "history_structured"),
+  null, // was knowledge_expansion_v2_183 — removed as exact duplicate of knowledge_v1_094
   q("inventions", "easy", "standard_recall", "Which inventor is strongly linked with the practical incandescent light bulb?", "Thomas Edison", ["Samuel Morse", "Eli Whitney", "James Watt"], "Edison developed and commercialized a practical incandescent lighting system.", "history_structured"),
-  q("inventions", "easy", "standard_recall", "Who invented dynamite?", "Alfred Nobel", ["Michael Faraday", "James Clerk Maxwell", "Robert Fulton"], "Alfred Nobel invented dynamite and later endowed the Nobel Prizes.", "history_structured"),
+  null, // was knowledge_expansion_v2_185 — removed as exact duplicate of knowledge_v1_126
   q("inventions", "intermediate", "standard_recall", "Which early electronic computer is often described as general-purpose and programmable?", "ENIAC", ["UNIVAC I", "Colossus", "Apple II"], "ENIAC is often cited as an early general-purpose electronic digital computer.", "history_structured"),
   q("inventions", "easy", "standard_recall", "Who created the raised-dot reading system called Braille?", "Louis Braille", ["Samuel Morse", "Johannes Gutenberg", "Alexander Fleming"], "Louis Braille developed the tactile reading system named for him.", "history_structured"),
   q("inventions", "easy", "standard_recall", "Which scientist gave pasteurization its name?", "Louis Pasteur", ["Robert Koch", "Gregor Mendel", "Antonie van Leeuwenhoek"], "Pasteurization is named after Louis Pasteur.", "history_structured"),
@@ -369,7 +375,7 @@ const RAW_SHAPE_FACTS: RawShapeFact[] = [
   q("language", "easy", "connected_clue", "A Korean king commissioned a featural alphabet in the 1400s; what is it called?", "Hangul", ["Kanji", "Hanja", "Hiragana"], "King Sejong's court created Hangul in the 15th century.", "language_culture_structured"),
 
   q("literature_arts", "easy", "standard_recall", "Who painted the Mona Lisa?", "Leonardo da Vinci", ["Michelangelo", "Raphael", "Caravaggio"], "Leonardo da Vinci painted the Mona Lisa.", "language_culture_structured"),
-  q("literature_arts", "easy", "standard_recall", "Who painted The Starry Night?", "Vincent van Gogh", ["Claude Monet", "Pablo Picasso", "Paul Cezanne"], "Vincent van Gogh painted The Starry Night in 1889.", "language_culture_structured"),
+  null, // was knowledge_expansion_v2_242 — removed as exact duplicate of knowledge_v1_273
   q("literature_arts", "easy", "standard_recall", "Who wrote Hamlet?", "William Shakespeare", ["Christopher Marlowe", "Oscar Wilde", "John Milton"], "Hamlet is one of Shakespeare's tragedies.", "language_culture_structured"),
   q("literature_arts", "easy", "standard_recall", "The Odyssey is traditionally attributed to which poet?", "Homer", ["Virgil", "Ovid", "Sophocles"], "The Odyssey is traditionally attributed to Homer.", "language_culture_structured"),
   q("literature_arts", "easy", "standard_recall", "Pride and Prejudice is by which author surname?", "Austen", ["Bronte", "Shelley", "Eliot"], "Jane Austen published Pride and Prejudice in 1813.", "language_culture_structured"),
