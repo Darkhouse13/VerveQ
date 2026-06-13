@@ -12,6 +12,7 @@
     "prebuild:dev": "npm run codegen",
     "build:dev": "vite build --mode development",
     "lint": "eslint .",
+    "check": "npm run codegen && tsc -b && npm run lint && npm run test && npm run build",
     "preview": "vite preview",
     "gameplay:curated": "npx tsx ../scripts/runCuratedGameplayWorkflow.ts",
     "gameplay:curated-parity": "npx tsx ../scripts/runCuratedParityWorkflow.ts",

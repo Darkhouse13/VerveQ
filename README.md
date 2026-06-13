@@ -113,6 +113,13 @@ cd app
 npm run gameplay:smoke -- all
 ```
 
+## Code gate
+
+From `app/`, `npm run check` is the full pre-push gate: codegen + `npx tsc -b`
++ lint + tests + build. The typecheck is a hard gate — master typechecks clean
+(0 errors; the old ~31-error baseline was eliminated 2026-06), so any new tsc
+error is a regression. Fail closed on it.
+
 ## Reachable-target validation reality
 
 From this workspace, the reliable validation pattern is:

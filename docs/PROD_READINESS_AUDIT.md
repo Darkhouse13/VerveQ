@@ -407,6 +407,9 @@ doc should be updated to reflect the actual behavior.
 combined `npm run check` or `npm run ci` that gates build+lint+test in one
 step. The old `.github/workflows/tests.yml` was removed; no replacement.
 
+**RESOLVED 2026-06:** `npm run check` now runs codegen + `tsc -b` + lint +
+tests + build in one command; tsc is a hard gate (0 errors on master).
+
 ---
 
 ### LOW-11 — `quizSessions.submitFeedback`, `sports.list`, and others have no auth gate
