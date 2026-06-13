@@ -1,0 +1,1043 @@
+{
+  "ok": true,
+  "findings": [
+    {
+      "code": "NEAR_DUPLICATE",
+      "severity": "WARN",
+      "questionRef": "knowledge_expansion_v2_031",
+      "field": "question",
+      "detail": "effective prompt is 100.0% similar to knowledge_v1_002; human review should decide whether to keep both."
+    },
+    {
+      "code": "NEAR_DUPLICATE",
+      "severity": "WARN",
+      "questionRef": "knowledge_v1_091",
+      "field": "question",
+      "detail": "effective prompt is 92.5% similar to knowledge_v1_021; human review should decide whether to keep both."
+    },
+    {
+      "code": "NEAR_DUPLICATE",
+      "severity": "WARN",
+      "questionRef": "knowledge_v1_156",
+      "field": "question",
+      "detail": "effective prompt is 92.5% similar to knowledge_v1_021; human review should decide whether to keep both."
+    },
+    {
+      "code": "NEAR_DUPLICATE",
+      "severity": "WARN",
+      "questionRef": "knowledge_expansion_v2_151",
+      "field": "question",
+      "detail": "effective prompt is 100.0% similar to knowledge_v1_031; human review should decide whether to keep both."
+    },
+    {
+      "code": "NEAR_DUPLICATE",
+      "severity": "WARN",
+      "questionRef": "knowledge_expansion_v2_002",
+      "field": "question",
+      "detail": "effective prompt is 95.0% similar to knowledge_v1_053; human review should decide whether to keep both."
+    },
+    {
+      "code": "NEAR_DUPLICATE",
+      "severity": "WARN",
+      "questionRef": "knowledge_v1_232",
+      "field": "question",
+      "detail": "effective prompt is 100.0% similar to knowledge_v1_076; human review should decide whether to keep both."
+    },
+    {
+      "code": "NEAR_DUPLICATE",
+      "severity": "WARN",
+      "questionRef": "knowledge_v1_272",
+      "field": "question",
+      "detail": "effective prompt is 92.5% similar to knowledge_v1_110; human review should decide whether to keep both."
+    },
+    {
+      "code": "NEAR_DUPLICATE",
+      "severity": "WARN",
+      "questionRef": "knowledge_v1_180",
+      "field": "question",
+      "detail": "effective prompt is 93.6% similar to knowledge_v1_113; human review should decide whether to keep both."
+    },
+    {
+      "code": "NEAR_DUPLICATE",
+      "severity": "WARN",
+      "questionRef": "knowledge_v1_280",
+      "field": "question",
+      "detail": "effective prompt is 93.0% similar to knowledge_v1_120; human review should decide whether to keep both."
+    },
+    {
+      "code": "NEAR_DUPLICATE",
+      "severity": "WARN",
+      "questionRef": "knowledge_expansion_v2_034",
+      "field": "question",
+      "detail": "effective prompt is 92.1% similar to knowledge_v1_170; human review should decide whether to keep both."
+    },
+    {
+      "code": "NEAR_DUPLICATE",
+      "severity": "WARN",
+      "questionRef": "challenge_arena_capitals_v2_132",
+      "field": "question",
+      "detail": "effective prompt is 94.1% similar to challenge_arena_capitals_v1_003; human review should decide whether to keep both."
+    },
+    {
+      "code": "NEAR_DUPLICATE",
+      "severity": "WARN",
+      "questionRef": "challenge_arena_capitals_v2_010",
+      "field": "question",
+      "detail": "effective prompt is 94.6% similar to challenge_arena_capitals_v1_004; human review should decide whether to keep both."
+    },
+    {
+      "code": "NEAR_DUPLICATE",
+      "severity": "WARN",
+      "questionRef": "challenge_arena_capitals_v2_046",
+      "field": "question",
+      "detail": "effective prompt is 94.9% similar to challenge_arena_capitals_v1_008; human review should decide whether to keep both."
+    },
+    {
+      "code": "NEAR_DUPLICATE",
+      "severity": "WARN",
+      "questionRef": "challenge_arena_capitals_v2_126",
+      "field": "question",
+      "detail": "effective prompt is 94.3% similar to challenge_arena_capitals_v2_003; human review should decide whether to keep both."
+    },
+    {
+      "code": "NEAR_DUPLICATE",
+      "severity": "WARN",
+      "questionRef": "challenge_arena_capitals_v2_028",
+      "field": "question",
+      "detail": "effective prompt is 94.3% similar to challenge_arena_capitals_v2_025; human review should decide whether to keep both."
+    },
+    {
+      "code": "NEAR_DUPLICATE",
+      "severity": "WARN",
+      "questionRef": "challenge_arena_capitals_v2_036",
+      "field": "question",
+      "detail": "effective prompt is 93.9% similar to challenge_arena_capitals_v2_035; human review should decide whether to keep both."
+    },
+    {
+      "code": "NEAR_DUPLICATE",
+      "severity": "WARN",
+      "questionRef": "challenge_arena_capitals_v2_067",
+      "field": "question",
+      "detail": "effective prompt is 93.9% similar to challenge_arena_capitals_v2_036; human review should decide whether to keep both."
+    },
+    {
+      "code": "NEAR_DUPLICATE",
+      "severity": "WARN",
+      "questionRef": "challenge_arena_capitals_v2_119",
+      "field": "question",
+      "detail": "effective prompt is 94.3% similar to challenge_arena_capitals_v2_064; human review should decide whether to keep both."
+    },
+    {
+      "code": "NEAR_DUPLICATE",
+      "severity": "WARN",
+      "questionRef": "challenge_arena_capitals_v2_192",
+      "field": "question",
+      "detail": "effective prompt is 97.1% similar to challenge_arena_capitals_v2_064; human review should decide whether to keep both."
+    },
+    {
+      "code": "NEAR_DUPLICATE",
+      "severity": "WARN",
+      "questionRef": "challenge_arena_capitals_v2_073",
+      "field": "question",
+      "detail": "effective prompt is 94.1% similar to challenge_arena_capitals_v2_067; human review should decide whether to keep both."
+    },
+    {
+      "code": "NEAR_DUPLICATE",
+      "severity": "WARN",
+      "questionRef": "challenge_arena_capitals_v2_082",
+      "field": "question",
+      "detail": "effective prompt is 97.1% similar to challenge_arena_capitals_v2_077; human review should decide whether to keep both."
+    },
+    {
+      "code": "NEAR_DUPLICATE",
+      "severity": "WARN",
+      "questionRef": "challenge_arena_capitals_v2_112",
+      "field": "question",
+      "detail": "effective prompt is 92.1% similar to challenge_arena_capitals_v2_079; human review should decide whether to keep both."
+    },
+    {
+      "code": "NEAR_DUPLICATE",
+      "severity": "WARN",
+      "questionRef": "challenge_arena_capitals_v2_081",
+      "field": "question",
+      "detail": "effective prompt is 96.9% similar to challenge_arena_capitals_v2_080; human review should decide whether to keep both."
+    },
+    {
+      "code": "NEAR_DUPLICATE",
+      "severity": "WARN",
+      "questionRef": "challenge_arena_capitals_v2_129",
+      "field": "question",
+      "detail": "effective prompt is 93.8% similar to challenge_arena_capitals_v2_080; human review should decide whether to keep both."
+    },
+    {
+      "code": "NEAR_DUPLICATE",
+      "severity": "WARN",
+      "questionRef": "challenge_arena_capitals_v2_126",
+      "field": "question",
+      "detail": "effective prompt is 94.3% similar to challenge_arena_capitals_v2_097; human review should decide whether to keep both."
+    },
+    {
+      "code": "NEAR_DUPLICATE",
+      "severity": "WARN",
+      "questionRef": "challenge_arena_capitals_v2_106",
+      "field": "question",
+      "detail": "effective prompt is 94.1% similar to challenge_arena_capitals_v2_103; human review should decide whether to keep both."
+    },
+    {
+      "code": "NEAR_DUPLICATE",
+      "severity": "WARN",
+      "questionRef": "challenge_arena_capitals_v2_107",
+      "field": "question",
+      "detail": "effective prompt is 93.9% similar to challenge_arena_capitals_v2_106; human review should decide whether to keep both."
+    },
+    {
+      "code": "NEAR_DUPLICATE",
+      "severity": "WARN",
+      "questionRef": "challenge_arena_capitals_v2_192",
+      "field": "question",
+      "detail": "effective prompt is 94.3% similar to challenge_arena_capitals_v2_119; human review should decide whether to keep both."
+    },
+    {
+      "code": "NEAR_DUPLICATE",
+      "severity": "WARN",
+      "questionRef": "challenge_arena_capitals_v2_126",
+      "field": "question",
+      "detail": "effective prompt is 94.3% similar to challenge_arena_capitals_v2_125; human review should decide whether to keep both."
+    },
+    {
+      "code": "NEAR_DUPLICATE",
+      "severity": "WARN",
+      "questionRef": "challenge_arena_capitals_v2_170",
+      "field": "question",
+      "detail": "effective prompt is 92.1% similar to challenge_arena_capitals_v2_130; human review should decide whether to keep both."
+    },
+    {
+      "code": "NEAR_DUPLICATE",
+      "severity": "WARN",
+      "questionRef": "challenge_arena_capitals_v2_160",
+      "field": "question",
+      "detail": "effective prompt is 94.3% similar to challenge_arena_capitals_v2_142; human review should decide whether to keep both."
+    },
+    {
+      "code": "NEAR_DUPLICATE",
+      "severity": "WARN",
+      "questionRef": "challenge_arena_capitals_v2_180",
+      "field": "question",
+      "detail": "effective prompt is 94.1% similar to challenge_arena_capitals_v2_144; human review should decide whether to keep both."
+    },
+    {
+      "code": "NEAR_DUPLICATE",
+      "severity": "WARN",
+      "questionRef": "challenge_arena_capitals_v2_169",
+      "field": "question",
+      "detail": "effective prompt is 94.1% similar to challenge_arena_capitals_v2_153; human review should decide whether to keep both."
+    },
+    {
+      "code": "NEAR_DUPLICATE",
+      "severity": "WARN",
+      "questionRef": "challenge_arena_capitals_v2_158",
+      "field": "question",
+      "detail": "effective prompt is 94.4% similar to challenge_arena_capitals_v2_157; human review should decide whether to keep both."
+    },
+    {
+      "code": "NEAR_DUPLICATE",
+      "severity": "WARN",
+      "questionRef": "challenge_arena_capitals_v2_174",
+      "field": "question",
+      "detail": "effective prompt is 93.9% similar to challenge_arena_capitals_v2_173; human review should decide whether to keep both."
+    },
+    {
+      "code": "NEAR_DUPLICATE",
+      "severity": "WARN",
+      "questionRef": "knowledge_expansion_v2_273",
+      "field": "question",
+      "detail": "effective prompt is 100.0% similar to knowledge_expansion_v1_166; human review should decide whether to keep both."
+    },
+    {
+      "code": "ANSWER_OVERUSE",
+      "severity": "WARN",
+      "questionRef": "knowledge_expansion_v2_066",
+      "field": "correctAnswer",
+      "detail": "\"Red blood cells\" appears 4 times in category \"biology\" within this batch; limit is 3."
+    },
+    {
+      "code": "ANSWER_OVERUSE",
+      "severity": "WARN",
+      "questionRef": "knowledge_expansion_v2_193",
+      "field": "correctAnswer",
+      "detail": "\"Thomas Edison\" appears 5 times in category \"inventions\" within this batch; limit is 3."
+    },
+    {
+      "code": "ANSWER_OVERUSE",
+      "severity": "WARN",
+      "questionRef": "knowledge_expansion_v2_061",
+      "field": "correctAnswer",
+      "detail": "\"DNA\" appears 4 times in category \"biology\" within this batch; limit is 3."
+    },
+    {
+      "code": "ANSWER_OVERUSE",
+      "severity": "WARN",
+      "questionRef": "knowledge_expansion_v2_130",
+      "field": "correctAnswer",
+      "detail": "\"Peru\" appears 5 times in category \"geography\" within this batch; limit is 3."
+    },
+    {
+      "code": "ANSWER_OVERUSE",
+      "severity": "WARN",
+      "questionRef": "knowledge_came_first_v1_228",
+      "field": "correctAnswer",
+      "detail": "\"The Buddha lived in northern India\" appears 5 times in category \"which_came_first\" within this batch; limit is 3."
+    },
+    {
+      "code": "ANSWER_OVERUSE",
+      "severity": "WARN",
+      "questionRef": "knowledge_came_first_v1_170",
+      "field": "correctAnswer",
+      "detail": "\"Athenian democracy developed under Cleisthenes\" appears 4 times in category \"which_came_first\" within this batch; limit is 3."
+    },
+    {
+      "code": "ANSWER_OVERUSE",
+      "severity": "WARN",
+      "questionRef": "knowledge_came_first_v1_231",
+      "field": "correctAnswer",
+      "detail": "\"The Rosetta Stone was discovered\" appears 5 times in category \"which_came_first\" within this batch; limit is 3."
+    },
+    {
+      "code": "ANSWER_OVERUSE",
+      "severity": "WARN",
+      "questionRef": "knowledge_came_first_v1_248",
+      "field": "correctAnswer",
+      "detail": "\"Constantinople fell to the Ottomans\" appears 5 times in category \"which_came_first\" within this batch; limit is 3."
+    },
+    {
+      "code": "ANSWER_OVERUSE",
+      "severity": "WARN",
+      "questionRef": "knowledge_came_first_v1_235",
+      "field": "correctAnswer",
+      "detail": "\"The Colosseum opened in Rome\" appears 5 times in category \"which_came_first\" within this batch; limit is 3."
+    },
+    {
+      "code": "ANSWER_OVERUSE",
+      "severity": "WARN",
+      "questionRef": "knowledge_came_first_v1_237",
+      "field": "correctAnswer",
+      "detail": "\"The Code of Hammurabi was created\" appears 6 times in category \"which_came_first\" within this batch; limit is 3."
+    },
+    {
+      "code": "ANSWER_OVERUSE",
+      "severity": "WARN",
+      "questionRef": "knowledge_came_first_v1_240",
+      "field": "correctAnswer",
+      "detail": "\"The steam engine patent by James Watt was granted\" appears 4 times in category \"which_came_first\" within this batch; limit is 3."
+    },
+    {
+      "code": "ANSWER_OVERUSE",
+      "severity": "WARN",
+      "questionRef": "knowledge_came_first_v1_204",
+      "field": "correctAnswer",
+      "detail": "\"The traditional founding of Rome occurred\" appears 4 times in category \"which_came_first\" within this batch; limit is 3."
+    },
+    {
+      "code": "ANSWER_OVERUSE",
+      "severity": "WARN",
+      "questionRef": "knowledge_came_first_v1_242",
+      "field": "correctAnswer",
+      "detail": "\"The Mongol Empire reached its greatest extent\" appears 4 times in category \"which_came_first\" within this batch; limit is 3."
+    },
+    {
+      "code": "ANSWER_OVERUSE",
+      "severity": "WARN",
+      "questionRef": "knowledge_came_first_v1_244",
+      "field": "correctAnswer",
+      "detail": "\"The First Emperor unified China\" appears 5 times in category \"which_came_first\" within this batch; limit is 3."
+    },
+    {
+      "code": "ANSWER_OVERUSE",
+      "severity": "WARN",
+      "questionRef": "knowledge_came_first_v1_249",
+      "field": "correctAnswer",
+      "detail": "\"Shakespeare's Globe Theatre opened\" appears 5 times in category \"which_came_first\" within this batch; limit is 3."
+    },
+    {
+      "code": "ANSWER_OVERUSE",
+      "severity": "WARN",
+      "questionRef": "knowledge_came_first_v1_217",
+      "field": "correctAnswer",
+      "detail": "\"The Magna Carta was sealed\" appears 4 times in category \"which_came_first\" within this batch; limit is 3."
+    },
+    {
+      "code": "ANSWER_OVERUSE",
+      "severity": "WARN",
+      "questionRef": "knowledge_came_first_v1_230",
+      "field": "correctAnswer",
+      "detail": "\"Julius Caesar was assassinated\" appears 5 times in category \"which_came_first\" within this batch; limit is 3."
+    },
+    {
+      "code": "ANSWER_OVERUSE",
+      "severity": "WARN",
+      "questionRef": "knowledge_came_first_v1_239",
+      "field": "correctAnswer",
+      "detail": "\"The Vikings raided Lindisfarne\" appears 4 times in category \"which_came_first\" within this batch; limit is 3."
+    },
+    {
+      "code": "ANSWER_OVERUSE",
+      "severity": "WARN",
+      "questionRef": "knowledge_came_first_v1_216",
+      "field": "correctAnswer",
+      "detail": "\"Columbus reached the Caribbean\" appears 4 times in category \"which_came_first\" within this batch; limit is 3."
+    },
+    {
+      "code": "ANSWER_OVERUSE",
+      "severity": "WARN",
+      "questionRef": "knowledge_came_first_v1_241",
+      "field": "correctAnswer",
+      "detail": "\"The Library of Alexandria was founded\" appears 5 times in category \"which_came_first\" within this batch; limit is 3."
+    },
+    {
+      "code": "ANSWER_OVERUSE",
+      "severity": "WARN",
+      "questionRef": "knowledge_came_first_v1_201",
+      "field": "correctAnswer",
+      "detail": "\"The Late Bronze Age collapse began\" appears 4 times in category \"which_came_first\" within this batch; limit is 3."
+    },
+    {
+      "code": "ANSWER_OVERUSE",
+      "severity": "WARN",
+      "questionRef": "knowledge_came_first_v1_243",
+      "field": "correctAnswer",
+      "detail": "\"The first known city-states emerged in Sumer\" appears 5 times in category \"which_came_first\" within this batch; limit is 3."
+    },
+    {
+      "code": "ANSWER_OVERUSE",
+      "severity": "WARN",
+      "questionRef": "knowledge_came_first_v1_246",
+      "field": "correctAnswer",
+      "detail": "\"The United States Declaration of Independence was adopted\" appears 4 times in category \"which_came_first\" within this batch; limit is 3."
+    },
+    {
+      "code": "ANSWER_OVERUSE",
+      "severity": "WARN",
+      "questionRef": "knowledge_came_first_v1_208",
+      "field": "correctAnswer",
+      "detail": "\"The Norman Conquest of England occurred\" appears 4 times in category \"which_came_first\" within this batch; limit is 3."
+    },
+    {
+      "code": "ANSWER_OVERUSE",
+      "severity": "WARN",
+      "questionRef": "knowledge_came_first_v1_220",
+      "field": "correctAnswer",
+      "detail": "\"The Battle of Marathon was fought\" appears 4 times in category \"which_came_first\" within this batch; limit is 3."
+    },
+    {
+      "code": "ANSWER_OVERUSE",
+      "severity": "WARN",
+      "questionRef": "knowledge_came_first_v1_213",
+      "field": "correctAnswer",
+      "detail": "\"The Great Pyramid of Giza was completed\" appears 4 times in category \"which_came_first\" within this batch; limit is 3."
+    },
+    {
+      "code": "ANSWER_OVERUSE",
+      "severity": "WARN",
+      "questionRef": "knowledge_came_first_v1_250",
+      "field": "correctAnswer",
+      "detail": "\"The Prophet Muhammad founded the community in Medina\" appears 4 times in category \"which_came_first\" within this batch; limit is 3."
+    },
+    {
+      "code": "ANSWER_OVERUSE",
+      "severity": "WARN",
+      "questionRef": "knowledge_came_first_v1_226",
+      "field": "correctAnswer",
+      "detail": "\"Charlemagne was crowned emperor\" appears 4 times in category \"which_came_first\" within this batch; limit is 3."
+    },
+    {
+      "code": "ANSWER_OVERUSE",
+      "severity": "WARN",
+      "questionRef": "knowledge_expansion_v2_239",
+      "field": "correctAnswer",
+      "detail": "\"Esperanto\" appears 4 times in category \"language\" within this batch; limit is 3."
+    },
+    {
+      "code": "DISTRACTOR_QUALITY",
+      "severity": "WARN",
+      "questionRef": "knowledge_v1_002",
+      "field": "options",
+      "detail": "Heuristic review needed; this does not certify semantic correctness. options mix numeric/date-like values with text labels."
+    },
+    {
+      "code": "DISTRACTOR_QUALITY",
+      "severity": "WARN",
+      "questionRef": "knowledge_v1_011",
+      "field": "options",
+      "detail": "Heuristic review needed; this does not certify semantic correctness. options mix numeric/date-like values with text labels."
+    },
+    {
+      "code": "DISTRACTOR_QUALITY",
+      "severity": "WARN",
+      "questionRef": "knowledge_v1_012",
+      "field": "options",
+      "detail": "Heuristic review needed; this does not certify semantic correctness. options mix numeric/date-like values with text labels."
+    },
+    {
+      "code": "DISTRACTOR_QUALITY",
+      "severity": "WARN",
+      "questionRef": "knowledge_v1_014",
+      "field": "options",
+      "detail": "Heuristic review needed; this does not certify semantic correctness. correct answer is much longer than every distractor."
+    },
+    {
+      "code": "DISTRACTOR_QUALITY",
+      "severity": "WARN",
+      "questionRef": "knowledge_v1_019",
+      "field": "options",
+      "detail": "Heuristic review needed; this does not certify semantic correctness. options mix numeric/date-like values with text labels."
+    },
+    {
+      "code": "DISTRACTOR_QUALITY",
+      "severity": "WARN",
+      "questionRef": "knowledge_v1_027",
+      "field": "options",
+      "detail": "Heuristic review needed; this does not certify semantic correctness. options mix numeric/date-like values with text labels."
+    },
+    {
+      "code": "DISTRACTOR_QUALITY",
+      "severity": "WARN",
+      "questionRef": "knowledge_v1_036",
+      "field": "options",
+      "detail": "Heuristic review needed; this does not certify semantic correctness. options mix numeric/date-like values with text labels."
+    },
+    {
+      "code": "DISTRACTOR_QUALITY",
+      "severity": "WARN",
+      "questionRef": "knowledge_v1_045",
+      "field": "options",
+      "detail": "Heuristic review needed; this does not certify semantic correctness. options mix numeric/date-like values with text labels."
+    },
+    {
+      "code": "DISTRACTOR_QUALITY",
+      "severity": "WARN",
+      "questionRef": "knowledge_v1_048",
+      "field": "options",
+      "detail": "Heuristic review needed; this does not certify semantic correctness. options mix numeric/date-like values with text labels."
+    },
+    {
+      "code": "DISTRACTOR_QUALITY",
+      "severity": "WARN",
+      "questionRef": "knowledge_v1_051",
+      "field": "options",
+      "detail": "Heuristic review needed; this does not certify semantic correctness. options mix numeric/date-like values with text labels."
+    },
+    {
+      "code": "DISTRACTOR_QUALITY",
+      "severity": "WARN",
+      "questionRef": "knowledge_v1_059",
+      "field": "options",
+      "detail": "Heuristic review needed; this does not certify semantic correctness. options mix numeric/date-like values with text labels."
+    },
+    {
+      "code": "DISTRACTOR_QUALITY",
+      "severity": "WARN",
+      "questionRef": "knowledge_v1_095",
+      "field": "options",
+      "detail": "Heuristic review needed; this does not certify semantic correctness. options mix numeric/date-like values with text labels."
+    },
+    {
+      "code": "DISTRACTOR_QUALITY",
+      "severity": "WARN",
+      "questionRef": "knowledge_v1_098",
+      "field": "options",
+      "detail": "Heuristic review needed; this does not certify semantic correctness. options mix numeric/date-like values with text labels."
+    },
+    {
+      "code": "DISTRACTOR_QUALITY",
+      "severity": "WARN",
+      "questionRef": "knowledge_v1_100",
+      "field": "options",
+      "detail": "Heuristic review needed; this does not certify semantic correctness. options mix numeric/date-like values with text labels."
+    },
+    {
+      "code": "DISTRACTOR_QUALITY",
+      "severity": "WARN",
+      "questionRef": "knowledge_v1_126",
+      "field": "options",
+      "detail": "Heuristic review needed; this does not certify semantic correctness. options mix numeric/date-like values with text labels."
+    },
+    {
+      "code": "DISTRACTOR_QUALITY",
+      "severity": "WARN",
+      "questionRef": "knowledge_v1_147",
+      "field": "options",
+      "detail": "Heuristic review needed; this does not certify semantic correctness. options mix numeric/date-like values with text labels."
+    },
+    {
+      "code": "DISTRACTOR_QUALITY",
+      "severity": "WARN",
+      "questionRef": "knowledge_v1_157",
+      "field": "options",
+      "detail": "Heuristic review needed; this does not certify semantic correctness. options mix numeric/date-like values with text labels."
+    },
+    {
+      "code": "DISTRACTOR_QUALITY",
+      "severity": "WARN",
+      "questionRef": "knowledge_v1_173",
+      "field": "options",
+      "detail": "Heuristic review needed; this does not certify semantic correctness. options mix numeric/date-like values with text labels."
+    },
+    {
+      "code": "DISTRACTOR_QUALITY",
+      "severity": "WARN",
+      "questionRef": "knowledge_v1_183",
+      "field": "options",
+      "detail": "Heuristic review needed; this does not certify semantic correctness. options mix numeric/date-like values with text labels."
+    },
+    {
+      "code": "DISTRACTOR_QUALITY",
+      "severity": "WARN",
+      "questionRef": "knowledge_v1_208",
+      "field": "options",
+      "detail": "Heuristic review needed; this does not certify semantic correctness. options mix numeric/date-like values with text labels."
+    },
+    {
+      "code": "DISTRACTOR_QUALITY",
+      "severity": "WARN",
+      "questionRef": "knowledge_v1_218",
+      "field": "options",
+      "detail": "Heuristic review needed; this does not certify semantic correctness. options mix numeric/date-like values with text labels."
+    },
+    {
+      "code": "DISTRACTOR_QUALITY",
+      "severity": "WARN",
+      "questionRef": "knowledge_v1_225",
+      "field": "options",
+      "detail": "Heuristic review needed; this does not certify semantic correctness. options mix numeric/date-like values with text labels."
+    },
+    {
+      "code": "DISTRACTOR_QUALITY",
+      "severity": "WARN",
+      "questionRef": "knowledge_v1_227",
+      "field": "options",
+      "detail": "Heuristic review needed; this does not certify semantic correctness. options mix numeric/date-like values with text labels."
+    },
+    {
+      "code": "DISTRACTOR_QUALITY",
+      "severity": "WARN",
+      "questionRef": "knowledge_v1_231",
+      "field": "options",
+      "detail": "Heuristic review needed; this does not certify semantic correctness. options mix numeric/date-like values with text labels."
+    },
+    {
+      "code": "DISTRACTOR_QUALITY",
+      "severity": "WARN",
+      "questionRef": "knowledge_v1_233",
+      "field": "options",
+      "detail": "Heuristic review needed; this does not certify semantic correctness. options mix numeric/date-like values with text labels."
+    },
+    {
+      "code": "DISTRACTOR_QUALITY",
+      "severity": "WARN",
+      "questionRef": "knowledge_v1_247",
+      "field": "options",
+      "detail": "Heuristic review needed; this does not certify semantic correctness. options mix numeric/date-like values with text labels."
+    },
+    {
+      "code": "DISTRACTOR_QUALITY",
+      "severity": "WARN",
+      "questionRef": "knowledge_v1_278",
+      "field": "options",
+      "detail": "Heuristic review needed; this does not certify semantic correctness. correct answer is much longer than every distractor."
+    },
+    {
+      "code": "DISTRACTOR_QUALITY",
+      "severity": "WARN",
+      "questionRef": "knowledge_v1_294",
+      "field": "options",
+      "detail": "Heuristic review needed; this does not certify semantic correctness. options mix numeric/date-like values with text labels."
+    },
+    {
+      "code": "DISTRACTOR_QUALITY",
+      "severity": "WARN",
+      "questionRef": "knowledge_v1_295",
+      "field": "options",
+      "detail": "Heuristic review needed; this does not certify semantic correctness. options mix numeric/date-like values with text labels."
+    },
+    {
+      "code": "DISTRACTOR_QUALITY",
+      "severity": "WARN",
+      "questionRef": "knowledge_v1_299",
+      "field": "options",
+      "detail": "Heuristic review needed; this does not certify semantic correctness. options mix numeric/date-like values with text labels."
+    },
+    {
+      "code": "DISTRACTOR_QUALITY",
+      "severity": "WARN",
+      "questionRef": "knowledge_came_first_v1_001",
+      "field": "options",
+      "detail": "Heuristic review needed; this does not certify semantic correctness. correct answer is much longer than every distractor."
+    },
+    {
+      "code": "DISTRACTOR_QUALITY",
+      "severity": "WARN",
+      "questionRef": "knowledge_came_first_v1_006",
+      "field": "options",
+      "detail": "Heuristic review needed; this does not certify semantic correctness. correct answer is much longer than every distractor."
+    },
+    {
+      "code": "DISTRACTOR_QUALITY",
+      "severity": "WARN",
+      "questionRef": "knowledge_came_first_v1_008",
+      "field": "options",
+      "detail": "Heuristic review needed; this does not certify semantic correctness. correct answer is much longer than every distractor."
+    },
+    {
+      "code": "DISTRACTOR_QUALITY",
+      "severity": "WARN",
+      "questionRef": "knowledge_came_first_v1_030",
+      "field": "options",
+      "detail": "Heuristic review needed; this does not certify semantic correctness. correct answer is much longer than every distractor."
+    },
+    {
+      "code": "DISTRACTOR_QUALITY",
+      "severity": "WARN",
+      "questionRef": "knowledge_came_first_v1_053",
+      "field": "options",
+      "detail": "Heuristic review needed; this does not certify semantic correctness. correct answer is much longer than every distractor."
+    },
+    {
+      "code": "DISTRACTOR_QUALITY",
+      "severity": "WARN",
+      "questionRef": "knowledge_came_first_v1_073",
+      "field": "options",
+      "detail": "Heuristic review needed; this does not certify semantic correctness. correct answer is much longer than every distractor."
+    },
+    {
+      "code": "DISTRACTOR_QUALITY",
+      "severity": "WARN",
+      "questionRef": "knowledge_came_first_v1_074",
+      "field": "options",
+      "detail": "Heuristic review needed; this does not certify semantic correctness. correct answer is much longer than every distractor."
+    },
+    {
+      "code": "DISTRACTOR_QUALITY",
+      "severity": "WARN",
+      "questionRef": "knowledge_came_first_v1_083",
+      "field": "options",
+      "detail": "Heuristic review needed; this does not certify semantic correctness. options mix numeric/date-like values with text labels."
+    },
+    {
+      "code": "DISTRACTOR_QUALITY",
+      "severity": "WARN",
+      "questionRef": "knowledge_came_first_v1_086",
+      "field": "options",
+      "detail": "Heuristic review needed; this does not certify semantic correctness. correct answer is much longer than every distractor."
+    },
+    {
+      "code": "DISTRACTOR_QUALITY",
+      "severity": "WARN",
+      "questionRef": "knowledge_came_first_v1_087",
+      "field": "options",
+      "detail": "Heuristic review needed; this does not certify semantic correctness. correct answer is much longer than every distractor."
+    },
+    {
+      "code": "DISTRACTOR_QUALITY",
+      "severity": "WARN",
+      "questionRef": "knowledge_came_first_v1_089",
+      "field": "options",
+      "detail": "Heuristic review needed; this does not certify semantic correctness. correct answer is much longer than every distractor."
+    },
+    {
+      "code": "DISTRACTOR_QUALITY",
+      "severity": "WARN",
+      "questionRef": "knowledge_came_first_v1_090",
+      "field": "options",
+      "detail": "Heuristic review needed; this does not certify semantic correctness. correct answer is much longer than every distractor."
+    },
+    {
+      "code": "DISTRACTOR_QUALITY",
+      "severity": "WARN",
+      "questionRef": "knowledge_came_first_v1_096",
+      "field": "options",
+      "detail": "Heuristic review needed; this does not certify semantic correctness. correct answer is much longer than every distractor."
+    },
+    {
+      "code": "DISTRACTOR_QUALITY",
+      "severity": "WARN",
+      "questionRef": "knowledge_came_first_v1_097",
+      "field": "options",
+      "detail": "Heuristic review needed; this does not certify semantic correctness. correct answer is much longer than every distractor."
+    },
+    {
+      "code": "DISTRACTOR_QUALITY",
+      "severity": "WARN",
+      "questionRef": "knowledge_came_first_v1_100",
+      "field": "options",
+      "detail": "Heuristic review needed; this does not certify semantic correctness. correct answer is much longer than every distractor."
+    },
+    {
+      "code": "DISTRACTOR_QUALITY",
+      "severity": "WARN",
+      "questionRef": "knowledge_came_first_v1_102",
+      "field": "options",
+      "detail": "Heuristic review needed; this does not certify semantic correctness. options mix numeric/date-like values with text labels."
+    },
+    {
+      "code": "DISTRACTOR_QUALITY",
+      "severity": "WARN",
+      "questionRef": "knowledge_came_first_v1_105",
+      "field": "options",
+      "detail": "Heuristic review needed; this does not certify semantic correctness. correct answer is much longer than every distractor."
+    },
+    {
+      "code": "DISTRACTOR_QUALITY",
+      "severity": "WARN",
+      "questionRef": "knowledge_came_first_v1_111",
+      "field": "options",
+      "detail": "Heuristic review needed; this does not certify semantic correctness. options mix numeric/date-like values with text labels."
+    },
+    {
+      "code": "DISTRACTOR_QUALITY",
+      "severity": "WARN",
+      "questionRef": "knowledge_came_first_v1_119",
+      "field": "options",
+      "detail": "Heuristic review needed; this does not certify semantic correctness. correct answer is much longer than every distractor; options mix numeric/date-like values with text labels."
+    },
+    {
+      "code": "DISTRACTOR_QUALITY",
+      "severity": "WARN",
+      "questionRef": "knowledge_came_first_v1_121",
+      "field": "options",
+      "detail": "Heuristic review needed; this does not certify semantic correctness. correct answer is much longer than every distractor."
+    },
+    {
+      "code": "DISTRACTOR_QUALITY",
+      "severity": "WARN",
+      "questionRef": "knowledge_came_first_v1_124",
+      "field": "options",
+      "detail": "Heuristic review needed; this does not certify semantic correctness. correct answer is much longer than every distractor."
+    },
+    {
+      "code": "DISTRACTOR_QUALITY",
+      "severity": "WARN",
+      "questionRef": "knowledge_came_first_v1_133",
+      "field": "options",
+      "detail": "Heuristic review needed; this does not certify semantic correctness. correct answer is much longer than every distractor."
+    },
+    {
+      "code": "DISTRACTOR_QUALITY",
+      "severity": "WARN",
+      "questionRef": "knowledge_came_first_v1_136",
+      "field": "options",
+      "detail": "Heuristic review needed; this does not certify semantic correctness. options mix numeric/date-like values with text labels."
+    },
+    {
+      "code": "DISTRACTOR_QUALITY",
+      "severity": "WARN",
+      "questionRef": "knowledge_came_first_v1_141",
+      "field": "options",
+      "detail": "Heuristic review needed; this does not certify semantic correctness. correct answer is much longer than every distractor; options mix numeric/date-like values with text labels."
+    },
+    {
+      "code": "DISTRACTOR_QUALITY",
+      "severity": "WARN",
+      "questionRef": "knowledge_came_first_v1_149",
+      "field": "options",
+      "detail": "Heuristic review needed; this does not certify semantic correctness. correct answer is much longer than every distractor."
+    },
+    {
+      "code": "DISTRACTOR_QUALITY",
+      "severity": "WARN",
+      "questionRef": "knowledge_came_first_v1_158",
+      "field": "options",
+      "detail": "Heuristic review needed; this does not certify semantic correctness. correct answer is much longer than every distractor."
+    },
+    {
+      "code": "DISTRACTOR_QUALITY",
+      "severity": "WARN",
+      "questionRef": "knowledge_came_first_v1_159",
+      "field": "options",
+      "detail": "Heuristic review needed; this does not certify semantic correctness. correct answer is much longer than every distractor."
+    },
+    {
+      "code": "DISTRACTOR_QUALITY",
+      "severity": "WARN",
+      "questionRef": "knowledge_came_first_v1_165",
+      "field": "options",
+      "detail": "Heuristic review needed; this does not certify semantic correctness. correct answer is much longer than every distractor."
+    },
+    {
+      "code": "DISTRACTOR_QUALITY",
+      "severity": "WARN",
+      "questionRef": "knowledge_came_first_v1_174",
+      "field": "options",
+      "detail": "Heuristic review needed; this does not certify semantic correctness. correct answer is much longer than every distractor."
+    },
+    {
+      "code": "DISTRACTOR_QUALITY",
+      "severity": "WARN",
+      "questionRef": "knowledge_came_first_v1_178",
+      "field": "options",
+      "detail": "Heuristic review needed; this does not certify semantic correctness. options mix numeric/date-like values with text labels."
+    },
+    {
+      "code": "DISTRACTOR_QUALITY",
+      "severity": "WARN",
+      "questionRef": "knowledge_came_first_v1_180",
+      "field": "options",
+      "detail": "Heuristic review needed; this does not certify semantic correctness. correct answer is much longer than every distractor."
+    },
+    {
+      "code": "DISTRACTOR_QUALITY",
+      "severity": "WARN",
+      "questionRef": "knowledge_came_first_v1_182",
+      "field": "options",
+      "detail": "Heuristic review needed; this does not certify semantic correctness. correct answer is much longer than every distractor."
+    },
+    {
+      "code": "DISTRACTOR_QUALITY",
+      "severity": "WARN",
+      "questionRef": "knowledge_came_first_v1_186",
+      "field": "options",
+      "detail": "Heuristic review needed; this does not certify semantic correctness. options mix numeric/date-like values with text labels."
+    },
+    {
+      "code": "DISTRACTOR_QUALITY",
+      "severity": "WARN",
+      "questionRef": "knowledge_came_first_v1_187",
+      "field": "options",
+      "detail": "Heuristic review needed; this does not certify semantic correctness. correct answer is much longer than every distractor."
+    },
+    {
+      "code": "DISTRACTOR_QUALITY",
+      "severity": "WARN",
+      "questionRef": "knowledge_came_first_v1_189",
+      "field": "options",
+      "detail": "Heuristic review needed; this does not certify semantic correctness. options mix numeric/date-like values with text labels."
+    },
+    {
+      "code": "DISTRACTOR_QUALITY",
+      "severity": "WARN",
+      "questionRef": "knowledge_came_first_v1_194",
+      "field": "options",
+      "detail": "Heuristic review needed; this does not certify semantic correctness. correct answer is much longer than every distractor."
+    },
+    {
+      "code": "DISTRACTOR_QUALITY",
+      "severity": "WARN",
+      "questionRef": "knowledge_came_first_v1_200",
+      "field": "options",
+      "detail": "Heuristic review needed; this does not certify semantic correctness. correct answer is much longer than every distractor."
+    },
+    {
+      "code": "DISTRACTOR_QUALITY",
+      "severity": "WARN",
+      "questionRef": "knowledge_came_first_v1_202",
+      "field": "options",
+      "detail": "Heuristic review needed; this does not certify semantic correctness. correct answer is much longer than every distractor."
+    },
+    {
+      "code": "DISTRACTOR_QUALITY",
+      "severity": "WARN",
+      "questionRef": "knowledge_came_first_v1_203",
+      "field": "options",
+      "detail": "Heuristic review needed; this does not certify semantic correctness. options mix numeric/date-like values with text labels."
+    },
+    {
+      "code": "DISTRACTOR_QUALITY",
+      "severity": "WARN",
+      "questionRef": "knowledge_came_first_v1_206",
+      "field": "options",
+      "detail": "Heuristic review needed; this does not certify semantic correctness. correct answer is much longer than every distractor; options mix numeric/date-like values with text labels."
+    },
+    {
+      "code": "DISTRACTOR_QUALITY",
+      "severity": "WARN",
+      "questionRef": "knowledge_came_first_v1_208",
+      "field": "options",
+      "detail": "Heuristic review needed; this does not certify semantic correctness. correct answer is much longer than every distractor."
+    },
+    {
+      "code": "DISTRACTOR_QUALITY",
+      "severity": "WARN",
+      "questionRef": "knowledge_came_first_v1_215",
+      "field": "options",
+      "detail": "Heuristic review needed; this does not certify semantic correctness. correct answer is much longer than every distractor."
+    },
+    {
+      "code": "DISTRACTOR_QUALITY",
+      "severity": "WARN",
+      "questionRef": "knowledge_came_first_v1_216",
+      "field": "options",
+      "detail": "Heuristic review needed; this does not certify semantic correctness. correct answer is much longer than every distractor."
+    },
+    {
+      "code": "DISTRACTOR_QUALITY",
+      "severity": "WARN",
+      "questionRef": "knowledge_came_first_v1_224",
+      "field": "options",
+      "detail": "Heuristic review needed; this does not certify semantic correctness. options mix numeric/date-like values with text labels."
+    },
+    {
+      "code": "DISTRACTOR_QUALITY",
+      "severity": "WARN",
+      "questionRef": "knowledge_came_first_v1_230",
+      "field": "options",
+      "detail": "Heuristic review needed; this does not certify semantic correctness. options mix numeric/date-like values with text labels."
+    },
+    {
+      "code": "DISTRACTOR_QUALITY",
+      "severity": "WARN",
+      "questionRef": "knowledge_came_first_v1_232",
+      "field": "options",
+      "detail": "Heuristic review needed; this does not certify semantic correctness. correct answer is much longer than every distractor."
+    },
+    {
+      "code": "DISTRACTOR_QUALITY",
+      "severity": "WARN",
+      "questionRef": "knowledge_came_first_v1_233",
+      "field": "options",
+      "detail": "Heuristic review needed; this does not certify semantic correctness. correct answer is much longer than every distractor."
+    },
+    {
+      "code": "DISTRACTOR_QUALITY",
+      "severity": "WARN",
+      "questionRef": "knowledge_came_first_v1_241",
+      "field": "options",
+      "detail": "Heuristic review needed; this does not certify semantic correctness. correct answer is much longer than every distractor."
+    },
+    {
+      "code": "DISTRACTOR_QUALITY",
+      "severity": "WARN",
+      "questionRef": "knowledge_came_first_v1_242",
+      "field": "options",
+      "detail": "Heuristic review needed; this does not certify semantic correctness. correct answer is much longer than every distractor."
+    },
+    {
+      "code": "DISTRACTOR_QUALITY",
+      "severity": "WARN",
+      "questionRef": "knowledge_came_first_v1_248",
+      "field": "options",
+      "detail": "Heuristic review needed; this does not certify semantic correctness. correct answer is much longer than every distractor."
+    },
+    {
+      "code": "DISTRACTOR_QUALITY",
+      "severity": "WARN",
+      "questionRef": "challenge_arena_capitals_v2_164",
+      "field": "options",
+      "detail": "Heuristic review needed; this does not certify semantic correctness. correct answer is much longer than every distractor."
+    }
+  ],
+  "rollup": {
+    "total": 146,
+    "bySeverity": {
+      "ERROR": 0,
+      "WARN": 146
+    },
+    "byCode": {
+      "STRUCTURAL_INVALID": 0,
+      "DISTRACTOR_MATCHES_CORRECT": 0,
+      "EXACT_DUPLICATE": 0,
+      "NEAR_DUPLICATE": 36,
+      "ANSWER_OVERUSE": 29,
+      "DISTRACTOR_QUALITY": 81
+    }
+  }
+}
+Content QA passed: 146 findings (0 ERROR, 146 WARN).

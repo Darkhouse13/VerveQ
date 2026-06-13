@@ -1,0 +1,28 @@
+{
+  "checksums": [
+    "knowledge_v1_005",
+    "knowledge_v1_240",
+    "knowledge_expansion_v2_033",
+    "knowledge_expansion_v2_065",
+    "knowledge_expansion_v2_068",
+    "knowledge_expansion_v2_121",
+    "knowledge_expansion_v2_152",
+    "knowledge_expansion_v2_154",
+    "knowledge_expansion_v2_183",
+    "knowledge_expansion_v2_185",
+    "knowledge_expansion_v2_242"
+  ],
+  "keptOriginals": {
+    "knowledge_v1_005": "challenge_arena_capitals_v1_002",
+    "knowledge_v1_240": "challenge_arena_capitals_v1_003",
+    "knowledge_expansion_v2_033": "knowledge_v1_180",
+    "knowledge_expansion_v2_065": "knowledge_v1_034",
+    "knowledge_expansion_v2_068": "knowledge_v1_112",
+    "knowledge_expansion_v2_121": "challenge_arena_capitals_v1_003",
+    "knowledge_expansion_v2_152": "knowledge_v1_068",
+    "knowledge_expansion_v2_154": "knowledge_v1_051",
+    "knowledge_expansion_v2_183": "knowledge_v1_094",
+    "knowledge_expansion_v2_185": "knowledge_v1_126",
+    "knowledge_expansion_v2_242": "knowledge_v1_273"
+  }
+}
