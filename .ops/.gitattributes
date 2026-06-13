@@ -1,0 +1,8 @@
+# .ops/ holds immutable operational audit artifacts. Their whole value is
+# byte-fidelity to exactly what ran against prod, so disable EOL/encoding
+# normalization: CRLF line endings and UTF-16 console captures must survive
+# verbatim (core.autocrlf=input would otherwise rewrite CRLF -> LF on commit).
+*.json  -text
+*.txt   -text
+# READMEs are ordinary docs, not captured artifacts.
+README.md text
