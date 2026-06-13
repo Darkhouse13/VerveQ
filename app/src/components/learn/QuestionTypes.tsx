@@ -30,7 +30,7 @@ function McqRenderer({ question, draft, setDraft, reveal, verdict }: RendererPro
   const q = question as LearnMcqQuestion;
   const picked = typeof draft === "string" ? draft : null;
   return (
-    <div className="flex flex-col gap-2.5">
+    <div className="flex flex-col gap-2 md:gap-2.5">
       {q.options.map((o, index) => {
         const isPicked = picked === o.key;
         // De-leaked: the server keeps the correct answer private, returning only
@@ -45,7 +45,7 @@ function McqRenderer({ question, draft, setDraft, reveal, verdict }: RendererPro
             disabled={reveal}
             onClick={() => setDraft(o.key)}
             className={cn(
-              "neo-border rounded-xl px-4 py-3.5 text-left flex items-center gap-3 font-medium transition-all",
+              "neo-border rounded-xl px-4 py-2.5 text-left flex items-center gap-3 font-medium transition-all md:py-3.5",
               correct && "bg-success text-success-foreground",
               wrong && "bg-destructive text-destructive-foreground",
               !reveal && isPicked && "bg-foreground text-background translate-x-0.5 translate-y-0.5",

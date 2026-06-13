@@ -77,7 +77,7 @@ export function TeachingReveal({
   const [felt, setFelt] = useState<"learn" | "test" | null>(null);
 
   return (
-    <div className="flex flex-col gap-3.5">
+    <div className="flex flex-col gap-2.5 md:gap-3.5">
       <div className="flex items-center gap-2.5">
         <Chip
           className={cn(
@@ -94,13 +94,16 @@ export function TeachingReveal({
         )}
       </div>
 
-      {/* The teaching payload — the WHY, never the answer. */}
-      <div className="neo-border neo-shadow rounded-xl bg-card p-4">
-        <div className="mb-2 flex items-center gap-2">
+      {/* The teaching payload — the WHY, never the answer. Tighter on mobile so the
+          rating below it stays on a no-scroll viewport. */}
+      <div className="neo-border neo-shadow rounded-xl bg-card p-3.5 md:p-4">
+        <div className="mb-1.5 flex items-center gap-2 md:mb-2">
           <Lightbulb size={20} strokeWidth={2.5} />
           <span className="font-heading text-[15px]">{t("reveal.ideaTitle")}</span>
         </div>
-        <p className="m-0 text-[15px] font-medium leading-relaxed">{verdict.teach}</p>
+        <p className="m-0 text-[14px] font-medium leading-snug md:text-[15px] md:leading-relaxed">
+          {verdict.teach}
+        </p>
       </div>
 
       {/* Spaced-rep self-rate → feeds the schedule. */}
@@ -130,8 +133,11 @@ export function TeachingReveal({
         </div>
       </div>
 
-      {/* The learning-or-test loop. */}
-      <div className="rounded-xl border-2 border-dashed border-foreground px-3.5 py-3">
+      {/* The learning-or-test loop. Optional, non-gating signal (continue is gated
+          only on the rating). Hidden below md so the rating + continue both stay on
+          the no-scroll mobile viewport — "everything else yields" to the rating. The
+          recordFeltSignal binding is unchanged and still collected on desktop. */}
+      <div className="hidden rounded-xl border-2 border-dashed border-foreground px-3.5 py-3 md:block">
         <div className="flex items-center justify-between gap-2.5">
           <span className="text-[13.5px] font-semibold">{t("reveal.feltQuestion")}</span>
           <div className="flex gap-1.5">
@@ -175,14 +181,16 @@ export function TeachingReveal({
         disabled={!rated}
         onClick={onContinue}
         className={cn(
-          "w-full neo-border neo-shadow rounded-xl bg-primary px-4 py-3.5 font-heading font-bold text-primary-foreground transition-all active:translate-x-0.5 active:translate-y-0.5 active:shadow-none",
+          "w-full neo-border neo-shadow rounded-xl bg-primary px-4 py-3 font-heading font-bold text-primary-foreground transition-all active:translate-x-0.5 active:translate-y-0.5 active:shadow-none md:py-3.5",
           !rated && "opacity-50 pointer-events-none",
         )}
       >
         {last ? t("reveal.finish") : t("reveal.next")}
       </button>
 
-      <div className="flex items-center gap-3 font-mono text-[11px] text-muted-foreground">
+      {/* Decorative reassurance (no binding) — hidden on mobile to keep the rating
+          + continue on the fold; the rail's Learn-promise carries the same idea. */}
+      <div className="hidden items-center gap-3 font-mono text-[11px] text-muted-foreground md:flex">
         <CircleHelp size={14} />
         <span>{t("reveal.scheduleNote")}</span>
       </div>

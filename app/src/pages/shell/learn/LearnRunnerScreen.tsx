@@ -16,7 +16,7 @@ import { useLearnSession } from "@/lib/learn/useLearnSession";
 import { useLearnGrading } from "@/lib/learn/useLearnGrading";
 import { learnPath, LEARN_SUBJECT_PARAM } from "@/lib/learn/useLearnSubject";
 import { SHELL_ROUTES } from "@/lib/shellRoutes";
-import type { LearnFelt, LearnRating, LearnVerdict } from "@/lib/learn/contract";
+import type { LearnFelt, LearnQuestion, LearnRating, LearnVerdict } from "@/lib/learn/contract";
 
 type Stage = "answer" | "branch" | "reveal";
 
@@ -72,6 +72,107 @@ function SessionSummary({
           {t("summary.reviewPlan")}
         </button>
       </div>
+    </div>
+  );
+}
+
+/**
+ * The play column — prompt, the active question renderer, and (post-answer) the
+ * teaching reveal with its spaced-rep rating. Presentational: it owns no session
+ * or grading logic; the runner threads state and the graded handlers in. Exported
+ * so the dev render harness can mount the real markup at mobile viewports.
+ */
+export interface RunnerColumnProps {
+  q: LearnQuestion;
+  total: number;
+  idx: number;
+  stage: Stage;
+  typeLabel: string;
+  draft: LearnDraft;
+  setDraft: (next: LearnDraft) => void;
+  verdict: LearnVerdict | null;
+  grading: boolean;
+  onSubmit: () => void;
+  onBranchRetry: () => void;
+  onBranchShowWhy: () => void;
+  onRate: (rating: LearnRating) => void;
+  onFelt: (felt: LearnFelt) => void;
+  onContinue: () => void;
+}
+
+export function RunnerColumn({
+  q,
+  total,
+  idx,
+  stage,
+  typeLabel,
+  draft,
+  setDraft,
+  verdict,
+  grading,
+  onSubmit,
+  onBranchRetry,
+  onBranchShowWhy,
+  onRate,
+  onFelt,
+  onContinue,
+}: RunnerColumnProps) {
+  const { t } = useTranslation("learn");
+  return (
+    <div className="flex min-h-0 flex-col gap-3 overflow-y-auto pr-0.5 md:gap-3.5">
+      <div className="flex items-center justify-between gap-2 md:hidden">
+        <Chip className="bg-foreground text-background">{typeLabel}</Chip>
+        <LadderDots total={total} current={idx + (stage === "reveal" ? 1 : 0)} />
+      </div>
+      {/* The concept line is desktop-only context. On the no-scroll mobile runner
+          it pushes the post-answer rating past the fold and is redundant with the
+          reveal, so it's hidden below md (mirrors the desktop rail drop, f555304). */}
+      <Eyebrow className="hidden break-words md:block">{q.subject}</Eyebrow>
+      <div className="font-heading text-xl leading-tight md:text-[27px]">{q.prompt}</div>
+
+      {stage !== "branch" && (
+        <QuestionRenderer
+          question={q}
+          draft={draft}
+          setDraft={setDraft}
+          reveal={stage === "reveal"}
+          verdict={verdict}
+        />
+      )}
+
+      {stage === "branch" && verdict && (
+        <>
+          <QuestionRenderer
+            question={q}
+            draft={draft}
+            setDraft={setDraft}
+            reveal={false}
+            verdict={null}
+          />
+          <MistakeBranch verdict={verdict} onRetry={onBranchRetry} onShowWhy={onBranchShowWhy} />
+        </>
+      )}
+
+      {stage === "answer" && (
+        <button
+          type="button"
+          disabled={!canSubmit(q, draft) || grading}
+          onClick={onSubmit}
+          className="mt-1 w-full neo-border neo-shadow rounded-xl bg-primary px-4 py-3.5 font-heading font-bold text-primary-foreground transition-all active:translate-x-0.5 active:translate-y-0.5 active:shadow-none disabled:opacity-50 disabled:pointer-events-none"
+        >
+          {grading ? t("run.checking") : t("run.check")}
+        </button>
+      )}
+
+      {stage === "reveal" && verdict && (
+        <TeachingReveal
+          verdict={verdict}
+          last={idx + 1 >= total}
+          onRate={onRate}
+          onFelt={onFelt}
+          onContinue={onContinue}
+        />
+      )}
     </div>
   );
 }
@@ -235,75 +336,34 @@ export default function LearnRunnerScreen() {
     </div>
   );
 
-  const column = (
-    <div className="flex min-h-0 flex-col gap-3.5 overflow-y-auto pr-0.5">
-      <div className="flex items-center justify-between gap-2 md:hidden">
-        <Chip className="bg-foreground text-background">{typeLabel}</Chip>
-        <LadderDots total={total} current={idx + (stage === "reveal" ? 1 : 0)} />
-      </div>
-      <Eyebrow className="break-words">{q.subject}</Eyebrow>
-      <div className="font-heading text-2xl leading-tight md:text-[27px]">{q.prompt}</div>
-
-      {stage !== "branch" && (
-        <QuestionRenderer
-          question={q}
-          draft={draft}
-          setDraft={setDraft}
-          reveal={stage === "reveal"}
-          verdict={verdict}
-        />
-      )}
-
-      {stage === "branch" && verdict && (
-        <>
-          <QuestionRenderer
-            question={q}
-            draft={draft}
-            setDraft={setDraft}
-            reveal={false}
-            verdict={null}
-          />
-          <MistakeBranch
-            verdict={verdict}
-            onRetry={() => {
-              setDraft(null);
-              setVerdict(null);
-              setStage("answer");
-            }}
-            onShowWhy={() => setStage("reveal")}
-          />
-        </>
-      )}
-
-      {stage === "answer" && (
-        <button
-          type="button"
-          disabled={!canSubmit(q, draft) || grading}
-          onClick={submit}
-          className="mt-1 w-full neo-border neo-shadow rounded-xl bg-primary px-4 py-3.5 font-heading font-bold text-primary-foreground transition-all active:translate-x-0.5 active:translate-y-0.5 active:shadow-none disabled:opacity-50 disabled:pointer-events-none"
-        >
-          {grading ? t("run.checking") : t("run.check")}
-        </button>
-      )}
-
-      {stage === "reveal" && verdict && (
-        <TeachingReveal
-          verdict={verdict}
-          last={idx + 1 >= total}
-          onRate={onRate}
-          onFelt={onFelt}
-          onContinue={() => void next()}
-        />
-      )}
-    </div>
-  );
-
   return (
     <LearnShell>
-      <div className="flex-1 min-h-0 p-4 md:p-6">
+      <div className="flex-1 min-h-0 p-3 md:p-6">
         <div className="grid h-full min-h-0 gap-4 md:grid-cols-[340px_1fr] md:gap-5">
           <div className="hidden md:block min-h-0">{rail}</div>
-          <div className="min-h-0 w-full md:max-w-3xl">{column}</div>
+          <div className="min-h-0 w-full md:max-w-3xl">
+            <RunnerColumn
+              q={q}
+              total={total}
+              idx={idx}
+              stage={stage}
+              typeLabel={typeLabel}
+              draft={draft}
+              setDraft={setDraft}
+              verdict={verdict}
+              grading={grading}
+              onSubmit={submit}
+              onBranchRetry={() => {
+                setDraft(null);
+                setVerdict(null);
+                setStage("answer");
+              }}
+              onBranchShowWhy={() => setStage("reveal")}
+              onRate={onRate}
+              onFelt={onFelt}
+              onContinue={() => void next()}
+            />
+          </div>
         </div>
       </div>
     </LearnShell>
