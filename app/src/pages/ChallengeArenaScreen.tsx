@@ -612,106 +612,116 @@ export function LobbyView({
     }
   };
 
+  // Desktop splits the lobby into two columns — room info (code · teams ·
+  // players) on the left, status + controls on the right — so the room fits
+  // common laptop heights without the controls falling below the fold, even
+  // at FFA-5 capacity. On mobile the grid collapses to one column whose child
+  // order (code → teams → roster → waiting → controls) and 1.25rem rhythm are
+  // identical to the original stack.
   return (
-    <div className="space-y-5">
-      <NeoCard shadow="lg" className="text-center py-5">
-        <p className="text-[10px] font-heading uppercase text-muted-foreground mb-1">
-          Arena code
-        </p>
-        <p className="font-mono font-bold text-4xl tracking-[0.4em]">{room.code}</p>
-        <p className="text-xs text-muted-foreground mt-1">
-          {active.length}/{capacity} joined · {arenaModeLabel(room.mode)}
-        </p>
-        <div className="mt-4 grid grid-cols-2 gap-2">
-          <NeoButton variant="blue" size="md" onClick={handleShare}>
-            <Share2 size={14} strokeWidth={3} />
-            Share
-          </NeoButton>
-          <NeoButton variant="secondary" size="md" onClick={handleCopy}>
-            <Copy size={14} strokeWidth={3} />
-            Copy link
-          </NeoButton>
-        </div>
-      </NeoCard>
+    <div className="md:grid md:grid-cols-2 md:gap-5 md:items-start">
+      <div className="space-y-5">
+        <NeoCard shadow="lg" className="text-center py-5">
+          <p className="text-[10px] font-heading uppercase text-muted-foreground mb-1">
+            Arena code
+          </p>
+          <p className="font-mono font-bold text-4xl tracking-[0.4em]">{room.code}</p>
+          <p className="text-xs text-muted-foreground mt-1">
+            {active.length}/{capacity} joined · {arenaModeLabel(room.mode)}
+          </p>
+          <div className="mt-4 grid grid-cols-2 gap-2">
+            <NeoButton variant="blue" size="md" onClick={handleShare}>
+              <Share2 size={14} strokeWidth={3} />
+              Share
+            </NeoButton>
+            <NeoButton variant="secondary" size="md" onClick={handleCopy}>
+              <Copy size={14} strokeWidth={3} />
+              Copy link
+            </NeoButton>
+          </div>
+        </NeoCard>
 
-      {room.mode === "2v2" && (
-        <TeamPicker
-          me={me}
-          active={active}
-          teamCounts={teamCounts}
-          onPick={handleTeam}
+        {room.mode === "2v2" && (
+          <TeamPicker
+            me={me}
+            active={active}
+            teamCounts={teamCounts}
+            onPick={handleTeam}
+          />
+        )}
+
+        <Roster
+          room={room}
+          userId={userId}
+          capacity={capacity}
         />
-      )}
+      </div>
 
-      <Roster
-        room={room}
-        userId={userId}
-        capacity={capacity}
-      />
+      <div className="space-y-5 mt-5 md:mt-0">
+        {!isHost && (
+          <NeoCard className="text-center">
+            <p className="text-xs text-muted-foreground">
+              Waiting for the host to start. Mark yourself ready when you&apos;re good
+              to go.
+            </p>
+          </NeoCard>
+        )}
 
-      {!isHost && (
-        <NeoCard className="text-center">
-          <p className="text-xs text-muted-foreground">
-            Waiting for the host to start. Mark yourself ready when you&apos;re good
-            to go.
-          </p>
-        </NeoCard>
-      )}
+        {isHost && blockedReasons.length > 0 && (
+          <NeoCard color="default" className="text-xs">
+            <p className="font-heading font-bold uppercase mb-1.5">
+              Waiting on
+            </p>
+            <ul className="space-y-1 list-disc list-inside text-muted-foreground">
+              {blockedReasons.map((r) => (
+                <li key={r}>{r}</li>
+              ))}
+            </ul>
+          </NeoCard>
+        )}
 
-      {isHost && blockedReasons.length > 0 && (
-        <NeoCard color="default" className="text-xs">
-          <p className="font-heading font-bold uppercase mb-1.5">
-            Waiting on
-          </p>
-          <ul className="space-y-1 list-disc list-inside text-muted-foreground">
-            {blockedReasons.map((r) => (
-              <li key={r}>{r}</li>
-            ))}
-          </ul>
-        </NeoCard>
-      )}
+        <div className="space-y-2.5">
+          <NeoButton
+            variant={me?.ready ? "success" : "primary"}
+            size="full"
+            onClick={handleReady}
+          >
+            {me?.ready ? (
+              <>
+                <Check size={16} strokeWidth={3} /> Ready
+              </>
+            ) : (
+              "Mark me ready"
+            )}
+          </NeoButton>
 
-      <div className="space-y-2.5">
-        <NeoButton
-          variant={me?.ready ? "success" : "primary"}
-          size="full"
-          onClick={handleReady}
-        >
-          {me?.ready ? (
-            <>
-              <Check size={16} strokeWidth={3} /> Ready
-            </>
-          ) : (
-            "Mark me ready"
+          {isHost && (
+            <NeoButton
+              variant="primary"
+              size="full"
+              disabled={!canStartNormal}
+              onClick={() => void handleStart(false)}
+            >
+              Start arena
+            </NeoButton>
           )}
-        </NeoButton>
 
-        {isHost && (
-          <NeoButton
-            variant="primary"
-            size="full"
-            disabled={!canStartNormal}
-            onClick={() => void handleStart(false)}
-          >
-            Start arena
-          </NeoButton>
-        )}
-
-        {isHost && !canStartNormal && (
-          <NeoButton
-            variant={forceAvailable ? "danger" : "ghost"}
-            size="full"
-            disabled={!forceAvailable}
-            onClick={() => void handleStart(true)}
-          >
-            {forceAvailable
-              ? "Force start (drops unready)"
-              : `Force start available in ${formatCountdown(
-                  Math.max(0, room.forceStartAvailableAt - tick),
-                  FORCE_START_GRACE_LABEL_MS,
-                )}`}
-          </NeoButton>
-        )}
+          {isHost && !canStartNormal && (
+            <NeoButton
+              variant={forceAvailable ? "danger" : "ghost"}
+              size="full"
+              disabled={!forceAvailable}
+              onClick={() => void handleStart(true)}
+            >
+              {forceAvailable
+                ? "Force start (drops unready)"
+                : `Force start available in ${formatCountdown(
+                    Math.max(0, room.forceStartAvailableAt - tick),
+                    FORCE_START_GRACE_LABEL_MS,
+                  )}`}
+            </NeoButton>
+          )}
+        </div>
       </div>
     </div>
   );

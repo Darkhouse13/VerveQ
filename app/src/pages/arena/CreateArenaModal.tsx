@@ -34,8 +34,8 @@ export default function CreateArenaModal({
   };
 
   return (
-    <div className="fixed inset-0 z-[100] bg-background overflow-hidden">
-      <div className="max-w-md mx-auto h-dvh max-h-dvh flex flex-col">
+    <div className="fixed inset-0 z-[100] flex flex-col bg-background overflow-hidden md:items-center md:justify-center md:bg-background/80 md:backdrop-blur-sm md:p-6">
+      <div className="w-full md:max-w-md mx-auto flex flex-col bg-background h-dvh max-h-dvh md:h-auto md:max-h-[88dvh] md:neo-border md:neo-shadow-lg md:rounded-xl md:overflow-hidden">
         <div className="flex items-center justify-between px-5 pt-4 pb-3 shrink-0">
           <button
             type="button"
@@ -49,7 +49,7 @@ export default function CreateArenaModal({
           <div className="w-9" />
         </div>
 
-        <div className="px-5 flex-1 min-h-0 overflow-y-auto overscroll-contain scrollbar-none">
+        <div className="px-5 flex-1 min-h-0 overflow-y-auto overscroll-contain scrollbar-none md:flex-none md:max-h-[60vh]">
           <p className="text-xs text-muted-foreground mb-3">
             Pick a mode. You&apos;ll get a code to share with friends.
           </p>

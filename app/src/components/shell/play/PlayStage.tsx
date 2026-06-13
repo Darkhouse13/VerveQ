@@ -39,6 +39,14 @@ interface PlayStageProps {
   strip?: ReactNode;
   /** Theme container class (e.g. `theme-learn`). */
   theme?: string;
+  /**
+   * Opt-in wide layout for rail-less phases (e.g. the Arena lobby): the content
+   * spans a roomy centered column instead of the phone-width answering column,
+   * letting a screen that owns its own desktop grid use the viewport width and
+   * fit common laptop heights without scrolling. Default keeps the 3-column
+   * stage byte-identical for every in-game caller.
+   */
+  wide?: boolean;
   /** Centered answering column. */
   children: ReactNode;
 }
@@ -56,6 +64,7 @@ export function PlayStage({
   right,
   strip,
   theme,
+  wide = false,
   children,
 }: PlayStageProps) {
   return (
@@ -111,20 +120,29 @@ export function PlayStage({
       >
         {strip && <div className="md:hidden shrink-0 mb-3">{strip}</div>}
 
-        <div className="flex-1 min-h-0 flex flex-col md:grid md:grid-cols-[1fr_28rem_1fr] md:gap-6 md:items-stretch">
-          <aside className={cn(RAIL, "md:justify-self-end md:pr-1")}>{left}</aside>
-
-          {/* Visible scrollbar: on short viewports the controls live below the
-              fold and a hidden-scroll column reads as a broken, unclickable game.
-              overflow-x stays clipped so the pressed-state translate never
-              spawns a horizontal scrollbar — px-1.5 keeps the 4px neo shadows
-              inside the clip so cards don't look cut on the right. */}
-          <div className="w-full max-w-md mx-auto flex-1 min-h-0 md:flex-none md:h-full overflow-y-auto overflow-x-hidden px-1.5 pb-4 md:py-3">
+        {wide ? (
+          // Rail-less wide layout: one roomy centered column. The screen owns
+          // its own md grid inside `children`, so we hand it the full width
+          // (capped for readability) and keep the internal scroll safety valve.
+          <div className="w-full max-w-3xl mx-auto flex-1 min-h-0 overflow-y-auto overflow-x-hidden px-1.5 pb-4 md:py-3">
             {children}
           </div>
+        ) : (
+          <div className="flex-1 min-h-0 flex flex-col md:grid md:grid-cols-[1fr_28rem_1fr] md:gap-6 md:items-stretch">
+            <aside className={cn(RAIL, "md:justify-self-end md:pr-1")}>{left}</aside>
 
-          <aside className={cn(RAIL, "md:pl-1")}>{right}</aside>
-        </div>
+            {/* Visible scrollbar: on short viewports the controls live below the
+                fold and a hidden-scroll column reads as a broken, unclickable game.
+                overflow-x stays clipped so the pressed-state translate never
+                spawns a horizontal scrollbar — px-1.5 keeps the 4px neo shadows
+                inside the clip so cards don't look cut on the right. */}
+            <div className="w-full max-w-md mx-auto flex-1 min-h-0 md:flex-none md:h-full overflow-y-auto overflow-x-hidden px-1.5 pb-4 md:py-3">
+              {children}
+            </div>
+
+            <aside className={cn(RAIL, "md:pl-1")}>{right}</aside>
+          </div>
+        )}
       </main>
     </div>
   );

@@ -353,6 +353,9 @@ function ArenaPlayRoom({ code, userId }: { code: string; userId: Id<"users"> | u
       left={left}
       right={right}
       strip={strip}
+      // The lobby has no ambient rails and owns its own desktop grid, so it
+      // takes the wide column to use the viewport and fit laptop heights.
+      wide={phase === "lobby"}
     >
       {center}
     </PlayStage>
