@@ -208,12 +208,8 @@ export default function LearnRunnerScreen() {
   // Left context rail (desktop only).
   const rail = (
     <div className="neo-border neo-shadow rounded-xl bg-card p-5 flex flex-col gap-4 min-h-0">
-      <div className="flex items-start justify-between gap-2">
-        {/* Long topic labels wrap (overriding Chip's nowrap) instead of clipping. */}
-        <Chip className="bg-foreground text-background min-w-0 max-w-full whitespace-normal break-words text-left">
-          {q.subject}
-        </Chip>
-        <Chip className="shrink-0">{typeLabel}</Chip>
+      <div className="flex items-start">
+        <Chip>{typeLabel}</Chip>
       </div>
       <div>
         <Eyebrow className="mb-2 block">{t("run.progress")}</Eyebrow>
