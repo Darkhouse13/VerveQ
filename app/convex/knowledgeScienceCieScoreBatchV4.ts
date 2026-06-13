@@ -172,7 +172,7 @@ const ELEMENT_ROWS = [
   ["Oganesson", "Q1307", "Og", 118],
 ] as const;
 
-const elementsByAtomicNumber = new Map(
+const elementsByAtomicNumber = new Map<number, ElementFact>(
   ELEMENT_ROWS.map(([name, qid, symbol, atomicNumber]) => [
     atomicNumber,
     element(name, qid, symbol, atomicNumber),

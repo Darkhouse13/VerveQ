@@ -270,14 +270,14 @@ const SI_UNIT_ROWS = [
   ["becquerel", "becquerel", "Q102573", "Bq", "special-name", "en"],
 ] as const;
 
-const elementsByAtomicNumber = new Map(
+const elementsByAtomicNumber = new Map<number, ElementFact>(
   ELEMENT_ROWS.map(([name, qid, symbol, atomicNumber]) => [
     atomicNumber,
     element(name, qid, symbol, atomicNumber),
   ]),
 );
 
-const siUnitsByKey = new Map(
+const siUnitsByKey = new Map<string, SiUnitFact>(
   SI_UNIT_ROWS.map(([key, name, qid, symbol, unitClass, symbolLanguage]) => [
     key,
     siUnit(name, qid, symbol, unitClass, symbolLanguage),

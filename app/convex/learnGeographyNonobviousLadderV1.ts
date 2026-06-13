@@ -30,8 +30,10 @@ type LearnModeProvenance = {
 
 export type LearnModeDistractor = {
   text: string;
-  misconception: string;
-  whyChosen: string;
+  // Authoring/audit context — pipeline-proof fixtures ship without them and
+  // no runtime consumer reads them, so they are optional.
+  misconception?: string;
+  whyChosen?: string;
   reveal: string;
 };
 
