@@ -4,7 +4,7 @@ import { ChevronRight } from "lucide-react";
 import { NeoCard } from "@/components/neo/NeoCard";
 import { ShellLayout } from "@/components/shell/ShellLayout";
 import { SHELL_ROUTES } from "@/lib/shellRoutes";
-import { COMPETE_MODE_TILES, type ModeTile } from "./competeModeTiles";
+import { COMPETE_MODE_TILES, COMPETE_KNOWLEDGE_TILES, type ModeTile } from "./competeModeTiles";
 
 const LIVE_SPORTS = new Set(["football"]);
 
@@ -91,6 +91,16 @@ export default function CompeteModeGridScreen() {
           <SectionLabel>{t("compete.sections.solo")}</SectionLabel>
           <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
             {solo.map((m) => (
+              <ModeTileCard key={m.key} tile={m} sport={sport} onPick={navigate} />
+            ))}
+          </div>
+
+          {/* General knowledge: same server-authoritative Quiz flow, sport
+              pinned to "knowledge". Its own section so it reads as a distinct
+              category rather than a football mode. */}
+          <SectionLabel>{t("compete.sections.knowledge")}</SectionLabel>
+          <div className="grid grid-cols-2 gap-3">
+            {COMPETE_KNOWLEDGE_TILES.map((m) => (
               <ModeTileCard key={m.key} tile={m} sport={sport} onPick={navigate} />
             ))}
           </div>

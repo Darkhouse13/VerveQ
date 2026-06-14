@@ -37,7 +37,7 @@ vi.mock("@/pages/shell/CompeteModeGridScreen", () => ({
 
 import { ShellGate } from "@/components/shell/ShellGate";
 import CompeteModeGridScreen from "@/pages/shell/CompeteModeGridScreen";
-import { COMPETE_MODE_TILES } from "@/pages/shell/competeModeTiles";
+import { COMPETE_MODE_TILES, COMPETE_KNOWLEDGE_TILES } from "@/pages/shell/competeModeTiles";
 import { SHELL_ROUTES } from "@/lib/shellRoutes";
 
 function LocationProbe() {
@@ -121,6 +121,22 @@ describe("compete grid tile targets (real config)", () => {
   it("routes every tile to a concrete path (no dead tiles)", () => {
     for (const tile of COMPETE_MODE_TILES) {
       expect(tile.to("football")).toMatch(/^\//);
+    }
+  });
+
+  it("surfaces Knowledge + Which Came First on the knowledge quiz flow", () => {
+    const byKey = Object.fromEntries(
+      COMPETE_KNOWLEDGE_TILES.map((tile) => [tile.key, tile.to("football")]),
+    );
+    expect(byKey.knowledgeQuiz).toBe(
+      "/difficulty?sport=knowledge&mode=quiz&target=v2",
+    );
+    expect(byKey.cameFirst).toBe(
+      "/difficulty?sport=knowledge&mode=came_first&target=v2",
+    );
+    // Sport-fixed: the carried sport must never leak into a knowledge target.
+    for (const tile of COMPETE_KNOWLEDGE_TILES) {
+      expect(tile.to("basketball")).toContain("sport=knowledge");
     }
   });
 });

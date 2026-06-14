@@ -82,7 +82,7 @@
   "compete": {
     "title": "Compete",
     "chooseCategory": "Choose a category",
-    "categoryHint": "Sport is live. History, Geography & Science live in Learn for now.",
+    "categoryHint": "Geography, History & Science also have a guided path in Learn.",
     "categories": {
       "sport": "Sport",
       "sportDesc": "Football",
@@ -100,6 +100,7 @@
     "modeGridHint": "{{sport}} · pick how you want to play",
     "sections": {
       "solo": "Solo modes",
+      "knowledge": "General knowledge",
       "friends": "With friends"
     }
   },
@@ -113,7 +114,9 @@
     "daily": { "name": "Daily Challenge", "desc": "Same questions for everyone" },
     "liveMatch": { "name": "Live Match", "desc": "Real-time 1v1, ELO matched" },
     "arena": { "name": "Arena", "desc": "Group challenge rooms" },
-    "duel": { "name": "Duels", "desc": "Head-to-head, send a link" }
+    "duel": { "name": "Duels", "desc": "Head-to-head, send a link" },
+    "knowledgeQuiz": { "name": "Knowledge Quiz", "desc": "Science, history & discoveries" },
+    "cameFirst": { "name": "Which Came First", "desc": "Order events on the timeline" }
   },
   "drawer": {
     "title": "Choose a category",

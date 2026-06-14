@@ -1,5 +1,6 @@
 import {
   Brain, Heart, Zap, TrendingUp, Grid3X3, HelpCircle, Timer, Swords, Users,
+  Lightbulb, Clock,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { SHELL_ROUTES } from "@/lib/shellRoutes";
@@ -43,4 +44,17 @@ export const COMPETE_MODE_TILES: ModeTile[] = [
   // Live Match is parked: nothing in the product can create a live match any
   // more (createFromChallenge has no callers), so the tile would advertise a
   // dead end. /v2/live-match stays routable as a viewer for legacy matches.
+];
+
+// General-knowledge quizzes share the football Quiz's server flow but pin the
+// sport to "knowledge" (the same pool already backing Duels and Daily, ~548
+// questions). Kept in a SEPARATE array from COMPETE_MODE_TILES so the
+// football-only mode-grid contract stays exact — knowledge is its own labelled
+// section on the landing, not a 10th football mode. The `to` builders ignore
+// the carried sport (it's fixed to knowledge). "Which Came First" routes the
+// `came_first` variant, which the server pins to its seeded intermediate pool
+// regardless of the difficulty the picker hands it (quizSessions.getQuestion).
+export const COMPETE_KNOWLEDGE_TILES: ModeTile[] = [
+  { key: "knowledgeQuiz", icon: Lightbulb, color: "blue", to: () => `/difficulty?sport=knowledge&mode=quiz&target=v2` },
+  { key: "cameFirst", icon: Clock, color: "primary", to: () => `/difficulty?sport=knowledge&mode=came_first&target=v2` },
 ];
