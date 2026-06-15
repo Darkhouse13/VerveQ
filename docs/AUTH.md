@@ -66,7 +66,7 @@ Shared between client and server via
 [`app/convex/lib/passwordPolicy.ts`](../app/convex/lib/passwordPolicy.ts)
 (re-exported for the frontend as `@/lib/password`).
 
-- Length: 12–72 characters.
+- Length: 8–72 characters.
 - No character-class rules (no forced mixed case / digits / symbols).
 - Case-insensitive rejection against a small bundled list of common
   leaked passwords (see

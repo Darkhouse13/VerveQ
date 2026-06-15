@@ -2,7 +2,7 @@
  * BLOCKER-1 regression suite.
  *
  * Three concerns are locked in here:
- *   1. The shared password policy (length 12..72, common-list rejection,
+ *   1. The shared password policy (length 8..72, common-list rejection,
  *      case-insensitive) that both the Convex Password provider
  *      (`validatePasswordRequirements` hook in convex/auth.ts) and the
  *      frontend LoginScreen use.
@@ -76,14 +76,14 @@ import {
 describe("validatePassword", () => {
   it("rejects a password shorter than the minimum length", () => {
     const short = "a".repeat(PASSWORD_MIN_LENGTH - 1);
-    expect(short).toHaveLength(11);
+    expect(short).toHaveLength(PASSWORD_MIN_LENGTH - 1);
     const result = validatePassword(short);
     expect(result.ok).toBe(false);
     expect(result.reason).toBe("too-short");
   });
 
   it("accepts a password exactly at the minimum length that is not common", () => {
-    const pw = "Zq7$mnPkL9#r"; // 12 chars, unlikely to appear in any leaked list
+    const pw = "Zq7$mnPk"; // 8 chars, unlikely to appear in any leaked list
     expect(pw).toHaveLength(PASSWORD_MIN_LENGTH);
     expect(validatePassword(pw)).toEqual({ ok: true, reason: null });
   });

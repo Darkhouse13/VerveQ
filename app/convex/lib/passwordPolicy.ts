@@ -5,17 +5,56 @@
 // Pure TypeScript with no Convex or browser dependencies so it is safe to
 // import from either runtime.
 
-export const PASSWORD_MIN_LENGTH = 12;
+export const PASSWORD_MIN_LENGTH = 8;
 // 72 bytes is the upper bound supported by bcrypt-family hashers. Convex
 // Auth hashes with Scrypt, which does not have that limit, but we cap at 72
 // characters anyway so the policy remains portable across future providers.
 export const PASSWORD_MAX_LENGTH = 72;
 
-// A small in-repo list of common leaked passwords at length >= 12, used to
-// reject the most obvious choices. Not an exhaustive deny list — it exists
-// to stop the easy hits like "password1234" / "qwerty123456" from getting
-// through the 12-character minimum.
+// A small in-repo list of common leaked passwords at length >= PASSWORD_MIN_LENGTH,
+// used to reject the most obvious choices. Not an exhaustive deny list — it exists
+// to stop the easy hits like "password" / "12345678" / "qwerty123" from getting
+// through the minimum-length check.
 export const COMMON_PASSWORDS: readonly string[] = [
+  // 8–11 char offenders — the most common leaked passwords that the 8-char
+  // floor now admits. Without these, dropping the minimum below 12 would let
+  // the single most-guessed passwords straight through.
+  "password",
+  "12345678",
+  "123456789",
+  "1234567890",
+  "qwerty123",
+  "qwertyuiop",
+  "password1",
+  "password12",
+  "password123",
+  "iloveyou",
+  "iloveyou1",
+  "sunshine",
+  "princess",
+  "princess1",
+  "football",
+  "baseball",
+  "1q2w3e4r",
+  "1qaz2wsx",
+  "abc12345",
+  "computer",
+  "whatever",
+  "superman",
+  "trustno1",
+  "starwars",
+  "monkey12",
+  "dragon12",
+  "letmein1",
+  "welcome1",
+  "admin123",
+  "passw0rd",
+  "p@ssw0rd",
+  "qazwsxedc",
+  "11111111",
+  "00000000",
+  "aaaaaaaa",
+  // 12+ char offenders (original list).
   "password1234",
   "password12345",
   "password123456",
