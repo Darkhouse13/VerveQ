@@ -62,6 +62,7 @@ export default function DuelResultScreen() {
   const getMyDuel = useMutation(api.duels.getMyDuel);
   const rematchMut = useMutation(api.duels.rematch);
   const declineMut = useMutation(api.duels.decline);
+  const markSharedMut = useMutation(api.duels.markShared);
   const [view, setView] = useState<DuelView | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [rematching, setRematching] = useState(false);
@@ -132,7 +133,9 @@ export default function DuelResultScreen() {
         ? "blue"
         : "muted";
   const headlineText = stillOpen
-    ? "Waiting for opponent"
+    ? view.opponent.id === null
+      ? "Invite an opponent"
+      : "Waiting for opponent"
     : myWon
       ? "You won"
       : myLost
@@ -149,8 +152,16 @@ export default function DuelResultScreen() {
       : `Final ${myScore} vs ${opponentScore} — rematch?`;
 
   const shareUrl = view.linkCode ? buildShareUrl(view.linkCode) : null;
+  // The challenger sharing a link duel is the real "challenge issued" moment —
+  // record it (once, server-side) whenever they share or copy.
+  const canInvite = view.role === "challenger" && !!shareUrl;
+  const awaitingInvite = stillOpen && canInvite && view.opponent.id === null;
+  const markShared = () => {
+    if (canInvite) markSharedMut({ duelId: view.duelId }).catch(() => {});
+  };
 
   const handleShare = async () => {
+    markShared();
     const payload = { title: "VerveQ duel", text: shareCardText, url: shareUrl ?? window.location.href };
     try {
       if (navigator.share) {
@@ -165,6 +176,7 @@ export default function DuelResultScreen() {
   };
 
   const handleCopy = async () => {
+    markShared();
     try {
       await navigator.clipboard.writeText(`${shareCardText} ${shareUrl ?? ""}`);
       toast.success("Copied");
@@ -327,8 +339,13 @@ export default function DuelResultScreen() {
                     : "Run it back"}
           </NeoButton>
         )}
-        <NeoButton variant="secondary" size="full" onClick={handleShare}>
-          <Share2 size={16} strokeWidth={3} /> Share result
+        <NeoButton
+          variant={awaitingInvite ? "primary" : "secondary"}
+          size="full"
+          onClick={handleShare}
+        >
+          <Share2 size={16} strokeWidth={3} />{" "}
+          {awaitingInvite ? "Invite a friend to beat your score" : "Share result"}
         </NeoButton>
         {shareUrl && (
           <NeoButton variant="ghost" size="full" onClick={handleCopy}>

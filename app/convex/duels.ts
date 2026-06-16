@@ -16,12 +16,15 @@ import {
 } from "./lib/authz";
 import { orderAnswerOptions } from "./lib/answerOptions";
 import { assertClientSport } from "./lib/sports";
+import { selectQuestionsWithImageCap } from "./lib/imageQuestions";
 import { calculateDuelTimeScore, normalizeAnswer } from "./lib/scoring";
 import {
   guestActorKey,
   markDefeat,
   recordChallengeIssued,
   recordFirstMatchComplete,
+  recordGuestPlayStarted,
+  recordLinkOpened,
   userActorKey,
 } from "./funnel";
 
@@ -164,7 +167,14 @@ async function getQuestionChecksumsForDuel(
   });
 
   const stable = filtered.sort((a, b) => a.checksum.localeCompare(b.checksum));
-  const picked = seededShuffle(stable, args.seed).slice(0, TOTAL_DUEL_QUESTIONS);
+  // Cap image questions at MAX_IMAGE_QUESTIONS (2) across the whole duel — the
+  // same ceiling quiz/blitz/live matches enforce — so no difficulty can serve
+  // an image-heavy set. Applied after the seeded shuffle so the picked set
+  // stays deterministic per duel seed.
+  const picked = selectQuestionsWithImageCap(
+    seededShuffle(stable, args.seed),
+    TOTAL_DUEL_QUESTIONS,
+  );
   if (picked.length < TOTAL_DUEL_QUESTIONS) {
     throw new Error(
       `Not enough duel questions for ${sportKey}/${args.difficulty}/${args.category ?? mode}: ${picked.length}/${TOTAL_DUEL_QUESTIONS}`,
@@ -730,24 +740,63 @@ export const create = mutation({
       linkCode,
     });
 
-    await recordChallengeIssued(ctx, {
-      challengerId: userId,
-      duelId,
-      linkCode,
-      viaLink,
-      now: Date.now(),
-    });
-
-    if (linkCode) {
-      // Pre-render the share card so the first crawler og:image fetch hits
-      // the warm cache instead of a multi-second cold render (which makes
-      // WhatsApp fall back to the small thumbnail).
-      await ctx.scheduler.runAfter(0, internal.duelShare.warmCard, {
-        linkCode,
+    // A direct-opponent duel is a real challenge at creation, so it counts
+    // immediately. A viaLink duel is play-first: the challenger plays, then
+    // challenge_issued fires when they actually share (duels.markShared), so
+    // creation stays silent and the share card is warmed at share time too.
+    if (!viaLink) {
+      await recordChallengeIssued(ctx, {
+        challengerId: userId,
+        duelId,
+        viaLink,
+        now: Date.now(),
       });
     }
 
     return { duelId, linkCode: linkCode ?? null, existing: false };
+  },
+});
+
+// Play-first duels defer "challenge_issued" to the moment the challenger
+// actually shares the link, so the loop funnel counts real invites instead of
+// every solo round. Idempotent via sharedAt: re-sharing the same link is a
+// no-op, so the share button can be tapped freely.
+export const markShared = mutation({
+  args: { duelId: v.id("duels") },
+  handler: async (ctx, { duelId }) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) throw new Error("Not authenticated");
+    const duel = await ctx.db.get(duelId);
+    if (!duel) throw new Error("Duel not found");
+    if (duel.challengerId !== userId) {
+      throw new Error("Only the challenger can share this duel");
+    }
+    if (!duel.linkCode) {
+      throw new Error("This duel has no share link");
+    }
+    if (duel.sharedAt) {
+      return { alreadyShared: true };
+    }
+
+    const now = Date.now();
+    await ctx.db.patch(duelId, { sharedAt: now });
+
+    await recordChallengeIssued(ctx, {
+      challengerId: userId,
+      duelId,
+      linkCode: duel.linkCode,
+      viaLink: true,
+      rematchOfDuelId: duel.rematchOfDuelId,
+      now,
+    });
+
+    // Warm the og:image now that the link is going out, so the first crawler
+    // fetch hits the cache instead of a multi-second cold render.
+    await ctx.scheduler.runAfter(0, internal.duelShare.warmCard, {
+      linkCode: duel.linkCode,
+    });
+
+    return { alreadyShared: false };
   },
 });
 
@@ -847,6 +896,25 @@ export const getByLinkCode = mutation({
     }
 
     const served = await ensureQuestionServed(ctx, updated, "opponent", Date.now());
+
+    // Funnel (auth-aware open): the recipient reached the duel screen. The
+    // challenger-self path threw above, so a captain opening their own link is
+    // never counted here — the open-stage self-exclusion M1/M2 require. anon
+    // /s/d/ taps still land as link_tap (dropTestMetrics); dropLoopMetrics
+    // counts link_opened only, so the two never double-count.
+    const opener = userId
+      ? userActorKey(userId)
+      : guestToken
+        ? guestActorKey(guestTokenHash(guestToken))
+        : null;
+    if (opener) {
+      await recordLinkOpened(ctx, {
+        actor: opener,
+        duel: served,
+        now: Date.now(),
+      });
+    }
+
     return await buildDuelView(ctx, served, "opponent");
   },
 });
@@ -934,6 +1002,31 @@ export const submitAnswer = mutation({
       timesAnswered: question.timesAnswered + 1,
       timesCorrect: question.timesCorrect + (correct ? 1 : 0),
     });
+
+    // Funnel: a link-duel recipient just answered their first question — the
+    // "play started" signal. Same actor derivation + once-per-actor dedupe as
+    // first_match_complete in `complete`, so play-rate and completion-rate
+    // count the same population. Only the opponent (recipient) side on a duel
+    // that actually carries a share link is part of the loop funnel.
+    if (
+      participant.side === "opponent" &&
+      questionIndex === 0 &&
+      duel.linkCode
+    ) {
+      const actor = participant.userId
+        ? userActorKey(participant.userId)
+        : duel.opponentGuestTokenHash
+          ? guestActorKey(duel.opponentGuestTokenHash)
+          : null;
+      if (actor) {
+        await recordGuestPlayStarted(ctx, {
+          actor,
+          duel,
+          side: participant.side,
+          now,
+        });
+      }
+    }
 
     if (
       participant.side === "opponent" &&
@@ -1334,11 +1427,23 @@ export const listMine = query({
       .withIndex("by_opponent_status", (q) => q.eq("opponentId", userId))
       .collect();
 
+    // A play-first solo round the challenger finished but never shared has no
+    // opponent who will ever join — hide it so it doesn't sit in the list
+    // until the 72h TTL. Still-in-progress solo rounds stay (resumable), and
+    // once shared (sharedAt set) it surfaces normally as awaiting_opponent.
+    const isUnsharedFinishedSolo = (duel: Doc<"duels">) =>
+      !duel.opponentId &&
+      !!duel.linkCode &&
+      !duel.sharedAt &&
+      duel.status === "awaiting_opponent" &&
+      !!duel.challengerResult?.completedAt;
+
     const seen = new Set<string>();
     const rows: { duel: Doc<"duels">; side: DuelSide }[] = [];
     for (const duel of asChallenger) {
       if (seen.has(duel._id)) continue;
       seen.add(duel._id);
+      if (isUnsharedFinishedSolo(duel)) continue;
       rows.push({ duel, side: "challenger" });
     }
     for (const duel of asOpponent) {

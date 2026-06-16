@@ -34,13 +34,26 @@ export default defineSchema({
   // actor is "user:<userId>", "guest:<hashedGuestToken>" (never a raw token),
   // or "anon" for pre-identity link taps. refChallengerId is the upstream
   // challenger the event is attributed to: the duel's challenger for
-  // link_tap / first_match_complete / defeated_player_return, and the actor's
-  // own recruiter for challenge_issued — which is what lets a query rebuild
-  // the captain → gen1 → gen2 chain.
+  // link_tap / link_opened / guest_play_started / first_match_complete /
+  // defeated_player_return, and the actor's own recruiter for
+  // challenge_issued — which is what lets a query rebuild the
+  // captain → gen1 → gen2 chain.
+  // link_tap is the anon /s/d/ HTTP hit (no auth context) feeding
+  // dropTestMetrics. link_opened is the AUTH-AWARE open: it fires from
+  // duels.getByLinkCode once a recipient reaches the duel screen, and because
+  // the challenger-self path throws upstream, a captain opening their own link
+  // never logs one. dropLoopMetrics counts link_opened (not link_tap) for
+  // opens, so M1/M2 exclude captain self-opens and the two never double-count.
+  // guest_play_started fires when a link-duel RECIPIENT (opponent side)
+  // submits their first answer; it splits non-completions into never-played
+  // vs played-but-quit, giving funnel.dropLoopMetrics its play-rate and
+  // completion-rate denominators (the one event the M1–M4 readout adds).
   funnelEvents: defineTable({
     type: v.union(
       v.literal("link_tap"),
+      v.literal("link_opened"),
       v.literal("challenge_issued"),
+      v.literal("guest_play_started"),
       v.literal("first_match_complete"),
       v.literal("defeated_player_return"),
     ),
@@ -297,6 +310,11 @@ export default defineSchema({
     resolvedAt: v.optional(v.number()),
     rivalryAppliedAt: v.optional(v.number()),
     lastNearExpiryNotifiedAt: v.optional(v.number()),
+    // Play-first duels are created opponent-less; the challenger plays, then
+    // shares. Stamped when the challenger first shares the link — gates the
+    // (now share-time) challenge_issued funnel event and keeps finished-but-
+    // never-shared solo rounds out of the duels list.
+    sharedAt: v.optional(v.number()),
   })
     .index("by_opponent_status", ["opponentId", "status"])
     .index("by_challenger", ["challengerId"])

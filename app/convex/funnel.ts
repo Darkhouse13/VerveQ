@@ -102,6 +102,67 @@ export async function recordFirstMatchComplete(
   return true;
 }
 
+// Auth-aware "link opened" — fired from duels.getByLinkCode once a recipient
+// reaches the duel screen. The challenger-self branch throws upstream, so a
+// captain opening their own link never produces one (the open-stage
+// self-exclusion M1/M2 need). Deduped per (actor, linkCode) so a refresh does
+// not inflate opens. Distinct from link_tap (the anon /s/d/ HTTP hit that
+// feeds dropTestMetrics); dropLoopMetrics counts link_opened only, so the two
+// never double-count. Returns whether a row was inserted.
+export async function recordLinkOpened(
+  ctx: Pick<MutationCtx, "db">,
+  args: { actor: string; duel: Doc<"duels">; now: number },
+) {
+  const existing = await ctx.db
+    .query("funnelEvents")
+    .withIndex("by_actor_type", (q) =>
+      q.eq("actor", args.actor).eq("type", "link_opened"),
+    )
+    .collect();
+  if (existing.some((e) => e.refLinkCode === args.duel.linkCode)) return false;
+  await ctx.db.insert("funnelEvents", {
+    type: "link_opened",
+    actor: args.actor,
+    refLinkCode: args.duel.linkCode,
+    refChallengerId: args.duel.challengerId,
+    ts: args.now,
+    meta: { duelId: args.duel._id },
+  });
+  return true;
+}
+
+// Fires at most once per actor (account or hashed guest) when a link-duel
+// recipient submits their FIRST answer — the "play started" signal. Mirrors
+// recordFirstMatchComplete's once-per-actor dedupe so play-rate and
+// completion-rate share the same population. Returns whether a row was
+// inserted.
+export async function recordGuestPlayStarted(
+  ctx: Pick<MutationCtx, "db">,
+  args: {
+    actor: string;
+    duel: Doc<"duels">;
+    side: "challenger" | "opponent";
+    now: number;
+  },
+) {
+  const existing = await ctx.db
+    .query("funnelEvents")
+    .withIndex("by_actor_type", (q) =>
+      q.eq("actor", args.actor).eq("type", "guest_play_started"),
+    )
+    .first();
+  if (existing) return false;
+  await ctx.db.insert("funnelEvents", {
+    type: "guest_play_started",
+    actor: args.actor,
+    refLinkCode: args.duel.linkCode,
+    refChallengerId: args.duel.challengerId,
+    ts: args.now,
+    meta: { duelId: args.duel._id, side: args.side },
+  });
+  return true;
+}
+
 // Mark "was defeated" at resolution; the return event fires on the loser's
 // next session start (sessionHeartbeat). Deduped per (user, duel).
 export async function markDefeat(
@@ -355,6 +416,114 @@ export const dropTestMetrics = internalQuery({
       },
       defeatedD7RetentionPct,
       defeatedD7: { cohort: d7Cohort, retained: d7Retained },
+    };
+  },
+});
+
+// ── Drop-Test loop readout (M1–M4) ──
+// Finer-grained companion to dropTestMetrics that walks the share → play →
+// loop funnel stage by stage, so a leak is locatable (not just whether one
+// exists). Maps the S0–S5 spec onto the existing event vocabulary — the only
+// added event is guest_play_started:
+//   S0 link_created         → challenge_issued, viaLink, organic (no recruiter)
+//   S1 link_opened          → link_opened (auth-aware; captain self-opens
+//                             excluded — see schema funnelEvents comment)
+//   S2 guest_play_started   → guest_play_started            ← added event
+//   S3 guest_play_completed → first_match_complete, side=opponent
+//   S5 loop_link_created    → challenge_issued, viaLink, with a recruiter
+//                             (the issuer was themselves a recruited recipient,
+//                             so refChallengerId proves the loop-back)
+// The share link is the unit of the loop: every stage is counted as DISTINCT
+// refLinkCode, and M1–M3 are scoped to the organic seed links so the funnel is
+// monotonic. M4 (the k-factor) compares gen-2 links spawned against seed-link
+// completions. Synthetic test actors are excluded throughout. S4/signupRate is
+// intentionally omitted — the loop-back is already encoded by refChallengerId,
+// so no account_claimed event is needed (see schema funnelEvents comment).
+//   npx convex run funnel:dropLoopMetrics '{}'
+//   npx convex run funnel:dropLoopMetrics '{"sinceDaysAgo":14}'
+export const dropLoopMetrics = internalQuery({
+  args: {
+    sinceTs: v.optional(v.number()),
+    sinceDaysAgo: v.optional(v.number()),
+  },
+  handler: async (ctx, { sinceTs, sinceDaysAgo }) => {
+    const now = Date.now();
+    const since =
+      sinceTs ?? (sinceDaysAgo ? now - sinceDaysAgo * DAY_MS : 0);
+    const syntheticUserIds = await collectSyntheticUserIds(ctx);
+    const eventsOf = async (
+      type:
+        | "link_opened"
+        | "challenge_issued"
+        | "guest_play_started"
+        | "first_match_complete",
+    ) =>
+      (
+        await ctx.db
+          .query("funnelEvents")
+          .withIndex("by_type_ts", (q) => q.eq("type", type).gte("ts", since))
+          .take(10000)
+      ).filter((e) => !isSyntheticEvent(e, syntheticUserIds));
+
+    const challenges = await eventsOf("challenge_issued");
+    const openEvents = await eventsOf("link_opened");
+    const starts = await eventsOf("guest_play_started");
+    const completes = await eventsOf("first_match_complete");
+
+    const distinctLinks = (
+      events: FunnelEventLike[],
+      pred: (e: FunnelEventLike) => boolean = () => true,
+    ) =>
+      new Set(
+        events
+          .filter(pred)
+          .map((e) => e.refLinkCode)
+          .filter((c): c is string => !!c),
+      );
+
+    const isViaLink = (e: FunnelEventLike) =>
+      ((e as { meta?: { viaLink?: boolean } }).meta?.viaLink ?? false) === true;
+    const isOpponentSide = (e: FunnelEventLike) =>
+      (e as { meta?: { side?: string } }).meta?.side === "opponent";
+
+    // Seeds: organic captain links only (a recruited issuer's link is a gen-2
+    // loop link, counted separately below — never as a seed).
+    const seedLinks = distinctLinks(
+      challenges,
+      (e) => isViaLink(e) && !e.refChallengerId,
+    );
+    // Gen-2 links: viaLink challenges whose issuer had a recruiter.
+    const loopLinks = distinctLinks(
+      challenges,
+      (e) => isViaLink(e) && !!e.refChallengerId,
+    );
+
+    // M1–M3 stages scoped to the seed links so the funnel can't widen.
+    const inSeed = (s: Set<string>) =>
+      new Set([...s].filter((code) => seedLinks.has(code)));
+    const openLinks = inSeed(distinctLinks(openEvents));
+    const playLinks = inSeed(distinctLinks(starts));
+    const completeLinks = inSeed(distinctLinks(completes, isOpponentSide));
+
+    const seeds = seedLinks.size;
+    const opens = openLinks.size;
+    const plays = playLinks.size;
+    const completions = completeLinks.size;
+    const loops = loopLinks.size;
+    const ratio = (num: number, den: number) => (den ? num / den : null);
+
+    return {
+      window: { since, now },
+      excludedSyntheticActors: syntheticUserIds.size,
+      seeds,
+      opens,
+      plays,
+      completions,
+      loopLinks: loops,
+      M1_openRate: ratio(opens, seeds),
+      M2_playRate: ratio(plays, opens),
+      M3_completionRate: ratio(completions, plays),
+      M4_loopRate: ratio(loops, completions),
     };
   },
 });

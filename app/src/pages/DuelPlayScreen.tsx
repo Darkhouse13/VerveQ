@@ -183,22 +183,20 @@ export function DuelPlay({ duelId, guestToken, initialView }: DuelPlayProps) {
     }
   }, [view, completeDuel, duelId, guestTokenForArgs, refresh]);
 
-  const handleSelect = (idx: number) => {
-    if (revealed || submitting) return;
-    setSelected(idx);
-  };
-
-  const handleSubmit = async () => {
+  // Tap = submit, matching the other versus modes (arena, live match): there is
+  // no separate confirm step. The selected index just drives the brief
+  // pre-reveal highlight while the server result is in flight.
+  const handleSelect = async (idx: number) => {
     if (!view || !view.currentQuestion) return;
-    if (selected === null) return;
-    if (submitting || revealed) return;
+    if (selected !== null || submitting || revealed) return;
+    setSelected(idx);
     const questionIndex = view.myResult.perQuestion.length;
     setSubmitting(true);
     try {
       const result = await submitAnswer({
         duelId,
         questionIndex,
-        answer: view.currentQuestion.options[selected],
+        answer: view.currentQuestion.options[idx],
         guestToken: guestTokenForArgs,
       });
       setRevealed({
@@ -215,6 +213,7 @@ export function DuelPlay({ duelId, guestToken, initialView }: DuelPlayProps) {
       }, AUTO_ADVANCE_DELAY_MS);
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Failed to submit answer");
+      setSelected(null);
     } finally {
       setSubmitting(false);
     }
@@ -367,7 +366,9 @@ export function DuelPlay({ duelId, guestToken, initialView }: DuelPlayProps) {
 
       <div className="flex items-center justify-between mb-3">
         <p className="text-xs font-heading font-bold uppercase truncate">
-          vs @{opponentName}
+          {view.opponent.id === null && view.role === "challenger"
+            ? "Set your score"
+            : `vs @${opponentName}`}
         </p>
         <p className="font-heading font-bold text-xs">{progress}</p>
       </div>
@@ -413,7 +414,7 @@ export function DuelPlay({ duelId, guestToken, initialView }: DuelPlayProps) {
             key={idx}
             type="button"
             disabled={!!revealed || submitting}
-            onClick={() => handleSelect(idx)}
+            onClick={() => void handleSelect(idx)}
             className={`w-full neo-border neo-shadow rounded-lg p-4 flex items-center gap-3 text-left transition-all cursor-pointer ${!revealed ? "active:neo-shadow-pressed" : ""} ${getOptionStyle(idx)}`}
           >
             {!isCameFirst && (
@@ -443,17 +444,6 @@ export function DuelPlay({ duelId, guestToken, initialView }: DuelPlayProps) {
           {revealed.explanation && <p className="mt-1">{revealed.explanation}</p>}
         </NeoCard>
       )}
-
-      <div className="mt-5">
-        <NeoButton
-          variant="primary"
-          size="full"
-          disabled={selected === null || submitting || !!revealed}
-          onClick={handleSubmit}
-        >
-          {submitting ? "Submitting…" : revealed ? "Loading next…" : "Submit answer"}
-        </NeoButton>
-      </div>
     </div>
   );
 }
@@ -524,6 +514,8 @@ function WaitingForOpponent({
   onBack: () => void;
   onSeeResult: () => void;
 }) {
+  const markShared = useMutation(api.duels.markShared);
+
   if (liveStatus && liveStatus.status !== "awaiting_opponent") {
     return (
       <LiveResolvedStatus
@@ -537,6 +529,56 @@ function WaitingForOpponent({
         onBack={onBack}
         onSeeResult={onSeeResult}
       />
+    );
+  }
+
+  // Only the challenger of a link duel can invite (their view carries linkCode).
+  const canInvite = !!view.linkCode;
+  // Play-first: finished a solo round, nobody invited yet.
+  const opponentBound = view.opponent.id !== null;
+
+  const share = async () => {
+    if (!view.linkCode) return;
+    // The share IS the "challenge issued" moment for a play-first duel — record
+    // it server-side (idempotent), then open the share sheet.
+    markShared({ duelId: view.duelId }).catch(() => {});
+    const url = buildShareUrl(view.linkCode);
+    try {
+      if (navigator.share) {
+        await navigator.share({ text: `Beat my ${view.myResult.score}`, url });
+      } else {
+        await navigator.clipboard.writeText(url);
+        toast.success("Link copied");
+      }
+    } catch {
+      /* ignore */
+    }
+  };
+
+  if (canInvite && !opponentBound) {
+    return (
+      <div className="min-h-screen bg-background px-5 py-8 flex flex-col items-center">
+        <NeoCard shadow="lg" className="w-full text-center py-8 mb-5">
+          <Trophy size={28} strokeWidth={2.5} className="mx-auto mb-2" />
+          <p className="font-heading font-bold text-lg">That&apos;s your score</p>
+          <p className="font-mono font-bold text-3xl mt-3">{view.myResult.score}</p>
+          <p className="text-[10px] font-heading uppercase text-muted-foreground">
+            your score
+          </p>
+          <p className="text-sm text-muted-foreground mt-4">
+            Now invite a friend to beat it — the first to open your link plays the
+            same questions.
+          </p>
+        </NeoCard>
+        <div className="w-full space-y-3">
+          <NeoButton variant="primary" size="full" onClick={share}>
+            Invite a friend
+          </NeoButton>
+          <NeoButton variant="secondary" size="full" onClick={onBack}>
+            Back to duels
+          </NeoButton>
+        </div>
+      </div>
     );
   }
 
@@ -556,24 +598,8 @@ function WaitingForOpponent({
         </p>
       </NeoCard>
       <div className="w-full space-y-3">
-        {view.linkCode && (
-          <NeoButton
-            variant="secondary"
-            size="full"
-            onClick={async () => {
-              const url = buildShareUrl(view.linkCode!);
-              try {
-                if (navigator.share) {
-                  await navigator.share({ text: `Beat my ${view.myResult.score}`, url });
-                } else {
-                  await navigator.clipboard.writeText(url);
-                  toast.success("Link copied");
-                }
-              } catch {
-                /* ignore */
-              }
-            }}
-          >
+        {canInvite && (
+          <NeoButton variant="secondary" size="full" onClick={share}>
             Share challenge link
           </NeoButton>
         )}

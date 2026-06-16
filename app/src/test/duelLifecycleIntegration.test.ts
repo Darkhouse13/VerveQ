@@ -667,6 +667,94 @@ describe("duel lifecycle integration", () => {
     });
   });
 
+  it("defers challenge_issued to markShared and hides unshared finished solo duels", async () => {
+    const db = makeSeededDb();
+    const challengeEvents = () =>
+      db
+        .all<Row & { type: string; refLinkCode?: string; actor: string }>(
+          "funnelEvents",
+        )
+        .filter((e) => e.type === "challenge_issued");
+
+    setAuth("user_a");
+    const created = (await handlerOf(duels.create)(makeCtx(db), {
+      type: "knowledge",
+      category: "science",
+      difficulty: "easy",
+      mode: "quiz",
+      viaLink: true,
+    })) as { duelId: string; linkCode: string | null };
+    expect(created.linkCode).toEqual(expect.any(String));
+
+    // Play-first: creating a link duel is NOT a challenge yet, and nothing is
+    // recorded until the player actually shares.
+    expect(db.all("funnelEvents")).toHaveLength(0);
+    expect(db.row<DuelRow>(created.duelId).sharedAt).toBeUndefined();
+
+    await answerAll(db, created.duelId, "user_a", (q) => q.correctAnswer);
+    setAuth("user_a");
+    await handlerOf(duels.complete)(makeCtx(db), { duelId: created.duelId });
+    expect(challengeEvents()).toHaveLength(0);
+
+    // Finished but never shared → kept out of the duels list entirely.
+    setAuth("user_a");
+    const beforeShare = (await handlerOf(duels.listMine)(
+      makeCtx(db),
+      {},
+    )) as ListMineResult;
+    expect(beforeShare.yourTurn).toHaveLength(0);
+    expect(beforeShare.awaiting).toHaveLength(0);
+    expect(beforeShare.resolved).toHaveLength(0);
+
+    // Sharing stamps sharedAt and records challenge_issued exactly once.
+    setAuth("user_a");
+    const shared = (await handlerOf(duels.markShared)(makeCtx(db), {
+      duelId: created.duelId,
+    })) as { alreadyShared: boolean };
+    expect(shared.alreadyShared).toBe(false);
+    expect(db.row<DuelRow>(created.duelId).sharedAt).toEqual(expect.any(Number));
+    expect(challengeEvents()).toHaveLength(1);
+    expect(challengeEvents()[0]).toMatchObject({
+      type: "challenge_issued",
+      actor: "user:user_a",
+      refLinkCode: created.linkCode,
+    });
+
+    // Now it surfaces as an awaiting (challenger done) duel.
+    setAuth("user_a");
+    const afterShare = (await handlerOf(duels.listMine)(
+      makeCtx(db),
+      {},
+    )) as ListMineResult;
+    expect(afterShare.awaiting).toHaveLength(1);
+
+    // Re-sharing is idempotent: no duplicate challenge_issued.
+    setAuth("user_a");
+    const again = (await handlerOf(duels.markShared)(makeCtx(db), {
+      duelId: created.duelId,
+    })) as { alreadyShared: boolean };
+    expect(again.alreadyShared).toBe(true);
+    expect(challengeEvents()).toHaveLength(1);
+  });
+
+  it("counts a direct-opponent duel as a challenge at creation and rejects markShared", async () => {
+    const db = makeSeededDb();
+    const duelId = await createKnowledgeDuel(db); // targeted at user_b
+
+    const events = db.all<Row & { type: string; actor: string }>("funnelEvents");
+    expect(events).toHaveLength(1);
+    expect(events[0]).toMatchObject({
+      type: "challenge_issued",
+      actor: "user:user_a",
+    });
+
+    // A targeted duel has no share link, so there is nothing to "share".
+    setAuth("user_a");
+    await expect(
+      handlerOf(duels.markShared)(makeCtx(db), { duelId }),
+    ).rejects.toThrow(/no share link/i);
+  });
+
   it("allows username-only users to create link duels but not direct account duels", async () => {
     const db = makeSeededDb();
     db.seed("users", "anon_user", {
