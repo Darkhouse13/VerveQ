@@ -1,7 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useQuery } from "convex/react";
-import { Brain, Crown, Flame, Hammer, Heart, Lock, Star } from "lucide-react";
+import { Brain, Crown, Flame, Hammer, Lock, Star, Swords } from "lucide-react";
 import { NeoCard } from "@/components/neo/NeoCard";
 import { NeoAvatar } from "@/components/neo/NeoAvatar";
 import { NeoBadge } from "@/components/neo/NeoBadge";
@@ -253,15 +253,15 @@ export default function ShellHomeScreen() {
                 </p>
               </NeoCard>
               <NeoCard
-                onClick={() => navigate("/v2/survival?sport=football")}
+                onClick={() => navigate(SHELL_ROUTES.arena)}
                 className={`p-3.5 flex flex-col gap-1.5 min-h-0 ${LIFT}`}
               >
-                <Heart size={22} strokeWidth={2.5} />
+                <Swords size={22} strokeWidth={2.5} />
                 <p className="font-heading font-bold text-base leading-none">
-                  {t("modes.survival.name")}
+                  {t("modes.arena.name")}
                 </p>
                 <p className="font-mono text-[10.5px] uppercase text-muted-foreground">
-                  {t("modes.survival.desc")}
+                  {t("modes.arena.desc")}
                 </p>
               </NeoCard>
               <NeoCard

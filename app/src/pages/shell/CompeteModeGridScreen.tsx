@@ -65,6 +65,14 @@ export default function CompeteModeGridScreen() {
           the top row, like justify-center did) when the sections overflow. */}
       <div className="flex flex-col h-full min-h-0 overflow-y-auto overflow-x-hidden scrollbar-none">
         <div className="flex flex-col gap-3 md:gap-4 my-auto pb-1">
+          {/* Arena & Duels lead — the headline "play with friends" surface. */}
+          <SectionLabel>{t("compete.sections.friends")}</SectionLabel>
+          <div className="grid grid-cols-2 gap-3">
+            {friends.map((m) => (
+              <ModeTileCard key={m.key} tile={m} sport={sport} onPick={navigate} />
+            ))}
+          </div>
+
           {/* Today's hook — one wide strip, same target as the Home card. */}
           {daily && (
             <NeoCard
@@ -101,13 +109,6 @@ export default function CompeteModeGridScreen() {
           <SectionLabel>{t("compete.sections.knowledge")}</SectionLabel>
           <div className="grid grid-cols-2 gap-3">
             {COMPETE_KNOWLEDGE_TILES.map((m) => (
-              <ModeTileCard key={m.key} tile={m} sport={sport} onPick={navigate} />
-            ))}
-          </div>
-
-          <SectionLabel>{t("compete.sections.friends")}</SectionLabel>
-          <div className="grid grid-cols-2 gap-3">
-            {friends.map((m) => (
               <ModeTileCard key={m.key} tile={m} sport={sport} onPick={navigate} />
             ))}
           </div>
