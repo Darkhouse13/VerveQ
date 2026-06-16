@@ -3,6 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { useMutation } from "convex/react";
 import { Swords, ArrowRight, Sparkles } from "lucide-react";
 import { toast } from "sonner";
+import { friendlyError } from "@/lib/errors";
 
 import { NeoCard } from "@/components/neo/NeoCard";
 import { NeoButton } from "@/components/neo/NeoButton";
@@ -121,7 +122,7 @@ export default function DuelLinkScreen() {
             return;
           }
         } catch (e) {
-          toast.error(e instanceof Error ? e.message : "Could not attach result");
+          toast.error(friendlyError(e, "Could not attach result"));
         }
       }
 
@@ -154,7 +155,7 @@ export default function DuelLinkScreen() {
         }
       } catch (e) {
         if (cancelled) return;
-        setErrorMsg(e instanceof Error ? e.message : "Could not load duel");
+        setErrorMsg(friendlyError(e, "Could not load duel"));
         setPhase("error");
       }
     })();

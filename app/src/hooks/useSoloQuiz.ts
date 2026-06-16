@@ -11,6 +11,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useMutation } from "convex/react";
 import { toast } from "sonner";
+import { friendlyError } from "@/lib/errors";
 import { api } from "../../convex/_generated/api";
 import { useAntiCheat } from "@/hooks/useAntiCheat";
 import { useAuth } from "@/contexts/AuthContext";
@@ -178,9 +179,7 @@ export function useSoloQuiz(): SoloQuizState {
           { correct: res.correct, timeTaken: res.timeTaken, score: res.score },
         ]);
       } catch (error) {
-        const message =
-          error instanceof Error ? error.message : "Failed to check answer";
-        toast.error(message || "Failed to check answer");
+        toast.error(friendlyError(error, "Failed to check answer"));
       } finally {
         answerSubmitInFlight.current = false;
         setChecking(false);

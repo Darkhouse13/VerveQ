@@ -10,6 +10,7 @@ import { ImageZoomModal } from "@/components/ImageZoomModal";
 import { useAntiCheat } from "@/hooks/useAntiCheat";
 import { ExitGameButton } from "@/components/ExitGameButton";
 import { toast } from "sonner";
+import { friendlyError } from "@/lib/errors";
 import type { Id } from "../../convex/_generated/dataModel";
 
 const MAX_QUESTIONS = 10;
@@ -97,7 +98,7 @@ export default function DailyQuizScreen() {
           toast.error("You've already played today's challenge!");
           navigate("/home", { replace: true });
         } else {
-          toast.error(msg);
+          toast.error(friendlyError(e, "Couldn’t start today’s challenge."));
           navigate(-1);
         }
         localAttemptSport.current = null;
@@ -178,8 +179,7 @@ export default function DailyQuizScreen() {
       ]);
     } catch (error) {
       console.error("Daily challenge answer check failed", error);
-      const message = error instanceof Error ? error.message : "Failed to check answer";
-      toast.error(message || "Failed to check answer");
+      toast.error(friendlyError(error, "Failed to check answer"));
     } finally {
       answerSubmitInFlight.current = false;
       setChecking(false);

@@ -11,6 +11,7 @@ import { ExitGameButton } from "@/components/ExitGameButton";
 import { useAntiCheat } from "@/hooks/useAntiCheat";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
+import { friendlyError } from "@/lib/errors";
 import type { Id } from "../../convex/_generated/dataModel";
 import type { GameResultState } from "@/types/api";
 
@@ -173,8 +174,7 @@ export default function QuizScreen() {
       ]);
     } catch (error) {
       console.error("Quiz answer check failed", error);
-      const message = error instanceof Error ? error.message : "Failed to check answer";
-      toast.error(message || "Failed to check answer");
+      toast.error(friendlyError(error, "Failed to check answer"));
     } finally {
       answerSubmitInFlight.current = false;
       setChecking(false);

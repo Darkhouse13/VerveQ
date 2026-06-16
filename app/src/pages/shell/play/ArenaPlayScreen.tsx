@@ -12,7 +12,7 @@
  * and reuses the existing, proven Lobby/Countdown/RoundBreak/Final views for the
  * non-in-game phases. No arena backend, schema, or grading is touched.
  */
-import { humanizeServerError } from "@/lib/errors";
+import { friendlyError } from "@/lib/errors";
 import {
   useCallback,
   useEffect,
@@ -158,7 +158,7 @@ function ArenaPlayRoom({ code, userId }: { code: string; userId: Id<"users"> | u
         await joinMut({ code });
         setJoinError(null);
       } catch (e) {
-        setJoinError(humanizeServerError(e, "Could not join this arena. Check the code and try again."));
+        setJoinError(friendlyError(e, "Could not join this arena. Check the code and try again."));
       }
     })();
   }, [code, joinMut, room]);
@@ -169,7 +169,7 @@ function ArenaPlayRoom({ code, userId }: { code: string; userId: Id<"users"> | u
     try {
       await leaveMut({ arenaId: room.arenaId });
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Could not leave");
+      toast.error(friendlyError(e, "Could not leave"));
     } finally {
       setLeaving(false);
       navigate("/v2/arena");
@@ -188,7 +188,7 @@ function ArenaPlayRoom({ code, userId }: { code: string; userId: Id<"users"> | u
       toast.success("Rematch lobby ready");
       navigate(`/v2/arena/${result.code}`, { replace: true });
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Rematch failed");
+      toast.error(friendlyError(e, "Rematch failed"));
     } finally {
       setRematching(false);
     }
@@ -414,7 +414,7 @@ function ArenaQuestionColumn({ room, userId }: { room: Room; userId: Id<"users">
     } catch (e) {
       const msg = e instanceof Error ? e.message : "Submit failed";
       if (!/already answered/i.test(msg)) {
-        toast.error(msg);
+        toast.error(friendlyError(e, "Couldn’t submit your answer."));
         setPending(null);
         setSubmitting(false);
       }
@@ -440,7 +440,7 @@ function ArenaQuestionColumn({ room, userId }: { room: Room; userId: Id<"users">
     } catch (e) {
       const msg = e instanceof Error ? e.message : "Submit failed";
       if (!/already answered/i.test(msg)) {
-        toast.error(msg);
+        toast.error(friendlyError(e, "Couldn’t submit your answer."));
         setSubmitting(false);
       }
     }

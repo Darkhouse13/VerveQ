@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery, useMutation } from "convex/react";
 import { api } from "../../convex/_generated/api";
+import { friendlyError } from "@/lib/errors";
 import { NeoCard } from "@/components/neo/NeoCard";
 import { NeoButton } from "@/components/neo/NeoButton";
 import { NeoBadge } from "@/components/neo/NeoBadge";
@@ -229,7 +230,7 @@ function SubmitTab({ onSuccess }: { onSuccess: () => void }) {
       setImageId(null);
       onSuccess();
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Submission failed");
+      toast.error(friendlyError(e, "Submission failed"));
     } finally {
       setSubmitting(false);
     }
@@ -396,7 +397,7 @@ function ReviewTab() {
         toast.success(`Vote recorded (${vote})`);
       }
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Vote failed");
+      toast.error(friendlyError(e, "Vote failed"));
     } finally {
       setVoting(null);
     }

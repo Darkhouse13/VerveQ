@@ -16,6 +16,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useMutation, useQuery } from "convex/react";
 import { toast } from "sonner";
+import { friendlyError } from "@/lib/errors";
 import { api } from "../../convex/_generated/api";
 import { useAntiCheat } from "@/hooks/useAntiCheat";
 import { SHELL_ROUTES } from "@/lib/shellRoutes";
@@ -115,7 +116,7 @@ export function useDailyQuiz(): DailyQuizState {
           toast.error("You've already played today's challenge!");
           navigate(SHELL_ROUTES.home, { replace: true });
         } else {
-          toast.error(msg);
+          toast.error(friendlyError(e, "Couldn’t start today’s challenge."));
           navigate(-1);
         }
         localAttemptSport.current = null;
@@ -197,8 +198,7 @@ export function useDailyQuiz(): DailyQuizState {
           { correct: res.correct, timeTaken: res.timeTaken, score: res.score },
         ]);
       } catch (error) {
-        const message = error instanceof Error ? error.message : "Failed to check answer";
-        toast.error(message || "Failed to check answer");
+        toast.error(friendlyError(error, "Failed to check answer"));
       } finally {
         answerSubmitInFlight.current = false;
         setChecking(false);

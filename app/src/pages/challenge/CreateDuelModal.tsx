@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useMutation } from "convex/react";
 import { ChevronLeft, X } from "lucide-react";
 import { toast } from "sonner";
+import { friendlyError } from "@/lib/errors";
 
 import { NeoCard } from "@/components/neo/NeoCard";
 import { NeoButton } from "@/components/neo/NeoButton";
@@ -150,7 +151,7 @@ export default function CreateDuelModal({
       const result = await createMut({ ...args, viaLink: true });
       onCreated(result.duelId);
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Failed to start duel");
+      toast.error(friendlyError(e, "Failed to start duel"));
     } finally {
       setSubmitting(false);
     }

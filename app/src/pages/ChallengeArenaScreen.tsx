@@ -26,6 +26,7 @@ import {
   X,
 } from "lucide-react";
 import { toast } from "sonner";
+import { friendlyError } from "@/lib/errors";
 
 import { NeoCard } from "@/components/neo/NeoCard";
 import { NeoButton } from "@/components/neo/NeoButton";
@@ -125,7 +126,7 @@ function ChallengeArenaRoom({
         await joinMut({ code });
         setJoinError(null);
       } catch (e) {
-        setJoinError(e instanceof Error ? e.message : "Could not join arena");
+        setJoinError(friendlyError(e, "Could not join arena"));
       }
     })();
   }, [code, joinMut, room]);
@@ -142,7 +143,7 @@ function ChallengeArenaRoom({
         await leaveMut({ arenaId: room.arenaId });
       } catch (e) {
         if (!silent) {
-          toast.error(e instanceof Error ? e.message : "Could not leave");
+          toast.error(friendlyError(e, "Could not leave"));
         }
       } finally {
         setLeaving(false);
@@ -164,7 +165,7 @@ function ChallengeArenaRoom({
       toast.success("Rematch lobby ready");
       navigate(`/arena/${result.code}`, { replace: true });
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Rematch failed");
+      toast.error(friendlyError(e, "Rematch failed"));
     } finally {
       setRematching(false);
     }
@@ -577,7 +578,7 @@ export function LobbyView({
     try {
       await setReady({ arenaId: room.arenaId, ready: !me.ready });
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Could not update ready");
+      toast.error(friendlyError(e, "Could not update ready"));
     }
   };
 
@@ -585,7 +586,7 @@ export function LobbyView({
     try {
       await setTeam({ arenaId: room.arenaId, team });
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Could not set team");
+      toast.error(friendlyError(e, "Could not set team"));
     }
   };
 
@@ -593,7 +594,7 @@ export function LobbyView({
     try {
       await startMut({ arenaId: room.arenaId, force });
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Could not start");
+      toast.error(friendlyError(e, "Could not start"));
     }
   };
 
@@ -987,7 +988,7 @@ function QuestionView({
     } catch (e) {
       const msg = e instanceof Error ? e.message : "Submit failed";
       if (!/already answered/i.test(msg)) {
-        toast.error(msg);
+        toast.error(friendlyError(e, "Couldn’t submit your answer."));
         setPending(null);
         setSubmitting(false);
       }
@@ -1014,7 +1015,7 @@ function QuestionView({
     } catch (e) {
       const msg = e instanceof Error ? e.message : "Submit failed";
       if (!/already answered/i.test(msg)) {
-        toast.error(msg);
+        toast.error(friendlyError(e, "Couldn’t submit your answer."));
         setSubmitting(false);
       }
     }
@@ -1351,7 +1352,7 @@ export function RoundBreakView({
     try {
       await readyNextRound({ arenaId: room.arenaId });
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Could not ready");
+      toast.error(friendlyError(e, "Could not ready"));
     }
   };
 

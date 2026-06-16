@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useMutation } from "convex/react";
 import { X } from "lucide-react";
 import { toast } from "sonner";
+import { friendlyError } from "@/lib/errors";
 
 import { NeoCard } from "@/components/neo/NeoCard";
 import { NeoButton } from "@/components/neo/NeoButton";
@@ -27,7 +28,7 @@ export default function CreateArenaModal({
       const result = await create({ mode });
       onCreated(result.code);
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Failed to create arena");
+      toast.error(friendlyError(e, "Failed to create arena"));
     } finally {
       setSubmitting(false);
     }

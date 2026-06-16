@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { humanizeServerError } from "@/lib/errors";
+import { friendlyError, humanizeServerError } from "@/lib/errors";
 
 describe("humanizeServerError", () => {
   it("strips Convex transport noise down to the thrown message", () => {
@@ -27,5 +27,54 @@ describe("humanizeServerError", () => {
     expect(humanizeServerError(new Error("Username is already taken."))).toBe(
       "Username is already taken.",
     );
+  });
+});
+
+describe("friendlyError", () => {
+  const wrap = (msg: string) =>
+    `[CONVEX M(x:y)] [Request ID: abc] Server Error Uncaught Error: ${msg} at handler (../convex/x.ts:1:1) Called by client`;
+
+  it("maps known server errors to curated, user-facing copy", () => {
+    expect(friendlyError(new Error(wrap("Not authenticated")))).toBe(
+      "Please sign in to continue.",
+    );
+    expect(friendlyError(new Error(wrap("Arena not found")))).toBe(
+      "This isn’t available anymore — it may have expired.",
+    );
+    expect(friendlyError(new Error(wrap("Arena is full")))).toBe(
+      "This room is already full.",
+    );
+    expect(friendlyError(new Error(wrap("Cannot duel yourself")))).toBe(
+      "You can’t duel yourself.",
+    );
+  });
+
+  it("never leaks raw internals — leaky/unknown errors use the fallback", () => {
+    // Internal detail (question counts) must never reach the player.
+    expect(
+      friendlyError(
+        new Error(wrap("Not enough duel questions for football/easy: 7/10")),
+        "Couldn’t start the duel.",
+      ),
+    ).toBe("Couldn’t start the duel.");
+    // Config / secret names never shown.
+    expect(
+      friendlyError(new Error(wrap("RESEND_API_KEY is not configured")), "fb"),
+    ).toBe("fb");
+    // Completely unrecognised message → contextual fallback, not the raw text.
+    const raw = wrap("Unexpected widget malfunction zzz");
+    expect(friendlyError(new Error(raw), "fb")).toBe("fb");
+    expect(friendlyError(new Error(raw), "fb")).not.toContain("widget");
+  });
+
+  it("falls back when there is no error or nothing legible", () => {
+    expect(friendlyError(undefined, "fb")).toBe("fb");
+    expect(friendlyError(new Error(""), "fb")).toBe("fb");
+    expect(
+      friendlyError(
+        new Error("[CONVEX M(x:y)] [Request ID: abc] Server Error"),
+        "fb",
+      ),
+    ).toBe("fb");
   });
 });

@@ -3,6 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { useQuery, useMutation } from "convex/react";
 import { ArrowLeft, Swords, Flame } from "lucide-react";
 import { toast } from "sonner";
+import { friendlyError } from "@/lib/errors";
 
 import { NeoCard } from "@/components/neo/NeoCard";
 import { NeoButton } from "@/components/neo/NeoButton";
@@ -216,7 +217,7 @@ export function RivalDetailScreen({ embedded = false }: { embedded?: boolean } =
       toast.success("Rematch sent");
       navigate(`/duel/play/${result.duelId}`);
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Rematch failed");
+      toast.error(friendlyError(e, "Rematch failed"));
     } finally {
       setRematching(false);
     }

@@ -3,6 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { useMutation, useQuery } from "convex/react";
 import { Check, X, Clock, Trophy, ArrowLeft, Swords } from "lucide-react";
 import { toast } from "sonner";
+import { friendlyError } from "@/lib/errors";
 
 import { NeoCard } from "@/components/neo/NeoCard";
 import { NeoButton } from "@/components/neo/NeoButton";
@@ -147,8 +148,7 @@ export function DuelPlay({ duelId, guestToken, initialView }: DuelPlayProps) {
       setLoadError(null);
       return fresh;
     } catch (e) {
-      const msg = e instanceof Error ? e.message : "Failed to load duel";
-      setLoadError(msg);
+      setLoadError(friendlyError(e, "Failed to load duel"));
       return null;
     }
   }, [duelId, getMyDuel, guestTokenForArgs]);
@@ -212,7 +212,7 @@ export function DuelPlay({ duelId, guestToken, initialView }: DuelPlayProps) {
         await refresh();
       }, AUTO_ADVANCE_DELAY_MS);
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Failed to submit answer");
+      toast.error(friendlyError(e, "Failed to submit answer"));
       setSelected(null);
     } finally {
       setSubmitting(false);
@@ -233,7 +233,7 @@ export function DuelPlay({ duelId, guestToken, initialView }: DuelPlayProps) {
       }
       navigate(`/duel/play/${result.duelId}`);
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Rematch failed");
+      toast.error(friendlyError(e, "Rematch failed"));
     } finally {
       setRematching(false);
     }

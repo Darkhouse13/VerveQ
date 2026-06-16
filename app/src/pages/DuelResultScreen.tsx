@@ -3,6 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { useMutation, useQuery } from "convex/react";
 import { ArrowLeft, Swords, Share2, Copy } from "lucide-react";
 import { toast } from "sonner";
+import { friendlyError } from "@/lib/errors";
 
 import { NeoCard } from "@/components/neo/NeoCard";
 import { NeoButton } from "@/components/neo/NeoButton";
@@ -83,7 +84,7 @@ export default function DuelResultScreen() {
         const v = (await getMyDuel({ duelId: duelId as Id<"duels"> })) as DuelView;
         setView(v);
       } catch (e) {
-        setError(e instanceof Error ? e.message : "Failed to load duel");
+        setError(friendlyError(e, "Failed to load duel"));
       }
     })();
   }, [duelId, getMyDuel, isAuthenticated, navigate]);
@@ -206,7 +207,7 @@ export default function DuelResultScreen() {
       }
       navigate(`/duel/play/${result.duelId}`);
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Rematch failed");
+      toast.error(friendlyError(e, "Rematch failed"));
     } finally {
       setRematching(false);
     }
@@ -219,7 +220,7 @@ export default function DuelResultScreen() {
       await declineMut({ duelId: openRematch.duelId });
       toast.success("Rematch declined");
     } catch (e) {
-      toast.error(e instanceof Error ? e.message : "Could not decline");
+      toast.error(friendlyError(e, "Could not decline"));
     } finally {
       setDeclining(false);
     }

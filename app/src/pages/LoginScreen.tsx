@@ -11,6 +11,7 @@ import {
   describePasswordReason,
 } from "../../convex/lib/passwordPolicy";
 import { toast } from "sonner";
+import { friendlyError } from "@/lib/errors";
 
 type Mode = "signin" | "signup" | "reset-request" | "reset-confirm";
 
@@ -94,7 +95,7 @@ export default function LoginScreen() {
     if (e instanceof AuthError) {
       setError(e.message);
     } else if (e instanceof Error) {
-      setError(e.message);
+      setError(friendlyError(e, "Something went wrong. Please try again."));
     } else {
       setError("Something went wrong. Please try again.");
     }
