@@ -32,6 +32,8 @@ export interface SoloBlitzState {
   endTimeMs: number;
   selected: number | null;
   revealed: boolean;
+  /** True while the pick is in flight to the server, before the verdict lands. */
+  checking: boolean;
   correctIdx: number;
   /** True briefly after a wrong answer — drives the penalty flash / shake. */
   penaltyFlash: boolean;
@@ -54,6 +56,7 @@ export function useSoloBlitz(): SoloBlitzState {
   const [endTimeMs, setEndTimeMs] = useState(0);
   const [selected, setSelected] = useState<number | null>(null);
   const [revealed, setRevealed] = useState(false);
+  const [checking, setChecking] = useState(false);
   const [revealedAnswer, setRevealedAnswer] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [penaltyFlash, setPenaltyFlash] = useState(false);
@@ -62,6 +65,7 @@ export function useSoloBlitz(): SoloBlitzState {
   const [zoomImage, setZoomImage] = useState<string | null>(null);
 
   const sessionRef = useRef<Id<"blitzSessions"> | null>(null);
+  const answerSubmitInFlight = useRef(false);
 
   const startMut = useMutation(api.blitz.start);
   const getQuestionMut = useMutation(api.blitz.getQuestion);
@@ -73,8 +77,11 @@ export function useSoloBlitz(): SoloBlitzState {
     setGameOver(true);
     const sid = sessionRef.current;
     if (!sid) return;
-    try {
-      const res = await endGameMut({ sessionId: sid });
+    const goToResults = (res: {
+      score: number;
+      correctCount: number;
+      wrongCount: number;
+    }) =>
       navigate("/blitz-results", {
         state: {
           score: res.score,
@@ -84,8 +91,19 @@ export function useSoloBlitz(): SoloBlitzState {
           mode: "blitz" as const,
         },
       });
+    try {
+      goToResults(await endGameMut({ sessionId: sid }));
     } catch {
-      navigate("/home");
+      // The buzzer fired on the client, but the server clock may trail it by a
+      // hair (or a transient hiccup dropped the call). Wait a beat — the server
+      // clock advances past the deadline — and finalize once more before giving
+      // up to home, so a clean run still reaches its results screen.
+      try {
+        await new Promise((r) => setTimeout(r, 1200));
+        goToResults(await endGameMut({ sessionId: sid }));
+      } catch {
+        navigate("/home");
+      }
     }
   }, [endGameMut, navigate, sport, gameOver]);
 
@@ -146,9 +164,23 @@ export function useSoloBlitz(): SoloBlitzState {
 
   const onOption = useCallback(
     async (idx: number) => {
-      if (revealed || !question || !sessionId || gameOver) return;
+      if (
+        revealed ||
+        checking ||
+        answerSubmitInFlight.current ||
+        !question ||
+        !sessionId ||
+        gameOver
+      )
+        return;
+      // Lock input immediately (so a second tap can't fire another submit) and
+      // mark the pick "checking" — but DON'T flip `revealed` yet. Revealing
+      // before the server verdict arrives would paint a correct pick red for one
+      // frame (correctIdx is still -1) and only flip it green once the answer
+      // lands. We wait for the verdict and reveal it atomically below.
+      answerSubmitInFlight.current = true;
       setSelected(idx);
-      setRevealed(true);
+      setChecking(true);
       try {
         const res = await submitAnswerMut({
           sessionId,
@@ -157,7 +189,10 @@ export function useSoloBlitz(): SoloBlitzState {
         });
         setScore(res.score);
         setEndTimeMs(res.endTimeMs);
+        // Set the correct answer BEFORE revealing so the grading colours (green
+        // for correct, red for a wrong pick) are right on the very first frame.
         setRevealedAnswer(res.correctAnswer);
+        setRevealed(true);
 
         if (!res.correct) {
           setPenaltyFlash(true);
@@ -176,9 +211,12 @@ export function useSoloBlitz(): SoloBlitzState {
         }, res.correct ? 400 : 800);
       } catch {
         void finishGame();
+      } finally {
+        answerSubmitInFlight.current = false;
+        setChecking(false);
       }
     },
-    [revealed, question, sessionId, gameOver, submitAnswerMut, finishGame, fetchQuestion],
+    [revealed, checking, question, sessionId, gameOver, submitAnswerMut, finishGame, fetchQuestion],
   );
 
   const correctIdx =
@@ -191,6 +229,7 @@ export function useSoloBlitz(): SoloBlitzState {
     endTimeMs,
     selected,
     revealed,
+    checking,
     correctIdx,
     penaltyFlash,
     shaking,

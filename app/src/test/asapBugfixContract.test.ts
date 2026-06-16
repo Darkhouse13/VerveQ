@@ -7,6 +7,7 @@ vi.mock("@convex-dev/auth/server", () => ({
 
 import * as survivalSessions from "../../convex/survivalSessions";
 import * as dailyChallenge from "../../convex/dailyChallenge";
+import * as blitz from "../../convex/blitz";
 
 function handlerOf<T>(fn: T): (ctx: unknown, args: unknown) => Promise<unknown> {
   const registered = fn as {
@@ -292,6 +293,128 @@ describe("ASAP bugfix contracts", () => {
       expect(source).toContain("disabled={revealed || checking}");
       expect(source).not.toContain("selected === null || checking || revealed");
     }
+  });
+
+  it("blitz endGame finalizes a run at the buzzer despite minor client/server clock skew", async () => {
+    const now = Date.now();
+    // The client's countdown fired, but the server clock is still ~1s short of
+    // the deadline and the session was never marked gameOver server-side.
+    const session = {
+      _id: "blitz_1",
+      userId: "stub_user",
+      sport: "football",
+      score: 700,
+      correctCount: 7,
+      wrongCount: 1,
+      usedChecksums: [],
+      gameOver: false,
+      startedAt: now - 59_000,
+      endTimeMs: now + 1_000,
+    };
+    const user = { _id: "stub_user", isAnonymous: true };
+    const patch = vi.fn();
+    const insert = vi.fn();
+    const ctx = {
+      db: {
+        get: async (id: string) => (id === "stub_user" ? user : session),
+        patch,
+        insert,
+      },
+    };
+
+    const res = (await handlerOf(blitz.endGame)(ctx, {
+      sessionId: "blitz_1",
+    })) as Record<string, unknown>;
+
+    expect(res).toMatchObject({ score: 700, correctCount: 7, wrongCount: 1 });
+    // Anonymous players are not ranked-eligible, so no leaderboard row is written.
+    expect(insert).not.toHaveBeenCalled();
+  });
+
+  it("blitz endGame still refuses to bank a run with real time left on the clock", async () => {
+    const now = Date.now();
+    const session = {
+      _id: "blitz_1",
+      userId: "stub_user",
+      sport: "football",
+      score: 300,
+      correctCount: 3,
+      wrongCount: 0,
+      usedChecksums: [],
+      gameOver: false,
+      startedAt: now,
+      endTimeMs: now + 30_000, // 30s left — well beyond the skew grace
+    };
+    const ctx = {
+      db: {
+        get: async () => session,
+        patch: vi.fn(),
+        insert: vi.fn(),
+      },
+    };
+
+    await expect(
+      handlerOf(blitz.endGame)(ctx, { sessionId: "blitz_1" }),
+    ).rejects.toThrow(/unfinished/i);
+  });
+
+  it("blitz endGame accepts a clock-skew grace window so the buzzer reaches the results screen", () => {
+    const source = read("convex/blitz.ts");
+
+    expect(source).toContain("FINALIZE_GRACE_MS");
+    expect(source).toContain("now >= session.endTimeMs - FINALIZE_GRACE_MS");
+  });
+
+  it("blitz finish retries endGame once before falling back to the home page", () => {
+    const hookSource = read("src/hooks/useSoloBlitz.ts");
+    const legacySource = read("src/pages/BlitzScreen.tsx");
+
+    for (const source of [hookSource, legacySource]) {
+      // The retry must sit between the first finalize and the home fallback.
+      const firstEnd = source.indexOf("await endGameMut({ sessionId: sid })");
+      const home = source.indexOf('navigate("/home")');
+      expect(firstEnd).toBeGreaterThan(-1);
+      expect(home).toBeGreaterThan(firstEnd);
+      // Two finalize attempts wrapped in nested try/catch, one delayed retry.
+      expect(source.match(/endGameMut\(\{ sessionId: sid \}\)/g)?.length).toBe(2);
+      expect(source).toContain("setTimeout(r, 1200)");
+    }
+  });
+
+  it("blitz reveals the server verdict before flipping `revealed`, so a correct pick never flashes red first", () => {
+    const hookSource = read("src/hooks/useSoloBlitz.ts");
+    const legacySource = read("src/pages/BlitzScreen.tsx");
+
+    for (const source of [hookSource, legacySource]) {
+      const answerSet = source.indexOf("setRevealedAnswer(res.correctAnswer)");
+      const revealSet = source.indexOf("setRevealed(true)");
+      expect(answerSet).toBeGreaterThan(-1);
+      expect(revealSet).toBeGreaterThan(-1);
+      // The correct answer is known BEFORE the reveal flips on.
+      expect(answerSet).toBeLessThan(revealSet);
+      // A double-tap guard replaces the old "reveal immediately" lock.
+      expect(source).toContain("answerSubmitInFlight.current");
+      expect(source).toContain("setChecking(true)");
+      expect(source).toContain("setChecking(false)");
+    }
+  });
+
+  it("blitz options show a neutral 'selected' state while checking, never red before grading", () => {
+    const v2Source = read("src/pages/shell/play/BlitzPlayScreen.tsx");
+    const legacySource = read("src/pages/BlitzScreen.tsx");
+
+    // v2 shell (production) — the picked option (before reveal) is primary, not
+    // destructive. Whitespace-tolerant so indentation/line-endings don't matter.
+    expect(v2Source).toMatch(
+      /b\.selected === idx\s*\?\s*"bg-primary text-primary-foreground"/,
+    );
+    expect(v2Source).toContain("disabled={b.revealed || b.checking}");
+
+    // Legacy screen mirrors the same pending style + checking lock.
+    expect(legacySource).toMatch(
+      /idx === selected\s*\?\s*"bg-primary text-primary-foreground"/,
+    );
+    expect(legacySource).toContain("disabled={revealed || checking}");
   });
 
 });

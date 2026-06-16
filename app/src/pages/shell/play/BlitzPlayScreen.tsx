@@ -27,7 +27,12 @@ export default function BlitzPlayScreen() {
   const [remaining, setRemaining] = useState(BLITZ_WINDOW_SECONDS);
 
   const optionStyle = (idx: number) => {
-    if (!b.revealed) return "bg-card text-card-foreground";
+    // Before the verdict lands, show the picked option as "selected" (primary),
+    // never red — grading colours only apply once the server answer is known.
+    if (!b.revealed)
+      return b.selected === idx
+        ? "bg-primary text-primary-foreground"
+        : "bg-card text-card-foreground";
     if (idx === b.correctIdx) return "bg-success text-success-foreground";
     if (idx === b.selected) return "bg-destructive text-destructive-foreground";
     return "bg-muted text-muted-foreground opacity-50";
@@ -89,9 +94,9 @@ export default function BlitzPlayScreen() {
             <button
               key={idx}
               type="button"
-              disabled={b.revealed}
+              disabled={b.revealed || b.checking}
               onClick={() => b.onOption(idx)}
-              className={`w-full neo-border neo-shadow rounded-lg p-4 flex items-center gap-3 text-left transition-all cursor-pointer ${!b.revealed ? "active:neo-shadow-pressed" : ""} ${optionStyle(idx)}`}
+              className={`w-full neo-border neo-shadow rounded-lg p-4 flex items-center gap-3 text-left transition-all cursor-pointer ${!b.revealed && !b.checking ? "active:neo-shadow-pressed" : ""} ${optionStyle(idx)}`}
             >
               <span className="neo-border rounded-full w-8 h-8 flex items-center justify-center font-heading font-bold text-xs bg-background text-foreground shrink-0">
                 {b.revealed && idx === b.correctIdx ? (

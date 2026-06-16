@@ -30,6 +30,7 @@ export default function BlitzScreen() {
   const [endTimeMs, setEndTimeMs] = useState(0);
   const [selected, setSelected] = useState<number | null>(null);
   const [revealed, setRevealed] = useState(false);
+  const [checking, setChecking] = useState(false);
   const [isCorrect, setIsCorrect] = useState(false);
   const [loading, setLoading] = useState(true);
   const [penaltyFlash, setPenaltyFlash] = useState(false);
@@ -39,6 +40,7 @@ export default function BlitzScreen() {
   const [revealedAnswer, setRevealedAnswer] = useState<string | null>(null);
 
   const sessionRef = useRef<Id<"blitzSessions"> | null>(null);
+  const answerSubmitInFlight = useRef(false);
 
   const startMut = useMutation(api.blitz.start);
   const getQuestionMut = useMutation(api.blitz.getQuestion);
@@ -50,8 +52,11 @@ export default function BlitzScreen() {
     setGameOver(true);
     const sid = sessionRef.current;
     if (!sid) return;
-    try {
-      const res = await endGameMut({ sessionId: sid });
+    const goToResults = (res: {
+      score: number;
+      correctCount: number;
+      wrongCount: number;
+    }) =>
       navigate("/blitz-results", {
         state: {
           score: res.score,
@@ -61,8 +66,19 @@ export default function BlitzScreen() {
           mode: "blitz" as const,
         },
       });
+    try {
+      goToResults(await endGameMut({ sessionId: sid }));
     } catch {
-      navigate("/home");
+      // The buzzer fired on the client, but the server clock may trail it by a
+      // hair (or a transient hiccup dropped the call). Wait a beat and finalize
+      // once more before falling back home, so a clean run still reaches its
+      // results screen instead of being dumped to the home page.
+      try {
+        await new Promise((r) => setTimeout(r, 1200));
+        goToResults(await endGameMut({ sessionId: sid }));
+      } catch {
+        navigate("/home");
+      }
     }
   }, [endGameMut, navigate, sport, gameOver]);
 
@@ -121,9 +137,21 @@ export default function BlitzScreen() {
   );
 
   const handleSelect = async (idx: number) => {
-    if (revealed || !question || !sessionId || gameOver) return;
+    if (
+      revealed ||
+      checking ||
+      answerSubmitInFlight.current ||
+      !question ||
+      !sessionId ||
+      gameOver
+    )
+      return;
+    // Lock input right away (so a double-tap can't fire a second submit) but
+    // hold off on `revealed` until the server's verdict is in — revealing early
+    // would flash a correct pick red for a frame before it turns green.
+    answerSubmitInFlight.current = true;
     setSelected(idx);
-    setRevealed(true);
+    setChecking(true);
 
     const answer = question.options[idx];
 
@@ -136,8 +164,11 @@ export default function BlitzScreen() {
 
       setScore(res.score);
       setEndTimeMs(res.endTimeMs);
+      // Set the correct answer BEFORE revealing so grading colours are right on
+      // the first frame (green for a correct pick, never a red flash first).
       setRevealedAnswer(res.correctAnswer);
       setIsCorrect(res.correct);
+      setRevealed(true);
 
       if (!res.correct) {
         setPenaltyFlash(true);
@@ -157,6 +188,9 @@ export default function BlitzScreen() {
       }, res.correct ? 400 : 800);
     } catch {
       finishGame();
+    } finally {
+      answerSubmitInFlight.current = false;
+      setChecking(false);
     }
   };
 
@@ -176,7 +210,12 @@ export default function BlitzScreen() {
       : -1;
 
   const getOptionStyle = (idx: number) => {
-    if (!revealed) return "bg-card text-card-foreground";
+    // Before the verdict lands, show the picked option as "selected" (primary),
+    // never red — grading colours only apply once the server answer is known.
+    if (!revealed)
+      return idx === selected
+        ? "bg-primary text-primary-foreground"
+        : "bg-card text-card-foreground";
     if (idx === correctIdx) return "bg-success text-success-foreground";
     if (idx === selected) return "bg-destructive text-destructive-foreground";
     return "bg-muted text-muted-foreground opacity-50";
@@ -227,9 +266,9 @@ export default function BlitzScreen() {
         {question?.options.map((opt, idx) => (
           <button
             key={idx}
-            disabled={revealed}
+            disabled={revealed || checking}
             onClick={() => handleSelect(idx)}
-            className={`w-full neo-border neo-shadow rounded-lg p-4 flex items-center gap-3 text-left transition-all cursor-pointer ${!revealed ? "active:neo-shadow-pressed" : ""} ${getOptionStyle(idx)}`}
+            className={`w-full neo-border neo-shadow rounded-lg p-4 flex items-center gap-3 text-left transition-all cursor-pointer ${!revealed && !checking ? "active:neo-shadow-pressed" : ""} ${getOptionStyle(idx)}`}
           >
             <span className="neo-border rounded-full w-8 h-8 flex items-center justify-center font-heading font-bold text-xs bg-background text-foreground shrink-0">
               {revealed && idx === correctIdx ? (

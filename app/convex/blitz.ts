@@ -20,6 +20,14 @@ import {
 const BLITZ_DURATION_MS = 60_000; // 60 seconds
 const WRONG_PENALTY_MS = 3_000;   // -3s on wrong
 const CORRECT_POINTS = 100;
+// Clock-skew tolerance for finalizing a run. The client's countdown fires
+// `endGame` the instant ITS clock passes `endTimeMs`; if the device clock runs
+// ahead of the server's, the server can still read `now < endTimeMs` and would
+// otherwise reject the finalize, bouncing the player to the home page instead
+// of the results screen. Finalizing a few seconds early is harmless — the score
+// is only the sum of answers already locked in, and no points can be earned
+// after time is up — so we accept a small grace window.
+const FINALIZE_GRACE_MS = 3_000;
 
 export const start = mutation({
   args: { sport: v.string() },
@@ -214,7 +222,7 @@ export const endGame = mutation({
 
     const now = Date.now();
 
-    const timeExpired = now >= session.endTimeMs;
+    const timeExpired = now >= session.endTimeMs - FINALIZE_GRACE_MS;
     if (!session.gameOver && !timeExpired) {
       throw new Error("Cannot save an unfinished Blitz session");
     }
