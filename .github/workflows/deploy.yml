@@ -1,0 +1,62 @@
+name: deploy
+
+# Auto-deploy on push to master:
+#   1. Convex backend (functions + schema) — only if CONVEX_DEPLOY_KEY is set.
+#   2. Frontend — SSH to the host; a forced command runs the existing
+#      image-based publish (deploy/build-and-run.sh) with rollback kept.
+# VerveQ is NOT a Coolify app; this replaces the manual deploy in docs/DEPLOYMENT.md.
+on:
+  push:
+    branches: [master]
+  workflow_dispatch:
+
+# One production deploy at a time; let an in-flight one finish rather than
+# cancelling it mid-build.
+concurrency:
+  group: verveq-deploy
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    env:
+      CONVEX_DEPLOY_KEY: ${{ secrets.CONVEX_DEPLOY_KEY }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # --- Backend: Convex (skipped until CONVEX_DEPLOY_KEY is added) ---
+      - name: Set up Node
+        if: env.CONVEX_DEPLOY_KEY != ''
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: app/package-lock.json
+
+      - name: Deploy Convex backend
+        if: env.CONVEX_DEPLOY_KEY != ''
+        working-directory: app
+        run: |
+          npm ci
+          npx convex deploy
+
+      - name: Convex deploy skipped
+        if: env.CONVEX_DEPLOY_KEY == ''
+        run: echo "::warning title=Convex not deployed::CONVEX_DEPLOY_KEY secret is not set — skipping backend deploy. Add it (Settings → Secrets → Actions) so schema/function changes ship automatically."
+
+      # --- Frontend: SSH triggers the server-side forced deploy command ---
+      - name: Deploy frontend over SSH
+        env:
+          SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
+          SSH_HOST: ${{ secrets.DEPLOY_SSH_HOST }}
+          KNOWN_HOSTS: ${{ secrets.DEPLOY_KNOWN_HOSTS }}
+        run: |
+          mkdir -p ~/.ssh
+          printf '%s\n' "$SSH_KEY" > ~/.ssh/id_deploy
+          chmod 600 ~/.ssh/id_deploy
+          printf '%s\n' "$KNOWN_HOSTS" > ~/.ssh/known_hosts
+          # The server pins this key to a forced command (verveq-ci-deploy.sh),
+          # so the literal "deploy" arg below is ignored — it just triggers the
+          # pull + image build + container recreate, streaming logs back here.
+          ssh -i ~/.ssh/id_deploy -o IdentitiesOnly=yes "root@${SSH_HOST}" deploy
