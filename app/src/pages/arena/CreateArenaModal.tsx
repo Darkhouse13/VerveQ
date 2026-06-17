@@ -66,9 +66,11 @@ export default function CreateArenaModal({
                 className="flex items-center justify-between !p-3"
               >
                 <div className="min-w-0">
-                  <p className="font-heading font-bold text-sm leading-tight">{opt.label}</p>
+                  <p className="font-heading font-bold text-sm leading-tight">
+                    {t(`createArena.mode_${opt.key}_label`, { defaultValue: opt.label })}
+                  </p>
                   <p className="text-[11px] opacity-90 truncate leading-tight mt-0.5">
-                    {opt.description}
+                    {t(`createArena.mode_${opt.key}_desc`, { defaultValue: opt.description })}
                   </p>
                 </div>
                 <NeoBadge

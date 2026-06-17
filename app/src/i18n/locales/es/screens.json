@@ -390,7 +390,17 @@
     "capacityMax_one": "máx. {{count}}",
     "capacityMax_other": "máx. {{count}}",
     "creating": "Creando…",
-    "createButton": "Crear arena"
+    "createButton": "Crear arena",
+    "mode_1v1_label": "1v1",
+    "mode_1v1_desc": "Mano a mano — el más rápido gana",
+    "mode_2v2_label": "2v2 por equipos",
+    "mode_2v2_desc": "Elige equipo, suma la puntuación",
+    "mode_ffa3_label": "FFA 3",
+    "mode_ffa3_desc": "Todos contra todos, tres jugadores",
+    "mode_ffa4_label": "FFA 4",
+    "mode_ffa4_desc": "Todos contra todos, cuatro jugadores",
+    "mode_ffa5_label": "FFA 5",
+    "mode_ffa5_desc": "Todos contra todos, cinco jugadores"
   },
   "joinArena": {
     "closeAria": "Cerrar",
