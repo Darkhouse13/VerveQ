@@ -1,3 +1,240 @@
 {
-  "_note": "Stub namespace. Translations pending — missing keys fall back to English (en/shell.json)."
+  "common": {
+    "back": "Atrás",
+    "play": "Jugar",
+    "new": "Nuevo",
+    "soon": "Pronto",
+    "comingSoon": "Próximamente",
+    "enter": "Entrar",
+    "cancel": "Cancelar",
+    "inLearn": "En Aprender"
+  },
+  "nav": {
+    "home": "Inicio",
+    "compete": "Competir",
+    "ranks": "Rangos",
+    "learn": "Aprender",
+    "profile": "Perfil"
+  },
+  "auth": {
+    "signIn": "Iniciar sesión",
+    "haveAccount": "¿Ya tienes una cuenta?"
+  },
+  "landing": {
+    "eyebrow": "Trivia de fútbol · mano a mano",
+    "headline": "Resuélvelo.",
+    "subline": "Demuestra que sabes más que tus amigos: primero el fútbol, después todo lo demás.",
+    "play": "Jugar ahora",
+    "freeNote": "Gratis · sin registro: juega primero, elige un nombre después.",
+    "haveAccount": "¿Ya estás en VerveQ?",
+    "signIn": "Iniciar sesión",
+    "roundBadge": "Ronda de prueba",
+    "progress": "P {{current}} / {{total}}",
+    "score": "Puntos: {{score}}",
+    "speedHint": "Las respuestas rápidas suman más",
+    "correct": "Correcto · +{{points}} pts",
+    "wrong": "Incorrecto · sin puntos",
+    "next": "Siguiente pregunta",
+    "seeScore": "Ver mi puntuación",
+    "resultBadge": "Buena ronda",
+    "resultCorrect": "{{correct}} / {{total}} correctas",
+    "claimTitle": "Elige un nombre de usuario",
+    "claimBody": "Empieza a competir y reta a un amigo: sin correo, sin contraseña.",
+    "claimCta": "Elegir nombre de usuario",
+    "maybeLater": "Quizá más tarde — seguir jugando",
+    "explore": "Explorar VerveQ"
+  },
+  "account": {
+    "title": "¿Cómo quieres jugar?",
+    "body": "Guarda tu progreso y sube en los rangos con una cuenta, o entra directo.",
+    "create": "Crear una cuenta",
+    "signIn": "Iniciar sesión",
+    "guest": "Jugar como invitado",
+    "guestNote": "Jugar como invitado solo requiere un nombre de usuario: sin correo, sin contraseña. Puedes pasar a una cuenta completa cuando quieras."
+  },
+  "home": {
+    "pillars": {
+      "competeTitle": "Competir",
+      "competeChip": "Clasificatorio",
+      "competeBody": "Arenas en directo, duelos y desafíos mentales de fútbol. Elige una categoría y sube de rango.",
+      "rankChip": "Rango: {{tier}}",
+      "learnTitle": "Aprender",
+      "learnChip": "Ruta tranquila",
+      "learnBody": "Construye conocimiento de verdad. Preguntas adaptativas, explicaciones y repaso espaciado: no es un examen.",
+      "lockedInChip": "{{count}} consolidadas",
+      "dueChip": "{{count}} para hoy"
+    },
+    "hooks": {
+      "eyebrow": "Retos diarios · mantén la racha",
+      "eyebrowShort": "Retos diarios",
+      "resetsIn": "Se reinicia en {{time}}",
+      "played": "Jugado ✓",
+      "quizSub": "10 P · elige tu nivel"
+    },
+    "ranksCard": {
+      "view": "Ver rangos"
+    },
+    "stats": {
+      "streak": "Racha",
+      "unranked": "Sin clasificar"
+    }
+  },
+  "compete": {
+    "title": "Competir",
+    "chooseCategory": "Elige una categoría",
+    "categoryHint": "Geografía, Historia y Ciencia también tienen una ruta guiada en Aprender.",
+    "categories": {
+      "sport": "Deporte",
+      "sportDesc": "Fútbol",
+      "history": "Historia",
+      "geography": "Geografía",
+      "science": "Ciencia"
+    },
+    "chooseSport": "Elige un deporte",
+    "sports": {
+      "football": "Fútbol",
+      "basketball": "Baloncesto",
+      "tennis": "Tenis"
+    },
+    "chooseMode": "Elige un modo",
+    "modeGridHint": "{{sport}} · elige cómo quieres jugar",
+    "sections": {
+      "solo": "Modos individuales",
+      "knowledge": "Cultura general",
+      "friends": "Con amigos"
+    }
+  },
+  "modes": {
+    "quiz": { "name": "Quiz", "desc": "10 preguntas, puntuación por tiempo" },
+    "survival": { "name": "Survival", "desc": "Adivina jugadores por sus iniciales" },
+    "blitz": { "name": "Blitz", "desc": "Ronda rápida de 60 segundos" },
+    "higherLower": { "name": "Más o Menos", "desc": "Compara estadísticas de jugadores" },
+    "verveGrid": { "name": "VerveGrid", "desc": "Completa la cuadrícula 3x3" },
+    "whoAmI": { "name": "¿Quién soy?", "desc": "Cuatro pistas progresivas" },
+    "daily": { "name": "Reto diario", "desc": "Las mismas preguntas para todos" },
+    "liveMatch": { "name": "Partida en directo", "desc": "1v1 en tiempo real, emparejado por ELO" },
+    "arena": { "name": "Arena", "desc": "Salas de desafío en grupo" },
+    "duel": { "name": "Duelos", "desc": "Mano a mano, envía un enlace" },
+    "knowledgeQuiz": { "name": "Quiz de cultura", "desc": "Ciencia, historia y descubrimientos" },
+    "cameFirst": { "name": "¿Qué fue primero?", "desc": "Ordena los eventos en la línea de tiempo" }
+  },
+  "drawer": {
+    "title": "Elige una categoría",
+    "subtitle": "Elige sobre qué te pondremos a prueba",
+    "categories": {
+      "whichCameFirst": "¿Qué fue primero?",
+      "whichCameFirstDesc": "Ordena los eventos en la línea de tiempo",
+      "knowledge": "Cultura",
+      "knowledgeDesc": "Ciencia, historia y descubrimientos",
+      "mixedBag": "Cajón de sastre",
+      "mixedBagDesc": "Un poco de todo"
+    }
+  },
+  "ranks": {
+    "title": "Los Rangos",
+    "eyebrow": "Escalera competitiva",
+    "eyebrowSeason": "Escalera competitiva · Temporada {{n}}",
+    "seasonChip": "Temporada {{n}}",
+    "rankedChip": "Clasificatorio",
+    "endsIn": "Termina en {{days}} días",
+    "endsInShort": "TERMINA EN {{days}}D",
+    "seasonDatesSoon": "Fechas de temporada pronto",
+    "eloRating": "Puntuación ELO",
+    "unranked": "Sin clasificar",
+    "tiers": {
+      "bronze": "Bronce",
+      "silver": "Plata",
+      "gold": "Oro",
+      "platinum": "Platino"
+    },
+    "tierRange": "{{min}}–{{max}} ELO",
+    "tierRangeTop": "{{min}}+ ELO",
+    "progressTo": "{{elo}} / {{next}} ELO para {{tier}}",
+    "topTier": "Máximo nivel — defiende tu corona",
+    "allTimeRecord": "Histórico",
+    "playRanked": "Jugar clasificatorio →",
+    "perModeSoon": "Puntuaciones por modo — próximamente",
+    "archiveSoon": "Archivo de temporadas — pronto",
+    "globalRankSoon": "Rango global — próximamente",
+    "globalRankOf": "#{{rank}} de {{total}}",
+    "globalRankShort": "#{{rank}} global",
+    "globalRankUnplaced": "Aún sin partidas clasificatorias",
+    "ladder": "La escalera",
+    "ladderHint": "Sube ↑ · Bronce → Platino",
+    "youAreHere": "Estás aquí",
+    "newPlayersStart": "Los nuevos jugadores empiezan aquí",
+    "seasonalCrown": "Corona de temporada",
+    "board": "Clasificación",
+    "boardScope": "⚽ Fútbol · Quiz",
+    "boardTop": "Top {{n}}",
+    "boardEmpty": "La clasificación abre pronto",
+    "boardYou": "Tú",
+    "boardLockedRow": "Tu fila se desbloquea con una cuenta completa",
+    "fullBoard": "Clasificación completa →",
+    "locked": {
+      "chip": "Cuentas completas",
+      "title": "El clasificatorio te espera",
+      "body": "El ELO, los niveles y la escalera de temporada son para cuentas completas, así que cada rango lo gana un jugador real. Tus estadísticas casuales se mantienen; la clasificación empieza en cuanto te pasas a cuenta completa.",
+      "slot": "Tu ELO · tu nivel · tu rango global — aparecen aquí",
+      "create": "Crear cuenta completa →",
+      "keepCasual": "Seguir jugando en casual"
+    }
+  },
+  "profile": {
+    "title": "Perfil",
+    "language": "Idioma",
+    "eyebrow": "Tu vestuario",
+    "memberSince": "Miembro desde {{date}}",
+    "playingSince": "Jugando desde {{date}} · este dispositivo",
+    "fullAccount": "Cuenta completa",
+    "usernameOnly": "Solo nombre de usuario",
+    "edit": "Editar",
+    "share": "Compartir",
+    "editSoon": "¡La edición de perfil llega pronto!",
+    "shareCopied": "¡Enlace del perfil copiado!",
+    "ranked": "Clasificatorio",
+    "rankedSeason": "Clasificatorio · Temporada {{n}}",
+    "lockedChip": "Bloqueado",
+    "lockedTitle": "El ELO y los niveles requieren una cuenta completa",
+    "lockedBody": "Los modos casuales siguen contando para tus partidas. La clasificación empieza en cuanto te pasas a cuenta completa.",
+    "peekLadder": "Echar un vistazo a la escalera →",
+    "viewRanks": "Ver rangos →",
+    "global": "global",
+    "upgradeTitle": "Guarda tu progreso — crea una cuenta completa",
+    "upgradeBody": "Tu nombre de usuario y tus partidas solo viven en este dispositivo. Haz una copia de seguridad y desbloquea el clasificatorio.",
+    "upgradeCta": "Crear cuenta →",
+    "stats": {
+      "games": "Partidas jugadas",
+      "winRate": "Tasa de victorias",
+      "bestStreak": "Mejor racha",
+      "favTopic": "Tema favorito",
+      "rankedOnly": "Solo clasificatorio"
+    },
+    "achievements": "Logros",
+    "achievementsNone": "Los logros se cargan una vez configurados",
+    "locked": "Bloqueado",
+    "activity": "Actividad reciente",
+    "activityRanked": "Clasificatorio",
+    "activityEmpty": "Aún sin partidas clasificatorias",
+    "activityEmptyGuest": "El historial clasificatorio se desbloquea con una cuenta completa",
+    "decay": "Decaimiento de ELO",
+    "seasonReset": "Reinicio de temporada",
+    "seasons": "Historial de temporadas",
+    "seasonsPeak": "Nivel final",
+    "seasonsEmpty": "Historial de temporadas — aparece cuando termine tu primera temporada",
+    "seasonsGuest": "Historial de temporadas — solo cuentas completas",
+    "signOut": "Cerrar sesión",
+    "signOutWarning": "⚠ Solo nombre de usuario: cerrar sesión borra tu progreso en este dispositivo.",
+    "signOutConfirmTitle": "¿Cerrar sesión?",
+    "signOutConfirmBody": "Tu cuenta está guardada. Vuelve a iniciar sesión cuando quieras para ver tu ELO, tus logros y tus rangos.",
+    "signOutConfirmBodyGuest": "Este nombre de usuario no tiene contraseña ni correo. Al cerrar sesión se borran de forma permanente esta cuenta y su progreso — no hay forma de volver a entrar.",
+    "signOutConfirmCta": "Cerrar sesión",
+    "signOutConfirmCtaGuest": "Borrar y cerrar sesión",
+    "cancel": "Cancelar"
+  },
+  "forge": {
+    "title": "La Forja",
+    "subtitle": "Crea y revisa preguntas",
+    "enter": "Entrar a la Forja"
+  }
 }

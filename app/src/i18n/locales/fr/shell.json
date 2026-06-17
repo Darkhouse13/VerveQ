@@ -1,3 +1,240 @@
 {
-  "_note": "Stub namespace. Translations pending — missing keys fall back to English (en/shell.json)."
+  "common": {
+    "back": "Retour",
+    "play": "Jouer",
+    "new": "Nouveau",
+    "soon": "Bientôt",
+    "comingSoon": "Bientôt disponible",
+    "enter": "Entrer",
+    "cancel": "Annuler",
+    "inLearn": "Dans Apprendre"
+  },
+  "nav": {
+    "home": "Accueil",
+    "compete": "Affronter",
+    "ranks": "Classement",
+    "learn": "Apprendre",
+    "profile": "Profil"
+  },
+  "auth": {
+    "signIn": "Se connecter",
+    "haveAccount": "Tu as déjà un compte ?"
+  },
+  "landing": {
+    "eyebrow": "Quiz football · en duel",
+    "headline": "Tranchons-en.",
+    "subline": "Prouve que tu en sais plus que tes potes — le football d'abord, le reste ensuite.",
+    "play": "Jouer maintenant",
+    "freeNote": "Gratuit · sans inscription — joue d'abord, choisis un pseudo après.",
+    "haveAccount": "Déjà sur VerveQ ?",
+    "signIn": "Se connecter",
+    "roundBadge": "Manche découverte",
+    "progress": "Q {{current}} / {{total}}",
+    "score": "Score : {{score}}",
+    "speedHint": "Plus tu réponds vite, plus tu marques",
+    "correct": "Correct · +{{points}} pts",
+    "wrong": "Faux · aucun point",
+    "next": "Question suivante",
+    "seeScore": "Voir mon score",
+    "resultBadge": "Belle manche",
+    "resultCorrect": "{{correct}} / {{total}} correctes",
+    "claimTitle": "Choisis un pseudo",
+    "claimBody": "Lance la compétition et défie un pote — sans e-mail, sans mot de passe.",
+    "claimCta": "Choisir un pseudo",
+    "maybeLater": "Plus tard — je continue à jouer",
+    "explore": "Explorer VerveQ"
+  },
+  "account": {
+    "title": "Comment veux-tu jouer ?",
+    "body": "Sauvegarde ta progression et grimpe au classement avec un compte, ou lance-toi directement.",
+    "create": "Créer un compte",
+    "signIn": "Se connecter",
+    "guest": "Jouer en invité",
+    "guestNote": "Le mode invité ne demande qu'un pseudo — sans e-mail, sans mot de passe. Tu peux passer à un compte complet quand tu veux."
+  },
+  "home": {
+    "pillars": {
+      "competeTitle": "Affronter",
+      "competeChip": "Classé",
+      "competeBody": "Arènes en direct, duels et casse-têtes football. Choisis une catégorie, grimpe au classement.",
+      "rankChip": "Rang : {{tier}}",
+      "learnTitle": "Apprendre",
+      "learnChip": "Voie douce",
+      "learnBody": "Construis de vraies connaissances. Questions adaptatives, explications pédagogiques, révisions espacées — pas un examen.",
+      "lockedInChip": "{{count}} acquis",
+      "dueChip": "{{count}} à réviser aujourd'hui"
+    },
+    "hooks": {
+      "eyebrow": "Défis du jour · garde la série",
+      "eyebrowShort": "Défis du jour",
+      "resetsIn": "Réinitialisation dans {{time}}",
+      "played": "Joué ✓",
+      "quizSub": "10 Q · choisis ton niveau"
+    },
+    "ranksCard": {
+      "view": "Voir le classement"
+    },
+    "stats": {
+      "streak": "Série",
+      "unranked": "Non classé"
+    }
+  },
+  "compete": {
+    "title": "Affronter",
+    "chooseCategory": "Choisis une catégorie",
+    "categoryHint": "Géographie, Histoire et Science ont aussi un parcours guidé dans Apprendre.",
+    "categories": {
+      "sport": "Sport",
+      "sportDesc": "Football",
+      "history": "Histoire",
+      "geography": "Géographie",
+      "science": "Science"
+    },
+    "chooseSport": "Choisis un sport",
+    "sports": {
+      "football": "Football",
+      "basketball": "Basketball",
+      "tennis": "Tennis"
+    },
+    "chooseMode": "Choisis un mode",
+    "modeGridHint": "{{sport}} · choisis comment jouer",
+    "sections": {
+      "solo": "Modes solo",
+      "knowledge": "Culture générale",
+      "friends": "Entre amis"
+    }
+  },
+  "modes": {
+    "quiz": { "name": "Quiz", "desc": "10 questions, score au temps" },
+    "survival": { "name": "Survival", "desc": "Devine les joueurs par leurs initiales" },
+    "blitz": { "name": "Blitz", "desc": "Manche éclair de 60 secondes" },
+    "higherLower": { "name": "Plus ou Moins", "desc": "Compare les stats des joueurs" },
+    "verveGrid": { "name": "VerveGrid", "desc": "Remplis la grille 3x3" },
+    "whoAmI": { "name": "Qui suis-je ?", "desc": "Quatre indices progressifs" },
+    "daily": { "name": "Défi du jour", "desc": "Les mêmes questions pour tous" },
+    "liveMatch": { "name": "Match en direct", "desc": "1v1 en temps réel, équilibré par ELO" },
+    "arena": { "name": "Arène", "desc": "Salons de défi en groupe" },
+    "duel": { "name": "Duels", "desc": "En tête-à-tête, envoie un lien" },
+    "knowledgeQuiz": { "name": "Quiz culture", "desc": "Science, histoire et découvertes" },
+    "cameFirst": { "name": "Lequel d'abord", "desc": "Place les événements sur la frise" }
+  },
+  "drawer": {
+    "title": "Choisis une catégorie",
+    "subtitle": "Choisis le thème sur lequel tu seras testé",
+    "categories": {
+      "whichCameFirst": "Lequel d'abord",
+      "whichCameFirstDesc": "Place les événements sur la frise",
+      "knowledge": "Culture",
+      "knowledgeDesc": "Science, histoire et découvertes",
+      "mixedBag": "Pot-pourri",
+      "mixedBagDesc": "Un peu de tout"
+    }
+  },
+  "ranks": {
+    "title": "Le Classement",
+    "eyebrow": "Échelle compétitive",
+    "eyebrowSeason": "Échelle compétitive · Saison {{n}}",
+    "seasonChip": "Saison {{n}}",
+    "rankedChip": "Classé",
+    "endsIn": "Se termine dans {{days}} jours",
+    "endsInShort": "FIN DANS {{days}}J",
+    "seasonDatesSoon": "Dates de la saison bientôt",
+    "eloRating": "Score ELO",
+    "unranked": "Non classé",
+    "tiers": {
+      "bronze": "Bronze",
+      "silver": "Argent",
+      "gold": "Or",
+      "platinum": "Platine"
+    },
+    "tierRange": "{{min}}–{{max}} ELO",
+    "tierRangeTop": "{{min}}+ ELO",
+    "progressTo": "{{elo}} / {{next}} ELO pour {{tier}}",
+    "topTier": "Palier max — défends ta couronne",
+    "allTimeRecord": "Record absolu",
+    "playRanked": "Jouer en classé →",
+    "perModeSoon": "Scores par mode — bientôt disponible",
+    "archiveSoon": "Archives des saisons — bientôt",
+    "globalRankSoon": "Rang mondial — bientôt disponible",
+    "globalRankOf": "#{{rank}} sur {{total}}",
+    "globalRankShort": "#{{rank}} mondial",
+    "globalRankUnplaced": "Aucune partie classée pour l'instant",
+    "ladder": "L'échelle",
+    "ladderHint": "Grimpe ↑ · Bronze → Platine",
+    "youAreHere": "Tu es ici",
+    "newPlayersStart": "Les nouveaux joueurs démarrent ici",
+    "seasonalCrown": "Couronne de la saison",
+    "board": "Classement",
+    "boardScope": "⚽ Football · Quiz",
+    "boardTop": "Top {{n}}",
+    "boardEmpty": "Le classement ouvre bientôt",
+    "boardYou": "Toi",
+    "boardLockedRow": "Ta ligne se débloque avec un compte complet",
+    "fullBoard": "Classement complet →",
+    "locked": {
+      "chip": "Comptes complets",
+      "title": "Le classé t'attend",
+      "body": "L'ELO, les paliers et l'échelle de la saison sont réservés aux comptes complets — pour que chaque rang soit gagné par un vrai joueur. Tes stats détente restent ; le placement démarre dès que tu passes au compte complet.",
+      "slot": "Ton ELO · ton palier · ton rang mondial — ils apparaîtront ici",
+      "create": "Créer un compte complet →",
+      "keepCasual": "Continuer en détente"
+    }
+  },
+  "profile": {
+    "title": "Profil",
+    "language": "Langue",
+    "eyebrow": "Ton vestiaire",
+    "memberSince": "Membre depuis le {{date}}",
+    "playingSince": "Tu joues depuis le {{date}} · cet appareil",
+    "fullAccount": "Compte complet",
+    "usernameOnly": "Pseudo uniquement",
+    "edit": "Modifier",
+    "share": "Partager",
+    "editSoon": "La modification du profil arrive bientôt !",
+    "shareCopied": "Lien du profil copié !",
+    "ranked": "Classé",
+    "rankedSeason": "Classé · Saison {{n}}",
+    "lockedChip": "Verrouillé",
+    "lockedTitle": "L'ELO et les paliers nécessitent un compte complet",
+    "lockedBody": "Les modes détente comptent quand même dans tes parties. Le placement démarre dès que tu passes au compte complet.",
+    "peekLadder": "Jeter un œil à l'échelle →",
+    "viewRanks": "Voir le classement →",
+    "global": "mondial",
+    "upgradeTitle": "Sauvegarde ta progression — crée un compte complet",
+    "upgradeBody": "Ton pseudo et tes parties n'existent que sur cet appareil. Sauvegarde-les et débloque le classé.",
+    "upgradeCta": "Créer un compte →",
+    "stats": {
+      "games": "Parties jouées",
+      "winRate": "Taux de victoire",
+      "bestStreak": "Meilleure série",
+      "favTopic": "Thème préféré",
+      "rankedOnly": "Classé uniquement"
+    },
+    "achievements": "Succès",
+    "achievementsNone": "Les succès se chargeront une fois initialisés",
+    "locked": "Verrouillé",
+    "activity": "Activité récente",
+    "activityRanked": "Classé",
+    "activityEmpty": "Aucune partie classée pour l'instant",
+    "activityEmptyGuest": "L'historique classé se débloque avec un compte complet",
+    "decay": "Déclin ELO",
+    "seasonReset": "Réinitialisation de saison",
+    "seasons": "Historique des saisons",
+    "seasonsPeak": "Palier final",
+    "seasonsEmpty": "Historique des saisons — apparaît à la fin de ta première saison",
+    "seasonsGuest": "Historique des saisons — réservé aux comptes complets",
+    "signOut": "Se déconnecter",
+    "signOutWarning": "⚠ Pseudo uniquement : te déconnecter efface ta progression sur cet appareil.",
+    "signOutConfirmTitle": "Se déconnecter ?",
+    "signOutConfirmBody": "Ton compte est sauvegardé. Reconnecte-toi quand tu veux pour retrouver ton ELO, tes succès et ton classement.",
+    "signOutConfirmBodyGuest": "Ce pseudo n'a ni mot de passe ni e-mail. Te déconnecter efface définitivement ce compte et sa progression — il n'y a aucun moyen de te reconnecter.",
+    "signOutConfirmCta": "Se déconnecter",
+    "signOutConfirmCtaGuest": "Effacer et se déconnecter",
+    "cancel": "Annuler"
+  },
+  "forge": {
+    "title": "La Forge",
+    "subtitle": "Créer et relire des questions",
+    "enter": "Entrer dans la Forge"
+  }
 }

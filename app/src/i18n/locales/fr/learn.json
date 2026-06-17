@@ -6,38 +6,119 @@
     "mcq": "Choix multiple",
     "text": "Texte libre",
     "numeric": "Numérique",
-    "order": "Mettre dans l'ordre"
+    "order": "À remettre dans l'ordre"
+  },
+  "state": {
+    "learning": "En apprentissage",
+    "learningUpper": "En apprentissage",
+    "lockedIn": "Acquis"
   },
   "subjects": {
     "geography": "Géographie",
     "history": "Histoire",
-    "science": "Sciences"
+    "science": "Science"
   },
   "entry": {
     "title": "Apprendre",
     "mastery": "Maîtrise",
     "review": "Révision",
     "subjectsLabel": "Matières",
+    "todaysSession": "Session du jour",
     "heroLine1": "Apprends-le,",
     "heroLine2": "ne le bachote pas.",
-    "start": "Commencer →"
+    "heroBody": "Une courte série adaptative — choix multiple, texte libre, nombres et mise en ordre. Si tu te trompes, on t'explique, on ne te note pas.",
+    "metaLine": "Série adaptative · ≈5 min",
+    "start": "Commencer →",
+    "resumeTitle": "On reprend là où tu t'es arrêté",
+    "allSubjects": "Toutes les matières →",
+    "dueNote": "{{count}} éléments à réviser aujourd'hui · garde le rythme.",
+    "dueTitle": "À réviser",
+    "dueItems": "éléments prêts aujourd'hui",
+    "rotationNote": "{{count}} matières en rotation.",
+    "dueNoteEmpty": "Rien à réviser — la session du jour plante de nouvelles graines.",
+    "resumeEmpty": "Rien en cours pour l'instant — lance la session du jour."
   },
   "run": {
+    "loading": "Chargement de la session…",
+    "progress": "Progression",
+    "questionOf": "Question {{current}} sur {{total}}",
+    "promiseTitle": "La promesse d'Apprendre",
+    "promiseBody": "Chaque erreur t'apporte une explication, pas une croix rouge ✕. On programme un retour pour que ça reste vraiment.",
+    "leave": "← Quitter la session",
     "check": "Vérifier la réponse",
     "checking": "Vérification…",
-    "errorTitle": "Impossible de démarrer votre session",
-    "errorBody": "Une erreur est survenue lors du chargement des questions du jour. Vérifiez votre connexion et réessayez.",
+    "textPlaceholder": "Saisis ta réponse…",
+    "accepted": "Accepté :",
+    "correctOrder": "Ordre correct :",
+    "moveUp": "Monter",
+    "moveDown": "Descendre",
+    "errorTitle": "Impossible de démarrer ta session",
+    "errorBody": "Un problème est survenu pendant le chargement des questions du jour. Vérifie ta connexion et réessaie.",
     "retry": "Réessayer",
     "backToLearn": "← Retour à Apprendre"
   },
   "branch": {
-    "title": "Attention — piège fréquent",
+    "title": "Attention — piège classique",
     "tryAgain": "Réessayer",
     "showWhy": "Montre-moi pourquoi →"
   },
   "reveal": {
-    "ideaTitle": "L'idée à retenir",
+    "gotIt": "✓ Compris",
+    "notYet": "↻ Pas encore",
+    "pending": "Correction en attente",
+    "whyEyebrow": "Le pourquoi — pas le quoi",
+    "ideaTitle": "Voici l'idée à retenir",
+    "stickQuestion": "C'est bien resté ?",
+    "rating": {
+      "again": "À revoir",
+      "hard": "Difficile",
+      "good": "Bien",
+      "easy": "Facile"
+    },
+    "feltQuestion": "Ça t'a semblé être de l'apprentissage ou un examen ?",
+    "feltLearn": "De l'apprentissage",
+    "feltTest": "Un examen",
+    "feltLearnNote": "Parfait — c'est le but. On garde ce rythme.",
+    "feltTestNote": "Bien noté — on ajoutera plus d'accompagnement avant la prochaine du même genre.",
     "next": "Question suivante →",
-    "finish": "Terminer la session →"
+    "finish": "Terminer la session →",
+    "scheduleNote": "On programme un retour pour que ça reste."
+  },
+  "summary": {
+    "title": "Session terminée",
+    "body": "Tu as travaillé {{count}} questions. Le but n'était pas le score — c'est ce qui est passé dans ta mémoire à long terme.",
+    "firstTry": "Du premier coup",
+    "lockedIn": "Acquis",
+    "scheduled": "Programmé",
+    "seeMastery": "Voir la maîtrise",
+    "reviewPlan": "Plan de révision →"
+  },
+  "review": {
+    "eyebrow": "Apprendre · révision espacée",
+    "title": "Ton planning de mémoire",
+    "reviewDue": "Révisions à faire →",
+    "resting": "Au repos",
+    "active": "Actif",
+    "lockedIn": "Acquis",
+    "stillLearning": "Encore en apprentissage",
+    "lockedBlurb": "On espace — tu t'en souviens de façon fiable. Le prochain rappel est dans quelques jours, pas maintenant.",
+    "learningBlurb": "On revient bientôt pendant que la mémoire se forme encore. Des intervalles courts, exprès.",
+    "reviewIn": "Révision dans {{days}}j",
+    "dueNow": "À réviser maintenant",
+    "dueIn": "À réviser dans {{hours}}h",
+    "masteryPct": "{{pct}}% de maîtrise",
+    "inQueue": "{{count}} éléments en file",
+    "notScheduled": "Pas encore programmé"
+  },
+  "mastery": {
+    "eyebrow": "Apprendre · maîtrise",
+    "title": "Où tu en es",
+    "reviewSchedule": "Planning de révision →",
+    "overall": "Maîtrise globale",
+    "lockedIn": "Acquis",
+    "learning": "En apprentissage",
+    "due": "À réviser",
+    "startSession": "Lancer une session →",
+    "dueLine": "{{count}} éléments à réviser"
   }
 }

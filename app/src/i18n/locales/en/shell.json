@@ -182,6 +182,7 @@
   },
   "profile": {
     "title": "Profile",
+    "language": "Language",
     "eyebrow": "Your locker",
     "memberSince": "Member since {{date}}",
     "playingSince": "Playing since {{date}} · this device",
