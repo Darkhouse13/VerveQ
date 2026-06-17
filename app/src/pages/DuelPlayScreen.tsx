@@ -155,7 +155,7 @@ export function DuelPlay({ duelId, guestToken, initialView }: DuelPlayProps) {
       setLoadError(friendlyError(e, t("duelPlay.errorLoadDuel")));
       return null;
     }
-  }, [duelId, getMyDuel, guestTokenForArgs, t]);
+  }, [duelId, getMyDuel, guestTokenForArgs, t, i18n]);
 
   useEffect(() => {
     if (!initialView) {
