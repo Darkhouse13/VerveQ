@@ -1,16 +1,29 @@
 {
   "quiz": {
-    "title": "Quiz"
+    "title": "Quiz",
+    "loadQuestionFailed": "No se pudo cargar la pregunta",
+    "startSessionFailed": "No se pudo iniciar la sesión de quiz",
+    "tabSwitchEnded": "Quiz terminado — cambiaste de pestaña",
+    "tabSwitchWarning": "No cambies de pestaña — tu quiz terminará",
+    "checkFailedToast": "No se pudo verificar la respuesta"
   },
   "dailyQuiz": {
     "title": "Reto diario",
-    "loadingLabel": "Cargando el reto diario…"
+    "loadingLabel": "Cargando el reto diario…",
+    "alreadyPlayed": "¡Ya jugaste el reto de hoy!",
+    "startFailedToast": "No se pudo iniciar el reto de hoy.",
+    "forfeitedTabSwitch": "¡Reto perdido — cambiaste de pestaña!",
+    "tabSwitchWarning": "No cambies de pestaña — perderás el reto diario",
+    "checkFailedToast": "No se pudo verificar la respuesta"
   },
   "blitz": {
     "starting": "Iniciando Blitz…",
     "subtitle": "Sprint de 60 segundos",
     "quit": "Salir",
-    "imageAlt": "Imagen de: {{question}}"
+    "imageAlt": "Imagen de: {{question}}",
+    "startFailedToast": "No se pudo iniciar el Blitz",
+    "tabSwitchWrong": "Cambio de pestaña — cuenta como respuesta incorrecta (-3 s)",
+    "tabSwitchWarning": "No cambies de pestaña — cuenta como respuesta incorrecta (-3 s)"
   },
   "verveGrid": {
     "building": "Construyendo tu cuadrícula…",
@@ -18,7 +31,13 @@
     "tryAgain": "Reintentar",
     "backToCompete": "Volver a Competir",
     "subtitle_one": "Fútbol · {{count}} intento · sin repeticiones",
-    "subtitle_other": "Fútbol · {{count}} intentos · sin repeticiones"
+    "subtitle_other": "Fútbol · {{count}} intentos · sin repeticiones",
+    "unsupportedTitle": "Solo fútbol por ahora",
+    "unsupportedMessage": "VerveGrid solo está disponible para fútbol por ahora. Elige fútbol para cargar una cuadrícula.",
+    "startFailedTitle": "No se pudo iniciar una cuadrícula",
+    "startFailedMessage": "VerveGrid no se pudo cargar ahora. Inténtalo de nuevo o vuelve a Competir.",
+    "tabSwitchEnded": "Cuadrícula terminada — cambiaste de pestaña",
+    "tabSwitchWarning": "No cambies de pestaña — tu cuadrícula terminará"
   },
   "higherLower": {
     "title": "Más o Menos",
@@ -44,7 +63,20 @@
     "poolExhausted": "Racha perfecta: este grupo de estadísticas se ha agotado.",
     "playAgain": "Jugar de nuevo",
     "home": "Inicio",
-    "seasonRange": "Temporada {{start}}/{{end}}"
+    "seasonRange": "Temporada {{start}}/{{end}}",
+    "stats": {
+      "goalsFor": "Goles marcados",
+      "goalsAgainst": "Goles encajados",
+      "cleanSheets": "Porterías a cero",
+      "assists": "Asistencias",
+      "appearances": "Partidos jugados",
+      "yellowCards": "Tarjetas amarillas",
+      "redCards": "Tarjetas rojas",
+      "wins": "Victorias",
+      "losses": "Derrotas",
+      "draws": "Empates",
+      "points": "Puntos"
+    }
   },
   "survival": {
     "title": "Supervivencia",

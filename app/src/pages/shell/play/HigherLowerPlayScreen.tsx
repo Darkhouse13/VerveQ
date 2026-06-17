@@ -26,8 +26,9 @@ import { useAntiCheat } from "@/hooks/useAntiCheat";
 import { api } from "../../../../convex/_generated/api";
 import type { Id } from "../../../../convex/_generated/dataModel";
 
-// Human-readable stat key labels (ported verbatim from the live screen).
-const STAT_LABELS: Record<string, string> = {
+// Fallback human-readable stat key labels (ported verbatim from the live
+// screen). Used as i18n defaultValues so a missing translation still renders.
+const STAT_LABEL_FALLBACKS: Record<string, string> = {
   goalsFor: "Goals Scored",
   goalsAgainst: "Goals Conceded",
   cleanSheets: "Clean Sheets",
@@ -40,10 +41,6 @@ const STAT_LABELS: Record<string, string> = {
   draws: "Draws",
   points: "Points",
 };
-
-function formatStatKey(key: string): string {
-  return STAT_LABELS[key] || key.replace(/([A-Z])/g, " $1").replace(/^./, (s) => s.toUpperCase());
-}
 
 const SUPPORTED_HIGHER_LOWER_SPORTS = new Set(["football"]);
 const START_SESSION_TIMEOUT_MS = 8000;
@@ -64,6 +61,19 @@ function withTimeout<T>(promise: Promise<T>, timeoutMs: number): Promise<T> {
 
 export default function HigherLowerPlayScreen() {
   const { t } = useTranslation("play");
+
+  // Human-readable stat label, translated. Falls back to the verbatim English
+  // label (or a de-camelCased key) so an untranslated stat still renders.
+  const formatStatKey = useCallback(
+    (key: string): string => {
+      const fallback =
+        STAT_LABEL_FALLBACKS[key] ||
+        key.replace(/([A-Z])/g, " $1").replace(/^./, (s) => s.toUpperCase());
+      return t(`higherLower.stats.${key}`, { defaultValue: fallback });
+    },
+    [t],
+  );
+
   const navigate = useNavigate();
   const [params] = useSearchParams();
   const sport = params.get("sport") || "football";

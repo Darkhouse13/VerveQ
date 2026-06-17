@@ -1,16 +1,29 @@
 {
   "quiz": {
-    "title": "Quiz"
+    "title": "Quiz",
+    "loadQuestionFailed": "Échec du chargement de la question",
+    "startSessionFailed": "Impossible de démarrer la session de quiz",
+    "tabSwitchEnded": "Quiz terminé — tu as changé d'onglet",
+    "tabSwitchWarning": "Ne change pas d'onglet — ton quiz se terminera",
+    "checkFailedToast": "Échec de la vérification de la réponse"
   },
   "dailyQuiz": {
     "title": "Défi du jour",
-    "loadingLabel": "Chargement du défi du jour…"
+    "loadingLabel": "Chargement du défi du jour…",
+    "alreadyPlayed": "Tu as déjà joué le défi du jour !",
+    "startFailedToast": "Impossible de démarrer le défi du jour.",
+    "forfeitedTabSwitch": "Défi abandonné — tu as changé d'onglet !",
+    "tabSwitchWarning": "Ne change pas d'onglet — le défi du jour sera abandonné",
+    "checkFailedToast": "Échec de la vérification de la réponse"
   },
   "blitz": {
     "starting": "Démarrage du Blitz…",
     "subtitle": "Sprint de 60 secondes",
     "quit": "Quitter",
-    "imageAlt": "Image pour : {{question}}"
+    "imageAlt": "Image pour : {{question}}",
+    "startFailedToast": "Impossible de démarrer le Blitz",
+    "tabSwitchWrong": "Changement d'onglet — compté comme une mauvaise réponse (-3 s)",
+    "tabSwitchWarning": "Ne change pas d'onglet — ça compte comme une mauvaise réponse (-3 s)"
   },
   "verveGrid": {
     "building": "Construction de ta grille…",
@@ -18,7 +31,13 @@
     "tryAgain": "Réessayer",
     "backToCompete": "Retour à Compétition",
     "subtitle_one": "Football · {{count}} essai · sans répétition",
-    "subtitle_other": "Football · {{count}} essais · sans répétition"
+    "subtitle_other": "Football · {{count}} essais · sans répétition",
+    "unsupportedTitle": "Football uniquement pour l'instant",
+    "unsupportedMessage": "VerveGrid n'est disponible que pour le football pour l'instant. Choisis le football pour charger une grille.",
+    "startFailedTitle": "Impossible de lancer une grille",
+    "startFailedMessage": "VerveGrid n'a pas pu se charger. Réessaie ou retourne à Compétition.",
+    "tabSwitchEnded": "Grille terminée — tu as changé d'onglet",
+    "tabSwitchWarning": "Ne change pas d'onglet — ta grille se terminera"
   },
   "higherLower": {
     "title": "Plus ou Moins",
@@ -44,7 +63,20 @@
     "poolExhausted": "Parcours parfait : ce lot de stats est épuisé.",
     "playAgain": "Rejouer",
     "home": "Accueil",
-    "seasonRange": "Saison {{start}}/{{end}}"
+    "seasonRange": "Saison {{start}}/{{end}}",
+    "stats": {
+      "goalsFor": "Buts marqués",
+      "goalsAgainst": "Buts encaissés",
+      "cleanSheets": "Clean sheets",
+      "assists": "Passes décisives",
+      "appearances": "Apparitions",
+      "yellowCards": "Cartons jaunes",
+      "redCards": "Cartons rouges",
+      "wins": "Victoires",
+      "losses": "Défaites",
+      "draws": "Matchs nuls",
+      "points": "Points"
+    }
   },
   "survival": {
     "title": "Survie",

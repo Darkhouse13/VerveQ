@@ -1,16 +1,29 @@
 {
   "quiz": {
-    "title": "Quiz"
+    "title": "Quiz",
+    "loadQuestionFailed": "Failed to load question",
+    "startSessionFailed": "Failed to start quiz session",
+    "tabSwitchEnded": "Quiz ended — you switched tabs",
+    "tabSwitchWarning": "Don't switch tabs — your quiz will end",
+    "checkFailedToast": "Failed to check answer"
   },
   "dailyQuiz": {
     "title": "Daily Challenge",
-    "loadingLabel": "Loading daily challenge…"
+    "loadingLabel": "Loading daily challenge…",
+    "alreadyPlayed": "You've already played today's challenge!",
+    "startFailedToast": "Couldn't start today's challenge.",
+    "forfeitedTabSwitch": "Challenge forfeited — you switched tabs!",
+    "tabSwitchWarning": "Don't switch tabs — daily challenge will be forfeited",
+    "checkFailedToast": "Failed to check answer"
   },
   "blitz": {
     "starting": "Starting Blitz…",
     "subtitle": "60-second sprint",
     "quit": "Quit",
-    "imageAlt": "Image for: {{question}}"
+    "imageAlt": "Image for: {{question}}",
+    "startFailedToast": "Failed to start blitz",
+    "tabSwitchWrong": "Tab switch — counted as a wrong answer (-3s)",
+    "tabSwitchWarning": "Don't switch tabs — it counts as a wrong answer (-3s)"
   },
   "verveGrid": {
     "building": "Building your grid…",
@@ -18,7 +31,13 @@
     "tryAgain": "Try Again",
     "backToCompete": "Back To Compete",
     "subtitle_one": "Football · {{count}} guess · no repeats",
-    "subtitle_other": "Football · {{count}} guesses · no repeats"
+    "subtitle_other": "Football · {{count}} guesses · no repeats",
+    "unsupportedTitle": "Football Only For Now",
+    "unsupportedMessage": "VerveGrid is currently available for football only. Pick football to load a curated grid.",
+    "startFailedTitle": "Couldn't Start A Grid",
+    "startFailedMessage": "VerveGrid couldn't load right now. Try again, or head back to Compete.",
+    "tabSwitchEnded": "Grid ended — you switched tabs",
+    "tabSwitchWarning": "Don't switch tabs — your grid will end"
   },
   "higherLower": {
     "title": "Higher or Lower",
@@ -44,7 +63,20 @@
     "poolExhausted": "Perfect run: this stat pool is exhausted.",
     "playAgain": "Play Again",
     "home": "Home",
-    "seasonRange": "{{start}}/{{end}} Season"
+    "seasonRange": "{{start}}/{{end}} Season",
+    "stats": {
+      "goalsFor": "Goals Scored",
+      "goalsAgainst": "Goals Conceded",
+      "cleanSheets": "Clean Sheets",
+      "assists": "Assists",
+      "appearances": "Appearances",
+      "yellowCards": "Yellow Cards",
+      "redCards": "Red Cards",
+      "wins": "Wins",
+      "losses": "Losses",
+      "draws": "Draws",
+      "points": "Points"
+    }
   },
   "survival": {
     "title": "Survival",
