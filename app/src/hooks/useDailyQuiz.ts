@@ -303,6 +303,8 @@ export function useDailyQuiz(): DailyQuizState {
       ? {
           question: question.question,
           options: question.options,
+          // Canonical passthrough until the daily serve path is wired (P4.1b).
+          optionValues: question.options,
           difficulty: "",
           checksum: question.checksum,
           category: question.category,

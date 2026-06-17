@@ -30,6 +30,9 @@ function parseDifficulty(value: string | null): QuizDifficulty {
 interface QuestionData {
   question: string;
   options: string[];
+  // Canonical English options in the same order — submitted to the server so
+  // grading stays canonical even when `options` are localized labels.
+  optionValues: string[];
   difficulty: string;
   checksum: string;
   category: string;
@@ -56,7 +59,7 @@ export interface SoloQuizState {
 }
 
 export function useSoloQuiz(): SoloQuizState {
-  const { t } = useTranslation("play");
+  const { t, i18n } = useTranslation("play");
   const navigate = useNavigate();
   const [params] = useSearchParams();
   const sport = params.get("sport") || "football";
@@ -100,7 +103,10 @@ export function useSoloQuiz(): SoloQuizState {
     async (sid: Id<"quizSessions">) => {
       setLoading(true);
       try {
-        const q = await getQuestionMut({ sessionId: sid });
+        const q = await getQuestionMut({
+          sessionId: sid,
+          locale: i18n.resolvedLanguage ?? i18n.language,
+        });
         setQuestion(q);
         setRevealedAnswer(null);
         setSelected(null);
@@ -113,7 +119,7 @@ export function useSoloQuiz(): SoloQuizState {
         setLoading(false);
       }
     },
-    [getQuestionMut, t],
+    [getQuestionMut, t, i18n],
   );
 
   useEffect(() => {
@@ -168,7 +174,8 @@ export function useSoloQuiz(): SoloQuizState {
       try {
         const res = await checkAnswerMut({
           sessionId,
-          answer: question.options[optionIndex],
+          // Canonical English value — grading compares against correctAnswer.
+          answer: question.optionValues[optionIndex],
         });
         setRevealedAnswer(res.correctAnswer);
         setRevealed(true);
@@ -280,7 +287,9 @@ export function useSoloQuiz(): SoloQuizState {
   }, [advanceAfterReveal, revealed]);
 
   const correctIdx =
-    question && revealedAnswer ? question.options.indexOf(revealedAnswer) : -1;
+    question && revealedAnswer
+      ? question.optionValues.indexOf(revealedAnswer)
+      : -1;
 
   return {
     loading,

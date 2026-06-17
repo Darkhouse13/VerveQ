@@ -7,6 +7,10 @@ import { calculateTimeScore, normalizeAnswer } from "./lib/scoring";
 import { pickQuestionPool } from "./lib/imageQuestions";
 import { orderAnswerOptions } from "./lib/answerOptions";
 import {
+  composeLocalizedQuestion,
+  fetchQuestionTranslation,
+} from "./lib/contentI18n";
+import {
   assertStandardMcqQuestion,
   isStandardMcqQuestion,
 } from "./lib/mcqEligibility";
@@ -51,8 +55,9 @@ export const createSession = mutation({
 export const getQuestion = mutation({
   args: {
     sessionId: v.id("quizSessions"),
+    locale: v.optional(v.string()),
   },
-  handler: async (ctx, { sessionId }) => {
+  handler: async (ctx, { sessionId, locale }) => {
     const userId = await getAuthUserId(ctx);
     if (!userId) throw new Error("Not authenticated");
 
@@ -104,11 +109,22 @@ export const getQuestion = mutation({
       ? await ctx.storage.getUrl(picked.imageId)
       : null;
 
-    // correctAnswer + explanation are deliberately withheld — they are
-    // revealed by checkAnswer after the server validates the submission.
+    // Display-translate, grade-canonical: serve localized labels plus the
+    // canonical `optionValues` the client submits, so grading (which compares
+    // the submission to the English correctAnswer) and the checksum are
+    // untouched. For en / untranslated, optionValues === options (no-op).
+    // correctAnswer + explanation are withheld until checkAnswer.
+    const orderedValues = orderAnswerOptions(picked.options, picked.correctAnswer, picked.checksum);
+    const translation = await fetchQuestionTranslation(
+      ctx,
+      picked.checksum,
+      locale,
+    );
+    const localized = composeLocalizedQuestion(picked, orderedValues, translation);
     return {
-      question: picked.question,
-      options: orderAnswerOptions(picked.options, picked.correctAnswer, picked.checksum),
+      question: localized.question,
+      options: localized.options,
+      optionValues: localized.optionValues,
       difficulty: picked.difficulty,
       checksum: picked.checksum,
       category: picked.category,
