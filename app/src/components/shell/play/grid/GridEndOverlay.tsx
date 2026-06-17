@@ -6,6 +6,7 @@
  * pick-share / solver-distribution metric, so it is omitted rather than
  * fabricated. Missed squares stay hidden on the board behind this overlay.
  */
+import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
 
 interface GridEndOverlayProps {
@@ -49,6 +50,7 @@ export function GridEndOverlay({
   onNewGrid,
   onHome,
 }: GridEndOverlayProps) {
+  const { t } = useTranslation("play");
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-foreground/60 p-5">
       <div className="w-full max-w-sm bg-background neo-border neo-shadow-lg rounded-xl overflow-hidden animate-slide-up">
@@ -59,17 +61,19 @@ export function GridEndOverlay({
           )}
         >
           <p className="text-[10px] font-heading font-bold uppercase tracking-wide opacity-85">
-            {allSolved ? "Grid complete" : "Out of guesses"}
+            {allSolved ? t("grid.gridComplete") : t("grid.outOfGuesses")}
           </p>
           <p className="font-heading font-bold text-3xl leading-none mt-1.5">
-            {allSolved ? `Perfect ${totalCells}/${totalCells}` : `${correctCount} / ${totalCells} filled`}
+            {allSolved
+              ? t("grid.perfectScore", { total: totalCells })
+              : t("grid.filledScore", { correct: correctCount, total: totalCells })}
           </p>
         </div>
 
         <div className="p-5 space-y-3">
           <div className="flex gap-2.5">
-            <Stat label="Points" value={String(points)} tone="highlight" />
-            <Stat label="Cells" value={`${correctCount}/${totalCells}`} />
+            <Stat label={t("grid.points")} value={String(points)} tone="highlight" />
+            <Stat label={t("grid.cells")} value={`${correctCount}/${totalCells}`} />
           </div>
 
           <div className="grid grid-cols-2 gap-2.5">
@@ -78,14 +82,14 @@ export function GridEndOverlay({
               onClick={onNewGrid}
               className="neo-border neo-shadow rounded-lg bg-primary text-primary-foreground font-heading font-bold uppercase tracking-wide text-sm py-3 cursor-pointer active:neo-shadow-pressed"
             >
-              New Grid
+              {t("grid.newGrid")}
             </button>
             <button
               type="button"
               onClick={onHome}
               className="neo-border neo-shadow rounded-lg bg-background text-foreground font-heading font-bold uppercase tracking-wide text-sm py-3 cursor-pointer active:neo-shadow-pressed"
             >
-              Home
+              {t("grid.home")}
             </button>
           </div>
 
@@ -94,10 +98,10 @@ export function GridEndOverlay({
             onClick={onReview}
             className="w-full font-mono text-[11px] text-muted-foreground hover:text-foreground py-1 cursor-pointer"
           >
-            Review board ↑
+            {t("grid.reviewBoard")}
           </button>
           <p className="font-mono text-[9.5px] text-center text-muted-foreground">
-            Missed squares stay hidden — no answers revealed.
+            {t("grid.noAnswersRevealed")}
           </p>
         </div>
       </div>

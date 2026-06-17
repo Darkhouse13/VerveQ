@@ -17,6 +17,7 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useMutation, useQuery } from "convex/react";
+import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import { Eye, User, AlertTriangle } from "lucide-react";
 import { NeoCard } from "@/components/neo/NeoCard";
@@ -89,6 +90,7 @@ function withTimeout<T>(promise: Promise<T>, timeoutMs: number): Promise<T> {
 }
 
 export default function WhoAmIPlayScreen() {
+  const { t } = useTranslation("play");
   const navigate = useNavigate();
   const [params] = useSearchParams();
   const sport = params.get("sport") || "football";
@@ -144,9 +146,8 @@ export default function WhoAmIPlayScreen() {
       setClues([]);
       setStartupState({
         kind: "unsupported",
-        title: "Football Only For Now",
-        message:
-          "Who Am I is currently available for football only. Pick football to start an approved-clue round.",
+        title: t("whoAmI.unsupportedTitle"),
+        message: t("whoAmI.unsupportedMessage"),
       });
       setLoading(false);
       return;
@@ -173,14 +174,13 @@ export default function WhoAmIPlayScreen() {
       setClues([]);
       setStartupState({
         kind: "start_failed",
-        title: "Couldn't Start A Round",
-        message:
-          "We couldn't start a Who Am I challenge right now. Try again or head back to Compete.",
+        title: t("whoAmI.startFailedTitle"),
+        message: t("whoAmI.startFailedMessage"),
       });
     } finally {
       setLoading(false);
     }
-  }, [startChallengeMut, sport, hardMode]);
+  }, [startChallengeMut, sport, hardMode, t]);
 
   useEffect(() => {
     startGame();
@@ -194,11 +194,11 @@ export default function WhoAmIPlayScreen() {
           setScore(res.score);
           setResult({ correct: false, score: res.score });
           setGameOver(true);
-          toast.error("Attempt ended — you switched tabs");
+          toast.error(t("whoAmI.tabSwitchEnded"));
         }
       });
-    }, [sessionId, gameOver, loading, startupState, penalizeTabSwitchMut]),
-    { warningMessage: "Don't switch tabs — your attempt will end" },
+    }, [sessionId, gameOver, loading, startupState, penalizeTabSwitchMut, t]),
+    { warningMessage: t("whoAmI.tabSwitchWarning") },
   );
 
   const handleRevealClue = async () => {
@@ -250,7 +250,12 @@ export default function WhoAmIPlayScreen() {
         setGameOver(true);
       } else {
         toast.error(
-          `Wrong — ${Math.max(0, (res.maxGuesses ?? maxGuesses) - (res.wrongGuessCount ?? wrongGuessCount))} guesses left`,
+          t("whoAmI.wrongGuessesLeft", {
+            count: Math.max(
+              0,
+              (res.maxGuesses ?? maxGuesses) - (res.wrongGuessCount ?? wrongGuessCount),
+            ),
+          }),
         );
       }
     } catch (err) {
@@ -267,13 +272,13 @@ export default function WhoAmIPlayScreen() {
   // Ambient view-model: score + guesses remaining (as `lives`) + clue COUNT only.
   const guessesRemaining = Math.max(0, maxGuesses - wrongGuessCount);
   const metrics = { score, lives: guessesRemaining };
-  const clueProgress = { current: currentStage, total: TOTAL_CLUES, roundLabel: "Clue" };
+  const clueProgress = { current: currentStage, total: TOTAL_CLUES, roundLabel: t("whoAmI.clueLabel") };
 
   if (loading) {
     return (
       <PlayStage title="Who Am I" onExit={() => navigate(SHELL_ROUTES.home)}>
         <div className="flex items-center justify-center py-16">
-          <p className="font-heading font-bold text-lg animate-pulse">Loading clue set…</p>
+          <p className="font-heading font-bold text-lg animate-pulse">{t("whoAmI.loading")}</p>
         </div>
       </PlayStage>
     );
@@ -281,7 +286,7 @@ export default function WhoAmIPlayScreen() {
 
   if (startupState) {
     return (
-      <PlayStage title="Who Am I" onExit={() => navigate(SHELL_ROUTES.home)} exitLabel="Quit">
+      <PlayStage title="Who Am I" onExit={() => navigate(SHELL_ROUTES.home)} exitLabel={t("whoAmI.quit")}>
         <div className="flex flex-col items-center justify-center py-10">
           <NeoCard color="accent" className="w-full text-center py-8 px-6">
             <p className="font-heading font-bold text-2xl">{startupState.title}</p>
@@ -296,11 +301,11 @@ export default function WhoAmIPlayScreen() {
                   size="lg"
                   onClick={() => navigate(`${SHELL_ROUTES.whoAmIPlay}?sport=football`)}
                 >
-                  Play Football
+                  {t("whoAmI.playFootball")}
                 </NeoButton>
               ) : (
                 <NeoButton variant="primary" size="lg" onClick={startGame}>
-                  Try Again
+                  {t("whoAmI.tryAgain")}
                 </NeoButton>
               )}
               <NeoButton
@@ -308,7 +313,7 @@ export default function WhoAmIPlayScreen() {
                 size="lg"
                 onClick={() => navigate(SHELL_ROUTES.competeSportGrid(sport))}
               >
-                Back To Compete
+                {t("whoAmI.backToCompete")}
               </NeoButton>
             </div>
           </NeoCard>
@@ -320,9 +325,9 @@ export default function WhoAmIPlayScreen() {
   return (
     <PlayStage
       title="Who Am I"
-      subtitle={hardMode ? "Hard mode · clue-only" : "Curated clue sets"}
+      subtitle={hardMode ? t("whoAmI.subtitleHardMode") : t("whoAmI.subtitleCurated")}
       onExit={() => navigate(SHELL_ROUTES.home)}
-      exitLabel="Quit"
+      exitLabel={t("whoAmI.quit")}
       strip={<AmbientStrip metrics={{ score }} progress={clueProgress} />}
       right={
         <>
@@ -344,14 +349,19 @@ export default function WhoAmIPlayScreen() {
             {multiplier}
           </NeoBadge>
           <p className="text-xs text-muted-foreground">
-            Clue {currentStage}/{TOTAL_CLUES} · Guesses {wrongGuessCount}/{maxGuesses}
+            {t("whoAmI.clueGuessMeta", {
+              current: currentStage,
+              total: TOTAL_CLUES,
+              wrong: wrongGuessCount,
+              max: maxGuesses,
+            })}
           </p>
         </div>
 
         {hardMode && (
           <NeoCard color="default" className="mb-4 text-center py-3">
-            <p className="font-heading font-bold text-sm">Hard Mode</p>
-            <p className="font-body text-xs text-muted-foreground">No visual aid. Pure clue deduction.</p>
+            <p className="font-heading font-bold text-sm">{t("whoAmI.hardModeTitle")}</p>
+            <p className="font-body text-xs text-muted-foreground">{t("whoAmI.hardModeBody")}</p>
           </NeoCard>
         )}
 
@@ -393,13 +403,13 @@ export default function WhoAmIPlayScreen() {
             {closeCallShake && (
               <div className="neo-border rounded-lg bg-accent p-3 flex items-center gap-2 animate-shake-horizontal">
                 <AlertTriangle size={16} />
-                <p className="font-heading font-bold text-xs">Close! Try again</p>
+                <p className="font-heading font-bold text-xs">{t("whoAmI.closeTryAgain")}</p>
               </div>
             )}
 
             {guessHistory.some((item) => item.feedback) && (
               <NeoCard color="default" className="p-3" data-testid="whoami-deduction-feedback">
-                <p className="font-heading font-bold text-xs mb-2">Deduction board</p>
+                <p className="font-heading font-bold text-xs mb-2">{t("whoAmI.deductionBoard")}</p>
                 <div className="space-y-2">
                   {guessHistory
                     .filter((item) => item.feedback)
@@ -410,17 +420,19 @@ export default function WhoAmIPlayScreen() {
                       >
                         <div className="flex items-center justify-between gap-2">
                           <p className="font-heading font-bold text-xs truncate">{item.guessName}</p>
-                          <p className="font-mono text-[10px]">{item.scoreAfter} pts</p>
+                          <p className="font-mono text-[10px]">
+                            {t("whoAmI.points", { score: item.scoreAfter })}
+                          </p>
                         </div>
                         <div className="grid grid-cols-3 gap-2 mt-2 text-[11px] font-mono">
                           <span className={feedbackColor(item.feedback!.nationality)}>
-                            Nation {feedbackLabel(item.feedback!.nationality)}
+                            {t("whoAmI.nationLabel", { mark: feedbackLabel(item.feedback!.nationality) })}
                           </span>
                           <span className={feedbackColor(item.feedback!.position)}>
-                            Pos {feedbackLabel(item.feedback!.position)}
+                            {t("whoAmI.posLabel", { mark: feedbackLabel(item.feedback!.position) })}
                           </span>
                           <span className={feedbackColor(item.feedback!.team)}>
-                            Club {feedbackLabel(item.feedback!.team)}
+                            {t("whoAmI.clubLabel", { mark: feedbackLabel(item.feedback!.team) })}
                           </span>
                         </div>
                       </div>
@@ -432,7 +444,7 @@ export default function WhoAmIPlayScreen() {
             {/* Guess input */}
             <NeoInput
               ref={inputRef}
-              placeholder="Enter player name..."
+              placeholder={t("whoAmI.guessPlaceholder")}
               value={guess}
               onChange={(e) => {
                 setGuess(e.target.value);
@@ -445,7 +457,7 @@ export default function WhoAmIPlayScreen() {
             <div className="min-h-6" data-testid="whoami-player-autocomplete">
               {trimmedGuess.length > 0 && trimmedGuess.length < WHO_AM_I_PLAYER_SEARCH_MIN_QUERY_LENGTH && (
                 <p className="text-xs text-muted-foreground font-body">
-                  Type at least 3 letters for player suggestions.
+                  {t("whoAmI.suggestionsHint", { min: WHO_AM_I_PLAYER_SEARCH_MIN_QUERY_LENGTH })}
                 </p>
               )}
 
@@ -485,7 +497,7 @@ export default function WhoAmIPlayScreen() {
                 disabled={!trimmedGuess || submitting}
               >
                 <User size={16} className="mr-1" />
-                {submitting ? "Checking..." : "Guess"}
+                {submitting ? t("whoAmI.checking") : t("whoAmI.guess")}
               </NeoButton>
               <NeoButton
                 variant="accent"
@@ -494,7 +506,11 @@ export default function WhoAmIPlayScreen() {
                 disabled={currentStage >= TOTAL_CLUES || revealing}
               >
                 <Eye size={16} className="mr-1" />
-                {revealing ? "Revealing..." : `Reveal (${currentStage >= TOTAL_CLUES ? "Max" : "-25%"})`}
+                {revealing
+                  ? t("whoAmI.revealing")
+                  : t("whoAmI.reveal", {
+                      cost: currentStage >= TOTAL_CLUES ? t("whoAmI.revealMax") : t("whoAmI.revealCost"),
+                    })}
               </NeoButton>
             </div>
           </div>
@@ -504,19 +520,23 @@ export default function WhoAmIPlayScreen() {
         {gameOver && result && (
           <div className="mt-5 space-y-3 animate-slide-up">
             <NeoCard color={result.correct ? "success" : "destructive"} className="text-center py-5">
-              <p className="font-heading font-bold text-xl">{result.correct ? "Correct!" : "Wrong!"}</p>
+              <p className="font-heading font-bold text-xl">
+                {result.correct ? t("whoAmI.resultCorrect") : t("whoAmI.resultWrong")}
+              </p>
               {result.answerName && (
-                <p className="font-body text-sm mt-1 opacity-90">It was {result.answerName}</p>
+                <p className="font-body text-sm mt-1 opacity-90">
+                  {t("whoAmI.itWas", { name: result.answerName })}
+                </p>
               )}
               <p className="font-mono font-bold text-3xl mt-2">{result.score}</p>
-              <p className="text-xs opacity-80 mt-1">Points earned</p>
+              <p className="text-xs opacity-80 mt-1">{t("whoAmI.pointsEarned")}</p>
             </NeoCard>
             <div className="grid grid-cols-2 gap-3">
               <NeoButton variant="primary" size="lg" onClick={startGame}>
-                Next Player
+                {t("whoAmI.nextPlayer")}
               </NeoButton>
               <NeoButton variant="secondary" size="lg" onClick={() => navigate(SHELL_ROUTES.home)}>
-                Home
+                {t("whoAmI.home")}
               </NeoButton>
             </div>
           </div>

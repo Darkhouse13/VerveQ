@@ -6,12 +6,14 @@
  * is reused by the Daily challenge (`DailyQuizPlayScreen`) via `useDailyQuiz`.
  */
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { QuizPlayView } from "@/components/shell/play/QuizPlayView";
 import { SHELL_ROUTES } from "@/lib/shellRoutes";
 import { useSoloQuiz } from "@/hooks/useSoloQuiz";
 
 export default function QuizPlayScreen() {
   const navigate = useNavigate();
+  const { t } = useTranslation("play");
   const q = useSoloQuiz();
-  return <QuizPlayView q={q} title="Quiz" onExit={() => navigate(SHELL_ROUTES.home)} />;
+  return <QuizPlayView q={q} title={t("quiz.title")} onExit={() => navigate(SHELL_ROUTES.home)} />;
 }

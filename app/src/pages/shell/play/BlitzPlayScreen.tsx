@@ -7,6 +7,7 @@
  */
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { Check, X } from "lucide-react";
 import { NeoCard } from "@/components/neo/NeoCard";
 import { BlitzClock } from "@/components/BlitzClock";
@@ -22,6 +23,7 @@ const LETTERS = ["A", "B", "C", "D"];
 const BLITZ_WINDOW_SECONDS = 60;
 
 export default function BlitzPlayScreen() {
+  const { t } = useTranslation("play");
   const navigate = useNavigate();
   const b = useSoloBlitz();
   const [remaining, setRemaining] = useState(BLITZ_WINDOW_SECONDS);
@@ -48,7 +50,7 @@ export default function BlitzPlayScreen() {
       <PlayStage title="Blitz" onExit={() => navigate(SHELL_ROUTES.home)}>
         <div className="flex items-center justify-center py-16">
           <p className="font-heading font-bold text-lg animate-pulse">
-            Starting Blitz…
+            {t("blitz.starting")}
           </p>
         </div>
       </PlayStage>
@@ -58,9 +60,9 @@ export default function BlitzPlayScreen() {
   return (
     <PlayStage
       title="Blitz"
-      subtitle="60-second sprint"
+      subtitle={t("blitz.subtitle")}
       onExit={() => navigate(SHELL_ROUTES.home)}
-      exitLabel="Quit"
+      exitLabel={t("blitz.quit")}
       strip={<AmbientStrip metrics={metrics} />}
       right={<MetricsPanel metrics={metrics} />}
     >
@@ -79,7 +81,7 @@ export default function BlitzPlayScreen() {
             <div className="mb-3">
               <QuestionImage
                 imageUrl={b.question.imageUrl}
-                alt={`Image for: ${b.question.question}`}
+                alt={t("blitz.imageAlt", { question: b.question.question })}
                 onZoom={() => b.setZoomImage(b.question!.imageUrl!)}
               />
             </div>

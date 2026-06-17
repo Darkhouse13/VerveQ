@@ -5,6 +5,7 @@
  * contract: consumes only the sanitized ambient view-model.
  */
 import { Clock, Star, Users } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
 import type { PlayMetrics, PlayProgress } from "./types";
 
@@ -17,6 +18,7 @@ export function AmbientStrip({
   progress?: PlayProgress;
   rosterCount?: number;
 }) {
+  const { t } = useTranslation("play");
   const showTimerBar = metrics?.timeFraction !== undefined;
   const pct = Math.max(0, Math.min(1, metrics?.timeFraction ?? 0));
 
@@ -26,7 +28,7 @@ export function AmbientStrip({
         {metrics?.seconds !== undefined ? (
           <span className="inline-flex items-center gap-1">
             <Clock size={13} strokeWidth={3} />
-            {metrics.seconds}s
+            {t("ambient.seconds", { seconds: metrics.seconds })}
           </span>
         ) : (
           <span />

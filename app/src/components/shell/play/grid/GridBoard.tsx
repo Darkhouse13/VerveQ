@@ -8,6 +8,7 @@
  * revealed (the client never receives the answer pool).
  */
 import { Check, Plus, X } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
 import { difficultyStyle, monogram } from "./difficulty";
 import type { GridAxis, GridCellState } from "@/hooks/useVerveGrid";
@@ -35,6 +36,7 @@ function Cell({
   compact?: boolean;
   onPick: () => void;
 }) {
+  const { t } = useTranslation("play");
   const isCorrect = cell?.correct === true;
   const isWrong = cell?.correct === false;
   const isEmpty = !cell || cell.correct === undefined;
@@ -54,7 +56,7 @@ function Cell({
           —
         </span>
         <span className="font-mono font-bold tracking-wider text-destructive" style={{ fontSize: compact ? 7 : 9 }}>
-          MISSED
+          {t("grid.missed")}
         </span>
       </div>
     );
@@ -77,7 +79,7 @@ function Cell({
               {cell.guessedPlayerName}
             </p>
             <p className="font-mono text-muted-foreground" style={{ fontSize: compact ? 8 : 10 }}>
-              locked in
+              {t("grid.lockedIn")}
             </p>
           </div>
         </div>
@@ -134,7 +136,7 @@ function Cell({
         <Plus size={compact ? 16 : 20} strokeWidth={3} />
       </span>
       <span className="font-mono uppercase tracking-wider text-muted-foreground" style={{ fontSize: compact ? 7.5 : 9 }}>
-        Tap to pick
+        {t("grid.tapToPick")}
       </span>
     </button>
   );

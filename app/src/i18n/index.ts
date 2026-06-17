@@ -19,6 +19,7 @@ export type SupportedLanguage = (typeof SUPPORTED_LANGUAGES)[number];
 
 export const SHELL_NS = "shell";
 export const LEARN_NS = "learn";
+export const PLAY_NS = "play";
 
 // Lazy module map — loaders are NOT eager, so each locale file is a separate
 // chunk pulled in only when its (language, namespace) pair is requested.
@@ -56,7 +57,7 @@ void i18n
     fallbackLng: "en",
     supportedLngs: SUPPORTED_LANGUAGES as unknown as string[],
     nonExplicitSupportedLngs: true, // map `fr-FR` -> `fr`
-    ns: [SHELL_NS, LEARN_NS],
+    ns: [SHELL_NS, LEARN_NS, PLAY_NS],
     defaultNS: SHELL_NS,
     load: "languageOnly",
     detection: {
@@ -66,6 +67,14 @@ void i18n
     },
     interpolation: { escapeValue: false }, // React already escapes
     react: { useSuspense: true },
+    // Dev-only: surface any key referenced in code but missing from the active
+    // namespace (e.g. a screen calling t("play.x") with no matching locale key),
+    // which silent English fallback would otherwise hide during QA.
+    saveMissing: import.meta.env.DEV,
+    missingKeyHandler: import.meta.env.DEV
+      ? (lngs, ns, key) =>
+          console.warn(`[i18n] missing key ${ns}:${key} (${lngs.join(", ")})`)
+      : undefined,
   });
 
 export default i18n;

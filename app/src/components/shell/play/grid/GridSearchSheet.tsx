@@ -10,6 +10,7 @@
  * Bottom-sheet on mobile, centered modal on desktop (matches the prototype).
  */
 import { useEffect, useRef } from "react";
+import { Trans, useTranslation } from "react-i18next";
 import { Search, X } from "lucide-react";
 import { monogram } from "./difficulty";
 import type { GridSearchResult } from "@/hooks/useVerveGrid";
@@ -39,6 +40,7 @@ export function GridSearchSheet({
   onSelect,
   onClose,
 }: GridSearchSheetProps) {
+  const { t } = useTranslation("play");
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -66,13 +68,13 @@ export function GridSearchSheet({
         <div className="shrink-0 p-4 border-b-[3px] border-border">
           <div className="flex items-center justify-between">
             <p className="text-[10px] font-heading font-bold uppercase tracking-wide text-muted-foreground">
-              Fill this square
+              {t("grid.fillThisSquare")}
             </p>
             <button
               type="button"
               onClick={onClose}
               className="neo-border rounded-lg px-2 py-1 bg-background cursor-pointer active:neo-shadow-pressed"
-              aria-label="Close"
+              aria-label={t("grid.close")}
             >
               <X size={14} strokeWidth={3} />
             </button>
@@ -95,11 +97,11 @@ export function GridSearchSheet({
               ref={inputRef}
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="Search any player…"
+              placeholder={t("grid.searchPlaceholder")}
               className="flex-1 min-w-0 bg-transparent outline-none font-body font-semibold text-sm text-foreground placeholder:text-muted-foreground"
             />
             <span className="neo-border rounded-full bg-foreground text-background px-2 py-0.5 font-mono font-bold text-[8px] tracking-wide shrink-0">
-              {guessesLeft} LEFT
+              {t("grid.guessesLeft", { count: guessesLeft })}
             </span>
           </div>
         </div>
@@ -108,16 +110,16 @@ export function GridSearchSheet({
         <div className="flex-1 min-h-0 overflow-y-auto scrollbar-none p-3 space-y-2">
           {!showResults && (
             <p className="font-mono text-xs text-muted-foreground text-center py-6">
-              Type at least {minChars} letters to search the full player database.
+              {t("grid.minCharsHint", { count: minChars })}
             </p>
           )}
           {showResults && results === undefined && (
             <p className="font-mono text-xs text-muted-foreground text-center py-6 animate-pulse">
-              Searching…
+              {t("grid.searching")}
             </p>
           )}
           {showResults && results?.length === 0 && (
-            <p className="font-mono text-xs text-muted-foreground text-center py-6">No players found.</p>
+            <p className="font-mono text-xs text-muted-foreground text-center py-6">{t("grid.noPlayersFound")}</p>
           )}
           {results?.map((player) => (
             <button
@@ -154,8 +156,11 @@ export function GridSearchSheet({
         {/* no-leak reassurance */}
         <div className="shrink-0 px-4 py-3 border-t-[3px] border-border bg-muted">
           <p className="font-mono text-[10px] leading-relaxed text-muted-foreground">
-            ⚠ Pick any player who fits both. You only learn if it counts — and how rare it is —{" "}
-            <b className="text-foreground">after you lock it in.</b>
+            <Trans
+              i18nKey="grid.lockInReassurance"
+              ns="play"
+              components={{ strong: <b className="text-foreground" /> }}
+            />
           </p>
         </div>
       </div>

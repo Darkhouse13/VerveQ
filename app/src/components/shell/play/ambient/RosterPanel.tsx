@@ -6,17 +6,18 @@
  * Content-blind by contract: consumes only the sanitized ambient view-model.
  */
 import { Check, Hourglass, LogOut, Minus } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
 import type { RosterEntry, RevealPick } from "./types";
 
 const STATE_META: Record<
   RosterEntry["state"],
-  { Icon: typeof Check; tint: string; label: string }
+  { Icon: typeof Check; tint: string; labelKey: string }
 > = {
-  answered: { Icon: Check, tint: "text-success", label: "Answered" },
-  answering: { Icon: Hourglass, tint: "text-accent-foreground", label: "Thinking" },
-  left: { Icon: LogOut, tint: "text-muted-foreground", label: "Left" },
-  idle: { Icon: Minus, tint: "text-muted-foreground", label: "Idle" },
+  answered: { Icon: Check, tint: "text-success", labelKey: "ambient.statusAnswered" },
+  answering: { Icon: Hourglass, tint: "text-accent-foreground", labelKey: "ambient.statusThinking" },
+  left: { Icon: LogOut, tint: "text-muted-foreground", labelKey: "ambient.statusLeft" },
+  idle: { Icon: Minus, tint: "text-muted-foreground", labelKey: "ambient.statusIdle" },
 };
 
 function PanelTitle({ children }: { children: string }) {
@@ -28,7 +29,7 @@ function PanelTitle({ children }: { children: string }) {
 }
 
 export function RosterPanel({
-  title = "Roster",
+  title,
   entries,
   picks,
 }: {
@@ -37,10 +38,11 @@ export function RosterPanel({
   /** Sanitized per-player picks — pass ONLY on reveal. */
   picks?: RevealPick[];
 }) {
+  const { t } = useTranslation("play");
   if (picks && picks.length > 0) {
     return (
       <section className="space-y-2">
-        <PanelTitle>Picks</PanelTitle>
+        <PanelTitle>{t("ambient.picks")}</PanelTitle>
         <ul className="space-y-1.5">
           {picks.map((p) => (
             <li
@@ -53,7 +55,7 @@ export function RosterPanel({
               <div className="min-w-0">
                 <p className="font-heading font-bold text-xs truncate">
                   {p.name}
-                  {p.isMe && " (you)"}
+                  {p.isMe && ` ${t("ambient.youSuffix")}`}
                 </p>
                 <p className="text-[10px] font-mono truncate opacity-80">{p.label || "—"}</p>
               </div>
@@ -70,8 +72,8 @@ export function RosterPanel({
                 {p.outcome === "correct"
                   ? `+${p.points ?? 0}`
                   : p.outcome === "wrong"
-                    ? "Wrong"
-                    : "Missed"}
+                    ? t("ambient.outcomeWrong")
+                    : t("ambient.outcomeMissed")}
               </span>
             </li>
           ))}
@@ -82,7 +84,7 @@ export function RosterPanel({
 
   return (
     <section className="space-y-2">
-      <PanelTitle>{title}</PanelTitle>
+      <PanelTitle>{title ?? t("ambient.roster")}</PanelTitle>
       <ul className="space-y-1.5">
         {entries.map((e) => {
           const meta = STATE_META[e.state];
@@ -96,11 +98,11 @@ export function RosterPanel({
             >
               <span className="font-heading font-bold text-xs truncate min-w-0">
                 {e.name}
-                {e.isMe && " (you)"}
+                {e.isMe && ` ${t("ambient.youSuffix")}`}
               </span>
               <span
                 className={cn("shrink-0 inline-flex items-center gap-1", meta.tint)}
-                title={meta.label}
+                title={t(meta.labelKey)}
               >
                 <meta.Icon size={13} strokeWidth={3} />
               </span>
@@ -108,7 +110,7 @@ export function RosterPanel({
           );
         })}
         {entries.length === 0 && (
-          <li className="text-[11px] text-muted-foreground">No players yet</li>
+          <li className="text-[11px] text-muted-foreground">{t("ambient.noPlayersYet")}</li>
         )}
       </ul>
     </section>

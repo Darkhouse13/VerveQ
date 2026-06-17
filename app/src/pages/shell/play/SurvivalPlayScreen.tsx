@@ -14,6 +14,7 @@
  */
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { useMutation } from "convex/react";
 import { toast } from "sonner";
 import { NeoCard } from "@/components/neo/NeoCard";
@@ -43,6 +44,7 @@ interface ChallengeData {
 }
 
 export default function SurvivalPlayScreen() {
+  const { t } = useTranslation("play");
   const navigate = useNavigate();
   const [params] = useSearchParams();
   const sport = params.get("sport") || "football";
@@ -117,7 +119,7 @@ export default function SurvivalPlayScreen() {
         setLoading(false);
         startTime.current = Date.now();
       } catch {
-        toast.error("Failed to start survival");
+        toast.error(t("survival.failedToStart"));
         navigate(-1);
       }
     })();
@@ -140,7 +142,7 @@ export default function SurvivalPlayScreen() {
       });
       // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [sessionId, round, challenge]),
-    { warningMessage: "Don't switch tabs — you'll lose a life" },
+    { warningMessage: t("survival.tabSwitchWarning") },
   );
 
   const goToResults = async (finalScore: number, finalRound: number) => {
@@ -187,7 +189,7 @@ export default function SurvivalPlayScreen() {
       if (res.closeCall) {
         setCloseCallShake(true);
         setTimeout(() => setCloseCallShake(false), 600);
-        toast.warning("CLOSE! Check your spelling.", { duration: 3000 });
+        toast.warning(t("survival.closeCheckSpelling"), { duration: 3000 });
         setSubmitting(false);
         return;
       }
@@ -205,17 +207,20 @@ export default function SurvivalPlayScreen() {
           performanceBonusRef.current += 0.1;
         }
         if (res.typoAccepted) {
-          toast.warning(`TYPO ACCEPTED: Did you mean ${res.correctAnswer}?`, {
-            duration: 3000,
-          });
+          toast.warning(
+            t("survival.typoAccepted", { answer: res.correctAnswer }),
+            {
+              duration: 3000,
+            },
+          );
         }
         if (res.isHiddenAnswer) {
-          toast.success("HIDDEN ANSWER FOUND! +BONUS", { duration: 4000 });
+          toast.success(t("survival.hiddenAnswerFound"), { duration: 4000 });
         }
         if (res.earnedLife) {
           setShowEarnedLife(true);
           setTimeout(() => setShowEarnedLife(false), 1500);
-          toast.success("+1 LIFE", { duration: 3000 });
+          toast.success(t("survival.plusOneLife"), { duration: 3000 });
         }
       } else {
         setSpeedStreak(0);
@@ -233,7 +238,7 @@ export default function SurvivalPlayScreen() {
         }, 1500);
       }
     } catch {
-      toast.error("Failed to submit guess");
+      toast.error(t("survival.failedToSubmit"));
     } finally {
       setSubmitting(false);
     }
@@ -249,7 +254,7 @@ export default function SurvivalPlayScreen() {
       setHintStage(res.stage);
       setHintTokens(res.tokensLeft);
     } catch {
-      toast.error("Failed to get hint");
+      toast.error(t("survival.failedToGetHint"));
     } finally {
       setHintLoading(false);
     }
@@ -273,7 +278,7 @@ export default function SurvivalPlayScreen() {
         setRound(res.round);
       }
     } catch {
-      toast.error("Failed to skip");
+      toast.error(t("survival.failedToSkip"));
     }
   };
 
@@ -281,10 +286,13 @@ export default function SurvivalPlayScreen() {
 
   if (loading) {
     return (
-      <PlayStage title="Survival" onExit={() => navigate(SHELL_ROUTES.home)}>
+      <PlayStage
+        title={t("survival.title")}
+        onExit={() => navigate(SHELL_ROUTES.home)}
+      >
         <div className="flex items-center justify-center py-16">
           <p className="font-heading font-bold text-lg animate-pulse">
-            Starting survival…
+            {t("survival.starting")}
           </p>
         </div>
       </PlayStage>
@@ -295,10 +303,10 @@ export default function SurvivalPlayScreen() {
 
   return (
     <PlayStage
-      title="Survival"
-      subtitle={`Round ${round}`}
+      title={t("survival.title")}
+      subtitle={t("survival.round", { round })}
       onExit={() => navigate(SHELL_ROUTES.home)}
-      exitLabel="Quit"
+      exitLabel={t("survival.quit")}
       strip={<AmbientStrip metrics={metrics} />}
       right={<MetricsPanel metrics={metrics} />}
     >
@@ -313,7 +321,9 @@ export default function SurvivalPlayScreen() {
               className={`neo-border rounded px-3 py-1.5 ${isOnFire ? "bg-destructive text-destructive-foreground animate-pulse-urgent" : "bg-primary text-primary-foreground"}`}
             >
               <span className="font-heading font-bold text-xs uppercase">
-                {isOnFire ? "\u{1F525} ON FIRE" : `⚡ STREAK: x${speedStreak}`}
+                {isOnFire
+                  ? t("survival.onFire")
+                  : t("survival.streak", { count: speedStreak })}
               </span>
             </div>
           </div>
@@ -326,8 +336,8 @@ export default function SurvivalPlayScreen() {
           >
             <span className="font-heading font-bold text-sm">
               {feedback.correct
-                ? `Correct! ${feedback.answer}`
-                : `Wrong! It was ${feedback.answer}`}
+                ? t("survival.correct", { answer: feedback.answer })
+                : t("survival.wrong", { answer: feedback.answer })}
             </span>
           </div>
         )}
@@ -341,11 +351,11 @@ export default function SurvivalPlayScreen() {
         >
           {showEarnedLife && (
             <span className="absolute top-2 left-1/2 -translate-x-1/2 text-success font-heading font-bold text-sm animate-float-up pointer-events-none">
-              +1 LIFE
+              {t("survival.plusOneLife")}
             </span>
           )}
           <p className="text-sm text-muted-foreground font-heading mb-4">
-            Who has these initials?
+            {t("survival.whoHasInitials")}
           </p>
           <div className="flex gap-4 mb-6">
             {initials.map((letter, i) => (
@@ -359,7 +369,7 @@ export default function SurvivalPlayScreen() {
           </div>
 
           <NeoBadge color="blue" rotated>
-            Round {round}
+            {t("survival.round", { round })}
           </NeoBadge>
         </NeoCard>
 
@@ -373,7 +383,8 @@ export default function SurvivalPlayScreen() {
                 className="animate-slide-up"
               >
                 <p className="text-xs font-body">
-                  <strong>Hint {i + 1}:</strong> {h}
+                  <strong>{t("survival.hintLabel", { number: i + 1 })}</strong>{" "}
+                  {h}
                 </p>
               </NeoCard>
             ))}
@@ -382,7 +393,7 @@ export default function SurvivalPlayScreen() {
 
         {/* Input — close call shake + panic glow */}
         <NeoInput
-          placeholder="Type player name..."
+          placeholder={t("survival.inputPlaceholder")}
           value={guess}
           onChange={(e) => setGuess(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && handleGuess()}
@@ -397,7 +408,7 @@ export default function SurvivalPlayScreen() {
           onClick={handleGuess}
           disabled={!guess.trim() || submitting}
         >
-          {submitting ? "Checking..." : "Submit Guess"}
+          {submitting ? t("survival.checking") : t("survival.submitGuess")}
         </NeoButton>
 
         {/* Hint + Skip */}
@@ -409,17 +420,19 @@ export default function SurvivalPlayScreen() {
             disabled={hintTokens <= 0 || hintStage >= 3 || hintLoading}
           >
             {hintLoading
-              ? "Fetching Hint..."
+              ? t("survival.fetchingHint")
               : hintTokens <= 0
-                ? "No Hints Left"
-                : `\u{1F4A1} Hint (${hintTokens})`}
+                ? t("survival.noHintsLeft")
+                : t("survival.hint", { count: hintTokens })}
           </NeoButton>
           <NeoButton
             variant={freeSkipsLeft > 0 ? "secondary" : "danger"}
             size="md"
             onClick={handleSkip}
           >
-            {freeSkipsLeft > 0 ? `SKIP (${freeSkipsLeft} FREE)` : "SKIP (-1 LIFE)"}
+            {freeSkipsLeft > 0
+              ? t("survival.skipFree", { count: freeSkipsLeft })
+              : t("survival.skipLife")}
           </NeoButton>
         </div>
       </div>
@@ -429,10 +442,10 @@ export default function SurvivalPlayScreen() {
         <DialogContent className="neo-border neo-shadow-lg bg-destructive text-destructive-foreground max-w-sm">
           <DialogHeader>
             <DialogTitle className="font-heading text-xl text-center">
-              {"\u{1F6A8}"} CHEATING DETECTED {"\u{1F6A8}"}
+              {"\u{1F6A8}"} {t("survival.cheatingDetected")} {"\u{1F6A8}"}
             </DialogTitle>
             <DialogDescription className="text-destructive-foreground/90 text-center text-sm mt-2">
-              You lost focus on the game window. 1 Life deducted.
+              {t("survival.cheatingDescription")}
             </DialogDescription>
           </DialogHeader>
           <NeoButton
@@ -441,7 +454,7 @@ export default function SurvivalPlayScreen() {
             onClick={() => setShowCheatModal(false)}
             className="mt-2"
           >
-            I UNDERSTAND
+            {t("survival.iUnderstand")}
           </NeoButton>
         </DialogContent>
       </Dialog>

@@ -12,6 +12,7 @@
  * (status + your picks) and content-blind by contract (answer-leak guard).
  */
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { LogOut } from "lucide-react";
 import { GridRunPanel, GridPickLogPanel, GridStrip } from "@/components/shell/play/ambient/grid";
 import type { GridRunStats, GridPickItem } from "@/components/shell/play/ambient/grid";
@@ -43,6 +44,7 @@ function useIsCompact(): boolean {
 }
 
 export function GridStage({ vm, subtitle, onExit, onHome }: GridStageProps) {
+  const { t } = useTranslation("play");
   const isCompact = useIsCompact();
   const stats: GridRunStats = {
     guessesLeft: vm.remainingGuesses,
@@ -64,7 +66,7 @@ export function GridStage({ vm, subtitle, onExit, onHome }: GridStageProps) {
             className="neo-border rounded-lg px-2.5 py-2 bg-foreground text-background border-background/30 shrink-0 cursor-pointer inline-flex items-center gap-1.5"
           >
             <LogOut size={14} strokeWidth={3} />
-            <span className="text-[10px] font-heading font-bold uppercase">Leave</span>
+            <span className="text-[10px] font-heading font-bold uppercase">{t("grid.leave")}</span>
           </button>
           <span className="neo-border rounded-full bg-electric-blue text-electric-blue-foreground border-background px-2.5 py-1 font-heading font-bold uppercase tracking-wide text-[10px] inline-flex items-center gap-1 shrink-0">
             ▦ VerveGrid
