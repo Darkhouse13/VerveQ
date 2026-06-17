@@ -139,8 +139,11 @@ function CenteredMessage({ children }: { children: string }) {
 
 function ArenaPlayRoom({ code, userId }: { code: string; userId: Id<"users"> | undefined }) {
   const navigate = useNavigate();
-  const { t } = useTranslation("play");
-  const room = useQuery(api.challengeArenas.getRoom, { code });
+  const { t, i18n } = useTranslation("play");
+  const room = useQuery(api.challengeArenas.getRoom, {
+    code,
+    locale: i18n.resolvedLanguage ?? i18n.language,
+  });
   const joinMut = useMutation(api.challengeArenas.join);
   const leaveMut = useMutation(api.challengeArenas.leave);
   const rematchMut = useMutation(api.challengeArenas.rematch);
@@ -409,6 +412,12 @@ function ArenaQuestionColumn({ room, userId }: { room: Room; userId: Id<"users">
   const selected = pending ?? myAnswered;
   const options =
     "options" in question && Array.isArray(question.options) ? question.options : [];
+  // Canonical English values (same order) — submitted/compared so grading and
+  // selection stay canonical even when `options` are localized labels.
+  const optionValues =
+    "optionValues" in question && Array.isArray(question.optionValues)
+      ? question.optionValues
+      : options;
   const letters = ["A", "B", "C", "D"];
 
   const handleSelect = async (opt: string) => {
@@ -525,13 +534,14 @@ function ArenaQuestionColumn({ room, userId }: { room: Room; userId: Id<"users">
       ) : (
         <div className={isCameFirst ? "grid grid-cols-1 gap-3" : "space-y-2"}>
           {options.map((opt, idx) => {
-            const isPicked = selected === opt;
+            const value = optionValues[idx] ?? opt;
+            const isPicked = selected === value;
             return (
               <button
-                key={opt}
+                key={value}
                 type="button"
                 disabled={locked || submitting}
-                onClick={() => void handleSelect(opt)}
+                onClick={() => void handleSelect(value)}
                 className={`w-full neo-border neo-shadow rounded-lg p-4 flex items-center gap-3 text-left cursor-pointer transition-all ${
                   locked && isPicked
                     ? "bg-success text-success-foreground"
