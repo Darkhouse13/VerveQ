@@ -281,7 +281,7 @@ export function useVerveGrid(sport: string): VerveGridViewModel {
         if (result.alreadyUsed) {
           setShakeCellIndex(cellIndex);
           setTimeout(() => setShakeCellIndex(null), 600);
-          toast.warning("Already used in another cell");
+          toast.warning(t("verveGrid.alreadyUsed"));
           // Re-open so the player can pick a different name for this cell.
           setSearchOpen(true);
           return;
@@ -304,7 +304,7 @@ export function useVerveGrid(sport: string): VerveGridViewModel {
         if (!result.correct) {
           setShakeCellIndex(cellIndex);
           setTimeout(() => setShakeCellIndex(null), 600);
-          toast.error("Not a match — guess locked");
+          toast.error(t("verveGrid.notAMatch"));
         }
 
         if ("gameOver" in result && result.gameOver) {
@@ -314,12 +314,12 @@ export function useVerveGrid(sport: string): VerveGridViewModel {
         setActiveCellIndex(null);
       } catch (err) {
         console.error("Guess error:", err);
-        toast.error("Couldn't submit that pick — try again");
+        toast.error(t("verveGrid.submitFailed"));
       } finally {
         setSubmitting(false);
       }
     },
-    [sessionId, submitting, submitGuessMut],
+    [sessionId, submitting, submitGuessMut, t],
   );
 
   const filledCount = useMemo(

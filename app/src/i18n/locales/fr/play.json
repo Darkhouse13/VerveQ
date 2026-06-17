@@ -5,7 +5,8 @@
     "startSessionFailed": "Impossible de démarrer la session de quiz",
     "tabSwitchEnded": "Quiz terminé — tu as changé d'onglet",
     "tabSwitchWarning": "Ne change pas d'onglet — ton quiz se terminera",
-    "checkFailedToast": "Échec de la vérification de la réponse"
+    "checkFailedToast": "Échec de la vérification de la réponse",
+    "cameFirstBadge": "Lequel est venu en premier"
   },
   "dailyQuiz": {
     "title": "Défi du jour",
@@ -37,7 +38,10 @@
     "startFailedTitle": "Impossible de lancer une grille",
     "startFailedMessage": "VerveGrid n'a pas pu se charger. Réessaie ou retourne à Compétition.",
     "tabSwitchEnded": "Grille terminée — tu as changé d'onglet",
-    "tabSwitchWarning": "Ne change pas d'onglet — ta grille se terminera"
+    "tabSwitchWarning": "Ne change pas d'onglet — ta grille se terminera",
+    "alreadyUsed": "Déjà utilisé dans une autre case",
+    "notAMatch": "Pas une bonne réponse — choix verrouillé",
+    "submitFailed": "Impossible d'enregistrer ce choix — réessaie"
   },
   "higherLower": {
     "title": "Plus ou Moins",

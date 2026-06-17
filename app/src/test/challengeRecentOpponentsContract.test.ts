@@ -7,6 +7,7 @@ describe("challenge duel hub contract", () => {
     const duels = readFileSync("convex/duels.ts", "utf8");
     const rivalries = readFileSync("convex/rivalries.ts", "utf8");
     const createDuel = readFileSync("src/pages/challenge/CreateDuelModal.tsx", "utf8");
+    const screens = JSON.parse(readFileSync("src/i18n/locales/en/screens.json", "utf8"));
 
     expect(schema).toContain("duels: defineTable");
     expect(schema).toContain('index("by_challenger"');
@@ -23,8 +24,11 @@ describe("challenge duel hub contract", () => {
     // Play-first: the create modal no longer forces an opponent up front — it
     // creates a link duel, plays, and invites from the results screen.
     expect(createDuel).toContain("viaLink: true");
-    expect(createDuel).toContain("Play duel");
-    expect(createDuel).toContain("Play now, invite after");
+    // i18n: the create-modal CTAs moved to locale keys; assert key wiring + copy.
+    expect(createDuel).toContain("createDuel.playDuel");
+    expect(screens.createDuel.playDuel).toBe("Play duel");
+    expect(createDuel).toContain("createDuel.playNowInviteAfterTitle");
+    expect(screens.createDuel.playNowInviteAfterTitle).toBe("Play now, invite after");
     expect(createDuel).not.toContain("OpponentMode");
     expect(createDuel).not.toContain("api.rivalries.listMine");
 
@@ -47,7 +51,7 @@ describe("challenge duel hub contract", () => {
     expect(screens.challenge.waitingTitle).toBe("Waiting on them");
     expect(challengeScreen).toContain("challenge.newDuel");
     expect(screens.challenge.newDuel).toBe("New Duel");
-    expect(challengeScreen).toContain("formatModeLabel(d.mode)");
+    expect(challengeScreen).toContain("formatModeLabel(d.mode, t)");
     expect(challengeScreen).toContain("const topRivals = useMemo");
   });
 

@@ -5,7 +5,8 @@
     "startSessionFailed": "No se pudo iniciar la sesión de quiz",
     "tabSwitchEnded": "Quiz terminado — cambiaste de pestaña",
     "tabSwitchWarning": "No cambies de pestaña — tu quiz terminará",
-    "checkFailedToast": "No se pudo verificar la respuesta"
+    "checkFailedToast": "No se pudo verificar la respuesta",
+    "cameFirstBadge": "¿Qué fue primero?"
   },
   "dailyQuiz": {
     "title": "Reto diario",
@@ -37,7 +38,10 @@
     "startFailedTitle": "No se pudo iniciar una cuadrícula",
     "startFailedMessage": "VerveGrid no se pudo cargar ahora. Inténtalo de nuevo o vuelve a Competir.",
     "tabSwitchEnded": "Cuadrícula terminada — cambiaste de pestaña",
-    "tabSwitchWarning": "No cambies de pestaña — tu cuadrícula terminará"
+    "tabSwitchWarning": "No cambies de pestaña — tu cuadrícula terminará",
+    "alreadyUsed": "Ya usado en otra casilla",
+    "notAMatch": "No coincide — intento bloqueado",
+    "submitFailed": "No se pudo enviar esa elección — inténtalo de nuevo"
   },
   "higherLower": {
     "title": "Más o Menos",

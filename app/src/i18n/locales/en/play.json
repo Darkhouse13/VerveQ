@@ -5,7 +5,8 @@
     "startSessionFailed": "Failed to start quiz session",
     "tabSwitchEnded": "Quiz ended — you switched tabs",
     "tabSwitchWarning": "Don't switch tabs — your quiz will end",
-    "checkFailedToast": "Failed to check answer"
+    "checkFailedToast": "Failed to check answer",
+    "cameFirstBadge": "Which Came First"
   },
   "dailyQuiz": {
     "title": "Daily Challenge",
@@ -37,7 +38,10 @@
     "startFailedTitle": "Couldn't Start A Grid",
     "startFailedMessage": "VerveGrid couldn't load right now. Try again, or head back to Compete.",
     "tabSwitchEnded": "Grid ended — you switched tabs",
-    "tabSwitchWarning": "Don't switch tabs — your grid will end"
+    "tabSwitchWarning": "Don't switch tabs — your grid will end",
+    "alreadyUsed": "Already used in another cell",
+    "notAMatch": "Not a match — guess locked",
+    "submitFailed": "Couldn't submit that pick — try again"
   },
   "higherLower": {
     "title": "Higher or Lower",

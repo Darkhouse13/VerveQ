@@ -83,14 +83,15 @@ describe("knowledge expansion contract", () => {
     expect(sportSelect).toContain("availableTopics");
     expect(sportSelect).toContain("Pick a Topic");
     expect(createDuel).toContain("KNOWLEDGE_CATEGORIES");
-    expect(createDuel).toContain("Pick a category");
+    expect(createDuel).toContain("createDuel.headerPickCategory");
+    expect(screens.createDuel.headerPickCategory).toBe("Pick a category");
     expect(createDuel).toContain("formatCategoryLabel(c)");
     // The duel headline helpers moved to the shared lib so the Duels page and
     // the history page render categories identically.
     const duelLib = readFileSync("src/lib/duel.ts", "utf8");
-    expect(challenge).toContain("duelSummaryHeadline(d)");
+    expect(challenge).toContain("duelSummaryHeadline(d, t)");
     expect(duelLib).toContain("formatCategoryLabel(s.category)");
-    expect(challenge).toContain("formatModeLabel(d.mode)");
+    expect(challenge).toContain("formatModeLabel(d.mode, t)");
     // i18n: the "Topic" stat labels on the result surfaces moved to locale keys.
     // The "Topic" wording IS the contract here, so assert the en-locale VALUE
     // says "Topic" (not Sport) and that the internal sport key is still the value.

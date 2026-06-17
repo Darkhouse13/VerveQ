@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useMutation } from "convex/react";
 import { X } from "lucide-react";
 import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
 import { friendlyError } from "@/lib/errors";
 
 import { NeoCard } from "@/components/neo/NeoCard";
@@ -17,6 +18,7 @@ export default function CreateArenaModal({
   onClose: () => void;
   onCreated: (code: string) => void;
 }) {
+  const { t } = useTranslation("screens");
   const [mode, setMode] = useState<ArenaMode>("1v1");
   const [submitting, setSubmitting] = useState(false);
   const create = useMutation(api.challengeArenas.create);
@@ -28,7 +30,7 @@ export default function CreateArenaModal({
       const result = await create({ mode });
       onCreated(result.code);
     } catch (e) {
-      toast.error(friendlyError(e, "Failed to create arena"));
+      toast.error(friendlyError(e, t("createArena.createError")));
     } finally {
       setSubmitting(false);
     }
@@ -42,17 +44,17 @@ export default function CreateArenaModal({
             type="button"
             onClick={onClose}
             className="neo-border neo-shadow rounded-lg p-2 bg-background cursor-pointer active:neo-shadow-pressed"
-            aria-label="Close"
+            aria-label={t("createArena.closeAria")}
           >
             <X size={18} strokeWidth={2.5} />
           </button>
-          <p className="font-heading font-bold text-sm uppercase">Create arena</p>
+          <p className="font-heading font-bold text-sm uppercase">{t("createArena.title")}</p>
           <div className="w-9" />
         </div>
 
         <div className="px-5 flex-1 min-h-0 overflow-y-auto overscroll-contain scrollbar-none md:flex-none md:max-h-[60vh]">
           <p className="text-xs text-muted-foreground mb-3">
-            Pick a mode. You&apos;ll get a code to share with friends.
+            {t("createArena.pickModeHint")}
           </p>
 
           <div className="space-y-2">
@@ -73,7 +75,7 @@ export default function CreateArenaModal({
                   color={mode === opt.key ? "accent" : "muted"}
                   size="sm"
                 >
-                  {opt.capacity} max
+                  {t("createArena.capacityMax", { count: opt.capacity })}
                 </NeoBadge>
               </NeoCard>
             ))}
@@ -87,7 +89,7 @@ export default function CreateArenaModal({
             disabled={submitting}
             onClick={handleCreate}
           >
-            {submitting ? "Creating…" : "Create arena"}
+            {submitting ? t("createArena.creating") : t("createArena.createButton")}
           </NeoButton>
         </div>
       </div>

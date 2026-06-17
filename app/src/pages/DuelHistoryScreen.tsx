@@ -134,7 +134,7 @@ export default function DuelHistoryScreen({
         ) : (
           <div className="space-y-2">
             {shown.map((d) => {
-              const badge = duelStatusBadge(d.status, outcomeFor(d));
+              const badge = duelStatusBadge(d.status, outcomeFor(d), t);
               return (
                 <NeoCard
                   key={d.duelId}
@@ -144,10 +144,10 @@ export default function DuelHistoryScreen({
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0">
                       <p className="font-heading font-bold text-sm truncate">
-                        {duelOpponentLabel(d.opponent.username)}
+                        {duelOpponentLabel(d.opponent.username, t)}
                       </p>
                       <p className="text-xs text-muted-foreground capitalize truncate">
-                        {duelSummaryHeadline(d)} · {formatModeLabel(d.mode)} ·{" "}
+                        {duelSummaryHeadline(d, t)} · {formatModeLabel(d.mode, t)} ·{" "}
                         {d.difficulty}
                       </p>
                     </div>
@@ -163,7 +163,7 @@ export default function DuelHistoryScreen({
                       {t("duelHistory.scoreThem")}
                     </span>
                     <span className="text-muted-foreground">
-                      {d.resolvedAt ? formatRelativeTime(d.resolvedAt) : ""}
+                      {d.resolvedAt ? formatRelativeTime(d.resolvedAt, t) : ""}
                     </span>
                   </div>
                 </NeoCard>

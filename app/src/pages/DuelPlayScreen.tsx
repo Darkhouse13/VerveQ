@@ -365,7 +365,7 @@ export function DuelPlay({ duelId, guestToken, initialView }: DuelPlayProps) {
           <ArrowLeft size={18} strokeWidth={2.5} />
         </button>
         <p className="font-mono font-bold text-sm inline-flex items-center gap-1">
-          <Clock size={14} strokeWidth={3} /> {formatRelativeTime(view.expiresAt)}
+          <Clock size={14} strokeWidth={3} /> {formatRelativeTime(view.expiresAt, t)}
         </p>
       </div>
 
@@ -383,7 +383,7 @@ export function DuelPlay({ duelId, guestToken, initialView }: DuelPlayProps) {
           {t("duelPlay.scoreLabel", { score: view.myResult.score })}
         </p>
         <NeoBadge color="primary" size="sm">
-          {formatModeLabel(view.mode)}
+          {formatModeLabel(view.mode, t)}
         </NeoBadge>
       </div>
       <p className="text-[10px] text-muted-foreground mb-4">

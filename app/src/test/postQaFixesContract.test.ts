@@ -41,7 +41,7 @@ describe("post-QA regression contracts", () => {
     const screens = JSON.parse(read("src/i18n/locales/en/screens.json"));
     expect(source).toContain("challenge.yourTurnTitle");
     expect(screens.challenge.yourTurnTitle).toBe("Your turn");
-    expect(source).toContain("formatModeLabel(d.mode)");
+    expect(source).toContain("formatModeLabel(d.mode, t)");
   });
 });
 

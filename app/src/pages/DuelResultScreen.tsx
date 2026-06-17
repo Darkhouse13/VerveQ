@@ -289,7 +289,7 @@ export default function DuelResultScreen() {
       {/* Share card */}
       <NeoCard shadow="lg" color={myWon ? "primary" : "default"} className="mb-5 text-center py-6">
         <p className="text-xs font-heading uppercase opacity-80">
-          {topicLabel(view, t)} · {formatModeLabel(view.mode)} · {view.difficulty}
+          {topicLabel(view, t)} · {formatModeLabel(view.mode, t)} · {view.difficulty}
         </p>
         <NeoBadge color={headlineColor} rotated size="md" className="mt-3 text-xl px-6 py-2">
           {headlineText}

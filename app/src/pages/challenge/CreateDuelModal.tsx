@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useMutation } from "convex/react";
 import { ChevronLeft, X } from "lucide-react";
 import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
 import { friendlyError } from "@/lib/errors";
 
 import { NeoCard } from "@/components/neo/NeoCard";
@@ -59,6 +60,7 @@ export default function CreateDuelModal({
   onClose: () => void;
   onCreated: (duelId: Id<"duels">) => void;
 }) {
+  const { t } = useTranslation("screens");
   const [step, setStep] = useState<Step>("kind");
   const [kind, setKind] = useState<DuelKind | null>(null);
   const [sport, setSport] = useState<string | null>(null);
@@ -90,11 +92,13 @@ export default function CreateDuelModal({
   const headerTitle = (() => {
     switch (step) {
       case "kind":
-        return "Pick a duel type";
+        return t("createDuel.headerPickType");
       case "topic":
-        return kind === "sports" ? "Pick a sport" : "Pick a category";
+        return kind === "sports"
+          ? t("createDuel.headerPickSport")
+          : t("createDuel.headerPickCategory");
       case "difficulty":
-        return "Pick a difficulty";
+        return t("createDuel.headerPickDifficulty");
     }
   })();
 
@@ -151,7 +155,7 @@ export default function CreateDuelModal({
       const result = await createMut({ ...args, viaLink: true });
       onCreated(result.duelId);
     } catch (e) {
-      toast.error(friendlyError(e, "Failed to start duel"));
+      toast.error(friendlyError(e, t("createDuel.startError")));
     } finally {
       setSubmitting(false);
     }
@@ -165,7 +169,7 @@ export default function CreateDuelModal({
             type="button"
             onClick={goBack}
             className="neo-border neo-shadow rounded-lg p-2 bg-background cursor-pointer active:neo-shadow-pressed"
-            aria-label="Back"
+            aria-label={t("createDuel.backAria")}
           >
             {step === "kind" ? <X size={18} strokeWidth={2.5} /> : <ChevronLeft size={18} strokeWidth={2.5} />}
           </button>
@@ -182,8 +186,8 @@ export default function CreateDuelModal({
                 className="flex items-center justify-between"
               >
                 <div>
-                  <p className="font-heading font-bold">Sports trivia</p>
-                  <p className="text-xs opacity-90">Football — head-to-head quiz</p>
+                  <p className="font-heading font-bold">{t("createDuel.kindSportsTitle")}</p>
+                  <p className="text-xs opacity-90">{t("createDuel.kindSportsDesc")}</p>
                 </div>
                 <span className="text-2xl">🏆</span>
               </NeoCard>
@@ -193,8 +197,8 @@ export default function CreateDuelModal({
                 className="flex items-center justify-between"
               >
                 <div>
-                  <p className="font-heading font-bold">Knowledge</p>
-                  <p className="text-xs opacity-90">Science · History · Culture · more</p>
+                  <p className="font-heading font-bold">{t("createDuel.kindKnowledgeTitle")}</p>
+                  <p className="text-xs opacity-90">{t("createDuel.kindKnowledgeDesc")}</p>
                 </div>
                 <span className="text-2xl">🧠</span>
               </NeoCard>
@@ -204,8 +208,8 @@ export default function CreateDuelModal({
                 className="flex items-center justify-between"
               >
                 <div>
-                  <p className="font-heading font-bold">Which Came First</p>
-                  <p className="text-xs opacity-90">Two events. Which happened earlier?</p>
+                  <p className="font-heading font-bold">{t("createDuel.kindCameFirstTitle")}</p>
+                  <p className="text-xs opacity-90">{t("createDuel.kindCameFirstDesc")}</p>
                 </div>
                 <span className="text-2xl">⏳</span>
               </NeoCard>
@@ -224,7 +228,9 @@ export default function CreateDuelModal({
                       className="flex flex-col items-center gap-2 py-6"
                     >
                       <span className="text-4xl">{s.emoji}</span>
-                      <p className="font-heading font-bold text-sm">{s.label}</p>
+                      <p className="font-heading font-bold text-sm">
+                        {t(`createDuel.sport_${s.key}`, { defaultValue: s.label })}
+                      </p>
                     </NeoCard>
                   ))}
                 </div>
@@ -236,8 +242,8 @@ export default function CreateDuelModal({
                     onClick={() => handleSelectTopic("")}
                     className="text-center py-4"
                   >
-                    <p className="font-heading font-bold text-sm">Mixed</p>
-                    <p className="text-[10px] opacity-80">Any knowledge category</p>
+                    <p className="font-heading font-bold text-sm">{t("createDuel.categoryMixed")}</p>
+                    <p className="text-[10px] opacity-80">{t("createDuel.categoryMixedDesc")}</p>
                   </NeoCard>
                   {KNOWLEDGE_CATEGORIES.map((c) => (
                     <NeoCard
@@ -265,7 +271,9 @@ export default function CreateDuelModal({
                   onClick={() => setDifficulty(d.key)}
                   className="flex items-center justify-between"
                 >
-                  <p className="font-heading font-bold">{d.label}</p>
+                  <p className="font-heading font-bold">
+                    {t(`createDuel.difficulty_${d.key}`, { defaultValue: d.label })}
+                  </p>
                   <NeoBadge color={d.color} size="sm">{d.key}</NeoBadge>
                 </NeoCard>
               ))}
@@ -273,10 +281,9 @@ export default function CreateDuelModal({
               {/* Set expectations: there is no "choose opponent" step — you
                   play first and invite afterwards from the results screen. */}
               <NeoCard color="default" className="text-left">
-                <p className="font-heading font-bold text-sm">Play now, invite after</p>
+                <p className="font-heading font-bold text-sm">{t("createDuel.playNowInviteAfterTitle")}</p>
                 <p className="text-xs text-muted-foreground mt-1">
-                  You take your turn first. When you finish, share a link to
-                  challenge a friend to beat your score.
+                  {t("createDuel.playNowInviteAfterDesc")}
                 </p>
               </NeoCard>
 
@@ -286,7 +293,7 @@ export default function CreateDuelModal({
                 disabled={submitting}
                 onClick={handlePlay}
               >
-                {submitting ? "Starting…" : "Play duel"}
+                {submitting ? t("createDuel.starting") : t("createDuel.playDuel")}
               </NeoButton>
             </div>
           )}

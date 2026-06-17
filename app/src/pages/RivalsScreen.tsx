@@ -130,7 +130,7 @@ export default function RivalsListScreen({ embedded = false }: { embedded?: bool
                   )}
                   {r.updatedAt && (
                     <p className="text-[10px] text-muted-foreground">
-                      {t("rivals.lastDuel", { time: formatRelativeTime(r.updatedAt) })}
+                      {t("rivals.lastDuel", { time: formatRelativeTime(r.updatedAt, t) })}
                     </p>
                   )}
                 </NeoCard>
@@ -278,7 +278,7 @@ export function RivalDetailScreen({ embedded = false }: { embedded?: boolean } =
           </div>
           {rivalry.updatedAt && (
             <p className="text-xs font-mono text-muted-foreground">
-              {t("rivals.lastDuelShort", { time: formatRelativeTime(rivalry.updatedAt) })}
+              {t("rivals.lastDuelShort", { time: formatRelativeTime(rivalry.updatedAt, t) })}
             </p>
           )}
         </NeoCard>

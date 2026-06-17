@@ -312,7 +312,7 @@ function IntroScreen({
           {t("duelLink.challengedYou", { challenger })}
         </h1>
         <p className="text-sm text-muted-foreground mt-2">
-          {topicLabel(view, t)} · {formatModeLabel(view.mode)} · {view.difficulty[0].toUpperCase() + view.difficulty.slice(1)}
+          {topicLabel(view, t)} · {formatModeLabel(view.mode, t)} · {view.difficulty[0].toUpperCase() + view.difficulty.slice(1)}
         </p>
         <p className="text-xs text-muted-foreground mt-1">
           {t("duelLink.questionCount", { count: view.questionCount })}

@@ -270,8 +270,8 @@ export default function ChallengeScreen({ embedded = false }: { embedded?: boole
           {yourTurn.map((d) => {
             const badge = d.rematchOfDuelId
               ? { label: t("challenge.rematch"), color: "yellow" as const }
-              : duelStatusBadge(d.status, null);
-            const expiresIn = formatRelativeTime(d.expiresAt);
+              : duelStatusBadge(d.status, null, t);
+            const expiresIn = formatRelativeTime(d.expiresAt, t);
             return (
               <NeoCard
                 key={d.duelId}
@@ -282,10 +282,10 @@ export default function ChallengeScreen({ embedded = false }: { embedded?: boole
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
                     <p className="font-heading font-bold text-sm truncate">
-                      {duelOpponentLabel(d.opponent.username)}
+                      {duelOpponentLabel(d.opponent.username, t)}
                     </p>
                     <p className="text-xs text-muted-foreground capitalize truncate">
-                      {duelSummaryHeadline(d)} · {formatModeLabel(d.mode)} · {d.difficulty}
+                      {duelSummaryHeadline(d, t)} · {formatModeLabel(d.mode, t)} · {d.difficulty}
                     </p>
                   </div>
                   <NeoBadge color={badge.color} size="sm">
@@ -317,7 +317,7 @@ export default function ChallengeScreen({ embedded = false }: { embedded?: boole
           accent="blue"
         >
           {awaiting.map((d) => {
-            const badge = duelStatusBadge(d.status, null);
+            const badge = duelStatusBadge(d.status, null, t);
             return (
               <NeoCard
                 key={d.duelId}
@@ -327,10 +327,10 @@ export default function ChallengeScreen({ embedded = false }: { embedded?: boole
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
                     <p className="font-heading font-bold text-sm truncate">
-                      {duelOpponentLabel(d.opponent.username)}
+                      {duelOpponentLabel(d.opponent.username, t)}
                     </p>
                     <p className="text-xs text-muted-foreground capitalize truncate">
-                      {duelSummaryHeadline(d)} · {formatModeLabel(d.mode)} · {d.difficulty}
+                      {duelSummaryHeadline(d, t)} · {formatModeLabel(d.mode, t)} · {d.difficulty}
                     </p>
                   </div>
                   <NeoBadge color={badge.color} size="sm">
@@ -399,7 +399,7 @@ export default function ChallengeScreen({ embedded = false }: { embedded?: boole
                       ? d.winnerId === me?._id
                       : "draw"
                     : null;
-                const badge = duelStatusBadge(d.status, winnerForMe);
+                const badge = duelStatusBadge(d.status, winnerForMe, t);
                 const rematchIncoming = d.openRematch && !d.openRematch.byMe;
                 return (
                   <NeoCard
@@ -413,12 +413,12 @@ export default function ChallengeScreen({ embedded = false }: { embedded?: boole
                       </NeoBadge>
                       <div className="min-w-0">
                         <p className="font-heading font-bold text-xs truncate">
-                          {duelOpponentLabel(d.opponent.username)}
+                          {duelOpponentLabel(d.opponent.username, t)}
                         </p>
                         <p className="text-[10px] text-muted-foreground capitalize truncate">
-                          {duelSummaryHeadline(d)}
+                          {duelSummaryHeadline(d, t)}
                           {d.resolvedAt
-                            ? ` · ${formatRelativeTime(d.resolvedAt)}`
+                            ? ` · ${formatRelativeTime(d.resolvedAt, t)}`
                             : ""}
                         </p>
                       </div>

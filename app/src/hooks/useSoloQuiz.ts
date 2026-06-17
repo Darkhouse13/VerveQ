@@ -295,7 +295,7 @@ export function useSoloQuiz(): SoloQuizState {
     correctIdx,
     checkResult,
     isCameFirst,
-    badgeLabel: isCameFirst ? "Which Came First" : difficulty,
+    badgeLabel: isCameFirst ? t("quiz.cameFirstBadge") : difficulty,
     zoomImage,
     setZoomImage,
     onOption,

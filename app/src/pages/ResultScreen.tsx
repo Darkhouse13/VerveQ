@@ -112,15 +112,15 @@ export default function ResultScreen() {
     : null;
   const currentStreak = state.currentStreak ?? state.versusScore?.currentStreak ?? null;
   const recentMatches = state.recentMatches ?? state.versusScore?.recentMatches ?? [];
-  const streakOwner =
-    currentStreak &&
+  const streakIsYou =
+    !!currentStreak &&
     (currentStreak.owner === "you" ||
       (currentStreak.owner === "player1" && state.currentUserIsPlayer1) ||
-      (currentStreak.owner === "player2" && !state.currentUserIsPlayer1))
-      ? t("result.streakOwnerYour")
-      : t("result.streakOwnerOpponent");
+      (currentStreak.owner === "player2" && !state.currentUserIsPlayer1));
   const streakLabel = currentStreak
-    ? t("result.streakActive", { count: currentStreak.count, owner: streakOwner })
+    ? streakIsYou
+      ? t("result.streakActiveYour", { count: currentStreak.count })
+      : t("result.streakActiveOpponent", { count: currentStreak.count })
     : t("result.streakNone");
 
   const stats = isChallenge
