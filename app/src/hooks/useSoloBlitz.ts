@@ -21,6 +21,8 @@ import type { Id } from "../../convex/_generated/dataModel";
 interface QuestionData {
   question: string;
   options: string[];
+  // Canonical English options (same order) — submitted so grading stays canonical.
+  optionValues: string[];
   checksum: string;
   imageUrl?: string | null;
 }
@@ -47,7 +49,7 @@ export interface SoloBlitzState {
 }
 
 export function useSoloBlitz(): SoloBlitzState {
-  const { t } = useTranslation("play");
+  const { t, i18n } = useTranslation("play");
   const navigate = useNavigate();
   const [params] = useSearchParams();
   const sport = params.get("sport") || "football";
@@ -112,7 +114,10 @@ export function useSoloBlitz(): SoloBlitzState {
   const fetchQuestion = useCallback(
     async (sid: Id<"blitzSessions">) => {
       try {
-        const q = await getQuestionMut({ sessionId: sid });
+        const q = await getQuestionMut({
+          sessionId: sid,
+          locale: i18n.resolvedLanguage ?? i18n.language,
+        });
         setQuestion(q);
         setRevealedAnswer(null);
         setSelected(null);
@@ -122,7 +127,7 @@ export function useSoloBlitz(): SoloBlitzState {
         void finishGame();
       }
     },
-    [getQuestionMut, finishGame],
+    [getQuestionMut, finishGame, i18n],
   );
 
   useEffect(() => {
@@ -133,7 +138,10 @@ export function useSoloBlitz(): SoloBlitzState {
         });
         setSessionId(sid);
         sessionRef.current = sid;
-        const q = await getQuestionMut({ sessionId: sid });
+        const q = await getQuestionMut({
+          sessionId: sid,
+          locale: i18n.resolvedLanguage ?? i18n.language,
+        });
         setQuestion(q);
         setEndTimeMs(serverEndTimeMs);
         setLoading(false);
@@ -186,7 +194,8 @@ export function useSoloBlitz(): SoloBlitzState {
       try {
         const res = await submitAnswerMut({
           sessionId,
-          answer: question.options[idx],
+          // Canonical English value — grading compares against correctAnswer.
+          answer: question.optionValues[idx],
           checksum: question.checksum,
         });
         setScore(res.score);
@@ -222,7 +231,9 @@ export function useSoloBlitz(): SoloBlitzState {
   );
 
   const correctIdx =
-    question && revealedAnswer ? question.options.indexOf(revealedAnswer) : -1;
+    question && revealedAnswer
+      ? question.optionValues.indexOf(revealedAnswer)
+      : -1;
 
   return {
     loading,

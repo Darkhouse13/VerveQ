@@ -13,6 +13,10 @@ import { normalizeAnswer } from "./lib/scoring";
 import { advanceStreak, utcDayNumber } from "./lib/streaks";
 import { orderAnswerOptions } from "./lib/answerOptions";
 import {
+  composeLocalizedQuestion,
+  fetchQuestionTranslation,
+} from "./lib/contentI18n";
+import {
   assertStandardMcqQuestion,
   isStandardMcqQuestion,
 } from "./lib/mcqEligibility";
@@ -55,8 +59,8 @@ export const start = mutation({
 });
 
 export const getQuestion = mutation({
-  args: { sessionId: v.id("blitzSessions") },
-  handler: async (ctx, { sessionId }) => {
+  args: { sessionId: v.id("blitzSessions"), locale: v.optional(v.string()) },
+  handler: async (ctx, { sessionId, locale }) => {
     const userId = await getAuthUserId(ctx);
     if (!userId) throw new Error("Not authenticated");
     const session = await ctx.db.get(sessionId);
@@ -113,11 +117,17 @@ export const getQuestion = mutation({
       ? await ctx.storage.getUrl(pick.imageId)
       : null;
 
-    // correctAnswer + explanation are withheld; they come back in the
-    // submitAnswer response after server-side validation.
+    // Display-translate, grade-canonical (docs/I18N_CONTENT_DESIGN.md): canonical
+    // optionValues are submitted; options may be localized labels. For en /
+    // untranslated, optionValues === options (no-op). correctAnswer + explanation
+    // are withheld until submitAnswer.
+    const orderedValues = orderAnswerOptions(pick.options, pick.correctAnswer, pick.checksum);
+    const translation = await fetchQuestionTranslation(ctx, pick.checksum, locale);
+    const localized = composeLocalizedQuestion(pick, orderedValues, translation);
     return {
-      question: pick.question,
-      options: orderAnswerOptions(pick.options, pick.correctAnswer, pick.checksum),
+      question: localized.question,
+      options: localized.options,
+      optionValues: localized.optionValues,
       checksum: pick.checksum,
       imageUrl,
     };
