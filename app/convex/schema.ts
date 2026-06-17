@@ -423,6 +423,22 @@ export default defineSchema({
     ])
     .index("by_checksum", ["checksum"]),
 
+  // Per-locale DISPLAY translations for quiz content (Phase 4 i18n). Canonical
+  // English stays in quizQuestions; this overlays display fields only and is
+  // NEVER read by grading (see docs/I18N_CONTENT_DESIGN.md). `options` are stored
+  // aligned to the canonical (unordered) quizQuestions.options so the serve
+  // helper can reorder them alongside the canonical values the client submits.
+  quizQuestionTranslations: defineTable({
+    checksum: v.string(),
+    locale: v.string(),
+    question: v.string(),
+    options: v.array(v.string()),
+    explanation: v.optional(v.string()),
+    source: v.union(v.literal("llm"), v.literal("human")),
+    reviewed: v.boolean(),
+    updatedAt: v.number(),
+  }).index("by_checksum_locale", ["checksum", "locale"]),
+
   // One row per (user, question) difficulty vote. Enforces one vote per user
   // per question in quizSessions.submitFeedback so the difficultyScore running
   // mean cannot be inflated by repeat votes from a single identity.
