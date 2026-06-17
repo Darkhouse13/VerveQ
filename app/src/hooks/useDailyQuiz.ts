@@ -30,6 +30,8 @@ const AUTO_ADVANCE_DELAY_MS = 2000;
 interface DailyQuestionData {
   question: string;
   options: string[];
+  // Canonical English options (same order) — submitted so grading stays canonical.
+  optionValues: string[];
   checksum: string;
   category: string;
   imageUrl?: string | null;
@@ -42,7 +44,7 @@ export interface DailyQuizState extends SoloQuizState {
 }
 
 export function useDailyQuiz(): DailyQuizState {
-  const { t } = useTranslation("play");
+  const { t, i18n } = useTranslation("play");
   const navigate = useNavigate();
   const [params] = useSearchParams();
   const sport = params.get("sport") || "football";
@@ -82,7 +84,11 @@ export function useDailyQuiz(): DailyQuizState {
   const dailyQuestion = useQuery(
     api.dailyChallenge.getQuestion,
     attemptId && !attemptFinished && questionNum < MAX_QUESTIONS
-      ? { attemptId, questionIndex: questionNum }
+      ? {
+          attemptId,
+          questionIndex: questionNum,
+          locale: i18n.resolvedLanguage ?? i18n.language,
+        }
       : "skip",
   );
   const submitAnswerMut = useMutation(api.dailyChallenge.submitAnswer);
@@ -183,7 +189,8 @@ export function useDailyQuiz(): DailyQuizState {
       try {
         const res = await submitAnswerMut({
           attemptId,
-          answer: question.options[optionIndex],
+          // Canonical English value — grading compares against correctAnswer.
+          answer: question.optionValues[optionIndex],
           questionIndex: questionNum,
         });
         setRevealedAnswer(res.correctAnswer);
@@ -295,7 +302,9 @@ export function useDailyQuiz(): DailyQuizState {
   }, [attemptId, forfeited, forfeitMut, navigate]);
 
   const correctIdx =
-    question && revealedAnswer ? question.options.indexOf(revealedAnswer) : -1;
+    question && revealedAnswer
+      ? question.optionValues.indexOf(revealedAnswer)
+      : -1;
 
   return {
     loading: loading || !question,
@@ -303,8 +312,7 @@ export function useDailyQuiz(): DailyQuizState {
       ? {
           question: question.question,
           options: question.options,
-          // Canonical passthrough until the daily serve path is wired (P4.1b).
-          optionValues: question.options,
+          optionValues: question.optionValues,
           difficulty: "",
           checksum: question.checksum,
           category: question.category,

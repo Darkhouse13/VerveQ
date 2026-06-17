@@ -11,6 +11,10 @@ import { normalizeAnswer } from "./lib/scoring";
 import { recordPlayForStreak } from "./lib/streaks";
 import { orderAnswerOptions } from "./lib/answerOptions";
 import {
+  composeLocalizedQuestion,
+  fetchQuestionTranslation,
+} from "./lib/contentI18n";
+import {
   assertStandardMcqQuestion,
   isStandardMcqQuestion,
 } from "./lib/mcqEligibility";
@@ -525,8 +529,9 @@ export const getQuestion = query({
   args: {
     attemptId: v.id("dailyAttempts"),
     questionIndex: v.number(),
+    locale: v.optional(v.string()),
   },
-  handler: async (ctx, { attemptId, questionIndex }) => {
+  handler: async (ctx, { attemptId, questionIndex, locale }) => {
     const userId = await getAuthUserId(ctx);
     if (!userId) throw new Error("Not authenticated");
     await assertRankedEligibleUser(ctx, userId);
@@ -574,11 +579,42 @@ export const getQuestion = query({
       ? await ctx.storage.getUrl(question.imageId)
       : null;
 
-    // correctAnswer + explanation are revealed by submitAnswer after the
-    // server validates the guess.
+    // Display-translate, grade-canonical (docs/I18N_CONTENT_DESIGN.md). The
+    // snapshot's options are canonical English already in display order, so they
+    // ARE the submitted optionValues; the canonical row gives the unordered
+    // option list needed to map them to the aligned translation. For en /
+    // untranslated, options === optionValues (no-op). correctAnswer +
+    // explanation are revealed by submitAnswer after the server validates.
+    let displayQuestion = question.question;
+    let displayOptions = question.options;
+    const translation = await fetchQuestionTranslation(
+      ctx,
+      question.checksum,
+      locale,
+    );
+    if (translation) {
+      const canonical = await ctx.db
+        .query("quizQuestions")
+        .withIndex("by_checksum", (q) => q.eq("checksum", question.checksum))
+        .first();
+      if (canonical) {
+        const localized = composeLocalizedQuestion(
+          {
+            question: canonical.question,
+            options: canonical.options,
+            explanation: canonical.explanation,
+          },
+          question.options,
+          translation,
+        );
+        displayQuestion = localized.question;
+        displayOptions = localized.options;
+      }
+    }
     return {
-      question: question.question,
-      options: question.options,
+      question: displayQuestion,
+      options: displayOptions,
+      optionValues: question.options,
       checksum: question.checksum,
       category: question.category,
       imageUrl,
