@@ -141,9 +141,12 @@ function NotInMatch({
 // ───────────────────────── room ─────────────────────────
 
 function LiveMatchPlayRoom({ matchId }: { matchId: Id<"liveMatches"> }) {
-  const { t } = useTranslation("play");
+  const { t, i18n } = useTranslation("play");
   const navigate = useNavigate();
-  const match = useQuery(api.liveMatches.getMatch, { matchId });
+  const match = useQuery(api.liveMatches.getMatch, {
+    matchId,
+    locale: i18n.resolvedLanguage ?? i18n.language,
+  });
   const heartbeatMut = useMutation(api.liveMatches.heartbeat);
   const forfeitMut = useMutation(api.liveMatches.forfeit);
   const abandonWaitingMut = useMutation(api.liveMatches.abandonWaitingMatch);
@@ -519,7 +522,12 @@ function LiveQuestionColumn({
   const { t } = useTranslation("play");
   const submitAnswer = useMutation(api.liveMatches.submitAnswer);
   const question = match.questions[match.currentQuestion] as
-    | { question: string; options: string[]; imageUrl?: string | null }
+    | {
+        question: string;
+        options: string[];
+        optionValues: string[];
+        imageUrl?: string | null;
+      }
     | null
     | undefined;
 
@@ -555,7 +563,7 @@ function LiveQuestionColumn({
   const locked = !!myAnswer || pending !== null;
   const myPickIdx =
     myAnswer?.answer != null
-      ? question.options.indexOf(myAnswer.answer)
+      ? question.optionValues.indexOf(myAnswer.answer)
       : pending;
   const myCorrect = myAnswer?.correct ?? null;
   const letters = ["A", "B", "C", "D"];
@@ -564,7 +572,7 @@ function LiveQuestionColumn({
     if (locked) return;
     setPending(idx);
     try {
-      const res = await submitAnswer({ matchId, answer: question.options[idx] });
+      const res = await submitAnswer({ matchId, answer: question.optionValues[idx] });
       if (!res.correct) {
         setShaking(true);
         window.setTimeout(() => setShaking(false), 500);
@@ -649,7 +657,12 @@ function LiveQuestionColumn({
 function LiveRevealColumn({ match }: { match: Match }) {
   const { t } = useTranslation("play");
   const question = match.questions[match.currentQuestion] as
-    | { question: string; options: string[]; imageUrl?: string | null }
+    | {
+        question: string;
+        options: string[];
+        optionValues: string[];
+        imageUrl?: string | null;
+      }
     | null
     | undefined;
   const myAnswers = match.myAnswers as Array<
