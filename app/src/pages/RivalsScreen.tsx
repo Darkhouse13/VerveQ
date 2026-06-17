@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { useQuery, useMutation } from "convex/react";
 import { ArrowLeft, Swords, Flame } from "lucide-react";
 import { toast } from "sonner";
@@ -17,6 +18,7 @@ import { formatRelativeTime } from "@/lib/duel";
 
 export default function RivalsListScreen({ embedded = false }: { embedded?: boolean } = {}) {
   const navigate = useNavigate();
+  const { t } = useTranslation("screens");
   const { user, isGuest } = useAuth();
   const data = useQuery(api.rivalries.listMine, isGuest || !user ? "skip" : {});
   // In the shell, cross-screen links resolve to contained shell routes.
@@ -35,9 +37,9 @@ export default function RivalsListScreen({ embedded = false }: { embedded?: bool
           <ArrowLeft size={20} strokeWidth={2.5} />
         </button>
         <NeoCard shadow="lg" className="text-center py-8">
-          <p className="font-heading font-bold text-lg">Rivals need an account</p>
+          <p className="font-heading font-bold text-lg">{t("rivals.needAccountTitle")}</p>
           <p className="text-sm text-muted-foreground mt-1">
-            Sign up to track head-to-head records.
+            {t("rivals.needAccountDescription")}
           </p>
         </NeoCard>
         {!embedded && <BottomNav />}
@@ -59,20 +61,20 @@ export default function RivalsListScreen({ embedded = false }: { embedded?: bool
           >
             <ArrowLeft size={20} strokeWidth={2.5} />
           </button>
-          <h1 className="text-2xl font-heading font-bold">Rivals</h1>
+          <h1 className="text-2xl font-heading font-bold">{t("rivals.title")}</h1>
           <div className="w-9" />
         </div>
 
         {loading ? (
           <NeoCard className="text-center py-6 text-sm text-muted-foreground">
-            Loading…
+            {t("rivals.loading")}
           </NeoCard>
         ) : rivalries.length === 0 ? (
           <NeoCard className="text-center py-6">
             <Swords size={28} strokeWidth={2.5} className="mx-auto mb-2" />
-            <p className="font-heading font-bold">No rivals yet</p>
+            <p className="font-heading font-bold">{t("rivals.emptyTitle")}</p>
             <p className="text-xs text-muted-foreground mt-1">
-              Send a duel to start a head-to-head record.
+              {t("rivals.emptyDescription")}
             </p>
             <NeoButton
               variant="primary"
@@ -80,7 +82,7 @@ export default function RivalsListScreen({ embedded = false }: { embedded?: bool
               className="mt-4"
               onClick={() => navigate(duelsPath)}
             >
-              Send a duel
+              {t("rivals.sendDuel")}
             </NeoButton>
           </NeoCard>
         ) : (
@@ -88,15 +90,15 @@ export default function RivalsListScreen({ embedded = false }: { embedded?: bool
             {rivalries.map((r) => {
               const lead =
                 r.wins > r.losses
-                  ? `You lead ${r.wins}-${r.losses}`
+                  ? t("rivals.youLead", { wins: r.wins, losses: r.losses })
                   : r.wins < r.losses
-                    ? `You trail ${r.wins}-${r.losses}`
-                    : `Tied ${r.wins}-${r.losses}`;
+                    ? t("rivals.youTrail", { wins: r.wins, losses: r.losses })
+                    : t("rivals.tied", { wins: r.wins, losses: r.losses });
               const streakLine =
                 r.currentStreakLen > 0
                   ? r.currentStreakHolderId === user?._id
-                    ? `🔥 ${r.currentStreakLen} streak (you)`
-                    : `🔥 ${r.currentStreakLen} streak vs you`
+                    ? t("rivals.streakYou", { count: r.currentStreakLen })
+                    : t("rivals.streakVsYou", { count: r.currentStreakLen })
                   : null;
               return (
                 <NeoCard
@@ -128,7 +130,7 @@ export default function RivalsListScreen({ embedded = false }: { embedded?: bool
                   )}
                   {r.updatedAt && (
                     <p className="text-[10px] text-muted-foreground">
-                      Last duel {formatRelativeTime(r.updatedAt)}
+                      {t("rivals.lastDuel", { time: formatRelativeTime(r.updatedAt) })}
                     </p>
                   )}
                 </NeoCard>
@@ -144,6 +146,7 @@ export default function RivalsListScreen({ embedded = false }: { embedded?: bool
 
 export function RivalDetailScreen({ embedded = false }: { embedded?: boolean } = {}) {
   const navigate = useNavigate();
+  const { t } = useTranslation("screens");
   const { user, isGuest } = useAuth();
   const { opponentUserId } = useParams<{ opponentUserId: string }>();
   const duelsPath = embedded ? SHELL_ROUTES.duels : "/challenge";
@@ -159,7 +162,7 @@ export function RivalDetailScreen({ embedded = false }: { embedded?: boolean } =
   if (isGuest) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
-        <p className="font-heading font-bold">Sign in to view rivals.</p>
+        <p className="font-heading font-bold">{t("rivals.signInToView")}</p>
       </div>
     );
   }
@@ -171,7 +174,7 @@ export function RivalDetailScreen({ embedded = false }: { embedded?: boolean } =
   if (rivalry === undefined) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
-        <p className="font-heading font-bold animate-pulse">Loading…</p>
+        <p className="font-heading font-bold animate-pulse">{t("rivals.loading")}</p>
       </div>
     );
   }
@@ -187,9 +190,9 @@ export function RivalDetailScreen({ embedded = false }: { embedded?: boolean } =
           <ArrowLeft size={20} strokeWidth={2.5} />
         </button>
         <NeoCard className="text-center py-8">
-          <p className="font-heading font-bold">No record</p>
+          <p className="font-heading font-bold">{t("rivals.noRecordTitle")}</p>
           <p className="text-sm text-muted-foreground mt-1">
-            You haven&apos;t finished a duel with this player yet.
+            {t("rivals.noRecordDescription")}
           </p>
         </NeoCard>
       </div>
@@ -202,22 +205,22 @@ export function RivalDetailScreen({ embedded = false }: { embedded?: boolean } =
   const streakLine =
     rivalry.currentStreakLen > 0
       ? streakHolderIsMe
-        ? `🔥 ${rivalry.currentStreakLen} streak`
-        : `${rivalry.currentStreakLen} vs you`
-      : "No active streak";
+        ? t("rivals.detailStreakMine", { count: rivalry.currentStreakLen })
+        : t("rivals.detailStreakVsYou", { count: rivalry.currentStreakLen })
+      : t("rivals.noActiveStreak");
 
   const handleRematch = async () => {
     if (!rivalry.lastDuelId) {
-      toast.error("No previous duel to rematch");
+      toast.error(t("rivals.noPreviousDuel"));
       return;
     }
     setRematching(true);
     try {
       const result = await rematchMut({ duelId: rivalry.lastDuelId });
-      toast.success("Rematch sent");
+      toast.success(t("rivals.rematchSent"));
       navigate(`/duel/play/${result.duelId}`);
     } catch (e) {
-      toast.error(friendlyError(e, "Rematch failed"));
+      toast.error(friendlyError(e, t("rivals.rematchFailed")));
     } finally {
       setRematching(false);
     }
@@ -235,7 +238,7 @@ export function RivalDetailScreen({ embedded = false }: { embedded?: boolean } =
             <ArrowLeft size={20} strokeWidth={2.5} />
           </button>
           <h1 className="text-xl font-heading font-bold truncate">
-            @{rivalry.opponent?.username ?? "Rival"}
+            @{rivalry.opponent?.username ?? t("rivals.rivalFallback")}
           </h1>
           <div className="w-9" />
         </div>
@@ -252,7 +255,7 @@ export function RivalDetailScreen({ embedded = false }: { embedded?: boolean } =
             ) : null}
           </p>
           <p className="text-xs font-heading uppercase text-muted-foreground mt-2">
-            You · Them {rivalry.draws ? "· Draws" : ""}
+            {rivalry.draws ? t("rivals.scoreLabelWithDraws") : t("rivals.scoreLabel")}
           </p>
           <NeoBadge
             color={isLeading ? "success" : isTied ? "blue" : "destructive"}
@@ -260,7 +263,7 @@ export function RivalDetailScreen({ embedded = false }: { embedded?: boolean } =
             size="md"
             className="mt-4 text-base px-5 py-1.5"
           >
-            {isLeading ? "Leading" : isTied ? "Tied" : "Trailing"}
+            {isLeading ? t("rivals.leading") : isTied ? t("rivals.tiedBadge") : t("rivals.trailing")}
           </NeoBadge>
         </NeoCard>
 
@@ -275,7 +278,7 @@ export function RivalDetailScreen({ embedded = false }: { embedded?: boolean } =
           </div>
           {rivalry.updatedAt && (
             <p className="text-xs font-mono text-muted-foreground">
-              Last {formatRelativeTime(rivalry.updatedAt)}
+              {t("rivals.lastDuelShort", { time: formatRelativeTime(rivalry.updatedAt) })}
             </p>
           )}
         </NeoCard>
@@ -287,11 +290,11 @@ export function RivalDetailScreen({ embedded = false }: { embedded?: boolean } =
           onClick={handleRematch}
         >
           <Swords size={16} strokeWidth={3} />
-          {rematching ? "Sending…" : "Rematch"}
+          {rematching ? t("rivals.sending") : t("rivals.rematch")}
         </NeoButton>
 
         <NeoButton variant="secondary" size="full" onClick={() => navigate(duelsPath)}>
-          New custom duel
+          {t("rivals.newCustomDuel")}
         </NeoButton>
       </div>
     </div>

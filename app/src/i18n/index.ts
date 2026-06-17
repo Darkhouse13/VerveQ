@@ -20,6 +20,7 @@ export type SupportedLanguage = (typeof SUPPORTED_LANGUAGES)[number];
 export const SHELL_NS = "shell";
 export const LEARN_NS = "learn";
 export const PLAY_NS = "play";
+export const SCREENS_NS = "screens";
 
 // Lazy module map — loaders are NOT eager, so each locale file is a separate
 // chunk pulled in only when its (language, namespace) pair is requested.
@@ -57,7 +58,7 @@ void i18n
     fallbackLng: "en",
     supportedLngs: SUPPORTED_LANGUAGES as unknown as string[],
     nonExplicitSupportedLngs: true, // map `fr-FR` -> `fr`
-    ns: [SHELL_NS, LEARN_NS, PLAY_NS],
+    ns: [SHELL_NS, LEARN_NS, PLAY_NS, SCREENS_NS],
     defaultNS: SHELL_NS,
     load: "languageOnly",
     detection: {

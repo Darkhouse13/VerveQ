@@ -33,7 +33,7 @@ for (const [filePath, data] of Object.entries(modules)) {
 }
 
 // Namespaces declared in src/i18n/index.ts; keep in sync if a namespace is added.
-const NAMESPACES = ["shell", "learn", "play"] as const;
+const NAMESPACES = ["shell", "learn", "play", "screens"] as const;
 const NON_EN = SUPPORTED_LANGUAGES.filter((l) => l !== "en");
 
 // Guards the translation contract: every non-English locale must define exactly

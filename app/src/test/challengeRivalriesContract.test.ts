@@ -21,10 +21,16 @@ describe("challenge rivalries v1 contract", () => {
 
   it("keeps historical rivalry context on challenge results without re-surfacing live rematches", () => {
     const resultScreen = readFileSync("src/pages/ResultScreen.tsx", "utf8");
+    const screens = JSON.parse(readFileSync("src/i18n/locales/en/screens.json", "utf8"));
 
-    expect(resultScreen).toContain("Rivalry");
-    expect(resultScreen).toContain("Streak");
-    expect(resultScreen).toContain("Last 5");
+    // i18n: the rivalry card labels moved to locale keys; verify both the key
+    // wiring in source and that the English copy is intact.
+    expect(resultScreen).toContain("result.rivalry");
+    expect(screens.result.rivalry).toBe("Rivalry");
+    expect(resultScreen).toContain("result.streakCardLabel");
+    expect(screens.result.streakCardLabel).toBe("Streak");
+    expect(resultScreen).toContain("result.lastFive");
+    expect(screens.result.lastFive).toBe("Last 5");
     expect(resultScreen).not.toContain("getChallengeAgainLabel");
     expect(resultScreen).not.toContain("Get Revenge");
     expect(resultScreen).not.toContain("Defend Your Win");

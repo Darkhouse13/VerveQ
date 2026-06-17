@@ -6,11 +6,15 @@ describe("challenge result UX contract", () => {
     const liveMatch = readFileSync("src/pages/LiveMatchScreen.tsx", "utf8");
     const resultScreen = readFileSync("src/pages/ResultScreen.tsx", "utf8");
     const types = readFileSync("src/types/api.ts", "utf8");
+    const screens = JSON.parse(readFileSync("src/i18n/locales/en/screens.json", "utf8"));
 
     expect(types).toContain('"challenge"');
     expect(liveMatch).toContain('mode: "challenge"');
     expect(resultScreen).toContain("isChallenge");
-    expect(resultScreen).toContain("Match Result");
+    // i18n: the "Match Result" heading moved to a locale key; verify both the
+    // key wiring and the English copy.
+    expect(resultScreen).toContain("result.matchResult");
+    expect(screens.result.matchResult).toBe("Match Result");
     expect(resultScreen).toContain('onClick={() => navigate("/home")}');
     expect(resultScreen).not.toContain("handleChallengeAgain");
     expect(resultScreen).not.toContain('api.liveMatches.createFromChallenge');

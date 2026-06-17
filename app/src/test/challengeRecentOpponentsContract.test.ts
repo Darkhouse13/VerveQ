@@ -36,11 +36,17 @@ describe("challenge duel hub contract", () => {
 
   it("renders the Duel Hub buckets instead of legacy recent-opponent buttons", () => {
     const challengeScreen = readFileSync("src/pages/ChallengeScreen.tsx", "utf8");
+    const screens = JSON.parse(readFileSync("src/i18n/locales/en/screens.json", "utf8"));
 
     expect(challengeScreen).toContain("api.duels.listMine");
-    expect(challengeScreen).toContain('title="Your turn"');
-    expect(challengeScreen).toContain('title="Waiting on them"');
-    expect(challengeScreen).toContain("New Duel");
+    // i18n: the section titles moved to locale keys; assert both the key wiring
+    // in source and that the English copy is intact.
+    expect(challengeScreen).toContain("challenge.yourTurnTitle");
+    expect(screens.challenge.yourTurnTitle).toBe("Your turn");
+    expect(challengeScreen).toContain("challenge.waitingTitle");
+    expect(screens.challenge.waitingTitle).toBe("Waiting on them");
+    expect(challengeScreen).toContain("challenge.newDuel");
+    expect(screens.challenge.newDuel).toBe("New Duel");
     expect(challengeScreen).toContain("formatModeLabel(d.mode)");
     expect(challengeScreen).toContain("const topRivals = useMemo");
   });
@@ -49,14 +55,20 @@ describe("challenge duel hub contract", () => {
     const challengeScreen = readFileSync("src/pages/ChallengeScreen.tsx", "utf8");
     const historyScreen = readFileSync("src/pages/DuelHistoryScreen.tsx", "utf8");
     const appSource = readFileSync("src/App.tsx", "utf8");
+    const screens = JSON.parse(readFileSync("src/i18n/locales/en/screens.json", "utf8"));
 
     expect(challengeScreen).toContain("RECENT_RESULTS_SHOWN");
-    expect(challengeScreen).toContain("Recent results");
-    expect(challengeScreen).toContain("Duel history");
+    // i18n: "Recent results" and "Duel history" copy moved to locale keys.
+    expect(challengeScreen).toContain("challenge.recentResults");
+    expect(screens.challenge.recentResults).toBe("Recent results");
+    expect(challengeScreen).toContain("challenge.duelHistory");
+    expect(screens.challenge.duelHistory).toBe("Duel history");
     expect(challengeScreen).not.toContain('title="Resolved"');
 
     expect(historyScreen).toContain("api.duels.listMine");
-    expect(historyScreen).toContain("Duel history");
+    // i18n: the history page title moved to a locale key as well.
+    expect(historyScreen).toContain("duelHistory.title");
+    expect(screens.duelHistory.title).toBe("Duel history");
     expect(appSource).toContain('path="/duels/history"');
     expect(appSource).toContain('path="/v2/duels/history"');
   });

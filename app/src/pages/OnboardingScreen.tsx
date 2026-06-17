@@ -1,38 +1,40 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { NeoButton } from "@/components/neo/NeoButton";
 import { NeoCard } from "@/components/neo/NeoCard";
 import { Trophy, Gamepad2, Star, Check } from "lucide-react";
 
 const steps = [
   {
-    title: "Welcome to VerveQ!",
+    titleKey: "welcomeTitle",
     features: [
-      { icon: Trophy, label: "ELO Rankings", desc: "Climb the competitive ladder", color: "primary" as const },
-      { icon: Gamepad2, label: "Quiz & Survival Modes", desc: "Two ways to play", color: "accent" as const },
-      { icon: Star, label: "Achievements", desc: "Unlock badges and rewards", color: "blue" as const },
+      { icon: Trophy, key: "elo", color: "primary" as const },
+      { icon: Gamepad2, key: "modes", color: "accent" as const },
+      { icon: Star, key: "achievements", color: "blue" as const },
     ],
   },
   {
-    title: "Pick Your Sport",
+    titleKey: "pickSportTitle",
     sports: [
-      { emoji: "⚽", name: "Football", color: "success" as const },
-      { emoji: "🎾", name: "Tennis", color: "accent" as const },
-      { emoji: "🏀", name: "Basketball", color: "primary" as const },
-      { emoji: "🏈", name: "More Coming", color: "default" as const },
+      { emoji: "⚽", name: "Football", key: "football", color: "success" as const },
+      { emoji: "🎾", name: "Tennis", key: "tennis", color: "accent" as const },
+      { emoji: "🏀", name: "Basketball", key: "basketball", color: "primary" as const },
+      { emoji: "🏈", name: "More Coming", key: "moreComing", color: "default" as const },
     ],
   },
   {
-    title: "Your Skill Level",
+    titleKey: "skillLevelTitle",
     levels: [
-      { name: "Beginner", desc: "Just getting started", color: "success" as const, emoji: "🌱" },
-      { name: "Intermediate", desc: "I know my stuff", color: "primary" as const, emoji: "⚡" },
-      { name: "Expert", desc: "Bring it on!", color: "destructive" as const, emoji: "🔥" },
+      { name: "Beginner", key: "beginner", color: "success" as const, emoji: "🌱" },
+      { name: "Intermediate", key: "intermediate", color: "primary" as const, emoji: "⚡" },
+      { name: "Expert", key: "expert", color: "destructive" as const, emoji: "🔥" },
     ],
   },
 ];
 
 export default function OnboardingScreen() {
+  const { t } = useTranslation("screens");
   const [step, setStep] = useState(0);
   const [selectedSport, setSelectedSport] = useState<string | null>(null);
   const [selectedLevel, setSelectedLevel] = useState<string | null>(null);
@@ -67,18 +69,18 @@ export default function OnboardingScreen() {
         ))}
       </div>
 
-      <h2 className="text-2xl font-heading font-bold text-center mb-6">{current.title}</h2>
+      <h2 className="text-2xl font-heading font-bold text-center mb-6">{t(`onboarding.${current.titleKey}`)}</h2>
 
       <div className="flex-1 space-y-3">
         {step === 0 &&
           current.features?.map((f) => (
-            <NeoCard key={f.label} color={f.color} className="flex items-center gap-4">
+            <NeoCard key={f.key} color={f.color} className="flex items-center gap-4">
               <div className="neo-border rounded-lg bg-background p-2.5">
                 <f.icon size={24} strokeWidth={2.5} className="text-foreground" />
               </div>
               <div>
-                <p className="font-heading font-bold text-sm">{f.label}</p>
-                <p className="text-xs opacity-80">{f.desc}</p>
+                <p className="font-heading font-bold text-sm">{t(`onboarding.feature_${f.key}_label`)}</p>
+                <p className="text-xs opacity-80">{t(`onboarding.feature_${f.key}_desc`)}</p>
               </div>
             </NeoCard>
           ))}
@@ -94,7 +96,7 @@ export default function OnboardingScreen() {
                 onClick={() => setSelectedSport(s.name)}
               >
                 <span className="text-4xl">{s.emoji}</span>
-                <p className="font-heading font-bold text-sm">{s.name}</p>
+                <p className="font-heading font-bold text-sm">{t(`onboarding.sport_${s.key}`)}</p>
               </NeoCard>
             ))}
           </div>
@@ -111,8 +113,8 @@ export default function OnboardingScreen() {
             >
               <span className="text-3xl">{l.emoji}</span>
               <div>
-                <p className="font-heading font-bold uppercase">{l.name}</p>
-                <p className="text-xs opacity-80">{l.desc}</p>
+                <p className="font-heading font-bold uppercase">{t(`onboarding.level_${l.key}_name`)}</p>
+                <p className="text-xs opacity-80">{t(`onboarding.level_${l.key}_desc`)}</p>
               </div>
             </NeoCard>
           ))}
@@ -123,10 +125,10 @@ export default function OnboardingScreen() {
           className="text-sm text-muted-foreground font-heading underline underline-offset-4 cursor-pointer"
           onClick={() => navigate("/home")}
         >
-          Skip
+          {t("onboarding.skip")}
         </button>
         <NeoButton variant="primary" size="lg" onClick={handleNext}>
-          {step === 2 ? "Let's Go!" : "Next"}
+          {step === 2 ? t("onboarding.letsGo") : t("onboarding.next")}
         </NeoButton>
       </div>
     </div>
