@@ -4,6 +4,7 @@ import { NeoBadge } from "@/components/neo/NeoBadge";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Calendar, Copy, Check } from "lucide-react";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 
 interface DailyResultState {
@@ -25,6 +26,7 @@ interface DailyResultState {
 export default function DailyResultScreen() {
   const navigate = useNavigate();
   const location = useLocation();
+  const { t } = useTranslation("screens");
   const state = location.state as DailyResultState | null;
   const [copied, setCopied] = useState(false);
 
@@ -36,33 +38,44 @@ export default function DailyResultScreen() {
   const isQuiz = state.mode === "daily-quiz";
   const dateStr = new Date().toISOString().slice(0, 10);
 
+  const sportLabel = state.sport.charAt(0).toUpperCase() + state.sport.slice(1);
   const shareText = isQuiz
-    ? `VerveQ Daily ${state.sport.charAt(0).toUpperCase() + state.sport.slice(1)} Quiz [${dateStr}] | Score: ${state.score}/1000 | ${state.shareString || ""}`
-    : `VerveQ Daily ${state.sport.charAt(0).toUpperCase() + state.sport.slice(1)} Survival [${dateStr}] | Score: ${state.score} | Rounds: ${state.total}`;
+    ? t("dailyResult.shareQuiz", {
+        sport: sportLabel,
+        date: dateStr,
+        score: state.score,
+        emoji: state.shareString || "",
+      })
+    : t("dailyResult.shareSurvival", {
+        sport: sportLabel,
+        date: dateStr,
+        score: state.score,
+        rounds: state.total,
+      });
 
   const handleCopy = async () => {
     try {
       await navigator.clipboard.writeText(shareText);
       setCopied(true);
-      toast.success("Copied to clipboard!");
+      toast.success(t("dailyResult.copiedToClipboard"));
       setTimeout(() => setCopied(false), 2000);
     } catch {
-      toast.error("Failed to copy");
+      toast.error(t("dailyResult.copyFailed"));
     }
   };
 
   const stats = isQuiz
     ? [
-        { label: "Correct", value: `${state.correctCount}/${state.total}`, color: "success" as const },
-        { label: "Score", value: `${state.score}`, color: "primary" as const },
-        { label: "Topic", value: state.sport, color: "blue" as const },
-        { label: "Mode", value: "Daily Quiz", color: "pink" as const },
+        { label: t("dailyResult.statCorrect"), value: `${state.correctCount}/${state.total}`, color: "success" as const },
+        { label: t("dailyResult.statScore"), value: `${state.score}`, color: "primary" as const },
+        { label: t("dailyResult.statTopic"), value: state.sport, color: "blue" as const },
+        { label: t("dailyResult.statMode"), value: t("dailyResult.modeDailyQuiz"), color: "pink" as const },
       ]
     : [
-        { label: "Score", value: `${state.score}`, color: "primary" as const },
-        { label: "Rounds", value: `${state.total}`, color: "success" as const },
-        { label: "Topic", value: state.sport, color: "blue" as const },
-        { label: "Mode", value: "Daily Survival", color: "pink" as const },
+        { label: t("dailyResult.statScore"), value: `${state.score}`, color: "primary" as const },
+        { label: t("dailyResult.statRounds"), value: `${state.total}`, color: "success" as const },
+        { label: t("dailyResult.statTopic"), value: state.sport, color: "blue" as const },
+        { label: t("dailyResult.statMode"), value: t("dailyResult.modeDailySurvival"), color: "pink" as const },
       ];
 
   return (
@@ -73,7 +86,7 @@ export default function DailyResultScreen() {
           {isQuiz ? `${state.correctCount}/${state.total}` : state.score}
         </p>
         <p className="font-heading text-sm text-muted-foreground mt-2">
-          Daily Challenge Complete
+          {t("dailyResult.complete")}
         </p>
       </NeoCard>
 
@@ -92,9 +105,9 @@ export default function DailyResultScreen() {
             onClick={handleCopy}
           >
             {copied ? (
-              <><Check size={14} className="mr-1" /> Copied</>
+              <><Check size={14} className="mr-1" /> {t("dailyResult.copied")}</>
             ) : (
-              <><Copy size={14} className="mr-1" /> Share Result</>
+              <><Copy size={14} className="mr-1" /> {t("dailyResult.shareResult")}</>
             )}
           </NeoButton>
         </NeoCard>
@@ -114,7 +127,7 @@ export default function DailyResultScreen() {
       {isQuiz && state.scoreBreakdown && state.scoreBreakdown.length > 0 && (
         <NeoCard className="w-full mb-8 py-4">
           <p className="font-heading font-bold text-sm text-center mb-3">
-            Score Breakdown
+            {t("dailyResult.scoreBreakdown")}
           </p>
           <div className="grid grid-cols-5 gap-2">
             {state.scoreBreakdown.map((item, index) => (
@@ -124,7 +137,7 @@ export default function DailyResultScreen() {
                   item.correct ? "bg-success text-success-foreground" : "bg-muted"
                 }`}
               >
-                <p className="font-mono font-bold text-xs">Q{index + 1}</p>
+                <p className="font-mono font-bold text-xs">{t("dailyResult.questionShort", { num: index + 1 })}</p>
                 <p className="font-mono font-bold text-sm">{item.score}</p>
                 <p className="text-[9px] opacity-80">
                   {item.timeTaken.toFixed(1)}s
@@ -141,7 +154,7 @@ export default function DailyResultScreen() {
           size="full"
           onClick={() => navigate("/home")}
         >
-          Back to Home
+          {t("dailyResult.backToHome")}
         </NeoButton>
       </div>
     </div>

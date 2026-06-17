@@ -6,6 +6,7 @@
  * `/verve-grid` route is unaffected.
  */
 import { useNavigate, useSearchParams } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { NeoCard } from "@/components/neo/NeoCard";
 import { NeoButton } from "@/components/neo/NeoButton";
 import { GridStage } from "@/components/shell/play/grid/GridStage";
@@ -13,6 +14,7 @@ import { SHELL_ROUTES } from "@/lib/shellRoutes";
 import { useVerveGrid } from "@/hooks/useVerveGrid";
 
 export default function VerveGridPlayScreen() {
+  const { t } = useTranslation("play");
   const navigate = useNavigate();
   const [params] = useSearchParams();
   const sport = params.get("sport") || "football";
@@ -25,7 +27,7 @@ export default function VerveGridPlayScreen() {
   if (vm.loading) {
     return (
       <div className="min-h-[100dvh] bg-background flex items-center justify-center">
-        <p className="font-heading font-bold text-lg animate-pulse">Building your grid…</p>
+        <p className="font-heading font-bold text-lg animate-pulse">{t("verveGrid.building")}</p>
       </div>
     );
   }
@@ -45,15 +47,15 @@ export default function VerveGridPlayScreen() {
                 size="lg"
                 onClick={() => navigate(`${SHELL_ROUTES.verveGridPlay}?sport=football`)}
               >
-                Play Football
+                {t("verveGrid.playFootball")}
               </NeoButton>
             ) : (
               <NeoButton variant="primary" size="lg" onClick={vm.startGame}>
-                Try Again
+                {t("verveGrid.tryAgain")}
               </NeoButton>
             )}
             <NeoButton variant="secondary" size="lg" onClick={goCompete}>
-              Back To Compete
+              {t("verveGrid.backToCompete")}
             </NeoButton>
           </div>
         </NeoCard>
@@ -64,7 +66,7 @@ export default function VerveGridPlayScreen() {
   return (
     <GridStage
       vm={vm}
-      subtitle={`Football · ${vm.totalCells} guesses · no repeats`}
+      subtitle={t("verveGrid.subtitle", { count: vm.totalCells })}
       onExit={goCompete}
       onHome={goHome}
     />

@@ -26,6 +26,7 @@ import {
 } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useMutation, useQuery } from "convex/react";
+import { useTranslation } from "react-i18next";
 import { Check, X } from "lucide-react";
 import type { FunctionReturnType } from "convex/server";
 
@@ -61,18 +62,19 @@ type Status = Match["status"];
 const QUESTION_WINDOW_MS = 10_000;
 const COUNTDOWN_MS = 3_000;
 
-const STATUS_LABEL: Record<Status, string> = {
-  waiting: "Waiting",
-  countdown: "Starting",
-  question: "Question",
-  roundResult: "Reveal",
-  completed: "Final",
-  forfeited: "Final",
+const STATUS_LABEL_KEY: Record<Status, string> = {
+  waiting: "statusWaiting",
+  countdown: "statusStarting",
+  question: "statusQuestion",
+  roundResult: "statusReveal",
+  completed: "statusFinal",
+  forfeited: "statusFinal",
 };
 
 // ───────────────────────── matchId resolve ─────────────────────────
 
 export default function LiveMatchPlayScreen() {
+  const { t } = useTranslation("play");
   const navigate = useNavigate();
   const [params] = useSearchParams();
   const paramMatchId = params.get("matchId") as Id<"liveMatches"> | null;
@@ -87,15 +89,15 @@ export default function LiveMatchPlayScreen() {
   const matchId = paramMatchId ?? activeMatchId ?? null;
 
   if (paramMatchId === null && activeMatchId === undefined) {
-    return <CenteredMessage>Finding your match…</CenteredMessage>;
+    return <CenteredMessage>{t("liveMatch.findingMatch")}</CenteredMessage>;
   }
 
   if (!matchId) {
     return (
       <NotInMatch
-        title="No live match yet"
-        detail="Start a real-time 1v1 from the Challenge hub — once you're paired, the match plays out here."
-        actionLabel="Go to Challenge"
+        title={t("liveMatch.noMatchTitle")}
+        detail={t("liveMatch.noMatchDetail")}
+        actionLabel={t("liveMatch.goToChallenge")}
         onAction={() => navigate("/challenge")}
       />
     );
@@ -139,8 +141,12 @@ function NotInMatch({
 // ───────────────────────── room ─────────────────────────
 
 function LiveMatchPlayRoom({ matchId }: { matchId: Id<"liveMatches"> }) {
+  const { t, i18n } = useTranslation("play");
   const navigate = useNavigate();
-  const match = useQuery(api.liveMatches.getMatch, { matchId });
+  const match = useQuery(api.liveMatches.getMatch, {
+    matchId,
+    locale: i18n.resolvedLanguage ?? i18n.language,
+  });
   const heartbeatMut = useMutation(api.liveMatches.heartbeat);
   const forfeitMut = useMutation(api.liveMatches.forfeit);
   const abandonWaitingMut = useMutation(api.liveMatches.abandonWaitingMatch);
@@ -176,7 +182,7 @@ function LiveMatchPlayRoom({ matchId }: { matchId: Id<"liveMatches"> }) {
     useCallback(() => {
       if (inGame) void forfeitMut({ matchId });
     }, [matchId, inGame, forfeitMut]),
-    { warningMessage: "Don't switch tabs — you'll forfeit the match" },
+    { warningMessage: t("liveMatch.antiCheatWarning") },
   );
 
   // On completion, hand off to the existing results screen with the legacy
@@ -223,20 +229,21 @@ function LiveMatchPlayRoom({ matchId }: { matchId: Id<"liveMatches"> }) {
     });
   }, [match?.status, match, navigate]);
 
-  if (match === undefined) return <CenteredMessage>Loading match…</CenteredMessage>;
+  if (match === undefined)
+    return <CenteredMessage>{t("liveMatch.loadingMatch")}</CenteredMessage>;
   if (match === null) {
     return (
       <NotInMatch
-        title="Match unavailable"
-        detail="This Live Match is no longer active."
-        actionLabel="Go to Challenge"
+        title={t("liveMatch.unavailableTitle")}
+        detail={t("liveMatch.unavailableDetail")}
+        actionLabel={t("liveMatch.goToChallenge")}
         onAction={() => navigate("/challenge")}
       />
     );
   }
   if (match.status === "completed" || match.status === "forfeited") {
     // The effect above navigates to /results; render a placeholder meanwhile.
-    return <CenteredMessage>Wrapping up…</CenteredMessage>;
+    return <CenteredMessage>{t("liveMatch.wrappingUp")}</CenteredMessage>;
   }
 
   const phase = match.status;
@@ -353,20 +360,27 @@ function LiveMatchPlayRoom({ matchId }: { matchId: Id<"liveMatches"> }) {
       center = <LiveRevealColumn match={match} />;
       break;
     default:
-      center = <CenteredMessage>Loading…</CenteredMessage>;
+      center = <CenteredMessage>{t("liveMatch.loading")}</CenteredMessage>;
   }
 
   return (
     <PlayStage
-      title="Live Match"
-      subtitle={`${capitalize(match.sport)} · ${STATUS_LABEL[phase]}`}
+      title={t("liveMatch.stageTitle")}
+      subtitle={t("liveMatch.subtitle", {
+        sport: capitalize(match.sport),
+        status: t(`liveMatch.${STATUS_LABEL_KEY[phase]}`),
+      })}
       headerRight={
         <ExitGameButton
-          title={phase === "waiting" ? "Leave match?" : "Forfeit match?"}
+          title={
+            phase === "waiting"
+              ? t("liveMatch.leaveTitle")
+              : t("liveMatch.forfeitTitle")
+          }
           description={
             phase === "waiting"
-              ? "Leaving now abandons this match before it starts."
-              : "Quitting now counts as a forfeit and your opponent wins."
+              ? t("liveMatch.leaveDescription")
+              : t("liveMatch.forfeitDescription")
           }
           destination="/v2"
           onConfirm={handleExit}
@@ -394,6 +408,7 @@ function LiveLobbyColumn({
   match: Match;
   matchId: Id<"liveMatches">;
 }) {
+  const { t } = useTranslation("play");
   const setReadyMut = useMutation(api.liveMatches.setReady);
   const [submitting, setSubmitting] = useState(false);
   const me = match.isPlayer1 ? match.player1 : match.player2;
@@ -415,11 +430,16 @@ function LiveLobbyColumn({
     <div className="space-y-5">
       <NeoCard shadow="lg" className="text-center py-6">
         <p className="text-[10px] font-heading uppercase tracking-wide text-muted-foreground mb-4">
-          {capitalize(match.sport)} · {match.totalQuestions} questions
+          {t("liveMatch.lobbyMeta", {
+            sport: capitalize(match.sport),
+            count: match.totalQuestions,
+          })}
         </p>
         <div className="flex items-center justify-center gap-6">
           <PlayerStack name={me.username} ready={myReady} youLabel />
-          <p className="font-heading font-bold text-2xl text-muted-foreground">VS</p>
+          <p className="font-heading font-bold text-2xl text-muted-foreground">
+            {t("liveMatch.vs")}
+          </p>
           <PlayerStack name={opponent.username} ready={oppReady} />
         </div>
       </NeoCard>
@@ -431,11 +451,11 @@ function LiveLobbyColumn({
           onClick={() => void handleReady()}
           disabled={submitting}
         >
-          I'm Ready!
+          {t("liveMatch.imReady")}
         </NeoButton>
       ) : (
         <p className="text-center font-heading font-bold text-sm animate-pulse">
-          Waiting for {opponent.username}…
+          {t("liveMatch.waitingForOpponent", { name: opponent.username })}
         </p>
       )}
     </div>
@@ -451,19 +471,20 @@ function PlayerStack({
   ready: boolean;
   youLabel?: boolean;
 }) {
+  const { t } = useTranslation("play");
   return (
     <div className="text-center">
       <NeoAvatar name={name} size="lg" />
       <p className="font-heading font-bold text-sm mt-2 truncate max-w-[100px]">
         {name}
-        {youLabel && " (you)"}
+        {youLabel && t("liveMatch.youSuffix")}
       </p>
       <p
         className={`text-xs font-heading font-bold uppercase mt-1 ${
           ready ? "text-success" : "text-muted-foreground"
         }`}
       >
-        {ready ? "Ready!" : "Not ready"}
+        {ready ? t("liveMatch.ready") : t("liveMatch.notReady")}
       </p>
     </div>
   );
@@ -472,6 +493,7 @@ function PlayerStack({
 // ───────────────────────── COUNTDOWN ─────────────────────────
 
 function LiveCountdownColumn({ match, tick }: { match: Match; tick: number }) {
+  const { t } = useTranslation("play");
   const endsAt = match.countdownStartedAt
     ? match.countdownStartedAt + COUNTDOWN_MS
     : undefined;
@@ -479,9 +501,11 @@ function LiveCountdownColumn({ match, tick }: { match: Match; tick: number }) {
   return (
     <NeoCard shadow="lg" className="text-center py-10">
       <p className="text-[10px] font-heading uppercase tracking-wide text-muted-foreground mb-2">
-        Get ready
+        {t("liveMatch.getReady")}
       </p>
-      <p className="font-mono font-bold text-6xl">{remaining || "Go!"}</p>
+      <p className="font-mono font-bold text-6xl">
+        {remaining || t("liveMatch.go")}
+      </p>
     </NeoCard>
   );
 }
@@ -495,9 +519,15 @@ function LiveQuestionColumn({
   match: Match;
   matchId: Id<"liveMatches">;
 }) {
+  const { t } = useTranslation("play");
   const submitAnswer = useMutation(api.liveMatches.submitAnswer);
   const question = match.questions[match.currentQuestion] as
-    | { question: string; options: string[]; imageUrl?: string | null }
+    | {
+        question: string;
+        options: string[];
+        optionValues: string[];
+        imageUrl?: string | null;
+      }
     | null
     | undefined;
 
@@ -523,7 +553,9 @@ function LiveQuestionColumn({
   if (!question) {
     return (
       <NeoCard className="text-center py-8">
-        <p className="font-heading font-bold animate-pulse">Loading question…</p>
+        <p className="font-heading font-bold animate-pulse">
+          {t("liveMatch.loadingQuestion")}
+        </p>
       </NeoCard>
     );
   }
@@ -531,7 +563,7 @@ function LiveQuestionColumn({
   const locked = !!myAnswer || pending !== null;
   const myPickIdx =
     myAnswer?.answer != null
-      ? question.options.indexOf(myAnswer.answer)
+      ? question.optionValues.indexOf(myAnswer.answer)
       : pending;
   const myCorrect = myAnswer?.correct ?? null;
   const letters = ["A", "B", "C", "D"];
@@ -540,7 +572,7 @@ function LiveQuestionColumn({
     if (locked) return;
     setPending(idx);
     try {
-      const res = await submitAnswer({ matchId, answer: question.options[idx] });
+      const res = await submitAnswer({ matchId, answer: question.optionValues[idx] });
       if (!res.correct) {
         setShaking(true);
         window.setTimeout(() => setShaking(false), 500);
@@ -606,7 +638,7 @@ function LiveQuestionColumn({
       </div>
 
       <p className="text-center text-[11px] text-muted-foreground">
-        {locked ? "Locked in — waiting for the round to close…" : "Tap an option to lock it in."}
+        {locked ? t("liveMatch.lockedHint") : t("liveMatch.tapToLockHint")}
       </p>
 
       {zoomImage && (
@@ -623,8 +655,14 @@ function LiveQuestionColumn({
 // ───────────────────────── REVEAL (answering column only) ─────────────────────────
 
 function LiveRevealColumn({ match }: { match: Match }) {
+  const { t } = useTranslation("play");
   const question = match.questions[match.currentQuestion] as
-    | { question: string; options: string[]; imageUrl?: string | null }
+    | {
+        question: string;
+        options: string[];
+        optionValues: string[];
+        imageUrl?: string | null;
+      }
     | null
     | undefined;
   const myAnswers = match.myAnswers as Array<
@@ -635,10 +673,13 @@ function LiveRevealColumn({ match }: { match: Match }) {
   const myRound = match.isPlayer1 ? round?.player1 : round?.player2;
 
   const verdict = !myRound
-    ? { label: "Missed", color: "muted" as const }
+    ? { label: t("liveMatch.verdictMissed"), color: "muted" as const }
     : myRound.correct
-      ? { label: `+${myRound.score}`, color: "success" as const }
-      : { label: "Wrong", color: "destructive" as const };
+      ? {
+          label: t("liveMatch.verdictPoints", { score: myRound.score }),
+          color: "success" as const,
+        }
+      : { label: t("liveMatch.verdictWrong"), color: "destructive" as const };
 
   return (
     <div className="space-y-4">
@@ -658,7 +699,9 @@ function LiveRevealColumn({ match }: { match: Match }) {
       <NeoCard color={verdict.color === "success" ? "success" : "default"}>
         <div className="flex items-center justify-between">
           <div className="min-w-0">
-            <p className="text-[10px] font-heading uppercase">Your answer</p>
+            <p className="text-[10px] font-heading uppercase">
+              {t("liveMatch.yourAnswer")}
+            </p>
             <p className="font-heading font-bold text-sm truncate">
               {myAnswer?.answer ?? "—"}
             </p>
@@ -669,7 +712,9 @@ function LiveRevealColumn({ match }: { match: Match }) {
         </div>
       </NeoCard>
 
-      <p className="text-center text-[11px] text-muted-foreground">Next up in a moment…</p>
+      <p className="text-center text-[11px] text-muted-foreground">
+        {t("liveMatch.nextUp")}
+      </p>
     </div>
   );
 }

@@ -8,6 +8,11 @@
     "numeric": "Numérico",
     "order": "Ordenar"
   },
+  "state": {
+    "learning": "Aprendiendo",
+    "learningUpper": "Aprendiendo",
+    "lockedIn": "Consolidado"
+  },
   "subjects": {
     "geography": "Geografía",
     "history": "Historia",
@@ -18,13 +23,35 @@
     "mastery": "Dominio",
     "review": "Repaso",
     "subjectsLabel": "Materias",
+    "todaysSession": "Sesión de hoy",
     "heroLine1": "Apréndelo,",
     "heroLine2": "no lo memorices a presión.",
-    "start": "Empezar →"
+    "heroBody": "Un set adaptativo y breve: opción múltiple, texto libre, números y ordenar. Si fallas, te enseñamos en lugar de solo marcarlo mal.",
+    "metaLine": "Set adaptativo · ≈5 min",
+    "start": "Empezar →",
+    "resumeTitle": "Retomando donde lo dejaste",
+    "allSubjects": "Todas las materias →",
+    "dueNote": "{{count}} elementos para hoy · mantenlo vivo.",
+    "dueTitle": "Toca repasar",
+    "dueItems": "elementos listos para hoy",
+    "rotationNote": "{{count}} materias en rotación.",
+    "dueNoteEmpty": "Nada pendiente — la sesión de hoy planta nuevas semillas.",
+    "resumeEmpty": "Aún no hay nada en curso — empieza la sesión de hoy."
   },
   "run": {
+    "loading": "Cargando sesión…",
+    "progress": "Progreso",
+    "questionOf": "Pregunta {{current}} de {{total}}",
+    "promiseTitle": "La promesa de Aprender",
+    "promiseBody": "Cada fallo se gana una explicación, no una ✕ roja. Programamos un repaso para que de verdad se quede.",
+    "leave": "← Salir de la sesión",
     "check": "Comprobar respuesta",
     "checking": "Comprobando…",
+    "textPlaceholder": "Escribe tu respuesta…",
+    "accepted": "Aceptada:",
+    "correctOrder": "Orden correcto:",
+    "moveUp": "Subir",
+    "moveDown": "Bajar",
     "errorTitle": "No se pudo iniciar tu sesión",
     "errorBody": "Algo falló al cargar las preguntas de hoy. Comprueba tu conexión e inténtalo de nuevo.",
     "retry": "Reintentar",
@@ -36,8 +63,62 @@
     "showWhy": "Muéstrame por qué →"
   },
   "reveal": {
-    "ideaTitle": "La idea para quedarte",
+    "gotIt": "✓ Acertado",
+    "notYet": "↻ Aún no",
+    "pending": "Corrección pendiente",
+    "whyEyebrow": "El porqué — no el qué",
+    "ideaTitle": "Esta es la idea que te quedas",
+    "stickQuestion": "¿Qué tan bien se te quedó?",
+    "rating": {
+      "again": "Otra vez",
+      "hard": "Difícil",
+      "good": "Bien",
+      "easy": "Fácil"
+    },
+    "feltQuestion": "¿Te pareció aprender o un examen?",
+    "feltLearn": "Aprender",
+    "feltTest": "Un examen",
+    "feltLearnNote": "Bien — ese es el objetivo. Mantendremos este ritmo.",
+    "feltTestNote": "Anotado — añadiremos más apoyo didáctico antes de la próxima parecida.",
     "next": "Siguiente pregunta →",
-    "finish": "Terminar la sesión →"
+    "finish": "Terminar la sesión →",
+    "scheduleNote": "Programamos un repaso para que se quede."
+  },
+  "summary": {
+    "title": "Sesión completada",
+    "body": "Has resuelto {{count}} preguntas. Lo importante no era la puntuación, sino lo que pasó a tu memoria a largo plazo.",
+    "firstTry": "Al primer intento",
+    "lockedIn": "Consolidadas",
+    "scheduled": "Programadas",
+    "seeMastery": "Ver dominio",
+    "reviewPlan": "Plan de repaso →"
+  },
+  "review": {
+    "eyebrow": "Aprender · repaso espaciado",
+    "title": "Tu calendario de memoria",
+    "reviewDue": "Toca repasar →",
+    "resting": "En reposo",
+    "active": "Activo",
+    "lockedIn": "Consolidado",
+    "stillLearning": "Aún aprendiendo",
+    "lockedBlurb": "Espaciándose — los recuerdas de forma fiable. El próximo aviso es dentro de días, no ahora.",
+    "learningBlurb": "Volviendo pronto mientras la memoria aún se forma. Intervalos cortos a propósito.",
+    "reviewIn": "Repaso en {{days}}d",
+    "dueNow": "Toca ahora",
+    "dueIn": "Toca en {{hours}}h",
+    "masteryPct": "{{pct}}% de dominio",
+    "inQueue": "{{count}} elementos en cola",
+    "notScheduled": "Aún no programado"
+  },
+  "mastery": {
+    "eyebrow": "Aprender · dominio",
+    "title": "Dónde estás",
+    "reviewSchedule": "Calendario de repaso →",
+    "overall": "Dominio general",
+    "lockedIn": "Consolidado",
+    "learning": "Aprendiendo",
+    "due": "Pendiente",
+    "startSession": "Empezar sesión →",
+    "dueLine": "{{count}} elementos pendientes"
   }
 }

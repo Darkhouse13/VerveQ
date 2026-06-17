@@ -10,6 +10,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useMutation } from "convex/react";
+import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import { friendlyError } from "@/lib/errors";
 import { api } from "../../convex/_generated/api";
@@ -29,6 +30,9 @@ function parseDifficulty(value: string | null): QuizDifficulty {
 interface QuestionData {
   question: string;
   options: string[];
+  // Canonical English options in the same order — submitted to the server so
+  // grading stays canonical even when `options` are localized labels.
+  optionValues: string[];
   difficulty: string;
   checksum: string;
   category: string;
@@ -55,6 +59,7 @@ export interface SoloQuizState {
 }
 
 export function useSoloQuiz(): SoloQuizState {
+  const { t, i18n } = useTranslation("play");
   const navigate = useNavigate();
   const [params] = useSearchParams();
   const sport = params.get("sport") || "football";
@@ -98,7 +103,10 @@ export function useSoloQuiz(): SoloQuizState {
     async (sid: Id<"quizSessions">) => {
       setLoading(true);
       try {
-        const q = await getQuestionMut({ sessionId: sid });
+        const q = await getQuestionMut({
+          sessionId: sid,
+          locale: i18n.resolvedLanguage ?? i18n.language,
+        });
         setQuestion(q);
         setRevealedAnswer(null);
         setSelected(null);
@@ -106,12 +114,12 @@ export function useSoloQuiz(): SoloQuizState {
         setCheckResult(null);
         setTimer(0);
       } catch {
-        toast.error("Failed to load question");
+        toast.error(t("quiz.loadQuestionFailed"));
       } finally {
         setLoading(false);
       }
     },
-    [getQuestionMut],
+    [getQuestionMut, t, i18n],
   );
 
   useEffect(() => {
@@ -125,7 +133,7 @@ export function useSoloQuiz(): SoloQuizState {
         setSessionId(sid);
         await fetchQuestion(sid);
       } catch {
-        toast.error("Failed to start quiz session");
+        toast.error(t("quiz.startSessionFailed"));
       }
     })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -142,12 +150,12 @@ export function useSoloQuiz(): SoloQuizState {
       if (!sessionId || revealed) return;
       penalizeTabSwitchMut({ sessionId }).then((res) => {
         if (res.penalized) {
-          toast.error("Quiz ended — you switched tabs");
+          toast.error(t("quiz.tabSwitchEnded"));
           navigate("/home", { replace: true });
         }
       });
-    }, [sessionId, revealed, penalizeTabSwitchMut, navigate]),
-    { warningMessage: "Don't switch tabs — your quiz will end" },
+    }, [sessionId, revealed, penalizeTabSwitchMut, navigate, t]),
+    { warningMessage: t("quiz.tabSwitchWarning") },
   );
 
   const handleCheck = useCallback(
@@ -166,7 +174,8 @@ export function useSoloQuiz(): SoloQuizState {
       try {
         const res = await checkAnswerMut({
           sessionId,
-          answer: question.options[optionIndex],
+          // Canonical English value — grading compares against correctAnswer.
+          answer: question.optionValues[optionIndex],
         });
         setRevealedAnswer(res.correctAnswer);
         setRevealed(true);
@@ -179,13 +188,13 @@ export function useSoloQuiz(): SoloQuizState {
           { correct: res.correct, timeTaken: res.timeTaken, score: res.score },
         ]);
       } catch (error) {
-        toast.error(friendlyError(error, "Failed to check answer"));
+        toast.error(friendlyError(error, t("quiz.checkFailedToast")));
       } finally {
         answerSubmitInFlight.current = false;
         setChecking(false);
       }
     },
-    [checkAnswerMut, checking, question, revealed, sessionId],
+    [checkAnswerMut, checking, question, revealed, sessionId, t],
   );
 
   const onOption = useCallback(
@@ -278,7 +287,9 @@ export function useSoloQuiz(): SoloQuizState {
   }, [advanceAfterReveal, revealed]);
 
   const correctIdx =
-    question && revealedAnswer ? question.options.indexOf(revealedAnswer) : -1;
+    question && revealedAnswer
+      ? question.optionValues.indexOf(revealedAnswer)
+      : -1;
 
   return {
     loading,
@@ -293,7 +304,7 @@ export function useSoloQuiz(): SoloQuizState {
     correctIdx,
     checkResult,
     isCameFirst,
-    badgeLabel: isCameFirst ? "Which Came First" : difficulty,
+    badgeLabel: isCameFirst ? t("quiz.cameFirstBadge") : difficulty,
     zoomImage,
     setZoomImage,
     onOption,

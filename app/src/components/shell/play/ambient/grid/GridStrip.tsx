@@ -4,6 +4,7 @@
  * Three compact meta stats: guesses left, cells remaining, points. No board
  * content. Content-blind by contract (answer-leak guard).
  */
+import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
 import type { GridRunStats } from "./types";
 
@@ -36,11 +37,12 @@ function Cell({
 }
 
 export function GridStrip({ stats }: { stats: GridRunStats }) {
+  const { t } = useTranslation("play");
   return (
     <div className="md:hidden flex gap-2">
-      <Cell label="Guesses" value={stats.guessesLeft} tone={stats.guessesLeft <= 2 ? "alert" : "default"} />
-      <Cell label="Cells" value={stats.cellsRemaining} />
-      <Cell label="Points" value={stats.points} tone="highlight" />
+      <Cell label={t("ambient.guesses")} value={stats.guessesLeft} tone={stats.guessesLeft <= 2 ? "alert" : "default"} />
+      <Cell label={t("ambient.cells")} value={stats.cellsRemaining} />
+      <Cell label={t("ambient.points")} value={stats.points} tone="highlight" />
     </div>
   );
 }

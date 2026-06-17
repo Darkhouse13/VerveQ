@@ -31,6 +31,7 @@ describe("challenge head-to-head history and rematch contract", () => {
     const liveMatch = readFileSync("src/pages/LiveMatchScreen.tsx", "utf8");
     const resultScreen = readFileSync("src/pages/ResultScreen.tsx", "utf8");
     const types = readFileSync("src/types/api.ts", "utf8");
+    const screens = JSON.parse(readFileSync("src/i18n/locales/en/screens.json", "utf8"));
 
     expect(types).toContain("opponentId?: string");
     expect(types).toContain("versusScore");
@@ -38,7 +39,10 @@ describe("challenge head-to-head history and rematch contract", () => {
     expect(liveMatch).toContain("versusScore: match.versusSummary");
     expect(resultScreen).toContain("challengeScoreline");
     expect(resultScreen).toContain('state.mode === "challenge" ? challengeScoreline');
-    expect(resultScreen).toContain("Series");
+    // i18n: the rivalry "Series" card label moved to a locale key; verify the
+    // key wiring and that the English copy is intact.
+    expect(resultScreen).toContain("result.seriesCardLabel");
+    expect(screens.result.seriesCardLabel).toBe("Series");
   });
 
   it("keeps legacy rematch backend code dormant instead of wiring it to Live Match results", () => {

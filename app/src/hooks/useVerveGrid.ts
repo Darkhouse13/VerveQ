@@ -17,6 +17,7 @@
  */
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useMutation, useQuery } from "convex/react";
+import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import { api } from "../../convex/_generated/api";
 import type { Id } from "../../convex/_generated/dataModel";
@@ -138,6 +139,7 @@ export interface VerveGridViewModel {
 }
 
 export function useVerveGrid(sport: string): VerveGridViewModel {
+  const { t } = useTranslation("play");
   const isSupportedSport = SUPPORTED_VERVE_GRID_SPORTS.has(sport);
 
   const startSessionMut = useMutation(api.verveGrid.startSession);
@@ -181,9 +183,8 @@ export function useVerveGrid(sport: string): VerveGridViewModel {
     if (!isSupportedSport) {
       setStartupState({
         kind: "unsupported",
-        title: "Football Only For Now",
-        message:
-          "VerveGrid is currently available for football only. Pick football to load a curated grid.",
+        title: t("verveGrid.unsupportedTitle"),
+        message: t("verveGrid.unsupportedMessage"),
       });
       setLoading(false);
       return;
@@ -217,14 +218,13 @@ export function useVerveGrid(sport: string): VerveGridViewModel {
       setCells([]);
       setStartupState({
         kind: "start_failed",
-        title: "Couldn't Start A Grid",
-        message:
-          "VerveGrid couldn't load right now. Try again, or head back to Compete.",
+        title: t("verveGrid.startFailedTitle"),
+        message: t("verveGrid.startFailedMessage"),
       });
     } finally {
       setLoading(false);
     }
-  }, [isSupportedSport, startSessionMut, sport]);
+  }, [isSupportedSport, startSessionMut, sport, t]);
 
   useEffect(() => {
     startGame();
@@ -238,11 +238,11 @@ export function useVerveGrid(sport: string): VerveGridViewModel {
           setGameOver(true);
           setAllSolved(false);
           setCorrectCount(res.correctCount);
-          toast.error("Grid ended — you switched tabs");
+          toast.error(t("verveGrid.tabSwitchEnded"));
         }
       });
-    }, [sessionId, gameOver, loading, startupState, penalizeTabSwitchMut]),
-    { warningMessage: "Don't switch tabs — your grid will end" },
+    }, [sessionId, gameOver, loading, startupState, penalizeTabSwitchMut, t]),
+    { warningMessage: t("verveGrid.tabSwitchWarning") },
   );
 
   const openCell = useCallback(
@@ -281,7 +281,7 @@ export function useVerveGrid(sport: string): VerveGridViewModel {
         if (result.alreadyUsed) {
           setShakeCellIndex(cellIndex);
           setTimeout(() => setShakeCellIndex(null), 600);
-          toast.warning("Already used in another cell");
+          toast.warning(t("verveGrid.alreadyUsed"));
           // Re-open so the player can pick a different name for this cell.
           setSearchOpen(true);
           return;
@@ -304,7 +304,7 @@ export function useVerveGrid(sport: string): VerveGridViewModel {
         if (!result.correct) {
           setShakeCellIndex(cellIndex);
           setTimeout(() => setShakeCellIndex(null), 600);
-          toast.error("Not a match — guess locked");
+          toast.error(t("verveGrid.notAMatch"));
         }
 
         if ("gameOver" in result && result.gameOver) {
@@ -314,12 +314,12 @@ export function useVerveGrid(sport: string): VerveGridViewModel {
         setActiveCellIndex(null);
       } catch (err) {
         console.error("Guess error:", err);
-        toast.error("Couldn't submit that pick — try again");
+        toast.error(t("verveGrid.submitFailed"));
       } finally {
         setSubmitting(false);
       }
     },
-    [sessionId, submitting, submitGuessMut],
+    [sessionId, submitting, submitGuessMut, t],
   );
 
   const filledCount = useMemo(

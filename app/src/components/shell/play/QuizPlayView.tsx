@@ -9,6 +9,7 @@
  * Presentation only: no grading, gating, or session logic lives here. The driving
  * hook owns all of that and the `onExit` behaviour (e.g. Daily forfeits on quit).
  */
+import { useTranslation } from "react-i18next";
 import { Check, X } from "lucide-react";
 import { NeoCard } from "@/components/neo/NeoCard";
 import { NeoBadge } from "@/components/neo/NeoBadge";
@@ -31,7 +32,9 @@ interface QuizPlayViewProps {
   loadingLabel?: string;
 }
 
-export function QuizPlayView({ q, title, onExit, exitLabel = "Quit", loadingLabel }: QuizPlayViewProps) {
+export function QuizPlayView({ q, title, onExit, exitLabel, loadingLabel }: QuizPlayViewProps) {
+  const { t } = useTranslation("play");
+  const resolvedExitLabel = exitLabel ?? t("quizView.quit");
   const optionStyle = (idx: number) => {
     if (!q.revealed)
       return q.selected === idx
@@ -50,7 +53,7 @@ export function QuizPlayView({ q, title, onExit, exitLabel = "Quit", loadingLabe
       <PlayStage title={title} onExit={onExit}>
         <div className="flex items-center justify-center py-16">
           <p className="font-heading font-bold text-lg animate-pulse">
-            {loadingLabel ?? (q.isCameFirst ? "Loading Which Came First…" : "Loading quiz…")}
+            {loadingLabel ?? (q.isCameFirst ? t("quizView.loadingCameFirst") : t("quizView.loadingQuiz"))}
           </p>
         </div>
       </PlayStage>
@@ -60,9 +63,9 @@ export function QuizPlayView({ q, title, onExit, exitLabel = "Quit", loadingLabe
   return (
     <PlayStage
       title={title}
-      subtitle={`Q ${q.questionNum}/${q.maxQuestions}`}
+      subtitle={t("quizView.questionProgress", { current: q.questionNum, total: q.maxQuestions })}
       onExit={onExit}
-      exitLabel={exitLabel}
+      exitLabel={resolvedExitLabel}
       strip={<AmbientStrip metrics={metrics} progress={progress} />}
       right={
         <>
@@ -83,7 +86,7 @@ export function QuizPlayView({ q, title, onExit, exitLabel = "Quit", loadingLabe
             <div className="mb-3">
               <QuestionImage
                 imageUrl={q.question.imageUrl}
-                alt={`Image for: ${q.question.question}`}
+                alt={t("quizView.imageAlt", { question: q.question.question })}
                 onZoom={() => q.setZoomImage(q.question!.imageUrl!)}
               />
             </div>

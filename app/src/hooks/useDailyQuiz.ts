@@ -15,6 +15,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useMutation, useQuery } from "convex/react";
+import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import { friendlyError } from "@/lib/errors";
 import { api } from "../../convex/_generated/api";
@@ -29,6 +30,8 @@ const AUTO_ADVANCE_DELAY_MS = 2000;
 interface DailyQuestionData {
   question: string;
   options: string[];
+  // Canonical English options (same order) — submitted so grading stays canonical.
+  optionValues: string[];
   checksum: string;
   category: string;
   imageUrl?: string | null;
@@ -41,6 +44,7 @@ export interface DailyQuizState extends SoloQuizState {
 }
 
 export function useDailyQuiz(): DailyQuizState {
+  const { t, i18n } = useTranslation("play");
   const navigate = useNavigate();
   const [params] = useSearchParams();
   const sport = params.get("sport") || "football";
@@ -80,7 +84,11 @@ export function useDailyQuiz(): DailyQuizState {
   const dailyQuestion = useQuery(
     api.dailyChallenge.getQuestion,
     attemptId && !attemptFinished && questionNum < MAX_QUESTIONS
-      ? { attemptId, questionIndex: questionNum }
+      ? {
+          attemptId,
+          questionIndex: questionNum,
+          locale: i18n.resolvedLanguage ?? i18n.language,
+        }
       : "skip",
   );
   const submitAnswerMut = useMutation(api.dailyChallenge.submitAnswer);
@@ -93,7 +101,7 @@ export function useDailyQuiz(): DailyQuizState {
     if (attemptStatus) {
       const hasLocalAttempt = localAttemptSport.current === sport || attemptId !== null;
       if (startAttemptInFlight.current || hasLocalAttempt) return;
-      toast.error("You've already played today's challenge!");
+      toast.error(t("dailyQuiz.alreadyPlayed"));
       navigate(SHELL_ROUTES.home, { replace: true });
       return;
     }
@@ -113,10 +121,10 @@ export function useDailyQuiz(): DailyQuizState {
       } catch (e) {
         const msg = e instanceof Error ? e.message : "Failed";
         if (msg.includes("Already attempted")) {
-          toast.error("You've already played today's challenge!");
+          toast.error(t("dailyQuiz.alreadyPlayed"));
           navigate(SHELL_ROUTES.home, { replace: true });
         } else {
-          toast.error(friendlyError(e, "Couldn’t start today’s challenge."));
+          toast.error(friendlyError(e, t("dailyQuiz.startFailedToast")));
           navigate(-1);
         }
         localAttemptSport.current = null;
@@ -124,7 +132,7 @@ export function useDailyQuiz(): DailyQuizState {
         startAttemptInFlight.current = false;
       }
     })();
-  }, [attemptId, attemptStatus, getOrCreateChallengeMut, navigate, sport, startAttemptMut]);
+  }, [attemptId, attemptStatus, getOrCreateChallengeMut, navigate, sport, startAttemptMut, t]);
 
   useEffect(() => {
     if (dailyQuestion && !forfeited) {
@@ -157,12 +165,12 @@ export function useDailyQuiz(): DailyQuizState {
       if (attemptId && !forfeited) {
         setForfeited(true);
         forfeitMut({ attemptId }).then(() => {
-          toast.error("Challenge forfeited — you switched tabs!");
+          toast.error(t("dailyQuiz.forfeitedTabSwitch"));
           navigate(SHELL_ROUTES.home, { replace: true });
         });
       }
-    }, [attemptId, forfeited, forfeitMut, navigate]),
-    { warningMessage: "Don't switch tabs — daily challenge will be forfeited" },
+    }, [attemptId, forfeited, forfeitMut, navigate, t]),
+    { warningMessage: t("dailyQuiz.tabSwitchWarning") },
   );
 
   const handleCheck = useCallback(
@@ -181,7 +189,8 @@ export function useDailyQuiz(): DailyQuizState {
       try {
         const res = await submitAnswerMut({
           attemptId,
-          answer: question.options[optionIndex],
+          // Canonical English value — grading compares against correctAnswer.
+          answer: question.optionValues[optionIndex],
           questionIndex: questionNum,
         });
         setRevealedAnswer(res.correctAnswer);
@@ -198,13 +207,13 @@ export function useDailyQuiz(): DailyQuizState {
           { correct: res.correct, timeTaken: res.timeTaken, score: res.score },
         ]);
       } catch (error) {
-        toast.error(friendlyError(error, "Failed to check answer"));
+        toast.error(friendlyError(error, t("dailyQuiz.checkFailedToast")));
       } finally {
         answerSubmitInFlight.current = false;
         setChecking(false);
       }
     },
-    [attemptId, checking, question, questionNum, revealed, submitAnswerMut],
+    [attemptId, checking, question, questionNum, revealed, submitAnswerMut, t],
   );
 
   const onOption = useCallback(
@@ -293,7 +302,9 @@ export function useDailyQuiz(): DailyQuizState {
   }, [attemptId, forfeited, forfeitMut, navigate]);
 
   const correctIdx =
-    question && revealedAnswer ? question.options.indexOf(revealedAnswer) : -1;
+    question && revealedAnswer
+      ? question.optionValues.indexOf(revealedAnswer)
+      : -1;
 
   return {
     loading: loading || !question,
@@ -301,6 +312,7 @@ export function useDailyQuiz(): DailyQuizState {
       ? {
           question: question.question,
           options: question.options,
+          optionValues: question.optionValues,
           difficulty: "",
           checksum: question.checksum,
           category: question.category,

@@ -1,5 +1,6 @@
 import { useEffect, useCallback } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { useQuery, useMutation } from "convex/react";
 import { api } from "../../convex/_generated/api";
 import { NeoCard } from "@/components/neo/NeoCard";
@@ -9,6 +10,7 @@ import { ExitGameButton } from "@/components/ExitGameButton";
 import type { Id } from "../../convex/_generated/dataModel";
 
 export default function WaitingRoomScreen() {
+  const { t } = useTranslation("screens");
   const navigate = useNavigate();
   const [params] = useSearchParams();
   const matchId = params.get("matchId") as Id<"liveMatches"> | null;
@@ -73,7 +75,7 @@ export default function WaitingRoomScreen() {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <p className="font-heading font-bold text-lg animate-pulse">
-          Loading match...
+          {t("waitingRoom.loading")}
         </p>
       </div>
     );
@@ -83,12 +85,12 @@ export default function WaitingRoomScreen() {
     return (
       <div className="min-h-screen bg-background px-5 py-8 flex items-center justify-center">
         <NeoCard shadow="lg" className="w-full text-center py-6">
-          <p className="font-heading font-bold text-lg">Match unavailable</p>
+          <p className="font-heading font-bold text-lg">{t("waitingRoom.unavailableTitle")}</p>
           <p className="text-sm text-muted-foreground mt-2 mb-4">
-            This legacy Live Match is no longer active.
+            {t("waitingRoom.unavailableDesc")}
           </p>
           <NeoButton variant="primary" size="full" onClick={() => navigate("/home")}>
-            Back to Home
+            {t("waitingRoom.backToHome")}
           </NeoButton>
         </NeoCard>
       </div>
@@ -104,12 +106,12 @@ export default function WaitingRoomScreen() {
     <div className="min-h-screen bg-background px-5 py-8 flex flex-col items-center justify-center">
       <div className="w-full mb-6">
         <ExitGameButton
-          title="Leave waiting room?"
-          description="Leaving will abandon this legacy Live Match and return you home."
+          title={t("waitingRoom.leaveTitle")}
+          description={t("waitingRoom.leaveDescription")}
           onConfirm={handleLeave}
         />
       </div>
-      <h1 className="font-heading font-bold text-2xl mb-8">Waiting Room</h1>
+      <h1 className="font-heading font-bold text-2xl mb-8">{t("waitingRoom.heading")}</h1>
 
       <div className="flex items-center gap-8 mb-8">
         {/* Me */}
@@ -117,12 +119,12 @@ export default function WaitingRoomScreen() {
           <NeoAvatar name={me.username} size="lg" />
           <p className="font-heading font-bold text-sm mt-2">{me.username}</p>
           <p className="text-xs text-muted-foreground mt-1">
-            {myReady ? "Ready!" : "Not ready"}
+            {myReady ? t("waitingRoom.ready") : t("waitingRoom.notReady")}
           </p>
         </div>
 
         <p className="font-heading font-bold text-2xl text-muted-foreground">
-          VS
+          {t("waitingRoom.vs")}
         </p>
 
         {/* Opponent */}
@@ -132,24 +134,24 @@ export default function WaitingRoomScreen() {
             {opponent.username}
           </p>
           <p className="text-xs text-muted-foreground mt-1">
-            {opponentReady ? "Ready!" : "Waiting..."}
+            {opponentReady ? t("waitingRoom.ready") : t("waitingRoom.opponentWaiting")}
           </p>
         </div>
       </div>
 
       <NeoCard className="w-full text-center py-4 mb-6">
         <p className="font-heading font-bold text-sm capitalize">
-          {match.sport} · {match.totalQuestions} Questions
+          {match.sport} · {t("waitingRoom.questionCount", { count: match.totalQuestions })}
         </p>
       </NeoCard>
 
       {!myReady ? (
         <NeoButton variant="primary" size="full" onClick={handleReady}>
-          I'm Ready!
+          {t("waitingRoom.imReady")}
         </NeoButton>
       ) : (
         <p className="font-heading font-bold text-sm animate-pulse">
-          Waiting for opponent...
+          {t("waitingRoom.waitingForOpponent")}
         </p>
       )}
     </div>

@@ -5,6 +5,7 @@
  */
 import type { ReactNode } from "react";
 import { Clock, Flame, Heart, Star, Zap } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
 import type { PlayMetrics } from "./types";
 
@@ -33,6 +34,7 @@ function Stat({
 }
 
 export function MetricsPanel({ metrics }: { metrics: PlayMetrics }) {
+  const { t } = useTranslation("play");
   // The depleting bar is for windowed (countdown) timers only; count-up timers
   // pass just `seconds` and get a plain readout, no bar.
   const hasBar = metrics.timeFraction !== undefined;
@@ -56,7 +58,7 @@ export function MetricsPanel({ metrics }: { metrics: PlayMetrics }) {
           {metrics.seconds !== undefined && (
             <p className="font-mono font-bold text-sm inline-flex items-center gap-1">
               <Clock size={12} strokeWidth={3} />
-              {metrics.seconds}s
+              {t("ambient.seconds", { seconds: metrics.seconds })}
             </p>
           )}
         </div>
@@ -64,16 +66,16 @@ export function MetricsPanel({ metrics }: { metrics: PlayMetrics }) {
 
       <div className="grid grid-cols-2 gap-1.5">
         {metrics.score !== undefined && (
-          <Stat icon={<Star size={14} strokeWidth={3} />} label="Score" value={metrics.score} tint="text-primary" />
+          <Stat icon={<Star size={14} strokeWidth={3} />} label={t("ambient.score")} value={metrics.score} tint="text-primary" />
         )}
         {metrics.lives !== undefined && (
-          <Stat icon={<Heart size={14} strokeWidth={3} />} label="Lives" value={metrics.lives} tint="text-destructive" />
+          <Stat icon={<Heart size={14} strokeWidth={3} />} label={t("ambient.lives")} value={metrics.lives} tint="text-destructive" />
         )}
         {metrics.streak !== undefined && (
-          <Stat icon={<Flame size={14} strokeWidth={3} />} label="Streak" value={metrics.streak} tint="text-hot-pink" />
+          <Stat icon={<Flame size={14} strokeWidth={3} />} label={t("ambient.streak")} value={metrics.streak} tint="text-hot-pink" />
         )}
         {metrics.combo !== undefined && (
-          <Stat icon={<Zap size={14} strokeWidth={3} />} label="Combo" value={`${metrics.combo}×`} tint="text-accent-foreground" />
+          <Stat icon={<Zap size={14} strokeWidth={3} />} label={t("ambient.combo")} value={`${metrics.combo}×`} tint="text-accent-foreground" />
         )}
       </div>
     </section>

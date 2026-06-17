@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { X } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 import { NeoButton } from "@/components/neo/NeoButton";
 import { NeoInput } from "@/components/neo/NeoInput";
@@ -12,6 +13,7 @@ export default function JoinArenaModal({
   onClose: () => void;
   onJoin: (code: string) => void;
 }) {
+  const { t } = useTranslation("screens");
   const [code, setCode] = useState("");
   const trimmed = normalizeArenaCode(code);
   const canSubmit = trimmed.length >= 4;
@@ -30,17 +32,17 @@ export default function JoinArenaModal({
             type="button"
             onClick={onClose}
             className="neo-border neo-shadow rounded-lg p-2 bg-background cursor-pointer active:neo-shadow-pressed"
-            aria-label="Close"
+            aria-label={t("joinArena.closeAria")}
           >
             <X size={18} strokeWidth={2.5} />
           </button>
-          <p className="font-heading font-bold text-sm uppercase">Join arena</p>
+          <p className="font-heading font-bold text-sm uppercase">{t("joinArena.title")}</p>
           <div className="w-9" />
         </div>
 
         <form className="px-5 py-4 flex-1 space-y-4" onSubmit={handleSubmit}>
           <p className="text-xs text-muted-foreground">
-            Enter the code your friend shared, or paste the arena link.
+            {t("joinArena.instructions")}
           </p>
 
           <NeoInput
@@ -61,7 +63,7 @@ export default function JoinArenaModal({
             size="full"
             disabled={!canSubmit}
           >
-            Join
+            {t("joinArena.joinButton")}
           </NeoButton>
         </form>
       </div>

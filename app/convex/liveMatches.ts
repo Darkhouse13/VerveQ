@@ -12,6 +12,10 @@ import {
 import { normalizeAnswer } from "./lib/scoring";
 import { orderAnswerOptions } from "./lib/answerOptions";
 import { selectQuestionsWithImageCap } from "./lib/imageQuestions";
+import {
+  composeLocalizedQuestion,
+  fetchQuestionTranslation,
+} from "./lib/contentI18n";
 
 const TOTAL_QUESTIONS = 10;
 const QUESTION_TIME_LIMIT_MS = 10_000;
@@ -44,21 +48,53 @@ type LiveAnswer = {
 };
 
 async function sanitizeQuestion(
-  ctx: { storage?: { getUrl: (id: Id<"_storage">) => Promise<string | null> } },
+  ctx: Pick<QueryCtx, "db" | "storage">,
   question: StoredLiveQuestion,
+  locale?: string,
 ) {
-  const imageUrl = question.imageId && ctx.storage
+  const imageUrl = question.imageId
     ? await ctx.storage.getUrl(question.imageId)
     : null;
+  // Display-translate, grade-canonical (docs/I18N_CONTENT_DESIGN.md): players
+  // submit canonical optionValues; options may be localized labels. The stored
+  // options are canonical English; the canonical row maps them to the aligned
+  // translation. For en / untranslated, options === optionValues (no-op).
+  const orderedValues = question.correctAnswer
+    ? orderAnswerOptions(
+        question.options,
+        question.correctAnswer,
+        question.checksum ?? question.question,
+      )
+    : question.options;
+  let displayQuestion = question.question;
+  let displayOptions = orderedValues;
+  const checksum = question.checksum;
+  if (locale && checksum) {
+    const translation = await fetchQuestionTranslation(ctx, checksum, locale);
+    if (translation) {
+      const canonical = await ctx.db
+        .query("quizQuestions")
+        .withIndex("by_checksum", (q) => q.eq("checksum", checksum))
+        .first();
+      if (canonical) {
+        const localized = composeLocalizedQuestion(
+          {
+            question: canonical.question,
+            options: canonical.options,
+            explanation: canonical.explanation,
+          },
+          orderedValues,
+          translation,
+        );
+        displayQuestion = localized.question;
+        displayOptions = localized.options;
+      }
+    }
+  }
   return {
-    question: question.question,
-    options: question.correctAnswer
-      ? orderAnswerOptions(
-          question.options,
-          question.correctAnswer,
-          question.checksum ?? question.question,
-        )
-      : question.options,
+    question: displayQuestion,
+    options: displayOptions,
+    optionValues: orderedValues,
     ...(imageUrl ? { imageUrl } : {}),
   };
 }
@@ -832,8 +868,8 @@ export const abandonWaitingMatch = mutation({
 // ── Queries ──
 
 export const getMatch = query({
-  args: { matchId: v.id("liveMatches") },
-  handler: async (ctx, { matchId }) => {
+  args: { matchId: v.id("liveMatches"), locale: v.optional(v.string()) },
+  handler: async (ctx, { matchId, locale }) => {
     const userId = await getAuthUserId(ctx);
     if (!userId) return null;
     const match = await ctx.db.get(matchId);
@@ -869,7 +905,7 @@ export const getMatch = query({
               match.status === "completed" ||
               match.status === "forfeited"))
         ) {
-          return sanitizeQuestion(ctx, q);
+          return sanitizeQuestion(ctx, q, locale);
         }
         return null;
       }),

@@ -36,8 +36,12 @@ describe("post-QA regression contracts", () => {
     expect(source).toContain("const yourTurn = list?.yourTurn ?? []");
     expect(source).toContain("const awaiting = list?.awaiting ?? []");
     expect(source).toContain("const resolved = list?.resolved ?? []");
-    expect(source).toContain('title="Your turn"');
-    expect(source).toContain("formatModeLabel(d.mode)");
+    // i18n: the "Your turn" bucket title moved to a locale key; assert the key
+    // wiring in source and that the English copy is intact.
+    const screens = JSON.parse(read("src/i18n/locales/en/screens.json"));
+    expect(source).toContain("challenge.yourTurnTitle");
+    expect(screens.challenge.yourTurnTitle).toBe("Your turn");
+    expect(source).toContain("formatModeLabel(d.mode, t)");
   });
 });
 

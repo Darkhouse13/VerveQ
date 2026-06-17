@@ -6,6 +6,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { Star, ArrowUp, ArrowDown } from "lucide-react";
 import { useEffect } from "react";
 import { useMutation } from "convex/react";
+import { useTranslation } from "react-i18next";
 import { api } from "../../convex/_generated/api";
 import { toast } from "sonner";
 import type { GameResultState } from "@/types/api";
@@ -22,34 +23,38 @@ function getGrade(accuracy: number) {
   return { letter: "F", color: "destructive" as const, stars: 0 };
 }
 
-function getKFactorExplanation(label?: string, k?: number) {
+type TFunc = ReturnType<typeof useTranslation>["t"];
+
+function getKFactorExplanation(t: TFunc, label?: string, k?: number) {
   if (!label || !k) return null;
   if (label === "Placement Match") {
-    return `K=${k}: early games move faster while your rating settles.`;
+    return t("result.kFactorPlacement", { k });
   }
   if (label === "High-Tier Protection") {
-    return `K=${k}: rating moves slower above 2000 ELO.`;
+    return t("result.kFactorHighTier", { k });
   }
-  return `K=${k}: standard rating movement.`;
+  return t("result.kFactorStandard", { k });
 }
 
 function formatRecentOutcome(
+  t: TFunc,
   match: NonNullable<GameResultState["recentMatches"]>[number],
   currentUserIsPlayer1?: boolean,
 ) {
   const myScore = currentUserIsPlayer1 ? match.player1Score : match.player2Score;
   const opponentScore = currentUserIsPlayer1 ? match.player2Score : match.player1Score;
   const outcome = match.outcome === "draw"
-    ? "D"
+    ? t("result.outcomeDraw")
     : currentUserIsPlayer1
-      ? match.outcome === "win" ? "W" : "L"
-      : match.outcome === "win" ? "L" : "W";
+      ? match.outcome === "win" ? t("result.outcomeWin") : t("result.outcomeLoss")
+      : match.outcome === "win" ? t("result.outcomeLoss") : t("result.outcomeWin");
   return `${outcome} ${myScore}-${opponentScore}`;
 }
 
 export default function ResultScreen() {
   const navigate = useNavigate();
   const location = useLocation();
+  const { t } = useTranslation("screens");
   const checkAchievements = useMutation(api.achievements.checkAndUnlock);
 
   const state = location.state as GameResultState | null;
@@ -64,7 +69,7 @@ export default function ResultScreen() {
         const res = await checkAchievements();
         if (res.newlyUnlocked.length > 0) {
           toast.success(
-            `Achievement unlocked! (${res.newlyUnlocked.length} new)`,
+            t("result.achievementUnlocked", { count: res.newlyUnlocked.length }),
           );
         }
       } catch {
@@ -84,19 +89,20 @@ export default function ResultScreen() {
   const grade = getGrade(accuracy);
   const challengeTitle =
     state.outcome === "win"
-      ? "You Won"
+      ? t("result.outcomeYouWon")
       : state.outcome === "loss"
-        ? "You Lost"
+        ? t("result.outcomeYouLost")
         : state.outcome === "draw"
-          ? "Draw"
+          ? t("result.outcomeDrawTitle")
           : state.outcome === "forfeitWin"
-            ? "Opponent Forfeited"
+            ? t("result.outcomeOpponentForfeited")
             : state.outcome === "forfeitLoss"
-              ? "Forfeit"
-              : "Match Result";
+              ? t("result.outcomeForfeit")
+              : t("result.matchResult");
   const eloChange = state.eloChange;
   const eloPositive = eloChange !== null && eloChange >= 0;
   const kFactorExplanation = getKFactorExplanation(
+    t,
     state.kFactorLabel,
     state.kFactor,
   );
@@ -106,29 +112,36 @@ export default function ResultScreen() {
     : null;
   const currentStreak = state.currentStreak ?? state.versusScore?.currentStreak ?? null;
   const recentMatches = state.recentMatches ?? state.versusScore?.recentMatches ?? [];
+  const streakIsYou =
+    !!currentStreak &&
+    (currentStreak.owner === "you" ||
+      (currentStreak.owner === "player1" && state.currentUserIsPlayer1) ||
+      (currentStreak.owner === "player2" && !state.currentUserIsPlayer1));
   const streakLabel = currentStreak
-    ? `${currentStreak.count} match ${currentStreak.owner === "you" || (currentStreak.owner === "player1" && state.currentUserIsPlayer1) || (currentStreak.owner === "player2" && !state.currentUserIsPlayer1) ? "your" : "opponent"} Streak`
-    : "No active Streak";
+    ? streakIsYou
+      ? t("result.streakActiveYour", { count: currentStreak.count })
+      : t("result.streakActiveOpponent", { count: currentStreak.count })
+    : t("result.streakNone");
 
   const stats = isChallenge
     ? [
-        { label: "Your Score", value: `${state.score}`, color: "primary" as const },
-        { label: "Opponent", value: `${state.opponentScore ?? 0}`, color: "accent" as const },
-        { label: "Correct", value: `${state.correctCount}/${state.total}`, color: "success" as const },
-        { label: "Topic", value: state.sport, color: "blue" as const },
+        { label: t("result.statYourScore"), value: `${state.score}`, color: "primary" as const },
+        { label: t("result.statOpponent"), value: `${state.opponentScore ?? 0}`, color: "accent" as const },
+        { label: t("result.statCorrect"), value: `${state.correctCount}/${state.total}`, color: "success" as const },
+        { label: t("result.statTopic"), value: state.sport, color: "blue" as const },
       ]
     : isQuiz
       ? [
-          { label: "Correct", value: `${state.correctCount}`, color: "success" as const },
-          { label: "Avg Time", value: `${state.avgTime.toFixed(1)}s`, color: "blue" as const },
-          { label: "Accuracy", value: `${Math.round(accuracy * 100)}%`, color: "accent" as const },
-          { label: "Score", value: `${state.score}`, color: "primary" as const },
+          { label: t("result.statCorrect"), value: `${state.correctCount}`, color: "success" as const },
+          { label: t("result.statAvgTime"), value: `${state.avgTime.toFixed(1)}s`, color: "blue" as const },
+          { label: t("result.statAccuracy"), value: `${Math.round(accuracy * 100)}%`, color: "accent" as const },
+          { label: t("result.statScore"), value: `${state.score}`, color: "primary" as const },
         ]
       : [
-        { label: "Rounds", value: `${state.total}`, color: "success" as const },
-        { label: "Score", value: `${state.score}`, color: "primary" as const },
-        { label: "Topic", value: state.sport, color: "blue" as const },
-        { label: "Mode", value: "Survival", color: "accent" as const },
+        { label: t("result.statRounds"), value: `${state.total}`, color: "success" as const },
+        { label: t("result.statScore"), value: `${state.score}`, color: "primary" as const },
+        { label: t("result.statTopic"), value: state.sport, color: "blue" as const },
+        { label: t("result.statMode"), value: "Survival", color: "accent" as const },
       ];
 
   return (
@@ -138,7 +151,7 @@ export default function ResultScreen() {
           {state.mode === "challenge" ? challengeScoreline : isQuiz ? `${state.correctCount}/${state.total}` : state.score}
         </p>
         <p className="font-heading text-sm text-muted-foreground mt-2">
-          {isChallenge ? "Match Result" : "Final Score"}
+          {isChallenge ? t("result.matchResult") : t("result.finalScore")}
         </p>
       </NeoCard>
 
@@ -154,12 +167,12 @@ export default function ResultScreen() {
           </NeoBadge>
           {state.opponentName && (
             <p className="text-xs text-muted-foreground mt-3">
-              vs @{state.opponentName}
+              {t("result.versusOpponent", { name: state.opponentName })}
             </p>
           )}
           {seriesLabel && (
             <p className="text-xs font-heading font-bold text-muted-foreground mt-2">
-              Series {seriesLabel}
+              {t("result.seriesLabel", { series: seriesLabel })}
             </p>
           )}
         </div>
@@ -248,25 +261,25 @@ export default function ResultScreen() {
       {isChallenge && (
         <NeoCard className="w-full mb-8 py-4">
           <div className="flex items-center justify-between mb-3">
-            <p className="font-heading font-bold text-sm uppercase">Rivalry</p>
+            <p className="font-heading font-bold text-sm uppercase">{t("result.rivalry")}</p>
           </div>
           <div className="grid grid-cols-2 gap-2 mb-3">
             <div className="neo-border rounded-md p-3 text-center bg-muted">
               <p className="font-mono font-bold text-lg">{seriesLabel ?? "0-0"}</p>
-              <p className="text-[10px] font-heading uppercase opacity-80">Series</p>
+              <p className="text-[10px] font-heading uppercase opacity-80">{t("result.seriesCardLabel")}</p>
             </div>
             <div className="neo-border rounded-md p-3 text-center bg-muted">
               <p className="font-mono font-bold text-sm">{streakLabel}</p>
-              <p className="text-[10px] font-heading uppercase opacity-80">Streak</p>
+              <p className="text-[10px] font-heading uppercase opacity-80">{t("result.streakCardLabel")}</p>
             </div>
           </div>
           {recentMatches.length > 0 && (
             <div>
-              <p className="text-[10px] font-heading uppercase text-muted-foreground mb-2">Last 5</p>
+              <p className="text-[10px] font-heading uppercase text-muted-foreground mb-2">{t("result.lastFive")}</p>
               <div className="flex flex-wrap gap-2">
                 {recentMatches.slice(0, 5).map((match, index) => (
                   <span key={`${match.playedAt}-${index}`} className="neo-border rounded px-2 py-1 text-[10px] font-mono font-bold bg-card">
-                    {formatRecentOutcome(match, state.currentUserIsPlayer1)}
+                    {formatRecentOutcome(t, match, state.currentUserIsPlayer1)}
                   </span>
                 ))}
               </div>
@@ -278,7 +291,7 @@ export default function ResultScreen() {
       {isQuiz && state.scoreBreakdown && state.scoreBreakdown.length > 0 && (
         <NeoCard className="w-full mb-8 py-4">
           <p className="font-heading font-bold text-sm text-center mb-3">
-            Score Breakdown
+            {t("result.scoreBreakdown")}
           </p>
           <div className="grid grid-cols-5 gap-2">
             {state.scoreBreakdown.map((item, index) => (
@@ -288,7 +301,7 @@ export default function ResultScreen() {
                   item.correct ? "bg-success text-success-foreground" : "bg-muted"
                 }`}
               >
-                <p className="font-mono font-bold text-xs">Q{index + 1}</p>
+                <p className="font-mono font-bold text-xs">{t("result.questionShort", { num: index + 1 })}</p>
                 <p className="font-mono font-bold text-sm">{item.score}</p>
                 <p className="text-[9px] opacity-80">
                   {item.timeTaken.toFixed(1)}s
@@ -306,7 +319,7 @@ export default function ResultScreen() {
             size="full"
             onClick={() => navigate("/home")}
           >
-            Back to Home
+            {t("result.backToHome")}
           </NeoButton>
         ) : (
           <>
@@ -315,7 +328,7 @@ export default function ResultScreen() {
               size="full"
               onClick={() => navigate(`/sport-select?mode=${state.mode}`)}
             >
-              Play Again
+              {t("result.playAgain")}
             </NeoButton>
             <NeoButton
               variant="secondary"
@@ -328,7 +341,7 @@ export default function ResultScreen() {
                 )
               }
             >
-              Try Other Mode
+              {t("result.tryOtherMode")}
             </NeoButton>
           </>
         )}
@@ -337,7 +350,7 @@ export default function ResultScreen() {
             className="w-full text-center text-sm text-muted-foreground font-heading underline underline-offset-4 cursor-pointer"
             onClick={() => navigate("/home")}
           >
-            Back to Home
+            {t("result.backToHome")}
           </button>
         )}
       </div>

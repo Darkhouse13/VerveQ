@@ -18,6 +18,7 @@
  */
 import type { ReactNode } from "react";
 import { LogOut } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
 
 interface PlayStageProps {
@@ -57,7 +58,7 @@ export function PlayStage({
   title,
   subtitle,
   onExit,
-  exitLabel = "Leave",
+  exitLabel,
   exitDisabled = false,
   headerRight,
   left,
@@ -67,6 +68,8 @@ export function PlayStage({
   wide = false,
   children,
 }: PlayStageProps) {
+  const { t } = useTranslation("play");
+  const resolvedExitLabel = exitLabel ?? t("stage.exit");
   return (
     <div
       className={cn(
@@ -87,7 +90,7 @@ export function PlayStage({
                 className="neo-border neo-shadow rounded-lg px-3 py-2 bg-background shrink-0 cursor-pointer active:neo-shadow-pressed inline-flex items-center gap-1.5 disabled:opacity-60"
               >
                 <LogOut size={14} strokeWidth={3} />
-                <span className="text-[10px] font-heading font-bold uppercase">{exitLabel}</span>
+                <span className="text-[10px] font-heading font-bold uppercase">{resolvedExitLabel}</span>
               </button>
             )}
             <div className="min-w-0 flex-1 text-center md:text-left">

@@ -11,15 +11,17 @@
  */
 import { QuizPlayView } from "@/components/shell/play/QuizPlayView";
 import { useDailyQuiz } from "@/hooks/useDailyQuiz";
+import { useTranslation } from "react-i18next";
 
 export default function DailyQuizPlayScreen() {
+  const { t } = useTranslation("play");
   const q = useDailyQuiz();
   return (
     <QuizPlayView
       q={q}
-      title="Daily Challenge"
+      title={t("dailyQuiz.title")}
       onExit={q.forfeitAndExit}
-      loadingLabel="Loading daily challenge…"
+      loadingLabel={t("dailyQuiz.loadingLabel")}
     />
   );
 }

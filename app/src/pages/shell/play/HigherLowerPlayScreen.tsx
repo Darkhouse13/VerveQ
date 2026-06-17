@@ -13,6 +13,7 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useMutation } from "convex/react";
+import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import { TrendingUp, TrendingDown } from "lucide-react";
 import { NeoCard } from "@/components/neo/NeoCard";
@@ -25,8 +26,9 @@ import { useAntiCheat } from "@/hooks/useAntiCheat";
 import { api } from "../../../../convex/_generated/api";
 import type { Id } from "../../../../convex/_generated/dataModel";
 
-// Human-readable stat key labels (ported verbatim from the live screen).
-const STAT_LABELS: Record<string, string> = {
+// Fallback human-readable stat key labels (ported verbatim from the live
+// screen). Used as i18n defaultValues so a missing translation still renders.
+const STAT_LABEL_FALLBACKS: Record<string, string> = {
   goalsFor: "Goals Scored",
   goalsAgainst: "Goals Conceded",
   cleanSheets: "Clean Sheets",
@@ -39,10 +41,6 @@ const STAT_LABELS: Record<string, string> = {
   draws: "Draws",
   points: "Points",
 };
-
-function formatStatKey(key: string): string {
-  return STAT_LABELS[key] || key.replace(/([A-Z])/g, " $1").replace(/^./, (s) => s.toUpperCase());
-}
 
 const SUPPORTED_HIGHER_LOWER_SPORTS = new Set(["football"]);
 const START_SESSION_TIMEOUT_MS = 8000;
@@ -62,6 +60,20 @@ function withTimeout<T>(promise: Promise<T>, timeoutMs: number): Promise<T> {
 }
 
 export default function HigherLowerPlayScreen() {
+  const { t } = useTranslation("play");
+
+  // Human-readable stat label, translated. Falls back to the verbatim English
+  // label (or a de-camelCased key) so an untranslated stat still renders.
+  const formatStatKey = useCallback(
+    (key: string): string => {
+      const fallback =
+        STAT_LABEL_FALLBACKS[key] ||
+        key.replace(/([A-Z])/g, " $1").replace(/^./, (s) => s.toUpperCase());
+      return t(`higherLower.stats.${key}`, { defaultValue: fallback });
+    },
+    [t],
+  );
+
   const navigate = useNavigate();
   const [params] = useSearchParams();
   const sport = params.get("sport") || "football";
@@ -106,9 +118,8 @@ export default function HigherLowerPlayScreen() {
     if (!isSupportedSport) {
       setStartupState({
         kind: "unsupported",
-        title: "Football Only For Now",
-        message:
-          "Higher or Lower is currently available for football only. Pick football to start a round.",
+        title: t("higherLower.unsupportedTitle"),
+        message: t("higherLower.unsupportedMessage"),
       });
       setLoading(false);
       return;
@@ -140,14 +151,13 @@ export default function HigherLowerPlayScreen() {
       setSessionId(null);
       setStartupState({
         kind: "start_failed",
-        title: "Couldn't Start A Round",
-        message:
-          "Higher or Lower couldn't load right now. Try again, or go back and retry from Compete.",
+        title: t("higherLower.startFailedTitle"),
+        message: t("higherLower.startFailedMessage"),
       });
     } finally {
       setLoading(false);
     }
-  }, [isSupportedSport, sport, startSessionMut]);
+  }, [isSupportedSport, sport, startSessionMut, t]);
 
   useEffect(() => {
     startGame();
@@ -160,11 +170,11 @@ export default function HigherLowerPlayScreen() {
         if (res.penalized) {
           setGameOver(true);
           setScore(res.score);
-          toast.error("Run ended — you switched tabs");
+          toast.error(t("higherLower.tabSwitchEnded"));
         }
       });
-    }, [sessionId, gameOver, loading, startupState, penalizeTabSwitchMut]),
-    { warningMessage: "Don't switch tabs — your run will end" },
+    }, [sessionId, gameOver, loading, startupState, penalizeTabSwitchMut, t]),
+    { warningMessage: t("higherLower.tabSwitchWarning") },
   );
 
   const handleGuess = async (guess: "higher" | "lower") => {
@@ -223,7 +233,7 @@ export default function HigherLowerPlayScreen() {
   const seasonDisplay = season
     ? SINGLE_YEAR_CONTEXTS.has(context)
       ? `${season}`
-      : `${season}/${season + 1} Season`
+      : t("higherLower.seasonRange", { start: season, end: season + 1 })
     : null;
   const displayLabel = contextLabel || context;
 
@@ -231,9 +241,9 @@ export default function HigherLowerPlayScreen() {
 
   if (loading) {
     return (
-      <PlayStage title="Higher or Lower" onExit={() => navigate(SHELL_ROUTES.home)}>
+      <PlayStage title={t("higherLower.title")} onExit={() => navigate(SHELL_ROUTES.home)}>
         <div className="flex items-center justify-center py-16">
-          <p className="font-heading font-bold text-lg animate-pulse">Loading…</p>
+          <p className="font-heading font-bold text-lg animate-pulse">{t("higherLower.loading")}</p>
         </div>
       </PlayStage>
     );
@@ -242,9 +252,9 @@ export default function HigherLowerPlayScreen() {
   if (startupState) {
     return (
       <PlayStage
-        title="Higher or Lower"
+        title={t("higherLower.title")}
         onExit={() => navigate(SHELL_ROUTES.home)}
-        exitLabel="Quit"
+        exitLabel={t("higherLower.quit")}
       >
         <div className="flex flex-col items-center justify-center py-10">
           <NeoCard color="primary" shadow="lg" className="w-full text-center py-8 px-5">
@@ -258,11 +268,11 @@ export default function HigherLowerPlayScreen() {
                   size="lg"
                   onClick={() => navigate(`${SHELL_ROUTES.higherLowerPlay}?sport=football`)}
                 >
-                  Play Football
+                  {t("higherLower.playFootball")}
                 </NeoButton>
               ) : (
                 <NeoButton variant="primary" size="lg" onClick={startGame}>
-                  Try Again
+                  {t("higherLower.tryAgain")}
                 </NeoButton>
               )}
               <NeoButton
@@ -270,7 +280,7 @@ export default function HigherLowerPlayScreen() {
                 size="lg"
                 onClick={() => navigate(SHELL_ROUTES.competeSportGrid(sport))}
               >
-                Back To Compete
+                {t("higherLower.backToCompete")}
               </NeoButton>
             </div>
           </NeoCard>
@@ -281,10 +291,10 @@ export default function HigherLowerPlayScreen() {
 
   return (
     <PlayStage
-      title="Higher or Lower"
-      subtitle="Who has more?"
+      title={t("higherLower.title")}
+      subtitle={t("higherLower.subtitle")}
       onExit={() => navigate(SHELL_ROUTES.home)}
-      exitLabel="Quit"
+      exitLabel={t("higherLower.quit")}
       strip={<AmbientStrip metrics={metrics} />}
       right={<MetricsPanel metrics={metrics} />}
     >
@@ -299,7 +309,7 @@ export default function HigherLowerPlayScreen() {
           </p>
           <div className="flex items-center justify-center gap-2 mt-1">
             <NeoBadge color={entityType === "team" ? "accent" : "pink"} size="sm">
-              {entityType === "team" ? "Team Stat" : "Player Stat"}
+              {entityType === "team" ? t("higherLower.teamStat") : t("higherLower.playerStat")}
             </NeoBadge>
           </div>
         </div>
@@ -371,7 +381,7 @@ export default function HigherLowerPlayScreen() {
               disabled={animating}
             >
               <TrendingUp size={20} className="mr-1" />
-              {pendingGuess === "higher" ? "Checking..." : "Higher"}
+              {pendingGuess === "higher" ? t("higherLower.checking") : t("higherLower.higher")}
             </NeoButton>
             <NeoButton
               variant="pink"
@@ -385,7 +395,7 @@ export default function HigherLowerPlayScreen() {
               disabled={animating}
             >
               <TrendingDown size={20} className="mr-1" />
-              {pendingGuess === "lower" ? "Checking..." : "Lower"}
+              {pendingGuess === "lower" ? t("higherLower.checking") : t("higherLower.lower")}
             </NeoButton>
           </div>
         )}
@@ -394,21 +404,21 @@ export default function HigherLowerPlayScreen() {
         {gameOver && (
           <div className="mt-5 space-y-3 animate-slide-up">
             <NeoCard color="primary" className="text-center py-4">
-              <p className="font-heading font-bold text-xl">Game Over!</p>
+              <p className="font-heading font-bold text-xl">{t("higherLower.gameOver")}</p>
               <p className="font-mono font-bold text-3xl mt-1">{score}</p>
-              <p className="text-xs opacity-80 mt-1">Final Score</p>
+              <p className="text-xs opacity-80 mt-1">{t("higherLower.finalScore")}</p>
               {endReason === "pool_exhausted" && (
                 <p className="text-xs opacity-80 mt-2">
-                  Perfect run: this stat pool is exhausted.
+                  {t("higherLower.poolExhausted")}
                 </p>
               )}
             </NeoCard>
             <div className="grid grid-cols-2 gap-3">
               <NeoButton variant="primary" size="lg" onClick={startGame}>
-                Play Again
+                {t("higherLower.playAgain")}
               </NeoButton>
               <NeoButton variant="secondary" size="lg" onClick={() => navigate(SHELL_ROUTES.home)}>
-                Home
+                {t("higherLower.home")}
               </NeoButton>
             </div>
           </div>

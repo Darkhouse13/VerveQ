@@ -1,16 +1,18 @@
 import { useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { NeoCard } from "@/components/neo/NeoCard";
 import { NeoButton } from "@/components/neo/NeoButton";
 import { ArrowLeft } from "lucide-react";
 
 const difficulties = [
-  { name: "Easy", apiValue: "easy", desc: "Casual fun, relaxed pace", emoji: "\uD83D\uDE0A", color: "success" as const },
-  { name: "Medium", apiValue: "intermediate", desc: "Balanced challenge", emoji: "\uD83D\uDCAA", color: "primary" as const },
-  { name: "Hard", apiValue: "hard", desc: "Expert level, no mercy", emoji: "\uD83D\uDD25", color: "destructive" as const },
+  { name: "Easy", key: "easy", apiValue: "easy", emoji: "😊", color: "success" as const },
+  { name: "Medium", key: "medium", apiValue: "intermediate", emoji: "💪", color: "primary" as const },
+  { name: "Hard", key: "hard", apiValue: "hard", emoji: "🔥", color: "destructive" as const },
 ];
 
 export default function DifficultyScreen() {
+  const { t } = useTranslation("screens");
   const [selected, setSelected] = useState<string | null>(null);
   const navigate = useNavigate();
   const [params] = useSearchParams();
@@ -40,10 +42,10 @@ export default function DifficultyScreen() {
         <ArrowLeft size={20} strokeWidth={2.5} />
       </button>
 
-      <h1 className="text-3xl font-heading font-bold mb-2">Choose Difficulty</h1>
+      <h1 className="text-3xl font-heading font-bold mb-2">{t("difficulty.title")}</h1>
       {mode === "came_first" && (
         <p className="text-sm text-muted-foreground mb-4">
-          Which Came First? asks you to pick the earlier event.
+          {t("difficulty.cameFirstHint")}
         </p>
       )}
 
@@ -59,18 +61,18 @@ export default function DifficultyScreen() {
           >
             <span className="text-4xl">{d.emoji}</span>
             <div>
-              <p className="font-heading font-bold text-xl uppercase">{d.name}</p>
-              <p className="text-sm opacity-80">{d.desc}</p>
+              <p className="font-heading font-bold text-xl uppercase">{t(`difficulty.${d.key}_name`)}</p>
+              <p className="text-sm opacity-80">{t(`difficulty.${d.key}_desc`)}</p>
             </div>
           </NeoCard>
         ))}
       </div>
 
-      <p className="text-center text-xs text-muted-foreground mt-4">You can always change this later</p>
+      <p className="text-center text-xs text-muted-foreground mt-4">{t("difficulty.changeLater")}</p>
 
       <div className="mt-6">
         <NeoButton variant="primary" size="full" disabled={!selected} onClick={handleStart}>
-          Start Game
+          {t("difficulty.startGame")}
         </NeoButton>
       </div>
     </div>

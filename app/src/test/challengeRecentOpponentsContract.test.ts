@@ -7,6 +7,7 @@ describe("challenge duel hub contract", () => {
     const duels = readFileSync("convex/duels.ts", "utf8");
     const rivalries = readFileSync("convex/rivalries.ts", "utf8");
     const createDuel = readFileSync("src/pages/challenge/CreateDuelModal.tsx", "utf8");
+    const screens = JSON.parse(readFileSync("src/i18n/locales/en/screens.json", "utf8"));
 
     expect(schema).toContain("duels: defineTable");
     expect(schema).toContain('index("by_challenger"');
@@ -23,8 +24,11 @@ describe("challenge duel hub contract", () => {
     // Play-first: the create modal no longer forces an opponent up front — it
     // creates a link duel, plays, and invites from the results screen.
     expect(createDuel).toContain("viaLink: true");
-    expect(createDuel).toContain("Play duel");
-    expect(createDuel).toContain("Play now, invite after");
+    // i18n: the create-modal CTAs moved to locale keys; assert key wiring + copy.
+    expect(createDuel).toContain("createDuel.playDuel");
+    expect(screens.createDuel.playDuel).toBe("Play duel");
+    expect(createDuel).toContain("createDuel.playNowInviteAfterTitle");
+    expect(screens.createDuel.playNowInviteAfterTitle).toBe("Play now, invite after");
     expect(createDuel).not.toContain("OpponentMode");
     expect(createDuel).not.toContain("api.rivalries.listMine");
 
@@ -36,12 +40,18 @@ describe("challenge duel hub contract", () => {
 
   it("renders the Duel Hub buckets instead of legacy recent-opponent buttons", () => {
     const challengeScreen = readFileSync("src/pages/ChallengeScreen.tsx", "utf8");
+    const screens = JSON.parse(readFileSync("src/i18n/locales/en/screens.json", "utf8"));
 
     expect(challengeScreen).toContain("api.duels.listMine");
-    expect(challengeScreen).toContain('title="Your turn"');
-    expect(challengeScreen).toContain('title="Waiting on them"');
-    expect(challengeScreen).toContain("New Duel");
-    expect(challengeScreen).toContain("formatModeLabel(d.mode)");
+    // i18n: the section titles moved to locale keys; assert both the key wiring
+    // in source and that the English copy is intact.
+    expect(challengeScreen).toContain("challenge.yourTurnTitle");
+    expect(screens.challenge.yourTurnTitle).toBe("Your turn");
+    expect(challengeScreen).toContain("challenge.waitingTitle");
+    expect(screens.challenge.waitingTitle).toBe("Waiting on them");
+    expect(challengeScreen).toContain("challenge.newDuel");
+    expect(screens.challenge.newDuel).toBe("New Duel");
+    expect(challengeScreen).toContain("formatModeLabel(d.mode, t)");
     expect(challengeScreen).toContain("const topRivals = useMemo");
   });
 
@@ -49,14 +59,20 @@ describe("challenge duel hub contract", () => {
     const challengeScreen = readFileSync("src/pages/ChallengeScreen.tsx", "utf8");
     const historyScreen = readFileSync("src/pages/DuelHistoryScreen.tsx", "utf8");
     const appSource = readFileSync("src/App.tsx", "utf8");
+    const screens = JSON.parse(readFileSync("src/i18n/locales/en/screens.json", "utf8"));
 
     expect(challengeScreen).toContain("RECENT_RESULTS_SHOWN");
-    expect(challengeScreen).toContain("Recent results");
-    expect(challengeScreen).toContain("Duel history");
+    // i18n: "Recent results" and "Duel history" copy moved to locale keys.
+    expect(challengeScreen).toContain("challenge.recentResults");
+    expect(screens.challenge.recentResults).toBe("Recent results");
+    expect(challengeScreen).toContain("challenge.duelHistory");
+    expect(screens.challenge.duelHistory).toBe("Duel history");
     expect(challengeScreen).not.toContain('title="Resolved"');
 
     expect(historyScreen).toContain("api.duels.listMine");
-    expect(historyScreen).toContain("Duel history");
+    // i18n: the history page title moved to a locale key as well.
+    expect(historyScreen).toContain("duelHistory.title");
+    expect(screens.duelHistory.title).toBe("Duel history");
     expect(appSource).toContain('path="/duels/history"');
     expect(appSource).toContain('path="/v2/duels/history"');
   });

@@ -1,6 +1,7 @@
 import { NeoCard } from "@/components/neo/NeoCard";
 import { NeoButton } from "@/components/neo/NeoButton";
 import { useNavigate, useLocation } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { Zap } from "lucide-react";
 
 interface BlitzResultState {
@@ -14,6 +15,7 @@ interface BlitzResultState {
 export default function BlitzResultScreen() {
   const navigate = useNavigate();
   const location = useLocation();
+  const { t } = useTranslation("screens");
   const state = location.state as BlitzResultState | null;
 
   if (!state) {
@@ -22,11 +24,11 @@ export default function BlitzResultScreen() {
   }
 
   const stats = [
-    { label: "Score", value: `${state.score}`, color: "primary" as const },
-    { label: "Correct", value: `${state.correctCount}`, color: "success" as const },
-    { label: "Wrong", value: `${state.wrongCount}`, color: "destructive" as const },
+    { label: t("blitzResult.statScore"), value: `${state.score}`, color: "primary" as const },
+    { label: t("blitzResult.statCorrect"), value: `${state.correctCount}`, color: "success" as const },
+    { label: t("blitzResult.statWrong"), value: `${state.wrongCount}`, color: "destructive" as const },
     // Raw sport keys are lowercase ("football") — title-case for display.
-    { label: "Topic", value: state.sport ? state.sport[0].toUpperCase() + state.sport.slice(1) : state.sport, color: "blue" as const },
+    { label: t("blitzResult.statTopic"), value: state.sport ? state.sport[0].toUpperCase() + state.sport.slice(1) : state.sport, color: "blue" as const },
   ];
 
   return (
@@ -35,13 +37,13 @@ export default function BlitzResultScreen() {
         <Zap size={40} strokeWidth={2.5} className="mx-auto mb-3 text-hot-pink" />
         <p className="font-mono font-bold text-6xl">{state.score}</p>
         <p className="font-heading text-sm text-muted-foreground mt-2">
-          Blitz Score
+          {t("blitzResult.blitzScore")}
         </p>
       </NeoCard>
 
       {state.score >= 500 && (
         <NeoCard color="primary" className="w-full text-center py-3 mb-6">
-          <p className="font-heading font-bold text-lg">New High Score!</p>
+          <p className="font-heading font-bold text-lg">{t("blitzResult.newHighScore")}</p>
         </NeoCard>
       )}
 
@@ -62,14 +64,14 @@ export default function BlitzResultScreen() {
           size="full"
           onClick={() => navigate(`/blitz?sport=${state.sport}`)}
         >
-          Play Again
+          {t("blitzResult.playAgain")}
         </NeoButton>
         <NeoButton
           variant="secondary"
           size="full"
           onClick={() => navigate("/home")}
         >
-          Back to Home
+          {t("blitzResult.backToHome")}
         </NeoButton>
       </div>
     </div>

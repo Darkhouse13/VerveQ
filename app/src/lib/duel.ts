@@ -1,3 +1,5 @@
+import type { TFunction } from "i18next";
+
 const GUEST_TOKEN_STORAGE_PREFIX = "verveq_duel_guest_token::";
 const ALPHABET =
   "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
@@ -87,9 +89,9 @@ export function buildShareUrl(linkCode: string): string {
   return `${getShareBaseUrl()}/s/d/${linkCode}`;
 }
 
-export function formatModeLabel(mode: string): string {
-  if (mode === "came_first") return "Which Came First";
-  if (mode === "quiz") return "Quiz";
+export function formatModeLabel(mode: string, t: TFunction): string {
+  if (mode === "came_first") return t("duelLib.modeCameFirst");
+  if (mode === "quiz") return t("duelLib.modeQuiz");
   return mode.replace(/_/g, " ");
 }
 
@@ -101,29 +103,40 @@ export function formatCategoryLabel(category: string | null): string {
     .join(" ");
 }
 
-export function formatRelativeTime(ms: number): string {
+export function formatRelativeTime(ms: number, t: TFunction): string {
   const diff = ms - Date.now();
   const abs = Math.abs(diff);
   const minutes = Math.round(abs / 60_000);
-  if (minutes < 1) return diff >= 0 ? "now" : "just now";
-  if (minutes < 60) return diff >= 0 ? `in ${minutes}m` : `${minutes}m ago`;
+  if (minutes < 1) return diff >= 0 ? t("duelLib.now") : t("duelLib.justNow");
+  if (minutes < 60)
+    return diff >= 0
+      ? t("duelLib.inMinutes", { count: minutes })
+      : t("duelLib.minutesAgo", { count: minutes });
   const hours = Math.round(minutes / 60);
-  if (hours < 24) return diff >= 0 ? `in ${hours}h` : `${hours}h ago`;
+  if (hours < 24)
+    return diff >= 0
+      ? t("duelLib.inHours", { count: hours })
+      : t("duelLib.hoursAgo", { count: hours });
   const days = Math.round(hours / 24);
-  return diff >= 0 ? `in ${days}d` : `${days}d ago`;
+  return diff >= 0
+    ? t("duelLib.inDays", { count: days })
+    : t("duelLib.daysAgo", { count: days });
 }
 
 export type DuelOutcomeForMe = boolean | "draw" | null;
 
-export function duelSummaryHeadline(s: {
-  type: string;
-  sport: string | null;
-  category: string | null;
-  mode: string;
-}): string {
-  if (s.mode === "came_first") return "Which Came First";
+export function duelSummaryHeadline(
+  s: {
+    type: string;
+    sport: string | null;
+    category: string | null;
+    mode: string;
+  },
+  t: TFunction,
+): string {
+  if (s.mode === "came_first") return t("duelLib.modeCameFirst");
   if (s.type === "knowledge") {
-    return s.category ? formatCategoryLabel(s.category) : "Knowledge";
+    return s.category ? formatCategoryLabel(s.category) : t("duelLib.knowledge");
   }
   const sport = s.sport ?? "sport";
   return sport.charAt(0).toUpperCase() + sport.slice(1);
@@ -132,17 +145,26 @@ export function duelSummaryHeadline(s: {
 export function duelStatusBadge(
   status: string,
   winnerForMe: DuelOutcomeForMe,
+  t: TFunction,
 ): { label: string; color: "blue" | "muted" | "success" | "destructive" } {
-  if (status === "awaiting_opponent") return { label: "Open", color: "blue" };
-  if (status === "declined") return { label: "Declined", color: "muted" };
-  if (status === "expired") return { label: "Expired", color: "muted" };
-  if (winnerForMe === true) return { label: "Win", color: "success" };
-  if (winnerForMe === false) return { label: "Loss", color: "destructive" };
-  if (winnerForMe === "draw") return { label: "Draw", color: "blue" };
-  return { label: "Done", color: "muted" };
+  if (status === "awaiting_opponent")
+    return { label: t("duelLib.statusOpen"), color: "blue" };
+  if (status === "declined")
+    return { label: t("duelLib.statusDeclined"), color: "muted" };
+  if (status === "expired")
+    return { label: t("duelLib.statusExpired"), color: "muted" };
+  if (winnerForMe === true)
+    return { label: t("duelLib.outcomeWin"), color: "success" };
+  if (winnerForMe === false)
+    return { label: t("duelLib.outcomeLoss"), color: "destructive" };
+  if (winnerForMe === "draw")
+    return { label: t("duelLib.outcomeDraw"), color: "blue" };
+  return { label: t("duelLib.statusDone"), color: "muted" };
 }
 
-export function duelOpponentLabel(username: string): string {
+export function duelOpponentLabel(username: string, t: TFunction): string {
   // Link duels have no opponent yet; the server placeholder is "Link opponent".
-  return username === "Link opponent" ? "Open invite" : `vs @${username}`;
+  return username === "Link opponent"
+    ? t("duelLib.openInvite")
+    : t("duelLib.versusUser", { username });
 }

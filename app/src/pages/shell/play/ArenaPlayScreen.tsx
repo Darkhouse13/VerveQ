@@ -26,6 +26,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { useMutation, useQuery } from "convex/react";
 import { ArrowRight, Share2 } from "lucide-react";
 import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
 
 import { NeoCard } from "@/components/neo/NeoCard";
 import { NeoButton } from "@/components/neo/NeoButton";
@@ -71,14 +72,16 @@ import {
 type Room = NonNullable<FunctionReturnType<typeof api.challengeArenas.getRoom>>;
 type Phase = Room["phase"];
 
-const PHASE_LABEL: Record<Phase, string> = {
-  lobby: "Lobby",
-  countdown: "Starting",
-  question: "Question",
-  reveal: "Reveal",
-  round_break: "Round break",
-  final: "Final",
-  abandoned: "Ended",
+// Maps each phase to its i18n key under `arena.phase`; resolved via `t` at the
+// call site (this constant is module-level and can't call the hook).
+const PHASE_LABEL_KEY: Record<Phase, string> = {
+  lobby: "lobby",
+  countdown: "countdown",
+  question: "question",
+  reveal: "reveal",
+  round_break: "roundBreak",
+  final: "final",
+  abandoned: "abandoned",
 };
 
 // ───────────────────────── auth gate + join ─────────────────────────
@@ -86,15 +89,16 @@ const PHASE_LABEL: Record<Phase, string> = {
 export default function ArenaPlayScreen() {
   const params = useParams<{ code: string }>();
   const { user, accountState, hasUsername } = useAuth();
+  const { t } = useTranslation("play");
 
   const rawCode = params.code ?? "";
   const code = useMemo(() => normalizeArenaCode(rawCode), [rawCode]);
 
   if (!code) {
-    return <NotInRoom title="Missing arena code" detail="The link you followed didn't include an arena code." />;
+    return <NotInRoom title={t("arena.missingCodeTitle")} detail={t("arena.missingCodeDetail")} />;
   }
   if (accountState === "loading") {
-    return <CenteredMessage>Loading…</CenteredMessage>;
+    return <CenteredMessage>{t("arena.loading")}</CenteredMessage>;
   }
   // No session, or a session without a username yet: onboard RIGHT HERE so the
   // lobby code is never dropped. Arena is in the username-only mode set, so any
@@ -110,14 +114,15 @@ export default function ArenaPlayScreen() {
 function ArenaOnboardingGate({ code }: { code: string }) {
   // No-op: the username claim flips `hasUsername` in AuthContext, which swaps
   // ArenaPlayScreen into ArenaPlayRoom. We never navigate, so the code survives.
+  const { t } = useTranslation("play");
   const noop = useCallback(() => {}, []);
   return (
     <div className="min-h-[100dvh] bg-background flex flex-col items-center justify-center px-5 py-8">
       <UsernameOnlyOnboarding
         inviteCode={code}
-        heading="Join the arena"
-        subheading={`Pick a username to join lobby ${code}. No email or password needed.`}
-        submitLabel="Join the arena"
+        heading={t("arena.onboardHeading")}
+        subheading={t("arena.onboardSubheading", { code })}
+        submitLabel={t("arena.onboardSubmit")}
         onComplete={noop}
       />
     </div>
@@ -134,7 +139,11 @@ function CenteredMessage({ children }: { children: string }) {
 
 function ArenaPlayRoom({ code, userId }: { code: string; userId: Id<"users"> | undefined }) {
   const navigate = useNavigate();
-  const room = useQuery(api.challengeArenas.getRoom, { code });
+  const { t, i18n } = useTranslation("play");
+  const room = useQuery(api.challengeArenas.getRoom, {
+    code,
+    locale: i18n.resolvedLanguage ?? i18n.language,
+  });
   const joinMut = useMutation(api.challengeArenas.join);
   const leaveMut = useMutation(api.challengeArenas.leave);
   const rematchMut = useMutation(api.challengeArenas.rematch);
@@ -158,10 +167,10 @@ function ArenaPlayRoom({ code, userId }: { code: string; userId: Id<"users"> | u
         await joinMut({ code });
         setJoinError(null);
       } catch (e) {
-        setJoinError(friendlyError(e, "Could not join this arena. Check the code and try again."));
+        setJoinError(friendlyError(e, t("arena.joinFailed")));
       }
     })();
-  }, [code, joinMut, room]);
+  }, [code, joinMut, room, t]);
 
   const handleLeave = useCallback(async () => {
     if (!room || leaving) return;
@@ -169,12 +178,12 @@ function ArenaPlayRoom({ code, userId }: { code: string; userId: Id<"users"> | u
     try {
       await leaveMut({ arenaId: room.arenaId });
     } catch (e) {
-      toast.error(friendlyError(e, "Could not leave"));
+      toast.error(friendlyError(e, t("arena.leaveFailed")));
     } finally {
       setLeaving(false);
       navigate("/v2/arena");
     }
-  }, [leaveMut, leaving, navigate, room]);
+  }, [leaveMut, leaving, navigate, room, t]);
 
   const handleRematch = useCallback(async () => {
     if (!room || rematching) return;
@@ -185,44 +194,40 @@ function ArenaPlayRoom({ code, userId }: { code: string; userId: Id<"users"> | u
     setRematching(true);
     try {
       const result = await rematchMut({ arenaId: room.arenaId });
-      toast.success("Rematch lobby ready");
+      toast.success(t("arena.rematchReady"));
       navigate(`/v2/arena/${result.code}`, { replace: true });
     } catch (e) {
-      toast.error(friendlyError(e, "Rematch failed"));
+      toast.error(friendlyError(e, t("arena.rematchFailed")));
     } finally {
       setRematching(false);
     }
-  }, [navigate, rematchMut, rematching, room]);
+  }, [navigate, rematchMut, rematching, room, t]);
 
   const handleShare = useCallback(async () => {
     if (!room) return;
     const res = await shareArenaLink(room.code);
-    if (res === "copied") toast.success("Link copied");
-    if (res === "failed") toast.error("Could not share link");
-  }, [room]);
+    if (res === "copied") toast.success(t("arena.linkCopied"));
+    if (res === "failed") toast.error(t("arena.shareFailed"));
+  }, [room, t]);
 
-  if (room === undefined) return <CenteredMessage>Loading arena…</CenteredMessage>;
+  if (room === undefined) return <CenteredMessage>{t("arena.loadingArena")}</CenteredMessage>;
   if (room === null) {
     return joinError ? (
-      <NotInRoom title="Couldn't join arena" detail={joinError} backLabel="Back to Arena" onBack={() => navigate("/v2/arena")} />
+      <NotInRoom title={t("arena.joinErrorTitle")} detail={joinError} backLabel={t("arena.backToArena")} onBack={() => navigate("/v2/arena")} />
     ) : (
-      <CenteredMessage>Joining…</CenteredMessage>
+      <CenteredMessage>{t("arena.joining")}</CenteredMessage>
     );
   }
   if (room.status === "abandoned") {
-    return <NotInRoom title="Arena ended" detail="The room was abandoned or expired." backLabel="Back to Arena" onBack={() => navigate("/v2/arena")} />;
+    return <NotInRoom title={t("arena.endedTitle")} detail={t("arena.endedDetail")} backLabel={t("arena.backToArena")} onBack={() => navigate("/v2/arena")} />;
   }
 
   const me = userId ? room.players.find((p) => p.userId === userId) ?? null : null;
   if (!me || me.left) {
     return (
       <NotInRoom
-        title={me?.left ? "You left this arena" : "Not in this arena"}
-        detail={
-          me?.left
-            ? "Rejoin from the code if the lobby is still open, or head back to the Challenge hub."
-            : "Ask the host for the code, or open the share link they sent."
-        }
+        title={me?.left ? t("arena.leftTitle") : t("arena.notInRoomTitle")}
+        detail={me?.left ? t("arena.leftDetail") : t("arena.notInRoomDetail")}
         onBack={() => navigate("/v2/arena")}
       />
     );
@@ -283,7 +288,10 @@ function ArenaPlayRoom({ code, userId }: { code: string; userId: Id<"users"> | u
   const progress = {
     current: room.currentQuestionIndex + 1,
     total: room.config.perRound,
-    roundLabel: `R${room.currentRound + 1}/${room.config.rounds}`,
+    roundLabel: t("arena.roundLabel", {
+      round: room.currentRound + 1,
+      rounds: room.config.rounds,
+    }),
   };
 
   const left = isInGame ? (
@@ -329,13 +337,13 @@ function ArenaPlayRoom({ code, userId }: { code: string; userId: Id<"users"> | u
       center = <FinalView room={room} userId={userId} rematching={rematching} onRematch={() => void handleRematch()} />;
       break;
     default:
-      center = <CenteredMessage>Loading…</CenteredMessage>;
+      center = <CenteredMessage>{t("arena.loading")}</CenteredMessage>;
   }
 
   return (
     <PlayStage
       title={room.code}
-      subtitle={`${arenaModeLabel(room.mode)} · ${PHASE_LABEL[phase]}`}
+      subtitle={`${arenaModeLabel(room.mode)} · ${t(`arena.phase.${PHASE_LABEL_KEY[phase]}`)}`}
       onExit={() => void handleLeave()}
       exitDisabled={leaving}
       headerRight={
@@ -346,7 +354,7 @@ function ArenaPlayRoom({ code, userId }: { code: string; userId: Id<"users"> | u
             className="neo-border neo-shadow rounded-lg px-3 py-2 bg-electric-blue text-electric-blue-foreground cursor-pointer active:neo-shadow-pressed inline-flex items-center gap-1.5"
           >
             <Share2 size={14} strokeWidth={3} />
-            <span className="text-[10px] font-heading font-bold uppercase">Share</span>
+            <span className="text-[10px] font-heading font-bold uppercase">{t("arena.share")}</span>
           </button>
         ) : undefined
       }
@@ -365,6 +373,7 @@ function ArenaPlayRoom({ code, userId }: { code: string; userId: Id<"users"> | u
 // ───────────────────────── QUESTION (answering column only) ─────────────────────────
 
 function ArenaQuestionColumn({ room, userId }: { room: Room; userId: Id<"users"> | undefined }) {
+  const { t } = useTranslation("play");
   const submitAnswer = useMutation(api.challengeArenas.submitAnswer);
   const question = room.currentQuestion;
   const myAnswered = room.myCurrentAnswer?.answer ?? null;
@@ -390,7 +399,7 @@ function ArenaQuestionColumn({ room, userId }: { room: Room; userId: Id<"users">
   if (!question) {
     return (
       <NeoCard className="text-center py-8">
-        <p className="font-heading font-bold animate-pulse">Loading question…</p>
+        <p className="font-heading font-bold animate-pulse">{t("arena.loadingQuestion")}</p>
       </NeoCard>
     );
   }
@@ -403,6 +412,12 @@ function ArenaQuestionColumn({ room, userId }: { room: Room; userId: Id<"users">
   const selected = pending ?? myAnswered;
   const options =
     "options" in question && Array.isArray(question.options) ? question.options : [];
+  // Canonical English values (same order) — submitted/compared so grading and
+  // selection stay canonical even when `options` are localized labels.
+  const optionValues =
+    "optionValues" in question && Array.isArray(question.optionValues)
+      ? question.optionValues
+      : options;
   const letters = ["A", "B", "C", "D"];
 
   const handleSelect = async (opt: string) => {
@@ -414,7 +429,7 @@ function ArenaQuestionColumn({ room, userId }: { room: Room; userId: Id<"users">
     } catch (e) {
       const msg = e instanceof Error ? e.message : "Submit failed";
       if (!/already answered/i.test(msg)) {
-        toast.error(friendlyError(e, "Couldn’t submit your answer."));
+        toast.error(friendlyError(e, t("arena.submitFailed")));
         setPending(null);
         setSubmitting(false);
       }
@@ -440,7 +455,7 @@ function ArenaQuestionColumn({ room, userId }: { room: Room; userId: Id<"users">
     } catch (e) {
       const msg = e instanceof Error ? e.message : "Submit failed";
       if (!/already answered/i.test(msg)) {
-        toast.error(friendlyError(e, "Couldn’t submit your answer."));
+        toast.error(friendlyError(e, t("arena.submitFailed")));
         setSubmitting(false);
       }
     }
@@ -450,12 +465,12 @@ function ArenaQuestionColumn({ room, userId }: { room: Room; userId: Id<"users">
     <div className="space-y-3">
       {isLogoText ? (
         <NeoCard shadow="lg" className="text-center">
-          {question.imageUrl && <QuestionImage imageUrl={question.imageUrl} alt="Logo quiz image" />}
+          {question.imageUrl && <QuestionImage imageUrl={question.imageUrl} alt={t("arena.logoImageAlt")} />}
         </NeoCard>
       ) : isCameFirst ? (
         <NeoCard shadow="lg" className="text-center">
           <p className="text-[10px] font-heading uppercase text-muted-foreground mb-1">
-            Which came first?
+            {t("arena.whichCameFirst")}
           </p>
           <p className="font-heading font-bold text-lg leading-tight">{question.question}</p>
         </NeoCard>
@@ -463,7 +478,7 @@ function ArenaQuestionColumn({ room, userId }: { room: Room; userId: Id<"users">
         <NeoCard shadow="lg">
           {isLogo && (
             <div className="mb-3">
-              <QuestionImage imageUrl={question.imageUrl} alt={`Image for: ${question.question}`} />
+              <QuestionImage imageUrl={question.imageUrl} alt={t("arena.questionImageAlt", { question: question.question })} />
             </div>
           )}
           <p className="font-heading font-bold text-lg leading-tight">{question.question}</p>
@@ -487,8 +502,8 @@ function ArenaQuestionColumn({ room, userId }: { room: Room; userId: Id<"users">
               spellCheck={false}
               enterKeyHint="go"
               autoFocus
-              placeholder="Name the company"
-              aria-label="Guess the company name"
+              placeholder={t("arena.logoPlaceholder")}
+              aria-label={t("arena.logoAriaLabel")}
               className="min-w-0 flex-1 py-3 font-heading font-bold"
             />
             <NeoButton
@@ -497,21 +512,21 @@ function ArenaQuestionColumn({ room, userId }: { room: Room; userId: Id<"users">
               size="md"
               disabled={locked || submitting || !logoGuess.trim()}
               className="shrink-0 px-4 py-3 disabled:opacity-60"
-              aria-label="Submit guess"
+              aria-label={t("arena.submitGuess")}
             >
               <ArrowRight size={18} strokeWidth={3} />
             </NeoButton>
           </div>
           <div className="min-h-[18px] text-center text-[11px] font-heading font-bold uppercase tracking-wide">
             {locked ? (
-              <span className="text-success">Got it!</span>
+              <span className="text-success">{t("arena.gotIt")}</span>
             ) : logoFeedback === "close" ? (
-              <span className="text-accent">So close — one letter off!</span>
+              <span className="text-accent">{t("arena.feedbackClose")}</span>
             ) : logoFeedback === "wrong" ? (
-              <span className="text-destructive">Nope — try again</span>
+              <span className="text-destructive">{t("arena.feedbackWrong")}</span>
             ) : (
               <span className="text-muted-foreground normal-case">
-                Type your guess and hit enter — keep trying.
+                {t("arena.logoHint")}
               </span>
             )}
           </div>
@@ -519,13 +534,14 @@ function ArenaQuestionColumn({ room, userId }: { room: Room; userId: Id<"users">
       ) : (
         <div className={isCameFirst ? "grid grid-cols-1 gap-3" : "space-y-2"}>
           {options.map((opt, idx) => {
-            const isPicked = selected === opt;
+            const value = optionValues[idx] ?? opt;
+            const isPicked = selected === value;
             return (
               <button
-                key={opt}
+                key={value}
                 type="button"
                 disabled={locked || submitting}
-                onClick={() => void handleSelect(opt)}
+                onClick={() => void handleSelect(value)}
                 className={`w-full neo-border neo-shadow rounded-lg p-4 flex items-center gap-3 text-left cursor-pointer transition-all ${
                   locked && isPicked
                     ? "bg-success text-success-foreground"
@@ -547,7 +563,7 @@ function ArenaQuestionColumn({ room, userId }: { room: Room; userId: Id<"users">
       )}
 
       <p className="text-center text-[11px] text-muted-foreground">
-        {locked ? "Locked in — waiting for reveal…" : isLogoText ? "" : "Tap an option to lock it in."}
+        {locked ? t("arena.lockedWaiting") : isLogoText ? "" : t("arena.tapToLock")}
       </p>
     </div>
   );
@@ -556,11 +572,12 @@ function ArenaQuestionColumn({ room, userId }: { room: Room; userId: Id<"users">
 // ───────────────────────── REVEAL (answering column only) ─────────────────────────
 
 function ArenaRevealColumn({ room, userId }: { room: Room; userId: Id<"users"> | undefined }) {
+  const { t } = useTranslation("play");
   const question = room.currentQuestion;
   if (!question) {
     return (
       <NeoCard className="text-center py-8">
-        <p className="font-heading font-bold animate-pulse">Loading reveal…</p>
+        <p className="font-heading font-bold animate-pulse">{t("arena.loadingReveal")}</p>
       </NeoCard>
     );
   }
@@ -569,7 +586,7 @@ function ArenaRevealColumn({ room, userId }: { room: Room; userId: Id<"users"> |
   const questionText =
     "question" in question && typeof question.question === "string"
       ? question.question
-      : "Name this logo.";
+      : t("arena.nameThisLogo");
   const correctAnswer =
     "correctAnswer" in question && typeof question.correctAnswer === "string"
       ? question.correctAnswer
@@ -599,7 +616,7 @@ function ArenaRevealColumn({ room, userId }: { room: Room; userId: Id<"users"> |
         </p>
         {question.imageUrl && (
           <div className="mb-3 mt-2">
-            <QuestionImage imageUrl={question.imageUrl} alt={isLogoText ? "Logo quiz image" : questionText} />
+            <QuestionImage imageUrl={question.imageUrl} alt={isLogoText ? t("arena.logoImageAlt") : questionText} />
           </div>
         )}
         {!isLogoText && (
@@ -607,7 +624,7 @@ function ArenaRevealColumn({ room, userId }: { room: Room; userId: Id<"users"> |
         )}
         {correctAnswer && (
           <div className="mt-3 neo-border rounded-lg bg-success text-success-foreground px-3 py-2">
-            <p className="text-[10px] font-heading uppercase mb-0.5">Correct</p>
+            <p className="text-[10px] font-heading uppercase mb-0.5">{t("arena.correct")}</p>
             <p className="font-heading font-bold text-sm">{correctAnswer}</p>
           </div>
         )}
@@ -615,7 +632,7 @@ function ArenaRevealColumn({ room, userId }: { room: Room; userId: Id<"users"> |
 
       <NeoCard className="p-0 overflow-hidden">
         <p className="text-[10px] font-heading font-bold uppercase tracking-wide px-3 pt-2.5 pb-1.5">
-          Round answers
+          {t("arena.roundAnswers")}
         </p>
         <div className="max-h-[26dvh] overflow-y-auto scrollbar-none">
           {rows.map(({ player, a }) => {
@@ -630,7 +647,7 @@ function ArenaRevealColumn({ room, userId }: { room: Room; userId: Id<"users"> |
                 <div className="min-w-0 flex-1">
                   <p className="font-heading font-bold text-xs truncate">
                     {player.nameSnapshot}
-                    {isMe && " (you)"}
+                    {isMe && t("arena.youSuffix")}
                   </p>
                   <p className={`text-[10px] font-mono truncate ${isMe ? "opacity-90" : "opacity-70"}`}>
                     {a?.answer || "—"}
@@ -640,7 +657,7 @@ function ArenaRevealColumn({ room, userId }: { room: Room; userId: Id<"users"> |
                   color={!a ? "muted" : a.correct ? "success" : "destructive"}
                   size="sm"
                 >
-                  {!a ? "Missed" : a.correct ? `+${a.points}` : "Wrong"}
+                  {!a ? t("arena.missed") : a.correct ? t("arena.pointsGained", { points: a.points }) : t("arena.wrong")}
                 </NeoBadge>
               </div>
             );
@@ -648,7 +665,7 @@ function ArenaRevealColumn({ room, userId }: { room: Room; userId: Id<"users"> |
         </div>
       </NeoCard>
 
-      <p className="text-center text-[11px] text-muted-foreground">Next up in a moment…</p>
+      <p className="text-center text-[11px] text-muted-foreground">{t("arena.nextUp")}</p>
     </div>
   );
 }

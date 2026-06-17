@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "convex/react";
+import { useTranslation } from "react-i18next";
 import { ArrowLeft, Trophy } from "lucide-react";
 
 import { NeoCard } from "@/components/neo/NeoCard";
@@ -20,17 +21,18 @@ import {
 
 type Filter = "all" | "wins" | "losses" | "draws";
 
-const FILTERS: { key: Filter; label: string }[] = [
-  { key: "all", label: "All" },
-  { key: "wins", label: "Wins" },
-  { key: "losses", label: "Losses" },
-  { key: "draws", label: "Draws" },
+const FILTERS: { key: Filter; labelKey: string }[] = [
+  { key: "all", labelKey: "duelHistory.filterAll" },
+  { key: "wins", labelKey: "duelHistory.filterWins" },
+  { key: "losses", labelKey: "duelHistory.filterLosses" },
+  { key: "draws", labelKey: "duelHistory.filterDraws" },
 ];
 
 export default function DuelHistoryScreen({
   embedded = false,
 }: { embedded?: boolean } = {}) {
   const navigate = useNavigate();
+  const { t } = useTranslation("screens");
   const { user, isGuest } = useAuth();
   const duelsPath = embedded ? SHELL_ROUTES.duels : "/challenge";
   const [filter, setFilter] = useState<Filter>("all");
@@ -82,27 +84,27 @@ export default function DuelHistoryScreen({
           >
             <ArrowLeft size={18} strokeWidth={2.5} />
           </button>
-          <h1 className="text-lg font-heading font-bold uppercase">Duel history</h1>
+          <h1 className="text-lg font-heading font-bold uppercase">{t("duelHistory.title")}</h1>
           <div className="w-9" />
         </div>
 
         <div className="grid grid-cols-3 gap-2">
           <NeoCard color="success" className="text-center py-2.5">
             <p className="font-mono font-bold text-lg leading-none">{tally.wins}</p>
-            <p className="text-[10px] font-heading uppercase opacity-80 mt-1">Wins</p>
+            <p className="text-[10px] font-heading uppercase opacity-80 mt-1">{t("duelHistory.statWins")}</p>
           </NeoCard>
           <NeoCard color="destructive" className="text-center py-2.5">
             <p className="font-mono font-bold text-lg leading-none">{tally.losses}</p>
-            <p className="text-[10px] font-heading uppercase opacity-80 mt-1">Losses</p>
+            <p className="text-[10px] font-heading uppercase opacity-80 mt-1">{t("duelHistory.statLosses")}</p>
           </NeoCard>
           <NeoCard color="blue" className="text-center py-2.5">
             <p className="font-mono font-bold text-lg leading-none">{tally.draws}</p>
-            <p className="text-[10px] font-heading uppercase opacity-80 mt-1">Draws</p>
+            <p className="text-[10px] font-heading uppercase opacity-80 mt-1">{t("duelHistory.statDraws")}</p>
           </NeoCard>
         </div>
 
         <div className="flex gap-2">
-          {FILTERS.map(({ key, label }) => (
+          {FILTERS.map(({ key, labelKey }) => (
             <button
               key={key}
               type="button"
@@ -113,7 +115,7 @@ export default function DuelHistoryScreen({
                   : "bg-background text-muted-foreground"
               }`}
             >
-              {label}
+              {t(labelKey)}
             </button>
           ))}
         </div>
@@ -123,16 +125,16 @@ export default function DuelHistoryScreen({
             <Trophy size={24} strokeWidth={2.5} className="mx-auto mb-2" />
             <p className="text-sm text-muted-foreground">
               {loading
-                ? "Loading…"
+                ? t("duelHistory.loading")
                 : filter === "all"
-                  ? "No finished duels yet. Send one from the Duels page."
-                  : "Nothing here for this filter."}
+                  ? t("duelHistory.emptyAll")
+                  : t("duelHistory.emptyFilter")}
             </p>
           </NeoCard>
         ) : (
           <div className="space-y-2">
             {shown.map((d) => {
-              const badge = duelStatusBadge(d.status, outcomeFor(d));
+              const badge = duelStatusBadge(d.status, outcomeFor(d), t);
               return (
                 <NeoCard
                   key={d.duelId}
@@ -142,10 +144,10 @@ export default function DuelHistoryScreen({
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0">
                       <p className="font-heading font-bold text-sm truncate">
-                        {duelOpponentLabel(d.opponent.username)}
+                        {duelOpponentLabel(d.opponent.username, t)}
                       </p>
                       <p className="text-xs text-muted-foreground capitalize truncate">
-                        {duelSummaryHeadline(d)} · {formatModeLabel(d.mode)} ·{" "}
+                        {duelSummaryHeadline(d, t)} · {formatModeLabel(d.mode, t)} ·{" "}
                         {d.difficulty}
                       </p>
                     </div>
@@ -155,18 +157,20 @@ export default function DuelHistoryScreen({
                   </div>
                   <div className="flex items-center justify-between text-[11px] font-mono">
                     <span>
-                      You <span className="font-bold">{d.myScore}</span> —{" "}
-                      <span className="font-bold">{d.opponentScore}</span> them
+                      {t("duelHistory.scoreYou")}{" "}
+                      <span className="font-bold">{d.myScore}</span> —{" "}
+                      <span className="font-bold">{d.opponentScore}</span>{" "}
+                      {t("duelHistory.scoreThem")}
                     </span>
                     <span className="text-muted-foreground">
-                      {d.resolvedAt ? formatRelativeTime(d.resolvedAt) : ""}
+                      {d.resolvedAt ? formatRelativeTime(d.resolvedAt, t) : ""}
                     </span>
                   </div>
                 </NeoCard>
               );
             })}
             <p className="text-center text-[10px] text-muted-foreground pt-1">
-              Showing your latest {resolved.length} finished duels.
+              {t("duelHistory.showingCount", { count: resolved.length })}
             </p>
           </div>
         )}

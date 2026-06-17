@@ -15,6 +15,7 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { ShellLayout } from "@/components/shell/ShellLayout";
+import { LanguageSwitcher } from "@/components/shell/LanguageSwitcher";
 import { SHELL_ROUTES } from "@/lib/shellRoutes";
 import { useAuth } from "@/contexts/AuthContext";
 import {
@@ -527,6 +528,12 @@ export default function ShellProfileScreen() {
       </NeoCard>
     );
 
+  const languageCard = (
+    <NeoCard className="md:shrink-0">
+      <LanguageSwitcher />
+    </NeoCard>
+  );
+
   const signOut = (
     <div className="flex flex-col gap-2 md:shrink-0 md:mt-auto">
       {guest && (
@@ -566,6 +573,7 @@ export default function ShellProfileScreen() {
           <div className="flex flex-col gap-4 min-h-0 overflow-y-auto">
             {identity}
             {rankCard}
+            {languageCard}
             {signOut}
           </div>
           <div className="flex flex-col gap-4 min-h-0 overflow-y-auto">
@@ -588,6 +596,7 @@ export default function ShellProfileScreen() {
         {badgeGrid}
         {activityCard}
         {seasonsCard}
+        {languageCard}
         {signOut}
       </div>
 

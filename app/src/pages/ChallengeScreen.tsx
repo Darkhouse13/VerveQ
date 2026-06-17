@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useNavigate } from "react-router-dom";
 import { useQuery, useMutation } from "convex/react";
 import {
@@ -42,13 +43,10 @@ import CreateDuelModal from "./challenge/CreateDuelModal";
 import CreateArenaModal from "./arena/CreateArenaModal";
 import JoinArenaModal from "./arena/JoinArenaModal";
 
-function pluralize(n: number, one: string, many: string) {
-  return n === 1 ? `1 ${one}` : `${n} ${many}`;
-}
-
 const RECENT_RESULTS_SHOWN = 3;
 
 export default function ChallengeScreen({ embedded = false }: { embedded?: boolean } = {}) {
+  const { t } = useTranslation("screens");
   const navigate = useNavigate();
   const { user, isGuest, logout } = useAuth();
   // When embedded in the v2 shell, cross-screen links resolve to the contained
@@ -117,15 +115,15 @@ export default function ChallengeScreen({ embedded = false }: { embedded?: boole
     return (
       <div className={embedded ? "" : "min-h-screen bg-background pb-20"}>
         <div className="px-5 pt-6 space-y-6">
-          <h1 className="text-2xl font-heading font-bold">Challenge</h1>
+          <h1 className="text-2xl font-heading font-bold">{t("challenge.title")}</h1>
           <NeoCard shadow="lg" className="text-center py-8">
             <Swords size={32} strokeWidth={2.5} className="mx-auto mb-3" />
-            <p className="font-heading font-bold text-lg">Async duels need an account</p>
+            <p className="font-heading font-bold text-lg">{t("challenge.guestHeadline")}</p>
             <p className="text-sm text-muted-foreground mt-1 mb-4">
-              Create a username so your duels and rivalries can stick.
+              {t("challenge.guestSubtitle")}
             </p>
             <NeoButton variant="primary" size="md" onClick={handleCreateAccount}>
-              Create an account
+              {t("challenge.createAccount")}
             </NeoButton>
           </NeoCard>
         </div>
@@ -146,15 +144,15 @@ export default function ChallengeScreen({ embedded = false }: { embedded?: boole
       <div className="px-5 pt-6 space-y-6">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-heading font-bold">Duels</h1>
+            <h1 className="text-2xl font-heading font-bold">{t("challenge.duelsTitle")}</h1>
             <p className="text-xs text-muted-foreground mt-0.5">
-              Async head-to-heads with your friends.
+              {t("challenge.duelsSubtitle")}
             </p>
           </div>
           {(unread?.count ?? 0) > 0 && (
             <NeoBadge color="destructive" size="sm">
               <Bell size={11} strokeWidth={3} className="mr-1" />
-              {unread?.count} new
+              {t("challenge.unreadNew", { count: unread?.count ?? 0 })}
             </NeoBadge>
           )}
         </div>
@@ -164,19 +162,19 @@ export default function ChallengeScreen({ embedded = false }: { embedded?: boole
             <NeoCard className="text-center py-2.5">
               <p className="font-mono font-bold text-lg leading-none">{record.wins}</p>
               <p className="text-[10px] font-heading uppercase text-muted-foreground mt-1">
-                Wins
+                {t("challenge.wins")}
               </p>
             </NeoCard>
             <NeoCard className="text-center py-2.5">
               <p className="font-mono font-bold text-lg leading-none">{record.losses}</p>
               <p className="text-[10px] font-heading uppercase text-muted-foreground mt-1">
-                Losses
+                {t("challenge.losses")}
               </p>
             </NeoCard>
             <NeoCard className="text-center py-2.5">
               <p className="font-mono font-bold text-lg leading-none">{record.draws}</p>
               <p className="text-[10px] font-heading uppercase text-muted-foreground mt-1">
-                Draws
+                {t("challenge.draws")}
               </p>
             </NeoCard>
           </div>
@@ -186,14 +184,13 @@ export default function ChallengeScreen({ embedded = false }: { embedded?: boole
           <div className="flex items-start justify-between gap-3">
             <div className="min-w-0">
               <p className="font-heading font-bold text-base inline-flex items-center gap-1.5">
-                <Gamepad2 size={16} strokeWidth={3} /> Challenge Arena
+                <Gamepad2 size={16} strokeWidth={3} /> {t("challenge.arenaTitle")}
               </p>
               <p className="text-xs opacity-90">
-                Live 5-round rooms — 1v1, 2v2, or FFA. Share a code, ready up,
-                play together.
+                {t("challenge.arenaDescription")}
               </p>
             </div>
-            <NeoBadge color="primary" size="sm">New</NeoBadge>
+            <NeoBadge color="primary" size="sm">{t("challenge.newBadge")}</NeoBadge>
           </div>
           <div className="grid grid-cols-2 gap-2">
             <NeoButton
@@ -201,14 +198,14 @@ export default function ChallengeScreen({ embedded = false }: { embedded?: boole
               size="md"
               onClick={() => setShowArenaCreate(true)}
             >
-              <Plus size={14} strokeWidth={3} /> Create
+              <Plus size={14} strokeWidth={3} /> {t("challenge.create")}
             </NeoButton>
             <NeoButton
               variant="secondary"
               size="md"
               onClick={() => setShowArenaJoin(true)}
             >
-              <Hash size={14} strokeWidth={3} /> Join code
+              <Hash size={14} strokeWidth={3} /> {t("challenge.joinCode")}
             </NeoButton>
           </div>
         </NeoCard>
@@ -218,7 +215,7 @@ export default function ChallengeScreen({ embedded = false }: { embedded?: boole
           size="full"
           onClick={() => setShowCreate(true)}
         >
-          <Plus size={18} strokeWidth={3} /> New Duel
+          <Plus size={18} strokeWidth={3} /> {t("challenge.newDuel")}
         </NeoButton>
 
         {/* Rivals strip */}
@@ -226,14 +223,14 @@ export default function ChallengeScreen({ embedded = false }: { embedded?: boole
           <div>
             <div className="flex items-center justify-between mb-2">
               <p className="text-xs font-heading font-bold uppercase text-muted-foreground">
-                Your Rivals
+                {t("challenge.yourRivals")}
               </p>
               <button
                 type="button"
                 onClick={() => navigate(rivalsPath)}
                 className="text-xs font-heading font-bold uppercase text-primary underline underline-offset-4 cursor-pointer"
               >
-                See all
+                {t("challenge.seeAll")}
               </button>
             </div>
             <div className="flex gap-2 overflow-x-auto pb-1">
@@ -264,17 +261,17 @@ export default function ChallengeScreen({ embedded = false }: { embedded?: boole
 
         {/* Your Turn */}
         <Section
-          title="Your turn"
+          title={t("challenge.yourTurnTitle")}
           icon={<Swords size={16} strokeWidth={3} />}
-          countLabel={pluralize(yourTurn.length, "duel waiting", "duels waiting")}
-          empty={loading ? "Loading…" : "Nothing waiting on you. Send a new duel."}
+          countLabel={t("challenge.duelsWaiting", { count: yourTurn.length })}
+          empty={loading ? t("challenge.loading") : t("challenge.yourTurnEmpty")}
           accent="primary"
         >
           {yourTurn.map((d) => {
             const badge = d.rematchOfDuelId
-              ? { label: "Rematch", color: "yellow" as const }
-              : duelStatusBadge(d.status, null);
-            const expiresIn = formatRelativeTime(d.expiresAt);
+              ? { label: t("challenge.rematch"), color: "yellow" as const }
+              : duelStatusBadge(d.status, null, t);
+            const expiresIn = formatRelativeTime(d.expiresAt, t);
             return (
               <NeoCard
                 key={d.duelId}
@@ -285,10 +282,10 @@ export default function ChallengeScreen({ embedded = false }: { embedded?: boole
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
                     <p className="font-heading font-bold text-sm truncate">
-                      {duelOpponentLabel(d.opponent.username)}
+                      {duelOpponentLabel(d.opponent.username, t)}
                     </p>
                     <p className="text-xs text-muted-foreground capitalize truncate">
-                      {duelSummaryHeadline(d)} · {formatModeLabel(d.mode)} · {d.difficulty}
+                      {duelSummaryHeadline(d, t)} · {formatModeLabel(d.mode, t)} · {d.difficulty}
                     </p>
                   </div>
                   <NeoBadge color={badge.color} size="sm">
@@ -297,7 +294,10 @@ export default function ChallengeScreen({ embedded = false }: { embedded?: boole
                 </div>
                 <div className="flex items-center justify-between text-[11px]">
                   <span className="font-mono text-muted-foreground">
-                    {d.myAnsweredCount}/{d.questionCount} answered
+                    {t("challenge.answeredCount", {
+                      answered: d.myAnsweredCount,
+                      total: d.questionCount,
+                    })}
                   </span>
                   <span className="font-mono text-muted-foreground inline-flex items-center gap-1">
                     <Clock size={11} strokeWidth={3} /> {expiresIn}
@@ -310,14 +310,14 @@ export default function ChallengeScreen({ embedded = false }: { embedded?: boole
 
         {/* Waiting on them */}
         <Section
-          title="Waiting on them"
+          title={t("challenge.waitingTitle")}
           icon={<Clock size={16} strokeWidth={3} />}
-          countLabel={pluralize(awaiting.length, "duel out", "duels out")}
-          empty={loading ? "Loading…" : "No duels waiting on someone else."}
+          countLabel={t("challenge.duelsOut", { count: awaiting.length })}
+          empty={loading ? t("challenge.loading") : t("challenge.waitingEmpty")}
           accent="blue"
         >
           {awaiting.map((d) => {
-            const badge = duelStatusBadge(d.status, null);
+            const badge = duelStatusBadge(d.status, null, t);
             return (
               <NeoCard
                 key={d.duelId}
@@ -327,10 +327,10 @@ export default function ChallengeScreen({ embedded = false }: { embedded?: boole
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
                     <p className="font-heading font-bold text-sm truncate">
-                      {duelOpponentLabel(d.opponent.username)}
+                      {duelOpponentLabel(d.opponent.username, t)}
                     </p>
                     <p className="text-xs text-muted-foreground capitalize truncate">
-                      {duelSummaryHeadline(d)} · {formatModeLabel(d.mode)} · {d.difficulty}
+                      {duelSummaryHeadline(d, t)} · {formatModeLabel(d.mode, t)} · {d.difficulty}
                     </p>
                   </div>
                   <NeoBadge color={badge.color} size="sm">
@@ -339,11 +339,11 @@ export default function ChallengeScreen({ embedded = false }: { embedded?: boole
                 </div>
                 <div className="flex items-center justify-between text-[11px]">
                   <span className="font-mono">
-                    You: <span className="font-bold">{d.myScore}</span>
+                    {t("challenge.youLabel")} <span className="font-bold">{d.myScore}</span>
                     {d.myCompleted ? " ✓" : ""}
                   </span>
                   <span className="font-mono text-muted-foreground">
-                    {d.linkCode ? "Link share" : "Waiting for opponent"}
+                    {d.linkCode ? t("challenge.linkShare") : t("challenge.waitingForOpponent")}
                   </span>
                 </div>
                 {d.linkCode && (
@@ -353,11 +353,11 @@ export default function ChallengeScreen({ embedded = false }: { embedded?: boole
                       e.stopPropagation();
                       const url = `${window.location.origin}/duel/${d.linkCode}`;
                       navigator.clipboard.writeText(url).catch(() => {});
-                      toast.success("Link copied");
+                      toast.success(t("challenge.linkCopied"));
                     }}
                     className="text-[11px] font-heading font-bold uppercase underline underline-offset-2 text-primary cursor-pointer"
                   >
-                    Copy share link
+                    {t("challenge.copyShareLink")}
                   </button>
                 )}
               </NeoCard>
@@ -372,7 +372,7 @@ export default function ChallengeScreen({ embedded = false }: { embedded?: boole
               <span className="inline-flex items-center justify-center w-5 h-5 rounded-full neo-border bg-muted">
                 <Trophy size={16} strokeWidth={3} />
               </span>
-              Recent results
+              {t("challenge.recentResults")}
             </p>
             {resolved.length > 0 && (
               <button
@@ -380,14 +380,14 @@ export default function ChallengeScreen({ embedded = false }: { embedded?: boole
                 onClick={() => navigate(historyPath)}
                 className="text-xs font-heading font-bold uppercase text-primary underline underline-offset-4 cursor-pointer"
               >
-                History
+                {t("challenge.history")}
               </button>
             )}
           </div>
           {recent.length === 0 ? (
             <NeoCard className="text-center py-5">
               <p className="text-xs text-muted-foreground">
-                {loading ? "Loading…" : "No finished duels yet."}
+                {loading ? t("challenge.loading") : t("challenge.noFinishedDuels")}
               </p>
             </NeoCard>
           ) : (
@@ -399,7 +399,7 @@ export default function ChallengeScreen({ embedded = false }: { embedded?: boole
                       ? d.winnerId === me?._id
                       : "draw"
                     : null;
-                const badge = duelStatusBadge(d.status, winnerForMe);
+                const badge = duelStatusBadge(d.status, winnerForMe, t);
                 const rematchIncoming = d.openRematch && !d.openRematch.byMe;
                 return (
                   <NeoCard
@@ -413,12 +413,12 @@ export default function ChallengeScreen({ embedded = false }: { embedded?: boole
                       </NeoBadge>
                       <div className="min-w-0">
                         <p className="font-heading font-bold text-xs truncate">
-                          {duelOpponentLabel(d.opponent.username)}
+                          {duelOpponentLabel(d.opponent.username, t)}
                         </p>
                         <p className="text-[10px] text-muted-foreground capitalize truncate">
-                          {duelSummaryHeadline(d)}
+                          {duelSummaryHeadline(d, t)}
                           {d.resolvedAt
-                            ? ` · ${formatRelativeTime(d.resolvedAt)}`
+                            ? ` · ${formatRelativeTime(d.resolvedAt, t)}`
                             : ""}
                         </p>
                       </div>
@@ -426,7 +426,7 @@ export default function ChallengeScreen({ embedded = false }: { embedded?: boole
                     <div className="flex items-center gap-2 shrink-0">
                       {rematchIncoming && (
                         <NeoBadge color="yellow" size="sm">
-                          Rematch!
+                          {t("challenge.rematchIncoming")}
                         </NeoBadge>
                       )}
                       <p className="font-mono font-bold text-xs">
@@ -441,11 +441,11 @@ export default function ChallengeScreen({ embedded = false }: { embedded?: boole
                 className="py-3 flex items-center justify-between"
               >
                 <p className="font-heading font-bold text-sm inline-flex items-center gap-2">
-                  <History size={16} strokeWidth={2.5} /> Duel history
+                  <History size={16} strokeWidth={2.5} /> {t("challenge.duelHistory")}
                 </p>
                 <span className="inline-flex items-center gap-1.5">
                   <NeoBadge color="muted" size="sm">
-                    {pluralize(resolved.length, "result", "results")}
+                    {t("challenge.resultsCount", { count: resolved.length })}
                   </NeoBadge>
                   <ChevronRight size={16} strokeWidth={3} />
                 </span>
@@ -461,8 +461,8 @@ export default function ChallengeScreen({ embedded = false }: { embedded?: boole
           <div className="flex items-center gap-3">
             <Users size={22} strokeWidth={2.5} />
             <div>
-              <p className="font-heading font-bold text-sm">Rivals</p>
-              <p className="text-xs text-muted-foreground">Head-to-head ledger</p>
+              <p className="font-heading font-bold text-sm">{t("challenge.rivals")}</p>
+              <p className="text-xs text-muted-foreground">{t("challenge.rivalsLedger")}</p>
             </div>
           </div>
           <NeoBadge color="primary" size="sm">

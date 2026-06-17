@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useMutation, useQuery } from "convex/react";
+import { useTranslation } from "react-i18next";
 import { Check, X, Clock, Trophy, ArrowLeft, Swords } from "lucide-react";
 import { toast } from "sonner";
 import { friendlyError } from "@/lib/errors";
@@ -55,6 +56,7 @@ type DuelView = {
     checksum: string;
     question: string;
     options: string[];
+    optionValues: string[];
     category: string;
     difficulty: string;
     imageUrl: string | null;
@@ -104,6 +106,7 @@ export default function DuelPlayScreen() {
 
 export function DuelPlay({ duelId, guestToken, initialView }: DuelPlayProps) {
   const navigate = useNavigate();
+  const { t, i18n } = useTranslation("screens");
   const { user } = useAuth();
   const getMyDuel = useMutation(api.duels.getMyDuel);
   const submitAnswer = useMutation(api.duels.submitAnswer);
@@ -143,15 +146,16 @@ export function DuelPlay({ duelId, guestToken, initialView }: DuelPlayProps) {
       const fresh = (await getMyDuel({
         duelId,
         guestToken: guestTokenForArgs,
+        locale: i18n.resolvedLanguage ?? i18n.language,
       })) as DuelView;
       setView(fresh);
       setLoadError(null);
       return fresh;
     } catch (e) {
-      setLoadError(friendlyError(e, "Failed to load duel"));
+      setLoadError(friendlyError(e, t("duelPlay.errorLoadDuel")));
       return null;
     }
-  }, [duelId, getMyDuel, guestTokenForArgs]);
+  }, [duelId, getMyDuel, guestTokenForArgs, t, i18n]);
 
   useEffect(() => {
     if (!initialView) {
@@ -196,7 +200,8 @@ export function DuelPlay({ duelId, guestToken, initialView }: DuelPlayProps) {
       const result = await submitAnswer({
         duelId,
         questionIndex,
-        answer: view.currentQuestion.options[idx],
+        // Canonical English value — grading compares against correctAnswer.
+        answer: view.currentQuestion.optionValues[idx],
         guestToken: guestTokenForArgs,
       });
       setRevealed({
@@ -212,7 +217,7 @@ export function DuelPlay({ duelId, guestToken, initialView }: DuelPlayProps) {
         await refresh();
       }, AUTO_ADVANCE_DELAY_MS);
     } catch (e) {
-      toast.error(friendlyError(e, "Failed to submit answer"));
+      toast.error(friendlyError(e, t("duelPlay.errorSubmitAnswer")));
       setSelected(null);
     } finally {
       setSubmitting(false);
@@ -225,15 +230,15 @@ export function DuelPlay({ duelId, guestToken, initialView }: DuelPlayProps) {
     try {
       const result = await rematchMut({ duelId: view.duelId });
       if (result.existing) {
-        toast.success("Rematch already open — joining it");
+        toast.success(t("duelPlay.rematchAlreadyOpen"));
       } else if (result.linkCode) {
-        toast.success("Rematch ready");
+        toast.success(t("duelPlay.rematchReady"));
       } else {
-        toast.success("Rematch sent");
+        toast.success(t("duelPlay.rematchSent"));
       }
       navigate(`/duel/play/${result.duelId}`);
     } catch (e) {
-      toast.error(friendlyError(e, "Rematch failed"));
+      toast.error(friendlyError(e, t("duelPlay.errorRematchFailed")));
     } finally {
       setRematching(false);
     }
@@ -249,10 +254,10 @@ export function DuelPlay({ duelId, guestToken, initialView }: DuelPlayProps) {
     return (
       <div className="min-h-screen bg-background px-5 py-8 flex flex-col items-center justify-center">
         <NeoCard shadow="lg" className="w-full max-w-md text-center py-8">
-          <p className="font-heading font-bold text-lg mb-2">Couldn&apos;t load duel</p>
+          <p className="font-heading font-bold text-lg mb-2">{t("duelPlay.couldntLoadDuel")}</p>
           <p className="text-xs text-muted-foreground mb-4 break-words">{loadError}</p>
           <NeoButton variant="primary" size="full" onClick={() => navigate("/challenge")}>
-            Back to duels
+            {t("duelPlay.backToDuels")}
           </NeoButton>
         </NeoCard>
       </div>
@@ -262,7 +267,7 @@ export function DuelPlay({ duelId, guestToken, initialView }: DuelPlayProps) {
   if (!view) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
-        <p className="font-heading font-bold animate-pulse">Loading duel…</p>
+        <p className="font-heading font-bold animate-pulse">{t("duelPlay.loadingDuel")}</p>
       </div>
     );
   }
@@ -272,7 +277,10 @@ export function DuelPlay({ duelId, guestToken, initialView }: DuelPlayProps) {
   const isCameFirst = view.mode === "came_first";
   const totalQ = view.questionCount;
   const answered = view.myResult.perQuestion.length;
-  const progress = `Q ${Math.min(answered + 1, totalQ)} / ${totalQ}`;
+  const progress = t("duelPlay.progress", {
+    current: Math.min(answered + 1, totalQ),
+    total: totalQ,
+  });
 
   const openRematchHandler = (rematchDuelId: Id<"duels">) =>
     navigate(`/duel/play/${rematchDuelId}`);
@@ -328,13 +336,13 @@ export function DuelPlay({ duelId, guestToken, initialView }: DuelPlayProps) {
   if (!question) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
-        <p className="font-heading font-bold animate-pulse">Loading question…</p>
+        <p className="font-heading font-bold animate-pulse">{t("duelPlay.loadingQuestion")}</p>
       </div>
     );
   }
 
   const correctIdx = revealed
-    ? question.options.indexOf(revealed.correctAnswer)
+    ? question.optionValues.indexOf(revealed.correctAnswer)
     : -1;
 
   const getOptionStyle = (idx: number) => {
@@ -360,33 +368,35 @@ export function DuelPlay({ duelId, guestToken, initialView }: DuelPlayProps) {
           <ArrowLeft size={18} strokeWidth={2.5} />
         </button>
         <p className="font-mono font-bold text-sm inline-flex items-center gap-1">
-          <Clock size={14} strokeWidth={3} /> {formatRelativeTime(view.expiresAt)}
+          <Clock size={14} strokeWidth={3} /> {formatRelativeTime(view.expiresAt, t)}
         </p>
       </div>
 
       <div className="flex items-center justify-between mb-3">
         <p className="text-xs font-heading font-bold uppercase truncate">
           {view.opponent.id === null && view.role === "challenger"
-            ? "Set your score"
-            : `vs @${opponentName}`}
+            ? t("duelPlay.setYourScore")
+            : t("duelPlay.versusOpponent", { name: opponentName })}
         </p>
         <p className="font-heading font-bold text-xs">{progress}</p>
       </div>
 
       <div className="flex items-center justify-between mb-1">
-        <p className="font-mono font-bold text-sm">Score: {view.myResult.score}</p>
+        <p className="font-mono font-bold text-sm">
+          {t("duelPlay.scoreLabel", { score: view.myResult.score })}
+        </p>
         <NeoBadge color="primary" size="sm">
-          {formatModeLabel(view.mode)}
+          {formatModeLabel(view.mode, t)}
         </NeoBadge>
       </div>
       <p className="text-[10px] text-muted-foreground mb-4">
-        Fast answers score more — correct always counts.
+        {t("duelPlay.fastAnswersHint")}
       </p>
 
       {isCameFirst ? (
         <NeoCard shadow="lg" className="mb-5 text-center">
           <p className="text-xs font-heading uppercase text-muted-foreground mb-1">
-            Which came first?
+            {t("duelPlay.whichCameFirst")}
           </p>
           <p className="font-heading font-bold text-lg leading-tight">
             {question.question}
@@ -398,7 +408,7 @@ export function DuelPlay({ duelId, guestToken, initialView }: DuelPlayProps) {
             <div className="mb-3">
               <QuestionImage
                 imageUrl={question.imageUrl}
-                alt={`Image for: ${question.question}`}
+                alt={t("duelPlay.imageAlt", { question: question.question })}
               />
             </div>
           )}
@@ -439,7 +449,9 @@ export function DuelPlay({ duelId, guestToken, initialView }: DuelPlayProps) {
           className="mt-4 text-sm leading-snug"
         >
           <p className="font-heading font-bold text-sm">
-            {revealed.correct ? `Correct · +${revealed.score} pts` : "Wrong · no points"}
+            {revealed.correct
+              ? t("duelPlay.revealCorrect", { score: revealed.score })
+              : t("duelPlay.revealWrong")}
           </p>
           {revealed.explanation && <p className="mt-1">{revealed.explanation}</p>}
         </NeoCard>
@@ -457,14 +469,15 @@ function RematchPrompt({
   opponentName: string;
   onOpen: (duelId: Id<"duels">) => void;
 }) {
+  const { t } = useTranslation("screens");
   if (!openRematch) return null;
   if (openRematch.byMe) {
     return (
       <NeoCard className="w-full mb-3 flex items-center justify-between gap-3">
         <div className="min-w-0">
-          <p className="font-heading font-bold text-sm">Rematch sent</p>
+          <p className="font-heading font-bold text-sm">{t("duelPlay.rematchSentTitle")}</p>
           <p className="text-xs text-muted-foreground truncate">
-            Waiting for @{opponentName} to play.
+            {t("duelPlay.waitingForOpponentToPlay", { name: opponentName })}
           </p>
         </div>
         <NeoButton
@@ -472,7 +485,7 @@ function RematchPrompt({
           size="sm"
           onClick={() => onOpen(openRematch.duelId)}
         >
-          Open
+          {t("duelPlay.open")}
         </NeoButton>
       </NeoCard>
     );
@@ -480,14 +493,14 @@ function RematchPrompt({
   return (
     <NeoCard color="accent" shadow="lg" className="w-full mb-3 space-y-2">
       <p className="font-heading font-bold text-sm inline-flex items-center gap-1.5">
-        <Swords size={14} strokeWidth={3} /> @{opponentName} wants a rematch!
+        <Swords size={14} strokeWidth={3} /> {t("duelPlay.opponentWantsRematch", { name: opponentName })}
       </p>
       <NeoButton
         variant="primary"
         size="full"
         onClick={() => onOpen(openRematch.duelId)}
       >
-        Accept rematch
+        {t("duelPlay.acceptRematch")}
       </NeoButton>
     </NeoCard>
   );
@@ -514,6 +527,7 @@ function WaitingForOpponent({
   onBack: () => void;
   onSeeResult: () => void;
 }) {
+  const { t } = useTranslation("screens");
   const markShared = useMutation(api.duels.markShared);
 
   if (liveStatus && liveStatus.status !== "awaiting_opponent") {
@@ -545,10 +559,13 @@ function WaitingForOpponent({
     const url = buildShareUrl(view.linkCode);
     try {
       if (navigator.share) {
-        await navigator.share({ text: `Beat my ${view.myResult.score}`, url });
+        await navigator.share({
+          text: t("duelPlay.shareBeatMyScore", { score: view.myResult.score }),
+          url,
+        });
       } else {
         await navigator.clipboard.writeText(url);
-        toast.success("Link copied");
+        toast.success(t("duelPlay.linkCopied"));
       }
     } catch {
       /* ignore */
@@ -560,22 +577,21 @@ function WaitingForOpponent({
       <div className="min-h-screen bg-background px-5 py-8 flex flex-col items-center">
         <NeoCard shadow="lg" className="w-full text-center py-8 mb-5">
           <Trophy size={28} strokeWidth={2.5} className="mx-auto mb-2" />
-          <p className="font-heading font-bold text-lg">That&apos;s your score</p>
+          <p className="font-heading font-bold text-lg">{t("duelPlay.thatsYourScore")}</p>
           <p className="font-mono font-bold text-3xl mt-3">{view.myResult.score}</p>
           <p className="text-[10px] font-heading uppercase text-muted-foreground">
-            your score
+            {t("duelPlay.yourScore")}
           </p>
           <p className="text-sm text-muted-foreground mt-4">
-            Now invite a friend to beat it — the first to open your link plays the
-            same questions.
+            {t("duelPlay.inviteFriendToBeatItHint")}
           </p>
         </NeoCard>
         <div className="w-full space-y-3">
           <NeoButton variant="primary" size="full" onClick={share}>
-            Invite a friend
+            {t("duelPlay.inviteAFriend")}
           </NeoButton>
           <NeoButton variant="secondary" size="full" onClick={onBack}>
-            Back to duels
+            {t("duelPlay.backToDuels")}
           </NeoButton>
         </div>
       </div>
@@ -588,23 +604,23 @@ function WaitingForOpponent({
     <div className="min-h-screen bg-background px-5 py-8 flex flex-col items-center">
       <NeoCard shadow="lg" className="w-full text-center py-8 mb-5">
         <Clock size={28} strokeWidth={2.5} className="mx-auto mb-2" />
-        <p className="font-heading font-bold text-lg">Locked in</p>
+        <p className="font-heading font-bold text-lg">{t("duelPlay.lockedIn")}</p>
         <p className="text-sm text-muted-foreground mt-1">
-          Waiting for @{opponentName} to finish.
+          {t("duelPlay.waitingForOpponentToFinish", { name: opponentName })}
         </p>
         <p className="font-mono font-bold text-3xl mt-4">{view.myResult.score}</p>
         <p className="text-[10px] font-heading uppercase text-muted-foreground">
-          your score
+          {t("duelPlay.yourScore")}
         </p>
       </NeoCard>
       <div className="w-full space-y-3">
         {canInvite && (
           <NeoButton variant="secondary" size="full" onClick={share}>
-            Share challenge link
+            {t("duelPlay.shareChallengeLink")}
           </NeoButton>
         )}
         <NeoButton variant="primary" size="full" onClick={onBack}>
-          Back to duels
+          {t("duelPlay.backToDuels")}
         </NeoButton>
       </div>
     </div>
@@ -615,15 +631,16 @@ function statusHeadline(
   view: DuelView,
   status: Pick<DuelStatus, "status" | "winnerId">,
   userId: string | null,
+  t: (key: string) => string,
 ) {
   if (status.status === "expired") {
-    return { title: "Duel expired", color: "muted" as const };
+    return { title: t("duelPlay.duelExpired"), color: "muted" as const };
   }
   if (status.status === "declined") {
-    return { title: "Duel declined", color: "muted" as const };
+    return { title: t("duelPlay.duelDeclined"), color: "muted" as const };
   }
   if (!status.winnerId) {
-    return { title: "Draw", color: "blue" as const };
+    return { title: t("duelPlay.draw"), color: "blue" as const };
   }
   const challengerWon = status.winnerId === view.challenger.id;
   const mine =
@@ -633,8 +650,8 @@ function statusHeadline(
         ? challengerWon
         : !challengerWon;
   return mine
-    ? { title: "You won", color: "success" as const }
-    : { title: "You lost", color: "destructive" as const };
+    ? { title: t("duelPlay.youWon"), color: "success" as const }
+    : { title: t("duelPlay.youLost"), color: "destructive" as const };
 }
 
 function LiveResolvedStatus({
@@ -658,7 +675,8 @@ function LiveResolvedStatus({
   onBack: () => void;
   onSeeResult: () => void;
 }) {
-  const headline = statusHeadline(view, status, userId);
+  const { t } = useTranslation("screens");
+  const headline = statusHeadline(view, status, userId, t);
   const opponentName =
     view.role === "challenger" ? view.opponent.displayName : view.challenger.displayName;
   const openRematch = canRematch ? status.openRematch : null;
@@ -668,7 +686,7 @@ function LiveResolvedStatus({
       <NeoCard shadow="lg" className="w-full text-center py-8 mb-5">
         <Trophy size={28} strokeWidth={2.5} className="mx-auto mb-2" />
         <p className="text-xs font-heading uppercase text-muted-foreground mb-2">
-          @{opponentName} finished
+          {t("duelPlay.opponentFinished", { name: opponentName })}
         </p>
         <NeoBadge color={headline.color} rotated size="md" className="text-lg px-5 py-2">
           {headline.title}
@@ -691,14 +709,14 @@ function LiveResolvedStatus({
             onClick={onRematch}
           >
             <Swords size={16} strokeWidth={3} />
-            {rematching ? "Sending…" : "Rematch"}
+            {rematching ? t("duelPlay.sending") : t("duelPlay.rematch")}
           </NeoButton>
         )}
         <NeoButton variant={canRematch ? "secondary" : "primary"} size="full" onClick={onSeeResult}>
-          See full result
+          {t("duelPlay.seeFullResult")}
         </NeoButton>
         <NeoButton variant="ghost" size="full" onClick={onBack}>
-          Back to duels
+          {t("duelPlay.backToDuels")}
         </NeoButton>
       </div>
     </div>
@@ -720,22 +738,23 @@ function DuelLocked({
   onBack: () => void;
   onSeeResult: () => void;
 }) {
-  let title = "Duel resolved";
+  const { t } = useTranslation("screens");
+  let title = t("duelPlay.duelResolved");
   let color: "success" | "destructive" | "blue" | "muted" = "blue";
   if (view.status === "expired") {
-    title = "Duel expired";
+    title = t("duelPlay.duelExpired");
     color = "muted";
   } else if (view.status === "declined") {
-    title = "Duel declined";
+    title = t("duelPlay.duelDeclined");
     color = "muted";
   } else if (view.winnerId && userId && view.winnerId === userId) {
-    title = "You won";
+    title = t("duelPlay.youWon");
     color = "success";
   } else if (view.winnerId && userId && view.winnerId !== userId) {
-    title = "You lost";
+    title = t("duelPlay.youLost");
     color = "destructive";
   } else {
-    title = "Draw";
+    title = t("duelPlay.draw");
     color = "blue";
   }
   return (
@@ -760,10 +779,10 @@ function DuelLocked({
       />
       <div className="w-full space-y-3">
         <NeoButton variant="primary" size="full" onClick={onSeeResult}>
-          See full result
+          {t("duelPlay.seeFullResult")}
         </NeoButton>
         <NeoButton variant="secondary" size="full" onClick={onBack}>
-          Back to duels
+          {t("duelPlay.backToDuels")}
         </NeoButton>
       </div>
     </div>

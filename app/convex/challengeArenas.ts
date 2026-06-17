@@ -13,6 +13,10 @@ import { internal } from "./_generated/api";
 import { normalizeAnswer } from "./lib/scoring";
 import { matchLogoGuess } from "./lib/logoTextAnswers";
 import { orderAnswerOptions } from "./lib/answerOptions";
+import {
+  composeLocalizedQuestion,
+  fetchQuestionTranslation,
+} from "./lib/contentI18n";
 import { assertUsernameRequiredUser } from "./lib/authz";
 import {
   challengeArenaCapitalCityQuestions,
@@ -1268,9 +1272,10 @@ async function collectUpcomingImageUrls(
 }
 
 async function sanitizeQuestion(
-  ctx: Pick<QueryCtx | MutationCtx, "storage">,
+  ctx: Pick<QueryCtx | MutationCtx, "storage" | "db">,
   question: Question,
   includeCorrectAnswer: boolean,
+  locale?: string,
 ) {
   const kind = questionKind(question);
   const imageUrl = question.imageUrl ?? (question.imageId
@@ -1293,14 +1298,24 @@ async function sanitizeQuestion(
     };
   }
 
+  // Display-translate, grade-canonical (docs/I18N_CONTENT_DESIGN.md): players
+  // submit the canonical optionValues; options may be localized labels.
+  const orderedValues = orderAnswerOptions(
+    question.options,
+    question.correctAnswer,
+    question.checksum,
+  );
+  const translation = await fetchQuestionTranslation(
+    ctx,
+    question.checksum,
+    locale,
+  );
+  const localized = composeLocalizedQuestion(question, orderedValues, translation);
   return {
     kind,
-    question: question.question,
-    options: orderAnswerOptions(
-      question.options,
-      question.correctAnswer,
-      question.checksum,
-    ),
+    question: localized.question,
+    options: localized.options,
+    optionValues: localized.optionValues,
     category: question.category,
     difficulty: question.difficulty,
     imageUrl,
@@ -2481,6 +2496,7 @@ export const getRoom = query({
   args: {
     arenaId: v.optional(v.id("arenas")),
     code: v.optional(v.string()),
+    locale: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     const userId = await getAuthUserId(ctx);
@@ -2499,7 +2515,7 @@ export const getRoom = query({
         arena.phase === "final");
     const includeCorrectAnswer = arena.phase !== "question";
     const currentQuestion = includeQuestion
-      ? await sanitizeQuestion(ctx, question, includeCorrectAnswer)
+      ? await sanitizeQuestion(ctx, question, includeCorrectAnswer, args.locale)
       : null;
 
     const currentAnswers = await answersForQuestion(

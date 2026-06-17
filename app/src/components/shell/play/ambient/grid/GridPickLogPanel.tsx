@@ -5,6 +5,7 @@
  * surfaced only on lock-in. Never lists answers for unfilled cells. Content-blind
  * by contract (answer-leak guard).
  */
+import { useTranslation } from "react-i18next";
 import { difficultyStyle, monogram } from "../../grid/difficulty";
 import type { GridPickItem } from "./types";
 
@@ -15,11 +16,12 @@ export function GridPickLogPanel({
   picks: GridPickItem[];
   totalCells: number;
 }) {
+  const { t } = useTranslation("play");
   return (
     <div className="neo-border neo-shadow rounded-xl bg-background p-3.5 flex flex-col h-full min-h-0">
       <div className="flex items-center justify-between shrink-0">
         <p className="text-[10px] font-heading font-bold uppercase tracking-wide text-muted-foreground">
-          Your pick log
+          {t("ambient.yourPickLog")}
         </p>
         <span className="neo-border rounded-full bg-card px-2 py-0.5 font-mono font-bold text-[9px]">
           {picks.length}/{totalCells}
@@ -29,7 +31,7 @@ export function GridPickLogPanel({
       <div className="flex-1 min-h-0 overflow-y-auto scrollbar-none mt-3 space-y-2">
         {picks.length === 0 ? (
           <p className="font-mono text-[11px] leading-relaxed text-muted-foreground px-0.5 py-1">
-            No picks yet — tap any square to search for a player who fits both its row &amp; column.
+            {t("ambient.noPicksYet")}
           </p>
         ) : (
           picks.map((pick) => {
@@ -48,7 +50,7 @@ export function GridPickLogPanel({
                 </div>
                 {style && (
                   <span className={`font-mono text-[10px] font-bold ${style.textClass}`}>
-                    {pick.points ?? 0}p
+                    {t("ambient.pointsShort", { points: pick.points ?? 0 })}
                   </span>
                 )}
               </div>

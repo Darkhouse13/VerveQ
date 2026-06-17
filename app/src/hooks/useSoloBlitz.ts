@@ -12,6 +12,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useMutation } from "convex/react";
+import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import { api } from "../../convex/_generated/api";
 import { useAntiCheat } from "@/hooks/useAntiCheat";
@@ -20,6 +21,8 @@ import type { Id } from "../../convex/_generated/dataModel";
 interface QuestionData {
   question: string;
   options: string[];
+  // Canonical English options (same order) — submitted so grading stays canonical.
+  optionValues: string[];
   checksum: string;
   imageUrl?: string | null;
 }
@@ -46,6 +49,7 @@ export interface SoloBlitzState {
 }
 
 export function useSoloBlitz(): SoloBlitzState {
+  const { t, i18n } = useTranslation("play");
   const navigate = useNavigate();
   const [params] = useSearchParams();
   const sport = params.get("sport") || "football";
@@ -110,7 +114,10 @@ export function useSoloBlitz(): SoloBlitzState {
   const fetchQuestion = useCallback(
     async (sid: Id<"blitzSessions">) => {
       try {
-        const q = await getQuestionMut({ sessionId: sid });
+        const q = await getQuestionMut({
+          sessionId: sid,
+          locale: i18n.resolvedLanguage ?? i18n.language,
+        });
         setQuestion(q);
         setRevealedAnswer(null);
         setSelected(null);
@@ -120,7 +127,7 @@ export function useSoloBlitz(): SoloBlitzState {
         void finishGame();
       }
     },
-    [getQuestionMut, finishGame],
+    [getQuestionMut, finishGame, i18n],
   );
 
   useEffect(() => {
@@ -131,12 +138,15 @@ export function useSoloBlitz(): SoloBlitzState {
         });
         setSessionId(sid);
         sessionRef.current = sid;
-        const q = await getQuestionMut({ sessionId: sid });
+        const q = await getQuestionMut({
+          sessionId: sid,
+          locale: i18n.resolvedLanguage ?? i18n.language,
+        });
         setQuestion(q);
         setEndTimeMs(serverEndTimeMs);
         setLoading(false);
       } catch {
-        toast.error("Failed to start blitz");
+        toast.error(t("blitz.startFailedToast"));
         navigate(-1);
       }
     })();
@@ -156,10 +166,10 @@ export function useSoloBlitz(): SoloBlitzState {
           setEndTimeMs(res.endTimeMs);
           if (res.gameOver) void finishGame();
         });
-        toast.error("Tab switch — counted as a wrong answer (-3s)");
+        toast.error(t("blitz.tabSwitchWrong"));
       }
-    }, [gameOver, question, sessionId, revealed, submitAnswerMut, finishGame]),
-    { warningMessage: "Don't switch tabs — it counts as a wrong answer (-3s)" },
+    }, [gameOver, question, sessionId, revealed, submitAnswerMut, finishGame, t]),
+    { warningMessage: t("blitz.tabSwitchWarning") },
   );
 
   const onOption = useCallback(
@@ -184,7 +194,8 @@ export function useSoloBlitz(): SoloBlitzState {
       try {
         const res = await submitAnswerMut({
           sessionId,
-          answer: question.options[idx],
+          // Canonical English value — grading compares against correctAnswer.
+          answer: question.optionValues[idx],
           checksum: question.checksum,
         });
         setScore(res.score);
@@ -220,7 +231,9 @@ export function useSoloBlitz(): SoloBlitzState {
   );
 
   const correctIdx =
-    question && revealedAnswer ? question.options.indexOf(revealedAnswer) : -1;
+    question && revealedAnswer
+      ? question.optionValues.indexOf(revealedAnswer)
+      : -1;
 
   return {
     loading,
