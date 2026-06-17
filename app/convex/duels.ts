@@ -15,6 +15,10 @@ import {
   isUsernameRequiredUserDoc,
 } from "./lib/authz";
 import { orderAnswerOptions } from "./lib/answerOptions";
+import {
+  composeLocalizedQuestion,
+  fetchQuestionTranslation,
+} from "./lib/contentI18n";
 import { assertClientSport } from "./lib/sports";
 import { selectQuestionsWithImageCap } from "./lib/imageQuestions";
 import { calculateDuelTimeScore, normalizeAnswer } from "./lib/scoring";
@@ -283,6 +287,7 @@ async function ensureQuestionServed(
 async function publicQuestion(
   ctx: Pick<MutationCtx, "db" | "storage">,
   checksum: string,
+  locale?: string,
 ) {
   const question = await ctx.db
     .query("quizQuestions")
@@ -293,14 +298,24 @@ async function publicQuestion(
   const imageUrl = question.imageId
     ? await ctx.storage.getUrl(question.imageId)
     : null;
+  // Display-translate, grade-canonical (docs/I18N_CONTENT_DESIGN.md): each
+  // viewer submits the canonical optionValues; options may be localized labels.
+  const orderedValues = orderAnswerOptions(
+    question.options,
+    question.correctAnswer,
+    question.checksum,
+  );
+  const translation = await fetchQuestionTranslation(ctx, checksum, locale);
+  const localized = composeLocalizedQuestion(
+    question,
+    orderedValues,
+    translation,
+  );
   return {
     checksum: question.checksum,
-    question: question.question,
-    options: orderAnswerOptions(
-      question.options,
-      question.correctAnswer,
-      question.checksum,
-    ),
+    question: localized.question,
+    options: localized.options,
+    optionValues: localized.optionValues,
     category: question.category,
     difficulty: question.difficulty,
     imageUrl,
@@ -335,6 +350,7 @@ async function buildDuelView(
   ctx: Pick<MutationCtx, "db" | "storage">,
   duel: Doc<"duels">,
   side: DuelSide,
+  locale?: string,
 ) {
   const myResult = getResultForSide(duel, side);
   const opponentResult =
@@ -389,7 +405,7 @@ async function buildDuelView(
     opponentResult: sanitizeOpponentResult(opponentResult),
     winnerId: duel.winnerId ?? null,
     currentQuestion: hasCurrent
-      ? await publicQuestion(ctx, duel.questionChecksums[nextIndex])
+      ? await publicQuestion(ctx, duel.questionChecksums[nextIndex], locale)
       : null,
   };
 }
@@ -804,8 +820,9 @@ export const getMyDuel = mutation({
   args: {
     duelId: v.id("duels"),
     guestToken: v.optional(v.string()),
+    locale: v.optional(v.string()),
   },
-  handler: async (ctx, { duelId, guestToken }) => {
+  handler: async (ctx, { duelId, guestToken, locale }) => {
     const duel = await ctx.db.get(duelId);
     if (!duel) throw new Error("Duel not found");
     const participant = await identifyParticipant(ctx, duel, guestToken);
@@ -813,7 +830,7 @@ export const getMyDuel = mutation({
       Date.now() >= duel.expiresAt
         ? await resolveDuelIfReady(ctx, duelId, Date.now(), true) ?? duel
         : await ensureQuestionServed(ctx, duel, participant.side, Date.now());
-    return await buildDuelView(ctx, current, participant.side);
+    return await buildDuelView(ctx, current, participant.side, locale);
   },
 });
 
@@ -821,8 +838,9 @@ export const getByLinkCode = mutation({
   args: {
     linkCode: v.string(),
     guestToken: v.optional(v.string()),
+    locale: v.optional(v.string()),
   },
-  handler: async (ctx, { linkCode, guestToken }) => {
+  handler: async (ctx, { linkCode, guestToken, locale }) => {
     const duel = await ctx.db
       .query("duels")
       .withIndex("by_linkCode", (q) => q.eq("linkCode", linkCode.trim()))
@@ -831,7 +849,7 @@ export const getByLinkCode = mutation({
     if (Date.now() >= duel.expiresAt) {
       const expired = await resolveDuelIfReady(ctx, duel._id, Date.now(), true);
       if (!expired) throw new Error("Duel expired");
-      return await buildDuelView(ctx, expired, "opponent");
+      return await buildDuelView(ctx, expired, "opponent", locale);
     }
     if (duel.status !== "awaiting_opponent") {
       throw new Error("Duel is no longer open");
@@ -915,7 +933,7 @@ export const getByLinkCode = mutation({
       });
     }
 
-    return await buildDuelView(ctx, served, "opponent");
+    return await buildDuelView(ctx, served, "opponent", locale);
   },
 });
 

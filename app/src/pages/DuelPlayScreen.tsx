@@ -56,6 +56,7 @@ type DuelView = {
     checksum: string;
     question: string;
     options: string[];
+    optionValues: string[];
     category: string;
     difficulty: string;
     imageUrl: string | null;
@@ -105,7 +106,7 @@ export default function DuelPlayScreen() {
 
 export function DuelPlay({ duelId, guestToken, initialView }: DuelPlayProps) {
   const navigate = useNavigate();
-  const { t } = useTranslation("screens");
+  const { t, i18n } = useTranslation("screens");
   const { user } = useAuth();
   const getMyDuel = useMutation(api.duels.getMyDuel);
   const submitAnswer = useMutation(api.duels.submitAnswer);
@@ -145,6 +146,7 @@ export function DuelPlay({ duelId, guestToken, initialView }: DuelPlayProps) {
       const fresh = (await getMyDuel({
         duelId,
         guestToken: guestTokenForArgs,
+        locale: i18n.resolvedLanguage ?? i18n.language,
       })) as DuelView;
       setView(fresh);
       setLoadError(null);
@@ -198,7 +200,8 @@ export function DuelPlay({ duelId, guestToken, initialView }: DuelPlayProps) {
       const result = await submitAnswer({
         duelId,
         questionIndex,
-        answer: view.currentQuestion.options[idx],
+        // Canonical English value — grading compares against correctAnswer.
+        answer: view.currentQuestion.optionValues[idx],
         guestToken: guestTokenForArgs,
       });
       setRevealed({
@@ -339,7 +342,7 @@ export function DuelPlay({ duelId, guestToken, initialView }: DuelPlayProps) {
   }
 
   const correctIdx = revealed
-    ? question.options.indexOf(revealed.correctAnswer)
+    ? question.optionValues.indexOf(revealed.correctAnswer)
     : -1;
 
   const getOptionStyle = (idx: number) => {

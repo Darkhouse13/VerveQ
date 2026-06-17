@@ -72,7 +72,7 @@ export function composeLocalizedQuestion(
  * not-yet-translated (callers then serve canonical English).
  */
 export async function fetchQuestionTranslation(
-  ctx: QueryCtx,
+  ctx: Pick<QueryCtx, "db">,
   checksum: string,
   locale: string | undefined | null,
 ): Promise<QuestionTranslation | null> {

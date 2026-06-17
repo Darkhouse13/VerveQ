@@ -58,6 +58,7 @@ type DuelView = {
     checksum: string;
     question: string;
     options: string[];
+    optionValues: string[];
     category: string;
     difficulty: string;
     imageUrl: string | null;
@@ -87,7 +88,7 @@ function topicLabel(view: DuelView, t: (key: string) => string) {
 export default function DuelLinkScreen() {
   const { linkCode } = useParams<{ linkCode: string }>();
   const navigate = useNavigate();
-  const { t } = useTranslation("screens");
+  const { t, i18n } = useTranslation("screens");
   const { user, isAuthenticated, isGuest, isLoading } = useAuth();
   const getByLinkCode = useMutation(api.duels.getByLinkCode);
   const attachGuestResult = useMutation(api.duels.attachGuestResult);
@@ -141,6 +142,7 @@ export default function DuelLinkScreen() {
         const fresh = (await getByLinkCode({
           linkCode,
           guestToken: token,
+          locale: i18n.resolvedLanguage ?? i18n.language,
         })) as DuelView;
         if (cancelled) return;
         setView(fresh);
