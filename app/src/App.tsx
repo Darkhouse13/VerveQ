@@ -408,15 +408,14 @@ const AppRoutes = () => (
                 </ShellGate>
               }
             />
-            {/* Preferences + account hub (language, upgrade, sign out). Reached
-                from the Profile gear; mirrors Profile's identity gate. */}
+            {/* Preferences + account hub. NOT identity-gated — language is a
+                device preference everyone can change; the account section adapts
+                to auth state (sign-in CTA when logged out). */}
             <Route
               path="/v2/settings"
               element={
                 <ShellGate>
-                  <UsernameOnlyRoute>
-                    <SettingsScreen />
-                  </UsernameOnlyRoute>
+                  <SettingsScreen />
                 </ShellGate>
               }
             />

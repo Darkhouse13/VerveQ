@@ -244,6 +244,8 @@
     "accountHeading": "Account",
     "accountFull": "Full account",
     "accountGuest": "Guest account",
-    "accountNoHandle": "Signed in"
+    "accountNoHandle": "Signed in",
+    "notSignedIn": "You're not signed in.",
+    "signInCta": "Sign in or create account"
   }
 }

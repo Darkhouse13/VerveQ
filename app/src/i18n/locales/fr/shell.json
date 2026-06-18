@@ -244,6 +244,8 @@
     "accountHeading": "Compte",
     "accountFull": "Compte complet",
     "accountGuest": "Compte invité",
-    "accountNoHandle": "Connecté"
+    "accountNoHandle": "Connecté",
+    "notSignedIn": "Tu n'es pas connecté.",
+    "signInCta": "Se connecter ou créer un compte"
   }
 }
