@@ -1,21 +1,12 @@
-import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useQuery } from "convex/react";
-import { Lock, Share2, ArrowUp, Crown } from "lucide-react";
+import { Lock, Share2, Crown, Settings } from "lucide-react";
 import { toast } from "sonner";
 import { NeoCard } from "@/components/neo/NeoCard";
 import { NeoButton } from "@/components/neo/NeoButton";
 import { NeoBadge } from "@/components/neo/NeoBadge";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-} from "@/components/ui/dialog";
 import { ShellLayout } from "@/components/shell/ShellLayout";
-import { LanguageSwitcher } from "@/components/shell/LanguageSwitcher";
 import { SHELL_ROUTES } from "@/lib/shellRoutes";
 import { useAuth } from "@/contexts/AuthContext";
 import {
@@ -87,8 +78,7 @@ function timeAgo(ts: number): string {
 export default function ShellProfileScreen() {
   const navigate = useNavigate();
   const { t } = useTranslation();
-  const { user, username, isFullAccount, isUsernameOnly, logout } = useAuth();
-  const [signOutOpen, setSignOutOpen] = useState(false);
+  const { user, username, isFullAccount, isUsernameOnly } = useAuth();
 
   // The route guard (UsernameOnlyRoute) guarantees a server identity here.
   const userId = user && user._id !== "guest_tab" ? (user._id as Id<"users">) : undefined;
@@ -194,34 +184,6 @@ export default function ShellProfileScreen() {
       </div>
     </NeoCard>
   );
-
-  const upgradeBanner = guest ? (
-    <NeoCard
-      color="blue"
-      shadow="lg"
-      className="flex items-center gap-4 flex-wrap"
-      data-testid="profile-upgrade-cta"
-    >
-      <div className="neo-border rounded-lg bg-background/20 border-background w-11 h-11 shrink-0 -rotate-3 flex items-center justify-center">
-        <ArrowUp size={22} strokeWidth={3} />
-      </div>
-      <div className="flex-1 min-w-[200px]">
-        <p className="font-heading font-bold text-base md:text-lg leading-tight">
-          {t("profile.upgradeTitle")}
-        </p>
-        <p className="text-xs opacity-90 mt-0.5">{t("profile.upgradeBody")}</p>
-      </div>
-      <NeoButton
-        variant="secondary"
-        size="sm"
-        onClick={() =>
-          navigate(`${SHELL_ROUTES.upgrade}?next=${encodeURIComponent(SHELL_ROUTES.profile)}`)
-        }
-      >
-        {t("profile.upgradeCta")}
-      </NeoButton>
-    </NeoCard>
-  ) : null;
 
   const rankCard = guest ? (
     <NeoCard
@@ -528,30 +490,6 @@ export default function ShellProfileScreen() {
       </NeoCard>
     );
 
-  const languageCard = (
-    <NeoCard className="md:shrink-0">
-      <LanguageSwitcher />
-    </NeoCard>
-  );
-
-  const signOut = (
-    <div className="flex flex-col gap-2 md:shrink-0 md:mt-auto">
-      {guest && (
-        <p className="font-mono text-[10px] uppercase tracking-wide text-destructive">
-          {t("profile.signOutWarning")}
-        </p>
-      )}
-      <NeoButton
-        variant="secondary"
-        size="full"
-        className="text-destructive"
-        onClick={() => setSignOutOpen(true)}
-      >
-        {t("profile.signOut")}
-      </NeoButton>
-    </div>
-  );
-
   return (
     <ShellLayout
       title={t("profile.title")}
@@ -559,22 +497,29 @@ export default function ShellProfileScreen() {
       back
       onBack={() => navigate(SHELL_ROUTES.home)}
       headerRight={
-        handle ? (
-          <NeoBadge color="muted" className="bg-foreground text-background">
-            @{handle}
-          </NeoBadge>
-        ) : undefined
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            aria-label={t("settings.openLabel")}
+            onClick={() => navigate(SHELL_ROUTES.settings)}
+            className="neo-border neo-shadow rounded-lg bg-card p-2 shrink-0 transition-all active:neo-shadow-pressed"
+          >
+            <Settings size={18} strokeWidth={2.5} />
+          </button>
+          {handle && (
+            <NeoBadge color="muted" className="bg-foreground text-background">
+              @{handle}
+            </NeoBadge>
+          )}
+        </div>
       }
     >
       {/* Desktop — never-scroll 3-column locker */}
       <div className="hidden md:flex md:flex-col md:h-full md:min-h-0 md:gap-4">
-        {upgradeBanner}
         <div className="grid grid-cols-[1.05fr_1.25fr_1.1fr] gap-4 flex-1 min-h-0">
           <div className="flex flex-col gap-4 min-h-0 overflow-y-auto">
             {identity}
             {rankCard}
-            {languageCard}
-            {signOut}
           </div>
           <div className="flex flex-col gap-4 min-h-0 overflow-y-auto">
             {statTiles}
@@ -590,52 +535,12 @@ export default function ShellProfileScreen() {
       {/* Mobile — stacked, scrolls */}
       <div className="flex flex-col gap-4 md:hidden">
         {identity}
-        {upgradeBanner}
         {rankCard}
         {statTiles}
         {badgeGrid}
         {activityCard}
         {seasonsCard}
-        {languageCard}
-        {signOut}
       </div>
-
-      <Dialog open={signOutOpen} onOpenChange={setSignOutOpen}>
-        <DialogContent className="neo-border bg-card">
-          <DialogHeader>
-            <DialogTitle className="font-heading uppercase">
-              {t("profile.signOutConfirmTitle")}
-            </DialogTitle>
-            <DialogDescription className="text-sm">
-              {guest
-                ? t("profile.signOutConfirmBodyGuest")
-                : t("profile.signOutConfirmBody")}
-            </DialogDescription>
-          </DialogHeader>
-          <div className="flex gap-3 mt-4">
-            <NeoButton
-              variant="secondary"
-              size="full"
-              onClick={() => setSignOutOpen(false)}
-            >
-              {t("profile.cancel")}
-            </NeoButton>
-            <NeoButton
-              variant="danger"
-              size="full"
-              onClick={async () => {
-                setSignOutOpen(false);
-                await logout();
-                navigate("/", { replace: true });
-              }}
-            >
-              {guest
-                ? t("profile.signOutConfirmCtaGuest")
-                : t("profile.signOutConfirmCta")}
-            </NeoButton>
-          </div>
-        </DialogContent>
-      </Dialog>
     </ShellLayout>
   );
 }

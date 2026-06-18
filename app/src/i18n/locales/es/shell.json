@@ -236,5 +236,14 @@
     "title": "La Forja",
     "subtitle": "Crea y revisa preguntas",
     "enter": "Entrar a la Forja"
+  },
+  "settings": {
+    "title": "Ajustes",
+    "eyebrow": "Preferencias y cuenta",
+    "openLabel": "Abrir ajustes",
+    "accountHeading": "Cuenta",
+    "accountFull": "Cuenta completa",
+    "accountGuest": "Cuenta de invitado",
+    "accountNoHandle": "Sesión iniciada"
   }
 }

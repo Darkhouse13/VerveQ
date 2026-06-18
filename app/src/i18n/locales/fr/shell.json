@@ -236,5 +236,14 @@
     "title": "La Forge",
     "subtitle": "Créer et relire des questions",
     "enter": "Entrer dans la Forge"
+  },
+  "settings": {
+    "title": "Paramètres",
+    "eyebrow": "Préférences et compte",
+    "openLabel": "Ouvrir les paramètres",
+    "accountHeading": "Compte",
+    "accountFull": "Compte complet",
+    "accountGuest": "Compte invité",
+    "accountNoHandle": "Connecté"
   }
 }

@@ -36,6 +36,8 @@ export const SHELL_ROUTES = {
    * the user back into the v1 app. See App.tsx and the screens' `embedded` prop.
    */
   profile: "/v2/profile",
+  /** Preferences + account hub — language switch, account upgrade, sign out. */
+  settings: "/v2/settings",
   /**
    * Arena entry hub (group challenge rooms): create a room or join with a
    * code. Distinct from `duels` (head-to-head send-a-link); play happens on
@@ -82,6 +84,7 @@ export const SHELL_ROUTE_PATTERNS = {
   competeSport: "/compete/sport",
   competeSportGrid: "/compete/sport/:sport",
   ranks: "/v2/ranks",
+  settings: "/v2/settings",
   learn: "/v2/learn",
   learnRun: "/v2/learn/run",
   learnReview: "/v2/learn/review",
