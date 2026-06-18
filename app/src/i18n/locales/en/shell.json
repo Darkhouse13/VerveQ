@@ -236,5 +236,14 @@
     "title": "The Forge",
     "subtitle": "Create & review questions",
     "enter": "Enter the Forge"
+  },
+  "settings": {
+    "title": "Settings",
+    "eyebrow": "Preferences & account",
+    "openLabel": "Open settings",
+    "accountHeading": "Account",
+    "accountFull": "Full account",
+    "accountGuest": "Guest account",
+    "accountNoHandle": "Signed in"
   }
 }

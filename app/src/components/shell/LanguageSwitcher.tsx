@@ -1,21 +1,17 @@
 import { Globe } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import { SUPPORTED_LANGUAGES, type SupportedLanguage } from "@/i18n";
+import { SUPPORTED_LANGUAGES, LANGUAGE_AUTONYMS } from "@/i18n";
+import { chooseLanguage } from "@/lib/languagePref";
 import { cn } from "@/lib/utils";
 
 /**
  * Language picker for the v2 shell. Renders one pill per supported language,
  * labelled with its own autonym (so the control reads natively regardless of
- * the active UI language). Selecting one calls `i18n.changeLanguage`, which the
- * configured LanguageDetector persists to localStorage (`caches: ["localStorage"]`),
- * so the choice survives reloads. Suspense lazy-loads the target namespaces.
+ * the active UI language). Selecting one calls `chooseLanguage`, which switches
+ * the language (i18next's LanguageDetector persists it to localStorage so it
+ * survives reloads) AND records the choice as explicit so the first-run language
+ * prompt never reappears. Suspense lazy-loads the target namespaces.
  */
-const LANGUAGE_AUTONYMS: Record<SupportedLanguage, string> = {
-  en: "English",
-  fr: "Français",
-  es: "Español",
-};
-
 export function LanguageSwitcher({ className }: { className?: string }) {
   const { i18n, t } = useTranslation();
   const active = i18n.resolvedLanguage ?? i18n.language;
@@ -35,7 +31,7 @@ export function LanguageSwitcher({ className }: { className?: string }) {
               key={lng}
               type="button"
               aria-pressed={selected}
-              onClick={() => void i18n.changeLanguage(lng)}
+              onClick={() => void chooseLanguage(lng)}
               className={cn(
                 "flex-1 neo-border rounded-lg px-2 py-2 font-heading font-bold text-[13px] transition-all",
                 selected

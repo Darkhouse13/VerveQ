@@ -39,6 +39,7 @@ import LearnLadderScreen from "./pages/LearnLadderScreen";
 import NotFound from "./pages/NotFound";
 import { ShellGate } from "./components/shell/ShellGate";
 import { ShellLayout } from "./components/shell/ShellLayout";
+import { FirstRunLanguagePrompt } from "./components/shell/FirstRunLanguagePrompt";
 import {
   UsernameOnlyRoute,
   FullAccountRoute,
@@ -52,6 +53,7 @@ const ShellHomeScreen = lazy(() => import("./pages/shell/ShellHomeScreen"));
 const CompeteModeGridScreen = lazy(() => import("./pages/shell/CompeteModeGridScreen"));
 const RanksScreen = lazy(() => import("./pages/shell/RanksScreen"));
 const ShellProfileScreen = lazy(() => import("./pages/shell/ShellProfileScreen"));
+const SettingsScreen = lazy(() => import("./pages/shell/SettingsScreen"));
 const AccountChoiceScreen = lazy(() => import("./pages/shell/AccountChoiceScreen"));
 const WelcomeScreen = lazy(() => import("./pages/shell/WelcomeScreen"));
 const UpgradeScreen = lazy(() => import("./pages/shell/UpgradeScreen"));
@@ -109,6 +111,8 @@ const AppRoutes = () => (
         future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
       >
         <div className="max-w-md mx-auto min-h-screen relative">
+          {/* One-time language chooser, overlays whatever screen loads first. */}
+          <FirstRunLanguagePrompt />
           <Routes>
             <Route path="/" element={<EntryRoute />} />
             <Route
@@ -400,6 +404,18 @@ const AppRoutes = () => (
                 <ShellGate>
                   <UsernameOnlyRoute>
                     <ShellProfileScreen />
+                  </UsernameOnlyRoute>
+                </ShellGate>
+              }
+            />
+            {/* Preferences + account hub (language, upgrade, sign out). Reached
+                from the Profile gear; mirrors Profile's identity gate. */}
+            <Route
+              path="/v2/settings"
+              element={
+                <ShellGate>
+                  <UsernameOnlyRoute>
+                    <SettingsScreen />
                   </UsernameOnlyRoute>
                 </ShellGate>
               }

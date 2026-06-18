@@ -17,6 +17,17 @@ import LanguageDetector from "i18next-browser-languagedetector";
 export const SUPPORTED_LANGUAGES = ["en", "fr", "es"] as const;
 export type SupportedLanguage = (typeof SUPPORTED_LANGUAGES)[number];
 
+/**
+ * Each language labelled in its OWN tongue, so a picker reads natively
+ * regardless of the active UI language (used by the Profile/Settings language
+ * switcher and the first-run language prompt).
+ */
+export const LANGUAGE_AUTONYMS: Record<SupportedLanguage, string> = {
+  en: "English",
+  fr: "Français",
+  es: "Español",
+};
+
 export const SHELL_NS = "shell";
 export const LEARN_NS = "learn";
 export const PLAY_NS = "play";
