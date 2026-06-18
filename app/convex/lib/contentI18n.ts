@@ -68,6 +68,25 @@ export function composeLocalizedQuestion(
 }
 
 /**
+ * Map a canonical option value (a server-returned `correctAnswer`, or a player's
+ * submitted pick — clients submit the canonical `optionValues[i]`) back to its
+ * localized DISPLAY label, using the aligned `options`/`optionValues` a serve
+ * path returns. Used by reveal UIs (arena, liveMatch) that would otherwise show
+ * the canonical English text in fr/es. Falls back to the canonical value when
+ * there is no mapping — proper-noun answers, logo text (no options), or an
+ * untranslated question (where `options === optionValues` anyway).
+ */
+export function localizedAnswerLabel(
+  options: readonly string[] | undefined | null,
+  optionValues: readonly string[] | undefined | null,
+  canonicalValue: string,
+): string {
+  if (!options || !optionValues) return canonicalValue;
+  const i = optionValues.indexOf(canonicalValue);
+  return i >= 0 ? (options[i] ?? canonicalValue) : canonicalValue;
+}
+
+/**
  * Fetch the display translation for a question, or null for English / missing /
  * not-yet-translated (callers then serve canonical English).
  */

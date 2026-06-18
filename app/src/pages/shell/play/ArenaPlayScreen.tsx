@@ -37,6 +37,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { api } from "../../../../convex/_generated/api";
 import type { Id } from "../../../../convex/_generated/dataModel";
 import type { FunctionReturnType } from "convex/server";
+import { localizedAnswerLabel } from "../../../../convex/lib/contentI18n";
 import {
   arenaCategoryEmoji,
   arenaCategoryLabel,
@@ -71,6 +72,23 @@ import {
 
 type Room = NonNullable<FunctionReturnType<typeof api.challengeArenas.getRoom>>;
 type Phase = Room["phase"];
+
+// Reveal/ambient UIs surface canonical values — the `correctAnswer` and each
+// player's pick (clients submit the canonical `optionValues[i]`). Map them back
+// to the localized DISPLAY label via the aligned options/optionValues the serve
+// returns; falls back to canonical for logo text / proper nouns. Grading is
+// untouched (it still compares the canonical value).
+function localizeArenaAnswer(question: Room["currentQuestion"], value: string): string {
+  const options =
+    question && "options" in question && Array.isArray(question.options)
+      ? question.options
+      : undefined;
+  const optionValues =
+    question && "optionValues" in question && Array.isArray(question.optionValues)
+      ? question.optionValues
+      : undefined;
+  return localizedAnswerLabel(options, optionValues, value);
+}
 
 // Maps each phase to its i18n key under `arena.phase`; resolved via `t` at the
 // call site (this constant is module-level and can't call the hook).
@@ -260,13 +278,13 @@ function ArenaPlayRoom({ code, userId }: { code: string; userId: Id<"users"> | u
     isMe: p.userId === userId,
   }));
 
-  // On reveal, surface sanitized per-player picks (label = the pick text).
+  // On reveal, surface sanitized per-player picks (label = the localized pick text).
   const revealPicks: RevealPick[] = active.map((p) => {
     const a = room.revealAnswers.find((r) => r.userId === p.userId);
     return {
       id: String(p.userId),
       name: p.nameSnapshot,
-      label: a?.answer ?? "",
+      label: a ? localizeArenaAnswer(room.currentQuestion, a.answer) : "",
       outcome: !a ? "missed" : a.correct ? "correct" : "wrong",
       points: a?.points,
       isMe: p.userId === userId,
@@ -591,6 +609,10 @@ function ArenaRevealColumn({ room, userId }: { room: Room; userId: Id<"users"> |
     "correctAnswer" in question && typeof question.correctAnswer === "string"
       ? question.correctAnswer
       : null;
+  // Show the localized label for the correct answer (the served value is canonical).
+  const correctAnswerLabel = correctAnswer
+    ? localizeArenaAnswer(question, correctAnswer)
+    : null;
 
   // Everyone's picks, banter-ordered: scorers first (fastest on top), then
   // wrong picks, then misses. My row is highlighted instead of a separate
@@ -622,10 +644,10 @@ function ArenaRevealColumn({ room, userId }: { room: Room; userId: Id<"users"> |
         {!isLogoText && (
           <p className="font-heading font-bold text-base leading-snug">{questionText}</p>
         )}
-        {correctAnswer && (
+        {correctAnswerLabel && (
           <div className="mt-3 neo-border rounded-lg bg-success text-success-foreground px-3 py-2">
             <p className="text-[10px] font-heading uppercase mb-0.5">{t("arena.correct")}</p>
-            <p className="font-heading font-bold text-sm">{correctAnswer}</p>
+            <p className="font-heading font-bold text-sm">{correctAnswerLabel}</p>
           </div>
         )}
       </NeoCard>
@@ -650,7 +672,7 @@ function ArenaRevealColumn({ room, userId }: { room: Room; userId: Id<"users"> |
                     {isMe && t("arena.youSuffix")}
                   </p>
                   <p className={`text-[10px] font-mono truncate ${isMe ? "opacity-90" : "opacity-70"}`}>
-                    {a?.answer || "—"}
+                    {a?.answer ? localizeArenaAnswer(question, a.answer) : "—"}
                   </p>
                 </div>
                 <NeoBadge

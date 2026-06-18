@@ -70,7 +70,7 @@ const ANSWER_LEAK_GUARD = [
 ];
 
 export default tseslint.config(
-  { ignores: ["dist", "convex/_generated/**"] },
+  { ignores: ["dist", "convex/_generated/**", ".ops/**"] },
   {
     extends: [js.configs.recommended, ...tseslint.configs.recommended],
     files: ["**/*.{ts,tsx}"],

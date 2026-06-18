@@ -54,6 +54,7 @@ import type {
 } from "@/components/shell/play/ambient";
 import { api } from "../../../../convex/_generated/api";
 import type { Id } from "../../../../convex/_generated/dataModel";
+import { localizedAnswerLabel } from "../../../../convex/lib/contentI18n";
 
 type Match = NonNullable<FunctionReturnType<typeof api.liveMatches.getMatch>>;
 type Status = Match["status"];
@@ -672,6 +673,11 @@ function LiveRevealColumn({ match }: { match: Match }) {
   const round = match.roundAnswers;
   const myRound = match.isPlayer1 ? round?.player1 : round?.player2;
 
+  // The served pick is the canonical optionValues[i]; show its localized label.
+  const myPickLabel = myAnswer?.answer
+    ? localizedAnswerLabel(question?.options, question?.optionValues, myAnswer.answer)
+    : "—";
+
   const verdict = !myRound
     ? { label: t("liveMatch.verdictMissed"), color: "muted" as const }
     : myRound.correct
@@ -703,7 +709,7 @@ function LiveRevealColumn({ match }: { match: Match }) {
               {t("liveMatch.yourAnswer")}
             </p>
             <p className="font-heading font-bold text-sm truncate">
-              {myAnswer?.answer ?? "—"}
+              {myPickLabel}
             </p>
           </div>
           <NeoBadge color={verdict.color} size="md">

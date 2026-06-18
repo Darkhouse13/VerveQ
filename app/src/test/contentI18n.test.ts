@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   composeLocalizedQuestion,
+  localizedAnswerLabel,
   type CanonicalQuestion,
 } from "../../convex/lib/contentI18n";
 
@@ -56,5 +57,31 @@ describe("composeLocalizedQuestion", () => {
       options: ["a", "b", "c", "d"],
     });
     expect(r.explanation).toBe("Fe is iron.");
+  });
+});
+
+describe("localizedAnswerLabel", () => {
+  // Display order (what a serve path returns), with aligned canonical values.
+  const options = ["Argent", "Fer", "Plomb", "Or"];
+  const optionValues = ["Silver", "Iron", "Lead", "Gold"];
+
+  it("maps a canonical value (correctAnswer/pick) to its localized label", () => {
+    expect(localizedAnswerLabel(options, optionValues, "Iron")).toBe("Fer");
+    expect(localizedAnswerLabel(options, optionValues, "Gold")).toBe("Or");
+  });
+
+  it("falls back to the canonical value when not found (proper noun / free text)", () => {
+    expect(localizedAnswerLabel(options, optionValues, "Lionel Messi")).toBe(
+      "Lionel Messi",
+    );
+  });
+
+  it("falls back to the canonical value when there are no options (logo text)", () => {
+    expect(localizedAnswerLabel(undefined, undefined, "Nike")).toBe("Nike");
+    expect(localizedAnswerLabel(null, optionValues, "Iron")).toBe("Iron");
+  });
+
+  it("is a no-op for an untranslated question (options === optionValues)", () => {
+    expect(localizedAnswerLabel(optionValues, optionValues, "Iron")).toBe("Iron");
   });
 });
