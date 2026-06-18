@@ -259,7 +259,12 @@ export const vote = mutation({
         resolvedAt: Date.now(),
       });
 
-      // Auto-insert into quiz pool
+      // Auto-insert into quiz pool.
+      // i18n (docs/I18N_CONTENT_DESIGN.md): no explicit translation enqueue is
+      // needed. Discovery is pull-based — a new MCQ has no quizQuestionTranslations
+      // row, so it auto-surfaces in contentTranslations.listUntranslatedMcq /
+      // translationCoverageReport (remaining > 0) for the next backfill pass, and
+      // serves canonical English in the meantime (the designed fallback).
       await ctx.db.insert("quizQuestions", {
         sport: submission.sport,
         category: submission.category,

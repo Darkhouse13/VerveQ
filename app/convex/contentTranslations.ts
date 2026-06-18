@@ -128,3 +128,76 @@ export const previewLocalized = internalQuery({
   },
 });
 
+/**
+ * P4.4 QA — per-locale translation coverage + integrity, read-only. Reports, for
+ * each requested locale, how many standard MCQ have a translation (coverage %),
+ * the reviewed/unreviewed split, and flags two integrity problems:
+ *   - `orphans`: translation rows whose checksum no longer exists in any
+ *     `quizQuestions` row (the question was deleted/edited → stale row).
+ *   - `nonMcqTargets`: rows whose checksum exists but is not a standard MCQ
+ *     (translation can never be served → likely mis-targeted).
+ * Drives a CI/ops health check; complements `listUntranslatedMcq` (the backfill
+ * driver). Default locales fr+es.
+ */
+export const translationCoverageReport = internalQuery({
+  args: { locales: v.optional(v.array(v.string())) },
+  handler: async (ctx, { locales }) => {
+    const targetLocales = locales ?? ["fr", "es"];
+    const allQuestions = await ctx.db.query("quizQuestions").collect();
+    const mcqChecksums = new Set(
+      allQuestions.filter(isStandardMcqQuestion).map((q) => q.checksum),
+    );
+    const anyChecksums = new Set(allQuestions.map((q) => q.checksum));
+    const totalMcq = mcqChecksums.size;
+
+    const translations = await ctx.db.query("quizQuestionTranslations").collect();
+
+    const perLocale: Record<
+      string,
+      { translated: number; remaining: number; coveragePct: number; reviewed: number; unreviewed: number }
+    > = {};
+    for (const locale of targetLocales) {
+      perLocale[locale] = {
+        translated: 0,
+        remaining: totalMcq,
+        coveragePct: 0,
+        reviewed: 0,
+        unreviewed: 0,
+      };
+    }
+
+    const orphans: Array<{ checksum: string; locale: string }> = [];
+    const nonMcqTargets: Array<{ checksum: string; locale: string }> = [];
+
+    for (const tr of translations) {
+      if (!anyChecksums.has(tr.checksum)) {
+        orphans.push({ checksum: tr.checksum, locale: tr.locale });
+        continue;
+      }
+      if (!mcqChecksums.has(tr.checksum)) {
+        nonMcqTargets.push({ checksum: tr.checksum, locale: tr.locale });
+        continue;
+      }
+      const bucket = perLocale[tr.locale];
+      if (!bucket) continue; // a locale outside the requested set
+      bucket.translated += 1;
+      if (tr.reviewed) bucket.reviewed += 1;
+      else bucket.unreviewed += 1;
+    }
+
+    for (const locale of targetLocales) {
+      const b = perLocale[locale];
+      b.remaining = Math.max(0, totalMcq - b.translated);
+      b.coveragePct = totalMcq === 0 ? 100 : Math.round((b.translated / totalMcq) * 1000) / 10;
+    }
+
+    return {
+      totalMcq,
+      locales: perLocale,
+      orphans: { count: orphans.length, sample: orphans.slice(0, 25) },
+      nonMcqTargets: { count: nonMcqTargets.length, sample: nonMcqTargets.slice(0, 25) },
+      ok: orphans.length === 0 && nonMcqTargets.length === 0,
+    };
+  },
+});
+
