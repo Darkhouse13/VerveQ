@@ -244,6 +244,8 @@
     "accountHeading": "Cuenta",
     "accountFull": "Cuenta completa",
     "accountGuest": "Cuenta de invitado",
-    "accountNoHandle": "Sesión iniciada"
+    "accountNoHandle": "Sesión iniciada",
+    "notSignedIn": "No has iniciado sesión.",
+    "signInCta": "Inicia sesión o crea una cuenta"
   }
 }

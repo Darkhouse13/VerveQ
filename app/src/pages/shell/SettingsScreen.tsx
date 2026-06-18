@@ -14,7 +14,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { ArrowUp, LogOut, User } from "lucide-react";
+import { ArrowUp, LogIn, LogOut, User } from "lucide-react";
 import { NeoCard } from "@/components/neo/NeoCard";
 import { NeoButton } from "@/components/neo/NeoButton";
 import {
@@ -32,9 +32,13 @@ import { useAuth } from "@/contexts/AuthContext";
 export default function SettingsScreen() {
   const navigate = useNavigate();
   const { t } = useTranslation();
-  const { user, username, isUsernameOnly, logout } = useAuth();
+  const { user, username, isUsernameOnly, accountState, logout } = useAuth();
   const [signOutOpen, setSignOutOpen] = useState(false);
 
+  // Language is a device preference (works for everyone). The account section
+  // only renders controls when there's an identity; logged-out visitors get a
+  // sign-in CTA instead, so Settings is coherent in every auth state.
+  const signedIn = accountState === "usernameOnly" || accountState === "fullAccount";
   const guest = isUsernameOnly;
   const handle = username ?? user?.username ?? "";
 
@@ -51,56 +55,79 @@ export default function SettingsScreen() {
           <LanguageSwitcher />
         </NeoCard>
 
-        {/* Account */}
+        {/* Account — controls when signed in, a sign-in CTA when not. */}
         <NeoCard className="flex flex-col gap-3.5">
           <span className="font-mono text-[11px] font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-1.5">
             <User size={13} strokeWidth={2.5} />
             {t("settings.accountHeading")}
           </span>
-          <div className="flex items-center justify-between gap-2">
-            <div className="min-w-0">
-              <p className="font-heading font-bold text-base truncate">
-                {handle ? `@${handle}` : t("settings.accountNoHandle")}
-              </p>
-              <p className="text-xs text-muted-foreground">
-                {guest ? t("settings.accountGuest") : t("settings.accountFull")}
-              </p>
-            </div>
-          </div>
 
-          {guest && (
-            <NeoButton
-              variant="primary"
-              size="full"
-              data-testid="settings-upgrade-cta"
-              onClick={() =>
-                navigate(
-                  `${SHELL_ROUTES.upgrade}?next=${encodeURIComponent(SHELL_ROUTES.settings)}`,
-                )
-              }
-            >
-              <ArrowUp size={16} strokeWidth={3} className="mr-1" />
-              {t("profile.upgradeCta")}
-            </NeoButton>
-          )}
+          {signedIn ? (
+            <>
+              <div className="flex items-center justify-between gap-2">
+                <div className="min-w-0">
+                  <p className="font-heading font-bold text-base truncate">
+                    {handle ? `@${handle}` : t("settings.accountNoHandle")}
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    {guest ? t("settings.accountGuest") : t("settings.accountFull")}
+                  </p>
+                </div>
+              </div>
 
-          {guest && (
-            <p className="font-mono text-[10px] uppercase tracking-wide text-destructive">
-              {t("profile.signOutWarning")}
-            </p>
+              {guest && (
+                <NeoButton
+                  variant="primary"
+                  size="full"
+                  data-testid="settings-upgrade-cta"
+                  onClick={() =>
+                    navigate(
+                      `${SHELL_ROUTES.upgrade}?next=${encodeURIComponent(SHELL_ROUTES.settings)}`,
+                    )
+                  }
+                >
+                  <ArrowUp size={16} strokeWidth={3} className="mr-1" />
+                  {t("profile.upgradeCta")}
+                </NeoButton>
+              )}
+
+              {guest && (
+                <p className="font-mono text-[10px] uppercase tracking-wide text-destructive">
+                  {t("profile.signOutWarning")}
+                </p>
+              )}
+              <NeoButton
+                variant="secondary"
+                size="full"
+                className="text-destructive"
+                onClick={() => setSignOutOpen(true)}
+              >
+                <LogOut size={16} strokeWidth={2.5} className="mr-1" />
+                {t("profile.signOut")}
+              </NeoButton>
+            </>
+          ) : (
+            <>
+              <p className="text-sm text-muted-foreground">{t("settings.notSignedIn")}</p>
+              <NeoButton
+                variant="primary"
+                size="full"
+                data-testid="settings-signin-cta"
+                onClick={() =>
+                  navigate(
+                    `${SHELL_ROUTES.account}?next=${encodeURIComponent(SHELL_ROUTES.settings)}`,
+                  )
+                }
+              >
+                <LogIn size={16} strokeWidth={2.5} className="mr-1" />
+                {t("settings.signInCta")}
+              </NeoButton>
+            </>
           )}
-          <NeoButton
-            variant="secondary"
-            size="full"
-            className="text-destructive"
-            onClick={() => setSignOutOpen(true)}
-          >
-            <LogOut size={16} strokeWidth={2.5} className="mr-1" />
-            {t("profile.signOut")}
-          </NeoButton>
         </NeoCard>
       </div>
 
+      {signedIn && (
       <Dialog open={signOutOpen} onOpenChange={setSignOutOpen}>
         <DialogContent className="neo-border bg-card">
           <DialogHeader>
@@ -137,6 +164,7 @@ export default function SettingsScreen() {
           </div>
         </DialogContent>
       </Dialog>
+      )}
     </ShellLayout>
   );
 }
