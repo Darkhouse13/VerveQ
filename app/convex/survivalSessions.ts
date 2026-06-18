@@ -700,6 +700,75 @@ function buildFamousPlayerHint(
   return getFamousPlayerFallbackHint(primaryPlayer, sport, stage);
 }
 
+/**
+ * i18n (docs/I18N_CONTENT_DESIGN.md, P4.3): the structured form of
+ * buildFamousPlayerHint. The v2 Survival screen composes the localized hint from
+ * `key` (→ a `survival.hintBody.*` template in the `play` namespace) + `vars`.
+ * Values stay CANONICAL — player/club/team/nationality are proper nouns, and
+ * position/era/handedness are left canonical for now (only the template scaffolding
+ * + labels translate; see the P4.3 decision). The legacy English `hintText` is
+ * unchanged for v1. `key`/`vars` mirror the English branches above 1:1.
+ */
+type HintI18n = { key: string; vars: Record<string, string | number> };
+
+function fallbackHintI18n(
+  primaryPlayer: string,
+  sport: string,
+  stage: number,
+): HintI18n {
+  if (!primaryPlayer) return { key: "fbNoPlayer", vars: { sport } };
+  if (stage === 1) {
+    return {
+      key: "fbFirstNameLen",
+      vars: { sport, length: getFirstName(primaryPlayer).length },
+    };
+  }
+  if (stage === 2) {
+    return { key: "fbLastNameInitial", vars: { initial: getLastNameInitial(primaryPlayer) } };
+  }
+  return { key: "fmFirstName", vars: { firstName: getFirstName(primaryPlayer) } };
+}
+
+function buildFamousPlayerHintI18n(
+  sport: string,
+  primaryPlayer: string,
+  stage: number,
+): HintI18n {
+  if (sport === "football") {
+    const meta = primaryPlayer ? footballMetadataMap[primaryPlayer] : undefined;
+    if (stage === 1 && meta) {
+      return { key: "fmNationalityClub", vars: { nationality: meta.nationality, club: meta.club } };
+    }
+    if (stage === 2 && meta) {
+      return { key: "fmPositionEra", vars: { position: meta.position, era: meta.era } };
+    }
+    if (stage === 3) return { key: "fmFirstName", vars: { firstName: getFirstName(primaryPlayer) } };
+    return fallbackHintI18n(primaryPlayer, sport, stage);
+  }
+
+  if (sport === "basketball") {
+    const meta = primaryPlayer ? nbaMetadataMap[primaryPlayer] : undefined;
+    if (stage === 1 && meta) {
+      return { key: "fmTeamNationality", vars: { team: meta.team, nationality: meta.nationality } };
+    }
+    if (stage === 2 && meta) return { key: "fmPosition", vars: { position: meta.position } };
+    if (stage === 3) return { key: "fmFirstName", vars: { firstName: getFirstName(primaryPlayer) } };
+    return fallbackHintI18n(primaryPlayer, sport, stage);
+  }
+
+  if (sport === "tennis") {
+    const meta = primaryPlayer ? tennisMetadataMap[primaryPlayer] : undefined;
+    if (stage === 1 && meta) return { key: "fmNationality", vars: { nationality: meta.nationality } };
+    if (stage === 2 && meta) {
+      return { key: "fmHandednessRank", vars: { handedness: meta.handedness, rank: meta.highestRank } };
+    }
+    if (stage === 3) return { key: "fmFirstName", vars: { firstName: getFirstName(primaryPlayer) } };
+    return fallbackHintI18n(primaryPlayer, sport, stage);
+  }
+
+  return fallbackHintI18n(primaryPlayer, sport, stage);
+}
+
 function getChallengeValidGuessPlayers(
   sport: string,
   challenge: Pick<SurvivalChallenge, "initials" | "validPlayers">,
@@ -1119,6 +1188,7 @@ export const useHint = mutation({
       ? getChallengePrimaryPlayer(sport, challenge)
       : "";
     const hintText = buildFamousPlayerHint(sport, primaryPlayer, stage);
+    const hintI18n = buildFamousPlayerHintI18n(sport, primaryPlayer, stage);
 
     await ctx.db.patch(sessionId, {
       hintTokensLeft: tokensLeft - 1,
@@ -1128,7 +1198,10 @@ export const useHint = mutation({
 
     return {
       stage,
+      // Legacy English string (v1 screens, untranslated). v2 uses `hintI18n`.
       hintText,
+      // Structured form → localized in the v2 UI via `survival.hintBody.<key>`.
+      hintI18n,
       tokensLeft: tokensLeft - 1,
     };
   },

@@ -66,7 +66,12 @@ export default function SurvivalPlayScreen() {
   const [submitting, setSubmitting] = useState(false);
 
   // Tiered hint state
-  const [hints, setHints] = useState<string[]>([]);
+  // Structured hints (P4.3): the server returns a localization key + canonical
+  // vars; the label/template is composed here via the `play` namespace so the
+  // displayed hint follows the viewer's language (proper-noun vars stay canonical).
+  const [hints, setHints] = useState<
+    Array<{ key: string; vars: Record<string, string | number> }>
+  >([]);
   const [hintStage, setHintStage] = useState(0);
   const [hintTokens, setHintTokens] = useState(3);
   const [hintLoading, setHintLoading] = useState(false);
@@ -250,7 +255,7 @@ export default function SurvivalPlayScreen() {
     try {
       const nextStage = hintStage + 1;
       const res = await hintMutation({ sessionId, stage: nextStage });
-      setHints((prev) => [...prev, res.hintText]);
+      setHints((prev) => [...prev, res.hintI18n]);
       setHintStage(res.stage);
       setHintTokens(res.tokensLeft);
     } catch {
@@ -384,7 +389,14 @@ export default function SurvivalPlayScreen() {
               >
                 <p className="text-xs font-body">
                   <strong>{t("survival.hintLabel", { number: i + 1 })}</strong>{" "}
-                  {h}
+                  {t(
+                    `survival.hintBody.${h.key}`,
+                    // `sport` is the only var that localizes (small closed enum);
+                    // all other vars are canonical proper nouns, passed through.
+                    "sport" in h.vars
+                      ? { ...h.vars, sport: t(`survival.sportName.${h.vars.sport}`) }
+                      : h.vars,
+                  )}
                 </p>
               </NeoCard>
             ))}

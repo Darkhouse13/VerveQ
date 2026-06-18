@@ -112,7 +112,24 @@
     "skipLife": "SKIP (-1 LIFE)",
     "cheatingDetected": "CHEATING DETECTED",
     "cheatingDescription": "You lost focus on the game window. 1 Life deducted.",
-    "iUnderstand": "I UNDERSTAND"
+    "iUnderstand": "I UNDERSTAND",
+    "hintBody": {
+      "fmNationalityClub": "Most famous match — nationality: {{nationality}} | club: {{club}}",
+      "fmPositionEra": "Most famous match — position: {{position}} | era: {{era}}",
+      "fmTeamNationality": "Most famous match — team: {{team}} | nationality: {{nationality}}",
+      "fmPosition": "Most famous match — position: {{position}}",
+      "fmNationality": "Most famous match — nationality: {{nationality}}",
+      "fmHandednessRank": "Most famous match — handedness: {{handedness}} | highest rank: #{{rank}}",
+      "fmFirstName": "Most famous match first name: {{firstName}}",
+      "fbNoPlayer": "Most famous match: known {{sport}} player.",
+      "fbFirstNameLen": "Most famous match: {{sport}} player; first name has {{length}} letters.",
+      "fbLastNameInitial": "Most famous match: last name starts with {{initial}}."
+    },
+    "sportName": {
+      "football": "football",
+      "basketball": "NBA",
+      "tennis": "tennis"
+    }
   },
   "whoAmI": {
     "unsupportedTitle": "Football Only For Now",

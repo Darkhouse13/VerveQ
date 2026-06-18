@@ -112,7 +112,24 @@
     "skipLife": "SALTAR (-1 VIDA)",
     "cheatingDetected": "TRAMPA DETECTADA",
     "cheatingDescription": "Perdiste el foco en la ventana del juego. 1 vida descontada.",
-    "iUnderstand": "ENTIENDO"
+    "iUnderstand": "ENTIENDO",
+    "hintBody": {
+      "fmNationalityClub": "Jugador más conocido — nacionalidad: {{nationality}} | club: {{club}}",
+      "fmPositionEra": "Jugador más conocido — posición: {{position}} | época: {{era}}",
+      "fmTeamNationality": "Jugador más conocido — equipo: {{team}} | nacionalidad: {{nationality}}",
+      "fmPosition": "Jugador más conocido — posición: {{position}}",
+      "fmNationality": "Jugador más conocido — nacionalidad: {{nationality}}",
+      "fmHandednessRank": "Jugador más conocido — mano: {{handedness}} | mejor clasificación: #{{rank}}",
+      "fmFirstName": "Nombre del jugador más conocido: {{firstName}}",
+      "fbNoPlayer": "Jugador más conocido: un jugador de {{sport}} conocido.",
+      "fbFirstNameLen": "Jugador más conocido: jugador de {{sport}}; el nombre tiene {{length}} letras.",
+      "fbLastNameInitial": "Jugador más conocido: el apellido empieza por {{initial}}."
+    },
+    "sportName": {
+      "football": "fútbol",
+      "basketball": "NBA",
+      "tennis": "tenis"
+    }
   },
   "whoAmI": {
     "unsupportedTitle": "Solo fútbol por ahora",
