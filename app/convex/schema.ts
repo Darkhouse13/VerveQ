@@ -439,6 +439,23 @@ export default defineSchema({
     updatedAt: v.number(),
   }).index("by_checksum_locale", ["checksum", "locale"]),
 
+  // Phase 4.3 — per-locale DISPLAY overlay for Who Am I clue prose
+  // (display-translate, grade-canonical: see docs/I18N_CONTENT_DESIGN.md). One
+  // row per (externalId, locale) carrying the 4 progressive clues translated;
+  // the canonical answerName / fuzzy grading are NEVER touched. Embedded player /
+  // club / place names stay canonical — only the surrounding prose translates.
+  whoAmIClueTranslations: defineTable({
+    externalId: v.string(), // FK → whoAmIApprovedClues.externalId
+    locale: v.string(), // "fr" | "es"
+    clue1: v.string(),
+    clue2: v.string(),
+    clue3: v.string(),
+    clue4: v.string(),
+    source: v.union(v.literal("llm"), v.literal("human")),
+    reviewed: v.boolean(),
+    updatedAt: v.number(),
+  }).index("by_externalId_locale", ["externalId", "locale"]),
+
   // One row per (user, question) difficulty vote. Enforces one vote per user
   // per question in quizSessions.submitFeedback so the difficultyScore running
   // mean cannot be inflated by repeat votes from a single identity.

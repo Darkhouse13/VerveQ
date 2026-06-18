@@ -90,7 +90,8 @@ function withTimeout<T>(promise: Promise<T>, timeoutMs: number): Promise<T> {
 }
 
 export default function WhoAmIPlayScreen() {
-  const { t } = useTranslation("play");
+  const { t, i18n } = useTranslation("play");
+  const locale = i18n.resolvedLanguage ?? i18n.language;
   const navigate = useNavigate();
   const [params] = useSearchParams();
   const sport = params.get("sport") || "football";
@@ -154,7 +155,7 @@ export default function WhoAmIPlayScreen() {
     }
 
     try {
-      const res = await withTimeout(startChallengeMut({ sport, hardMode }), START_CHALLENGE_TIMEOUT_MS);
+      const res = await withTimeout(startChallengeMut({ sport, hardMode, locale }), START_CHALLENGE_TIMEOUT_MS);
       setSessionId(res.sessionId);
       setClues([res.clue1]);
       setCurrentStage(res.currentStage);
@@ -180,7 +181,7 @@ export default function WhoAmIPlayScreen() {
     } finally {
       setLoading(false);
     }
-  }, [startChallengeMut, sport, hardMode, t]);
+  }, [startChallengeMut, sport, hardMode, locale, t]);
 
   useEffect(() => {
     startGame();
@@ -205,7 +206,7 @@ export default function WhoAmIPlayScreen() {
     if (!sessionId || currentStage >= TOTAL_CLUES || revealing || gameOver) return;
     setRevealing(true);
     try {
-      const res = await revealNextClueMut({ sessionId });
+      const res = await revealNextClueMut({ sessionId, locale });
       setClues((prev) => [...prev, res.clueText]);
       setCurrentStage(res.currentStage);
       setScore(res.score);
