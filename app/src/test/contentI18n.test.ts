@@ -1,8 +1,10 @@
 import { describe, expect, it } from "vitest";
 import {
+  composeLocalizedClues,
   composeLocalizedQuestion,
   localizedAnswerLabel,
   type CanonicalQuestion,
+  type ClueSet,
 } from "../../convex/lib/contentI18n";
 
 const canonical: CanonicalQuestion = {
@@ -83,5 +85,43 @@ describe("localizedAnswerLabel", () => {
 
   it("is a no-op for an untranslated question (options === optionValues)", () => {
     expect(localizedAnswerLabel(optionValues, optionValues, "Iron")).toBe("Iron");
+  });
+});
+
+describe("composeLocalizedClues", () => {
+  const canonical: ClueSet = {
+    clue1: "I won the Ballon d'Or seven times.",
+    clue2: "I made my debut for FC Barcelona.",
+    clue3: "I moved to Paris Saint-Germain in 2021.",
+    clue4: "My name is Lionel.",
+  };
+
+  it("is a no-op when there is no translation (en path)", () => {
+    const r = composeLocalizedClues(canonical, null);
+    expect(r).toEqual(canonical);
+  });
+
+  it("overlays translated clue prose while keeping the same shape", () => {
+    const translation: ClueSet = {
+      clue1: "J'ai remporté le Ballon d'Or sept fois.",
+      clue2: "J'ai débuté avec le FC Barcelona.",
+      clue3: "J'ai rejoint le Paris Saint-Germain en 2021.",
+      clue4: "Je m'appelle Lionel.",
+    };
+    const r = composeLocalizedClues(canonical, translation);
+    expect(r).toEqual(translation);
+  });
+
+  it("falls back per-clue to canonical when a translated clue is empty", () => {
+    const r = composeLocalizedClues(canonical, {
+      clue1: "J'ai remporté le Ballon d'Or sept fois.",
+      clue2: "",
+      clue3: "J'ai rejoint le Paris Saint-Germain en 2021.",
+      clue4: "",
+    });
+    expect(r.clue1).toBe("J'ai remporté le Ballon d'Or sept fois.");
+    expect(r.clue2).toBe(canonical.clue2); // empty → canonical
+    expect(r.clue3).toBe("J'ai rejoint le Paris Saint-Germain en 2021.");
+    expect(r.clue4).toBe(canonical.clue4); // empty → canonical
   });
 });

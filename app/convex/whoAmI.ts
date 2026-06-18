@@ -10,6 +10,7 @@ import {
   getWhoAmIPlayerMetadata,
   resolveCanonicalPlayerName,
 } from "./whoAmIPlayerSearch";
+import { composeLocalizedClues, fetchClueTranslation } from "./lib/contentI18n";
 
 const SESSION_TTL_MS = 60 * 60 * 1000; // 1 hour
 const BASE_SCORE = 1000;
@@ -79,8 +80,9 @@ export const startChallenge = mutation({
     sport: v.string(),
     difficulty: v.optional(v.string()),
     hardMode: v.optional(v.boolean()),
+    locale: v.optional(v.string()),
   },
-  handler: async (ctx, { sport, difficulty, hardMode }) => {
+  handler: async (ctx, { sport, difficulty, hardMode, locale }) => {
     const userId = await getAuthUserId(ctx);
     if (!userId) throw new Error("Not authenticated");
     await assertUsernameRequiredUser(ctx, userId);
@@ -111,6 +113,10 @@ export const startChallenge = mutation({
     }
 
     const clue = clues[Math.floor(Math.random() * clues.length)];
+    const localizedClues = composeLocalizedClues(
+      clue,
+      await fetchClueTranslation(ctx, clue.externalId, locale),
+    );
 
     const sessionId = await ctx.db.insert("whoAmISessions", {
       userId,
@@ -130,7 +136,7 @@ export const startChallenge = mutation({
 
     return {
       sessionId,
-      clue1: clue.clue1,
+      clue1: localizedClues.clue1,
       currentStage: 1,
       score: BASE_SCORE,
       difficulty: clue.difficulty,
@@ -150,8 +156,9 @@ export const startChallenge = mutation({
 export const revealNextClue = mutation({
   args: {
     sessionId: v.id("whoAmISessions"),
+    locale: v.optional(v.string()),
   },
-  handler: async (ctx, { sessionId }) => {
+  handler: async (ctx, { sessionId, locale }) => {
     const userId = await getAuthUserId(ctx);
     if (!userId) throw new Error("Not authenticated");
     const session = await ctx.db.get(sessionId);
@@ -181,9 +188,13 @@ export const revealNextClue = mutation({
       score: newScore,
     });
 
-    const clueKey = `clue${newStage}` as keyof typeof clue;
+    const localizedClues = composeLocalizedClues(
+      clue,
+      await fetchClueTranslation(ctx, session.clueExternalId, locale),
+    );
+    const clueKey = `clue${newStage}` as keyof ReturnType<typeof composeLocalizedClues>;
     return {
-      clueText: clue[clueKey] as string,
+      clueText: localizedClues[clueKey],
       currentStage: newStage,
       score: newScore,
     };
@@ -335,8 +346,11 @@ export const penalizeTabSwitch = mutation({
 });
 
 export const getSession = query({
-  args: { sessionId: v.id("whoAmISessions") },
-  handler: async (ctx, { sessionId }) => {
+  args: {
+    sessionId: v.id("whoAmISessions"),
+    locale: v.optional(v.string()),
+  },
+  handler: async (ctx, { sessionId, locale }) => {
     const userId = await getAuthUserId(ctx);
     if (!userId) return null;
     const session = await ctx.db.get(sessionId);
@@ -350,10 +364,14 @@ export const getSession = query({
 
     if (!clue) return null;
 
+    const localizedClues = composeLocalizedClues(
+      clue,
+      await fetchClueTranslation(ctx, session.clueExternalId, locale),
+    );
     const clues: string[] = [];
     for (let i = 1; i <= session.currentStage; i++) {
-      const key = `clue${i}` as keyof typeof clue;
-      clues.push(clue[key] as string);
+      const key = `clue${i}` as keyof typeof localizedClues;
+      clues.push(localizedClues[key]);
     }
 
     return {
