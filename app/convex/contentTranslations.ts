@@ -1,6 +1,11 @@
 import { internalMutation, internalQuery } from "./_generated/server";
 import { v } from "convex/values";
 import { isStandardMcqQuestion } from "./lib/mcqEligibility";
+import { orderAnswerOptions } from "./lib/answerOptions";
+import {
+  composeLocalizedQuestion,
+  fetchQuestionTranslation,
+} from "./lib/contentI18n";
 
 /**
  * Phase 4.2 — backfill ops for quizQuestionTranslations (the per-locale DISPLAY
@@ -96,3 +101,30 @@ export const listUntranslatedMcq = internalQuery({
     };
   },
 });
+
+/**
+ * Verification helper — reproduces exactly what the runtime serve paths return
+ * for a question in `locale` (orderAnswerOptions + fetchQuestionTranslation +
+ * composeLocalizedQuestion). Confirms the display is localized AND `optionValues`
+ * stay canonical (so grading is unaffected), without needing a live game session.
+ */
+export const previewLocalized = internalQuery({
+  args: { checksum: v.string(), locale: v.string() },
+  handler: async (ctx, { checksum, locale }) => {
+    const q = await ctx.db
+      .query("quizQuestions")
+      .withIndex("by_checksum", (x) => x.eq("checksum", checksum))
+      .first();
+    if (!q) return null;
+    const orderedValues = orderAnswerOptions(q.options, q.correctAnswer, q.checksum);
+    const translation = await fetchQuestionTranslation(ctx, checksum, locale);
+    const localized = composeLocalizedQuestion(q, orderedValues, translation);
+    return {
+      locale,
+      hasTranslation: translation !== null,
+      correctAnswer: q.correctAnswer,
+      ...localized,
+    };
+  },
+});
+
