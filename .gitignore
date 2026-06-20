@@ -223,6 +223,11 @@ data_cleaning/**/*.db
 # Development and cleanup artifacts
 development_files/
 
+# Local operational scratch — curated-parity allowlist, i18n backfill runs, etc.
+# Local-only by design; must never reach the image (the build guard treats any
+# untracked file under app/ as tree dirt).
+app/.ops/
+
 # IDE-specific folders
 .claude/
 # Ignore all markdown files by default, then re-include essential ones
