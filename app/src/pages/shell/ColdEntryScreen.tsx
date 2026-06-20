@@ -23,12 +23,18 @@ import { NeoCard } from "@/components/neo/NeoCard";
 import { NeoLogo } from "@/components/neo/NeoLogo";
 import { ShellLayout } from "@/components/shell/ShellLayout";
 import { SHELL_ROUTES } from "@/lib/shellRoutes";
+import { useMutation } from "convex/react";
 import {
   sampleTasteRound,
   scoreTasteAnswer,
   TASTE_ROUND_SIZE,
   type TasteQuestion,
 } from "@/lib/tasteRound";
+import {
+  getOrCreateColdSessionToken,
+  readColdSource,
+} from "@/lib/coldSession";
+import { api } from "../../../convex/_generated/api";
 
 type Phase = "orient" | "playing" | "done";
 
@@ -37,6 +43,7 @@ const OPTION_LETTERS = ["A", "B", "C", "D"];
 export default function ColdEntryScreen() {
   const navigate = useNavigate();
   const { t } = useTranslation("shell");
+  const recordTasteRound = useMutation(api.funnel.recordTasteRoundEvent);
 
   const [phase, setPhase] = useState<Phase>("orient");
   const [round, setRound] = useState<TasteQuestion[]>([]);
@@ -49,8 +56,23 @@ export default function ColdEntryScreen() {
   // runs dry; intentionally not persisted — a returning visitor starts clean.
   const seenIds = useRef<Set<string>>(new Set());
   const questionStartedAt = useRef(0);
+  // Cold-path funnel instrumentation. Fired at most once per mount via these
+  // refs; the server also dedupes per session token across reloads/tabs, so a
+  // replay ("Maybe later") or a re-render never double-counts. Best-effort —
+  // a failed call must never block or break the serverless taste round.
+  const tasteStartedFired = useRef(false);
+  const tasteCompletedFired = useRef(false);
 
   const startRound = useCallback(() => {
+    if (!tasteStartedFired.current) {
+      tasteStartedFired.current = true;
+      const source = readColdSource();
+      void recordTasteRound({
+        sessionToken: getOrCreateColdSessionToken(),
+        stage: "started",
+        ...(source ? { source } : {}),
+      }).catch(() => {});
+    }
     const sample = sampleTasteRound(seenIds.current);
     for (const q of sample) seenIds.current.add(q.id);
     setRound(sample);
@@ -60,7 +82,7 @@ export default function ColdEntryScreen() {
     setPicked(null);
     questionStartedAt.current = performance.now();
     setPhase("playing");
-  }, []);
+  }, [recordTasteRound]);
 
   const goSignIn = () => navigate("/?mode=signin");
   const goClaim = () =>
@@ -131,6 +153,13 @@ export default function ColdEntryScreen() {
 
     const advance = () => {
       if (isLast) {
+        if (!tasteCompletedFired.current) {
+          tasteCompletedFired.current = true;
+          void recordTasteRound({
+            sessionToken: getOrCreateColdSessionToken(),
+            stage: "completed",
+          }).catch(() => {});
+        }
         setPhase("done");
         return;
       }

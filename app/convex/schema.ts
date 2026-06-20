@@ -56,6 +56,10 @@ export default defineSchema({
       v.literal("guest_play_started"),
       v.literal("first_match_complete"),
       v.literal("defeated_player_return"),
+      // Cold-entry taste round (client-only landing game). Fired server-side
+      // via funnel.recordTasteRoundEvent; actor is an anonymous guest: session.
+      v.literal("taste_round_started"),
+      v.literal("taste_round_completed"),
     ),
     actor: v.string(),
     refLinkCode: v.optional(v.string()),

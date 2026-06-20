@@ -35,12 +35,26 @@ vi.mock("react-i18next", () => ({
   }),
 }));
 
+// Cold-path funnel instrumentation calls a Convex mutation; this test renders
+// ColdEntryScreen with no ConvexProvider, so stub useMutation with a spy we can
+// assert on (proves the started/completed events fire at the right transitions).
+const recordTasteRoundSpy = vi.hoisted(() =>
+  vi.fn((_args: { sessionToken: string; stage: string; source?: string }) =>
+    Promise.resolve({ ok: true, recorded: true }),
+  ),
+);
+vi.mock("convex/react", () => ({
+  useMutation: () => recordTasteRoundSpy,
+}));
+
 import ColdEntryScreen from "@/pages/shell/ColdEntryScreen";
 import { TASTE_ROUND_SIZE } from "@/lib/tasteRound";
 
 afterEach(() => {
   cleanup();
   navigateSpy.mockReset();
+  recordTasteRoundSpy.mockClear();
+  window.localStorage.clear();
 });
 
 function renderColdEntry() {
@@ -115,6 +129,30 @@ describe("cold-entry landing", () => {
     expect(navigateSpy).not.toHaveBeenCalled();
     expect(screen.getAllByTestId("taste-option")).toHaveLength(4);
     expect(screen.queryByText("landing.claimTitle")).toBeNull();
+  });
+
+  it("fires taste_round_started on Play and taste_round_completed at the end — once each, replay does not re-fire", () => {
+    renderColdEntry();
+    expect(recordTasteRoundSpy).not.toHaveBeenCalled();
+
+    fireEvent.click(screen.getByText("landing.play"));
+    expect(recordTasteRoundSpy).toHaveBeenCalledTimes(1);
+    expect(recordTasteRoundSpy.mock.calls[0][0]).toMatchObject({
+      stage: "started",
+    });
+
+    playThroughRound();
+    const stages = recordTasteRoundSpy.mock.calls.map((c) => c[0].stage);
+    expect(stages.filter((s) => s === "started")).toHaveLength(1);
+    expect(stages.filter((s) => s === "completed")).toHaveLength(1);
+
+    // "Maybe later" replays a fresh round but must NOT re-fire started — the
+    // per-mount ref dedupes (the server dedupes across reloads/tabs too).
+    fireEvent.click(screen.getByText("landing.maybeLater"));
+    fireEvent.click(screen.getAllByTestId("taste-option")[0]);
+    expect(
+      recordTasteRoundSpy.mock.calls.filter((c) => c[0].stage === "started"),
+    ).toHaveLength(1);
   });
 
   it("the result card offers explore + sign-in escapes", () => {

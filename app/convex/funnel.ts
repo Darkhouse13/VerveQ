@@ -226,6 +226,75 @@ export const sessionHeartbeat = mutation({
   },
 });
 
+// ── Cold-entry taste round ──
+// The cold landing's taste round is 100% client-side (no Convex session) — so
+// unlike the duel-loop events, which fire from internal helpers inside duel
+// mutations, it has NO server handler to piggyback on. This thin public
+// mutation is the cold path's only entry point. It does NOT add a new write
+// path: it reuses the same funnelEvents insert + by_actor_type dedupe pattern
+// as recordGuestPlayStarted, just reachable from the client.
+//
+// The session id is an anonymous tab-local token (see src/lib/coldSession.ts).
+// We hash it into the guest: actor namespace so cold events share the shape of
+// every other guest actor (no raw token stored; no PII). ts is server time,
+// like all other events.
+
+// Mirrors duels.ts hashString — a pure, deterministic non-crypto hash, copied
+// (not imported) so funnel.ts keeps zero dependency on duels.ts. Cold tokens
+// never collide with duel-guest tokens, so byte-identical hashing isn't needed.
+function hashString(value: string) {
+  let h1 = 0xdeadbeef;
+  let h2 = 0x41c6ce57;
+  for (let i = 0; i < value.length; i += 1) {
+    const ch = value.charCodeAt(i);
+    h1 = Math.imul(h1 ^ ch, 2654435761);
+    h2 = Math.imul(h2 ^ ch, 1597334677);
+  }
+  h1 = Math.imul(h1 ^ (h1 >>> 16), 2246822507);
+  h1 ^= Math.imul(h2 ^ (h2 >>> 13), 3266489909);
+  h2 = Math.imul(h2 ^ (h2 >>> 16), 2246822507);
+  h2 ^= Math.imul(h1 ^ (h1 >>> 13), 3266489909);
+  return `${(h2 >>> 0).toString(16).padStart(8, "0")}${(h1 >>> 0)
+    .toString(16)
+    .padStart(8, "0")}`;
+}
+
+export const recordTasteRoundEvent = mutation({
+  args: {
+    // Anonymous tab-local session token (never an email/account id).
+    sessionToken: v.string(),
+    stage: v.union(v.literal("started"), v.literal("completed")),
+    // Coarse traffic source captured on "started" only: utm_source ?? ref.
+    source: v.optional(v.string()),
+  },
+  handler: async (ctx, { sessionToken, stage, source }) => {
+    const trimmed = sessionToken.trim();
+    // Mirrors the duel guest-token minimum; a too-short token is ignored
+    // rather than throwing, so instrumentation never breaks the taste round.
+    if (trimmed.length < 16) return { ok: false, recorded: false };
+
+    const type =
+      stage === "started" ? "taste_round_started" : "taste_round_completed";
+    const actor = guestActorKey(hashString(`cold-taste:${trimmed}`));
+
+    // At most one started + one completed per session — same once-per-actor
+    // dedupe as recordGuestPlayStarted / recordFirstMatchComplete.
+    const existing = await ctx.db
+      .query("funnelEvents")
+      .withIndex("by_actor_type", (q) => q.eq("actor", actor).eq("type", type))
+      .first();
+    if (existing) return { ok: true, recorded: false };
+
+    await ctx.db.insert("funnelEvents", {
+      type,
+      actor,
+      ts: Date.now(),
+      ...(stage === "started" && source ? { meta: { source } } : {}),
+    });
+    return { ok: true, recorded: true };
+  },
+});
+
 // ── Synthetic test actors ──
 // Smoke runs and QA create accounts under these username prefixes; their
 // activity must never count toward Drop-Test numbers. Events are synthetic
@@ -524,6 +593,61 @@ export const dropLoopMetrics = internalQuery({
       M2_playRate: ratio(plays, opens),
       M3_completionRate: ratio(completions, plays),
       M4_loopRate: ratio(loops, completions),
+    };
+  },
+});
+
+// ── Cold-entry taste-round readout ──
+// Read-only rollup of the cold landing's taste round (see
+// funnel.recordTasteRoundEvent): how many anonymous visitors started vs.
+// finished it, and where the starters came from. Mirrors dropLoopMetrics —
+// optional ts window via the by_type_ts index, and a ratio() that never
+// divides by zero. Cold-taste actors are anonymous guest: sessions that can't
+// be synthetic (no username, no smoke linkCode), so no synthetic filtering is
+// needed here. source is meta.source (utm_source ?? ref); a starter with no
+// source is bucketed as "direct".
+//   npx convex run funnel:coldEntryMetrics '{}'
+//   npx convex run funnel:coldEntryMetrics '{"startMs":...,"endMs":...}'
+export const coldEntryMetrics = internalQuery({
+  args: {
+    startMs: v.optional(v.number()),
+    endMs: v.optional(v.number()),
+  },
+  handler: async (ctx, { startMs, endMs }) => {
+    const now = Date.now();
+    const start = startMs ?? 0;
+    const end = endMs ?? now;
+    const eventsOf = async (
+      type: "taste_round_started" | "taste_round_completed",
+    ) =>
+      await ctx.db
+        .query("funnelEvents")
+        .withIndex("by_type_ts", (q) =>
+          q.eq("type", type).gte("ts", start).lte("ts", end),
+        )
+        .take(10000);
+
+    const startedEvents = await eventsOf("taste_round_started");
+    const completedEvents = await eventsOf("taste_round_completed");
+
+    const started = startedEvents.length;
+    const completed = completedEvents.length;
+    const ratio = (num: number, den: number) => (den ? num / den : null);
+
+    // Starters grouped by traffic source; missing/undefined → "direct".
+    const bySource: Record<string, number> = {};
+    for (const e of startedEvents) {
+      const source =
+        (e as { meta?: { source?: string } }).meta?.source ?? "direct";
+      bySource[source] = (bySource[source] ?? 0) + 1;
+    }
+
+    return {
+      window: { startMs: start, endMs: end },
+      started,
+      completed,
+      completionRate: ratio(completed, started),
+      bySource,
     };
   },
 });
