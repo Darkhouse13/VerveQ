@@ -15,9 +15,12 @@ import { toast } from "sonner";
 const STAT_LABELS: Record<string, string> = {
   goalsFor: "Goals Scored",
   goalsAgainst: "Goals Conceded",
+  goals: "Goals",
   cleanSheets: "Clean Sheets",
   assists: "Assists",
   appearances: "Appearances",
+  minutes: "Minutes Played",
+  cardsYellow: "Yellow Cards",
   yellowCards: "Yellow Cards",
   redCards: "Red Cards",
   wins: "Wins",

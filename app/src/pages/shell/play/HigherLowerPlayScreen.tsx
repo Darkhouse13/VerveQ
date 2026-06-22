@@ -31,9 +31,12 @@ import type { Id } from "../../../../convex/_generated/dataModel";
 const STAT_LABEL_FALLBACKS: Record<string, string> = {
   goalsFor: "Goals Scored",
   goalsAgainst: "Goals Conceded",
+  goals: "Goals",
   cleanSheets: "Clean Sheets",
   assists: "Assists",
   appearances: "Appearances",
+  minutes: "Minutes Played",
+  cardsYellow: "Yellow Cards",
   yellowCards: "Yellow Cards",
   redCards: "Red Cards",
   wins: "Wins",

@@ -662,6 +662,7 @@ interface PipelineFlags {
   resume: boolean;
   sportFilter: "all" | "football" | "nba";
   configPath: string;
+  rebuildHlOnly: boolean;
 }
 
 // ─── Constants ──────────────────────────────────────────────────────────────
@@ -1358,8 +1359,11 @@ const HIGHER_LOWER_APPROVED_CONTEXT_KEYS = new Set(
 const HIGHER_LOWER_APPROVED_STAT_KEYS = new Set([
   "goalsFor",
   "goalsAgainst",
+  "goals",
   "assists",
   "appearances",
+  "minutes",
+  "cardsYellow",
   "wins",
   "losses",
   "draws",
@@ -1406,6 +1410,7 @@ function parseArgs(): PipelineFlags {
   return {
     dryRun: args.includes("--dry-run"),
     resume: args.includes("--resume"),
+    rebuildHlOnly: args.includes("--rebuild-hl-only"),
     sportFilter: (() => {
       if (sportIdx >= 0 && args[sportIdx + 1]) {
         const val = args[sportIdx + 1].toLowerCase();
@@ -8368,6 +8373,42 @@ function validateOutput(): string[] {
 
 async function main(): Promise<void> {
   const flags = parseArgs();
+
+  // Offline rebuild of the Higher/Lower curated layer only — derived purely
+  // from persisted statFacts + playerQualityProfiles, so it needs no API keys
+  // and touches no other table. Use after tuning HIGHER_LOWER_APPROVED_STAT_KEYS
+  // (or the other HL constants) to regenerate higherLowerPools/Facts in place.
+  if (flags.rebuildHlOnly) {
+    console.log(
+      "Rebuilding Higher/Lower data from persisted statFacts + quality profiles...",
+    );
+    const statFacts = loadTable<StatFact>("statFacts");
+    const qualityProfiles = loadTable<PlayerQualityProfile>(
+      "playerQualityProfiles",
+    );
+    if (statFacts.length === 0 || qualityProfiles.length === 0) {
+      console.error(
+        `Cannot rebuild HL: statFacts=${statFacts.length}, playerQualityProfiles=${qualityProfiles.length} (expected both > 0 on disk)`,
+      );
+      process.exit(1);
+    }
+    const hl = buildFootballHigherLowerData(statFacts, qualityProfiles);
+    persistReplaceTable("higherLowerPools", hl.pools);
+    persistReplaceTable("higherLowerFacts", hl.facts);
+
+    const byStat = new Map<string, { pools: number; facts: number }>();
+    for (const pool of hl.pools) {
+      const row = byStat.get(pool.statKey) ?? { pools: 0, facts: 0 };
+      row.pools += 1;
+      row.facts += pool.factCount;
+      byStat.set(pool.statKey, row);
+    }
+    console.log("  Higher/Lower breakdown by statKey (pools / facts):");
+    for (const [statKey, row] of [...byStat.entries()].sort()) {
+      console.log(`    ${statKey}: ${row.pools} / ${row.facts}`);
+    }
+    return;
+  }
 
   // Load config
   let config: PipelineConfig;

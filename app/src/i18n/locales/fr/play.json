@@ -71,9 +71,12 @@
     "stats": {
       "goalsFor": "Buts marqués",
       "goalsAgainst": "Buts encaissés",
+      "goals": "Buts",
       "cleanSheets": "Clean sheets",
       "assists": "Passes décisives",
       "appearances": "Apparitions",
+      "minutes": "Minutes jouées",
+      "cardsYellow": "Cartons jaunes",
       "yellowCards": "Cartons jaunes",
       "redCards": "Cartons rouges",
       "wins": "Victoires",

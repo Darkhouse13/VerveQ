@@ -71,9 +71,12 @@
     "stats": {
       "goalsFor": "Goles marcados",
       "goalsAgainst": "Goles encajados",
+      "goals": "Goles",
       "cleanSheets": "Porterías a cero",
       "assists": "Asistencias",
       "appearances": "Partidos jugados",
+      "minutes": "Minutos jugados",
+      "cardsYellow": "Tarjetas amarillas",
       "yellowCards": "Tarjetas amarillas",
       "redCards": "Tarjetas rojas",
       "wins": "Victorias",
