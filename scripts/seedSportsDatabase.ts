@@ -194,12 +194,82 @@ async function importConvexEsm<T>(relativePath: string): Promise<T> {
   return (await import(pathToFileURL(modulePath).href)) as T;
 }
 
+const DEPLOY_KEY_ENV = "CONVEX_DEPLOY_KEY";
+
+// Read a deploy key from the environment, falling back to app/.env.local. A
+// deploy key lets the seeder authenticate WITHOUT convex's CLI/bundler ESM
+// internals (bundler/context.js + cli/lib/*), whose undeclared, version-pinned
+// transitive deps (@sentry/node v7, @sentry/tracing, fetch-retry, openapi-fetch,
+// detect-port, chalk>=5.3, find-up>=6, …) are not installed in app/node_modules
+// and crash the default credential path under tsx with convex 1.40.x. Generate
+// one in the Convex dashboard (deployment → Settings → Deploy keys) for the
+// target deployment.
+function resolveAdminDeployKey(target: ConvexTarget): string | null {
+  const fromEnv = process.env[DEPLOY_KEY_ENV]?.trim();
+  if (fromEnv) return fromEnv;
+  try {
+    const raw = fs.readFileSync(target.envPath, "utf8");
+    for (const line of raw.split(/\r?\n/)) {
+      const match = line.match(/^\s*CONVEX_DEPLOY_KEY\s*=\s*(.+?)\s*$/);
+      if (match) {
+        const value = match[1].replace(/^["']|["']$/g, "").trim();
+        if (value) return value;
+      }
+    }
+  } catch {
+    /* no .env.local or unreadable — fall through to the CLI credential path */
+  }
+  return null;
+}
+
+// Defense in depth: if the deploy key names a specific deployment
+// ("<env>:<name>|<secret>"), it MUST match the pinned (allowlisted) target so a
+// stray key can't authenticate against the wrong URL. Project-scoped keys
+// ("project:…") carry no deployment name and are left as-is.
+function assertDeployKeyMatchesTarget(
+  deployKey: string,
+  target: ConvexTarget,
+): void {
+  const head = deployKey.split("|")[0] ?? "";
+  // Only the explicit "<env>:<name>|<secret>" deploy-key form self-describes a
+  // deployment we can check. Project-scoped ("project:…") and opaque/bare keys
+  // are left for convex to validate — it rejects a key that doesn't match the
+  // deployment serving target.convexUrl, so a mismatch can't write to the wrong
+  // place; this guard just turns the common typo into a clear error.
+  if (!head.includes(":") || head.startsWith("project:")) return;
+  const name = head.split(":").pop();
+  if (name && name !== target.deploymentSlug) {
+    throw new Error(
+      `${DEPLOY_KEY_ENV} is scoped to "${name}" but the resolved target is "${target.deploymentSlug}". Refusing to use a mismatched key.`,
+    );
+  }
+}
+
 async function loadConvexAdminRuntime(
   target: ConvexTarget,
 ): Promise<ConvexAdminRuntime> {
   if (adminRuntime) return adminRuntime;
 
   adminRuntime = (async () => {
+    const deployKey = resolveAdminDeployKey(target);
+    if (deployKey) {
+      // Durable path: authenticate with an explicit deploy key against the
+      // pinned target URL, importing ONLY the lightweight browser/server
+      // modules (no convex CLI/bundler internals → no missing-dep crash).
+      assertDeployKeyMatchesTarget(deployKey, target);
+      const [browserMod, serverMod] = await Promise.all([
+        importConvexEsm<ConvexBrowserModule>("browser/index-node.js"),
+        importConvexEsm<ConvexServerModule>("server/index.js"),
+      ]);
+      const client = new browserMod.ConvexHttpClient(target.convexUrl);
+      client.setAdminAuth(deployKey);
+      return { client, makeFunctionReference: serverMod.makeFunctionReference };
+    }
+
+    // Fallback path: resolve credentials via convex's CLI internals. Works
+    // where convex's full CLI dependency tree is installed; if this throws
+    // ERR_MODULE_NOT_FOUND (@sentry/node, fetch-retry, chalk, find-up, …), set
+    // CONVEX_DEPLOY_KEY (see resolveAdminDeployKey) to use the path above.
     const [browserMod, serverMod, contextMod, selectionMod, apiMod] =
       await Promise.all([
         importConvexEsm<ConvexBrowserModule>("browser/index-node.js"),
