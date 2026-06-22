@@ -82,13 +82,17 @@ export const getQuestion = mutation({
       throw new Error("Answer the current question before requesting another");
     }
 
-    // Get a random unused question
+    // Collect the FULL sport+intermediate pool (mirrors quizSessions.getQuestion).
+    // The old `.take(200)` silently capped Blitz to the first 200 questions by
+    // index order, so most of the pool (e.g. football intermediate ≫ 200) was
+    // permanently unreachable in this mode — every Blitz run drew from the same
+    // 200-question window. Collecting the whole pool makes Blitz reach all of it.
     const allQuestions = await ctx.db
       .query("quizQuestions")
       .withIndex("by_sport_difficulty", (q) =>
         q.eq("sport", session.sport).eq("difficulty", "intermediate"),
       )
-      .take(200);
+      .collect();
 
     const pool = pickQuestionPool(
       allQuestions.filter(isStandardMcqQuestion),
