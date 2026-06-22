@@ -10,6 +10,7 @@ import { getTodayUTC, seededShuffle } from "./lib/daily";
 import { normalizeAnswer } from "./lib/scoring";
 import { recordPlayForStreak } from "./lib/streaks";
 import { orderAnswerOptions } from "./lib/answerOptions";
+import { questionHasImage } from "./lib/imageQuestions";
 import {
   composeLocalizedQuestion,
   fetchQuestionTranslation,
@@ -229,8 +230,8 @@ async function getOrCreateDailyQuizChallenge(
   for (const question of shuffled) {
     if (selected.length >= DAILY_QUIZ_COUNT) break;
     const lastWasImage =
-      selected.length > 0 && selected[selected.length - 1].imageId != null;
-    if (question.imageId) {
+      selected.length > 0 && questionHasImage(selected[selected.length - 1]);
+    if (questionHasImage(question)) {
       if (imageCount >= MAX_IMAGE_QUESTIONS || lastWasImage) continue;
       imageCount++;
     }
@@ -328,9 +329,8 @@ export const getOrCreateChallenge = mutation({
       for (const q of shuffled) {
         if (selected.length >= DAILY_QUIZ_COUNT) break;
         const lastWasImage =
-          selected.length > 0 &&
-          selected[selected.length - 1].imageId != null;
-        if (q.imageId) {
+          selected.length > 0 && questionHasImage(selected[selected.length - 1]);
+        if (questionHasImage(q)) {
           if (imageCount >= MAX_IMAGE_QUESTIONS || lastWasImage) continue;
           imageCount++;
         }

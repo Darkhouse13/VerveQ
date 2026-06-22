@@ -13,6 +13,7 @@ import { internal } from "./_generated/api";
 import { normalizeAnswer } from "./lib/scoring";
 import { matchLogoGuess } from "./lib/logoTextAnswers";
 import { orderAnswerOptions } from "./lib/answerOptions";
+import { capImageQuestions } from "./lib/imageQuestions";
 import {
   composeLocalizedQuestion,
   fetchQuestionTranslation,
@@ -871,6 +872,7 @@ async function pickIndexedChecksums(
   label: string,
   perRound: number,
   predicate: (question: Question) => boolean,
+  capImages: boolean,
   fallbackSeeds?: ChallengeArenaQuestionSeed[],
 ) {
   const relevantRecentlySeen = recentlySeenCountForScopes(
@@ -898,7 +900,12 @@ async function pickIndexedChecksums(
     recentlySeen,
     perRound,
   );
-  const picked = seededShuffle(candidates, seed).slice(0, perRound);
+  const shuffled = seededShuffle(candidates, seed);
+  // Hold image questions to MAX_IMAGE_QUESTIONS per round (then re-shuffle so the
+  // image picks aren't clustered at the front). The logos round opts out.
+  const picked = capImages
+    ? seededShuffle(capImageQuestions(shuffled, perRound), `${seed}:images`)
+    : shuffled.slice(0, perRound);
   if (picked.length >= perRound) {
     for (const question of picked) used.add(question.checksum);
     return picked.map((question) => question.checksum);
@@ -1120,6 +1127,10 @@ type RoundSpec =
       // bulk-imported tennis/basketball quiz pools). Used only for create-time
       // validation; the start-time picker remains the hard backstop.
       contentFloor?: number;
+      // By default each round caps image questions at MAX_IMAGE_QUESTIONS (so an
+      // image-heavy pool like basketball can't fill a round with silhouettes).
+      // The logos round opts out — it is meant to be all-images.
+      noImageCap?: boolean;
     };
 
 const ROUND_SPEC_REGISTRY: Record<string, RoundSpec> = {
@@ -1171,6 +1182,7 @@ const ROUND_SPEC_REGISTRY: Record<string, RoundSpec> = {
     ],
     predicate: isLogoTextQuestion,
     fallbackSeeds: challengeArenaEnterpriseLogoQuestions,
+    noImageCap: true, // the logos round is intentionally all-images
   },
   capital_cities: {
     kind: "indexed",
@@ -1343,6 +1355,7 @@ async function lockRoundQuestionSets(
           spec.label,
           perRound,
           spec.predicate,
+          !spec.noImageCap,
           spec.fallbackSeeds,
         ),
       );

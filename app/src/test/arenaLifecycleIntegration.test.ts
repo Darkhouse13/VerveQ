@@ -2372,4 +2372,50 @@ describe("challenge arena lifecycle integration", () => {
       true,
     );
   });
+
+  it("caps image questions per round for an image-heavy sport (basketball)", async () => {
+    const db = makeSeededDb();
+    // Image-heavy pool: 18 silhouettes (imageId) + 18 text MCQs.
+    for (let i = 0; i < 18; i += 1) {
+      const suffix = String(i).padStart(2, "0");
+      seedQuestion(db, `bb_img_${suffix}`, {
+        sport: "basketball",
+        category: "player_silhouette",
+        checksum: `bb11aa22cc33${suffix}`,
+        correctAnswer: `Silhouette ${suffix}`,
+        imageId: `bb_silhouette_${suffix}`,
+      });
+      seedQuestion(db, `bb_txt_${suffix}`, {
+        sport: "basketball",
+        category: "nba_players",
+        checksum: `bb44dd55ee66${suffix}`,
+        correctAnswer: `NBA Text ${suffix}`,
+      });
+    }
+
+    setAuth("user_a");
+    const created = (await handlerOf(challengeArenas.create)(makeCtx(db), {
+      mode: "1v1",
+      rounds: 1,
+      perRound: 10,
+      categories: ["basketball"],
+    })) as { arenaId: string; code: string };
+    setAuth("user_b");
+    await handlerOf(challengeArenas.join)(makeCtx(db), { code: created.code });
+    await readyUsers(db, created.arenaId, ["user_a", "user_b"]);
+    setAuth("user_a");
+    await handlerOf(challengeArenas.start)(makeCtx(db), {
+      arenaId: created.arenaId,
+    });
+
+    const arena = db.row<ArenaRow>(created.arenaId);
+    const round = arena.roundChecksums[0].map((checksum) =>
+      questionByChecksum(db, checksum),
+    );
+    expect(round).toHaveLength(10);
+    const images = round.filter(
+      (question) => question.imageId || question.imageUrl,
+    );
+    expect(images.length).toBeLessThanOrEqual(2);
+  });
 });
