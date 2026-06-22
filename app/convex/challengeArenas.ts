@@ -34,6 +34,16 @@ import { contentDuplicateKey } from "./lib/contentQa";
 
 const ARENA_ROUNDS = 5;
 const QUESTIONS_PER_ROUND = 10;
+// Customizable-arena bounds. Defaults reproduce today's fixed 5×10. The maxima
+// are deliberately modest: every selectable category comfortably holds
+// MAX_QUESTIONS_PER_ROUND under seeded content (asserted in
+// arenaConfigContract.test.ts), and MAX_TOTAL_QUESTIONS caps the per-start read
+// budget regardless of how rounds/perRound are combined.
+const MIN_ARENA_ROUNDS = 1;
+const MAX_ARENA_ROUNDS = 8;
+const MIN_QUESTIONS_PER_ROUND = 5;
+const MAX_QUESTIONS_PER_ROUND = 15;
+const MAX_TOTAL_QUESTIONS = 80;
 const QUESTION_WINDOW_MS = 10_000;
 const COUNTDOWN_MS = 3_000;
 const REVEAL_WINDOW_MS = 2_000;
@@ -43,8 +53,18 @@ const ARENA_TTL_MS = 3 * 60 * 60 * 1000;
 const EXPIRE_BATCH_SIZE = 50;
 const RANK_BONUS = [50, 30, 20, 10, 10] as const;
 const FOOTBALL_IMAGE_QUESTION_CAP = 2;
+// Base anti-repeat window (the default 5×10 arena = 2 full arenas). Custom
+// arenas grow the window to 2× their own question count so a single large
+// arena can never overflow it (which would let just-seen questions repeat).
 const RECENTLY_SEEN_WINDOW_COUNT = ARENA_ROUNDS * QUESTIONS_PER_ROUND * 2;
 const RECENTLY_SEEN_WINDOW_AGE_MS = 14 * 24 * 60 * 60 * 1000;
+
+function recentlySeenWindowForConfig(config: {
+  rounds: number;
+  perRound: number;
+}) {
+  return Math.max(RECENTLY_SEEN_WINDOW_COUNT, config.rounds * config.perRound * 2);
+}
 const INDEXED_POOL_PAGE_SIZE = 64;
 const INDEXED_POOL_MAX_READS = 192;
 const FOOTBALL_IMAGE_CANDIDATE_MAX_READS = 16;
@@ -556,14 +576,11 @@ async function collectSeedBackedCandidates(
   used: Set<string>,
   recentlySeen: RecentlySeenMap,
   seed: string,
+  perRound: number,
   predicate: (question: Question) => boolean,
 ) {
   const base = uniqueStableSeeds(seeds, used);
-  const eligible = applyRecentlySeenExclusion(
-    base,
-    recentlySeen,
-    QUESTIONS_PER_ROUND,
-  );
+  const eligible = applyRecentlySeenExclusion(base, recentlySeen, perRound);
   const eligibleChecksums = new Set(eligible.map((candidate) => candidate.checksum));
   const readOrder = [
     ...seededShuffle(eligible, seed),
@@ -578,7 +595,7 @@ async function collectSeedBackedCandidates(
     const question = await readQuestionByChecksum(ctx, candidate.checksum);
     if (question && !used.has(question.checksum) && predicate(question)) {
       questions.push(question);
-      if (questions.length >= QUESTIONS_PER_ROUND) break;
+      if (questions.length >= perRound) break;
     }
   }
   return questions;
@@ -792,17 +809,18 @@ function footballRoundCapacity(candidates: Question[]) {
 function applyRecentlySeenFootballExclusion(
   candidates: Question[],
   recentlySeen: RecentlySeenMap,
+  perRound: number,
 ) {
   if (recentlySeen.size === 0) return candidates;
 
   const included = candidates.filter(
     (candidate) => !recentlySeen.has(candidate.checksum),
   );
-  if (footballRoundCapacity(included) >= QUESTIONS_PER_ROUND) return included;
+  if (footballRoundCapacity(included) >= perRound) return included;
 
   for (const candidate of oldestRecentlySeenCandidates(candidates, recentlySeen)) {
     included.push(candidate);
-    if (footballRoundCapacity(included) >= QUESTIONS_PER_ROUND) break;
+    if (footballRoundCapacity(included) >= perRound) break;
   }
 
   const includedChecksums = new Set(
@@ -820,6 +838,7 @@ async function pickSeedBackedChecksums(
   recentlySeen: RecentlySeenMap,
   seed: string,
   label: string,
+  perRound: number,
   predicate: (question: Question) => boolean = isAnswerableMcq,
 ) {
   const picked = await collectSeedBackedCandidates(
@@ -828,11 +847,12 @@ async function pickSeedBackedChecksums(
     used,
     recentlySeen,
     seed,
+    perRound,
     predicate,
   );
-  if (picked.length < QUESTIONS_PER_ROUND) {
+  if (picked.length < perRound) {
     throw new Error(
-      `Not enough challenge arena questions for ${label}: ${picked.length}/${QUESTIONS_PER_ROUND}`,
+      `Not enough challenge arena questions for ${label}: ${picked.length}/${perRound}`,
     );
   }
   for (const question of picked) used.add(question.checksum);
@@ -846,6 +866,7 @@ async function pickIndexedChecksums(
   recentlySeen: RecentlySeenMap,
   seed: string,
   label: string,
+  perRound: number,
   predicate: (question: Question) => boolean,
   fallbackSeeds?: ChallengeArenaQuestionSeed[],
 ) {
@@ -855,7 +876,7 @@ async function pickIndexedChecksums(
     fallbackSeeds,
   );
   const targetCandidates =
-    QUESTIONS_PER_ROUND + Math.min(relevantRecentlySeen, 40) + 32;
+    perRound + Math.min(relevantRecentlySeen, 40) + 32;
   const questions: Question[] = [];
   for (const [scopeIndex, scope] of scopes.entries()) {
     questions.push(
@@ -872,10 +893,10 @@ async function pickIndexedChecksums(
   const candidates = applyRecentlySeenExclusion(
     uniqueStableQuestionCandidates(questions, used, predicate),
     recentlySeen,
-    QUESTIONS_PER_ROUND,
+    perRound,
   );
-  const picked = seededShuffle(candidates, seed).slice(0, QUESTIONS_PER_ROUND);
-  if (picked.length >= QUESTIONS_PER_ROUND) {
+  const picked = seededShuffle(candidates, seed).slice(0, perRound);
+  if (picked.length >= perRound) {
     for (const question of picked) used.add(question.checksum);
     return picked.map((question) => question.checksum);
   }
@@ -888,12 +909,13 @@ async function pickIndexedChecksums(
       recentlySeen,
       `${seed}:seedFallback`,
       label,
+      perRound,
       predicate,
     );
   }
 
   throw new Error(
-    `Not enough challenge arena questions for ${label}: ${picked.length}/${QUESTIONS_PER_ROUND}`,
+    `Not enough challenge arena questions for ${label}: ${picked.length}/${perRound}`,
   );
 }
 
@@ -903,13 +925,14 @@ async function pickFootballChecksums(
   recentlySeen: RecentlySeenMap,
   seed: string,
   label: string,
+  perRound: number,
 ) {
   const footballScope = { sport: "football", cursorPrefix: "football_" };
   const relevantRecentlySeen = recentlySeenCountForScopes(recentlySeen, [
     footballScope,
   ]);
   const targetTextCandidates =
-    QUESTIONS_PER_ROUND +
+    perRound +
     Math.min(relevantRecentlySeen, 40) +
     32;
   const targetImageCandidates =
@@ -951,6 +974,7 @@ async function pickFootballChecksums(
         isFootballQuizQuestion,
       ),
       recentlySeen,
+      perRound,
     ),
     seed,
   );
@@ -959,12 +983,12 @@ async function pickFootballChecksums(
     .slice(0, FOOTBALL_IMAGE_QUESTION_CAP);
   const textPicked = candidates
     .filter((question) => !hasQuestionImage(question))
-    .slice(0, QUESTIONS_PER_ROUND - imagePicked.length);
+    .slice(0, perRound - imagePicked.length);
   const picked = seededShuffle([...imagePicked, ...textPicked], `${seed}:order`);
 
-  if (picked.length < QUESTIONS_PER_ROUND) {
+  if (picked.length < perRound) {
     throw new Error(
-      `Not enough challenge arena text questions for ${label}: ${textPicked.length}/${QUESTIONS_PER_ROUND - imagePicked.length}`,
+      `Not enough challenge arena text questions for ${label}: ${textPicked.length}/${perRound - imagePicked.length}`,
     );
   }
   if (picked.filter(hasQuestionImage).length > FOOTBALL_IMAGE_QUESTION_CAP) {
@@ -981,6 +1005,7 @@ async function loadCrewRecentlySeenChecksums(
   ctx: Pick<QueryCtx | MutationCtx, "db">,
   userIds: Id<"users">[],
   now: number,
+  windowCount: number = RECENTLY_SEEN_WINDOW_COUNT,
 ) {
   const cutoff = now - RECENTLY_SEEN_WINDOW_AGE_MS;
   const recentlySeen: RecentlySeenMap = new Map();
@@ -990,7 +1015,7 @@ async function loadCrewRecentlySeenChecksums(
       .query("arenaRecentlySeenQuestions")
       .withIndex("by_user_seen_at", (q) => q.eq("userId", userId))
       .order("desc")
-      .take(RECENTLY_SEEN_WINDOW_COUNT);
+      .take(windowCount);
     const windowRows = rows
       .filter((row) => row.seenAt >= cutoff)
       .sort(
@@ -999,7 +1024,7 @@ async function loadCrewRecentlySeenChecksums(
           a.checksum.localeCompare(b.checksum) ||
           String(a._id).localeCompare(String(b._id)),
       )
-      .slice(0, RECENTLY_SEEN_WINDOW_COUNT);
+      .slice(0, windowCount);
 
     for (const row of windowRows) {
       recentlySeen.set(
@@ -1016,12 +1041,13 @@ async function pruneRecentlySeenForUser(
   ctx: Pick<MutationCtx, "db">,
   userId: Id<"users">,
   _now: number,
+  windowCount: number = RECENTLY_SEEN_WINDOW_COUNT,
 ) {
   const rows = await ctx.db
     .query("arenaRecentlySeenQuestions")
     .withIndex("by_user_seen_at", (q) => q.eq("userId", userId))
     .order("desc")
-    .take(RECENTLY_SEEN_WINDOW_COUNT + QUESTIONS_PER_ROUND + 1);
+    .take(windowCount + MAX_QUESTIONS_PER_ROUND + 1);
   const keepIds = new Set(
     rows
       .sort(
@@ -1030,7 +1056,7 @@ async function pruneRecentlySeenForUser(
           a.checksum.localeCompare(b.checksum) ||
           String(a._id).localeCompare(String(b._id)),
       )
-      .slice(0, RECENTLY_SEEN_WINDOW_COUNT)
+      .slice(0, windowCount)
       .map((row) => row._id),
   );
 
@@ -1046,6 +1072,7 @@ async function recordRecentlySeenArenaQuestions(
   userIds: Id<"users">[],
   checksums: string[],
   seenAt: number,
+  windowCount: number = RECENTLY_SEEN_WINDOW_COUNT,
 ) {
   const uniqueChecksums = [...new Set(checksums)];
   for (const userId of userIds) {
@@ -1066,8 +1093,179 @@ async function recordRecentlySeenArenaQuestions(
         });
       }
     }
-    await pruneRecentlySeenForUser(ctx, userId, seenAt);
+    await pruneRecentlySeenForUser(ctx, userId, seenAt, windowCount);
   }
+}
+
+// Data-driven routing for a single arena round. Each selectable category maps to
+// one RoundSpec describing how to source `perRound` questions for that round.
+// The five entries below reproduce the original hardcoded branches verbatim, so
+// the default 5×10 arena selects exactly as before; adding a new selectable
+// subject is now one registry entry (+ a UI option in src/lib/arena.ts).
+type RoundSpec =
+  | { kind: "football"; label: string }
+  | {
+      kind: "indexed";
+      label: string;
+      scopes: IndexedCandidateScope[];
+      predicate: (question: Question) => boolean;
+      // Bundled questions used as a guaranteed fallback when the indexed pool
+      // can't fill the round; also the static content floor (see arenaConfig
+      // validation + contract test).
+      fallbackSeeds: ChallengeArenaQuestionSeed[];
+    };
+
+const ROUND_SPEC_REGISTRY: Record<string, RoundSpec> = {
+  football_quiz: { kind: "football", label: "football quiz" },
+  general_knowledge: {
+    kind: "indexed",
+    label: "general knowledge",
+    scopes: [
+      { sport: "knowledge", cursorPrefix: "knowledge_" },
+      { sport: ARENA_CIE_SPORT, cursorPrefix: "knowledge_" },
+    ],
+    predicate: (question) =>
+      question.category !== "which_came_first" &&
+      question.category !== "enterprise_logos" &&
+      question.category !== "capital_cities" &&
+      isAnswerableMcq(question),
+    fallbackSeeds: challengeArenaGeneralKnowledgeQuestions,
+  },
+  which_came_first: {
+    kind: "indexed",
+    label: "which came first",
+    scopes: [
+      {
+        sport: "knowledge",
+        category: "which_came_first",
+        cursorPrefix: "knowledge_came_first_v",
+        cursorAlphabet: NUMERIC_CURSOR_ALPHABET,
+      },
+      {
+        sport: ARENA_CIE_SPORT,
+        category: "which_came_first",
+        cursorPrefix: "knowledge_",
+      },
+    ],
+    predicate: (question) =>
+      question.category === "which_came_first" && isAnswerableMcq(question),
+    fallbackSeeds: challengeArenaWhichCameFirstQuestions,
+  },
+  enterprise_logos: {
+    kind: "indexed",
+    label: "enterprise logos",
+    scopes: [
+      {
+        sport: "knowledge",
+        category: "enterprise_logos",
+        cursorPrefix: "challenge_arena_enterprise_logos_v1_",
+        cursorAlphabet: NUMERIC_CURSOR_ALPHABET,
+      },
+    ],
+    predicate: isLogoTextQuestion,
+    fallbackSeeds: challengeArenaEnterpriseLogoQuestions,
+  },
+  capital_cities: {
+    kind: "indexed",
+    label: "capital cities",
+    scopes: [
+      {
+        sport: "knowledge",
+        category: "capital_cities",
+        cursorPrefix: "challenge_arena_capitals_v",
+        cursorAlphabet: NUMERIC_CURSOR_ALPHABET,
+      },
+      {
+        sport: ARENA_CIE_SPORT,
+        category: "capital_cities",
+        cursorPrefix: "knowledge_geography_cie_score_v",
+      },
+    ],
+    predicate: (question) =>
+      question.category === "capital_cities" && isAnswerableMcq(question),
+    fallbackSeeds: challengeArenaCapitalCityQuestions,
+  },
+};
+
+// Selectable categories, in their canonical default order. The default arena
+// uses all five (DEFAULT_ROUND_CATEGORIES); custom arenas pick any subset/order.
+export const ARENA_SELECTABLE_CATEGORIES = Object.keys(
+  ROUND_SPEC_REGISTRY,
+) as Array<keyof typeof ROUND_SPEC_REGISTRY>;
+
+// Static guaranteed floor of questions a category can supply for one round —
+// the bundled fallback count (football is effectively unbounded). Used by config
+// validation so a config can never be accepted that the shipped content can't
+// fill; the start-time picker remains the hard backstop.
+function categoryRoundCapacityFloor(category: string): number {
+  const spec = ROUND_SPEC_REGISTRY[category];
+  if (!spec) return 0;
+  return spec.kind === "football" ? Number.POSITIVE_INFINITY : spec.fallbackSeeds.length;
+}
+
+// Normalize + validate a (possibly partial) arena config from `create`. Returns
+// today's fixed 5×10 default when nothing is customized; otherwise fails closed
+// on any out-of-bounds / unknown-category / unfillable-perRound input so a bad
+// config can never reach the lobby. Mirrored client-side in src/lib/arena.ts.
+function validateArenaConfig(input: {
+  rounds?: number;
+  perRound?: number;
+  categories?: string[];
+}): { rounds: number; perRound: number; categories: string[] } {
+  const customizing =
+    input.rounds !== undefined ||
+    input.perRound !== undefined ||
+    input.categories !== undefined;
+  if (!customizing) {
+    return {
+      rounds: ARENA_ROUNDS,
+      perRound: QUESTIONS_PER_ROUND,
+      categories: [...DEFAULT_ROUND_CATEGORIES],
+    };
+  }
+
+  const rounds = input.rounds ?? ARENA_ROUNDS;
+  const perRound = input.perRound ?? QUESTIONS_PER_ROUND;
+  const categories = input.categories ?? [...DEFAULT_ROUND_CATEGORIES];
+
+  if (
+    !Number.isInteger(rounds) ||
+    rounds < MIN_ARENA_ROUNDS ||
+    rounds > MAX_ARENA_ROUNDS
+  ) {
+    throw new Error(
+      `Arena rounds must be a whole number between ${MIN_ARENA_ROUNDS} and ${MAX_ARENA_ROUNDS}`,
+    );
+  }
+  if (
+    !Number.isInteger(perRound) ||
+    perRound < MIN_QUESTIONS_PER_ROUND ||
+    perRound > MAX_QUESTIONS_PER_ROUND
+  ) {
+    throw new Error(
+      `Arena questions per round must be a whole number between ${MIN_QUESTIONS_PER_ROUND} and ${MAX_QUESTIONS_PER_ROUND}`,
+    );
+  }
+  if (rounds * perRound > MAX_TOTAL_QUESTIONS) {
+    throw new Error(
+      `Arena cannot exceed ${MAX_TOTAL_QUESTIONS} total questions (requested ${rounds * perRound})`,
+    );
+  }
+  if (categories.length !== rounds) {
+    throw new Error(`Arena must list exactly ${rounds} subject(s), one per round`);
+  }
+  for (const category of categories) {
+    if (!ROUND_SPEC_REGISTRY[category]) {
+      throw new Error(`Unknown arena category: ${category}`);
+    }
+    if (perRound > categoryRoundCapacityFloor(category)) {
+      throw new Error(
+        `Not enough "${category}" content for ${perRound} questions per round`,
+      );
+    }
+  }
+
+  return { rounds, perRound, categories };
 }
 
 async function lockRoundQuestionSets(
@@ -1075,131 +1273,54 @@ async function lockRoundQuestionSets(
   seed: string,
   playerIds: Id<"users">[],
   now: number,
+  config: { rounds: number; perRound: number; categories: string[] },
 ) {
-  const recentlySeen = await loadCrewRecentlySeenChecksums(ctx, playerIds, now);
+  const recentlySeen = await loadCrewRecentlySeenChecksums(
+    ctx,
+    playerIds,
+    now,
+    recentlySeenWindowForConfig(config),
+  );
   const used = new Set<string>();
   const categories: string[] = [];
   const rounds: string[][] = [];
+  const perRound = config.perRound;
 
-  for (const category of DEFAULT_ROUND_CATEGORIES) {
-    if (category === "football_quiz") {
+  for (const [roundIndex, category] of config.categories.entries()) {
+    const spec = ROUND_SPEC_REGISTRY[category];
+    if (!spec) {
+      throw new Error(`Unknown challenge arena category: ${category}`);
+    }
+    // Fold the round index into the seed so picking the same category for more
+    // than one round yields a distinct, non-overlapping set each round (rather
+    // than re-shuffling the identical pool against the same `used` set).
+    const roundSeed = `${seed}:r${roundIndex}:${category}`;
+    if (spec.kind === "football") {
       rounds.push(
         await pickFootballChecksums(
           ctx,
           used,
           recentlySeen,
-          `${seed}:${category}`,
-          "football quiz",
+          roundSeed,
+          spec.label,
+          perRound,
         ),
       );
-      categories.push(category);
-      continue;
-    }
-
-    if (category === "general_knowledge") {
+    } else {
       rounds.push(
         await pickIndexedChecksums(
           ctx,
-          [
-            { sport: "knowledge", cursorPrefix: "knowledge_" },
-            { sport: ARENA_CIE_SPORT, cursorPrefix: "knowledge_" },
-          ],
+          spec.scopes,
           used,
           recentlySeen,
-          `${seed}:${category}`,
-          "general knowledge",
-          (question) =>
-            question.category !== "which_came_first" &&
-            question.category !== "enterprise_logos" &&
-            question.category !== "capital_cities" &&
-            isAnswerableMcq(question),
-          challengeArenaGeneralKnowledgeQuestions,
+          roundSeed,
+          spec.label,
+          perRound,
+          spec.predicate,
+          spec.fallbackSeeds,
         ),
       );
-      categories.push(category);
-      continue;
     }
-
-    if (category === "which_came_first") {
-      rounds.push(
-        await pickIndexedChecksums(
-          ctx,
-          [
-            {
-              sport: "knowledge",
-              category: "which_came_first",
-              cursorPrefix: "knowledge_came_first_v",
-              cursorAlphabet: NUMERIC_CURSOR_ALPHABET,
-            },
-            {
-              sport: ARENA_CIE_SPORT,
-              category: "which_came_first",
-              cursorPrefix: "knowledge_",
-            },
-          ],
-          used,
-          recentlySeen,
-          `${seed}:${category}`,
-          "which came first",
-          (question) =>
-            question.category === "which_came_first" &&
-            isAnswerableMcq(question),
-          challengeArenaWhichCameFirstQuestions,
-        ),
-      );
-      categories.push(category);
-      continue;
-    }
-
-    if (category === "enterprise_logos") {
-      rounds.push(
-        await pickIndexedChecksums(
-          ctx,
-          [
-            {
-              sport: "knowledge",
-              category: "enterprise_logos",
-              cursorPrefix: "challenge_arena_enterprise_logos_v1_",
-              cursorAlphabet: NUMERIC_CURSOR_ALPHABET,
-            },
-          ],
-          used,
-          recentlySeen,
-          `${seed}:${category}`,
-          "enterprise logos",
-          isLogoTextQuestion,
-          challengeArenaEnterpriseLogoQuestions,
-        ),
-      );
-      categories.push(category);
-      continue;
-    }
-
-    rounds.push(
-      await pickIndexedChecksums(
-        ctx,
-        [
-          {
-            sport: "knowledge",
-            category: "capital_cities",
-            cursorPrefix: "challenge_arena_capitals_v",
-            cursorAlphabet: NUMERIC_CURSOR_ALPHABET,
-          },
-          {
-            sport: ARENA_CIE_SPORT,
-            category: "capital_cities",
-            cursorPrefix: "knowledge_geography_cie_score_v",
-          },
-        ],
-        used,
-        recentlySeen,
-        `${seed}:${category}`,
-        "capital cities",
-        (question) =>
-          question.category === "capital_cities" && isAnswerableMcq(question),
-        challengeArenaCapitalCityQuestions,
-      ),
-    );
     categories.push(category);
   }
 
@@ -1951,12 +2072,18 @@ async function getContentCounts(ctx: Pick<QueryCtx | MutationCtx, "db">) {
 }
 
 export const create = mutation({
-  args: { mode: arenaMode },
-  handler: async (ctx, { mode }) => {
+  args: {
+    mode: arenaMode,
+    rounds: v.optional(v.number()),
+    perRound: v.optional(v.number()),
+    categories: v.optional(v.array(v.string())),
+  },
+  handler: async (ctx, { mode, rounds, perRound, categories }) => {
     const userId = await getAuthUserId(ctx);
     if (!userId) throw new Error("Not authenticated");
 
     const user = await assertUsernameRequiredUser(ctx, userId);
+    const config = validateArenaConfig({ rounds, perRound, categories });
     const now = Date.now();
     const code = await generateUniqueCode(ctx);
     const arenaId = await ctx.db.insert("arenas", {
@@ -1976,11 +2103,7 @@ export const create = mutation({
           totalScore: 0,
         },
       ],
-      config: {
-        rounds: ARENA_ROUNDS,
-        perRound: QUESTIONS_PER_ROUND,
-        categories: [...DEFAULT_ROUND_CATEGORIES],
-      },
+      config,
       currentRound: 0,
       currentQuestionIndex: 0,
       phase: "lobby",
@@ -2208,12 +2331,19 @@ export const start = mutation({
 
     const seed = hashString(`${arena._id}:${arena.code}:${now}`);
     const starterIds = starters.map((player) => player.userId);
-    const locked = await lockRoundQuestionSets(ctx, seed, starterIds, now);
+    const locked = await lockRoundQuestionSets(
+      ctx,
+      seed,
+      starterIds,
+      now,
+      arena.config,
+    );
     await recordRecentlySeenArenaQuestions(
       ctx,
       starterIds,
       locked.rounds.flat(),
       now,
+      recentlySeenWindowForConfig(arena.config),
     );
     await ctx.db.patch(arenaId, {
       players,
@@ -2469,10 +2599,13 @@ export const rematch = mutation({
       mode: arena.mode,
       status: "lobby",
       players,
+      // Carry the finished arena's custom config into the rematch lobby so a
+      // bespoke format (rounds / questions-per-round / subjects) survives a
+      // rematch instead of silently snapping back to the 5×10 default.
       config: {
-        rounds: ARENA_ROUNDS,
-        perRound: QUESTIONS_PER_ROUND,
-        categories: [...DEFAULT_ROUND_CATEGORIES],
+        rounds: arena.config.rounds,
+        perRound: arena.config.perRound,
+        categories: [...arena.config.categories],
       },
       currentRound: 0,
       currentQuestionIndex: 0,

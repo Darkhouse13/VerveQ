@@ -16,6 +16,91 @@ export const ARENA_MODE_OPTIONS: Array<{
   { key: "ffa5", label: "FFA 5", description: "Free-for-all, five players", capacity: 5 },
 ];
 
+// ---------------------------------------------------------------------------
+// Customizable arena config (mirrors convex/challengeArenas.ts validateArenaConfig
+// + bounds). Keep these in lockstep with the backend — arenaConfigContract.test
+// asserts the option keys match the server's ARENA_SELECTABLE_CATEGORIES.
+// ---------------------------------------------------------------------------
+
+export const ARENA_MIN_ROUNDS = 1;
+export const ARENA_MAX_ROUNDS = 8;
+export const ARENA_MIN_PER_ROUND = 5;
+export const ARENA_MAX_PER_ROUND = 15;
+export const ARENA_MAX_TOTAL_QUESTIONS = 80;
+export const ARENA_DEFAULT_ROUNDS = 5;
+export const ARENA_DEFAULT_PER_ROUND = 10;
+
+// Selectable subjects, in canonical (default rotation) order. The backend
+// registry is the source of truth for which keys are valid; this list carries
+// the presentation (label + emoji + one-line blurb) for the create UI.
+export const ARENA_CATEGORY_OPTIONS: Array<{
+  key: string;
+  label: string;
+  emoji: string;
+  blurb: string;
+}> = [
+  { key: "football_quiz", label: "Football Quiz", emoji: "⚽", blurb: "Players, clubs, trophies" },
+  { key: "general_knowledge", label: "General Knowledge", emoji: "🧠", blurb: "A bit of everything" },
+  { key: "which_came_first", label: "Which Came First", emoji: "⏳", blurb: "Order two events in time" },
+  { key: "enterprise_logos", label: "Enterprise Logos", emoji: "🏢", blurb: "Name the company" },
+  { key: "capital_cities", label: "Capital Cities", emoji: "🏙️", blurb: "Capitals of the world" },
+];
+
+export const ARENA_DEFAULT_CATEGORIES = ARENA_CATEGORY_OPTIONS.map((o) => o.key);
+
+export type ArenaConfig = {
+  rounds: number;
+  perRound: number;
+  categories: string[];
+};
+
+// Build the per-round category list by cycling the chosen subjects across the
+// requested number of rounds (e.g. 5 rounds over [football, capitals] →
+// [football, capitals, football, capitals, football]). Order follows
+// ARENA_CATEGORY_OPTIONS so an all-subjects default reproduces the server default.
+export function buildArenaCategories(
+  selectedSubjects: string[],
+  rounds: number,
+): string[] {
+  const ordered = ARENA_CATEGORY_OPTIONS.map((o) => o.key).filter((key) =>
+    selectedSubjects.includes(key),
+  );
+  if (ordered.length === 0) return [];
+  return Array.from({ length: rounds }, (_, i) => ordered[i % ordered.length]);
+}
+
+// Client-side mirror of the server validation. Returns a human error string, or
+// null when the config is valid. The UI also constrains inputs so this should
+// rarely fire — it's a guard + the source of the disable/hint state.
+export function arenaConfigError(config: ArenaConfig): string | null {
+  const { rounds, perRound, categories } = config;
+  if (
+    !Number.isInteger(rounds) ||
+    rounds < ARENA_MIN_ROUNDS ||
+    rounds > ARENA_MAX_ROUNDS
+  ) {
+    return `Pick between ${ARENA_MIN_ROUNDS} and ${ARENA_MAX_ROUNDS} rounds.`;
+  }
+  if (
+    !Number.isInteger(perRound) ||
+    perRound < ARENA_MIN_PER_ROUND ||
+    perRound > ARENA_MAX_PER_ROUND
+  ) {
+    return `Pick between ${ARENA_MIN_PER_ROUND} and ${ARENA_MAX_PER_ROUND} questions per round.`;
+  }
+  if (rounds * perRound > ARENA_MAX_TOTAL_QUESTIONS) {
+    return `That's ${rounds * perRound} questions — the max is ${ARENA_MAX_TOTAL_QUESTIONS}.`;
+  }
+  if (categories.length !== rounds) {
+    return "Pick at least one subject.";
+  }
+  const valid = new Set(ARENA_CATEGORY_OPTIONS.map((o) => o.key));
+  if (categories.some((c) => !valid.has(c))) {
+    return "Unknown subject selected.";
+  }
+  return null;
+}
+
 export function arenaModeLabel(mode: string) {
   switch (mode) {
     case "1v1":

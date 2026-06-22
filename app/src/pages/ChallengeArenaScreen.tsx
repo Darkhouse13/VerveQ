@@ -446,11 +446,11 @@ function ArenaHelpModal({ onClose }: { onClose: () => void }) {
           <ul className="mt-4 space-y-2.5 text-sm leading-snug">
             <li className="flex items-start gap-2">
               <span className="neo-border rounded-full w-6 h-6 shrink-0 flex items-center justify-center font-mono font-bold text-[11px] bg-card">
-                5×
+                ▶
               </span>
               <span>
-                <span className="font-heading font-bold">5 rounds × 10 questions.</span>{" "}
-                Each round runs a single category back-to-back.
+                <span className="font-heading font-bold">Rounds of rapid-fire questions.</span>{" "}
+                Each round runs a single subject back-to-back.
               </span>
             </li>
             <li className="flex items-start gap-2">
@@ -458,8 +458,8 @@ function ArenaHelpModal({ onClose }: { onClose: () => void }) {
                 ☰
               </span>
               <span>
-                <span className="font-heading font-bold">5 rotating categories.</span>{" "}
-                A fresh topic each round — see the next one on the break screen.
+                <span className="font-heading font-bold">The host picks the format.</span>{" "}
+                Rounds and subjects are chosen when the arena is created — see the next one on the break screen.
               </span>
             </li>
             <li className="flex items-start gap-2">

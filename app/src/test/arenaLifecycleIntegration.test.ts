@@ -2191,4 +2191,139 @@ describe("challenge arena lifecycle integration", () => {
     })) as RoomView;
     expect(room.revealAnswers).toHaveLength(2);
   });
+
+  it("locks a custom rounds/perRound/categories config end to end", async () => {
+    const db = makeSeededDb();
+    setAuth("user_a");
+    const created = (await handlerOf(challengeArenas.create)(makeCtx(db), {
+      mode: "ffa3",
+      rounds: 3,
+      perRound: 6,
+      categories: ["football_quiz", "general_knowledge", "capital_cities"],
+    })) as { arenaId: string; code: string };
+    for (const userId of ["user_b", "user_c"]) {
+      setAuth(userId);
+      await handlerOf(challengeArenas.join)(makeCtx(db), { code: created.code });
+    }
+    await readyUsers(db, created.arenaId, ["user_a", "user_b", "user_c"]);
+
+    setAuth("user_a");
+    const startResult = (await handlerOf(challengeArenas.start)(makeCtx(db), {
+      arenaId: created.arenaId,
+    })) as { questionSetSizes: number[]; categories: string[] };
+    expect(startResult.questionSetSizes).toEqual([6, 6, 6]);
+    expect(startResult.categories).toEqual([
+      "football_quiz",
+      "general_knowledge",
+      "capital_cities",
+    ]);
+
+    const arena = db.row<ArenaRow>(created.arenaId);
+    expect(arena.config).toMatchObject({ rounds: 3, perRound: 6 });
+    expect(arena.roundChecksums).toHaveLength(3);
+    for (const round of arena.roundChecksums) expect(round).toHaveLength(6);
+    expect(new Set(arena.roundChecksums.flat()).size).toBe(18);
+
+    const rounds = arena.roundChecksums.map((round) =>
+      round.map((checksum) => questionByChecksum(db, checksum)),
+    );
+    expect(rounds[0].every((question) => question.sport === "football")).toBe(true);
+    expect(
+      rounds[2].every((question) => question.category === "capital_cities"),
+    ).toBe(true);
+  });
+
+  it("repeats one subject across rounds with a distinct question set each round", async () => {
+    const db = makeSeededDb();
+    setAuth("user_a");
+    const created = (await handlerOf(challengeArenas.create)(makeCtx(db), {
+      mode: "1v1",
+      rounds: 2,
+      perRound: 5,
+      categories: ["which_came_first", "which_came_first"],
+    })) as { arenaId: string; code: string };
+    setAuth("user_b");
+    await handlerOf(challengeArenas.join)(makeCtx(db), { code: created.code });
+    await readyUsers(db, created.arenaId, ["user_a", "user_b"]);
+
+    setAuth("user_a");
+    const startResult = (await handlerOf(challengeArenas.start)(makeCtx(db), {
+      arenaId: created.arenaId,
+    })) as { questionSetSizes: number[] };
+    expect(startResult.questionSetSizes).toEqual([5, 5]);
+
+    const arena = db.row<ArenaRow>(created.arenaId);
+    expect(arena.roundChecksums).toHaveLength(2);
+    // No overlap between the two same-subject rounds.
+    expect(new Set(arena.roundChecksums.flat()).size).toBe(10);
+    const questions = arena.roundChecksums
+      .flat()
+      .map((checksum) => questionByChecksum(db, checksum));
+    expect(
+      questions.every((question) => question.category === "which_came_first"),
+    ).toBe(true);
+  });
+
+  it("rejects out-of-bounds or inconsistent custom configs", async () => {
+    const db = makeSeededDb();
+    setAuth("user_a");
+    const badConfigs = [
+      { rounds: 0, perRound: 10, categories: [] },
+      { rounds: 9, perRound: 5, categories: Array(9).fill("football_quiz") },
+      { rounds: 2, perRound: 3, categories: ["football_quiz", "general_knowledge"] },
+      { rounds: 2, perRound: 16, categories: ["football_quiz", "general_knowledge"] },
+      { rounds: 8, perRound: 15, categories: Array(8).fill("football_quiz") },
+      { rounds: 3, perRound: 6, categories: ["football_quiz", "general_knowledge"] },
+      { rounds: 1, perRound: 6, categories: ["arena_knowledge"] },
+    ];
+    for (const config of badConfigs) {
+      await expect(
+        handlerOf(challengeArenas.create)(makeCtx(db), { mode: "1v1", ...config }),
+      ).rejects.toThrow();
+    }
+    // No arenas were created by the rejected calls.
+    expect(db.all<ArenaRow>("arenas")).toHaveLength(0);
+  });
+
+  it("rematch carries the finished arena's custom config into the new lobby", async () => {
+    const db = new FakeDb();
+    seedUsers(db);
+    const arenaId = "arena_custom_rematch";
+    const customConfig = {
+      rounds: 3,
+      perRound: 7,
+      categories: ["capital_cities", "football_quiz", "general_knowledge"],
+    };
+    db.seed("arenas", arenaId, {
+      code: "CUSTOMR",
+      hostId: "user_a",
+      mode: "ffa3",
+      status: "final",
+      players: ["user_a", "user_b", "user_c"].map((userId, index) => ({
+        userId,
+        nameSnapshot: `Player ${index + 1}`,
+        ready: false,
+        joinedAt: now,
+        lastSeenAt: now,
+        left: false,
+        totalScore: 0,
+      })),
+      config: customConfig,
+      currentRound: 2,
+      currentQuestionIndex: 6,
+      phase: "final",
+      questionWindowMs: 10_000,
+      roundChecksums: [],
+      createdAt: now,
+      expiresAt: now + 60_000,
+    });
+
+    setAuth("user_a");
+    const rematched = (await handlerOf(challengeArenas.rematch)(makeCtx(db), {
+      arenaId,
+    })) as { arenaId: string; code: string };
+    const lobby = db.row<ArenaRow>(rematched.arenaId);
+    expect(lobby.status).toBe("lobby");
+    expect(lobby.config).toEqual(customConfig);
+  });
 });
