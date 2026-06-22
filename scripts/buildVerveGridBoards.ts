@@ -63,7 +63,7 @@ const BOARD_TEMPLATES: BoardTemplate[] = [
     colType: "nationality",
     minCellSize: 3,
     maxCellSize: 12,
-    maxBoards: 72,
+    maxBoards: 270,
   },
   {
     id: "clubs-vs-positions",
@@ -72,7 +72,7 @@ const BOARD_TEMPLATES: BoardTemplate[] = [
     colType: "position",
     minCellSize: 3,
     maxCellSize: 18,
-    maxBoards: 48,
+    maxBoards: 160,
   },
   {
     id: "clubs-vs-clubs",
@@ -81,7 +81,7 @@ const BOARD_TEMPLATES: BoardTemplate[] = [
     colType: "team",
     minCellSize: 3,
     maxCellSize: 10,
-    maxBoards: 72,
+    maxBoards: 270,
   },
 ];
 
@@ -186,9 +186,24 @@ function buildBoardsForTemplate(
     entryByKey.set(gridCellKey(row, col), entry);
   }
 
-  const rows = Array.from(rowMap.values()).sort((a, b) =>
+  let rows = Array.from(rowMap.values()).sort((a, b) =>
     a.label.localeCompare(b.label),
   );
+  // The triplet enumeration below is O(rows^3). The Wikidata-augmented index has
+  // far more row axes than the original top-5-league snapshot, so cap to the most
+  // "connected" rows (those sharing the most columns — i.e. the big clubs that
+  // produce the best boards). Leaves the original small-row-count case untouched.
+  const ROW_CAP = 250;
+  if (rows.length > ROW_CAP) {
+    rows = [...rows]
+      .sort((a, b) => {
+        const da = rowToCols.get(axisId(a))?.size ?? 0;
+        const db = rowToCols.get(axisId(b))?.size ?? 0;
+        return db - da || a.label.localeCompare(b.label);
+      })
+      .slice(0, ROW_CAP)
+      .sort((a, b) => a.label.localeCompare(b.label));
+  }
   const seenBoards = new Set<string>();
   const candidateBoards: VerveGridBoard[] = [];
 

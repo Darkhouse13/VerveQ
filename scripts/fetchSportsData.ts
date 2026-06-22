@@ -663,6 +663,7 @@ interface PipelineFlags {
   sportFilter: "all" | "football" | "nba";
   configPath: string;
   rebuildHlOnly: boolean;
+  rebuildGridOnly: boolean;
 }
 
 // ─── Constants ──────────────────────────────────────────────────────────────
@@ -1411,6 +1412,7 @@ function parseArgs(): PipelineFlags {
     dryRun: args.includes("--dry-run"),
     resume: args.includes("--resume"),
     rebuildHlOnly: args.includes("--rebuild-hl-only"),
+    rebuildGridOnly: args.includes("--rebuild-grid-only"),
     sportFilter: (() => {
       if (sportIdx >= 0 && args[sportIdx + 1]) {
         const val = args[sportIdx + 1].toLowerCase();
@@ -5129,6 +5131,10 @@ function buildGridIndex(
   ptsList: PlayerTeamSeason[],
   teams: Team[],
   trophies: PlayerTrophy[],
+  // Optional full-career player->team affiliations (Wikidata P54), keyed by
+  // playerId -> set of teamId. Unioned into the appearance-derived map so legends
+  // map to every club they played for, not just their 2010-2024 league stints.
+  extraAffiliations?: Map<string, Set<string>>,
 ): GridIndexEntry[] {
   // Build lookup maps
   const playerToTeams = new Map<string, Set<string>>();
@@ -5158,6 +5164,15 @@ function buildGridIndex(
     playerToLeagues.get(pts.playerId)!.add(pts.leagueId);
   }
 
+  // Union full-career affiliations (Wikidata) on top of appearance-derived clubs.
+  if (extraAffiliations) {
+    for (const [playerId, teamSet] of extraAffiliations) {
+      if (!playerToTeams.has(playerId)) playerToTeams.set(playerId, new Set());
+      const target = playerToTeams.get(playerId)!;
+      for (const teamId of teamSet) target.add(teamId);
+    }
+  }
+
   for (const t of trophies) {
     if (t.place?.toLowerCase() === "winner") {
       if (!playerToTrophies.has(t.playerId))
@@ -5179,13 +5194,13 @@ function buildGridIndex(
 
   const entries: GridIndexEntry[] = [];
   const playerIds = players.map((p) => p.id);
+  const sport = players[0]?.sport || "football";
 
-  function findIntersection(
-    filterA: (pid: string) => boolean,
-    filterB: (pid: string) => boolean,
-  ): string[] {
-    return playerIds.filter((pid) => filterA(pid) && filterB(pid));
-  }
+  // Global team ordering (allTeamIds insertion order), so team×team pair ids are
+  // built deterministically (lower-index team first) — matches the prior nested
+  // loop's (i<j) ordering without iterating every team pair.
+  const teamIndex = new Map<string, number>();
+  for (const t of allTeamIds) teamIndex.set(t, teamIndex.size);
 
   function difficultyFromCount(count: number): "easy" | "medium" | "hard" {
     if (count >= 6) return "easy";
@@ -5193,109 +5208,445 @@ function buildGridIndex(
     return "hard";
   }
 
-  // Team × Nationality
-  for (const teamId of allTeamIds) {
-    const tName = teamNames.get(teamId) || teamId;
-    for (const nat of allNationalities) {
-      const pids = findIntersection(
-        (pid) => playerToTeams.get(pid)?.has(teamId) === true,
-        (pid) => playerToNationality.get(pid) === nat,
-      );
-      if (pids.length > 0) {
-        entries.push({
-          id: `grid_team_${teamId}_nat_${sanitizeCacheKey(nat)}`,
-          sport: players[0]?.sport || "football",
-          rowType: "team",
-          rowKey: teamId,
-          rowLabel: tName,
-          colType: "nationality",
-          colKey: nat,
-          colLabel: nat,
-          playerIds: pids,
-          difficulty: difficultyFromCount(pids.length),
-        });
+  // Player-driven accumulation: each player contributes only its own (team×nat),
+  // (team×pos), (nat×pos) and (team,team) pairs. O(sum of players' team-pairs)
+  // instead of O(teams^2 × players) — essential once Wikidata adds ~4k clubs.
+  const teamNat = new Map<string, string[]>();
+  const teamPos = new Map<string, string[]>();
+  const natPos = new Map<string, string[]>();
+  const teamTeam = new Map<string, string[]>();
+  const push = (m: Map<string, string[]>, key: string, pid: string) => {
+    const arr = m.get(key);
+    if (arr) arr.push(pid);
+    else m.set(key, [pid]);
+  };
+
+  for (const pid of playerIds) {
+    const teamsSet = playerToTeams.get(pid);
+    const nat = playerToNationality.get(pid);
+    const pos = playerToPosition.get(pid);
+    if (nat && pos) push(natPos, `${nat}\t${pos}`, pid);
+    if (teamsSet && teamsSet.size > 0) {
+      const tArr = [...teamsSet];
+      for (const t of tArr) {
+        if (nat) push(teamNat, `${t}\t${nat}`, pid);
+        if (pos) push(teamPos, `${t}\t${pos}`, pid);
+      }
+      for (let i = 0; i < tArr.length; i++) {
+        for (let j = i + 1; j < tArr.length; j++) {
+          let a = tArr[i];
+          let b = tArr[j];
+          if ((teamIndex.get(a) ?? 0) > (teamIndex.get(b) ?? 0)) {
+            const tmp = a;
+            a = b;
+            b = tmp;
+          }
+          push(teamTeam, `${a}\t${b}`, pid);
+        }
       }
     }
   }
 
-  // Team × Position
-  for (const teamId of allTeamIds) {
-    const tName = teamNames.get(teamId) || teamId;
-    for (const pos of allPositions) {
-      const pids = findIntersection(
-        (pid) => playerToTeams.get(pid)?.has(teamId) === true,
-        (pid) => playerToPosition.get(pid) === pos,
-      );
-      if (pids.length > 0) {
-        entries.push({
-          id: `grid_team_${teamId}_pos_${sanitizeCacheKey(pos)}`,
-          sport: players[0]?.sport || "football",
-          rowType: "team",
-          rowKey: teamId,
-          rowLabel: tName,
-          colType: "position",
-          colKey: pos,
-          colLabel: pos,
-          playerIds: pids,
-          difficulty: difficultyFromCount(pids.length),
-        });
-      }
-    }
+  for (const [key, pids] of teamNat) {
+    const [teamId, nat] = key.split("\t");
+    entries.push({
+      id: `grid_team_${teamId}_nat_${sanitizeCacheKey(nat)}`,
+      sport,
+      rowType: "team",
+      rowKey: teamId,
+      rowLabel: teamNames.get(teamId) || teamId,
+      colType: "nationality",
+      colKey: nat,
+      colLabel: nat,
+      playerIds: pids,
+      difficulty: difficultyFromCount(pids.length),
+    });
   }
-
-  // Nationality × Position
-  for (const nat of allNationalities) {
-    for (const pos of allPositions) {
-      const pids = findIntersection(
-        (pid) => playerToNationality.get(pid) === nat,
-        (pid) => playerToPosition.get(pid) === pos,
-      );
-      if (pids.length > 0) {
-        entries.push({
-          id: `grid_nat_${sanitizeCacheKey(nat)}_pos_${sanitizeCacheKey(pos)}`,
-          sport: players[0]?.sport || "football",
-          rowType: "nationality",
-          rowKey: nat,
-          rowLabel: nat,
-          colType: "position",
-          colKey: pos,
-          colLabel: pos,
-          playerIds: pids,
-          difficulty: difficultyFromCount(pids.length),
-        });
-      }
-    }
+  for (const [key, pids] of teamPos) {
+    const [teamId, pos] = key.split("\t");
+    entries.push({
+      id: `grid_team_${teamId}_pos_${sanitizeCacheKey(pos)}`,
+      sport,
+      rowType: "team",
+      rowKey: teamId,
+      rowLabel: teamNames.get(teamId) || teamId,
+      colType: "position",
+      colKey: pos,
+      colLabel: pos,
+      playerIds: pids,
+      difficulty: difficultyFromCount(pids.length),
+    });
   }
-
-  // Team × Team (players who played for both)
-  const teamArr = Array.from(allTeamIds);
-  for (let i = 0; i < teamArr.length; i++) {
-    for (let j = i + 1; j < teamArr.length; j++) {
-      const tA = teamArr[i];
-      const tB = teamArr[j];
-      const pids = findIntersection(
-        (pid) => playerToTeams.get(pid)?.has(tA) === true,
-        (pid) => playerToTeams.get(pid)?.has(tB) === true,
-      );
-      if (pids.length > 0) {
-        entries.push({
-          id: `grid_team_${tA}_team_${tB}`,
-          sport: players[0]?.sport || "football",
-          rowType: "team",
-          rowKey: tA,
-          rowLabel: teamNames.get(tA) || tA,
-          colType: "team",
-          colKey: tB,
-          colLabel: teamNames.get(tB) || tB,
-          playerIds: pids,
-          difficulty: difficultyFromCount(pids.length),
-        });
-      }
-    }
+  for (const [key, pids] of natPos) {
+    const [nat, pos] = key.split("\t");
+    entries.push({
+      id: `grid_nat_${sanitizeCacheKey(nat)}_pos_${sanitizeCacheKey(pos)}`,
+      sport,
+      rowType: "nationality",
+      rowKey: nat,
+      rowLabel: nat,
+      colType: "position",
+      colKey: pos,
+      colLabel: pos,
+      playerIds: pids,
+      difficulty: difficultyFromCount(pids.length),
+    });
+  }
+  for (const [key, pids] of teamTeam) {
+    const [tA, tB] = key.split("\t");
+    entries.push({
+      id: `grid_team_${tA}_team_${tB}`,
+      sport,
+      rowType: "team",
+      rowKey: tA,
+      rowLabel: teamNames.get(tA) || tA,
+      colType: "team",
+      colKey: tB,
+      colLabel: teamNames.get(tB) || tB,
+      playerIds: pids,
+      difficulty: difficultyFromCount(pids.length),
+    });
   }
 
   console.log(`  Built ${entries.length} grid index entries`);
   return entries;
+}
+
+// ─── Wikidata grid augmentation (full-career affiliations + roster expansion) ──
+// Consumes the artifacts produced by scripts/ingestWikidataPlayerData.ts:
+//   wikidataAffiliations.json  roster QID -> full P54 club history
+//   wikidataLegends.json       notable players not in the roster (+ their P54)
+// Produces the inputs buildGridIndex / persisted tables need: full-career
+// affiliations keyed by playerId, minted Team rows for clubs not in teams.json,
+// and synthetic legend Player rows. Idempotent: re-running reproduces identically
+// and never double-mints (synthetic ids are deterministic and deduped).
+
+interface WikidataClub {
+  clubQid: string;
+  label: string;
+  start: string | null;
+  end: string | null;
+  league: string | null;
+  country: string | null;
+}
+interface WikidataAffiliationRecord {
+  qid: string;
+  playerIds: string[];
+  apiIds: number[];
+  clubs: WikidataClub[];
+  nationalTeams: string[];
+  nationalities: string[];
+}
+interface WikidataLegendRecord {
+  qid: string;
+  syntheticId: string;
+  name: string;
+  birthDate: string | null;
+  nationality: string | null;
+  nationalities: string[];
+  position: string | null;
+  sitelinks: number;
+  clubs: WikidataClub[];
+  nationalTeams: string[];
+}
+
+const WIKIDATA_CLUB_LEAGUE_ID = "fb_wd_clubs"; // synthetic, NOT a national-team league
+// A Wikidata club not in teams.json only becomes a grid axis (minted team) if at
+// least this many of our players are affiliated with it. Keeps famous non-top-5
+// clubs (Santos, Boca, Celtic) while dropping reserve teams / lower-division
+// noise, and bounds the axis space so board generation stays tractable.
+const MIN_MINTED_CLUB_PLAYERS = 3;
+// Generic club-type tokens + name particles stripped to form a match "core".
+// IMPORTANT: only GENERIC tokens — never distinguishing prefixes like
+// "atletico"/"real"/"sporting", which would collapse Atletico Madrid <-> Real
+// Madrid into the same core.
+const TEAM_TYPE_TOKENS = new Set([
+  // club-type abbreviations / words
+  "fc", "cf", "afc", "sc", "ssc", "ssd", "ss", "as", "ac", "rc", "rcd", "cd",
+  "ud", "ca", "sd", "ad", "sv", "fk", "bk", "if", "ifk", "sk", "bsc", "cfc",
+  "acf", "asd", "us", "usd", "ogc", "osc", "bc", "afk", "club", "football",
+  "calcio", "futbol", "futebol", "balompie", "fbpa", "the",
+  // name particles
+  "de", "del", "della", "la", "le", "los", "las", "el", "lo", "du", "da",
+  "dos", "of", "und",
+]);
+// Map Wikidata's historical/variant citizenship labels to the modern nation the
+// grid's nationality axis uses, so legends land on the right nationality cells.
+const NATIONALITY_ALIASES: Record<string, string> = {
+  "West Germany": "Germany",
+  "East Germany": "Germany",
+  "Kingdom of the Netherlands": "Netherlands",
+  "Kingdom of Hungary": "Hungary",
+  "Italian Social Republic": "Italy",
+  "French Fourth Republic": "France",
+  "French Third Republic": "France",
+};
+
+function normTeamName(s: string): string {
+  let out = "";
+  for (const ch of s.normalize("NFD").toLowerCase()) {
+    const code = ch.codePointAt(0)!;
+    if (code >= 0x0300 && code <= 0x036f) continue;
+    out += (ch >= "a" && ch <= "z") || (ch >= "0" && ch <= "9") ? ch : " ";
+  }
+  return out.replace(/\s+/g, " ").trim();
+}
+function teamCore(s: string): string {
+  // Drop generic type tokens, pure-numeric tokens (founding years like "1909"),
+  // and single characters (e.g. "F.C." -> "f c"). Applied identically to both
+  // teams.json names and Wikidata labels so cores align across naming styles.
+  return normTeamName(s)
+    .split(" ")
+    .filter((t) => t.length >= 2 && !/^\d+$/.test(t) && !TEAM_TYPE_TOKENS.has(t))
+    .join(" ");
+}
+
+// Manual aliases for famous clubs whose Wikidata English label diverges from the
+// teams.json name even after core normalization (e.g. "Bayern Munich" vs
+// "Bayern München"). Keyed by Wikidata-label core -> teams.json-name core.
+// Seeded from the data-driven top-minted-clubs report (see --rebuild-grid-only).
+const CLUB_CORE_ALIASES: Record<string, string> = {
+  "bayern munich": "bayern munchen",
+  "internazionale milano": "inter",
+  "internazionale": "inter",
+  "inter milan": "inter",
+  "olympique lyonnais": "lyon",
+  "espanyol barcelona": "espanyol", // geographic suffix collides with FC Barcelona
+  "wolverhampton wanderers": "wolves",
+  "stade rennais": "rennes",
+  "chievoverona": "chievo",
+  // Curated short-name vs Wikidata long-name where subset/uniqueness misses
+  // (truncations like "utd"/"brom", or a colliding token like "Athletic").
+  "west bromwich albion": "west brom",
+  "wigan athletic": "wigan",
+  "sheffield united": "sheffield utd",
+  "siena": "robur siena",
+};
+
+interface GridAugmentation {
+  extraAffiliations: Map<string, Set<string>>;
+  mintedTeams: Team[];
+  legendPlayers: Player[];
+  stats: Record<string, number>;
+}
+
+function loadOptionalJsonArray<T>(fileName: string): T[] {
+  const p = path.join(DATA_DIR, fileName);
+  return fs.existsSync(p) ? (JSON.parse(fs.readFileSync(p, "utf8")) as T[]) : [];
+}
+
+function buildWikidataGridAugmentation(
+  players: Player[],
+  teams: Team[],
+): GridAugmentation {
+  const affiliations = loadOptionalJsonArray<WikidataAffiliationRecord>(
+    "wikidataAffiliations.json",
+  );
+  const legends = loadOptionalJsonArray<WikidataLegendRecord>("wikidataLegends.json");
+  const stats: Record<string, number> = {
+    affiliationRecords: affiliations.length,
+    legendRecords: legends.length,
+  };
+
+  // Index existing teams by full normalized name and by core, to resolve clubs.
+  // Also keep each team's core token-set + a token->teamIds index for the
+  // subset matcher (curated short name "West Ham" vs Wikidata "West Ham United").
+  const teamByNorm = new Map<string, string>();
+  const teamByCore = new Map<string, string>();
+  const teamCoreTokens: { teamId: string; tokens: Set<string> }[] = [];
+  const tokenToTeams = new Map<string, Set<string>>();
+  for (const t of teams) {
+    if (t.sport !== "football") continue;
+    const n = normTeamName(t.name);
+    if (!teamByNorm.has(n)) teamByNorm.set(n, t.id);
+    const toks = teamCore(t.name).split(" ").filter(Boolean);
+    if (toks.length === 0) continue;
+    const c = toks.join(" ");
+    if (!teamByCore.has(c)) teamByCore.set(c, t.id);
+    teamCoreTokens.push({ teamId: t.id, tokens: new Set(toks) });
+    for (const tok of toks) {
+      if (!tokenToTeams.has(tok)) tokenToTeams.set(tok, new Set());
+      tokenToTeams.get(tok)!.add(t.id);
+    }
+  }
+  const rosterPlayerIds = new Set(players.map((p) => p.id));
+
+  // Subset match: an existing team whose ENTIRE core is a subset of the Wikidata
+  // club's core tokens, accepted only when exactly one existing team qualifies.
+  // Uniqueness refuses ambiguous merges (e.g. "Inter Milan" -> {Inter, AC Milan}).
+  function subsetMatch(labelCore: string): string | null {
+    const wTokens = new Set(labelCore.split(" ").filter(Boolean));
+    if (wTokens.size === 0) return null;
+    const candidateIds = new Set<string>();
+    for (const tok of wTokens)
+      for (const id of tokenToTeams.get(tok) ?? []) candidateIds.add(id);
+    const distinct = new Set<string>();
+    for (const e of teamCoreTokens) {
+      if (!candidateIds.has(e.teamId)) continue;
+      let allIn = true;
+      for (const t of e.tokens) if (!wTokens.has(t)) { allIn = false; break; }
+      if (allIn) distinct.add(e.teamId);
+    }
+    return distinct.size === 1 ? [...distinct][0] : null;
+  }
+
+  // Resolve a Wikidata club to an existing teamId (pure — no minting side effect).
+  function resolveClubTarget(
+    club: WikidataClub,
+  ): { existing: string } | { mintQid: string } {
+    const labelNorm = normTeamName(club.label);
+    const labelCore = teamCore(club.label);
+    for (const k of [labelNorm, labelCore, CLUB_CORE_ALIASES[labelCore]]) {
+      if (!k) continue;
+      const hit = teamByNorm.get(k) ?? teamByCore.get(k);
+      if (hit) return { existing: hit };
+    }
+    const sub = subsetMatch(labelCore);
+    if (sub) return { existing: sub };
+    return { mintQid: club.clubQid };
+  }
+
+  // ── Pass 1: resolve every affiliation; tally distinct players per would-mint
+  // club so only sufficiently-populated clubs become axes. Existing teams kept.
+  interface AffilReq {
+    playerId: string;
+    existing?: string;
+    mintQid?: string;
+  }
+  const reqs: AffilReq[] = [];
+  const mintMeta = new Map<string, { label: string; country: string | null }>();
+  const mintPlayers = new Map<string, Set<string>>();
+  const record = (playerId: string, club: WikidataClub) => {
+    const t = resolveClubTarget(club);
+    if ("existing" in t) {
+      reqs.push({ playerId, existing: t.existing });
+    } else {
+      reqs.push({ playerId, mintQid: t.mintQid });
+      if (!mintMeta.has(t.mintQid))
+        mintMeta.set(t.mintQid, { label: club.label, country: club.country });
+      if (!mintPlayers.has(t.mintQid)) mintPlayers.set(t.mintQid, new Set());
+      mintPlayers.get(t.mintQid)!.add(playerId);
+    }
+  };
+
+  let rosterClubLinks = 0;
+  for (const rec of affiliations) {
+    for (const playerId of rec.playerIds) {
+      if (!rosterPlayerIds.has(playerId)) continue;
+      for (const club of rec.clubs) {
+        record(playerId, club);
+        rosterClubLinks++;
+      }
+    }
+  }
+
+  // Legend candidates (synthetic rows); 0-club entries are non-footballers
+  // mis-tagged by Wikidata (Camus, Connery) or unsearchable dead ends — skipped.
+  const legendCandidates: Player[] = [];
+  const seenLegendIds = new Set<string>();
+  let legendsSkippedNoClub = 0;
+  for (const leg of legends) {
+    if (seenLegendIds.has(leg.syntheticId)) continue;
+    seenLegendIds.add(leg.syntheticId);
+    if (leg.clubs.length === 0) {
+      legendsSkippedNoClub++;
+      continue;
+    }
+    // Split the Wikidata label so surname search works (the runtime searches both
+    // by_sport_name and by_sport_lastName prefixes — without lastName, two-word
+    // legends like "Diego Maradona" aren't findable by "Maradona").
+    const nameParts = leg.name.trim().split(/\s+/);
+    const legFirstName = nameParts.length > 1 ? nameParts[0] : leg.name;
+    const legLastName = nameParts.length > 1 ? nameParts.slice(1).join(" ") : leg.name;
+    legendCandidates.push({
+      id: leg.syntheticId,
+      sport: "football",
+      apiId: 900_000_000 + Number(leg.qid.replace(/\D/g, "")),
+      name: leg.name,
+      firstName: legFirstName,
+      lastName: legLastName,
+      nationality: leg.nationality
+        ? NATIONALITY_ALIASES[leg.nationality] ?? leg.nationality
+        : null,
+      birthDate: leg.birthDate,
+      birthCountry: null,
+      age: null,
+      height: null,
+      weight: null,
+      position: leg.position,
+      photo: null,
+      injured: false,
+    });
+    for (const club of leg.clubs) record(leg.syntheticId, club);
+  }
+
+  // ── Which would-mint clubs clear the player-count floor and become axes.
+  const mintedTeams = new Map<string, Team>();
+  const qualified = new Set<string>();
+  let droppedSmallClubs = 0;
+  for (const [qid, pset] of mintPlayers) {
+    if (pset.size >= MIN_MINTED_CLUB_PLAYERS) {
+      qualified.add(qid);
+      const id = `fb_wd_team_${qid}`;
+      const meta = mintMeta.get(qid)!;
+      mintedTeams.set(id, {
+        id,
+        sport: "football",
+        apiId: 900_000_000 + Number(qid.replace(/\D/g, "")),
+        name: meta.label,
+        shortName: null,
+        logo: null,
+        country: meta.country,
+        leagueId: WIKIDATA_CLUB_LEAGUE_ID,
+        season: 2024,
+        founded: null,
+        venue: null,
+      });
+    } else {
+      droppedSmallClubs++;
+    }
+  }
+
+  // ── Pass 2: keep affiliations to existing teams + qualified mints only.
+  const extraAffiliations = new Map<string, Set<string>>();
+  const addAffil = (playerId: string, teamId: string) => {
+    if (!extraAffiliations.has(playerId)) extraAffiliations.set(playerId, new Set());
+    extraAffiliations.get(playerId)!.add(teamId);
+  };
+  let matchedClubLinks = 0;
+  let mintedClubLinks = 0;
+  for (const r of reqs) {
+    if (r.existing) {
+      addAffil(r.playerId, r.existing);
+      matchedClubLinks++;
+    } else if (r.mintQid && qualified.has(r.mintQid)) {
+      addAffil(r.playerId, `fb_wd_team_${r.mintQid}`);
+      mintedClubLinks++;
+    }
+  }
+
+  // Keep every legend searchable (they have >=1 real club). Even when all their
+  // clubs were sub-threshold and dropped as axes, they still appear on
+  // nationality×position cells (e.g. "Brazil × Attacker") and in player search.
+  const legendPlayers = legendCandidates;
+
+  stats.matchedClubLinks = matchedClubLinks;
+  stats.mintedClubs = mintedTeams.size;
+  stats.droppedSmallClubs = droppedSmallClubs;
+  stats.mintedClubLinks = mintedClubLinks;
+  stats.legendsSkippedNoClub = legendsSkippedNoClub;
+  stats.legendsDroppedNoKeptClub = legendCandidates.length - legendPlayers.length;
+  stats.rosterClubLinks = rosterClubLinks;
+  stats.legendPlayers = legendPlayers.length;
+  stats.playersAugmented = extraAffiliations.size;
+  stats.minMintedClubPlayers = MIN_MINTED_CLUB_PLAYERS;
+
+  return {
+    extraAffiliations,
+    mintedTeams: [...mintedTeams.values()],
+    legendPlayers,
+    stats,
+  };
 }
 
 function buildFootballVerveGridApprovedData(
@@ -5507,7 +5858,16 @@ function buildFootballVerveGridApprovedData(
     { rowTripletsWithThreePlusSharedCols: number; columnTypeMixes: Set<string> }
   >();
 
-  for (let i = 0; i < rowIds.length - 2; i++) {
+  // This template-feasibility stat is O(rows^3) and purely informational. The
+  // Wikidata-augmented index has thousands of row axes, where the triple loop is
+  // infeasible — skip it past a threshold (board generation does not depend on it).
+  const TEMPLATE_ANALYSIS_ROW_CAP = 250;
+  if (rowIds.length > TEMPLATE_ANALYSIS_ROW_CAP) {
+    console.log(
+      `  (skipping O(rows^3) QA template analysis: ${rowIds.length} rows > ${TEMPLATE_ANALYSIS_ROW_CAP})`,
+    );
+  }
+  for (let i = 0; rowIds.length <= TEMPLATE_ANALYSIS_ROW_CAP && i < rowIds.length - 2; i++) {
     for (let j = i + 1; j < rowIds.length - 1; j++) {
       for (let k = j + 1; k < rowIds.length; k++) {
         const rowIdA = rowIds[i];
@@ -8407,6 +8767,69 @@ async function main(): Promise<void> {
     for (const [statKey, row] of [...byStat.entries()].sort()) {
       console.log(`    ${statKey}: ${row.pools} / ${row.facts}`);
     }
+    return;
+  }
+
+  if (flags.rebuildGridOnly) {
+    console.log(
+      "Rebuilding VerveGrid from persisted tables + Wikidata augmentation (offline)...",
+    );
+    // Strip any previously-injected Wikidata rows so re-runs are idempotent.
+    const basePlayers = loadTable<Player>("players").filter(
+      (p) => !p.id.startsWith("fb_wd_"),
+    );
+    const baseTeams = loadTable<Team>("teams").filter(
+      (t) => !t.id.startsWith("fb_wd_team_"),
+    );
+    const pts = loadTable<PlayerTeamSeason>("playerTeamSeason");
+    const trophies = loadTable<PlayerTrophy>("playerTrophies");
+    if (basePlayers.length === 0 || baseTeams.length === 0) {
+      console.error(
+        `Cannot rebuild grid: players=${basePlayers.length}, teams=${baseTeams.length} (expected both > 0 on disk)`,
+      );
+      process.exit(1);
+    }
+
+    const aug = buildWikidataGridAugmentation(basePlayers, baseTeams);
+    console.log("  augmentation:", JSON.stringify(aug.stats));
+
+    // Report the most-referenced minted clubs — high counts usually mean a famous
+    // club whose name diverged and should get a CLUB_CORE_ALIASES entry instead.
+    const mintedById = new Map(aug.mintedTeams.map((t) => [t.id, t.name]));
+    const mintedCounts = new Map<string, number>();
+    for (const [, teamSet] of aug.extraAffiliations) {
+      for (const teamId of teamSet) {
+        if (mintedById.has(teamId))
+          mintedCounts.set(teamId, (mintedCounts.get(teamId) ?? 0) + 1);
+      }
+    }
+    const topMinted = [...mintedCounts.entries()].sort((a, b) => b[1] - a[1]).slice(0, 30);
+    console.log("  top minted clubs by player count (review for aliases):");
+    for (const [id, n] of topMinted) console.log(`    ${n}\t${mintedById.get(id)}`);
+
+    const players = [...basePlayers, ...aug.legendPlayers];
+    const teams = [...baseTeams, ...aug.mintedTeams];
+    // Persist expanded base tables so curated-parity reseeds sportsPlayers/sportsTeams.
+    persistReplaceTable("players", players);
+    persistReplaceTable("teams", teams);
+
+    console.log("  Building grid index (with full-career affiliations)...");
+    const gridIndex = buildGridIndex(players, pts, teams, trophies, aug.extraAffiliations);
+    persistReplaceTable("gridIndex", gridIndex);
+
+    console.log("  Building approved VerveGrid index...");
+    const verveGridData = buildFootballVerveGridApprovedData(gridIndex, teams);
+    persistReplaceTable("verveGridApprovedIndex", verveGridData.approvedEntries);
+    persistJsonFile("verveGridQaReport", verveGridData.qaReport);
+
+    console.log(
+      `  approved entries ${verveGridData.approvedEntries.length}; ` +
+        `players ${players.length} (+${aug.legendPlayers.length} legends); ` +
+        `teams ${teams.length} (+${aug.mintedTeams.length} minted)`,
+    );
+    console.log(
+      "  NEXT: `npx tsx scripts/buildVerveGridBoards.ts` to regenerate boards, then reseed.",
+    );
     return;
   }
 
