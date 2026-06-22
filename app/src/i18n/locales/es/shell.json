@@ -246,6 +246,15 @@
     "accountGuest": "Cuenta de invitado",
     "accountNoHandle": "Sesión iniciada",
     "notSignedIn": "No has iniciado sesión.",
-    "signInCta": "Inicia sesión o crea una cuenta"
+    "signInCta": "Inicia sesión o crea una cuenta",
+    "dailyHeading": "Reto diario",
+    "dailyDescription": "Elige el tema de tu cuestionario diario.",
+    "dailySaved": "Tema del reto actualizado",
+    "dailySubjects": {
+      "football": "Fútbol",
+      "basketball": "Baloncesto",
+      "tennis": "Tenis",
+      "knowledge": "Cultura general"
+    }
   }
 }

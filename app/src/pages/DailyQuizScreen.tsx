@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { useMutation, useQuery } from "convex/react";
+import { usePreferredDailySport } from "@/hooks/usePreferredDailySport";
 import { api } from "../../convex/_generated/api";
 import { NeoCard } from "@/components/neo/NeoCard";
 import { NeoBadge } from "@/components/neo/NeoBadge";
@@ -27,8 +28,9 @@ interface QuestionData {
 
 export default function DailyQuizScreen() {
   const navigate = useNavigate();
-  const [params] = useSearchParams();
-  const sport = params.get("sport") || "football";
+  // URL ?sport= → saved preference → football (shared with the launch points
+  // and the getAttemptStatus query so the attempt-gating stays in lockstep).
+  const sport = usePreferredDailySport();
 
   const [attemptId, setAttemptId] = useState<Id<"dailyAttempts"> | null>(null);
   const [question, setQuestion] = useState<QuestionData | null>(null);

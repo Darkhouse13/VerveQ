@@ -4,6 +4,7 @@ import { ChevronRight } from "lucide-react";
 import { NeoCard } from "@/components/neo/NeoCard";
 import { ShellLayout } from "@/components/shell/ShellLayout";
 import { SHELL_ROUTES } from "@/lib/shellRoutes";
+import { usePreferredDailySport } from "@/hooks/usePreferredDailySport";
 import { COMPETE_MODE_TILES, COMPETE_KNOWLEDGE_TILES, type ModeTile } from "./competeModeTiles";
 
 const LIVE_SPORTS = new Set(["football"]);
@@ -39,6 +40,10 @@ export default function CompeteModeGridScreen() {
   const navigate = useNavigate();
   const { t } = useTranslation();
   const { sport = "football" } = useParams<{ sport: string }>();
+  // Daily is subject-agnostic (not tied to this grid's football scope): launch
+  // the user's preferred subject, matching the Home daily card. Declared before
+  // the early return below to satisfy the rules of hooks.
+  const dailySport = usePreferredDailySport();
 
   // Only football is live; anything else falls back to the compete landing
   // (which defaults to football). Param-less /compete never hits this.
@@ -79,7 +84,7 @@ export default function CompeteModeGridScreen() {
               color={daily.color}
               shadow="lg"
               className="flex items-center gap-3 cursor-pointer py-2.5 md:py-3.5"
-              onClick={() => navigate(daily.to(sport))}
+              onClick={() => navigate(daily.to(dailySport))}
             >
               <div className="neo-border rounded-xl bg-background w-fit p-2 md:p-2.5">
                 <daily.icon size={22} strokeWidth={2.5} className="text-foreground" />

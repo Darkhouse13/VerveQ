@@ -22,6 +22,11 @@ export default defineSchema({
     currentStreak: v.optional(v.number()),
     bestStreak: v.optional(v.number()),
     approvedQuestionsCount: v.optional(v.number()),
+    // User's preferred Daily Challenge subject (a CLIENT_SPORTS value:
+    // football/basketball/tennis/knowledge). Optional ⇒ unset means the
+    // Daily defaults to football. Set via users.setPreferredDailySport and
+    // read off api.users.me on the client.
+    preferredDailySport: v.optional(v.string()),
     // Updated (debounced) by funnel.sessionHeartbeat on app load; used for
     // retention metrics like D7-of-defeated-players.
     lastSeenAt: v.optional(v.number()),

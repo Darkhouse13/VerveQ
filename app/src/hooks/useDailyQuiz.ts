@@ -13,8 +13,9 @@
  * `/daily-results` screen with the same state shape the live screen produced.
  */
 import { useState, useEffect, useRef, useCallback } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { useMutation, useQuery } from "convex/react";
+import { usePreferredDailySport } from "@/hooks/usePreferredDailySport";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import { friendlyError } from "@/lib/errors";
@@ -46,8 +47,10 @@ export interface DailyQuizState extends SoloQuizState {
 export function useDailyQuiz(): DailyQuizState {
   const { t, i18n } = useTranslation("play");
   const navigate = useNavigate();
-  const [params] = useSearchParams();
-  const sport = params.get("sport") || "football";
+  // Resolved via the shared helper (URL ?sport= → saved preference → football)
+  // so this play loop, its getAttemptStatus query, and the launch point that
+  // navigated here all agree on the same subject.
+  const sport = usePreferredDailySport();
 
   const [attemptId, setAttemptId] = useState<Id<"dailyAttempts"> | null>(null);
   const [question, setQuestion] = useState<DailyQuestionData | null>(null);

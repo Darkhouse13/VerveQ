@@ -10,6 +10,7 @@ import { ShellLayout } from "@/components/shell/ShellLayout";
 import { SHELL_ROUTES } from "@/lib/shellRoutes";
 import { RANKED_CAPABILITIES, tierFromElo, tierProgress } from "@/lib/rankedLadder";
 import { useAuth } from "@/contexts/AuthContext";
+import { usePreferredDailySport } from "@/hooks/usePreferredDailySport";
 import { api } from "../../../convex/_generated/api";
 import type { Id } from "../../../convex/_generated/dataModel";
 
@@ -68,9 +69,12 @@ export default function ShellHomeScreen() {
     api.learn.getLearnSubjects,
     hasUsername ? {} : "skip",
   );
+  // The daily card reflects (and launches) the user's preferred subject; the
+  // status query and the launch nav below must use this same value.
+  const dailySport = usePreferredDailySport();
   const dailyStatus = useQuery(
     api.dailyChallenge.getAttemptStatus,
-    hasUsername ? { sport: "football", mode: "quiz" } : "skip",
+    hasUsername ? { sport: dailySport, mode: "quiz" } : "skip",
   );
   const season = useQuery(
     api.seasonManager.getCurrentSeason,
@@ -239,7 +243,7 @@ export default function ShellHomeScreen() {
             <div className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-3.5 md:flex-1 md:min-h-0">
               <NeoCard
                 color="yellow"
-                onClick={() => navigate(`${SHELL_ROUTES.dailyPlay}?sport=football`)}
+                onClick={() => navigate(`${SHELL_ROUTES.dailyPlay}?sport=${dailySport}`)}
                 className={`p-3.5 flex flex-col gap-1.5 min-h-0 ${LIFT}`}
               >
                 <Star size={22} strokeWidth={2.5} />

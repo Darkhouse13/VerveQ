@@ -22,6 +22,8 @@ interface AuthUser {
   isGuest: boolean;
   totalGames: number;
   avatarUrl?: string;
+  /** Preferred Daily Challenge subject; unset ⇒ football. */
+  preferredDailySport?: string;
 }
 
 export type AuthErrorCode =
@@ -664,6 +666,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           isGuest: user.isGuest ?? user.isAnonymous ?? false,
           totalGames: user.totalGames ?? 0,
           avatarUrl: user.avatarUrl,
+          preferredDailySport: user.preferredDailySport,
         }
       : null;
 

@@ -11,6 +11,7 @@ import {
   normalizeUsername,
 } from "./lib/usernames";
 import { describePasswordReason, validatePassword } from "./lib/passwordPolicy";
+import { assertClientSport } from "./lib/sports";
 
 const PASSWORD_PROVIDER_ID = "password";
 const USERNAME_ONLY_ATTEMPT_KIND = "username_claim";
@@ -52,6 +53,21 @@ export const me = query({
     const userId = await getAuthUserId(ctx);
     if (!userId) return null;
     return await ctx.db.get(userId);
+  },
+});
+
+// Persist the user's preferred Daily Challenge subject. assertClientSport
+// fail-closes anything outside football/basketball/tennis/knowledge (notably
+// the arena-only "arena_knowledge"). The new value flows to the client via
+// api.users.me, which the shared usePreferredDailySport helper reads.
+export const setPreferredDailySport = mutation({
+  args: { sport: v.string() },
+  handler: async (ctx, { sport }) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) throw new Error("Not authenticated");
+    assertClientSport(sport);
+    await ctx.db.patch(userId, { preferredDailySport: sport });
+    return sport;
   },
 });
 

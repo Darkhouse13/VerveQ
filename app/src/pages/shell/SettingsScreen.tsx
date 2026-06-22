@@ -14,9 +14,18 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { ArrowUp, LogIn, LogOut, User } from "lucide-react";
+import { useMutation } from "convex/react";
+import { toast } from "sonner";
+import { ArrowUp, CalendarDays, LogIn, LogOut, User } from "lucide-react";
 import { NeoCard } from "@/components/neo/NeoCard";
 import { NeoButton } from "@/components/neo/NeoButton";
+import { cn } from "@/lib/utils";
+import { friendlyError } from "@/lib/errors";
+import { api } from "../../../convex/_generated/api";
+import {
+  DAILY_SUBJECTS,
+  usePreferredDailySport,
+} from "@/hooks/usePreferredDailySport";
 import {
   Dialog,
   DialogContent,
@@ -34,6 +43,27 @@ export default function SettingsScreen() {
   const { t } = useTranslation();
   const { user, username, isUsernameOnly, accountState, logout } = useAuth();
   const [signOutOpen, setSignOutOpen] = useState(false);
+
+  // Daily Challenge subject preference. The picker reflects the same resolved
+  // value the banner/home/play screens use; saving patches the user doc, which
+  // those readers pick up reactively via api.users.me.
+  const currentDailySport = usePreferredDailySport();
+  const setPreferredDailySport = useMutation(api.users.setPreferredDailySport);
+  const [savingDailySport, setSavingDailySport] = useState<string | null>(null);
+  const selectedDailySport = savingDailySport ?? currentDailySport;
+
+  const handlePickDailySport = async (sport: string) => {
+    if (sport === currentDailySport || savingDailySport) return;
+    setSavingDailySport(sport);
+    try {
+      await setPreferredDailySport({ sport });
+      toast.success(t("settings.dailySaved"));
+    } catch (error) {
+      toast.error(friendlyError(error, t("settings.dailyHeading")));
+    } finally {
+      setSavingDailySport(null);
+    }
+  };
 
   // Language is a device preference (works for everyone). The account section
   // only renders controls when there's an identity; logged-out visitors get a
@@ -54,6 +84,46 @@ export default function SettingsScreen() {
         <NeoCard>
           <LanguageSwitcher />
         </NeoCard>
+
+        {/* Daily Challenge subject — only meaningful with an identity to store
+            it on; logged-out visitors don't see it. */}
+        {signedIn && (
+          <NeoCard className="flex flex-col gap-2">
+            <span className="font-mono text-[11px] font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-1.5">
+              <CalendarDays size={13} strokeWidth={2.5} />
+              {t("settings.dailyHeading")}
+            </span>
+            <p className="text-xs text-muted-foreground">
+              {t("settings.dailyDescription")}
+            </p>
+            <div
+              className="grid grid-cols-2 gap-2"
+              role="group"
+              aria-label={t("settings.dailyHeading")}
+            >
+              {DAILY_SUBJECTS.map((subject) => {
+                const selected = selectedDailySport === subject;
+                return (
+                  <button
+                    key={subject}
+                    type="button"
+                    aria-pressed={selected}
+                    disabled={savingDailySport !== null}
+                    onClick={() => void handlePickDailySport(subject)}
+                    className={cn(
+                      "neo-border rounded-lg px-2 py-2 font-heading font-bold text-[13px] transition-all disabled:opacity-60",
+                      selected
+                        ? "bg-foreground text-background neo-shadow"
+                        : "bg-card active:neo-shadow-pressed",
+                    )}
+                  >
+                    {t(`settings.dailySubjects.${subject}`)}
+                  </button>
+                );
+              })}
+            </div>
+          </NeoCard>
+        )}
 
         {/* Account — controls when signed in, a sign-in CTA when not. */}
         <NeoCard className="flex flex-col gap-3.5">

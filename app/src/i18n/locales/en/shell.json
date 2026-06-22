@@ -246,6 +246,15 @@
     "accountGuest": "Guest account",
     "accountNoHandle": "Signed in",
     "notSignedIn": "You're not signed in.",
-    "signInCta": "Sign in or create account"
+    "signInCta": "Sign in or create account",
+    "dailyHeading": "Daily Challenge",
+    "dailyDescription": "Choose the subject served as your daily quiz.",
+    "dailySaved": "Daily subject updated",
+    "dailySubjects": {
+      "football": "Football",
+      "basketball": "Basketball",
+      "tennis": "Tennis",
+      "knowledge": "Knowledge"
+    }
   }
 }

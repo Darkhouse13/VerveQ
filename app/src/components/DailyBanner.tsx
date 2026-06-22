@@ -6,6 +6,7 @@ import { api } from "../../convex/_generated/api";
 import { useCountdown } from "@/hooks/useCountdown";
 import { Calendar, Lock } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
+import { usePreferredDailySport } from "@/hooks/usePreferredDailySport";
 
 function getMidnightUTC(): number {
   const now = new Date();
@@ -17,10 +18,11 @@ function getMidnightUTC(): number {
 export function DailyBanner() {
   const navigate = useNavigate();
   const { isGuest } = useAuth();
+  const dailySport = usePreferredDailySport();
 
   const quizStatus = useQuery(
     api.dailyChallenge.getAttemptStatus,
-    isGuest ? "skip" : { sport: "football", mode: "quiz" },
+    isGuest ? "skip" : { sport: dailySport, mode: "quiz" },
   );
 
   const statusLoading = !isGuest && quizStatus === undefined;
@@ -62,7 +64,7 @@ export function DailyBanner() {
             size="sm"
             disabled={statusLoading}
             className={statusLoading ? "opacity-70 cursor-wait" : undefined}
-            onClick={() => navigate(isGuest ? "/?mode=signup&from=guest" : "/daily-quiz?sport=football")}
+            onClick={() => navigate(isGuest ? "/?mode=signup&from=guest" : `/daily-quiz?sport=${dailySport}`)}
           >
             {statusLoading ? "Checking" : isGuest ? "Create Account" : "Play"}
           </NeoButton>

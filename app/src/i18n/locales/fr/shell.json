@@ -246,6 +246,15 @@
     "accountGuest": "Compte invité",
     "accountNoHandle": "Connecté",
     "notSignedIn": "Tu n'es pas connecté.",
-    "signInCta": "Se connecter ou créer un compte"
+    "signInCta": "Se connecter ou créer un compte",
+    "dailyHeading": "Défi du jour",
+    "dailyDescription": "Choisis le sujet de ton quiz quotidien.",
+    "dailySaved": "Sujet du défi mis à jour",
+    "dailySubjects": {
+      "football": "Football",
+      "basketball": "Basketball",
+      "tennis": "Tennis",
+      "knowledge": "Culture générale"
+    }
   }
 }

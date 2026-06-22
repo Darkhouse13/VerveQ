@@ -24,7 +24,16 @@ const DAILY_QUIZ_COUNT = 10;
 const MAX_TIME_SEC = 10;
 const DAILY_ATTEMPT_TTL_MS = 30 * 60 * 1000;
 const DAY_MS = 24 * 60 * 60 * 1000;
-const DAILY_GENERATOR_SPORTS = ["football", "basketball", "tennis"] as const;
+// Subjects the daily cron pre-generates a quiz for. "knowledge" was added so
+// users who set preferredDailySport: "knowledge" get a ready challenge; the
+// per-sport loop try/catches, so a subject short on questions logs "skipped"
+// rather than failing the whole cron.
+const DAILY_GENERATOR_SPORTS = [
+  "football",
+  "basketball",
+  "tennis",
+  "knowledge",
+] as const;
 
 type DailyMode = "quiz" | "survival";
 
@@ -200,12 +209,16 @@ async function getOrCreateDailyQuizChallenge(
   }
 
   const MAX_IMAGE_QUESTIONS = 2;
+  // Draw from the full intermediate pool. The old `.take(200)` capped the
+  // candidate set to the first 200 rows by index order, so the seeded shuffle
+  // only ever reshuffled that window — and a subject whose standard MCQs sit
+  // past row 200 could fall short of DAILY_QUIZ_COUNT and get skipped.
   const questions = await ctx.db
     .query("quizQuestions")
     .withIndex("by_sport_difficulty", (q) =>
       q.eq("sport", sport).eq("difficulty", "intermediate"),
     )
-    .take(200);
+    .collect();
 
   const shuffled = seededShuffle(
     questions.filter(isStandardMcqQuestion),
@@ -294,12 +307,14 @@ export const getOrCreateChallenge = mutation({
     if (mode === "quiz") {
       const MAX_IMAGE_QUESTIONS = 2;
 
+      // Full intermediate pool (see getOrCreateDailyQuizChallenge): `.take(200)`
+      // capped the candidate set to the first 200 rows by index order.
       const questions = await ctx.db
         .query("quizQuestions")
         .withIndex("by_sport_difficulty", (q) =>
           q.eq("sport", sport).eq("difficulty", "intermediate"),
         )
-        .take(200);
+        .collect();
 
       const shuffled = seededShuffle(
         questions.filter(isStandardMcqQuestion),
