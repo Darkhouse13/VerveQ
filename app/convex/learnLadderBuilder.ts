@@ -9,8 +9,6 @@ import {
   questionSkillTags,
   verifiedLearnCieScoreQuestions,
 } from "./learnQuestionSkillTags";
-import { learnHistoryDatesRevealsV1ByChecksum } from "./learnHistoryDatesRevealsV1";
-import { learnScienceRecallRevealsV1ByChecksum } from "./learnScienceRecallRevealsV1";
 import {
   learnGeographyNonobviousLadderV1ByChecksum,
   learnGeographyNonobviousLadderV1Questions,
@@ -38,11 +36,20 @@ import type { LearnQuestionType } from "./learnGraders";
 //      correctReveal) BY CHECKSUM where it exists, and
 //   3. ordering easy -> intermediate -> hard and capping the rung count.
 //
-// A node is PLAYABLE only when enough of its tagged questions actually carry
-// teaching metadata. Tagged-but-reveal-less questions (currently every CIE
-// batch question) are NOT shipped into the loop — empty/tautological reveals are
-// exactly the quiz-not-learning failure we already fixed, so they keep the node
-// in "coming soon" instead.
+// Teaching reveals are OPTIONAL enrichment, not a ship gate. A node ships in one
+// of two shapes, never a mix:
+//   - CURATED ladder: if any tagged question carries a hand-authored reveal, the
+//     ladder is built from those reveal-carrying questions only (the teach
+//     content is the point — we don't dilute it with bare drills).
+//   - RECALL DRILL: if NO tagged question carries a reveal, the node still ships
+//     as an honest spaced-repetition drill (questions only, no teach card). The
+//     grader surfaces the correct answer on a miss so the drill is learnable.
+// Playability is simply "enough questions to build a loop" (MIN_PLAYABLE_RUNGS),
+// which is why reveal-less nodes (e.g. geo.borders.identify, the science/history
+// recall nodes) are now playable drills instead of dead "coming soon" entries.
+// The old tautological CIE recall-reveal layers were removed precisely because a
+// reveal that restates the answer is the quiz-not-learning failure — an honest
+// drill beats a fake teach card.
 
 type Difficulty = "easy" | "intermediate" | "hard";
 
@@ -65,8 +72,9 @@ export type BuiltLadderQuestion = {
   correctAnswer: string;
   difficulty: Difficulty;
   ladderIndex: number;
-  distractors: LearnModeDistractor[];
-  correctReveal: string;
+  /** Teaching metadata — present on curated reveal rungs, absent on drill rungs. */
+  distractors?: LearnModeDistractor[];
+  correctReveal?: string;
   acceptedAnswers?: string[];
   textEditDistance?: number;
   numericAnswer?: number;
@@ -178,8 +186,6 @@ const revealByChecksum = {
   ...learnGeographyBorderReasoningLadderV1ByChecksum,
   ...learnGeographyCapitalsRecallRevealsV1ByChecksum,
   ...learnGeographyPipelineProofLadderV1ByChecksum,
-  ...learnHistoryDatesRevealsV1ByChecksum,
-  ...learnScienceRecallRevealsV1ByChecksum,
 };
 
 // Candidate pool = every learn-eligible question we can tag, from the enriched
@@ -250,6 +256,21 @@ function selectBalancedRungs<T extends { candidate: { difficulty: Difficulty } }
   return ordered.filter((entry) => picked.has(entry));
 }
 
+type LadderEntry = {
+  candidate: LadderCandidate;
+  reveal: (typeof revealByChecksum)[string] | undefined;
+};
+
+function orderByDifficulty(entries: LadderEntry[]): LadderEntry[] {
+  return entries.sort((left, right) => {
+    const byDifficulty =
+      DIFFICULTY_RANK[left.candidate.difficulty] -
+      DIFFICULTY_RANK[right.candidate.difficulty];
+    if (byDifficulty !== 0) return byDifficulty;
+    return (left.candidate.ladderIndex ?? 0) - (right.candidate.ladderIndex ?? 0);
+  });
+}
+
 export function buildLadder(nodeId: SkillNodeId): BuiltLadder {
   const node = skillNodeById[nodeId];
   if (!node) {
@@ -258,63 +279,70 @@ export function buildLadder(nodeId: SkillNodeId): BuiltLadder {
 
   const tagged = candidatePool.filter((candidate) => candidate.tags.includes(nodeId));
 
-  // Only reveal-carrying questions reach the loop — the readiness rule depends
-  // on this so we never ship a "reveal" that just restates the answer.
-  const enriched = tagged
-    .map((candidate) => ({ candidate, reveal: revealByChecksum[candidate.checksum] }))
-    .filter(
-      (entry): entry is { candidate: LadderCandidate; reveal: NonNullable<typeof entry.reveal> } =>
-        entry.reveal != null && entry.reveal.skillNodes.includes(nodeId),
-    );
-
-  const ordered = enriched.sort((left, right) => {
-    const byDifficulty =
-      DIFFICULTY_RANK[left.candidate.difficulty] -
-      DIFFICULTY_RANK[right.candidate.difficulty];
-    if (byDifficulty !== 0) return byDifficulty;
-    return (left.candidate.ladderIndex ?? 0) - (right.candidate.ladderIndex ?? 0);
+  // Attach a reveal where one exists AND was authored for this node, so recall
+  // reveals don't leak into concept ladders that share base-question tags.
+  const entries: LadderEntry[] = tagged.map((candidate) => {
+    const reveal = revealByChecksum[candidate.checksum];
+    return {
+      candidate,
+      reveal: reveal != null && reveal.skillNodes.includes(nodeId) ? reveal : undefined,
+    };
   });
 
-  const selected = isPipelineProofNode(node) ? ordered : selectBalancedRungs(ordered);
+  const revealCarrying = orderByDifficulty(entries.filter((entry) => entry.reveal != null));
+  const drills = orderByDifficulty(entries.filter((entry) => entry.reveal == null));
 
-  const questions: BuiltLadderQuestion[] = selected
-    .slice(0, isPipelineProofNode(node) ? selected.length : MAX_LADDER_RUNGS)
-    .map((entry, index) => ({
-      checksum: entry.candidate.checksum,
-      type: entry.candidate.type ?? "mcq",
-      question: entry.candidate.question,
-      options: entry.candidate.options,
-      correctAnswer: entry.candidate.correctAnswer,
-      difficulty: entry.candidate.difficulty,
-      // Re-index sequentially so the loop's progress bar matches the built order.
-      ladderIndex: index + 1,
-      distractors: entry.reveal.distractors,
-      correctReveal: entry.reveal.correctReveal,
-      ...(entry.candidate.acceptedAnswers
-        ? { acceptedAnswers: entry.candidate.acceptedAnswers }
-        : {}),
-      ...(entry.candidate.textEditDistance !== undefined
-        ? { textEditDistance: entry.candidate.textEditDistance }
-        : {}),
-      ...(entry.candidate.numericAnswer !== undefined
-        ? { numericAnswer: entry.candidate.numericAnswer }
-        : {}),
-      ...(entry.candidate.numericTolerance !== undefined
-        ? { numericTolerance: entry.candidate.numericTolerance }
-        : {}),
-      ...(entry.candidate.numericUnit
-        ? { numericUnit: entry.candidate.numericUnit }
-        : {}),
-      ...(entry.candidate.acceptedUnits
-        ? { acceptedUnits: entry.candidate.acceptedUnits }
-        : {}),
-      ...(entry.candidate.items
-        ? { items: entry.candidate.items }
-        : {}),
-      ...(entry.candidate.correctOrder
-        ? { correctOrder: entry.candidate.correctOrder }
-        : {}),
-    }));
+  // Curated-or-drill, never mixed (see header). Pipeline-proof ships every rung;
+  // a node with reveals ships its reveal rungs; otherwise it ships a recall drill.
+  let selected: LadderEntry[];
+  if (isPipelineProofNode(node)) {
+    selected = revealCarrying;
+  } else if (revealCarrying.length > 0) {
+    selected = selectBalancedRungs(revealCarrying).slice(0, MAX_LADDER_RUNGS);
+  } else {
+    selected = selectBalancedRungs(drills).slice(0, MAX_LADDER_RUNGS);
+  }
+
+  const questions: BuiltLadderQuestion[] = selected.map((entry, index) => ({
+    checksum: entry.candidate.checksum,
+    type: entry.candidate.type ?? "mcq",
+    question: entry.candidate.question,
+    options: entry.candidate.options,
+    correctAnswer: entry.candidate.correctAnswer,
+    difficulty: entry.candidate.difficulty,
+    // Re-index sequentially so the loop's progress bar matches the built order.
+    ladderIndex: index + 1,
+    // Teaching metadata only when the rung actually carries a reveal; drill rungs
+    // ship without it and the grader reveals the answer on a miss instead.
+    ...(entry.reveal
+      ? {
+          distractors: entry.reveal.distractors,
+          correctReveal: entry.reveal.correctReveal,
+        }
+      : {}),
+    ...(entry.candidate.acceptedAnswers
+      ? { acceptedAnswers: entry.candidate.acceptedAnswers }
+      : {}),
+    ...(entry.candidate.textEditDistance !== undefined
+      ? { textEditDistance: entry.candidate.textEditDistance }
+      : {}),
+    ...(entry.candidate.numericAnswer !== undefined
+      ? { numericAnswer: entry.candidate.numericAnswer }
+      : {}),
+    ...(entry.candidate.numericTolerance !== undefined
+      ? { numericTolerance: entry.candidate.numericTolerance }
+      : {}),
+    ...(entry.candidate.numericUnit
+      ? { numericUnit: entry.candidate.numericUnit }
+      : {}),
+    ...(entry.candidate.acceptedUnits
+      ? { acceptedUnits: entry.candidate.acceptedUnits }
+      : {}),
+    ...(entry.candidate.items ? { items: entry.candidate.items } : {}),
+    ...(entry.candidate.correctOrder
+      ? { correctOrder: entry.candidate.correctOrder }
+      : {}),
+  }));
 
   return {
     nodeId,

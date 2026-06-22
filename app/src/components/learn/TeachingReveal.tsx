@@ -95,16 +95,20 @@ export function TeachingReveal({
       </div>
 
       {/* The teaching payload — the WHY, never the answer. Tighter on mobile so the
-          rating below it stays on a no-scroll viewport. */}
-      <div className="neo-border neo-shadow rounded-xl bg-card p-3.5 md:p-4">
-        <div className="mb-1.5 flex items-center gap-2 md:mb-2">
-          <Lightbulb size={20} strokeWidth={2.5} />
-          <span className="font-heading text-[15px]">{t("reveal.ideaTitle")}</span>
+          rating below it stays on a no-scroll viewport. Drill rungs carry no
+          teach: the card is hidden and the correct answer is shown in the
+          question renderer instead. */}
+      {verdict.teach && (
+        <div className="neo-border neo-shadow rounded-xl bg-card p-3.5 md:p-4">
+          <div className="mb-1.5 flex items-center gap-2 md:mb-2">
+            <Lightbulb size={20} strokeWidth={2.5} />
+            <span className="font-heading text-[15px]">{t("reveal.ideaTitle")}</span>
+          </div>
+          <p className="m-0 text-[14px] font-medium leading-snug md:text-[15px] md:leading-relaxed">
+            {verdict.teach}
+          </p>
         </div>
-        <p className="m-0 text-[14px] font-medium leading-snug md:text-[15px] md:leading-relaxed">
-          {verdict.teach}
-        </p>
-      </div>
+      )}
 
       {/* Spaced-rep self-rate → feeds the schedule. */}
       <div>

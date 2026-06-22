@@ -50,9 +50,9 @@ export default function LearnLadderScreen() {
         </p>
         {summary && (
           <p className="text-sm text-muted-foreground mt-2 leading-snug">
-            It has {summary.taggedCount} tagged question
-            {summary.taggedCount === 1 ? "" : "s"}, but they don't carry teaching
-            reveals yet — so we won't ship it as a learning loop.
+            It only has {summary.taggedCount} tagged question
+            {summary.taggedCount === 1 ? "" : "s"} — not enough to build a session
+            yet.
           </p>
         )}
       </NeoCard>

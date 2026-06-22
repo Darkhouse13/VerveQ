@@ -4,14 +4,17 @@ export type LearnQuestionType = "mcq" | "text" | "numeric" | "order";
 
 export type LearnDistractorReveal = {
   text: string;
-  reveal: string;
+  /** Optional teaching detour for this specific wrong pick (curated ladders
+   * only); recall-drill distractors carry none. */
+  reveal?: string;
 };
 
 export type LearnGradableQuestion = {
   type?: LearnQuestionType;
   options?: string[];
   correctAnswer?: string;
-  correctReveal: string;
+  /** Optional teaching "why". Absent on pure recall-drill rungs. */
+  correctReveal?: string;
   distractors?: LearnDistractorReveal[];
   acceptedAnswers?: string[];
   textEditDistance?: number;
@@ -25,10 +28,31 @@ export type LearnGradableQuestion = {
 export type LearnSubmitVerdict = {
   correct: boolean;
   branchId?: string;
-  teach: string;
+  /** Teaching payload (the "why"). Absent on drill rungs with no reveal. */
+  teach?: string;
+  /** Surfaced only when a wrong drill answer has no teach, so the drill still
+   * reveals the right answer. Curated reveal rungs never set this. */
+  correctAnswer?: string;
   masteryDelta?: number;
   nextReview?: number;
 };
+
+/** Build the verdict for the non-MCQ graders: attach the rung's teach when it
+ * has one, otherwise (on a wrong answer) surface the correct answer so a
+ * reveal-less drill is still learnable. */
+function revealVerdict(
+  correct: boolean,
+  question: LearnGradableQuestion,
+): LearnSubmitVerdict {
+  const teach = nonBlank(question.correctReveal);
+  return {
+    correct,
+    ...(teach ? { teach } : {}),
+    ...(!correct && !teach && nonBlank(question.correctAnswer)
+      ? { correctAnswer: question.correctAnswer }
+      : {}),
+  };
+}
 
 type ParsedNumber = {
   value: number;
@@ -82,7 +106,7 @@ export function gradeTextAnswer(
   answer: unknown,
 ): LearnSubmitVerdict {
   if (typeof answer !== "string") {
-    return { correct: false, teach: question.correctReveal };
+    return revealVerdict(false, question);
   }
 
   const normalizedAnswer = normalizeLearnText(answer);
@@ -103,13 +127,10 @@ export function gradeTextAnswer(
   }
 
   if (best && best.distance <= tolerance) {
-    return {
-      correct: true,
-      teach: question.correctReveal,
-    };
+    return revealVerdict(true, question);
   }
 
-  return { correct: false, teach: question.correctReveal };
+  return revealVerdict(false, question);
 }
 
 function normalizeNumericLiteral(raw: string): string {
@@ -212,10 +233,7 @@ export function gradeNumericAnswer(
     submitted !== null &&
     Math.abs(submitted.value - expected.value) <= tolerance + Number.EPSILON;
 
-  return {
-    correct: valueCorrect && unitCorrect,
-    teach: question.correctReveal,
-  };
+  return revealVerdict(valueCorrect && unitCorrect, question);
 }
 
 export function gradeOrderAnswer(
@@ -231,7 +249,7 @@ export function gradeOrderAnswer(
     submitted.length === expected.length &&
     submitted.every((value, index) => value === expected[index]);
 
-  return { correct, teach: question.correctReveal };
+  return revealVerdict(correct, question);
 }
 
 export function gradeMcqAnswer(
@@ -246,18 +264,30 @@ export function gradeMcqAnswer(
   }
 
   const correct = answer === question.correctAnswer;
-  const teach = correct
-    ? question.correctReveal
-    : question.distractors?.find((distractor) => distractor.text === answer)
-        ?.reveal;
-  if (!teach) {
-    throw new Error("Verified teaching reveal not found for submitted answer");
+  if (correct) {
+    const teach = nonBlank(question.correctReveal);
+    return { correct: true, ...(teach ? { teach } : {}) };
   }
 
+  // Wrong pick. Prefer a distractor-specific teaching detour (the curated-ladder
+  // "known trap" branch), then the rung's general "why", and finally — for a
+  // pure recall drill with no reveal at all — surface the correct answer so the
+  // drill is still learnable instead of throwing.
+  const distractorTeach = nonBlank(
+    question.distractors?.find((distractor) => distractor.text === answer)?.reveal,
+  );
+  if (distractorTeach) {
+    return { correct: false, branchId: answer, teach: distractorTeach };
+  }
+  const generalTeach = nonBlank(question.correctReveal);
+  if (generalTeach) {
+    return { correct: false, teach: generalTeach };
+  }
   return {
-    correct,
-    ...(correct ? {} : { branchId: answer }),
-    teach,
+    correct: false,
+    ...(nonBlank(question.correctAnswer)
+      ? { correctAnswer: question.correctAnswer }
+      : {}),
   };
 }
 

@@ -101,3 +101,59 @@ describe("Learn graders", () => {
     });
   });
 });
+
+describe("Learn MCQ grader (reveal-optional)", () => {
+  const drill = {
+    type: "mcq" as const,
+    options: ["Tokyo", "Seoul", "Beijing", "Hanoi"],
+    correctAnswer: "Tokyo",
+  };
+
+  it("grades a reveal-less drill with no teach on a correct pick", () => {
+    expect(gradeLearnAnswer(drill, "Tokyo")).toEqual({ correct: true });
+  });
+
+  it("surfaces the correct answer when a reveal-less drill pick is wrong", () => {
+    expect(gradeLearnAnswer(drill, "Seoul")).toEqual({
+      correct: false,
+      correctAnswer: "Tokyo",
+    });
+  });
+
+  it("falls back to the correctReveal hook when distractors carry no reveal", () => {
+    const capitalsStyle = {
+      ...drill,
+      correctReveal: "Tokyo sits on Tokyo Bay.",
+      distractors: [{ text: "Seoul" }, { text: "Beijing" }, { text: "Hanoi" }],
+    };
+    expect(gradeLearnAnswer(capitalsStyle, "Seoul")).toEqual({
+      correct: false,
+      teach: "Tokyo sits on Tokyo Bay.",
+    });
+    expect(gradeLearnAnswer(capitalsStyle, "Tokyo")).toEqual({
+      correct: true,
+      teach: "Tokyo sits on Tokyo Bay.",
+    });
+  });
+
+  it("takes the distractor teaching detour when a wrong pick has its own reveal", () => {
+    const curated = {
+      ...drill,
+      correctReveal: "Tokyo sits on Tokyo Bay.",
+      distractors: [
+        { text: "Seoul", reveal: "Seoul is South Korea's capital." },
+        { text: "Beijing" },
+        { text: "Hanoi" },
+      ],
+    };
+    expect(gradeLearnAnswer(curated, "Seoul")).toEqual({
+      correct: false,
+      branchId: "Seoul",
+      teach: "Seoul is South Korea's capital.",
+    });
+  });
+
+  it("still rejects an option that is not on the card", () => {
+    expect(() => gradeLearnAnswer(drill, "Osaka")).toThrow();
+  });
+});

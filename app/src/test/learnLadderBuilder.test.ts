@@ -21,13 +21,13 @@ describe("learn ladder builder", () => {
     );
     expect(ladder.questions.length).toBeLessThanOrEqual(MAX_LADDER_RUNGS);
 
-    // Every rung carries teaching metadata.
+    // Every rung carries teaching metadata (curated concept ladder).
     for (const rung of ladder.questions) {
-      expect(rung.correctReveal.trim().length).toBeGreaterThan(0);
-      expect(rung.distractors.length).toBe(3);
-      for (const distractor of rung.distractors) {
+      expect((rung.correctReveal ?? "").trim().length).toBeGreaterThan(0);
+      expect(rung.distractors ?? []).toHaveLength(3);
+      for (const distractor of rung.distractors ?? []) {
         expect(rung.options).toContain(distractor.text);
-        expect(distractor.reveal.trim().length).toBeGreaterThan(0);
+        expect((distractor.reveal ?? "").trim().length).toBeGreaterThan(0);
       }
     }
   });
@@ -39,8 +39,8 @@ describe("learn ladder builder", () => {
     );
     expect(ladder.questions.length).toBeLessThanOrEqual(MAX_LADDER_RUNGS);
     for (const rung of ladder.questions) {
-      expect(rung.correctReveal.trim().length).toBeGreaterThan(0);
-      expect(rung.distractors.length).toBe(3);
+      expect((rung.correctReveal ?? "").trim().length).toBeGreaterThan(0);
+      expect(rung.distractors ?? []).toHaveLength(3);
     }
   });
 
@@ -50,18 +50,33 @@ describe("learn ladder builder", () => {
     )) {
       const ladder = buildLadder(nodeId as keyof typeof learnGeographyCapitalsRecallSelectedChecksumsByNode);
 
+      // Reveal-carrying capitals questions are still preferred over bare drills,
+      // so the curated selection is unchanged.
       expect(ladder.questions.map((question) => question.checksum)).toEqual(
         expectedChecksums,
       );
       expect(ladder.questions).toHaveLength(8);
       for (const rung of ladder.questions) {
-        expect(rung.correctReveal.trim().length).toBeGreaterThan(0);
-        expect(rung.distractors).toHaveLength(3);
-        for (const distractor of rung.distractors) {
+        // The authored correctReveal hook stays; per-distractor tautologies were
+        // dropped, so distractors no longer carry reveal text.
+        expect((rung.correctReveal ?? "").trim().length).toBeGreaterThan(0);
+        expect(rung.distractors ?? []).toHaveLength(3);
+        for (const distractor of rung.distractors ?? []) {
           expect(rung.options).toContain(distractor.text);
-          expect(distractor.reveal.trim().length).toBeGreaterThan(0);
+          expect(distractor.reveal).toBeUndefined();
         }
       }
+    }
+  });
+
+  it("ships a reveal-less node as an honest recall drill (no teach metadata)", () => {
+    const ladder = buildLadder("geo.borders.identify");
+    expect(ladder.questions.length).toBeGreaterThanOrEqual(MIN_PLAYABLE_RUNGS);
+    expect(ladder.questions.length).toBeLessThanOrEqual(MAX_LADDER_RUNGS);
+    for (const rung of ladder.questions) {
+      expect(rung.type).toBe("mcq");
+      expect(rung.correctReveal).toBeUndefined();
+      expect(rung.distractors).toBeUndefined();
     }
   });
 
@@ -108,17 +123,19 @@ describe("learn ladder builder", () => {
     }
   });
 
-  it("marks only nodes with reveal-carrying questions as playable", () => {
+  it("marks every node with enough questions as playable (reveal ladder or drill)", () => {
     const summaries = listSubjectNodeSummaries("geography");
     const playable = summaries.filter((summary) => summary.playable);
 
-    // Recall-capital nodes, non-obvious capitals, and border reasoning qualify.
+    // Curated reveal ladders (capitals, non-obvious, border reasoning) AND the
+    // reveal-less border-identify drill all ship now that reveals are optional.
     expect(playable.map((summary) => summary.nodeId)).toEqual([
       "geo.capitals.core",
       "geo.capitals.europe",
       "geo.capitals.asia",
       "geo.capitals.other",
       "geo.capitals.nonobvious",
+      "geo.borders.identify",
       "geo.borders.reasoning",
     ]);
 
@@ -126,7 +143,7 @@ describe("learn ladder builder", () => {
       if (summary.playable) {
         expect(summary.rungCount).toBeGreaterThanOrEqual(MIN_PLAYABLE_RUNGS);
       } else {
-        // Coming-soon nodes can still be tagged; they just lack teaching reveals.
+        // A node only stays coming-soon if it has too few tagged questions.
         expect(summary.rungCount).toBeLessThan(MIN_PLAYABLE_RUNGS);
       }
     }

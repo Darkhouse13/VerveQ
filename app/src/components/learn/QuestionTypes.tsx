@@ -33,11 +33,17 @@ function McqRenderer({ question, draft, setDraft, reveal, verdict }: RendererPro
     <div className="flex flex-col gap-2 md:gap-2.5">
       {q.options.map((o, index) => {
         const isPicked = picked === o.key;
-        // De-leaked: the server keeps the correct answer private, returning only
-        // whether THIS pick was right. Colour the user's own pick; dim the rest.
-        const correct = reveal && isPicked && !!verdict?.correct;
-        const wrong = reveal && isPicked && !!verdict && !verdict.correct;
-        const dimmed = reveal && !isPicked;
+        // Curated reveal rungs keep the correct answer private (it's carried in
+        // the teach). Drill rungs return `correctAnswer` on a miss so the right
+        // option is shown green here — the drill stays learnable without a fake
+        // teach card.
+        const isAnswer =
+          reveal &&
+          !!verdict?.correctAnswer &&
+          (o.text === verdict.correctAnswer || o.key === verdict.correctAnswer);
+        const correct = reveal && !!verdict && ((isPicked && verdict.correct) || isAnswer);
+        const wrong = reveal && isPicked && !!verdict && !verdict.correct && !isAnswer;
+        const dimmed = reveal && !isPicked && !isAnswer;
         return (
           <button
             key={o.key}

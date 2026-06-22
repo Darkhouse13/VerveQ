@@ -34,7 +34,9 @@ export type LearnModeDistractor = {
   // no runtime consumer reads them, so they are optional.
   misconception?: string;
   whyChosen?: string;
-  reveal: string;
+  // Per-distractor teaching detour. Optional: curated concept ladders author one
+  // per trap; recall reveals (e.g. capitals) keep only the correctReveal hook.
+  reveal?: string;
 };
 
 export type LearnGeographyNonobviousLadderQuestion = ContentQuestionSeed & {

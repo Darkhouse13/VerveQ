@@ -72,6 +72,7 @@ export function useLearnGrading(session: LearnSessionRef) {
         correct: verdict.correct,
         teach: verdict.teach,
         branchId: verdict.branchId,
+        correctAnswer: verdict.correctAnswer,
         masteryDelta: verdict.masteryDelta,
         nextReview: verdict.nextReview,
       };

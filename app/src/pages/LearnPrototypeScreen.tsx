@@ -26,10 +26,12 @@ export type LearnRung = {
 };
 
 // Verdict returned by submitLearnRung — the server's grading of one pick.
+// `teach` is absent on drill rungs; those return `correctAnswer` on a miss.
 type RungVerdict = {
   correct: boolean;
   branchId?: string;
-  teach: string;
+  teach?: string;
+  correctAnswer?: string;
   masteryDelta?: number;
   nextReview?: number;
 };
@@ -228,8 +230,12 @@ export function LearnLoop({
       return "bg-card text-card-foreground active:neo-shadow-pressed";
     if (option === picked && verdict.correct)
       return "bg-success text-success-foreground";
-    // Wrong picks are framed as "your guess", not flagged red. The server keeps
-    // the correct answer private and returns only the verified teaching reveal.
+    // Drill rungs return the correct answer on a miss — show it green so the
+    // recall drill stays learnable. Curated reveal rungs send no correctAnswer.
+    if (verdict.correctAnswer && option === verdict.correctAnswer)
+      return "bg-success text-success-foreground";
+    // Wrong picks are framed as "your guess", not flagged red. Curated rungs keep
+    // the correct answer private and return only the verified teaching reveal.
     if (option === picked)
       return "bg-card text-card-foreground ring-2 ring-electric-blue";
     return "bg-muted text-muted-foreground opacity-50";
@@ -310,7 +316,12 @@ export function LearnLoop({
           </div>
 
           <p className="font-heading font-bold text-base leading-snug">
-            {verdict.teach}
+            {verdict.teach ??
+              (isCorrect
+                ? "Nice — that's right."
+                : verdict.correctAnswer
+                  ? `The answer is ${verdict.correctAnswer}.`
+                  : "")}
           </p>
         </NeoCard>
       )}

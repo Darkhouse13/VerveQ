@@ -273,8 +273,14 @@ function provenance(raw: RawRecallReveal): LearnModeProvenance {
   };
 }
 
+// Recall distractors carry NO per-distractor reveal: the old
+// "The capital of X is Y, not Z" line was a tautology that just restated the
+// answer. The authored correctReveal hook (e.g. the river/planned-capital anchor)
+// is the teach here, shown whether the pick is right or wrong; on a wrong pick
+// the grader also surfaces the correct capital. The capital fields stay on the
+// raw row for provenance/auditing only.
 function buildDistractor(
-  targetCapital: EntityRef,
+  _targetCapital: EntityRef,
   distractor: DistractorCapital,
 ): LearnModeDistractor {
   return {
@@ -282,7 +288,6 @@ function buildDistractor(
     misconception: "same-region capital recall distractor",
     whyChosen:
       "It is a plausible country option in the same recall neighborhood as the answer.",
-    reveal: `The capital of ${distractor.country.name} is ${distractor.capital.name}, not ${targetCapital.name}.`,
   };
 }
 

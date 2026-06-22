@@ -139,7 +139,8 @@ describe("getLearnSubjects Convex contract", () => {
     expect(geography).toMatchObject({
       name: "Geography",
       totalNodes: 7,
-      playableNodes: 6,
+      // All 7 geography nodes ship now: reveal ladders + the border-identify drill.
+      playableNodes: 7,
       servable: true,
       dueCount: 0,
       learningCount: expect.any(Number),

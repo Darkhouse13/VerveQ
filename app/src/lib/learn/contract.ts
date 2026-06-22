@@ -97,13 +97,16 @@ export interface LearnSubmit {
  * `teach` explains the WHY (it never restates the answer). When `branchId` is
  * present on an incorrect attempt, the answer hit a known trap and the UI shows
  * the adaptive teaching detour before the full reveal.
+ *
+ * Drill rungs (honest spaced-repetition recall, no authored reveal) return no
+ * `teach`; on a miss they return `correctAnswer` so the right answer is shown.
  */
 export interface LearnVerdict {
   correct: boolean;
   /** Set when a wrong answer matched a known misconception → teaching detour. */
   branchId?: string;
-  /** Server teaching payload (the "why"). Rendered verbatim. */
-  teach: string;
+  /** Server teaching payload (the "why"). Absent on reveal-less drill rungs. */
+  teach?: string;
   /** Optional mastery movement for this attempt (display/telemetry only). */
   masteryDelta?: number;
   /** Optional next-review timestamp (epoch ms) for the spaced schedule. */

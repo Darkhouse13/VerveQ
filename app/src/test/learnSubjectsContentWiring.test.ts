@@ -1,17 +1,5 @@
 import { describe, expect, it } from "vitest";
 import {
-  learnHistoryDatesRevealsV1ByChecksum,
-  learnHistoryDatesRevealsV1Metadata,
-  learnHistoryDatesRevealChecksumsByNode,
-  validateLearnHistoryDatesRevealsV1,
-} from "../../convex/learnHistoryDatesRevealsV1";
-import {
-  learnScienceRecallRevealsV1ByChecksum,
-  learnScienceRecallRevealsV1Metadata,
-  learnScienceRecallRevealChecksumsByNode,
-  validateLearnScienceRecallRevealsV1,
-} from "../../convex/learnScienceRecallRevealsV1";
-import {
   questionSkillTags,
   validateLearnSkillGraph,
 } from "../../convex/learnQuestionSkillTags";
@@ -34,78 +22,11 @@ const SCIENCE_NODES: SkillNodeId[] = [
   "sci.units.si",
 ];
 
-describe("history and science reveal layers", () => {
-  it("pass their fail-closed derived-only validators with full batch coverage", () => {
-    expect(validateLearnHistoryDatesRevealsV1()).toEqual({
-      ok: true,
-      errors: [],
-      revealCount: 50,
-    });
-    expect(validateLearnScienceRecallRevealsV1()).toEqual({
-      ok: true,
-      errors: [],
-      revealCount: 50,
-    });
-    expect(learnHistoryDatesRevealsV1Metadata).toMatchObject({
-      mode: "learn",
-      layer: "checksum_reveals",
-      sourceBatchId: "knowledge_history_cie_score_v1",
-    });
-    expect(learnScienceRecallRevealsV1Metadata).toMatchObject({
-      mode: "learn",
-      layer: "checksum_reveals",
-      sourceBatchId: "knowledge_science_cie_score_v1",
-    });
-  });
-
-  it("covers every batch question per node with consistent tags", () => {
-    const expectedCounts: Record<string, number> = {
-      "hist.events.dates": 20,
-      "hist.founding.years": 15,
-      "hist.chronology": 15,
-      "sci.elements.symbols": 18,
-      "sci.elements.numbers": 17,
-      "sci.units.si": 15,
-    };
-    const selections: Array<[Record<string, string[]>, Record<string, { skillNodes: SkillNodeId[] }>]> = [
-      [learnHistoryDatesRevealChecksumsByNode, learnHistoryDatesRevealsV1ByChecksum],
-      [learnScienceRecallRevealChecksumsByNode, learnScienceRecallRevealsV1ByChecksum],
-    ];
-    for (const [byNode, byChecksum] of selections) {
-      for (const [nodeId, checksums] of Object.entries(byNode)) {
-        expect(checksums, nodeId).toHaveLength(expectedCounts[nodeId]);
-        for (const checksum of checksums) {
-          expect(questionSkillTags[checksum]).toContain(nodeId);
-          expect(byChecksum[checksum].skillNodes).toContain(nodeId as SkillNodeId);
-        }
-      }
-    }
-  });
-
-  it("keeps every reveal sourced, teaching, and derived from batch claims", () => {
-    const reveals = {
-      ...learnHistoryDatesRevealsV1ByChecksum,
-      ...learnScienceRecallRevealsV1ByChecksum,
-    };
-    for (const [checksum, reveal] of Object.entries(reveals)) {
-      expect(reveal.correctReveal, checksum).toMatch(/\.$/);
-      expect(reveal.distractors).toHaveLength(3);
-      expect(reveal.provenance.verdict).toBe("agree");
-      expect(reveal.provenance.authorModel).toBe("anthropic/claude-fable-5");
-      expect(reveal.provenance.verifierModel).toBe("openai/gpt-5-codex");
-      for (const claim of reveal.provenance.claims) {
-        expect(claim.sourceRef, checksum).toMatch(/^wikidata:/);
-        expect(claim.volatility).toBe("static");
-      }
-      for (const distractor of reveal.distractors) {
-        expect(distractor.reveal.trim().length, checksum).toBeGreaterThan(0);
-      }
-    }
-  });
-});
-
-describe("history and science ladders", () => {
-  it("marks every wired node playable and builds full reveal-carrying ladders", () => {
+describe("history and science recall drills", () => {
+  // The tautological CIE recall-reveal layers were removed. These nodes now ship
+  // as honest spaced-repetition drills — questions only, no fake teach card. The
+  // candidate population is unchanged; only the reveal overlay went away.
+  it("marks every wired node playable and builds full drill ladders without reveals", () => {
     for (const nodeId of [...HISTORY_NODES, ...SCIENCE_NODES]) {
       const ladder = buildLadder(nodeId);
       expect(ladder.questions.length, nodeId).toBeGreaterThanOrEqual(
@@ -113,13 +34,11 @@ describe("history and science ladders", () => {
       );
       expect(ladder.questions).toHaveLength(8);
       for (const rung of ladder.questions) {
-        expect(rung.correctReveal.trim().length).toBeGreaterThan(0);
-        expect(rung.distractors).toHaveLength(3);
-        for (const distractor of rung.distractors) {
-          expect(rung.options, `${nodeId} ${rung.checksum}`).toContain(
-            distractor.text,
-          );
-        }
+        expect(rung.type, `${nodeId} ${rung.checksum}`).toBe("mcq");
+        expect(rung.options.length).toBeGreaterThan(0);
+        // Drill rungs carry no teaching metadata.
+        expect(rung.correctReveal, `${nodeId} ${rung.checksum}`).toBeUndefined();
+        expect(rung.distractors, `${nodeId} ${rung.checksum}`).toBeUndefined();
       }
     }
   });
@@ -140,6 +59,18 @@ describe("history and science ladders", () => {
         rung.difficulty === "easy" ? 0 : rung.difficulty === "intermediate" ? 1 : 2,
       );
       expect([...ranks].sort((a, b) => a - b), nodeId).toEqual(ranks);
+    }
+  });
+
+  it("draws every drill rung from a question already tagged to its node", () => {
+    for (const nodeId of [...HISTORY_NODES, ...SCIENCE_NODES]) {
+      const ladder = buildLadder(nodeId);
+      for (const rung of ladder.questions) {
+        expect(
+          questionSkillTags[rung.checksum],
+          `${nodeId} ${rung.checksum}`,
+        ).toContain(nodeId);
+      }
     }
   });
 
