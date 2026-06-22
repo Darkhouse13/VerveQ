@@ -407,16 +407,21 @@
     "totalSummary": "{{total}} questions au total (max {{max}}).",
     "subjectsHeading": "Thèmes",
     "subjectsHint": "Les manches alternent entre les thèmes que tu choisis.",
+    "subjectsCapHint": "Jusqu'à {{count}} (un par manche).",
     "subject_football_quiz": "Quiz football",
     "subject_general_knowledge": "Culture générale",
     "subject_which_came_first": "Lequel d'abord",
     "subject_enterprise_logos": "Logos d'entreprises",
     "subject_capital_cities": "Capitales",
+    "subject_tennis": "Tennis",
+    "subject_basketball": "Basket",
     "subjectBlurb_football_quiz": "Joueurs, clubs, trophées",
     "subjectBlurb_general_knowledge": "Un peu de tout",
     "subjectBlurb_which_came_first": "Classe deux événements dans le temps",
     "subjectBlurb_enterprise_logos": "Nomme l'entreprise",
-    "subjectBlurb_capital_cities": "Capitales du monde"
+    "subjectBlurb_capital_cities": "Capitales du monde",
+    "subjectBlurb_tennis": "ATP, Grands Chelems, records",
+    "subjectBlurb_basketball": "Joueurs NBA, équipes, histoire"
   },
   "joinArena": {
     "closeAria": "Fermer",

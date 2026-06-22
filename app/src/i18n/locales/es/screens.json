@@ -407,16 +407,21 @@
     "totalSummary": "{{total}} preguntas en total (máx. {{max}}).",
     "subjectsHeading": "Temas",
     "subjectsHint": "Las rondas rotan entre los temas que elijas.",
+    "subjectsCapHint": "Hasta {{count}} (uno por ronda).",
     "subject_football_quiz": "Quiz de fútbol",
     "subject_general_knowledge": "Cultura general",
     "subject_which_came_first": "Qué fue primero",
     "subject_enterprise_logos": "Logos de empresas",
     "subject_capital_cities": "Capitales",
+    "subject_tennis": "Tenis",
+    "subject_basketball": "Baloncesto",
     "subjectBlurb_football_quiz": "Jugadores, clubes, trofeos",
     "subjectBlurb_general_knowledge": "Un poco de todo",
     "subjectBlurb_which_came_first": "Ordena dos eventos en el tiempo",
     "subjectBlurb_enterprise_logos": "Nombra la empresa",
-    "subjectBlurb_capital_cities": "Capitales del mundo"
+    "subjectBlurb_capital_cities": "Capitales del mundo",
+    "subjectBlurb_tennis": "ATP, grand slams, récords",
+    "subjectBlurb_basketball": "Jugadores NBA, equipos, historia"
   },
   "joinArena": {
     "closeAria": "Cerrar",

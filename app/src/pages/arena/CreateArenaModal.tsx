@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useMutation } from "convex/react";
 import { Check, Minus, Plus, X } from "lucide-react";
 import { toast } from "sonner";
@@ -85,12 +85,26 @@ export default function CreateArenaModal({
   const [submitting, setSubmitting] = useState(false);
   const create = useMutation(api.challengeArenas.create);
 
+  // You can't pick more subjects than there are rounds (extra subjects would
+  // never appear in the rotation). When rounds shrinks below the current
+  // selection, drop the trailing subjects (keeping option order) to match.
+  useEffect(() => {
+    setSubjects((prev) => {
+      if (prev.length <= rounds) return prev;
+      const trimmed = ARENA_CATEGORY_OPTIONS.map((o) => o.key)
+        .filter((key) => prev.includes(key))
+        .slice(0, rounds);
+      return trimmed;
+    });
+  }, [rounds]);
+
   const categories = useMemo(
     () => buildArenaCategories(subjects, rounds),
     [subjects, rounds],
   );
   const total = rounds * perRound;
   const configError = arenaConfigError({ rounds, perRound, categories });
+  const atSubjectCap = subjects.length >= rounds;
   const canIncRounds =
     rounds < ARENA_MAX_ROUNDS && (rounds + 1) * perRound <= ARENA_MAX_TOTAL_QUESTIONS;
   const canIncPerRound =
@@ -98,9 +112,11 @@ export default function CreateArenaModal({
     rounds * (perRound + 1) <= ARENA_MAX_TOTAL_QUESTIONS;
 
   const toggleSubject = (key: string) => {
-    setSubjects((prev) =>
-      prev.includes(key) ? prev.filter((k) => k !== key) : [...prev, key],
-    );
+    setSubjects((prev) => {
+      if (prev.includes(key)) return prev.filter((k) => k !== key);
+      if (prev.length >= rounds) return prev; // at cap — can't add more
+      return [...prev, key];
+    });
   };
 
   const handleCreate = async () => {
@@ -201,22 +217,30 @@ export default function CreateArenaModal({
           <p className="text-[11px] text-muted-foreground mb-2">
             {t("createArena.subjectsHint", {
               defaultValue: "Rounds rotate through the subjects you pick.",
+            })}{" "}
+            {t("createArena.subjectsCapHint", {
+              defaultValue: "Up to {{count}} (one per round).",
+              count: rounds,
             })}
           </p>
 
           <div className="grid grid-cols-2 gap-2">
             {ARENA_CATEGORY_OPTIONS.map((opt) => {
               const selected = subjects.includes(opt.key);
+              const disabled = !selected && atSubjectCap;
               return (
                 <button
                   key={opt.key}
                   type="button"
                   onClick={() => toggleSubject(opt.key)}
                   aria-pressed={selected}
-                  className={`neo-border rounded-lg p-2.5 text-left flex items-start gap-2 cursor-pointer transition-colors ${
+                  disabled={disabled}
+                  className={`neo-border rounded-lg p-2.5 text-left flex items-start gap-2 transition-colors ${
                     selected
-                      ? "bg-primary text-primary-foreground neo-shadow"
-                      : "bg-background neo-shadow active:neo-shadow-pressed"
+                      ? "bg-primary text-primary-foreground neo-shadow cursor-pointer"
+                      : disabled
+                        ? "bg-background neo-shadow opacity-40 cursor-not-allowed"
+                        : "bg-background neo-shadow active:neo-shadow-pressed cursor-pointer"
                   }`}
                 >
                   <span className="text-lg leading-none mt-0.5">{opt.emoji}</span>

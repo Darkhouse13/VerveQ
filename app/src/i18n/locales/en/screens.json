@@ -407,16 +407,21 @@
     "totalSummary": "{{total}} questions total (max {{max}}).",
     "subjectsHeading": "Subjects",
     "subjectsHint": "Rounds rotate through the subjects you pick.",
+    "subjectsCapHint": "Up to {{count}} (one per round).",
     "subject_football_quiz": "Football Quiz",
     "subject_general_knowledge": "General Knowledge",
     "subject_which_came_first": "Which Came First",
     "subject_enterprise_logos": "Enterprise Logos",
     "subject_capital_cities": "Capital Cities",
+    "subject_tennis": "Tennis",
+    "subject_basketball": "Basketball",
     "subjectBlurb_football_quiz": "Players, clubs, trophies",
     "subjectBlurb_general_knowledge": "A bit of everything",
     "subjectBlurb_which_came_first": "Order two events in time",
     "subjectBlurb_enterprise_logos": "Name the company",
-    "subjectBlurb_capital_cities": "Capitals of the world"
+    "subjectBlurb_capital_cities": "Capitals of the world",
+    "subjectBlurb_tennis": "ATP, slams, records",
+    "subjectBlurb_basketball": "NBA players, teams, history"
   },
   "joinArena": {
     "closeAria": "Close",

@@ -44,9 +44,21 @@ export const ARENA_CATEGORY_OPTIONS: Array<{
   { key: "which_came_first", label: "Which Came First", emoji: "⏳", blurb: "Order two events in time" },
   { key: "enterprise_logos", label: "Enterprise Logos", emoji: "🏢", blurb: "Name the company" },
   { key: "capital_cities", label: "Capital Cities", emoji: "🏙️", blurb: "Capitals of the world" },
+  { key: "tennis", label: "Tennis", emoji: "🎾", blurb: "ATP, slams, records" },
+  { key: "basketball", label: "Basketball", emoji: "🏀", blurb: "NBA players, teams, history" },
 ];
 
-export const ARENA_DEFAULT_CATEGORIES = ARENA_CATEGORY_OPTIONS.map((o) => o.key);
+// The subjects pre-selected for the default 5-round arena (matches the server's
+// DEFAULT_ROUND_CATEGORIES). Tennis/basketball are selectable but not on by
+// default. NOTE: must stay ≤ ARENA_DEFAULT_ROUNDS so the default config already
+// satisfies the "subjects ≤ rounds" rule.
+export const ARENA_DEFAULT_CATEGORIES = [
+  "football_quiz",
+  "general_knowledge",
+  "which_came_first",
+  "enterprise_logos",
+  "capital_cities",
+];
 
 export type ArenaConfig = {
   rounds: number;

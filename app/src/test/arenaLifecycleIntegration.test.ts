@@ -2326,4 +2326,50 @@ describe("challenge arena lifecycle integration", () => {
     expect(lobby.status).toBe("lobby");
     expect(lobby.config).toEqual(customConfig);
   });
+
+  it("routes the tennis and basketball quiz pools into selectable rounds", async () => {
+    const db = makeSeededDb();
+    for (let i = 0; i < 20; i += 1) {
+      const suffix = String(i).padStart(2, "0");
+      seedQuestion(db, `tennis_${suffix}`, {
+        sport: "tennis",
+        category: "grand_slam_winners",
+        checksum: `a1b2c3d4e5f6${suffix}`,
+        correctAnswer: `Tennis Champ ${suffix}`,
+      });
+      seedQuestion(db, `basketball_${suffix}`, {
+        sport: "basketball",
+        category: "nba_players",
+        checksum: `f6e5d4c3b2a1${suffix}`,
+        correctAnswer: `NBA Star ${suffix}`,
+      });
+    }
+
+    setAuth("user_a");
+    const created = (await handlerOf(challengeArenas.create)(makeCtx(db), {
+      mode: "1v1",
+      rounds: 2,
+      perRound: 6,
+      categories: ["tennis", "basketball"],
+    })) as { arenaId: string; code: string };
+    setAuth("user_b");
+    await handlerOf(challengeArenas.join)(makeCtx(db), { code: created.code });
+    await readyUsers(db, created.arenaId, ["user_a", "user_b"]);
+
+    setAuth("user_a");
+    const startResult = (await handlerOf(challengeArenas.start)(makeCtx(db), {
+      arenaId: created.arenaId,
+    })) as { questionSetSizes: number[]; categories: string[] };
+    expect(startResult.questionSetSizes).toEqual([6, 6]);
+    expect(startResult.categories).toEqual(["tennis", "basketball"]);
+
+    const arena = db.row<ArenaRow>(created.arenaId);
+    const rounds = arena.roundChecksums.map((round) =>
+      round.map((checksum) => questionByChecksum(db, checksum)),
+    );
+    expect(rounds[0].every((question) => question.sport === "tennis")).toBe(true);
+    expect(rounds[1].every((question) => question.sport === "basketball")).toBe(
+      true,
+    );
+  });
 });

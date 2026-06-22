@@ -76,6 +76,9 @@ const CONTENT_STATUS_FOOTBALL_READ_CAP = 750;
 const CONTENT_STATUS_CIE_READ_CAP = 3_000;
 const CHECKSUM_CURSOR_ALPHABET = "abcdefghijklmnopqrstuvwxyz0123456789_";
 const NUMERIC_CURSOR_ALPHABET = "0123456789";
+// Tennis/basketball quiz checksums are 16-char hex hashes (no semantic prefix),
+// so cursor sampling for those scopes draws from the hex space for uniform reach.
+const HEX_CURSOR_ALPHABET = "0123456789abcdef";
 
 const arenaMode = v.union(
   v.literal("1v1"),
@@ -1110,9 +1113,13 @@ type RoundSpec =
       scopes: IndexedCandidateScope[];
       predicate: (question: Question) => boolean;
       // Bundled questions used as a guaranteed fallback when the indexed pool
-      // can't fill the round; also the static content floor (see arenaConfig
-      // validation + contract test).
-      fallbackSeeds: ChallengeArenaQuestionSeed[];
+      // can't fill the round; their count is also the static content floor (see
+      // arenaConfig validation + contract test).
+      fallbackSeeds?: ChallengeArenaQuestionSeed[];
+      // Static floor for pools that have no bundled fallback (e.g. the
+      // bulk-imported tennis/basketball quiz pools). Used only for create-time
+      // validation; the start-time picker remains the hard backstop.
+      contentFloor?: number;
     };
 
 const ROUND_SPEC_REGISTRY: Record<string, RoundSpec> = {
@@ -1185,6 +1192,24 @@ const ROUND_SPEC_REGISTRY: Record<string, RoundSpec> = {
       question.category === "capital_cities" && isAnswerableMcq(question),
     fallbackSeeds: challengeArenaCapitalCityQuestions,
   },
+  // Tennis/basketball are the full bulk-imported quiz pools (all categories, all
+  // difficulties, text + image MCQs). No bundled fallback — sampled directly from
+  // quizQuestions by sport. contentFloor reflects the live pool (verified
+  // 2026-06-22: tennis 274, basketball 733), both well above the max perRound.
+  tennis: {
+    kind: "indexed",
+    label: "tennis",
+    scopes: [{ sport: "tennis", cursorAlphabet: HEX_CURSOR_ALPHABET }],
+    predicate: isAnswerableMcq,
+    contentFloor: 274,
+  },
+  basketball: {
+    kind: "indexed",
+    label: "basketball",
+    scopes: [{ sport: "basketball", cursorAlphabet: HEX_CURSOR_ALPHABET }],
+    predicate: isAnswerableMcq,
+    contentFloor: 733,
+  },
 };
 
 // Selectable categories, in their canonical default order. The default arena
@@ -1197,10 +1222,11 @@ export const ARENA_SELECTABLE_CATEGORIES = Object.keys(
 // the bundled fallback count (football is effectively unbounded). Used by config
 // validation so a config can never be accepted that the shipped content can't
 // fill; the start-time picker remains the hard backstop.
-function categoryRoundCapacityFloor(category: string): number {
+export function categoryRoundCapacityFloor(category: string): number {
   const spec = ROUND_SPEC_REGISTRY[category];
   if (!spec) return 0;
-  return spec.kind === "football" ? Number.POSITIVE_INFINITY : spec.fallbackSeeds.length;
+  if (spec.kind === "football") return Number.POSITIVE_INFINITY;
+  return spec.fallbackSeeds?.length ?? spec.contentFloor ?? 0;
 }
 
 // Normalize + validate a (possibly partial) arena config from `create`. Returns
