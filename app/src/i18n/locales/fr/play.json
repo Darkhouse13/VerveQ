@@ -46,6 +46,7 @@
   "higherLower": {
     "title": "Plus ou Moins",
     "subtitle": "Qui en a le plus ?",
+    "question": "Qui a le plus de {{stat}} ?",
     "quit": "Quitter",
     "loading": "Chargement…",
     "unsupportedTitle": "Football uniquement pour l'instant",

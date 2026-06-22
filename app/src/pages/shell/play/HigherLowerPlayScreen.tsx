@@ -302,15 +302,19 @@ export default function HigherLowerPlayScreen() {
       right={<MetricsPanel metrics={metrics} />}
     >
       <div className="flex flex-col">
-        {/* Stat context — the question framing for the binary call. */}
+        {/* Stat context — the question framing for the binary call. The
+            league + season + stat are the actual question, so they lead. */}
         <div className="text-center mb-4">
-          {seasonDisplay && (
-            <p className="text-[11px] text-muted-foreground mb-0.5">{seasonDisplay}</p>
-          )}
-          <p className="font-heading font-bold text-sm text-muted-foreground uppercase">
-            {displayLabel} — {formatStatKey(statKey)}
-          </p>
-          <div className="flex items-center justify-center gap-2 mt-1">
+          <div className="flex items-center justify-center gap-2 flex-wrap mb-2">
+            <NeoBadge color="yellow" size="md">{displayLabel}</NeoBadge>
+            {seasonDisplay && (
+              <NeoBadge color="muted" size="md">{seasonDisplay}</NeoBadge>
+            )}
+          </div>
+          <h2 className="font-heading font-black text-2xl leading-tight">
+            {t("higherLower.question", { stat: formatStatKey(statKey) })}
+          </h2>
+          <div className="flex items-center justify-center mt-1.5">
             <NeoBadge color={entityType === "team" ? "accent" : "pink"} size="sm">
               {entityType === "team" ? t("higherLower.teamStat") : t("higherLower.playerStat")}
             </NeoBadge>
@@ -327,14 +331,11 @@ export default function HigherLowerPlayScreen() {
             <img
               src={playerAPhoto}
               alt={playerAName}
-              className="w-14 h-14 rounded-full neo-border object-cover mb-2"
+              className="w-24 h-24 rounded-full neo-border object-cover mb-2"
             />
           )}
           <p className="font-heading font-bold text-lg">{playerAName}</p>
           <p className="font-mono font-bold text-4xl mt-1">{playerAValue}</p>
-          <p className="text-xs text-success-foreground opacity-80 mt-1">
-            {formatStatKey(statKey)}
-          </p>
         </NeoCard>
 
         {/* VS divider */}
@@ -361,12 +362,11 @@ export default function HigherLowerPlayScreen() {
             <img
               src={playerBPhoto}
               alt={playerBName}
-              className="w-14 h-14 rounded-full neo-border object-cover mb-2"
+              className="w-24 h-24 rounded-full neo-border object-cover mb-2"
             />
           )}
           <p className="font-heading font-bold text-lg">{playerBName}</p>
           <p className="font-mono font-bold text-4xl mt-1">{feedback ? feedback.value : "?"}</p>
-          <p className="text-xs opacity-80 mt-1">{formatStatKey(statKey)}</p>
         </NeoCard>
 
         {/* Action buttons — the binary call. */}

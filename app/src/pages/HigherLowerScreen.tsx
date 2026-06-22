@@ -300,44 +300,41 @@ export default function HigherLowerScreen() {
         </div>
       </div>
 
-      {/* Stat context */}
+      {/* Stat context — league + season + stat are the question, so they lead. */}
       <div className="text-center mb-4">
-        {seasonDisplay && (
-          <p className="text-[11px] text-muted-foreground mb-0.5">
-            {seasonDisplay}
-          </p>
-        )}
-        <p className="font-heading font-bold text-sm text-muted-foreground uppercase">
-          {displayLabel} — {formatStatKey(statKey)}
-        </p>
-        <div className="flex items-center justify-center gap-2 mt-1">
+        <div className="flex items-center justify-center gap-2 flex-wrap mb-2">
+          <NeoBadge color="yellow" size="md">{displayLabel}</NeoBadge>
+          {seasonDisplay && (
+            <NeoBadge color="muted" size="md">{seasonDisplay}</NeoBadge>
+          )}
+        </div>
+        <h2 className="font-heading font-black text-2xl leading-tight">
+          Who has more {formatStatKey(statKey)}?
+        </h2>
+        <div className="flex items-center justify-center mt-1.5">
           <NeoBadge color={entityType === "team" ? "accent" : "pink"} size="sm">
             {entityType === "team" ? "Team Stat" : "Player Stat"}
           </NeoBadge>
-          <p className="text-xs text-muted-foreground">Who has more?</p>
         </div>
       </div>
 
       {/* Split layout */}
-      <div className="flex-1 flex flex-col gap-4">
+      <div className="flex-1 flex flex-col justify-center gap-4">
         {/* Player A — value shown */}
         <NeoCard
           color="success"
           shadow="lg"
-          className="flex-1 flex flex-col items-center justify-center text-center py-6"
+          className="flex flex-col items-center justify-center text-center py-4"
         >
           {playerAPhoto && (
             <img
               src={playerAPhoto}
               alt={playerAName}
-              className="w-20 h-20 rounded-full neo-border object-cover mb-3"
+              className="w-24 h-24 rounded-full neo-border object-cover mb-3"
             />
           )}
           <p className="font-heading font-bold text-lg">{playerAName}</p>
           <p className="font-mono font-bold text-4xl mt-2">{playerAValue}</p>
-          <p className="text-xs text-success-foreground opacity-80 mt-1">
-            {formatStatKey(statKey)}
-          </p>
         </NeoCard>
 
         {/* VS divider */}
@@ -350,7 +347,7 @@ export default function HigherLowerScreen() {
         {/* Player B — value hidden */}
         <NeoCard
           shadow="lg"
-          className={`flex-1 flex flex-col items-center justify-center text-center py-6 transition-all ${
+          className={`flex flex-col items-center justify-center text-center py-4 transition-all ${
             shakeB ? "animate-shake-horizontal" : ""
           } ${slideIn ? "animate-slide-up" : ""} ${
             feedback
@@ -364,7 +361,7 @@ export default function HigherLowerScreen() {
             <img
               src={playerBPhoto}
               alt={playerBName}
-              className="w-20 h-20 rounded-full neo-border object-cover mb-3"
+              className="w-24 h-24 rounded-full neo-border object-cover mb-3"
             />
           )}
           <p className="font-heading font-bold text-lg">{playerBName}</p>
@@ -374,8 +371,6 @@ export default function HigherLowerScreen() {
           ) : (
             <p className="font-mono font-bold text-4xl mt-2">?</p>
           )}
-
-          <p className="text-xs opacity-80 mt-1">{formatStatKey(statKey)}</p>
         </NeoCard>
       </div>
 

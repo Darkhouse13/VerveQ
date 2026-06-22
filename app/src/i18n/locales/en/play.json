@@ -46,6 +46,7 @@
   "higherLower": {
     "title": "Higher or Lower",
     "subtitle": "Who has more?",
+    "question": "Who has more {{stat}}?",
     "quit": "Quit",
     "loading": "Loading…",
     "unsupportedTitle": "Football Only For Now",

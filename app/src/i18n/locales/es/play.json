@@ -46,6 +46,7 @@
   "higherLower": {
     "title": "Más o Menos",
     "subtitle": "¿Quién tiene más?",
+    "question": "¿Quién tiene más {{stat}}?",
     "quit": "Salir",
     "loading": "Cargando…",
     "unsupportedTitle": "Solo fútbol por ahora",
