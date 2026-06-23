@@ -151,11 +151,11 @@ describe("CIE score batch registry → Learn parity", () => {
 
 describe("CIE score batch registry integrity", () => {
   it("lists every bundled CIE score batch exactly once", () => {
-    expect(cieScoreBatchRegistry).toHaveLength(21);
+    expect(cieScoreBatchRegistry).toHaveLength(24);
     const modules = cieScoreBatchRegistry.map((entry) => entry.batchModule);
-    expect(new Set(modules).size).toBe(21);
+    expect(new Set(modules).size).toBe(24);
     const batchIds = cieScoreBatchRegistry.map((entry) => entry.metadata.batchId);
-    expect(new Set(batchIds).size).toBe(21);
+    expect(new Set(batchIds).size).toBe(24);
   });
 
   it("keeps batchModule, subject and batchId consistent", () => {

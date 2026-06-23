@@ -74,8 +74,8 @@ const BATCH_ID = "knowledge_science_cie_score_v7";
 const WORK_UNIT_ID = "score-mode:knowledge:science:static:v7";
 const RETRIEVED_AT = "2026-06-22";
 const AUTHOR_MODEL = "anthropic/claude-opus-4-8";
-const VERIFIER_MODEL = "pending_anthropic_verification";
-const VERDICT: Verdict = "pending";
+const VERIFIER_MODEL = "deepseek/deepseek-v4-flash";
+const VERDICT: Verdict = "agree";
 
 function compound(
   name: string,

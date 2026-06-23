@@ -36,6 +36,10 @@ import {
   knowledgeGeographyCieScoreBatchV9Questions,
 } from "./knowledgeGeographyCieScoreBatchV9";
 import {
+  knowledgeGeographyCieScoreBatchV10Metadata,
+  knowledgeGeographyCieScoreBatchV10Questions,
+} from "./knowledgeGeographyCieScoreBatchV10";
+import {
   knowledgeHistoryCieScoreBatchV1Metadata,
   knowledgeHistoryCieScoreBatchV1Questions,
 } from "./knowledgeHistoryCieScoreBatchV1";
@@ -60,6 +64,10 @@ import {
   knowledgeHistoryCieScoreBatchV6Questions,
 } from "./knowledgeHistoryCieScoreBatchV6";
 import {
+  knowledgeHistoryCieScoreBatchV7Metadata,
+  knowledgeHistoryCieScoreBatchV7Questions,
+} from "./knowledgeHistoryCieScoreBatchV7";
+import {
   knowledgeScienceCieScoreBatchV1Metadata,
   knowledgeScienceCieScoreBatchV1Questions,
 } from "./knowledgeScienceCieScoreBatchV1";
@@ -83,6 +91,10 @@ import {
   knowledgeScienceCieScoreBatchV6Metadata,
   knowledgeScienceCieScoreBatchV6Questions,
 } from "./knowledgeScienceCieScoreBatchV6";
+import {
+  knowledgeScienceCieScoreBatchV7Metadata,
+  knowledgeScienceCieScoreBatchV7Questions,
+} from "./knowledgeScienceCieScoreBatchV7";
 
 // Single source of truth for every CIE score-mode batch bundled in convex/.
 // Consumers:
@@ -258,6 +270,16 @@ export const cieScoreBatchRegistry: CieScoreBatchRegistryEntry[] = [
     questions: knowledgeGeographyCieScoreBatchV9Questions,
   },
   {
+    batchModule: "knowledgeGeographyCieScoreBatchV10",
+    subject: "geography",
+    shape: "mcq",
+    arenaCategory: "general_knowledge",
+    eligible: true,
+    learnTagged: false,
+    metadata: knowledgeGeographyCieScoreBatchV10Metadata,
+    questions: knowledgeGeographyCieScoreBatchV10Questions,
+  },
+  {
     batchModule: "knowledgeHistoryCieScoreBatchV1",
     subject: "history",
     shape: "mcq",
@@ -318,6 +340,16 @@ export const cieScoreBatchRegistry: CieScoreBatchRegistryEntry[] = [
     questions: knowledgeHistoryCieScoreBatchV6Questions,
   },
   {
+    batchModule: "knowledgeHistoryCieScoreBatchV7",
+    subject: "history",
+    shape: "mcq",
+    arenaCategory: "general_knowledge",
+    eligible: true,
+    learnTagged: false,
+    metadata: knowledgeHistoryCieScoreBatchV7Metadata,
+    questions: knowledgeHistoryCieScoreBatchV7Questions,
+  },
+  {
     batchModule: "knowledgeScienceCieScoreBatchV1",
     subject: "science",
     shape: "mcq",
@@ -376,6 +408,16 @@ export const cieScoreBatchRegistry: CieScoreBatchRegistryEntry[] = [
     learnTagged: false,
     metadata: knowledgeScienceCieScoreBatchV6Metadata,
     questions: knowledgeScienceCieScoreBatchV6Questions,
+  },
+  {
+    batchModule: "knowledgeScienceCieScoreBatchV7",
+    subject: "science",
+    shape: "mcq",
+    arenaCategory: "general_knowledge",
+    eligible: true,
+    learnTagged: false,
+    metadata: knowledgeScienceCieScoreBatchV7Metadata,
+    questions: knowledgeScienceCieScoreBatchV7Questions,
   },
 ];
 

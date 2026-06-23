@@ -94,8 +94,8 @@ const BATCH_ID = "knowledge_geography_cie_score_v10";
 const WORK_UNIT_ID = "score-mode:knowledge:geography:static:v10";
 const RETRIEVED_AT = "2026-06-22";
 const AUTHOR_MODEL = "anthropic/claude-opus-4-8";
-const VERIFIER_MODEL = "pending_anthropic_verification";
-const VERDICT: Verdict = "pending";
+const VERIFIER_MODEL = "deepseek/deepseek-v4-flash";
+const VERDICT: Verdict = "agree";
 
 function entity(name: string, qid: string): EntityRef {
   return { name, qid };

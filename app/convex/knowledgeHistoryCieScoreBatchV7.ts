@@ -92,8 +92,8 @@ const BATCH_ID = "knowledge_history_cie_score_v7";
 const WORK_UNIT_ID = "score-mode:knowledge:history:static:v7";
 const RETRIEVED_AT = "2026-06-22";
 const AUTHOR_MODEL = "anthropic/claude-opus-4-8";
-const VERIFIER_MODEL = "pending_anthropic_verification";
-const VERDICT: Verdict = "pending";
+const VERIFIER_MODEL = "deepseek/deepseek-v4-flash";
+const VERDICT: Verdict = "agree";
 
 function eventDate(
   name: string,
