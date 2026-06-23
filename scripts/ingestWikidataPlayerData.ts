@@ -209,10 +209,13 @@ async function resolve() {
             return { c, specific, maxLen, natOk, score: specific.length * 10 + shared.length };
           })
           .filter((s) => s.specific.length >= 1)
+          // Token-overlap score is the primary signal for WHICH person this is;
+          // nationality is only a tiebreak (a UK player's correct match is often
+          // nat-false because Wikidata cites "United Kingdom", not "England").
           .sort(
             (a, b) =>
-              Number(b.natOk) - Number(a.natOk) ||
               b.score - a.score ||
+              Number(b.natOk) - Number(a.natOk) ||
               b.maxLen - a.maxLen,
           );
 
