@@ -10,5 +10,7 @@ crons.interval("live-match-stale-check", { minutes: 1 }, internal.liveMatches.re
 crons.interval("expired-session-cleanup", { hours: 1 }, internal.maintenance.cleanupExpiredSessions, {});
 crons.interval("async-duel-expiry", { hours: 1 }, internal.duels.expireStaleDuels, {});
 crons.interval("challenge-arena-expiry", { hours: 1 }, internal.challengeArenas.expireStaleArenas);
+// Founder ops: emails the prior UTC day's unique-player count (incl. guests).
+crons.daily("daily-active-users-email", { hourUTC: 0, minuteUTC: 30 }, internal.opsActiveUsers.emailDailyReport, {});
 
 export default crons;

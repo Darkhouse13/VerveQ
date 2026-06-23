@@ -1,4 +1,5 @@
-import { internalQuery } from "./_generated/server";
+import { internalAction, internalQuery } from "./_generated/server";
+import { internal } from "./_generated/api";
 import { v } from "convex/values";
 
 /**
@@ -103,5 +104,84 @@ export const playedSince = internalQuery({
       anonOrGuestPlays,
       perTableUniqueUsers,
     };
+  },
+});
+
+const DAY_MS = 86_400_000;
+
+/**
+ * Daily "unique players (incl. guests)" email. Scheduled by crons.ts to run a
+ * little after UTC midnight; reports the full UTC day that just ended.
+ *
+ * Recipient is OPS_REPORT_EMAIL (falls back to the founder address). Reuses the
+ * same Resend env (RESEND_API_KEY + EMAIL_FROM) the auth/notification emails use;
+ * if either is missing it logs and no-ops rather than throwing, so a misconfigured
+ * deployment never turns into a noisy failed-cron loop.
+ *
+ * Completeness mirrors playedSince: completions are durable, but a few session
+ * tables are TTL'd (~30-60min), so a prior-day count leans on the durable tables.
+ */
+export const emailDailyReport = internalAction({
+  args: {},
+  handler: async (ctx) => {
+    const now = Date.now();
+    const todayStartUtc = Math.floor(now / DAY_MS) * DAY_MS;
+    const sinceMs = todayStartUtc - DAY_MS;
+    const untilMs = todayStartUtc;
+
+    const stats = await ctx.runQuery(internal.opsActiveUsers.playedSince, {
+      sinceMs,
+      untilMs,
+    });
+
+    const apiKey = process.env.RESEND_API_KEY;
+    const from = process.env.EMAIL_FROM;
+    const to = process.env.OPS_REPORT_EMAIL || "hamza.bentaieb@verveq.com";
+    if (!apiKey || !from) {
+      console.error(
+        "[opsActiveUsers] daily report skipped: RESEND_API_KEY or EMAIL_FROM not configured",
+      );
+      return;
+    }
+
+    const dateLabel = new Date(sinceMs).toISOString().slice(0, 10); // YYYY-MM-DD
+    const breakdown = Object.entries(stats.perTableUniqueUsers)
+      .sort((a, b) => b[1] - a[1])
+      .map(([table, n]) => `  ${table}: ${n}`)
+      .join("\n");
+
+    const subject = `VerveQ players — ${dateLabel}: ${stats.uniqueUsers} unique`;
+    const text = [
+      `VerveQ unique players for ${dateLabel} (UTC)`,
+      ``,
+      `Unique users (incl. guests/anonymous): ${stats.uniqueUsers}`,
+      `Identity-less guest plays: ${stats.anonOrGuestPlays}`,
+      ``,
+      `Per-table unique users:`,
+      breakdown || "  (none)",
+      ``,
+      `Window: ${new Date(sinceMs).toISOString()} → ${new Date(untilMs).toISOString()}`,
+      `Note: anonymous/guest accounts carry real user IDs, so they're included in the`,
+      `unique count. A few session tables are short-lived (TTL ~30-60min), so this`,
+      `count leans on durable tables (completed games, blitz, daily, duels, arenas, learn).`,
+    ].join("\n");
+
+    const res = await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${apiKey}`,
+      },
+      body: JSON.stringify({ from, to: [to], subject, text }),
+    });
+    if (!res.ok) {
+      const detail = await res.text().catch(() => "");
+      throw new Error(
+        `Resend send failed (${res.status} ${res.statusText}): ${detail.slice(0, 500)}`,
+      );
+    }
+    console.log(
+      `[opsActiveUsers] daily report sent to ${to} for ${dateLabel}: ${stats.uniqueUsers} unique`,
+    );
   },
 });
