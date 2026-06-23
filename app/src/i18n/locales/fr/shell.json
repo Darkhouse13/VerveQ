@@ -255,6 +255,10 @@
       "basketball": "Basketball",
       "tennis": "Tennis",
       "knowledge": "Culture générale"
-    }
+    },
+    "supportHeading": "Aide & Communauté",
+    "supportDescription": "Contactez-nous pour de l'aide ou suivez-nous pour les actualités.",
+    "supportFollowX": "Suivre sur X",
+    "supportContact": "Contacter le support"
   }
 }

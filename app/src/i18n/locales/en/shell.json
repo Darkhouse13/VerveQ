@@ -255,6 +255,10 @@
       "basketball": "Basketball",
       "tennis": "Tennis",
       "knowledge": "Knowledge"
-    }
+    },
+    "supportHeading": "Support & Community",
+    "supportDescription": "Reach out for help or follow along for updates.",
+    "supportFollowX": "Follow on X",
+    "supportContact": "Contact support"
   }
 }

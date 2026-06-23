@@ -23,7 +23,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const DATA_DIR = path.join(__dirname, "data");
 
 const UA =
-  "VerveQ-data-ingest/1.0 (hamza.bentaieb@verveq.com; VerveGrid coverage rebuild)";
+  "VerveQ-data-ingest/1.0 (support@verveq.com; VerveGrid coverage rebuild)";
 const WDQS = "https://query.wikidata.org/sparql";
 const FOOTBALLER = "wd:Q937857"; // occupation: association football player
 const THROTTLE_MS = 1200; // polite ~1 query / 1.2s sustained

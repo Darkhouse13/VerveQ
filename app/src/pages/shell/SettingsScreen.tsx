@@ -16,7 +16,7 @@ import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useMutation } from "convex/react";
 import { toast } from "sonner";
-import { ArrowUp, CalendarDays, LogIn, LogOut, User } from "lucide-react";
+import { ArrowUp, CalendarDays, LifeBuoy, LogIn, LogOut, Mail, User } from "lucide-react";
 import { NeoCard } from "@/components/neo/NeoCard";
 import { NeoButton } from "@/components/neo/NeoButton";
 import { cn } from "@/lib/utils";
@@ -37,6 +37,21 @@ import { ShellLayout } from "@/components/shell/ShellLayout";
 import { LanguageSwitcher } from "@/components/shell/LanguageSwitcher";
 import { SHELL_ROUTES } from "@/lib/shellRoutes";
 import { useAuth } from "@/contexts/AuthContext";
+
+// Public contact surfaces — a generic mailbox (keeps personal identity out of
+// the app) and the project's X account.
+const SUPPORT_EMAIL = "support@verveq.com";
+const X_URL = "https://x.com/playverveq";
+const X_HANDLE = "@playverveq";
+
+// X brand mark (lucide dropped brand icons).
+function XLogo({ className }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor" className={className}>
+      <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24h-6.65l-5.213-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231 5.45-6.231Zm-1.161 17.52h1.833L7.084 4.126H5.117L17.083 19.77Z" />
+    </svg>
+  );
+}
 
 export default function SettingsScreen() {
   const navigate = useNavigate();
@@ -194,6 +209,41 @@ export default function SettingsScreen() {
               </NeoButton>
             </>
           )}
+        </NeoCard>
+
+        {/* Support & Community — universal; shown signed in or out. */}
+        <NeoCard className="flex flex-col gap-3">
+          <span className="font-mono text-[11px] font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-1.5">
+            <LifeBuoy size={13} strokeWidth={2.5} />
+            {t("settings.supportHeading")}
+          </span>
+          <p className="text-xs text-muted-foreground">
+            {t("settings.supportDescription")}
+          </p>
+          <div className="flex flex-col gap-2">
+            <a
+              href={X_URL}
+              target="_blank"
+              rel="noreferrer noopener"
+              className="neo-border rounded-lg bg-card px-3 py-2.5 flex items-center gap-2 font-heading font-bold text-[13px] transition-all active:neo-shadow-pressed"
+            >
+              <XLogo className="h-4 w-4 shrink-0" />
+              <span className="flex-1 text-left">{t("settings.supportFollowX")}</span>
+              <span className="font-mono text-[11px] text-muted-foreground">
+                {X_HANDLE}
+              </span>
+            </a>
+            <a
+              href={`mailto:${SUPPORT_EMAIL}`}
+              className="neo-border rounded-lg bg-card px-3 py-2.5 flex items-center gap-2 font-heading font-bold text-[13px] transition-all active:neo-shadow-pressed"
+            >
+              <Mail size={16} strokeWidth={2.5} className="shrink-0" />
+              <span className="flex-1 text-left">{t("settings.supportContact")}</span>
+              <span className="font-mono text-[11px] text-muted-foreground">
+                {SUPPORT_EMAIL}
+              </span>
+            </a>
+          </div>
         </NeoCard>
       </div>
 

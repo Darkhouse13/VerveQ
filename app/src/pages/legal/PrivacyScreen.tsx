@@ -120,6 +120,15 @@ export default function PrivacyScreen() {
       <p>
         Privacy questions and requests: <strong>security@verveq.com</strong>
       </p>
+      <p>
+        General support:{" "}
+        <a href="mailto:support@verveq.com">support@verveq.com</a>. Follow VerveQ
+        on X:{" "}
+        <a href="https://x.com/playverveq" target="_blank" rel="noreferrer noopener">
+          @playverveq
+        </a>
+        .
+      </p>
     </LegalLayout>
   );
 }
