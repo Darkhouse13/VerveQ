@@ -7,6 +7,7 @@
  * `upgradeAccount` from AuthContext; the human tests the real password submit.
  */
 import { useCallback, useState, type FormEvent } from "react";
+import { useTranslation } from "react-i18next";
 import { NeoCard } from "@/components/neo/NeoCard";
 import { NeoButton } from "@/components/neo/NeoButton";
 import { NeoInput } from "@/components/neo/NeoInput";
@@ -52,6 +53,7 @@ function fieldForAuthError(err: AuthError): keyof FieldErrors {
 }
 
 export function UpgradeAccountForm({ onSuccess }: UpgradeAccountFormProps) {
+  const { t } = useTranslation("screens");
   const { upgradeAccount, username } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -76,16 +78,26 @@ export function UpgradeAccountForm({ onSuccess }: UpgradeAccountFormProps) {
       // inline, at the field, before a network round-trip.
       const next: FieldErrors = {};
       if (!email.trim()) {
-        next.email = "Please enter your email.";
+        next.email = t("upgradeForm.emailRequired", {
+          defaultValue: "Please enter your email.",
+        });
       } else if (!EMAIL_RE.test(email.trim().toLowerCase())) {
-        next.email = "Please enter a valid email address.";
+        next.email = t("upgradeForm.emailInvalid", {
+          defaultValue: "Please enter a valid email address.",
+        });
       }
       const pw = validatePassword(password);
       if (!pw.ok && pw.reason) {
-        next.password = describePasswordReason(pw.reason);
+        next.password = t(`passwordReason.${pw.reason}`, {
+          defaultValue: describePasswordReason(pw.reason),
+          min: PASSWORD_MIN_LENGTH,
+          max: PASSWORD_MAX_LENGTH,
+        });
       }
       if (!next.password && password !== confirm) {
-        next.confirm = "Passwords do not match.";
+        next.confirm = t("upgradeForm.passwordMismatch", {
+          defaultValue: "Passwords do not match.",
+        });
       }
       setErrors(next);
       if (next.email || next.password || next.confirm) return;
@@ -95,19 +107,25 @@ export function UpgradeAccountForm({ onSuccess }: UpgradeAccountFormProps) {
         onSuccess();
       } catch (err) {
         if (err instanceof AuthError) {
-          setErrors({ [fieldForAuthError(err)]: err.message });
+          setErrors({
+            [fieldForAuthError(err)]: t(`authError.${err.code}`, {
+              defaultValue: err.message,
+            }),
+          });
         } else {
           setErrors({
             general:
               err instanceof Error
                 ? err.message
-                : "Could not upgrade your account. Try again.",
+                : t("upgradeForm.genericError", {
+                    defaultValue: "Could not upgrade your account. Try again.",
+                  }),
           });
         }
         setSubmitting(false);
       }
     },
-    [email, password, confirm, displayName, upgradeAccount, onSuccess],
+    [email, password, confirm, displayName, upgradeAccount, onSuccess, t],
   );
 
   const fieldError = (text: string | undefined, id: string) =>
@@ -122,14 +140,20 @@ export function UpgradeAccountForm({ onSuccess }: UpgradeAccountFormProps) {
       <NeoCard shadow="lg" className="p-6">
         <div className="text-center mb-5">
           <h1 className="text-2xl font-heading font-bold tracking-tight">
-            Save your progress
+            {t("upgradeForm.title", { defaultValue: "Save your progress" })}
           </h1>
           <p className="text-sm text-muted-foreground mt-1">
-            Add an email and password to keep{" "}
+            {t("upgradeForm.subtitleBefore", {
+              defaultValue: "Add an email and password to keep",
+            })}{" "}
             <span className="font-heading font-bold text-foreground">
-              @{username ?? "your username"}
+              @
+              {username ??
+                t("upgradeForm.usernameFallback", { defaultValue: "your username" })}
             </span>{" "}
-            and unlock ranked play, leaderboards, and daily streaks.
+            {t("upgradeForm.subtitleAfter", {
+              defaultValue: "and unlock ranked play, leaderboards, and daily streaks.",
+            })}
           </p>
         </div>
 
@@ -138,8 +162,8 @@ export function UpgradeAccountForm({ onSuccess }: UpgradeAccountFormProps) {
             <NeoInput
               type="email"
               autoComplete="email"
-              placeholder="Email"
-              aria-label="Email"
+              placeholder={t("upgradeForm.emailPlaceholder", { defaultValue: "Email" })}
+              aria-label={t("upgradeForm.emailLabel", { defaultValue: "Email" })}
               aria-invalid={!!errors.email}
               aria-describedby={errors.email ? "upgrade-email-error" : undefined}
               value={email}
@@ -154,8 +178,12 @@ export function UpgradeAccountForm({ onSuccess }: UpgradeAccountFormProps) {
           <NeoInput
             type="text"
             autoComplete="nickname"
-            placeholder="Display name (optional)"
-            aria-label="Display name"
+            placeholder={t("upgradeForm.displayNamePlaceholder", {
+              defaultValue: "Display name (optional)",
+            })}
+            aria-label={t("upgradeForm.displayNameLabel", {
+              defaultValue: "Display name",
+            })}
             value={displayName}
             onChange={(e) => setDisplayName(e.target.value)}
             disabled={submitting}
@@ -164,8 +192,10 @@ export function UpgradeAccountForm({ onSuccess }: UpgradeAccountFormProps) {
             <NeoInput
               type="password"
               autoComplete="new-password"
-              placeholder="Password"
-              aria-label="Password"
+              placeholder={t("upgradeForm.passwordPlaceholder", {
+                defaultValue: "Password",
+              })}
+              aria-label={t("upgradeForm.passwordLabel", { defaultValue: "Password" })}
               aria-invalid={!!errors.password}
               aria-describedby={
                 errors.password ? "upgrade-password-error" : "upgrade-password-hint"
@@ -181,8 +211,12 @@ export function UpgradeAccountForm({ onSuccess }: UpgradeAccountFormProps) {
               id="upgrade-password-hint"
               className="text-xs text-muted-foreground font-heading mt-1"
             >
-              {PASSWORD_MIN_LENGTH}–{PASSWORD_MAX_LENGTH} characters; common
-              passwords are rejected.
+              {t("upgradeForm.passwordHint", {
+                defaultValue:
+                  "{{min}}–{{max}} characters; common passwords are rejected.",
+                min: PASSWORD_MIN_LENGTH,
+                max: PASSWORD_MAX_LENGTH,
+              })}
             </p>
             {fieldError(errors.password, "upgrade-password-error")}
           </div>
@@ -190,8 +224,12 @@ export function UpgradeAccountForm({ onSuccess }: UpgradeAccountFormProps) {
             <NeoInput
               type="password"
               autoComplete="new-password"
-              placeholder="Confirm password"
-              aria-label="Confirm password"
+              placeholder={t("upgradeForm.confirmPlaceholder", {
+                defaultValue: "Confirm password",
+              })}
+              aria-label={t("upgradeForm.confirmLabel", {
+                defaultValue: "Confirm password",
+              })}
               aria-invalid={!!errors.confirm}
               aria-describedby={errors.confirm ? "upgrade-confirm-error" : undefined}
               value={confirm}
@@ -220,13 +258,17 @@ export function UpgradeAccountForm({ onSuccess }: UpgradeAccountFormProps) {
             disabled={submitting}
             className="disabled:opacity-60"
           >
-            {submitting ? "Saving…" : "Create full account"}
+            {submitting
+              ? t("upgradeForm.saving", { defaultValue: "Saving…" })
+              : t("upgradeForm.submit", { defaultValue: "Create full account" })}
           </NeoButton>
         </form>
 
         <p className="text-[11px] text-muted-foreground text-center mt-4 leading-snug">
-          Your username and casual progress carry over. Ranked ELO starts once
-          you upgrade.
+          {t("upgradeForm.footer", {
+            defaultValue:
+              "Your username and casual progress carry over. Ranked ELO starts once you upgrade.",
+          })}
         </p>
       </NeoCard>
     </div>

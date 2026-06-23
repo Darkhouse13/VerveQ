@@ -260,5 +260,39 @@
     "supportDescription": "Reach out for help or follow along for updates.",
     "supportFollowX": "Follow on X",
     "supportContact": "Contact support"
+  },
+  "arenaHub": {
+    "cardTitle": "Live rooms, one code",
+    "cardBody": "Host a room (1v1, 2v2, or free-for-all), share the code, and everyone answers the same questions in real time.",
+    "create": "Create arena",
+    "join": "Join with code"
+  },
+  "leaderboard": {
+    "title": "Leaderboard",
+    "subtitle": "Who runs the ladder",
+    "rankedElo": "Ranked · ELO",
+    "highScore": "High score",
+    "allTime": "All-time",
+    "seasonAria": "Season",
+    "liveSeason": "S{{n}} · Live",
+    "seasonOption": "Season {{n}}",
+    "blitzBlurb": "Each player's best 60-second Blitz run — all-time, not seasonal.",
+    "rankedBlurb": "ELO rating from ranked {{mode}} games — win to climb, Bronze to Platinum.",
+    "loading": "Loading ladder…",
+    "emptyTitle": "No entries yet",
+    "emptyBody": "Be the first to play!",
+    "chase": "The chase",
+    "rankedCount": "{{n}} ranked",
+    "chaseEmpty": "The podium is the whole field — go climb it.",
+    "you": "You",
+    "youSuffix": " (you)"
+  },
+  "gate": {
+    "title": "Full account required",
+    "bodyUpgrade": "You're playing username-only, so this run stays casual. Ranked modes, global leaderboards, and daily streaks need a full account — upgrading keeps your username and casual progress.",
+    "bodyCreate": "Ranked modes, global leaderboards, and daily streaks need a full account. Create one to start climbing.",
+    "ctaUpgrade": "Save my progress & go ranked",
+    "ctaCreate": "Get started",
+    "later": "Maybe later"
   }
 }

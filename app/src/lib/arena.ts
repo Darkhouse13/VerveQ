@@ -81,36 +81,61 @@ export function buildArenaCategories(
   return Array.from({ length: rounds }, (_, i) => ordered[i % ordered.length]);
 }
 
-// Client-side mirror of the server validation. Returns a human error string, or
-// null when the config is valid. The UI also constrains inputs so this should
-// rarely fire — it's a guard + the source of the disable/hint state.
-export function arenaConfigError(config: ArenaConfig): string | null {
+// Structured config error so the UI can render a TRANSLATED message. Returns a
+// stable `code` (+ any interpolation values) or null when the config is valid.
+// The UI also constrains inputs so this should rarely fire — it's a guard + the
+// source of the disable/hint state (callers use truthiness to disable submit).
+export type ArenaConfigError =
+  | { code: "rounds" }
+  | { code: "perRound" }
+  | { code: "total"; total: number }
+  | { code: "noSubjects" }
+  | { code: "unknownSubject" };
+
+export function arenaConfigError(config: ArenaConfig): ArenaConfigError | null {
   const { rounds, perRound, categories } = config;
   if (
     !Number.isInteger(rounds) ||
     rounds < ARENA_MIN_ROUNDS ||
     rounds > ARENA_MAX_ROUNDS
   ) {
-    return `Pick between ${ARENA_MIN_ROUNDS} and ${ARENA_MAX_ROUNDS} rounds.`;
+    return { code: "rounds" };
   }
   if (
     !Number.isInteger(perRound) ||
     perRound < ARENA_MIN_PER_ROUND ||
     perRound > ARENA_MAX_PER_ROUND
   ) {
-    return `Pick between ${ARENA_MIN_PER_ROUND} and ${ARENA_MAX_PER_ROUND} questions per round.`;
+    return { code: "perRound" };
   }
   if (rounds * perRound > ARENA_MAX_TOTAL_QUESTIONS) {
-    return `That's ${rounds * perRound} questions — the max is ${ARENA_MAX_TOTAL_QUESTIONS}.`;
+    return { code: "total", total: rounds * perRound };
   }
   if (categories.length !== rounds) {
-    return "Pick at least one subject.";
+    return { code: "noSubjects" };
   }
   const valid = new Set(ARENA_CATEGORY_OPTIONS.map((o) => o.key));
   if (categories.some((c) => !valid.has(c))) {
-    return "Unknown subject selected.";
+    return { code: "unknownSubject" };
   }
   return null;
+}
+
+// English fallback for an ArenaConfigError, used as the i18n `defaultValue` so a
+// missing locale key still reads as a sentence (never a raw key).
+export function arenaConfigErrorFallback(error: ArenaConfigError): string {
+  switch (error.code) {
+    case "rounds":
+      return `Pick between ${ARENA_MIN_ROUNDS} and ${ARENA_MAX_ROUNDS} rounds.`;
+    case "perRound":
+      return `Pick between ${ARENA_MIN_PER_ROUND} and ${ARENA_MAX_PER_ROUND} questions per round.`;
+    case "total":
+      return `That's ${error.total} questions — the max is ${ARENA_MAX_TOTAL_QUESTIONS}.`;
+    case "noSubjects":
+      return "Pick at least one subject.";
+    case "unknownSubject":
+      return "Unknown subject selected.";
+  }
 }
 
 export function arenaModeLabel(mode: string) {

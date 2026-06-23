@@ -43,11 +43,13 @@ export default function ArenaHubScreen() {
           </div>
           <div>
             <p className="font-heading font-bold text-lg leading-tight">
-              Live rooms, one code
+              {t("arenaHub.cardTitle", { defaultValue: "Live rooms, one code" })}
             </p>
             <p className="text-sm opacity-80 mt-1">
-              Host a room (1v1, 2v2, or free-for-all), share the code, and
-              everyone answers the same questions in real time.
+              {t("arenaHub.cardBody", {
+                defaultValue:
+                  "Host a room (1v1, 2v2, or free-for-all), share the code, and everyone answers the same questions in real time.",
+              })}
             </p>
           </div>
         </NeoCard>
@@ -58,7 +60,7 @@ export default function ArenaHubScreen() {
           onClick={() => setShowCreate(true)}
         >
           <Plus size={18} strokeWidth={3} className="mr-1.5" />
-          Create arena
+          {t("arenaHub.create", { defaultValue: "Create arena" })}
         </NeoButton>
         <NeoButton
           variant="secondary"
@@ -66,7 +68,7 @@ export default function ArenaHubScreen() {
           onClick={() => setShowJoin(true)}
         >
           <Hash size={18} strokeWidth={3} className="mr-1.5" />
-          Join with code
+          {t("arenaHub.join", { defaultValue: "Join with code" })}
         </NeoButton>
       </div>
 

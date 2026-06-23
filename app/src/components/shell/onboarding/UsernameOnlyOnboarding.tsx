@@ -20,6 +20,7 @@ import {
   useState,
   type FormEvent,
 } from "react";
+import { useTranslation } from "react-i18next";
 import { Loader2 } from "lucide-react";
 import { NeoCard } from "@/components/neo/NeoCard";
 import { NeoButton } from "@/components/neo/NeoButton";
@@ -46,11 +47,23 @@ interface UsernameOnlyOnboardingProps {
 
 export function UsernameOnlyOnboarding({
   inviteCode,
-  heading = "Pick a username",
-  subheading = "That's all it takes to start playing. No email, no password.",
-  submitLabel = "Start playing",
+  heading,
+  subheading,
+  submitLabel,
   onComplete,
 }: UsernameOnlyOnboardingProps) {
+  const { t } = useTranslation("screens");
+  // Callers (e.g. the Arena invite flow) may pass already-translated copy; when
+  // they don't (e.g. the generic /welcome route) fall back to translated defaults.
+  const headingText =
+    heading ?? t("usernameOnboard.heading", { defaultValue: "Pick a username" });
+  const subheadingText =
+    subheading ??
+    t("usernameOnboard.subheading", {
+      defaultValue: "That's all it takes to start playing. No email, no password.",
+    });
+  const submitText =
+    submitLabel ?? t("usernameOnboard.submit", { defaultValue: "Start playing" });
   const {
     accountState,
     hasUsername,
@@ -80,7 +93,10 @@ export function UsernameOnlyOnboarding({
       setError(null);
       if (!valid) {
         setError(
-          "Username must be 3-24 lowercase letters, numbers, or underscores.",
+          t("usernameOnboard.invalid", {
+            defaultValue:
+              "Username must be 3-24 lowercase letters, numbers, or underscores.",
+          }),
         );
         return;
       }
@@ -97,10 +113,12 @@ export function UsernameOnlyOnboarding({
       } catch (err) {
         const message =
           err instanceof AuthError
-            ? err.message
+            ? t(`authError.${err.code}`, { defaultValue: err.message })
             : err instanceof Error
               ? err.message
-              : "Could not claim that username. Try another one.";
+              : t("usernameOnboard.genericError", {
+                  defaultValue: "Could not claim that username. Try another one.",
+                });
         setError(message);
         setSubmitting(false);
       }
@@ -113,6 +131,7 @@ export function UsernameOnlyOnboarding({
       startAnonymousSession,
       claimUsername,
       onComplete,
+      t,
     ],
   );
 
@@ -131,9 +150,9 @@ export function UsernameOnlyOnboarding({
           <NeoLogo size="md" />
           <div>
             <h1 className="text-2xl font-heading font-bold tracking-tight">
-              {heading}
+              {headingText}
             </h1>
-            <p className="text-sm text-muted-foreground mt-1">{subheading}</p>
+            <p className="text-sm text-muted-foreground mt-1">{subheadingText}</p>
           </div>
         </div>
 
@@ -147,8 +166,12 @@ export function UsernameOnlyOnboarding({
               spellCheck={false}
               enterKeyHint="go"
               autoFocus
-              placeholder="username"
-              aria-label="Username"
+              placeholder={t("usernameOnboard.usernamePlaceholder", {
+                defaultValue: "username",
+              })}
+              aria-label={t("usernameOnboard.usernameLabel", {
+                defaultValue: "Username",
+              })}
               value={username}
               onChange={(e) => {
                 setUsername(e.target.value.toLowerCase());
@@ -159,10 +182,18 @@ export function UsernameOnlyOnboarding({
             {/* The rule lives AT the field, always visible — the user learns
                 what a valid username is before the error, not from it. */}
             <p className="text-xs text-muted-foreground font-heading text-center mt-1.5">
-              3–24 characters: lowercase letters, numbers, underscores.
+              {t("usernameOnboard.rule", {
+                defaultValue:
+                  "3–24 characters: lowercase letters, numbers, underscores.",
+              })}
             </p>
             <p className="text-xs text-muted-foreground font-heading text-center mt-0.5">
-              Your handle: @{normalized || "username"}
+              {t("usernameOnboard.handle", {
+                defaultValue: "Your handle: @{{handle}}",
+                handle:
+                  normalized ||
+                  t("usernameOnboard.handleFallback", { defaultValue: "username" }),
+              })}
             </p>
           </div>
 
@@ -182,13 +213,17 @@ export function UsernameOnlyOnboarding({
             disabled={submitting || !valid}
             className="disabled:opacity-60"
           >
-            {submitting ? "Setting up…" : submitLabel}
+            {submitting
+              ? t("usernameOnboard.settingUp", { defaultValue: "Setting up…" })
+              : submitText}
           </NeoButton>
         </form>
 
         <p className="text-[11px] text-muted-foreground text-center mt-4 leading-snug">
-          Username-only play is casual and unranked. You can add an email and
-          password later to save your progress and go ranked.
+          {t("usernameOnboard.footer", {
+            defaultValue:
+              "Username-only play is casual and unranked. You can add an email and password later to save your progress and go ranked.",
+          })}
         </p>
       </NeoCard>
     </div>

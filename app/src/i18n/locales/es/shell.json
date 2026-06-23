@@ -260,5 +260,39 @@
     "supportDescription": "Contáctanos para obtener ayuda o síguenos para novedades.",
     "supportFollowX": "Seguir en X",
     "supportContact": "Contactar con soporte"
+  },
+  "arenaHub": {
+    "cardTitle": "Salas en directo, un solo código",
+    "cardBody": "Crea una sala (1v1, 2v2 o todos contra todos), comparte el código y todos responden las mismas preguntas en tiempo real.",
+    "create": "Crear arena",
+    "join": "Unirse con código"
+  },
+  "leaderboard": {
+    "title": "Clasificación",
+    "subtitle": "Quién manda en la escalera",
+    "rankedElo": "Clasificatorio · ELO",
+    "highScore": "Puntuación máxima",
+    "allTime": "Histórico",
+    "seasonAria": "Temporada",
+    "liveSeason": "T{{n}} · En vivo",
+    "seasonOption": "Temporada {{n}}",
+    "blitzBlurb": "La mejor ronda Blitz de 60 segundos de cada jugador — histórica, no por temporada.",
+    "rankedBlurb": "Puntuación ELO de partidas clasificatorias de {{mode}} — gana para subir, de Bronce a Platino.",
+    "loading": "Cargando la escalera…",
+    "emptyTitle": "Aún no hay entradas",
+    "emptyBody": "¡Sé el primero en jugar!",
+    "chase": "La persecución",
+    "rankedCount": "{{n}} clasificados",
+    "chaseEmpty": "El podio es todo el campo — ve a escalarlo.",
+    "you": "Tú",
+    "youSuffix": " (tú)"
+  },
+  "gate": {
+    "title": "Se requiere cuenta completa",
+    "bodyUpgrade": "Estás jugando solo con nombre de usuario, así que esta partida es casual. Los modos clasificatorios, las clasificaciones globales y las rachas diarias requieren una cuenta completa — al pasarte conservas tu nombre de usuario y tu progreso casual.",
+    "bodyCreate": "Los modos clasificatorios, las clasificaciones globales y las rachas diarias requieren una cuenta completa. Crea una para empezar a subir.",
+    "ctaUpgrade": "Guardar mi progreso y pasar a clasificatorio",
+    "ctaCreate": "Empezar",
+    "later": "Quizá más tarde"
   }
 }

@@ -7,6 +7,7 @@
  * archived seasons) — presentation only, nothing is ranked client-side.
  */
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Crown } from "lucide-react";
 import { useQuery } from "convex/react";
 import { NeoCard } from "@/components/neo/NeoCard";
@@ -49,10 +50,12 @@ interface Row {
 
 function ModeChip({
   mode,
+  label,
   active,
   onPick,
 }: {
   mode: Mode;
+  label: string;
   active: boolean;
   onPick: (m: Mode) => void;
 }) {
@@ -66,12 +69,13 @@ function ModeChip({
           : "bg-background text-foreground"
       }`}
     >
-      {mode}
+      {label}
     </button>
   );
 }
 
 export default function ShellLeaderboardScreen() {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const myId = user?._id;
   const [mode, setMode] = useState<Mode>("Quiz");
@@ -140,7 +144,11 @@ export default function ShellLeaderboardScreen() {
   const myRow = myId ? rows.find((r) => String(r.userId) === String(myId)) : undefined;
 
   return (
-    <ShellLayout title="Leaderboard" subtitle="Who runs the ladder" back>
+    <ShellLayout
+      title={t("leaderboard.title", { defaultValue: "Leaderboard" })}
+      subtitle={t("leaderboard.subtitle", { defaultValue: "Who runs the ladder" })}
+      back
+    >
       <div className="h-full min-h-0 flex flex-col gap-3 md:max-w-2xl md:mx-auto md:w-full">
         {/* Filters — fixed chrome, never scrolls. The two chip clusters are
             labeled because they are different boards, not two flavors of one:
@@ -149,42 +157,60 @@ export default function ShellLeaderboardScreen() {
           <div className="flex items-end gap-3 flex-1 min-w-0">
             <div>
               <p className="font-mono text-[9px] font-bold uppercase tracking-[0.14em] text-muted-foreground mb-1">
-                Ranked · ELO
+                {t("leaderboard.rankedElo", { defaultValue: "Ranked · ELO" })}
               </p>
               <div className="flex gap-1.5">
                 {RANKED_MODES.map((m) => (
-                  <ModeChip key={m} mode={m} active={mode === m} onPick={setMode} />
+                  <ModeChip
+                    key={m}
+                    mode={m}
+                    label={t(`modes.${m.toLowerCase()}.name`, { defaultValue: m })}
+                    active={mode === m}
+                    onPick={setMode}
+                  />
                 ))}
               </div>
             </div>
             <div>
               <p className="font-mono text-[9px] font-bold uppercase tracking-[0.14em] text-muted-foreground mb-1">
-                High score
+                {t("leaderboard.highScore", { defaultValue: "High score" })}
               </p>
               <div className="flex gap-1.5">
                 {SCORE_MODES.map((m) => (
-                  <ModeChip key={m} mode={m} active={mode === m} onPick={setMode} />
+                  <ModeChip
+                    key={m}
+                    mode={m}
+                    label={t(`modes.${m.toLowerCase()}.name`, { defaultValue: m })}
+                    active={mode === m}
+                    onPick={setMode}
+                  />
                 ))}
               </div>
             </div>
           </div>
           {isBlitz ? (
             <span className="neo-border rounded-lg px-2.5 py-1 bg-muted/60 text-muted-foreground font-heading font-bold text-[11px] uppercase shrink-0">
-              All-time
+              {t("leaderboard.allTime", { defaultValue: "All-time" })}
             </span>
           ) : (
             <select
               value={season === "current" ? "current" : String(season)}
               onChange={(e) => setSeason(e.target.value === "current" ? "current" : Number(e.target.value))}
-              aria-label="Season"
+              aria-label={t("leaderboard.seasonAria", { defaultValue: "Season" })}
               className="neo-border rounded-lg px-2.5 py-1 bg-background text-foreground font-heading font-bold text-[11px] uppercase cursor-pointer shrink-0"
             >
               <option value="current">
-                S{currentSeason ? currentSeason.seasonNumber : "—"} · Live
+                {t("leaderboard.liveSeason", {
+                  defaultValue: "S{{n}} · Live",
+                  n: currentSeason ? currentSeason.seasonNumber : "—",
+                })}
               </option>
               {(pastSeasons ?? []).map((s) => (
                 <option key={s.seasonNumber} value={String(s.seasonNumber)}>
-                  Season {s.seasonNumber}
+                  {t("leaderboard.seasonOption", {
+                    defaultValue: "Season {{n}}",
+                    n: s.seasonNumber,
+                  })}
                 </option>
               ))}
             </select>
@@ -194,19 +220,32 @@ export default function ShellLeaderboardScreen() {
         {/* One line that says what the numbers mean for this board. */}
         <p className="shrink-0 text-[11px] text-muted-foreground leading-snug">
           {isBlitz
-            ? "Each player's best 60-second Blitz run — all-time, not seasonal."
-            : `ELO rating from ranked ${mode} games — win to climb, Bronze to Platinum.`}
+            ? t("leaderboard.blitzBlurb", {
+                defaultValue:
+                  "Each player's best 60-second Blitz run — all-time, not seasonal.",
+              })
+            : t("leaderboard.rankedBlurb", {
+                defaultValue:
+                  "ELO rating from ranked {{mode}} games — win to climb, Bronze to Platinum.",
+                mode: t(`modes.${mode.toLowerCase()}.name`, { defaultValue: mode }),
+              })}
         </p>
 
         {loading ? (
           <div className="flex-1 flex items-center justify-center">
-            <p className="font-heading font-bold animate-pulse">Loading ladder…</p>
+            <p className="font-heading font-bold animate-pulse">
+              {t("leaderboard.loading", { defaultValue: "Loading ladder…" })}
+            </p>
           </div>
         ) : rows.length === 0 ? (
           <div className="flex-1 flex items-center justify-center">
             <NeoCard className="text-center py-10 px-8">
-              <p className="font-heading font-bold text-lg">No entries yet</p>
-              <p className="text-sm text-muted-foreground mt-1">Be the first to play!</p>
+              <p className="font-heading font-bold text-lg">
+                {t("leaderboard.emptyTitle", { defaultValue: "No entries yet" })}
+              </p>
+              <p className="text-sm text-muted-foreground mt-1">
+                {t("leaderboard.emptyBody", { defaultValue: "Be the first to play!" })}
+              </p>
             </NeoCard>
           </div>
         ) : (
@@ -242,13 +281,22 @@ export default function ShellLeaderboardScreen() {
             {/* The chase — THE one scroll surface in the shell. */}
             <NeoCard className="flex-1 min-h-0 flex flex-col p-0 overflow-hidden mb-1">
               <div className="shrink-0 flex items-center justify-between px-3.5 py-2 border-b-2 border-border bg-muted/40">
-                <p className="text-[10px] font-heading font-bold uppercase tracking-wider">The chase</p>
-                <p className="font-mono text-[10px] text-muted-foreground">{rows.length} ranked</p>
+                <p className="text-[10px] font-heading font-bold uppercase tracking-wider">
+                  {t("leaderboard.chase", { defaultValue: "The chase" })}
+                </p>
+                <p className="font-mono text-[10px] text-muted-foreground">
+                  {t("leaderboard.rankedCount", {
+                    defaultValue: "{{n}} ranked",
+                    n: rows.length,
+                  })}
+                </p>
               </div>
               <div className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden">
                 {chase.length === 0 ? (
                   <p className="text-center text-xs text-muted-foreground py-6 px-4">
-                    The podium is the whole field — go climb it.
+                    {t("leaderboard.chaseEmpty", {
+                      defaultValue: "The podium is the whole field — go climb it.",
+                    })}
                   </p>
                 ) : (
                   chase.map((r) => {
@@ -265,11 +313,13 @@ export default function ShellLeaderboardScreen() {
                         <NeoAvatar name={r.username} size="sm" />
                         <p className="font-heading font-bold text-sm flex-1 min-w-0 truncate">
                           {r.username}
-                          {isMe && " (you)"}
+                          {isMe && t("leaderboard.youSuffix", { defaultValue: " (you)" })}
                         </p>
                         {!isBlitz && (
                           <NeoBadge color={tier.color} size="sm">
-                            {tier.name}
+                            {t(`ranks.tiers.${tier.name.toLowerCase()}`, {
+                              defaultValue: tier.name,
+                            })}
                           </NeoBadge>
                         )}
                         {r.badge && (
@@ -290,7 +340,9 @@ export default function ShellLeaderboardScreen() {
               {myRow && (
                 <div className="shrink-0 border-t-[3px] border-border bg-foreground text-background flex items-center gap-2.5 px-3.5 py-2">
                   <span className="font-mono font-bold text-sm w-7 text-right shrink-0">{myRow.rank}</span>
-                  <p className="font-heading font-bold text-sm flex-1 min-w-0 truncate">You</p>
+                  <p className="font-heading font-bold text-sm flex-1 min-w-0 truncate">
+                    {t("leaderboard.you", { defaultValue: "You" })}
+                  </p>
                   <span className="font-mono font-bold text-sm">
                     {formatValue(myRow.value)}{" "}
                     <span className="opacity-60 uppercase text-[9px]">{unit}</span>

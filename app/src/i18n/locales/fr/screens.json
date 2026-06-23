@@ -421,7 +421,12 @@
     "subjectBlurb_enterprise_logos": "Nomme l'entreprise",
     "subjectBlurb_capital_cities": "Capitales du monde",
     "subjectBlurb_tennis": "ATP, Grands Chelems, records",
-    "subjectBlurb_basketball": "Joueurs NBA, équipes, histoire"
+    "subjectBlurb_basketball": "Joueurs NBA, équipes, histoire",
+    "error_rounds": "Choisis entre {{min}} et {{max}} manches.",
+    "error_perRound": "Choisis entre {{min}} et {{max}} questions par manche.",
+    "error_total": "Ça fait {{total}} questions — le maximum est {{max}}.",
+    "error_noSubjects": "Choisis au moins un sujet.",
+    "error_unknownSubject": "Sujet sélectionné inconnu."
   },
   "joinArena": {
     "closeAria": "Fermer",
@@ -456,5 +461,57 @@
     "outcomeDraw": "Nul",
     "openInvite": "Invitation ouverte",
     "versusUser": "vs @{{username}}"
+  },
+  "upgradeForm": {
+    "title": "Sauvegarde ta progression",
+    "subtitleBefore": "Ajoute un e-mail et un mot de passe pour conserver",
+    "subtitleAfter": "et débloquer le classé, les classements et les séries quotidiennes.",
+    "usernameFallback": "ton pseudo",
+    "emailPlaceholder": "E-mail",
+    "emailLabel": "E-mail",
+    "displayNamePlaceholder": "Nom affiché (facultatif)",
+    "displayNameLabel": "Nom affiché",
+    "passwordPlaceholder": "Mot de passe",
+    "passwordLabel": "Mot de passe",
+    "passwordHint": "{{min}} à {{max}} caractères ; les mots de passe courants sont refusés.",
+    "confirmPlaceholder": "Confirme le mot de passe",
+    "confirmLabel": "Confirme le mot de passe",
+    "emailRequired": "Saisis ton e-mail.",
+    "emailInvalid": "Saisis une adresse e-mail valide.",
+    "passwordMismatch": "Les mots de passe ne correspondent pas.",
+    "genericError": "Impossible de mettre à niveau ton compte. Réessaie.",
+    "saving": "Enregistrement…",
+    "submit": "Créer un compte complet",
+    "footer": "Ton pseudo et ta progression détente sont conservés. L'ELO classé démarre dès la mise à niveau."
+  },
+  "usernameOnboard": {
+    "heading": "Choisis un pseudo",
+    "subheading": "C'est tout ce qu'il faut pour commencer à jouer. Sans e-mail, sans mot de passe.",
+    "submit": "Commencer à jouer",
+    "usernamePlaceholder": "pseudo",
+    "usernameLabel": "Pseudo",
+    "rule": "3 à 24 caractères : lettres minuscules, chiffres, tirets bas.",
+    "handle": "Ton identifiant : @{{handle}}",
+    "handleFallback": "pseudo",
+    "invalid": "Le pseudo doit comporter 3 à 24 lettres minuscules, chiffres ou tirets bas.",
+    "genericError": "Impossible de réserver ce pseudo. Essaies-en un autre.",
+    "settingUp": "Configuration…",
+    "footer": "Le jeu en pseudo uniquement est détente et non classé. Tu pourras ajouter un e-mail et un mot de passe plus tard pour sauvegarder ta progression et passer en classé."
+  },
+  "authError": {
+    "invalid_username": "Le pseudo doit comporter 3 à 24 lettres minuscules, chiffres ou tirets bas.",
+    "username_taken": "Ce pseudo est déjà pris. Essaies-en un autre.",
+    "invalid_email": "Saisis une adresse e-mail valide.",
+    "legacy_email": "Ce domaine d'e-mail est réservé. Utilise ta vraie adresse e-mail.",
+    "weak_password": "Choisis un mot de passe plus solide.",
+    "email_taken": "Cet e-mail est déjà utilisé.",
+    "upgrade_unavailable": "Impossible de mettre à niveau ton compte pour le moment. Réessaie.",
+    "rate_limited": "Trop de tentatives. Patiente un instant et réessaie.",
+    "unknown": "Une erreur s'est produite. Réessaie."
+  },
+  "passwordReason": {
+    "too-short": "Le mot de passe doit comporter au moins {{min}} caractères.",
+    "too-long": "Le mot de passe doit comporter {{max}} caractères au maximum.",
+    "too-common": "Ce mot de passe est trop courant. Choisis-en un autre."
   }
 }

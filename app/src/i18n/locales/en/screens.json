@@ -421,7 +421,12 @@
     "subjectBlurb_enterprise_logos": "Name the company",
     "subjectBlurb_capital_cities": "Capitals of the world",
     "subjectBlurb_tennis": "ATP, slams, records",
-    "subjectBlurb_basketball": "NBA players, teams, history"
+    "subjectBlurb_basketball": "NBA players, teams, history",
+    "error_rounds": "Pick between {{min}} and {{max}} rounds.",
+    "error_perRound": "Pick between {{min}} and {{max}} questions per round.",
+    "error_total": "That's {{total}} questions — the max is {{max}}.",
+    "error_noSubjects": "Pick at least one subject.",
+    "error_unknownSubject": "Unknown subject selected."
   },
   "joinArena": {
     "closeAria": "Close",
@@ -456,5 +461,57 @@
     "outcomeDraw": "Draw",
     "openInvite": "Open invite",
     "versusUser": "vs @{{username}}"
+  },
+  "upgradeForm": {
+    "title": "Save your progress",
+    "subtitleBefore": "Add an email and password to keep",
+    "subtitleAfter": "and unlock ranked play, leaderboards, and daily streaks.",
+    "usernameFallback": "your username",
+    "emailPlaceholder": "Email",
+    "emailLabel": "Email",
+    "displayNamePlaceholder": "Display name (optional)",
+    "displayNameLabel": "Display name",
+    "passwordPlaceholder": "Password",
+    "passwordLabel": "Password",
+    "passwordHint": "{{min}}–{{max}} characters; common passwords are rejected.",
+    "confirmPlaceholder": "Confirm password",
+    "confirmLabel": "Confirm password",
+    "emailRequired": "Please enter your email.",
+    "emailInvalid": "Please enter a valid email address.",
+    "passwordMismatch": "Passwords do not match.",
+    "genericError": "Could not upgrade your account. Try again.",
+    "saving": "Saving…",
+    "submit": "Create full account",
+    "footer": "Your username and casual progress carry over. Ranked ELO starts once you upgrade."
+  },
+  "usernameOnboard": {
+    "heading": "Pick a username",
+    "subheading": "That's all it takes to start playing. No email, no password.",
+    "submit": "Start playing",
+    "usernamePlaceholder": "username",
+    "usernameLabel": "Username",
+    "rule": "3–24 characters: lowercase letters, numbers, underscores.",
+    "handle": "Your handle: @{{handle}}",
+    "handleFallback": "username",
+    "invalid": "Username must be 3-24 lowercase letters, numbers, or underscores.",
+    "genericError": "Could not claim that username. Try another one.",
+    "settingUp": "Setting up…",
+    "footer": "Username-only play is casual and unranked. You can add an email and password later to save your progress and go ranked."
+  },
+  "authError": {
+    "invalid_username": "Username must be 3-24 lowercase letters, numbers, or underscores.",
+    "username_taken": "That username is taken. Try another one.",
+    "invalid_email": "Please enter a valid email address.",
+    "legacy_email": "That email domain is reserved. Please use your real email address.",
+    "weak_password": "Please choose a stronger password.",
+    "email_taken": "That email is already in use.",
+    "upgrade_unavailable": "Couldn't upgrade your account right now. Try again.",
+    "rate_limited": "Too many attempts. Please wait a moment and try again.",
+    "unknown": "Something went wrong. Please try again."
+  },
+  "passwordReason": {
+    "too-short": "Password must be at least {{min}} characters.",
+    "too-long": "Password must be {{max}} characters or fewer.",
+    "too-common": "That password is too common. Please choose a different one."
   }
 }

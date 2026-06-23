@@ -421,7 +421,12 @@
     "subjectBlurb_enterprise_logos": "Nombra la empresa",
     "subjectBlurb_capital_cities": "Capitales del mundo",
     "subjectBlurb_tennis": "ATP, grand slams, récords",
-    "subjectBlurb_basketball": "Jugadores NBA, equipos, historia"
+    "subjectBlurb_basketball": "Jugadores NBA, equipos, historia",
+    "error_rounds": "Elige entre {{min}} y {{max}} rondas.",
+    "error_perRound": "Elige entre {{min}} y {{max}} preguntas por ronda.",
+    "error_total": "Son {{total}} preguntas — el máximo es {{max}}.",
+    "error_noSubjects": "Elige al menos un tema.",
+    "error_unknownSubject": "Tema seleccionado desconocido."
   },
   "joinArena": {
     "closeAria": "Cerrar",
@@ -456,5 +461,57 @@
     "outcomeDraw": "Empate",
     "openInvite": "Invitación abierta",
     "versusUser": "vs @{{username}}"
+  },
+  "upgradeForm": {
+    "title": "Guarda tu progreso",
+    "subtitleBefore": "Añade un correo y una contraseña para conservar",
+    "subtitleAfter": "y desbloquear el clasificatorio, las clasificaciones y las rachas diarias.",
+    "usernameFallback": "tu nombre de usuario",
+    "emailPlaceholder": "Correo",
+    "emailLabel": "Correo",
+    "displayNamePlaceholder": "Nombre visible (opcional)",
+    "displayNameLabel": "Nombre visible",
+    "passwordPlaceholder": "Contraseña",
+    "passwordLabel": "Contraseña",
+    "passwordHint": "De {{min}} a {{max}} caracteres; se rechazan las contraseñas comunes.",
+    "confirmPlaceholder": "Confirma la contraseña",
+    "confirmLabel": "Confirma la contraseña",
+    "emailRequired": "Introduce tu correo.",
+    "emailInvalid": "Introduce una dirección de correo válida.",
+    "passwordMismatch": "Las contraseñas no coinciden.",
+    "genericError": "No se pudo actualizar tu cuenta. Inténtalo de nuevo.",
+    "saving": "Guardando…",
+    "submit": "Crear cuenta completa",
+    "footer": "Tu nombre de usuario y tu progreso casual se conservan. El ELO clasificatorio empieza al actualizar."
+  },
+  "usernameOnboard": {
+    "heading": "Elige un nombre de usuario",
+    "subheading": "Es todo lo que necesitas para empezar a jugar. Sin correo, sin contraseña.",
+    "submit": "Empezar a jugar",
+    "usernamePlaceholder": "nombre de usuario",
+    "usernameLabel": "Nombre de usuario",
+    "rule": "De 3 a 24 caracteres: letras minúsculas, números, guiones bajos.",
+    "handle": "Tu identificador: @{{handle}}",
+    "handleFallback": "nombre de usuario",
+    "invalid": "El nombre de usuario debe tener de 3 a 24 letras minúsculas, números o guiones bajos.",
+    "genericError": "No se pudo reservar ese nombre de usuario. Prueba con otro.",
+    "settingUp": "Configurando…",
+    "footer": "El juego solo con nombre de usuario es casual y sin clasificar. Puedes añadir un correo y una contraseña más tarde para guardar tu progreso y pasar a clasificatorio."
+  },
+  "authError": {
+    "invalid_username": "El nombre de usuario debe tener de 3 a 24 letras minúsculas, números o guiones bajos.",
+    "username_taken": "Ese nombre de usuario ya está cogido. Prueba con otro.",
+    "invalid_email": "Introduce una dirección de correo válida.",
+    "legacy_email": "Ese dominio de correo está reservado. Usa tu dirección de correo real.",
+    "weak_password": "Elige una contraseña más segura.",
+    "email_taken": "Ese correo ya está en uso.",
+    "upgrade_unavailable": "No se pudo actualizar tu cuenta ahora mismo. Inténtalo de nuevo.",
+    "rate_limited": "Demasiados intentos. Espera un momento e inténtalo de nuevo.",
+    "unknown": "Algo salió mal. Inténtalo de nuevo."
+  },
+  "passwordReason": {
+    "too-short": "La contraseña debe tener al menos {{min}} caracteres.",
+    "too-long": "La contraseña debe tener {{max}} caracteres o menos.",
+    "too-common": "Esa contraseña es demasiado común. Elige una diferente."
   }
 }

@@ -21,6 +21,7 @@ import {
   ARENA_MIN_ROUNDS,
   ARENA_MODE_OPTIONS,
   arenaConfigError,
+  arenaConfigErrorFallback,
   buildArenaCategories,
   type ArenaMode,
 } from "@/lib/arena";
@@ -104,6 +105,20 @@ export default function CreateArenaModal({
   );
   const total = rounds * perRound;
   const configError = arenaConfigError({ rounds, perRound, categories });
+  const configErrorText = configError
+    ? t(`createArena.error_${configError.code}`, {
+        defaultValue: arenaConfigErrorFallback(configError),
+        min:
+          configError.code === "perRound" ? ARENA_MIN_PER_ROUND : ARENA_MIN_ROUNDS,
+        max:
+          configError.code === "perRound"
+            ? ARENA_MAX_PER_ROUND
+            : configError.code === "total"
+              ? ARENA_MAX_TOTAL_QUESTIONS
+              : ARENA_MAX_ROUNDS,
+        total: configError.code === "total" ? configError.total : undefined,
+      })
+    : null;
   const atSubjectCap = subjects.length >= rounds;
   const canIncRounds =
     rounds < ARENA_MAX_ROUNDS && (rounds + 1) * perRound <= ARENA_MAX_TOTAL_QUESTIONS;
@@ -258,9 +273,9 @@ export default function CreateArenaModal({
             })}
           </div>
 
-          {configError && (
+          {configErrorText && (
             <p className="text-[11px] text-destructive font-medium mt-3">
-              {configError}
+              {configErrorText}
             </p>
           )}
         </div>

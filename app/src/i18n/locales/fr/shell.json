@@ -260,5 +260,39 @@
     "supportDescription": "Contactez-nous pour de l'aide ou suivez-nous pour les actualités.",
     "supportFollowX": "Suivre sur X",
     "supportContact": "Contacter le support"
+  },
+  "arenaHub": {
+    "cardTitle": "Des salons en direct, un seul code",
+    "cardBody": "Crée un salon (1v1, 2v2 ou chacun pour soi), partage le code, et tout le monde répond aux mêmes questions en temps réel.",
+    "create": "Créer une arène",
+    "join": "Rejoindre avec un code"
+  },
+  "leaderboard": {
+    "title": "Classement",
+    "subtitle": "Qui domine l'échelle",
+    "rankedElo": "Classé · ELO",
+    "highScore": "Meilleur score",
+    "allTime": "Absolu",
+    "seasonAria": "Saison",
+    "liveSeason": "S{{n}} · En direct",
+    "seasonOption": "Saison {{n}}",
+    "blitzBlurb": "La meilleure manche Blitz de 60 secondes de chaque joueur — en absolu, pas par saison.",
+    "rankedBlurb": "Score ELO des parties classées de {{mode}} — gagne pour grimper, de Bronze à Platine.",
+    "loading": "Chargement de l'échelle…",
+    "emptyTitle": "Aucune entrée pour l'instant",
+    "emptyBody": "Sois le premier à jouer !",
+    "chase": "La poursuite",
+    "rankedCount": "{{n}} classés",
+    "chaseEmpty": "Le podium, c'est tout le terrain — va le gravir.",
+    "you": "Toi",
+    "youSuffix": " (toi)"
+  },
+  "gate": {
+    "title": "Compte complet requis",
+    "bodyUpgrade": "Tu joues en pseudo uniquement, donc cette partie reste détente. Les modes classés, les classements mondiaux et les séries quotidiennes nécessitent un compte complet — passer au compte complet conserve ton pseudo et ta progression détente.",
+    "bodyCreate": "Les modes classés, les classements mondiaux et les séries quotidiennes nécessitent un compte complet. Crées-en un pour commencer à grimper.",
+    "ctaUpgrade": "Sauvegarder ma progression et passer en classé",
+    "ctaCreate": "Commencer",
+    "later": "Plus tard"
   }
 }

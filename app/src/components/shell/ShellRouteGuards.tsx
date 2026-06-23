@@ -21,6 +21,7 @@
  */
 import type { ReactNode } from "react";
 import { Navigate, useLocation, useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { Loader2, Lock } from "lucide-react";
 import { NeoCard } from "@/components/neo/NeoCard";
 import { NeoButton } from "@/components/neo/NeoButton";
@@ -80,6 +81,7 @@ function FullAccountGate({
   state: AccountState;
 }) {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   // Anonymous + username: the headline upgrade path — keep username + casual
   // progress, unlock ranked. Otherwise (logged out / no username yet) the user
   // needs a username first, so route them through onboarding.
@@ -93,12 +95,18 @@ function FullAccountGate({
             <Lock size={28} strokeWidth={2.5} />
           </div>
           <h1 className="text-2xl font-heading font-bold mb-2">
-            Full account required
+            {t("gate.title", { defaultValue: "Full account required" })}
           </h1>
           <p className="text-sm text-muted-foreground mb-5">
             {canUpgrade
-              ? "You're playing username-only, so this run stays casual. Ranked modes, global leaderboards, and daily streaks need a full account — upgrading keeps your username and casual progress."
-              : "Ranked modes, global leaderboards, and daily streaks need a full account. Create one to start climbing."}
+              ? t("gate.bodyUpgrade", {
+                  defaultValue:
+                    "You're playing username-only, so this run stays casual. Ranked modes, global leaderboards, and daily streaks need a full account — upgrading keeps your username and casual progress.",
+                })
+              : t("gate.bodyCreate", {
+                  defaultValue:
+                    "Ranked modes, global leaderboards, and daily streaks need a full account. Create one to start climbing.",
+                })}
           </p>
           {canUpgrade ? (
             <NeoButton
@@ -106,7 +114,7 @@ function FullAccountGate({
               size="full"
               onClick={() => navigate(upgradeUrl(next))}
             >
-              Save my progress &amp; go ranked
+              {t("gate.ctaUpgrade", { defaultValue: "Save my progress & go ranked" })}
             </NeoButton>
           ) : (
             <NeoButton
@@ -114,7 +122,7 @@ function FullAccountGate({
               size="full"
               onClick={() => navigate(accountChoiceUrl(next))}
             >
-              Get started
+              {t("gate.ctaCreate", { defaultValue: "Get started" })}
             </NeoButton>
           )}
           <button
@@ -122,7 +130,7 @@ function FullAccountGate({
             onClick={() => navigate(SHELL_ROUTES.home)}
             className="w-full text-sm text-muted-foreground font-heading underline underline-offset-4 hover:text-foreground mt-3"
           >
-            Maybe later
+            {t("gate.later", { defaultValue: "Maybe later" })}
           </button>
         </NeoCard>
       </div>
