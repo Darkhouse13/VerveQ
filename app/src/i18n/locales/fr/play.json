@@ -348,5 +348,11 @@
     "pts_other": "{{count}} pts",
     "howItWorks": "Comment ça marche",
     "howItWorksBody": "Chaque case demande un joueur correspondant à sa <strong>colonne</strong> et sa <strong>ligne</strong>. Les cases plus rares rapportent plus. {{totalCells}} essais, sans répétition."
+  },
+  "difficulty": {
+    "label": "Difficulté",
+    "easy": "Facile",
+    "intermediate": "Moyen",
+    "hard": "Difficile"
   }
 }

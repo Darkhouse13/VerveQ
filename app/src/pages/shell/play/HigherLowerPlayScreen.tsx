@@ -21,7 +21,9 @@ import { NeoButton } from "@/components/neo/NeoButton";
 import { NeoBadge } from "@/components/neo/NeoBadge";
 import { PlayStage } from "@/components/shell/play/PlayStage";
 import { MetricsPanel, AmbientStrip } from "@/components/shell/play/ambient";
+import { DifficultySelector } from "@/components/shell/play/DifficultySelector";
 import { SHELL_ROUTES } from "@/lib/shellRoutes";
+import { useDifficulty } from "@/lib/difficulty";
 import { useAntiCheat } from "@/hooks/useAntiCheat";
 import { api } from "../../../../convex/_generated/api";
 import type { Id } from "../../../../convex/_generated/dataModel";
@@ -81,6 +83,7 @@ export default function HigherLowerPlayScreen() {
   const [params] = useSearchParams();
   const sport = params.get("sport") || "football";
   const isSupportedSport = SUPPORTED_HIGHER_LOWER_SPORTS.has(sport);
+  const [difficulty, setDifficulty] = useDifficulty("higherlower");
 
   const startSessionMut = useMutation(api.higherLower.startSession);
   const makeGuessMut = useMutation(api.higherLower.makeGuess);
@@ -131,7 +134,10 @@ export default function HigherLowerPlayScreen() {
     setLoading(true);
     setStartupState(null);
     try {
-      const result = await withTimeout(startSessionMut({ sport }), START_SESSION_TIMEOUT_MS);
+      const result = await withTimeout(
+        startSessionMut({ sport, difficulty }),
+        START_SESSION_TIMEOUT_MS,
+      );
       setSessionId(result.sessionId);
       setStatKey(result.statKey);
       setContext(result.context);
@@ -160,7 +166,7 @@ export default function HigherLowerPlayScreen() {
     } finally {
       setLoading(false);
     }
-  }, [isSupportedSport, sport, startSessionMut, t]);
+  }, [isSupportedSport, sport, difficulty, startSessionMut, t]);
 
   useEffect(() => {
     startGame();
@@ -302,6 +308,13 @@ export default function HigherLowerPlayScreen() {
       right={<MetricsPanel metrics={metrics} />}
     >
       <div className="flex flex-col">
+        {/* Difficulty — changing it starts a fresh run at the new tier. */}
+        {!gameOver && (
+          <div className="flex justify-center mb-3">
+            <DifficultySelector value={difficulty} onChange={setDifficulty} disabled={animating} />
+          </div>
+        )}
+
         {/* Stat context — the question framing for the binary call. The
             league + season + stat are the actual question, so they lead. */}
         <div className="text-center mb-4">
@@ -416,6 +429,11 @@ export default function HigherLowerPlayScreen() {
                 </p>
               )}
             </NeoCard>
+            {/* Drop the tier before replaying — a losing streak shouldn't be a
+                dead end. */}
+            <div className="flex justify-center">
+              <DifficultySelector value={difficulty} onChange={setDifficulty} size="md" />
+            </div>
             <div className="grid grid-cols-2 gap-3">
               <NeoButton variant="primary" size="lg" onClick={startGame}>
                 {t("higherLower.playAgain")}

@@ -1069,6 +1069,9 @@ export default defineSchema({
     sport: v.string(),
     templateId: v.string(),
     axisFamily: v.string(),
+    // "easy" | "intermediate" | "hard". Optional: legacy boards predate the
+    // difficulty tiers and are treated as "hard" by the runtime.
+    difficulty: v.optional(v.string()),
     score: v.number(),
     rows: v.array(
       v.object({
@@ -1157,6 +1160,7 @@ export default defineSchema({
   higherLowerSessions: defineTable({
     userId: v.optional(v.id("users")),
     sport: v.string(),
+    difficulty: v.optional(v.string()),
     score: v.number(),
     streak: v.number(),
     seenFactIds: v.optional(v.array(v.string())),
@@ -1185,6 +1189,7 @@ export default defineSchema({
     sport: v.string(),
     boardTemplateId: v.optional(v.string()),
     boardAxisFamily: v.optional(v.string()),
+    difficulty: v.optional(v.string()),
     rows: v.array(
       v.object({
         type: v.string(),

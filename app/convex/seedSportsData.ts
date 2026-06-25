@@ -428,6 +428,7 @@ export const seedVerveGridBoardsBatch = internalMutation({
         sport: v.string(),
         templateId: v.string(),
         axisFamily: v.string(),
+        difficulty: v.optional(v.string()),
         score: v.number(),
         rows: v.array(
           v.object({

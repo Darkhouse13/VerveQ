@@ -5,6 +5,13 @@ import { assertUsernameRequiredUser } from "./lib/authz";
 import { normalizeAnswer } from "./lib/scoring";
 import { incrementTotalGames } from "./lib/playCount";
 import { levenshteinDistance } from "./lib/fuzzy";
+import {
+  acceptedTiersFor,
+  DEFAULT_DIFFICULTY,
+  difficultyArg,
+  difficultyFallbackChain,
+  type DifficultyLevel,
+} from "./lib/gameDifficulty";
 
 const SESSION_TTL_MS = 60 * 60 * 1000; // 1 hour
 const MAX_GUESSES = 9;
@@ -92,8 +99,8 @@ function publicCellMetadata(cell: { rowIdx: number; colIdx: number; validPlayerI
 }
 
 export const startSession = mutation({
-  args: { sport: v.string() },
-  handler: async (ctx, { sport }) => {
+  args: { sport: v.string(), difficulty: difficultyArg },
+  handler: async (ctx, { sport, difficulty }) => {
     const userId = await getAuthUserId(ctx);
     if (!userId) throw new Error("Not authenticated");
     await assertUsernameRequiredUser(ctx, userId);
@@ -120,12 +127,31 @@ export const startSession = mutation({
       throw new Error("No playable VerveGrid boards are available for this sport");
     }
 
+    // Pick the requested difficulty's board pool. Widen toward "hard" if it's
+    // empty (e.g. easy/intermediate boards not seeded yet) so a grid always
+    // starts. A board with no difficulty tag is treated as "hard".
+    const requested: DifficultyLevel = difficulty ?? DEFAULT_DIFFICULTY;
+    let servedDifficulty: DifficultyLevel = requested;
+    let difficultyPool = playableBoards;
+    for (const level of difficultyFallbackChain(requested)) {
+      const accepted = acceptedTiersFor(level);
+      const pool = playableBoards.filter((board) =>
+        accepted.has((board.difficulty as DifficultyLevel | undefined) ?? "hard"),
+      );
+      if (pool.length > 0) {
+        servedDifficulty = level;
+        difficultyPool = pool;
+        break;
+      }
+    }
+
     const chosenBoard =
-      playableBoards[Math.floor(Math.random() * playableBoards.length)];
+      difficultyPool[Math.floor(Math.random() * difficultyPool.length)];
 
     const sessionId = await ctx.db.insert("verveGridSessions", {
       userId,
       sport,
+      difficulty: servedDifficulty,
       boardTemplateId: chosenBoard.templateId,
       boardAxisFamily: chosenBoard.axisFamily,
       rows: chosenBoard.rows,
@@ -144,6 +170,7 @@ export const startSession = mutation({
 
     return {
       sessionId,
+      difficulty: servedDifficulty,
       boardTemplateId: chosenBoard.templateId,
       boardAxisFamily: chosenBoard.axisFamily,
       rows: chosenBoard.rows,

@@ -19,6 +19,8 @@ import type { GridRunStats, GridPickItem } from "@/components/shell/play/ambient
 import { GridBoard } from "./GridBoard";
 import { GridSearchSheet } from "./GridSearchSheet";
 import { GridEndOverlay } from "./GridEndOverlay";
+import { DifficultySelector } from "@/components/shell/play/DifficultySelector";
+import type { Difficulty } from "@/lib/difficulty";
 import type { VerveGridViewModel } from "@/hooks/useVerveGrid";
 
 interface GridStageProps {
@@ -74,6 +76,14 @@ export function GridStage({ vm, subtitle, onExit, onHome }: GridStageProps) {
           {subtitle && (
             <span className="hidden md:inline font-mono text-xs text-background/70 truncate">{subtitle}</span>
           )}
+          <div className="ml-auto shrink-0">
+            <DifficultySelector
+              value={vm.difficulty}
+              onChange={vm.setDifficulty}
+              hideLabel
+              disabled={vm.loading}
+            />
+          </div>
         </div>
       </header>
 
@@ -132,6 +142,8 @@ export function GridStage({ vm, subtitle, onExit, onHome }: GridStageProps) {
           correctCount={vm.correctCount}
           totalCells={vm.totalCells}
           points={vm.points}
+          difficulty={vm.difficulty}
+          onDifficultyChange={vm.setDifficulty}
           onNewGrid={vm.startGame}
           onHome={onHome}
         />
@@ -150,6 +162,8 @@ function GridEndOverlayGate({
   correctCount,
   totalCells,
   points,
+  difficulty,
+  onDifficultyChange,
   onNewGrid,
   onHome,
 }: {
@@ -157,6 +171,8 @@ function GridEndOverlayGate({
   correctCount: number;
   totalCells: number;
   points: number;
+  difficulty: Difficulty;
+  onDifficultyChange: (next: Difficulty) => void;
   onNewGrid: () => void;
   onHome: () => void;
 }) {
@@ -173,6 +189,8 @@ function GridEndOverlayGate({
       correctCount={correctCount}
       totalCells={totalCells}
       points={points}
+      difficulty={difficulty}
+      onDifficultyChange={onDifficultyChange}
       onReview={() => setOpen(false)}
       onNewGrid={onNewGrid}
       onHome={onHome}

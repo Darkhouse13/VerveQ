@@ -348,5 +348,11 @@
     "pts_other": "{{count}} pts",
     "howItWorks": "How it works",
     "howItWorksBody": "Each square needs a player matching its <strong>column</strong> and <strong>row</strong>. Rarer cells score more. {{totalCells}} guesses, no repeats."
+  },
+  "difficulty": {
+    "label": "Difficulty",
+    "easy": "Easy",
+    "intermediate": "Medium",
+    "hard": "Hard"
   }
 }

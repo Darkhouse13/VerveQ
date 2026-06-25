@@ -22,6 +22,7 @@ import { toast } from "sonner";
 import { api } from "../../convex/_generated/api";
 import type { Id } from "../../convex/_generated/dataModel";
 import { useAntiCheat } from "@/hooks/useAntiCheat";
+import { useDifficulty, type Difficulty } from "@/lib/difficulty";
 
 export const SUPPORTED_VERVE_GRID_SPORTS = new Set(["football"]);
 export const GRID_SEARCH_MIN_CHARS = 3;
@@ -131,6 +132,10 @@ export interface VerveGridViewModel {
   shakeCellIndex: number | null;
   submitting: boolean;
 
+  // Difficulty
+  difficulty: Difficulty;
+  setDifficulty: (next: Difficulty) => void;
+
   // Actions
   startGame: () => void;
   openCell: (cellIndex: number) => void;
@@ -141,6 +146,7 @@ export interface VerveGridViewModel {
 export function useVerveGrid(sport: string): VerveGridViewModel {
   const { t } = useTranslation("play");
   const isSupportedSport = SUPPORTED_VERVE_GRID_SPORTS.has(sport);
+  const [difficulty, setDifficulty] = useDifficulty("vervegrid");
 
   const startSessionMut = useMutation(api.verveGrid.startSession);
   const submitGuessMut = useMutation(api.verveGrid.submitGuess);
@@ -193,7 +199,10 @@ export function useVerveGrid(sport: string): VerveGridViewModel {
     setLoading(true);
     setStartupState(null);
     try {
-      const result = await withTimeout(startSessionMut({ sport }), START_SESSION_TIMEOUT_MS);
+      const result = await withTimeout(
+        startSessionMut({ sport, difficulty }),
+        START_SESSION_TIMEOUT_MS,
+      );
       setSessionId(result.sessionId);
       setRows(result.rows as GridAxis[]);
       setCols(result.cols as GridAxis[]);
@@ -224,7 +233,7 @@ export function useVerveGrid(sport: string): VerveGridViewModel {
     } finally {
       setLoading(false);
     }
-  }, [isSupportedSport, startSessionMut, sport, t]);
+  }, [isSupportedSport, startSessionMut, sport, difficulty, t]);
 
   useEffect(() => {
     startGame();
@@ -388,6 +397,8 @@ export function useVerveGrid(sport: string): VerveGridViewModel {
     minChars: GRID_SEARCH_MIN_CHARS,
     shakeCellIndex,
     submitting,
+    difficulty,
+    setDifficulty,
     startGame,
     openCell,
     closeSheet,

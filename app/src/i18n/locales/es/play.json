@@ -348,5 +348,11 @@
     "pts_other": "{{count}} pts",
     "howItWorks": "Cómo funciona",
     "howItWorksBody": "Cada casilla necesita un jugador que coincida con su <strong>columna</strong> y <strong>fila</strong>. Las casillas más raras puntúan más. {{totalCells}} intentos, sin repeticiones."
+  },
+  "difficulty": {
+    "label": "Dificultad",
+    "easy": "Fácil",
+    "intermediate": "Medio",
+    "hard": "Difícil"
   }
 }

@@ -3,8 +3,42 @@ import { v } from "convex/values";
 import { incrementTotalGames } from "./lib/playCount";
 import { getAuthUserId } from "@convex-dev/auth/server";
 import { assertUsernameRequiredUser } from "./lib/authz";
+import {
+  DEFAULT_DIFFICULTY,
+  difficultyArg,
+  difficultyFallbackChain,
+  type DifficultyLevel,
+} from "./lib/gameDifficulty";
 
 const SESSION_TTL_MS = 60 * 60 * 1000; // 1 hour
+
+// League/competition contextKeys allowed per difficulty (a CEILING — each tier
+// also includes the easier ones). "hard" applies no filter (every pool).
+//   easy:   Premier League, La Liga, Bundesliga, Champions League
+//   medium: + Serie A, Ligue 1, Eredivisie, Europa League, Euro, World Cup
+//   hard:   everything (adds Copa America, Conference League, …)
+const HL_EASY_CONTEXTS = new Set([
+  "league:fb_39", // Premier League
+  "league:fb_140", // La Liga
+  "league:fb_78", // Bundesliga
+  "league:fb_2", // Champions League
+]);
+const HL_MEDIUM_CONTEXTS = new Set([
+  ...HL_EASY_CONTEXTS,
+  "league:fb_135", // Serie A
+  "league:fb_61", // Ligue 1
+  "league:fb_88", // Eredivisie
+  "league:fb_3", // Europa League
+  "league:fb_4", // Euro Championship
+  "league:fb_1", // World Cup
+]);
+
+/** Allowed pool contextKeys for a tier, or null for "hard" (no restriction). */
+function allowedContextsFor(level: DifficultyLevel): Set<string> | null {
+  if (level === "easy") return HL_EASY_CONTEXTS;
+  if (level === "intermediate") return HL_MEDIUM_CONTEXTS;
+  return null;
+}
 
 // Human-readable labels for context keys (league IDs -> display names)
 const CONTEXT_KEY_LABELS: Record<string, string> = {
@@ -133,8 +167,8 @@ async function getEntityImage(
 }
 
 export const startSession = mutation({
-  args: { sport: v.string() },
-  handler: async (ctx, { sport }) => {
+  args: { sport: v.string(), difficulty: difficultyArg },
+  handler: async (ctx, { sport, difficulty }) => {
     const userId = await getAuthUserId(ctx);
     if (!userId) throw new Error("Not authenticated");
     await assertUsernameRequiredUser(ctx, userId);
@@ -151,21 +185,35 @@ export const startSession = mutation({
       throw new Error("No approved Higher or Lower pools available");
     }
 
+    // Restrict the pool to the requested difficulty's leagues, widening toward
+    // "hard" if that tier yields no usable (non-tie) pool so a game can always
+    // start.
+    const requested: DifficultyLevel = difficulty ?? DEFAULT_DIFFICULTY;
+    let servedDifficulty: DifficultyLevel = requested;
     let selectedPool: HigherLowerPoolDoc | null = null;
     let factA: HigherLowerFactDoc | null = null;
     let factB: HigherLowerFactDoc | null = null;
 
-    for (const pool of shuffle([...approvedPools])) {
-      const facts = await ctx.db
-        .query("higherLowerFacts")
-        .withIndex("by_pool_key", (q) => q.eq("poolKey", pool.externalId))
-        .collect();
-      const pair = pickDifferentValuePair(facts);
-      if (!pair) continue;
+    for (const level of difficultyFallbackChain(requested)) {
+      const allowed = allowedContextsFor(level);
+      const tierPools = allowed
+        ? approvedPools.filter((pool) => allowed.has(pool.contextKey))
+        : approvedPools;
 
-      selectedPool = pool;
-      [factA, factB] = pair;
-      break;
+      for (const pool of shuffle([...tierPools])) {
+        const facts = await ctx.db
+          .query("higherLowerFacts")
+          .withIndex("by_pool_key", (q) => q.eq("poolKey", pool.externalId))
+          .collect();
+        const pair = pickDifferentValuePair(facts);
+        if (!pair) continue;
+
+        selectedPool = pool;
+        [factA, factB] = pair;
+        servedDifficulty = level;
+        break;
+      }
+      if (selectedPool) break;
     }
 
     if (!selectedPool || !factA || !factB) {
@@ -178,6 +226,7 @@ export const startSession = mutation({
     const sessionId = await ctx.db.insert("higherLowerSessions", {
       userId,
       sport,
+      difficulty: servedDifficulty,
       score: 0,
       streak: 0,
       seenFactIds: [factA.externalId, factB.externalId],
@@ -201,6 +250,7 @@ export const startSession = mutation({
 
     return {
       sessionId,
+      difficulty: servedDifficulty,
       statKey: factA.statKey,
       context: factA.contextKey,
       contextLabel:

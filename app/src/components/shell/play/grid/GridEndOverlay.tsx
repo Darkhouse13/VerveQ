@@ -8,12 +8,16 @@
  */
 import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
+import { DifficultySelector } from "@/components/shell/play/DifficultySelector";
+import type { Difficulty } from "@/lib/difficulty";
 
 interface GridEndOverlayProps {
   allSolved: boolean;
   correctCount: number;
   totalCells: number;
   points: number;
+  difficulty: Difficulty;
+  onDifficultyChange: (next: Difficulty) => void;
   onReview: () => void;
   onNewGrid: () => void;
   onHome: () => void;
@@ -46,6 +50,8 @@ export function GridEndOverlay({
   correctCount,
   totalCells,
   points,
+  difficulty,
+  onDifficultyChange,
   onReview,
   onNewGrid,
   onHome,
@@ -74,6 +80,12 @@ export function GridEndOverlay({
           <div className="flex gap-2.5">
             <Stat label={t("grid.points")} value={String(points)} tone="highlight" />
             <Stat label={t("grid.cells")} value={`${correctCount}/${totalCells}`} />
+          </div>
+
+          {/* Step the difficulty before replaying — losing should never be a
+              dead end. The next grid honours the new tier. */}
+          <div className="flex justify-center pt-0.5">
+            <DifficultySelector value={difficulty} onChange={onDifficultyChange} size="md" />
           </div>
 
           <div className="grid grid-cols-2 gap-2.5">
