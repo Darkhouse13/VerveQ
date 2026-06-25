@@ -22,7 +22,7 @@ import { toast } from "sonner";
 import { api } from "../../convex/_generated/api";
 import type { Id } from "../../convex/_generated/dataModel";
 import { useAntiCheat } from "@/hooks/useAntiCheat";
-import { useDifficulty, type Difficulty } from "@/lib/difficulty";
+import type { Difficulty } from "@/lib/difficulty";
 
 export const SUPPORTED_VERVE_GRID_SPORTS = new Set(["football"]);
 export const GRID_SEARCH_MIN_CHARS = 3;
@@ -132,10 +132,6 @@ export interface VerveGridViewModel {
   shakeCellIndex: number | null;
   submitting: boolean;
 
-  // Difficulty
-  difficulty: Difficulty;
-  setDifficulty: (next: Difficulty) => void;
-
   // Actions
   startGame: () => void;
   openCell: (cellIndex: number) => void;
@@ -143,10 +139,9 @@ export interface VerveGridViewModel {
   selectPlayer: (player: { externalId: string; name: string }) => void;
 }
 
-export function useVerveGrid(sport: string): VerveGridViewModel {
+export function useVerveGrid(sport: string, difficulty: Difficulty): VerveGridViewModel {
   const { t } = useTranslation("play");
   const isSupportedSport = SUPPORTED_VERVE_GRID_SPORTS.has(sport);
-  const [difficulty, setDifficulty] = useDifficulty("vervegrid");
 
   const startSessionMut = useMutation(api.verveGrid.startSession);
   const submitGuessMut = useMutation(api.verveGrid.submitGuess);
@@ -397,8 +392,6 @@ export function useVerveGrid(sport: string): VerveGridViewModel {
     minChars: GRID_SEARCH_MIN_CHARS,
     shakeCellIndex,
     submitting,
-    difficulty,
-    setDifficulty,
     startGame,
     openCell,
     closeSheet,

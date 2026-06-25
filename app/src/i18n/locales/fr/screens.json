@@ -32,6 +32,11 @@
     "medium_desc": "Défi équilibré",
     "hard_name": "Difficile",
     "hard_desc": "Niveau expert, sans pitié",
+    "curated": {
+      "easy_desc": "Grands clubs & ligues majeures",
+      "medium_desc": "Ajoute des ligues & coupes",
+      "hard_desc": "Tous les clubs & compétitions"
+    },
     "changeLater": "Tu peux toujours changer ça plus tard",
     "startGame": "Commencer la partie"
   },

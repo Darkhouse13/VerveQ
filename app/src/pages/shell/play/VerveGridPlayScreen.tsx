@@ -12,14 +12,18 @@ import { NeoButton } from "@/components/neo/NeoButton";
 import { GridStage } from "@/components/shell/play/grid/GridStage";
 import { SHELL_ROUTES } from "@/lib/shellRoutes";
 import { useVerveGrid } from "@/hooks/useVerveGrid";
+import { parseDifficulty } from "@/lib/difficulty";
 
 export default function VerveGridPlayScreen() {
   const { t } = useTranslation("play");
   const navigate = useNavigate();
   const [params] = useSearchParams();
   const sport = params.get("sport") || "football";
+  // Tier is chosen on the difficulty picker and carried in the URL; a direct
+  // deep link (no param) falls back to easy.
+  const difficulty = parseDifficulty(params.get("difficulty"));
 
-  const vm = useVerveGrid(sport);
+  const vm = useVerveGrid(sport, difficulty);
 
   const goCompete = () => navigate(SHELL_ROUTES.competeSportGrid(sport));
   const goHome = () => navigate(SHELL_ROUTES.home);
@@ -45,7 +49,7 @@ export default function VerveGridPlayScreen() {
               <NeoButton
                 variant="primary"
                 size="lg"
-                onClick={() => navigate(`${SHELL_ROUTES.verveGridPlay}?sport=football`)}
+                onClick={() => navigate("/difficulty?sport=football&mode=verve-grid")}
               >
                 {t("verveGrid.playFootball")}
               </NeoButton>

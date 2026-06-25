@@ -157,7 +157,10 @@ export function GridBoard({ rows, cols, cells, gameOver, shakeCellIndex, onPick,
         gridTemplateRows: `${headerRow} minmax(0,1fr) minmax(0,1fr) minmax(0,1fr)`,
         gap: 3,
         background: "hsl(var(--border))",
-        aspectRatio: compact ? undefined : "1.04 / 1",
+        // Square-ish board on every breakpoint: height tracks the (full) width
+        // so mobile cells stay roughly square instead of collapsing to short,
+        // wide rectangles. maxHeight:100% still clamps it on very short screens.
+        aspectRatio: "1.04 / 1",
         maxHeight: "100%",
         maxWidth: "100%",
       }}

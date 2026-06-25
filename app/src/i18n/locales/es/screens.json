@@ -32,6 +32,11 @@
     "medium_desc": "Reto equilibrado",
     "hard_name": "Difícil",
     "hard_desc": "Nivel experto, sin piedad",
+    "curated": {
+      "easy_desc": "Grandes clubes y ligas top",
+      "medium_desc": "Añade más ligas y copas",
+      "hard_desc": "Todos los clubes y competiciones"
+    },
     "changeLater": "Siempre puedes cambiarlo más tarde",
     "startGame": "Empezar partida"
   },

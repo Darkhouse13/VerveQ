@@ -11,6 +11,15 @@ const difficulties = [
   { name: "Hard", key: "hard", apiValue: "hard", emoji: "🔥", color: "destructive" as const },
 ];
 
+// Curated solo modes (VerveGrid, Higher or Lower) reuse this picker as their
+// single difficulty source: the tier is chosen here and deep-linked into the v2
+// play screen via `?difficulty=`. Unlike Quiz, there is no in-game tier changer,
+// so the chosen tier holds for the run and changing it means coming back here.
+const CURATED_MODE_DESTINATIONS: Record<string, string> = {
+  "verve-grid": "/v2/verve-grid",
+  "higher-lower": "/v2/higher-lower",
+};
+
 export default function DifficultyScreen() {
   const { t } = useTranslation("screens");
   const [selected, setSelected] = useState<string | null>(null);
@@ -22,12 +31,18 @@ export default function DifficultyScreen() {
   // layout instead of the legacy `/quiz` screen. Additive: without it the legacy
   // flow is unchanged, so the picker is the single difficulty source for both.
   const target = params.get("target");
-  const cameFirstModeParam = "mode=came_first";
+  const curatedDest = CURATED_MODE_DESTINATIONS[mode];
+  const isCurated = !!curatedDest;
 
   const handleStart = () => {
     if (!selected) return;
     const diff = difficulties.find((d) => d.name === selected)!.apiValue;
-    void cameFirstModeParam;
+    // Curated solo modes deep-link straight into their v2 play screen at the
+    // chosen tier — no `mode` param (each route is the mode).
+    if (curatedDest) {
+      navigate(`${curatedDest}?sport=${sport}&difficulty=${diff}`);
+      return;
+    }
     const resolvedMode = mode === "came_first" ? "came_first" : "quiz";
     const dest = target === "v2" ? "/v2/quiz" : "/quiz";
     navigate(`${dest}?sport=${sport}&difficulty=${diff}&mode=${resolvedMode}`);
@@ -62,13 +77,19 @@ export default function DifficultyScreen() {
             <span className="text-4xl">{d.emoji}</span>
             <div>
               <p className="font-heading font-bold text-xl uppercase">{t(`difficulty.${d.key}_name`)}</p>
-              <p className="text-sm opacity-80">{t(`difficulty.${d.key}_desc`)}</p>
+              <p className="text-sm opacity-80">
+                {isCurated ? t(`difficulty.curated.${d.key}_desc`) : t(`difficulty.${d.key}_desc`)}
+              </p>
             </div>
           </NeoCard>
         ))}
       </div>
 
-      <p className="text-center text-xs text-muted-foreground mt-4">{t("difficulty.changeLater")}</p>
+      {/* Quiz keeps an in-game difficulty changer; the curated solo modes don't,
+          so the "change later" reassurance would be misleading for them. */}
+      {!isCurated && (
+        <p className="text-center text-xs text-muted-foreground mt-4">{t("difficulty.changeLater")}</p>
+      )}
 
       <div className="mt-6">
         <NeoButton variant="primary" size="full" disabled={!selected} onClick={handleStart}>

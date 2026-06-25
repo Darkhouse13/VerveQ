@@ -19,8 +19,6 @@ import type { GridRunStats, GridPickItem } from "@/components/shell/play/ambient
 import { GridBoard } from "./GridBoard";
 import { GridSearchSheet } from "./GridSearchSheet";
 import { GridEndOverlay } from "./GridEndOverlay";
-import { DifficultySelector } from "@/components/shell/play/DifficultySelector";
-import type { Difficulty } from "@/lib/difficulty";
 import type { VerveGridViewModel } from "@/hooks/useVerveGrid";
 
 interface GridStageProps {
@@ -76,14 +74,6 @@ export function GridStage({ vm, subtitle, onExit, onHome }: GridStageProps) {
           {subtitle && (
             <span className="hidden md:inline font-mono text-xs text-background/70 truncate">{subtitle}</span>
           )}
-          <div className="ml-auto shrink-0">
-            <DifficultySelector
-              value={vm.difficulty}
-              onChange={vm.setDifficulty}
-              hideLabel
-              disabled={vm.loading}
-            />
-          </div>
         </div>
       </header>
 
@@ -102,8 +92,9 @@ export function GridStage({ vm, subtitle, onExit, onHome }: GridStageProps) {
           <GridStrip stats={stats} />
         </div>
 
-        {/* board centerpiece */}
-        <div className="flex-1 min-h-0 flex items-center justify-center p-3 md:p-0 overflow-hidden">
+        {/* board centerpiece — top-aligned on mobile so the board sits directly
+            under the HUD strip (no mid-screen gap); centered on desktop. */}
+        <div className="flex-1 min-h-0 flex items-start md:items-center justify-center p-3 md:p-0 overflow-hidden">
           <div className="w-full min-w-0 max-w-[32rem] md:max-w-none md:h-full grid place-items-center">
             <GridBoard
               rows={vm.rows}
@@ -142,8 +133,6 @@ export function GridStage({ vm, subtitle, onExit, onHome }: GridStageProps) {
           correctCount={vm.correctCount}
           totalCells={vm.totalCells}
           points={vm.points}
-          difficulty={vm.difficulty}
-          onDifficultyChange={vm.setDifficulty}
           onNewGrid={vm.startGame}
           onHome={onHome}
         />
@@ -162,8 +151,6 @@ function GridEndOverlayGate({
   correctCount,
   totalCells,
   points,
-  difficulty,
-  onDifficultyChange,
   onNewGrid,
   onHome,
 }: {
@@ -171,8 +158,6 @@ function GridEndOverlayGate({
   correctCount: number;
   totalCells: number;
   points: number;
-  difficulty: Difficulty;
-  onDifficultyChange: (next: Difficulty) => void;
   onNewGrid: () => void;
   onHome: () => void;
 }) {
@@ -189,8 +174,6 @@ function GridEndOverlayGate({
       correctCount={correctCount}
       totalCells={totalCells}
       points={points}
-      difficulty={difficulty}
-      onDifficultyChange={onDifficultyChange}
       onReview={() => setOpen(false)}
       onNewGrid={onNewGrid}
       onHome={onHome}

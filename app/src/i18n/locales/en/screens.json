@@ -32,6 +32,11 @@
     "medium_desc": "Balanced challenge",
     "hard_name": "Hard",
     "hard_desc": "Expert level, no mercy",
+    "curated": {
+      "easy_desc": "Top clubs & major leagues",
+      "medium_desc": "Adds more leagues & cups",
+      "hard_desc": "Every club & competition"
+    },
     "changeLater": "You can always change this later",
     "startGame": "Start Game"
   },

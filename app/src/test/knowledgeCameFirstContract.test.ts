@@ -29,7 +29,10 @@ describe("Knowledge Which Came First mode", () => {
 
     expect(home).toContain("Which Came First?");
     expect(app).toContain('path="/quiz"');
-    expect(difficulty).toContain("mode=came_first");
+    // DifficultyScreen routes the came_first variant distinctly. Asserts the
+    // real branch (not a planted URL fragment) so the picker keeps preserving
+    // the Which Came First mode into the quiz deep link.
+    expect(difficulty).toContain('mode === "came_first" ? "came_first" : "quiz"');
     expect(quizScreen).toContain('const mode = params.get("mode") || "quiz"');
     expect(quizScreen).toContain("mode: mode === \"came_first\" ? \"came_first\" : \"quiz\"");
     expect(quizSessions).toContain("mode: v.optional(v.string())");

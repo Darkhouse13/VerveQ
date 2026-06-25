@@ -34,10 +34,12 @@ export const COMPETE_MODE_TILES: ModeTile[] = [
   // Survival + Blitz are migrated to the shell prototype layout (solo).
   { key: "survival", icon: Heart, color: "primary", to: (s) => `/v2/survival?sport=${s}` },
   { key: "blitz", icon: Zap, color: "pink", to: (s) => `/v2/blitz?sport=${s}` },
-  // Higher/Lower + Who Am I are migrated to the shell prototype layout (solo).
-  { key: "higherLower", icon: TrendingUp, color: "success", to: (s) => `/v2/higher-lower?sport=${s}` },
-  // VerveGrid is migrated to the bespoke v2 GridStage (solo) over the existing backend.
-  { key: "verveGrid", icon: Grid3X3, color: "blue", to: (s) => `/v2/verve-grid?sport=${s}` },
+  // Higher/Lower + VerveGrid are the curated solo modes with difficulty tiers, so
+  // they route through the shared difficulty picker first (like Quiz) — the player
+  // chooses easy/medium/hard up front and the picker deep-links into the v2 play
+  // screen with `?difficulty=`. Who Am I has no tiers, so it launches directly.
+  { key: "higherLower", icon: TrendingUp, color: "success", to: (s) => `/difficulty?sport=${s}&mode=higher-lower` },
+  { key: "verveGrid", icon: Grid3X3, color: "blue", to: (s) => `/difficulty?sport=${s}&mode=verve-grid` },
   { key: "whoAmI", icon: HelpCircle, color: "yellow", to: (s) => `/v2/who-am-i?sport=${s}` },
   // Daily is migrated to the shell — reuses the Quiz prototype layout via the DAILY session.
   { key: "daily", icon: Timer, color: "primary", to: (s) => `/v2/daily?sport=${s}` },
