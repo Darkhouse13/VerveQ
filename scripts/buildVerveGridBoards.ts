@@ -29,36 +29,31 @@ export type BoardDifficulty = "easy" | "intermediate" | "hard";
 const TOP5_LEAGUE_IDS = new Set(["fb_39", "fb_140", "fb_135", "fb_78", "fb_61"]);
 
 /**
- * The unmistakably-elite clubs of the big-5 leagues — the only teams an "easy"
- * board may use. Kept deliberately small and famous; widen here if easy yields
- * too few boards. (Team keys are API-Football ids from teams.json.)
+ * The TOP 4 clubs of each big-5 league (20 total) — the only teams an "easy"
+ * board may use. Chosen by league + European pedigree over the 2010-2025 window
+ * the data spans. (Team keys are API-Football ids from teams.json.)
  */
 const ELITE_TEAM_KEYS = new Set([
   // Premier League
   "fb_team_33", // Manchester United
   "fb_team_50", // Manchester City
   "fb_team_40", // Liverpool
-  "fb_team_42", // Arsenal
   "fb_team_49", // Chelsea
-  "fb_team_47", // Tottenham
   // La Liga
   "fb_team_541", // Real Madrid
   "fb_team_529", // Barcelona
   "fb_team_530", // Atletico Madrid
   "fb_team_536", // Sevilla
-  "fb_team_532", // Valencia
   // Serie A
   "fb_team_496", // Juventus
   "fb_team_489", // AC Milan
   "fb_team_505", // Inter
   "fb_team_492", // Napoli
-  "fb_team_497", // AS Roma
   // Bundesliga
   "fb_team_157", // Bayern München
   "fb_team_165", // Borussia Dortmund
   "fb_team_168", // Bayer Leverkusen
   "fb_team_173", // RB Leipzig
-  "fb_team_174", // FC Schalke 04
   // Ligue 1
   "fb_team_85", // Paris Saint Germain
   "fb_team_81", // Marseille
