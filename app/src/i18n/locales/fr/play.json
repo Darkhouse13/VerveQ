@@ -46,7 +46,6 @@
   "higherLower": {
     "title": "Plus ou Moins",
     "subtitle": "Qui en a le plus ?",
-    "question": "Qui a le plus de {{stat}} ?",
     "quit": "Quitter",
     "loading": "Chargement…",
     "unsupportedTitle": "Football uniquement pour l'instant",
@@ -58,8 +57,6 @@
     "backToCompete": "Retour à Compétition",
     "tabSwitchEnded": "Partie terminée — tu as changé d'onglet",
     "tabSwitchWarning": "Ne change pas d'onglet — ta partie va se terminer",
-    "teamStat": "Stat d'équipe",
-    "playerStat": "Stat de joueur",
     "higher": "Plus",
     "lower": "Moins",
     "checking": "Vérification...",

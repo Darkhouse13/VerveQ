@@ -46,7 +46,6 @@
   "higherLower": {
     "title": "Más o Menos",
     "subtitle": "¿Quién tiene más?",
-    "question": "¿Quién tiene más {{stat}}?",
     "quit": "Salir",
     "loading": "Cargando…",
     "unsupportedTitle": "Solo fútbol por ahora",
@@ -58,8 +57,6 @@
     "backToCompete": "Volver a Competir",
     "tabSwitchEnded": "Racha terminada — cambiaste de pestaña",
     "tabSwitchWarning": "No cambies de pestaña — tu racha terminará",
-    "teamStat": "Estadística de equipo",
-    "playerStat": "Estadística de jugador",
     "higher": "Más",
     "lower": "Menos",
     "checking": "Comprobando...",

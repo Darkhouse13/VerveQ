@@ -46,7 +46,6 @@
   "higherLower": {
     "title": "Higher or Lower",
     "subtitle": "Who has more?",
-    "question": "Who has more {{stat}}?",
     "quit": "Quit",
     "loading": "Loading…",
     "unsupportedTitle": "Football Only For Now",
@@ -58,8 +57,6 @@
     "backToCompete": "Back To Compete",
     "tabSwitchEnded": "Run ended — you switched tabs",
     "tabSwitchWarning": "Don't switch tabs — your run will end",
-    "teamStat": "Team Stat",
-    "playerStat": "Player Stat",
     "higher": "Higher",
     "lower": "Lower",
     "checking": "Checking...",

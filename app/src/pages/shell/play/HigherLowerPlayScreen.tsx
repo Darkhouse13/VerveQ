@@ -308,77 +308,83 @@ export default function HigherLowerPlayScreen() {
       strip={<AmbientStrip metrics={metrics} />}
       right={<MetricsPanel metrics={metrics} />}
     >
-      <div className="flex flex-col">
-        {/* Stat context — the question framing for the binary call. The
-            league + season + stat are the actual question, so they lead. */}
-        <div className="text-center mb-4">
-          <div className="flex items-center justify-center gap-2 flex-wrap mb-2">
-            <NeoBadge color="yellow" size="md">{displayLabel}</NeoBadge>
-            {seasonDisplay && (
-              <NeoBadge color="muted" size="md">{seasonDisplay}</NeoBadge>
+      {/* Fit-to-viewport column: the mode-local header and the binary-call
+          buttons are pinned (shrink-0); the two team panels flex to share the
+          leftover height so both values + the buttons stay on one phone screen
+          without scrolling. The PlayStage shell already locks the page at
+          100dvh and hands this column a bounded height (h-full resolves
+          against it); a scroll fallback remains for extreme/short viewports. */}
+      <div className="flex flex-col h-full">
+        {/* Stat context — collapsed to one line (league · season · stat). The
+            shell's top bar already frames the "Who has more?" question, so the
+            body just names the stat; the badge colour encodes team vs player. */}
+        <div className="shrink-0 flex flex-wrap items-center justify-center gap-1.5 text-center mb-2">
+          <NeoBadge color="yellow" size="sm">{displayLabel}</NeoBadge>
+          {seasonDisplay && (
+            <NeoBadge color="muted" size="sm">{seasonDisplay}</NeoBadge>
+          )}
+          <NeoBadge color={entityType === "team" ? "accent" : "pink"} size="sm">
+            {formatStatKey(statKey)}
+          </NeoBadge>
+        </div>
+
+        {/* Team panels — flex-1 min-h-0 so they shrink to fit; each panel
+            shares the leftover height. min-h-0 is required or the panels won't
+            shrink below their content and the column overflows. */}
+        <div className="flex-1 min-h-0 flex flex-col gap-1.5">
+          {/* Player A — value shown */}
+          <NeoCard
+            color="success"
+            shadow="lg"
+            className="flex-1 min-h-0 flex flex-col items-center justify-center text-center overflow-hidden py-2"
+          >
+            {playerAPhoto && (
+              <img
+                src={playerAPhoto}
+                alt={playerAName}
+                className="aspect-square h-[12dvh] max-h-[6rem] w-auto min-h-0 rounded-full neo-border object-cover mb-1.5"
+              />
             )}
+            <p className="font-heading font-bold text-lg truncate w-full px-3 shrink-0">{playerAName}</p>
+            <p className="font-mono font-bold text-4xl leading-none mt-0.5 shrink-0">{playerAValue}</p>
+          </NeoCard>
+
+          {/* VS divider */}
+          <div className="shrink-0 flex items-center justify-center">
+            <div className="neo-border rounded-full bg-background px-3 py-0.5 font-heading font-bold text-xs">
+              VS
+            </div>
           </div>
-          <h2 className="font-heading font-black text-2xl leading-tight">
-            {t("higherLower.question", { stat: formatStatKey(statKey) })}
-          </h2>
-          <div className="flex items-center justify-center mt-1.5">
-            <NeoBadge color={entityType === "team" ? "accent" : "pink"} size="sm">
-              {entityType === "team" ? t("higherLower.teamStat") : t("higherLower.playerStat")}
-            </NeoBadge>
-          </div>
+
+          {/* Player B — value hidden until guess */}
+          <NeoCard
+            shadow="lg"
+            className={`flex-1 min-h-0 flex flex-col items-center justify-center text-center overflow-hidden py-2 transition-all ${
+              shakeB ? "animate-shake-horizontal" : ""
+            } ${slideIn ? "animate-slide-up" : ""} ${
+              feedback
+                ? feedback.correct
+                  ? "bg-success text-success-foreground"
+                  : "bg-destructive text-destructive-foreground"
+                : "bg-electric-blue text-electric-blue-foreground"
+            }`}
+          >
+            {playerBPhoto && (
+              <img
+                src={playerBPhoto}
+                alt={playerBName}
+                className="aspect-square h-[12dvh] max-h-[6rem] w-auto min-h-0 rounded-full neo-border object-cover mb-1.5"
+              />
+            )}
+            <p className="font-heading font-bold text-lg truncate w-full px-3 shrink-0">{playerBName}</p>
+            <p className="font-mono font-bold text-4xl leading-none mt-0.5 shrink-0">{feedback ? feedback.value : "?"}</p>
+          </NeoCard>
         </div>
 
-        {/* Player A — value shown */}
-        <NeoCard
-          color="success"
-          shadow="lg"
-          className="flex flex-col items-center justify-center text-center py-3"
-        >
-          {playerAPhoto && (
-            <img
-              src={playerAPhoto}
-              alt={playerAName}
-              className="w-24 h-24 rounded-full neo-border object-cover mb-2"
-            />
-          )}
-          <p className="font-heading font-bold text-lg">{playerAName}</p>
-          <p className="font-mono font-bold text-4xl mt-1">{playerAValue}</p>
-        </NeoCard>
-
-        {/* VS divider */}
-        <div className="flex items-center justify-center my-2">
-          <div className="neo-border rounded-full bg-background px-4 py-1.5 font-heading font-bold text-sm">
-            VS
-          </div>
-        </div>
-
-        {/* Player B — value hidden until guess */}
-        <NeoCard
-          shadow="lg"
-          className={`flex flex-col items-center justify-center text-center py-3 transition-all ${
-            shakeB ? "animate-shake-horizontal" : ""
-          } ${slideIn ? "animate-slide-up" : ""} ${
-            feedback
-              ? feedback.correct
-                ? "bg-success text-success-foreground"
-                : "bg-destructive text-destructive-foreground"
-              : "bg-electric-blue text-electric-blue-foreground"
-          }`}
-        >
-          {playerBPhoto && (
-            <img
-              src={playerBPhoto}
-              alt={playerBName}
-              className="w-24 h-24 rounded-full neo-border object-cover mb-2"
-            />
-          )}
-          <p className="font-heading font-bold text-lg">{playerBName}</p>
-          <p className="font-mono font-bold text-4xl mt-1">{feedback ? feedback.value : "?"}</p>
-        </NeoCard>
-
-        {/* Action buttons — the binary call. */}
+        {/* Action buttons — the binary call, docked at the bottom (shrink-0)
+            so they're always on screen. */}
         {!gameOver && !feedback && (
-          <div className="grid grid-cols-2 gap-3 mt-4">
+          <div className="shrink-0 grid grid-cols-2 gap-3 mt-3">
             <NeoButton
               variant="accent"
               size="lg"
@@ -410,15 +416,16 @@ export default function HigherLowerPlayScreen() {
           </div>
         )}
 
-        {/* Game over */}
+        {/* Game over — docked (shrink-0) so the final score + actions stay on
+            screen; the panels above flex to absorb the remaining height. */}
         {gameOver && (
-          <div className="mt-5 space-y-3 animate-slide-up">
-            <NeoCard color="primary" className="text-center py-4">
-              <p className="font-heading font-bold text-xl">{t("higherLower.gameOver")}</p>
-              <p className="font-mono font-bold text-3xl mt-1">{score}</p>
-              <p className="text-xs opacity-80 mt-1">{t("higherLower.finalScore")}</p>
+          <div className="shrink-0 mt-3 space-y-2 animate-slide-up">
+            <NeoCard color="primary" className="text-center py-3">
+              <p className="font-heading font-bold text-lg">{t("higherLower.gameOver")}</p>
+              <p className="font-mono font-bold text-3xl leading-none mt-0.5">{score}</p>
+              <p className="text-[10px] opacity-80 mt-0.5">{t("higherLower.finalScore")}</p>
               {endReason === "pool_exhausted" && (
-                <p className="text-xs opacity-80 mt-2">
+                <p className="text-[10px] opacity-80 mt-1">
                   {t("higherLower.poolExhausted")}
                 </p>
               )}
