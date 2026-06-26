@@ -1,6 +1,6 @@
 import { useNavigate, useParams, Navigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { ChevronRight, Crown } from "lucide-react";
+import { ChevronRight } from "lucide-react";
 import { NeoCard } from "@/components/neo/NeoCard";
 import { NeoBadge } from "@/components/neo/NeoBadge";
 import { ShellLayout } from "@/components/shell/ShellLayout";
@@ -222,8 +222,9 @@ function RankedModeCard({
         <tile.icon size={26} strokeWidth={2.5} className="text-foreground" />
       </div>
       <div className="flex-1 min-w-0">
-        <NeoBadge color="yellow" className="mb-1">
-          <Crown size={10} strokeWidth={3} className="mr-1" />
+        {/* Neo pill, text only — uppercase/mono treatment comes from NeoBadge;
+            no emoji or icon (off-brand for the neo-brutalist system). */}
+        <NeoBadge color="yellow" className="mb-1 whitespace-nowrap">
           {t("compete.rankedBadge")}
         </NeoBadge>
         <p className="font-heading font-bold text-base md:text-lg leading-tight">
