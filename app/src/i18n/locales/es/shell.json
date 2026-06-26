@@ -100,9 +100,13 @@
     "modeGridHint": "{{sport}} · elige cómo quieres jugar",
     "sections": {
       "solo": "Modos individuales",
+      "ranked": "Clasificatorio",
+      "casual": "Casual",
       "knowledge": "Cultura general",
       "friends": "Con amigos"
-    }
+    },
+    "rankedBadge": "Cuenta para tu ELO",
+    "casualHint": "Solo por diversión — no afectan tu rango."
   },
   "modes": {
     "quiz": { "name": "Quiz", "desc": "10 preguntas, puntuación por tiempo" },

@@ -6,6 +6,7 @@ import { NeoBadge } from "@/components/neo/NeoBadge";
 import { NeoButton } from "@/components/neo/NeoButton";
 import { ShellLayout } from "@/components/shell/ShellLayout";
 import { SHELL_ROUTES } from "@/lib/shellRoutes";
+import { RANKED_MODE_TILES } from "./competeModeTiles";
 import { useAuth } from "@/contexts/AuthContext";
 import {
   RANKED_CAPABILITIES,
@@ -38,6 +39,14 @@ import type { Id } from "../../../convex/_generated/dataModel";
 const BOARD_SPORT = "football";
 const BOARD_MODE = "quiz";
 const BOARD_SIZE = 5;
+
+/**
+ * "Play ranked" lands straight in the ranked mode (Quiz today) rather than the
+ * generic Compete grid — reusing the tile's OWN deep-link builder so this route
+ * can't drift from the grid. Falls back to the grid if no ranked mode exists.
+ */
+const PLAY_RANKED_TO =
+  RANKED_MODE_TILES[0]?.to(BOARD_SPORT) ?? SHELL_ROUTES.compete;
 
 const MEDALS: Record<number, string> = {
   1: "#E2B23A",
@@ -250,7 +259,7 @@ export default function RanksScreen() {
           </div>
         ))}
       </div>
-      <NeoButton variant="primary" size="full" onClick={() => navigate(SHELL_ROUTES.compete)}>
+      <NeoButton variant="primary" size="full" onClick={() => navigate(PLAY_RANKED_TO)}>
         {t("ranks.playRanked")}
       </NeoButton>
     </div>

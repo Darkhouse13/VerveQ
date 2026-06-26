@@ -13,6 +13,15 @@ export interface ModeTile {
   color: NeoColor;
   /** Builds the EXISTING, proven deep link for the chosen sport. */
   to: (sport: string) => string;
+  /**
+   * Whether finishing this mode moves the player's ELO — the SINGLE source of
+   * truth for the Compete grid's RANKED vs CASUAL split (the screen derives its
+   * sections from this flag, never a hardcoded key list). Set on a mode iff its
+   * server finalizer writes `userRatings` AND that ladder is surfaced to the
+   * player. Quiz only today: Survival also writes ELO, but its ladder isn't
+   * shown, so it stays casual until that's surfaced — a one-line flip here.
+   */
+  ranked?: boolean;
 }
 
 // Tile config for the Compete landing grid (CompeteModeGridScreen). Lives in
@@ -25,7 +34,7 @@ export const COMPETE_MODE_TILES: ModeTile[] = [
   // Quiz is migrated to the v2 shell's centered-column "prototype layout". It
   // routes through the existing difficulty picker (target=v2) so the player
   // chooses a difficulty rather than defaulting to intermediate.
-  { key: "quiz", icon: Brain, color: "accent", to: (s) => `/difficulty?sport=${s}&mode=quiz&target=v2` },
+  { key: "quiz", icon: Brain, color: "accent", ranked: true, to: (s) => `/difficulty?sport=${s}&mode=quiz&target=v2` },
   // Arena and Duels are DISTINCT flows: Arena is the group-challenge-room
   // experience (create/join a room by code — its own shell hub), Duels is
   // head-to-head send-a-link via the Challenge hub embedded in the shell.
@@ -60,3 +69,11 @@ export const COMPETE_KNOWLEDGE_TILES: ModeTile[] = [
   { key: "knowledgeQuiz", icon: Lightbulb, color: "blue", to: () => `/difficulty?sport=knowledge&mode=quiz&target=v2` },
   { key: "cameFirst", icon: Clock, color: "primary", to: () => `/difficulty?sport=knowledge&mode=came_first&target=v2` },
 ];
+
+// The ranked modes (finishing them moves ELO), in grid order. DERIVED from the
+// `ranked` flag so ranked-ness stays declared in exactly one place — the Compete
+// grid renders its RANKED section from this, and Ranks' "Play ranked" button
+// reuses the first entry's own deep-link builder so the route can't drift.
+export const RANKED_MODE_TILES: ModeTile[] = COMPETE_MODE_TILES.filter(
+  (t) => t.ranked,
+);
