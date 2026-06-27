@@ -1,8 +1,15 @@
-import { internalMutation, internalAction } from "./_generated/server";
+import {
+  internalMutation,
+  internalAction,
+  type MutationCtx,
+} from "./_generated/server";
 import { internal } from "./_generated/api";
 import { v } from "convex/values";
 import { knowledgeQuestions } from "./knowledgeQuestions";
 import { footballRecordsQuestions } from "./footballRecordsQuestions";
+import { footballTriviaExpansion } from "./footballTriviaExpansionV1";
+import { basketballTriviaExpansion } from "./basketballTriviaExpansionV1";
+import { tennisTriviaExpansion } from "./tennisTriviaExpansionV1";
 
 export const clearAll = internalMutation({
   args: {},
@@ -125,6 +132,62 @@ export const seedFootballRecordsQuestions = internalMutation({
 
     return { inserted, skipped, total: footballRecordsQuestions.length };
   },
+});
+
+// Sports text-trivia expansions (football/basketball/tennis). Web-researched,
+// adversarially fact-verified, content-QA clean (0 ERRORs), and deduped against
+// the live pool at build time. Each skips by checksum so re-runs are idempotent.
+const seedTriviaBank = async (
+  ctx: MutationCtx,
+  bank: ReadonlyArray<{
+    sport: string;
+    category: string;
+    question: string;
+    options: string[];
+    correctAnswer: string;
+    explanation?: string;
+    difficulty: "easy" | "intermediate" | "hard";
+    bucket: string;
+    checksum: string;
+  }>,
+) => {
+  let inserted = 0;
+  let skipped = 0;
+  for (const q of bank) {
+    const existing = await ctx.db
+      .query("quizQuestions")
+      .withIndex("by_checksum", (qb) => qb.eq("checksum", q.checksum))
+      .first();
+    if (existing) {
+      skipped++;
+      continue;
+    }
+    await ctx.db.insert("quizQuestions", {
+      ...q,
+      difficultyVotes: 0,
+      difficultyScore: 0,
+      timesAnswered: 0,
+      timesCorrect: 0,
+      usageCount: 0,
+    });
+    inserted++;
+  }
+  return { inserted, skipped, total: bank.length };
+};
+
+export const seedFootballTriviaExpansion = internalMutation({
+  args: {},
+  handler: async (ctx) => seedTriviaBank(ctx, footballTriviaExpansion),
+});
+
+export const seedBasketballTriviaExpansion = internalMutation({
+  args: {},
+  handler: async (ctx) => seedTriviaBank(ctx, basketballTriviaExpansion),
+});
+
+export const seedTennisTriviaExpansion = internalMutation({
+  args: {},
+  handler: async (ctx) => seedTriviaBank(ctx, tennisTriviaExpansion),
 });
 
 // ── Image question seeding ───────────────────────────────────────────────────
