@@ -6,6 +6,10 @@ import { normalizeAnswer } from "./lib/scoring";
 import { incrementTotalGames } from "./lib/playCount";
 import { levenshteinDistance } from "./lib/fuzzy";
 import {
+  expandPlayerDisplayName,
+  playerSearchTokens,
+} from "./lib/playerSearch";
+import {
   acceptedTiersFor,
   DEFAULT_DIFFICULTY,
   difficultyArg,
@@ -17,15 +21,32 @@ const SESSION_TTL_MS = 60 * 60 * 1000; // 1 hour
 const MAX_GUESSES = 9;
 const MIN_QUERY_LENGTH = 2;
 
-function matchesPlayerSearch(name: string, queryText: string): boolean {
-  const query = normalizeAnswer(queryText);
-  const normalizedName = normalizeAnswer(name);
-  if (normalizedName.includes(query)) return true;
+/**
+ * Does this player match the search query? Matches across the player's full
+ * token bag (display name + first name + last name), so "Harry Kane" finds a
+ * row stored as name "H. Kane" / firstName "Harry Edward" / lastName "Kane",
+ * and "Haaland" finds a compound lastName "Braut Haaland". `normalizedQuery`
+ * must already be normalizeAnswer()'d by the caller.
+ */
+function matchesPlayerSearch(player: RosterPlayer, normalizedQuery: string): boolean {
+  const tokens = playerSearchTokens(player.name, player.firstName, player.lastName);
+  if (tokens.length === 0) return false;
 
-  const maxDistance = query.length < 5 ? 1 : 2;
-  return normalizedName
-    .split(/\s+/)
-    .some((token) => levenshteinDistance(query, token) <= maxDistance);
+  // Whole-query substring over the token bag — handles partial single tokens
+  // ("fost" → "foster") and contiguous multi-token queries.
+  if (tokens.join(" ").includes(normalizedQuery)) return true;
+
+  // Otherwise every query token must hit some name token (prefix or typo-close).
+  const queryTokens = normalizedQuery.split(/\s+/).filter(Boolean);
+  if (queryTokens.length === 0) return false;
+  return queryTokens.every((queryToken) => {
+    const maxDistance = queryToken.length < 5 ? 1 : 2;
+    return tokens.some(
+      (token) =>
+        token.startsWith(queryToken) ||
+        levenshteinDistance(queryToken, token) <= maxDistance,
+    );
+  });
 }
 
 /**
@@ -46,10 +67,18 @@ export function buildRosterSearchPrefixes(queryText: string): string[] {
 type RosterPlayer = {
   externalId: string;
   name: string;
+  firstName?: string;
+  lastName?: string;
   photo?: string;
   position?: string;
   nationality?: string;
 };
+
+/** 0 if the player's (expanded) display name starts with the query — these lead. */
+function leadsByPrefix(player: RosterPlayer, normalizedQuery: string): number {
+  const display = expandPlayerDisplayName(player.name, player.firstName, player.lastName);
+  return normalizeAnswer(display).startsWith(normalizedQuery) ? 0 : 1;
+}
 
 /** Rank + dedupe + cap full-roster search hits. Pure so the contract can pin it. */
 export function rankRosterSearchResults<T extends RosterPlayer>(
@@ -66,12 +95,12 @@ export function rankRosterSearchResults<T extends RosterPlayer>(
       seen.add(player.externalId);
       return (
         !excludedExternalIds.has(player.externalId) &&
-        matchesPlayerSearch(player.name, normalized)
+        matchesPlayerSearch(player, normalized)
       );
     })
     .sort((a, b) => {
-      const aStarts = normalizeAnswer(a.name).startsWith(normalized) ? 0 : 1;
-      const bStarts = normalizeAnswer(b.name).startsWith(normalized) ? 0 : 1;
+      const aStarts = leadsByPrefix(a, normalized);
+      const bStarts = leadsByPrefix(b, normalized);
       if (aStarts !== bStarts) return aStarts - bStarts;
       return a.name.localeCompare(b.name);
     })
@@ -218,7 +247,30 @@ export const searchPlayers = query({
       }
     }
 
-    const candidates = [];
+    // Gather a candidate pool from two sources, then let rankRosterSearchResults
+    // decide relevance. Dedupe by externalId.
+    const candidatesById = new Map<string, RosterPlayer>();
+    const addCandidate = (player: RosterPlayer) => {
+      candidatesById.set(player.externalId, player);
+    };
+
+    // (1) Full-text search index over `searchText` (name + firstName + lastName
+    // tokens). This is what makes "Harry Kane" / "Jude Bellingham" / "Haaland"
+    // (compound lastName "Braut Haaland") findable — a prefix scan over the
+    // abbreviated `name`/`lastName` alone can't reach them.
+    const normalizedQuery = normalizeAnswer(queryText);
+    if (normalizedQuery) {
+      const searchHits = await ctx.db
+        .query("sportsPlayers")
+        .withSearchIndex("search_text", (q) =>
+          q.search("searchText", normalizedQuery).eq("sport", sport),
+        )
+        .take(64);
+      for (const player of searchHits) addCandidate(player);
+    }
+
+    // (2) Legacy prefix scans over name/lastName. Kept as a robust fallback that
+    // also covers any rows not yet carrying `searchText` (pre-backfill window).
     for (const prefix of buildRosterSearchPrefixes(queryText)) {
       const upperBound = `${prefix}￿`;
       const byName = await ctx.db
@@ -233,12 +285,17 @@ export const searchPlayers = query({
           q.eq("sport", sport).gte("lastName", prefix).lt("lastName", upperBound),
         )
         .take(25);
-      candidates.push(...byName, ...byLastName);
+      for (const player of [...byName, ...byLastName]) addCandidate(player);
     }
 
-    return rankRosterSearchResults(candidates, queryText, usedPlayerIds).map((player) => ({
+    return rankRosterSearchResults(
+      [...candidatesById.values()],
+      queryText,
+      usedPlayerIds,
+    ).map((player) => ({
       externalId: player.externalId,
-      name: player.name,
+      // Show the recognisable full name ("Harry Kane"), not the stored "H. Kane".
+      name: expandPlayerDisplayName(player.name, player.firstName, player.lastName),
       photo: player.photo,
       position: player.position,
       nationality: player.nationality,

@@ -66,3 +66,67 @@ describe("rankRosterSearchResults", () => {
     expect(rankRosterSearchResults(many, "foster")).toHaveLength(10);
   });
 });
+
+/**
+ * The roster stores abbreviated display names ("H. Kane") with the real given
+ * name in firstName and a possibly-compound surname in lastName ("Braut
+ * Haaland"). Search must reach players by their well-known full name and by any
+ * surname token — not just the stored abbreviation. (Regression: "Harry Kane"
+ * and even "Haaland" used to return nothing.)
+ */
+describe("rankRosterSearchResults — full names & compound surnames", () => {
+  const stars = [
+    {
+      externalId: "kane",
+      name: "H. Kane",
+      firstName: "Harry Edward",
+      lastName: "Kane",
+      nationality: "England",
+    },
+    {
+      externalId: "haaland",
+      name: "E. Haaland",
+      firstName: "Erling",
+      lastName: "Braut Haaland",
+      nationality: "Norway",
+    },
+    {
+      externalId: "bellingham",
+      name: "J. Bellingham",
+      firstName: "Jude Victor William",
+      lastName: "Bellingham",
+      nationality: "England",
+    },
+    {
+      externalId: "messi",
+      name: "Lionel Messi",
+      firstName: "Lionel Andrés",
+      lastName: "Messi",
+      nationality: "Argentina",
+    },
+  ];
+
+  it("finds an abbreviated player by their full name", () => {
+    expect(rankRosterSearchResults(stars, "Harry Kane").map((r) => r.externalId)).toContain("kane");
+    expect(
+      rankRosterSearchResults(stars, "Jude Bellingham").map((r) => r.externalId),
+    ).toContain("bellingham");
+  });
+
+  it("finds a player by a non-leading compound-surname token", () => {
+    expect(rankRosterSearchResults(stars, "Haaland").map((r) => r.externalId)).toContain("haaland");
+    expect(
+      rankRosterSearchResults(stars, "Erling Haaland").map((r) => r.externalId),
+    ).toContain("haaland");
+  });
+
+  it("still finds by surname alone", () => {
+    expect(rankRosterSearchResults(stars, "kane").map((r) => r.externalId)).toContain("kane");
+  });
+
+  it("tolerates a typo in a longer surname", () => {
+    expect(
+      rankRosterSearchResults(stars, "Bellinghan").map((r) => r.externalId),
+    ).toContain("bellingham");
+  });
+});

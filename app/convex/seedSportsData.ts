@@ -1,6 +1,14 @@
-import { internalMutation, query, type MutationCtx, type QueryCtx } from "./_generated/server";
+import {
+  internalAction,
+  internalMutation,
+  query,
+  type MutationCtx,
+  type QueryCtx,
+} from "./_generated/server";
+import { internal } from "./_generated/api";
 import type { Id } from "./_generated/dataModel";
 import { v } from "convex/values";
+import { buildPlayerSearchText } from "./lib/playerSearch";
 
 const curatedTableName = v.union(
   v.literal("sportsPlayers"),
@@ -280,7 +288,22 @@ export const seedPlayersBatch = internalMutation({
     ...seedBatchArgs,
   },
   handler: async (ctx, { records, seedVersion, replaceExisting }) =>
-    seedBatch(ctx, "sportsPlayers", records, seedVersion, replaceExisting),
+    // Derive searchText at write time so freshly seeded / reseeded rows are
+    // searchable by full name without depending on the upstream artifact.
+    seedBatch(
+      ctx,
+      "sportsPlayers",
+      records.map((record) => ({
+        ...record,
+        searchText: buildPlayerSearchText(
+          record.name,
+          record.firstName,
+          record.lastName,
+        ),
+      })),
+      seedVersion,
+      replaceExisting,
+    ),
 });
 
 export const seedTeamsBatch = internalMutation({
@@ -610,5 +633,76 @@ export const getCuratedSeedTableStatusPage = query({
       continueCursor: page.continueCursor,
       isDone: page.isDone,
     };
+  },
+});
+
+// ── searchText backfill ───────────────────────────────────────────────────────
+// One-off (idempotent) job to populate `sportsPlayers.searchText` for rows that
+// were seeded before the field/search-index existed. Safe to re-run.
+
+export const backfillPlayerSearchTextPage = internalMutation({
+  args: {
+    sport: v.string(),
+    cursor: v.union(v.string(), v.null()),
+  },
+  handler: async (ctx, { sport, cursor }) => {
+    const page = await ctx.db
+      .query("sportsPlayers")
+      .withIndex("by_sport", (q) => q.eq("sport", sport))
+      .paginate({ numItems: 256, cursor, maximumRowsRead: 512 });
+
+    let updated = 0;
+    for (const doc of page.page) {
+      const desired = buildPlayerSearchText(doc.name, doc.firstName, doc.lastName);
+      if (doc.searchText !== desired) {
+        await ctx.db.patch(doc._id, { searchText: desired });
+        updated++;
+      }
+    }
+
+    return {
+      updated,
+      scanned: page.page.length,
+      isDone: page.isDone,
+      continueCursor: page.continueCursor,
+    };
+  },
+});
+
+export const backfillPlayerSearchText = internalAction({
+  args: { sport: v.optional(v.string()) },
+  handler: async (
+    ctx,
+    { sport },
+  ): Promise<{
+    sport: string;
+    totalUpdated: number;
+    totalScanned: number;
+    pages: number;
+  }> => {
+    const targetSport = sport ?? "football";
+    let cursor: string | null = null;
+    let totalUpdated = 0;
+    let totalScanned = 0;
+    let pages = 0;
+
+    for (;;) {
+      const result: {
+        updated: number;
+        scanned: number;
+        isDone: boolean;
+        continueCursor: string;
+      } = await ctx.runMutation(
+        internal.seedSportsData.backfillPlayerSearchTextPage,
+        { sport: targetSport, cursor },
+      );
+      totalUpdated += result.updated;
+      totalScanned += result.scanned;
+      pages++;
+      if (result.isDone) break;
+      cursor = result.continueCursor;
+    }
+
+    return { sport: targetSport, totalUpdated, totalScanned, pages };
   },
 });

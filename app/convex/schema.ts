@@ -956,11 +956,20 @@ export default defineSchema({
     position: v.optional(v.string()),
     photo: v.optional(v.string()),
     injured: v.optional(v.boolean()),
+    // Denormalized, accent-folded token bag of name + firstName + lastName.
+    // Powers full-name / any-surname-token search (the stored `name` is often an
+    // abbreviated "X. Lastname"). Populated by the seed path + a backfill job;
+    // optional so pre-backfill rows still validate. See lib/playerSearch.ts.
+    searchText: v.optional(v.string()),
   })
     .index("by_external_id", ["externalId"])
     .index("by_sport", ["sport"])
     .index("by_sport_name", ["sport", "name"])
-    .index("by_sport_lastName", ["sport", "lastName"]),
+    .index("by_sport_lastName", ["sport", "lastName"])
+    .searchIndex("search_text", {
+      searchField: "searchText",
+      filterFields: ["sport"],
+    }),
 
   sportsTeams: defineTable({
     externalId: v.string(),
