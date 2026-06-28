@@ -2373,6 +2373,60 @@ describe("challenge arena lifecycle integration", () => {
     );
   });
 
+  it("routes the knowledge-category subjects (science, movies_tv) into selectable rounds", async () => {
+    const db = makeSeededDb();
+    for (let i = 0; i < 20; i += 1) {
+      const suffix = String(i).padStart(2, "0");
+      seedQuestion(db, `science_${suffix}`, {
+        sport: "knowledge",
+        category: "science",
+        checksum: `scin1_test0000${suffix}`,
+        correctAnswer: `Science Fact ${suffix}`,
+      });
+      seedQuestion(db, `movies_${suffix}`, {
+        sport: "knowledge",
+        category: "movies_tv",
+        checksum: `movtv1_test000${suffix}`,
+        correctAnswer: `Movie Fact ${suffix}`,
+      });
+    }
+
+    setAuth("user_a");
+    const created = (await handlerOf(challengeArenas.create)(makeCtx(db), {
+      mode: "1v1",
+      rounds: 2,
+      perRound: 6,
+      categories: ["science", "movies_tv"],
+    })) as { arenaId: string; code: string };
+    setAuth("user_b");
+    await handlerOf(challengeArenas.join)(makeCtx(db), { code: created.code });
+    await readyUsers(db, created.arenaId, ["user_a", "user_b"]);
+
+    setAuth("user_a");
+    const startResult = (await handlerOf(challengeArenas.start)(makeCtx(db), {
+      arenaId: created.arenaId,
+    })) as { questionSetSizes: number[]; categories: string[] };
+    expect(startResult.questionSetSizes).toEqual([6, 6]);
+    expect(startResult.categories).toEqual(["science", "movies_tv"]);
+
+    const arena = db.row<ArenaRow>(created.arenaId);
+    const rounds = arena.roundChecksums.map((round) =>
+      round.map((checksum) => questionByChecksum(db, checksum)),
+    );
+    expect(
+      rounds[0].every(
+        (question) =>
+          question.sport === "knowledge" && question.category === "science",
+      ),
+    ).toBe(true);
+    expect(
+      rounds[1].every(
+        (question) =>
+          question.sport === "knowledge" && question.category === "movies_tv",
+      ),
+    ).toBe(true);
+  });
+
   it("caps image questions per round for an image-heavy sport (basketball)", async () => {
     const db = makeSeededDb();
     // Image-heavy pool: 18 silhouettes (imageId) + 18 text MCQs.

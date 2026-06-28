@@ -31,6 +31,11 @@ import {
   arenaCieSeedPlan,
   type ArenaCiePlannedRow,
 } from "./challengeArenaCieContent";
+import { scienceQuestions } from "./scienceQuestionsV1";
+import { worldHistoryQuestions } from "./worldHistoryQuestionsV1";
+import { moviesTvQuestions } from "./moviesTvQuestionsV1";
+import { musicQuestions } from "./musicQuestionsV1";
+import { videoGamesQuestions } from "./videoGamesQuestionsV1";
 import { contentDuplicateKey } from "./lib/contentQa";
 
 const ARENA_ROUNDS = 5;
@@ -1221,6 +1226,55 @@ const ROUND_SPEC_REGISTRY: Record<string, RoundSpec> = {
     scopes: [{ sport: "basketball", cursorAlphabet: HEX_CURSOR_ALPHABET }],
     predicate: isAnswerableMcq,
     contentFloor: 733,
+  },
+  // General-knowledge subject rounds, seeded as sport "knowledge" with a
+  // dedicated category each (see *QuestionsV1.ts). The bundled bank doubles as
+  // the runtime fallback + static content floor. These categories are NOT
+  // excluded from the general_knowledge pool — they enrich it too — and the
+  // per-game `used` set prevents a question repeating across rounds.
+  science: {
+    kind: "indexed",
+    label: "science & nature",
+    scopes: [{ sport: "knowledge", category: "science", cursorPrefix: "scin1_" }],
+    predicate: (question) =>
+      question.category === "science" && isAnswerableMcq(question),
+    fallbackSeeds: scienceQuestions,
+  },
+  world_history: {
+    kind: "indexed",
+    label: "world history",
+    scopes: [{ sport: "knowledge", category: "history", cursorPrefix: "whist1_" }],
+    predicate: (question) =>
+      question.category === "history" && isAnswerableMcq(question),
+    fallbackSeeds: worldHistoryQuestions,
+  },
+  movies_tv: {
+    kind: "indexed",
+    label: "movies & tv",
+    scopes: [
+      { sport: "knowledge", category: "movies_tv", cursorPrefix: "movtv1_" },
+    ],
+    predicate: (question) =>
+      question.category === "movies_tv" && isAnswerableMcq(question),
+    fallbackSeeds: moviesTvQuestions,
+  },
+  music: {
+    kind: "indexed",
+    label: "music",
+    scopes: [{ sport: "knowledge", category: "music", cursorPrefix: "musq1_" }],
+    predicate: (question) =>
+      question.category === "music" && isAnswerableMcq(question),
+    fallbackSeeds: musicQuestions,
+  },
+  video_games: {
+    kind: "indexed",
+    label: "video games",
+    scopes: [
+      { sport: "knowledge", category: "video_games", cursorPrefix: "vgam1_" },
+    ],
+    predicate: (question) =>
+      question.category === "video_games" && isAnswerableMcq(question),
+    fallbackSeeds: videoGamesQuestions,
   },
 };
 

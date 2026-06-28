@@ -46,6 +46,11 @@ export const ARENA_CATEGORY_OPTIONS: Array<{
   { key: "capital_cities", label: "Capital Cities", emoji: "🏙️", blurb: "Capitals of the world" },
   { key: "tennis", label: "Tennis", emoji: "🎾", blurb: "ATP, slams, records" },
   { key: "basketball", label: "Basketball", emoji: "🏀", blurb: "NBA players, teams, history" },
+  { key: "science", label: "Science & Nature", emoji: "🔬", blurb: "The natural world & beyond" },
+  { key: "world_history", label: "World History", emoji: "🏛️", blurb: "Events, eras & empires" },
+  { key: "movies_tv", label: "Movies & TV", emoji: "🎬", blurb: "Films, shows & stars" },
+  { key: "music", label: "Music", emoji: "🎵", blurb: "Artists, albums & eras" },
+  { key: "video_games", label: "Video Games", emoji: "🎮", blurb: "Franchises, studios & icons" },
 ];
 
 // The subjects pre-selected for the default 5-round arena (matches the server's
@@ -195,6 +200,11 @@ const CATEGORY_LABELS: Record<string, string> = {
   name_the_logo: "Name the Logo",
   capital_cities: "Capital Cities",
   geography_fallback_for_logo: "Geography",
+  science: "Science & Nature",
+  world_history: "World History",
+  movies_tv: "Movies & TV",
+  music: "Music",
+  video_games: "Video Games",
 };
 
 export function arenaCategoryLabel(slug: string) {
@@ -222,6 +232,16 @@ export function arenaCategoryEmoji(slug: string) {
       return "🏙️";
     case "geography_fallback_for_logo":
       return "🗺️";
+    case "science":
+      return "🔬";
+    case "world_history":
+      return "🏛️";
+    case "movies_tv":
+      return "🎬";
+    case "music":
+      return "🎵";
+    case "video_games":
+      return "🎮";
     default:
       return "❓";
   }

@@ -10,6 +10,11 @@ import { footballRecordsQuestions } from "./footballRecordsQuestions";
 import { footballTriviaExpansion } from "./footballTriviaExpansionV1";
 import { basketballTriviaExpansion } from "./basketballTriviaExpansionV1";
 import { tennisTriviaExpansion } from "./tennisTriviaExpansionV1";
+import { scienceQuestions } from "./scienceQuestionsV1";
+import { worldHistoryQuestions } from "./worldHistoryQuestionsV1";
+import { moviesTvQuestions } from "./moviesTvQuestionsV1";
+import { musicQuestions } from "./musicQuestionsV1";
+import { videoGamesQuestions } from "./videoGamesQuestionsV1";
 
 export const clearAll = internalMutation({
   args: {},
@@ -188,6 +193,34 @@ export const seedBasketballTriviaExpansion = internalMutation({
 export const seedTennisTriviaExpansion = internalMutation({
   args: {},
   handler: async (ctx) => seedTriviaBank(ctx, tennisTriviaExpansion),
+});
+
+// New Arena subjects (sport "knowledge", dedicated category each). Generated +
+// independently fact-verified, deduped, content-QA clean (0 ERRORs). Idempotent
+// by checksum.
+export const seedScienceQuestions = internalMutation({
+  args: {},
+  handler: async (ctx) => seedTriviaBank(ctx, scienceQuestions),
+});
+
+export const seedWorldHistoryQuestions = internalMutation({
+  args: {},
+  handler: async (ctx) => seedTriviaBank(ctx, worldHistoryQuestions),
+});
+
+export const seedMoviesTvQuestions = internalMutation({
+  args: {},
+  handler: async (ctx) => seedTriviaBank(ctx, moviesTvQuestions),
+});
+
+export const seedMusicQuestions = internalMutation({
+  args: {},
+  handler: async (ctx) => seedTriviaBank(ctx, musicQuestions),
+});
+
+export const seedVideoGamesQuestions = internalMutation({
+  args: {},
+  handler: async (ctx) => seedTriviaBank(ctx, videoGamesQuestions),
 });
 
 // ── Image question seeding ───────────────────────────────────────────────────
