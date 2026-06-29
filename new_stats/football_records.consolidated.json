@@ -1,0 +1,799 @@
+{
+  "meta": {
+    "title": "VerveQ Football Records & All-Time Stats — Consolidated Dataset",
+    "version": 1,
+    "currentAsOf": "2026-06-23",
+    "sources": [
+      "compass_artifact_wf-1941a734-7680-41fe-81f3-65d045a957ea_text_markdown.md",
+      "compass_artifact_wf-ec0bdd8c-3b47-4be7-98a5-304e5529fce7_text_markdown.md"
+    ],
+    "liveCaveat": "The 2026 World Cup is in progress (June–July 2026). All active-player tournament/career figures (Messi, Mbappé, Ronaldo, Lukaku, Lewandowski — WC goals, caps, international goals, appearances) are changing match-to-match. Such facts are marked \"volatile\": true and should be re-verified after the WC final and the close of the 2025–26 domestic seasons.",
+    "fameSystem": "Each fact carries a \"fame\" anchor used to seed question difficulty: 'iconic' = headline record a semi-casual fan could know; 'known' = an engaged fan would know; 'niche' = stats-specialist territory.",
+    "difficultySystem": {
+      "tiers": ["easy", "intermediate", "hard"],
+      "rule": "Difficulty is per-QUESTION, not per-fact, because one fact yields questions of different difficulty. Axis 1 = fact fame (iconic/known/niche). Axis 2 = question form: naming the #1 holder is easiest; naming #2-#3 or a less-famous holder is mid; recalling an exact number, a deep rank (#4+), or an obscure holder is hardest.",
+      "easy": "fame=iconic AND form=name-the-#1-holder (or identify the famous record). Intended to be the SMALLEST bucket.",
+      "intermediate": "fame=known; OR an iconic fact asked via exact number / 2nd-3rd placing / league-title count.",
+      "hard": "fame=niche; OR any deep rank (#4+); OR precise historic numbers; OR obscure single-tournament/match/manager records."
+    },
+    "conflictsPolicy": "Where the two sources disagree, the primary value is chosen (Wikipedia EUR-at-time for transfer ordering; the most recent / officially-sourced figure for live stats) and the alternative is recorded in \"conflicts\"."
+  },
+
+  "facts": [
+
+    {
+      "id": "transfer_men_alltime_top",
+      "category": "Transfers",
+      "subcategory": "Most expensive (men, all-time)",
+      "type": "leaderboard",
+      "statement": "Most expensive football transfers of all time (men), EUR at time of transfer",
+      "unit": "EUR millions",
+      "asOf": "2025-09-01",
+      "fame": "iconic",
+      "entries": [
+        {"rank": 1, "name": "Neymar", "move": "Barcelona → PSG", "pos": "FW", "value": 222, "year": 2017},
+        {"rank": 2, "name": "Kylian Mbappé", "move": "Monaco → PSG", "pos": "FW", "value": 180, "year": 2017},
+        {"rank": 3, "name": "Alexander Isak", "move": "Newcastle → Liverpool", "pos": "FW", "value": 144.5, "year": 2025, "note": "£125m fixed fee — British transfer record"},
+        {"rank": 4, "name": "João Félix", "move": "Benfica → Atlético Madrid", "pos": "FW", "value": 126, "year": 2019},
+        {"rank": 5, "name": "Enzo Fernández", "move": "Benfica → Chelsea", "pos": "MF", "value": 121, "year": 2023},
+        {"rank": 6, "name": "Antoine Griezmann", "move": "Atlético → Barcelona", "pos": "FW", "value": 120, "year": 2019},
+        {"rank": 7, "name": "Philippe Coutinho", "move": "Liverpool → Barcelona", "pos": "MF", "value": 118.4, "year": 2018},
+        {"rank": 8, "name": "Jack Grealish", "move": "Aston Villa → Man City", "pos": "MF", "value": 117.7, "year": 2021},
+        {"rank": 9, "name": "Florian Wirtz", "move": "Bayer Leverkusen → Liverpool", "pos": "MF", "value": 117.5, "year": 2025},
+        {"rank": 10, "name": "Declan Rice", "move": "West Ham → Arsenal", "pos": "MF", "value": 116.5, "year": 2023},
+        {"rank": 11, "name": "Moisés Caicedo", "move": "Brighton → Chelsea", "pos": "MF", "value": 116.3, "year": 2023},
+        {"rank": 12, "name": "Romelu Lukaku", "move": "Inter → Chelsea", "pos": "FW", "value": 115, "year": 2021},
+        {"rank": 13, "name": "Ousmane Dembélé", "move": "Dortmund → Barcelona", "pos": "FW", "value": 105, "year": 2017},
+        {"rank": 14, "name": "Paul Pogba", "move": "Juventus → Man United", "pos": "MF", "value": 105, "year": 2016},
+        {"rank": 15, "name": "Jude Bellingham", "move": "Dortmund → Real Madrid", "pos": "MF", "value": 103, "year": 2023},
+        {"rank": 16, "name": "Eden Hazard", "move": "Chelsea → Real Madrid", "pos": "FW", "value": 100, "year": 2019},
+        {"rank": 17, "name": "Cristiano Ronaldo", "move": "Real Madrid → Juventus", "pos": "FW", "value": 100, "year": 2018},
+        {"rank": 18, "name": "Harry Kane", "move": "Tottenham → Bayern Munich", "pos": "FW", "value": 100, "year": 2023},
+        {"rank": 19, "name": "Gareth Bale", "move": "Tottenham → Real Madrid", "pos": "FW", "value": 100, "year": 2013},
+        {"rank": 20, "name": "Antony", "move": "Ajax → Man United", "pos": "FW", "value": 95, "year": 2022},
+        {"rank": 21, "name": "Cristiano Ronaldo", "move": "Man United → Real Madrid", "pos": "FW", "value": 94, "year": 2009},
+        {"rank": 22, "name": "Joško Gvardiol", "move": "RB Leipzig → Man City", "pos": "DF", "value": 90, "year": 2023},
+        {"rank": 23, "name": "Neymar", "move": "PSG → Al-Hilal", "pos": "FW", "value": 90, "year": 2023},
+        {"rank": 24, "name": "Gonzalo Higuaín", "move": "Napoli → Juventus", "pos": "FW", "value": 90, "year": 2016},
+        {"rank": 25, "name": "Harry Maguire", "move": "Leicester → Man United", "pos": "DF", "value": 86.6, "year": 2019}
+      ],
+      "tiedTiers": {
+        "75m_tier_2019_2025": ["Matthijs de Ligt (Ajax→Juventus 2019)", "Frenkie de Jong (Ajax→Barcelona 2019)", "Bryan Mbeumo (Brentford→Man Utd 2025)", "Victor Osimhen (Napoli→Galatasaray 2025)", "Julián Álvarez (Man City→Atlético 2024)", "Darwin Núñez (Benfica→Liverpool 2022)"],
+        "60m_tier": ["Achraf Hakimi", "Christopher Nkunku", "Erling Haaland (Dortmund→Man City 2022)", "Naby Keïta", "Luís Figo"]
+      },
+      "notes": "Only ~18 players have ever moved for €100m+ (Goal.com, Jun 2025; Wirtz was the 18th). The €75m / €70m / €65m / €60m bands each contain many tied players — ideal distractor clusters.",
+      "conflicts": ["File 2 dates Mbappé's PSG move 2018 (loan-to-buy) vs 2017; uses Coutinho/Dembélé €135m (add-on-inclusive) vs Wikipedia EUR-at-time 118.4/105; Isak ~€150m+ and Wirtz ~€136m vs 144.5/117.5."]
+    },
+
+    {
+      "id": "transfer_men_by_position",
+      "category": "Transfers",
+      "subcategory": "Most expensive by position",
+      "type": "leaderboard_group",
+      "statement": "Most expensive transfer by playing position (men), EUR at time",
+      "unit": "EUR millions",
+      "fame": "known",
+      "groups": {
+        "Forward": [{"rank":1,"name":"Neymar","value":222,"year":2017},{"rank":2,"name":"Kylian Mbappé","value":180,"year":2017},{"rank":3,"name":"Alexander Isak","value":144.5,"year":2025},{"rank":4,"name":"João Félix","value":126,"year":2019},{"rank":5,"name":"Antoine Griezmann","value":120,"year":2019}],
+        "Midfielder": [{"rank":1,"name":"Enzo Fernández","value":121,"year":2023},{"rank":2,"name":"Philippe Coutinho","value":120,"year":2018},{"rank":3,"name":"Florian Wirtz","value":117.5,"year":2025},{"rank":4,"name":"Jack Grealish","value":117.7,"year":2021},{"rank":5,"name":"Moisés Caicedo","value":116.3,"year":2023}],
+        "Defender": [{"rank":1,"name":"Joško Gvardiol","value":90,"year":2023},{"rank":2,"name":"Harry Maguire","value":86.6,"year":2019},{"rank":3,"name":"Virgil van Dijk","value":84.4,"year":2018},{"rank":4,"name":"Wesley Fofana","value":80.9,"year":2022},{"rank":5,"name":"Lucas Hernández","value":80,"year":2019}],
+        "Goalkeeper": [{"rank":1,"name":"Kepa Arrizabalaga","value":80,"year":2018,"note":"release clause — world GK record"},{"rank":2,"name":"Alisson","value":72.5,"year":2018},{"rank":3,"name":"André Onana","value":52.5,"year":2023},{"rank":4,"name":"Gianluigi Buffon","value":51.6,"year":2001},{"rank":5,"name":"Ederson","value":40,"year":2017}]
+      },
+      "notes": "GK ordering #3/#4 (Onana vs Buffon) flips by conversion/add-on treatment.",
+      "conflicts": ["Van Dijk long held the world DF record (€84.4m) before Gvardiol; both are quizzable as 'record defender transfer'."]
+    },
+
+    {
+      "id": "transfer_record_per_big_five",
+      "category": "Transfers",
+      "subcategory": "Record incoming signing per Big Five league",
+      "type": "leaderboard_group",
+      "statement": "Record incoming transfer fee received within each Big Five league",
+      "unit": "EUR millions",
+      "fame": "known",
+      "groups": {
+        "Premier League": [{"rank":1,"name":"Alexander Isak","club":"Liverpool","value":144.5,"year":2025},{"rank":2,"name":"Enzo Fernández","club":"Chelsea","value":121,"year":2023},{"rank":3,"name":"Florian Wirtz","club":"Liverpool","value":117.5,"year":2025}],
+        "La Liga": [{"rank":1,"name":"João Félix","club":"Atlético","value":126,"year":2019},{"rank":2,"name":"Antoine Griezmann","club":"Barcelona","value":120,"year":2019},{"rank":3,"name":"Philippe Coutinho","club":"Barcelona","value":120,"year":2018}],
+        "Serie A": [{"rank":1,"name":"Cristiano Ronaldo","club":"Juventus","value":100,"year":2018},{"rank":2,"name":"Gonzalo Higuaín","club":"Juventus","value":90,"year":2016},{"rank":3,"name":"Romelu Lukaku","club":"Inter","value":80,"year":2019}],
+        "Bundesliga": [{"rank":1,"name":"Harry Kane","club":"Bayern","value":100,"year":2023},{"rank":2,"name":"Lucas Hernández","club":"Bayern","value":80,"year":2019},{"rank":3,"name":"Matthijs de Ligt","club":"Bayern","value":67,"year":2022}],
+        "Ligue 1": [{"rank":1,"name":"Neymar","club":"PSG","value":222,"year":2017},{"rank":2,"name":"Kylian Mbappé","club":"PSG","value":180,"year":2017},{"rank":3,"name":"Randal Kolo Muani","club":"PSG","value":75,"year":2023}]
+      },
+      "notes": "All top Ligue 1 records are PSG."
+    },
+
+    {
+      "id": "transfer_teenager_record",
+      "category": "Transfers",
+      "subcategory": "Most expensive teenager",
+      "type": "superlative",
+      "statement": "Most expensive teenage transfer",
+      "answer": "Kylian Mbappé",
+      "value": 180,
+      "valueDetail": "€180m, Monaco → PSG, 2017",
+      "fame": "known",
+      "distractors": ["João Félix (€126m, 2019)", "Jude Bellingham (€103m, 2023)", "Anthony Martial (€60m, 2015)"]
+    },
+
+    {
+      "id": "transfer_by_confederation",
+      "category": "Transfers",
+      "subcategory": "Most expensive by confederation",
+      "type": "leaderboard_group",
+      "statement": "Most expensive transfer of a player from each confederation",
+      "unit": "EUR millions",
+      "fame": "niche",
+      "groups": {
+        "CONMEBOL (S. America)": [{"name":"Neymar","value":222,"year":2017}],
+        "UEFA (Europe)": [{"name":"Kylian Mbappé","value":180,"year":2017}],
+        "CAF (Africa)": [{"name":"Nicolas Pépé","value":80,"move":"Lille→Arsenal","year":2019}],
+        "CONCACAF (N. America)": [{"name":"Christian Pulisic","value":64,"move":"Dortmund→Chelsea","year":2019}],
+        "AFC (Asia)": [{"name":"Kim Min-jae","value":50,"move":"Napoli→Bayern","year":2023}],
+        "OFC (Oceania)": [{"name":"Chris Wood","value":29,"move":"Burnley→Newcastle","year":2022}]
+      }
+    },
+
+    {
+      "id": "transfer_women_top",
+      "category": "Transfers",
+      "subcategory": "Most expensive (women)",
+      "type": "leaderboard",
+      "statement": "Most expensive women's football transfers",
+      "unit": "USD (reported)",
+      "asOf": "2026-01",
+      "fame": "niche",
+      "entries": [
+        {"rank": 1, "name": "Lizbeth Ovalle", "move": "Tigres → Orlando Pride", "value": "$1.5m", "year": 2025, "note": "world record (Wikipedia/Goal/GWR)"},
+        {"rank": 2, "name": "Alyssa Thompson", "move": "Angel City → Chelsea", "value": "~$1.34m", "year": 2025},
+        {"rank": 3, "name": "Olivia Smith", "move": "Liverpool → Arsenal", "value": "£1.0m", "year": 2025, "note": "first £1m player"},
+        {"rank": 4, "name": "Naomi Girma", "move": "San Diego Wave → Chelsea", "value": "$1.1m", "year": 2025, "note": "first $1m player (Jan 2025)"},
+        {"rank": 5, "name": "Racheal Kundananji", "move": "Madrid CFF → Bay FC", "value": "~$862k", "year": 2024, "note": "first African to hold the record"},
+        {"rank": 6, "name": "Barbra Banda", "move": "Shanghai → Orlando Pride", "value": "~$740k", "year": 2024}
+      ],
+      "notes": "FIFA recorded ~£20.74m ($28.6m) of women's transfer spend in 2025, up 80%+ YoY.",
+      "conflicts": ["Grokipedia ranks Grace Geyoro (PSG→London City Lionesses, ~£1.0–1.43m) #1, but the club denied a record fee. Treat Ovalle as the record."]
+    },
+
+    {
+      "id": "league_scorers_premier_league",
+      "category": "Premier League",
+      "subcategory": "All-time top scorers",
+      "type": "leaderboard",
+      "statement": "Premier League all-time top scorers (since 1992)",
+      "unit": "goals",
+      "asOf": "2026-02-22",
+      "fame": "iconic",
+      "entries": [
+        {"rank": 1, "name": "Alan Shearer", "value": 260},
+        {"rank": 2, "name": "Harry Kane", "value": 213},
+        {"rank": 3, "name": "Wayne Rooney", "value": 208},
+        {"rank": 4, "name": "Mohamed Salah", "value": 191, "active": true, "note": "finished his Liverpool PL career on 191"},
+        {"rank": 5, "name": "Andy Cole", "value": 187},
+        {"rank": 6, "name": "Sergio Agüero", "value": 184},
+        {"rank": 7, "name": "Frank Lampard", "value": 177},
+        {"rank": 8, "name": "Thierry Henry", "value": 175},
+        {"rank": 9, "name": "Robbie Fowler", "value": 163},
+        {"rank": 10, "name": "Jermain Defoe", "value": 162},
+        {"rank": 11, "name": "Michael Owen", "value": 150},
+        {"rank": 14, "name": "Jamie Vardy", "value": 145},
+        {"rank": 17, "name": "Son Heung-min", "value": 127},
+        {"rank": 30, "name": "Erling Haaland", "value": 107, "active": true},
+        {"rank": 34, "name": "Cristiano Ronaldo", "value": 103},
+        {"rank": 35, "name": "Matt Le Tissier", "value": 100}
+      ],
+      "notes": "The '100 Club' has 35 players. Haaland fastest to 100 (111 games, Dec 2025); Michael Owen youngest to 100 (23y 133d); Dwight Yorke first non-English to 100. Closest active to 100: Callum Wilson 93, Chris Wood 91. Ranks 16–35 bunch tightly (100–127) — great distractors."
+    },
+
+    {
+      "id": "league_records_premier_league",
+      "category": "Premier League",
+      "subcategory": "Miscellaneous records",
+      "type": "record_set",
+      "statement": "Assorted Premier League records",
+      "fame": "niche",
+      "records": [
+        {"record": "Most career clean sheets (GK)", "holder": "Petr Čech", "value": "202", "distractors": ["David James", "David de Gea", "Edwin van der Sar"]},
+        {"record": "Most clean sheets in one season", "holder": "Petr Čech", "value": "24 (2004–05)", "distractors": ["Joe Hart", "Ederson", "Edwin van der Sar"]},
+        {"record": "Longest run without conceding", "holder": "Edwin van der Sar", "value": "14 matches / 1,311 min (2008–09)", "distractors": ["Petr Čech", "Pepe Reina", "David de Gea"]},
+        {"record": "Most titles (manager)", "holder": "Sir Alex Ferguson", "value": "13", "distractors": ["Pep Guardiola", "Arsène Wenger", "José Mourinho"]},
+        {"record": "Quickest manager to 100 wins", "holder": "Pep Guardiola", "value": "134 games", "distractors": ["José Mourinho", "Sir Alex Ferguson", "Jürgen Klopp"]},
+        {"record": "Longest managerial tenure", "holder": "Arsène Wenger", "value": "21y 224d", "distractors": ["Sir Alex Ferguson", "David Moyes", "Sean Dyche"]},
+        {"record": "Biggest win", "holder": "Man Utd 9–0 Southampton (2021)", "value": "9–0", "distractors": ["Liverpool 9–0 Bournemouth", "Leicester 9–0 Southampton", "Tottenham 9–1 Wigan"]}
+      ]
+    },
+
+    {
+      "id": "league_scorers_la_liga",
+      "category": "La Liga",
+      "subcategory": "All-time top scorers",
+      "type": "leaderboard",
+      "statement": "La Liga all-time top scorers",
+      "unit": "goals",
+      "asOf": "2026-05-24",
+      "fame": "iconic",
+      "entries": [
+        {"rank": 1, "name": "Lionel Messi", "value": 474, "note": "all for Barcelona"},
+        {"rank": 2, "name": "Cristiano Ronaldo", "value": 311},
+        {"rank": 3, "name": "Telmo Zarra", "value": 251},
+        {"rank": 4, "name": "Hugo Sánchez", "value": 234},
+        {"rank": 5, "name": "Raúl", "value": 228},
+        {"rank": 6, "name": "Alfredo Di Stéfano", "value": 227},
+        {"rank": null, "name": "Karim Benzema", "value": 238, "note": "228 (Wikipedia) vs 238 (some media) — flagged"}
+      ],
+      "notes": "Most recent to 100: Cristhian Stuani (May 2024). Closest active: Mikel Oyarzabal 97.",
+      "conflicts": ["Benzema cited at 228 (Wikipedia) vs 238 (media); ranking among Zarra/Hugo Sánchez/Raúl/Di Stéfano shifts accordingly."]
+    },
+
+    {
+      "id": "league_scorers_bundesliga",
+      "category": "Bundesliga",
+      "subcategory": "All-time top scorers",
+      "type": "leaderboard",
+      "statement": "Bundesliga all-time top scorers",
+      "unit": "goals",
+      "fame": "known",
+      "entries": [
+        {"rank": 1, "name": "Gerd Müller", "value": 365},
+        {"rank": 2, "name": "Robert Lewandowski", "value": 312},
+        {"rank": 3, "name": "Klaus Fischer", "value": 268},
+        {"rank": 4, "name": "Manfred Burgsmüller", "value": 213},
+        {"rank": 5, "name": "Jupp Heynckes", "value": 220, "note": "file 2 lists 220 at #4; ordering near 213–220 varies"}
+      ],
+      "notes": "Most recent to 100: Andrej Kramarić (May 2023). Harry Kane scoring heavily in 2025–26.",
+      "conflicts": ["File 1 has Burgsmüller 213 at #4 then Pizarro ~197; File 2 inserts Heynckes 220 at #4. Müller, Lewandowski, Fischer top 3 are uncontested."]
+    },
+
+    {
+      "id": "league_scorers_serie_a",
+      "category": "Serie A",
+      "subcategory": "All-time top scorers",
+      "type": "leaderboard",
+      "statement": "Serie A all-time top scorers",
+      "unit": "goals",
+      "fame": "known",
+      "entries": [
+        {"rank": 1, "name": "Silvio Piola", "value": 274},
+        {"rank": 2, "name": "Francesco Totti", "value": 250},
+        {"rank": 3, "name": "Gunnar Nordahl", "value": 225, "note": "best ratio, 0.77"},
+        {"rank": 4, "name": "Giuseppe Meazza", "value": 216},
+        {"rank": 4, "name": "José Altafini", "value": 216},
+        {"rank": 6, "name": "Antonio Di Natale", "value": 209},
+        {"rank": 7, "name": "Roberto Baggio", "value": 205}
+      ],
+      "notes": "Most recent to 100: Lautaro Martínez (Feb 2024). Closest active: Dušan Vlahović 94."
+    },
+
+    {
+      "id": "league_scorers_ligue_1",
+      "category": "Ligue 1",
+      "subcategory": "All-time top scorers",
+      "type": "leaderboard",
+      "statement": "Ligue 1 all-time top scorers",
+      "unit": "goals",
+      "fame": "niche",
+      "entries": [
+        {"rank": 1, "name": "Delio Onnis", "value": 299},
+        {"rank": 2, "name": "Bernard Lacombe", "value": 255},
+        {"rank": 3, "name": "Hervé Revelli", "value": 216},
+        {"rank": 4, "name": "Roger Courtois", "value": 210},
+        {"rank": 5, "name": "Thadée Cisowski", "value": 206},
+        {"rank": 6, "name": "Roger Piantoni", "value": 203}
+      ],
+      "notes": "Most recent to 100: Kévin Gameiro (Mar 2024). Closest active: Florian Thauvin 97."
+    },
+
+    {
+      "id": "league_topscorer_awards",
+      "category": "Leagues",
+      "subcategory": "Top-scorer award counts",
+      "type": "leaderboard_group",
+      "statement": "Most top-scorer awards in each Big Five league (and single-season records)",
+      "fame": "known",
+      "groups": {
+        "Pichichi (La Liga)": [{"name":"Lionel Messi","value":8,"note":"record"},{"name":"Telmo Zarra","value":6},{"name":"Hugo Sánchez","value":5},{"name":"Alfredo Di Stéfano","value":5},{"name":"Quini","value":5}],
+        "Torjägerkanone (Bundesliga)": [{"name":"Gerd Müller","value":7},{"name":"Robert Lewandowski","value":7}],
+        "Capocannoniere (Serie A)": [{"name":"Gunnar Nordahl","value":5}],
+        "Top scorer (Ligue 1)": [{"name":"Kylian Mbappé","value":6,"note":"2019–24, record"},{"name":"Carlos Bianchi","value":5},{"name":"Delio Onnis","value":5},{"name":"Jean-Pierre Papin","value":5}]
+      },
+      "singleSeasonRecords": [
+        {"league":"La Liga","holder":"Lionel Messi","value":"50 (2011–12)"},
+        {"league":"Bundesliga","holder":"Robert Lewandowski","value":"41 (2020–21)","note":"broke Gerd Müller's 40 from 1971–72"},
+        {"league":"Serie A","holder":"Aldo Boffi / Gunnar Nordahl era; modern: Higuaín & Immobile","value":"36 (Higuaín 2015–16, Immobile 2019–20)"}
+      ],
+      "fameOverrides": {"Pichichi (La Liga)": "iconic"}
+    },
+
+    {
+      "id": "league_titles_england",
+      "category": "Premier League",
+      "subcategory": "Title counts",
+      "type": "leaderboard",
+      "statement": "Most English top-flight titles (First Division + Premier League combined)",
+      "unit": "titles",
+      "asOf": "2026-05",
+      "fame": "known",
+      "entries": [
+        {"rank": 1, "name": "Manchester United", "value": 20},
+        {"rank": 1, "name": "Liverpool", "value": 20, "note": "reached 20 with the 2024–25 title"},
+        {"rank": 3, "name": "Arsenal", "value": 14, "note": "won 2025–26 under Arteta"},
+        {"rank": 4, "name": "Manchester City", "value": 10},
+        {"rank": 5, "name": "Everton", "value": 9},
+        {"rank": 6, "name": "Aston Villa", "value": 7}
+      ],
+      "subLeaderboards": {
+        "Premier League era only (since 1992)": [{"rank":1,"name":"Manchester United","value":13},{"rank":2,"name":"Manchester City","value":8,"note":"four in a row 2020–24"},{"rank":3,"name":"Chelsea","value":5},{"rank":4,"name":"Arsenal","value":4,"note":"incl. 2025–26"},{"rank":5,"name":"Liverpool","value":2},{"rank":6,"name":"Blackburn","value":1},{"rank":6,"name":"Leicester","value":1}]
+      }
+    },
+
+    {
+      "id": "league_titles_la_liga",
+      "category": "La Liga",
+      "subcategory": "Title counts",
+      "type": "leaderboard",
+      "statement": "Most La Liga titles",
+      "unit": "titles",
+      "fame": "known",
+      "entries": [
+        {"rank": 1, "name": "Real Madrid", "value": 36},
+        {"rank": 2, "name": "Barcelona", "value": 29, "note": "retained the 2025–26 crown"},
+        {"rank": 3, "name": "Atlético Madrid", "value": 11},
+        {"rank": 4, "name": "Athletic Bilbao", "value": 8},
+        {"rank": 5, "name": "Valencia", "value": 6}
+      ]
+    },
+
+    {
+      "id": "league_titles_bundesliga",
+      "category": "Bundesliga",
+      "subcategory": "Title counts",
+      "type": "leaderboard",
+      "statement": "Most Bundesliga titles",
+      "unit": "titles",
+      "fame": "known",
+      "entries": [
+        {"rank": 1, "name": "Bayern Munich", "value": 34},
+        {"rank": 2, "name": "Borussia Dortmund", "value": 5},
+        {"rank": 2, "name": "Borussia Mönchengladbach", "value": 5},
+        {"rank": 4, "name": "Werder Bremen", "value": 4},
+        {"rank": 5, "name": "Hamburg", "value": 3}
+      ]
+    },
+
+    {
+      "id": "league_titles_serie_a",
+      "category": "Serie A",
+      "subcategory": "Title counts",
+      "type": "leaderboard",
+      "statement": "Most Serie A titles",
+      "unit": "titles",
+      "fame": "known",
+      "entries": [
+        {"rank": 1, "name": "Juventus", "value": 36, "note": "FIGC official count after Calciopoli deductions"},
+        {"rank": 2, "name": "Inter Milan", "value": 21, "note": "won 2025–26"},
+        {"rank": 3, "name": "AC Milan", "value": 19},
+        {"rank": 4, "name": "Genoa", "value": 9},
+        {"rank": 4, "name": "Torino", "value": 7},
+        {"rank": 4, "name": "Bologna", "value": 7},
+        {"rank": 4, "name": "Pro Vercelli", "value": 7}
+      ],
+      "notes": "Napoli won 2024–25 (their 4th). Juventus stripped of 2004–05 in Calciopoli."
+    },
+
+    {
+      "id": "ucl_alltime_scorers",
+      "category": "Champions League",
+      "subcategory": "All-time top scorers",
+      "type": "leaderboard",
+      "statement": "UEFA Champions League / European Cup all-time top scorers (excludes qualifying)",
+      "unit": "goals",
+      "fame": "iconic",
+      "entries": [
+        {"rank": 1, "name": "Cristiano Ronaldo", "value": 140},
+        {"rank": 2, "name": "Lionel Messi", "value": 129},
+        {"rank": 3, "name": "Robert Lewandowski", "value": 109, "active": true},
+        {"rank": 4, "name": "Karim Benzema", "value": 90},
+        {"rank": 5, "name": "Raúl", "value": 71},
+        {"rank": 6, "name": "Kylian Mbappé", "value": 70, "active": true},
+        {"rank": 7, "name": "Thomas Müller", "value": 57},
+        {"rank": 7, "name": "Erling Haaland", "value": 57, "active": true, "note": "fastest to 50"},
+        {"rank": 9, "name": "Ruud van Nistelrooy", "value": 56},
+        {"rank": 10, "name": "Harry Kane", "value": 54, "active": true}
+      ],
+      "notes": "Single-season record: Ronaldo 17 (2013–14). Ronaldo top scorer 7 seasons. Ronaldo & Messi 8 hat-tricks each. Ronaldo only player to score in 3 finals."
+    },
+
+    {
+      "id": "ucl_titles_club",
+      "category": "Champions League",
+      "subcategory": "Titles by club",
+      "type": "leaderboard",
+      "statement": "Most UEFA Champions League / European Cup titles (by club)",
+      "unit": "titles",
+      "asOf": "2026",
+      "fame": "iconic",
+      "entries": [
+        {"rank": 1, "name": "Real Madrid", "value": 15, "note": "18 finals"},
+        {"rank": 2, "name": "AC Milan", "value": 7, "note": "11 finals"},
+        {"rank": 3, "name": "Liverpool", "value": 6},
+        {"rank": 3, "name": "Bayern Munich", "value": 6},
+        {"rank": 5, "name": "Barcelona", "value": 5},
+        {"rank": 6, "name": "Ajax", "value": 4},
+        {"rank": 7, "name": "Inter", "value": 3},
+        {"rank": 7, "name": "Manchester United", "value": 3},
+        {"rank": 9, "name": "PSG", "value": 2, "note": "2025, 2026"}
+      ],
+      "notes": "Juventus has the most runner-up finishes (7). Atlético Madrid is the only club to reach 3 finals without winning. By nation: Spain 20, England 15, Italy 12, Germany 8."
+    },
+
+    {
+      "id": "ucl_titles_player_manager",
+      "category": "Champions League",
+      "subcategory": "Titles by player & manager",
+      "type": "record_set",
+      "statement": "Most Champions League titles as player and as manager",
+      "fame": "known",
+      "records": [
+        {"record": "Most titles (player, European Cup era)", "holder": "Francisco Gento", "value": "6", "distractors": ["Alfredo Di Stéfano (5)", "Paolo Maldini (5)", "Cristiano Ronaldo (5)"]},
+        {"record": "Most titles (player, CL era)", "holder": "Dani Carvajal, Toni Kroos & Luka Modrić", "value": "6 each", "distractors": ["Lionel Messi (4)", "Sergio Ramos (4)", "Xavi (4)"]},
+        {"record": "Most titles (manager)", "holder": "Carlo Ancelotti", "value": "5", "distractors": ["Bob Paisley (3)", "Pep Guardiola (3)", "Zinédine Zidane (3)"]},
+        {"record": "Most consecutive titles (manager)", "holder": "Zinédine Zidane", "value": "3 (2016–18)", "distractors": ["Carlo Ancelotti", "Pep Guardiola", "Bob Paisley"]}
+      ],
+      "notes": "Recent finals: PSG 5–0 Inter (2025, biggest CL final win); PSG beat Arsenal on penalties (2026). Most consecutive titles (club): Real Madrid 5 (1956–60)."
+    },
+
+    {
+      "id": "wc_alltime_scorers",
+      "category": "World Cup",
+      "subcategory": "All-time top scorers",
+      "type": "leaderboard",
+      "statement": "FIFA World Cup all-time top scorers (men)",
+      "unit": "goals",
+      "asOf": "2026-06-22",
+      "fame": "iconic",
+      "volatile": true,
+      "entries": [
+        {"rank": 1, "name": "Lionel Messi", "team": "Argentina", "value": 18, "active": true, "note": "passed Klose 22 Jun 2026; clear of women's record-holder Marta (17)"},
+        {"rank": 2, "name": "Miroslav Klose", "team": "Germany", "value": 16},
+        {"rank": 3, "name": "Ronaldo Nazário", "team": "Brazil", "value": 15},
+        {"rank": 4, "name": "Kylian Mbappé", "team": "France", "value": 16, "active": true, "note": "15–16, rising (sources differ)"},
+        {"rank": 5, "name": "Gerd Müller", "team": "West Germany", "value": 14},
+        {"rank": 6, "name": "Just Fontaine", "team": "France", "value": 13},
+        {"rank": 7, "name": "Pelé", "team": "Brazil", "value": 12}
+      ],
+      "notes": "Messi became the all-time top scorer with a brace vs Austria (22 Jun 2026) after a hat-trick vs Algeria.",
+      "conflicts": ["Mbappé listed at 16 (file 1) vs 15 (file 2) — volatile, 2026 WC ongoing."]
+    },
+
+    {
+      "id": "wc_single_tournament_scorers",
+      "category": "World Cup",
+      "subcategory": "Most goals in a single tournament",
+      "type": "leaderboard",
+      "statement": "Most goals at a single World Cup",
+      "unit": "goals",
+      "fame": "known",
+      "entries": [
+        {"rank": 1, "name": "Just Fontaine", "value": 13, "year": 1958, "note": "in just 6 games"},
+        {"rank": 2, "name": "Sándor Kocsis", "value": 11, "year": 1954},
+        {"rank": 3, "name": "Gerd Müller", "value": 10, "year": 1970},
+        {"rank": 4, "name": "Eusébio", "value": 9, "year": 1966}
+      ]
+    },
+
+    {
+      "id": "wc_titles_country",
+      "category": "World Cup",
+      "subcategory": "Titles by country",
+      "type": "leaderboard",
+      "statement": "Most FIFA World Cup titles (by country)",
+      "unit": "titles",
+      "fame": "iconic",
+      "entries": [
+        {"rank": 1, "name": "Brazil", "value": 5},
+        {"rank": 2, "name": "Italy", "value": 4},
+        {"rank": 2, "name": "Germany", "value": 4},
+        {"rank": 4, "name": "Argentina", "value": 3},
+        {"rank": 5, "name": "Uruguay", "value": 2},
+        {"rank": 5, "name": "France", "value": 2},
+        {"rank": 7, "name": "England", "value": 1},
+        {"rank": 7, "name": "Spain", "value": 1}
+      ],
+      "notes": "Most finals: Germany 8. Most runner-up without ever winning: Netherlands 3. Most tournaments contested: Brazil 23 (only ever-present)."
+    },
+
+    {
+      "id": "wc_misc_records",
+      "category": "World Cup",
+      "subcategory": "Miscellaneous records",
+      "type": "record_set",
+      "statement": "Assorted FIFA World Cup records",
+      "fame": "known",
+      "records": [
+        {"record": "Most World Cup titles (player)", "holder": "Pelé", "value": "3 (1958, 1962, 1970)", "distractors": ["Diego Maradona", "Cafu", "Lionel Messi"]},
+        {"record": "Most final appearances (player)", "holder": "Cafu", "value": "3 (1994, 1998, 2002)", "distractors": ["Pelé", "Franz Beckenbauer", "Lothar Matthäus"]},
+        {"record": "Most goals in a single match", "holder": "Oleg Salenko", "value": "5 (Russia v Cameroon, 1994)", "distractors": ["Just Fontaine", "Sándor Kocsis", "Gerd Müller"]},
+        {"record": "Most appearances (matches)", "holder": "Lionel Messi", "value": "28", "active": true, "volatile": true, "distractors": ["Lothar Matthäus (25)", "Miroslav Klose (24)", "Paolo Maldini (23)"]},
+        {"record": "Oldest player", "holder": "Essam El-Hadary", "value": "45y 161d (2018)", "distractors": ["Roger Milla", "Dino Zoff", "Faryd Mondragón"]},
+        {"record": "Youngest player", "holder": "Norman Whiteside", "value": "17y 41d (1982)", "distractors": ["Pelé", "Kylian Mbappé", "Michael Owen"]},
+        {"record": "Youngest scorer", "holder": "Pelé", "value": "17y 239d (1958)", "distractors": ["Kylian Mbappé", "Michael Owen", "Lionel Messi"]},
+        {"record": "First-ever World Cup goal", "holder": "Lucien Laurent", "value": "France, 1930", "distractors": ["Guillermo Stábile", "Bert Patenaude", "Héctor Castro"]},
+        {"record": "Hat-trick in a final", "holder": "Geoff Hurst (1966) & Kylian Mbappé (2022)", "value": "only two", "distractors": ["Pelé", "Gerd Müller", "Zinedine Zidane"]}
+      ],
+      "notes": "2026 is the first 48-team edition and first three-host tournament (USA/Canada/Mexico). Highest-scoring match: Austria 7–5 Switzerland (1954, 12 goals)."
+    },
+
+    {
+      "id": "euros_scorers",
+      "category": "European Championship",
+      "subcategory": "All-time top scorers",
+      "type": "leaderboard",
+      "statement": "UEFA European Championship all-time top scorers",
+      "unit": "goals",
+      "fame": "known",
+      "entries": [
+        {"rank": 1, "name": "Cristiano Ronaldo", "value": 14, "note": "across 5 editions/30 apps"},
+        {"rank": 2, "name": "Michel Platini", "value": 9, "note": "all in 1984 — single-edition record"},
+        {"rank": 3, "name": "Antoine Griezmann", "value": 7},
+        {"rank": 3, "name": "Alan Shearer", "value": 7}
+      ],
+      "notes": "Ronaldo is the only player to be top scorer of two editions and to score at five separate Euros."
+    },
+
+    {
+      "id": "euros_titles",
+      "category": "European Championship",
+      "subcategory": "Titles by country",
+      "type": "leaderboard",
+      "statement": "Most UEFA European Championship titles",
+      "unit": "titles",
+      "fame": "known",
+      "entries": [
+        {"rank": 1, "name": "Spain", "value": 4, "note": "incl. 2024 — sole leader"},
+        {"rank": 2, "name": "Germany", "value": 3},
+        {"rank": 3, "name": "France", "value": 2},
+        {"rank": 4, "name": "Italy", "value": 1},
+        {"rank": 4, "name": "Portugal", "value": 1}
+      ],
+      "notes": "Single winners also include USSR, Czechoslovakia, Netherlands, Denmark, Greece. Most appearances: Cristiano Ronaldo (30 matches)."
+    },
+
+    {
+      "id": "copa_america_scorers_titles",
+      "category": "Copa América",
+      "subcategory": "Scorers & titles",
+      "type": "record_set",
+      "statement": "Copa América scorers and title records",
+      "fame": "niche",
+      "records": [
+        {"record": "All-time top scorer", "holder": "Norberto Méndez & Zizinho", "value": "17 each", "distractors": ["Lionel Messi (14)", "Gabriel Batistuta (13)", "Lolo Fernández (15)"]},
+        {"record": "Most titles (country)", "holder": "Argentina", "value": "16", "distractors": ["Uruguay (15)", "Brazil (9)", "Chile (2)"]},
+        {"record": "Most titles (player)", "holder": "Ángel Romano (Uruguay)", "value": "6", "distractors": ["Lionel Messi", "Pelé", "Zizinho"]}
+      ],
+      "notes": "Uruguay 15, Brazil 9. Messi 14 (5th all-time, active). Single-match record 5 goals (incl. Argentina's 12–0 over Ecuador, 1942).",
+      "conflicts": ["Argentina/Uruguay title counts vary by source (16 vs 15); use Argentina 16, Uruguay 15."]
+    },
+
+    {
+      "id": "afcon_scorers_titles",
+      "category": "AFCON",
+      "subcategory": "Scorers & titles",
+      "type": "record_set",
+      "statement": "Africa Cup of Nations scorers and title records",
+      "fame": "niche",
+      "records": [
+        {"record": "All-time top scorer", "holder": "Samuel Eto'o", "value": "18", "distractors": ["Laurent Pokou (14)", "Rashidi Yekini (13)", "Didier Drogba (11)"]},
+        {"record": "Most titles (country)", "holder": "Egypt", "value": "7", "distractors": ["Cameroon (5)", "Ghana (4)", "Nigeria (3)"]},
+        {"record": "Most goals in one match", "holder": "Laurent Pokou", "value": "5 (v Ethiopia, 1970)", "distractors": ["Samuel Eto'o", "Ndaye Mulamba", "Hossam Hassan"]},
+        {"record": "Most goals in one edition", "holder": "Ndaye Mulamba", "value": "9 (1974)", "distractors": ["Laurent Pokou", "Samuel Eto'o", "Mengistu Worku"]},
+        {"record": "Most appearances", "holder": "Rigobert Song & André Ayew", "value": "36 each", "distractors": ["Samuel Eto'o", "Ahmed Hassan", "Didier Drogba"]}
+      ],
+      "notes": "Egypt has the most appearances (27) and most goals. Oldest player: El-Hadary 44y 21d (2017).",
+      "conflicts": ["AFCON 2025: Morocco awarded the title on appeal (March 2026), overturning Senegal's January 2026 final win."]
+    },
+
+    {
+      "id": "asian_cup_scorers_titles",
+      "category": "Asian Cup",
+      "subcategory": "Scorers & titles",
+      "type": "record_set",
+      "statement": "AFC Asian Cup scorers and title records",
+      "fame": "niche",
+      "records": [
+        {"record": "Most titles (country)", "holder": "Japan", "value": "4 (1992, 2000, 2004, 2011)", "distractors": ["Iran (3)", "Saudi Arabia (3)", "South Korea (2)"]},
+        {"record": "All-time top scorer", "holder": "Ali Daei", "value": "14", "distractors": ["Lee Dong-gook (10)", "Almoez Ali (9)", "Ali Mabkhout (9)"]},
+        {"record": "Most goals in a single tournament", "holder": "Almoez Ali", "value": "9 (2019)", "distractors": ["Ali Daei", "Lee Dong-gook", "Naohiro Takahara"]},
+        {"record": "Only side to win three in a row", "holder": "Iran", "value": "1968–76", "distractors": ["Japan", "Saudi Arabia", "South Korea"]}
+      ],
+      "notes": "Deep Asian Cup scorer ranks are less consistently sourced — verify beyond the top handful."
+    },
+
+    {
+      "id": "europa_league",
+      "category": "Europa League",
+      "subcategory": "Titles & scorers",
+      "type": "record_set",
+      "statement": "UEFA Europa League / UEFA Cup records",
+      "fame": "known",
+      "records": [
+        {"record": "Most titles (club)", "holder": "Sevilla", "value": "7", "note": "only club to win 3 in a row (2014–16)", "distractors": ["Juventus (3)", "Inter (3)", "Liverpool (3)"]},
+        {"record": "Top scorer (Europa League era, since 2009–10)", "holder": "Pierre-Emerick Aubameyang", "value": "34", "distractors": ["Radamel Falcao (30)", "Romelu Lukaku (27)", "Bruno Fernandes (27)"]}
+      ]
+    },
+
+    {
+      "id": "club_world_cup",
+      "category": "Club World Cup",
+      "subcategory": "Titles & 2025 edition",
+      "type": "record_set",
+      "statement": "FIFA Club World Cup records",
+      "fame": "known",
+      "records": [
+        {"record": "Most titles (all formats)", "holder": "Real Madrid", "value": "5 (2014, 2016, 2017, 2018, 2022)", "distractors": ["Barcelona (3)", "Bayern Munich (2)", "Corinthians (2)"]},
+        {"record": "Winner of the first 32-team edition (2025)", "holder": "Chelsea", "value": "beat PSG 3–0", "distractors": ["Real Madrid", "Manchester City", "PSG"]},
+        {"record": "2025 Golden Ball winner", "holder": "Cole Palmer", "value": "Chelsea", "distractors": ["Désiré Doué", "Gonzalo García", "Kylian Mbappé"]},
+        {"record": "2025 top scorer", "holder": "Gonzalo García", "value": "Real Madrid, 4 goals", "distractors": ["Cole Palmer", "Harry Kane", "Marcos Leonardo"]}
+      ]
+    },
+
+    {
+      "id": "caf_champions_league",
+      "category": "CAF Champions League",
+      "subcategory": "Titles",
+      "type": "leaderboard",
+      "statement": "Most CAF Champions League titles (by club)",
+      "unit": "titles",
+      "fame": "niche",
+      "entries": [
+        {"rank": 1, "name": "Al Ahly", "value": 12, "note": "Egypt — record"},
+        {"rank": 2, "name": "Zamalek", "value": 5, "note": "Egypt"},
+        {"rank": 2, "name": "TP Mazembe", "value": 5, "note": "DR Congo"},
+        {"rank": 4, "name": "Espérance de Tunis", "value": 4},
+        {"rank": 5, "name": "Raja Casablanca", "value": 3},
+        {"rank": 5, "name": "Wydad AC", "value": 3}
+      ],
+      "notes": "By country: Egypt 19. Most recent champion: Mamelodi Sundowns (South Africa) won 2025–26, beating AS FAR 2–1 agg (their 2nd title). Pyramids FC won 2024–25."
+    },
+
+    {
+      "id": "afc_champions_league",
+      "category": "AFC Champions League",
+      "subcategory": "Titles",
+      "type": "leaderboard",
+      "statement": "Most AFC Champions League titles (by club)",
+      "unit": "titles",
+      "fame": "niche",
+      "entries": [
+        {"rank": 1, "name": "Al-Hilal", "value": 4, "note": "Saudi Arabia — record; also most finals"},
+        {"rank": 2, "name": "Pohang Steelers", "value": 3, "note": "South Korea"},
+        {"rank": 2, "name": "Urawa Red Diamonds", "value": 3, "note": "Japan"}
+      ],
+      "notes": "By country: South Korea 12; Japan & Saudi Arabia 8 each. Most recent: Al-Ahli (Saudi Arabia) won the 2024–25 AFC Champions League Elite (first title), beating Kawasaki Frontale 2–0.",
+      "conflicts": ["A reported second straight Al-Ahli title in 2026 is unverified — re-check before use."]
+    },
+
+    {
+      "id": "intercontinental_nations_league",
+      "category": "Other Competitions",
+      "subcategory": "Intercontinental Cup & Nations League",
+      "type": "record_set",
+      "statement": "Intercontinental Cup and UEFA Nations League records",
+      "fame": "niche",
+      "records": [
+        {"record": "Most Intercontinental Cup titles (club, 1960–2004)", "holder": "Real Madrid, AC Milan, Boca Juniors, Peñarol & Nacional", "value": "3 each", "distractors": ["Bayern Munich", "Santos", "Inter"]},
+        {"record": "Most UEFA Nations League titles", "holder": "Portugal", "value": "2 (2018–19, 2024–25)", "distractors": ["France", "Spain", "Italy"]}
+      ],
+      "notes": "Nations League winners: Portugal (2019), France (2021), Spain (2023), Portugal (2025 — beat Spain 5–3 on pens). Last Intercontinental Cup (2004): Porto beat Once Caldas on penalties."
+    },
+
+    {
+      "id": "career_goals",
+      "category": "Individual Records",
+      "subcategory": "Most career goals",
+      "type": "leaderboard",
+      "statement": "Most career goals (all competitions) — heavily source-contested",
+      "unit": "goals",
+      "asOf": "2026-05-21",
+      "fame": "known",
+      "volatile": true,
+      "entries": [
+        {"rank": 1, "name": "Cristiano Ronaldo", "value": 973, "active": true, "note": "5 Sporting, 145 Man Utd, 450 Real Madrid, 101 Juventus, 129 Al-Nassr + international"},
+        {"rank": 2, "name": "Lionel Messi", "value": 890, "active": true, "note": "~890+"},
+        {"rank": 3, "name": "Josef Bican", "value": 805, "note": "RSSSF ~805–950; UEFA recognises 518 in top European leagues"},
+        {"rank": 4, "name": "Romário", "value": 772},
+        {"rank": 5, "name": "Pelé", "value": 762, "note": "762/767 by source"}
+      ],
+      "notes": "FIFA keeps no official career-goals list; friendly/wartime/lower-tier goals are disputed and totals vary widely.",
+      "conflicts": ["Ronaldo's Man Utd/Real Madrid splits vary by source; Bican/Pelé totals are reconstructions."]
+    },
+
+    {
+      "id": "international_caps",
+      "category": "Individual Records",
+      "subcategory": "Most international caps",
+      "type": "leaderboard",
+      "statement": "Most international caps (men)",
+      "unit": "caps",
+      "asOf": "2026-06-22",
+      "fame": "known",
+      "volatile": true,
+      "entries": [
+        {"rank": 1, "name": "Cristiano Ronaldo", "value": 229, "active": true, "note": "first to 200 (Jun 2023)"},
+        {"rank": 2, "name": "Bader Al-Mutawa", "value": 202, "note": "Kuwait"},
+        {"rank": 3, "name": "Lionel Messi", "value": 201, "active": true, "note": "~201, rising"},
+        {"rank": 4, "name": "Luka Modrić", "value": 197, "active": true},
+        {"rank": 5, "name": "Soh Chin Ann", "value": 195, "note": "FIFA-recognised; RSSSF/IFFHS credit 219"}
+      ],
+      "notes": "Billy Wright (England) first to 100 (1959). 680 men from 120 countries have 100+ caps.",
+      "conflicts": ["Soh Chin Ann: FIFA 195 vs RSSSF/IFFHS 219 (excludes Olympic/non-'A' matches)."]
+    },
+
+    {
+      "id": "international_goals",
+      "category": "Individual Records",
+      "subcategory": "Most international goals",
+      "type": "leaderboard",
+      "statement": "Most international goals (men)",
+      "unit": "goals",
+      "asOf": "2026-06-22",
+      "fame": "iconic",
+      "volatile": true,
+      "entries": [
+        {"rank": 1, "name": "Cristiano Ronaldo", "value": 143, "active": true},
+        {"rank": 2, "name": "Lionel Messi", "value": 122, "active": true, "note": "highest South American"},
+        {"rank": 3, "name": "Ali Daei", "value": 108, "note": "Iran; first to 100 (FIFA revised from 109)"},
+        {"rank": 4, "name": "Sunil Chhetri", "value": 94, "note": "India; some sources 95"},
+        {"rank": 5, "name": "Mokhtar Dahari", "value": 89, "note": "Malaysia"},
+        {"rank": 6, "name": "Ferenc Puskás", "value": 84}
+      ],
+      "notes": "87 men have scored 50+ international goals; Imre Schlosser first to 50 (1917).",
+      "conflicts": ["Messi 112+ (file 1) vs 122 (file 2, after Austria) — use 122, volatile. Lukaku & Lewandowski (~88–90) active and disputed by 1–5."]
+    },
+
+    {
+      "id": "ballon_dor",
+      "category": "Individual Awards",
+      "subcategory": "Ballon d'Or",
+      "type": "record_set",
+      "statement": "Ballon d'Or records",
+      "fame": "iconic",
+      "records": [
+        {"record": "Most wins", "holder": "Lionel Messi", "value": "8 (2009, 2010, 2011, 2012, 2015, 2019, 2021, 2023)", "distractors": ["Cristiano Ronaldo (5)", "Michel Platini (3)", "Johan Cruyff (3)"]},
+        {"record": "Second-most wins", "holder": "Cristiano Ronaldo", "value": "5", "distractors": ["Michel Platini (3)", "Marco van Basten (3)", "Franz Beckenbauer (2)"]},
+        {"record": "Most nominations", "holder": "Cristiano Ronaldo", "value": "18", "distractors": ["Lionel Messi", "Karim Benzema", "Zlatan Ibrahimović"]},
+        {"record": "Only goalkeeper to win", "holder": "Lev Yashin", "value": "1963", "distractors": ["Gianluigi Buffon", "Manuel Neuer", "Iker Casillas"]},
+        {"record": "2024 winner", "holder": "Rodri", "value": "Manchester City", "distractors": ["Vinícius Júnior", "Jude Bellingham", "Erling Haaland"]},
+        {"record": "2025 winner", "holder": "Ousmane Dembélé", "value": "PSG; sixth Frenchman to win", "distractors": ["Lamine Yamal", "Vitinha", "Mohamed Salah"]},
+        {"record": "Women's Ballon d'Or — most wins", "holder": "Aitana Bonmatí", "value": "3 (record, in 2025)", "distractors": ["Alexia Putellas", "Ada Hegerberg", "Megan Rapinoe"]}
+      ],
+      "notes": "Two-time winners: Di Stéfano, Beckenbauer, Keegan, Rummenigge, Ronaldo (R9). Messi has 14 podium finishes (11 consecutive 2007–17)."
+    },
+
+    {
+      "id": "golden_shoe",
+      "category": "Individual Awards",
+      "subcategory": "European Golden Shoe",
+      "type": "record_set",
+      "statement": "European Golden Shoe records",
+      "fame": "known",
+      "records": [
+        {"record": "Most wins", "holder": "Lionel Messi", "value": "6 (2010, 2012, 2013, 2017, 2018, 2019)", "distractors": ["Cristiano Ronaldo (4)", "Gerd Müller (2)", "Thierry Henry (2)"]},
+        {"record": "Second-most wins", "holder": "Cristiano Ronaldo", "value": "4 (2008, 2011, 2014, 2015)", "distractors": ["Eusébio (2)", "Luis Suárez (2)", "Robert Lewandowski (2)"]},
+        {"record": "2024–25 winner", "holder": "Kylian Mbappé", "value": "31 La Liga goals — first Real Madrid winner since Ronaldo", "distractors": ["Robert Lewandowski", "Harry Kane", "Erling Haaland"]}
+      ],
+      "notes": "Messi's 2011–12 win (50 goals / 100 points) is the record; only player with 3 in a row. Recent: Haaland (2022–23), Kane (2023–24), Mbappé (2024–25)."
+    },
+
+    {
+      "id": "manager_records",
+      "category": "Individual Records",
+      "subcategory": "Manager records",
+      "type": "record_set",
+      "statement": "Notable manager records",
+      "fame": "niche",
+      "records": [
+        {"record": "Most Champions League / European Cup titles", "holder": "Carlo Ancelotti", "value": "6 (AC Milan 2003, 2007; Real Madrid 2014, 2022, 2024)", "distractors": ["Bob Paisley", "Zinédine Zidane", "Pep Guardiola"], "note": "Some lists credit Ancelotti 5 as of a given date; 6 reflects most recent."},
+        {"record": "Most Ligue 1 matches managed", "holder": "Guy Roux", "value": "894", "distractors": ["Arsène Wenger", "Didier Deschamps", "Christophe Galtier"]}
+      ]
+    }
+
+  ]
+}

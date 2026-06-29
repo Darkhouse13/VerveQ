@@ -1,0 +1,59 @@
+{
+  "note": "These 3 contradict CURRENTLY-LIVE questions because live data predates the 2026 World Cup. Do NOT seed as-is; instead UPDATE the live rows (via opsContentIntegrity.updateQuestionStemByChecksum) when ready.",
+  "conflicts": [
+    {
+      "id": "q_transfer_confederation_africa",
+      "sport": "football",
+      "category": "Transfers",
+      "subcategory": "Most expensive by confederation",
+      "factId": "transfer_by_confederation",
+      "difficulty": "hard",
+      "question": "Who is the most expensive transfer of a player from the CAF (Africa) confederation?",
+      "options": [
+        "Nicolas Pépé",
+        "Kim Min-jae",
+        "Christian Pulisic",
+        "Chris Wood"
+      ],
+      "correctAnswer": "Nicolas Pépé",
+      "volatile": false,
+      "liveMatch": "[transfer_records] Who is the most expensive African player of all time? :: Victor Osimhen"
+    },
+    {
+      "id": "q_wc_alltime_top_holder",
+      "sport": "football",
+      "category": "World Cup",
+      "subcategory": "All-time top scorers",
+      "factId": "wc_alltime_scorers",
+      "difficulty": "easy",
+      "question": "As of June 2026, who is the all-time leading goalscorer in FIFA World Cup history?",
+      "options": [
+        "Lionel Messi",
+        "Miroslav Klose",
+        "Ronaldo Nazário",
+        "Just Fontaine"
+      ],
+      "correctAnswer": "Lionel Messi",
+      "volatile": true,
+      "liveMatch": "[world_cup] Who is the all-time leading men's goalscorer in FIFA World Cup history? :: Miroslav Klose"
+    },
+    {
+      "id": "q_wc_alltime_germany_record",
+      "sport": "football",
+      "category": "World Cup",
+      "subcategory": "All-time top scorers",
+      "factId": "wc_alltime_scorers",
+      "difficulty": "intermediate",
+      "question": "Which player held the World Cup all-time scoring record before Lionel Messi surpassed him in June 2026?",
+      "options": [
+        "Miroslav Klose",
+        "Ronaldo Nazário",
+        "Gerd Müller",
+        "Pelé"
+      ],
+      "correctAnswer": "Miroslav Klose",
+      "volatile": true,
+      "liveMatch": "[world_cup] Who is the all-time leading men's goalscorer in FIFA World Cup history? :: Miroslav Klose"
+    }
+  ]
+}

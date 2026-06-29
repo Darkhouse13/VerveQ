@@ -1,0 +1,3063 @@
+{
+  "meta": {
+    "title": "VerveQ Football Records — Quiz Questions",
+    "version": 1,
+    "generatedFrom": "football_records.consolidated.json",
+    "sport": "football",
+    "total": 179,
+    "difficultyDistribution": {
+      "easy": 15,
+      "intermediate": 58,
+      "hard": 106
+    },
+    "difficultyRule": "easy = iconic #1-holder of a headline record (smallest bucket); intermediate = engaged-fan knowledge / #2-3 / title counts; hard = exact figures, deep ranks, niche competitions.",
+    "volatileNote": "Questions with volatile:true derive from facts that change during the 2026 World Cup (and active-player career/caps/goals). Phrased 'as of June 2026'. Re-verify after the WC final.",
+    "explanationNote": "DEFERRED: quiz questions intentionally carry NO explanation field for now — revisit later if explanations are wanted.",
+    "schemaNote": "Maps to convex quizQuestions: sport, category, question, options, correctAnswer, difficulty. factId/subcategory/volatile are extra provenance fields for the seeding step."
+  },
+  "questions": [
+    {
+      "id": "q_transfer_most_expensive_ever",
+      "sport": "football",
+      "category": "Transfers",
+      "subcategory": "Most expensive (men, all-time)",
+      "factId": "transfer_men_alltime_top",
+      "difficulty": "easy",
+      "question": "Who is the most expensive football transfer of all time (men)?",
+      "options": [
+        "Neymar",
+        "Kylian Mbappé",
+        "Cristiano Ronaldo",
+        "João Félix"
+      ],
+      "correctAnswer": "Neymar",
+      "volatile": false
+    },
+    {
+      "id": "q_transfer_neymar_fee",
+      "sport": "football",
+      "category": "Transfers",
+      "subcategory": "Most expensive (men, all-time)",
+      "factId": "transfer_men_alltime_top",
+      "difficulty": "intermediate",
+      "question": "How much did Neymar's record Barcelona → PSG transfer cost (EUR at the time)?",
+      "options": [
+        "€222m",
+        "€180m",
+        "€200m",
+        "€144.5m"
+      ],
+      "correctAnswer": "€222m",
+      "volatile": false
+    },
+    {
+      "id": "q_transfer_second_most_expensive",
+      "sport": "football",
+      "category": "Transfers",
+      "subcategory": "Most expensive (men, all-time)",
+      "factId": "transfer_men_alltime_top",
+      "difficulty": "intermediate",
+      "question": "Who is the second most expensive transfer of all time (men)?",
+      "options": [
+        "Kylian Mbappé",
+        "Alexander Isak",
+        "João Félix",
+        "Enzo Fernández"
+      ],
+      "correctAnswer": "Kylian Mbappé",
+      "volatile": false
+    },
+    {
+      "id": "q_transfer_third_most_expensive",
+      "sport": "football",
+      "category": "Transfers",
+      "subcategory": "Most expensive (men, all-time)",
+      "factId": "transfer_men_alltime_top",
+      "difficulty": "intermediate",
+      "question": "Which player's move from Newcastle to Liverpool ranks 3rd on the all-time most expensive transfers list (a British transfer record)?",
+      "options": [
+        "Alexander Isak",
+        "Antoine Griezmann",
+        "Philippe Coutinho",
+        "Florian Wirtz"
+      ],
+      "correctAnswer": "Alexander Isak",
+      "volatile": false
+    },
+    {
+      "id": "q_transfer_not_in_top5",
+      "sport": "football",
+      "category": "Transfers",
+      "subcategory": "Most expensive (men, all-time)",
+      "factId": "transfer_men_alltime_top",
+      "difficulty": "hard",
+      "question": "Which of these players is NOT in the all-time top 5 most expensive transfers (men)?",
+      "options": [
+        "Antoine Griezmann",
+        "Neymar",
+        "Alexander Isak",
+        "Enzo Fernández"
+      ],
+      "correctAnswer": "Antoine Griezmann",
+      "volatile": false
+    },
+    {
+      "id": "q_transfer_enzo_fee",
+      "sport": "football",
+      "category": "Transfers",
+      "subcategory": "Most expensive (men, all-time)",
+      "factId": "transfer_men_alltime_top",
+      "difficulty": "hard",
+      "question": "How much did Enzo Fernández cost when he moved from Benfica to Chelsea in 2023 (EUR at the time)?",
+      "options": [
+        "€121m",
+        "€126m",
+        "€117.7m",
+        "€105m"
+      ],
+      "correctAnswer": "€121m",
+      "volatile": false
+    },
+    {
+      "id": "q_transfer_most_expensive_of_four",
+      "sport": "football",
+      "category": "Transfers",
+      "subcategory": "Most expensive (men, all-time)",
+      "factId": "transfer_men_alltime_top",
+      "difficulty": "hard",
+      "question": "Which of these transfers cost the most (EUR at the time)?",
+      "options": [
+        "João Félix",
+        "Antoine Griezmann",
+        "Philippe Coutinho",
+        "Jack Grealish"
+      ],
+      "correctAnswer": "João Félix",
+      "volatile": false
+    },
+    {
+      "id": "q_transfer_top_forward",
+      "sport": "football",
+      "category": "Transfers",
+      "subcategory": "Most expensive by position",
+      "factId": "transfer_men_by_position",
+      "difficulty": "intermediate",
+      "question": "Who is the most expensive forward transfer of all time?",
+      "options": [
+        "Neymar",
+        "Kylian Mbappé",
+        "Alexander Isak",
+        "Antoine Griezmann"
+      ],
+      "correctAnswer": "Neymar",
+      "volatile": false
+    },
+    {
+      "id": "q_transfer_top_midfielder",
+      "sport": "football",
+      "category": "Transfers",
+      "subcategory": "Most expensive by position",
+      "factId": "transfer_men_by_position",
+      "difficulty": "intermediate",
+      "question": "Who holds the record for the most expensive midfielder transfer?",
+      "options": [
+        "Enzo Fernández",
+        "Florian Wirtz",
+        "Jack Grealish",
+        "Moisés Caicedo"
+      ],
+      "correctAnswer": "Enzo Fernández",
+      "volatile": false
+    },
+    {
+      "id": "q_transfer_top_defender",
+      "sport": "football",
+      "category": "Transfers",
+      "subcategory": "Most expensive by position",
+      "factId": "transfer_men_by_position",
+      "difficulty": "hard",
+      "question": "Who is the most expensive defender transfer of all time?",
+      "options": [
+        "Joško Gvardiol",
+        "Virgil van Dijk",
+        "Harry Maguire",
+        "Wesley Fofana"
+      ],
+      "correctAnswer": "Joško Gvardiol",
+      "volatile": false
+    },
+    {
+      "id": "q_transfer_top_goalkeeper",
+      "sport": "football",
+      "category": "Transfers",
+      "subcategory": "Most expensive by position",
+      "factId": "transfer_men_by_position",
+      "difficulty": "hard",
+      "question": "Who is the most expensive goalkeeper transfer of all time?",
+      "options": [
+        "Kepa Arrizabalaga",
+        "Alisson",
+        "André Onana",
+        "Ederson"
+      ],
+      "correctAnswer": "Kepa Arrizabalaga",
+      "volatile": false
+    },
+    {
+      "id": "q_transfer_premier_league_record",
+      "sport": "football",
+      "category": "Transfers",
+      "subcategory": "Record incoming signing per Big Five league",
+      "factId": "transfer_record_per_big_five",
+      "difficulty": "intermediate",
+      "question": "Who is the record incoming signing in Premier League history (by fee)?",
+      "options": [
+        "Alexander Isak",
+        "Enzo Fernández",
+        "Florian Wirtz",
+        "Moisés Caicedo"
+      ],
+      "correctAnswer": "Alexander Isak",
+      "volatile": false
+    },
+    {
+      "id": "q_transfer_la_liga_record",
+      "sport": "football",
+      "category": "Transfers",
+      "subcategory": "Record incoming signing per Big Five league",
+      "factId": "transfer_record_per_big_five",
+      "difficulty": "hard",
+      "question": "Who is the most expensive incoming signing in La Liga history (by fee)?",
+      "options": [
+        "João Félix",
+        "Antoine Griezmann",
+        "Philippe Coutinho",
+        "Eden Hazard"
+      ],
+      "correctAnswer": "João Félix",
+      "volatile": false
+    },
+    {
+      "id": "q_transfer_serie_a_record",
+      "sport": "football",
+      "category": "Transfers",
+      "subcategory": "Record incoming signing per Big Five league",
+      "factId": "transfer_record_per_big_five",
+      "difficulty": "hard",
+      "question": "Who is the record incoming signing in Serie A history (by fee)?",
+      "options": [
+        "Cristiano Ronaldo",
+        "Gonzalo Higuaín",
+        "Romelu Lukaku",
+        "Gianluigi Buffon"
+      ],
+      "correctAnswer": "Cristiano Ronaldo",
+      "volatile": false
+    },
+    {
+      "id": "q_transfer_bundesliga_record",
+      "sport": "football",
+      "category": "Transfers",
+      "subcategory": "Record incoming signing per Big Five league",
+      "factId": "transfer_record_per_big_five",
+      "difficulty": "hard",
+      "question": "Who is the most expensive incoming signing in Bundesliga history (by fee)?",
+      "options": [
+        "Harry Kane",
+        "Lucas Hernández",
+        "Matthijs de Ligt",
+        "Florian Wirtz"
+      ],
+      "correctAnswer": "Harry Kane",
+      "volatile": false
+    },
+    {
+      "id": "q_transfer_teenager_record",
+      "sport": "football",
+      "category": "Transfers",
+      "subcategory": "Most expensive teenager",
+      "factId": "transfer_teenager_record",
+      "difficulty": "intermediate",
+      "question": "Who is the most expensive teenage transfer in football history?",
+      "options": [
+        "Kylian Mbappé",
+        "João Félix",
+        "Jude Bellingham",
+        "Anthony Martial"
+      ],
+      "correctAnswer": "Kylian Mbappé",
+      "volatile": false
+    },
+    {
+      "id": "q_transfer_teenager_fee",
+      "sport": "football",
+      "category": "Transfers",
+      "subcategory": "Most expensive teenager",
+      "factId": "transfer_teenager_record",
+      "difficulty": "hard",
+      "question": "How much did Kylian Mbappé's record teenage transfer (Monaco → PSG, 2017) cost?",
+      "options": [
+        "€180m",
+        "€126m",
+        "€103m",
+        "€144.5m"
+      ],
+      "correctAnswer": "€180m",
+      "volatile": false
+    },
+    {
+      "id": "q_transfer_confederation_africa",
+      "sport": "football",
+      "category": "Transfers",
+      "subcategory": "Most expensive by confederation",
+      "factId": "transfer_by_confederation",
+      "difficulty": "hard",
+      "question": "Who is the most expensive transfer of a player from the CAF (Africa) confederation?",
+      "options": [
+        "Nicolas Pépé",
+        "Kim Min-jae",
+        "Christian Pulisic",
+        "Chris Wood"
+      ],
+      "correctAnswer": "Nicolas Pépé",
+      "volatile": false
+    },
+    {
+      "id": "q_transfer_confederation_concacaf",
+      "sport": "football",
+      "category": "Transfers",
+      "subcategory": "Most expensive by confederation",
+      "factId": "transfer_by_confederation",
+      "difficulty": "hard",
+      "question": "Who is the most expensive transfer of a player from the CONCACAF (N. America) confederation?",
+      "options": [
+        "Christian Pulisic",
+        "Chris Wood",
+        "Nicolas Pépé",
+        "Kim Min-jae"
+      ],
+      "correctAnswer": "Christian Pulisic",
+      "volatile": false
+    },
+    {
+      "id": "q_transfer_women_record",
+      "sport": "football",
+      "category": "Transfers",
+      "subcategory": "Most expensive (women)",
+      "factId": "transfer_women_top",
+      "difficulty": "hard",
+      "question": "Who holds the record for the most expensive women's football transfer?",
+      "options": [
+        "Lizbeth Ovalle",
+        "Alyssa Thompson",
+        "Naomi Girma",
+        "Olivia Smith"
+      ],
+      "correctAnswer": "Lizbeth Ovalle",
+      "volatile": false
+    },
+    {
+      "id": "q_transfer_women_first_million_pound",
+      "sport": "football",
+      "category": "Transfers",
+      "subcategory": "Most expensive (women)",
+      "factId": "transfer_women_top",
+      "difficulty": "hard",
+      "question": "Which player became the first £1m women's transfer, moving from Liverpool to Arsenal in 2025?",
+      "options": [
+        "Olivia Smith",
+        "Naomi Girma",
+        "Racheal Kundananji",
+        "Barbra Banda"
+      ],
+      "correctAnswer": "Olivia Smith",
+      "volatile": false
+    },
+    {
+      "id": "q_transfer_women_first_million_dollar",
+      "sport": "football",
+      "category": "Transfers",
+      "subcategory": "Most expensive (women)",
+      "factId": "transfer_women_top",
+      "difficulty": "hard",
+      "question": "Which player became the first $1m women's transfer (San Diego Wave → Chelsea, Jan 2025)?",
+      "options": [
+        "Naomi Girma",
+        "Lizbeth Ovalle",
+        "Alyssa Thompson",
+        "Racheal Kundananji"
+      ],
+      "correctAnswer": "Naomi Girma",
+      "volatile": false
+    },
+    {
+      "id": "q_lgscore_pl_alltime_top",
+      "sport": "football",
+      "category": "Premier League",
+      "subcategory": "All-time top scorers",
+      "factId": "league_scorers_premier_league",
+      "difficulty": "easy",
+      "question": "Who is the all-time top scorer in the Premier League (since 1992)?",
+      "options": [
+        "Alan Shearer",
+        "Wayne Rooney",
+        "Harry Kane",
+        "Thierry Henry"
+      ],
+      "correctAnswer": "Alan Shearer",
+      "volatile": false
+    },
+    {
+      "id": "q_lgscore_laliga_alltime_top",
+      "sport": "football",
+      "category": "La Liga",
+      "subcategory": "All-time top scorers",
+      "factId": "league_scorers_la_liga",
+      "difficulty": "easy",
+      "question": "Who is the all-time top scorer in La Liga?",
+      "options": [
+        "Cristiano Ronaldo",
+        "Lionel Messi",
+        "Telmo Zarra",
+        "Raúl"
+      ],
+      "correctAnswer": "Lionel Messi",
+      "volatile": false
+    },
+    {
+      "id": "q_lgscore_most_pichichis",
+      "sport": "football",
+      "category": "Leagues",
+      "subcategory": "Top-scorer award counts",
+      "factId": "league_topscorer_awards",
+      "difficulty": "easy",
+      "question": "Who has won the most Pichichi trophies (La Liga top scorer) with a record 8?",
+      "options": [
+        "Lionel Messi",
+        "Cristiano Ronaldo",
+        "Telmo Zarra",
+        "Hugo Sánchez"
+      ],
+      "correctAnswer": "Lionel Messi",
+      "volatile": false
+    },
+    {
+      "id": "q_lgscore_pl_second",
+      "sport": "football",
+      "category": "Premier League",
+      "subcategory": "All-time top scorers",
+      "factId": "league_scorers_premier_league",
+      "difficulty": "intermediate",
+      "question": "Who is the second-highest scorer in Premier League history, behind Alan Shearer?",
+      "options": [
+        "Harry Kane",
+        "Wayne Rooney",
+        "Andy Cole",
+        "Sergio Agüero"
+      ],
+      "correctAnswer": "Harry Kane",
+      "volatile": false
+    },
+    {
+      "id": "q_lgscore_pl_third",
+      "sport": "football",
+      "category": "Premier League",
+      "subcategory": "All-time top scorers",
+      "factId": "league_scorers_premier_league",
+      "difficulty": "intermediate",
+      "question": "Which player ranks third on the Premier League's all-time scoring list?",
+      "options": [
+        "Wayne Rooney",
+        "Andy Cole",
+        "Frank Lampard",
+        "Robbie Fowler"
+      ],
+      "correctAnswer": "Wayne Rooney",
+      "volatile": false
+    },
+    {
+      "id": "q_lgscore_pl_shearer_total",
+      "sport": "football",
+      "category": "Premier League",
+      "subcategory": "All-time top scorers",
+      "factId": "league_scorers_premier_league",
+      "difficulty": "hard",
+      "question": "How many Premier League goals did Alan Shearer score?",
+      "options": [
+        "260",
+        "248",
+        "271",
+        "239"
+      ],
+      "correctAnswer": "260",
+      "volatile": false
+    },
+    {
+      "id": "q_lgscore_pl_not_top5",
+      "sport": "football",
+      "category": "Premier League",
+      "subcategory": "All-time top scorers",
+      "factId": "league_scorers_premier_league",
+      "difficulty": "hard",
+      "question": "Which of these players is NOT in the Premier League's all-time top 5 scorers?",
+      "options": [
+        "Frank Lampard",
+        "Alan Shearer",
+        "Mohamed Salah",
+        "Andy Cole"
+      ],
+      "correctAnswer": "Frank Lampard",
+      "volatile": false
+    },
+    {
+      "id": "q_lgscore_laliga_zarra_third",
+      "sport": "football",
+      "category": "La Liga",
+      "subcategory": "All-time top scorers",
+      "factId": "league_scorers_la_liga",
+      "difficulty": "hard",
+      "question": "Behind Messi and Cristiano Ronaldo, which legend is the third-highest scorer in La Liga history?",
+      "options": [
+        "Telmo Zarra",
+        "Hugo Sánchez",
+        "Alfredo Di Stéfano",
+        "Raúl"
+      ],
+      "correctAnswer": "Telmo Zarra",
+      "volatile": false
+    },
+    {
+      "id": "q_lgscore_laliga_cr7_total",
+      "sport": "football",
+      "category": "La Liga",
+      "subcategory": "All-time top scorers",
+      "factId": "league_scorers_la_liga",
+      "difficulty": "hard",
+      "question": "How many La Liga goals did Cristiano Ronaldo score?",
+      "options": [
+        "311",
+        "294",
+        "326",
+        "281"
+      ],
+      "correctAnswer": "311",
+      "volatile": false
+    },
+    {
+      "id": "q_lgscore_laliga_messi_total",
+      "sport": "football",
+      "category": "La Liga",
+      "subcategory": "All-time top scorers",
+      "factId": "league_scorers_la_liga",
+      "difficulty": "hard",
+      "question": "How many La Liga goals did Lionel Messi score, all for Barcelona?",
+      "options": [
+        "474",
+        "455",
+        "489",
+        "462"
+      ],
+      "correctAnswer": "474",
+      "volatile": false
+    },
+    {
+      "id": "q_lgscore_laliga_not_top6",
+      "sport": "football",
+      "category": "La Liga",
+      "subcategory": "All-time top scorers",
+      "factId": "league_scorers_la_liga",
+      "difficulty": "hard",
+      "question": "Which of these players is NOT among the recognised top six all-time La Liga scorers?",
+      "options": [
+        "David Villa",
+        "Telmo Zarra",
+        "Hugo Sánchez",
+        "Alfredo Di Stéfano"
+      ],
+      "correctAnswer": "David Villa",
+      "volatile": false
+    },
+    {
+      "id": "q_lgscore_bundesliga_top",
+      "sport": "football",
+      "category": "Bundesliga",
+      "subcategory": "All-time top scorers",
+      "factId": "league_scorers_bundesliga",
+      "difficulty": "intermediate",
+      "question": "Who is the all-time top scorer in the Bundesliga?",
+      "options": [
+        "Gerd Müller",
+        "Robert Lewandowski",
+        "Klaus Fischer",
+        "Jupp Heynckes"
+      ],
+      "correctAnswer": "Gerd Müller",
+      "volatile": false
+    },
+    {
+      "id": "q_lgscore_bundesliga_second",
+      "sport": "football",
+      "category": "Bundesliga",
+      "subcategory": "All-time top scorers",
+      "factId": "league_scorers_bundesliga",
+      "difficulty": "intermediate",
+      "question": "Who is the second-highest scorer in Bundesliga history, behind Gerd Müller?",
+      "options": [
+        "Robert Lewandowski",
+        "Klaus Fischer",
+        "Manfred Burgsmüller",
+        "Jupp Heynckes"
+      ],
+      "correctAnswer": "Robert Lewandowski",
+      "volatile": false
+    },
+    {
+      "id": "q_lgscore_bundesliga_muller_total",
+      "sport": "football",
+      "category": "Bundesliga",
+      "subcategory": "All-time top scorers",
+      "factId": "league_scorers_bundesliga",
+      "difficulty": "hard",
+      "question": "How many Bundesliga goals did Gerd Müller score?",
+      "options": [
+        "365",
+        "348",
+        "377",
+        "352"
+      ],
+      "correctAnswer": "365",
+      "volatile": false
+    },
+    {
+      "id": "q_lgscore_bundesliga_third",
+      "sport": "football",
+      "category": "Bundesliga",
+      "subcategory": "All-time top scorers",
+      "factId": "league_scorers_bundesliga",
+      "difficulty": "hard",
+      "question": "Which player completes the uncontested top three of Bundesliga all-time scorers alongside Gerd Müller and Robert Lewandowski?",
+      "options": [
+        "Klaus Fischer",
+        "Manfred Burgsmüller",
+        "Jupp Heynckes",
+        "Claudio Pizarro"
+      ],
+      "correctAnswer": "Klaus Fischer",
+      "volatile": false
+    },
+    {
+      "id": "q_lgscore_seriea_top",
+      "sport": "football",
+      "category": "Serie A",
+      "subcategory": "All-time top scorers",
+      "factId": "league_scorers_serie_a",
+      "difficulty": "intermediate",
+      "question": "Who is the all-time top scorer in Serie A?",
+      "options": [
+        "Silvio Piola",
+        "Francesco Totti",
+        "Gunnar Nordahl",
+        "Giuseppe Meazza"
+      ],
+      "correctAnswer": "Silvio Piola",
+      "volatile": false
+    },
+    {
+      "id": "q_lgscore_seriea_second",
+      "sport": "football",
+      "category": "Serie A",
+      "subcategory": "All-time top scorers",
+      "factId": "league_scorers_serie_a",
+      "difficulty": "intermediate",
+      "question": "Which Roma legend is the second-highest scorer in Serie A history?",
+      "options": [
+        "Francesco Totti",
+        "Roberto Baggio",
+        "Antonio Di Natale",
+        "Gunnar Nordahl"
+      ],
+      "correctAnswer": "Francesco Totti",
+      "volatile": false
+    },
+    {
+      "id": "q_lgscore_seriea_piola_total",
+      "sport": "football",
+      "category": "Serie A",
+      "subcategory": "All-time top scorers",
+      "factId": "league_scorers_serie_a",
+      "difficulty": "hard",
+      "question": "How many Serie A goals did all-time leader Silvio Piola score?",
+      "options": [
+        "274",
+        "261",
+        "289",
+        "250"
+      ],
+      "correctAnswer": "274",
+      "volatile": false
+    },
+    {
+      "id": "q_lgscore_seriea_third",
+      "sport": "football",
+      "category": "Serie A",
+      "subcategory": "All-time top scorers",
+      "factId": "league_scorers_serie_a",
+      "difficulty": "hard",
+      "question": "Which Milan great, famed for his scoring ratio, is third on Serie A's all-time list behind Piola and Totti?",
+      "options": [
+        "Gunnar Nordahl",
+        "José Altafini",
+        "Giuseppe Meazza",
+        "Roberto Baggio"
+      ],
+      "correctAnswer": "Gunnar Nordahl",
+      "volatile": false
+    },
+    {
+      "id": "q_lgscore_seriea_not_top7",
+      "sport": "football",
+      "category": "Serie A",
+      "subcategory": "All-time top scorers",
+      "factId": "league_scorers_serie_a",
+      "difficulty": "hard",
+      "question": "Which of these players is NOT among Serie A's all-time top scorers listed in the top seven?",
+      "options": [
+        "Gabriel Batistuta",
+        "Giuseppe Meazza",
+        "Antonio Di Natale",
+        "Roberto Baggio"
+      ],
+      "correctAnswer": "Gabriel Batistuta",
+      "volatile": false
+    },
+    {
+      "id": "q_lgscore_ligue1_top",
+      "sport": "football",
+      "category": "Ligue 1",
+      "subcategory": "All-time top scorers",
+      "factId": "league_scorers_ligue_1",
+      "difficulty": "intermediate",
+      "question": "Who is the all-time top scorer in Ligue 1?",
+      "options": [
+        "Delio Onnis",
+        "Bernard Lacombe",
+        "Hervé Revelli",
+        "Jean-Pierre Papin"
+      ],
+      "correctAnswer": "Delio Onnis",
+      "volatile": false
+    },
+    {
+      "id": "q_lgscore_ligue1_second",
+      "sport": "football",
+      "category": "Ligue 1",
+      "subcategory": "All-time top scorers",
+      "factId": "league_scorers_ligue_1",
+      "difficulty": "hard",
+      "question": "Who is the second-highest scorer in Ligue 1 history, behind Delio Onnis?",
+      "options": [
+        "Bernard Lacombe",
+        "Hervé Revelli",
+        "Roger Courtois",
+        "Thadée Cisowski"
+      ],
+      "correctAnswer": "Bernard Lacombe",
+      "volatile": false
+    },
+    {
+      "id": "q_lgscore_ligue1_onnis_total",
+      "sport": "football",
+      "category": "Ligue 1",
+      "subcategory": "All-time top scorers",
+      "factId": "league_scorers_ligue_1",
+      "difficulty": "hard",
+      "question": "How many Ligue 1 goals did all-time leader Delio Onnis score?",
+      "options": [
+        "299",
+        "285",
+        "312",
+        "276"
+      ],
+      "correctAnswer": "299",
+      "volatile": false
+    },
+    {
+      "id": "q_lgscore_ligue1_third",
+      "sport": "football",
+      "category": "Ligue 1",
+      "subcategory": "All-time top scorers",
+      "factId": "league_scorers_ligue_1",
+      "difficulty": "hard",
+      "question": "Which player is third on Ligue 1's all-time scoring list, behind Onnis and Lacombe?",
+      "options": [
+        "Hervé Revelli",
+        "Roger Courtois",
+        "Thadée Cisowski",
+        "Roger Piantoni"
+      ],
+      "correctAnswer": "Hervé Revelli",
+      "volatile": false
+    },
+    {
+      "id": "q_lgscore_ligue1_not_top6",
+      "sport": "football",
+      "category": "Ligue 1",
+      "subcategory": "All-time top scorers",
+      "factId": "league_scorers_ligue_1",
+      "difficulty": "hard",
+      "question": "Which of these players is NOT among Ligue 1's top six all-time scorers?",
+      "options": [
+        "Carlos Bianchi",
+        "Bernard Lacombe",
+        "Roger Courtois",
+        "Roger Piantoni"
+      ],
+      "correctAnswer": "Carlos Bianchi",
+      "volatile": false
+    },
+    {
+      "id": "q_lgscore_awards_torjager",
+      "sport": "football",
+      "category": "Leagues",
+      "subcategory": "Top-scorer award counts",
+      "factId": "league_topscorer_awards",
+      "difficulty": "intermediate",
+      "question": "Gerd Müller and which other player share the record for most Bundesliga top-scorer awards (Torjägerkanone) with 7 each?",
+      "options": [
+        "Robert Lewandowski",
+        "Klaus Fischer",
+        "Jupp Heynckes",
+        "Harry Kane"
+      ],
+      "correctAnswer": "Robert Lewandowski",
+      "volatile": false
+    },
+    {
+      "id": "q_lgscore_awards_ligue1_most",
+      "sport": "football",
+      "category": "Leagues",
+      "subcategory": "Top-scorer award counts",
+      "factId": "league_topscorer_awards",
+      "difficulty": "intermediate",
+      "question": "Who holds the record for most Ligue 1 top-scorer awards with 6 (2019–24)?",
+      "options": [
+        "Kylian Mbappé",
+        "Carlos Bianchi",
+        "Jean-Pierre Papin",
+        "Delio Onnis"
+      ],
+      "correctAnswer": "Kylian Mbappé",
+      "volatile": false
+    },
+    {
+      "id": "q_lgscore_awards_pichichi_count",
+      "sport": "football",
+      "category": "Leagues",
+      "subcategory": "Top-scorer award counts",
+      "factId": "league_topscorer_awards",
+      "difficulty": "hard",
+      "question": "How many Pichichi trophies did Lionel Messi win, a La Liga record?",
+      "options": [
+        "8",
+        "6",
+        "7",
+        "9"
+      ],
+      "correctAnswer": "8",
+      "volatile": false
+    },
+    {
+      "id": "q_lgscore_awards_capocannoniere",
+      "sport": "football",
+      "category": "Leagues",
+      "subcategory": "Top-scorer award counts",
+      "factId": "league_topscorer_awards",
+      "difficulty": "hard",
+      "question": "Which player won a record 5 Capocannoniere awards as Serie A top scorer?",
+      "options": [
+        "Gunnar Nordahl",
+        "Silvio Piola",
+        "Giuseppe Meazza",
+        "Francesco Totti"
+      ],
+      "correctAnswer": "Gunnar Nordahl",
+      "volatile": false
+    },
+    {
+      "id": "q_lgscore_awards_pichichi_second",
+      "sport": "football",
+      "category": "Leagues",
+      "subcategory": "Top-scorer award counts",
+      "factId": "league_topscorer_awards",
+      "difficulty": "hard",
+      "question": "Behind Messi's 8, which legend won the second-most Pichichi trophies with 6?",
+      "options": [
+        "Telmo Zarra",
+        "Hugo Sánchez",
+        "Alfredo Di Stéfano",
+        "Quini"
+      ],
+      "correctAnswer": "Telmo Zarra",
+      "volatile": false
+    },
+    {
+      "id": "q_lgscore_ss_laliga_messi50",
+      "sport": "football",
+      "category": "Leagues",
+      "subcategory": "Top-scorer award counts",
+      "factId": "league_topscorer_awards",
+      "difficulty": "intermediate",
+      "question": "How many goals did Lionel Messi score in 2011–12 to set the La Liga single-season record?",
+      "options": [
+        "50",
+        "46",
+        "43",
+        "38"
+      ],
+      "correctAnswer": "50",
+      "volatile": false
+    },
+    {
+      "id": "q_lgscore_ss_bundesliga_lewa41",
+      "sport": "football",
+      "category": "Leagues",
+      "subcategory": "Top-scorer award counts",
+      "factId": "league_topscorer_awards",
+      "difficulty": "intermediate",
+      "question": "Robert Lewandowski set the Bundesliga single-season scoring record in 2020–21, breaking Gerd Müller's 40. How many goals did he score?",
+      "options": [
+        "41",
+        "39",
+        "44",
+        "40"
+      ],
+      "correctAnswer": "41",
+      "volatile": false
+    },
+    {
+      "id": "q_lgtitle_laliga_most",
+      "sport": "football",
+      "category": "La Liga",
+      "subcategory": "Title counts",
+      "factId": "league_titles_la_liga",
+      "difficulty": "easy",
+      "question": "Which club has won the most La Liga titles?",
+      "options": [
+        "Real Madrid",
+        "Barcelona",
+        "Atlético Madrid",
+        "Valencia"
+      ],
+      "correctAnswer": "Real Madrid",
+      "volatile": false
+    },
+    {
+      "id": "q_lgtitle_bundesliga_most",
+      "sport": "football",
+      "category": "Bundesliga",
+      "subcategory": "Title counts",
+      "factId": "league_titles_bundesliga",
+      "difficulty": "easy",
+      "question": "Which club has won the most Bundesliga titles?",
+      "options": [
+        "Bayern Munich",
+        "Borussia Dortmund",
+        "Borussia Mönchengladbach",
+        "Werder Bremen"
+      ],
+      "correctAnswer": "Bayern Munich",
+      "volatile": false
+    },
+    {
+      "id": "q_lgtitle_seriea_most",
+      "sport": "football",
+      "category": "Serie A",
+      "subcategory": "Title counts",
+      "factId": "league_titles_serie_a",
+      "difficulty": "intermediate",
+      "question": "Which club has won the most Serie A titles?",
+      "options": [
+        "Juventus",
+        "Inter Milan",
+        "AC Milan",
+        "Genoa"
+      ],
+      "correctAnswer": "Juventus",
+      "volatile": false
+    },
+    {
+      "id": "q_lgtitle_pl_era_most",
+      "sport": "football",
+      "category": "Premier League",
+      "subcategory": "Title counts",
+      "factId": "league_titles_england",
+      "difficulty": "intermediate",
+      "question": "Which club has won the most Premier League titles since the league began in 1992?",
+      "options": [
+        "Manchester United",
+        "Manchester City",
+        "Chelsea",
+        "Arsenal"
+      ],
+      "correctAnswer": "Manchester United",
+      "volatile": false
+    },
+    {
+      "id": "q_lgtitle_england_combined_leaders",
+      "sport": "football",
+      "category": "Premier League",
+      "subcategory": "Title counts",
+      "factId": "league_titles_england",
+      "difficulty": "intermediate",
+      "question": "Which two clubs are tied with the most English top-flight titles (First Division + Premier League combined), on 20 each?",
+      "options": [
+        "Manchester United & Liverpool",
+        "Manchester United & Arsenal",
+        "Liverpool & Everton",
+        "Arsenal & Manchester City"
+      ],
+      "correctAnswer": "Manchester United & Liverpool",
+      "volatile": false
+    },
+    {
+      "id": "q_lgtitle_pl_champ_2526",
+      "sport": "football",
+      "category": "Premier League",
+      "subcategory": "Title counts",
+      "factId": "league_titles_england",
+      "difficulty": "intermediate",
+      "question": "Which club won the 2025–26 Premier League title under Mikel Arteta?",
+      "options": [
+        "Arsenal",
+        "Manchester City",
+        "Liverpool",
+        "Manchester United"
+      ],
+      "correctAnswer": "Arsenal",
+      "volatile": false
+    },
+    {
+      "id": "q_lgtitle_seriea_champ_2526",
+      "sport": "football",
+      "category": "Serie A",
+      "subcategory": "Title counts",
+      "factId": "league_titles_serie_a",
+      "difficulty": "intermediate",
+      "question": "Which club won the 2025–26 Serie A title?",
+      "options": [
+        "Inter Milan",
+        "Juventus",
+        "AC Milan",
+        "Napoli"
+      ],
+      "correctAnswer": "Inter Milan",
+      "volatile": false
+    },
+    {
+      "id": "q_lgtitle_laliga_realmadrid_count",
+      "sport": "football",
+      "category": "La Liga",
+      "subcategory": "Title counts",
+      "factId": "league_titles_la_liga",
+      "difficulty": "hard",
+      "question": "How many La Liga titles has Real Madrid won?",
+      "options": [
+        "36",
+        "29",
+        "33",
+        "40"
+      ],
+      "correctAnswer": "36",
+      "volatile": false
+    },
+    {
+      "id": "q_lgtitle_laliga_second",
+      "sport": "football",
+      "category": "La Liga",
+      "subcategory": "Title counts",
+      "factId": "league_titles_la_liga",
+      "difficulty": "intermediate",
+      "question": "Which club has the second-most La Liga titles?",
+      "options": [
+        "Barcelona",
+        "Atlético Madrid",
+        "Athletic Bilbao",
+        "Valencia"
+      ],
+      "correctAnswer": "Barcelona",
+      "volatile": false
+    },
+    {
+      "id": "q_lgtitle_laliga_third",
+      "sport": "football",
+      "category": "La Liga",
+      "subcategory": "Title counts",
+      "factId": "league_titles_la_liga",
+      "difficulty": "hard",
+      "question": "After Real Madrid and Barcelona, which club has the most La Liga titles?",
+      "options": [
+        "Atlético Madrid",
+        "Athletic Bilbao",
+        "Valencia",
+        "Sevilla"
+      ],
+      "correctAnswer": "Atlético Madrid",
+      "volatile": false
+    },
+    {
+      "id": "q_lgtitle_bundesliga_bayern_count",
+      "sport": "football",
+      "category": "Bundesliga",
+      "subcategory": "Title counts",
+      "factId": "league_titles_bundesliga",
+      "difficulty": "hard",
+      "question": "How many Bundesliga titles has Bayern Munich won?",
+      "options": [
+        "34",
+        "30",
+        "28",
+        "36"
+      ],
+      "correctAnswer": "34",
+      "volatile": false
+    },
+    {
+      "id": "q_lgtitle_bundesliga_not_top",
+      "sport": "football",
+      "category": "Bundesliga",
+      "subcategory": "Title counts",
+      "factId": "league_titles_bundesliga",
+      "difficulty": "hard",
+      "question": "Which of these clubs is NOT among the top five for most Bundesliga titles?",
+      "options": [
+        "Bayer Leverkusen",
+        "Borussia Dortmund",
+        "Werder Bremen",
+        "Hamburg"
+      ],
+      "correctAnswer": "Bayer Leverkusen",
+      "volatile": false
+    },
+    {
+      "id": "q_lgtitle_seriea_juve_count",
+      "sport": "football",
+      "category": "Serie A",
+      "subcategory": "Title counts",
+      "factId": "league_titles_serie_a",
+      "difficulty": "hard",
+      "question": "How many Serie A titles does Juventus have, by the FIGC official count?",
+      "options": [
+        "36",
+        "38",
+        "34",
+        "30"
+      ],
+      "correctAnswer": "36",
+      "volatile": false
+    },
+    {
+      "id": "q_lgtitle_seriea_second",
+      "sport": "football",
+      "category": "Serie A",
+      "subcategory": "Title counts",
+      "factId": "league_titles_serie_a",
+      "difficulty": "hard",
+      "question": "Which club has the second-most Serie A titles?",
+      "options": [
+        "Inter Milan",
+        "AC Milan",
+        "Genoa",
+        "Torino"
+      ],
+      "correctAnswer": "Inter Milan",
+      "volatile": false
+    },
+    {
+      "id": "q_lgtitle_pl_manutd_era_count",
+      "sport": "football",
+      "category": "Premier League",
+      "subcategory": "Title counts",
+      "factId": "league_titles_england",
+      "difficulty": "hard",
+      "question": "How many Premier League-era titles (since 1992) has Manchester United won?",
+      "options": [
+        "13",
+        "20",
+        "11",
+        "8"
+      ],
+      "correctAnswer": "13",
+      "volatile": false
+    },
+    {
+      "id": "q_lgtitle_pl_era_second",
+      "sport": "football",
+      "category": "Premier League",
+      "subcategory": "Title counts",
+      "factId": "league_titles_england",
+      "difficulty": "hard",
+      "question": "Which club has the second-most Premier League-era titles (since 1992)?",
+      "options": [
+        "Manchester City",
+        "Chelsea",
+        "Arsenal",
+        "Liverpool"
+      ],
+      "correctAnswer": "Manchester City",
+      "volatile": false
+    },
+    {
+      "id": "q_lgtitle_pl_record_clean_sheets_career",
+      "sport": "football",
+      "category": "Premier League",
+      "subcategory": "Miscellaneous records",
+      "factId": "league_records_premier_league",
+      "difficulty": "hard",
+      "question": "Which goalkeeper holds the Premier League record for most career clean sheets?",
+      "options": [
+        "Petr Čech",
+        "David James",
+        "David de Gea",
+        "Edwin van der Sar"
+      ],
+      "correctAnswer": "Petr Čech",
+      "volatile": false
+    },
+    {
+      "id": "q_lgtitle_pl_record_manager_titles",
+      "sport": "football",
+      "category": "Premier League",
+      "subcategory": "Miscellaneous records",
+      "factId": "league_records_premier_league",
+      "difficulty": "hard",
+      "question": "Which manager has won the most Premier League titles?",
+      "options": [
+        "Sir Alex Ferguson",
+        "Pep Guardiola",
+        "Arsène Wenger",
+        "José Mourinho"
+      ],
+      "correctAnswer": "Sir Alex Ferguson",
+      "volatile": false
+    },
+    {
+      "id": "q_lgtitle_pl_record_quickest_100_wins",
+      "sport": "football",
+      "category": "Premier League",
+      "subcategory": "Miscellaneous records",
+      "factId": "league_records_premier_league",
+      "difficulty": "hard",
+      "question": "Which manager reached 100 Premier League wins in the fewest games (134)?",
+      "options": [
+        "Pep Guardiola",
+        "José Mourinho",
+        "Sir Alex Ferguson",
+        "Jürgen Klopp"
+      ],
+      "correctAnswer": "Pep Guardiola",
+      "volatile": false
+    },
+    {
+      "id": "q_lgtitle_pl_record_longest_tenure",
+      "sport": "football",
+      "category": "Premier League",
+      "subcategory": "Miscellaneous records",
+      "factId": "league_records_premier_league",
+      "difficulty": "hard",
+      "question": "Which manager holds the record for the longest managerial tenure in the Premier League era (21 years, 224 days)?",
+      "options": [
+        "Arsène Wenger",
+        "Sir Alex Ferguson",
+        "David Moyes",
+        "Sean Dyche"
+      ],
+      "correctAnswer": "Arsène Wenger",
+      "volatile": false
+    },
+    {
+      "id": "q_lgtitle_pl_record_biggest_win",
+      "sport": "football",
+      "category": "Premier League",
+      "subcategory": "Miscellaneous records",
+      "factId": "league_records_premier_league",
+      "difficulty": "hard",
+      "question": "Which result is the biggest winning margin in Premier League history?",
+      "options": [
+        "Man Utd 9–0 Southampton (2021)",
+        "Liverpool 9–0 Bournemouth",
+        "Leicester 9–0 Southampton",
+        "Tottenham 9–1 Wigan"
+      ],
+      "correctAnswer": "Man Utd 9–0 Southampton (2021)",
+      "volatile": false
+    },
+    {
+      "id": "q_lgtitle_pl_record_longest_no_concede",
+      "sport": "football",
+      "category": "Premier League",
+      "subcategory": "Miscellaneous records",
+      "factId": "league_records_premier_league",
+      "difficulty": "hard",
+      "question": "Which goalkeeper holds the Premier League record for the longest run without conceding (14 matches / 1,311 minutes in 2008–09)?",
+      "options": [
+        "Edwin van der Sar",
+        "Petr Čech",
+        "Pepe Reina",
+        "David de Gea"
+      ],
+      "correctAnswer": "Edwin van der Sar",
+      "volatile": false
+    },
+    {
+      "id": "q_ucl_alltime_top_scorer",
+      "sport": "football",
+      "category": "Champions League",
+      "subcategory": "All-time top scorers",
+      "factId": "ucl_alltime_scorers",
+      "difficulty": "easy",
+      "question": "Who is the all-time top scorer in the UEFA Champions League / European Cup?",
+      "options": [
+        "Cristiano Ronaldo",
+        "Lionel Messi",
+        "Robert Lewandowski",
+        "Karim Benzema"
+      ],
+      "correctAnswer": "Cristiano Ronaldo",
+      "volatile": false
+    },
+    {
+      "id": "q_ucl_ronaldo_goals",
+      "sport": "football",
+      "category": "Champions League",
+      "subcategory": "All-time top scorers",
+      "factId": "ucl_alltime_scorers",
+      "difficulty": "hard",
+      "question": "How many goals did Cristiano Ronaldo score in the Champions League / European Cup?",
+      "options": [
+        "140",
+        "129",
+        "109",
+        "151"
+      ],
+      "correctAnswer": "140",
+      "volatile": false
+    },
+    {
+      "id": "q_ucl_second_top_scorer",
+      "sport": "football",
+      "category": "Champions League",
+      "subcategory": "All-time top scorers",
+      "factId": "ucl_alltime_scorers",
+      "difficulty": "intermediate",
+      "question": "Who is the second-highest all-time scorer in the Champions League / European Cup?",
+      "options": [
+        "Lionel Messi",
+        "Robert Lewandowski",
+        "Karim Benzema",
+        "Raúl"
+      ],
+      "correctAnswer": "Lionel Messi",
+      "volatile": false
+    },
+    {
+      "id": "q_ucl_messi_goals",
+      "sport": "football",
+      "category": "Champions League",
+      "subcategory": "All-time top scorers",
+      "factId": "ucl_alltime_scorers",
+      "difficulty": "hard",
+      "question": "How many goals did Lionel Messi score in the Champions League / European Cup?",
+      "options": [
+        "129",
+        "140",
+        "109",
+        "120"
+      ],
+      "correctAnswer": "129",
+      "volatile": false
+    },
+    {
+      "id": "q_ucl_third_top_scorer",
+      "sport": "football",
+      "category": "Champions League",
+      "subcategory": "All-time top scorers",
+      "factId": "ucl_alltime_scorers",
+      "difficulty": "intermediate",
+      "question": "Who ranks third on the all-time Champions League / European Cup scoring list?",
+      "options": [
+        "Robert Lewandowski",
+        "Karim Benzema",
+        "Raúl",
+        "Kylian Mbappé"
+      ],
+      "correctAnswer": "Robert Lewandowski",
+      "volatile": false
+    },
+    {
+      "id": "q_ucl_not_top5_scorer",
+      "sport": "football",
+      "category": "Champions League",
+      "subcategory": "All-time top scorers",
+      "factId": "ucl_alltime_scorers",
+      "difficulty": "hard",
+      "question": "Which of these players is NOT in the all-time top 5 Champions League / European Cup scorers?",
+      "options": [
+        "Kylian Mbappé",
+        "Cristiano Ronaldo",
+        "Robert Lewandowski",
+        "Karim Benzema"
+      ],
+      "correctAnswer": "Kylian Mbappé",
+      "volatile": false
+    },
+    {
+      "id": "q_ucl_benzema_rank",
+      "sport": "football",
+      "category": "Champions League",
+      "subcategory": "All-time top scorers",
+      "factId": "ucl_alltime_scorers",
+      "difficulty": "hard",
+      "question": "Karim Benzema sits 4th on the all-time Champions League scoring list with how many goals?",
+      "options": [
+        "90",
+        "71",
+        "109",
+        "70"
+      ],
+      "correctAnswer": "90",
+      "volatile": false
+    },
+    {
+      "id": "q_ucl_single_season_record",
+      "sport": "football",
+      "category": "Champions League",
+      "subcategory": "All-time top scorers",
+      "factId": "ucl_alltime_scorers",
+      "difficulty": "intermediate",
+      "question": "What is the record for most goals in a single Champions League season, set by Cristiano Ronaldo in 2013–14?",
+      "options": [
+        "17",
+        "15",
+        "14",
+        "12"
+      ],
+      "correctAnswer": "17",
+      "volatile": false
+    },
+    {
+      "id": "q_ucl_müller_haaland_57",
+      "sport": "football",
+      "category": "Champions League",
+      "subcategory": "All-time top scorers",
+      "factId": "ucl_alltime_scorers",
+      "difficulty": "hard",
+      "question": "Thomas Müller and Erling Haaland are tied on which goal total in the all-time Champions League scoring list?",
+      "options": [
+        "57",
+        "70",
+        "56",
+        "54"
+      ],
+      "correctAnswer": "57",
+      "volatile": false
+    },
+    {
+      "id": "q_ucl_most_titles_club",
+      "sport": "football",
+      "category": "Champions League",
+      "subcategory": "Titles by club",
+      "factId": "ucl_titles_club",
+      "difficulty": "easy",
+      "question": "Which club has won the most Champions League / European Cup titles?",
+      "options": [
+        "Real Madrid",
+        "AC Milan",
+        "Bayern Munich",
+        "Liverpool"
+      ],
+      "correctAnswer": "Real Madrid",
+      "volatile": false
+    },
+    {
+      "id": "q_ucl_real_madrid_titles",
+      "sport": "football",
+      "category": "Champions League",
+      "subcategory": "Titles by club",
+      "factId": "ucl_titles_club",
+      "difficulty": "hard",
+      "question": "How many Champions League / European Cup titles have Real Madrid won?",
+      "options": [
+        "15",
+        "13",
+        "14",
+        "18"
+      ],
+      "correctAnswer": "15",
+      "volatile": false
+    },
+    {
+      "id": "q_ucl_milan_titles",
+      "sport": "football",
+      "category": "Champions League",
+      "subcategory": "Titles by club",
+      "factId": "ucl_titles_club",
+      "difficulty": "intermediate",
+      "question": "AC Milan are second on the all-time list with how many European Cup / Champions League titles?",
+      "options": [
+        "7",
+        "6",
+        "5",
+        "8"
+      ],
+      "correctAnswer": "7",
+      "volatile": false
+    },
+    {
+      "id": "q_ucl_six_titles_clubs",
+      "sport": "football",
+      "category": "Champions League",
+      "subcategory": "Titles by club",
+      "factId": "ucl_titles_club",
+      "difficulty": "hard",
+      "question": "Liverpool and which other club are tied on six Champions League / European Cup titles?",
+      "options": [
+        "Bayern Munich",
+        "Barcelona",
+        "Ajax",
+        "Inter"
+      ],
+      "correctAnswer": "Bayern Munich",
+      "volatile": false
+    },
+    {
+      "id": "q_ucl_most_runner_up",
+      "sport": "football",
+      "category": "Champions League",
+      "subcategory": "Titles by club",
+      "factId": "ucl_titles_club",
+      "difficulty": "hard",
+      "question": "Which club has the most runner-up finishes (7 lost finals) in the European Cup / Champions League?",
+      "options": [
+        "Juventus",
+        "Atlético Madrid",
+        "Benfica",
+        "AC Milan"
+      ],
+      "correctAnswer": "Juventus",
+      "volatile": false
+    },
+    {
+      "id": "q_ucl_psg_recent_winner",
+      "sport": "football",
+      "category": "Champions League",
+      "subcategory": "Titles by club",
+      "factId": "ucl_titles_club",
+      "difficulty": "intermediate",
+      "question": "Which club won the Champions League in both 2025 and 2026 for their first two European titles?",
+      "options": [
+        "PSG",
+        "Inter",
+        "Arsenal",
+        "Manchester City"
+      ],
+      "correctAnswer": "PSG",
+      "volatile": false
+    },
+    {
+      "id": "q_ucl_titles_by_nation",
+      "sport": "football",
+      "category": "Champions League",
+      "subcategory": "Titles by club",
+      "factId": "ucl_titles_club",
+      "difficulty": "hard",
+      "question": "Which nation has produced the most Champions League / European Cup winners, with 20 titles?",
+      "options": [
+        "Spain",
+        "England",
+        "Italy",
+        "Germany"
+      ],
+      "correctAnswer": "Spain",
+      "volatile": false
+    },
+    {
+      "id": "q_ucl_most_titles_manager",
+      "sport": "football",
+      "category": "Champions League",
+      "subcategory": "Titles by player & manager",
+      "factId": "ucl_titles_player_manager",
+      "difficulty": "intermediate",
+      "question": "Who has won the most Champions League titles as a manager (5)?",
+      "options": [
+        "Carlo Ancelotti",
+        "Pep Guardiola",
+        "Bob Paisley",
+        "Zinédine Zidane"
+      ],
+      "correctAnswer": "Carlo Ancelotti",
+      "volatile": false
+    },
+    {
+      "id": "q_ucl_most_titles_player_european_cup",
+      "sport": "football",
+      "category": "Champions League",
+      "subcategory": "Titles by player & manager",
+      "factId": "ucl_titles_player_manager",
+      "difficulty": "intermediate",
+      "question": "Who holds the record for most European Cup titles as a player, with 6?",
+      "options": [
+        "Francisco Gento",
+        "Alfredo Di Stéfano",
+        "Paolo Maldini",
+        "Cristiano Ronaldo"
+      ],
+      "correctAnswer": "Francisco Gento",
+      "volatile": false
+    },
+    {
+      "id": "q_ucl_most_consecutive_manager",
+      "sport": "football",
+      "category": "Champions League",
+      "subcategory": "Titles by player & manager",
+      "factId": "ucl_titles_player_manager",
+      "difficulty": "hard",
+      "question": "Which manager won three consecutive Champions League titles (2016–18)?",
+      "options": [
+        "Zinédine Zidane",
+        "Carlo Ancelotti",
+        "Pep Guardiola",
+        "Bob Paisley"
+      ],
+      "correctAnswer": "Zinédine Zidane",
+      "volatile": false
+    },
+    {
+      "id": "q_ucl_2025_final_score",
+      "sport": "football",
+      "category": "Champions League",
+      "subcategory": "Titles by player & manager",
+      "factId": "ucl_titles_player_manager",
+      "difficulty": "hard",
+      "question": "What was the scoreline when PSG beat Inter in the 2025 Champions League final, the biggest CL final win?",
+      "options": [
+        "5–0",
+        "4–0",
+        "3–1",
+        "4–1"
+      ],
+      "correctAnswer": "5–0",
+      "volatile": false
+    },
+    {
+      "id": "q_wc_alltime_top_holder",
+      "sport": "football",
+      "category": "World Cup",
+      "subcategory": "All-time top scorers",
+      "factId": "wc_alltime_scorers",
+      "difficulty": "easy",
+      "question": "As of June 2026, who is the all-time leading goalscorer in FIFA World Cup history?",
+      "options": [
+        "Lionel Messi",
+        "Miroslav Klose",
+        "Ronaldo Nazário",
+        "Just Fontaine"
+      ],
+      "correctAnswer": "Lionel Messi",
+      "volatile": true
+    },
+    {
+      "id": "q_wc_alltime_messi_count",
+      "sport": "football",
+      "category": "World Cup",
+      "subcategory": "All-time top scorers",
+      "factId": "wc_alltime_scorers",
+      "difficulty": "hard",
+      "question": "As of 22 June 2026, how many career World Cup goals has Lionel Messi scored?",
+      "options": [
+        "18",
+        "16",
+        "15",
+        "20"
+      ],
+      "correctAnswer": "18",
+      "volatile": true
+    },
+    {
+      "id": "q_wc_alltime_klose_count",
+      "sport": "football",
+      "category": "World Cup",
+      "subcategory": "All-time top scorers",
+      "factId": "wc_alltime_scorers",
+      "difficulty": "hard",
+      "question": "How many goals did Miroslav Klose score across his World Cup career, the German record?",
+      "options": [
+        "16",
+        "14",
+        "18",
+        "15"
+      ],
+      "correctAnswer": "16",
+      "volatile": true
+    },
+    {
+      "id": "q_wc_alltime_germany_record",
+      "sport": "football",
+      "category": "World Cup",
+      "subcategory": "All-time top scorers",
+      "factId": "wc_alltime_scorers",
+      "difficulty": "intermediate",
+      "question": "Which player held the World Cup all-time scoring record before Lionel Messi surpassed him in June 2026?",
+      "options": [
+        "Miroslav Klose",
+        "Ronaldo Nazário",
+        "Gerd Müller",
+        "Pelé"
+      ],
+      "correctAnswer": "Miroslav Klose",
+      "volatile": true
+    },
+    {
+      "id": "q_wc_alltime_brazil_15",
+      "sport": "football",
+      "category": "World Cup",
+      "subcategory": "All-time top scorers",
+      "factId": "wc_alltime_scorers",
+      "difficulty": "intermediate",
+      "question": "Which Brazilian striker sits on 15 career World Cup goals, behind Messi and Klose?",
+      "options": [
+        "Ronaldo Nazário",
+        "Pelé",
+        "Just Fontaine",
+        "Gerd Müller"
+      ],
+      "correctAnswer": "Ronaldo Nazário",
+      "volatile": true
+    },
+    {
+      "id": "q_wc_alltime_pele_count",
+      "sport": "football",
+      "category": "World Cup",
+      "subcategory": "All-time top scorers",
+      "factId": "wc_alltime_scorers",
+      "difficulty": "hard",
+      "question": "How many World Cup goals did Pelé score across his career?",
+      "options": [
+        "12",
+        "14",
+        "10",
+        "13"
+      ],
+      "correctAnswer": "12",
+      "volatile": true
+    },
+    {
+      "id": "q_wc_single_tourn_fontaine_holder",
+      "sport": "football",
+      "category": "World Cup",
+      "subcategory": "Most goals in a single tournament",
+      "factId": "wc_single_tournament_scorers",
+      "difficulty": "intermediate",
+      "question": "Who holds the record for the most goals scored at a single World Cup tournament?",
+      "options": [
+        "Just Fontaine",
+        "Sándor Kocsis",
+        "Gerd Müller",
+        "Eusébio"
+      ],
+      "correctAnswer": "Just Fontaine",
+      "volatile": false
+    },
+    {
+      "id": "q_wc_single_tourn_fontaine_count",
+      "sport": "football",
+      "category": "World Cup",
+      "subcategory": "Most goals in a single tournament",
+      "factId": "wc_single_tournament_scorers",
+      "difficulty": "hard",
+      "question": "How many goals did Just Fontaine score at the 1958 World Cup, a single-tournament record?",
+      "options": [
+        "13",
+        "11",
+        "10",
+        "9"
+      ],
+      "correctAnswer": "13",
+      "volatile": false
+    },
+    {
+      "id": "q_wc_single_tourn_kocsis",
+      "sport": "football",
+      "category": "World Cup",
+      "subcategory": "Most goals in a single tournament",
+      "factId": "wc_single_tournament_scorers",
+      "difficulty": "hard",
+      "question": "Sándor Kocsis scored 11 goals at the 1954 World Cup. How many did he finish behind the all-time single-tournament record of 13?",
+      "options": [
+        "2",
+        "1",
+        "3",
+        "4"
+      ],
+      "correctAnswer": "2",
+      "volatile": false
+    },
+    {
+      "id": "q_wc_titles_country_brazil",
+      "sport": "football",
+      "category": "World Cup",
+      "subcategory": "Titles by country",
+      "factId": "wc_titles_country",
+      "difficulty": "easy",
+      "question": "Which country has won the most FIFA World Cup titles?",
+      "options": [
+        "Brazil",
+        "Italy",
+        "Germany",
+        "Argentina"
+      ],
+      "correctAnswer": "Brazil",
+      "volatile": false
+    },
+    {
+      "id": "q_wc_titles_country_brazil_count",
+      "sport": "football",
+      "category": "World Cup",
+      "subcategory": "Titles by country",
+      "factId": "wc_titles_country",
+      "difficulty": "hard",
+      "question": "How many World Cup titles has Brazil won?",
+      "options": [
+        "5",
+        "4",
+        "6",
+        "3"
+      ],
+      "correctAnswer": "5",
+      "volatile": false
+    },
+    {
+      "id": "q_wc_titles_country_four",
+      "sport": "football",
+      "category": "World Cup",
+      "subcategory": "Titles by country",
+      "factId": "wc_titles_country",
+      "difficulty": "intermediate",
+      "question": "Which two countries are tied on four World Cup titles each, behind only Brazil?",
+      "options": [
+        "Italy and Germany",
+        "Argentina and Uruguay",
+        "France and Spain",
+        "Germany and Argentina"
+      ],
+      "correctAnswer": "Italy and Germany",
+      "volatile": false
+    },
+    {
+      "id": "q_wc_titles_country_not_won",
+      "sport": "football",
+      "category": "World Cup",
+      "subcategory": "Titles by country",
+      "factId": "wc_titles_country",
+      "difficulty": "hard",
+      "question": "Which of these countries has NOT won the FIFA World Cup?",
+      "options": [
+        "Netherlands",
+        "England",
+        "Spain",
+        "Uruguay"
+      ],
+      "correctAnswer": "Netherlands",
+      "volatile": false
+    },
+    {
+      "id": "q_wc_misc_player_titles_pele",
+      "sport": "football",
+      "category": "World Cup",
+      "subcategory": "Miscellaneous records",
+      "factId": "wc_misc_records",
+      "difficulty": "intermediate",
+      "question": "Which player has won the most World Cup titles, lifting the trophy three times (1958, 1962, 1970)?",
+      "options": [
+        "Pelé",
+        "Diego Maradona",
+        "Cafu",
+        "Lionel Messi"
+      ],
+      "correctAnswer": "Pelé",
+      "volatile": false
+    },
+    {
+      "id": "q_wc_misc_final_apps_cafu",
+      "sport": "football",
+      "category": "World Cup",
+      "subcategory": "Miscellaneous records",
+      "factId": "wc_misc_records",
+      "difficulty": "intermediate",
+      "question": "Who is the only player to appear in three different World Cup finals (1994, 1998, 2002)?",
+      "options": [
+        "Cafu",
+        "Pelé",
+        "Franz Beckenbauer",
+        "Lothar Matthäus"
+      ],
+      "correctAnswer": "Cafu",
+      "volatile": false
+    },
+    {
+      "id": "q_wc_misc_salenko_match",
+      "sport": "football",
+      "category": "World Cup",
+      "subcategory": "Miscellaneous records",
+      "factId": "wc_misc_records",
+      "difficulty": "hard",
+      "question": "Who holds the record for the most goals in a single World Cup match, scoring 5 against Cameroon in 1994?",
+      "options": [
+        "Oleg Salenko",
+        "Just Fontaine",
+        "Sándor Kocsis",
+        "Gerd Müller"
+      ],
+      "correctAnswer": "Oleg Salenko",
+      "volatile": false
+    },
+    {
+      "id": "q_wc_misc_first_goal_laurent",
+      "sport": "football",
+      "category": "World Cup",
+      "subcategory": "Miscellaneous records",
+      "factId": "wc_misc_records",
+      "difficulty": "hard",
+      "question": "Who scored the first-ever goal in World Cup history, for France in 1930?",
+      "options": [
+        "Lucien Laurent",
+        "Guillermo Stábile",
+        "Bert Patenaude",
+        "Héctor Castro"
+      ],
+      "correctAnswer": "Lucien Laurent",
+      "volatile": false
+    },
+    {
+      "id": "q_wc_misc_oldest_player",
+      "sport": "football",
+      "category": "World Cup",
+      "subcategory": "Miscellaneous records",
+      "factId": "wc_misc_records",
+      "difficulty": "hard",
+      "question": "Who is the oldest player ever to feature at a World Cup, aged 45 at the 2018 tournament?",
+      "options": [
+        "Essam El-Hadary",
+        "Roger Milla",
+        "Dino Zoff",
+        "Faryd Mondragón"
+      ],
+      "correctAnswer": "Essam El-Hadary",
+      "volatile": false
+    },
+    {
+      "id": "q_wc_misc_youngest_scorer",
+      "sport": "football",
+      "category": "World Cup",
+      "subcategory": "Miscellaneous records",
+      "factId": "wc_misc_records",
+      "difficulty": "hard",
+      "question": "Who is the youngest goalscorer in World Cup history, netting in the 1958 tournament aged 17?",
+      "options": [
+        "Pelé",
+        "Kylian Mbappé",
+        "Michael Owen",
+        "Lionel Messi"
+      ],
+      "correctAnswer": "Pelé",
+      "volatile": false
+    },
+    {
+      "id": "q_wc_misc_final_hattrick",
+      "sport": "football",
+      "category": "World Cup",
+      "subcategory": "Miscellaneous records",
+      "factId": "wc_misc_records",
+      "difficulty": "hard",
+      "question": "Geoff Hurst (1966) is one of only two players to score a hat-trick in a World Cup final. Who is the other, having done so in 2022?",
+      "options": [
+        "Kylian Mbappé",
+        "Pelé",
+        "Gerd Müller",
+        "Zinedine Zidane"
+      ],
+      "correctAnswer": "Kylian Mbappé",
+      "volatile": false
+    },
+    {
+      "id": "q_wc_misc_messi_apps",
+      "sport": "football",
+      "category": "World Cup",
+      "subcategory": "Miscellaneous records",
+      "factId": "wc_misc_records",
+      "difficulty": "intermediate",
+      "question": "As of June 2026, which player holds the record for the most World Cup match appearances?",
+      "options": [
+        "Lionel Messi",
+        "Lothar Matthäus",
+        "Miroslav Klose",
+        "Paolo Maldini"
+      ],
+      "correctAnswer": "Lionel Messi",
+      "volatile": true
+    },
+    {
+      "id": "q_wc_misc_2026_format",
+      "sport": "football",
+      "category": "World Cup",
+      "subcategory": "Miscellaneous records",
+      "factId": "wc_misc_records",
+      "difficulty": "intermediate",
+      "question": "The 2026 World Cup is the first edition to feature how many teams?",
+      "options": [
+        "48",
+        "32",
+        "40",
+        "64"
+      ],
+      "correctAnswer": "48",
+      "volatile": false
+    },
+    {
+      "id": "q_wc_misc_2026_hosts",
+      "sport": "football",
+      "category": "World Cup",
+      "subcategory": "Miscellaneous records",
+      "factId": "wc_misc_records",
+      "difficulty": "intermediate",
+      "question": "Which three nations are co-hosting the 2026 World Cup, the first three-host tournament?",
+      "options": [
+        "USA, Canada and Mexico",
+        "USA, Mexico and Brazil",
+        "Canada, Mexico and Argentina",
+        "USA, Canada and Costa Rica"
+      ],
+      "correctAnswer": "USA, Canada and Mexico",
+      "volatile": false
+    },
+    {
+      "id": "q_cont_euros_topscorer_ronaldo",
+      "sport": "football",
+      "category": "European Championship",
+      "subcategory": "All-time top scorers",
+      "factId": "euros_scorers",
+      "difficulty": "easy",
+      "question": "Who is the all-time top scorer in the history of the UEFA European Championship?",
+      "options": [
+        "Cristiano Ronaldo",
+        "Michel Platini",
+        "Antoine Griezmann",
+        "Alan Shearer"
+      ],
+      "correctAnswer": "Cristiano Ronaldo",
+      "volatile": false
+    },
+    {
+      "id": "q_cont_euros_ronaldo_count",
+      "sport": "football",
+      "category": "European Championship",
+      "subcategory": "All-time top scorers",
+      "factId": "euros_scorers",
+      "difficulty": "hard",
+      "question": "How many goals did Cristiano Ronaldo score across his European Championship career to become the tournament's all-time top scorer?",
+      "options": [
+        "14",
+        "9",
+        "11",
+        "16"
+      ],
+      "correctAnswer": "14",
+      "volatile": false
+    },
+    {
+      "id": "q_cont_euros_platini_single",
+      "sport": "football",
+      "category": "European Championship",
+      "subcategory": "All-time top scorers",
+      "factId": "euros_scorers",
+      "difficulty": "intermediate",
+      "question": "Who holds the record for most goals at a single European Championship, scoring 9 in the 1984 edition?",
+      "options": [
+        "Michel Platini",
+        "Cristiano Ronaldo",
+        "Alan Shearer",
+        "Antoine Griezmann"
+      ],
+      "correctAnswer": "Michel Platini",
+      "volatile": false
+    },
+    {
+      "id": "q_cont_euros_third_tie",
+      "sport": "football",
+      "category": "European Championship",
+      "subcategory": "All-time top scorers",
+      "factId": "euros_scorers",
+      "difficulty": "hard",
+      "question": "Antoine Griezmann is tied for third on the European Championship all-time scorers list (7 goals). Which other player shares that tally?",
+      "options": [
+        "Alan Shearer",
+        "Wayne Rooney",
+        "Thierry Henry",
+        "Michel Platini"
+      ],
+      "correctAnswer": "Alan Shearer",
+      "volatile": false
+    },
+    {
+      "id": "q_cont_euros_titles_spain",
+      "sport": "football",
+      "category": "European Championship",
+      "subcategory": "Titles by country",
+      "factId": "euros_titles",
+      "difficulty": "easy",
+      "question": "Which nation has won the most UEFA European Championship titles?",
+      "options": [
+        "Spain",
+        "Germany",
+        "France",
+        "Italy"
+      ],
+      "correctAnswer": "Spain",
+      "volatile": false
+    },
+    {
+      "id": "q_cont_euros_titles_spain_count",
+      "sport": "football",
+      "category": "European Championship",
+      "subcategory": "Titles by country",
+      "factId": "euros_titles",
+      "difficulty": "hard",
+      "question": "How many European Championship titles has Spain won, making it the sole record holder?",
+      "options": [
+        "4",
+        "3",
+        "2",
+        "5"
+      ],
+      "correctAnswer": "4",
+      "volatile": false
+    },
+    {
+      "id": "q_cont_euros_titles_germany",
+      "sport": "football",
+      "category": "European Championship",
+      "subcategory": "Titles by country",
+      "factId": "euros_titles",
+      "difficulty": "intermediate",
+      "question": "With 3 titles, which country sits second on the list of most European Championship wins?",
+      "options": [
+        "Germany",
+        "France",
+        "Italy",
+        "Netherlands"
+      ],
+      "correctAnswer": "Germany",
+      "volatile": false
+    },
+    {
+      "id": "q_cont_copa_topscorer",
+      "sport": "football",
+      "category": "Copa América",
+      "subcategory": "Scorers & titles",
+      "factId": "copa_america_scorers_titles",
+      "difficulty": "hard",
+      "question": "Norberto Méndez and which Brazilian legend share the title of Copa América all-time top scorer with 17 goals each?",
+      "options": [
+        "Zizinho",
+        "Pelé",
+        "Gabriel Batistuta",
+        "Lolo Fernández"
+      ],
+      "correctAnswer": "Zizinho",
+      "volatile": false
+    },
+    {
+      "id": "q_cont_copa_titles_argentina",
+      "sport": "football",
+      "category": "Copa América",
+      "subcategory": "Scorers & titles",
+      "factId": "copa_america_scorers_titles",
+      "difficulty": "intermediate",
+      "question": "Which country has won the most Copa América titles, with 16?",
+      "options": [
+        "Argentina",
+        "Uruguay",
+        "Brazil",
+        "Chile"
+      ],
+      "correctAnswer": "Argentina",
+      "volatile": false
+    },
+    {
+      "id": "q_cont_copa_uruguay_count",
+      "sport": "football",
+      "category": "Copa América",
+      "subcategory": "Scorers & titles",
+      "factId": "copa_america_scorers_titles",
+      "difficulty": "hard",
+      "question": "Uruguay sits second on the Copa América title list, just behind Argentina. How many Copa América titles has Uruguay won?",
+      "options": [
+        "15",
+        "16",
+        "9",
+        "12"
+      ],
+      "correctAnswer": "15",
+      "volatile": false
+    },
+    {
+      "id": "q_cont_copa_most_titles_player",
+      "sport": "football",
+      "category": "Copa América",
+      "subcategory": "Scorers & titles",
+      "factId": "copa_america_scorers_titles",
+      "difficulty": "hard",
+      "question": "Which Uruguayan holds the record for most Copa América titles won as a player, with 6?",
+      "options": [
+        "Ángel Romano",
+        "Zizinho",
+        "Lionel Messi",
+        "Pelé"
+      ],
+      "correctAnswer": "Ángel Romano",
+      "volatile": false
+    },
+    {
+      "id": "q_cont_afcon_topscorer",
+      "sport": "football",
+      "category": "AFCON",
+      "subcategory": "Scorers & titles",
+      "factId": "afcon_scorers_titles",
+      "difficulty": "hard",
+      "question": "Who is the all-time top scorer in the Africa Cup of Nations, with 18 goals?",
+      "options": [
+        "Samuel Eto'o",
+        "Laurent Pokou",
+        "Rashidi Yekini",
+        "Didier Drogba"
+      ],
+      "correctAnswer": "Samuel Eto'o",
+      "volatile": false
+    },
+    {
+      "id": "q_cont_afcon_titles_egypt",
+      "sport": "football",
+      "category": "AFCON",
+      "subcategory": "Scorers & titles",
+      "factId": "afcon_scorers_titles",
+      "difficulty": "intermediate",
+      "question": "Which country has won the most Africa Cup of Nations titles, with 7?",
+      "options": [
+        "Egypt",
+        "Cameroon",
+        "Ghana",
+        "Nigeria"
+      ],
+      "correctAnswer": "Egypt",
+      "volatile": false
+    },
+    {
+      "id": "q_cont_afcon_one_edition",
+      "sport": "football",
+      "category": "AFCON",
+      "subcategory": "Scorers & titles",
+      "factId": "afcon_scorers_titles",
+      "difficulty": "hard",
+      "question": "Who holds the record for most goals at a single Africa Cup of Nations, scoring 9 at the 1974 edition?",
+      "options": [
+        "Ndaye Mulamba",
+        "Laurent Pokou",
+        "Samuel Eto'o",
+        "Mengistu Worku"
+      ],
+      "correctAnswer": "Ndaye Mulamba",
+      "volatile": false
+    },
+    {
+      "id": "q_cont_afcon_one_match",
+      "sport": "football",
+      "category": "AFCON",
+      "subcategory": "Scorers & titles",
+      "factId": "afcon_scorers_titles",
+      "difficulty": "hard",
+      "question": "Which player scored 5 goals in a single Africa Cup of Nations match against Ethiopia in 1970, an AFCON record?",
+      "options": [
+        "Laurent Pokou",
+        "Samuel Eto'o",
+        "Ndaye Mulamba",
+        "Hossam Hassan"
+      ],
+      "correctAnswer": "Laurent Pokou",
+      "volatile": false
+    },
+    {
+      "id": "q_cont_afcon_appearances",
+      "sport": "football",
+      "category": "AFCON",
+      "subcategory": "Scorers & titles",
+      "factId": "afcon_scorers_titles",
+      "difficulty": "hard",
+      "question": "André Ayew shares the record for most Africa Cup of Nations appearances (36). Which Cameroonian defender shares that record with him?",
+      "options": [
+        "Rigobert Song",
+        "Samuel Eto'o",
+        "Ahmed Hassan",
+        "Didier Drogba"
+      ],
+      "correctAnswer": "Rigobert Song",
+      "volatile": false
+    },
+    {
+      "id": "q_cont_asiancup_titles_japan",
+      "sport": "football",
+      "category": "Asian Cup",
+      "subcategory": "Scorers & titles",
+      "factId": "asian_cup_scorers_titles",
+      "difficulty": "intermediate",
+      "question": "Which country has won the most AFC Asian Cup titles, with 4 (1992, 2000, 2004, 2011)?",
+      "options": [
+        "Japan",
+        "Iran",
+        "Saudi Arabia",
+        "South Korea"
+      ],
+      "correctAnswer": "Japan",
+      "volatile": false
+    },
+    {
+      "id": "q_cont_asiancup_topscorer",
+      "sport": "football",
+      "category": "Asian Cup",
+      "subcategory": "Scorers & titles",
+      "factId": "asian_cup_scorers_titles",
+      "difficulty": "hard",
+      "question": "Who is the all-time top scorer in the AFC Asian Cup, with 14 goals?",
+      "options": [
+        "Ali Daei",
+        "Lee Dong-gook",
+        "Almoez Ali",
+        "Ali Mabkhout"
+      ],
+      "correctAnswer": "Ali Daei",
+      "volatile": false
+    },
+    {
+      "id": "q_cont_asiancup_single_tournament",
+      "sport": "football",
+      "category": "Asian Cup",
+      "subcategory": "Scorers & titles",
+      "factId": "asian_cup_scorers_titles",
+      "difficulty": "hard",
+      "question": "Who scored a record 9 goals at a single AFC Asian Cup (the 2019 edition)?",
+      "options": [
+        "Almoez Ali",
+        "Ali Daei",
+        "Lee Dong-gook",
+        "Naohiro Takahara"
+      ],
+      "correctAnswer": "Almoez Ali",
+      "volatile": false
+    },
+    {
+      "id": "q_cont_asiancup_three_in_row",
+      "sport": "football",
+      "category": "Asian Cup",
+      "subcategory": "Scorers & titles",
+      "factId": "asian_cup_scorers_titles",
+      "difficulty": "hard",
+      "question": "Which is the only nation to win three consecutive AFC Asian Cup titles (1968–76)?",
+      "options": [
+        "Iran",
+        "Japan",
+        "Saudi Arabia",
+        "South Korea"
+      ],
+      "correctAnswer": "Iran",
+      "volatile": false
+    },
+    {
+      "id": "q_cont_europa_titles_sevilla",
+      "sport": "football",
+      "category": "Europa League",
+      "subcategory": "Titles & scorers",
+      "factId": "europa_league",
+      "difficulty": "intermediate",
+      "question": "Which club has won the most UEFA Europa League / UEFA Cup titles, with 7?",
+      "options": [
+        "Sevilla",
+        "Juventus",
+        "Inter",
+        "Liverpool"
+      ],
+      "correctAnswer": "Sevilla",
+      "volatile": false
+    },
+    {
+      "id": "q_cont_europa_topscorer",
+      "sport": "football",
+      "category": "Europa League",
+      "subcategory": "Titles & scorers",
+      "factId": "europa_league",
+      "difficulty": "hard",
+      "question": "Who is the all-time top scorer of the Europa League era (since 2009–10), with 34 goals?",
+      "options": [
+        "Pierre-Emerick Aubameyang",
+        "Radamel Falcao",
+        "Romelu Lukaku",
+        "Bruno Fernandes"
+      ],
+      "correctAnswer": "Pierre-Emerick Aubameyang",
+      "volatile": false
+    },
+    {
+      "id": "q_cont_europa_three_in_row",
+      "sport": "football",
+      "category": "Europa League",
+      "subcategory": "Titles & scorers",
+      "factId": "europa_league",
+      "difficulty": "hard",
+      "question": "Sevilla is the only club to win the Europa League three years in a row. In which span did they achieve this?",
+      "options": [
+        "2014–16",
+        "2006–08",
+        "2010–12",
+        "2018–20"
+      ],
+      "correctAnswer": "2014–16",
+      "volatile": false
+    },
+    {
+      "id": "q_cont_cwc_most_titles",
+      "sport": "football",
+      "category": "Club World Cup",
+      "subcategory": "Titles & 2025 edition",
+      "factId": "club_world_cup",
+      "difficulty": "intermediate",
+      "question": "Which club has won the most FIFA Club World Cup titles (all formats), with 5?",
+      "options": [
+        "Real Madrid",
+        "Barcelona",
+        "Bayern Munich",
+        "Corinthians"
+      ],
+      "correctAnswer": "Real Madrid",
+      "volatile": false
+    },
+    {
+      "id": "q_cont_cwc_first_32team",
+      "sport": "football",
+      "category": "Club World Cup",
+      "subcategory": "Titles & 2025 edition",
+      "factId": "club_world_cup",
+      "difficulty": "intermediate",
+      "question": "Which club won the first 32-team FIFA Club World Cup in 2025, beating PSG 3–0 in the final?",
+      "options": [
+        "Chelsea",
+        "Real Madrid",
+        "Manchester City",
+        "PSG"
+      ],
+      "correctAnswer": "Chelsea",
+      "volatile": false
+    },
+    {
+      "id": "q_cont_cwc_golden_ball",
+      "sport": "football",
+      "category": "Club World Cup",
+      "subcategory": "Titles & 2025 edition",
+      "factId": "club_world_cup",
+      "difficulty": "hard",
+      "question": "Which Chelsea player won the Golden Ball at the 2025 FIFA Club World Cup?",
+      "options": [
+        "Cole Palmer",
+        "Désiré Doué",
+        "Gonzalo García",
+        "Kylian Mbappé"
+      ],
+      "correctAnswer": "Cole Palmer",
+      "volatile": false
+    },
+    {
+      "id": "q_cont_cwc_top_scorer_2025",
+      "sport": "football",
+      "category": "Club World Cup",
+      "subcategory": "Titles & 2025 edition",
+      "factId": "club_world_cup",
+      "difficulty": "hard",
+      "question": "Which Real Madrid player was the top scorer of the 2025 FIFA Club World Cup with 4 goals?",
+      "options": [
+        "Gonzalo García",
+        "Cole Palmer",
+        "Harry Kane",
+        "Marcos Leonardo"
+      ],
+      "correctAnswer": "Gonzalo García",
+      "volatile": false
+    },
+    {
+      "id": "q_cont_caf_most_titles",
+      "sport": "football",
+      "category": "CAF Champions League",
+      "subcategory": "Titles",
+      "factId": "caf_champions_league",
+      "difficulty": "hard",
+      "question": "Which Egyptian club holds the record for most CAF Champions League titles, with 12?",
+      "options": [
+        "Al Ahly",
+        "Zamalek",
+        "TP Mazembe",
+        "Espérance de Tunis"
+      ],
+      "correctAnswer": "Al Ahly",
+      "volatile": false
+    },
+    {
+      "id": "q_cont_caf_second",
+      "sport": "football",
+      "category": "CAF Champions League",
+      "subcategory": "Titles",
+      "factId": "caf_champions_league",
+      "difficulty": "hard",
+      "question": "Zamalek is tied for second on the CAF Champions League title list with 5. Which DR Congo club shares that tally?",
+      "options": [
+        "TP Mazembe",
+        "Raja Casablanca",
+        "Wydad AC",
+        "Espérance de Tunis"
+      ],
+      "correctAnswer": "TP Mazembe",
+      "volatile": false
+    },
+    {
+      "id": "q_cont_caf_recent_champion",
+      "sport": "football",
+      "category": "CAF Champions League",
+      "subcategory": "Titles",
+      "factId": "caf_champions_league",
+      "difficulty": "hard",
+      "question": "Which South African club won the 2025–26 CAF Champions League, beating AS FAR for their second title?",
+      "options": [
+        "Mamelodi Sundowns",
+        "Pyramids FC",
+        "Wydad AC",
+        "Al Ahly"
+      ],
+      "correctAnswer": "Mamelodi Sundowns",
+      "volatile": false
+    },
+    {
+      "id": "q_cont_afc_most_titles",
+      "sport": "football",
+      "category": "AFC Champions League",
+      "subcategory": "Titles",
+      "factId": "afc_champions_league",
+      "difficulty": "hard",
+      "question": "Which Saudi Arabian club holds the record for most AFC Champions League titles, with 4?",
+      "options": [
+        "Al-Hilal",
+        "Pohang Steelers",
+        "Urawa Red Diamonds",
+        "Al-Ahli"
+      ],
+      "correctAnswer": "Al-Hilal",
+      "volatile": false
+    },
+    {
+      "id": "q_cont_afc_three_titles",
+      "sport": "football",
+      "category": "AFC Champions League",
+      "subcategory": "Titles",
+      "factId": "afc_champions_league",
+      "difficulty": "hard",
+      "question": "Urawa Red Diamonds is tied on 3 AFC Champions League titles. Which South Korean club shares that tally?",
+      "options": [
+        "Pohang Steelers",
+        "Al-Hilal",
+        "Jeonbuk Hyundai Motors",
+        "Kawasaki Frontale"
+      ],
+      "correctAnswer": "Pohang Steelers",
+      "volatile": false
+    },
+    {
+      "id": "q_cont_afc_recent_champion",
+      "sport": "football",
+      "category": "AFC Champions League",
+      "subcategory": "Titles",
+      "factId": "afc_champions_league",
+      "difficulty": "hard",
+      "question": "Which Saudi Arabian club won the 2024–25 AFC Champions League Elite — their first title — beating Kawasaki Frontale 2–0?",
+      "options": [
+        "Al-Ahli",
+        "Al-Hilal",
+        "Urawa Red Diamonds",
+        "Pohang Steelers"
+      ],
+      "correctAnswer": "Al-Ahli",
+      "volatile": false
+    },
+    {
+      "id": "q_cont_nations_league_portugal",
+      "sport": "football",
+      "category": "Other Competitions",
+      "subcategory": "Intercontinental Cup & Nations League",
+      "factId": "intercontinental_nations_league",
+      "difficulty": "intermediate",
+      "question": "Which country has won the most UEFA Nations League titles, with 2 (2018–19 and 2024–25)?",
+      "options": [
+        "Portugal",
+        "France",
+        "Spain",
+        "Italy"
+      ],
+      "correctAnswer": "Portugal",
+      "volatile": false
+    },
+    {
+      "id": "q_cont_intercontinental_cup",
+      "sport": "football",
+      "category": "Other Competitions",
+      "subcategory": "Intercontinental Cup & Nations League",
+      "factId": "intercontinental_nations_league",
+      "difficulty": "hard",
+      "question": "Real Madrid, AC Milan, Boca Juniors, Peñarol and which other club share the record for most Intercontinental Cup titles (3 each, 1960–2004)?",
+      "options": [
+        "Nacional",
+        "Bayern Munich",
+        "Santos",
+        "Inter"
+      ],
+      "correctAnswer": "Nacional",
+      "volatile": false
+    },
+    {
+      "id": "q_indiv_intl_goals_holder",
+      "sport": "football",
+      "category": "Individual Records",
+      "subcategory": "Most international goals",
+      "factId": "international_goals",
+      "difficulty": "easy",
+      "question": "Who has scored the most goals in men's international football history?",
+      "options": [
+        "Cristiano Ronaldo",
+        "Lionel Messi",
+        "Ali Daei",
+        "Ferenc Puskás"
+      ],
+      "correctAnswer": "Cristiano Ronaldo",
+      "volatile": true
+    },
+    {
+      "id": "q_indiv_ballon_dor_most_wins",
+      "sport": "football",
+      "category": "Individual Awards",
+      "subcategory": "Ballon d'Or",
+      "factId": "ballon_dor",
+      "difficulty": "easy",
+      "question": "Who has won the most Ballon d'Or awards?",
+      "options": [
+        "Lionel Messi",
+        "Cristiano Ronaldo",
+        "Michel Platini",
+        "Johan Cruyff"
+      ],
+      "correctAnswer": "Lionel Messi",
+      "volatile": false
+    },
+    {
+      "id": "q_indiv_golden_shoe_most_wins",
+      "sport": "football",
+      "category": "Individual Awards",
+      "subcategory": "European Golden Shoe",
+      "factId": "golden_shoe",
+      "difficulty": "easy",
+      "question": "Who has won the most European Golden Shoe awards?",
+      "options": [
+        "Lionel Messi",
+        "Cristiano Ronaldo",
+        "Gerd Müller",
+        "Thierry Henry"
+      ],
+      "correctAnswer": "Lionel Messi",
+      "volatile": false
+    },
+    {
+      "id": "q_indiv_career_goals_holder",
+      "sport": "football",
+      "category": "Individual Records",
+      "subcategory": "Most career goals",
+      "factId": "career_goals",
+      "difficulty": "intermediate",
+      "question": "Who has scored the most career goals across all competitions?",
+      "options": [
+        "Cristiano Ronaldo",
+        "Lionel Messi",
+        "Josef Bican",
+        "Pelé"
+      ],
+      "correctAnswer": "Cristiano Ronaldo",
+      "volatile": true
+    },
+    {
+      "id": "q_indiv_career_goals_second",
+      "sport": "football",
+      "category": "Individual Records",
+      "subcategory": "Most career goals",
+      "factId": "career_goals",
+      "difficulty": "intermediate",
+      "question": "Which player ranks second on the list of most career goals across all competitions?",
+      "options": [
+        "Lionel Messi",
+        "Romário",
+        "Josef Bican",
+        "Pelé"
+      ],
+      "correctAnswer": "Lionel Messi",
+      "volatile": true
+    },
+    {
+      "id": "q_indiv_career_goals_ronaldo_exact",
+      "sport": "football",
+      "category": "Individual Records",
+      "subcategory": "Most career goals",
+      "factId": "career_goals",
+      "difficulty": "hard",
+      "question": "How many career goals had Cristiano Ronaldo scored across all competitions (as of June 2026)?",
+      "options": [
+        "973",
+        "890",
+        "805",
+        "762"
+      ],
+      "correctAnswer": "973",
+      "volatile": true
+    },
+    {
+      "id": "q_indiv_career_goals_third",
+      "sport": "football",
+      "category": "Individual Records",
+      "subcategory": "Most career goals",
+      "factId": "career_goals",
+      "difficulty": "hard",
+      "question": "Which historic forward ranks third for most career goals, behind Cristiano Ronaldo and Lionel Messi?",
+      "options": [
+        "Josef Bican",
+        "Romário",
+        "Pelé",
+        "Ferenc Puskás"
+      ],
+      "correctAnswer": "Josef Bican",
+      "volatile": true
+    },
+    {
+      "id": "q_indiv_intl_caps_holder",
+      "sport": "football",
+      "category": "Individual Records",
+      "subcategory": "Most international caps",
+      "factId": "international_caps",
+      "difficulty": "intermediate",
+      "question": "Who holds the record for the most men's international caps?",
+      "options": [
+        "Cristiano Ronaldo",
+        "Bader Al-Mutawa",
+        "Lionel Messi",
+        "Luka Modrić"
+      ],
+      "correctAnswer": "Cristiano Ronaldo",
+      "volatile": true
+    },
+    {
+      "id": "q_indiv_intl_caps_ronaldo_exact",
+      "sport": "football",
+      "category": "Individual Records",
+      "subcategory": "Most international caps",
+      "factId": "international_caps",
+      "difficulty": "hard",
+      "question": "How many international caps had Cristiano Ronaldo earned (as of June 2026)?",
+      "options": [
+        "229",
+        "202",
+        "201",
+        "197"
+      ],
+      "correctAnswer": "229",
+      "volatile": true
+    },
+    {
+      "id": "q_indiv_intl_caps_second",
+      "sport": "football",
+      "category": "Individual Records",
+      "subcategory": "Most international caps",
+      "factId": "international_caps",
+      "difficulty": "hard",
+      "question": "Which Kuwaiti player ranks second for the most men's international caps?",
+      "options": [
+        "Bader Al-Mutawa",
+        "Soh Chin Ann",
+        "Luka Modrić",
+        "Lionel Messi"
+      ],
+      "correctAnswer": "Bader Al-Mutawa",
+      "volatile": true
+    },
+    {
+      "id": "q_indiv_intl_caps_first_to_200",
+      "sport": "football",
+      "category": "Individual Records",
+      "subcategory": "Most international caps",
+      "factId": "international_caps",
+      "difficulty": "hard",
+      "question": "Who became the first male player to reach 200 international caps?",
+      "options": [
+        "Cristiano Ronaldo",
+        "Bader Al-Mutawa",
+        "Lionel Messi",
+        "Luka Modrić"
+      ],
+      "correctAnswer": "Cristiano Ronaldo",
+      "volatile": true
+    },
+    {
+      "id": "q_indiv_intl_goals_second",
+      "sport": "football",
+      "category": "Individual Records",
+      "subcategory": "Most international goals",
+      "factId": "international_goals",
+      "difficulty": "intermediate",
+      "question": "Which player ranks second for the most men's international goals?",
+      "options": [
+        "Lionel Messi",
+        "Ali Daei",
+        "Sunil Chhetri",
+        "Ferenc Puskás"
+      ],
+      "correctAnswer": "Lionel Messi",
+      "volatile": true
+    },
+    {
+      "id": "q_indiv_intl_goals_ronaldo_exact",
+      "sport": "football",
+      "category": "Individual Records",
+      "subcategory": "Most international goals",
+      "factId": "international_goals",
+      "difficulty": "hard",
+      "question": "How many international goals had Cristiano Ronaldo scored (as of June 2026)?",
+      "options": [
+        "143",
+        "122",
+        "108",
+        "94"
+      ],
+      "correctAnswer": "143",
+      "volatile": true
+    },
+    {
+      "id": "q_indiv_intl_goals_messi_exact",
+      "sport": "football",
+      "category": "Individual Records",
+      "subcategory": "Most international goals",
+      "factId": "international_goals",
+      "difficulty": "hard",
+      "question": "How many international goals had Lionel Messi scored (as of June 2026)?",
+      "options": [
+        "122",
+        "143",
+        "108",
+        "84"
+      ],
+      "correctAnswer": "122",
+      "volatile": true
+    },
+    {
+      "id": "q_indiv_intl_goals_iran_holder",
+      "sport": "football",
+      "category": "Individual Records",
+      "subcategory": "Most international goals",
+      "factId": "international_goals",
+      "difficulty": "hard",
+      "question": "Which Iranian striker, the first man to reach 100 international goals, ranks third all-time?",
+      "options": [
+        "Ali Daei",
+        "Sunil Chhetri",
+        "Mokhtar Dahari",
+        "Ferenc Puskás"
+      ],
+      "correctAnswer": "Ali Daei",
+      "volatile": true
+    },
+    {
+      "id": "q_indiv_ballon_dor_second",
+      "sport": "football",
+      "category": "Individual Awards",
+      "subcategory": "Ballon d'Or",
+      "factId": "ballon_dor",
+      "difficulty": "intermediate",
+      "question": "Who has the second-most Ballon d'Or wins, with five?",
+      "options": [
+        "Cristiano Ronaldo",
+        "Michel Platini",
+        "Marco van Basten",
+        "Franz Beckenbauer"
+      ],
+      "correctAnswer": "Cristiano Ronaldo",
+      "volatile": false
+    },
+    {
+      "id": "q_indiv_ballon_dor_only_gk",
+      "sport": "football",
+      "category": "Individual Awards",
+      "subcategory": "Ballon d'Or",
+      "factId": "ballon_dor",
+      "difficulty": "intermediate",
+      "question": "Who is the only goalkeeper ever to win the Ballon d'Or?",
+      "options": [
+        "Lev Yashin",
+        "Gianluigi Buffon",
+        "Manuel Neuer",
+        "Iker Casillas"
+      ],
+      "correctAnswer": "Lev Yashin",
+      "volatile": false
+    },
+    {
+      "id": "q_indiv_ballon_dor_2024",
+      "sport": "football",
+      "category": "Individual Awards",
+      "subcategory": "Ballon d'Or",
+      "factId": "ballon_dor",
+      "difficulty": "intermediate",
+      "question": "Who won the 2024 Ballon d'Or?",
+      "options": [
+        "Rodri",
+        "Vinícius Júnior",
+        "Jude Bellingham",
+        "Erling Haaland"
+      ],
+      "correctAnswer": "Rodri",
+      "volatile": false
+    },
+    {
+      "id": "q_indiv_ballon_dor_2025",
+      "sport": "football",
+      "category": "Individual Awards",
+      "subcategory": "Ballon d'Or",
+      "factId": "ballon_dor",
+      "difficulty": "intermediate",
+      "question": "Who won the 2025 Ballon d'Or?",
+      "options": [
+        "Ousmane Dembélé",
+        "Lamine Yamal",
+        "Vitinha",
+        "Mohamed Salah"
+      ],
+      "correctAnswer": "Ousmane Dembélé",
+      "volatile": false
+    },
+    {
+      "id": "q_indiv_ballon_dor_most_nominations",
+      "sport": "football",
+      "category": "Individual Awards",
+      "subcategory": "Ballon d'Or",
+      "factId": "ballon_dor",
+      "difficulty": "hard",
+      "question": "Who holds the record for the most Ballon d'Or nominations, with 18?",
+      "options": [
+        "Cristiano Ronaldo",
+        "Lionel Messi",
+        "Karim Benzema",
+        "Zlatan Ibrahimović"
+      ],
+      "correctAnswer": "Cristiano Ronaldo",
+      "volatile": false
+    },
+    {
+      "id": "q_indiv_ballon_dor_womens",
+      "sport": "football",
+      "category": "Individual Awards",
+      "subcategory": "Ballon d'Or",
+      "factId": "ballon_dor",
+      "difficulty": "hard",
+      "question": "Who holds the record for the most women's Ballon d'Or wins, reaching three in 2025?",
+      "options": [
+        "Aitana Bonmatí",
+        "Alexia Putellas",
+        "Ada Hegerberg",
+        "Megan Rapinoe"
+      ],
+      "correctAnswer": "Aitana Bonmatí",
+      "volatile": false
+    },
+    {
+      "id": "q_indiv_golden_shoe_second",
+      "sport": "football",
+      "category": "Individual Awards",
+      "subcategory": "European Golden Shoe",
+      "factId": "golden_shoe",
+      "difficulty": "intermediate",
+      "question": "Who has the second-most European Golden Shoe wins, with four?",
+      "options": [
+        "Cristiano Ronaldo",
+        "Eusébio",
+        "Luis Suárez",
+        "Robert Lewandowski"
+      ],
+      "correctAnswer": "Cristiano Ronaldo",
+      "volatile": false
+    },
+    {
+      "id": "q_indiv_golden_shoe_2425",
+      "sport": "football",
+      "category": "Individual Awards",
+      "subcategory": "European Golden Shoe",
+      "factId": "golden_shoe",
+      "difficulty": "hard",
+      "question": "Who won the 2024–25 European Golden Shoe with 31 La Liga goals?",
+      "options": [
+        "Kylian Mbappé",
+        "Robert Lewandowski",
+        "Harry Kane",
+        "Erling Haaland"
+      ],
+      "correctAnswer": "Kylian Mbappé",
+      "volatile": false
+    },
+    {
+      "id": "q_indiv_manager_cl_titles",
+      "sport": "football",
+      "category": "Individual Records",
+      "subcategory": "Manager records",
+      "factId": "manager_records",
+      "difficulty": "hard",
+      "question": "Which manager has won the most Champions League / European Cup titles?",
+      "options": [
+        "Carlo Ancelotti",
+        "Bob Paisley",
+        "Zinédine Zidane",
+        "Pep Guardiola"
+      ],
+      "correctAnswer": "Carlo Ancelotti",
+      "volatile": false
+    },
+    {
+      "id": "q_indiv_manager_ligue1_games",
+      "sport": "football",
+      "category": "Individual Records",
+      "subcategory": "Manager records",
+      "factId": "manager_records",
+      "difficulty": "hard",
+      "question": "Who managed the most Ligue 1 matches ever, with 894?",
+      "options": [
+        "Guy Roux",
+        "Arsène Wenger",
+        "Didier Deschamps",
+        "Christophe Galtier"
+      ],
+      "correctAnswer": "Guy Roux",
+      "volatile": false
+    }
+  ]
+}
