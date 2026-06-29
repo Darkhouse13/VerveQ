@@ -47,6 +47,9 @@ const LIFT =
 const EYEBROW =
   "font-mono text-[11px] font-bold uppercase tracking-[0.16em] text-muted-foreground";
 
+/** Optional support nudge — small, unobtrusive, never shown during play. */
+const COFFEE_URL = "https://buymeacoffee.com/verveq";
+
 export default function ShellHomeScreen() {
   const navigate = useNavigate();
   const { t } = useTranslation();
@@ -398,6 +401,21 @@ export default function ShellHomeScreen() {
             </div>
           </button>
         </div>
+
+        {/* Support nudge — a small line at the foot of home; on mobile it sits
+            below the content in the scroll column, on desktop it pins under the
+            never-scroll grid. Links out to Buy Me a Coffee (new tab). */}
+        <p className="shrink-0 text-center text-[11px] text-muted-foreground pt-3.5 pb-1">
+          {t("home.supportCoffeePrefix")}{" "}
+          <a
+            href={COFFEE_URL}
+            target="_blank"
+            rel="noreferrer noopener"
+            className="font-bold underline underline-offset-2 transition-colors hover:text-foreground"
+          >
+            {t("home.supportCoffeeLink")}
+          </a>
+        </p>
       </div>
     </ShellLayout>
   );

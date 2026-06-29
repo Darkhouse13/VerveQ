@@ -77,7 +77,9 @@
     "stats": {
       "streak": "Série",
       "unranked": "Non classé"
-    }
+    },
+    "supportCoffeePrefix": "Vous aimez VerveQ ?",
+    "supportCoffeeLink": "Offrez-nous un café ☕"
   },
   "compete": {
     "title": "Affronter",

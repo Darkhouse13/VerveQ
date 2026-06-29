@@ -93,6 +93,7 @@ export default function SettingsScreen() {
       title={t("settings.title")}
       subtitle={t("settings.eyebrow")}
       back
+      scroll
       onBack={() => navigate(SHELL_ROUTES.profile)}
     >
       <div className="mx-auto w-full max-w-md flex flex-col gap-4 pt-1">

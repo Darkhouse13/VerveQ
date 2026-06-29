@@ -22,6 +22,13 @@ interface ShellLayoutProps {
   /** Center the main content within its max width on desktop. */
   center?: boolean;
   /**
+   * Opt out of the never-scroll discipline: let `main` scroll vertically on
+   * every breakpoint (not just mobile). For content-heavy utility screens
+   * (e.g. Settings) whose card stack legitimately exceeds the viewport on
+   * desktop/monitor — without this they'd be clipped by `md:overflow-hidden`.
+   */
+  scroll?: boolean;
+  /**
    * Embed an existing (legacy) screen inside the shell chrome: keeps the v2 nav
    * but lets the body scroll on desktop too (legacy screens are mobile-first and
    * taller than the viewport) and drops the horizontal padding so the embedded
@@ -60,6 +67,7 @@ export function ShellLayout({
   theme,
   center = false,
   embed = false,
+  scroll = false,
   className,
   children,
 }: ShellLayoutProps) {
@@ -127,9 +135,11 @@ export function ShellLayout({
             : [
                 "max-w-md md:max-w-6xl px-5 md:px-8",
                 // Internal vertical valve for content that can't fit a very
-                // short viewport; desktop never scrolls. Horizontal overflow
-                // is always clipped (pressed-state translate).
-                "overflow-y-auto overflow-x-hidden scrollbar-none md:overflow-hidden",
+                // short viewport; desktop never scrolls UNLESS `scroll` is set
+                // (content-heavy utility screens). Horizontal overflow is
+                // always clipped (pressed-state translate).
+                "overflow-y-auto overflow-x-hidden scrollbar-none",
+                scroll ? "" : "md:overflow-hidden",
               ],
           hideNav ? "pb-8" : embed ? "pb-4 md:pb-10" : "pb-4 md:pb-6",
           center && "flex flex-col justify-center",

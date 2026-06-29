@@ -77,7 +77,9 @@
     "stats": {
       "streak": "Racha",
       "unranked": "Sin clasificar"
-    }
+    },
+    "supportCoffeePrefix": "¿Te gusta VerveQ?",
+    "supportCoffeeLink": "Invítanos un café ☕"
   },
   "compete": {
     "title": "Competir",
