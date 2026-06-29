@@ -16,7 +16,7 @@ import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useMutation } from "convex/react";
 import { toast } from "sonner";
-import { ArrowUp, CalendarDays, LifeBuoy, LogIn, LogOut, Mail, User } from "lucide-react";
+import { ArrowUp, CalendarDays, Coffee, LifeBuoy, LogIn, LogOut, Mail, User } from "lucide-react";
 import { NeoCard } from "@/components/neo/NeoCard";
 import { NeoButton } from "@/components/neo/NeoButton";
 import { cn } from "@/lib/utils";
@@ -43,6 +43,7 @@ import { useAuth } from "@/contexts/AuthContext";
 const SUPPORT_EMAIL = "support@verveq.com";
 const X_URL = "https://x.com/playverveq";
 const X_HANDLE = "@playverveq";
+const COFFEE_URL = "https://buymeacoffee.com/verveq";
 
 // X brand mark (lucide dropped brand icons).
 function XLogo({ className }: { className?: string }) {
@@ -241,6 +242,18 @@ export default function SettingsScreen() {
               <span className="flex-1 text-left">{t("settings.supportContact")}</span>
               <span className="font-mono text-[11px] text-muted-foreground">
                 {SUPPORT_EMAIL}
+              </span>
+            </a>
+            <a
+              href={COFFEE_URL}
+              target="_blank"
+              rel="noreferrer noopener"
+              className="neo-border rounded-lg bg-card px-3 py-2.5 flex items-center gap-2 font-heading font-bold text-[13px] transition-all active:neo-shadow-pressed"
+            >
+              <Coffee size={16} strokeWidth={2.5} className="shrink-0" />
+              <span className="flex-1 text-left">{t("settings.supportCoffee")}</span>
+              <span className="font-mono text-[11px] text-muted-foreground">
+                ☕
               </span>
             </a>
           </div>
