@@ -64,26 +64,33 @@ function Cell({
 
   if (isCorrect) {
     return (
-      <div className={cn("bg-background text-foreground flex flex-col min-h-0 overflow-hidden", compact ? "p-1.5 gap-1" : "p-2.5 gap-2")}>
-        <div className="flex items-center gap-2 min-h-0">
-          <div
+      <div className={cn("relative bg-background text-foreground flex flex-col min-h-0 overflow-hidden", compact ? "p-1.5" : "p-2")}>
+        {/* status check — small corner indicator so the name owns the full cell width */}
+        <div
+          className={cn(
+            "neo-border rounded-md bg-success text-success-foreground grid place-items-center shrink-0 absolute top-1 right-1 z-10",
+            compact ? "w-5 h-5" : "w-6 h-6",
+          )}
+        >
+          <Check size={compact ? 11 : 14} strokeWidth={3} />
+        </div>
+        {/* player name — primary content: full width, up to 2 lines, whitespace-only wrap
+            (no break-words → never splits mid-word; line-clamp ellipsizes only past 2 lines) */}
+        <div className="flex-1 flex flex-col justify-center min-h-0">
+          <p
             className={cn(
-              "neo-border rounded-md bg-success text-success-foreground grid place-items-center shrink-0",
-              compact ? "w-7 h-7" : "w-9 h-9",
+              "font-heading font-bold leading-tight line-clamp-2",
+              compact ? "text-[11px] pr-5" : "text-[13px] pr-6",
             )}
           >
-            <Check size={compact ? 13 : 16} strokeWidth={3} />
-          </div>
-          <div className="min-w-0">
-            <p className={cn("font-heading font-bold leading-tight truncate", compact ? "text-[11px]" : "text-sm")}>
-              {cell.guessedPlayerName}
-            </p>
-            <p className="font-mono text-muted-foreground" style={{ fontSize: compact ? 8 : 10 }}>
-              {t("grid.lockedIn")}
-            </p>
-          </div>
+            {cell.guessedPlayerName}
+          </p>
+          <p className="font-mono text-muted-foreground mt-0.5" style={{ fontSize: compact ? 8 : 10 }}>
+            {t("grid.lockedIn")}
+          </p>
         </div>
-        <div className="flex items-center gap-1.5 mt-auto">
+        {/* rarity badge + points reflowed beneath the name, pinned low to use the cell height */}
+        <div className="flex items-center gap-1.5 pt-1 flex-wrap">
           {style && (
             <span
               className={cn("neo-border rounded-full font-mono font-bold tracking-wide", style.badgeClass)}
