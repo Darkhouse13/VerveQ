@@ -55,6 +55,72 @@ export const exportPoolByChecksumPrefixes = internalQuery({
   },
 });
 
+// Patch correctAnswer (and optionally options) for verified-wrong questions.
+// Fails closed per fix: skips (never throws the whole batch) when the live row
+// has drifted from what the verifier saw, or when the new answer is not among
+// the options. Returns a per-fix status log.
+export const applyAnswerFixesByChecksum = internalMutation({
+  args: {
+    fixes: v.array(
+      v.object({
+        checksum: v.string(),
+        expectedSport: v.string(),
+        expectedCurrentAnswer: v.string(),
+        newCorrectAnswer: v.string(),
+        newOptions: v.optional(v.array(v.string())),
+      }),
+    ),
+    apply: v.boolean(),
+  },
+  handler: async (ctx, { fixes, apply }) => {
+    const results: Array<Record<string, unknown>> = [];
+    for (const fix of fixes) {
+      const matches = await ctx.db
+        .query("quizQuestions")
+        .withIndex("by_checksum", (q) => q.eq("checksum", fix.checksum))
+        .collect();
+      if (matches.length !== 1) {
+        results.push({ checksum: fix.checksum, status: "skip", reason: `matched ${matches.length} rows` });
+        continue;
+      }
+      const row = matches[0];
+      if (row.sport !== fix.expectedSport) {
+        results.push({ checksum: fix.checksum, status: "skip", reason: `sport ${row.sport} != ${fix.expectedSport}` });
+        continue;
+      }
+      if (row.correctAnswer !== fix.expectedCurrentAnswer) {
+        results.push({ checksum: fix.checksum, status: "skip", reason: `live answer drifted: "${row.correctAnswer}"` });
+        continue;
+      }
+      const options = fix.newOptions ?? row.options;
+      if (!options.includes(fix.newCorrectAnswer)) {
+        results.push({ checksum: fix.checksum, status: "skip", reason: "new answer not among options" });
+        continue;
+      }
+      if (row.correctAnswer === fix.newCorrectAnswer && !fix.newOptions) {
+        results.push({ checksum: fix.checksum, status: "noop", reason: "already correct" });
+        continue;
+      }
+      if (apply) {
+        await ctx.db.patch(row._id, { correctAnswer: fix.newCorrectAnswer, options });
+      }
+      results.push({
+        checksum: fix.checksum,
+        status: apply ? "patched" : "would-patch",
+        sport: row.sport,
+        before: fix.expectedCurrentAnswer,
+        after: fix.newCorrectAnswer,
+      });
+    }
+    const summary = results.reduce<Record<string, number>>((acc, r) => {
+      const s = r.status as string;
+      acc[s] = (acc[s] ?? 0) + 1;
+      return acc;
+    }, {});
+    return { applied: apply, summary, results };
+  },
+});
+
 export const deleteRowsByChecksums = internalMutation({
   args: {
     checksums: v.array(v.string()),
