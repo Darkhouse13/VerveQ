@@ -64,6 +64,23 @@ describe("learn skill graph geography tags", () => {
     expect(report.acyclic).toBe(true);
     expect(report.errors).toEqual([]);
     expect(report.zeroFitQuestions).toHaveLength(0);
-    expect(report.orphanNodes).toEqual(["geo.borders.reasoning"]);
+    // Nodes served entirely by hand-authored ladder modules (not verified CIE
+    // score batches) carry zero CIE population, so they read as CIE "orphans"
+    // while still being playable from their module — like geo.borders.reasoning.
+    expect(report.orphanNodes).toEqual([
+      "geo.borders.reasoning",
+      "astro.solarSystem",
+      "astro.moons",
+      "astro.starsAndScale",
+      "bio.taxonomy",
+      "bio.anatomy",
+      "bio.cells",
+      "math.sequences",
+      "math.constants",
+      "math.geometry",
+      "lang.roots",
+      "lang.affixes",
+      "lang.etymology",
+    ]);
   });
 });

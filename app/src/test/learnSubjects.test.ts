@@ -162,6 +162,17 @@ describe("getLearnSubjects Convex contract", () => {
       playableNodes: 3,
       servable: true,
     });
+
+    // The four subjects added with hand-authored teaching ladders: each ships
+    // three fully playable nodes.
+    for (const subjectId of ["astronomy", "biology", "mathematics", "language"]) {
+      const subject = result.subjects.find((s) => s.subject === subjectId);
+      expect(subject, subjectId).toMatchObject({
+        totalNodes: 3,
+        playableNodes: 3,
+        servable: true,
+      });
+    }
   });
 });
 

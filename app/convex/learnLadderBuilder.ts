@@ -25,6 +25,78 @@ import {
   learnGeographyPipelineProofLadderV1Questions,
   type LearnOrderRenderItem,
 } from "./learnGeographyPipelineProofLadderV1";
+import {
+  learnHistoryEventDatesLadderV1ByChecksum,
+  learnHistoryEventDatesLadderV1Questions,
+} from "./learnHistoryEventDatesLadderV1";
+import {
+  learnHistoryFoundingYearsLadderV1ByChecksum,
+  learnHistoryFoundingYearsLadderV1Questions,
+} from "./learnHistoryFoundingYearsLadderV1";
+import {
+  learnHistoryChronologyLadderV1ByChecksum,
+  learnHistoryChronologyLadderV1Questions,
+} from "./learnHistoryChronologyLadderV1";
+import {
+  learnScienceElementSymbolsLadderV1ByChecksum,
+  learnScienceElementSymbolsLadderV1Questions,
+} from "./learnScienceElementSymbolsLadderV1";
+import {
+  learnScienceAtomicNumbersLadderV1ByChecksum,
+  learnScienceAtomicNumbersLadderV1Questions,
+} from "./learnScienceAtomicNumbersLadderV1";
+import {
+  learnScienceSiUnitsLadderV1ByChecksum,
+  learnScienceSiUnitsLadderV1Questions,
+} from "./learnScienceSiUnitsLadderV1";
+import {
+  learnAstronomySolarSystemLadderV1ByChecksum,
+  learnAstronomySolarSystemLadderV1Questions,
+} from "./learnAstronomySolarSystemLadderV1";
+import {
+  learnAstronomyMoonsLadderV1ByChecksum,
+  learnAstronomyMoonsLadderV1Questions,
+} from "./learnAstronomyMoonsLadderV1";
+import {
+  learnAstronomyStarsScaleLadderV1ByChecksum,
+  learnAstronomyStarsScaleLadderV1Questions,
+} from "./learnAstronomyStarsScaleLadderV1";
+import {
+  learnBiologyTaxonomyLadderV1ByChecksum,
+  learnBiologyTaxonomyLadderV1Questions,
+} from "./learnBiologyTaxonomyLadderV1";
+import {
+  learnBiologyAnatomyLadderV1ByChecksum,
+  learnBiologyAnatomyLadderV1Questions,
+} from "./learnBiologyAnatomyLadderV1";
+import {
+  learnBiologyCellsLadderV1ByChecksum,
+  learnBiologyCellsLadderV1Questions,
+} from "./learnBiologyCellsLadderV1";
+import {
+  learnMathSequencesLadderV1ByChecksum,
+  learnMathSequencesLadderV1Questions,
+} from "./learnMathSequencesLadderV1";
+import {
+  learnMathConstantsLadderV1ByChecksum,
+  learnMathConstantsLadderV1Questions,
+} from "./learnMathConstantsLadderV1";
+import {
+  learnMathGeometryLadderV1ByChecksum,
+  learnMathGeometryLadderV1Questions,
+} from "./learnMathGeometryLadderV1";
+import {
+  learnLanguageRootsLadderV1ByChecksum,
+  learnLanguageRootsLadderV1Questions,
+} from "./learnLanguageRootsLadderV1";
+import {
+  learnLanguageAffixesLadderV1ByChecksum,
+  learnLanguageAffixesLadderV1Questions,
+} from "./learnLanguageAffixesLadderV1";
+import {
+  learnLanguageEtymologyLadderV1ByChecksum,
+  learnLanguageEtymologyLadderV1Questions,
+} from "./learnLanguageEtymologyLadderV1";
 import type { LearnQuestionType } from "./learnGraders";
 
 // Graph-driven Learn ladder builder.
@@ -118,6 +190,30 @@ const CONCEPT_LINE_BY_NODE: Partial<Record<SkillNodeId, string>> = {
     "The atomic number is the element's address on the periodic table — neighbors are the classic traps.",
   "sci.units.si":
     "SI symbols are exact: knowing whether a unit is a base unit or a special name makes the symbol memorable.",
+  "astro.solarSystem":
+    "The closest, biggest, and hottest planets are rarely the same world — each superlative belongs to a different one.",
+  "astro.moons":
+    "Moons far outnumber planets; pairing each famous moon to the planet it orbits is how the outer Solar System sticks.",
+  "astro.starsAndScale":
+    "Space is measured in light-years because kilometres run out of room — distance, brightness, and a star's fate all trace back to scale.",
+  "bio.taxonomy":
+    "Looks deceive: a whale is not a fish and a bat is not a bird — classification follows traits, not appearances.",
+  "bio.anatomy":
+    "Each organ has one main job, and knowing the job is how you remember which organ — and which system — does what.",
+  "bio.cells":
+    "Every cell is a tiny factory: the nucleus holds the plans and each organelle runs one part of the line.",
+  "math.sequences":
+    "A sequence sticks once you find its rule — add, double, square, or sum the last two — not by memorizing the numbers.",
+  "math.constants":
+    "The famous constants each answer one question — a circle, growth, the golden ratio — so pairing value to meaning locks them in.",
+  "math.geometry":
+    "Greek number-roots name the polygons and the angles always add up: geometry rewards the pattern-spotter.",
+  "lang.roots":
+    "A handful of Greek and Latin roots unlock thousands of English words — learn the root, decode the word.",
+  "lang.affixes":
+    "Prefixes and suffixes are meaning-modifiers: un- flips it, re- repeats it, -ology studies it.",
+  "lang.etymology":
+    "English is a magpie language, and tracing a word back to the tongue it came from is half its story.",
 };
 
 function conceptLineFor(node: SkillNode): string {
@@ -186,6 +282,24 @@ const revealByChecksum = {
   ...learnGeographyBorderReasoningLadderV1ByChecksum,
   ...learnGeographyCapitalsRecallRevealsV1ByChecksum,
   ...learnGeographyPipelineProofLadderV1ByChecksum,
+  ...learnHistoryEventDatesLadderV1ByChecksum,
+  ...learnHistoryFoundingYearsLadderV1ByChecksum,
+  ...learnHistoryChronologyLadderV1ByChecksum,
+  ...learnScienceElementSymbolsLadderV1ByChecksum,
+  ...learnScienceAtomicNumbersLadderV1ByChecksum,
+  ...learnScienceSiUnitsLadderV1ByChecksum,
+  ...learnAstronomySolarSystemLadderV1ByChecksum,
+  ...learnAstronomyMoonsLadderV1ByChecksum,
+  ...learnAstronomyStarsScaleLadderV1ByChecksum,
+  ...learnBiologyTaxonomyLadderV1ByChecksum,
+  ...learnBiologyAnatomyLadderV1ByChecksum,
+  ...learnBiologyCellsLadderV1ByChecksum,
+  ...learnMathSequencesLadderV1ByChecksum,
+  ...learnMathConstantsLadderV1ByChecksum,
+  ...learnMathGeometryLadderV1ByChecksum,
+  ...learnLanguageRootsLadderV1ByChecksum,
+  ...learnLanguageAffixesLadderV1ByChecksum,
+  ...learnLanguageEtymologyLadderV1ByChecksum,
 };
 
 // Candidate pool = every learn-eligible question we can tag, from the enriched
@@ -195,6 +309,24 @@ const enrichedLadderQuestions = [
   ...learnGeographyNonobviousLadderV1Questions,
   ...learnGeographyBorderReasoningLadderV1Questions,
   ...learnGeographyPipelineProofLadderV1Questions,
+  ...learnHistoryEventDatesLadderV1Questions,
+  ...learnHistoryFoundingYearsLadderV1Questions,
+  ...learnHistoryChronologyLadderV1Questions,
+  ...learnScienceElementSymbolsLadderV1Questions,
+  ...learnScienceAtomicNumbersLadderV1Questions,
+  ...learnScienceSiUnitsLadderV1Questions,
+  ...learnAstronomySolarSystemLadderV1Questions,
+  ...learnAstronomyMoonsLadderV1Questions,
+  ...learnAstronomyStarsScaleLadderV1Questions,
+  ...learnBiologyTaxonomyLadderV1Questions,
+  ...learnBiologyAnatomyLadderV1Questions,
+  ...learnBiologyCellsLadderV1Questions,
+  ...learnMathSequencesLadderV1Questions,
+  ...learnMathConstantsLadderV1Questions,
+  ...learnMathGeometryLadderV1Questions,
+  ...learnLanguageRootsLadderV1Questions,
+  ...learnLanguageAffixesLadderV1Questions,
+  ...learnLanguageEtymologyLadderV1Questions,
 ];
 
 const ladderCandidates: LadderCandidate[] = enrichedLadderQuestions.map(

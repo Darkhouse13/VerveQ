@@ -24,6 +24,26 @@ export const learnSubjects = [
     name: "Science",
     description: "Element symbols, atomic numbers, and SI units.",
   },
+  {
+    id: "astronomy",
+    name: "Astronomy",
+    description: "Planets, moons, stars, and cosmic scale.",
+  },
+  {
+    id: "biology",
+    name: "Biology",
+    description: "Classification, human anatomy, and cells.",
+  },
+  {
+    id: "mathematics",
+    name: "Mathematics",
+    description: "Sequences, constants, and geometry.",
+  },
+  {
+    id: "language",
+    name: "Language",
+    description: "Greek and Latin roots, affixes, and word origins.",
+  },
 ] as const satisfies readonly LearnSubjectMeta[];
 
 export type LearnSubjectId = (typeof learnSubjects)[number]["id"];
@@ -60,6 +80,18 @@ export const skillNodeIds = [
   "sci.elements.symbols",
   "sci.elements.numbers",
   "sci.units.si",
+  "astro.solarSystem",
+  "astro.moons",
+  "astro.starsAndScale",
+  "bio.taxonomy",
+  "bio.anatomy",
+  "bio.cells",
+  "math.sequences",
+  "math.constants",
+  "math.geometry",
+  "lang.roots",
+  "lang.affixes",
+  "lang.etymology",
 ] as const;
 
 export type SkillNodeId = (typeof skillNodeIds)[number];
@@ -181,6 +213,102 @@ export const skillNodes: SkillNode[] = [
     description:
       "SI base and special-named units and the symbols that stand for them.",
     prerequisites: [],
+  },
+  {
+    id: "astro.solarSystem",
+    subject: "astronomy",
+    name: "The Solar System",
+    description:
+      "The planets and their order, sizes, and standout traits — including the traps where closest or biggest is not the answer.",
+    prerequisites: [],
+  },
+  {
+    id: "astro.moons",
+    subject: "astronomy",
+    name: "Moons",
+    description:
+      "Matching major moons to the planets they orbit and the records that make them famous.",
+    prerequisites: ["astro.solarSystem"],
+  },
+  {
+    id: "astro.starsAndScale",
+    subject: "astronomy",
+    name: "Stars & cosmic scale",
+    description:
+      "Stars, brightness, distances, and the units used to measure a universe far too big for kilometres.",
+    prerequisites: ["astro.solarSystem"],
+  },
+  {
+    id: "bio.taxonomy",
+    subject: "biology",
+    name: "Classification",
+    description:
+      "Sorting animals into their groups — mammal, reptile, amphibian, arachnid — and the ranks of the taxonomic hierarchy.",
+    prerequisites: [],
+  },
+  {
+    id: "bio.anatomy",
+    subject: "biology",
+    name: "Human anatomy",
+    description:
+      "The organs, systems, and bones of the human body and what each one does.",
+    prerequisites: [],
+  },
+  {
+    id: "bio.cells",
+    subject: "biology",
+    name: "Cells & genetics",
+    description:
+      "The parts of a cell, what each organelle does, and the molecules that carry the genetic code.",
+    prerequisites: ["bio.taxonomy"],
+  },
+  {
+    id: "math.sequences",
+    subject: "mathematics",
+    name: "Sequences & patterns",
+    description:
+      "Continuing number patterns — even numbers, squares, cubes, primes, and the Fibonacci sequence — by finding the rule.",
+    prerequisites: [],
+  },
+  {
+    id: "math.constants",
+    subject: "mathematics",
+    name: "Numbers & constants",
+    description:
+      "Key mathematical constants and definitions: pi, e, the golden ratio, primes, and powers.",
+    prerequisites: [],
+  },
+  {
+    id: "math.geometry",
+    subject: "mathematics",
+    name: "Geometry",
+    description:
+      "Polygon names and sides, angle facts, triangle types, and the parts of a right triangle.",
+    prerequisites: [],
+  },
+  {
+    id: "lang.roots",
+    subject: "language",
+    name: "Greek & Latin roots",
+    description:
+      "The combining roots that build English words — photo, aqua, bio, geo, chrono — and what they mean.",
+    prerequisites: [],
+  },
+  {
+    id: "lang.affixes",
+    subject: "language",
+    name: "Prefixes & suffixes",
+    description:
+      "The affixes that change meaning — un-, re-, pre-, anti-, -ology, -phobia — and how they work.",
+    prerequisites: ["lang.roots"],
+  },
+  {
+    id: "lang.etymology",
+    subject: "language",
+    name: "Word origins",
+    description:
+      "The languages English borrowed everyday words from — German, Japanese, Arabic, Czech, and more.",
+    prerequisites: ["lang.roots"],
   },
 ];
 
