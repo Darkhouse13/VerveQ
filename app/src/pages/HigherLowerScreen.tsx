@@ -198,7 +198,14 @@ export default function HigherLowerScreen() {
         setScore(result.score);
         setStreak(result.streak);
         setEndReason(null);
-        setGameOver(true);
+        // Reveal the losing value for a beat BEFORE mounting the game-over
+        // actions (mirrors the correct-path delay above). This keeps any
+        // tappable control OUT of the guess buttons' screen region while the
+        // tap that fired this guess is still completing, so that tap's
+        // trailing `click` can't land on — and auto-activate — the freshly
+        // mounted "Play Again"/"Home" buttons (a ghost-click that would
+        // silently restart the round with a new comparison).
+        setTimeout(() => setGameOver(true), 1200);
       }
     } catch (err) {
       console.error("Guess error:", err);
