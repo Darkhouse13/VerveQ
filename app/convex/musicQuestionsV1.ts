@@ -3,6 +3,7 @@
 // deduped, validated (4 distinct options, answer matches exactly one), and
 // content-QA gated. Evergreen MCQs only. Idempotent seed (skipped by checksum).
 import type { ChallengeArenaQuestionSeed } from "./challengeArenaContent";
+import { musicQuestionsV2 } from "./musicQuestionsV2";
 
 export const musicQuestions: ChallengeArenaQuestionSeed[] = [
   {
@@ -7588,5 +7589,6 @@ export const musicQuestions: ChallengeArenaQuestionSeed[] = [
     "difficulty": "hard",
     "bucket": "knowledge_hard_music",
     "checksum": "musq1_y06sd0"
-  }
+  },
+  ...musicQuestionsV2,
 ];

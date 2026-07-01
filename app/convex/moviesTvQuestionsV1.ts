@@ -3,6 +3,7 @@
 // deduped, validated (4 distinct options, answer matches exactly one), and
 // content-QA gated. Evergreen MCQs only. Idempotent seed (skipped by checksum).
 import type { ChallengeArenaQuestionSeed } from "./challengeArenaContent";
+import { moviesTvQuestionsV2 } from "./moviesTvQuestionsV2";
 
 export const moviesTvQuestions: ChallengeArenaQuestionSeed[] = [
   {
@@ -7572,5 +7573,6 @@ export const moviesTvQuestions: ChallengeArenaQuestionSeed[] = [
     "difficulty": "hard",
     "bucket": "knowledge_hard_movies_tv",
     "checksum": "movtv1_erp0jh"
-  }
+  },
+  ...moviesTvQuestionsV2,
 ];
