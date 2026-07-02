@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import {
   MAX_IMAGE_QUESTIONS,
   capImageQuestions,
+  planQuestionSequence,
   questionHasImage,
   selectQuestionsWithImageCap,
 } from "../../convex/lib/imageQuestions";
@@ -56,5 +57,42 @@ describe("shared image question cap", () => {
     expect(picked).toHaveLength(6);
     // 2 text available + 2 capped images = 4, then backfill 2 more images → 4 images.
     expect(picked.filter(questionHasImage)).toHaveLength(4);
+  });
+
+  // planQuestionSequence backs the pre-planned quiz/blitz sessions (one pool
+  // collect at session create, indexed reads per question). It must obey the
+  // same rules as the per-fetch pickQuestionPool path it replaces.
+  it("planQuestionSequence plans unique questions honoring the image cap and no-consecutive-images rule", () => {
+    const images = Array.from({ length: 5 }, (_, i) => ({
+      checksum: `img${i}`,
+      imageId: `id${i}`,
+    }));
+    const text = Array.from({ length: 20 }, (_, i) => ({
+      checksum: `txt${i}`,
+      imageId: undefined as string | undefined,
+    }));
+    const pool = [...images, ...text];
+    const byChecksum = new Map(pool.map((q) => [q.checksum, q]));
+
+    const planned = planQuestionSequence(pool, 10);
+    expect(planned).toHaveLength(10);
+    expect(new Set(planned).size).toBe(10);
+    const isImage = (c: string) => questionHasImage(byChecksum.get(c)!);
+    expect(planned.filter(isImage).length).toBeLessThanOrEqual(
+      MAX_IMAGE_QUESTIONS,
+    );
+    for (let i = 1; i < planned.length; i++) {
+      expect(isImage(planned[i - 1]) && isImage(planned[i])).toBe(false);
+    }
+  });
+
+  it("planQuestionSequence stops at pool exhaustion instead of repeating", () => {
+    const pool = Array.from({ length: 4 }, (_, i) => ({
+      checksum: `t${i}`,
+      imageId: undefined as string | undefined,
+    }));
+    const planned = planQuestionSequence(pool, 10);
+    expect(planned).toHaveLength(4);
+    expect(new Set(planned).size).toBe(4);
   });
 });

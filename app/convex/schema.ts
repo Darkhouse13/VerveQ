@@ -482,6 +482,10 @@ export default defineSchema({
     difficulty: v.optional(
       v.union(v.literal("easy"), v.literal("intermediate"), v.literal("hard")),
     ),
+    // Question sequence planned at createSession (one pool collect per session
+    // instead of one per question). Optional: sessions created before this
+    // field shipped fall back to the per-question collect path.
+    plannedChecksums: v.optional(v.array(v.string())),
     usedChecksums: v.array(v.string()),
     expiresAt: v.number(),
     // Server-authoritative scoring state. Populated from createSession
@@ -830,6 +834,10 @@ export default defineSchema({
     score: v.number(),
     correctCount: v.number(),
     wrongCount: v.number(),
+    // Question sequence planned at start (one pool collect per run instead of
+    // one per question — each per-question collect ate ~0.3s of the 60s clock).
+    // Optional: pre-existing sessions fall back to the per-question collect.
+    plannedChecksums: v.optional(v.array(v.string())),
     usedChecksums: v.array(v.string()),
     currentChecksum: v.optional(v.string()),
     gameOver: v.boolean(),

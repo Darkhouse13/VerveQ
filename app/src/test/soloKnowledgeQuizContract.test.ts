@@ -316,8 +316,53 @@ describe("solo Knowledge quiz question loading", () => {
     expect(patch).not.toHaveBeenCalled();
   });
 
+  it("serves pre-planned sessions by checksum in plan order", async () => {
+    const session = {
+      _id: "session_1",
+      userId: "user_1",
+      sport: "knowledge",
+      mode: "quiz",
+      difficulty: "easy",
+      plannedChecksums: ["knowledge_v1_planned_b", "knowledge_v1_planned_a"],
+      usedChecksums: ["knowledge_v1_planned_b"] as string[],
+      completed: false,
+      expiresAt: Date.now() + 60_000,
+    };
+    const queried: Array<Record<string, unknown>> = [];
+    const patch = vi.fn();
+    const ctx = {
+      db: {
+        get: async () => session,
+        query: makeQuestionQuery(
+          [
+            makeQuestion({ checksum: "knowledge_v1_planned_a" }),
+            makeQuestion({ _id: "question_2", checksum: "knowledge_v1_planned_b" }),
+            makeQuestion({ _id: "question_3", checksum: "knowledge_v1_unplanned" }),
+          ],
+          queried,
+        ),
+        patch,
+      },
+      storage: { getUrl: vi.fn() },
+    };
+
+    const result = (await handlerOf(quizSessions.getQuestion)(ctx, {
+      sessionId: "session_1",
+    })) as Record<string, unknown>;
+
+    // The next unused planned question is served via a checksum lookup — the
+    // handler never re-collects the sport+difficulty slice.
+    expect(result.checksum).toBe("knowledge_v1_planned_a");
+    expect(queried).toContainEqual({ checksum: "knowledge_v1_planned_a" });
+    expect(queried).not.toContainEqual({
+      sport: "knowledge",
+      difficulty: "easy",
+    });
+  });
+
   it("normalizes Which Came First sessions to the seeded intermediate pool", async () => {
     const inserts: Array<Record<string, unknown>> = [];
+    const queried: Array<Record<string, unknown>> = [];
     const ctx = {
       db: {
         get: async () => ({
@@ -326,6 +371,9 @@ describe("solo Knowledge quiz question loading", () => {
           isGuest: false,
           isAnonymous: false,
         }),
+        // createSession now plans the question sequence up front, so it
+        // queries the pool; an empty pool still creates the session.
+        query: makeQuestionQuery([], queried),
         insert: async (_table: string, doc: Record<string, unknown>) => {
           inserts.push(doc);
           return "session_1";

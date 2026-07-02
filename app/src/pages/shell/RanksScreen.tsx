@@ -67,7 +67,7 @@ function DivisionStrip() {
 export default function RanksScreen() {
   const navigate = useNavigate();
   const { t } = useTranslation();
-  const { user, isFullAccount, isUsernameOnly } = useAuth();
+  const { user, isFullAccount, isUsernameOnly, accountState } = useAuth();
 
   const userId =
     isFullAccount && user && user._id !== "guest_tab"
@@ -91,21 +91,21 @@ export default function RanksScreen() {
       : "skip",
   );
 
-  const locked = !isFullAccount;
+  // While the auth handshake is settling, don't show the locked pitch (it
+  // would flash a "create account" CTA at a signed-in ranked player) — treat
+  // it like the profile still loading instead.
+  const settling = accountState === "loading";
+  const locked = !isFullAccount && !settling;
   const seasonNumber = currentSeason?.seasonNumber ?? null;
   const seasonDaysLeft = currentSeason
     ? Math.max(0, Math.ceil((currentSeason.endDate - Date.now()) / 86400000))
     : null;
 
-  if (isFullAccount && profile === undefined) {
-    return (
-      <ShellLayout theme="dark" title={t("ranks.title")} center>
-        <p className="font-heading font-bold uppercase tracking-wide animate-pulse text-center">
-          Loading…
-        </p>
-      </ShellLayout>
-    );
-  }
+  // While the profile is in flight the page still paints (header, ladder,
+  // board) — only the hero's numbers wait, so a slow connection sees the
+  // screen immediately instead of a full-screen spinner. The hero shows a
+  // pulse placeholder rather than flashing "Unranked" at a ranked player.
+  const profileLoading = settling || (isFullAccount && profile === undefined);
 
   const elo = isFullAccount && profile ? Math.round(profile.eloRating) : null;
   const myTier: TierKey | null = elo != null ? tierFromElo(elo) : null;
@@ -190,6 +190,12 @@ export default function RanksScreen() {
         </span>
       </div>
       <div className="flex flex-col gap-3.5 my-auto">
+        {profileLoading ? (
+          <p className="font-heading font-bold uppercase tracking-wide animate-pulse">
+            Loading…
+          </p>
+        ) : (
+        <>
         <div className="flex items-center gap-4">
           <div
             className="neo-border rounded-xl w-[72px] h-[72px] md:w-[84px] md:h-[84px] shrink-0 -rotate-6 flex items-center justify-center"
@@ -244,6 +250,8 @@ export default function RanksScreen() {
                 : t("ranks.topTier")}
             </p>
           </div>
+        )}
+        </>
         )}
       </div>
       {/* Parked ranked features — explicit placeholders, never numbers. */}

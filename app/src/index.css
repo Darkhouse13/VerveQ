@@ -1,5 +1,6 @@
-@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
-
+/* Fonts are loaded from index.html (<link rel="stylesheet">, with preconnect):
+   an @import here is only discovered after the bundled CSS downloads, which
+   serializes CSS -> fonts CSS -> woff2 on every cold load. */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;

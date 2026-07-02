@@ -60,6 +60,25 @@ export function capImageQuestions<T extends ImageFields>(
   return selected.slice(0, limit);
 }
 
+// Plan a serving sequence up front: repeatedly draw a random question through
+// `pickQuestionPool`, so the resulting order obeys the same image cap and
+// no-two-images-in-a-row rules the per-fetch path enforces. Lets session
+// creation collect the candidate pool ONCE and serve each question later with
+// a single indexed read instead of re-collecting the whole sport+difficulty
+// slice per question (~230ms per fetch on the live pools).
+export function planQuestionSequence<T extends ImageQuestion>(
+  candidates: T[],
+  count: number,
+): string[] {
+  const planned: string[] = [];
+  while (planned.length < count) {
+    const pool = pickQuestionPool(candidates, planned);
+    if (pool.length === 0) break;
+    planned.push(pool[Math.floor(Math.random() * pool.length)].checksum);
+  }
+  return planned;
+}
+
 export function pickQuestionPool<T extends ImageQuestion>(
   candidates: T[],
   usedChecksums: readonly string[],

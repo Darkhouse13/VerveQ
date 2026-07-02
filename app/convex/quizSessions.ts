@@ -1,10 +1,11 @@
-import { mutation, query } from "./_generated/server";
+import { mutation, query, type MutationCtx } from "./_generated/server";
+import type { Doc } from "./_generated/dataModel";
 import { v } from "convex/values";
 import { getAuthUserId } from "@convex-dev/auth/server";
 import { assertFullAccountUser } from "./lib/authz";
 import { assertClientSport } from "./lib/sports";
 import { calculateTimeScore, normalizeAnswer } from "./lib/scoring";
-import { pickQuestionPool } from "./lib/imageQuestions";
+import { pickQuestionPool, planQuestionSequence } from "./lib/imageQuestions";
 import { orderAnswerOptions } from "./lib/answerOptions";
 import {
   composeLocalizedQuestion,
@@ -17,6 +18,41 @@ import {
 
 const SESSION_TTL_MS = 30 * 60 * 1000; // 30 minutes
 const QUESTION_BASE_POINTS = 100;
+// A quiz is 10 questions; plan the whole sequence at createSession so each
+// getQuestion is a single indexed read instead of a full-slice collect
+// (~230ms per question on the live pools). getQuestion keeps the collect
+// path as a fallback, so pre-plan sessions and >10-question flows still work.
+const QUIZ_PLANNED_QUESTIONS = 10;
+
+/** The sport+difficulty slice narrowed to the session mode's playable rows —
+ * shared by planning (createSession) and the per-question fallback. */
+type QuizDifficulty = "easy" | "intermediate" | "hard";
+
+async function collectModeCandidates(
+  ctx: MutationCtx,
+  sport: string,
+  mode: string | undefined,
+  difficulty: QuizDifficulty,
+): Promise<Doc<"quizQuestions">[]> {
+  const candidates = await ctx.db
+    .query("quizQuestions")
+    .withIndex("by_sport_difficulty", (q) =>
+      q.eq("sport", sport).eq("difficulty", difficulty),
+    )
+    .collect();
+  return mode === "came_first"
+    ? candidates.filter((q) => q.category === "which_came_first")
+    : candidates.filter(isStandardMcqQuestion);
+}
+
+function sessionDifficulty(session: {
+  mode?: string;
+  difficulty?: QuizDifficulty;
+}): QuizDifficulty {
+  return session.mode === "came_first"
+    ? "intermediate"
+    : session.difficulty ?? "intermediate";
+}
 
 export const createSession = mutation({
   args: {
@@ -35,11 +71,23 @@ export const createSession = mutation({
     const normalizedDifficulty =
       normalizedMode === "came_first" ? "intermediate" : difficulty;
 
+    const candidates = await collectModeCandidates(
+      ctx,
+      sport,
+      normalizedMode,
+      sessionDifficulty({ mode: normalizedMode, difficulty: normalizedDifficulty }),
+    );
+    const plannedChecksums = planQuestionSequence(
+      candidates,
+      QUIZ_PLANNED_QUESTIONS,
+    );
+
     const sessionId = await ctx.db.insert("quizSessions", {
       userId,
       sport,
       mode: normalizedMode,
       difficulty: normalizedDifficulty,
+      plannedChecksums,
       usedChecksums: [],
       score: 0,
       correctCount: 0,
@@ -73,27 +121,44 @@ export const getQuestion = mutation({
       throw new Error("Session already completed");
     }
 
-    const difficulty =
-      session.mode === "came_first"
-        ? "intermediate"
-        : session.difficulty ?? "intermediate";
+    // Serve from the sequence planned at createSession: one indexed read
+    // instead of re-collecting the whole sport+difficulty slice per question.
+    let picked: Doc<"quizQuestions"> | null = null;
+    if (session.plannedChecksums) {
+      const used = new Set(session.usedChecksums);
+      for (const checksum of session.plannedChecksums) {
+        if (used.has(checksum)) continue;
+        const doc = await ctx.db
+          .query("quizQuestions")
+          .withIndex("by_checksum", (q) => q.eq("checksum", checksum))
+          .first();
+        // Skip rows deleted or edited out of mode-eligibility since planning.
+        if (!doc) continue;
+        if (
+          session.mode === "came_first"
+            ? doc.category !== "which_came_first"
+            : !isStandardMcqQuestion(doc)
+        ) {
+          continue;
+        }
+        picked = doc;
+        break;
+      }
+    }
 
-    const candidates = await ctx.db
-      .query("quizQuestions")
-      .withIndex("by_sport_difficulty", (q) =>
-        q.eq("sport", session.sport).eq("difficulty", difficulty),
-      )
-      .collect();
-
-    const modeCandidates =
-      session.mode === "came_first"
-        ? candidates.filter((q) => q.category === "which_came_first")
-        : candidates.filter(isStandardMcqQuestion);
-
-    const pool = pickQuestionPool(modeCandidates, session.usedChecksums);
-    if (!pool.length) throw new Error("No questions available");
-
-    const picked = pool[Math.floor(Math.random() * pool.length)];
+    // Fallback — sessions created before planning shipped, or a plan
+    // exhausted/staled mid-session: the original full-slice draw.
+    if (!picked) {
+      const modeCandidates = await collectModeCandidates(
+        ctx,
+        session.sport,
+        session.mode,
+        sessionDifficulty(session),
+      );
+      const pool = pickQuestionPool(modeCandidates, session.usedChecksums);
+      if (!pool.length) throw new Error("No questions available");
+      picked = pool[Math.floor(Math.random() * pool.length)];
+    }
     if (session.mode !== "came_first") {
       assertStandardMcqQuestion(picked);
     }

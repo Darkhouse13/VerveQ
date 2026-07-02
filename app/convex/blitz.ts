@@ -1,4 +1,4 @@
-import { mutation, query } from "./_generated/server";
+import { mutation, query, type MutationCtx } from "./_generated/server";
 import type { Doc } from "./_generated/dataModel";
 import { v } from "convex/values";
 import { getAuthUserId } from "@convex-dev/auth/server";
@@ -8,7 +8,7 @@ import {
   isRankedEligibleUserId,
 } from "./lib/authz";
 import { assertClientSport } from "./lib/sports";
-import { pickQuestionPool } from "./lib/imageQuestions";
+import { pickQuestionPool, planQuestionSequence } from "./lib/imageQuestions";
 import { normalizeAnswer } from "./lib/scoring";
 import { advanceStreak, utcDayNumber } from "./lib/streaks";
 import { orderAnswerOptions } from "./lib/answerOptions";
@@ -32,6 +32,22 @@ const CORRECT_POINTS = 100;
 // is only the sum of answers already locked in, and no points can be earned
 // after time is up — so we accept a small grace window.
 const FINALIZE_GRACE_MS = 3_000;
+// Enough planned questions for any humanly-possible 60s run (a question every
+// ~1.5s would be 40). Planning once at start replaces a full-pool collect per
+// question — each of those was eating ~0.3s of the run's fixed wall clock.
+// getQuestion falls back to the collect path if a run somehow outlives its plan.
+const BLITZ_PLANNED_QUESTIONS = 60;
+
+/** The playable blitz pool for a sport (full intermediate slice, MCQs only). */
+async function collectBlitzCandidates(ctx: MutationCtx, sport: string) {
+  const allQuestions = await ctx.db
+    .query("quizQuestions")
+    .withIndex("by_sport_difficulty", (q) =>
+      q.eq("sport", sport).eq("difficulty", "intermediate"),
+    )
+    .collect();
+  return allQuestions.filter(isStandardMcqQuestion);
+}
 
 export const start = mutation({
   args: { sport: v.string() },
@@ -41,6 +57,13 @@ export const start = mutation({
     await assertUsernameRequiredUser(ctx, userId);
     assertClientSport(sport);
 
+    const candidates = await collectBlitzCandidates(ctx, sport);
+    const plannedChecksums = planQuestionSequence(
+      candidates,
+      BLITZ_PLANNED_QUESTIONS,
+    );
+
+    // Anchor the clock AFTER planning so the collect doesn't eat play time.
     const now = Date.now();
     const sessionId = await ctx.db.insert("blitzSessions", {
       userId,
@@ -48,6 +71,7 @@ export const start = mutation({
       score: 0,
       correctCount: 0,
       wrongCount: 0,
+      plannedChecksums,
       usedChecksums: [],
       gameOver: false,
       startedAt: now,
@@ -82,33 +106,41 @@ export const getQuestion = mutation({
       throw new Error("Answer the current question before requesting another");
     }
 
-    // Collect the FULL sport+intermediate pool (mirrors quizSessions.getQuestion).
-    // The old `.take(200)` silently capped Blitz to the first 200 questions by
-    // index order, so most of the pool (e.g. football intermediate ≫ 200) was
-    // permanently unreachable in this mode — every Blitz run drew from the same
-    // 200-question window. Collecting the whole pool makes Blitz reach all of it.
-    const allQuestions = await ctx.db
-      .query("quizQuestions")
-      .withIndex("by_sport_difficulty", (q) =>
-        q.eq("sport", session.sport).eq("difficulty", "intermediate"),
-      )
-      .collect();
-
-    const pool = pickQuestionPool(
-      allQuestions.filter(isStandardMcqQuestion),
-      session.usedChecksums,
-    );
-
-    if (pool.length === 0) {
-      await ctx.db.patch(sessionId, {
-        gameOver: true,
-        endedAt: Date.now(),
-        currentChecksum: undefined,
-      });
-      throw new Error("No more questions");
+    // Serve from the sequence planned at start: one indexed read per question.
+    let pick: Doc<"quizQuestions"> | null = null;
+    if (session.plannedChecksums) {
+      const used = new Set(session.usedChecksums);
+      for (const checksum of session.plannedChecksums) {
+        if (used.has(checksum)) continue;
+        const doc = await ctx.db
+          .query("quizQuestions")
+          .withIndex("by_checksum", (q) => q.eq("checksum", checksum))
+          .first();
+        // Skip rows deleted or edited out of eligibility since planning.
+        if (!doc || !isStandardMcqQuestion(doc)) continue;
+        pick = doc;
+        break;
+      }
     }
 
-    const pick = pool[Math.floor(Math.random() * pool.length)];
+    // Fallback — pre-plan sessions, or a run that outlived its plan: the
+    // full-pool draw. (The whole intermediate slice, deliberately NOT a
+    // `.take(n)` window — see the git history on the old 200-row cap.)
+    if (!pick) {
+      const candidates = await collectBlitzCandidates(ctx, session.sport);
+      const pool = pickQuestionPool(candidates, session.usedChecksums);
+
+      if (pool.length === 0) {
+        await ctx.db.patch(sessionId, {
+          gameOver: true,
+          endedAt: Date.now(),
+          currentChecksum: undefined,
+        });
+        throw new Error("No more questions");
+      }
+
+      pick = pool[Math.floor(Math.random() * pool.length)];
+    }
     assertStandardMcqQuestion(pick);
 
     // Track used checksum

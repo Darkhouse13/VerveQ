@@ -71,10 +71,15 @@ export const getLeaderboard = query({
   handler: async (ctx, { sport, mode, limit = 20 }) => {
     const candidates = await rankedCandidates(ctx, sport, mode);
 
+    // One parallel batch instead of an awaited get per candidate — the user
+    // docs are needed for eligibility filtering either way.
+    const users = await Promise.all(candidates.map((r) => ctx.db.get(r.userId)));
+
     const entries = [];
-    for (const r of candidates) {
+    for (let i = 0; i < candidates.length; i++) {
       if (entries.length >= limit) break;
-      const user = await ctx.db.get(r.userId);
+      const r = candidates[i];
+      const user = users[i];
       if (!isRankedEligibleUserDoc(user)) continue;
       entries.push({
         rank: entries.length + 1,
@@ -110,14 +115,14 @@ export const getGlobalRank = query({
   },
   handler: async (ctx, { userId, sport, mode }) => {
     const candidates = await rankedCandidates(ctx, sport, mode);
+    const users = await Promise.all(candidates.map((r) => ctx.db.get(r.userId)));
 
     let rank = 0;
     let myRank: number | null = null;
-    for (const r of candidates) {
-      const user = await ctx.db.get(r.userId);
-      if (!isRankedEligibleUserDoc(user)) continue;
+    for (let i = 0; i < candidates.length; i++) {
+      if (!isRankedEligibleUserDoc(users[i])) continue;
       rank++;
-      if (r.userId === userId) myRank = rank;
+      if (candidates[i].userId === userId) myRank = rank;
     }
 
     return myRank === null ? null : { rank: myRank, total: rank };
