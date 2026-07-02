@@ -6,7 +6,12 @@ import {
   isRankedEligibleUserId,
 } from "./lib/authz";
 import { assertClientSport } from "./lib/sports";
-import { getTodayUTC, seededShuffle } from "./lib/daily";
+import {
+  getTodayUTC,
+  isWorldCupEditionActive,
+  isWorldCupThemedQuestion,
+  seededShuffle,
+} from "./lib/daily";
 import { normalizeAnswer } from "./lib/scoring";
 import { recordPlayForStreak } from "./lib/streaks";
 import { orderAnswerOptions } from "./lib/answerOptions";
@@ -19,7 +24,7 @@ import {
   assertStandardMcqQuestion,
   isStandardMcqQuestion,
 } from "./lib/mcqEligibility";
-import type { Id } from "./_generated/dataModel";
+import type { Doc, Id } from "./_generated/dataModel";
 
 const DAILY_QUIZ_COUNT = 10;
 const MAX_TIME_SEC = 10;
@@ -185,6 +190,73 @@ function canRestartAttempt(
   return getAttemptResultCount(attempt) === 0 || getAttemptExpiresAt(attempt) <= now;
 }
 
+// The daily quiz candidate pool + shuffle seed for a given date. Normally the
+// FULL intermediate slice for the sport (an old `.take(200)` capped the
+// candidate set to the first 200 rows by index order, so the seeded shuffle
+// only ever reshuffled that window — and a subject whose standard MCQs sat
+// past row 200 could fall short of DAILY_QUIZ_COUNT and get skipped).
+//
+// During the World Cup edition window (lib/daily.ts) the football daily
+// instead draws WC-themed questions across ALL difficulty tiers — any single
+// tier's themed slice is too thin — under a distinct seed. Falls back to the
+// regular pool if the themed pool ever runs short of a full quiz.
+const WORLD_CUP_EDITION_DIFFICULTIES = ["easy", "intermediate", "hard"] as const;
+
+async function collectDailyQuizCandidates(
+  ctx: MutationCtx,
+  sport: string,
+  date: string,
+): Promise<{ pool: Doc<"quizQuestions">[]; seed: string }> {
+  if (isWorldCupEditionActive(sport, date)) {
+    const tiers = await Promise.all(
+      WORLD_CUP_EDITION_DIFFICULTIES.map((difficulty) =>
+        ctx.db
+          .query("quizQuestions")
+          .withIndex("by_sport_difficulty", (q) =>
+            q.eq("sport", sport).eq("difficulty", difficulty),
+          )
+          .collect(),
+      ),
+    );
+    const themed = tiers
+      .flat()
+      .filter((q) => isStandardMcqQuestion(q) && isWorldCupThemedQuestion(q));
+    if (themed.length >= DAILY_QUIZ_COUNT) {
+      // The themed pool (~147) is small enough that independent daily shuffles
+      // repeat questions on back-to-back days — drop yesterday's picks while
+      // enough themed questions remain without them, so streak players don't
+      // see the same fact two mornings running.
+      const previousChallenges = await ctx.db
+        .query("dailyChallenges")
+        .withIndex("by_date_sport_mode", (q) =>
+          q
+            .eq("date", getPreviousUTCDate(date))
+            .eq("sport", sport)
+            .eq("mode", "quiz"),
+        )
+        .collect();
+      const previous = pickCanonicalChallenge(previousChallenges);
+      const yesterdays = new Set(previous?.questionChecksums ?? []);
+      const fresh = themed.filter((q) => !yesterdays.has(q.checksum));
+      return {
+        pool: fresh.length >= DAILY_QUIZ_COUNT ? fresh : themed,
+        seed: `${date}-${sport}-quiz-wc26`,
+      };
+    }
+  }
+
+  const questions = await ctx.db
+    .query("quizQuestions")
+    .withIndex("by_sport_difficulty", (q) =>
+      q.eq("sport", sport).eq("difficulty", "intermediate"),
+    )
+    .collect();
+  return {
+    pool: questions.filter(isStandardMcqQuestion),
+    seed: `${date}-${sport}-quiz`,
+  };
+}
+
 async function getOrCreateDailyQuizChallenge(
   ctx: MutationCtx,
   sport: string,
@@ -210,21 +282,8 @@ async function getOrCreateDailyQuizChallenge(
   }
 
   const MAX_IMAGE_QUESTIONS = 2;
-  // Draw from the full intermediate pool. The old `.take(200)` capped the
-  // candidate set to the first 200 rows by index order, so the seeded shuffle
-  // only ever reshuffled that window — and a subject whose standard MCQs sit
-  // past row 200 could fall short of DAILY_QUIZ_COUNT and get skipped.
-  const questions = await ctx.db
-    .query("quizQuestions")
-    .withIndex("by_sport_difficulty", (q) =>
-      q.eq("sport", sport).eq("difficulty", "intermediate"),
-    )
-    .collect();
-
-  const shuffled = seededShuffle(
-    questions.filter(isStandardMcqQuestion),
-    `${date}-${sport}-quiz`,
-  );
+  const { pool, seed } = await collectDailyQuizCandidates(ctx, sport, date);
+  const shuffled = seededShuffle(pool, seed);
   const selected: typeof shuffled = [];
   let imageCount = 0;
   for (const question of shuffled) {
@@ -308,19 +367,8 @@ export const getOrCreateChallenge = mutation({
     if (mode === "quiz") {
       const MAX_IMAGE_QUESTIONS = 2;
 
-      // Full intermediate pool (see getOrCreateDailyQuizChallenge): `.take(200)`
-      // capped the candidate set to the first 200 rows by index order.
-      const questions = await ctx.db
-        .query("quizQuestions")
-        .withIndex("by_sport_difficulty", (q) =>
-          q.eq("sport", sport).eq("difficulty", "intermediate"),
-        )
-        .collect();
-
-      const shuffled = seededShuffle(
-        questions.filter(isStandardMcqQuestion),
-        `${date}-${sport}-quiz`,
-      );
+      const { pool, seed } = await collectDailyQuizCandidates(ctx, sport, date);
+      const shuffled = seededShuffle(pool, seed);
 
       // Pick up to DAILY_QUIZ_COUNT questions, capping image questions at 3
       // and preventing consecutive image questions

@@ -2,10 +2,11 @@ import { NeoCard } from "@/components/neo/NeoCard";
 import { NeoButton } from "@/components/neo/NeoButton";
 import { NeoBadge } from "@/components/neo/NeoBadge";
 import { useNavigate, useLocation } from "react-router-dom";
-import { Calendar, Copy, Check } from "lucide-react";
+import { Calendar, Copy, Check, Share2 } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
+import { getTodayUTC, isWorldCupEditionActive } from "../../convex/lib/daily";
 
 interface DailyResultState {
   score: number;
@@ -36,29 +37,66 @@ export default function DailyResultScreen() {
   }
 
   const isQuiz = state.mode === "daily-quiz";
-  const dateStr = new Date().toISOString().slice(0, 10);
+  const dateStr = getTodayUTC();
+  // Same window predicate the backend uses to theme the daily's question pool,
+  // so the badge/share copy and the served questions flip together.
+  const isWorldCup = isWorldCupEditionActive(state.sport, dateStr);
 
   const sportLabel = state.sport.charAt(0).toUpperCase() + state.sport.slice(1);
+  // `ref=` feeds cold-entry attribution (coldEntryMetrics.bySource), so shared
+  // results are measurable against direct traffic.
+  const shareUrl = `${window.location.origin}/?ref=daily_share`;
   const shareText = isQuiz
-    ? t("dailyResult.shareQuiz", {
-        sport: sportLabel,
-        date: dateStr,
-        score: state.score,
-        emoji: state.shareString || "",
-      })
+    ? t(
+        isWorldCup ? "dailyResult.shareQuizWorldCup" : "dailyResult.shareQuiz",
+        {
+          sport: sportLabel,
+          date: dateStr,
+          score: state.score,
+          correct: state.correctCount,
+          total: state.total,
+          emoji: state.shareString || "",
+          url: shareUrl,
+        },
+      )
     : t("dailyResult.shareSurvival", {
         sport: sportLabel,
         date: dateStr,
         score: state.score,
         rounds: state.total,
+        url: shareUrl,
       });
+
+  const copyShareText = async () => {
+    await navigator.clipboard.writeText(shareText);
+    setCopied(true);
+    toast.success(t("dailyResult.copiedToClipboard"));
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  // One-tap share: the native sheet where it exists (mobile — WhatsApp et al.),
+  // clipboard everywhere else. A dismissed sheet (AbortError) is not an error.
+  const handleShare = async () => {
+    if (navigator.share) {
+      try {
+        await navigator.share({ text: shareText });
+        return;
+      } catch (error) {
+        if (error instanceof DOMException && error.name === "AbortError") {
+          return;
+        }
+      }
+    }
+    try {
+      await copyShareText();
+    } catch {
+      toast.error(t("dailyResult.copyFailed"));
+    }
+  };
 
   const handleCopy = async () => {
     try {
-      await navigator.clipboard.writeText(shareText);
-      setCopied(true);
-      toast.success(t("dailyResult.copiedToClipboard"));
-      setTimeout(() => setCopied(false), 2000);
+      await copyShareText();
     } catch {
       toast.error(t("dailyResult.copyFailed"));
     }
@@ -90,7 +128,12 @@ export default function DailyResultScreen() {
         </p>
       </NeoCard>
 
-      <div className="mb-4">
+      <div className="mb-4 flex items-center justify-center gap-2 flex-wrap">
+        {isWorldCup && (
+          <NeoBadge color="success" rotated size="md" className="text-sm px-4 py-1.5">
+            {t("dailyResult.worldCupEdition")}
+          </NeoBadge>
+        )}
         <NeoBadge color="pink" rotated size="md" className="text-lg px-5 py-1.5">
           {dateStr}
         </NeoBadge>
@@ -99,17 +142,19 @@ export default function DailyResultScreen() {
       {state.shareString && (
         <NeoCard className="w-full text-center py-4 mb-4">
           <p className="text-2xl tracking-widest mb-3">{state.shareString}</p>
-          <NeoButton
-            variant="secondary"
-            size="sm"
-            onClick={handleCopy}
-          >
-            {copied ? (
-              <><Check size={14} className="mr-1" /> {t("dailyResult.copied")}</>
-            ) : (
-              <><Copy size={14} className="mr-1" /> {t("dailyResult.shareResult")}</>
-            )}
-          </NeoButton>
+          <div className="flex items-center justify-center gap-2">
+            <NeoButton variant="primary" size="sm" onClick={handleShare}>
+              <Share2 size={14} className="mr-1" /> {t("dailyResult.challengeAMate")}
+            </NeoButton>
+            <NeoButton
+              variant="secondary"
+              size="sm"
+              onClick={handleCopy}
+              aria-label={t("dailyResult.shareResult")}
+            >
+              {copied ? <Check size={14} /> : <Copy size={14} />}
+            </NeoButton>
+          </div>
         </NeoCard>
       )}
 

@@ -11,6 +11,7 @@ import { SHELL_ROUTES } from "@/lib/shellRoutes";
 import { RANKED_CAPABILITIES, tierFromElo, tierProgress } from "@/lib/rankedLadder";
 import { useAuth } from "@/contexts/AuthContext";
 import { usePreferredDailySport } from "@/hooks/usePreferredDailySport";
+import { getTodayUTC, isWorldCupEditionActive } from "../../../convex/lib/daily";
 import { api } from "../../../convex/_generated/api";
 import type { Id } from "../../../convex/_generated/dataModel";
 
@@ -112,6 +113,9 @@ export default function ShellHomeScreen() {
   );
 
   const dailyPlayed = dailyStatus?.completed === true;
+  // Window shared with the backend's themed question pool (lib/daily.ts), so
+  // the card renames itself exactly while the WC edition is being served.
+  const dailyIsWorldCup = isWorldCupEditionActive(dailySport, getTodayUTC());
   const seasonNumber =
     typeof season?.seasonNumber === "number" ? season.seasonNumber : null;
 
@@ -251,7 +255,9 @@ export default function ShellHomeScreen() {
               >
                 <Star size={22} strokeWidth={2.5} />
                 <p className="font-heading font-bold text-base leading-none">
-                  {t("modes.daily.name")}
+                  {dailyIsWorldCup
+                    ? t("modes.daily.worldCupName")
+                    : t("modes.daily.name")}
                 </p>
                 <p className="font-mono text-[10.5px] uppercase text-muted-foreground">
                   {dailyPlayed

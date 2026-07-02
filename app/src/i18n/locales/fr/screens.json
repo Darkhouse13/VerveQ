@@ -100,8 +100,11 @@
     "streakActiveOpponent_other": "Série de {{count}} matchs de l'adversaire"
   },
   "dailyResult": {
-    "shareQuiz": "Quiz quotidien VerveQ {{sport}} [{{date}}] | Score : {{score}}/1000 | {{emoji}}",
-    "shareSurvival": "Survie quotidienne VerveQ {{sport}} [{{date}}] | Score : {{score}} | Manches : {{rounds}}",
+    "shareQuiz": "Quotidien VerveQ {{sport}} {{date}} — {{correct}}/{{total}} · {{score}} pts\n{{emoji}}\nTu crois pouvoir me battre ? {{url}}",
+    "shareQuizWorldCup": "⚽ Quotidien Coupe du Monde VerveQ {{date}} — {{correct}}/{{total}} · {{score}} pts\n{{emoji}}\nTu crois pouvoir me battre ? {{url}}",
+    "shareSurvival": "Survie quotidienne VerveQ {{sport}} {{date}} — Score : {{score}} · Manches : {{rounds}}\nTu crois pouvoir me battre ? {{url}}",
+    "worldCupEdition": "Édition Coupe du Monde",
+    "challengeAMate": "Défie un pote",
     "copiedToClipboard": "Copié dans le presse-papiers !",
     "copyFailed": "Échec de la copie",
     "statCorrect": "Correctes",

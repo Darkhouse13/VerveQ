@@ -7,6 +7,7 @@ import { NeoBadge } from "@/components/neo/NeoBadge";
 import { ShellLayout } from "@/components/shell/ShellLayout";
 import { SHELL_ROUTES } from "@/lib/shellRoutes";
 import { usePreferredDailySport } from "@/hooks/usePreferredDailySport";
+import { getTodayUTC, isWorldCupEditionActive } from "../../../convex/lib/daily";
 import {
   COMPETE_MODE_TILES,
   COMPETE_KNOWLEDGE_TILES,
@@ -69,6 +70,8 @@ export default function CompeteModeGridScreen() {
   }
 
   const daily = COMPETE_MODE_TILES.find((m) => m.key === "daily");
+  // Window shared with the backend's themed question pool (lib/daily.ts).
+  const dailyIsWorldCup = isWorldCupEditionActive(dailySport, getTodayUTC());
   const ranked = RANKED_MODE_TILES;
   const friends = tilesByKeys(FRIEND_KEYS);
   // Casual = the solo set MINUS anything ranked — derived from the flag so it
@@ -130,10 +133,14 @@ export default function CompeteModeGridScreen() {
               </div>
               <div className="flex-1 min-w-0">
                 <p className="font-heading font-bold text-base md:text-lg leading-tight">
-                  {t("modes.daily.name")}
+                  {dailyIsWorldCup
+                    ? t("modes.daily.worldCupName")
+                    : t("modes.daily.name")}
                 </p>
                 <p className="text-[11px] md:text-xs opacity-80 leading-tight mt-0.5">
-                  {t("modes.daily.desc")}
+                  {dailyIsWorldCup
+                    ? t("modes.daily.worldCupDesc")
+                    : t("modes.daily.desc")}
                 </p>
               </div>
               <ChevronRight size={20} strokeWidth={2.5} className="opacity-70 shrink-0" />
