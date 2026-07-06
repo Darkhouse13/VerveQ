@@ -33,7 +33,9 @@ describe("answer option ordering contract", () => {
     expect(quizSessions).toContain("orderAnswerOptions(picked.options, picked.correctAnswer, picked.checksum)");
     expect(dailyChallenge).toContain("orderAnswerOptions(");
     expect(blitz).toContain("orderAnswerOptions(pick.options, pick.correctAnswer, pick.checksum)");
-    expect(liveMatches).toContain("orderAnswerOptions(q.options, q.correctAnswer, q.checksum)");
+    // Live-match creation was removed with the challenge subsystem; legacy
+    // matches still order options at display time in sanitizeQuestion.
+    expect(liveMatches).toContain("orderAnswerOptions(");
     expect(liveMatches).toContain("question.correctAnswer");
   });
 });

@@ -32,7 +32,6 @@ const CONVEX_ESM_DIR = path.join(APP_DIR, "node_modules", "convex", "dist", "esm
 
 const BATCH_SIZE = 256;
 const DATA_DIR = path.resolve(__dirname, "data");
-const LEGACY_GRID_INDEX_FLAG = "--include-legacy-grid-index";
 const REPLACE_FLAG = "--replace";
 const SPORT_FLAG = "--sport";
 const SEED_VERSION_FLAG = "--seed-version";
@@ -85,11 +84,6 @@ const TABLE_CONFIGS: Record<string, TableConfig> = {
     mutation: "seedSportsData:seedTeamsBatch",
     mapRecord: identity,
   },
-  statFacts: {
-    jsonFile: "statFacts.json",
-    mutation: "seedSportsData:seedStatFactsBatch",
-    mapRecord: identity,
-  },
   higherLowerPools: {
     jsonFile: "higherLowerPools.json",
     mutation: "seedSportsData:seedHigherLowerPoolsBatch",
@@ -100,13 +94,9 @@ const TABLE_CONFIGS: Record<string, TableConfig> = {
     mutation: "seedSportsData:seedHigherLowerFactsBatch",
     mapRecord: identity,
   },
-  // Legacy VerveGrid raw table: keep available for pipeline/audit backfills,
-  // but do not include it in default Convex seeding.
-  gridIndex: {
-    jsonFile: "gridIndex.json",
-    mutation: "seedSportsData:seedGridIndexBatch",
-    mapRecord: identity,
-  },
+  // The raw pipeline tables (statFacts, gridIndex, whoAmIClues) are no longer
+  // Convex tables — gameplay reads only the approved layers, and the raw
+  // artifacts stay local in scripts/data/*.json.
   verveGridApprovedIndex: {
     jsonFile: "verveGridApprovedIndex.json",
     mutation: "seedSportsData:seedVerveGridApprovedIndexBatch",
@@ -115,11 +105,6 @@ const TABLE_CONFIGS: Record<string, TableConfig> = {
   verveGridBoards: {
     jsonFile: "verveGridBoards.json",
     mutation: "seedSportsData:seedVerveGridBoardsBatch",
-    mapRecord: identity,
-  },
-  whoAmIClues: {
-    jsonFile: "whoAmIClues.json",
-    mutation: "seedSportsData:seedWhoAmICluesBatch",
     mapRecord: identity,
   },
   whoAmIApprovedClues: {
@@ -491,7 +476,6 @@ async function main() {
   // Parse --table flag for single-table mode.
   const tableArg = process.argv.indexOf("--table");
   const targetTable = tableArg !== -1 ? process.argv[tableArg + 1] : null;
-  const includeLegacyGridIndex = process.argv.includes(LEGACY_GRID_INDEX_FLAG);
   const replaceExisting = process.argv.includes(REPLACE_FLAG);
   const guardReportMode = getGuardReportMode();
   const sport = getArgValue(SPORT_FLAG);
@@ -578,28 +562,12 @@ async function main() {
   const order = [
     "sportsPlayers",
     "sportsTeams",
-    "statFacts",
     "higherLowerPools",
     "higherLowerFacts",
     "verveGridApprovedIndex",
     "verveGridBoards",
-    "whoAmIClues",
     "whoAmIApprovedClues",
   ];
-
-  if (targetTable === "gridIndex") {
-    console.log(
-      "[legacy] Seeding raw gridIndex explicitly. This table is pipeline/audit-only and not part of live VerveGrid runtime.",
-    );
-  } else if (includeLegacyGridIndex) {
-    console.log(
-      "[legacy] Including raw gridIndex in this run by request. Live VerveGrid runtime still uses verveGridApprovedIndex + verveGridBoards.",
-    );
-  } else {
-    console.log(
-      "[default] Skipping raw gridIndex. Live VerveGrid runtime seeds verveGridApprovedIndex + verveGridBoards by default.",
-    );
-  }
 
   for (const tableName of order) {
     if (tables[tableName]) {
@@ -614,19 +582,6 @@ async function main() {
         generatedAt,
       });
     }
-  }
-
-  if (!targetTable && includeLegacyGridIndex) {
-    await seedTable(target, "gridIndex", TABLE_CONFIGS.gridIndex, {
-      replaceExisting: false,
-      sport: null,
-      seedVersion: null,
-      scopeKey: null,
-      mode: null,
-      artifactHash: null,
-      artifactPath: null,
-      generatedAt: null,
-    });
   }
 
   console.log("\nSeeding complete!");

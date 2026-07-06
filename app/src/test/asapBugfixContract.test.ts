@@ -218,10 +218,10 @@ describe("ASAP bugfix contracts", () => {
 
   it("10-question modes fail fast instead of starting with too few questions", () => {
     const dailySource = read("convex/dailyChallenge.ts");
-    const liveMatchSource = read("convex/liveMatches.ts");
 
+    // Live-match creation (and its fail-fast) was removed with the dormant
+    // challenge subsystem; daily remains the guarded 10-question mode here.
     expect(dailySource.match(/selected.length < DAILY_QUIZ_COUNT/g)?.length).toBeGreaterThanOrEqual(2);
-    expect(liveMatchSource).toContain("pickedQuestions.length < TOTAL_QUESTIONS");
   });
 
 

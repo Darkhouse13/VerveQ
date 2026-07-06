@@ -189,63 +189,10 @@ export default defineSchema({
     .index("by_user", ["userId"])
     .index("by_user_achievement", ["userId", "achievementId"]),
 
-  challenges: defineTable({
-    challengerId: v.id("users"),
-    challengedId: v.id("users"),
-    sport: v.string(),
-    mode: v.string(),
-    challengerScore: v.optional(v.number()),
-    challengedScore: v.optional(v.number()),
-    status: v.union(
-      v.literal("pending"),
-      v.literal("active"),
-      v.literal("completed"),
-      v.literal("declined"),
-    ),
-    winnerId: v.optional(v.id("users")),
-    completedAt: v.optional(v.number()),
-  })
-    .index("by_challenged_status", ["challengedId", "status"])
-    .index("by_challenger", ["challengerId"])
-    .index("by_challenged", ["challengedId"]),
-
-  challengeHeadToHeads: defineTable({
-    pairKey: v.string(),
-    playerAId: v.id("users"),
-    playerBId: v.id("users"),
-    sport: v.string(),
-    mode: v.string(),
-    playerAWins: v.number(),
-    playerBWins: v.number(),
-    draws: v.number(),
-    totalMatches: v.number(),
-    lastMatchId: v.optional(v.id("liveMatches")),
-    lastPlayedAt: v.optional(v.number()),
-  })
-    .index("by_pair_sport_mode", ["pairKey", "sport", "mode"])
-    .index("by_player_a", ["playerAId"])
-    .index("by_player_b", ["playerBId"]),
-
-  challengeMatchHistory: defineTable({
-    matchId: v.id("liveMatches"),
-    challengeId: v.optional(v.id("challenges")),
-    pairKey: v.string(),
-    playerAId: v.id("users"),
-    playerBId: v.id("users"),
-    player1Id: v.id("users"),
-    player2Id: v.id("users"),
-    sport: v.string(),
-    mode: v.string(),
-    player1Score: v.number(),
-    player2Score: v.number(),
-    winnerId: v.optional(v.id("users")),
-    status: v.union(v.literal("completed"), v.literal("forfeited")),
-    playedAt: v.number(),
-  })
-    .index("by_match", ["matchId"])
-    .index("by_pair_sport_mode", ["pairKey", "sport", "mode"])
-    .index("by_player_a", ["playerAId"])
-    .index("by_player_b", ["playerBId"]),
+  // The synchronous challenge → live-match subsystem (challenges,
+  // challengeHeadToHeads, challengeMatchHistory tables) was removed 2026-07:
+  // it never had a production entry point. Orphaned rows on old deployments
+  // are unvalidated and can be purged from the dashboard.
 
   duels: defineTable({
     challengerId: v.id("users"),
@@ -623,7 +570,9 @@ export default defineSchema({
   dailyChallenges: defineTable({
     date: v.string(),
     sport: v.string(),
-    mode: v.union(v.literal("quiz"), v.literal("survival")),
+    // "survival" was a declared-but-never-implemented variant (creation always
+    // threw), so quiz is the only mode that ever reached the table.
+    mode: v.literal("quiz"),
     questionChecksums: v.array(v.string()),
     questionSnapshots: v.optional(
       v.array(
@@ -638,7 +587,10 @@ export default defineSchema({
         }),
       ),
     ),
-    survivalInitials: v.array(v.string()),
+    // Legacy field: rows created before 2026-07 carry an always-empty array
+    // from the never-implemented daily-survival variant. No writers remain;
+    // drop the field after a prod backfill unsets it on old rows.
+    survivalInitials: v.optional(v.array(v.string())),
     createdAt: v.number(),
   }).index("by_date_sport_mode", ["date", "sport", "mode"]),
 
@@ -646,7 +598,7 @@ export default defineSchema({
     userId: v.id("users"),
     date: v.string(),
     sport: v.string(),
-    mode: v.union(v.literal("quiz"), v.literal("survival")),
+    mode: v.literal("quiz"),
     score: v.number(),
     completed: v.boolean(),
     forfeited: v.boolean(),
@@ -663,45 +615,9 @@ export default defineSchema({
     .index("by_date_sport_mode_score", ["date", "sport", "mode", "score"])
     .index("by_expiresAt", ["expiresAt"]),
 
-  // ── Multiplayer Challenge Arena (beta) ──
-  multiplayerMatches: defineTable({
-    hostId: v.id("users"),
-    joinCode: v.string(),
-    format: v.union(
-      v.literal("1v1"),
-      v.literal("2v2"),
-      v.literal("1v1v1"),
-      v.literal("1v1v1v1"),
-      v.literal("1v1v1v1v1"),
-    ),
-    minPlayers: v.number(),
-    maxPlayers: v.number(),
-    teamSize: v.optional(v.number()),
-    playerIds: v.array(v.id("users")),
-    teamAssignments: v.optional(v.array(v.number())),
-    readyUserIds: v.array(v.id("users")),
-    roundBreakReadyUserIds: v.array(v.id("users")),
-    status: v.union(
-      v.literal("lobby"),
-      v.literal("question"),
-      v.literal("roundBreak"),
-      v.literal("completed"),
-      v.literal("cancelled"),
-    ),
-    currentQuestion: v.number(),
-    currentRoundIndex: v.number(),
-    totalQuestions: v.number(),
-    questions: v.any(),
-    answersByUserId: v.any(),
-    scoresByUserId: v.any(),
-    questionStartedAt: v.optional(v.number()),
-    roundBreakStartedAt: v.optional(v.number()),
-    createdAt: v.number(),
-    updatedAt: v.number(),
-    completedAt: v.optional(v.number()),
-  })
-    .index("by_joinCode", ["joinCode"])
-    .index("by_host_status", ["hostId", "status"]),
+  // multiplayerMatches (the pre-arenas beta lobby table) was removed 2026-07:
+  // it had no writer anywhere and only a historical active-user counter read
+  // it. Orphaned rows on old deployments can be purged from the dashboard.
 
   // ── Live Head-to-Head ──
   liveMatches: defineTable({
@@ -735,8 +651,11 @@ export default defineSchema({
     createdAt: v.number(),
     completedAt: v.optional(v.number()),
     eloAppliedAt: v.optional(v.number()),
+    // Legacy fields from the removed challenge subsystem: old rows carry a
+    // history stamp and the originating challenge id (kept as a plain string
+    // since the challenges table is gone). No writers remain.
     historyRecordedAt: v.optional(v.number()),
-    challengeId: v.optional(v.id("challenges")),
+    challengeId: v.optional(v.string()),
   })
     .index("by_player1", ["player1Id", "status"])
     .index("by_player2", ["player2Id", "status"]),
@@ -996,19 +915,10 @@ export default defineSchema({
     .index("by_external_id", ["externalId"])
     .index("by_sport", ["sport"]),
 
-  statFacts: defineTable({
-    externalId: v.string(),
-    seedVersion: v.optional(v.string()),
-    sport: v.string(),
-    entityType: v.string(),
-    entityId: v.string(),
-    entityName: v.string(),
-    statKey: v.string(),
-    contextKey: v.string(),
-    value: v.number(),
-    season: v.optional(v.number()),
-  })
-    .index("by_external_id", ["externalId"]),
+  // The raw pipeline tables (statFacts, gridIndex, whoAmIClues) were removed
+  // 2026-07: gameplay reads only the approved layers (higherLowerPools/Facts,
+  // verveGridBoards, whoAmIApprovedClues) and the raw artifacts live in
+  // scripts/data/*.json. Orphaned rows can be purged from the dashboard.
 
   higherLowerPools: defineTable({
     externalId: v.string(),
@@ -1043,24 +953,6 @@ export default defineSchema({
     .index("by_external_id", ["externalId"])
     .index("by_pool_key", ["poolKey"])
     .index("by_sport", ["sport"]),
-
-  // Legacy VerveGrid raw table kept for pipeline/audit visibility.
-  // Live VerveGrid runtime starts from curated boards, not this table.
-  gridIndex: defineTable({
-    externalId: v.string(),
-    seedVersion: v.optional(v.string()),
-    sport: v.string(),
-    rowType: v.string(),
-    rowKey: v.string(),
-    rowLabel: v.string(),
-    colType: v.string(),
-    colKey: v.string(),
-    colLabel: v.string(),
-    playerIds: v.array(v.string()),
-    difficulty: v.string(),
-  })
-    .index("by_external_id", ["externalId"])
-    .index("by_sport_difficulty", ["sport", "difficulty"]),
 
   verveGridApprovedIndex: defineTable({
     externalId: v.string(),
@@ -1114,21 +1006,6 @@ export default defineSchema({
   })
     .index("by_external_id", ["externalId"])
     .index("by_sport", ["sport"]),
-
-  whoAmIClues: defineTable({
-    externalId: v.string(),
-    seedVersion: v.optional(v.string()),
-    sport: v.string(),
-    playerId: v.string(),
-    clue1: v.string(),
-    clue2: v.string(),
-    clue3: v.string(),
-    clue4: v.string(),
-    answerName: v.string(),
-    difficulty: v.string(),
-  })
-    .index("by_external_id", ["externalId"])
-    .index("by_sport_difficulty", ["sport", "difficulty"]),
 
   whoAmIApprovedClues: defineTable({
     externalId: v.string(),

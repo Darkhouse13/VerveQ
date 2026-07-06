@@ -26,7 +26,6 @@ import * as quizSessions from "../../convex/quizSessions";
 import * as blitz from "../../convex/blitz";
 import * as dailyChallenge from "../../convex/dailyChallenge";
 import * as duels from "../../convex/duels";
-import * as challenges from "../../convex/challenges";
 import { CLIENT_SPORTS, isClientSport } from "../../convex/lib/sports";
 import { ARENA_CIE_SPORT } from "../../convex/challengeArenaCieContent";
 
@@ -249,24 +248,6 @@ const ENTRY_POINTS: Array<{
         opponentUserId: "user_b",
       }),
   },
-  {
-    name: "challenges.create",
-    call: (db, sport) =>
-      handlerOf(challenges.create)(makeCtx(db), {
-        challengedUsername: "bravo",
-        sport,
-        mode: "quiz",
-      }),
-  },
-  {
-    name: "challenges.createRematch",
-    call: (db, sport) =>
-      handlerOf(challenges.createRematch)(makeCtx(db), {
-        opponentId: "user_b",
-        sport,
-        mode: "quiz",
-      }),
-  },
 ];
 
 const REJECTED_SPORTS = [
@@ -364,15 +345,6 @@ describe("sport allowlist — legitimate subjects unaffected", () => {
     expect(challenge?.questionChecksums).toHaveLength(10);
   });
 
-  it("challenges.create issues a real football challenge", async () => {
-    const db = makeSeededDb();
-    const result = (await handlerOf(challenges.create)(makeCtx(db), {
-      challengedUsername: "bravo",
-      sport: "football",
-      mode: "quiz",
-    })) as { challengeId: string };
-    expect(result.challengeId).toBeTruthy();
-  });
 });
 
 describe("submitFeedback — one difficulty vote per user per question", () => {

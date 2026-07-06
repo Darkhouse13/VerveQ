@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { useQuery, useMutation } from "convex/react";
 import { api } from "../../convex/_generated/api";
 import { friendlyError } from "@/lib/errors";
@@ -184,6 +185,7 @@ function ForgeLockScreen({
 // ── Submit Tab ──
 
 function SubmitTab({ onSuccess }: { onSuccess: () => void }) {
+  const { t } = useTranslation("screens");
   const [sport, setSport] = useState(SPORTS[0].name);
   const [category, setCategory] = useState("");
   const [difficulty, setDifficulty] = useState<(typeof DIFFICULTIES)[number]>("intermediate");
@@ -262,7 +264,7 @@ function SubmitTab({ onSuccess }: { onSuccess: () => void }) {
       <div>
         <p className="font-heading font-bold text-xs uppercase mb-2">Category</p>
         <NeoInput
-          placeholder="e.g. Transfers, World Cup, Grand Slams..."
+          placeholder={t("forge.topicPlaceholder")}
           value={category}
           onChange={(e) => setCategory(e.target.value)}
         />
@@ -294,7 +296,7 @@ function SubmitTab({ onSuccess }: { onSuccess: () => void }) {
         <textarea
           value={questionText}
           onChange={(e) => setQuestionText(e.target.value)}
-          placeholder="Type your trivia question..."
+          placeholder={t("forge.questionPlaceholder")}
           rows={3}
           className="neo-border neo-shadow rounded-lg px-4 py-3 font-body text-base bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary w-full transition-all resize-none"
         />
@@ -325,7 +327,7 @@ function SubmitTab({ onSuccess }: { onSuccess: () => void }) {
                 )}
               </button>
               <NeoInput
-                placeholder={`Option ${["A", "B", "C", "D"][idx]}`}
+                placeholder={t("forge.optionPlaceholder", { letter: ["A", "B", "C", "D"][idx] })}
                 value={opt}
                 onChange={(e) => updateOption(idx, e.target.value)}
               />
@@ -342,7 +344,7 @@ function SubmitTab({ onSuccess }: { onSuccess: () => void }) {
         <textarea
           value={explanation}
           onChange={(e) => setExplanation(e.target.value)}
-          placeholder="Why is this the correct answer?"
+          placeholder={t("forge.explanationPlaceholder")}
           rows={2}
           className="neo-border neo-shadow rounded-lg px-4 py-3 font-body text-base bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary w-full transition-all resize-none"
         />

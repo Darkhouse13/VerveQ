@@ -53,8 +53,9 @@ export const COMPETE_MODE_TILES: ModeTile[] = [
   // Daily is migrated to the shell — reuses the Quiz prototype layout via the DAILY session.
   { key: "daily", icon: Timer, color: "primary", to: (s) => `/v2/daily?sport=${s}` },
   // Live Match is parked: nothing in the product can create a live match any
-  // more (createFromChallenge has no callers), so the tile would advertise a
-  // dead end. /v2/live-match stays routable as a viewer for legacy matches.
+  // more (the challenge subsystem and createFromChallenge were removed), so
+  // the tile would advertise a dead end. /v2/live-match stays routable as a
+  // viewer for legacy matches.
 ];
 
 // General-knowledge quizzes share the football Quiz's server flow but pin the

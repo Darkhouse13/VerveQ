@@ -531,5 +531,27 @@
     "too-short": "Password must be at least {{min}} characters.",
     "too-long": "Password must be {{max}} characters or fewer.",
     "too-common": "That password is too common. Please choose a different one."
+  },
+  "login": {
+    "emailPlaceholder": "Email",
+    "passwordPlaceholder": "Password",
+    "usernamePlaceholder": "Username",
+    "displayNamePlaceholder": "Display name (optional)",
+    "confirmPasswordPlaceholder": "Confirm password",
+    "otpPlaceholder": "6-digit code",
+    "newPasswordPlaceholder": "New password",
+    "confirmNewPasswordPlaceholder": "Confirm new password"
+  },
+  "forge": {
+    "topicPlaceholder": "e.g. Transfers, World Cup, Grand Slams...",
+    "questionPlaceholder": "Type your trivia question...",
+    "optionPlaceholder": "Option {{letter}}",
+    "explanationPlaceholder": "Why is this the correct answer?"
+  },
+  "errorBoundary": {
+    "title": "Something went off-script",
+    "body": "We hit an unexpected error while drawing this screen. Try again — or reload if it sticks.",
+    "tryAgain": "Try again",
+    "reload": "Reload page"
   }
 }

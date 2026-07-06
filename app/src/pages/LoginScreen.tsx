@@ -3,6 +3,7 @@ import { NeoButton } from "@/components/neo/NeoButton";
 import { NeoInput } from "@/components/neo/NeoInput";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { useAuth, AuthError } from "@/contexts/AuthContext";
 import {
   PASSWORD_MIN_LENGTH,
@@ -27,6 +28,7 @@ function isMode(value: string | null): value is Mode {
 }
 
 export default function LoginScreen() {
+  const { t } = useTranslation("screens");
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const {
@@ -247,14 +249,14 @@ export default function LoginScreen() {
               <NeoInput
                 type="email"
                 autoComplete="email"
-                placeholder="Email"
+                placeholder={t("login.emailPlaceholder")}
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
               />
               <NeoInput
                 type="password"
                 autoComplete="current-password"
-                placeholder="Password"
+                placeholder={t("login.passwordPlaceholder")}
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && handleSignIn()}
@@ -316,14 +318,14 @@ export default function LoginScreen() {
             <NeoInput
               type="email"
               autoComplete="email"
-              placeholder="Email"
+              placeholder={t("login.emailPlaceholder")}
               value={email}
               onChange={(e) => setEmail(e.target.value)}
             />
             <NeoInput
               type="text"
               autoComplete="username"
-              placeholder="Username"
+              placeholder={t("login.usernamePlaceholder")}
               value={username}
               onChange={(e) => setUsername(e.target.value.toLowerCase())}
             />
@@ -333,21 +335,21 @@ export default function LoginScreen() {
             <NeoInput
               type="text"
               autoComplete="nickname"
-              placeholder="Display name (optional)"
+              placeholder={t("login.displayNamePlaceholder")}
               value={displayName}
               onChange={(e) => setDisplayName(e.target.value)}
             />
             <NeoInput
               type="password"
               autoComplete="new-password"
-              placeholder="Password"
+              placeholder={t("login.passwordPlaceholder")}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
             />
             <NeoInput
               type="password"
               autoComplete="new-password"
-              placeholder="Confirm password"
+              placeholder={t("login.confirmPasswordPlaceholder")}
               value={confirmPwd}
               onChange={(e) => setConfirmPwd(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && handleSignUp()}
@@ -388,7 +390,7 @@ export default function LoginScreen() {
             <NeoInput
               type="email"
               autoComplete="email"
-              placeholder="Email"
+              placeholder={t("login.emailPlaceholder")}
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && handleRequestReset()}
@@ -429,21 +431,21 @@ export default function LoginScreen() {
               inputMode="numeric"
               pattern="[0-9]*"
               autoComplete="one-time-code"
-              placeholder="6-digit code"
+              placeholder={t("login.otpPlaceholder")}
               value={code}
               onChange={(e) => setCode(e.target.value)}
             />
             <NeoInput
               type="password"
               autoComplete="new-password"
-              placeholder="New password"
+              placeholder={t("login.newPasswordPlaceholder")}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
             />
             <NeoInput
               type="password"
               autoComplete="new-password"
-              placeholder="Confirm new password"
+              placeholder={t("login.confirmNewPasswordPlaceholder")}
               value={confirmPwd}
               onChange={(e) => setConfirmPwd(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && handleConfirmReset()}

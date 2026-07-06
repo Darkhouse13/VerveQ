@@ -41,8 +41,6 @@ const DAILY_GENERATOR_SPORTS = [
   "knowledge",
 ] as const;
 
-type DailyMode = "quiz" | "survival";
-
 type QuizQuestionSnapshot = {
   checksum: string;
   question: string;
@@ -52,12 +50,6 @@ type QuizQuestionSnapshot = {
   category: string;
   imageId?: Id<"_storage">;
 };
-
-function assertDailyQuizMode(mode: DailyMode) {
-  if (mode !== "quiz") {
-    throw new Error("Daily survival is not implemented yet");
-  }
-}
 
 function snapshotQuestion(question: {
   checksum: string;
@@ -309,7 +301,6 @@ async function getOrCreateDailyQuizChallenge(
     mode,
     questionChecksums: selected.map((question) => question.checksum),
     questionSnapshots: selected.map(snapshotQuestion),
-    survivalInitials: [],
     createdAt: Date.now(),
   });
 
@@ -334,10 +325,9 @@ async function getOrCreateDailyQuizChallenge(
 export const getOrCreateChallenge = mutation({
   args: {
     sport: v.string(),
-    mode: v.union(v.literal("quiz"), v.literal("survival")),
+    mode: v.literal("quiz"),
   },
   handler: async (ctx, { sport, mode }) => {
-    assertDailyQuizMode(mode);
     assertClientSport(sport);
 
     const date = getTodayUTC();
@@ -360,43 +350,34 @@ export const getOrCreateChallenge = mutation({
     }
 
     // Lazily create today's challenge
-    let questionChecksums: string[] = [];
-    let questionSnapshots: QuizQuestionSnapshot[] = [];
-    let survivalInitials: string[] = [];
+    const MAX_IMAGE_QUESTIONS = 2;
 
-    if (mode === "quiz") {
-      const MAX_IMAGE_QUESTIONS = 2;
+    const { pool, seed } = await collectDailyQuizCandidates(ctx, sport, date);
+    const shuffled = seededShuffle(pool, seed);
 
-      const { pool, seed } = await collectDailyQuizCandidates(ctx, sport, date);
-      const shuffled = seededShuffle(pool, seed);
-
-      // Pick up to DAILY_QUIZ_COUNT questions, capping image questions at 3
-      // and preventing consecutive image questions
-      const selected: typeof shuffled = [];
-      let imageCount = 0;
-      for (const q of shuffled) {
-        if (selected.length >= DAILY_QUIZ_COUNT) break;
-        const lastWasImage =
-          selected.length > 0 && questionHasImage(selected[selected.length - 1]);
-        if (questionHasImage(q)) {
-          if (imageCount >= MAX_IMAGE_QUESTIONS || lastWasImage) continue;
-          imageCount++;
-        }
-        selected.push(q);
+    // Pick up to DAILY_QUIZ_COUNT questions, capping image questions at 3
+    // and preventing consecutive image questions
+    const selected: typeof shuffled = [];
+    let imageCount = 0;
+    for (const q of shuffled) {
+      if (selected.length >= DAILY_QUIZ_COUNT) break;
+      const lastWasImage =
+        selected.length > 0 && questionHasImage(selected[selected.length - 1]);
+      if (questionHasImage(q)) {
+        if (imageCount >= MAX_IMAGE_QUESTIONS || lastWasImage) continue;
+        imageCount++;
       }
-
-      if (selected.length < DAILY_QUIZ_COUNT) {
-        throw new Error(
-          `Not enough daily quiz questions available for ${sport}: ${selected.length}/${DAILY_QUIZ_COUNT}`,
-        );
-      }
-
-      questionChecksums = selected.map((q) => q.checksum);
-      questionSnapshots = selected.map(snapshotQuestion);
-    } else {
-      // For survival, we just store an empty array — survival uses its own session logic
-      survivalInitials = [];
+      selected.push(q);
     }
+
+    if (selected.length < DAILY_QUIZ_COUNT) {
+      throw new Error(
+        `Not enough daily quiz questions available for ${sport}: ${selected.length}/${DAILY_QUIZ_COUNT}`,
+      );
+    }
+
+    const questionChecksums = selected.map((q) => q.checksum);
+    const questionSnapshots = selected.map(snapshotQuestion);
 
     const id = await ctx.db.insert("dailyChallenges", {
       date,
@@ -404,7 +385,6 @@ export const getOrCreateChallenge = mutation({
       mode,
       questionChecksums,
       questionSnapshots,
-      survivalInitials,
       createdAt: Date.now(),
     });
 
@@ -455,11 +435,9 @@ export const generateTodaysChallenges = internalMutation({
 export const getAttemptStatus = query({
   args: {
     sport: v.string(),
-    mode: v.union(v.literal("quiz"), v.literal("survival")),
+    mode: v.literal("quiz"),
   },
   handler: async (ctx, { sport, mode }) => {
-    assertDailyQuizMode(mode);
-
     const userId = await getAuthUserId(ctx);
     if (!userId) return null;
     if (!(await isRankedEligibleUserId(ctx, userId))) return null;
@@ -497,10 +475,9 @@ export const getAttemptStatus = query({
 export const startAttempt = mutation({
   args: {
     sport: v.string(),
-    mode: v.union(v.literal("quiz"), v.literal("survival")),
+    mode: v.literal("quiz"),
   },
   handler: async (ctx, { sport, mode }) => {
-    assertDailyQuizMode(mode);
     assertClientSport(sport);
 
     const userId = await getAuthUserId(ctx);
@@ -600,7 +577,6 @@ export const getQuestion = query({
     await assertRankedEligibleUser(ctx, userId);
     const attempt = await ctx.db.get(attemptId);
     if (!attempt) throw new Error("Attempt not found");
-    assertDailyQuizMode(attempt.mode);
     if (attempt.userId !== userId) {
       throw new Error("Not authorized for this attempt");
     }
@@ -700,7 +676,6 @@ export const submitAnswer = mutation({
     await assertRankedEligibleUser(ctx, userId);
     const attempt = await ctx.db.get(attemptId);
     if (!attempt) throw new Error("Attempt not found");
-    assertDailyQuizMode(attempt.mode);
     if (attempt.userId !== userId) {
       throw new Error("Not authorized for this attempt");
     }

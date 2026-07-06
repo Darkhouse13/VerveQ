@@ -3,6 +3,19 @@ import * as Sentry from "@sentry/react";
 import { NeoButton } from "@/components/neo/NeoButton";
 import { NeoCard } from "@/components/neo/NeoCard";
 import { friendlyError } from "@/lib/errors";
+import i18n from "@/i18n";
+
+// The boundary must never crash itself: translate through the raw i18n
+// instance (hooks are unavailable in a class component) and fall back to
+// English if the screens namespace isn't loaded when the crash happens.
+function tSafe(key: string, fallback: string): string {
+  try {
+    const value = i18n.t(key, { ns: "screens", defaultValue: fallback });
+    return typeof value === "string" && value ? value : fallback;
+  } catch {
+    return fallback;
+  }
+}
 
 interface ErrorBoundaryProps {
   children: ReactNode;
@@ -48,11 +61,13 @@ export class ErrorBoundary extends Component<
       <div className="min-h-screen bg-background px-5 py-8 flex flex-col items-center justify-center">
         <NeoCard shadow="lg" className="w-full max-w-md text-center py-8">
           <h1 className="text-2xl font-heading font-bold mb-2">
-            Something went off-script
+            {tSafe("errorBoundary.title", "Something went off-script")}
           </h1>
           <p className="text-sm text-muted-foreground mb-5">
-            We hit an unexpected error while drawing this screen. Try again — or
-            reload if it sticks.
+            {tSafe(
+              "errorBoundary.body",
+              "We hit an unexpected error while drawing this screen. Try again — or reload if it sticks.",
+            )}
           </p>
           {this.state.error?.message && (
             <p className="text-xs font-mono text-destructive break-words mb-5">
@@ -61,14 +76,14 @@ export class ErrorBoundary extends Component<
           )}
           <div className="space-y-2.5">
             <NeoButton variant="primary" size="full" onClick={this.handleReset}>
-              Try again
+              {tSafe("errorBoundary.tryAgain", "Try again")}
             </NeoButton>
             <NeoButton
               variant="secondary"
               size="full"
               onClick={this.handleReload}
             >
-              Reload page
+              {tSafe("errorBoundary.reload", "Reload page")}
             </NeoButton>
           </div>
         </NeoCard>

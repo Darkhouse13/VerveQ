@@ -44,7 +44,6 @@ describe("Knowledge Which Came First mode", () => {
     const challenge = readFileSync("src/pages/ChallengeScreen.tsx", "utf8");
     const createDuel = readFileSync("src/pages/challenge/CreateDuelModal.tsx", "utf8");
     const duels = readFileSync("convex/duels.ts", "utf8");
-    const liveMatches = readFileSync("convex/liveMatches.ts", "utf8");
 
     expect(challenge).toContain("formatModeLabel");
     expect(challenge).toContain("api.duels.listMine");
@@ -54,8 +53,7 @@ describe("Knowledge Which Came First mode", () => {
     expect(createDuel).toContain('category: "which_came_first"');
     expect(duels).toContain('mode === "came_first"');
     expect(duels).toContain('question.category === "which_came_first"');
-    expect(liveMatches).toContain('challenge.mode === "came_first"');
-    expect(liveMatches).toContain('q.category === "which_came_first"');
-    expect(liveMatches).toContain("recordChallengeHistory");
+    // The live-match came_first parity assertions were removed with the
+    // dormant challenge subsystem; duels are the only came_first PvP path.
   });
 });

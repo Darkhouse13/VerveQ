@@ -29,11 +29,10 @@ type CuratedTableName =
   | "verveGridBoards"
   | "whoAmIApprovedClues";
 
-type SeedTableName =
-  | CuratedTableName
-  | "statFacts"
-  | "gridIndex"
-  | "whoAmIClues";
+// The raw pipeline tables (statFacts, gridIndex, whoAmIClues) were removed
+// from Convex 2026-07: runtime gameplay reads only the approved/curated
+// layers, and the raw artifacts live on as scripts/data/*.json.
+type SeedTableName = CuratedTableName;
 
 type ExistingSeedDoc = {
   _id: Id<SeedTableName>;
@@ -63,11 +62,6 @@ async function getExistingByExternalId(
         .query("sportsTeams")
         .withIndex("by_external_id", (q) => q.eq("externalId", externalId))
         .first()) satisfies ExistingSeedDoc | null;
-    case "statFacts":
-      return (await ctx.db
-        .query("statFacts")
-        .withIndex("by_external_id", (q) => q.eq("externalId", externalId))
-        .first()) satisfies ExistingSeedDoc | null;
     case "higherLowerPools":
       return (await ctx.db
         .query("higherLowerPools")
@@ -78,11 +72,6 @@ async function getExistingByExternalId(
         .query("higherLowerFacts")
         .withIndex("by_external_id", (q) => q.eq("externalId", externalId))
         .first()) satisfies ExistingSeedDoc | null;
-    case "gridIndex":
-      return (await ctx.db
-        .query("gridIndex")
-        .withIndex("by_external_id", (q) => q.eq("externalId", externalId))
-        .first()) satisfies ExistingSeedDoc | null;
     case "verveGridApprovedIndex":
       return (await ctx.db
         .query("verveGridApprovedIndex")
@@ -91,11 +80,6 @@ async function getExistingByExternalId(
     case "verveGridBoards":
       return (await ctx.db
         .query("verveGridBoards")
-        .withIndex("by_external_id", (q) => q.eq("externalId", externalId))
-        .first()) satisfies ExistingSeedDoc | null;
-    case "whoAmIClues":
-      return (await ctx.db
-        .query("whoAmIClues")
         .withIndex("by_external_id", (q) => q.eq("externalId", externalId))
         .first()) satisfies ExistingSeedDoc | null;
     case "whoAmIApprovedClues":
@@ -118,20 +102,14 @@ async function insertSeedRecord(
       return ctx.db.insert("sportsPlayers", doc as never);
     case "sportsTeams":
       return ctx.db.insert("sportsTeams", doc as never);
-    case "statFacts":
-      return ctx.db.insert("statFacts", doc as never);
     case "higherLowerPools":
       return ctx.db.insert("higherLowerPools", doc as never);
     case "higherLowerFacts":
       return ctx.db.insert("higherLowerFacts", doc as never);
-    case "gridIndex":
-      return ctx.db.insert("gridIndex", doc as never);
     case "verveGridApprovedIndex":
       return ctx.db.insert("verveGridApprovedIndex", doc as never);
     case "verveGridBoards":
       return ctx.db.insert("verveGridBoards", doc as never);
-    case "whoAmIClues":
-      return ctx.db.insert("whoAmIClues", doc as never);
     case "whoAmIApprovedClues":
       return ctx.db.insert("whoAmIApprovedClues", doc as never);
   }
@@ -329,27 +307,6 @@ export const seedTeamsBatch = internalMutation({
     seedBatch(ctx, "sportsTeams", records, seedVersion, replaceExisting),
 });
 
-export const seedStatFactsBatch = internalMutation({
-  args: {
-    records: v.array(
-      v.object({
-        externalId: v.string(),
-        sport: v.string(),
-        entityType: v.string(),
-        entityId: v.string(),
-        entityName: v.string(),
-        statKey: v.string(),
-        contextKey: v.string(),
-        value: v.number(),
-        season: v.optional(v.number()),
-      }),
-    ),
-    ...seedBatchArgs,
-  },
-  handler: async (ctx, { records, seedVersion, replaceExisting }) =>
-    seedBatch(ctx, "statFacts", records, seedVersion, replaceExisting),
-});
-
 export const seedHigherLowerPoolsBatch = internalMutation({
   args: {
     records: v.array(
@@ -393,30 +350,6 @@ export const seedHigherLowerFactsBatch = internalMutation({
   },
   handler: async (ctx, { records, seedVersion, replaceExisting }) =>
     seedBatch(ctx, "higherLowerFacts", records, seedVersion, replaceExisting),
-});
-
-// Legacy VerveGrid raw-table seed path. Keep for pipeline/audit backfills only;
-// default Convex seeding should use verveGridApprovedIndex + verveGridBoards.
-export const seedGridIndexBatch = internalMutation({
-  args: {
-    records: v.array(
-      v.object({
-        externalId: v.string(),
-        sport: v.string(),
-        rowType: v.string(),
-        rowKey: v.string(),
-        rowLabel: v.string(),
-        colType: v.string(),
-        colKey: v.string(),
-        colLabel: v.string(),
-        playerIds: v.array(v.string()),
-        difficulty: v.string(),
-      }),
-    ),
-    ...seedBatchArgs,
-  },
-  handler: async (ctx, { records, seedVersion, replaceExisting }) =>
-    seedBatch(ctx, "gridIndex", records, seedVersion, replaceExisting),
 });
 
 export const seedVerveGridApprovedIndexBatch = internalMutation({
@@ -480,27 +413,6 @@ export const seedVerveGridBoardsBatch = internalMutation({
   },
   handler: async (ctx, { records, seedVersion, replaceExisting }) =>
     seedBatch(ctx, "verveGridBoards", records, seedVersion, replaceExisting),
-});
-
-export const seedWhoAmICluesBatch = internalMutation({
-  args: {
-    records: v.array(
-      v.object({
-        externalId: v.string(),
-        sport: v.string(),
-        playerId: v.string(),
-        clue1: v.string(),
-        clue2: v.string(),
-        clue3: v.string(),
-        clue4: v.string(),
-        answerName: v.string(),
-        difficulty: v.string(),
-      }),
-    ),
-    ...seedBatchArgs,
-  },
-  handler: async (ctx, { records, seedVersion, replaceExisting }) =>
-    seedBatch(ctx, "whoAmIClues", records, seedVersion, replaceExisting),
 });
 
 export const seedWhoAmIApprovedCluesBatch = internalMutation({
