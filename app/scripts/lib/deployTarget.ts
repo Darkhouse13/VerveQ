@@ -9,7 +9,10 @@ export const LIVE_CONFIRM_ENV = "CONFIRM_LIVE_DEPLOY";
 
 export const KNOWN_LIVE_CONVEX_TARGETS = [
   {
-    deploymentName: "admired-warthog-495",
+    // 2026-07 migration: production moved from the dev-type deployment
+    // admired-warthog-495 to the project's prod deployment; warthog is now
+    // the dev/staging backend and is intentionally NOT guarded here.
+    deploymentName: "different-lynx-153",
     hosts: ["verveq.com"],
   },
 ] as const;

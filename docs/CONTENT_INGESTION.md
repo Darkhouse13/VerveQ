@@ -14,7 +14,7 @@ architecture; it does not describe shipped code.
 **Scope guardrails preserved:** server-authoritative answer checking is untouched
 (clients never see `correctAnswer`); the existing QA harness remains the
 fail-closed gate; Survival and the curated football-only modes are not in scope;
-CIE never targets the live dev backend (`admired-warthog-495` / verveq.com).
+CIE never targets the live backend (`different-lynx-153` / verveq.com) or the staging backend (`admired-warthog-495`) without the parity approval flow.
 
 ---
 

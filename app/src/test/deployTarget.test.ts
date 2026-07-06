@@ -12,7 +12,7 @@ describe("deploy target safety guard", () => {
     expect(() =>
       guardTarget({
         env: {
-          CONVEX_DEPLOYMENT: "dev:admired-warthog-495",
+          CONVEX_DEPLOYMENT: "prod:different-lynx-153",
         },
         envFilePaths: NO_ENV_FILES,
       }),
@@ -24,18 +24,29 @@ describe("deploy target safety guard", () => {
       guardTarget({
         allowLive: true,
         env: {
-          CONVEX_DEPLOYMENT: "dev:admired-warthog-495",
+          CONVEX_DEPLOYMENT: "prod:different-lynx-153",
           [LIVE_CONFIRM_ENV]: "true",
         },
         envFilePaths: NO_ENV_FILES,
       }),
-    ).toThrow(/CONFIRM_LIVE_DEPLOY=admired-warthog-495 exactly/);
+    ).toThrow(/CONFIRM_LIVE_DEPLOY=different-lynx-153 exactly/);
 
     const target = guardTarget({
       allowLive: true,
       env: {
+        CONVEX_DEPLOYMENT: "prod:different-lynx-153",
+        [LIVE_CONFIRM_ENV]: "different-lynx-153",
+      },
+      envFilePaths: NO_ENV_FILES,
+    });
+
+    expect(target.deploymentName).toBe("different-lynx-153");
+  });
+
+  it("allows the former live deployment (now dev/staging) without confirmation", () => {
+    const target = guardTarget({
+      env: {
         CONVEX_DEPLOYMENT: "dev:admired-warthog-495",
-        [LIVE_CONFIRM_ENV]: "admired-warthog-495",
       },
       envFilePaths: NO_ENV_FILES,
     });
