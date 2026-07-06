@@ -14,28 +14,16 @@ import { EntryRoute, HomeRoute } from "./components/EntryRoutes";
 // variants like /vervegrid) forward to the v2 surface for that mode so shared
 // links land on the mode they name. Flag-off renders children unchanged.
 import { V2Redirect, V2ArenaCodeRedirect } from "./components/V2Redirect";
+// v1 screens still live in production (embedded in the shell or reused by the
+// v2 play flow) stay statically imported.
 import OnboardingScreen from "./pages/OnboardingScreen";
-import SportSelectScreen from "./pages/SportSelectScreen";
 import DifficultyScreen from "./pages/DifficultyScreen";
-import QuizScreen from "./pages/QuizScreen";
-import SurvivalScreen from "./pages/SurvivalScreen";
 import ResultScreen from "./pages/ResultScreen";
-import LeaderboardScreen from "./pages/LeaderboardScreen";
-import ProfileScreen from "./pages/ProfileScreen";
 import ChallengeScreen from "./pages/ChallengeScreen";
-import DailyQuizScreen from "./pages/DailyQuizScreen";
 import DailyResultScreen from "./pages/DailyResultScreen";
-import BlitzScreen from "./pages/BlitzScreen";
 import BlitzResultScreen from "./pages/BlitzResultScreen";
 import WaitingRoomScreen from "./pages/WaitingRoomScreen";
-import LiveMatchScreen from "./pages/LiveMatchScreen";
 import ForgeScreen from "./pages/ForgeScreen";
-import HigherLowerScreen from "./pages/HigherLowerScreen";
-import VerveGridScreen from "./pages/VerveGridScreen";
-import WhoAmIScreen from "./pages/WhoAmIScreen";
-import LearnPrototypeScreen from "./pages/LearnPrototypeScreen";
-import LearnNodePickerScreen from "./pages/LearnNodePickerScreen";
-import LearnLadderScreen from "./pages/LearnLadderScreen";
 import NotFound from "./pages/NotFound";
 import { ShellGate } from "./components/shell/ShellGate";
 import { ShellLayout } from "./components/shell/ShellLayout";
@@ -45,11 +33,29 @@ import {
   FullAccountRoute,
 } from "./components/shell/ShellRouteGuards";
 
+// Rollback-only v1 mode screens: with the v2 shell flag on they sit behind
+// V2Redirect and never render, so they load lazily to stay out of the main
+// bundle. Flag-off (rollback) loads them through the app-level Suspense.
+const SportSelectScreen = lazy(() => import("./pages/SportSelectScreen"));
+const QuizScreen = lazy(() => import("./pages/QuizScreen"));
+const SurvivalScreen = lazy(() => import("./pages/SurvivalScreen"));
+const LeaderboardScreen = lazy(() => import("./pages/LeaderboardScreen"));
+const ProfileScreen = lazy(() => import("./pages/ProfileScreen"));
+const DailyQuizScreen = lazy(() => import("./pages/DailyQuizScreen"));
+const BlitzScreen = lazy(() => import("./pages/BlitzScreen"));
+const LiveMatchScreen = lazy(() => import("./pages/LiveMatchScreen"));
+const HigherLowerScreen = lazy(() => import("./pages/HigherLowerScreen"));
+const VerveGridScreen = lazy(() => import("./pages/VerveGridScreen"));
+const WhoAmIScreen = lazy(() => import("./pages/WhoAmIScreen"));
+const LearnPrototypeScreen = lazy(() => import("./pages/LearnPrototypeScreen"));
+const LearnNodePickerScreen = lazy(() => import("./pages/LearnNodePickerScreen"));
+const LearnLadderScreen = lazy(() => import("./pages/LearnLadderScreen"));
+
 // v2 unified shell (additive, flag-gated via VITE_V2_SHELL_ENABLED). Lazy so it
 // stays out of the main bundle; ShellGate redirects to /home when the flag is off.
 const ShellHomeScreen = lazy(() => import("./pages/shell/ShellHomeScreen"));
-// CompeteCategoryScreen / CompeteSportScreen are parked (see their files): with
-// Sport→Football the only live path, /compete lands directly on the mode grid.
+// With Sport→Football the only live path, /compete lands directly on the mode
+// grid (the old category/sport chooser screens were removed).
 const CompeteModeGridScreen = lazy(() => import("./pages/shell/CompeteModeGridScreen"));
 const RanksScreen = lazy(() => import("./pages/shell/RanksScreen"));
 const ShellProfileScreen = lazy(() => import("./pages/shell/ShellProfileScreen"));
