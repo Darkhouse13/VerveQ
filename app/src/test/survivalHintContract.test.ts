@@ -52,15 +52,18 @@ function makeLadderCtx() {
 }
 
 describe("survival help ladder and reveal contracts", () => {
-  it("uses the famous/headline player for clues instead of bucket-size count clues", async () => {
+  it("serves bare headline-player facts — no bucket counts, no 'match' jargon", async () => {
     const { ctx } = makeLadderCtx();
     const result = (await handlerOf(survivalSessions.requestHelp)(ctx, {
       sessionId: "session_1",
     })) as { kind: string; hintText: string; potValue: number };
 
     expect(result.kind).toBe("clue");
-    expect(result.hintText).toContain("Most famous match");
+    expect(result.hintText).toContain("Nationality");
     expect(result.hintText).toContain("Argentina");
+    // "Most famous match" read as a football fixture, not a matching player —
+    // the target is stated once by the screens, never per-clue.
+    expect(result.hintText).not.toMatch(/most famous match/i);
     expect(result.hintText).not.toMatch(/players match these initials|possible answers/i);
     // First help press costs 15% of the Easy base pot.
     expect(result.potValue).toBe(85);

@@ -723,6 +723,8 @@ function getLastNameInitial(player: string): string {
   return lastName.charAt(0).toUpperCase() || "?";
 }
 
+// Clue strings are bare facts — the screens carry a single "hints point to
+// the best-known player with these initials" caption, so no per-clue prefix.
 function getFamousPlayerFallbackHint(
   primaryPlayer: string,
   sport: string,
@@ -730,15 +732,15 @@ function getFamousPlayerFallbackHint(
 ): string {
   const sportLabel = sport === "basketball" ? "NBA" : sport;
   if (!primaryPlayer) {
-    return `Most famous match: known ${sportLabel} player.`;
+    return `A well-known ${sportLabel} player fits these initials.`;
   }
   if (stage === 1) {
-    return `Most famous match: ${sportLabel} player; first name has ${getFirstName(primaryPlayer).length} letters.`;
+    return `First name has ${getFirstName(primaryPlayer).length} letters.`;
   }
   if (stage === 2) {
-    return `Most famous match: last name starts with ${getLastNameInitial(primaryPlayer)}.`;
+    return `Last name starts with ${getLastNameInitial(primaryPlayer)}.`;
   }
-  return `Most famous match first name: ${getFirstName(primaryPlayer)}`;
+  return `First name: ${getFirstName(primaryPlayer)}`;
 }
 
 function buildFamousPlayerHint(
@@ -749,13 +751,13 @@ function buildFamousPlayerHint(
   if (sport === "football") {
     const meta = primaryPlayer ? footballMetadataMap[primaryPlayer] : undefined;
     if (stage === 1 && meta) {
-      return `Most famous match — nationality: ${meta.nationality} | club: ${meta.club}`;
+      return `Nationality: ${meta.nationality} | Club: ${meta.club}`;
     }
     if (stage === 2 && meta) {
-      return `Most famous match — position: ${meta.position} | era: ${meta.era}`;
+      return `Position: ${meta.position} | Era: ${meta.era}`;
     }
     if (stage === 3) {
-      return `Most famous match first name: ${getFirstName(primaryPlayer)}`;
+      return `First name: ${getFirstName(primaryPlayer)}`;
     }
     return getFamousPlayerFallbackHint(primaryPlayer, sport, stage);
   }
@@ -763,13 +765,13 @@ function buildFamousPlayerHint(
   if (sport === "basketball") {
     const meta = primaryPlayer ? nbaMetadataMap[primaryPlayer] : undefined;
     if (stage === 1 && meta) {
-      return `Most famous match — team: ${meta.team} | nationality: ${meta.nationality}`;
+      return `Team: ${meta.team} | Nationality: ${meta.nationality}`;
     }
     if (stage === 2 && meta) {
-      return `Most famous match — position: ${meta.position}`;
+      return `Position: ${meta.position}`;
     }
     if (stage === 3) {
-      return `Most famous match first name: ${getFirstName(primaryPlayer)}`;
+      return `First name: ${getFirstName(primaryPlayer)}`;
     }
     return getFamousPlayerFallbackHint(primaryPlayer, sport, stage);
   }
@@ -777,13 +779,13 @@ function buildFamousPlayerHint(
   if (sport === "tennis") {
     const meta = primaryPlayer ? tennisMetadataMap[primaryPlayer] : undefined;
     if (stage === 1 && meta) {
-      return `Most famous match — nationality: ${meta.nationality}`;
+      return `Nationality: ${meta.nationality}`;
     }
     if (stage === 2 && meta) {
-      return `Most famous match — handedness: ${meta.handedness} | highest rank: #${meta.highestRank}`;
+      return `Plays: ${meta.handedness} | Highest rank: #${meta.highestRank}`;
     }
     if (stage === 3) {
-      return `Most famous match first name: ${getFirstName(primaryPlayer)}`;
+      return `First name: ${getFirstName(primaryPlayer)}`;
     }
     return getFamousPlayerFallbackHint(primaryPlayer, sport, stage);
   }
