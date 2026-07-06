@@ -23,14 +23,14 @@ jobs:
       CONVEX_DEPLOY_KEY: ${{ secrets.CONVEX_DEPLOY_KEY }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
-      # --- Backend: Convex (skipped until CONVEX_DEPLOY_KEY is added) ---
+      # --- Backend: Convex (CONVEX_DEPLOY_KEY is configured; guard kept so forks/mirrors skip cleanly) ---
       - name: Set up Node
         if: env.CONVEX_DEPLOY_KEY != ''
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
-          node-version: 20
+          node-version: 22
           cache: npm
           cache-dependency-path: app/package-lock.json
 
