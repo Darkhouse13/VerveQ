@@ -241,6 +241,7 @@ app/.ops/
 data/
 !app/convex/data/
 app/convex/data/*
+!app/convex/data/football_career_paths.json
 !app/convex/data/football_player_metadata.json
 !app/convex/data/football_survival_index.json
 !app/convex/data/nba_player_metadata.json

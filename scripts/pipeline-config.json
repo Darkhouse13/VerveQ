@@ -42,7 +42,6 @@
   },
   "features": {
     "buildGridIndex": true,
-    "buildStatFacts": true,
-    "buildWhoAmIClues": true
+    "buildStatFacts": true
   }
 }

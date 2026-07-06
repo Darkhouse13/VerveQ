@@ -116,7 +116,7 @@
     "blitz": { "name": "Blitz", "desc": "Manche éclair de 60 secondes" },
     "higherLower": { "name": "Plus ou Moins", "desc": "Compare les stats des joueurs" },
     "verveGrid": { "name": "VerveGrid", "desc": "Remplis la grille 3x3" },
-    "whoAmI": { "name": "Qui suis-je ?", "desc": "Quatre indices progressifs" },
+    "careerPath": { "name": "Parcours de carrière", "desc": "Trouve le joueur d'après ses clubs" },
     "daily": { "name": "Défi du jour", "desc": "Les mêmes questions pour tous", "worldCupName": "Quotidien Coupe du Monde", "worldCupDesc": "Des questions Coupe du Monde tout le tournoi — les mêmes pour tous" },
     "liveMatch": { "name": "Match en direct", "desc": "1v1 en temps réel, équilibré par ELO" },
     "arena": { "name": "Arène", "desc": "Salons de défi en groupe" },

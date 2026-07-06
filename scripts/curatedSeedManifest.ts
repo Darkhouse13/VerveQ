@@ -13,8 +13,7 @@ export const CURATED_PARITY_SPORT = "football";
 export type CuratedParityMode =
   | "curated-support"
   | "higher-lower"
-  | "verve-grid"
-  | "who-am-i";
+  | "verve-grid";
 
 export type CuratedParityTable =
   | "sportsPlayers"
@@ -22,8 +21,7 @@ export type CuratedParityTable =
   | "higherLowerPools"
   | "higherLowerFacts"
   | "verveGridApprovedIndex"
-  | "verveGridBoards"
-  | "whoAmIApprovedClues";
+  | "verveGridBoards";
 
 type ManifestConfig = {
   tableName: CuratedParityTable;
@@ -79,11 +77,6 @@ const MANIFEST_CONFIGS: ManifestConfig[] = [
     tableName: "verveGridBoards",
     artifactFile: "verveGridBoards.json",
     mode: "verve-grid",
-  },
-  {
-    tableName: "whoAmIApprovedClues",
-    artifactFile: "whoAmIApprovedClues.json",
-    mode: "who-am-i",
   },
 ];
 

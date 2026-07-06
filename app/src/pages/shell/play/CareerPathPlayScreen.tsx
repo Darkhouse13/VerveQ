@@ -1,0 +1,390 @@
+/**
+ * Career Path (solo) on the v2 shell — guess the player from the chronological
+ * list of clubs he played for. The whole path is shown up front.
+ *
+ * Every decision is server-authoritative: `careerPath.startChallenge /
+ * submitGuess / penalizeTabSwitch`. Grading (aliases + the length-scaled
+ * Levenshtein typo budget) lives on the server; the client only ever sends the
+ * raw typed string.
+ *
+ * DELIBERATELY NO AUTOCOMPLETE: unlike VerveGrid's roster search, this mode
+ * offers no player suggestions while typing — the server-side fuzzy matcher is
+ * what keeps honest typos from being punished.
+ *
+ * The club list is QUESTION CONTENT and owns the answering COLUMN. The ambient
+ * rail carries ONLY meta (score, guesses remaining as `lives`) — the ambient
+ * panels are content-blind by contract (answer-leak ESLint guard).
+ */
+import { useState, useEffect, useCallback, useRef } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import { useMutation } from "convex/react";
+import { useTranslation } from "react-i18next";
+import { toast } from "sonner";
+import { User, AlertTriangle, Shirt } from "lucide-react";
+import { NeoCard } from "@/components/neo/NeoCard";
+import { NeoButton } from "@/components/neo/NeoButton";
+import { NeoInput } from "@/components/neo/NeoInput";
+import { NeoBadge } from "@/components/neo/NeoBadge";
+import { PlayStage } from "@/components/shell/play/PlayStage";
+import { MetricsPanel, AmbientStrip } from "@/components/shell/play/ambient";
+import { SHELL_ROUTES } from "@/lib/shellRoutes";
+import { useAntiCheat } from "@/hooks/useAntiCheat";
+import { api } from "../../../../convex/_generated/api";
+import type { Id } from "../../../../convex/_generated/dataModel";
+
+const SUPPORTED_CAREER_PATH_SPORTS = new Set(["football"]);
+const START_CHALLENGE_TIMEOUT_MS = 8000;
+
+type GuessHistoryItem = {
+  guessName: string;
+  correct: boolean;
+  closeCall: boolean;
+  scoreAfter: number;
+};
+
+function withTimeout<T>(promise: Promise<T>, timeoutMs: number): Promise<T> {
+  return new Promise((resolve, reject) => {
+    const timeoutId = window.setTimeout(() => {
+      reject(new Error("Career Path start timed out"));
+    }, timeoutMs);
+
+    promise
+      .then((value) => {
+        window.clearTimeout(timeoutId);
+        resolve(value);
+      })
+      .catch((error) => {
+        window.clearTimeout(timeoutId);
+        reject(error);
+      });
+  });
+}
+
+export default function CareerPathPlayScreen() {
+  const { t } = useTranslation("play");
+  const navigate = useNavigate();
+  const [params] = useSearchParams();
+  const sport = params.get("sport") || "football";
+
+  const startChallengeMut = useMutation(api.careerPath.startChallenge);
+  const submitGuessMut = useMutation(api.careerPath.submitGuess);
+  const penalizeTabSwitchMut = useMutation(api.careerPath.penalizeTabSwitch);
+
+  const [sessionId, setSessionId] = useState<Id<"careerPathSessions"> | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [clubs, setClubs] = useState<string[]>([]);
+  const [score, setScore] = useState(1000);
+  const [difficulty, setDifficulty] = useState("");
+  const [maxGuesses, setMaxGuesses] = useState(3);
+  const [wrongGuessCount, setWrongGuessCount] = useState(0);
+  const [guessHistory, setGuessHistory] = useState<GuessHistoryItem[]>([]);
+  const [guess, setGuess] = useState("");
+  const [gameOver, setGameOver] = useState(false);
+  const [result, setResult] = useState<{
+    correct: boolean;
+    typoAccepted?: boolean;
+    answerName?: string;
+    score: number;
+  } | null>(null);
+  const [startupState, setStartupState] = useState<{
+    kind: "unsupported" | "start_failed";
+    title: string;
+    message: string;
+  } | null>(null);
+  const [closeCallShake, setCloseCallShake] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+
+  const inputRef = useRef<HTMLInputElement>(null);
+  const trimmedGuess = guess.trim();
+
+  const startGame = useCallback(async () => {
+    setLoading(true);
+    setStartupState(null);
+
+    if (!SUPPORTED_CAREER_PATH_SPORTS.has(sport)) {
+      setSessionId(null);
+      setClubs([]);
+      setStartupState({
+        kind: "unsupported",
+        title: t("careerPath.unsupportedTitle"),
+        message: t("careerPath.unsupportedMessage"),
+      });
+      setLoading(false);
+      return;
+    }
+
+    try {
+      const res = await withTimeout(startChallengeMut({ sport }), START_CHALLENGE_TIMEOUT_MS);
+      setSessionId(res.sessionId);
+      setClubs(res.clubs);
+      setScore(res.score);
+      setDifficulty(res.difficulty);
+      setMaxGuesses(res.maxGuesses ?? 3);
+      setWrongGuessCount(res.wrongGuessCount ?? 0);
+      setGuessHistory(res.guesses ?? []);
+      setGuess("");
+      setGameOver(false);
+      setResult(null);
+      setCloseCallShake(false);
+    } catch (err) {
+      console.error("Failed to start challenge:", err);
+      setSessionId(null);
+      setClubs([]);
+      setStartupState({
+        kind: "start_failed",
+        title: t("careerPath.startFailedTitle"),
+        message: t("careerPath.startFailedMessage"),
+      });
+    } finally {
+      setLoading(false);
+    }
+  }, [startChallengeMut, sport, t]);
+
+  useEffect(() => {
+    startGame();
+  }, [startGame]);
+
+  useAntiCheat(
+    useCallback(() => {
+      if (!sessionId || gameOver || loading || startupState) return;
+      penalizeTabSwitchMut({ sessionId }).then((res) => {
+        if (res.penalized) {
+          setScore(res.score);
+          setResult({ correct: false, score: res.score });
+          setGameOver(true);
+          toast.error(t("careerPath.tabSwitchEnded"));
+        }
+      });
+    }, [sessionId, gameOver, loading, startupState, penalizeTabSwitchMut, t]),
+    { warningMessage: t("careerPath.tabSwitchWarning") },
+  );
+
+  const handleSubmitGuess = async () => {
+    const submittedGuess = guess.trim();
+    if (!sessionId || !submittedGuess || submitting || gameOver) return;
+    setSubmitting(true);
+    try {
+      const res = await submitGuessMut({ sessionId, guess: submittedGuess });
+
+      if (res.closeCall) {
+        setScore(res.score);
+        setCloseCallShake(true);
+        setTimeout(() => setCloseCallShake(false), 600);
+        setSubmitting(false);
+        return;
+      }
+
+      setScore(res.score);
+      setWrongGuessCount(res.wrongGuessCount ?? wrongGuessCount);
+      setMaxGuesses(res.maxGuesses ?? maxGuesses);
+      setGuessHistory(res.guesses ?? guessHistory);
+      if (res.gameOver) {
+        setResult({
+          correct: res.correct,
+          typoAccepted: res.typoAccepted,
+          answerName: res.answerName,
+          score: res.score,
+        });
+        setGuess("");
+        setGameOver(true);
+      } else {
+        setGuess("");
+        toast.error(
+          t("careerPath.wrongGuessesLeft", {
+            count: Math.max(
+              0,
+              (res.maxGuesses ?? maxGuesses) - (res.wrongGuessCount ?? wrongGuessCount),
+            ),
+          }),
+        );
+        inputRef.current?.focus();
+      }
+    } catch (err) {
+      console.error("Submit error:", err);
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  // Ambient view-model: score + guesses remaining (as `lives`) only — the club
+  // list is question content and never leaves the answering column.
+  const guessesRemaining = Math.max(0, maxGuesses - wrongGuessCount);
+  const metrics = { score, lives: guessesRemaining };
+
+  if (loading) {
+    return (
+      <PlayStage title="Career Path" onExit={() => navigate(SHELL_ROUTES.home)}>
+        <div className="flex items-center justify-center py-16">
+          <p className="font-heading font-bold text-lg animate-pulse">{t("careerPath.loading")}</p>
+        </div>
+      </PlayStage>
+    );
+  }
+
+  if (startupState) {
+    return (
+      <PlayStage title="Career Path" onExit={() => navigate(SHELL_ROUTES.home)} exitLabel={t("careerPath.quit")}>
+        <div className="flex flex-col items-center justify-center py-10">
+          <NeoCard color="accent" className="w-full text-center py-8 px-6">
+            <p className="font-heading font-bold text-2xl">{startupState.title}</p>
+            <p className="font-body text-sm mt-3 text-muted-foreground leading-relaxed">
+              {startupState.message}
+            </p>
+
+            <div className="mt-6 grid grid-cols-1 gap-3">
+              {startupState.kind === "unsupported" ? (
+                <NeoButton
+                  variant="primary"
+                  size="lg"
+                  onClick={() => navigate(`${SHELL_ROUTES.careerPathPlay}?sport=football`)}
+                >
+                  {t("careerPath.playFootball")}
+                </NeoButton>
+              ) : (
+                <NeoButton variant="primary" size="lg" onClick={startGame}>
+                  {t("careerPath.tryAgain")}
+                </NeoButton>
+              )}
+              <NeoButton
+                variant="secondary"
+                size="lg"
+                onClick={() => navigate(SHELL_ROUTES.competeSportGrid(sport))}
+              >
+                {t("careerPath.backToCompete")}
+              </NeoButton>
+            </div>
+          </NeoCard>
+        </div>
+      </PlayStage>
+    );
+  }
+
+  return (
+    <PlayStage
+      title="Career Path"
+      subtitle={t("careerPath.subtitle")}
+      onExit={() => navigate(SHELL_ROUTES.home)}
+      exitLabel={t("careerPath.quit")}
+      strip={<AmbientStrip metrics={metrics} />}
+      right={<MetricsPanel metrics={metrics} />}
+    >
+      <div className="flex flex-col">
+        {/* Meta framing (difficulty / guesses) — not question content. */}
+        <div className="flex items-center justify-center gap-2 mb-4">
+          <NeoBadge
+            color={difficulty === "easy" ? "success" : difficulty === "medium" ? "accent" : "pink"}
+            size="md"
+          >
+            {difficulty}
+          </NeoBadge>
+          <p className="text-xs text-muted-foreground">
+            {t("careerPath.guessMeta", { wrong: wrongGuessCount, max: maxGuesses })}
+          </p>
+        </div>
+
+        {/* The career path — QUESTION CONTENT, owns the column. */}
+        <NeoCard color="blue" className="animate-slide-up">
+          <p className="font-heading font-bold text-xs mb-3">{t("careerPath.clubsHeading")}</p>
+          <div className="space-y-2">
+            {clubs.map((club, i) => (
+              <div key={`${club}-${i}`} className="flex items-center gap-3">
+                <div className="neo-border rounded-full bg-background w-8 h-8 flex items-center justify-center shrink-0">
+                  <span className="font-mono font-bold text-sm text-foreground">{i + 1}</span>
+                </div>
+                <div className="flex items-center gap-2 min-w-0">
+                  <Shirt size={14} className="shrink-0 opacity-70" />
+                  <p className="font-heading font-bold text-sm truncate">{club}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </NeoCard>
+
+        {/* Action area */}
+        {!gameOver && (
+          <div className="mt-5 space-y-3">
+            {closeCallShake && (
+              <div className="neo-border rounded-lg bg-accent p-3 flex items-center gap-2 animate-shake-horizontal">
+                <AlertTriangle size={16} />
+                <p className="font-heading font-bold text-xs">{t("careerPath.closeTryAgain")}</p>
+              </div>
+            )}
+
+            {guessHistory.length > 0 && (
+              <NeoCard color="default" className="p-3">
+                <p className="font-heading font-bold text-xs mb-2">{t("careerPath.previousGuesses")}</p>
+                <div className="space-y-1">
+                  {guessHistory.map((item, index) => (
+                    <div
+                      key={`${item.guessName}-${index}`}
+                      className="flex items-center justify-between gap-2 neo-border rounded-md bg-background px-2 py-1"
+                    >
+                      <p className="font-heading font-bold text-xs truncate line-through opacity-70">
+                        {item.guessName}
+                      </p>
+                      <p className="font-mono text-[10px]">
+                        {t("careerPath.points", { score: item.scoreAfter })}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              </NeoCard>
+            )}
+
+            {/* Guess input — free text only, NO player suggestions (the server's
+                typo budget does the forgiving, not an autocomplete). */}
+            <NeoInput
+              ref={inputRef}
+              placeholder={t("careerPath.guessPlaceholder")}
+              value={guess}
+              onChange={(e) => setGuess(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && handleSubmitGuess()}
+              className={closeCallShake ? "animate-shake-horizontal" : ""}
+            />
+            <p className="text-xs text-muted-foreground font-body">{t("careerPath.typoHint")}</p>
+
+            <NeoButton
+              variant="primary"
+              size="lg"
+              onClick={handleSubmitGuess}
+              disabled={!trimmedGuess || submitting}
+              className="w-full"
+            >
+              <User size={16} className="mr-1" />
+              {submitting ? t("careerPath.checking") : t("careerPath.guess")}
+            </NeoButton>
+          </div>
+        )}
+
+        {/* Result */}
+        {gameOver && result && (
+          <div className="mt-5 space-y-3 animate-slide-up">
+            <NeoCard color={result.correct ? "success" : "destructive"} className="text-center py-5">
+              <p className="font-heading font-bold text-xl">
+                {result.correct ? t("careerPath.resultCorrect") : t("careerPath.resultWrong")}
+              </p>
+              {result.correct && result.typoAccepted && (
+                <p className="font-body text-xs mt-1 opacity-80">{t("careerPath.typoAccepted")}</p>
+              )}
+              {result.answerName && (
+                <p className="font-body text-sm mt-1 opacity-90">
+                  {t("careerPath.itWas", { name: result.answerName })}
+                </p>
+              )}
+              <p className="font-mono font-bold text-3xl mt-2">{result.score}</p>
+              <p className="text-xs opacity-80 mt-1">{t("careerPath.pointsEarned")}</p>
+            </NeoCard>
+            <div className="grid grid-cols-2 gap-3">
+              <NeoButton variant="primary" size="lg" onClick={startGame}>
+                {t("careerPath.nextPlayer")}
+              </NeoButton>
+              <NeoButton variant="secondary" size="lg" onClick={() => navigate(SHELL_ROUTES.home)}>
+                {t("careerPath.home")}
+              </NeoButton>
+            </div>
+          </div>
+        )}
+      </div>
+    </PlayStage>
+  );
+}

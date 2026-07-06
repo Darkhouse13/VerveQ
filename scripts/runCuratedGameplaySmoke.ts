@@ -6,7 +6,7 @@
  *
  * Usage:
  *   npx tsx scripts/runCuratedGameplaySmoke.ts
- *   npx tsx scripts/runCuratedGameplaySmoke.ts who-am-i
+ *   npx tsx scripts/runCuratedGameplaySmoke.ts career-path
  *   npx tsx scripts/runCuratedGameplaySmoke.ts --mode verve-grid
  */
 
@@ -20,7 +20,7 @@ import {
   resolveConvexTarget,
 } from "./curatedParityDeploymentSafety";
 
-type ModeName = "all" | "higher-lower" | "verve-grid" | "who-am-i";
+type ModeName = "all" | "higher-lower" | "verve-grid" | "career-path";
 type CuratedMode = Exclude<ModeName, "all">;
 type CallKind = "query" | "mutation";
 
@@ -97,27 +97,30 @@ const MODE_CONFIGS: Record<CuratedMode, ModeConfig> = {
       }
     },
   },
-  "who-am-i": {
-    label: "Who Am I",
-    parityTables: ["whoAmIApprovedClues"],
-    startPath: "whoAmI:startChallenge",
+  // Career Path content ships in-bundle (app/convex/data/football_career_paths.json),
+  // so there are no seeded parity tables to check — only the runtime smoke.
+  "career-path": {
+    label: "Career Path",
+    parityTables: [],
+    startPath: "careerPath:startChallenge",
     supportedArgs: { sport: "football" },
     unsupportedArgs: { sport: "basketball" },
     validateSuccess: (value) => {
       const result = value as Record<string, unknown>;
       if (
         typeof result.sessionId !== "string" ||
-        typeof result.clue1 !== "string" ||
+        !Array.isArray(result.clubs) ||
+        result.clubs.length === 0 ||
         typeof result.difficulty !== "string"
       ) {
-        throw new Error("Who Am I start result is missing required fields");
+        throw new Error("Career Path start result is missing required fields");
       }
-      return `session=${result.sessionId}, difficulty=${result.difficulty}`;
+      return `session=${result.sessionId}, clubs=${result.clubs.length}, difficulty=${result.difficulty}`;
     },
     validateFailure: (message) => {
       if (!/not available/i.test(message)) {
         throw new Error(
-          `Who Am I unsupported-sport failure was not explicit enough: ${message}`,
+          `Career Path unsupported-sport failure was not explicit enough: ${message}`,
         );
       }
     },
@@ -131,7 +134,7 @@ function parseArgs(): { mode: ModeName } {
     "all",
     "higher-lower",
     "verve-grid",
-    "who-am-i",
+    "career-path",
   ]);
   const positionalArgs = args.filter((arg, index) => {
     if (arg === "--mode") return false;
@@ -144,7 +147,7 @@ function parseArgs(): { mode: ModeName } {
 
   if (!modeValue || !recognizedModes.has(modeValue as ModeName)) {
     throw new Error(
-      `Unknown mode "${modeValue}". Expected one of: all, higher-lower, verve-grid, who-am-i`,
+      `Unknown mode "${modeValue}". Expected one of: all, higher-lower, verve-grid, career-path`,
     );
   }
 
@@ -159,7 +162,7 @@ function parseArgs(): { mode: ModeName } {
 
 function getSelectedModes(mode: ModeName): CuratedMode[] {
   return mode === "all"
-    ? ["higher-lower", "verve-grid", "who-am-i"]
+    ? ["higher-lower", "verve-grid", "career-path"]
     : [mode];
 }
 
@@ -332,7 +335,7 @@ async function checkModeStarts(
 async function printManualChecklist(mode: ModeName): Promise<void> {
   divider("Reachable Target Manual Checks");
   const modes =
-    mode === "all" ? ["higher-lower", "verve-grid", "who-am-i"] : [mode];
+    mode === "all" ? ["higher-lower", "verve-grid", "career-path"] : [mode];
   const checklistPath = "docs/CURATED_GAMEPLAY_REACHABLE_TARGET_CHECKLIST.md";
   console.log("[serve] cd app && npm run build && npx serve -s dist -l 3000");
   console.log(

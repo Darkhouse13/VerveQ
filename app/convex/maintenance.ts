@@ -80,11 +80,11 @@ export const cleanupExpiredSessions = internalMutation({
       }
     }
 
-    const whoAmISessions = await ctx.db
-      .query("whoAmISessions")
+    const careerPathSessions = await ctx.db
+      .query("careerPathSessions")
       .withIndex("by_expiresAt", (q) => q.lte("expiresAt", now))
       .take(batchLimit);
-    for (const session of whoAmISessions) {
+    for (const session of careerPathSessions) {
       if (session.expiresAt <= now && session.status === "active") {
         await ctx.db.patch(session._id, { status: "failed", score: 0 });
         closed++;

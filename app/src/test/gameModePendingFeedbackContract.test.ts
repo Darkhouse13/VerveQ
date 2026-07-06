@@ -11,11 +11,11 @@ describe("game mode pending feedback contract", () => {
     expect(source).toContain("pendingGuess");
   });
 
-  it("Who Am I shows immediate checking/revealing feedback while mutations are in flight", () => {
-    const source = read("src/pages/WhoAmIScreen.tsx");
+  it("Career Path shows immediate checking feedback while the guess mutation is in flight", () => {
+    const source = read("src/pages/shell/play/CareerPathPlayScreen.tsx");
 
-    expect(source).toContain("Checking...");
-    expect(source).toContain("Revealing...");
+    expect(source).toContain('t("careerPath.checking")');
+    expect(source).toContain("submitting");
   });
 
   it("Survival hint action shows immediate loading feedback while fetching a hint", () => {

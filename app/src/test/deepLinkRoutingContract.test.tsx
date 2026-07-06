@@ -156,8 +156,6 @@ const EXPECTED_ALIASES: Array<[path: string, target: string]> = [
   ["/higherlower", "/v2/higher-lower?sport=football"],
   ["/verve-grid", "/v2/verve-grid?sport=football"],
   ["/vervegrid", "/v2/verve-grid?sport=football"],
-  ["/who-am-i", "/v2/who-am-i?sport=football"],
-  ["/whoami", "/v2/who-am-i?sport=football"],
   ["/learn", "/v2/learn"],
 ];
 

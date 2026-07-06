@@ -46,7 +46,6 @@ const BlitzScreen = lazy(() => import("./pages/BlitzScreen"));
 const LiveMatchScreen = lazy(() => import("./pages/LiveMatchScreen"));
 const HigherLowerScreen = lazy(() => import("./pages/HigherLowerScreen"));
 const VerveGridScreen = lazy(() => import("./pages/VerveGridScreen"));
-const WhoAmIScreen = lazy(() => import("./pages/WhoAmIScreen"));
 const LearnPrototypeScreen = lazy(() => import("./pages/LearnPrototypeScreen"));
 const LearnNodePickerScreen = lazy(() => import("./pages/LearnNodePickerScreen"));
 const LearnLadderScreen = lazy(() => import("./pages/LearnLadderScreen"));
@@ -81,7 +80,7 @@ const QuizPlayScreen = lazy(() => import("./pages/shell/play/QuizPlayScreen"));
 const BlitzPlayScreen = lazy(() => import("./pages/shell/play/BlitzPlayScreen"));
 const SurvivalPlayScreen = lazy(() => import("./pages/shell/play/SurvivalPlayScreen"));
 const HigherLowerPlayScreen = lazy(() => import("./pages/shell/play/HigherLowerPlayScreen"));
-const WhoAmIPlayScreen = lazy(() => import("./pages/shell/play/WhoAmIPlayScreen"));
+const CareerPathPlayScreen = lazy(() => import("./pages/shell/play/CareerPathPlayScreen"));
 const VerveGridPlayScreen = lazy(() => import("./pages/shell/play/VerveGridPlayScreen"));
 const DailyQuizPlayScreen = lazy(() => import("./pages/shell/play/DailyQuizPlayScreen"));
 const ArenaPlayScreen = lazy(() => import("./pages/shell/play/ArenaPlayScreen"));
@@ -365,17 +364,6 @@ const AppRoutes = () => (
               }
             />
             <Route path="/vervegrid" element={<V2Redirect to="/v2/verve-grid?sport=football"><NotFound /></V2Redirect>} />
-            <Route
-              path="/who-am-i"
-              element={
-                <V2Redirect to="/v2/who-am-i?sport=football">
-                  <UsernameRequiredRoute>
-                    <WhoAmIScreen />
-                  </UsernameRequiredRoute>
-                </V2Redirect>
-              }
-            />
-            <Route path="/whoami" element={<V2Redirect to="/v2/who-am-i?sport=football"><NotFound /></V2Redirect>} />
             {/* Dev/preview only — Learn node picker + graph-built ladders. Not wired into home, nav, or any scored mode. */}
             <Route path="/learn" element={<V2Redirect to="/v2/learn"><LearnNodePickerScreen /></V2Redirect>} />
             <Route path="/learn/geography" element={<V2Redirect to="/v2/learn"><LearnNodePickerScreen /></V2Redirect>} />
@@ -512,7 +500,7 @@ const AppRoutes = () => (
             {/* Casual/social: username-only playable. */}
             <Route path="/v2/blitz" element={<ShellGate><UsernameOnlyRoute><BlitzPlayScreen /></UsernameOnlyRoute></ShellGate>} />
             <Route path="/v2/higher-lower" element={<ShellGate><UsernameOnlyRoute><HigherLowerPlayScreen /></UsernameOnlyRoute></ShellGate>} />
-            <Route path="/v2/who-am-i" element={<ShellGate><UsernameOnlyRoute><WhoAmIPlayScreen /></UsernameOnlyRoute></ShellGate>} />
+            <Route path="/v2/career-path" element={<ShellGate><UsernameOnlyRoute><CareerPathPlayScreen /></UsernameOnlyRoute></ShellGate>} />
             <Route path="/v2/verve-grid" element={<ShellGate><UsernameOnlyRoute><VerveGridPlayScreen /></UsernameOnlyRoute></ShellGate>} />
             {/* Daily reuses the migrated Quiz view but runs the DAILY session;
                 the official daily leaderboard/streaks are full-account only. */}
