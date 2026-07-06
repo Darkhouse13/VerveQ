@@ -497,9 +497,13 @@ export default function SurvivalPlayScreen() {
           </div>
         </NeoCard>
 
-        {/* Clues from the help ladder */}
+        {/* Clues from the help ladder — one caption states the target so the
+            bare facts below don't read as random noise. */}
         {clues.length > 0 && (
           <div className="space-y-2 mb-4">
+            <p className="text-xs text-muted-foreground font-body">
+              {t("survival.hintsTarget")}
+            </p>
             {clues.map((h, i) => (
               <NeoCard
                 key={i}

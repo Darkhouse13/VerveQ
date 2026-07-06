@@ -416,7 +416,7 @@ export default function SurvivalScreen() {
         {helpStage > 0 && maskedName && (
           <div className="flex flex-col items-center">
             <p className="text-xs text-muted-foreground font-heading uppercase mb-2">
-              Most famous match:
+              Best-known answer:
             </p>
             <div className="flex flex-wrap justify-center gap-x-4 gap-y-2 mb-2">
               {maskedName.split(" ").map((word, wi) => (
@@ -462,9 +462,13 @@ export default function SurvivalScreen() {
         </div>
       </NeoCard>
 
-      {/* Clues from the help ladder */}
+      {/* Clues from the help ladder — one caption states the target so the
+          bare facts below don't read as random noise. */}
       {clues.length > 0 && (
         <div className="space-y-2 mb-4">
+          <p className="text-xs text-muted-foreground font-body">
+            Hints point to the best-known player with these initials
+          </p>
           {clues.map((h, i) => (
             <NeoCard
               key={i}
