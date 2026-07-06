@@ -126,15 +126,6 @@ describe("weekend stabilization daily challenge", () => {
     expect(insert).not.toHaveBeenCalled();
   });
 
-  it("rejects the declared-but-unwired daily survival mode", async () => {
-    await expect(
-      handlerOf(dailyChallenge.getOrCreateChallenge)({}, {
-        sport: "football",
-        mode: "survival",
-      }),
-    ).rejects.toThrow("Daily survival is not implemented yet");
-  });
-
   it("serves daily questions from the frozen challenge snapshot", async () => {
     const startedAt = Date.now() - 4_000;
     const attempt = {

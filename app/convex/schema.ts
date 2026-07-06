@@ -623,7 +623,9 @@ export default defineSchema({
   dailyChallenges: defineTable({
     date: v.string(),
     sport: v.string(),
-    mode: v.union(v.literal("quiz"), v.literal("survival")),
+    // "survival" was a declared-but-never-implemented variant (creation always
+    // threw), so quiz is the only mode that ever reached the table.
+    mode: v.literal("quiz"),
     questionChecksums: v.array(v.string()),
     questionSnapshots: v.optional(
       v.array(
@@ -638,7 +640,10 @@ export default defineSchema({
         }),
       ),
     ),
-    survivalInitials: v.array(v.string()),
+    // Legacy field: rows created before 2026-07 carry an always-empty array
+    // from the never-implemented daily-survival variant. No writers remain;
+    // drop the field after a prod backfill unsets it on old rows.
+    survivalInitials: v.optional(v.array(v.string())),
     createdAt: v.number(),
   }).index("by_date_sport_mode", ["date", "sport", "mode"]),
 
@@ -646,7 +651,7 @@ export default defineSchema({
     userId: v.id("users"),
     date: v.string(),
     sport: v.string(),
-    mode: v.union(v.literal("quiz"), v.literal("survival")),
+    mode: v.literal("quiz"),
     score: v.number(),
     completed: v.boolean(),
     forfeited: v.boolean(),
