@@ -85,7 +85,6 @@ describe("ASAP bugfix contracts", () => {
         explanation: "Because A won",
         category: "football",
       }],
-      survivalInitials: [],
       createdAt: 1,
     };
     const patch = vi.fn();

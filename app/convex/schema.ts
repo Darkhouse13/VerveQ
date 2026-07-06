@@ -587,10 +587,6 @@ export default defineSchema({
         }),
       ),
     ),
-    // Legacy field: rows created before 2026-07 carry an always-empty array
-    // from the never-implemented daily-survival variant. No writers remain;
-    // drop the field after a prod backfill unsets it on old rows.
-    survivalInitials: v.optional(v.array(v.string())),
     createdAt: v.number(),
   }).index("by_date_sport_mode", ["date", "sport", "mode"]),
 

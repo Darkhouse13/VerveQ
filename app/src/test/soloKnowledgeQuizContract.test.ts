@@ -636,7 +636,6 @@ describe("Knowledge blitz and daily quiz MCQ eligibility", () => {
           category: "enterprise_logos",
         },
       ],
-      survivalInitials: [],
       createdAt: 1,
     };
     const ctx = {

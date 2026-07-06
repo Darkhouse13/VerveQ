@@ -242,7 +242,6 @@ describe("BLOCKER-2: correctness is derived from stored answers", () => {
           category: "football",
         },
       ],
-      survivalInitials: [],
       createdAt: 1,
     };
     const ctx = {
@@ -607,7 +606,6 @@ describe("BLOCKER-5: daily attempts enforce ownership and server time", () => {
           category: "football",
         },
       ],
-      survivalInitials: [],
       createdAt: 1,
     };
     const ctx = {

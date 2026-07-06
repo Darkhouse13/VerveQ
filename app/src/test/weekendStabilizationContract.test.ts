@@ -98,7 +98,6 @@ describe("weekend stabilization daily challenge", () => {
       mode: "quiz",
       questionChecksums: ["checksum_1"],
       questionSnapshots: [snapshot],
-      survivalInitials: [],
       createdAt: 1,
     };
     const duplicate = {
@@ -147,7 +146,6 @@ describe("weekend stabilization daily challenge", () => {
       mode: "quiz",
       questionChecksums: ["checksum_1"],
       questionSnapshots: [snapshot],
-      survivalInitials: [],
       createdAt: 1,
     };
     const ctx = {
@@ -201,7 +199,6 @@ describe("weekend stabilization daily challenge", () => {
         mode: "quiz",
         questionChecksums: ["checksum_1"],
         questionSnapshots: [snapshot],
-        survivalInitials: [],
         createdAt: 1,
       };
       const patch = vi.fn();
