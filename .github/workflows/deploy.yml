@@ -9,6 +9,11 @@ on:
   push:
     branches: [master]
   workflow_dispatch:
+    inputs:
+      allow_deleting_large_indexes:
+        description: "Pass --allow-deleting-large-indexes to convex deploy (one-off schema cleanups only)"
+        type: boolean
+        default: false
 
 # One production deploy at a time; let an in-flight one finish rather than
 # cancelling it mid-build.
@@ -37,9 +42,18 @@ jobs:
       - name: Deploy Convex backend
         if: env.CONVEX_DEPLOY_KEY != ''
         working-directory: app
+        env:
+          # Only ever true on a manual dispatch; push-triggered deploys stay
+          # fail-closed so a schema change that drops non-empty indexes needs
+          # an explicit operator decision.
+          ALLOW_DELETING_LARGE_INDEXES: ${{ inputs.allow_deleting_large_indexes == true && 'true' || 'false' }}
         run: |
           npm ci
-          npx convex deploy
+          if [ "$ALLOW_DELETING_LARGE_INDEXES" = "true" ]; then
+            npx convex deploy --allow-deleting-large-indexes
+          else
+            npx convex deploy
+          fi
 
       - name: Convex deploy skipped
         if: env.CONVEX_DEPLOY_KEY == ''
