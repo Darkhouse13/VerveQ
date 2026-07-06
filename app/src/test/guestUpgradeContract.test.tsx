@@ -43,6 +43,15 @@ vi.mock("@/contexts/AuthContext", () => ({
   AuthError: class AuthError extends Error {},
 }));
 
+// LoginScreen's placeholders come from the screens i18n namespace; passthrough
+// i18n (labels are raw keys) keeps the placeholder queries deterministic.
+vi.mock("react-i18next", () => ({
+  useTranslation: () => ({
+    t: (key: string) => key,
+    i18n: {},
+  }),
+}));
+
 vi.mock("convex/react", () => ({
   useQuery: vi.fn(),
   useMutation: vi.fn(() => vi.fn()),
@@ -273,15 +282,15 @@ describe("LoginScreen — mode override + guest notice", () => {
     expect(
       await screen.findByRole("button", { name: /^create account$/i }),
     ).toBeInTheDocument();
-    // Signup-only fields
+    // Signup-only fields (raw i18n keys — react-i18next is passthrough-mocked)
     expect(
-      screen.getByPlaceholderText(/^username/i),
+      screen.getByPlaceholderText("login.usernamePlaceholder"),
     ).toBeInTheDocument();
     expect(
-      screen.getByPlaceholderText(/display name/i),
+      screen.getByPlaceholderText("login.displayNamePlaceholder"),
     ).toBeInTheDocument();
     expect(
-      screen.getByPlaceholderText(/confirm password/i),
+      screen.getByPlaceholderText("login.confirmPasswordPlaceholder"),
     ).toBeInTheDocument();
   });
 
