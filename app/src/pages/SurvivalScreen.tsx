@@ -395,7 +395,7 @@ export default function SurvivalScreen() {
         <p className="text-sm text-muted-foreground font-heading mb-4">
           Who has these initials?
         </p>
-        <div className="flex gap-4 mb-5">
+        <div className="flex gap-4 mb-2">
           {initials.map((letter, i) => (
             <div
               key={i}
@@ -405,39 +405,50 @@ export default function SurvivalScreen() {
             </div>
           ))}
         </div>
+        <p className="text-xs text-muted-foreground font-body mb-4">
+          Any player with these initials counts
+        </p>
 
-        {/* The Reveal Ladder mask: word shapes are free, letters cost pot. */}
-        {maskedName && (
-          <div className="flex flex-wrap justify-center gap-x-4 gap-y-2 mb-2">
-            {maskedName.split(" ").map((word, wi) => (
-              <div key={wi} className="flex gap-1">
-                {Array.from(word).map((char, ci) =>
-                  char === MASK_CHAR ? (
-                    <div
-                      key={ci}
-                      className="neo-border rounded w-7 h-9 bg-muted"
-                      aria-hidden
-                    />
-                  ) : /\p{L}|\p{N}/u.test(char) ? (
-                    <div
-                      key={ci}
-                      className="neo-border rounded w-7 h-9 flex items-center justify-center bg-primary text-primary-foreground"
-                    >
-                      <span className="font-heading font-bold text-sm">
+        {/* The Reveal Ladder mask stays hidden until help is requested —
+            shown up front, the name's letter boxes read as a constraint on
+            the answer, when really any player with the initials counts.
+            Once visible it is labelled as the famous-match hint target. */}
+        {helpStage > 0 && maskedName && (
+          <div className="flex flex-col items-center">
+            <p className="text-xs text-muted-foreground font-heading uppercase mb-2">
+              Most famous match:
+            </p>
+            <div className="flex flex-wrap justify-center gap-x-4 gap-y-2 mb-2">
+              {maskedName.split(" ").map((word, wi) => (
+                <div key={wi} className="flex gap-1">
+                  {Array.from(word).map((char, ci) =>
+                    char === MASK_CHAR ? (
+                      <div
+                        key={ci}
+                        className="neo-border rounded w-7 h-9 bg-muted"
+                        aria-hidden
+                      />
+                    ) : /\p{L}|\p{N}/u.test(char) ? (
+                      <div
+                        key={ci}
+                        className="neo-border rounded w-7 h-9 flex items-center justify-center bg-primary text-primary-foreground"
+                      >
+                        <span className="font-heading font-bold text-sm">
+                          {char}
+                        </span>
+                      </div>
+                    ) : (
+                      <span
+                        key={ci}
+                        className="w-3 h-9 flex items-center justify-center font-heading font-bold text-sm"
+                      >
                         {char}
                       </span>
-                    </div>
-                  ) : (
-                    <span
-                      key={ci}
-                      className="w-3 h-9 flex items-center justify-center font-heading font-bold text-sm"
-                    >
-                      {char}
-                    </span>
-                  ),
-                )}
-              </div>
-            ))}
+                    ),
+                  )}
+                </div>
+              ))}
+            </div>
           </div>
         )}
 

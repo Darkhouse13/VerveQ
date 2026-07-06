@@ -105,6 +105,8 @@
     "correctPoints": "Correct! {{answer}} (+{{points}} pts)",
     "wrong": "Wrong! It was {{answer}}",
     "whoHasInitials": "Who has these initials?",
+    "anyPlayerCounts": "Any player with these initials counts",
+    "maskLabel": "Most famous match:",
     "clueLabel": "Clue {{number}}:",
     "pot": "POT: {{points}} pts",
     "inputPlaceholder": "Type player name...",

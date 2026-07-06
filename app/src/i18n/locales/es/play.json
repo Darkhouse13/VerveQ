@@ -105,6 +105,8 @@
     "correctPoints": "¡Correcto! {{answer}} (+{{points}} pts)",
     "wrong": "¡Incorrecto! Era {{answer}}",
     "whoHasInitials": "¿Quién tiene estas iniciales?",
+    "anyPlayerCounts": "Cualquier jugador con estas iniciales cuenta",
+    "maskLabel": "Jugador más conocido:",
     "clueLabel": "Pista {{number}}:",
     "pot": "BOTE: {{points}} pts",
     "inputPlaceholder": "Escribe el nombre del jugador...",

@@ -460,7 +460,7 @@ export default function SurvivalPlayScreen() {
           <p className="text-sm text-muted-foreground font-heading mb-4">
             {t("survival.whoHasInitials")}
           </p>
-          <div className="flex gap-4 mb-5">
+          <div className="flex gap-4 mb-2">
             {initials.map((letter, i) => (
               <div
                 key={i}
@@ -470,9 +470,22 @@ export default function SurvivalPlayScreen() {
               </div>
             ))}
           </div>
+          <p className="text-xs text-muted-foreground font-body mb-4">
+            {t("survival.anyPlayerCounts")}
+          </p>
 
-          {/* The Reveal Ladder mask: word shapes are free, letters cost pot. */}
-          {maskedName && <MaskedName maskedName={maskedName} />}
+          {/* The Reveal Ladder mask stays hidden until help is requested —
+              shown up front, the name's letter boxes read as a constraint on
+              the answer, when really any player with the initials counts.
+              Once visible it is labelled as the famous-match hint target. */}
+          {helpStage > 0 && maskedName && (
+            <div className="flex flex-col items-center">
+              <p className="text-xs text-muted-foreground font-heading uppercase mb-2">
+                {t("survival.maskLabel")}
+              </p>
+              <MaskedName maskedName={maskedName} />
+            </div>
+          )}
 
           <div className="flex items-center gap-3 mt-3">
             <NeoBadge color={potValue < basePot ? "accent" : "success"} rotated>
