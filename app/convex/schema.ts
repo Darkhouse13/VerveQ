@@ -395,23 +395,6 @@ export default defineSchema({
     updatedAt: v.number(),
   }).index("by_checksum_locale", ["checksum", "locale"]),
 
-  // Phase 4.3 — per-locale DISPLAY overlay for Who Am I clue prose
-  // (display-translate, grade-canonical: see docs/I18N_CONTENT_DESIGN.md). One
-  // row per (externalId, locale) carrying the 4 progressive clues translated;
-  // the canonical answerName / fuzzy grading are NEVER touched. Embedded player /
-  // club / place names stay canonical — only the surrounding prose translates.
-  whoAmIClueTranslations: defineTable({
-    externalId: v.string(), // FK → whoAmIApprovedClues.externalId
-    locale: v.string(), // "fr" | "es"
-    clue1: v.string(),
-    clue2: v.string(),
-    clue3: v.string(),
-    clue4: v.string(),
-    source: v.union(v.literal("llm"), v.literal("human")),
-    reviewed: v.boolean(),
-    updatedAt: v.number(),
-  }).index("by_externalId_locale", ["externalId", "locale"]),
-
   // One row per (user, question) difficulty vote. Enforces one vote per user
   // per question in quizSessions.submitFeedback so the difficultyScore running
   // mean cannot be inflated by repeat votes from a single identity.
@@ -913,8 +896,10 @@ export default defineSchema({
 
   // The raw pipeline tables (statFacts, gridIndex, whoAmIClues) were removed
   // 2026-07: gameplay reads only the approved layers (higherLowerPools/Facts,
-  // verveGridBoards, whoAmIApprovedClues) and the raw artifacts live in
-  // scripts/data/*.json. Orphaned rows can be purged from the dashboard.
+  // verveGridBoards) and the raw artifacts live in scripts/data/*.json.
+  // Orphaned rows can be purged from the dashboard. The Who Am I mode (and its
+  // whoAmIApprovedClues / whoAmIClueTranslations / whoAmISessions tables) was
+  // removed 2026-07 in favor of Career Path, whose content ships in-bundle.
 
   higherLowerPools: defineTable({
     externalId: v.string(),
@@ -1003,30 +988,6 @@ export default defineSchema({
     .index("by_external_id", ["externalId"])
     .index("by_sport", ["sport"]),
 
-  whoAmIApprovedClues: defineTable({
-    externalId: v.string(),
-    seedVersion: v.optional(v.string()),
-    sourceClueId: v.string(),
-    sport: v.string(),
-    playerId: v.string(),
-    clue1: v.string(),
-    clue2: v.string(),
-    clue3: v.string(),
-    clue4: v.string(),
-    answerName: v.string(),
-    difficulty: v.string(),
-    rawDifficulty: v.string(),
-    qualityScore: v.number(),
-    isHeadlineSeed: v.boolean(),
-    isManualLegend: v.boolean(),
-    teamLabels: v.array(v.string()),
-    approvalReasons: v.array(v.string()),
-    curationFlags: v.array(v.string()),
-  })
-    .index("by_external_id", ["externalId"])
-    .index("by_sport", ["sport"])
-    .index("by_sport_difficulty", ["sport", "difficulty"]),
-
   curatedSeedMetadata: defineTable({
     scopeKey: v.string(),
     tableName: v.string(),
@@ -1112,12 +1073,17 @@ export default defineSchema({
     .index("by_user", ["userId"])
     .index("by_expiresAt", ["expiresAt"]),
 
-  whoAmISessions: defineTable({
-    userId: v.optional(v.id("users")),
+  // Career Path (solo, casual) gameplay state. Content lives in-bundle
+  // (convex/data/football_career_paths.json) — sessions denormalize the shown
+  // clubs so a mid-round content update can't reshuffle an active game.
+  // answerName is server-only: careerPath.getSession strips it.
+  careerPathSessions: defineTable({
+    userId: v.id("users"),
     sport: v.string(),
-    clueExternalId: v.string(),
+    entryId: v.string(),
     answerName: v.string(),
-    currentStage: v.number(),
+    clubs: v.array(v.string()),
+    difficulty: v.string(),
     score: v.number(),
     status: v.union(
       v.literal("active"),
@@ -1125,23 +1091,16 @@ export default defineSchema({
       v.literal("failed"),
     ),
     expiresAt: v.number(),
-    closeCallCount: v.optional(v.number()),
-    guesses: v.optional(v.array(v.object({
+    closeCallCount: v.number(),
+    guesses: v.array(v.object({
       guessName: v.string(),
       correct: v.boolean(),
       closeCall: v.boolean(),
       scoreAfter: v.number(),
-      feedback: v.optional(v.object({
-        guessedPlayerName: v.string(),
-        nationality: v.union(v.literal("correct"), v.literal("incorrect"), v.literal("unknown")),
-        position: v.union(v.literal("correct"), v.literal("incorrect"), v.literal("unknown")),
-        team: v.union(v.literal("correct"), v.literal("incorrect"), v.literal("unknown")),
-      })),
       createdAt: v.number(),
-    }))),
-    maxGuesses: v.optional(v.number()),
-    wrongGuessCount: v.optional(v.number()),
-    hardMode: v.optional(v.boolean()),
+    })),
+    maxGuesses: v.number(),
+    wrongGuessCount: v.number(),
   })
     .index("by_user", ["userId"])
     .index("by_expiresAt", ["expiresAt"]),

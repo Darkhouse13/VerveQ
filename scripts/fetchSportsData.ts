@@ -4,7 +4,7 @@
  *
  * Extracts player/team/fixture data from API-FOOTBALL v3 (Pro) and
  * API-SPORTS NBA v2 (Free), normalizes into game-ready JSON tables
- * for VerveGrid, Higher or Lower, and Who Am I game modes.
+ * for VerveGrid and Higher or Lower game modes.
  *
  * Usage:
  *   npx tsx scripts/fetchSportsData.ts                       # full run
@@ -87,7 +87,6 @@ interface NbaConfig {
 interface FeaturesConfig {
   buildGridIndex: boolean;
   buildStatFacts: boolean;
-  buildWhoAmIClues: boolean;
   buildPlayerQualityProfiles?: boolean;
   buildFootballSurvivalIndex?: boolean;
   buildFootballCoverageReport?: boolean;
@@ -270,38 +269,6 @@ interface HigherLowerPool {
   season: number | null;
 }
 
-interface WhoAmIClue {
-  id: string;
-  sport: "football" | "nba";
-  playerId: string;
-  clue1: string;
-  clue2: string;
-  clue3: string;
-  clue4: string;
-  answerName: string;
-  difficulty: "easy" | "medium" | "hard";
-}
-
-interface WhoAmIApprovedClue {
-  id: string;
-  sourceClueId: string;
-  sport: "football";
-  playerId: string;
-  clue1: string;
-  clue2: string;
-  clue3: string;
-  clue4: string;
-  answerName: string;
-  difficulty: "easy" | "medium" | "hard";
-  rawDifficulty: "easy" | "medium" | "hard";
-  qualityScore: number;
-  isHeadlineSeed: boolean;
-  isManualLegend: boolean;
-  teamLabels: string[];
-  approvalReasons: string[];
-  curationFlags: string[];
-}
-
 interface PlayerQualityProfile {
   id: string;
   sport: "football";
@@ -339,7 +306,6 @@ interface PlayerQualityProfile {
 
   survivalTier: "A" | "B" | "C" | "D";
   survivalEligible: boolean;
-  whoAmIEligible: boolean;
   higherLowerEligible: boolean;
   gridEligible: boolean;
 
@@ -422,7 +388,6 @@ interface ManualFootballLegend {
   initials2?: string | null;
   initials3?: string | null;
   survivalTier?: "A" | "B";
-  whoAmIEligible?: boolean;
   notes?: string;
 }
 
@@ -443,7 +408,6 @@ interface NormalizedManualFootballLegend {
   initials2: string | null;
   initials3: string | null;
   survivalTier: "A" | "B";
-  whoAmIEligibleHint: boolean;
   notes: string | null;
   player: Player;
 }
@@ -543,15 +507,11 @@ interface FootballCoverageReport {
     legendsLoaded: number;
     seedsResolvedByManualLayer: number;
     survivalEligibleLegends: number;
-    whoAmIEligibleLegends: number;
     unresolvedHistoricalSeedsAfterManualLayer: string[];
   };
 
   headlineGameplayCoverage: {
     survivalEligible: number;
-    whoAmIEligible: number;
-    bothEligible: number;
-    neitherEligible: number;
   };
 
   coverage: HeadlineCoverageEntry[];
@@ -589,19 +549,6 @@ interface FootballGameplayQaReport {
       playableCount: number;
       topPlayerName: string | null;
       bucketScore: number;
-    }>;
-  };
-  whoAmI: {
-    totalClueSets: number;
-    headlineClueSets: number;
-    manualLegendClueSets: number;
-    easy: number;
-    medium: number;
-    hard: number;
-    lowSignalClueSets: Array<{
-      playerId: string;
-      answerName: string;
-      reasons: string[];
     }>;
   };
   quality: {
@@ -684,9 +631,6 @@ const MANUAL_FOOTBALL_LEGENDS_PATH = path.join(
 
 const FOOTBALL_ELITE_COMPETITION_IDS = new Set([1, 2, 3, 4, 9]);
 const FOOTBALL_RECENT_SEASONS_COUNT = 3;
-const FOOTBALL_WHO_AM_I_MIN_SIGNAL_COUNT = 3;
-const FOOTBALL_WHO_AM_I_MIN_PLAYABILITY_SCORE = 45;
-const FOOTBALL_WHO_AM_I_MIN_CLUE_RICHNESS_SCORE = 12;
 const FOOTBALL_SURVIVAL_EASY_MIN_TOP_SCORE = 150;
 const FOOTBALL_SURVIVAL_EASY_MIN_BUCKET_SCORE = 250;
 const FOOTBALL_SURVIVAL_EASY_MIN_PLAYABLE_RATIO = 0.18;
@@ -1944,7 +1888,6 @@ function normalizeManualFootballLegend(
     initials2: rawLegend.initials2 ?? getPlayerInitials(canonicalName, 2),
     initials3: rawLegend.initials3 ?? getPlayerInitials(canonicalName, 3),
     survivalTier: rawLegend.survivalTier === "B" ? "B" : "A",
-    whoAmIEligibleHint: rawLegend.whoAmIEligible ?? true,
     notes: rawLegend.notes?.trim() || null,
     player,
   };
@@ -3893,73 +3836,6 @@ function hasMeaningfulFootballStats(
   );
 }
 
-function getFootballWhoAmISignalStrength(params: {
-  playabilityScore: number;
-  clueRichnessScore: number;
-  metadataCompletenessScore: number;
-  teamCount: number;
-  trophyWins: number;
-  transferCount: number;
-  meaningfulStats: boolean;
-  hasNationality: boolean;
-  hasPosition: boolean;
-  isHeadlineSeed: boolean;
-  eliteCompetitionScore: number;
-}): {
-  signalCount: number;
-  hasIdentitySignal: boolean;
-  hasTeamSignal: boolean;
-  hasTrophySignal: boolean;
-  hasTransferSignal: boolean;
-  hasStatSignal: boolean;
-  qualifiesBase: boolean;
-  qualifiesHeadlineFallback: boolean;
-} {
-  const hasIdentitySignal = params.hasNationality && params.hasPosition;
-  const hasTeamSignal = params.teamCount >= 2;
-  const hasTrophySignal = params.trophyWins > 0;
-  const hasTransferSignal = params.transferCount > 0;
-  const hasStatSignal = params.meaningfulStats;
-  const signalCount = [
-    hasIdentitySignal,
-    hasTeamSignal,
-    hasTrophySignal,
-    hasTransferSignal,
-    hasStatSignal,
-  ].filter(Boolean).length;
-  const qualifiesBase =
-    params.playabilityScore >= FOOTBALL_WHO_AM_I_MIN_PLAYABILITY_SCORE &&
-    params.clueRichnessScore >= FOOTBALL_WHO_AM_I_MIN_CLUE_RICHNESS_SCORE &&
-    params.metadataCompletenessScore >= 8 &&
-    hasTeamSignal &&
-    (
-      hasTrophySignal ||
-      hasTransferSignal ||
-      (hasStatSignal &&
-        params.eliteCompetitionScore > 0 &&
-        params.playabilityScore >= 90)
-    );
-  const qualifiesHeadlineFallback =
-    !qualifiesBase &&
-    params.isHeadlineSeed &&
-    params.playabilityScore >= 120 &&
-    params.clueRichnessScore >= FOOTBALL_WHO_AM_I_MIN_CLUE_RICHNESS_SCORE &&
-    params.metadataCompletenessScore >= 8 &&
-    signalCount >= FOOTBALL_WHO_AM_I_MIN_SIGNAL_COUNT &&
-    (params.eliteCompetitionScore > 0 || hasTrophySignal || hasStatSignal);
-
-  return {
-    signalCount,
-    hasIdentitySignal,
-    hasTeamSignal,
-    hasTrophySignal,
-    hasTransferSignal,
-    hasStatSignal,
-    qualifiesBase,
-    qualifiesHeadlineFallback,
-  };
-}
-
 interface VerveGridQaCellStats {
   count: number;
   min: number;
@@ -4003,89 +3879,10 @@ interface VerveGridQaReport {
   };
 }
 
-interface WhoAmIRejectedClue {
-  sourceClueId: string;
-  playerId: string;
-  answerName: string;
-  rawDifficulty: "easy" | "medium" | "hard";
-  reasons: string[];
-}
-
-interface WhoAmIQaExample {
-  playerId: string;
-  answerName: string;
-  rawDifficulty: "easy" | "medium" | "hard";
-  approvedDifficulty?: "easy" | "medium" | "hard";
-  reasons?: string[];
-  rawClue1?: string;
-  rawClue2?: string;
-  rawClue3?: string;
-  rawClue4?: string;
-  approvedClue1?: string;
-  approvedClue2?: string;
-  approvedClue3?: string;
-  approvedClue4?: string;
-}
-
-interface WhoAmIQaReport {
-  generatedAt: string;
-  sport: "football";
-  raw: {
-    totalClueSets: number;
-    countsBySport: Record<string, number>;
-    countsByDifficulty: Record<string, number>;
-    lowSignalClueSets: number;
-    nationalTeamLeakyClueSets: number;
-    attackerGrammarIssues: number;
-    trophyWordingIssues: number;
-    transferClueSets: number;
-    firstNameClueSets: number;
-  };
-  approved: {
-    totalClueSets: number;
-    countsBySport: Record<string, number>;
-    countsByDifficulty: Record<string, number>;
-    headlineClueSets: number;
-    manualLegendClueSets: number;
-    nationalTeamLeakyClueSets: number;
-  };
-  rejections: {
-    totalRejected: number;
-    byReason: Record<string, number>;
-  };
-  curationImpact: {
-    approvedFromRawRate: number;
-    rejectedFromRawRate: number;
-    difficultyChangedCount: number;
-    nationalTeamLabelsRemovedCount: number;
-    transferClueReplacedCount: number;
-    trophyTextNormalizedCount: number;
-    attackerGrammarFixedCount: number;
-  };
-  examples: {
-    rejected: WhoAmIQaExample[];
-    difficultyChanged: WhoAmIQaExample[];
-    textAdjusted: WhoAmIQaExample[];
-  };
-}
-
 function getManualLegendTeamLabels(
   legend: NormalizedManualFootballLegend,
 ): string[] {
   return Array.from(new Set([...legend.clubs, ...legend.notableTeams]));
-}
-
-function getManualLegendClueDimensionCount(
-  legend: NormalizedManualFootballLegend,
-): number {
-  return [
-    Boolean(legend.nationality && legend.position),
-    getManualLegendTeamLabels(legend).length > 0,
-    legend.trophies.length > 0,
-    legend.achievements.length > 0,
-    Boolean(legend.era),
-    Boolean(legend.firstName),
-  ].filter(Boolean).length;
 }
 
 function buildManualFootballLegendQualityProfiles(
@@ -4119,17 +3916,10 @@ function buildManualFootballLegendQualityProfiles(
       const playabilityScore = roundScore(
         fameScore + metadataCompletenessScore + clueRichnessScore,
       );
-      const whoAmIEligible =
-        legend.whoAmIEligibleHint &&
-        getManualLegendClueDimensionCount(legend) >= 3 &&
-        metadataCompletenessScore >= 8;
 
       const reasons = ["manual_legend", "manual_layer", `tier_${legend.survivalTier.toLowerCase()}`];
       if (isHeadlineSeed) {
         reasons.push("headline_seed", "manual_layer_resolved");
-      }
-      if (whoAmIEligible) {
-        reasons.push("whoami_curated");
       }
 
       return {
@@ -4165,7 +3955,6 @@ function buildManualFootballLegendQualityProfiles(
         matchedViaProfilesEndpoint: false,
         survivalTier: legend.survivalTier,
         survivalEligible: true,
-        whoAmIEligible,
         higherLowerEligible: false,
         gridEligible: false,
         reasons,
@@ -4341,19 +4130,6 @@ function buildFootballPlayerQualityProfiles(
       totalGoals,
       totalAssists,
     );
-    const whoAmISignal = getFootballWhoAmISignalStrength({
-      playabilityScore,
-      clueRichnessScore,
-      metadataCompletenessScore,
-      teamCount,
-      trophyWins,
-      transferCount,
-      meaningfulStats,
-      hasNationality,
-      hasPosition,
-      isHeadlineSeed,
-      eliteCompetitionScore,
-    });
 
     const survivalTier: PlayerQualityProfile["survivalTier"] =
       playabilityScore >= 120
@@ -4365,8 +4141,6 @@ function buildFootballPlayerQualityProfiles(
             : "D";
 
     const survivalEligible = survivalTier !== "D";
-    const whoAmIEligible =
-      whoAmISignal.qualifiesBase || whoAmISignal.qualifiesHeadlineFallback;
     const higherLowerEligible = playabilityScore >= 50;
     const gridEligible = teamCount >= 1 && metadataCompletenessScore >= 4;
 
@@ -4391,14 +4165,10 @@ function buildFootballPlayerQualityProfiles(
     if (recentPresenceScore > 0) reasons.push("recent_presence");
     if (metadataCompletenessScore >= 8) reasons.push("metadata_complete");
     if (clueRichnessScore >= 10) reasons.push("clue_rich");
-    if (whoAmISignal.hasTeamSignal) reasons.push("whoami_team_signal");
     if (trophyWins > 0) reasons.push("trophy_winner");
     if (transferCount > 0) reasons.push("transfer_history");
     if (meaningfulStats) {
       reasons.push("meaningful_stats");
-    }
-    if (whoAmISignal.qualifiesHeadlineFallback) {
-      reasons.push("whoami_headline_fallback");
     }
     reasons.push(`tier_${survivalTier.toLowerCase()}`);
 
@@ -4435,7 +4205,6 @@ function buildFootballPlayerQualityProfiles(
       matchedViaProfilesEndpoint: coverageEntry?.status === "gap_filled",
       survivalTier,
       survivalEligible,
-      whoAmIEligible,
       higherLowerEligible,
       gridEligible,
       reasons,
@@ -4642,20 +4411,13 @@ function buildFootballCoverageReport(
           ? qualityProfilesByPlayerId.get(entry.matchedPlayerId)
           : undefined;
         const survivalEligible = Boolean(profile?.survivalEligible);
-        const whoAmIEligible = Boolean(profile?.whoAmIEligible);
 
         if (survivalEligible) counts.survivalEligible++;
-        if (whoAmIEligible) counts.whoAmIEligible++;
-        if (survivalEligible && whoAmIEligible) counts.bothEligible++;
-        if (!survivalEligible && !whoAmIEligible) counts.neitherEligible++;
 
         return counts;
       },
       {
         survivalEligible: 0,
-        whoAmIEligible: 0,
-        bothEligible: 0,
-        neitherEligible: 0,
       },
     );
 
@@ -4751,9 +4513,6 @@ function buildFootballCoverageReport(
     survivalEligibleLegends: manualLegendProfiles.filter(
       (profile) => profile.survivalEligible,
     ).length,
-    whoAmIEligibleLegends: manualLegendProfiles.filter(
-      (profile) => profile.whoAmIEligible,
-    ).length,
     unresolvedHistoricalSeedsAfterManualLayer,
   };
 
@@ -4796,13 +4555,11 @@ function buildFootballCoverageReport(
 
 function buildFootballGameplayQaReport(
   survivalIndex: SurvivalInitialsBucket[],
-  whoAmIClues: WhoAmIClue[],
   qualityProfiles: PlayerQualityProfile[],
 ): FootballGameplayQaReport {
   const qualityProfilesByPlayerId = new Map(
     qualityProfiles.map((profile) => [profile.playerId, profile]),
   );
-  const footballWhoAmIClues = whoAmIClues.filter((clue) => clue.sport === "football");
 
   const suspiciousBuckets = survivalIndex.flatMap((bucket) => {
     const topProfile = bucket.topPlayerId
@@ -4862,78 +4619,6 @@ function buildFootballGameplayQaReport(
       : [];
   });
 
-  const lowSignalClueSets = footballWhoAmIClues
-    .flatMap((clue) => {
-      const profile = qualityProfilesByPlayerId.get(clue.playerId);
-      if (!profile) {
-        return [
-          {
-            playerId: clue.playerId,
-            answerName: clue.answerName,
-            reasons: ["missing_quality_profile"],
-          },
-        ];
-      }
-
-      const reasons: string[] = [];
-      const isManualLegend = isManualLegendPlayerId(clue.playerId);
-      const meaningfulStats = profile.reasons.includes("meaningful_stats");
-      const whoAmISignal = getFootballWhoAmISignalStrength({
-        playabilityScore: profile.playabilityScore,
-        clueRichnessScore: profile.clueRichnessScore,
-        metadataCompletenessScore: profile.metadataCompletenessScore,
-        teamCount: profile.teamCount,
-        trophyWins: profile.trophyWins,
-        transferCount: profile.transferCount,
-        meaningfulStats,
-        hasNationality: profile.hasNationality,
-        hasPosition: profile.hasPosition,
-        isHeadlineSeed: profile.isHeadlineSeed,
-        eliteCompetitionScore: profile.eliteCompetitionScore,
-      });
-
-      if (profile.reasons.includes("whoami_headline_fallback")) {
-        reasons.push("headline_fallback_path");
-      }
-      if (!isManualLegend && whoAmISignal.signalCount === FOOTBALL_WHO_AM_I_MIN_SIGNAL_COUNT) {
-        reasons.push("minimum_signal_shape");
-      }
-      if (
-        !isManualLegend &&
-        profile.teamCount === 2 &&
-        profile.trophyWins === 0 &&
-        profile.transferCount === 0 &&
-        meaningfulStats
-      ) {
-        reasons.push("two_club_stats_only_signal");
-      }
-      if (
-        !isManualLegend &&
-        profile.trophyWins === 0 &&
-        profile.transferCount === 0 &&
-        meaningfulStats &&
-        profile.teamCount <= 3 &&
-        profile.clueRichnessScore <= FOOTBALL_WHO_AM_I_MIN_CLUE_RICHNESS_SCORE
-      ) {
-        reasons.push("stats_only_weak_diversity");
-      }
-
-      return reasons.length > 0
-        ? [
-            {
-              playerId: clue.playerId,
-              answerName: clue.answerName,
-              reasons,
-            },
-          ]
-        : [];
-    })
-    .sort(
-      (a, b) =>
-        b.reasons.length - a.reasons.length ||
-        a.answerName.localeCompare(b.answerName),
-    );
-
   const headlineTierBreakdown = qualityProfiles
     .filter((profile) => profile.isHeadlineSeed)
     .reduce(
@@ -4974,18 +4659,6 @@ function buildFootballGameplayQaReport(
           famousCount: bucket.famousCount,
         })),
       suspiciousBuckets,
-    },
-    whoAmI: {
-      totalClueSets: footballWhoAmIClues.length,
-      headlineClueSets: footballWhoAmIClues.filter((clue) => {
-        const profile = qualityProfilesByPlayerId.get(clue.playerId);
-        return Boolean(profile?.isHeadlineSeed);
-      }).length,
-      manualLegendClueSets: footballWhoAmIClues.filter((clue) => isManualLegendPlayerId(clue.playerId)).length,
-      easy: footballWhoAmIClues.filter((clue) => clue.difficulty === "easy").length,
-      medium: footballWhoAmIClues.filter((clue) => clue.difficulty === "medium").length,
-      hard: footballWhoAmIClues.filter((clue) => clue.difficulty === "hard").length,
-      lowSignalClueSets,
     },
     quality: {
       tierA: qualityProfiles.filter((profile) => profile.survivalTier === "A").length,
@@ -6232,857 +5905,6 @@ function buildFootballHigherLowerData(
   return { facts: approvedFacts, pools: approvedPools };
 }
 
-function getPreferredWhoAmITeamLabels(
-  pts: PlayerTeamSeason[],
-  teamNames: Map<string, string>,
-): string[] {
-  const appearancesByTeam = new Map<string, number>();
-
-  for (const entry of pts) {
-    const label = teamNames.get(entry.teamId) || "";
-    if (!label || label.startsWith("fb_team_")) continue;
-    appearancesByTeam.set(
-      label,
-      (appearancesByTeam.get(label) || 0) + (entry.appearances || 0),
-    );
-  }
-
-  return Array.from(appearancesByTeam.entries())
-    .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
-    .map(([label]) => label)
-    .filter((label, index, labels) => labels.indexOf(label) === index);
-}
-
-function getApprovedWhoAmITeamLabels(
-  pts: PlayerTeamSeason[],
-  teamsById: Map<string, Team>,
-): string[] {
-  const appearancesByTeam = new Map<string, number>();
-
-  for (const entry of pts) {
-    const team = teamsById.get(entry.teamId);
-    const label = team?.name || "";
-    if (!label || label.startsWith("fb_team_")) continue;
-    if (team && VERVE_GRID_NATIONAL_TEAM_LEAGUE_IDS.has(team.leagueId)) continue;
-
-    appearancesByTeam.set(
-      label,
-      (appearancesByTeam.get(label) || 0) + (entry.appearances || 0),
-    );
-  }
-
-  return Array.from(appearancesByTeam.entries())
-    .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
-    .map(([label]) => label)
-    .filter((label, index, labels) => labels.indexOf(label) === index);
-}
-
-function withIndefiniteArticle(label: string): string {
-  const trimmed = label.trim();
-  if (!trimmed) return trimmed;
-
-  const lower = trimmed.toLowerCase();
-  const article = /^[aeiou]/.test(lower) ? "an" : "a";
-  return `${article} ${trimmed}`;
-}
-
-function formatWhoAmIIdentityClue(params: {
-  nationality: string | null;
-  position: string | null;
-  pastTense?: boolean;
-}): string | null {
-  const parts: string[] = [];
-  if (params.nationality) {
-    parts.push(`I am from ${params.nationality}`);
-  }
-  if (params.position) {
-    const verb = params.pastTense ? "played as" : "play as";
-    parts.push(`I ${verb} ${withIndefiniteArticle(params.position)}`);
-  }
-
-  return parts.length > 0 ? `${parts.join(". ")}.` : null;
-}
-
-function formatWhoAmITrophyClue(
-  wins: PlayerTrophy[],
-): { clue: string; trophyNames: string[] } | null {
-  if (wins.length === 0) return null;
-
-  const trophyNames = wins
-    .map((trophy) => trophy.trophyName.trim())
-    .filter(Boolean)
-    .filter((name, index, names) => names.indexOf(name) === index)
-    .slice(0, 3);
-
-  const trophyWord = wins.length === 1 ? "trophy" : "trophies";
-  return {
-    clue: `I have won ${wins.length} ${trophyWord}, including ${trophyNames.join(", ")}.`,
-    trophyNames,
-  };
-}
-
-function getFootballWhoAmILowSignalReasons(
-  profile: PlayerQualityProfile,
-  isManualLegend: boolean,
-): string[] {
-  const reasons: string[] = [];
-  const meaningfulStats = profile.reasons.includes("meaningful_stats");
-  const whoAmISignal = getFootballWhoAmISignalStrength({
-    playabilityScore: profile.playabilityScore,
-    clueRichnessScore: profile.clueRichnessScore,
-    metadataCompletenessScore: profile.metadataCompletenessScore,
-    teamCount: profile.teamCount,
-    trophyWins: profile.trophyWins,
-    transferCount: profile.transferCount,
-    meaningfulStats,
-    hasNationality: profile.hasNationality,
-    hasPosition: profile.hasPosition,
-    isHeadlineSeed: profile.isHeadlineSeed,
-    eliteCompetitionScore: profile.eliteCompetitionScore,
-  });
-
-  if (profile.reasons.includes("whoami_headline_fallback")) {
-    reasons.push("headline_fallback_path");
-  }
-  if (
-    !isManualLegend &&
-    whoAmISignal.signalCount === FOOTBALL_WHO_AM_I_MIN_SIGNAL_COUNT
-  ) {
-    reasons.push("minimum_signal_shape");
-  }
-  if (
-    !isManualLegend &&
-    profile.teamCount === 2 &&
-    profile.trophyWins === 0 &&
-    profile.transferCount === 0 &&
-    meaningfulStats
-  ) {
-    reasons.push("two_club_stats_only_signal");
-  }
-  if (
-    !isManualLegend &&
-    profile.trophyWins === 0 &&
-    profile.transferCount === 0 &&
-    meaningfulStats &&
-    profile.teamCount <= 3 &&
-    profile.clueRichnessScore <= FOOTBALL_WHO_AM_I_MIN_CLUE_RICHNESS_SCORE
-  ) {
-    reasons.push("stats_only_weak_diversity");
-  }
-
-  return reasons;
-}
-
-function getApprovedWhoAmIDifficulty(params: {
-  rawDifficulty: "easy" | "medium" | "hard";
-  profile: PlayerQualityProfile;
-  isManualLegend: boolean;
-}): "easy" | "medium" | "hard" {
-  const { rawDifficulty, profile, isManualLegend } = params;
-
-  if (isManualLegend) {
-    return rawDifficulty === "hard" ? "medium" : rawDifficulty;
-  }
-
-  if (rawDifficulty === "easy") {
-    return profile.playabilityScore < 220 && !profile.isHeadlineSeed
-      ? "medium"
-      : "easy";
-  }
-
-  if (rawDifficulty === "medium") {
-    if (
-      (profile.isHeadlineSeed && profile.playabilityScore >= 350) ||
-      profile.playabilityScore >= 700 ||
-      (profile.teamCount >= 5 && profile.trophyWins >= 15)
-    ) {
-      return "easy";
-    }
-    return "medium";
-  }
-
-  if (
-    (profile.isHeadlineSeed && profile.playabilityScore >= 350) ||
-    profile.playabilityScore >= 650
-  ) {
-    return "easy";
-  }
-  if (
-    profile.playabilityScore >= 350 ||
-    profile.trophyWins > 0 ||
-    profile.transferCount >= 5 ||
-    (profile.teamCount >= 4 && profile.playabilityScore >= 250)
-  ) {
-    return "medium";
-  }
-  return "hard";
-}
-
-function buildFootballWhoAmIApprovedData(params: {
-  rawClues: WhoAmIClue[];
-  players: Player[];
-  ptsList: PlayerTeamSeason[];
-  teams: Team[];
-  trophies: PlayerTrophy[];
-  transfers: PlayerTransfer[];
-  qualityProfiles: PlayerQualityProfile[];
-}): {
-  approvedClues: WhoAmIApprovedClue[];
-  qaReport: WhoAmIQaReport;
-} {
-  const footballRawClues = params.rawClues.filter((clue) => clue.sport === "football");
-  const footballPlayers = params.players.filter((player) => player.sport === "football");
-  const footballPts = params.ptsList.filter((pts) => pts.leagueId.startsWith("fb_"));
-  const footballTeams = params.teams.filter((team) => team.sport === "football");
-  const footballTrophies = params.trophies.filter((trophy) => trophy.sport === "football");
-  const footballTransfers = params.transfers.filter((transfer) => transfer.sport === "football");
-  const qualityProfilesByPlayerId = new Map(
-    params.qualityProfiles.map((profile) => [profile.playerId, profile]),
-  );
-  const playerById = new Map(footballPlayers.map((player) => [player.id, player]));
-  const teamsById = new Map(footballTeams.map((team) => [team.id, team]));
-  const teamNames = new Map(footballTeams.map((team) => [team.id, team.name]));
-  const nationalTeamNames = new Set(
-    footballTeams
-      .filter((team) => VERVE_GRID_NATIONAL_TEAM_LEAGUE_IDS.has(team.leagueId))
-      .map((team) => team.name),
-  );
-
-  const playerPts = new Map<string, PlayerTeamSeason[]>();
-  for (const pts of footballPts) {
-    if (!playerPts.has(pts.playerId)) playerPts.set(pts.playerId, []);
-    playerPts.get(pts.playerId)!.push(pts);
-  }
-
-  const playerTrophies = new Map<string, PlayerTrophy[]>();
-  for (const trophy of footballTrophies) {
-    if (!playerTrophies.has(trophy.playerId)) playerTrophies.set(trophy.playerId, []);
-    playerTrophies.get(trophy.playerId)!.push(trophy);
-  }
-
-  const playerTransfers = new Map<string, PlayerTransfer[]>();
-  for (const transfer of footballTransfers) {
-    if (!playerTransfers.has(transfer.playerId)) {
-      playerTransfers.set(transfer.playerId, []);
-    }
-    playerTransfers.get(transfer.playerId)!.push(transfer);
-  }
-
-  const countsBySport = footballRawClues.reduce<Record<string, number>>((acc, clue) => {
-    acc[clue.sport] = (acc[clue.sport] || 0) + 1;
-    return acc;
-  }, {});
-  const rawCountsByDifficulty = footballRawClues.reduce<Record<string, number>>(
-    (acc, clue) => {
-      acc[clue.difficulty] = (acc[clue.difficulty] || 0) + 1;
-      return acc;
-    },
-    {},
-  );
-
-  const approvedClues: WhoAmIApprovedClue[] = [];
-  const rejectedClues: WhoAmIRejectedClue[] = [];
-  const difficultyChangedExamples: WhoAmIQaExample[] = [];
-  const rejectedExamples: WhoAmIQaExample[] = [];
-  const textAdjustedExamples: WhoAmIQaExample[] = [];
-
-  let nationalTeamLeakyRawCount = 0;
-  let nationalTeamLabelsRemovedCount = 0;
-  let trophyTextNormalizedCount = 0;
-  let transferClueReplacedCount = 0;
-  let attackerGrammarFixedCount = 0;
-
-  for (const rawClue of footballRawClues) {
-    const profile = qualityProfilesByPlayerId.get(rawClue.playerId);
-    const isManualLegend = isManualLegendPlayerId(rawClue.playerId);
-    const rejections: string[] = [];
-
-    if (!profile) {
-      rejections.push("missing_quality_profile");
-    } else if (!profile.whoAmIEligible) {
-      rejections.push("quality_profile_ineligible");
-    }
-
-    const pts = playerPts.get(rawClue.playerId) || [];
-    const wins = (playerTrophies.get(rawClue.playerId) || []).filter(
-      (trophy) => trophy.place?.toLowerCase() === "winner",
-    );
-    const transfers = playerTransfers.get(rawClue.playerId) || [];
-    const player = playerById.get(rawClue.playerId) || null;
-    const rawTeamLabels = !isManualLegend
-      ? getPreferredWhoAmITeamLabels(pts, teamNames)
-      : [];
-    const approvedTeamLabels = !isManualLegend
-      ? getApprovedWhoAmITeamLabels(pts, teamsById)
-      : [];
-
-    if (
-      rawTeamLabels.length > approvedTeamLabels.length &&
-      rawTeamLabels.length > 0
-    ) {
-      nationalTeamLabelsRemovedCount += rawTeamLabels.length - approvedTeamLabels.length;
-      nationalTeamLeakyRawCount += 1;
-    }
-
-    if (profile) {
-      rejections.push(...getFootballWhoAmILowSignalReasons(profile, isManualLegend));
-
-      if (
-        !isManualLegend &&
-        approvedTeamLabels.length < 2 &&
-        profile.trophyWins === 0 &&
-        profile.transferCount === 0 &&
-        !profile.isHeadlineSeed
-      ) {
-        rejections.push("insufficient_club_signal_after_curation");
-      }
-
-      if (
-        rejections.includes("stats_only_weak_diversity") &&
-        !profile.isHeadlineSeed &&
-        profile.playabilityScore < 300
-      ) {
-        rejections.push("reject_stats_only_weak_diversity");
-      }
-      if (
-        rejections.includes("minimum_signal_shape") &&
-        !profile.isHeadlineSeed &&
-        profile.playabilityScore < 180
-      ) {
-        rejections.push("reject_minimum_signal_shape");
-      }
-      if (rejections.includes("two_club_stats_only_signal")) {
-        rejections.push("reject_two_club_stats_only_signal");
-      }
-    }
-
-    const rejectionReasons = Array.from(new Set(rejections.filter((reason) => reason.startsWith("reject_") || reason === "missing_quality_profile" || reason === "quality_profile_ineligible" || reason === "insufficient_club_signal_after_curation")));
-    if (rejectionReasons.length > 0) {
-      rejectedClues.push({
-        sourceClueId: rawClue.id,
-        playerId: rawClue.playerId,
-        answerName: rawClue.answerName,
-        rawDifficulty: rawClue.difficulty,
-        reasons: rejectionReasons,
-      });
-      if (rejectedExamples.length < 12) {
-        rejectedExamples.push({
-          playerId: rawClue.playerId,
-          answerName: rawClue.answerName,
-          rawDifficulty: rawClue.difficulty,
-          reasons: rejectionReasons,
-          rawClue1: rawClue.clue1,
-          rawClue2: rawClue.clue2,
-          rawClue3: rawClue.clue3,
-          rawClue4: rawClue.clue4,
-        });
-      }
-      continue;
-    }
-
-    if (!profile) {
-      continue;
-    }
-
-    let approvedClue1 = rawClue.clue1;
-    let approvedClue2 = rawClue.clue2;
-    let approvedClue3 = rawClue.clue3;
-    let approvedClue4 = rawClue.clue4;
-    const curationFlags: string[] = [];
-
-    if (isManualLegend) {
-      const manualClue1 = formatWhoAmIIdentityClue({
-        nationality: rawClue.clue1.match(/^I am from (.+?)\./)?.[1] || null,
-        position: rawClue.clue1.match(/I played as (?:a|an) (.+?)\./)?.[1] || null,
-        pastTense: true,
-      });
-      if (manualClue1 && manualClue1 !== rawClue.clue1) {
-        approvedClue1 = manualClue1;
-        curationFlags.push("identity_clue_normalized");
-      }
-    } else if (player) {
-      const identityClue = formatWhoAmIIdentityClue({
-        nationality: player.nationality,
-        position: player.position,
-      });
-      if (identityClue) {
-        approvedClue1 = identityClue;
-      }
-      if (
-        rawClue.clue1.includes("I play as a Attacker.") &&
-        approvedClue1 !== rawClue.clue1
-      ) {
-        attackerGrammarFixedCount += 1;
-        curationFlags.push("attacker_article_fixed");
-      }
-
-      if (approvedTeamLabels.length >= 2) {
-        approvedClue2 = `I have played for ${approvedTeamLabels.slice(0, 4).join(", ")}.`;
-      } else if (approvedTeamLabels.length === 1) {
-        approvedClue2 = `I have played for ${approvedTeamLabels[0]}.`;
-      }
-      if (approvedClue2 !== rawClue.clue2) {
-        curationFlags.push("team_labels_curated");
-      }
-
-      const trophyClue = formatWhoAmITrophyClue(wins);
-      const totalGoals = pts.reduce((sum, entry) => sum + (entry.goals || 0), 0);
-      const totalAssists = pts.reduce((sum, entry) => sum + (entry.assists || 0), 0);
-      const totalAppearances = pts.reduce(
-        (sum, entry) => sum + (entry.appearances || 0),
-        0,
-      );
-
-      if (trophyClue) {
-        approvedClue3 = trophyClue.clue;
-      } else if (totalGoals > 0 && totalAssists >= 8 && totalGoals < 10) {
-        approvedClue3 = `I have produced ${totalGoals} goals and ${totalAssists} assists across ${totalAppearances} appearances.`;
-      } else if (totalGoals > 0) {
-        const goalWord = totalGoals === 1 ? "goal" : "goals";
-        approvedClue3 = `I have scored ${totalGoals} ${goalWord} across ${totalAppearances} appearances.`;
-      } else {
-        approvedClue3 = `I have made ${totalAppearances} appearances in my career.`;
-      }
-      if (approvedClue3 !== rawClue.clue3) {
-        trophyTextNormalizedCount += 1;
-        curationFlags.push("achievement_clue_normalized");
-      }
-
-      const distinctTransfers = transfers
-        .map((transfer) => `${transfer.fromTeamName} to ${transfer.toTeamName}`)
-        .filter((label, index, labels) => labels.indexOf(label) === index)
-        .slice(0, 2);
-      if (
-        distinctTransfers.length > 0 &&
-        (profile.transferCount >= 5 ||
-          (profile.teamCount >= 4 && profile.playabilityScore >= 300))
-      ) {
-        approvedClue4 = `My transfers include: ${distinctTransfers.join("; ")}.`;
-      } else if (player.firstName) {
-        approvedClue4 = `My first name is ${player.firstName}.`;
-        if (rawClue.clue4 !== approvedClue4 && rawClue.clue4.startsWith("My transfers include:")) {
-          transferClueReplacedCount += 1;
-          curationFlags.push("transfer_clue_replaced");
-        }
-      }
-    }
-
-    const approvedDifficulty = getApprovedWhoAmIDifficulty({
-      rawDifficulty: rawClue.difficulty,
-      profile,
-      isManualLegend,
-    });
-    if (approvedDifficulty !== rawClue.difficulty && difficultyChangedExamples.length < 12) {
-      difficultyChangedExamples.push({
-        playerId: rawClue.playerId,
-        answerName: rawClue.answerName,
-        rawDifficulty: rawClue.difficulty,
-        approvedDifficulty,
-        rawClue1: rawClue.clue1,
-        rawClue2: rawClue.clue2,
-        rawClue3: rawClue.clue3,
-        rawClue4: rawClue.clue4,
-      });
-    }
-    if (
-      (approvedClue1 !== rawClue.clue1 ||
-        approvedClue2 !== rawClue.clue2 ||
-        approvedClue3 !== rawClue.clue3 ||
-        approvedClue4 !== rawClue.clue4) &&
-      textAdjustedExamples.length < 12
-    ) {
-      textAdjustedExamples.push({
-        playerId: rawClue.playerId,
-        answerName: rawClue.answerName,
-        rawDifficulty: rawClue.difficulty,
-        approvedDifficulty,
-        rawClue1: rawClue.clue1,
-        rawClue2: rawClue.clue2,
-        rawClue3: rawClue.clue3,
-        rawClue4: rawClue.clue4,
-        approvedClue1,
-        approvedClue2,
-        approvedClue3,
-        approvedClue4,
-      });
-    }
-
-    const approvalReasons = [
-      "curated_upstream",
-      profile.isHeadlineSeed ? "headline_seed" : null,
-      isManualLegend ? "manual_legend" : null,
-      profile.playabilityScore >= 350 ? "high_playability" : null,
-      profile.trophyWins > 0 ? "trophy_signal" : null,
-      profile.transferCount > 0 ? "transfer_signal" : null,
-      approvedTeamLabels.length >= 3 ? "broad_club_history" : null,
-    ].filter((reason): reason is string => Boolean(reason));
-
-    approvedClues.push({
-      id: `whoami_approved_${rawClue.playerId}`,
-      sourceClueId: rawClue.id,
-      sport: "football",
-      playerId: rawClue.playerId,
-      clue1: approvedClue1,
-      clue2: approvedClue2,
-      clue3: approvedClue3,
-      clue4: approvedClue4,
-      answerName: rawClue.answerName,
-      difficulty: approvedDifficulty,
-      rawDifficulty: rawClue.difficulty,
-      qualityScore: Number(profile.playabilityScore.toFixed(2)),
-      isHeadlineSeed: profile.isHeadlineSeed,
-      isManualLegend,
-      teamLabels: approvedTeamLabels,
-      approvalReasons,
-      curationFlags: Array.from(new Set(curationFlags)),
-    });
-  }
-
-  const approvedCountsByDifficulty = approvedClues.reduce<Record<string, number>>(
-    (acc, clue) => {
-      acc[clue.difficulty] = (acc[clue.difficulty] || 0) + 1;
-      return acc;
-    },
-    {},
-  );
-  const rejectionReasonCounts = rejectedClues.reduce<Record<string, number>>(
-    (acc, clue) => {
-      for (const reason of clue.reasons) {
-        acc[reason] = (acc[reason] || 0) + 1;
-      }
-      return acc;
-    },
-    {},
-  );
-
-  return {
-    approvedClues: approvedClues.sort((a, b) => a.answerName.localeCompare(b.answerName)),
-    qaReport: {
-      generatedAt: new Date().toISOString(),
-      sport: "football",
-      raw: {
-        totalClueSets: footballRawClues.length,
-        countsBySport,
-        countsByDifficulty: rawCountsByDifficulty,
-        lowSignalClueSets: footballRawClues.filter((clue) => {
-          const profile = qualityProfilesByPlayerId.get(clue.playerId);
-          return profile
-            ? getFootballWhoAmILowSignalReasons(
-                profile,
-                isManualLegendPlayerId(clue.playerId),
-              ).length > 0
-            : true;
-        }).length,
-        nationalTeamLeakyClueSets: nationalTeamLeakyRawCount,
-        attackerGrammarIssues: footballRawClues.filter((clue) =>
-          clue.clue1.includes("I play as a Attacker."),
-        ).length,
-        trophyWordingIssues: footballRawClues.filter((clue) =>
-          clue.clue3.includes("trophy/trophies"),
-        ).length,
-        transferClueSets: footballRawClues.filter((clue) =>
-          clue.clue4.startsWith("My transfers include:"),
-        ).length,
-        firstNameClueSets: footballRawClues.filter((clue) =>
-          clue.clue4.startsWith("My first name is "),
-        ).length,
-      },
-      approved: {
-        totalClueSets: approvedClues.length,
-        countsBySport: { football: approvedClues.length },
-        countsByDifficulty: approvedCountsByDifficulty,
-        headlineClueSets: approvedClues.filter((clue) => clue.isHeadlineSeed).length,
-        manualLegendClueSets: approvedClues.filter((clue) => clue.isManualLegend).length,
-        nationalTeamLeakyClueSets: approvedClues.filter((clue) =>
-          clue.teamLabels.some((label) => nationalTeamNames.has(label)),
-        ).length,
-      },
-      rejections: {
-        totalRejected: rejectedClues.length,
-        byReason: rejectionReasonCounts,
-      },
-      curationImpact: {
-        approvedFromRawRate: Number(
-          (approvedClues.length / Math.max(1, footballRawClues.length)).toFixed(4),
-        ),
-        rejectedFromRawRate: Number(
-          (rejectedClues.length / Math.max(1, footballRawClues.length)).toFixed(4),
-        ),
-        difficultyChangedCount: approvedClues.filter(
-          (clue) => clue.difficulty !== clue.rawDifficulty,
-        ).length,
-        nationalTeamLabelsRemovedCount,
-        transferClueReplacedCount,
-        trophyTextNormalizedCount,
-        attackerGrammarFixedCount,
-      },
-      examples: {
-        rejected: rejectedExamples,
-        difficultyChanged: difficultyChangedExamples,
-        textAdjusted: textAdjustedExamples,
-      },
-    },
-  };
-}
-
-function buildManualFootballLegendWhoAmIClues(
-  manualLegends: NormalizedManualFootballLegend[],
-  qualityProfilesByPlayerId?: Map<string, PlayerQualityProfile>,
-): WhoAmIClue[] {
-  return manualLegends
-    .flatMap((legend) => {
-      const qualityProfile = qualityProfilesByPlayerId?.get(legend.id);
-      if (qualityProfile && !qualityProfile.whoAmIEligible) {
-        return [];
-      }
-
-      const teamLabels = getManualLegendTeamLabels(legend);
-      const clue1Parts: string[] = [];
-      if (legend.nationality) clue1Parts.push(`I am from ${legend.nationality}`);
-      if (legend.position) clue1Parts.push(`I played as a ${legend.position}`);
-      if (clue1Parts.length === 0) {
-        return [];
-      }
-
-      const clue1 = clue1Parts.join(". ") + ".";
-      const clue2 =
-        teamLabels.length > 0
-          ? `I am associated with ${teamLabels.slice(0, 4).join(", ")}.`
-          : `I am associated with the ${legend.era || "classic"} era of football.`;
-
-      let clue3 = "";
-      if (legend.trophies.length > 0) {
-        clue3 = `I won honors such as ${legend.trophies.slice(0, 3).join(", ")}.`;
-      } else if (legend.achievements.length > 0) {
-        clue3 = `I am known for ${legend.achievements.slice(0, 2).join(" and ")}.`;
-      } else {
-        clue3 = `I am remembered as a football icon of the ${legend.era || "classic"} era.`;
-      }
-
-      const clue4 = legend.firstName
-        ? `My first name is ${legend.firstName}.`
-        : legend.era
-          ? `I am strongly associated with the ${legend.era}.`
-          : `I am remembered as one of football's historic greats.`;
-      const difficulty: WhoAmIClue["difficulty"] =
-        legend.survivalTier === "A" ? "easy" : "medium";
-
-      return [
-        {
-          id: `whoami_${legend.id}`,
-          sport: "football" as const,
-          playerId: legend.id,
-          clue1,
-          clue2,
-          clue3,
-          clue4,
-          answerName: legend.canonicalName,
-          difficulty,
-        },
-      ];
-    })
-    .sort((a, b) => a.answerName.localeCompare(b.answerName));
-}
-
-function buildWhoAmIClues(
-  players: Player[],
-  ptsList: PlayerTeamSeason[],
-  teams: Team[],
-  trophies: PlayerTrophy[],
-  transfers: PlayerTransfer[],
-  qualityProfilesByPlayerId?: Map<string, PlayerQualityProfile>,
-  manualFootballLegends: NormalizedManualFootballLegend[] = [],
-): WhoAmIClue[] {
-  const clues: WhoAmIClue[] = [];
-  const teamNames = new Map<string, string>();
-  for (const t of teams) teamNames.set(t.id, t.name);
-
-  // Build per-player data
-  const playerPts = new Map<string, PlayerTeamSeason[]>();
-  for (const pts of ptsList) {
-    if (!playerPts.has(pts.playerId)) playerPts.set(pts.playerId, []);
-    playerPts.get(pts.playerId)!.push(pts);
-  }
-
-  const playerTrophies = new Map<string, PlayerTrophy[]>();
-  for (const t of trophies) {
-    if (!playerTrophies.has(t.playerId)) playerTrophies.set(t.playerId, []);
-    playerTrophies.get(t.playerId)!.push(t);
-  }
-
-  const playerTransfers = new Map<string, PlayerTransfer[]>();
-  for (const t of transfers) {
-    if (!playerTransfers.has(t.playerId))
-      playerTransfers.set(t.playerId, []);
-    playerTransfers.get(t.playerId)!.push(t);
-  }
-
-  // Sort players by total appearances for difficulty assignment
-  const playerAppearances = new Map<string, number>();
-  for (const [pid, ptArr] of playerPts) {
-    const total = ptArr.reduce((sum, pt) => sum + (pt.appearances || 0), 0);
-    playerAppearances.set(pid, total);
-  }
-
-  const sortedPlayerIds = [...playerAppearances.entries()]
-    .sort((a, b) => b[1] - a[1])
-    .map(([id]) => id);
-
-  for (const player of players) {
-    const pts = playerPts.get(player.id) || [];
-    const troph = playerTrophies.get(player.id) || [];
-    const trans = playerTransfers.get(player.id) || [];
-    const qualityProfile = qualityProfilesByPlayerId?.get(player.id);
-
-    // Need at least some data to make clues
-    if (pts.length === 0) continue;
-
-    if (player.sport === "football" && qualityProfile && !qualityProfile.whoAmIEligible) {
-      continue;
-    }
-
-    const wins = troph.filter(
-      (t) => t.place?.toLowerCase() === "winner",
-    );
-    const totalGoals = pts.reduce(
-      (sum, p) => sum + (p.goals || 0),
-      0,
-    );
-    const totalApps = pts.reduce(
-      (sum, p) => sum + (p.appearances || 0),
-      0,
-    );
-    const totalMinutes = pts.reduce(
-      (sum, p) => sum + (p.minutes || 0),
-      0,
-    );
-
-    const teamLabels = getPreferredWhoAmITeamLabels(pts, teamNames);
-    const meaningfulStats = hasMeaningfulFootballStats(
-      totalApps,
-      totalMinutes,
-      totalGoals,
-      pts.reduce((sum, p) => sum + (p.assists || 0), 0),
-    );
-
-    if (player.sport === "football") {
-      const metadataCompletenessScore =
-        (player.firstName ? 4 : 0) +
-        (player.nationality ? 4 : 0) +
-        (player.position ? 4 : 0) +
-        (player.photo ? 3 : 0);
-      const clueRichnessScore =
-        (teamLabels.length >= 2 ? 8 : teamLabels.length === 1 ? 3 : 0) +
-        (wins.length > 0 ? 6 : 0) +
-        (totalGoals > 0 ? 4 : 0) +
-        (trans.length > 0 ? 4 : 0);
-      const whoAmISignal = getFootballWhoAmISignalStrength({
-        playabilityScore: qualityProfile?.playabilityScore || 0,
-        clueRichnessScore:
-          qualityProfile?.clueRichnessScore ?? clueRichnessScore,
-        metadataCompletenessScore:
-          qualityProfile?.metadataCompletenessScore ?? metadataCompletenessScore,
-        teamCount: qualityProfile?.teamCount ?? teamLabels.length,
-        trophyWins: qualityProfile?.trophyWins ?? wins.length,
-        transferCount: qualityProfile?.transferCount ?? trans.length,
-        meaningfulStats,
-        hasNationality: qualityProfile?.hasNationality ?? Boolean(player.nationality),
-        hasPosition: qualityProfile?.hasPosition ?? Boolean(player.position),
-        isHeadlineSeed: qualityProfile?.isHeadlineSeed ?? false,
-        eliteCompetitionScore: qualityProfile?.eliteCompetitionScore ?? 0,
-      });
-
-      if (
-        !qualityProfile &&
-        !whoAmISignal.qualifiesBase &&
-        !whoAmISignal.qualifiesHeadlineFallback
-      ) {
-        continue;
-      }
-    }
-
-    // Clue 1: Nationality + position
-    const clue1Parts: string[] = [];
-    if (player.nationality) clue1Parts.push(`I am from ${player.nationality}`);
-    if (player.position) clue1Parts.push(`I play as a ${player.position}`);
-    if (clue1Parts.length === 0) continue;
-    const clue1 = clue1Parts.join(". ") + ".";
-
-    // Clue 2: Teams played for (distinct recognizable teams)
-    let clue2 = "";
-    if (teamLabels.length >= 2) {
-      const displayed = teamLabels.slice(0, 4);
-      clue2 = `I have played for ${displayed.join(", ")}.`;
-    } else if (teamLabels.length === 1) {
-      clue2 = `I have played for ${teamLabels[0]}.`;
-    } else {
-      clue2 = `I have played in ${pts.length} season(s).`;
-    }
-
-    // Clue 3: Trophies / achievements
-    let clue3 = "";
-    if (wins.length > 0) {
-      const topTrophies = wins.slice(0, 3).map((t) => t.trophyName);
-      clue3 = `I have won ${wins.length} trophy/trophies, including ${topTrophies.join(", ")}.`;
-    } else {
-      // Fallback: notable stats
-      if (totalGoals > 0) {
-        clue3 = `I have scored ${totalGoals} goals across ${totalApps} appearances.`;
-      } else if (pts[0]?.points != null) {
-        const totalPts = pts.reduce(
-          (sum, p) => sum + (p.points || 0),
-          0,
-        );
-        clue3 = `I have accumulated ${totalPts} points.`;
-      } else {
-        clue3 = `I have made ${totalApps} appearances in my career.`;
-      }
-    }
-
-    // Clue 4: Transfer history or specific team + era
-    let clue4 = "";
-    if (trans.length > 0) {
-      const recent = trans.slice(0, 2);
-      const parts = recent.map(
-        (t) => `${t.fromTeamName} to ${t.toTeamName}`,
-      );
-      clue4 = `My transfers include: ${parts.join("; ")}.`;
-    } else if (player.firstName) {
-      clue4 = `My first name is ${player.firstName}.`;
-    } else {
-      clue4 = `I currently play in the ${teamLabels[teamLabels.length - 1] || "top division"}.`;
-    }
-
-    // Difficulty based on ranking
-    const rank = sortedPlayerIds.indexOf(player.id);
-    let difficulty: "easy" | "medium" | "hard" = "hard";
-    if (rank >= 0 && rank < 100) difficulty = "easy";
-    else if (rank >= 100 && rank < 500) difficulty = "medium";
-
-    clues.push({
-      id: `whoami_${player.id}`,
-      sport: player.sport,
-      playerId: player.id,
-      clue1,
-      clue2,
-      clue3,
-      clue4,
-      answerName: player.name,
-      difficulty,
-    });
-  }
-
-  clues.push(
-    ...buildManualFootballLegendWhoAmIClues(
-      manualFootballLegends,
-      qualityProfilesByPlayerId,
-    ),
-  );
-
-  console.log(`  Built ${clues.length} Who Am I clue sets`);
-  return clues;
-}
-
 // ─── Persistence ────────────────────────────────────────────────────────────
 
 function persistTable<T extends { id: string }>(
@@ -8134,9 +6956,6 @@ async function runPipeline(
     const footballTrophies = allTrophies.filter((trophy) => trophy.sport === "football");
     const footballTransfers = allTransfers.filter((transfer) => transfer.sport === "football");
     const footballFixtures = allFixtures.filter((fixture) => fixture.sport === "football");
-    const footballWhoAmIClues = loadTable<WhoAmIClue>("whoAmIClues").filter(
-      (clue) => clue.sport === "football",
-    );
     const manualFootballLegends = loadManualFootballLegends();
     const derivedFootballPlayers = [
       ...footballPlayers,
@@ -8148,7 +6967,6 @@ async function runPipeline(
       manualFootballLegends,
     );
     const footballQualityProfiles =
-      config.features.buildWhoAmIClues ||
       config.features.buildPlayerQualityProfiles ||
       config.features.buildFootballSurvivalIndex ||
       config.features.buildFootballCoverageReport
@@ -8164,9 +6982,6 @@ async function runPipeline(
             manualFootballLegends,
           )
         : [];
-    const footballQualityLookup = new Map(
-      footballQualityProfiles.map((profile) => [profile.playerId, profile]),
-    );
 
     if (config.features.buildGridIndex) {
       console.log("  Building grid index...");
@@ -8190,20 +7005,6 @@ async function runPipeline(
       persistTable("statFacts", statFacts);
     }
 
-    if (config.features.buildWhoAmIClues) {
-      console.log("  Building Who Am I clues...");
-      const whoAmI = buildWhoAmIClues(
-        allPlayers,
-        allPts,
-        allTeams,
-        allTrophies,
-        allTransfers,
-        footballQualityLookup,
-        manualFootballLegends,
-      );
-      persistReplaceTable("whoAmIClues", whoAmI);
-    }
-
     state.phases.indexBuilding.status = "completed";
     savePipelineState(state);
   }
@@ -8225,9 +7026,6 @@ async function runPipeline(
     const footballTrophies = allTrophies.filter((trophy) => trophy.sport === "football");
     const footballTransfers = allTransfers.filter((transfer) => transfer.sport === "football");
     const footballFixtures = allFixtures.filter((fixture) => fixture.sport === "football");
-    const footballWhoAmIClues = loadTable<WhoAmIClue>("whoAmIClues").filter(
-      (clue) => clue.sport === "football",
-    );
     const manualFootballLegends = loadManualFootballLegends();
     const derivedFootballPlayers = [
       ...footballPlayers,
@@ -8286,19 +7084,6 @@ async function runPipeline(
       persistReplaceTable("footballSurvivalIndex", footballSurvivalIndex);
     }
 
-    console.log("  Building approved Who Am I football clues...");
-    const approvedWhoAmIData = buildFootballWhoAmIApprovedData({
-      rawClues: loadTable<WhoAmIClue>("whoAmIClues"),
-      players: allPlayers,
-      ptsList: allPts,
-      teams: allTeams,
-      trophies: allTrophies,
-      transfers: allTransfers,
-      qualityProfiles: footballQualityProfiles,
-    });
-    persistReplaceTable("whoAmIApprovedClues", approvedWhoAmIData.approvedClues);
-    persistJsonFile("whoAmIQaReport", approvedWhoAmIData.qaReport);
-
     if (config.features.buildFootballCoverageReport) {
       console.log("  Building football coverage report...");
       const footballCoverageReport = buildFootballCoverageReport(
@@ -8316,7 +7101,6 @@ async function runPipeline(
       console.log("  Building football gameplay QA report...");
       const footballGameplayQaReport = buildFootballGameplayQaReport(
         footballSurvivalIndex,
-        footballWhoAmIClues,
         footballQualityProfiles,
       );
       persistJsonFile("footballGameplayQaReport", footballGameplayQaReport);
@@ -8379,8 +7163,6 @@ async function runPipeline(
       "statFacts",
       "higherLowerPools",
       "higherLowerFacts",
-      "whoAmIClues",
-      "whoAmIApprovedClues",
       "playerQualityProfiles",
       "footballSurvivalIndex",
     ];
@@ -8406,7 +7188,7 @@ async function runPipeline(
     );
     if (footballGameplayQaReport) {
       console.log(
-        `  footballGameplayQaReport: ${footballGameplayQaReport.survival.totalBuckets} survival buckets, ${footballGameplayQaReport.whoAmI.totalClueSets} football clue sets`,
+        `  footballGameplayQaReport: ${footballGameplayQaReport.survival.totalBuckets} survival buckets`,
       );
     }
 
@@ -8423,13 +7205,6 @@ async function runPipeline(
     if (verveGridQaReport) {
       console.log(
         `  verveGridQaReport: ${verveGridQaReport.approved.totalEntries} approved entries, ${Object.keys(verveGridQaReport.approved.templateCountsByRowTypeMix).length} row type mixes`,
-      );
-    }
-
-    const whoAmIQaReport = loadJsonFile<WhoAmIQaReport>("whoAmIQaReport");
-    if (whoAmIQaReport) {
-      console.log(
-        `  whoAmIQaReport: ${whoAmIQaReport.approved.totalClueSets} approved clue sets, ${whoAmIQaReport.rejections.totalRejected} rejected`,
       );
     }
   }
@@ -8453,11 +7228,6 @@ function validateOutput(): string[] {
   const derivedPlayerIds = new Set([...playerIds, ...manualLegendIds]);
   const teamIds = new Set(teams.map((t) => t.id));
   const teamsById = new Map(teams.map((team) => [team.id, team]));
-  const nationalTeamNames = new Set(
-    teams
-      .filter((team) => VERVE_GRID_NATIONAL_TEAM_LEAGUE_IDS.has(team.leagueId))
-      .map((team) => team.name),
-  );
 
   // Check for duplicate IDs
   const playerIdCounts = new Map<string, number>();
@@ -8599,60 +7369,6 @@ function validateOutput(): string[] {
       }
       if (fact.entityType === "team" && !teamIds.has(fact.entityId)) {
         errors.push(`HigherLower fact ${fact.id} teamId ${fact.entityId} not in teams`);
-      }
-    }
-  }
-
-  const whoAmIApprovedPath = path.join(DATA_DIR, "whoAmIApprovedClues.json");
-  if (fs.existsSync(whoAmIApprovedPath)) {
-    const rawWhoAmIClues = loadTable<WhoAmIClue>("whoAmIClues");
-    const approvedWhoAmIClues = loadTable<WhoAmIApprovedClue>("whoAmIApprovedClues");
-    const qaReport = loadJsonFile<WhoAmIQaReport>("whoAmIQaReport");
-    const rawClueIds = new Set(rawWhoAmIClues.map((clue) => clue.id));
-    const approvedIds = new Map<string, number>();
-
-    for (const clue of approvedWhoAmIClues) {
-      approvedIds.set(clue.id, (approvedIds.get(clue.id) || 0) + 1);
-
-      if (clue.sport !== "football") {
-        errors.push(`WhoAmI approved clue ${clue.id} is not football-only`);
-      }
-      if (!derivedPlayerIds.has(clue.playerId)) {
-        errors.push(`WhoAmI approved clue ${clue.id} playerId ${clue.playerId} not in players`);
-      }
-      if (!rawClueIds.has(clue.sourceClueId)) {
-        errors.push(`WhoAmI approved clue ${clue.id} source ${clue.sourceClueId} missing from raw clues`);
-      }
-      if (!clue.clue1 || !clue.clue2 || !clue.clue3 || !clue.clue4) {
-        errors.push(`WhoAmI approved clue ${clue.id} has an empty clue stage`);
-      }
-      if (clue.clue1.includes("I play as a Attacker.")) {
-        errors.push(`WhoAmI approved clue ${clue.id} still has attacker grammar issue`);
-      }
-      if (clue.clue3.includes("trophy/trophies")) {
-        errors.push(`WhoAmI approved clue ${clue.id} still has trophy wording issue`);
-      }
-      if (clue.teamLabels.some((label) => nationalTeamNames.has(label))) {
-        errors.push(`WhoAmI approved clue ${clue.id} still exposes national team labels`);
-      }
-    }
-
-    for (const [id, count] of approvedIds) {
-      if (count > 1) {
-        errors.push(`Duplicate approved WhoAmI clue ID: ${id} (${count}x)`);
-      }
-    }
-
-    if (qaReport) {
-      if (qaReport.approved.totalClueSets !== approvedWhoAmIClues.length) {
-        errors.push(
-          `WhoAmIQaReport approved count ${qaReport.approved.totalClueSets} does not match approved clues ${approvedWhoAmIClues.length}`,
-        );
-      }
-      if (qaReport.approved.nationalTeamLeakyClueSets !== 0) {
-        errors.push(
-          `WhoAmIQaReport still reports ${qaReport.approved.nationalTeamLeakyClueSets} national-team-leaky approved clue sets`,
-        );
       }
     }
   }

@@ -8,7 +8,7 @@
 // daily/duel/challenge a client opens for itself. Keeping the literal out of
 // this allowlist is what enforces that boundary.
 //
-// Football-only modes (Higher/Lower, VerveGrid, Who Am I) keep their own
+// Football-only modes (Higher/Lower, VerveGrid, Career Path) keep their own
 // stricter `sport === "football"` checks; this set is the broad gate for the
 // modes that span every client-facing subject.
 export const CLIENT_SPORTS = [

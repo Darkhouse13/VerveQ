@@ -65,8 +65,8 @@ export const SHELL_ROUTES = {
   survivalPlay: "/v2/survival",
   /** Solo Higher or Lower on the shell prototype layout (FE reskin). */
   higherLowerPlay: "/v2/higher-lower",
-  /** Solo Who Am I on the shell prototype layout (FE reskin). */
-  whoAmIPlay: "/v2/who-am-i",
+  /** Solo Career Path on the shell prototype layout. */
+  careerPathPlay: "/v2/career-path",
   /** Solo VerveGrid on the bespoke GridStage (FE reskin over the existing backend). */
   verveGridPlay: "/v2/verve-grid",
   /** Daily Challenge (quiz) on the shell — reuses QuizPlayView via the DAILY session. */
@@ -93,7 +93,7 @@ export const SHELL_ROUTE_PATTERNS = {
   blitzPlay: "/v2/blitz",
   survivalPlay: "/v2/survival",
   higherLowerPlay: "/v2/higher-lower",
-  whoAmIPlay: "/v2/who-am-i",
+  careerPathPlay: "/v2/career-path",
   verveGridPlay: "/v2/verve-grid",
   dailyPlay: "/v2/daily",
   arena: "/v2/arena",
@@ -112,7 +112,6 @@ export const MODE_ROUTES = {
   blitz: "/sport-select?mode=blitz",
   higherLower: "/higher-lower",
   verveGrid: "/sport-select?mode=verve-grid",
-  whoAmI: "/sport-select?mode=who-am-i",
   daily: "/sport-select?mode=daily-quiz",
   liveMatch: "/live-match",
   challenge: "/challenge",

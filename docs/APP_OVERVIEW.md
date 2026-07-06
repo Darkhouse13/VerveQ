@@ -2,7 +2,7 @@
 
 ## What is VerveQ?
 
-VerveQ is a competitive sports trivia platform where players test and prove their sports knowledge through multiple game modes: **Quiz**, **Survival**, **Blitz**, **Higher or Lower**, **VerveGrid**, **Who Am I**, **Daily Challenge**, **Live Match**, and the synchronous multiplayer **Challenge Arena** rooms. Players earn ELO ratings, climb leaderboards, unlock achievements, contribute community questions via **The Forge**, and challenge friends — all across three supported sports.
+VerveQ is a competitive sports trivia platform where players test and prove their sports knowledge through multiple game modes: **Quiz**, **Survival**, **Blitz**, **Higher or Lower**, **VerveGrid**, **Career Path**, **Daily Challenge**, **Live Match**, and the synchronous multiplayer **Challenge Arena** rooms. Players earn ELO ratings, climb leaderboards, unlock achievements, contribute community questions via **The Forge**, and challenge friends — all across three supported sports.
 
 The platform targets sports enthusiasts who want more than casual trivia. VerveQ's ELO rating system, borrowed from competitive chess, provides a meaningful measure of sports knowledge that evolves with every game played.
 
@@ -24,7 +24,7 @@ Current mode availability is mixed:
 - Survival remains multi-sport in current runtime.
 - Higher or Lower is currently football-only in frontend and backend.
 - VerveGrid is currently football-only in frontend and backend.
-- Who Am I is currently football-only in frontend and backend.
+- Career Path is currently football-only in frontend and backend.
 
 ---
 
@@ -243,22 +243,20 @@ A 3x3 grid intersection challenge testing deep sports knowledge.
 
 ---
 
-### Who Am I
+### Career Path
 
-A progressive clue-based trivia game where more information costs points.
+Guess the player from the chronological list of clubs he played for (e.g., Barcelona → Paris Saint-Germain → Inter Miami → Messi). Replaced Who Am I in July 2026.
 
 **Current availability:** Football-only.
 
-**Current runtime layer:** Approved `whoAmIApprovedClues`.
+**Current runtime layer:** In-bundle dataset `app/convex/data/football_career_paths.json` (no DB content table; sessions live in `careerPathSessions`).
 
 **How it works:**
-1. Player selects football
-2. Game starts with a maximum potential score of 1,000 points
-3. Clue 1 is revealed (usually Nationality + Position)
-4. Player can make a guess or choose to reveal the next clue (up to 4 total clues)
-5. Revealing a clue reduces the potential score by 25% (e.g., 1000 → 750 → 562 → 421)
-6. Fuzzy matching allows for minor typos, giving players a "Close call" without ending the game
-7. A definitive wrong guess ends the game with 0 points
+1. Player launches the mode from the Compete grid (no difficulty picker; rounds mix easy/medium/hard by weight)
+2. The full club path is shown up front; the round is worth 1,000 points
+3. The player types a name — there is deliberately NO autocomplete; server-side fuzzy matching absorbs typos instead, with a tolerance that scales with the length of the player's name (1–3 edits)
+4. A near-miss ("close call") costs 10% of the score but not a guess
+5. A wrong guess halves the remaining potential score; three wrong guesses end the round at 0 points
 
 ---
 
@@ -652,7 +650,7 @@ Home Screen
   ├── Live Match ───── Challenge Accept ── Waiting Room ───── Live Match ──── Results
   ├── Higher/Lower ── Sport Select ───────────────────────── Higher or Lower ── Results
   ├── VerveGrid ───── Sport Select ───────────────────────── VerveGrid ──────── Results
-  ├── Who Am I ────── Sport Select ───────────────────────── Who Am I ────────── Results
+  ├── Career Path ─── (direct launch) ──────────────────────── Career Path ────── Results
   ├── Forge ─────────── Submit / Review / My Submissions
   ├── Leaderboard (bottom nav)
   ├── Challenge / Duel Hub (bottom nav)
@@ -709,7 +707,7 @@ Results Screen
 | 23 | Forge | `/forge` | Community question editor and reviewer |
 | 24 | Higher or Lower | `/higher-lower` | Streak-based stat comparison gameplay |
 | 25 | VerveGrid | `/verve-grid` | 3x3 grid intersection challenge |
-| 26 | Who Am I | `/who-am-i` | Progressive clue guessing gameplay |
+| 26 | Career Path | `/v2/career-path` | Guess the player from his club history |
 | 27 | Challenge Arena | `/arena/:code` | Synchronous arena room — lobby, countdown, 5 rounds of question/reveal, round break, final podium, rematch |
 
 ---
@@ -923,13 +921,13 @@ VerveQ uses a **neo-brutalism** design language characterized by:
 | `verveGrid.submitGuess` | Mutation | Submit a player guess for a grid cell |
 | `verveGrid.getSession` | Query | Get current session state |
 
-### Who Am I
+### Career Path
 | Function | Type | Description |
 |----------|------|-------------|
-| `whoAmI.startChallenge` | Mutation | Start a new Who Am I challenge |
-| `whoAmI.revealNextClue` | Mutation | Reveal the next clue (reduces potential score) |
-| `whoAmI.submitGuess` | Mutation | Submit a player name guess with fuzzy matching |
-| `whoAmI.getSession` | Query | Get current session state |
+| `careerPath.startChallenge` | Mutation | Start a new Career Path round (weighted difficulty mix) |
+| `careerPath.submitGuess` | Mutation | Submit a player name guess with length-scaled fuzzy matching |
+| `careerPath.penalizeTabSwitch` | Mutation | Fail the round when the player switches tabs |
+| `careerPath.getSession` | Query | Get current session state (never includes the answer) |
 
 ### Sports
 | Function | Type | Description |

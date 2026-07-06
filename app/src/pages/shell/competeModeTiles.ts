@@ -1,5 +1,5 @@
 import {
-  Brain, Heart, Zap, TrendingUp, Grid3X3, HelpCircle, Timer, Swords, Users,
+  Brain, Heart, Zap, TrendingUp, Grid3X3, Route, Timer, Swords, Users,
   Lightbulb, Clock,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
@@ -46,10 +46,10 @@ export const COMPETE_MODE_TILES: ModeTile[] = [
   // Higher/Lower + VerveGrid are the curated solo modes with difficulty tiers, so
   // they route through the shared difficulty picker first (like Quiz) — the player
   // chooses easy/medium/hard up front and the picker deep-links into the v2 play
-  // screen with `?difficulty=`. Who Am I has no tiers, so it launches directly.
+  // screen with `?difficulty=`. Career Path has no tiers, so it launches directly.
   { key: "higherLower", icon: TrendingUp, color: "success", to: (s) => `/difficulty?sport=${s}&mode=higher-lower` },
   { key: "verveGrid", icon: Grid3X3, color: "blue", to: (s) => `/difficulty?sport=${s}&mode=verve-grid` },
-  { key: "whoAmI", icon: HelpCircle, color: "yellow", to: (s) => `/v2/who-am-i?sport=${s}` },
+  { key: "careerPath", icon: Route, color: "yellow", to: (s) => `/v2/career-path?sport=${s}` },
   // Daily is migrated to the shell — reuses the Quiz prototype layout via the DAILY session.
   { key: "daily", icon: Timer, color: "primary", to: (s) => `/v2/daily?sport=${s}` },
   // Live Match is parked: nothing in the product can create a live match any

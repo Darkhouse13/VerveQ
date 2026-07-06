@@ -17,7 +17,6 @@ const curatedTableName = v.union(
   v.literal("higherLowerFacts"),
   v.literal("verveGridApprovedIndex"),
   v.literal("verveGridBoards"),
-  v.literal("whoAmIApprovedClues"),
 );
 
 type CuratedTableName =
@@ -26,8 +25,7 @@ type CuratedTableName =
   | "higherLowerPools"
   | "higherLowerFacts"
   | "verveGridApprovedIndex"
-  | "verveGridBoards"
-  | "whoAmIApprovedClues";
+  | "verveGridBoards";
 
 // The raw pipeline tables (statFacts, gridIndex, whoAmIClues) were removed
 // from Convex 2026-07: runtime gameplay reads only the approved/curated
@@ -82,11 +80,6 @@ async function getExistingByExternalId(
         .query("verveGridBoards")
         .withIndex("by_external_id", (q) => q.eq("externalId", externalId))
         .first()) satisfies ExistingSeedDoc | null;
-    case "whoAmIApprovedClues":
-      return (await ctx.db
-        .query("whoAmIApprovedClues")
-        .withIndex("by_external_id", (q) => q.eq("externalId", externalId))
-        .first()) satisfies ExistingSeedDoc | null;
   }
 }
 
@@ -110,8 +103,6 @@ async function insertSeedRecord(
       return ctx.db.insert("verveGridApprovedIndex", doc as never);
     case "verveGridBoards":
       return ctx.db.insert("verveGridBoards", doc as never);
-    case "whoAmIApprovedClues":
-      return ctx.db.insert("whoAmIApprovedClues", doc as never);
   }
 }
 
@@ -193,11 +184,6 @@ async function getScopedDocsPage(
     case "verveGridBoards":
       return (await ctx.db
         .query("verveGridBoards")
-        .withIndex("by_sport", (q) => q.eq("sport", sport))
-        .paginate(paginationOpts)) satisfies SeedDocPage;
-    case "whoAmIApprovedClues":
-      return (await ctx.db
-        .query("whoAmIApprovedClues")
         .withIndex("by_sport", (q) => q.eq("sport", sport))
         .paginate(paginationOpts)) satisfies SeedDocPage;
   }
@@ -413,35 +399,6 @@ export const seedVerveGridBoardsBatch = internalMutation({
   },
   handler: async (ctx, { records, seedVersion, replaceExisting }) =>
     seedBatch(ctx, "verveGridBoards", records, seedVersion, replaceExisting),
-});
-
-export const seedWhoAmIApprovedCluesBatch = internalMutation({
-  args: {
-    records: v.array(
-      v.object({
-        externalId: v.string(),
-        sourceClueId: v.string(),
-        sport: v.string(),
-        playerId: v.string(),
-        clue1: v.string(),
-        clue2: v.string(),
-        clue3: v.string(),
-        clue4: v.string(),
-        answerName: v.string(),
-        difficulty: v.string(),
-        rawDifficulty: v.string(),
-        qualityScore: v.number(),
-        isHeadlineSeed: v.boolean(),
-        isManualLegend: v.boolean(),
-        teamLabels: v.array(v.string()),
-        approvalReasons: v.array(v.string()),
-        curationFlags: v.array(v.string()),
-      }),
-    ),
-    ...seedBatchArgs,
-  },
-  handler: async (ctx, { records, seedVersion, replaceExisting }) =>
-    seedBatch(ctx, "whoAmIApprovedClues", records, seedVersion, replaceExisting),
 });
 
 export const clearCuratedSeedTablePage = internalMutation({

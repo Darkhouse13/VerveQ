@@ -3,7 +3,7 @@ import { NeoBadge } from "@/components/neo/NeoBadge";
 import { NeoAvatar } from "@/components/neo/NeoAvatar";
 import { BottomNav } from "@/components/neo/BottomNav";
 import { useNavigate } from "react-router-dom";
-import { Timer, Heart, Zap, Brain, Flame, Target, Trophy, Hammer, TrendingUp, Grid3X3, HelpCircle, Lightbulb, GraduationCap } from "lucide-react";
+import { Timer, Heart, Zap, Brain, Flame, Target, Trophy, Hammer, TrendingUp, Grid3X3, Lightbulb, GraduationCap } from "lucide-react";
 import { LEARN_ENABLED } from "@/lib/flags";
 import { DailyBanner } from "@/components/DailyBanner";
 import { SeasonBanner } from "@/components/SeasonBanner";
@@ -256,28 +256,6 @@ export default function HomeScreen() {
                 <p className="font-heading font-bold text-lg">VerveGrid</p>
                 <p className="text-xs opacity-80">
                   Curated football 3x3 grid
-                </p>
-              </div>
-              <span className="neo-border font-heading font-bold uppercase tracking-wide inline-flex items-center justify-center px-3 py-1.5 text-xs rounded-md bg-primary text-primary-foreground neo-shadow select-none">
-                Play
-              </span>
-            </NeoCard>
-            <NeoCard
-              shadow="lg"
-              className="flex items-center gap-4 cursor-pointer bg-hot-pink text-hot-pink-foreground"
-              onClick={() => navigate("/sport-select?mode=who-am-i")}
-            >
-              <div className="neo-border rounded-xl bg-background p-3">
-                <HelpCircle
-                  size={28}
-                  strokeWidth={2.5}
-                  className="text-foreground"
-                />
-              </div>
-              <div className="flex-1">
-                <p className="font-heading font-bold text-lg">Who Am I?</p>
-                <p className="text-xs opacity-80">
-                  Curated football player clues
                 </p>
               </div>
               <span className="neo-border font-heading font-bold uppercase tracking-wide inline-flex items-center justify-center px-3 py-1.5 text-xs rounded-md bg-primary text-primary-foreground neo-shadow select-none">

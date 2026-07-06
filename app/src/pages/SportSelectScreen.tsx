@@ -19,9 +19,8 @@ export default function SportSelectScreen() {
   const mode = params.get("mode") || "quiz";
   const isHigherLowerMode = mode === "higher-lower";
   const isVerveGridMode = mode === "verve-grid";
-  const isWhoAmIMode = mode === "who-am-i";
   const isSurvivalMode = mode === "survival";
-  const isFootballOnlyMode = isHigherLowerMode || isVerveGridMode || isWhoAmIMode;
+  const isFootballOnlyMode = isHigherLowerMode || isVerveGridMode;
   const availableTopics = isFootballOnlyMode
     ? ["football"]
     : isSurvivalMode
@@ -35,8 +34,6 @@ export default function SportSelectScreen() {
     ? "Higher or Lower is currently available for football only"
     : isVerveGridMode
       ? "VerveGrid is currently available for football only"
-      : isWhoAmIMode
-        ? "Who Am I is currently available for football only"
       : isSurvivalMode
         ? "Choose your sport"
         : "Choose a topic";
@@ -111,8 +108,6 @@ export default function SportSelectScreen() {
               navigate(`/higher-lower?sport=${selected}`);
             } else if (mode === "verve-grid") {
               navigate(`/verve-grid?sport=${selected}`);
-            } else if (mode === "who-am-i") {
-              navigate(`/who-am-i?sport=${selected}`);
             } else {
               navigate(`/difficulty?sport=${selected}&mode=${mode}`);
             }

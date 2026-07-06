@@ -8,7 +8,6 @@
  *   npx tsx scripts/runCuratedGameplayWorkflow.ts --mode all
  *   npx tsx scripts/runCuratedGameplayWorkflow.ts --mode higher-lower
  *   npx tsx scripts/runCuratedGameplayWorkflow.ts --mode verve-grid
- *   npx tsx scripts/runCuratedGameplayWorkflow.ts --mode who-am-i
  */
 
 import * as fs from "fs";
@@ -24,7 +23,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = path.resolve(__dirname, "..");
 const DATA_DIR = path.join(__dirname, "data");
 
-type ModeName = "all" | "higher-lower" | "verve-grid" | "who-am-i";
+type ModeName = "all" | "higher-lower" | "verve-grid";
 
 type ModeConfig = {
   label: string;
@@ -46,18 +45,11 @@ const MODE_CONFIGS: Record<Exclude<ModeName, "all">, ModeConfig> = {
     seedTables: ["verveGridApprovedIndex", "verveGridBoards"],
     requiresBoardBuild: true,
   },
-  "who-am-i": {
-    label: "Who Am I",
-    artifactFiles: ["whoAmIApprovedClues.json", "whoAmIQaReport.json"],
-    seedTables: ["whoAmIApprovedClues"],
-    requiresBoardBuild: false,
-  },
 };
 
 const ALL_MODE_ORDER: Array<Exclude<ModeName, "all">> = [
   "higher-lower",
   "verve-grid",
-  "who-am-i",
 ];
 
 function parseArgs(): { mode: ModeName } {
@@ -67,8 +59,7 @@ function parseArgs(): { mode: ModeName } {
     (arg) =>
       arg === "all" ||
       arg === "higher-lower" ||
-      arg === "verve-grid" ||
-      arg === "who-am-i",
+      arg === "verve-grid",
   );
   const modeValue =
     modeIndex >= 0 ? args[modeIndex + 1] : positionalMode ?? "all";
@@ -76,11 +67,10 @@ function parseArgs(): { mode: ModeName } {
   if (
     modeValue !== "all" &&
     modeValue !== "higher-lower" &&
-    modeValue !== "verve-grid" &&
-    modeValue !== "who-am-i"
+    modeValue !== "verve-grid"
   ) {
     throw new Error(
-      `Unknown mode "${modeValue}". Expected one of: all, higher-lower, verve-grid, who-am-i`,
+      `Unknown mode "${modeValue}". Expected one of: all, higher-lower, verve-grid`,
     );
   }
 

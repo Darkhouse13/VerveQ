@@ -46,7 +46,7 @@ describe("compete grid advertises only startable modes", () => {
       "blitz",
       "higherLower",
       "verveGrid",
-      "whoAmI",
+      "careerPath",
       "daily",
     ]);
   });

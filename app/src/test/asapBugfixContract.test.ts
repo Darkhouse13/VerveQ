@@ -202,8 +202,8 @@ describe("ASAP bugfix contracts", () => {
     expect(serverSource).toContain("Cell already answered");
   });
 
-  it("Who Am I updates the visible score after close-call penalties", () => {
-    const source = read("src/pages/WhoAmIScreen.tsx");
+  it("Career Path updates the visible score after close-call penalties", () => {
+    const source = read("src/pages/shell/play/CareerPathPlayScreen.tsx");
 
     expect(source).toContain("if (res.closeCall)");
     expect(source).toContain("setScore(res.score)");

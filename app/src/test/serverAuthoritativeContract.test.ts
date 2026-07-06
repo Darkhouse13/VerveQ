@@ -21,7 +21,7 @@ import * as games from "../../convex/games";
 import * as higherLower from "../../convex/higherLower";
 import * as quizSessions from "../../convex/quizSessions";
 import * as verveGrid from "../../convex/verveGrid";
-import * as whoAmI from "../../convex/whoAmI";
+import * as careerPath from "../../convex/careerPath";
 import {
   calculateEloChange,
   getSurvivalPerformance,
@@ -458,41 +458,35 @@ describe("BLOCKER-4: curated getSession queries do not leak answers", () => {
     expect(result.cells[0].validAnswerCount).toBe(2);
   });
 
-  it("whoAmI.getSession strips answerName after terminal states", async () => {
-    const session = {
-      _id: "wai_1",
+  it("careerPath.getSession strips answerName in every state, including terminal", async () => {
+    const makeSession = (status: string) => ({
+      _id: "cp_1",
       userId: "stub_user",
       sport: "football",
-      clueExternalId: "clue_x",
+      entryId: "cp-hidden",
       answerName: "Hidden Player",
-      currentStage: 4,
-      score: 0,
-      status: "failed",
-      expiresAt: Date.now() + 60_000,
-    };
-    const clue = {
-      externalId: "clue_x",
-      clue1: "One",
-      clue2: "Two",
-      clue3: "Three",
-      clue4: "Four",
+      clubs: ["Club One", "Club Two", "Club Three"],
       difficulty: "medium",
-    };
-    const ctx = {
-      db: {
-        get: async () => session,
-        query: () => ({
-          withIndex: () => ({ first: async () => clue }),
-        }),
-      },
-    };
+      score: 0,
+      status,
+      expiresAt: Date.now() + 60_000,
+      closeCallCount: 0,
+      guesses: [],
+      maxGuesses: 3,
+      wrongGuessCount: 3,
+    });
 
-    const result = (await handlerOf(whoAmI.getSession)(ctx, {
-      sessionId: "wai_1",
-    })) as Record<string, unknown>;
+    for (const status of ["active", "failed", "correct"]) {
+      const session = makeSession(status);
+      const result = (await handlerOf(careerPath.getSession)(
+        { db: { get: async () => session } },
+        { sessionId: "cp_1" },
+      )) as Record<string, unknown>;
 
-    expect(result).not.toHaveProperty("answerName");
-    expect(result.clues).toEqual(["One", "Two", "Three", "Four"]);
+      expect(result).not.toHaveProperty("answerName");
+      expect(result).not.toHaveProperty("entryId");
+      expect(result.clubs).toEqual(["Club One", "Club Two", "Club Three"]);
+    }
   });
 });
 

@@ -85,8 +85,8 @@ export const playedSince = internalQuery({
       add("higherLowerSessions", r.userId ?? null, r._creationTime);
     for (const r of await ctx.db.query("verveGridSessions").collect())
       add("verveGridSessions", r.userId ?? null, r._creationTime);
-    for (const r of await ctx.db.query("whoAmISessions").collect())
-      add("whoAmISessions", r.userId ?? null, r._creationTime);
+    for (const r of await ctx.db.query("careerPathSessions").collect())
+      add("careerPathSessions", r.userId ?? null, r._creationTime);
 
     const perTableUniqueUsers: Record<string, number> = {};
     for (const [table, set] of Object.entries(byTable))

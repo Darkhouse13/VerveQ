@@ -5,7 +5,7 @@
  * the FE shows the same gates the backend enforces — never a client guess:
  *
  *  - {@link UsernameOnlyRoute}: the casual / social set (Blitz, Higher-Lower,
- *    VerveGrid, Who Am I) plus identity surfaces like Profile. Anyone with a
+ *    VerveGrid, Career Path) plus identity surfaces like Profile. Anyone with a
  *    username — anonymous OR full — may pass. Visitors without one land on the
  *    ACCOUNT CHOOSER (sign in / create account / play as guest), preserving
  *    where they were headed via `?next=`. The bare username ask is reserved

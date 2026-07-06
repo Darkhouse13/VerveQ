@@ -49,7 +49,6 @@ const AUTHORITATIVE_CURATED_TABLES = new Set([
   "higherLowerFacts",
   "verveGridApprovedIndex",
   "verveGridBoards",
-  "whoAmIApprovedClues",
 ]);
 
 interface TableConfig {
@@ -105,11 +104,6 @@ const TABLE_CONFIGS: Record<string, TableConfig> = {
   verveGridBoards: {
     jsonFile: "verveGridBoards.json",
     mutation: "seedSportsData:seedVerveGridBoardsBatch",
-    mapRecord: identity,
-  },
-  whoAmIApprovedClues: {
-    jsonFile: "whoAmIApprovedClues.json",
-    mutation: "seedSportsData:seedWhoAmIApprovedCluesBatch",
     mapRecord: identity,
   },
 };
@@ -566,7 +560,6 @@ async function main() {
     "higherLowerFacts",
     "verveGridApprovedIndex",
     "verveGridBoards",
-    "whoAmIApprovedClues",
   ];
 
   for (const tableName of order) {

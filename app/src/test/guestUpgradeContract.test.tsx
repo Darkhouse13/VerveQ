@@ -389,7 +389,6 @@ describe("Guest account-required route contracts", () => {
       "ForgeScreen",
       "HigherLowerScreen",
       "VerveGridScreen",
-      "WhoAmIScreen",
     ]) {
       // Indentation-agnostic: deep-link aliasing (V2Redirect) may nest the
       // guard one level deeper, but the guard itself must stay.

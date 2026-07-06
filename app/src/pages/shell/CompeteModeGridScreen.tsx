@@ -24,7 +24,7 @@ const LIVE_SPORTS = new Set(["football"]);
 // `ranked` flag changes — no ranked key is hardcoded here. Keys reference
 // COMPETE_MODE_TILES so the routing contract (tile targets) stays asserted in
 // one place.
-const SOLO_KEYS = ["quiz", "survival", "blitz", "higherLower", "verveGrid", "whoAmI"];
+const SOLO_KEYS = ["quiz", "survival", "blitz", "higherLower", "verveGrid", "careerPath"];
 const FRIEND_KEYS = ["arena", "duel"];
 
 function tilesByKeys(keys: string[]): ModeTile[] {

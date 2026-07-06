@@ -116,7 +116,7 @@
     "blitz": { "name": "Blitz", "desc": "60-second speed round" },
     "higherLower": { "name": "Higher or Lower", "desc": "Compare player stats" },
     "verveGrid": { "name": "VerveGrid", "desc": "Fill the 3x3 grid" },
-    "whoAmI": { "name": "Who Am I?", "desc": "Four progressive clues" },
+    "careerPath": { "name": "Career Path", "desc": "Name the player from his clubs" },
     "daily": { "name": "Daily Challenge", "desc": "Same questions for everyone", "worldCupName": "World Cup Daily", "worldCupDesc": "World Cup questions all tournament — same for everyone" },
     "liveMatch": { "name": "Live Match", "desc": "Real-time 1v1, ELO matched" },
     "arena": { "name": "Arena", "desc": "Group challenge rooms" },

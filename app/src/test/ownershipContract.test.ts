@@ -22,7 +22,7 @@ vi.mock("@convex-dev/auth/server", () => ({
 import * as survivalSessions from "../../convex/survivalSessions";
 import * as higherLower from "../../convex/higherLower";
 import * as verveGrid from "../../convex/verveGrid";
-import * as whoAmI from "../../convex/whoAmI";
+import * as careerPath from "../../convex/careerPath";
 import * as liveMatches from "../../convex/liveMatches";
 import * as quizSessions from "../../convex/quizSessions";
 
@@ -183,28 +183,30 @@ describe("Area 2 — Curated getSession queries reject non-owners", () => {
     expect(res).toBeNull();
   });
 
-  it("whoAmI.getSession returns null when caller is not the session owner", async () => {
+  it("careerPath.getSession returns null when caller is not the session owner", async () => {
     authMock.getAuthUserId.mockResolvedValue("userB");
     const ctx = {
       db: {
         get: async () => ({
-          _id: "wai_1",
+          _id: "cp_1",
           userId: "userA",
           sport: "football",
-          clueExternalId: "clue_x",
+          entryId: "cp-henry",
           answerName: "Thierry Henry",
-          currentStage: 1,
+          clubs: ["Monaco", "Juventus", "Arsenal", "Barcelona", "New York Red Bulls"],
+          difficulty: "easy",
           score: 1000,
           status: "active",
           expiresAt: Date.now() + 60_000,
-        }),
-        query: () => ({
-          withIndex: () => ({ first: async () => ({ difficulty: "medium" }) }),
+          closeCallCount: 0,
+          guesses: [],
+          maxGuesses: 3,
+          wrongGuessCount: 0,
         }),
       },
     };
-    const res = await handlerOf(whoAmI.getSession)(ctx, {
-      sessionId: "wai_1",
+    const res = await handlerOf(careerPath.getSession)(ctx, {
+      sessionId: "cp_1",
     });
     expect(res).toBeNull();
   });
