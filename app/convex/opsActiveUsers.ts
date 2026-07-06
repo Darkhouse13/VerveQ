@@ -67,11 +67,6 @@ export const playedSince = internalQuery({
       add("liveMatches", r.player2Id, t);
     }
 
-    for (const r of await ctx.db.query("multiplayerMatches").collect()) {
-      const t = r.completedAt ?? r.createdAt;
-      for (const uid of r.playerIds) add("multiplayerMatches", uid, t);
-    }
-
     for (const r of await ctx.db.query("arenas").collect())
       for (const p of r.players)
         add("arenas", p.userId, p.lastSeenAt ?? p.joinedAt ?? r.createdAt);

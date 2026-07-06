@@ -615,45 +615,9 @@ export default defineSchema({
     .index("by_date_sport_mode_score", ["date", "sport", "mode", "score"])
     .index("by_expiresAt", ["expiresAt"]),
 
-  // ── Multiplayer Challenge Arena (beta) ──
-  multiplayerMatches: defineTable({
-    hostId: v.id("users"),
-    joinCode: v.string(),
-    format: v.union(
-      v.literal("1v1"),
-      v.literal("2v2"),
-      v.literal("1v1v1"),
-      v.literal("1v1v1v1"),
-      v.literal("1v1v1v1v1"),
-    ),
-    minPlayers: v.number(),
-    maxPlayers: v.number(),
-    teamSize: v.optional(v.number()),
-    playerIds: v.array(v.id("users")),
-    teamAssignments: v.optional(v.array(v.number())),
-    readyUserIds: v.array(v.id("users")),
-    roundBreakReadyUserIds: v.array(v.id("users")),
-    status: v.union(
-      v.literal("lobby"),
-      v.literal("question"),
-      v.literal("roundBreak"),
-      v.literal("completed"),
-      v.literal("cancelled"),
-    ),
-    currentQuestion: v.number(),
-    currentRoundIndex: v.number(),
-    totalQuestions: v.number(),
-    questions: v.any(),
-    answersByUserId: v.any(),
-    scoresByUserId: v.any(),
-    questionStartedAt: v.optional(v.number()),
-    roundBreakStartedAt: v.optional(v.number()),
-    createdAt: v.number(),
-    updatedAt: v.number(),
-    completedAt: v.optional(v.number()),
-  })
-    .index("by_joinCode", ["joinCode"])
-    .index("by_host_status", ["hostId", "status"]),
+  // multiplayerMatches (the pre-arenas beta lobby table) was removed 2026-07:
+  // it had no writer anywhere and only a historical active-user counter read
+  // it. Orphaned rows on old deployments can be purged from the dashboard.
 
   // ── Live Head-to-Head ──
   liveMatches: defineTable({
@@ -951,19 +915,10 @@ export default defineSchema({
     .index("by_external_id", ["externalId"])
     .index("by_sport", ["sport"]),
 
-  statFacts: defineTable({
-    externalId: v.string(),
-    seedVersion: v.optional(v.string()),
-    sport: v.string(),
-    entityType: v.string(),
-    entityId: v.string(),
-    entityName: v.string(),
-    statKey: v.string(),
-    contextKey: v.string(),
-    value: v.number(),
-    season: v.optional(v.number()),
-  })
-    .index("by_external_id", ["externalId"]),
+  // The raw pipeline tables (statFacts, gridIndex, whoAmIClues) were removed
+  // 2026-07: gameplay reads only the approved layers (higherLowerPools/Facts,
+  // verveGridBoards, whoAmIApprovedClues) and the raw artifacts live in
+  // scripts/data/*.json. Orphaned rows can be purged from the dashboard.
 
   higherLowerPools: defineTable({
     externalId: v.string(),
@@ -998,24 +953,6 @@ export default defineSchema({
     .index("by_external_id", ["externalId"])
     .index("by_pool_key", ["poolKey"])
     .index("by_sport", ["sport"]),
-
-  // Legacy VerveGrid raw table kept for pipeline/audit visibility.
-  // Live VerveGrid runtime starts from curated boards, not this table.
-  gridIndex: defineTable({
-    externalId: v.string(),
-    seedVersion: v.optional(v.string()),
-    sport: v.string(),
-    rowType: v.string(),
-    rowKey: v.string(),
-    rowLabel: v.string(),
-    colType: v.string(),
-    colKey: v.string(),
-    colLabel: v.string(),
-    playerIds: v.array(v.string()),
-    difficulty: v.string(),
-  })
-    .index("by_external_id", ["externalId"])
-    .index("by_sport_difficulty", ["sport", "difficulty"]),
 
   verveGridApprovedIndex: defineTable({
     externalId: v.string(),
@@ -1069,21 +1006,6 @@ export default defineSchema({
   })
     .index("by_external_id", ["externalId"])
     .index("by_sport", ["sport"]),
-
-  whoAmIClues: defineTable({
-    externalId: v.string(),
-    seedVersion: v.optional(v.string()),
-    sport: v.string(),
-    playerId: v.string(),
-    clue1: v.string(),
-    clue2: v.string(),
-    clue3: v.string(),
-    clue4: v.string(),
-    answerName: v.string(),
-    difficulty: v.string(),
-  })
-    .index("by_external_id", ["externalId"])
-    .index("by_sport_difficulty", ["sport", "difficulty"]),
 
   whoAmIApprovedClues: defineTable({
     externalId: v.string(),
