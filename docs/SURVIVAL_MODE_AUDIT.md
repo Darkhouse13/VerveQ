@@ -1,5 +1,20 @@
 # Survival Mode — Complete Technical Audit
 
+> **⚠️ Partially superseded (2026-07) — Reveal Ladder redesign.**
+> Survival now scores POINTS from a per-round shrinking pot (Easy 100 →
+> Expert 300, −15% of base per help press, floor 10) instead of one point per
+> round. The tiered hint tokens, free-skip/life-cost skips, and the
+> "initials-only, no mask" rule described below are gone: a single
+> `requestHelp` ladder serves 2 metadata clues then letter-by-letter reveals
+> of the primary player's masked name; skips are free (3 per game); lives are
+> only lost on committed wrong guesses; unambiguous surnames are accepted;
+> the anti-cheat's first offense floors the round's pot instead of taking a
+> life; `endRun` allows a voluntary cash-out. ELO maps points via
+> `getSurvivalPerformance(points/2000)` with win at ≥1200. Sections 5, 7, 9,
+> 11 and the schema notes reflect the OLD design; see
+> `app/convex/survivalSessions.ts` and `app/src/test/survivalRevealLadder.test.ts`
+> for the current contracts.
+
 ## 1. Overview
 
 Survival Mode is an initials-based name-guessing game. The player is shown 2–3 letter initials of a sports athlete and must type the full name. The game starts with 3 lives and progressively increases difficulty each round. A wrong answer, skip, or tab-switch costs 1 life. The game ends when lives reach zero.

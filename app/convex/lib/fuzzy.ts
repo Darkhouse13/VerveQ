@@ -56,11 +56,48 @@ export interface MatchResult {
   matchedPlayer: string;
   closeCall: boolean;
   typoAccepted: boolean;
+  /** Matched via an unambiguous surname (name suffix) rather than the full name. */
+  surnameMatch: boolean;
+  /** Guess matched the surname of 2+ valid players — the full name is needed. */
+  ambiguousSurname: boolean;
+}
+
+export interface FindBestMatchOptions {
+  /**
+   * Accept a guess that names only the surname (any word-suffix of the full
+   * name, e.g. "De Bruyne" or "Bruyne" for "Kevin De Bruyne") when exactly one
+   * valid player carries it. Off by default so full-name modes (Career Path,
+   * logo answers) keep their stricter contract.
+   */
+  acceptSurname?: boolean;
+}
+
+/**
+ * Best edit distance between the guess and any proper word-suffix of the
+ * player's normalized name (surnames incl. particles: "bruyne", "de bruyne").
+ * Returns null when no suffix qualifies. Short suffixes (<4 chars) must match
+ * exactly; longer ones get the usual length-scaled typo budget.
+ */
+function bestSurnameDistance(
+  normalizedGuess: string,
+  normalizedPlayer: string,
+): number | null {
+  const words = normalizedPlayer.split(" ").filter(Boolean);
+  if (words.length < 2) return null; // single-word names have no surname shortcut
+  let best: number | null = null;
+  for (let k = 1; k < words.length; k++) {
+    const suffix = words.slice(words.length - k).join(" ");
+    const maxDist = suffix.length < 4 ? 0 : getMaxFuzzyDistance(suffix);
+    const dist = levenshteinDistance(normalizedGuess, suffix);
+    if (dist <= maxDist && (best === null || dist < best)) best = dist;
+  }
+  return best;
 }
 
 export function findBestMatch(
   guess: string,
   validPlayers: string[],
+  options: FindBestMatchOptions = {},
 ): MatchResult {
   const normalizedGuess = normalizeAnswer(guess);
   if (!normalizedGuess) {
@@ -70,6 +107,8 @@ export function findBestMatch(
       matchedPlayer: validPlayers[0] || guess,
       closeCall: false,
       typoAccepted: false,
+      surnameMatch: false,
+      ambiguousSurname: false,
     };
   }
   let bestDistance = Infinity;
@@ -96,6 +135,8 @@ export function findBestMatch(
       matchedPlayer: bestPlayer,
       closeCall: false,
       typoAccepted: false,
+      surnameMatch: false,
+      ambiguousSurname: false,
     };
   }
 
@@ -106,7 +147,40 @@ export function findBestMatch(
       matchedPlayer: bestPlayer,
       closeCall: false,
       typoAccepted: true,
+      surnameMatch: false,
+      ambiguousSurname: false,
     };
+  }
+
+  if (options.acceptSurname && normalizedGuess.length >= 2) {
+    const surnameHits: Array<{ player: string; distance: number }> = [];
+    for (const player of validPlayers) {
+      const dist = bestSurnameDistance(normalizedGuess, normalizeAnswer(player));
+      if (dist !== null) surnameHits.push({ player, distance: dist });
+    }
+    if (surnameHits.length === 1) {
+      const hit = surnameHits[0];
+      return {
+        matched: true,
+        distance: hit.distance,
+        matchedPlayer: hit.player,
+        closeCall: false,
+        typoAccepted: hit.distance > 0,
+        surnameMatch: true,
+        ambiguousSurname: false,
+      };
+    }
+    if (surnameHits.length >= 2) {
+      return {
+        matched: false,
+        distance: Math.min(...surnameHits.map((hit) => hit.distance)),
+        matchedPlayer: bestPlayer,
+        closeCall: true,
+        typoAccepted: false,
+        surnameMatch: false,
+        ambiguousSurname: true,
+      };
+    }
   }
 
   // Close call: within 1-2 edits beyond the threshold
@@ -120,5 +194,7 @@ export function findBestMatch(
     matchedPlayer: bestPlayer,
     closeCall,
     typoAccepted: false,
+    surnameMatch: false,
+    ambiguousSurname: false,
   };
 }

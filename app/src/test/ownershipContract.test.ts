@@ -82,12 +82,20 @@ describe("Area 1 — Survival mutations reject non-owning callers", () => {
     ).rejects.toThrow(/authorized/i);
   });
 
-  it("useHint throws when the caller is not the session owner", async () => {
+  it("requestHelp throws when the caller is not the session owner", async () => {
     authMock.getAuthUserId.mockResolvedValue("userB");
     await expect(
-      handlerOf(survivalSessions.useHint)(ctxWithSession(), {
+      handlerOf(survivalSessions.requestHelp)(ctxWithSession(), {
         sessionId: "surv_1",
-        stage: 1,
+      }),
+    ).rejects.toThrow(/authorized/i);
+  });
+
+  it("endRun throws when the caller is not the session owner", async () => {
+    authMock.getAuthUserId.mockResolvedValue("userB");
+    await expect(
+      handlerOf(survivalSessions.endRun)(ctxWithSession(), {
+        sessionId: "surv_1",
       }),
     ).rejects.toThrow(/authorized/i);
   });
