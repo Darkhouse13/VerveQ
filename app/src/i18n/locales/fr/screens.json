@@ -531,5 +531,27 @@
     "too-short": "Le mot de passe doit comporter au moins {{min}} caractères.",
     "too-long": "Le mot de passe doit comporter {{max}} caractères au maximum.",
     "too-common": "Ce mot de passe est trop courant. Choisis-en un autre."
+  },
+  "login": {
+    "emailPlaceholder": "E-mail",
+    "passwordPlaceholder": "Mot de passe",
+    "usernamePlaceholder": "Nom d'utilisateur",
+    "displayNamePlaceholder": "Nom affiché (facultatif)",
+    "confirmPasswordPlaceholder": "Confirmer le mot de passe",
+    "otpPlaceholder": "Code à 6 chiffres",
+    "newPasswordPlaceholder": "Nouveau mot de passe",
+    "confirmNewPasswordPlaceholder": "Confirmer le nouveau mot de passe"
+  },
+  "forge": {
+    "topicPlaceholder": "p. ex. Transferts, Coupe du monde, Grand Chelem...",
+    "questionPlaceholder": "Écris ta question de trivia...",
+    "optionPlaceholder": "Option {{letter}}",
+    "explanationPlaceholder": "Pourquoi est-ce la bonne réponse ?"
+  },
+  "errorBoundary": {
+    "title": "Quelque chose a déraillé",
+    "body": "Une erreur inattendue s'est produite lors de l'affichage de cet écran. Réessaie — ou recharge si ça persiste.",
+    "tryAgain": "Réessayer",
+    "reload": "Recharger la page"
   }
 }

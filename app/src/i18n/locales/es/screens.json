@@ -531,5 +531,27 @@
     "too-short": "La contraseña debe tener al menos {{min}} caracteres.",
     "too-long": "La contraseña debe tener {{max}} caracteres o menos.",
     "too-common": "Esa contraseña es demasiado común. Elige una diferente."
+  },
+  "login": {
+    "emailPlaceholder": "Correo electrónico",
+    "passwordPlaceholder": "Contraseña",
+    "usernamePlaceholder": "Nombre de usuario",
+    "displayNamePlaceholder": "Nombre visible (opcional)",
+    "confirmPasswordPlaceholder": "Confirmar contraseña",
+    "otpPlaceholder": "Código de 6 dígitos",
+    "newPasswordPlaceholder": "Nueva contraseña",
+    "confirmNewPasswordPlaceholder": "Confirmar nueva contraseña"
+  },
+  "forge": {
+    "topicPlaceholder": "p. ej. Fichajes, Mundial, Grand Slams...",
+    "questionPlaceholder": "Escribe tu pregunta de trivia...",
+    "optionPlaceholder": "Opción {{letter}}",
+    "explanationPlaceholder": "¿Por qué es esta la respuesta correcta?"
+  },
+  "errorBoundary": {
+    "title": "Algo se salió del guion",
+    "body": "Ha ocurrido un error inesperado al mostrar esta pantalla. Inténtalo de nuevo o recarga si persiste.",
+    "tryAgain": "Intentar de nuevo",
+    "reload": "Recargar página"
   }
 }
