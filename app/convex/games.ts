@@ -8,6 +8,8 @@ import {
   calculateEloChange,
   getQuizPerformance,
   getSurvivalPerformance,
+  getSurvivalDifficultyTier,
+  SURVIVAL_WIN_POINTS,
   clampRating,
   getKFactor,
 } from "./lib/elo";
@@ -225,11 +227,10 @@ export const completeSurvival = mutation({
     );
     const basePerf = getSurvivalPerformance(score);
     const perf = Math.min(1.0, basePerf + performanceBonus);
-    const difficulty =
-      score >= 10 ? "hard" : score >= 5 ? "intermediate" : "easy";
+    const difficulty = getSurvivalDifficultyTier(score);
     const eloChange = calculateEloChange(currentElo, perf, difficulty, k);
     const newElo = clampRating(currentElo + eloChange);
-    const isWin = score >= 10;
+    const isWin = score >= SURVIVAL_WIN_POINTS;
 
     if (rating) {
       const newGames = rating.gamesPlayed + 1;

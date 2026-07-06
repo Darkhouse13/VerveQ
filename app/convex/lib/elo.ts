@@ -36,8 +36,24 @@ export function getQuizPerformance(
   return Math.min(1.0, accuracy + timeBonus);
 }
 
-export function getSurvivalPerformance(score: number): number {
-  return Math.min(score / 15, 1.0);
+// ── Survival Reveal Ladder scoring (2026-07) ──
+// Survival scores are POINTS banked from round pots (Easy 100 … Expert 300,
+// shrinking with help usage), not a count of correct rounds. Roughly:
+// ~2000 points ≈ the old "15 flawless rounds" perfect run.
+export const SURVIVAL_PERFECT_POINTS = 2000;
+export const SURVIVAL_WIN_POINTS = 1200;
+const SURVIVAL_INTERMEDIATE_POINTS = 500;
+
+export function getSurvivalPerformance(points: number): number {
+  return Math.min(points / SURVIVAL_PERFECT_POINTS, 1.0);
+}
+
+export function getSurvivalDifficultyTier(
+  points: number,
+): "easy" | "intermediate" | "hard" {
+  if (points >= SURVIVAL_WIN_POINTS) return "hard";
+  if (points >= SURVIVAL_INTERMEDIATE_POINTS) return "intermediate";
+  return "easy";
 }
 
 export function clampRating(rating: number): number {

@@ -515,14 +515,16 @@ export default defineSchema({
     userId: v.optional(v.id("users")),
     sport: v.string(),
     round: v.number(),
+    // Reveal Ladder (2026-07): score is POINTS banked from round pots, no
+    // longer the count of correct rounds (that's `correctCount`).
     score: v.number(),
+    correctCount: v.optional(v.number()),
     lives: v.number(),
     hintUsed: v.boolean(),
     usedInitials: v.array(v.string()),
     gameOver: v.boolean(),
     expiresAt: v.number(),
     startedAt: v.optional(v.number()),
-    freeSkipsLeft: v.optional(v.number()),
     currentChallenge: v.optional(
       v.object({
         initials: v.string(),
@@ -533,17 +535,25 @@ export default defineSchema({
         primaryPlayer: v.optional(v.string()),
       }),
     ),
-    // Anti-cheat: track which round was last penalized
+    // Anti-cheat: track which round was last penalized; first offense only
+    // floors the round's pot (antiCheatWarned/potFloorRound), repeats cost a life.
     lastPenalizedRound: v.optional(v.number()),
+    antiCheatWarned: v.optional(v.boolean()),
+    potFloorRound: v.optional(v.number()),
     // Speed-streak tracking
     speedStreak: v.optional(v.number()),
     lastAnswerAt: v.optional(v.number()),
     performanceBonus: v.optional(v.number()),
     closeCallRound: v.optional(v.number()),
     closeCallCount: v.optional(v.number()),
-    // Tiered hint system
+    // Reveal Ladder help state: per-round ladder stage + per-game skip budget
+    helpStage: v.optional(v.number()),
+    skipsLeft: v.optional(v.number()),
+    // Deprecated (pre-Reveal-Ladder hint tokens / free skip) — kept optional
+    // so rows written before the cutover still validate until they expire.
     hintTokensLeft: v.optional(v.number()),
     currentHintStage: v.optional(v.number()),
+    freeSkipsLeft: v.optional(v.number()),
     // Server-side idempotency marker for completeSurvival — set once ELO
     // has been recorded so a replayed call doesn't double-update the rating.
     completedAt: v.optional(v.number()),

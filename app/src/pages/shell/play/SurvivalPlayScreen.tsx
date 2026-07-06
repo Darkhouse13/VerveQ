@@ -1,16 +1,21 @@
 /**
- * Survival (solo) on the v2 shell — a PRESENTATION-ONLY reskin of the live
- * `SurvivalScreen` into the centered-column "prototype layout".
+ * Survival (solo) on the v2 shell — the REVEAL LADDER edition.
  *
- * Survival is protected: the game loop here is a faithful port of the live
- * screen. Every gameplay decision stays server-authoritative and UNCHANGED —
- * `survivalSessions.startGame / submitGuess / useHint / skipChallenge`,
- * `games.completeSurvival`, the close-call / typo / hidden-answer / earned-life
- * outcomes, and the tab-switch anti-cheat all behave exactly as on the live
- * screen. Fuzzy matching, valid answers, and hint content live on the server and
- * are not touched. Only the layout changes: the initials, hints, input, and
- * actions own the answering column; lives / streak / score move to the ambient
- * rail (the allowlisted ambient fields), content-blind by contract.
+ * Survival is protected: every gameplay decision stays server-authoritative —
+ * `survivalSessions.startGame / submitGuess / requestHelp / skipChallenge /
+ * endRun`, `games.completeSurvival`, and the tab-switch anti-cheat all live on
+ * the server. The client only renders what the server projects: the initials,
+ * the masked name (letters are filled in exclusively by server-side help-ladder
+ * responses — the full name never reaches the client while a round is live),
+ * the current pot, and the outcome flags (close call / ambiguous surname /
+ * typo / hidden answer / earned life).
+ *
+ * Reveal Ladder rules, for orientation:
+ * - each round is a pot (Easy 100 → Expert 300) that shrinks 15% of base per
+ *   help press and floors at 10, so every round is finishable;
+ * - one HELP button: 2 metadata clues, then letter-by-letter reveals;
+ * - lives are only lost on committed wrong guesses (skips are free, budget 3);
+ * - CASH OUT ends the run voluntarily and banks the score into ELO/results.
  */
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
@@ -41,6 +46,54 @@ interface ChallengeData {
   initials: string;
   difficulty: string;
   hint: string;
+  maskedName: string;
+  basePot: number;
+  potValue: number;
+  lettersRemaining: number;
+}
+
+interface ClueI18n {
+  key: string;
+  vars: Record<string, string | number>;
+}
+
+const MASK_CHAR = "•";
+/** Ladder stages 1-2 are clues; must mirror CLUE_STAGES on the server. */
+const CLUE_STAGES = 2;
+
+/** The masked name as tappable-looking letter boxes, word by word. */
+function MaskedName({ maskedName }: { maskedName: string }) {
+  return (
+    <div className="flex flex-wrap justify-center gap-x-4 gap-y-2 mb-2">
+      {maskedName.split(" ").map((word, wi) => (
+        <div key={wi} className="flex gap-1">
+          {Array.from(word).map((char, ci) =>
+            char === MASK_CHAR ? (
+              <div
+                key={ci}
+                className="neo-border rounded w-7 h-9 bg-muted"
+                aria-hidden
+              />
+            ) : /\p{L}|\p{N}/u.test(char) ? (
+              <div
+                key={ci}
+                className="neo-border rounded w-7 h-9 flex items-center justify-center bg-primary text-primary-foreground"
+              >
+                <span className="font-heading font-bold text-sm">{char}</span>
+              </div>
+            ) : (
+              <span
+                key={ci}
+                className="w-3 h-9 flex items-center justify-center font-heading font-bold text-sm"
+              >
+                {char}
+              </span>
+            ),
+          )}
+        </div>
+      ))}
+    </div>
+  );
 }
 
 export default function SurvivalPlayScreen() {
@@ -61,28 +114,28 @@ export default function SurvivalPlayScreen() {
   const [feedback, setFeedback] = useState<{
     correct: boolean;
     answer: string;
+    points: number;
   } | null>(null);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
 
-  // Tiered hint state
-  // Structured hints (P4.3): the server returns a localization key + canonical
-  // vars; the label/template is composed here via the `play` namespace so the
-  // displayed hint follows the viewer's language (proper-noun vars stay canonical).
-  const [hints, setHints] = useState<
-    Array<{ key: string; vars: Record<string, string | number> }>
-  >([]);
-  const [hintStage, setHintStage] = useState(0);
-  const [hintTokens, setHintTokens] = useState(3);
-  const [hintLoading, setHintLoading] = useState(false);
+  // Reveal Ladder round state — updated by requestHelp responses and reset
+  // whenever a fresh challenge arrives.
+  const [maskedName, setMaskedName] = useState("");
+  const [potValue, setPotValue] = useState(0);
+  const [basePot, setBasePot] = useState(0);
+  const [lettersRemaining, setLettersRemaining] = useState(0);
+  const [helpStage, setHelpStage] = useState(0);
+  const [clues, setClues] = useState<ClueI18n[]>([]);
+  const [helpLoading, setHelpLoading] = useState(false);
 
   // Speed streak state
   const [speedStreak, setSpeedStreak] = useState(0);
   const [isOnFire, setIsOnFire] = useState(false);
-  const performanceBonusRef = useRef(0);
+  const correctCountRef = useRef(0);
 
-  // Free skip state
-  const [freeSkipsLeft, setFreeSkipsLeft] = useState(1);
+  // Skip budget (free — lives are never lost on skips)
+  const [skipsLeft, setSkipsLeft] = useState(3);
 
   // Close call state
   const [closeCallShake, setCloseCallShake] = useState(false);
@@ -90,20 +143,34 @@ export default function SurvivalPlayScreen() {
   // Earn-a-life animation
   const [showEarnedLife, setShowEarnedLife] = useState(false);
 
-  // Anti-cheat state
-  const [showCheatModal, setShowCheatModal] = useState(false);
+  // Anti-cheat state: first offense is a warning (pot floored), repeats cost a life
+  const [cheatModal, setCheatModal] = useState<"warning" | "penalty" | null>(
+    null,
+  );
   const [shakeKey, setShakeKey] = useState(0);
+  const [endingRun, setEndingRun] = useState(false);
 
   const startTime = useRef(Date.now());
 
   const startGameMut = useMutation(api.survivalSessions.startGame);
   const submitGuessMut = useMutation(api.survivalSessions.submitGuess);
-  const hintMutation = useMutation(api.survivalSessions.useHint);
+  const helpMutation = useMutation(api.survivalSessions.requestHelp);
   const skipMut = useMutation(api.survivalSessions.skipChallenge);
+  const endRunMut = useMutation(api.survivalSessions.endRun);
   const completeSurvivalMut = useMutation(api.games.completeSurvival);
   const penalizeTabSwitchMut = useMutation(
     api.survivalSessions.penalizeTabSwitch,
   );
+
+  const applyChallenge = useCallback((next: ChallengeData) => {
+    setChallenge(next);
+    setMaskedName(next.maskedName);
+    setPotValue(next.potValue);
+    setBasePot(next.basePot);
+    setLettersRemaining(next.lettersRemaining);
+    setHelpStage(0);
+    setClues([]);
+  }, []);
 
   useEffect(() => {
     if (authLoading) return;
@@ -118,9 +185,8 @@ export default function SurvivalPlayScreen() {
         setLives(data.lives);
         setScore(data.score);
         setRound(data.round);
-        setChallenge(data.challenge);
-        setHintTokens(data.hintTokensLeft);
-        setFreeSkipsLeft(data.freeSkipsLeft);
+        setSkipsLeft(data.skipsLeft);
+        applyChallenge(data.challenge);
         setLoading(false);
         startTime.current = Date.now();
       } catch {
@@ -131,15 +197,19 @@ export default function SurvivalPlayScreen() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [authLoading, isAuthenticated]);
 
-  // Anti-cheat: penalize tab switching
+  // Anti-cheat: warn first (pot floored), penalize repeats
   useAntiCheat(
     useCallback(() => {
       if (!sessionId || !challenge) return;
       penalizeTabSwitchMut({ sessionId, currentRound: round }).then((res) => {
-        if (res.penalized) {
+        if (!res.penalized) return;
+        setShakeKey((k) => k + 1);
+        if (res.warning) {
+          setCheatModal("warning");
+          if (typeof res.potValue === "number") setPotValue(res.potValue);
+        } else {
+          setCheatModal("penalty");
           setLives(res.lives);
-          setShakeKey((k) => k + 1);
-          setShowCheatModal(true);
           if (res.gameOver) {
             setTimeout(() => goToResults(score, round), 2000);
           }
@@ -169,7 +239,7 @@ export default function SurvivalPlayScreen() {
     const state: GameResultState = {
       score: finalScore,
       total: finalRound,
-      correctCount: finalScore,
+      correctCount: correctCountRef.current,
       avgTime: 0,
       eloChange,
       newElo,
@@ -190,28 +260,40 @@ export default function SurvivalPlayScreen() {
         guess: guess.trim(),
       });
 
-      // Close call: shake input, don't clear, don't set feedback
+      // Close call / ambiguous surname: shake, keep input, free retry
       if (res.closeCall) {
         setCloseCallShake(true);
         setTimeout(() => setCloseCallShake(false), 600);
-        toast.warning(t("survival.closeCheckSpelling"), { duration: 3000 });
+        toast.warning(
+          res.ambiguousSurname
+            ? t("survival.ambiguousSurname")
+            : t("survival.closeCheckSpelling"),
+          { duration: 3000 },
+        );
         setSubmitting(false);
         return;
       }
 
-      setFeedback({ correct: res.correct, answer: res.correctAnswer });
+      setFeedback({
+        correct: res.correct,
+        answer: res.correctAnswer ?? "",
+        points: res.pointsEarned,
+      });
       setLives(res.lives);
       setScore(res.score);
       setRound(res.round);
       setGuess("");
 
       if (res.correct) {
+        correctCountRef.current += 1;
         setSpeedStreak(res.speedStreak ?? 0);
         setIsOnFire(res.isOnFire ?? false);
-        if (res.isOnFire) {
-          performanceBonusRef.current += 0.1;
-        }
-        if (res.typoAccepted) {
+        if (res.surnameMatch) {
+          toast.success(
+            t("survival.surnameAccepted", { answer: res.correctAnswer }),
+            { duration: 3000 },
+          );
+        } else if (res.typoAccepted) {
           toast.warning(
             t("survival.typoAccepted", { answer: res.correctAnswer }),
             {
@@ -235,11 +317,10 @@ export default function SurvivalPlayScreen() {
       if (res.gameOver) {
         goToResults(res.score, res.round);
       } else if (res.nextChallenge) {
+        const next = res.nextChallenge;
         setTimeout(() => {
-          setChallenge(res.nextChallenge!);
+          applyChallenge(next);
           setFeedback(null);
-          setHints([]);
-          setHintStage(0);
         }, 1500);
       }
     } catch {
@@ -249,41 +330,55 @@ export default function SurvivalPlayScreen() {
     }
   };
 
-  const handleHint = async () => {
-    if (!sessionId || hintTokens <= 0 || hintStage >= 3 || hintLoading) return;
-    setHintLoading(true);
+  const helpExhausted = helpStage >= CLUE_STAGES && lettersRemaining <= 0;
+
+  const handleHelp = async () => {
+    if (!sessionId || helpLoading || helpExhausted) return;
+    setHelpLoading(true);
     try {
-      const nextStage = hintStage + 1;
-      const res = await hintMutation({ sessionId, stage: nextStage });
-      setHints((prev) => [...prev, res.hintI18n]);
-      setHintStage(res.stage);
-      setHintTokens(res.tokensLeft);
+      const res = await helpMutation({ sessionId });
+      if (res.kind === "clue" && res.hintI18n) {
+        setClues((prev) => [...prev, res.hintI18n as ClueI18n]);
+      }
+      setMaskedName(res.maskedName);
+      setPotValue(res.potValue);
+      setLettersRemaining(res.lettersRemaining);
+      setHelpStage(res.stage);
     } catch {
-      toast.error(t("survival.failedToGetHint"));
+      toast.error(t("survival.failedToGetHelp"));
     } finally {
-      setHintLoading(false);
+      setHelpLoading(false);
     }
   };
 
   const handleSkip = async () => {
-    if (!sessionId) return;
+    if (!sessionId || skipsLeft <= 0) return;
     try {
       const res = await skipMut({ sessionId });
-      setLives(res.lives);
-      setFreeSkipsLeft(res.freeSkipsLeft);
+      setSkipsLeft(res.skipsLeft);
       setFeedback(null);
-      setHints([]);
-      setHintStage(0);
       setSpeedStreak(0);
       setIsOnFire(false);
       if (res.gameOver) {
         goToResults(res.score, res.round);
       } else if (res.challenge) {
-        setChallenge(res.challenge);
+        applyChallenge(res.challenge);
         setRound(res.round);
       }
     } catch {
       toast.error(t("survival.failedToSkip"));
+    }
+  };
+
+  const handleCashOut = async () => {
+    if (!sessionId || endingRun) return;
+    setEndingRun(true);
+    try {
+      const res = await endRunMut({ sessionId });
+      await goToResults(res.score, res.round);
+    } catch {
+      toast.error(t("survival.failedToCashOut"));
+      setEndingRun(false);
     }
   };
 
@@ -341,16 +436,19 @@ export default function SurvivalPlayScreen() {
           >
             <span className="font-heading font-bold text-sm">
               {feedback.correct
-                ? t("survival.correct", { answer: feedback.answer })
+                ? t("survival.correctPoints", {
+                    answer: feedback.answer,
+                    points: feedback.points,
+                  })
                 : t("survival.wrong", { answer: feedback.answer })}
             </span>
           </div>
         )}
 
-        {/* Initials card — panic state when 1 life */}
+        {/* Initials + masked name card — panic state when 1 life */}
         <NeoCard
           shadow="lg"
-          className={`relative flex flex-col items-center py-10 mb-5 ${
+          className={`relative flex flex-col items-center py-8 mb-5 ${
             lives === 1 ? "border-red-600 border-4 animate-pulse" : ""
           }`}
         >
@@ -362,7 +460,7 @@ export default function SurvivalPlayScreen() {
           <p className="text-sm text-muted-foreground font-heading mb-4">
             {t("survival.whoHasInitials")}
           </p>
-          <div className="flex gap-4 mb-6">
+          <div className="flex gap-4 mb-5">
             {initials.map((letter, i) => (
               <div
                 key={i}
@@ -373,22 +471,30 @@ export default function SurvivalPlayScreen() {
             ))}
           </div>
 
-          <NeoBadge color="blue" rotated>
-            {t("survival.round", { round })}
-          </NeoBadge>
+          {/* The Reveal Ladder mask: word shapes are free, letters cost pot. */}
+          {maskedName && <MaskedName maskedName={maskedName} />}
+
+          <div className="flex items-center gap-3 mt-3">
+            <NeoBadge color={potValue < basePot ? "accent" : "success"} rotated>
+              {t("survival.pot", { points: potValue })}
+            </NeoBadge>
+            <NeoBadge color="blue" rotated>
+              {t("survival.round", { round })}
+            </NeoBadge>
+          </div>
         </NeoCard>
 
-        {/* Hints tracker */}
-        {hints.length > 0 && (
+        {/* Clues from the help ladder */}
+        {clues.length > 0 && (
           <div className="space-y-2 mb-4">
-            {hints.map((h, i) => (
+            {clues.map((h, i) => (
               <NeoCard
                 key={i}
-                color={i === 0 ? "blue" : i === 1 ? "accent" : "primary"}
+                color={i === 0 ? "blue" : "accent"}
                 className="animate-slide-up"
               >
                 <p className="text-xs font-body">
-                  <strong>{t("survival.hintLabel", { number: i + 1 })}</strong>{" "}
+                  <strong>{t("survival.clueLabel", { number: i + 1 })}</strong>{" "}
                   {t(
                     `survival.hintBody.${h.key}`,
                     // `sport` is the only var that localizes (small closed enum);
@@ -423,47 +529,69 @@ export default function SurvivalPlayScreen() {
           {submitting ? t("survival.checking") : t("survival.submitGuess")}
         </NeoButton>
 
-        {/* Hint + Skip */}
-        <div className="grid grid-cols-2 gap-3">
+        {/* Help + Skip + Cash Out */}
+        <div className="grid grid-cols-3 gap-3">
           <NeoButton
             variant="blue"
             size="md"
-            onClick={handleHint}
-            disabled={hintTokens <= 0 || hintStage >= 3 || hintLoading}
+            onClick={handleHelp}
+            disabled={helpLoading || helpExhausted}
           >
-            {hintLoading
-              ? t("survival.fetchingHint")
-              : hintTokens <= 0
-                ? t("survival.noHintsLeft")
-                : t("survival.hint", { count: hintTokens })}
+            {helpLoading
+              ? t("survival.gettingHelp")
+              : helpExhausted
+                ? t("survival.nothingToReveal")
+                : helpStage < CLUE_STAGES
+                  ? t("survival.helpClue")
+                  : t("survival.helpLetter")}
           </NeoButton>
           <NeoButton
-            variant={freeSkipsLeft > 0 ? "secondary" : "danger"}
+            variant="secondary"
             size="md"
             onClick={handleSkip}
+            disabled={skipsLeft <= 0}
           >
-            {freeSkipsLeft > 0
-              ? t("survival.skipFree", { count: freeSkipsLeft })
-              : t("survival.skipLife")}
+            {skipsLeft > 0
+              ? t("survival.skip", { count: skipsLeft })
+              : t("survival.noSkipsLeft")}
+          </NeoButton>
+          <NeoButton
+            variant="accent"
+            size="md"
+            onClick={handleCashOut}
+            disabled={endingRun}
+          >
+            {endingRun ? t("survival.cashingOut") : t("survival.cashOut")}
           </NeoButton>
         </div>
       </div>
 
-      {/* Anti-cheat modal */}
-      <Dialog open={showCheatModal} onOpenChange={setShowCheatModal}>
-        <DialogContent className="neo-border neo-shadow-lg bg-destructive text-destructive-foreground max-w-sm">
+      {/* Anti-cheat modal: warning (pot floored) vs penalty (life lost) */}
+      <Dialog
+        open={cheatModal !== null}
+        onOpenChange={(open) => !open && setCheatModal(null)}
+      >
+        <DialogContent
+          className={`neo-border neo-shadow-lg max-w-sm ${cheatModal === "warning" ? "bg-accent text-accent-foreground" : "bg-destructive text-destructive-foreground"}`}
+        >
           <DialogHeader>
             <DialogTitle className="font-heading text-xl text-center">
-              {"\u{1F6A8}"} {t("survival.cheatingDetected")} {"\u{1F6A8}"}
+              {cheatModal === "warning"
+                ? `⚠️ ${t("survival.tabSwitchCaughtTitle")} ⚠️`
+                : `\u{1F6A8} ${t("survival.cheatingDetected")} \u{1F6A8}`}
             </DialogTitle>
-            <DialogDescription className="text-destructive-foreground/90 text-center text-sm mt-2">
-              {t("survival.cheatingDescription")}
+            <DialogDescription
+              className={`text-center text-sm mt-2 ${cheatModal === "warning" ? "text-accent-foreground/90" : "text-destructive-foreground/90"}`}
+            >
+              {cheatModal === "warning"
+                ? t("survival.tabSwitchWarningDescription")
+                : t("survival.cheatingDescription")}
             </DialogDescription>
           </DialogHeader>
           <NeoButton
             variant="secondary"
             size="full"
-            onClick={() => setShowCheatModal(false)}
+            onClick={() => setCheatModal(null)}
             className="mt-2"
           >
             {t("survival.iUnderstand")}

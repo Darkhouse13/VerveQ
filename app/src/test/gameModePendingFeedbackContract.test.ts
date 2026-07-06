@@ -18,10 +18,10 @@ describe("game mode pending feedback contract", () => {
     expect(source).toContain("submitting");
   });
 
-  it("Survival hint action shows immediate loading feedback while fetching a hint", () => {
+  it("Survival help action shows immediate loading feedback while the ladder mutation is in flight", () => {
     const source = read("src/pages/SurvivalScreen.tsx");
 
-    expect(source).toContain("hintLoading");
-    expect(source).toContain("Fetching Hint...");
+    expect(source).toContain("helpLoading");
+    expect(source).toContain("Getting Help...");
   });
 });

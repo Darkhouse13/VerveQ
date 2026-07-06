@@ -18,6 +18,23 @@ const SESSION_TTL_MS = 60 * 60 * 1000; // 1 hour
 const FREE_CLOSE_CALLS_PER_ROUND = 1;
 const PERFORMANCE_BONUS_CAP = 0.3;
 
+// ── Reveal Ladder economy ──
+// Each round is a shrinking pot: answering with no help banks the full pot,
+// every help press (clue or letter reveal) cuts it, and it never drops below
+// the floor — so a round is always finishable for at least a few points.
+const POT_BY_DIFFICULTY: Record<string, number> = {
+  Easy: 100,
+  Medium: 150,
+  Hard: 200,
+  Expert: 300,
+};
+const POT_FLOOR = 10;
+/** Each help press costs this fraction of the round's base pot. */
+const HELP_STEP_FRACTION = 0.15;
+/** Ladder stages 1..CLUE_STAGES are metadata clues; later stages reveal letters. */
+const CLUE_STAGES = 2;
+const SKIPS_PER_GAME = 3;
+
 type InitialsMap = Record<string, string[]>;
 
 type PlayerMetadata = {
@@ -363,6 +380,80 @@ function getDifficulty(round: number): DifficultyLevel {
   if (round <= 5) return { initialsLen: 2, label: "Medium" };
   if (round <= 7) return { initialsLen: 2, label: "Hard" };
   return { initialsLen: 3, label: "Expert" };
+}
+
+function getBasePot(difficulty: string): number {
+  return POT_BY_DIFFICULTY[difficulty] ?? POT_BY_DIFFICULTY.Easy;
+}
+
+/**
+ * Current value of the round's pot. `potFloored` is the anti-cheat first
+ * offense: the pot collapses to the floor for the rest of the round, so a
+ * quick lookup elsewhere can only ever earn the minimum.
+ */
+function getPotValue(
+  difficulty: string,
+  helpStage: number,
+  potFloored: boolean,
+): number {
+  if (potFloored) return POT_FLOOR;
+  const basePot = getBasePot(difficulty);
+  const step = Math.round(basePot * HELP_STEP_FRACTION);
+  return Math.max(POT_FLOOR, basePot - step * helpStage);
+}
+
+/** Letters revealed so far for a given ladder stage (clue stages reveal none). */
+function getRevealedLetterCount(helpStage: number): number {
+  return Math.max(0, helpStage - CLUE_STAGES);
+}
+
+const MASK_CHAR = "•";
+const LETTER_REGEX = /\p{L}/u;
+
+/**
+ * Masked form of the primary player's name, e.g. "K•••• D• B••••••" for
+ * "Kevin De Bruyne". Word-initial letters (already implied by the shown
+ * initials) and non-letter characters (hyphens, apostrophes) are always
+ * visible; `revealedLetters` hidden letters are filled in left to right.
+ * Only this masked string ever leaves the server — never the raw name.
+ */
+function buildMaskedName(
+  primaryPlayer: string,
+  revealedLetters: number,
+): string {
+  let remaining = revealedLetters;
+  return primaryPlayer
+    .trim()
+    .split(/\s+/)
+    .map((word) =>
+      Array.from(word)
+        .map((char, index) => {
+          if (!LETTER_REGEX.test(char)) return char;
+          if (index === 0) return char;
+          if (remaining > 0) {
+            remaining -= 1;
+            return char;
+          }
+          return MASK_CHAR;
+        })
+        .join(""),
+    )
+    .join(" ");
+}
+
+/** How many letters of the name start out hidden (mirror of buildMaskedName). */
+function countHiddenLetters(primaryPlayer: string): number {
+  return primaryPlayer
+    .trim()
+    .split(/\s+/)
+    .reduce(
+      (sum, word) =>
+        sum +
+        Array.from(word).filter(
+          (char, index) => LETTER_REGEX.test(char) && index > 0,
+        ).length,
+      0,
+    );
 }
 
 function getSizeScore(totalPlayers: number): number {
@@ -890,14 +981,42 @@ function generateChallenge(
   return generateLegacyChallenge(sport, round, usedInitials);
 }
 
+interface ChallengeViewState {
+  helpStage: number;
+  potFloored: boolean;
+}
+
+const FRESH_CHALLENGE_VIEW: ChallengeViewState = {
+  helpStage: 0,
+  potFloored: false,
+};
+
+/**
+ * Client-facing projection of a challenge. Deliberately omits `validPlayers`
+ * and `primaryPlayer`; the name only appears as the buildMaskedName() mask,
+ * with letters filled in strictly by the server-side help ladder.
+ */
 function buildChallengeResponse(
-  challenge: Pick<SurvivalChallenge, "initials" | "difficulty">,
+  challenge: Pick<
+    SurvivalChallenge,
+    "initials" | "difficulty" | "validPlayers"
+  > & { primaryPlayer?: string },
   sport: string,
+  view: ChallengeViewState = FRESH_CHALLENGE_VIEW,
 ) {
+  const primaryPlayer = getChallengePrimaryPlayer(sport, challenge);
+  const revealedLetters = getRevealedLetterCount(view.helpStage);
   return {
     initials: challenge.initials,
     difficulty: challenge.difficulty,
     hint: `Find a ${sport} player with initials ${challenge.initials}`,
+    maskedName: buildMaskedName(primaryPlayer, revealedLetters),
+    basePot: getBasePot(challenge.difficulty),
+    potValue: getPotValue(challenge.difficulty, view.helpStage, view.potFloored),
+    lettersRemaining: Math.max(
+      0,
+      countHiddenLetters(primaryPlayer) - revealedLetters,
+    ),
   };
 }
 
@@ -916,6 +1035,7 @@ export const startGame = mutation({
       sport,
       round: 1,
       score: 0,
+      correctCount: 0,
       lives: 3,
       hintUsed: false,
       usedInitials: [challenge.initials],
@@ -928,9 +1048,8 @@ export const startGame = mutation({
       performanceBonus: 0,
       closeCallRound: 1,
       closeCallCount: 0,
-      hintTokensLeft: 3,
-      currentHintStage: 0,
-      freeSkipsLeft: 1,
+      helpStage: 0,
+      skipsLeft: SKIPS_PER_GAME,
     });
 
     return {
@@ -938,9 +1057,7 @@ export const startGame = mutation({
       round: 1,
       lives: 3,
       score: 0,
-      hintAvailable: true,
-      hintTokensLeft: 3,
-      freeSkipsLeft: 1,
+      skipsLeft: SKIPS_PER_GAME,
       challenge: buildChallengeResponse(challenge, sport),
     };
   },
@@ -958,15 +1075,18 @@ export const getSession = query({
     return {
       round: session.round,
       score: session.score,
+      correctCount: session.correctCount ?? 0,
       lives: session.lives,
       hintUsed: session.hintUsed,
       gameOver: session.gameOver || expired,
-      hintTokensLeft: session.hintTokensLeft ?? 3,
-      currentHintStage: session.currentHintStage ?? 0,
+      helpStage: session.helpStage ?? 0,
       speedStreak: session.speedStreak ?? 0,
-      freeSkipsLeft: session.freeSkipsLeft ?? 1,
+      skipsLeft: session.skipsLeft ?? SKIPS_PER_GAME,
       challenge: session.currentChallenge
-        ? buildChallengeResponse(session.currentChallenge, session.sport)
+        ? buildChallengeResponse(session.currentChallenge, session.sport, {
+            helpStage: session.helpStage ?? 0,
+            potFloored: session.potFloorRound === session.round,
+          })
         : null,
     };
   },
@@ -998,12 +1118,23 @@ export const submitGuess = mutation({
       session.sport,
       challenge,
     );
-    const { matched: correct, distance, matchedPlayer, closeCall, typoAccepted } = findBestMatch(
-      guess,
-      validGuessPlayers,
-    );
+    const {
+      matched: correct,
+      distance,
+      matchedPlayer,
+      closeCall,
+      typoAccepted,
+      surnameMatch,
+      ambiguousSurname,
+    } = findBestMatch(guess, validGuessPlayers, { acceptSurname: true });
+
+    const helpStage = session.helpStage ?? 0;
+    const potFloored = session.potFloorRound === session.round;
+    const potValue = getPotValue(challenge.difficulty, helpStage, potFloored);
 
     // Close call: one free retry per round, then it counts as a miss.
+    // An ambiguous surname ("Silva" when several Silvas fit) rides the same
+    // free-retry lane with its own flag so the UI can ask for the full name.
     if (!correct && closeCall) {
       const closeCallsThisRound =
         session.closeCallRound === session.round
@@ -1021,9 +1152,15 @@ export const submitGuess = mutation({
         return {
           correct: false,
           closeCall: true,
+          ambiguousSurname,
           typoAccepted: false,
+          surnameMatch: false,
           matchDistance: distance,
-          correctAnswer: matchedPlayer,
+          // Never reveal what the near-miss was close to — the round is
+          // still live and the mask is the only sanctioned reveal channel.
+          correctAnswer: null,
+          pointsEarned: 0,
+          potValue,
           lives: session.lives,
           score: session.score,
           round: session.round,
@@ -1042,7 +1179,14 @@ export const submitGuess = mutation({
       const lastAnswerAt = session.lastAnswerAt ?? 0;
       const elapsed = lastAnswerAt > 0 ? (now - lastAnswerAt) / 1000 : Infinity;
 
-      const newStreak = elapsed < 4.0 ? (session.speedStreak ?? 0) + 1 : 1;
+      // The streak (and its earn-a-life / On Fire rewards) only feeds on
+      // full-pot answers — using the help ladder banks points but resets it.
+      const noHelpUsed = helpStage === 0 && !potFloored;
+      const newStreak = noHelpUsed
+        ? elapsed < 4.0
+          ? (session.speedStreak ?? 0) + 1
+          : 1
+        : 0;
       const isOnFire = newStreak >= 5;
       const bonusIncrement = isOnFire ? 0.1 : 0;
 
@@ -1056,7 +1200,8 @@ export const submitGuess = mutation({
       const newLives = earnedLife ? session.lives + 1 : session.lives;
 
       const newRound = session.round + 1;
-      const newScore = session.score + 1;
+      const newScore = session.score + potValue;
+      const newCorrectCount = (session.correctCount ?? 0) + 1;
       const next = generateChallenge(
         session.sport,
         newRound,
@@ -1066,6 +1211,7 @@ export const submitGuess = mutation({
       await ctx.db.patch(sessionId, {
         round: newRound,
         score: newScore,
+        correctCount: newCorrectCount,
         lives: newLives,
         usedInitials: next
           ? [...session.usedInitials, next.initials]
@@ -1080,15 +1226,19 @@ export const submitGuess = mutation({
         ),
         closeCallRound: newRound,
         closeCallCount: 0,
-        currentHintStage: 0,
+        helpStage: 0,
       });
 
       return {
         correct: true,
         closeCall: false,
+        ambiguousSurname: false,
         typoAccepted,
+        surnameMatch,
         matchDistance: distance,
         correctAnswer: matchedPlayer,
+        pointsEarned: potValue,
+        potValue,
         lives: newLives,
         score: newScore,
         round: newRound,
@@ -1121,7 +1271,7 @@ export const submitGuess = mutation({
         lastAnswerAt: 0,
         closeCallRound: next ? session.round + 1 : session.round,
         closeCallCount: 0,
-        currentHintStage: 0,
+        helpStage: 0,
         ...(next
           ? {
               round: session.round + 1,
@@ -1134,9 +1284,15 @@ export const submitGuess = mutation({
       return {
         correct: false,
         closeCall: false,
+        ambiguousSurname: false,
         typoAccepted: false,
+        surnameMatch: false,
         matchDistance: distance,
+        // A committed miss ends the round, so revealing the answer here is
+        // the learning moment, not a leak.
         correctAnswer: matchedPlayer,
+        pointsEarned: 0,
+        potValue,
         lives: newLives,
         score: session.score,
         round: next ? session.round + 1 : session.round,
@@ -1153,12 +1309,16 @@ export const submitGuess = mutation({
   },
 });
 
-export const useHint = mutation({
-  args: {
-    sessionId: v.id("survivalSessions"),
-    stage: v.number(),
-  },
-  handler: async (ctx, { sessionId, stage }) => {
+/**
+ * The one help button of the Reveal Ladder. Every press advances a single
+ * per-round ladder and shrinks the pot: stages 1-2 are metadata clues
+ * (nationality/club, position/era, …), every later stage fills in one letter
+ * of the masked name. Unlimited presses — a round can always be revealed down
+ * to the floor and finished, so nobody gets hard-stuck.
+ */
+export const requestHelp = mutation({
+  args: { sessionId: v.id("survivalSessions") },
+  handler: async (ctx, { sessionId }) => {
     const userId = await getAuthUserId(ctx);
     if (!userId) throw new Error("Not authenticated");
     const session = await ctx.db.get(sessionId);
@@ -1172,37 +1332,45 @@ export const useHint = mutation({
       throw new Error("Session expired");
     }
 
-    const tokensLeft = session.hintTokensLeft ?? 3;
-    const currentStage = session.currentHintStage ?? 0;
-
-    if (stage !== currentStage + 1) {
-      throw new Error("Must use hints in order");
-    }
-    if (tokensLeft <= 0) {
-      throw new Error("No hint tokens remaining");
-    }
+    const challenge = session.currentChallenge;
+    if (!challenge) throw new Error("No active challenge");
 
     const sport = session.sport;
-    const challenge = session.currentChallenge;
-    const primaryPlayer = challenge
-      ? getChallengePrimaryPlayer(sport, challenge)
-      : "";
-    const hintText = buildFamousPlayerHint(sport, primaryPlayer, stage);
-    const hintI18n = buildFamousPlayerHintI18n(sport, primaryPlayer, stage);
+    const primaryPlayer = getChallengePrimaryPlayer(sport, challenge);
+    const stage = (session.helpStage ?? 0) + 1;
+    const hiddenTotal = countHiddenLetters(primaryPlayer);
+
+    let kind: "clue" | "letter";
+    let hintText: string | null = null;
+    let hintI18n: HintI18n | null = null;
+    if (stage <= CLUE_STAGES) {
+      kind = "clue";
+      // Legacy English string (v1 screens, untranslated) + structured form
+      // localized in the v2 UI via `survival.hintBody.<key>`.
+      hintText = buildFamousPlayerHint(sport, primaryPlayer, stage);
+      hintI18n = buildFamousPlayerHintI18n(sport, primaryPlayer, stage);
+    } else {
+      kind = "letter";
+      if (getRevealedLetterCount(session.helpStage ?? 0) >= hiddenTotal) {
+        throw new Error("Nothing left to reveal");
+      }
+    }
 
     await ctx.db.patch(sessionId, {
-      hintTokensLeft: tokensLeft - 1,
-      currentHintStage: stage,
+      helpStage: stage,
       hintUsed: true,
     });
 
+    const revealedLetters = getRevealedLetterCount(stage);
+    const potFloored = session.potFloorRound === session.round;
     return {
       stage,
-      // Legacy English string (v1 screens, untranslated). v2 uses `hintI18n`.
+      kind,
       hintText,
-      // Structured form → localized in the v2 UI via `survival.hintBody.<key>`.
       hintI18n,
-      tokensLeft: tokensLeft - 1,
+      maskedName: buildMaskedName(primaryPlayer, revealedLetters),
+      potValue: getPotValue(challenge.difficulty, stage, potFloored),
+      lettersRemaining: Math.max(0, hiddenTotal - revealedLetters),
     };
   },
 });
@@ -1223,49 +1391,41 @@ export const skipChallenge = mutation({
       throw new Error("Session expired");
     }
 
-    const freeSkips = session.freeSkipsLeft ?? 1;
-    let newLives: number;
-    let newFreeSkips: number;
+    // Skips never cost a life in the Reveal Ladder — lives are only lost on
+    // committed wrong guesses. A small per-game budget keeps skip-fishing for
+    // favourable initials bounded.
+    const skipsLeft = session.skipsLeft ?? SKIPS_PER_GAME;
+    if (skipsLeft <= 0) throw new Error("No skips remaining");
+    const newSkips = skipsLeft - 1;
+    const newLives = session.lives;
 
-    if (freeSkips > 0) {
-      // Free skip — no life deduction
-      newLives = session.lives;
-      newFreeSkips = freeSkips - 1;
-    } else {
-      // Paid skip — deduct life
-      newLives = session.lives - 1;
-      newFreeSkips = 0;
-    }
-
-    let next = null;
-    if (newLives > 0) {
-      next = generateChallenge(
-        session.sport,
-        session.round + 1,
-        session.usedInitials,
-      );
-    }
+    const next = generateChallenge(
+      session.sport,
+      session.round + 1,
+      session.usedInitials,
+    );
     const isGameOver = newLives <= 0 || !next;
 
     await ctx.db.patch(sessionId, {
-      lives: newLives,
-      freeSkipsLeft: newFreeSkips,
+      skipsLeft: newSkips,
       gameOver: isGameOver,
       speedStreak: 0,
       lastAnswerAt: 0,
-      currentHintStage: 0,
+      helpStage: 0,
+      closeCallCount: 0,
       ...(next
         ? {
             round: session.round + 1,
             usedInitials: [...session.usedInitials, next.initials],
             currentChallenge: next,
+            closeCallRound: session.round + 1,
           }
         : {}),
     });
 
     return {
       lives: newLives,
-      freeSkipsLeft: newFreeSkips,
+      skipsLeft: newSkips,
       score: session.score,
       round: next ? session.round + 1 : session.round,
       gameOver: isGameOver,
@@ -1274,6 +1434,34 @@ export const skipChallenge = mutation({
       challenge: next
         ? buildChallengeResponse(next, session.sport)
         : null,
+    };
+  },
+});
+
+/**
+ * Voluntary cash-out: ends the run so the banked score can be finalized via
+ * games.completeSurvival. Distinct from abandoning the tab — this is the
+ * graceful "I'm done, record my points" exit.
+ */
+export const endRun = mutation({
+  args: { sessionId: v.id("survivalSessions") },
+  handler: async (ctx, { sessionId }) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) throw new Error("Not authenticated");
+    const session = await ctx.db.get(sessionId);
+    if (!session) throw new Error("Not found");
+    if (session.userId && session.userId !== userId) {
+      throw new Error("Not authorized");
+    }
+
+    if (!session.gameOver) {
+      await ctx.db.patch(sessionId, { gameOver: true });
+    }
+
+    return {
+      gameOver: true,
+      score: session.score,
+      round: session.round,
     };
   },
 });
@@ -1292,18 +1480,42 @@ export const penalizeTabSwitch = mutation({
       throw new Error("Not authorized");
     }
     if (session.gameOver) {
-      return { penalized: false, lives: 0, gameOver: true };
+      return { penalized: false, warning: false, lives: 0, gameOver: true };
     }
     if (Date.now() > session.expiresAt) {
       await ctx.db.patch(sessionId, { gameOver: true });
-      return { penalized: false, lives: session.lives, gameOver: true };
+      return {
+        penalized: false,
+        warning: false,
+        lives: session.lives,
+        gameOver: true,
+      };
     }
 
     if (session.lastPenalizedRound === currentRound) {
       return {
         penalized: false,
+        warning: false,
         lives: session.lives,
         gameOver: session.gameOver,
+      };
+    }
+
+    // First offense of the game: no life lost, but the current round's pot
+    // collapses to the floor — a quick lookup can only ever earn the minimum.
+    // Repeat offenses cost a life as before.
+    if (!session.antiCheatWarned) {
+      await ctx.db.patch(sessionId, {
+        antiCheatWarned: true,
+        potFloorRound: session.round,
+        lastPenalizedRound: currentRound,
+      });
+      return {
+        penalized: true,
+        warning: true,
+        lives: session.lives,
+        potValue: POT_FLOOR,
+        gameOver: false,
       };
     }
 
@@ -1316,6 +1528,6 @@ export const penalizeTabSwitch = mutation({
       lastPenalizedRound: currentRound,
     });
 
-    return { penalized: true, lives: newLives, gameOver: isGameOver };
+    return { penalized: true, warning: false, lives: newLives, gameOver: isGameOver };
   },
 });
