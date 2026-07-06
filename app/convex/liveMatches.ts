@@ -4,20 +4,14 @@ import { v } from "convex/values";
 import { getAuthUserId } from "@convex-dev/auth/server";
 import { internal } from "./_generated/api";
 import { clampRating, getKFactor } from "./lib/elo";
-import {
-  areFullAccountUsers,
-  areRankedEligibleUsers,
-  FULL_ACCOUNT_REQUIRED,
-} from "./lib/authz";
+import { areRankedEligibleUsers } from "./lib/authz";
 import { normalizeAnswer } from "./lib/scoring";
 import { orderAnswerOptions } from "./lib/answerOptions";
-import { selectQuestionsWithImageCap } from "./lib/imageQuestions";
 import {
   composeLocalizedQuestion,
   fetchQuestionTranslation,
 } from "./lib/contentI18n";
 
-const TOTAL_QUESTIONS = 10;
 const QUESTION_TIME_LIMIT_MS = 10_000;
 const ROUND_RESULT_DURATION_MS = 2_000;
 const HEARTBEAT_TIMEOUT_MS = 15_000;
@@ -170,68 +164,21 @@ function missedAnswer(now: number): LiveAnswer {
   };
 }
 
-async function findActiveMatchForUser(
-  ctx: Pick<MutationCtx, "db">,
-  userId: Id<"users">,
-) {
-  for (const status of ACTIVE_MATCH_STATUSES) {
-    const asP1 = await ctx.db
-      .query("liveMatches")
-      .withIndex("by_player1", (q) =>
-        q.eq("player1Id", userId).eq("status", status),
-      )
-      .first();
-    if (asP1) return asP1;
-
-    const asP2 = await ctx.db
-      .query("liveMatches")
-      .withIndex("by_player2", (q) =>
-        q.eq("player2Id", userId).eq("status", status),
-      )
-      .first();
-    if (asP2) return asP2;
-  }
-
-  return null;
-}
-
-
-function getPairKey(player1Id: Id<"users">, player2Id: Id<"users">) {
-  const [playerAId, playerBId] = [player1Id, player2Id].sort() as [Id<"users">, Id<"users">];
-  return { pairKey: `${playerAId}|${playerBId}`, playerAId, playerBId };
-}
-
-function orientVersusSummary(
-  summary: Doc<"challengeHeadToHeads"> | null,
-  player1Id: Id<"users">,
-  player2Id: Id<"users">,
-) {
-  if (!summary) {
-    return {
-      player1Wins: 0,
-      player2Wins: 0,
-      draws: 0,
-      totalMatches: 0,
-    };
-  }
-  const player1IsA = summary.playerAId === player1Id;
-  const player2IsA = summary.playerAId === player2Id;
-  return {
-    player1Wins: player1IsA ? summary.playerAWins : summary.playerBWins,
-    player2Wins: player2IsA ? summary.playerAWins : summary.playerBWins,
-    draws: summary.draws,
-    totalMatches: summary.totalMatches,
-    lastPlayedAt: summary.lastPlayedAt,
-  };
-}
-
-type RivalryDetails = {
-  currentStreak: {
+// Historical head-to-head context was removed with the dormant challenge
+// subsystem (see schema.ts for the table tombstone). The summary shape is
+// kept so existing match views render a clean empty state.
+type VersusSummary = {
+  player1Wins: number;
+  player2Wins: number;
+  draws: number;
+  totalMatches: number;
+  lastPlayedAt?: number;
+  currentStreak?: {
     count: number;
     owner: "player1" | "player2";
     streakOwner: "player1" | "player2";
   } | null;
-  recentMatches: Array<{
+  recentMatches?: Array<{
     outcome: "win" | "loss" | "draw";
     player1Score: number;
     player2Score: number;
@@ -239,183 +186,12 @@ type RivalryDetails = {
   }>;
 };
 
-// Rivalry fields are present only when head-to-head context is available, so
-// the summary type carries them as optional.
-type VersusSummary = {
-  player1Wins: number;
-  player2Wins: number;
-  draws: number;
-  totalMatches: number;
-  lastPlayedAt?: number;
-} & Partial<RivalryDetails>;
-
-async function getRivalryDetails(
-  ctx: Pick<QueryCtx, "db"> | Pick<MutationCtx, "db">,
-  player1Id: Id<"users">,
-  player2Id: Id<"users">,
-  sport: string,
-  mode = "quiz",
-): Promise<RivalryDetails> {
-  const { pairKey } = getPairKey(player1Id, player2Id);
-  const recentHistory = await ctx.db
-    .query("challengeMatchHistory")
-    .withIndex("by_pair_sport_mode", (q) =>
-      q.eq("pairKey", pairKey).eq("sport", sport).eq("mode", mode),
-    )
-    .order("desc")
-    .take(5);
-
-  let streakOwner: "player1" | "player2" | null = null;
-  let streakWinnerId: Id<"users"> | null = null;
-  let currentStreak = 0;
-  for (const match of recentHistory) {
-    if (!match.winnerId) break;
-    if (!streakWinnerId) {
-      streakWinnerId = match.winnerId;
-      streakOwner = match.winnerId === player1Id ? "player1" : "player2";
-    }
-    if (match.winnerId !== streakWinnerId) break;
-    currentStreak += 1;
-  }
-
-  return {
-    currentStreak: currentStreak > 1 && streakOwner
-      ? { count: currentStreak, owner: streakOwner, streakOwner }
-      : null,
-    recentMatches: recentHistory.map((match) => ({
-      outcome: !match.winnerId
-        ? "draw"
-        : match.winnerId === player1Id
-          ? "win"
-          : "loss",
-      player1Score: match.player1Score,
-      player2Score: match.player2Score,
-      playedAt: match.playedAt,
-    })),
-  };
-}
-
-async function getVersusSummary(
-  ctx: Pick<QueryCtx, "db"> | Pick<MutationCtx, "db">,
-  player1Id: Id<"users">,
-  player2Id: Id<"users">,
-  sport: string,
-  mode = "quiz",
-): Promise<VersusSummary> {
-  if (typeof (ctx.db as { query?: unknown }).query !== "function") {
-    return orientVersusSummary(null, player1Id, player2Id);
-  }
-  if (!(await areRankedEligibleUsers(ctx, [player1Id, player2Id]))) {
-    return orientVersusSummary(null, player1Id, player2Id);
-  }
-  const { pairKey } = getPairKey(player1Id, player2Id);
-  const summary = await ctx.db
-    .query("challengeHeadToHeads")
-    .withIndex("by_pair_sport_mode", (q) =>
-      q.eq("pairKey", pairKey).eq("sport", sport).eq("mode", mode),
-    )
-    .first();
-  const rivalry = await getRivalryDetails(ctx, player1Id, player2Id, sport, mode);
-  return {
-    ...orientVersusSummary(summary, player1Id, player2Id),
-    ...rivalry,
-  };
-}
-
-type ChallengeQuestionCandidate = Doc<"quizQuestions"> & { _id: Id<"quizQuestions"> };
-
-function shuffleInPlace<T>(items: T[]): T[] {
-  for (let i = items.length - 1; i > 0; i -= 1) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [items[i], items[j]] = [items[j], items[i]];
-  }
-  return items;
-}
-
-function selectRotatedQuestions(
-  candidates: ChallengeQuestionCandidate[],
-  recentChecksums: Set<string>,
-) {
-  const nonRecent = candidates.filter((q) => !recentChecksums.has(q.checksum));
-  const rotationPool = nonRecent.length >= TOTAL_QUESTIONS ? nonRecent : candidates;
-
-  const sortedByUsage = [...rotationPool].sort((a, b) => {
-    const usageDelta = a.usageCount - b.usageCount;
-    if (usageDelta !== 0) return usageDelta;
-    return a.timesAnswered - b.timesAnswered;
-  });
-
-  const leastUsedWindow = sortedByUsage.slice(0, Math.max(TOTAL_QUESTIONS * 4, 50));
-  const selectedFromWindow = selectQuestionsWithImageCap(
-    shuffleInPlace(leastUsedWindow),
-    TOTAL_QUESTIONS,
-  );
-  if (selectedFromWindow.length >= TOTAL_QUESTIONS) {
-    return selectedFromWindow;
-  }
-
-  return selectQuestionsWithImageCap(
-    shuffleInPlace(sortedByUsage),
-    TOTAL_QUESTIONS,
-  );
-}
-
-async function getChallengeQuestionCandidates(
-  ctx: Pick<MutationCtx, "db">,
-  challenge: Doc<"challenges">,
-): Promise<ChallengeQuestionCandidate[]> {
-  if (challenge.sport === "knowledge" && challenge.mode !== "came_first") {
-    const knowledgeQuestions: ChallengeQuestionCandidate[] = [];
-    for (const difficulty of ["easy", "intermediate", "hard"] as const) {
-      const questions = await ctx.db
-        .query("quizQuestions")
-        .withIndex("by_sport_difficulty", (q) =>
-          q.eq("sport", challenge.sport).eq("difficulty", difficulty),
-        )
-        .collect();
-      knowledgeQuestions.push(...questions);
-    }
-    return knowledgeQuestions.filter((q) => q.category !== "which_came_first");
-  }
-
-  const allQuestions = await ctx.db
-    .query("quizQuestions")
-    .withIndex("by_sport_difficulty", (q) =>
-      q.eq("sport", challenge.sport).eq("difficulty", "intermediate"),
-    )
-    .collect();
-
-  return challenge.mode === "came_first"
-    ? allQuestions.filter((q) => q.category === "which_came_first")
-    : allQuestions.filter((q) => q.category !== "which_came_first");
-}
-
-async function getRecentChallengeQuestionChecksums(
-  ctx: Pick<MutationCtx, "db">,
-  player1Id: Id<"users">,
-  player2Id: Id<"users">,
-  sport: string,
-  mode: string,
-) {
-  const { pairKey } = getPairKey(player1Id, player2Id);
-  const recentHistory = await ctx.db
-    .query("challengeMatchHistory")
-    .withIndex("by_pair_sport_mode", (q) =>
-      q.eq("pairKey", pairKey).eq("sport", sport).eq("mode", mode),
-    )
-    .order("desc")
-    .take(5);
-
-  const recentChecksums = new Set<string>();
-  for (const history of recentHistory) {
-    const previousMatch = await ctx.db.get(history.matchId);
-    if (!previousMatch) continue;
-    for (const question of previousMatch.questions as StoredLiveQuestion[]) {
-      if (question.checksum) recentChecksums.add(question.checksum);
-    }
-  }
-  return recentChecksums;
-}
+const EMPTY_VERSUS_SUMMARY: VersusSummary = {
+  player1Wins: 0,
+  player2Wins: 0,
+  draws: 0,
+  totalMatches: 0,
+};
 
 async function recordChallengeQuestionUsage(
   ctx: Pick<MutationCtx, "db">,
@@ -437,211 +213,7 @@ async function recordChallengeQuestionUsage(
   });
 }
 
-async function recordChallengeHistory(
-  ctx: Pick<MutationCtx, "db">,
-  match: Doc<"liveMatches">,
-  status: "completed" | "forfeited",
-  winnerId: Id<"users"> | undefined,
-  playedAt: number,
-) {
-  if (!(await areRankedEligibleUsers(ctx, [match.player1Id, match.player2Id]))) {
-    return;
-  }
-
-  const existingHistory = await ctx.db
-    .query("challengeMatchHistory")
-    .withIndex("by_match", (q) => q.eq("matchId", match._id))
-    .first();
-  if (existingHistory) return;
-
-  const { pairKey, playerAId, playerBId } = getPairKey(match.player1Id, match.player2Id);
-  const mode = match.mode ?? "quiz";
-  const playerAWon = winnerId === playerAId;
-  const playerBWon = winnerId === playerBId;
-  const draw = !winnerId;
-
-  await ctx.db.insert("challengeMatchHistory", {
-    matchId: match._id,
-    challengeId: match.challengeId,
-    pairKey,
-    playerAId,
-    playerBId,
-    player1Id: match.player1Id,
-    player2Id: match.player2Id,
-    sport: match.sport,
-    mode,
-    player1Score: match.player1Score,
-    player2Score: match.player2Score,
-    winnerId,
-    status,
-    playedAt,
-  });
-
-  const existing = await ctx.db
-    .query("challengeHeadToHeads")
-    .withIndex("by_pair_sport_mode", (q) =>
-      q.eq("pairKey", pairKey).eq("sport", match.sport).eq("mode", mode),
-    )
-    .first();
-
-  if (existing) {
-    await ctx.db.patch(existing._id, {
-      playerAWins: existing.playerAWins + (playerAWon ? 1 : 0),
-      playerBWins: existing.playerBWins + (playerBWon ? 1 : 0),
-      draws: existing.draws + (draw ? 1 : 0),
-      totalMatches: existing.totalMatches + 1,
-      lastMatchId: match._id,
-      lastPlayedAt: playedAt,
-    });
-  } else {
-    await ctx.db.insert("challengeHeadToHeads", {
-      pairKey,
-      playerAId,
-      playerBId,
-      sport: match.sport,
-      mode,
-      playerAWins: playerAWon ? 1 : 0,
-      playerBWins: playerBWon ? 1 : 0,
-      draws: draw ? 1 : 0,
-      totalMatches: 1,
-      lastMatchId: match._id,
-      lastPlayedAt: playedAt,
-    });
-  }
-}
-
 // ── Mutations ──
-async function declineOtherPendingChallengesForMatch(
-  ctx: Pick<MutationCtx, "db">,
-  matchChallengeId: Id<"challenges">,
-  player1Id: Id<"users">,
-  player2Id: Id<"users">,
-  sport: string,
-  mode: string,
-) {
-  const patchIfStale = async (challengerId: Id<"users">, challengedId: Id<"users">) => {
-    const challenges = await ctx.db
-      .query("challenges")
-      .withIndex("by_challenger", (q) => q.eq("challengerId", challengerId))
-      .collect();
-
-    for (const challenge of challenges) {
-      if (
-        challenge._id !== matchChallengeId &&
-        challenge.challengedId === challengedId &&
-        challenge.sport === sport &&
-        challenge.mode === mode &&
-        challenge.status === "pending"
-      ) {
-        await ctx.db.patch(challenge._id, { status: "declined" });
-      }
-    }
-  };
-
-  await patchIfStale(player1Id, player2Id);
-  await patchIfStale(player2Id, player1Id);
-}
-
-export const createFromChallenge = mutation({
-  args: { challengeId: v.id("challenges") },
-  handler: async (ctx, { challengeId }) => {
-    const userId = await getAuthUserId(ctx);
-    if (!userId) throw new Error("Not authenticated");
-
-    const challenge = await ctx.db.get(challengeId);
-    if (!challenge) throw new Error("Challenge not found");
-    if (challenge.status !== "active") {
-      throw new Error("Challenge is not active");
-    }
-    if (
-      challenge.challengerId !== userId &&
-      challenge.challengedId !== userId
-    ) {
-      throw new Error("Not authorized");
-    }
-    if (
-      !(await areFullAccountUsers(ctx, [
-        challenge.challengerId,
-        challenge.challengedId,
-      ]))
-    ) {
-      throw new Error(FULL_ACCOUNT_REQUIRED);
-    }
-
-    const challengerActive = await findActiveMatchForUser(
-      ctx,
-      challenge.challengerId,
-    );
-    const challengedActive = await findActiveMatchForUser(
-      ctx,
-      challenge.challengedId,
-    );
-    if (challengerActive || challengedActive) {
-      throw new Error("One of the players already has an active match");
-    }
-
-    // Pick 10 rotated questions for this sport/mode. Sports stay intermediate
-    // for fairness; normal Knowledge challenge quiz uses all 300 MCQs because
-    // its public difficulty labels are less relevant in head-to-head play.
-    const matchCandidates = await getChallengeQuestionCandidates(ctx, challenge);
-
-    const recentChecksums = await getRecentChallengeQuestionChecksums(
-      ctx,
-      challenge.challengerId,
-      challenge.challengedId,
-      challenge.sport,
-      challenge.mode,
-    );
-    const pickedQuestions = selectRotatedQuestions(matchCandidates, recentChecksums);
-    if (pickedQuestions.length < TOTAL_QUESTIONS) {
-      throw new Error(
-        `Not enough live match questions available for ${challenge.sport}: ${pickedQuestions.length}/${TOTAL_QUESTIONS}`,
-      );
-    }
-
-    const picked = pickedQuestions.map((q) => ({
-      question: q.question,
-      options: orderAnswerOptions(q.options, q.correctAnswer, q.checksum),
-      correctAnswer: q.correctAnswer,
-      explanation: q.explanation ?? null,
-      imageId: q.imageId ?? null,
-      checksum: q.checksum,
-    }));
-
-    await declineOtherPendingChallengesForMatch(
-      ctx,
-      challengeId,
-      challenge.challengerId,
-      challenge.challengedId,
-      challenge.sport,
-      challenge.mode,
-    );
-
-    const now = Date.now();
-    const matchId = await ctx.db.insert("liveMatches", {
-      player1Id: challenge.challengerId,
-      player2Id: challenge.challengedId,
-      sport: challenge.sport,
-      mode: challenge.mode,
-      status: "waiting",
-      currentQuestion: 0,
-      totalQuestions: TOTAL_QUESTIONS,
-      questions: picked,
-      player1Answers: [],
-      player2Answers: [],
-      player1Score: 0,
-      player2Score: 0,
-      player1Ready: false,
-      player2Ready: false,
-      player1LastSeen: now,
-      player2LastSeen: now,
-      createdAt: now,
-      challengeId,
-    });
-
-    return { matchId };
-  },
-});
 
 export const setReady = mutation({
   args: { matchId: v.id("liveMatches") },
@@ -882,13 +454,7 @@ export const getMatch = query({
     const p2 = await ctx.db.get(match.player2Id);
 
     const isP1 = userId === match.player1Id;
-    const versusSummary = await getVersusSummary(
-      ctx,
-      match.player1Id,
-      match.player2Id,
-      match.sport,
-      match.mode ?? "quiz",
-    );
+    const versusSummary = EMPTY_VERSUS_SUMMARY;
 
     // Never expose correctAnswer/explanation through the public match view.
     // Future questions stay hidden entirely; the current/past display shape is
@@ -1200,26 +766,11 @@ async function finishMatch(
     match.player2Id,
   ]);
 
-  if (!match.historyRecordedAt && rankedEligible) {
-    await recordChallengeHistory(ctx, match, status, winnerId, now);
-  }
-
-  if (match.challengeId) {
-    await ctx.db.patch(match.challengeId, {
-      status: "completed",
-      challengerScore: match.player1Score,
-      challengedScore: match.player2Score,
-      winnerId,
-      completedAt: match.completedAt ?? now,
-    });
-  }
-
   if (match.eloAppliedAt) {
     await ctx.db.patch(match._id, {
       status,
       winnerId,
       completedAt: match.completedAt ?? now,
-      historyRecordedAt: match.historyRecordedAt ?? now,
     });
     return;
   }
@@ -1232,7 +783,6 @@ async function finishMatch(
     status,
     winnerId,
     completedAt: now,
-    historyRecordedAt: match.historyRecordedAt ?? now,
     ...(applyElo && rankedEligible ? { eloAppliedAt: now } : {}),
   });
 }

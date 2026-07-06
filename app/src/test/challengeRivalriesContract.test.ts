@@ -2,16 +2,17 @@ import { describe, expect, it } from "vitest";
 import { readFileSync } from "node:fs";
 
 describe("challenge rivalries v1 contract", () => {
-  it("returns streak and recent match history with the head-to-head summary", () => {
+  // The head-to-head/rivalry queries were removed with the dormant challenge
+  // subsystem; getMatch keeps the versusSummary shape as an empty state so
+  // legacy match views still render.
+  it("keeps the versusSummary shape available to legacy live-match views", () => {
     const liveMatches = readFileSync("convex/liveMatches.ts", "utf8");
     const types = readFileSync("src/types/api.ts", "utf8");
     const liveMatchScreen = readFileSync("src/pages/LiveMatchScreen.tsx", "utf8");
 
-    expect(liveMatches).toContain("getRivalryDetails");
-    expect(liveMatches).toContain("currentStreak");
-    expect(liveMatches).toContain("recentMatches");
-    expect(liveMatches).toContain("streakOwner");
-    expect(liveMatches).toContain("challengeMatchHistory");
+    expect(liveMatches).toContain("EMPTY_VERSUS_SUMMARY");
+    expect(liveMatches).not.toContain("challengeMatchHistory");
+    expect(liveMatches).not.toContain("challengeHeadToHeads");
 
     expect(types).toContain("currentStreak?:");
     expect(types).toContain("recentMatches?:");

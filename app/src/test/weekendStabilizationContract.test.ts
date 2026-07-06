@@ -681,13 +681,6 @@ describe("weekend stabilization live matches", () => {
           if (table === "liveMatches") {
             return { collect: async () => [match] };
           }
-          if (table === "challengeMatchHistory" || table === "challengeHeadToHeads") {
-            return {
-              withIndex: () => ({
-                first: async () => null,
-              }),
-            };
-          }
           if (table === "userRatings") {
             throw new Error("waiting live-match exits must not apply ELO");
           }
@@ -723,28 +716,9 @@ describe("weekend stabilization live matches", () => {
       });
 
       expect(result).toEqual({ abandoned: true });
-      expect(insert).toHaveBeenCalledWith(
-        "challengeMatchHistory",
-        expect.objectContaining({
-          matchId: "match_1",
-          status: "forfeited",
-          winnerId: undefined,
-        }),
-      );
-      expect(insert).toHaveBeenCalledWith(
-        "challengeHeadToHeads",
-        expect.objectContaining({
-          draws: 1,
-          totalMatches: 1,
-        }),
-      );
-      expect(patch).toHaveBeenCalledWith(
-        "challenge_1",
-        expect.objectContaining({
-          status: "completed",
-          winnerId: undefined,
-        }),
-      );
+      // The challenge subsystem is gone: abandoning a legacy waiting match
+      // writes no history rows and never touches the legacy challengeId.
+      expect(insert).not.toHaveBeenCalled();
       const matchPatch = patch.mock.calls.find(([id]) => id === "match_1")?.[1] as Record<string, unknown>;
       expect(matchPatch).toMatchObject({
         status: "forfeited",
@@ -778,12 +752,9 @@ describe("weekend stabilization live matches", () => {
         completedAt: Date.now(),
       });
       expect(matchPatch).not.toHaveProperty("eloAppliedAt");
-      expect(patch).toHaveBeenCalledWith(
+      expect(patch).not.toHaveBeenCalledWith(
         "challenge_1",
-        expect.objectContaining({
-          status: "completed",
-          winnerId: "stub_user",
-        }),
+        expect.anything(),
       );
     } finally {
       vi.useRealTimers();

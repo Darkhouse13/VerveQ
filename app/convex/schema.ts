@@ -189,63 +189,10 @@ export default defineSchema({
     .index("by_user", ["userId"])
     .index("by_user_achievement", ["userId", "achievementId"]),
 
-  challenges: defineTable({
-    challengerId: v.id("users"),
-    challengedId: v.id("users"),
-    sport: v.string(),
-    mode: v.string(),
-    challengerScore: v.optional(v.number()),
-    challengedScore: v.optional(v.number()),
-    status: v.union(
-      v.literal("pending"),
-      v.literal("active"),
-      v.literal("completed"),
-      v.literal("declined"),
-    ),
-    winnerId: v.optional(v.id("users")),
-    completedAt: v.optional(v.number()),
-  })
-    .index("by_challenged_status", ["challengedId", "status"])
-    .index("by_challenger", ["challengerId"])
-    .index("by_challenged", ["challengedId"]),
-
-  challengeHeadToHeads: defineTable({
-    pairKey: v.string(),
-    playerAId: v.id("users"),
-    playerBId: v.id("users"),
-    sport: v.string(),
-    mode: v.string(),
-    playerAWins: v.number(),
-    playerBWins: v.number(),
-    draws: v.number(),
-    totalMatches: v.number(),
-    lastMatchId: v.optional(v.id("liveMatches")),
-    lastPlayedAt: v.optional(v.number()),
-  })
-    .index("by_pair_sport_mode", ["pairKey", "sport", "mode"])
-    .index("by_player_a", ["playerAId"])
-    .index("by_player_b", ["playerBId"]),
-
-  challengeMatchHistory: defineTable({
-    matchId: v.id("liveMatches"),
-    challengeId: v.optional(v.id("challenges")),
-    pairKey: v.string(),
-    playerAId: v.id("users"),
-    playerBId: v.id("users"),
-    player1Id: v.id("users"),
-    player2Id: v.id("users"),
-    sport: v.string(),
-    mode: v.string(),
-    player1Score: v.number(),
-    player2Score: v.number(),
-    winnerId: v.optional(v.id("users")),
-    status: v.union(v.literal("completed"), v.literal("forfeited")),
-    playedAt: v.number(),
-  })
-    .index("by_match", ["matchId"])
-    .index("by_pair_sport_mode", ["pairKey", "sport", "mode"])
-    .index("by_player_a", ["playerAId"])
-    .index("by_player_b", ["playerBId"]),
+  // The synchronous challenge → live-match subsystem (challenges,
+  // challengeHeadToHeads, challengeMatchHistory tables) was removed 2026-07:
+  // it never had a production entry point. Orphaned rows on old deployments
+  // are unvalidated and can be purged from the dashboard.
 
   duels: defineTable({
     challengerId: v.id("users"),
@@ -740,8 +687,11 @@ export default defineSchema({
     createdAt: v.number(),
     completedAt: v.optional(v.number()),
     eloAppliedAt: v.optional(v.number()),
+    // Legacy fields from the removed challenge subsystem: old rows carry a
+    // history stamp and the originating challenge id (kept as a plain string
+    // since the challenges table is gone). No writers remain.
     historyRecordedAt: v.optional(v.number()),
-    challengeId: v.optional(v.id("challenges")),
+    challengeId: v.optional(v.string()),
   })
     .index("by_player1", ["player1Id", "status"])
     .index("by_player2", ["player2Id", "status"]),
