@@ -9,6 +9,7 @@ import {
   isUsernameRequiredUserDoc,
 } from "./lib/authz";
 import { assertClientSport } from "./lib/sports";
+import { ensureDailySurvivalChallenge } from "./survivalSessions";
 import {
   getTodayUTC,
   isWorldCupEditionActive,
@@ -431,6 +432,26 @@ export const generateTodaysChallenges = internalMutation({
         });
       }
     }
+    // Daily Survival (football-only): pre-generate the shared 10-round queue
+    // so the first player of the day doesn't pay the generation write. Safe
+    // to race with startDailyGame — both go through the same get-or-create.
+    try {
+      const survival = await ensureDailySurvivalChallenge(ctx, getTodayUTC());
+      generated.push({
+        sport: "football-survival",
+        challengeId: survival._id,
+        questionCount: survival.survivalChallenges?.length ?? 0,
+        status: "generated",
+      });
+    } catch (error) {
+      generated.push({
+        sport: "football-survival",
+        challengeId: null,
+        questionCount: 0,
+        status: "skipped",
+        reason: error instanceof Error ? error.message : "Unknown error",
+      });
+    }
     return { generated };
   },
 });
@@ -438,7 +459,9 @@ export const generateTodaysChallenges = internalMutation({
 export const getAttemptStatus = query({
   args: {
     sport: v.string(),
-    mode: v.literal("quiz"),
+    // quiz + survival share the same attempts table and one-per-day rule;
+    // the handler is mode-generic (it only filters the index).
+    mode: v.union(v.literal("quiz"), v.literal("survival")),
   },
   handler: async (ctx, { sport, mode }) => {
     const userId = await getAuthUserId(ctx);

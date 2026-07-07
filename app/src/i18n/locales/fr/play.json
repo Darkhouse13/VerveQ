@@ -141,6 +141,14 @@
       "football": "football",
       "basketball": "NBA",
       "tennis": "tennis"
+    },
+    "daily": {
+      "title": "Survie du jour",
+      "round": "Manche {{round}} sur 10",
+      "playedTitle": "Tu as déjà joué la partie du jour",
+      "playedBody": "Tout le monde affronte les mêmes 10 manches chaque jour — une seule tentative. La nouvelle partie arrive à minuit UTC (dans {{time}}).",
+      "backHome": "Retour à l'accueil",
+      "forfeited": "Partie du jour perdue — quitter l'onglet y met fin."
     }
   },
   "careerPath": {

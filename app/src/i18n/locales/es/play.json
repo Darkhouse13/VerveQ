@@ -141,6 +141,14 @@
       "football": "fútbol",
       "basketball": "NBA",
       "tennis": "tenis"
+    },
+    "daily": {
+      "title": "Survival diario",
+      "round": "Ronda {{round}} de 10",
+      "playedTitle": "Ya jugaste la partida de hoy",
+      "playedBody": "Todos afrontan las mismas 10 rondas cada día — un intento. La nueva partida llega a medianoche UTC (en {{time}}).",
+      "backHome": "Volver al inicio",
+      "forfeited": "Partida diaria perdida — salir de la pestaña la termina."
     }
   },
   "careerPath": {

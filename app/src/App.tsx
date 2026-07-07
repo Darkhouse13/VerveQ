@@ -509,6 +509,9 @@ const AppRoutes = () => (
                 one-tap guest must reach it — attempts and streaks key off the
                 server identity, and the daily never touches ELO. */}
             <Route path="/v2/daily" element={<ShellGate><UsernameOnlyRoute><DailyQuizPlayScreen /></UsernameOnlyRoute></ShellGate>} />
+            {/* Daily Survival — the same SurvivalPlayScreen running the shared
+                daily queue. Username tier like the daily quiz: casual, no ELO. */}
+            <Route path="/v2/daily-survival" element={<ShellGate><UsernameOnlyRoute><SurvivalPlayScreen daily /></UsernameOnlyRoute></ShellGate>} />
             {/* Arena (multi-user) is username-only playable; the screen onboards
                 inline so a shared invite link never drops its lobby code. */}
             <Route path="/v2/arena/:code" element={<ShellGate><ArenaPlayScreen /></ShellGate>} />

@@ -195,6 +195,11 @@ export const completeSurvival = mutation({
     if (!session.userId || session.userId !== userId) {
       throw new Error("Not authorized for this session");
     }
+    // Daily Survival is casual by design: its result lives in dailyAttempts
+    // and must never reach the ELO ladder.
+    if (session.dailyDate) {
+      throw new Error("Daily survival runs are not ranked");
+    }
     if (!session.gameOver) {
       throw new Error("Session is still active");
     }

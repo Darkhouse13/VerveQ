@@ -1,8 +1,14 @@
-import { mutation, query } from "./_generated/server";
+import { mutation, query, type MutationCtx } from "./_generated/server";
 import { v } from "convex/values";
 import { getAuthUserId } from "@convex-dev/auth/server";
 import { findBestMatch } from "./lib/fuzzy";
-import { assertFullAccountUser } from "./lib/authz";
+import {
+  assertFullAccountUser,
+  assertUsernameRequiredUser,
+} from "./lib/authz";
+import { getTodayUTC } from "./lib/daily";
+import { recordPlayForStreak } from "./lib/streaks";
+import type { Doc, Id } from "./_generated/dataModel";
 
 // Survival data loaded inline for Convex (no filesystem access in mutations)
 // These are imported at bundle time.
@@ -1112,6 +1118,263 @@ function buildChallengeResponse(
   };
 }
 
+// ── Daily Survival ────────────────────────────────────────────────────────
+// One shared 10-round run per UTC day (football-only): the challenge queue is
+// generated ONCE onto the dailyChallenges row — determinism comes from that
+// frozen snapshot, not seeded RNG — and every player's session consumes it in
+// order. Username tier, one attempt per day, never touches ELO; the result
+// finalizes into the linked dailyAttempts row.
+
+const DAILY_SURVIVAL_ROUNDS = 10;
+const DAILY_SURVIVAL_SPORT = "football";
+
+type DailyChallengeRow = Doc<"dailyChallenges">;
+
+function pickEarliestDailyRow(
+  rows: DailyChallengeRow[],
+): DailyChallengeRow | null {
+  let earliest: DailyChallengeRow | null = null;
+  for (const row of rows) {
+    if (
+      !earliest ||
+      row.createdAt < earliest.createdAt ||
+      (row.createdAt === earliest.createdAt && row._id < earliest._id)
+    ) {
+      earliest = row;
+    }
+  }
+  return earliest;
+}
+
+async function getDailySurvivalRow(
+  ctx: MutationCtx,
+  date: string,
+): Promise<DailyChallengeRow | null> {
+  const rows = await ctx.db
+    .query("dailyChallenges")
+    .withIndex("by_date_sport_mode", (q) =>
+      q.eq("date", date).eq("sport", DAILY_SURVIVAL_SPORT).eq("mode", "survival"),
+    )
+    .collect();
+  return pickEarliestDailyRow(rows);
+}
+
+/** Get-or-create today's shared survival run. Exported for the daily cron.
+ *  Races resolve like the quiz daily: earliest createdAt wins, dupes die. */
+export async function ensureDailySurvivalChallenge(
+  ctx: MutationCtx,
+  date: string,
+): Promise<DailyChallengeRow> {
+  const existing = await getDailySurvivalRow(ctx, date);
+  if (existing?.survivalChallenges?.length) return existing;
+
+  const used: string[] = [];
+  const queue: NonNullable<DailyChallengeRow["survivalChallenges"]> = [];
+  for (let round = 1; round <= DAILY_SURVIVAL_ROUNDS; round += 1) {
+    const challenge = generateChallenge(DAILY_SURVIVAL_SPORT, round, used);
+    if (!challenge) throw new Error("No survival data available");
+    used.push(challenge.initials);
+    queue.push({
+      initials: challenge.initials,
+      difficulty: challenge.difficulty,
+      validPlayers: challenge.validPlayers,
+      primaryPlayer: challenge.primaryPlayer,
+    });
+  }
+
+  await ctx.db.insert("dailyChallenges", {
+    date,
+    sport: DAILY_SURVIVAL_SPORT,
+    mode: "survival",
+    questionChecksums: [],
+    survivalChallenges: queue,
+    createdAt: Date.now(),
+  });
+
+  const rows = await ctx.db
+    .query("dailyChallenges")
+    .withIndex("by_date_sport_mode", (q) =>
+      q.eq("date", date).eq("sport", DAILY_SURVIVAL_SPORT).eq("mode", "survival"),
+    )
+    .collect();
+  const canonical = pickEarliestDailyRow(rows)!;
+  for (const duplicate of rows) {
+    if (duplicate._id !== canonical._id) await ctx.db.delete(duplicate._id);
+  }
+  return canonical;
+}
+
+/** Round advance: daily sessions consume the frozen queue; ranked/casual
+ *  sessions keep the live generator. null = run over (queue done / no data). */
+async function nextChallengeForSession(
+  ctx: MutationCtx,
+  session: Doc<"survivalSessions">,
+  newRound: number,
+): Promise<SurvivalChallenge | null> {
+  if (!session.dailyDate) {
+    return generateChallenge(session.sport, newRound, session.usedInitials);
+  }
+  if (newRound > DAILY_SURVIVAL_ROUNDS) return null;
+  const daily = await getDailySurvivalRow(ctx, session.dailyDate);
+  const item = daily?.survivalChallenges?.[newRound - 1];
+  return item ? { ...item, round: newRound } : null;
+}
+
+/** Write a daily run's outcome into its dailyAttempts row exactly once.
+ *  Death and expiry BANK the score (completed); only the tab-switch
+ *  anti-cheat forfeits to 0. No-op for non-daily sessions and replays. */
+async function finalizeDailyRun(
+  ctx: MutationCtx,
+  session: Doc<"survivalSessions">,
+  outcome: { forfeited: boolean; score: number },
+): Promise<void> {
+  if (!session.dailyDate || !session.dailyAttemptId) return;
+  const attempt = await ctx.db.get(session.dailyAttemptId);
+  if (!attempt || attempt.completed || attempt.forfeited) return;
+  await ctx.db.patch(session.dailyAttemptId, {
+    completed: !outcome.forfeited,
+    forfeited: outcome.forfeited,
+    score: outcome.forfeited ? 0 : outcome.score,
+    completedAt: Date.now(),
+  });
+  // The daily IS the streak hook — same rule as the daily quiz.
+  if (!outcome.forfeited && session.userId) {
+    await recordPlayForStreak(ctx, session.userId);
+  }
+}
+
+export const startDailyGame = mutation({
+  args: {},
+  handler: async (ctx) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) throw new Error("Not authenticated");
+    // Username tier (anonymous OK): the daily is the habit loop and never
+    // writes ELO — one-attempt-per-day only needs a server identity.
+    await assertUsernameRequiredUser(ctx, userId);
+
+    const date = getTodayUTC();
+    const existing = await ctx.db
+      .query("dailyAttempts")
+      .withIndex("by_user_date_sport_mode", (q) =>
+        q
+          .eq("userId", userId)
+          .eq("date", date)
+          .eq("sport", DAILY_SURVIVAL_SPORT)
+          .eq("mode", "survival"),
+      )
+      .first();
+
+    if (existing) {
+      // Mid-run refresh must not burn the one daily attempt: the attempt row
+      // stores its live sessionId (results field), so re-entry resumes the
+      // run — mask, pot, and already-revealed clues replayed server-side.
+      const liveSessionId = (
+        existing.results as { sessionId?: Id<"survivalSessions"> } | null
+      )?.sessionId;
+      const live =
+        !existing.completed && !existing.forfeited && liveSessionId
+          ? await ctx.db.get(liveSessionId)
+          : null;
+      if (
+        live &&
+        !live.gameOver &&
+        Date.now() <= live.expiresAt &&
+        live.currentChallenge
+      ) {
+        const challenge = live.currentChallenge;
+        const helpStage = live.helpStage ?? 0;
+        const potFloored = live.potFloorRound === live.round;
+        const primaryPlayer = getChallengePrimaryPlayer(live.sport, challenge);
+        const clueStages = getClueStageCount(live.sport, primaryPlayer);
+        const clues: HintI18n[] = [];
+        for (let stage = 1; stage <= Math.min(helpStage, clueStages); stage += 1) {
+          clues.push(buildFamousPlayerHintI18n(live.sport, primaryPlayer, stage));
+        }
+        return {
+          sessionId: live._id,
+          round: live.round,
+          lives: live.lives,
+          score: live.score,
+          skipsLeft: live.skipsLeft ?? SKIPS_PER_GAME,
+          challenge: buildChallengeResponse(challenge, live.sport, {
+            helpStage,
+            potFloored,
+          }),
+          resumed: true,
+          helpStage,
+          clues,
+        };
+      }
+      // Unfinalized but dead (tab closed until the session's TTL passed):
+      // the run is over — bank whatever the session had.
+      if (!existing.completed && !existing.forfeited) {
+        const stale = liveSessionId ? await ctx.db.get(liveSessionId) : null;
+        await ctx.db.patch(existing._id, {
+          completed: true,
+          forfeited: false,
+          score: stale?.score ?? 0,
+          completedAt: Date.now(),
+        });
+      }
+      throw new Error("Already attempted today's challenge");
+    }
+
+    const daily = await ensureDailySurvivalChallenge(ctx, date);
+    const first = daily.survivalChallenges?.[0];
+    if (!first) throw new Error("No survival data available");
+    const challenge: SurvivalChallenge = { ...first, round: 1 };
+
+    const sessionId = await ctx.db.insert("survivalSessions", {
+      userId,
+      sport: DAILY_SURVIVAL_SPORT,
+      round: 1,
+      score: 0,
+      correctCount: 0,
+      lives: 3,
+      hintUsed: false,
+      usedInitials: [challenge.initials],
+      gameOver: false,
+      expiresAt: Date.now() + SESSION_TTL_MS,
+      startedAt: Date.now(),
+      currentChallenge: challenge,
+      speedStreak: 0,
+      lastAnswerAt: 0,
+      performanceBonus: 0,
+      closeCallRound: 1,
+      closeCallCount: 0,
+      helpStage: 0,
+      skipsLeft: SKIPS_PER_GAME,
+      dailyDate: date,
+    });
+
+    const attemptId = await ctx.db.insert("dailyAttempts", {
+      userId,
+      date,
+      sport: DAILY_SURVIVAL_SPORT,
+      mode: "survival",
+      score: 0,
+      completed: false,
+      forfeited: false,
+      results: { sessionId },
+      startedAt: Date.now(),
+      expiresAt: Date.now() + SESSION_TTL_MS,
+    });
+    await ctx.db.patch(sessionId, { dailyAttemptId: attemptId });
+
+    return {
+      sessionId,
+      round: 1,
+      lives: 3,
+      score: 0,
+      skipsLeft: SKIPS_PER_GAME,
+      challenge: buildChallengeResponse(challenge, DAILY_SURVIVAL_SPORT),
+      resumed: false,
+      helpStage: 0,
+      clues: [] as HintI18n[],
+    };
+  },
+});
+
 export const startGame = mutation({
   args: { sport: v.string() },
   handler: async (ctx, { sport }) => {
@@ -1200,6 +1463,11 @@ export const submitGuess = mutation({
     if (session.gameOver) throw new Error("Invalid session");
     if (Date.now() > session.expiresAt) {
       await ctx.db.patch(sessionId, { gameOver: true });
+      // Daily runs bank their score on expiry — never a silent zero.
+      await finalizeDailyRun(ctx, session, {
+        forfeited: false,
+        score: session.score,
+      });
       throw new Error("Session expired");
     }
 
@@ -1294,11 +1562,7 @@ export const submitGuess = mutation({
       const newRound = session.round + 1;
       const newScore = session.score + potValue;
       const newCorrectCount = (session.correctCount ?? 0) + 1;
-      const next = generateChallenge(
-        session.sport,
-        newRound,
-        session.usedInitials,
-      );
+      const next = await nextChallengeForSession(ctx, session, newRound);
 
       await ctx.db.patch(sessionId, {
         round: newRound,
@@ -1320,6 +1584,14 @@ export const submitGuess = mutation({
         closeCallCount: 0,
         helpStage: 0,
       });
+
+      // Daily queue exhausted on a correct answer = the run is complete.
+      if (!next) {
+        await finalizeDailyRun(ctx, session, {
+          forfeited: false,
+          score: newScore,
+        });
+      }
 
       return {
         correct: true,
@@ -1348,11 +1620,7 @@ export const submitGuess = mutation({
 
       let next = null;
       if (newLives > 0) {
-        next = generateChallenge(
-          session.sport,
-          session.round + 1,
-          session.usedInitials,
-        );
+        next = await nextChallengeForSession(ctx, session, session.round + 1);
       }
       const isGameOver = newLives <= 0 || !next;
 
@@ -1372,6 +1640,14 @@ export const submitGuess = mutation({
             }
           : {}),
       });
+
+      // A daily death BANKS the score — the run completed, it didn't forfeit.
+      if (isGameOver) {
+        await finalizeDailyRun(ctx, session, {
+          forfeited: false,
+          score: session.score,
+        });
+      }
 
       return {
         correct: false,
@@ -1421,6 +1697,11 @@ export const requestHelp = mutation({
     if (session.gameOver) throw new Error("Invalid session");
     if (Date.now() > session.expiresAt) {
       await ctx.db.patch(sessionId, { gameOver: true });
+      // Daily runs bank their score on expiry — never a silent zero.
+      await finalizeDailyRun(ctx, session, {
+        forfeited: false,
+        score: session.score,
+      });
       throw new Error("Session expired");
     }
 
@@ -1481,6 +1762,11 @@ export const skipChallenge = mutation({
     if (session.gameOver) throw new Error("Invalid session");
     if (Date.now() > session.expiresAt) {
       await ctx.db.patch(sessionId, { gameOver: true });
+      // Daily runs bank their score on expiry — never a silent zero.
+      await finalizeDailyRun(ctx, session, {
+        forfeited: false,
+        score: session.score,
+      });
       throw new Error("Session expired");
     }
 
@@ -1492,11 +1778,7 @@ export const skipChallenge = mutation({
     const newSkips = skipsLeft - 1;
     const newLives = session.lives;
 
-    const next = generateChallenge(
-      session.sport,
-      session.round + 1,
-      session.usedInitials,
-    );
+    const next = await nextChallengeForSession(ctx, session, session.round + 1);
     const isGameOver = newLives <= 0 || !next;
 
     await ctx.db.patch(sessionId, {
@@ -1515,6 +1797,14 @@ export const skipChallenge = mutation({
           }
         : {}),
     });
+
+    // Skipping into the end of the daily queue completes the run.
+    if (isGameOver) {
+      await finalizeDailyRun(ctx, session, {
+        forfeited: false,
+        score: session.score,
+      });
+    }
 
     return {
       lives: newLives,
@@ -1550,6 +1840,11 @@ export const endRun = mutation({
     if (!session.gameOver) {
       await ctx.db.patch(sessionId, { gameOver: true });
     }
+    // Cash-out completes a daily run with the banked score.
+    await finalizeDailyRun(ctx, session, {
+      forfeited: false,
+      score: session.score,
+    });
 
     return {
       gameOver: true,
@@ -1582,6 +1877,25 @@ export const penalizeTabSwitch = mutation({
         warning: false,
         lives: session.lives,
         gameOver: true,
+      };
+    }
+
+    // Daily Survival: leaving the tab forfeits the run outright. The daily is
+    // one shared, one-attempt puzzle — a lookup would be unrecoverable EV, so
+    // the documented daily rule is instant forfeit, not the warn-then-life
+    // ladder ranked runs get.
+    if (session.dailyDate) {
+      await ctx.db.patch(sessionId, {
+        gameOver: true,
+        lastPenalizedRound: currentRound,
+      });
+      await finalizeDailyRun(ctx, session, { forfeited: true, score: 0 });
+      return {
+        penalized: true,
+        warning: false,
+        lives: session.lives,
+        gameOver: true,
+        dailyForfeit: true,
       };
     }
 
