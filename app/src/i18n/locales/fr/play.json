@@ -127,10 +127,9 @@
     "tabSwitchWarningDescription": "Tu as quitté la fenêtre de jeu. La cagnotte de cette manche est tombée au minimum — la prochaine fois, tu perds une vie.",
     "iUnderstand": "J'AI COMPRIS",
     "hintBody": {
-      "fmNationalityClub": "Nationalité : {{nationality}} | Club : {{club}}",
-      "fmPositionEra": "Poste : {{position}} | Époque : {{era}}",
-      "fmTeamNationality": "Équipe : {{team}} | Nationalité : {{nationality}}",
-      "fmPosition": "Poste : {{position}}",
+      "fmNationalityPosition": "Nationalité : {{nationality}} | Poste : {{position}}",
+      "fmPlayedFor": "A joué pour {{club}} ({{era}})",
+      "fmPlayedForTeam": "A joué pour {{team}}",
       "fmNationality": "Nationalité : {{nationality}}",
       "fmHandednessRank": "Main : {{handedness}} | Meilleur classement : #{{rank}}",
       "fmFirstName": "Prénom : {{firstName}}",
