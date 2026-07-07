@@ -44,8 +44,11 @@ export default function DailyResultScreen() {
 
   const sportLabel = state.sport.charAt(0).toUpperCase() + state.sport.slice(1);
   // `ref=` feeds cold-entry attribution (coldEntryMetrics.bySource), so shared
-  // results are measurable against direct traffic.
-  const shareUrl = `${window.location.origin}/?ref=daily_share`;
+  // results are measurable against direct traffic. The link targets the static
+  // daily landing page (public/games/daily-football-quiz/) so the share
+  // unfurls with daily-specific OG copy instead of the generic home card; the
+  // page's app CTA forwards the incoming ?ref= so attribution survives the hop.
+  const shareUrl = `${window.location.origin}/games/daily-football-quiz/?ref=daily_share`;
   const shareText = isQuiz
     ? t(
         isWorldCup ? "dailyResult.shareQuizWorldCup" : "dailyResult.shareQuiz",
