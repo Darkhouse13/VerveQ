@@ -255,6 +255,35 @@ function pickWeighted<T>(
   return weightedItems[weightedItems.length - 1]?.item ?? null;
 }
 
+/**
+ * A displayable player name: every word carries at least two letters, so
+ * abbreviated dataset forms like "C. Stuani" or "O. Dembélé" don't qualify.
+ * The primary player feeds the mask, the letter reveals, and the clues — an
+ * abbreviated form makes all three unreadable.
+ */
+function isUnabbreviatedName(name: string): boolean {
+  const parts = name.trim().split(/\s+/).filter(Boolean);
+  return (
+    parts.length > 0 &&
+    parts.every((part) => (part.match(/\p{L}/gu) ?? []).length >= 2)
+  );
+}
+
+/**
+ * Strip legal boilerplate from dataset club names so clues read like a fan
+ * would say them: "Manchester City Football Club" → "Manchester City",
+ * "Club Atlético de Madrid S.A.D." → "Atlético de Madrid".
+ */
+export function cleanClubName(club: string): string {
+  const cleaned = club
+    .replace(/\b(Football Club|Fútbol Club|Club de Fútbol)\b/gi, " ")
+    .replace(/\bS\.A\.D\.?/gi, " ")
+    .replace(/^\s*Club\s+/i, "")
+    .replace(/\s{2,}/g, " ")
+    .trim();
+  return cleaned.length >= 3 ? cleaned : club;
+}
+
 function pickDeterministicPrimaryPlayer(players: string[]): string | null {
   const normalizedPlayers = Array.from(
     new Set(
@@ -402,9 +431,19 @@ function getPotValue(
   return Math.max(POT_FLOOR, basePot - step * helpStage);
 }
 
+/**
+ * How many ladder stages serve metadata clues for this round's hint target.
+ * Without metadata there are NO clue stages — every help press reveals a
+ * letter, because letters are always accurate; filler clues ("first name has
+ * 6 letters") are exactly the noise the ladder must not sell.
+ */
+function getClueStageCount(sport: string, primaryPlayer: string): number {
+  return getMetadataMapForSport(sport)[primaryPlayer] ? CLUE_STAGES : 0;
+}
+
 /** Letters revealed so far for a given ladder stage (clue stages reveal none). */
-function getRevealedLetterCount(helpStage: number): number {
-  return Math.max(0, helpStage - CLUE_STAGES);
+function getRevealedLetterCount(helpStage: number, clueStages: number): number {
+  return Math.max(0, helpStage - clueStages);
 }
 
 const MASK_CHAR = "•";
@@ -479,8 +518,12 @@ function pickPrimaryPlayer(players: string[], sport: string): string {
     return famousPlayer;
   }
 
+  // No famous candidate: prefer real, unabbreviated names before ranking.
+  const fullNamePool = players.filter(isUnabbreviatedName);
+  const pool = fullNamePool.length > 0 ? fullNamePool : players;
+
   const metadataMap = getMetadataMapForSport(sport);
-  const bestMetadataCandidate = players
+  const bestMetadataCandidate = pool
     .map((player, index) => ({
       player,
       index,
@@ -498,7 +541,7 @@ function pickPrimaryPlayer(players: string[], sport: string): string {
     return bestMetadataCandidate.player;
   }
 
-  return [...players].sort((a, b) => a.localeCompare(b))[0] ?? players[0] ?? "";
+  return [...pool].sort((a, b) => a.localeCompare(b))[0] ?? pool[0] ?? "";
 }
 
 function computeBucketStats(sport: string): BucketStats[] {
@@ -748,13 +791,17 @@ function buildFamousPlayerHint(
   primaryPlayer: string,
   stage: number,
 ): string {
+  // Clue facts must stay TRUE regardless of dataset age: nationality and
+  // position are stable, and "Played for X" holds even after a transfer —
+  // unlike "Club: X", which reads as current and goes stale (the metadata is
+  // a snapshot; Messi's said PSG in 2026).
   if (sport === "football") {
     const meta = primaryPlayer ? footballMetadataMap[primaryPlayer] : undefined;
     if (stage === 1 && meta) {
-      return `Nationality: ${meta.nationality} | Club: ${meta.club}`;
+      return `Nationality: ${meta.nationality} | Position: ${meta.position}`;
     }
     if (stage === 2 && meta) {
-      return `Position: ${meta.position} | Era: ${meta.era}`;
+      return `Played for ${cleanClubName(meta.club)} (${meta.era})`;
     }
     if (stage === 3) {
       return `First name: ${getFirstName(primaryPlayer)}`;
@@ -765,10 +812,10 @@ function buildFamousPlayerHint(
   if (sport === "basketball") {
     const meta = primaryPlayer ? nbaMetadataMap[primaryPlayer] : undefined;
     if (stage === 1 && meta) {
-      return `Team: ${meta.team} | Nationality: ${meta.nationality}`;
+      return `Nationality: ${meta.nationality} | Position: ${meta.position}`;
     }
     if (stage === 2 && meta) {
-      return `Position: ${meta.position}`;
+      return `Played for ${meta.team}`;
     }
     if (stage === 3) {
       return `First name: ${getFirstName(primaryPlayer)}`;
@@ -830,10 +877,10 @@ function buildFamousPlayerHintI18n(
   if (sport === "football") {
     const meta = primaryPlayer ? footballMetadataMap[primaryPlayer] : undefined;
     if (stage === 1 && meta) {
-      return { key: "fmNationalityClub", vars: { nationality: meta.nationality, club: meta.club } };
+      return { key: "fmNationalityPosition", vars: { nationality: meta.nationality, position: meta.position } };
     }
     if (stage === 2 && meta) {
-      return { key: "fmPositionEra", vars: { position: meta.position, era: meta.era } };
+      return { key: "fmPlayedFor", vars: { club: cleanClubName(meta.club), era: meta.era } };
     }
     if (stage === 3) return { key: "fmFirstName", vars: { firstName: getFirstName(primaryPlayer) } };
     return fallbackHintI18n(primaryPlayer, sport, stage);
@@ -842,9 +889,9 @@ function buildFamousPlayerHintI18n(
   if (sport === "basketball") {
     const meta = primaryPlayer ? nbaMetadataMap[primaryPlayer] : undefined;
     if (stage === 1 && meta) {
-      return { key: "fmTeamNationality", vars: { team: meta.team, nationality: meta.nationality } };
+      return { key: "fmNationalityPosition", vars: { nationality: meta.nationality, position: meta.position } };
     }
-    if (stage === 2 && meta) return { key: "fmPosition", vars: { position: meta.position } };
+    if (stage === 2 && meta) return { key: "fmPlayedForTeam", vars: { team: meta.team } };
     if (stage === 3) return { key: "fmFirstName", vars: { firstName: getFirstName(primaryPlayer) } };
     return fallbackHintI18n(primaryPlayer, sport, stage);
   }
@@ -875,6 +922,45 @@ function getChallengeValidGuessPlayers(
       ),
     ),
   );
+}
+
+/**
+ * The hint target for a football bucket — the player who drives the clues,
+ * the mask, and the letter reveals. Two dataset diseases force this shape
+ * (audit 2026-07): the curated index's topPlayerName does NOT track fame
+ * (bucket "JM" topped out at Jorge Molina over 23 famous players), and the
+ * index's playerNames are often abbreviated forms ("J. Musiala"). The
+ * initials MAP carries canonical full spellings whose names are always
+ * accepted guesses and match the metadata keys — so hunt there first:
+ * famous player, else index top pick when displayable, else the
+ * metadata-richest full name. Exported for tests.
+ */
+export function pickFootballPrimaryPlayer(
+  playerNames: string[],
+  topPlayerName: string | null,
+  initials: string,
+): string | null {
+  const mapNames = getInitialsMap("football")[initials] ?? [];
+  const famousSet = FAMOUS_PLAYERS.football;
+  const famousPlayer =
+    mapNames.find((player) => famousSet.has(player)) ??
+    playerNames.find((player) => famousSet.has(player));
+  if (famousPlayer) {
+    return famousPlayer;
+  }
+
+  if (topPlayerName && isUnabbreviatedName(topPlayerName)) {
+    return topPlayerName;
+  }
+
+  const fullNames = Array.from(
+    new Set([...mapNames, ...playerNames].filter(isUnabbreviatedName)),
+  );
+  if (fullNames.length > 0) {
+    return pickPrimaryPlayer(fullNames, "football");
+  }
+
+  return topPlayerName ?? pickDeterministicPrimaryPlayer(playerNames);
 }
 
 function generateFootballChallengeFromCuratedIndex(
@@ -910,9 +996,11 @@ function generateFootballChallengeFromCuratedIndex(
     return null;
   }
 
-  const primaryPlayer =
-    pickedBucket.topPlayerName ??
-    pickDeterministicPrimaryPlayer(pickedBucket.playerNames);
+  const primaryPlayer = pickFootballPrimaryPlayer(
+    pickedBucket.playerNames,
+    pickedBucket.topPlayerName,
+    pickedBucket.initials,
+  );
 
   if (!primaryPlayer) {
     return null;
@@ -1007,7 +1095,8 @@ function buildChallengeResponse(
   view: ChallengeViewState = FRESH_CHALLENGE_VIEW,
 ) {
   const primaryPlayer = getChallengePrimaryPlayer(sport, challenge);
-  const revealedLetters = getRevealedLetterCount(view.helpStage);
+  const clueStages = getClueStageCount(sport, primaryPlayer);
+  const revealedLetters = getRevealedLetterCount(view.helpStage, clueStages);
   return {
     initials: challenge.initials,
     difficulty: challenge.difficulty,
@@ -1015,6 +1104,7 @@ function buildChallengeResponse(
     maskedName: buildMaskedName(primaryPlayer, revealedLetters),
     basePot: getBasePot(challenge.difficulty),
     potValue: getPotValue(challenge.difficulty, view.helpStage, view.potFloored),
+    clueStages,
     lettersRemaining: Math.max(
       0,
       countHiddenLetters(primaryPlayer) - revealedLetters,
@@ -1340,12 +1430,13 @@ export const requestHelp = mutation({
     const sport = session.sport;
     const primaryPlayer = getChallengePrimaryPlayer(sport, challenge);
     const stage = (session.helpStage ?? 0) + 1;
+    const clueStages = getClueStageCount(sport, primaryPlayer);
     const hiddenTotal = countHiddenLetters(primaryPlayer);
 
     let kind: "clue" | "letter";
     let hintText: string | null = null;
     let hintI18n: HintI18n | null = null;
-    if (stage <= CLUE_STAGES) {
+    if (stage <= clueStages) {
       kind = "clue";
       // Legacy English string (v1 screens, untranslated) + structured form
       // localized in the v2 UI via `survival.hintBody.<key>`.
@@ -1353,7 +1444,7 @@ export const requestHelp = mutation({
       hintI18n = buildFamousPlayerHintI18n(sport, primaryPlayer, stage);
     } else {
       kind = "letter";
-      if (getRevealedLetterCount(session.helpStage ?? 0) >= hiddenTotal) {
+      if (getRevealedLetterCount(session.helpStage ?? 0, clueStages) >= hiddenTotal) {
         throw new Error("Nothing left to reveal");
       }
     }
@@ -1363,7 +1454,7 @@ export const requestHelp = mutation({
       hintUsed: true,
     });
 
-    const revealedLetters = getRevealedLetterCount(stage);
+    const revealedLetters = getRevealedLetterCount(stage, clueStages);
     const potFloored = session.potFloorRound === session.round;
     return {
       stage,

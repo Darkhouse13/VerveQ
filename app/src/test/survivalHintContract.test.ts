@@ -59,14 +59,33 @@ describe("survival help ladder and reveal contracts", () => {
     })) as { kind: string; hintText: string; potValue: number };
 
     expect(result.kind).toBe("clue");
-    expect(result.hintText).toContain("Nationality");
-    expect(result.hintText).toContain("Argentina");
+    // Clue 1 = stable facts only (nationality + position) — never the club,
+    // whose snapshot goes stale and turns the clue into misinformation.
+    expect(result.hintText).toContain("Nationality: Argentina");
+    expect(result.hintText).toContain("Position:");
+    expect(result.hintText).not.toContain("Club:");
     // "Most famous match" read as a football fixture, not a matching player —
     // the target is stated once by the screens, never per-clue.
     expect(result.hintText).not.toMatch(/most famous match/i);
     expect(result.hintText).not.toMatch(/players match these initials|possible answers/i);
     // First help press costs 15% of the Easy base pot.
     expect(result.potValue).toBe(85);
+  });
+
+  it("phrases the club clue as history ('Played for'), with legal boilerplate stripped", async () => {
+    const { ctx } = makeLadderCtx();
+    const help = handlerOf(survivalSessions.requestHelp);
+    await help(ctx, { sessionId: "session_1" });
+    const clue2 = (await help(ctx, { sessionId: "session_1" })) as {
+      kind: string;
+      hintText: string;
+    };
+
+    expect(clue2.kind).toBe("clue");
+    // "Played for X" stays true after any transfer; "Club: X" would not.
+    expect(clue2.hintText).toContain("Played for Paris Saint-Germain");
+    expect(clue2.hintText).not.toContain("Football Club");
+    expect(clue2.hintText).not.toMatch(/^Club:/);
   });
 
   it("reveals the name strictly letter-by-letter through the server ladder, shrinking the pot", async () => {
@@ -127,5 +146,7 @@ describe("survival help ladder and reveal contracts", () => {
     // Fresh challenge: mask shows word shapes + initials only, no extra letters.
     expect(result.challenge.maskedName).toBe("L••••• M••••");
     expect(result.challenge.potValue).toBe(100);
+    // Messi has metadata → this round's ladder starts with 2 clue stages.
+    expect(result.challenge.clueStages).toBe(2);
   });
 });

@@ -127,10 +127,9 @@
     "tabSwitchWarningDescription": "You left the game window. This round's pot dropped to the minimum — next time costs a life.",
     "iUnderstand": "I UNDERSTAND",
     "hintBody": {
-      "fmNationalityClub": "Nationality: {{nationality}} | Club: {{club}}",
-      "fmPositionEra": "Position: {{position}} | Era: {{era}}",
-      "fmTeamNationality": "Team: {{team}} | Nationality: {{nationality}}",
-      "fmPosition": "Position: {{position}}",
+      "fmNationalityPosition": "Nationality: {{nationality}} | Position: {{position}}",
+      "fmPlayedFor": "Played for {{club}} ({{era}})",
+      "fmPlayedForTeam": "Played for {{team}}",
       "fmNationality": "Nationality: {{nationality}}",
       "fmHandednessRank": "Plays: {{handedness}} | Highest rank: #{{rank}}",
       "fmFirstName": "First name: {{firstName}}",

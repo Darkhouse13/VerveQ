@@ -127,10 +127,9 @@
     "tabSwitchWarningDescription": "Saliste de la ventana del juego. El bote de esta ronda cayó al mínimo — la próxima vez pierdes una vida.",
     "iUnderstand": "ENTIENDO",
     "hintBody": {
-      "fmNationalityClub": "Nacionalidad: {{nationality}} | Club: {{club}}",
-      "fmPositionEra": "Posición: {{position}} | Época: {{era}}",
-      "fmTeamNationality": "Equipo: {{team}} | Nacionalidad: {{nationality}}",
-      "fmPosition": "Posición: {{position}}",
+      "fmNationalityPosition": "Nacionalidad: {{nationality}} | Posición: {{position}}",
+      "fmPlayedFor": "Jugó en {{club}} ({{era}})",
+      "fmPlayedForTeam": "Jugó en {{team}}",
       "fmNationality": "Nacionalidad: {{nationality}}",
       "fmHandednessRank": "Mano: {{handedness}} | Mejor clasificación: #{{rank}}",
       "fmFirstName": "Nombre: {{firstName}}",

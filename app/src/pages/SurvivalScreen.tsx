@@ -34,12 +34,13 @@ interface ChallengeData {
   maskedName: string;
   basePot: number;
   potValue: number;
+  // Clue stages for THIS round's hint target (0 when it has no metadata —
+  // then every help press reveals a letter). Server-decided per challenge.
+  clueStages: number;
   lettersRemaining: number;
 }
 
 const MASK_CHAR = "•";
-/** Ladder stages 1-2 are clues; must mirror CLUE_STAGES on the server. */
-const CLUE_STAGES = 2;
 
 export default function SurvivalScreen() {
   const navigate = useNavigate();
@@ -69,6 +70,7 @@ export default function SurvivalScreen() {
   const [basePot, setBasePot] = useState(0);
   const [lettersRemaining, setLettersRemaining] = useState(0);
   const [helpStage, setHelpStage] = useState(0);
+  const [clueStages, setClueStages] = useState(0);
   const [clues, setClues] = useState<string[]>([]);
   const [helpLoading, setHelpLoading] = useState(false);
 
@@ -110,6 +112,7 @@ export default function SurvivalScreen() {
     setMaskedName(next.maskedName);
     setPotValue(next.potValue);
     setBasePot(next.basePot);
+    setClueStages(next.clueStages);
     setLettersRemaining(next.lettersRemaining);
     setHelpStage(0);
     setClues([]);
@@ -269,7 +272,7 @@ export default function SurvivalScreen() {
     }
   };
 
-  const helpExhausted = helpStage >= CLUE_STAGES && lettersRemaining <= 0;
+  const helpExhausted = helpStage >= clueStages && lettersRemaining <= 0;
 
   const handleHelp = async () => {
     if (!sessionId || helpLoading || helpExhausted) return;
@@ -515,7 +518,7 @@ export default function SurvivalScreen() {
             ? "Getting Help..."
             : helpExhausted
               ? "All Revealed"
-              : helpStage < CLUE_STAGES
+              : helpStage < clueStages
                 ? "\u{1F4A1} Clue (-15%)"
                 : "\u{1F524} Letter (-15%)"}
         </NeoButton>

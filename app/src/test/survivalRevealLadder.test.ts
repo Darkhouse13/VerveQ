@@ -12,6 +12,10 @@ vi.mock("@convex-dev/auth/server", () => ({
 }));
 
 import * as survivalSessions from "../../convex/survivalSessions";
+import {
+  pickFootballPrimaryPlayer,
+  cleanClubName,
+} from "../../convex/survivalSessions";
 import { findBestMatch } from "../../convex/lib/fuzzy";
 
 function handlerOf<T>(fn: T): (ctx: unknown, args: unknown) => Promise<unknown> {
@@ -284,6 +288,59 @@ describe("anti-cheat warns before it bites", () => {
       lives: 2,
       gameOver: false,
     });
+  });
+});
+
+describe("hint target accuracy", () => {
+  it("a famous player beats the index's topPlayerName as the hint target", () => {
+    // Audit 2026-07: the real "JM" bucket held 23 famous players yet topped
+    // out at Jorge Molina, and the index only knows "J. Musiala" — the
+    // canonical full spelling must come from the initials map.
+    expect(
+      pickFootballPrimaryPlayer(["J. Musiala", "Jorge Molina"], "Jorge Molina", "JM"),
+    ).toBe("Jamal Musiala");
+  });
+
+  it("never picks an abbreviated dataset name while a full name exists", () => {
+    // "QQ" has no initials-map bucket, so only the given names compete.
+    expect(
+      pickFootballPrimaryPlayer(["C. Stuani", "Cristhian Stuani"], "C. Stuani", "QQ"),
+    ).toBe("Cristhian Stuani");
+  });
+
+  it("strips legal boilerplate from club names", () => {
+    expect(cleanClubName("Manchester City Football Club")).toBe("Manchester City");
+    expect(cleanClubName("Club Atlético de Madrid S.A.D.")).toBe("Atlético de Madrid");
+    expect(cleanClubName("Paris Saint-Germain Football Club")).toBe("Paris Saint-Germain");
+    expect(cleanClubName("Aarhus Gymnastik Forening")).toBe("Aarhus Gymnastik Forening");
+  });
+
+  it("skips clue stages entirely when the hint target has no metadata", async () => {
+    // "Quentin Quaranta" has no metadata → filler clues are forbidden; the
+    // first help press must already reveal a letter.
+    const { ctx, session } = makeCtx();
+    const result = (await handlerOf(survivalSessions.requestHelp)(ctx, {
+      sessionId: "surv_rl",
+    })) as Record<string, unknown>;
+
+    expect(result).toMatchObject({
+      stage: 1,
+      kind: "letter",
+      hintText: null,
+      maskedName: "Qu••••• Q•••••••",
+      potValue: 85,
+      lettersRemaining: 12,
+    });
+    expect(session.helpStage).toBe(1);
+  });
+
+  it("reports zero clue stages on the challenge when metadata is missing", async () => {
+    const { ctx } = makeCtx();
+    const result = (await handlerOf(survivalSessions.getSession)(ctx, {
+      sessionId: "surv_rl",
+    })) as { challenge: Record<string, unknown> };
+
+    expect(result.challenge.clueStages).toBe(0);
   });
 });
 
