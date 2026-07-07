@@ -1,4 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
+import { readFileSync } from "node:fs";
 
 const authState = vi.hoisted(() => ({ userId: "user_1" }));
 
@@ -94,6 +95,18 @@ const FULL_USER = {
 };
 
 describe("Daily Survival contract", () => {
+  it("is actually rendered on the Compete grid, not just present in tile data", () => {
+    // Regression pin: the tile existed in COMPETE_MODE_TILES while the screen
+    // rendered from its own key lists, so the mode shipped with no visible
+    // entry point. The screen must look the tile up AND print its copy.
+    const screen = readFileSync(
+      "src/pages/shell/CompeteModeGridScreen.tsx",
+      "utf8",
+    );
+    expect(screen).toContain('key === "dailySurvival"');
+    expect(screen).toContain("modes.dailySurvival.name");
+  });
+
   it("rejects identities without a username", async () => {
     authState.userId = "bare_user";
     const fake = makeFakeDb({
