@@ -6,6 +6,7 @@ import { lazy, Suspense } from "react";
 import { AuthProvider } from "./contexts/AuthContext";
 import { ProtectedRoute, UsernameRequiredRoute } from "./components/ProtectedRoute";
 import { ErrorBoundary } from "./components/ErrorBoundary";
+import { AnalyticsPageviews } from "./components/AnalyticsPageviews";
 // Flag-gated entry routing: v1 LoginScreen/HomeScreen when off, v2 shell
 // landing when VITE_V2_SHELL_ENABLED is on. Keeps "/" and "/home" as a clean
 // rollback seam (the only routes whose default destination the flag flips).
@@ -115,6 +116,7 @@ const AppRoutes = () => (
       <BrowserRouter
         future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
       >
+        <AnalyticsPageviews />
         <div className="max-w-md mx-auto min-h-screen relative">
           {/* One-time language chooser, overlays whatever screen loads first. */}
           <FirstRunLanguagePrompt />

@@ -4,12 +4,13 @@ import { LegalLayout } from "./LegalLayout";
  * Privacy policy for verveq.com. The statements below describe what the app
  * actually does today (username-only and full accounts, gameplay stats, IP
  * checks for anonymous onboarding, Convex hosting, Sentry error monitoring —
- * errors only, PII scrubbed in src/lib/sentry.ts) — keep it in sync when the
- * data model changes.
+ * errors only, PII scrubbed in src/lib/sentry.ts — and PostHog usage
+ * analytics — pageviews and explicit events only, codes scrubbed in
+ * src/lib/analytics.ts) — keep it in sync when the data model changes.
  */
 export default function PrivacyScreen() {
   return (
-    <LegalLayout title="Privacy Policy" lastUpdated="June 12, 2026">
+    <LegalLayout title="Privacy Policy" lastUpdated="July 7, 2026">
       <p>
         VerveQ (&quot;we&quot;, &quot;us&quot;) is a competitive sports trivia
         platform available at verveq.com. This policy explains what information
@@ -53,6 +54,16 @@ export default function PrivacyScreen() {
           collects errors only — it is not analytics and does not track your
           activity.
         </li>
+        <li>
+          <strong>Usage analytics.</strong> We measure how the product is used
+          — which pages and game modes are visited and in what order — via
+          PostHog, a product-analytics service, so we can decide what to
+          improve. This is deliberately narrow: no session recordings, no
+          automatic click capture, and no tracking cookies (a first-party
+          browser-storage entry only). Page addresses are scrubbed of duel and
+          lobby invite codes before they leave your browser, and query
+          parameters other than campaign attribution are dropped.
+        </li>
       </ul>
 
       <h2>What we do not do</h2>
@@ -60,11 +71,12 @@ export default function PrivacyScreen() {
         <li>We do not sell your personal information.</li>
         <li>We do not show third-party advertising.</li>
         <li>
-          We do not use third-party analytics or tracking cookies. The only
-          browser storage we use keeps you signed in and rate-limits abuse.
-          Our operational error monitoring (see &quot;Error reports&quot;
-          above) is not analytics: it sets no cookies, builds no profiles, and
-          receives only scrubbed crash data.
+          We do not use tracking cookies or cross-site tracking. Browser
+          storage keeps you signed in, rate-limits abuse, and holds a
+          first-party analytics identifier that never follows you to other
+          sites. Our operational error monitoring (see &quot;Error
+          reports&quot; above) is not analytics: it sets no cookies, builds no
+          profiles, and receives only scrubbed crash data.
         </li>
       </ul>
 
@@ -82,7 +94,9 @@ export default function PrivacyScreen() {
         data is stored on Convex infrastructure in the United States and our
         web servers are operated by us. Scrubbed error reports are processed
         by Sentry (sentry.io, operated by Functional Software, Inc.) in the
-        United States. Data is encrypted in transit.
+        United States. Usage analytics are processed by PostHog (posthog.com,
+        operated by PostHog, Inc.) on servers in the European Union. Data is
+        encrypted in transit.
       </p>
 
       <h2>Retention and deletion</h2>
