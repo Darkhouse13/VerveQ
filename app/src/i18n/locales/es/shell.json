@@ -296,8 +296,8 @@
   },
   "gate": {
     "title": "Se requiere cuenta completa",
-    "bodyUpgrade": "Estás jugando solo con nombre de usuario, así que esta partida es casual. Los modos clasificatorios, las clasificaciones globales y las rachas diarias requieren una cuenta completa — al pasarte conservas tu nombre de usuario y tu progreso casual.",
-    "bodyCreate": "Los modos clasificatorios, las clasificaciones globales y las rachas diarias requieren una cuenta completa. Crea una para empezar a subir.",
+    "bodyUpgrade": "Estás jugando solo con nombre de usuario, así que esta partida es casual. Los modos clasificatorios y las clasificaciones globales requieren una cuenta completa — al pasarte conservas tu nombre de usuario y tu progreso casual.",
+    "bodyCreate": "Los modos clasificatorios y las clasificaciones globales requieren una cuenta completa. Crea una para empezar a subir.",
     "ctaUpgrade": "Guardar mi progreso y pasar a clasificatorio",
     "ctaCreate": "Empezar",
     "later": "Quizá más tarde"

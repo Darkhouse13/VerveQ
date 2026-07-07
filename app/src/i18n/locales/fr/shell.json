@@ -296,8 +296,8 @@
   },
   "gate": {
     "title": "Compte complet requis",
-    "bodyUpgrade": "Tu joues en pseudo uniquement, donc cette partie reste détente. Les modes classés, les classements mondiaux et les séries quotidiennes nécessitent un compte complet — passer au compte complet conserve ton pseudo et ta progression détente.",
-    "bodyCreate": "Les modes classés, les classements mondiaux et les séries quotidiennes nécessitent un compte complet. Crées-en un pour commencer à grimper.",
+    "bodyUpgrade": "Tu joues en pseudo uniquement, donc cette partie reste détente. Les modes classés et les classements mondiaux nécessitent un compte complet — passer au compte complet conserve ton pseudo et ta progression détente.",
+    "bodyCreate": "Les modes classés et les classements mondiaux nécessitent un compte complet. Crées-en un pour commencer à grimper.",
     "ctaUpgrade": "Sauvegarder ma progression et passer en classé",
     "ctaCreate": "Commencer",
     "later": "Plus tard"

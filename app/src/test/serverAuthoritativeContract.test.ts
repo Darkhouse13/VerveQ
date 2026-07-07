@@ -246,7 +246,10 @@ describe("BLOCKER-2: correctness is derived from stored answers", () => {
     };
     const ctx = {
       db: {
-        get: async () => attempt,
+        get: async (id: string) =>
+          id === "stub_user"
+            ? { _id: "stub_user", username: "stub_user", isAnonymous: false }
+            : attempt,
         patch,
         query: makeDailyQuery(challenge),
       },
@@ -513,7 +516,10 @@ describe("BLOCKER-5: daily attempts enforce ownership and server time", () => {
     const patch = vi.fn();
     const ctx = {
       db: {
-        get: async () => makeOtherAttempt(),
+        get: async (id: string) =>
+          id === "stub_user"
+            ? { _id: "stub_user", username: "stub_user", isAnonymous: false }
+            : makeOtherAttempt(),
         patch,
       },
     };
@@ -532,7 +538,10 @@ describe("BLOCKER-5: daily attempts enforce ownership and server time", () => {
     const patch = vi.fn();
     const ctx = {
       db: {
-        get: async () => makeOtherAttempt(),
+        get: async (id: string) =>
+          id === "stub_user"
+            ? { _id: "stub_user", username: "stub_user", isAnonymous: false }
+            : makeOtherAttempt(),
         patch,
       },
     };
@@ -547,13 +556,16 @@ describe("BLOCKER-5: daily attempts enforce ownership and server time", () => {
     const patch = vi.fn();
     const ctx = {
       db: {
-        get: async () => makeOtherAttempt({
-          results: Array.from({ length: 10 }, () => ({
-            correct: true,
-            timeTaken: 1,
-            score: 100,
-          })),
-        }),
+        get: async (id: string) =>
+          id === "stub_user"
+            ? { _id: "stub_user", username: "stub_user", isAnonymous: false }
+            : makeOtherAttempt({
+                results: Array.from({ length: 10 }, () => ({
+                  correct: true,
+                  timeTaken: 1,
+                  score: 100,
+                })),
+              }),
         patch,
       },
     };
@@ -604,7 +616,10 @@ describe("BLOCKER-5: daily attempts enforce ownership and server time", () => {
     };
     const ctx = {
       db: {
-        get: async () => attempt,
+        get: async (id: string) =>
+          id === "stub_user"
+            ? { _id: "stub_user", username: "stub_user", isAnonymous: false }
+            : attempt,
         patch,
         query: makeDailyQuery(challenge),
       },

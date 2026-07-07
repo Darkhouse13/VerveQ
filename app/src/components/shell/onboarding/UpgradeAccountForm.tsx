@@ -152,7 +152,7 @@ export function UpgradeAccountForm({ onSuccess }: UpgradeAccountFormProps) {
                 t("upgradeForm.usernameFallback", { defaultValue: "your username" })}
             </span>{" "}
             {t("upgradeForm.subtitleAfter", {
-              defaultValue: "and unlock ranked play, leaderboards, and daily streaks.",
+              defaultValue: "and unlock ranked play and global leaderboards.",
             })}
           </p>
         </div>

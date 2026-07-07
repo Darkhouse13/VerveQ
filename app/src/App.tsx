@@ -502,9 +502,11 @@ const AppRoutes = () => (
             <Route path="/v2/higher-lower" element={<ShellGate><UsernameOnlyRoute><HigherLowerPlayScreen /></UsernameOnlyRoute></ShellGate>} />
             <Route path="/v2/career-path" element={<ShellGate><UsernameOnlyRoute><CareerPathPlayScreen /></UsernameOnlyRoute></ShellGate>} />
             <Route path="/v2/verve-grid" element={<ShellGate><UsernameOnlyRoute><VerveGridPlayScreen /></UsernameOnlyRoute></ShellGate>} />
-            {/* Daily reuses the migrated Quiz view but runs the DAILY session;
-                the official daily leaderboard/streaks are full-account only. */}
-            <Route path="/v2/daily" element={<ShellGate><FullAccountRoute><DailyQuizPlayScreen /></FullAccountRoute></ShellGate>} />
+            {/* Daily reuses the migrated Quiz view but runs the DAILY session.
+                Username tier (anonymous OK): the daily is the habit loop, so a
+                one-tap guest must reach it — attempts and streaks key off the
+                server identity, and the daily never touches ELO. */}
+            <Route path="/v2/daily" element={<ShellGate><UsernameOnlyRoute><DailyQuizPlayScreen /></UsernameOnlyRoute></ShellGate>} />
             {/* Arena (multi-user) is username-only playable; the screen onboards
                 inline so a shared invite link never drops its lobby code. */}
             <Route path="/v2/arena/:code" element={<ShellGate><ArenaPlayScreen /></ShellGate>} />
