@@ -157,6 +157,10 @@ export default function SurvivalPlayScreen({ daily = false }: { daily?: boolean 
   const [speedStreak, setSpeedStreak] = useState(0);
   const [isOnFire, setIsOnFire] = useState(false);
   const correctCountRef = useRef(0);
+  // Daily share grid: one emoji per finished round (🟩 clean, 🟨 helped,
+  // 🟥 miss, ⬜ skip) — client-built exactly like the daily quiz's
+  // shareString; display-only, so no server round-trip needed.
+  const dailyOutcomesRef = useRef<string[]>([]);
 
   // Skip budget (free — lives are never lost on skips)
   const [skipsLeft, setSkipsLeft] = useState(3);
@@ -289,6 +293,7 @@ export default function SurvivalPlayScreen({ daily = false }: { daily?: boolean 
           correctCount: correctCountRef.current,
           sport,
           mode: "daily-survival",
+          shareString: dailyOutcomesRef.current.join("") || undefined,
         },
       });
       return;
@@ -358,6 +363,9 @@ export default function SurvivalPlayScreen({ daily = false }: { daily?: boolean 
 
       if (res.correct) {
         correctCountRef.current += 1;
+        if (daily) {
+          dailyOutcomesRef.current.push(helpStage > 0 ? "🟨" : "🟩");
+        }
         setSpeedStreak(res.speedStreak ?? 0);
         setIsOnFire(res.isOnFire ?? false);
         if (res.surnameMatch) {
@@ -382,6 +390,7 @@ export default function SurvivalPlayScreen({ daily = false }: { daily?: boolean 
           toast.success(t("survival.plusOneLife"), { duration: 3000 });
         }
       } else {
+        if (daily) dailyOutcomesRef.current.push("🟥");
         setSpeedStreak(0);
         setIsOnFire(false);
       }
@@ -427,6 +436,7 @@ export default function SurvivalPlayScreen({ daily = false }: { daily?: boolean 
     if (!sessionId || skipsLeft <= 0) return;
     try {
       const res = await skipMut({ sessionId });
+      if (daily) dailyOutcomesRef.current.push("⬜");
       setSkipsLeft(res.skipsLeft);
       setFeedback(null);
       setSpeedStreak(0);

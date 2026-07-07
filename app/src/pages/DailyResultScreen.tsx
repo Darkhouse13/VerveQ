@@ -67,6 +67,7 @@ export default function DailyResultScreen() {
         date: dateStr,
         score: state.score,
         rounds: state.total,
+        emoji: state.shareString || "",
         url: shareUrl,
       });
 
