@@ -557,15 +557,21 @@ export default defineSchema({
     // Server-side idempotency marker for completeSurvival — set once ELO
     // has been recorded so a replayed call doesn't double-update the rating.
     completedAt: v.optional(v.number()),
+    // Daily Survival (2026-07): set on sessions playing the shared daily run.
+    // Challenges come from the dailyChallenges row's frozen queue (never
+    // generateChallenge), the run is capped at the queue length, results
+    // finalize into the linked dailyAttempts row, and ELO is never written.
+    dailyDate: v.optional(v.string()),
+    dailyAttemptId: v.optional(v.id("dailyAttempts")),
   }).index("by_expiresAt", ["expiresAt"]),
 
   // ── Daily Challenge ──
   dailyChallenges: defineTable({
     date: v.string(),
     sport: v.string(),
-    // "survival" was a declared-but-never-implemented variant (creation always
-    // threw), so quiz is the only mode that ever reached the table.
-    mode: v.literal("quiz"),
+    // quiz = frozen question snapshots; survival (2026-07, football-only) =
+    // a frozen 10-round challenge queue so every player faces the same run.
+    mode: v.union(v.literal("quiz"), v.literal("survival")),
     questionChecksums: v.array(v.string()),
     questionSnapshots: v.optional(
       v.array(
@@ -580,6 +586,18 @@ export default defineSchema({
         }),
       ),
     ),
+    // Daily Survival's shared run: generated ONCE (cron or first player),
+    // then read-only — determinism comes from the snapshot, not seeded RNG.
+    survivalChallenges: v.optional(
+      v.array(
+        v.object({
+          initials: v.string(),
+          difficulty: v.string(),
+          validPlayers: v.array(v.string()),
+          primaryPlayer: v.string(),
+        }),
+      ),
+    ),
     createdAt: v.number(),
   }).index("by_date_sport_mode", ["date", "sport", "mode"]),
 
@@ -587,7 +605,7 @@ export default defineSchema({
     userId: v.id("users"),
     date: v.string(),
     sport: v.string(),
-    mode: v.literal("quiz"),
+    mode: v.union(v.literal("quiz"), v.literal("survival")),
     score: v.number(),
     completed: v.boolean(),
     forfeited: v.boolean(),

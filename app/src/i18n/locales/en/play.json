@@ -141,6 +141,14 @@
       "football": "football",
       "basketball": "NBA",
       "tennis": "tennis"
+    },
+    "daily": {
+      "title": "Daily Survival",
+      "round": "Round {{round}} of 10",
+      "playedTitle": "You've played today's run",
+      "playedBody": "Everyone faces the same 10 rounds each day — one attempt. A new run drops at midnight UTC (in {{time}}).",
+      "backHome": "Back to home",
+      "forfeited": "Daily run forfeited — leaving the tab ends it."
     }
   },
   "careerPath": {

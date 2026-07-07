@@ -118,6 +118,7 @@
     "verveGrid": { "name": "VerveGrid", "desc": "Completa la cuadrícula 3x3" },
     "careerPath": { "name": "Trayectoria", "desc": "Nombra al jugador por sus clubes" },
     "daily": { "name": "Reto diario", "desc": "Las mismas preguntas para todos", "worldCupName": "Diario del Mundial", "worldCupDesc": "Preguntas del Mundial durante todo el torneo — las mismas para todos" },
+    "dailySurvival": { "name": "Survival diario", "desc": "La partida de hoy, igual para todos — un intento" },
     "liveMatch": { "name": "Partida en directo", "desc": "1v1 en tiempo real, emparejado por ELO" },
     "arena": { "name": "Arena", "desc": "Salas de desafío en grupo" },
     "duel": { "name": "Duelos", "desc": "Mano a mano, envía un enlace" },

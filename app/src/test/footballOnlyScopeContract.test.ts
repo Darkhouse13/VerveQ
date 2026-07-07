@@ -37,7 +37,7 @@ describe("compete grid advertises only startable modes", () => {
     expect(COMPETE_MODE_TILES.some((t) => t.key === "liveMatch")).toBe(false);
   });
 
-  it("still offers the nine live modes", () => {
+  it("still offers the ten live modes", () => {
     expect(COMPETE_MODE_TILES.map((t) => t.key)).toEqual([
       "quiz",
       "arena",
@@ -48,6 +48,8 @@ describe("compete grid advertises only startable modes", () => {
       "verveGrid",
       "careerPath",
       "daily",
+      // Daily Survival shipped 2026-07: the shared one-attempt run.
+      "dailySurvival",
     ]);
   });
 });

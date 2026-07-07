@@ -1,6 +1,6 @@
 import {
   Brain, Heart, Zap, TrendingUp, Grid3X3, Route, Timer, Swords, Users,
-  Lightbulb, Clock,
+  Lightbulb, Clock, CalendarHeart,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { SHELL_ROUTES } from "@/lib/shellRoutes";
@@ -52,6 +52,9 @@ export const COMPETE_MODE_TILES: ModeTile[] = [
   { key: "careerPath", icon: Route, color: "yellow", to: (s) => `/v2/career-path?sport=${s}` },
   // Daily is migrated to the shell — reuses the Quiz prototype layout via the DAILY session.
   { key: "daily", icon: Timer, color: "primary", to: (s) => `/v2/daily?sport=${s}` },
+  // Daily Survival: the shared one-attempt run on the Reveal Ladder engine.
+  // Football-only by design, so the builder ignores the carried sport.
+  { key: "dailySurvival", icon: CalendarHeart, color: "accent", to: () => "/v2/daily-survival" },
   // Live Match is parked: nothing in the product can create a live match any
   // more (the challenge subsystem and createFromChallenge were removed), so
   // the tile would advertise a dead end. /v2/live-match stays routable as a

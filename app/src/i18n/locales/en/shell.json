@@ -118,6 +118,7 @@
     "verveGrid": { "name": "VerveGrid", "desc": "Fill the 3x3 grid" },
     "careerPath": { "name": "Career Path", "desc": "Name the player from his clubs" },
     "daily": { "name": "Daily Challenge", "desc": "Same questions for everyone", "worldCupName": "World Cup Daily", "worldCupDesc": "World Cup questions all tournament — same for everyone" },
+    "dailySurvival": { "name": "Daily Survival", "desc": "Today's shared run — one attempt" },
     "liveMatch": { "name": "Live Match", "desc": "Real-time 1v1, ELO matched" },
     "arena": { "name": "Arena", "desc": "Group challenge rooms" },
     "duel": { "name": "Duels", "desc": "Head-to-head, send a link" },

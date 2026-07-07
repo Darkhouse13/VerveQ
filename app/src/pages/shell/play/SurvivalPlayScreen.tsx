@@ -97,11 +97,31 @@ function MaskedName({ maskedName }: { maskedName: string }) {
   );
 }
 
-export default function SurvivalPlayScreen() {
+/** "h:mm" until the next UTC midnight — when the daily run re-rolls. */
+function dailyResetCountdown(): string {
+  const now = new Date();
+  const nextUtcMidnight = Date.UTC(
+    now.getUTCFullYear(),
+    now.getUTCMonth(),
+    now.getUTCDate() + 1,
+  );
+  const ms = Math.max(0, nextUtcMidnight - now.getTime());
+  const h = Math.floor(ms / 3_600_000);
+  const m = Math.floor((ms % 3_600_000) / 60_000);
+  return `${h}:${String(m).padStart(2, "0")}`;
+}
+
+/**
+ * `daily` runs the shared Daily Survival instead of a ranked run: same Reveal
+ * Ladder engine and UI, but the server serves the frozen 10-round queue, the
+ * result lands in dailyAttempts (never ELO), one attempt per UTC day, and
+ * leaving the tab forfeits outright.
+ */
+export default function SurvivalPlayScreen({ daily = false }: { daily?: boolean }) {
   const { t } = useTranslation("play");
   const navigate = useNavigate();
   const [params] = useSearchParams();
-  const sport = params.get("sport") || "football";
+  const sport = daily ? "football" : params.get("sport") || "football";
   const { user, isLoading: authLoading, isAuthenticated } = useAuth();
 
   const [sessionId, setSessionId] = useState<Id<"survivalSessions"> | null>(
@@ -119,6 +139,8 @@ export default function SurvivalPlayScreen() {
   } | null>(null);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+  // Daily only: today's attempt is already spent (server-enforced).
+  const [playedToday, setPlayedToday] = useState(false);
 
   // Reveal Ladder round state — updated by requestHelp responses and reset
   // whenever a fresh challenge arrives.
@@ -155,6 +177,7 @@ export default function SurvivalPlayScreen() {
   const startTime = useRef(Date.now());
 
   const startGameMut = useMutation(api.survivalSessions.startGame);
+  const startDailyGameMut = useMutation(api.survivalSessions.startDailyGame);
   const submitGuessMut = useMutation(api.survivalSessions.submitGuess);
   const helpMutation = useMutation(api.survivalSessions.requestHelp);
   const skipMut = useMutation(api.survivalSessions.skipChallenge);
@@ -183,16 +206,41 @@ export default function SurvivalPlayScreen() {
     }
     (async () => {
       try {
-        const data = await startGameMut({ sport });
-        setSessionId(data.sessionId);
-        setLives(data.lives);
-        setScore(data.score);
-        setRound(data.round);
-        setSkipsLeft(data.skipsLeft);
-        applyChallenge(data.challenge);
+        if (daily) {
+          const data = await startDailyGameMut({});
+          setSessionId(data.sessionId);
+          setLives(data.lives);
+          setScore(data.score);
+          setRound(data.round);
+          setSkipsLeft(data.skipsLeft);
+          applyChallenge(data.challenge);
+          // Mid-run refresh: replay the help ladder the server already
+          // granted (mask/pot come back inside data.challenge).
+          if (data.resumed) {
+            setHelpStage(data.helpStage);
+            setClues(data.clues);
+          }
+        } else {
+          const data = await startGameMut({ sport });
+          setSessionId(data.sessionId);
+          setLives(data.lives);
+          setScore(data.score);
+          setRound(data.round);
+          setSkipsLeft(data.skipsLeft);
+          applyChallenge(data.challenge);
+        }
         setLoading(false);
         startTime.current = Date.now();
-      } catch {
+      } catch (error) {
+        if (
+          daily &&
+          error instanceof Error &&
+          /already attempted/i.test(error.message)
+        ) {
+          setPlayedToday(true);
+          setLoading(false);
+          return;
+        }
         toast.error(t("survival.failedToStart"));
         navigate(-1);
       }
@@ -207,6 +255,13 @@ export default function SurvivalPlayScreen() {
       penalizeTabSwitchMut({ sessionId, currentRound: round }).then((res) => {
         if (!res.penalized) return;
         setShakeKey((k) => k + 1);
+        // Daily rule: leaving the tab forfeits the one attempt outright.
+        if ("dailyForfeit" in res && res.dailyForfeit) {
+          setCheatModal("penalty");
+          toast.error(t("survival.daily.forfeited"), { duration: 4000 });
+          setTimeout(() => goToResults(0, round), 2000);
+          return;
+        }
         if (res.warning) {
           setCheatModal("warning");
           if (typeof res.potValue === "number") setPotValue(res.potValue);
@@ -224,6 +279,20 @@ export default function SurvivalPlayScreen() {
   );
 
   const goToResults = async (finalScore: number, finalRound: number) => {
+    // Daily runs land on the daily result surface (share copy included) and
+    // never call completeSurvival — the server rejects daily sessions there.
+    if (daily) {
+      navigate("/daily-results", {
+        state: {
+          score: finalScore,
+          total: finalRound,
+          correctCount: correctCountRef.current,
+          sport,
+          mode: "daily-survival",
+        },
+      });
+      return;
+    }
     let eloChange: number | null = null;
     let newElo: number | null = null;
     let kFactor: number | undefined;
@@ -390,7 +459,7 @@ export default function SurvivalPlayScreen() {
   if (loading) {
     return (
       <PlayStage
-        title={t("survival.title")}
+        title={daily ? t("survival.daily.title") : t("survival.title")}
         onExit={() => navigate(SHELL_ROUTES.home)}
       >
         <div className="flex items-center justify-center py-16">
@@ -402,12 +471,46 @@ export default function SurvivalPlayScreen() {
     );
   }
 
+  // Daily, already spent: a clean "come back at midnight" card, never an
+  // error state — one attempt is the product rule, not a failure.
+  if (playedToday) {
+    return (
+      <PlayStage
+        title={t("survival.daily.title")}
+        onExit={() => navigate(SHELL_ROUTES.home)}
+      >
+        <NeoCard shadow="lg" className="p-6 text-center max-w-sm mx-auto">
+          <p className="text-3xl mb-3" aria-hidden>
+            ✅
+          </p>
+          <h2 className="font-heading font-bold text-xl mb-2">
+            {t("survival.daily.playedTitle")}
+          </h2>
+          <p className="text-sm text-muted-foreground mb-5">
+            {t("survival.daily.playedBody", { time: dailyResetCountdown() })}
+          </p>
+          <NeoButton
+            variant="primary"
+            size="full"
+            onClick={() => navigate(SHELL_ROUTES.home)}
+          >
+            {t("survival.daily.backHome")}
+          </NeoButton>
+        </NeoCard>
+      </PlayStage>
+    );
+  }
+
   const initials = challenge?.initials.split("") || [];
 
   return (
     <PlayStage
-      title={t("survival.title")}
-      subtitle={t("survival.round", { round })}
+      title={daily ? t("survival.daily.title") : t("survival.title")}
+      subtitle={
+        daily
+          ? t("survival.daily.round", { round })
+          : t("survival.round", { round })
+      }
       onExit={() => navigate(SHELL_ROUTES.home)}
       exitLabel={t("survival.quit")}
       strip={<AmbientStrip metrics={metrics} />}
