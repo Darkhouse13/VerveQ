@@ -150,7 +150,8 @@ const EXPECTED_ALIASES: Array<[path: string, target: string]> = [
   ["/daily-quiz", "/v2/daily?sport=football"],
   ["/daily", "/v2/daily?sport=football"],
   ["/blitz", "/v2/blitz?sport=football"],
-  ["/live-match", "/v2/live-match"],
+  // /live-match left this table 2026-07: the dead Live Match surface was
+  // removed outright, so the old URL now 404s instead of aliasing.
   ["/forge", "/v2/forge"],
   ["/higher-lower", "/v2/higher-lower?sport=football"],
   ["/higherlower", "/v2/higher-lower?sport=football"],

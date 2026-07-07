@@ -73,13 +73,8 @@ export default function ChallengeScreen({ embedded = false }: { embedded?: boole
     !isGuest && me ? {} : "skip",
   );
   const markAllRead = useMutation(api.notifications.markAllRead);
-  const activeMatchId = useQuery(api.liveMatches.getActiveMatch);
-
-  useEffect(() => {
-    if (activeMatchId) {
-      navigate(`/waiting-room?matchId=${activeMatchId}`, { replace: true });
-    }
-  }, [activeMatchId, navigate]);
+  // Live Match removed 2026-07: nothing can create a match, so the old
+  // active-match redirect into /waiting-room is gone with its routes.
 
   useEffect(() => {
     if (!isGuest && me && unread && unread.count > 0) {
