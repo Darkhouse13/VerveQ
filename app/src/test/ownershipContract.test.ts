@@ -23,7 +23,6 @@ import * as survivalSessions from "../../convex/survivalSessions";
 import * as higherLower from "../../convex/higherLower";
 import * as verveGrid from "../../convex/verveGrid";
 import * as careerPath from "../../convex/careerPath";
-import * as liveMatches from "../../convex/liveMatches";
 import * as quizSessions from "../../convex/quizSessions";
 
 function handlerOf<T>(q: T): (ctx: unknown, args: unknown) => Promise<unknown> {
@@ -229,49 +228,8 @@ describe("Area 2 — Curated getSession queries reject non-owners", () => {
   });
 });
 
-describe("Area 3 — liveMatches participant gate", () => {
-  const matchDoc = {
-    _id: "match_1",
-    player1Id: "userA",
-    player2Id: "userB",
-    sport: "football",
-    status: "waiting",
-    currentQuestion: 0,
-    totalQuestions: 10,
-    questions: [],
-    player1Answers: [],
-    player2Answers: [],
-    player1Score: 0,
-    player2Score: 0,
-    player1Ready: false,
-    player2Ready: false,
-    player1LastSeen: Date.now(),
-    player2LastSeen: Date.now(),
-    createdAt: Date.now(),
-  };
-
-  it("getMatch returns null when caller is neither player", async () => {
-    authMock.getAuthUserId.mockResolvedValue("userC");
-    const ctx = {
-      db: {
-        get: async () => matchDoc,
-      },
-    };
-    const res = await handlerOf(liveMatches.getMatch)(ctx, {
-      matchId: "match_1",
-    });
-    expect(res).toBeNull();
-  });
-
-  it("getMatch returns null for unauthenticated callers", async () => {
-    authMock.getAuthUserId.mockResolvedValue(null);
-    const ctx = { db: { get: async () => matchDoc } };
-    const res = await handlerOf(liveMatches.getMatch)(ctx, {
-      matchId: "match_1",
-    });
-    expect(res).toBeNull();
-  });
-});
+// Area 3 (liveMatches participant gate) was removed 2026-07 with the
+// liveMatches subsystem purge.
 
 describe("Area 4 — quizSessions.submitFeedback requires auth", () => {
   it("throws when caller is unauthenticated", async () => {

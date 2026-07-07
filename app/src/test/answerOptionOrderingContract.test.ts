@@ -27,15 +27,12 @@ describe("answer option ordering contract", () => {
     const quizSessions = readFileSync("convex/quizSessions.ts", "utf8");
     const dailyChallenge = readFileSync("convex/dailyChallenge.ts", "utf8");
     const blitz = readFileSync("convex/blitz.ts", "utf8");
-    const liveMatches = readFileSync("convex/liveMatches.ts", "utf8");
 
     expect(helper).toContain("orderAnswerOptions");
     expect(quizSessions).toContain("orderAnswerOptions(picked.options, picked.correctAnswer, picked.checksum)");
     expect(dailyChallenge).toContain("orderAnswerOptions(");
     expect(blitz).toContain("orderAnswerOptions(pick.options, pick.correctAnswer, pick.checksum)");
-    // Live-match creation was removed with the challenge subsystem; legacy
-    // matches still order options at display time in sanitizeQuestion.
-    expect(liveMatches).toContain("orderAnswerOptions(");
-    expect(liveMatches).toContain("question.correctAnswer");
+    // liveMatches also ordered options for legacy matches until the
+    // subsystem was purged 2026-07.
   });
 });

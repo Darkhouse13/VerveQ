@@ -5,15 +5,10 @@ describe("challenge rivalries v1 contract", () => {
   // The head-to-head/rivalry queries were removed with the dormant challenge
   // subsystem; getMatch keeps the versusSummary shape as an empty state so
   // legacy match views still render.
-  // The live-match SCREENS were removed 2026-07; the parked backend keeps the
-  // empty versusSummary shape so any residual reader stays type-stable.
-  it("keeps the versusSummary shape on the parked liveMatches backend", () => {
-    const liveMatches = readFileSync("convex/liveMatches.ts", "utf8");
+  // The liveMatches backend was purged 2026-07; the rivalry summary types
+  // survive on the ResultScreen's historic challenge results.
+  it("keeps the rivalry summary types the result surfaces still read", () => {
     const types = readFileSync("src/types/api.ts", "utf8");
-
-    expect(liveMatches).toContain("EMPTY_VERSUS_SUMMARY");
-    expect(liveMatches).not.toContain("challengeMatchHistory");
-    expect(liveMatches).not.toContain("challengeHeadToHeads");
 
     expect(types).toContain("currentStreak?:");
     expect(types).toContain("recentMatches?:");
