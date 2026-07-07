@@ -102,7 +102,7 @@
   "dailyResult": {
     "shareQuiz": "VerveQ Daily {{sport}} {{date}} — {{correct}}/{{total}} · {{score}} pts\n{{emoji}}\nThink you can beat me? {{url}}",
     "shareQuizWorldCup": "⚽ VerveQ World Cup Daily {{date}} — {{correct}}/{{total}} · {{score}} pts\n{{emoji}}\nThink you can beat me? {{url}}",
-    "shareSurvival": "VerveQ Daily {{sport}} Survival {{date}} — Score: {{score}} · Rounds: {{rounds}}\nThink you can beat me? {{url}}",
+    "shareSurvival": "VerveQ Daily {{sport}} Survival {{date}} — Score: {{score}} · Rounds: {{rounds}}\n{{emoji}}\nThink you can beat me? {{url}}",
     "worldCupEdition": "World Cup Edition",
     "challengeAMate": "Challenge a mate",
     "copiedToClipboard": "Copied to clipboard!",

@@ -95,6 +95,24 @@ const FULL_USER = {
 };
 
 describe("Daily Survival contract", () => {
+  it("shares a per-round emoji grid, like the daily quiz", () => {
+    const screen = readFileSync(
+      "src/pages/shell/play/SurvivalPlayScreen.tsx",
+      "utf8",
+    );
+    expect(screen).toContain("dailyOutcomesRef");
+    for (const emoji of ["🟩", "🟨", "🟥", "⬜"]) {
+      expect(screen).toContain(emoji);
+    }
+    expect(screen).toContain("shareString: dailyOutcomesRef.current.join(");
+    for (const locale of ["en", "es", "fr"]) {
+      const screens = JSON.parse(
+        readFileSync(`src/i18n/locales/${locale}/screens.json`, "utf8"),
+      );
+      expect(screens.dailyResult.shareSurvival).toContain("{{emoji}}");
+    }
+  });
+
   it("is actually rendered on the Compete grid, not just present in tile data", () => {
     // Regression pin: the tile existed in COMPETE_MODE_TILES while the screen
     // rendered from its own key lists, so the mode shipped with no visible
