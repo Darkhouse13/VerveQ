@@ -70,6 +70,7 @@ export default function CompeteModeGridScreen() {
   }
 
   const daily = COMPETE_MODE_TILES.find((m) => m.key === "daily");
+  const dailySurvival = COMPETE_MODE_TILES.find((m) => m.key === "dailySurvival");
   // Window shared with the backend's themed question pool (lib/daily.ts).
   const dailyIsWorldCup = isWorldCupEditionActive(dailySport, getTodayUTC());
   const ranked = RANKED_MODE_TILES;
@@ -120,7 +121,8 @@ export default function CompeteModeGridScreen() {
             </div>
           </section>
 
-          {/* Today's hook — one wide strip, same target as the Home card. */}
+          {/* Today's hooks — wide strips, same targets as the Home card. Both
+              dailies sit together: the quiz and the shared Survival run. */}
           {daily && (
             <NeoCard
               color={daily.color}
@@ -141,6 +143,27 @@ export default function CompeteModeGridScreen() {
                   {dailyIsWorldCup
                     ? t("modes.daily.worldCupDesc")
                     : t("modes.daily.desc")}
+                </p>
+              </div>
+              <ChevronRight size={20} strokeWidth={2.5} className="opacity-70 shrink-0" />
+            </NeoCard>
+          )}
+          {dailySurvival && (
+            <NeoCard
+              color={dailySurvival.color}
+              shadow="default"
+              className="flex items-center gap-3.5 cursor-pointer rounded-2xl py-3.5 -mt-2"
+              onClick={() => navigate(dailySurvival.to(sport))}
+            >
+              <div className="neo-border rounded-xl bg-background w-fit p-2.5 shrink-0">
+                <dailySurvival.icon size={24} strokeWidth={2.5} className="text-foreground" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="font-heading font-bold text-base md:text-lg leading-tight">
+                  {t("modes.dailySurvival.name")}
+                </p>
+                <p className="text-[11px] md:text-xs opacity-80 leading-tight mt-0.5">
+                  {t("modes.dailySurvival.desc")}
                 </p>
               </div>
               <ChevronRight size={20} strokeWidth={2.5} className="opacity-70 shrink-0" />
