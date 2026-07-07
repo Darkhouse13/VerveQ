@@ -101,11 +101,11 @@ function FullAccountGate({
             {canUpgrade
               ? t("gate.bodyUpgrade", {
                   defaultValue:
-                    "You're playing username-only, so this run stays casual. Ranked modes, global leaderboards, and daily streaks need a full account — upgrading keeps your username and casual progress.",
+                    "You're playing username-only, so this run stays casual. Ranked modes and global leaderboards need a full account — upgrading keeps your username and casual progress.",
                 })
               : t("gate.bodyCreate", {
                   defaultValue:
-                    "Ranked modes, global leaderboards, and daily streaks need a full account. Create one to start climbing.",
+                    "Ranked modes and global leaderboards need a full account. Create one to start climbing.",
                 })}
           </p>
           {canUpgrade ? (

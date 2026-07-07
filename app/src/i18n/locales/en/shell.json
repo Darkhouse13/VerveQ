@@ -296,8 +296,8 @@
   },
   "gate": {
     "title": "Full account required",
-    "bodyUpgrade": "You're playing username-only, so this run stays casual. Ranked modes, global leaderboards, and daily streaks need a full account — upgrading keeps your username and casual progress.",
-    "bodyCreate": "Ranked modes, global leaderboards, and daily streaks need a full account. Create one to start climbing.",
+    "bodyUpgrade": "You're playing username-only, so this run stays casual. Ranked modes and global leaderboards need a full account — upgrading keeps your username and casual progress.",
+    "bodyCreate": "Ranked modes and global leaderboards need a full account. Create one to start climbing.",
     "ctaUpgrade": "Save my progress & go ranked",
     "ctaCreate": "Get started",
     "later": "Maybe later"

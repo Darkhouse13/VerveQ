@@ -14,9 +14,9 @@ export default function TermsScreen() {
       <p>
         VerveQ offers trivia game modes (solo, daily, and multiplayer),
         rankings, and community features. Username-only play is casual and
-        unranked; ranked play, global leaderboards, and daily streaks require a
-        full account with an email and password. We may add, change, or retire
-        features as the platform evolves.
+        unranked; ranked play and global leaderboards require a full account
+        with an email and password. We may add, change, or retire features as
+        the platform evolves.
       </p>
 
       <h2>Your account</h2>

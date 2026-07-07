@@ -150,7 +150,10 @@ describe("weekend stabilization daily challenge", () => {
     };
     const ctx = {
       db: {
-        get: async () => attempt,
+        get: async (id: string) =>
+          id === "stub_user"
+            ? { _id: "stub_user", username: "stub_user", isAnonymous: false }
+            : attempt,
         query: makeDailyQuery([challenge]),
       },
       storage: {
@@ -204,7 +207,10 @@ describe("weekend stabilization daily challenge", () => {
       const patch = vi.fn();
       const ctx = {
         db: {
-          get: async () => attempt,
+          get: async (id: string) =>
+            id === "stub_user"
+              ? { _id: "stub_user", username: "stub_user", isAnonymous: false }
+              : attempt,
           query: makeDailyQuery([challenge]),
           patch,
         },

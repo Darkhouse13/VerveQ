@@ -483,7 +483,7 @@
   "upgradeForm": {
     "title": "Sauvegarde ta progression",
     "subtitleBefore": "Ajoute un e-mail et un mot de passe pour conserver",
-    "subtitleAfter": "et débloquer le classé, les classements et les séries quotidiennes.",
+    "subtitleAfter": "et débloquer le classé et les classements mondiaux.",
     "usernameFallback": "ton pseudo",
     "emailPlaceholder": "E-mail",
     "emailLabel": "E-mail",

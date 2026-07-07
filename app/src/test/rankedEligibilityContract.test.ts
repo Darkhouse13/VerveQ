@@ -144,11 +144,44 @@ describe("ranked eligibility guardrail", () => {
     expect(result.entries.map((entry) => entry.userId)).toEqual(["full_user"]);
   });
 
-  it("rejects anonymous Daily official attempts", async () => {
+  // DELIBERATE contract flip (2026-07): the Daily is the habit loop, never
+  // writes ELO, and keys attempts/streaks off the server identity — so it
+  // admits any user with a username, anonymous included. The gate that
+  // remains is username-tier, not full-account.
+  it("admits username-only (anonymous) users to the official Daily", async () => {
     authState.userId = "anon_user";
+    const insert = vi.fn(async () => "attempt_1");
     const ctx = {
       db: {
-        get: vi.fn(async () => ({ _id: "anon_user", isAnonymous: true })),
+        get: vi.fn(async () => ({
+          _id: "anon_user",
+          username: "guest_martin",
+          isAnonymous: true,
+        })),
+        query: () => ({
+          withIndex: () => ({ first: async () => null }),
+        }),
+        insert,
+      },
+    };
+
+    const result = (await handlerOf(dailyChallenge.startAttempt)(ctx, {
+      sport: "football",
+      mode: "quiz",
+    })) as { attemptId: string };
+
+    expect(result.attemptId).toBe("attempt_1");
+    expect(insert).toHaveBeenCalledWith(
+      "dailyAttempts",
+      expect.objectContaining({ userId: "anon_user", mode: "quiz" }),
+    );
+  });
+
+  it("still rejects Daily attempts from identities without a username", async () => {
+    authState.userId = "bare_user";
+    const ctx = {
+      db: {
+        get: vi.fn(async () => ({ _id: "bare_user", isAnonymous: true })),
       },
     };
 
@@ -157,6 +190,6 @@ describe("ranked eligibility guardrail", () => {
         sport: "football",
         mode: "quiz",
       }),
-    ).rejects.toThrow(/full account required/i);
+    ).rejects.toThrow(/username required/i);
   });
 });

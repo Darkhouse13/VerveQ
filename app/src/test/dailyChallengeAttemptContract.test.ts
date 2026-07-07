@@ -103,7 +103,7 @@ describe("daily challenge attempt gating", () => {
     const attempt = makeAttempt();
     const ctx = {
       db: {
-        get: async () => ({ _id: "user_1", isAnonymous: false }),
+        get: async () => ({ _id: "user_1", username: "user_1", isAnonymous: false }),
         query: makeDailyAttemptsQuery([attempt]),
       },
     };
@@ -125,7 +125,7 @@ describe("daily challenge attempt gating", () => {
     });
     const ctx = {
       db: {
-        get: async () => ({ _id: "user_1", isAnonymous: false }),
+        get: async () => ({ _id: "user_1", username: "user_1", isAnonymous: false }),
         query: makeDailyAttemptsQuery([attempt]),
       },
     };
@@ -158,7 +158,7 @@ describe("daily challenge attempt gating", () => {
     const insert = vi.fn();
     const ctx = {
       db: {
-        get: async () => ({ _id: "user_1", isAnonymous: false }),
+        get: async () => ({ _id: "user_1", username: "user_1", isAnonymous: false }),
         query: makeDailyAttemptsQuery([attempt]),
         patch,
         insert,

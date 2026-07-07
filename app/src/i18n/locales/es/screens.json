@@ -483,7 +483,7 @@
   "upgradeForm": {
     "title": "Guarda tu progreso",
     "subtitleBefore": "Añade un correo y una contraseña para conservar",
-    "subtitleAfter": "y desbloquear el clasificatorio, las clasificaciones y las rachas diarias.",
+    "subtitleAfter": "y desbloquear el clasificatorio y las clasificaciones globales.",
     "usernameFallback": "tu nombre de usuario",
     "emailPlaceholder": "Correo",
     "emailLabel": "Correo",

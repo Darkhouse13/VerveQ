@@ -640,7 +640,10 @@ describe("Knowledge blitz and daily quiz MCQ eligibility", () => {
     };
     const ctx = {
       db: {
-        get: async () => attempt,
+        get: async (id: string) =>
+          id === "user_1"
+            ? { _id: "user_1", username: "user_1", isAnonymous: false }
+            : attempt,
         query: (table: string) => {
           if (table !== "dailyChallenges") {
             throw new Error(`Unexpected table query: ${table}`);
