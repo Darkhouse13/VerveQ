@@ -64,6 +64,7 @@
       "lockedInChip": "{{count}} locked in",
       "dueChip": "{{count}} due today"
     },
+    "today": { "eyebrow": "Today's games — same for everyone" },
     "hooks": {
       "eyebrow": "Daily hooks · keep the streak",
       "eyebrowShort": "Daily hooks",

@@ -1,7 +1,17 @@
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useQuery } from "convex/react";
-import { Brain, Crown, Flame, Hammer, Lock, Star, Swords } from "lucide-react";
+import {
+  Brain,
+  CalendarHeart,
+  Crown,
+  Flame,
+  Hammer,
+  Lock,
+  Star,
+  Swords,
+  Users,
+} from "lucide-react";
 import { NeoCard } from "@/components/neo/NeoCard";
 import { NeoAvatar } from "@/components/neo/NeoAvatar";
 import { NeoBadge } from "@/components/neo/NeoBadge";
@@ -16,15 +26,17 @@ import { api } from "../../../convex/_generated/api";
 import type { Id } from "../../../convex/_generated/dataModel";
 
 /**
- * v2 unified Home — the prototype's two-pillar layout: LEARN (warm palette) and
- * COMPETE side by side, a daily-hooks strip, the dark ladder card and the Forge.
+ * v2 unified Home — rebuilt around the DAILY SLATE (2026-07 strategy cut):
+ * TODAY's games (Daily Quiz + Daily Survival) lead beside COMPETE, then the
+ * hooks strip (Duels/Arena/Quiz), the dark ladder card and the Forge. The
+ * Learn pillar is parked — its routes stay live at /v2/learn, but the home no
+ * longer advertises it (general knowledge is off-thesis for a football app).
  * Desktop is a never-scroll grid; mobile is a scrolling column in the same DOM
  * order, so both breakpoints render one tree.
  *
  * Presentational + navigational only. Every number on screen is server-read
- * (profile, learn review plan, daily attempt, season) and honesty-gated: slots
- * the backend can't serve yet (lobby counts, coins, global rank) are absent,
- * never fabricated.
+ * (profile, daily attempts, season) and honesty-gated: slots the backend can't
+ * serve yet (lobby counts, coins, global rank) are absent, never fabricated.
  */
 
 /** "h:mm" until the next UTC midnight — when the daily challenge re-rolls. */
@@ -67,18 +79,17 @@ export default function ShellHomeScreen() {
   const showSignIn = accountState === "loggedOut";
   const profile = useQuery(api.profile.get, userId ? { userId } : "skip");
   // Identity-scoped reads; all skipped for guests/logged-out so nothing throws.
-  // Learn chips aggregate across every served subject (server registry), not
-  // any one hardcoded subject.
-  const learnSubjects = useQuery(
-    api.learn.getLearnSubjects,
-    hasUsername ? {} : "skip",
-  );
   // The daily card reflects (and launches) the user's preferred subject; the
   // status query and the launch nav below must use this same value.
   const dailySport = usePreferredDailySport();
   const dailyStatus = useQuery(
     api.dailyChallenge.getAttemptStatus,
     hasUsername ? { sport: dailySport, mode: "quiz" } : "skip",
+  );
+  // Daily Survival is football-only by design (the shared run).
+  const dailySurvivalStatus = useQuery(
+    api.dailyChallenge.getAttemptStatus,
+    hasUsername ? { sport: "football", mode: "survival" } : "skip",
   );
   const season = useQuery(
     api.seasonManager.getCurrentSeason,
@@ -100,19 +111,11 @@ export default function ShellHomeScreen() {
   const elo = profile?.rankedEligible ? Math.round(profile.eloRating) : null;
   const progress = elo != null ? tierProgress(elo) : null;
 
-  const learnSubjectRows = Array.isArray(learnSubjects?.subjects)
-    ? learnSubjects.subjects
-    : [];
-  const lockedIn = learnSubjectRows.reduce(
-    (sum, s) => sum + (s.lockedCount ?? 0),
-    0,
-  );
-  const dueToday = learnSubjectRows.reduce(
-    (sum, s) => sum + (s.dueCount ?? 0),
-    0,
-  );
-
   const dailyPlayed = dailyStatus?.completed === true;
+  // A forfeited daily survival is still spent for the day.
+  const dailySurvivalPlayed =
+    dailySurvivalStatus?.completed === true ||
+    dailySurvivalStatus?.forfeited === true;
   // Window shared with the backend's themed question pool (lib/daily.ts), so
   // the card renames itself exactly while the WC edition is being served.
   const dailyIsWorldCup = isWorldCupEditionActive(dailySport, getTodayUTC());
@@ -171,41 +174,44 @@ export default function ShellHomeScreen() {
             never-scroll 3-column grid (pillars · pillars/dailies · ladder/forge),
             ratios from the prototype (left 1.5fr split in two, right 1fr). */}
         <div className="flex flex-col gap-3 md:grid md:grid-cols-[3fr_3fr_4fr] md:grid-rows-[1.5fr_0.9fr] md:gap-4 md:flex-1 md:min-h-0">
-          {/* LEARN pillar — carries the WARM sub-palette, like the Learn flow */}
-          <div className="theme-learn flex min-h-0">
+          {/* TODAY pillar — the daily slate leads the home. Two cards, one
+              habit: the shared quiz and the shared survival run, both with
+              honest played/reset state read from the server. */}
+          <div className="flex flex-col gap-3 min-h-0">
+            <p className={EYEBROW}>{t("home.today.eyebrow")}</p>
             <NeoCard
+              color="yellow"
               shadow="lg"
-              onClick={() => navigate(SHELL_ROUTES.learn)}
-              className={`bg-background text-foreground p-5 flex flex-col min-h-0 flex-1 overflow-hidden ${LIFT}`}
+              onClick={() => navigate(`${SHELL_ROUTES.dailyPlay}?sport=${dailySport}`)}
+              className={`p-4 flex flex-col gap-1.5 min-h-0 flex-1 ${LIFT}`}
             >
-              <div className="flex items-start justify-between">
-                <NeoBadge color="muted" className="bg-card text-foreground">
-                  {t("home.pillars.learnChip")}
-                </NeoBadge>
-                <span aria-hidden className="text-[26px] leading-none">
-                  🌱
-                </span>
-              </div>
-              <p className="font-heading font-black uppercase text-[34px] md:text-[46px] leading-[0.95] mt-auto pt-3">
-                {t("home.pillars.learnTitle")}
+              <Star size={24} strokeWidth={2.5} />
+              <p className="font-heading font-black uppercase text-lg md:text-xl leading-none mt-auto">
+                {dailyIsWorldCup
+                  ? t("modes.daily.worldCupName")
+                  : t("modes.daily.name")}
               </p>
-              <p className="text-sm font-medium text-muted-foreground mt-2 max-w-[280px]">
-                {t("home.pillars.learnBody")}
+              <p className="font-mono text-[10.5px] uppercase text-muted-foreground">
+                {dailyPlayed
+                  ? t("home.hooks.played")
+                  : t("home.hooks.resetsIn", { time: dailyResetCountdown() })}
               </p>
-              {(lockedIn > 0 || dueToday > 0) && (
-                <div className="flex flex-wrap items-center gap-2 mt-3.5">
-                  {lockedIn > 0 && (
-                    <NeoBadge color="accent">
-                      {t("home.pillars.lockedInChip", { count: lockedIn })}
-                    </NeoBadge>
-                  )}
-                  {dueToday > 0 && (
-                    <NeoBadge color="muted" className="bg-card text-foreground">
-                      {t("home.pillars.dueChip", { count: dueToday })}
-                    </NeoBadge>
-                  )}
-                </div>
-              )}
+            </NeoCard>
+            <NeoCard
+              color="accent"
+              shadow="lg"
+              onClick={() => navigate("/v2/daily-survival")}
+              className={`p-4 flex flex-col gap-1.5 min-h-0 flex-1 ${LIFT}`}
+            >
+              <CalendarHeart size={24} strokeWidth={2.5} />
+              <p className="font-heading font-black uppercase text-lg md:text-xl leading-none mt-auto">
+                {t("modes.dailySurvival.name")}
+              </p>
+              <p className="font-mono text-[10.5px] uppercase text-muted-foreground">
+                {dailySurvivalPlayed
+                  ? t("home.hooks.played")
+                  : t("modes.dailySurvival.desc")}
+              </p>
             </NeoCard>
           </div>
 
@@ -248,21 +254,19 @@ export default function ShellHomeScreen() {
               <span className="hidden md:inline">{t("home.hooks.eyebrow")}</span>
             </p>
             <div className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-3.5 md:flex-1 md:min-h-0">
+              {/* Duels take the strip's lead slot (the dailies moved up to the
+                  TODAY pillar) — head-to-head is the "settle it" thesis. */}
               <NeoCard
-                color="yellow"
-                onClick={() => navigate(`${SHELL_ROUTES.dailyPlay}?sport=${dailySport}`)}
+                color="pink"
+                onClick={() => navigate(SHELL_ROUTES.duels)}
                 className={`p-3.5 flex flex-col gap-1.5 min-h-0 ${LIFT}`}
               >
-                <Star size={22} strokeWidth={2.5} />
+                <Users size={22} strokeWidth={2.5} />
                 <p className="font-heading font-bold text-base leading-none">
-                  {dailyIsWorldCup
-                    ? t("modes.daily.worldCupName")
-                    : t("modes.daily.name")}
+                  {t("modes.duel.name")}
                 </p>
                 <p className="font-mono text-[10.5px] uppercase text-muted-foreground">
-                  {dailyPlayed
-                    ? t("home.hooks.played")
-                    : t("home.hooks.resetsIn", { time: dailyResetCountdown() })}
+                  {t("modes.duel.desc")}
                 </p>
               </NeoCard>
               <NeoCard
