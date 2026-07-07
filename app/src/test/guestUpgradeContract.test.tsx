@@ -375,6 +375,8 @@ describe("Guest account-required route contracts", () => {
       fs.readFile(`${process.cwd()}/src/App.tsx`, "utf8"),
     );
 
+    // WaitingRoomScreen/LiveMatchScreen left this list 2026-07 when the dead
+    // Live Match surface was removed outright (routes deleted, not un-guarded).
     for (const screen of [
       "DifficultyScreen",
       "QuizScreen",
@@ -384,8 +386,6 @@ describe("Guest account-required route contracts", () => {
       "DailyResultScreen",
       "BlitzScreen",
       "BlitzResultScreen",
-      "WaitingRoomScreen",
-      "LiveMatchScreen",
       "ForgeScreen",
       "HigherLowerScreen",
       "VerveGridScreen",

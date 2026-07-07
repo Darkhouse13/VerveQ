@@ -23,7 +23,6 @@ import ResultScreen from "./pages/ResultScreen";
 import ChallengeScreen from "./pages/ChallengeScreen";
 import DailyResultScreen from "./pages/DailyResultScreen";
 import BlitzResultScreen from "./pages/BlitzResultScreen";
-import WaitingRoomScreen from "./pages/WaitingRoomScreen";
 import ForgeScreen from "./pages/ForgeScreen";
 import NotFound from "./pages/NotFound";
 import { ShellGate } from "./components/shell/ShellGate";
@@ -44,7 +43,6 @@ const LeaderboardScreen = lazy(() => import("./pages/LeaderboardScreen"));
 const ProfileScreen = lazy(() => import("./pages/ProfileScreen"));
 const DailyQuizScreen = lazy(() => import("./pages/DailyQuizScreen"));
 const BlitzScreen = lazy(() => import("./pages/BlitzScreen"));
-const LiveMatchScreen = lazy(() => import("./pages/LiveMatchScreen"));
 const HigherLowerScreen = lazy(() => import("./pages/HigherLowerScreen"));
 const VerveGridScreen = lazy(() => import("./pages/VerveGridScreen"));
 const LearnPrototypeScreen = lazy(() => import("./pages/LearnPrototypeScreen"));
@@ -85,7 +83,6 @@ const CareerPathPlayScreen = lazy(() => import("./pages/shell/play/CareerPathPla
 const VerveGridPlayScreen = lazy(() => import("./pages/shell/play/VerveGridPlayScreen"));
 const DailyQuizPlayScreen = lazy(() => import("./pages/shell/play/DailyQuizPlayScreen"));
 const ArenaPlayScreen = lazy(() => import("./pages/shell/play/ArenaPlayScreen"));
-const LiveMatchPlayScreen = lazy(() => import("./pages/shell/play/LiveMatchPlayScreen"));
 
 const DuelPlayScreen = lazy(() => import("./pages/DuelPlayScreen"));
 const DuelLinkScreen = lazy(() => import("./pages/DuelLinkScreen"));
@@ -316,24 +313,10 @@ const AppRoutes = () => (
                 </UsernameRequiredRoute>
               }
             />
-            <Route
-              path="/waiting-room"
-              element={
-                <UsernameRequiredRoute>
-                  <WaitingRoomScreen />
-                </UsernameRequiredRoute>
-              }
-            />
-            <Route
-              path="/live-match"
-              element={
-                <V2Redirect to="/v2/live-match">
-                  <UsernameRequiredRoute>
-                    <LiveMatchScreen />
-                  </UsernameRequiredRoute>
-                </V2Redirect>
-              }
-            />
+            {/* Live Match was removed 2026-07: nothing in the product could
+                create a match (the challenge subsystem went in PR #11), so the
+                viewer routes advertised a dead end. Old /live-match and
+                /waiting-room URLs now fall through to NotFound. */}
             <Route
               path="/forge"
               element={
@@ -515,10 +498,6 @@ const AppRoutes = () => (
             {/* Arena (multi-user) is username-only playable; the screen onboards
                 inline so a shared invite link never drops its lobby code. */}
             <Route path="/v2/arena/:code" element={<ShellGate><ArenaPlayScreen /></ShellGate>} />
-            {/* Live Match (1v1 realtime) on the shell — reskin over the existing
-                liveMatches backend; realtime/matchmaking/ELO unchanged. Live ELO
-                is ranked, so a full account is required. */}
-            <Route path="/v2/live-match" element={<ShellGate><FullAccountRoute><LiveMatchPlayScreen /></FullAccountRoute></ShellGate>} />
             {/* Public legal pages — no auth, no flag gate (launch/app-store
                 requirements; must render regardless of rollout state). */}
             <Route path="/privacy" element={<PrivacyScreen />} />
