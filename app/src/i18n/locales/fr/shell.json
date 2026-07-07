@@ -64,6 +64,7 @@
       "lockedInChip": "{{count}} acquis",
       "dueChip": "{{count}} à réviser aujourd'hui"
     },
+    "today": { "eyebrow": "Les jeux du jour — les mêmes pour tous" },
     "hooks": {
       "eyebrow": "Défis du jour · garde la série",
       "eyebrowShort": "Défis du jour",
