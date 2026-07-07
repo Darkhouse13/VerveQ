@@ -492,12 +492,12 @@ describe("Arena-only reachability of seeded CIE rows", () => {
 
 describe("Arena-only gating at the source level", () => {
   const convexDir = path.resolve(__dirname, "../../convex");
+  // liveMatches.ts left this list 2026-07 when the subsystem was purged.
   const nonArenaModules = [
     "quizSessions.ts",
     "blitz.ts",
     "dailyChallenge.ts",
     "duels.ts",
-    "liveMatches.ts",
   ];
 
   it("no non-arena selection module references the CIE sport or content module", () => {

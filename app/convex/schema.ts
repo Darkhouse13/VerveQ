@@ -626,46 +626,12 @@ export default defineSchema({
   // it had no writer anywhere and only a historical active-user counter read
   // it. Orphaned rows on old deployments can be purged from the dashboard.
 
-  // ── Live Head-to-Head ──
-  liveMatches: defineTable({
-    player1Id: v.id("users"),
-    player2Id: v.id("users"),
-    sport: v.string(),
-    mode: v.optional(v.string()),
-    status: v.union(
-      v.literal("waiting"),
-      v.literal("countdown"),
-      v.literal("question"),
-      v.literal("roundResult"),
-      v.literal("completed"),
-      v.literal("forfeited"),
-    ),
-    currentQuestion: v.number(),
-    totalQuestions: v.number(),
-    questions: v.any(),
-    player1Answers: v.any(),
-    player2Answers: v.any(),
-    player1Score: v.number(),
-    player2Score: v.number(),
-    player1Ready: v.boolean(),
-    player2Ready: v.boolean(),
-    player1LastSeen: v.number(),
-    player2LastSeen: v.number(),
-    winnerId: v.optional(v.id("users")),
-    countdownStartedAt: v.optional(v.number()),
-    questionStartedAt: v.optional(v.number()),
-    roundResultUntil: v.optional(v.number()),
-    createdAt: v.number(),
-    completedAt: v.optional(v.number()),
-    eloAppliedAt: v.optional(v.number()),
-    // Legacy fields from the removed challenge subsystem: old rows carry a
-    // history stamp and the originating challenge id (kept as a plain string
-    // since the challenges table is gone). No writers remain.
-    historyRecordedAt: v.optional(v.number()),
-    challengeId: v.optional(v.string()),
-  })
-    .index("by_player1", ["player1Id", "status"])
-    .index("by_player2", ["player2Id", "status"]),
+  // liveMatches (real-time 1v1 head-to-head) was removed 2026-07: the mode
+  // had been unstartable since the challenge subsystem went (PR #11), its
+  // frontend surfaces were deleted in PR #22, and this purge dropped the
+  // module, cron, ops counter, and table. Rows were emptied on both
+  // deployments before the schema change so the index deletions deploy clean;
+  // any lingering empty table shell is dashboard-deletable.
 
   // Challenge Arena
   arenas: defineTable({

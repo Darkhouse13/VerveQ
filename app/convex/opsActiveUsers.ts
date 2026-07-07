@@ -61,11 +61,8 @@ export const playedSince = internalQuery({
       add("duels", r.opponentId ?? null, r.opponentResult?.completedAt);
     }
 
-    for (const r of await ctx.db.query("liveMatches").collect()) {
-      const t = r.completedAt ?? r.createdAt;
-      add("liveMatches", r.player1Id, t);
-      add("liveMatches", r.player2Id, t);
-    }
+    // liveMatches was removed 2026-07 (subsystem purged; table dropped from
+    // the schema — orphaned rows are dashboard-purgeable).
 
     for (const r of await ctx.db.query("arenas").collect())
       for (const p of r.players)
