@@ -12,6 +12,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { bundle } from "@remotion/bundler";
 import { renderMedia, selectComposition } from "@remotion/renderer";
+import { buildCaption } from "./captions.mjs";
 
 const dir = path.dirname(fileURLToPath(import.meta.url));
 const DATASET = path.join(dir, "..", "..", "app", "convex", "data", "football_career_paths.json");
@@ -67,6 +68,10 @@ for (const e of picks) {
 }
 if (dry) process.exit(0);
 
+// Captions are fixed before rendering starts so a crash mid-batch still
+// leaves every finished MP4 with its caption file beside it.
+const captions = new Map(picks.map((e) => [e.id, buildCaption(e)]));
+
 mkdirSync(outDir, { recursive: true });
 
 console.log("\nBundling composition…");
@@ -96,11 +101,12 @@ for (const [i, entry] of picks.entries()) {
       }
     },
   });
+  writeFileSync(outputLocation.replace(/\.mp4$/, ".txt"), captions.get(entry.id));
   // Write the ledger after every video, not at the end — a crash mid-batch
   // must not cause already-rendered players to be picked again.
   ledger[entry.id] = today;
   writeFileSync(LEDGER, JSON.stringify(ledger, null, 2) + "\n");
-  console.log(`\n  → ${outputLocation}`);
+  console.log(`\n  → ${outputLocation} (+ caption .txt)`);
 }
 
 console.log(`\nDone. ${picks.length} video(s) in ${outDir}`);
