@@ -21,8 +21,11 @@ The first render downloads a headless Chrome build automatically (~1 min).
 npm run render -- --count 7 --difficulty easy
 ```
 
-Videos land in `out/<date>/`. Each rendered player id is recorded in
-`ledger.json` and never picked again — commit the ledger after each batch.
+Videos land in `out/<date>/`, each with a ready-to-paste `<id>.txt` caption
+beside it (spoiler-free hook + comment bait + hashtags, rotated per video —
+tweak freely, they're starting points; hook/tag pools live in
+`captions.mjs`). Each rendered player id is recorded in `ledger.json` and
+never picked again — commit the ledger after each batch.
 Start with `easy` (recognizable players = mass appeal); mix in `medium` once
 the account has an audience. `--dry` previews the picks without rendering,
 `--id cp-messi` renders a specific player (filename = answer, mind spoilers
@@ -34,9 +37,8 @@ when screen-sharing).
    Shorts.
 2. Add a trending sound **in the TikTok app** — never bake music into the
    render (native sounds help distribution and dodge licensing).
-3. Caption = a hook + 2–3 hashtags, e.g. *"Only real fans get this before
-   club 3 🔥 #football #quiz #careerpath"*. Reply to good comments — that's
-   the part you're already great at.
+3. Caption = paste the `<id>.txt` sitting next to the MP4. Reply to good
+   comments — that's the part you're already great at.
 
 ## Rules (deliberate, don't "fix")
 
