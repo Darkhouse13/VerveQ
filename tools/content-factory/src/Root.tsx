@@ -4,18 +4,22 @@ import { CareerPathReveal, CareerPathEntry } from "./CareerPathReveal";
 import { FPS, phases } from "./timing";
 
 // Studio preview default only — render.mjs injects the real entry per video.
+// A loan-heavy path so the LOAN badge is visible in the studio preview.
 const SAMPLE: CareerPathEntry = {
-  id: "cp-cristiano-ronaldo",
-  answerName: "Cristiano Ronaldo",
+  id: "cp-coutinho",
+  answerName: "Philippe Coutinho",
   clubs: [
-    "Sporting CP",
-    "Manchester United",
-    "Real Madrid",
-    "Juventus",
-    "Manchester United",
-    "Al-Nassr",
+    "Vasco da Gama",
+    "Inter Milan",
+    { name: "Espanyol", loan: true },
+    "Liverpool",
+    "Barcelona",
+    { name: "Bayern Munich", loan: true },
+    { name: "Aston Villa", loan: true },
+    "Al-Duhail",
+    "Vasco da Gama",
   ],
-  difficulty: "easy",
+  difficulty: "medium",
 };
 
 export const RemotionRoot: React.FC = () => (

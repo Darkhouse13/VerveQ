@@ -1076,7 +1076,13 @@ export default defineSchema({
     sport: v.string(),
     entryId: v.string(),
     answerName: v.string(),
-    clubs: v.array(v.string()),
+    // A club is a bare name (permanent spell) or { name, loan } for a loan.
+    clubs: v.array(
+      v.union(
+        v.string(),
+        v.object({ name: v.string(), loan: v.optional(v.boolean()) }),
+      ),
+    ),
     difficulty: v.string(),
     score: v.number(),
     status: v.union(

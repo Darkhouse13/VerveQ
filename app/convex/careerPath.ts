@@ -4,6 +4,7 @@ import { getAuthUserId } from "@convex-dev/auth/server";
 import { assertUsernameRequiredUser } from "./lib/authz";
 import { findBestMatch } from "./lib/fuzzy";
 import { incrementTotalGames } from "./lib/playCount";
+import type { CareerPathClub } from "./lib/careerPathClubs";
 import careerPathEntries from "./data/football_career_paths.json";
 
 /**
@@ -36,8 +37,11 @@ export interface CareerPathEntry {
   answerName: string;
   /** Extra gradeable names (nicknames, common short forms). */
   acceptedAnswers?: string[];
-  /** Chronological senior-career clubs — the question content. */
-  clubs: string[];
+  /**
+   * Chronological senior-career clubs — the question content. A club is a bare
+   * name for a permanent spell, or `{ name, loan: true }` for a loan spell.
+   */
+  clubs: CareerPathClub[];
   difficulty: string;
 }
 
