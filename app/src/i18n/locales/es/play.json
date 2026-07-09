@@ -168,6 +168,7 @@
     "subtitle": "Adivina el jugador por sus clubes",
     "guessMeta": "Intentos {{wrong}}/{{max}}",
     "clubsHeading": "Jugó en…",
+    "loan": "Cedido",
     "closeTryAgain": "¡Casi! Revisa la ortografía y reinténtalo",
     "previousGuesses": "Intentos anteriores",
     "points": "{{score}} pts",

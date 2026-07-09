@@ -31,6 +31,7 @@ import { SHELL_ROUTES } from "@/lib/shellRoutes";
 import { useAntiCheat } from "@/hooks/useAntiCheat";
 import { api } from "../../../../convex/_generated/api";
 import type { Id } from "../../../../convex/_generated/dataModel";
+import { clubName, clubIsLoan, type CareerPathClub } from "../../../../convex/lib/careerPathClubs";
 
 const SUPPORTED_CAREER_PATH_SPORTS = new Set(["football"]);
 const START_CHALLENGE_TIMEOUT_MS = 8000;
@@ -72,7 +73,7 @@ export default function CareerPathPlayScreen() {
 
   const [sessionId, setSessionId] = useState<Id<"careerPathSessions"> | null>(null);
   const [loading, setLoading] = useState(true);
-  const [clubs, setClubs] = useState<string[]>([]);
+  const [clubs, setClubs] = useState<CareerPathClub[]>([]);
   const [score, setScore] = useState(1000);
   const [difficulty, setDifficulty] = useState("");
   const [maxGuesses, setMaxGuesses] = useState(3);
@@ -286,17 +287,26 @@ export default function CareerPathPlayScreen() {
         <NeoCard color="blue" className="animate-slide-up">
           <p className="font-heading font-bold text-xs mb-3">{t("careerPath.clubsHeading")}</p>
           <div className="space-y-2">
-            {clubs.map((club, i) => (
-              <div key={`${club}-${i}`} className="flex items-center gap-3">
-                <div className="neo-border rounded-full bg-background w-8 h-8 flex items-center justify-center shrink-0">
-                  <span className="font-mono font-bold text-sm text-foreground">{i + 1}</span>
+            {clubs.map((club, i) => {
+              const name = clubName(club);
+              const loan = clubIsLoan(club);
+              return (
+                <div key={`${name}-${i}`} className="flex items-center gap-3">
+                  <div className="neo-border rounded-full bg-background w-8 h-8 flex items-center justify-center shrink-0">
+                    <span className="font-mono font-bold text-sm text-foreground">{i + 1}</span>
+                  </div>
+                  <div className="flex items-center gap-2 min-w-0">
+                    <Shirt size={14} className="shrink-0 opacity-70" />
+                    <p className="font-heading font-bold text-sm truncate">{name}</p>
+                    {loan && (
+                      <NeoBadge color="yellow" size="sm" className="shrink-0">
+                        {t("careerPath.loan")}
+                      </NeoBadge>
+                    )}
+                  </div>
                 </div>
-                <div className="flex items-center gap-2 min-w-0">
-                  <Shirt size={14} className="shrink-0 opacity-70" />
-                  <p className="font-heading font-bold text-sm truncate">{club}</p>
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </NeoCard>
 

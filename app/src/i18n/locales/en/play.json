@@ -168,6 +168,7 @@
     "subtitle": "Guess the player from his clubs",
     "guessMeta": "Guesses {{wrong}}/{{max}}",
     "clubsHeading": "He played for…",
+    "loan": "Loan",
     "closeTryAgain": "Close! Check your spelling and try again",
     "previousGuesses": "Previous guesses",
     "points": "{{score}} pts",

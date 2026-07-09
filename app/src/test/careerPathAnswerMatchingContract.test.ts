@@ -5,6 +5,7 @@ import {
   getCareerPathEntries,
   CAREER_PATH_MAX_GUESSES,
 } from "../../convex/careerPath";
+import { clubName, clubIsLoan } from "../../convex/lib/careerPathClubs";
 import { findBestMatch, getMaxFuzzyDistance } from "../../convex/lib/fuzzy";
 import { normalizeAnswer } from "../../convex/lib/scoring";
 
@@ -114,9 +115,26 @@ describe("career path content dataset", () => {
       expect(["easy", "medium", "hard"]).toContain(entry.difficulty);
       expect(entry.clubs.length).toBeGreaterThanOrEqual(2);
       for (const club of entry.clubs) {
-        expect(club.trim().length).toBeGreaterThan(0);
+        expect(clubName(club).trim().length).toBeGreaterThan(0);
       }
     }
+  });
+
+  it("marks loan spells as structured { name, loan: true } objects, never bare noise", () => {
+    let loanCount = 0;
+    for (const entry of entries) {
+      for (const club of entry.clubs) {
+        if (typeof club === "string") continue;
+        // Object form is reserved for loans — no bare-name objects, no loan:false.
+        expect(typeof club.name).toBe("string");
+        expect(club.name.trim().length).toBeGreaterThan(0);
+        expect(club.loan).toBe(true);
+        expect(clubIsLoan(club)).toBe(true);
+        loanCount++;
+      }
+    }
+    // The whole point of the structured shape: loans are actually represented.
+    expect(loanCount).toBeGreaterThan(0);
   });
 
   it("never carries nationality — the path is the only clue", () => {

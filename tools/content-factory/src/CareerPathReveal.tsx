@@ -10,7 +10,7 @@ import { loadFont as loadHeading } from "@remotion/google-fonts/SpaceGrotesk";
 import { loadFont as loadBody } from "@remotion/google-fonts/Inter";
 import { loadFont as loadMono } from "@remotion/google-fonts/JetBrainsMono";
 import { COLORS, DIFFICULTY_STYLE, neoShadow } from "./theme";
-import { phases } from "./timing";
+import { COUNTDOWN_FRAMES, clubAppearAt, phases } from "./timing";
 
 // latin-ext is non-negotiable: the dataset has Šeško, Çalhanoğlu, Gvardiol…
 const heading = loadHeading("normal", {
@@ -23,12 +23,21 @@ const body = loadBody("normal", {
 });
 const mono = loadMono("normal", { weights: ["700"], subsets: ["latin"] });
 
+// A club is a bare name (permanent spell) or { name, loan } for a loan spell.
+// Duplicated from app/convex/lib/careerPathClubs — the factory is a separate
+// project (same boundary as the theme-token duplication).
+export type CareerPathClub = string | { name: string; loan?: boolean };
 export type CareerPathEntry = {
   id: string;
   answerName: string;
-  clubs: string[];
+  clubs: CareerPathClub[];
   difficulty: "easy" | "medium" | "hard";
 };
+
+const clubName = (club: CareerPathClub): string =>
+  typeof club === "string" ? club : club.name;
+const clubIsLoan = (club: CareerPathClub): boolean =>
+  typeof club !== "string" && club.loan === true;
 
 export type CareerPathRevealProps = { entry: CareerPathEntry };
 
@@ -58,7 +67,14 @@ export const CareerPathReveal: React.FC<CareerPathRevealProps> = ({ entry }) => 
     spring({ frame: frame - start, fps, config: { damping }, durationInFrames: 24 });
 
   // ---- header (persistent until the CTA covers it) ----
-  const headerIn = pop(4);
+  // Frame 0 must already read as content — no fade-in from blank cream.
+  // The heading settles from a slight overscale instead of appearing.
+  const headerSettle = spring({
+    frame,
+    fps,
+    config: { damping: 14 },
+    durationInFrames: 18,
+  });
 
   // ---- club list geometry: up to 10 rows must fit between header and footer ----
   const n = entry.clubs.length;
@@ -69,10 +85,11 @@ export const CareerPathReveal: React.FC<CareerPathRevealProps> = ({ entry }) => 
   const clubFontSize = Math.min(48, Math.floor(cardH * 0.42));
 
   // ---- countdown ----
+  const perDigit = COUNTDOWN_FRAMES / 3;
   const inCountdown = frame >= p.clubsEnd && frame < p.countdownEnd;
-  const countIdx = Math.min(2, Math.floor((frame - p.clubsEnd) / 30));
+  const countIdx = Math.min(2, Math.floor((frame - p.clubsEnd) / perDigit));
   const countValue = 3 - countIdx;
-  const countPop = pop(p.clubsEnd + countIdx * 30, 10);
+  const countPop = pop(p.clubsEnd + countIdx * perDigit, 10);
 
   // ---- reveal ----
   const inReveal = frame >= p.countdownEnd;
@@ -114,47 +131,50 @@ export const CareerPathReveal: React.FC<CareerPathRevealProps> = ({ entry }) => 
       </div>
 
       {/* header */}
-      <div
-        style={{
-          position: "absolute",
-          top: 64,
-          left: 56,
-          right: 56,
-          transform: `translateY(${(1 - headerIn) * -60}px)`,
-          opacity: headerIn,
-        }}
-      >
+      <div style={{ position: "absolute", top: 64, left: 56, right: 56 }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           <span style={pillStyle(COLORS.orange, COLORS.white)}>CAREER PATH</span>
           <span style={pillStyle(diff.bg, diff.fg)}>{diff.label}</span>
         </div>
+        {/* the settle scales only the left-aligned text — the pills above must
+            stay pinned inside the frame on frame 0 */}
         <div
           style={{
-            fontFamily: heading.fontFamily,
-            fontWeight: 700,
-            fontSize: 92,
-            lineHeight: 1.02,
-            color: COLORS.ink,
-            marginTop: 36,
-            letterSpacing: -1,
+            transform: `scale(${1.08 - headerSettle * 0.08})`,
+            transformOrigin: "top left",
           }}
         >
-          NAME THE PLAYER
-        </div>
-        <div style={{ fontSize: 38, fontWeight: 500, color: COLORS.ink, marginTop: 12, opacity: 0.75 }}>
-          Every club of his career, in order.
+          <div
+            style={{
+              fontFamily: heading.fontFamily,
+              fontWeight: 700,
+              // double-digit club counts add a character; keep the overscaled
+              // frame-0 heading inside the safe area
+              fontSize: n >= 10 ? 84 : 92,
+              lineHeight: 1.02,
+              color: COLORS.ink,
+              marginTop: 36,
+              letterSpacing: -1,
+            }}
+          >
+            {n} CLUBS. 1 PLAYER.
+          </div>
+          <div style={{ fontSize: 38, fontWeight: 500, color: COLORS.ink, marginTop: 12, opacity: 0.75 }}>
+            Name him before the reveal.
+          </div>
         </div>
       </div>
 
       {/* club list */}
       <div style={{ position: "absolute", top: listTop, left: 56, right: 56 }}>
         {entry.clubs.map((club, i) => {
-          const appearAt = p.hookEnd + i * 42;
-          const s = pop(appearAt, 11);
+          const s = pop(clubAppearAt(i), 11);
           const tilt = i % 2 === 0 ? -1.2 : 1.2;
+          const name = clubName(club);
+          const loan = clubIsLoan(club);
           return (
             <div
-              key={`${club}-${i}`}
+              key={`${name}-${i}`}
               style={{
                 height: cardH,
                 marginBottom: rowH - cardH,
@@ -190,16 +210,36 @@ export const CareerPathReveal: React.FC<CareerPathRevealProps> = ({ entry }) => 
               >
                 {String(i + 1).padStart(2, "0")}
               </div>
-              <div
-                style={{
-                  fontFamily: heading.fontFamily,
-                  fontWeight: 700,
-                  fontSize: club.length > 20 ? clubFontSize * 0.82 : clubFontSize,
-                  color: COLORS.ink,
-                  whiteSpace: "nowrap",
-                }}
-              >
-                {club.toUpperCase()}
+              <div style={{ display: "flex", alignItems: "center", gap: 16, minWidth: 0 }}>
+                <div
+                  style={{
+                    fontFamily: heading.fontFamily,
+                    fontWeight: 700,
+                    fontSize: name.length > 20 ? clubFontSize * 0.82 : clubFontSize,
+                    color: COLORS.ink,
+                    whiteSpace: "nowrap",
+                  }}
+                >
+                  {name.toUpperCase()}
+                </div>
+                {loan ? (
+                  <div
+                    style={{
+                      flexShrink: 0,
+                      fontFamily: mono.fontFamily,
+                      fontWeight: 700,
+                      fontSize: clubFontSize * 0.42,
+                      letterSpacing: 2,
+                      color: COLORS.ink,
+                      background: COLORS.yellow,
+                      border: `3px solid ${COLORS.ink}`,
+                      borderRadius: 8,
+                      padding: "4px 14px",
+                    }}
+                  >
+                    LOAN
+                  </div>
+                ) : null}
               </div>
             </div>
           );
@@ -250,6 +290,16 @@ export const CareerPathReveal: React.FC<CareerPathRevealProps> = ({ entry }) => 
             >
               {countValue}
             </span>
+          </div>
+          <div
+            style={{
+              ...pillStyle(COLORS.pink, COLORS.white),
+              fontSize: 36,
+              marginTop: 80,
+              transform: "rotate(-1.5deg)",
+            }}
+          >
+            COMMENT YOUR ANSWER
           </div>
         </AbsoluteFill>
       ) : null}

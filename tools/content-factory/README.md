@@ -2,9 +2,11 @@
 
 Batch-renders short-form videos (TikTok / Instagram Reels / YouTube Shorts)
 from `app/convex/data/football_career_paths.json`. One template — **Career
-Path Reveal**: clubs slam in one by one, WHO IS HE?, 3-2-1, reveal, CTA to
-verveq.com. 1080×1920, ~17–25s depending on club count. No UI, no scheduler,
-no auto-posting — a render script.
+Path Reveal**: the hook ("7 CLUBS. 1 PLAYER.") is readable on frame 0 and the
+first club lands at 0.33s (retention lives or dies in the first 3 seconds),
+clubs slam in one by one, WHO IS HE?, 3-2-1, reveal, CTA to verveq.com.
+1080×1920, ~10–22s depending on club count. No UI, no scheduler, no
+auto-posting — a render script.
 
 ## One-time setup
 
