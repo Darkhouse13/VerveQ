@@ -1072,7 +1072,10 @@ export default defineSchema({
   // clubs so a mid-round content update can't reshuffle an active game.
   // answerName is server-only: careerPath.getSession strips it.
   careerPathSessions: defineTable({
-    userId: v.id("users"),
+    // Career Path is guest-playable: a session belongs to EITHER an auth user or
+    // an unauthenticated guest (identified by the hash of a client-held token).
+    userId: v.optional(v.id("users")),
+    guestTokenHash: v.optional(v.string()),
     sport: v.string(),
     entryId: v.string(),
     answerName: v.string(),

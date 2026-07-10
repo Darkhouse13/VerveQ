@@ -32,6 +32,8 @@ import { useAntiCheat } from "@/hooks/useAntiCheat";
 import { api } from "../../../../convex/_generated/api";
 import type { Id } from "../../../../convex/_generated/dataModel";
 import { clubsForDisplay, type CareerPathClub } from "../../../../convex/lib/careerPathClubs";
+import { getOrCreateCareerPathGuestToken } from "@/lib/careerPathGuest";
+import { useAuth } from "@/contexts/AuthContext";
 
 const SUPPORTED_CAREER_PATH_SPORTS = new Set(["football"]);
 const START_CHALLENGE_TIMEOUT_MS = 8000;
@@ -70,6 +72,11 @@ export default function CareerPathPlayScreen() {
   const startChallengeMut = useMutation(api.careerPath.startChallenge);
   const submitGuessMut = useMutation(api.careerPath.submitGuess);
   const penalizeTabSwitchMut = useMutation(api.careerPath.penalizeTabSwitch);
+
+  // Zero-login play: a stable guest token identifies logged-out players. The
+  // server prefers the auth user when present and ignores the token then.
+  const [guestToken] = useState(getOrCreateCareerPathGuestToken);
+  const { hasUsername } = useAuth();
 
   const [sessionId, setSessionId] = useState<Id<"careerPathSessions"> | null>(null);
   const [loading, setLoading] = useState(true);
@@ -115,7 +122,10 @@ export default function CareerPathPlayScreen() {
     }
 
     try {
-      const res = await withTimeout(startChallengeMut({ sport }), START_CHALLENGE_TIMEOUT_MS);
+      const res = await withTimeout(
+        startChallengeMut({ sport, guestToken }),
+        START_CHALLENGE_TIMEOUT_MS,
+      );
       setSessionId(res.sessionId);
       setClubs(res.clubs);
       setScore(res.score);
@@ -139,7 +149,7 @@ export default function CareerPathPlayScreen() {
     } finally {
       setLoading(false);
     }
-  }, [startChallengeMut, sport, t]);
+  }, [startChallengeMut, sport, guestToken, t]);
 
   useEffect(() => {
     startGame();
@@ -148,7 +158,7 @@ export default function CareerPathPlayScreen() {
   useAntiCheat(
     useCallback(() => {
       if (!sessionId || gameOver || loading || startupState) return;
-      penalizeTabSwitchMut({ sessionId }).then((res) => {
+      penalizeTabSwitchMut({ sessionId, guestToken }).then((res) => {
         if (res.penalized) {
           setScore(res.score);
           setResult({ correct: false, score: res.score });
@@ -156,7 +166,7 @@ export default function CareerPathPlayScreen() {
           toast.error(t("careerPath.tabSwitchEnded"));
         }
       });
-    }, [sessionId, gameOver, loading, startupState, penalizeTabSwitchMut, t]),
+    }, [sessionId, gameOver, loading, startupState, penalizeTabSwitchMut, guestToken, t]),
     { warningMessage: t("careerPath.tabSwitchWarning") },
   );
 
@@ -165,7 +175,7 @@ export default function CareerPathPlayScreen() {
     if (!sessionId || !submittedGuess || submitting || gameOver) return;
     setSubmitting(true);
     try {
-      const res = await submitGuessMut({ sessionId, guess: submittedGuess });
+      const res = await submitGuessMut({ sessionId, guess: submittedGuess, guestToken });
 
       if (res.closeCall) {
         setScore(res.score);
@@ -391,6 +401,28 @@ export default function CareerPathPlayScreen() {
               <p className="font-mono font-bold text-3xl mt-2">{result.score}</p>
               <p className="text-xs opacity-80 mt-1">{t("careerPath.pointsEarned")}</p>
             </NeoCard>
+            {/* Guests played with zero friction — invite (never force) an account. */}
+            {!hasUsername && (
+              <NeoCard color="default" className="text-center py-3 px-4">
+                <p className="font-body text-xs text-muted-foreground">
+                  {t("careerPath.guestNudge")}
+                </p>
+                <NeoButton
+                  variant="secondary"
+                  size="sm"
+                  className="mt-2"
+                  onClick={() =>
+                    navigate(
+                      `${SHELL_ROUTES.account}?next=${encodeURIComponent(
+                        `${SHELL_ROUTES.careerPathPlay}?sport=football`,
+                      )}`,
+                    )
+                  }
+                >
+                  {t("careerPath.guestNudgeCta")}
+                </NeoButton>
+              </NeoCard>
+            )}
             <div className="grid grid-cols-2 gap-3">
               <NeoButton variant="primary" size="lg" onClick={startGame}>
                 {t("careerPath.nextPlayer")}

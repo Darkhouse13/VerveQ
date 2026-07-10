@@ -170,6 +170,8 @@
     "clubsHeading": "Il a joué pour…",
     "loan": "Prêt",
     "moreClubs": "+{{count}} autres clubs",
+    "guestNudge": "Vous jouez en invité — votre progression ne sera pas sauvegardée.",
+    "guestNudgeCta": "Créer un compte gratuit",
     "closeTryAgain": "Proche ! Vérifie l'orthographe et réessaie",
     "previousGuesses": "Essais précédents",
     "points": "{{score}} pts",

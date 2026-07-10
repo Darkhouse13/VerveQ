@@ -1,7 +1,8 @@
 import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
+import type { Id } from "./_generated/dataModel";
+import type { QueryCtx, MutationCtx } from "./_generated/server";
 import { getAuthUserId } from "@convex-dev/auth/server";
-import { assertUsernameRequiredUser } from "./lib/authz";
 import { findBestMatch } from "./lib/fuzzy";
 import { incrementTotalGames } from "./lib/playCount";
 import type { CareerPathClub } from "./lib/careerPathClubs";
@@ -14,10 +15,69 @@ import careerPathEntries from "./data/football_career_paths.json";
  * search): the player types a name and the server grades it with the shared
  * length-scaled fuzzy matcher (lib/fuzzy), so honest typos still land.
  *
+ * GUEST-PLAYABLE with zero friction: this is the mode we market, so a logged-out
+ * visitor can play immediately. Identity is either an auth userId OR an
+ * unauthenticated `guestToken` (a client secret in localStorage; the server
+ * stores only its hash), mirroring the duel-share-link guest model. Grading
+ * still happens entirely server-side, so the answer never leaves the server.
+ *
  * Content ships in-bundle (data/football_career_paths.json) — curated club
  * paths are proper nouns, so unlike Who Am I's prose clues they need no
  * translation overlay, no external pipeline, and no seeded content table.
  */
+
+// FNV-style string hash (mirrors duels.ts / challengeArenas.ts) — the raw guest
+// token is never persisted, only this hash, so a DB leak can't replay sessions.
+function hashString(value: string): string {
+  let h1 = 0xdeadbeef;
+  let h2 = 0x41c6ce57;
+  for (let i = 0; i < value.length; i += 1) {
+    const ch = value.charCodeAt(i);
+    h1 = Math.imul(h1 ^ ch, 2654435761);
+    h2 = Math.imul(h2 ^ ch, 1597334677);
+  }
+  h1 = Math.imul(h1 ^ (h1 >>> 16), 2246822507);
+  h1 ^= Math.imul(h2 ^ (h2 >>> 13), 3266489909);
+  h2 = Math.imul(h2 ^ (h2 >>> 16), 2246822507);
+  h2 ^= Math.imul(h1 ^ (h1 >>> 13), 3266489909);
+  return `${(h2 >>> 0).toString(16).padStart(8, "0")}${(h1 >>> 0)
+    .toString(16)
+    .padStart(8, "0")}`;
+}
+
+export function guestTokenHash(token: string): string {
+  const trimmed = token.trim();
+  if (trimmed.length < 16) {
+    throw new Error("Career Path guest token must be at least 16 characters");
+  }
+  return hashString(`career-path-guest:${trimmed}`);
+}
+
+/**
+ * Resolve who is playing. Prefer the authenticated user; otherwise fall back to
+ * the guest token. Throws only if the caller is neither authed nor a guest.
+ */
+async function resolveActor(
+  ctx: QueryCtx | MutationCtx,
+  guestToken: string | undefined,
+): Promise<{ userId: Id<"users"> | null; guestHash: string | null }> {
+  const userId = await getAuthUserId(ctx);
+  if (userId) return { userId, guestHash: null };
+  if (guestToken && guestToken.trim().length >= 16) {
+    return { userId: null, guestHash: guestTokenHash(guestToken) };
+  }
+  return { userId: null, guestHash: null };
+}
+
+/** A session belongs to the caller if the auth user OR the guest hash matches. */
+function ownsSession(
+  session: { userId?: Id<"users">; guestTokenHash?: string },
+  actor: { userId: Id<"users"> | null; guestHash: string | null },
+): boolean {
+  if (session.userId) return actor.userId === session.userId;
+  if (session.guestTokenHash) return actor.guestHash === session.guestTokenHash;
+  return false;
+}
 
 const SESSION_TTL_MS = 60 * 60 * 1000; // 1 hour
 const BASE_SCORE = 1000;
@@ -100,11 +160,14 @@ export const startChallenge = mutation({
   args: {
     sport: v.string(),
     difficulty: v.optional(v.string()),
+    guestToken: v.optional(v.string()),
   },
-  handler: async (ctx, { sport, difficulty }) => {
-    const userId = await getAuthUserId(ctx);
-    if (!userId) throw new Error("Not authenticated");
-    await assertUsernameRequiredUser(ctx, userId);
+  handler: async (ctx, { sport, difficulty, guestToken }) => {
+    const actor = await resolveActor(ctx, guestToken);
+    if (!actor.userId && !actor.guestHash) {
+      // Logged out and no usable guest token — the client always supplies one.
+      throw new Error("A guest token is required to play as a guest");
+    }
 
     if (sport !== CAREER_PATH_SPORT) {
       throw new Error("Career Path is not available for this sport");
@@ -133,7 +196,8 @@ export const startChallenge = mutation({
     const entry = entries[Math.floor(Math.random() * entries.length)];
 
     const sessionId = await ctx.db.insert("careerPathSessions", {
-      userId,
+      ...(actor.userId ? { userId: actor.userId } : {}),
+      ...(actor.guestHash ? { guestTokenHash: actor.guestHash } : {}),
       sport,
       entryId: entry.id,
       answerName: entry.answerName,
@@ -186,13 +250,13 @@ export const submitGuess = mutation({
   args: {
     sessionId: v.id("careerPathSessions"),
     guess: v.string(),
+    guestToken: v.optional(v.string()),
   },
-  handler: async (ctx, { sessionId, guess }): Promise<SubmitGuessResult> => {
-    const userId = await getAuthUserId(ctx);
-    if (!userId) throw new Error("Not authenticated");
+  handler: async (ctx, { sessionId, guess, guestToken }): Promise<SubmitGuessResult> => {
+    const actor = await resolveActor(ctx, guestToken);
     const session = await ctx.db.get(sessionId);
     if (!session) throw new Error("Session not found");
-    if (session.userId !== userId) {
+    if (!ownsSession(session, actor)) {
       throw new Error("Not authorized");
     }
     if (session.status !== "active") throw new Error("Game is not active");
@@ -208,7 +272,7 @@ export const submitGuess = mutation({
     );
 
     if (result.matched) {
-      await incrementTotalGames(ctx, userId);
+      if (actor.userId) await incrementTotalGames(ctx, actor.userId);
       await ctx.db.patch(sessionId, { status: "correct" });
       return {
         correct: true,
@@ -264,8 +328,8 @@ export const submitGuess = mutation({
       },
     ];
 
-    if (gameOver) {
-      await incrementTotalGames(ctx, userId);
+    if (gameOver && actor.userId) {
+      await incrementTotalGames(ctx, actor.userId);
     }
     await ctx.db.patch(sessionId, {
       status: gameOver ? "failed" : "active",
@@ -288,13 +352,15 @@ export const submitGuess = mutation({
 });
 
 export const penalizeTabSwitch = mutation({
-  args: { sessionId: v.id("careerPathSessions") },
-  handler: async (ctx, { sessionId }) => {
-    const userId = await getAuthUserId(ctx);
-    if (!userId) throw new Error("Not authenticated");
+  args: {
+    sessionId: v.id("careerPathSessions"),
+    guestToken: v.optional(v.string()),
+  },
+  handler: async (ctx, { sessionId, guestToken }) => {
+    const actor = await resolveActor(ctx, guestToken);
     const session = await ctx.db.get(sessionId);
     if (!session) throw new Error("Session not found");
-    if (session.userId !== userId) {
+    if (!ownsSession(session, actor)) {
       throw new Error("Not authorized");
     }
     if (session.status !== "active") {
@@ -309,13 +375,13 @@ export const penalizeTabSwitch = mutation({
 export const getSession = query({
   args: {
     sessionId: v.id("careerPathSessions"),
+    guestToken: v.optional(v.string()),
   },
-  handler: async (ctx, { sessionId }) => {
-    const userId = await getAuthUserId(ctx);
-    if (!userId) return null;
+  handler: async (ctx, { sessionId, guestToken }) => {
+    const actor = await resolveActor(ctx, guestToken);
     const session = await ctx.db.get(sessionId);
     if (!session) return null;
-    if (session.userId !== userId) return null;
+    if (!ownsSession(session, actor)) return null;
 
     // answerName NEVER leaves the server through this query — reveals happen
     // only through submitGuess's terminal responses.

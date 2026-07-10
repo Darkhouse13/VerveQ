@@ -218,6 +218,47 @@ describe("Area 2 — Curated getSession queries reject non-owners", () => {
     expect(res).toBeNull();
   });
 
+  it("careerPath.getSession authorizes a guest by matching token, rejects others", async () => {
+    authMock.getAuthUserId.mockResolvedValue(null); // logged-out guest
+    const token = "guesttoken-abcdef123456"; // >= 16 chars
+    const ctx = {
+      db: {
+        get: async () => ({
+          _id: "cp_2",
+          guestTokenHash: careerPath.guestTokenHash(token),
+          sport: "football",
+          entryId: "cp-henry",
+          answerName: "Thierry Henry",
+          clubs: ["Monaco", "Arsenal"],
+          difficulty: "easy",
+          score: 1000,
+          status: "active",
+          expiresAt: Date.now() + 60_000,
+          closeCallCount: 0,
+          guesses: [],
+          maxGuesses: 3,
+          wrongGuessCount: 0,
+        }),
+      },
+    };
+    const owned = (await handlerOf(careerPath.getSession)(ctx, {
+      sessionId: "cp_2",
+      guestToken: token,
+    })) as Record<string, unknown> | null;
+    expect(owned).not.toBeNull();
+    expect(owned).not.toHaveProperty("answerName");
+    expect(owned!.clubs).toEqual(["Monaco", "Arsenal"]);
+
+    const wrong = await handlerOf(careerPath.getSession)(ctx, {
+      sessionId: "cp_2",
+      guestToken: "wrongtoken-000000000000",
+    });
+    expect(wrong).toBeNull();
+
+    const none = await handlerOf(careerPath.getSession)(ctx, { sessionId: "cp_2" });
+    expect(none).toBeNull();
+  });
+
   it("higherLower.getSession returns null for unauthenticated callers", async () => {
     authMock.getAuthUserId.mockResolvedValue(null);
     const ctx = { db: { get: async () => ({ userId: "userA" }) } };
