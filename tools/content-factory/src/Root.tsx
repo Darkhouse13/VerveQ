@@ -1,6 +1,6 @@
 import React from "react";
 import { Composition } from "remotion";
-import { CareerPathReveal, CareerPathEntry } from "./CareerPathReveal";
+import { CareerPathReveal, CareerPathEntry, clubsForDisplay } from "./CareerPathReveal";
 import { FPS, phases } from "./timing";
 
 // Studio preview default only — render.mjs injects the real entry per video.
@@ -29,10 +29,10 @@ export const RemotionRoot: React.FC = () => (
     fps={FPS}
     width={1080}
     height={1920}
-    durationInFrames={phases(SAMPLE.clubs.length).total}
+    durationInFrames={phases(clubsForDisplay(SAMPLE.clubs).length).total}
     defaultProps={{ entry: SAMPLE }}
     calculateMetadata={({ props }) => ({
-      durationInFrames: phases(props.entry.clubs.length).total,
+      durationInFrames: phases(clubsForDisplay(props.entry.clubs).length).total,
     })}
   />
 );

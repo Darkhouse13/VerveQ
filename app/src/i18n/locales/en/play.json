@@ -169,6 +169,7 @@
     "guessMeta": "Guesses {{wrong}}/{{max}}",
     "clubsHeading": "He played for…",
     "loan": "Loan",
+    "moreClubs": "+{{count}} more clubs",
     "closeTryAgain": "Close! Check your spelling and try again",
     "previousGuesses": "Previous guesses",
     "points": "{{score}} pts",

@@ -169,6 +169,7 @@
     "guessMeta": "Intentos {{wrong}}/{{max}}",
     "clubsHeading": "Jugó en…",
     "loan": "Cedido",
+    "moreClubs": "+{{count}} clubes más",
     "closeTryAgain": "¡Casi! Revisa la ortografía y reinténtalo",
     "previousGuesses": "Intentos anteriores",
     "points": "{{score}} pts",
