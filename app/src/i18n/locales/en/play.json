@@ -170,6 +170,8 @@
     "clubsHeading": "He played for…",
     "loan": "Loan",
     "moreClubs": "+{{count}} more clubs",
+    "guestNudge": "Playing as guest — your progress won’t be saved.",
+    "guestNudgeCta": "Create a free account",
     "closeTryAgain": "Close! Check your spelling and try again",
     "previousGuesses": "Previous guesses",
     "points": "{{score}} pts",

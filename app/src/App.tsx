@@ -485,7 +485,10 @@ const AppRoutes = () => (
             {/* Casual/social: username-only playable. */}
             <Route path="/v2/blitz" element={<ShellGate><UsernameOnlyRoute><BlitzPlayScreen /></UsernameOnlyRoute></ShellGate>} />
             <Route path="/v2/higher-lower" element={<ShellGate><UsernameOnlyRoute><HigherLowerPlayScreen /></UsernameOnlyRoute></ShellGate>} />
-            <Route path="/v2/career-path" element={<ShellGate><UsernameOnlyRoute><CareerPathPlayScreen /></UsernameOnlyRoute></ShellGate>} />
+            {/* Career Path is the marketed mode: GUEST-PLAYABLE with zero login.
+                No route guard — a logged-out visitor plays instantly via a client
+                guestToken (careerPath.ts accepts unauthenticated guests). */}
+            <Route path="/v2/career-path" element={<ShellGate><CareerPathPlayScreen /></ShellGate>} />
             <Route path="/v2/verve-grid" element={<ShellGate><UsernameOnlyRoute><VerveGridPlayScreen /></UsernameOnlyRoute></ShellGate>} />
             {/* Daily reuses the migrated Quiz view but runs the DAILY session.
                 Username tier (anonymous OK): the daily is the habit loop, so a

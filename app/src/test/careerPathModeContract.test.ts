@@ -68,6 +68,25 @@ describe("career path offers no autocomplete help", () => {
   });
 });
 
+describe("career path is guest-playable (zero login)", () => {
+  const app = read("src/App.tsx");
+  const backend = read("convex/careerPath.ts");
+
+  it("routes career path publicly — no username/account guard", () => {
+    // The marketed mode: a logged-out visitor plays instantly.
+    expect(app).toContain("<ShellGate><CareerPathPlayScreen /></ShellGate>");
+    expect(app).not.toMatch(/<UsernameOnlyRoute>\s*<CareerPathPlayScreen/);
+  });
+
+  it("the backend no longer requires a username and accepts a guest token", () => {
+    expect(backend).not.toContain("assertUsernameRequiredUser");
+    expect(backend).toContain("guestToken");
+    expect(backend).toContain("guestTokenHash");
+    // Guests have no user record, so play-count writes must be user-gated.
+    expect(backend).toContain("if (actor.userId) await incrementTotalGames");
+  });
+});
+
 describe("who am i stays removed", () => {
   it("has no whoAmI source files left", () => {
     const walk = (dir: string): string[] =>
