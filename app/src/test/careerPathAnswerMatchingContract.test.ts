@@ -5,7 +5,12 @@ import {
   getCareerPathEntries,
   CAREER_PATH_MAX_GUESSES,
 } from "../../convex/careerPath";
-import { clubName, clubIsLoan } from "../../convex/lib/careerPathClubs";
+import {
+  clubName,
+  clubIsLoan,
+  clubsForDisplay,
+  CAREER_PATH_MAX_DISPLAY_CLUBS,
+} from "../../convex/lib/careerPathClubs";
 import { findBestMatch, getMaxFuzzyDistance } from "../../convex/lib/fuzzy";
 import { normalizeAnswer } from "../../convex/lib/scoring";
 
@@ -157,5 +162,40 @@ describe("career path content dataset", () => {
 
   it("keeps the guess economy at three attempts", () => {
     expect(CAREER_PATH_MAX_GUESSES).toBe(3);
+  });
+});
+
+describe("clubsForDisplay condenses only very long paths", () => {
+  it("passes short/normal paths through unchanged with 1-based positions", () => {
+    const clubs = ["Ajax", { name: "PSV", loan: true }, "Barcelona"];
+    const rows = clubsForDisplay(clubs);
+    expect(rows).toHaveLength(3);
+    expect(rows.every((r) => r.kind === "club")).toBe(true);
+    expect(rows.map((r) => (r.kind === "club" ? r.position : 0))).toEqual([1, 2, 3]);
+    expect(rows[1]).toMatchObject({ kind: "club", name: "PSV", loan: true, position: 2 });
+  });
+
+  it("condenses an over-long path to head + gap + tail with a truthful hidden count", () => {
+    const clubs = Array.from({ length: 20 }, (_, i) => `Club ${i + 1}`);
+    const rows = clubsForDisplay(clubs);
+    expect(rows).toHaveLength(CAREER_PATH_MAX_DISPLAY_CLUBS);
+    const gaps = rows.filter((r) => r.kind === "gap");
+    expect(gaps).toHaveLength(1);
+    const clubRows = rows.filter((r) => r.kind === "club");
+    // head 6 + tail 5 = 11 real clubs shown, 1 gap row
+    expect(clubRows).toHaveLength(CAREER_PATH_MAX_DISPLAY_CLUBS - 1);
+    const positions = clubRows.map((r) => (r.kind === "club" ? r.position : 0));
+    expect(positions).toEqual([1, 2, 3, 4, 5, 6, 16, 17, 18, 19, 20]);
+    // hidden = total - shown; every real spell is accounted for (nothing lost, just not drawn)
+    const hidden = gaps[0].kind === "gap" ? gaps[0].hidden : 0;
+    expect(hidden).toBe(clubs.length - (CAREER_PATH_MAX_DISPLAY_CLUBS - 1));
+    expect(clubRows.length + hidden).toBe(clubs.length);
+  });
+
+  it("never condenses at exactly the cap", () => {
+    const clubs = Array.from({ length: CAREER_PATH_MAX_DISPLAY_CLUBS }, (_, i) => `C${i}`);
+    const rows = clubsForDisplay(clubs);
+    expect(rows).toHaveLength(CAREER_PATH_MAX_DISPLAY_CLUBS);
+    expect(rows.some((r) => r.kind === "gap")).toBe(false);
   });
 });

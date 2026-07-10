@@ -39,6 +39,33 @@ const clubName = (club: CareerPathClub): string =>
 const clubIsLoan = (club: CareerPathClub): boolean =>
   typeof club !== "string" && club.loan === true;
 
+// Condense enormous paths (Abreu 37, Túlio 39) so rows stay legible in a
+// vertical video. Display only — mirrors app/convex/lib/careerPathClubs.
+export const MAX_DISPLAY_CLUBS = 12;
+export type ClubRow =
+  | { kind: "club"; name: string; loan: boolean; position: number }
+  | { kind: "gap"; hidden: number };
+export const clubsForDisplay = (
+  clubs: CareerPathClub[],
+  max = MAX_DISPLAY_CLUBS,
+): ClubRow[] => {
+  const row = (club: CareerPathClub, index: number): ClubRow => ({
+    kind: "club",
+    name: clubName(club),
+    loan: clubIsLoan(club),
+    position: index + 1,
+  });
+  if (clubs.length <= max) return clubs.map(row);
+  const shown = max - 1;
+  const head = Math.ceil(shown / 2);
+  const tail = shown - head;
+  const rows: ClubRow[] = clubs.slice(0, head).map(row);
+  rows.push({ kind: "gap", hidden: clubs.length - head - tail });
+  const tailStart = clubs.length - tail;
+  clubs.slice(tailStart).forEach((club, i) => rows.push(row(club, tailStart + i)));
+  return rows;
+};
+
 export type CareerPathRevealProps = { entry: CareerPathEntry };
 
 const W = 1080;
@@ -60,7 +87,8 @@ const pillStyle = (bg: string, fg: string): React.CSSProperties => ({
 export const CareerPathReveal: React.FC<CareerPathRevealProps> = ({ entry }) => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
-  const p = phases(entry.clubs.length);
+  const rows = clubsForDisplay(entry.clubs);
+  const p = phases(rows.length);
   const diff = DIFFICULTY_STYLE[entry.difficulty] ?? DIFFICULTY_STYLE.medium;
 
   const pop = (start: number, damping = 12) =>
@@ -76,8 +104,8 @@ export const CareerPathReveal: React.FC<CareerPathRevealProps> = ({ entry }) => 
     durationInFrames: 18,
   });
 
-  // ---- club list geometry: up to 10 rows must fit between header and footer ----
-  const n = entry.clubs.length;
+  // ---- club list geometry: up to MAX_DISPLAY_CLUBS rows fit between header/footer ----
+  const n = rows.length;
   const listTop = 400;
   const listHeight = 1360;
   const rowH = Math.min(140, Math.floor(listHeight / n));
@@ -167,14 +195,37 @@ export const CareerPathReveal: React.FC<CareerPathRevealProps> = ({ entry }) => 
 
       {/* club list */}
       <div style={{ position: "absolute", top: listTop, left: 56, right: 56 }}>
-        {entry.clubs.map((club, i) => {
+        {rows.map((r, i) => {
           const s = pop(clubAppearAt(i), 11);
           const tilt = i % 2 === 0 ? -1.2 : 1.2;
-          const name = clubName(club);
-          const loan = clubIsLoan(club);
+          if (r.kind === "gap") {
+            return (
+              <div
+                key={`gap-${i}`}
+                style={{
+                  height: cardH,
+                  marginBottom: rowH - cardH,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  opacity: s,
+                  transform: `scale(${0.7 + s * 0.3})`,
+                  fontFamily: mono.fontFamily,
+                  fontWeight: 700,
+                  fontSize: clubFontSize * 0.62,
+                  letterSpacing: 3,
+                  color: COLORS.ink,
+                }}
+              >
+                + {r.hidden} MORE CLUBS
+              </div>
+            );
+          }
+          const name = r.name;
+          const loan = r.loan;
           return (
             <div
-              key={`${name}-${i}`}
+              key={`${name}-${r.position}`}
               style={{
                 height: cardH,
                 marginBottom: rowH - cardH,
@@ -208,7 +259,7 @@ export const CareerPathReveal: React.FC<CareerPathRevealProps> = ({ entry }) => 
                   fontSize: clubFontSize * 0.8,
                 }}
               >
-                {String(i + 1).padStart(2, "0")}
+                {String(r.position).padStart(2, "0")}
               </div>
               <div style={{ display: "flex", alignItems: "center", gap: 16, minWidth: 0 }}>
                 <div

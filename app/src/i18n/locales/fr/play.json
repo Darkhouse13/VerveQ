@@ -169,6 +169,7 @@
     "guessMeta": "Essais {{wrong}}/{{max}}",
     "clubsHeading": "Il a joué pour…",
     "loan": "Prêt",
+    "moreClubs": "+{{count}} autres clubs",
     "closeTryAgain": "Proche ! Vérifie l'orthographe et réessaie",
     "previousGuesses": "Essais précédents",
     "points": "{{score}} pts",
