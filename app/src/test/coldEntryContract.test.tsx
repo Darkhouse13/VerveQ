@@ -166,4 +166,15 @@ describe("cold-entry landing", () => {
     fireEvent.click(screen.getByText("landing.signIn"));
     expect(navigateSpy).toHaveBeenLastCalledWith("/?mode=signin");
   });
+
+  it("the result card cross-sells Career Path with taste attribution", () => {
+    renderColdEntry();
+    fireEvent.click(screen.getByText("landing.play"));
+    playThroughRound();
+
+    // Guest-playable marketed mode — the hop carries ?ref=taste so it stays
+    // separable from promo/short-link traffic in funnel.careerPathMetrics.
+    fireEvent.click(screen.getByText("landing.careerPathCta"));
+    expect(navigateSpy).toHaveBeenLastCalledWith("/v2/career-path?ref=taste");
+  });
 });

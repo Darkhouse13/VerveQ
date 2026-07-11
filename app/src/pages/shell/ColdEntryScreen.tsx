@@ -7,7 +7,9 @@
  * questions, client scoring, no Convex session, no signup wall). Only AFTER
  * the round do we ask for anything: the claim card mirrors the duel
  * guest-claim pattern and routes into the existing `/v2/welcome` username-only
- * onboarding. "Maybe later" keeps them playing fresh rounds.
+ * onboarding. "Maybe later" keeps them playing fresh rounds, and the result
+ * card cross-sells Career Path (the guest-playable marketed mode) with
+ * `?ref=taste` so those hops stay visible in funnel.careerPathMetrics.
  *
  * Reached ONLY from `EntryRoute` when the account state is logged out — the
  * signed-in path, the duel share-link path (`/duel/:linkCode`), and the auth
@@ -284,6 +286,15 @@ export default function ColdEntryScreen() {
         <div className="w-full mt-6 space-y-3">
           <NeoButton variant="primary" size="full" onClick={goClaim}>
             {t("landing.claimCta")}
+          </NeoButton>
+          {/* Cross-sell the marketed mode — guest-playable, so this never
+              hits a login wall. ?ref=taste keeps the hop attributable. */}
+          <NeoButton
+            variant="secondary"
+            size="full"
+            onClick={() => navigate(`${SHELL_ROUTES.careerPathPlay}?ref=taste`)}
+          >
+            {t("landing.careerPathCta")}
           </NeoButton>
           <NeoButton variant="ghost" size="full" onClick={startRound}>
             {t("landing.maybeLater")}

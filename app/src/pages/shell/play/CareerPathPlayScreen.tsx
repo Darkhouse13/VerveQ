@@ -33,6 +33,10 @@ import { api } from "../../../../convex/_generated/api";
 import type { Id } from "../../../../convex/_generated/dataModel";
 import { clubsForDisplay, type CareerPathClub } from "../../../../convex/lib/careerPathClubs";
 import { getOrCreateCareerPathGuestToken } from "@/lib/careerPathGuest";
+import {
+  getOrCreateColdSessionToken,
+  readColdSource,
+} from "@/lib/coldSession";
 import { useAuth } from "@/contexts/AuthContext";
 
 const SUPPORTED_CAREER_PATH_SPORTS = new Set(["football"]);
@@ -72,6 +76,7 @@ export default function CareerPathPlayScreen() {
   const startChallengeMut = useMutation(api.careerPath.startChallenge);
   const submitGuessMut = useMutation(api.careerPath.submitGuess);
   const penalizeTabSwitchMut = useMutation(api.careerPath.penalizeTabSwitch);
+  const recordCareerPathEvent = useMutation(api.funnel.recordCareerPathEvent);
 
   // Zero-login play: a stable guest token identifies logged-out players. The
   // server prefers the auth user when present and ignores the token then.
@@ -105,6 +110,13 @@ export default function CareerPathPlayScreen() {
   const inputRef = useRef<HTMLInputElement>(null);
   const trimmedGuess = guess.trim();
 
+  // Top-of-funnel instrumentation, mirroring ColdEntryScreen's taste round:
+  // fired at most once per mount via these refs, deduped once-per-visitor on
+  // the server (funnel.recordCareerPathEvent). Best-effort — a failed call
+  // must never block or break play.
+  const funnelStartedFired = useRef(false);
+  const funnelCompletedFired = useRef(false);
+
   const startGame = useCallback(async () => {
     setLoading(true);
     setStartupState(null);
@@ -126,6 +138,17 @@ export default function CareerPathPlayScreen() {
         startChallengeMut({ sport, guestToken }),
         START_CHALLENGE_TIMEOUT_MS,
       );
+      if (!funnelStartedFired.current) {
+        funnelStartedFired.current = true;
+        // Source comes off this route's own URL (?ref / ?utm_source) — the
+        // /play short link and promo bio links land here directly.
+        const source = readColdSource();
+        void recordCareerPathEvent({
+          sessionToken: getOrCreateColdSessionToken(),
+          stage: "started",
+          ...(source ? { source } : {}),
+        }).catch(() => {});
+      }
       setSessionId(res.sessionId);
       setClubs(res.clubs);
       setScore(res.score);
@@ -149,11 +172,22 @@ export default function CareerPathPlayScreen() {
     } finally {
       setLoading(false);
     }
-  }, [startChallengeMut, sport, guestToken, t]);
+  }, [startChallengeMut, recordCareerPathEvent, sport, guestToken, t]);
 
   useEffect(() => {
     startGame();
   }, [startGame]);
+
+  // First finished round = the funnel "completed" (the result card, win or
+  // lose, is the payoff the promo promised). Once per mount; server dedupes.
+  useEffect(() => {
+    if (!gameOver || !result || funnelCompletedFired.current) return;
+    funnelCompletedFired.current = true;
+    void recordCareerPathEvent({
+      sessionToken: getOrCreateColdSessionToken(),
+      stage: "completed",
+    }).catch(() => {});
+  }, [gameOver, result, recordCareerPathEvent]);
 
   useAntiCheat(
     useCallback(() => {

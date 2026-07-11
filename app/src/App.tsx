@@ -10,7 +10,7 @@ import { AnalyticsPageviews } from "./components/AnalyticsPageviews";
 // Flag-gated entry routing: v1 LoginScreen/HomeScreen when off, v2 shell
 // landing when VITE_V2_SHELL_ENABLED is on. Keeps "/" and "/home" as a clean
 // rollback seam (the only routes whose default destination the flag flips).
-import { EntryRoute, HomeRoute } from "./components/EntryRoutes";
+import { EntryRoute, HomeRoute, PlayShortLinkRoute } from "./components/EntryRoutes";
 // Deep-link aliases: with the v2 shell live, v1 mode URLs (and spelling
 // variants like /vervegrid) forward to the v2 surface for that mode so shared
 // links land on the mode they name. Flag-off renders children unchanged.
@@ -489,6 +489,10 @@ const AppRoutes = () => (
                 No route guard — a logged-out visitor plays instantly via a client
                 guestToken (careerPath.ts accepts unauthenticated guests). */}
             <Route path="/v2/career-path" element={<ShellGate><CareerPathPlayScreen /></ShellGate>} />
+            {/* /play — the short link on promo endcards + social bio links.
+                Public redirect into Career Path with attribution preserved
+                (a bare hit gets ?ref=play); see lib/playShortLink.ts. */}
+            <Route path="/play" element={<PlayShortLinkRoute />} />
             <Route path="/v2/verve-grid" element={<ShellGate><UsernameOnlyRoute><VerveGridPlayScreen /></UsernameOnlyRoute></ShellGate>} />
             {/* Daily reuses the migrated Quiz view but runs the DAILY session.
                 Username tier (anonymous OK): the daily is the habit loop, so a

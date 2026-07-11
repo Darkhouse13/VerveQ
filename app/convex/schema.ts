@@ -65,6 +65,12 @@ export default defineSchema({
       // via funnel.recordTasteRoundEvent; actor is an anonymous guest: session.
       v.literal("taste_round_started"),
       v.literal("taste_round_completed"),
+      // Career Path top-of-funnel (the marketed, guest-playable mode — the
+      // target of the /play short link). Fired via
+      // funnel.recordCareerPathEvent; actor is the same anonymous cold-session
+      // token as the taste round, hashed in its own namespace.
+      v.literal("career_path_started"),
+      v.literal("career_path_completed"),
     ),
     actor: v.string(),
     refLinkCode: v.optional(v.string()),
