@@ -24,10 +24,11 @@
  * route guards; the bare username ask stays for guest play and invite flows.
  */
 import { lazy, Suspense } from "react";
-import { Navigate, useSearchParams } from "react-router-dom";
+import { Navigate, useLocation, useSearchParams } from "react-router-dom";
 import { Loader2 } from "lucide-react";
 import { V2_SHELL_ENABLED } from "@/lib/flags";
 import { SHELL_ROUTES } from "@/lib/shellRoutes";
+import { playShortLinkTarget } from "@/lib/playShortLink";
 import { useAuth } from "@/contexts/AuthContext";
 import LoginScreen from "@/pages/LoginScreen";
 import HomeScreen from "@/pages/HomeScreen";
@@ -74,4 +75,12 @@ export function EntryRoute() {
 export function HomeRoute() {
   if (V2_SHELL_ENABLED) return <Navigate to={SHELL_ROUTES.home} replace />;
   return <HomeScreen />;
+}
+
+/** `/play` — the off-platform short link (promo endcards, social bios).
+ * Redirects into Career Path, the guest-playable marketed mode, preserving
+ * attribution params; see lib/playShortLink.ts for the why. */
+export function PlayShortLinkRoute() {
+  const { search } = useLocation();
+  return <Navigate to={playShortLinkTarget(search)} replace />;
 }

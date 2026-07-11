@@ -4,6 +4,7 @@ import { join } from "node:path";
 
 import { COMPETE_MODE_TILES } from "@/pages/shell/competeModeTiles";
 import { SHELL_ROUTES, SHELL_ROUTE_PATTERNS } from "@/lib/shellRoutes";
+import { playShortLinkTarget } from "@/lib/playShortLink";
 
 const read = (path: string) => readFileSync(path, "utf8");
 
@@ -84,6 +85,40 @@ describe("career path is guest-playable (zero login)", () => {
     expect(backend).toContain("guestTokenHash");
     // Guests have no user record, so play-count writes must be user-gated.
     expect(backend).toContain("if (actor.userId) await incrementTotalGames");
+  });
+});
+
+describe("career path social funnel", () => {
+  it("/play short link routes into career path, attribution preserved", () => {
+    // The off-platform CTA (promo endcards, social bios) must land on the
+    // marketed mode, and a bare hit must not be bucketed as "direct".
+    expect(read("src/App.tsx")).toContain('path="/play"');
+    expect(playShortLinkTarget("")).toBe("/v2/career-path?ref=play");
+    expect(playShortLinkTarget("?ref=tiktok")).toBe(
+      "/v2/career-path?ref=tiktok",
+    );
+    expect(playShortLinkTarget("?utm_source=ig")).toBe(
+      "/v2/career-path?utm_source=ig",
+    );
+  });
+
+  it("the play screen records started/completed top-of-funnel events", () => {
+    const screen = read("src/pages/shell/play/CareerPathPlayScreen.tsx");
+    expect(screen).toContain("api.funnel.recordCareerPathEvent");
+    expect(screen).toContain('stage: "started"');
+    expect(screen).toContain('stage: "completed"');
+    // Attribution reads off this route's own URL (?ref / ?utm_source), the
+    // same coldSession helper the taste round uses.
+    expect(screen).toContain("readColdSource");
+  });
+
+  it("the funnel events and readout exist server-side", () => {
+    const funnel = read("convex/funnel.ts");
+    expect(funnel).toContain("export const recordCareerPathEvent");
+    expect(funnel).toContain("export const careerPathMetrics");
+    const schema = read("convex/schema.ts");
+    expect(schema).toContain('v.literal("career_path_started")');
+    expect(schema).toContain('v.literal("career_path_completed")');
   });
 });
 

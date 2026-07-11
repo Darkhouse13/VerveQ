@@ -295,6 +295,52 @@ export const recordTasteRoundEvent = mutation({
   },
 });
 
+// ── Career Path top-of-funnel ──
+// Career Path is the marketed mode (guest-playable, the target of the /play
+// short link and the promo videos), so it needs the same top-of-funnel
+// instrumentation as the taste round: did a visitor who landed there start a
+// round, did they finish one, and which source brought them. Mirrors
+// recordTasteRoundEvent exactly — same anonymous cold-session token, own hash
+// namespace so the two surfaces never collapse into one actor. Fired for
+// EVERY visitor (guest or signed-in): the once-per-actor dedupe makes the
+// counts unique browsers either way, and a signed-in arrival from a promo
+// link is still a converted visit.
+export const recordCareerPathEvent = mutation({
+  args: {
+    // Anonymous tab-local session token (never an email/account id).
+    sessionToken: v.string(),
+    stage: v.union(v.literal("started"), v.literal("completed")),
+    // Coarse traffic source captured on "started" only: utm_source ?? ref.
+    source: v.optional(v.string()),
+  },
+  handler: async (ctx, { sessionToken, stage, source }) => {
+    const trimmed = sessionToken.trim();
+    // Mirrors the duel guest-token minimum; a too-short token is ignored
+    // rather than throwing, so instrumentation never breaks play.
+    if (trimmed.length < 16) return { ok: false, recorded: false };
+
+    const type =
+      stage === "started" ? "career_path_started" : "career_path_completed";
+    const actor = guestActorKey(hashString(`cold-career:${trimmed}`));
+
+    // At most one started + one completed per visitor, ever — same
+    // once-per-actor dedupe as recordTasteRoundEvent.
+    const existing = await ctx.db
+      .query("funnelEvents")
+      .withIndex("by_actor_type", (q) => q.eq("actor", actor).eq("type", type))
+      .first();
+    if (existing) return { ok: true, recorded: false };
+
+    await ctx.db.insert("funnelEvents", {
+      type,
+      actor,
+      ts: Date.now(),
+      ...(stage === "started" && source ? { meta: { source } } : {}),
+    });
+    return { ok: true, recorded: true };
+  },
+});
+
 // ── Synthetic test actors ──
 // Smoke runs and QA create accounts under these username prefixes; their
 // activity must never count toward Drop-Test numbers. Events are synthetic
@@ -608,46 +654,85 @@ export const dropLoopMetrics = internalQuery({
 // source is bucketed as "direct".
 //   npx convex run funnel:coldEntryMetrics '{}'
 //   npx convex run funnel:coldEntryMetrics '{"startMs":...,"endMs":...}'
+async function startedCompletedRollup(
+  ctx: Pick<QueryCtx, "db">,
+  types: {
+    started: "taste_round_started" | "career_path_started";
+    completed: "taste_round_completed" | "career_path_completed";
+  },
+  { startMs, endMs }: { startMs?: number; endMs?: number },
+) {
+  const now = Date.now();
+  const start = startMs ?? 0;
+  const end = endMs ?? now;
+  const eventsOf = async (
+    type:
+      | "taste_round_started"
+      | "taste_round_completed"
+      | "career_path_started"
+      | "career_path_completed",
+  ) =>
+    await ctx.db
+      .query("funnelEvents")
+      .withIndex("by_type_ts", (q) =>
+        q.eq("type", type).gte("ts", start).lte("ts", end),
+      )
+      .take(10000);
+
+  const startedEvents = await eventsOf(types.started);
+  const completedEvents = await eventsOf(types.completed);
+
+  const started = startedEvents.length;
+  const completed = completedEvents.length;
+  const ratio = (num: number, den: number) => (den ? num / den : null);
+
+  // Starters grouped by traffic source; missing/undefined → "direct".
+  const bySource: Record<string, number> = {};
+  for (const e of startedEvents) {
+    const source =
+      (e as { meta?: { source?: string } }).meta?.source ?? "direct";
+    bySource[source] = (bySource[source] ?? 0) + 1;
+  }
+
+  return {
+    window: { startMs: start, endMs: end },
+    started,
+    completed,
+    completionRate: ratio(completed, started),
+    bySource,
+  };
+}
+
 export const coldEntryMetrics = internalQuery({
   args: {
     startMs: v.optional(v.number()),
     endMs: v.optional(v.number()),
   },
-  handler: async (ctx, { startMs, endMs }) => {
-    const now = Date.now();
-    const start = startMs ?? 0;
-    const end = endMs ?? now;
-    const eventsOf = async (
-      type: "taste_round_started" | "taste_round_completed",
-    ) =>
-      await ctx.db
-        .query("funnelEvents")
-        .withIndex("by_type_ts", (q) =>
-          q.eq("type", type).gte("ts", start).lte("ts", end),
-        )
-        .take(10000);
+  handler: async (ctx, args) =>
+    startedCompletedRollup(
+      ctx,
+      { started: "taste_round_started", completed: "taste_round_completed" },
+      args,
+    ),
+});
 
-    const startedEvents = await eventsOf("taste_round_started");
-    const completedEvents = await eventsOf("taste_round_completed");
-
-    const started = startedEvents.length;
-    const completed = completedEvents.length;
-    const ratio = (num: number, den: number) => (den ? num / den : null);
-
-    // Starters grouped by traffic source; missing/undefined → "direct".
-    const bySource: Record<string, number> = {};
-    for (const e of startedEvents) {
-      const source =
-        (e as { meta?: { source?: string } }).meta?.source ?? "direct";
-      bySource[source] = (bySource[source] ?? 0) + 1;
-    }
-
-    return {
-      window: { startMs: start, endMs: end },
-      started,
-      completed,
-      completionRate: ratio(completed, started),
-      bySource,
-    };
+// ── Career Path top-of-funnel readout ──
+// Same rollup for the Career Path surface (see funnel.recordCareerPathEvent):
+// unique visitors who started vs. finished a round, and where the starters
+// came from. Because both surfaces dedupe once-per-visitor and bucket source
+// the same way, this reads side-by-side with coldEntryMetrics — the promo →
+// /play → career-path funnel vs. the bare-/ → taste-round funnel.
+//   npx convex run funnel:careerPathMetrics '{}'
+//   npx convex run funnel:careerPathMetrics '{"startMs":...,"endMs":...}'
+export const careerPathMetrics = internalQuery({
+  args: {
+    startMs: v.optional(v.number()),
+    endMs: v.optional(v.number()),
   },
+  handler: async (ctx, args) =>
+    startedCompletedRollup(
+      ctx,
+      { started: "career_path_started", completed: "career_path_completed" },
+      args,
+    ),
 });
