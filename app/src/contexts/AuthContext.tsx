@@ -334,10 +334,13 @@ function mapAuthError(err: unknown, fallbackCode: AuthErrorCode): AuthError {
   const structured = convexAuthErrorCode(err);
   if (structured) return new AuthError(structured, SAFE_MESSAGE[structured]);
   // Strip the "[CONVEX A(auth:signIn)] [Request ID: …] Server Error … Called by
-  // client" envelope before matching, so the rules below can never pass that
-  // envelope through as user-facing copy. In production this leaves nothing at
-  // all for server-thrown plain Errors — every rule falls through to the
-  // catch-all, which is why the server must throw ConvexError to be mappable.
+  // client" envelope, then match on the remainder. The server's text is only
+  // ever a routing signal here — every rule below answers with curated
+  // SAFE_MESSAGE copy, so a message that happens to contain a recognised
+  // phrase still can't carry internal detail into the UI. In production this
+  // leaves nothing at all for server-thrown plain Errors: every rule falls
+  // through to the catch-all, which is why the server must throw a
+  // ConvexError to be mappable.
   const cleaned = humanizeServerError(err, "");
   const lower = cleaned.toLowerCase();
   if (lower.includes("invalid credentials")) {
@@ -357,20 +360,20 @@ function mapAuthError(err: unknown, fallbackCode: AuthErrorCode): AuthError {
     return new AuthError("username_taken", SAFE_MESSAGE.username_taken);
   }
   if (lower.includes("username must")) {
-    return new AuthError("invalid_username", cleaned);
+    return new AuthError("invalid_username", SAFE_MESSAGE.invalid_username);
   }
   if (lower.includes("email is already linked")) {
     return new AuthError("email_taken", SAFE_MESSAGE.email_taken);
   }
   if (lower.includes("too many")) {
-    return new AuthError("rate_limited", cleaned);
+    return new AuthError("rate_limited", SAFE_MESSAGE.rate_limited);
   }
   if (
     lower.includes("password must be") ||
     lower.includes("too common") ||
     lower.includes("invalid password")
   ) {
-    return new AuthError("weak_password", cleaned);
+    return new AuthError("weak_password", SAFE_MESSAGE.weak_password);
   }
   // Catch-all: opaque or unrecognised. Raw server text never reaches the UI.
   return new AuthError(fallbackCode, SAFE_MESSAGE[fallbackCode]);

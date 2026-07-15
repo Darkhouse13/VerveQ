@@ -155,14 +155,18 @@ fast to act on.
    to `"Server Error"` and nothing legible survives, so these rules all
    fall through. Treat them as a dev-ergonomics convenience, not the
    contract.
-3. **Catch-all** — the call site's fallback code, rendered with curated
-   copy from `SAFE_MESSAGE` (one entry per `AuthErrorCode`).
+3. **Catch-all** — the call site's fallback code.
 
 `AuthError.message` is rendered verbatim by LoginScreen, so raw server
-text must never reach it. The catch-all always substitutes `SAFE_MESSAGE`
-copy rather than passing the server's message through — this is what
-stops a raw `[CONVEX …] Server Error` string from being rendered inline.
-`authContract.test.ts` locks that in.
+text must never reach it. **Every** branch — matched or catch-all —
+answers with curated `SAFE_MESSAGE` copy (one entry per `AuthErrorCode`);
+the server's text is only ever a routing signal, never user-facing copy.
+That matters because matching a phrase must not license passing the rest
+of the message through: otherwise a recognised phrase becomes a carrier
+for whatever internal detail trails it. This is what stops a raw
+`[CONVEX …] Server Error` string from being rendered inline.
+`authContract.test.ts` locks it in, including noisy inputs that carry a
+recognised phrase alongside internal detail.
 
 ## Known gaps
 

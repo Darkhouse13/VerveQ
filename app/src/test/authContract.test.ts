@@ -462,6 +462,33 @@ describe("AuthError never carries raw Convex transport noise", () => {
       expect((err as Error).message).not.toContain(noise);
     }
   });
+
+  // A server message is only a routing signal: matching one of the recognised
+  // phrases must not license passing the rest of that message through, or a
+  // recognised phrase becomes a carrier for whatever internal detail trails it.
+  it.each([
+    ["username must", "invalid_username"],
+    ["too many", "rate_limited"],
+    ["password must be", "weak_password"],
+    ["too common", "weak_password"],
+    ["invalid password", "weak_password"],
+  ])(
+    "matches %s for routing but answers with curated copy",
+    async (phrase, expectedCode) => {
+      authMock.signIn.mockRejectedValueOnce(
+        new Error(
+          `[CONVEX A(auth:signIn)] [Request ID: xyz] Server Error\nUncaught Error: ${phrase} SECRET_INTERNAL_DETAIL\n  Called by client`,
+        ),
+      );
+      const { result } = renderHook(() => useAuth(), { wrapper });
+      const err = (await result.current
+        .signIn("alice@example.com", "Zq7$mnPkL9#r")
+        .catch((e: Error) => e)) as Error & { code: string };
+      expect(err.code).toBe(expectedCode);
+      expect(err.message).not.toContain("SECRET_INTERNAL_DETAIL");
+      expect(err.message).not.toContain("[CONVEX");
+    },
+  );
 });
 
 describe("AuthContext.confirmPasswordReset", () => {
