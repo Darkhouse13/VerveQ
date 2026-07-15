@@ -21,6 +21,13 @@ import { toast } from "sonner";
 import { friendlyError } from "@/lib/errors";
 import { api } from "../../convex/_generated/api";
 import { useAntiCheat } from "@/hooks/useAntiCheat";
+import { useAuth } from "@/contexts/AuthContext";
+import {
+  startRun,
+  completeRun,
+  abandonRun,
+  noteQuestionAnswered,
+} from "@/lib/gameAnalytics";
 import { SHELL_ROUTES } from "@/lib/shellRoutes";
 import type { Id } from "../../convex/_generated/dataModel";
 import type { SoloQuizState } from "@/hooks/useSoloQuiz";
@@ -51,6 +58,7 @@ export function useDailyQuiz(): DailyQuizState {
   // so this play loop, its getAttemptStatus query, and the launch point that
   // navigated here all agree on the same subject.
   const sport = usePreferredDailySport();
+  const { accountState } = useAuth();
 
   const [attemptId, setAttemptId] = useState<Id<"dailyAttempts"> | null>(null);
   const [question, setQuestion] = useState<DailyQuestionData | null>(null);
@@ -98,6 +106,13 @@ export function useDailyQuiz(): DailyQuizState {
   const forfeitMut = useMutation(api.dailyChallenge.forfeit);
   const completeAttemptMut = useMutation(api.dailyChallenge.completeAttempt);
 
+  // Read through a ref, NOT as a dependency of the start effect below: that
+  // effect's deps drive the one-attempt-per-day gate, so adding accountState
+  // would re-run the gate and mint a second server attempt every time auth
+  // settled — inventing games nobody started.
+  const accountStateRef = useRef(accountState);
+  accountStateRef.current = accountState;
+
   // Start (or block) the daily attempt — one attempt per day, server-enforced.
   useEffect(() => {
     if (attemptStatus === undefined) return;
@@ -118,6 +133,9 @@ export function useDailyQuiz(): DailyQuizState {
       try {
         await getOrCreateChallengeMut({ sport, mode: "quiz" });
         const { attemptId: aid } = await startAttemptMut({ sport, mode: "quiz" });
+        // A game genuinely began — the server minted the attempt, and the
+        // attempt IS this mode's session (there is no quizSession here).
+        startRun(aid, "daily", { accountState: accountStateRef.current });
         setAttemptId(aid);
         setLoading(false);
         startTime.current = Date.now();
@@ -136,6 +154,15 @@ export function useDailyQuiz(): DailyQuizState {
       }
     })();
   }, [attemptId, attemptStatus, getOrCreateChallengeMut, navigate, sport, startAttemptMut, t]);
+
+  // Backstop for exits that bypass forfeitAndExit (browser back, a shell route
+  // change). Reads the attempt through a ref so the cleanup sees the one live
+  // at unmount rather than the null captured on mount. abandonRun ignores runs
+  // that already ended, so neither a finished attempt nor an explicit forfeit
+  // below can be reported twice.
+  const liveAttemptRef = useRef<Id<"dailyAttempts"> | null>(null);
+  liveAttemptRef.current = attemptId;
+  useEffect(() => () => abandonRun(liveAttemptRef.current), []);
 
   useEffect(() => {
     if (dailyQuestion && !forfeited) {
@@ -167,6 +194,11 @@ export function useDailyQuiz(): DailyQuizState {
     useCallback(() => {
       if (attemptId && !forfeited) {
         setForfeited(true);
+        // Abandoned, not completed: a forfeited attempt is voided (server
+        // writes score 0, no leaderboard entry) — the same end state as
+        // quitting, so it reports the same way. Called before the mutation
+        // settles because the run is over either way.
+        abandonRun(attemptId);
         forfeitMut({ attemptId }).then(() => {
           toast.error(t("dailyQuiz.forfeitedTabSwitch"));
           navigate(SHELL_ROUTES.home, { replace: true });
@@ -196,6 +228,7 @@ export function useDailyQuiz(): DailyQuizState {
           answer: question.optionValues[optionIndex],
           questionIndex: questionNum,
         });
+        noteQuestionAnswered(attemptId);
         setRevealedAnswer(res.correctAnswer);
         setRevealed(true);
         setCheckResult({
@@ -239,6 +272,9 @@ export function useDailyQuiz(): DailyQuizState {
             /* continue to results */
           }
         }
+        // Reported before setAttemptId(null) clears the key. No `result`: the
+        // daily is scored, it has no win/loss.
+        completeRun(attemptId, { score: totalScore });
         setAttemptFinished(true);
         setAttemptId(null);
         const finalResults =
@@ -300,6 +336,10 @@ export function useDailyQuiz(): DailyQuizState {
     if (attemptId && !forfeited) {
       setForfeited(true);
       void forfeitMut({ attemptId });
+      // The explicit abandon — the one exit the player actually chose. The
+      // unmount backstop above would catch it, but only this path can promise
+      // the signal regardless of how the navigation unwinds.
+      abandonRun(attemptId);
     }
     navigate(SHELL_ROUTES.home, { replace: true });
   }, [attemptId, forfeited, forfeitMut, navigate]);

@@ -12,6 +12,7 @@ import {
   GENERIC_CARD_KEY,
   type ShareCardData,
 } from "./lib/duelShareCard";
+import { captureServerEvent } from "./lib/posthogServer";
 
 // Server-side data backing the /s/d/:linkCode share route. Exposes ONLY the
 // challenger's display label and (once they've completed) their score —
@@ -62,6 +63,36 @@ export const logLinkTap = internalMutation({
       refChallengerId: duel?.challengerId,
       ts: Date.now(),
       meta: duel ? { duelId: duel._id } : undefined,
+    });
+  },
+});
+
+/**
+ * share_link_opened — a real human opened a /s/d/ link.
+ *
+ * Scheduled fire-and-forget from the share route (like warmCard) rather than
+ * awaited inline: the human is mid-302, and a round trip to PostHog must not
+ * sit between the tap and the game.
+ *
+ * Fires ONLY for non-crawlers — the route's existing user-agent check owns
+ * that split, so a WhatsApp/Slack unfurl prefetch can never be counted as a
+ * person opening the link.
+ *
+ * distinct_id is minted per open and cannot stitch to the opener's browser id:
+ * the SPA never runs on this surface, and persistence is localStorage, so
+ * there is no cookie to read server-side. Person processing is off for exactly
+ * that reason. Whether the open led to a game is answered by joining link_code
+ * to the /duel/:linkCode landing at analysis time — deliberately not asserted
+ * here, where it would be a guess.
+ */
+export const captureShareLinkOpened = internalAction({
+  args: { linkCode: v.string(), openId: v.string() },
+  handler: async (_ctx, { linkCode, openId }) => {
+    await captureServerEvent("share_link_opened", `share_open_${openId}`, {
+      mode: "duel",
+      link_code: linkCode,
+      origin: "server",
+      is_crawler: false,
     });
   },
 });

@@ -27,6 +27,8 @@ import { NeoButton } from "@/components/neo/NeoButton";
 import { NeoInput } from "@/components/neo/NeoInput";
 import { NeoLogo } from "@/components/neo/NeoLogo";
 import { useAuth, AuthError } from "@/contexts/AuthContext";
+import { track } from "@/lib/analytics";
+import { getEntrySource } from "@/lib/entrySource";
 
 // Mirror the server's username rule (convex/lib/usernames.ts) for instant,
 // pre-submit feedback. The server remains the source of truth.
@@ -108,6 +110,16 @@ export function UsernameOnlyOnboarding({
           await startAnonymousSession();
         }
         await claimUsername(normalized, { inviteCode });
+        // Fires only on a claim that actually SUCCEEDED. Deliberately not
+        // hooked to onComplete(), which the effect above also calls for a
+        // visitor who already had a username — that is an arrival, not a claim.
+        // identify() follows from AuthContext once `me` resolves the new
+        // account id; that is also what attributes this visitor's pre-claim
+        // anonymous events to the person now being created.
+        track("username_claimed", {
+          entry_source: getEntrySource(),
+          via_invite: !!inviteCode,
+        });
         completedRef.current = true;
         onComplete();
       } catch (err) {

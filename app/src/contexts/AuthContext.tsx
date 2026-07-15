@@ -15,6 +15,7 @@ import {
   describePasswordReason,
 } from "../../convex/lib/passwordPolicy";
 import { humanizeServerError } from "@/lib/errors";
+import { identifyAccount, resetIdentity, track } from "@/lib/analytics";
 
 interface AuthUser {
   _id: string;
@@ -411,6 +412,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     })();
   }, [userId, sessionHeartbeat]);
 
+  // PostHog identity: bind the anonymous distinct_id to the stable users doc
+  // id so a return on another device (or after a storage clear) stitches to
+  // the same person, and the pre-claim anonymous history is attributed to it.
+  //
+  // Keyed on `userId`, which reads the raw `me` doc — so it is null while auth
+  // is settling (identifying a returning user as logged-out was the exact
+  // misattribution this ticket exists to fix), and it can never be the
+  // tab-local guest's shared `guest_tab` literal, which lives only on authUser.
+  const identifiedForRef = useRef<string | null>(null);
+  useEffect(() => {
+    if (!userId || identifiedForRef.current === userId) return;
+    identifiedForRef.current = userId;
+    identifyAccount(userId);
+  }, [userId]);
+
   // Auth is still SETTLING (not "logged out") while: the `me` query hasn't
   // resolved; the token handshake is in flight (queries run unauthenticated
   // until the stored token is validated, so `me` transiently resolves null on
@@ -645,6 +661,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       } catch (err) {
         throw mapAuthError(err, "invalid_credentials");
       }
+      // The real return-intent signal: fires on a SUCCEEDED sign-in only, not
+      // on the identify effect above (which re-runs on every app load for an
+      // already-signed-in user and would read as a login every reload).
+      // identify() follows from that effect once `me` resolves the account id.
+      track("account_login", { method: "password" });
     },
     [convexSignIn],
   );
@@ -721,12 +742,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setTabGuestSession(false);
     setLocalGuestActive(false);
     await convexSignOut();
+    // Drop the person binding AND the guard, so the next visitor on this
+    // device is a fresh anonymous person rather than the last one, and a
+    // re-login by the same account identifies again instead of being skipped.
+    identifiedForRef.current = null;
+    resetIdentity();
   }, [convexSignOut]);
 
   const signOutToGuest = useCallback(async () => {
     await convexSignOut();
     setTabGuestSession(true);
     setLocalGuestActive(true);
+    identifiedForRef.current = null;
+    resetIdentity();
   }, [convexSignOut]);
 
   const authUser: AuthUser | null = localGuestActive && !user

@@ -158,6 +158,17 @@ async function serveSharePage(
     } catch {
       // Instrumentation must never block the human handoff.
     }
+    try {
+      // Scheduled, not awaited inline: the redirect is what the human is
+      // waiting on, and PostHog's round trip does not belong in front of it.
+      await ctx.scheduler.runAfter(
+        0,
+        internal.duelShare.captureShareLinkOpened,
+        { linkCode, openId: crypto.randomUUID() },
+      );
+    } catch {
+      // Same contract as above — the handoff outranks the telemetry.
+    }
     return redirectResponse(duelUrl);
   }
 

@@ -64,5 +64,8 @@
   <footer>
     <p>VerveQ — football trivia with real stakes. <a href="/">Play</a> · <a href="/privacy">Privacy</a> · <a href="/terms">Terms</a></p>
   </footer>
+  <!-- Curiosity funnel. ?v= is load-bearing: nginx serves *.js as immutable
+       for 30d, so an unversioned url could never be updated. Bump on change. -->
+  <script src="/games/funnel.js?v=1" defer></script>
 </body>
 </html>

@@ -16,6 +16,13 @@ import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
 import { api } from "../../convex/_generated/api";
 import { useAntiCheat } from "@/hooks/useAntiCheat";
+import { useAuth } from "@/contexts/AuthContext";
+import {
+  startRun,
+  completeRun,
+  abandonRun,
+  noteQuestionAnswered,
+} from "@/lib/gameAnalytics";
 import type { Id } from "../../convex/_generated/dataModel";
 
 interface QuestionData {
@@ -71,6 +78,14 @@ export function useSoloBlitz(): SoloBlitzState {
   const sessionRef = useRef<Id<"blitzSessions"> | null>(null);
   const answerSubmitInFlight = useRef(false);
 
+  const { accountState } = useAuth();
+  // Read through a ref, NOT as a dependency of the start effect below: that
+  // effect is mount-once and is what mints the server session, so re-running it
+  // when auth settles (or when a guest claims a username) would mint a second
+  // session and invent a game nobody started.
+  const accountStateRef = useRef(accountState);
+  accountStateRef.current = accountState;
+
   const startMut = useMutation(api.blitz.start);
   const getQuestionMut = useMutation(api.blitz.getQuestion);
   const submitAnswerMut = useMutation(api.blitz.submitAnswer);
@@ -85,7 +100,12 @@ export function useSoloBlitz(): SoloBlitzState {
       score: number;
       correctCount: number;
       wrongCount: number;
-    }) =>
+    }) => {
+      // Both finalize paths — the first attempt and the delayed retry below —
+      // converge here with a server-confirmed score, and completeRun is
+      // idempotent per session, so neither can double-report. `result` stays
+      // unset on purpose: Blitz scores a run, it has no win/loss.
+      completeRun(sid, { score: res.score });
       navigate("/blitz-results", {
         state: {
           score: res.score,
@@ -95,6 +115,7 @@ export function useSoloBlitz(): SoloBlitzState {
           mode: "blitz" as const,
         },
       });
+    };
     try {
       goToResults(await endGameMut({ sessionId: sid }));
     } catch {
@@ -106,6 +127,12 @@ export function useSoloBlitz(): SoloBlitzState {
         await new Promise((r) => setTimeout(r, 1200));
         goToResults(await endGameMut({ sessionId: sid }));
       } catch {
+        // The run still ENDED here — the buzzer (or a server gameOver) already
+        // fired and the player is being sent home; only the finalize call was
+        // lost. Reporting it as anything but completed would silently drop
+        // every give-up run. Score is omitted rather than guessed: the server
+        // never told us what it was.
+        completeRun(sid);
         navigate("/home");
       }
     }
@@ -136,6 +163,10 @@ export function useSoloBlitz(): SoloBlitzState {
         const { sessionId: sid, endTimeMs: serverEndTimeMs } = await startMut({
           sport,
         });
+        // A game genuinely began — the server minted a session. Fired on that
+        // resolution rather than on mount, so passing through this route (or a
+        // start that throws below) mints nothing and stays silent.
+        startRun(sid, "blitz", { accountState: accountStateRef.current });
         setSessionId(sid);
         sessionRef.current = sid;
         const q = await getQuestionMut({
@@ -152,6 +183,13 @@ export function useSoloBlitz(): SoloBlitzState {
     })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // Leaving mid-run. Reads the live session through the existing ref so the
+  // cleanup sees the session that was live at unmount rather than one captured
+  // at mount. abandonRun ignores runs that already ended, so a finished run —
+  // including an expired clock, which is a real completion, not an exit — can
+  // never be reported as abandoned.
+  useEffect(() => () => abandonRun(sessionRef.current), []);
 
   // Anti-cheat: a tab-away submits a guaranteed-wrong guess; the server still
   // decides correctness and applies the -3s penalty.
@@ -198,6 +236,11 @@ export function useSoloBlitz(): SoloBlitzState {
           answer: question.optionValues[idx],
           checksum: question.checksum,
         });
+        // The player's own pick, graded by the server. Counted only here: the
+        // anti-cheat auto-submit above is a penalty rather than an answer, and
+        // the question it burns stays on screen and pickable, so counting it
+        // there would tally the same question twice.
+        noteQuestionAnswered(sessionId);
         setScore(res.score);
         setEndTimeMs(res.endTimeMs);
         // Set the correct answer BEFORE revealing so the grading colours (green

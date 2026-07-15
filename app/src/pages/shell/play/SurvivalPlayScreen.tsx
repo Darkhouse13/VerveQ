@@ -31,6 +31,12 @@ import { MetricsPanel, AmbientStrip } from "@/components/shell/play/ambient";
 import { SHELL_ROUTES } from "@/lib/shellRoutes";
 import { useAuth } from "@/contexts/AuthContext";
 import { useAntiCheat } from "@/hooks/useAntiCheat";
+import {
+  startRun,
+  noteQuestionAnswered,
+  completeRun,
+  abandonRun,
+} from "@/lib/gameAnalytics";
 import { api } from "../../../../convex/_generated/api";
 import type { Id } from "../../../../convex/_generated/dataModel";
 import type { GameResultState } from "@/types/api";
@@ -122,7 +128,7 @@ export default function SurvivalPlayScreen({ daily = false }: { daily?: boolean 
   const navigate = useNavigate();
   const [params] = useSearchParams();
   const sport = daily ? "football" : params.get("sport") || "football";
-  const { user, isLoading: authLoading, isAuthenticated } = useAuth();
+  const { user, isLoading: authLoading, isAuthenticated, accountState } = useAuth();
 
   const [sessionId, setSessionId] = useState<Id<"survivalSessions"> | null>(
     null,
@@ -202,6 +208,14 @@ export default function SurvivalPlayScreen({ daily = false }: { daily?: boolean 
     setClues([]);
   }, []);
 
+  // Read through a ref, NOT as a dependency of the start effect below: adding
+  // accountState there would re-run it and mint a brand-new server session on
+  // every auth transition. `isAuthenticated` is deliberately not reused as the
+  // reported identity either — it counts tab-local guests with no server
+  // identity as authenticated, which is only good enough for the route gate.
+  const accountStateRef = useRef(accountState);
+  accountStateRef.current = accountState;
+
   useEffect(() => {
     if (authLoading) return;
     if (!isAuthenticated) {
@@ -212,6 +226,19 @@ export default function SurvivalPlayScreen({ daily = false }: { daily?: boolean 
       try {
         if (daily) {
           const data = await startDailyGameMut({});
+          // `resumed` means the server handed back an attempt that was ALREADY
+          // running (a mid-run refresh), not a new one. Daily is capped at one
+          // attempt per UTC day, so counting a start here would report more
+          // daily games than the server can create — a refresh loop could
+          // invent them without end. The earlier load already reported this
+          // attempt's start; leaving the run unregistered means the registry
+          // no-ops its completion and its abandon too, which is the honest
+          // trade: silence for a run this page load did not begin.
+          if (!data.resumed) {
+            startRun(data.sessionId, "daily-survival", {
+              accountState: accountStateRef.current,
+            });
+          }
           setSessionId(data.sessionId);
           setLives(data.lives);
           setScore(data.score);
@@ -226,6 +253,11 @@ export default function SurvivalPlayScreen({ daily = false }: { daily?: boolean 
           }
         } else {
           const data = await startGameMut({ sport });
+          // Ranked runs never resume — the server inserts a fresh session on
+          // every call — so a resolved start is always a new game.
+          startRun(data.sessionId, "survival", {
+            accountState: accountStateRef.current,
+          });
           setSessionId(data.sessionId);
           setLives(data.lives);
           setScore(data.score);
@@ -251,6 +283,14 @@ export default function SurvivalPlayScreen({ daily = false }: { daily?: boolean 
     })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [authLoading, isAuthenticated]);
+
+  // Leaving mid-run. Reads the session through a ref so the cleanup sees the
+  // session that was live at unmount rather than the one captured at mount.
+  // abandonRun ignores runs that already ended, so the cash-out and forfeit
+  // exits — which navigate, and so unmount — can never be filed as abandons.
+  const liveSessionRef = useRef<string | null>(null);
+  liveSessionRef.current = sessionId;
+  useEffect(() => () => abandonRun(liveSessionRef.current), []);
 
   // Anti-cheat: warn first (pot floored), penalize repeats
   useAntiCheat(
@@ -283,6 +323,14 @@ export default function SurvivalPlayScreen({ daily = false }: { daily?: boolean 
   );
 
   const goToResults = async (finalScore: number, finalRound: number) => {
+    // Every way this run can end funnels through here — lives gone, skip that
+    // emptied the queue, anti-cheat forfeit, and CASH OUT. Cash out is a
+    // voluntary end but still a completion, not an abandon: the player banked
+    // a final score and the server closed the session, which is the opposite
+    // of walking out mid-round. Reported before the navigate below so the
+    // unmount that navigate triggers finds the run already ended; daily is
+    // included even though it never reaches completeSurvival.
+    completeRun(sessionId, { score: finalScore });
     // Daily runs land on the daily result surface (share copy included) and
     // never call completeSurvival — the server rejects daily sessions there.
     if (daily) {
@@ -351,6 +399,10 @@ export default function SurvivalPlayScreen({ daily = false }: { daily?: boolean 
         return;
       }
 
+      // Past the close-call retry above, the guess is committed — that is the
+      // point a question is genuinely resolved. Counted before any goToResults
+      // below, which reads the tally, so the last guess of a run still lands.
+      noteQuestionAnswered(sessionId);
       setFeedback({
         correct: res.correct,
         answer: res.correctAnswer ?? "",
