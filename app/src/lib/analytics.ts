@@ -112,11 +112,14 @@ export function initAnalytics(): void {
           // posthog-js drops every event from an automated browser, and does
           // it silently — it checks the UA blocklist, navigator.userAgentData
           // .brands (which still says HeadlessChrome even when the UA string
-          // is overridden) and navigator.webdriver. Without this the scripted
-          // verification pass sends NOTHING and reads as a broken app.
+          // is overridden) and navigator.webdriver. This flag opts OUT of that
+          // filter; without it the scripted verification pass sends NOTHING and
+          // reads as a broken app.
           //
-          // Stays ON in production, where it is doing real work: it is what
-          // keeps crawler hits on the /games/ pages out of the funnel.
+          // Test-mode only, and it must stay that way: setting it in production
+          // would opt prod out of the bot filter and let crawler hits into the
+          // /games/ funnel. Production keeps crawlers out precisely BECAUSE
+          // this is absent there.
           opt_out_useragent_filter: true,
         }
       : {}),

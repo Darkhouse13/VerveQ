@@ -39,7 +39,7 @@ evidence that a game exists. A navigation that mints no session is silent.
 | --- | --- | --- |
 | `game_started` | a session mutation **resolves** with an id | `mode`, `entry_source`, `is_authenticated`, `account_state`, `start_trigger` |
 | `game_completed` | a real terminal state with a real outcome | `mode`, `score`, `questions_answered`, `duration_seconds`, `result` |
-| `game_abandoned` | left mid-game (unmount, or `pagehide`) | `mode`, `questions_answered_before_exit`, `exit_signal` |
+| `game_abandoned` | left mid-game (unmount, or `pagehide`) | `mode`, `questions_answered_before_exit`, and `exit_signal` **on the `pagehide` path only** |
 
 `start_trigger` is load-bearing. **Every mode provisions its session in a mount
 effect, and Career Path has no play CTA at all** — so arriving *is* starting.
@@ -70,6 +70,15 @@ Two behaviours worth knowing:
   a tab is merely backgrounded, and someone who switches apps and returns has
   abandoned nothing. The cost is that a mobile session killed while
   backgrounded is never seen — a real gap, preferred to a fabricated event.
+
+  Only this path stamps `exit_signal` (`"pagehide"`). The in-app unmount path
+  (`abandonRun`, `lib/gameAnalytics.ts`) emits `mode` and
+  `questions_answered_before_exit` and nothing else, so an abandon **with no
+  `exit_signal` at all** is an in-app exit — a route change away from a live
+  game, or a run orphaned by a new session. Grouping abandons by `exit_signal`
+  therefore drops every in-app exit into a null bucket rather than excluding
+  none; treat absence as a value. (The funnel's `exit_before_play` is the
+  exception — it always carries one.)
 
 ### Identity
 
@@ -195,13 +204,20 @@ must be filterable — permanently and without exception.
   for the browser profile.
 - `opt_out_useragent_filter: true` — posthog-js silently drops everything an
   automated browser sends (UA blocklist, `navigator.userAgentData.brands`, and
-  `navigator.webdriver`). Without this a scripted pass sends nothing and reads
-  as a broken app. It stays **on** in production, where it is what keeps crawler
-  hits out of the `/games/*` funnel.
+  `navigator.webdriver`). This flag **opts out of that filter**, which is what
+  lets a scripted pass observe itself; without it the pass sends nothing and
+  reads as a broken app. Read the direction carefully: `true` *disables* the bot
+  filter. It is therefore **off in production** — and that is exactly what keeps
+  crawler hits out of the `/games/*` funnel, since the filter only runs when the
+  flag is not set. The static pages express the same rule as
+  `opt_out_useragent_filter: isTest` (`games/funnel.js`), false for real traffic
+  on the live host.
 
-All three are gated on `VITE_ANALYTICS_TEST_MODE`, which `deploy/build-and-run.sh`
-does **not** forward (it forwards only `VITE_POSTHOG_KEY` / `VITE_POSTHOG_HOST`),
-so real traffic can never be marked as test. The static pages gate instead on
+All three are gated on `VITE_ANALYTICS_TEST_MODE` (`TEST_MODE` in
+`lib/analytics.ts`), which `deploy/build-and-run.sh` does **not** forward. That
+script forwards an explicit allowlist — the Convex, release, v2-shell, Sentry and
+PostHog (`VITE_POSTHOG_KEY` / `VITE_POSTHOG_HOST`) vars — and this flag is not on
+it, so real traffic can never be marked as test. The static pages gate instead on
 hostname: the live host reports real traffic, anywhere else is silent unless it
 opts in with `?vq_test=1`. Server-side, test-ness is derived from the deployment
 (`CONVEX_CLOUD_URL`), which is unspoofable.
@@ -239,7 +255,7 @@ Verified 2026-07-15 by `scripts/analyticsVerificationPass.mjs` against dev
   verve-grid, daily (all `usernameOnly`).
 - `game_completed` vs `game_abandoned` are **distinguishable**: completion
   carries `score` / `questions_answered` / `duration_seconds` / `result`; abandon
-  carries `questions_answered_before_exit` / `exit_signal`; never both.
+  carries `questions_answered_before_exit`; never both.
 - Route changes produce **silence** (`game_started=0`, `game_completed=0`,
   `pageviews=1`) — against a backend proven in the same run to serve real games.
 - Tab-close abandons arrive via `pagehide` + `sendBeacon`.
