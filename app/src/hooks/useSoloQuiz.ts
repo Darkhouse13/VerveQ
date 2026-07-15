@@ -16,6 +16,12 @@ import { friendlyError } from "@/lib/errors";
 import { api } from "../../convex/_generated/api";
 import { useAntiCheat } from "@/hooks/useAntiCheat";
 import { useAuth } from "@/contexts/AuthContext";
+import {
+  startRun,
+  completeRun,
+  abandonRun,
+  noteQuestionAnswered,
+} from "@/lib/gameAnalytics";
 import type { Id } from "../../convex/_generated/dataModel";
 import type { GameResultState } from "@/types/api";
 
@@ -66,7 +72,7 @@ export function useSoloQuiz(): SoloQuizState {
   const mode = params.get("mode") || "quiz";
   const difficulty = parseDifficulty(params.get("difficulty"));
   const isCameFirst = mode === "came_first";
-  const { user } = useAuth();
+  const { user, accountState } = useAuth();
 
   const [sessionId, setSessionId] = useState<Id<"quizSessions"> | null>(null);
   const [question, setQuestion] = useState<QuestionData | null>(null);
@@ -122,6 +128,13 @@ export function useSoloQuiz(): SoloQuizState {
     [getQuestionMut, t, i18n],
   );
 
+  // Read through a ref, NOT as a dependency of the mount-once effect below:
+  // adding accountState there would re-run it and mint a fresh server session
+  // every time auth settled or the visitor claimed a username — inventing
+  // games nobody started.
+  const accountStateRef = useRef(accountState);
+  accountStateRef.current = accountState;
+
   useEffect(() => {
     (async () => {
       try {
@@ -130,6 +143,9 @@ export function useSoloQuiz(): SoloQuizState {
           mode: isCameFirst ? "came_first" : "quiz",
           difficulty,
         });
+        // A game genuinely began — the server minted the session. `came_first`
+        // is a quiz variant, not a mode of its own (same as GameResultState).
+        startRun(sid, "quiz", { accountState: accountStateRef.current });
         setSessionId(sid);
         await fetchQuestion(sid);
       } catch {
@@ -138,6 +154,14 @@ export function useSoloQuiz(): SoloQuizState {
     })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // Leaving mid-quiz. Reads the session through a ref so the cleanup sees the
+  // session that was live at unmount rather than the null captured on mount.
+  // abandonRun ignores runs that already ended, so reaching /results can never
+  // be re-reported as an abandon.
+  const liveSessionRef = useRef<Id<"quizSessions"> | null>(null);
+  liveSessionRef.current = sessionId;
+  useEffect(() => () => abandonRun(liveSessionRef.current), []);
 
   useEffect(() => {
     if (revealed || loading) return;
@@ -150,6 +174,11 @@ export function useSoloQuiz(): SoloQuizState {
       if (!sessionId || revealed) return;
       penalizeTabSwitchMut({ sessionId }).then((res) => {
         if (res.penalized) {
+          // Abandoned, not completed: the server stamps `abandonedAt` and
+          // computes no score, and the player is dropped on /home with no
+          // result. (Career Path treats ITS anti-cheat forfeit as a completion
+          // because there the forfeit still produces a final scored card.)
+          abandonRun(sessionId);
           toast.error(t("quiz.tabSwitchEnded"));
           navigate("/home", { replace: true });
         }
@@ -177,6 +206,7 @@ export function useSoloQuiz(): SoloQuizState {
           // Canonical English value — grading compares against correctAnswer.
           answer: question.optionValues[optionIndex],
         });
+        noteQuestionAnswered(sessionId);
         setRevealedAnswer(res.correctAnswer);
         setRevealed(true);
         setCheckResult({ correct: res.correct, explanation: res.explanation });
@@ -232,6 +262,13 @@ export function useSoloQuiz(): SoloQuizState {
             /* continue to results */
           }
         }
+        // Fires for logged-out players too. completeQuizMut above is gated on
+        // `user` (no server identity, no elo to write), so gating this on the
+        // same condition would erase every logged-out finish from the funnel
+        // while still counting its game_started. serverScore already falls back
+        // to the local totalScore — the score those players are actually shown.
+        // No `result`: the quiz is scored, it has no win/loss.
+        completeRun(sessionId, { score: serverScore });
         const state: GameResultState = {
           score: serverScore,
           total: QUIZ_MAX_QUESTIONS,

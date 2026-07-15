@@ -38,6 +38,7 @@ import {
   readColdSource,
 } from "@/lib/coldSession";
 import { useAuth } from "@/contexts/AuthContext";
+import { startRun, completeRun, abandonRun } from "@/lib/gameAnalytics";
 
 const SUPPORTED_CAREER_PATH_SPORTS = new Set(["football"]);
 const START_CHALLENGE_TIMEOUT_MS = 8000;
@@ -81,7 +82,7 @@ export default function CareerPathPlayScreen() {
   // Zero-login play: a stable guest token identifies logged-out players. The
   // server prefers the auth user when present and ignores the token then.
   const [guestToken] = useState(getOrCreateCareerPathGuestToken);
-  const { hasUsername } = useAuth();
+  const { hasUsername, accountState } = useAuth();
 
   const [sessionId, setSessionId] = useState<Id<"careerPathSessions"> | null>(null);
   const [loading, setLoading] = useState(true);
@@ -117,6 +118,13 @@ export default function CareerPathPlayScreen() {
   const funnelStartedFired = useRef(false);
   const funnelCompletedFired = useRef(false);
 
+  // Read through a ref, NOT as a startGame dependency: startGame already sits
+  // in a useEffect keyed on its own identity, so adding accountState to its
+  // deps would mint a fresh server session every time auth settled or the
+  // visitor claimed a username — inventing games nobody started.
+  const accountStateRef = useRef(accountState);
+  accountStateRef.current = accountState;
+
   const startGame = useCallback(async () => {
     setLoading(true);
     setStartupState(null);
@@ -149,6 +157,14 @@ export default function CareerPathPlayScreen() {
           ...(source ? { source } : {}),
         }).catch(() => {});
       }
+      // A game genuinely began — the server minted a session. Keyed on that
+      // session id, so the "Next player" replays below each count as their own
+      // game (unlike the once-per-mount funnel refs above, which answer a
+      // different question), while a bare navigation here mints nothing and
+      // stays silent.
+      startRun(res.sessionId, "career-path", {
+        accountState: accountStateRef.current,
+      });
       setSessionId(res.sessionId);
       setClubs(res.clubs);
       setScore(res.score);
@@ -188,6 +204,28 @@ export default function CareerPathPlayScreen() {
       stage: "completed",
     }).catch(() => {});
   }, [gameOver, result, recordCareerPathEvent]);
+
+  // Per-GAME completion (distinct from the once-per-mount funnel signal above,
+  // which deliberately ignores replays). Both terminal paths converge on
+  // gameOver+result — a resolved guess and the anti-cheat forfeit — and
+  // completeRun is idempotent per session, so neither can double-report.
+  useEffect(() => {
+    if (!gameOver || !result || !sessionId) return;
+    completeRun(sessionId, {
+      score: result.score,
+      // One session is one career path, so the round IS the question.
+      questionsAnswered: 1,
+      result: result.correct ? "win" : "loss",
+    });
+  }, [gameOver, result, sessionId]);
+
+  // Leaving mid-game. Reads the session through a ref so the cleanup sees the
+  // session that was live at unmount rather than the one captured at mount.
+  // abandonRun ignores runs that already ended, so a finished game can never
+  // be reported as abandoned.
+  const liveSessionRef = useRef<string | null>(null);
+  liveSessionRef.current = sessionId;
+  useEffect(() => () => abandonRun(liveSessionRef.current), []);
 
   useAntiCheat(
     useCallback(() => {

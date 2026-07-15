@@ -83,5 +83,8 @@
       });
     })();
   </script>
+  <!-- Curiosity funnel. ?v= is load-bearing: nginx serves *.js as immutable
+       for 30d, so an unversioned url could never be updated. Bump on change. -->
+  <script src="/games/funnel.js?v=1" defer></script>
 </body>
 </html>

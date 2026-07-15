@@ -22,6 +22,13 @@ import { toast } from "sonner";
 import { api } from "../../convex/_generated/api";
 import type { Id } from "../../convex/_generated/dataModel";
 import { useAntiCheat } from "@/hooks/useAntiCheat";
+import { useAuth } from "@/contexts/AuthContext";
+import {
+  startRun,
+  completeRun,
+  abandonRun,
+  noteQuestionAnswered,
+} from "@/lib/gameAnalytics";
 import type { Difficulty } from "@/lib/difficulty";
 
 export const SUPPORTED_VERVE_GRID_SPORTS = new Set(["football"]);
@@ -141,6 +148,7 @@ export interface VerveGridViewModel {
 
 export function useVerveGrid(sport: string, difficulty: Difficulty): VerveGridViewModel {
   const { t } = useTranslation("play");
+  const { accountState } = useAuth();
   const isSupportedSport = SUPPORTED_VERVE_GRID_SPORTS.has(sport);
 
   const startSessionMut = useMutation(api.verveGrid.startSession);
@@ -180,6 +188,13 @@ export function useVerveGrid(sport: string, difficulty: Difficulty): VerveGridVi
   );
   const searchResults = rawResults as GridSearchResult[] | undefined;
 
+  // Read through a ref, NOT as a startGame dependency: startGame is already
+  // re-created (and mints a NEW server session) on a locale or difficulty
+  // change, so adding accountState would mint another one every time auth
+  // settled or a guest claimed a username — inventing games nobody started.
+  const accountStateRef = useRef(accountState);
+  accountStateRef.current = accountState;
+
   const startGame = useCallback(async () => {
     if (!isSupportedSport) {
       setStartupState({
@@ -198,6 +213,13 @@ export function useVerveGrid(sport: string, difficulty: Difficulty): VerveGridVi
         startSessionMut({ sport, difficulty }),
         START_SESSION_TIMEOUT_MS,
       );
+      // A game genuinely began — the server minted a session. Keyed on that id,
+      // so the re-runs above (a locale or difficulty switch) each count as the
+      // separate game the server actually created, while a bare navigation here
+      // mints nothing and stays silent.
+      startRun(result.sessionId, "verve-grid", {
+        accountState: accountStateRef.current,
+      });
       setSessionId(result.sessionId);
       setRows(result.rows as GridAxis[]);
       setCols(result.cols as GridAxis[]);
@@ -233,6 +255,14 @@ export function useVerveGrid(sport: string, difficulty: Difficulty): VerveGridVi
   useEffect(() => {
     startGame();
   }, [startGame]);
+
+  // Leaving mid-game. Reads the session through a ref so the cleanup sees the
+  // session that was live at unmount rather than the one captured at mount.
+  // abandonRun ignores runs that already ended, so a finished grid can never be
+  // reported as abandoned.
+  const liveSessionRef = useRef<string | null>(null);
+  liveSessionRef.current = sessionId;
+  useEffect(() => () => abandonRun(liveSessionRef.current), []);
 
   useAntiCheat(
     useCallback(() => {
@@ -291,6 +321,10 @@ export function useVerveGrid(sport: string, difficulty: Difficulty): VerveGridVi
           return;
         }
 
+        // A lock-in the server actually graded. The `alreadyUsed` bounce above
+        // is a rejected pick — the cell stays open and re-pickable — so it is
+        // not a resolved question and must not be tallied as one.
+        noteQuestionAnswered(sessionId);
         setCells((prev) => {
           const next = [...prev];
           next[cellIndex] = {
@@ -337,6 +371,20 @@ export function useVerveGrid(sport: string, difficulty: Difficulty): VerveGridVi
       cells.reduce((sum, c) => (c.correct === true ? sum + (c.points ?? 0) : sum), 0),
     [cells],
   );
+
+  // Per-game completion. Both terminal paths converge on gameOver — the lock-in
+  // that closes the board and the anti-cheat forfeit — and completeRun is
+  // idempotent per session, so neither can double-report. Sits below `points`
+  // because it reports the final tally that memo computes.
+  useEffect(() => {
+    if (!gameOver || !sessionId) return;
+    completeRun(sessionId, {
+      score: points,
+      // "Perfect Grid" is the only win this mode defines; running out of
+      // guesses — or forfeiting — is the loss.
+      result: allSolved ? "win" : "loss",
+    });
+  }, [gameOver, sessionId, points, allSolved]);
 
   const picks = useMemo<GridPickEntry[]>(() => {
     return cells

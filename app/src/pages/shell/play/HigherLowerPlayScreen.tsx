@@ -24,6 +24,13 @@ import { MetricsPanel, AmbientStrip } from "@/components/shell/play/ambient";
 import { SHELL_ROUTES } from "@/lib/shellRoutes";
 import { parseDifficulty } from "@/lib/difficulty";
 import { useAntiCheat } from "@/hooks/useAntiCheat";
+import { useAuth } from "@/contexts/AuthContext";
+import {
+  startRun,
+  noteQuestionAnswered,
+  completeRun,
+  abandonRun,
+} from "@/lib/gameAnalytics";
 import { api } from "../../../../convex/_generated/api";
 import type { Id } from "../../../../convex/_generated/dataModel";
 
@@ -90,6 +97,8 @@ export default function HigherLowerPlayScreen() {
   const makeGuessMut = useMutation(api.higherLower.makeGuess);
   const penalizeTabSwitchMut = useMutation(api.higherLower.penalizeTabSwitch);
 
+  const { accountState } = useAuth();
+
   const [sessionId, setSessionId] = useState<Id<"higherLowerSessions"> | null>(null);
   const [loading, setLoading] = useState(true);
   const [statKey, setStatKey] = useState("");
@@ -121,6 +130,12 @@ export default function HigherLowerPlayScreen() {
     message: string;
   } | null>(null);
 
+  // Read through a ref, NOT as a startGame dependency: startGame is its own
+  // useEffect's only dep, so adding accountState there would mint a fresh
+  // server session every time auth settled — inventing games nobody started.
+  const accountStateRef = useRef(accountState);
+  accountStateRef.current = accountState;
+
   const startGame = useCallback(async () => {
     if (!isSupportedSport) {
       setStartupState({
@@ -139,6 +154,14 @@ export default function HigherLowerPlayScreen() {
         startSessionMut({ sport, difficulty }),
         START_SESSION_TIMEOUT_MS,
       );
+      // A game genuinely began — the server minted a session. `t` sits in this
+      // callback's deps, so a locale switch re-runs it and mints a NEW session;
+      // that is legitimately a second game, and keying on session id counts
+      // exactly what the server counts. A bare navigation here mints nothing
+      // and stays silent.
+      startRun(result.sessionId, "higher-lower", {
+        accountState: accountStateRef.current,
+      });
       setSessionId(result.sessionId);
       setStatKey(result.statKey);
       setContext(result.context);
@@ -173,6 +196,14 @@ export default function HigherLowerPlayScreen() {
     startGame();
   }, [startGame]);
 
+  // Leaving mid-game. Reads the session through a ref so the cleanup sees the
+  // session that was live at unmount rather than the one captured at mount.
+  // abandonRun ignores runs that already ended, so a finished game can never
+  // be reported as abandoned.
+  const liveSessionRef = useRef<string | null>(null);
+  liveSessionRef.current = sessionId;
+  useEffect(() => () => abandonRun(liveSessionRef.current), []);
+
   useAntiCheat(
     useCallback(() => {
       if (!sessionId || gameOver || loading || startupState) return;
@@ -180,6 +211,9 @@ export default function HigherLowerPlayScreen() {
         if (res.penalized) {
           setGameOver(true);
           setScore(res.score);
+          // A forfeit is a real end state, not an exit — the server has already
+          // closed the session, so this run can never be abandoned afterwards.
+          completeRun(sessionId, { score: res.score, result: "loss" });
           toast.error(t("higherLower.tabSwitchEnded"));
         }
       });
@@ -195,6 +229,9 @@ export default function HigherLowerPlayScreen() {
 
     try {
       const result = await makeGuessMut({ sessionId, guess });
+      // Counted before any terminal report below, which reads the tally: every
+      // resolved call is an answered question, right or wrong.
+      noteQuestionAnswered(sessionId);
       setFeedback({ correct: result.correct, value: result.playerBValue });
 
       if (result.correct) {
@@ -204,6 +241,9 @@ export default function HigherLowerPlayScreen() {
         if (result.gameOver) {
           setEndReason(result.endReason ?? null);
           setGameOver(true);
+          // The server only ends a CORRECT call when the pool ran dry, so this
+          // is the one way out of this mode still standing.
+          completeRun(sessionId, { score: result.score, result: "win" });
         } else {
           // Animate transition: slide B → A, new B slides in.
           setTimeout(() => {
@@ -227,6 +267,12 @@ export default function HigherLowerPlayScreen() {
         setScore(result.score);
         setStreak(result.streak);
         setEndReason(null);
+        // Reported HERE rather than from inside the 1200ms timeout below: the
+        // run is over the instant the server rejects the guess, and the delay
+        // is presentation only. A player who bounces during the reveal has
+        // still finished the game, and the unmount cleanup would otherwise get
+        // there first and file it as abandoned.
+        completeRun(sessionId, { score: result.score, result: "loss" });
         // Reveal the losing value for a beat BEFORE mounting the game-over
         // actions (mirrors the correct-path delay above). This keeps any
         // tappable control OUT of the guess buttons' screen region while the
