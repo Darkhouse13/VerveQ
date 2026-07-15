@@ -1,8 +1,20 @@
 # VerveQ — Comprehensive App Overview
 
+> **Read this first.** Production runs the **v2 shell**
+> (`VITE_V2_SHELL_ENABLED=true`). The v1 screens this document's Screen
+> Inventory and User Flow were originally written around — `LoginScreen` as
+> the entry, `HomeScreen` as the hub — are a **redirect-only rollback seam**.
+> v1 `HomeScreen` is not reachable in production and is stripped from the
+> deployed bundle entirely. Where this document and
+> [`app/src/App.tsx`](../app/src/App.tsx) disagree about routes, App.tsx is the
+> truth. See "Screen Inventory" and "Authentication" for the live surfaces.
+
 ## What is VerveQ?
 
-VerveQ is a competitive sports trivia platform where players test and prove their sports knowledge through multiple game modes: **Quiz**, **Survival**, **Blitz**, **Higher or Lower**, **VerveGrid**, **Career Path**, **Daily Challenge**, **Live Match**, and the synchronous multiplayer **Challenge Arena** rooms. Players earn ELO ratings, climb leaderboards, unlock achievements, contribute community questions via **The Forge**, and challenge friends — all across three supported sports.
+VerveQ is a competitive sports trivia platform where players test and prove their sports knowledge through multiple game modes: **Quiz**, **Survival**, **Blitz**, **Higher or Lower**, **VerveGrid**, **Career Path**, **Daily Challenge**, and the synchronous multiplayer **Challenge Arena** rooms. Players earn ELO ratings, climb leaderboards, unlock achievements, contribute community questions via **The Forge**, and challenge friends — all across three supported sports.
+
+> **Live Match was removed in July 2026** along with the `liveMatches`
+> subsystem. Its former section below is retained as a marker only.
 
 The platform targets sports enthusiasts who want more than casual trivia. VerveQ's ELO rating system, borrowed from competitive chess, provides a meaningful measure of sports knowledge that evolves with every game played.
 
@@ -18,6 +30,13 @@ The platform targets sports enthusiasts who want more than casual trivia. VerveQ
 | **Total** | | **970** | **2,514** | **35,677** |
 
 **Grand total: 3,484 quiz questions** (970 text + 2,514 image).
+
+> These counts are a **dated snapshot and were not re-verified**. They are live
+> Convex row counts, and the bank is composed at runtime
+> (`knowledgeQuestions.push(...)`), so they cannot be checked from the repo.
+> Directionally they now undercount — the 24 CIE batches and later expansions
+> landed after this table was written. Count against the deployment before
+> relying on them.
 
 Current mode availability is mixed:
 
@@ -120,18 +139,20 @@ A progressive challenge where players guess sports player names from their initi
 - Wrong guesses cost 1 life
 - Game over at 0 lives
 
-**Hint system:**
-- 3 hint tokens available per game, with 3 progressive stages per challenge
+**Help system (Reveal Ladder):**
+- Served by `survivalSessions.requestHelp`. Per-round ladder stage
+  (`helpStage`) plus a per-game skip budget (`skipsLeft`).
 - **Stage 1:** Nationality and club/team information
 - **Stage 2:** Position, era, or handedness details
 - **Stage 3:** First name of a matching player
-- Hints must be used in order (Stage 1 before Stage 2, etc.)
-- Each stage consumes 1 hint token — strategic use is key
+- Stages must be used in order.
+- Help does not cost a token — it **shrinks the round's pot**, which is why
+  survival score is banked points rather than a round count (see ELO below).
 
-**Skip mechanic:**
-- 1 free skip per game (no life cost)
-- Additional skips cost 1 life each
-- A new challenge is generated for the next round
+> The old model — 3 hint tokens per game (`hintTokensLeft`,
+> `currentHintStage`) and 1 free skip (`freeSkipsLeft`) — was replaced by the
+> Reveal Ladder. Those fields are marked deprecated in `schema.ts` and kept
+> optional only so pre-cutover rows still validate until they expire.
 
 **Speed streak / "On Fire" system:**
 - Fast answers (under 4 seconds) build a speed streak counter
@@ -143,9 +164,13 @@ A progressive challenge where players guess sports player names from their initi
 - Players earn a bonus for finding valid players who are not the primary (most famous) player for those initials
 
 **Anti-cheat:**
-- Tab-switch detection penalizes players who leave the game
-- Standard survival: -1 life per tab switch
-- Daily survival: Instant forfeit
+- Tab-switch detection penalizes players who leave the game, after a short
+  grace period (`useAntiCheat` defaults `hiddenGraceMs = 1000`, cleared if the
+  player returns in time).
+- Standard survival: the **first** offense only floors that round's pot
+  (`antiCheatWarned` / `potFloorRound`); **repeat** offenses cost a life
+  (`schema.ts`).
+- Daily survival: instant forfeit.
 
 **Difficulty progression by round:**
 
@@ -262,9 +287,8 @@ Guess the player from the chronological list of clubs he played for (e.g., Barce
 
 ### Daily Challenge
 
-A once-per-day quiz challenge with a shared question set and daily leaderboard.
-Daily Survival is declared in type unions, but it is not wired into playable
-runtime today; `dailyChallenge.assertDailyQuizMode` rejects survival mode.
+A once-per-day challenge with a shared question set and daily leaderboard.
+Both Daily Quiz and **Daily Survival** are playable.
 
 **How it works:**
 1. Each day (UTC-based), a unique set of questions is generated per sport using seeded shuffling
@@ -280,7 +304,13 @@ runtime today; `dailyChallenge.assertDailyQuizMode` rejects survival mode.
 - Maximum possible score: 1,000 points
 
 **Daily Survival:**
-- Not currently playable. The backend rejects `mode: "survival"` for daily challenges with "Daily survival is not implemented yet."
+- Playable at `/v2/daily-survival` (`App.tsx`), served by
+  `survivalSessions.startDailyGame`. The daily set is built by
+  `ensureDailySurvivalChallenge` (`survivalSessions.ts`, called from
+  `dailyChallenge.ts`).
+- 10 rounds (`DAILY_SURVIVAL_ROUNDS`).
+- **Casual by design — not ranked.** `games.ts` excludes it from ELO
+  explicitly.
 
 **Special mechanics:**
 - Seeded shuffling ensures fairness — every player faces the same challenge
@@ -289,41 +319,28 @@ runtime today; `dailyChallenge.assertDailyQuizMode` rejects survival mode.
 
 ---
 
-### Live Match
+### Live Match — REMOVED 2026-07
 
-Real-time head-to-head competitive quiz between two players.
+The real-time head-to-head mode and its whole `liveMatches` subsystem were
+deleted. Nothing described here is live:
 
-**How it works:**
-1. A challenge is accepted between two players
-2. Both players enter a waiting room and mark themselves as "Ready"
-3. A 3-second countdown begins once both are ready
-4. 10 intermediate questions are served simultaneously to both players
-5. Each question has a 10-second timer
-6. Players tap an option to submit — the tap is the answer, with no confirm step
-7. After both answer (or timeout), a 2-second round result display shows both answers
-8. After 10 questions, the winner is determined by higher total score
+- `app/convex/liveMatches.ts` — deleted.
+- Routes `/live-match` and `/waiting-room` — removed; those URLs now fall
+  through to NotFound (`app/src/App.tsx`).
+- The `live-match-stale-check` cron — removed with the subsystem
+  (`app/convex/crons.ts`).
+- Tables `multiplayerMatches`, `challengeHeadToHeads`, `challengeMatchHistory`
+  — removals recorded in `app/convex/schema.ts`.
 
-**Scoring (Cutthroat system):**
-- Base: 100 points per correct answer
-- Time bonus: 10 points per second saved (e.g., answering in 2s = +80 bonus)
-- **First correct** gets full base (100) + time bonus
-- **Second correct** (opponent already answered correctly) gets half base (50) + time bonus
-- Both wrong: 0 points each
-- Maximum per question: ~190 points (correct in <1s, opponent wrong)
-
-**Special mechanics:**
-- Opponent status visible during questions: "thinking," "locked in," or "answered incorrectly"
-- Heartbeat system: players must ping every 5 seconds; 15 seconds of inactivity = automatic forfeit
-- Manual forfeit option available at any time
-- ELO ratings are updated for both players after match completion
-- Ties are possible when both players achieve equal scores
+The asynchronous **Duels** system is the surviving head-to-head format — see
+[`docs/CHALLENGE_DUELS.md`](CHALLENGE_DUELS.md).
 
 ---
 
 ### Challenge Arena
 
 Synchronous, server-clocked multiplayer rooms with a mobile-first UI. Additive
-to `liveMatches` and `duels`.
+to `duels`. (Originally also additive to `liveMatches`, removed 2026-07.)
 
 **Supported modes:** `1v1`, `2v2`, `ffa3`, `ffa4`, `ffa5`.
 
@@ -375,8 +392,11 @@ traps the user.
 - Correct answers get base + time bonus + rank-order bonus
 - `2v2` leaderboards sum team-member scores
 
-Account required to host or join (MVP — anonymous play not supported here).
-ELO, matchmaking, chat, and global leaderboards are intentionally out of scope.
+A **username** is required to host or join — not a full account. Both
+`create` and `join` go through `assertUsernameRequiredUser`
+(`app/convex/lib/authz.ts`), which admits anonymous users that hold a
+username, so `usernameOnly` players can play. ELO, matchmaking, chat, and
+global leaderboards are intentionally out of scope.
 
 See [`docs/CHALLENGE_ARENA.md`](CHALLENGE_ARENA.md) for state machine,
 server-authoritative guarantees, leave-safety, content fallback behavior, cron
@@ -439,13 +459,16 @@ performance = min(accuracy + timeBonus, 1.0)
 
 *Survival mode:*
 ```
-performance = min(score / 15, 1.0)
+performance = min(points / SURVIVAL_PERFECT_POINTS, 1.0)   // 2000
 ```
-A survival score of 15 represents perfect performance.
+A survival score is **points banked from round pots** (Easy 100 … Expert 300,
+shrinking with help usage), *not* a count of correct rounds. ~2000 points is
+roughly the old "15 flawless rounds" perfect run
+(`getSurvivalPerformance`, `app/convex/lib/elo.ts`).
 
 **Win/Loss determination:**
 - Quiz: Win if accuracy >= 80%
-- Survival: Win if score >= 10
+- Survival: Win if points >= `SURVIVAL_WIN_POINTS` (1200) — `games.ts`
 
 **Tier system (derived from ELO):**
 
@@ -533,9 +556,10 @@ Rankings are sorted by ELO rating in descending order, limited to players with a
 
 Players can challenge friends to compete head-to-head through two backend
 paths. The Challenge tab (`/challenge`) is now an **async Duel Hub** built on
-top of `duels`, `rivalries`, and `challengeNotifications` — the old synchronous
-"send invite → live match" path is still wired through `liveMatches` but is no
-longer the default surface.
+top of `duels`, `rivalries`, and `challengeNotifications`. The old synchronous
+"send invite → live match" path was **removed 2026-07** along with
+`liveMatches` and the legacy `challenges` subsystem; Duels is the only
+head-to-head path now.
 
 **Async Duel path (primary):**
 1. From `/challenge`, tap **New Duel** to pick:
@@ -555,11 +579,10 @@ longer the default surface.
    **Resolved**, with a per-card status badge and CTA. The Challenge nav icon
    carries an unread badge from `notifications.unreadCount`.
 
-**Synchronous Live Match path (legacy):**
-Still available — `liveMatches` powers the existing real-time head-to-head and
-its waiting room. New duels do not flow through this path; live matches are now
-launched from the result-screen rematch action and from existing
-`challenges` invites.
+**Synchronous Live Match path — REMOVED 2026-07:**
+`liveMatches` and the legacy `challenges` subsystem were both deleted
+(`app/convex/schema.ts` records the table removals). Duels are the only
+head-to-head path now.
 
 Async duels use the existing `quizQuestions` table. Knowledge is modeled as
 `sport: "knowledge"` with category taxonomy, including `which_came_first`;
@@ -615,39 +638,61 @@ Each player has a profile displaying their competitive history:
 
 ## Authentication
 
-VerveQ supports two authentication methods:
+The live model is **username-only onboarding with an in-place upgrade**.
+[`docs/AUTH.md`](AUTH.md) is the reference; this is the summary.
 
-1. **Guest Play (Anonymous)**
-   - Click "Play as Guest" or "Quick Start"
-   - No account creation required
-   - Full access to quiz and survival modes
-   - Cannot send or receive challenges
-   - Guest profiles are temporary
+A visitor gets a real anonymous *server* identity first, claims a username
+second, and attaches email + password later — keeping the same `users` doc,
+username, and casual progress. Four states, all derived server-side from
+`users.me`:
 
-2. **Account Creation (Password)**
-   - Enter a display name to create an account
-   - Username derived from display name (lowercase, underscores)
-   - Full access to all features including challenges
-   - Persistent profile, stats, and achievements
+| State | Can play |
+|-------|----------|
+| `loggedOut` | cold entry / taste round |
+| `needsUsername` | anonymous session, no username yet |
+| `usernameOnly` | casual + social modes (Arena, Duels, Career Path, Learn) — **excluded from ranked** |
+| `fullAccount` | everything, including ranked (Quiz, Survival, Blitz) |
 
-Authentication is handled by Convex Auth with JWT-based sessions.
+- **`startAnonymousSession()`** — the real Convex anonymous provider, gated on
+  a single-use IP permit. Not a client-side pretend-guest.
+- **`claimUsername()`** — uniqueness enforced by the `usernameClaims` table.
+- **`upgradeAccount(email, password, displayName?)`** — attaches credentials
+  to the same doc via `users.upgradeUsernameOnly`. Ranked is not backfilled;
+  it starts on upgrade.
+- **`signUp(email, password, username, displayName?)`** — the direct path.
+  Username is **explicit**, not derived from the email or display name.
+
+Ranked gating is enforced on both sides: `FullAccountRoute` client-side,
+`app/convex/lib/authz.ts` server-side.
+
+`loginAsGuest()` ("Play as guest" on `LoginScreen`) is a **legacy tab-local
+seam** with no server identity — every v2 surface treats it as logged out.
+"Quick Start" does not exist.
+
+Sessions are Convex Auth; passwords are hashed with Scrypt.
 
 ---
 
 ## User Flow
 
+> **This is the v1 flow — a rollback seam, not the live product.** In
+> production the entry is `/` → `ColdEntryScreen` (signed out) or the v2 shell
+> home, and onboarding is `UsernameOnlyOnboarding` (username-only), not a
+> 3-step wizard off a login screen. "Quick Start" does not exist in the
+> codebase. `App.tsx` is the route truth; the diagram below is retained
+> because the mode-level flows (Sport Select → Play → Results, the Arena
+> lobby chain, the Duel chain) still describe what happens inside each mode.
+
 ```
-Login Screen
-  ├── Quick Start (guest) ──────────────────────────────────── Home
+[v1 seam] Login Screen
   ├── Play as Guest ────────── Onboarding (3 steps) ────────── Home
   └── Create Account ───────── Onboarding (3 steps) ────────── Home
 
-Home Screen
+[v1 seam] Home Screen
   ├── Quiz Mode ────── Sport Select ── Difficulty Select ──── Quiz (10 Qs) ── Results
   ├── Survival Mode ── Sport Select ───────────────────────── Survival ─────── Results
   ├── Daily Challenge ─ Sport Select ── Mode Select ────────── Daily Quiz/Survival ── Daily Results
   ├── Blitz Mode ───── Sport Select ───────────────────────── Blitz (60s) ─── Blitz Results
-  ├── Live Match ───── Challenge Accept ── Waiting Room ───── Live Match ──── Results
   ├── Higher/Lower ── Sport Select ───────────────────────── Higher or Lower ── Results
   ├── VerveGrid ───── Sport Select ───────────────────────── VerveGrid ──────── Results
   ├── Career Path ─── (direct launch) ──────────────────────── Career Path ────── Results
@@ -680,11 +725,38 @@ Results Screen
 
 ## Screen Inventory
 
+**The live routes are the `/v2/*` shell below.** The v1 table that follows it
+is the rollback seam: with `VITE_V2_SHELL_ENABLED=true` those routes are
+`V2Redirect`-wrapped and forward to their v2 counterpart, and v1 `HomeScreen`
+is unreachable — dead-code-eliminated from the deployed bundle. Source of
+truth for both tables is [`app/src/App.tsx`](../app/src/App.tsx).
+
+### Live (v2 shell)
+
+| Route | Purpose |
+|-------|---------|
+| `/` | `ColdEntryScreen` when signed out; otherwise redirects to shell home. `LoginScreen` only with an explicit `?mode=` / `?from=` auth intent |
+| `/v2/welcome` | `UsernameOnlyOnboarding` — the onboarding card |
+| `/v2/upgrade` | `UpgradeAccountForm` — username-only → full account |
+| `/v2/account`, `/v2/profile`, `/v2/settings` | Account, profile, settings |
+| `/compete`, `/compete/sport`, `/compete/sport/:sport` | Compete category → sport → mode grid |
+| `/v2/quiz`, `/v2/survival`, `/v2/blitz` | Ranked modes (`FullAccountRoute`) |
+| `/v2/daily`, `/v2/daily-survival` | Daily Quiz, Daily Survival |
+| `/v2/higher-lower`, `/v2/verve-grid`, `/v2/career-path` | Casual curated modes |
+| `/v2/arena`, `/v2/arena/:code` | Arena hub; lobby by code (onboards inline — no guard, so an invite link never drops its code) |
+| `/v2/duels`, `/v2/duels/history`, `/v2/rivals` | Duels + rivalries |
+| `/v2/learn`, `/v2/learn/run`, `/v2/learn/mastery`, `/v2/learn/review` | Learn |
+| `/v2/leaderboard`, `/v2/ranks` | Leaderboard, Ranks |
+| `/v2/forge` | The Forge |
+| `/play` | Off-platform short link (promo endcards, social bios) |
+
+### v1 seam (redirect-only in production)
+
 | # | Screen | Route | Purpose |
 |---|--------|-------|---------|
-| 1 | Login | `/` | Authentication entry point |
-| 2 | Onboarding | `/onboarding` | 3-step new user wizard |
-| 3 | Home | `/home` | Main hub with stats, game entry points |
+| 1 | Login | `/` | Auth entry — now only via explicit auth intent |
+| 2 | Onboarding | `/onboarding` | 3-step wizard (superseded by `UsernameOnlyOnboarding`) |
+| 3 | Home | `/home` | **Unreachable in production** — redirects to `/v2` home |
 | 4 | Sport Select | `/sport-select` | Choose football, tennis, or basketball |
 | 5 | Difficulty | `/difficulty` | Choose easy, medium, or hard (quiz only) |
 | 6 | Quiz | `/quiz` | 10-question timed quiz gameplay |
@@ -702,8 +774,8 @@ Results Screen
 | 18 | Daily Results | `/daily-results` | Daily challenge results |
 | 19 | Blitz | `/blitz` | 60-second speed quiz |
 | 20 | Blitz Results | `/blitz-results` | Blitz mode results |
-| 21 | Waiting Room | `/waiting-room` | Live match matchmaking lobby |
-| 22 | Live Match | `/live-match` | Head-to-head real-time gameplay |
+| 21 | ~~Waiting Room~~ | ~~`/waiting-room`~~ | **Removed 2026-07** — falls through to NotFound |
+| 22 | ~~Live Match~~ | ~~`/live-match`~~ | **Removed 2026-07** — falls through to NotFound |
 | 23 | Forge | `/forge` | Community question editor and reviewer |
 | 24 | Higher or Lower | `/higher-lower` | Streak-based stat comparison gameplay |
 | 25 | VerveGrid | `/verve-grid` | 3x3 grid intersection challenge |
@@ -720,7 +792,7 @@ Results Screen
 | Build Tool | Vite (SWC plugin) |
 | Backend | Convex (serverless TypeScript functions) |
 | Database | Convex document database (real-time) |
-| Authentication | @convex-dev/auth (Anonymous + Password providers) |
+| Authentication | @convex-dev/auth — Password provider + a hand-rolled `ConvexCredentials({ id: "anonymous" })` (IP-permit gated), **not** the stock Anonymous provider |
 | Styling | Tailwind CSS + shadcn/ui components |
 | Design System | Neo-brutalism (thick borders, bold shadows, vibrant colors) |
 | Routing | React Router v6 |
@@ -760,9 +832,16 @@ VerveQ uses a **neo-brutalism** design language characterized by:
 
 ### Convex Tables
 
+> **Partial list.** `app/convex/schema.ts` defines ~45 tables; the table below
+> predates several subsystems and omits `arenas`, `arenaAnswers`, `duels`,
+> `rivalries`, `challengeNotifications`, `careerPathSessions`, `usernameClaims`,
+> `anonymousOnboardingAttempts`, `anonymousOnboardingIpPermits`, `funnelEvents`,
+> the `learn*` tables, and the curated content tables. Treat `schema.ts` as the
+> source of truth.
+
 | Table | Purpose | Key Indexes |
 |-------|---------|-------------|
-| `users` | User identity and profile | by_username |
+| `users` | User identity and profile | by_username (a plain index — uniqueness lives in `usernameClaims`) |
 | `userRatings` | ELO ratings per sport/mode | by_user_sport_mode, by_sport_mode_elo |
 | `gameSessions` | Historical game records | by_user |
 | `quizQuestions` | 3,484 quiz questions (970 text + 2,514 image) | by_sport_difficulty, by_checksum |
@@ -770,10 +849,10 @@ VerveQ uses a **neo-brutalism** design language characterized by:
 | `survivalSessions` | Active survival game state (1-hr TTL) | — |
 | `achievements` | Achievement definitions (8 total) | by_achievement_id |
 | `userAchievements` | Unlocked achievements per user | by_user, by_user_achievement |
-| `challenges` | Player-vs-player challenges | by_challenged_status, by_challenger |
+| ~~`challenges`~~ | **Removed 2026-07** with the synchronous challenge subsystem | — |
 | `dailyChallenges` | Daily challenge definitions | by_date_sport_mode |
 | `dailyAttempts` | User attempts at daily challenges | by_user_date_sport_mode, by_date_sport_mode_score |
-| `liveMatches` | Real-time PvP match state | by_player1, by_player2 |
+| ~~`liveMatches`~~ | **Removed 2026-07** with the subsystem | — |
 | `blitzSessions` | Active blitz game state | by_user |
 | `blitzScores` | Blitz high scores | by_sport_score, by_user |
 | `seasons` | Seasonal ranking periods | by_active, by_season_number |
@@ -820,7 +899,7 @@ VerveQ uses a **neo-brutalism** design language characterized by:
 | `survivalSessions.startGame` | Mutation | Start survival game, get first challenge |
 | `survivalSessions.getSession` | Query | Get current session state |
 | `survivalSessions.submitGuess` | Mutation | Submit a player name guess |
-| `survivalSessions.useHint` | Mutation | Reveal progressive hint (costs 1 token) |
+| `survivalSessions.requestHelp` | Mutation | Request help on a round (shrinks the round pot) |
 | `survivalSessions.skipChallenge` | Mutation | Skip current challenge (free or -1 life) |
 | `survivalSessions.penalizeTabSwitch` | Mutation | Apply anti-cheat tab-switch penalty |
 
@@ -836,18 +915,18 @@ VerveQ uses a **neo-brutalism** design language characterized by:
 | `blitz.start` | Mutation | Start a 60-second blitz session |
 | `blitz.getQuestion` | Mutation | Fetch next blitz question |
 | `blitz.submitAnswer` | Mutation | Submit answer, apply time penalty if wrong |
-| `blitz.end` | Mutation | End blitz session, save score |
-| `blitz.getScore` | Query | Get blitz high scores |
+| `blitz.endGame` | Mutation | End blitz session, save score |
+| `blitz.getHighScores` | Query | Get blitz high scores |
 
 ### Daily Challenge
 | Function | Type | Description |
 |----------|------|-------------|
 | `dailyChallenge.getOrCreateChallenge` | Mutation | Get or generate today's daily challenge |
 
-### Live Matches
-| Function | Type | Description |
-|----------|------|-------------|
-| `liveMatches.createFromChallenge` | Mutation | Create a live match from an accepted challenge |
+### Live Matches — REMOVED 2026-07
+
+`app/convex/liveMatches.ts` was deleted; every `liveMatches.*` function is
+gone. Use Duels (`duels.*`) or Arena (`challengeArenas.*`).
 
 ### Challenge Arena
 | Function | Type | Description |
@@ -869,7 +948,7 @@ VerveQ uses a **neo-brutalism** design language characterized by:
 |----------|------|-------------|
 | `forge.submit` | Mutation | Submit a community question |
 | `forge.vote` | Mutation | Vote to approve or reject a submission |
-| `forge.getPending` | Query | Get pending questions for review |
+| `forge.getReviewQueue` | Query | Get the review queue |
 
 ### Seasons
 | Function | Type | Description |
@@ -879,7 +958,7 @@ VerveQ uses a **neo-brutalism** design language characterized by:
 ### ELO Decay
 | Function | Type | Description |
 |----------|------|-------------|
-| `eloDecay.checkDecay` | Mutation | Check and apply ELO decay for inactive players |
+| `eloDecay.runDecay` | **internalMutation** | Apply ELO decay for inactive players. Cron-only — not client-callable |
 
 ### Leaderboards
 | Function | Type | Description |
@@ -896,10 +975,7 @@ VerveQ uses a **neo-brutalism** design language characterized by:
 ### Challenges
 | Function | Type | Description |
 |----------|------|-------------|
-| `challenges.getPending` | Query | Get pending challenges for current user |
-| `challenges.create` | Mutation | Send a challenge to another player |
-| `challenges.accept` | Mutation | Accept a pending challenge |
-| `challenges.decline` | Mutation | Decline a pending challenge |
+| ~~`challenges.*`~~ | — | **Removed 2026-07.** `app/convex/challenges.ts` was deleted with the dormant synchronous challenge subsystem. Use Duels (`duels.*`) or Arena (`challengeArenas.*`). |
 
 ### Profile
 | Function | Type | Description |
