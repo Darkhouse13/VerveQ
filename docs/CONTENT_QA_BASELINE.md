@@ -4,6 +4,21 @@ Baseline date: 2026-05-24
 
 This is the pre-expansion baseline that upcoming 5x content batches will be measured against. It was generated offline from bundled seed modules only; no backend calls, network requests, or seeding were performed.
 
+> **Dated snapshot — no longer covers the current bank.** Every number below is as-of
+> **2026-05-24** and has not been recomputed. This baseline **predates and excludes all 24 CIE
+> score batches** (Geography v1–v10, History v1–v7, Science v1–v7): `app/scripts/contentQaBaseline.ts`
+> imports only `challengeArenaCapitalCityQuestions`, `challengeArenaEnterpriseLogoQuestions`,
+> `challengeArenaGeneralKnowledgeQuestions`, and `knowledgeQuestions` — no
+> `knowledge*CieScoreBatch*` module is in its import set. CIE batches are gated per-batch by
+> `npm run content:qa -- <batch>` (`docs/CONTENT_QA.md`) plus cross-family verify
+> (`docs/CIE_BATCH_RUNBOOK.md`), not by this file.
+>
+> Treat it as a historical floor for the pre-expansion pools only, never as an inventory of what
+> ships today. The row counts cannot be re-derived by reading the source: `knowledgeQuestions` is
+> assembled at runtime via `knowledgeQuestions.push(...)` (`app/convex/knowledgeQuestions.ts:8290-8293`)
+> and the capital rows are `.map()`-generated (`app/convex/challengeArenaContent.ts:547`). Re-running
+> `npm run content:qa:baseline` is the only way to refresh them — do not hand-edit the numbers.
+
 Scope:
 - `challengeArenaGeneralKnowledgeQuestions` from `app/convex/challengeArenaContent.ts`.
 - `knowledgeQuestions` rows with `category: "which_came_first"` from `app/convex/knowledgeQuestions.ts`.

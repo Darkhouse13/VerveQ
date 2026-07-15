@@ -1,18 +1,48 @@
 # CIE Batch Runbook — Shape Expansion (free-text / numeric / ordering)
 
-> **Drop-in extension for `docs/CIE_BATCH_RUNBOOK.md`.** Splice the lettered/numbered
-> blocks below into the matching sections of the runbook. Where a block says
-> *replaces*, swap the named text; where it says *add*, append.
+> **STATUS: SUPERSEDED PROPOSAL — historical. Do not author against this document.**
+> *Fenced 2026-07-15.*
 >
-> **STATUS: PROPOSED — do not freeze until both are confirmed on `feat/learn-mode`:**
-> 1. **Grader contract.** The `grading` field names/types below are *proposals*. They
->    must match what the Learn v2 server-authoritative grader actually consumes. If the
->    grader doesn't yet support a shape, that shape is not authorable — STOP and escalate.
-> 2. **Provenance schema.** Reconcile field names against `docs/CONTENT_INGESTION.md` §5
->    (provenance) so shape rows carry the same per-claim provenance as MCQ rows.
+> This was a proposal whose own freeze gate was "confirm the grader contract on
+> `feat/learn-mode`". That branch no longer exists, and the grader shipped on `master` with
+> a **materially different contract**. The proposal was never reconciled with it, so every
+> `grading` block below is fiction as written.
 >
-> Until frozen: **no shape authoring volume.** Each shape still solo-proves at N=1 (§7).
-> Cross-family model verify stays mandatory per item — nothing here replaces it.
+> **The real contract is `app/convex/learnGraders.ts`.** Read it there, not here:
+>
+> | This doc proposes | What actually shipped (`learnGraders.ts`) |
+> | --- | --- |
+> | Shapes `free_text`, `numeric`, `ordering` (§2, §3A) | `LearnQuestionType = "mcq" \| "text" \| "numeric" \| "order"` (`:3`) — different names |
+> | A `grading: { mode, … }` wrapper object | **No wrapper.** Fields are flat on the question (`LearnGradableQuestion`, `:12–26`) |
+> | `acceptedAnswers` + `normalization` block (§3A.1) | `acceptedAnswers` (`:19`), flat; no normalization sub-object |
+> | `canonicalValue` / `unit` / `tolerance: {type,value}` (§3A.2) | `numericAnswer` (`:21`), `numericUnit` (`:23`), `acceptedUnits` (`:24`), and a **scalar** `numericTolerance` (`:22`) — no abs/rel discriminator |
+> | `items` / `canonicalOrder` / `orderingKey` / `match` (§3A.3) | `correctOrder: string[]` (`:25`) only |
+> | "**No fuzzy / edit-distance / substring acceptance**" (§3A.1) | **False — fuzzy shipped.** `learnGraders.ts:1` imports `levenshteinDistance` from `./lib/fuzzy`; `:20` exposes `textEditDistance` |
+>
+> Kept for the reasoning that is still sound and contract-independent: the GREEN eligibility
+> tests, the §5.FT / §5.NUM / §5.ORD ambiguity blocks, the dedup-key generalization (§6), and
+> the per-shape N=1 solo proof (§7). Those arguments survive; the field names do not.
+>
+> Anyone reviving shape authoring: re-derive §3A and §6 from `learnGraders.ts` first, then
+> unfence. Cross-family model verify stays mandatory per item — nothing here replaces it.
+>
+> ---
+>
+> *Original banner, as written:*
+>
+> > **Drop-in extension for `docs/CIE_BATCH_RUNBOOK.md`.** Splice the lettered/numbered
+> > blocks below into the matching sections of the runbook. Where a block says
+> > *replaces*, swap the named text; where it says *add*, append.
+> >
+> > **STATUS: PROPOSED — do not freeze until both are confirmed on `feat/learn-mode`:**
+> > 1. **Grader contract.** The `grading` field names/types below are *proposals*. They
+> >    must match what the Learn v2 server-authoritative grader actually consumes. If the
+> >    grader doesn't yet support a shape, that shape is not authorable — STOP and escalate.
+> > 2. **Provenance schema.** Reconcile field names against `docs/CONTENT_INGESTION.md` §5
+> >    (provenance) so shape rows carry the same per-claim provenance as MCQ rows.
+> >
+> > Until frozen: **no shape authoring volume.** Each shape still solo-proves at N=1 (§7).
+> > Cross-family model verify stays mandatory per item — nothing here replaces it.
 
 ---
 
