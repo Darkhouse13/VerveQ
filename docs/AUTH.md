@@ -56,9 +56,22 @@ Configured in [`app/convex/authEmail.ts`](../app/convex/authEmail.ts).
 - Delivery: Resend HTTP API (`https://api.resend.com/emails`). Plain
   text body — no HTML / React email templates.
 
-A failed delivery throws loudly from the Convex action. In particular,
-if `RESEND_API_KEY` or `EMAIL_FROM` is unset the reset fails fast with a
-clear error instead of silently pretending to have sent the email.
+A failed delivery — including an unset `RESEND_API_KEY` / `EMAIL_FROM` —
+throws `ConvexError({ code: "reset_unavailable" })`. It must be a
+ConvexError, not a plain `Error`: production Convex redacts a plain
+Error's message to an opaque `"Server Error"` before it reaches the
+browser, so the client could never map it to useful copy (see "Client-side
+error surfacing"). The diagnostic detail (Resend status and response body)
+is `console.error`-logged into the Convex deployment logs and deliberately
+kept out of the client-visible payload.
+
+Requesting a reset for an email with **no** password account does not
+error. Convex Auth throws a plain `InvalidAccountId` from `retrieveAccount`
+before the email provider is ever reached; `requestPasswordReset` swallows
+it and resolves, so the reset form cannot be used to probe which emails are
+registered. The UI shows the same neutral "if that email is registered, a
+reset code is on its way" toast either way. A genuine send failure is
+distinguishable precisely because it arrives as a ConvexError.
 
 ## Password policy
 
@@ -129,6 +142,27 @@ Errors surface as `AuthError` with a stable `code`. The LoginScreen
 renders the error inline above the submit button in the destructive
 color. We deliberately do not toast auth errors — toasts disappear too
 fast to act on.
+
+`mapAuthError` in AuthContext resolves the code in this order:
+
+1. **`ConvexError.data.code`** — the only server payload that survives
+   production redaction. Server code that wants a specific client message
+   *must* throw `ConvexError({ code })` with a code from the list above.
+2. **Message matching** — the thrown message, first de-noised through
+   `humanizeServerError` to strip the `[CONVEX A(auth:signIn)] [Request
+   ID: …] Server Error … Called by client` envelope. This only ever
+   matches on **dev** deployments; in production the message is redacted
+   to `"Server Error"` and nothing legible survives, so these rules all
+   fall through. Treat them as a dev-ergonomics convenience, not the
+   contract.
+3. **Catch-all** — the call site's fallback code, rendered with curated
+   copy from `SAFE_MESSAGE` (one entry per `AuthErrorCode`).
+
+`AuthError.message` is rendered verbatim by LoginScreen, so raw server
+text must never reach it. The catch-all always substitutes `SAFE_MESSAGE`
+copy rather than passing the server's message through — this is what
+stops a raw `[CONVEX …] Server Error` string from being rendered inline.
+`authContract.test.ts` locks that in.
 
 ## Known gaps
 
