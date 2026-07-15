@@ -1,16 +1,19 @@
 # Security Policy
 
-> Historical deployment notes in this document are superseded by
-> docs/DEPLOYMENT.md. The current live stack is `app/` + Convex, not the older
-> FastAPI/PostgreSQL deployment model.
+> The current live stack is `app/` + Convex, not the older FastAPI/PostgreSQL
+> model. Deployment notes here are superseded by docs/DEPLOYMENT.md, and the
+> authoritative auth reference is docs/AUTH.md. Anything below that describes a
+> database, ORM, or token model you cannot find in `app/convex/` is historical.
 
 ## Supported Versions
 
-The following versions of VerveQ Platform are currently being supported with security updates:
+VerveQ ships continuously from `master` — every merge is a production release
+(see [DEPLOYMENT.md](DEPLOYMENT.md)). There are no maintained release branches
+and no back-porting: the deployed `master` is the only supported version, and
+security fixes reach production by merging them.
 
-| Version | Supported          |
-| ------- | ------------------ |
-| 1.0.x   | :white_check_mark: |
+`app/package.json` declares version `0.1.0`; it is not a release channel and
+carries no support promise.
 
 ## Reporting a Vulnerability
 
@@ -30,33 +33,43 @@ After the initial reply to your report, the security team will endeavor to keep 
 ## Security Measures
 
 ### Authentication
-- JWT tokens are used for secure authentication
-- Tokens expire after a configurable period
-- Strong secret keys are required for production deployments
+
+Authentication is [Convex Auth](https://labs.convex.dev/auth), configured in
+[`app/convex/auth.ts`](../app/convex/auth.ts). Full detail — flows, error
+contract, known gaps — is in [AUTH.md](AUTH.md).
+
+- Two providers: **Password** (real email + password) and **Anonymous** (guest play, IP-permit rate-limited)
+- Passwords are hashed with **Scrypt** via Convex Auth's default crypto. The application never stores or handles a plaintext password at rest
+- Password policy is shared by client and server through [`app/convex/lib/passwordPolicy.ts`](../app/convex/lib/passwordPolicy.ts): 8–72 characters, with case-insensitive rejection of common leaked passwords. The Convex `Password` provider enforces it in `validatePasswordRequirements`, so a direct Convex call cannot bypass the client-side check
+- Password reset is a 6-digit OTP delivered by email, valid 10 minutes and single-use. Requesting a reset for an unregistered email resolves normally rather than erroring, so the form cannot be used to enumerate accounts
+- Session tokens are issued and validated by Convex Auth; the issuer is configured via `CONVEX_SITE_URL` (`app/convex/auth.config.ts`)
 
 ### Data Protection
+
 - Sensitive data is never committed to the repository
-- Environment variables are used for configuration
-- Database connections are secured with proper credentials
+- Server-side secrets (`RESEND_API_KEY`, `EMAIL_FROM`, `CONVEX_SITE_URL`) are set on the Convex dashboard, **not** in `app/.env.local` — the frontend bundle must never see them
+- Only `VITE_`-prefixed variables reach the browser bundle; treat every one of them as public
+- Game logic is server-authoritative: answer keys are stripped server-side before a session is returned to the client
+- Production error reporting (Sentry) is errors-only with PII scrubbed
 
 ### API Security
-- Rate limiting prevents abuse
-- CORS policies protect against unauthorized cross-origin requests
-- Input validation prevents injection attacks
+
+- Convex functions declare argument validators, and the data layer is Convex's own — there is no SQL and no string-built query surface
+- Authorization is checked server-side per function (`app/convex/lib/authz.ts`), not in the client
+- Convex Auth has a built-in sign-in attempt limit (`signIn.maxFailedAttempsPerHour`, default 10); anonymous onboarding is additionally IP-permit gated
 
 ### Network Security
-- HTTPS is required for production deployments
-- Secure headers are implemented
-- Regular security audits are performed
+
+- HTTPS is enforced in production; TLS terminates at Traefik in front of the app container (see [DEPLOYMENT.md](DEPLOYMENT.md))
+- CI never carries deploy secrets in the verification workflow (`check.yml` references none)
 
 ## Security Best Practices
 
-For production deployments, we recommend:
+For anyone operating this stack:
 
-1. Always use strong, randomly generated secret keys
-2. Configure proper CORS origins for your domain
-3. Use HTTPS for all communications
-4. Regularly update dependencies
-5. Monitor logs for suspicious activity
-6. Implement proper database backup procedures
-7. Use the Convex deployment and persistence model documented in `docs/DEPLOYMENT.md` for production
+1. Keep server-side secrets on the Convex dashboard; never commit them or expose them through a `VITE_` variable
+2. Use HTTPS for all communications
+3. Regularly update dependencies
+4. Monitor the Convex deployment logs for suspicious activity
+5. Rehearse schema changes on the dev deployment before merging — a merge to `master` ships schema to production
+6. Use the Convex deployment and persistence model documented in [DEPLOYMENT.md](DEPLOYMENT.md) for production
