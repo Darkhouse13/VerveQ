@@ -81,10 +81,11 @@ function report(label, ok, detail) {
 async function fresh(browser) {
   sent = [];
   const ctx = await browser.newContext();
-  // Suppress the first-run language modal. Picking a language changes i18n's
-  // `t`, which re-creates startGame and mints a SECOND server session — real
-  // behaviour worth knowing about, but leaving it on would mean these
-  // assertions measure the modal rather than the game loop.
+  // Suppress the first-run language modal: it overlays whatever screen loads
+  // first, and these assertions are about the game loop, not the modal. The
+  // double-start it used to cause on Career Path is fixed and pinned by
+  // careerPathModeContract; the first-run flow itself is exercised there and by
+  // the repro in that fix, not here.
   await ctx.addInitScript(() => {
     try {
       localStorage.setItem("verveq_lang_chosen", "1");
@@ -145,10 +146,10 @@ async function main() {
   {
     const { ctx, page } = await fresh(browser);
     await page.goto(`${BASE}/v2/career-path?ref=play`, { waitUntil: "networkidle" });
-    // Dismiss BEFORE asserting: choosing a language changes i18n's `t`, which
-    // re-creates startGame and mints a second server session. That is real
-    // behaviour (and the orphaned first run correctly reports an abandon), but
-    // doing it mid-run here would be measuring the harness, not the app.
+    // Dismiss BEFORE asserting: the prompt overlays the screen and swallows
+    // clicks meant for it. Career Path's arrival is idempotent, so a locale
+    // switch no longer mints a second session — but the modal is still in the
+    // way, and these blocks are about the game loop, not the modal.
     await dismissLanguagePrompt(page);
     await wait(FLUSH + 2000);
 
@@ -178,10 +179,10 @@ async function main() {
   {
     const { ctx, page } = await fresh(browser);
     await page.goto(`${BASE}/v2/career-path?ref=play`, { waitUntil: "networkidle" });
-    // Dismiss BEFORE asserting: choosing a language changes i18n's `t`, which
-    // re-creates startGame and mints a second server session. That is real
-    // behaviour (and the orphaned first run correctly reports an abandon), but
-    // doing it mid-run here would be measuring the harness, not the app.
+    // Dismiss BEFORE asserting: the prompt overlays the screen and swallows
+    // clicks meant for it. Career Path's arrival is idempotent, so a locale
+    // switch no longer mints a second session — but the modal is still in the
+    // way, and these blocks are about the game loop, not the modal.
     await dismissLanguagePrompt(page);
     await wait(FLUSH + 2000);
     const started = seen("game_started").length === 1;
@@ -214,10 +215,10 @@ async function main() {
     const { ctx, page } = await fresh(browser);
     // Build anonymous history FIRST so the merge has something to attribute.
     await page.goto(`${BASE}/v2/career-path?ref=play`, { waitUntil: "networkidle" });
-    // Dismiss BEFORE asserting: choosing a language changes i18n's `t`, which
-    // re-creates startGame and mints a second server session. That is real
-    // behaviour (and the orphaned first run correctly reports an abandon), but
-    // doing it mid-run here would be measuring the harness, not the app.
+    // Dismiss BEFORE asserting: the prompt overlays the screen and swallows
+    // clicks meant for it. Career Path's arrival is idempotent, so a locale
+    // switch no longer mints a second session — but the modal is still in the
+    // way, and these blocks are about the game loop, not the modal.
     await dismissLanguagePrompt(page);
     await wait(FLUSH + 2000);
 

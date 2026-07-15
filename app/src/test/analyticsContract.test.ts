@@ -103,3 +103,65 @@ describe("analytics wiring (source contract)", () => {
     expect(source).toContain("Usage analytics");
   });
 });
+
+/**
+ * Arriving on a play screen provisions exactly ONE server session.
+ *
+ * Every mode auto-starts from a mount effect, so what that effect is keyed on
+ * IS product behaviour, not a detail: re-run it and the server mints another
+ * game. The first-run language modal made that concrete — it overlays whatever
+ * screen loads first (on `/play`, the marketed door, that is Career Path), and
+ * picking a language makes i18n hand out a new `t`. While `t` sat in
+ * startGame's dependencies behind an effect keyed on startGame's IDENTITY, the
+ * pick re-ran the start: two real backend rows for one visitor, the first
+ * orphaned and reporting an abandon it never earned.
+ *
+ * These three are the auto-start owners that held `t`. The guard is keyed on
+ * the real inputs (sport, difficulty), so an explicit replay still mints a real
+ * session — this is idempotency on arrival, not start suppression.
+ */
+describe("play screens provision one session per arrival", () => {
+  const OWNERS = [
+    {
+      mode: "career-path",
+      file: "src/pages/shell/play/CareerPathPlayScreen.tsx",
+      startDeps: /\}, \[startChallengeMut[^\]]*\]\);/,
+    },
+    {
+      mode: "higher-lower",
+      file: "src/pages/shell/play/HigherLowerPlayScreen.tsx",
+      startDeps: /\}, \[isSupportedSport[^\]]*\]\);/,
+    },
+    {
+      mode: "verve-grid",
+      file: "src/hooks/useVerveGrid.ts",
+      startDeps: /\}, \[isSupportedSport[^\]]*\]\);/,
+    },
+  ];
+
+  for (const owner of OWNERS) {
+    describe(owner.mode, () => {
+      const source = read(owner.file);
+
+      it("keeps i18n's t out of the start closure", () => {
+        const deps = source.match(owner.startDeps)?.[0];
+        expect(deps).toBeDefined();
+        // A re-created translation function is not a reason to mint a session.
+        expect(deps).not.toMatch(/\bt\b/);
+      });
+
+      it("auto-starts on the real inputs, not on startGame's identity", () => {
+        expect(source).toContain("autoStartedForRef");
+        expect(source).toMatch(/if \(autoStartedForRef\.current === \w+\) return;/);
+        // The exact shape of the bug: an effect that re-fires whenever the
+        // start closure is re-created.
+        expect(source).not.toContain("}, [startGame]);");
+      });
+
+      it("holds only the startup KIND in state, never translated copy", () => {
+        // Translated strings in state would drag `t` back into the closure.
+        expect(source).not.toContain("setStartupState({");
+      });
+    });
+  }
+});

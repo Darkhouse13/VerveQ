@@ -60,9 +60,11 @@ scored → completion.
 Two behaviours worth knowing:
 
 - **Orphaned runs.** A tab holds one live game, so a new session means the
-  previous run was left behind and it reports an abandon. This is what a locale
-  switch does: `startGame` sits in a `useEffect` with i18n's `t` in scope, so
-  changing language re-runs it and mints a fresh server session.
+  previous run was left behind and it reports an abandon. What reaches this is a
+  real replay ("Next player", a difficulty change) leaving a live run behind. A
+  **locale switch** used to reach it too, where nobody had left anything: the
+  play screens re-created `startGame` on a new `t` and minted a second server
+  session. That is fixed at the source (below) for all three auto-start owners.
 - **Tab-close.** Closing the tab destroys the JS context without React running
   any unmount cleanup, so per-screen handling never sees the most common real
   exit. `armExitAbandonReporting()` (`main.tsx`) covers it via `pagehide` +
@@ -286,9 +288,25 @@ Verified 2026-07-15 by `scripts/analyticsVerificationPass.mjs` against dev
    fine while silently violating the requirement it exists to prove. Now
    persisted (`vq_test_anon_id`). Test-mode only; production never had a
    bootstrap.
-2. **First-run language modal double-starts games** — *open, separate ticket*.
-   Picking a language changes i18n's `t`, re-creating `startGame` and minting a
-   second server session. A first-time visitor on `/play` produces two
-   `game_started` and one spurious abandon, inflating starts on the marketed
-   path. Visible in data (the orphaned run reports), but it is noise at the top
-   of the most important funnel.
+2. **First-run language modal double-starts games** — *fixed*. Picking a
+   language changed i18n's `t`, which re-created `startGame`; the auto-start
+   effect was keyed on that identity, so it re-ran and the server minted a
+   **second session**. A first-time visitor on `/play` produced two
+   `game_started`, one spurious abandon, and two real `careerPathSessions` rows
+   — a product bug, not only a double count. Reproduced and fixed on all three
+   auto-start owners that held `t`: **Career Path** (`/play`, the marketed door
+   and by far the most exposed), **Higher/Lower** and **VerveGrid**.
+
+   Root cause: `t` in `startGame`'s dependencies, where it only ever supplied
+   startup error copy. Fix: that copy is derived at render, so `t` leaves the
+   closure, and arrival auto-starts **once per sport (+difficulty)** via a ref
+   guard rather than once per `startGame` identity — idempotent on the
+   server-minted session, while "Next player" / "Try again" and a real
+   difficulty change still start real new games. Pinned by `analyticsContract`
+   ("play screens provision one session per arrival").
+
+   Verified on dev against pre- and post-fix bundles, with the counts confirmed
+   in ingested PostHog rows and in `careerPathSessions` itself: Career Path went
+   from two `game_started`, one abandon and **two** backend session rows to one,
+   zero and **one**; Higher/Lower and VerveGrid from two starts and one abandon
+   to one and zero. A legitimate "Next player" still fires its own start.

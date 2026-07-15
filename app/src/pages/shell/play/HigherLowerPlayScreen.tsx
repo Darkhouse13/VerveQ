@@ -124,11 +124,13 @@ export default function HigherLowerPlayScreen() {
   const guessInFlight = useRef(false);
   const [shakeB, setShakeB] = useState(false);
   const [slideIn, setSlideIn] = useState(false);
-  const [startupState, setStartupState] = useState<{
-    kind: "unsupported" | "start_failed";
-    title: string;
-    message: string;
-  } | null>(null);
+  // The KIND only — never the rendered copy. Holding translated strings here
+  // would put `t` in startGame's closure, and a locale switch would then re-run
+  // the auto-start effect (see below); it would also freeze this text in the
+  // language that was active when the failure happened.
+  const [startupState, setStartupState] = useState<
+    "unsupported" | "start_failed" | null
+  >(null);
 
   // Read through a ref, NOT as a startGame dependency: startGame is its own
   // useEffect's only dep, so adding accountState there would mint a fresh
@@ -138,11 +140,7 @@ export default function HigherLowerPlayScreen() {
 
   const startGame = useCallback(async () => {
     if (!isSupportedSport) {
-      setStartupState({
-        kind: "unsupported",
-        title: t("higherLower.unsupportedTitle"),
-        message: t("higherLower.unsupportedMessage"),
-      });
+      setStartupState("unsupported");
       setLoading(false);
       return;
     }
@@ -154,11 +152,9 @@ export default function HigherLowerPlayScreen() {
         startSessionMut({ sport, difficulty }),
         START_SESSION_TIMEOUT_MS,
       );
-      // A game genuinely began — the server minted a session. `t` sits in this
-      // callback's deps, so a locale switch re-runs it and mints a NEW session;
-      // that is legitimately a second game, and keying on session id counts
-      // exactly what the server counts. A bare navigation here mints nothing
-      // and stays silent.
+      // A game genuinely began — the server minted a session. Keyed on that id,
+      // so a real replay counts as its own game while a bare navigation here
+      // mints nothing and stays silent.
       startRun(result.sessionId, "higher-lower", {
         accountState: accountStateRef.current,
       });
@@ -182,19 +178,31 @@ export default function HigherLowerPlayScreen() {
     } catch (err) {
       console.error("Failed to start session:", err);
       setSessionId(null);
-      setStartupState({
-        kind: "start_failed",
-        title: t("higherLower.startFailedTitle"),
-        message: t("higherLower.startFailedMessage"),
-      });
+      setStartupState("start_failed");
     } finally {
       setLoading(false);
     }
-  }, [isSupportedSport, sport, difficulty, startSessionMut, t]);
+    // NO `t` here, deliberately: every start below is a server session, and a
+    // re-created translation function is not a reason to mint one.
+  }, [isSupportedSport, sport, difficulty, startSessionMut]);
 
+  // Arriving provisions exactly ONE session per sport+difficulty. "Play again"
+  // and "Try again" call startGame directly and are untouched by this guard, so
+  // a real new game is still a real new start.
+  //
+  // Keyed on the real inputs, NOT on startGame's identity: a re-created closure
+  // is not a new game. The first-run language modal is exactly that case — it
+  // overlays whatever screen loads first, and picking a language makes i18n
+  // hand out a new `t`, re-creating anything holding it. Re-running the effect
+  // then minted a SECOND server session and orphaned the first, which reported
+  // an abandon it never earned.
+  const autoStartedForRef = useRef<string | null>(null);
   useEffect(() => {
-    startGame();
-  }, [startGame]);
+    const key = `${sport}|${difficulty}`;
+    if (autoStartedForRef.current === key) return;
+    autoStartedForRef.current = key;
+    void startGame();
+  }, [sport, difficulty, startGame]);
 
   // Leaving mid-game. Reads the session through a ref so the cleanup sees the
   // session that was live at unmount rather than the one captured at mount.
@@ -321,11 +329,19 @@ export default function HigherLowerPlayScreen() {
       >
         <div className="flex flex-col items-center justify-center py-10">
           <NeoCard color="primary" shadow="lg" className="w-full text-center py-8 px-5">
-            <p className="font-heading font-bold text-2xl">{startupState.title}</p>
-            <p className="text-sm text-muted-foreground mt-3">{startupState.message}</p>
+            <p className="font-heading font-bold text-2xl">
+              {startupState === "unsupported"
+                ? t("higherLower.unsupportedTitle")
+                : t("higherLower.startFailedTitle")}
+            </p>
+            <p className="text-sm text-muted-foreground mt-3">
+              {startupState === "unsupported"
+                ? t("higherLower.unsupportedMessage")
+                : t("higherLower.startFailedMessage")}
+            </p>
 
             <div className="grid grid-cols-1 gap-3 mt-6">
-              {startupState.kind === "unsupported" ? (
+              {startupState === "unsupported" ? (
                 <NeoButton
                   variant="primary"
                   size="lg"

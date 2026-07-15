@@ -158,3 +158,13 @@ describe("who am i stays removed", () => {
     expect(schema).toMatch(/careerPathSessions:\s*defineTable/);
   });
 });
+
+describe("career path still starts a REAL new game on an explicit action", () => {
+  it("wires Next player / Try again straight to startGame", () => {
+    // The arrival guard (see analyticsContract) is idempotency on arrival, NOT
+    // global start suppression: an explicit replay must still mint a session.
+    expect(read("src/pages/shell/play/CareerPathPlayScreen.tsx")).toContain(
+      "onClick={startGame}",
+    );
+  });
+});

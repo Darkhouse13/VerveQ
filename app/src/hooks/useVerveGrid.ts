@@ -75,11 +75,14 @@ export interface GridSearchResult {
   nationality?: string;
 }
 
-export interface GridStartupState {
-  kind: "unsupported" | "start_failed";
-  title: string;
-  message: string;
-}
+/**
+ * The KIND only — never the rendered copy. Translated strings here would put
+ * `t` in startGame's closure, and a locale switch would then re-run the
+ * auto-start effect and mint a second server session; they would also freeze
+ * the text in the language that was active when the failure happened. The
+ * screen owns the wording.
+ */
+export type GridStartupState = "unsupported" | "start_failed";
 
 function withTimeout<T>(promise: Promise<T>, timeoutMs: number): Promise<T> {
   return new Promise((resolve, reject) => {
@@ -197,11 +200,7 @@ export function useVerveGrid(sport: string, difficulty: Difficulty): VerveGridVi
 
   const startGame = useCallback(async () => {
     if (!isSupportedSport) {
-      setStartupState({
-        kind: "unsupported",
-        title: t("verveGrid.unsupportedTitle"),
-        message: t("verveGrid.unsupportedMessage"),
-      });
+      setStartupState("unsupported");
       setLoading(false);
       return;
     }
@@ -214,8 +213,7 @@ export function useVerveGrid(sport: string, difficulty: Difficulty): VerveGridVi
         START_SESSION_TIMEOUT_MS,
       );
       // A game genuinely began — the server minted a session. Keyed on that id,
-      // so the re-runs above (a locale or difficulty switch) each count as the
-      // separate game the server actually created, while a bare navigation here
+      // so a real replay counts as its own game while a bare navigation here
       // mints nothing and stays silent.
       startRun(result.sessionId, "verve-grid", {
         accountState: accountStateRef.current,
@@ -242,19 +240,31 @@ export function useVerveGrid(sport: string, difficulty: Difficulty): VerveGridVi
       setRows([]);
       setCols([]);
       setCells([]);
-      setStartupState({
-        kind: "start_failed",
-        title: t("verveGrid.startFailedTitle"),
-        message: t("verveGrid.startFailedMessage"),
-      });
+      setStartupState("start_failed");
     } finally {
       setLoading(false);
     }
-  }, [isSupportedSport, startSessionMut, sport, difficulty, t]);
+    // NO `t` here, deliberately: every start below is a server session, and a
+    // re-created translation function is not a reason to mint one.
+  }, [isSupportedSport, startSessionMut, sport, difficulty]);
 
+  // Arriving provisions exactly ONE session per sport+difficulty. "Try again"
+  // and a real replay call startGame directly and are untouched by this guard,
+  // so a real new game is still a real new start.
+  //
+  // Keyed on the real inputs, NOT on startGame's identity: a re-created closure
+  // is not a new game. The first-run language modal is exactly that case — it
+  // overlays whatever screen loads first, and picking a language makes i18n
+  // hand out a new `t`, re-creating anything holding it. Re-running the effect
+  // then minted a SECOND server session and orphaned the first, which reported
+  // an abandon it never earned.
+  const autoStartedForRef = useRef<string | null>(null);
   useEffect(() => {
-    startGame();
-  }, [startGame]);
+    const key = `${sport}|${difficulty}`;
+    if (autoStartedForRef.current === key) return;
+    autoStartedForRef.current = key;
+    void startGame();
+  }, [sport, difficulty, startGame]);
 
   // Leaving mid-game. Reads the session through a ref so the cleanup sees the
   // session that was live at unmount rather than the one captured at mount.

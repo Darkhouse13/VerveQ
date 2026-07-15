@@ -11,11 +11,12 @@ import type { AccountState } from "@/contexts/AuthContext";
  *
  *  - Nothing fires on a route change. Navigating to /v2/career-path without
  *    playing mints no session, so it produces silence.
- *  - Modes whose startGame sits in a useEffect with `t` (i18n) in its
- *    dependencies — Career Path, Higher/Lower, VerveGrid — re-run it on a
- *    locale switch. Each re-run mints a NEW server session, so keying on
- *    session id counts exactly what the server counts, and a re-render that
- *    mints nothing stays silent.
+ *  - A re-render that mints nothing stays silent. The auto-start owners (Career
+ *    Path, Higher/Lower, VerveGrid) each provision ONE session per arrival and
+ *    are idempotent across a locale switch, so i18n handing out a new `t`
+ *    cannot invent a game. They used to: `t` sat in startGame's dependencies
+ *    behind an effect keyed on its identity, and the first-run language modal
+ *    fired exactly that on `/play` — two sessions for one visitor.
  *  - Career Path's "Next player" replays call startGame again on the same
  *    mount; each mints its own session, so each is its own game_started. (The
  *    existing recordCareerPathEvent funnel signal is ref-guarded to once per
@@ -105,13 +106,17 @@ export function startRun(
   if (!sessionId || runs.has(sessionId)) return;
 
   // A tab can only hold one live game, so a NEW session means any run still
-  // open was left behind — report it rather than leaking it. This is the
-  // locale/difficulty re-fire in Career Path, Higher/Lower and VerveGrid:
-  // startGame re-runs, the server mints a fresh session, and the previous run
-  // would otherwise sit un-ended forever, under-reporting abandons and
-  // pinning hasRunInProgress() true for the rest of the tab's life. Ordinary
-  // navigation never reaches this — the screen's unmount cleanup ends the run
-  // first, and abandonRun ignores anything already ended.
+  // open was left behind — report it rather than leaking it, or it would sit
+  // un-ended forever, under-reporting abandons and pinning hasRunInProgress()
+  // true for the rest of the tab's life. Ordinary navigation never reaches this
+  // — the screen's unmount cleanup ends the run first, and abandonRun ignores
+  // anything already ended.
+  //
+  // What reaches this now is the honest case: a real replay (Career Path's
+  // "Next player", a difficulty change) leaving a genuinely live run behind. It
+  // used to fire on a LOCALE switch too, where nobody had left anything — the
+  // play screens re-created startGame on a new `t` and minted a second session.
+  // That is fixed at the source; this stays as the backstop it was meant to be.
   for (const [id, run] of runs) if (!run.ended) abandonRun(id);
 
   anyRunStarted = true;
