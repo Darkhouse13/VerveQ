@@ -100,11 +100,13 @@ export default function CareerPathPlayScreen() {
     answerName?: string;
     score: number;
   } | null>(null);
-  const [startupState, setStartupState] = useState<{
-    kind: "unsupported" | "start_failed";
-    title: string;
-    message: string;
-  } | null>(null);
+  // The KIND only — never the rendered copy. Holding translated strings in state
+  // would put `t` in startGame's closure, and a locale switch would then re-run
+  // the auto-start effect (see below); it would also freeze this text in the
+  // language that was active when the failure happened.
+  const [startupState, setStartupState] = useState<
+    "unsupported" | "start_failed" | null
+  >(null);
   const [closeCallShake, setCloseCallShake] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
@@ -132,11 +134,7 @@ export default function CareerPathPlayScreen() {
     if (!SUPPORTED_CAREER_PATH_SPORTS.has(sport)) {
       setSessionId(null);
       setClubs([]);
-      setStartupState({
-        kind: "unsupported",
-        title: t("careerPath.unsupportedTitle"),
-        message: t("careerPath.unsupportedMessage"),
-      });
+      setStartupState("unsupported");
       setLoading(false);
       return;
     }
@@ -180,19 +178,31 @@ export default function CareerPathPlayScreen() {
       console.error("Failed to start challenge:", err);
       setSessionId(null);
       setClubs([]);
-      setStartupState({
-        kind: "start_failed",
-        title: t("careerPath.startFailedTitle"),
-        message: t("careerPath.startFailedMessage"),
-      });
+      setStartupState("start_failed");
     } finally {
       setLoading(false);
     }
-  }, [startChallengeMut, recordCareerPathEvent, sport, guestToken, t]);
+    // NO `t` here, deliberately: every start below is a server session, and a
+    // re-created translation function is not a reason to mint one.
+  }, [startChallengeMut, recordCareerPathEvent, sport, guestToken]);
 
+  // Arriving provisions exactly ONE session per sport. Every other start is an
+  // explicit user action — "Next player" and "Try again" call startGame
+  // directly and are untouched by this guard, so a real new game is still a
+  // real new start.
+  //
+  // Keyed on the real input, NOT on startGame's identity: a re-created closure
+  // is not a new game. The first-run language modal is exactly that case — on
+  // the marketed /play path a first-time visitor picks a language, i18n hands
+  // out a new `t`, and anything holding it re-creates startGame. Re-running the
+  // effect then minted a SECOND server session and orphaned the first, which
+  // reported an abandon it never earned.
+  const autoStartedForRef = useRef<string | null>(null);
   useEffect(() => {
-    startGame();
-  }, [startGame]);
+    if (autoStartedForRef.current === sport) return;
+    autoStartedForRef.current = sport;
+    void startGame();
+  }, [sport, startGame]);
 
   // First finished round = the funnel "completed" (the result card, win or
   // lose, is the payoff the promo promised). Once per mount; server dedupes.
@@ -309,13 +319,19 @@ export default function CareerPathPlayScreen() {
       <PlayStage title="Career Path" onExit={() => navigate(SHELL_ROUTES.home)} exitLabel={t("careerPath.quit")}>
         <div className="flex flex-col items-center justify-center py-10">
           <NeoCard color="accent" className="w-full text-center py-8 px-6">
-            <p className="font-heading font-bold text-2xl">{startupState.title}</p>
+            <p className="font-heading font-bold text-2xl">
+              {startupState === "unsupported"
+                ? t("careerPath.unsupportedTitle")
+                : t("careerPath.startFailedTitle")}
+            </p>
             <p className="font-body text-sm mt-3 text-muted-foreground leading-relaxed">
-              {startupState.message}
+              {startupState === "unsupported"
+                ? t("careerPath.unsupportedMessage")
+                : t("careerPath.startFailedMessage")}
             </p>
 
             <div className="mt-6 grid grid-cols-1 gap-3">
-              {startupState.kind === "unsupported" ? (
+              {startupState === "unsupported" ? (
                 <NeoButton
                   variant="primary"
                   size="lg"

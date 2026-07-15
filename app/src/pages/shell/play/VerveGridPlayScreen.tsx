@@ -40,12 +40,18 @@ export default function VerveGridPlayScreen() {
     return (
       <div className="min-h-[100dvh] bg-background px-4 py-6 flex items-center justify-center">
         <NeoCard color="blue" shadow="lg" className="w-full max-w-md text-center py-8 px-6">
-          <p className="font-heading font-bold text-2xl">{vm.startupState.title}</p>
+          <p className="font-heading font-bold text-2xl">
+            {vm.startupState === "unsupported"
+              ? t("verveGrid.unsupportedTitle")
+              : t("verveGrid.startFailedTitle")}
+          </p>
           <p className="text-sm text-muted-foreground mt-3 leading-relaxed">
-            {vm.startupState.message}
+            {vm.startupState === "unsupported"
+              ? t("verveGrid.unsupportedMessage")
+              : t("verveGrid.startFailedMessage")}
           </p>
           <div className="grid grid-cols-1 gap-3 mt-6">
-            {vm.startupState.kind === "unsupported" ? (
+            {vm.startupState === "unsupported" ? (
               <NeoButton
                 variant="primary"
                 size="lg"
