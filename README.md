@@ -75,7 +75,7 @@ CI runs this same gate on every push and PR (`.github/workflows/check.yml`).
 1. `check.yml` runs the full code gate.
 2. `deploy.yml` deploys the Convex backend (`npx convex deploy`, gated on the `CONVEX_DEPLOY_KEY` secret, which is configured) and publishes the frontend over SSH — a forced command on the host runs the image-based publish (`deploy/build-and-run.sh`) with the previous container retained for instant rollback and a `/healthz` check after cutover.
 
-There is no manual deploy step in the normal flow. `docs/DEPLOYMENT.md` describes the underlying host topology and rollback procedure but predates the automation — where they disagree, the workflows are the truth.
+There is no manual deploy step in the normal flow, and no confirmation prompt — **a merge to `master` is a production release**, including a Convex schema/function push to prod. The two steps are sequential and not atomic: Convex ships first, so a failed frontend step leaves the new backend live behind the old bundle. [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md) covers what a master push does, the host topology, and rollback.
 
 ## Curated runtime parity
 
@@ -111,6 +111,21 @@ Required Convex dashboard env vars: `RESEND_API_KEY`, `EMAIL_FROM`, `CONVEX_SITE
 
 ## Docs status
 
-Trustworthy today: [`docs/AUTH.md`](docs/AUTH.md), [`docs/QA_BUGLOG.md`](docs/QA_BUGLOG.md) (closest to a current v2 state snapshot), [`docs/I18N_CONTENT_DESIGN.md`](docs/I18N_CONTENT_DESIGN.md), [`docs/CONTENT_QA.md`](docs/CONTENT_QA.md), [`docs/CIE_BATCH_RUNBOOK.md`](docs/CIE_BATCH_RUNBOOK.md), [`docs/INSIDE_OUT_AUDIT_RESOLUTION.md`](docs/INSIDE_OUT_AUDIT_RESOLUTION.md).
+Audited against the code on 2026-07-15. The docs previously listed here as
+"trustworthy today" were not — five of the six carried a specific false claim,
+so the list is now stated per-doc with its known defect.
+
+**Verified accurate:** [`docs/CONTENT_QA.md`](docs/CONTENT_QA.md) — every command, export name, finding code and exit rule checked against `app/scripts/contentQa.ts` / `contentQaCli.ts`.
+
+**Reconciled, with a caveat:** [`docs/DEPLOYMENT.md`](docs/DEPLOYMENT.md) — its pipeline description now matches `deploy.yml` line for line. Its host-state details (IP, container and image names, Traefik/acme, the 2026-06-12 recovery artifacts) live on the production host and cannot be verified from this repo — treat them as last-known-good, not confirmed.
+
+**Accurate in part:** [`docs/AUTH.md`](docs/AUTH.md) — the client/server error-surfacing contract is current and test-locked. The account model section is not: it still calls guest → account upgrade unimplemented, but that shipped (`app/convex/users.ts:333`), and it describes `loginAsGuest` as the anonymous provider when the real one is `startAnonymousSession` (`app/src/contexts/AuthContext.tsx:495`).
+
+**Check the code before acting on these** — each carries a named false claim:
+
+- [`docs/INSIDE_OUT_AUDIT_RESOLUTION.md`](docs/INSIDE_OUT_AUDIT_RESOLUTION.md) — **VG7 is reversed; do not re-apply it.** It claims VerveGrid `searchPlayers` no longer falls back to a global sport-wide roster. That behaviour was deliberately restored: `QA_BUGLOG.md` item 015 reclassified cell-scoped search as a **P0 answer oracle** (any result shown was a correct answer), and `app/convex/verveGrid.ts:226` now reads *"Search spans the FULL roster — never the cell's valid answers."* Re-applying VG7 reintroduces the P0. Its schema list also cites `liveMatches.*` fields from a deleted module.
+- [`docs/QA_BUGLOG.md`](docs/QA_BUGLOG.md) — the fixes it records are real, but it is a **dated log, not a current state snapshot**: several items track Who Am I, removed 2026-07 (`app/convex/schema.ts:901`), and its cited `whoAmIAnswerMatchingContract` test is now `careerPathAnswerMatchingContract`. Its "FIXED (deploy-gated)" items assert deployment state the repo cannot confirm.
+- [`docs/I18N_CONTENT_DESIGN.md`](docs/I18N_CONTENT_DESIGN.md) — specifies the deleted `whoAmIClueTranslations` table (`app/convex/schema.ts:901`) and cites `liveMatches.ts`, which no longer exists. Most of its other line citations have drifted.
+- [`docs/CIE_BATCH_RUNBOOK.md`](docs/CIE_BATCH_RUNBOOK.md) — its §6.1 gate `npm run content:qa` throws `"Missing batch path."` (`app/scripts/contentQaCli.ts:183`); the runnable form is `npm run content:qa -- <batch>`. Both branches it names are gone, and the author/verifier model families are inverted versus the shipped batches.
 
 Known-stale (kept for history, pending rewrite): `APP_OVERVIEW.md`, `DEPLOYMENT_CHECKLIST.md`, `REPO_INVENTORY.md`, `CONTRIBUTING.md`, `SECURITY.md` (auth section), and the "Design — not yet implemented" status headers on the CIE/content-ingestion docs (those systems shipped). Dated audits (`INSIDE_OUT_AUDIT.md`, `PROD_READINESS_AUDIT.md`, `CONTENT_QA_BASELINE.md`) are snapshots, not current state.
