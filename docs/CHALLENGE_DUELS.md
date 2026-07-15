@@ -1,8 +1,13 @@
 # Async Challenge Duels
 
-This document covers the new backend foundation for asynchronous, seeded,
-head-to-head duels. It is additive to the existing `challenges` +
-`liveMatches` synchronous flow.
+This document covers the backend foundation for asynchronous, seeded,
+head-to-head duels.
+
+It was written as an additive layer beside the `challenges` + `liveMatches`
+synchronous flow. Both of those were removed in 2026-07 (`896a47a` and
+`7de7662`), so duels no longer sit beside a synchronous invite path — Challenge
+Arena is the only synchronous head-to-head surface left. Statements about that
+pairing are corrected in place below.
 
 ## Status
 
@@ -126,6 +131,13 @@ in `<ErrorBoundary>` (`src/components/ErrorBoundary.tsx`).
 The link-landing route is the only duel route reachable as a guest — every
 other duel route is gated by `UsernameRequiredRoute`.
 
+Production now runs the v2 shell, which re-hosts these screens: `/challenge`
+forwards to `/v2/duels` and `/rivals` to `/v2/rivals`, both rendering the same
+components embedded in `ShellLayout`. `/duel/play/:duelId`,
+`/duel/result/:duelId`, `/duel/:linkCode`, and `/rivals/:opponentUserId` are not
+redirected and keep the gating above. See `docs/COMPETITIVE_MODES.md` for the
+current route table.
+
 ### Convex bindings
 
 The frontend touches the following functions directly:
@@ -157,8 +169,11 @@ The frontend touches the following functions directly:
   signup redirect in `localStorage`.
 - `rivalries.listMine`, `rivalries.get` — power the rivals strip on the hub,
   the rivals list, and the per-rival detail.
-- `notifications.unreadCount` — drives the unread badge on the Challenge
-  bottom-nav tab.
+- `notifications.unreadCount` — read by the Duel Hub itself
+  (`ChallengeScreen.tsx:72`) to decide whether to mark all read on open. It also
+  drove an unread badge on the v1 `BottomNav` Challenge tab, but the live v2
+  `ShellNav` has no Challenge tab and renders no badge, so that surface is dead
+  with v1.
 - `notifications.markAllRead` — fired when the user opens the hub.
 
 ### Guest link bridge — tab-local, never auto-account
@@ -201,10 +216,14 @@ this is still a row in `quizQuestions` with `category: "which_came_first"`.
 
 ### What is intentionally not wired
 
-- The live, real-time `liveMatches` head-to-head path is unchanged. The
-  Duel Hub does not replace it; it lives next to it.
-- Curated football-only modes (Higher or Lower, VerveGrid, Who Am I, Survival)
-  were not touched by this pass.
-- ELO is not applied to duels in this pass — `rivalries` is the only ledger
-  written on duel resolution. Synchronous live matches still drive ELO via
-  `games.ts`.
+- The live, real-time `liveMatches` head-to-head path was left untouched by this
+  pass. It has since been removed entirely (2026-07, `7de7662`):
+  `app/convex/liveMatches.ts` is deleted and the `/live-match` / `/waiting-room`
+  routes fall through to `NotFound`. The Duel Hub no longer lives next to it.
+- Curated football-only modes (Higher or Lower, VerveGrid, Survival) were not
+  touched by this pass. Who Am I was also in that set; it was removed 2026-07
+  (`99c2604`) and replaced by Career Path.
+- ELO is not applied to duels — `rivalries` is the only ledger written on duel
+  resolution. This pass noted that synchronous live matches drove ELO via
+  `games.ts`; with `liveMatches` gone, no head-to-head surface writes
+  `userRatings` at all. `games.ts` still applies ELO for solo modes.

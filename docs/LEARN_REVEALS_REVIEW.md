@@ -1,6 +1,30 @@
 # Learn reveal layers — cross-family review brief (Codex)
 
-Status: **reviewed/complete (Codex round 2)**.
+> **⚠️ Superseded (2026-06-22) — both reviewed files were deleted.**
+> This review signed off on 2026-06-12. Ten days later, commit `cb02968`
+> ("decouple teaching reveals from the ship gate; drop tautological recall
+> reveals") deleted **both** layers this brief covers:
+> `app/convex/learnHistoryDatesRevealsV1.ts` (-703 lines) and
+> `app/convex/learnScienceRecallRevealsV1.ts` (-615 lines). The stated reason:
+> they were 100 template-generated reveals that only restated the answer — i.e.
+> the non-tautology criterion in "The claimed invariant" below (point 4) is
+> exactly what they later failed at the product level, notwithstanding the
+> mechanical `agree` verdicts recorded here.
+>
+> Nothing in the Scope table is actionable: those files, their `VERIFIER_MODEL`
+> stamps, and their module-load validators are gone. The Gates section is
+> likewise historical — `learnSubjectsContentWiring.test.ts` still exists but no
+> longer validates these layers at 50/50.
+>
+> The supporting wiring listed under Scope **does** still exist and was not
+> deleted: `app/convex/learnSkillGraph.ts`, `app/convex/learnQuestionSkillTags.ts`,
+> and `app/convex/learnLadderBuilder.ts` (`selectBalancedRungs` at
+> `learnLadderBuilder.ts:369`, which `cb02968` also reworked).
+>
+> Retained as history: this is the record of the round-1/round-2 cross-family
+> exchange and the validator-hardening findings it produced. Do not action it.
+
+Status: **reviewed/complete (Codex round 2)** — then **superseded**; see banner.
 (Authored by Anthropic family — inverse of the usual CIE direction, so the
 cross-family roles flip: Codex verifies.)
 
@@ -45,12 +69,13 @@ Two Claude-authored Learn-mode reveal layers over already-verified score-mode ba
 
 | File | Source batch | Entries |
 |---|---|---|
-| `app/convex/learnHistoryDatesRevealsV1.ts` | `knowledge_history_cie_score_v1` (verdict agree) | 50 |
-| `app/convex/learnScienceRecallRevealsV1.ts` | `knowledge_science_cie_score_v1` (verdict agree) | 50 |
+| ~~`app/convex/learnHistoryDatesRevealsV1.ts`~~ (deleted `cb02968`) | `knowledge_history_cie_score_v1` (verdict agree) | 50 |
+| ~~`app/convex/learnScienceRecallRevealsV1.ts`~~ (deleted `cb02968`) | `knowledge_science_cie_score_v1` (verdict agree) | 50 |
 
 Supporting wiring (review for soundness, not content): subject/node additions in
 `learnSkillGraph.ts`, category taggers in `learnQuestionSkillTags.ts`, balanced
-ladder selection in `learnLadderBuilder.ts` (`selectBalancedRungs`).
+ladder selection in `learnLadderBuilder.ts` (`selectBalancedRungs`). These three
+still exist; only the two reveal layers above were deleted.
 
 ## The claimed invariant — attack it
 

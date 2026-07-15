@@ -1,8 +1,10 @@
 # Challenge Arena
 
 Challenge Arena is the additive backend for synchronous, server-clocked,
-multiplayer rooms. It does not replace `liveMatches`, async `duels`, or the
-curated football-only modes.
+multiplayer rooms. It does not replace async `duels` or the curated
+football-only modes. It was originally written alongside `liveMatches`, which
+was removed 2026-07 (`7de7662`) — Arena is now the only synchronous
+head-to-head path.
 
 ## Scope
 
@@ -259,14 +261,25 @@ bounded batch.
 
 ## Frontend (MVP)
 
-The Challenge Arena UI lives in `app/src/pages/ChallengeArenaScreen.tsx` (lazy-
-loaded, route `/arena/:code`, wrapped in the global `ErrorBoundary` and gated by
-`UsernameRequiredRoute`). Two entry points sit at the top of the Challenge tab:
+Production runs the v2 shell, where the room UI is
+`app/src/pages/shell/play/ArenaPlayScreen.tsx` at route `/v2/arena/:code`
+(wrapped in `ShellGate`, no auth guard on the route itself). It reuses the same
+server-authoritative `challengeArenas` room read-model and mutations, and reuses
+the proven Lobby / Countdown / RoundBreak / Final views described below; only the
+in-game question/reveal layout differs. The v1 screen
+`app/src/pages/ChallengeArenaScreen.tsx` still compiles at `/arena/:code`, but
+that route is wrapped in `V2ArenaCodeRedirect`, which forwards code-intact to
+`/v2/arena/:code` while the shell flag is on — so v1 is a rollback seam, not a
+live surface.
+
+Entry is a dedicated Arena hub, `app/src/pages/shell/ArenaHubScreen.tsx` at
+`/v2/arena` (gated by `UsernameOnlyRoute`), which offers create and join-by-code.
+It is distinct from Duels. The v1 modals still back the flow:
 
 - `app/src/pages/arena/CreateArenaModal.tsx` — pick mode (1v1 / 2v2 / FFA 3-5)
-  then `challengeArenas.create` and redirect to `/arena/<code>`.
+  then `challengeArenas.create` and redirect to the room.
 - `app/src/pages/arena/JoinArenaModal.tsx` — accept a normalised code and
-  redirect to `/arena/<code>`.
+  redirect to the room.
 
 Everything inside the room is driven by a single reactive `useQuery` on
 `challengeArenas.getRoom`. The component renders one of six sub-views based on
@@ -285,8 +298,8 @@ Cross-cutting:
 
 - A persistent header strip across every phase shows the code, mode, current
   phase + round, and a **Leave** button that calls `leave` then navigates back
-  to `/challenge`. Leaving never blocks; rejoining is just re-opening the same
-  code.
+  to the Arena hub (`/v2/arena`). Leaving never blocks; rejoining is just
+  re-opening the same code.
 - During the `lobby` phase the header also surfaces a **?** help button
   (`HelpCircle`) that opens `ArenaHelpModal`: a dismissible neo-brutalist card
   summarising arena rules (5 rounds × 10 questions, 5 rotating categories,
@@ -314,6 +327,12 @@ Cross-cutting:
   own bundle chunk, and styled exclusively with the Neo* primitives + tailwind
   utility classes already used by the rest of the app.
 
-Account requirement: hosting and joining both require an account (no anonymous
-player can show up in the roster). Guests landing on `/arena/:code` are
-redirected to the sign-up flow with `from=arena`.
+Account requirement: hosting and joining both go through
+`assertUsernameRequiredUser` (`challengeArenas.ts:2178`, `:2218`), so every
+roster entry has a username. This is the username tier, not a full account — a
+one-tap anonymous user who has picked a username may play.
+
+Guests are not bounced to a sign-up flow. `/v2/arena/:code` carries no route
+guard: the screen onboards inline so a shared invite link never drops its lobby
+code. Logged-out visitors to the `/v2/arena` hub onboard with `?next=` back to
+the hub rather than bouncing home.

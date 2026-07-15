@@ -1,13 +1,22 @@
 # VerveQ — Comprehensive App Overview
 
 > **Read this first.** Production runs the **v2 shell**
-> (`VITE_V2_SHELL_ENABLED=true`). The v1 screens this document's Screen
-> Inventory and User Flow were originally written around — `LoginScreen` as
-> the entry, `HomeScreen` as the hub — are a **redirect-only rollback seam**.
-> v1 `HomeScreen` is not reachable in production and is stripped from the
-> deployed bundle entirely. Where this document and
-> [`app/src/App.tsx`](../app/src/App.tsx) disagree about routes, App.tsx is the
-> truth. See "Screen Inventory" and "Authentication" for the live surfaces.
+> (`VITE_V2_SHELL_ENABLED=true`). The hub this document's Screen Inventory and
+> User Flow were written around — `LoginScreen` as the entry, `HomeScreen` as
+> the hub — is superseded: v1 `HomeScreen` is **not reachable in production**
+> and is stripped from the deployed bundle entirely, and `LoginScreen` mounts
+> only for an explicit `?mode=` / `?from=` auth intent.
+>
+> The v1 seam is **not uniformly dead**, so don't over-read that. Most v1 mode
+> routes are `V2Redirect`-wrapped and forward to a `/v2/*` counterpart, but a
+> few v1 deep-link screens are still live regardless of the flag —
+> `/duel/play/:duelId`, `/duel/result/:duelId` and `/rivals/:opponentUserId`
+> render v1 screens under `UsernameRequiredRoute`, and `/duel/:linkCode`
+> (the share-link landing) is live and unguarded by design.
+>
+> Where this document and [`app/src/App.tsx`](../app/src/App.tsx) disagree
+> about routes, App.tsx is the truth. See "Screen Inventory" and
+> "Authentication" for the live surfaces.
 
 ## What is VerveQ?
 
@@ -725,11 +734,17 @@ Results Screen
 
 ## Screen Inventory
 
-**The live routes are the `/v2/*` shell below.** The v1 table that follows it
-is the rollback seam: with `VITE_V2_SHELL_ENABLED=true` those routes are
+**The live routes are the `/v2/*` shell below.** The v1 table that follows is
+mostly the rollback seam: with `VITE_V2_SHELL_ENABLED=true` those routes are
 `V2Redirect`-wrapped and forward to their v2 counterpart, and v1 `HomeScreen`
-is unreachable — dead-code-eliminated from the deployed bundle. Source of
-truth for both tables is [`app/src/App.tsx`](../app/src/App.tsx).
+is unreachable — dead-code-eliminated from the deployed bundle.
+
+Exceptions worth knowing: `/duel/play/:duelId`, `/duel/result/:duelId` and
+`/rivals/:opponentUserId` are **not** redirect-wrapped — they render v1
+screens under `UsernameRequiredRoute` and serve real traffic. `/duel/:linkCode`
+is live and deliberately unguarded (a shared duel link must land for a
+signed-out visitor). Source of truth for both tables is
+[`app/src/App.tsx`](../app/src/App.tsx).
 
 ### Live (v2 shell)
 

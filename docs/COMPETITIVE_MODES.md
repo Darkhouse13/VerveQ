@@ -2,33 +2,40 @@
 
 This is a current-state inventory of the live competitive/head-to-head surfaces
 that a user can reach through the wired `app/` frontend today. It is grounded in
-the route table, bottom nav, `ChallengeScreen`, direct entry routes, and the
-Convex functions those screens call.
+the route table, the shell nav, direct entry routes, and the Convex functions
+those screens call.
+
+Production runs the v2 shell (`VITE_V2_SHELL_ENABLED=true`). The v1 screens
+still compile from source, but every v1 competitive route is wrapped in
+`V2Redirect` / `V2ArenaCodeRedirect` and forwards to its `/v2` counterpart while
+the flag is on, so v1 is a rollback seam and not a live surface. Where the two
+differ, this document describes the v2 surface.
 
 ## Top-level reachability
 
-- Bottom nav exposes one competitive entry: `Challenge` -> `/challenge`.
-- `/challenge` is wrapped in `UsernameRequiredRoute`, so a guest is stopped at
-  the username-required screen before the Challenge hub renders.
-- `HomeScreen` does not link to `/challenge`, `/arena/*`, `/duel/*`,
-  `/rivals/*`, `/waiting-room`, or `/live-match`. The "Which Came First?"
-  card on Home is a solo quiz entry
-  (`/difficulty?sport=knowledge&mode=came_first`), not an async duel entry.
-- The Challenge hub surfaces Arena create/join, async duel creation/inbox, and
-  the rivals list/detail entry.
+- The shell nav exposes one competitive entry: `Compete` -> `/compete`
+  (`app/src/components/shell/ShellNav.tsx`). There is no `Challenge` tab. The v1
+  `BottomNav` still lists `Challenge` -> `/challenge`, but that route redirects
+  to `/v2/duels` while the shell flag is on.
+- The live head-to-head routes are `/v2/duels`, `/v2/duels/history`, `/v2/arena`,
+  `/v2/arena/:code`, `/v2/rivals`, and `/v2/rivals/:opponentUserId`. All except
+  `/v2/arena/:code` are wrapped in `ShellGate` + `UsernameOnlyRoute`, so a
+  logged-out visitor onboards with `?next=` back to the surface instead of
+  bouncing home.
+- `/v2/arena/:code` carries no route guard: the screen onboards inline so a
+  shared invite link never drops its lobby code.
 - `/duel/:linkCode` is intentionally open and handles account and guest link
-  recipients. `/duel/play/:duelId`, `/duel/result/:duelId`, `/arena/:code`,
-  `/rivals`, `/rivals/:opponentUserId`, `/waiting-room`, and `/live-match`
-  require a non-guest account route.
-- `ChallengeScreen` calls `liveMatches.getActiveMatch` and redirects to
-  `/waiting-room?matchId=...` if an active legacy live match already exists.
+  recipients.
+- Live Match and the older challenge invite flow no longer exist in any form;
+  see "Removed subsystems" below.
 
 ## Challenge Arena
 
 Reachable: yes.
 
-Entry point: bottom nav `Challenge` -> `/challenge` -> Challenge Arena card
-`Create` or `Join code`; direct shared links use `/arena/:code`.
+Entry point: the dedicated Arena hub at `/v2/arena` (`ArenaHubScreen`), which
+offers create and join-by-code; direct shared links use `/v2/arena/:code`. Old
+`/arena/:code` links are forwarded code-intact by `V2ArenaCodeRedirect`.
 
 Format: synchronous server-clocked room. The host creates a code, players join
 the lobby, ready up, then the server runs countdown, question, reveal, round
@@ -46,19 +53,22 @@ Persistence: arena state is stored in `arenas`, answers in `arenaAnswers`, and
 recent question novelty in `arenaRecentlySeenQuestions`. Final podium/standings
 are derived from arena answers. Arena rematch creates a new arena and stamps
 `rematchArenaId` / `rematchArenaCode` on the finished room. It does not write
-the async `rivalries` ledger or the legacy `challengeHeadToHeads` ledger.
+the async `rivalries` ledger.
 
-Guest support: no. The route requires a username account; unauthenticated arena
-links redirect to login/signup and local guest sessions are redirected to signup.
+Guest support: playing still requires a username, but `/v2/arena/:code` has no
+route guard — the screen onboards inline so a shared invite link never drops its
+lobby code. The `/v2/arena` hub is gated by `UsernameOnlyRoute`.
 
 ## Async Duels
 
 Reachable: yes.
 
-Entry point: bottom nav `Challenge` -> `/challenge` -> `New Duel`; existing
-duels are listed on the same hub in `Your turn`, `Awaiting opponent`, and
-`Resolved`. Direct routes are `/duel/play/:duelId`, `/duel/result/:duelId`, and
-share links at `/duel/:linkCode`.
+Entry point: the Duel hub at `/v2/duels` (`ChallengeScreen` rendered embedded in
+`ShellLayout`) -> `New Duel`; existing duels are listed on the same hub in
+`Your turn`, `Awaiting opponent`, and `Resolved`. `/duel/play/:duelId` and
+`/duel/result/:duelId` are shared routes — they are not redirected by the shell
+flag and stay gated by `UsernameRequiredRoute`. Share links use
+`/duel/:linkCode`; `/duels/history` forwards to `/v2/duels/history`.
 
 Format: asynchronous 1v1. The creator chooses Sports trivia, Knowledge, or
 Which Came First, then topic/category, difficulty, and opponent. Opponents can
@@ -86,9 +96,11 @@ recipients with a guest token, and can later attach the result to a new account.
 
 Reachable: yes, when the user has a username account.
 
-Entry point: the Challenge hub shows a top rivals strip when rivalries exist,
-plus a `Rivals` card; full list is `/rivals`, and detail is
-`/rivals/:opponentUserId`.
+Entry point: the Duel hub shows a top rivals strip when rivalries exist, plus a
+`Rivals` card; full list is `/v2/rivals`, and detail is
+`/v2/rivals/:opponentUserId`. The v1 `/rivals` forwards to `/v2/rivals`, but
+`/rivals/:opponentUserId` is not redirected and still renders the v1 detail
+screen under `UsernameRequiredRoute`.
 
 Format: not a gameplay mode. Rivalries are the head-to-head ledger produced by
 resolved async duels. The list shows opponent records, W-L-D, active streak,
@@ -108,77 +120,36 @@ Guest support: no direct guest rivalry screen. Guest link-duel results only
 enter the rivalry ledger after the guest creates/signs into an account and the
 result is attached.
 
-## Legacy Live Match and Older Challenges (Deprecated/Dormant)
+## Removed subsystems
 
-Reachable: dormant legacy only. Live Match is deprecated and is not a supported
-way to start play. The route and waiting room remain so an already-active legacy
-match can resolve safely, but the older challenge send/accept flow is not
-exposed as a normal first-entry UI today.
+These are gone from the codebase — not dormant, not retained, not awaiting
+cleanup. Nothing in this list has a module, route, cron, or table left.
 
-Entry point: route-level entries are `/waiting-room?matchId=...` and
-`/live-match?matchId=...`. The Challenge hub also auto-resumes an existing
-active live match through `liveMatches.getActiveMatch`. There is no current
-frontend mutation path that creates a new legacy live match: the old
-`ResultScreen` rematch glue after a `mode: "challenge"` result is disabled and
-no longer calls `challenges.createRematch`, `challenges.accept`, or
-`liveMatches.createFromChallenge`.
+- **Live Match** (removed 2026-07, `7de7662`). `app/convex/liveMatches.ts` is
+  deleted, so `getActiveMatch`, `createFromChallenge`, `abandonWaitingMatch`,
+  and `reapStaleMatches` no longer exist. The `live-match-stale-check` cron is
+  gone from `app/convex/crons.ts`. The `/live-match` and `/waiting-room` routes
+  were removed from `app/src/App.tsx` and now fall through to `NotFound`. The
+  mode had been unstartable since the challenge subsystem went, and the
+  `liveMatches` table removal is recorded at `app/convex/schema.ts:635-640`.
+  `ChallengeScreen` no longer calls `getActiveMatch` or redirects into a waiting
+  room (`app/src/pages/ChallengeScreen.tsx:76-77`).
+- **The synchronous challenge invite subsystem** (removed 2026-07, `896a47a`).
+  `app/convex/challenges.ts` is deleted, so `challenges.getPending`, `create`,
+  `accept`, `decline`, and `createRematch` no longer exist. The `challenges`,
+  `challengeHeadToHeads`, and `challengeMatchHistory` table removals are
+  recorded at `app/convex/schema.ts:198-201`. It never had a production entry
+  point.
+- **`multiplayerMatches`** (removed 2026-07). The pre-arenas beta lobby table
+  had no writer anywhere; removal is recorded at `app/convex/schema.ts:631`.
 
-Format: synchronous 1v1 live match. It has a waiting room, both-player ready
-state, countdown, 10 live questions, 10-second question windows, round result
-screens, heartbeat/stale-player forfeit handling, and tab-switch forfeit from
-the live match UI.
+Orphaned rows for any of the above on older deployments are unvalidated and are
+purgeable from the Convex dashboard.
 
-Make-safe behavior: `/challenge` auto-resume can still send a user into an
-already-active legacy waiting room. If the other player never appears,
-`liveMatches.reapStaleMatches` runs from the `live-match-stale-check` cron and
-finalizes stale active matches using the 15-second heartbeat cutoff. Waiting
-matches do not apply ELO. The waiting room now has an explicit exit that
-abandons an unstarted legacy match and returns home, and it sends the user home
-if the backend has already finalized the match. Once a match reaches live play,
-the Live Match UI still has manual forfeit and completed/forfeited matches still
-route to Results, which has a Home exit.
-
-Player counts: exactly 2 account players.
-
-ELO: yes in backend. Completed matches call `updateMatchElo`; forfeits apply
-ELO once the match has moved past `waiting`. The current live-match result
-navigation passes `eloChange: null`, so the match result screen does not show
-the applied ELO delta.
-
-Persistence: `liveMatches` stores the active/completed match. When finalized,
-the backend updates the source `challenges` row, writes `challengeMatchHistory`,
-writes/updates `challengeHeadToHeads`, and updates `userRatings` when ELO
-applies. This ledger is separate from async duel `rivalries`.
-
-Guest support: no. `/waiting-room` and `/live-match` require a username account,
-and `liveMatches` participants are account user IDs.
-
-Older Challenges surfacing: hidden/superseded for normal entry. Backend
-functions still exist for `challenges.getPending`, `challenges.create`,
-`challenges.accept`, and `challenges.decline`, but `app/src` no longer renders
-a pending challenges table, a send-challenge form, or accept/decline controls
-from the Challenge tab. `ResultScreen` no longer contains legacy rematch glue,
-so a completed Live Match result cannot spawn a new un-startable Live Match.
-
-Future cleanup: remove the legacy routes, `challenges` invite lifecycle, and
-`liveMatches` creation/result plumbing once product decides the retained data
-and ELO history no longer need those code paths.
-
-## Backend paths wired but not surfaced in current UI
-
-- `challenges.getPending`, `challenges.create`, `challenges.accept`, and
-  `challenges.decline` are exported backend functions for the old challenge
-  invite lifecycle, but they have no current Challenge hub UI.
-- `liveMatches.createFromChallenge` is exported for retained legacy plumbing,
-  but there is no current frontend call site and no current pending-challenge
-  inbox UI that calls it.
-- `liveMatches.abandonWaitingMatch` exists only as a safe-exit mutation for
-  unstarted legacy waiting rooms; it does not start a match or apply ELO.
-- `challengeHeadToHeads` and `challengeMatchHistory` are maintained for legacy
-  live matches, but the reachable `/rivals` screens read the async duel
-  `rivalries` table instead.
-- `multiplayerMatches` exists in the schema, but no current `app/src` UI or
-  Convex function call site references it.
+ELO consequence: none of the three head-to-head surfaces inventoried above
+writes `userRatings`. Live Match was the only head-to-head path that applied
+ELO, and it is gone; Arena, async duels, and rivalries all leave `userRatings`
+untouched. Solo modes still write it through `games.ts`.
 
 ## Open question: overlapping 1v1 paths
 
@@ -188,5 +159,7 @@ product call.
 | Path | Sync/async | Players | Content/format | ELO | Persistence |
 | --- | --- | --- | --- | --- | --- |
 | Arena `1v1` | Sync | 2 account players | 5 rounds x 10 shared live questions; mixed arena categories; code lobby and rematch | No | `arenas` + `arenaAnswers`; no rivalry ledger |
-| Legacy Live Match (deprecated/dormant) | Sync | 2 account players | 10 shared live questions from a retained `challenges` invite; no normal start path; waiting room and ready flow retained only for active legacy matches | Yes, backend applies it after start; waiting abandon/stale resolution does not | `liveMatches`, `challenges`, `challengeMatchHistory`, `challengeHeadToHeads`, `userRatings` |
 | Async Duel | Async | 2 sides; account/account or account/link guest | 10 locked questions; sports, knowledge, or Which Came First; no shared live room | No | `duels`; async `rivalries` ledger for account-backed results |
+
+Legacy Live Match previously occupied a third row here. It was removed in
+2026-07 and is no longer part of the overlap.

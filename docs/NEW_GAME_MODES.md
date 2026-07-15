@@ -1,12 +1,14 @@
 # Curated Gameplay Modes - Current Source of Truth
 
-This document replaces the earlier raw-runtime audit for the three curated gameplay modes:
+This document replaces the earlier raw-runtime audit for the curated gameplay modes:
 
 - Higher or Lower
 - VerveGrid
-- Who Am I
 
 It documents the runtime layers that are actually in use today, the current availability by mode, and the validation/deployment reality from this workspace.
+
+Who Am I was a third curated mode here. It was removed 2026-07 (`99c2604`) and
+replaced by Career Path; see "Who Am I (removed)" below.
 
 ## Current status summary
 
@@ -14,11 +16,10 @@ It documents the runtime layers that are actually in use today, the current avai
 | --- | --- | --- | --- | --- |
 | Higher or Lower | Yes | Yes | Yes | Externally blocked when deploy access/config is missing |
 | VerveGrid | Yes | Yes | Yes | Externally blocked when deploy access/config is missing |
-| Who Am I | Yes | Yes | Yes | Externally blocked when deploy access/config is missing |
 
 ## Shared rules
 
-- All three modes are currently football-only in both frontend and backend/runtime.
+- Both modes are currently football-only in both frontend and backend/runtime.
 - Raw provider-shaped data is preserved for pipeline and audit use.
 - Live runtime uses approved curated layers, not the earlier raw runtime tables.
 - Missing remote frontend deploy access/config is an operational blocker, not a repo gameplay bug.
@@ -78,25 +79,23 @@ VerveGrid generation is two-stage:
 The second stage currently runs through `scripts/buildVerveGridBoards.ts`.
 Raw `gridIndex` remains a local pipeline/audit artifact and is no longer part of default Convex seeding for live/dev runtime.
 
-## Who Am I
+## Who Am I (removed)
 
-### Live runtime layer
+Who Am I no longer exists. It was removed 2026-07 in `99c2604` and replaced by
+Career Path (guess the player from his clubs).
 
-- Approved clue layer: `whoAmIApprovedClues`
-- Session backend: `app/convex/whoAmI.ts`
+- `app/convex/whoAmI.ts` is deleted. The session backend is gone.
+- The `whoAmIApprovedClues`, `whoAmIClueTranslations`, and `whoAmISessions`
+  table removals are recorded at `app/convex/schema.ts:900-902`. Raw
+  `whoAmIClues` went with the other raw pipeline tables.
+- `whoAmIApprovedClues` is **not** part of the curated parity footprint and is
+  not reseeded by any workflow — the `CuratedParityTable` union in
+  `scripts/curatedSeedManifest.ts:18-24` does not contain it.
+- The replacement is `app/convex/careerPath.ts`. Its content ships in-bundle
+  rather than through a curated approved layer, so Career Path is outside the
+  scope of this document.
 
-### What this replaced
-
-- Earlier runtime selection from raw `whoAmIClues`
-- Implicit easy/medium-only default selection
-
-### Current behavior
-
-- Football-only in frontend and backend
-- Sessions start only from approved clues
-- Default no-arg starts use an explicit weighted mix over approved difficulties
-- Frontend has explicit unsupported-sport and startup-failure states
-- Copy now reflects the approved football clue pool rather than generic multi-sport availability
+Orphaned `whoAmI*` rows on older deployments are purgeable from the dashboard.
 
 ## Survival in relation to these modes
 
@@ -164,7 +163,8 @@ npm run gameplay:curated-parity
   - `higherLowerFacts`
   - `verveGridApprovedIndex`
   - `verveGridBoards`
-  - `whoAmIApprovedClues`
+- That list is the `CuratedParityTable` union in
+  `scripts/curatedSeedManifest.ts:18-24` and is the authoritative scope.
 - It replaces stale backend rows instead of only inserting missing rows.
 - It stops before any clear-and-reseed step if the deployment kind is not `dev`/`preview`, the target is not in the local ops allowlist, the approval artifact is missing/expired/mismatched/already consumed, the active apply session is not valid, or the run is happening in CI.
 - It stores the applied artifact version, hash, counts, and replace summary in `curatedSeedMetadata`.
@@ -184,7 +184,6 @@ npm run gameplay:curated-parity
 
 - `app/convex/higherLower.ts`
 - `app/convex/verveGrid.ts`
-- `app/convex/whoAmI.ts`
 - `app/convex/schema.ts`
 - `scripts/seedSportsDatabase.ts`
 - `scripts/runCuratedParityWorkflow.ts`
