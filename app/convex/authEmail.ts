@@ -1,4 +1,5 @@
 import type { EmailConfig } from "@convex-dev/auth/server";
+import { ConvexError } from "convex/values";
 
 // Convex Auth email provider used for the Password provider's `reset`
 // (OTP-based password reset) flow. A 6-digit numeric code is sent via the
@@ -8,11 +9,19 @@ import type { EmailConfig } from "@convex-dev/auth/server";
 //   RESEND_API_KEY   required — Resend API secret
 //   EMAIL_FROM       required — e.g. "VerveQ <no-reply@yourdomain.tld>"
 //
-// Missing env vars throw loudly so a dev operator sees the misconfiguration
-// immediately rather than a user hitting a silently broken reset flow.
+// Failures throw `ConvexError({ code: "reset_unavailable" })`. Production
+// Convex redacts a plain `Error`'s message before it reaches the browser —
+// the client would only ever see an opaque "Server Error", which it cannot
+// map to useful copy. A ConvexError's `data` is the one payload that survives
+// redaction, so it is the only way to tell the client *why* the reset failed.
+// The diagnostic detail (Resend status, response body) is logged server-side
+// and deliberately kept out of that payload.
 
 const OTP_LENGTH = 6;
 const OTP_MAX_AGE_SECONDS = 10 * 60;
+
+/** Client-visible payload. Must never carry internal detail. */
+const RESET_UNAVAILABLE = { code: "reset_unavailable" } as const;
 
 function generateOtp(length: number): string {
   const bytes = new Uint8Array(length);
@@ -46,9 +55,10 @@ async function sendResendEmail(args: {
   });
   if (!res.ok) {
     const detail = await res.text().catch(() => "");
-    throw new Error(
+    console.error(
       `Resend send failed (${res.status} ${res.statusText}): ${detail.slice(0, 500)}`,
     );
+    throw new ConvexError(RESET_UNAVAILABLE);
   }
 }
 
@@ -65,14 +75,16 @@ export const ResendOTPPasswordReset: EmailConfig = {
     const apiKey = process.env.RESEND_API_KEY;
     const from = process.env.EMAIL_FROM;
     if (!apiKey) {
-      throw new Error(
+      console.error(
         "RESEND_API_KEY is not configured on this Convex deployment — password reset email cannot be sent.",
       );
+      throw new ConvexError(RESET_UNAVAILABLE);
     }
     if (!from) {
-      throw new Error(
+      console.error(
         "EMAIL_FROM is not configured on this Convex deployment — password reset email cannot be sent.",
       );
+      throw new ConvexError(RESET_UNAVAILABLE);
     }
     const expiresAt = expires instanceof Date ? expires : new Date(expires);
     const minutesLeft = Math.max(

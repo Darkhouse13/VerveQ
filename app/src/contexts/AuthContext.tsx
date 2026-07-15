@@ -14,6 +14,7 @@ import {
   validatePassword,
   describePasswordReason,
 } from "../../convex/lib/passwordPolicy";
+import { humanizeServerError } from "@/lib/errors";
 
 interface AuthUser {
   _id: string;
@@ -260,58 +261,122 @@ async function requestAnonymousOnboardingIpPermit(): Promise<string> {
 const ANON_PROPAGATION_TIMEOUT_MS = 15000;
 const ANON_PROPAGATION_POLL_MS = 100;
 
+/**
+ * Copy used whenever the server's own text is unusable — either redacted by
+ * production Convex or unrecognised by the rules below. Every AuthErrorCode
+ * needs an entry so the catch-all in `mapAuthError` always has safe copy to
+ * fall back to and never has to surface raw server text.
+ */
+const SAFE_MESSAGE: Record<AuthErrorCode, string> = {
+  invalid_email: "Please enter a valid email address.",
+  legacy_email: "That email domain is not valid for password reset.",
+  weak_password: "That password doesn’t meet the requirements.",
+  invalid_username: "That username isn’t valid. Try another one.",
+  username_taken: "Username is already taken. Choose another one.",
+  password_mismatch: "Those passwords don’t match.",
+  invalid_credentials:
+    "That email and password combination does not match any account.",
+  invalid_code:
+    "That reset code is invalid or has expired. Please request a new one.",
+  reset_unavailable:
+    "Couldn’t send your reset code right now. Try again in a moment.",
+  email_taken: "That email is already linked to an account. Sign in instead.",
+  upgrade_unavailable:
+    "Couldn’t upgrade your account right now. Try again in a moment.",
+  rate_limited: "Too many attempts. Please try again in a bit.",
+  unknown: "Something went wrong. Please try again.",
+};
+
+const AUTH_ERROR_CODES = new Set<string>(Object.keys(SAFE_MESSAGE));
+
+/**
+ * A `ConvexError`'s `data` is the only server payload that survives production
+ * Convex's error redaction — a plain `Error`'s message is replaced with an
+ * opaque "Server Error" before it reaches the browser. Read it before falling
+ * back to message matching. Duck-typed rather than `instanceof ConvexError` so
+ * a second copy of `convex/values` in the bundle can't silently break this.
+ */
+function convexAuthErrorCode(err: unknown): AuthErrorCode | null {
+  if (!err || typeof err !== "object" || !("data" in err)) return null;
+  const data = (err as { data?: unknown }).data;
+  if (!data || typeof data !== "object" || !("code" in data)) return null;
+  const code = (data as { code?: unknown }).code;
+  return typeof code === "string" && AUTH_ERROR_CODES.has(code)
+    ? (code as AuthErrorCode)
+    : null;
+}
+
+/**
+ * True when nothing legible survives the Convex transport envelope: the server
+ * threw a plain `Error` and production redacted its message to "Server Error".
+ * Such an error tells the caller nothing, so it must never be shown verbatim.
+ */
+function isOpaqueServerError(err: unknown): boolean {
+  if (err instanceof AuthError) return false;
+  if (convexAuthErrorCode(err)) return false;
+  return humanizeServerError(err, "") === "";
+}
+
+/**
+ * Convex Auth's `retrieveAccount` throws a plain `Error("InvalidAccountId")`
+ * when no account matches the email. Only legible on dev deployments, where
+ * messages aren't redacted — matched so dev mirrors production's behaviour
+ * instead of leaking account existence that production hides.
+ */
+function isAccountNotFound(err: unknown): boolean {
+  // Tests the raw message (never surfaces it) — the humanized form drops or
+  // mangles stack frames depending on their shape.
+  return /invalidaccountid/i.test(err instanceof Error ? err.message : String(err));
+}
+
 function mapAuthError(err: unknown, fallbackCode: AuthErrorCode): AuthError {
   if (err instanceof AuthError) return err;
-  const message = err instanceof Error ? err.message : String(err);
-  const lower = message.toLowerCase();
+  const structured = convexAuthErrorCode(err);
+  if (structured) return new AuthError(structured, SAFE_MESSAGE[structured]);
+  // Strip the "[CONVEX A(auth:signIn)] [Request ID: …] Server Error … Called by
+  // client" envelope, then match on the remainder. The server's text is only
+  // ever a routing signal here — every rule below answers with curated
+  // SAFE_MESSAGE copy, so a message that happens to contain a recognised
+  // phrase still can't carry internal detail into the UI. In production this
+  // leaves nothing at all for server-thrown plain Errors: every rule falls
+  // through to the catch-all, which is why the server must throw a
+  // ConvexError to be mappable.
+  const cleaned = humanizeServerError(err, "");
+  const lower = cleaned.toLowerCase();
   if (lower.includes("invalid credentials")) {
-    return new AuthError(
-      "invalid_credentials",
-      "That email and password combination does not match any account.",
-    );
+    return new AuthError("invalid_credentials", SAFE_MESSAGE.invalid_credentials);
   }
   if (lower.includes("invalid code")) {
-    return new AuthError(
-      "invalid_code",
-      "That reset code is invalid or has expired. Please request a new one.",
-    );
+    return new AuthError("invalid_code", SAFE_MESSAGE.invalid_code);
   }
   if (lower.includes("password reset is not enabled")) {
-    return new AuthError(
-      "reset_unavailable",
-      "Password reset is temporarily unavailable. Please try again later.",
-    );
+    return new AuthError("reset_unavailable", SAFE_MESSAGE.reset_unavailable);
   }
   if (
     lower.includes("username is already taken") ||
     lower.includes("username claim is ambiguous") ||
     lower.includes("username claim could not be made safely")
   ) {
-    return new AuthError(
-      "username_taken",
-      "Username is already taken. Choose another one.",
-    );
+    return new AuthError("username_taken", SAFE_MESSAGE.username_taken);
   }
   if (lower.includes("username must")) {
-    return new AuthError("invalid_username", message);
+    return new AuthError("invalid_username", SAFE_MESSAGE.invalid_username);
   }
   if (lower.includes("email is already linked")) {
-    return new AuthError(
-      "email_taken",
-      "That email is already linked to an account. Sign in instead.",
-    );
+    return new AuthError("email_taken", SAFE_MESSAGE.email_taken);
   }
   if (lower.includes("too many")) {
-    return new AuthError("rate_limited", message);
+    return new AuthError("rate_limited", SAFE_MESSAGE.rate_limited);
   }
   if (
     lower.includes("password must be") ||
     lower.includes("too common") ||
     lower.includes("invalid password")
   ) {
-    return new AuthError("weak_password", message);
+    return new AuthError("weak_password", SAFE_MESSAGE.weak_password);
   }
-  return new AuthError(fallbackCode, message || "Authentication failed.");
+  // Catch-all: opaque or unrecognised. Raw server text never reaches the UI.
+  return new AuthError(fallbackCode, SAFE_MESSAGE[fallbackCode]);
 }
 
 export function AuthProvider({ children }: { children: ReactNode }) {
@@ -602,7 +667,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           flow: "reset",
         });
       } catch (err) {
-        throw mapAuthError(err, "unknown");
+        // An email with no password account makes Convex Auth throw a plain
+        // `InvalidAccountId` — opaque once production redacts it, legible in
+        // dev. Swallow both so the reset form can't be used to probe which
+        // emails are registered; LoginScreen's neutral "if that email is
+        // registered…" toast covers the account-missing and account-present
+        // cases identically. A real send failure arrives as a ConvexError
+        // carrying `reset_unavailable` and still surfaces to the user.
+        if (isOpaqueServerError(err) || isAccountNotFound(err)) return;
+        throw mapAuthError(err, "reset_unavailable");
       }
     },
     [convexSignIn],

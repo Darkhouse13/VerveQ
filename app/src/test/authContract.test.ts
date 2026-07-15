@@ -370,6 +370,125 @@ describe("AuthContext.requestPasswordReset", () => {
     ).rejects.toMatchObject({ code: "invalid_email" });
     expect(authMock.signIn).not.toHaveBeenCalled();
   });
+
+  // Production Convex redacts a plain Error's message to a bare "Server Error"
+  // before it reaches the browser, so an unknown email (Convex Auth throws
+  // `InvalidAccountId`) is indistinguishable from any other opaque failure.
+  // Resolving keeps the reset form from confirming which emails are
+  // registered — LoginScreen's neutral toast covers both cases.
+  it("resolves silently when the account does not exist (prod, redacted)", async () => {
+    authMock.signIn.mockRejectedValueOnce(
+      new Error(
+        "[CONVEX A(auth:signIn)] [Request ID: 9ac79f4673483ca7] Server Error\n  Called by client",
+      ),
+    );
+    const { result } = renderHook(() => useAuth(), { wrapper });
+    await expect(
+      result.current.requestPasswordReset("ghost@example.com"),
+    ).resolves.toBeUndefined();
+  });
+
+  it("resolves silently when the account does not exist (dev, legible)", async () => {
+    authMock.signIn.mockRejectedValueOnce(
+      new Error(
+        "[CONVEX A(auth:signIn)] [Request ID: abc] Server Error\nUncaught Error: InvalidAccountId\n    at retrieveAccount (../../node_modules/@convex-dev/auth/src/server/implementation/index.ts:602:9)\n  Called by client",
+      ),
+    );
+    const { result } = renderHook(() => useAuth(), { wrapper });
+    await expect(
+      result.current.requestPasswordReset("ghost@example.com"),
+    ).resolves.toBeUndefined();
+  });
+
+  // A genuine send failure is a ConvexError; its `data` survives redaction and
+  // must still reach the user rather than being swallowed as a silent success.
+  it("surfaces a real send failure as reset_unavailable with friendly copy", async () => {
+    const convexError = Object.assign(
+      new Error("[CONVEX A(auth:signIn)] [Request ID: def] Server Error"),
+      { data: { code: "reset_unavailable" } },
+    );
+    authMock.signIn.mockRejectedValueOnce(convexError);
+    const { result } = renderHook(() => useAuth(), { wrapper });
+    await expect(
+      result.current.requestPasswordReset("alice@example.com"),
+    ).rejects.toMatchObject({
+      code: "reset_unavailable",
+      message: "Couldn’t send your reset code right now. Try again in a moment.",
+    });
+  });
+});
+
+// The reported bug: a raw "[CONVEX A(auth:signIn)] … Server Error" string was
+// rendered inline by LoginScreen. AuthError.message is shown verbatim, so no
+// flow may ever put transport noise into it.
+describe("AuthError never carries raw Convex transport noise", () => {
+  const RAW =
+    "[CONVEX A(auth:signIn)] [Request ID: 9ac79f4673483ca7] Server Error\n  Called by client";
+
+  it("maps an opaque signIn failure to safe copy", async () => {
+    authMock.signIn.mockRejectedValueOnce(new Error(RAW));
+    const { result } = renderHook(() => useAuth(), { wrapper });
+    await expect(
+      result.current.signIn("alice@example.com", "Zq7$mnPkL9#r"),
+    ).rejects.toMatchObject({
+      code: "invalid_credentials",
+      message: "That email and password combination does not match any account.",
+    });
+  });
+
+  it("maps an opaque confirmPasswordReset failure to safe copy", async () => {
+    authMock.signIn.mockRejectedValueOnce(new Error(RAW));
+    const { result } = renderHook(() => useAuth(), { wrapper });
+    await expect(
+      result.current.confirmPasswordReset(
+        "alice@example.com",
+        "123456",
+        "Zq7$mnPkL9#r",
+      ),
+    ).rejects.toMatchObject({ code: "invalid_code" });
+  });
+
+  it.each([
+    ["opaque server error", RAW],
+    ["unrecognised server text", "[CONVEX A(auth:signIn)] Uncaught Error: kaboom internal detail"],
+  ])("never leaks %s into AuthError.message", async (_label, raw) => {
+    authMock.signIn.mockRejectedValueOnce(new Error(raw));
+    const { result } = renderHook(() => useAuth(), { wrapper });
+    const err = await result.current
+      .signIn("alice@example.com", "Zq7$mnPkL9#r")
+      .catch((e: Error) => e);
+    expect(err).toBeInstanceOf(Error);
+    for (const noise of ["[CONVEX", "Request ID", "Server Error", "Called by client", "kaboom"]) {
+      expect((err as Error).message).not.toContain(noise);
+    }
+  });
+
+  // A server message is only a routing signal: matching one of the recognised
+  // phrases must not license passing the rest of that message through, or a
+  // recognised phrase becomes a carrier for whatever internal detail trails it.
+  it.each([
+    ["username must", "invalid_username"],
+    ["too many", "rate_limited"],
+    ["password must be", "weak_password"],
+    ["too common", "weak_password"],
+    ["invalid password", "weak_password"],
+  ])(
+    "matches %s for routing but answers with curated copy",
+    async (phrase, expectedCode) => {
+      authMock.signIn.mockRejectedValueOnce(
+        new Error(
+          `[CONVEX A(auth:signIn)] [Request ID: xyz] Server Error\nUncaught Error: ${phrase} SECRET_INTERNAL_DETAIL\n  Called by client`,
+        ),
+      );
+      const { result } = renderHook(() => useAuth(), { wrapper });
+      const err = (await result.current
+        .signIn("alice@example.com", "Zq7$mnPkL9#r")
+        .catch((e: Error) => e)) as Error & { code: string };
+      expect(err.code).toBe(expectedCode);
+      expect(err.message).not.toContain("SECRET_INTERNAL_DETAIL");
+      expect(err.message).not.toContain("[CONVEX");
+    },
+  );
 });
 
 describe("AuthContext.confirmPasswordReset", () => {
