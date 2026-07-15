@@ -1,14 +1,23 @@
 # VerveQ CIE — Sourcing Policy (per discipline)
 
-**Status:** Design — not yet implemented. Companion to `docs/CONTENT_INGESTION.md`.
-This is the source-of-truth policy for *where the Content Ingestion Engine is
-allowed to pull facts from*, per discipline, and which subjects it must refuse.
+**Status:** Live policy — written 2026-05-25, status corrected 2026-07-15. The
+original "Design — not yet implemented" header is no longer accurate: the CIE's
+sourcing backbone shipped and this policy describes it. Companion to
+`docs/CONTENT_INGESTION.md`. This is the source-of-truth policy for *where the
+Content Ingestion Engine is allowed to pull facts from*, per discipline, and
+which subjects it must refuse. The policy text below is unchanged and
+uncontradicted by the shipped engine.
 
-**State framing (per working discipline):**
+**State framing (per working discipline), as of 2026-07-15:**
 
-- Complete in repo: not yet (policy/design only).
-- Live in dev backend: no.
-- Validated on reachable target: no.
+- Complete in repo: yes, as policy — and it is the policy the shipped batches
+  follow. The §3 "preferred backbone" is what every shipped CIE batch records:
+  all 24 entries in `app/convex/knowledgeCieScoreBatchRegistry.ts` carry
+  `sourceType: "structured_open"`, `sourceName: "Wikidata"`,
+  `sourceLicense: "CC0-1.0"`.
+- Live in dev backend: yes — the sourcing metadata ships in-bundle with each
+  batch module.
+- Validated on reachable target: n/a — this is policy, not code.
 - Blocked externally: no.
 
 **Not legal advice.** The IP guidance below is an operating policy, not a legal

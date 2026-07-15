@@ -1,13 +1,26 @@
 # VerveQ CIE — Planted-Error Validation Task
 
-**Status:** Design / task brief — not yet run. Companion to
+**Status:** Deliverables built; execution unproven — historical task brief from
+2026-05-25, status corrected 2026-07-15. The original "not yet run" header is
+half-stale: all four §10 deliverables now exist in `scripts/`, but nothing in the
+repo evidences that the run was ever *executed*. The brief is kept as written for
+the method, the corruption taxonomy, and the locked §9 thresholds. Companion to
 `docs/CONTENT_INGESTION.md` (§6 cross-family verification, §10 step 1).
 
-**State framing (per working discipline):**
+**State framing (per working discipline), as of 2026-07-15:**
 
-- Complete in repo: no (task brief only).
-- Live in dev backend: no.
-- Validated on reachable target: no.
+- Complete in repo: yes. Golden set `scripts/cie-golden-geography.ts` (30 labelled
+  items, 15 clean / 15 corrupted); verify runner `scripts/runCieValidation.ts`;
+  scorer `scripts/scoreCieValidation.ts`; `scripts/CIE_VALIDATION_README.md`. The
+  runner supports four model families — OpenAI / Anthropic / GLM / MiniMax
+  (`scripts/runCieValidation.ts:26`) — exceeding the §5 ">=2" bar, with
+  author-family != verifier-family enforced.
+- Live in dev backend: no — offline by design, unchanged.
+- Validated on reachable target: **unproven, and deliberately left flagged.** The
+  runner's output root (`scripts/data/cie-validation/`, per
+  `scripts/scoreCieValidation.ts:15`) is absent from the repo and no §10 go/no-go
+  readout is committed. Having the runner is not having the result: the §9
+  decision should be treated as still open until a readout lands.
 - Blocked externally: no.
 
 **Scope guardrails preserved:** offline only; no Convex, no seeding, no runtime;

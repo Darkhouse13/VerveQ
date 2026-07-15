@@ -1,15 +1,40 @@
 # VerveQ Content Ingestion Engine (CIE) — Architecture Spec
 
-**Status:** Design — not yet implemented. This is a source-of-truth design doc for
-the content-sourcing engine. It is authoritative for the CIE's intended
-architecture; it does not describe shipped code.
+**Status:** Partially shipped — historical design record from 2026-05-25, status
+corrected 2026-07-15. The original "Design — not yet implemented / does not
+describe shipped code" header is wrong: the engine's output path shipped and is
+live. But it did **not** ship as specified — the work-unit, batch-metadata, and
+Learn-tier *tables* below were never built, and content ships in-bundle instead.
+This doc remains authoritative for the intended architecture and the reasoning;
+it is not a description of the current schema. Per-section markers flag which is
+which.
 
-**State framing (per working discipline):**
+**State framing (per working discipline), as of 2026-07-15:**
 
-- Complete in repo: not yet (design only).
-- Live in dev backend: no.
-- Validated on reachable target: no.
-- Blocked externally: no — this is design work ahead of implementation.
+- Complete in repo: **partially.** 24 CIE content batch modules ship, all marked
+  eligible in `app/convex/knowledgeCieScoreBatchRegistry.ts:181`. They are
+  consumed by `app/convex/challengeArenaCieContent.ts:153`
+  (`buildArenaCieSeedPlan`) and `app/convex/learnQuestionSkillTags.ts:2`
+  (Learn tagging). What did *not* ship: the `workUnits` (§3, §10),
+  `contentBatchMetadata` (§9, §10), and `learnMeta` (§7) tables do not exist in
+  `app/convex/schema.ts`.
+- Live in dev backend: yes — batches ship in-bundle (no seeding step for CIE
+  content) and are read on the live Arena path via `arenaCieSeedPlan()`
+  (`app/convex/challengeArenas.ts:31`).
+- Validated on reachable target: batch content flows through the existing
+  harness/registry gates. The §10-step-1 planted-error verify-loop validation —
+  the premise the whole design rests on — has runner and scorer built but **no
+  committed result**; see `docs/CIE_VALIDATION_TASK.md`.
+- Blocked externally: no.
+
+**What shipped vs. what is still design:**
+
+| Section | State |
+|---|---|
+| §4 four stages, §5 provenance, §6 cross-family verify | Shipped as an offline authoring convention; each batch records `authorModel` / `verifierModel` / `verdict` and per-claim provenance in-module. |
+| §3 work units, lease/claim mutation | **Still design.** No `workUnits` table; `workUnitId` is carried per batch as a literal with no backing table. |
+| §7 Learn-mode `learnMeta` layer | **Still design.** No `learnMeta` table; Learn tagging is derived in `learnQuestionSkillTags.ts`. |
+| §9 `contentBatchMetadata` table | **Still design.** Batch metadata ships in-module (e.g. `knowledgeGeographyCieScoreBatchV1Metadata`) rather than in a table. |
 
 **Scope guardrails preserved:** server-authoritative answer checking is untouched
 (clients never see `correctAnswer`); the existing QA harness remains the
@@ -56,6 +81,11 @@ still per-deployment; `quizQuestions` is still the runtime answer source of trut
 server authority is untouched.
 
 ## 3. Work-unit model — parallel agents fill gaps instead of piling on
+
+> **Still design (2026-07-15).** No `workUnits` table exists in
+> `app/convex/schema.ts`; there is no lease/claim mutation. Shipped batches carry
+> a `workUnitId` literal in their in-module metadata, so the *concept* survives as
+> a labelling convention, but the coordination machinery below was never built.
 
 The failure mode of "spin up many agents" is that they all author *capital of
 France* and ignore the long tail. The fix is to make agents pull **work units**
@@ -142,6 +172,11 @@ fact into a *learning* product is the harm we fail closed against. Default-deny.
 
 ## 7. The two content tiers (an additive schema split, not a forked table)
 
+> **Still design (2026-07-15).** No `learnMeta` table exists in
+> `app/convex/schema.ts`. Learn-mode tagging is instead derived in
+> `app/convex/learnQuestionSkillTags.ts` from the batches flagged `learnTagged`
+> in the registry. The misconception/reveal teaching object below is unbuilt.
+
 `quizQuestions` stays the lean runtime answer source of truth — score-mode and
 runtime answer-checking read it, server authority unchanged. Learn-mode's extra
 "teaching" data lives in an **additive learning layer keyed by `checksum`**,
@@ -185,6 +220,13 @@ Existing gates stay (structural, dedup, distractor-collision, fairness). New gat
 A blocked candidate is dropped or queued — never force-shipped.
 
 ## 9. Output, batching, seeding
+
+> **Partially shipped (2026-07-15).** The committed-batch-artifact idea shipped:
+> 24 batch modules live in `app/convex/`, each with an in-module metadata export.
+> The `contentBatchMetadata` *table* was never built, and CIE content is not
+> seeded — it ships in-bundle and is read directly on the Arena path
+> (`app/convex/challengeArenas.ts:31`), so the `seedContentGaps` route below
+> describes an intent that the implementation sidestepped.
 
 - Passing candidates are written as a **committed batch artifact** (the audit
   trail travels with code, like the curated approved layers; seeds are

@@ -1,14 +1,69 @@
 # Low-Friction Username-Only Onboarding
 
-Priority: make shared Arena links playable after only a username, while keeping ranked ELO and global leaderboards full-account only.
+**Historical design record — written 2026-06-08, shipped since; banner added
+2026-07-15.** Essentially every proposal below is now implemented. The doc is
+preserved for its reasoning and for the guardrails it locked in, but its
+present-tense claims are no longer true of the codebase: "Current State Findings"
+describes June 2026, not today. Read it as a record of a decision, not as a
+description of behaviour.
+
+Where the design actually lives:
+
+- **Anonymous session:** `startAnonymousSession`
+  (`app/src/contexts/AuthContext.tsx:495`) calls `signIn("anonymous")`; the
+  username-only onboarding screen is routed at `/v2/welcome`
+  (`app/src/App.tsx:366`).
+- **Username claim + uniqueness:** `usernameClaims` table with a `by_key` index
+  (`app/convex/schema.ts:116-124`), enforced by `claimUsernameForUser`
+  (`app/convex/lib/usernames.ts:85-136`) — normalize, check, insert, re-read,
+  fail closed on ambiguity, no auto-suffixing, exactly as §Guardrails specified.
+- **Ranked gate:** `app/convex/lib/authz.ts` is the proposed
+  `assertRankedEligibleUser` / `isRankedEligibleUser` helper, shipped and wired
+  into `games.ts:53,191`, `leaderboards.ts:83,123`, `seasonManager.ts:100,254`,
+  `eloDecay.ts:37,99,115`, `blitz.ts:276,344`, `duels.ts:467`, `profile.ts:13` —
+  and, beyond the original list, `forge.ts`, `quizSessions.ts`,
+  `survivalSessions.ts`, and `rivalries.ts`.
+- **Rate limiting:** `USERNAME_ONLY_RATE_LIMITS` (`app/convex/users.ts:20-26`)
+  covers per-user, per-device, and per-invite windows; an IP permit is mandatory
+  for anonymous sign-in (`app/convex/auth.ts:29-36`, enforced at
+  `app/convex/users.ts:170-172`) — the doc's optional "add edge/IP limiting" was
+  taken.
+- **Route split:** `UsernameOnlyRoute` / `FullAccountRoute`
+  (`app/src/components/shell/ShellRouteGuards.tsx:52-74`); upgrade path is
+  `users.upgradeUsernameOnly` (`app/convex/users.ts:333-407`).
+- **Arena invite flow:** `/v2/arena/:code` (`app/src/App.tsx:507`) carries no
+  route gate at all — the screen onboards inline so a shared invite never drops
+  its lobby code, which is the outcome §Arena Invite Flow asked for.
+
+Two surfaces this doc references no longer exist: `liveMatches.ts` was removed
+2026-07 (removal recorded at `app/convex/schema.ts:635-640`), and **Who Am I**
+was removed 2026-07 in favour of Career Path (`app/convex/schema.ts:900-902`).
+Mentions of either below are historical.
 
 ## Current State Findings
 
+*(As of 2026-06-08. Superseded — annotations mark what changed.)*
+
 - Convex Anonymous is registered in `app/convex/auth.ts`, but the app's guest button does not call it. `AuthContext.loginAsGuest()` only sets `sessionStorage.verveq_guest_session`, returns local user id `guest_tab`, and tests assert no Convex `signIn` or profile write. Today "guest" has no server identity.
+  - **Superseded:** username-only users now have a real server identity.
+    `startAnonymousSession` (`app/src/contexts/AuthContext.tsx:495-506`) calls
+    `convexSignIn("anonymous")` with a required IP permit.
 - A real Convex anonymous session would satisfy `getAuthUserId` / `requireUserId`. If the anonymous user then had `username` and `isGuest: false`, the current `UsernameRequiredRoute` would allow it. Without that patch, `isAnonymous: true` is treated as guest and the route blocks. Current `users.ensureProfile` also rejects `isGuest: true`, so username-only needs a dedicated attach path.
 - Usernames live on `users.username`, indexed by non-unique `by_username`. `users.ensureProfile` normalizes to `[a-z0-9_]{3,24}`, rejects detected duplicates by exact index lookup plus case-insensitive scan, then patches the user. This still leaves audit HIGH-3: no schema/database-level uniqueness guarantee, so concurrent claims need fail-closed server hardening.
+  - **Superseded:** HIGH-3 is closed. The `usernameClaims` table
+    (`app/convex/schema.ts:116-124`) plus `claimUsernameForUser`
+    (`app/convex/lib/usernames.ts:85-136`) provide the claim record and the
+    insert-then-re-read check that fails closed on a detected race.
 - Arena route `/arena/:code` is wrapped in `UsernameRequiredRoute`. Inside `ChallengeArenaScreen` there is logic to redirect unauthenticated users to `/?from=arena&code=CODE`, but the outer route gate likely intercepts first and sends them to `/` without the code. For current guests, the gate shows a signup CTA with `from=guest`, also losing the code. The screen auto-joins by code only after a username user reaches it.
+  - **Superseded:** the live invite target is `/v2/arena/:code`
+    (`app/src/App.tsx:507`), which is deliberately ungated and onboards inline,
+    so the code survives. The legacy `/arena/:code` route still wraps
+    `UsernameRequiredRoute` but now redirects to the v2 surface first
+    (`V2ArenaCodeRedirect`, `app/src/App.tsx:251`).
 - Ranked/global eligibility is not centralized. Quiz/survival write `userRatings` in `games.ts`; live match writes ELO in `liveMatches.ts`; leaderboard reads `userRatings` and only filters `gamesPlayed > 0`; season reset archives every `userRatings` row; Blitz has its own `blitzScores` leaderboard. None exclude `isAnonymous` / `isGuest` today.
+  - **Superseded:** eligibility is centralized in `app/convex/lib/authz.ts` and
+    every listed call site now excludes `isAnonymous` / `isGuest` (see the banner
+    for the wiring). `liveMatches.ts` was deleted rather than gated.
 - No local `RANKING_V2_DESIGN` file was present, so this reconciles against the stated rule: anonymous/username-only users are excluded from ranked ELO and ranked/global leaderboards.
 
 ## Proposed Model
@@ -77,6 +132,13 @@ Frontend:
 - Mode gates: username-only allowed for the proposed playable set; full-account CTA for ranked/Forge/daily/rivals.
 
 ## Decisions Needing Sign-Off
+
+*(Settled — these were signed off and implemented as proposed. The route split
+landed as `UsernameOnlyRoute` / `FullAccountRoute`
+(`app/src/components/shell/ShellRouteGuards.tsx:52-74`) and the upgrade carryover
+as `users.upgradeUsernameOnly` (`app/convex/users.ts:333-407`). Rate-limit depth
+went further than the floor proposed here: per-user/device/invite windows **and**
+mandatory IP permits. The Who Am I item is moot — the mode was removed 2026-07.)*
 
 - Mode set: confirm username-only should include Arena host+join, shared-link duels, Blitz play, Higher/Lower, VerveGrid, and Who Am I; confirm Quiz/Survival remain full-account ranked only.
 - Username collision policy: reject exact/case-insensitive duplicates with no auto-suffixing; ambiguous race state makes the username unavailable.
