@@ -20,7 +20,14 @@ frontend NEVER grades. It submits `{ sessionId, questionId, answer }` through a
 single seam (`app/src/lib/learn/useLearnGrading.ts`) and renders the server's
 `LearnVerdict`. See `app/src/lib/learn/contract.ts`.
 
-- MCQ → existing server path `api.learn.submitLearnRung`.
-- text / numeric / order → one quarantined client stub (`stubGrader.ts`) until
-  Codex's graders land on `feat/v2-learn-graders`; swapping to the real mutation
-  is a one-line change in `useLearnGrading.ts`.
+All four question types (mcq / text / numeric / order) route through the single
+server-authoritative mutation `api.learn.submitLearnRung`
+(`app/src/lib/learn/useLearnGrading.ts:8-13`); the graders live at
+`app/convex/learnGraders.ts`. There is no client-side correctness logic anywhere
+in the Learn UI.
+
+> NOTE 2026-07-15: this previously described text / numeric / order as routing
+> through a quarantined client stub (`stubGrader.ts`) pending graders on
+> `feat/v2-learn-graders`, with the swap to the real mutation "a one-line change".
+> That swap has happened — `stubGrader.ts` no longer exists (zero references
+> repo-wide) and the graders shipped.

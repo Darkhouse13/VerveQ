@@ -1,5 +1,15 @@
 # Production Readiness Audit
 
+> **Snapshot, not current state.** The audit is from 2026-04-21 and its last
+> doc-truth pass from 2026-05-31. Phrases below like "current state", "current
+> status", and "still open in the current tree" mean *as of 2026-05-31* — they
+> were true when written and several are not true now. Items whose status has
+> since changed carry a `NOTE 2026-07-15` annotation; where an annotation and the
+> body text disagree, the annotation (and the code it cites) wins. Sections that
+> cite `app/convex/whoAmI.ts` or `app/convex/liveMatches.ts` describe deleted
+> subsystems. Verify against code before acting on anything here.
+> — annotated 2026-07-15
+
 Read-only audit of the live surface (app + Convex) performed 2026-04-21.
 Phase 0 doc-truth pass performed 2026-05-31 against the current `app/`
 tree. Closed items below are marked with current file+line evidence; open
@@ -94,6 +104,12 @@ expiry. VerveGrid maps cells to UI-safe fields and exposes
 `validAnswerCount`, not `validPlayerIds`. Who Am I returns `answerName: null`
 while active/early-failed and reveals only after terminal reveal states.
 
+> **NOTE 2026-07-15: the Who Am I third of this item is moot.** `app/convex/whoAmI.ts`
+> no longer exists — the mode was removed 2026-07 in favor of Career Path
+> (`app/convex/schema.ts:900-902`, replacement at `app/convex/careerPath.ts`), so
+> the `whoAmI.ts:295-341` citation above is a dead reference. The Higher/Lower and
+> VerveGrid halves still stand; line numbers in those two files have drifted.
+
 ---
 
 ### BLOCKER-5 — Daily challenge `submitAnswer` has no attempt-ownership check and trusts `timeTaken` — **RESOLVED**
@@ -110,6 +126,16 @@ Current state: `submitAnswer`, `forfeit`, and `completeAttempt` all require
 
 ### HIGH-1 — Global leaderboard (`getLeaderboard` with no sport/mode) is not actually ranked by ELO — **OPEN / DEFERRED TO V2 HARDENING**
 **File:** `app/convex/leaderboards.ts:11-53`
+
+> **NOTE 2026-07-15: fixed — this item is closed.** The unscoped branch is now
+> `ctx.db.query("userRatings").collect()` (`app/convex/leaderboards.ts:44`), not
+> `.order("desc").take(200)`. It collapses to one row per user (their best
+> rating) and sorts in the handler, so the board is the real top of the ladder
+> rather than the newest 200 rows. The reasoning is documented in the module header at
+> `app/convex/leaderboards.ts:13-17`, which calls out precisely this trap:
+> "`.take(n)` on an unindexed query would page by creation time and silently drop
+> high-ELO users." The scale caveat noted at `:24-27` (full-table read, fine at
+> curated scale) is the remaining, lower-severity concern.
 
 When `sport`/`mode` are absent, the fallback is:
 
@@ -129,6 +155,8 @@ notice; it's a credibility hit.
 **Current status:** still open in the current tree. This is a ranking/scale
 hardening item for v2: either expose only sport+mode leaderboards (which do
 use `by_sport_mode_elo`), or add a global ELO index on `userRatings`.
+— NOTE 2026-07-15: "still open" was true at the 2026-05-31 pass; it is not true
+now. See the annotation at the top of this item.
 
 ---
 
@@ -208,6 +236,18 @@ fallback scan is gone. The remaining bounded fan-out over valid player IDs
 is a lower-priority performance consideration, not the original global-scan
 high.
 
+> **NOTE 2026-07-15: the paragraph above is no longer true, and the fix it
+> describes was deliberately undone.** Cell-scoped search was reclassified as a
+> P0 answer oracle (`docs/QA_BUGLOG.md` item 015): every result shown was by
+> construction a correct answer, so wrong picks cost nothing and the 9-guess
+> budget was meaningless. Search now spans the FULL roster on purpose —
+> `app/convex/verveGrid.ts:226-228` states the contract, candidates are gathered
+> at `:263-289`, and missing session context does **not** return `[]` (the
+> session read at `:230-248` only scopes used-player filtering). Correctness is
+> decided server-side on lock-in (`submitGuess`) only. Treat the roster-wide read
+> as an accepted performance cost, not a regression to re-close: narrowing it
+> back to the cell reintroduces the P0.
+
 ---
 
 ## Medium-severity
@@ -260,6 +300,12 @@ Every route is statically imported in `App.tsx`. First paint always ships
 the whole app including Blitz/Live Match/Forge code for a user who might
 only play Quiz.
 
+> **NOTE 2026-07-15: no longer true — routes are code-split.** `app/src/App.tsx`
+> now contains 43 `lazy()` calls, i.e. the suggested fix direction below was
+> applied. The 528 KB / 153 KB-gzipped single-chunk figure in the heading is a
+> 2026-04-21 measurement and no longer describes the build; re-measure before
+> citing it. (Live Match, named above, has since been deleted entirely.)
+
 **Why it matters:** slower first paint on mobile 4G, especially on the
 login screen which is by far the most common first load.
 
@@ -270,6 +316,14 @@ for non-login routes. One-evening change.
 
 ### MED-4 — `useAntiCheat` fires on every `visibilitychange` hidden event without a grace period
 **File:** `app/src/hooks/useAntiCheat.ts:7-17`
+
+> **NOTE 2026-07-15: fixed — the grace period exists.** `useAntiCheat` takes a
+> `hiddenGraceMs` option defaulting to **1000** (`app/src/hooks/useAntiCheat.ts:21`).
+> On `hidden` the penalty is a `setTimeout(onTabAway, hiddenGraceMs)`
+> (`:36`); returning to the tab clears it before it fires (`:37-40`), and unmount
+> clears it too (`:44`). This is the debounce the fix direction below asks for,
+> at 1s rather than the suggested 2s, so a transient mobile hide no longer
+> penalizes. The heading and body text predate that change.
 
 In Daily Quiz (`app/src/pages/DailyQuizScreen.tsx:135-145`) a single tab hide
 triggers an immediate forfeit. On mobile Safari, the OS sends `visibilitychange
@@ -323,6 +377,13 @@ locking to an exact version, not a `^0.0.91` range.
 
 ### MED-7 — `getMatch` has no player-in-match gate
 **File:** `app/convex/liveMatches.ts:240-302`
+
+> **NOTE 2026-07-15: moot — the whole subsystem is gone.** Live Match was removed
+> 2026-07: `app/convex/liveMatches.ts` was purged in commit `7de7662`, the
+> `liveMatches` table went with it (`app/convex/schema.ts:635-640`), the
+> `live-match-stale-check` cron is gone (`app/convex/crons.ts:9`), and the routes
+> were dropped (`app/src/App.tsx:316-319`). There is no `getMatch` to gate. This
+> item needs no fix and the file reference above is dead.
 
 `getMatch` returns the full sanitized match view to any authenticated caller
 who knows the `matchId`. During an active question the current
@@ -391,6 +452,10 @@ matches anything since test suite was deleted. Harmless but stale.
 Repeat of `docs/REPO_INVENTORY.md` findings: `@auth/core`,
 `@hookform/resolvers`, `date-fns`, `zod` have zero first-party imports.
 Each bumps install size and audit surface.
+
+> **NOTE 2026-07-15: premise gone — nothing to remove.** None of `@auth/core`,
+> `@hookform/resolvers`, `date-fns`, or `zod` appears in `app/package.json` at
+> all any more, so there are no unused dependencies here to strip.
 
 ---
 

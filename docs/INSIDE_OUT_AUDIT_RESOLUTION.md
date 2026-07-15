@@ -1,5 +1,14 @@
 # VerveQ Inside-Out Audit Resolution
 
+> **Snapshot, not current state.** Committed 2026-04-27 (`c3bbb27`). This records
+> what was fixed *then*, in response to `docs/INSIDE_OUT_AUDIT.md`. Most of it
+> still holds, but some entries no longer describe the tree — read the
+> `NOTE 2026-07-15` annotations before relying on any item, and treat code as
+> the authority over both documents. Most important: **VG7 was deliberately
+> undone** (see the VerveGrid section) — re-applying it would reintroduce a P0.
+> Two sections cover deleted subsystems (Who Am I, Live Match).
+> — annotated 2026-07-15
+
 Branch: `codex/weekend-stabilization-cleanup`
 
 This document records the fixes and product-facing decisions introduced from the inside-out audit punch list. It is intended to be read alongside `docs/INSIDE_OUT_AUDIT.md`.
@@ -12,11 +21,19 @@ This document records the fixes and product-facing decisions introduced from the
 - `npm.cmd run lint` -> 0 errors, 8 pre-existing warnings
 - `npm.cmd run build`
 
+NOTE 2026-07-15: the above is a 2026-04-27 verification run. The test count is a
+record of that run, not a current figure or a target.
+
 ## Competitive Scope Decision
 
 - Quiz and Survival are the only modes that affect ELO.
 - Higher/Lower, VerveGrid, and Who Am I are intentionally friendly/score-only modes for now.
 - Pre-deploy follow-up: the Home screen and mode selection surfaces should visually distinguish ranked modes from friendly modes before release, because all modes currently sit together and can imply equal competitive weight.
+  > **NOTE 2026-07-15: done.** The Compete grid renders a RANKED vs CASUAL split
+  > derived from a single `ranked` flag per mode tile
+  > (`app/src/pages/shell/competeModeTiles.ts:16-24`, `:81-83`), consumed at
+  > `app/src/pages/shell/CompeteModeGridScreen.tsx:76-80`. Casual is derived as the
+  > solo set minus anything ranked, so no ranked key is hardcoded in the screen.
 
 ## Quiz
 
@@ -67,9 +84,23 @@ This document records the fixes and product-facing decisions introduced from the
 - VG5: VerveGrid search/submission/session reads enforce `expiresAt`.
 - VG6: no ELO finalization was added for VerveGrid. This remains a product decision because the mode currently behaves as score-only.
 - VG7: `searchPlayers` no longer falls back to a global sport-wide player list when session/cell context is missing.
+  > **NOTE 2026-07-15 — REVERSED. Do not re-apply this fix; it reintroduces a P0.**
+  > Scoping search to the cell's `validPlayerIds` made the search box an **answer
+  > oracle**: every result shown was by construction a correct answer, so wrong
+  > picks cost nothing and the 9-guess budget was meaningless (`docs/QA_BUGLOG.md`
+  > item 015, P0). Search now spans the FULL roster by design —
+  > `app/convex/verveGrid.ts:226-228` states the contract, and the search-index +
+  > prefix-scan candidate gather is at `app/convex/verveGrid.ts:263-289`. Whether a
+  > pick counts is decided server-side on lock-in (`submitGuess`) only. The session
+  > check at `:230-248` now scopes *used-player filtering*, not the candidate pool.
 - X8: VerveGrid now has an explicit tab-switch penalty mutation and UI hook; switching away completes the board.
 
 ## Who Am I
+
+> **NOTE 2026-07-15: subsystem deleted — this section is historical.** The Who Am I
+> mode and its `whoAmIApprovedClues` / `whoAmIClueTranslations` / `whoAmISessions`
+> tables were removed 2026-07 in favor of Career Path (`app/convex/schema.ts:900-902`,
+> replacement at `app/convex/careerPath.ts`). `app/convex/whoAmI.ts` no longer exists.
 
 - WAI1: failed guesses now keep DB and response score behavior aligned.
 - WAI2: close calls now decay score and increment `closeCallCount`.
@@ -92,6 +123,12 @@ This document records the fixes and product-facing decisions introduced from the
 - D9: daily attempts now have `expiresAt`; stale active attempts can be restarted after expiry and are closed by cleanup.
 
 ## Live Match
+
+> **NOTE 2026-07-15: subsystem deleted — this section is historical.** Live Match was
+> removed 2026-07: `app/convex/liveMatches.ts` was purged in commit `7de7662`, the
+> `liveMatches` table went with it (`app/convex/schema.ts:635-640`), the
+> `live-match-stale-check` cron is gone (`app/convex/crons.ts:9`), and the frontend
+> routes were dropped (`app/src/App.tsx:316-319`). None of LM1–LM12 below is live code.
 
 - LM1: forfeits now apply ELO when the match had started.
 - LM2: Live Match answer checks now use `normalizeAnswer`.
@@ -128,8 +165,8 @@ This document records the fixes and product-facing decisions introduced from the
 - `survivalSessions.startedAt`
 - `dailyAttempts.expiresAt`
 - `dailyChallenges.questionSnapshots`
-- `liveMatches.countdownStartedAt`
-- `liveMatches.eloAppliedAt`
+- `liveMatches.countdownStartedAt` — NOTE 2026-07-15: gone with the `liveMatches` table (0 occurrences in `app/convex/schema.ts`; see `schema.ts:635-640`).
+- `liveMatches.eloAppliedAt` — NOTE 2026-07-15: gone with the `liveMatches` table (0 occurrences in `app/convex/schema.ts`; see `schema.ts:635-640`).
 - `seasons.resetStartedAt`
 - `seasons.by_season_number`
 - `seasonHistory.by_season_user_sport_mode`

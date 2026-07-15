@@ -1,5 +1,16 @@
 # VerveQ inside-out audit — per-mode evidence-backed punch list
 
+> **Snapshot, not current state.** Committed 2026-04-27 (`c3bbb27`). This is a
+> dated point-in-time record of what was broken *then*, kept for its evidence
+> and reasoning trail. The triage tables in §10 are **not an open to-do list** —
+> they are the list as it stood on 2026-04-27, and nearly every item has since
+> been actioned. For what was fixed, deferred, or decided against, read
+> [docs/INSIDE_OUT_AUDIT_RESOLUTION.md](INSIDE_OUT_AUDIT_RESOLUTION.md) — and
+> where that doc and this one disagree, the code wins over both. Two whole
+> sections cover subsystems that no longer exist: §6 (Who Am I) and §8 (Live
+> Match). Verify against code before acting on anything here.
+> — annotated 2026-07-15
+
 Branch: `codex/weekend-stabilization-cleanup`. Scope: 8 game modes plus shared lib. PR1 items (exit confirms, NeoCard a11y, image alts, explanations rendered, anti-cheat toasts, survival difficulty wired, Jaro-Winkler doc bug) excluded.
 
 ---
@@ -102,6 +113,13 @@ Branch: `codex/weekend-stabilization-cleanup`. Scope: 8 game modes plus shared l
 
 ## 6. Who Am I — `convex/whoAmI.ts`, `src/pages/WhoAmIScreen.tsx`
 
+> **NOTE 2026-07-15: subsystem deleted — this whole section is historical.** The
+> Who Am I mode, along with its `whoAmIApprovedClues` / `whoAmIClueTranslations`
+> / `whoAmISessions` tables, was removed 2026-07 in favor of Career Path
+> (`app/convex/schema.ts:900-902`, replacement at `app/convex/careerPath.ts`).
+> `app/convex/whoAmI.ts` no longer exists. WAI1–WAI6 below, and their rows in
+> the §10 triage tables, are unactionable.
+
 **WAI1.** **Wrong final guess returns `score: 0` even though `session.score` was patched per-reveal.** `whoAmI.ts:180-188`: on `failed`, the response has `score: 0`. But the DB row's `score` is e.g. 421 (from `revealNextClue` patches at L127-130). `getSession` (L221) returns the DB score. So the submit response says "you got 0", but the post-game query says "421". Whichever the result-screen reads determines what the player sees. Repro: submit a wrong guess after revealing all 4 clues — compare the submit response payload to a follow-up `getSession` poll. — **wrong**
 
 **WAI2.** **`closeCall` on submit doesn't reduce score and doesn't consume anything.** `whoAmI.ts:170-178`. A player can keep submitting almost-right answers forever; the score doesn't decay (only reveals do). With 1000-char tolerance + 4 reveal stages of 0.75× decay, a determined guesser can extract the right answer with no penalty by close-calling until they spell it correctly. — **exploitable**
@@ -143,6 +161,14 @@ Branch: `codex/weekend-stabilization-cleanup`. Scope: 8 game modes plus shared l
 ---
 
 ## 8. Live Match — `convex/liveMatches.ts`, `src/pages/LiveMatchScreen.tsx`
+
+> **NOTE 2026-07-15: subsystem deleted — this whole section is historical.** Live
+> Match was removed 2026-07: `app/convex/liveMatches.ts` was purged in commit
+> `7de7662`, the `liveMatches` table went with it (`app/convex/schema.ts:635-640`),
+> the `live-match-stale-check` cron is gone (`app/convex/crons.ts:9`), and the
+> frontend routes were dropped (`app/src/App.tsx:316-319`). The mode had been
+> unstartable since the challenge subsystem was removed. LM1–LM12 below, and
+> their rows in the §10 triage tables, are unactionable.
 
 **LM1.** **`forfeit` doesn't update ELO.** `liveMatches.ts:237-259`: patches status/winnerId/completedAt, never calls `updateMatchElo`. So a player who quits mid-match loses no ELO; the winner gains nothing. Compare to natural completion at L429-431 which calls `updateMatchElo`. **Important** — this means rage-quit is the dominant strategy when losing. Repro: be losing in Q5, hit forfeit; check `userRatings` — unchanged for both players. — **exploitable**
 
@@ -207,6 +233,11 @@ Branch: `codex/weekend-stabilization-cleanup`. Scope: 8 game modes plus shared l
 ---
 
 ## 10. Triage
+
+> **NOTE 2026-07-15: this is the triage as of 2026-04-27, not open work.** See
+> [docs/INSIDE_OUT_AUDIT_RESOLUTION.md](INSIDE_OUT_AUDIT_RESOLUTION.md) for the
+> disposition of each item. All WAI\* and LM\* rows below belong to deleted
+> subsystems (§6, §8) and are unactionable.
 
 ### Fix soonest (real bugs / exploits, low surface area)
 | # | Mode | Finding |
