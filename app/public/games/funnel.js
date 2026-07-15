@@ -78,9 +78,11 @@
     person_profiles: "identified_only",
     // Only ever true for a ?vq_test=1 run off the production host. posthog-js
     // silently drops everything an automated browser sends (UA blocklist,
-    // userAgentData.brands, navigator.webdriver), so the scripted pass cannot
-    // observe itself without this. Left ON for real traffic, where it is what
-    // keeps Googlebot and friends out of the curiosity funnel.
+    // userAgentData.brands, navigator.webdriver); this flag opts OUT of that
+    // filter, so the scripted pass cannot observe itself without it. Real
+    // traffic on the live host leaves it FALSE, and that is precisely what
+    // keeps Googlebot and friends out of the curiosity funnel: the filter only
+    // runs when this is off.
     opt_out_useragent_filter: isTest,
     loaded: function (ph) {
       if (isTest) ph.register({ is_test: true, env: "test" });
