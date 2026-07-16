@@ -23,6 +23,9 @@
     "content:qa": "npx tsx scripts/contentQaCli.ts",
     "content:qa:baseline": "npx tsx scripts/contentQaBaseline.ts",
     "learn:graph:validate": "npx tsx scripts/validateLearnSkillGraph.ts",
+    "draw:sim": "npx tsx scripts/drawSim/sim.ts",
+    "draw:sweep": "npx tsx scripts/drawSim/sweep.ts",
+    "draw:layoutcheck": "npx tsx scripts/drawSim/layoutcheck.ts",
     "test": "vitest run",
     "test:watch": "vitest"
   },
