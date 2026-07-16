@@ -67,7 +67,7 @@ export const DEFAULT_ENGINE_CONFIG: EngineConfig = {
   // index = chain length; entries below 3 are ×1.
   synergyTable: [1, 1, 1, 1.5, 2.0, 2.5, 3.0],
   maxSynergyFamilies: 3,
-  thresholds: { base: 420, growth: 1.35, bossMult: 1.15 },
+  thresholds: { base: 420, growth: 1.35, bossMult: 1.15, thresholdShape: [1, 1, 1, 1, 1] },
   archetypes: buildArchetypes(1),
   cardGen: {
     setSize: 60,

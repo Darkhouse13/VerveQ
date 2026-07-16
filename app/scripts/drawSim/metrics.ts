@@ -93,13 +93,18 @@ export function finalizeBotStats(acc: BotAccumulator, maxRounds: number): BotSta
   };
 }
 
+/** Ticket 0.1 C2 — a state is "tense" when EV(push)−EV(bank) ∈ [TENSE_LO, TENSE_HI] × banked. */
+export const TENSE_LO = -0.2;
+export const TENSE_HI = 0.1;
+
 /**
- * P3 — EV/stdev of PUSH at a chaser bank point, from the player's information
- * set: squad, synergy, modifiers, and thresholds are known; future forms are
- * unknown and resampled uniform in [1-f, 1+f]. After the forced push the
- * simulated player continues with the chaser's own policy.
+ * P3 (Ticket 0.1 C2) — EV/stdev of PUSH at a chaser-reached post-clear state,
+ * from the player's information set: squad, synergy, modifiers, and thresholds
+ * are known; future forms are unknown and resampled uniform in [1-f, 1+f].
+ * After the forced push the simulated player continues with the chaser's own
+ * policy. EV(bank) at the state is simply `banked`.
  */
-export function evalPushAtBankPoint(
+export function evalPushAtState(
   ctx: BoardContext,
   squadCardIdxs: number[],
   nextFixture: number,
@@ -160,10 +165,12 @@ export interface ProfileInputs {
   chaserFullClearRate: number;
   pooledNearMissRate: number;
   pooledFails: number;
-  p3MedianGap: number;
-  p3MedianSpread: number;
-  p3Points: number;
-  p3FracInRange: number;
+  /** Chaser-reached post-clear states sampled at rounds 2 and 3 (visitation-weighted). */
+  p3States: number;
+  /** Fraction of sampled states with EV(push)−EV(bank) ∈ [TENSE_LO, TENSE_HI] × banked. */
+  p3TenseFrac: number;
+  /** Median stdev(push)/banked among tense states. */
+  p3TenseMedianSpread: number;
   p4Rate: number;
   p5Checked: number;
   p5Ok: boolean;
@@ -217,11 +224,18 @@ export function evaluateCriteria(m: ProfileInputs): Criterion[] {
     `${(m.pooledNearMissRate * 100).toFixed(1)}% of ${m.pooledFails} fails`,
   );
   push(
-    "P3",
-    "bank-point EV(push)-EV(bank) in [-15%,0%], stdev(push)>=40%",
-    outside(m.p3MedianGap, -0.15, 0, 0.05) + Math.max(0, (0.4 - m.p3MedianSpread) / 0.1),
-    `median gap ${(m.p3MedianGap * 100).toFixed(1)}%, median spread ${(m.p3MedianSpread * 100).toFixed(1)}% ` +
-      `(${(m.p3FracInRange * 100).toFixed(0)}% of ${m.p3Points} points in range)`,
+    "P3a",
+    "tense states (EV gap in [-20%,+10%] of banked) >= 40% of round-2/3 states",
+    Math.max(0, (0.4 - m.p3TenseFrac) / 0.1),
+    `${(m.p3TenseFrac * 100).toFixed(1)}% of ${m.p3States} states tense`,
+  );
+  push(
+    "P3b",
+    "among tense states, stdev(push) >= 35% of banked (median)",
+    Number.isNaN(m.p3TenseMedianSpread) ? 5 : Math.max(0, (0.35 - m.p3TenseMedianSpread) / 0.1),
+    Number.isNaN(m.p3TenseMedianSpread)
+      ? "no tense states"
+      : `median spread ${(m.p3TenseMedianSpread * 100).toFixed(1)}%`,
   );
   push(
     "P4",

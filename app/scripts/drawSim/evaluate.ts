@@ -21,13 +21,16 @@ import { buildContext, type BoardContext } from "./boardContext";
 import { runOracle } from "./oracle";
 import { runChaser, runGreedy, runRandom } from "./bots";
 import {
-  evalPushAtBankPoint,
+  evalPushAtState,
   evaluateCriteria,
   finalizeBotStats,
   median,
   newBotAccumulator,
+  percentile,
   profileDistance,
   recordBotRun,
+  TENSE_HI,
+  TENSE_LO,
   type BotStats,
   type Criterion,
 } from "./metrics";
@@ -52,7 +55,20 @@ export interface ConfigEval {
     scoreP50: number;
   };
   bots: Record<string, BotStats>;
-  p3: { points: number; medianGap: number; medianSpread: number; fracInRange: number };
+  /**
+   * Ticket 0.1 C2 — all chaser-reached post-clear states at rounds 2 and 3,
+   * visitation-weighted. gapDeciles/spreadDeciles = p10/p25/p50/p75/p90;
+   * gapHist bins the full EV-gap distribution (fraction of banked).
+   */
+  p3: {
+    states: number;
+    tenseCount: number;
+    tenseFrac: number;
+    tenseMedianSpread: number;
+    gapDeciles: number[];
+    spreadDeciles: number[];
+    gapHist: { lo: number; hi: number; count: number }[];
+  };
   p4Rate: number;
   p5: { checked: number; ok: boolean };
   criteria: Criterion[];
@@ -130,20 +146,28 @@ export function evaluateConfig(config: EngineConfig, opts: EvaluateOptions): Con
     const random = runRandom(ctx, rngFromString(`${boardSeed}|randombot`));
     recordBotRun(randomAcc, random);
 
-    if (chaser.outcome === "banked") {
+    // P3 (Ticket 0.1 C2): every chaser-reached post-clear state at rounds 2
+    // and 3 is a sample, whether the chaser then banked, pushed, or busted
+    // later — one visit per board per round (visitation-weighted).
+    if (chaser.roundsCleared >= 2) {
       const squadIdxs = chaser.choiceLog
         .filter((c) => c.type === "pick")
         .map((c, row) => row * ctx.offers + (c.type === "pick" ? c.offerIndex : 0));
-      const { evGap, spread } = evalPushAtBankPoint(
-        ctx,
-        squadIdxs,
-        chaser.roundsCleared,
-        chaser.finalScore,
-        rngFromString(`${boardSeed}|p3`),
-        opts.p3Samples,
-      );
-      p3Gaps.push(evGap);
-      p3Spreads.push(spread);
+      for (const round of [2, 3]) {
+        if (chaser.roundsCleared < round) break;
+        let banked = 0;
+        for (let r = 0; r < round; r++) banked += chaser.rounds[r].score;
+        const { evGap, spread } = evalPushAtState(
+          ctx,
+          squadIdxs,
+          round, // next fixture index (0-based) after clearing `round` rounds
+          banked,
+          rngFromString(`${boardSeed}|p3|r${round}`),
+          opts.p3Samples,
+        );
+        p3Gaps.push(evGap);
+        p3Spreads.push(spread);
+      }
     }
 
     if (opts.p5Every > 0 && i % opts.p5Every === 0) {
@@ -163,7 +187,34 @@ export function evaluateConfig(config: EngineConfig, opts: EvaluateOptions): Con
 
   const pooledFails = bots.greedy.busts + bots.chaser.busts;
   const pooledNearMisses = bots.greedy.nearMisses + bots.chaser.nearMisses;
-  const p3InRange = p3Gaps.filter((g) => g >= -0.15 && g <= 0).length;
+
+  const tenseSpreads: number[] = [];
+  for (let s = 0; s < p3Gaps.length; s++) {
+    if (p3Gaps[s] >= TENSE_LO && p3Gaps[s] <= TENSE_HI) tenseSpreads.push(p3Spreads[s]);
+  }
+  const tenseFrac = p3Gaps.length ? tenseSpreads.length / p3Gaps.length : 0;
+  const tenseMedianSpread = tenseSpreads.length ? median(tenseSpreads) : NaN;
+  const sortedGaps = [...p3Gaps].sort((a, b) => a - b);
+  const sortedSpreads = [...p3Spreads].sort((a, b) => a - b);
+  const deciles = (sorted: number[]) =>
+    [0.1, 0.25, 0.5, 0.75, 0.9].map((p) => percentile(sorted, p));
+  // Full EV-gap distribution: 0.1-wide bins over [-1, 2], outliers clamped in.
+  const HIST_LO = -1;
+  const HIST_HI = 2;
+  const HIST_BINS = 30;
+  const histCounts = Array.from({ length: HIST_BINS }, () => 0);
+  for (const g of p3Gaps) {
+    const bin = Math.min(
+      HIST_BINS - 1,
+      Math.max(0, Math.floor(((g - HIST_LO) / (HIST_HI - HIST_LO)) * HIST_BINS)),
+    );
+    histCounts[bin]++;
+  }
+  const gapHist = histCounts.map((count, b) => ({
+    lo: Number((HIST_LO + (b * (HIST_HI - HIST_LO)) / HIST_BINS).toFixed(1)),
+    hi: Number((HIST_LO + ((b + 1) * (HIST_HI - HIST_LO)) / HIST_BINS).toFixed(1)),
+    count,
+  }));
 
   const criteria = evaluateCriteria({
     oracleFullClearRate: oracleFullClears / n,
@@ -175,10 +226,9 @@ export function evaluateConfig(config: EngineConfig, opts: EvaluateOptions): Con
     chaserFullClearRate: bots.chaser.fullClearRate,
     pooledNearMissRate: pooledFails === 0 ? 0 : pooledNearMisses / pooledFails,
     pooledFails,
-    p3MedianGap: p3Gaps.length ? median(p3Gaps) : NaN,
-    p3MedianSpread: p3Spreads.length ? median(p3Spreads) : NaN,
-    p3Points: p3Gaps.length,
-    p3FracInRange: p3Gaps.length ? p3InRange / p3Gaps.length : 0,
+    p3States: p3Gaps.length,
+    p3TenseFrac: tenseFrac,
+    p3TenseMedianSpread: tenseMedianSpread,
     p4Rate: diversityBoards / n,
     p5Checked,
     p5Ok,
@@ -197,10 +247,13 @@ export function evaluateConfig(config: EngineConfig, opts: EvaluateOptions): Con
     },
     bots,
     p3: {
-      points: p3Gaps.length,
-      medianGap: p3Gaps.length ? median(p3Gaps) : NaN,
-      medianSpread: p3Spreads.length ? median(p3Spreads) : NaN,
-      fracInRange: p3Gaps.length ? p3InRange / p3Gaps.length : 0,
+      states: p3Gaps.length,
+      tenseCount: tenseSpreads.length,
+      tenseFrac,
+      tenseMedianSpread,
+      gapDeciles: deciles(sortedGaps),
+      spreadDeciles: deciles(sortedSpreads),
+      gapHist,
     },
     p4Rate: diversityBoards / n,
     p5: { checked: p5Checked, ok: p5Ok },

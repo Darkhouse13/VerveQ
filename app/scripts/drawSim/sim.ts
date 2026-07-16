@@ -85,9 +85,21 @@ export function renderEval(ev: ConfigEval): string {
       `${ev.oracle.deadBoards} dead boards (${ev.oracle.deadFlagged} flagged)`,
   );
   lines.push(
-    `p3: ${ev.p3.points} bank points, median gap ${pct(ev.p3.medianGap)}, ` +
-      `median spread ${pct(ev.p3.medianSpread)}, in-range ${pct(ev.p3.fracInRange)}`,
+    `p3: ${ev.p3.states} round-2/3 states, tense ${pct(ev.p3.tenseFrac)} (${ev.p3.tenseCount}), ` +
+      `tense median spread ${Number.isNaN(ev.p3.tenseMedianSpread) ? "n/a" : pct(ev.p3.tenseMedianSpread)}`,
   );
+  const dec = (v: number[]) => v.map((x) => pct(x)).join(" / ");
+  lines.push(`    EV-gap p10/p25/p50/p75/p90: ${dec(ev.p3.gapDeciles)}`);
+  lines.push(`    spread p10/p25/p50/p75/p90: ${dec(ev.p3.spreadDeciles)}`);
+  const occupied = ev.p3.gapHist.filter((b) => b.count > 0);
+  const peak = Math.max(1, ...occupied.map((b) => b.count));
+  for (const b of occupied) {
+    const bar = "#".repeat(Math.max(1, Math.round((b.count / peak) * 40)));
+    lines.push(
+      `    ${`${(b.lo * 100).toFixed(0)}%`.padStart(6)}..${`${(b.hi * 100).toFixed(0)}%`.padStart(5)} ` +
+        `${String(b.count).padStart(6)} ${bar}`,
+    );
+  }
   lines.push(`p4: line diversity on ${pct(ev.p4Rate)} of boards`);
   lines.push("");
   lines.push(formatCriteriaTable(ev.criteria));

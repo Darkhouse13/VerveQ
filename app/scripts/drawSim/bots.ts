@@ -2,7 +2,10 @@
  * D4 heuristic bots. Every bot plays through the real engine
  * (initRun/applyChoice), so bot results exercise exactly the shipped rules.
  *
- * - greedy:        always the highest rating; banks once cumulative > 1.5 × F1 threshold.
+ * - greedy:        always the highest rating; pushes while the squad's
+ *                  face-value score (Σ ratings — no form, no fixture
+ *                  modifiers, no synergy) ≥ 1.0 × the next threshold
+ *                  (Ticket 0.1 C1), else banks.
  * - synergyChaser: maximizes the largest chain; pushes while last roundScore
  *                  ≥ 1.1 × next threshold (assumes form = 1.0).
  * - random:        uniform picks, 50/50 bank/push (seeded).
@@ -51,10 +54,13 @@ const pickHighestRating: PickFn = (ctx, state) => {
 };
 
 export function runGreedy(ctx: BoardContext): RunResult {
-  const bankLine = 1.5 * ctx.thresholds[0];
-  return runScriptedBot(ctx, pickHighestRating, (_ctx, state) =>
-    state.cumulative > bankLine ? "bank" : "push",
-  );
+  const ratingById = new Map<string, number>();
+  for (const row of ctx.board.rows) for (const card of row) ratingById.set(card.id, card.rating);
+  return runScriptedBot(ctx, pickHighestRating, (c, state) => {
+    let face = 0;
+    for (const id of state.squad) face += ratingById.get(id) ?? 0;
+    return face >= 1.0 * c.thresholds[state.fixtureIndex + 1] ? "push" : "bank";
+  });
 }
 
 export function runChaser(ctx: BoardContext): RunResult {

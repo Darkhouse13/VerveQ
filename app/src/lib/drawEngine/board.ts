@@ -37,11 +37,13 @@ export function generateBoard(boardSeed: string, cardSet: Card[], config: Engine
     Array.from({ length: config.archetypes.length }, (_, i) => i),
   );
   const fixtures: Fixture[] = [];
-  const { base, growth, bossMult } = config.thresholds;
+  const { base, growth, bossMult, thresholdShape } = config.thresholds;
   for (let i = 0; i < config.fixtureCount; i++) {
     const archetype = config.archetypes[order[i % order.length]];
     const isBoss = i === config.fixtureCount - 1;
-    const threshold = Math.round(base * Math.pow(growth, i) * (isBoss ? bossMult : 1));
+    const threshold = Math.round(
+      base * Math.pow(growth, i) * (isBoss ? bossMult : 1) * (thresholdShape?.[i] ?? 1),
+    );
     fixtures.push({
       index: i,
       archetypeId: archetype.id,

@@ -50,6 +50,26 @@ describe("board contract", () => {
       expect(board.fixtures[i].threshold).toBeGreaterThan(board.fixtures[i - 1].threshold);
     }
   });
+
+  it("applies the optional thresholdShape as a per-fixture multiplier (Ticket 0.1 C3)", () => {
+    const shape = [1, 1.2, 1, 0.9, 1.5];
+    const shaped = generateBoard("contract-board", cardSet, {
+      ...config,
+      thresholds: { ...config.thresholds, thresholdShape: shape },
+    });
+    const { base, growth, bossMult } = config.thresholds;
+    shaped.fixtures.forEach((fixture, i) => {
+      expect(fixture.threshold).toBe(
+        Math.round(base * Math.pow(growth, i) * (fixture.isBoss ? bossMult : 1) * shape[i]),
+      );
+    });
+    // Omitting thresholdShape reproduces the v0 curve exactly.
+    const bare = generateBoard("contract-board", cardSet, {
+      ...config,
+      thresholds: { base, growth, bossMult },
+    });
+    expect(bare.fixtures.map((f) => f.threshold)).toEqual(board.fixtures.map((f) => f.threshold));
+  });
 });
 
 describe("synthetic-only card content", () => {

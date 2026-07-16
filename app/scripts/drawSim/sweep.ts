@@ -24,6 +24,7 @@ import {
   rngInt,
   type EngineConfig,
 } from "../../src/lib/drawEngine";
+import { buildBoostOnlyArchetypes, buildMixedDipArchetypes } from "./archetypeTables";
 import { evaluateConfig, type ConfigEval } from "./evaluate";
 import { parseFlags, renderEval } from "./sim";
 
@@ -36,20 +37,26 @@ const HERE = path.dirname(fileURLToPath(import.meta.url));
  * chaser≈2400 / oracle≈3900 at synergyScale 1 with low tag cardinality.
  */
 const RANGES = {
-  thresholdBase: [1200, 2400],
-  thresholdGrowth: [1.1, 1.4],
+  thresholdBase: [400, 2400],
+  thresholdGrowth: [1.04, 1.4],
   bossMult: [0.7, 1.15],
-  formSpread: [0.12, 0.32],
+  /** thresholdShape final entry — the boss wall on top of bossMult (Ticket 0.1 C3). */
+  bossShape: [1.0, 1.6],
+  formSpread: [0.12, 0.45],
   bustKeep: [0.15, 0.4],
   fullClearBonus: [1.1, 1.6],
   /** synergy table entry m ⇒ 1 + (m-1)·scale over the base 1.5/2/2.5/3 table. */
-  synergyScale: [0.75, 1.25],
+  synergyScale: [0.4, 1.25],
   /** archetype multipliers m ⇒ m^strength. */
-  modifierStrength: [0.6, 1.5],
-  ratingSkew: [0.8, 1.6],
-  clubCount: [5, 9],
-  nationCount: [3, 6],
-  eraCount: [3, 5],
+  modifierStrength: [0.6, 1.6],
+  ratingSkew: [0.7, 1.6],
+  clubCount: [5, 13],
+  nationCount: [3, 8],
+  eraCount: [3, 6],
+  /** Card-set size (boards sample 18) — small sets concentrate cross-board margins. */
+  setSize: [22, 60],
+  /** 0 = default boost+penalty table, 1 = boost-only, 2 = mixed mild/deep dips. */
+  archStyle: [0, 2],
   clubsPerCardWeightPresets: [
     [4, 4, 2],
     [3, 4, 3],
@@ -63,6 +70,7 @@ interface Genome {
   base: number;
   growth: number;
   bossMult: number;
+  bossShape: number;
   formSpread: number;
   bustKeep: number;
   fullClearBonus: number;
@@ -72,24 +80,29 @@ interface Genome {
   clubCount: number;
   nationCount: number;
   eraCount: number;
+  setSize: number;
+  archStyle: number;
   presetIdx: number;
 }
 
-/** Hand-tuned anchor (probe C region — see ticket report). */
+/** Anchor = the Ticket 0.1 calibrator search winner (passes all but P3a there). */
 const ANCHOR: Genome = {
-  base: 1800,
-  growth: 1.18,
-  bossMult: 0.85,
-  formSpread: 0.25,
-  bustKeep: 0.35,
-  fullClearBonus: 1.25,
-  synergyScale: 1,
-  modifierStrength: 1,
-  ratingSkew: 1.2,
-  clubCount: 6,
-  nationCount: 4,
-  eraCount: 5,
-  presetIdx: 2,
+  base: 400,
+  growth: 1.29,
+  bossMult: 0.9,
+  bossShape: 1,
+  formSpread: 0.2994,
+  bustKeep: 0.1515,
+  fullClearBonus: 1.5389,
+  synergyScale: 0.48,
+  modifierStrength: 1.577,
+  ratingSkew: 0.8116,
+  clubCount: 12,
+  nationCount: 6,
+  eraCount: 6,
+  setSize: 44,
+  archStyle: 0,
+  presetIdx: 1,
 };
 
 function sampleGenome(rng: () => number): Genome {
@@ -99,6 +112,7 @@ function sampleGenome(rng: () => number): Genome {
     base: Math.round(uniform(RANGES.thresholdBase)),
     growth: uniform(RANGES.thresholdGrowth),
     bossMult: uniform(RANGES.bossMult),
+    bossShape: uniform(RANGES.bossShape),
     formSpread: uniform(RANGES.formSpread),
     bustKeep: uniform(RANGES.bustKeep),
     fullClearBonus: uniform(RANGES.fullClearBonus),
@@ -108,6 +122,8 @@ function sampleGenome(rng: () => number): Genome {
     clubCount: int(RANGES.clubCount),
     nationCount: int(RANGES.nationCount),
     eraCount: int(RANGES.eraCount),
+    setSize: int(RANGES.setSize),
+    archStyle: int(RANGES.archStyle),
     presetIdx: rngInt(rng, RANGES.clubsPerCardWeightPresets.length),
   };
 }
@@ -124,6 +140,7 @@ function perturbGenome(g: Genome, rng: () => number): Genome {
     base: Math.round(jitter(g.base, 0.15, RANGES.thresholdBase)),
     growth: jitter(g.growth, 0.05, RANGES.thresholdGrowth),
     bossMult: jitter(g.bossMult, 0.08, RANGES.bossMult),
+    bossShape: jitter(g.bossShape, 0.08, RANGES.bossShape),
     formSpread: jitter(g.formSpread, 0.15, RANGES.formSpread),
     bustKeep: jitter(g.bustKeep, 0.15, RANGES.bustKeep),
     fullClearBonus: jitter(g.fullClearBonus, 0.08, RANGES.fullClearBonus),
@@ -133,6 +150,8 @@ function perturbGenome(g: Genome, rng: () => number): Genome {
     clubCount: jitterInt(g.clubCount, RANGES.clubCount),
     nationCount: jitterInt(g.nationCount, RANGES.nationCount),
     eraCount: jitterInt(g.eraCount, RANGES.eraCount),
+    setSize: clamp(g.setSize + (rngInt(rng, 9) - 4), RANGES.setSize),
+    archStyle: rng() < 0.8 ? g.archStyle : rngInt(rng, RANGES.archStyle[1] + 1),
     presetIdx: rng() < 0.8 ? g.presetIdx : rngInt(rng, RANGES.clubsPerCardWeightPresets.length),
   };
 }
@@ -145,10 +164,21 @@ function buildConfig(g: Genome): EngineConfig {
     bustKeep: g.bustKeep,
     fullClearBonus: g.fullClearBonus,
     synergyTable: [1, 1, 1, scaled(1.5), scaled(2.0), scaled(2.5), scaled(3.0)],
-    thresholds: { base: g.base, growth: g.growth, bossMult: g.bossMult },
-    archetypes: buildArchetypes(g.modifierStrength),
+    thresholds: {
+      base: g.base,
+      growth: g.growth,
+      bossMult: g.bossMult,
+      thresholdShape: [1, 1, 1, 1, Number(g.bossShape.toFixed(3))],
+    },
+    archetypes:
+      g.archStyle === 2
+        ? buildMixedDipArchetypes(g.modifierStrength)
+        : g.archStyle === 1
+          ? buildBoostOnlyArchetypes(g.modifierStrength)
+          : buildArchetypes(g.modifierStrength),
     cardGen: {
       ...DEFAULT_ENGINE_CONFIG.cardGen,
+      setSize: g.setSize,
       ratingSkew: g.ratingSkew,
       clubCount: g.clubCount,
       nationCount: g.nationCount,
@@ -236,7 +266,7 @@ function main(): void {
 
   const top5 = shortlist.slice(0, 5);
   console.log("\n================ TOP 5 ================");
-  const ids = ["P0", "P1a", "P1b", "P1c", "P1d", "P2", "P3", "P4", "P5"];
+  const ids = ["P0", "P1a", "P1b", "P1c", "P1d", "P2", "P3a", "P3b", "P4", "P5"];
   console.log(
     ["rank".padEnd(5), "config".padEnd(11), "dist".padEnd(8), ...ids.map((s) => s.padEnd(5))].join(" "),
   );
@@ -288,7 +318,7 @@ function main(): void {
   console.log(`\nartifacts: ${outPath} + best-config.json`);
 
   const coreFails = (top5[0].full as ConfigEval).criteria.filter(
-    (c) => ["P0", "P1a", "P1b", "P1c", "P1d", "P2", "P3"].includes(c.id) && !c.pass,
+    (c) => ["P0", "P1a", "P1b", "P1c", "P1d", "P2", "P3a", "P3b"].includes(c.id) && !c.pass,
   );
   if (coreFails.length > 0) {
     console.error(

@@ -101,11 +101,17 @@ export interface CardGenConfig {
   positionWeights: Record<PositionId, number>;
 }
 
-/** Threshold curve: threshold(i) = round(base * growth^i), boss ×bossMult. */
+/**
+ * Threshold curve: threshold(i) = round(base * growth^i * shape[i]), boss
+ * additionally ×bossMult. thresholdShape is an optional per-fixture multiplier
+ * on the geometric curve (length = fixtureCount; omitted or short ⇒ ×1).
+ * Additive knob from Ticket 0.1 — omitting it reproduces the v0 curve exactly.
+ */
 export interface ThresholdConfig {
   base: number;
   growth: number;
   bossMult: number;
+  thresholdShape?: number[];
 }
 
 /** Every gameplay number is a knob here. */
