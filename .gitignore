@@ -238,6 +238,8 @@ app/.ops/
 !.github/ISSUE_TEMPLATE/bug_report.md
 !.github/ISSUE_TEMPLATE/feature_request.md
 !.github/pull_request_template.md
+!app/src/lib/drawEngine/*.md
+!app/scripts/drawSim/*.md
 # Data and temporary data cleaning folders
 data/
 !app/convex/data/

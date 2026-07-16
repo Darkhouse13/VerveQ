@@ -1,11 +1,19 @@
 /**
- * THE DRAW — frozen v0 contract.
+ * THE DRAW — CONTRACT v1.0 (frozen, Ticket 0.4, tag draw-engine-v1.0).
  *
  * Everything in the engine, the sim harness, and (later) the UI imports its
- * shapes from this file. Breaking changes to this file mid-build are a
- * STOP-and-report event (see DECISIONS.md).
+ * shapes from this file. v1.0 closes breaking changes: the contract may only
+ * grow by ADDITIVE knobs, and only by owner ticket (see DECISIONS.md).
  *
  * Design invariants:
+ * - P0-RUNTIME (CONTRACT INVARIANT, Ticket 0.4): production serving MUST
+ *   pass detectDeadBoard — a dead board (no draft line can full-clear) is
+ *   never served to players. Dead seed ⇒ deterministic reroll chain: the
+ *   served board index is the first non-dead k in hash(dateSeed, k) for
+ *   k = 0, 1, 2, …; a pure function of the date seed, so every user gets the
+ *   same board (leaderboard fairness preserved). The player-facing dead-board
+ *   rate is therefore 0% by construction. Implementation lands in the Convex
+ *   serving ticket; the invariant binds from v1.0.
  * - A board is FULLY derived from (boardSeed, cardSet, EngineConfig). No I/O,
  *   no wall clock, no ambient randomness anywhere in the engine.
  * - All card content is synthetic (generated fake names, CLUB_A-style tag

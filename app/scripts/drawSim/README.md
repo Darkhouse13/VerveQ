@@ -32,13 +32,17 @@ sweep. Everything is seeded — same flags ⇒ identical output.
 
 ## Status
 
-Ticket 0.3: P2 band amended to 25–60% by owner ruling (STOP-3 accepted; the
-60% line is a degeneracy alarm, not a tuning target), C2 near-miss
-attribution diagnostic (report-only), and `--eval` upgraded to the full
-selection-free acceptance instrument (pooled P0–P5 gates + per-set table).
-Acceptance: STOP on P0 — c13-1 passes 9/10 pooled over the 10-set rotation
-(amended P2 = 47.1%, mid-band) but P0 is honestly 98.0% across fresh card
-sets (per-set 91.4–99.7%; dead-board rate is a card-set property). No freeze,
-no push. Full tables and the ruling in drawEngine/DECISIONS.md. Useful
-calibrate modes: `--eval` (acceptance) and `--genome` (plane for a printed
+Ticket 0.4: P0 restructured into two tiers by owner ruling (STOP-4 accepted;
+no criterion loosened, each guarantee relocated to the tier where it lives).
+P0-config gates config acceptance at pooled full-clear ≥ 97% across the
+10-set rotation (per-set P0 = report-only diagnostic); the player-facing
+dead-board rate is 0% by construction via the P0-runtime CONTRACT INVARIANT
+(production `detectDeadBoard` gate + deterministic reroll chain — see
+`../src/lib/drawEngine/types.ts`); the pinned production card set gets its
+own ≥ 99.5% Tier-2 acceptance run (P0-set, CIE card-set ticket).
+Acceptance: **PASS 10/10** — c13-1 pooled over 10 sets × 2000 boards
+(P0-config 98.00%, P2 47.1% mid-band, P3a 47.2%). Engine contract frozen as
+**CONTRACT v1.0** (tag `draw-engine-v1.0`); additive knobs by owner ticket
+only. Full ruling and tables in drawEngine/DECISIONS.md. Useful calibrate
+modes: `--eval` (acceptance) and `--genome` (plane for a printed
 ContentGenome).

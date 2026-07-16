@@ -723,6 +723,9 @@ function main(): void {
   // the POOLED result against the true profile bands (metrics.ts, incl. P4
   // from the line matrices and real-engine P5 spot-checks), and reports the
   // per-set table plus the C2 near-miss attribution alongside.
+  // Ticket 0.4: the pooled P0 gate is P0-config (>=97%); per-set P0 in the
+  // table below is a report-only diagnostic (see metrics.ts + DECISIONS.md
+  // for the two-tier P0 architecture).
   if (flags.has("eval")) {
     const { config, kGreedy } = loadConfig(flags.get("config"));
     const R = config.fixtureCount;
@@ -902,7 +905,7 @@ function main(): void {
     );
 
     const pad = (v: string | number, w: number) => String(v).padEnd(w);
-    console.log(`\nper-set table:`);
+    console.log(`\nper-set table (report-only diagnostic — the gate is pooled, Ticket 0.4):`);
     console.log(
       `  ${pad("set", 4)} ${pad("boards", 7)} ${pad("P0%", 7)} ${pad("P1a", 4)} ${pad("P1b", 4)} ` +
         `${pad("P1c", 4)} ${pad("P1d%", 6)} ${pad("P2% (nm/fails)", 17)} ${pad("P3a%", 6)} ` +

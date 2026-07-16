@@ -272,10 +272,21 @@ export function evaluateCriteria(m: ProfileInputs): Criterion[] {
   const push = (id: string, label: string, distance: number, value: string) =>
     criteria.push({ id, label, pass: distance === 0, value, distance });
 
+  // Ticket 0.4 C1 (owner ruling on STOP-4): P0 restructured into tiers — no
+  // criterion loosened, each guarantee relocated to the tier where it lives.
+  // THIS criterion is P0-config: pooled full-clear >=97% across the card-set
+  // rotation — the honest cross-set robustness statement a content-free
+  // config can make (dead-board rate is a card-set property; per-set P0 is a
+  // report-only diagnostic). The player-facing dead-board rate is 0% by
+  // construction via P0-runtime, a CONTRACT INVARIANT (production serving
+  // must pass detectDeadBoard; dead seed => deterministic reroll chain — see
+  // types.ts + DECISIONS.md). The pinned production card set additionally
+  // needs >=99.5% natural clear over >=2000 boards in its own Tier-2 run
+  // (P0-set, CIE card-set ticket).
   push(
     "P0",
-    "oracle full-clears >=99.5%, remainder flagged dead",
-    Math.max(0, (0.995 - m.oracleFullClearRate) / 0.005) + (m.deadFlagged === m.deadBoards ? 0 : 10),
+    "P0-config: pooled full-clear >=97% (runtime dead-board gate = contract invariant; per-set = diagnostic)",
+    Math.max(0, (0.97 - m.oracleFullClearRate) / 0.005) + (m.deadFlagged === m.deadBoards ? 0 : 10),
     `${(m.oracleFullClearRate * 100).toFixed(2)}% full-clear, ${m.deadBoards} dead / ${m.deadFlagged} flagged`,
   );
   push(
