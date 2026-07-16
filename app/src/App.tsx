@@ -94,6 +94,11 @@ const RivalDetailScreen = lazy(() =>
 );
 const ChallengeArenaScreen = lazy(() => import("./pages/ChallengeArenaScreen"));
 
+// THE DRAW (Ticket B) — mock-driven, flag-gated via VITE_DRAW_ENABLED inside
+// the screen itself; unlinked from any nav. Lazy so it stays out of the main
+// bundle; with the flag off the route just bounces to "/".
+const DrawScreen = lazy(() => import("./pages/draw/DrawScreen"));
+
 const convex = new ConvexReactClient(
   import.meta.env.VITE_CONVEX_URL as string,
 );
@@ -505,6 +510,9 @@ const AppRoutes = () => (
             {/* Arena (multi-user) is username-only playable; the screen onboards
                 inline so a shared invite link never drops its lobby code. */}
             <Route path="/v2/arena/:code" element={<ShellGate><ArenaPlayScreen /></ShellGate>} />
+            {/* THE DRAW — dev/preview only, flag-gated (VITE_DRAW_ENABLED),
+                not linked from home, nav, or any mode grid. */}
+            <Route path="/draw" element={<DrawScreen />} />
             {/* Public legal pages — no auth, no flag gate (launch/app-store
                 requirements; must render regardless of rollout state). */}
             <Route path="/privacy" element={<PrivacyScreen />} />

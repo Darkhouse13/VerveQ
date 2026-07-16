@@ -1,0 +1,63 @@
+/* THE DRAW — mode-local styles (imported only by the /draw screens). */
+
+/* Rip reveal: a fresh draft row tears in top-to-bottom with a slight
+   overshoot; cards stagger via --rip-delay set inline per slot. */
+@keyframes draw-rip-in {
+  0% {
+    clip-path: inset(0 0 100% 0);
+    transform: translateY(-16px) rotate(var(--rip-rot, -3deg)) scale(1.05);
+    opacity: 0.4;
+  }
+  55% {
+    clip-path: inset(0 0 0 0);
+    opacity: 1;
+  }
+  75% {
+    transform: translateY(3px) rotate(calc(var(--rip-rot, -3deg) * -0.25)) scale(0.99);
+  }
+  100% {
+    transform: translateY(0) rotate(0deg) scale(1);
+  }
+}
+
+.draw-rip {
+  animation: draw-rip-in 0.5s cubic-bezier(0.22, 0.9, 0.3, 1.15) both;
+  animation-delay: var(--rip-delay, 0s);
+}
+
+/* Threshold bar fill — width animates on reveal. */
+.draw-bar-fill {
+  transition: width 0.9s cubic-bezier(0.25, 0.8, 0.3, 1);
+}
+
+/* Share card (S5). The BUST variant is deliberately the most stylish one:
+   hazard stripes, hard tilt stamp, deep offset shadow. */
+.draw-share-bust {
+  background:
+    repeating-linear-gradient(
+      -45deg,
+      hsl(0 0% 7%) 0 14px,
+      hsl(1 100% 60%) 14px 28px
+    );
+}
+
+.draw-share-stamp {
+  transform: rotate(-8deg);
+  letter-spacing: 0.06em;
+}
+
+@keyframes draw-stamp-in {
+  0% { transform: rotate(-8deg) scale(2.2); opacity: 0; }
+  60% { transform: rotate(-8deg) scale(0.94); opacity: 1; }
+  100% { transform: rotate(-8deg) scale(1); }
+}
+
+.draw-share-stamp {
+  animation: draw-stamp-in 0.4s ease-out both;
+}
+
+/* Benched chip: the card visually sits down on the bench. */
+.draw-benched {
+  transform: translateY(4px) rotate(-2deg);
+  opacity: 0.55;
+}
