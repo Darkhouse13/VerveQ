@@ -246,6 +246,9 @@ data/
 app/convex/data/*
 !app/convex/data/football_career_paths.json
 !app/convex/data/playersSourced.json
+!app/convex/data/drawCardsReal.candidates.json
+!app/convex/data/drawCardsReal.dossier.json
+!app/convex/data/drawCardsReal.BUILD_NOTES.md
 !app/convex/data/clubAliases.json
 !app/convex/data/playerAdditions.json
 !app/convex/data/football_player_metadata.json
