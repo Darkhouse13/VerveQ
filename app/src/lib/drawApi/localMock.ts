@@ -49,6 +49,10 @@ import type {
   DrawToday,
 } from "./types";
 import { MOCK_CARD_SET_SEED, MOCK_ENGINE_CONFIG } from "./mockConfig";
+import {
+  DRAW_DISABLED_MESSAGE,
+  DRAW_SIGN_IN_REQUIRED,
+} from "../../../convex/lib/drawMessages";
 // Board numbering is SERVER-derived (Ticket C, Step 2b): the mock computes it
 // with the same helper and the same launch epoch as convex/draw.ts rather than
 // keeping its own epoch arithmetic.
@@ -65,11 +69,32 @@ interface StorageLike {
   removeItem(key: string): void;
 }
 
+/**
+ * Injectable failure modes (Ticket D). The mock originally could not reject at
+ * all, so the screens were built with no failure path and the Convex adapter's
+ * first live run hung forever on "Loading…". These reproduce the three ways a
+ * real backend says no, using the SERVER'S OWN sentences (drawMessages.ts) so
+ * the UI's translation is exercised against the real strings:
+ *
+ *  - authFailure  — no identity reached the server (session lost/never made)
+ *  - gateClosed   — drawSettings.enabled=false and the caller isn't a tester
+ *  - networkError — the request never got an answer
+ */
+export type DrawFaultMode = "authFailure" | "gateClosed" | "networkError";
+
+const FAULT_MESSAGE: Record<DrawFaultMode, string> = {
+  authFailure: DRAW_SIGN_IN_REQUIRED,
+  gateClosed: DRAW_DISABLED_MESSAGE,
+  networkError: "Failed to fetch",
+};
+
 export interface LocalMockApiOptions {
   /** Clock override (epoch ms) — tests pin the day. Defaults to Date.now. */
   now?: () => number;
   /** Storage override; null disables persistence. Defaults to localStorage. */
   storage?: StorageLike | null;
+  /** Start faulted; every call rejects until cleared via setFault(null). */
+  fault?: DrawFaultMode | null;
 }
 
 interface StreakRecord {
@@ -152,10 +177,12 @@ export class LocalMockApi implements DrawApi {
   /** In-memory run fallback when storage is unavailable. */
   private memoryRun: { dateKey: string; json: string } | null = null;
   private memoryStreak: StreakRecord = { current: 0, best: 0, lastDoneKey: null };
+  private fault: DrawFaultMode | null;
 
   constructor(options: LocalMockApiOptions = {}) {
     this.config = MOCK_ENGINE_CONFIG;
     this.cardSet = generateCardSet(MOCK_CARD_SET_SEED, this.config.cardGen);
+    this.fault = options.fault ?? null;
     this.now = options.now ?? (() => Date.now());
     this.storage =
       options.storage !== undefined
@@ -165,9 +192,23 @@ export class LocalMockApi implements DrawApi {
           : null;
   }
 
+  /**
+   * Set (or clear) the fault mode. Clearing mid-test is how a recovery is
+   * simulated: e.g. authFailure until the session is bootstrapped, then null.
+   */
+  setFault(fault: DrawFaultMode | null): void {
+    this.fault = fault;
+  }
+
+  /** Rejects with the server's own sentence when a fault mode is armed. */
+  private failIfFaulted(): void {
+    if (this.fault !== null) throw new Error(FAULT_MESSAGE[this.fault]);
+  }
+
   // ---- DrawApi ------------------------------------------------------------
 
   async getToday(): Promise<DrawToday> {
+    this.failIfFaulted();
     const dateKey = this.dateKey();
     const board = this.board(dateKey);
     const state = this.loadRun(dateKey);
@@ -190,6 +231,7 @@ export class LocalMockApi implements DrawApi {
   }
 
   async startRun(): Promise<DrawRunView> {
+    this.failIfFaulted();
     const dateKey = this.dateKey();
     const board = this.board(dateKey);
     let state = this.loadRun(dateKey);
@@ -201,6 +243,7 @@ export class LocalMockApi implements DrawApi {
   }
 
   async submitChoice(choice: Choice): Promise<DrawRunView> {
+    this.failIfFaulted();
     const dateKey = this.dateKey();
     const board = this.board(dateKey);
     const state = this.loadRun(dateKey);
@@ -212,6 +255,7 @@ export class LocalMockApi implements DrawApi {
   }
 
   async getLeaderboard(): Promise<DrawLeaderboardEntry[]> {
+    this.failIfFaulted();
     const dateKey = this.dateKey();
     const board = this.board(dateKey);
     const rng = rngFromString(`${board.seed}|mock-leaderboard`);
@@ -247,6 +291,7 @@ export class LocalMockApi implements DrawApi {
   }
 
   async getRarity(): Promise<DrawRarity> {
+    this.failIfFaulted();
     const dateKey = this.dateKey();
     const state = this.loadRun(dateKey);
     if (state === null || state.squad.length < this.config.rows) {
@@ -258,6 +303,7 @@ export class LocalMockApi implements DrawApi {
   }
 
   async getStreak(): Promise<DrawStreak> {
+    this.failIfFaulted();
     const record = this.streakRecord();
     return { current: record.current, best: record.best };
   }

@@ -80,6 +80,19 @@ export VITE_CONVEX_SITE_URL=https://different-lynx-153.convex.site
 ./deploy/build-and-run.sh
 ```
 
+> **`VITE_DRAW_ENABLED` is intentionally absent above.** THE DRAW is dark: the
+> flag is dev-only (`app/.env.local`), so `/draw` does not exist in the prod
+> bundle. It is a double gate — even with the flag on, `drawSettings.enabled`
+> (or tester membership) is checked server-side on every draw function, so the
+> flag alone opens nothing. Both gates stay until the Home ticket links the
+> mode. To run it locally:
+>
+> ```bash
+> cd app
+> # PowerShell: $env:VITE_DRAW_ENABLED = "true"; npm run dev
+> VITE_DRAW_ENABLED=true npm run dev
+> ```
+
 This:
 1. Runs `npm ci` + `vite build` in `app/` (as `hermes`).
 2. Builds `verveq-web:<git-sha>-<stamp>` from `deploy/Dockerfile` (bundle + nginx conf baked in).

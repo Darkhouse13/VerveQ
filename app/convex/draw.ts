@@ -47,6 +47,7 @@ import {
   boardNumberForDate,
   nextBoardAtForDate,
 } from "./lib/drawDaily";
+import { DRAW_DISABLED_MESSAGE, DRAW_SIGN_IN_REQUIRED } from "./lib/drawMessages";
 import { MS_PER_DAY } from "./lib/streaks";
 import { userActorKey } from "./funnel";
 
@@ -59,8 +60,10 @@ import { userActorKey } from "./funnel";
  */
 export { DRAW_LAUNCH_EPOCH_DATE_KEY };
 
-export const DRAW_DISABLED_MESSAGE = "THE DRAW is not open yet";
-const SIGN_IN_REQUIRED = "Sign in required";
+// Defined in lib/drawMessages so the client can recognise these exact
+// sentences without importing this module (which pulls in _generated/server).
+export { DRAW_DISABLED_MESSAGE };
+const SIGN_IN_REQUIRED = DRAW_SIGN_IN_REQUIRED;
 const LEADERBOARD_SCAN_CAP = 5000;
 
 // ── access gate ──

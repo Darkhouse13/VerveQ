@@ -14,6 +14,12 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Navigate, useNavigate } from "react-router-dom";
 import { useConvex } from "convex/react";
 import { Flame } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
+import { DRAW_ENABLED } from "@/lib/flags";
+import {
+  DRAW_DISABLED_MESSAGE,
+  DRAW_SIGN_IN_REQUIRED,
+} from "../../../convex/lib/drawMessages";
 import { NeoButton } from "@/components/neo/NeoButton";
 import { NeoCard } from "@/components/neo/NeoCard";
 import { createDrawApi } from "@/lib/drawApi";
@@ -34,12 +40,32 @@ import { ResultStage } from "@/components/draw/ResultStage";
 import { LAYOUT } from "@/components/draw/layout";
 import "@/components/draw/draw.css";
 
-type Stage = "loading" | "entry" | "play" | "result";
+type Stage = "loading" | "entry" | "play" | "result" | "error";
 
 interface DrawExperienceProps {
   api: DrawApi;
   /** Round-reveal beat; tests pass 0. */
   revealMs?: number;
+}
+
+/**
+ * The mock could never reject, so the screen originally had no failure path
+ * and any rejection left it spinning on "Loading…" forever. Against a real
+ * backend every call can fail — the flag gate ("not open yet"), a lost
+ * session ("Sign in required"), the replay gate, or the network — so failures
+ * are surfaced rather than swallowed.
+ */
+function messageOf(error: unknown): string {
+  const raw = error instanceof Error ? error.message : String(error);
+  // Convex wraps a thrown server Error with its own framing, so match on the
+  // sentence draw.ts threw rather than on equality.
+  if (raw.includes(DRAW_SIGN_IN_REQUIRED)) {
+    return "Couldn't start a guest session. Check your connection and retry.";
+  }
+  if (raw.includes(DRAW_DISABLED_MESSAGE)) {
+    return `${DRAW_DISABLED_MESSAGE}.`;
+  }
+  return raw;
 }
 
 /** The full mock-driven experience. Exported ungated for component tests. */
@@ -52,21 +78,36 @@ export function DrawExperience({ api, revealMs = 900 }: DrawExperienceProps) {
   const [streak, setStreak] = useState<DrawStreak | null>(null);
   const [leaderboard, setLeaderboard] = useState<DrawLeaderboardEntry[]>([]);
   const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   // Synchronous double-tap guard: React state alone flips too late for two
   // taps landing in the same frame (choice submission ordering contract).
   const busyRef = useRef(false);
+  const [reloadKey, setReloadKey] = useState(0);
 
   useEffect(() => {
     let cancelled = false;
-    api.getToday().then((t) => {
-      if (cancelled) return;
-      setToday(t);
-      setStage("entry");
-    });
+    api
+      .getToday()
+      .then((t) => {
+        if (cancelled) return;
+        setToday(t);
+        setStage("entry");
+      })
+      .catch((e: unknown) => {
+        if (cancelled) return;
+        setError(messageOf(e));
+        setStage("error");
+      });
     return () => {
       cancelled = true;
     };
-  }, [api]);
+  }, [api, reloadKey]);
+
+  const retry = useCallback(() => {
+    setError(null);
+    setStage("loading");
+    setReloadKey((k) => k + 1);
+  }, []);
 
   const loadResult = useCallback(async () => {
     const [r, s, lb, t] = await Promise.all([
@@ -94,6 +135,11 @@ export function DrawExperience({ api, revealMs = 900 }: DrawExperienceProps) {
       } else {
         setStage("play");
       }
+    } catch (e: unknown) {
+      // Without this the rejection escapes as an unhandled promise and the
+      // CTA just silently un-sticks.
+      setError(messageOf(e));
+      setStage("error");
     } finally {
       busyRef.current = false;
       setBusy(false);
@@ -107,6 +153,12 @@ export function DrawExperience({ api, revealMs = 900 }: DrawExperienceProps) {
       setBusy(true);
       try {
         setView(await api.submitChoice(choice));
+      } catch (e: unknown) {
+        // Includes the B2 replay-gate reject, where the server deliberately
+        // wrote no result: retry re-reads the authoritative run state rather
+        // than leaving a dead button behind.
+        setError(messageOf(e));
+        setStage("error");
       } finally {
         busyRef.current = false;
         setBusy(false);
@@ -148,6 +200,29 @@ export function DrawExperience({ api, revealMs = 900 }: DrawExperienceProps) {
         {stage === "loading" && (
           <div className="flex-1 flex items-center justify-center">
             <p className="font-heading font-bold animate-pulse">Loading…</p>
+          </div>
+        )}
+
+        {stage === "error" && (
+          <div
+            className="flex-1 flex flex-col items-center justify-center text-center"
+            style={{ gap: LAYOUT.sectionGap }}
+            data-testid="draw-error"
+          >
+            <NeoCard color="destructive" shadow="lg" className="w-full py-6 px-4">
+              <p className="font-heading font-bold text-sm">CAN'T LOAD THE BOARD</p>
+              <p className="text-xs text-muted-foreground mt-2 leading-snug break-words">
+                {error}
+              </p>
+            </NeoCard>
+            <div className="w-full flex flex-col gap-2">
+              <NeoButton variant="primary" size="lg" className="w-full" onClick={retry}>
+                RETRY
+              </NeoButton>
+              <NeoButton variant="secondary" size="lg" className="w-full" onClick={exit}>
+                LEAVE
+              </NeoButton>
+            </div>
           </div>
         )}
 
@@ -232,18 +307,52 @@ export function DrawExperience({ api, revealMs = 900 }: DrawExperienceProps) {
 }
 
 /**
- * Route component. Gated on VITE_DRAW_ENABLED (same build-time flag pattern
- * as lib/flags.ts — defined here because Ticket B's scope owns only draw
- * files): anything but the exact string "true" bounces to "/".
+ * Route component. Gated on DRAW_ENABLED (lib/flags.ts — Ticket B kept the
+ * flag inline because its scope owned only draw files; Ticket D moved it to
+ * the registry with the rest). Anything but "true" bounces to "/".
  *
  * The build-time flag only decides whether the ROUTE renders. The mode's real
  * gate is server-side (drawSettings.enabled + the tester allowlist, checked on
  * every draw function), so a flipped VITE flag alone opens nothing.
  */
 export default function DrawScreen() {
-  const enabled = import.meta.env.VITE_DRAW_ENABLED === "true";
+  const enabled = DRAW_ENABLED;
   const convex = useConvex();
   const api = useMemo(() => createDrawApi(convex), [convex]);
+  const { accountState, startAnonymousSession } = useAuth();
+  const [authFailed, setAuthFailed] = useState(false);
+  const bootstrapped = useRef(false);
+
+  // D1 — play-first: THE DRAW is server-authoritative and every function needs
+  // an identity, so a visitor with no session gets a guest one made for them
+  // rather than a dead end. Guests play like anyone else (Ticket A B6).
+  //
+  // `accountState` is the server-authoritative signal, read off the reactive
+  // users.me doc: it reports "loggedOut" for a tab-local v1 guest too, which
+  // has NO server identity and would otherwise fail every call. Gating on it —
+  // rather than retrying on a timer straight after signIn — is the house
+  // pattern (see AuthContext#claimUsername): the retry is driven by real
+  // propagation, so it can't race the session into existence. Once the doc
+  // lands, accountState flips, this component re-renders, and DrawExperience
+  // mounts and calls getToday exactly once, already authenticated.
+  useEffect(() => {
+    if (accountState !== "loggedOut" || bootstrapped.current) return;
+    bootstrapped.current = true;
+    startAnonymousSession().catch(() => setAuthFailed(true));
+  }, [accountState, startAnonymousSession]);
+
   if (!enabled) return <Navigate to="/" replace />;
+
+  // Session settling or being created. `authFailed` is what stops this from
+  // becoming the very "Loading…" hang this ticket exists to kill: on failure
+  // we fall through and let DrawExperience surface the error stage.
+  if (!authFailed && (accountState === "loading" || accountState === "loggedOut")) {
+    return (
+      <div className="fixed inset-0 z-40 bg-background text-foreground flex items-center justify-center">
+        <p className="font-heading font-bold animate-pulse">Loading…</p>
+      </div>
+    );
+  }
+
   return <DrawExperience api={api} />;
 }

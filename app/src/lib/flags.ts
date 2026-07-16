@@ -24,3 +24,17 @@ export const LEARN_ENABLED = import.meta.env.VITE_LEARN_ENABLED === "true";
  * existing game screen, schema, or auth path changes when this is OFF or ON.
  */
 export const V2_SHELL_ENABLED = import.meta.env.VITE_V2_SHELL_ENABLED === "true";
+
+/**
+ * Gates the `/draw` route (THE DRAW). Default OFF; set `VITE_DRAW_ENABLED=true`
+ * in `app/.env.local` and restart the dev server to see it. Deliberately NOT
+ * exported in the production build vars (see docs/DEPLOYMENT.md), so the route
+ * does not exist in prod.
+ *
+ * This is only HALF the gate, and the weaker half — it decides whether the
+ * route renders at all. The mode's real gate is server-side and unbypassable
+ * from the client: every draw function checks `drawSettings.enabled` or tester
+ * membership. Flipping this flag alone opens nothing. The double gate stays
+ * until the Home ticket links the mode.
+ */
+export const DRAW_ENABLED = import.meta.env.VITE_DRAW_ENABLED === "true";
