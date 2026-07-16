@@ -22,7 +22,13 @@
     "  candidate tie on identical anchor evidence     => UNRESOLVED (homonyms are indistinguishable)",
     "",
     "A single anchor is deliberately NOT sufficient for `resolved`: one club cannot separate players",
-    "who share a surname and a club. That is a live risk here, not a hypothetical — see Maldini."
+    "who share a surname and a club. That is a live risk here, not a hypothetical — see Maldini.",
+    "",
+    "OWNER RULING (E1.1): { ownerRuling: { qid, verdict: \"green\", ruledOn, note } } resolves a",
+    "single-anchor AMBER identity. It adds NO evidence — it records that a human accepted a named",
+    "entity, and is pinned to an exact QID so the ruling can never drift onto a homonym if search",
+    "results move. The gate applies it ONLY when ownerRuling.qid equals the QID the gate itself",
+    "selected; a mismatch is warned about and ignored, never forced."
   ],
   "additions": [
     {
@@ -51,8 +57,19 @@
         "Cesare, by contrast, also played for Torino, so a Torino membership would have falsified",
         "this candidate. To upgrade this entry to `resolved`, the gate needs a SECOND real senior",
         "club — which does not exist for Paolo. The honest options are: accept AMBER via an explicit",
-        "owner ruling on Q483027, or leave the entry out. Do not invent an anchor to force it green."
-      ]
+        "owner ruling on Q483027, or leave the entry out. Do not invent an anchor to force it green.",
+        "",
+        "RULED 2026-07-16 (E1.1): the owner ruled Q483027 GREEN — see ownerRuling below. The club",
+        "evidence is unchanged and still cannot separate father from son; what changed is that a",
+        "human took the decision and it is recorded as such, in both playersSourced.json and the",
+        "E1 card dossier. This is not a sourced verdict and must never be re-labelled as one."
+      ],
+      "ownerRuling": {
+        "qid": "Q483027",
+        "verdict": "green",
+        "ruledOn": "2026-07-16",
+        "note": "Owner ruled Q483027 is Paolo Maldini, not his father Cesare (Q296350). The lone AC Milan anchor cannot separate them — this is a human decision on the corroborating evidence in ownerNote (b. 1968-06-26; exactly one club in P54; earliest senior P580 1985; DEF; Italy), not new club evidence."
+      }
     }
   ]
 }

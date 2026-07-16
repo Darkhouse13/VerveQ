@@ -1,0 +1,459 @@
+{
+ "_doc": [
+  "Owner position rulings for THE DRAW real card set (Ticket E1.1).",
+  "",
+  "WHY THIS FILE EXISTS. Each card below has exactly ONE Wikidata P413 statement:",
+  "\"wing half\". Wikidata's own P279 subclass tree says wing half ⊂ midfielder, so the",
+  "sourced position is MID and the ingest emits MID at GREEN quality — it is not a",
+  "conflict, there is nothing to flag. But \"wing half\" is a 1930s half-back role, and",
+  "Wikidata editors plainly use it as a catch-all for modern wingers: it sits on Neymar,",
+  "Bale, Ribéry, Di María, Figo and Mahrez. E1's conflict rule cannot help here — it",
+  "resolves BETWEEN statements, and these players have only one.",
+  "",
+  "So the honest options are only two: ship the sourced MID, or have a human overrule",
+  "the source. Overruling it is a judgement call, not a fact, and this ticket forbids",
+  "silently overriding a FACT with an opinion. This file is how that judgement is made",
+  "explicit, attributable and auditable.",
+  "",
+  "SCHEMA: { qid, name, nation, clubs, eraLabel, debutYear, sourcedStatement, sourcedPosition,",
+  "          ruling: \"MID\" | \"ATT\" | null, note }",
+  "  ruling  null => UNRULED => the card keeps the sourced MID. Absence of a ruling is",
+  "          never read as agreement; it just means nobody has decided.",
+  "  note    why. Read it before changing a ruling.",
+  "",
+  "EFFECT. A ruling does NOT change playersSourced.json — the sourced fact stays MID",
+  "there, and the card dossier preserves the raw statement verbatim. It marks the card's",
+  "position `editorial-ruled`, attributed to the owner, exactly like rating and fameRank",
+  "are editorial. A ruling changes the position mix, so the selector re-balances after",
+  "applying it (see BUILD_NOTES)."
+ ],
+ "ruledOn": "2026-07-16",
+ "rulings": [
+  {
+   "qid": "Q142794",
+   "name": "Neymar",
+   "nation": "Brazil",
+   "clubs": [
+    "Santos F.C.",
+    "Paris Saint-Germain FC",
+    "FC Barcelona"
+   ],
+   "eraLabel": "2010s-20s",
+   "debutYear": 2009,
+   "sourcedStatement": "wing half",
+   "sourcedPosition": "MID",
+   "sourcedVia": "P413 -> P279 subclass-of -> midfielder",
+   "ruling": "ATT",
+   "note": "A forward throughout his career (Santos, Barcelona, PSG). played as a winger/forward; the sole 'wing half' statement is the Wikidata catch-all for wingers, not a claim he played half-back."
+  },
+  {
+   "qid": "Q184586",
+   "name": "Gareth Bale",
+   "nation": "Wales",
+   "clubs": [
+    "Tottenham Hotspur F.C.",
+    "Real Madrid Club de Fútbol",
+    "Southampton F.C."
+   ],
+   "eraLabel": "2010s-20s",
+   "debutYear": 2006,
+   "sourcedStatement": "wing half",
+   "sourcedPosition": "MID",
+   "sourcedVia": "P413 -> P279 subclass-of -> midfielder",
+   "ruling": "ATT",
+   "note": "Converted from left-back to a forward at Tottenham and played as a forward/winger at Real Madrid. played as a winger/forward; the sole 'wing half' statement is the Wikidata catch-all for wingers, not a claim he played half-back."
+  },
+  {
+   "qid": "Q1918",
+   "name": "Franck Ribéry",
+   "nation": "France",
+   "clubs": [
+    "FC Bayern Munich",
+    "US Boulogne",
+    "Olympique de Marseille"
+   ],
+   "eraLabel": "2000s",
+   "debutYear": 2000,
+   "sourcedStatement": "wing half",
+   "sourcedPosition": "MID",
+   "sourcedVia": "P413 -> P279 subclass-of -> midfielder",
+   "ruling": "ATT",
+   "note": "A winger at Marseille and Bayern for over a decade. played as a winger/forward; the sole 'wing half' statement is the Wikidata catch-all for wingers, not a claim he played half-back."
+  },
+  {
+   "qid": "Q251683",
+   "name": "Ángel Di María",
+   "nation": "Argentina",
+   "clubs": [
+    "Club Atlético Rosario Central",
+    "S.L. Benfica",
+    "Paris Saint-Germain FC"
+   ],
+   "eraLabel": "2010s-20s",
+   "debutYear": 2005,
+   "sourcedStatement": "wing half",
+   "sourcedPosition": "MID",
+   "sourcedVia": "P413 -> P279 subclass-of -> midfielder",
+   "ruling": "ATT",
+   "note": "A winger at Benfica, Real Madrid, PSG and Juventus. played as a winger/forward; the sole 'wing half' statement is the Wikidata catch-all for wingers, not a claim he played half-back."
+  },
+  {
+   "qid": "Q8338725",
+   "name": "Riyad Mahrez",
+   "nation": "Algeria",
+   "clubs": [
+    "Manchester City F.C.",
+    "Leicester City F.C.",
+    "Al Ahli FC"
+   ],
+   "eraLabel": "2010s-20s",
+   "debutYear": 2009,
+   "sourcedStatement": "wing half",
+   "sourcedPosition": "MID",
+   "sourcedVia": "P413 -> P279 subclass-of -> midfielder",
+   "ruling": "ATT",
+   "note": "A right winger at Leicester and Manchester City. played as a winger/forward; the sole 'wing half' statement is the Wikidata catch-all for wingers, not a claim he played half-back."
+  },
+  {
+   "qid": "Q483145",
+   "name": "Luís Figo",
+   "nation": "Portugal",
+   "clubs": [
+    "Sporting CP",
+    "FC Barcelona",
+    "Real Madrid Club de Fútbol"
+   ],
+   "eraLabel": "1980s-90s",
+   "debutYear": 1989,
+   "sourcedStatement": "wing half",
+   "sourcedPosition": "MID",
+   "sourcedVia": "P413 -> P279 subclass-of -> midfielder",
+   "ruling": "ATT",
+   "note": "A right winger at Barcelona, Real Madrid and Inter. played as a winger/forward; the sole 'wing half' statement is the Wikidata catch-all for wingers, not a claim he played half-back."
+  },
+  {
+   "qid": "Q58441",
+   "name": "Robinho",
+   "nation": "Brazil",
+   "clubs": [
+    "Santos F.C.",
+    "AC Milan",
+    "Real Madrid Club de Fútbol"
+   ],
+   "eraLabel": "2000s",
+   "debutYear": 2002,
+   "sourcedStatement": "wing half",
+   "sourcedPosition": "MID",
+   "sourcedVia": "P413 -> P279 subclass-of -> midfielder",
+   "ruling": "ATT",
+   "note": "A forward/winger at Santos, Real Madrid, Manchester City and Milan. played as a winger/forward; the sole 'wing half' statement is the Wikidata catch-all for wingers, not a claim he played half-back."
+  },
+  {
+   "qid": "Q161069",
+   "name": "David Silva",
+   "nation": "Spain",
+   "clubs": [
+    "Manchester City F.C.",
+    "Valencia CF",
+    "Real Sociedad"
+   ],
+   "eraLabel": "2000s",
+   "debutYear": 2003,
+   "sourcedStatement": "wing half",
+   "sourcedPosition": "MID",
+   "sourcedVia": "P413 -> P279 subclass-of -> midfielder",
+   "ruling": "MID",
+   "note": "An attacking midfielder at Valencia, Manchester City and Spain — genuinely a central midfielder — the sourced MID is right here, and the ruling confirms rather than overrides it."
+  },
+  {
+   "qid": "Q104454",
+   "name": "Mario Götze",
+   "nation": "Germany",
+   "clubs": [
+    "Borussia Dortmund",
+    "Eintracht Frankfurt",
+    "FC Bayern Munich"
+   ],
+   "eraLabel": "2010s-20s",
+   "debutYear": 2009,
+   "sourcedStatement": "wing half",
+   "sourcedPosition": "MID",
+   "sourcedVia": "P413 -> P279 subclass-of -> midfielder",
+   "ruling": "MID",
+   "note": "An attacking midfielder at Dortmund, Bayern and Germany — genuinely a central midfielder — the sourced MID is right here, and the ruling confirms rather than overrides it."
+  },
+  {
+   "qid": "Q482947",
+   "name": "Nani",
+   "nation": "Portugal",
+   "clubs": [
+    "Sporting CP",
+    "Manchester United F.C.",
+    "Valencia CF"
+   ],
+   "eraLabel": "2010s-20s",
+   "debutYear": 2005,
+   "sourcedStatement": "wing half",
+   "sourcedPosition": "MID",
+   "sourcedVia": "P413 -> P279 subclass-of -> midfielder",
+   "ruling": "ATT",
+   "note": "A winger at Sporting and Manchester United. played as a winger/forward; the sole 'wing half' statement is the Wikidata catch-all for wingers, not a claim he played half-back."
+  },
+  {
+   "qid": "Q180553",
+   "name": "Alexis Sánchez",
+   "nation": "Chile",
+   "clubs": [
+    "Udinese Calcio",
+    "Inter Milan",
+    "Arsenal F.C."
+   ],
+   "eraLabel": "2010s-20s",
+   "debutYear": 2005,
+   "sourcedStatement": "wing half",
+   "sourcedPosition": "MID",
+   "sourcedVia": "P413 -> P279 subclass-of -> midfielder",
+   "ruling": "ATT",
+   "note": "A forward at Barcelona, Arsenal and Inter. played as a winger/forward; the sole 'wing half' statement is the Wikidata catch-all for wingers, not a claim he played half-back."
+  },
+  {
+   "qid": "Q294214",
+   "name": "Dirk Kuyt",
+   "nation": "Netherlands",
+   "clubs": [
+    "Feyenoord Rotterdam",
+    "Liverpool F.C.",
+    "FC Utrecht"
+   ],
+   "eraLabel": "2000s",
+   "debutYear": 1998,
+   "sourcedStatement": "wing half",
+   "sourcedPosition": "MID",
+   "sourcedVia": "P413 -> P279 subclass-of -> midfielder",
+   "ruling": "ATT",
+   "note": "A striker at Feyenoord and the Netherlands; deployed wide at Liverpool but known as a forward. played as a winger/forward; the sole 'wing half' statement is the Wikidata catch-all for wingers, not a claim he played half-back."
+  },
+  {
+   "qid": "Q50603",
+   "name": "Park Ji-sung",
+   "nation": "South Korea",
+   "clubs": [
+    "PSV Eindhoven",
+    "Manchester United F.C.",
+    "Kyoto Sanga FC"
+   ],
+   "eraLabel": "2000s",
+   "debutYear": 2000,
+   "sourcedStatement": "wing half",
+   "sourcedPosition": "MID",
+   "sourcedVia": "P413 -> P279 subclass-of -> midfielder",
+   "ruling": "MID",
+   "note": "A central/wide midfielder at PSV and Manchester United — genuinely a central midfielder — the sourced MID is right here, and the ruling confirms rather than overrides it."
+  },
+  {
+   "qid": "Q174486",
+   "name": "Antonio Valencia",
+   "nation": "Ecuador",
+   "clubs": [
+    "Manchester United F.C.",
+    "Villarreal CF",
+    "Wigan Athletic F.C."
+   ],
+   "eraLabel": "2000s",
+   "debutYear": 2003,
+   "sourcedStatement": "wing half",
+   "sourcedPosition": "MID",
+   "sourcedVia": "P413 -> P279 subclass-of -> midfielder",
+   "ruling": "ATT",
+   "note": "Made his name as a right winger at Wigan and Manchester United (later converted to right-back). played as a winger/forward; the sole 'wing half' statement is the Wikidata catch-all for wingers, not a claim he played half-back."
+  },
+  {
+   "qid": "Q188241",
+   "name": "Ricardo Quaresma",
+   "nation": "Portugal",
+   "clubs": [
+    "FC Porto",
+    "Beşiktaş J.K. (Football)",
+    "Sporting CP"
+   ],
+   "eraLabel": "2000s",
+   "debutYear": 2000,
+   "sourcedStatement": "wing half",
+   "sourcedPosition": "MID",
+   "sourcedVia": "P413 -> P279 subclass-of -> midfielder",
+   "ruling": "ATT",
+   "note": "A winger at Porto, Inter and Beşiktaş. played as a winger/forward; the sole 'wing half' statement is the Wikidata catch-all for wingers, not a claim he played half-back."
+  },
+  {
+   "qid": "Q29516",
+   "name": "Theo Walcott",
+   "nation": "England",
+   "clubs": [
+    "Southampton F.C.",
+    "Arsenal F.C.",
+    "Everton F.C."
+   ],
+   "eraLabel": "2010s-20s",
+   "debutYear": 2005,
+   "sourcedStatement": "wing half",
+   "sourcedPosition": "MID",
+   "sourcedVia": "P413 -> P279 subclass-of -> midfielder",
+   "ruling": "ATT",
+   "note": "A winger/forward at Arsenal and Everton. played as a winger/forward; the sole 'wing half' statement is the Wikidata catch-all for wingers, not a claim he played half-back."
+  },
+  {
+   "qid": "Q484909",
+   "name": "Clarence Seedorf",
+   "nation": "Netherlands",
+   "clubs": [
+    "AC Milan",
+    "AFC Ajax",
+    "Real Madrid Club de Fútbol"
+   ],
+   "eraLabel": "1980s-90s",
+   "debutYear": 1992,
+   "sourcedStatement": "wing half",
+   "sourcedPosition": "MID",
+   "sourcedVia": "P413 -> P279 subclass-of -> midfielder",
+   "ruling": "MID",
+   "note": "A central midfielder at Ajax, Real Madrid, Inter and Milan — genuinely a central midfielder — the sourced MID is right here, and the ruling confirms rather than overrides it."
+  },
+  {
+   "qid": "Q185225",
+   "name": "Santi Cazorla",
+   "nation": "Spain",
+   "clubs": [
+    "Villarreal CF",
+    "Arsenal F.C.",
+    "Al Sadd Sports Club"
+   ],
+   "eraLabel": "2000s",
+   "debutYear": 2003,
+   "sourcedStatement": "wing half",
+   "sourcedPosition": "MID",
+   "sourcedVia": "P413 -> P279 subclass-of -> midfielder",
+   "ruling": "MID",
+   "note": "A central/attacking midfielder at Villarreal and Arsenal — genuinely a central midfielder — the sourced MID is right here, and the ruling confirms rather than overrides it."
+  },
+  {
+   "qid": "Q190929",
+   "name": "Maxi Rodríguez",
+   "nation": "Argentina",
+   "clubs": [
+    "Newell's Old Boys",
+    "Atlético Madrid",
+    "RCD Espanyol de Barcelona"
+   ],
+   "eraLabel": "2000s",
+   "debutYear": 1999,
+   "sourcedStatement": "wing half",
+   "sourcedPosition": "MID",
+   "sourcedVia": "P413 -> P279 subclass-of -> midfielder",
+   "ruling": "MID",
+   "note": "A midfielder at Atlético, Liverpool and Argentina — genuinely a central midfielder — the sourced MID is right here, and the ruling confirms rather than overrides it."
+  },
+  {
+   "qid": "Q5981954",
+   "name": "Lucas Vázquez",
+   "nation": "Spain",
+   "clubs": [
+    "Real Madrid Club de Fútbol",
+    "RCD Espanyol de Barcelona",
+    "Bayer 04 Leverkusen"
+   ],
+   "eraLabel": "2010s-20s",
+   "debutYear": 2007,
+   "sourcedStatement": "wing half",
+   "sourcedPosition": "MID",
+   "sourcedVia": "P413 -> P279 subclass-of -> midfielder",
+   "ruling": "ATT",
+   "note": "Made his name as a right winger at Real Madrid (later deployed at right-back). played as a winger/forward; the sole 'wing half' statement is the Wikidata catch-all for wingers, not a claim he played half-back."
+  },
+  {
+   "qid": "Q246417",
+   "name": "Denis Cheryshev",
+   "nation": "Russia",
+   "clubs": [
+    "Valencia CF",
+    "Villarreal CF",
+    "Real Madrid Club de Fútbol"
+   ],
+   "eraLabel": "2010s-20s",
+   "debutYear": 2009,
+   "sourcedStatement": "wing half",
+   "sourcedPosition": "MID",
+   "sourcedVia": "P413 -> P279 subclass-of -> midfielder",
+   "ruling": "ATT",
+   "note": "A winger at Valencia, Villarreal and Russia. played as a winger/forward; the sole 'wing half' statement is the Wikidata catch-all for wingers, not a claim he played half-back."
+  },
+  {
+   "qid": "Q18976",
+   "name": "Ole Gunnar Solskjær",
+   "nation": "Norway",
+   "clubs": [
+    "Manchester United F.C.",
+    "Clausenengen FK",
+    "Molde FK"
+   ],
+   "eraLabel": "1980s-90s",
+   "debutYear": 1990,
+   "sourcedStatement": "wing half",
+   "sourcedPosition": "MID",
+   "sourcedVia": "P413 -> P279 subclass-of -> midfielder",
+   "ruling": "ATT",
+   "note": "A striker at Manchester United — the least ambiguous case in this file. played as a winger/forward; the sole 'wing half' statement is the Wikidata catch-all for wingers, not a claim he played half-back."
+  },
+  {
+   "qid": "Q73480",
+   "name": "Willian",
+   "nation": "Brazil",
+   "clubs": [
+    "S.C. Corinthians Paulista",
+    "Chelsea F.C.",
+    "FC Shakhtar Donetsk"
+   ],
+   "eraLabel": "2010s-20s",
+   "debutYear": 2006,
+   "sourcedStatement": "wing half",
+   "sourcedPosition": "MID",
+   "sourcedVia": "P413 -> P279 subclass-of -> midfielder",
+   "ruling": "ATT",
+   "note": "A winger at Shakhtar, Chelsea and Arsenal. played as a winger/forward; the sole 'wing half' statement is the Wikidata catch-all for wingers, not a claim he played half-back."
+  },
+  {
+   "qid": "Q165014",
+   "name": "Ibrahim Afellay",
+   "nation": "Netherlands",
+   "clubs": [
+    "PSV Eindhoven",
+    "Stoke City F.C.",
+    "FC Barcelona"
+   ],
+   "eraLabel": "2000s",
+   "debutYear": 2004,
+   "sourcedStatement": "wing half",
+   "sourcedPosition": "MID",
+   "sourcedVia": "P413 -> P279 subclass-of -> midfielder",
+   "ruling": "MID",
+   "note": "A midfielder at PSV, Barcelona and the Netherlands — genuinely a central midfielder — the sourced MID is right here, and the ruling confirms rather than overrides it."
+  },
+  {
+   "qid": "Q210102",
+   "name": "Jairzinho",
+   "nation": "Brazil",
+   "clubs": [
+    "Botafogo F.R.",
+    "Cruzeiro E.C.",
+    "Olympique de Marseille"
+   ],
+   "eraLabel": "1960s-70s",
+   "debutYear": 1962,
+   "sourcedStatement": "wing half",
+   "sourcedPosition": "MID",
+   "sourcedVia": "P413 -> P279 subclass-of -> midfielder",
+   "ruling": "ATT",
+   "note": "A winger/forward for Botafogo and Brazil's 1970 side. played as a winger/forward; the sole 'wing half' statement is the Wikidata catch-all for wingers, not a claim he played half-back."
+  }
+ ],
+ "ruledBy": "owner"
+}

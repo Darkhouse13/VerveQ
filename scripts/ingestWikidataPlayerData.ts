@@ -546,6 +546,7 @@ async function legends() {
 //   cp-clubdict distinct club QIDs -> label/aliases/type/country
 //   cp-facts    gate locally, then fetch facts for WINNERS only
 //   cp-emit     write playersSourced.json (pure; no network)
+//   cp-assert   committed playersSourced.json == a fresh emit (pure; no network)
 //   cp-report   coverage report (pure; no network)
 //   cp-all      run every stage in order
 //
@@ -556,6 +557,9 @@ async function legends() {
 // codified in 1863; anything earlier is a Wikidata placeholder/typo, not a career.
 // Deliberately wide — these reject sentinels, they do not curate the era range.
 const CP_MIN_PLAUSIBLE_DEBUT = 1850;
+// FIFA's minimum age for a professional contract. The floor below which a P54
+// start year cannot be describing senior football (E1.1).
+const CP_MIN_DEBUT_AGE = 16;
 const CP_MAX_PLAUSIBLE_DEBUT = new Date().getFullYear() + 1;
 
 const CP_CACHE_DIR = path.join(__dirname, "cache", "careerPath");
@@ -589,11 +593,18 @@ interface CareerPath {
   // confirmed). Anchors are the owner's HYPOTHESIS; Wikidata is the test.
   origin?: "career-path" | "manual";
   anchorClubs?: string[];
+  ownerRuling?: { qid: string; verdict: "green"; ruledOn: string; note: string };
 }
 interface PlayerAddition {
   name: string;
   anchorClubs: string[];
   ownerNote?: string | string[];
+  // E1.1: an explicit owner ruling on a QID the club-anchor gate could not resolve.
+  // It NEVER invents evidence — it records that a human accepted a named entity as
+  // correct, pinned to the exact QID so it cannot silently transfer to a different
+  // entity if search results move. The gate refuses a ruling whose qid does not
+  // match the candidate it actually selected.
+  ownerRuling?: { qid: string; verdict: "green"; ruledOn: string; note: string };
 }
 const cpClubEntryName = (c: CareerPathClub): string => (typeof c === "string" ? c : c.name);
 interface SearchCandidates {
@@ -616,6 +627,10 @@ interface RawFacts {
   positions: string[]; // P413 labels
   countryForSport: string | null; // P1532 label
   citizenships: string[]; // P27 labels
+  // E1.1: P569 birth year. Without it debutYear is unfixable — see cpDebutYear.
+  // `undefined` marks a pre-E1.1 cache entry and forces a refetch; `null` means
+  // fetched and genuinely absent.
+  birthYear?: number | null;
   retrievedAt: string;
 }
 
@@ -639,6 +654,7 @@ function cpLoadAdditions(): CareerPath[] {
     difficulty: "manual",
     origin: "manual" as const,
     anchorClubs: a.anchorClubs,
+    ownerRuling: a.ownerRuling,
   }));
 }
 
@@ -690,7 +706,15 @@ function cpClubNamesOf(entry: ClubDictEntry): Set<string> {
 // or youth/reserve side is excluded rather than risk polluting the club list.
 const CP_NATIONAL_TYPE_RE = /national (association )?football team|national team|national association football/i;
 const CP_NATIONAL_LABEL_RE = /\bnational\b/i;
-const CP_YOUTH_TYPE_RE = /reserve team|youth team|farm team|academy|youth academy|under-\d{2}/i;
+// E1.1: `reserve team` and `farm team` are deliberately NOT here — they are P31
+// types of SENIOR sides in the league pyramid, and lumping them with age-group
+// types is what made debutYear unfixable. E0's single CP_YOUTH_TYPE_RE carried
+// `reserve team`, so excluding age-group sides from a debut also excluded
+// FC Barcelona Atlètic and read Iniesta as debuting in 2002 rather than 2001.
+// Reserve/farm sides are matched by cpIsReserve instead: excluded from the clubs
+// printed on a card, counted for debutYear.
+const CP_AGEGROUP_TYPE_RE = /youth team|academy|youth academy|under-\d{2}/i;
+const CP_RESERVE_TYPE_RE = /reserve|farm team/i;
 
 // Youth/reserve markers, split by WHERE they may legally appear in a label.
 //
@@ -698,27 +722,54 @@ const CP_YOUTH_TYPE_RE = /reserve team|youth team|farm team|academy|youth academ
 // "Brazil national under-23 football team" carries the marker mid-label, and an
 // end-anchored rule silently accepted it as a SENIOR national team, which then
 // became the source of that player's sporting-nation fact.
-const CP_YOUTH_ANYWHERE_RE =
-  /\bU-?\d{2}\b|\bunder-?\d{2}\b|\byouth\b|\breserves?\b|\bacademy\b|\bprimavera\b|\bjuvenil\b|\bamateure\b|\bcastilla\b/i;
+// E1.1: youth and reserve are SPLIT, because they answer different questions.
+// An AGE-GROUP side (U-19, Juvenil, academy) is not senior football and can
+// never source a debut. A RESERVE/B side IS senior football — it plays in the
+// senior league pyramid — so it counts for debutYear even though it is never an
+// "iconic" club worth printing on a card. Collapsing the two (as E0 did) makes
+// debutYear unfixable: see cpDebutYear.
+const CP_AGEGROUP_ANYWHERE_RE =
+  /\bU-?\d{2}\b|\bunder-?\d{2}\b|\byouth\b|\bacademy\b|\bprimavera\b|\bjuvenil\b|\bcadet\b/i;
+const CP_RESERVE_ANYWHERE_RE = /\breserves?\b|\bamateure\b|\bcastilla\b|\batl[eè]tic\b/i;
 // TRAILING ONLY: bare letters/numerals marking a B-side ("FC Barcelona B",
 // "FC Barcelona C", "Bayern Munich II"). Meaningful only as a suffix — un-anchoring
 // them would wrongly exclude senior clubs whose names merely contain the letter,
 // while "Boca Juniors"/"Argentinos Juniors" must stay KEPT (senior clubs).
-const CP_YOUTH_SUFFIX_RE = /\s(B|C|D|II|III|IV)$/;
+const CP_RESERVE_SUFFIX_RE = /\s(B|C|D|II|III|IV)$/;
+
+// E1.1: P54 is not a club-only property. Q1492 — the CITY of Barcelona, typed
+// `municipality of Catalonia`/`city` — appears as a P54 value and became a club
+// tag colliding with FC Barcelona. A deny-list cannot anticipate which non-club
+// entity shows up next, so a club must POSITIVELY declare a club-ish type.
+const CP_CLUB_TYPE_RE = /football club|football team|sports team|sports club|association football/i;
 
 function cpIsNationalTeam(e: ClubDictEntry): boolean {
   return e.types.some((t) => CP_NATIONAL_TYPE_RE.test(t)) || CP_NATIONAL_LABEL_RE.test(e.label);
 }
-function cpIsYouthOrReserve(e: ClubDictEntry): boolean {
+function cpIsAgeGroup(e: ClubDictEntry): boolean {
+  return e.types.some((t) => CP_AGEGROUP_TYPE_RE.test(t)) || CP_AGEGROUP_ANYWHERE_RE.test(e.label.trim());
+}
+function cpIsReserve(e: ClubDictEntry): boolean {
   const label = e.label.trim();
   return (
-    e.types.some((t) => CP_YOUTH_TYPE_RE.test(t)) ||
-    CP_YOUTH_ANYWHERE_RE.test(label) ||
-    CP_YOUTH_SUFFIX_RE.test(label)
+    e.types.some((t) => CP_RESERVE_TYPE_RE.test(t)) ||
+    CP_RESERVE_ANYWHERE_RE.test(label) ||
+    CP_RESERVE_SUFFIX_RE.test(label)
   );
 }
+function cpIsClubEntity(e: ClubDictEntry): boolean {
+  return e.types.some((t) => CP_CLUB_TYPE_RE.test(t));
+}
+function cpIsYouthOrReserve(e: ClubDictEntry): boolean {
+  return cpIsAgeGroup(e) || cpIsReserve(e);
+}
+/** Senior football for debutYear: a real club side, reserve/B sides INCLUDED. */
+function cpCountsForDebut(e: ClubDictEntry): boolean {
+  return cpIsClubEntity(e) && !cpIsNationalTeam(e) && !cpIsAgeGroup(e);
+}
+/** A club worth naming on a card: senior FIRST team only. */
 function cpIsSeniorClub(e: ClubDictEntry): boolean {
-  return !cpIsNationalTeam(e) && !cpIsYouthOrReserve(e);
+  return cpIsClubEntity(e) && !cpIsNationalTeam(e) && !cpIsYouthOrReserve(e);
 }
 
 // A national team's SECOND string ("France B national football team", "England
@@ -738,6 +789,20 @@ const CP_NT_FOOTBALL_RE = /football|soccer/i;
 // was emitted as "United Kingdom" at green quality. Same class of UK modelling
 // artifact as the P17 case, excluded for the same reason.
 const CP_NT_COMPOSITE_RE = /^(united kingdom|great britain)\b|\bolympic\b/i;
+// E1.1: NON-FIFA REPRESENTATIVE SIDES. Same class as the Team GB composite above,
+// and the same failure: a side that is not a FIFA nation sourcing the sporting
+// nation fact. The Basque Country side is the live case — Wikidata types it
+// `men's national association football team` and, because its label says
+// "regional" rather than "national", CP_NT_LABEL_RE cannot parse a name from it,
+// so cpNationFromNationalTeam falls through to P17. The Basque Country spans two
+// states and Q738846 carries **P17 = France**, so EIGHT Basque Spaniards —
+// Xabi Alonso, Zubizarreta, Llorente, Javi Martínez, Illarramendi, Iván Campo,
+// Mendieta, Julio Salinas — were emitted as "France", a nation none represented.
+// Catalonia and Galicia are equally non-FIFA but carry P17 = Spain, so they
+// happened to yield the right answer; they are excluded here anyway, because
+// being right by luck is not a rule. With every regional side excluded these
+// players fall through to P1532/P27, which both say Spain.
+const CP_NT_NON_FIFA_RE = /\bregional\b|^(basque country|catalonia|galicia)\b/i;
 
 // A SENIOR association-football national team — the only kind allowed to source the
 // sporting-nation fact ("senior national team P54 if present").
@@ -749,7 +814,8 @@ function cpIsSeniorNationalTeam(e: ClubDictEntry): boolean {
     !CP_NT_B_TEAM_RE.test(label) &&
     CP_NT_FOOTBALL_RE.test(label) &&
     !CP_NT_OTHER_SPORT_RE.test(label) &&
-    !CP_NT_COMPOSITE_RE.test(label)
+    !CP_NT_COMPOSITE_RE.test(label) &&
+    !CP_NT_NON_FIFA_RE.test(label)
   );
 }
 
@@ -818,17 +884,64 @@ function cpMapPositionLabel(label: string): CpPosition | null {
 // NOTE: the caller passes wdt:P413 values, which are already rank-filtered by
 // Wikidata (truthy = best rank), so a `preferred` value correctly wins upstream and
 // only ties among equally-ranked values ever reach the ambiguity branch.
-const CP_POSITION_PRECEDENCE: CpPosition[] = ["GK", "DEF", "MID", "ATT"];
-function cpMapPosition(labels: string[]): {
+// A GENERIC P413 value names only a broad line; a SPECIFIC one names a role
+// within it. "forward" is generic, "left winger" is specific (E1.1).
+const CP_GENERIC_POSITION_RE = /^(forward|midfielder|defender|attacker|wing half)$/i;
+const cpIsGenericPositionLabel = (l: string) => CP_GENERIC_POSITION_RE.test(l.trim());
+
+// E1.1 — OWNER-RULED CONFLICT RESOLUTION (replaces E0's arbitrary precedence).
+//
+// E0 resolved conflicts by a GK > DEF > MID > ATT precedence it documented as
+// "arbitrary and carr[ying] no claim of correctness", explicitly leaving the call
+// to E1. That precedence always picks the least-attacking bucket, which emitted
+// Messi, Cristiano Ronaldo, Pelé, Maradona, Cruyff, Salah and Rooney as MID and
+// skewed the pool to 504 MID / 434 ATT. The owner ruled the rule below.
+//
+// Ranks cannot do this job: `wdt:` is already rank-filtered, and only 6 of 529
+// statements across the selected set carry `preferred` — the conflicts are
+// genuinely equal-rank. Statement ORDER cannot either: Ronaldo lists "wing half"
+// BEFORE "forward".
+//
+// The pick is STILL not a sourced verdict — `ambiguous` and `candidates` are
+// unchanged, and consumers must keep reading sourceQuality.
+function cpMapPosition(
+  labels: string[],
+  debutYear: number | null,
+): {
   pick: CpPosition | null;
   candidates: CpPosition[];
   ambiguous: boolean;
+  artifactDropped: string[];
 } {
-  const buckets = [...new Set(labels.map(cpMapPositionLabel).filter(Boolean) as CpPosition[])];
-  if (buckets.length === 0) return { pick: null, candidates: [], ambiguous: false };
-  if (buckets.length === 1) return { pick: buckets[0], candidates: buckets, ambiguous: false };
-  const pick = CP_POSITION_PRECEDENCE.find((b) => buckets.includes(b)) || null;
-  return { pick, candidates: buckets, ambiguous: true };
+  const mappable = labels.filter((l) => cpMapPositionLabel(l));
+  const buckets = [...new Set(mappable.map(cpMapPositionLabel) as CpPosition[])];
+  if (buckets.length === 0) return { pick: null, candidates: [], ambiguous: false, artifactDropped: [] };
+  if (buckets.length === 1) {
+    return { pick: buckets[0], candidates: buckets, ambiguous: false, artifactDropped: [] };
+  }
+
+  // (a) ARTIFACT: "wing half" is a 1930s half-back role. Wikidata editors attach it
+  // to modern wingers (Ronaldo, Salah, Vinícius, Garrincha all carry it). Where the
+  // player debuted in the modern era AND another statement survives, it is a mapping
+  // artifact, not a claim. Dropped ONLY when something else remains — a player whose
+  // only value is "wing half" keeps MID (Wikidata's own P279 answer), because
+  // overriding a sole source would be inventing a fact.
+  const modern = debutYear !== null && debutYear >= 1950;
+  const survivors = mappable.filter((l) => !/^wing half$/i.test(l.trim()));
+  const artifactDropped =
+    modern && survivors.length > 0 && survivors.length < mappable.length ? ["wing half"] : [];
+  const kept = artifactDropped.length > 0 ? survivors : mappable;
+
+  // (b) SPECIFIC values outrank GENERIC ones: "full-back" beats a co-stated
+  // "midfielder" (Zanetti, Alexander-Arnold stay DEF).
+  const specific = kept.filter((l) => !cpIsGenericPositionLabel(l));
+  const basis = specific.length > 0 ? specific : kept;
+  const basisBuckets = [...new Set(basis.map(cpMapPositionLabel) as CpPosition[])];
+
+  // (c) Remaining ties resolve to the MOST ATTACKING bucket.
+  const order: CpPosition[] = ["ATT", "MID", "DEF", "GK"];
+  const pick = order.find((b) => basisBuckets.includes(b)) || null;
+  return { pick, candidates: buckets, ambiguous: true, artifactDropped };
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -1031,6 +1144,7 @@ interface GateResult {
   matchCount: number;
   status: "resolved" | "amber-identity" | "unresolved";
   unmatchedClubNames: string[];
+  ownerRuling?: { qid: string; verdict: "green"; ruledOn: string; note: string };
 }
 
 function cpRunGate(): GateResult[] {
@@ -1128,6 +1242,17 @@ function cpRunGate(): GateResult[] {
         });
         continue;
       }
+      // E1.1: an owner ruling can resolve a single-anchor identity, but ONLY for the
+      // exact QID it names. A ruling pinned to a different entity than the gate chose
+      // is ignored (and reported) rather than applied to whatever won — the whole
+      // point of pinning the QID is that the ruling cannot drift onto a homonym.
+      const ruling = p.ownerRuling;
+      const ruled = Boolean(ruling && ruling.verdict === "green" && ruling.qid === best.qid);
+      if (ruling && !ruled) {
+        console.warn(
+          `  [owner-ruling IGNORED] ${p.answerName}: ruling names ${ruling.qid}, gate selected ${best.qid}`,
+        );
+      }
       out.push({
         careerPathId: p.id,
         answerName: p.answerName,
@@ -1136,8 +1261,9 @@ function cpRunGate(): GateResult[] {
         matchedClubs: best.matched,
         matchCount: best.matched.length,
         // >=2 confirmed anchors earns `resolved`; a single confirmed anchor stays
-        // AMBER pending an explicit owner ruling on the QID.
-        status: anchors.length >= 2 ? "resolved" : "amber-identity",
+        // AMBER unless an explicit owner ruling names this exact QID (E1.1).
+        status: anchors.length >= 2 || ruled ? "resolved" : "amber-identity",
+        ...(ruled ? { ownerRuling: ruling } : {}),
         unmatchedClubNames: [],
       });
       continue;
@@ -1165,7 +1291,9 @@ async function cpFacts() {
   const gate = cpRunGate();
   const winners = [...new Set(gate.filter((g) => g.qid).map((g) => g.qid as string))];
   const cache = readJson<Record<string, RawFacts>>(CP_FACTS_CACHE, {});
-  const pending = winners.filter((q) => !(q in cache));
+  // E1.1 cache migration: an entry without `birthYear` predates the P569 fetch
+  // and must be re-pulled, or debutYear silently keeps its youth-club value.
+  const pending = winners.filter((q) => !(q in cache) || cache[q].birthYear === undefined);
   console.log(`cp-facts: ${winners.length} gated QIDs, ${pending.length} pending`);
 
   const chunks = chunk(pending, 80);
@@ -1173,12 +1301,16 @@ async function cpFacts() {
     const values = chunks[ci].map((q) => `wd:${q}`).join(" ");
     const ts = nowIso();
     for (const q of chunks[ci]) {
-      cache[q] = cache[q] || {
+      // RESET, never `||=`: a re-fetched entry that kept its old array would have
+      // every membership pushed twice (the E1.1 P569 migration re-pulls entries
+      // that already exist).
+      cache[q] = {
         qid: q,
         memberships: [],
         positions: [],
         countryForSport: null,
         citizenships: [],
+        birthYear: null,
         retrievedAt: ts,
       };
     }
@@ -1190,12 +1322,14 @@ async function cpFacts() {
   OPTIONAL { ?s pq:P580 ?start }
   OPTIONAL { ?s pq:P582 ?end }
 }`;
-    // Scalars: P413 position, P1532 country for sport, P27 citizenship.
-    const scalarQuery = `SELECT ?p (GROUP_CONCAT(DISTINCT ?posL;separator="||") AS ?poss) (GROUP_CONCAT(DISTINCT ?cfsL;separator="||") AS ?cfs) (GROUP_CONCAT(DISTINCT ?natL;separator="||") AS ?nats) WHERE {
+    // Scalars: P413 position, P1532 country for sport, P27 citizenship,
+    // P569 date of birth (E1.1 — the age floor debutYear is derived against).
+    const scalarQuery = `SELECT ?p (GROUP_CONCAT(DISTINCT ?posL;separator="||") AS ?poss) (GROUP_CONCAT(DISTINCT ?cfsL;separator="||") AS ?cfs) (GROUP_CONCAT(DISTINCT ?natL;separator="||") AS ?nats) (MIN(?dob) AS ?born) WHERE {
   VALUES ?p { ${values} }
   OPTIONAL { ?p wdt:P413 ?pos. ?pos rdfs:label ?posL. FILTER(LANG(?posL)="en") }
   OPTIONAL { ?p wdt:P1532 ?cfsE. ?cfsE rdfs:label ?cfsL. FILTER(LANG(?cfsL)="en") }
   OPTIONAL { ?p wdt:P27 ?natE. ?natE rdfs:label ?natL. FILTER(LANG(?natL)="en") }
+  OPTIONAL { ?p wdt:P569 ?dob }
 } GROUP BY ?p`;
 
     try {
@@ -1216,6 +1350,10 @@ async function cpFacts() {
         cache[p].positions = r.poss?.value ? r.poss.value.split("||").filter(Boolean) : [];
         cache[p].countryForSport = r.cfs?.value ? r.cfs.value.split("||")[0] : null;
         cache[p].citizenships = r.nats?.value ? r.nats.value.split("||").filter(Boolean) : [];
+        const born = yr(r.born?.value);
+        const bornN = born === null ? NaN : Number(born);
+        cache[p].birthYear =
+          Number.isFinite(bornN) && bornN >= 1850 && bornN <= CP_MAX_PLAUSIBLE_DEBUT ? bornN : null;
       }
     } catch (err) {
       console.error(`  chunk ${ci + 1}/${chunks.length} FAILED: ${String(err).slice(0, 100)}`);
@@ -1257,6 +1395,17 @@ interface SourcedFact<T> {
   source: SourceRef;
   sourceQuality: SourceQuality;
 }
+// E1.1: a club membership plus the span it is sourced from. The span is part of
+// the membership's provenance (P580/P582) and makes the file self-sufficient:
+// downstream can rank tenure without re-reading the gitignored fetch cache, which
+// is exactly how E1's card set and this file drifted apart in the first place.
+// `start` is clamped to the player's 16th year so an academy P580 cannot inflate
+// a tenure; `end` null means the membership is open.
+interface SourcedClub extends SourcedFact<string> {
+  clubQid: string;
+  membershipStart: number | null;
+  membershipEnd: number | null;
+}
 interface SourcedPlayer {
   careerPathId: string;
   answerName: string;
@@ -1268,12 +1417,19 @@ interface SourcedPlayer {
     nation: SourcedFact<string> | null;
     position: SourcedFact<CpPosition> | null;
     debutYear: SourcedFact<number> | null;
-    clubs: SourcedFact<string>[];
+    // E1.1: P569. Not a card fact — published because debutYear is DERIVED against
+    // it, so a verifier cannot re-check the debut without seeing the anchor.
+    birthYear: SourcedFact<number> | null;
+    clubs: SourcedClub[];
   };
   identityEvidence: {
     matchedClubs: string[];
     matchCount: number;
     status: "resolved" | "amber-identity";
+    // E1.1: set when an explicit owner ruling in playerAdditions.json resolved an
+    // identity the club-anchor gate could not. The evidence is unchanged — this
+    // records WHO decided, so the call is never mistaken for a sourced verdict.
+    ownerRuling?: { qid: string; verdict: "green"; ruledOn: string; note: string };
     nationPath?: "national-team" | "P1532" | "P27";
     // Present only when P413 gave several equally-ranked, conflicting buckets.
     // `facts.position.value` is then a deterministic pick, NOT a sourced verdict.
@@ -1281,11 +1437,14 @@ interface SourcedPlayer {
     // Present only when the player has >1 senior national team (dual internationals).
     // `facts.nation.value` is then a deterministic pick, NOT a sourced verdict.
     nationCandidates?: string[];
+    // E1.1: every raw P413 label, verbatim, and any dropped as a known artifact.
+    positionStatements?: string[];
+    positionArtifactDropped?: string[];
   };
   volatility: "static";
 }
 
-function cpEmit(): { players: SourcedPlayer[]; gate: GateResult[] } {
+function cpEmit(write = true): { players: SourcedPlayer[]; gate: GateResult[] } {
   const gate = cpRunGate();
   const facts = readJson<Record<string, RawFacts>>(CP_FACTS_CACHE, {});
   const clubDict = readJson<Record<string, ClubDictEntry>>(CP_CLUBDICT_CACHE, {});
@@ -1305,43 +1464,94 @@ function cpEmit(): { players: SourcedPlayer[]; gate: GateResult[] } {
       retrievedAt: raw.retrievedAt,
     });
 
-    // ── clubs: P54 minus national teams minus youth/reserve sides ──
-    const seen = new Set<string>();
-    const included: { clubQid: string; label: string; start: string | null }[] = [];
+    // ── birthYear (P569): not a card fact — the anchor debutYear is derived against ──
+    const born = raw.birthYear ?? null;
+    const birthYear: SourcedFact<number> | null =
+      born !== null ? { value: born, source: ref("P569"), sourceQuality: q("green") } : null;
+    // A membership only reaches senior football from the player's 16th year — FIFA's
+    // minimum professional contract age, and the floor below which a P580 cannot be
+    // describing senior football at all.
+    const seniorFrom = born !== null ? born + CP_MIN_DEBUT_AGE : null;
+    const startOf = (m: { start: string | null }) => {
+      const n = Number(m.start);
+      return m.start && Number.isFinite(n) && n >= CP_MIN_PLAUSIBLE_DEBUT && n <= CP_MAX_PLAUSIBLE_DEBUT
+        ? n
+        : null;
+    };
+    const endOf = (m: { end: string | null }) => {
+      const n = Number(m.end);
+      return m.end && Number.isFinite(n) ? n : null;
+    };
+
+    // ── clubs: P54 first teams the player actually played SENIOR football for ──
+    // E1.1: a membership that both starts AND ends before the player turned 16 is an
+    // academy stint, not senior football, and the ticket's fact is "has played senior
+    // football for this club". Messi's Newell's Old Boys spell (1995-2000, ages 8-13)
+    // is a real P54 statement about a real senior club — and he never played a senior
+    // minute for them. A membership that merely STARTS early is kept: Wikidata records
+    // academy entry as the club start, so Busquets' Barcelona is P580=2000 (age 12)
+    // through 2023, and dropping it would delete his actual career.
+    const seen = new Map<string, { clubQid: string; label: string; start: number | null; end: number | null; open: boolean }>();
     for (const m of raw.memberships) {
       const e = clubDict[m.clubQid];
       if (!e || !cpIsSeniorClub(e)) continue;
-      if (!seen.has(m.clubQid)) {
-        seen.add(m.clubQid);
-        included.push({ clubQid: m.clubQid, label: e.label, start: m.start });
+      const rawEnd = endOf(m);
+      if (seniorFrom !== null && rawEnd !== null && rawEnd < seniorFrom) continue; // pre-16 academy stint only
+      const rawStart = startOf(m);
+      const start = rawStart === null ? null : seniorFrom === null ? rawStart : Math.max(rawStart, seniorFrom);
+      const prev = seen.get(m.clubQid);
+      if (!prev) {
+        seen.set(m.clubQid, { clubQid: m.clubQid, label: e.label, start, end: rawEnd, open: m.end === null });
       } else {
-        const prev = included.find((i) => i.clubQid === m.clubQid)!;
-        if (m.start && (!prev.start || m.start < prev.start)) prev.start = m.start;
+        // Merge repeat spells (Beckham's two AC Milan loans) into one membership.
+        if (start !== null && (prev.start === null || start < prev.start)) prev.start = start;
+        if (m.end === null) prev.open = true;
+        if (rawEnd !== null && (prev.end === null || rawEnd > prev.end)) prev.end = rawEnd;
       }
     }
-    const clubs: SourcedFact<string>[] = included.map((i) => ({
+    const clubs: SourcedClub[] = [...seen.values()].map((i) => ({
       value: i.label,
+      clubQid: i.clubQid,
+      membershipStart: i.start,
+      membershipEnd: i.open ? null : i.end,
       source: ref("P54"),
       sourceQuality: q("green"),
     }));
 
-    // ── debutYear: earliest P580 across INCLUDED clubs; null if none (fail closed) ──
+    // ── debutYear: earliest senior-club P580 at or after the player's 16th year ──
     // Wikidata carries placeholder start times: Roberto Carlos (Q429039) has a real
     // P580 of "0001-01-01T00:00:00Z", which min()'d straight through to debutYear=1.
     // Discard values outside the plausible range rather than propagate a sentinel as
     // a sourced fact. The floor is set at football's codification era, NOT trimmed to
     // this dataset — Ricardo Zamora (1914) and Larbi Benbarek (1935) are genuine early
     // debuts and must survive. If every start is implausible, debutYear is null.
+    //
+    // E1.1 — THE AGE FLOOR. P54 covers a player's whole club history INCLUDING the
+    // academy, so a bare min() over starts is a youth-entry date, not a debut: 71 of
+    // 1308 players (5.4%) debuted at an impossible age — Messi 1995 (aged 8), Pelé
+    // 1953 (13), De Bruyne 1995 (4), Eriksen 1995 (3). Reserve/B sides are COUNTED
+    // here (cpCountsForDebut, not cpIsSeniorClub): they are senior league football,
+    // and excluding them deletes the genuine early senior clubs while leaving the
+    // academy-poisoned first-team span as the only survivor — which reads Busquets,
+    // whose Barcelona P580 is his age-12 academy entry, as debuting in 2023 at Inter
+    // Miami. Age-group sides are excluded. Without P569 there is no floor to apply,
+    // so the value stays as-sourced and is flagged amber rather than guessed.
     const starts = raw.memberships
       .filter((m) => {
         const e = clubDict[m.clubQid];
-        return e && cpIsSeniorClub(e) && m.start;
+        if (!e || !cpCountsForDebut(e)) return false;
+        const s = startOf(m);
+        if (s === null) return false;
+        return seniorFrom === null || s >= seniorFrom;
       })
-      .map((m) => Number(m.start))
-      .filter((n) => Number.isFinite(n) && n >= CP_MIN_PLAUSIBLE_DEBUT && n <= CP_MAX_PLAUSIBLE_DEBUT);
+      .map((m) => startOf(m) as number);
     const debutYear: SourcedFact<number> | null =
       starts.length > 0
-        ? { value: Math.min(...starts), source: ref("P54/P580"), sourceQuality: q("green") }
+        ? {
+            value: Math.min(...starts),
+            source: ref(seniorFrom !== null ? "P54/P580+P569" : "P54/P580"),
+            sourceQuality: seniorFrom !== null ? q("green") : "amber",
+          }
         : null;
 
     // ── nation (sporting): senior national team P54 > P1532 > P27(amber) ──
@@ -1380,7 +1590,7 @@ function cpEmit(): { players: SourcedPlayer[]; gate: GateResult[] } {
     }
 
     // ── position: P413 mapped; unmappable/absent => null; conflict => amber ──
-    const mapped = cpMapPosition(raw.positions);
+    const mapped = cpMapPosition(raw.positions, debutYear?.value ?? null);
     const position: SourcedFact<CpPosition> | null = mapped.pick
       ? {
           value: mapped.pick,
@@ -1394,22 +1604,76 @@ function cpEmit(): { players: SourcedPlayer[]; gate: GateResult[] } {
       answerName: g.answerName,
       origin: g.origin,
       qid: g.qid,
-      facts: { nation, position, debutYear, clubs },
+      facts: { nation, position, debutYear, birthYear, clubs },
       identityEvidence: {
         matchedClubs: g.matchedClubs,
         matchCount: g.matchCount,
         status: g.status as "resolved" | "amber-identity",
+        ...(g.ownerRuling ? { ownerRuling: g.ownerRuling } : {}),
         ...(nationPath ? { nationPath } : {}),
         ...(nationCandidates ? { nationCandidates } : {}),
         ...(mapped.ambiguous ? { positionCandidates: mapped.candidates } : {}),
+        // E1.1: the raw P413 values behind `position`, verbatim, so a verifier can
+        // re-run the conflict rule without refetching — and so an owner ruling on a
+        // position can never obscure what Wikidata actually said.
+        positionStatements: raw.positions,
+        ...(mapped.artifactDropped.length > 0 ? { positionArtifactDropped: mapped.artifactDropped } : {}),
       },
       volatility: "static",
     });
   }
 
-  writeJson(CP_OUT_PATH, players);
-  console.log(`cp-emit DONE: wrote ${players.length} players -> ${path.relative(process.cwd(), CP_OUT_PATH)}`);
+  if (write) {
+    writeJson(CP_OUT_PATH, players);
+    console.log(`cp-emit DONE: wrote ${players.length} players -> ${path.relative(process.cwd(), CP_OUT_PATH)}`);
+  }
   return { players, gate };
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// STAGE cp-assert: the committed file IS what the pipeline emits (E1.1)
+// ─────────────────────────────────────────────────────────────────────────────
+// Re-runs cp-emit in memory and diffs it against the committed playersSourced.json,
+// ignoring `retrievedAt` (a fetch timestamp, not a fact). This is what stops the
+// canonical file drifting from the rules that are supposed to produce it — the exact
+// failure E1 hit, where the committed file disagreed with the raw cache it came from.
+// Pure + offline: it never refetches, so it is safe in CI.
+// ─────────────────────────────────────────────────────────────────────────────
+const cpStripTimestamps = (v: unknown): unknown =>
+  JSON.parse(
+    JSON.stringify(v, (k, val) => (k === "retrievedAt" || k === "ruledOn" ? undefined : val)),
+  );
+
+function cpAssert(): void {
+  if (!fs.existsSync(CP_OUT_PATH)) {
+    console.error(`cp-assert FAILED: ${path.relative(process.cwd(), CP_OUT_PATH)} does not exist`);
+    process.exitCode = 1;
+    return;
+  }
+  const committed = readJson<SourcedPlayer[]>(CP_OUT_PATH, []);
+  const { players } = cpEmit(false);
+  const a = cpStripTimestamps(committed) as SourcedPlayer[];
+  const b = cpStripTimestamps(players) as SourcedPlayer[];
+  if (a.length !== b.length) {
+    console.error(`cp-assert FAILED: committed ${a.length} players, re-run emits ${b.length}`);
+    process.exitCode = 1;
+    return;
+  }
+  const diffs: string[] = [];
+  for (let i = 0; i < a.length && diffs.length < 10; i++) {
+    const x = JSON.stringify(a[i]);
+    const y = JSON.stringify(b[i]);
+    if (x !== y) diffs.push(`  [${i}] ${committed[i]?.answerName ?? "?"}
+    committed: ${x.slice(0, 260)}
+    re-run:    ${y.slice(0, 260)}`);
+  }
+  if (diffs.length > 0) {
+    console.error(`cp-assert FAILED: ${diffs.length}+ players differ (modulo retrievedAt):`);
+    console.error(diffs.join("\n"));
+    process.exitCode = 1;
+    return;
+  }
+  console.log(`cp-assert OK: committed file reproduces exactly (${a.length} players, modulo retrievedAt)`);
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -1632,6 +1896,7 @@ async function main() {
   else if (cmd === "cp-facts") await cpFacts();
   else if (cmd === "cp-emit") cpEmit();
   else if (cmd === "cp-report") cpReport();
+  else if (cmd === "cp-assert") cpAssert();
   else if (cmd === "cp-all") {
     await cpSearch();
     await cpClubQids();
