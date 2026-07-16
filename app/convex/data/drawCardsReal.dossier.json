@@ -6,7 +6,9 @@
   "app/convex/data/playersSourced.json fact-for-fact (asserted by the build).",
   "EDITORIAL (VerveQ's own, unverified): rating, fameRank, which <=3 clubs are listed,",
   "tag/displayCode/fullName, and any position marked provenance:'editorial-ruled' —",
-  "those carry the owner's ruling AND the sourced value they overrule, side by side."
+  "those carry the owner's ruling AND the sourced value they overrule, side by side.",
+  "Also editorial: eraIndex/eraLabel — see the eraMapping section, which states the",
+  "partition as a RULE over the sourced debutYear (ranges alone would be unfalsifiable)."
  ],
  "setVersion": "real-v1",
  "generatedFor": "THE DRAW / Tickets E1 + E1.1",
@@ -16,6 +18,101 @@
  "ownerPositionRulings": {
   "file": "ownerPositionRulings.json",
   "applied": 24
+ },
+ "eraMapping": {
+  "provenance": "editorial",
+  "_doc": [
+   "A game-mechanical partition of the set into four era buckets. NOT a truth claim: no",
+   "source asserts a player's era. eraIndex/eraLabel are VerveQ's own, like rating and",
+   "fameRank. The only input is debutYear, which IS sourced — see each entry facts.debutYear.",
+   "Stated as a RULE, not just ranges, so the partition can be recomputed from debutYear",
+   "alone and can never drift silently from the cards (asserted: drawCardSetEraContract)."
+  ],
+  "rule": {
+   "input": "debutYear (sourced; per-entry facts.debutYear)",
+   "derived": "peakYear := debutYear + 5",
+   "assign": "lowest eraIndex whose peakYear range contains the card peakYear; ranges are contiguous and exhaustive",
+   "buckets": [
+    {
+     "eraIndex": 0,
+     "eraLabel": "≤70s",
+     "peakYearMin": null,
+     "peakYearMax": 1980,
+     "debutYearMin": null,
+     "debutYearMax": 1975,
+     "cardCount": 40,
+     "observedDebutYearRange": [
+      1943,
+      1974
+     ]
+    },
+    {
+     "eraIndex": 1,
+     "eraLabel": "1980s-90s",
+     "peakYearMin": 1981,
+     "peakYearMax": 1999,
+     "debutYearMin": 1976,
+     "debutYearMax": 1994,
+     "cardCount": 70,
+     "observedDebutYearRange": [
+      1976,
+      1994
+     ]
+    },
+    {
+     "eraIndex": 2,
+     "eraLabel": "2000s",
+     "peakYearMin": 2000,
+     "peakYearMax": 2009,
+     "debutYearMin": 1995,
+     "debutYearMax": 2004,
+     "cardCount": 132,
+     "observedDebutYearRange": [
+      1995,
+      2004
+     ]
+    },
+    {
+     "eraIndex": 3,
+     "eraLabel": "2010s-20s",
+     "peakYearMin": 2010,
+     "peakYearMax": null,
+     "debutYearMin": 2005,
+     "debutYearMax": null,
+     "cardCount": 188,
+     "observedDebutYearRange": [
+      2005,
+      2021
+     ]
+    }
+   ]
+  },
+  "derivationNote": [
+   "Why +5: a card belongs to the era a player was KNOWN in, not the year they first",
+   "appeared. A debut is typically followed by ~5 years before first-team prominence, so",
+   "bucketing on debutYear alone files late-blooming players one era earlier than fans",
+   "place them. +5 is a flat editorial approximation of \"time to prominence\" — deliberately",
+   "uniform, since a per-player peak would be an unsourced judgement on all 430 cards.",
+   "Corroboration: this rule reproduces all 430 committed eraIndex values exactly (0",
+   "mismatches), so it is the rule the set was built under, not a fit after the fact."
+  ],
+  "bucket0Note": [
+   "Bucket 0 is open-ended at the bottom (no peakYearMin) and exists to satisfy the >=40",
+   "cards-per-bucket floor. Rationale, per BUILD_NOTES D2->D3: a closed \"1960s-2020s\"",
+   "partition excluded 15 pre-1960 icons outright; an open bottom gives them a home",
+   "(earliest committed debut 1943). Bucket 0 sits exactly at the floor (40 cards), so it",
+   "is the binding constraint on the partition: no further narrowing of its range is",
+   "possible without dropping below the floor or re-selecting cards."
+  ],
+  "boundaryNote": [
+   "The bucket0/bucket1 boundary is DECLARED, not transcribed. No committed selector exists",
+   "to transcribe it from (see BUILD_NOTES \"Selector reproducibility gap\"), and the set",
+   "cannot discriminate it: no card has debutYear 1975 (peakYear 1980), so peakYear<=1980",
+   "and peakYear<=1979 classify all 430 committed cards identically. peakYear<=1980 -> bucket 0",
+   "is therefore a forward-binding declaration for cards added later, chosen so the four",
+   "peakYear ranges are contiguous with no gap. Every other boundary is pinned by adjacent",
+   "cards on both sides and is a transcription of what the data shows."
+  ]
  },
  "entries": [
   {

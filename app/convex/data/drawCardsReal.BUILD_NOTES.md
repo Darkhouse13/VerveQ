@@ -448,8 +448,80 @@ Pipeline: `cp-search → cp-clubqids → cp-clubdict → cp-facts → cp-emit`, 
 Selection, era assignment and rating assignment are pure functions of the
 canonical file plus the sitelink fame backbone.
 
-**Known gap:** the card-build step itself is not yet a committed script — E1 was
-specified as data-only deliverables. The dossier and these notes fully document
-it, and every property is machine-asserted, but a third party cannot currently
-regenerate `drawCardsReal.*` from the canonical file without re-authoring the
-selector. Worth a follow-up ticket if the set is ever retuned.
+**Known gap (selector reproducibility) — this has now bitten once.** The
+card-build step is not a committed script; E1 was specified as data-only
+deliverables. A third party cannot regenerate `drawCardsReal.*` from the
+canonical file without re-authoring the selector.
+
+The claim above once read "the dossier and these notes fully document it." E2's
+blind verify falsified that: the era partition was documented **nowhere** — not
+in the dossier, not here — and E2 stopped rather than verify 430 cards against a
+rule it could only have reverse-engineered from the cards themselves. E1.2 then
+found there was no selector to transcribe the rule *from*, so one boundary could
+not be recovered at all and had to be declared (see §12).
+
+The lesson is narrower than "write the selector": **a rule that lives only in the
+build session is not documented, however well the data is asserted.** Asserting
+every property of the output says nothing about the rule that produced it. §12
+and `drawCardSetEraContract` close this for `eraIndex` specifically. The rest of
+the selector — selection, quotas, tier and fame handling — is still session-only
+knowledge and remains a follow-up ticket, now known to be load-bearing rather
+than merely tidy.
+
+---
+
+## 12. Era mapping (E1.2)
+
+`eraIndex` is the only card field with no source behind it and no editorial
+sibling in the dossier's original `_doc` list — it was neither sourced nor
+declared. It is now stated in `dossier.eraMapping`, marked
+`provenance: "editorial"`: a game-mechanical partition, not a truth claim about
+when a player "belonged."
+
+Stated as a **rule**, not as ranges. Ranges alone are unfalsifiable — read back
+off the cards they confirm the cards by construction, which is exactly why E2
+stopped.
+
+```
+peakYear := debutYear + 5          (debutYear is sourced; peakYear is editorial)
+
+bucket 3  "2010s-20s"   peakYear >= 2010          debut >= 2005     188 cards
+bucket 2  "2000s"       2000 <= peakYear <= 2009  debut 1995-2004   132 cards
+bucket 1  "1980s-90s"   1981 <= peakYear <= 1999  debut 1976-1994    70 cards
+bucket 0  "<=70s"       peakYear <= 1980          debut <= 1975      40 cards
+```
+
+**Why +5.** A card belongs to the era a player was *known* in, not the year they
+first appeared; a debut is typically followed by ~5 years to first-team
+prominence. Bucketing on `debutYear` alone files late bloomers an era earlier
+than fans place them. The +5 is flat and uniform on purpose — a per-player peak
+would be an unsourced judgement on all 430 cards, i.e. 430 more things to verify.
+
+**It is transcription, not a fit.** The rule reproduces all 430 committed
+`eraIndex` values exactly (0 mismatches). It is the rule the set was built
+under, recovered rather than invented — with one exception below.
+
+**Bucket 0 is open-ended below** and exists to satisfy the >=40-per-bucket floor
+(§8). Per D2→D3, a closed "1960s–2020s" partition excluded 15 pre-1960 icons
+outright; an open bottom gives them a home (earliest committed debut 1943).
+Bucket 0 sits *exactly* at 40 — it is the binding constraint on the partition,
+so its range cannot narrow without dropping below the floor or re-selecting.
+
+**The bucket 0/1 boundary is DECLARED, not transcribed** — the one place E1.2
+could not recover what the build did. No card has `debutYear` 1975 (peakYear
+1980), so `peakYear <= 1980` and `peakYear <= 1979` classify all 430 committed
+cards **identically**; the data cannot discriminate them and no selector exists
+to ask. `peakYear <= 1980 -> bucket 0` is therefore a forward-binding choice for
+cards added later, made so the four ranges are contiguous with no gap. Every
+other boundary is pinned by cards on both sides.
+
+Ticket text specified bucket 1 as `"80s-90s"`; the committed label is
+`"1980s-90s"` and was left alone (E1.2 item 2 permitted only the bucket 0
+relabel). The table records the label as it IS.
+
+**Drift guard:** `app/src/test/drawCardSetEraContract.test.ts` recomputes every
+card's `eraIndex` from the stated rule, checks labels, counts, bounds,
+contiguity and the >=40 floor. It runs in `npm run check`. Mutation-tested at
+authoring: flipping one card's `eraIndex`, flipping one label, and shifting a
+stated boundary each fail the gate. The mapping and the cards can no longer
+drift apart silently in either direction.
