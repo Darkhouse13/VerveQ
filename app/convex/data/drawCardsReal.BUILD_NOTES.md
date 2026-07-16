@@ -1,12 +1,13 @@
-# THE DRAW — real card set "real-v1" (Tickets E1 + E1.1) — BUILD NOTES
+# THE DRAW — real card set "real-v2" (Tickets E1 → E0.2) — BUILD NOTES
 
-**Built:** 2026-07-16 · **Candidates:** 430 (400 expected to survive E2 verification)
+**Built:** 2026-07-17 · **Candidates:** 430 · **Set version:** `real-v2`
 
 **Files**
 - `drawCardsReal.candidates.json` — the card data
 - `drawCardsReal.dossier.json` — per-fact provenance, for blind verify
 - `ownerPositionRulings.json` — the 25 owner position rulings (E1.1)
 - `playersSourced.json` — the canonical sourced layer these are selected from
+- `../../../scripts/buildDrawCardSet.ts` — **the selector (new in E0.2)**
 - this file
 
 Engine untouched (CONTRACT v1.0, frozen). No app code. Nothing imports these
@@ -14,7 +15,52 @@ yet; seeding under a new `setVersion` is a later ticket.
 
 ---
 
-## 0. What E1.1 changed
+## 0. What E0.2 changed, and why
+
+E2 verified real-v1 and returned **RED: 143 of 430 cards**. It did not ask for 143
+fixes — it found **one derivation bug** behind 138 of them and said so: *"Fix the
+rule upstream... This is the same 'fix the rule, not the output' lesson E1.1
+already learned once."* E0.2 is that fix, plus the four smaller rule faults E2
+found alongside it.
+
+| # | E2 finding | E0.2 |
+|---|---|---|
+| F1 | **Multi-spell collapse** — 207/1260 memberships merged to a min/max hull; 158 across 138 cards affirmatively false | `clubs[].spells` — **one spell per P54 statement, never merged** (§1) |
+| F4 | Reserve/B-side debut bias, systematic and one-directional | reserve sides excluded from `debutYear`; **85 debuts move** (§3) |
+| — | `wdt:P413` returned best-rank only, hiding real position ambiguity | P413 read **statement-level** (`p:/ps:`); Ronaldinho + Endo fixed (§4) |
+| — | dual internationals decided by **alphabetical order** | most recent senior national team, sourced (§5) |
+| — | memberships citing an unresolvable club QID, dropped in silence | dropped **and logged** (§9) |
+| §11 | the selector was never committed and could not be reproduced | **`scripts/buildDrawCardSet.ts` exists** (§11) |
+
+**What E0.2 did NOT do**, and must not be read as having done:
+
+- **F2 (inherited source falsehood) is untouched and remains the ceiling.** E2's own
+  recommendation says F2 *"should govern the timeline"* and that it is the most
+  consequential item on its list. A Wikidata-only audit grades a faithful
+  transcription ~100% and learns nothing about whether the cards are TRUE. Dybala's
+  debut is still sourced to a statement placing him at **Club Sport Emelec, a club he
+  never played for**; the value (2011) is right only because the phantom club and his
+  real first club share a start year. No rule here can see that — E2 found all three
+  instances by accident, and the only instrument that found any of them was a second
+  source. **How much second-sourcing this set warrants before it faces players is
+  still an open owner decision.**
+- **F3 (the `membershipStart` clamp is undocumented)** — out of scope by owner ruling.
+  Still true, still owed: `membershipStart` is `max(P580, birthYear+16)` and is
+  presented as a bare P54 fact, so a checker reading Piqué/Barcelona sees 1997 on
+  Wikidata, 2003 on the card, and concludes the artifact is wrong.
+- **F5 (`tier` wrong on ≥3 cards)** — out of scope by owner ruling. `tier` is not a
+  card field and its E1 rule was session-only and unrecoverable, so rather than
+  invent a rule that would reproduce the defect, **the dossier no longer carries
+  `tier` at all**. Keegan/Vertonghen/Ochoa are no longer labelled "active" because
+  nothing labels them.
+- **F4's date-vs-year note** — out of scope by owner ruling. The age-16 rule is
+  **year subtraction** (`startYear >= birthYear + 16`), which is what the committed
+  set holds. Messi 2003→2004, Puskás 1943 and Bellingham 2019 depend on it. Pinned
+  here so a future re-run cannot silently disagree.
+
+---
+
+## 0a. What E1.1 changed (kept for the record)
 
 E1 shipped 430 cards, but it derived four corrections **in the card build**,
 leaving the canonical `playersSourced.json` still carrying the bugs. That is a
@@ -60,6 +106,11 @@ npx tsx scripts/ingestWikidataPlayerData.ts cp-assert
 Input: `app/convex/data/playersSourced.json` (1314 records, Wikidata CC0,
 per-fact provenance), which the card build now reads **exclusively** for facts.
 
+**E0.2:** the selection above is now performed by the committed
+`scripts/buildDrawCardSet.ts` (§11), and the exact funnel is recorded in
+`dossier.selector.pool` rather than in prose here — so it can never drift from the
+code that produced it.
+
 ```
 1314 canonical records
  -12  duplicate QIDs collapsed (same player under two names)
@@ -78,11 +129,12 @@ reproducible, and already the fame proxy in `ingestWikidataPlayerData.ts`
 absent `scripts/data/`). `fameRank` stays EDITORIAL — sitelinks are its
 documented backbone, not a sourced fact.
 
-| tier | cards | share |
-|---|---|---|
-| retired icons & legends | 150 | 34.9% |
-| active stars | 195 | 45.3% |
-| cult heroes / journeymen | 85 | 19.8% |
+> **`tier` is GONE as of E0.2, and this table with it.** E2 found it wrong on at
+> least 3 cards (Keegan, Vertonghen, Ochoa all `active`, all retired). It was never
+> a card field — dossier metadata only — and its E1 rule was session-only and
+> unrecoverable. Re-authoring the selector meant either inventing a tier rule (which
+> would have had to reproduce the defect to reproduce the table) or dropping the
+> field. It is dropped. Nothing read it.
 
 ---
 
@@ -138,27 +190,57 @@ cited 2004; Busquets 2006 (Barcelona C) vs 2008. The emitted value is exactly
 what the definition yields, so E2 can blind-verify it without judgement. It is
 **not** "date of first appearance" and must not be labelled as such in UI copy.
 
-### Why two different club filters exist
+### E0.2 — the two club filters are ONE again
 
-This is the subtle part, and getting it wrong silently deletes careers.
+E1.1 split them so `debutYear` **counted** reserve/B sides ("they are senior league
+football"). E2 measured the result: **65 of 430 cards (15%) had their debut set by a
+reserve/B/C side**, applied faithfully and consistently (64 of 65), and **every single
+divergence from the commonly-cited senior debut ran the same direction — earlier.**
+A rule whose errors are all one-directional is a biased rule, not a noisy one.
 
-- **debutYear counts reserve/B sides.** They are senior league football. Exclude
-  them and the only survivor is the academy-poisoned first-team span: Busquets'
-  Barcelona membership is P580 = **2000**, his age-12 academy entry, running to
-  2023 — so an age filter alone drops it and reads him as debuting in **2023** at
-  Inter Miami.
-- **Club listing excludes reserve/B sides** (never iconic) but **keeps** a
-  membership that merely *starts* early, because of the same academy-entry
-  modelling. A membership that both starts *and ends* before age 16 is dropped:
-  Messi's Newell's Old Boys spell (1995–2000, ages 8–13) is a real P54 statement
-  about a real senior club he never played a senior minute for, and the ticket's
-  fact is "has played senior football for this club".
+The owner ruled the definition: **`debutYear` is the first-team debut**, so
+`cpCountsForDebut === cpIsSeniorClub`. Measured offline against the fetch cache
+before the change: **85 debuts move, 84 of them by +1..+4 onto the commonly-cited
+year** — Messi 2003→**2004**, Iniesta 2001→**2002**, Pedro 2005→**2008**,
+Neuer/Khedira 2004→**2006**, Villa 2000→**2001**, Butragueño 1981→**1984**.
 
-E0 had one predicate for both, and its `CP_YOUTH_TYPE_RE` carried
-`reserve team` — so the first attempt at splitting them still read Iniesta as
-debuting in 2002 rather than 2001, because FC Barcelona Atlètic was classed as
-youth. The type regexes are now split too (`CP_AGEGROUP_TYPE_RE` vs
-`CP_RESERVE_TYPE_RE`).
+Club listing is unchanged: reserve sides are still never printed, a membership that
+merely *starts* early is kept, and one that both starts *and ends* before age 16 is
+dropped — Messi's Newell's Old Boys spell (1995–2000, ages 8–13) is a real P54
+statement about a real senior club he never played a senior minute for.
+
+> **The one regression, declared not buried: Sergio Busquets 2006 → 2023.**
+> E1.1's note predicted exactly this and it is worth reading twice, because the
+> reason is subtle. His FC Barcelona membership is **ONE statement, P580 = 2000** —
+> his age-12 academy entry — running to 2023. `debutYear` **filters out** statements
+> starting before age 16 rather than clamping them, so that statement is discarded
+> whole, and the only senior first team left is **Inter Miami 2023**. He is the sole
+> shift beyond +4 across all 1302 players.
+>
+> This is a *source-modelling* fault (Wikidata files his academy entry on the
+> first-team QID), not a rule fault, and no rule reading only P54 can tell it apart
+> from a genuine 2000 debut. **Busquets is on the owner list.** The mechanism to
+> resolve him already exists — a QID-pinned `ownerRuling` in `playerAdditions.json`,
+> exactly as Maldini's identity was resolved. Inventing a threshold to catch him
+> would be an opinion dressed as a rule.
+
+### Why the definition FILTERS rather than reading the spells
+
+Ticket E0.2 item 1 says "debutYear read spells". Taken literally that means `min()`
+over the emitted spell starts — which are **clamped** to `birthYear+16`, so an
+academy-start statement still contributes `birthYear+16` instead of being discarded.
+Both readings were measured against the committed cache:
+
+| reading | debuts changed | matched a known senior debut (16 spot checks) |
+|---|---|---|
+| **filter** (shipped) | 85 | **13/16** |
+| clamped spells | 123 | 11/16 |
+
+The clamped reading regresses **Piqué 2004→2003, ter Stegen 2011→2008, Xabi Alonso
+1999→1997** — in each case an academy-entry P580 on the first-team statement,
+floored to `birthYear+16`, undercutting the real debut. So the filter stays, and
+with it the definition a verifier can check without judgement. (It would have fixed
+Busquets to 2004 — still wrong, and at the cost of two players it breaks.)
 
 ---
 
@@ -321,13 +403,13 @@ rating 90, DEF, Italy, debut 1985, one club — AC Milan.
 
 ## 8. Histograms vs floors
 
-| floor (S2) | required | actual |
-|---|---|---|
-| distinct club tags with ≥6 cards | ≥25 | **48** (of 335 distinct) |
-| nations with ≥8 cards | ≥10 | **13** (of 57 distinct) |
-| every era bucket | ≥40 | **40 / 70 / 132 / 188** |
-| every card ≥1 club tag | yes | **yes** (1 card has 1 club, 28 have 2, 401 have 3) |
-| positions within ±3pp of generator | ±3pp | **0.00pp on all four** |
+| floor (S2) | required | real-v1 | **real-v2 (E0.2)** |
+|---|---|---|---|
+| distinct club tags with ≥6 cards | ≥25 | 48 (of 335) | **49** (of 325 distinct) |
+| nations with ≥8 cards | ≥10 | 13 (of 57) | **13** |
+| every era bucket | ≥40 | 40 / 70 / 132 / 188 | **40 / 76 / 138 / 176** |
+| every card ≥1 club tag | yes | yes | **yes** (1 card has 1 club, 25 have 2, 404 have 3) |
+| positions within ±3pp of generator | ±3pp | 0.00pp | **0.00pp on all four** |
 
 ### Positions (generator `positionWeights` GK1/DEF3/MID3/ATT3 → 10/30/30/30%)
 
@@ -411,15 +493,21 @@ No player was invented. No fact was guessed.
 
 ## 10. Source quality of the 430 (for E2)
 
-| fact | green | amber |
-|---|---|---|
-| nation | 414 | 16 |
-| position | 384 | 46 |
-| debutYear | 425 | 5 |
+| fact | real-v1 green | real-v1 amber | **real-v2 green** | **real-v2 amber** |
+|---|---|---|---|---|
+| nation | 414 | 16 | **413** | **17** |
+| position | 384 | 46 | **380** | **50** |
+| debutYear | 425 | 5 | **424** | **6** |
 
-**Amber identity (5):** Xavi, Ferenc Puskás, Nacho, Just Fontaine, Daniel Agger
-— single-anchor identity resolution. *Maldini is no longer among them:* the
-owner ruling resolved him.
+Amber went **up**, which is the point: E0.2 did not make the data worse, it stopped
+the file claiming certainty it never had. The 4 new amber positions are the cards
+whose second P413 value `wdt:` was hiding (§4).
+
+**Amber identity (6):** Xavi, Ferenc Puskás, Ole Gunnar Solskjær, Nacho, Just
+Fontaine, Daniel Agger — single-anchor identity resolution. *Maldini is not among
+them:* the owner ruling resolved him. (Solskjær is back in the set: he was the
+E1.1 rebalance's self-inflicted casualty, and the re-authored selector's declared
+tie-breaks put him back.)
 
 Every fact carries a resolvable ref (`qid`, `property`, `retrievedAt`) and every
 `qid` resolves at `https://www.wikidata.org/wiki/<qid>`. Volatility is `static`
@@ -448,25 +536,36 @@ Pipeline: `cp-search → cp-clubqids → cp-clubdict → cp-facts → cp-emit`, 
 Selection, era assignment and rating assignment are pure functions of the
 canonical file plus the sitelink fame backbone.
 
-**Known gap (selector reproducibility) — this has now bitten once.** The
-card-build step is not a committed script; E1 was specified as data-only
-deliverables. A third party cannot regenerate `drawCardsReal.*` from the
-canonical file without re-authoring the selector.
+**The selector gap is CLOSED (E0.2).** `scripts/buildDrawCardSet.ts` is committed.
+It is pure and offline, reads only the canonical file plus the sitelink cache, and
+`--check` asserts the committed artifacts reproduce from it byte for byte:
 
-The claim above once read "the dossier and these notes fully document it." E2's
-blind verify falsified that: the era partition was documented **nowhere** — not
-in the dossier, not here — and E2 stopped rather than verify 430 cards against a
-rule it could only have reverse-engineered from the cards themselves. E1.2 then
-found there was no selector to transcribe the rule *from*, so one boundary could
-not be recovered at all and had to be declared (see §12).
+```
+npx tsx scripts/buildDrawCardSet.ts --check
+  -> selector --check OK: both artifacts reproduce exactly (430 cards, modulo retrievedAt)
+```
 
-The lesson is narrower than "write the selector": **a rule that lives only in the
-build session is not documented, however well the data is asserted.** Asserting
-every property of the output says nothing about the rule that produced it. §12
-and `drawCardSetEraContract` close this for `eraIndex` specifically. The rest of
-the selector — selection, quotas, tier and fame handling — is still session-only
-knowledge and remains a follow-up ticket, now known to be load-bearing rather
-than merely tidy.
+**It is a re-authoring, not a recovery — and that distinction is load-bearing.**
+E1's selector was never committed and is gone. What survived is prose: the floors,
+the quotas, the fame backbone, the era rule. Everything the prose did not pin down
+— selection order, tie-breaks, tier, club-tag spelling, display codes — is
+**DECLARED afresh** in that file, not transcribed from anything.
+
+So running the new selector on the OLD canonical does **not** reproduce real-v1.
+It reproduces **405 of 430 (94.2%)**; 25 cards differ. That 25 is the price of the
+missing selector, and it is reported separately from the rule changes precisely so
+it cannot be mistaken for one (§13).
+
+**The lesson E1.2 recorded still stands, and is now paid off rather than repeated:**
+*a rule that lives only in the build session is not documented, however well the
+data is asserted.* Asserting every property of the output says nothing about the
+rule that produced it.
+
+**Still owed:** neither `cp-assert` nor `buildDrawCardSet --check` runs in CI. Both
+are pure and offline and are safe there; `drawCardSetEraContract` is the only guard
+currently wired into `npm run check`. Until they are, the canonical file, the card
+set and the rules can still drift apart between tickets — the exact failure this
+section exists to describe.
 
 ---
 
@@ -525,3 +624,66 @@ contiguity and the >=40 floor. It runs in `npm run check`. Mutation-tested at
 authoring: flipping one card's `eraIndex`, flipping one label, and shifting a
 stated boundary each fail the gate. The mapping and the cards can no longer
 drift apart silently in either direction.
+
+---
+
+## 13. E0.2 — the dual diff, and what may be attributed to what
+
+The selector had to be re-authored (§11), so a single `real-v1 -> real-v2` diff
+would blame the rule fixes for drift they did not cause. Two diffs, measured by
+running the SAME committed selector over both canonical files:
+
+| diff | meaning | result |
+|---|---|---|
+| `real-v1 -> X` | **re-authoring drift.** Same facts, re-declared selector rules. | **25 out / 25 in** (405/430 unchanged) |
+| `X -> Y` | **the E0.2 rule effects.** Same selector, only the facts changed. | **0 out / 0 in — composition identical** |
+
+*X = new selector on the OLD canonical; Y = new selector on the NEW canonical = the
+committed real-v2.*
+
+**The rule fixes changed no card's membership of the set.** The ticket's
+"composition changes via lowest-fameRank swaps only" is satisfied vacuously: there
+are none. Position quotas held (0 position changes), fame is unchanged, and the era
+floors stayed satisfied without a swap. Every composition difference from real-v1 is
+selector re-authoring, disclosed above and not attributable to E0.2's rules.
+
+**Fact changes across the 430 cards present in both X and Y:**
+
+| field | changed | notes |
+|---|---|---|
+| `position` | **0** | Ronaldinho/Endo widened to amber but their *pick* did not move |
+| `nation` | **6** | §5 |
+| `debutYear` | **45** | §3 |
+| `eraIndex` | **3** | Neuer, Khedira, Kevin-Prince Boateng — all `2000s -> 2010s-20s` on corrected debuts |
+
+### Era redistribution
+
+| eraIndex | label | real-v1 | X | **real-v2** |
+|---|---|---|---|---|
+| 0 | `≤70s` | 40 | 40 | **40** |
+| 1 | `1980s-90s` | 70 | 76 | **76** |
+| 2 | `2000s` | 132 | 141 | **138** |
+| 3 | `2010s-20s` | 188 | 173 | **176** |
+
+Bucket 0 still sits **exactly** at the ≥40 floor and remains the binding constraint
+on the partition. 18 era-floor swaps ran inside selection (lowest-fameRank, within
+the same position), all recorded in `dossier.selector.eraSwaps`.
+
+> **The §8 observation still stands and is now worse, not better.** 40/76/138/176 is
+> not the ~uniform distribution the tuned generator produces, and **era is a synergy
+> family** — era-chain frequency in live play will differ from the c13-1 sim. The
+> still-owed Ticket 0.4 requirement (≥99.5% natural clear over ≥2000 boards on the
+> pinned production set) has not been run against this set.
+
+## 14. Pending owner rulings (E0.2)
+
+| # | card(s) | question |
+|---|---|---|
+| 1 | **Sergio Busquets** | debut 2006 → **2023**. Sole shift beyond +4. Wikidata files his academy entry on the first-team QID; no P54-only rule can see it. Suggested: QID-pinned `ownerRuling` for 2008, as Maldini's identity was resolved. |
+| 2 | **Ferenc Puskás → Spain** | Rule output, honestly: Hungary 1945–56, **Spain 1961–62**, most recent wins. Sourced and correct by rule; wrong by football sense. Same class: **Di Stéfano → Spain** (Argentina 1947, Colombia 1949–52, Spain 1957–61). |
+| 3 | **Edgar Davids → Suriname** | Wikidata asserts a Suriname senior spell 2009–10 overlapping his club career. If false, it is F2 — beyond any rule here. |
+| 4 | **Ronaldinho, Wataru Endo** | positions widened green→amber by the statement-level P413 fetch. Pick unchanged (ATT / MID), **no membership impact**. They need a ruling only if the owner wants the ambiguity resolved rather than disclosed. |
+| 5 | **10 dropped memberships** | unresolvable club refs, now logged (§9). Błaszczykowski's is E2's amber: Wikidata's KS Częstochowa 2003 is a real senior club whose QID resolves to nothing, so his debut stays 2004. Resolving the QIDs would change 2 in-set debuts. |
+
+**Not a ruling — a decision:** how much second-sourcing this set warrants before it
+faces players (F2). E2 called it the most consequential item on its list.
