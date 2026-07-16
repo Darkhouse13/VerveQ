@@ -37,7 +37,7 @@ const HERE = path.dirname(fileURLToPath(import.meta.url));
  * chaser≈2400 / oracle≈3900 at synergyScale 1 with low tag cardinality.
  */
 const RANGES = {
-  thresholdBase: [400, 2400],
+  thresholdBase: [250, 2400],
   thresholdGrowth: [1.04, 1.4],
   bossMult: [0.7, 1.15],
   /** thresholdShape final entry — the boss wall on top of bossMult (Ticket 0.1 C3). */
@@ -45,8 +45,11 @@ const RANGES = {
   formSpread: [0.12, 0.45],
   bustKeep: [0.15, 0.4],
   fullClearBonus: [1.1, 1.6],
-  /** synergy table entry m ⇒ 1 + (m-1)·scale over the base 1.5/2/2.5/3 table. */
-  synergyScale: [0.4, 1.25],
+  /** synergyTable = [1,1,1, base, base+step, base+2·step] (flat tables reachable). */
+  synergyBase: [1.12, 1.45],
+  synergyStep: [0.05, 0.4],
+  /** Greedy push-rule face multiplier (Ticket 0.2). */
+  kGreedy: [0.9, 1.2],
   /** archetype multipliers m ⇒ m^strength. */
   modifierStrength: [0.6, 1.6],
   ratingSkew: [0.7, 1.6],
@@ -74,7 +77,9 @@ interface Genome {
   formSpread: number;
   bustKeep: number;
   fullClearBonus: number;
-  synergyScale: number;
+  synergyBase: number;
+  synergyStep: number;
+  kGreedy: number;
   modifierStrength: number;
   ratingSkew: number;
   clubCount: number;
@@ -85,22 +90,24 @@ interface Genome {
   presetIdx: number;
 }
 
-/** Anchor = the Ticket 0.1 calibrator search winner (passes all but P3a there). */
+/** Anchor = the Ticket 0.2 calibrated candidate (passes all criteria at 800 boards). */
 const ANCHOR: Genome = {
-  base: 400,
-  growth: 1.29,
-  bossMult: 0.9,
-  bossShape: 1,
-  formSpread: 0.2994,
-  bustKeep: 0.1515,
-  fullClearBonus: 1.5389,
-  synergyScale: 0.48,
-  modifierStrength: 1.577,
-  ratingSkew: 0.8116,
-  clubCount: 12,
-  nationCount: 6,
+  base: 250,
+  growth: 1.265,
+  bossMult: 1,
+  bossShape: 1.35,
+  formSpread: 0.4479,
+  bustKeep: 0.2507,
+  fullClearBonus: 1.4816,
+  synergyBase: 1.2875,
+  synergyStep: 0.1074,
+  kGreedy: 1.1,
+  modifierStrength: 1.3116,
+  ratingSkew: 0.8736,
+  clubCount: 11,
+  nationCount: 5,
   eraCount: 6,
-  setSize: 44,
+  setSize: 54,
   archStyle: 0,
   presetIdx: 1,
 };
@@ -116,7 +123,9 @@ function sampleGenome(rng: () => number): Genome {
     formSpread: uniform(RANGES.formSpread),
     bustKeep: uniform(RANGES.bustKeep),
     fullClearBonus: uniform(RANGES.fullClearBonus),
-    synergyScale: uniform(RANGES.synergyScale),
+    synergyBase: uniform(RANGES.synergyBase),
+    synergyStep: uniform(RANGES.synergyStep),
+    kGreedy: uniform(RANGES.kGreedy),
     modifierStrength: uniform(RANGES.modifierStrength),
     ratingSkew: uniform(RANGES.ratingSkew),
     clubCount: int(RANGES.clubCount),
@@ -144,7 +153,9 @@ function perturbGenome(g: Genome, rng: () => number): Genome {
     formSpread: jitter(g.formSpread, 0.15, RANGES.formSpread),
     bustKeep: jitter(g.bustKeep, 0.15, RANGES.bustKeep),
     fullClearBonus: jitter(g.fullClearBonus, 0.08, RANGES.fullClearBonus),
-    synergyScale: jitter(g.synergyScale, 0.1, RANGES.synergyScale),
+    synergyBase: jitter(g.synergyBase, 0.06, RANGES.synergyBase),
+    synergyStep: jitter(g.synergyStep, 0.2, RANGES.synergyStep),
+    kGreedy: jitter(g.kGreedy, 0.05, RANGES.kGreedy),
     modifierStrength: jitter(g.modifierStrength, 0.15, RANGES.modifierStrength),
     ratingSkew: jitter(g.ratingSkew, 0.12, RANGES.ratingSkew),
     clubCount: jitterInt(g.clubCount, RANGES.clubCount),
@@ -157,13 +168,13 @@ function perturbGenome(g: Genome, rng: () => number): Genome {
 }
 
 function buildConfig(g: Genome): EngineConfig {
-  const scaled = (m: number) => 1 + (m - 1) * g.synergyScale;
+  const s = (k: number) => Number((g.synergyBase + k * g.synergyStep).toFixed(4));
   return {
     ...DEFAULT_ENGINE_CONFIG,
     formSpread: g.formSpread,
     bustKeep: g.bustKeep,
     fullClearBonus: g.fullClearBonus,
-    synergyTable: [1, 1, 1, scaled(1.5), scaled(2.0), scaled(2.5), scaled(3.0)],
+    synergyTable: [1, 1, 1, s(0), s(1), s(2)],
     thresholds: {
       base: g.base,
       growth: g.growth,
@@ -230,6 +241,7 @@ function main(): void {
       seedBase: `${seed}|screen`,
       p3Samples: 64,
       p5Every: 0,
+      kGreedy: genome.kGreedy,
     });
     entries.push({ id, genome, config, screen });
     if (nextId % 25 === 0) {
@@ -259,6 +271,7 @@ function main(): void {
       seedBase: `${seed}|full`,
       p3Samples: 200,
       p5Every: 199,
+      kGreedy: entry.genome.kGreedy,
     });
     console.log(`  config#${entry.id}: distance ${entry.full.distance.toFixed(3)}`);
   }
@@ -313,7 +326,7 @@ function main(): void {
   fs.writeFileSync(outPath, JSON.stringify(artifact, null, 2));
   fs.writeFileSync(
     path.join(artifactsDir, "best-config.json"),
-    JSON.stringify({ config: top5[0].config }, null, 2),
+    JSON.stringify({ config: top5[0].config, kGreedy: top5[0].genome.kGreedy }, null, 2),
   );
   console.log(`\nartifacts: ${outPath} + best-config.json`);
 

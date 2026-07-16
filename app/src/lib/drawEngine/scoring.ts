@@ -108,14 +108,19 @@ export function squadSynergies(cards: Card[], config: EngineConfig): SynergyBrea
   return granted.slice(0, config.maxSynergyFamilies);
 }
 
-/** Full round score with breakdown. Pure; identical inputs ⇒ identical floats. */
+/**
+ * Full round score with breakdown for the FIELDED cards (pass the squad minus
+ * the benched card; synergy chains use fielded cards only — Ticket 0.2 A2).
+ * Pure; identical inputs ⇒ identical floats.
+ */
 export function scoreRound(
   boardSeed: string,
-  squad: Card[],
+  fielded: Card[],
   fixture: Fixture,
   config: EngineConfig,
+  benchedCardId = "",
 ): RoundBreakdown {
-  const cards: CardRoundBreakdown[] = squad.map((card) => {
+  const cards: CardRoundBreakdown[] = fielded.map((card) => {
     const form = formFor(boardSeed, card.id, fixture.index, config.formSpread);
     const fixtureMult = fixtureMultFor(card, fixture);
     return {
@@ -128,13 +133,14 @@ export function scoreRound(
   });
   let baseSum = 0;
   for (const c of cards) baseSum += c.contribution;
-  const synergies = squadSynergies(squad, config);
+  const synergies = squadSynergies(fielded, config);
   let synergyMult = 1;
   for (const s of synergies) synergyMult *= s.mult;
   const score = baseSum * synergyMult;
   return {
     fixtureIndex: fixture.index,
     threshold: fixture.threshold,
+    benchedCardId,
     baseSum,
     synergies,
     synergyMult,

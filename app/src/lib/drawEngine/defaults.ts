@@ -64,8 +64,8 @@ export const DEFAULT_ENGINE_CONFIG: EngineConfig = {
   formSpread: 0.15,
   bustKeep: 0.25,
   fullClearBonus: 1.25,
-  // index = chain length; entries below 3 are ×1.
-  synergyTable: [1, 1, 1, 1.5, 2.0, 2.5, 3.0],
+  // index = chain length; entries below 3 are ×1; chains cap at 5 fielded cards.
+  synergyTable: [1, 1, 1, 1.5, 2.0, 2.5],
   maxSynergyFamilies: 3,
   thresholds: { base: 420, growth: 1.35, bossMult: 1.15, thresholdShape: [1, 1, 1, 1, 1] },
   archetypes: buildArchetypes(1),

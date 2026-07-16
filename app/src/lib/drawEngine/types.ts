@@ -15,6 +15,10 @@
  * - Form is derived from (boardSeed, cardId, roundIndex) only — never from
  *   user identity or user choices. Same card ⇒ same form for every user on
  *   the same board.
+ * - MATCHDAY BENCH (Ticket 0.2 A1, final contract change): every round, before
+ *   the reveal, exactly one squad card is benched; the remaining fielded cards
+ *   score. The bench pick is an explicit per-round `bench` entry in ChoiceLog,
+ *   and synergy chains are computed on the fielded cards only (A2).
  */
 
 export type PositionId = "GK" | "DEF" | "MID" | "ATT";
@@ -130,8 +134,9 @@ export interface EngineConfig {
   fullClearBonus: number;
   /**
    * synergyTable[chainLength] = multiplier for the largest shared-tag chain of
-   * that length in a family. Lengths beyond the last entry clamp to it;
-   * missing/short entries mean ×1. Default: 3→1.5, 4→2.0, 5→2.5, 6→3.0.
+   * that length in a family, computed on the FIELDED cards (Ticket 0.2 A2).
+   * Lengths beyond the last entry clamp to it; missing/short entries mean ×1.
+   * Default: 3→1.5, 4→2.0, 5→2.5 (chains cap at the 5 fielded cards).
    */
   synergyTable: number[];
   /** Hard cap on synergy families (ties to the layout meter budget). */
@@ -142,16 +147,21 @@ export interface EngineConfig {
   cardGen: CardGenConfig;
 }
 
-/** One user decision. Draft rows take picks; cleared rounds take bank/push. */
+/**
+ * One user decision. Draft rows take picks; each round takes a bench pick
+ * (squadIndex = position in the squad array, 0-based) before it plays;
+ * cleared non-boss rounds take bank/push.
+ */
 export type Choice =
   | { type: "pick"; offerIndex: number }
+  | { type: "bench"; squadIndex: number }
   | { type: "bank" }
   | { type: "push" };
 
 /** The complete decision record of a run. replay(board, config, log) ⇒ identical RunResult. */
 export type ChoiceLog = Choice[];
 
-export type RunPhase = "draft" | "decision" | "done";
+export type RunPhase = "draft" | "bench" | "decision" | "done";
 export type RunOutcome = "banked" | "busted" | "fullclear";
 
 export interface CardRoundBreakdown {
@@ -174,7 +184,9 @@ export interface SynergyBreakdown {
 export interface RoundBreakdown {
   fixtureIndex: number;
   threshold: number;
-  /** Σ contributions before synergy. */
+  /** The squad card benched for this round (Ticket 0.2 A1). */
+  benchedCardId: string;
+  /** Σ fielded contributions before synergy. */
   baseSum: number;
   /** Families that granted a multiplier (chain ≥ first table entry > 1). */
   synergies: SynergyBreakdown[];
@@ -182,6 +194,7 @@ export interface RoundBreakdown {
   synergyMult: number;
   score: number;
   cleared: boolean;
+  /** Fielded cards only (squad minus the benched card). */
   cards: CardRoundBreakdown[];
 }
 
@@ -196,7 +209,7 @@ export interface RunState {
   rowIndex: number;
   /** Picked card ids, in row order. */
   squad: string[];
-  /** Fixture just played (decision phase) / next to play (end of draft). */
+  /** Next fixture to play (bench phase) / fixture just played (decision phase). */
   fixtureIndex: number;
   /** Sum of cleared round scores so far. */
   cumulative: number;

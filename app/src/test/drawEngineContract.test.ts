@@ -18,6 +18,7 @@ import {
   toResult,
   type BoardSpec,
   type Card,
+  type Choice,
   type EngineConfig,
   type Fixture,
   type RunState,
@@ -141,12 +142,14 @@ describe("synergy math", () => {
     ]);
   });
 
-  it("chains below 3 grant nothing; chain 6 grants x3; length clamps to the table end", () => {
+  it("chains below 3 grant nothing; chain 5 grants x2.5; length clamps to the table end", () => {
+    const five = Array.from({ length: 5 }, (_, i) => mkCard(`C${i}`, 70));
+    const club = squadSynergies(five, config).find((s) => s.family === "club");
+    expect(club).toEqual({ family: "club", tag: "CLUB_A", chain: 5, mult: 2.5 });
+    // Longer lists (not reachable with a 5-card field) clamp to the table end.
     const six = Array.from({ length: 6 }, (_, i) => mkCard(`C${i}`, 70));
-    const synergies = squadSynergies(six, config);
-    const club = synergies.find((s) => s.family === "club");
-    expect(club).toEqual({ family: "club", tag: "CLUB_A", chain: 6, mult: 3.0 });
-    const pair = squadSynergies(six.slice(0, 2), config);
+    expect(squadSynergies(six, config).find((s) => s.family === "club")?.mult).toBe(2.5);
+    const pair = squadSynergies(five.slice(0, 2), config);
     expect(pair).toEqual([]);
   });
 
@@ -193,39 +196,84 @@ describe("round scoring with fixture modifiers", () => {
   });
 });
 
+describe("bench mechanic (Ticket 0.2 A1/A2)", () => {
+  // rows = 4 → squad 4, fielded 3. Offer 0 squad: three CLUB_A 80s + one CLUB_X 80.
+  const benchConfig: EngineConfig = { ...exactConfig, rows: 4, fixtureCount: 2 };
+  // A/B/C share only CLUB_A (distinct nations/eras keep the other families quiet).
+  const rows = [
+    [mkCard("A", 80), mkCard("A2", 60)],
+    [mkCard("B", 80, { nation: "NATION_B", era: "ERA_2000s", eraIndex: 4 }), mkCard("B2", 60)],
+    [mkCard("C", 80, { nation: "NATION_C", era: "ERA_1980s", eraIndex: 2 }), mkCard("C2", 60)],
+    [mkCard("D", 80, { clubs: ["CLUB_X"], nation: "NATION_X", era: "ERA_1960s", eraIndex: 0 }), mkCard("D2", 60)],
+  ];
+  const board = mkBoard(rows, [mkFixture(0, 100), mkFixture(1, 100, { isBoss: true })]);
+
+  it("synergy counts fielded cards only; the benched card's tags are excluded", () => {
+    // Bench D → fielded A,B,C: CLUB_A chain 3 ⇒ (3×80) × 1.5 = 360.
+    const state = draftAll(board, benchConfig);
+    expect(state.phase).toBe("bench");
+    const viaD = applyChoice(board, benchConfig, state, { type: "bench", squadIndex: 3 });
+    expect(viaD.rounds[0].benchedCardId).toBe("D");
+    expect(viaD.rounds[0].cards).toHaveLength(3);
+    expect(viaD.rounds[0].score).toBe(360);
+    // Bench C → fielded A,B,D: largest CLUB_A chain 2 ⇒ no synergy, 240.
+    const viaC = applyChoice(board, benchConfig, state, { type: "bench", squadIndex: 2 });
+    expect(viaC.rounds[0].benchedCardId).toBe("C");
+    expect(viaC.rounds[0].score).toBe(240);
+  });
+
+  it("every round takes its own bench pick and it is replayed from the log", () => {
+    let state = draftAll(board, benchConfig);
+    state = applyChoice(board, benchConfig, state, { type: "bench", squadIndex: 3 });
+    state = applyChoice(board, benchConfig, state, { type: "push" });
+    expect(state.phase).toBe("bench");
+    state = applyChoice(board, benchConfig, state, { type: "bench", squadIndex: 0 });
+    const result = toResult(state);
+    expect(result.rounds.map((r) => r.benchedCardId)).toEqual(["D", "A"]);
+    expect(result.choiceLog.filter((c) => c.type === "bench")).toHaveLength(2);
+  });
+});
+
 describe("run settlement", () => {
   const rows = [
     [mkCard("R0A", 80), mkCard("R0B", 70)],
     [mkCard("R1A", 80, { clubs: ["CLUB_B"] }), mkCard("R1B", 70)],
   ];
-  // Squad via offer 0: 80 + 80 = 160 per round (no 3-chain, spread 0).
+  // Squad via offer 0: R0A + R1A; benching index 1 fields R0A alone ⇒ 80 per
+  // round (form 1 at spread 0, no modifiers, no chain).
+  const bench1: Choice = { type: "bench", squadIndex: 1 };
 
   it("bank ends the run with final = cumulative", () => {
-    const board = mkBoard(rows, [mkFixture(0, 100), mkFixture(1, 100, { isBoss: true })]);
+    const board = mkBoard(rows, [mkFixture(0, 50), mkFixture(1, 50, { isBoss: true })]);
     let state = draftAll(board, exactConfig);
+    expect(state.phase).toBe("bench");
+    state = applyChoice(board, exactConfig, state, bench1);
     expect(state.phase).toBe("decision");
-    expect(state.cumulative).toBe(160);
+    expect(state.cumulative).toBe(80);
     state = applyChoice(board, exactConfig, state, { type: "bank" });
     const result = toResult(state);
     expect(result.outcome).toBe("banked");
-    expect(result.finalScore).toBe(160);
+    expect(result.finalScore).toBe(80);
     expect(result.roundsCleared).toBe(1);
   });
 
   it("failing a round busts: final = cumulative x bustKeep", () => {
-    const board = mkBoard(rows, [mkFixture(0, 100), mkFixture(1, 10000, { isBoss: true })]);
+    const board = mkBoard(rows, [mkFixture(0, 50), mkFixture(1, 10000, { isBoss: true })]);
     let state = draftAll(board, exactConfig);
+    state = applyChoice(board, exactConfig, state, bench1);
     state = applyChoice(board, exactConfig, state, { type: "push" });
+    state = applyChoice(board, exactConfig, state, bench1);
     const result = toResult(state);
     expect(result.outcome).toBe("busted");
-    expect(result.finalScore).toBe(160 * exactConfig.bustKeep);
+    expect(result.finalScore).toBe(80 * exactConfig.bustKeep);
     expect(result.roundsCleared).toBe(1);
     expect(result.rounds).toHaveLength(2);
   });
 
   it("failing F1 immediately settles at 0", () => {
     const board = mkBoard(rows, [mkFixture(0, 10000), mkFixture(1, 10000, { isBoss: true })]);
-    const state = draftAll(board, exactConfig);
+    let state = draftAll(board, exactConfig);
+    state = applyChoice(board, exactConfig, state, bench1);
     const result = toResult(state);
     expect(result.outcome).toBe("busted");
     expect(result.finalScore).toBe(0);
@@ -233,24 +281,84 @@ describe("run settlement", () => {
   });
 
   it("clearing the boss grants the full-clear bonus", () => {
-    const board = mkBoard(rows, [mkFixture(0, 100), mkFixture(1, 100, { isBoss: true })]);
+    const board = mkBoard(rows, [mkFixture(0, 50), mkFixture(1, 50, { isBoss: true })]);
     let state = draftAll(board, exactConfig);
+    state = applyChoice(board, exactConfig, state, bench1);
     state = applyChoice(board, exactConfig, state, { type: "push" });
+    state = applyChoice(board, exactConfig, state, bench1);
     const result = toResult(state);
     expect(result.outcome).toBe("fullclear");
-    expect(result.finalScore).toBe(320 * exactConfig.fullClearBonus);
+    expect(result.finalScore).toBe(160 * exactConfig.fullClearBonus);
     expect(result.roundsCleared).toBe(2);
   });
 
   it("rejects illegal choices", () => {
-    const board = mkBoard(rows, [mkFixture(0, 100), mkFixture(1, 100, { isBoss: true })]);
+    const board = mkBoard(rows, [mkFixture(0, 50), mkFixture(1, 50, { isBoss: true })]);
     const fresh = initRun(board);
     expect(() => applyChoice(board, exactConfig, fresh, { type: "bank" })).toThrow();
+    expect(() => applyChoice(board, exactConfig, fresh, { type: "bench", squadIndex: 0 })).toThrow();
     expect(() => applyChoice(board, exactConfig, fresh, { type: "pick", offerIndex: 2 })).toThrow();
-    const decided = draftAll(board, exactConfig);
-    expect(() => applyChoice(board, exactConfig, decided, { type: "pick", offerIndex: 0 })).toThrow();
+    const benchPhase = draftAll(board, exactConfig);
+    expect(() => applyChoice(board, exactConfig, benchPhase, { type: "pick", offerIndex: 0 })).toThrow();
+    expect(() => applyChoice(board, exactConfig, benchPhase, { type: "push" })).toThrow();
+    expect(() => applyChoice(board, exactConfig, benchPhase, { type: "bench", squadIndex: 2 })).toThrow();
+    expect(() => applyChoice(board, exactConfig, benchPhase, { type: "bench", squadIndex: -1 })).toThrow();
+    const decided = applyChoice(board, exactConfig, benchPhase, bench1);
+    expect(() => applyChoice(board, exactConfig, decided, { type: "bench", squadIndex: 0 })).toThrow();
     const done = applyChoice(board, exactConfig, decided, { type: "bank" });
     expect(() => applyChoice(board, exactConfig, done, { type: "push" })).toThrow();
+  });
+});
+
+describe("oracle bench property (Ticket 0.2 A3)", () => {
+  it("per-round argmax bench is exhaustive-equivalent (rounds are bench-independent)", () => {
+    // Thresholds low enough that every sequence full-clears: independence and
+    // optimality can then be asserted over ALL 6^5 bench sequences.
+    const cfg: EngineConfig = {
+      ...config,
+      thresholds: { base: 10, growth: 1.01, bossMult: 1 },
+    };
+    const set = generateCardSet("bench-property-cards", cfg.cardGen);
+    const b = generateBoard("bench-property-board", set, cfg);
+    const R = cfg.fixtureCount;
+    const S = cfg.rows;
+
+    const runWith = (benchSeq: number[]): { final: number; scores: number[] } => {
+      let state = initRun(b);
+      for (let r = 0; r < S; r++) state = applyChoice(b, cfg, state, { type: "pick", offerIndex: 0 });
+      for (let r = 0; r < R; r++) {
+        state = applyChoice(b, cfg, state, { type: "bench", squadIndex: benchSeq[r] });
+        if (state.phase === "decision") state = applyChoice(b, cfg, state, { type: "push" });
+      }
+      const result = toResult(state);
+      return { final: result.finalScore, scores: result.rounds.map((x) => x.score) };
+    };
+
+    // Per-round single-bench scores from S probe sequences.
+    const single: number[][] = Array.from({ length: R }, () => new Array(S).fill(0));
+    for (let j = 0; j < S; j++) {
+      const probe = runWith(new Array(R).fill(j));
+      for (let r = 0; r < R; r++) single[r][j] = probe.scores[r];
+    }
+    const argmax = single.map((scores) => scores.indexOf(Math.max(...scores)));
+    const argmaxFinal = runWith(argmax).final;
+
+    // Exhaustive: every sequence's rounds match the single-bench scores
+    // (independence) and none beats the per-round argmax plan.
+    let bestFinal = -1;
+    const seq = new Array(R).fill(0);
+    const total = Math.pow(S, R);
+    for (let n = 0; n < total; n++) {
+      let x = n;
+      for (let r = 0; r < R; r++) {
+        seq[r] = x % S;
+        x = Math.floor(x / S);
+      }
+      const run = runWith(seq);
+      for (let r = 0; r < R; r++) expect(run.scores[r]).toBe(single[r][seq[r]]);
+      if (run.final > bestFinal) bestFinal = run.final;
+    }
+    expect(argmaxFinal).toBe(bestFinal);
   });
 });
 

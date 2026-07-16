@@ -9,7 +9,8 @@
  *   --boards N        boards to simulate (default 2000)
  *   --config path     JSON file with a partial EngineConfig (deep-merged onto defaults)
  *   --seed s          seed base (default "drawsim-v0")
- *   --p3samples N     Monte-Carlo samples per bank point (default 200)
+ *   --p3samples N     Monte-Carlo samples per decision state (default 200)
+ *   --kgreedy k       greedy push-rule face multiplier (overrides the config file)
  *   --out path        artifact path (default artifacts/sim-<seed>-<boards>.json)
  */
 
@@ -34,11 +35,19 @@ export function parseFlags(argv: string[]): Map<string, string> {
   return flags;
 }
 
-export function loadConfig(configPath: string | undefined): EngineConfig {
-  if (!configPath) return mergeConfig(undefined);
+/** Harness-level knobs that ride alongside the EngineConfig in config files. */
+export interface LoadedConfig {
+  config: EngineConfig;
+  /** Greedy push-rule face multiplier (Ticket 0.2), default 1. */
+  kGreedy: number;
+}
+
+export function loadConfig(configPath: string | undefined): LoadedConfig {
+  if (!configPath) return { config: mergeConfig(undefined), kGreedy: 1 };
   const raw = JSON.parse(fs.readFileSync(configPath, "utf8"));
-  // Accept either a bare partial config or a sweep artifact entry ({ config: ... }).
-  return mergeConfig(raw.config ?? raw);
+  // Accept either a bare partial config or a sweep artifact entry
+  // ({ config: ..., kGreedy?: ... }).
+  return { config: mergeConfig(raw.config ?? raw), kGreedy: Number(raw.kGreedy ?? 1) };
 }
 
 function pct(x: number): string {
@@ -85,7 +94,8 @@ export function renderEval(ev: ConfigEval): string {
       `${ev.oracle.deadBoards} dead boards (${ev.oracle.deadFlagged} flagged)`,
   );
   lines.push(
-    `p3: ${ev.p3.states} round-2/3 states, tense ${pct(ev.p3.tenseFrac)} (${ev.p3.tenseCount}), ` +
+    `p3: tense runs ${pct(ev.p3.tenseRunFrac)} (${ev.p3.tenseRuns}/${ev.p3.runs}); ` +
+      `${ev.p3.states} decision states, per-state tense ${pct(ev.p3.perStateTenseFrac)} (${ev.p3.tenseCount}), ` +
       `tense median spread ${Number.isNaN(ev.p3.tenseMedianSpread) ? "n/a" : pct(ev.p3.tenseMedianSpread)}`,
   );
   const dec = (v: number[]) => v.map((x) => pct(x)).join(" / ");
@@ -114,7 +124,8 @@ function main(): void {
   const boards = Number(flags.get("boards") ?? 2000);
   const seedBase = flags.get("seed") ?? "drawsim-v0";
   const p3Samples = Number(flags.get("p3samples") ?? 200);
-  const config = loadConfig(flags.get("config"));
+  const { config, kGreedy: fileKGreedy } = loadConfig(flags.get("config"));
+  const kGreedy = Number(flags.get("kgreedy") ?? fileKGreedy);
 
   const layout = checkLayout(config);
   if (!layout.eligible) {
@@ -123,7 +134,7 @@ function main(): void {
     return;
   }
 
-  const ev = evaluateConfig(config, { boards, seedBase, p3Samples, p5Every: 97 });
+  const ev = evaluateConfig(config, { boards, seedBase, p3Samples, p5Every: 97, kGreedy });
 
   if (ev.oracle.medianMs > 1000) {
     console.error(
@@ -137,7 +148,7 @@ function main(): void {
   const outPath =
     flags.get("out") ?? path.join(HERE, "artifacts", `sim-${seedBase}-${boards}.json`);
   fs.mkdirSync(path.dirname(outPath), { recursive: true });
-  fs.writeFileSync(outPath, JSON.stringify({ config, eval: ev }, null, 2));
+  fs.writeFileSync(outPath, JSON.stringify({ config, kGreedy, eval: ev }, null, 2));
   console.log(`\nartifact: ${outPath}`);
 }
 

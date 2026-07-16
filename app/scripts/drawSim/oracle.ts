@@ -2,10 +2,15 @@
  * Oracle bot: exhaustive over all offersPerRow^rows draft lines with form
  * known (it reads the true eff matrix).
  *
+ * Bench (Ticket 0.2 A3): per line and round the oracle takes the exact
+ * optimal bench — argmax over the 6 removals of the fielded score — which is
+ * per-round independent given the stop policy (rounds are additive;
+ * property-tested against exhaustive bench enumeration).
  * Bank/push is resolved analytically per line: round scores are strictly
  * positive, so the optimal stop policy is provably "push until the first
  * future fail, bank just before it" (or ride a clean line to full clear).
- * This is exhaustive-equivalent over draft × stop policies — see DECISIONS.md.
+ * This is exhaustive-equivalent over draft × bench × stop policies — see
+ * DECISIONS.md.
  *
  * Also produces, from the same enumeration:
  *  - dead-board detection (no line full-clears),
@@ -14,7 +19,7 @@
  */
 
 import { applyChoice, initRun, toResult, type Choice, type RunResult } from "../../src/lib/drawEngine";
-import { synergyMultFromMaxima, type BoardContext } from "./boardContext";
+import { benchOptimalScores, type BoardContext } from "./boardContext";
 
 export interface OracleOutcome {
   result: RunResult;
@@ -53,16 +58,14 @@ export function runOracle(ctx: BoardContext): OracleOutcome {
   let bestBankAfter = 0;
   let fullClearPossible = false;
 
+  const squadIdxs = new Int32Array(rows);
+  const benchScores = new Float64Array(R);
+
   const visit = (row: number, leafBase: number): void => {
     nodes++;
     if (row === rows) {
-      let maxClub = 0;
-      for (let i = 0; i < clubCounts.length; i++) if (clubCounts[i] > maxClub) maxClub = clubCounts[i];
-      let maxNation = 0;
-      for (let i = 0; i < nationCounts.length; i++) if (nationCounts[i] > maxNation) maxNation = nationCounts[i];
-      let maxEra = 0;
-      for (let i = 0; i < eraCounts.length; i++) if (eraCounts[i] > maxEra) maxEra = eraCounts[i];
-      const synMult = synergyMultFromMaxima(config, maxClub, maxNation, maxEra);
+      // Bench-optimal score per round (argmax over the 6 removals).
+      benchOptimalScores(ctx, squadIdxs, clubCounts, nationCounts, eraCounts, roundSums, benchScores);
 
       // Walk the gauntlet: bank right before the first fail, or full-clear.
       let cumulative = 0;
@@ -70,7 +73,7 @@ export function runOracle(ctx: BoardContext): OracleOutcome {
       let bankAfter = 0;
       let failed = false;
       for (let r = 0; r < R; r++) {
-        const score = roundSums[r] * synMult;
+        const score = benchScores[r];
         if (score < thresholds[r]) {
           failed = true;
           final = cumulative; // bank after r cleared rounds (0 ⇒ forced bust for 0)
@@ -82,7 +85,7 @@ export function runOracle(ctx: BoardContext): OracleOutcome {
       if (!failed) {
         fullClearPossible = true;
         const fullClear = cumulative * config.fullClearBonus;
-        const bankBeforeBoss = cumulative - roundSums[R - 1] * synMult;
+        const bankBeforeBoss = cumulative - benchScores[R - 1];
         if (fullClear >= bankBeforeBoss) {
           final = fullClear;
           bankAfter = R;
@@ -104,6 +107,7 @@ export function runOracle(ctx: BoardContext): OracleOutcome {
     for (let o = 0; o < offers; o++) {
       const c = row * offers + o;
       picks[row] = o;
+      squadIdxs[row] = c;
       for (let r = 0; r < R; r++) roundSums[r] += eff[r * N + c];
       for (const id of ctx.clubIds[c]) clubCounts[id]++;
       nationCounts[ctx.nationIds[c]]++;
@@ -149,15 +153,36 @@ export function runOracle(ctx: BoardContext): OracleOutcome {
     idx = Math.floor(idx / offers);
   }
 
-  // Execute the best plan through the real engine.
+  // Recompute the best line's bench plan (argmax removal per round).
+  const bestSquad = new Int32Array(rows);
+  const bestSums = new Float64Array(R);
+  const bestClubs = new Int32Array(ctx.numClubs);
+  const bestNations = new Int32Array(ctx.numNations);
+  const bestEras = new Int32Array(ctx.numEras);
+  for (let r = 0; r < rows; r++) {
+    const c = r * offers + bestLine[r];
+    bestSquad[r] = c;
+    for (let j = 0; j < R; j++) bestSums[j] += eff[j * N + c];
+    for (const id of ctx.clubIds[c]) bestClubs[id]++;
+    bestNations[ctx.nationIds[c]]++;
+    bestEras[ctx.eraIds[c]]++;
+  }
+  const bestBench = new Int32Array(R);
+  const bestScores = new Float64Array(R);
+  benchOptimalScores(ctx, bestSquad, bestClubs, bestNations, bestEras, bestSums, bestScores, bestBench);
+
+  // Execute the best plan through the real engine (bench picks included).
   const log: Choice[] = bestLine.map((offerIndex) => ({ type: "pick", offerIndex }));
   let state = initRun(ctx.board);
   for (const choice of log) state = applyChoice(ctx.board, config, state, choice);
-  // Decisions: (bankAfter - 1) pushes then bank, or pushes to the boss.
-  while (state.phase === "decision") {
-    const cleared = state.rounds.length; // all cleared so far in decision phase
-    const wantMore = bestBankAfter > cleared;
-    state = applyChoice(ctx.board, config, state, wantMore ? { type: "push" } : { type: "bank" });
+  while (state.phase === "bench") {
+    const r = state.fixtureIndex;
+    state = applyChoice(ctx.board, config, state, { type: "bench", squadIndex: bestBench[r] });
+    if (state.phase === "decision") {
+      const cleared = state.rounds.length; // all cleared so far in decision phase
+      const wantMore = bestBankAfter > cleared;
+      state = applyChoice(ctx.board, config, state, wantMore ? { type: "push" } : { type: "bank" });
+    }
   }
   const result = toResult(state);
   if (Math.abs(result.finalScore - bestFinal) > 1e-6 * Math.max(1, bestFinal)) {

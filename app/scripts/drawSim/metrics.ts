@@ -4,7 +4,7 @@
  * by the sweep ranking.
  */
 
-import { squadSynergies } from "../../src/lib/drawEngine";
+import { scoreRound, type EngineConfig } from "../../src/lib/drawEngine";
 import type { BoardContext } from "./boardContext";
 
 export function percentile(sorted: number[], p: number): number {
@@ -93,29 +93,62 @@ export function finalizeBotStats(acc: BotAccumulator, maxRounds: number): BotSta
   };
 }
 
-/** Ticket 0.1 C2 — a state is "tense" when EV(push)−EV(bank) ∈ [TENSE_LO, TENSE_HI] × banked. */
-export const TENSE_LO = -0.2;
-export const TENSE_HI = 0.1;
+/** Ticket 0.2 — a state is "tense" when |EV(push) − EV(bank)| ≤ TENSE_SPREAD_RATIO × stdev(push). */
+export const TENSE_SPREAD_RATIO = 0.5;
+
+/** Chaser's fixed matchday plan for one round: fielded card indices + their synergy multiplier. */
+export interface ChaserRoundPlan {
+  /** ctx.cards indices fielded this round (squad minus the chaser's form=1 bench). */
+  fieldedIdxs: number[];
+  /** Synergy multiplier of the fielded cards (tag-only — form-independent). */
+  synMult: number;
+}
 
 /**
- * P3 (Ticket 0.1 C2) — EV/stdev of PUSH at a chaser-reached post-clear state,
- * from the player's information set: squad, synergy, modifiers, and thresholds
- * are known; future forms are unknown and resampled uniform in [1-f, 1+f].
- * After the forced push the simulated player continues with the chaser's own
- * policy. EV(bank) at the state is simply `banked`.
+ * The chaser's bench per round is form-independent (argmax of the form=1
+ * expected score, mirroring bots.ts chaserBenchFor exactly), so the fielded
+ * set and its synergy multiplier can be fixed per round before any resampling.
+ */
+export function buildChaserPlan(ctx: BoardContext, squadCardIdxs: number[]): ChaserRoundPlan[] {
+  const formless: EngineConfig = { ...ctx.config, formSpread: 0 };
+  const squad = squadCardIdxs.map((i) => ctx.cards[i]);
+  return ctx.board.fixtures.map((fixture) => {
+    let bestI = 0;
+    let bestScore = -1;
+    let bestSyn = 1;
+    for (let i = 0; i < squad.length; i++) {
+      const fielded = squad.filter((_, j) => j !== i);
+      const round = scoreRound(ctx.board.seed, fielded, fixture, formless);
+      if (round.score > bestScore) {
+        bestScore = round.score;
+        bestI = i;
+        bestSyn = round.synergyMult;
+      }
+    }
+    return {
+      fieldedIdxs: squadCardIdxs.filter((_, j) => j !== bestI),
+      synMult: bestSyn,
+    };
+  });
+}
+
+/**
+ * P3 (Ticket 0.2) — EV/stdev of PUSH at a chaser-reached post-clear state,
+ * from the player's information set: squad, bench plan, synergy, modifiers,
+ * and thresholds are known; future forms are unknown and resampled uniform in
+ * [1-f, 1+f]. After the forced push the simulated player continues with the
+ * chaser's own policy (form=1 bench each round, push while score ≥ 1.1 × next
+ * threshold). EV(bank) at the state is simply `banked`.
  */
 export function evalPushAtState(
   ctx: BoardContext,
-  squadCardIdxs: number[],
+  plan: ChaserRoundPlan[],
   nextFixture: number,
   banked: number,
   rng: () => number,
   samples: number,
 ): { evGap: number; spread: number } {
   const { config, ratingMod, thresholds, N, R } = ctx;
-  const squadCards = squadCardIdxs.map((i) => ctx.cards[i]);
-  let synMult = 1;
-  for (const s of squadSynergies(squadCards, config)) synMult *= s.mult;
   const f = config.formSpread;
 
   let sum = 0;
@@ -125,8 +158,8 @@ export function evalPushAtState(
     let final = 0;
     for (let j = nextFixture; j < R; j++) {
       let base = 0;
-      for (const ci of squadCardIdxs) base += ratingMod[j * N + ci] * (1 - f + 2 * f * rng());
-      const score = base * synMult;
+      for (const ci of plan[j].fieldedIdxs) base += ratingMod[j * N + ci] * (1 - f + 2 * f * rng());
+      const score = base * plan[j].synMult;
       if (score < thresholds[j]) {
         final = cum * config.bustKeep;
         break;
@@ -165,10 +198,14 @@ export interface ProfileInputs {
   chaserFullClearRate: number;
   pooledNearMissRate: number;
   pooledFails: number;
-  /** Chaser-reached post-clear states sampled at rounds 2 and 3 (visitation-weighted). */
+  /** Chaser runs simulated (= boards). */
+  p3Runs: number;
+  /** Fraction of chaser runs encountering ≥1 tense state (Ticket 0.2 P3a). */
+  p3TenseRunFrac: number;
+  /** All chaser-reached post-clear decision states (visitation-weighted). */
   p3States: number;
-  /** Fraction of sampled states with EV(push)−EV(bank) ∈ [TENSE_LO, TENSE_HI] × banked. */
-  p3TenseFrac: number;
+  /** Per-state tense fraction (reported alongside the run-level P3a). */
+  p3PerStateTenseFrac: number;
   /** Median stdev(push)/banked among tense states. */
   p3TenseMedianSpread: number;
   p4Rate: number;
@@ -225,14 +262,15 @@ export function evaluateCriteria(m: ProfileInputs): Criterion[] {
   );
   push(
     "P3a",
-    "tense states (EV gap in [-20%,+10%] of banked) >= 40% of round-2/3 states",
-    Math.max(0, (0.4 - m.p3TenseFrac) / 0.1),
-    `${(m.p3TenseFrac * 100).toFixed(1)}% of ${m.p3States} states tense`,
+    ">=40% of chaser runs hit >=1 tense state (|EV gap| <= 0.5 x stdev(push))",
+    Math.max(0, (0.4 - m.p3TenseRunFrac) / 0.1),
+    `${(m.p3TenseRunFrac * 100).toFixed(1)}% of ${m.p3Runs} runs ` +
+      `(per-state ${(m.p3PerStateTenseFrac * 100).toFixed(1)}% of ${m.p3States})`,
   );
   push(
     "P3b",
-    "among tense states, stdev(push) >= 35% of banked (median)",
-    Number.isNaN(m.p3TenseMedianSpread) ? 5 : Math.max(0, (0.35 - m.p3TenseMedianSpread) / 0.1),
+    "among tense states, stdev(push) >= 30% of banked (median)",
+    Number.isNaN(m.p3TenseMedianSpread) ? 5 : Math.max(0, (0.3 - m.p3TenseMedianSpread) / 0.1),
     Number.isNaN(m.p3TenseMedianSpread)
       ? "no tense states"
       : `median spread ${(m.p3TenseMedianSpread * 100).toFixed(1)}%`,

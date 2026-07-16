@@ -21,6 +21,7 @@ import { buildContext, type BoardContext } from "./boardContext";
 import { runOracle } from "./oracle";
 import { runChaser, runGreedy, runRandom } from "./bots";
 import {
+  buildChaserPlan,
   evalPushAtState,
   evaluateCriteria,
   finalizeBotStats,
@@ -29,8 +30,7 @@ import {
   percentile,
   profileDistance,
   recordBotRun,
-  TENSE_HI,
-  TENSE_LO,
+  TENSE_SPREAD_RATIO,
   type BotStats,
   type Criterion,
 } from "./metrics";
@@ -41,6 +41,8 @@ export interface EvaluateOptions {
   p3Samples: number;
   /** Run a determinism spot-check every N boards (0 disables). */
   p5Every: number;
+  /** Greedy push-rule face multiplier (Ticket 0.2, sweepable in [0.9, 1.2]). */
+  kGreedy?: number;
 }
 
 export interface ConfigEval {
@@ -56,14 +58,18 @@ export interface ConfigEval {
   };
   bots: Record<string, BotStats>;
   /**
-   * Ticket 0.1 C2 — all chaser-reached post-clear states at rounds 2 and 3,
-   * visitation-weighted. gapDeciles/spreadDeciles = p10/p25/p50/p75/p90;
+   * Ticket 0.2 — every chaser-reached post-clear decision state,
+   * visitation-weighted; tense := |EV gap| ≤ 0.5 × stdev(push). Run-level
+   * tenseRunFrac feeds P3a. gapDeciles/spreadDeciles = p10/p25/p50/p75/p90;
    * gapHist bins the full EV-gap distribution (fraction of banked).
    */
   p3: {
+    runs: number;
+    tenseRuns: number;
+    tenseRunFrac: number;
     states: number;
     tenseCount: number;
-    tenseFrac: number;
+    perStateTenseFrac: number;
     tenseMedianSpread: number;
     gapDeciles: number[];
     spreadDeciles: number[];
@@ -119,6 +125,8 @@ export function evaluateConfig(config: EngineConfig, opts: EvaluateOptions): Con
 
   const p3Gaps: number[] = [];
   const p3Spreads: number[] = [];
+  const p3TenseMask: boolean[] = [];
+  let tenseRuns = 0;
 
   let p5Checked = 0;
   let p5Ok = true;
@@ -139,36 +147,43 @@ export function evaluateConfig(config: EngineConfig, opts: EvaluateOptions): Con
     }
     if (oracle.diversityOk) diversityBoards++;
 
-    const greedy = runGreedy(ctx);
+    const greedy = runGreedy(ctx, opts.kGreedy ?? 1);
     recordBotRun(greedyAcc, greedy);
     const chaser = runChaser(ctx);
     recordBotRun(chaserAcc, chaser);
     const random = runRandom(ctx, rngFromString(`${boardSeed}|randombot`));
     recordBotRun(randomAcc, random);
 
-    // P3 (Ticket 0.1 C2): every chaser-reached post-clear state at rounds 2
-    // and 3 is a sample, whether the chaser then banked, pushed, or busted
-    // later — one visit per board per round (visitation-weighted).
-    if (chaser.roundsCleared >= 2) {
+    // P3 (Ticket 0.2): every chaser-reached post-clear decision state is a
+    // sample, whether the chaser then banked, pushed, or busted later — one
+    // visit per board per cleared non-boss round (visitation-weighted).
+    // Run-level: a run is "tense" when any of its states is.
+    let runTense = false;
+    if (chaser.roundsCleared >= 1) {
       const squadIdxs = chaser.choiceLog
         .filter((c) => c.type === "pick")
         .map((c, row) => row * ctx.offers + (c.type === "pick" ? c.offerIndex : 0));
-      for (const round of [2, 3]) {
+      const plan = buildChaserPlan(ctx, squadIdxs);
+      let banked = 0;
+      for (let round = 1; round < config.fixtureCount; round++) {
         if (chaser.roundsCleared < round) break;
-        let banked = 0;
-        for (let r = 0; r < round; r++) banked += chaser.rounds[r].score;
+        banked += chaser.rounds[round - 1].score;
         const { evGap, spread } = evalPushAtState(
           ctx,
-          squadIdxs,
+          plan,
           round, // next fixture index (0-based) after clearing `round` rounds
           banked,
           rngFromString(`${boardSeed}|p3|r${round}`),
           opts.p3Samples,
         );
+        const tense = Math.abs(evGap) <= TENSE_SPREAD_RATIO * spread;
         p3Gaps.push(evGap);
         p3Spreads.push(spread);
+        p3TenseMask.push(tense);
+        if (tense) runTense = true;
       }
     }
+    if (runTense) tenseRuns++;
 
     if (opts.p5Every > 0 && i % opts.p5Every === 0) {
       p5Checked++;
@@ -190,7 +205,7 @@ export function evaluateConfig(config: EngineConfig, opts: EvaluateOptions): Con
 
   const tenseSpreads: number[] = [];
   for (let s = 0; s < p3Gaps.length; s++) {
-    if (p3Gaps[s] >= TENSE_LO && p3Gaps[s] <= TENSE_HI) tenseSpreads.push(p3Spreads[s]);
+    if (p3TenseMask[s]) tenseSpreads.push(p3Spreads[s]);
   }
   const tenseFrac = p3Gaps.length ? tenseSpreads.length / p3Gaps.length : 0;
   const tenseMedianSpread = tenseSpreads.length ? median(tenseSpreads) : NaN;
@@ -226,8 +241,10 @@ export function evaluateConfig(config: EngineConfig, opts: EvaluateOptions): Con
     chaserFullClearRate: bots.chaser.fullClearRate,
     pooledNearMissRate: pooledFails === 0 ? 0 : pooledNearMisses / pooledFails,
     pooledFails,
+    p3Runs: n,
+    p3TenseRunFrac: tenseRuns / n,
     p3States: p3Gaps.length,
-    p3TenseFrac: tenseFrac,
+    p3PerStateTenseFrac: tenseFrac,
     p3TenseMedianSpread: tenseMedianSpread,
     p4Rate: diversityBoards / n,
     p5Checked,
@@ -247,9 +264,12 @@ export function evaluateConfig(config: EngineConfig, opts: EvaluateOptions): Con
     },
     bots,
     p3: {
+      runs: n,
+      tenseRuns,
+      tenseRunFrac: tenseRuns / n,
       states: p3Gaps.length,
       tenseCount: tenseSpreads.length,
-      tenseFrac,
+      perStateTenseFrac: tenseFrac,
       tenseMedianSpread,
       gapDeciles: deciles(sortedGaps),
       spreadDeciles: deciles(sortedSpreads),

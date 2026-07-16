@@ -6,9 +6,11 @@
  * mutated). replay(board, config, choiceLog) reproduces the identical
  * RunResult — property-tested in app/src/test/.
  *
- * Flow: 6 draft picks (one per row) → F1 plays automatically → on clear,
- * BANK (run ends) or PUSH (next fixture plays). Fail ⇒ final =
- * cumulative × bustKeep. Clearing the boss ⇒ final = cumulative × fullClearBonus.
+ * Flow (Ticket 0.2 A1): 6 draft picks (one per row) → per round: BENCH exactly
+ * one squad card (5 fielded cards score, synergy on fielded only) → the round
+ * plays → on clear, BANK (run ends) or PUSH (bench again for the next
+ * fixture). Fail ⇒ final = cumulative × bustKeep. Clearing the boss ⇒
+ * final = cumulative × fullClearBonus.
  */
 
 import { scoreRound } from "./scoring";
@@ -47,10 +49,20 @@ function squadCards(board: BoardSpec, state: RunState): Card[] {
   });
 }
 
-/** Plays state.fixtureIndex and settles the aftermath. Mutates the (fresh) state. */
-function playFixture(board: BoardSpec, config: EngineConfig, state: RunState): void {
+/**
+ * Plays state.fixtureIndex with the squad minus the benched card and settles
+ * the aftermath. Mutates the (fresh) state.
+ */
+function playFixture(
+  board: BoardSpec,
+  config: EngineConfig,
+  state: RunState,
+  benchIndex: number,
+): void {
   const fixture = board.fixtures[state.fixtureIndex];
-  const round = scoreRound(board.seed, squadCards(board, state), fixture, config);
+  const squad = squadCards(board, state);
+  const fielded = squad.filter((_, i) => i !== benchIndex);
+  const round = scoreRound(board.seed, fielded, fixture, config, squad[benchIndex].id);
   state.rounds = [...state.rounds, round];
   if (!round.cleared) {
     state.phase = "done";
@@ -94,9 +106,24 @@ export function applyChoice(
     next.squad.push(board.rows[state.rowIndex][choice.offerIndex].id);
     next.rowIndex = state.rowIndex + 1;
     if (next.rowIndex === config.rows) {
-      // Draft complete — F1 plays immediately (no skips, no redraft).
-      playFixture(board, config, next);
+      // Draft complete — F1 awaits its bench pick (no skips, no redraft).
+      next.phase = "bench";
     }
+    return next;
+  }
+
+  if (state.phase === "bench") {
+    if (choice.type !== "bench") {
+      throw new Error(`Expected a bench pick in bench phase, got ${choice.type}`);
+    }
+    if (
+      choice.squadIndex < 0 ||
+      choice.squadIndex >= state.squad.length ||
+      !Number.isInteger(choice.squadIndex)
+    ) {
+      throw new Error(`squadIndex ${choice.squadIndex} out of range 0..${state.squad.length - 1}`);
+    }
+    playFixture(board, config, next, choice.squadIndex);
     return next;
   }
 
@@ -109,7 +136,7 @@ export function applyChoice(
   }
   if (choice.type === "push") {
     next.fixtureIndex = state.fixtureIndex + 1;
-    playFixture(board, config, next);
+    next.phase = "bench";
     return next;
   }
   throw new Error(`Expected bank or push in decision phase, got ${choice.type}`);

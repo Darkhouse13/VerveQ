@@ -20,10 +20,10 @@ sweep. Everything is seeded — same flags ⇒ identical output.
 
 ## Files
 
-- `boardContext.ts` — per-board flat precompute (eff matrix, tag ids) shared by oracle/MC; values come from engine scoring functions so the fast path can't drift.
-- `oracle.ts` — exhaustive 3^6 draft enumeration, analytic bank/push (provably optimal: round scores are strictly positive), dead-board detector, P4 line diversity. ~0.4 ms/board.
-- `bots.ts` — greedy (Ticket 0.1 C1 face-value rule) / synergyChaser / random, all driven through `applyChoice`.
-- `metrics.ts` — distributions, P3 push-EV Monte Carlo at round-2/3 states (Ticket 0.1 C2), criteria + profile distance.
+- `boardContext.ts` — per-board flat precompute (eff matrix, tag ids) + the bench-optimal removal scorer shared by oracle/calibrator; values come from engine scoring functions so the fast path can't drift.
+- `oracle.ts` — exhaustive 3^6 draft enumeration with exact per-round bench (argmax over 6 removals — Ticket 0.2 A3), analytic bank/push (provably optimal: round scores are strictly positive), dead-board detector, P4 line diversity. ~1.4 ms/board.
+- `bots.ts` — greedy (bench lowest rating×mult; kGreedy face push rule) / synergyChaser (form=1 bench argmax) / random (uniform bench), all driven through `applyChoice`.
+- `metrics.ts` — distributions, chaser bench plans, P3 push-EV Monte Carlo at all post-clear decision states (Ticket 0.2 run-level tense), criteria + profile distance.
 - `evaluate.ts` — one config × N boards ⇒ full metric set incl. the EV-gap distribution (shared by sim & sweep).
 - `archetypeTables.ts` — alternative archetype knob tables (boost-only, mixed mild/deep dips) shared by calibrate & sweep.
 - `sim.ts`, `sweep.ts`, `layoutcheck.ts` — CLIs.
@@ -32,8 +32,10 @@ sweep. Everything is seeded — same flags ⇒ identical output.
 
 ## Status
 
-Engine + harness + property tests: complete and green. Ticket 0.1 amendments
-(C1 greedy rule, C2 P3a/P3b, C3 thresholdShape) applied. Tuning: STOP condition
-reported again — P3a (tense-state fraction ≥ 40%) is capped near ~15% by the
-P2/P1d dispersion requirements; root-cause analysis in DECISIONS.md
-("Tuning outcome (Ticket 0.1)").
+Ticket 0.2: matchday bench (one card benched per round, synergy on the 5
+fielded cards), run-level P3 tension (tense := |EV gap| ≤ 0.5 × stdev(push)),
+kGreedy knob. Engine + harness + property tests green. Tuning: STOP — the
+closest config passes 9/10 (only P2 near-miss fails, honestly 43–54% vs
+≤ 40%); root cause and methodology notes in drawEngine/DECISIONS.md. Useful
+extra calibrate modes: `--eval` (selection-free re-measure of one config) and
+`--genome` (plane for a printed ContentGenome).

@@ -9,7 +9,7 @@ import { checkLayout } from "../../src/lib/drawEngine";
 import { loadConfig, parseFlags } from "./sim";
 
 const flags = parseFlags(process.argv.slice(2));
-const config = loadConfig(flags.get("config"));
+const { config } = loadConfig(flags.get("config"));
 const result = checkLayout(config);
 const m = result.metrics;
 

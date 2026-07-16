@@ -97,6 +97,66 @@ export function buildContext(board: BoardSpec, config: EngineConfig): BoardConte
 }
 
 /**
+ * Ticket 0.2 A1/A3 — bench-optimal round scores for one squad: per round, the
+ * max over single removals of (Σ fielded eff) × synMult(fielded chains).
+ * The chain maxima after each removal don't depend on the round, so they (and
+ * the removal's synergy multiplier) are computed once per squad; the per-round
+ * argmax is then 6 multiply-compares. This is the oracle's exact bench policy
+ * (per-round optimality is provable: rounds are additive and independent given
+ * the stop policy — property-tested against exhaustive bench enumeration).
+ *
+ * squadIdxs are indices into ctx.cards; the tag-count arrays and roundSums
+ * must already reflect the whole 6-card squad.
+ */
+export function benchOptimalScores(
+  ctx: BoardContext,
+  squadIdxs: ArrayLike<number>,
+  clubCounts: Int32Array,
+  nationCounts: Int32Array,
+  eraCounts: Int32Array,
+  roundSums: Float64Array,
+  outScores: Float64Array,
+  outBench?: Int32Array,
+): void {
+  const { R, N, eff, config } = ctx;
+  const k = squadIdxs.length;
+  const synW = new Float64Array(k);
+  for (let i = 0; i < k; i++) {
+    const c = squadIdxs[i];
+    const ownedClubs = ctx.clubIds[c];
+    let maxClub = 0;
+    for (let id = 0; id < clubCounts.length; id++) {
+      const v = clubCounts[id] - (ownedClubs.includes(id) ? 1 : 0);
+      if (v > maxClub) maxClub = v;
+    }
+    let maxNation = 0;
+    for (let id = 0; id < nationCounts.length; id++) {
+      const v = nationCounts[id] - (id === ctx.nationIds[c] ? 1 : 0);
+      if (v > maxNation) maxNation = v;
+    }
+    let maxEra = 0;
+    for (let id = 0; id < eraCounts.length; id++) {
+      const v = eraCounts[id] - (id === ctx.eraIds[c] ? 1 : 0);
+      if (v > maxEra) maxEra = v;
+    }
+    synW[i] = synergyMultFromMaxima(config, maxClub, maxNation, maxEra);
+  }
+  for (let r = 0; r < R; r++) {
+    let best = -1;
+    let bestI = 0;
+    for (let i = 0; i < k; i++) {
+      const score = (roundSums[r] - eff[r * N + squadIdxs[i]]) * synW[i];
+      if (score > best) {
+        best = score;
+        bestI = i;
+      }
+    }
+    outScores[r] = best;
+    if (outBench) outBench[r] = bestI;
+  }
+}
+
+/**
  * Squad synergy multiplier from chain maxima, mirroring
  * squadSynergies/chainMult exactly: per family the largest chain's table
  * multiplier, granted only when > 1, top maxSynergyFamilies kept.

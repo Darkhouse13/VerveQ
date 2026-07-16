@@ -40,7 +40,12 @@ export const LAYOUT = {
   fixtureCardH: 140,
   squadChipMinW: 44,
   squadChipGap: 6,
-  squadStripH: 64,
+  /**
+   * Ticket 0.2 D2: the squad strip is now the tap-to-bench control — all 6
+   * squad chips shown, one selected as benched per round. Taller than the old
+   * passive strip: 64px tappable chip + 20px bench-state label + 8px padding.
+   */
+  benchStripH: 92,
   thresholdBarH: 56,
   bankPushButtonsH: 56,
 
@@ -113,11 +118,12 @@ export function checkLayout(config: EngineConfig): LayoutCheckResult {
     violations.push(`draft view ${draftViewH.toFixed(0)}px > budget ${budgetH}px`);
   }
 
-  // Round view: top bar / fixture card / squad strip / synergy meters / threshold bar / bank-push.
+  // Round view: top bar / fixture card / tap-to-bench squad strip /
+  // synergy meters / threshold bar / bank-push.
   const roundSections = [
     L.topBarH,
     L.fixtureCardH,
-    L.squadStripH,
+    L.benchStripH,
     synergyMetersH,
     L.thresholdBarH,
     L.bankPushButtonsH,
