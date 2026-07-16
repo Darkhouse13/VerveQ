@@ -110,6 +110,13 @@ export function renderEval(ev: ConfigEval): string {
         `${String(b.count).padStart(6)} ${bar}`,
     );
   }
+  const att = ev.p2Attribution;
+  lines.push(
+    `p2 near-miss attribution (report-only): by fail round ${att.byRound
+      .map((c, r) => `r${r + 1}=${c}`)
+      .join(" ")} — forced r1 ${pct(att.forcedShare)}, chosen push r>=2 ${pct(att.chosenShare)} ` +
+      `of ${att.nearMisses} near-misses`,
+  );
   lines.push(`p4: line diversity on ${pct(ev.p4Rate)} of boards`);
   lines.push("");
   lines.push(formatCriteriaTable(ev.criteria));

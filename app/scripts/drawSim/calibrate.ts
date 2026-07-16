@@ -39,9 +39,17 @@ import {
 } from "../../src/lib/drawEngine";
 import { benchOptimalScores, buildContext, type BoardContext } from "./boardContext";
 import { buildBoostOnlyArchetypes, buildMixedDipArchetypes } from "./archetypeTables";
-import { chaserBenchFor, greedyBenchFor } from "./bots";
+import { chaserBenchFor, greedyBenchFor, runChaser, runGreedy, runRandom } from "./bots";
+import { runOracle } from "./oracle";
+import { determinismSpotCheck } from "./evaluate";
 import { loadConfig, parseFlags } from "./sim";
-import { median } from "./metrics";
+import {
+  evaluateCriteria,
+  formatCriteriaTable,
+  median,
+  nearMissAttribution,
+  NEAR_MISS_WINDOW,
+} from "./metrics";
 
 interface BoardData {
   /** Greedy's realized fielded score per round (bench = lowest rating×mult). */
@@ -130,61 +138,69 @@ function computeLineScores(ctx: BoardContext): Float64Array {
   return out;
 }
 
-function precompute(config: EngineConfig, seedBase: string, boards: number): BoardData[] {
-  // Rotate over several card sets: the sim generates its set from its own
-  // seed, so a curve tuned against a single set overfits the set lottery —
-  // averaging over sets is what makes winners transfer across sim seeds.
-  const CARD_SETS = 10;
-  const cardSets = Array.from({ length: CARD_SETS }, (_, s) =>
+// Rotate over several card sets: the sim generates its set from its own
+// seed, so a curve tuned against a single set overfits the set lottery —
+// averaging over sets is what makes winners transfer across sim seeds.
+const CARD_SETS = 10;
+
+function rotatedCardSets(config: EngineConfig, seedBase: string): Card[][] {
+  return Array.from({ length: CARD_SETS }, (_, s) =>
     generateCardSet(`${seedBase}|cards${s}`, config.cardGen),
   );
-  const formless: EngineConfig = { ...config, formSpread: 0 };
+}
+
+function precomputeBoard(
+  config: EngineConfig,
+  formless: EngineConfig,
+  cardSet: Card[],
+  seedBase: string,
+  i: number,
+): { data: BoardData; ctx: BoardContext } {
   const R = config.fixtureCount;
   const fielded = config.rows - 1;
-  const data: BoardData[] = [];
-  for (let i = 0; i < boards; i++) {
-    const board = generateBoard(`${seedBase}#${i}`, cardSets[i % CARD_SETS], config);
-    const ctx = buildContext(board, config);
+  const board = generateBoard(`${seedBase}#${i}`, cardSet, config);
+  const ctx = buildContext(board, config);
 
-    // Random bot: replicate runScriptedBot's exact rng consumption order —
-    // 6 picks, then per round a bench draw, then (if it reaches the decision)
-    // a push coin. Later draws are simply unused when a run stops early.
-    const rng = rngFromString(`${seedBase}#${i}|randombot`);
-    const randomSquad = board.rows.map((row) => row[rngInt(rng, row.length)]);
-    const randomBench: number[] = [];
-    const coins: boolean[] = [];
-    for (let r = 0; r < R; r++) {
-      randomBench.push(rngInt(rng, config.rows));
-      if (r < R - 1) coins.push(rng() < 0.5);
-    }
+  // Random bot: replicate runScriptedBot's exact rng consumption order —
+  // 6 picks, then per round a bench draw, then (if it reaches the decision)
+  // a push coin. Later draws are simply unused when a run stops early.
+  const rng = rngFromString(`${seedBase}#${i}|randombot`);
+  const randomSquad = board.rows.map((row) => row[rngInt(rng, row.length)]);
+  const randomBench: number[] = [];
+  const coins: boolean[] = [];
+  for (let r = 0; r < R; r++) {
+    randomBench.push(rngInt(rng, config.rows));
+    if (r < R - 1) coins.push(rng() < 0.5);
+  }
 
-    const chaserSquad = draftChaser(ctx);
-    const greedySquad = draftGreedy(ctx);
+  const chaserSquad = draftChaser(ctx);
+  const greedySquad = draftGreedy(ctx);
 
-    const greedy: number[] = [];
-    const greedyFaces: number[] = [];
-    const chaser: number[] = [];
-    const random: number[] = [];
-    const chaserW = new Float64Array(R * fielded);
-    board.fixtures.forEach((fixture, r) => {
-      const gb = greedyBenchFor(ctx, greedySquad, r);
-      const gFielded = greedySquad.filter((_, j) => j !== gb);
-      greedy.push(scoreRound(board.seed, gFielded, fixture, config).score);
-      greedyFaces.push(gFielded.reduce((sum, c) => sum + c.rating, 0));
+  const greedy: number[] = [];
+  const greedyFaces: number[] = [];
+  const chaser: number[] = [];
+  const random: number[] = [];
+  const chaserW = new Float64Array(R * fielded);
+  board.fixtures.forEach((fixture, r) => {
+    const gb = greedyBenchFor(ctx, greedySquad, r);
+    const gFielded = greedySquad.filter((_, j) => j !== gb);
+    greedy.push(scoreRound(board.seed, gFielded, fixture, config).score);
+    greedyFaces.push(gFielded.reduce((sum, c) => sum + c.rating, 0));
 
-      const cb = chaserBenchFor(ctx, formless, chaserSquad, r);
-      const cFielded = chaserSquad.filter((_, j) => j !== cb);
-      chaser.push(scoreRound(board.seed, cFielded, fixture, config).score);
-      const breakdown = scoreRound(board.seed, cFielded, fixture, formless);
-      breakdown.cards.forEach((card, j) => {
-        chaserW[r * fielded + j] = card.contribution * breakdown.synergyMult;
-      });
-
-      const rFielded = randomSquad.filter((_, j) => j !== randomBench[r]);
-      random.push(scoreRound(board.seed, rFielded, fixture, config).score);
+    const cb = chaserBenchFor(ctx, formless, chaserSquad, r);
+    const cFielded = chaserSquad.filter((_, j) => j !== cb);
+    chaser.push(scoreRound(board.seed, cFielded, fixture, config).score);
+    const breakdown = scoreRound(board.seed, cFielded, fixture, formless);
+    breakdown.cards.forEach((card, j) => {
+      chaserW[r * fielded + j] = card.contribution * breakdown.synergyMult;
     });
 
-    data.push({
+    const rFielded = randomSquad.filter((_, j) => j !== randomBench[r]);
+    random.push(scoreRound(board.seed, rFielded, fixture, config).score);
+  });
+
+  return {
+    data: {
       greedy,
       greedyFaces,
       chaser,
@@ -192,7 +208,17 @@ function precompute(config: EngineConfig, seedBase: string, boards: number): Boa
       random,
       coins,
       lineScores: computeLineScores(ctx),
-    });
+    },
+    ctx,
+  };
+}
+
+function precompute(config: EngineConfig, seedBase: string, boards: number): BoardData[] {
+  const cardSets = rotatedCardSets(config, seedBase);
+  const formless: EngineConfig = { ...config, formSpread: 0 };
+  const data: BoardData[] = [];
+  for (let i = 0; i < boards; i++) {
+    data.push(precomputeBoard(config, formless, cardSets[i % CARD_SETS], seedBase, i).data);
   }
   return data;
 }
@@ -235,6 +261,23 @@ function randomRounds(scores: number[], coins: boolean[], t: number[]): number {
   return t.length;
 }
 
+/** Raw P3 accumulators — poolable across card-set chunks (counts add, spreads concat). */
+interface McP3Raw {
+  runs: number;
+  tenseRuns: number;
+  states: number;
+  tense: number;
+  tenseSpreads: number[];
+}
+
+function mcP3Derive(raw: McP3Raw): { p3a: number; p3b: number; perState: number } {
+  return {
+    p3a: raw.runs === 0 ? 0 : raw.tenseRuns / raw.runs,
+    p3b: raw.tenseSpreads.length ? median(raw.tenseSpreads) : NaN,
+    perState: raw.states === 0 ? 0 : raw.tense / raw.states,
+  };
+}
+
 /**
  * P3a/P3b for one curve (Ticket 0.2, run-level) — the same Monte-Carlo
  * evalPushAtState runs in the real sim (chaser continuation policy, forms
@@ -248,7 +291,7 @@ function mcP3(
   t: number[],
   rng: () => number,
   samples: number,
-): { p3a: number; p3b: number; perState: number } {
+): McP3Raw {
   const R = config.fixtureCount;
   const fielded = config.rows - 1;
   const f = config.formSpread;
@@ -298,11 +341,7 @@ function mcP3(
     }
     if (runTense) tenseRuns++;
   }
-  return {
-    p3a: data.length === 0 ? 0 : tenseRuns / data.length,
-    p3b: tenseSpreads.length ? median(tenseSpreads) : NaN,
-    perState: states === 0 ? 0 : tense / states,
-  };
+  return { runs: data.length, tenseRuns, states, tense, tenseSpreads };
 }
 
 /** bossAxis = bossMult × thresholdShape[last]; one analytic axis, split on emission. */
@@ -331,6 +370,9 @@ interface PlaneResult {
 }
 
 const KGREEDY_GRID = [0.9, 1.0, 1.1, 1.2];
+
+/** A fail counts as a near-miss when score/threshold ≥ this (12% window, metrics.ts). */
+const NEAR_MISS_FLOOR = 1 - NEAR_MISS_WINDOW;
 
 function thresholdsFor(curve: Curve, R: number): number[] {
   return Array.from({ length: R }, (_, r) =>
@@ -428,7 +470,7 @@ function evalPlane(data: BoardData[], config: EngineConfig, keep: number): Plane
             gRoundsK[ki].push(g.rounds);
             if (!Number.isNaN(g.failMargin)) {
               gFailsK[ki]++;
-              if (g.failMargin >= 0.88) gNearK[ki]++;
+              if (g.failMargin >= NEAR_MISS_FLOOR) gNearK[ki]++;
             }
           }
           const c = chaserRounds(data[i].chaser, t);
@@ -436,7 +478,7 @@ function evalPlane(data: BoardData[], config: EngineConfig, keep: number): Plane
           if (c.fullClear) chaserFC++;
           if (!Number.isNaN(c.failMargin)) {
             cFails++;
-            if (c.failMargin >= 0.88) cNearMisses++;
+            if (c.failMargin >= NEAR_MISS_FLOOR) cNearMisses++;
           }
           rRounds.push(randomRounds(data[i].random, data[i].coins, t));
         }
@@ -513,7 +555,7 @@ function evalPlane(data: BoardData[], config: EngineConfig, keep: number): Plane
     const rng = rngFromString(
       `p3|${cand.curve.base}|${cand.curve.growth}|${cand.curve.bossAxis}`,
     );
-    const { p3a, p3b, perState } = mcP3(data, config, t, rng, 96);
+    const { p3a, p3b, perState } = mcP3Derive(mcP3(data, config, t, rng, 96));
     cand.p3a = p3a;
     cand.p3b = p3b;
     cand.p3PerState = perState;
@@ -533,13 +575,12 @@ function evalPlane(data: BoardData[], config: EngineConfig, keep: number): Plane
   return shortlist.slice(0, keep);
 }
 
-/** P4 line-diversity rate for a specific curve (needs the line matrices). */
-function diversityRate(data: BoardData[], config: EngineConfig, curve: Curve, bonus: number): number {
+/** P4 line-diversity rate for specific thresholds (needs the line matrices). */
+function diversityRate(data: BoardData[], config: EngineConfig, t: number[], bonus: number): number {
   const R = config.fixtureCount;
   const rows = config.rows;
   const offers = config.offersPerRow;
   const lineCount = Math.pow(offers, rows);
-  const t = thresholdsFor(curve, R);
   let ok = 0;
   const finals = new Float64Array(lineCount);
   for (const bd of data) {
@@ -678,9 +719,12 @@ function main(): void {
   // --eval: no plane scan, no selection — measure the loaded config's OWN
   // thresholds (+ kGreedy) on freshly rotated card sets. This is the honest,
   // selection-free estimate of a specific candidate (winner's-curse control).
+  // Ticket 0.3: processes the rotation set-by-set (boards/10 per set), gates
+  // the POOLED result against the true profile bands (metrics.ts, incl. P4
+  // from the line matrices and real-engine P5 spot-checks), and reports the
+  // per-set table plus the C2 near-miss attribution alongside.
   if (flags.has("eval")) {
     const { config, kGreedy } = loadConfig(flags.get("config"));
-    const data = precompute(config, seedBase, boards);
     const R = config.fixtureCount;
     const t = config.thresholds.thresholdShape
       ? Array.from({ length: R }, (_, r) =>
@@ -692,49 +736,190 @@ function main(): void {
           ),
         )
       : thresholdsFor({ base: config.thresholds.base, growth: config.thresholds.growth, bossAxis: config.thresholds.bossMult }, R);
-    let fullClearable = 0;
-    const gRounds: number[] = [];
-    const cRounds: number[] = [];
-    const rRounds: number[] = [];
-    let chaserFC = 0;
-    let fails = 0;
-    let nearMisses = 0;
+    const formless: EngineConfig = { ...config, formSpread: 0 };
+    const cardSets = rotatedCardSets(config, seedBase);
     const lineCount = Math.pow(config.offersPerRow, config.rows);
-    for (const bd of data) {
-      let best = 0;
-      for (let l = 0; l < lineCount; l++) {
-        let worst = Infinity;
-        for (let r = 0; r < R; r++) {
-          const u = bd.lineScores[l * R + r] / t[r];
-          if (u < worst) worst = u;
-        }
-        if (worst > best) best = worst;
-      }
-      if (best >= 1) fullClearable++;
-      const g = greedyRounds(bd.greedy, bd.greedyFaces, kGreedy, t);
-      gRounds.push(g.rounds);
-      if (!Number.isNaN(g.failMargin)) {
-        fails++;
-        if (g.failMargin >= 0.88) nearMisses++;
-      }
-      const c = chaserRounds(bd.chaser, t);
-      cRounds.push(c.rounds);
-      if (c.fullClear) chaserFC++;
-      if (!Number.isNaN(c.failMargin)) {
-        fails++;
-        if (c.failMargin >= 0.88) nearMisses++;
-      }
-      rRounds.push(randomRounds(bd.random, bd.coins, t));
+    const P5_EVERY = 97;
+
+    interface SetStats {
+      set: number;
+      n: number;
+      p0: number;
+      p1a: number;
+      p1b: number;
+      p1c: number;
+      p1d: number;
+      fails: number;
+      nearMisses: number;
+      p3a: number;
+      p3b: number;
+      p4: number;
     }
-    const { p3a, p3b, perState } = mcP3(data, config, t, rngFromString(`${seedBase}|eval`), 192);
+    const perSet: SetStats[] = [];
+
+    let fullClearableAll = 0;
+    const gAll: number[] = [];
+    const cAll: number[] = [];
+    const rAll: number[] = [];
+    let chaserFCAll = 0;
+    let failsAll = 0;
+    let nearAll = 0;
+    const byRoundAll = Array.from({ length: R }, () => 0);
+    const p3All: McP3Raw = { runs: 0, tenseRuns: 0, states: 0, tense: 0, tenseSpreads: [] };
+    let p4Weighted = 0;
+    let p5Checked = 0;
+    let p5Ok = true;
+
+    for (let s = 0; s < CARD_SETS; s++) {
+      const data: BoardData[] = [];
+      let fullClearable = 0;
+      let chaserFC = 0;
+      let fails = 0;
+      let nearMisses = 0;
+      const gRounds: number[] = [];
+      const cRounds: number[] = [];
+      const rRounds: number[] = [];
+      for (let i = s; i < boards; i += CARD_SETS) {
+        const { data: bd, ctx } = precomputeBoard(config, formless, cardSets[s], seedBase, i);
+        data.push(bd);
+        // P5: replay + serialization spot-check through the real engine, on
+        // the same cadence the sim uses.
+        if (i % P5_EVERY === 0) {
+          p5Checked++;
+          const runs = [
+            runGreedy(ctx, kGreedy),
+            runChaser(ctx),
+            runRandom(ctx, rngFromString(`${seedBase}#${i}|randombot`)),
+            runOracle(ctx).result,
+          ];
+          if (!determinismSpotCheck(ctx, runs)) p5Ok = false;
+        }
+        let best = 0;
+        for (let l = 0; l < lineCount; l++) {
+          let worst = Infinity;
+          for (let r = 0; r < R; r++) {
+            const u = bd.lineScores[l * R + r] / t[r];
+            if (u < worst) worst = u;
+          }
+          if (worst > best) best = worst;
+        }
+        if (best >= 1) fullClearable++;
+        const g = greedyRounds(bd.greedy, bd.greedyFaces, kGreedy, t);
+        gRounds.push(g.rounds);
+        if (!Number.isNaN(g.failMargin)) {
+          fails++;
+          if (g.failMargin >= NEAR_MISS_FLOOR) {
+            nearMisses++;
+            byRoundAll[g.rounds]++;
+          }
+        }
+        const c = chaserRounds(bd.chaser, t);
+        cRounds.push(c.rounds);
+        if (c.fullClear) chaserFC++;
+        if (!Number.isNaN(c.failMargin)) {
+          fails++;
+          if (c.failMargin >= NEAR_MISS_FLOOR) {
+            nearMisses++;
+            byRoundAll[c.rounds]++;
+          }
+        }
+        rRounds.push(randomRounds(bd.random, bd.coins, t));
+      }
+      if (data.length === 0) continue;
+      const n = data.length;
+      const p3 = mcP3(data, config, t, rngFromString(`${seedBase}|eval|set${s}`), 192);
+      const { p3a, p3b } = mcP3Derive(p3);
+      const p4 = diversityRate(data, config, t, config.fullClearBonus);
+      perSet.push({
+        set: s,
+        n,
+        p0: fullClearable / n,
+        p1a: median(rRounds),
+        p1b: median(gRounds),
+        p1c: median(cRounds),
+        p1d: chaserFC / n,
+        fails,
+        nearMisses,
+        p3a,
+        p3b,
+        p4,
+      });
+      fullClearableAll += fullClearable;
+      gAll.push(...gRounds);
+      cAll.push(...cRounds);
+      rAll.push(...rRounds);
+      chaserFCAll += chaserFC;
+      failsAll += fails;
+      nearAll += nearMisses;
+      p3All.runs += p3.runs;
+      p3All.tenseRuns += p3.tenseRuns;
+      p3All.states += p3.states;
+      p3All.tense += p3.tense;
+      p3All.tenseSpreads.push(...p3.tenseSpreads);
+      p4Weighted += p4 * n;
+      console.log(
+        `  set ${s}: ${n} boards done (${((performance.now() - t0) / 1000).toFixed(0)}s elapsed)`,
+      );
+    }
+
+    const total = gAll.length;
+    const pooledP3 = mcP3Derive(p3All);
+    const criteria = evaluateCriteria({
+      oracleFullClearRate: fullClearableAll / total,
+      // The analytic detector IS the full-clear enumeration, so every dead
+      // board is flagged by construction.
+      deadBoards: total - fullClearableAll,
+      deadFlagged: total - fullClearableAll,
+      randomMedianRounds: median(rAll),
+      greedyMedianRounds: median(gAll),
+      chaserMedianRounds: median(cAll),
+      chaserFullClearRate: chaserFCAll / total,
+      pooledNearMissRate: failsAll === 0 ? 0 : nearAll / failsAll,
+      pooledFails: failsAll,
+      p3Runs: p3All.runs,
+      p3TenseRunFrac: pooledP3.p3a,
+      p3States: p3All.states,
+      p3PerStateTenseFrac: pooledP3.perState,
+      p3TenseMedianSpread: pooledP3.p3b,
+      p4Rate: p4Weighted / total,
+      p5Checked,
+      p5Ok,
+    });
     console.log(
-      `eval (${boards} boards, rotated sets, seed ${seedBase}, kGreedy ${kGreedy}): ` +
-        `P0=${((fullClearable / data.length) * 100).toFixed(2)}% P1a=${median(rRounds)} ` +
-        `P1b=${median(gRounds)} P1c=${median(cRounds)} P1d=${((chaserFC / data.length) * 100).toFixed(1)}% ` +
-        `P2=${(fails ? (nearMisses / fails) * 100 : 0).toFixed(1)}% ` +
-        `P3a=${(p3a * 100).toFixed(1)}%runs(${(perState * 100).toFixed(1)}%st) P3b=${(p3b * 100).toFixed(1)}%`,
+      `\neval (${total} boards = ${perSet.length} sets x ~${Math.round(total / perSet.length)}, ` +
+        `seed ${seedBase}, kGreedy ${kGreedy}) — POOLED, selection-free:\n`,
     );
-    console.log(`total ${((performance.now() - t0) / 1000).toFixed(0)}s`);
+    console.log(formatCriteriaTable(criteria));
+    const passed = criteria.filter((c) => c.pass).length;
+    console.log(`\ncriteria: ${passed}/${criteria.length} PASS`);
+
+    const att = nearMissAttribution(byRoundAll);
+    console.log(
+      `\nnear-miss attribution (report-only, Ticket 0.3 C2): by fail round ` +
+        att.byRound.map((count, r) => `r${r + 1}=${count}`).join(" ") +
+        ` — forced r1 ${(att.forcedShare * 100).toFixed(1)}%, ` +
+        `chosen push r>=2 ${(att.chosenShare * 100).toFixed(1)}% of ${att.nearMisses} near-misses`,
+    );
+
+    const pad = (v: string | number, w: number) => String(v).padEnd(w);
+    console.log(`\nper-set table:`);
+    console.log(
+      `  ${pad("set", 4)} ${pad("boards", 7)} ${pad("P0%", 7)} ${pad("P1a", 4)} ${pad("P1b", 4)} ` +
+        `${pad("P1c", 4)} ${pad("P1d%", 6)} ${pad("P2% (nm/fails)", 17)} ${pad("P3a%", 6)} ` +
+        `${pad("P3b%", 6)} P4%`,
+    );
+    for (const st of perSet) {
+      const p2 = st.fails === 0 ? 0 : st.nearMisses / st.fails;
+      console.log(
+        `  ${pad(st.set, 4)} ${pad(st.n, 7)} ${pad((st.p0 * 100).toFixed(2), 7)} ${pad(st.p1a, 4)} ` +
+          `${pad(st.p1b, 4)} ${pad(st.p1c, 4)} ${pad((st.p1d * 100).toFixed(1), 6)} ` +
+          `${pad(`${(p2 * 100).toFixed(1)} (${st.nearMisses}/${st.fails})`, 17)} ` +
+          `${pad((st.p3a * 100).toFixed(1), 6)} ` +
+          `${pad(Number.isNaN(st.p3b) ? "n/a" : (st.p3b * 100).toFixed(1), 6)} ` +
+          `${(st.p4 * 100).toFixed(1)}`,
+      );
+    }
+    console.log(`\ntotal ${((performance.now() - t0) / 1000).toFixed(0)}s`);
     return;
   }
 
@@ -765,7 +950,7 @@ function main(): void {
       );
     }
     for (const c of top.slice(0, 3)) {
-      const p4 = diversityRate(data, config, c.curve, config.fullClearBonus);
+      const p4 = diversityRate(data, config, thresholdsFor(c.curve, config.fixtureCount), config.fullClearBonus);
       console.log(
         `  P4 check: base=${c.curve.base} g=${c.curve.growth} axis=${c.curve.bossAxis} -> ${(p4 * 100).toFixed(1)}%`,
       );
@@ -824,7 +1009,7 @@ function main(): void {
     const idx = genomes.indexOf(hit.genome);
     const config = contentToConfig(hit.genome);
     const data = dataCache.get(idx) ?? precompute(config, seedBase, boards);
-    hit.p4 = diversityRate(data, config, hit.plane.curve, config.fullClearBonus);
+    hit.p4 = diversityRate(data, config, thresholdsFor(hit.plane.curve, config.fixtureCount), config.fullClearBonus);
     hit.total = hit.plane.distance + Math.max(0, (0.7 - hit.p4) / 0.1);
     console.log(
       `#${rank + 1} dist=${hit.plane.distance.toFixed(3)} P4=${(hit.p4 * 100).toFixed(1)}% ` +

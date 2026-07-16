@@ -36,6 +36,8 @@ export interface BotStats {
   nearMissRate: number;
   busts: number;
   nearMisses: number;
+  /** Near-miss count by fail-round index (0-based; index 0 = the forced round 1). */
+  nearMissByRound: number[];
 }
 
 export interface BotAccumulator {
@@ -46,10 +48,21 @@ export interface BotAccumulator {
   banks: number;
   fullClears: number;
   nearMisses: number;
+  /** Fail-round index (0-based) of each near-miss bust (Ticket 0.3 C2). */
+  nearMissRounds: number[];
 }
 
 export function newBotAccumulator(name: string): BotAccumulator {
-  return { name, rounds: [], scores: [], busts: 0, banks: 0, fullClears: 0, nearMisses: 0 };
+  return {
+    name,
+    rounds: [],
+    scores: [],
+    busts: 0,
+    banks: 0,
+    fullClears: 0,
+    nearMisses: 0,
+    nearMissRounds: [],
+  };
 }
 
 export const NEAR_MISS_WINDOW = 0.12;
@@ -63,7 +76,10 @@ export function recordBotRun(
   if (result.outcome === "busted") {
     acc.busts++;
     const failed = result.rounds[result.rounds.length - 1];
-    if (!failed.cleared && failed.score >= failed.threshold * (1 - NEAR_MISS_WINDOW)) acc.nearMisses++;
+    if (!failed.cleared && failed.score >= failed.threshold * (1 - NEAR_MISS_WINDOW)) {
+      acc.nearMisses++;
+      acc.nearMissRounds.push(result.roundsCleared);
+    }
   } else if (result.outcome === "banked") {
     acc.banks++;
   } else {
@@ -76,6 +92,8 @@ export function finalizeBotStats(acc: BotAccumulator, maxRounds: number): BotSta
   const sortedScores = [...acc.scores].sort((a, b) => a - b);
   const roundsDist = Array.from({ length: maxRounds + 1 }, () => 0);
   for (const r of acc.rounds) roundsDist[r]++;
+  const nearMissByRound = Array.from({ length: maxRounds }, () => 0);
+  for (const r of acc.nearMissRounds) nearMissByRound[r]++;
   return {
     name: acc.name,
     n,
@@ -90,6 +108,36 @@ export function finalizeBotStats(acc: BotAccumulator, maxRounds: number): BotSta
     nearMissRate: acc.busts === 0 ? 0 : acc.nearMisses / acc.busts,
     busts: acc.busts,
     nearMisses: acc.nearMisses,
+    nearMissByRound,
+  };
+}
+
+/**
+ * Ticket 0.3 C2 — report-only near-miss attribution (no gate): where the
+ * pooled near-miss fails happen. Round 1 (index 0) is the only round a run
+ * cannot avoid ("forced"); a fail at round ≥ 2 was entered by a chosen push.
+ */
+export interface NearMissAttribution {
+  nearMisses: number;
+  /** Count by fail-round index (0-based). */
+  byRound: number[];
+  forced: number;
+  chosen: number;
+  forcedShare: number;
+  chosenShare: number;
+}
+
+export function nearMissAttribution(byRound: number[]): NearMissAttribution {
+  const nearMisses = byRound.reduce((a, b) => a + b, 0);
+  const forced = byRound[0] ?? 0;
+  const chosen = nearMisses - forced;
+  return {
+    nearMisses,
+    byRound,
+    forced,
+    chosen,
+    forcedShare: nearMisses === 0 ? 0 : forced / nearMisses,
+    chosenShare: nearMisses === 0 ? 0 : chosen / nearMisses,
   };
 }
 
@@ -254,10 +302,13 @@ export function evaluateCriteria(m: ProfileInputs): Criterion[] {
     outside(m.chaserFullClearRate, 0.1, 0.25, 0.05),
     `${(m.chaserFullClearRate * 100).toFixed(1)}%`,
   );
+  // Ticket 0.3 C1 (owner amendment): ceiling 40% → 60%. The 60% line is a
+  // degeneracy alarm, not a tuning target — near-miss clustering under
+  // rational play is accepted as a genre property (see DECISIONS.md STOP-3).
   push(
     "P2",
-    "near-miss 25-40% of failed rounds (greedy+chaser)",
-    outside(m.pooledNearMissRate, 0.25, 0.4, 0.05),
+    "near-miss 25-60% of failed rounds (greedy+chaser; 60% = degeneracy alarm)",
+    outside(m.pooledNearMissRate, 0.25, 0.6, 0.05),
     `${(m.pooledNearMissRate * 100).toFixed(1)}% of ${m.pooledFails} fails`,
   );
   push(

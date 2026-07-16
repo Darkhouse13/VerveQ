@@ -26,6 +26,7 @@ import {
   evaluateCriteria,
   finalizeBotStats,
   median,
+  nearMissAttribution,
   newBotAccumulator,
   percentile,
   profileDistance,
@@ -33,6 +34,7 @@ import {
   TENSE_SPREAD_RATIO,
   type BotStats,
   type Criterion,
+  type NearMissAttribution,
 } from "./metrics";
 
 export interface EvaluateOptions {
@@ -75,6 +77,8 @@ export interface ConfigEval {
     spreadDeciles: number[];
     gapHist: { lo: number; hi: number; count: number }[];
   };
+  /** Ticket 0.3 C2 — report-only: where the pooled (greedy+chaser) near-miss fails happen. */
+  p2Attribution: NearMissAttribution;
   p4Rate: number;
   p5: { checked: number; ok: boolean };
   criteria: Criterion[];
@@ -82,7 +86,7 @@ export interface ConfigEval {
 }
 
 /** Deterministic replay + serialization spot-check for one board's bot runs. */
-function determinismSpotCheck(ctx: BoardContext, results: RunResult[]): boolean {
+export function determinismSpotCheck(ctx: BoardContext, results: RunResult[]): boolean {
   for (const result of results) {
     const replayed = replay(ctx.board, ctx.config, result.choiceLog);
     if (
@@ -202,6 +206,9 @@ export function evaluateConfig(config: EngineConfig, opts: EvaluateOptions): Con
 
   const pooledFails = bots.greedy.busts + bots.chaser.busts;
   const pooledNearMisses = bots.greedy.nearMisses + bots.chaser.nearMisses;
+  const p2Attribution = nearMissAttribution(
+    bots.greedy.nearMissByRound.map((c, r) => c + bots.chaser.nearMissByRound[r]),
+  );
 
   const tenseSpreads: number[] = [];
   for (let s = 0; s < p3Gaps.length; s++) {
@@ -275,6 +282,7 @@ export function evaluateConfig(config: EngineConfig, opts: EvaluateOptions): Con
       spreadDeciles: deciles(sortedSpreads),
       gapHist,
     },
+    p2Attribution,
     p4Rate: diversityBoards / n,
     p5: { checked: p5Checked, ok: p5Ok },
     criteria,
