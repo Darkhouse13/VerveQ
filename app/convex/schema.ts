@@ -2,6 +2,83 @@ import { defineSchema, defineTable } from "convex/server";
 import { v } from "convex/values";
 import { authTables } from "@convex-dev/auth/server";
 
+// ── THE DRAW shared validators ──
+// Mirror the frozen engine CONTRACT v1.0 shapes (app/src/lib/drawEngine/
+// types.ts): Card, FixtureModifier, Fixture, Choice, RoundBreakdown. The
+// engine contract may only grow additively, so these track it exactly.
+const drawPosition = v.union(
+  v.literal("GK"),
+  v.literal("DEF"),
+  v.literal("MID"),
+  v.literal("ATT"),
+);
+
+const drawCardSnapshot = v.object({
+  id: v.string(),
+  name: v.string(),
+  rating: v.number(),
+  clubs: v.array(v.string()),
+  nation: v.string(),
+  era: v.string(),
+  eraIndex: v.number(),
+  position: drawPosition,
+});
+
+const drawFixtureModifier = v.object({
+  kind: v.union(
+    v.literal("position"),
+    v.literal("club"),
+    v.literal("nation"),
+    v.literal("era"),
+    v.literal("eraBefore"),
+    v.literal("eraAtLeast"),
+  ),
+  value: v.union(v.string(), v.number()),
+  mult: v.number(),
+});
+
+const drawFixture = v.object({
+  index: v.number(),
+  archetypeId: v.string(),
+  modifiers: v.array(drawFixtureModifier),
+  threshold: v.number(),
+  isBoss: v.boolean(),
+});
+
+const drawChoice = v.union(
+  v.object({ type: v.literal("pick"), offerIndex: v.number() }),
+  v.object({ type: v.literal("bench"), squadIndex: v.number() }),
+  v.object({ type: v.literal("bank") }),
+  v.object({ type: v.literal("push") }),
+);
+
+const drawRoundBreakdown = v.object({
+  fixtureIndex: v.number(),
+  threshold: v.number(),
+  benchedCardId: v.string(),
+  baseSum: v.number(),
+  synergies: v.array(
+    v.object({
+      family: v.union(v.literal("club"), v.literal("nation"), v.literal("era")),
+      tag: v.string(),
+      chain: v.number(),
+      mult: v.number(),
+    }),
+  ),
+  synergyMult: v.number(),
+  score: v.number(),
+  cleared: v.boolean(),
+  cards: v.array(
+    v.object({
+      cardId: v.string(),
+      rating: v.number(),
+      form: v.number(),
+      fixtureMult: v.number(),
+      contribution: v.number(),
+    }),
+  ),
+});
+
 export default defineSchema({
   ...authTables,
 
@@ -71,6 +148,18 @@ export default defineSchema({
       // token as the taste round, hashed in its own namespace.
       v.literal("career_path_started"),
       v.literal("career_path_completed"),
+      // THE DRAW (Convex serving ticket A). Emitted from convex/draw.ts at
+      // run start, each draft pick, each bench pick, and completion (one of
+      // bank/bust/fullclear). draw_replay_reject is the B2 replay-gate audit
+      // trail: a completed choiceLog whose regenerated-board replay disagreed
+      // with the stored board snapshot (set/config drift or tampering).
+      v.literal("draw_start"),
+      v.literal("draw_pick"),
+      v.literal("draw_bench"),
+      v.literal("draw_bank"),
+      v.literal("draw_bust"),
+      v.literal("draw_fullclear"),
+      v.literal("draw_replay_reject"),
     ),
     actor: v.string(),
     refLinkCode: v.optional(v.string()),
@@ -1113,4 +1202,107 @@ export default defineSchema({
   })
     .index("by_user", ["userId"])
     .index("by_expiresAt", ["expiresAt"]),
+
+  // ── THE DRAW (engine CONTRACT v1.0, serving Ticket A) ──
+
+  // The active card pool. Seeded via app/scripts/seedDrawCards.ts →
+  // drawSeed.seedSyntheticCards from the SYNTHETIC generator with a pinned
+  // seed; a future real (CIE) set is a reseed under a new setVersion — zero
+  // code change. `synthetic` makes the content's provenance visible in data.
+  drawCards: defineTable({
+    cardId: v.string(),
+    name: v.string(),
+    rating: v.number(),
+    clubs: v.array(v.string()),
+    nation: v.string(),
+    era: v.string(),
+    // Ordinal era-bucket index (0 = oldest) — required by eraBefore/eraAtLeast
+    // fixture modifiers, so it is part of the stored card, not derived.
+    eraIndex: v.number(),
+    position: drawPosition,
+    setVersion: v.string(),
+    synthetic: v.boolean(),
+  })
+    .index("by_setVersion", ["setVersion"])
+    .index("by_setVersion_cardId", ["setVersion", "cardId"]),
+
+  // Singleton flag gate. Every public draw function checks it: disabled ⇒
+  // throw unless the caller is a tester. Managed via drawSeed.updateSettings
+  // (internal, npx convex run only).
+  drawSettings: defineTable({
+    enabled: v.boolean(),
+    testerUserIds: v.array(v.id("users")),
+    activeSetVersion: v.string(),
+    configVersion: v.string(),
+  }),
+
+  // One board per UTC date, identical for all users (leaderboard fairness).
+  // boardSeed is the first non-dead k in hash(dateKey, k) — the P0-runtime
+  // CONTRACT INVARIANT reroll chain; rerollIndex records how far it walked.
+  // The resolved BoardSpec is snapshotted as an audit pin against set/config
+  // drift; completion replays against a fresh regeneration (draw.ts B2 gate).
+  // boardSeed and the snapshot are SERVER-ONLY: no public payload may include
+  // them pre-completion (post-completion the board rows may be revealed, the
+  // seed never).
+  drawDailyBoards: defineTable({
+    dateKey: v.string(), // "YYYY-MM-DD" UTC
+    boardSeed: v.string(),
+    rerollIndex: v.number(),
+    setVersion: v.string(),
+    configVersion: v.string(),
+    board: v.object({
+      seed: v.string(),
+      rows: v.array(v.array(drawCardSnapshot)),
+      fixtures: v.array(drawFixture),
+    }),
+    generatedAt: v.number(),
+  }).index("by_dateKey", ["dateKey"]),
+
+  // One run per user per dateKey (enforced server-side in draw.startRun).
+  // The server owns all state: choiceLog is the complete decision record and
+  // the ONLY thing the client ever contributed (one validated Choice at a
+  // time); score/result are written exclusively by the completion replay
+  // gate. `score` is denormalized out of `result` for the leaderboard index.
+  drawRuns: defineTable({
+    userId: v.id("users"),
+    dateKey: v.string(),
+    boardId: v.id("drawDailyBoards"),
+    choiceLog: v.array(drawChoice),
+    status: v.union(
+      v.literal("drafting"),
+      v.literal("running"),
+      v.literal("banked"),
+      v.literal("busted"),
+      v.literal("fullclear"),
+    ),
+    // Draft line fingerprint (offer indices row 0..5, e.g. "021102"), set
+    // when the draft completes; feeds getRarity ("X% drafted this line").
+    draftLineHash: v.optional(v.string()),
+    score: v.optional(v.number()),
+    result: v.optional(
+      v.object({
+        finalScore: v.number(),
+        roundsCleared: v.number(),
+        outcome: v.union(
+          v.literal("banked"),
+          v.literal("busted"),
+          v.literal("fullclear"),
+        ),
+        rounds: v.array(drawRoundBreakdown),
+      }),
+    ),
+    startedAt: v.number(),
+    completedAt: v.optional(v.number()),
+  })
+    .index("by_user_date", ["userId", "dateKey"])
+    .index("by_date_score", ["dateKey", "score"]),
+
+  // Daily-draw streak — consecutive UTC dateKeys with a completed run. Own
+  // table so profile.ts / the users table stay untouched.
+  drawStreaks: defineTable({
+    userId: v.id("users"),
+    current: v.number(),
+    best: v.number(),
+    lastPlayedDateKey: v.string(),
+  }).index("by_user", ["userId"]),
 });

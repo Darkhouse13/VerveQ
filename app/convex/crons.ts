@@ -12,5 +12,8 @@ crons.interval("async-duel-expiry", { hours: 1 }, internal.duels.expireStaleDuel
 crons.interval("challenge-arena-expiry", { hours: 1 }, internal.challengeArenas.expireStaleArenas);
 // Founder ops: emails the prior UTC day's unique-player count (incl. guests).
 crons.daily("daily-active-users-email", { hourUTC: 0, minuteUTC: 30 }, internal.opsActiveUsers.emailDailyReport, {});
+// THE DRAW: pregenerate today's board (P0-runtime reroll chain, idempotent —
+// draw.ts also generates lazily on the first request if this hasn't run).
+crons.daily("draw-daily-board", { hourUTC: 0, minuteUTC: 2 }, internal.drawBoards.generateTodaysBoard, {});
 
 export default crons;
