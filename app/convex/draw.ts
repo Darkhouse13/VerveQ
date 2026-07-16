@@ -32,6 +32,7 @@ import {
   replay,
   toResult,
   type BoardSpec,
+  type Card,
   type Choice,
   type ChoiceLog,
   type EngineConfig,
@@ -41,8 +42,22 @@ import {
 import { ensureDailyBoard, loadCardSet } from "./drawBoards";
 import { resolveDrawConfig } from "./drawSeed";
 import { getTodayUTC, midnightUTCTimestamp } from "./lib/daily";
+import {
+  DRAW_LAUNCH_EPOCH_DATE_KEY,
+  boardNumberForDate,
+  nextBoardAtForDate,
+} from "./lib/drawDaily";
 import { MS_PER_DAY } from "./lib/streaks";
 import { userActorKey } from "./funnel";
+
+/**
+ * The UTC day BOARD #1 goes live on — OWNER-SETTABLE, must be fixed before the
+ * flag opens to non-testers (moving it later renumbers every board). Defined
+ * in lib/drawDaily so the client-side mock can share the exact arithmetic
+ * without importing this server module; re-exported here because draw.ts is
+ * where the owner looks for the mode's knobs.
+ */
+export { DRAW_LAUNCH_EPOCH_DATE_KEY };
 
 export const DRAW_DISABLED_MESSAGE = "THE DRAW is not open yet";
 const SIGN_IN_REQUIRED = "Sign in required";
@@ -83,29 +98,16 @@ function draftLineOf(log: ChoiceLog): string {
 
 // ── sanitized payloads (B3) ──
 
-interface DrawCardView {
-  id: string;
-  name: string;
-  rating: number;
-  clubs: string[];
-  nation: string;
-  era: string;
-  eraIndex: number;
-  position: string;
-}
+// Structurally the engine's Card. Kept as its own name because it is the
+// PUBLIC projection: the engine's Card may grow additive fields under the
+// contract, and those must not reach a payload without a deliberate edit here.
+type DrawCardView = Card;
 
 // Explicit allowlist copies (never spread the source object) so a future
-// server-only field on a snapshot can't leak by default.
-function cardView(card: {
-  id: string;
-  name: string;
-  rating: number;
-  clubs: string[];
-  nation: string;
-  era: string;
-  eraIndex: number;
-  position: string;
-}): DrawCardView {
+// server-only field on a snapshot can't leak by default. `position` keeps its
+// PositionId union (the schema validates it as one) so the client's API
+// adapter maps the payload without a widening cast.
+function cardView(card: Card): DrawCardView {
   return {
     id: card.id,
     name: card.name,
@@ -128,6 +130,23 @@ function fixturesView(board: StoredBoard["board"]) {
   }));
 }
 
+/**
+ * The display-relevant knobs of the serving config. A strict subset: nothing
+ * here (form spread, thresholds, archetype table, cardGen) reveals board
+ * content or form. Served rather than imported client-side so the UI always
+ * describes the config the board was actually generated under.
+ */
+function rulesView(config: EngineConfig) {
+  return {
+    rows: config.rows,
+    offersPerRow: config.offersPerRow,
+    fixtureCount: config.fixtureCount,
+    synergyTable: [...config.synergyTable],
+    bustKeep: config.bustKeep,
+    fullClearBonus: config.fullClearBonus,
+  };
+}
+
 function runView(boardDoc: StoredBoard, state: RunState, run: Doc<"drawRuns">) {
   const board = boardDoc.board;
   const byId = new Map<string, DrawCardView>();
@@ -135,6 +154,8 @@ function runView(boardDoc: StoredBoard, state: RunState, run: Doc<"drawRuns">) {
   const done = state.phase === "done";
   return {
     dateKey: run.dateKey,
+    // Server-derived so the client never does epoch math (Ticket C, 2b).
+    boardNumber: boardNumberForDate(run.dateKey),
     status: run.status,
     phase: state.phase,
     rowIndex: state.rowIndex,
@@ -185,6 +206,31 @@ export function nextDrawStreak(
   const current = lastDay === day - 1 ? prev!.current + 1 : 1;
   const best = Math.max(prev?.best ?? 0, current);
   return { current, best, lastPlayedDateKey: dateKey };
+}
+
+/**
+ * The caller's streak as the client should read it: a streak whose last
+ * completion is older than yesterday has lapsed and reads as 0 (`best` and
+ * the stored row survive — only the live count lapses). Shared by getStreak
+ * and getToday so the entry screen's chip and the result screen's streak can
+ * never disagree.
+ */
+async function readDrawStreak(
+  ctx: Pick<QueryCtx, "db">,
+  userId: Id<"users">,
+): Promise<{ current: number; best: number; lastPlayedDateKey: string | null }> {
+  const doc = await ctx.db
+    .query("drawStreaks")
+    .withIndex("by_user", (q) => q.eq("userId", userId))
+    .first();
+  if (!doc) return { current: 0, best: 0, lastPlayedDateKey: null };
+  const today = dayNumberFromDateKey(getTodayUTC());
+  const last = dayNumberFromDateKey(doc.lastPlayedDateKey);
+  return {
+    current: last >= today - 1 ? doc.current : 0,
+    best: doc.best,
+    lastPlayedDateKey: doc.lastPlayedDateKey,
+  };
 }
 
 async function advanceDrawStreak(
@@ -456,12 +502,27 @@ async function emitChoiceEvent(
 
 // ── public queries (B4) ──
 
-/** Today's board meta + the caller's run state (sanitized). */
+/**
+ * Today's board meta + the caller's run state (sanitized).
+ *
+ * Carries everything the entry screen renders — boardNumber, playState,
+ * streak, rules, nextBoardAt — so the client is a pure renderer and its API
+ * adapter needs no derivation of its own. Deriving any of these client-side
+ * would mean a second implementation of server truth, which is exactly how
+ * the mock and the server drift apart.
+ */
 export const getToday = query({
   args: {},
   handler: async (ctx) => {
     const { userId } = await requireDrawUser(ctx);
     const dateKey = getTodayUTC();
+    const streak = await readDrawStreak(ctx, userId);
+    const meta = {
+      dateKey,
+      boardNumber: boardNumberForDate(dateKey),
+      nextBoardAt: nextBoardAtForDate(dateKey),
+      streak: streak.current,
+    };
     const boardDoc = await ctx.db
       .query("drawDailyBoards")
       .withIndex("by_dateKey", (q) => q.eq("dateKey", dateKey))
@@ -469,18 +530,33 @@ export const getToday = query({
     if (!boardDoc) {
       // Cron hasn't run yet — the client calls ensureToday (mutation) to
       // generate lazily; queries can't write.
-      return { dateKey, boardReady: false as const, fixtures: null, run: null };
+      return {
+        ...meta,
+        boardReady: false as const,
+        fixtures: null,
+        rules: null,
+        playState: "unplayed" as const,
+        run: null,
+      };
     }
     const run = await ctx.db
       .query("drawRuns")
       .withIndex("by_user_date", (q) => q.eq("userId", userId).eq("dateKey", dateKey))
       .first();
     const config = resolveDrawConfig(boardDoc.configVersion);
+    const state = run ? replayState(boardDoc.board, config, run.choiceLog) : null;
     return {
-      dateKey,
+      ...meta,
       boardReady: true as const,
       fixtures: fixturesView(boardDoc.board),
-      run: run ? runView(boardDoc, replayState(boardDoc.board, config, run.choiceLog), run) : null,
+      rules: rulesView(config),
+      playState:
+        state === null
+          ? ("unplayed" as const)
+          : state.phase === "done"
+            ? ("done" as const)
+            : ("in_progress" as const),
+      run: run && state ? runView(boardDoc, state, run) : null,
     };
   },
 });
@@ -573,17 +649,6 @@ export const getStreak = query({
   args: {},
   handler: async (ctx) => {
     const { userId } = await requireDrawUser(ctx);
-    const doc = await ctx.db
-      .query("drawStreaks")
-      .withIndex("by_user", (q) => q.eq("userId", userId))
-      .first();
-    if (!doc) return { current: 0, best: 0, lastPlayedDateKey: null };
-    const today = dayNumberFromDateKey(getTodayUTC());
-    const last = dayNumberFromDateKey(doc.lastPlayedDateKey);
-    return {
-      current: last >= today - 1 ? doc.current : 0,
-      best: doc.best,
-      lastPlayedDateKey: doc.lastPlayedDateKey,
-    };
+    return await readDrawStreak(ctx, userId);
   },
 });

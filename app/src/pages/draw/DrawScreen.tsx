@@ -1,7 +1,8 @@
 /**
- * THE DRAW — /draw (Ticket B). Mock-driven: every screen runs against the
- * DrawApi seam (LocalMockApi today; the Convex implementation is a later
- * ticket). Flag-gated and unlinked from any nav.
+ * THE DRAW — /draw. Every screen runs against the DrawApi seam; the route
+ * binds that seam to the Convex serving layer (Ticket C), while tests and dev
+ * harnesses inject a LocalMockApi into DrawExperience directly. Flag-gated
+ * and unlinked from any nav.
  *
  * Screen flow: S1 entry → S2 draft (DraftStage) → S3 rounds (RoundStage) →
  * S4 result + S5 share card (ResultStage). S2/S3 obey the LAYOUT_SPEC
@@ -11,6 +12,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Navigate, useNavigate } from "react-router-dom";
+import { useConvex } from "convex/react";
 import { Flame } from "lucide-react";
 import { NeoButton } from "@/components/neo/NeoButton";
 import { NeoCard } from "@/components/neo/NeoCard";
@@ -233,10 +235,15 @@ export function DrawExperience({ api, revealMs = 900 }: DrawExperienceProps) {
  * Route component. Gated on VITE_DRAW_ENABLED (same build-time flag pattern
  * as lib/flags.ts — defined here because Ticket B's scope owns only draw
  * files): anything but the exact string "true" bounces to "/".
+ *
+ * The build-time flag only decides whether the ROUTE renders. The mode's real
+ * gate is server-side (drawSettings.enabled + the tester allowlist, checked on
+ * every draw function), so a flipped VITE flag alone opens nothing.
  */
 export default function DrawScreen() {
   const enabled = import.meta.env.VITE_DRAW_ENABLED === "true";
-  const api = useMemo(() => createDrawApi(), []);
+  const convex = useConvex();
+  const api = useMemo(() => createDrawApi(convex), [convex]);
   if (!enabled) return <Navigate to="/" replace />;
   return <DrawExperience api={api} />;
 }

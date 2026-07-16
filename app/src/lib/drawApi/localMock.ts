@@ -48,11 +48,11 @@ import type {
   DrawStreak,
   DrawToday,
 } from "./types";
-import {
-  MOCK_CARD_SET_SEED,
-  MOCK_ENGINE_CONFIG,
-  MOCK_EPOCH_DATE_KEY,
-} from "./mockConfig";
+import { MOCK_CARD_SET_SEED, MOCK_ENGINE_CONFIG } from "./mockConfig";
+// Board numbering is SERVER-derived (Ticket C, Step 2b): the mock computes it
+// with the same helper and the same launch epoch as convex/draw.ts rather than
+// keeping its own epoch arithmetic.
+import { boardNumberForDate, nextBoardAtForDate } from "../../../convex/lib/drawDaily";
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 const STORAGE_PREFIX = "verveq-draw-mock";
@@ -185,7 +185,7 @@ export class LocalMockApi implements DrawApi {
         bustKeep: this.config.bustKeep,
         fullClearBonus: this.config.fullClearBonus,
       },
-      nextBoardAt: dateKeyToUtcMs(dateKey) + DAY_MS,
+      nextBoardAt: nextBoardAtForDate(dateKey),
     });
   }
 
@@ -269,9 +269,7 @@ export class LocalMockApi implements DrawApi {
   }
 
   private boardNumber(dateKey: string): number {
-    return (
-      Math.round((dateKeyToUtcMs(dateKey) - dateKeyToUtcMs(MOCK_EPOCH_DATE_KEY)) / DAY_MS) + 1
-    );
+    return boardNumberForDate(dateKey);
   }
 
   private board(dateKey: string): BoardSpec {

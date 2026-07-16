@@ -10,10 +10,15 @@
  * Runs the real convex/draw.ts handlers against an in-memory db fake (the
  * house pattern — see dailyChallengeAttemptContract.test.ts), with the real
  * engine, real board generation, and the real dead-board oracle underneath.
+ * The fake now lives in test/support/drawFakeConvex.ts, shared with the
+ * adapter suite (Ticket C, Step 3).
  */
 
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { FakeDb, handlerOf } from "./support/drawFakeConvex";
 
+// vi.hoisted values cannot cross a module boundary, so each suite declares its
+// own auth mock rather than sharing one from test/support.
 const authMock = vi.hoisted(() => ({
   getAuthUserId: vi.fn(async () => null as string | null),
 }));
@@ -40,166 +45,6 @@ import {
 } from "../../convex/drawBoards";
 import { DRAW_ACTIVE_CONFIG } from "../../convex/drawSeed";
 import { getTodayUTC } from "../../convex/lib/daily";
-
-// ── minimal in-memory Convex db fake ──
-
-type Row = { _id: string; _creationTime: number } & Record<string, unknown>;
-
-const INDEXES: Record<string, Record<string, string[]>> = {
-  drawCards: {
-    by_setVersion: ["setVersion"],
-    by_setVersion_cardId: ["setVersion", "cardId"],
-  },
-  drawSettings: {},
-  drawDailyBoards: { by_dateKey: ["dateKey"] },
-  drawRuns: {
-    by_user_date: ["userId", "dateKey"],
-    by_date_score: ["dateKey", "score"],
-  },
-  drawStreaks: { by_user: ["userId"] },
-  funnelEvents: {
-    by_type_ts: ["type", "ts"],
-    by_actor_type: ["actor", "type"],
-  },
-  users: { by_username: ["username"] },
-};
-
-function compareValues(a: unknown, b: unknown): number {
-  if (a === undefined && b === undefined) return 0;
-  if (a === undefined) return -1; // undefined sorts lowest, like Convex
-  if (b === undefined) return 1;
-  if (typeof a === "number" && typeof b === "number") return a - b;
-  return String(a) < String(b) ? -1 : String(a) > String(b) ? 1 : 0;
-}
-
-class FakeDb {
-  private tables = new Map<string, Map<string, Row>>();
-  private counter = 0;
-
-  table(name: string): Map<string, Row> {
-    let t = this.tables.get(name);
-    if (!t) {
-      t = new Map();
-      this.tables.set(name, t);
-    }
-    return t;
-  }
-
-  rows(name: string): Row[] {
-    return [...this.table(name).values()];
-  }
-
-  async insert(table: string, doc: Record<string, unknown>): Promise<string> {
-    this.counter += 1;
-    const _id = `${table};${this.counter}`;
-    this.table(table).set(_id, { ...doc, _id, _creationTime: this.counter });
-    return _id;
-  }
-
-  async get(id: string): Promise<Row | null> {
-    const table = id.split(";")[0];
-    return this.table(table).get(id) ?? null;
-  }
-
-  async patch(id: string, fields: Record<string, unknown>): Promise<void> {
-    const row = await this.get(id);
-    if (!row) throw new Error(`patch: no row ${id}`);
-    Object.assign(row, fields);
-  }
-
-  async replace(id: string, doc: Record<string, unknown>): Promise<void> {
-    const row = await this.get(id);
-    if (!row) throw new Error(`replace: no row ${id}`);
-    const { _id, _creationTime } = row;
-    for (const key of Object.keys(row)) delete row[key];
-    Object.assign(row, doc, { _id, _creationTime });
-  }
-
-  async delete(id: string): Promise<void> {
-    const table = id.split(";")[0];
-    this.table(table).delete(id);
-  }
-
-  query(table: string) {
-    const filters: Array<{ op: "eq" | "gte" | "lte"; field: string; value: unknown }> = [];
-    let indexFields: string[] = [];
-    let desc = false;
-
-    const matches = (row: Row): boolean =>
-      filters.every(({ op, field, value }) => {
-        const actual = row[field];
-        if (op === "eq") return actual === value;
-        if (op === "gte") return compareValues(actual, value) >= 0;
-        return compareValues(actual, value) <= 0;
-      });
-
-    const sorted = (): Row[] => {
-      const out = this.rows(table).filter(matches);
-      out.sort((a, b) => {
-        for (const field of indexFields) {
-          const cmp = compareValues(a[field], b[field]);
-          if (cmp !== 0) return cmp;
-        }
-        return a._creationTime - b._creationTime;
-      });
-      if (desc) out.reverse();
-      return out;
-    };
-
-    const rangeBuilder = {
-      eq(field: string, value: unknown) {
-        filters.push({ op: "eq", field, value });
-        return rangeBuilder;
-      },
-      gte(field: string, value: unknown) {
-        filters.push({ op: "gte", field, value });
-        return rangeBuilder;
-      },
-      lte(field: string, value: unknown) {
-        filters.push({ op: "lte", field, value });
-        return rangeBuilder;
-      },
-      lt(field: string, value: unknown) {
-        filters.push({ op: "lte", field, value });
-        return rangeBuilder;
-      },
-    };
-
-    const builder = {
-      withIndex(name: string, cb?: (q: typeof rangeBuilder) => unknown) {
-        indexFields = INDEXES[table]?.[name] ?? [];
-        if (cb) cb(rangeBuilder);
-        return builder;
-      },
-      order(direction: "asc" | "desc") {
-        desc = direction === "desc";
-        return builder;
-      },
-      async first() {
-        return sorted()[0] ?? null;
-      },
-      async collect() {
-        return sorted();
-      },
-      async take(n: number) {
-        return sorted().slice(0, n);
-      },
-    };
-    return builder;
-  }
-}
-
-// ── harness ──
-
-type Handler = (ctx: unknown, args: unknown) => Promise<unknown>;
-
-function handlerOf<T>(fn: T): Handler {
-  const registered = fn as { _handler?: Handler };
-  if (typeof registered._handler !== "function") {
-    throw new Error("not a Convex registered function with a handler");
-  }
-  return registered._handler;
-}
 
 interface Env {
   db: FakeDb;

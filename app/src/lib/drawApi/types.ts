@@ -101,6 +101,17 @@ export interface DrawRunView {
    * screen board reveal). Null while the run is live.
    */
   fullBoard: Card[][] | null;
+  /**
+   * Server run status (drafting | running | banked | busted | fullclear).
+   * Passthrough from the serving layer; `phase` is what the UI switches on,
+   * this is the persisted row's own view of the same run. Absent on the mock.
+   */
+  status?: string;
+  /**
+   * Draft-line fingerprint ("021102"), set once the draft completes — the key
+   * getRarity aggregates on. Passthrough; absent on the mock.
+   */
+  draftLineHash?: string | null;
 }
 
 export interface DrawLeaderboardEntry {
