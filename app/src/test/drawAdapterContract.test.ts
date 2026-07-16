@@ -300,6 +300,23 @@ describe("adapter rename map", () => {
     expect(today.fixtures).toHaveLength(DRAW_ACTIVE_CONFIG.fixtureCount);
     expect(today.fixtures[today.fixtures.length - 1].isBoss).toBe(true);
     // rules is the served config projection — and nothing more of the config.
+    //
+    // Ticket F widened this by two knobs: formSpread and maxSynergyFamilies
+    // are now part of the CLIENT contract, because F3's projected band cannot
+    // be computed without them (see convexApi.ts#rulesView). Note what did NOT
+    // change: the SERVER still sends neither — the adapter fills both from the
+    // pinned config — so this is a change to what the client contract carries,
+    // not to what crosses the wire.
+    //
+    // Why that is safe, and why the old "tuning knobs stay server-side" framing
+    // was never what protected form: the ENGINE SHIPS IN THE CLIENT BUNDLE.
+    // formFor, scoreRound and generateBoard all run in the browser (the mock
+    // plays whole boards there), so C13V1_CONFIG — formSpread included — is
+    // already sitting in the JS the player downloads. The only thing that makes
+    // form unknowable before a round resolves is the BOARD SEED, which is
+    // server-only and stays so. Knowing form is uniform on [1-f, 1+f] reveals
+    // nothing about any particular draw from it; knowing the seed would reveal
+    // every one. The seed assertions below are the ones with teeth.
     expect(today.rules).toEqual({
       rows: DRAW_ACTIVE_CONFIG.rows,
       offersPerRow: DRAW_ACTIVE_CONFIG.offersPerRow,
@@ -307,12 +324,15 @@ describe("adapter rename map", () => {
       synergyTable: DRAW_ACTIVE_CONFIG.synergyTable,
       bustKeep: DRAW_ACTIVE_CONFIG.bustKeep,
       fullClearBonus: DRAW_ACTIVE_CONFIG.fullClearBonus,
+      formSpread: DRAW_ACTIVE_CONFIG.formSpread,
+      maxSynergyFamilies: DRAW_ACTIVE_CONFIG.maxSynergyFamilies,
     });
-    // The tuning knobs behind the board stay server-side.
+    // The board-generation knobs stay out of the client contract entirely:
+    // these WOULD narrow the board, and nothing in the UI needs them.
     const keys = collectKeys(today);
-    expect(keys.has("formSpread")).toBe(false);
     expect(keys.has("archetypes")).toBe(false);
     expect(keys.has("cardGen")).toBe(false);
+    expect(keys.has("ratingSkew")).toBe(false);
   });
 
   it("getToday tracks playState across the run; run views carry the server boardNumber", async () => {
@@ -380,7 +400,11 @@ describe("adapter rename map", () => {
     const rarity = await env.api.getRarity();
     // Sole player on this line so far ⇒ 100% of completed runs drafted it.
     expect(rarity.linePercent).toBe(100);
-    expect(Object.keys(rarity)).toEqual(["linePercent"]);
+    // Ticket F (F6): total → population. This is exactly the n=1 case the
+    // suppression exists for — the adapter still reports the honest 100%, and
+    // the population it now carries is what stops the UI from printing it.
+    expect(Object.keys(rarity).sort()).toEqual(["linePercent", "population"]);
+    expect(rarity.population).toBe(1);
 
     const streak = await env.api.getStreak();
     expect(streak).toEqual({ current: 1, best: 1 });
@@ -453,6 +477,7 @@ describe("adapter share content", () => {
       identity: buildIdentity(view.rounds),
       score: view.finalScore!,
       url: "https://verveq.com/draw",
+      rarity: { linePercent: 4.2, population: 500 },
     });
 
     expect(text).toContain(`THE DRAW #${boardNumberForDate(env.today)}`);

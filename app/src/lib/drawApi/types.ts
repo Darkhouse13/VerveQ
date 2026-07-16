@@ -46,6 +46,21 @@ export interface DrawRules {
   synergyTable: number[];
   bustKeep: number;
   fullClearBonus: number;
+  /**
+   * Ticket F (F3). Form is uniform in [1-formSpread, 1+formSpread], so these
+   * two knobs are what let the UI show a projected score BAND before a round
+   * resolves — the bound of every form draw, never a form draw itself.
+   *
+   * This does NOT widen sanitization. formSpread is the WIDTH of the form
+   * distribution, a published rule of the game; per-card form stays derived
+   * from (boardSeed, cardId, roundIndex) and still appears only in the
+   * RoundBreakdown of a round that has already played. Knowing the interval
+   * reveals nothing about the draw inside it (drawApiSanitizationContract
+   * pins this).
+   */
+  formSpread: number;
+  /** Cap on granted synergy families — squadSynergies applies it (F3 band). */
+  maxSynergyFamilies: number;
 }
 
 /** Today's board as seen BEFORE (and outside) a run. */
@@ -126,6 +141,13 @@ export interface DrawLeaderboardEntry {
 export interface DrawRarity {
   /** Share of today's players who drafted this exact line, percent (0..100). */
   linePercent: number;
+  /**
+   * Completed runs for the dateKey — the denominator `linePercent` is a share
+   * OF. Ticket F (F6): at n=1 every line is "100% rare", which is noise
+   * dressed as a stat, so the UI suppresses the rarity line below
+   * MIN_RARITY_POPULATION rather than shipping an absurdity.
+   */
+  population: number;
 }
 
 export interface DrawStreak {

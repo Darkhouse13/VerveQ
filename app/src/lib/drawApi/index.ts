@@ -13,7 +13,12 @@
  */
 
 export * from "./types";
-export { LocalMockApi, boardFullClearable, resolveBoardForDate } from "./localMock";
+export {
+  LocalMockApi,
+  MOCK_LEADERBOARD_SIZE,
+  boardFullClearable,
+  resolveBoardForDate,
+} from "./localMock";
 export { ConvexDrawApi, DrawReplayRejectedError } from "./convexApi";
 export type { DrawConvexClient } from "./convexApi";
 

@@ -44,11 +44,16 @@ describe("Draw full loop against LocalMockApi", () => {
     expect(screen.getByTestId("draw-fixture-strip")).toBeInTheDocument();
     fireEvent.click(cta);
 
-    // S2 — draft: 6 picks, always the first offer.
+    // S2 — draft: 6 picks, always the first offer. Ticket F (F2a) made the
+    // pick two-step, so each row is select-then-confirm: the first tap only
+    // lifts the card, and the mini-gauntlet + ghost meters appear before
+    // anything is committed.
     for (let row = 0; row < 6; row++) {
       const pickLabel = await screen.findByText(`PICK ${row + 1}/6`);
       expect(pickLabel).toBeInTheDocument();
-      fireEvent.click(screen.getByTestId("draw-offer-0"));
+      fireEvent.click(screen.getByTestId("draw-offer-0")); // select
+      expect(screen.getByTestId("draw-pick-impact")).toBeInTheDocument();
+      fireEvent.click(screen.getByTestId("draw-offer-0")); // confirm
     }
 
     // S3 — rounds: bench chip 0, confirm, then push while offered (up to the
@@ -84,13 +89,19 @@ describe("Draw full loop against LocalMockApi", () => {
     expect(screen.getByTestId("draw-countdown")).toBeInTheDocument();
   });
 
-  it("a double-tap on an offer submits exactly one pick (ordering guard)", async () => {
+  it("a mashed offer submits exactly one pick (ordering guard)", async () => {
     const api = renderDraw();
     fireEvent.click(await screen.findByTestId("draw-entry-cta"));
 
     const offer = await screen.findByTestId("draw-offer-0");
-    // Two taps in the same frame — the synchronous busy ref must swallow the
-    // second before React state catches up.
+    // Ticket F (F2a) re-shaped what a double-tap MEANS: two taps are now a
+    // legitimate select-then-confirm, i.e. exactly one pick by design. So the
+    // guard is probed by mashing — taps 1-2 select and commit, and taps 3-4
+    // land in the same frame while that submit is still in flight. The
+    // synchronous busy ref must swallow them before React state catches up;
+    // without it, tap 4 would commit a second pick against a stale row.
+    fireEvent.click(offer);
+    fireEvent.click(offer);
     fireEvent.click(offer);
     fireEvent.click(offer);
 
@@ -169,7 +180,8 @@ describe("Draw failure surfacing", () => {
 
     // The connection drops mid-draft; the next pick must not be swallowed.
     api.setFault("networkError");
-    fireEvent.click(screen.getByTestId("draw-offer-0"));
+    fireEvent.click(screen.getByTestId("draw-offer-0")); // select
+    fireEvent.click(screen.getByTestId("draw-offer-0")); // confirm — this call fails
     expect(await screen.findByTestId("draw-error")).toBeInTheDocument();
   });
 });

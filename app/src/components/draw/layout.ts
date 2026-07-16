@@ -15,23 +15,59 @@ export const SYNERGY_METERS_H =
   LAYOUT.maxSynergyFamilies * LAYOUT.synergyMeterH +
   (LAYOUT.maxSynergyFamilies - 1) * LAYOUT.synergyMeterGap;
 
-/** Draft view stack, top to bottom (LAYOUT_SPEC "Draft view"). */
+/**
+ * Ticket F sections. These are UI-LOCAL and deliberately not in the engine's
+ * LAYOUT: that module is frozen at CONTRACT v1.0 and its `checkLayout` gates
+ * CONFIG eligibility (draw:layoutcheck) — a different question from what these
+ * screens render. The consequence worth stating: checkLayout's draft/round
+ * totals (518/540) now UNDERSTATE the real stacks below (618/596). Both still
+ * fit the same 812px budget with room to spare, so no config that was eligible
+ * became ineligible; but a future config retune that eats the remaining
+ * headroom would pass checkLayout and fail here. The layout-budget test asserts
+ * against THESE arrays — what the screens actually render — so that failure
+ * would surface in the gate rather than on a phone.
+ */
+
+/** F1c — the next unplayed fixture's effect line, persistent on the draft. */
+export const NEXT_FIXTURE_H = 36;
+
+/** F2b — mini-gauntlet + synergy impact of the selected offer. */
+export const PICK_IMPACT_H = 40;
+
+/** F3b — projected band for the next fixture + banked / bust-keeps. */
+export const DECISION_INFO_H = 76;
+
+/**
+ * Draft view stack, top to bottom (LAYOUT_SPEC "Draft view" + Ticket F).
+ * 48+64+36+88+190+40+24+44 + 7×12 = 618.
+ */
 export const DRAFT_SECTIONS = [
   LAYOUT.topBarH,
   LAYOUT.fixtureStripH,
+  NEXT_FIXTURE_H,
   SYNERGY_METERS_H,
   LAYOUT.offerCardMaxH,
+  PICK_IMPACT_H,
   LAYOUT.rowDotsH,
   LAYOUT.scoreBarH,
 ] as const;
 
-/** Round view stack, top to bottom (LAYOUT_SPEC "Round view"). */
+/**
+ * Round view stack, top to bottom (LAYOUT_SPEC "Round view" + Ticket F).
+ * 48+140+92+88+56+76+56 + 6×12 = 628.
+ *
+ * DECISION_INFO_H is RESERVED, not conditional: it only has content in the
+ * decision phase, but the slot is held open from the first frame so BANK and
+ * PUSH do not slide under a thumb at the exact moment the reveal lands and the
+ * player reaches for them.
+ */
 export const ROUND_SECTIONS = [
   LAYOUT.topBarH,
   LAYOUT.fixtureCardH,
   LAYOUT.benchStripH,
   SYNERGY_METERS_H,
   LAYOUT.thresholdBarH,
+  DECISION_INFO_H,
   LAYOUT.bankPushButtonsH,
 ] as const;
 

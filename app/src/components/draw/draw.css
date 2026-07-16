@@ -61,3 +61,76 @@
   transform: translateY(4px) rotate(-2deg);
   opacity: 0.55;
 }
+
+/* ── Ticket F — legibility pass ─────────────────────────────────────────── */
+
+/* F2b — ghost segment: the chain slot a selected offer WOULD fill. Pulsing
+   and hollow so it can't be misread as already earned. */
+@keyframes draw-ghost-pulse {
+  0%, 100% { opacity: 0.28; transform: scaleY(0.82); }
+  50% { opacity: 0.85; transform: scaleY(1); }
+}
+
+.draw-ghost-seg {
+  animation: draw-ghost-pulse 1.1s ease-in-out infinite;
+}
+
+/* F2b — the multiplier a pick would create. */
+@keyframes draw-ghost-chip {
+  0%, 100% { opacity: 0.6; }
+  50% { opacity: 1; }
+}
+
+.draw-ghost-chip {
+  animation: draw-ghost-chip 1.1s ease-in-out infinite;
+}
+
+/* F2a — a selected offer lifts off the page: the shadow grows and the card
+   rises, so "selected" is unmistakable against the two it beat. */
+.draw-offer-selected {
+  transform: translateY(-6px);
+  transition: transform 0.14s cubic-bezier(0.22, 0.9, 0.3, 1.2);
+}
+
+/* F3a — the uncertain band. The gradient is the point: the score lands
+   somewhere in here and the UI does not know where. */
+.draw-band-fill {
+  background: linear-gradient(
+    90deg,
+    hsl(var(--destructive)) 0%,
+    hsl(var(--yellow)) 50%,
+    hsl(var(--success)) 100%
+  );
+}
+
+/* F1b / F7 — bottom sheet entrance. */
+@keyframes draw-sheet-in {
+  0% { transform: translate(-50%, 100%); }
+  100% { transform: translate(-50%, 0); }
+}
+
+.draw-sheet-in {
+  animation: draw-sheet-in 0.22s cubic-bezier(0.22, 0.9, 0.3, 1) both;
+}
+
+/* F4 — coach mark entrance. */
+@keyframes draw-coach-in {
+  0% { transform: translateY(-6px) scale(0.96); opacity: 0; }
+  100% { transform: translateY(0) scale(1); opacity: 1; }
+}
+
+.draw-coach-in {
+  animation: draw-coach-in 0.2s ease-out both;
+}
+
+/* Every Ticket F motion is decorative — honor the OS setting. */
+@media (prefers-reduced-motion: reduce) {
+  .draw-ghost-seg,
+  .draw-ghost-chip,
+  .draw-sheet-in,
+  .draw-coach-in {
+    animation: none;
+  }
+  .draw-ghost-seg { opacity: 0.6; }
+  .draw-offer-selected { transition: none; }
+}

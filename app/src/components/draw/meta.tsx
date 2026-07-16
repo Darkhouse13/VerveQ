@@ -6,6 +6,7 @@
 
 import { Shield, Zap, Cog, History, Sparkles, Hand, Swords } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
+import { eraTag } from "@/lib/drawEngine";
 import type { FixtureModifier, SynergyFamily } from "@/lib/drawEngine";
 
 export const ARCHETYPE_META: Record<string, { label: string; Icon: LucideIcon }> = {
@@ -58,7 +59,11 @@ export function modifierLabel(mod: FixtureModifier): string {
   return `${shortTag(String(mod.value))} ${formatMult(mod.mult)}`;
 }
 
-/** Era bucket index → decade label ("3" → "90s" with the 1960-based buckets). */
+/**
+ * Era bucket index → decade label ("3" → "90s"). Goes through the engine's own
+ * `eraTag` rather than repeating its 1960 base here: the buckets cards are
+ * generated into and the labels modifiers are described with cannot then drift.
+ */
 function eraBoundLabel(index: number): string {
-  return `${String(1960 + index * 10).slice(2)}s`;
+  return shortTag(eraTag(index));
 }

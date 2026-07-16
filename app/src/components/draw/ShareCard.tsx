@@ -1,7 +1,7 @@
 import { cn } from "@/lib/utils";
 import { Crown } from "lucide-react";
 import type { ShareCardData } from "./share";
-import { OUTCOME_LABEL } from "./share";
+import { OUTCOME_LABEL, rarityLine } from "./share";
 
 /**
  * S5 — the spoiler-free share card. Its props (ShareCardData) carry board
@@ -14,6 +14,9 @@ import { OUTCOME_LABEL } from "./share";
 export function ShareCard({ data }: { data: ShareCardData }) {
   const busted = data.outcome === "busted";
   const fullclear = data.outcome === "fullclear";
+  // F6 — same gate as buildShareText: below the population floor there is no
+  // rarity line to draw at all.
+  const rarity = rarityLine(data.rarity);
   return (
     <div
       className={cn(
@@ -70,6 +73,18 @@ export function ShareCard({ data }: { data: ShareCardData }) {
           {Math.round(data.score).toLocaleString("en-US")}
           <span className="text-xs align-top ml-1">PTS</span>
         </p>
+
+        {rarity && (
+          <p
+            className={cn(
+              "text-center font-heading font-bold text-[10px] tracking-wide",
+              busted ? "opacity-80" : "text-muted-foreground",
+            )}
+            data-testid="draw-share-rarity"
+          >
+            {rarity}
+          </p>
+        )}
 
         <p
           className={cn(

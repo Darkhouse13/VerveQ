@@ -1,12 +1,19 @@
-import { useEffect, useMemo, useState } from "react";
-import { Crown } from "lucide-react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Crown, Info } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { NeoButton } from "@/components/neo/NeoButton";
-import type { Card, RoundBreakdown } from "@/lib/drawEngine";
+import type { Card, Fixture, RoundBreakdown } from "@/lib/drawEngine";
 import type { DrawRules, DrawRunView } from "@/lib/drawApi/types";
 import { archetypeMeta, modifierLabel, formatMult } from "./meta";
+import { DIR_ARROW, effectTokens } from "./fixtureEffects";
+import { bustKeepValue, projectRound } from "./projection";
+import { ProjectedBand } from "./ProjectedBand";
+import { FixtureSheet } from "./FixtureSheet";
+import { CardDetailSheet } from "./CardDetailSheet";
+import { CoachMark } from "./CoachMark";
+import { useCoachMarks } from "./coachMarks";
 import { SynergyMeters } from "./SynergyMeters";
-import { LAYOUT } from "./layout";
+import { DECISION_INFO_H, LAYOUT } from "./layout";
 
 type RoundMode = "select" | "reveal" | "decision" | "done";
 
@@ -23,12 +30,16 @@ interface RoundStageProps {
   onContinue: () => void;
 }
 
+/** Long-press opens a card's detail without firing its bench tap (F7). */
+const LONG_PRESS_MS = 450;
+
 /**
- * S3 — round view (LAYOUT_SPEC "Round view", 540px of the 812px budget):
- * fixture card w/ modifiers + threshold, tap-to-bench squad strip (exactly
- * one benched, changeable until CONFIRM), synergy meters on the fielded five,
- * score-vs-threshold bar, then BANK / PUSH. Bust and full-clear states end
- * here with a CONTINUE out. No scroll.
+ * S3 — round view (LAYOUT_SPEC "Round view" + Ticket F, 628px of the 812px
+ * budget): fixture card w/ effect line + threshold, tap-to-bench squad strip
+ * (exactly one benched, changeable until CONFIRM), synergy meters on the
+ * fielded five, the projected band / score bar, the stake panel, then
+ * BANK / PUSH. Bust and full-clear states end here with a CONTINUE out.
+ * No scroll.
  */
 export function RoundStage({
   view,
@@ -44,6 +55,9 @@ export function RoundStage({
   // resumed run (reload mid-decision) doesn't replay the reveal animation.
   const [seenRounds, setSeenRounds] = useState(() => view.rounds.length);
   const [selected, setSelected] = useState<number | null>(null);
+  const [sheetFixture, setSheetFixture] = useState<Fixture | null>(null);
+  const [sheetCard, setSheetCard] = useState<Card | null>(null);
+  const coach = useCoachMarks();
 
   const pendingReveal = view.rounds.length > seenRounds;
   useEffect(() => {
@@ -85,8 +99,7 @@ export function RoundStage({
 
   const resolved = mode !== "select" && lastRound !== null;
   const score = resolved ? lastRound.score : null;
-  const fillPct =
-    score === null ? 0 : Math.min((score / fixture.threshold) * 100, 115);
+  const fillPct = score === null ? 0 : Math.min((score / fixture.threshold) * 100, 115);
 
   const perCard = useMemo(() => {
     const map = new Map<string, { contribution: number; form: number }>();
@@ -98,16 +111,72 @@ export function RoundStage({
 
   const nextFixture = view.fixtures[view.fixtureIndex + 1] ?? null;
 
+  /**
+   * F3a — the band for the five that would take the pitch under the current
+   * bench selection. Recomputed on every toggle: this is what makes benching a
+   * decision rather than a formality. Only meaningful once exactly one card is
+   * benched, so it stays null until then.
+   */
+  const selectBand = useMemo(() => {
+    if (mode !== "select" || selected === null) return null;
+    return projectRound(meterCards, fixture, rules);
+  }, [mode, selected, meterCards, fixture, rules]);
+
+  /** F3b — what the SAME five would face if the player pushes on. */
+  const pushBand = useMemo(() => {
+    if (mode !== "decision" || nextFixture === null) return null;
+    return projectRound(meterCards, nextFixture, rules);
+  }, [mode, nextFixture, meterCards, rules]);
+
+  // ── F7 long-press ────────────────────────────────────────────────────────
+  const pressTimer = useRef<number | null>(null);
+  const longPressed = useRef(false);
+
+  const clearPress = useCallback(() => {
+    if (pressTimer.current !== null) {
+      window.clearTimeout(pressTimer.current);
+      pressTimer.current = null;
+    }
+  }, []);
+
+  const startPress = useCallback(
+    (card: Card) => {
+      longPressed.current = false;
+      clearPress();
+      pressTimer.current = window.setTimeout(() => {
+        longPressed.current = true;
+        setSheetCard(card);
+      }, LONG_PRESS_MS);
+    },
+    [clearPress],
+  );
+
+  useEffect(() => clearPress, [clearPress]);
+
+  const tapChip = (index: number) => {
+    // A long-press already opened the sheet — don't also bench the card.
+    if (longPressed.current) {
+      longPressed.current = false;
+      return;
+    }
+    if (mode !== "select" || locked) return;
+    coach.dismiss("bench");
+    setSelected(index);
+  };
+
   return (
     <div
-      className="flex flex-col flex-1 min-h-0"
+      className="relative flex flex-col flex-1 min-h-0"
       style={{ gap: LAYOUT.sectionGap }}
       data-testid="draw-round-stage"
     >
-      {/* Fixture card — archetype, modifiers, threshold; resolution math once
-          the round has played (form revealed per card in the strip below). */}
-      <div
-        className="neo-border neo-shadow rounded-lg bg-card flex flex-col p-3 shrink-0"
+      {/* Fixture card — archetype, effect line, modifiers, threshold; the
+          resolution math once the round has played (form revealed per card in
+          the strip below). Tappable for the same sheet the strip opens (F1b). */}
+      <button
+        type="button"
+        onClick={() => setSheetFixture(fixture)}
+        className="neo-border neo-shadow rounded-lg bg-card flex flex-col p-3 shrink-0 text-left w-full cursor-pointer active:neo-shadow-pressed"
         style={{ height: LAYOUT.fixtureCardH }}
         data-testid="draw-fixture-card"
       >
@@ -115,11 +184,14 @@ export function RoundStage({
           <span className="font-heading font-bold text-[10px] tracking-wide text-muted-foreground">
             FIXTURE {fixture.index + 1}/{rules.fixtureCount}
           </span>
-          {fixture.isBoss && (
-            <span className="neo-border rounded bg-yellow text-yellow-foreground font-heading font-bold text-[9px] px-1.5 py-0.5 inline-flex items-center gap-1">
-              <Crown size={10} strokeWidth={3} /> BOSS
-            </span>
-          )}
+          <span className="flex items-center gap-1">
+            {fixture.isBoss && (
+              <span className="neo-border rounded bg-yellow text-yellow-foreground font-heading font-bold text-[9px] px-1.5 py-0.5 inline-flex items-center gap-1">
+                <Crown size={10} strokeWidth={3} /> BOSS
+              </span>
+            )}
+            <Info size={12} strokeWidth={3} className="text-muted-foreground" />
+          </span>
         </div>
         <div className="flex items-center gap-2 mt-1">
           <Icon size={22} strokeWidth={2.5} />
@@ -129,7 +201,31 @@ export function RoundStage({
           </span>
           <span className="font-mono font-bold text-2xl leading-none">{fixture.threshold}</span>
         </div>
-        <div className="flex flex-wrap gap-1 mt-1.5">
+
+        {/* F1a — the effect in one line, above the exact multipliers. */}
+        <p
+          className="font-mono font-bold text-[11px] mt-1.5"
+          data-testid="draw-fixture-card-effect"
+        >
+          {effectTokens(fixture).map((t, i) => (
+            <span
+              key={i}
+              className={cn(
+                "mr-2",
+                t.dir === "up"
+                  ? "text-success"
+                  : t.dir === "down"
+                    ? "text-destructive"
+                    : "text-muted-foreground",
+              )}
+            >
+              {t.label}
+              {DIR_ARROW[t.dir]}
+            </span>
+          ))}
+        </p>
+
+        <div className="flex flex-wrap gap-1 mt-1">
           {fixture.modifiers.map((mod, i) => (
             <span
               key={i}
@@ -151,149 +247,217 @@ export function RoundStage({
             {lastRound.cleared ? "CLEARED" : "FAILED"}
           </p>
         )}
-      </div>
+      </button>
 
       {/* Tap-to-bench squad strip (Ticket 0.2 D2): before the reveal it is the
           bench selector; after, it shows the fielded five with their revealed
-          form + contribution, the benched card visually on the bench. */}
+          form + contribution, the benched card visually on the bench.
+          Long-press any chip for its detail sheet (F7). */}
       <div
-        className="flex shrink-0"
-        style={{ height: LAYOUT.benchStripH, gap: LAYOUT.squadChipGap }}
-        data-testid="draw-bench-strip"
-      >
-        {view.squad.map((card, i) => {
-          const benchedNow = mode === "select" ? selected === i : lastRound?.benchedCardId === card.id;
-          const stat = perCard.get(card.id);
-          return (
-            <div key={card.id} className="flex-1 min-w-0 flex flex-col" style={{ gap: 4 }}>
-              <button
-                type="button"
-                disabled={mode !== "select" || locked}
-                onClick={() => setSelected(i)}
-                aria-pressed={mode === "select" ? selected === i : undefined}
-                className={cn(
-                  "neo-border rounded-lg bg-card flex flex-col items-center justify-center min-w-0 px-0.5",
-                  mode === "select" && "cursor-pointer neo-shadow-sm active:neo-shadow-pressed",
-                  benchedNow && "draw-benched",
-                )}
-                style={{ height: 64 }}
-                data-testid={`draw-squad-chip-${i}`}
-              >
-                <span className="font-mono font-bold text-base leading-none">{card.rating}</span>
-                <span className="font-heading font-bold text-[8px] leading-tight text-muted-foreground">
-                  {card.position}
-                </span>
-                {stat && (
-                  <span className="font-mono font-bold text-[9px] leading-none">
-                    {stat.form >= 1 ? "▲" : "▼"}
-                    {Math.round(stat.contribution)}
+          className="flex shrink-0"
+          style={{ height: LAYOUT.benchStripH, gap: LAYOUT.squadChipGap }}
+          data-testid="draw-bench-strip"
+        >
+          {view.squad.map((card, i) => {
+            const benchedNow = mode === "select" ? selected === i : lastRound?.benchedCardId === card.id;
+            const stat = perCard.get(card.id);
+            return (
+              <div key={card.id} className="flex-1 min-w-0 flex flex-col" style={{ gap: 4 }}>
+                <button
+                  type="button"
+                  disabled={locked}
+                  onClick={() => tapChip(i)}
+                  onPointerDown={() => startPress(card)}
+                  onPointerUp={clearPress}
+                  onPointerLeave={clearPress}
+                  onContextMenu={(e) => e.preventDefault()}
+                  aria-pressed={mode === "select" ? selected === i : undefined}
+                  className={cn(
+                    "neo-border rounded-lg bg-card flex flex-col items-center justify-center min-w-0 px-0.5 touch-none",
+                    mode === "select" && "cursor-pointer neo-shadow-sm active:neo-shadow-pressed",
+                    benchedNow && "draw-benched",
+                  )}
+                  style={{ height: 64 }}
+                  data-testid={`draw-squad-chip-${i}`}
+                >
+                  <span className="font-mono font-bold text-base leading-none">{card.rating}</span>
+                  <span className="font-heading font-bold text-[8px] leading-tight text-muted-foreground">
+                    {card.position}
                   </span>
-                )}
-              </button>
-              <div className="h-5 flex items-start justify-center">
-                {benchedNow && (
-                  <span
-                    className="neo-border rounded bg-foreground text-background font-heading font-bold text-[7px] px-1 py-0.5 tracking-wide"
-                    data-testid={`draw-benched-badge-${i}`}
-                  >
-                    BENCHED
-                  </span>
-                )}
+                  {stat && (
+                    <span className="font-mono font-bold text-[9px] leading-none">
+                      {stat.form >= 1 ? "▲" : "▼"}
+                      {Math.round(stat.contribution)}
+                    </span>
+                  )}
+                </button>
+                <div className="h-5 flex items-start justify-center">
+                  {benchedNow && (
+                    <span
+                      className="neo-border rounded bg-foreground text-background font-heading font-bold text-[7px] px-1 py-0.5 tracking-wide"
+                      data-testid={`draw-benched-badge-${i}`}
+                    >
+                      BENCHED
+                    </span>
+                  )}
+                </div>
               </div>
-            </div>
-          );
-        })}
+            );
+          })}
       </div>
 
       <SynergyMeters cards={meterCards} synergyTable={rules.synergyTable} />
 
-      {/* Score-vs-threshold bar (animated fill). */}
-      <div
-        className="neo-border rounded-lg bg-card flex flex-col justify-center px-3 shrink-0"
-        style={{ height: LAYOUT.thresholdBarH }}
-        data-testid="draw-threshold-bar"
-      >
-        <div className="flex items-center justify-between font-mono font-bold text-[11px] mb-1">
-          <span data-testid="draw-round-score">{score === null ? "—" : Math.round(score)}</span>
-          <span className="text-muted-foreground">/ {fixture.threshold}</span>
+      {/* One 56px slot: the projected band while choosing (F3a), the resolved
+          score once the round has played. */}
+      {mode === "select" && selectBand !== null ? (
+        <ProjectedBand band={selectBand} threshold={fixture.threshold} label="YOUR FIVE" />
+      ) : (
+        <div
+          className="neo-border rounded-lg bg-card flex flex-col justify-center px-3 shrink-0"
+          style={{ height: LAYOUT.thresholdBarH }}
+          data-testid="draw-threshold-bar"
+        >
+          <div className="flex items-center justify-between font-mono font-bold text-[11px] mb-1">
+            <span data-testid="draw-round-score">{score === null ? "—" : Math.round(score)}</span>
+            <span className="text-muted-foreground">/ {fixture.threshold}</span>
+          </div>
+          <div className="neo-border rounded-full h-3.5 bg-muted overflow-hidden">
+            <div
+              className={cn(
+                "draw-bar-fill h-full rounded-full",
+                score === null ? "bg-muted" : lastRound?.cleared ? "bg-success" : "bg-destructive",
+              )}
+              style={{ width: `${fillPct}%` }}
+            />
+          </div>
         </div>
-        <div className="neo-border rounded-full h-3.5 bg-muted overflow-hidden">
-          <div
-            className={cn(
-              "draw-bar-fill h-full rounded-full",
-              score === null
-                ? "bg-muted"
-                : lastRound?.cleared
-                  ? "bg-success"
-                  : "bg-destructive",
-            )}
-            style={{ width: `${fillPct}%` }}
+      )}
+
+      {/* F3b — the stake. Reserved at a fixed height so BANK / PUSH never move
+          under a thumb when the reveal lands (see layout.ts). */}
+      <div
+        className="shrink-0 flex flex-col justify-center"
+        style={{ height: DECISION_INFO_H, gap: 4 }}
+        data-testid="draw-stake-panel"
+      >
+        {mode === "decision" && pushBand !== null && nextFixture !== null && (
+          <ProjectedBand
+            band={pushBand}
+            threshold={nextFixture.threshold}
+            label="IF YOU PUSH"
+            testId="draw-push-band"
           />
+        )}
+        <div className="flex items-center justify-between px-1">
+          <span className="font-heading font-bold text-[10px] tracking-wide">
+            BANKED{" "}
+            <span className="font-mono text-xs" data-testid="draw-stake-banked">
+              {Math.round(view.cumulative)}
+            </span>
+          </span>
+          <span className="font-heading font-bold text-[10px] tracking-wide text-muted-foreground">
+            BUST KEEPS{" "}
+            <span className="font-mono text-xs text-destructive" data-testid="draw-stake-bust">
+              {bustKeepValue(view.cumulative, rules)}
+            </span>
+          </span>
         </div>
       </div>
 
       {/* Decision slot: CONFIRM (bench) → resolving → BANK / PUSH, or the
           bust / full-clear exit. */}
-      <div className="shrink-0" style={{ height: LAYOUT.bankPushButtonsH }} data-testid="draw-decision-panel">
-        {mode === "select" && (
-          <NeoButton
-            variant="primary"
-            className="w-full h-full"
-            disabled={selected === null || locked}
-            onClick={() => selected !== null && onBench(selected)}
-            data-testid="draw-confirm-bench"
-          >
-            {selected === null ? "TAP A CARD TO BENCH" : "CONFIRM XI"}
-          </NeoButton>
-        )}
-        {mode === "reveal" && (
-          <NeoButton variant="secondary" className="w-full h-full" disabled>
-            RESOLVING…
-          </NeoButton>
-        )}
-        {mode === "decision" && (
-          <div className="grid grid-cols-2 gap-3 h-full">
+      <div
+        className="relative shrink-0"
+        style={{ height: LAYOUT.bankPushButtonsH }}
+        data-testid="draw-decision-panel"
+      >
+        <div className="h-full">
+          {mode === "select" && (
             <NeoButton
-              variant="success"
-              className="h-full flex-col gap-0"
-              disabled={locked}
-              onClick={onBank}
-              data-testid="draw-bank"
+              variant="primary"
+              className="w-full h-full"
+              disabled={selected === null || locked}
+              onClick={() => selected !== null && onBench(selected)}
+              data-testid="draw-confirm-bench"
             >
-              <span>BANK</span>
-              <span className="font-mono text-[10px] normal-case">
-                {Math.round(view.cumulative)} pts
-              </span>
+              {selected === null ? "TAP A CARD TO BENCH" : "CONFIRM XI"}
             </NeoButton>
+          )}
+          {mode === "reveal" && (
+            <NeoButton variant="secondary" className="w-full h-full" disabled>
+              RESOLVING…
+            </NeoButton>
+          )}
+          {mode === "decision" && (
+            <div className="grid grid-cols-2 gap-3 h-full">
+              <NeoButton
+                variant="success"
+                className="h-full flex-col gap-0"
+                disabled={locked}
+                onClick={() => {
+                  coach.dismiss("decision");
+                  onBank();
+                }}
+                data-testid="draw-bank"
+              >
+                <span>BANK</span>
+                <span className="font-mono text-[10px] normal-case">
+                  {Math.round(view.cumulative)} pts
+                </span>
+              </NeoButton>
+              <NeoButton
+                variant="accent"
+                className="h-full flex-col gap-0"
+                disabled={locked}
+                onClick={() => {
+                  coach.dismiss("decision");
+                  onPush();
+                }}
+                data-testid="draw-push"
+              >
+                <span>PUSH</span>
+                <span className="font-mono text-[10px] normal-case">
+                  {nextFixture ? `next clears at ${nextFixture.threshold}` : ""}
+                </span>
+              </NeoButton>
+            </div>
+          )}
+          {mode === "done" && (
             <NeoButton
-              variant="accent"
-              className="h-full flex-col gap-0"
-              disabled={locked}
-              onClick={onPush}
-              data-testid="draw-push"
+              variant={view.outcome === "busted" ? "danger" : view.outcome === "fullclear" ? "yellow" : "success"}
+              className="w-full h-full"
+              onClick={onContinue}
+              data-testid="draw-continue"
             >
-              <span>PUSH</span>
-              <span className="font-mono text-[10px] normal-case">
-                {nextFixture ? `next clears at ${nextFixture.threshold}` : ""}
-              </span>
+              {view.outcome === "busted"
+                ? "BUSTED — SEE RESULT"
+                : view.outcome === "fullclear"
+                  ? "FULL CLEAR — SEE RESULT"
+                  : "SEE RESULT"}
             </NeoButton>
-          </div>
-        )}
-        {mode === "done" && (
-          <NeoButton
-            variant={view.outcome === "busted" ? "danger" : view.outcome === "fullclear" ? "yellow" : "success"}
-            className="w-full h-full"
-            onClick={onContinue}
-            data-testid="draw-continue"
-          >
-            {view.outcome === "busted"
-              ? "BUSTED — SEE RESULT"
-              : view.outcome === "fullclear"
-                ? "FULL CLEAR — SEE RESULT"
-                : "SEE RESULT"}
-          </NeoButton>
-        )}
+          )}
+        </div>
       </div>
+
+      {/* Pinned to the stage's bottom slack — see CoachMark. The bench and
+          bank/push marks land directly under the button they describe, without
+          covering the band or the stake panel that button acts on. */}
+      {(mode === "select" || mode === "decision") && (
+        <CoachMark
+          id={mode === "select" ? "bench" : "decision"}
+          seen={coach.seen}
+          onDismiss={coach.dismiss}
+          onSkipAll={coach.skipAll}
+        />
+      )}
+
+      <FixtureSheet
+        fixture={sheetFixture}
+        fixtureCount={rules.fixtureCount}
+        onClose={() => setSheetFixture(null)}
+      />
+      <CardDetailSheet card={sheetCard} onClose={() => setSheetCard(null)} />
     </div>
   );
 }

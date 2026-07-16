@@ -38,6 +38,10 @@ function shareDataFor(view: DrawRunView): ShareCardData {
     identity: buildIdentity(view.rounds),
     score: view.finalScore ?? 0,
     url: "https://verveq.com/draw",
+    // Ticket F (F6): the leak contract must hold whether or not the rarity
+    // line renders, so the spoiler-free assertions below run with a population
+    // above the floor — the branch that puts the MOST text on the card.
+    rarity: { linePercent: 4.2, population: 500 },
   };
 }
 

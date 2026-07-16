@@ -26,7 +26,11 @@
  *                                           adapter never sends one, so the
  *                                           server's UTC clock is the only
  *                                           clock in play.
- *                   boardNumber/rules/playState/streak/nextBoardAt → passthrough
+ *                   boardNumber/playState/streak/nextBoardAt → passthrough
+ *                   rules                 → rulesView(): copied field-by-field,
+ *                                           PLUS the one documented gap-fill in
+ *                                           this file (formSpread,
+ *                                           maxSynergyFamilies) — see rulesView
  *                   boardReady:false      → ensureToday(), then re-read
  *   startRun        (run view)            → DrawRunView
  *   submitChoice    {replayRejected, run} → DrawRunView | throw
@@ -35,6 +39,7 @@
  *                                           `isYou` comes from me.rank instead)
  *                   entry.roundsCleared   → DROPPED (not in the UI contract)
  *   getRarity       sharePct              → DrawRarity.linePercent
+ *                   total                 → DrawRarity.population (F6)
  *   getStreak       lastPlayedDateKey     → DROPPED (not in the UI contract)
  *
  * Passthrough (same name, same meaning, no transform): phase, rowIndex,
@@ -53,11 +58,13 @@ import type {
   DrawApi,
   DrawLeaderboardEntry,
   DrawRarity,
+  DrawRules,
   DrawRunView,
   DrawStreak,
   DrawToday,
 } from "./types";
 import type { Choice } from "@/lib/drawEngine";
+import { C13V1_CONFIG } from "@/lib/drawEngine/configs/c13v1";
 
 /**
  * Minimal client surface this adapter needs — structurally satisfied by
@@ -103,6 +110,15 @@ interface ServerRun {
   choiceLog: unknown;
 }
 
+/**
+ * What convex/draw.ts `rulesView` ACTUALLY sends today. Deliberately typed as
+ * its own shape rather than `DrawToday["rules"]`: the client contract gained
+ * formSpread + maxSynergyFamilies in Ticket F (F3's projected band needs
+ * both), and the serving layer does not send them yet — see `rulesView` below.
+ */
+type ServerRules = Omit<DrawRules, "formSpread" | "maxSynergyFamilies"> &
+  Partial<Pick<DrawRules, "formSpread" | "maxSynergyFamilies">>;
+
 interface ServerToday {
   dateKey: string;
   boardNumber: number;
@@ -110,7 +126,7 @@ interface ServerToday {
   streak: number;
   boardReady: boolean;
   fixtures: DrawToday["fixtures"] | null;
-  rules: DrawToday["rules"] | null;
+  rules: ServerRules | null;
   playState: DrawToday["playState"];
   run: ServerRun | null;
 }
@@ -176,6 +192,45 @@ function card(c: ServerCard): DrawRunView["squad"][number] {
   };
 }
 
+/**
+ * KNOWN GAP (Ticket F, F3) — the one place this adapter fills a value the
+ * server did not send, and it is a deliberate, bounded compromise.
+ *
+ * convex/draw.ts `rulesView` publishes a strict subset of the config that
+ * omits formSpread and maxSynergyFamilies. The projected score band (F3) is
+ * arithmetically impossible without both: form is uniform in
+ * [1-formSpread, 1+formSpread], and squadSynergies applies maxSynergyFamilies
+ * when it grants multipliers. Ticket F's scope fences convex/ off (its only
+ * backend exception was getRarity, which turned out not to need one), so the
+ * knobs cannot be added to rulesView here.
+ *
+ * Filling them from the pinned config is CORRECT TODAY and not indefinitely:
+ * convex/drawSeed.ts registers exactly one configVersion (c13-1) and every
+ * board is generated under it, so the pinned module and the serving config are
+ * the same numbers — drawConfigSingleSourceContract.test.ts already asserts
+ * the mock and the server share the object. It stops being correct the moment
+ * a SECOND config is registered and a board is served under it, because this
+ * would then describe the wrong config.
+ *
+ * FOLLOW-UP: a serving ticket should add both knobs to `rulesView` (neither
+ * reveals board content or form — formSpread is the width of the form
+ * distribution, not a draw from it). Once served, the `??` below stops firing
+ * and this fallback is dead code; drawLegibilityRulesContract.test.ts pins the
+ * filled values against C13V1_CONFIG so the two cannot drift meanwhile.
+ */
+function rulesView(rules: ServerRules): DrawRules {
+  return {
+    rows: rules.rows,
+    offersPerRow: rules.offersPerRow,
+    fixtureCount: rules.fixtureCount,
+    synergyTable: [...rules.synergyTable],
+    bustKeep: rules.bustKeep,
+    fullClearBonus: rules.fullClearBonus,
+    formSpread: rules.formSpread ?? C13V1_CONFIG.formSpread,
+    maxSynergyFamilies: rules.maxSynergyFamilies ?? C13V1_CONFIG.maxSynergyFamilies,
+  };
+}
+
 function runView(run: ServerRun): DrawRunView {
   return {
     boardNumber: run.boardNumber,
@@ -218,7 +273,7 @@ export class ConvexDrawApi implements DrawApi {
       fixtures: today.fixtures,
       playState: today.playState,
       streak: today.streak,
-      rules: today.rules,
+      rules: rulesView(today.rules),
       nextBoardAt: today.nextBoardAt,
     };
   }
@@ -255,7 +310,12 @@ export class ConvexDrawApi implements DrawApi {
     if (rarity === null || rarity.sharePct === null) {
       throw new Error("Rarity is only available for a completed draft");
     }
-    return { linePercent: rarity.sharePct };
+    // total → population (Ticket F, F6). The count of completed runs for the
+    // dateKey — the denominator sharePct is a share OF — was already computed
+    // and returned by getRarity; it was simply dropped here. So F6 needs no
+    // backend change: the suppression threshold is a display decision and
+    // lives entirely client-side (see MIN_RARITY_POPULATION).
+    return { linePercent: rarity.sharePct, population: rarity.total };
   }
 
   async getStreak(): Promise<DrawStreak> {

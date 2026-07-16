@@ -10,9 +10,11 @@ import type {
   DrawRunView,
   DrawStreak,
 } from "@/lib/drawApi/types";
+import type { Card } from "@/lib/drawEngine";
 import { DrawCardFace } from "./DrawCardFace";
+import { CardDetailSheet } from "./CardDetailSheet";
 import { ShareCard } from "./ShareCard";
-import { buildIdentity, buildShareText, buildTrail, OUTCOME_LABEL } from "./share";
+import { buildIdentity, buildShareText, buildTrail, OUTCOME_LABEL, rarityLine } from "./share";
 import type { ShareCardData } from "./share";
 
 interface ResultStageProps {
@@ -55,7 +57,11 @@ export function ResultStage({ view, rarity, streak, leaderboard, nextBoardAt, sh
     identity,
     score: view.finalScore ?? 0,
     url: shareUrl,
+    rarity,
   };
+  // F6 — one gate, shared with the share card and the share text.
+  const rarityText = rarityLine(rarity);
+  const [detailCard, setDetailCard] = useState<Card | null>(null);
 
   const [now, setNow] = useState(() => Date.now());
   useEffect(() => {
@@ -97,9 +103,9 @@ export function ResultStage({ view, rarity, streak, leaderboard, nextBoardAt, sh
           {Math.round(view.finalScore ?? 0).toLocaleString("en-US")}
         </p>
         <p className="text-2xl mt-2 tracking-wide">{trail}</p>
-        {rarity !== null && (
-          <p className="font-heading font-bold text-[11px] mt-2 uppercase" data-testid="draw-rarity-line">
-            Only {rarity.linePercent}% drafted this line
+        {rarityText && (
+          <p className="font-heading font-bold text-[11px] mt-2" data-testid="draw-rarity-line">
+            {rarityText}
           </p>
         )}
       </NeoCard>
@@ -136,18 +142,23 @@ export function ResultStage({ view, rarity, streak, leaderboard, nextBoardAt, sh
                 <span className="font-mono font-bold text-[9px] w-5 text-muted-foreground">
                   R{r + 1}
                 </span>
+                {/* F7 — the reveal is outside the pick flow, so a tap here is
+                    unambiguous: it opens the card's detail. */}
                 {row.map((card) => (
-                  <div
+                  <button
                     key={card.id}
+                    type="button"
+                    onClick={() => setDetailCard(card)}
                     className={cn(
-                      "neo-border rounded flex-1 min-w-0 h-14 bg-card",
+                      "neo-border rounded flex-1 min-w-0 h-14 bg-card cursor-pointer active:neo-shadow-pressed",
                       squadIds.has(card.id)
                         ? "ring-2 ring-primary neo-shadow-sm"
                         : "opacity-60",
                     )}
+                    data-testid={`draw-reveal-card-${card.id}`}
                   >
                     <DrawCardFace card={card} size="mini" />
-                  </div>
+                  </button>
                 ))}
               </div>
             ))}
@@ -172,12 +183,18 @@ export function ResultStage({ view, rarity, streak, leaderboard, nextBoardAt, sh
                 <span className="font-heading text-[9px] uppercase opacity-70">
                   {OUTCOME_LABEL[entry.outcome]}
                 </span>
-                <span className="font-mono font-bold text-xs">{entry.score.toLocaleString("en-US")}</span>
+                {/* F5 — integers only. The engine's scores are floats and this
+                    row rendered them raw ("444.291"). */}
+                <span className="font-mono font-bold text-xs">
+                  {Math.round(entry.score).toLocaleString("en-US")}
+                </span>
               </div>
             ))}
           </div>
         </div>
       )}
+
+      <CardDetailSheet card={detailCard} onClose={() => setDetailCard(null)} />
     </div>
   );
 }

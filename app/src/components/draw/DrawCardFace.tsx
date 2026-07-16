@@ -1,6 +1,7 @@
 import { cn } from "@/lib/utils";
 import type { Card } from "@/lib/drawEngine";
 import { shortTag } from "./meta";
+import { tagCode } from "./tags";
 
 interface DrawCardFaceProps {
   card: Card;
@@ -15,7 +16,14 @@ const POSITION_CLASS: Record<string, string> = {
   ATT: "bg-hot-pink text-hot-pink-foreground",
 };
 
-/** A synthetic player card face (name, rating, position, synergy tags). */
+/**
+ * A synthetic player card face (name, rating, position, synergy tags).
+ *
+ * F7: clubs and nation render through tags.ts — a display CODE, not the raw
+ * tag — so the real card set's short codes appear here without a change to
+ * this file. The full names live in the card detail sheet, which is the only
+ * place there is room for them.
+ */
 export function DrawCardFace({ card, size = "offer" }: DrawCardFaceProps) {
   const mini = size === "mini";
   return (
@@ -50,8 +58,9 @@ export function DrawCardFace({ card, size = "offer" }: DrawCardFaceProps) {
               "rounded-sm bg-electric-blue text-electric-blue-foreground font-mono font-bold leading-none",
               mini ? "text-[6px] px-0.5 py-px" : "text-[8px] px-1 py-0.5",
             )}
+            data-testid="draw-card-club"
           >
-            {shortTag(club)}
+            {tagCode(club)}
           </span>
         ))}
         <span
@@ -59,8 +68,9 @@ export function DrawCardFace({ card, size = "offer" }: DrawCardFaceProps) {
             "rounded-sm bg-hot-pink text-hot-pink-foreground font-mono font-bold leading-none",
             mini ? "text-[6px] px-0.5 py-px" : "text-[8px] px-1 py-0.5",
           )}
+          data-testid="draw-card-nation"
         >
-          {shortTag(card.nation)}
+          {tagCode(card.nation)}
         </span>
         <span
           className={cn(

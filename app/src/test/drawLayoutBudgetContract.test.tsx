@@ -12,7 +12,10 @@ import { MOCK_ENGINE_CONFIG } from "@/lib/drawApi/mockConfig";
 import { LocalMockApi } from "@/lib/drawApi";
 import type { DrawRunView, DrawToday } from "@/lib/drawApi/types";
 import {
+  DECISION_INFO_H,
   DRAFT_SECTIONS,
+  NEXT_FIXTURE_H,
+  PICK_IMPACT_H,
   ROUND_SECTIONS,
   HEIGHT_BUDGET,
   LAYOUT,
@@ -46,11 +49,16 @@ describe("Draw layout budget (LAYOUT_SPEC 390×844)", () => {
   });
 
   it("the stage section stacks match the spec totals and fit the 812px budget", () => {
-    // LAYOUT_SPEC: draft 48+64+88+190+24+44 + 5×12 = 518; round
-    // 48+140+92+88+56+56 + 5×12 = 540; budget 844 − 2×16 = 812.
+    // LAYOUT_SPEC + Ticket F: draft 48+64+36+88+190+40+24+44 + 7×12 = 618;
+    // round 48+140+92+88+56+76+56 + 6×12 = 628; budget 844 − 2×16 = 812.
+    //
+    // Ticket F added 100px to the draft (F1c's next-fixture line, F2b's
+    // mini-gauntlet) and 88px to the round (F3b's stake panel), against the
+    // 294px/272px of headroom the two views had. Both still fit with ~190px
+    // spare and neither view scrolls.
     expect(HEIGHT_BUDGET).toBe(812);
-    expect(stackedHeight(DRAFT_SECTIONS)).toBe(518);
-    expect(stackedHeight(ROUND_SECTIONS)).toBe(540);
+    expect(stackedHeight(DRAFT_SECTIONS)).toBe(618);
+    expect(stackedHeight(ROUND_SECTIONS)).toBe(628);
     expect(stackedHeight(DRAFT_SECTIONS)).toBeLessThanOrEqual(HEIGHT_BUDGET);
     expect(stackedHeight(ROUND_SECTIONS)).toBeLessThanOrEqual(HEIGHT_BUDGET);
   });
@@ -63,6 +71,9 @@ describe("Draw layout budget (LAYOUT_SPEC 390×844)", () => {
     expect(screen.getByTestId("draw-offer-row").style.height).toBe(`${LAYOUT.offerCardMaxH}px`);
     expect(screen.getByTestId("draw-row-dots").style.height).toBe(`${LAYOUT.rowDotsH}px`);
     expect(screen.getByTestId("draw-score-bar").style.height).toBe(`${LAYOUT.scoreBarH}px`);
+    // Ticket F sections carry their budgeted heights too.
+    expect(screen.getByTestId("draw-next-fixture").style.height).toBe(`${NEXT_FIXTURE_H}px`);
+    expect(screen.getByTestId("draw-pick-impact").style.height).toBe(`${PICK_IMPACT_H}px`);
     // One active row of exactly 3 offers — never more on screen.
     expect(screen.getAllByTestId(/draw-offer-\d/)).toHaveLength(MOCK_ENGINE_CONFIG.offersPerRow);
   });
@@ -86,6 +97,10 @@ describe("Draw layout budget (LAYOUT_SPEC 390×844)", () => {
     expect(screen.getByTestId("draw-synergy-meters").style.height).toBe("88px");
     expect(screen.getByTestId("draw-threshold-bar").style.height).toBe(`${LAYOUT.thresholdBarH}px`);
     expect(screen.getByTestId("draw-decision-panel").style.height).toBe(`${LAYOUT.bankPushButtonsH}px`);
+    // F3b's stake panel is RESERVED from the first frame — the slot must hold
+    // its height in the bench phase, before it has any content, or BANK/PUSH
+    // would move under the player's thumb when the reveal lands.
+    expect(screen.getByTestId("draw-stake-panel").style.height).toBe(`${DECISION_INFO_H}px`);
     // All 6 squad chips visible (the tap-to-bench strip shows the full squad).
     expect(screen.getAllByTestId(/draw-squad-chip-\d/)).toHaveLength(MOCK_ENGINE_CONFIG.rows);
   });

@@ -60,6 +60,8 @@ import { boardNumberForDate, nextBoardAtForDate } from "../../../convex/lib/draw
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 const STORAGE_PREFIX = "verveq-draw-mock";
+/** Fabricated rivals on the mock leaderboard (+1 for the player, once done). */
+export const MOCK_LEADERBOARD_SIZE = 7;
 /** Reroll-chain backstop; dead-board rate is ~2% per k, so 50 is astronomical. */
 const MAX_REROLLS = 50;
 
@@ -95,6 +97,13 @@ export interface LocalMockApiOptions {
   storage?: StorageLike | null;
   /** Start faulted; every call rejects until cleared via setFault(null). */
   fault?: DrawFaultMode | null;
+  /**
+   * Override the synthetic rarity population (Ticket F, F6). The mock's own
+   * world only ever holds MOCK_LEADERBOARD_SIZE + 1 players, which is below
+   * MIN_RARITY_POPULATION — so by default the mock exercises the SUPPRESSED
+   * branch, honestly. Set this to reach the shown branch in dev.
+   */
+  rarityPopulation?: number;
 }
 
 interface StreakRecord {
@@ -178,11 +187,13 @@ export class LocalMockApi implements DrawApi {
   private memoryRun: { dateKey: string; json: string } | null = null;
   private memoryStreak: StreakRecord = { current: 0, best: 0, lastDoneKey: null };
   private fault: DrawFaultMode | null;
+  private readonly rarityPopulation: number | undefined;
 
   constructor(options: LocalMockApiOptions = {}) {
     this.config = MOCK_ENGINE_CONFIG;
     this.cardSet = generateCardSet(MOCK_CARD_SET_SEED, this.config.cardGen);
     this.fault = options.fault ?? null;
+    this.rarityPopulation = options.rarityPopulation;
     this.now = options.now ?? (() => Date.now());
     this.storage =
       options.storage !== undefined
@@ -225,6 +236,8 @@ export class LocalMockApi implements DrawApi {
         synergyTable: this.config.synergyTable,
         bustKeep: this.config.bustKeep,
         fullClearBonus: this.config.fullClearBonus,
+        formSpread: this.config.formSpread,
+        maxSynergyFamilies: this.config.maxSynergyFamilies,
       },
       nextBoardAt: nextBoardAtForDate(dateKey),
     });
@@ -260,7 +273,7 @@ export class LocalMockApi implements DrawApi {
     const board = this.board(dateKey);
     const rng = rngFromString(`${board.seed}|mock-leaderboard`);
     const entries: DrawLeaderboardEntry[] = [];
-    for (let i = 0; i < 7; i++) {
+    for (let i = 0; i < MOCK_LEADERBOARD_SIZE; i++) {
       const busted = rng() < 0.35;
       const fullclear = !busted && rng() < 0.2;
       const score = Math.round(
@@ -299,7 +312,13 @@ export class LocalMockApi implements DrawApi {
     }
     // Deterministic pseudo-rarity from the drafted line: same line, same %.
     const u = rngFromString(`${dateKey}|mock-rarity|${state.squad.join(",")}`)();
-    return { linePercent: Math.round((0.4 + u * 23.6) * 10) / 10 };
+    return {
+      linePercent: Math.round((0.4 + u * 23.6) * 10) / 10,
+      // The mock's world is exactly its leaderboard, so this is the honest
+      // denominator — and it sits below MIN_RARITY_POPULATION, so the rarity
+      // line is suppressed unless a dev overrides it (see options).
+      population: this.rarityPopulation ?? MOCK_LEADERBOARD_SIZE + 1,
+    };
   }
 
   async getStreak(): Promise<DrawStreak> {
