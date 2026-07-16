@@ -529,14 +529,1120 @@ async function legends() {
   );
 }
 
+// ═════════════════════════════════════════════════════════════════════════════
+// THE DRAW — Ticket E0: sourced player retrieval (provenance-first enrichment)
+// ═════════════════════════════════════════════════════════════════════════════
+//
+// Enriches the Career Path universe (football_career_paths.json) with per-fact
+// sourced data + provenance, so E1 can select and E2 can blindly verify.
+//
+// PROVENANCE LAW: no fact is written without a resolvable Wikidata source ref.
+// Nation, position and debut year come from Wikidata's answer or are null.
+// Model knowledge is never a source. Absence is recorded as null, never guessed.
+//
+// Stages (each cached + resumable; run in order):
+//   cp-search   answerName -> candidate QIDs           (Wikidata search API)
+//   cp-clubqids candidate QIDs -> their P54 club QIDs   (cheap gate input)
+//   cp-clubdict distinct club QIDs -> label/aliases/type/country
+//   cp-facts    gate locally, then fetch facts for WINNERS only
+//   cp-emit     write playersSourced.json (pure; no network)
+//   cp-report   coverage report (pure; no network)
+//   cp-all      run every stage in order
+//
+// Network stages cache raw responses under scripts/cache/careerPath (gitignored),
+// so cp-emit / cp-report rerun instantly and offline while iterating on rules.
+
+// Plausibility bounds for a P580-derived debut year. Association football was
+// codified in 1863; anything earlier is a Wikidata placeholder/typo, not a career.
+// Deliberately wide — these reject sentinels, they do not curate the era range.
+const CP_MIN_PLAUSIBLE_DEBUT = 1850;
+const CP_MAX_PLAUSIBLE_DEBUT = new Date().getFullYear() + 1;
+
+const CP_CACHE_DIR = path.join(__dirname, "cache", "careerPath");
+const CP_PATHS_PATH = path.join(__dirname, "..", "app", "convex", "data", "football_career_paths.json");
+const CP_ALIASES_PATH = path.join(__dirname, "..", "app", "convex", "data", "clubAliases.json");
+const CP_ADDITIONS_PATH = path.join(__dirname, "..", "app", "convex", "data", "playerAdditions.json");
+const CP_OUT_PATH = path.join(__dirname, "..", "app", "convex", "data", "playersSourced.json");
+const CP_SEARCH_CACHE = path.join(CP_CACHE_DIR, "searchCandidates.json");
+const CP_CLUBQIDS_CACHE = path.join(CP_CACHE_DIR, "candidateClubQids.json");
+const CP_CLUBDICT_CACHE = path.join(CP_CACHE_DIR, "clubDict.json");
+const CP_FACTS_CACHE = path.join(CP_CACHE_DIR, "playerFacts.json");
+
+const WD_API = "https://www.wikidata.org/w/api.php";
+const SEARCH_THROTTLE_MS = 150; // action=wbsearchentities is light; still be polite
+
+// NOTE ON `clubs` SHAPE: football_career_paths.json is heterogeneous — an entry is
+// either a bare string ("Barcelona") or a loan-annotated object ({name, loan:true}).
+// 1216 of 9366 club entries (across 639 of 1322 players) are the object form, so this
+// is the norm, not an edge case. Everything downstream MUST read club names through
+// cpClubEntryName(); coercing an entry with String() yields "[object Object]", which
+// would silently fail to match and weaken the identity gate for ~half the universe.
+type CareerPathClub = string | { name: string; loan?: boolean };
+interface CareerPath {
+  id: string;
+  answerName: string;
+  acceptedAnswers?: string[];
+  clubs: CareerPathClub[];
+  difficulty: string;
+  // Ticket E0.1. "career-path" = derived from football_career_paths.json (gate: >=2 of
+  // many clubs). "manual" = owner-supplied addition (gate: ALL owner anchors must be
+  // confirmed). Anchors are the owner's HYPOTHESIS; Wikidata is the test.
+  origin?: "career-path" | "manual";
+  anchorClubs?: string[];
+}
+interface PlayerAddition {
+  name: string;
+  anchorClubs: string[];
+  ownerNote?: string | string[];
+}
+const cpClubEntryName = (c: CareerPathClub): string => (typeof c === "string" ? c : c.name);
+interface SearchCandidates {
+  careerPathId: string;
+  answerName: string;
+  candidates: { qid: string; label: string; description: string }[];
+  retrievedAt: string;
+}
+interface ClubDictEntry {
+  qid: string;
+  label: string;
+  aliases: string[];
+  types: string[]; // P31 labels
+  country: string | null; // P17 label
+  retrievedAt: string;
+}
+interface RawFacts {
+  qid: string;
+  memberships: { clubQid: string; start: string | null; end: string | null }[];
+  positions: string[]; // P413 labels
+  countryForSport: string | null; // P1532 label
+  citizenships: string[]; // P27 labels
+  retrievedAt: string;
+}
+
+const cpEnsureCache = () => fs.mkdirSync(CP_CACHE_DIR, { recursive: true });
+const nowIso = () => new Date().toISOString();
+
+// The universe every stage operates on. CP_ONLY (comma-separated careerPathIds)
+// narrows it for smoke tests; every stage reads through here so a scoped run stays
+// internally consistent (gate/report counts describe the SAME set that was fetched).
+// add_<slug> — synthetic, stable careerPathId for owner-supplied additions.
+const cpAdditionId = (name: string) => `add_${norm(name).replace(/ /g, "-")}`;
+
+// Owner additions, normalised onto the CareerPath shape so every stage (search,
+// club fetch, facts, emit) treats them identically. Only the identity gate differs.
+function cpLoadAdditions(): CareerPath[] {
+  const raw = readJson<{ additions?: PlayerAddition[] }>(CP_ADDITIONS_PATH, {});
+  return (raw.additions || []).map((a) => ({
+    id: cpAdditionId(a.name),
+    answerName: a.name,
+    clubs: a.anchorClubs,
+    difficulty: "manual",
+    origin: "manual" as const,
+    anchorClubs: a.anchorClubs,
+  }));
+}
+
+function cpUniverse(): CareerPath[] {
+  const all = [
+    ...readJson<CareerPath[]>(CP_PATHS_PATH, []).map((p) => ({ ...p, origin: "career-path" as const })),
+    ...cpLoadAdditions(),
+  ];
+  const only = (process.env.CP_ONLY || "").split(",").map((s) => s.trim()).filter(Boolean);
+  if (only.length === 0) return all;
+  const want = new Set(only);
+  const picked = all.filter((p) => want.has(p.id));
+  console.log(`  [CP_ONLY] scoped universe: ${picked.length}/${all.length} career paths`);
+  return picked;
+}
+
+// ── club-name matching ───────────────────────────────────────────────────────
+// STRICT normalized equality against a club's label + skos:altLabel set.
+//
+// Deliberately strict: the tempting alternative (strip affix tokens like FC/AC/CF,
+// then compare token sets) collapses "AC Milan" -> {milan}, which is a subset of
+// "Inter Milan" -> {inter, milan} and produces cross-club false positives. Since a
+// false club match directly weakens the identity gate, we accept more misses in
+// exchange for no false matches. Wikidata's own altLabels already carry most bare
+// names ("Manchester United" is an alias of Q18656); clubAliases.json holds the
+// residue where they do not (e.g. "Juventus" vs label "Juventus FC").
+function cpLoadAliasTable(): Map<string, string[]> {
+  const raw = readJson<{ aliases?: Record<string, string[]> }>(CP_ALIASES_PATH, {});
+  return new Map(Object.entries(raw.aliases || {}));
+}
+
+function cpAcceptedNames(cpClub: string, aliases: Map<string, string[]>): Set<string> {
+  const out = new Set<string>([norm(cpClub)]);
+  for (const a of aliases.get(cpClub) || []) out.add(norm(a));
+  return out;
+}
+
+function cpClubNamesOf(entry: ClubDictEntry): Set<string> {
+  const s = new Set<string>([norm(entry.label)]);
+  for (const a of entry.aliases) s.add(norm(a));
+  return s;
+}
+
+// ── club-type exclusion rules (documented per ticket) ────────────────────────
+// A P54 entry is only a CLUB fact if it is neither a national team nor an
+// identifiable youth/reserve/B side. Both checks look at P31 type labels first
+// (authoritative) and fall back to the entity label (catches entries whose P31 is
+// missing or under-specified). Fail-closed: anything that looks like a national
+// or youth/reserve side is excluded rather than risk polluting the club list.
+const CP_NATIONAL_TYPE_RE = /national (association )?football team|national team|national association football/i;
+const CP_NATIONAL_LABEL_RE = /\bnational\b/i;
+const CP_YOUTH_TYPE_RE = /reserve team|youth team|farm team|academy|youth academy|under-\d{2}/i;
+
+// Youth/reserve markers, split by WHERE they may legally appear in a label.
+//
+// ANYWHERE: unambiguous age/reserve words. These must NOT be end-anchored —
+// "Brazil national under-23 football team" carries the marker mid-label, and an
+// end-anchored rule silently accepted it as a SENIOR national team, which then
+// became the source of that player's sporting-nation fact.
+const CP_YOUTH_ANYWHERE_RE =
+  /\bU-?\d{2}\b|\bunder-?\d{2}\b|\byouth\b|\breserves?\b|\bacademy\b|\bprimavera\b|\bjuvenil\b|\bamateure\b|\bcastilla\b/i;
+// TRAILING ONLY: bare letters/numerals marking a B-side ("FC Barcelona B",
+// "FC Barcelona C", "Bayern Munich II"). Meaningful only as a suffix — un-anchoring
+// them would wrongly exclude senior clubs whose names merely contain the letter,
+// while "Boca Juniors"/"Argentinos Juniors" must stay KEPT (senior clubs).
+const CP_YOUTH_SUFFIX_RE = /\s(B|C|D|II|III|IV)$/;
+
+function cpIsNationalTeam(e: ClubDictEntry): boolean {
+  return e.types.some((t) => CP_NATIONAL_TYPE_RE.test(t)) || CP_NATIONAL_LABEL_RE.test(e.label);
+}
+function cpIsYouthOrReserve(e: ClubDictEntry): boolean {
+  const label = e.label.trim();
+  return (
+    e.types.some((t) => CP_YOUTH_TYPE_RE.test(t)) ||
+    CP_YOUTH_ANYWHERE_RE.test(label) ||
+    CP_YOUTH_SUFFIX_RE.test(label)
+  );
+}
+function cpIsSeniorClub(e: ClubDictEntry): boolean {
+  return !cpIsNationalTeam(e) && !cpIsYouthOrReserve(e);
+}
+
+// A national team's SECOND string ("France B national football team", "England
+// national association football B team"). The B marker sits mid-label here, so the
+// trailing-suffix rule above cannot see it. Scoped to national teams only — a bare
+// \bB\b applied to clubs would wrongly exclude senior clubs containing "B".
+const CP_NT_B_TEAM_RE = /\bB\b/;
+// The dictionary also holds non-association-football national sides (rugby union,
+// beach soccer, futsal), because candidate QIDs include non-footballers. None may
+// ever source a football player's sporting nation.
+const CP_NT_OTHER_SPORT_RE = /rugby|beach soccer|futsal|american football|field hockey|cricket/i;
+const CP_NT_FOOTBALL_RE = /football|soccer/i;
+// Olympic composites are NOT football sporting nations. "United Kingdom national
+// association football team" (Team GB) is an Olympic-only side assembled from the
+// four home nations and is not a FIFA member. Craig Bellamy — a Wales international
+// — carries BOTH it and the Wales team, and it sorted first in his P54 order, so he
+// was emitted as "United Kingdom" at green quality. Same class of UK modelling
+// artifact as the P17 case, excluded for the same reason.
+const CP_NT_COMPOSITE_RE = /^(united kingdom|great britain)\b|\bolympic\b/i;
+
+// A SENIOR association-football national team — the only kind allowed to source the
+// sporting-nation fact ("senior national team P54 if present").
+function cpIsSeniorNationalTeam(e: ClubDictEntry): boolean {
+  const label = e.label.trim();
+  return (
+    cpIsNationalTeam(e) &&
+    !cpIsYouthOrReserve(e) &&
+    !CP_NT_B_TEAM_RE.test(label) &&
+    CP_NT_FOOTBALL_RE.test(label) &&
+    !CP_NT_OTHER_SPORT_RE.test(label) &&
+    !CP_NT_COMPOSITE_RE.test(label)
+  );
+}
+
+// Extract the sporting nation from a senior national-team entity.
+//
+// P17 (country) alone is WRONG here: it names the sovereign state, but football's
+// nations are not states. England, Scotland, Wales and Northern Ireland are four
+// separate FIFA nations that ALL carry P17 = United Kingdom, which silently
+// collapsed 115 players (Gareth Bale, a Wales international, was emitted as
+// "United Kingdom" — a team he never played for).
+//
+// The team's own NAME alone is wrong too: "Canadian men's national soccer team"
+// parses to the demonym "Canadian", not "Canada".
+//
+// So: trust P17 by default (accurate and clean for every sovereign nation), and use
+// the team's name ONLY where P17 is provably too coarse — the United Kingdom case.
+// That is one rule about a known Wikidata modelling choice covering a whole class,
+// not per-player curation. If neither yields a name, return null (fail closed).
+const CP_NT_LABEL_RE =
+  /^(.*?)\s+(?:men's |women's )?national\s+(?:association\s+)?(?:football|soccer)\s+team$/i;
+function cpNationFromNationalTeam(e: ClubDictEntry): string | null {
+  const m = e.label.trim().match(CP_NT_LABEL_RE);
+  const fromLabel = m ? m[1].trim() : null;
+  if (e.country === "United Kingdom" && fromLabel) return fromLabel;
+  return e.country || fromLabel;
+}
+
+// ── position mapping (P413 -> GK|DEF|MID|ATT) ────────────────────────────────
+type CpPosition = "GK" | "DEF" | "MID" | "ATT";
+
+// Map ONE P413 label to a bucket. Within a single label, order matters:
+// "attacking midfielder" must resolve to MID (midfield beats attack), and
+// "wing-back" must resolve to DEF without being caught by /winger/.
+function cpMapPositionLabel(label: string): CpPosition | null {
+  const s = label.toLowerCase().trim();
+  if (!s) return null;
+  if (/goalkeeper|goalie|keeper/.test(s)) return "GK";
+  // Terms Wikidata ITSELF classifies as midfielder via P279 (subclass of):
+  //   Q8025128 "wing half" -> midfielder   (95 of our 105 null positions)
+  //   Q1201458 "playmaker" -> midfielder
+  // Mapped on Wikidata's own subclass statement, NOT on football judgement. Many
+  // players tagged "wing half" are plainly wingers (Bale, Neymar, Di María), but
+  // reclassing them to ATT would be our opinion overriding the only sourced answer —
+  // exactly what this ticket forbids. E2 can verify this mapping against P279.
+  // "centerhalf" (Q1109563) has NO P279 parent, so it stays unmapped -> null.
+  if (/\bwing half\b|\bplaymaker\b/.test(s)) return "MID";
+  if (/midfield/.test(s)) return "MID";
+  if (/\bback\b|back\b|defender|defence|defense|sweeper|libero/.test(s)) return "DEF";
+  if (/forward|striker|winger|attack|centre-forward|center-forward/.test(s)) return "ATT";
+  return null;
+}
+
+// Map a player's P413 value set. Each label is mapped INDEPENDENTLY — joining the
+// labels into one string and running an ordered regex would let a global priority
+// invent an answer Wikidata never gave.
+//
+// Wikidata frequently carries several equally-ranked P413 values that disagree
+// (Pelé, Cruyff and Messi are each BOTH "midfielder" AND "forward" at NormalRank).
+// There is no Wikidata answer to "which one wins", so we do not pretend there is:
+// a genuine multi-bucket conflict is reported as AMBIGUOUS and flagged amber, with
+// every candidate bucket recorded so E1 can decide (curation is out of scope here).
+// `pick` exists only so the field is populated deterministically; the precedence
+// GK > DEF > MID > ATT is arbitrary and carries no claim of correctness — consumers
+// must read sourceQuality/positionCandidates, not trust `pick` blindly.
+//
+// NOTE: the caller passes wdt:P413 values, which are already rank-filtered by
+// Wikidata (truthy = best rank), so a `preferred` value correctly wins upstream and
+// only ties among equally-ranked values ever reach the ambiguity branch.
+const CP_POSITION_PRECEDENCE: CpPosition[] = ["GK", "DEF", "MID", "ATT"];
+function cpMapPosition(labels: string[]): {
+  pick: CpPosition | null;
+  candidates: CpPosition[];
+  ambiguous: boolean;
+} {
+  const buckets = [...new Set(labels.map(cpMapPositionLabel).filter(Boolean) as CpPosition[])];
+  if (buckets.length === 0) return { pick: null, candidates: [], ambiguous: false };
+  if (buckets.length === 1) return { pick: buckets[0], candidates: buckets, ambiguous: false };
+  const pick = CP_POSITION_PRECEDENCE.find((b) => buckets.includes(b)) || null;
+  return { pick, candidates: buckets, ambiguous: true };
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// STAGE cp-search: answerName (+acceptedAnswers) -> candidate QIDs
+// ─────────────────────────────────────────────────────────────────────────────
+async function cpSearchEntities(term: string): Promise<{ qid: string; label: string; description: string }[]> {
+  const url =
+    `${WD_API}?action=wbsearchentities&format=json&language=en&uselang=en&type=item&limit=10&search=` +
+    encodeURIComponent(term);
+  for (let attempt = 0; attempt < 5; attempt++) {
+    try {
+      const res = await fetch(url, { headers: { "User-Agent": UA } });
+      if (res.status === 429 || res.status >= 500) {
+        await sleep(2 ** attempt * 1000);
+        continue;
+      }
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const json = (await res.json()) as { search?: any[] };
+      return (json.search || []).map((s) => ({
+        qid: s.id as string,
+        label: (s.label as string) || "",
+        description: (s.description as string) || "",
+      }));
+    } catch (err) {
+      if (attempt === 4) throw err;
+      await sleep(2 ** attempt * 1000);
+    }
+  }
+  return [];
+}
+
+// Candidate prefilter. Non-footballers (books, given names, video games) carry no
+// P54 and would be eliminated by the identity gate anyway; dropping them here only
+// saves WDQS work. Entities with NO description are KEPT — an empty description is
+// not evidence against personhood, and the club gate remains the real decider.
+const CP_NONPERSON_DESC_RE =
+  /\b(book|edition|album|song|film|movie|video game|family name|given name|surname|disambiguation|magazine|newspaper|painting|album by)\b/i;
+const CP_FOOTBALL_DESC_RE = /footballer|football player|soccer|association football/i;
+function cpKeepCandidate(c: { description: string }): boolean {
+  if (!c.description.trim()) return true;
+  if (CP_FOOTBALL_DESC_RE.test(c.description)) return true;
+  return !CP_NONPERSON_DESC_RE.test(c.description);
+}
+
+async function cpSearch() {
+  cpEnsureCache();
+  const paths = cpUniverse();
+  const cache = readJson<SearchCandidates[]>(CP_SEARCH_CACHE, []);
+  const done = new Set(cache.map((c) => c.careerPathId));
+  const pending = paths.filter((p) => !done.has(p.id));
+  console.log(`cp-search: ${paths.length} career paths, ${pending.length} pending, ${cache.length} cached`);
+
+  for (let i = 0; i < pending.length; i++) {
+    const p = pending[i];
+    // Search the answer name plus any accepted answers — different surface forms
+    // (e.g. "Salinas" vs "Julio Salinas Fernández") surface different candidates.
+    const terms = [p.answerName, ...(p.acceptedAnswers || [])];
+    const byQid = new Map<string, { qid: string; label: string; description: string }>();
+    for (const t of terms) {
+      let hits: { qid: string; label: string; description: string }[];
+      try {
+        hits = await cpSearchEntities(t);
+      } catch (err) {
+        console.error(`  search "${t}" FAILED: ${String(err).slice(0, 80)}`);
+        continue;
+      }
+      for (const h of hits) if (cpKeepCandidate(h) && !byQid.has(h.qid)) byQid.set(h.qid, h);
+      await sleep(SEARCH_THROTTLE_MS);
+    }
+    cache.push({
+      careerPathId: p.id,
+      answerName: p.answerName,
+      candidates: [...byQid.values()],
+      retrievedAt: nowIso(),
+    });
+    if ((i + 1) % 50 === 0 || i === pending.length - 1) {
+      writeJson(CP_SEARCH_CACHE, cache);
+      console.log(`  ${i + 1}/${pending.length} searched (${cache.length} total)`);
+    }
+  }
+  writeJson(CP_SEARCH_CACHE, cache);
+  const noCand = cache.filter((c) => c.candidates.length === 0).length;
+  const totalCands = cache.reduce((a, c) => a + c.candidates.length, 0);
+  console.log(
+    `cp-search DONE: ${cache.length} players, ${totalCands} candidates ` +
+      `(avg ${(totalCands / Math.max(1, cache.length)).toFixed(1)}), ${noCand} with zero candidates`,
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// STAGE cp-clubqids: candidate QIDs -> their P54 club QIDs (gate input, cheap)
+// ─────────────────────────────────────────────────────────────────────────────
+async function cpClubQids() {
+  cpEnsureCache();
+  const search = readJson<SearchCandidates[]>(CP_SEARCH_CACHE, []);
+  if (search.length === 0) {
+    console.error("no search cache — run `cp-search` first");
+    process.exit(1);
+  }
+  const allQids = [...new Set(search.flatMap((s) => s.candidates.map((c) => c.qid)))];
+  const cache = readJson<Record<string, string[]>>(CP_CLUBQIDS_CACHE, {});
+  const pending = allQids.filter((q) => !(q in cache));
+  console.log(`cp-clubqids: ${allQids.length} distinct candidate QIDs, ${pending.length} pending`);
+
+  const chunks = chunk(pending, 200);
+  for (let ci = 0; ci < chunks.length; ci++) {
+    const values = chunks[ci].map((q) => `wd:${q}`).join(" ");
+    // MUST use the full statement path (p:P54/ps:P54), NOT truthy wdt:P54.
+    // wdt: exposes only BEST-RANK statements. Wikidata marks an active player's
+    // CURRENT club as `preferred` rank, so wdt:P54 returns that club ALONE and hides
+    // the whole career history (Messi -> Inter Miami only; Ronaldo -> Al-Nassr only).
+    // Retired players have no preferred statement, so they look fine — which makes
+    // this fail silently and only for active players, starving the identity gate of
+    // the very club evidence it needs. p:/ps: returns every statement, any rank.
+    const query = `SELECT ?p ?club WHERE { VALUES ?p { ${values} } ?p p:P54 ?s. ?s ps:P54 ?club. }`;
+    let rows: any[];
+    try {
+      rows = await sparql(query, 90000);
+    } catch (err) {
+      console.error(`  chunk ${ci + 1}/${chunks.length} FAILED: ${String(err).slice(0, 100)}`);
+      continue;
+    }
+    // Seed every QID in the chunk (including those with zero P54) so reruns skip them.
+    for (const q of chunks[ci]) cache[q] = cache[q] || [];
+    for (const r of rows) {
+      const p = qidOf(r.p.value);
+      const club = qidOf(r.club.value);
+      if (!cache[p].includes(club)) cache[p].push(club);
+    }
+    writeJson(CP_CLUBQIDS_CACHE, cache);
+    if ((ci + 1) % 5 === 0 || ci === chunks.length - 1) {
+      console.log(`  chunk ${ci + 1}/${chunks.length}`);
+    }
+  }
+  const withClubs = Object.values(cache).filter((v) => v.length > 0).length;
+  console.log(`cp-clubqids DONE: ${Object.keys(cache).length} QIDs, ${withClubs} have >=1 P54 club`);
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// STAGE cp-clubdict: distinct club QIDs -> label / altLabels / P31 types / P17
+// ─────────────────────────────────────────────────────────────────────────────
+// `extraQids` lets cp-facts top the dictionary up with clubs first seen on
+// qualifier-bearing statements, without round-tripping them through the cache file.
+async function cpClubDict(extraQids: string[] = []) {
+  cpEnsureCache();
+  const clubQids = readJson<Record<string, string[]>>(CP_CLUBQIDS_CACHE, {});
+  const all = [...new Set([...Object.values(clubQids).flat(), ...extraQids])];
+  const cache = readJson<Record<string, ClubDictEntry>>(CP_CLUBDICT_CACHE, {});
+  const pending = all.filter((q) => !(q in cache));
+  console.log(`cp-clubdict: ${all.length} distinct club QIDs, ${pending.length} pending`);
+
+  const chunks = chunk(pending, 150);
+  for (let ci = 0; ci < chunks.length; ci++) {
+    const values = chunks[ci].map((q) => `wd:${q}`).join(" ");
+    const query = `SELECT ?c ?cLabel (GROUP_CONCAT(DISTINCT ?a;separator="||") AS ?aliases) (GROUP_CONCAT(DISTINCT ?t;separator="||") AS ?types) (SAMPLE(?ctry) AS ?country) WHERE {
+  VALUES ?c { ${values} }
+  ?c rdfs:label ?cLabel. FILTER(LANG(?cLabel)="en")
+  OPTIONAL { ?c skos:altLabel ?a. FILTER(LANG(?a)="en") }
+  OPTIONAL { ?c wdt:P31 ?tE. ?tE rdfs:label ?t. FILTER(LANG(?t)="en") }
+  OPTIONAL { ?c wdt:P17 ?ctryE. ?ctryE rdfs:label ?ctry. FILTER(LANG(?ctry)="en") }
+} GROUP BY ?c ?cLabel`;
+    let rows: any[];
+    try {
+      rows = await sparql(query, 90000);
+    } catch (err) {
+      console.error(`  chunk ${ci + 1}/${chunks.length} FAILED: ${String(err).slice(0, 100)}`);
+      continue;
+    }
+    const ts = nowIso();
+    for (const r of rows) {
+      const qid = qidOf(r.c.value);
+      cache[qid] = {
+        qid,
+        label: r.cLabel.value,
+        aliases: r.aliases?.value ? r.aliases.value.split("||").filter(Boolean) : [],
+        types: r.types?.value ? r.types.value.split("||").filter(Boolean) : [],
+        country: r.country?.value || null,
+        retrievedAt: ts,
+      };
+    }
+    writeJson(CP_CLUBDICT_CACHE, cache);
+    if ((ci + 1) % 5 === 0 || ci === chunks.length - 1) console.log(`  chunk ${ci + 1}/${chunks.length}`);
+  }
+  console.log(`cp-clubdict DONE: ${Object.keys(cache).length} clubs described`);
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// IDENTITY GATE (pure) — the core safety rule of this ticket
+// ─────────────────────────────────────────────────────────────────────────────
+// Accept a QID only if >=2 of the player's Career Path clubs match that entity's
+// P54 club memberships. 1 match => AMBER-identity. 0 => UNRESOLVED (excluded).
+// Name similarity ALONE is never sufficient — homonyms ("Ronaldo" ranks Cristiano
+// above Ronaldo Nazário in search) are the failure mode this gate exists to stop.
+interface GateResult {
+  careerPathId: string;
+  answerName: string;
+  origin: "career-path" | "manual";
+  qid: string | null;
+  matchedClubs: string[];
+  matchCount: number;
+  status: "resolved" | "amber-identity" | "unresolved";
+  unmatchedClubNames: string[];
+}
+
+function cpRunGate(): GateResult[] {
+  const paths = cpUniverse();
+  const search = readJson<SearchCandidates[]>(CP_SEARCH_CACHE, []);
+  const clubQids = readJson<Record<string, string[]>>(CP_CLUBQIDS_CACHE, {});
+  const clubDict = readJson<Record<string, ClubDictEntry>>(CP_CLUBDICT_CACHE, {});
+  const aliasTable = cpLoadAliasTable();
+  const searchById = new Map(search.map((s) => [s.careerPathId, s]));
+
+  const out: GateResult[] = [];
+  for (const p of paths) {
+    const s = searchById.get(p.id);
+    const cands = s?.candidates || [];
+    // DISTINCT club names only. A career path can list the same club twice (e.g.
+    // cp-beckham has two AC Milan loan spells); counting both would let a SINGLE
+    // real club clear the ">=2 clubs" gate. Dedupe on the normalized name.
+    const distinctClubs: string[] = [];
+    const seenClub = new Set<string>();
+    for (const entry of p.clubs) {
+      const name = cpClubEntryName(entry);
+      const key = norm(name);
+      if (!key || seenClub.has(key)) continue;
+      seenClub.add(key);
+      distinctClubs.push(name);
+    }
+    // Score every candidate by how many DISTINCT Career Path clubs appear in that
+    // candidate's P54 set. Highest match count wins; ties are rejected as
+    // unresolvable (we cannot tell the homonyms apart on club evidence).
+    const scored = cands
+      .map((c) => {
+        const entityClubNames = (clubQids[c.qid] || [])
+          .map((cq) => clubDict[cq])
+          .filter(Boolean)
+          .map((e) => cpClubNamesOf(e));
+        const matched: string[] = [];
+        for (const cpClub of distinctClubs) {
+          const accepted = cpAcceptedNames(cpClub, aliasTable);
+          const hit = entityClubNames.some((names) => [...accepted].some((a) => names.has(a)));
+          if (hit) matched.push(cpClub);
+        }
+        return { qid: c.qid, matched };
+      })
+      .sort((a, b) => b.matched.length - a.matched.length);
+
+    const best = scored[0];
+    const second = scored[1];
+    if (!best || best.matched.length === 0) {
+      out.push({
+        careerPathId: p.id,
+        answerName: p.answerName,
+        origin: p.origin || "career-path",
+        qid: null,
+        matchedClubs: [],
+        matchCount: 0,
+        status: "unresolved",
+        unmatchedClubNames: distinctClubs,
+      });
+      continue;
+    }
+    // Ambiguous tie between two candidates on identical club evidence => refuse.
+    if (second && second.matched.length === best.matched.length) {
+      out.push({
+        careerPathId: p.id,
+        answerName: p.answerName,
+        origin: p.origin || "career-path",
+        qid: null,
+        matchedClubs: [],
+        matchCount: 0,
+        status: "unresolved",
+        unmatchedClubNames: distinctClubs,
+      });
+      continue;
+    }
+    // ── E0.1: owner-anchored gate for manual additions ──
+    // The owner's anchors are a HYPOTHESIS; Wikidata is the test. EVERY anchor must
+    // be confirmed in the entity's P54 or the entry is UNRESOLVED — a partially
+    // confirmed assertion is never forced through. A lone confirmed anchor yields
+    // AMBER-identity, never `resolved`: one club cannot separate players who share a
+    // surname AND that club (Cesare / Paolo / Daniel Maldini all played for AC Milan),
+    // and deciding on name similarity is exactly what this gate exists to prevent.
+    if (p.origin === "manual") {
+      const anchors = distinctClubs;
+      const allConfirmed = anchors.length > 0 && best.matched.length === anchors.length;
+      if (!allConfirmed) {
+        out.push({
+          careerPathId: p.id,
+          answerName: p.answerName,
+          origin: "manual",
+          qid: null,
+          matchedClubs: best.matched,
+          matchCount: best.matched.length,
+          status: "unresolved",
+          unmatchedClubNames: anchors.filter((c) => !best.matched.includes(c)),
+        });
+        continue;
+      }
+      out.push({
+        careerPathId: p.id,
+        answerName: p.answerName,
+        origin: "manual",
+        qid: best.qid,
+        matchedClubs: best.matched,
+        matchCount: best.matched.length,
+        // >=2 confirmed anchors earns `resolved`; a single confirmed anchor stays
+        // AMBER pending an explicit owner ruling on the QID.
+        status: anchors.length >= 2 ? "resolved" : "amber-identity",
+        unmatchedClubNames: [],
+      });
+      continue;
+    }
+
+    out.push({
+      careerPathId: p.id,
+      answerName: p.answerName,
+      origin: p.origin || "career-path",
+      qid: best.qid,
+      matchedClubs: best.matched,
+      matchCount: best.matched.length,
+      status: best.matched.length >= 2 ? "resolved" : "amber-identity",
+      unmatchedClubNames: distinctClubs.filter((c) => !best.matched.includes(c)),
+    });
+  }
+  return out;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// STAGE cp-facts: fetch facts for gate winners only
+// ─────────────────────────────────────────────────────────────────────────────
+async function cpFacts() {
+  cpEnsureCache();
+  const gate = cpRunGate();
+  const winners = [...new Set(gate.filter((g) => g.qid).map((g) => g.qid as string))];
+  const cache = readJson<Record<string, RawFacts>>(CP_FACTS_CACHE, {});
+  const pending = winners.filter((q) => !(q in cache));
+  console.log(`cp-facts: ${winners.length} gated QIDs, ${pending.length} pending`);
+
+  const chunks = chunk(pending, 80);
+  for (let ci = 0; ci < chunks.length; ci++) {
+    const values = chunks[ci].map((q) => `wd:${q}`).join(" ");
+    const ts = nowIso();
+    for (const q of chunks[ci]) {
+      cache[q] = cache[q] || {
+        qid: q,
+        memberships: [],
+        positions: [],
+        countryForSport: null,
+        citizenships: [],
+        retrievedAt: ts,
+      };
+    }
+
+    // P54 statements WITH start/end qualifiers (debutYear needs statement-level P580).
+    const memQuery = `SELECT ?p ?club ?start ?end WHERE {
+  VALUES ?p { ${values} }
+  ?p p:P54 ?s. ?s ps:P54 ?club.
+  OPTIONAL { ?s pq:P580 ?start }
+  OPTIONAL { ?s pq:P582 ?end }
+}`;
+    // Scalars: P413 position, P1532 country for sport, P27 citizenship.
+    const scalarQuery = `SELECT ?p (GROUP_CONCAT(DISTINCT ?posL;separator="||") AS ?poss) (GROUP_CONCAT(DISTINCT ?cfsL;separator="||") AS ?cfs) (GROUP_CONCAT(DISTINCT ?natL;separator="||") AS ?nats) WHERE {
+  VALUES ?p { ${values} }
+  OPTIONAL { ?p wdt:P413 ?pos. ?pos rdfs:label ?posL. FILTER(LANG(?posL)="en") }
+  OPTIONAL { ?p wdt:P1532 ?cfsE. ?cfsE rdfs:label ?cfsL. FILTER(LANG(?cfsL)="en") }
+  OPTIONAL { ?p wdt:P27 ?natE. ?natE rdfs:label ?natL. FILTER(LANG(?natL)="en") }
+} GROUP BY ?p`;
+
+    try {
+      const memRows = await sparql(memQuery, 90000);
+      for (const r of memRows) {
+        const p = qidOf(r.p.value);
+        if (!cache[p]) continue;
+        cache[p].memberships.push({
+          clubQid: qidOf(r.club.value),
+          start: yr(r.start?.value),
+          end: yr(r.end?.value),
+        });
+      }
+      const scRows = await sparql(scalarQuery, 90000);
+      for (const r of scRows) {
+        const p = qidOf(r.p.value);
+        if (!cache[p]) continue;
+        cache[p].positions = r.poss?.value ? r.poss.value.split("||").filter(Boolean) : [];
+        cache[p].countryForSport = r.cfs?.value ? r.cfs.value.split("||")[0] : null;
+        cache[p].citizenships = r.nats?.value ? r.nats.value.split("||").filter(Boolean) : [];
+      }
+    } catch (err) {
+      console.error(`  chunk ${ci + 1}/${chunks.length} FAILED: ${String(err).slice(0, 100)}`);
+      for (const q of chunks[ci]) delete cache[q]; // leave undone; rerun resumes
+      continue;
+    }
+    writeJson(CP_FACTS_CACHE, cache);
+    if ((ci + 1) % 5 === 0 || ci === chunks.length - 1) console.log(`  chunk ${ci + 1}/${chunks.length}`);
+  }
+
+  // Newly-referenced club QIDs (from qualifier-bearing statements) may not be in the
+  // dict yet; top it up so cp-emit can classify every membership.
+  const clubDict = readJson<Record<string, ClubDictEntry>>(CP_CLUBDICT_CACHE, {});
+  const missing = [
+    ...new Set(
+      Object.values(cache)
+        .flatMap((f) => f.memberships.map((m) => m.clubQid))
+        .filter((q) => !(q in clubDict)),
+    ),
+  ];
+  if (missing.length > 0) {
+    console.log(`  topping up club dict with ${missing.length} newly-seen clubs`);
+    await cpClubDict(missing);
+  }
+  console.log(`cp-facts DONE: ${Object.keys(cache).length} players with raw facts`);
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// STAGE cp-emit: playersSourced.json (pure — the provenance contract)
+// ─────────────────────────────────────────────────────────────────────────────
+type SourceQuality = "green" | "amber";
+interface SourceRef {
+  qid: string;
+  property: string;
+  retrievedAt: string;
+}
+interface SourcedFact<T> {
+  value: T;
+  source: SourceRef;
+  sourceQuality: SourceQuality;
+}
+interface SourcedPlayer {
+  careerPathId: string;
+  answerName: string;
+  // E0.1: "manual" entries came from playerAdditions.json (owner-anchored identity),
+  // not from the Career Path universe. Facts are sourced identically either way.
+  origin: "career-path" | "manual";
+  qid: string;
+  facts: {
+    nation: SourcedFact<string> | null;
+    position: SourcedFact<CpPosition> | null;
+    debutYear: SourcedFact<number> | null;
+    clubs: SourcedFact<string>[];
+  };
+  identityEvidence: {
+    matchedClubs: string[];
+    matchCount: number;
+    status: "resolved" | "amber-identity";
+    nationPath?: "national-team" | "P1532" | "P27";
+    // Present only when P413 gave several equally-ranked, conflicting buckets.
+    // `facts.position.value` is then a deterministic pick, NOT a sourced verdict.
+    positionCandidates?: CpPosition[];
+    // Present only when the player has >1 senior national team (dual internationals).
+    // `facts.nation.value` is then a deterministic pick, NOT a sourced verdict.
+    nationCandidates?: string[];
+  };
+  volatility: "static";
+}
+
+function cpEmit(): { players: SourcedPlayer[]; gate: GateResult[] } {
+  const gate = cpRunGate();
+  const facts = readJson<Record<string, RawFacts>>(CP_FACTS_CACHE, {});
+  const clubDict = readJson<Record<string, ClubDictEntry>>(CP_CLUBDICT_CACHE, {});
+  const players: SourcedPlayer[] = [];
+
+  for (const g of gate) {
+    if (!g.qid) continue;
+    const raw = facts[g.qid];
+    if (!raw) continue;
+    // If the IDENTITY itself is amber (only one club matched), every fact inherits
+    // amber: a fact is only as trustworthy as the entity it was read from.
+    const identityAmber = g.status === "amber-identity";
+    const q = (base: SourceQuality): SourceQuality => (identityAmber ? "amber" : base);
+    const ref = (property: string): SourceRef => ({
+      qid: g.qid as string,
+      property,
+      retrievedAt: raw.retrievedAt,
+    });
+
+    // ── clubs: P54 minus national teams minus youth/reserve sides ──
+    const seen = new Set<string>();
+    const included: { clubQid: string; label: string; start: string | null }[] = [];
+    for (const m of raw.memberships) {
+      const e = clubDict[m.clubQid];
+      if (!e || !cpIsSeniorClub(e)) continue;
+      if (!seen.has(m.clubQid)) {
+        seen.add(m.clubQid);
+        included.push({ clubQid: m.clubQid, label: e.label, start: m.start });
+      } else {
+        const prev = included.find((i) => i.clubQid === m.clubQid)!;
+        if (m.start && (!prev.start || m.start < prev.start)) prev.start = m.start;
+      }
+    }
+    const clubs: SourcedFact<string>[] = included.map((i) => ({
+      value: i.label,
+      source: ref("P54"),
+      sourceQuality: q("green"),
+    }));
+
+    // ── debutYear: earliest P580 across INCLUDED clubs; null if none (fail closed) ──
+    // Wikidata carries placeholder start times: Roberto Carlos (Q429039) has a real
+    // P580 of "0001-01-01T00:00:00Z", which min()'d straight through to debutYear=1.
+    // Discard values outside the plausible range rather than propagate a sentinel as
+    // a sourced fact. The floor is set at football's codification era, NOT trimmed to
+    // this dataset — Ricardo Zamora (1914) and Larbi Benbarek (1935) are genuine early
+    // debuts and must survive. If every start is implausible, debutYear is null.
+    const starts = raw.memberships
+      .filter((m) => {
+        const e = clubDict[m.clubQid];
+        return e && cpIsSeniorClub(e) && m.start;
+      })
+      .map((m) => Number(m.start))
+      .filter((n) => Number.isFinite(n) && n >= CP_MIN_PLAUSIBLE_DEBUT && n <= CP_MAX_PLAUSIBLE_DEBUT);
+    const debutYear: SourcedFact<number> | null =
+      starts.length > 0
+        ? { value: Math.min(...starts), source: ref("P54/P580"), sourceQuality: q("green") }
+        : null;
+
+    // ── nation (sporting): senior national team P54 > P1532 > P27(amber) ──
+    let nation: SourcedFact<string> | null = null;
+    let nationPath: "national-team" | "P1532" | "P27" | undefined;
+    let nationCandidates: string[] | undefined;
+    // Collect EVERY senior national team, not the first in P54 order. Membership
+    // order is arbitrary, so `find()` silently let whichever statement happened to
+    // sort first decide the nation. A player with two senior teams (dual
+    // internationals) is genuinely ambiguous: pick deterministically, flag amber and
+    // record the candidates, exactly as conflicting P413 values are handled.
+    const natNations = [
+      ...new Set(
+        raw.memberships
+          .map((m) => clubDict[m.clubQid])
+          .filter((e): e is ClubDictEntry => Boolean(e) && cpIsSeniorNationalTeam(e))
+          .map((e) => cpNationFromNationalTeam(e))
+          .filter((v): v is string => Boolean(v)),
+      ),
+    ].sort();
+    if (natNations.length > 0) {
+      nation = {
+        value: natNations[0],
+        source: ref("P54"),
+        sourceQuality: natNations.length > 1 ? "amber" : q("green"),
+      };
+      nationPath = "national-team";
+      if (natNations.length > 1) nationCandidates = natNations;
+    } else if (raw.countryForSport) {
+      nation = { value: raw.countryForSport, source: ref("P1532"), sourceQuality: q("green") };
+      nationPath = "P1532";
+    } else if (raw.citizenships.length > 0) {
+      // Citizenship is a legal fact, not a sporting one — always amber.
+      nation = { value: raw.citizenships[0], source: ref("P27"), sourceQuality: "amber" };
+      nationPath = "P27";
+    }
+
+    // ── position: P413 mapped; unmappable/absent => null; conflict => amber ──
+    const mapped = cpMapPosition(raw.positions);
+    const position: SourcedFact<CpPosition> | null = mapped.pick
+      ? {
+          value: mapped.pick,
+          source: ref("P413"),
+          sourceQuality: mapped.ambiguous ? "amber" : q("green"),
+        }
+      : null;
+
+    players.push({
+      careerPathId: g.careerPathId,
+      answerName: g.answerName,
+      origin: g.origin,
+      qid: g.qid,
+      facts: { nation, position, debutYear, clubs },
+      identityEvidence: {
+        matchedClubs: g.matchedClubs,
+        matchCount: g.matchCount,
+        status: g.status as "resolved" | "amber-identity",
+        ...(nationPath ? { nationPath } : {}),
+        ...(nationCandidates ? { nationCandidates } : {}),
+        ...(mapped.ambiguous ? { positionCandidates: mapped.candidates } : {}),
+      },
+      volatility: "static",
+    });
+  }
+
+  writeJson(CP_OUT_PATH, players);
+  console.log(`cp-emit DONE: wrote ${players.length} players -> ${path.relative(process.cwd(), CP_OUT_PATH)}`);
+  return { players, gate };
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// STAGE cp-report: coverage report (drives E1 feasibility — no curation here)
+// ─────────────────────────────────────────────────────────────────────────────
+// Icon-tier spot-list, pinned by careerPathId rather than display name. Matching
+// icons by name is the very homonym trap this ticket guards against: "Ronaldo"
+// resolves to Cristiano Ronaldo in the universe, not Ronaldo Nazário (cp-ronaldo-nazario).
+// A missing id is itself reportable — the ticket's Maldini is absent from the universe.
+// Each entry lists every id that may satisfy it: a player absent from the Career
+// Path universe can be supplied via playerAdditions.json (E0.1) under an add_ id.
+const CP_ICON_TIER: { ids: string[]; name: string }[] = [
+  { ids: ["cp-pele"], name: "Pelé" },
+  { ids: ["cp-maradona"], name: "Diego Maradona" },
+  { ids: ["cp-cruyff"], name: "Johan Cruyff" },
+  { ids: ["cp-zidane"], name: "Zinedine Zidane" },
+  { ids: ["cp-ronaldo-nazario"], name: "Ronaldo Nazário" },
+  { ids: ["cp-maldini", "add_paolo-maldini"], name: "Paolo Maldini" },
+];
+
+function cpReport() {
+  const paths = cpUniverse();
+  const { players, gate } = cpEmit();
+  const byId = new Map(players.map((p) => [p.careerPathId, p]));
+  const L = (s = "") => console.log(s);
+
+  const resolved = gate.filter((g) => g.status === "resolved").length;
+  const amber = gate.filter((g) => g.status === "amber-identity").length;
+  const unresolved = gate.filter((g) => g.status === "unresolved").length;
+
+  L("\n══════════════════════════════════════════════════════════════");
+  L("  TICKET E0 — COVERAGE REPORT");
+  L("══════════════════════════════════════════════════════════════");
+  L(`\nUNIVERSE: ${paths.length} career paths`);
+  const pct = (n: number) => `${((n / paths.length) * 100).toFixed(1)}%`;
+  L(`\n── IDENTITY ──`);
+  L(`  resolved (>=2 club matches) : ${resolved} (${pct(resolved)})`);
+  L(`  AMBER-identity (1 match)    : ${amber} (${pct(amber)})`);
+  L(`  UNRESOLVED (0 / tie)        : ${unresolved} (${pct(unresolved)})`);
+  L(`  emitted to playersSourced   : ${players.length}`);
+  // A gated player with no facts row was dropped by cp-emit (a failed/incomplete
+  // cp-facts chunk). Surface it loudly — silently emitting fewer players than the
+  // gate accepted would read as "fully covered" while quietly losing data.
+  const gatedTotal = resolved + amber;
+  if (players.length < gatedTotal) {
+    L(
+      `\n  !!! WARNING: ${gatedTotal - players.length} gated players have NO facts row and were` +
+        ` dropped.\n      cp-facts is incomplete — rerun \`cp-facts\` (it resumes) before trusting this report.`,
+    );
+  }
+
+  // ── E0.1: owner additions get their own section. They are few and each one needs a
+  // human ruling, so a per-entry verdict is more useful than a rolled-up percentage.
+  const addGate = gate.filter((g) => g.origin === "manual");
+  if (addGate.length > 0) {
+    L(`\n── MANUAL ADDITIONS (E0.1, owner-anchored) ──`);
+    for (const g of addGate) {
+      const sp = players.find((p) => p.careerPathId === g.careerPathId);
+      const anchors = cpUniverse().find((p) => p.id === g.careerPathId)?.anchorClubs || [];
+      L(`  ${g.answerName}  (${g.careerPathId})`);
+      L(`    owner anchors   : ${anchors.length} [${anchors.join(", ")}]`);
+      L(`    confirmed in P54: ${g.matchCount} [${g.matchedClubs.join(", ")}]`);
+      L(`    verdict         : ${g.status.toUpperCase()}${g.qid ? ` -> ${g.qid}` : ""}`);
+      if (g.status === "unresolved") {
+        L(`      !!! NOT EMITTED. Anchors unconfirmed: [${g.unmatchedClubNames.join(", ")}]`);
+        L(`          The owner's assertion failed the Wikidata test. Never forced.`);
+      } else if (g.status === "amber-identity") {
+        L(`      !!! AMBER — SINGLE ANCHOR. One club cannot separate same-surname players`);
+        L(`          who shared it. E1 must NOT select this player until the owner rules`);
+        L(`          explicitly on QID ${g.qid}.`);
+      }
+      if (sp) {
+        L(
+          `    facts           : nation=${sp.facts.nation?.value ?? "null"} pos=${sp.facts.position?.value ?? "null"}` +
+            ` debut=${sp.facts.debutYear?.value ?? "null"} clubs=${sp.facts.clubs.length}`,
+        );
+      }
+    }
+  }
+
+  L(`\n── PER-FACT NULL RATES (of ${players.length} emitted) ──`);
+  const nulls = {
+    nation: players.filter((p) => !p.facts.nation).length,
+    position: players.filter((p) => !p.facts.position).length,
+    debutYear: players.filter((p) => !p.facts.debutYear).length,
+    clubs: players.filter((p) => p.facts.clubs.length === 0).length,
+  };
+  for (const [k, v] of Object.entries(nulls)) {
+    const p = players.length ? ((v / players.length) * 100).toFixed(1) : "0.0";
+    L(`  ${k.padEnd(10)} null: ${String(v).padStart(4)} (${p}%)`);
+  }
+  // Report the nation PATH and the amber CAUSES separately. A single "amber" count
+  // conflates unrelated causes (citizenship fallback vs dual internationals vs
+  // amber identity) and reads as a much worse P27 rate than the data shows.
+  const natByPath = { "national-team": 0, P1532: 0, P27: 0 } as Record<string, number>;
+  for (const p of players) if (p.identityEvidence.nationPath) natByPath[p.identityEvidence.nationPath]++;
+  const natAmber = players.filter((p) => p.facts.nation?.sourceQuality === "amber").length;
+  const natDual = players.filter((p) => p.identityEvidence.nationCandidates).length;
+  L(`\n── NATION SOURCE PATH ──`);
+  L(`  senior national team (P54) : ${natByPath["national-team"]}`);
+  L(`  country for sport (P1532)  : ${natByPath.P1532}`);
+  L(`  citizenship (P27, amber)   : ${natByPath.P27}`);
+  L(`  amber nations overall      : ${natAmber}`);
+  L(`    of which dual-international (>1 senior national team): ${natDual}`);
+  const posAmber = players.filter((p) => p.facts.position?.sourceQuality === "amber").length;
+  const posConflict = players.filter((p) => p.identityEvidence.positionCandidates).length;
+  L(`  amber positions overall    : ${posAmber}`);
+  L(`    of which conflicting P413 buckets (e.g. midfielder+forward): ${posConflict}`);
+
+  L(`\n── DEBUT YEAR COVERAGE ──`);
+  const withDebut = players.filter((p) => p.facts.debutYear).length;
+  L(`  overall: ${withDebut}/${players.length} emitted (${players.length ? ((withDebut / players.length) * 100).toFixed(1) : "0"}%)`);
+  L(`           ${withDebut}/${paths.length} of universe (${pct(withDebut)})`);
+
+  L(`\n  ICON TIER (E1 blocker if missing):`);
+  let iconMissing = 0;
+  let iconAbsent = 0;
+  for (const { ids, name } of CP_ICON_TIER) {
+    const cp = paths.find((p) => ids.includes(p.id));
+    if (!cp) {
+      L(`    ${name.padEnd(20)} *** NOT IN UNIVERSE (none of ${ids.join(", ")} present) ***`);
+      iconAbsent++;
+      continue;
+    }
+    const sp = byId.get(cp.id);
+    if (!sp) {
+      L(`    ${name.padEnd(20)} *** UNRESOLVED — identity gate rejected ***`);
+      iconMissing++;
+      continue;
+    }
+    const d = sp.facts.debutYear?.value ?? null;
+    if (d === null) iconMissing++;
+    L(
+      `    ${name.padEnd(20)} ${sp.qid.padEnd(9)} debut=${d === null ? "*** NULL ***" : d}` +
+        (sp.origin === "manual" ? " [E0.1 manual]" : "") +
+        `  nation=${sp.facts.nation?.value ?? "null"}  pos=${sp.facts.position?.value ?? "null"}` +
+        `  clubs=${sp.facts.clubs.length}  [${sp.identityEvidence.status}]`,
+    );
+  }
+  if (iconMissing > 0) {
+    L(`\n    !!! LOUD WARNING: ${iconMissing}/${CP_ICON_TIER.length} icon-tier players LACK a sourced debut year.`);
+    L(`        E1 must treat these as era-ineligible. Do NOT estimate — fix upstream or accept exclusion.`);
+  }
+  if (iconAbsent > 0) {
+    L(`\n    !!! LOUD WARNING: ${iconAbsent}/${CP_ICON_TIER.length} icon-tier players are NOT IN THE UNIVERSE at all.`);
+    L(`        No enrichment can recover these — the career-path universe itself lacks them.`);
+  }
+  // An icon with a sourced debut year can still be unusable: an amber identity is
+  // pending a ruling, so "all have debut years" alone would read as a false all-clear.
+  const iconAmber = CP_ICON_TIER.map(({ ids }) => players.find((p) => ids.includes(p.careerPathId)))
+    .filter((sp) => sp?.identityEvidence.status === "amber-identity");
+  if (iconAmber.length > 0) {
+    L(`\n    !!! ${iconAmber.length}/${CP_ICON_TIER.length} icon-tier players have an AMBER identity:`);
+    for (const sp of iconAmber) {
+      L(`        ${sp!.answerName} (${sp!.qid}) — identity rests on ${sp!.identityEvidence.matchCount} club match.`);
+    }
+    L(`        Debut years are sourced, but E1 must NOT select these until the identity is ruled on.`);
+  }
+  if (iconMissing === 0 && iconAbsent === 0 && iconAmber.length === 0) {
+    L(`    All icon-tier players have sourced debut years and confirmed identities.`);
+  } else if (iconMissing === 0 && iconAbsent === 0) {
+    L(`    All icon-tier players have sourced debut years.`);
+  }
+
+  L(`\n── GOALKEEPERS ──`);
+  const gks = players.filter((p) => p.facts.position?.value === "GK");
+  const gkFull = gks.filter((p) => p.facts.nation && p.facts.debutYear && p.facts.clubs.length > 0);
+  L(`  position=GK: ${gks.length}   with FULL facts (nation+debut+clubs): ${gkFull.length}`);
+
+  L(`\n── ERA HISTOGRAM (debutYear by decade) ──`);
+  const buckets = new Map<string, number>();
+  for (const p of players) {
+    const d = p.facts.debutYear?.value;
+    if (!d) continue;
+    const dec = `${Math.floor(d / 10) * 10}s`;
+    buckets.set(dec, (buckets.get(dec) || 0) + 1);
+  }
+  for (const dec of [...buckets.keys()].sort()) {
+    const n = buckets.get(dec)!;
+    L(`  ${dec.padEnd(6)} ${String(n).padStart(4)} ${"█".repeat(Math.round(n / 5))}`);
+  }
+
+  L(`\n── NATIONS with >=8 fully-sourced players ──`);
+  const full = players.filter((p) => p.facts.nation && p.facts.position && p.facts.debutYear && p.facts.clubs.length > 0);
+  L(`  (fully-sourced = nation + position + debutYear + >=1 club: ${full.length} players)`);
+  const natCount = new Map<string, number>();
+  for (const p of full) natCount.set(p.facts.nation!.value, (natCount.get(p.facts.nation!.value) || 0) + 1);
+  const bigNats = [...natCount.entries()].filter(([, n]) => n >= 8).sort((a, b) => b[1] - a[1]);
+  L(`  ${bigNats.length} nations qualify`);
+  for (const [n, c] of bigNats) L(`    ${String(c).padStart(4)}  ${n}`);
+
+  L(`\n── CLUB TAGS with >=6 fully-sourced players ──`);
+  const clubCount = new Map<string, number>();
+  for (const p of full) for (const c of p.facts.clubs) clubCount.set(c.value, (clubCount.get(c.value) || 0) + 1);
+  const bigClubs = [...clubCount.entries()].filter(([, n]) => n >= 6).sort((a, b) => b[1] - a[1]);
+  L(`  ${bigClubs.length} club tags qualify`);
+  for (const [c, n] of bigClubs.slice(0, 40)) L(`    ${String(n).padStart(4)}  ${c}`);
+  if (bigClubs.length > 40) L(`    ... and ${bigClubs.length - 40} more`);
+
+  // Feeds clubAliases.json maintenance: the club names that most often failed to
+  // match are the highest-leverage alias-table additions.
+  L(`\n── TOP UNMATCHED CLUB NAMES (alias-table queue) ──`);
+  const unmatched = new Map<string, number>();
+  for (const g of gate) for (const c of g.unmatchedClubNames) unmatched.set(c, (unmatched.get(c) || 0) + 1);
+  for (const [c, n] of [...unmatched.entries()].sort((a, b) => b[1] - a[1]).slice(0, 25)) {
+    L(`    ${String(n).padStart(4)}  ${c}`);
+  }
+  L("\n══════════════════════════════════════════════════════════════\n");
+}
+
 // entrypoint (no top-level await — tsx emits cjs here)
 async function main() {
   const cmd = process.argv[2];
   if (cmd === "resolve") await resolve();
   else if (cmd === "affiliations") await affiliations();
   else if (cmd === "legends") await legends();
-  else {
-    console.error(`unknown subcommand "${cmd}". use: resolve | affiliations | legends`);
+  else if (cmd === "cp-search") await cpSearch();
+  else if (cmd === "cp-clubqids") await cpClubQids();
+  else if (cmd === "cp-clubdict") await cpClubDict();
+  else if (cmd === "cp-facts") await cpFacts();
+  else if (cmd === "cp-emit") cpEmit();
+  else if (cmd === "cp-report") cpReport();
+  else if (cmd === "cp-all") {
+    await cpSearch();
+    await cpClubQids();
+    await cpClubDict();
+    await cpFacts();
+    cpReport();
+  } else {
+    console.error(
+      `unknown subcommand "${cmd}". use: resolve | affiliations | legends | ` +
+        `cp-search | cp-clubqids | cp-clubdict | cp-facts | cp-emit | cp-report | cp-all`,
+    );
     process.exit(1);
   }
 }

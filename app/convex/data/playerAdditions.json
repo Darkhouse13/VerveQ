@@ -1,0 +1,58 @@
+{
+  "_doc": [
+    "Owner-supplied manual player additions for THE DRAW (Ticket E0.1).",
+    "",
+    "PURPOSE: the Career Path universe (football_career_paths.json) is missing players the owner",
+    "wants in the pool. Each entry names a player and asserts anchor clubs. Entries here are an",
+    "OWNER HYPOTHESIS, not a fact: Wikidata is the test. Anchors are never written to the output —",
+    "they only gate which Wikidata entity (if any) we accept. Facts still come solely from Wikidata.",
+    "",
+    "SCHEMA: { name, anchorClubs: [...], ownerNote? }",
+    "  name        the player, as the owner refers to them (also the entity search term)",
+    "  anchorClubs clubs the owner asserts this player played for. TWO is the norm and the only",
+    "              way to earn a `resolved` identity. Names are matched exactly as Career Path club",
+    "              names are (strict normalized equality vs Wikidata label+altLabels, plus",
+    "              clubAliases.json). National teams are NOT clubs and must never be used here.",
+    "  ownerNote   why this entry looks the way it does; read it before changing an entry.",
+    "",
+    "GATE (see cpRunGate in scripts/ingestWikidataPlayerData.ts):",
+    "  2+ anchors, ALL confirmed in the entity's P54  => resolved",
+    "  2+ anchors, ANY anchor NOT confirmed           => UNRESOLVED (reported, never forced)",
+    "  exactly 1 anchor, confirmed                    => AMBER-identity, pending explicit owner ruling",
+    "  candidate tie on identical anchor evidence     => UNRESOLVED (homonyms are indistinguishable)",
+    "",
+    "A single anchor is deliberately NOT sufficient for `resolved`: one club cannot separate players",
+    "who share a surname and a club. That is a live risk here, not a hypothetical — see Maldini."
+  ],
+  "additions": [
+    {
+      "name": "Paolo Maldini",
+      "anchorClubs": ["AC Milan"],
+      "ownerNote": [
+        "SINGLE ANCHOR BY NECESSITY, NOT BY OVERSIGHT. Paolo Maldini is a one-club player: AC Milan,",
+        "1984-2009, his entire senior career. No second club exists for the owner to supply, so the",
+        "two-anchor rule is unsatisfiable and this entry rides as AMBER-identity awaiting an explicit",
+        "owner ruling. Do NOT 'fix' this by adding a second anchor — Italy is a national team, not a",
+        "club, and Milan's youth setup is not a senior club.",
+        "",
+        "WHY THAT IS RISKY HERE — VERIFIED, NOT HYPOTHETICAL. The AC Milan anchor is shared by his",
+        "father: Wikidata confirms BOTH Cesare Maldini (Q296350, b. 1932-02-05) and Paolo Maldini",
+        "(Q483027, b. 1968-06-26) have AC Milan in P54. The lone anchor therefore cannot separate",
+        "them. The gate returned a single candidate ONLY because the search term 'Paolo Maldini'",
+        "excluded Cesare — i.e. the disambiguation came from NAME similarity, which this ticket",
+        "explicitly forbids as sufficient evidence. Hence AMBER, not resolved.",
+        "",
+        "OWNER RULING NEEDED on QID Q483027. Corroborating evidence (all from Wikidata, all",
+        "independently re-fetched, none of it used by the gate):",
+        "  - born 1968-06-26, which is Paolo's date of birth (Cesare's is 1932-02-05)",
+        "  - exactly ONE club in P54: AC Milan — consistent with the one-club career",
+        "  - earliest P580 across senior clubs = 1985, consistent with Paolo's first-team debut",
+        "  - position DEF, senior nation Italy",
+        "Cesare, by contrast, also played for Torino, so a Torino membership would have falsified",
+        "this candidate. To upgrade this entry to `resolved`, the gate needs a SECOND real senior",
+        "club — which does not exist for Paolo. The honest options are: accept AMBER via an explicit",
+        "owner ruling on Q483027, or leave the entry out. Do not invent an anchor to force it green."
+      ]
+    }
+  ]
+}
