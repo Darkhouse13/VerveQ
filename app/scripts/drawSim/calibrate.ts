@@ -26,22 +26,41 @@
  */
 
 import fs from "node:fs";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 import {
   buildArchetypes,
   DAILY_SLICE_CONFIG_V1,
   DEFAULT_ENGINE_CONFIG,
+  FORM_HINT_BANDS,
+  formFor,
+  fixtureMultFor,
   generateBoard,
   generateCardSet,
+  hintPosteriorForm,
   rngFromString,
   rngInt,
   scoreRound,
   sliceDeck,
+  sliceTripleScore,
+  squadSynergies,
+  unitFromString,
   type Card,
   type EngineConfig,
 } from "../../src/lib/drawEngine";
+import { C13V1_CONFIG } from "../../src/lib/drawEngine/configs/c13v1";
 import { benchOptimalScores, buildContext, type BoardContext } from "./boardContext";
 import { buildBoostOnlyArchetypes, buildMixedDipArchetypes } from "./archetypeTables";
-import { chaserBenchFor, greedyBenchFor, runChaser, runGreedy, runRandom } from "./bots";
+import {
+  assistedPushGate,
+  chaserBenchFor,
+  greedyBenchFor,
+  runAssisted,
+  runChaser,
+  runGreedy,
+  runRandom,
+  runReader,
+} from "./bots";
 import { runOracle } from "./oracle";
 import { makeSliceAcceptanceScorer, SLICE_SCORE_TARGET } from "./sliceScorer";
 import { determinismSpotCheck } from "./evaluate";
@@ -73,6 +92,80 @@ interface BoardData {
   coins: boolean[];
   /** Bench-optimal lineScores[line * R + r] (max over the 6 removals, oracle policy). */
   lineScores: Float64Array;
+  /**
+   * Ticket G — F3 band centres per round for the chain-first squad's
+   * band-optimal bench (= the chaser's formless argmax value): the assisted
+   * bot's push rule compares mids[r] against t[r].
+   */
+  mids: number[];
+  /** Chain-first squad per-round weights w[r*rows+i] = rating × fixtureMult. */
+  squadW: Float64Array;
+  /** Synergy multiplier of the fielded five after removing squad card i. */
+  squadSyn: Float64Array;
+  /** Realized forms squadForm[r*rows+i] for the chain-first squad. */
+  squadForm: Float64Array;
+  /**
+   * Realized contributions squadC[r*rows+i] = rating × form × fixtureMult,
+   * multiplied in scoreRound's exact op order so analytic realized scores are
+   * float-identical to the engine's.
+   */
+  squadC: Float64Array;
+  /** Hint raw draws per (round, squad card): true band idx + the two noise draws. */
+  hintTrue: Int8Array;
+  hintV1: Float64Array;
+  hintV2: Float64Array;
+}
+
+/** Reader analytic per-board data for one hintReliability: realized fielded
+ * score + posterior band centre per round (bench = posterior argmax). */
+export interface ReaderData {
+  scores: number[];
+  mids: number[];
+}
+
+/**
+ * Derive the reader's per-round realized scores and posterior mids from the
+ * precomputed squad arrays, mirroring bots.ts readerBenchFor/readerExpectedScore
+ * float-for-float (same summation order, same hintPosteriorForm calls).
+ */
+export function readerDataFor(
+  bd: BoardData,
+  config: EngineConfig,
+  hintReliability: number,
+): ReaderData {
+  const R = config.fixtureCount;
+  const rows = config.rows;
+  const s = config.formSpread;
+  const scores: number[] = [];
+  const mids: number[] = [];
+  for (let r = 0; r < R; r++) {
+    // Posterior mean form per squad card for this round.
+    const post: number[] = [];
+    for (let i = 0; i < rows; i++) {
+      const k = r * rows + i;
+      const hintIdx =
+        bd.hintV1[k] < hintReliability
+          ? bd.hintTrue[k]
+          : (bd.hintTrue[k] + (bd.hintV2[k] < 0.5 ? 1 : 2)) % 3;
+      post.push(hintPosteriorForm(FORM_HINT_BANDS[hintIdx], hintReliability, s));
+    }
+    let bench = 0;
+    let bestMid = -1;
+    for (let i = 0; i < rows; i++) {
+      let sum = 0;
+      for (let j = 0; j < rows; j++) if (j !== i) sum += bd.squadW[r * rows + j] * post[j];
+      const mid = sum * bd.squadSyn[i];
+      if (mid > bestMid) {
+        bestMid = mid;
+        bench = i;
+      }
+    }
+    let realized = 0;
+    for (let j = 0; j < rows; j++) if (j !== bench) realized += bd.squadC[r * rows + j];
+    scores.push(realized * bd.squadSyn[bench]);
+    mids.push(bestMid);
+  }
+  return { scores, mids };
 }
 
 function draftGreedy(ctx: BoardContext): Card[] {
@@ -183,7 +276,7 @@ function loadCardSetFile(p: string): Card[] {
   }));
 }
 
-function precomputeBoard(
+export function precomputeBoard(
   config: EngineConfig,
   formless: EngineConfig,
   cardSet: Card[],
@@ -233,6 +326,51 @@ function precomputeBoard(
     random.push(scoreRound(board.seed, rFielded, fixture, config).score);
   });
 
+  // Ticket G — chain-first squad raw arrays for the assisted/reader analytic
+  // path (band centres, posterior benches, hint draws).
+  const rows = config.rows;
+  const squadW = new Float64Array(R * rows);
+  const squadForm = new Float64Array(R * rows);
+  const squadC = new Float64Array(R * rows);
+  const hintTrue = new Int8Array(R * rows);
+  const hintV1 = new Float64Array(R * rows);
+  const hintV2 = new Float64Array(R * rows);
+  board.fixtures.forEach((fixture, r) => {
+    chaserSquad.forEach((card, i) => {
+      const k = r * rows + i;
+      const mult = fixtureMultFor(card, fixture);
+      const form = formFor(board.seed, card.id, r, config.formSpread);
+      squadW[k] = card.rating * mult;
+      squadForm[k] = form;
+      squadC[k] = card.rating * form * mult;
+      const u = unitFromString(`${board.seed}|form|${card.id}|${r}`);
+      hintTrue[k] = u < 1 / 3 ? 0 : u < 2 / 3 ? 1 : 2;
+      const noise = rngFromString(`${board.seed}|hint|${card.id}|${r}`);
+      hintV1[k] = noise();
+      hintV2[k] = noise();
+    });
+  });
+  const squadSyn = new Float64Array(rows);
+  for (let i = 0; i < rows; i++) {
+    const fieldedSquad = chaserSquad.filter((_, j) => j !== i);
+    let syn = 1;
+    for (const s of squadSynergies(fieldedSquad, config)) syn *= s.mult;
+    squadSyn[i] = syn;
+  }
+  // Band centre per round = the band-optimal bench's formless score (the same
+  // argmax chaserBenchFor resolves, same summation order, strict >).
+  const mids: number[] = [];
+  for (let r = 0; r < R; r++) {
+    let best = -1;
+    for (let i = 0; i < rows; i++) {
+      let sum = 0;
+      for (let j = 0; j < rows; j++) if (j !== i) sum += squadW[r * rows + j];
+      const mid = sum * squadSyn[i];
+      if (mid > best) best = mid;
+    }
+    mids.push(best);
+  }
+
   return {
     data: {
       greedy,
@@ -242,6 +380,14 @@ function precomputeBoard(
       random,
       coins,
       lineScores: computeLineScores(ctx),
+      mids,
+      squadW,
+      squadSyn,
+      squadForm,
+      squadC,
+      hintTrue,
+      hintV1,
+      hintV2,
     },
     ctx,
   };
@@ -257,42 +403,96 @@ function precompute(config: EngineConfig, seedBase: string, boards: number): Boa
   return data;
 }
 
-function greedyRounds(
+/** Analytic run outcome: rounds cleared, fail margin (NaN if no bust), final
+ * score under the engine's settlement (bank = cum, bust = cum × bustKeep,
+ * full clear = cum × fullClearBonus). */
+export interface BotOutcome {
+  rounds: number;
+  failMargin: number;
+  fullClear: boolean;
+  final: number;
+}
+
+export function greedyRounds(
   scores: number[],
   faces: number[],
   kGreedy: number,
   t: number[],
-): { rounds: number; failMargin: number } {
+  bustKeep: number,
+  bonus: number,
+): BotOutcome {
+  let cum = 0;
   for (let r = 0; r < t.length; r++) {
-    if (scores[r] < t[r]) return { rounds: r, failMargin: scores[r] / t[r] };
-    if (r === t.length - 1) return { rounds: t.length, failMargin: NaN };
-    if (faces[r + 1] < kGreedy * t[r + 1]) return { rounds: r + 1, failMargin: NaN };
+    if (scores[r] < t[r])
+      return { rounds: r, failMargin: scores[r] / t[r], fullClear: false, final: cum * bustKeep };
+    cum += scores[r];
+    if (r === t.length - 1) return { rounds: t.length, failMargin: NaN, fullClear: true, final: cum * bonus };
+    if (faces[r + 1] < kGreedy * t[r + 1])
+      return { rounds: r + 1, failMargin: NaN, fullClear: false, final: cum };
   }
-  return { rounds: t.length, failMargin: NaN };
+  return { rounds: t.length, failMargin: NaN, fullClear: true, final: cum * bonus };
 }
 
-interface ChaserOutcome {
-  rounds: number;
-  failMargin: number;
-  fullClear: boolean;
+export function chaserRounds(
+  scores: number[],
+  t: number[],
+  bustKeep: number,
+  bonus: number,
+): BotOutcome {
+  let cum = 0;
+  for (let r = 0; r < t.length; r++) {
+    if (scores[r] < t[r])
+      return { rounds: r, failMargin: scores[r] / t[r], fullClear: false, final: cum * bustKeep };
+    cum += scores[r];
+    if (r === t.length - 1) return { rounds: t.length, failMargin: NaN, fullClear: true, final: cum * bonus };
+    if (scores[r] < 1.1 * t[r + 1])
+      return { rounds: r + 1, failMargin: NaN, fullClear: false, final: cum };
+  }
+  return { rounds: t.length, failMargin: NaN, fullClear: true, final: cum * bonus };
 }
 
-function chaserRounds(scores: number[], t: number[]): ChaserOutcome {
+/**
+ * Ticket G — the F3 band policy (assisted with realized chaser scores + band
+ * mids; reader with ReaderData): bust on a failed round, bank when the NEXT
+ * round's band centre sits below its threshold, else push.
+ */
+export function bandRounds(
+  scores: number[],
+  mids: number[],
+  t: number[],
+  bustKeep: number,
+  bonus: number,
+  /** assistedPushGate(formSpread, kAssisted); 1 = kAssisted 0.5 (band centre). */
+  pushGate = 1,
+): BotOutcome {
+  let cum = 0;
   for (let r = 0; r < t.length; r++) {
-    if (scores[r] < t[r]) return { rounds: r, failMargin: scores[r] / t[r], fullClear: false };
-    if (r === t.length - 1) return { rounds: t.length, failMargin: NaN, fullClear: true };
-    if (scores[r] < 1.1 * t[r + 1]) return { rounds: r + 1, failMargin: NaN, fullClear: false };
+    if (scores[r] < t[r])
+      return { rounds: r, failMargin: scores[r] / t[r], fullClear: false, final: cum * bustKeep };
+    cum += scores[r];
+    if (r === t.length - 1) return { rounds: t.length, failMargin: NaN, fullClear: true, final: cum * bonus };
+    if (mids[r + 1] * pushGate < t[r + 1])
+      return { rounds: r + 1, failMargin: NaN, fullClear: false, final: cum };
   }
-  return { rounds: t.length, failMargin: NaN, fullClear: true };
+  return { rounds: t.length, failMargin: NaN, fullClear: true, final: cum * bonus };
 }
 
-function randomRounds(scores: number[], coins: boolean[], t: number[]): number {
+export function randomRounds(
+  scores: number[],
+  coins: boolean[],
+  t: number[],
+  bustKeep: number,
+  bonus: number,
+): BotOutcome {
+  let cum = 0;
   for (let r = 0; r < t.length; r++) {
-    if (scores[r] < t[r]) return r;
-    if (r === t.length - 1) return t.length;
-    if (!coins[r]) return r + 1;
+    if (scores[r] < t[r])
+      return { rounds: r, failMargin: scores[r] / t[r], fullClear: false, final: cum * bustKeep };
+    cum += scores[r];
+    if (r === t.length - 1) return { rounds: t.length, failMargin: NaN, fullClear: true, final: cum * bonus };
+    if (!coins[r]) return { rounds: r + 1, failMargin: NaN, fullClear: false, final: cum };
   }
-  return t.length;
+  return { rounds: t.length, failMargin: NaN, fullClear: true, final: cum * bonus };
 }
 
 /** Raw P3 accumulators — poolable across card-set chunks (counts add, spreads concat). */
@@ -325,6 +525,9 @@ function mcP3(
   t: number[],
   rng: () => number,
   samples: number,
+  /** Ticket G: assistedPushGate value — measure assisted-reached states with
+   * the band-policy continuation. Undefined = v1.0 chaser policy. */
+  assistedGate?: number,
 ): McP3Raw {
   const R = config.fixtureCount;
   const fielded = config.rows - 1;
@@ -334,7 +537,10 @@ function mcP3(
   let tenseRuns = 0;
   const tenseSpreads: number[] = [];
   for (const bd of data) {
-    const c = chaserRounds(bd.chaser, t);
+    const c =
+      assistedGate !== undefined
+        ? bandRounds(bd.chaser, bd.mids, t, config.bustKeep, config.fullClearBonus, assistedGate)
+        : chaserRounds(bd.chaser, t, config.bustKeep, config.fullClearBonus);
     let banked = 0;
     let runTense = false;
     for (let k = 1; k < R; k++) {
@@ -355,7 +561,11 @@ function mcP3(
           cum += score;
           if (j === R - 1) {
             final = cum * config.fullClearBonus;
-          } else if (score < 1.1 * t[j + 1]) {
+          } else if (
+            assistedGate !== undefined
+              ? bd.mids[j + 1] * assistedGate < t[j + 1]
+              : score < 1.1 * t[j + 1]
+          ) {
             final = cum;
             break;
           }
@@ -500,21 +710,28 @@ function evalPlane(data: BoardData[], config: EngineConfig, keep: number): Plane
         for (let i = 0; i < boards; i++) {
           if (M[i] >= base) fullClearable++;
           for (let ki = 0; ki < KGREEDY_GRID.length; ki++) {
-            const g = greedyRounds(data[i].greedy, data[i].greedyFaces, KGREEDY_GRID[ki], t);
+            const g = greedyRounds(
+              data[i].greedy,
+              data[i].greedyFaces,
+              KGREEDY_GRID[ki],
+              t,
+              config.bustKeep,
+              config.fullClearBonus,
+            );
             gRoundsK[ki].push(g.rounds);
             if (!Number.isNaN(g.failMargin)) {
               gFailsK[ki]++;
               if (g.failMargin >= NEAR_MISS_FLOOR) gNearK[ki]++;
             }
           }
-          const c = chaserRounds(data[i].chaser, t);
+          const c = chaserRounds(data[i].chaser, t, config.bustKeep, config.fullClearBonus);
           cRounds.push(c.rounds);
           if (c.fullClear) chaserFC++;
           if (!Number.isNaN(c.failMargin)) {
             cFails++;
             if (c.failMargin >= NEAR_MISS_FLOOR) cNearMisses++;
           }
-          rRounds.push(randomRounds(data[i].random, data[i].coins, t));
+          rRounds.push(randomRounds(data[i].random, data[i].coins, t, config.bustKeep, config.fullClearBonus).rounds);
         }
         const p0 = fullClearable / boards;
         const p1a = median(rRounds);
@@ -744,11 +961,405 @@ function contentToConfig(g: ContentGenome): EngineConfig {
   };
 }
 
+/**
+ * Ticket G — the c13-2 retune sweep: formSpread × hintReliability × threshold
+ * knobs (base × growth × bossAxis, kGreedy resolved per curve), evaluated on
+ * DEFAULT-SCORER Daily Deck slices of the committed real set (the serving
+ * policy the amended bars are defined on). Content knobs (synergy table,
+ * archetypes, cardGen) stay pinned to c13-1 — this is a v1.1 retune, not a
+ * content search.
+ *
+ *   npx tsx scripts/drawSim/calibrate.ts --sweepg \
+ *     --slicerotation ../convex/data/drawCardsReal.candidates.json \
+ *     --slices 20 --boards 4000 --seed sweep-g
+ *
+ * Search targets are shrunk inside the profile bands (winner's-curse control,
+ * same discipline as the main calibrator); the honest gate is a separate
+ * `--eval --slicerotation --defaultscorer` acceptance run on the winner.
+ */
+function sweepGMode(flags: Map<string, string>): void {
+  const t0 = performance.now();
+  const boards = Number(flags.get("boards") ?? 4000);
+  const seedBase = flags.get("seed") ?? "sweep-g";
+  const sliceRotationPath = flags.get("slicerotation");
+  if (!sliceRotationPath) throw new Error("--sweepg requires --slicerotation <committed card set>");
+  const sliceCount = Number(flags.get("slices") ?? 20);
+  const parseGrid = (flag: string, dflt: number[]) =>
+    flags.has(flag) ? (flags.get(flag) as string).split(",").map(Number) : dflt;
+  // The retune starts from the ACCEPTED serving config (c13-1) — content
+  // knobs (synergy table, archetypes, cardGen) are pinned; only formSpread,
+  // hints and the threshold curve are searched.
+  const baseCfg = flags.has("config") ? loadConfig(flags.get("config")).config : C13V1_CONFIG;
+  const R = baseCfg.fixtureCount;
+
+  const fsGrid = parseGrid("fsgrid", [0.34, 0.36, 0.38, baseCfg.formSpread, 0.42]);
+  const hrGrid = parseGrid("hrgrid", [0.5, 0.6, 0.7, 0.8, 0.9]);
+  const bases = parseGrid("bases", [275, 300, 325, 350, 375, 400, 425]);
+  const growths = parseGrid("growths", [1.215, 1.24, 1.265, 1.29, 1.315]);
+  const bossAxes = parseGrid("axes", [1.0, 1.1, 1.2, 1.3, 1.4]);
+  const kaGrid = parseGrid("kagrid", [0.3, 0.35, 0.4, 0.45, 0.5]);
+
+  const fullSet = loadCardSetFile(sliceRotationPath);
+  // Served slice policy (E5 ruling): generator + DEFAULT tie-break scorer.
+  const slices = Array.from({ length: sliceCount }, (_, s) =>
+    sliceDeck(`${seedBase}|slice${s}`, fullSet, DAILY_SLICE_CONFIG_V1, sliceTripleScore),
+  );
+  console.log(
+    `sweepg: ${sliceCount} default-scorer slices of ${fullSet.length} cards, ` +
+      `${boards} boards, |fs|=${fsGrid.length} |hr|=${hrGrid.length} ` +
+      `curves=${bases.length * growths.length * bossAxes.length}`,
+  );
+
+  interface GCand {
+    fs: number;
+    hr: number;
+    curve: Curve;
+    kGreedy: number;
+    kAssisted: number;
+    distance: number;
+    p0: number;
+    p0MinSlice: number;
+    p1a: number;
+    p1b: number;
+    p1c: number;
+    p1d: number;
+    p2: number;
+    p6: number;
+    p3a: number;
+    p3b: number;
+    p4: number;
+    ladderOk: boolean;
+    medians: Record<string, number>;
+  }
+  const out = (v: number, lo: number, hi: number, u: number) =>
+    v < lo ? (lo - v) / u : v > hi ? (v - hi) / u : 0;
+  const all: GCand[] = [];
+  // Stage-2 P3/P4 need the per-fs board data; kept only for the current fs,
+  // so stage 2 runs inside the fs loop on that fs's shortlist.
+  const lineCount = Math.pow(baseCfg.offersPerRow, baseCfg.rows);
+
+  for (const fsv of fsGrid) {
+    const config: EngineConfig = { ...baseCfg, formSpread: fsv };
+    const formless: EngineConfig = { ...config, formSpread: 0 };
+    const data: BoardData[] = [];
+    const sliceOf: number[] = [];
+    for (let s = 0; s < sliceCount; s++) {
+      for (let i = s; i < boards; i += sliceCount) {
+        data.push(precomputeBoard(config, formless, slices[s], seedBase, i).data);
+        sliceOf.push(s);
+      }
+    }
+    const n = data.length;
+    console.log(
+      `  fs=${fsv.toFixed(4)}: precomputed ${n} boards (${((performance.now() - t0) / 1000).toFixed(0)}s)`,
+    );
+    // Reader data per hintReliability (threshold-independent).
+    const readerByHr = hrGrid.map((hr) => data.map((bd) => readerDataFor(bd, config, hr)));
+
+    for (const growth of growths) {
+      // Per-growth normalized line margins (see evalPlane).
+      const gw = Array.from({ length: R }, (_, r) => Math.pow(growth, r));
+      const uMin = new Float64Array(n * lineCount);
+      const uLast = new Float64Array(n * lineCount);
+      for (let i = 0; i < n; i++) {
+        const ls = data[i].lineScores;
+        for (let l = 0; l < lineCount; l++) {
+          let worst = Infinity;
+          for (let r = 0; r < R - 1; r++) {
+            const u = ls[l * R + r] / gw[r];
+            if (u < worst) worst = u;
+          }
+          uMin[i * lineCount + l] = worst;
+          uLast[i * lineCount + l] = ls[l * R + R - 1] / gw[R - 1];
+        }
+      }
+      for (const bossAxis of bossAxes) {
+        const M = new Float64Array(n);
+        for (let i = 0; i < n; i++) {
+          let best = 0;
+          const off = i * lineCount;
+          for (let l = 0; l < lineCount; l++) {
+            const u = Math.min(uMin[off + l], uLast[off + l] / bossAxis);
+            if (u > best) best = u;
+          }
+          M[i] = best;
+        }
+        for (const base of bases) {
+          const t = thresholdsFor({ base, growth, bossAxis }, R);
+          let fullClearable = 0;
+          const sliceClear = Array.from({ length: sliceCount }, () => 0);
+          const sliceN = Array.from({ length: sliceCount }, () => 0);
+          for (let i = 0; i < n; i++) {
+            sliceN[sliceOf[i]]++;
+            if (M[i] >= base) {
+              fullClearable++;
+              sliceClear[sliceOf[i]]++;
+            }
+          }
+          const p0 = fullClearable / n;
+          const p0MinSlice = Math.min(
+            ...sliceClear.map((c, s) => (sliceN[s] === 0 ? 1 : c / sliceN[s])),
+          );
+          // Threshold-dependent bot outcomes. Greedy per kGreedy; assisted
+          // per kAssisted (its band-fraction push tolerance — the Ticket G
+          // bot-model knob, kGreedy precedent); reader deferred to per-hr.
+          const gK = KGREEDY_GRID.map(() => ({ rounds: [] as number[], fails: 0, near: 0, finals: [] as number[] }));
+          const aK = kaGrid.map((ka) => ({
+            gate: assistedPushGate(fsv, ka),
+            fc: 0,
+            fails: 0,
+            near: 0,
+            finals: [] as number[],
+          }));
+          const cRounds: number[] = [];
+          const rRounds: number[] = [];
+          const cFinals: number[] = [];
+          const rnFinals: number[] = [];
+          let chaserFC = 0;
+          for (let i = 0; i < n; i++) {
+            const bd = data[i];
+            for (let ki = 0; ki < KGREEDY_GRID.length; ki++) {
+              const g = greedyRounds(bd.greedy, bd.greedyFaces, KGREEDY_GRID[ki], t, config.bustKeep, config.fullClearBonus);
+              gK[ki].rounds.push(g.rounds);
+              gK[ki].finals.push(g.final);
+              if (!Number.isNaN(g.failMargin)) {
+                gK[ki].fails++;
+                if (g.failMargin >= NEAR_MISS_FLOOR) gK[ki].near++;
+              }
+            }
+            const c = chaserRounds(bd.chaser, t, config.bustKeep, config.fullClearBonus);
+            cRounds.push(c.rounds);
+            cFinals.push(c.final);
+            if (c.fullClear) chaserFC++;
+            for (const ak of aK) {
+              const a = bandRounds(bd.chaser, bd.mids, t, config.bustKeep, config.fullClearBonus, ak.gate);
+              ak.finals.push(a.final);
+              if (a.fullClear) ak.fc++;
+              if (!Number.isNaN(a.failMargin)) {
+                ak.fails++;
+                if (a.failMargin >= NEAR_MISS_FLOOR) ak.near++;
+              }
+            }
+            const rn = randomRounds(bd.random, bd.coins, t, config.bustKeep, config.fullClearBonus);
+            rRounds.push(rn.rounds);
+            rnFinals.push(rn.final);
+          }
+          const p1a = median(rRounds);
+          const p1c = median(cRounds);
+          // Shrunk search targets (honest bands: pooled P0-set >=99.4,
+          // per-slice >=99.0, P1d [10,25], P2 [25,60]).
+          const shared = [
+            Math.max(0, (0.995 - p0) / 0.001),
+            Math.max(0, (0.992 - p0MinSlice) / 0.001),
+            Math.max(0, p1a - 1),
+            out(p1c, 3, 4, 0.5),
+          ];
+          // Joint (kAssisted × kGreedy × hintReliability) resolution on the
+          // TOTAL of P1d + P1b + P2 + P6 — resolving ka on P1d alone and
+          // measuring P6 afterwards misses the middle of the P1d↔P6 trade
+          // (both ride the assisted bot's push marginality).
+          let bestKi = 0;
+          let bestAi = 0;
+          let bestJoint = Infinity;
+          let bestP1b = 0;
+          let bestP2 = 0;
+          let chosenHr = NaN;
+          let chosenP6 = -Infinity;
+          let chosenReaderMed = NaN;
+          for (let ai = 0; ai < kaGrid.length; ai++) {
+            const p1dDist = out(aK[ai].fc / n, 0.12, 0.23, 0.05);
+            const aMedAi = median(aK[ai].finals);
+            // Best kGreedy for this ka (P1b + pooled P2).
+            let kiBest = 0;
+            let kiDist = Infinity;
+            let kiP1b = 0;
+            let kiP2 = 0;
+            for (let ki = 0; ki < KGREEDY_GRID.length; ki++) {
+              const fails = gK[ki].fails + aK[ai].fails;
+              const p2k = fails === 0 ? 0 : (gK[ki].near + aK[ai].near) / fails;
+              const p1bk = median(gK[ki].rounds);
+              const kd = out(p1bk, 2, 2, 0.5) + out(p2k, 0.27, 0.55, 0.05);
+              if (kd < kiDist) {
+                kiDist = kd;
+                kiBest = ki;
+                kiP1b = p1bk;
+                kiP2 = p2k;
+              }
+            }
+            // Best hintReliability for this ka: the LOWEST clearing the
+            // shrunk P6 target (weakest hint still worth reading), else the
+            // best ratio available.
+            let hiHr = NaN;
+            let hiP6 = -Infinity;
+            let hiMed = NaN;
+            for (let hi = 0; hi < hrGrid.length; hi++) {
+              const rdData = readerByHr[hi];
+              const rdFinals: number[] = [];
+              for (let i = 0; i < n; i++) {
+                rdFinals.push(
+                  bandRounds(rdData[i].scores, rdData[i].mids, t, config.bustKeep, config.fullClearBonus, aK[ai].gate).final,
+                );
+              }
+              const med = median(rdFinals);
+              const ratio = med / aMedAi;
+              if (ratio >= 1.1) {
+                hiHr = hrGrid[hi];
+                hiP6 = ratio;
+                hiMed = med;
+                break;
+              }
+              if (ratio > hiP6) {
+                hiHr = hrGrid[hi];
+                hiP6 = ratio;
+                hiMed = med;
+              }
+            }
+            const p6DistAi = Math.max(0, (1.1 - hiP6) / 0.02);
+            const jd = p1dDist + kiDist + p6DistAi;
+            if (jd < bestJoint) {
+              bestJoint = jd;
+              bestAi = ai;
+              bestKi = kiBest;
+              bestP1b = kiP1b;
+              bestP2 = kiP2;
+              chosenHr = hiHr;
+              chosenP6 = hiP6;
+              chosenReaderMed = hiMed;
+            }
+          }
+          const p1d = aK[bestAi].fc / n;
+          const aMed = median(aK[bestAi].finals);
+          const p6Dist = Math.max(0, (1.1 - chosenP6) / 0.02);
+          const dParts = [
+            ...shared,
+            out(p1d, 0.12, 0.23, 0.05),
+            out(bestP1b, 2, 2, 0.5),
+            out(bestP2, 0.27, 0.55, 0.05),
+            p6Dist,
+          ];
+          all.push({
+            fs: fsv,
+            hr: chosenHr,
+            curve: { base, growth, bossAxis },
+            kGreedy: KGREEDY_GRID[bestKi],
+            kAssisted: kaGrid[bestAi],
+            distance: dParts.reduce((x, y) => x + y, 0),
+            p0,
+            p0MinSlice,
+            p1a,
+            p1b: bestP1b,
+            p1c,
+            p1d,
+            p2: bestP2,
+            p6: chosenP6,
+            p3a: NaN,
+            p3b: NaN,
+            p4: NaN,
+            ladderOk:
+              median(rnFinals) <= median(gK[bestKi].finals) &&
+              median(gK[bestKi].finals) <= median(cFinals) &&
+              median(cFinals) <= aMed &&
+              aMed <= chosenReaderMed,
+            medians: {
+              random: median(rnFinals),
+              greedy: median(gK[bestKi].finals),
+              chaser: median(cFinals),
+              assisted: aMed,
+              reader: chosenReaderMed,
+            },
+          });
+        }
+      }
+    }
+
+    // Stage 2 for this fs: real-MC P3 (assisted policy) + P4 on the fs's
+    // shortlist (needs `data`, which is discarded when the fs loop advances).
+    const fsCands = all.filter((c) => c.fs === fsv).sort((a, b) => a.distance - b.distance);
+    const shortlist = fsCands.slice(0, Number(flags.get("shortlist") ?? 12));
+    for (const cand of shortlist) {
+      const t = thresholdsFor(cand.curve, R);
+      const raw = mcP3(
+        data,
+        config,
+        t,
+        rngFromString(`p3g|${cand.curve.base}|${cand.curve.growth}|${cand.curve.bossAxis}|${fsv}`),
+        96,
+        assistedPushGate(fsv, cand.kAssisted),
+      );
+      const { p3a, p3b } = mcP3Derive(raw);
+      cand.p3a = p3a;
+      cand.p3b = p3b;
+      cand.p4 = diversityRate(data, config, t, config.fullClearBonus);
+      const p3aDist = Math.max(0, (0.45 - p3a) / 0.1);
+      const p3bDist = Number.isNaN(p3b) ? 5 : Math.max(0, (0.3 - p3b) / 0.1);
+      const p4Dist = Math.max(0, (0.72 - cand.p4) / 0.1);
+      cand.distance += p3aDist + p3bDist + p4Dist;
+    }
+    console.log(
+      `  fs=${fsv.toFixed(4)}: stage2 done, best distance ${shortlist[0]?.distance.toFixed(3)} ` +
+        `(${((performance.now() - t0) / 1000).toFixed(0)}s)`,
+    );
+  }
+
+  const ranked = all
+    .filter((c) => !Number.isNaN(c.p3a))
+    .sort((a, b) => a.distance - b.distance);
+  console.log(`\ntop Ticket G candidates (stage-2-scored):`);
+  for (const c of ranked.slice(0, 12)) {
+    console.log(
+      `  fs=${c.fs.toFixed(4)} hr=${c.hr} base=${c.curve.base} growth=${c.curve.growth} ` +
+        `axis=${c.curve.bossAxis} k=${c.kGreedy} ka=${c.kAssisted} dist=${c.distance.toFixed(3)} | ` +
+        `P0=${(c.p0 * 100).toFixed(2)}%(min ${(c.p0MinSlice * 100).toFixed(2)}%) P1a=${c.p1a} ` +
+        `P1b=${c.p1b} P1c=${c.p1c} P1d=${(c.p1d * 100).toFixed(1)}% P2=${(c.p2 * 100).toFixed(1)}% ` +
+        `P3a=${(c.p3a * 100).toFixed(1)}% P3b=${Number.isNaN(c.p3b) ? "n/a" : (c.p3b * 100).toFixed(1) + "%"} ` +
+        `P4=${(c.p4 * 100).toFixed(1)}% P6=+${((c.p6 - 1) * 100).toFixed(1)}% ladder=${c.ladderOk ? "ok" : "BROKEN"}`,
+    );
+  }
+  // Frontier views for the STOP report (if nothing passes honestly).
+  const byP0 = [...all].sort((a, b) => b.p0 - a.p0)[0];
+  const byP6 = [...all].sort((a, b) => b.p6 - a.p6)[0];
+  console.log(
+    `\nfrontiers: max pooled P0 ${(byP0.p0 * 100).toFixed(2)}% ` +
+      `(fs=${byP0.fs.toFixed(4)} base=${byP0.curve.base} g=${byP0.curve.growth} a=${byP0.curve.bossAxis}); ` +
+      `max P6 gap +${((byP6.p6 - 1) * 100).toFixed(1)}% (hr=${byP6.hr})`,
+  );
+  const winner = ranked[0];
+  if (winner) {
+    const winnerConfig: EngineConfig = {
+      ...baseCfg,
+      formSpread: winner.fs,
+      thresholds: curveToThresholds(winner.curve),
+      hints: { hintReliability: winner.hr },
+    };
+    console.log(`\nwinner ladder medians: ${JSON.stringify(winner.medians)}`);
+    console.log(`\nwinner config (verify with --eval --slicerotation --defaultscorer):`);
+    console.log(JSON.stringify({ config: winnerConfig, kGreedy: winner.kGreedy }));
+    const HERE = path.dirname(fileURLToPath(import.meta.url));
+    const outPath = path.join(HERE, "artifacts", `sweepg-${seedBase}.json`);
+    fs.mkdirSync(path.dirname(outPath), { recursive: true });
+    fs.writeFileSync(
+      outPath,
+      JSON.stringify(
+        { config: winnerConfig, kGreedy: winner.kGreedy, kAssisted: winner.kAssisted, top: ranked.slice(0, 12) },
+        null,
+        2,
+      ),
+    );
+    console.log(`artifact: ${outPath}`);
+  }
+  console.log(`\ntotal ${((performance.now() - t0) / 1000).toFixed(0)}s`);
+}
+
 function main(): void {
   const flags = parseFlags(process.argv.slice(2));
   const boards = Number(flags.get("boards") ?? 500);
   const seedBase = flags.get("seed") ?? "calibrate-v0";
   const t0 = performance.now();
+
+  if (flags.has("sweepg")) {
+    sweepGMode(flags);
+    return;
+  }
 
   // --eval: no plane scan, no selection — measure the loaded config's OWN
   // thresholds (+ kGreedy) on freshly rotated card sets. This is the honest,
@@ -761,7 +1372,7 @@ function main(): void {
   // table below is a report-only diagnostic (see metrics.ts + DECISIONS.md
   // for the two-tier P0 architecture).
   if (flags.has("eval")) {
-    const { config, kGreedy } = loadConfig(flags.get("config"));
+    const { config, kGreedy, kAssisted } = loadConfig(flags.get("config"));
     const R = config.fixtureCount;
     const t = config.thresholds.thresholdShape
       ? Array.from({ length: R }, (_, r) =>
@@ -791,10 +1402,15 @@ function main(): void {
     if (cardSetPath && sliceRotationPath)
       throw new Error("--cardset and --slicerotation are mutually exclusive");
     const sliceFullSet = sliceRotationPath ? loadCardSetFile(sliceRotationPath) : null;
-    // The oracle-backed scorer is part of the shipped generator policy: the
+    // Ticket G: `--defaultscorer` measures the SERVED slice policy (sliceDeck's
+    // default triple-count tie-break — the E5 serving-scorer ruling) instead of
+    // the screened acceptance instrument. The Ticket G amended bars are defined
+    // on exactly this policy.
+    const useDefaultScorer = flags.has("defaultscorer");
+    // The oracle-backed scorer is part of the screened generator policy: the
     // serving layer must build the identical scorer (same config, same probe
     // count) so acceptance and production pick the same slice per dateSeed.
-    const sliceScorer = makeSliceAcceptanceScorer(config);
+    const sliceScorer = useDefaultScorer ? sliceTripleScore : makeSliceAcceptanceScorer(config);
     const cardSets = sliceFullSet
       ? Array.from({ length: sliceCount }, (_, s) =>
           sliceDeck(
@@ -802,7 +1418,7 @@ function main(): void {
             sliceFullSet,
             DAILY_SLICE_CONFIG_V1,
             sliceScorer,
-            SLICE_SCORE_TARGET,
+            useDefaultScorer ? undefined : SLICE_SCORE_TARGET,
           ),
         )
       : cardSetPath
@@ -812,6 +1428,11 @@ function main(): void {
     const p0SetGate = Boolean(cardSetPath || sliceRotationPath);
     const lineCount = Math.pow(config.offersPerRow, config.rows);
     const P5_EVERY = 97;
+    // Ticket G — a config with hints is measured on profile v1.1: P1d gates
+    // assisted, P2 pools greedy+assisted, P3 runs on assisted, P6 added.
+    const v11 = Boolean(config.hints);
+    const hintRel = config.hints?.hintReliability ?? 1 / 3;
+    const aGate = assistedPushGate(config.formSpread, kAssisted);
 
     interface SetStats {
       set: number;
@@ -834,8 +1455,17 @@ function main(): void {
     const cAll: number[] = [];
     const rAll: number[] = [];
     let chaserFCAll = 0;
+    let assistedFCAll = 0;
     let failsAll = 0;
     let nearAll = 0;
+    // Ladder + P6: pooled final scores per bot.
+    const finalsAll: Record<string, number[]> = {
+      random: [],
+      greedy: [],
+      chaser: [],
+      assisted: [],
+      reader: [],
+    };
     const byRoundAll = Array.from({ length: R }, () => 0);
     const p3All: McP3Raw = { runs: 0, tenseRuns: 0, states: 0, tense: 0, tenseSpreads: [] };
     let p4Weighted = 0;
@@ -846,6 +1476,7 @@ function main(): void {
       const data: BoardData[] = [];
       let fullClearable = 0;
       let chaserFC = 0;
+      let assistedFC = 0;
       let fails = 0;
       let nearMisses = 0;
       const gRounds: number[] = [];
@@ -855,12 +1486,14 @@ function main(): void {
         const { data: bd, ctx } = precomputeBoard(config, formless, cardSets[s], seedBase, i);
         data.push(bd);
         // P5: replay + serialization spot-check through the real engine, on
-        // the same cadence the sim uses.
+        // the same cadence the sim uses (Ticket G adds assisted + reader).
         if (i % P5_EVERY === 0) {
           p5Checked++;
           const runs = [
             runGreedy(ctx, kGreedy),
             runChaser(ctx),
+            runAssisted(ctx, kAssisted),
+            runReader(ctx, kAssisted),
             runRandom(ctx, rngFromString(`${seedBase}#${i}|randombot`)),
             runOracle(ctx).result,
           ];
@@ -876,8 +1509,9 @@ function main(): void {
           if (worst > best) best = worst;
         }
         if (best >= 1) fullClearable++;
-        const g = greedyRounds(bd.greedy, bd.greedyFaces, kGreedy, t);
+        const g = greedyRounds(bd.greedy, bd.greedyFaces, kGreedy, t, config.bustKeep, config.fullClearBonus);
         gRounds.push(g.rounds);
+        finalsAll.greedy.push(g.final);
         if (!Number.isNaN(g.failMargin)) {
           fails++;
           if (g.failMargin >= NEAR_MISS_FLOOR) {
@@ -885,21 +1519,43 @@ function main(): void {
             byRoundAll[g.rounds]++;
           }
         }
-        const c = chaserRounds(bd.chaser, t);
+        const c = chaserRounds(bd.chaser, t, config.bustKeep, config.fullClearBonus);
         cRounds.push(c.rounds);
+        finalsAll.chaser.push(c.final);
         if (c.fullClear) chaserFC++;
-        if (!Number.isNaN(c.failMargin)) {
+        // Ticket G: assisted (band policy on the same squad/bench) and reader
+        // (posterior-weighted band policy) — the v1.1 shipped-player models.
+        const a = bandRounds(bd.chaser, bd.mids, t, config.bustKeep, config.fullClearBonus, aGate);
+        finalsAll.assisted.push(a.final);
+        if (a.fullClear) assistedFC++;
+        const rd = readerDataFor(bd, config, hintRel);
+        const rdOut = bandRounds(rd.scores, rd.mids, t, config.bustKeep, config.fullClearBonus, aGate);
+        finalsAll.reader.push(rdOut.final);
+        // P2 pools greedy + the profile's shipped-player bot (v1.0 chaser,
+        // v1.1 assisted).
+        const partner = v11 ? a : c;
+        if (v11) {
+          if (!Number.isNaN(partner.failMargin)) {
+            fails++;
+            if (partner.failMargin >= NEAR_MISS_FLOOR) {
+              nearMisses++;
+              byRoundAll[partner.rounds]++;
+            }
+          }
+        } else if (!Number.isNaN(c.failMargin)) {
           fails++;
           if (c.failMargin >= NEAR_MISS_FLOOR) {
             nearMisses++;
             byRoundAll[c.rounds]++;
           }
         }
-        rRounds.push(randomRounds(bd.random, bd.coins, t));
+        const rn = randomRounds(bd.random, bd.coins, t, config.bustKeep, config.fullClearBonus);
+        rRounds.push(rn.rounds);
+        finalsAll.random.push(rn.final);
       }
       if (data.length === 0) continue;
       const n = data.length;
-      const p3 = mcP3(data, config, t, rngFromString(`${seedBase}|eval|set${s}`), 192);
+      const p3 = mcP3(data, config, t, rngFromString(`${seedBase}|eval|set${s}`), 192, v11 ? aGate : undefined);
       const { p3a, p3b } = mcP3Derive(p3);
       const p4 = diversityRate(data, config, t, config.fullClearBonus);
       perSet.push({
@@ -909,7 +1565,7 @@ function main(): void {
         p1a: median(rRounds),
         p1b: median(gRounds),
         p1c: median(cRounds),
-        p1d: chaserFC / n,
+        p1d: (v11 ? assistedFC : chaserFC) / n,
         fails,
         nearMisses,
         p3a,
@@ -921,6 +1577,7 @@ function main(): void {
       cAll.push(...cRounds);
       rAll.push(...rRounds);
       chaserFCAll += chaserFC;
+      assistedFCAll += assistedFC;
       failsAll += fails;
       nearAll += nearMisses;
       p3All.runs += p3.runs;
@@ -936,6 +1593,9 @@ function main(): void {
 
     const total = gAll.length;
     const pooledP3 = mcP3Derive(p3All);
+    // Ticket G amended slice-rotation bars (profile v1.1 only): pooled P0-set
+    // >= 99.4%, per-slice >= 99.0%, would-be reroll alarm at 1%.
+    const amendedBars = Boolean(v11 && sliceRotationPath);
     const criteria = evaluateCriteria({
       oracleFullClearRate: fullClearableAll / total,
       // The analytic detector IS the full-clear enumeration, so every dead
@@ -946,6 +1606,9 @@ function main(): void {
       greedyMedianRounds: median(gAll),
       chaserMedianRounds: median(cAll),
       chaserFullClearRate: chaserFCAll / total,
+      assistedFullClearRate: assistedFCAll / total,
+      assistedMedianScore: median(finalsAll.assisted),
+      readerMedianScore: median(finalsAll.reader),
       pooledNearMissRate: failsAll === 0 ? 0 : nearAll / failsAll,
       pooledFails: failsAll,
       p3Runs: p3All.runs,
@@ -956,7 +1619,19 @@ function main(): void {
       p4Rate: p4Weighted / total,
       p5Checked,
       p5Ok,
-    }, { p0SetGate });
+    }, {
+      p0SetGate,
+      profileV11: v11,
+      p0SetBar: amendedBars ? 0.994 : undefined,
+      sliceBars: amendedBars
+        ? {
+            minSliceP0: Math.min(...perSet.map((st) => st.p0)),
+            perSliceBar: 0.99,
+            rerollRate: (total - fullClearableAll) / total,
+            rerollAlarm: 0.01,
+          }
+        : undefined,
+    });
     if (p0SetGate) {
       // P0-runtime would-be reroll rate: the fraction of seeds whose k=0 board
       // is dead — production would serve the first non-dead k instead. Reported
@@ -975,6 +1650,14 @@ function main(): void {
     console.log(formatCriteriaTable(criteria));
     const passed = criteria.filter((c) => c.pass).length;
     console.log(`\ncriteria: ${passed}/${criteria.length} PASS`);
+
+    if (v11) {
+      // Ticket G ladder (report-only): random < greedy < chaser < assisted <= reader.
+      const ladder = (["random", "greedy", "chaser", "assisted", "reader"] as const)
+        .map((n) => `${n}=${median(finalsAll[n]).toFixed(0)}`)
+        .join(" < ");
+      console.log(`\nladder (median final score, want nondecreasing): ${ladder}`);
+    }
 
     const att = nearMissAttribution(byRoundAll);
     console.log(
@@ -1108,4 +1791,6 @@ function main(): void {
   console.log(`\ntotal ${((performance.now() - t0) / 1000).toFixed(0)}s`);
 }
 
-main();
+const isMain =
+  process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url);
+if (isMain) main();

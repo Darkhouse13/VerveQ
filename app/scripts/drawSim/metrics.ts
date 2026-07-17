@@ -181,12 +181,27 @@ export function buildChaserPlan(ctx: BoardContext, squadCardIdxs: number[]): Cha
 }
 
 /**
- * P3 (Ticket 0.2) — EV/stdev of PUSH at a chaser-reached post-clear state,
+ * Band centre per round for a plan's fielded five: Σ(rating × fixtureMult) ×
+ * synergyMult — the F3 band centre the assisted policy pushes on (Ticket G).
+ */
+export function planBandMids(ctx: BoardContext, plan: ChaserRoundPlan[]): number[] {
+  return plan.map((p, r) => {
+    let sum = 0;
+    for (const ci of p.fieldedIdxs) sum += ctx.ratingMod[r * ctx.N + ci];
+    return sum * p.synMult;
+  });
+}
+
+/**
+ * P3 (Ticket 0.2) — EV/stdev of PUSH at a bot-reached post-clear state,
  * from the player's information set: squad, bench plan, synergy, modifiers,
  * and thresholds are known; future forms are unknown and resampled uniform in
  * [1-f, 1+f]. After the forced push the simulated player continues with the
- * chaser's own policy (form=1 bench each round, push while score ≥ 1.1 × next
- * threshold). EV(bank) at the state is simply `banked`.
+ * measured bot's own policy — the chaser's (form=1 bench each round, push
+ * while score ≥ 1.1 × next threshold) by default, or, when `assistedMids` is
+ * given (Ticket G, profile v1.1), the assisted bot's (same bench plan, push
+ * while the NEXT round's band centre ≥ its threshold — a deterministic stop
+ * given the squad). EV(bank) at the state is simply `banked`.
  */
 export function evalPushAtState(
   ctx: BoardContext,
@@ -195,6 +210,8 @@ export function evalPushAtState(
   banked: number,
   rng: () => number,
   samples: number,
+  /** Band centres + push gate for the assisted policy (Ticket G). */
+  assisted?: { mids: number[]; pushGate: number },
 ): { evGap: number; spread: number } {
   const { config, ratingMod, thresholds, N, R } = ctx;
   const f = config.formSpread;
@@ -215,7 +232,11 @@ export function evalPushAtState(
       cum += score;
       if (j === R - 1) {
         final = cum * config.fullClearBonus;
-      } else if (score < 1.1 * thresholds[j + 1]) {
+      } else if (
+        assisted
+          ? assisted.mids[j + 1] * assisted.pushGate < thresholds[j + 1]
+          : score < 1.1 * thresholds[j + 1]
+      ) {
         final = cum;
         break;
       }
@@ -244,6 +265,19 @@ export interface ProfileInputs {
   greedyMedianRounds: number;
   chaserMedianRounds: number;
   chaserFullClearRate: number;
+  /**
+   * Ticket G (profile v1.1): P1d gates the ASSISTED bot's full-clear rate;
+   * chaser FC becomes a report-only diagnostic. Required when profileV11.
+   */
+  assistedFullClearRate?: number;
+  /** Ticket G P6: reader's median final score must exceed assisted's by ≥8%. */
+  assistedMedianScore?: number;
+  readerMedianScore?: number;
+  /**
+   * P2 pooled inputs. Profile v1.0 pools greedy+chaser; v1.1 pools
+   * greedy+assisted (the chaser's spot in the pool follows the bot the
+   * profile measures the shipped player with — see DECISIONS.md Ticket G).
+   */
   pooledNearMissRate: number;
   pooledFails: number;
   /** Chaser runs simulated (= boards). */
@@ -267,7 +301,28 @@ function outside(value: number, lo: number, hi: number, unit: number): number {
   return 0;
 }
 
-export function evaluateCriteria(m: ProfileInputs, opts?: { p0SetGate?: boolean }): Criterion[] {
+export interface CriteriaOptions {
+  p0SetGate?: boolean;
+  /**
+   * P0-set bar (natural full-clear). Default 0.995 (Ticket 0.4 Tier-2);
+   * Ticket G's slice-rotation acceptance runs the owner-amended 0.994.
+   */
+  p0SetBar?: number;
+  /**
+   * Ticket G — profile v1.1 (engine v1.1 with hints): P1d gates the assisted
+   * bot, P3 is measured on assisted, P2 pools greedy+assisted, and P6
+   * (reader ≥ assisted + 8% median score) is added. The v1.1 inputs on
+   * ProfileInputs are required.
+   */
+  profileV11?: boolean;
+  /**
+   * Ticket G slice-rotation bars (amended acceptance): per-slice P0 floor and
+   * the would-be-reroll alarm. Emitted as extra criteria when provided.
+   */
+  sliceBars?: { minSliceP0: number; perSliceBar: number; rerollRate: number; rerollAlarm: number };
+}
+
+export function evaluateCriteria(m: ProfileInputs, opts?: CriteriaOptions): Criterion[] {
   const criteria: Criterion[] = [];
   const push = (id: string, label: string, distance: number, value: string) =>
     criteria.push({ id, label, pass: distance === 0, value, distance });
@@ -288,10 +343,13 @@ export function evaluateCriteria(m: ProfileInputs, opts?: { p0SetGate?: boolean 
   // is raw k=0 full-clearability; the would-be reroll rate is reported
   // separately by the caller.
   if (opts?.p0SetGate) {
+    const bar = opts?.p0SetBar ?? 0.995;
     push(
       "P0-set",
-      "P0-set: pinned set natural full-clear >=99.5% over >=2000 boards (no reroll assist; Ticket 0.4 Tier-2)",
-      Math.max(0, (0.995 - m.oracleFullClearRate) / 0.001) + (m.deadFlagged === m.deadBoards ? 0 : 10),
+      `P0-set: pinned set natural full-clear >=${(bar * 100).toFixed(1)}% (no reroll assist; Ticket 0.4 Tier-2` +
+        (opts?.p0SetBar !== undefined && opts.p0SetBar !== 0.995 ? ", Ticket G amended bar" : "") +
+        ")",
+      Math.max(0, (bar - m.oracleFullClearRate) / 0.001) + (m.deadFlagged === m.deadBoards ? 0 : 10),
       `${(m.oracleFullClearRate * 100).toFixed(2)}% natural full-clear, ${m.deadBoards} dead / ${m.deadFlagged} flagged`,
     );
   } else {
@@ -320,24 +378,36 @@ export function evaluateCriteria(m: ProfileInputs, opts?: { p0SetGate?: boolean 
     outside(m.chaserMedianRounds, 3, 4, 0.5),
     `median ${m.chaserMedianRounds}`,
   );
+  // Ticket G (profile v1.1): P1d gates the ASSISTED bot (the shipped-human
+  // model); chaser FC stays visible as a diagnostic. Band unchanged.
+  if (opts?.profileV11) {
+    const fc = m.assistedFullClearRate ?? NaN;
+    push(
+      "P1d",
+      "assisted full-clear rate in [10%,25%] (Ticket G; chaser FC = diagnostic)",
+      Number.isNaN(fc) ? 10 : outside(fc, 0.1, 0.25, 0.05),
+      `${(fc * 100).toFixed(1)}% (chaser ${(m.chaserFullClearRate * 100).toFixed(1)}%)`,
+    );
+  } else {
   push(
     "P1d",
     "chaser full-clear rate in [10%,25%]",
     outside(m.chaserFullClearRate, 0.1, 0.25, 0.05),
     `${(m.chaserFullClearRate * 100).toFixed(1)}%`,
   );
+  }
   // Ticket 0.3 C1 (owner amendment): ceiling 40% → 60%. The 60% line is a
   // degeneracy alarm, not a tuning target — near-miss clustering under
   // rational play is accepted as a genre property (see DECISIONS.md STOP-3).
   push(
     "P2",
-    "near-miss 25-60% of failed rounds (greedy+chaser; 60% = degeneracy alarm)",
+    `near-miss 25-60% of failed rounds (greedy+${opts?.profileV11 ? "assisted" : "chaser"}; 60% = degeneracy alarm)`,
     outside(m.pooledNearMissRate, 0.25, 0.6, 0.05),
     `${(m.pooledNearMissRate * 100).toFixed(1)}% of ${m.pooledFails} fails`,
   );
   push(
     "P3a",
-    ">=40% of chaser runs hit >=1 tense state (|EV gap| <= 0.5 x stdev(push))",
+    `>=40% of ${opts?.profileV11 ? "assisted" : "chaser"} runs hit >=1 tense state (|EV gap| <= 0.5 x stdev(push))`,
     Math.max(0, (0.4 - m.p3TenseRunFrac) / 0.1),
     `${(m.p3TenseRunFrac * 100).toFixed(1)}% of ${m.p3Runs} runs ` +
       `(per-state ${(m.p3PerStateTenseFrac * 100).toFixed(1)}% of ${m.p3States})`,
@@ -357,6 +427,37 @@ export function evaluateCriteria(m: ProfileInputs, opts?: { p0SetGate?: boolean 
     `${(m.p4Rate * 100).toFixed(1)}%`,
   );
   push("P5", "determinism spot-checks (full property tests in vitest)", m.p5Ok ? 0 : 10, `${m.p5Checked} boards re-replayed, ${m.p5Ok ? "all identical" : "MISMATCH"}`);
+  // Ticket G P6: hints must be worth reading — reader's median final score
+  // exceeds assisted's by >=8%.
+  if (opts?.profileV11) {
+    const a = m.assistedMedianScore ?? NaN;
+    const r = m.readerMedianScore ?? NaN;
+    const ratio = r / a;
+    push(
+      "P6",
+      "reader median final score >= 1.08 x assisted median (hints worth reading; Ticket G)",
+      !Number.isFinite(ratio) ? 10 : Math.max(0, (1.08 - ratio) / 0.02),
+      Number.isFinite(ratio)
+        ? `reader ${r.toFixed(0)} vs assisted ${a.toFixed(0)} (${((ratio - 1) * 100).toFixed(1)}% gap)`
+        : "missing median scores",
+    );
+  }
+  // Ticket G amended slice-rotation bars: per-slice P0 floor + reroll alarm.
+  if (opts?.sliceBars) {
+    const sb = opts.sliceBars;
+    push(
+      "P0-slice",
+      `per-slice natural full-clear >=${(sb.perSliceBar * 100).toFixed(1)}% (worst slice; Ticket G amended bars)`,
+      Math.max(0, (sb.perSliceBar - sb.minSliceP0) / 0.001),
+      `worst slice ${(sb.minSliceP0 * 100).toFixed(2)}%`,
+    );
+    push(
+      "P0-reroll",
+      `would-be reroll rate <=${(sb.rerollAlarm * 100).toFixed(1)}% (P0-runtime chain depth alarm; Ticket G)`,
+      Math.max(0, (sb.rerollRate - sb.rerollAlarm) / 0.001),
+      `${(sb.rerollRate * 100).toFixed(2)}% of seeds would reroll`,
+    );
+  }
   return criteria;
 }
 

@@ -213,6 +213,107 @@ Landed and frozen: types.ts marked **CONTRACT v1.0** (breaking changes
 closed; additive knobs by owner ticket only, P0-runtime invariant included),
 tag `draw-engine-v1.0`.
 
+## Ticket G (owner-ordered, 2026-07-18): engine v1.1 — form hints + assisted/reader bots
+
+Owner-sanctioned ADDITIVE contract change (v1.0 → v1.1); no breaking changes.
+Landed (independent of the tuning outcome, per the E3 precedent of landing the
+instrument):
+
+- **hints.ts** — `formHint(boardSeed, cardId, roundIndex, hintReliability)` →
+  COLD | NEUTRAL | HOT. True band = tercile of the SAME seeded u that formFor
+  realizes; an independent noise stream (`|hint|`) keeps the true band with
+  probability `hintReliability`, else shows one of the other two bands
+  uniformly — so hintReliability IS P(hint == realized band) and the hint
+  marginal stays uniform (no population tell). Bayes helpers
+  (`hintPosteriorMeanU` / `hintPosteriorForm`); reliability 1/3 collapses the
+  posterior to the prior. SANITIZATION: hints are design-public PRE-round
+  (pure function of board seed — locked decision 3 untouched); the realized
+  form value remains post-resolution only; contract-tested that the hint
+  carries no information beyond its band statistics
+  (drawHintsContract.test.ts).
+- **types.ts** — `EngineConfig.hints?: HintConfig { hintReliability }`
+  (additive; omitted ⇒ bit-for-bit v1.0).
+- **bots.ts** — `assisted` (the shipped-human model: chain-first draft,
+  F3-band-centre bench = the chaser's formless argmax, push by exact band
+  arithmetic: push iff the next threshold sits at or below `kAssisted` of the
+  next round's projected band); `reader` (assisted + Bayesian hint use: every
+  form-1 weight replaced by the posterior mean form given the card's hint,
+  same for bench and push). Ladder target random < greedy < chaser <
+  assisted ≤ reader — held in every measurement.
+- **kAssisted (bot-model knob, FLAGGED)** — the ticket fixes the assisted
+  bot's bench/push to "exact F3 band arithmetic" but the arithmetic alone
+  does not fix the push TOLERANCE (where across the band the threshold must
+  sit). Modeled as a harness-level knob like kGreedy (Ticket 0.2 A3
+  precedent): push iff bandFraction(threshold) ≤ kAssisted, resolved by the
+  profile fit (P1d's band is exactly the instrument that pins it). Default
+  0.5 (= band centre). This is a session interpretation, not owner text —
+  recorded here for the owner to affirm or overrule.
+- **Profile v1.1 instruments** (metrics/evaluate/calibrate, active only for
+  configs WITH hints): P1d gates ASSISTED full-clear [10%, 25%] (chaser FC
+  demoted to diagnostic); P2 pools greedy+assisted; P3 measured on assisted
+  with the band-policy continuation; NEW P6: reader median final score ≥
+  1.08 × assisted's; P1c and all bands unchanged. Ticket G slice-rotation
+  acceptance bars (amended by the ticket): pooled P0-set ≥ 99.4%, per-slice
+  ≥ 99.0%, would-be reroll alarm 1% — measured on DEFAULT-scorer slices (the
+  E5 serving policy), `calibrate --eval --slicerotation --defaultscorer`.
+
+## Tuning outcome (Ticket G) — STOP on P3a + P6 (one dial, three masters)
+
+The c13-2 sweep (`calibrate --sweepg`: formSpread × hintReliability ×
+threshold plane × kGreedy × kAssisted, 4 campaigns ≈ 7k combinations on 20
+default-scorer real-v4 slices × 4000 boards, stage-2 real-MC P3 + P4,
+shrunk search targets) found NO passing config. Fail-closed: STOP; nothing
+frozen as c13-2, no DECISIONS loosening, serving stays on c13-1 (no hints).
+
+Closest config, honest selection-free 20×500 re-measure (seed accept-g-stop;
+fs 0.45, base 400, growth 1.24, shape5 1.1, hr 0.8, kGreedy 0.9, kAssisted
+0.2): **11/13 PASS** — P0-set 99.80% (worst slice 99.20%, reroll 0.20%),
+P1a 1, P1b 2, P1c 4, P1d 20.3%, P2 49.9%, P3b 64.2%, P4 97.3%, P5 104/104 —
+failing only **P3a 19.7%** (≥ 40%) and **P6 +1.1%** (≥ +8%). Artifact:
+scripts/drawSim/artifacts/g-closest.json (gitignored).
+
+Root cause — **P1d, P3a and P6 are three readings of ONE quantity: how often
+the assisted model's pushes are marginal.** The F3 band centre is the
+formless round score, so a band player's pushes are near-optimally informed:
+- P1d ≤ 25% needs marginal pushes RARE (at P0-compatible threshold heights
+  an aggressive band player full-clears ~50% — measured 53.0% at kAssisted
+  0.5; the kAssisted dial reaches the band only at 0.2, i.e. push at ≥
+  bottom-fifth of the band).
+- P3a ≥ 40% needs marginal pushes COMMON — tense states ARE marginal
+  decisions. Measured max across every sweep and honest run: **~23–26%**;
+  in the P1d-passing region ~17–20%. (The v1.0 chaser scored 45.1% on the
+  same slices because its backward-looking 1.1× rule manufactures
+  marginality; the band policy is too well-informed to be tense.)
+- P6 ≥ +8% needs marginal pushes COMMON — hints only pay where a decision
+  can flip. Honest frontier: **+4.2%** at the most-aggressive corner
+  (kAssisted 0.5, hr 0.9, where P1d is 53%); **+1.1%** in the P1d band.
+  (Search-stage P6 up to +13% did not survive selection-free re-measure —
+  winner's curse, as the harness notes predict.)
+
+Threshold knobs cannot decouple them: raising thresholds/boss walls moves
+P0-set down with P1d (axis 1.6 ⇒ P1d 29% but P0 96%, min-slice 92.5%), and
+conservatism (kAssisted ↓) buys P1d exactly by destroying the marginality
+P3a/P6 need. What v1.0 kept on separate dials (P1d on the chaser's
+manufactured marginality, P3 on the same), v1.1's better-informed player
+collapses onto one.
+
+Everything else co-holds comfortably: the amended P0 bars pass across the
+region (up to 99.98% pooled / 99.5% worst slice), P2 lands mid-band once
+assisted joins the pool (44–55%), the ladder holds everywhere measured, and
+hints ARE strictly worth reading (reader ≥ assisted in every honest run) —
+just not +8% worth.
+
+Suggested (not applied — owner rulings required):
+1. **Re-gate P1d and P3 on the chaser** (v1.0 semantics) and keep assisted/
+   reader as P6's instrument at kAssisted 0.5: on measured numbers this
+   passes P0/P1/P2/P3 as at E5, with honest P6 ≈ +4% — combine with (2).
+2. **Lower P6's bar to what a bench+push hint reader can honestly earn
+   (≈ +3–5%)**, or widen the hint channel (reader uses hints at DRAFT, a
+   spec change) if +8% must stand.
+3. **Accept that the band player IS the game now**: re-band P1d for assisted
+   (e.g. [35%, 55%]) and drop P3a to a diagnostic — a deliberate profile
+   redesign, not a tune.
+
 ## Harness honesty notes (Ticket 0.2 methodology)
 
 - **Card-set lottery**: the card set is derived from the evaluation seed, so

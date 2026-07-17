@@ -1,9 +1,13 @@
 /**
- * THE DRAW — CONTRACT v1.0 (frozen, Ticket 0.4, tag draw-engine-v1.0).
+ * THE DRAW — CONTRACT v1.1 (v1.0 frozen at Ticket 0.4, tag draw-engine-v1.0;
+ * v1.1 adds the OWNER-SANCTIONED additive hint knob, Ticket G).
  *
  * Everything in the engine, the sim harness, and (later) the UI imports its
- * shapes from this file. v1.0 closes breaking changes: the contract may only
+ * shapes from this file. v1.0 closed breaking changes: the contract may only
  * grow by ADDITIVE knobs, and only by owner ticket (see DECISIONS.md).
+ * v1.1 additions (Ticket G): `EngineConfig.hints` (optional — omitting it
+ * reproduces v1.0 bit-for-bit) and the formHint module (hints.ts). Hints are
+ * design-public PRE-round; the realized form stays post-resolution only.
  *
  * Design invariants:
  * - P0-RUNTIME (CONTRACT INVARIANT, Ticket 0.4): production serving MUST
@@ -126,6 +130,20 @@ export interface ThresholdConfig {
   thresholdShape?: number[];
 }
 
+/**
+ * Form-hint knobs (Ticket G, engine v1.1 — ADDITIVE; absent ⇒ no hints, the
+ * exact v1.0 game). See hints.ts for the derivation and the sanitization
+ * contract.
+ */
+export interface HintConfig {
+  /**
+   * P(hint band == realized form band). 1 = always truthful, 1/3 = fully
+   * uninformative. Hints are seeded from (boardSeed, cardId, roundIndex)
+   * only — same board ⇒ same hints for every user (locked decision 3).
+   */
+  hintReliability: number;
+}
+
 /** Every gameplay number is a knob here. */
 export interface EngineConfig {
   /** Draft rows (squad size). Layout cap: ≤ 6. */
@@ -153,6 +171,11 @@ export interface EngineConfig {
   /** Archetype knob table boards sample their fixtures from. */
   archetypes: FixtureArchetype[];
   cardGen: CardGenConfig;
+  /**
+   * Ticket G (v1.1, ADDITIVE): pre-round form hints. Omitted ⇒ hints off and
+   * the config plays exactly as under v1.0.
+   */
+  hints?: HintConfig;
 }
 
 /**

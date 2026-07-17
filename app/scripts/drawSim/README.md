@@ -30,6 +30,21 @@ sweep. Everything is seeded — same flags ⇒ identical output.
 - `calibrate.ts` — exploits the fact that bot draft picks are threshold-independent: precomputes per-board bot round-scores + the 729-line score matrix once, then scores the whole threshold plane (base × growth × bossAxis, where bossAxis = bossMult × thresholdShape[last]) analytically (~22k curves in seconds), with the real P3 Monte-Carlo on a stratified shortlist. Used to prove the Ticket 0 P1b conflict and the Ticket 0.1 P3a ceiling (see `../src/lib/drawEngine/DECISIONS.md`). `--eval` (Ticket 0.3) is the selection-free acceptance instrument: it measures one exact config set-by-set over the 10-set rotation and gates the POOLED result on the full P0–P5 profile (P4 from the line matrices, P5 via real-engine replay spot-checks), printing a per-set table and the C2 near-miss attribution alongside.
 - `artifacts/` — gitignored JSON outputs.
 
+## Ticket G (engine v1.1)
+
+`bots.ts` adds `assisted` (shipped-human model: chain-first draft, band-centre
+bench, push by exact F3 band arithmetic with the `kAssisted` tolerance knob)
+and `reader` (assisted + Bayesian use of the v1.1 form hints). Configs WITH
+`hints` are measured on profile v1.1: P1d gates assisted FC, P2 pools
+greedy+assisted, P3 runs on assisted, P6 (reader ≥ assisted + 8% median) is
+added, and slice-rotation acceptance uses the amended bars (pooled ≥ 99.4%,
+per-slice ≥ 99.0%, reroll alarm 1%) on DEFAULT-scorer slices
+(`--eval --slicerotation <set> --defaultscorer`). The c13-2 retune sweep is
+`calibrate --sweepg` (formSpread × hintReliability × threshold plane ×
+kGreedy × kAssisted). Outcome: **STOP** — P3a and P6 are structurally
+unreachable while P1d holds (one marginality dial, three masters); closest
+config passes 11/13. Full ruling in drawEngine/DECISIONS.md (Ticket G).
+
 ## Status
 
 Ticket 0.4: P0 restructured into two tiers by owner ruling (STOP-4 accepted;

@@ -40,14 +40,20 @@ export interface LoadedConfig {
   config: EngineConfig;
   /** Greedy push-rule face multiplier (Ticket 0.2), default 1. */
   kGreedy: number;
+  /** Assisted/reader band-fraction push tolerance (Ticket G), default 0.5. */
+  kAssisted: number;
 }
 
 export function loadConfig(configPath: string | undefined): LoadedConfig {
-  if (!configPath) return { config: mergeConfig(undefined), kGreedy: 1 };
+  if (!configPath) return { config: mergeConfig(undefined), kGreedy: 1, kAssisted: 0.5 };
   const raw = JSON.parse(fs.readFileSync(configPath, "utf8"));
   // Accept either a bare partial config or a sweep artifact entry
-  // ({ config: ..., kGreedy?: ... }).
-  return { config: mergeConfig(raw.config ?? raw), kGreedy: Number(raw.kGreedy ?? 1) };
+  // ({ config: ..., kGreedy?: ..., kAssisted?: ... }).
+  return {
+    config: mergeConfig(raw.config ?? raw),
+    kGreedy: Number(raw.kGreedy ?? 1),
+    kAssisted: Number(raw.kAssisted ?? 0.5),
+  };
 }
 
 function pct(x: number): string {
@@ -71,8 +77,9 @@ export function renderEval(ev: ConfigEval): string {
     "nearmiss",
   ].join(" ");
   lines.push(header);
-  for (const name of ["oracle", "greedy", "chaser", "random"]) {
+  for (const name of ["oracle", "greedy", "chaser", "assisted", "reader", "random"]) {
     const b = ev.bots[name];
+    if (!b) continue; // pre-Ticket-G artifacts have no assisted/reader
     lines.push(
       [
         name.padEnd(8),
@@ -117,6 +124,13 @@ export function renderEval(ev: ConfigEval): string {
       .join(" ")} — forced r1 ${pct(att.forcedShare)}, chosen push r>=2 ${pct(att.chosenShare)} ` +
       `of ${att.nearMisses} near-misses`,
   );
+  if (ev.bots.assisted && ev.bots.reader) {
+    // Ticket G ladder (report-only): random < greedy < chaser < assisted <= reader.
+    const ladder = ["random", "greedy", "chaser", "assisted", "reader"]
+      .map((n) => `${n}=${ev.bots[n].scoreP50.toFixed(0)}`)
+      .join(" < ");
+    lines.push(`ladder (median final score, want nondecreasing): ${ladder}`);
+  }
   lines.push(`p4: line diversity on ${pct(ev.p4Rate)} of boards`);
   lines.push("");
   lines.push(formatCriteriaTable(ev.criteria));
@@ -131,8 +145,9 @@ function main(): void {
   const boards = Number(flags.get("boards") ?? 2000);
   const seedBase = flags.get("seed") ?? "drawsim-v0";
   const p3Samples = Number(flags.get("p3samples") ?? 200);
-  const { config, kGreedy: fileKGreedy } = loadConfig(flags.get("config"));
+  const { config, kGreedy: fileKGreedy, kAssisted: fileKAssisted } = loadConfig(flags.get("config"));
   const kGreedy = Number(flags.get("kgreedy") ?? fileKGreedy);
+  const kAssisted = Number(flags.get("kassisted") ?? fileKAssisted);
 
   const layout = checkLayout(config);
   if (!layout.eligible) {
@@ -141,7 +156,7 @@ function main(): void {
     return;
   }
 
-  const ev = evaluateConfig(config, { boards, seedBase, p3Samples, p5Every: 97, kGreedy });
+  const ev = evaluateConfig(config, { boards, seedBase, p3Samples, p5Every: 97, kGreedy, kAssisted });
 
   if (ev.oracle.medianMs > 1000) {
     console.error(
@@ -155,7 +170,7 @@ function main(): void {
   const outPath =
     flags.get("out") ?? path.join(HERE, "artifacts", `sim-${seedBase}-${boards}.json`);
   fs.mkdirSync(path.dirname(outPath), { recursive: true });
-  fs.writeFileSync(outPath, JSON.stringify({ config, kGreedy, eval: ev }, null, 2));
+  fs.writeFileSync(outPath, JSON.stringify({ config, kGreedy, kAssisted, eval: ev }, null, 2));
   console.log(`\nartifact: ${outPath}`);
 }
 
