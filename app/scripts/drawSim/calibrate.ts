@@ -149,6 +149,37 @@ function rotatedCardSets(config: EngineConfig, seedBase: string): Card[][] {
   );
 }
 
+/**
+ * Ticket E3 step 1 — load a COMMITTED card set (drawCardsReal.candidates.json
+ * shape) as engine cards, using the same field mapping the serving layer uses
+ * (convex/drawBoards.ts loadCardSet: tag list = clubs, era = label). This is
+ * what --eval's single-set mode (P0-set gate, Ticket 0.4 Tier-2) runs on.
+ */
+function loadCardSetFile(p: string): Card[] {
+  interface RealCardRow {
+    cardId: string;
+    name: string;
+    rating: number;
+    clubs: { tag: string }[];
+    nation: string;
+    eraLabel: string;
+    eraIndex: number;
+    position: Card["position"];
+  }
+  const rows = JSON.parse(fs.readFileSync(p, "utf8")) as RealCardRow[];
+  if (!Array.isArray(rows) || rows.length === 0) throw new Error(`empty/invalid card set file: ${p}`);
+  return rows.map((r) => ({
+    id: r.cardId,
+    name: r.name,
+    rating: r.rating,
+    clubs: r.clubs.map((c) => c.tag),
+    nation: r.nation,
+    era: r.eraLabel,
+    eraIndex: r.eraIndex,
+    position: r.position,
+  }));
+}
+
 function precomputeBoard(
   config: EngineConfig,
   formless: EngineConfig,
@@ -740,7 +771,14 @@ function main(): void {
         )
       : thresholdsFor({ base: config.thresholds.base, growth: config.thresholds.growth, bossAxis: config.thresholds.bossMult }, R);
     const formless: EngineConfig = { ...config, formSpread: 0 };
-    const cardSets = rotatedCardSets(config, seedBase);
+    // Ticket E3 step 1 — single-set mode: `--cardset <path>` evaluates ONE
+    // committed card set (all boards on it) instead of the 10-set synthetic
+    // rotation, and gates P0 at the stricter P0-set tier (>=99.5% natural
+    // full-clear, no reroll assist). Everything else (P1a–P4 bands, P5
+    // spot-checks) is unchanged.
+    const cardSetPath = flags.get("cardset");
+    const cardSets = cardSetPath ? [loadCardSetFile(cardSetPath)] : rotatedCardSets(config, seedBase);
+    const numSets = cardSets.length;
     const lineCount = Math.pow(config.offersPerRow, config.rows);
     const P5_EVERY = 97;
 
@@ -773,7 +811,7 @@ function main(): void {
     let p5Checked = 0;
     let p5Ok = true;
 
-    for (let s = 0; s < CARD_SETS; s++) {
+    for (let s = 0; s < numSets; s++) {
       const data: BoardData[] = [];
       let fullClearable = 0;
       let chaserFC = 0;
@@ -782,7 +820,7 @@ function main(): void {
       const gRounds: number[] = [];
       const cRounds: number[] = [];
       const rRounds: number[] = [];
-      for (let i = s; i < boards; i += CARD_SETS) {
+      for (let i = s; i < boards; i += numSets) {
         const { data: bd, ctx } = precomputeBoard(config, formless, cardSets[s], seedBase, i);
         data.push(bd);
         // P5: replay + serialization spot-check through the real engine, on
@@ -887,7 +925,18 @@ function main(): void {
       p4Rate: p4Weighted / total,
       p5Checked,
       p5Ok,
-    });
+    }, { p0SetGate: Boolean(cardSetPath) });
+    if (cardSetPath) {
+      // P0-runtime would-be reroll rate: the fraction of seeds whose k=0 board
+      // is dead — production would serve the first non-dead k instead. Reported
+      // separately, NEVER credited toward P0-set (the gate above is natural).
+      const dead = total - fullClearableAll;
+      console.log(
+        `\nsingle-set mode: ${cardSetPath} (${cardSets[0].length} cards)\n` +
+          `would-be reroll rate (k=0 dead, P0-runtime chain would reroll; not counted toward P0-set): ` +
+          `${((dead / total) * 100).toFixed(2)}% (${dead}/${total})`,
+      );
+    }
     console.log(
       `\neval (${total} boards = ${perSet.length} sets x ~${Math.round(total / perSet.length)}, ` +
         `seed ${seedBase}, kGreedy ${kGreedy}) — POOLED, selection-free:\n`,

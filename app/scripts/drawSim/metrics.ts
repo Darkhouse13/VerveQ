@@ -267,7 +267,7 @@ function outside(value: number, lo: number, hi: number, unit: number): number {
   return 0;
 }
 
-export function evaluateCriteria(m: ProfileInputs): Criterion[] {
+export function evaluateCriteria(m: ProfileInputs, opts?: { p0SetGate?: boolean }): Criterion[] {
   const criteria: Criterion[] = [];
   const push = (id: string, label: string, distance: number, value: string) =>
     criteria.push({ id, label, pass: distance === 0, value, distance });
@@ -282,13 +282,26 @@ export function evaluateCriteria(m: ProfileInputs): Criterion[] {
   // must pass detectDeadBoard; dead seed => deterministic reroll chain — see
   // types.ts + DECISIONS.md). The pinned production card set additionally
   // needs >=99.5% natural clear over >=2000 boards in its own Tier-2 run
-  // (P0-set, CIE card-set ticket).
+  // (P0-set, CIE card-set ticket) — that stricter tier is what `p0SetGate`
+  // selects (Ticket E3 step 1: single-set --eval acceptance of a pinned set).
+  // NATURAL means the P0-runtime reroll chain is NOT credited: the rate below
+  // is raw k=0 full-clearability; the would-be reroll rate is reported
+  // separately by the caller.
+  if (opts?.p0SetGate) {
+    push(
+      "P0-set",
+      "P0-set: pinned set natural full-clear >=99.5% over >=2000 boards (no reroll assist; Ticket 0.4 Tier-2)",
+      Math.max(0, (0.995 - m.oracleFullClearRate) / 0.001) + (m.deadFlagged === m.deadBoards ? 0 : 10),
+      `${(m.oracleFullClearRate * 100).toFixed(2)}% natural full-clear, ${m.deadBoards} dead / ${m.deadFlagged} flagged`,
+    );
+  } else {
   push(
     "P0",
     "P0-config: pooled full-clear >=97% (runtime dead-board gate = contract invariant; per-set = diagnostic)",
     Math.max(0, (0.97 - m.oracleFullClearRate) / 0.005) + (m.deadFlagged === m.deadBoards ? 0 : 10),
     `${(m.oracleFullClearRate * 100).toFixed(2)}% full-clear, ${m.deadBoards} dead / ${m.deadFlagged} flagged`,
   );
+  }
   push(
     "P1a",
     "random median rounds <=1",
