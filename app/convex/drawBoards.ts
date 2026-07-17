@@ -176,6 +176,23 @@ export async function ensureDailyBoard(
 }
 
 /**
+ * Canonical JSON for idempotency comparison: Convex normalizes stored object
+ * key order, so a plain JSON.stringify of a stored row never byte-matches a
+ * freshly computed object even when they are semantically identical (found
+ * live in E5 — the in-memory test fake preserves key order and passed).
+ */
+function stableStringify(value: unknown): string {
+  if (Array.isArray(value)) return `[${value.map(stableStringify).join(",")}]`;
+  if (value !== null && typeof value === "object") {
+    const entries = Object.entries(value as Record<string, unknown>)
+      .filter(([, v]) => v !== undefined)
+      .sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0));
+    return `{${entries.map(([k, v]) => `${JSON.stringify(k)}:${stableStringify(v)}`).join(",")}}`;
+  }
+  return JSON.stringify(value);
+}
+
+/**
  * Ticket E5 — ops regeneration for a set/config switch. Deletes and
  * recreates the board for a date so it reflects the CURRENT settings.
  *
@@ -235,9 +252,9 @@ export const regenerateBoardForDate = internalMutation({
       existing.boardSeed === fresh.boardSeed &&
       existing.setVersion === settings.activeSetVersion &&
       existing.configVersion === settings.configVersion &&
-      JSON.stringify(existing.board) === JSON.stringify(fresh.board) &&
-      JSON.stringify(existing.sliceCardIds ?? null) ===
-        JSON.stringify(pool.sliced ? pool.cards.map((c) => c.id) : null)
+      stableStringify(existing.board) === stableStringify(fresh.board) &&
+      stableStringify(existing.sliceCardIds ?? null) ===
+        stableStringify(pool.sliced ? pool.cards.map((c) => c.id) : null)
     ) {
       return { ...summary, unchanged: true as const };
     }
