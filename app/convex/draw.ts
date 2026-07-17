@@ -135,9 +135,15 @@ function fixturesView(board: StoredBoard["board"]) {
 
 /**
  * The display-relevant knobs of the serving config. A strict subset: nothing
- * here (form spread, thresholds, archetype table, cardGen) reveals board
- * content or form. Served rather than imported client-side so the UI always
- * describes the config the board was actually generated under.
+ * here (thresholds, archetype table, cardGen) reveals board content or form.
+ * Served rather than imported client-side so the UI always describes the
+ * config the board was actually generated under.
+ *
+ * E5 (Ticket F follow-up, scoped exception granted): formSpread and
+ * maxSynergyFamilies are served for the F3 projected band. Neither is a
+ * leak — formSpread is the WIDTH of the form distribution (a published rule
+ * of the game), never a draw from it; per-card form stays derived from the
+ * boardSeed and appears only in played-round breakdowns.
  */
 function rulesView(config: EngineConfig) {
   return {
@@ -147,6 +153,8 @@ function rulesView(config: EngineConfig) {
     synergyTable: [...config.synergyTable],
     bustKeep: config.bustKeep,
     fullClearBonus: config.fullClearBonus,
+    formSpread: config.formSpread,
+    maxSynergyFamilies: config.maxSynergyFamilies,
   };
 }
 
@@ -301,7 +309,20 @@ async function verifyReplayIdentity(
   userId: Id<"users">,
 ): Promise<{ ok: true; result: RunResult } | { ok: false }> {
   const fromSnapshot = toResult(finished);
-  const cardSet = await loadCardSet(ctx, boardDoc.setVersion);
+  const fullSet = await loadCardSet(ctx, boardDoc.setVersion);
+  // E5 — a Daily Deck board pins its slice: regenerate from EXACTLY the
+  // pinned card ids (in the stored, id-sorted order), never by re-running
+  // slice selection — a generator change must not invalidate old boards.
+  // A pinned id missing from the live set is a genuine identity break and
+  // falls through to the reject path via the failed replay.
+  let cardSet = fullSet;
+  if (boardDoc.sliceCardIds) {
+    const byId = new Map(fullSet.map((c) => [c.id, c]));
+    cardSet = boardDoc.sliceCardIds.flatMap((id) => {
+      const card = byId.get(id);
+      return card ? [card] : [];
+    });
+  }
   const regenerated = generateBoard(boardDoc.boardSeed, cardSet, config);
   let fromRegenerated: RunResult | null = null;
   let replayError: string | null = null;

@@ -27,10 +27,9 @@
  *                                           server's UTC clock is the only
  *                                           clock in play.
  *                   boardNumber/playState/streak/nextBoardAt → passthrough
- *                   rules                 → rulesView(): copied field-by-field,
- *                                           PLUS the one documented gap-fill in
- *                                           this file (formSpread,
- *                                           maxSynergyFamilies) — see rulesView
+ *                   rules                 → rulesView(): copied field-by-field
+ *                                           (server-complete since E5 — no
+ *                                           client fallback)
  *                   boardReady:false      → ensureToday(), then re-read
  *   startRun        (run view)            → DrawRunView
  *   submitChoice    {replayRejected, run} → DrawRunView | throw
@@ -64,7 +63,6 @@ import type {
   DrawToday,
 } from "./types";
 import type { Choice } from "@/lib/drawEngine";
-import { C13V1_CONFIG } from "@/lib/drawEngine/configs/c13v1";
 
 /**
  * Minimal client surface this adapter needs — structurally satisfied by
@@ -111,13 +109,11 @@ interface ServerRun {
 }
 
 /**
- * What convex/draw.ts `rulesView` ACTUALLY sends today. Deliberately typed as
- * its own shape rather than `DrawToday["rules"]`: the client contract gained
- * formSpread + maxSynergyFamilies in Ticket F (F3's projected band needs
- * both), and the serving layer does not send them yet — see `rulesView` below.
+ * What convex/draw.ts `rulesView` sends. E5: the server publishes the full
+ * DrawRules shape including formSpread + maxSynergyFamilies (F3's projected
+ * band inputs), so the wire shape and the client contract coincide again.
  */
-type ServerRules = Omit<DrawRules, "formSpread" | "maxSynergyFamilies"> &
-  Partial<Pick<DrawRules, "formSpread" | "maxSynergyFamilies">>;
+type ServerRules = DrawRules;
 
 interface ServerToday {
   dateKey: string;
@@ -193,30 +189,11 @@ function card(c: ServerCard): DrawRunView["squad"][number] {
 }
 
 /**
- * KNOWN GAP (Ticket F, F3) — the one place this adapter fills a value the
- * server did not send, and it is a deliberate, bounded compromise.
- *
- * convex/draw.ts `rulesView` publishes a strict subset of the config that
- * omits formSpread and maxSynergyFamilies. The projected score band (F3) is
- * arithmetically impossible without both: form is uniform in
- * [1-formSpread, 1+formSpread], and squadSynergies applies maxSynergyFamilies
- * when it grants multipliers. Ticket F's scope fences convex/ off (its only
- * backend exception was getRarity, which turned out not to need one), so the
- * knobs cannot be added to rulesView here.
- *
- * Filling them from the pinned config is CORRECT TODAY and not indefinitely:
- * convex/drawSeed.ts registers exactly one configVersion (c13-1) and every
- * board is generated under it, so the pinned module and the serving config are
- * the same numbers — drawConfigSingleSourceContract.test.ts already asserts
- * the mock and the server share the object. It stops being correct the moment
- * a SECOND config is registered and a board is served under it, because this
- * would then describe the wrong config.
- *
- * FOLLOW-UP: a serving ticket should add both knobs to `rulesView` (neither
- * reveals board content or form — formSpread is the width of the form
- * distribution, not a draw from it). Once served, the `??` below stops firing
- * and this fallback is dead code; drawLegibilityRulesContract.test.ts pins the
- * filled values against C13V1_CONFIG so the two cannot drift meanwhile.
+ * Rename-only mapping of the server's rulesView. Ticket F's client-side
+ * fallback for formSpread/maxSynergyFamilies is GONE (E5): the server now
+ * publishes both (the F3 projected band's inputs), so this adapter is back
+ * to carrying no config knowledge of its own —
+ * drawLegibilityRulesContract.test.ts asserts the served values arrive.
  */
 function rulesView(rules: ServerRules): DrawRules {
   return {
@@ -226,8 +203,8 @@ function rulesView(rules: ServerRules): DrawRules {
     synergyTable: [...rules.synergyTable],
     bustKeep: rules.bustKeep,
     fullClearBonus: rules.fullClearBonus,
-    formSpread: rules.formSpread ?? C13V1_CONFIG.formSpread,
-    maxSynergyFamilies: rules.maxSynergyFamilies ?? C13V1_CONFIG.maxSynergyFamilies,
+    formSpread: rules.formSpread,
+    maxSynergyFamilies: rules.maxSynergyFamilies,
   };
 }
 

@@ -14,11 +14,15 @@
  * regeneration to enforce the pin (B2).
  */
 
+import { v } from "convex/values";
 import { internalMutation } from "./_generated/server";
 import type { MutationCtx, QueryCtx } from "./_generated/server";
 import type { Doc } from "./_generated/dataModel";
 import {
+  DAILY_SLICE_CONFIG_V1,
+  DAILY_SLICE_CONFIG_VERSION,
   generateBoard,
+  sliceDeck,
   type BoardSpec,
   type Card,
   type EngineConfig,
@@ -43,6 +47,30 @@ const MAX_REROLLS = 100;
 
 export function dailyBoardSeed(dateKey: string, rerollIndex: number): string {
   return `draw|${dateKey}|k${rerollIndex}`;
+}
+
+/**
+ * Ticket E5 — DAILY DECK. Sets at or above this size are served as a daily
+ * SLICE (sliceDeck on the dateKey; same slice for every user and every
+ * reroll k — only the BOARD seed varies within the slice). Small sets (the
+ * 50-card synthetic set) are served whole: they already ARE the density
+ * profile the slice restores, and sliceDeck's nation-eligibility floors are
+ * unsatisfiable on them by construction.
+ *
+ * Production computes the slice with sliceDeck's DEFAULT tie-break scorer —
+ * an in-session owner ruling (see drawEngine/DECISIONS.md, Ticket E4/E5):
+ * the screened acceptance scorer costs minutes and cannot run in Convex.
+ */
+export const DAILY_SLICE_MIN_SET = 100;
+
+/** The day's card pool: a Daily Deck slice for large sets, the set itself
+ * otherwise. Pure in (dateKey, fullSet) — regeneration is byte-identical. */
+export function dailyCardPool(
+  dateKey: string,
+  fullSet: Card[],
+): { cards: Card[]; sliced: boolean } {
+  if (fullSet.length < DAILY_SLICE_MIN_SET) return { cards: fullSet, sliced: false };
+  return { cards: sliceDeck(dateKey, fullSet, DAILY_SLICE_CONFIG_V1), sliced: true };
 }
 
 export interface DailyBoardResult {
@@ -119,8 +147,13 @@ export async function ensureDailyBoard(
     throw new Error("drawSettings missing — run drawSeed:seedSyntheticCards first");
   }
   const config = resolveDrawConfig(settings.configVersion);
-  const cardSet = await loadCardSet(ctx, settings.activeSetVersion);
-  const { boardSeed, rerollIndex, board } = computeDailyBoard(dateKey, cardSet, config);
+  const fullSet = await loadCardSet(ctx, settings.activeSetVersion);
+  // E5 — Daily Deck: large sets serve a per-dateKey slice; the reroll chain
+  // varies only the board seed WITHIN the slice. The row pins the realized
+  // slice (card ids + profile version) so replay identity and audits never
+  // depend on re-running selection.
+  const pool = dailyCardPool(dateKey, fullSet);
+  const { boardSeed, rerollIndex, board } = computeDailyBoard(dateKey, pool.cards, config);
 
   const boardId = await ctx.db.insert("drawDailyBoards", {
     dateKey,
@@ -128,6 +161,12 @@ export async function ensureDailyBoard(
     rerollIndex,
     setVersion: settings.activeSetVersion,
     configVersion: settings.configVersion,
+    ...(pool.sliced
+      ? {
+          sliceCardIds: pool.cards.map((c) => c.id),
+          sliceConfigVersion: DAILY_SLICE_CONFIG_VERSION,
+        }
+      : {}),
     board,
     generatedAt: Date.now(),
   });
@@ -135,6 +174,92 @@ export async function ensureDailyBoard(
   if (!inserted) throw new Error("drawDailyBoards insert vanished");
   return inserted;
 }
+
+/**
+ * Ticket E5 — ops regeneration for a set/config switch. Deletes and
+ * recreates the board for a date so it reflects the CURRENT settings.
+ *
+ * FAIL-CLOSED GUARDS: throws unless drawSettings.enabled === false (a live
+ * mode must never have its board swapped underneath players), and throws if
+ * any run exists for the date (a regenerated board would orphan the run's
+ * choiceLog against the B2 replay gate).
+ *
+ * Idempotent: generation is pure in (dateKey, settings, card set), so when
+ * the existing row already matches a fresh computation nothing is written
+ * and { unchanged: true } is returned; a second call after a regeneration
+ * always lands here.
+ *
+ * Run: npx convex run drawBoards:regenerateBoardForDate '{"dateKey":"YYYY-MM-DD"}'
+ */
+export const regenerateBoardForDate = internalMutation({
+  args: { dateKey: v.optional(v.string()) },
+  handler: async (ctx, args) => {
+    const dateKey = args.dateKey ?? getTodayUTC();
+    const settings = await ctx.db.query("drawSettings").first();
+    if (!settings) throw new Error("drawSettings missing — seed first");
+    if (settings.enabled !== false) {
+      throw new Error(
+        "regenerateBoardForDate refused: drawSettings.enabled must be false (regenerating a live board would swap it underneath players)",
+      );
+    }
+    const anyRun = await ctx.db
+      .query("drawRuns")
+      .withIndex("by_date_score", (q) => q.eq("dateKey", dateKey))
+      .first();
+    if (anyRun) {
+      throw new Error(
+        `regenerateBoardForDate refused: drawRuns exist for ${dateKey} — a regenerated board would orphan their choiceLogs`,
+      );
+    }
+
+    const config = resolveDrawConfig(settings.configVersion);
+    const fullSet = await loadCardSet(ctx, settings.activeSetVersion);
+    const pool = dailyCardPool(dateKey, fullSet);
+    const fresh = computeDailyBoard(dateKey, pool.cards, config);
+
+    const existing = await ctx.db
+      .query("drawDailyBoards")
+      .withIndex("by_dateKey", (q) => q.eq("dateKey", dateKey))
+      .first();
+    const summary = {
+      dateKey,
+      setVersion: settings.activeSetVersion,
+      configVersion: settings.configVersion,
+      boardSeed: fresh.boardSeed,
+      rerollIndex: fresh.rerollIndex,
+      sliced: pool.sliced,
+      sliceCardCount: pool.sliced ? pool.cards.length : null,
+    };
+    if (
+      existing &&
+      existing.boardSeed === fresh.boardSeed &&
+      existing.setVersion === settings.activeSetVersion &&
+      existing.configVersion === settings.configVersion &&
+      JSON.stringify(existing.board) === JSON.stringify(fresh.board) &&
+      JSON.stringify(existing.sliceCardIds ?? null) ===
+        JSON.stringify(pool.sliced ? pool.cards.map((c) => c.id) : null)
+    ) {
+      return { ...summary, unchanged: true as const };
+    }
+    if (existing) await ctx.db.delete(existing._id);
+    await ctx.db.insert("drawDailyBoards", {
+      dateKey,
+      boardSeed: fresh.boardSeed,
+      rerollIndex: fresh.rerollIndex,
+      setVersion: settings.activeSetVersion,
+      configVersion: settings.configVersion,
+      ...(pool.sliced
+        ? {
+            sliceCardIds: pool.cards.map((c) => c.id),
+            sliceConfigVersion: DAILY_SLICE_CONFIG_VERSION,
+          }
+        : {}),
+      board: fresh.board,
+      generatedAt: Date.now(),
+    });
+    return { ...summary, unchanged: false as const, replacedExisting: Boolean(existing) };
+  },
+});
 
 /** Daily cron target (see convex/crons.ts). Safe to run repeatedly. */
 export const generateTodaysBoard = internalMutation({

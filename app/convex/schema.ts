@@ -1250,6 +1250,11 @@ export default defineSchema({
     rerollIndex: v.number(),
     setVersion: v.string(),
     configVersion: v.string(),
+    // E5 — Daily Deck pin: present when the day serves a SLICE of the active
+    // set (large real sets). The realized slice card ids + profile version
+    // are snapshotted so replay identity and audits never re-run selection.
+    sliceCardIds: v.optional(v.array(v.string())),
+    sliceConfigVersion: v.optional(v.string()),
     board: v.object({
       seed: v.string(),
       rows: v.array(v.array(drawCardSnapshot)),

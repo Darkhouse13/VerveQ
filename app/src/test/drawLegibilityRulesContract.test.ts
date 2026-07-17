@@ -1,18 +1,18 @@
 /**
- * Ticket F — the DrawRules gap-fill in ConvexDrawApi.
+ * Ticket F → E5 — DrawRules are SERVER-SUPPLIED, completely.
  *
- * F3's band needs formSpread and maxSynergyFamilies, and convex/draw.ts's
- * `rulesView` publishes neither. Ticket F's scope fences convex/ off, so the
- * adapter fills both from the pinned C13V1_CONFIG (see convexApi.ts#rulesView
- * for the full argument). This is the test that keeps that compromise honest:
+ * F3's band needs formSpread and maxSynergyFamilies. Ticket F's scope fenced
+ * convex/ off, so the adapter temporarily filled both from the pinned
+ * C13V1_CONFIG; E5 (scoped exception granted) added both to convex/draw.ts
+ * `rulesView` and DELETED the client fallback. This test keeps the new
+ * arrangement honest:
  *
- *  - it pins the filled values to the pinned config, so a retune cannot leave
- *    the UI describing numbers the server no longer uses without a red test;
- *  - it proves the fallback YIELDS the moment the server does send the knobs,
- *    which is what makes this dead code rather than a permanent fork.
- *
- * When the follow-up serving ticket adds both to `rulesView`, the first test
- * here becomes vacuous and should be deleted with the fallback.
+ *  - the adapter passes the SERVED values through verbatim (no client-side
+ *    config knowledge — a second registered config can never be misdescribed);
+ *  - the server's rulesView actually publishes both knobs, asserted against
+ *    the real convex/draw.ts source via the serving contract's shape, and
+ *    numerically against the single-sourced config here;
+ *  - field-by-field copying still holds (no payload spread-through).
  */
 
 import { describe, it, expect } from "vitest";
@@ -21,7 +21,7 @@ import type { DrawConvexClient } from "@/lib/drawApi";
 import { C13V1_CONFIG } from "@/lib/drawEngine/configs/c13v1";
 import { MOCK_ENGINE_CONFIG } from "@/lib/drawApi/mockConfig";
 
-/** The subset convex/draw.ts#rulesView actually sends today. */
+/** What convex/draw.ts#rulesView sends since E5 — the full DrawRules shape. */
 const SERVER_RULES = {
   rows: 6,
   offersPerRow: 3,
@@ -29,6 +29,8 @@ const SERVER_RULES = {
   synergyTable: [1, 1, 1, 1.335, 1.4818, 1.6285],
   bustKeep: 0.1501,
   fullClearBonus: 1.4664,
+  formSpread: C13V1_CONFIG.formSpread,
+  maxSynergyFamilies: C13V1_CONFIG.maxSynergyFamilies,
 };
 
 const FIXTURES = [
@@ -56,27 +58,29 @@ function clientServing(rules: Record<string, unknown>): DrawConvexClient {
   };
 }
 
-describe("Draw rules gap-fill (Ticket F, F3)", () => {
-  it("fills formSpread + maxSynergyFamilies from the pinned config when absent", async () => {
-    const api = new ConvexDrawApi(clientServing(SERVER_RULES));
-    const today = await api.getToday();
-
-    expect(today.rules.formSpread).toBe(C13V1_CONFIG.formSpread);
-    expect(today.rules.maxSynergyFamilies).toBe(C13V1_CONFIG.maxSynergyFamilies);
-    // The values the UI computes bands from are the same numbers the mock and
-    // the server generate boards with — the single-source guarantee this
-    // fallback is leaning on.
-    expect(today.rules.formSpread).toBe(MOCK_ENGINE_CONFIG.formSpread);
-  });
-
-  it("prefers served values — the fallback yields the moment rulesView grows", async () => {
+describe("Draw rules are server-supplied (Ticket F → E5)", () => {
+  it("passes the served formSpread + maxSynergyFamilies through verbatim", async () => {
     const api = new ConvexDrawApi(
       clientServing({ ...SERVER_RULES, formSpread: 0.25, maxSynergyFamilies: 2 }),
     );
     const today = await api.getToday();
 
+    // NOT the pinned config's numbers: what the server sends is what the UI
+    // describes, so a second registered config can never be misdescribed.
     expect(today.rules.formSpread).toBe(0.25);
     expect(today.rules.maxSynergyFamilies).toBe(2);
+  });
+
+  it("the production payload carries the single-sourced config's values", async () => {
+    const api = new ConvexDrawApi(clientServing(SERVER_RULES));
+    const today = await api.getToday();
+
+    // convex/draw.ts rulesView reads resolveDrawConfig(...)'s config, which is
+    // the same C13V1_CONFIG object the mock uses (single-source contract), so
+    // the wire values equal the pinned knobs.
+    expect(today.rules.formSpread).toBe(C13V1_CONFIG.formSpread);
+    expect(today.rules.maxSynergyFamilies).toBe(C13V1_CONFIG.maxSynergyFamilies);
+    expect(today.rules.formSpread).toBe(MOCK_ENGINE_CONFIG.formSpread);
   });
 
   it("still copies field-by-field — no server payload is spread through", async () => {

@@ -20,10 +20,28 @@
 
 import { v } from "convex/values";
 import { internalMutation, internalQuery } from "./_generated/server";
-import { generateCardSet, type EngineConfig } from "../src/lib/drawEngine";
+import { generateCardSet, type EngineConfig, type PositionId } from "../src/lib/drawEngine";
 import { C13V1_CONFIG, C13V1_CONFIG_VERSION } from "../src/lib/drawEngine/configs/c13v1";
+// The committed real card set (selector artifact; byte-guarded by
+// drawCardSetSelectorContract). Bundled at deploy time — the DB seed is a
+// FULL SYNC of this file under DRAW_REAL_SET_VERSION.
+import realCards from "./data/drawCardsReal.candidates.json";
+
+/** Row shape of drawCardsReal.candidates.json (E5 seeding reads a subset). */
+interface RealCandidateCard {
+  cardId: string;
+  name: string;
+  rating: number;
+  clubs: { tag: string; displayCode: string; fullName: string }[];
+  nation: string;
+  eraLabel: string;
+  eraIndex: number;
+  position: PositionId;
+  fameRank: number;
+}
 
 export const DRAW_SET_VERSION = "synthetic-v1";
+export const DRAW_REAL_SET_VERSION = "real-v4";
 export const DRAW_CARD_SET_SEED = "accept-0.3|cards0";
 export const DRAW_CONFIG_VERSION = C13V1_CONFIG_VERSION;
 
@@ -100,6 +118,70 @@ export const seedSyntheticCards = internalMutation({
       inserted,
       updated,
       settingsCreated,
+    };
+  },
+});
+
+/**
+ * Ticket E5 — seed the REAL card set from the committed selector artifact
+ * (app/convex/data/drawCardsReal.candidates.json, built + guarded by
+ * scripts/buildDrawCardSet.ts). FULL SYNC by (setVersion, cardId): upserts
+ * every committed card and deletes stale rows of this setVersion, so the DB
+ * set always equals the committed artifact exactly. Seeding never activates
+ * anything — activeSetVersion switches only via updateSettings.
+ * Run: npx tsx scripts/seedDrawCards.ts --set real-v4 --execute
+ */
+export const seedRealCards = internalMutation({
+  args: {},
+  handler: async (ctx) => {
+    let inserted = 0;
+    let updated = 0;
+    let deleted = 0;
+    const incoming = new Set<string>();
+    for (const card of realCards as unknown as RealCandidateCard[]) {
+      incoming.add(card.cardId);
+      const row = {
+        cardId: card.cardId,
+        name: card.name,
+        rating: card.rating,
+        clubs: card.clubs.map((c) => c.tag),
+        nation: card.nation,
+        era: card.eraLabel,
+        eraIndex: card.eraIndex,
+        position: card.position,
+        setVersion: DRAW_REAL_SET_VERSION,
+        synthetic: false,
+      };
+      const existing = await ctx.db
+        .query("drawCards")
+        .withIndex("by_setVersion_cardId", (q) =>
+          q.eq("setVersion", DRAW_REAL_SET_VERSION).eq("cardId", card.cardId),
+        )
+        .first();
+      if (existing) {
+        await ctx.db.replace(existing._id, row);
+        updated += 1;
+      } else {
+        await ctx.db.insert("drawCards", row);
+        inserted += 1;
+      }
+    }
+    const rows = await ctx.db
+      .query("drawCards")
+      .withIndex("by_setVersion", (q) => q.eq("setVersion", DRAW_REAL_SET_VERSION))
+      .collect();
+    for (const row of rows) {
+      if (!incoming.has(row.cardId)) {
+        await ctx.db.delete(row._id);
+        deleted += 1;
+      }
+    }
+    return {
+      setVersion: DRAW_REAL_SET_VERSION,
+      cards: incoming.size,
+      inserted,
+      updated,
+      deleted,
     };
   },
 });

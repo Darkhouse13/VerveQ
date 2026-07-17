@@ -98,6 +98,14 @@ export interface SliceConfig {
   comboCandidates: number;
 }
 
+/**
+ * Version pin for the Daily Deck profile below. A retune is a NEW config
+ * object + version string, never an edit of this one: served board rows pin
+ * sliceConfigVersion, so a historical board must always be attributable to
+ * the exact profile that built its slice.
+ */
+export const DAILY_SLICE_CONFIG_VERSION = "daily-slice-v1";
+
 /** The pinned Daily Deck profile (Ticket E4). Tuned via acceptance only —
  * c13-1 itself is untouchable. */
 export const DAILY_SLICE_CONFIG_V1: SliceConfig = {

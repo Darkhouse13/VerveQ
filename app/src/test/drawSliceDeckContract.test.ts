@@ -47,7 +47,9 @@ const CFG = DAILY_SLICE_CONFIG_V1;
 const SEEDS = ["2026-07-17", "2026-07-18", "2026-08-01"];
 
 describe("drawSliceDeckContract (Ticket E4)", () => {
-  it("is deterministic: same (dateSeed, fullSet, cfg) ⇒ identical slice", () => {
+  // Timeouts: best-of-64 combo search costs ~1s per build (E5 raised
+  // comboCandidates for the serving policy), and each case builds several.
+  it("is deterministic: same (dateSeed, fullSet, cfg) ⇒ identical slice", { timeout: 30_000 }, () => {
     for (const seed of SEEDS) {
       const a = sliceDeck(seed, FULL_SET, CFG);
       const b = sliceDeck(seed, FULL_SET, CFG);
@@ -55,12 +57,12 @@ describe("drawSliceDeckContract (Ticket E4)", () => {
     }
   });
 
-  it("varies across dateSeeds", () => {
+  it("varies across dateSeeds", { timeout: 30_000 }, () => {
     const ids = SEEDS.map((s) => sliceDeck(s, FULL_SET, CFG).map((c) => c.id).join(","));
     expect(new Set(ids).size).toBeGreaterThan(1);
   });
 
-  it("holds the full profile on every slice", () => {
+  it("holds the full profile on every slice", { timeout: 30_000 }, () => {
     const fullById = new Map(FULL_SET.map((c) => [c.id, c]));
     // Exact icon pool: top-K by rating, ties by id — mirrors sliceDeck's rule.
     const iconPool = new Set(
