@@ -905,3 +905,68 @@ for bounded verification effort at the boundaries where the engine can feel it.
 guards fail closed, fresh-worktree proved). ~~Dybala ships green~~ (§14 — signed
 disputed-statement record, now amber). ~~F2 scope undecided~~ (§15 — scope ruled,
 residual risk accepted).
+
+## 16. E0.5 — fact-model realignment, cited-override layer, real-v3
+
+Built ENTIRELY from E2.1's blind re-verify (`drawCardsReal.verify2.json`, committed
+first). E2.1 re-retrieved all 430 cards live and found `debutYear` systematically
+EARLIER than the competitive debut: ~25% of the cards for which a qualifying
+non-Wikidata source was actually retrieved were contradicted, every era from Banks
+(1958) to Rashford (2016). The field was not patched — it was renamed and redefined.
+
+**Fact model.** `debutYear → sourceStartYear` across canonical, dossier and selector.
+It now means "earliest senior-club membership START per P54 (age ≥16, first teams) —
+NOT a debut". The dossier's `sourceStartYearMeaning` lists the five contamination
+classes (signing/registration, academy-on-first-team-QID, reserve/B-team, split-season
+label, friendly). **No date is a published fact:** the card face carries no year at
+all; `sourceStartYear` and `eraYear` live in the dossier only. Per-club spell dates are
+demoted to internal identity evidence — the published club fact is membership EXISTENCE.
+
+**Cited overrides (`ownerCitedOverrides.json`).** eraYear := citedValue where a signed
+record exists, else sourceStartYear. Era mapping runs on eraYear. A record is minted
+ONLY for a verify2 RED that CROSSES an era bucket — 8 of them, each built from the
+verifier's own publisher + URL + verbatim quote. Within-bucket contradictions change no
+bucket and are `acceptedNoise`, not overrides (guarded: an override that doesn't cross a
+bucket is a STOP). Keyed on **qid**, not cardId — cardId is positional and shifts when
+the pool changes. Note **Gordon Banks**: the headline 5-year error (1953 youth contract
+vs 1958 debut) is NOT overridden — both years sit in bucket 0, so it crosses nothing.
+The ticket's "Banks class" names the contradiction class, not a bucket crossing.
+
+**RED triage.**
+- **van der Sar (V1d, fix never landed).** Diagnosed at the rule: his Ajax years
+  (1990–99) are filed under Q1492 = Barcelona the CITY. `cpIsClubEntity`'s allow-list
+  (E1.1) correctly refuses the non-club entity, but SILENTLY — deleting his earliest
+  career and promoting the 1999 Juventus transfer to the start. Fixed at the rule: a
+  malformed non-club membership (real entity, not club/national/youth/phantom) whose
+  start predates the surviving earliest senior start ⇒ `sourceStartYear` nulled, card
+  fails the pool (`cpErasedCareerLog`). Catches **De Bruyne** too (a Romanian commune +
+  a pharmacy predate his Genk start; his card was right only by luck). Both drop;
+  owner-approved. Narrowed to exclude youth/academy entities (else Eriksen's "Ajax Youth
+  Academy" and Donovan's "IMG Soccer Academy" would false-positive).
+- **Benatia (membership-vs-appearance).** ESPN omits Marseille entirely; the printed
+  Marseille chip asserted a first-team spell the appearance record doesn't support.
+  CHIP dropped via `ownerDisputedStatements.dropPrintedClub`; membership stays in
+  canonical + dossier (marked `disputedAppearance`). Card fills the slot from Udinese.
+- **Brehme (representative-team-in-club-slot).** "Germany Olympic football team"
+  (typed `national Olympic football team`) printed as a club. Fixed at the rule
+  (`cpIsRepresentativeTeam`, TYPE-matched so real clubs — Sydney Olympic FC, BK Olympic —
+  survive); dropped from canonical + chips.
+- **Falcao — NOT overridden.** verify2's 1999 is bucket-crossing but was a debut at 13,
+  excluded by the age-16 rule. Under the realigned model there is no contradiction:
+  sourceStartYear is the earliest SENIOR start. Definitional non-defect, flagged.
+- **Valderrama.** His impossible spell dates (start>end) are no longer published — dates
+  aren't a published club fact — so the defect dissolves; the club memberships are real.
+
+**Rebuild (real-v3).** Selector re-runs rulings-before-selection. Floors held
+(40/76/133/181, ≥40), position quota exact (GK43/DEF129/MID129/ATT129, ±0pp), era assert
+green. Composition change: **−2 / +2** — van der Sar (GK) and De Bruyne (MID) fail
+closed; Dida (GK) and Çalhanoğlu (MID) backfill by fame. The 8 era overrides re-bucketed
+their cards within era2/era3 (both far above the floor), so they moved no set membership.
+18 era-0 floor swaps (same mechanism as real-v2).
+
+**Owed to owner (E0.5):** De Bruyne — dropped fail-closed, a Busquets-class candidate for
+a signed ruling to restore once a clean start year is sourced. Falcao — definitional
+ruling (is a debut-at-13 the era anchor, or not?). Agüero — the one override where the
+corrected debut (2003) files him one era EARLIER than fame suggests, a property of the +5
+peak heuristic, not the override. And the standing owed items from §15 (F2 120-card
+review, bucket 0/1 boundary).

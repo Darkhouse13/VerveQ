@@ -4,7 +4,6 @@
     "name": "Lionel Messi",
     "nation": "Argentina",
     "position": "ATT",
-    "debutYear": 2004,
     "eraIndex": 2,
     "eraLabel": "2000s",
     "clubs": [
@@ -32,7 +31,6 @@
     "name": "Cristiano Ronaldo",
     "nation": "Portugal",
     "position": "ATT",
-    "debutYear": 2002,
     "eraIndex": 2,
     "eraLabel": "2000s",
     "clubs": [
@@ -60,7 +58,6 @@
     "name": "Pelé",
     "nation": "Brazil",
     "position": "ATT",
-    "debutYear": 1956,
     "eraIndex": 0,
     "eraLabel": "≤70s",
     "clubs": [
@@ -88,7 +85,6 @@
     "name": "Diego Maradona",
     "nation": "Argentina",
     "position": "ATT",
-    "debutYear": 1976,
     "eraIndex": 1,
     "eraLabel": "1980s-90s",
     "clubs": [
@@ -116,7 +112,6 @@
     "name": "Neymar",
     "nation": "Brazil",
     "position": "ATT",
-    "debutYear": 2009,
     "eraIndex": 3,
     "eraLabel": "2010s-20s",
     "clubs": [
@@ -144,7 +139,6 @@
     "name": "Zinedine Zidane",
     "nation": "France",
     "position": "MID",
-    "debutYear": 1989,
     "eraIndex": 1,
     "eraLabel": "1980s-90s",
     "clubs": [
@@ -172,7 +166,6 @@
     "name": "David Beckham",
     "nation": "England",
     "position": "MID",
-    "debutYear": 1992,
     "eraIndex": 1,
     "eraLabel": "1980s-90s",
     "clubs": [
@@ -200,7 +193,6 @@
     "name": "Kylian Mbappé",
     "nation": "France",
     "position": "ATT",
-    "debutYear": 2015,
     "eraIndex": 3,
     "eraLabel": "2010s-20s",
     "clubs": [
@@ -228,7 +220,6 @@
     "name": "Johan Cruyff",
     "nation": "Netherlands",
     "position": "ATT",
-    "debutYear": 1964,
     "eraIndex": 0,
     "eraLabel": "≤70s",
     "clubs": [
@@ -256,7 +247,6 @@
     "name": "Ronaldo Nazário",
     "nation": "Brazil",
     "position": "ATT",
-    "debutYear": 1993,
     "eraIndex": 1,
     "eraLabel": "1980s-90s",
     "clubs": [
@@ -284,7 +274,6 @@
     "name": "Zlatan Ibrahimović",
     "nation": "Sweden",
     "position": "ATT",
-    "debutYear": 1999,
     "eraIndex": 2,
     "eraLabel": "2000s",
     "clubs": [
@@ -312,7 +301,6 @@
     "name": "Franz Beckenbauer",
     "nation": "Germany",
     "position": "DEF",
-    "debutYear": 1965,
     "eraIndex": 0,
     "eraLabel": "≤70s",
     "clubs": [
@@ -340,7 +328,6 @@
     "name": "Ronaldinho",
     "nation": "Brazil",
     "position": "ATT",
-    "debutYear": 1998,
     "eraIndex": 2,
     "eraLabel": "2000s",
     "clubs": [
@@ -368,7 +355,6 @@
     "name": "Luis Suárez",
     "nation": "Uruguay",
     "position": "ATT",
-    "debutYear": 2005,
     "eraIndex": 3,
     "eraLabel": "2010s-20s",
     "clubs": [
@@ -396,7 +382,6 @@
     "name": "Luka Modrić",
     "nation": "Croatia",
     "position": "MID",
-    "debutYear": 2003,
     "eraIndex": 2,
     "eraLabel": "2000s",
     "clubs": [
@@ -424,7 +409,6 @@
     "name": "Gianluigi Buffon",
     "nation": "Italy",
     "position": "GK",
-    "debutYear": 1995,
     "eraIndex": 2,
     "eraLabel": "2000s",
     "clubs": [
@@ -452,9 +436,8 @@
     "name": "Karim Benzema",
     "nation": "France",
     "position": "ATT",
-    "debutYear": 2004,
-    "eraIndex": 2,
-    "eraLabel": "2000s",
+    "eraIndex": 3,
+    "eraLabel": "2010s-20s",
     "clubs": [
       {
         "tag": "real-madrid",
@@ -480,7 +463,6 @@
     "name": "Robert Lewandowski",
     "nation": "Poland",
     "position": "ATT",
-    "debutYear": 2006,
     "eraIndex": 3,
     "eraLabel": "2010s-20s",
     "clubs": [
@@ -508,7 +490,6 @@
     "name": "Andrés Iniesta",
     "nation": "Spain",
     "position": "MID",
-    "debutYear": 2002,
     "eraIndex": 2,
     "eraLabel": "2000s",
     "clubs": [
@@ -536,7 +517,6 @@
     "name": "Mesut Özil",
     "nation": "Germany",
     "position": "MID",
-    "debutYear": 2006,
     "eraIndex": 3,
     "eraLabel": "2010s-20s",
     "clubs": [
@@ -564,7 +544,6 @@
     "name": "Frank Lampard",
     "nation": "England",
     "position": "MID",
-    "debutYear": 1995,
     "eraIndex": 2,
     "eraLabel": "2000s",
     "clubs": [
@@ -592,7 +571,6 @@
     "name": "Michel Platini",
     "nation": "France",
     "position": "MID",
-    "debutYear": 1972,
     "eraIndex": 0,
     "eraLabel": "≤70s",
     "clubs": [
@@ -620,7 +598,6 @@
     "name": "Thierry Henry",
     "nation": "France",
     "position": "ATT",
-    "debutYear": 1994,
     "eraIndex": 1,
     "eraLabel": "1980s-90s",
     "clubs": [
@@ -648,7 +625,6 @@
     "name": "Mohamed Salah",
     "nation": "Egypt",
     "position": "ATT",
-    "debutYear": 2010,
     "eraIndex": 3,
     "eraLabel": "2010s-20s",
     "clubs": [
@@ -676,7 +652,6 @@
     "name": "Wayne Rooney",
     "nation": "England",
     "position": "MID",
-    "debutYear": 2002,
     "eraIndex": 2,
     "eraLabel": "2000s",
     "clubs": [
@@ -704,7 +679,6 @@
     "name": "Miroslav Klose",
     "nation": "Germany",
     "position": "ATT",
-    "debutYear": 1998,
     "eraIndex": 2,
     "eraLabel": "2000s",
     "clubs": [
@@ -732,7 +706,6 @@
     "name": "Iker Casillas",
     "nation": "Spain",
     "position": "GK",
-    "debutYear": 1999,
     "eraIndex": 2,
     "eraLabel": "2000s",
     "clubs": [
@@ -755,7 +728,6 @@
     "name": "Antoine Griezmann",
     "nation": "France",
     "position": "ATT",
-    "debutYear": 2009,
     "eraIndex": 3,
     "eraLabel": "2010s-20s",
     "clubs": [
@@ -783,7 +755,6 @@
     "name": "Manuel Neuer",
     "nation": "Germany",
     "position": "GK",
-    "debutYear": 2006,
     "eraIndex": 3,
     "eraLabel": "2010s-20s",
     "clubs": [
@@ -806,7 +777,6 @@
     "name": "Kaká",
     "nation": "Brazil",
     "position": "MID",
-    "debutYear": 2001,
     "eraIndex": 2,
     "eraLabel": "2000s",
     "clubs": [
@@ -834,7 +804,6 @@
     "name": "Robin van Persie",
     "nation": "Netherlands",
     "position": "ATT",
-    "debutYear": 2001,
     "eraIndex": 2,
     "eraLabel": "2000s",
     "clubs": [
@@ -862,7 +831,6 @@
     "name": "Xavi",
     "nation": "Spain",
     "position": "MID",
-    "debutYear": 1998,
     "eraIndex": 2,
     "eraLabel": "2000s",
     "clubs": [
@@ -885,7 +853,6 @@
     "name": "Steven Gerrard",
     "nation": "England",
     "position": "MID",
-    "debutYear": 1998,
     "eraIndex": 2,
     "eraLabel": "2000s",
     "clubs": [
@@ -908,7 +875,6 @@
     "name": "Eusébio",
     "nation": "Portugal",
     "position": "ATT",
-    "debutYear": 1960,
     "eraIndex": 0,
     "eraLabel": "≤70s",
     "clubs": [
@@ -936,7 +902,6 @@
     "name": "Pep Guardiola",
     "nation": "Spain",
     "position": "MID",
-    "debutYear": 1990,
     "eraIndex": 1,
     "eraLabel": "1980s-90s",
     "clubs": [
@@ -964,7 +929,6 @@
     "name": "George Weah",
     "nation": "Liberia",
     "position": "ATT",
-    "debutYear": 1984,
     "eraIndex": 1,
     "eraLabel": "1980s-90s",
     "clubs": [
@@ -992,7 +956,6 @@
     "name": "Gareth Bale",
     "nation": "Wales",
     "position": "ATT",
-    "debutYear": 2006,
     "eraIndex": 3,
     "eraLabel": "2010s-20s",
     "clubs": [
@@ -1020,7 +983,6 @@
     "name": "Thomas Müller",
     "nation": "Germany",
     "position": "MID",
-    "debutYear": 2008,
     "eraIndex": 3,
     "eraLabel": "2010s-20s",
     "clubs": [
@@ -1043,7 +1005,6 @@
     "name": "Ferenc Puskás",
     "nation": "Hungary",
     "position": "ATT",
-    "debutYear": 1943,
     "eraIndex": 0,
     "eraLabel": "≤70s",
     "clubs": [
@@ -1066,7 +1027,6 @@
     "name": "Harry Kane",
     "nation": "England",
     "position": "ATT",
-    "debutYear": 2009,
     "eraIndex": 3,
     "eraLabel": "2010s-20s",
     "clubs": [
@@ -1094,7 +1054,6 @@
     "name": "Paul Pogba",
     "nation": "France",
     "position": "MID",
-    "debutYear": 2011,
     "eraIndex": 3,
     "eraLabel": "2010s-20s",
     "clubs": [
@@ -1122,7 +1081,6 @@
     "name": "Eden Hazard",
     "nation": "Belgium",
     "position": "ATT",
-    "debutYear": 2007,
     "eraIndex": 3,
     "eraLabel": "2010s-20s",
     "clubs": [
@@ -1150,7 +1108,6 @@
     "name": "Erling Haaland",
     "nation": "Norway",
     "position": "ATT",
-    "debutYear": 2016,
     "eraIndex": 3,
     "eraLabel": "2010s-20s",
     "clubs": [
@@ -1178,7 +1135,6 @@
     "name": "Arjen Robben",
     "nation": "Netherlands",
     "position": "ATT",
-    "debutYear": 2000,
     "eraIndex": 2,
     "eraLabel": "2000s",
     "clubs": [
@@ -1206,7 +1162,6 @@
     "name": "Gerard Piqué",
     "nation": "Spain",
     "position": "DEF",
-    "debutYear": 2004,
     "eraIndex": 2,
     "eraLabel": "2000s",
     "clubs": [
@@ -1234,7 +1189,6 @@
     "name": "Samuel Eto'o",
     "nation": "Cameroon",
     "position": "ATT",
-    "debutYear": 1997,
     "eraIndex": 2,
     "eraLabel": "2000s",
     "clubs": [
@@ -1262,7 +1216,6 @@
     "name": "Lukas Podolski",
     "nation": "Germany",
     "position": "MID",
-    "debutYear": 2003,
     "eraIndex": 2,
     "eraLabel": "2000s",
     "clubs": [
@@ -1290,7 +1243,6 @@
     "name": "Sadio Mané",
     "nation": "Senegal",
     "position": "ATT",
-    "debutYear": 2010,
     "eraIndex": 3,
     "eraLabel": "2010s-20s",
     "clubs": [
@@ -1315,38 +1267,9 @@
   },
   {
     "cardId": "real_0049",
-    "name": "Kevin De Bruyne",
-    "nation": "Belgium",
-    "position": "MID",
-    "debutYear": 2008,
-    "eraIndex": 3,
-    "eraLabel": "2010s-20s",
-    "clubs": [
-      {
-        "tag": "k-r-c-genk",
-        "displayCode": "KRC",
-        "fullName": "K.R.C. Genk"
-      },
-      {
-        "tag": "vfl-wolfsburg",
-        "displayCode": "VFL",
-        "fullName": "VfL Wolfsburg"
-      },
-      {
-        "tag": "napoli",
-        "displayCode": "NAP",
-        "fullName": "SSC Napoli"
-      }
-    ],
-    "rating": 92,
-    "fameRank": 49
-  },
-  {
-    "cardId": "real_0050",
     "name": "Fernando Torres",
     "nation": "Spain",
     "position": "ATT",
-    "debutYear": 2001,
     "eraIndex": 2,
     "eraLabel": "2000s",
     "clubs": [
@@ -1367,14 +1290,13 @@
       }
     ],
     "rating": 92,
-    "fameRank": 50
+    "fameRank": 49
   },
   {
-    "cardId": "real_0051",
+    "cardId": "real_0050",
     "name": "Gerd Müller",
     "nation": "Germany",
     "position": "ATT",
-    "debutYear": 1963,
     "eraIndex": 0,
     "eraLabel": "≤70s",
     "clubs": [
@@ -1395,14 +1317,13 @@
       }
     ],
     "rating": 92,
-    "fameRank": 51
+    "fameRank": 50
   },
   {
-    "cardId": "real_0052",
+    "cardId": "real_0051",
     "name": "Didier Drogba",
     "nation": "Ivory Coast",
     "position": "ATT",
-    "debutYear": 1998,
     "eraIndex": 2,
     "eraLabel": "2000s",
     "clubs": [
@@ -1423,14 +1344,13 @@
       }
     ],
     "rating": 92,
-    "fameRank": 52
+    "fameRank": 51
   },
   {
-    "cardId": "real_0053",
+    "cardId": "real_0052",
     "name": "Roberto Baggio",
     "nation": "Italy",
     "position": "ATT",
-    "debutYear": 1985,
     "eraIndex": 1,
     "eraLabel": "1980s-90s",
     "clubs": [
@@ -1451,16 +1371,15 @@
       }
     ],
     "rating": 92,
-    "fameRank": 53
+    "fameRank": 52
   },
   {
-    "cardId": "real_0054",
+    "cardId": "real_0053",
     "name": "Sergio Agüero",
     "nation": "Argentina",
     "position": "ATT",
-    "debutYear": 2006,
-    "eraIndex": 3,
-    "eraLabel": "2010s-20s",
+    "eraIndex": 2,
+    "eraLabel": "2000s",
     "clubs": [
       {
         "tag": "manchester-city-f-c",
@@ -1479,14 +1398,13 @@
       }
     ],
     "rating": 92,
-    "fameRank": 54
+    "fameRank": 53
   },
   {
-    "cardId": "real_0055",
+    "cardId": "real_0054",
     "name": "Alfredo Di Stéfano",
     "nation": "Spain",
     "position": "ATT",
-    "debutYear": 1945,
     "eraIndex": 0,
     "eraLabel": "≤70s",
     "clubs": [
@@ -1507,14 +1425,13 @@
       }
     ],
     "rating": 92,
-    "fameRank": 55
+    "fameRank": 54
   },
   {
-    "cardId": "real_0056",
+    "cardId": "real_0055",
     "name": "James Rodríguez",
     "nation": "Colombia",
     "position": "ATT",
-    "debutYear": 2008,
     "eraIndex": 3,
     "eraLabel": "2010s-20s",
     "clubs": [
@@ -1535,14 +1452,13 @@
       }
     ],
     "rating": 92,
-    "fameRank": 56
+    "fameRank": 55
   },
   {
-    "cardId": "real_0057",
+    "cardId": "real_0056",
     "name": "Sergio Ramos",
     "nation": "Spain",
     "position": "DEF",
-    "debutYear": 2004,
     "eraIndex": 2,
     "eraLabel": "2000s",
     "clubs": [
@@ -1562,15 +1478,14 @@
         "fullName": "Paris Saint-Germain FC"
       }
     ],
-    "rating": 91,
-    "fameRank": 57
+    "rating": 92,
+    "fameRank": 56
   },
   {
-    "cardId": "real_0058",
+    "cardId": "real_0057",
     "name": "Mario Balotelli",
     "nation": "Italy",
     "position": "ATT",
-    "debutYear": 2006,
     "eraIndex": 3,
     "eraLabel": "2010s-20s",
     "clubs": [
@@ -1591,14 +1506,13 @@
       }
     ],
     "rating": 91,
-    "fameRank": 58
+    "fameRank": 57
   },
   {
-    "cardId": "real_0059",
+    "cardId": "real_0058",
     "name": "Olivier Giroud",
     "nation": "France",
     "position": "ATT",
-    "debutYear": 2005,
     "eraIndex": 3,
     "eraLabel": "2010s-20s",
     "clubs": [
@@ -1619,14 +1533,13 @@
       }
     ],
     "rating": 91,
-    "fameRank": 59
+    "fameRank": 58
   },
   {
-    "cardId": "real_0060",
+    "cardId": "real_0059",
     "name": "Franck Ribéry",
     "nation": "France",
     "position": "ATT",
-    "debutYear": 2000,
     "eraIndex": 2,
     "eraLabel": "2000s",
     "clubs": [
@@ -1647,14 +1560,13 @@
       }
     ],
     "rating": 91,
-    "fameRank": 60
+    "fameRank": 59
   },
   {
-    "cardId": "real_0061",
+    "cardId": "real_0060",
     "name": "Romelu Lukaku",
     "nation": "Belgium",
     "position": "ATT",
-    "debutYear": 2009,
     "eraIndex": 3,
     "eraLabel": "2010s-20s",
     "clubs": [
@@ -1675,14 +1587,13 @@
       }
     ],
     "rating": 91,
-    "fameRank": 61
+    "fameRank": 60
   },
   {
-    "cardId": "real_0062",
+    "cardId": "real_0061",
     "name": "Marco van Basten",
     "nation": "Netherlands",
     "position": "ATT",
-    "debutYear": 1981,
     "eraIndex": 1,
     "eraLabel": "1980s-90s",
     "clubs": [
@@ -1698,14 +1609,13 @@
       }
     ],
     "rating": 91,
-    "fameRank": 62
+    "fameRank": 61
   },
   {
-    "cardId": "real_0063",
+    "cardId": "real_0062",
     "name": "Thibaut Courtois",
     "nation": "Belgium",
     "position": "GK",
-    "debutYear": 2009,
     "eraIndex": 3,
     "eraLabel": "2010s-20s",
     "clubs": [
@@ -1726,14 +1636,13 @@
       }
     ],
     "rating": 91,
-    "fameRank": 63
+    "fameRank": 62
   },
   {
-    "cardId": "real_0064",
+    "cardId": "real_0063",
     "name": "Diego Forlán",
     "nation": "Uruguay",
     "position": "ATT",
-    "debutYear": 1997,
     "eraIndex": 2,
     "eraLabel": "2000s",
     "clubs": [
@@ -1754,14 +1663,13 @@
       }
     ],
     "rating": 91,
-    "fameRank": 64
+    "fameRank": 63
   },
   {
-    "cardId": "real_0065",
+    "cardId": "real_0064",
     "name": "Xabi Alonso",
     "nation": "Spain",
     "position": "MID",
-    "debutYear": 2000,
     "eraIndex": 2,
     "eraLabel": "2000s",
     "clubs": [
@@ -1782,14 +1690,13 @@
       }
     ],
     "rating": 91,
-    "fameRank": 65
+    "fameRank": 64
   },
   {
-    "cardId": "real_0066",
+    "cardId": "real_0065",
     "name": "Andriy Shevchenko",
     "nation": "Ukraine",
     "position": "ATT",
-    "debutYear": 1994,
     "eraIndex": 1,
     "eraLabel": "1980s-90s",
     "clubs": [
@@ -1810,14 +1717,13 @@
       }
     ],
     "rating": 91,
-    "fameRank": 66
+    "fameRank": 65
   },
   {
-    "cardId": "real_0067",
+    "cardId": "real_0066",
     "name": "Philipp Lahm",
     "nation": "Germany",
     "position": "DEF",
-    "debutYear": 2002,
     "eraIndex": 2,
     "eraLabel": "2000s",
     "clubs": [
@@ -1833,14 +1739,13 @@
       }
     ],
     "rating": 91,
-    "fameRank": 67
+    "fameRank": 66
   },
   {
-    "cardId": "real_0068",
+    "cardId": "real_0067",
     "name": "Toni Kroos",
     "nation": "Germany",
     "position": "MID",
-    "debutYear": 2007,
     "eraIndex": 3,
     "eraLabel": "2010s-20s",
     "clubs": [
@@ -1860,15 +1765,14 @@
         "fullName": "Bayer 04 Leverkusen"
       }
     ],
-    "rating": 90,
-    "fameRank": 68
+    "rating": 91,
+    "fameRank": 67
   },
   {
-    "cardId": "real_0069",
+    "cardId": "real_0068",
     "name": "Cesc Fàbregas",
     "nation": "Spain",
     "position": "MID",
-    "debutYear": 2003,
     "eraIndex": 2,
     "eraLabel": "2000s",
     "clubs": [
@@ -1889,14 +1793,13 @@
       }
     ],
     "rating": 90,
-    "fameRank": 69
+    "fameRank": 68
   },
   {
-    "cardId": "real_0070",
+    "cardId": "real_0069",
     "name": "Ousmane Dembélé",
     "nation": "France",
     "position": "ATT",
-    "debutYear": 2015,
     "eraIndex": 3,
     "eraLabel": "2010s-20s",
     "clubs": [
@@ -1917,14 +1820,13 @@
       }
     ],
     "rating": 90,
-    "fameRank": 70
+    "fameRank": 69
   },
   {
-    "cardId": "real_0071",
+    "cardId": "real_0070",
     "name": "Marcus Rashford",
     "nation": "England",
     "position": "ATT",
-    "debutYear": 2015,
     "eraIndex": 3,
     "eraLabel": "2010s-20s",
     "clubs": [
@@ -1945,14 +1847,13 @@
       }
     ],
     "rating": 90,
-    "fameRank": 71
+    "fameRank": 70
   },
   {
-    "cardId": "real_0072",
+    "cardId": "real_0071",
     "name": "Lothar Matthäus",
     "nation": "Germany",
     "position": "DEF",
-    "debutYear": 1979,
     "eraIndex": 1,
     "eraLabel": "1980s-90s",
     "clubs": [
@@ -1973,14 +1874,13 @@
       }
     ],
     "rating": 90,
-    "fameRank": 72
+    "fameRank": 71
   },
   {
-    "cardId": "real_0073",
+    "cardId": "real_0072",
     "name": "Alessandro Del Piero",
     "nation": "Italy",
     "position": "ATT",
-    "debutYear": 1991,
     "eraIndex": 1,
     "eraLabel": "1980s-90s",
     "clubs": [
@@ -2001,14 +1901,13 @@
       }
     ],
     "rating": 90,
-    "fameRank": 73
+    "fameRank": 72
   },
   {
-    "cardId": "real_0074",
+    "cardId": "real_0073",
     "name": "David Villa",
     "nation": "Spain",
     "position": "ATT",
-    "debutYear": 2001,
     "eraIndex": 2,
     "eraLabel": "2000s",
     "clubs": [
@@ -2029,14 +1928,13 @@
       }
     ],
     "rating": 90,
-    "fameRank": 74
+    "fameRank": 73
   },
   {
-    "cardId": "real_0075",
+    "cardId": "real_0074",
     "name": "Edinson Cavani",
     "nation": "Uruguay",
     "position": "ATT",
-    "debutYear": 2005,
     "eraIndex": 3,
     "eraLabel": "2010s-20s",
     "clubs": [
@@ -2057,14 +1955,13 @@
       }
     ],
     "rating": 90,
-    "fameRank": 75
+    "fameRank": 74
   },
   {
-    "cardId": "real_0076",
+    "cardId": "real_0075",
     "name": "Dani Alves",
     "nation": "Brazil",
     "position": "DEF",
-    "debutYear": 2001,
     "eraIndex": 2,
     "eraLabel": "2000s",
     "clubs": [
@@ -2085,14 +1982,13 @@
       }
     ],
     "rating": 90,
-    "fameRank": 76
+    "fameRank": 75
   },
   {
-    "cardId": "real_0077",
+    "cardId": "real_0076",
     "name": "Ángel Di María",
     "nation": "Argentina",
     "position": "ATT",
-    "debutYear": 2005,
     "eraIndex": 3,
     "eraLabel": "2010s-20s",
     "clubs": [
@@ -2113,14 +2009,13 @@
       }
     ],
     "rating": 90,
-    "fameRank": 77
+    "fameRank": 76
   },
   {
-    "cardId": "real_0078",
+    "cardId": "real_0077",
     "name": "Roberto Carlos",
     "nation": "Brazil",
     "position": "DEF",
-    "debutYear": 1991,
     "eraIndex": 1,
     "eraLabel": "1980s-90s",
     "clubs": [
@@ -2141,14 +2036,13 @@
       }
     ],
     "rating": 90,
-    "fameRank": 78
+    "fameRank": 77
   },
   {
-    "cardId": "real_0079",
+    "cardId": "real_0078",
     "name": "Andrea Pirlo",
     "nation": "Italy",
     "position": "MID",
-    "debutYear": 1995,
     "eraIndex": 2,
     "eraLabel": "2000s",
     "clubs": [
@@ -2169,14 +2063,13 @@
       }
     ],
     "rating": 90,
-    "fameRank": 79
+    "fameRank": 78
   },
   {
-    "cardId": "real_0080",
+    "cardId": "real_0079",
     "name": "Fabio Cannavaro",
     "nation": "Italy",
     "position": "DEF",
-    "debutYear": 1992,
     "eraIndex": 1,
     "eraLabel": "1980s-90s",
     "clubs": [
@@ -2197,14 +2090,13 @@
       }
     ],
     "rating": 90,
-    "fameRank": 80
+    "fameRank": 79
   },
   {
-    "cardId": "real_0081",
+    "cardId": "real_0080",
     "name": "Raúl",
     "nation": "Spain",
     "position": "ATT",
-    "debutYear": 1994,
     "eraIndex": 1,
     "eraLabel": "1980s-90s",
     "clubs": [
@@ -2225,14 +2117,13 @@
       }
     ],
     "rating": 90,
-    "fameRank": 81
+    "fameRank": 80
   },
   {
-    "cardId": "real_0082",
+    "cardId": "real_0081",
     "name": "Hugo Lloris",
     "nation": "France",
     "position": "GK",
-    "debutYear": 2005,
     "eraIndex": 3,
     "eraLabel": "2010s-20s",
     "clubs": [
@@ -2253,14 +2144,13 @@
       }
     ],
     "rating": 90,
-    "fameRank": 82
+    "fameRank": 81
   },
   {
-    "cardId": "real_0083",
+    "cardId": "real_0082",
     "name": "Sergio Busquets",
     "nation": "Spain",
     "position": "MID",
-    "debutYear": 2008,
     "eraIndex": 3,
     "eraLabel": "2010s-20s",
     "clubs": [
@@ -2281,14 +2171,13 @@
       }
     ],
     "rating": 90,
-    "fameRank": 83
+    "fameRank": 82
   },
   {
-    "cardId": "real_0084",
+    "cardId": "real_0083",
     "name": "Ivan Rakitić",
     "nation": "Croatia",
     "position": "MID",
-    "debutYear": 2005,
     "eraIndex": 3,
     "eraLabel": "2010s-20s",
     "clubs": [
@@ -2309,14 +2198,13 @@
       }
     ],
     "rating": 90,
-    "fameRank": 84
+    "fameRank": 83
   },
   {
-    "cardId": "real_0085",
+    "cardId": "real_0084",
     "name": "Oliver Kahn",
     "nation": "Germany",
     "position": "GK",
-    "debutYear": 1987,
     "eraIndex": 1,
     "eraLabel": "1980s-90s",
     "clubs": [
@@ -2331,15 +2219,14 @@
         "fullName": "Karlsruher SC"
       }
     ],
-    "rating": 89,
-    "fameRank": 85
+    "rating": 90,
+    "fameRank": 84
   },
   {
-    "cardId": "real_0086",
+    "cardId": "real_0085",
     "name": "David de Gea",
     "nation": "Spain",
     "position": "GK",
-    "debutYear": 2009,
     "eraIndex": 3,
     "eraLabel": "2010s-20s",
     "clubs": [
@@ -2360,14 +2247,13 @@
       }
     ],
     "rating": 89,
-    "fameRank": 86
+    "fameRank": 85
   },
   {
-    "cardId": "real_0087",
+    "cardId": "real_0086",
     "name": "Paolo Maldini",
     "nation": "Italy",
     "position": "DEF",
-    "debutYear": 1985,
     "eraIndex": 1,
     "eraLabel": "1980s-90s",
     "clubs": [
@@ -2378,14 +2264,13 @@
       }
     ],
     "rating": 89,
-    "fameRank": 87
+    "fameRank": 86
   },
   {
-    "cardId": "real_0088",
+    "cardId": "real_0087",
     "name": "Michael Ballack",
     "nation": "Germany",
     "position": "MID",
-    "debutYear": 1995,
     "eraIndex": 2,
     "eraLabel": "2000s",
     "clubs": [
@@ -2406,14 +2291,13 @@
       }
     ],
     "rating": 89,
-    "fameRank": 88
+    "fameRank": 87
   },
   {
-    "cardId": "real_0089",
+    "cardId": "real_0088",
     "name": "Eric Cantona",
     "nation": "France",
     "position": "ATT",
-    "debutYear": 1983,
     "eraIndex": 1,
     "eraLabel": "1980s-90s",
     "clubs": [
@@ -2434,14 +2318,13 @@
       }
     ],
     "rating": 89,
-    "fameRank": 89
+    "fameRank": 88
   },
   {
-    "cardId": "real_0090",
+    "cardId": "real_0089",
     "name": "Romário",
     "nation": "Brazil",
     "position": "ATT",
-    "debutYear": 1985,
     "eraIndex": 1,
     "eraLabel": "1980s-90s",
     "clubs": [
@@ -2462,14 +2345,13 @@
       }
     ],
     "rating": 89,
-    "fameRank": 90
+    "fameRank": 89
   },
   {
-    "cardId": "real_0091",
+    "cardId": "real_0090",
     "name": "Jordi Alba",
     "nation": "Spain",
     "position": "DEF",
-    "debutYear": 2007,
     "eraIndex": 3,
     "eraLabel": "2010s-20s",
     "clubs": [
@@ -2490,14 +2372,13 @@
       }
     ],
     "rating": 89,
-    "fameRank": 91
+    "fameRank": 90
   },
   {
-    "cardId": "real_0092",
+    "cardId": "real_0091",
     "name": "Vinícius Júnior",
     "nation": "Brazil",
     "position": "ATT",
-    "debutYear": 2017,
     "eraIndex": 3,
     "eraLabel": "2010s-20s",
     "clubs": [
@@ -2513,14 +2394,13 @@
       }
     ],
     "rating": 89,
-    "fameRank": 92
+    "fameRank": 91
   },
   {
-    "cardId": "real_0093",
+    "cardId": "real_0092",
     "name": "Marcelo Vieira",
     "nation": "Brazil",
     "position": "DEF",
-    "debutYear": 2005,
     "eraIndex": 3,
     "eraLabel": "2010s-20s",
     "clubs": [
@@ -2541,14 +2421,13 @@
       }
     ],
     "rating": 89,
-    "fameRank": 93
+    "fameRank": 92
   },
   {
-    "cardId": "real_0094",
+    "cardId": "real_0093",
     "name": "Luís Figo",
     "nation": "Portugal",
     "position": "ATT",
-    "debutYear": 1989,
     "eraIndex": 1,
     "eraLabel": "1980s-90s",
     "clubs": [
@@ -2569,14 +2448,13 @@
       }
     ],
     "rating": 89,
-    "fameRank": 94
+    "fameRank": 93
   },
   {
-    "cardId": "real_0095",
+    "cardId": "real_0094",
     "name": "Michael Owen",
     "nation": "England",
     "position": "ATT",
-    "debutYear": 1995,
     "eraIndex": 2,
     "eraLabel": "2000s",
     "clubs": [
@@ -2597,14 +2475,13 @@
       }
     ],
     "rating": 89,
-    "fameRank": 95
+    "fameRank": 94
   },
   {
-    "cardId": "real_0096",
+    "cardId": "real_0095",
     "name": "Garrincha",
     "nation": "Brazil",
     "position": "ATT",
-    "debutYear": 1953,
     "eraIndex": 0,
     "eraLabel": "≤70s",
     "clubs": [
@@ -2624,15 +2501,14 @@
         "fullName": "Olaria Atlético Clube"
       }
     ],
-    "rating": 88,
-    "fameRank": 96
+    "rating": 89,
+    "fameRank": 95
   },
   {
-    "cardId": "real_0097",
+    "cardId": "real_0096",
     "name": "Rivaldo",
     "nation": "Brazil",
     "position": "ATT",
-    "debutYear": 1989,
     "eraIndex": 1,
     "eraLabel": "1980s-90s",
     "clubs": [
@@ -2653,14 +2529,13 @@
       }
     ],
     "rating": 88,
-    "fameRank": 97
+    "fameRank": 96
   },
   {
-    "cardId": "real_0098",
+    "cardId": "real_0097",
     "name": "John Terry",
     "nation": "England",
     "position": "DEF",
-    "debutYear": 1998,
     "eraIndex": 2,
     "eraLabel": "2000s",
     "clubs": [
@@ -2681,14 +2556,13 @@
       }
     ],
     "rating": 88,
-    "fameRank": 98
+    "fameRank": 97
   },
   {
-    "cardId": "real_0099",
+    "cardId": "real_0098",
     "name": "Jérôme Boateng",
     "nation": "Germany",
     "position": "DEF",
-    "debutYear": 2007,
     "eraIndex": 3,
     "eraLabel": "2010s-20s",
     "clubs": [
@@ -2709,14 +2583,13 @@
       }
     ],
     "rating": 88,
-    "fameRank": 99
+    "fameRank": 98
   },
   {
-    "cardId": "real_0100",
+    "cardId": "real_0099",
     "name": "Hernán Crespo",
     "nation": "Argentina",
     "position": "ATT",
-    "debutYear": 1993,
     "eraIndex": 1,
     "eraLabel": "1980s-90s",
     "clubs": [
@@ -2737,14 +2610,13 @@
       }
     ],
     "rating": 88,
-    "fameRank": 100
+    "fameRank": 99
   },
   {
-    "cardId": "real_0101",
+    "cardId": "real_0100",
     "name": "Paulo Dybala",
     "nation": "Argentina",
     "position": "ATT",
-    "debutYear": 2011,
     "eraIndex": 3,
     "eraLabel": "2010s-20s",
     "clubs": [
@@ -2765,14 +2637,13 @@
       }
     ],
     "rating": 88,
-    "fameRank": 101
+    "fameRank": 100
   },
   {
-    "cardId": "real_0102",
+    "cardId": "real_0101",
     "name": "Raphaël Varane",
     "nation": "France",
     "position": "DEF",
-    "debutYear": 2010,
     "eraIndex": 3,
     "eraLabel": "2010s-20s",
     "clubs": [
@@ -2793,14 +2664,13 @@
       }
     ],
     "rating": 88,
-    "fameRank": 102
+    "fameRank": 101
   },
   {
-    "cardId": "real_0103",
+    "cardId": "real_0102",
     "name": "Riyad Mahrez",
     "nation": "Algeria",
     "position": "ATT",
-    "debutYear": 2009,
     "eraIndex": 3,
     "eraLabel": "2010s-20s",
     "clubs": [
@@ -2821,14 +2691,13 @@
       }
     ],
     "rating": 88,
-    "fameRank": 103
+    "fameRank": 102
   },
   {
-    "cardId": "real_0104",
+    "cardId": "real_0103",
     "name": "Wesley Sneijder",
     "nation": "Netherlands",
     "position": "MID",
-    "debutYear": 2002,
     "eraIndex": 2,
     "eraLabel": "2000s",
     "clubs": [
@@ -2849,14 +2718,13 @@
       }
     ],
     "rating": 88,
-    "fameRank": 104
+    "fameRank": 103
   },
   {
-    "cardId": "real_0105",
+    "cardId": "real_0104",
     "name": "Marco Reus",
     "nation": "Germany",
     "position": "MID",
-    "debutYear": 2007,
     "eraIndex": 3,
     "eraLabel": "2010s-20s",
     "clubs": [
@@ -2877,14 +2745,13 @@
       }
     ],
     "rating": 88,
-    "fameRank": 105
+    "fameRank": 104
   },
   {
-    "cardId": "real_0106",
+    "cardId": "real_0105",
     "name": "Nemanja Vidić",
     "nation": "Serbia",
     "position": "DEF",
-    "debutYear": 2000,
     "eraIndex": 2,
     "eraLabel": "2000s",
     "clubs": [
@@ -2905,14 +2772,13 @@
       }
     ],
     "rating": 88,
-    "fameRank": 106
+    "fameRank": 105
   },
   {
-    "cardId": "real_0107",
+    "cardId": "real_0106",
     "name": "Dennis Bergkamp",
     "nation": "Netherlands",
     "position": "ATT",
-    "debutYear": 1986,
     "eraIndex": 1,
     "eraLabel": "1980s-90s",
     "clubs": [
@@ -2932,15 +2798,14 @@
         "fullName": "Inter Milan"
       }
     ],
-    "rating": 87,
-    "fameRank": 107
+    "rating": 88,
+    "fameRank": 106
   },
   {
-    "cardId": "real_0108",
+    "cardId": "real_0107",
     "name": "Son Heung-min",
     "nation": "South Korea",
     "position": "ATT",
-    "debutYear": 2010,
     "eraIndex": 3,
     "eraLabel": "2010s-20s",
     "clubs": [
@@ -2961,42 +2826,13 @@
       }
     ],
     "rating": 87,
-    "fameRank": 108
+    "fameRank": 107
   },
   {
-    "cardId": "real_0109",
-    "name": "Edwin van der Sar",
-    "nation": "Netherlands",
-    "position": "GK",
-    "debutYear": 1999,
-    "eraIndex": 2,
-    "eraLabel": "2000s",
-    "clubs": [
-      {
-        "tag": "manchester-united-f-c",
-        "displayCode": "MAN",
-        "fullName": "Manchester United F.C."
-      },
-      {
-        "tag": "fulham-f-c",
-        "displayCode": "FUL",
-        "fullName": "Fulham F.C."
-      },
-      {
-        "tag": "juventus",
-        "displayCode": "JUV",
-        "fullName": "Juventus FC"
-      }
-    ],
-    "rating": 87,
-    "fameRank": 109
-  },
-  {
-    "cardId": "real_0110",
+    "cardId": "real_0108",
     "name": "Didier Deschamps",
     "nation": "France",
     "position": "MID",
-    "debutYear": 1985,
     "eraIndex": 1,
     "eraLabel": "1980s-90s",
     "clubs": [
@@ -3017,14 +2853,13 @@
       }
     ],
     "rating": 87,
-    "fameRank": 110
+    "fameRank": 108
   },
   {
-    "cardId": "real_0111",
+    "cardId": "real_0109",
     "name": "Jürgen Klinsmann",
     "nation": "Germany",
     "position": "ATT",
-    "debutYear": 1981,
     "eraIndex": 1,
     "eraLabel": "1980s-90s",
     "clubs": [
@@ -3045,14 +2880,13 @@
       }
     ],
     "rating": 87,
-    "fameRank": 111
+    "fameRank": 109
   },
   {
-    "cardId": "real_0112",
+    "cardId": "real_0110",
     "name": "Robinho",
     "nation": "Brazil",
     "position": "ATT",
-    "debutYear": 2002,
     "eraIndex": 2,
     "eraLabel": "2000s",
     "clubs": [
@@ -3073,14 +2907,13 @@
       }
     ],
     "rating": 87,
-    "fameRank": 112
+    "fameRank": 110
   },
   {
-    "cardId": "real_0113",
+    "cardId": "real_0111",
     "name": "Casemiro",
     "nation": "Brazil",
     "position": "MID",
-    "debutYear": 2010,
     "eraIndex": 3,
     "eraLabel": "2010s-20s",
     "clubs": [
@@ -3101,14 +2934,13 @@
       }
     ],
     "rating": 87,
-    "fameRank": 113
+    "fameRank": 111
   },
   {
-    "cardId": "real_0114",
+    "cardId": "real_0112",
     "name": "Mario Götze",
     "nation": "Germany",
     "position": "MID",
-    "debutYear": 2009,
     "eraIndex": 3,
     "eraLabel": "2010s-20s",
     "clubs": [
@@ -3129,14 +2961,13 @@
       }
     ],
     "rating": 87,
-    "fameRank": 114
+    "fameRank": 112
   },
   {
-    "cardId": "real_0115",
+    "cardId": "real_0113",
     "name": "David Silva",
     "nation": "Spain",
     "position": "MID",
-    "debutYear": 2003,
     "eraIndex": 2,
     "eraLabel": "2000s",
     "clubs": [
@@ -3157,14 +2988,13 @@
       }
     ],
     "rating": 87,
-    "fameRank": 115
+    "fameRank": 113
   },
   {
-    "cardId": "real_0116",
+    "cardId": "real_0114",
     "name": "N'Golo Kanté",
     "nation": "France",
     "position": "MID",
-    "debutYear": 2011,
     "eraIndex": 3,
     "eraLabel": "2010s-20s",
     "clubs": [
@@ -3185,14 +3015,13 @@
       }
     ],
     "rating": 87,
-    "fameRank": 116
+    "fameRank": 114
   },
   {
-    "cardId": "real_0117",
+    "cardId": "real_0115",
     "name": "Diego Godín",
     "nation": "Uruguay",
     "position": "DEF",
-    "debutYear": 2003,
     "eraIndex": 2,
     "eraLabel": "2000s",
     "clubs": [
@@ -3212,15 +3041,14 @@
         "fullName": "C.A. Cerro"
       }
     ],
-    "rating": 86,
-    "fameRank": 117
+    "rating": 87,
+    "fameRank": 115
   },
   {
-    "cardId": "real_0118",
+    "cardId": "real_0116",
     "name": "Jordan Henderson",
     "nation": "England",
     "position": "MID",
-    "debutYear": 2008,
     "eraIndex": 3,
     "eraLabel": "2010s-20s",
     "clubs": [
@@ -3240,15 +3068,14 @@
         "fullName": "Brentford F.C."
       }
     ],
-    "rating": 86,
-    "fameRank": 118
+    "rating": 87,
+    "fameRank": 116
   },
   {
-    "cardId": "real_0119",
+    "cardId": "real_0117",
     "name": "Bastian Schweinsteiger",
     "nation": "Germany",
     "position": "MID",
-    "debutYear": 2002,
     "eraIndex": 2,
     "eraLabel": "2000s",
     "clubs": [
@@ -3269,14 +3096,13 @@
       }
     ],
     "rating": 86,
-    "fameRank": 119
+    "fameRank": 117
   },
   {
-    "cardId": "real_0120",
+    "cardId": "real_0118",
     "name": "Pepe",
     "nation": "Portugal",
     "position": "DEF",
-    "debutYear": 2002,
     "eraIndex": 2,
     "eraLabel": "2000s",
     "clubs": [
@@ -3297,14 +3123,13 @@
       }
     ],
     "rating": 86,
-    "fameRank": 120
+    "fameRank": 118
   },
   {
-    "cardId": "real_0121",
+    "cardId": "real_0119",
     "name": "Carlos Tevez",
     "nation": "Argentina",
     "position": "ATT",
-    "debutYear": 2001,
     "eraIndex": 2,
     "eraLabel": "2000s",
     "clubs": [
@@ -3325,14 +3150,13 @@
       }
     ],
     "rating": 86,
-    "fameRank": 121
+    "fameRank": 119
   },
   {
-    "cardId": "real_0122",
+    "cardId": "real_0120",
     "name": "Jude Bellingham",
     "nation": "England",
     "position": "MID",
-    "debutYear": 2019,
     "eraIndex": 3,
     "eraLabel": "2010s-20s",
     "clubs": [
@@ -3353,14 +3177,13 @@
       }
     ],
     "rating": 86,
-    "fameRank": 122
+    "fameRank": 120
   },
   {
-    "cardId": "real_0123",
+    "cardId": "real_0121",
     "name": "Mats Hummels",
     "nation": "Germany",
     "position": "DEF",
-    "debutYear": 2007,
     "eraIndex": 3,
     "eraLabel": "2010s-20s",
     "clubs": [
@@ -3381,14 +3204,13 @@
       }
     ],
     "rating": 86,
-    "fameRank": 123
+    "fameRank": 121
   },
   {
-    "cardId": "real_0124",
+    "cardId": "real_0122",
     "name": "Pepe Reina",
     "nation": "Spain",
     "position": "GK",
-    "debutYear": 2000,
     "eraIndex": 2,
     "eraLabel": "2000s",
     "clubs": [
@@ -3409,14 +3231,13 @@
       }
     ],
     "rating": 86,
-    "fameRank": 124
+    "fameRank": 122
   },
   {
-    "cardId": "real_0125",
+    "cardId": "real_0123",
     "name": "Yaya Touré",
     "nation": "Ivory Coast",
     "position": "DEF",
-    "debutYear": 2001,
     "eraIndex": 2,
     "eraLabel": "2000s",
     "clubs": [
@@ -3437,14 +3258,13 @@
       }
     ],
     "rating": 86,
-    "fameRank": 125
+    "fameRank": 123
   },
   {
-    "cardId": "real_0126",
+    "cardId": "real_0124",
     "name": "Mario Mandžukić",
     "nation": "Croatia",
     "position": "ATT",
-    "debutYear": 2004,
     "eraIndex": 2,
     "eraLabel": "2000s",
     "clubs": [
@@ -3465,16 +3285,15 @@
       }
     ],
     "rating": 86,
-    "fameRank": 126
+    "fameRank": 124
   },
   {
-    "cardId": "real_0127",
+    "cardId": "real_0125",
     "name": "Keisuke Honda",
     "nation": "Japan",
     "position": "ATT",
-    "debutYear": 2004,
-    "eraIndex": 2,
-    "eraLabel": "2000s",
+    "eraIndex": 3,
+    "eraLabel": "2010s-20s",
     "clubs": [
       {
         "tag": "pfc-cska-moscow",
@@ -3493,14 +3312,13 @@
       }
     ],
     "rating": 86,
-    "fameRank": 127
+    "fameRank": 125
   },
   {
-    "cardId": "real_0128",
+    "cardId": "real_0126",
     "name": "Philippe Coutinho",
     "nation": "Brazil",
     "position": "ATT",
-    "debutYear": 2008,
     "eraIndex": 3,
     "eraLabel": "2010s-20s",
     "clubs": [
@@ -3521,14 +3339,13 @@
       }
     ],
     "rating": 86,
-    "fameRank": 128
+    "fameRank": 126
   },
   {
-    "cardId": "real_0129",
+    "cardId": "real_0127",
     "name": "Raheem Sterling",
     "nation": "England",
     "position": "ATT",
-    "debutYear": 2012,
     "eraIndex": 3,
     "eraLabel": "2010s-20s",
     "clubs": [
@@ -3549,14 +3366,13 @@
       }
     ],
     "rating": 86,
-    "fameRank": 129
+    "fameRank": 127
   },
   {
-    "cardId": "real_0130",
+    "cardId": "real_0128",
     "name": "Ruud van Nistelrooy",
     "nation": "Netherlands",
     "position": "ATT",
-    "debutYear": 1993,
     "eraIndex": 1,
     "eraLabel": "1980s-90s",
     "clubs": [
@@ -3577,14 +3393,13 @@
       }
     ],
     "rating": 86,
-    "fameRank": 130
+    "fameRank": 128
   },
   {
-    "cardId": "real_0131",
+    "cardId": "real_0129",
     "name": "Petr Čech",
     "nation": "Czech Republic",
     "position": "GK",
-    "debutYear": 1999,
     "eraIndex": 2,
     "eraLabel": "2000s",
     "clubs": [
@@ -3605,14 +3420,13 @@
       }
     ],
     "rating": 86,
-    "fameRank": 131
+    "fameRank": 129
   },
   {
-    "cardId": "real_0132",
+    "cardId": "real_0130",
     "name": "Alan Shearer",
     "nation": "England",
     "position": "ATT",
-    "debutYear": 1988,
     "eraIndex": 1,
     "eraLabel": "1980s-90s",
     "clubs": [
@@ -3632,15 +3446,14 @@
         "fullName": "Blackburn Rovers F.C."
       }
     ],
-    "rating": 85,
-    "fameRank": 132
+    "rating": 86,
+    "fameRank": 130
   },
   {
-    "cardId": "real_0133",
+    "cardId": "real_0131",
     "name": "Gonzalo Higuaín",
     "nation": "Argentina",
     "position": "ATT",
-    "debutYear": 2005,
     "eraIndex": 3,
     "eraLabel": "2010s-20s",
     "clubs": [
@@ -3660,15 +3473,14 @@
         "fullName": "SSC Napoli"
       }
     ],
-    "rating": 85,
-    "fameRank": 133
+    "rating": 86,
+    "fameRank": 131
   },
   {
-    "cardId": "real_0134",
+    "cardId": "real_0132",
     "name": "Sami Khedira",
     "nation": "Germany",
     "position": "MID",
-    "debutYear": 2006,
     "eraIndex": 3,
     "eraLabel": "2010s-20s",
     "clubs": [
@@ -3689,14 +3501,13 @@
       }
     ],
     "rating": 85,
-    "fameRank": 134
+    "fameRank": 132
   },
   {
-    "cardId": "real_0135",
+    "cardId": "real_0133",
     "name": "Javier Mascherano",
     "nation": "Argentina",
     "position": "DEF",
-    "debutYear": 2003,
     "eraIndex": 2,
     "eraLabel": "2000s",
     "clubs": [
@@ -3717,14 +3528,13 @@
       }
     ],
     "rating": 85,
-    "fameRank": 135
+    "fameRank": 133
   },
   {
-    "cardId": "real_0136",
+    "cardId": "real_0134",
     "name": "Juan Mata",
     "nation": "Spain",
     "position": "ATT",
-    "debutYear": 2007,
     "eraIndex": 3,
     "eraLabel": "2010s-20s",
     "clubs": [
@@ -3745,14 +3555,13 @@
       }
     ],
     "rating": 85,
-    "fameRank": 136
+    "fameRank": 134
   },
   {
-    "cardId": "real_0137",
+    "cardId": "real_0135",
     "name": "Ruud Gullit",
     "nation": "Netherlands",
     "position": "MID",
-    "debutYear": 1979,
     "eraIndex": 1,
     "eraLabel": "1980s-90s",
     "clubs": [
@@ -3773,14 +3582,13 @@
       }
     ],
     "rating": 85,
-    "fameRank": 137
+    "fameRank": 135
   },
   {
-    "cardId": "real_0138",
+    "cardId": "real_0136",
     "name": "Lilian Thuram",
     "nation": "France",
     "position": "DEF",
-    "debutYear": 1991,
     "eraIndex": 1,
     "eraLabel": "1980s-90s",
     "clubs": [
@@ -3801,14 +3609,13 @@
       }
     ],
     "rating": 85,
-    "fameRank": 138
+    "fameRank": 136
   },
   {
-    "cardId": "real_0139",
+    "cardId": "real_0137",
     "name": "Alisson Becker",
     "nation": "Brazil",
     "position": "GK",
-    "debutYear": 2013,
     "eraIndex": 3,
     "eraLabel": "2010s-20s",
     "clubs": [
@@ -3829,14 +3636,13 @@
       }
     ],
     "rating": 85,
-    "fameRank": 139
+    "fameRank": 137
   },
   {
-    "cardId": "real_0140",
+    "cardId": "real_0138",
     "name": "Arturo Vidal",
     "nation": "Chile",
     "position": "MID",
-    "debutYear": 2005,
     "eraIndex": 3,
     "eraLabel": "2010s-20s",
     "clubs": [
@@ -3857,14 +3663,13 @@
       }
     ],
     "rating": 85,
-    "fameRank": 140
+    "fameRank": 138
   },
   {
-    "cardId": "real_0141",
+    "cardId": "real_0139",
     "name": "Zico",
     "nation": "Brazil",
     "position": "MID",
-    "debutYear": 1971,
     "eraIndex": 0,
     "eraLabel": "≤70s",
     "clubs": [
@@ -3885,14 +3690,13 @@
       }
     ],
     "rating": 85,
-    "fameRank": 141
+    "fameRank": 139
   },
   {
-    "cardId": "real_0142",
+    "cardId": "real_0140",
     "name": "Víctor Valdés",
     "nation": "Spain",
     "position": "GK",
-    "debutYear": 2002,
     "eraIndex": 2,
     "eraLabel": "2000s",
     "clubs": [
@@ -3913,14 +3717,13 @@
       }
     ],
     "rating": 85,
-    "fameRank": 142
+    "fameRank": 140
   },
   {
-    "cardId": "real_0143",
+    "cardId": "real_0141",
     "name": "Nani",
     "nation": "Portugal",
     "position": "ATT",
-    "debutYear": 2005,
     "eraIndex": 3,
     "eraLabel": "2010s-20s",
     "clubs": [
@@ -3941,14 +3744,13 @@
       }
     ],
     "rating": 85,
-    "fameRank": 143
+    "fameRank": 141
   },
   {
-    "cardId": "real_0144",
+    "cardId": "real_0142",
     "name": "Rio Ferdinand",
     "nation": "England",
     "position": "DEF",
-    "debutYear": 1996,
     "eraIndex": 2,
     "eraLabel": "2000s",
     "clubs": [
@@ -3969,14 +3771,13 @@
       }
     ],
     "rating": 85,
-    "fameRank": 144
+    "fameRank": 142
   },
   {
-    "cardId": "real_0145",
+    "cardId": "real_0143",
     "name": "Virgil van Dijk",
     "nation": "Netherlands",
     "position": "DEF",
-    "debutYear": 2011,
     "eraIndex": 3,
     "eraLabel": "2010s-20s",
     "clubs": [
@@ -3997,14 +3798,13 @@
       }
     ],
     "rating": 85,
-    "fameRank": 145
+    "fameRank": 143
   },
   {
-    "cardId": "real_0146",
+    "cardId": "real_0144",
     "name": "Alexis Sánchez",
     "nation": "Chile",
     "position": "ATT",
-    "debutYear": 2005,
     "eraIndex": 3,
     "eraLabel": "2010s-20s",
     "clubs": [
@@ -4025,14 +3825,13 @@
       }
     ],
     "rating": 85,
-    "fameRank": 146
+    "fameRank": 144
   },
   {
-    "cardId": "real_0147",
+    "cardId": "real_0145",
     "name": "David Luiz",
     "nation": "Brazil",
     "position": "DEF",
-    "debutYear": 2006,
     "eraIndex": 3,
     "eraLabel": "2010s-20s",
     "clubs": [
@@ -4052,15 +3851,14 @@
         "fullName": "E.C. Vitória"
       }
     ],
-    "rating": 84,
-    "fameRank": 147
+    "rating": 85,
+    "fameRank": 145
   },
   {
-    "cardId": "real_0148",
+    "cardId": "real_0146",
     "name": "Thiago Silva",
     "nation": "Brazil",
     "position": "DEF",
-    "debutYear": 2000,
     "eraIndex": 2,
     "eraLabel": "2000s",
     "clubs": [
@@ -4080,15 +3878,14 @@
         "fullName": "Chelsea F.C."
       }
     ],
-    "rating": 84,
-    "fameRank": 148
+    "rating": 85,
+    "fameRank": 146
   },
   {
-    "cardId": "real_0149",
+    "cardId": "real_0147",
     "name": "Pierre-Emerick Aubameyang",
     "nation": "Gabon",
     "position": "ATT",
-    "debutYear": 2007,
     "eraIndex": 3,
     "eraLabel": "2010s-20s",
     "clubs": [
@@ -4109,14 +3906,13 @@
       }
     ],
     "rating": 84,
-    "fameRank": 149
+    "fameRank": 147
   },
   {
-    "cardId": "real_0150",
+    "cardId": "real_0148",
     "name": "Diego Costa",
     "nation": "Spain",
     "position": "ATT",
-    "debutYear": 2006,
     "eraIndex": 3,
     "eraLabel": "2010s-20s",
     "clubs": [
@@ -4137,14 +3933,13 @@
       }
     ],
     "rating": 84,
-    "fameRank": 150
+    "fameRank": 148
   },
   {
-    "cardId": "real_0151",
+    "cardId": "real_0149",
     "name": "Giorgio Chiellini",
     "nation": "Italy",
     "position": "DEF",
-    "debutYear": 2000,
     "eraIndex": 2,
     "eraLabel": "2000s",
     "clubs": [
@@ -4165,14 +3960,13 @@
       }
     ],
     "rating": 84,
-    "fameRank": 151
+    "fameRank": 149
   },
   {
-    "cardId": "real_0152",
+    "cardId": "real_0150",
     "name": "Hidetoshi Nakata",
     "nation": "Japan",
     "position": "MID",
-    "debutYear": 1995,
     "eraIndex": 2,
     "eraLabel": "2000s",
     "clubs": [
@@ -4193,14 +3987,13 @@
       }
     ],
     "rating": 84,
-    "fameRank": 152
+    "fameRank": 150
   },
   {
-    "cardId": "real_0153",
+    "cardId": "real_0151",
     "name": "Ivan Perišić",
     "nation": "Croatia",
     "position": "ATT",
-    "debutYear": 2007,
     "eraIndex": 3,
     "eraLabel": "2010s-20s",
     "clubs": [
@@ -4221,14 +4014,13 @@
       }
     ],
     "rating": 84,
-    "fameRank": 153
+    "fameRank": 151
   },
   {
-    "cardId": "real_0154",
+    "cardId": "real_0152",
     "name": "Hristo Stoichkov",
     "nation": "Bulgaria",
     "position": "ATT",
-    "debutYear": 1982,
     "eraIndex": 1,
     "eraLabel": "1980s-90s",
     "clubs": [
@@ -4249,14 +4041,13 @@
       }
     ],
     "rating": 84,
-    "fameRank": 154
+    "fameRank": 152
   },
   {
-    "cardId": "real_0155",
+    "cardId": "real_0153",
     "name": "Aaron Ramsey",
     "nation": "Wales",
     "position": "MID",
-    "debutYear": 2006,
     "eraIndex": 3,
     "eraLabel": "2010s-20s",
     "clubs": [
@@ -4277,14 +4068,13 @@
       }
     ],
     "rating": 84,
-    "fameRank": 155
+    "fameRank": 153
   },
   {
-    "cardId": "real_0156",
+    "cardId": "real_0154",
     "name": "Mario Gómez",
     "nation": "Germany",
     "position": "ATT",
-    "debutYear": 2003,
     "eraIndex": 2,
     "eraLabel": "2000s",
     "clubs": [
@@ -4305,14 +4095,13 @@
       }
     ],
     "rating": 84,
-    "fameRank": 156
+    "fameRank": 154
   },
   {
-    "cardId": "real_0157",
+    "cardId": "real_0155",
     "name": "Keylor Navas",
     "nation": "Costa Rica",
     "position": "GK",
-    "debutYear": 2005,
     "eraIndex": 3,
     "eraLabel": "2010s-20s",
     "clubs": [
@@ -4333,14 +4122,13 @@
       }
     ],
     "rating": 84,
-    "fameRank": 157
+    "fameRank": 155
   },
   {
-    "cardId": "real_0158",
+    "cardId": "real_0156",
     "name": "Ashley Cole",
     "nation": "England",
     "position": "DEF",
-    "debutYear": 1998,
     "eraIndex": 2,
     "eraLabel": "2000s",
     "clubs": [
@@ -4361,14 +4149,13 @@
       }
     ],
     "rating": 84,
-    "fameRank": 158
+    "fameRank": 156
   },
   {
-    "cardId": "real_0159",
+    "cardId": "real_0157",
     "name": "Michael Laudrup",
     "nation": "Denmark",
     "position": "MID",
-    "debutYear": 1981,
     "eraIndex": 1,
     "eraLabel": "1980s-90s",
     "clubs": [
@@ -4388,15 +4175,14 @@
         "fullName": "SS Lazio"
       }
     ],
-    "rating": 83,
-    "fameRank": 159
+    "rating": 84,
+    "fameRank": 157
   },
   {
-    "cardId": "real_0160",
+    "cardId": "real_0158",
     "name": "Wojciech Szczęsny",
     "nation": "Poland",
     "position": "GK",
-    "debutYear": 2006,
     "eraIndex": 3,
     "eraLabel": "2010s-20s",
     "clubs": [
@@ -4416,15 +4202,14 @@
         "fullName": "AS Roma"
       }
     ],
-    "rating": 83,
-    "fameRank": 160
+    "rating": 84,
+    "fameRank": 158
   },
   {
-    "cardId": "real_0161",
+    "cardId": "real_0159",
     "name": "Diogo Jota",
     "nation": "Portugal",
     "position": "ATT",
-    "debutYear": 2014,
     "eraIndex": 3,
     "eraLabel": "2010s-20s",
     "clubs": [
@@ -4445,14 +4230,13 @@
       }
     ],
     "rating": 83,
-    "fameRank": 161
+    "fameRank": 159
   },
   {
-    "cardId": "real_0162",
+    "cardId": "real_0160",
     "name": "Xherdan Shaqiri",
     "nation": "Switzerland",
     "position": "ATT",
-    "debutYear": 2007,
     "eraIndex": 3,
     "eraLabel": "2010s-20s",
     "clubs": [
@@ -4473,14 +4257,13 @@
       }
     ],
     "rating": 83,
-    "fameRank": 162
+    "fameRank": 160
   },
   {
-    "cardId": "real_0163",
+    "cardId": "real_0161",
     "name": "Achraf Hakimi",
     "nation": "Morocco",
     "position": "DEF",
-    "debutYear": 2017,
     "eraIndex": 3,
     "eraLabel": "2010s-20s",
     "clubs": [
@@ -4501,14 +4284,13 @@
       }
     ],
     "rating": 83,
-    "fameRank": 163
+    "fameRank": 161
   },
   {
-    "cardId": "real_0164",
+    "cardId": "real_0162",
     "name": "Patrick Vieira",
     "nation": "France",
     "position": "MID",
-    "debutYear": 1993,
     "eraIndex": 1,
     "eraLabel": "1980s-90s",
     "clubs": [
@@ -4529,14 +4311,13 @@
       }
     ],
     "rating": 83,
-    "fameRank": 164
+    "fameRank": 162
   },
   {
-    "cardId": "real_0165",
+    "cardId": "real_0163",
     "name": "Andrey Arshavin",
     "nation": "Russia",
     "position": "ATT",
-    "debutYear": 1999,
     "eraIndex": 2,
     "eraLabel": "2000s",
     "clubs": [
@@ -4557,16 +4338,15 @@
       }
     ],
     "rating": 83,
-    "fameRank": 165
+    "fameRank": 163
   },
   {
-    "cardId": "real_0166",
+    "cardId": "real_0164",
     "name": "Arda Turan",
     "nation": "Turkey",
     "position": "MID",
-    "debutYear": 2004,
-    "eraIndex": 2,
-    "eraLabel": "2000s",
+    "eraIndex": 3,
+    "eraLabel": "2010s-20s",
     "clubs": [
       {
         "tag": "galatasaray-s-k",
@@ -4585,14 +4365,13 @@
       }
     ],
     "rating": 83,
-    "fameRank": 166
+    "fameRank": 164
   },
   {
-    "cardId": "real_0167",
+    "cardId": "real_0165",
     "name": "Javier Zanetti",
     "nation": "Argentina",
     "position": "DEF",
-    "debutYear": 1992,
     "eraIndex": 1,
     "eraLabel": "1980s-90s",
     "clubs": [
@@ -4613,14 +4392,13 @@
       }
     ],
     "rating": 83,
-    "fameRank": 167
+    "fameRank": 165
   },
   {
-    "cardId": "real_0168",
+    "cardId": "real_0166",
     "name": "Roberto Firmino",
     "nation": "Brazil",
     "position": "MID",
-    "debutYear": 2009,
     "eraIndex": 3,
     "eraLabel": "2010s-20s",
     "clubs": [
@@ -4641,14 +4419,13 @@
       }
     ],
     "rating": 83,
-    "fameRank": 168
+    "fameRank": 166
   },
   {
-    "cardId": "real_0169",
+    "cardId": "real_0167",
     "name": "Ashley Young",
     "nation": "England",
     "position": "DEF",
-    "debutYear": 2003,
     "eraIndex": 2,
     "eraLabel": "2000s",
     "clubs": [
@@ -4669,14 +4446,13 @@
       }
     ],
     "rating": 83,
-    "fameRank": 169
+    "fameRank": 167
   },
   {
-    "cardId": "real_0170",
+    "cardId": "real_0168",
     "name": "Shinji Kagawa",
     "nation": "Japan",
     "position": "MID",
-    "debutYear": 2006,
     "eraIndex": 3,
     "eraLabel": "2010s-20s",
     "clubs": [
@@ -4697,14 +4473,13 @@
       }
     ],
     "rating": 83,
-    "fameRank": 170
+    "fameRank": 168
   },
   {
-    "cardId": "real_0171",
+    "cardId": "real_0169",
     "name": "Marc-André ter Stegen",
     "nation": "Germany",
     "position": "GK",
-    "debutYear": 2011,
     "eraIndex": 3,
     "eraLabel": "2010s-20s",
     "clubs": [
@@ -4725,14 +4500,13 @@
       }
     ],
     "rating": 83,
-    "fameRank": 171
+    "fameRank": 169
   },
   {
-    "cardId": "real_0172",
+    "cardId": "real_0170",
     "name": "Harry Maguire",
     "nation": "England",
     "position": "DEF",
-    "debutYear": 2011,
     "eraIndex": 3,
     "eraLabel": "2010s-20s",
     "clubs": [
@@ -4753,14 +4527,13 @@
       }
     ],
     "rating": 83,
-    "fameRank": 172
+    "fameRank": 170
   },
   {
-    "cardId": "real_0173",
+    "cardId": "real_0171",
     "name": "Frank Rijkaard",
     "nation": "Netherlands",
     "position": "MID",
-    "debutYear": 1980,
     "eraIndex": 1,
     "eraLabel": "1980s-90s",
     "clubs": [
@@ -4780,15 +4553,14 @@
         "fullName": "Real Zaragoza"
       }
     ],
-    "rating": 82,
-    "fameRank": 173
+    "rating": 83,
+    "fameRank": 171
   },
   {
-    "cardId": "real_0174",
+    "cardId": "real_0172",
     "name": "Nicolas Anelka",
     "nation": "France",
     "position": "ATT",
-    "debutYear": 1996,
     "eraIndex": 2,
     "eraLabel": "2000s",
     "clubs": [
@@ -4808,15 +4580,14 @@
         "fullName": "Manchester City F.C."
       }
     ],
-    "rating": 82,
-    "fameRank": 174
+    "rating": 83,
+    "fameRank": 172
   },
   {
-    "cardId": "real_0175",
+    "cardId": "real_0173",
     "name": "Leonardo Bonucci",
     "nation": "Italy",
     "position": "DEF",
-    "debutYear": 2005,
     "eraIndex": 3,
     "eraLabel": "2010s-20s",
     "clubs": [
@@ -4837,14 +4608,13 @@
       }
     ],
     "rating": 82,
-    "fameRank": 175
+    "fameRank": 173
   },
   {
-    "cardId": "real_0176",
+    "cardId": "real_0174",
     "name": "Dunga",
     "nation": "Brazil",
     "position": "MID",
-    "debutYear": 1980,
     "eraIndex": 1,
     "eraLabel": "1980s-90s",
     "clubs": [
@@ -4865,14 +4635,13 @@
       }
     ],
     "rating": 82,
-    "fameRank": 176
+    "fameRank": 174
   },
   {
-    "cardId": "real_0177",
+    "cardId": "real_0175",
     "name": "Klaas-Jan Huntelaar",
     "nation": "Netherlands",
     "position": "ATT",
-    "debutYear": 2002,
     "eraIndex": 2,
     "eraLabel": "2000s",
     "clubs": [
@@ -4893,14 +4662,13 @@
       }
     ],
     "rating": 82,
-    "fameRank": 177
+    "fameRank": 175
   },
   {
-    "cardId": "real_0178",
+    "cardId": "real_0176",
     "name": "Emmanuel Adebayor",
     "nation": "Togo",
     "position": "ATT",
-    "debutYear": 2001,
     "eraIndex": 2,
     "eraLabel": "2000s",
     "clubs": [
@@ -4921,14 +4689,13 @@
       }
     ],
     "rating": 82,
-    "fameRank": 178
+    "fameRank": 176
   },
   {
-    "cardId": "real_0179",
+    "cardId": "real_0177",
     "name": "Álvaro Morata",
     "nation": "Spain",
     "position": "ATT",
-    "debutYear": 2010,
     "eraIndex": 3,
     "eraLabel": "2010s-20s",
     "clubs": [
@@ -4949,14 +4716,13 @@
       }
     ],
     "rating": 82,
-    "fameRank": 179
+    "fameRank": 177
   },
   {
-    "cardId": "real_0180",
+    "cardId": "real_0178",
     "name": "Deco",
     "nation": "Portugal",
     "position": "MID",
-    "debutYear": 1995,
     "eraIndex": 2,
     "eraLabel": "2000s",
     "clubs": [
@@ -4977,14 +4743,13 @@
       }
     ],
     "rating": 82,
-    "fameRank": 180
+    "fameRank": 178
   },
   {
-    "cardId": "real_0181",
+    "cardId": "real_0179",
     "name": "Edin Džeko",
     "nation": "Bosnia and Herzegovina",
     "position": "ATT",
-    "debutYear": 2003,
     "eraIndex": 2,
     "eraLabel": "2000s",
     "clubs": [
@@ -5005,14 +4770,13 @@
       }
     ],
     "rating": 82,
-    "fameRank": 181
+    "fameRank": 179
   },
   {
-    "cardId": "real_0182",
+    "cardId": "real_0180",
     "name": "Javier Hernández",
     "nation": "Mexico",
     "position": "ATT",
-    "debutYear": 2006,
     "eraIndex": 3,
     "eraLabel": "2010s-20s",
     "clubs": [
@@ -5033,14 +4797,13 @@
       }
     ],
     "rating": 82,
-    "fameRank": 182
+    "fameRank": 180
   },
   {
-    "cardId": "real_0183",
+    "cardId": "real_0181",
     "name": "Gabriel Batistuta",
     "nation": "Argentina",
     "position": "ATT",
-    "debutYear": 1988,
     "eraIndex": 1,
     "eraLabel": "1980s-90s",
     "clubs": [
@@ -5061,14 +4824,13 @@
       }
     ],
     "rating": 82,
-    "fameRank": 183
+    "fameRank": 181
   },
   {
-    "cardId": "real_0184",
+    "cardId": "real_0182",
     "name": "Mario Kempes",
     "nation": "Argentina",
     "position": "ATT",
-    "debutYear": 1970,
     "eraIndex": 0,
     "eraLabel": "≤70s",
     "clubs": [
@@ -5089,16 +4851,15 @@
       }
     ],
     "rating": 82,
-    "fameRank": 184
+    "fameRank": 182
   },
   {
-    "cardId": "real_0185",
+    "cardId": "real_0183",
     "name": "David Trezeguet",
     "nation": "France",
     "position": "ATT",
-    "debutYear": 1994,
-    "eraIndex": 1,
-    "eraLabel": "1980s-90s",
+    "eraIndex": 2,
+    "eraLabel": "2000s",
     "clubs": [
       {
         "tag": "juventus",
@@ -5117,14 +4878,13 @@
       }
     ],
     "rating": 82,
-    "fameRank": 185
+    "fameRank": 183
   },
   {
-    "cardId": "real_0186",
+    "cardId": "real_0184",
     "name": "Memphis Depay",
     "nation": "Netherlands",
     "position": "ATT",
-    "debutYear": 2011,
     "eraIndex": 3,
     "eraLabel": "2010s-20s",
     "clubs": [
@@ -5145,14 +4905,13 @@
       }
     ],
     "rating": 82,
-    "fameRank": 186
+    "fameRank": 184
   },
   {
-    "cardId": "real_0187",
+    "cardId": "real_0185",
     "name": "Patrice Evra",
     "nation": "France",
     "position": "DEF",
-    "debutYear": 1998,
     "eraIndex": 2,
     "eraLabel": "2000s",
     "clubs": [
@@ -5173,14 +4932,13 @@
       }
     ],
     "rating": 82,
-    "fameRank": 187
+    "fameRank": 185
   },
   {
-    "cardId": "real_0188",
+    "cardId": "real_0186",
     "name": "Christian Eriksen",
     "nation": "Denmark",
     "position": "MID",
-    "debutYear": 2010,
     "eraIndex": 3,
     "eraLabel": "2010s-20s",
     "clubs": [
@@ -5200,15 +4958,14 @@
         "fullName": "AFC Ajax"
       }
     ],
-    "rating": 81,
-    "fameRank": 188
+    "rating": 82,
+    "fameRank": 186
   },
   {
-    "cardId": "real_0189",
+    "cardId": "real_0187",
     "name": "André Schürrle",
     "nation": "Germany",
     "position": "ATT",
-    "debutYear": 2009,
     "eraIndex": 3,
     "eraLabel": "2010s-20s",
     "clubs": [
@@ -5228,15 +4985,14 @@
         "fullName": "1. FSV Mainz 05"
       }
     ],
-    "rating": 81,
-    "fameRank": 189
+    "rating": 82,
+    "fameRank": 187
   },
   {
-    "cardId": "real_0190",
+    "cardId": "real_0188",
     "name": "Hulk",
     "nation": "Brazil",
     "position": "MID",
-    "debutYear": 2004,
     "eraIndex": 2,
     "eraLabel": "2000s",
     "clubs": [
@@ -5257,14 +5013,13 @@
       }
     ],
     "rating": 81,
-    "fameRank": 190
+    "fameRank": 188
   },
   {
-    "cardId": "real_0191",
+    "cardId": "real_0189",
     "name": "Filippo Inzaghi",
     "nation": "Italy",
     "position": "ATT",
-    "debutYear": 1991,
     "eraIndex": 1,
     "eraLabel": "1980s-90s",
     "clubs": [
@@ -5285,14 +5040,13 @@
       }
     ],
     "rating": 81,
-    "fameRank": 191
+    "fameRank": 189
   },
   {
-    "cardId": "real_0192",
+    "cardId": "real_0190",
     "name": "Samuel Umtiti",
     "nation": "France",
     "position": "DEF",
-    "debutYear": 2012,
     "eraIndex": 3,
     "eraLabel": "2010s-20s",
     "clubs": [
@@ -5313,14 +5067,13 @@
       }
     ],
     "rating": 81,
-    "fameRank": 192
+    "fameRank": 190
   },
   {
-    "cardId": "real_0193",
+    "cardId": "real_0191",
     "name": "Joshua Kimmich",
     "nation": "Germany",
     "position": "MID",
-    "debutYear": 2013,
     "eraIndex": 3,
     "eraLabel": "2010s-20s",
     "clubs": [
@@ -5336,14 +5089,13 @@
       }
     ],
     "rating": 81,
-    "fameRank": 193
+    "fameRank": 191
   },
   {
-    "cardId": "real_0194",
+    "cardId": "real_0192",
     "name": "Dino Zoff",
     "nation": "Italy",
     "position": "GK",
-    "debutYear": 1961,
     "eraIndex": 0,
     "eraLabel": "≤70s",
     "clubs": [
@@ -5364,14 +5116,13 @@
       }
     ],
     "rating": 81,
-    "fameRank": 194
+    "fameRank": 192
   },
   {
-    "cardId": "real_0195",
+    "cardId": "real_0193",
     "name": "Mikel Arteta",
     "nation": "Spain",
     "position": "MID",
-    "debutYear": 2000,
     "eraIndex": 2,
     "eraLabel": "2000s",
     "clubs": [
@@ -5392,14 +5143,13 @@
       }
     ],
     "rating": 81,
-    "fameRank": 195
+    "fameRank": 193
   },
   {
-    "cardId": "real_0196",
+    "cardId": "real_0194",
     "name": "Ronald Koeman",
     "nation": "Netherlands",
     "position": "DEF",
-    "debutYear": 1980,
     "eraIndex": 1,
     "eraLabel": "1980s-90s",
     "clubs": [
@@ -5420,14 +5170,13 @@
       }
     ],
     "rating": 81,
-    "fameRank": 196
+    "fameRank": 194
   },
   {
-    "cardId": "real_0197",
+    "cardId": "real_0195",
     "name": "Éric Abidal",
     "nation": "France",
     "position": "DEF",
-    "debutYear": 1999,
     "eraIndex": 2,
     "eraLabel": "2000s",
     "clubs": [
@@ -5448,14 +5197,13 @@
       }
     ],
     "rating": 81,
-    "fameRank": 197
+    "fameRank": 195
   },
   {
-    "cardId": "real_0198",
+    "cardId": "real_0196",
     "name": "Rodri",
     "nation": "Spain",
     "position": "MID",
-    "debutYear": 2015,
     "eraIndex": 3,
     "eraLabel": "2010s-20s",
     "clubs": [
@@ -5476,14 +5224,13 @@
       }
     ],
     "rating": 81,
-    "fameRank": 198
+    "fameRank": 196
   },
   {
-    "cardId": "real_0199",
+    "cardId": "real_0197",
     "name": "Luis Enrique",
     "nation": "Spain",
     "position": "ATT",
-    "debutYear": 1989,
     "eraIndex": 1,
     "eraLabel": "1980s-90s",
     "clubs": [
@@ -5504,14 +5251,13 @@
       }
     ],
     "rating": 81,
-    "fameRank": 199
+    "fameRank": 197
   },
   {
-    "cardId": "real_0200",
+    "cardId": "real_0198",
     "name": "Yuto Nagatomo",
     "nation": "Japan",
     "position": "DEF",
-    "debutYear": 2007,
     "eraIndex": 3,
     "eraLabel": "2010s-20s",
     "clubs": [
@@ -5532,14 +5278,13 @@
       }
     ],
     "rating": 81,
-    "fameRank": 200
+    "fameRank": 198
   },
   {
-    "cardId": "real_0201",
+    "cardId": "real_0199",
     "name": "Michael Carrick",
     "nation": "England",
     "position": "MID",
-    "debutYear": 1999,
     "eraIndex": 2,
     "eraLabel": "2000s",
     "clubs": [
@@ -5560,14 +5305,13 @@
       }
     ],
     "rating": 81,
-    "fameRank": 201
+    "fameRank": 199
   },
   {
-    "cardId": "real_0202",
+    "cardId": "real_0200",
     "name": "Shinji Okazaki",
     "nation": "Japan",
     "position": "ATT",
-    "debutYear": 2005,
     "eraIndex": 3,
     "eraLabel": "2010s-20s",
     "clubs": [
@@ -5588,14 +5332,13 @@
       }
     ],
     "rating": 81,
-    "fameRank": 202
+    "fameRank": 200
   },
   {
-    "cardId": "real_0203",
+    "cardId": "real_0201",
     "name": "Park Ji-sung",
     "nation": "South Korea",
     "position": "MID",
-    "debutYear": 2000,
     "eraIndex": 2,
     "eraLabel": "2000s",
     "clubs": [
@@ -5616,14 +5359,13 @@
       }
     ],
     "rating": 81,
-    "fameRank": 203
+    "fameRank": 201
   },
   {
-    "cardId": "real_0204",
+    "cardId": "real_0202",
     "name": "Jordan Pickford",
     "nation": "England",
     "position": "GK",
-    "debutYear": 2011,
     "eraIndex": 3,
     "eraLabel": "2010s-20s",
     "clubs": [
@@ -5644,14 +5386,13 @@
       }
     ],
     "rating": 81,
-    "fameRank": 204
+    "fameRank": 202
   },
   {
-    "cardId": "real_0205",
+    "cardId": "real_0203",
     "name": "Radamel Falcao",
     "nation": "Colombia",
     "position": "ATT",
-    "debutYear": 2005,
     "eraIndex": 3,
     "eraLabel": "2010s-20s",
     "clubs": [
@@ -5671,15 +5412,14 @@
         "fullName": "Rayo Vallecano"
       }
     ],
-    "rating": 80,
-    "fameRank": 205
+    "rating": 81,
+    "fameRank": 203
   },
   {
-    "cardId": "real_0206",
+    "cardId": "real_0204",
     "name": "Rafael van der Vaart",
     "nation": "Netherlands",
     "position": "MID",
-    "debutYear": 2000,
     "eraIndex": 2,
     "eraLabel": "2000s",
     "clubs": [
@@ -5699,17 +5439,16 @@
         "fullName": "Tottenham Hotspur F.C."
       }
     ],
-    "rating": 80,
-    "fameRank": 206
+    "rating": 81,
+    "fameRank": 204
   },
   {
-    "cardId": "real_0207",
+    "cardId": "real_0205",
     "name": "John Obi Mikel",
     "nation": "Nigeria",
     "position": "MID",
-    "debutYear": 2004,
-    "eraIndex": 2,
-    "eraLabel": "2000s",
+    "eraIndex": 3,
+    "eraLabel": "2010s-20s",
     "clubs": [
       {
         "tag": "chelsea-f-c",
@@ -5728,14 +5467,13 @@
       }
     ],
     "rating": 80,
-    "fameRank": 207
+    "fameRank": 205
   },
   {
-    "cardId": "real_0208",
+    "cardId": "real_0206",
     "name": "Vincent Kompany",
     "nation": "Belgium",
     "position": "DEF",
-    "debutYear": 2003,
     "eraIndex": 2,
     "eraLabel": "2000s",
     "clubs": [
@@ -5756,14 +5494,13 @@
       }
     ],
     "rating": 80,
-    "fameRank": 208
+    "fameRank": 206
   },
   {
-    "cardId": "real_0209",
+    "cardId": "real_0207",
     "name": "Diego Simeone",
     "nation": "Argentina",
     "position": "MID",
-    "debutYear": 1987,
     "eraIndex": 1,
     "eraLabel": "1980s-90s",
     "clubs": [
@@ -5784,14 +5521,13 @@
       }
     ],
     "rating": 80,
-    "fameRank": 209
+    "fameRank": 207
   },
   {
-    "cardId": "real_0210",
+    "cardId": "real_0208",
     "name": "Dirk Kuyt",
     "nation": "Netherlands",
     "position": "ATT",
-    "debutYear": 1998,
     "eraIndex": 2,
     "eraLabel": "2000s",
     "clubs": [
@@ -5812,14 +5548,13 @@
       }
     ],
     "rating": 80,
-    "fameRank": 210
+    "fameRank": 208
   },
   {
-    "cardId": "real_0211",
+    "cardId": "real_0209",
     "name": "Theo Walcott",
     "nation": "England",
     "position": "ATT",
-    "debutYear": 2005,
     "eraIndex": 3,
     "eraLabel": "2010s-20s",
     "clubs": [
@@ -5840,14 +5575,13 @@
       }
     ],
     "rating": 80,
-    "fameRank": 211
+    "fameRank": 209
   },
   {
-    "cardId": "real_0212",
+    "cardId": "real_0210",
     "name": "Julian Draxler",
     "nation": "Germany",
     "position": "MID",
-    "debutYear": 2011,
     "eraIndex": 3,
     "eraLabel": "2010s-20s",
     "clubs": [
@@ -5868,14 +5602,13 @@
       }
     ],
     "rating": 80,
-    "fameRank": 212
+    "fameRank": 210
   },
   {
-    "cardId": "real_0213",
+    "cardId": "real_0211",
     "name": "David Alaba",
     "nation": "Austria",
     "position": "DEF",
-    "debutYear": 2010,
     "eraIndex": 3,
     "eraLabel": "2010s-20s",
     "clubs": [
@@ -5896,14 +5629,13 @@
       }
     ],
     "rating": 80,
-    "fameRank": 213
+    "fameRank": 211
   },
   {
-    "cardId": "real_0214",
+    "cardId": "real_0212",
     "name": "Dejan Lovren",
     "nation": "Croatia",
     "position": "DEF",
-    "debutYear": 2006,
     "eraIndex": 3,
     "eraLabel": "2010s-20s",
     "clubs": [
@@ -5924,14 +5656,13 @@
       }
     ],
     "rating": 80,
-    "fameRank": 214
+    "fameRank": 212
   },
   {
-    "cardId": "real_0215",
+    "cardId": "real_0213",
     "name": "Jamie Vardy",
     "nation": "England",
     "position": "ATT",
-    "debutYear": 2007,
     "eraIndex": 3,
     "eraLabel": "2010s-20s",
     "clubs": [
@@ -5952,14 +5683,13 @@
       }
     ],
     "rating": 80,
-    "fameRank": 215
+    "fameRank": 213
   },
   {
-    "cardId": "real_0216",
+    "cardId": "real_0214",
     "name": "Takumi Minamino",
     "nation": "Japan",
     "position": "MID",
-    "debutYear": 2012,
     "eraIndex": 3,
     "eraLabel": "2010s-20s",
     "clubs": [
@@ -5980,14 +5710,13 @@
       }
     ],
     "rating": 80,
-    "fameRank": 216
+    "fameRank": 214
   },
   {
-    "cardId": "real_0217",
+    "cardId": "real_0215",
     "name": "İlkay Gündoğan",
     "nation": "Germany",
     "position": "MID",
-    "debutYear": 2009,
     "eraIndex": 3,
     "eraLabel": "2010s-20s",
     "clubs": [
@@ -6008,14 +5737,13 @@
       }
     ],
     "rating": 80,
-    "fameRank": 217
+    "fameRank": 215
   },
   {
-    "cardId": "real_0218",
+    "cardId": "real_0216",
     "name": "Ole Gunnar Solskjær",
     "nation": "Norway",
     "position": "ATT",
-    "debutYear": 1990,
     "eraIndex": 1,
     "eraLabel": "1980s-90s",
     "clubs": [
@@ -6036,14 +5764,13 @@
       }
     ],
     "rating": 80,
-    "fameRank": 218
+    "fameRank": 216
   },
   {
-    "cardId": "real_0219",
+    "cardId": "real_0217",
     "name": "Gheorghe Hagi",
     "nation": "Romania",
     "position": "MID",
-    "debutYear": 1982,
     "eraIndex": 1,
     "eraLabel": "1980s-90s",
     "clubs": [
@@ -6063,15 +5790,14 @@
         "fullName": "FCSB"
       }
     ],
-    "rating": 79,
-    "fameRank": 219
+    "rating": 80,
+    "fameRank": 217
   },
   {
-    "cardId": "real_0220",
+    "cardId": "real_0218",
     "name": "César Azpilicueta",
     "nation": "Spain",
     "position": "DEF",
-    "debutYear": 2007,
     "eraIndex": 3,
     "eraLabel": "2010s-20s",
     "clubs": [
@@ -6091,15 +5817,14 @@
         "fullName": "Olympique de Marseille"
       }
     ],
-    "rating": 79,
-    "fameRank": 220
+    "rating": 80,
+    "fameRank": 218
   },
   {
-    "cardId": "real_0221",
+    "cardId": "real_0219",
     "name": "Bruno Fernandes",
     "nation": "Portugal",
     "position": "MID",
-    "debutYear": 2012,
     "eraIndex": 3,
     "eraLabel": "2010s-20s",
     "clubs": [
@@ -6120,14 +5845,13 @@
       }
     ],
     "rating": 79,
-    "fameRank": 221
+    "fameRank": 219
   },
   {
-    "cardId": "real_0222",
+    "cardId": "real_0220",
     "name": "Jens Lehmann",
     "nation": "Germany",
     "position": "GK",
-    "debutYear": 1988,
     "eraIndex": 1,
     "eraLabel": "1980s-90s",
     "clubs": [
@@ -6148,14 +5872,13 @@
       }
     ],
     "rating": 79,
-    "fameRank": 222
+    "fameRank": 220
   },
   {
-    "cardId": "real_0223",
+    "cardId": "real_0221",
     "name": "Per Mertesacker",
     "nation": "Germany",
     "position": "DEF",
-    "debutYear": 2003,
     "eraIndex": 2,
     "eraLabel": "2000s",
     "clubs": [
@@ -6176,14 +5899,13 @@
       }
     ],
     "rating": 79,
-    "fameRank": 223
+    "fameRank": 221
   },
   {
-    "cardId": "real_0224",
+    "cardId": "real_0222",
     "name": "Isco",
     "nation": "Spain",
     "position": "MID",
-    "debutYear": 2009,
     "eraIndex": 3,
     "eraLabel": "2010s-20s",
     "clubs": [
@@ -6204,14 +5926,13 @@
       }
     ],
     "rating": 79,
-    "fameRank": 224
+    "fameRank": 222
   },
   {
-    "cardId": "real_0225",
+    "cardId": "real_0223",
     "name": "Luke Shaw",
     "nation": "England",
     "position": "DEF",
-    "debutYear": 2011,
     "eraIndex": 3,
     "eraLabel": "2010s-20s",
     "clubs": [
@@ -6227,14 +5948,13 @@
       }
     ],
     "rating": 79,
-    "fameRank": 225
+    "fameRank": 223
   },
   {
-    "cardId": "real_0226",
+    "cardId": "real_0224",
     "name": "Wataru Endo",
     "nation": "Japan",
     "position": "MID",
-    "debutYear": 2010,
     "eraIndex": 3,
     "eraLabel": "2010s-20s",
     "clubs": [
@@ -6254,15 +5974,14 @@
         "fullName": "Liverpool F.C."
       }
     ],
-    "rating": 78,
-    "fameRank": 226
+    "rating": 79,
+    "fameRank": 224
   },
   {
-    "cardId": "real_0227",
+    "cardId": "real_0225",
     "name": "Dele Alli",
     "nation": "England",
     "position": "MID",
-    "debutYear": 2015,
     "eraIndex": 3,
     "eraLabel": "2010s-20s",
     "clubs": [
@@ -6282,15 +6001,14 @@
         "fullName": "Everton F.C."
       }
     ],
-    "rating": 78,
-    "fameRank": 227
+    "rating": 79,
+    "fameRank": 225
   },
   {
-    "cardId": "real_0228",
+    "cardId": "real_0226",
     "name": "Gennaro Gattuso",
     "nation": "Italy",
     "position": "MID",
-    "debutYear": 1995,
     "eraIndex": 2,
     "eraLabel": "2000s",
     "clubs": [
@@ -6311,14 +6029,13 @@
       }
     ],
     "rating": 78,
-    "fameRank": 228
+    "fameRank": 226
   },
   {
-    "cardId": "real_0229",
+    "cardId": "real_0227",
     "name": "Mauro Icardi",
     "nation": "Argentina",
     "position": "ATT",
-    "debutYear": 2012,
     "eraIndex": 3,
     "eraLabel": "2010s-20s",
     "clubs": [
@@ -6339,14 +6056,13 @@
       }
     ],
     "rating": 78,
-    "fameRank": 229
+    "fameRank": 227
   },
   {
-    "cardId": "real_0230",
+    "cardId": "real_0228",
     "name": "Karl-Heinz Rummenigge",
     "nation": "Germany",
     "position": "ATT",
-    "debutYear": 1974,
     "eraIndex": 0,
     "eraLabel": "≤70s",
     "clubs": [
@@ -6367,14 +6083,13 @@
       }
     ],
     "rating": 78,
-    "fameRank": 230
+    "fameRank": 228
   },
   {
-    "cardId": "real_0231",
+    "cardId": "real_0229",
     "name": "Pavel Nedvěd",
     "nation": "Czech Republic",
     "position": "MID",
-    "debutYear": 1989,
     "eraIndex": 1,
     "eraLabel": "1980s-90s",
     "clubs": [
@@ -6395,14 +6110,13 @@
       }
     ],
     "rating": 78,
-    "fameRank": 231
+    "fameRank": 229
   },
   {
-    "cardId": "real_0232",
+    "cardId": "real_0230",
     "name": "Antonio Valencia",
     "nation": "Ecuador",
     "position": "ATT",
-    "debutYear": 2003,
     "eraIndex": 2,
     "eraLabel": "2000s",
     "clubs": [
@@ -6423,14 +6137,13 @@
       }
     ],
     "rating": 78,
-    "fameRank": 232
+    "fameRank": 230
   },
   {
-    "cardId": "real_0233",
+    "cardId": "real_0231",
     "name": "Thiago Alcântara",
     "nation": "Spain",
     "position": "MID",
-    "debutYear": 2009,
     "eraIndex": 3,
     "eraLabel": "2010s-20s",
     "clubs": [
@@ -6451,14 +6164,13 @@
       }
     ],
     "rating": 78,
-    "fameRank": 233
+    "fameRank": 231
   },
   {
-    "cardId": "real_0234",
+    "cardId": "real_0232",
     "name": "Branislav Ivanović",
     "nation": "Serbia",
     "position": "DEF",
-    "debutYear": 2002,
     "eraIndex": 2,
     "eraLabel": "2000s",
     "clubs": [
@@ -6479,14 +6191,13 @@
       }
     ],
     "rating": 78,
-    "fameRank": 234
+    "fameRank": 232
   },
   {
-    "cardId": "real_0235",
+    "cardId": "real_0233",
     "name": "Peter Schmeichel",
     "nation": "Denmark",
     "position": "GK",
-    "debutYear": 1981,
     "eraIndex": 1,
     "eraLabel": "1980s-90s",
     "clubs": [
@@ -6507,14 +6218,13 @@
       }
     ],
     "rating": 78,
-    "fameRank": 235
+    "fameRank": 233
   },
   {
-    "cardId": "real_0236",
+    "cardId": "real_0234",
     "name": "Alberto Gilardino",
     "nation": "Italy",
     "position": "ATT",
-    "debutYear": 1999,
     "eraIndex": 2,
     "eraLabel": "2000s",
     "clubs": [
@@ -6535,14 +6245,13 @@
       }
     ],
     "rating": 78,
-    "fameRank": 236
+    "fameRank": 234
   },
   {
-    "cardId": "real_0237",
+    "cardId": "real_0235",
     "name": "Tim Cahill",
     "nation": "Australia",
     "position": "MID",
-    "debutYear": 1998,
     "eraIndex": 2,
     "eraLabel": "2000s",
     "clubs": [
@@ -6563,14 +6272,13 @@
       }
     ],
     "rating": 78,
-    "fameRank": 237
+    "fameRank": 235
   },
   {
-    "cardId": "real_0238",
+    "cardId": "real_0236",
     "name": "Ricardo Quaresma",
     "nation": "Portugal",
     "position": "ATT",
-    "debutYear": 2001,
     "eraIndex": 2,
     "eraLabel": "2000s",
     "clubs": [
@@ -6591,14 +6299,13 @@
       }
     ],
     "rating": 78,
-    "fameRank": 238
+    "fameRank": 236
   },
   {
-    "cardId": "real_0239",
+    "cardId": "real_0237",
     "name": "Davor Šuker",
     "nation": "Croatia",
     "position": "ATT",
-    "debutYear": 1984,
     "eraIndex": 1,
     "eraLabel": "1980s-90s",
     "clubs": [
@@ -6619,14 +6326,13 @@
       }
     ],
     "rating": 78,
-    "fameRank": 239
+    "fameRank": 237
   },
   {
-    "cardId": "real_0240",
+    "cardId": "real_0238",
     "name": "Samir Nasri",
     "nation": "France",
     "position": "MID",
-    "debutYear": 2004,
     "eraIndex": 2,
     "eraLabel": "2000s",
     "clubs": [
@@ -6647,14 +6353,13 @@
       }
     ],
     "rating": 78,
-    "fameRank": 240
+    "fameRank": 238
   },
   {
-    "cardId": "real_0241",
+    "cardId": "real_0239",
     "name": "Kai Havertz",
     "nation": "Germany",
     "position": "MID",
-    "debutYear": 2016,
     "eraIndex": 3,
     "eraLabel": "2010s-20s",
     "clubs": [
@@ -6675,14 +6380,13 @@
       }
     ],
     "rating": 78,
-    "fameRank": 241
+    "fameRank": 239
   },
   {
-    "cardId": "real_0242",
+    "cardId": "real_0240",
     "name": "Divock Origi",
     "nation": "Belgium",
     "position": "ATT",
-    "debutYear": 2012,
     "eraIndex": 3,
     "eraLabel": "2010s-20s",
     "clubs": [
@@ -6702,15 +6406,14 @@
         "fullName": "AC Milan"
       }
     ],
-    "rating": 77,
-    "fameRank": 242
+    "rating": 78,
+    "fameRank": 240
   },
   {
-    "cardId": "real_0243",
+    "cardId": "real_0241",
     "name": "Fábio Coentrão",
     "nation": "Portugal",
     "position": "DEF",
-    "debutYear": 2005,
     "eraIndex": 3,
     "eraLabel": "2010s-20s",
     "clubs": [
@@ -6730,15 +6433,14 @@
         "fullName": "S.L. Benfica"
       }
     ],
-    "rating": 77,
-    "fameRank": 243
+    "rating": 78,
+    "fameRank": 241
   },
   {
-    "cardId": "real_0244",
+    "cardId": "real_0242",
     "name": "Clarence Seedorf",
     "nation": "Netherlands",
     "position": "MID",
-    "debutYear": 1992,
     "eraIndex": 1,
     "eraLabel": "1980s-90s",
     "clubs": [
@@ -6759,14 +6461,13 @@
       }
     ],
     "rating": 77,
-    "fameRank": 244
+    "fameRank": 242
   },
   {
-    "cardId": "real_0245",
+    "cardId": "real_0243",
     "name": "Nacho",
     "nation": "Spain",
     "position": "DEF",
-    "debutYear": 2011,
     "eraIndex": 3,
     "eraLabel": "2010s-20s",
     "clubs": [
@@ -6782,14 +6483,13 @@
       }
     ],
     "rating": 77,
-    "fameRank": 245
+    "fameRank": 243
   },
   {
-    "cardId": "real_0246",
+    "cardId": "real_0244",
     "name": "Ricardo Carvalho",
     "nation": "Portugal",
     "position": "DEF",
-    "debutYear": 1996,
     "eraIndex": 2,
     "eraLabel": "2000s",
     "clubs": [
@@ -6810,14 +6510,13 @@
       }
     ],
     "rating": 77,
-    "fameRank": 246
+    "fameRank": 244
   },
   {
-    "cardId": "real_0247",
+    "cardId": "real_0245",
     "name": "Antonio Rüdiger",
     "nation": "Germany",
     "position": "DEF",
-    "debutYear": 2012,
     "eraIndex": 3,
     "eraLabel": "2010s-20s",
     "clubs": [
@@ -6838,14 +6537,13 @@
       }
     ],
     "rating": 77,
-    "fameRank": 247
+    "fameRank": 245
   },
   {
-    "cardId": "real_0248",
+    "cardId": "real_0246",
     "name": "Michael Essien",
     "nation": "Ghana",
     "position": "MID",
-    "debutYear": 2000,
     "eraIndex": 2,
     "eraLabel": "2000s",
     "clubs": [
@@ -6866,14 +6564,13 @@
       }
     ],
     "rating": 77,
-    "fameRank": 248
+    "fameRank": 246
   },
   {
-    "cardId": "real_0249",
+    "cardId": "real_0247",
     "name": "Freddie Ljungberg",
     "nation": "Sweden",
     "position": "ATT",
-    "debutYear": 1994,
     "eraIndex": 1,
     "eraLabel": "1980s-90s",
     "clubs": [
@@ -6894,14 +6591,13 @@
       }
     ],
     "rating": 77,
-    "fameRank": 249
+    "fameRank": 247
   },
   {
-    "cardId": "real_0250",
+    "cardId": "real_0248",
     "name": "Jakub Błaszczykowski",
     "nation": "Poland",
     "position": "MID",
-    "debutYear": 2004,
     "eraIndex": 2,
     "eraLabel": "2000s",
     "clubs": [
@@ -6922,14 +6618,13 @@
       }
     ],
     "rating": 77,
-    "fameRank": 250
+    "fameRank": 248
   },
   {
-    "cardId": "real_0251",
+    "cardId": "real_0249",
     "name": "Kevin Keegan",
     "nation": "England",
     "position": "ATT",
-    "debutYear": 1968,
     "eraIndex": 0,
     "eraLabel": "≤70s",
     "clubs": [
@@ -6950,14 +6645,13 @@
       }
     ],
     "rating": 77,
-    "fameRank": 251
+    "fameRank": 249
   },
   {
-    "cardId": "real_0252",
+    "cardId": "real_0250",
     "name": "Cafu",
     "nation": "Brazil",
     "position": "DEF",
-    "debutYear": 1990,
     "eraIndex": 1,
     "eraLabel": "1980s-90s",
     "clubs": [
@@ -6978,14 +6672,13 @@
       }
     ],
     "rating": 77,
-    "fameRank": 252
+    "fameRank": 250
   },
   {
-    "cardId": "real_0253",
+    "cardId": "real_0251",
     "name": "Júlio César",
     "nation": "Brazil",
     "position": "GK",
-    "debutYear": 1998,
     "eraIndex": 2,
     "eraLabel": "2000s",
     "clubs": [
@@ -7006,14 +6699,13 @@
       }
     ],
     "rating": 77,
-    "fameRank": 253
+    "fameRank": 251
   },
   {
-    "cardId": "real_0254",
+    "cardId": "real_0252",
     "name": "Santi Cazorla",
     "nation": "Spain",
     "position": "MID",
-    "debutYear": 2003,
     "eraIndex": 2,
     "eraLabel": "2000s",
     "clubs": [
@@ -7034,14 +6726,13 @@
       }
     ],
     "rating": 77,
-    "fameRank": 254
+    "fameRank": 252
   },
   {
-    "cardId": "real_0255",
+    "cardId": "real_0253",
     "name": "Danny Welbeck",
     "nation": "England",
     "position": "ATT",
-    "debutYear": 2008,
     "eraIndex": 3,
     "eraLabel": "2010s-20s",
     "clubs": [
@@ -7062,14 +6753,13 @@
       }
     ],
     "rating": 77,
-    "fameRank": 255
+    "fameRank": 253
   },
   {
-    "cardId": "real_0256",
+    "cardId": "real_0254",
     "name": "Bacary Sagna",
     "nation": "France",
     "position": "DEF",
-    "debutYear": 2004,
     "eraIndex": 2,
     "eraLabel": "2000s",
     "clubs": [
@@ -7089,15 +6779,14 @@
         "fullName": "Manchester City F.C."
       }
     ],
-    "rating": 76,
-    "fameRank": 256
+    "rating": 77,
+    "fameRank": 254
   },
   {
-    "cardId": "real_0257",
+    "cardId": "real_0255",
     "name": "Federico Valverde",
     "nation": "Uruguay",
     "position": "MID",
-    "debutYear": 2015,
     "eraIndex": 3,
     "eraLabel": "2010s-20s",
     "clubs": [
@@ -7117,15 +6806,14 @@
         "fullName": "Deportivo de A Coruña"
       }
     ],
-    "rating": 76,
-    "fameRank": 257
+    "rating": 77,
+    "fameRank": 255
   },
   {
-    "cardId": "real_0258",
+    "cardId": "real_0256",
     "name": "Marek Hamšík",
     "nation": "Slovakia",
     "position": "MID",
-    "debutYear": 2004,
     "eraIndex": 2,
     "eraLabel": "2000s",
     "clubs": [
@@ -7146,14 +6834,13 @@
       }
     ],
     "rating": 76,
-    "fameRank": 258
+    "fameRank": 256
   },
   {
-    "cardId": "real_0259",
+    "cardId": "real_0257",
     "name": "Gianluigi Donnarumma",
     "nation": "Italy",
     "position": "GK",
-    "debutYear": 2015,
     "eraIndex": 3,
     "eraLabel": "2010s-20s",
     "clubs": [
@@ -7174,14 +6861,13 @@
       }
     ],
     "rating": 76,
-    "fameRank": 259
+    "fameRank": 257
   },
   {
-    "cardId": "real_0260",
+    "cardId": "real_0258",
     "name": "Sergio Romero",
     "nation": "Argentina",
     "position": "GK",
-    "debutYear": 2006,
     "eraIndex": 3,
     "eraLabel": "2010s-20s",
     "clubs": [
@@ -7202,14 +6888,13 @@
       }
     ],
     "rating": 76,
-    "fameRank": 260
+    "fameRank": 258
   },
   {
-    "cardId": "real_0261",
+    "cardId": "real_0259",
     "name": "Maya Yoshida",
     "nation": "Japan",
     "position": "DEF",
-    "debutYear": 2007,
     "eraIndex": 3,
     "eraLabel": "2010s-20s",
     "clubs": [
@@ -7230,14 +6915,13 @@
       }
     ],
     "rating": 76,
-    "fameRank": 261
+    "fameRank": 259
   },
   {
-    "cardId": "real_0262",
+    "cardId": "real_0260",
     "name": "Kasper Schmeichel",
     "nation": "Denmark",
     "position": "GK",
-    "debutYear": 2005,
     "eraIndex": 3,
     "eraLabel": "2010s-20s",
     "clubs": [
@@ -7258,14 +6942,13 @@
       }
     ],
     "rating": 76,
-    "fameRank": 262
+    "fameRank": 260
   },
   {
-    "cardId": "real_0263",
+    "cardId": "real_0261",
     "name": "Kazuyoshi Miura",
     "nation": "Japan",
     "position": "ATT",
-    "debutYear": 1986,
     "eraIndex": 1,
     "eraLabel": "1980s-90s",
     "clubs": [
@@ -7286,14 +6969,13 @@
       }
     ],
     "rating": 76,
-    "fameRank": 263
+    "fameRank": 261
   },
   {
-    "cardId": "real_0264",
+    "cardId": "real_0262",
     "name": "Roberto Mancini",
     "nation": "Italy",
     "position": "ATT",
-    "debutYear": 1981,
     "eraIndex": 1,
     "eraLabel": "1980s-90s",
     "clubs": [
@@ -7314,14 +6996,13 @@
       }
     ],
     "rating": 76,
-    "fameRank": 264
+    "fameRank": 262
   },
   {
-    "cardId": "real_0265",
+    "cardId": "real_0263",
     "name": "Ansu Fati",
     "nation": "Spain",
     "position": "ATT",
-    "debutYear": 2019,
     "eraIndex": 3,
     "eraLabel": "2010s-20s",
     "clubs": [
@@ -7342,14 +7023,13 @@
       }
     ],
     "rating": 76,
-    "fameRank": 265
+    "fameRank": 263
   },
   {
-    "cardId": "real_0266",
+    "cardId": "real_0264",
     "name": "Mateo Kovačić",
     "nation": "Croatia",
     "position": "MID",
-    "debutYear": 2010,
     "eraIndex": 3,
     "eraLabel": "2010s-20s",
     "clubs": [
@@ -7370,14 +7050,13 @@
       }
     ],
     "rating": 76,
-    "fameRank": 266
+    "fameRank": 264
   },
   {
-    "cardId": "real_0267",
+    "cardId": "real_0265",
     "name": "Sócrates",
     "nation": "Brazil",
     "position": "ATT",
-    "debutYear": 1974,
     "eraIndex": 0,
     "eraLabel": "≤70s",
     "clubs": [
@@ -7398,14 +7077,13 @@
       }
     ],
     "rating": 76,
-    "fameRank": 267
+    "fameRank": 265
   },
   {
-    "cardId": "real_0268",
+    "cardId": "real_0266",
     "name": "Arda Güler",
     "nation": "Turkey",
     "position": "MID",
-    "debutYear": 2021,
     "eraIndex": 3,
     "eraLabel": "2010s-20s",
     "clubs": [
@@ -7421,14 +7099,13 @@
       }
     ],
     "rating": 76,
-    "fameRank": 268
+    "fameRank": 266
   },
   {
-    "cardId": "real_0269",
+    "cardId": "real_0267",
     "name": "Toby Alderweireld",
     "nation": "Belgium",
     "position": "DEF",
-    "debutYear": 2008,
     "eraIndex": 3,
     "eraLabel": "2010s-20s",
     "clubs": [
@@ -7449,14 +7126,13 @@
       }
     ],
     "rating": 76,
-    "fameRank": 269
+    "fameRank": 267
   },
   {
-    "cardId": "real_0270",
+    "cardId": "real_0268",
     "name": "Kevin-Prince Boateng",
     "nation": "Ghana",
     "position": "ATT",
-    "debutYear": 2005,
     "eraIndex": 3,
     "eraLabel": "2010s-20s",
     "clubs": [
@@ -7477,14 +7153,13 @@
       }
     ],
     "rating": 76,
-    "fameRank": 270
+    "fameRank": 268
   },
   {
-    "cardId": "real_0271",
+    "cardId": "real_0269",
     "name": "Leroy Sané",
     "nation": "Germany",
     "position": "ATT",
-    "debutYear": 2014,
     "eraIndex": 3,
     "eraLabel": "2010s-20s",
     "clubs": [
@@ -7505,14 +7180,13 @@
       }
     ],
     "rating": 76,
-    "fameRank": 271
+    "fameRank": 269
   },
   {
-    "cardId": "real_0272",
+    "cardId": "real_0270",
     "name": "Nicklas Bendtner",
     "nation": "Denmark",
     "position": "ATT",
-    "debutYear": 2005,
     "eraIndex": 3,
     "eraLabel": "2010s-20s",
     "clubs": [
@@ -7533,14 +7207,13 @@
       }
     ],
     "rating": 76,
-    "fameRank": 272
+    "fameRank": 270
   },
   {
-    "cardId": "real_0273",
+    "cardId": "real_0271",
     "name": "Daniele De Rossi",
     "nation": "Italy",
     "position": "MID",
-    "debutYear": 2001,
     "eraIndex": 2,
     "eraLabel": "2000s",
     "clubs": [
@@ -7556,14 +7229,13 @@
       }
     ],
     "rating": 76,
-    "fameRank": 273
+    "fameRank": 271
   },
   {
-    "cardId": "real_0274",
+    "cardId": "real_0272",
     "name": "Robbie Keane",
     "nation": "Ireland",
     "position": "ATT",
-    "debutYear": 1997,
     "eraIndex": 2,
     "eraLabel": "2000s",
     "clubs": [
@@ -7584,14 +7256,13 @@
       }
     ],
     "rating": 76,
-    "fameRank": 274
+    "fameRank": 272
   },
   {
-    "cardId": "real_0275",
+    "cardId": "real_0273",
     "name": "Joe Hart",
     "nation": "England",
     "position": "GK",
-    "debutYear": 2003,
     "eraIndex": 2,
     "eraLabel": "2000s",
     "clubs": [
@@ -7612,14 +7283,13 @@
       }
     ],
     "rating": 76,
-    "fameRank": 275
+    "fameRank": 273
   },
   {
-    "cardId": "real_0276",
+    "cardId": "real_0274",
     "name": "Leighton Baines",
     "nation": "England",
     "position": "DEF",
-    "debutYear": 2002,
     "eraIndex": 2,
     "eraLabel": "2000s",
     "clubs": [
@@ -7635,14 +7305,13 @@
       }
     ],
     "rating": 76,
-    "fameRank": 276
+    "fameRank": 274
   },
   {
-    "cardId": "real_0277",
+    "cardId": "real_0275",
     "name": "James Milner",
     "nation": "England",
     "position": "DEF",
-    "debutYear": 2002,
     "eraIndex": 2,
     "eraLabel": "2000s",
     "clubs": [
@@ -7663,14 +7332,13 @@
       }
     ],
     "rating": 76,
-    "fameRank": 277
+    "fameRank": 275
   },
   {
-    "cardId": "real_0278",
+    "cardId": "real_0276",
     "name": "Bruno Alves",
     "nation": "Portugal",
     "position": "DEF",
-    "debutYear": 2001,
     "eraIndex": 2,
     "eraLabel": "2000s",
     "clubs": [
@@ -7690,15 +7358,14 @@
         "fullName": "FC Zenit Saint Petersburg"
       }
     ],
-    "rating": 75,
-    "fameRank": 278
+    "rating": 76,
+    "fameRank": 276
   },
   {
-    "cardId": "real_0279",
+    "cardId": "real_0277",
     "name": "Marcel Desailly",
     "nation": "France",
     "position": "DEF",
-    "debutYear": 1986,
     "eraIndex": 1,
     "eraLabel": "1980s-90s",
     "clubs": [
@@ -7718,15 +7385,14 @@
         "fullName": "AC Milan"
       }
     ],
-    "rating": 75,
-    "fameRank": 279
+    "rating": 76,
+    "fameRank": 277
   },
   {
-    "cardId": "real_0280",
+    "cardId": "real_0278",
     "name": "Aleksandr Kerzhakov",
     "nation": "Russia",
     "position": "ATT",
-    "debutYear": 2001,
     "eraIndex": 2,
     "eraLabel": "2000s",
     "clubs": [
@@ -7747,14 +7413,13 @@
       }
     ],
     "rating": 75,
-    "fameRank": 280
+    "fameRank": 278
   },
   {
-    "cardId": "real_0281",
+    "cardId": "real_0279",
     "name": "Lautaro Martínez",
     "nation": "Argentina",
     "position": "ATT",
-    "debutYear": 2015,
     "eraIndex": 3,
     "eraLabel": "2010s-20s",
     "clubs": [
@@ -7770,14 +7435,13 @@
       }
     ],
     "rating": 75,
-    "fameRank": 281
+    "fameRank": 279
   },
   {
-    "cardId": "real_0282",
+    "cardId": "real_0280",
     "name": "Rivellino",
     "nation": "Brazil",
     "position": "MID",
-    "debutYear": 1965,
     "eraIndex": 0,
     "eraLabel": "≤70s",
     "clubs": [
@@ -7798,14 +7462,13 @@
       }
     ],
     "rating": 75,
-    "fameRank": 282
+    "fameRank": 280
   },
   {
-    "cardId": "real_0283",
+    "cardId": "real_0281",
     "name": "Denis Cheryshev",
     "nation": "Russia",
     "position": "ATT",
-    "debutYear": 2013,
     "eraIndex": 3,
     "eraLabel": "2010s-20s",
     "clubs": [
@@ -7826,14 +7489,13 @@
       }
     ],
     "rating": 75,
-    "fameRank": 283
+    "fameRank": 281
   },
   {
-    "cardId": "real_0284",
+    "cardId": "real_0282",
     "name": "Trent Alexander-Arnold",
     "nation": "England",
     "position": "DEF",
-    "debutYear": 2016,
     "eraIndex": 3,
     "eraLabel": "2010s-20s",
     "clubs": [
@@ -7849,14 +7511,13 @@
       }
     ],
     "rating": 75,
-    "fameRank": 284
+    "fameRank": 282
   },
   {
-    "cardId": "real_0285",
+    "cardId": "real_0283",
     "name": "Paul Breitner",
     "nation": "Germany",
     "position": "DEF",
-    "debutYear": 1970,
     "eraIndex": 0,
     "eraLabel": "≤70s",
     "clubs": [
@@ -7877,14 +7538,13 @@
       }
     ],
     "rating": 75,
-    "fameRank": 285
+    "fameRank": 283
   },
   {
-    "cardId": "real_0286",
+    "cardId": "real_0284",
     "name": "Fernandinho",
     "nation": "Brazil",
     "position": "MID",
-    "debutYear": 2002,
     "eraIndex": 2,
     "eraLabel": "2000s",
     "clubs": [
@@ -7905,14 +7565,13 @@
       }
     ],
     "rating": 75,
-    "fameRank": 286
+    "fameRank": 284
   },
   {
-    "cardId": "real_0287",
+    "cardId": "real_0285",
     "name": "Kyle Walker",
     "nation": "England",
     "position": "DEF",
-    "debutYear": 2008,
     "eraIndex": 3,
     "eraLabel": "2010s-20s",
     "clubs": [
@@ -7933,14 +7592,13 @@
       }
     ],
     "rating": 75,
-    "fameRank": 287
+    "fameRank": 285
   },
   {
-    "cardId": "real_0288",
+    "cardId": "real_0286",
     "name": "Axel Witsel",
     "nation": "Belgium",
     "position": "MID",
-    "debutYear": 2006,
     "eraIndex": 3,
     "eraLabel": "2010s-20s",
     "clubs": [
@@ -7961,14 +7619,13 @@
       }
     ],
     "rating": 75,
-    "fameRank": 288
+    "fameRank": 286
   },
   {
-    "cardId": "real_0289",
+    "cardId": "real_0287",
     "name": "Martin Ødegaard",
     "nation": "Norway",
     "position": "MID",
-    "debutYear": 2014,
     "eraIndex": 3,
     "eraLabel": "2010s-20s",
     "clubs": [
@@ -7989,14 +7646,13 @@
       }
     ],
     "rating": 75,
-    "fameRank": 289
+    "fameRank": 287
   },
   {
-    "cardId": "real_0290",
+    "cardId": "real_0288",
     "name": "Nicolás Otamendi",
     "nation": "Argentina",
     "position": "DEF",
-    "debutYear": 2007,
     "eraIndex": 3,
     "eraLabel": "2010s-20s",
     "clubs": [
@@ -8016,15 +7672,14 @@
         "fullName": "FC Porto"
       }
     ],
-    "rating": 74,
-    "fameRank": 290
+    "rating": 75,
+    "fameRank": 288
   },
   {
-    "cardId": "real_0291",
+    "cardId": "real_0289",
     "name": "Roy Keane",
     "nation": "Ireland",
     "position": "MID",
-    "debutYear": 1989,
     "eraIndex": 1,
     "eraLabel": "1980s-90s",
     "clubs": [
@@ -8044,15 +7699,14 @@
         "fullName": "Cobh Ramblers F.C."
       }
     ],
-    "rating": 74,
-    "fameRank": 291
+    "rating": 75,
+    "fameRank": 289
   },
   {
-    "cardId": "real_0292",
+    "cardId": "real_0290",
     "name": "Maxi Rodríguez",
     "nation": "Argentina",
     "position": "MID",
-    "debutYear": 1999,
     "eraIndex": 2,
     "eraLabel": "2000s",
     "clubs": [
@@ -8073,14 +7727,13 @@
       }
     ],
     "rating": 74,
-    "fameRank": 292
+    "fameRank": 290
   },
   {
-    "cardId": "real_0293",
+    "cardId": "real_0291",
     "name": "Fabien Barthez",
     "nation": "France",
     "position": "GK",
-    "debutYear": 1990,
     "eraIndex": 1,
     "eraLabel": "1980s-90s",
     "clubs": [
@@ -8101,14 +7754,13 @@
       }
     ],
     "rating": 74,
-    "fameRank": 293
+    "fameRank": 291
   },
   {
-    "cardId": "real_0294",
+    "cardId": "real_0292",
     "name": "Oscar",
     "nation": "Brazil",
     "position": "MID",
-    "debutYear": 2008,
     "eraIndex": 3,
     "eraLabel": "2010s-20s",
     "clubs": [
@@ -8129,14 +7781,13 @@
       }
     ],
     "rating": 74,
-    "fameRank": 294
+    "fameRank": 292
   },
   {
-    "cardId": "real_0295",
+    "cardId": "real_0293",
     "name": "Benjamin Pavard",
     "nation": "France",
     "position": "DEF",
-    "debutYear": 2015,
     "eraIndex": 3,
     "eraLabel": "2010s-20s",
     "clubs": [
@@ -8157,14 +7808,13 @@
       }
     ],
     "rating": 74,
-    "fameRank": 295
+    "fameRank": 293
   },
   {
-    "cardId": "real_0296",
+    "cardId": "real_0294",
     "name": "Marouane Fellaini",
     "nation": "Belgium",
     "position": "MID",
-    "debutYear": 2006,
     "eraIndex": 3,
     "eraLabel": "2010s-20s",
     "clubs": [
@@ -8185,14 +7835,13 @@
       }
     ],
     "rating": 74,
-    "fameRank": 296
+    "fameRank": 294
   },
   {
-    "cardId": "real_0297",
+    "cardId": "real_0295",
     "name": "Claudio Bravo",
     "nation": "Chile",
     "position": "GK",
-    "debutYear": 2001,
     "eraIndex": 2,
     "eraLabel": "2000s",
     "clubs": [
@@ -8213,14 +7862,13 @@
       }
     ],
     "rating": 74,
-    "fameRank": 297
+    "fameRank": 295
   },
   {
-    "cardId": "real_0298",
+    "cardId": "real_0296",
     "name": "Jan Vertonghen",
     "nation": "Belgium",
     "position": "DEF",
-    "debutYear": 2006,
     "eraIndex": 3,
     "eraLabel": "2010s-20s",
     "clubs": [
@@ -8241,14 +7889,13 @@
       }
     ],
     "rating": 74,
-    "fameRank": 298
+    "fameRank": 296
   },
   {
-    "cardId": "real_0299",
+    "cardId": "real_0297",
     "name": "Kolo Touré",
     "nation": "Ivory Coast",
     "position": "DEF",
-    "debutYear": 1999,
     "eraIndex": 2,
     "eraLabel": "2000s",
     "clubs": [
@@ -8269,14 +7916,13 @@
       }
     ],
     "rating": 74,
-    "fameRank": 299
+    "fameRank": 297
   },
   {
-    "cardId": "real_0300",
+    "cardId": "real_0298",
     "name": "Bernardo Silva",
     "nation": "Portugal",
     "position": "MID",
-    "debutYear": 2013,
     "eraIndex": 3,
     "eraLabel": "2010s-20s",
     "clubs": [
@@ -8297,14 +7943,13 @@
       }
     ],
     "rating": 74,
-    "fameRank": 300
+    "fameRank": 298
   },
   {
-    "cardId": "real_0301",
+    "cardId": "real_0299",
     "name": "Claudio Marchisio",
     "nation": "Italy",
     "position": "MID",
-    "debutYear": 2005,
     "eraIndex": 3,
     "eraLabel": "2010s-20s",
     "clubs": [
@@ -8325,14 +7970,13 @@
       }
     ],
     "rating": 74,
-    "fameRank": 301
+    "fameRank": 299
   },
   {
-    "cardId": "real_0302",
+    "cardId": "real_0300",
     "name": "Shunsuke Nakamura",
     "nation": "Japan",
     "position": "MID",
-    "debutYear": 1997,
     "eraIndex": 2,
     "eraLabel": "2000s",
     "clubs": [
@@ -8353,14 +7997,13 @@
       }
     ],
     "rating": 74,
-    "fameRank": 302
+    "fameRank": 300
   },
   {
-    "cardId": "real_0303",
+    "cardId": "real_0301",
     "name": "Thiago Motta",
     "nation": "Italy",
     "position": "MID",
-    "debutYear": 2001,
     "eraIndex": 2,
     "eraLabel": "2000s",
     "clubs": [
@@ -8381,14 +8024,13 @@
       }
     ],
     "rating": 74,
-    "fameRank": 303
+    "fameRank": 301
   },
   {
-    "cardId": "real_0304",
+    "cardId": "real_0302",
     "name": "Carlos Valderrama",
     "nation": "Colombia",
     "position": "MID",
-    "debutYear": 1981,
     "eraIndex": 1,
     "eraLabel": "1980s-90s",
     "clubs": [
@@ -8409,14 +8051,13 @@
       }
     ],
     "rating": 74,
-    "fameRank": 304
+    "fameRank": 302
   },
   {
-    "cardId": "real_0305",
+    "cardId": "real_0303",
     "name": "Guillermo Ochoa",
     "nation": "Mexico",
     "position": "GK",
-    "debutYear": 2003,
     "eraIndex": 2,
     "eraLabel": "2000s",
     "clubs": [
@@ -8436,15 +8077,14 @@
         "fullName": "Málaga CF"
       }
     ],
-    "rating": 73,
-    "fameRank": 305
+    "rating": 74,
+    "fameRank": 303
   },
   {
-    "cardId": "real_0306",
+    "cardId": "real_0304",
     "name": "Alessandro Nesta",
     "nation": "Italy",
     "position": "DEF",
-    "debutYear": 1993,
     "eraIndex": 1,
     "eraLabel": "1980s-90s",
     "clubs": [
@@ -8464,15 +8104,14 @@
         "fullName": "CF Montréal"
       }
     ],
-    "rating": 73,
-    "fameRank": 306
+    "rating": 74,
+    "fameRank": 304
   },
   {
-    "cardId": "real_0307",
+    "cardId": "real_0305",
     "name": "Dragan Stojković",
     "nation": "Yugoslavia",
     "position": "MID",
-    "debutYear": 1981,
     "eraIndex": 1,
     "eraLabel": "1980s-90s",
     "clubs": [
@@ -8493,14 +8132,13 @@
       }
     ],
     "rating": 73,
-    "fameRank": 307
+    "fameRank": 305
   },
   {
-    "cardId": "real_0308",
+    "cardId": "real_0306",
     "name": "Emre Can",
     "nation": "Germany",
     "position": "MID",
-    "debutYear": 2012,
     "eraIndex": 3,
     "eraLabel": "2010s-20s",
     "clubs": [
@@ -8521,14 +8159,13 @@
       }
     ],
     "rating": 73,
-    "fameRank": 308
+    "fameRank": 306
   },
   {
-    "cardId": "real_0309",
+    "cardId": "real_0307",
     "name": "Tomáš Rosický",
     "nation": "Czech Republic",
     "position": "MID",
-    "debutYear": 1998,
     "eraIndex": 2,
     "eraLabel": "2000s",
     "clubs": [
@@ -8549,14 +8186,13 @@
       }
     ],
     "rating": 73,
-    "fameRank": 309
+    "fameRank": 307
   },
   {
-    "cardId": "real_0310",
+    "cardId": "real_0308",
     "name": "Kepa Arrizabalaga",
     "nation": "Spain",
     "position": "GK",
-    "debutYear": 2011,
     "eraIndex": 3,
     "eraLabel": "2010s-20s",
     "clubs": [
@@ -8577,14 +8213,13 @@
       }
     ],
     "rating": 73,
-    "fameRank": 310
+    "fameRank": 308
   },
   {
-    "cardId": "real_0311",
+    "cardId": "real_0309",
     "name": "Hakim Ziyech",
     "nation": "Morocco",
     "position": "MID",
-    "debutYear": 2012,
     "eraIndex": 3,
     "eraLabel": "2010s-20s",
     "clubs": [
@@ -8605,14 +8240,13 @@
       }
     ],
     "rating": 73,
-    "fameRank": 311
+    "fameRank": 309
   },
   {
-    "cardId": "real_0312",
+    "cardId": "real_0310",
     "name": "Emiliano Martínez",
     "nation": "Argentina",
     "position": "GK",
-    "debutYear": 2010,
     "eraIndex": 3,
     "eraLabel": "2010s-20s",
     "clubs": [
@@ -8633,14 +8267,13 @@
       }
     ],
     "rating": 73,
-    "fameRank": 312
+    "fameRank": 310
   },
   {
-    "cardId": "real_0313",
+    "cardId": "real_0311",
     "name": "Dimitri Payet",
     "nation": "France",
     "position": "MID",
-    "debutYear": 2004,
     "eraIndex": 2,
     "eraLabel": "2000s",
     "clubs": [
@@ -8660,15 +8293,14 @@
         "fullName": "West Ham United F.C."
       }
     ],
-    "rating": 72,
-    "fameRank": 313
+    "rating": 73,
+    "fameRank": 311
   },
   {
-    "cardId": "real_0314",
+    "cardId": "real_0312",
     "name": "Granit Xhaka",
     "nation": "Switzerland",
     "position": "MID",
-    "debutYear": 2010,
     "eraIndex": 3,
     "eraLabel": "2010s-20s",
     "clubs": [
@@ -8688,15 +8320,14 @@
         "fullName": "Bayer 04 Leverkusen"
       }
     ],
-    "rating": 72,
-    "fameRank": 314
+    "rating": 73,
+    "fameRank": 312
   },
   {
-    "cardId": "real_0315",
+    "cardId": "real_0313",
     "name": "Andrea Barzagli",
     "nation": "Italy",
     "position": "DEF",
-    "debutYear": 1998,
     "eraIndex": 2,
     "eraLabel": "2000s",
     "clubs": [
@@ -8717,14 +8348,13 @@
       }
     ],
     "rating": 72,
-    "fameRank": 315
+    "fameRank": 313
   },
   {
-    "cardId": "real_0316",
+    "cardId": "real_0314",
     "name": "Mark van Bommel",
     "nation": "Netherlands",
     "position": "MID",
-    "debutYear": 1999,
     "eraIndex": 2,
     "eraLabel": "2000s",
     "clubs": [
@@ -8745,14 +8375,13 @@
       }
     ],
     "rating": 72,
-    "fameRank": 316
+    "fameRank": 314
   },
   {
-    "cardId": "real_0317",
+    "cardId": "real_0315",
     "name": "Andreas Brehme",
     "nation": "Germany",
     "position": "DEF",
-    "debutYear": 1978,
     "eraIndex": 1,
     "eraLabel": "1980s-90s",
     "clubs": [
@@ -8762,25 +8391,24 @@
         "fullName": "1. FC Kaiserslautern"
       },
       {
-        "tag": "germany-olympic-team",
-        "displayCode": "GER",
-        "fullName": "Germany Olympic football team"
-      },
-      {
         "tag": "inter-milan",
         "displayCode": "INT",
         "fullName": "Inter Milan"
+      },
+      {
+        "tag": "bayern-munich",
+        "displayCode": "BAY",
+        "fullName": "FC Bayern Munich"
       }
     ],
     "rating": 72,
-    "fameRank": 317
+    "fameRank": 315
   },
   {
-    "cardId": "real_0318",
+    "cardId": "real_0316",
     "name": "Giovanni van Bronckhorst",
     "nation": "Netherlands",
     "position": "DEF",
-    "debutYear": 1993,
     "eraIndex": 1,
     "eraLabel": "1980s-90s",
     "clubs": [
@@ -8801,14 +8429,13 @@
       }
     ],
     "rating": 72,
-    "fameRank": 318
+    "fameRank": 316
   },
   {
-    "cardId": "real_0319",
+    "cardId": "real_0317",
     "name": "Lorenzo Insigne",
     "nation": "Italy",
     "position": "MID",
-    "debutYear": 2009,
     "eraIndex": 3,
     "eraLabel": "2010s-20s",
     "clubs": [
@@ -8829,14 +8456,13 @@
       }
     ],
     "rating": 72,
-    "fameRank": 319
+    "fameRank": 317
   },
   {
-    "cardId": "real_0320",
+    "cardId": "real_0318",
     "name": "Marco Materazzi",
     "nation": "Italy",
     "position": "DEF",
-    "debutYear": 1990,
     "eraIndex": 1,
     "eraLabel": "1980s-90s",
     "clubs": [
@@ -8857,14 +8483,13 @@
       }
     ],
     "rating": 72,
-    "fameRank": 320
+    "fameRank": 318
   },
   {
-    "cardId": "real_0321",
+    "cardId": "real_0319",
     "name": "Rafael Márquez",
     "nation": "Mexico",
     "position": "DEF",
-    "debutYear": 1996,
     "eraIndex": 2,
     "eraLabel": "2000s",
     "clubs": [
@@ -8885,14 +8510,13 @@
       }
     ],
     "rating": 72,
-    "fameRank": 321
+    "fameRank": 319
   },
   {
-    "cardId": "real_0322",
+    "cardId": "real_0320",
     "name": "Adrien Rabiot",
     "nation": "France",
     "position": "MID",
-    "debutYear": 2012,
     "eraIndex": 3,
     "eraLabel": "2010s-20s",
     "clubs": [
@@ -8913,14 +8537,13 @@
       }
     ],
     "rating": 72,
-    "fameRank": 322
+    "fameRank": 320
   },
   {
-    "cardId": "real_0323",
+    "cardId": "real_0321",
     "name": "Blaise Matuidi",
     "nation": "France",
     "position": "MID",
-    "debutYear": 2004,
     "eraIndex": 2,
     "eraLabel": "2000s",
     "clubs": [
@@ -8941,14 +8564,13 @@
       }
     ],
     "rating": 72,
-    "fameRank": 323
+    "fameRank": 321
   },
   {
-    "cardId": "real_0324",
+    "cardId": "real_0322",
     "name": "Just Fontaine",
     "nation": "France",
     "position": "ATT",
-    "debutYear": 1950,
     "eraIndex": 0,
     "eraLabel": "≤70s",
     "clubs": [
@@ -8969,14 +8591,13 @@
       }
     ],
     "rating": 72,
-    "fameRank": 324
+    "fameRank": 322
   },
   {
-    "cardId": "real_0325",
+    "cardId": "real_0323",
     "name": "Juan Román Riquelme",
     "nation": "Argentina",
     "position": "MID",
-    "debutYear": 1996,
     "eraIndex": 2,
     "eraLabel": "2000s",
     "clubs": [
@@ -8996,15 +8617,14 @@
         "fullName": "FC Barcelona"
       }
     ],
-    "rating": 71,
-    "fameRank": 325
+    "rating": 72,
+    "fameRank": 323
   },
   {
-    "cardId": "real_0326",
+    "cardId": "real_0324",
     "name": "Frenkie de Jong",
     "nation": "Netherlands",
     "position": "MID",
-    "debutYear": 2016,
     "eraIndex": 3,
     "eraLabel": "2010s-20s",
     "clubs": [
@@ -9019,15 +8639,14 @@
         "fullName": "AFC Ajax"
       }
     ],
-    "rating": 71,
-    "fameRank": 326
+    "rating": 72,
+    "fameRank": 324
   },
   {
-    "cardId": "real_0327",
+    "cardId": "real_0325",
     "name": "John Stones",
     "nation": "England",
     "position": "MID",
-    "debutYear": 2011,
     "eraIndex": 3,
     "eraLabel": "2010s-20s",
     "clubs": [
@@ -9048,14 +8667,13 @@
       }
     ],
     "rating": 71,
-    "fameRank": 327
+    "fameRank": 325
   },
   {
-    "cardId": "real_0328",
+    "cardId": "real_0326",
     "name": "Rui Patrício",
     "nation": "Portugal",
     "position": "GK",
-    "debutYear": 2006,
     "eraIndex": 3,
     "eraLabel": "2010s-20s",
     "clubs": [
@@ -9076,14 +8694,13 @@
       }
     ],
     "rating": 71,
-    "fameRank": 328
+    "fameRank": 326
   },
   {
-    "cardId": "real_0329",
+    "cardId": "real_0327",
     "name": "Marco Verratti",
     "nation": "Italy",
     "position": "MID",
-    "debutYear": 2008,
     "eraIndex": 3,
     "eraLabel": "2010s-20s",
     "clubs": [
@@ -9104,14 +8721,13 @@
       }
     ],
     "rating": 71,
-    "fameRank": 329
+    "fameRank": 327
   },
   {
-    "cardId": "real_0330",
+    "cardId": "real_0328",
     "name": "Robert Pirès",
     "nation": "France",
     "position": "MID",
-    "debutYear": 1991,
     "eraIndex": 1,
     "eraLabel": "1980s-90s",
     "clubs": [
@@ -9132,14 +8748,13 @@
       }
     ],
     "rating": 71,
-    "fameRank": 330
+    "fameRank": 328
   },
   {
-    "cardId": "real_0331",
+    "cardId": "real_0329",
     "name": "Ibrahim Afellay",
     "nation": "Netherlands",
     "position": "MID",
-    "debutYear": 2004,
     "eraIndex": 2,
     "eraLabel": "2000s",
     "clubs": [
@@ -9160,14 +8775,13 @@
       }
     ],
     "rating": 71,
-    "fameRank": 331
+    "fameRank": 329
   },
   {
-    "cardId": "real_0332",
+    "cardId": "real_0330",
     "name": "Raul Meireles",
     "nation": "Portugal",
     "position": "MID",
-    "debutYear": 2001,
     "eraIndex": 2,
     "eraLabel": "2000s",
     "clubs": [
@@ -9188,14 +8802,13 @@
       }
     ],
     "rating": 71,
-    "fameRank": 332
+    "fameRank": 330
   },
   {
-    "cardId": "real_0333",
+    "cardId": "real_0331",
     "name": "Maicon",
     "nation": "Brazil",
     "position": "DEF",
-    "debutYear": 2001,
     "eraIndex": 2,
     "eraLabel": "2000s",
     "clubs": [
@@ -9216,14 +8829,13 @@
       }
     ],
     "rating": 71,
-    "fameRank": 333
+    "fameRank": 331
   },
   {
-    "cardId": "real_0334",
+    "cardId": "real_0332",
     "name": "Laurent Blanc",
     "nation": "France",
     "position": "DEF",
-    "debutYear": 1983,
     "eraIndex": 1,
     "eraLabel": "1980s-90s",
     "clubs": [
@@ -9244,14 +8856,13 @@
       }
     ],
     "rating": 71,
-    "fameRank": 334
+    "fameRank": 332
   },
   {
-    "cardId": "real_0335",
+    "cardId": "real_0333",
     "name": "Claude Makélélé",
     "nation": "France",
     "position": "MID",
-    "debutYear": 1990,
     "eraIndex": 1,
     "eraLabel": "1980s-90s",
     "clubs": [
@@ -9271,15 +8882,14 @@
         "fullName": "Paris Saint-Germain FC"
       }
     ],
-    "rating": 70,
-    "fameRank": 335
+    "rating": 71,
+    "fameRank": 333
   },
   {
-    "cardId": "real_0336",
+    "cardId": "real_0334",
     "name": "Sulley Muntari",
     "nation": "Ghana",
     "position": "DEF",
-    "debutYear": 2002,
     "eraIndex": 2,
     "eraLabel": "2000s",
     "clubs": [
@@ -9299,15 +8909,14 @@
         "fullName": "Inter Milan"
       }
     ],
-    "rating": 70,
-    "fameRank": 336
+    "rating": 71,
+    "fameRank": 334
   },
   {
-    "cardId": "real_0337",
+    "cardId": "real_0335",
     "name": "Gordon Banks",
     "nation": "England",
     "position": "GK",
-    "debutYear": 1953,
     "eraIndex": 0,
     "eraLabel": "≤70s",
     "clubs": [
@@ -9328,16 +8937,15 @@
       }
     ],
     "rating": 70,
-    "fameRank": 337
+    "fameRank": 335
   },
   {
-    "cardId": "real_0338",
+    "cardId": "real_0336",
     "name": "João Moutinho",
     "nation": "Portugal",
     "position": "MID",
-    "debutYear": 2004,
-    "eraIndex": 2,
-    "eraLabel": "2000s",
+    "eraIndex": 3,
+    "eraLabel": "2010s-20s",
     "clubs": [
       {
         "tag": "sporting-cp",
@@ -9356,14 +8964,13 @@
       }
     ],
     "rating": 70,
-    "fameRank": 338
+    "fameRank": 336
   },
   {
-    "cardId": "real_0339",
+    "cardId": "real_0337",
     "name": "Federico Chiesa",
     "nation": "Italy",
     "position": "MID",
-    "debutYear": 2016,
     "eraIndex": 3,
     "eraLabel": "2010s-20s",
     "clubs": [
@@ -9384,14 +8991,13 @@
       }
     ],
     "rating": 70,
-    "fameRank": 339
+    "fameRank": 337
   },
   {
-    "cardId": "real_0340",
+    "cardId": "real_0338",
     "name": "Declan Rice",
     "nation": "England",
     "position": "MID",
-    "debutYear": 2015,
     "eraIndex": 3,
     "eraLabel": "2010s-20s",
     "clubs": [
@@ -9407,14 +9013,13 @@
       }
     ],
     "rating": 70,
-    "fameRank": 340
+    "fameRank": 338
   },
   {
-    "cardId": "real_0341",
+    "cardId": "real_0339",
     "name": "Shinji Ono",
     "nation": "Japan",
     "position": "MID",
-    "debutYear": 1998,
     "eraIndex": 2,
     "eraLabel": "2000s",
     "clubs": [
@@ -9434,15 +9039,14 @@
         "fullName": "Hokkaido Consadole Sapporo"
       }
     ],
-    "rating": 69,
-    "fameRank": 341
+    "rating": 70,
+    "fameRank": 339
   },
   {
-    "cardId": "real_0342",
+    "cardId": "real_0340",
     "name": "Bixente Lizarazu",
     "nation": "France",
     "position": "DEF",
-    "debutYear": 1988,
     "eraIndex": 1,
     "eraLabel": "1980s-90s",
     "clubs": [
@@ -9462,15 +9066,14 @@
         "fullName": "Paris Saint-Germain FC"
       }
     ],
-    "rating": 69,
-    "fameRank": 342
+    "rating": 70,
+    "fameRank": 340
   },
   {
-    "cardId": "real_0343",
+    "cardId": "real_0341",
     "name": "Ryan Babel",
     "nation": "Netherlands",
     "position": "MID",
-    "debutYear": 2004,
     "eraIndex": 2,
     "eraLabel": "2000s",
     "clubs": [
@@ -9491,14 +9094,13 @@
       }
     ],
     "rating": 69,
-    "fameRank": 343
+    "fameRank": 341
   },
   {
-    "cardId": "real_0344",
+    "cardId": "real_0342",
     "name": "Edgar Davids",
     "nation": "Netherlands",
     "position": "MID",
-    "debutYear": 1991,
     "eraIndex": 1,
     "eraLabel": "1980s-90s",
     "clubs": [
@@ -9519,14 +9121,13 @@
       }
     ],
     "rating": 69,
-    "fameRank": 344
+    "fameRank": 342
   },
   {
-    "cardId": "real_0345",
+    "cardId": "real_0343",
     "name": "Fernando Gago",
     "nation": "Argentina",
     "position": "MID",
-    "debutYear": 2004,
     "eraIndex": 2,
     "eraLabel": "2000s",
     "clubs": [
@@ -9547,14 +9148,13 @@
       }
     ],
     "rating": 69,
-    "fameRank": 345
+    "fameRank": 343
   },
   {
-    "cardId": "real_0346",
+    "cardId": "real_0344",
     "name": "Lucas Hernández",
     "nation": "France",
     "position": "DEF",
-    "debutYear": 2014,
     "eraIndex": 3,
     "eraLabel": "2010s-20s",
     "clubs": [
@@ -9575,14 +9175,13 @@
       }
     ],
     "rating": 69,
-    "fameRank": 346
+    "fameRank": 344
   },
   {
-    "cardId": "real_0347",
+    "cardId": "real_0345",
     "name": "Rui Costa",
     "nation": "Portugal",
     "position": "MID",
-    "debutYear": 1990,
     "eraIndex": 1,
     "eraLabel": "1980s-90s",
     "clubs": [
@@ -9603,14 +9202,13 @@
       }
     ],
     "rating": 69,
-    "fameRank": 347
+    "fameRank": 345
   },
   {
-    "cardId": "real_0348",
+    "cardId": "real_0346",
     "name": "William Gallas",
     "nation": "France",
     "position": "DEF",
-    "debutYear": 1995,
     "eraIndex": 2,
     "eraLabel": "2000s",
     "clubs": [
@@ -9631,14 +9229,13 @@
       }
     ],
     "rating": 69,
-    "fameRank": 348
+    "fameRank": 346
   },
   {
-    "cardId": "real_0349",
+    "cardId": "real_0347",
     "name": "Tim Howard",
     "nation": "United States",
     "position": "GK",
-    "debutYear": 1997,
     "eraIndex": 2,
     "eraLabel": "2000s",
     "clubs": [
@@ -9659,14 +9256,13 @@
       }
     ],
     "rating": 69,
-    "fameRank": 349
+    "fameRank": 347
   },
   {
-    "cardId": "real_0350",
+    "cardId": "real_0348",
     "name": "Jan Oblak",
     "nation": "Slovenia",
     "position": "GK",
-    "debutYear": 2009,
     "eraIndex": 3,
     "eraLabel": "2010s-20s",
     "clubs": [
@@ -9687,14 +9283,13 @@
       }
     ],
     "rating": 69,
-    "fameRank": 350
+    "fameRank": 348
   },
   {
-    "cardId": "real_0351",
+    "cardId": "real_0349",
     "name": "Christian Pulisic",
     "nation": "United States",
     "position": "MID",
-    "debutYear": 2016,
     "eraIndex": 3,
     "eraLabel": "2010s-20s",
     "clubs": [
@@ -9715,14 +9310,13 @@
       }
     ],
     "rating": 69,
-    "fameRank": 351
+    "fameRank": 349
   },
   {
-    "cardId": "real_0352",
+    "cardId": "real_0350",
     "name": "Junichi Inamoto",
     "nation": "Japan",
     "position": "MID",
-    "debutYear": 1997,
     "eraIndex": 2,
     "eraLabel": "2000s",
     "clubs": [
@@ -9743,14 +9337,13 @@
       }
     ],
     "rating": 69,
-    "fameRank": 352
+    "fameRank": 350
   },
   {
-    "cardId": "real_0353",
+    "cardId": "real_0351",
     "name": "Douglas Costa",
     "nation": "Brazil",
     "position": "MID",
-    "debutYear": 2008,
     "eraIndex": 3,
     "eraLabel": "2010s-20s",
     "clubs": [
@@ -9771,14 +9364,13 @@
       }
     ],
     "rating": 69,
-    "fameRank": 353
+    "fameRank": 351
   },
   {
-    "cardId": "real_0354",
+    "cardId": "real_0352",
     "name": "Zbigniew Boniek",
     "nation": "Poland",
     "position": "ATT",
-    "debutYear": 1973,
     "eraIndex": 0,
     "eraLabel": "≤70s",
     "clubs": [
@@ -9799,14 +9391,13 @@
       }
     ],
     "rating": 69,
-    "fameRank": 354
+    "fameRank": 352
   },
   {
-    "cardId": "real_0355",
+    "cardId": "real_0353",
     "name": "Paulinho",
     "nation": "Brazil",
     "position": "MID",
-    "debutYear": 2004,
     "eraIndex": 2,
     "eraLabel": "2000s",
     "clubs": [
@@ -9827,14 +9418,40 @@
       }
     ],
     "rating": 69,
-    "fameRank": 355
+    "fameRank": 353
   },
   {
-    "cardId": "real_0356",
+    "cardId": "real_0354",
+    "name": "Hakan Çalhanoğlu",
+    "nation": "Turkey",
+    "position": "MID",
+    "eraIndex": 3,
+    "eraLabel": "2010s-20s",
+    "clubs": [
+      {
+        "tag": "inter-milan",
+        "displayCode": "INT",
+        "fullName": "Inter Milan"
+      },
+      {
+        "tag": "milan",
+        "displayCode": "MIL",
+        "fullName": "AC Milan"
+      },
+      {
+        "tag": "bayer-04-leverkusen",
+        "displayCode": "BAY2",
+        "fullName": "Bayer 04 Leverkusen"
+      }
+    ],
+    "rating": 69,
+    "fameRank": 354
+  },
+  {
+    "cardId": "real_0355",
     "name": "Raymond Kopa",
     "nation": "France",
     "position": "MID",
-    "debutYear": 1949,
     "eraIndex": 0,
     "eraLabel": "≤70s",
     "clubs": [
@@ -9854,15 +9471,14 @@
         "fullName": "Angers SCO"
       }
     ],
-    "rating": 68,
-    "fameRank": 356
+    "rating": 69,
+    "fameRank": 355
   },
   {
-    "cardId": "real_0357",
+    "cardId": "real_0356",
     "name": "Simon Mignolet",
     "nation": "Belgium",
     "position": "GK",
-    "debutYear": 2007,
     "eraIndex": 3,
     "eraLabel": "2010s-20s",
     "clubs": [
@@ -9883,14 +9499,13 @@
       }
     ],
     "rating": 68,
-    "fameRank": 357
+    "fameRank": 356
   },
   {
-    "cardId": "real_0358",
+    "cardId": "real_0357",
     "name": "Roger Milla",
     "nation": "Cameroon",
     "position": "ATT",
-    "debutYear": 1970,
     "eraIndex": 0,
     "eraLabel": "≤70s",
     "clubs": [
@@ -9911,14 +9526,13 @@
       }
     ],
     "rating": 68,
-    "fameRank": 358
+    "fameRank": 357
   },
   {
-    "cardId": "real_0359",
+    "cardId": "real_0358",
     "name": "Yuri Zhirkov",
     "nation": "Russia",
     "position": "DEF",
-    "debutYear": 2001,
     "eraIndex": 2,
     "eraLabel": "2000s",
     "clubs": [
@@ -9939,14 +9553,13 @@
       }
     ],
     "rating": 68,
-    "fameRank": 359
+    "fameRank": 358
   },
   {
-    "cardId": "real_0360",
+    "cardId": "real_0359",
     "name": "John Arne Riise",
     "nation": "Norway",
     "position": "DEF",
-    "debutYear": 1997,
     "eraIndex": 2,
     "eraLabel": "2000s",
     "clubs": [
@@ -9967,14 +9580,13 @@
       }
     ],
     "rating": 68,
-    "fameRank": 360
+    "fameRank": 359
   },
   {
-    "cardId": "real_0361",
+    "cardId": "real_0360",
     "name": "Steve Mandanda",
     "nation": "France",
     "position": "GK",
-    "debutYear": 2005,
     "eraIndex": 3,
     "eraLabel": "2010s-20s",
     "clubs": [
@@ -9995,14 +9607,13 @@
       }
     ],
     "rating": 68,
-    "fameRank": 361
+    "fameRank": 360
   },
   {
-    "cardId": "real_0362",
+    "cardId": "real_0361",
     "name": "Fernando Muslera",
     "nation": "Uruguay",
     "position": "GK",
-    "debutYear": 2004,
     "eraIndex": 2,
     "eraLabel": "2000s",
     "clubs": [
@@ -10023,14 +9634,13 @@
       }
     ],
     "rating": 68,
-    "fameRank": 362
+    "fameRank": 361
   },
   {
-    "cardId": "real_0363",
+    "cardId": "real_0362",
     "name": "Matthijs de Ligt",
     "nation": "Netherlands",
     "position": "DEF",
-    "debutYear": 2016,
     "eraIndex": 3,
     "eraLabel": "2010s-20s",
     "clubs": [
@@ -10051,14 +9661,13 @@
       }
     ],
     "rating": 68,
-    "fameRank": 363
+    "fameRank": 362
   },
   {
-    "cardId": "real_0364",
+    "cardId": "real_0363",
     "name": "Nacho Monreal",
     "nation": "Spain",
     "position": "DEF",
-    "debutYear": 2006,
     "eraIndex": 3,
     "eraLabel": "2010s-20s",
     "clubs": [
@@ -10079,16 +9688,15 @@
       }
     ],
     "rating": 68,
-    "fameRank": 364
+    "fameRank": 363
   },
   {
-    "cardId": "real_0365",
+    "cardId": "real_0364",
     "name": "David Ospina",
     "nation": "Colombia",
     "position": "GK",
-    "debutYear": 2004,
-    "eraIndex": 2,
-    "eraLabel": "2000s",
+    "eraIndex": 3,
+    "eraLabel": "2010s-20s",
     "clubs": [
       {
         "tag": "atletico-nacional",
@@ -10107,14 +9715,13 @@
       }
     ],
     "rating": 68,
-    "fameRank": 365
+    "fameRank": 364
   },
   {
-    "cardId": "real_0366",
+    "cardId": "real_0365",
     "name": "João Cancelo",
     "nation": "Portugal",
     "position": "DEF",
-    "debutYear": 2014,
     "eraIndex": 3,
     "eraLabel": "2010s-20s",
     "clubs": [
@@ -10135,14 +9742,13 @@
       }
     ],
     "rating": 68,
-    "fameRank": 366
+    "fameRank": 365
   },
   {
-    "cardId": "real_0367",
+    "cardId": "real_0366",
     "name": "Lucas Digne",
     "nation": "France",
     "position": "DEF",
-    "debutYear": 2011,
     "eraIndex": 3,
     "eraLabel": "2010s-20s",
     "clubs": [
@@ -10162,15 +9768,14 @@
         "fullName": "Lille OSC"
       }
     ],
-    "rating": 67,
-    "fameRank": 367
+    "rating": 68,
+    "fameRank": 366
   },
   {
-    "cardId": "real_0368",
+    "cardId": "real_0367",
     "name": "Daniel Passarella",
     "nation": "Argentina",
     "position": "DEF",
-    "debutYear": 1971,
     "eraIndex": 0,
     "eraLabel": "≤70s",
     "clubs": [
@@ -10191,14 +9796,13 @@
       }
     ],
     "rating": 67,
-    "fameRank": 368
+    "fameRank": 367
   },
   {
-    "cardId": "real_0369",
+    "cardId": "real_0368",
     "name": "Andreas Christensen",
     "nation": "Denmark",
     "position": "DEF",
-    "debutYear": 2014,
     "eraIndex": 3,
     "eraLabel": "2010s-20s",
     "clubs": [
@@ -10219,14 +9823,13 @@
       }
     ],
     "rating": 67,
-    "fameRank": 369
+    "fameRank": 368
   },
   {
-    "cardId": "real_0370",
+    "cardId": "real_0369",
     "name": "Daniel Agger",
     "nation": "Denmark",
     "position": "DEF",
-    "debutYear": 2004,
     "eraIndex": 2,
     "eraLabel": "2000s",
     "clubs": [
@@ -10242,14 +9845,13 @@
       }
     ],
     "rating": 67,
-    "fameRank": 370
+    "fameRank": 369
   },
   {
-    "cardId": "real_0371",
+    "cardId": "real_0370",
     "name": "Bobby Moore",
     "nation": "England",
     "position": "DEF",
-    "debutYear": 1958,
     "eraIndex": 0,
     "eraLabel": "≤70s",
     "clubs": [
@@ -10270,14 +9872,13 @@
       }
     ],
     "rating": 67,
-    "fameRank": 371
+    "fameRank": 370
   },
   {
-    "cardId": "real_0372",
+    "cardId": "real_0371",
     "name": "Simon Kjær",
     "nation": "Denmark",
     "position": "DEF",
-    "debutYear": 2007,
     "eraIndex": 3,
     "eraLabel": "2010s-20s",
     "clubs": [
@@ -10298,14 +9899,13 @@
       }
     ],
     "rating": 67,
-    "fameRank": 372
+    "fameRank": 371
   },
   {
-    "cardId": "real_0373",
+    "cardId": "real_0372",
     "name": "Aleksandar Kolarov",
     "nation": "Serbia",
     "position": "DEF",
-    "debutYear": 2004,
     "eraIndex": 2,
     "eraLabel": "2000s",
     "clubs": [
@@ -10326,14 +9926,13 @@
       }
     ],
     "rating": 67,
-    "fameRank": 373
+    "fameRank": 372
   },
   {
-    "cardId": "real_0374",
+    "cardId": "real_0373",
     "name": "Samir Handanović",
     "nation": "Slovenia",
     "position": "GK",
-    "debutYear": 2003,
     "eraIndex": 2,
     "eraLabel": "2000s",
     "clubs": [
@@ -10354,14 +9953,13 @@
       }
     ],
     "rating": 67,
-    "fameRank": 374
+    "fameRank": 373
   },
   {
-    "cardId": "real_0375",
+    "cardId": "real_0374",
     "name": "Frank de Boer",
     "nation": "Netherlands",
     "position": "DEF",
-    "debutYear": 1988,
     "eraIndex": 1,
     "eraLabel": "1980s-90s",
     "clubs": [
@@ -10382,14 +9980,13 @@
       }
     ],
     "rating": 67,
-    "fameRank": 375
+    "fameRank": 374
   },
   {
-    "cardId": "real_0376",
+    "cardId": "real_0375",
     "name": "Filipe Luís",
     "nation": "Brazil",
     "position": "DEF",
-    "debutYear": 2003,
     "eraIndex": 2,
     "eraLabel": "2000s",
     "clubs": [
@@ -10410,14 +10007,13 @@
       }
     ],
     "rating": 67,
-    "fameRank": 376
+    "fameRank": 375
   },
   {
-    "cardId": "real_0377",
+    "cardId": "real_0376",
     "name": "Marquinhos",
     "nation": "Brazil",
     "position": "DEF",
-    "debutYear": 2011,
     "eraIndex": 3,
     "eraLabel": "2010s-20s",
     "clubs": [
@@ -10438,14 +10034,13 @@
       }
     ],
     "rating": 67,
-    "fameRank": 377
+    "fameRank": 376
   },
   {
-    "cardId": "real_0378",
+    "cardId": "real_0377",
     "name": "Jules Koundé",
     "nation": "France",
     "position": "DEF",
-    "debutYear": 2017,
     "eraIndex": 3,
     "eraLabel": "2010s-20s",
     "clubs": [
@@ -10466,14 +10061,13 @@
       }
     ],
     "rating": 67,
-    "fameRank": 378
+    "fameRank": 377
   },
   {
-    "cardId": "real_0379",
+    "cardId": "real_0378",
     "name": "Juan Cuadrado",
     "nation": "Colombia",
     "position": "DEF",
-    "debutYear": 2008,
     "eraIndex": 3,
     "eraLabel": "2010s-20s",
     "clubs": [
@@ -10493,15 +10087,14 @@
         "fullName": "Udinese Calcio"
       }
     ],
-    "rating": 66,
-    "fameRank": 379
+    "rating": 67,
+    "fameRank": 378
   },
   {
-    "cardId": "real_0380",
+    "cardId": "real_0379",
     "name": "Yann Sommer",
     "nation": "Switzerland",
     "position": "GK",
-    "debutYear": 2005,
     "eraIndex": 3,
     "eraLabel": "2010s-20s",
     "clubs": [
@@ -10522,14 +10115,13 @@
       }
     ],
     "rating": 66,
-    "fameRank": 380
+    "fameRank": 379
   },
   {
-    "cardId": "real_0381",
+    "cardId": "real_0380",
     "name": "Kieran Trippier",
     "nation": "England",
     "position": "DEF",
-    "debutYear": 2009,
     "eraIndex": 3,
     "eraLabel": "2010s-20s",
     "clubs": [
@@ -10550,14 +10142,13 @@
       }
     ],
     "rating": 66,
-    "fameRank": 381
+    "fameRank": 380
   },
   {
-    "cardId": "real_0382",
+    "cardId": "real_0381",
     "name": "Lúcio",
     "nation": "Brazil",
     "position": "DEF",
-    "debutYear": 1997,
     "eraIndex": 2,
     "eraLabel": "2000s",
     "clubs": [
@@ -10578,14 +10169,13 @@
       }
     ],
     "rating": 66,
-    "fameRank": 382
+    "fameRank": 381
   },
   {
-    "cardId": "real_0383",
+    "cardId": "real_0382",
     "name": "Gianluca Zambrotta",
     "nation": "Italy",
     "position": "DEF",
-    "debutYear": 1994,
     "eraIndex": 1,
     "eraLabel": "1980s-90s",
     "clubs": [
@@ -10606,6 +10196,33 @@
       }
     ],
     "rating": 66,
+    "fameRank": 382
+  },
+  {
+    "cardId": "real_0383",
+    "name": "Dida",
+    "nation": "Brazil",
+    "position": "GK",
+    "eraIndex": 1,
+    "eraLabel": "1980s-90s",
+    "clubs": [
+      {
+        "tag": "milan",
+        "displayCode": "MIL",
+        "fullName": "AC Milan"
+      },
+      {
+        "tag": "cruzeiro-e-c",
+        "displayCode": "CRU",
+        "fullName": "Cruzeiro E.C."
+      },
+      {
+        "tag": "s-c-corinthians-paulista",
+        "displayCode": "SCC",
+        "fullName": "S.C. Corinthians Paulista"
+      }
+    ],
+    "rating": 66,
     "fameRank": 383
   },
   {
@@ -10613,7 +10230,6 @@
     "name": "Martin Škrtel",
     "nation": "Slovakia",
     "position": "DEF",
-    "debutYear": 2001,
     "eraIndex": 2,
     "eraLabel": "2000s",
     "clubs": [
@@ -10641,7 +10257,6 @@
     "name": "Walter Samuel",
     "nation": "Argentina",
     "position": "DEF",
-    "debutYear": 1996,
     "eraIndex": 2,
     "eraLabel": "2000s",
     "clubs": [
@@ -10669,7 +10284,6 @@
     "name": "Stefan de Vrij",
     "nation": "Netherlands",
     "position": "DEF",
-    "debutYear": 2009,
     "eraIndex": 3,
     "eraLabel": "2010s-20s",
     "clubs": [
@@ -10697,7 +10311,6 @@
     "name": "Peter Shilton",
     "nation": "England",
     "position": "GK",
-    "debutYear": 1966,
     "eraIndex": 0,
     "eraLabel": "≤70s",
     "clubs": [
@@ -10725,7 +10338,6 @@
     "name": "Éder Militão",
     "nation": "Brazil",
     "position": "DEF",
-    "debutYear": 2017,
     "eraIndex": 3,
     "eraLabel": "2010s-20s",
     "clubs": [
@@ -10753,7 +10365,6 @@
     "name": "Domagoj Vida",
     "nation": "Croatia",
     "position": "DEF",
-    "debutYear": 2006,
     "eraIndex": 3,
     "eraLabel": "2010s-20s",
     "clubs": [
@@ -10781,7 +10392,6 @@
     "name": "John Heitinga",
     "nation": "Netherlands",
     "position": "DEF",
-    "debutYear": 2001,
     "eraIndex": 2,
     "eraLabel": "2000s",
     "clubs": [
@@ -10809,7 +10419,6 @@
     "name": "Andrew Robertson",
     "nation": "Scotland",
     "position": "DEF",
-    "debutYear": 2012,
     "eraIndex": 3,
     "eraLabel": "2010s-20s",
     "clubs": [
@@ -10837,7 +10446,6 @@
     "name": "Nélson Semedo",
     "nation": "Portugal",
     "position": "DEF",
-    "debutYear": 2012,
     "eraIndex": 3,
     "eraLabel": "2010s-20s",
     "clubs": [
@@ -10865,7 +10473,6 @@
     "name": "Presnel Kimpembe",
     "nation": "France",
     "position": "DEF",
-    "debutYear": 2014,
     "eraIndex": 3,
     "eraLabel": "2010s-20s",
     "clubs": [
@@ -10888,7 +10495,6 @@
     "name": "Martín Cáceres",
     "nation": "Uruguay",
     "position": "DEF",
-    "debutYear": 2006,
     "eraIndex": 3,
     "eraLabel": "2010s-20s",
     "clubs": [
@@ -10916,7 +10522,6 @@
     "name": "Fernando Hierro",
     "nation": "Spain",
     "position": "DEF",
-    "debutYear": 1987,
     "eraIndex": 1,
     "eraLabel": "1980s-90s",
     "clubs": [
@@ -10944,7 +10549,6 @@
     "name": "Alphonso Davies",
     "nation": "Canada",
     "position": "DEF",
-    "debutYear": 2016,
     "eraIndex": 3,
     "eraLabel": "2010s-20s",
     "clubs": [
@@ -10967,7 +10571,6 @@
     "name": "Ibrahima Konaté",
     "nation": "France",
     "position": "DEF",
-    "debutYear": 2017,
     "eraIndex": 3,
     "eraLabel": "2010s-20s",
     "clubs": [
@@ -10995,7 +10598,6 @@
     "name": "Kalidou Koulibaly",
     "nation": "Senegal",
     "position": "DEF",
-    "debutYear": 2010,
     "eraIndex": 3,
     "eraLabel": "2010s-20s",
     "clubs": [
@@ -11023,7 +10625,6 @@
     "name": "Aymeric Laporte",
     "nation": "Spain",
     "position": "DEF",
-    "debutYear": 2010,
     "eraIndex": 3,
     "eraLabel": "2010s-20s",
     "clubs": [
@@ -11051,7 +10652,6 @@
     "name": "Reece James",
     "nation": "England",
     "position": "DEF",
-    "debutYear": 2018,
     "eraIndex": 3,
     "eraLabel": "2010s-20s",
     "clubs": [
@@ -11074,7 +10674,6 @@
     "name": "Mehdi Benatia",
     "nation": "Morocco",
     "position": "DEF",
-    "debutYear": 2005,
     "eraIndex": 3,
     "eraLabel": "2010s-20s",
     "clubs": [
@@ -11084,14 +10683,14 @@
         "fullName": "Juventus FC"
       },
       {
-        "tag": "olympique-marseille",
-        "displayCode": "OLY",
-        "fullName": "Olympique de Marseille"
-      },
-      {
         "tag": "bayern-munich",
         "displayCode": "BAY",
         "fullName": "FC Bayern Munich"
+      },
+      {
+        "tag": "udinese-calcio",
+        "displayCode": "UDI",
+        "fullName": "Udinese Calcio"
       }
     ],
     "rating": 64,
@@ -11102,7 +10701,6 @@
     "name": "Guido Buchwald",
     "nation": "Germany",
     "position": "DEF",
-    "debutYear": 1979,
     "eraIndex": 1,
     "eraLabel": "1980s-90s",
     "clubs": [
@@ -11130,7 +10728,6 @@
     "name": "Roberto Ayala",
     "nation": "Argentina",
     "position": "DEF",
-    "debutYear": 1991,
     "eraIndex": 1,
     "eraLabel": "1980s-90s",
     "clubs": [
@@ -11158,7 +10755,6 @@
     "name": "Philippe Mexès",
     "nation": "France",
     "position": "DEF",
-    "debutYear": 1999,
     "eraIndex": 2,
     "eraLabel": "2000s",
     "clubs": [
@@ -11186,7 +10782,6 @@
     "name": "Takehiro Tomiyasu",
     "nation": "Japan",
     "position": "DEF",
-    "debutYear": 2015,
     "eraIndex": 3,
     "eraLabel": "2010s-20s",
     "clubs": [
@@ -11214,7 +10809,6 @@
     "name": "Lucas Neill",
     "nation": "Australia",
     "position": "DEF",
-    "debutYear": 1995,
     "eraIndex": 2,
     "eraLabel": "2000s",
     "clubs": [
@@ -11242,7 +10836,6 @@
     "name": "Daniel Van Buyten",
     "nation": "Belgium",
     "position": "DEF",
-    "debutYear": 1998,
     "eraIndex": 2,
     "eraLabel": "2000s",
     "clubs": [
@@ -11270,7 +10863,6 @@
     "name": "Niklas Süle",
     "nation": "Germany",
     "position": "DEF",
-    "debutYear": 2013,
     "eraIndex": 3,
     "eraLabel": "2010s-20s",
     "clubs": [
@@ -11298,7 +10890,6 @@
     "name": "Christian Panucci",
     "nation": "Italy",
     "position": "DEF",
-    "debutYear": 1991,
     "eraIndex": 1,
     "eraLabel": "1980s-90s",
     "clubs": [
@@ -11326,7 +10917,6 @@
     "name": "Alex Song",
     "nation": "Cameroon",
     "position": "DEF",
-    "debutYear": 2004,
     "eraIndex": 2,
     "eraLabel": "2000s",
     "clubs": [
@@ -11354,7 +10944,6 @@
     "name": "Sami Hyypiä",
     "nation": "Finland",
     "position": "DEF",
-    "debutYear": 1990,
     "eraIndex": 1,
     "eraLabel": "1980s-90s",
     "clubs": [
@@ -11382,7 +10971,6 @@
     "name": "Sol Campbell",
     "nation": "England",
     "position": "DEF",
-    "debutYear": 1992,
     "eraIndex": 1,
     "eraLabel": "1980s-90s",
     "clubs": [
@@ -11410,7 +10998,6 @@
     "name": "Théo Hernandez",
     "nation": "France",
     "position": "DEF",
-    "debutYear": 2016,
     "eraIndex": 3,
     "eraLabel": "2010s-20s",
     "clubs": [
@@ -11438,7 +11025,6 @@
     "name": "Siniša Mihajlović",
     "nation": "Serbia and Montenegro",
     "position": "DEF",
-    "debutYear": 1987,
     "eraIndex": 1,
     "eraLabel": "1980s-90s",
     "clubs": [
@@ -11466,7 +11052,6 @@
     "name": "Šime Vrsaljko",
     "nation": "Croatia",
     "position": "DEF",
-    "debutYear": 2009,
     "eraIndex": 3,
     "eraLabel": "2010s-20s",
     "clubs": [
@@ -11494,7 +11079,6 @@
     "name": "Jairzinho",
     "nation": "Brazil",
     "position": "ATT",
-    "debutYear": 1962,
     "eraIndex": 0,
     "eraLabel": "≤70s",
     "clubs": [
@@ -11522,7 +11106,6 @@
     "name": "Vahid Halilhodžić",
     "nation": "Yugoslavia",
     "position": "ATT",
-    "debutYear": 1971,
     "eraIndex": 0,
     "eraLabel": "≤70s",
     "clubs": [
@@ -11550,7 +11133,6 @@
     "name": "Francisco Gento",
     "nation": "Spain",
     "position": "ATT",
-    "debutYear": 1952,
     "eraIndex": 0,
     "eraLabel": "≤70s",
     "clubs": [
@@ -11578,7 +11160,6 @@
     "name": "Luis Suárez Miramontes",
     "nation": "Spain",
     "position": "MID",
-    "debutYear": 1953,
     "eraIndex": 0,
     "eraLabel": "≤70s",
     "clubs": [
@@ -11606,7 +11187,6 @@
     "name": "Allan Simonsen",
     "nation": "Denmark",
     "position": "ATT",
-    "debutYear": 1971,
     "eraIndex": 0,
     "eraLabel": "≤70s",
     "clubs": [
@@ -11634,7 +11214,6 @@
     "name": "Gaetano Scirea",
     "nation": "Italy",
     "position": "DEF",
-    "debutYear": 1972,
     "eraIndex": 0,
     "eraLabel": "≤70s",
     "clubs": [
@@ -11657,7 +11236,6 @@
     "name": "Antonín Panenka",
     "nation": "Czechoslovakia",
     "position": "MID",
-    "debutYear": 1967,
     "eraIndex": 0,
     "eraLabel": "≤70s",
     "clubs": [
@@ -11685,7 +11263,6 @@
     "name": "Claudio Gentile",
     "nation": "Italy",
     "position": "DEF",
-    "debutYear": 1971,
     "eraIndex": 0,
     "eraLabel": "≤70s",
     "clubs": [
@@ -11713,7 +11290,6 @@
     "name": "Antonio Cabrini",
     "nation": "Italy",
     "position": "DEF",
-    "debutYear": 1973,
     "eraIndex": 0,
     "eraLabel": "≤70s",
     "clubs": [
@@ -11741,7 +11317,6 @@
     "name": "Günter Netzer",
     "nation": "Germany",
     "position": "MID",
-    "debutYear": 1963,
     "eraIndex": 0,
     "eraLabel": "≤70s",
     "clubs": [
@@ -11769,7 +11344,6 @@
     "name": "Harald Schumacher",
     "nation": "Germany",
     "position": "GK",
-    "debutYear": 1972,
     "eraIndex": 0,
     "eraLabel": "≤70s",
     "clubs": [
@@ -11797,7 +11371,6 @@
     "name": "Jean Tigana",
     "nation": "France",
     "position": "MID",
-    "debutYear": 1975,
     "eraIndex": 0,
     "eraLabel": "≤70s",
     "clubs": [
@@ -11825,7 +11398,6 @@
     "name": "László Kubala",
     "nation": "Spain",
     "position": "MID",
-    "debutYear": 1944,
     "eraIndex": 0,
     "eraLabel": "≤70s",
     "clubs": [
@@ -11853,7 +11425,6 @@
     "name": "Ricardo Zamora",
     "nation": "Spain",
     "position": "GK",
-    "debutYear": 1919,
     "eraIndex": 0,
     "eraLabel": "≤70s",
     "clubs": [
@@ -11881,7 +11452,6 @@
     "name": "Jean-Marie Pfaff",
     "nation": "Belgium",
     "position": "GK",
-    "debutYear": 1973,
     "eraIndex": 0,
     "eraLabel": "≤70s",
     "clubs": [

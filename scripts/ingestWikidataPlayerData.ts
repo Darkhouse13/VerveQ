@@ -787,6 +787,14 @@ function cpIsPhantomEntity(e: ClubDictEntry): boolean {
 const cpPhantomLog: { qid: string; name: string; clubQid: string; start: string | null; end: string | null }[] = [];
 // E0.2 item 4: dual internationals the recency rule cannot separate -> owner list.
 const cpNationRulingLog: { qid: string; name: string; candidates: string[]; reason: string }[] = [];
+// E0.5 — MALFORMED NON-CLUB memberships that erased a player's EARLIEST career.
+// A P54 statement resolving to a real entity that is not a football club (a city,
+// a commune, a business, a university) is a mis-targeted membership. cpIsClubEntity
+// (E1.1) correctly refuses to tag it — but that refusal is SILENT, and when the
+// malformed statement is the EARLIEST, refusing it deletes the start of the career
+// and promotes a later transfer to sourceStartYear. Recorded here and fail-closed
+// (sourceStartYear -> null) so the card drops rather than ship a mis-bucketed year.
+const cpErasedCareerLog: { qid: string; name: string; sourceStartWas: number; malformedStarts: number[] }[] = [];
 function cpIsYouthOrReserve(e: ClubDictEntry): boolean {
   return cpIsAgeGroup(e) || cpIsReserve(e);
 }
@@ -809,9 +817,31 @@ function cpIsYouthOrReserve(e: ClubDictEntry): boolean {
 function cpCountsForDebut(e: ClubDictEntry): boolean {
   return cpIsSeniorClub(e);
 }
+// E0.5 — REPRESENTATIVE TEAMS IN THE CLUB SLOT. E2.1 found Andreas Brehme carrying
+// "Germany Olympic football team" (Q1202757, typed `national Olympic football team`)
+// as one of his three printed clubs. An Olympic side is a representative team
+// assembled for a tournament, not a club a player is transferred to — the same class
+// the nation path already excludes via CP_NT_COMPOSITE_RE's \bolympic\b. cpIsClubEntity
+// accepts it (the type contains "football team") and cpIsNationalTeam misses it (no
+// "national ... team" match on this exact string), so it slipped into the club list.
+// Excluded here so it is dropped from BOTH the printed chips and the canonical clubs:
+// unlike Benatia's Marseille (a real club with a disputed appearance, handled by an
+// owner disputed-statement record), this entity is simply not a club at all.
+//
+// MATCHED ON TYPE, NEVER LABEL. Real clubs carry "Olympic" in their NAME — Sydney
+// Olympic FC, BK Olympic, Atletico Olympic F.C. — and are typed "association football
+// club". Representative sides are typed "national Olympic football team". A label
+// regex would wrongly drop the three real clubs; the type regex catches only the
+// representative teams. (The "... Olympic football team" sides that ALSO carry
+// "national association football team" — Portugal, Colombia, etc. — are already
+// excluded by cpIsNationalTeam; this closes the gap for those typed ONLY as Olympic.)
+const CP_REPRESENTATIVE_TYPE_RE = /\bolympic\b/i;
+function cpIsRepresentativeTeam(e: ClubDictEntry): boolean {
+  return e.types.some((t) => CP_REPRESENTATIVE_TYPE_RE.test(t));
+}
 /** A club worth naming on a card: senior FIRST team only. */
 function cpIsSeniorClub(e: ClubDictEntry): boolean {
-  return cpIsClubEntity(e) && !cpIsNationalTeam(e) && !cpIsYouthOrReserve(e);
+  return cpIsClubEntity(e) && !cpIsNationalTeam(e) && !cpIsYouthOrReserve(e) && !cpIsRepresentativeTeam(e);
 }
 
 // A national team's SECOND string ("France B national football team", "England
@@ -1506,9 +1536,12 @@ interface SourcedPlayer {
   facts: {
     nation: SourcedFact<string> | null;
     position: SourcedFact<CpPosition> | null;
-    debutYear: SourcedFact<number> | null;
-    // E1.1: P569. Not a card fact — published because debutYear is DERIVED against
-    // it, so a verifier cannot re-check the debut without seeing the anchor.
+    // E0.5: earliest senior-club membership START, not a debut claim — see the
+    // derivation and cpErasedCareerLog. Renamed from debutYear across canonical,
+    // dossier and selector so no artifact publishes a debut it cannot source.
+    sourceStartYear: SourcedFact<number> | null;
+    // E1.1: P569. Not a card fact — published because sourceStartYear is DERIVED
+    // against it, so a verifier cannot re-check the value without seeing the anchor.
     birthYear: SourcedFact<number> | null;
     clubs: SourcedClub[];
   };
@@ -1540,6 +1573,7 @@ function cpEmit(write = true): { players: SourcedPlayer[]; gate: GateResult[] } 
   // cp-assert re-runs this in-process; the logs must not accumulate across passes.
   cpPhantomLog.length = 0;
   cpNationRulingLog.length = 0;
+  cpErasedCareerLog.length = 0;
   const gate = cpRunGate();
   const facts = readJson<Record<string, RawFacts>>(CP_FACTS_CACHE, {});
   const clubDict = readJson<Record<string, ClubDictEntry>>(CP_CLUBDICT_CACHE, {});
@@ -1673,7 +1707,13 @@ function cpEmit(write = true): { players: SourcedPlayer[]; gate: GateResult[] } 
         return seniorFrom === null || s >= seniorFrom;
       })
       .map((m) => startOf(m) as number);
-    const debutYear: SourcedFact<number> | null =
+    // E0.5 — RENAMED debutYear -> sourceStartYear. This is the earliest senior-club
+    // P54 membership START (age >= 16, first teams only) — NOT a competitive-debut
+    // claim. E2.1's blind verify confirmed the two differ systematically: ~25% of
+    // checked cards had a signing/registration/academy/reserve/friendly year sitting
+    // where a debut was assumed. The field keeps its derivation; only its NAME and
+    // its published meaning change, so no card asserts a debut it cannot source.
+    const sourceStartCandidate: SourcedFact<number> | null =
       starts.length > 0
         ? {
             value: Math.min(...starts),
@@ -1681,6 +1721,49 @@ function cpEmit(write = true): { players: SourcedPlayer[]; gate: GateResult[] } 
             sourceQuality: seniorFrom !== null ? q("green") : "amber",
           }
         : null;
+
+    // E0.5 — FAIL CLOSED on an ERASED EARLIEST CAREER (the van der Sar class; E2.1
+    // V1d flagged the E0.2 fix as never landed). A malformed non-club membership
+    // (real entity, not a football club, not a national team, not a phantom) whose
+    // START predates the surviving earliest senior start means the true first career
+    // point was silently deleted by cpIsClubEntity's allow-list, and a later transfer
+    // became sourceStartYear. Edwin van der Sar's Ajax years (1990-1999) are filed
+    // under Q1492 = Barcelona the CITY, so 1999 (his Juventus transfer) surfaced as
+    // the start, one era bucket too late. No rule reading only P54 can recover the
+    // real start from a statement pointing at the wrong entity, so the value is
+    // nulled and the card fails out of the pool — the honest outcome, not a guess.
+    // De Bruyne is caught too (a Romanian commune + a pharmacy business predate his
+    // Genk start); his card was right by luck, and "right by luck" is not sourceable.
+    // "Malformed" is narrow ON PURPOSE. It is NOT any excluded statement — a youth
+    // side, an academy or a national team is a PRINCIPLED exclusion that erases no
+    // senior career, so those are cleared first. What remains is a statement pointing
+    // at an entity that is not football at all (a city, a commune, a business): the
+    // club slot is genuinely mis-targeted, and only then can an early membership have
+    // been silently deleted. Without the youth clear, Eriksen ("Ajax Youth Academy",
+    // typed job-training) and Donovan ("IMG Soccer Academy") would drop on legitimate
+    // academy stints — false positives the E0.2 filter already excludes correctly.
+    const malformedNonClubStarts = raw.memberships
+      .map((m) => ({ e: clubDict[m.clubQid], s: startOf(m) }))
+      .filter(
+        (r) =>
+          r.e &&
+          r.s !== null &&
+          !cpIsPhantomEntity(r.e) &&
+          !cpIsClubEntity(r.e) &&
+          !cpIsNationalTeam(r.e) &&
+          !cpIsYouthOrReserve(r.e),
+      )
+      .map((r) => r.s as number);
+    const erasesEarliestCareer =
+      sourceStartCandidate !== null && malformedNonClubStarts.some((s) => s < sourceStartCandidate.value);
+    if (erasesEarliestCareer)
+      cpErasedCareerLog.push({
+        qid: g.qid as string,
+        name: g.answerName,
+        sourceStartWas: sourceStartCandidate!.value,
+        malformedStarts: [...new Set(malformedNonClubStarts)].sort((a, b) => a - b),
+      });
+    const sourceStartYear: SourcedFact<number> | null = erasesEarliestCareer ? null : sourceStartCandidate;
 
     // ── nation (sporting): senior national team P54 > P1532 > P27(amber) ──
     let nation: SourcedFact<string> | null = null;
@@ -1784,7 +1867,7 @@ function cpEmit(write = true): { players: SourcedPlayer[]; gate: GateResult[] } 
     }
 
     // ── position: P413 mapped; unmappable/absent => null; conflict => amber ──
-    const mapped = cpMapPosition(raw.positions, debutYear?.value ?? null);
+    const mapped = cpMapPosition(raw.positions, sourceStartYear?.value ?? null);
     const position: SourcedFact<CpPosition> | null = mapped.pick
       ? {
           value: mapped.pick,
@@ -1798,7 +1881,7 @@ function cpEmit(write = true): { players: SourcedPlayer[]; gate: GateResult[] } 
       answerName: g.answerName,
       origin: g.origin,
       qid: g.qid,
-      facts: { nation, position, debutYear, birthYear, clubs },
+      facts: { nation, position, sourceStartYear, birthYear, clubs },
       identityEvidence: {
         matchedClubs: g.matchedClubs,
         matchCount: g.matchCount,
@@ -1995,7 +2078,7 @@ function cpReport() {
       if (sp) {
         L(
           `    facts           : nation=${sp.facts.nation?.value ?? "null"} pos=${sp.facts.position?.value ?? "null"}` +
-            ` debut=${sp.facts.debutYear?.value ?? "null"} clubs=${sp.facts.clubs.length}`,
+            ` debut=${sp.facts.sourceStartYear?.value ?? "null"} clubs=${sp.facts.clubs.length}`,
         );
       }
     }
@@ -2005,7 +2088,7 @@ function cpReport() {
   const nulls = {
     nation: players.filter((p) => !p.facts.nation).length,
     position: players.filter((p) => !p.facts.position).length,
-    debutYear: players.filter((p) => !p.facts.debutYear).length,
+    debutYear: players.filter((p) => !p.facts.sourceStartYear).length,
     clubs: players.filter((p) => p.facts.clubs.length === 0).length,
   };
   for (const [k, v] of Object.entries(nulls)) {
@@ -2041,6 +2124,17 @@ function cpReport() {
   }
   L(`  total: ${cpPhantomLog.length} membership(s) across ${new Set(cpPhantomLog.map((p) => p.qid)).size} player(s), ${new Set(cpPhantomLog.map((p) => p.clubQid)).size} distinct club QID(s)`);
 
+  // ── E0.5 — earliest career erased by a malformed non-club membership ─────────
+  L(`\n── FAIL-CLOSED: sourceStartYear NULLED, EARLIEST CAREER ERASED (E0.5) ──`);
+  L(`  A P54 membership resolving to a real NON-CLUB entity (city/commune/business)`);
+  L(`  whose start predates the surviving earliest senior start. cpIsClubEntity`);
+  L(`  refuses it, deleting the true first career point; rather than promote a later`);
+  L(`  transfer to sourceStartYear, the value is nulled and the card fails the pool.`);
+  if (cpErasedCareerLog.length === 0) L(`  none`);
+  for (const e of cpErasedCareerLog)
+    L(`    ${e.name.padEnd(26)} surfaced ${e.sourceStartWas}, malformed start(s) at ${e.malformedStarts.join(", ")} -> NULLED`);
+  L(`  total: ${cpErasedCareerLog.length} player(s) dropped from the pool.`);
+
   // ── E0.2 item 4 — nations the recency rule cannot decide ────────────────────
   L(`\n── OWNER LIST: NATIONS UNRESOLVABLE BY THE RECENCY RULE (E0.2 item 4) ──`);
   if (cpNationRulingLog.length === 0) L(`  none — every dual international was separated by recency`);
@@ -2049,7 +2143,7 @@ function cpReport() {
   L(`  dual internationals resolved BY the rule (amber, candidates recorded): ${duals.length}`);
 
   L(`\n── DEBUT YEAR COVERAGE ──`);
-  const withDebut = players.filter((p) => p.facts.debutYear).length;
+  const withDebut = players.filter((p) => p.facts.sourceStartYear).length;
   L(`  overall: ${withDebut}/${players.length} emitted (${players.length ? ((withDebut / players.length) * 100).toFixed(1) : "0"}%)`);
   L(`           ${withDebut}/${paths.length} of universe (${pct(withDebut)})`);
 
@@ -2069,7 +2163,7 @@ function cpReport() {
       iconMissing++;
       continue;
     }
-    const d = sp.facts.debutYear?.value ?? null;
+    const d = sp.facts.sourceStartYear?.value ?? null;
     if (d === null) iconMissing++;
     L(
       `    ${name.padEnd(20)} ${sp.qid.padEnd(9)} debut=${d === null ? "*** NULL ***" : d}` +
@@ -2105,13 +2199,13 @@ function cpReport() {
 
   L(`\n── GOALKEEPERS ──`);
   const gks = players.filter((p) => p.facts.position?.value === "GK");
-  const gkFull = gks.filter((p) => p.facts.nation && p.facts.debutYear && p.facts.clubs.length > 0);
+  const gkFull = gks.filter((p) => p.facts.nation && p.facts.sourceStartYear && p.facts.clubs.length > 0);
   L(`  position=GK: ${gks.length}   with FULL facts (nation+debut+clubs): ${gkFull.length}`);
 
   L(`\n── ERA HISTOGRAM (debutYear by decade) ──`);
   const buckets = new Map<string, number>();
   for (const p of players) {
-    const d = p.facts.debutYear?.value;
+    const d = p.facts.sourceStartYear?.value;
     if (!d) continue;
     const dec = `${Math.floor(d / 10) * 10}s`;
     buckets.set(dec, (buckets.get(dec) || 0) + 1);
@@ -2122,7 +2216,7 @@ function cpReport() {
   }
 
   L(`\n── NATIONS with >=8 fully-sourced players ──`);
-  const full = players.filter((p) => p.facts.nation && p.facts.position && p.facts.debutYear && p.facts.clubs.length > 0);
+  const full = players.filter((p) => p.facts.nation && p.facts.position && p.facts.sourceStartYear && p.facts.clubs.length > 0);
   L(`  (fully-sourced = nation + position + debutYear + >=1 club: ${full.length} players)`);
   const natCount = new Map<string, number>();
   for (const p of full) natCount.set(p.facts.nation!.value, (natCount.get(p.facts.nation!.value) || 0) + 1);

@@ -25,7 +25,15 @@
     "with this record attached, so a reader sees the value, the statement behind it, and",
     "the reason the two do not add up. The canonical playersSourced.json is untouched:",
     "a ruling never edits a fact, and cp-assert still proves the file reproduces from the",
-    "rules alone."
+    "rules alone.",
+    "",
+    "E0.5 EXTENSION — dropPrintedClub (the Benatia class). Where the disputed statement is",
+    "a CLUB the card would print but the player's first-team APPEARANCE there is disputed",
+    "(affectsFacts ['clubs']), the record carries dropPrintedClub = <clubQid>. The selector",
+    "suppresses that CHIP from the card face and fills the slot from the next club by tenure.",
+    "The membership still stays in the canonical AND in the dossier clubs (marked",
+    "disputedAppearance), so nothing is edited away — the card simply stops asserting a",
+    "first-team appearance a human has disputed."
   ],
   "ruledBy": "owner",
   "ruledOn": "2026-07-17",
@@ -47,11 +55,34 @@
         "verbatimNote": "Preserved exactly as Wikidata carries it. Verified LIVE by E0.3's sweep and again on 2026-07-17: the ref resolves to a real, fully described club (multisports club / association football club). Nothing about the statement is malformed — that is the entire point of the F2 class."
       },
       "dispute": "Dybala never played for Club Sport Emelec. His real first senior club, Instituto de Córdoba, is absent from Wikidata's P54 for him entirely.",
-      "affectsFacts": ["debutYear"],
+      "affectsFacts": ["sourceStartYear"],
       "valueStands": 2011,
       "cardQuality": "amber",
-      "note": "The committed debutYear 2011 is CORRECT and stays. E2 confirmed it against independent Argentine press (senior debut for Instituto de Córdoba, 12 August 2011) — the value is right only because the phantom club and the real club happen to share a start year. Right value, invented provenance; correct by coincidence. This record exists because that coincidence is not a fact we should be silently trading on: the card claimed green off a statement that is false. It is now amber, with the reason attached. NOT dropped: E0.2 measured that dropping the Emelec statement moves his debut to Palermo 2012 — turning an independently confirmed CORRECT value into a wrong one. Emelec is not printed on the card (his three printed clubs are Juventus, Roma, Palermo by tenure), so the artifact has never asserted he played there.",
+      "note": "The committed sourceStartYear 2011 is CORRECT and stays. E2 confirmed it against independent Argentine press (senior debut for Instituto de Córdoba, 12 August 2011) — the value is right only because the phantom club and the real club happen to share a start year. Right value, invented provenance; correct by coincidence. This record exists because that coincidence is not a fact we should be silently trading on: the card claimed green off a statement that is false. It is now amber, with the reason attached. NOT dropped: E0.2 measured that dropping the Emelec statement moves his debut to Palermo 2012 — turning an independently confirmed CORRECT value into a wrong one. Emelec is not printed on the card (his three printed clubs are Juventus, Roma, Palermo by tenure), so the artifact has never asserted he played there.",
       "e2Reference": "E2 systemicFindings F2, severity UNMEASURABLE — 'Dybala (debut-setting statement places him at Club Sport Emelec, a club he never played for; his real first club is absent from Wikidata entirely; the committed value is right only because the phantom club and the real club share a start year)'. E2 amberList real_0104: 'Value 2011 CONFIRMED correct by independent Argentine press (Instituto de Cordoba, senior debut 12 Aug 2011) — but its provenance is a phantom Wikidata statement... Right value, invented provenance; correct only by coincidence of year.'"
+    },
+    {
+      "qid": "Q462779",
+      "name": "Mehdi Benatia",
+      "cardId": "real_0401",
+      "class": "membership-vs-appearance (E2.1 Benatia class)",
+      "verdict": "notCredited",
+      "dropPrintedClub": "Q132885",
+      "statement": {
+        "property": "P54",
+        "value": "Olympique de Marseille",
+        "valueQid": "Q132885",
+        "spells": [{ "start": 2005, "end": 2008 }],
+        "rank": "NormalRank",
+        "resolves": true,
+        "liveAsOf": "2026-07-17",
+        "verbatimNote": "Preserved exactly as Wikidata carries it. The club is real and fully described (association football club); the statement resolves. What is disputed is the APPEARANCE, not the entity — the F2-adjacent case where the membership exists in the source but the first-team competitive appearance behind it does not."
+      },
+      "dispute": "ESPN's career history for Benatia omits Marseille ENTIRELY: its earliest season row is 2006/07 at Tours. He was in OM's system without a first-team competitive appearance. The printed Marseille chip (2005-2008) therefore asserted a first-team spell the appearance record does not support.",
+      "affectsFacts": ["clubs"],
+      "cardQuality": "amber",
+      "note": "The Marseille CHIP is dropped from the card (the ticket's Benatia-class disposition). The membership STAYS in the canonical playersSourced.json as source data — a ruling never edits a fact — and stays in the dossier clubs marked disputedAppearance with this record. Only the chip is suppressed, so the card no longer asserts a first-team appearance a source disputes. The card's other clubs by tenure (Juventus, Bayern, Udinese) fill the three slots. Benatia's sourceStartYear is a SEPARATE within-bucket contradiction (2005 vs ESPN 2006, both era 3) recorded as accepted noise in ownerCitedOverrides — no era override.",
+      "e2Reference": "E2.1 red real_0401: 'debutYear + printedSpells contradicted by non-Wikidata source... COMPOUND: ESPN's earliest season row is 2006/07 at Tours, and its career history omits Marseille ENTIRELY — so the card's printed Marseille spell (2005-2008) is itself questionable, not just the debut year. He was in OM's system without a first-team competitive appearance.'"
     }
   ]
 }

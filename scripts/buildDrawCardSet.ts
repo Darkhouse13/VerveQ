@@ -52,13 +52,14 @@ const RULINGS_PATH = path.join(DATA, "ownerPositionRulings.json");
 const NATION_RULINGS_PATH = path.join(DATA, "ownerNationRulings.json");
 const DEBUT_RULINGS_PATH = path.join(DATA, "ownerDebutRulings.json");
 const DISPUTED_PATH = path.join(DATA, "ownerDisputedStatements.json");
+const CITED_OVERRIDES_PATH = path.join(DATA, "ownerCitedOverrides.json");
 const SITELINKS_PATH = path.join(CACHE, "sitelinks.json");
 const CARDS_PATH = path.join(DATA, "drawCardsReal.candidates.json");
 const DOSSIER_PATH = path.join(DATA, "drawCardsReal.dossier.json");
 
 /** Pinned so an open spell's tenure is reproducible rather than clock-dependent. */
 const PINNED_YEAR = 2026;
-const SET_VERSION = "real-v2";
+const SET_VERSION = "real-v3";
 const RATING_SEED = "realset-ratings-v1";
 const SET_SIZE = 430;
 const MAX_CLUBS_PER_CARD = 3;
@@ -70,7 +71,7 @@ interface SourcedClub { value: string; clubQid: string; spells: Spell[]; source:
 interface Sourced<T> { value: T; source: { qid: string; property: string; retrievedAt: string }; sourceQuality: string }
 interface Player {
   careerPathId: string; answerName: string; origin: string; qid: string;
-  facts: { nation: Sourced<string> | null; position: Sourced<Pos> | null; debutYear: Sourced<number> | null; birthYear: Sourced<number> | null; clubs: SourcedClub[] };
+  facts: { nation: Sourced<string> | null; position: Sourced<Pos> | null; sourceStartYear: Sourced<number> | null; birthYear: Sourced<number> | null; clubs: SourcedClub[] };
   identityEvidence: Record<string, unknown> & { positionCandidates?: Pos[]; nationCandidates?: string[]; positionStatements?: string[] };
   volatility: string;
 }
@@ -97,10 +98,14 @@ function pool(players: Player[]) {
   const distinct = [...byQid.values()];
   // FAIL CLOSED. A card needs a position, a debut year and at least one club; none
   // may be invented, so a player missing any of them is dropped and counted.
-  const drops = { noPosition: 0, noDebut: 0, noClub: 0 };
+  const drops = { noPosition: 0, noSourceStart: 0, noClub: 0 };
   const selectable = distinct.filter((p) => {
     if (!p.facts.position) { drops.noPosition++; return false; }
-    if (!p.facts.debutYear) { drops.noDebut++; return false; }
+    // E0.5 — a null sourceStartYear fails the card out here. This is how the van der
+    // Sar / De Bruyne fail-closed (erased earliest career, ingest) removes them: the
+    // canonical carries null, so the pool never selects them and the selector
+    // backfills — no card ships on a mis-bucketed or unknowable start year.
+    if (!p.facts.sourceStartYear) { drops.noSourceStart++; return false; }
     if (p.facts.clubs.length === 0) { drops.noClub++; return false; }
     return true;
   });
@@ -214,7 +219,7 @@ function select(
   selectable: Player[],
   sitelinks: Record<string, number>,
   posOf: (p: Player) => Pos,
-  debutOf: (p: Player) => number,
+  eraYearOf: (p: Player) => number,
 ) {
   const w = C13V1_CONFIG.cardGen.positionWeights;
   const total = w.GK + w.DEF + w.MID + w.ATT;
@@ -237,11 +242,11 @@ function select(
   // lowest-fame selected card of the most over-supplied era — within the SAME
   // position, so quotas stay exact. Bounded: each pass fills one seat.
   for (let guard = 0; guard < 500; guard++) {
-    const count = (i: number) => chosen.filter((c) => eraOf(debutOf(c)).index === i).length;
+    const count = (i: number) => chosen.filter((c) => eraOf(eraYearOf(c)).index === i).length;
     const short = ERA_BUCKETS.map((b) => b.index).find((i) => count(i) < ERA_FLOOR);
     if (short === undefined) break;
     const inSet = new Set(chosen.map((c) => c.qid));
-    const cand = ranked.find((c) => !inSet.has(c.qid) && eraOf(debutOf(c)).index === short);
+    const cand = ranked.find((c) => !inSet.has(c.qid) && eraOf(eraYearOf(c)).index === short);
     if (!cand) {
       throw new Error(
         `STOP: era bucket ${short} cannot reach the floor of ${ERA_FLOOR} — the pool is exhausted ` +
@@ -251,13 +256,13 @@ function select(
     }
     const pos = posOf(cand);
     const victim = [...chosen]
-      .filter((c) => posOf(c) === pos && eraOf(debutOf(c)).index !== short)
+      .filter((c) => posOf(c) === pos && eraOf(eraYearOf(c)).index !== short)
       .sort((a, b) => (sitelinks[a.qid] ?? 0) - (sitelinks[b.qid] ?? 0) || b.qid.localeCompare(a.qid))
-      .find((c) => count(eraOf(debutOf(c)).index) > ERA_FLOOR);
+      .find((c) => count(eraOf(eraYearOf(c)).index) > ERA_FLOOR);
     if (!victim) throw new Error(`STOP: era bucket ${short} short and no droppable ${pos} outside a floor-bound era.`);
     chosen.splice(chosen.findIndex((c) => c.qid === victim.qid), 1);
     chosen.push(cand);
-    swaps.push(`era${short} <- ${cand.answerName} (${pos}, fame ${sitelinks[cand.qid] ?? 0}) replaces ${victim.answerName} (era${eraOf(debutOf(victim)).index}, fame ${sitelinks[victim.qid] ?? 0})`);
+    swaps.push(`era${short} <- ${cand.answerName} (${pos}, fame ${sitelinks[cand.qid] ?? 0}) replaces ${victim.answerName} (era${eraOf(eraYearOf(victim)).index}, fame ${sitelinks[victim.qid] ?? 0})`);
   }
   return { chosen: fameOrder(chosen, sitelinks), quota, swaps };
 }
@@ -284,9 +289,19 @@ function build() {
   // what the artifact claims about it. The affected fact is forced amber and carries
   // the record, so a green fact can never rest on a statement a human has established
   // is false. No rule can find these — see ownerDisputedStatements.json.
-  type Disputed = { qid: string; name: string; class: string; verdict: string; affectsFacts: string[]; cardQuality: string; statement: unknown; dispute: string; note: string; e2Reference?: string; valueStands?: unknown };
+  type Disputed = { qid: string; name: string; class: string; verdict: string; affectsFacts: string[]; cardQuality: string; statement: unknown; dispute: string; note: string; e2Reference?: string; valueStands?: unknown; dropPrintedClub?: string };
   const disputed = readJson<{ ruledBy?: string; ruledOn?: string; records?: Disputed[] }>(DISPUTED_PATH, {});
   const disputedByQid = new Map((disputed.records ?? []).map((r) => [r.qid, r]));
+
+  // E0.5 — CITED ERA-YEAR OVERRIDES. sourceStartYear is the earliest senior-club
+  // membership START, not a debut, and E2.1's blind verify found it systematically
+  // early. No date is a published fact, but eraYear (-> peakYear -> eraIndex) still
+  // decides the one year-derived thing a player sees, so this layer supplies eraYear
+  // from a named, quoted citation whenever the sourced value would file the card in
+  // the WRONG era. It never edits sourceStartYear; the sourced value stands beside it.
+  type CitedOverride = { cardId: string; qid: string; name: string; field: "eraYear"; sourceValue: number; citedValue: number; publisher: string; url: string; quote: string; bucketMove?: string; note?: string; signedBy: string };
+  const citedOverrides = readJson<{ ruledBy?: string; ruledOn?: string; records?: CitedOverride[]; acceptedNoise?: unknown[] }>(CITED_OVERRIDES_PATH, {});
+  const citedOverrideByQid = new Map((citedOverrides.records ?? []).map((r) => [r.qid, r]));
 
   // FAIL CLOSED on a ruling that hits nothing. A QID-pinned ruling whose QID is not
   // in the pool is either a typo or a stale record, and in both cases it silently
@@ -294,11 +309,13 @@ function build() {
   // Maldini's identity ruling to a QID for this reason, and warns if it misses).
   // A ruling the owner signed must either apply or stop the build.
   const poolQids = new Set(players.map((p) => p.qid));
+  const byQidPool = new Map(players.map((p) => [p.qid, p]));
   for (const [label, qids] of [
     ["position", [...rulingByQid.keys()]],
     ["nation", [...natRulingByQid.keys()]],
     ["debutYear", [...debutRulingByQid.keys()]],
     ["disputedStatement", [...disputedByQid.keys()]],
+    ["citedOverride", [...citedOverrideByQid.keys()]],
   ] as const) {
     const orphans = qids.filter((q) => !poolQids.has(q));
     if (orphans.length > 0)
@@ -312,6 +329,23 @@ function build() {
   for (const r of debutRulings.rulings ?? [])
     if (r.ruling === r.ruleOutput) throw new Error(`STOP: debut ruling for ${r.name} (${r.qid}) equals the rule output ${r.ruleOutput} — record it under reviewedNotOverridden instead.`);
 
+  // E0.5 — a cited override must (a) declare the SAME sourceValue the pool actually
+  // carries, so the record cannot silently rot when the canonical changes, and (b)
+  // MOVE THE ERA BUCKET. An override whose citedValue lands in the same bucket as the
+  // sourced value changes nothing a player sees, so it is a decision pretending to be
+  // one — exactly what acceptedNoise is for. Both are STOP conditions, not warnings.
+  for (const r of citedOverrides.records ?? []) {
+    const p = byQidPool.get(r.qid)!;
+    const src = p.facts.sourceStartYear?.value ?? null;
+    // A debut ruling (Busquets) resets sourceStartYear before an override would read
+    // it; none currently coincide, but resolve through it so the check stays honest.
+    const effectiveSrc = debutRulingByQid.get(r.qid)?.ruling ?? src;
+    if (effectiveSrc !== r.sourceValue)
+      throw new Error(`STOP: cited override for ${r.name} (${r.qid}) declares sourceValue ${r.sourceValue} but the pool carries ${effectiveSrc}. Re-verify against the current canonical.`);
+    if (eraOf(r.citedValue).index === eraOf(r.sourceValue).index)
+      throw new Error(`STOP: cited override for ${r.name} (${r.qid}) does not cross an era bucket (${r.sourceValue} and ${r.citedValue} both map to era ${eraOf(r.sourceValue).index}) — record it under acceptedNoise instead.`);
+  }
+
   // THE RULED POSITION IS THE CARD'S POSITION, so selection must run on the RULED
   // pool. Applying rulings after selection instead puts the set at ATT 147 / MID 111
   // (±4.19pp, outside the ±3pp band) — the 18 MID->ATT rulings move players across
@@ -321,13 +355,18 @@ function build() {
   // A position ruling is therefore not cosmetic: it decides who is in the set.
   const posOf = (p: Player): Pos => rulingByQid.get(p.qid)?.ruling ?? p.facts.position!.value;
   // E0.3 — nation and debut rulings apply to the POOL, on the same principle.
-  // debutYear feeds eraOf, which feeds the era floors, so a debut ruling can move
-  // cards in and out of the set; nation enters no selection criterion and cannot.
+  // nation enters no selection criterion and cannot move a card; the era year can.
   const natOf = (p: Player): string | null => natRulingByQid.get(p.qid)?.ruling ?? p.facts.nation?.value ?? null;
-  const debutOf = (p: Player): number => debutRulingByQid.get(p.qid)?.ruling ?? p.facts.debutYear!.value;
+  // E0.5 — sourceStartYear is the published (dossier-only) sourced value: a debut
+  // ruling may reset it, but a cited override never touches it.
+  const startYearOf = (p: Player): number => debutRulingByQid.get(p.qid)?.ruling ?? p.facts.sourceStartYear!.value;
+  // eraYear is what era mapping runs on: the cited override's value where one exists,
+  // else sourceStartYear. This is the ONLY year that feeds eraOf, the era floors and
+  // therefore selection — so the overrides are rulings-before-selection, like the rest.
+  const eraYearOf = (p: Player): number => citedOverrideByQid.get(p.qid)?.citedValue ?? startYearOf(p);
 
   const { selectable, drops, duplicates } = pool(players);
-  const { chosen, quota, swaps } = select(selectable, sitelinks, posOf, debutOf);
+  const { chosen, quota, swaps } = select(selectable, sitelinks, posOf, eraYearOf);
   if (chosen.length !== SET_SIZE) throw new Error(`STOP: selected ${chosen.length}, expected ${SET_SIZE}`);
 
   // Ratings are identical-by-construction to the tuned c13v1 set: the SAME generator,
@@ -336,22 +375,36 @@ function build() {
   const gen = generateCardSet(RATING_SEED, { ...C13V1_CONFIG.cardGen, setSize: SET_SIZE });
   const ratings = gen.map((c) => c.rating).sort((a, b) => b - a);
 
+  // E0.5 — a printed club a player is disputed to have actually appeared for is
+  // dropped from the card (the Benatia class). The membership STAYS in the canonical
+  // and in the dossier as source data with its disputed-statement record; only the
+  // CHIP is suppressed, so the card never asserts an appearance a human has disputed.
+  const droppedChipOf = (p: Player): string | null => {
+    const d = disputedByQid.get(p.qid);
+    return d?.dropPrintedClub ?? null;
+  };
+
   const tagger = buildTagger(chosen);
   const cards = chosen.map((p, i) => {
-    const era = eraOf(debutOf(p));
+    // E0.5 — era mapping runs on eraYear (cited override where one exists, else
+    // sourceStartYear). No date is printed on the card; eraIndex/eraLabel — editorial
+    // buckets, not a year — are the only era signal a player sees.
+    const era = eraOf(eraYearOf(p));
+    const droppedChip = droppedChipOf(p);
     const clubs = p.facts.clubs
       .slice()
+      .filter((c) => c.clubQid !== droppedChip)
       // Longest sourced first-team tenure first. Ties -> QID, never file order.
       .sort((a, b) => tenure(b) - tenure(a) || a.clubQid.localeCompare(b.clubQid))
       .slice(0, MAX_CLUBS_PER_CARD)
       .map((c) => { const t = tagger.get(c.clubQid)!; return { tag: t.tag, displayCode: t.code, fullName: t.name }; });
-    const ruling = rulingByQid.get(p.qid);
     return {
       cardId: `real_${String(i + 1).padStart(4, "0")}`,
       name: p.answerName,
       nation: natOf(p),
       position: posOf(p),
-      debutYear: debutOf(p),
+      // E0.5 — NO DATE IS A PUBLISHED FACT. debutYear is gone from the card face; the
+      // sourced sourceStartYear and the eraYear that bucketed it live in the dossier.
       eraIndex: era.index,
       eraLabel: era.label,
       clubs,
@@ -360,17 +413,64 @@ function build() {
     };
   });
 
+  // E0.5 — eraYear per card (cited override where present, else sourceStartYear) and
+  // the bucket it maps to. Aligned with `cards`/`chosen` order for the era mapping's
+  // per-bucket rollup and each entry's era block.
+  const entryEraYear = chosen.map((p) => {
+    const eraYear = eraYearOf(p);
+    return { eraYear, eraIndex: eraOf(eraYear).index };
+  });
+
   const dossier = {
     _doc:
-      "Per-fact provenance for drawCardsReal.candidates.json. FACTS (nation, position, debutYear, club membership) " +
+      "Per-fact provenance for drawCardsReal.candidates.json. FACTS (nation, position, sourceStartYear, club membership) " +
       "are sourced from Wikidata (CC0) and carry a resolvable ref. EDITORIAL fields (rating, fameRank, which <=3 clubs " +
-      "are printed, tag/displayCode/fullName, eraIndex) are VerveQ's own and are marked as such — they are not claims " +
-      "about the player. Built by scripts/buildDrawCardSet.ts, which is committed and reproduces this file exactly.",
+      "are printed, tag/displayCode/fullName, eraIndex, eraYear) are VerveQ's own and are marked as such — they are not claims " +
+      "about the player. NO DATE IS A PUBLISHED FACT: the card face carries no year at all (see sourceStartYearMeaning); " +
+      "sourceStartYear and eraYear live here in the dossier only. Built by scripts/buildDrawCardSet.ts, which is committed " +
+      "and reproduces this file exactly.",
     setVersion: SET_VERSION,
     generatedFor: "THE DRAW",
     cardCount: cards.length,
     ratingSeed: RATING_SEED,
     configVersion: C13V1_CONFIG_VERSION,
+    // E0.5 — THE FACT-MODEL REALIGNMENT. The field formerly called debutYear is
+    // renamed sourceStartYear across canonical, dossier and selector, and redefined.
+    sourceStartYearMeaning: {
+      definition:
+        "The earliest senior-club membership START per the source's P54 statements " +
+        "(age >= 16, first teams only). It is NOT a competitive-debut claim and is not " +
+        "published as one: the card face carries no year, and this value appears only " +
+        "here as membership-start provenance.",
+      whyRenamed:
+        "E2.1's blind re-verify (drawCardsReal.verify2.json, committed) re-retrieved all " +
+        "430 cards live and found the value systematically EARLIER than the competitive " +
+        "debut: ~25% of the cards for which a qualifying non-Wikidata source was actually " +
+        "retrieved were contradicted, spanning every era from Banks (1958) to Rashford " +
+        "(2016). Calling it debutYear asserted a debut the source cannot support. Renaming " +
+        "it to what it actually is — a membership start — makes every downstream claim true.",
+      knownContaminationClasses: [
+        "1. SIGNING / SQUAD-REGISTRATION year — the year a player joined the club's books, " +
+          "not his first competitive minute (Owen 1995 signing vs 1997 debut; Banks 1953 " +
+          "part-time youth contract vs 1958 debut; Gattuso, Romero, Otamendi).",
+        "2. ACADEMY / YOUTH-INTAKE recorded on the FIRST-TEAM QID — one P54 statement starting " +
+          "at the academy age but typed as the senior club, so the age filter cannot split it " +
+          "(Busquets 2000 age-12 intake -> owner debut ruling; Szczesny 2006 academy vs 2009).",
+        "3. RESERVE / B-TEAM season counted as first-team (Moutinho 2003/04 Sporting B vs 2005 " +
+          "first-team; Benzema autumn-2004 CFA reserve side vs Jan-2005 first team).",
+        "4. SPLIT-SEASON label mis-parsed to its earlier year ('2005/06' -> 2005 for Cavani, " +
+          "whose Danubio debut was Apr 2006).",
+        "5. FRIENDLY / non-competitive match logged as a debut (David Silva's 2003 value traces " +
+          "to a Trofeo de La Magdalena friendly, not a competitive appearance).",
+      ],
+      note:
+        "These five are why sourceStartYear is provenance, not a truth claim about a debut. " +
+        "Where the contamination would put a card in the WRONG ERA, a signed cited override " +
+        "supplies eraYear instead (ownerCitedOverrides); where it does not cross a bucket it " +
+        "is accepted noise. printedSpells (per-club P54 spell dates) are likewise demoted to " +
+        "internal identity evidence: the published club fact is membership EXISTENCE only, " +
+        "never a date.",
+    },
     selector: {
       script: "scripts/buildDrawCardSet.ts",
       provenance: "editorial",
@@ -390,48 +490,44 @@ function build() {
       _doc: [
         "A game-mechanical partition of the set into four era buckets. NOT a truth claim: no",
         "source asserts a player's era. eraIndex/eraLabel are VerveQ's own, like rating and",
-        "fameRank. The only input is debutYear, which IS sourced — see each entry facts.debutYear.",
-        "Stated as a RULE, not just ranges, so the partition can be recomputed from debutYear",
-        "alone and can never drift silently from the cards (asserted: drawCardSetEraContract).",
+        "fameRank. The only input is eraYear (per-entry), which is the cited override where one",
+        "exists (ownerCitedOverrides) and the sourced sourceStartYear otherwise. Stated as a RULE,",
+        "not just ranges, so the partition can be recomputed from eraYear alone and can never",
+        "drift silently from the cards (asserted: drawCardSetEraContract).",
       ],
       rule: {
-        input: "debutYear (sourced; per-entry facts.debutYear)",
-        derived: "peakYear := debutYear + 5",
+        input: "eraYear (per-entry; cited override where present, else sourced sourceStartYear)",
+        derived: "peakYear := eraYear + 5",
         assign: "lowest eraIndex whose peakYear range contains the card peakYear; ranges are contiguous and exhaustive",
         buckets: ERA_BUCKETS.map((b) => {
-          const mine = cards.filter((c) => c.eraIndex === b.index);
-          const debuts = mine.map((c) => c.debutYear);
+          const mine = entryEraYear.filter((e) => e.eraIndex === b.index);
+          const years = mine.map((e) => e.eraYear);
           return {
             eraIndex: b.index,
             eraLabel: b.label,
             peakYearMin: b.minPeak,
             peakYearMax: b.maxPeak,
-            debutYearMin: b.minPeak === null ? null : b.minPeak - 5,
-            debutYearMax: b.maxPeak === null ? null : b.maxPeak - 5,
+            eraYearMin: b.minPeak === null ? null : b.minPeak - 5,
+            eraYearMax: b.maxPeak === null ? null : b.maxPeak - 5,
             cardCount: mine.length,
-            observedDebutYearRange: debuts.length ? [Math.min(...debuts), Math.max(...debuts)] : null,
+            observedEraYearRange: years.length ? [Math.min(...years), Math.max(...years)] : null,
           };
         }),
       },
       derivationNote: [
         "Why +5: a card belongs to the era a player was KNOWN in, not the year they first",
-        "appeared. A debut is typically followed by ~5 years before first-team prominence, so",
-        "bucketing on debutYear alone files late-blooming players one era earlier than fans",
-        "place them. +5 is a flat editorial approximation of \"time to prominence\" — deliberately",
-        "uniform, since a per-player peak would be an unsourced judgement on all 430 cards.",
+        "appeared. A career start is typically followed by ~5 years before first-team prominence,",
+        "so bucketing on the start year alone files late-blooming players one era earlier than",
+        "fans place them. +5 is a flat editorial approximation of \"time to prominence\" —",
+        "deliberately uniform, since a per-player peak would be an unsourced judgement on all cards.",
       ],
       boundaryNote: [
-        "The bucket0/bucket1 boundary is DECLARED, not transcribed, and as of E0.4 it is also",
-        "LOAD-BEARING. E1.2 declared it when it was free: no card then had debutYear 1975, so",
-        "peakYear<=1980 and peakYear<=1979 classified all 430 identically and the data could not",
-        "discriminate them. E0.2's debut rules moved 85 values, and real-v2 now contains Jean",
-        "Tigana (real_0427, debutYear 1975, peakYear 1980) sitting EXACTLY on the boundary.",
-        "He is in bucket 0 because of this declaration. Bucket 0 holds exactly 40 cards — the",
-        "floor — so under peakYear<=1979 he moves to bucket 1, bucket 0 falls to 39, and the",
-        "selector must swap a card in to stay legal. The choice is kept (it is the documented one,",
-        "and it keeps the four peakYear ranges contiguous with no gap), but it now decides a card",
-        "and a floor rather than nothing, and is flagged for owner review. Every other boundary is",
-        "pinned by cards on both sides.",
+        "The bucket0/bucket1 boundary (peakYear<=1980) is DECLARED, not transcribed, and is",
+        "LOAD-BEARING: bucket 0 sits exactly at the 40-card floor, so a single card crossing this",
+        "boundary forces a floor swap. E1.2 could declare it freely when no card had eraYear 1975;",
+        "that is no longer true. The choice is kept (it is the documented one, and it keeps the four",
+        "peakYear ranges contiguous with no gap) and is flagged for owner review. Every other",
+        "boundary is pinned by cards on both sides.",
       ],
     },
     ownerPositionRulings: rulings.rulings ?? [],
@@ -440,16 +536,28 @@ function build() {
     ownerNationRulings: natRulings,
     ownerDebutRulings: debutRulings,
     ownerDisputedStatements: disputed,
+    // E0.5 — the cited era-year override layer, every signed record in one place.
+    ownerCitedOverrides: citedOverrides,
     entries: chosen.map((p, i) => {
       const ruling = rulingByQid.get(p.qid);
       const natRuling = natRulingByQid.get(p.qid);
       const debutRuling = debutRulingByQid.get(p.qid);
       const dispute = disputedByQid.get(p.qid);
+      const cited = citedOverrideByQid.get(p.qid);
       return {
         cardId: cards[i].cardId,
         name: p.answerName,
         qid: p.qid,
         fameSitelinks: sitelinks[p.qid] ?? 0,
+        // E0.5 — how this card's eraIndex/eraLabel were derived. eraYear is the cited
+        // override's citedValue where one exists, else the sourced sourceStartYear.
+        era: {
+          eraIndex: cards[i].eraIndex,
+          eraLabel: cards[i].eraLabel,
+          eraYear: entryEraYear[i].eraYear,
+          eraYearSource: cited ? "cited-override" : "sourceStartYear",
+          citedOverride: cited ?? null,
+        },
         facts: {
           // E0.3 — an overridden nation reproduces the RULE'S OUTPUT verbatim beside
           // the ruling, exactly as an overridden position reproduces its sourced value.
@@ -488,7 +596,11 @@ function build() {
                 sourceQuality: p.facts.position!.sourceQuality,
               }
             : { ...p.facts.position!, provenance: "sourced", statements: p.identityEvidence.positionStatements ?? null, candidates: p.identityEvidence.positionCandidates ?? null },
-          debutYear: debutRuling
+          // E0.5 — renamed from debutYear. Provenance for the earliest senior-club
+          // membership START, explicitly NOT a debut claim (see sourceStartYearMeaning).
+          // A debut ruling (Busquets) may reset the value; a cited override never does —
+          // it supplies eraYear (see entry.era), leaving this sourced value intact.
+          sourceStartYear: debutRuling
             ? {
                 value: debutRuling.ruling,
                 provenance: "editorial-ruled",
@@ -502,26 +614,41 @@ function build() {
                 // rather than filled with a plausible-looking citation.
                 independentRef: debutRuling.independentRef ?? null,
                 independentRefStatus: debutRuling.independentRefStatus ?? null,
-                sourcedValue: p.facts.debutYear!.value,
+                sourcedValue: p.facts.sourceStartYear!.value,
                 birthYear: p.facts.birthYear?.value ?? null,
                 birthYearSource: p.facts.birthYear?.source ?? null,
-                source: p.facts.debutYear!.source,
-                sourceQuality: p.facts.debutYear!.sourceQuality,
+                source: p.facts.sourceStartYear!.source,
+                sourceQuality: p.facts.sourceStartYear!.sourceQuality,
               }
-            : p.facts.debutYear && {
-                ...p.facts.debutYear,
+            : p.facts.sourceStartYear && {
+                ...p.facts.sourceStartYear,
                 provenance: "sourced",
                 // E0.4 — a disputed statement forces the fact it supports to amber.
                 // The VALUE is untouched (Dybala's 2011 is independently confirmed
                 // correct); what changes is the confidence the artifact claims, which
                 // was resting on a statement a human has established is false.
-                ...(dispute?.affectsFacts.includes("debutYear")
+                ...(dispute?.affectsFacts.includes("sourceStartYear")
                   ? { sourceQuality: dispute.cardQuality, disputedStatement: dispute }
                   : {}),
                 birthYear: p.facts.birthYear?.value ?? null,
                 birthYearSource: p.facts.birthYear?.source ?? null,
               },
-          clubs: p.facts.clubs.map((c) => ({ value: c.value, clubQid: c.clubQid, spells: c.spells, source: c.source, sourceQuality: c.sourceQuality, printed: cards[i].clubs.some((x) => x.tag === tagger.get(c.clubQid)?.tag) })),
+          // E0.5 — printed reflects the card face AFTER a disputed-appearance chip drop
+          // (Benatia's Marseille). The membership stays here as source data, marked with
+          // its disputed-statement record, so the canonical is never edited — only the
+          // chip is suppressed. spells stay as INTERNAL identity evidence; the published
+          // club fact is membership EXISTENCE, never a date.
+          clubs: p.facts.clubs.map((c) => ({
+            value: c.value,
+            clubQid: c.clubQid,
+            spells: c.spells,
+            source: c.source,
+            sourceQuality: c.sourceQuality,
+            printed: cards[i].clubs.some((x) => x.tag === tagger.get(c.clubQid)?.tag),
+            ...(dispute?.dropPrintedClub === c.clubQid
+              ? { disputedAppearance: true, disputedStatement: dispute, sourceQuality: dispute.cardQuality }
+              : {}),
+          })),
         },
         identityEvidence: p.identityEvidence,
       };
