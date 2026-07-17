@@ -45,13 +45,14 @@
       "name": "Edwin van der Sar",
       "field": "eraYear",
       "eraYear": 1990,
-      "publisher": "Wikidata (Q482955, statement P54 -> Q1492), as recorded in the verify2 RED",
-      "url": "https://www.wikidata.org/wiki/Q482955#P54",
-      "quote": "Live Q482955 P54 carries a 1990-1999 membership whose target is Q1492 = \"Barcelona, city in Catalonia, Spain\" - a CITY, not a club. The builder correctly refused the non-club entity, but the consequence is that the 1990-1999 span (his Ajax years) vanished ... and the earliest surviving club statement (Juventus, 1999) became the debut. 1999 is his Juventus transfer, not his debut.",
+      "publisher": "Wikipedia (English)",
+      "url": "https://en.wikipedia.org/wiki/Edwin_van_der_Sar",
+      "quote": "Senior career: 1990-1999 Ajax (infobox 'Years / Team'). His Ajax senior career began in 1990, which supports eraYear 1990 under membership-start semantics.",
       "signedBy": "owner",
       "erasedContext": "sourceStartYear nulled by the erased-earliest-career rule: his 1990-1999 Ajax membership is the single malformed statement (filed under Q1492 = Barcelona the CITY), and 1990 predates the earliest surviving senior membership (Juventus, P580=1999). Q1492 is not a football club, so the chip is dropped too — Ajax appears nowhere on the card. This is honest: the source's own statement points at the wrong entity, and no rule can recover Ajax from it.",
       "survivingSeniorStart": 1999,
-      "citationHonesty": "NOT a resolvable external publisher+quote+url. The ticket asked for the citation to be 'lifted verbatim from his verify2.json RED record'; that record carries NO external corroboration. Its own words: 'A non-Wikidata confirmation of the Ajax 1990 debut was attempted but blocked (Britannica/Ajax/ManUtd/UEFA/ESPN/worldfootball all 403 or 404).' So eraYear 1990 is sourced to van der Sar's OWN Wikidata P54 Ajax statement (start 1990) — the same statement the erased-career rule refused for having the wrong TARGET, not the wrong START — and the quote above is the verify2 RED finding verbatim. A plausible external URL was deliberately NOT fabricated (the Busquets-ref discipline: a citation nobody can resolve is not a citation). 1990 -> peak 1995 -> bucket 1 ('1980s-90s'), one bucket earlier than the 1999-Juventus artifact that shipped in real-v3 (bucket 2)."
+      "note": "eraYear 1990 is his Ajax MEMBERSHIP START (senior career 1990-1999 per the Wikipedia infobox, verified live 2026-07-17). His press / first-team competitive debut was April 1991 — within the SAME era bucket (1, '1980s-90s': peak 1995 for 1990 vs 1996 for 1991), so the 1990-vs-1991 gap is accepted noise of the signing-vs-debut class and moves no bucket. This is membership-start semantics, consistent with sourceStartYear across the set: the published anchor is the start of the senior membership, not the first competitive minute.",
+      "citationHistory": "E0.6 originally restored eraYear 1990 on van der Sar's OWN Wikidata P54 Ajax statement (start 1990, the statement the erased-career rule refused for wrong TARGET Q1492, not wrong START), because verify2's RED carried NO resolvable external citation — its words: 'A non-Wikidata confirmation of the Ajax 1990 debut was attempted but blocked (Britannica/Ajax/ManUtd/UEFA/ESPN/worldfootball all 403 or 404).' A plausible external URL was deliberately NOT fabricated. E0.6.1 supersedes that with the Wikipedia senior-career infobox (publisher/url/quote above), which resolves live and supports 1990-1999 Ajax under membership-start semantics. The blocked-corroboration status is RETAINED here as history, not deleted."
     }
   ]
 }
