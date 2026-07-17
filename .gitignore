@@ -8,7 +8,16 @@ complete_image_seed_data.json
 verveq_seed_data.json
 
 # Data pipeline cache
-scripts/cache/
+# E0.4: careerPath/ is COMMITTED — it is the only input the pure data guards
+# (cp-assert, selector --check) can re-derive from, and while it was ignored those
+# guards SKIPPED on any fresh checkout, so CI never actually ran them. Note the
+# shape: `scripts/cache/*` rather than `scripts/cache/`, because git cannot
+# re-include a path whose PARENT DIRECTORY is excluded — `!scripts/cache/careerPath/`
+# under a `scripts/cache/` rule silently does nothing.
+scripts/cache/*
+!scripts/cache/careerPath/
+# (full-run.log stays out via the global *.log rule below — it is a transcript of one
+# run, not an input to any rule.)
 
 # Sports data pipeline output
 scripts/data/
@@ -252,6 +261,7 @@ app/convex/data/*
 !app/convex/data/ownerPositionRulings.json
 !app/convex/data/ownerNationRulings.json
 !app/convex/data/ownerDebutRulings.json
+!app/convex/data/ownerDisputedStatements.json
 !app/convex/data/clubAliases.json
 !app/convex/data/playerAdditions.json
 !app/convex/data/football_player_metadata.json

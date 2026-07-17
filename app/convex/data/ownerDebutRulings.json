@@ -36,8 +36,19 @@
       "ruleOutput": 2023,
       "ruleBasis": "P54 statements surviving the rule: Inter Miami CF 2023-2025 only. FC Barcelona (P580=2000, age 12) discarded by the age-16 filter; UFB Jàbac i Terrassa (2003, age 15) likewise; FC Barcelona C and FC Barcelona Atlètic excluded as reserve sides; UE Lleida (ends 2003, age 15) dropped as a pre-16 stint.",
       "ruling": 2008,
-      "independentRef": null,
-      "independentRefStatus": "OWED — the ticket called for 'the independent ref recorded' and none was supplied with the ruling. The value is recorded on the owner's authority alone. NOT fabricated: no citation is asserted here, because inventing one would be exactly the failure the signed-ruling pattern exists to prevent. Supply a source and this field should be filled.",
+      "independentRef": [
+        {
+          "url": "https://www.fcbarcelona.com/en/news/860614",
+          "publisher": "FC Barcelona (fcbarcelona.com)",
+          "title": "Busquets tested on 10 years at Barça",
+          "published": "2018-09-11",
+          "retrievedAt": "2026-07-17",
+          "verified": true,
+          "supports": "\"Sergio Busquets made his first team debut on 13 September 2008. Under the orders of coach Pep Guardiola, the midfielder...shone in a 1-1 draw against Racing Santander.\"",
+          "note": "Fetched and read before recording — the page resolves, is the club's own publication, and names the exact debut date. A ref is only recorded here once it has been confirmed to resolve AND to support the ruled value."
+        }
+      ],
+      "independentRefStatus": "RESOLVED (1 ref). E0.3 recorded this as OWED because no ref was supplied. E0.4 supplied two descriptors; the fcbarcelona.com piece was identified by its id (860614), fetched, verified to resolve and verified to state the debut date, and is recorded above. The second intended ref — a uefa.com appearances piece — carries no URL, id or slug, and NO URL was supplied when asked. It is therefore NOT recorded: a citation nobody can resolve is not a citation, and guessing a plausible uefa.com URL would be exactly the fabrication this pattern exists to prevent. The ruled value is independently sourced by the ref above; a second corroborating ref remains welcome but is not required for the value to stand.",
       "note": "His FC Barcelona first-team debut season. E1.1's BUILD_NOTES already recorded 2008 as the commonly-cited value while shipping 2006 ('Busquets 2006 (Barcelona C) vs 2008'), and E2's F4 lists him in the same reserve-set class as Pedro 2005-vs-2008 and Messi 2003-vs-2004. Ruled by the owner on 2026-07-17 against a rule output of 2023, which is not a plausible debut for a player who won the Champions League in 2009.",
       "eraImpact": "none — peakYear 2013 (ruled) and 2028 (rule output) both fall in bucket 3, '2010s-20s'. The card's eraIndex is unchanged by this ruling."
     }

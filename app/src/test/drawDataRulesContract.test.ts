@@ -17,20 +17,30 @@ import { checkCommittedArtifacts } from "../../../scripts/buildDrawCardSet";
  * imported rather than shelled out to, so they need no tsx dependency and no
  * subprocess — the scripts guard their own `main()` so importing them is inert.
  *
- * THE CACHE CAVEAT, stated plainly: `scripts/cache/careerPath/` is gitignored, so
- * on a machine that has never run the network stages these guards have nothing to
- * re-derive from and would fail for a reason that is not a defect. They skip in
- * that case, which means a fresh CI checkout does NOT currently exercise them.
- * Making that unconditional means committing the cache (~3.8 MB) or restoring it
- * in CI, and that is an owner decision rather than something to smuggle in here.
+ * E0.4 — THE CACHE IS NOW COMMITTED, so these guards no longer skip. While
+ * `scripts/cache/careerPath/` was gitignored they had nothing to re-derive from on a
+ * fresh checkout and skipped, which meant CI reported them green without ever running
+ * them — a guard that cannot fail is indistinguishable from no guard at all. The
+ * owner ruled the ~3.7 MB in (see BUILD_NOTES §11).
+ *
+ * So the cache is now an INPUT, not a scratch dir: it is the evidence the committed
+ * data is derived from, and deleting it is a defect rather than a clean slate. These
+ * assertions therefore FAIL CLOSED if it is missing rather than skipping over it.
  */
 import { existsSync } from "node:fs";
-const CACHE_PRESENT =
-  existsSync("../scripts/cache/careerPath/playerFacts.json") &&
-  existsSync("../scripts/cache/careerPath/clubDict.json") &&
-  existsSync("../scripts/cache/careerPath/sitelinks.json");
 
-describe.skipIf(!CACHE_PRESENT)("draw data — the committed files reproduce from their rules", () => {
+const CACHE_FILES = [
+  "../scripts/cache/careerPath/playerFacts.json",
+  "../scripts/cache/careerPath/clubDict.json",
+  "../scripts/cache/careerPath/searchCandidates.json",
+  "../scripts/cache/careerPath/sitelinks.json",
+];
+
+describe("draw data — the committed files reproduce from their rules", () => {
+  it("the fetch cache the guards re-derive from is present and committed", () => {
+    expect(CACHE_FILES.filter((f) => !existsSync(f))).toEqual([]);
+  });
+
   /**
    * cp-assert. Re-runs the ingest emit in memory and diffs it against the
    * committed canonical file, then asserts the E0.2 spell invariant directly

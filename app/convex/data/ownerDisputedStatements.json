@@ -1,0 +1,57 @@
+{
+  "_doc": [
+    "Owner-signed DISPUTED STATEMENT records for THE DRAW real card set (Ticket E0.4).",
+    "",
+    "WHY THIS FILE EXISTS — AND WHY IT IS NOT A RULE. E2's F2 finding is the one class",
+    "no rule in this pipeline can reach: a Wikidata statement that RESOLVES perfectly and",
+    "is simply FALSE. Every provenance check we have passes on it. E0.2's phantom rule",
+    "drops refs that do not resolve; E0.3's live sweep re-checked all 8436 memberships",
+    "against Wikidata and found 0 unresolvable refs. Neither sees a lie that is well",
+    "formed. E2 said so plainly: the only instrument that found any F2 instance was a",
+    "SECOND SOURCE, and all three it found were found by accident.",
+    "",
+    "So this file is not a detector. It is a ledger of instances a human has established",
+    "by other means, signed, so that what we know does not live only in a session",
+    "transcript — the lesson BUILD_NOTES §11 paid for twice.",
+    "",
+    "verdict 'notCredited' means: the statement is REAL, LIVE and preserved verbatim",
+    "below, but it is not credited as provenance for the fact it would otherwise support.",
+    "It is deliberately NOT dropped. Dropping it would be worse than keeping it: see the",
+    "Dybala record, where the disputed statement is the only thing carrying a value that",
+    "is independently CONFIRMED CORRECT.",
+    "",
+    "EFFECT ON THE ARTIFACT. A disputed statement does not change a value — it changes",
+    "what we CLAIM about that value. The affected fact is forced to amber in the dossier",
+    "with this record attached, so a reader sees the value, the statement behind it, and",
+    "the reason the two do not add up. The canonical playersSourced.json is untouched:",
+    "a ruling never edits a fact, and cp-assert still proves the file reproduces from the",
+    "rules alone."
+  ],
+  "ruledBy": "owner",
+  "ruledOn": "2026-07-17",
+  "records": [
+    {
+      "qid": "Q166317",
+      "name": "Paulo Dybala",
+      "cardId": "real_0101",
+      "class": "F2",
+      "verdict": "notCredited",
+      "statement": {
+        "property": "P54",
+        "value": "Club Sport Emelec",
+        "valueQid": "Q1421829",
+        "spells": [{ "start": 2011, "end": 2012 }],
+        "rank": "NormalRank",
+        "resolves": true,
+        "liveAsOf": "2026-07-17",
+        "verbatimNote": "Preserved exactly as Wikidata carries it. Verified LIVE by E0.3's sweep and again on 2026-07-17: the ref resolves to a real, fully described club (multisports club / association football club). Nothing about the statement is malformed — that is the entire point of the F2 class."
+      },
+      "dispute": "Dybala never played for Club Sport Emelec. His real first senior club, Instituto de Córdoba, is absent from Wikidata's P54 for him entirely.",
+      "affectsFacts": ["debutYear"],
+      "valueStands": 2011,
+      "cardQuality": "amber",
+      "note": "The committed debutYear 2011 is CORRECT and stays. E2 confirmed it against independent Argentine press (senior debut for Instituto de Córdoba, 12 August 2011) — the value is right only because the phantom club and the real club happen to share a start year. Right value, invented provenance; correct by coincidence. This record exists because that coincidence is not a fact we should be silently trading on: the card claimed green off a statement that is false. It is now amber, with the reason attached. NOT dropped: E0.2 measured that dropping the Emelec statement moves his debut to Palermo 2012 — turning an independently confirmed CORRECT value into a wrong one. Emelec is not printed on the card (his three printed clubs are Juventus, Roma, Palermo by tenure), so the artifact has never asserted he played there.",
+      "e2Reference": "E2 systemicFindings F2, severity UNMEASURABLE — 'Dybala (debut-setting statement places him at Club Sport Emelec, a club he never played for; his real first club is absent from Wikidata entirely; the committed value is right only because the phantom club and the real club share a start year)'. E2 amberList real_0104: 'Value 2011 CONFIRMED correct by independent Argentine press (Instituto de Cordoba, senior debut 12 Aug 2011) — but its provenance is a phantom Wikidata statement... Right value, invented provenance; correct only by coincidence of year.'"
+    }
+  ]
+}

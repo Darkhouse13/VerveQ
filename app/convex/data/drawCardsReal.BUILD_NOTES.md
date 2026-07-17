@@ -633,12 +633,25 @@ guard:
 
 Both reverted; both green.
 
-> **Caveat, stated rather than glossed:** `scripts/cache/careerPath/` is gitignored,
-> so on a checkout that has never run the network stages the guards have nothing to
-> re-derive from and **skip**. A fresh CI runner therefore does not yet exercise them.
-> Closing that means committing the ~3.8 MB cache or restoring it in CI — an owner
-> decision, not something to smuggle in under a CI-wiring ticket. Until then these
-> guards protect the developer loop, not the pipeline.
+**E0.4 — the cache is COMMITTED and the guards no longer skip.** While
+`scripts/cache/careerPath/` was gitignored, a fresh checkout had nothing to re-derive
+from, so both guards **skipped** and CI reported them green without ever running them
+— a guard that cannot fail is indistinguishable from no guard. The owner ruled the
+cache in: **5 files, 3.74 MB** (`playerFacts`, `clubDict`, `searchCandidates`,
+`candidateClubQids`, `sitelinks`). `full-run.log` stays out — it is a transcript of
+one run, not an input to any rule.
+
+The cache is now an **input, not a scratch directory**: it is the evidence the
+committed data derives from, and deleting it is a defect rather than a clean slate.
+The guards fail closed on a missing cache rather than skipping (a third assertion
+checks it is present), and a fresh-worktree run proves they execute on a clean
+checkout.
+
+> **`.gitignore` trap, worth knowing:** git **cannot re-include a path whose parent
+> directory is excluded**, so `!scripts/cache/careerPath/` under a `scripts/cache/`
+> rule silently does nothing. The rule had to become `scripts/cache/*` first. This is
+> the same class of trap as E1.1's note that `git check-ignore` exits 0 on a negated
+> path — an ignore rule that quietly fails to do what it looks like it does.
 
 ---
 
@@ -680,12 +693,28 @@ Bucket 0 sits *exactly* at 40 — it is the binding constraint on the partition,
 so its range cannot narrow without dropping below the floor or re-selecting.
 
 **The bucket 0/1 boundary is DECLARED, not transcribed** — the one place E1.2
-could not recover what the build did. No card has `debutYear` 1975 (peakYear
-1980), so `peakYear <= 1980` and `peakYear <= 1979` classify all 430 committed
-cards **identically**; the data cannot discriminate them and no selector exists
-to ask. `peakYear <= 1980 -> bucket 0` is therefore a forward-binding choice for
-cards added later, made so the four ranges are contiguous with no gap. Every
+could not recover what the build did. `peakYear <= 1980 -> bucket 0` is a
+forward-binding choice, made so the four ranges are contiguous with no gap. Every
 other boundary is pinned by cards on both sides.
+
+> **E0.4 — this declaration is no longer free, and the sentence that used to sit
+> here is now false.** It read: *"No card has `debutYear` 1975 (peakYear 1980), so
+> `peakYear <= 1980` and `peakYear <= 1979` classify all 430 committed cards
+> identically; the data cannot discriminate them."* That was true of real-v1. It is
+> not true of real-v2: E0.2's debut rules moved 85 values, and the set now contains
+> **Jean Tigana (real_0427, debut 1975, peakYear 1980)** sitting exactly on the
+> boundary.
+>
+> He is in bucket 0 *because of the declaration*. And **bucket 0 holds exactly 40
+> cards — the floor** — so under `peakYear <= 1979` he moves to bucket 1, bucket 0
+> falls to **39**, and the selector must swap a card in to stay legal. A boundary
+> that classified nothing now decides a card and a floor.
+>
+> **Kept as declared** — it is still the documented choice and still the one that
+> keeps the ranges contiguous — but it is flagged for owner review, and it is a
+> worked example of why a claim about the data has to be re-checked whenever the
+> data moves. Nothing failed here: the era contract passed, every floor passed, and
+> the prose was quietly wrong anyway.
 
 Ticket text specified bucket 1 as `"80s-90s"`; the committed label is
 `"1980s-90s"` and was left alone (E1.2 item 2 permitted only the bucket 0
@@ -773,20 +802,106 @@ always sees what the rule said and that a human overruled it.
 `reviewedNotOverridden` so absence of a ruling is never mistaken for the case never
 having been looked at.
 
-**Busquets' `independentRef` is published as `null`.** The ticket called for "the
-independent ref recorded" and none was supplied with the ruling. The value rests on
-the owner's authority alone and says so (`independentRefStatus: "OWED"`). No citation
-is asserted, because inventing one is precisely the failure this whole pattern exists
-to prevent.
+**Busquets' `independentRef` — RESOLVED (1 ref), E0.4.** E0.3 published it as `null`
+because none was supplied. E0.4 supplied two descriptors; the fcbarcelona.com piece
+was identified by its id (**860614**), **fetched, verified to resolve, and verified to
+support the ruled value** before being recorded — "Busquets tested on 10 years at
+Barça" (11 Sept 2018): *"Sergio Busquets made his first team debut on 13 September
+2008."* The second intended ref, a uefa.com appearances piece, carries no URL, id or
+slug and none was supplied when asked, so **it is not recorded.** A citation nobody
+can resolve is not a citation, and a plausible-looking uefa.com URL is exactly the
+fabrication this pattern exists to prevent. The ruled value is independently sourced
+by the ref that does exist.
+
+### Disputed statements (E0.4) — the F2 ledger
+
+`ownerDisputedStatements.json` is a new signed record type, and deliberately **not a
+rule**: F2 is the class where a statement resolves perfectly and is simply false, so
+every provenance check we have passes on it (E0.3's live sweep re-checked all 8436
+memberships and found 0 unresolvable refs). It is a ledger of instances a human
+established by other means, so that what we know does not live only in a transcript.
+
+| card | statement | verdict | effect |
+|---|---|---|---|
+| real_0101 **Paulo Dybala** | `P54 → Club Sport Emelec (Q1421829)`, 2011–2012, NormalRank, **live and resolving as of 2026-07-17** | **`notCredited`** (class F2) | `debutYear` **2011 stands**, forced **green → amber**, record attached |
+
+**`notCredited` means the statement is preserved verbatim and not credited as
+provenance — it is deliberately NOT dropped.** Dropping it would be strictly worse:
+E0.2 measured that removing the Emelec statement moves Dybala's debut to Palermo
+**2012**, turning a value E2 *independently confirmed correct* (Instituto de Córdoba,
+senior debut 12 August 2011, Argentine press) into a wrong one — because his real
+first club is absent from Wikidata entirely. The value was right by coincidence of
+year, and that coincidence is not something to keep silently trading on. Emelec is not
+printed on his card (his three printed clubs are Juventus, Roma, Palermo, by tenure),
+so the artifact has never asserted he played there.
+
+## 15. F2 — the second-sourcing scope rule (E0.4)
+
+E2 called F2 the most consequential item on its list and said it *"should govern the
+timeline"*. E0.4 rules the scope rather than leaving it open:
+
+> **SCOPE RULE: second-source a disputed fact only where the dispute would cross an
+> era boundary.**
+
+**Why that line and not another.** F2 is unbounded by construction — a faithful
+transcription of a wrong source cannot be detected from the source, so "verify
+everything" is the only exhaustive answer and it is not affordable. The scope rule
+picks the one place a wrong debut year does mechanical damage rather than cosmetic
+damage: **era is a synergy family.** A debut that is wrong by a year inside a bucket
+changes a number nobody plays against; a debut that is wrong across a bucket boundary
+changes the card's `eraIndex`, and therefore its synergy chains, the era histogram and
+the ≥40 floors. The first is an inaccuracy; the second is a gameplay defect.
+
+**The population this scopes to** (measured against real-v2, under
+`peakYear := debutYear + 5`):
+
+| dispute size | cards whose `eraIndex` would change | share |
+|---|---|---|
+| ±1 year | 67 | 15.6% |
+| ±2 years | 120 | 27.9% |
+| ±3 years | 169 | 39.3% |
+
+Boundary-adjacent debut years in the set: 1974, 1975, 1976, 1993, 1994, 1995, 1996,
+2003, 2004, 2005, 2006. So a ±2 review — the band E2's own F4 used when it flagged
+Benzema, Neuer and Khedira as sitting on the 2/3 boundary — is **120 cards, not 430.**
+
+### Residual risk, accepted
+
+This is what the owner is accepting, stated so it cannot be discovered later as a
+surprise:
+
+- **Every non-boundary-crossing F2 instance stays unverified and ships.** A card can
+  carry a debut that is wrong by a year or two, sourced to a statement that resolves
+  perfectly, and nothing in this pipeline will ever flag it. Ozil (Real Madrid start
+  2009 vs an actual 2010) is a known live instance and is **still green**.
+- **The size of that class is unknown and unestimated.** E2 was explicit: *"There is
+  no basis for estimating how many more of the 430 carry this class, and the 38-card
+  second sample is far too small to size it."* Three instances were found, all three
+  by accident.
+- **The cheap detector does not exist.** E2 tested it: a debut statement with zero
+  references or only P143 "imported from Wikipedia" fires on **406 of 430 (94.4%)** —
+  that is the baseline for football data on Wikidata, not a signal. Messi's debut
+  statement has zero references; Ronaldo's and Maradona's are P143-only.
+- **What is NOT accepted:** an F2 instance a human has actually established. Those go
+  in `ownerDisputedStatements.json`, force the affected fact to amber, and are never
+  silently carried as green (§14).
+
+The accepted risk is therefore **unverified accuracy inside a bucket**, in exchange
+for bounded verification effort at the boundaries where the engine can feel it.
 
 ### Still owed
 
 | # | item | why it is not closed |
 |---|---|---|
-| 1 | **F2 — second-sourcing** | The ceiling on everything. E2: it *"should govern the timeline"*. Not a ruling — a decision about how much second-sourcing this set warrants before it faces players. |
-| 2 | **Dybala ships GREEN** | His debut (2011) is correct but its provenance is a phantom Emelec statement. E0.3's live sweep confirms the statement is LIVE, so no rule flags it. Marking it amber needs a signed record, not a rule. |
+| 1 | **F2 — the ±2 boundary review itself** | The scope rule is now ruled; the 120-card review has not been RUN. That is the work the rule authorises, not work it completes. |
+| 2 | **Bucket 0/1 boundary is now load-bearing** | §12. Jean Tigana sits exactly on the declared boundary and bucket 0 sits exactly at the floor. Kept as declared, flagged for review. |
 | 3 | **Ronaldinho, Wataru Endo** | Positions widened green→amber by the statement-level P413 fetch; picks unchanged, no membership impact. Ruling needed only to resolve the ambiguity rather than disclose it. |
 | 4 | **10 dropped memberships** | Unresolvable club refs (§9). Błaszczykowski's is E2's amber: KS Częstochowa 2003 is a real senior club whose QID resolves to nothing, so his debut stays 2004. |
-| 5 | **CI guards skip without the cache** | §11. `scripts/cache/careerPath/` is gitignored, so a fresh checkout skips both data guards. |
-| 6 | **Busquets' independent ref** | See above. |
-| 7 | **Tier as a target** | §1 — descriptive today. Making it a constraint is a new rule and a new ticket. |
+| 5 | **Busquets' 2nd ref** | **CLOSED to 1 of 2 (E0.4).** The fcbarcelona.com piece is recorded and verified. The intended uefa.com "appearances piece" was never supplied as a URL and is NOT recorded — a citation nobody can resolve is not a citation. |
+| 6 | **Tier as a target** | §1 — descriptive today. Making it a constraint is a new rule and a new ticket. |
+| 7 | **P0-set sim** | Ticket 0.4's forward requirement: ≥99.5% natural clear over ≥2000 boards on the pinned production set. Never run against real-v2. Era is a synergy family and real-v2's era spread (40/76/138/176) is not the generator's, so this is not a formality. |
+
+**Closed by E0.4:** ~~CI guards skip without the cache~~ (§11 — cache committed,
+guards fail closed, fresh-worktree proved). ~~Dybala ships green~~ (§14 — signed
+disputed-statement record, now amber). ~~F2 scope undecided~~ (§15 — scope ruled,
+residual risk accepted).

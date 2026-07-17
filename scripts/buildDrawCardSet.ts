@@ -51,6 +51,7 @@ const SOURCED_PATH = path.join(DATA, "playersSourced.json");
 const RULINGS_PATH = path.join(DATA, "ownerPositionRulings.json");
 const NATION_RULINGS_PATH = path.join(DATA, "ownerNationRulings.json");
 const DEBUT_RULINGS_PATH = path.join(DATA, "ownerDebutRulings.json");
+const DISPUTED_PATH = path.join(DATA, "ownerDisputedStatements.json");
 const SITELINKS_PATH = path.join(CACHE, "sitelinks.json");
 const CARDS_PATH = path.join(DATA, "drawCardsReal.candidates.json");
 const DOSSIER_PATH = path.join(DATA, "drawCardsReal.dossier.json");
@@ -124,9 +125,19 @@ function fameOrder(ps: Player[], sitelinks: Record<string, number>): Player[] {
 // (Puskás 1943, Di Stéfano) have a home; bucket 3 is open above.
 // Labels are the COMMITTED ones (E1.2 relabelled bucket 0 to "≤70s"); the
 // drawCardSetEraContract drift guard compares card labels against these.
-// The bucket 0/1 boundary is DECLARED, not transcribed: no card has debutYear 1975,
-// so peakYear<=1980 and <=1979 classify every card identically and the data cannot
-// discriminate them. <=1980 is chosen so the four ranges are contiguous with no gap.
+//
+// The bucket 0/1 boundary is DECLARED, not transcribed. E1.2 could declare it freely
+// because nothing turned on it: no card had debutYear 1975, so peakYear<=1980 and
+// <=1979 classified all 430 identically.
+//
+// E0.4 — THAT IS NO LONGER TRUE, and the declaration is now load-bearing. E0.2's
+// debut rules moved 85 values, and real-v2 contains Jean Tigana (real_0427, debut
+// 1975, peakYear 1980) sitting EXACTLY on the boundary. He is in bucket 0 because of
+// this line. And bucket 0 holds exactly 40 cards — the floor — so under <=1979 he
+// moves to bucket 1, bucket 0 falls to 39, and the selector has to swap a card in to
+// stay legal. A boundary that classified nothing now decides a card and a floor.
+// Kept as declared (it is still the documented choice, and it keeps the four ranges
+// contiguous), but it is no longer free, and the owner should know that.
 const ERA_BUCKETS = [
   { index: 0, label: "≤70s", minPeak: null as number | null, maxPeak: 1980 as number | null },
   { index: 1, label: "1980s-90s", minPeak: 1981 as number | null, maxPeak: 1999 as number | null },
@@ -269,6 +280,14 @@ function build() {
   const natRulingByQid = new Map((natRulings.rulings ?? []).map((r) => [r.qid, r]));
   const debutRulingByQid = new Map((debutRulings.rulings ?? []).map((r) => [r.qid, r]));
 
+  // E0.4 — disputed statements (F2 class). These do NOT change a value; they change
+  // what the artifact claims about it. The affected fact is forced amber and carries
+  // the record, so a green fact can never rest on a statement a human has established
+  // is false. No rule can find these — see ownerDisputedStatements.json.
+  type Disputed = { qid: string; name: string; class: string; verdict: string; affectsFacts: string[]; cardQuality: string; statement: unknown; dispute: string; note: string; e2Reference?: string; valueStands?: unknown };
+  const disputed = readJson<{ ruledBy?: string; ruledOn?: string; records?: Disputed[] }>(DISPUTED_PATH, {});
+  const disputedByQid = new Map((disputed.records ?? []).map((r) => [r.qid, r]));
+
   // FAIL CLOSED on a ruling that hits nothing. A QID-pinned ruling whose QID is not
   // in the pool is either a typo or a stale record, and in both cases it silently
   // does NOTHING — the exact drift the QID pinning exists to prevent (E1.1 pinned
@@ -279,6 +298,7 @@ function build() {
     ["position", [...rulingByQid.keys()]],
     ["nation", [...natRulingByQid.keys()]],
     ["debutYear", [...debutRulingByQid.keys()]],
+    ["disputedStatement", [...disputedByQid.keys()]],
   ] as const) {
     const orphans = qids.filter((q) => !poolQids.has(q));
     if (orphans.length > 0)
@@ -401,12 +421,17 @@ function build() {
         "uniform, since a per-player peak would be an unsourced judgement on all 430 cards.",
       ],
       boundaryNote: [
-        "The bucket0/bucket1 boundary is DECLARED, not transcribed. No card has debutYear 1975",
-        "(peakYear 1980), so peakYear<=1980 and peakYear<=1979 classify every card identically and",
-        "the data cannot discriminate them. peakYear<=1980 -> bucket 0 is a forward-binding choice,",
-        "made so the four peakYear ranges are contiguous with no gap. Every other boundary is",
-        "pinned by cards on both sides. E0.2 note: a selector now EXISTS (scripts/buildDrawCardSet.ts),",
-        "so this boundary is code rather than prose — but it is still a declaration, not a recovery.",
+        "The bucket0/bucket1 boundary is DECLARED, not transcribed, and as of E0.4 it is also",
+        "LOAD-BEARING. E1.2 declared it when it was free: no card then had debutYear 1975, so",
+        "peakYear<=1980 and peakYear<=1979 classified all 430 identically and the data could not",
+        "discriminate them. E0.2's debut rules moved 85 values, and real-v2 now contains Jean",
+        "Tigana (real_0427, debutYear 1975, peakYear 1980) sitting EXACTLY on the boundary.",
+        "He is in bucket 0 because of this declaration. Bucket 0 holds exactly 40 cards — the",
+        "floor — so under peakYear<=1979 he moves to bucket 1, bucket 0 falls to 39, and the",
+        "selector must swap a card in to stay legal. The choice is kept (it is the documented one,",
+        "and it keeps the four peakYear ranges contiguous with no gap), but it now decides a card",
+        "and a floor rather than nothing, and is flagged for owner review. Every other boundary is",
+        "pinned by cards on both sides.",
       ],
     },
     ownerPositionRulings: rulings.rulings ?? [],
@@ -414,10 +439,12 @@ function build() {
     // edits a fact: playersSourced.json still emits the rule's answer for all of them.
     ownerNationRulings: natRulings,
     ownerDebutRulings: debutRulings,
+    ownerDisputedStatements: disputed,
     entries: chosen.map((p, i) => {
       const ruling = rulingByQid.get(p.qid);
       const natRuling = natRulingByQid.get(p.qid);
       const debutRuling = debutRulingByQid.get(p.qid);
+      const dispute = disputedByQid.get(p.qid);
       return {
         cardId: cards[i].cardId,
         name: p.answerName,
@@ -481,7 +508,19 @@ function build() {
                 source: p.facts.debutYear!.source,
                 sourceQuality: p.facts.debutYear!.sourceQuality,
               }
-            : p.facts.debutYear && { ...p.facts.debutYear, provenance: "sourced", birthYear: p.facts.birthYear?.value ?? null, birthYearSource: p.facts.birthYear?.source ?? null },
+            : p.facts.debutYear && {
+                ...p.facts.debutYear,
+                provenance: "sourced",
+                // E0.4 — a disputed statement forces the fact it supports to amber.
+                // The VALUE is untouched (Dybala's 2011 is independently confirmed
+                // correct); what changes is the confidence the artifact claims, which
+                // was resting on a statement a human has established is false.
+                ...(dispute?.affectsFacts.includes("debutYear")
+                  ? { sourceQuality: dispute.cardQuality, disputedStatement: dispute }
+                  : {}),
+                birthYear: p.facts.birthYear?.value ?? null,
+                birthYearSource: p.facts.birthYear?.source ?? null,
+              },
           clubs: p.facts.clubs.map((c) => ({ value: c.value, clubQid: c.clubQid, spells: c.spells, source: c.source, sourceQuality: c.sourceQuality, printed: cards[i].clubs.some((x) => x.tag === tagger.get(c.clubQid)?.tag) })),
         },
         identityEvidence: p.identityEvidence,
