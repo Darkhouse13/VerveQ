@@ -1,0 +1,62 @@
+{
+  "_doc": [
+    "Owner nation rulings for THE DRAW real card set (Ticket E0.3).",
+    "",
+    "WHY THIS FILE EXISTS. E0.2 replaced E1.1's alphabetical nation pick (which made",
+    "Diego Costa 'Brazil' because B precedes S) with a sourced rule: a dual international",
+    "resolves to his MOST RECENT senior national team, read from the P580/P582 on the P54",
+    "statement itself. That rule is right far more often than it is wrong — it fixed Costa",
+    "to Spain, Zaha to Ivory Coast, Dumfries to Netherlands, Motta to Italy, Sammer and",
+    "Kirsten from GDR to Germany, Karpin and Mostovoi from CIS to Russia.",
+    "",
+    "But recency is not identity, and on a handful of players it is confidently wrong in a",
+    "way no P54-only rule can see. The rule cannot know that Puskás's 4 Spain caps at 35",
+    "are a footnote to 84 caps for the Mighty Magyars — both spells are genuine, sourced",
+    "and dated, and Spain is simply later.",
+    "",
+    "THE SIGNED PATTERN (identical to ownerPositionRulings.json). A ruling NEVER edits a",
+    "fact. playersSourced.json still emits the rule's answer, and cp-assert still proves it",
+    "reproduces from the rules. The override lives here and in the card/dossier, where it",
+    "carries provenance 'editorial-ruled' and reproduces the rule's output VERBATIM beside",
+    "it (ruleOutput + ruleCandidates), so a reader always sees what the rule said, what",
+    "Wikidata said, and that a human overruled it. Absence of a ruling is never read as",
+    "agreement: Di Stéfano was reviewed and deliberately NOT overridden (see below).",
+    "",
+    "Rulings are applied to the POOL before selection re-runs — the ordering E0.2",
+    "discovered the hard way with positions. Nation does not enter the selection criteria",
+    "(fame + position quota + era floors), so unlike a position ruling it cannot change",
+    "which cards are in the set; it moves the nation histogram only."
+  ],
+  "ruledBy": "owner",
+  "ruledOn": "2026-07-17",
+  "reviewedNotOverridden": [
+    {
+      "qid": "Q164546",
+      "name": "Alfredo Di Stéfano",
+      "ruleOutput": "Spain",
+      "ruleCandidates": ["Argentina", "Colombia", "Spain"],
+      "note": "Reviewed and deliberately NOT overridden. The rule's answer is defensible on the merits rather than merely by recency: 31 caps for Spain against 6 for Argentina, and his Real Madrid era is what he is known for. Recorded here so that the absence of a ruling on this card is not mistaken for the case never having been looked at."
+    }
+  ],
+  "rulings": [
+    {
+      "qid": "Q482931",
+      "name": "Ferenc Puskás",
+      "ruleOutput": "Spain",
+      "ruleCandidates": ["Hungary", "Spain"],
+      "ruleBasis": "P54: Hungary men's national football team 1945-1956; Spain men's national football team 1961-1962. Most recent senior national team wins; both spells are genuine playing careers and both overlap his club career, so the coaching-contamination guard does not fire.",
+      "ruling": "Hungary",
+      "note": "The definitive Hungarian icon — 84 caps and 84 goals for the Mighty Magyars, the 1953 Wembley side, the 1954 World Cup final. His 4 Spain caps came at 35 after he had already been the best player in the world for a decade. Recency is a sourced tiebreak, not a claim about identity, and here it is wrong."
+    },
+    {
+      "qid": "Q185115",
+      "name": "Edgar Davids",
+      "ruleOutput": "Suriname",
+      "ruleCandidates": ["Netherlands", "Suriname"],
+      "ruleBasis": "P54: Netherlands national association football team 1994-2005; Suriname men's national football team 2009-2010. The Suriname span overlaps his club career (he was at Crystal Palace into 2010), so the coaching-contamination guard does not fire and recency picks Suriname.",
+      "ruling": "Netherlands",
+      "note": "74 caps for the Netherlands across Euro 96, France 98, Euro 2000 and Euro 2004 — he is a Dutch international in every ordinary sense. The Suriname statement is unverified here and is a candidate F2 instance (inherited source falsehood): if it is false, no rule reading only P54 can detect it, and this override is the only instrument available. Flagged for the second-sourcing pass either way.",
+      "pendingSecondSource": true
+    }
+  ]
+}

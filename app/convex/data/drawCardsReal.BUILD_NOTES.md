@@ -6,8 +6,11 @@
 - `drawCardsReal.candidates.json` — the card data
 - `drawCardsReal.dossier.json` — per-fact provenance, for blind verify
 - `ownerPositionRulings.json` — the 25 owner position rulings (E1.1)
+- `ownerNationRulings.json` — Puskás, Davids (E0.3) + Di Stéfano reviewed-not-overridden
+- `ownerDebutRulings.json` — Busquets (E0.3)
 - `playersSourced.json` — the canonical sourced layer these are selected from
 - `../../../scripts/buildDrawCardSet.ts` — **the selector (new in E0.2)**
+- `../../src/test/drawDataRulesContract.test.ts` — **the CI guards (new in E0.3)**
 - this file
 
 Engine untouched (CONTRACT v1.0, frozen). No app code. Nothing imports these
@@ -31,6 +34,17 @@ found alongside it.
 | — | dual internationals decided by **alphabetical order** | most recent senior national team, sourced (§5) |
 | — | memberships citing an unresolvable club QID, dropped in silence | dropped **and logged** (§9) |
 | §11 | the selector was never committed and could not be reproduced | **`scripts/buildDrawCardSet.ts` exists** (§11) |
+
+### E0.3 — rulings applied, guards wired, sweep completed
+
+| item | outcome |
+|---|---|
+| **Phantom sweep, live** | All 1314 players re-checked against Wikidata: **8436 memberships vs 12185 live (player,club) pairs → 0 refs fail to resolve.** Nothing further to drop; E0.2's 10 drops (§9) are the complete set. |
+| **Dybala/Emelec** | The ticket named it as the known instance. **It is not one.** `Club Sport Emelec (Q1421829)` is a live, NormalRank P54 statement resolving to a real described club — verified live on 2026-07-17. The ref resolves; the *statement* is false. That is F2, and dropping it would have moved a correct debut (2011, confirmed by E2 against Argentine press) to a wrong one (Palermo 2012), because his real first club is absent from Wikidata entirely. |
+| **Owner rulings** | 3 applied — Puskás, Davids, Busquets (§14). Selection unchanged 430/430. |
+| **Nation override mechanism** | `ownerNationRulings.json`, same signed pattern as positions. |
+| **Tiers** | Ruled descriptive, not enforced (§1). F5 quoted verbatim there. |
+| **CI** | `cp-assert` + `selector --check` now run in `npm run check` (§11). Mutation-proved. |
 
 **What E0.2 did NOT do**, and must not be read as having done:
 
@@ -129,12 +143,56 @@ reproducible, and already the fame proxy in `ingestWikidataPlayerData.ts`
 absent `scripts/data/`). `fameRank` stays EDITORIAL — sitelinks are its
 documented backbone, not a sourced fact.
 
-> **`tier` is GONE as of E0.2, and this table with it.** E2 found it wrong on at
-> least 3 cards (Keegan, Vertonghen, Ochoa all `active`, all retired). It was never
-> a card field — dossier metadata only — and its E1 rule was session-only and
-> unrecoverable. Re-authoring the selector meant either inventing a tier rule (which
-> would have had to reproduce the defect to reproduce the table) or dropping the
-> field. It is dropped. Nothing read it.
+> **`tier` is GONE (E0.2), and this table with it. E0.3 records the owner ruling
+> that makes that permanent: composition tiers are DESCRIPTIVE, not enforced.**
+>
+> **The selector enforces exactly two things: fame-ordering and the floors.** It
+> does not target a tier mix, and no card is selected or dropped to hit one. The
+> 150/195/85 table above described an *outcome* of E1's selection, and it was read
+> ever since as though it were a specification — which is how a number nobody chose
+> became a constraint nobody could reproduce.
+>
+> E2's finding, quoted verbatim so it is on the record in the file it concerns
+> (**F5, severity METADATA — "tier is wrong on at least 3 cards"**):
+>
+> > "Kevin Keegan (real_0328) tier=active — born 1951, retired as a player in 1984.
+> > Jan Vertonghen (real_0281) tier=active — retired 2025. Guillermo Ochoa
+> > (real_0303) tier=active — retired. Outside the four verified facts, so not part
+> > of the RED/AMBER verdict, but plainly wrong. A second agent found no tier errors
+> > among its own 10 cards, so this is 3 confirmed instances rather than a general
+> > claim."
+>
+> `tier` was dossier metadata only — it was never a card field and nothing read it.
+> Its E1 rule was session-only and is unrecoverable, so re-authoring the selector
+> offered only two options: invent a tier rule (which would have had to reproduce
+> F5's defect in order to reproduce the documented table) or drop the field. It is
+> dropped, and F5 is retired by removal rather than by fix.
+>
+> **Descriptive composition of real-v2, for owner review** (observed, not enforced;
+> the cut is declared here, not sourced):
+>
+> | descriptive band | definition (declared here, not sourced) | cards |
+> |---|---|---|
+> | active | ≥1 open club spell (P582 absent) | **156** |
+> | retired icons & legends | no open spell, sitelinks ≥ 100 | **19** |
+> | cult heroes / journeymen | no open spell, sitelinks < 100 | **255** |
+>
+> Fame spread: max 221 (Messi), median 67, min 43.
+>
+> **These bands do not reproduce E1's 150/195/85 and no honest choice of cut would.**
+> The ≥100 line is arbitrary — it is stated so the counts are checkable, not because
+> 100 means anything. Read the two real dimensions instead: **156 active / 274
+> retired**, and a fame range of 43–221. If the owner wants a tier mix to be a
+> *target* rather than a description, that is a new rule and needs a ticket; the
+> selector would then have to enforce it alongside the position quota and era floors,
+> and the two can conflict.
+>
+> **"active" here is the same observable that produced F5** — an open spell means
+> Wikidata carries no end date. It is now honest for 2 of E2's 3 cards (Keegan
+> real_0251 and Vertonghen real_0298 both read retired), but **Ochoa (real_0305)
+> still has an open spell and would still band as "active" despite having retired.**
+> That is F5's root cause surviving in descriptive form, which is exactly why the
+> band is published as a description of the data and not as a claim about the player.
 
 ---
 
@@ -561,11 +619,26 @@ it cannot be mistaken for one (§13).
 data is asserted.* Asserting every property of the output says nothing about the
 rule that produced it.
 
-**Still owed:** neither `cp-assert` nor `buildDrawCardSet --check` runs in CI. Both
-are pure and offline and are safe there; `drawCardSetEraContract` is the only guard
-currently wired into `npm run check`. Until they are, the canonical file, the card
-set and the rules can still drift apart between tickets — the exact failure this
-section exists to describe.
+**E0.3 — both guards now run in `npm run check`**, via
+`app/src/test/drawDataRulesContract.test.ts` (`npm run test` is already inside
+`check`). They are imported and run in-process rather than shelled out to, so they
+need no `tsx` dependency and no subprocess; both scripts guard their own `main()`, so
+importing them is inert. Mutation-proved at authoring, one deliberate mutation per
+guard:
+
+| mutation | cp-assert guard | selector guard |
+|---|---|---|
+| canonical `playersSourced.json`: Messi debutYear 2004 → 1999 | **FAIL** ✓ | **FAIL** ✓ (correctly — it derives from the canonical) |
+| card `drawCardsReal.candidates.json`: real_0001 rating 95 → 60 | pass ✓ (reads canonical only) | **FAIL** ✓ |
+
+Both reverted; both green.
+
+> **Caveat, stated rather than glossed:** `scripts/cache/careerPath/` is gitignored,
+> so on a checkout that has never run the network stages the guards have nothing to
+> re-derive from and **skip**. A fresh CI runner therefore does not yet exercise them.
+> Closing that means committing the ~3.8 MB cache or restoring it in CI — an owner
+> decision, not something to smuggle in under a CI-wiring ticket. Until then these
+> guards protect the developer loop, not the pipeline.
 
 ---
 
@@ -675,15 +748,45 @@ the same position), all recorded in `dossier.selector.eraSwaps`.
 > still-owed Ticket 0.4 requirement (≥99.5% natural clear over ≥2000 boards on the
 > pinned production set) has not been run against this set.
 
-## 14. Pending owner rulings (E0.2)
+## 14. Owner rulings — applied (E0.3)
 
-| # | card(s) | question |
+Three signed overrides, all applied to the POOL before selection re-ran. **Selection
+was unchanged: 430/430, zero swaps** — nation enters no selection criterion, and
+Busquets' ruled debut lands in the same era bucket as the rule's output (peakYear
+2013 and 2028 are both bucket 3). All floors, the ±3pp band and the era assert were
+re-checked and hold.
+
+| card | field | rule output | **ruled** | file |
+|---|---|---|---|---|
+| real_0039 Ferenc Puskás | nation | Spain | **Hungary** | `ownerNationRulings.json` |
+| real_0344 Edgar Davids | nation | Suriname | **Netherlands** | `ownerNationRulings.json` |
+| real_0083 Sergio Busquets | debutYear | 2023 | **2008** | `ownerDebutRulings.json` |
+
+**A ruling never edits a fact, and this is now mechanically visible:** applying all
+three left `playersSourced.json` byte-identical, and `cp-assert` still proves the
+canonical file reproduces from the rules alone. The rule's output travels beside the
+override in the card dossier (`ruleOutput`, `ruleBasis`, `sourcedValue`), so a reader
+always sees what the rule said and that a human overruled it.
+
+**Reviewed and deliberately NOT overridden:** Di Stéfano keeps the rule's **Spain**
+(31 caps for Spain vs 6 for Argentina). Recorded in `ownerNationRulings.json` under
+`reviewedNotOverridden` so absence of a ruling is never mistaken for the case never
+having been looked at.
+
+**Busquets' `independentRef` is published as `null`.** The ticket called for "the
+independent ref recorded" and none was supplied with the ruling. The value rests on
+the owner's authority alone and says so (`independentRefStatus: "OWED"`). No citation
+is asserted, because inventing one is precisely the failure this whole pattern exists
+to prevent.
+
+### Still owed
+
+| # | item | why it is not closed |
 |---|---|---|
-| 1 | **Sergio Busquets** | debut 2006 → **2023**. Sole shift beyond +4. Wikidata files his academy entry on the first-team QID; no P54-only rule can see it. Suggested: QID-pinned `ownerRuling` for 2008, as Maldini's identity was resolved. |
-| 2 | **Ferenc Puskás → Spain** | Rule output, honestly: Hungary 1945–56, **Spain 1961–62**, most recent wins. Sourced and correct by rule; wrong by football sense. Same class: **Di Stéfano → Spain** (Argentina 1947, Colombia 1949–52, Spain 1957–61). |
-| 3 | **Edgar Davids → Suriname** | Wikidata asserts a Suriname senior spell 2009–10 overlapping his club career. If false, it is F2 — beyond any rule here. |
-| 4 | **Ronaldinho, Wataru Endo** | positions widened green→amber by the statement-level P413 fetch. Pick unchanged (ATT / MID), **no membership impact**. They need a ruling only if the owner wants the ambiguity resolved rather than disclosed. |
-| 5 | **10 dropped memberships** | unresolvable club refs, now logged (§9). Błaszczykowski's is E2's amber: Wikidata's KS Częstochowa 2003 is a real senior club whose QID resolves to nothing, so his debut stays 2004. Resolving the QIDs would change 2 in-set debuts. |
-
-**Not a ruling — a decision:** how much second-sourcing this set warrants before it
-faces players (F2). E2 called it the most consequential item on its list.
+| 1 | **F2 — second-sourcing** | The ceiling on everything. E2: it *"should govern the timeline"*. Not a ruling — a decision about how much second-sourcing this set warrants before it faces players. |
+| 2 | **Dybala ships GREEN** | His debut (2011) is correct but its provenance is a phantom Emelec statement. E0.3's live sweep confirms the statement is LIVE, so no rule flags it. Marking it amber needs a signed record, not a rule. |
+| 3 | **Ronaldinho, Wataru Endo** | Positions widened green→amber by the statement-level P413 fetch; picks unchanged, no membership impact. Ruling needed only to resolve the ambiguity rather than disclose it. |
+| 4 | **10 dropped memberships** | Unresolvable club refs (§9). Błaszczykowski's is E2's amber: KS Częstochowa 2003 is a real senior club whose QID resolves to nothing, so his debut stays 2004. |
+| 5 | **CI guards skip without the cache** | §11. `scripts/cache/careerPath/` is gitignored, so a fresh checkout skips both data guards. |
+| 6 | **Busquets' independent ref** | See above. |
+| 7 | **Tier as a target** | §1 — descriptive today. Making it a constraint is a new rule and a new ticket. |

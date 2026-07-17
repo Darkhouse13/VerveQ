@@ -1844,21 +1844,19 @@ const cpStripTimestamps = (v: unknown): unknown =>
     JSON.stringify(v, (k, val) => (k === "retrievedAt" || k === "ruledOn" ? undefined : val)),
   );
 
-function cpAssert(): void {
-  if (!fs.existsSync(CP_OUT_PATH)) {
-    console.error(`cp-assert FAILED: ${path.relative(process.cwd(), CP_OUT_PATH)} does not exist`);
-    process.exitCode = 1;
-    return;
-  }
+/**
+ * E0.3 — the pure half of cp-assert, exported so the CI guard
+ * (app/src/test/drawCanonicalAssertContract.test.ts) can run it in-process.
+ * Returns [] when the committed canonical file reproduces from the rules.
+ * Offline: reads only the committed file and the fetch cache.
+ */
+export function cpAssertFailures(): string[] {
+  if (!fs.existsSync(CP_OUT_PATH)) return [`${path.relative(process.cwd(), CP_OUT_PATH)} does not exist`];
   const committed = readJson<SourcedPlayer[]>(CP_OUT_PATH, []);
   const { players } = cpEmit(false);
   const a = cpStripTimestamps(committed) as SourcedPlayer[];
   const b = cpStripTimestamps(players) as SourcedPlayer[];
-  if (a.length !== b.length) {
-    console.error(`cp-assert FAILED: committed ${a.length} players, re-run emits ${b.length}`);
-    process.exitCode = 1;
-    return;
-  }
+  if (a.length !== b.length) return [`committed ${a.length} players, re-run emits ${b.length}`];
   const diffs: string[] = [];
   for (let i = 0; i < a.length && diffs.length < 10; i++) {
     const x = JSON.stringify(a[i]);
@@ -1867,12 +1865,7 @@ function cpAssert(): void {
     committed: ${x.slice(0, 260)}
     re-run:    ${y.slice(0, 260)}`);
   }
-  if (diffs.length > 0) {
-    console.error(`cp-assert FAILED: ${diffs.length}+ players differ (modulo retrievedAt):`);
-    console.error(diffs.join("\n"));
-    process.exitCode = 1;
-    return;
-  }
+  if (diffs.length > 0) return [`${diffs.length}+ players differ (modulo retrievedAt):\n${diffs.join("\n")}`];
 
   // ── E0.2 item 1 — THE SPELL INVARIANT ────────────────────────────────────────
   // Byte-equality above only proves the file matches the rules as they are now. It
@@ -1909,15 +1902,25 @@ function cpAssert(): void {
       }
     }
   }
-  if (spellFails.length > 0) {
-    console.error(`cp-assert FAILED: spell count does not match source statement count:`);
-    console.error(spellFails.join("\n"));
+  if (spellFails.length > 0)
+    return [`spell count does not match source statement count:\n${spellFails.join("\n")}`];
+
+  cpAssertMultiSpellClubs = multiSpellClubs;
+  return [];
+}
+/** Reporting only — set by the last cpAssertFailures() run. */
+let cpAssertMultiSpellClubs = 0;
+
+function cpAssert(): void {
+  const fails = cpAssertFailures();
+  if (fails.length > 0) {
+    for (const f of fails) console.error(`cp-assert FAILED: ${f}`);
     process.exitCode = 1;
     return;
   }
-
-  console.log(`cp-assert OK: committed file reproduces exactly (${a.length} players, modulo retrievedAt)`);
-  console.log(`cp-assert OK: one spell per P54 statement, no merging (${multiSpellClubs} multi-spell clubs)`);
+  const n = readJson<SourcedPlayer[]>(CP_OUT_PATH, []).length;
+  console.log(`cp-assert OK: committed file reproduces exactly (${n} players, modulo retrievedAt)`);
+  console.log(`cp-assert OK: one spell per P54 statement, no merging (${cpAssertMultiSpellClubs} multi-spell clubs)`);
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -2216,7 +2219,15 @@ async function main() {
     process.exit(1);
   }
 }
-main().catch((err) => {
-  console.error(err);
-  process.exit(1);
-});
+// Only run when invoked as a script. Importing this module (the E0.3 CI guard
+// imports cpAssertFailures) must not execute a stage or exit the process.
+const cpInvokedDirectly =
+  typeof process !== "undefined" &&
+  process.argv[1] !== undefined &&
+  path.resolve(process.argv[1]) === path.resolve(fileURLToPath(import.meta.url));
+if (cpInvokedDirectly) {
+  main().catch((err) => {
+    console.error(err);
+    process.exit(1);
+  });
+}

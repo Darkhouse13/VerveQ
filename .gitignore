@@ -250,6 +250,8 @@ app/convex/data/*
 !app/convex/data/drawCardsReal.dossier.json
 !app/convex/data/drawCardsReal.BUILD_NOTES.md
 !app/convex/data/ownerPositionRulings.json
+!app/convex/data/ownerNationRulings.json
+!app/convex/data/ownerDebutRulings.json
 !app/convex/data/clubAliases.json
 !app/convex/data/playerAdditions.json
 !app/convex/data/football_player_metadata.json

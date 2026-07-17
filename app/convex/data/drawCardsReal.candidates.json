@@ -1041,7 +1041,7 @@
   {
     "cardId": "real_0039",
     "name": "Ferenc Puskás",
-    "nation": "Spain",
+    "nation": "Hungary",
     "position": "ATT",
     "debutYear": 1943,
     "eraIndex": 0,
@@ -2260,7 +2260,7 @@
     "name": "Sergio Busquets",
     "nation": "Spain",
     "position": "MID",
-    "debutYear": 2023,
+    "debutYear": 2008,
     "eraIndex": 3,
     "eraLabel": "2010s-20s",
     "clubs": [
@@ -9496,7 +9496,7 @@
   {
     "cardId": "real_0344",
     "name": "Edgar Davids",
-    "nation": "Suriname",
+    "nation": "Netherlands",
     "position": "MID",
     "debutYear": 1991,
     "eraIndex": 1,

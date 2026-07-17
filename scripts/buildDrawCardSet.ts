@@ -49,6 +49,8 @@ const CACHE = path.join(__dirname, "cache", "careerPath");
 
 const SOURCED_PATH = path.join(DATA, "playersSourced.json");
 const RULINGS_PATH = path.join(DATA, "ownerPositionRulings.json");
+const NATION_RULINGS_PATH = path.join(DATA, "ownerNationRulings.json");
+const DEBUT_RULINGS_PATH = path.join(DATA, "ownerDebutRulings.json");
 const SITELINKS_PATH = path.join(CACHE, "sitelinks.json");
 const CARDS_PATH = path.join(DATA, "drawCardsReal.candidates.json");
 const DOSSIER_PATH = path.join(DATA, "drawCardsReal.dossier.json");
@@ -197,7 +199,12 @@ function buildTagger(selected: Player[]) {
 // ±3pp band without any post-hoc correction. Within a position, fame decides.
 // Then era floors are repaired by lowest-fameRank swaps INSIDE the same position,
 // so the quota cannot drift while the floor is satisfied.
-function select(selectable: Player[], sitelinks: Record<string, number>, posOf: (p: Player) => Pos) {
+function select(
+  selectable: Player[],
+  sitelinks: Record<string, number>,
+  posOf: (p: Player) => Pos,
+  debutOf: (p: Player) => number,
+) {
   const w = C13V1_CONFIG.cardGen.positionWeights;
   const total = w.GK + w.DEF + w.MID + w.ATT;
   const quota: Record<Pos, number> = { GK: 0, DEF: 0, MID: 0, ATT: 0 };
@@ -219,11 +226,11 @@ function select(selectable: Player[], sitelinks: Record<string, number>, posOf: 
   // lowest-fame selected card of the most over-supplied era — within the SAME
   // position, so quotas stay exact. Bounded: each pass fills one seat.
   for (let guard = 0; guard < 500; guard++) {
-    const count = (i: number) => chosen.filter((c) => eraOf(c.facts.debutYear!.value).index === i).length;
+    const count = (i: number) => chosen.filter((c) => eraOf(debutOf(c)).index === i).length;
     const short = ERA_BUCKETS.map((b) => b.index).find((i) => count(i) < ERA_FLOOR);
     if (short === undefined) break;
     const inSet = new Set(chosen.map((c) => c.qid));
-    const cand = ranked.find((c) => !inSet.has(c.qid) && eraOf(c.facts.debutYear!.value).index === short);
+    const cand = ranked.find((c) => !inSet.has(c.qid) && eraOf(debutOf(c)).index === short);
     if (!cand) {
       throw new Error(
         `STOP: era bucket ${short} cannot reach the floor of ${ERA_FLOOR} — the pool is exhausted ` +
@@ -233,13 +240,13 @@ function select(selectable: Player[], sitelinks: Record<string, number>, posOf: 
     }
     const pos = posOf(cand);
     const victim = [...chosen]
-      .filter((c) => posOf(c) === pos && eraOf(c.facts.debutYear!.value).index !== short)
+      .filter((c) => posOf(c) === pos && eraOf(debutOf(c)).index !== short)
       .sort((a, b) => (sitelinks[a.qid] ?? 0) - (sitelinks[b.qid] ?? 0) || b.qid.localeCompare(a.qid))
-      .find((c) => count(eraOf(c.facts.debutYear!.value).index) > ERA_FLOOR);
+      .find((c) => count(eraOf(debutOf(c)).index) > ERA_FLOOR);
     if (!victim) throw new Error(`STOP: era bucket ${short} short and no droppable ${pos} outside a floor-bound era.`);
     chosen.splice(chosen.findIndex((c) => c.qid === victim.qid), 1);
     chosen.push(cand);
-    swaps.push(`era${short} <- ${cand.answerName} (${pos}, fame ${sitelinks[cand.qid] ?? 0}) replaces ${victim.answerName} (era${eraOf(victim.facts.debutYear!.value).index}, fame ${sitelinks[victim.qid] ?? 0})`);
+    swaps.push(`era${short} <- ${cand.answerName} (${pos}, fame ${sitelinks[cand.qid] ?? 0}) replaces ${victim.answerName} (era${eraOf(debutOf(victim)).index}, fame ${sitelinks[victim.qid] ?? 0})`);
   }
   return { chosen: fameOrder(chosen, sitelinks), quota, swaps };
 }
@@ -254,6 +261,37 @@ function build() {
   const rulings = readJson<{ ruledBy?: string; ruledOn?: string; rulings?: { qid: string; ruling: Pos; note?: string }[] }>(RULINGS_PATH, {});
   const rulingByQid = new Map((rulings.rulings ?? []).map((r) => [r.qid, r]));
 
+  // E0.3 — nation and debutYear rulings, same signed pattern as positions.
+  type NationRuling = { qid: string; name: string; ruleOutput: string; ruleCandidates?: string[]; ruleBasis?: string; ruling: string; note?: string; pendingSecondSource?: boolean };
+  type DebutRuling = { qid: string; name: string; ruleOutput: number; ruleBasis?: string; ruling: number; note?: string; independentRef?: string | null; independentRefStatus?: string; eraImpact?: string };
+  const natRulings = readJson<{ ruledBy?: string; ruledOn?: string; rulings?: NationRuling[]; reviewedNotOverridden?: unknown[] }>(NATION_RULINGS_PATH, {});
+  const debutRulings = readJson<{ ruledBy?: string; ruledOn?: string; rulings?: DebutRuling[] }>(DEBUT_RULINGS_PATH, {});
+  const natRulingByQid = new Map((natRulings.rulings ?? []).map((r) => [r.qid, r]));
+  const debutRulingByQid = new Map((debutRulings.rulings ?? []).map((r) => [r.qid, r]));
+
+  // FAIL CLOSED on a ruling that hits nothing. A QID-pinned ruling whose QID is not
+  // in the pool is either a typo or a stale record, and in both cases it silently
+  // does NOTHING — the exact drift the QID pinning exists to prevent (E1.1 pinned
+  // Maldini's identity ruling to a QID for this reason, and warns if it misses).
+  // A ruling the owner signed must either apply or stop the build.
+  const poolQids = new Set(players.map((p) => p.qid));
+  for (const [label, qids] of [
+    ["position", [...rulingByQid.keys()]],
+    ["nation", [...natRulingByQid.keys()]],
+    ["debutYear", [...debutRulingByQid.keys()]],
+  ] as const) {
+    const orphans = qids.filter((q) => !poolQids.has(q));
+    if (orphans.length > 0)
+      throw new Error(`STOP: ${label} ruling(s) reference QIDs absent from the canonical pool: ${orphans.join(", ")}`);
+  }
+  // A ruling that agrees with the rule is a no-op pretending to be a decision: it
+  // would show as "editorial-ruled" while changing nothing. Catch it rather than
+  // ship a card that claims a human overruled something.
+  for (const r of natRulings.rulings ?? [])
+    if (r.ruling === r.ruleOutput) throw new Error(`STOP: nation ruling for ${r.name} (${r.qid}) equals the rule output "${r.ruleOutput}" — record it under reviewedNotOverridden instead.`);
+  for (const r of debutRulings.rulings ?? [])
+    if (r.ruling === r.ruleOutput) throw new Error(`STOP: debut ruling for ${r.name} (${r.qid}) equals the rule output ${r.ruleOutput} — record it under reviewedNotOverridden instead.`);
+
   // THE RULED POSITION IS THE CARD'S POSITION, so selection must run on the RULED
   // pool. Applying rulings after selection instead puts the set at ATT 147 / MID 111
   // (±4.19pp, outside the ±3pp band) — the 18 MID->ATT rulings move players across
@@ -262,9 +300,14 @@ function build() {
   // lowest-fame ATT while the cards it promotes are the highest-fame unselected MID.
   // A position ruling is therefore not cosmetic: it decides who is in the set.
   const posOf = (p: Player): Pos => rulingByQid.get(p.qid)?.ruling ?? p.facts.position!.value;
+  // E0.3 — nation and debut rulings apply to the POOL, on the same principle.
+  // debutYear feeds eraOf, which feeds the era floors, so a debut ruling can move
+  // cards in and out of the set; nation enters no selection criterion and cannot.
+  const natOf = (p: Player): string | null => natRulingByQid.get(p.qid)?.ruling ?? p.facts.nation?.value ?? null;
+  const debutOf = (p: Player): number => debutRulingByQid.get(p.qid)?.ruling ?? p.facts.debutYear!.value;
 
   const { selectable, drops, duplicates } = pool(players);
-  const { chosen, quota, swaps } = select(selectable, sitelinks, posOf);
+  const { chosen, quota, swaps } = select(selectable, sitelinks, posOf, debutOf);
   if (chosen.length !== SET_SIZE) throw new Error(`STOP: selected ${chosen.length}, expected ${SET_SIZE}`);
 
   // Ratings are identical-by-construction to the tuned c13v1 set: the SAME generator,
@@ -275,7 +318,7 @@ function build() {
 
   const tagger = buildTagger(chosen);
   const cards = chosen.map((p, i) => {
-    const era = eraOf(p.facts.debutYear!.value);
+    const era = eraOf(debutOf(p));
     const clubs = p.facts.clubs
       .slice()
       // Longest sourced first-team tenure first. Ties -> QID, never file order.
@@ -286,9 +329,9 @@ function build() {
     return {
       cardId: `real_${String(i + 1).padStart(4, "0")}`,
       name: p.answerName,
-      nation: p.facts.nation?.value ?? null,
+      nation: natOf(p),
       position: posOf(p),
-      debutYear: p.facts.debutYear!.value,
+      debutYear: debutOf(p),
       eraIndex: era.index,
       eraLabel: era.label,
       clubs,
@@ -367,15 +410,40 @@ function build() {
       ],
     },
     ownerPositionRulings: rulings.rulings ?? [],
+    // E0.3 — every signed override that shaped this set, in one place. A ruling never
+    // edits a fact: playersSourced.json still emits the rule's answer for all of them.
+    ownerNationRulings: natRulings,
+    ownerDebutRulings: debutRulings,
     entries: chosen.map((p, i) => {
       const ruling = rulingByQid.get(p.qid);
+      const natRuling = natRulingByQid.get(p.qid);
+      const debutRuling = debutRulingByQid.get(p.qid);
       return {
         cardId: cards[i].cardId,
         name: p.answerName,
         qid: p.qid,
         fameSitelinks: sitelinks[p.qid] ?? 0,
         facts: {
-          nation: p.facts.nation && { ...p.facts.nation, candidates: p.identityEvidence.nationCandidates ?? null, path: p.identityEvidence.nationPath ?? null },
+          // E0.3 — an overridden nation reproduces the RULE'S OUTPUT verbatim beside
+          // the ruling, exactly as an overridden position reproduces its sourced value.
+          // A reader always sees what the rule said and that a human overruled it.
+          nation: natRuling
+            ? {
+                value: natRuling.ruling,
+                provenance: "editorial-ruled",
+                ruledBy: natRulings.ruledBy ?? null,
+                ruledOn: natRulings.ruledOn ?? null,
+                note: natRuling.note ?? null,
+                ruleOutput: natRuling.ruleOutput,
+                ruleBasis: natRuling.ruleBasis ?? null,
+                ...(natRuling.pendingSecondSource ? { pendingSecondSource: true } : {}),
+                sourcedValue: p.facts.nation?.value ?? null,
+                candidates: p.identityEvidence.nationCandidates ?? null,
+                path: p.identityEvidence.nationPath ?? null,
+                source: p.facts.nation?.source ?? null,
+                sourceQuality: p.facts.nation?.sourceQuality ?? null,
+              }
+            : p.facts.nation && { ...p.facts.nation, provenance: "sourced", candidates: p.identityEvidence.nationCandidates ?? null, path: p.identityEvidence.nationPath ?? null },
           position: ruling
             ? {
                 value: ruling.ruling,
@@ -393,7 +461,27 @@ function build() {
                 sourceQuality: p.facts.position!.sourceQuality,
               }
             : { ...p.facts.position!, provenance: "sourced", statements: p.identityEvidence.positionStatements ?? null, candidates: p.identityEvidence.positionCandidates ?? null },
-          debutYear: p.facts.debutYear && { ...p.facts.debutYear, birthYear: p.facts.birthYear?.value ?? null, birthYearSource: p.facts.birthYear?.source ?? null },
+          debutYear: debutRuling
+            ? {
+                value: debutRuling.ruling,
+                provenance: "editorial-ruled",
+                ruledBy: debutRulings.ruledBy ?? null,
+                ruledOn: debutRulings.ruledOn ?? null,
+                note: debutRuling.note ?? null,
+                ruleOutput: debutRuling.ruleOutput,
+                ruleBasis: debutRuling.ruleBasis ?? null,
+                // null here is load-bearing: the ticket asked for an independent ref
+                // and none was supplied. The field is published EMPTY with its status
+                // rather than filled with a plausible-looking citation.
+                independentRef: debutRuling.independentRef ?? null,
+                independentRefStatus: debutRuling.independentRefStatus ?? null,
+                sourcedValue: p.facts.debutYear!.value,
+                birthYear: p.facts.birthYear?.value ?? null,
+                birthYearSource: p.facts.birthYear?.source ?? null,
+                source: p.facts.debutYear!.source,
+                sourceQuality: p.facts.debutYear!.sourceQuality,
+              }
+            : p.facts.debutYear && { ...p.facts.debutYear, provenance: "sourced", birthYear: p.facts.birthYear?.value ?? null, birthYearSource: p.facts.birthYear?.source ?? null },
           clubs: p.facts.clubs.map((c) => ({ value: c.value, clubQid: c.clubQid, spells: c.spells, source: c.source, sourceQuality: c.sourceQuality, printed: cards[i].clubs.some((x) => x.tag === tagger.get(c.clubQid)?.tag) })),
         },
         identityEvidence: p.identityEvidence,
@@ -403,26 +491,50 @@ function build() {
   return { cards, dossier };
 }
 
-function main() {
-  const check = process.argv.includes("--check");
+/**
+ * E0.3 — the pure half of `--check`, exported so the CI guard
+ * (app/src/test/drawCardSetSelectorContract.test.ts) can run it in-process
+ * without a subprocess or a tsx dependency. Returns [] when the committed
+ * artifacts reproduce from the rules; a list of failures otherwise.
+ */
+export function checkCommittedArtifacts(): string[] {
   const { cards, dossier } = build();
-  const cardsJson = JSON.stringify(cards, null, 2) + "\n";
-  const dossierJson = JSON.stringify(dossier, null, 2) + "\n";
-  if (check) {
-    const strip = (s: string) => JSON.stringify(JSON.parse(s), (k, v) => (k === "retrievedAt" ? undefined : v));
-    let ok = true;
-    for (const [p, got] of [[CARDS_PATH, cardsJson], [DOSSIER_PATH, dossierJson]] as const) {
-      const committed = fs.existsSync(p) ? fs.readFileSync(p, "utf8") : "";
-      if (strip(committed || "null") !== strip(got)) { console.error(`selector --check FAILED: ${path.basename(p)} does not match a fresh build`); ok = false; }
+  const strip = (s: string) => JSON.stringify(JSON.parse(s), (k, v) => (k === "retrievedAt" ? undefined : v));
+  const fails: string[] = [];
+  for (const [p, got] of [
+    [CARDS_PATH, JSON.stringify(cards, null, 2) + "\n"],
+    [DOSSIER_PATH, JSON.stringify(dossier, null, 2) + "\n"],
+  ] as const) {
+    const committed = fs.existsSync(p) ? fs.readFileSync(p, "utf8") : "";
+    if (!committed) fails.push(`${path.basename(p)} does not exist`);
+    else if (strip(committed) !== strip(got)) fails.push(`${path.basename(p)} does not match a fresh build from the rules`);
+  }
+  return fails;
+}
+
+function main() {
+  if (process.argv.includes("--check")) {
+    const fails = checkCommittedArtifacts();
+    if (fails.length > 0) {
+      for (const f of fails) console.error(`selector --check FAILED: ${f}`);
+      process.exitCode = 1;
+      return;
     }
-    if (!ok) { process.exitCode = 1; return; }
-    console.log(`selector --check OK: both artifacts reproduce exactly (${cards.length} cards, modulo retrievedAt)`);
+    console.log(`selector --check OK: both artifacts reproduce exactly (modulo retrievedAt)`);
     return;
   }
-  fs.writeFileSync(CARDS_PATH, cardsJson);
-  fs.writeFileSync(DOSSIER_PATH, dossierJson);
+  const { cards, dossier } = build();
+  fs.writeFileSync(CARDS_PATH, JSON.stringify(cards, null, 2) + "\n");
+  fs.writeFileSync(DOSSIER_PATH, JSON.stringify(dossier, null, 2) + "\n");
   console.log(`selector DONE: ${cards.length} cards -> ${path.relative(process.cwd(), CARDS_PATH)}`);
   console.log(`               dossier -> ${path.relative(process.cwd(), DOSSIER_PATH)}`);
   console.log(`  era swaps: ${dossier.selector.eraSwaps.length}`);
 }
-main();
+
+// Only run when invoked as a script. Importing this module (the CI guard does)
+// must not rebuild or rewrite the committed artifacts.
+const invokedDirectly =
+  typeof process !== "undefined" &&
+  process.argv[1] !== undefined &&
+  path.resolve(process.argv[1]) === path.resolve(fileURLToPath(import.meta.url));
+if (invokedDirectly) main();

@@ -1,0 +1,45 @@
+{
+  "_doc": [
+    "Owner debutYear rulings for THE DRAW real card set (Ticket E0.3).",
+    "",
+    "WHY THIS FILE EXISTS. E0.2 ruled that debutYear is the FIRST-TEAM debut, which fixed",
+    "84 of 85 shifted debuts onto the commonly-cited year. It broke exactly one player, and",
+    "the reason is a fault in the SOURCE rather than in the rule: Wikidata records Sergio",
+    "Busquets's academy entry on the FIRST-TEAM QID — his FC Barcelona membership is a",
+    "single P54 statement, P580=2000, when he was 12, running to 2023. The age-16 filter",
+    "therefore discards that statement whole rather than clamping it, his reserve spells",
+    "(Barcelona C, Barcelona Atlètic) are excluded as reserve sides, and the only senior",
+    "first team left standing is Inter Miami — so the rule emits 2023.",
+    "",
+    "No rule reading only P54 can tell that apart from a genuine 2000 debut, and E0.2",
+    "measured the alternative readings rather than guessing: reading the clamped spells",
+    "instead would put him at 2004 (still wrong) at the cost of regressing Piqué, ter Stegen",
+    "and Xabi Alonso. Inventing a threshold to catch him would be an opinion dressed as a",
+    "rule. So it goes to a signed ruling instead.",
+    "",
+    "THE SIGNED PATTERN (identical to ownerPositionRulings.json). A ruling NEVER edits a",
+    "fact: playersSourced.json still emits 2023 and cp-assert still proves it reproduces",
+    "from the rules. The override lives here and in the card/dossier, carrying provenance",
+    "'editorial-ruled' with the rule's output reproduced verbatim beside it.",
+    "",
+    "Rulings are applied to the POOL before selection re-runs. debutYear DOES enter the",
+    "selection criteria via eraIndex (peakYear := debutYear + 5) and the >=40-per-bucket era",
+    "floor, so a debut ruling CAN move cards in and out of the set. This one does not:",
+    "peakYear 2013 and peakYear 2028 both land in bucket 3."
+  ],
+  "ruledBy": "owner",
+  "ruledOn": "2026-07-17",
+  "rulings": [
+    {
+      "qid": "Q49704",
+      "name": "Sergio Busquets",
+      "ruleOutput": 2023,
+      "ruleBasis": "P54 statements surviving the rule: Inter Miami CF 2023-2025 only. FC Barcelona (P580=2000, age 12) discarded by the age-16 filter; UFB Jàbac i Terrassa (2003, age 15) likewise; FC Barcelona C and FC Barcelona Atlètic excluded as reserve sides; UE Lleida (ends 2003, age 15) dropped as a pre-16 stint.",
+      "ruling": 2008,
+      "independentRef": null,
+      "independentRefStatus": "OWED — the ticket called for 'the independent ref recorded' and none was supplied with the ruling. The value is recorded on the owner's authority alone. NOT fabricated: no citation is asserted here, because inventing one would be exactly the failure the signed-ruling pattern exists to prevent. Supply a source and this field should be filled.",
+      "note": "His FC Barcelona first-team debut season. E1.1's BUILD_NOTES already recorded 2008 as the commonly-cited value while shipping 2006 ('Busquets 2006 (Barcelona C) vs 2008'), and E2's F4 lists him in the same reserve-set class as Pedro 2005-vs-2008 and Messi 2003-vs-2004. Ruled by the owner on 2026-07-17 against a rule output of 2023, which is not a plausible debut for a player who won the Champions League in 2009.",
+      "eraImpact": "none — peakYear 2013 (ruled) and 2028 (rule output) both fall in bucket 3, '2010s-20s'. The card's eraIndex is unchanged by this ruling."
+    }
+  ]
+}
