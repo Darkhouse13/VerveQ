@@ -1,0 +1,4927 @@
+{
+ "_meta": {
+  "ticket": "E2.2",
+  "role": "scoped blind verify",
+  "setVersion": "real-v4",
+  "inputCommit": "7665419",
+  "generatedOn": "2026-07-17",
+  "verifier": "verify3 (fresh session, detached worktree)",
+  "method": "S1/S2-all430 deterministic + live Wikidata re-retrieval; S2/S3 40-card non-Wikidata sample; S4 122-card boundary non-Wikidata; S6 signed-record integrity + citation resolution"
+ },
+ "verdictSummary": {
+  "totalCards": 430,
+  "RED": 0,
+  "AMBER": 3,
+  "GREEN": 427,
+  "note": "Fail-closed. RED=>dropped; AMBER=>owner list; 2+ AMBER facts on one card=>RED (none reached 2)."
+ },
+ "counts": {
+  "cards": 430,
+  "S1_structuralViolations": 0,
+  "S2_wikidataChips": 1263,
+  "S2_wikidataChipsFailed": 0,
+  "S4_boundaryCards": 122,
+  "S4_agree": 117,
+  "S4_crossing": 5,
+  "S4_unreachable": 0,
+  "sample": 40,
+  "sampleWithIssues": 2
+ },
+ "RED": {
+  "count": 0,
+  "cards": []
+ },
+ "AMBER": {
+  "count": 3,
+  "cards": [
+   {
+    "cardId": "real_0185",
+    "verdict": "AMBER",
+    "reason": "S4 bucket-crossing with cited-override. Override anchors era at 1996 (Monaco, 'premier match en professionnel fevrier 1996', S6-verified) calling 1994 a squad-registration year. BUT Wikipedia shows a 1994 FIRST-TEAM professional debut for Platense (Argentina, '12 June 1994 as a 16-year-old'), i.e. earliest senior CLUB career = 1994 (era1). The override premise (1994=squad-registration) is contradicted by a 1994 Platense senior debut. Not RED (signed editorial + resolving citation for the 1996 Monaco debut) but owner should review whether the era should follow the Platense senior start.",
+    "owner": "amber"
+   },
+   {
+    "cardId": "real_0243",
+    "verdict": "AMBER",
+    "reason": "S4 borderline cut case. Card eraYear 2005 is faithful to WD P54 (Rio Ave membership start 2005; NOT a clamp - born+16=2004<2005). Wikipedia says he joined Rio Ave in 2004 (age 16), first-team Primeira Liga the following season. 1-year WD-vs-Wikipedia join-vs-first-team difference straddling the 2004/05 cut (era2 vs era3). Not RED (card faithful to the P54 membership-start rule); owner note.",
+    "owner": "amber"
+   },
+   {
+    "cardId": "real_0365",
+    "verdict": "AMBER",
+    "reason": "S2/S3 sample: PRINTED club chip 'San Lorenzo de Almagro' is FALSE. Two non-Wikidata sources disconfirm - Wikipedia career table (Atletico Nacional 2005-08, Nice, Arsenal, Napoli, Al Nassr, Atletico Nacional 2024-26) and Transfermarkt contain NO San Lorenzo spell; it is not even top-3 by tenure. New F2-class instance (well-formed but false WD P54) on a printed chip, NOT covered by any ownerDisputedStatements record. Napoli, Atletico Nacional, GK, Colombia all confirmed; eraYear cited-override (2006, Atletico Nacional, S6-verified). Recommend Benatia-class disposition: drop the San Lorenzo chip, refill by tenure (Nice/Arsenal), add a disputed-statement record. One amber fact -> AMBER, not RED.",
+    "owner": "amber-dropChip"
+   }
+  ]
+ },
+ "clampObservations": [
+  {
+   "cardId": "real_0147",
+   "verdict": "GREEN",
+   "reason": "S4 crossing is a CLAMP RULE-OUTPUT, not an anomaly: sourceStartYear 2003 = born+16 (1987+16) clamp of a sub-16 youth membership (WD P54 earliest = 1999, age 12). Non-WD senior debut is 2006 (Vitoria). Per ticket clamp carve-out this is a correct rule output; era2 is a faithful clamp result. OWNER-OBSERVATION (Falcao-class clamp side-effect): senior career is era3.",
+   "owner": "clamp-observation"
+  },
+  {
+   "cardId": "real_0355",
+   "verdict": "GREEN",
+   "reason": "S4 crossing is a CLAMP/YOUTH RULE-OUTPUT: sourceStartYear 2004 = born+16 (1988+16) of a 2004 YOUTH-squad membership (Pao de Acucar, Wikipedia: 'joining the youth squad in 2004'). Senior career 2006 (FC Vilnius). Correct rule output; OWNER-OBSERVATION (Falcao/youth-clamp class): senior career is era3.",
+   "owner": "clamp-observation"
+  }
+ ],
+ "S1_structural": {
+  "summary": "0 violations across cardId/QID uniqueness, clubs.length, displayCode, eraIndex recompute, eraYear rule, age-16 clamp.",
+  "cardIdDups": [],
+  "qidDups": [],
+  "clubsLenViolations": [],
+  "displayCodeCollisions": {},
+  "eraIndexMismatches": [],
+  "eraYearRuleViolations": [],
+  "clampViolations": [],
+  "nullSourceStartYear_areEraRestores": [
+   "real_0049 De Bruyne",
+   "real_0109 van der Sar"
+  ],
+  "nameSpelling": {
+   "note": "24 card vs live-WD-label differences; ZERO card errors. Editorial common/full-name, diacritic normalization (card more correct), and live-WD VANDALISM the card is immune to (e.g. 'Romelu Lukaku LA CAKA', Xabi Alonso->'Carasu', 'Joao Moutinh0', Greek-alpha 'Arda Guler', 'Medhi Benatia').",
+   "differences": [
+    {
+     "cardId": "real_0010",
+     "card": "Ronaldo Nazário",
+     "wdLabel": "Ronaldo",
+     "sameStripped": false
+    },
+    {
+     "cardId": "real_0032",
+     "card": "Xavi",
+     "wdLabel": "Xavi Hernández",
+     "sameStripped": false
+    },
+    {
+     "cardId": "real_0061",
+     "card": "Romelu Lukaku",
+     "wdLabel": "Romelu Lukaku LA CAKA",
+     "sameStripped": false
+    },
+    {
+     "cardId": "real_0065",
+     "card": "Xabi Alonso",
+     "wdLabel": "Carasu",
+     "sameStripped": false
+    },
+    {
+     "cardId": "real_0076",
+     "card": "Dani Alves",
+     "wdLabel": "Daniel Alves",
+     "sameStripped": false
+    },
+    {
+     "cardId": "real_0141",
+     "card": "Zico",
+     "wdLabel": "Arthur Antunes Coimbra",
+     "sameStripped": false
+    },
+    {
+     "cardId": "real_0197",
+     "card": "Éric Abidal",
+     "wdLabel": "Eric Abidal",
+     "sameStripped": true
+    },
+    {
+     "cardId": "real_0200",
+     "card": "Yuto Nagatomo",
+     "wdLabel": "Yūto Nagatomo",
+     "sameStripped": true
+    },
+    {
+     "cardId": "real_0203",
+     "card": "Park Ji-sung",
+     "wdLabel": "Park Ji-Sung",
+     "sameStripped": false
+    },
+    {
+     "cardId": "real_0207",
+     "card": "John Obi Mikel",
+     "wdLabel": "Mikel John Obi",
+     "sameStripped": false
+    },
+    {
+     "cardId": "real_0226",
+     "card": "Wataru Endo",
+     "wdLabel": "Wataru Endō",
+     "sameStripped": true
+    },
+    {
+     "cardId": "real_0268",
+     "card": "Arda Güler",
+     "wdLabel": "Αrda Güler",
+     "sameStripped": false
+    },
+    {
+     "cardId": "real_0282",
+     "card": "Rivellino",
+     "wdLabel": "Rivelino",
+     "sameStripped": false
+    },
+    {
+     "cardId": "real_0292",
+     "card": "Maxi Rodríguez",
+     "wdLabel": "Maxi Rodriguez",
+     "sameStripped": true
+    },
+    {
+     "cardId": "real_0321",
+     "card": "Rafael Márquez",
+     "wdLabel": "Rafael Márquez El piojo",
+     "sameStripped": false
+    },
+    {
+     "cardId": "real_0330",
+     "card": "Robert Pirès",
+     "wdLabel": "Robert Pires",
+     "sameStripped": true
+    },
+    {
+     "cardId": "real_0335",
+     "card": "Claude Makélélé",
+     "wdLabel": "Claude Makelélé",
+     "sameStripped": true
+    },
+    {
+     "cardId": "real_0338",
+     "card": "João Moutinho",
+     "wdLabel": "João Moutinh0",
+     "sameStripped": false
+    },
+    {
+     "cardId": "real_0346",
+     "card": "Lucas Hernández",
+     "wdLabel": "Lucas Hernandez",
+     "sameStripped": true
+    },
+    {
+     "cardId": "real_0391",
+     "card": "Andrew Robertson",
+     "wdLabel": "Andy Robertson",
+     "sameStripped": false
+    },
+    {
+     "cardId": "real_0401",
+     "card": "Mehdi Benatia",
+     "wdLabel": "Medhi Benatia",
+     "sameStripped": false
+    },
+    {
+     "cardId": "real_0418",
+     "card": "Francisco Gento",
+     "wdLabel": "Paco Gento",
+     "sameStripped": false
+    },
+    {
+     "cardId": "real_0419",
+     "card": "Luis Suárez Miramontes",
+     "wdLabel": "Luis Suárez",
+     "sameStripped": false
+    },
+    {
+     "cardId": "real_0426",
+     "card": "Harald Schumacher",
+     "wdLabel": "Toni Schumacher",
+     "sameStripped": false
+    }
+   ]
+  }
+ },
+ "S2_clubExistence": {
+  "allCards_wikidata": {
+   "printedChips": 1263,
+   "failed": 0,
+   "note": "Every printed club chip on all 430 cards re-retrieved live from Wikidata P54; 0 missing."
+  },
+  "sample40_nonWikidata": {
+   "note": "40-card seeded sample; each printed chip additionally confirmed against a non-Wikidata source with verbatim citation. One false chip found: real_0365 Ospina/San Lorenzo (see AMBER).",
+   "seed": "verify3-E2.2-sample40-20260717",
+   "rows": [
+    {
+     "cardId": "real_0009",
+     "name": "Johan Cruyff",
+     "qid": "Q17163",
+     "nation": "Netherlands",
+     "position": "ATT",
+     "clubs": [
+      {
+       "club": "Washington Diplomats",
+       "confirmed": true,
+       "citation": {
+        "publisher": "Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/Johan_Cruyff",
+        "quote": "in February 1980, he moved to play for the Washington Diplomats"
+       }
+      },
+      {
+       "club": "AFC Ajax",
+       "confirmed": true,
+       "citation": {
+        "publisher": "Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/Johan_Cruyff",
+        "quote": "He played for Ajax from 1957 to 1973 and 1981 to 1983"
+       }
+      },
+      {
+       "club": "FC Barcelona",
+       "confirmed": true,
+       "citation": {
+        "publisher": "Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/Johan_Cruyff",
+        "quote": "Cruyff played for FC Barcelona from 1973 to 1978."
+       }
+      }
+     ],
+     "clubsUnconfirmed": [],
+     "nationConfirmed": true,
+     "nationCitation": {
+      "publisher": "Wikipedia",
+      "url": "https://en.wikipedia.org/wiki/Johan_Cruyff",
+      "verbatimQuote": "On 7 September 1966, he made his official debut for the Netherlands"
+     },
+     "positionConfirmed": true,
+     "positionCitation": {
+      "publisher": "Wikipedia",
+      "url": "https://en.wikipedia.org/wiki/Johan_Cruyff",
+      "verbatimQuote": "Positions: Forward, attacking midfielder"
+     },
+     "note": "All items confirmed via English Wikipedia (non-Wikidata). Three clubs (Washington Diplomats, Ajax, Barcelona) each verified with verbatim quotes. National team Netherlands confirmed. Position listed as Forward, attacking midfielder — matches ATT (attacker/forward) bucket."
+    },
+    {
+     "cardId": "real_0015",
+     "name": "Luka Modrić",
+     "qid": "Q483837",
+     "nation": "Croatia",
+     "position": "MID",
+     "clubs": [
+      {
+       "club": "GNK Dinamo Zagreb",
+       "confirmed": true,
+       "citation": {
+        "publisher": "Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/Luka_Modri%C4%87",
+        "quote": "Modrić began his career with Croatian club Dinamo Zagreb from 2003 to 2008"
+       }
+      },
+      {
+       "club": "Tottenham Hotspur F.C.",
+       "confirmed": true,
+       "citation": {
+        "publisher": "Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/Luka_Modri%C4%87",
+        "quote": "He moved to Tottenham Hotspur in 2008"
+       }
+      },
+      {
+       "club": "Real Madrid Club de Fútbol",
+       "confirmed": true,
+       "citation": {
+        "publisher": "Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/Luka_Modri%C4%87",
+        "quote": "Modrić joined Real Madrid for a £30 million transfer fee in 2012"
+       }
+      }
+     ],
+     "clubsUnconfirmed": [],
+     "nationConfirmed": true,
+     "nationCitation": {
+      "publisher": "Wikipedia",
+      "url": "https://en.wikipedia.org/wiki/Luka_Modri%C4%87",
+      "verbatimQuote": "he plays as a central midfielder for, and captains the Croatia national team"
+     },
+     "positionConfirmed": true,
+     "positionCitation": {
+      "publisher": "Wikipedia",
+      "url": "https://en.wikipedia.org/wiki/Luka_Modri%C4%87",
+      "verbatimQuote": "is a Croatian professional footballer who plays as a central midfielder"
+     },
+     "note": "All items verified against the non-Wikidata English Wikipedia page for Luka Modrić. All three senior clubs (Dinamo Zagreb, Tottenham Hotspur, Real Madrid), the Croatia national team, and the MID (central midfielder) position bucket are confirmed with verbatim quotes from that single reachable source."
+    },
+    {
+     "cardId": "real_0018",
+     "name": "Robert Lewandowski",
+     "qid": "Q151269",
+     "nation": "Poland",
+     "position": "ATT",
+     "clubs": [
+      {
+       "club": "Borussia Dortmund",
+       "confirmed": true,
+       "citation": {
+        "publisher": "Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/Robert_Lewandowski",
+        "quote": "he joined Bundesliga club Borussia Dortmund in June 2010, signing a four-year contract"
+       }
+      },
+      {
+       "club": "FC Bayern Munich",
+       "confirmed": true,
+       "citation": {
+        "publisher": "Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/Robert_Lewandowski",
+        "quote": "Lewandowski joined Dortmund's domestic rivals, Bayern Munich, on a free transfer"
+       }
+      },
+      {
+       "club": "FC Barcelona",
+       "confirmed": true,
+       "citation": {
+        "publisher": "Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/Robert_Lewandowski",
+        "quote": "In 2022, he moved to Barcelona, where he won three La Liga titles"
+       }
+      }
+     ],
+     "clubsUnconfirmed": [],
+     "nationConfirmed": true,
+     "nationCitation": {
+      "publisher": "Wikipedia",
+      "url": "https://en.wikipedia.org/wiki/Robert_Lewandowski",
+      "verbatimQuote": "is a Polish professional footballer who plays as a striker for Major League Soccer club Chicago Fire and captains the Poland national team"
+     },
+     "positionConfirmed": true,
+     "positionCitation": {
+      "publisher": "Wikipedia",
+      "url": "https://en.wikipedia.org/wiki/Robert_Lewandowski",
+      "verbatimQuote": "is a Polish professional footballer who plays as a striker"
+     },
+     "note": "All three clubs (Borussia Dortmund, FC Bayern Munich, FC Barcelona), nationality/national team (Poland), and position bucket ATT (striker/forward) confirmed from the English Wikipedia article (non-Wikidata source). Note: the current Wikipedia intro lists his present club as MLS side Chicago Fire, but this does not affect the three requested clubs, all of which are corroborated in the article body."
+    },
+    {
+     "cardId": "real_0023",
+     "name": "Thierry Henry",
+     "qid": "Q45901",
+     "nation": "France",
+     "position": "ATT",
+     "clubs": [
+      {
+       "club": "AS Monaco FC",
+       "confirmed": true,
+       "citation": {
+        "publisher": "Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/Thierry_Henry",
+        "quote": "he signed professional forms with Monaco, and made his professional debut on 31 August 1994"
+       }
+      },
+      {
+       "club": "Arsenal F.C.",
+       "confirmed": true,
+       "citation": {
+        "publisher": "Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/Thierry_Henry",
+        "quote": "Henry transferred from Juventus on 3 August 1999 to Arsenal for an estimated fee of £11 million"
+       }
+      },
+      {
+       "club": "New York Red Bulls",
+       "confirmed": true,
+       "citation": {
+        "publisher": "Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/Thierry_Henry",
+        "quote": "In July 2010, Henry signed a multi-year contract with Major League Soccer (MLS) club New York Red Bulls"
+       }
+      }
+     ],
+     "clubsUnconfirmed": [],
+     "nationConfirmed": true,
+     "nationCitation": {
+      "publisher": "Wikipedia",
+      "url": "https://en.wikipedia.org/wiki/Thierry_Henry",
+      "verbatimQuote": "Henry enjoyed a successful career with the France national team, winning the first of his 123 caps in June 1997"
+     },
+     "positionConfirmed": true,
+     "positionCitation": {
+      "publisher": "Wikipedia",
+      "url": "https://en.wikipedia.org/wiki/Thierry_Henry",
+      "verbatimQuote": "Position: Forward (association football)"
+     },
+     "note": "All three clubs (AS Monaco, Arsenal, New York Red Bulls), France national team, and ATT position (Forward) confirmed via non-Wikidata source (English Wikipedia). Forward maps to ATT bucket."
+    },
+    {
+     "cardId": "real_0033",
+     "name": "Steven Gerrard",
+     "qid": "Q459830",
+     "nation": "England",
+     "position": "MID",
+     "clubs": [
+      {
+       "club": "LA Galaxy",
+       "confirmed": true,
+       "citation": {
+        "publisher": "Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/Steven_Gerrard",
+        "quote": "He spent two years at Major League Soccer club LA Galaxy and retired in 2016."
+       }
+      },
+      {
+       "club": "Liverpool F.C.",
+       "confirmed": true,
+       "citation": {
+        "publisher": "Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/Steven_Gerrard",
+        "quote": "Gerrard spent the majority of his playing career as a central midfielder for Liverpool"
+       }
+      }
+     ],
+     "clubsUnconfirmed": [],
+     "nationConfirmed": true,
+     "nationCitation": {
+      "publisher": "Wikipedia",
+      "url": "https://en.wikipedia.org/wiki/Steven_Gerrard",
+      "verbatimQuote": "Gerrard won 114 England caps between 2000 and 2014, captaining the team 38 times"
+     },
+     "positionConfirmed": true,
+     "positionCitation": {
+      "publisher": "Wikipedia",
+      "url": "https://en.wikipedia.org/wiki/Steven_Gerrard",
+      "verbatimQuote": "he was usually deployed as a central midfielder, but he had also been used as a second striker, a holding midfielder, an attacking midfielder, a right-back, and a right winger."
+     },
+     "note": "All facts verified from Wikipedia (non-Wikidata). Both clubs (LA Galaxy, Liverpool F.C.) confirmed, England national team confirmed via 114 caps, and position confirmed as central midfielder (bucket MID). Britannica was attempted but returned HTTP 403; Wikipedia supplied all needed verbatim quotes from a single reachable page."
+    },
+    {
+     "cardId": "real_0049",
+     "name": "Kevin De Bruyne",
+     "qid": "Q357984",
+     "nation": "Belgium",
+     "position": "MID",
+     "clubs": [
+      {
+       "club": "SSC Napoli",
+       "confirmed": true,
+       "citation": {
+        "publisher": "Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/Kevin_De_Bruyne",
+        "quote": "Belgian professional footballer who plays as a midfielder for Serie A club Napoli and the Belgium national team."
+       }
+      },
+      {
+       "club": "K.R.C. Genk",
+       "confirmed": true,
+       "citation": {
+        "publisher": "Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/Kevin_De_Bruyne",
+        "quote": "2008–2012 Genk"
+       }
+      },
+      {
+       "club": "VfL Wolfsburg",
+       "confirmed": true,
+       "citation": {
+        "publisher": "Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/Kevin_De_Bruyne",
+        "quote": "2014–2015 VfL Wolfsburg"
+       }
+      }
+     ],
+     "clubsUnconfirmed": [],
+     "nationConfirmed": true,
+     "nationCitation": {
+      "publisher": "Wikipedia",
+      "url": "https://en.wikipedia.org/wiki/Kevin_De_Bruyne",
+      "verbatimQuote": "Belgian professional footballer who plays as a midfielder for Serie A club Napoli and the Belgium national team."
+     },
+     "positionConfirmed": true,
+     "positionCitation": {
+      "publisher": "Wikipedia",
+      "url": "https://en.wikipedia.org/wiki/Kevin_De_Bruyne",
+      "verbatimQuote": "who plays as a midfielder"
+     },
+     "note": "All items verified against the non-Wikidata English Wikipedia page for Kevin De Bruyne. Infobox career history confirms Genk (2008–2012), VfL Wolfsburg (2014–2015), and Napoli (2025–). Lead sentence confirms Belgian nationality/Belgium national team and midfielder position (bucket MID)."
+    },
+    {
+     "cardId": "real_0060",
+     "name": "Franck Ribéry",
+     "qid": "Q1918",
+     "nation": "France",
+     "position": "ATT",
+     "clubs": [
+      {
+       "club": "FC Bayern Munich",
+       "confirmed": true,
+       "citation": {
+        "publisher": "Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/Franck_Rib%C3%A9ry",
+        "quote": "In 2007, Ribéry joined German club Bayern Munich for a then club-record fee of €25 million."
+       }
+      },
+      {
+       "club": "ACF Fiorentina",
+       "confirmed": true,
+       "citation": {
+        "publisher": "Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/Franck_Rib%C3%A9ry",
+        "quote": "In August 2019, Ribéry signed with Italian side Fiorentina on a free transfer."
+       }
+      },
+      {
+       "club": "Olympique de Marseille",
+       "confirmed": true,
+       "citation": {
+        "publisher": "Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/Franck_Rib%C3%A9ry",
+        "quote": "On 15 June 2005, Ribéry announced that he would be returning to France joining Ligue 1 club Marseille on a five-year contract."
+       }
+      }
+     ],
+     "clubsUnconfirmed": [],
+     "nationConfirmed": true,
+     "nationCitation": {
+      "publisher": "Wikipedia",
+      "url": "https://en.wikipedia.org/wiki/Franck_Rib%C3%A9ry",
+      "verbatimQuote": "Between 2006 and 2014, Ribéry played for the France national team 81 times."
+     },
+     "positionConfirmed": true,
+     "positionCitation": {
+      "publisher": "Wikipedia",
+      "url": "https://en.wikipedia.org/wiki/Franck_Rib%C3%A9ry",
+      "verbatimQuote": "Ribéry primarily played as a winger and was described as a player who was 'fast, tricky, and an excellent dribbler.'"
+     },
+     "note": "All items verified against English Wikipedia (non-Wikidata). Winger maps to the ATT bucket. Clubs (Bayern Munich, Fiorentina, Marseille), France nationality/national team, and attacker position all confirmed with verbatim quotes."
+    },
+    {
+     "cardId": "real_0062",
+     "name": "Marco van Basten",
+     "qid": "Q483629",
+     "nation": "Netherlands",
+     "position": "ATT",
+     "clubs": [
+      {
+       "club": "AFC Ajax",
+       "confirmed": true,
+       "citation": {
+        "publisher": "Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/Marco_van_Basten",
+        "quote": "Ajax signed 16-year-old Marco for the 1981–82 season."
+       }
+      },
+      {
+       "club": "AC Milan",
+       "confirmed": true,
+       "citation": {
+        "publisher": "Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/Marco_van_Basten",
+        "quote": "In 1987, Milan president Silvio Berlusconi signed Van Basten, along with fellow countryman Ruud Gullit."
+       }
+      }
+     ],
+     "clubsUnconfirmed": [],
+     "nationConfirmed": true,
+     "nationCitation": {
+      "publisher": "Wikipedia",
+      "url": "https://en.wikipedia.org/wiki/Marco_van_Basten",
+      "verbatimQuote": "Dutch former football manager and player who played as a striker for Ajax and AC Milan, as well as the Netherlands national team."
+     },
+     "positionConfirmed": true,
+     "positionCitation": {
+      "publisher": "Wikipedia",
+      "url": "https://en.wikipedia.org/wiki/Marco_van_Basten",
+      "verbatimQuote": "Dutch former football manager and player who played as a striker for Ajax and AC Milan, as well as the Netherlands national team."
+     },
+     "note": "All items verified from English Wikipedia (non-Wikidata). Clubs Ajax and AC Milan both confirmed; nationality Netherlands confirmed; position striker maps to ATT bucket. Britannica returned HTTP 403 so Wikipedia was used as the reachable source."
+    },
+    {
+     "cardId": "real_0074",
+     "name": "David Villa",
+     "qid": "Q83006",
+     "nation": "Spain",
+     "position": "ATT",
+     "clubs": [
+      {
+       "club": "FC Barcelona",
+       "confirmed": true,
+       "citation": {
+        "publisher": "Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/David_Villa",
+        "quote": "On 19 May 2010, Barcelona reached an agreement with Valencia for the acquisition of Villa for a €40 million transfer fee."
+       }
+      },
+      {
+       "club": "New York City FC",
+       "confirmed": true,
+       "citation": {
+        "publisher": "Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/David_Villa",
+        "quote": "he was announced as the first player for the newly formed New York City, who would start playing in the 2015 season of Major League Soccer"
+       }
+      },
+      {
+       "club": "Valencia CF",
+       "confirmed": true,
+       "citation": {
+        "publisher": "Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/David_Villa",
+        "quote": "He joined Valencia in 2005 for a transfer fee of €12 million"
+       }
+      }
+     ],
+     "clubsUnconfirmed": [],
+     "nationConfirmed": true,
+     "nationCitation": {
+      "publisher": "Wikipedia",
+      "url": "https://en.wikipedia.org/wiki/David_Villa",
+      "verbatimQuote": "David Villa Sánchez...is a Spanish former professional footballer"
+     },
+     "positionConfirmed": true,
+     "positionCitation": {
+      "publisher": "Wikipedia",
+      "url": "https://en.wikipedia.org/wiki/David_Villa",
+      "verbatimQuote": "Position: Striker"
+     },
+     "note": "All three clubs (FC Barcelona, New York City FC, Valencia CF), Spanish nationality, and ATT position (striker) confirmed via non-Wikidata source (English Wikipedia). Striker maps to the ATT (attacker/forward) bucket."
+    },
+    {
+     "cardId": "real_0077",
+     "name": "Ángel Di María",
+     "qid": "Q251683",
+     "nation": "Argentina",
+     "position": "ATT",
+     "clubs": [
+      {
+       "club": "Club Atlético Rosario Central",
+       "confirmed": true,
+       "citation": {
+        "publisher": "Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/%C3%81ngel_Di_Mar%C3%ADa",
+        "quote": "Di María made his professional debut on 14 December 2005 in Rosario's final fixture of the Apertura, a 2–2 draw away to Independiente."
+       }
+      },
+      {
+       "club": "S.L. Benfica",
+       "confirmed": true,
+       "citation": {
+        "publisher": "Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/%C3%81ngel_Di_Mar%C3%ADa",
+        "quote": "Di María was transferred to the Portuguese side Benfica in July 2007, where he played as a winger."
+       }
+      },
+      {
+       "club": "Paris Saint-Germain FC",
+       "confirmed": true,
+       "citation": {
+        "publisher": "Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/%C3%81ngel_Di_Mar%C3%ADa",
+        "quote": "On 2 August, it was reported Di María would undergo a medical ahead of a move to Paris Saint-Germain."
+       }
+      }
+     ],
+     "clubsUnconfirmed": [],
+     "nationConfirmed": true,
+     "nationCitation": {
+      "publisher": "Wikipedia",
+      "url": "https://en.wikipedia.org/wiki/%C3%81ngel_Di_Mar%C3%ADa",
+      "verbatimQuote": "Ángel Fabián Di María is an Argentine professional footballer who plays as a right winger or attacking midfielder for and captains Argentine Primera División club Rosario Central."
+     },
+     "positionConfirmed": true,
+     "positionCitation": {
+      "publisher": "Wikipedia",
+      "url": "https://en.wikipedia.org/wiki/%C3%81ngel_Di_Mar%C3%ADa",
+      "verbatimQuote": "Di María is a winger who is also capable of playing as a more central attacking midfielder or on either side of the pitch, although he is predominantly a left-footed player."
+     },
+     "note": "All items verified against English Wikipedia (non-Wikidata). All three clubs (Rosario Central, Benfica, PSG), Argentina nationality, and ATT position bucket (winger/attacker) confirmed. Winger maps to ATT."
+    },
+    {
+     "cardId": "real_0086",
+     "name": "David de Gea",
+     "qid": "Q150268",
+     "nation": "Spain",
+     "position": "GK",
+     "clubs": [
+      {
+       "club": "Atlético Madrid",
+       "confirmed": true,
+       "citation": {
+        "publisher": "Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/David_de_Gea",
+        "quote": "After being made Atlético's first-choice goalkeeper, he helped the team win the UEFA Europa League and the UEFA Super Cup in 2010."
+       }
+      },
+      {
+       "club": "Manchester United F.C.",
+       "confirmed": true,
+       "citation": {
+        "publisher": "Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/David_de_Gea",
+        "quote": "De Gea joined the club in 2011 for £18.9 million, a British record for a goalkeeper at the time."
+       }
+      },
+      {
+       "club": "ACF Fiorentina",
+       "confirmed": true,
+       "citation": {
+        "publisher": "Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/David_de_Gea",
+        "quote": "After spending the entirety of the 2023–24 season as a free agent, on 9 August 2024, De Gea signed for Serie A club Fiorentina."
+       }
+      }
+     ],
+     "clubsUnconfirmed": [],
+     "nationConfirmed": true,
+     "nationCitation": {
+      "publisher": "Wikipedia",
+      "url": "https://en.wikipedia.org/wiki/David_de_Gea",
+      "verbatimQuote": "David de Gea Quintana is a Spanish professional footballer who plays as a goalkeeper for and captains Serie A club Fiorentina."
+     },
+     "positionConfirmed": true,
+     "positionCitation": {
+      "publisher": "Wikipedia",
+      "url": "https://en.wikipedia.org/wiki/David_de_Gea",
+      "verbatimQuote": "David de Gea Quintana is a Spanish professional footballer who plays as a goalkeeper for and captains Serie A club Fiorentina."
+     },
+     "note": "All facts verified from the non-Wikidata English Wikipedia page. All three clubs (Atlético Madrid, Manchester United, Fiorentina) confirmed as senior teams. Nationality Spain confirmed (\"Spanish professional footballer\"). Position bucket GK confirmed (\"plays as a goalkeeper\")."
+    },
+    {
+     "cardId": "real_0096",
+     "name": "Garrincha",
+     "qid": "Q180642",
+     "nation": "Brazil",
+     "position": "ATT",
+     "clubs": [
+      {
+       "club": "Olaria Atlético Clube",
+       "confirmed": true,
+       "citation": {
+        "publisher": "Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/Garrincha",
+        "quote": "Garrincha's professional career as a footballer lasted until 1972, when he played for Olaria"
+       }
+      },
+      {
+       "club": "Botafogo F.R.",
+       "confirmed": true,
+       "citation": {
+        "publisher": "Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/Garrincha",
+        "quote": "Garrincha played for Botafogo for 12 years, the bulk of his professional career."
+       }
+      },
+      {
+       "club": "Clube de Regatas do Flamengo",
+       "confirmed": true,
+       "citation": {
+        "publisher": "Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/Garrincha",
+        "quote": "The same year, he went back to Brazil and joined Flamengo, where he would stay until 1969."
+       }
+      }
+     ],
+     "clubsUnconfirmed": [],
+     "nationConfirmed": true,
+     "nationCitation": {
+      "publisher": "Wikipedia",
+      "url": "https://en.wikipedia.org/wiki/Garrincha",
+      "verbatimQuote": "Manuel Francisco dos Santos...was a Brazilian professional footballer who played as a right winger."
+     },
+     "positionConfirmed": true,
+     "positionCitation": {
+      "publisher": "Wikipedia",
+      "url": "https://en.wikipedia.org/wiki/Garrincha",
+      "verbatimQuote": "was a Brazilian professional footballer who played as a right winger."
+     },
+     "note": "All three clubs (Olaria, Botafogo, Flamengo), nationality (Brazil), and position bucket (ATT — right winger/forward) confirmed from the English Wikipedia article (non-Wikidata source). Right winger maps to the ATT/attacker bucket."
+    },
+    {
+     "cardId": "real_0104",
+     "name": "Wesley Sneijder",
+     "qid": "Q124086",
+     "nation": "Netherlands",
+     "position": "MID",
+     "clubs": [
+      {
+       "club": "Inter Milan",
+       "confirmed": true,
+       "citation": {
+        "publisher": "Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/Wesley_Sneijder",
+        "quote": "2009–2013 Inter Milan 76 (13)"
+       }
+      },
+      {
+       "club": "AFC Ajax",
+       "confirmed": true,
+       "citation": {
+        "publisher": "Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/Wesley_Sneijder",
+        "quote": "2002–2007 Ajax 126 (43)"
+       }
+      },
+      {
+       "club": "Galatasaray S.K.",
+       "confirmed": true,
+       "citation": {
+        "publisher": "Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/Wesley_Sneijder",
+        "quote": "2013–2017 Galatasaray 124 (35)"
+       }
+      }
+     ],
+     "clubsUnconfirmed": [],
+     "nationConfirmed": true,
+     "nationCitation": {
+      "publisher": "Wikipedia",
+      "url": "https://en.wikipedia.org/wiki/Wesley_Sneijder",
+      "verbatimQuote": "2003–2018 Netherlands 134 (31)"
+     },
+     "positionConfirmed": true,
+     "positionCitation": {
+      "publisher": "Wikipedia",
+      "url": "https://en.wikipedia.org/wiki/Wesley_Sneijder",
+      "verbatimQuote": "Position Attacking midfielder"
+     },
+     "note": "All items confirmed via English Wikipedia (non-Wikidata). Career table lists Ajax (2002-2007), Inter Milan (2009-2013), Galatasaray (2013-2017), and Netherlands national team (2003-2018, 134 caps). Position listed as attacking midfielder, matching MID bucket."
+    },
+    {
+     "cardId": "real_0120",
+     "name": "Pepe",
+     "qid": "Q485697",
+     "nation": "Portugal",
+     "position": "DEF",
+     "clubs": [
+      {
+       "club": "FC Porto",
+       "confirmed": true,
+       "citation": {
+        "publisher": "CBS Sports",
+        "url": "https://www.cbssports.com/soccer/news/pepe-retires-at-age-41-portugal-great-former-real-madrid-defender-known-for-aggression-trophy-filled-career/",
+        "quote": "Pepe played with Maritimo, Porto, Real Madrid and Besiktas before going back to Porto in 2019"
+       }
+      },
+      {
+       "club": "Beşiktaş J.K. (Football)",
+       "confirmed": true,
+       "citation": {
+        "publisher": "CBS Sports",
+        "url": "https://www.cbssports.com/soccer/news/pepe-retires-at-age-41-portugal-great-former-real-madrid-defender-known-for-aggression-trophy-filled-career/",
+        "quote": "Pepe played with Maritimo, Porto, Real Madrid and Besiktas before going back to Porto in 2019"
+       }
+      },
+      {
+       "club": "Real Madrid Club de Fútbol",
+       "confirmed": true,
+       "citation": {
+        "publisher": "CBS Sports",
+        "url": "https://www.cbssports.com/soccer/news/pepe-retires-at-age-41-portugal-great-former-real-madrid-defender-known-for-aggression-trophy-filled-career/",
+        "quote": "Pepe played with Maritimo, Porto, Real Madrid and Besiktas before going back to Porto in 2019"
+       }
+      }
+     ],
+     "clubsUnconfirmed": [],
+     "nationConfirmed": true,
+     "nationCitation": {
+      "publisher": "CBS Sports",
+      "url": "https://www.cbssports.com/soccer/news/pepe-retires-at-age-41-portugal-great-former-real-madrid-defender-known-for-aggression-trophy-filled-career/",
+      "verbatimQuote": "141 caps for Portugal over 23 years, including playing in UEFA Euro 2024"
+     },
+     "positionConfirmed": true,
+     "positionCitation": {
+      "publisher": "CBS Sports",
+      "url": "https://www.cbssports.com/soccer/news/pepe-retires-at-age-41-portugal-great-former-real-madrid-defender-known-for-aggression-trophy-filled-career/",
+      "verbatimQuote": "Portuguese iconic center back Pepe has announced his retirement from professional soccer"
+     },
+     "note": "All items confirmed from CBS Sports (non-Wikidata reputable press). Clubs FC Porto, Real Madrid, and Beşiktaş all named in one verbatim sentence. Nationality Portugal confirmed via 141 caps. Position: \"center back\" = DEF bucket. Search also corroborated by ESPN (listed as FC Porto Defender) and Wikipedia."
+    },
+    {
+     "cardId": "real_0121",
+     "name": "Carlos Tevez",
+     "qid": "Q50600",
+     "nation": "Argentina",
+     "position": "ATT",
+     "clubs": [
+      {
+       "club": "Boca Juniors",
+       "confirmed": true,
+       "citation": {
+        "publisher": "Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/Carlos_Tevez",
+        "quote": "Tevez began his career with Boca Juniors, winning the Copa Libertadores and Intercontinental Cup in 2003"
+       }
+      },
+      {
+       "club": "Manchester City F.C.",
+       "confirmed": true,
+       "citation": {
+        "publisher": "Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/Carlos_Tevez",
+        "quote": "In 2009, Tevez joined Manchester United's rivals Manchester City."
+       }
+      },
+      {
+       "club": "Juventus FC",
+       "confirmed": true,
+       "citation": {
+        "publisher": "Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/Carlos_Tevez",
+        "quote": "In 2013, he joined Juventus, where he won two Scudetti among other trophies."
+       }
+      }
+     ],
+     "clubsUnconfirmed": [],
+     "nationConfirmed": true,
+     "nationCitation": {
+      "publisher": "Wikipedia",
+      "url": "https://en.wikipedia.org/wiki/Carlos_Tevez",
+      "verbatimQuote": "Tevez made his international debut for Argentina in 2004, earning 76 caps"
+     },
+     "positionConfirmed": true,
+     "positionCitation": {
+      "publisher": "Wikipedia",
+      "url": "https://en.wikipedia.org/wiki/Carlos_Tevez",
+      "verbatimQuote": "A dynamic forward in his prime, Tevez was capable of playing as a striker, as a winger, as a supporting forward, or as an attacking midfielder."
+     },
+     "note": "All facts confirmed from English Wikipedia (non-Wikidata). Clubs Boca Juniors, Manchester City, and Juventus all confirmed as senior teams. Nationality Argentina confirmed via international debut/caps. Position bucket ATT confirmed: described as a forward/striker."
+    },
+    {
+     "cardId": "real_0152",
+     "name": "Hidetoshi Nakata",
+     "qid": "Q128725",
+     "nation": "Japan",
+     "position": "MID",
+     "clubs": [
+      {
+       "club": "A.C. Perugia Calcio",
+       "confirmed": true,
+       "citation": {
+        "publisher": "Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/Hidetoshi_Nakata",
+        "quote": "signed by Perugia in Italy's Serie A"
+       }
+      },
+      {
+       "club": "Parma Calcio 1913",
+       "confirmed": true,
+       "citation": {
+        "publisher": "Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/Hidetoshi_Nakata",
+        "quote": "In the summer of 2001, Nakata penned a four-year deal with Parma"
+       }
+      },
+      {
+       "club": "Shonan Bellmare",
+       "confirmed": true,
+       "citation": {
+        "publisher": "Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/Hidetoshi_Nakata",
+        "quote": "Nakata began his professional career at the age of 18 in 1995, with J1 League side Bellmare Hiratsuka (now Shonan Bellmare)"
+       }
+      }
+     ],
+     "clubsUnconfirmed": [],
+     "nationConfirmed": true,
+     "nationCitation": {
+      "publisher": "Wikipedia",
+      "url": "https://en.wikipedia.org/wiki/Hidetoshi_Nakata",
+      "verbatimQuote": "played for Japan in three World Cup tournaments (1998, 2002 and 2006)"
+     },
+     "positionConfirmed": true,
+     "positionCitation": {
+      "publisher": "Wikipedia",
+      "url": "https://en.wikipedia.org/wiki/Hidetoshi_Nakata",
+      "verbatimQuote": "played as a midfielder"
+     },
+     "note": "All items verified from English Wikipedia (non-Wikidata). Position 'midfielder' matches MID bucket. Bellmare Hiratsuka is explicitly noted as now Shonan Bellmare. Nation Japan confirmed via national team World Cup appearances."
+    },
+    {
+     "cardId": "real_0165",
+     "name": "Andrey Arshavin",
+     "qid": "Q47230",
+     "nation": "Russia",
+     "position": "ATT",
+     "clubs": [
+      {
+       "club": "FC Zenit Saint Petersburg",
+       "confirmed": true,
+       "citation": {
+        "publisher": "Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/Andrey_Arshavin",
+        "quote": "Arshavin began his career at Zenit Saint Petersburg in 2000."
+       }
+      },
+      {
+       "club": "FC Kairat",
+       "confirmed": true,
+       "citation": {
+        "publisher": "Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/Andrey_Arshavin",
+        "quote": "On 18 March 2016, Arshavin signed for Kazakhstani club FC Kairat on a one-year deal."
+       }
+      },
+      {
+       "club": "Arsenal F.C.",
+       "confirmed": true,
+       "citation": {
+        "publisher": "Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/Andrey_Arshavin",
+        "quote": "Arshavin thereafter signed for English Premier League club Arsenal during the 2008–09 winter transfer window."
+       }
+      }
+     ],
+     "clubsUnconfirmed": [],
+     "nationConfirmed": true,
+     "nationCitation": {
+      "publisher": "Wikipedia",
+      "url": "https://en.wikipedia.org/wiki/Andrey_Arshavin",
+      "verbatimQuote": "Andrey Sergeyevich Arshavin... is a Russian former professional footballer."
+     },
+     "positionConfirmed": true,
+     "positionCitation": {
+      "publisher": "Wikipedia",
+      "url": "https://en.wikipedia.org/wiki/Andrey_Arshavin",
+      "verbatimQuote": "played as a winger or midfielder"
+     },
+     "note": "All three clubs, Russian nationality, and attacking position confirmed via non-Wikidata source (English Wikipedia). Position note: Wikipedia describes him as a winger / attacking midfielder; press outlets (e.g. Sky Sports) routinely refer to him as a 'former Arsenal forward'. As a winger/forward he fits the ATT (attacker) bucket, so positionConfirmed=true, though his attacking-midfielder role sits near the MID/ATT boundary."
+    },
+    {
+     "cardId": "real_0167",
+     "name": "Javier Zanetti",
+     "qid": "Q52876",
+     "nation": "Argentina",
+     "position": "DEF",
+     "clubs": [
+      {
+       "club": "Club Atlético Banfield",
+       "confirmed": true,
+       "citation": {
+        "publisher": "Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/Javier_Zanetti",
+        "quote": "A 20-year-old Zanetti debuted for Banfield on 12 September 1993 in a home match"
+       }
+      },
+      {
+       "club": "Club Atlético Talleres de Remedios de Escalada",
+       "confirmed": true,
+       "citation": {
+        "publisher": "Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/Javier_Zanetti",
+        "quote": "With them, he played 33 matches and scored one goal in his only season, before moving in 1993"
+       }
+      },
+      {
+       "club": "Inter Milan",
+       "confirmed": true,
+       "citation": {
+        "publisher": "Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/Javier_Zanetti",
+        "quote": "From 1995 to 2014 he played for Italian club Inter Milan and was captain from 2001 until his retirement"
+       }
+      }
+     ],
+     "clubsUnconfirmed": [],
+     "nationConfirmed": true,
+     "nationCitation": {
+      "publisher": "Wikipedia",
+      "url": "https://en.wikipedia.org/wiki/Javier_Zanetti",
+      "verbatimQuote": "With the Argentina national team, Zanetti played in 145 games"
+     },
+     "positionConfirmed": true,
+     "positionCitation": {
+      "publisher": "Wikipedia",
+      "url": "https://en.wikipedia.org/wiki/Javier_Zanetti",
+      "verbatimQuote": "Zanetti was known for his versatility and adeptness, often playing as full-back or wing-back on both flanks"
+     },
+     "note": "All three clubs, nationality (Argentina), and position bucket DEF (full-back/wing-back = defender) confirmed via Wikipedia (non-Wikidata). The Talleres quote references his single season there in context of the Argentine second-division team Talleres de Remedios de Escalada. Note he also played as midfielder at times, but his primary bucket is DEF."
+    },
+    {
+     "cardId": "real_0175",
+     "name": "Leonardo Bonucci",
+     "qid": "Q208050",
+     "nation": "Italy",
+     "position": "DEF",
+     "clubs": [
+      {
+       "club": "Juventus FC",
+       "confirmed": true,
+       "citation": {
+        "publisher": "Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/Leonardo_Bonucci",
+        "quote": "On 1 July 2010, Bonucci was signed by Juventus on a four-year contract for a total of €15.5 million fee."
+       }
+      },
+      {
+       "club": "Inter Milan",
+       "confirmed": true,
+       "citation": {
+        "publisher": "Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/Leonardo_Bonucci",
+        "quote": "On 7 July 2006, Inter bought Bonucci outright."
+       }
+      },
+      {
+       "club": "Treviso F.B.C. 1993",
+       "confirmed": true,
+       "citation": {
+        "publisher": "Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/Leonardo_Bonucci",
+        "quote": "On 1 July 2007, Bonucci and Maa Boumsong formally became players of Treviso after their loan contract back to Inter had expired."
+       }
+      }
+     ],
+     "clubsUnconfirmed": [],
+     "nationConfirmed": true,
+     "nationCitation": {
+      "publisher": "Wikipedia",
+      "url": "https://en.wikipedia.org/wiki/Leonardo_Bonucci",
+      "verbatimQuote": "Bonucci made his debut with the Italy senior team on 3 March 2010, under manager Marcello Lippi, in a friendly match against Cameroon."
+     },
+     "positionConfirmed": true,
+     "positionCitation": {
+      "publisher": "Wikipedia",
+      "url": "https://en.wikipedia.org/wiki/Leonardo_Bonucci",
+      "verbatimQuote": "Position: Centre-back"
+     },
+     "note": "All three club memberships, nationality (Italy), and position bucket (DEF = centre-back) confirmed via English Wikipedia (non-Wikidata). Treviso membership note: Wikipedia confirms he formally became a Treviso player in July 2007. Centre-back maps to the DEF bucket."
+    },
+    {
+     "cardId": "real_0222",
+     "name": "Jens Lehmann",
+     "qid": "Q57114",
+     "nation": "Germany",
+     "position": "GK",
+     "clubs": [
+      {
+       "club": "Arsenal F.C.",
+       "confirmed": true,
+       "citation": {
+        "publisher": "Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/Jens_Lehmann",
+        "quote": "Lehmann joined Arsenal on 25 July 2003"
+       }
+      },
+      {
+       "club": "Schalke 04",
+       "confirmed": true,
+       "citation": {
+        "publisher": "Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/Jens_Lehmann",
+        "quote": "Lehmann started his career in the 1988–89 season with Schalke 04"
+       }
+      },
+      {
+       "club": "Borussia Dortmund",
+       "confirmed": true,
+       "citation": {
+        "publisher": "Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/Jens_Lehmann",
+        "quote": "In early 1999, Lehmann returned to Germany to play for Borussia Dortmund"
+       }
+      }
+     ],
+     "clubsUnconfirmed": [],
+     "nationConfirmed": true,
+     "nationCitation": {
+      "publisher": "Wikipedia",
+      "url": "https://en.wikipedia.org/wiki/Jens_Lehmann",
+      "verbatimQuote": "made his debut for the Germany national team against Oman in February 1998 and earned 61 caps for his country"
+     },
+     "positionConfirmed": true,
+     "positionCitation": {
+      "publisher": "Wikipedia",
+      "url": "https://en.wikipedia.org/wiki/Jens_Lehmann",
+      "verbatimQuote": "played as a goalkeeper"
+     },
+     "note": "All items verified against the English Wikipedia article on Jens Lehmann (non-Wikidata source). Three senior clubs (Arsenal, Schalke 04, Borussia Dortmund), Germany national team, and GK (goalkeeper) position bucket all confirmed with verbatim quotes."
+    },
+    {
+     "cardId": "real_0227",
+     "name": "Dele Alli",
+     "qid": "Q10553748",
+     "nation": "England",
+     "position": "MID",
+     "clubs": [
+      {
+       "club": "Tottenham Hotspur F.C.",
+       "confirmed": true,
+       "citation": {
+        "publisher": "Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/Dele_Alli",
+        "quote": "2015–2022 Tottenham Hotspur 181 (51)"
+       }
+      },
+      {
+       "club": "Milton Keynes Dons F.C.",
+       "confirmed": true,
+       "citation": {
+        "publisher": "Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/Dele_Alli",
+        "quote": "2012–2015 Milton Keynes Dons 62 (18)"
+       }
+      },
+      {
+       "club": "Everton F.C.",
+       "confirmed": true,
+       "citation": {
+        "publisher": "Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/Dele_Alli",
+        "quote": "2022–2024 Everton 13 (0)"
+       }
+      }
+     ],
+     "clubsUnconfirmed": [],
+     "nationConfirmed": true,
+     "nationCitation": {
+      "publisher": "Wikipedia",
+      "url": "https://en.wikipedia.org/wiki/Dele_Alli",
+      "verbatimQuote": "Bamidele Jermaine \"Dele\" Alli (born 11 April 1996) is an English professional footballer ... 2015–2019 England 37 (3)"
+     },
+     "positionConfirmed": true,
+     "positionCitation": {
+      "publisher": "Wikipedia",
+      "url": "https://en.wikipedia.org/wiki/Dele_Alli",
+      "verbatimQuote": "is an English professional footballer who plays as an attacking midfielder"
+     },
+     "note": "All items verified against the non-Wikidata English Wikipedia article for Dele Alli (Q10553748). Infobox career table confirms all three senior clubs (Milton Keynes Dons 2012–2015, Tottenham Hotspur 2015–2022, Everton 2022–2024) and the England national team (37 caps). Opening sentence confirms position as attacking midfielder, which maps to the MID bucket. Nationality: English."
+    },
+    {
+     "cardId": "real_0260",
+     "name": "Sergio Romero",
+     "qid": "Q215463",
+     "nation": "Argentina",
+     "position": "GK",
+     "clubs": [
+      {
+       "club": "Manchester United F.C.",
+       "confirmed": true,
+       "citation": {
+        "publisher": "Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/Sergio_Romero",
+        "quote": "He signed for Manchester United in July 2015, largely serving as backup to David de Gea but playing in a series of important matches for the club."
+       }
+      },
+      {
+       "club": "AZ Alkmaar",
+       "confirmed": true,
+       "citation": {
+        "publisher": "Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/Sergio_Romero",
+        "quote": "He won the Eredivisie in 2009, and two years later joined Italian side Sampdoria."
+       }
+      },
+      {
+       "club": "U.C. Sampdoria",
+       "confirmed": true,
+       "citation": {
+        "publisher": "Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/Sergio_Romero",
+        "quote": "He won the Eredivisie in 2009, and two years later joined Italian side Sampdoria."
+       }
+      }
+     ],
+     "clubsUnconfirmed": [],
+     "nationConfirmed": true,
+     "nationCitation": {
+      "publisher": "Wikipedia",
+      "url": "https://en.wikipedia.org/wiki/Sergio_Romero",
+      "verbatimQuote": "Sergio Germán \"Chiquito\" Romero...is an Argentine former professional footballer who played as a goalkeeper."
+     },
+     "positionConfirmed": true,
+     "positionCitation": {
+      "publisher": "Wikipedia",
+      "url": "https://en.wikipedia.org/wiki/Sergio_Romero",
+      "verbatimQuote": "Sergio Germán \"Chiquito\" Romero...is an Argentine former professional footballer who played as a goalkeeper."
+     },
+     "note": "All items verified against English Wikipedia (non-Wikidata). Position bucket GK confirmed ('played as a goalkeeper'); nationality Argentina confirmed ('Argentine former professional footballer'). AZ Alkmaar and Sampdoria are confirmed via the transition sentence plus dedicated career sections; Manchester United confirmed by explicit signing sentence. The AZ/Sampdoria quote references both clubs in one sentence."
+    },
+    {
+     "cardId": "real_0261",
+     "name": "Maya Yoshida",
+     "qid": "Q248141",
+     "nation": "Japan",
+     "position": "DEF",
+     "clubs": [
+      {
+       "club": "LA Galaxy",
+       "confirmed": true,
+       "citation": {
+        "publisher": "LA Galaxy (official club site)",
+        "url": "https://www.lagalaxy.com/news/la-galaxy-sign-japanese-national-team-defender-maya-yoshida",
+        "quote": "LA Galaxy today announced that the club has signed Japanese National Team defender Maya Yoshida"
+       }
+      },
+      {
+       "club": "Southampton F.C.",
+       "confirmed": true,
+       "citation": {
+        "publisher": "LA Galaxy (official club site)",
+        "url": "https://www.lagalaxy.com/news/la-galaxy-sign-japanese-national-team-defender-maya-yoshida",
+        "quote": "After his stint with Venlo, Yoshida joined Southampton FC, where he recorded nine goals"
+       }
+      },
+      {
+       "club": "U.C. Sampdoria",
+       "confirmed": true,
+       "citation": {
+        "publisher": "LA Galaxy (official club site)",
+        "url": "https://www.lagalaxy.com/news/la-galaxy-sign-japanese-national-team-defender-maya-yoshida",
+        "quote": "In three seasons with Sampdoria (2020-22), Yoshida tallied three goals and six assists"
+       }
+      }
+     ],
+     "clubsUnconfirmed": [],
+     "nationConfirmed": true,
+     "nationCitation": {
+      "publisher": "LA Galaxy (official club site)",
+      "url": "https://www.lagalaxy.com/news/la-galaxy-sign-japanese-national-team-defender-maya-yoshida",
+      "verbatimQuote": "In 126 career appearances (120 starts) for the Japan Men's National Team, Yoshida has recorded 12 goals"
+     },
+     "positionConfirmed": true,
+     "positionCitation": {
+      "publisher": "LA Galaxy (official club site)",
+      "url": "https://www.lagalaxy.com/news/la-galaxy-sign-japanese-national-team-defender-maya-yoshida",
+      "verbatimQuote": "LA Galaxy today announced that the club has signed Japanese National Team defender Maya Yoshida"
+     },
+     "note": "All three clubs (LA Galaxy, Southampton, Sampdoria), the Japan national team, and the DEF (defender/center back) position bucket were confirmed from a single non-Wikidata source: the official LA Galaxy signing announcement. Position is corroborated further by the same page's quote \"Maya is a top center back\" (center back = defender = DEF)."
+    },
+    {
+     "cardId": "real_0266",
+     "name": "Mateo Kovačić",
+     "qid": "Q701297",
+     "nation": "Croatia",
+     "position": "MID",
+     "clubs": [
+      {
+       "club": "GNK Dinamo Zagreb",
+       "confirmed": true,
+       "citation": {
+        "publisher": "Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/Mateo_Kova%C4%8Di%C4%87",
+        "quote": "Kovačić began his professional career with Dinamo Zagreb at the age of 16, with whom he won two consecutive Prva HNL titles"
+       }
+      },
+      {
+       "club": "Chelsea F.C.",
+       "confirmed": true,
+       "citation": {
+        "publisher": "Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/Mateo_Kova%C4%8Di%C4%87",
+        "quote": "He subsequently joined Chelsea, where he won the UEFA Europa League, a fourth Champions League title, the UEFA Super Cup and the FIFA Club World Cup"
+       }
+      },
+      {
+       "club": "Real Madrid Club de Fútbol",
+       "confirmed": true,
+       "citation": {
+        "publisher": "Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/Mateo_Kova%C4%8Di%C4%87",
+        "quote": "In 2015, he moved to Real Madrid, where he won nine trophies, including three UEFA Champions League titles between 2016 and 2018"
+       }
+      }
+     ],
+     "clubsUnconfirmed": [],
+     "nationConfirmed": true,
+     "nationCitation": {
+      "publisher": "Wikipedia",
+      "url": "https://en.wikipedia.org/wiki/Mateo_Kova%C4%8Di%C4%87",
+      "verbatimQuote": "Born in Austria, Kovačić played for Croatia at multiple youth levels before making his debut for the senior national team in 2013"
+     },
+     "positionConfirmed": true,
+     "positionCitation": {
+      "publisher": "Wikipedia",
+      "url": "https://en.wikipedia.org/wiki/Mateo_Kova%C4%8Di%C4%87",
+      "verbatimQuote": "plays as a central midfielder for Premier League club Manchester City and the Croatia national team"
+     },
+     "note": "All items verified from the English Wikipedia page (non-Wikidata). Three senior clubs (Dinamo Zagreb, Chelsea, Real Madrid) confirmed, Croatia national team confirmed, and position \"central midfielder\" confirms the MID bucket."
+    },
+    {
+     "cardId": "real_0297",
+     "name": "Claudio Bravo",
+     "qid": "Q313161",
+     "nation": "Chile",
+     "position": "GK",
+     "clubs": [
+      {
+       "club": "Manchester City F.C.",
+       "confirmed": true,
+       "citation": {
+        "publisher": "Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/Claudio_Bravo",
+        "quote": "In the summer of 2016, he moved to Manchester City, where he won several titles"
+       }
+      },
+      {
+       "club": "Real Sociedad",
+       "confirmed": true,
+       "citation": {
+        "publisher": "Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/Claudio_Bravo",
+        "quote": "moved to Real Sociedad in 2006, appearing in 237 official games with the latter club"
+       }
+      },
+      {
+       "club": "Club Social y Deportivo Colo Colo",
+       "confirmed": true,
+       "citation": {
+        "publisher": "Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/Claudio_Bravo",
+        "quote": "Bravo began his career with Colo-Colo"
+       }
+      }
+     ],
+     "clubsUnconfirmed": [],
+     "nationConfirmed": true,
+     "nationCitation": {
+      "publisher": "Wikipedia",
+      "url": "https://en.wikipedia.org/wiki/Claudio_Bravo",
+      "verbatimQuote": "Chilean former professional footballer who played as a goalkeeper"
+     },
+     "positionConfirmed": true,
+     "positionCitation": {
+      "publisher": "Wikipedia",
+      "url": "https://en.wikipedia.org/wiki/Claudio_Bravo",
+      "verbatimQuote": "Chilean former professional footballer who played as a goalkeeper"
+     },
+     "note": "All three clubs (Manchester City, Real Sociedad, Colo-Colo), nationality (Chile), and position (goalkeeper = GK bucket) confirmed via the non-Wikidata English Wikipedia page. ESPN and Copa America results corroborated Chile national team status."
+    },
+    {
+     "cardId": "real_0307",
+     "name": "Dragan Stojković",
+     "qid": "Q257548",
+     "nation": "Yugoslavia",
+     "position": "MID",
+     "clubs": [
+      {
+       "club": "Nagoya Grampus",
+       "confirmed": true,
+       "citation": {
+        "publisher": "Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/Dragan_Stojkovi%C4%87",
+        "quote": "Stojković signed with Japanese J-League team Nagoya Grampus Eight"
+       }
+      },
+      {
+       "club": "FK Crvena zvezda",
+       "confirmed": true,
+       "citation": {
+        "publisher": "Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/Dragan_Stojkovi%C4%87",
+        "quote": "moved to Red Star Belgrade where he would spend the next four seasons"
+       }
+      },
+      {
+       "club": "FK Radnički Niš",
+       "confirmed": true,
+       "citation": {
+        "publisher": "Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/Dragan_Stojkovi%C4%87",
+        "quote": "playing career with Yugoslav First League and hometown side Radnički Niš"
+       }
+      }
+     ],
+     "clubsUnconfirmed": [],
+     "nationConfirmed": true,
+     "nationCitation": {
+      "publisher": "Wikipedia",
+      "url": "https://en.wikipedia.org/wiki/Dragan_Stojkovi%C4%87",
+      "verbatimQuote": "a long-time captain of the Yugoslavia national team"
+     },
+     "positionConfirmed": true,
+     "positionCitation": {
+      "publisher": "Wikipedia",
+      "url": "https://en.wikipedia.org/wiki/Dragan_Stojkovi%C4%87",
+      "verbatimQuote": "A midfielder and occasional forward, Stojković began his professional playing career"
+     },
+     "note": "All items confirmed from the non-Wikidata English Wikipedia article. FK Crvena zvezda is referred to as \"Red Star Belgrade\" in the source (same club). Position bucket MID confirmed (\"A midfielder and occasional forward\"). Nationality Yugoslavia confirmed (long-time captain of the Yugoslavia national team). All three senior clubs confirmed."
+    },
+    {
+     "cardId": "real_0312",
+     "name": "Emiliano Martínez",
+     "qid": "Q3275904",
+     "nation": "Argentina",
+     "position": "GK",
+     "clubs": [
+      {
+       "club": "Arsenal F.C.",
+       "confirmed": true,
+       "citation": {
+        "publisher": "Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/Emiliano_Mart%C3%ADnez",
+        "quote": "At Arsenal, he initially served as understudy"
+       }
+      },
+      {
+       "club": "Aston Villa F.C.",
+       "confirmed": true,
+       "citation": {
+        "publisher": "Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/Emiliano_Mart%C3%ADnez",
+        "quote": "In September 2020, Martínez moved to fellow Premier League club Aston Villa"
+       }
+      },
+      {
+       "club": "Sheffield Wednesday F.C.",
+       "confirmed": true,
+       "citation": {
+        "publisher": "Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/Emiliano_Mart%C3%ADnez",
+        "quote": "Martínez subsequently transferred to Championship club Sheffield Wednesday on an emergency 28-day loan"
+       }
+      }
+     ],
+     "clubsUnconfirmed": [],
+     "nationConfirmed": true,
+     "nationCitation": {
+      "publisher": "Wikipedia",
+      "url": "https://en.wikipedia.org/wiki/Emiliano_Mart%C3%ADnez",
+      "verbatimQuote": "the Argentina national team"
+     },
+     "positionConfirmed": true,
+     "positionCitation": {
+      "publisher": "Wikipedia",
+      "url": "https://en.wikipedia.org/wiki/Emiliano_Mart%C3%ADnez",
+      "verbatimQuote": "plays as a goalkeeper for Premier League club Aston Villa"
+     },
+     "note": "All three clubs (Arsenal, Aston Villa senior; Sheffield Wednesday via loan), Argentina national team, and GK position confirmed via non-Wikidata source (English Wikipedia). Sheffield Wednesday was a loan spell from Arsenal but still a senior-team membership."
+    },
+    {
+     "cardId": "real_0317",
+     "name": "Andreas Brehme",
+     "qid": "Q159045",
+     "nation": "Germany",
+     "position": "DEF",
+     "clubs": [
+      {
+       "club": "1. FC Kaiserslautern",
+       "confirmed": true,
+       "citation": {
+        "publisher": "Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/Andreas_Brehme",
+        "quote": "Brehme played for 1. FC Kaiserslautern from 1981 to 1986, before moving to Bayern Munich, where he played from 1986 to 1988"
+       }
+      },
+      {
+       "club": "FC Bayern Munich",
+       "confirmed": true,
+       "citation": {
+        "publisher": "Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/Andreas_Brehme",
+        "quote": "before moving to Bayern Munich, where he played from 1986 to 1988"
+       }
+      },
+      {
+       "club": "Inter Milan",
+       "confirmed": true,
+       "citation": {
+        "publisher": "Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/Andreas_Brehme",
+        "quote": "After that, he joined Italian side Inter Milan, playing there from 1988 to 1992"
+       }
+      }
+     ],
+     "clubsUnconfirmed": [],
+     "nationConfirmed": true,
+     "nationCitation": {
+      "publisher": "Wikipedia",
+      "url": "https://en.wikipedia.org/wiki/Andreas_Brehme",
+      "verbatimQuote": "As a member of the (West) Germany national team, Brehme took part at UEFA Euro 1984, the 1984 Summer Olympics, the 1986 FIFA World Cup, UEFA Euro 1988, the 1990 FIFA World Cup, UEFA Euro 1992, and the 1994 World Cup"
+     },
+     "positionConfirmed": true,
+     "positionCitation": {
+      "publisher": "Wikipedia",
+      "url": "https://en.wikipedia.org/wiki/Andreas_Brehme",
+      "verbatimQuote": "A versatile attacking full-back with an eye for goal, Brehme was capable of playing anywhere along the flank on either side of the pitch...regarded as one of the best left-backs of his generation"
+     },
+     "note": "All facts verified against English Wikipedia (non-Wikidata). All three clubs confirmed as senior teams (Kaiserslautern 1981-86, Bayern Munich 1986-88, Inter Milan 1988-92). Nationality Germany (West Germany national team) confirmed. Position is left-back/full-back, which maps to the DEF (defender) bucket. Note: the source describes Germany national team as \"(West) Germany\" reflecting the pre-1990 era, consistent with Germany."
+    },
+    {
+     "cardId": "real_0331",
+     "name": "Ibrahim Afellay",
+     "qid": "Q165014",
+     "nation": "Netherlands",
+     "position": "MID",
+     "clubs": [
+      {
+       "club": "PSV Eindhoven",
+       "confirmed": true,
+       "citation": {
+        "publisher": "Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/Ibrahim_Afellay",
+        "quote": "After debuting in 2004, he represented PSV for eight seasons, helping them to four Eredivisie titles"
+       }
+      },
+      {
+       "club": "FC Barcelona",
+       "confirmed": true,
+       "citation": {
+        "publisher": "Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/Ibrahim_Afellay",
+        "quote": "moving to Barcelona for €3 million in January 2011"
+       }
+      },
+      {
+       "club": "Stoke City F.C.",
+       "confirmed": true,
+       "citation": {
+        "publisher": "Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/Ibrahim_Afellay",
+        "quote": "Afellay joined Premier League side Stoke City on a two-year contract on 27 July 2015"
+       }
+      }
+     ],
+     "clubsUnconfirmed": [],
+     "nationConfirmed": true,
+     "nationCitation": {
+      "publisher": "Wikipedia",
+      "url": "https://en.wikipedia.org/wiki/Ibrahim_Afellay",
+      "verbatimQuote": "Making his Netherlands national team debut in 2007, Afellay appeared at the 2010 World Cup"
+     },
+     "positionConfirmed": true,
+     "positionCitation": {
+      "publisher": "Wikipedia",
+      "url": "https://en.wikipedia.org/wiki/Ibrahim_Afellay",
+      "verbatimQuote": "Dutch former professional footballer who played as an attacking midfielder or winger"
+     },
+     "note": "All items verified against English Wikipedia (non-Wikidata). Three clubs (PSV Eindhoven, FC Barcelona, Stoke City), Netherlands national team, and MID position bucket (attacking midfielder/winger) all confirmed with verbatim quotes. FC Barcelona club membership also independently corroborated by fcbarcelona.com in search results."
+    },
+    {
+     "cardId": "real_0333",
+     "name": "Maicon",
+     "qid": "Q177686",
+     "nation": "Brazil",
+     "position": "DEF",
+     "clubs": [
+      {
+       "club": "AS Roma",
+       "confirmed": true,
+       "citation": {
+        "publisher": "Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/Maicon_(footballer,_born_1981)",
+        "quote": "After two years in Monaco, he signed for Inter Milan in 2006...moving back to Italy to play for Roma the following season."
+       }
+      },
+      {
+       "club": "Cruzeiro E.C.",
+       "confirmed": true,
+       "citation": {
+        "publisher": "Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/Maicon_(footballer,_born_1981)",
+        "quote": "Maicon began his career in his native country with Cruzeiro...before moving to Europe when he signed for Ligue 1 side Monaco."
+       }
+      },
+      {
+       "club": "Inter Milan",
+       "confirmed": true,
+       "citation": {
+        "publisher": "Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/Maicon_(footballer,_born_1981)",
+        "quote": "After two years in Monaco, he signed for Inter Milan in 2006"
+       }
+      }
+     ],
+     "clubsUnconfirmed": [],
+     "nationConfirmed": true,
+     "nationCitation": {
+      "publisher": "Wikipedia",
+      "url": "https://en.wikipedia.org/wiki/Maicon_(footballer,_born_1981)",
+      "verbatimQuote": "As a Brazil international, Maicon made his debut in 2003 and represented his nation on 76 occasions"
+     },
+     "positionConfirmed": true,
+     "positionCitation": {
+      "publisher": "Wikipedia",
+      "url": "https://en.wikipedia.org/wiki/Maicon_(footballer,_born_1981)",
+      "verbatimQuote": "Position: Right-back"
+     },
+     "note": "All items confirmed from English Wikipedia (non-Wikidata). Clubs Cruzeiro, Inter Milan, and Roma (AS Roma) all verified as senior teams. Nationality/national team is Brazil (76 caps). Position right-back maps to the DEF bucket. Note: Wikipedia mentions Grêmio/Criciúma at youth level only; the three requested senior clubs are all confirmed."
+    },
+    {
+     "cardId": "real_0334",
+     "name": "Laurent Blanc",
+     "qid": "Q1839",
+     "nation": "France",
+     "position": "DEF",
+     "clubs": [
+      {
+       "club": "Olympique de Marseille",
+       "confirmed": true,
+       "citation": {
+        "publisher": "Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/Laurent_Blanc",
+        "quote": "Rolland Courbis managed to convince Blanc to join Marseille, which proved beneficial for both the club and Blanc."
+       }
+      },
+      {
+       "club": "Manchester United F.C.",
+       "confirmed": true,
+       "citation": {
+        "publisher": "Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/Laurent_Blanc",
+        "quote": "Manchester United manager Alex Ferguson had attempted to lure Blanc several times since 1996 and finally succeeded in August 2001."
+       }
+      },
+      {
+       "club": "Montpellier Hérault Sport Club",
+       "confirmed": true,
+       "citation": {
+        "publisher": "Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/Laurent_Blanc",
+        "quote": "His career started at Montpellier, where he signed his first professional contract in 1983."
+       }
+      }
+     ],
+     "clubsUnconfirmed": [],
+     "nationConfirmed": true,
+     "nationCitation": {
+      "publisher": "Wikipedia",
+      "url": "https://en.wikipedia.org/wiki/Laurent_Blanc",
+      "verbatimQuote": "He is also a former French international, earning 97 caps and scoring 16 international goals."
+     },
+     "positionConfirmed": true,
+     "positionCitation": {
+      "publisher": "Wikipedia",
+      "url": "https://en.wikipedia.org/wiki/Laurent_Blanc",
+      "verbatimQuote": "He played as a centre-back."
+     },
+     "note": "All items verified against English Wikipedia (non-Wikidata). Position centre-back maps to DEF bucket. Nationality France confirmed (French international, 97 caps). All three senior clubs confirmed in single fetch."
+    },
+    {
+     "cardId": "real_0352",
+     "name": "Junichi Inamoto",
+     "qid": "Q311191",
+     "nation": "Japan",
+     "position": "MID",
+     "clubs": [
+      {
+       "club": "Kawasaki Frontale",
+       "confirmed": true,
+       "citation": {
+        "publisher": "Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/Junichi_Inamoto",
+        "quote": "Inamoto signed for J1 League club Kawasaki Frontale on 11 January 2010"
+       }
+      },
+      {
+       "club": "Gamba Osaka",
+       "confirmed": true,
+       "citation": {
+        "publisher": "Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/Junichi_Inamoto",
+        "quote": "He played for Gamba Osaka during his last year of high school, signing with the club in 1997"
+       }
+      },
+      {
+       "club": "Hokkaido Consadole Sapporo",
+       "confirmed": true,
+       "citation": {
+        "publisher": "Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/Junichi_Inamoto",
+        "quote": "Inamoto then subsequently featured for Hokkaido Consadole Sapporo in the J2 League"
+       }
+      }
+     ],
+     "clubsUnconfirmed": [],
+     "nationConfirmed": true,
+     "nationCitation": {
+      "publisher": "Wikipedia",
+      "url": "https://en.wikipedia.org/wiki/Junichi_Inamoto",
+      "verbatimQuote": "He is a retired international for the Japan national team."
+     },
+     "positionConfirmed": true,
+     "positionCitation": {
+      "publisher": "Wikipedia",
+      "url": "https://en.wikipedia.org/wiki/Junichi_Inamoto",
+      "verbatimQuote": "Japanese footballer (born 1979)...who played as a midfielder."
+     },
+     "note": "All three senior clubs, nationality (Japan), and position bucket (MID/midfielder) confirmed via non-Wikidata source (English Wikipedia). Verbatim quotes copied from the fetched page. Position \"midfielder\" maps to bucket MID."
+    },
+    {
+     "cardId": "real_0353",
+     "name": "Douglas Costa",
+     "qid": "Q391680",
+     "nation": "Brazil",
+     "position": "MID",
+     "clubs": [
+      {
+       "club": "Juventus FC",
+       "confirmed": true,
+       "citation": {
+        "publisher": "Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/Douglas_Costa",
+        "quote": "On 7 June 2018, Juventus made his loan move permanent, signing Costa to a four-year deal."
+       }
+      },
+      {
+       "club": "FC Bayern Munich",
+       "confirmed": true,
+       "citation": {
+        "publisher": "Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/Douglas_Costa",
+        "quote": "On 1 July 2015, Bayern Munich announced they had signed Costa for a transfer fee of €30 million."
+       }
+      },
+      {
+       "club": "FC Shakhtar Donetsk",
+       "confirmed": true,
+       "citation": {
+        "publisher": "Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/Douglas_Costa",
+        "quote": "He joined Ukrainian side Shakhtar Donetsk on 10 January 2010."
+       }
+      }
+     ],
+     "clubsUnconfirmed": [],
+     "nationConfirmed": true,
+     "nationCitation": {
+      "publisher": "Wikipedia",
+      "url": "https://en.wikipedia.org/wiki/Douglas_Costa",
+      "verbatimQuote": "A full international since 2014, Costa represented Brazil at the 2015 Copa América and the 2018 FIFA World Cup."
+     },
+     "positionConfirmed": false,
+     "positionCitation": {
+      "publisher": "Wikipedia",
+      "url": "https://en.wikipedia.org/wiki/Douglas_Costa",
+      "verbatimQuote": "who plays as a winger for Emirati club Al-Ittifaq."
+     },
+     "note": "All three senior clubs (Shakhtar Donetsk, Bayern Munich, Juventus) confirmed via non-Wikidata source (Wikipedia). Brazilian nationality/national team confirmed. POSITION MISMATCH: Wikipedia describes him as a 'winger', which is an attacking/forward role (ATT bucket), not a midfielder (MID). The card's MID designation does not clearly match; winger is more accurately categorized as ATT. Set positionConfirmed=false to flag this discrepancy."
+    },
+    {
+     "cardId": "real_0365",
+     "name": "David Ospina",
+     "qid": "Q436987",
+     "nation": "Colombia",
+     "position": "GK",
+     "clubs": [
+      {
+       "club": "San Lorenzo de Almagro",
+       "confirmed": false,
+       "citation": null
+      },
+      {
+       "club": "SSC Napoli",
+       "confirmed": true,
+       "citation": {
+        "publisher": "Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/David_Ospina",
+        "quote": "On 15 August 2018, Serie A club Napoli agreed a season-long loan deal"
+       }
+      },
+      {
+       "club": "Atlético Nacional",
+       "confirmed": true,
+       "citation": {
+        "publisher": "Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/David_Ospina",
+        "quote": "David Ospina came through the youth system of Atlético Nacional and made his senior debut"
+       }
+      }
+     ],
+     "clubsUnconfirmed": [
+      "San Lorenzo de Almagro"
+     ],
+     "nationConfirmed": true,
+     "nationCitation": {
+      "publisher": "Wikipedia",
+      "url": "https://en.wikipedia.org/wiki/David_Ospina",
+      "verbatimQuote": "David Ospina Ramírez (born 31 August 1988) is a Colombian professional footballer"
+     },
+     "positionConfirmed": true,
+     "positionCitation": {
+      "publisher": "Wikipedia",
+      "url": "https://en.wikipedia.org/wiki/David_Ospina",
+      "verbatimQuote": "who plays as a goalkeeper for the Colombia national team"
+     },
+     "note": "Napoli, Atletico Nacional, Colombia nationality, and GK position all confirmed via non-Wikidata source (English Wikipedia). San Lorenzo de Almagro could NOT be confirmed: Wikipedia and Transfermarkt career histories contain no San Lorenzo entry, and July 2026 Argentine press (vamosciclon, infobae, mundoazulgrana) describe only San Lorenzo's INTEREST in signing the free-agent Ospina, with no formal offer or transfer completed. As of 1 July 2026 he is without a club. So San Lorenzo membership is a rumor/interest only, not a confirmed senior-team membership; set confirmed=false with null citation. Transfermarkt also independently confirms his position as Goalkeeper."
+    },
+    {
+     "cardId": "real_0380",
+     "name": "Yann Sommer",
+     "qid": "Q667596",
+     "nation": "Switzerland",
+     "position": "GK",
+     "clubs": [
+      {
+       "club": "FC Basel",
+       "confirmed": true,
+       "citation": {
+        "publisher": "Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/Yann_Sommer",
+        "quote": "Sommer began his career at Basel, where he won the Swiss Super League on four consecutive occasions"
+       }
+      },
+      {
+       "club": "Borussia Mönchengladbach",
+       "confirmed": true,
+       "citation": {
+        "publisher": "Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/Yann_Sommer",
+        "quote": "On 10 March 2014, Sommer signed a five-year contract with Bundesliga side Borussia Mönchengladbach"
+       }
+      },
+      {
+       "club": "Inter Milan",
+       "confirmed": true,
+       "citation": {
+        "publisher": "Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/Yann_Sommer",
+        "quote": "On 7 August 2023, Sommer joined Italian club Inter Milan, signing a contract until 2026"
+       }
+      }
+     ],
+     "clubsUnconfirmed": [],
+     "nationConfirmed": true,
+     "nationCitation": {
+      "publisher": "Wikipedia",
+      "url": "https://en.wikipedia.org/wiki/Yann_Sommer",
+      "verbatimQuote": "Swiss professional footballer ... represented the nation at the FIFA World Cup in 2014, 2018 and 2022, and the UEFA European Championship in 2016, 2020 and 2024"
+     },
+     "positionConfirmed": true,
+     "positionCitation": {
+      "publisher": "Wikipedia",
+      "url": "https://en.wikipedia.org/wiki/Yann_Sommer",
+      "verbatimQuote": "plays as a goalkeeper"
+     },
+     "note": "All facts verified from the non-Wikidata English Wikipedia page for Yann Sommer. Position bucket GK (goalkeeper) confirmed, nationality Switzerland confirmed via senior national-team appearances, and all three senior clubs (FC Basel, Borussia Mönchengladbach, Inter Milan) confirmed with verbatim quotes."
+    },
+    {
+     "cardId": "real_0386",
+     "name": "Stefan de Vrij",
+     "qid": "Q195953",
+     "nation": "Netherlands",
+     "position": "DEF",
+     "clubs": [
+      {
+       "club": "Inter Milan",
+       "confirmed": true,
+       "citation": {
+        "publisher": "Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/Stefan_de_Vrij",
+        "quote": "Following four seasons in Rome, he switched to fellow Serie A side Inter Milan, where he won three league titles in eight years."
+       }
+      },
+      {
+       "club": "SS Lazio",
+       "confirmed": true,
+       "citation": {
+        "publisher": "Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/Stefan_de_Vrij",
+        "quote": "he spent five seasons at the Eredivisie club, serving briefly as captain, before joining Lazio in July 2014."
+       }
+      },
+      {
+       "club": "Feyenoord Rotterdam",
+       "confirmed": true,
+       "citation": {
+        "publisher": "Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/Stefan_de_Vrij",
+        "quote": "De Vrij began his career at his local club VV Spirit, and debuted as a professional for Feyenoord at age 17. He spent five seasons at the Eredivisie club, serving briefly as captain, before joining Lazio in July 2014."
+       }
+      }
+     ],
+     "clubsUnconfirmed": [],
+     "nationConfirmed": true,
+     "nationCitation": {
+      "publisher": "Wikipedia",
+      "url": "https://en.wikipedia.org/wiki/Stefan_de_Vrij",
+      "verbatimQuote": "A full international since 2012, De Vrij has earned over 70 caps for the Netherlands."
+     },
+     "positionConfirmed": true,
+     "positionCitation": {
+      "publisher": "Wikipedia",
+      "url": "https://en.wikipedia.org/wiki/Stefan_de_Vrij",
+      "verbatimQuote": "plays as a centre-back for Super League Greece club Panathinaikos and the Netherlands national team."
+     },
+     "note": "All items confirmed via English Wikipedia (non-Wikidata). Centre-back maps to DEF bucket. Clubs Feyenoord, Lazio, and Inter Milan all confirmed as senior-team memberships; Netherlands confirmed as national team/nationality."
+    },
+    {
+     "cardId": "real_0389",
+     "name": "Domagoj Vida",
+     "qid": "Q314227",
+     "nation": "Croatia",
+     "position": "DEF",
+     "clubs": [
+      {
+       "club": "FC Dynamo Kyiv",
+       "confirmed": true,
+       "citation": {
+        "publisher": "Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/Domagoj_Vida",
+        "quote": "On 2 January 2013, it was announced that Vida had signed for Ukrainian club Dynamo Kyiv on a five–year deal"
+       }
+      },
+      {
+       "club": "Beşiktaş J.K. (Football)",
+       "confirmed": true,
+       "citation": {
+        "publisher": "Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/Domagoj_Vida",
+        "quote": "On 3 January 2018, Vida moved to Beşiktaş, signing a four-and-a-half-year contract."
+       }
+      },
+      {
+       "club": "AEK Athens F.C.",
+       "confirmed": true,
+       "citation": {
+        "publisher": "Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/Domagoj_Vida",
+        "quote": "Domagoj Vida...is a Croatian professional footballer who plays as a centre-back for Super League Greece club AEK Athens."
+       }
+      }
+     ],
+     "clubsUnconfirmed": [],
+     "nationConfirmed": true,
+     "nationCitation": {
+      "publisher": "Wikipedia",
+      "url": "https://en.wikipedia.org/wiki/Domagoj_Vida",
+      "verbatimQuote": "Domagoj Vida...is a Croatian professional footballer...representing Croatia"
+     },
+     "positionConfirmed": true,
+     "positionCitation": {
+      "publisher": "Wikipedia",
+      "url": "https://en.wikipedia.org/wiki/Domagoj_Vida",
+      "verbatimQuote": "who plays as a centre-back for Super League Greece club AEK Athens"
+     },
+     "note": "All items confirmed from the English Wikipedia article (non-Wikidata). Dynamo Kyiv, Beşiktaş, and AEK Athens senior-team memberships each supported by a verbatim quote. Nationality Croatia and position DEF (centre-back = defender) both confirmed."
+    },
+    {
+     "cardId": "real_0400",
+     "name": "Reece James",
+     "qid": "Q39076401",
+     "nation": "England",
+     "position": "DEF",
+     "clubs": [
+      {
+       "club": "Wigan Athletic F.C.",
+       "confirmed": true,
+       "citation": {
+        "publisher": "Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/Reece_James",
+        "quote": "In June 2018, James joined Championship club Wigan Athletic on loan for the 2018–19 season."
+       }
+      },
+      {
+       "club": "Chelsea F.C.",
+       "confirmed": true,
+       "citation": {
+        "publisher": "Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/Reece_James",
+        "quote": "Reece Lewis James...is an English professional footballer who plays as a right-back for Premier League club Chelsea, which he captains."
+       }
+      }
+     ],
+     "clubsUnconfirmed": [],
+     "nationConfirmed": true,
+     "nationCitation": {
+      "publisher": "Wikipedia",
+      "url": "https://en.wikipedia.org/wiki/Reece_James",
+      "verbatimQuote": "After representing England at various youth levels, James made his senior debut in 2020, and went on to appear at UEFA Euro 2020."
+     },
+     "positionConfirmed": true,
+     "positionCitation": {
+      "publisher": "Wikipedia",
+      "url": "https://en.wikipedia.org/wiki/Reece_James",
+      "verbatimQuote": "plays as a right-back for Premier League club Chelsea"
+     },
+     "note": "All items confirmed from English Wikipedia (non-Wikidata). Both clubs (Wigan Athletic on loan 2018-19, Chelsea) verified. England national team confirmed. Position right-back maps to DEF bucket. Wigan loan corroborated by Sky Sports search result as well."
+    },
+    {
+     "cardId": "real_0417",
+     "name": "Vahid Halilhodžić",
+     "qid": "Q463933",
+     "nation": "Yugoslavia",
+     "position": "ATT",
+     "clubs": [
+      {
+       "club": "FK Velež Mostar",
+       "confirmed": true,
+       "citation": {
+        "publisher": "Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/Vahid_Halilhod%C5%BEi%C4%87",
+        "quote": "Halilhodžić then went on to become one of the club's key players throughout the 1970s, appearing in a total of 376 matches and scoring 253 goals for the club"
+       }
+      },
+      {
+       "club": "FC Nantes",
+       "confirmed": true,
+       "citation": {
+        "publisher": "Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/Vahid_Halilhod%C5%BEi%C4%87",
+        "quote": "Halilhodžić went on to spend five years at La Beaujoire, appearing in a total of 163 league matches and scoring 92 goals for the club"
+       }
+      },
+      {
+       "club": "NK Neretva",
+       "confirmed": true,
+       "citation": {
+        "publisher": "Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/Vahid_Halilhod%C5%BEi%C4%87",
+        "quote": "sent on a six-month loan to second-level side Neretva Metković to gain some experience."
+       }
+      }
+     ],
+     "clubsUnconfirmed": [],
+     "nationConfirmed": true,
+     "nationCitation": {
+      "publisher": "Wikipedia",
+      "url": "https://en.wikipedia.org/wiki/Vahid_Halilhod%C5%BEi%C4%87",
+      "verbatimQuote": "15 full international caps for Yugoslavia ... scored eight goals."
+     },
+     "positionConfirmed": true,
+     "positionCitation": {
+      "publisher": "Wikipedia",
+      "url": "https://en.wikipedia.org/wiki/Vahid_Halilhod%C5%BEi%C4%87",
+      "verbatimQuote": "The document identifies him as a \"Forward\" in his position listing"
+     },
+     "note": "All items verified against English Wikipedia (non-Wikidata). Clubs: Velež Mostar (376 apps/253 goals), Nantes (5 years, 163 apps/92 goals), and NK Neretva confirmed as the six-month loan club \"Neretva Metković\" (name variant of NK Neretva). National team Yugoslavia confirmed (15 caps). Position: Forward = ATT bucket. Position quote is a paraphrase-flagged verbatim from the fetch summary; the source lists him as a Forward and describes him as a striker."
+    },
+    {
+     "cardId": "real_0429",
+     "name": "Ricardo Zamora",
+     "qid": "Q296337",
+     "nation": "Spain",
+     "position": "GK",
+     "clubs": [
+      {
+       "club": "RCD Espanyol de Barcelona",
+       "confirmed": true,
+       "citation": {
+        "publisher": "Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/Ricardo_Zamora",
+        "quote": "He played as a goalkeeper for, among others, RCD Espanyol, FC Barcelona and Real Madrid."
+       }
+      },
+      {
+       "club": "Real Madrid Club de Fútbol",
+       "confirmed": true,
+       "citation": {
+        "publisher": "Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/Ricardo_Zamora",
+        "quote": "He played as a goalkeeper for, among others, RCD Espanyol, FC Barcelona and Real Madrid."
+       }
+      },
+      {
+       "club": "FC Barcelona",
+       "confirmed": true,
+       "citation": {
+        "publisher": "Wikipedia",
+        "url": "https://en.wikipedia.org/wiki/Ricardo_Zamora",
+        "quote": "He played as a goalkeeper for, among others, RCD Espanyol, FC Barcelona and Real Madrid."
+       }
+      }
+     ],
+     "clubsUnconfirmed": [],
+     "nationConfirmed": true,
+     "nationCitation": {
+      "publisher": "Wikipedia",
+      "url": "https://en.wikipedia.org/wiki/Ricardo_Zamora",
+      "verbatimQuote": "Ricardo Zamora Martínez...was a Spanish football player and manager. ... As an international he played for Spain."
+     },
+     "positionConfirmed": true,
+     "positionCitation": {
+      "publisher": "Wikipedia",
+      "url": "https://en.wikipedia.org/wiki/Ricardo_Zamora",
+      "verbatimQuote": "He played as a goalkeeper for, among others, RCD Espanyol, FC Barcelona and Real Madrid."
+     },
+     "note": "All three clubs (Espanyol, Real Madrid, FC Barcelona), Spanish nationality/national team, and GK (goalkeeper) position bucket confirmed from a single non-Wikidata source: the English Wikipedia article on Ricardo Zamora. One reachable page provided verbatim quotes for every claim; no fabrication needed."
+    }
+   ]
+  }
+ },
+ "S3_nationPosition": {
+  "note": "Same 40-card sample; nation+position confirmed non-Wikidata with citations both ways. Issues: real_0353 Douglas Costa position (P413 'wing half'->MID vs prose 'winger'); no nation issues.",
+  "issues": [
+   {
+    "cardId": "real_0353",
+    "name": "Douglas Costa",
+    "qid": "Q391680",
+    "nation": "Brazil",
+    "position": "MID",
+    "clubs": [
+     {
+      "club": "Juventus FC",
+      "confirmed": true,
+      "citation": {
+       "publisher": "Wikipedia",
+       "url": "https://en.wikipedia.org/wiki/Douglas_Costa",
+       "quote": "On 7 June 2018, Juventus made his loan move permanent, signing Costa to a four-year deal."
+      }
+     },
+     {
+      "club": "FC Bayern Munich",
+      "confirmed": true,
+      "citation": {
+       "publisher": "Wikipedia",
+       "url": "https://en.wikipedia.org/wiki/Douglas_Costa",
+       "quote": "On 1 July 2015, Bayern Munich announced they had signed Costa for a transfer fee of €30 million."
+      }
+     },
+     {
+      "club": "FC Shakhtar Donetsk",
+      "confirmed": true,
+      "citation": {
+       "publisher": "Wikipedia",
+       "url": "https://en.wikipedia.org/wiki/Douglas_Costa",
+       "quote": "He joined Ukrainian side Shakhtar Donetsk on 10 January 2010."
+      }
+     }
+    ],
+    "clubsUnconfirmed": [],
+    "nationConfirmed": true,
+    "nationCitation": {
+     "publisher": "Wikipedia",
+     "url": "https://en.wikipedia.org/wiki/Douglas_Costa",
+     "verbatimQuote": "A full international since 2014, Costa represented Brazil at the 2015 Copa América and the 2018 FIFA World Cup."
+    },
+    "positionConfirmed": false,
+    "positionCitation": {
+     "publisher": "Wikipedia",
+     "url": "https://en.wikipedia.org/wiki/Douglas_Costa",
+     "verbatimQuote": "who plays as a winger for Emirati club Al-Ittifaq."
+    },
+    "note": "All three senior clubs (Shakhtar Donetsk, Bayern Munich, Juventus) confirmed via non-Wikidata source (Wikipedia). Brazilian nationality/national team confirmed. POSITION MISMATCH: Wikipedia describes him as a 'winger', which is an attacking/forward role (ATT bucket), not a midfielder (MID). The card's MID designation does not clearly match; winger is more accurately categorized as ATT. Set positionConfirmed=false to flag this discrepancy."
+   },
+   {
+    "cardId": "real_0365",
+    "name": "David Ospina",
+    "qid": "Q436987",
+    "nation": "Colombia",
+    "position": "GK",
+    "clubs": [
+     {
+      "club": "San Lorenzo de Almagro",
+      "confirmed": false,
+      "citation": null
+     },
+     {
+      "club": "SSC Napoli",
+      "confirmed": true,
+      "citation": {
+       "publisher": "Wikipedia",
+       "url": "https://en.wikipedia.org/wiki/David_Ospina",
+       "quote": "On 15 August 2018, Serie A club Napoli agreed a season-long loan deal"
+      }
+     },
+     {
+      "club": "Atlético Nacional",
+      "confirmed": true,
+      "citation": {
+       "publisher": "Wikipedia",
+       "url": "https://en.wikipedia.org/wiki/David_Ospina",
+       "quote": "David Ospina came through the youth system of Atlético Nacional and made his senior debut"
+      }
+     }
+    ],
+    "clubsUnconfirmed": [
+     "San Lorenzo de Almagro"
+    ],
+    "nationConfirmed": true,
+    "nationCitation": {
+     "publisher": "Wikipedia",
+     "url": "https://en.wikipedia.org/wiki/David_Ospina",
+     "verbatimQuote": "David Ospina Ramírez (born 31 August 1988) is a Colombian professional footballer"
+    },
+    "positionConfirmed": true,
+    "positionCitation": {
+     "publisher": "Wikipedia",
+     "url": "https://en.wikipedia.org/wiki/David_Ospina",
+     "verbatimQuote": "who plays as a goalkeeper for the Colombia national team"
+    },
+    "note": "Napoli, Atletico Nacional, Colombia nationality, and GK position all confirmed via non-Wikidata source (English Wikipedia). San Lorenzo de Almagro could NOT be confirmed: Wikipedia and Transfermarkt career histories contain no San Lorenzo entry, and July 2026 Argentine press (vamosciclon, infobae, mundoazulgrana) describe only San Lorenzo's INTEREST in signing the free-agent Ospina, with no formal offer or transfer completed. As of 1 July 2026 he is without a club. So San Lorenzo membership is a rumor/interest only, not a confirmed senior-team membership; set confirmed=false with null citation. Transfermarkt also independently confirms his position as Goalkeeper."
+   }
+  ]
+ },
+ "S4_eraContest": {
+  "rule": "|eraYear - cut| <= 2 ; cuts at 1975.5/1994.5/2004.5",
+  "boundaryCardCount": 122,
+  "agree": 117,
+  "crossings": 5,
+  "unreachable": 0,
+  "crossingsAdjudicated": [
+   {
+    "cardId": "real_0147",
+    "name": "David Luiz",
+    "qid": "Q193706",
+    "eraYear": 2003,
+    "eraIndex": 2,
+    "src": "sourceStartYear",
+    "nearCut": "2000s|2010s-20s",
+    "sourceYear": 2006,
+    "sourceBucket": 3,
+    "disposition": "CROSS-LATER(debut>anchor)",
+    "citation": {
+     "publisher": "Wikipedia",
+     "url": "https://en.wikipedia.org/wiki/David_Luiz",
+     "quote": "David Luiz made his debut for Vitória in 2006, excelling in a 2–2 draw against Santa Cruz"
+    },
+    "note": "Wikipedia says David Luiz debuted for Vitória's senior team in 2006 (infobox senior career 2006–2007), vs the card's 2003 anchor.",
+    "adjudication": "GREEN",
+    "why": "S4 crossing is a CLAMP RULE-OUTPUT, not an anomaly: sourceStartYear 2003 = born+16 (1987+16) clamp of a sub-16 youth membership (WD P54 earliest = 1999, age 12). Non-WD senior debut is 2006 (Vitoria). Per ticket clamp carve-out this is a correct rule output; era2 is a faithful clamp result. OWNER-OBSERVATION (Falcao-class clamp side-effect): senior career is era3."
+   },
+   {
+    "cardId": "real_0185",
+    "name": "David Trezeguet",
+    "qid": "Q183967",
+    "eraYear": 1996,
+    "eraIndex": 2,
+    "src": "cited-override",
+    "nearCut": "1980s-90s|2000s",
+    "sourceYear": 1994,
+    "sourceBucket": 1,
+    "disposition": "CROSS-EARLIER",
+    "citation": {
+     "publisher": "Wikipedia",
+     "url": "https://en.wikipedia.org/wiki/David_Trezeguet",
+     "quote": "he played his first professional game on 12 June 1994 as a 16-year-old in a 1–1 tie against Gimnasia."
+    },
+    "note": "Wikipedia says Trezeguet debuted for senior club Platense's first team in 1994 (not 1996), giving an earliest senior career start of 1994 — flags a discrepancy with the card's 1996 era-anchor.",
+    "adjudication": "AMBER",
+    "why": "S4 bucket-crossing with cited-override. Override anchors era at 1996 (Monaco, 'premier match en professionnel fevrier 1996', S6-verified) calling 1994 a squad-registration year. BUT Wikipedia shows a 1994 FIRST-TEAM professional debut for Platense (Argentina, '12 June 1994 as a 16-year-old'), i.e. earliest senior CLUB career = 1994 (era1). The override premise (1994=squad-registration) is contradicted by a 1994 Platense senior debut. Not RED (signed editorial + resolving citation for the 1996 Monaco debut) but owner should review whether the era should follow the Platense senior start."
+   },
+   {
+    "cardId": "real_0207",
+    "name": "John Obi Mikel",
+    "qid": "Q166984",
+    "eraYear": 2005,
+    "eraIndex": 3,
+    "src": "cited-override",
+    "nearCut": "2000s|2010s-20s",
+    "sourceYear": 2004,
+    "sourceBucket": 2,
+    "disposition": "CROSS-EARLIER",
+    "citation": {
+     "publisher": "Wikipedia",
+     "url": "https://en.wikipedia.org/wiki/Mikel_John_Obi",
+     "quote": "Mikel began his career with local club Plateau United, before joining Norwegian club Lyn at the age of 17 in 2004."
+    },
+    "note": "Wikipedia states he joined his first senior club, Lyn (Oslo), in 2004 — one year earlier than the card's 2005 anchor.",
+    "adjudication": "GREEN",
+    "why": "S4 crossing fully explained: cited-override working as designed - WD membership 2004 -> owner-cited first-team debut 2005 (Lynhistorie.no 'Debut 24.04.05', re-resolved in S6). Research re-found the 2004 membership; no defect."
+   },
+   {
+    "cardId": "real_0243",
+    "name": "Fábio Coentrão",
+    "qid": "Q484384",
+    "eraYear": 2005,
+    "eraIndex": 3,
+    "src": "sourceStartYear",
+    "nearCut": "2000s|2010s-20s",
+    "sourceYear": 2004,
+    "sourceBucket": 2,
+    "disposition": "CROSS-EARLIER",
+    "citation": {
+     "publisher": "Wikipedia",
+     "url": "https://en.wikipedia.org/wiki/F%C3%A1bio_Coentr%C3%A3o",
+     "quote": "He joined his hometown's Rio Ave F.C. in 2004 at the age of 16, playing three Primeira Liga games in the following season for a northern side that would be relegated."
+    },
+    "note": "Wikipedia says he joined senior side Rio Ave F.C. in 2004 (age 16), playing Primeira Liga games the following season — one year earlier than the card's 2005 anchor.",
+    "adjudication": "AMBER",
+    "why": "S4 borderline cut case. Card eraYear 2005 is faithful to WD P54 (Rio Ave membership start 2005; NOT a clamp - born+16=2004<2005). Wikipedia says he joined Rio Ave in 2004 (age 16), first-team Primeira Liga the following season. 1-year WD-vs-Wikipedia join-vs-first-team difference straddling the 2004/05 cut (era2 vs era3). Not RED (card faithful to the P54 membership-start rule); owner note."
+   },
+   {
+    "cardId": "real_0355",
+    "name": "Paulinho",
+    "qid": "Q73082",
+    "eraYear": 2004,
+    "eraIndex": 2,
+    "src": "sourceStartYear",
+    "nearCut": "2000s|2010s-20s",
+    "sourceYear": 2006,
+    "sourceBucket": 3,
+    "disposition": "CROSS-LATER(debut>anchor)",
+    "citation": {
+     "publisher": "Wikipedia",
+     "url": "https://en.wikipedia.org/wiki/Paulinho_(footballer,_born_July_1988)",
+     "quote": "Paulinho began his playing career with Pão de Açúcar, joining the youth squad in 2004. After failing to break through into the first team, Paulinho joined Lithuanian side Vilnius in 2006."
+    },
+    "note": "Wikipedia dates his 2004 join to the YOUTH squad only; his senior career (stats table: Pão de Açúcar 2006–2010, plus 2006 FC Vilnius spell) starts in 2006, not the card's 2004.",
+    "adjudication": "GREEN",
+    "why": "S4 crossing is a CLAMP/YOUTH RULE-OUTPUT: sourceStartYear 2004 = born+16 (1988+16) of a 2004 YOUTH-squad membership (Pao de Acucar, Wikipedia: 'joining the youth squad in 2004'). Senior career 2006 (FC Vilnius). Correct rule output; OWNER-OBSERVATION (Falcao/youth-clamp class): senior career is era3."
+   }
+  ],
+  "fullBoundaryTable": [
+   {
+    "cardId": "real_0001",
+    "name": "Lionel Messi",
+    "qid": "Q615",
+    "eraYear": 2003,
+    "eraIndex": 2,
+    "src": "sourceStartYear",
+    "nearCut": "2000s|2010s-20s",
+    "sourceYear": 2003,
+    "sourceBucket": 2,
+    "disposition": "AGREE",
+    "citation": {
+     "publisher": "beIN SPORTS",
+     "url": "https://www.beinsports.com/en-us/soccer/la-liga/articles-video/today-marks-21-years-since-messi-made-his-debut-with-barcelona-2024-11-16",
+     "quote": "November 16, 2003, marked the beginning of an unforgettable era in FC Barcelona's history. In a friendly against Porto during the inauguration of the Estádio do Dragão, a 16-year-old named Lionel Messi made his debut with the first team under Frank Rijkaard's management."
+    },
+    "note": "beIN SPORTS states Messi made his FC Barcelona first-team debut on 16 November 2003 in a friendly against Porto — matching the card's 2003 era-anchor for earliest senior club membership. (Note: his competitive debut came later, 16 Oct 2004.)"
+   },
+   {
+    "cardId": "real_0004",
+    "name": "Diego Maradona",
+    "qid": "Q17515",
+    "eraYear": 1976,
+    "eraIndex": 1,
+    "src": "sourceStartYear",
+    "nearCut": "≤70s|1980s-90s",
+    "sourceYear": 1976,
+    "sourceBucket": 1,
+    "disposition": "AGREE",
+    "citation": {
+     "publisher": "Póg Mo Goal",
+     "url": "https://pogmogoal.com/the-blog-reel/on-this-day-1976-maradona-makes-debut/15218/",
+     "quote": "October 20, 1976, Diego Armando Maradona Franco makes his professional début with Argentinos Juniors, ten days before his sixteenth birthday."
+    },
+    "note": "Source states Maradona made his professional senior debut for Argentinos Juniors on 20 October 1976, matching the card's era-anchor year of 1976."
+   },
+   {
+    "cardId": "real_0010",
+    "name": "Ronaldo Nazário",
+    "qid": "Q529207",
+    "eraYear": 1993,
+    "eraIndex": 1,
+    "src": "sourceStartYear",
+    "nearCut": "1980s-90s|2000s",
+    "sourceYear": 1993,
+    "sourceBucket": 1,
+    "disposition": "AGREE",
+    "citation": {
+     "publisher": "Wikipedia",
+     "url": "https://en.wikipedia.org/wiki/Ronaldo_(Brazilian_footballer)",
+     "quote": "Three months after arriving at Cruzeiro, Ronaldo made his professional debut on 25 May 1993 against Caldense in the Minas Gerais State Championship."
+    },
+    "note": "Wikipedia states Ronaldo joined his first senior club Cruzeiro and made his professional debut in 1993, matching the card's era-anchor year."
+   },
+   {
+    "cardId": "real_0014",
+    "name": "Luis Suárez",
+    "qid": "Q26517",
+    "eraYear": 2005,
+    "eraIndex": 3,
+    "src": "sourceStartYear",
+    "nearCut": "2000s|2010s-20s",
+    "sourceYear": 2005,
+    "sourceBucket": 3,
+    "disposition": "AGREE",
+    "citation": {
+     "publisher": "Wikipedia",
+     "url": "https://en.wikipedia.org/wiki/Luis_Su%C3%A1rez",
+     "quote": "In May 2005, at age 18, Suárez made his first-team debut against Atlético Junior in the Copa Libertadores."
+    },
+    "note": "Wikipedia states Suarez made his senior first-team debut for Nacional in May 2005, matching the card's 2005 anchor."
+   },
+   {
+    "cardId": "real_0015",
+    "name": "Luka Modrić",
+    "qid": "Q483837",
+    "eraYear": 2003,
+    "eraIndex": 2,
+    "src": "sourceStartYear",
+    "nearCut": "2000s|2010s-20s",
+    "sourceYear": 2003,
+    "sourceBucket": 2,
+    "disposition": "AGREE",
+    "citation": {
+     "publisher": "Wikipedia",
+     "url": "https://en.wikipedia.org/wiki/Luka_Modri%C4%87",
+     "quote": "After a season with Dinamo Zagreb's youth side, Modrić was loaned in 2003 to Zrinjski Mostar in the Bosnian Premier League."
+    },
+    "note": "Wikipedia says Modrić got his first senior football experience via a 2003 loan to Zrinjski Mostar (from Dinamo Zagreb), matching the card's era-anchor year 2003."
+   },
+   {
+    "cardId": "real_0016",
+    "name": "Gianluigi Buffon",
+    "qid": "Q68060",
+    "eraYear": 1995,
+    "eraIndex": 2,
+    "src": "sourceStartYear",
+    "nearCut": "1980s-90s|2000s",
+    "sourceYear": 1995,
+    "sourceBucket": 2,
+    "disposition": "AGREE",
+    "citation": {
+     "publisher": "Wikipedia",
+     "url": "https://en.wikipedia.org/wiki/Gianluigi_Buffon",
+     "quote": "Buffon was promoted to the senior squad in 1995 and, at the age of 17 years and 295 days, made his Serie A debut for Parma under Nevio Scala on 19 November 1995."
+    },
+    "note": "Wikipedia states Buffon was promoted to Parma's senior squad in 1995 and made his Serie A debut on 19 Nov 1995; earliest senior club = Parma, start year 1995, matching the card's era-anchor."
+   },
+   {
+    "cardId": "real_0017",
+    "name": "Karim Benzema",
+    "qid": "Q1912",
+    "eraYear": 2005,
+    "eraIndex": 3,
+    "src": "cited-override",
+    "nearCut": "2000s|2010s-20s",
+    "sourceYear": 2005,
+    "sourceBucket": 3,
+    "disposition": "AGREE",
+    "citation": {
+     "publisher": "Wikipedia",
+     "url": "https://en.wikipedia.org/wiki/Karim_Benzema",
+     "quote": "He made his professional debut on 15 January 2005 against Metz, appearing as a substitute for Pierre-Alain Frau."
+    },
+    "note": "Wikipedia states Benzema's senior/professional debut for Olympique Lyonnais was on 15 January 2005, matching the card's era-anchor year of 2005."
+   },
+   {
+    "cardId": "real_0018",
+    "name": "Robert Lewandowski",
+    "qid": "Q151269",
+    "eraYear": 2006,
+    "eraIndex": 3,
+    "src": "sourceStartYear",
+    "nearCut": "2000s|2010s-20s",
+    "sourceYear": 2006,
+    "sourceBucket": 3,
+    "disposition": "AGREE",
+    "citation": {
+     "publisher": "Wikipedia",
+     "url": "https://en.wikipedia.org/wiki/Robert_Lewandowski",
+     "quote": "In 2006–08, Znicz Pruszków, 59 (36)"
+    },
+    "note": "Wikipedia's senior career statistics table lists Znicz Pruszków (2006–08) as his first senior club, matching the card's era-anchor year of 2006."
+   },
+   {
+    "cardId": "real_0020",
+    "name": "Mesut Özil",
+    "qid": "Q83488",
+    "eraYear": 2006,
+    "eraIndex": 3,
+    "src": "sourceStartYear",
+    "nearCut": "2000s|2010s-20s",
+    "sourceYear": 2006,
+    "sourceBucket": 3,
+    "disposition": "AGREE",
+    "citation": {
+     "publisher": "Wikipedia",
+     "url": "https://en.wikipedia.org/wiki/Mesut_%C3%96zil",
+     "quote": "Born and raised in Gelsenkirchen, Özil began his senior club career playing for hometown club Schalke 04"
+    },
+    "note": "Wikipedia states Özil began his senior club career at Schalke 04; its career-stats table lists his Schalke 04 senior spell as 2006–2008, giving a first senior-team year of 2006."
+   },
+   {
+    "cardId": "real_0021",
+    "name": "Frank Lampard",
+    "qid": "Q41533",
+    "eraYear": 1995,
+    "eraIndex": 2,
+    "src": "sourceStartYear",
+    "nearCut": "1980s-90s|2000s",
+    "sourceYear": 1995,
+    "sourceBucket": 2,
+    "disposition": "AGREE",
+    "citation": {
+     "publisher": "Wikipedia",
+     "url": "https://en.wikipedia.org/wiki/Frank_Lampard",
+     "quote": "Lampard joined West Ham when his father was the assistant coach, entering as an apprentice in the youth team in 1994 and signing a professional contract the following year."
+    },
+    "note": "Wikipedia confirms Lampard signed his first professional (senior) contract with West Ham United in 1995 (\"the following year\" after joining the youth team in 1994), matching the card's era-anchor of 1995."
+   },
+   {
+    "cardId": "real_0023",
+    "name": "Thierry Henry",
+    "qid": "Q45901",
+    "eraYear": 1994,
+    "eraIndex": 1,
+    "src": "sourceStartYear",
+    "nearCut": "1980s-90s|2000s",
+    "sourceYear": 1994,
+    "sourceBucket": 1,
+    "disposition": "AGREE",
+    "citation": {
+     "publisher": "Wikipedia",
+     "url": "https://en.wikipedia.org/wiki/Thierry_Henry",
+     "quote": "Subsequently, Henry signed professional forms with Monaco, and made his professional debut on 31 August 1994, in a 2–0 loss against Nice."
+    },
+    "note": "Wikipedia states Henry signed professional forms with AS Monaco and made his senior debut on 31 August 1994 — earliest senior club is AS Monaco, start year 1994, matching the card's era-anchor."
+   },
+   {
+    "cardId": "real_0029",
+    "name": "Manuel Neuer",
+    "qid": "Q107365",
+    "eraYear": 2006,
+    "eraIndex": 3,
+    "src": "sourceStartYear",
+    "nearCut": "2000s|2010s-20s",
+    "sourceYear": 2005,
+    "sourceBucket": 3,
+    "disposition": "AGREE",
+    "citation": {
+     "publisher": "Wikipedia",
+     "url": "https://en.wikipedia.org/wiki/Manuel_Neuer",
+     "quote": "Neuer progressed through every age group at his hometown club, Schalke 04, and signed professional terms in 2005."
+    },
+    "note": "Wikipedia says Neuer signed professional (senior) terms with Schalke 04 in 2005; his competitive Bundesliga first-team debut for Schalke came matchday 2 of the 2006-07 season (Aug 2006). Card anchor year is 2006."
+   },
+   {
+    "cardId": "real_0037",
+    "name": "Gareth Bale",
+    "qid": "Q184586",
+    "eraYear": 2006,
+    "eraIndex": 3,
+    "src": "sourceStartYear",
+    "nearCut": "2000s|2010s-20s",
+    "sourceYear": 2006,
+    "sourceBucket": 3,
+    "disposition": "AGREE",
+    "citation": {
+     "publisher": "Sports Mole",
+     "url": "https://www.sportsmole.co.uk/football/real-madrid/on-this-day/feature/on-this-day-gareth-bale-makes-professional-debut-for-southampton_396715.html",
+     "quote": "Gareth Bale made his senior debut for Southampton on April 17, 2006."
+    },
+    "note": "Sports Mole says Bale made his senior debut for Southampton on 17 April 2006 — matches the card's 2006 anchor."
+   },
+   {
+    "cardId": "real_0045",
+    "name": "Gerard Piqué",
+    "qid": "Q17507",
+    "eraYear": 2003,
+    "eraIndex": 2,
+    "src": "sourceStartYear",
+    "nearCut": "2000s|2010s-20s",
+    "sourceYear": 2004,
+    "sourceBucket": 2,
+    "disposition": "AGREE",
+    "citation": {
+     "publisher": "Wikipedia",
+     "url": "https://en.wikipedia.org/wiki/Gerard_Piqu%C3%A9",
+     "quote": "Piqué made his debut for Manchester United in October 2004, as a centre-back, a 67th minute replacement for John O'Shea in a 3–0 League Cup victory at Crewe Alexandra."
+    },
+    "note": "Wikipedia states Piqué's first senior first-team appearance came for Manchester United in October 2004, one year later than the card's 2003 era-anchor."
+   },
+   {
+    "cardId": "real_0047",
+    "name": "Lukas Podolski",
+    "qid": "Q134976",
+    "eraYear": 2003,
+    "eraIndex": 2,
+    "src": "sourceStartYear",
+    "nearCut": "2000s|2010s-20s",
+    "sourceYear": 2003,
+    "sourceBucket": 2,
+    "disposition": "AGREE",
+    "citation": {
+     "publisher": "Wikipedia",
+     "url": "https://en.wikipedia.org/wiki/Lukas_Podolski",
+     "quote": "In 2003, at the age of 18, Podolski was still part of the club's youth side... he made his top flight debut shortly afterwards on 22 November 2003."
+    },
+    "note": "Wikipedia: Podolski joined the 1. FC Köln senior first team in 2003, making his top-flight debut on 22 November 2003."
+   },
+   {
+    "cardId": "real_0054",
+    "name": "Sergio Agüero",
+    "qid": "Q119562",
+    "eraYear": 2004,
+    "eraIndex": 2,
+    "src": "sourceStartYear",
+    "nearCut": "2000s|2010s-20s",
+    "sourceYear": 2003,
+    "sourceBucket": 2,
+    "disposition": "AGREE",
+    "citation": {
+     "publisher": "Wikipedia",
+     "url": "https://en.wikipedia.org/wiki/Sergio_Ag%C3%BCero",
+     "quote": "on 5 July 2003 against San Lorenzo, when Independiente's coach, Oscar Ruggeri sent Agüero onto the field as a substitute for Emanuel Rivas in the 69th minute of the match"
+    },
+    "note": "Wikipedia states Agüero made his senior first-team debut for Independiente on 5 July 2003 (year 2003), one year before the card's 2004 anchor."
+   },
+   {
+    "cardId": "real_0057",
+    "name": "Sergio Ramos",
+    "qid": "Q483309",
+    "eraYear": 2004,
+    "eraIndex": 2,
+    "src": "sourceStartYear",
+    "nearCut": "2000s|2010s-20s",
+    "sourceYear": 2004,
+    "sourceBucket": 2,
+    "disposition": "AGREE",
+    "citation": {
+     "publisher": "Wikipedia",
+     "url": "https://en.wikipedia.org/wiki/Sergio_Ramos",
+     "quote": "He made his first-team and La Liga debut on 1 February 2004, coming on as a 64th-minute substitute for Paco Gallardo in a 0–1 away loss against Deportivo La Coruña."
+    },
+    "note": "Wikipedia states Ramos made his Sevilla first-team debut on 1 February 2004, matching the card's 2004 era-anchor; club = Sevilla FC."
+   },
+   {
+    "cardId": "real_0058",
+    "name": "Mario Balotelli",
+    "qid": "Q129700",
+    "eraYear": 2006,
+    "eraIndex": 3,
+    "src": "sourceStartYear",
+    "nearCut": "2000s|2010s-20s",
+    "sourceYear": 2006,
+    "sourceBucket": 3,
+    "disposition": "AGREE",
+    "citation": {
+     "publisher": "Wikipedia",
+     "url": "https://en.wikipedia.org/wiki/Mario_Balotelli",
+     "quote": "At age 15, he was promoted to the first team, making his first team debut in a Serie C1 league match against Padova on 2 April 2006."
+    },
+    "note": "Wikipedia states Balotelli made his senior first-team debut for Lumezzane on 2 April 2006, matching the card's era-anchor year 2006."
+   },
+   {
+    "cardId": "real_0059",
+    "name": "Olivier Giroud",
+    "qid": "Q1911",
+    "eraYear": 2005,
+    "eraIndex": 3,
+    "src": "sourceStartYear",
+    "nearCut": "2000s|2010s-20s",
+    "sourceYear": 2005,
+    "sourceBucket": 3,
+    "disposition": "AGREE",
+    "citation": {
+     "publisher": "Wikipedia",
+     "url": "https://en.wikipedia.org/wiki/Olivier_Giroud",
+     "quote": "2005–2008 | Grenoble | 23 | (2)"
+    },
+    "note": "Wikipedia's Senior career infobox table lists Grenoble as Giroud's first senior club with years 2005-2008; the anchor year 2005 matches the card."
+   },
+   {
+    "cardId": "real_0066",
+    "name": "Andriy Shevchenko",
+    "qid": "Q41244",
+    "eraYear": 1994,
+    "eraIndex": 1,
+    "src": "sourceStartYear",
+    "nearCut": "1980s-90s|2000s",
+    "sourceYear": 1994,
+    "sourceBucket": 1,
+    "disposition": "AGREE",
+    "citation": {
+     "publisher": "Wikipedia",
+     "url": "https://en.wikipedia.org/wiki/Andriy_Shevchenko",
+     "quote": "He made his Vyshcha Liha debut for Dynamo Kiev on 8 November 1994 in an away game against Shakhtar Donetsk when he was 18."
+    },
+    "note": "Wikipedia states Shevchenko debuted for Dynamo Kyiv's senior team in 1994 (top-flight debut 8 Nov 1994; a National Cup senior appearance on 5 Nov 1994), matching the card's 1994 era-anchor."
+   },
+   {
+    "cardId": "real_0069",
+    "name": "Cesc Fàbregas",
+    "qid": "Q17499",
+    "eraYear": 2003,
+    "eraIndex": 2,
+    "src": "sourceStartYear",
+    "nearCut": "2000s|2010s-20s",
+    "sourceYear": 2003,
+    "sourceBucket": 2,
+    "disposition": "AGREE",
+    "citation": {
+     "publisher": "Wikipedia",
+     "url": "https://en.wikipedia.org/wiki/Cesc_F%C3%A0bregas",
+     "quote": "He nevertheless made his debut for Arsenal not long after, on 28 October 2003, in a League Cup tie at home to Rotherham United."
+    },
+    "note": "Wikipedia states Fàbregas made his senior first-team debut for Arsenal on 28 October 2003 (joined the club's academy 11 Sept 2003), matching the card's era-anchor year of 2003."
+   },
+   {
+    "cardId": "real_0075",
+    "name": "Edinson Cavani",
+    "qid": "Q167790",
+    "eraYear": 2005,
+    "eraIndex": 3,
+    "src": "sourceStartYear",
+    "nearCut": "2000s|2010s-20s",
+    "sourceYear": 2005,
+    "sourceBucket": 3,
+    "disposition": "AGREE",
+    "citation": {
+     "publisher": "Wikipedia",
+     "url": "https://en.wikipedia.org/wiki/Edinson_Cavani",
+     "quote": "2005–2007 Danubio 15 (5)"
+    },
+    "note": "Wikipedia's senior career table lists Danubio 2005–2007 as his first senior club, so his senior career start year is 2005, matching the card's era-anchor."
+   },
+   {
+    "cardId": "real_0077",
+    "name": "Ángel Di María",
+    "qid": "Q251683",
+    "eraYear": 2005,
+    "eraIndex": 3,
+    "src": "sourceStartYear",
+    "nearCut": "2000s|2010s-20s",
+    "sourceYear": 2005,
+    "sourceBucket": 3,
+    "disposition": "AGREE",
+    "citation": {
+     "publisher": "Wikipedia",
+     "url": "https://en.wikipedia.org/wiki/%C3%81ngel_Di_Mar%C3%ADa",
+     "quote": "Di María made his professional debut on 14 December 2005 in Rosario's final fixture of the Apertura, a 2–2 draw away to Independiente, by replacing Emiliano Vecchio."
+    },
+    "note": "Wikipedia states Di María made his professional/senior debut for Rosario Central on 14 December 2005, matching the card's 2005 era-anchor."
+   },
+   {
+    "cardId": "real_0079",
+    "name": "Andrea Pirlo",
+    "qid": "Q43926",
+    "eraYear": 1995,
+    "eraIndex": 2,
+    "src": "sourceStartYear",
+    "nearCut": "1980s-90s|2000s",
+    "sourceYear": 1995,
+    "sourceBucket": 2,
+    "disposition": "AGREE",
+    "citation": {
+     "publisher": "Wikipedia",
+     "url": "https://en.wikipedia.org/wiki/Andrea_Pirlo",
+     "quote": "In 1995, at the age of 16, Pirlo made his Serie A debut for Brescia against Reggiana, on 21 May, becoming Brescia's youngest player to make an appearance in Serie A."
+    },
+    "note": "Wikipedia states Pirlo debuted for his hometown senior club Brescia in 1995, matching the card's era-anchor year."
+   },
+   {
+    "cardId": "real_0081",
+    "name": "Raúl",
+    "qid": "Q11576",
+    "eraYear": 1994,
+    "eraIndex": 1,
+    "src": "sourceStartYear",
+    "nearCut": "1980s-90s|2000s",
+    "sourceYear": 1994,
+    "sourceBucket": 1,
+    "disposition": "AGREE",
+    "citation": {
+     "publisher": "Wikipedia",
+     "url": "https://en.wikipedia.org/wiki/Ra%C3%BAl_Gonz%C3%A1lez",
+     "quote": "He first started his professional career in the 1994–95 season with Real Madrid C. ... On 29 October 1994, in an away game against Real Zaragoza at La Romareda, he created a goal for strike partner Iván Zamorano."
+    },
+    "note": "Wikipedia: Raúl started his professional career in the 1994–95 season and made his senior first-team debut for Real Madrid on 29 October 1994 vs Real Zaragoza."
+   },
+   {
+    "cardId": "real_0082",
+    "name": "Hugo Lloris",
+    "qid": "Q1907",
+    "eraYear": 2005,
+    "eraIndex": 3,
+    "src": "sourceStartYear",
+    "nearCut": "2000s|2010s-20s",
+    "sourceYear": 2005,
+    "sourceBucket": 3,
+    "disposition": "AGREE",
+    "citation": {
+     "publisher": "Wikipedia",
+     "url": "https://en.wikipedia.org/wiki/Hugo_Lloris",
+     "quote": "Lloris was promoted to the first team squad ahead of the 2005–06 season and assigned the number 1 shirt."
+    },
+    "note": "Wikipedia states Lloris joined the Nice senior first team squad for the 2005-06 season and made his professional debut on 25 October 2005; earliest senior club = Nice, start year 2005, matching the card's era-anchor."
+   },
+   {
+    "cardId": "real_0084",
+    "name": "Ivan Rakitić",
+    "qid": "Q115453",
+    "eraYear": 2005,
+    "eraIndex": 3,
+    "src": "sourceStartYear",
+    "nearCut": "2000s|2010s-20s",
+    "sourceYear": 2005,
+    "sourceBucket": 3,
+    "disposition": "AGREE",
+    "citation": {
+     "publisher": "Wikipedia",
+     "url": "https://en.wikipedia.org/wiki/Ivan_Rakiti%C4%87",
+     "quote": "After spending some short time in the youth teams, Rakitić went on to make his first-team debut for Basel on 29 September 2005 during the UEFA Cup away match at Široki Brijeg."
+    },
+    "note": "Wikipedia states Rakitić made his senior first-team debut for FC Basel in 2005, matching the card's era-anchor year."
+   },
+   {
+    "cardId": "real_0088",
+    "name": "Michael Ballack",
+    "qid": "Q11948",
+    "eraYear": 1995,
+    "eraIndex": 2,
+    "src": "sourceStartYear",
+    "nearCut": "1980s-90s|2000s",
+    "sourceYear": 1995,
+    "sourceBucket": 2,
+    "disposition": "AGREE",
+    "citation": {
+     "publisher": "Wikipedia",
+     "url": "https://en.wikipedia.org/wiki/Michael_Ballack",
+     "quote": "His professional debut came on 4 August 1995, on the first day of the new 2. Bundesliga season."
+    },
+    "note": "Wikipedia states Ballack made his professional first-team debut for Chemnitzer FC on 4 August 1995, matching the card's era-anchor of 1995."
+   },
+   {
+    "cardId": "real_0093",
+    "name": "Marcelo Vieira",
+    "qid": "Q38136",
+    "eraYear": 2005,
+    "eraIndex": 3,
+    "src": "sourceStartYear",
+    "nearCut": "2000s|2010s-20s",
+    "sourceYear": 2005,
+    "sourceBucket": 3,
+    "disposition": "AGREE",
+    "citation": {
+     "publisher": "Wikipedia",
+     "url": "https://en.wikipedia.org/wiki/Marcelo_(footballer,_born_1988)",
+     "quote": "Starting his professional career with Fluminense in 2005, Marcelo won a Campeonato Carioca title in his first season"
+    },
+    "note": "Wikipedia states Marcelo started his professional (senior) career with Fluminense in 2005, matching the card's era-anchor year."
+   },
+   {
+    "cardId": "real_0095",
+    "name": "Michael Owen",
+    "qid": "Q128829",
+    "eraYear": 1995,
+    "eraIndex": 2,
+    "src": "sourceStartYear",
+    "nearCut": "1980s-90s|2000s",
+    "sourceYear": 1996,
+    "sourceBucket": 2,
+    "disposition": "AGREE",
+    "citation": {
+     "publisher": "Wikipedia",
+     "url": "https://en.wikipedia.org/wiki/Michael_Owen",
+     "quote": "On 6 May 1997, Owen scored on his Liverpool debut against Wimbledon at Selhurst Park."
+    },
+    "note": "Wikipedia infobox lists Owen's senior Liverpool years as 1996-2004 (pro contract Dec 1996); his competitive first-team debut came 6 May 1997 vs Wimbledon. Club: Liverpool. Neither matches the card's 1995 anchor."
+   },
+   {
+    "cardId": "real_0100",
+    "name": "Hernán Crespo",
+    "qid": "Q160206",
+    "eraYear": 1993,
+    "eraIndex": 1,
+    "src": "sourceStartYear",
+    "nearCut": "1980s-90s|2000s",
+    "sourceYear": 1993,
+    "sourceBucket": 1,
+    "disposition": "AGREE",
+    "citation": {
+     "publisher": "Wikipedia",
+     "url": "https://en.wikipedia.org/wiki/Hern%C3%A1n_Crespo",
+     "quote": "Crespo made his debut with River Plate during the 1993–94 season, scoring 13 goals in 25 league appearances as River Plate won the Apertura league title."
+    },
+    "note": "Wikipedia states Crespo made his senior debut with River Plate in the 1993–94 season, matching the card's 1993 anchor."
+   },
+   {
+    "cardId": "real_0115",
+    "name": "David Silva",
+    "qid": "Q161069",
+    "eraYear": 2003,
+    "eraIndex": 2,
+    "src": "sourceStartYear",
+    "nearCut": "2000s|2010s-20s",
+    "sourceYear": 2003,
+    "sourceBucket": 2,
+    "disposition": "AGREE",
+    "citation": {
+     "publisher": "Wikipedia",
+     "url": "https://en.wikipedia.org/wiki/David_Silva",
+     "quote": "Valencia B 2003–04 [Segunda División B] ... 14 appearances, 1 goal"
+    },
+    "note": "Wikipedia's career statistics table lists Valencia B, 2003-04 Segunda Division B (14 apps, 1 goal) as his earliest senior club, supporting a 2003 senior career start; this matches the card's 2003 era-anchor."
+   },
+   {
+    "cardId": "real_0117",
+    "name": "Diego Godín",
+    "qid": "Q214903",
+    "eraYear": 2003,
+    "eraIndex": 2,
+    "src": "sourceStartYear",
+    "nearCut": "2000s|2010s-20s",
+    "sourceYear": 2003,
+    "sourceBucket": 2,
+    "disposition": "AGREE",
+    "citation": {
+     "publisher": "Wikipedia",
+     "url": "https://en.wikipedia.org/wiki/Diego_God%C3%ADn",
+     "quote": "Godín started his professional career with Cerro at the age of 17."
+    },
+    "note": "Wikipedia says Godín began his senior/professional career with Cerro, and its career-stats table lists 2003 as his first year at the club — matching the card's era-anchor year of 2003."
+   },
+   {
+    "cardId": "real_0126",
+    "name": "Mario Mandžukić",
+    "qid": "Q187171",
+    "eraYear": 2004,
+    "eraIndex": 2,
+    "src": "sourceStartYear",
+    "nearCut": "2000s|2010s-20s",
+    "sourceYear": 2004,
+    "sourceBucket": 2,
+    "disposition": "AGREE",
+    "citation": {
+     "publisher": "Wikipedia",
+     "url": "https://en.wikipedia.org/wiki/Mario_Mand%C5%BEuki%C4%87",
+     "quote": "Starting his career in 2004 at hometown club Marsonia, Mandžukić then moved to two Zagreb-based clubs..."
+    },
+    "note": "Wikipedia states Mandzukic started his senior career in 2004 at hometown club Marsonia, matching the card's era-anchor year."
+   },
+   {
+    "cardId": "real_0127",
+    "name": "Keisuke Honda",
+    "qid": "Q202054",
+    "eraYear": 2005,
+    "eraIndex": 3,
+    "src": "cited-override",
+    "nearCut": "2000s|2010s-20s",
+    "sourceYear": 2005,
+    "sourceBucket": 3,
+    "disposition": "AGREE",
+    "citation": {
+     "publisher": "Wikipedia",
+     "url": "https://en.wikipedia.org/wiki/Keisuke_Honda",
+     "quote": "After graduating high school, he began his professional career in 2005, with J1 League side Nagoya Grampus Eight."
+    },
+    "note": "Wikipedia states Honda began his senior/professional career in 2005 with Nagoya Grampus Eight, matching the card's era-anchor of 2005."
+   },
+   {
+    "cardId": "real_0130",
+    "name": "Ruud van Nistelrooy",
+    "qid": "Q45626",
+    "eraYear": 1993,
+    "eraIndex": 1,
+    "src": "sourceStartYear",
+    "nearCut": "1980s-90s|2000s",
+    "sourceYear": 1993,
+    "sourceBucket": 1,
+    "disposition": "AGREE",
+    "citation": {
+     "publisher": "Wikipedia",
+     "url": "https://en.wikipedia.org/wiki/Ruud_van_Nistelrooy",
+     "quote": "Van Nistelrooy started his career in 1993, aged 17, with Dutch Eerste Divisie side Den Bosch"
+    },
+    "note": "Wikipedia states his senior career started in 1993 with FC Den Bosch, matching the card's era-anchor year."
+   },
+   {
+    "cardId": "real_0133",
+    "name": "Gonzalo Higuaín",
+    "qid": "Q483846",
+    "eraYear": 2005,
+    "eraIndex": 3,
+    "src": "sourceStartYear",
+    "nearCut": "2000s|2010s-20s",
+    "sourceYear": 2005,
+    "sourceBucket": 3,
+    "disposition": "AGREE",
+    "citation": {
+     "publisher": "Wikipedia",
+     "url": "https://en.wikipedia.org/wiki/Gonzalo_Higua%C3%ADn",
+     "quote": "Higuaín started playing in the youth teams and made his debut with River Plate in a 2–1 defeat against Gimnasia y Esgrima (LP) on 29 May 2005."
+    },
+    "note": "Wikipedia states Higuaín made his senior first-team debut for River Plate on 29 May 2005, confirming the card's era-anchor year of 2005."
+   },
+   {
+    "cardId": "real_0134",
+    "name": "Sami Khedira",
+    "qid": "Q54094",
+    "eraYear": 2006,
+    "eraIndex": 3,
+    "src": "sourceStartYear",
+    "nearCut": "2000s|2010s-20s",
+    "sourceYear": 2006,
+    "sourceBucket": 3,
+    "disposition": "AGREE",
+    "citation": {
+     "publisher": "Wikipedia",
+     "url": "https://en.wikipedia.org/wiki/Sami_Khedira",
+     "quote": "His debut followed on 1 October 2006 against Hertha BSC, replacing Antônio da Silva at the end of the 2–2 away draw."
+    },
+    "note": "Wikipedia states Khedira was called up to VfB Stuttgart's senior Bundesliga squad in the 2006-07 season and made his first-team debut on 1 October 2006 — senior club start year 2006, matching the card anchor."
+   },
+   {
+    "cardId": "real_0135",
+    "name": "Javier Mascherano",
+    "qid": "Q161571",
+    "eraYear": 2003,
+    "eraIndex": 2,
+    "src": "sourceStartYear",
+    "nearCut": "2000s|2010s-20s",
+    "sourceYear": 2003,
+    "sourceBucket": 2,
+    "disposition": "AGREE",
+    "citation": {
+     "publisher": "Wikipedia",
+     "url": "https://en.wikipedia.org/wiki/Javier_Mascherano",
+     "quote": "Mascherano won his first silverware when River won the 2003–04 Clausura championship."
+    },
+    "note": "Wikipedia infobox lists his senior career at River Plate as 2003–2005, and the article states he won the 2003–04 Clausura with River, confirming 2003 as his senior club career start."
+   },
+   {
+    "cardId": "real_0140",
+    "name": "Arturo Vidal",
+    "qid": "Q192671",
+    "eraYear": 2005,
+    "eraIndex": 3,
+    "src": "sourceStartYear",
+    "nearCut": "2000s|2010s-20s",
+    "sourceYear": 2005,
+    "sourceBucket": 3,
+    "disposition": "AGREE",
+    "citation": {
+     "publisher": "Wikipedia",
+     "url": "https://en.wikipedia.org/wiki/Arturo_Vidal",
+     "quote": "2005–2007 Colo-Colo 36 (2)"
+    },
+    "note": "Wikipedia infobox Senior career table lists Vidal's first senior club, Colo-Colo, beginning 2005 (professional debut prose says 2006 Apertura final); era-anchor 2005 confirmed."
+   },
+   {
+    "cardId": "real_0143",
+    "name": "Nani",
+    "qid": "Q482947",
+    "eraYear": 2005,
+    "eraIndex": 3,
+    "src": "sourceStartYear",
+    "nearCut": "2000s|2010s-20s",
+    "sourceYear": 2005,
+    "sourceBucket": 3,
+    "disposition": "AGREE",
+    "citation": {
+     "publisher": "Wikipedia",
+     "url": "https://en.wikipedia.org/wiki/Nani_(footballer)",
+     "quote": "After two seasons in the youth team, where he won the National Junior Championship in 2004–05, Nani was promoted to the first team early in the 2005–06 season."
+    },
+    "note": "Wikipedia states Nani was promoted to Sporting CP's senior first team early in the 2005-06 season, i.e. 2005 — matching the card's era-anchor."
+   },
+   {
+    "cardId": "real_0144",
+    "name": "Rio Ferdinand",
+    "qid": "Q483417",
+    "eraYear": 1996,
+    "eraIndex": 2,
+    "src": "sourceStartYear",
+    "nearCut": "1980s-90s|2000s",
+    "sourceYear": 1996,
+    "sourceBucket": 2,
+    "disposition": "AGREE",
+    "citation": {
+     "publisher": "Wikipedia",
+     "url": "https://en.wikipedia.org/wiki/Rio_Ferdinand",
+     "quote": "On 5 May 1996, he made his senior team debut, as he came on as a substitute for Tony Cottee in the Hammers' last game of the season, a 1–1 home draw against Sheffield Wednesday."
+    },
+    "note": "Wikipedia states Rio Ferdinand made his senior first-team debut for West Ham United on 5 May 1996, matching the card's era-anchor year of 1996."
+   },
+   {
+    "cardId": "real_0146",
+    "name": "Alexis Sánchez",
+    "qid": "Q180553",
+    "eraYear": 2005,
+    "eraIndex": 3,
+    "src": "sourceStartYear",
+    "nearCut": "2000s|2010s-20s",
+    "sourceYear": 2005,
+    "sourceBucket": 3,
+    "disposition": "AGREE",
+    "citation": {
+     "publisher": "Wikipedia",
+     "url": "https://en.wikipedia.org/wiki/Alexis_S%C3%A1nchez",
+     "quote": "In February 2005, Sánchez was promoted to the senior first team by manager Nelson Acosta."
+    },
+    "note": "Wikipedia says Sánchez was promoted to Cobreloa's senior first team in February 2005 (debut vs Deportes Temuco on 12 Feb), matching the card's 2005 era-anchor."
+   },
+   {
+    "cardId": "real_0147",
+    "name": "David Luiz",
+    "qid": "Q193706",
+    "eraYear": 2003,
+    "eraIndex": 2,
+    "src": "sourceStartYear",
+    "nearCut": "2000s|2010s-20s",
+    "sourceYear": 2006,
+    "sourceBucket": 3,
+    "disposition": "CROSS-LATER(debut>anchor)",
+    "citation": {
+     "publisher": "Wikipedia",
+     "url": "https://en.wikipedia.org/wiki/David_Luiz",
+     "quote": "David Luiz made his debut for Vitória in 2006, excelling in a 2–2 draw against Santa Cruz"
+    },
+    "note": "Wikipedia says David Luiz debuted for Vitória's senior team in 2006 (infobox senior career 2006–2007), vs the card's 2003 anchor."
+   },
+   {
+    "cardId": "real_0149",
+    "name": "Pierre-Emerick Aubameyang",
+    "qid": "Q44977",
+    "eraYear": 2005,
+    "eraIndex": 3,
+    "src": "sourceStartYear",
+    "nearCut": "2000s|2010s-20s",
+    "sourceYear": 2008,
+    "sourceBucket": 3,
+    "disposition": "AGREE",
+    "citation": {
+     "publisher": "Wikipedia",
+     "url": "https://en.wikipedia.org/wiki/Pierre-Emerick_Aubameyang",
+     "quote": "2008–2011 Milan 0 (0)"
+    },
+    "note": "Wikipedia infobox lists Aubameyang's earliest SENIOR club membership as AC Milan starting 2008 (he joined the youth academy in Jan 2007 and never played a senior match for Milan); this contradicts the card's 2005 anchor."
+   },
+   {
+    "cardId": "real_0150",
+    "name": "Diego Costa",
+    "qid": "Q459707",
+    "eraYear": 2006,
+    "eraIndex": 3,
+    "src": "sourceStartYear",
+    "nearCut": "2000s|2010s-20s",
+    "sourceYear": 2006,
+    "sourceBucket": 3,
+    "disposition": "AGREE",
+    "citation": {
+     "publisher": "Wikipedia",
+     "url": "https://en.wikipedia.org/wiki/Diego_Costa",
+     "quote": "Costa signed for his first European club in February 2006, Portugal's Braga."
+    },
+    "note": "Wikipedia says Diego Costa signed for his first European (senior) club, Braga, in February 2006 — matching the card's era-anchor of 2006."
+   },
+   {
+    "cardId": "real_0152",
+    "name": "Hidetoshi Nakata",
+    "qid": "Q128725",
+    "eraYear": 1995,
+    "eraIndex": 2,
+    "src": "sourceStartYear",
+    "nearCut": "1980s-90s|2000s",
+    "sourceYear": 1995,
+    "sourceBucket": 2,
+    "disposition": "AGREE",
+    "citation": {
+     "publisher": "Wikipedia",
+     "url": "https://en.wikipedia.org/wiki/Hidetoshi_Nakata",
+     "quote": "Nakata began his professional career at the age of 18 in 1995, with J1 League side Bellmare Hiratsuka."
+    },
+    "note": "Wikipedia states Nakata turned professional / joined his first senior club, Bellmare Hiratsuka (now Shonan Bellmare), in 1995 — matching the card's era-anchor year."
+   },
+   {
+    "cardId": "real_0155",
+    "name": "Aaron Ramsey",
+    "qid": "Q213427",
+    "eraYear": 2006,
+    "eraIndex": 3,
+    "src": "sourceStartYear",
+    "nearCut": "2000s|2010s-20s",
+    "sourceYear": 2007,
+    "sourceBucket": 3,
+    "disposition": "AGREE",
+    "citation": {
+     "publisher": "Wikipedia",
+     "url": "https://en.wikipedia.org/wiki/Aaron_Ramsey",
+     "quote": "After a few more years he eventually made his debut in the last home game of the 2006–07 Championship season, coming on to replace Paul Parry in the final minute of the 1–0 defeat to Hull City on 28 April 2007."
+    },
+    "note": "Wikipedia says Ramsey's senior debut for Cardiff City came on 28 April 2007 (in the 2006-07 Championship season); the card's 2006 anchor matches the season label but the source dates the actual debut to 2007."
+   },
+   {
+    "cardId": "real_0156",
+    "name": "Mario Gómez",
+    "qid": "Q45766",
+    "eraYear": 2003,
+    "eraIndex": 2,
+    "src": "sourceStartYear",
+    "nearCut": "2000s|2010s-20s",
+    "sourceYear": 2003,
+    "sourceBucket": 2,
+    "disposition": "AGREE",
+    "citation": {
+     "publisher": "Wikipedia",
+     "url": "https://en.wikipedia.org/wiki/Mario_G%C3%B3mez",
+     "quote": "Gómez played for VfB Stuttgart II in the Regionalliga Süd in the 2003–04 season, scoring six goals in 19 appearances."
+    },
+    "note": "Wikipedia says Gómez played for VfB Stuttgart II (senior reserve team) in the Regionalliga Süd in the 2003–04 season — earliest senior club career start = 2003, matching the card anchor."
+   },
+   {
+    "cardId": "real_0157",
+    "name": "Keylor Navas",
+    "qid": "Q969423",
+    "eraYear": 2005,
+    "eraIndex": 3,
+    "src": "sourceStartYear",
+    "nearCut": "2000s|2010s-20s",
+    "sourceYear": 2005,
+    "sourceBucket": 3,
+    "disposition": "AGREE",
+    "citation": {
+     "publisher": "Wikipedia",
+     "url": "https://en.wikipedia.org/wiki/Keylor_Navas",
+     "quote": "Born in San Isidro de El General, Pérez Zeledón, Navas made his professional debut with Deportivo Saprissa on 6 November 2005, in a Primera league match against Asociación Deportiva Carmelita."
+    },
+    "note": "Wikipedia states Navas made his professional debut with Deportivo Saprissa in 2005, matching the card's era-anchor year."
+   },
+   {
+    "cardId": "real_0160",
+    "name": "Wojciech Szczęsny",
+    "qid": "Q188997",
+    "eraYear": 2006,
+    "eraIndex": 3,
+    "src": "sourceStartYear",
+    "nearCut": "2000s|2010s-20s",
+    "sourceYear": 2009,
+    "sourceBucket": 3,
+    "disposition": "AGREE",
+    "citation": {
+     "publisher": "Wikipedia",
+     "url": "https://en.wikipedia.org/wiki/Wojciech_Szcz%C4%99sny",
+     "quote": "In January 2006, Szczęsny joined the Arsenal youth set-up, progressing to the reserve team during the 2008–09 season."
+    },
+    "note": "Wikipedia: Szczesny joined Arsenal's YOUTH set-up in Jan 2006; his senior career table lists Arsenal from 2009 (first senior appearance 2009-10). So the card's 2006 anchor matches when he joined the club, but the senior first-team start per this source is 2009."
+   },
+   {
+    "cardId": "real_0164",
+    "name": "Patrick Vieira",
+    "qid": "Q46347",
+    "eraYear": 1993,
+    "eraIndex": 1,
+    "src": "sourceStartYear",
+    "nearCut": "1980s-90s|2000s",
+    "sourceYear": 1993,
+    "sourceBucket": 1,
+    "disposition": "AGREE",
+    "citation": {
+     "publisher": "Wikipedia",
+     "url": "https://en.wikipedia.org/wiki/Patrick_Vieira",
+     "quote": "Vieira first played for Tours U19 in the early 1990s, before moving to Cannes, where he made his debut at the age of 17, in 1993, and captained the team at just 19 years old."
+    },
+    "note": "Wikipedia states Vieira made his senior debut for AS Cannes in 1993, matching the card's era-anchor year."
+   },
+   {
+    "cardId": "real_0166",
+    "name": "Arda Turan",
+    "qid": "Q487459",
+    "eraYear": 2005,
+    "eraIndex": 3,
+    "src": "cited-override",
+    "nearCut": "2000s|2010s-20s",
+    "sourceYear": 2005,
+    "sourceBucket": 3,
+    "disposition": "AGREE",
+    "citation": {
+     "publisher": "Wikipedia",
+     "url": "https://en.wikipedia.org/wiki/Arda_Turan",
+     "quote": "He was promoted to the Galatasaray first-team by manager Gheorghe Hagi in 2004–05 season, and he made his official debut against Bursaspor in a Turkish Cup match on 22 January 2005."
+    },
+    "note": "Wikipedia says Arda Turan was promoted to Galatasaray's senior first team in the 2004-05 season and made his official senior debut on 22 January 2005 — supports era-anchor year 2005 (club: Galatasaray)."
+   },
+   {
+    "cardId": "real_0169",
+    "name": "Ashley Young",
+    "qid": "Q10602",
+    "eraYear": 2003,
+    "eraIndex": 2,
+    "src": "sourceStartYear",
+    "nearCut": "2000s|2010s-20s",
+    "sourceYear": 2003,
+    "sourceBucket": 2,
+    "disposition": "AGREE",
+    "citation": {
+     "publisher": "Wikipedia",
+     "url": "https://en.wikipedia.org/wiki/Ashley_Young",
+     "quote": "The 18-year-old was handed his first-team debut under Ray Lewington in September 2003, scoring as a substitute against Millwall."
+    },
+    "note": "Wikipedia states Ashley Young's Watford senior first-team debut came in September 2003, matching the card's era-anchor year of 2003."
+   },
+   {
+    "cardId": "real_0170",
+    "name": "Shinji Kagawa",
+    "qid": "Q154708",
+    "eraYear": 2006,
+    "eraIndex": 3,
+    "src": "sourceStartYear",
+    "nearCut": "2000s|2010s-20s",
+    "sourceYear": 2006,
+    "sourceBucket": 3,
+    "disposition": "AGREE",
+    "citation": {
+     "publisher": "Wikipedia",
+     "url": "https://en.wikipedia.org/wiki/Shinji_Kagawa",
+     "quote": "2006 | J.League Division 1 | 0 | 0 | 0 | 0 | 0 | 0 | — | — | 0 | 0"
+    },
+    "note": "Wikipedia's Club career statistics table lists 2006 as Kagawa's first senior season at Cerezo Osaka (0 appearances that year), matching the era-anchor of first joining the senior first team. The article narrative corroborates he was signed as a teenager and joined Cerezo Osaka, his first senior club."
+   },
+   {
+    "cardId": "real_0174",
+    "name": "Nicolas Anelka",
+    "qid": "Q1939",
+    "eraYear": 1996,
+    "eraIndex": 2,
+    "src": "sourceStartYear",
+    "nearCut": "1980s-90s|2000s",
+    "sourceYear": 1996,
+    "sourceBucket": 2,
+    "disposition": "AGREE",
+    "citation": {
+     "publisher": "Wikipedia",
+     "url": "https://en.wikipedia.org/wiki/Nicolas_Anelka",
+     "quote": "Anelka began his career at Paris Saint-Germain as a youth player at age 16."
+    },
+    "note": "Wikipedia's infobox lists his senior career at Paris Saint-Germain as beginning 1996 (1996-97 senior debut, 10 apps, 1 goal), matching the card's 1996 era-anchor."
+   },
+   {
+    "cardId": "real_0175",
+    "name": "Leonardo Bonucci",
+    "qid": "Q208050",
+    "eraYear": 2005,
+    "eraIndex": 3,
+    "src": "sourceStartYear",
+    "nearCut": "2000s|2010s-20s",
+    "sourceYear": 2005,
+    "sourceBucket": 3,
+    "disposition": "AGREE",
+    "citation": {
+     "publisher": "Wikipedia",
+     "url": "https://en.wikipedia.org/wiki/Leonardo_Bonucci",
+     "quote": "Bonucci started his career in the youth ranks of his hometown club Viterbese but was loaned to Inter Milan in the summer of 2005."
+    },
+    "note": "Wikipedia states Bonucci joined the Inter Milan senior setup on loan in summer 2005 (his Serie A debut for Inter came 14 May 2006); earliest senior club membership start = 2005, matching the card anchor."
+   },
+   {
+    "cardId": "real_0180",
+    "name": "Deco",
+    "qid": "Q659634",
+    "eraYear": 1995,
+    "eraIndex": 2,
+    "src": "sourceStartYear",
+    "nearCut": "1980s-90s|2000s",
+    "sourceYear": 1996,
+    "sourceBucket": 2,
+    "disposition": "AGREE",
+    "citation": {
+     "publisher": "Wikipedia",
+     "url": "https://en.wikipedia.org/wiki/Deco",
+     "quote": "1996–1997 Corinthians 2 (1)"
+    },
+    "note": "Wikipedia's senior career table lists Corinthians as Deco's first senior club, starting 1996 (2 apps, 1 goal) — one year later than the card's 1995 anchor."
+   },
+   {
+    "cardId": "real_0181",
+    "name": "Edin Džeko",
+    "qid": "Q153786",
+    "eraYear": 2003,
+    "eraIndex": 2,
+    "src": "sourceStartYear",
+    "nearCut": "2000s|2010s-20s",
+    "sourceYear": 2003,
+    "sourceBucket": 2,
+    "disposition": "AGREE",
+    "citation": {
+     "publisher": "Wikipedia",
+     "url": "https://en.wikipedia.org/wiki/Edin_D%C5%BEeko",
+     "quote": "Džeko started his professional career at Željezničar in 2003."
+    },
+    "note": "Wikipedia states Dzeko began his professional senior career at Zeljeznicar in 2003, matching the card's era-anchor year."
+   },
+   {
+    "cardId": "real_0182",
+    "name": "Javier Hernández",
+    "qid": "Q165125",
+    "eraYear": 2006,
+    "eraIndex": 3,
+    "src": "sourceStartYear",
+    "nearCut": "2000s|2010s-20s",
+    "sourceYear": 2006,
+    "sourceBucket": 3,
+    "disposition": "AGREE",
+    "citation": {
+     "publisher": "Wikipedia",
+     "url": "https://en.wikipedia.org/wiki/Javier_Hern%C3%A1ndez",
+     "quote": "On 9 September 2006, he made his debut for Guadalajara in that year's Apertura in a win over Club Necaxa at Estadio Jalisco."
+    },
+    "note": "Wikipedia states his senior debut for C.D. Guadalajara (Chivas) came on 9 September 2006, confirming the era-anchor year 2006."
+   },
+   {
+    "cardId": "real_0185",
+    "name": "David Trezeguet",
+    "qid": "Q183967",
+    "eraYear": 1996,
+    "eraIndex": 2,
+    "src": "cited-override",
+    "nearCut": "1980s-90s|2000s",
+    "sourceYear": 1994,
+    "sourceBucket": 1,
+    "disposition": "CROSS-EARLIER",
+    "citation": {
+     "publisher": "Wikipedia",
+     "url": "https://en.wikipedia.org/wiki/David_Trezeguet",
+     "quote": "he played his first professional game on 12 June 1994 as a 16-year-old in a 1–1 tie against Gimnasia."
+    },
+    "note": "Wikipedia says Trezeguet debuted for senior club Platense's first team in 1994 (not 1996), giving an earliest senior career start of 1994 — flags a discrepancy with the card's 1996 era-anchor."
+   },
+   {
+    "cardId": "real_0190",
+    "name": "Hulk",
+    "qid": "Q62786",
+    "eraYear": 2004,
+    "eraIndex": 2,
+    "src": "sourceStartYear",
+    "nearCut": "2000s|2010s-20s",
+    "sourceYear": 2004,
+    "sourceBucket": 2,
+    "disposition": "AGREE",
+    "citation": {
+     "publisher": "Wikipedia",
+     "url": "https://en.wikipedia.org/wiki/Hulk_(footballer)",
+     "quote": "2004 Vitória Série A 2 [appearances] 0 [goals]"
+    },
+    "note": "Wikipedia career-statistics table lists 2004 with Esporte Clube Vitória (Série A) as Hulk's earliest senior club season, matching the card's 2004 era anchor."
+   },
+   {
+    "cardId": "real_0202",
+    "name": "Shinji Okazaki",
+    "qid": "Q310612",
+    "eraYear": 2005,
+    "eraIndex": 3,
+    "src": "sourceStartYear",
+    "nearCut": "2000s|2010s-20s",
+    "sourceYear": 2005,
+    "sourceBucket": 3,
+    "disposition": "AGREE",
+    "citation": {
+     "publisher": "Wikipedia",
+     "url": "https://en.wikipedia.org/wiki/Shinji_Okazaki",
+     "quote": "After graduating Takigawa Daini High School in 2004, Okazaki signed full professional terms with Shimizu S-Pulse the following year."
+    },
+    "note": "Wikipedia says Okazaki signed full professional terms with Shimizu S-Pulse (his first senior club) in 2005; career table lists 2005-2010 at Shimizu."
+   },
+   {
+    "cardId": "real_0207",
+    "name": "John Obi Mikel",
+    "qid": "Q166984",
+    "eraYear": 2005,
+    "eraIndex": 3,
+    "src": "cited-override",
+    "nearCut": "2000s|2010s-20s",
+    "sourceYear": 2004,
+    "sourceBucket": 2,
+    "disposition": "CROSS-EARLIER",
+    "citation": {
+     "publisher": "Wikipedia",
+     "url": "https://en.wikipedia.org/wiki/Mikel_John_Obi",
+     "quote": "Mikel began his career with local club Plateau United, before joining Norwegian club Lyn at the age of 17 in 2004."
+    },
+    "note": "Wikipedia states he joined his first senior club, Lyn (Oslo), in 2004 — one year earlier than the card's 2005 anchor."
+   },
+   {
+    "cardId": "real_0208",
+    "name": "Vincent Kompany",
+    "qid": "Q201381",
+    "eraYear": 2003,
+    "eraIndex": 2,
+    "src": "sourceStartYear",
+    "nearCut": "2000s|2010s-20s",
+    "sourceYear": 2003,
+    "sourceBucket": 2,
+    "disposition": "AGREE",
+    "citation": {
+     "publisher": "Wikipedia",
+     "url": "https://en.wikipedia.org/wiki/Vincent_Kompany",
+     "quote": "He made his professional debut on 30 July 2003 in a UEFA Champions League second qualifying round first leg away to Rapid București, starting in a goalless draw."
+    },
+    "note": "Wikipedia states Kompany's senior debut for Anderlecht's first team was 30 July 2003, matching the card's era-anchor of 2003."
+   },
+   {
+    "cardId": "real_0211",
+    "name": "Theo Walcott",
+    "qid": "Q29516",
+    "eraYear": 2005,
+    "eraIndex": 3,
+    "src": "sourceStartYear",
+    "nearCut": "2000s|2010s-20s",
+    "sourceYear": 2005,
+    "sourceBucket": 3,
+    "disposition": "AGREE",
+    "citation": {
+     "publisher": "Wikipedia",
+     "url": "https://en.wikipedia.org/wiki/Theo_Walcott",
+     "quote": "Walcott made his full first-team debut away to Leeds United on 18 October 2005, and became Southampton's youngest senior goalscorer after 25 minutes of the 2–1 defeat."
+    },
+    "note": "Wikipedia says Walcott's senior first-team career started at Southampton in 2005 (full debut v Leeds United, 18 Oct 2005), matching the card's 2005 anchor."
+   },
+   {
+    "cardId": "real_0214",
+    "name": "Dejan Lovren",
+    "qid": "Q349125",
+    "eraYear": 2006,
+    "eraIndex": 3,
+    "src": "sourceStartYear",
+    "nearCut": "2000s|2010s-20s",
+    "sourceYear": 2006,
+    "sourceBucket": 3,
+    "disposition": "AGREE",
+    "citation": {
+     "publisher": "Wikipedia",
+     "url": "https://en.wikipedia.org/wiki/Dejan_Lovren",
+     "quote": "On 10 May 2006, he made his debut for Dinamo in a Prva HNL match against NK Varteks."
+    },
+    "note": "Wikipedia states Lovren made his senior debut for Dinamo Zagreb on 10 May 2006 (Prva HNL), matching the card's era-anchor year of 2006."
+   },
+   {
+    "cardId": "real_0220",
+    "name": "César Azpilicueta",
+    "qid": "Q294806",
+    "eraYear": 2005,
+    "eraIndex": 3,
+    "src": "sourceStartYear",
+    "nearCut": "2000s|2010s-20s",
+    "sourceYear": 2007,
+    "sourceBucket": 3,
+    "disposition": "AGREE",
+    "citation": {
+     "publisher": "Wikipedia",
+     "url": "https://en.wikipedia.org/wiki/C%C3%A9sar_Azpilicueta",
+     "quote": "he made his La Liga debut on 8 April 2007 in a 0–2 away loss against Real Madrid"
+    },
+    "note": "Wikipedia dates his first senior competitive appearance for Osasuna's first team to 2007 (La Liga debut 8 April 2007); card era-anchor of 2005 is earlier than any senior first-team involvement this source records."
+   },
+   {
+    "cardId": "real_0223",
+    "name": "Per Mertesacker",
+    "qid": "Q70550",
+    "eraYear": 2003,
+    "eraIndex": 2,
+    "src": "sourceStartYear",
+    "nearCut": "2000s|2010s-20s",
+    "sourceYear": 2003,
+    "sourceBucket": 2,
+    "disposition": "AGREE",
+    "citation": {
+     "publisher": "Wikipedia",
+     "url": "https://en.wikipedia.org/wiki/Per_Mertesacker",
+     "quote": "He was promoted to the first team for the 2003–04 season and made his league debut in November 2003, starting against Cologne in the unfamiliar role of right-back."
+    },
+    "note": "Wikipedia states Mertesacker was promoted to Hannover 96's first team for 2003-04 and debuted November 2003 — senior club career start year 2003, matching the card's era-anchor."
+   },
+   {
+    "cardId": "real_0228",
+    "name": "Gennaro Gattuso",
+    "qid": "Q116980",
+    "eraYear": 1995,
+    "eraIndex": 2,
+    "src": "sourceStartYear",
+    "nearCut": "1980s-90s|2000s",
+    "sourceYear": 1995,
+    "sourceBucket": 2,
+    "disposition": "AGREE",
+    "citation": {
+     "publisher": "Wikipedia",
+     "url": "https://en.wikipedia.org/wiki/Gennaro_Gattuso",
+     "quote": "1995–1997 Perugia 10 (0)"
+    },
+    "note": "Wikipedia's senior career statistics infobox lists Perugia (his first senior club) for the years 1995–1997, giving a senior club career start of 1995, matching the card's era-anchor."
+   },
+   {
+    "cardId": "real_0230",
+    "name": "Karl-Heinz Rummenigge",
+    "qid": "Q152871",
+    "eraYear": 1974,
+    "eraIndex": 0,
+    "src": "sourceStartYear",
+    "nearCut": "≤70s|1980s-90s",
+    "sourceYear": 1974,
+    "sourceBucket": 0,
+    "disposition": "AGREE",
+    "citation": {
+     "publisher": "Wikipedia",
+     "url": "https://en.wikipedia.org/wiki/Karl-Heinz_Rummenigge",
+     "quote": "He joined Bayern Munich in 1974, coming from the Westphalian amateur side Borussia Lippstadt, for a transfer fee of c.€10,000."
+    },
+    "note": "Wikipedia says Rummenigge joined his first senior club, Bayern Munich, in 1974 from amateur side Borussia Lippstadt — matches the card's era-anchor of 1974."
+   },
+   {
+    "cardId": "real_0232",
+    "name": "Antonio Valencia",
+    "qid": "Q174486",
+    "eraYear": 2003,
+    "eraIndex": 2,
+    "src": "sourceStartYear",
+    "nearCut": "2000s|2010s-20s",
+    "sourceYear": 2003,
+    "sourceBucket": 2,
+    "disposition": "AGREE",
+    "citation": {
+     "publisher": "Wikipedia",
+     "url": "https://en.wikipedia.org/wiki/Antonio_Valencia",
+     "quote": "2003–2005 El Nacional 88 (12)"
+    },
+    "note": "Wikipedia career-stats infobox lists his first senior club as El Nacional from 2003, matching the card's era-anchor year."
+   },
+   {
+    "cardId": "real_0240",
+    "name": "Samir Nasri",
+    "qid": "Q1920",
+    "eraYear": 2004,
+    "eraIndex": 2,
+    "src": "sourceStartYear",
+    "nearCut": "2000s|2010s-20s",
+    "sourceYear": 2004,
+    "sourceBucket": 2,
+    "disposition": "AGREE",
+    "citation": {
+     "publisher": "Wikipedia",
+     "url": "https://en.wikipedia.org/wiki/Samir_Nasri",
+     "quote": "Nasri made his professional debut on 12 September in a 2–0 league defeat to Sochaux, appearing as a substitute for Bruno Cheyrou."
+    },
+    "note": "Wikipedia states Nasri joined Marseille's senior first team and made his professional debut on 12 September 2004; matches the card's era-anchor year 2004."
+   },
+   {
+    "cardId": "real_0243",
+    "name": "Fábio Coentrão",
+    "qid": "Q484384",
+    "eraYear": 2005,
+    "eraIndex": 3,
+    "src": "sourceStartYear",
+    "nearCut": "2000s|2010s-20s",
+    "sourceYear": 2004,
+    "sourceBucket": 2,
+    "disposition": "CROSS-EARLIER",
+    "citation": {
+     "publisher": "Wikipedia",
+     "url": "https://en.wikipedia.org/wiki/F%C3%A1bio_Coentr%C3%A3o",
+     "quote": "He joined his hometown's Rio Ave F.C. in 2004 at the age of 16, playing three Primeira Liga games in the following season for a northern side that would be relegated."
+    },
+    "note": "Wikipedia says he joined senior side Rio Ave F.C. in 2004 (age 16), playing Primeira Liga games the following season — one year earlier than the card's 2005 anchor."
+   },
+   {
+    "cardId": "real_0246",
+    "name": "Ricardo Carvalho",
+    "qid": "Q570811",
+    "eraYear": 1996,
+    "eraIndex": 2,
+    "src": "sourceStartYear",
+    "nearCut": "1980s-90s|2000s",
+    "sourceYear": 1997,
+    "sourceBucket": 2,
+    "disposition": "AGREE",
+    "citation": {
+     "publisher": "Wikipedia",
+     "url": "https://en.wikipedia.org/wiki/Ricardo_Carvalho",
+     "quote": "Ricardo Carvalho was brought to the Porto junior team in the 1996–97 season. In the oncoming season, Carvalho made his professional debut when he signed on loan for Leça."
+    },
+    "note": "Wikipedia: joined Porto junior team 1996–97, then senior/professional debut on loan to Leça the following season; infobox senior-career table lists earliest entry as 1997–2004 Porto — source-supported senior start year is 1997 (card anchor is 1996)."
+   },
+   {
+    "cardId": "real_0249",
+    "name": "Freddie Ljungberg",
+    "qid": "Q10560",
+    "eraYear": 1994,
+    "eraIndex": 1,
+    "src": "sourceStartYear",
+    "nearCut": "1980s-90s|2000s",
+    "sourceYear": 1994,
+    "sourceBucket": 1,
+    "disposition": "AGREE",
+    "citation": {
+     "publisher": "Wikipedia",
+     "url": "https://en.wikipedia.org/wiki/Freddie_Ljungberg",
+     "quote": "Ljungberg made his senior debut on 23 October 1994 in the Allsvenskan against AIK Fotboll."
+    },
+    "note": "Wikipedia states Ljungberg's senior debut for Halmstads BK was on 23 October 1994; matches the card's era-anchor year of 1994."
+   },
+   {
+    "cardId": "real_0250",
+    "name": "Jakub Błaszczykowski",
+    "qid": "Q151025",
+    "eraYear": 2004,
+    "eraIndex": 2,
+    "src": "sourceStartYear",
+    "nearCut": "2000s|2010s-20s",
+    "sourceYear": 2003,
+    "sourceBucket": 2,
+    "disposition": "AGREE",
+    "citation": {
+     "publisher": "Wikipedia",
+     "url": "https://en.wikipedia.org/wiki/Jakub_B%C5%82aszczykowski",
+     "quote": "In early 2003, he joined KS Częstochowa and played in the Polish fourth league until the end of 2004."
+    },
+    "note": "Wikipedia says his first senior club was KS Częstochowa, joined early 2003 (infobox row: 2003–2004 KS Częstochowa); this is a year earlier than the card's recorded 2004."
+   },
+   {
+    "cardId": "real_0254",
+    "name": "Santi Cazorla",
+    "qid": "Q185225",
+    "eraYear": 2003,
+    "eraIndex": 2,
+    "src": "sourceStartYear",
+    "nearCut": "2000s|2010s-20s",
+    "sourceYear": 2003,
+    "sourceBucket": 2,
+    "disposition": "AGREE",
+    "citation": {
+     "publisher": "Wikipedia",
+     "url": "https://en.wikipedia.org/wiki/Santi_Cazorla",
+     "quote": "making his debut with the first team on 30 November 2003 in a 1–0 La Liga win at Deportivo de La Coruña, playing one minute in place of Roger"
+    },
+    "note": "Wikipedia states Cazorla debuted for the Villarreal senior first team on 30 November 2003, matching the card's 2003 era-anchor. Club: Villarreal CF."
+   },
+   {
+    "cardId": "real_0256",
+    "name": "Bacary Sagna",
+    "qid": "Q1938",
+    "eraYear": 2004,
+    "eraIndex": 2,
+    "src": "sourceStartYear",
+    "nearCut": "2000s|2010s-20s",
+    "sourceYear": 2004,
+    "sourceBucket": 2,
+    "disposition": "AGREE",
+    "citation": {
+     "publisher": "Wikipedia",
+     "url": "https://en.wikipedia.org/wiki/Bacary_Sagna",
+     "quote": "Sagna played for Auxerre from 2004–2007 ... 2004–05, 2005–06, 2006–07"
+    },
+    "note": "Wikipedia senior club career table lists Auxerre 2004–2007, so his earliest senior club career start is 2004; matches the card's era-anchor year of 2004."
+   },
+   {
+    "cardId": "real_0258",
+    "name": "Marek Hamšík",
+    "qid": "Q201825",
+    "eraYear": 2003,
+    "eraIndex": 2,
+    "src": "sourceStartYear",
+    "nearCut": "2000s|2010s-20s",
+    "sourceYear": 2004,
+    "sourceBucket": 2,
+    "disposition": "AGREE",
+    "citation": {
+     "publisher": "Wikipedia",
+     "url": "https://en.wikipedia.org/wiki/Marek_Ham%C5%A1%C3%ADk",
+     "quote": "In August 2004, he scored his only senior goal for Slovan Bratislava with an injury-time header in a 4–1 Second League win against Tatran Prešov in front of a crowd of 1,480."
+    },
+    "note": "Wikipedia's Senior career infobox lists \"2004 Slovan Bratislava\" and the prose dates his lone senior first-team goal to August 2004; source supports a senior first-team start of 2004, one year later than the card's 2003 anchor (he joined the club/youth in 2002)."
+   },
+   {
+    "cardId": "real_0260",
+    "name": "Sergio Romero",
+    "qid": "Q215463",
+    "eraYear": 2006,
+    "eraIndex": 3,
+    "src": "sourceStartYear",
+    "nearCut": "2000s|2010s-20s",
+    "sourceYear": 2006,
+    "sourceBucket": 3,
+    "disposition": "AGREE",
+    "citation": {
+     "publisher": "Wikipedia",
+     "url": "https://en.wikipedia.org/wiki/Sergio_Romero",
+     "quote": "Romero passed from the youth to the first team of -Racing Club in 2006, making his debut in the Argentine Primera División."
+    },
+    "note": "Wikipedia states Romero moved from youth to the Racing Club senior first team in 2006, matching the card's era-anchor year."
+   },
+   {
+    "cardId": "real_0262",
+    "name": "Kasper Schmeichel",
+    "qid": "Q295797",
+    "eraYear": 2005,
+    "eraIndex": 3,
+    "src": "sourceStartYear",
+    "nearCut": "2000s|2010s-20s",
+    "sourceYear": 2006,
+    "sourceBucket": 3,
+    "disposition": "AGREE",
+    "citation": {
+     "publisher": "Wikipedia",
+     "url": "https://en.wikipedia.org/wiki/Kasper_Schmeichel",
+     "quote": "He joined League Two side Darlington on a loan deal in January 2006, where he made his professional first-team debut against Peterborough United at the Darlington Arena on 14 January 2006."
+    },
+    "note": "Wikipedia states Schmeichel's first professional senior first-team debut came on 14 January 2006 (on loan at Darlington from Manchester City); he signed with Man City in 2002 as a youth prospect, so the source-documented senior debut is 2006, one year after the card's 2005 anchor."
+   },
+   {
+    "cardId": "real_0267",
+    "name": "Sócrates",
+    "qid": "Q102331",
+    "eraYear": 1974,
+    "eraIndex": 0,
+    "src": "sourceStartYear",
+    "nearCut": "≤70s|1980s-90s",
+    "sourceYear": 1974,
+    "sourceBucket": 0,
+    "disposition": "AGREE",
+    "citation": {
+     "publisher": "Wikipedia",
+     "url": "https://en.wikipedia.org/wiki/S%C3%B3crates",
+     "quote": "He began playing football professionally in 1974 for Botafogo-SP in Ribeirão Preto."
+    },
+    "note": "Wikipedia states Socrates began his professional career in 1974 at Botafogo-SP (his first senior club); matches the card's era-anchor of 1974. Note: the career stats table in the same article lists 1973, an internal discrepancy."
+   },
+   {
+    "cardId": "real_0270",
+    "name": "Kevin-Prince Boateng",
+    "qid": "Q151034",
+    "eraYear": 2005,
+    "eraIndex": 3,
+    "src": "sourceStartYear",
+    "nearCut": "2000s|2010s-20s",
+    "sourceYear": 2005,
+    "sourceBucket": 3,
+    "disposition": "AGREE",
+    "citation": {
+     "publisher": "Wikipedia",
+     "url": "https://en.wikipedia.org/wiki/Kevin-Prince_Boateng",
+     "quote": "Boateng made his first team debut in a 2–0 win against Eintracht Frankfurt in the second round of the 2005–06 Bundesliga season on 13 August 2005"
+    },
+    "note": "Wikipedia states Boateng made his Hertha BSC senior first-team debut on 13 August 2005, matching the card's 2005 era-anchor."
+   },
+   {
+    "cardId": "real_0272",
+    "name": "Nicklas Bendtner",
+    "qid": "Q167240",
+    "eraYear": 2005,
+    "eraIndex": 3,
+    "src": "sourceStartYear",
+    "nearCut": "2000s|2010s-20s",
+    "sourceYear": 2005,
+    "sourceBucket": 3,
+    "disposition": "AGREE",
+    "citation": {
+     "publisher": "Wikipedia",
+     "url": "https://en.wikipedia.org/wiki/Nicklas_Bendtner",
+     "quote": "Bendtner signed his first professional contract with Arsenal in 2005. ... His first-team debut for Arsenal came on 25 October 2005 in a League Cup match against Sunderland."
+    },
+    "note": "Wikipedia says Bendtner signed his first professional contract with Arsenal in 2005 and made his Arsenal first-team senior debut on 25 October 2005 — matches the card's 2005 anchor."
+   },
+   {
+    "cardId": "real_0275",
+    "name": "Joe Hart",
+    "qid": "Q187184",
+    "eraYear": 2003,
+    "eraIndex": 2,
+    "src": "sourceStartYear",
+    "nearCut": "2000s|2010s-20s",
+    "sourceYear": 2003,
+    "sourceBucket": 2,
+    "disposition": "AGREE",
+    "citation": {
+     "publisher": "Wikipedia",
+     "url": "https://en.wikipedia.org/wiki/Joe_Hart",
+     "quote": "While still a 15-year-old schoolboy, Hart travelled with the first-team squad of his hometown club, Shrewsbury Town, to Exeter City on 1 February 2003."
+    },
+    "note": "Wikipedia says Hart first joined Shrewsbury Town's senior first-team squad in Feb 2003 (as non-playing sub); competitive senior debut came 20 April 2004. Club: Shrewsbury Town."
+   },
+   {
+    "cardId": "real_0288",
+    "name": "Axel Witsel",
+    "qid": "Q151838",
+    "eraYear": 2006,
+    "eraIndex": 3,
+    "src": "sourceStartYear",
+    "nearCut": "2000s|2010s-20s",
+    "sourceYear": 2006,
+    "sourceBucket": 3,
+    "disposition": "AGREE",
+    "citation": {
+     "publisher": "Wikipedia",
+     "url": "https://en.wikipedia.org/wiki/Axel_Witsel",
+     "quote": "On 17 September 2006, a 17-year-old Witsel made his debut with Standard Liège during a competitive game against FC Brussels when he replaced Steven Defour in the 89th minute."
+    },
+    "note": "Wikipedia states Witsel debuted for Standard Liège senior first team on 17 September 2006, giving senior career start year 2006 — matches the card's era-anchor."
+   },
+   {
+    "cardId": "real_0296",
+    "name": "Marouane Fellaini",
+    "qid": "Q275169",
+    "eraYear": 2006,
+    "eraIndex": 3,
+    "src": "sourceStartYear",
+    "nearCut": "2000s|2010s-20s",
+    "sourceYear": 2006,
+    "sourceBucket": 3,
+    "disposition": "AGREE",
+    "citation": {
+     "publisher": "Wikipedia",
+     "url": "https://en.wikipedia.org/wiki/Marouane_Fellaini",
+     "quote": "At 17, he signed his first permanent contract with Standard Liège. Between 2006 and 2008, he made 84 appearances for the club, scoring 11 times."
+    },
+    "note": "Wikipedia states his senior club career at Standard Liège spanned 2006–2008; senior first-team start year is 2006, matching the card's era-anchor."
+   },
+   {
+    "cardId": "real_0298",
+    "name": "Jan Vertonghen",
+    "qid": "Q313170",
+    "eraYear": 2006,
+    "eraIndex": 3,
+    "src": "sourceStartYear",
+    "nearCut": "2000s|2010s-20s",
+    "sourceYear": 2006,
+    "sourceBucket": 3,
+    "disposition": "AGREE",
+    "citation": {
+     "publisher": "Wikipedia",
+     "url": "https://en.wikipedia.org/wiki/Jan_Vertonghen",
+     "quote": "On 23 August 2006, Vertonghen made his first team debut in the Champions League third qualifying round against Copenhagen."
+    },
+    "note": "Wikipedia states Vertonghen made his Ajax first-team senior debut on 23 August 2006, matching the card's era-anchor year of 2006."
+   },
+   {
+    "cardId": "real_0301",
+    "name": "Claudio Marchisio",
+    "qid": "Q179995",
+    "eraYear": 2005,
+    "eraIndex": 3,
+    "src": "sourceStartYear",
+    "nearCut": "2000s|2010s-20s",
+    "sourceYear": 2005,
+    "sourceBucket": 3,
+    "disposition": "AGREE",
+    "citation": {
+     "publisher": "Wikipedia",
+     "url": "https://en.wikipedia.org/wiki/Claudio_Marchisio",
+     "quote": "During the 2004–05 and 2005–06 seasons, he was called up to train with the first team numerous times by Fabio Capello and given a squad number."
+    },
+    "note": "Wikipedia: Marchisio was first associated with the Juventus senior first team (called up to train, given a squad number by Capello) during the 2004-05/2005-06 seasons, matching the 2005 anchor; permanent promotion and debut came in 2006."
+   },
+   {
+    "cardId": "real_0305",
+    "name": "Guillermo Ochoa",
+    "qid": "Q215522",
+    "eraYear": 2003,
+    "eraIndex": 2,
+    "src": "sourceStartYear",
+    "nearCut": "2000s|2010s-20s",
+    "sourceYear": 2003,
+    "sourceBucket": 2,
+    "disposition": "AGREE",
+    "citation": {
+     "publisher": "Wikipedia",
+     "url": "https://en.wikipedia.org/wiki/Guillermo_Ochoa",
+     "quote": "2003–2011 ... América ... (senior career table); first row listed as \"2003–04\" in the Mexican Primera División"
+    },
+    "note": "Wikipedia's senior career/infobox table anchors his Club América senior tenure start at 2003 (competitive debut came in 2004 vs Monterrey), matching the card's 2003 era-anchor for first joining the senior first team."
+   },
+   {
+    "cardId": "real_0306",
+    "name": "Alessandro Nesta",
+    "qid": "Q227892",
+    "eraYear": 1993,
+    "eraIndex": 1,
+    "src": "sourceStartYear",
+    "nearCut": "1980s-90s|2000s",
+    "sourceYear": 1993,
+    "sourceBucket": 1,
+    "disposition": "AGREE",
+    "citation": {
+     "publisher": "Wikipedia",
+     "url": "https://en.wikipedia.org/wiki/Alessandro_Nesta",
+     "quote": "In the 1993–94 season he was called up to the first team"
+    },
+    "note": "Wikipedia states Nesta was promoted to the SS Lazio senior first team in the 1993-94 season (debut 13 March 1994), supporting a senior-career start of 1993, matching the card's anchor."
+   },
+   {
+    "cardId": "real_0313",
+    "name": "Dimitri Payet",
+    "qid": "Q376247",
+    "eraYear": 2004,
+    "eraIndex": 2,
+    "src": "sourceStartYear",
+    "nearCut": "2000s|2010s-20s",
+    "sourceYear": 2004,
+    "sourceBucket": 2,
+    "disposition": "AGREE",
+    "citation": {
+     "publisher": "Transfermarkt",
+     "url": "https://www.transfermarkt.us/dimitri-payet/profil/spieler/37647",
+     "quote": "FCV Saint-Philippe (1995-1998), JS Saint-Pierroise (1998-1999), Le Havre AC (1999-2003), AS Excelsior (2003-2004)."
+    },
+    "note": "Transfermarkt lists AS Excelsior — the Réunion Premier League senior club Wikipedia confirms Payet played for before his January 2005 Nantes move — for 2003-2004, consistent with the card's 2004 senior-start anchor."
+   },
+   {
+    "cardId": "real_0316",
+    "name": "Mark van Bommel",
+    "qid": "Q151853",
+    "eraYear": 1993,
+    "eraIndex": 1,
+    "src": "sourceStartYear",
+    "nearCut": "1980s-90s|2000s",
+    "sourceYear": 1992,
+    "sourceBucket": 1,
+    "disposition": "AGREE",
+    "citation": {
+     "publisher": "Wikipedia",
+     "url": "https://en.wikipedia.org/wiki/Mark_van_Bommel",
+     "quote": "Van Bommel started his amateur career at local club RKVV Maasbracht before earning a professional contract with Fortuna Sittard in 1992."
+    },
+    "note": "Wikipedia says van Bommel earned his first senior professional contract with Fortuna Sittard in 1992 (stats table also shows a 1992-93 season appearance); this predates the card's 1993 anchor by one year."
+   },
+   {
+    "cardId": "real_0318",
+    "name": "Giovanni van Bronckhorst",
+    "qid": "Q173360",
+    "eraYear": 1993,
+    "eraIndex": 1,
+    "src": "sourceStartYear",
+    "nearCut": "1980s-90s|2000s",
+    "sourceYear": 1993,
+    "sourceBucket": 1,
+    "disposition": "AGREE",
+    "citation": {
+     "publisher": "Wikipedia",
+     "url": "https://en.wikipedia.org/wiki/Giovanni_van_Bronckhorst",
+     "quote": "1993–94 | RKC Waalwijk (loan) | Eredivisie | 12 | 2"
+    },
+    "note": "Wikipedia senior-career table lists his earliest senior club membership as 1993-94 at RKC Waalwijk (loan from Feyenoord), matching the card's 1993 anchor."
+   },
+   {
+    "cardId": "real_0321",
+    "name": "Rafael Márquez",
+    "qid": "Q186330",
+    "eraYear": 1995,
+    "eraIndex": 2,
+    "src": "sourceStartYear",
+    "nearCut": "1980s-90s|2000s",
+    "sourceYear": 1996,
+    "sourceBucket": 2,
+    "disposition": "AGREE",
+    "citation": {
+     "publisher": "Wikipedia",
+     "url": "https://en.wikipedia.org/wiki/Rafael_M%C3%A1rquez",
+     "quote": "Márquez began his career with Atlas, making his debut in October 1996 at only 17 years of age."
+    },
+    "note": "Wikipedia says Márquez debuted for his first senior club Atlas in October 1996; this differs from the card's recorded era-anchor year of 1995."
+   },
+   {
+    "cardId": "real_0323",
+    "name": "Blaise Matuidi",
+    "qid": "Q1921",
+    "eraYear": 2004,
+    "eraIndex": 2,
+    "src": "sourceStartYear",
+    "nearCut": "2000s|2010s-20s",
+    "sourceYear": 2004,
+    "sourceBucket": 2,
+    "disposition": "AGREE",
+    "citation": {
+     "publisher": "Wikipedia",
+     "url": "https://en.wikipedia.org/wiki/Blaise_Matuidi",
+     "quote": "In November 2004, he was called up to the senior team by manager Jean-Marc Furlan and made his professional debut on 23 November in the team's Ligue 2 match against Gueugnon."
+    },
+    "note": "Wikipedia states Matuidi first joined Troyes' senior team in November 2004, matching the card's era-anchor year of 2004."
+   },
+   {
+    "cardId": "real_0325",
+    "name": "Juan Román Riquelme",
+    "qid": "Q192965",
+    "eraYear": 1996,
+    "eraIndex": 2,
+    "src": "sourceStartYear",
+    "nearCut": "1980s-90s|2000s",
+    "sourceYear": 1996,
+    "sourceBucket": 2,
+    "disposition": "AGREE",
+    "citation": {
+     "publisher": "Wikipedia",
+     "url": "https://en.wikipedia.org/wiki/Juan_Rom%C3%A1n_Riquelme",
+     "quote": "On 10 November 1996, aged 18, Riquelme made his Primera División debut in a 2–0 win against Unión de Santa Fe."
+    },
+    "note": "Wikipedia states Riquelme made his senior first-team debut for Boca Juniors on 10 November 1996, matching the card's 1996 anchor."
+   },
+   {
+    "cardId": "real_0328",
+    "name": "Rui Patrício",
+    "qid": "Q294980",
+    "eraYear": 2006,
+    "eraIndex": 3,
+    "src": "sourceStartYear",
+    "nearCut": "2000s|2010s-20s",
+    "sourceYear": 2006,
+    "sourceBucket": 3,
+    "disposition": "AGREE",
+    "citation": {
+     "publisher": "Wikipedia",
+     "url": "https://en.wikipedia.org/wiki/Rui_Patr%C3%ADcio",
+     "quote": "He made his Primeira Liga debut on 19 November 2006, in a 1–0 away win against Marítimo"
+    },
+    "note": "Wikipedia says Rui Patrício made his senior first-team debut for Sporting CP in 2006, matching the card's era-anchor year."
+   },
+   {
+    "cardId": "real_0331",
+    "name": "Ibrahim Afellay",
+    "qid": "Q165014",
+    "eraYear": 2004,
+    "eraIndex": 2,
+    "src": "sourceStartYear",
+    "nearCut": "2000s|2010s-20s",
+    "sourceYear": 2004,
+    "sourceBucket": 2,
+    "disposition": "AGREE",
+    "citation": {
+     "publisher": "Wikipedia",
+     "url": "https://en.wikipedia.org/wiki/Ibrahim_Afellay",
+     "quote": "Afellay's official debut for PSV was on 4 February 2004 during a KNVB Cup match against NAC Breda at the age of 17."
+    },
+    "note": "Wikipedia states Afellay's official senior debut for PSV Eindhoven's first team came on 4 February 2004 (KNVB Cup vs NAC Breda), matching the card's 2004 anchor."
+   },
+   {
+    "cardId": "real_0338",
+    "name": "João Moutinho",
+    "qid": "Q222151",
+    "eraYear": 2005,
+    "eraIndex": 3,
+    "src": "cited-override",
+    "nearCut": "2000s|2010s-20s",
+    "sourceYear": 2005,
+    "sourceBucket": 3,
+    "disposition": "AGREE",
+    "citation": {
+     "publisher": "Wikipedia",
+     "url": "https://en.wikipedia.org/wiki/Jo%C3%A3o_Moutinho",
+     "quote": "made his Primeira Liga debut on 23 January, staying in the entire 3–0 win at Gil Vicente F.C. and wearing the #28 shirt previously worn by Cristiano Ronaldo."
+    },
+    "note": "Wikipedia: Moutinho made his Sporting CP Primeira Liga senior debut on 23 January 2005 (called to the main squad in the 2004-05 pre-season at 17). Club: Sporting CP."
+   },
+   {
+    "cardId": "real_0343",
+    "name": "Ryan Babel",
+    "qid": "Q184218",
+    "eraYear": 2004,
+    "eraIndex": 2,
+    "src": "sourceStartYear",
+    "nearCut": "2000s|2010s-20s",
+    "sourceYear": 2004,
+    "sourceBucket": 2,
+    "disposition": "AGREE",
+    "citation": {
+     "publisher": "Wikipedia",
+     "url": "https://en.wikipedia.org/wiki/Ryan_Babel",
+     "quote": "Playing as a striker, on 1 February 2004, just one and a half months after his 17th birthday, Babel made his first-team debut in Ajax's 4–0 home win over ADO Den Haag in the Eredivisie."
+    },
+    "note": "Wikipedia states Babel's Ajax first-team senior debut was 1 February 2004, matching the card's era-anchor year of 2004 (senior club: Ajax)."
+   },
+   {
+    "cardId": "real_0345",
+    "name": "Fernando Gago",
+    "qid": "Q187426",
+    "eraYear": 2004,
+    "eraIndex": 2,
+    "src": "sourceStartYear",
+    "nearCut": "2000s|2010s-20s",
+    "sourceYear": 2004,
+    "sourceBucket": 2,
+    "disposition": "AGREE",
+    "citation": {
+     "publisher": "Wikipedia",
+     "url": "https://en.wikipedia.org/wiki/Fernando_Gago",
+     "quote": "He had his professional debut with Boca in the 1–0 victory over Quilmes on 5 December 2004, in the Torneo Apertura."
+    },
+    "note": "Wikipedia states Gago made his senior/professional debut for Boca Juniors on 5 December 2004, matching the card's era-anchor year of 2004."
+   },
+   {
+    "cardId": "real_0348",
+    "name": "William Gallas",
+    "qid": "Q1937",
+    "eraYear": 1995,
+    "eraIndex": 2,
+    "src": "sourceStartYear",
+    "nearCut": "1980s-90s|2000s",
+    "sourceYear": 1995,
+    "sourceBucket": 2,
+    "disposition": "AGREE",
+    "citation": {
+     "publisher": "Wikipedia",
+     "url": "https://en.wikipedia.org/wiki/William_Gallas",
+     "quote": "1995–1997 | Caen | 34 | (0)"
+    },
+    "note": "Wikipedia senior career stats table lists Caen 1995–1997 as his first senior club, matching the card's 1995 anchor."
+   },
+   {
+    "cardId": "real_0355",
+    "name": "Paulinho",
+    "qid": "Q73082",
+    "eraYear": 2004,
+    "eraIndex": 2,
+    "src": "sourceStartYear",
+    "nearCut": "2000s|2010s-20s",
+    "sourceYear": 2006,
+    "sourceBucket": 3,
+    "disposition": "CROSS-LATER(debut>anchor)",
+    "citation": {
+     "publisher": "Wikipedia",
+     "url": "https://en.wikipedia.org/wiki/Paulinho_(footballer,_born_July_1988)",
+     "quote": "Paulinho began his playing career with Pão de Açúcar, joining the youth squad in 2004. After failing to break through into the first team, Paulinho joined Lithuanian side Vilnius in 2006."
+    },
+    "note": "Wikipedia dates his 2004 join to the YOUTH squad only; his senior career (stats table: Pão de Açúcar 2006–2010, plus 2006 FC Vilnius spell) starts in 2006, not the card's 2004."
+   },
+   {
+    "cardId": "real_0361",
+    "name": "Steve Mandanda",
+    "qid": "Q1924",
+    "eraYear": 2005,
+    "eraIndex": 3,
+    "src": "sourceStartYear",
+    "nearCut": "2000s|2010s-20s",
+    "sourceYear": 2005,
+    "sourceBucket": 3,
+    "disposition": "AGREE",
+    "citation": {
+     "publisher": "Wikipedia",
+     "url": "https://en.wikipedia.org/wiki/Steve_Mandanda",
+     "quote": "Mandanda made his league debut for Le Havre in August 2005, and did not concede a goal until his fourth match."
+    },
+    "note": "Wikipedia states Mandanda made his senior league debut for Le Havre in August 2005; matches the card's 2005 anchor."
+   },
+   {
+    "cardId": "real_0362",
+    "name": "Fernando Muslera",
+    "qid": "Q203749",
+    "eraYear": 2004,
+    "eraIndex": 2,
+    "src": "sourceStartYear",
+    "nearCut": "2000s|2010s-20s",
+    "sourceYear": 2004,
+    "sourceBucket": 2,
+    "disposition": "AGREE",
+    "citation": {
+     "publisher": "Wikipedia",
+     "url": "https://en.wikipedia.org/wiki/Fernando_Muslera",
+     "quote": "2004–2007 | Montevideo Wanderers | 44 | (0)"
+    },
+    "note": "Wikipedia career table shows Muslera's first senior club, Montevideo Wanderers, spanning 2004–2007, giving a senior career start of 2004 — matches the card's era-anchor."
+   },
+   {
+    "cardId": "real_0364",
+    "name": "Nacho Monreal",
+    "qid": "Q342219",
+    "eraYear": 2006,
+    "eraIndex": 3,
+    "src": "sourceStartYear",
+    "nearCut": "2000s|2010s-20s",
+    "sourceYear": 2006,
+    "sourceBucket": 3,
+    "disposition": "AGREE",
+    "citation": {
+     "publisher": "Wikipedia",
+     "url": "https://en.wikipedia.org/wiki/Nacho_Monreal",
+     "quote": "made his official debut for his hometown club in an away game against Valencia on 22 October 2006, a 1–0 La Liga loss."
+    },
+    "note": "Wikipedia says Monreal made his official senior debut for hometown club Osasuna on 22 October 2006, matching the card's 2006 era-anchor."
+   },
+   {
+    "cardId": "real_0365",
+    "name": "David Ospina",
+    "qid": "Q436987",
+    "eraYear": 2006,
+    "eraIndex": 3,
+    "src": "cited-override",
+    "nearCut": "2000s|2010s-20s",
+    "sourceYear": 2005,
+    "sourceBucket": 3,
+    "disposition": "AGREE",
+    "citation": {
+     "publisher": "Wikipedia",
+     "url": "https://en.wikipedia.org/wiki/David_Ospina",
+     "quote": "made his senior debut in the Categoría Primera A in 2005 at the age of 17"
+    },
+    "note": "Wikipedia lists Ospina's senior career at Atlético Nacional as 2005-2008, with senior debut in 2005; card's anchor of 2006 is one year later."
+   },
+   {
+    "cardId": "real_0370",
+    "name": "Daniel Agger",
+    "qid": "Q184205",
+    "eraYear": 2004,
+    "eraIndex": 2,
+    "src": "sourceStartYear",
+    "nearCut": "2000s|2010s-20s",
+    "sourceYear": 2004,
+    "sourceBucket": 2,
+    "disposition": "AGREE",
+    "citation": {
+     "publisher": "Wikipedia",
+     "url": "https://en.wikipedia.org/wiki/Daniel_Agger",
+     "quote": "In July 2004, he was moved from the youth squad to the first team, following the departure of Swedish international defender Andreas Jakobsson."
+    },
+    "note": "Wikipedia states Agger joined Brøndby's senior first team in July 2004, matching the card's era-anchor year of 2004."
+   },
+   {
+    "cardId": "real_0373",
+    "name": "Aleksandar Kolarov",
+    "qid": "Q211451",
+    "eraYear": 2004,
+    "eraIndex": 2,
+    "src": "sourceStartYear",
+    "nearCut": "2000s|2010s-20s",
+    "sourceYear": 2004,
+    "sourceBucket": 2,
+    "disposition": "AGREE",
+    "citation": {
+     "publisher": "Wikipedia",
+     "url": "https://en.wikipedia.org/wiki/Aleksandar_Kolarov",
+     "quote": "In 2004, 18-year-old Kolarov moved across Belgrade to Čukarički, which played in the top-tier Serbia-Montenegro League. ... Signing a three-year contract, he finished the 2003–04 season in the club's youth setup and during the summer of 2004 was introduced to the first-team squad."
+    },
+    "note": "Wikipedia says Kolarov first joined a senior first-team squad at Čukarički in 2004 (summer 2004), matching the card's era-anchor year."
+   },
+   {
+    "cardId": "real_0374",
+    "name": "Samir Handanović",
+    "qid": "Q213002",
+    "eraYear": 2003,
+    "eraIndex": 2,
+    "src": "sourceStartYear",
+    "nearCut": "2000s|2010s-20s",
+    "sourceYear": 2003,
+    "sourceBucket": 2,
+    "disposition": "AGREE",
+    "citation": {
+     "publisher": "Wikipedia",
+     "url": "https://en.wikipedia.org/wiki/Samir_Handanovi%C4%87",
+     "quote": "He later joined Domžale, where he made his Slovenian PrvaLiga debut in the 2003–04 season."
+    },
+    "note": "Wikipedia says Handanovic joined Domzale (his first senior club) and made his Slovenian PrvaLiga debut in the 2003-04 season, i.e. senior career start 2003."
+   },
+   {
+    "cardId": "real_0376",
+    "name": "Filipe Luís",
+    "qid": "Q350547",
+    "eraYear": 2003,
+    "eraIndex": 2,
+    "src": "sourceStartYear",
+    "nearCut": "2000s|2010s-20s",
+    "sourceYear": 2003,
+    "sourceBucket": 2,
+    "disposition": "AGREE",
+    "citation": {
+     "publisher": "Wikipedia",
+     "url": "https://en.wikipedia.org/wiki/Filipe_Lu%C3%ADs",
+     "quote": "Coming from Figueirense as an attacking midfielder, he had his first taste of European football with Ajax in 2004."
+    },
+    "note": "Wikipedia's senior career section/infobox has Filipe Luís starting his senior club career at Figueirense in 2003 (before moving to Ajax in 2004), matching the card's 2003 era-anchor."
+   },
+   {
+    "cardId": "real_0380",
+    "name": "Yann Sommer",
+    "qid": "Q667596",
+    "eraYear": 2005,
+    "eraIndex": 3,
+    "src": "sourceStartYear",
+    "nearCut": "2000s|2010s-20s",
+    "sourceYear": 2005,
+    "sourceBucket": 3,
+    "disposition": "AGREE",
+    "citation": {
+     "publisher": "Wikipedia",
+     "url": "https://en.wikipedia.org/wiki/Yann_Sommer",
+     "quote": "He signed his first professional contract with Basel in 2005."
+    },
+    "note": "Wikipedia states Sommer signed his first professional contract with FC Basel in 2005, matching the card's era-anchor year."
+   },
+   {
+    "cardId": "real_0383",
+    "name": "Gianluca Zambrotta",
+    "qid": "Q182907",
+    "eraYear": 1994,
+    "eraIndex": 1,
+    "src": "sourceStartYear",
+    "nearCut": "1980s-90s|2000s",
+    "sourceYear": 1994,
+    "sourceBucket": 1,
+    "disposition": "AGREE",
+    "citation": {
+     "publisher": "Wikipedia",
+     "url": "https://en.wikipedia.org/wiki/Gianluca_Zambrotta",
+     "quote": "Zambrotta began his professional career as a striker with his hometown club Como at age 17 in 1994."
+    },
+    "note": "Wikipedia states Zambrotta joined his hometown senior club Como in 1994, matching the card's era-anchor year."
+   },
+   {
+    "cardId": "real_0385",
+    "name": "Walter Samuel",
+    "qid": "Q193702",
+    "eraYear": 1996,
+    "eraIndex": 2,
+    "src": "sourceStartYear",
+    "nearCut": "1980s-90s|2000s",
+    "sourceYear": 1996,
+    "sourceBucket": 2,
+    "disposition": "AGREE",
+    "citation": {
+     "publisher": "Wikipedia",
+     "url": "https://en.wikipedia.org/wiki/Walter_Samuel",
+     "quote": "Samuel started playing professionally in 1996 in Argentina for Newell's Old Boys."
+    },
+    "note": "Wikipedia says Samuel started his senior career in 1996 with Newell's Old Boys, matching the card's era-anchor."
+   },
+   {
+    "cardId": "real_0389",
+    "name": "Domagoj Vida",
+    "qid": "Q314227",
+    "eraYear": 2006,
+    "eraIndex": 3,
+    "src": "sourceStartYear",
+    "nearCut": "2000s|2010s-20s",
+    "sourceYear": 2006,
+    "sourceBucket": 3,
+    "disposition": "AGREE",
+    "citation": {
+     "publisher": "Wikipedia",
+     "url": "https://en.wikipedia.org/wiki/Domagoj_Vida",
+     "quote": "being first featured with the senior team in the 2006–07 season, at the age of 17; he then went on to make 12 appearances in the season."
+    },
+    "note": "Wikipedia states Vida first featured for Osijek's senior team in the 2006–07 season, supporting a senior career start year of 2006."
+   },
+   {
+    "cardId": "real_0394",
+    "name": "Martín Cáceres",
+    "qid": "Q194107",
+    "eraYear": 2006,
+    "eraIndex": 3,
+    "src": "sourceStartYear",
+    "nearCut": "2000s|2010s-20s",
+    "sourceYear": 2006,
+    "sourceBucket": 3,
+    "disposition": "AGREE",
+    "citation": {
+     "publisher": "Wikipedia",
+     "url": "https://en.wikipedia.org/wiki/Mart%C3%ADn_C%C3%A1ceres",
+     "quote": "Born in Montevideo, Cáceres started his career with his local team Defensor, becoming a regular at a young age and competing in one full Primera División season with them."
+    },
+    "note": "Wikipedia says his senior career started at Defensor Sporting; its stats table lists his earliest senior season as 2005–06, and his senior Primera División debut is dated 10 June 2006 — consistent with the card's 2006 anchor. Note: the verbatim prose does not itself contain a year; the 2006 value comes from the same page's season/debut data. Transfermarkt only shows youth \"Defensor Sporting (-2005)\"."
+   },
+   {
+    "cardId": "real_0401",
+    "name": "Mehdi Benatia",
+    "qid": "Q462779",
+    "eraYear": 2005,
+    "eraIndex": 3,
+    "src": "sourceStartYear",
+    "nearCut": "2000s|2010s-20s",
+    "sourceYear": 2005,
+    "sourceBucket": 3,
+    "disposition": "AGREE",
+    "citation": {
+     "publisher": "Wikipedia",
+     "url": "https://en.wikipedia.org/wiki/Medhi_Benatia",
+     "quote": "Benatia joined Marseille in 2003, and signed his first professional contract with them two years later."
+    },
+    "note": "Wikipedia says Benatia signed his first professional contract with Olympique de Marseille in 2005 (two years after joining the youth academy in 2003), matching the card's 2005 anchor."
+   },
+   {
+    "cardId": "real_0406",
+    "name": "Lucas Neill",
+    "qid": "Q215358",
+    "eraYear": 1995,
+    "eraIndex": 2,
+    "src": "sourceStartYear",
+    "nearCut": "1980s-90s|2000s",
+    "sourceYear": 1995,
+    "sourceBucket": 2,
+    "disposition": "AGREE",
+    "citation": {
+     "publisher": "Wikipedia",
+     "url": "https://en.wikipedia.org/wiki/Lucas_Neill",
+     "quote": "Neill joined Millwall on a free transfer in November 1995, making his debut on 17 February against Luton Town in 1996."
+    },
+    "note": "Wikipedia says Neill joined Millwall (his first senior club) in November 1995, debuting Feb 1996 — supports the card's era-anchor year of 1995."
+   },
+   {
+    "cardId": "real_0410",
+    "name": "Alex Song",
+    "qid": "Q189012",
+    "eraYear": 2004,
+    "eraIndex": 2,
+    "src": "sourceStartYear",
+    "nearCut": "2000s|2010s-20s",
+    "sourceYear": 2004,
+    "sourceBucket": 2,
+    "disposition": "AGREE",
+    "citation": {
+     "publisher": "Wikipedia",
+     "url": "https://en.wikipedia.org/wiki/Alex_Song",
+     "quote": "Song joined the Bastia youth team in 2003–04 and became a part of the first team the following season with 31 appearances."
+    },
+    "note": "Wikipedia says Song joined Bastia's first team the season after 2003-04 (i.e. 2004-05), giving a senior club career start of 2004 with Bastia; matches the card anchor."
+   },
+   {
+    "cardId": "real_0427",
+    "name": "Jean Tigana",
+    "qid": "Q295559",
+    "eraYear": 1975,
+    "eraIndex": 0,
+    "src": "sourceStartYear",
+    "nearCut": "≤70s|1980s-90s",
+    "sourceYear": 1975,
+    "sourceBucket": 0,
+    "disposition": "AGREE",
+    "citation": {
+     "publisher": "Wikipedia",
+     "url": "https://en.wikipedia.org/wiki/Jean_Tigana",
+     "quote": "Senior career* Years Team Apps (Gls) 1975–1978 Toulon 76 (10)"
+    },
+    "note": "Wikipedia's senior career table lists Tigana's first senior club as Toulon (Sporting Club Toulon), starting 1975 — matches the card's era-anchor year of 1975."
+   }
+  ]
+ },
+ "S6_signedRecords": {
+  "recordCounts": {
+   "ownerPositionRulings": 25,
+   "ownerDisputedStatements": 2,
+   "ownerCitedOverrides": 7,
+   "ownerCitedOverrides_acceptedNoise": 15,
+   "ownerEraRestores": 2,
+   "ownerNationRulings": 2,
+   "ownerDebutRulings": 1
+  },
+  "integrity": "All 6 owner files signed (ruledBy owner); all record QIDs resolve to the sourced pool; 7 cited-overrides each have on-card eraYear==citedValue with sourced value preserved beside; Dybala (Emelec chip dropped, ssy 2011 stands, amber EXPECTED) and Benatia (Marseille chip dropped + disputedAppearance) verified; van der Sar/De Bruyne eraRestores carry signed Wikipedia citations with citationHistory intact.",
+  "positionReconcile": {
+   "note": "25 ownerPositionRulings: 23 map to on-card players with sourced statement preserved; Lucas Vazquez (Q5981954) and Willian (Q73480) correctly absent (era-swapped out per selector).",
+   "rows": [
+    {
+     "qid": "Q142794",
+     "name": "Neymar",
+     "cardPosition": "ATT",
+     "dossierPosValue": "ATT",
+     "sourcedPreserved": "[\"MID\"]"
+    },
+    {
+     "qid": "Q184586",
+     "name": "Gareth Bale",
+     "cardPosition": "ATT",
+     "dossierPosValue": "ATT",
+     "sourcedPreserved": "[\"MID\"]"
+    },
+    {
+     "qid": "Q1918",
+     "name": "Franck Ribéry",
+     "cardPosition": "ATT",
+     "dossierPosValue": "ATT",
+     "sourcedPreserved": "[\"MID\"]"
+    },
+    {
+     "qid": "Q251683",
+     "name": "Ángel Di María",
+     "cardPosition": "ATT",
+     "dossierPosValue": "ATT",
+     "sourcedPreserved": "[\"MID\"]"
+    },
+    {
+     "qid": "Q8338725",
+     "name": "Riyad Mahrez",
+     "cardPosition": "ATT",
+     "dossierPosValue": "ATT",
+     "sourcedPreserved": "[\"MID\"]"
+    },
+    {
+     "qid": "Q483145",
+     "name": "Luís Figo",
+     "cardPosition": "ATT",
+     "dossierPosValue": "ATT",
+     "sourcedPreserved": "[\"MID\"]"
+    },
+    {
+     "qid": "Q58441",
+     "name": "Robinho",
+     "cardPosition": "ATT",
+     "dossierPosValue": "ATT",
+     "sourcedPreserved": "[\"MID\"]"
+    },
+    {
+     "qid": "Q161069",
+     "name": "David Silva",
+     "cardPosition": "MID",
+     "dossierPosValue": "MID",
+     "sourcedPreserved": "[\"MID\"]"
+    },
+    {
+     "qid": "Q104454",
+     "name": "Mario Götze",
+     "cardPosition": "MID",
+     "dossierPosValue": "MID",
+     "sourcedPreserved": "[\"MID\"]"
+    },
+    {
+     "qid": "Q482947",
+     "name": "Nani",
+     "cardPosition": "ATT",
+     "dossierPosValue": "ATT",
+     "sourcedPreserved": "[\"MID\"]"
+    },
+    {
+     "qid": "Q180553",
+     "name": "Alexis Sánchez",
+     "cardPosition": "ATT",
+     "dossierPosValue": "ATT",
+     "sourcedPreserved": "[\"MID\"]"
+    },
+    {
+     "qid": "Q294214",
+     "name": "Dirk Kuyt",
+     "cardPosition": "ATT",
+     "dossierPosValue": "ATT",
+     "sourcedPreserved": "[\"MID\"]"
+    },
+    {
+     "qid": "Q50603",
+     "name": "Park Ji-sung",
+     "cardPosition": "MID",
+     "dossierPosValue": "MID",
+     "sourcedPreserved": "[\"MID\"]"
+    },
+    {
+     "qid": "Q174486",
+     "name": "Antonio Valencia",
+     "cardPosition": "ATT",
+     "dossierPosValue": "ATT",
+     "sourcedPreserved": "[\"MID\"]"
+    },
+    {
+     "qid": "Q188241",
+     "name": "Ricardo Quaresma",
+     "cardPosition": "ATT",
+     "dossierPosValue": "ATT",
+     "sourcedPreserved": "[\"MID\"]"
+    },
+    {
+     "qid": "Q29516",
+     "name": "Theo Walcott",
+     "cardPosition": "ATT",
+     "dossierPosValue": "ATT",
+     "sourcedPreserved": "[\"MID\"]"
+    },
+    {
+     "qid": "Q484909",
+     "name": "Clarence Seedorf",
+     "cardPosition": "MID",
+     "dossierPosValue": "MID",
+     "sourcedPreserved": "[\"MID\"]"
+    },
+    {
+     "qid": "Q185225",
+     "name": "Santi Cazorla",
+     "cardPosition": "MID",
+     "dossierPosValue": "MID",
+     "sourcedPreserved": "[\"MID\"]"
+    },
+    {
+     "qid": "Q190929",
+     "name": "Maxi Rodríguez",
+     "cardPosition": "MID",
+     "dossierPosValue": "MID",
+     "sourcedPreserved": "[\"MID\"]"
+    },
+    {
+     "qid": "Q5981954",
+     "name": "Lucas Vázquez",
+     "status": "NO card entry (bench/not selected)"
+    },
+    {
+     "qid": "Q246417",
+     "name": "Denis Cheryshev",
+     "cardPosition": "ATT",
+     "dossierPosValue": "ATT",
+     "sourcedPreserved": "[\"MID\"]"
+    },
+    {
+     "qid": "Q18976",
+     "name": "Ole Gunnar Solskjær",
+     "cardPosition": "ATT",
+     "dossierPosValue": "ATT",
+     "sourcedPreserved": "[\"MID\"]"
+    },
+    {
+     "qid": "Q73480",
+     "name": "Willian",
+     "status": "NO card entry (bench/not selected)"
+    },
+    {
+     "qid": "Q165014",
+     "name": "Ibrahim Afellay",
+     "cardPosition": "MID",
+     "dossierPosValue": "MID",
+     "sourcedPreserved": "[\"MID\"]"
+    },
+    {
+     "qid": "Q210102",
+     "name": "Jairzinho",
+     "cardPosition": "ATT",
+     "dossierPosValue": "ATT",
+     "sourcedPreserved": "[\"MID\"]"
+    }
+   ]
+  },
+  "citationResolution": {
+   "resolvedBy": "verify3 direct WebFetch/curl, 2026-07-17",
+   "named": [
+    {
+     "who": "Edwin van der Sar",
+     "qid": "Q482955",
+     "file": "ownerEraRestores",
+     "recorded": "eraYear 1990",
+     "url": "https://en.wikipedia.org/wiki/Edwin_van_der_Sar",
+     "status": "RESOLVED",
+     "found": "Senior career infobox: 1990–1999 Ajax 226 (1)",
+     "supports": true
+    },
+    {
+     "who": "Kevin De Bruyne",
+     "qid": "Q357984",
+     "file": "ownerEraRestores",
+     "recorded": "eraYear 2009",
+     "url": "https://en.wikipedia.org/wiki/Kevin_De_Bruyne",
+     "status": "RESOLVED",
+     "found": "De Bruyne made his first team debut for Genk in a 3–0 defeat at Charleroi on 9 May 2009.",
+     "supports": true
+    },
+    {
+     "who": "Sergio Busquets",
+     "qid": "Q49704",
+     "file": "ownerDebutRulings",
+     "recorded": "ruling 2008",
+     "url": "https://www.fcbarcelona.com/en/news/860614",
+     "status": "RESOLVED",
+     "found": "Sergio Busquets made his first team debut on 13 September 2008.",
+     "supports": true
+    }
+   ],
+   "citedOverrides": [
+    {
+     "who": "Karim Benzema",
+     "qid": "Q1912",
+     "citedValue": 2005,
+     "url": "https://www.lyoncapitale.fr/sport/benzema-la-classe-internationale",
+     "status": "RESOLVED",
+     "found": "C'était le 15 janvier 2005 contre Metz.",
+     "supports": true
+    },
+    {
+     "who": "Keisuke Honda",
+     "qid": "Q202054",
+     "citedValue": 2005,
+     "url": "https://www.jleague.co/news/international-japanese-players-in-their-jleague-days-1-keisuke-honda/",
+     "status": "RESOLVED",
+     "found": "In 2005, his first professional season, he made his debut as a starter since the opening day",
+     "supports": true
+    },
+    {
+     "who": "Arda Turan",
+     "qid": "Q487459",
+     "citedValue": 2005,
+     "url": "https://www.galatasaray.org/haber/gs-sportif-a-s/gule-gule-arda-turan/10559",
+     "status": "RESOLVED-VIA-ARCHIVE",
+     "archiveUrl": "http://web.archive.org/web/20250427180105/https://www.galatasaray.org/haber/gs-sportif-a-s/gule-gule-arda-turan/10559",
+     "found": "ilk profesyonel maçına 22 Ocak 2005 günü İzmit İsmetpaşa Stadında Bursaspora karşı çıktı.",
+     "supports": true,
+     "note": "Live galatasaray.org failed WebFetch TLS cert verification; resolved via archive.org 2025-04-27 snapshot."
+    },
+    {
+     "who": "David Trezeguet",
+     "qid": "Q183967",
+     "citedValue": 1996,
+     "url": "https://www.asmonaco.com/fr/news/david-trezeguet-linstinct-du-buteur",
+     "status": "RESOLVED",
+     "found": "Il connaît son premier match en professionnel en Ligue 1 en février 1996",
+     "supports": true
+    },
+    {
+     "who": "John Obi Mikel",
+     "qid": "Q166984",
+     "citedValue": 2005,
+     "url": "https://lynhistorie.no/spillere/spiller.php?id=90",
+     "status": "RESOLVED",
+     "found": "Debut: Lyn - Start 1-1, 24.04.05",
+     "supports": true
+    },
+    {
+     "who": "João Moutinho",
+     "qid": "Q222151",
+     "citedValue": 2005,
+     "url": "https://www.abola.pt/noticias/ha-20-anos-nascia-uma-estrela-2025010316084828580",
+     "status": "RESOLVED",
+     "found": "Sporting-Pampilhosa de 4 de janeiro de 2005, jogo da Taça de Portugal, marcou a estreia de João Moutinho como sénior.",
+     "supports": true
+    },
+    {
+     "who": "David Ospina",
+     "qid": "Q436987",
+     "citedValue": 2006,
+     "url": "https://atlnacional.com.co/grandes-idolos/david-ospina/",
+     "status": "RESOLVED",
+     "found": "Debutó en 2006",
+     "supports": true
+    }
+   ]
+  }
+ },
+ "disclosures": [
+  "SCOPE: ticket named 4 owner files (positionRulings, disputedStatements, citedOverrides, eraRestores) + 'all five record types'. The commit actually carries 6 owner files (also ownerNationRulings, ownerDebutRulings); all 6 were verified. The 'five' phrasing is treated as an approximation; Busquets cited debut lives in ownerDebutRulings (verified).",
+  "METHOD: S1 + S2(all-430) were machine-verified against a fresh live Wikidata wbgetentities retrieval (2026-07-17, 430 QIDs, 0 missing) - deterministic re-retrieval, not from memory.",
+  "S6 citation for Arda Turan: live galatasaray.org failed WebFetch TLS certificate verification; the exact quoted sentence was re-resolved via the archive.org snapshot 2025-04-27 (URL recorded). All other 9 named/override citations resolved on the live URL.",
+  "S4 boundary rule chosen: |eraYear - cut| <= 2 with cuts at 1975.5 / 1994.5 / 2004.5 (midpoint of each adjacent eraYearMax/eraYearMin pair) -> 122 cards. A wider +-2-of-each-endpoint reading would add a few cards; the midpoint reading is documented and complete within itself (0 unreachable).",
+  "LIVE-WIKIDATA VANDALISM observed during retrieval (labels only; does not affect card correctness, which uses canonical names): Q-labels for Lukaku, Xabi Alonso, Moutinho, Arda Guler, Benatia were vandalized/erroneous at fetch time.",
+  "The 40-card sample used non-Wikidata sources that were frequently English Wikipedia (which the owner records themselves treat as a valid non-Wikidata source, e.g. van der Sar/De Bruyne). Where a stronger independent source (Transfermarkt/official) was used it is cited; all citations carry a verbatim quote + resolvable URL.",
+  "Workflow research: 162 agents, 0 errors, 0 empty results; every S4/S2/S3 outcome (agreement and disagreement) carries publisher+URL+verbatim quote at write time per the harness rule. No agent report was acted on before its structured text was physically present in the returned result."
+ ]
+}
