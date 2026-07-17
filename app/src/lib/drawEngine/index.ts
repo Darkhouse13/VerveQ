@@ -6,3 +6,5 @@ export * from "./scoring";
 export * from "./engine";
 export * from "./layout";
 export * from "./defaults";
+// Ticket E4 (owner-sanctioned additive module): Daily Deck slice generator.
+export * from "./sliceDeck";

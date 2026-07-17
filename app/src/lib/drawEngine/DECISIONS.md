@@ -324,3 +324,45 @@ suggested (not applied) rule/profile amendments.
   external corroboration was blocked per verify2 and NOT fabricated) are re-admitted from
   the erased-earliest-career fail-closed. The canonical still emits null; the restore is
   an editorial override that never edits a fact.
+
+## Ticket E4/E5 (owner-ordered, 2026-07-17): Daily Deck slice serving — the rotation ruling
+
+- E3's P0-set Tier-2 gate measured real-v4 served WHOLE at 88.20% natural
+  full-clear (STOP; diagnosis: 430 cards over 323 club tags is ~2.6× less
+  synergy-dense than the 50-card/11-tag synthetic genome c13-1 was tuned on).
+  The owner remedy (Ticket E4) is SERVING-LAYER density restoration: each day
+  serves a ~46-card SLICE of the pinned real set built to the synthetic
+  profile. The engine is untouched — sliceDeck.ts is an additive module
+  (seeded, pure) permitted by the E4 owner ticket.
+- E4 acceptance (calibrate --eval --slicerotation, 20 slices × 1000 boards,
+  seed accept-slice-rotation, c13-1 unchanged): two independent 20000-board
+  runs measured pooled P0-set **99.48% / 99.46%** against the 99.5% bar —
+  every other criterion PASS (P1d 24.3%, P2 44.6%, P3a 45.1%, P3b 77.9%,
+  P4 95.7%, P5 207/207 identical). The session STOPPED rather than re-roll
+  knob jitters until acceptance noise crossed the bar (winner's-curse
+  discipline). Diagnosis, measured: every composition knob moves P0-set and
+  P1d TOGETHER (frontier corner ≈ 99.47/24.3); residual dead boards have
+  normal chain sizes and die on the row-arrangement lottery (~0.5% floor
+  composition cannot reach); real cards carry ~1.1 chain-relevant club chips
+  vs the synthetic 2.2 (fact chips cannot be fabricated). Log:
+  scripts/drawSim/artifacts/eval-accept-daily-deck-v1.log (local artifact).
+- **OWNER RULING (Ticket E5, 2026-07-17): the measured 99.47% (99.46–99.48
+  across the two 20000-board runs) is ACCEPTED under the amended rotation
+  bars.** This is an explicit owner adjudication recorded here, not a session
+  loosening. Rationale: the confidence interval straddles the bar; 8 of the
+  10 synthetic rotation sets c13-1 was itself accepted on measured below
+  99.5 per-set (pooled synthetic acceptance was 98.0%); and the P0-runtime
+  CONTRACT INVARIANT serves 0 dead boards to players regardless (the
+  measured would-be reroll rate is 0.54%).
+- **SERVING SCORER RULING (Ticket E5, in-session owner answer): production
+  computes the daily slice with sliceDeck's DEFAULT tie-break scorer** — the
+  ticket-literal 3-arg call. The screened acceptance scorer (64 candidates ×
+  2048 oracle+chaser probes, sliceScorer.ts) costs 2–30 minutes on hard days
+  and cannot run inside Convex (mutation or action). Served slices measure
+  ~99.2% natural clear vs the instrument's screened 99.47%; the delta is
+  invisible to players (P0-runtime rerolls either way; would-be reroll depth
+  ~0.8% vs ~0.5%) and the P1a–P4 bands held under both policies in tuning.
+  The screened scorer remains the acceptance INSTRUMENT for future slice
+  profiles; the served policy is the generator + default scorer, and the
+  board row pins the realized slice (sliceCardIds) so replay identity never
+  depends on re-running selection.

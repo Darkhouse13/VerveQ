@@ -28,12 +28,14 @@
 import fs from "node:fs";
 import {
   buildArchetypes,
+  DAILY_SLICE_CONFIG_V1,
   DEFAULT_ENGINE_CONFIG,
   generateBoard,
   generateCardSet,
   rngFromString,
   rngInt,
   scoreRound,
+  sliceDeck,
   type Card,
   type EngineConfig,
 } from "../../src/lib/drawEngine";
@@ -41,6 +43,7 @@ import { benchOptimalScores, buildContext, type BoardContext } from "./boardCont
 import { buildBoostOnlyArchetypes, buildMixedDipArchetypes } from "./archetypeTables";
 import { chaserBenchFor, greedyBenchFor, runChaser, runGreedy, runRandom } from "./bots";
 import { runOracle } from "./oracle";
+import { makeSliceAcceptanceScorer, SLICE_SCORE_TARGET } from "./sliceScorer";
 import { determinismSpotCheck } from "./evaluate";
 import { loadConfig, parseFlags } from "./sim";
 import {
@@ -776,9 +779,37 @@ function main(): void {
     // rotation, and gates P0 at the stricter P0-set tier (>=99.5% natural
     // full-clear, no reroll assist). Everything else (P1a–P4 bands, P5
     // spot-checks) is unchanged.
+    //
+    // Ticket E4 — slice-rotation mode: `--slicerotation <path>` builds
+    // `--slices` (default 20) Daily Deck slices from the committed full set
+    // via sliceDeck (distinct dateSeeds `${seedBase}|slice<s>`) and pools all
+    // of them under the SAME strict P0-set gate. c13-1 is untouched; the
+    // slice profile (DAILY_SLICE_CONFIG_V1) is the only tunable surface.
     const cardSetPath = flags.get("cardset");
-    const cardSets = cardSetPath ? [loadCardSetFile(cardSetPath)] : rotatedCardSets(config, seedBase);
+    const sliceRotationPath = flags.get("slicerotation");
+    const sliceCount = Number(flags.get("slices") ?? 20);
+    if (cardSetPath && sliceRotationPath)
+      throw new Error("--cardset and --slicerotation are mutually exclusive");
+    const sliceFullSet = sliceRotationPath ? loadCardSetFile(sliceRotationPath) : null;
+    // The oracle-backed scorer is part of the shipped generator policy: the
+    // serving layer must build the identical scorer (same config, same probe
+    // count) so acceptance and production pick the same slice per dateSeed.
+    const sliceScorer = makeSliceAcceptanceScorer(config);
+    const cardSets = sliceFullSet
+      ? Array.from({ length: sliceCount }, (_, s) =>
+          sliceDeck(
+            `${seedBase}|slice${s}`,
+            sliceFullSet,
+            DAILY_SLICE_CONFIG_V1,
+            sliceScorer,
+            SLICE_SCORE_TARGET,
+          ),
+        )
+      : cardSetPath
+        ? [loadCardSetFile(cardSetPath)]
+        : rotatedCardSets(config, seedBase);
     const numSets = cardSets.length;
+    const p0SetGate = Boolean(cardSetPath || sliceRotationPath);
     const lineCount = Math.pow(config.offersPerRow, config.rows);
     const P5_EVERY = 97;
 
@@ -925,14 +956,14 @@ function main(): void {
       p4Rate: p4Weighted / total,
       p5Checked,
       p5Ok,
-    }, { p0SetGate: Boolean(cardSetPath) });
-    if (cardSetPath) {
+    }, { p0SetGate });
+    if (p0SetGate) {
       // P0-runtime would-be reroll rate: the fraction of seeds whose k=0 board
       // is dead — production would serve the first non-dead k instead. Reported
       // separately, NEVER credited toward P0-set (the gate above is natural).
       const dead = total - fullClearableAll;
       console.log(
-        `\nsingle-set mode: ${cardSetPath} (${cardSets[0].length} cards)\n` +
+        `\n${sliceRotationPath ? `slice-rotation mode: ${sliceRotationPath} × ${numSets} slices of ${cardSets[0].length}` : `single-set mode: ${cardSetPath} (${cardSets[0].length} cards)`}\n` +
           `would-be reroll rate (k=0 dead, P0-runtime chain would reroll; not counted toward P0-set): ` +
           `${((dead / total) * 100).toFixed(2)}% (${dead}/${total})`,
       );
