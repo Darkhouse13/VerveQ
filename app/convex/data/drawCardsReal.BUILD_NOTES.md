@@ -1046,3 +1046,36 @@ Luiz, van Bommel) one era earlier than fame places them — accepted as definiti
 the owner may want a per-player era override layer if that reads wrong on the card. van der
 Sar's 1990 has no external corroboration (blocked); a resolvable citation remains welcome.
 Standing items from §15 (F2 120-card review, bucket 0/1 boundary) still open.
+
+## 18. E3 step 0a — verify3 AMBER rulings (set stays real-v4)
+
+Ticket E2.2's blind re-verify (`drawCardsReal.verify3.json`, 0 RED / 3 AMBER / 427 GREEN)
+left three owner action items. All three ruled and applied here; **selection membership is
+unchanged** (fame order untouched), so the set version stays **real-v4** — two cards
+change what they display/claim, one changes only its dossier quality.
+
+**Ospina (Q436987) — San Lorenzo chip DROPPED** (Benatia-class,
+`ownerDisputedStatements.dropPrintedClub: Q218282`). verify3 S2 could not confirm the
+membership anywhere: Wikipedia/Transfermarkt career tables have no San Lorenzo row, and
+July-2026 Argentine press records only transfer INTEREST. The WD spell (2008-2014) is
+exactly Wikipedia's OGC Nice span — a real span transplanted onto the wrong club (Nice is
+absent from his P54). Chips backfill by the ordinary tenure rule:
+**Atlético Nacional / Napoli / Arsenal**. Membership stays in canonical + dossier
+(`disputedAppearance`, amber).
+
+**Trezeguet (Q183967) — cited override REVOKED** (first entry in
+`ownerCitedOverrides.revoked`; the selector reads only `records`, so it simply stops
+applying). verify3 S4: Wikipedia dates a 1994 FIRST-TEAM professional debut for
+Platense ("12 June 1994 as a 16-year-old"), contradicting the override's premise that
+1994 was a squad-registration year — the Monaco citation dates his first match FOR
+MONACO, not his earliest senior start. eraYear reverts to sourced 1994 →
+**era 2 → era 1**. Era counts now **40/78/133/179** (all ≥40; bucket 0 unchanged at the
+floor). The revoked record is preserved verbatim with the contest citation attached.
+
+**Coentrão (Q484384) — amber note, NO override** (`ownerDisputedStatements`, verdict
+`contested`, affects sourceStartYear, value stands 2005). Card eraYear 2005 is faithful
+to the membership-start rule (P54 Rio Ave 2005; born+16=2004, no clamp). Wikipedia's
+2004 is a JOIN year with first-team league play "the following season" — the second
+source itself places the first-team football in 2005, so it straddles join-vs-first-team
+rather than contradicting the anchor. Dossier fact forced amber with the record attached;
+era stands.

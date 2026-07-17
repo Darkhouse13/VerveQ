@@ -4912,8 +4912,8 @@
     "name": "David Trezeguet",
     "nation": "France",
     "position": "ATT",
-    "eraIndex": 2,
-    "eraLabel": "2000s",
+    "eraIndex": 1,
+    "eraLabel": "1980s-90s",
     "clubs": [
       {
         "tag": "juventus",
@@ -9731,14 +9731,14 @@
         "fullName": "Atlético Nacional"
       },
       {
-        "tag": "san-lorenzo-almagro",
-        "displayCode": "SAN2",
-        "fullName": "San Lorenzo de Almagro"
-      },
-      {
         "tag": "napoli",
         "displayCode": "NAP",
         "fullName": "SSC Napoli"
+      },
+      {
+        "tag": "arsenal-f-c",
+        "displayCode": "ARS",
+        "fullName": "Arsenal F.C."
       }
     ],
     "rating": 68,

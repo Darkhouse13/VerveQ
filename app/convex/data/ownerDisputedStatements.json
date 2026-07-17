@@ -83,6 +83,52 @@
       "cardQuality": "amber",
       "note": "The Marseille CHIP is dropped from the card (the ticket's Benatia-class disposition). The membership STAYS in the canonical playersSourced.json as source data — a ruling never edits a fact — and stays in the dossier clubs marked disputedAppearance with this record. Only the chip is suppressed, so the card no longer asserts a first-team appearance a source disputes. The card's other clubs by tenure (Juventus, Bayern, Udinese) fill the three slots. Benatia's sourceStartYear is a SEPARATE within-bucket contradiction (2005 vs ESPN 2006, both era 3) recorded as accepted noise in ownerCitedOverrides — no era override.",
       "e2Reference": "E2.1 red real_0401: 'debutYear + printedSpells contradicted by non-Wikidata source... COMPOUND: ESPN's earliest season row is 2006/07 at Tours, and its career history omits Marseille ENTIRELY — so the card's printed Marseille spell (2005-2008) is itself questionable, not just the debut year. He was in OM's system without a first-team competitive appearance.'"
+    },
+    {
+      "qid": "Q436987",
+      "name": "David Ospina",
+      "cardId": "real_0365",
+      "class": "F2 (false printed chip, verify3 S2)",
+      "verdict": "notCredited",
+      "dropPrintedClub": "Q218282",
+      "statement": {
+        "property": "P54",
+        "value": "San Lorenzo de Almagro",
+        "valueQid": "Q218282",
+        "spells": [{ "start": 2008, "end": 2014 }],
+        "rank": "NormalRank",
+        "resolves": true,
+        "liveAsOf": "2026-07-17",
+        "verbatimNote": "Preserved exactly as Wikidata carries it. The club is real and fully described; the statement resolves — the F2 class again. The spell years 2008-2014 are exactly the years Wikipedia's career table assigns to OGC Nice, a club absent from his P54 entirely — the statement appears to transplant a real span onto the wrong club."
+      },
+      "dispute": "Ospina never played for San Lorenzo de Almagro. Wikipedia and Transfermarkt career histories contain no San Lorenzo entry; July 2026 Argentine press (vamosciclon, infobae, mundoazulgrana) describe only San Lorenzo's INTEREST in signing the free-agent Ospina, with no formal offer or transfer completed. The statement records a rumor/interest as a membership.",
+      "affectsFacts": ["clubs"],
+      "cardQuality": "amber",
+      "note": "E3 step 0a ruling (verify3 AMBER item 1). The San Lorenzo CHIP is dropped from the card (Benatia-class disposition) and the slot backfills by the ordinary tenure rule. The membership STAYS in the canonical playersSourced.json and in the dossier clubs marked disputedAppearance — a ruling never edits a fact. His sourceStartYear (2004, Atletico Nacional) and cited era override (2006, Atletico Nacional club site) are untouched: both rest on Nacional statements, not this one.",
+      "e2Reference": "verify3 (drawCardsReal.verify3.json) S2 sample40 real_0365: 'San Lorenzo de Almagro could NOT be confirmed: Wikipedia and Transfermarkt career histories contain no San Lorenzo entry... So San Lorenzo membership is a rumor/interest only, not a confirmed senior-team membership.'"
+    },
+    {
+      "qid": "Q484384",
+      "name": "Fabio Coentrao",
+      "cardId": "real_0243",
+      "class": "membership-start straddle (verify3 AMBER, join-vs-first-team)",
+      "verdict": "contested",
+      "statement": {
+        "property": "P54",
+        "value": "Rio Ave F.C.",
+        "valueQid": "Q622432",
+        "spells": [{ "start": 2005, "end": 2007 }],
+        "rank": "NormalRank",
+        "resolves": true,
+        "liveAsOf": "2026-07-17",
+        "verbatimNote": "Preserved exactly as Wikidata carries it (earliest Rio Ave spell; his later Rio Ave returns are separate statements). The club is real; the statement resolves. What is contested is only the START year of this earliest spell."
+      },
+      "dispute": "Wikipedia dates his joining Rio Ave to 2004 at age 16 ('He joined his hometown's Rio Ave F.C. in 2004 at the age of 16, playing three Primeira Liga games in the following season'), one year earlier than the P54 membership start of 2005. The two years straddle the era2/era3 cut (peak 2009 vs 2010).",
+      "affectsFacts": ["sourceStartYear"],
+      "valueStands": 2005,
+      "cardQuality": "amber",
+      "note": "E3 step 0a ruling (verify3 AMBER item 3): AMBER NOTE ONLY, no cited override. The card's eraYear 2005 is FAITHFUL to the membership-start rule (P54 Rio Ave start 2005; born+16=2004 so no clamp fires), and Wikipedia's 2004 is a JOIN year with first-team league play 'the following season' — i.e. the second source itself places the first-team football in 2005. A bucket-crossing override needs a citation that contradicts the anchor's semantics, not one that straddles join-vs-first-team; this one does not clear that bar. The fact is forced amber with this record attached so the straddle is visible, and the era stands.",
+      "e2Reference": "verify3 (drawCardsReal.verify3.json) S4 crossingsAdjudicated real_0243: 'Card eraYear 2005 is faithful to WD P54 (Rio Ave membership start 2005; NOT a clamp - born+16=2004<2005)... 1-year WD-vs-Wikipedia join-vs-first-team difference straddling the 2004/05 cut (era2 vs era3). Not RED (card faithful to the P54 membership-start rule); owner note.'"
     }
   ]
 }

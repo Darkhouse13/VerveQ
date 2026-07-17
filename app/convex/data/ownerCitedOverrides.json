@@ -59,7 +59,15 @@
     "    Gordon Banks (real_0337): his 5-year error (1953 youth contract vs 1958 debut) is",
     "    the headline signing-vs-debut case, yet BOTH years sit in bucket 0 (peak <= 1980),",
     "    so no override is minted. The ticket's 'Banks class' names the contradiction",
-    "    class, not a bucket crossing; Banks himself crosses nothing."
+    "    class, not a bucket crossing; Banks himself crosses nothing.",
+    "",
+    "E3 REVOCATION (step 0a). A record whose PREMISE a later blind verify contradicts is",
+    "REVOKED, not deleted: it moves to `revoked` below with the contest and its citation",
+    "attached, and eraYear falls back to sourceStartYear. The selector reads only `records`,",
+    "so a revoked override simply stops applying. Trezeguet is the first instance —",
+    "verify3 (S4 real_0185) found a 1994 FIRST-TEAM professional debut for Platense,",
+    "contradicting the override's 'squad-registration' premise; his era follows the",
+    "sourced 1994 (era 1)."
   ],
   "ruledBy": "owner",
   "ruledOn": "2026-07-17",
@@ -124,20 +132,6 @@
       "signedBy": "owner"
     },
     {
-      "cardId": "real_0185",
-      "qid": "Q183967",
-      "name": "David Trezeguet",
-      "field": "eraYear",
-      "sourceValue": 1994,
-      "citedValue": 1996,
-      "publisher": "AS Monaco FC (official club site)",
-      "url": "https://www.asmonaco.com/fr/news/david-trezeguet-linstinct-du-buteur",
-      "quote": "Il connait son premier match en professionnel en Ligue 1 en fevrier 1996",
-      "bucketMove": "1 -> 2",
-      "note": "Club's own site dates the first professional Ligue 1 match to February 1996; 1994 is a squad-registration year.",
-      "signedBy": "owner"
-    },
-    {
       "cardId": "real_0207",
       "qid": "Q166984",
       "name": "John Obi Mikel",
@@ -178,6 +172,34 @@
       "bucketMove": "2 -> 3",
       "note": "Club's own site dates the debut to 2006, corroborated by Pulzo pinning the first league match to 5 Feb 2006 v Cucuta. 2004 unsupported by any source found.",
       "signedBy": "owner"
+    }
+  ],
+  "revoked": [
+    {
+      "cardId": "real_0185",
+      "qid": "Q183967",
+      "name": "David Trezeguet",
+      "field": "eraYear",
+      "sourceValue": 1994,
+      "citedValue": 1996,
+      "publisher": "AS Monaco FC (official club site)",
+      "url": "https://www.asmonaco.com/fr/news/david-trezeguet-linstinct-du-buteur",
+      "quote": "Il connait son premier match en professionnel en Ligue 1 en fevrier 1996",
+      "bucketMove": "1 -> 2",
+      "note": "Club's own site dates the first professional Ligue 1 match to February 1996; 1994 is a squad-registration year.",
+      "signedBy": "owner",
+      "revokedOn": "2026-07-17",
+      "revokedBy": "owner",
+      "revocation": {
+        "ticket": "E3 step 0a (verify3 AMBER, drawCardsReal.verify3.json S4 real_0185)",
+        "contest": "The override's premise — that 1994 is a squad-registration year — is contradicted by a 1994 FIRST-TEAM professional debut for Club Atletico Platense (Argentina), a different club from the Monaco debut the citation dates. The Monaco citation remains true and resolvable; it dates his first professional match FOR MONACO, not his earliest senior career start.",
+        "contestCitation": {
+          "publisher": "Wikipedia",
+          "url": "https://en.wikipedia.org/wiki/David_Trezeguet",
+          "quote": "he played his first professional game on 12 June 1994 as a 16-year-old in a 1-1 tie against Gimnasia."
+        },
+        "effect": "eraYear reverts to the sourced sourceStartYear 1994 (Platense P54 membership start, age 16, no clamp needed); card moves era 2 -> era 1. The Monaco record is preserved here verbatim as a revoked decision, never deleted — the same audit discipline as every signed layer."
+      }
     }
   ]
 }
