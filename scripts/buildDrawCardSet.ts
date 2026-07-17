@@ -53,13 +53,14 @@ const NATION_RULINGS_PATH = path.join(DATA, "ownerNationRulings.json");
 const DEBUT_RULINGS_PATH = path.join(DATA, "ownerDebutRulings.json");
 const DISPUTED_PATH = path.join(DATA, "ownerDisputedStatements.json");
 const CITED_OVERRIDES_PATH = path.join(DATA, "ownerCitedOverrides.json");
+const ERA_RESTORES_PATH = path.join(DATA, "ownerEraRestores.json");
 const SITELINKS_PATH = path.join(CACHE, "sitelinks.json");
 const CARDS_PATH = path.join(DATA, "drawCardsReal.candidates.json");
 const DOSSIER_PATH = path.join(DATA, "drawCardsReal.dossier.json");
 
 /** Pinned so an open spell's tenure is reproducible rather than clock-dependent. */
 const PINNED_YEAR = 2026;
-const SET_VERSION = "real-v3";
+const SET_VERSION = "real-v4";
 const RATING_SEED = "realset-ratings-v1";
 const SET_SIZE = 430;
 const MAX_CLUBS_PER_CARD = 3;
@@ -80,7 +81,7 @@ const readJson = <T,>(p: string, fb: T): T => (fs.existsSync(p) ? (JSON.parse(fs
 // ─────────────────────────────────────────────────────────────────────────────
 // S1 — the selectable pool
 // ─────────────────────────────────────────────────────────────────────────────
-function pool(players: Player[]) {
+function pool(players: Player[], restoreQids: Set<string> = new Set()) {
   // Duplicate QIDs: the same person emitted under two names. Two cards for one
   // player is a visible defect AND would forge a synergy chain with himself.
   // Keep the fuller name (Marcelo -> "Marcelo Vieira"), ties by careerPathId so
@@ -105,7 +106,12 @@ function pool(players: Player[]) {
     // Sar / De Bruyne fail-closed (erased earliest career, ingest) removes them: the
     // canonical carries null, so the pool never selects them and the selector
     // backfills — no card ships on a mis-bucketed or unknowable start year.
-    if (!p.facts.sourceStartYear) { drops.noSourceStart++; return false; }
+    //
+    // E0.6 — a signed era RESTORE (ownerEraRestores) re-admits a card the erased-career
+    // rule nulled, supplying eraYear from an owner citation. The canonical is untouched
+    // (sourceStartYear stays null); the restore lives beside it, exactly as a position
+    // ruling never edits the sourced position. Only the two named QIDs pass here.
+    if (!p.facts.sourceStartYear && !restoreQids.has(p.qid)) { drops.noSourceStart++; return false; }
     if (p.facts.clubs.length === 0) { drops.noClub++; return false; }
     return true;
   });
@@ -303,6 +309,18 @@ function build() {
   const citedOverrides = readJson<{ ruledBy?: string; ruledOn?: string; records?: CitedOverride[]; acceptedNoise?: unknown[] }>(CITED_OVERRIDES_PATH, {});
   const citedOverrideByQid = new Map((citedOverrides.records ?? []).map((r) => [r.qid, r]));
 
+  // E0.6 — ERA RESTORES. The erased-earliest-career rule (ingest) nulls sourceStartYear
+  // for a card whose true first career point is filed under a malformed non-club entity
+  // (van der Sar's Ajax under Q1492 = Barcelona the city; De Bruyne's Genk start behind
+  // a Romanian commune + a pharmacy business). That fail-closed is correct — no rule can
+  // recover the year from a mis-targeted statement — but it drops two icons. This signed
+  // layer re-admits them with an owner-cited eraYear, leaving the canonical null. It is
+  // the only thing that lets a null-sourceStartYear card into the pool.
+  type EraRestore = { qid: string; name: string; field: "eraYear"; eraYear: number; publisher: string; url: string; quote: string; signedBy: string };
+  const eraRestores = readJson<{ ruledBy?: string; ruledOn?: string; records?: EraRestore[] }>(ERA_RESTORES_PATH, {});
+  const restoreByQid = new Map((eraRestores.records ?? []).map((r) => [r.qid, r]));
+  const restoreQids = new Set(restoreByQid.keys());
+
   // FAIL CLOSED on a ruling that hits nothing. A QID-pinned ruling whose QID is not
   // in the pool is either a typo or a stale record, and in both cases it silently
   // does NOTHING — the exact drift the QID pinning exists to prevent (E1.1 pinned
@@ -316,10 +334,20 @@ function build() {
     ["debutYear", [...debutRulingByQid.keys()]],
     ["disputedStatement", [...disputedByQid.keys()]],
     ["citedOverride", [...citedOverrideByQid.keys()]],
+    ["eraRestore", [...restoreByQid.keys()]],
   ] as const) {
     const orphans = qids.filter((q) => !poolQids.has(q));
     if (orphans.length > 0)
       throw new Error(`STOP: ${label} ruling(s) reference QIDs absent from the canonical pool: ${orphans.join(", ")}`);
+  }
+  // E0.6 — a restore is a no-op unless the card was actually dropped. If the canonical
+  // carries a non-null sourceStartYear for a restored QID, the pool would select it
+  // anyway and the restore's eraYear silently overrides a sourced value — the exact
+  // drift the signed layers guard against. Restore ONLY a card the ingest nulled.
+  for (const r of eraRestores.records ?? []) {
+    const p = byQidPool.get(r.qid)!;
+    if (p.facts.sourceStartYear !== null)
+      throw new Error(`STOP: era restore for ${r.name} (${r.qid}) but the pool carries a non-null sourceStartYear (${p.facts.sourceStartYear.value}) — the card is not dropped, so the restore does nothing. Remove it.`);
   }
   // A ruling that agrees with the rule is a no-op pretending to be a decision: it
   // would show as "editorial-ruled" while changing nothing. Catch it rather than
@@ -361,11 +389,15 @@ function build() {
   // ruling may reset it, but a cited override never touches it.
   const startYearOf = (p: Player): number => debutRulingByQid.get(p.qid)?.ruling ?? p.facts.sourceStartYear!.value;
   // eraYear is what era mapping runs on: the cited override's value where one exists,
-  // else sourceStartYear. This is the ONLY year that feeds eraOf, the era floors and
+  // then an era restore (a dropped card re-admitted with an owner-cited year), else
+  // sourceStartYear. This is the ONLY year that feeds eraOf, the era floors and
   // therefore selection — so the overrides are rulings-before-selection, like the rest.
-  const eraYearOf = (p: Player): number => citedOverrideByQid.get(p.qid)?.citedValue ?? startYearOf(p);
+  // The restore MUST precede startYearOf: a restored card has a null sourceStartYear,
+  // which startYearOf would dereference.
+  const eraYearOf = (p: Player): number =>
+    citedOverrideByQid.get(p.qid)?.citedValue ?? restoreByQid.get(p.qid)?.eraYear ?? startYearOf(p);
 
-  const { selectable, drops, duplicates } = pool(players);
+  const { selectable, drops, duplicates } = pool(players, restoreQids);
   const { chosen, quota, swaps } = select(selectable, sitelinks, posOf, eraYearOf);
   if (chosen.length !== SET_SIZE) throw new Error(`STOP: selected ${chosen.length}, expected ${SET_SIZE}`);
 
@@ -438,10 +470,28 @@ function build() {
     // renamed sourceStartYear across canonical, dossier and selector, and redefined.
     sourceStartYearMeaning: {
       definition:
-        "The earliest senior-club membership START per the source's P54 statements " +
-        "(age >= 16, first teams only). It is NOT a competitive-debut claim and is not " +
-        "published as one: the card face carries no year, and this value appears only " +
+        "The earliest senior-club membership START per the source's P54 statements, " +
+        "CLAMPED to the player's 16th year (E0.6): min over first-team starts of " +
+        "max(membershipStart, birthYear + 16). It is NOT a competitive-debut claim and is " +
+        "not published as one: the card face carries no year, and this value appears only " +
         "here as membership-start provenance.",
+      clampAndCuriosities: [
+        "E0.6 — THE AGE-16 CLAMP replaced the age-16 DISCARD. A senior first-team membership",
+        "whose P580 predates the player's 16th year (an academy entry modelled on the",
+        "first-team QID, or a genuine child-prodigy debut) is anchored to born+16, not thrown",
+        "away. The discard let such a statement DELETE the earliest career point and promote a",
+        "later transfer to the anchor, sometimes across an era bucket (Agüero surfaced 2006 /",
+        "Atlético when his Independiente start is 2003). The clamp never deletes a career.",
+        "",
+        "DEFINITIONAL RULING (E0.6 item 4, owner-signed): a sub-16 debut is a CURIOSITY, not",
+        "an anchor. The clamp IS the definition of the anchor — born+16, never the curiosity",
+        "year itself and never a later transfer. Radamel Falcao is the headline case: his",
+        "age-13 Gimnasia de la Plata 1999 statement clamps to born+16 = 2002, so his card",
+        "moves from bucket 3 (real-v3: 2005 River Plate) to bucket 2. This is accepted as the",
+        "pipeline's definition rather than patched per-player. The full set of pool players the",
+        "clamp re-buckets is in BUILD_NOTES; among selected cards: Falcao 3->2, David Luiz 3->2,",
+        "Mark van Bommel 2->1 (Agüero and Busquets are held in place by an override / ruling).",
+      ],
       whyRenamed:
         "E2.1's blind re-verify (drawCardsReal.verify2.json, committed) re-retrieved all " +
         "430 cards live and found the value systematically EARLIER than the competitive " +
@@ -538,25 +588,31 @@ function build() {
     ownerDisputedStatements: disputed,
     // E0.5 — the cited era-year override layer, every signed record in one place.
     ownerCitedOverrides: citedOverrides,
+    // E0.6 — the era-restore layer: cards the erased-career rule nulled, re-admitted
+    // on an owner-cited eraYear. The canonical still emits null; this is the override.
+    ownerEraRestores: eraRestores,
     entries: chosen.map((p, i) => {
       const ruling = rulingByQid.get(p.qid);
       const natRuling = natRulingByQid.get(p.qid);
       const debutRuling = debutRulingByQid.get(p.qid);
       const dispute = disputedByQid.get(p.qid);
       const cited = citedOverrideByQid.get(p.qid);
+      const restore = restoreByQid.get(p.qid);
       return {
         cardId: cards[i].cardId,
         name: p.answerName,
         qid: p.qid,
         fameSitelinks: sitelinks[p.qid] ?? 0,
-        // E0.5 — how this card's eraIndex/eraLabel were derived. eraYear is the cited
-        // override's citedValue where one exists, else the sourced sourceStartYear.
+        // E0.5/E0.6 — how this card's eraIndex/eraLabel were derived. eraYear is the
+        // cited override's citedValue where one exists, then an era restore (E0.6), else
+        // the sourced sourceStartYear.
         era: {
           eraIndex: cards[i].eraIndex,
           eraLabel: cards[i].eraLabel,
           eraYear: entryEraYear[i].eraYear,
-          eraYearSource: cited ? "cited-override" : "sourceStartYear",
+          eraYearSource: cited ? "cited-override" : restore ? "era-restore" : "sourceStartYear",
           citedOverride: cited ?? null,
+          eraRestore: restore ?? null,
         },
         facts: {
           // E0.3 — an overridden nation reproduces the RULE'S OUTPUT verbatim beside
@@ -600,7 +656,25 @@ function build() {
           // membership START, explicitly NOT a debut claim (see sourceStartYearMeaning).
           // A debut ruling (Busquets) may reset the value; a cited override never does —
           // it supplies eraYear (see entry.era), leaving this sourced value intact.
-          sourceStartYear: debutRuling
+          sourceStartYear: restore
+            ? {
+                // E0.6 — the ingest nulled this (erased earliest career); no sourced
+                // value survives. The card is re-admitted on an owner-cited eraYear
+                // (see era.eraRestore), and sourceStartYear stays null: the restore
+                // supplies an ERA, never a sourced membership-start year.
+                value: null,
+                provenance: "editorial-restored",
+                ruledBy: eraRestores.ruledBy ?? null,
+                ruledOn: eraRestores.ruledOn ?? null,
+                eraYear: restore.eraYear,
+                publisher: restore.publisher,
+                url: restore.url,
+                quote: restore.quote,
+                sourcedValue: null,
+                birthYear: p.facts.birthYear?.value ?? null,
+                birthYearSource: p.facts.birthYear?.source ?? null,
+              }
+            : debutRuling
             ? {
                 value: debutRuling.ruling,
                 provenance: "editorial-ruled",

@@ -302,3 +302,25 @@ suggested (not applied) rule/profile amendments.
   rating × fixture-modifier for the upcoming fixture; its C1 push rule
   compares Σ ratings of the 5 cards it would field next round (ratings only,
   per C1's "face value") against kGreedy × next threshold.
+
+## Card-set data decisions (Ticket E0.6)
+
+- **Age-16 CLAMP replaces the age-16 discard (sourceStartYear derivation).** A
+  senior first-team P54 statement starting before the player's 16th year is
+  anchored to `max(membershipStart, birthYear+16)`, not discarded. The discard let
+  an academy-on-first-team P580 delete the earliest career point and promote a later
+  transfer across an era bucket; the clamp never deletes a career. Since E0.5, this
+  value is not a debut and no date is published — the ONLY thing it decides is the
+  era bucket — so the debut-accuracy objection that kept the filter no longer applies.
+  Full clamp re-bucket delta in drawCardsReal.BUILD_NOTES.md (E0.6).
+- **Falcao definitional ruling (owner-signed).** A sub-16 debut is a CURIOSITY, not
+  an anchor; the clamp IS the definition of the anchor (born+16). Falcao's age-13
+  Gimnasia de la Plata 1999 statement clamps to 2002, moving his card from bucket 3
+  to bucket 2. Accepted as the pipeline's definition rather than patched per-player.
+  Recorded also in the dossier (sourceStartYearMeaning.clampAndCuriosities) and
+  ownerCitedOverrides.json (_doc, where he is NOT overridden — the clamp re-buckets him).
+- **Two era restores (owner-signed, ownerEraRestores.json).** De Bruyne (eraYear 2009,
+  Wikipedia-cited) and van der Sar (eraYear 1990, sourced to his own P54 Ajax statement;
+  external corroboration was blocked per verify2 and NOT fabricated) are re-admitted from
+  the erased-earliest-career fail-closed. The canonical still emits null; the restore is
+  an editorial override that never edits a fact.

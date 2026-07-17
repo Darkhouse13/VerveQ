@@ -263,6 +263,7 @@ app/convex/data/*
 !app/convex/data/ownerDebutRulings.json
 !app/convex/data/ownerDisputedStatements.json
 !app/convex/data/ownerCitedOverrides.json
+!app/convex/data/ownerEraRestores.json
 !app/convex/data/drawCardsReal.verify2.json
 !app/convex/data/clubAliases.json
 !app/convex/data/playerAdditions.json

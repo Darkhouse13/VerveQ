@@ -970,3 +970,79 @@ ruling (is a debut-at-13 the era anchor, or not?). Agüero — the one override 
 corrected debut (2003) files him one era EARLIER than fame suggests, a property of the +5
 peak heuristic, not the override. And the standing owed items from §15 (F2 120-card
 review, bucket 0/1 boundary).
+
+## 17. E0.6 — age-16 CLAMP, two restores, real-v4
+
+**The change.** `sourceStartYear` derivation switched from the age-16 DISCARD to an
+age-16 CLAMP: `min` over senior first-team starts of `max(membershipStart, birthYear+16)`.
+A statement starting before the player's 16th year is now anchored to born+16 instead of
+thrown away. The two differ only when a player's EARLIEST senior start is sub-16: the
+discard skipped it and surfaced the next membership (often a later transfer), the clamp
+floors it to born+16. Since E0.5 this field is not a debut and publishes no date, so the
+old debut-accuracy objection to the clamp is moot; what the discard cost was letting an
+academy P580 delete the earliest career point and cross an era bucket (Agüero).
+
+**Clamp delta.** 52 of 1314 canonical `sourceStartYear` values shift (all downward — the
+clamp reaches an earlier, previously-discarded statement). 45 shift WITHIN a bucket and
+change nothing a player sees (e.g. Piqué 2004→2003, ter Stegen 2011→2008, Xabi Alonso
+1999→1997 — the three E0.2 named as "regressions", all same-bucket). 7 cross an era
+bucket:
+
+| player | qid | old ssy → new | bucket | in set? | net card bucket |
+|---|---|---|---|---|---|
+| Radamel Falcao | Q138172 | 2005 → 2002 | 3 → 2 | yes | **3 → 2** (definitional ruling) |
+| David Luiz | Q193706 | 2006 → 2003 | 3 → 2 | yes | **3 → 2** |
+| Mark van Bommel | Q151853 | 1999 → 1993 | 2 → 1 | yes | **2 → 1** |
+| Sergio Agüero | Q119562 | 2006 → 2004 | 3 → 2 | yes | 2 → 2 (override→acceptedNoise; unchanged) |
+| Sergio Busquets | Q49704 | 2023 → 2004 | 3 → 2 | yes | 3 → 3 (debut ruling 2008 holds it) |
+| Kakha Kaladze | Q192031 | 1998 → 1994 | 2 → 1 | no | — (pool only) |
+| Javi Martínez | Q201752 | 2006 → 2004 | 3 → 2 | no | — (pool only) |
+
+So among SELECTED cards the clamp re-buckets three (Falcao, David Luiz, van Bommel) and
+holds two in place by an override/ruling. These three are late-bloomers whose earliest
+senior P54 statement is a sub-16 academy/prodigy entry; the clamp files them one era
+earlier by construction. This is the owner's definition (item 4), stated in the dossier's
+`sourceStartYearMeaning.clampAndCuriosities` and in DECISIONS.md, not patched per-player.
+
+**Agüero — override retired to acceptedNoise.** His E0.5 override (bucketMove 3→2, cited
+2003) was load-bearing only because the discard surfaced 2006. Under the clamp the
+Independiente 2003 statement anchors to born+16=2004, same bucket (2) as the cited 2003,
+so the correction crosses nothing. Moved to `ownerCitedOverrides.acceptedNoise` with the
+citation preserved for audit; card bucket unchanged (2) by construction.
+
+**Busquets — rule output 2023→2004, ruling now load-bearing.** The clamp surfaces his FC
+Barcelona P580=2000 as 2004 (was discarded to Inter Miami 2023). His signed debut ruling
+(2008) stands; but 2004 (peak 2009) is bucket 2 while the ruled 2008 (peak 2013) is bucket
+3, so the ruling — previously a no-op on era — now holds the card in bucket 3. `ruleOutput`
+and `eraImpact` amended in ownerDebutRulings.json.
+
+**Two restores (ownerEraRestores.json, signed).** The erased-earliest-career rule
+(unchanged) still nulls both:
+- **Kevin De Bruyne** (Q357984): a Romanian commune (Q12725066, 1995) and a pharmacy
+  business (Q115689400, 2000) predate his Genk start (2008). Restored eraYear **2009**,
+  his first-team debut, verified live at en.wikipedia.org/wiki/Kevin_De_Bruyne (quote:
+  "De Bruyne made his first team debut for Genk in a 3-0 defeat at Charleroi on 9 May
+  2009"). Genk membership start is 2008; both 2008 and 2009 are bucket 3. MID, bucket 3.
+- **Edwin van der Sar** (Q482955): his Ajax 1990-1999 membership is filed under Q1492 =
+  Barcelona the CITY, predating the surviving Juventus 1999. Restored eraYear **1990**.
+  CITATION HONESTY: verify2's RED record carries NO resolvable external citation — its own
+  words are "A non-Wikidata confirmation of the Ajax 1990 debut was attempted but blocked
+  (Britannica/Ajax/ManUtd/UEFA/ESPN/worldfootball all 403 or 404)". So 1990 is sourced to
+  his OWN Wikidata P54 Ajax statement (the one the rule refused for wrong TARGET, not wrong
+  START), and a plausible external URL was deliberately NOT fabricated. GK, bucket 1. Ajax
+  chip stays absent (unsourceable club QID); chips are Juventus/Fulham/Man Utd.
+
+**Rebuild real-v4.** Rulings-before-selection, restores re-admitted to the pool. Position
+quota exact (GK43/DEF129/MID129/ATT129, ±0.0pp, 10/30/30/30). Era 40/77/134/179 (all ≥40;
+bucket 0 still exactly at the floor). Composition **−2 / +2** vs real-v3: **De Bruyne (MID)
++ van der Sar (GK) IN; Çalhanoğlu (MID) + Dida (GK) OUT** — the restores re-enter high in
+fame order (fameRank 49, 109), pushing the lowest-fame MID/GK off the quota edge, exactly
+as E0.5 predicted when it dropped them. 18 era-0 floor swaps (same mechanism as real-v3).
+Guards green offline (cp-assert, selector --check, era contract 7 tests), full suite
+909/909, fresh-worktree reproduction byte-exact.
+
+**Owed to owner (E0.6).** The clamp files three selected late-bloomers (Falcao, David
+Luiz, van Bommel) one era earlier than fame places them — accepted as definitional, but
+the owner may want a per-player era override layer if that reads wrong on the card. van der
+Sar's 1990 has no external corroboration (blocked); a resolvable citation remains welcome.
+Standing items from §15 (F2 120-card review, bucket 0/1 boundary) still open.

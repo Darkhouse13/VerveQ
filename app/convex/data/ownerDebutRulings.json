@@ -11,11 +11,12 @@
     "(Barcelona C, Barcelona Atlètic) are excluded as reserve sides, and the only senior",
     "first team left standing is Inter Miami — so the rule emits 2023.",
     "",
-    "No rule reading only P54 can tell that apart from a genuine 2000 debut, and E0.2",
-    "measured the alternative readings rather than guessing: reading the clamped spells",
-    "instead would put him at 2004 (still wrong) at the cost of regressing Piqué, ter Stegen",
-    "and Xabi Alonso. Inventing a threshold to catch him would be an opinion dressed as a",
-    "rule. So it goes to a signed ruling instead.",
+    "E0.6 UPDATE. The pipeline now DOES read the clamped spell (age-16 clamp replaced the",
+    "discard), so the rule emits 2004, not 2023 — the '2004 (still wrong)' reading E0.2",
+    "measured is now the pipeline's own output. It is closer (a bucket off, not a career",
+    "off) but still not his debut, so the signed ruling stands. What changed materially is",
+    "the era impact: 2004 (peak 2009) is bucket 2 while the ruled 2008 (peak 2013) is bucket",
+    "3, so this ruling is now what holds the card in the 2010s bucket rather than a no-op.",
     "",
     "THE SIGNED PATTERN (identical to ownerPositionRulings.json). A ruling NEVER edits a",
     "fact: playersSourced.json still emits 2023 and cp-assert still proves it reproduces",
@@ -23,9 +24,10 @@
     "'editorial-ruled' with the rule's output reproduced verbatim beside it.",
     "",
     "Rulings are applied to the POOL before selection re-runs. debutYear DOES enter the",
-    "selection criteria via eraIndex (peakYear := debutYear + 5) and the >=40-per-bucket era",
-    "floor, so a debut ruling CAN move cards in and out of the set. This one does not:",
-    "peakYear 2013 and peakYear 2028 both land in bucket 3."
+    "selection criteria via eraIndex (peakYear := eraYear + 5) and the >=40-per-bucket era",
+    "floor, so a debut ruling CAN move cards in and out of the set. Under E0.6 this one now",
+    "changes the card's bucket relative to the rule: ruled peakYear 2013 (bucket 3) vs rule",
+    "output peakYear 2009 (bucket 2). See eraImpact."
   ],
   "ruledBy": "owner",
   "ruledOn": "2026-07-17",
@@ -33,8 +35,8 @@
     {
       "qid": "Q49704",
       "name": "Sergio Busquets",
-      "ruleOutput": 2023,
-      "ruleBasis": "P54 statements surviving the rule: Inter Miami CF 2023-2025 only. FC Barcelona (P580=2000, age 12) discarded by the age-16 filter; UFB Jàbac i Terrassa (2003, age 15) likewise; FC Barcelona C and FC Barcelona Atlètic excluded as reserve sides; UE Lleida (ends 2003, age 15) dropped as a pre-16 stint.",
+      "ruleOutput": 2004,
+      "ruleBasis": "E0.6 CLAMP output. FC Barcelona is a single P54 statement, P580=2000 (age 12); under E0.6 it is CLAMPED to born+16 = 2004 rather than discarded, and 2004 is earlier than the only other surviving senior first team (Inter Miami CF 2023), so the rule now emits 2004 (was 2023 under E0.5's age-16 discard, when only Inter Miami survived). Still wrong — 2004 is his academy age, not a debut — but it is now off by a bucket, not by a career. FC Barcelona C and FC Barcelona Atlètic remain excluded as reserve sides; UFB Jàbac i Terrassa and UE Lleida are pre-16 youth stints.",
       "ruling": 2008,
       "independentRef": [
         {
@@ -49,8 +51,8 @@
         }
       ],
       "independentRefStatus": "RESOLVED (1 ref). E0.3 recorded this as OWED because no ref was supplied. E0.4 supplied two descriptors; the fcbarcelona.com piece was identified by its id (860614), fetched, verified to resolve and verified to state the debut date, and is recorded above. The second intended ref — a uefa.com appearances piece — carries no URL, id or slug, and NO URL was supplied when asked. It is therefore NOT recorded: a citation nobody can resolve is not a citation, and guessing a plausible uefa.com URL would be exactly the fabrication this pattern exists to prevent. The ruled value is independently sourced by the ref above; a second corroborating ref remains welcome but is not required for the value to stand.",
-      "note": "His FC Barcelona first-team debut season. E1.1's BUILD_NOTES already recorded 2008 as the commonly-cited value while shipping 2006 ('Busquets 2006 (Barcelona C) vs 2008'), and E2's F4 lists him in the same reserve-set class as Pedro 2005-vs-2008 and Messi 2003-vs-2004. Ruled by the owner on 2026-07-17 against a rule output of 2023, which is not a plausible debut for a player who won the Champions League in 2009.",
-      "eraImpact": "none — peakYear 2013 (ruled) and 2028 (rule output) both fall in bucket 3, '2010s-20s'. The card's eraIndex is unchanged by this ruling."
+      "note": "His FC Barcelona first-team debut season. E1.1's BUILD_NOTES already recorded 2008 as the commonly-cited value while shipping 2006 ('Busquets 2006 (Barcelona C) vs 2008'), and E2's F4 lists him in the same reserve-set class as Pedro 2005-vs-2008 and Messi 2003-vs-2004. Ruled by the owner on 2026-07-17; the rule output was 2023 under E0.5 and is now 2004 under the E0.6 clamp — neither is a plausible debut for a player who won the Champions League in 2009.",
+      "eraImpact": "E0.6 — NOW LOAD-BEARING (was 'none' under E0.5). The clamp moved the rule output from 2023 (peak 2028, bucket 3) to 2004 (peak 2009, bucket 2), so without this ruling the card would file into bucket 2 ('2000s'). The ruled value 2008 (peak 2013) keeps it in bucket 3 ('2010s-20s'), where it belongs. The card's eraIndex (3) is unchanged from real-v3; the ruling is what holds it there against the clamp."
     }
   ]
 }

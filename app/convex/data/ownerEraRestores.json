@@ -1,0 +1,57 @@
+{
+  "_doc": [
+    "Owner ERA RESTORES for THE DRAW real card set (Ticket E0.6).",
+    "",
+    "WHAT THIS LAYER IS. The ingest's erased-earliest-career rule (E0.5) nulls",
+    "sourceStartYear when a player's true first career point is filed under a MALFORMED",
+    "non-club entity (a city, a commune, a business) whose start predates the earliest",
+    "surviving senior membership. That fail-closed is correct: no rule reading only P54",
+    "can recover the real start from a statement pointing at the wrong entity, so the",
+    "card fails out of the pool rather than ship a mis-bucketed year. But it drops two",
+    "icons whose era every fan knows. This signed layer re-admits exactly those two, on",
+    "an owner-cited eraYear, WITHOUT editing the canonical: playersSourced.json still",
+    "carries sourceStartYear null, cp-assert still proves it reproduces from the rules,",
+    "and the restore lives here and in the dossier as an editorial override — the same",
+    "discipline as a position or cited-era ruling. It is the ONLY thing that admits a",
+    "null-sourceStartYear card into the pool (see buildDrawCardSet.ts pool() and the",
+    "no-op guard: a restore whose card is NOT dropped is a STOP condition).",
+    "",
+    "KEY IS qid. cardId is positional (real_<fameRank>) and shifts on every rebuild.",
+    "",
+    "eraYear only. A restore supplies the ERA the card is bucketed into; it never claims",
+    "a sourced membership-start year (sourceStartYear stays null) and prints no date on",
+    "the card face. Club chips, position and nation come from the SURVIVING P54 — the",
+    "mis-filed early membership (van der Sar's Ajax under Q1492 the city) stays absent,",
+    "because it cannot be sourced, and no chip is invented to fill the gap."
+  ],
+  "ruledBy": "owner",
+  "ruledOn": "2026-07-17",
+  "records": [
+    {
+      "qid": "Q357984",
+      "name": "Kevin De Bruyne",
+      "field": "eraYear",
+      "eraYear": 2009,
+      "publisher": "Wikipedia (English)",
+      "url": "https://en.wikipedia.org/wiki/Kevin_De_Bruyne",
+      "quote": "De Bruyne made his first team debut for Genk in a 3-0 defeat at Charleroi on 9 May 2009.",
+      "signedBy": "owner",
+      "erasedContext": "sourceStartYear nulled by the erased-earliest-career rule: live Q357984 P54 carries a commune of Romania (Q12725066, Partestii de Jos, start 1995) and a pharmacy business (Q115689400, Farmacie Comunali Riunite, start 2000) — both malformed non-club targets whose starts predate his earliest surviving senior membership (K.R.C. Genk, P580=2008). The card was right by luck under earlier builds and 'right by luck' is not sourceable, so it failed the pool.",
+      "survivingSeniorStart": 2008,
+      "note": "eraYear 2009 is his FIRST-TEAM debut, verified live at the Wikipedia URL above (fetched 2026-07-17, quote reproduced verbatim). His Genk MEMBERSHIP start is 2008 (P580) and both 2008 and 2009 map to bucket 3 (peak 2013/2014, '2010s-20s'), so the bucket is the same either way; 2009 is recorded because it is the sourced debut the citation actually supports. Club chips (Genk, Werder Bremen, Wolfsburg) and position (MID) / nation (Belgium) come from the surviving P54, unchanged."
+    },
+    {
+      "qid": "Q482955",
+      "name": "Edwin van der Sar",
+      "field": "eraYear",
+      "eraYear": 1990,
+      "publisher": "Wikidata (Q482955, statement P54 -> Q1492), as recorded in the verify2 RED",
+      "url": "https://www.wikidata.org/wiki/Q482955#P54",
+      "quote": "Live Q482955 P54 carries a 1990-1999 membership whose target is Q1492 = \"Barcelona, city in Catalonia, Spain\" - a CITY, not a club. The builder correctly refused the non-club entity, but the consequence is that the 1990-1999 span (his Ajax years) vanished ... and the earliest surviving club statement (Juventus, 1999) became the debut. 1999 is his Juventus transfer, not his debut.",
+      "signedBy": "owner",
+      "erasedContext": "sourceStartYear nulled by the erased-earliest-career rule: his 1990-1999 Ajax membership is the single malformed statement (filed under Q1492 = Barcelona the CITY), and 1990 predates the earliest surviving senior membership (Juventus, P580=1999). Q1492 is not a football club, so the chip is dropped too — Ajax appears nowhere on the card. This is honest: the source's own statement points at the wrong entity, and no rule can recover Ajax from it.",
+      "survivingSeniorStart": 1999,
+      "citationHonesty": "NOT a resolvable external publisher+quote+url. The ticket asked for the citation to be 'lifted verbatim from his verify2.json RED record'; that record carries NO external corroboration. Its own words: 'A non-Wikidata confirmation of the Ajax 1990 debut was attempted but blocked (Britannica/Ajax/ManUtd/UEFA/ESPN/worldfootball all 403 or 404).' So eraYear 1990 is sourced to van der Sar's OWN Wikidata P54 Ajax statement (start 1990) — the same statement the erased-career rule refused for having the wrong TARGET, not the wrong START — and the quote above is the verify2 RED finding verbatim. A plausible external URL was deliberately NOT fabricated (the Busquets-ref discipline: a citation nobody can resolve is not a citation). 1990 -> peak 1995 -> bucket 1 ('1980s-90s'), one bucket earlier than the 1999-Juventus artifact that shipped in real-v3 (bucket 2)."
+    }
+  ]
+}

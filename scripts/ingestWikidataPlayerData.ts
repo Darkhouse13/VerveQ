@@ -1658,7 +1658,7 @@ function cpEmit(write = true): { players: SourcedPlayer[]; gate: GateResult[] } 
       sourceQuality: q("green"),
     }));
 
-    // ── debutYear: earliest senior-club P580 at or after the player's 16th year ──
+    // ── sourceStartYear: earliest senior-club P580, clamped to the player's 16th year ──
     // Wikidata carries placeholder start times: Roberto Carlos (Q429039) has a real
     // P580 of "0001-01-01T00:00:00Z", which min()'d straight through to debutYear=1.
     // Discard values outside the plausible range rather than propagate a sentinel as
@@ -1675,38 +1675,58 @@ function cpEmit(write = true): { players: SourcedPlayer[]; gate: GateResult[] } 
     // E0.2 — reserve/B sides are now EXCLUDED (cpCountsForDebut === cpIsSeniorClub):
     // debutYear is the FIRST-TEAM debut. See cpCountsForDebut for the measurement.
     //
-    // E0.2 — WHY THIS FILTERS STATEMENTS RATHER THAN READING `clubs` SPELLS.
-    // The ticket says debutYear reads spells. Taken literally that means min() over
-    // the emitted spell starts, which are CLAMPED to born+16 — so a statement that
-    // starts in the academy still contributes born+16 instead of being discarded.
-    // Both readings were measured offline against the committed cache:
+    // E0.6 — CLAMP, NOT DISCARD. sourceStartYear = min over senior first-team starts of
+    // max(start, born+16). This REPLACES the E0.2/E0.5 age-16 FILTER (which discarded a
+    // sub-16 statement whole). The two differ only when a player's EARLIEST senior start
+    // is sub-16: the filter skipped it and surfaced the next membership at/after 16 —
+    // often a later transfer — while the clamp anchors that earliest statement to born+16.
+    // So `min(clamped)` = max(earliestSeniorStart, born+16): the earliest career point,
+    // floored to age 16, never deleted.
     //
-    //   reading            debuts changed    matched a known senior debut (16 spot checks)
-    //   filter (this one)  85                13/16
-    //   clamped spells     123               11/16
+    // WHY THE FILTER'S OBJECTION NO LONGER HOLDS. E0.2 kept the filter because the clamped
+    // reading "regresses" debut ACCURACY (Piqué 2004->2003, ter Stegen 2011->2008, Xabi
+    // Alonso 1999->1997 — an academy P580 on the first-team QID floored to born+16). But
+    // E0.5 REDEFINED this field: it is not a debut and no date is published. The only
+    // thing it decides is the ERA BUCKET (eraYear -> peakYear := eraYear+5 -> eraIndex),
+    // and none of those three cross a bucket (2004/2003 both era2, 2011/2008 both era3,
+    // 1999/1997 both era2). What the discard DID cost was worse: it let an early academy
+    // statement delete the earliest career point and promote a later transfer across a
+    // bucket (Agüero surfaced 2006/Atlético, era3, when his Independiente start is 2003).
+    // The clamp fixes that class at the rule and removes the Busquets special-case: his
+    // FC Barcelona P580=2000 now clamps to born+16=2004 (was discarded to Inter Miami
+    // 2023). 2004 is still his academy age, not a debut, so his signed debut ruling (2008)
+    // stands — but the rule output is now off by a bucket, not by a career.
     //
-    // The clamped reading regresses Piqué (2004->2003), ter Stegen (2011->2008) and
-    // Xabi Alonso (1999->1997) — in every case an academy-entry P580 on the FIRST-TEAM
-    // statement, floored to born+16, undercutting the real debut. So the filter stays,
-    // and with it the definition a verifier can check without judgement: the earliest
-    // P54 start at which the player was aged >= 16, first teams only.
+    // The COST is stated plainly and reported in full (buildDrawCardSet BUILD_NOTES §E0.6
+    // clamp delta): the clamp files a late-blooming player whose earliest senior statement
+    // is a sub-16 academy entry one era EARLIER. Seven pool players cross a bucket (Falcao,
+    // David Luiz, van Bommel, Agüero, Busquets, Kaladze, Javi Martínez); Agüero and
+    // Busquets are held by an override/ruling, the rest move. This is the definition the
+    // owner chose (E0.6 item 4): a sub-16 debut is a curiosity, and born+16 — not the
+    // curiosity year, and not a later transfer — is the anchor.
     //
-    // The cost is Busquets, and it is declared rather than papered over: his FC
-    // Barcelona membership is ONE statement, P580=2000 (age 12) to 2023, so the filter
-    // discards it whole and only Inter Miami survives -> 2023. He is the sole shift
-    // beyond +4 across 1302 players and is listed for an owner ruling. Wikidata models
-    // his academy entry on the first-team QID; no rule reading only P54 can tell that
-    // apart from a genuine 2000 debut, and inventing a threshold to catch him would be
-    // an opinion dressed as a rule.
+    // The placeholder-year guard (Roberto Carlos P580=year 0001) and the birthYear-null
+    // amber path (no born => no floor to clamp to => as-sourced min, flagged amber) are
+    // unchanged from E1.1.
     const starts = raw.memberships
       .filter((m) => {
         const e = clubDict[m.clubQid];
         if (!e || !cpCountsForDebut(e)) return false;
-        const s = startOf(m);
-        if (s === null) return false;
-        return seniorFrom === null || s >= seniorFrom;
+        return startOf(m) !== null;
       })
-      .map((m) => startOf(m) as number);
+      // E0.6 — CLAMP, not discard. A senior first-team membership whose P580 predates
+      // the player's 16th year is anchored to born+16 rather than thrown away. The
+      // clamp is `max(membershipStart, born+16)`, so `Math.min` over the clamped starts
+      // is `max(earliestSeniorStart, born+16)` — the earliest senior career point,
+      // floored to age 16. This replaces the age-16 FILTER (see the block above): the
+      // filter DISCARDED a sub-16 statement whole, which let an academy-on-first-team
+      // P580 delete the earliest career point and promote a later transfer to the
+      // anchor (Agüero surfaced 2006/Atlético, his real Independiente start 2003 gone).
+      // Careers are never deleted for an early statement now; only clamped.
+      .map((m) => {
+        const s = startOf(m) as number;
+        return seniorFrom === null ? s : Math.max(s, seniorFrom);
+      });
     // E0.5 — RENAMED debutYear -> sourceStartYear. This is the earliest senior-club
     // P54 membership START (age >= 16, first teams only) — NOT a competitive-debut
     // claim. E2.1's blind verify confirmed the two differ systematically: ~25% of
