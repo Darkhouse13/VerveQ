@@ -8,6 +8,9 @@
  * v1.1 additions (Ticket G): `EngineConfig.hints` (optional — omitting it
  * reproduces v1.0 bit-for-bit) and the formHint module (hints.ts). Hints are
  * design-public PRE-round; the realized form stays post-resolution only.
+ * Ticket G2 addition (additive under v1.1): `EngineConfig.clearance` — the
+ * coarse SAFE/TIGHT/LONGSHOT clearance-signal bucket cutoffs (clearance.ts),
+ * computed from the same design-public inputs as the F3 band.
  *
  * Design invariants:
  * - P0-RUNTIME (CONTRACT INVARIANT, Ticket 0.4): production serving MUST
@@ -131,6 +134,21 @@ export interface ThresholdConfig {
 }
 
 /**
+ * Coarse clearance-signal buckets (Ticket G2 — ADDITIVE). SAFE reads "band
+ * centre ≥ safeRatio × threshold", LONGSHOT "< longshotRatio × threshold",
+ * TIGHT in between. One definition shared by UI and bots — clearance.ts.
+ */
+export type ClearanceSignal = "SAFE" | "TIGHT" | "LONGSHOT";
+
+/** Bucket cutoffs, as multiples of the fixture threshold. safeRatio ≥ longshotRatio. */
+export interface ClearanceConfig {
+  /** Band centre at or above safeRatio × threshold reads SAFE. */
+  safeRatio: number;
+  /** Band centre below longshotRatio × threshold reads LONGSHOT. */
+  longshotRatio: number;
+}
+
+/**
  * Form-hint knobs (Ticket G, engine v1.1 — ADDITIVE; absent ⇒ no hints, the
  * exact v1.0 game). See hints.ts for the derivation and the sanitization
  * contract.
@@ -176,6 +194,12 @@ export interface EngineConfig {
    * the config plays exactly as under v1.0.
    */
   hints?: HintConfig;
+  /**
+   * Ticket G2 (ADDITIVE): coarse clearance-signal bucket cutoffs
+   * (see clearance.ts). Omitted ⇒ no signal (consumers fall back to
+   * DEFAULT_CLEARANCE for display-only use).
+   */
+  clearance?: ClearanceConfig;
 }
 
 /**

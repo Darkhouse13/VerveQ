@@ -10,3 +10,5 @@ export * from "./defaults";
 export * from "./sliceDeck";
 // Ticket G (owner-sanctioned additive module, v1.1): pre-round form hints.
 export * from "./hints";
+// Ticket G2 (owner-sanctioned additive module): coarse clearance signal.
+export * from "./clearance";

@@ -29,6 +29,9 @@
 
 import {
   applyChoice,
+  bandMidFor,
+  clearanceSignal,
+  DEFAULT_CLEARANCE,
   fixtureMultFor,
   formHint,
   hintPosteriorForm,
@@ -258,6 +261,102 @@ export function readerBenchFor(
  * 1/3 (uninformative), where the posterior equals the prior and the reader
  * plays exactly like assisted.
  */
+/**
+ * Ticket G2 — the coarse pair. Both draft chain-first (the shipped human
+ * follows the synergy meters) but read the game COARSELY: bench by raw face
+ * (rating × fixture modifier — no synergy accounting, no band), and take
+ * bank/push from the three-bucket clearance signal (clearance.ts), never the
+ * exact band value.
+ *
+ * - coarseAssisted: benches the lowest face; pushes ONLY on SAFE. The
+ *   unassisted player banks tight spots — they cannot tell a 55% push from
+ *   an 80% one, so they don't take either.
+ * - coarseReader: the same player reading hints — bench by posterior face
+ *   (rating × mult × E[form | hint]) and the signal recomputed on the
+ *   posterior band centre; pushes on anything NOT posterior-LONGSHOT. Hints
+ *   turn a tight spot into a read: cold TIGHTs demote to LONGSHOT (bank),
+ *   hot LONGSHOTs promote to TIGHT (push). Both bucket cutoffs are live
+ *   knobs: safeRatio governs the unassisted push, longshotRatio the
+ *   informed one.
+ */
+export function coarseBenchFor(ctx: BoardContext, squad: Card[], fixtureIndex: number): number {
+  // Identical arithmetic to greedyBenchFor — the coarse player's bench IS the
+  // face bench; kept as its own named policy so the two can diverge later.
+  return greedyBenchFor(ctx, squad, fixtureIndex);
+}
+
+export function runCoarseAssisted(ctx: BoardContext): RunResult {
+  const clearance = ctx.config.clearance ?? DEFAULT_CLEARANCE;
+  const bench: BenchFn = (c, state, squad) => coarseBenchFor(c, squad, state.fixtureIndex);
+  const decide: DecideFn = (c, state, squad) => {
+    const next = state.fixtureIndex + 1;
+    const b = coarseBenchFor(c, squad, next);
+    const fielded = squad.filter((_, j) => j !== b);
+    const fixture = c.board.fixtures[next];
+    const signal = clearanceSignal(bandMidFor(fielded, fixture, c.config), c.thresholds[next], clearance);
+    return signal === "SAFE" ? "push" : "bank";
+  };
+  return runScriptedBot(ctx, pickChainFirst, bench, decide);
+}
+
+/** Coarse reader's bench: lowest posterior face (rating × mult × E[form|hint]). */
+export function coarseReaderBenchFor(
+  ctx: BoardContext,
+  squad: Card[],
+  fixtureIndex: number,
+  hintReliability: number,
+): number {
+  const fixture = ctx.board.fixtures[fixtureIndex];
+  let worst = 0;
+  let worstFace = Infinity;
+  for (let i = 0; i < squad.length; i++) {
+    const hint = formHint(ctx.board.seed, squad[i].id, fixture.index, hintReliability);
+    const postForm = hintPosteriorForm(hint, hintReliability, ctx.config.formSpread);
+    const face = squad[i].rating * fixtureMultFor(squad[i], fixture) * postForm;
+    if (face < worstFace) {
+      worstFace = face;
+      worst = i;
+    }
+  }
+  return worst;
+}
+
+/** Posterior band centre: Σ(rating × mult × E[form|hint]) × synergyMult. */
+export function coarseReaderMidFor(
+  boardSeed: string,
+  fielded: Card[],
+  fixture: Fixture,
+  config: EngineConfig,
+  hintReliability: number,
+): number {
+  let sum = 0;
+  for (const card of fielded) {
+    const hint = formHint(boardSeed, card.id, fixture.index, hintReliability);
+    const postForm = hintPosteriorForm(hint, hintReliability, config.formSpread);
+    sum += card.rating * fixtureMultFor(card, fixture) * postForm;
+  }
+  let syn = 1;
+  for (const s of squadSynergies(fielded, config)) syn *= s.mult;
+  return sum * syn;
+}
+
+export function runCoarseReader(ctx: BoardContext): RunResult {
+  const clearance = ctx.config.clearance ?? DEFAULT_CLEARANCE;
+  const r = ctx.config.hints?.hintReliability ?? 1 / 3;
+  const bench: BenchFn = (c, state, squad) =>
+    coarseReaderBenchFor(c, squad, state.fixtureIndex, r);
+  const decide: DecideFn = (c, state, squad) => {
+    const next = state.fixtureIndex + 1;
+    const b = coarseReaderBenchFor(c, squad, next, r);
+    const fielded = squad.filter((_, j) => j !== b);
+    const fixture = c.board.fixtures[next];
+    const mid = coarseReaderMidFor(c.board.seed, fielded, fixture, c.config, r);
+    const signal = clearanceSignal(mid, c.thresholds[next], clearance);
+    return signal === "LONGSHOT" ? "bank" : "push";
+  };
+  return runScriptedBot(ctx, pickChainFirst, bench, decide);
+}
+
 export function runReader(ctx: BoardContext, kAssisted = DEFAULT_K_ASSISTED): RunResult {
   const r = ctx.config.hints?.hintReliability ?? 1 / 3;
   const gate = assistedPushGate(ctx.config.formSpread, kAssisted);

@@ -57,6 +57,8 @@ import {
   greedyBenchFor,
   runAssisted,
   runChaser,
+  runCoarseAssisted,
+  runCoarseReader,
   runGreedy,
   runRandom,
   runReader,
@@ -114,6 +116,13 @@ interface BoardData {
   hintTrue: Int8Array;
   hintV1: Float64Array;
   hintV2: Float64Array;
+  /**
+   * Ticket G2 — the coarse bench plan (lowest raw face, no synergy): realized
+   * fielded score, band centre, and MC weight vectors per round.
+   */
+  coarseScores: number[];
+  coarseMids: number[];
+  coarseW: Float64Array;
 }
 
 /** Reader analytic per-board data for one hintReliability: realized fielded
@@ -371,6 +380,36 @@ export function precomputeBoard(
     mids.push(best);
   }
 
+  // Ticket G2 — coarse bench plan: bench the lowest raw face (strict <,
+  // ascending — mirrors coarseBenchFor/greedyBenchFor), then the realized
+  // score, band centre and MC weights of that fielded five.
+  const coarseScores: number[] = [];
+  const coarseMids: number[] = [];
+  const coarseW = new Float64Array(R * (rows - 1));
+  for (let r = 0; r < R; r++) {
+    let worst = 0;
+    let worstFace = Infinity;
+    for (let i = 0; i < rows; i++) {
+      const face = squadW[r * rows + i];
+      if (face < worstFace) {
+        worstFace = face;
+        worst = i;
+      }
+    }
+    let realized = 0;
+    let midSum = 0;
+    let fi = 0;
+    for (let j = 0; j < rows; j++) {
+      if (j === worst) continue;
+      realized += squadC[r * rows + j];
+      midSum += squadW[r * rows + j];
+      coarseW[r * (rows - 1) + fi] = squadW[r * rows + j] * squadSyn[worst];
+      fi++;
+    }
+    coarseScores.push(realized * squadSyn[worst]);
+    coarseMids.push(midSum * squadSyn[worst]);
+  }
+
   return {
     data: {
       greedy,
@@ -388,6 +427,9 @@ export function precomputeBoard(
       hintTrue,
       hintV1,
       hintV2,
+      coarseScores,
+      coarseMids,
+      coarseW,
     },
     ctx,
   };
@@ -401,6 +443,54 @@ function precompute(config: EngineConfig, seedBase: string, boards: number): Boa
     data.push(precomputeBoard(config, formless, cardSets[i % CARD_SETS], seedBase, i).data);
   }
   return data;
+}
+
+/**
+ * Ticket G2 — coarse reader analytic data for one hintReliability: bench by
+ * posterior face (argmin rating × mult × E[form|hint], strict <, ascending —
+ * mirrors coarseReaderBenchFor), realized score and posterior band centre per
+ * round, float-identical to the real bot.
+ */
+export function coarseReaderDataFor(
+  bd: BoardData,
+  config: EngineConfig,
+  hintReliability: number,
+): ReaderData {
+  const R = config.fixtureCount;
+  const rows = config.rows;
+  const s = config.formSpread;
+  const scores: number[] = [];
+  const mids: number[] = [];
+  for (let r = 0; r < R; r++) {
+    const post: number[] = [];
+    for (let i = 0; i < rows; i++) {
+      const k = r * rows + i;
+      const hintIdx =
+        bd.hintV1[k] < hintReliability
+          ? bd.hintTrue[k]
+          : (bd.hintTrue[k] + (bd.hintV2[k] < 0.5 ? 1 : 2)) % 3;
+      post.push(hintPosteriorForm(FORM_HINT_BANDS[hintIdx], hintReliability, s));
+    }
+    let worst = 0;
+    let worstFace = Infinity;
+    for (let i = 0; i < rows; i++) {
+      const face = bd.squadW[r * rows + i] * post[i];
+      if (face < worstFace) {
+        worstFace = face;
+        worst = i;
+      }
+    }
+    let realized = 0;
+    let midSum = 0;
+    for (let j = 0; j < rows; j++) {
+      if (j === worst) continue;
+      realized += bd.squadC[r * rows + j];
+      midSum += bd.squadW[r * rows + j] * post[j];
+    }
+    scores.push(realized * bd.squadSyn[worst]);
+    mids.push(midSum * bd.squadSyn[worst]);
+  }
+  return { scores, mids };
 }
 
 /** Analytic run outcome: rounds cleared, fail margin (NaN if no bust), final
@@ -477,6 +567,33 @@ export function bandRounds(
   return { rounds: t.length, failMargin: NaN, fullClear: true, final: cum * bonus };
 }
 
+/**
+ * Ticket G2 — the coarse signal policy: bust on a failed round, bank when
+ * the NEXT round's (posterior) band centre reads below pushRatio × threshold
+ * (coarseAssisted: pushRatio = safeRatio, pushes only SAFE; coarseReader:
+ * pushRatio = longshotRatio, pushes anything not LONGSHOT). The comparison
+ * is mid < ratio × t — the exact clearanceSignal arithmetic.
+ */
+export function signalRounds(
+  scores: number[],
+  mids: number[],
+  t: number[],
+  bustKeep: number,
+  bonus: number,
+  pushRatio: number,
+): BotOutcome {
+  let cum = 0;
+  for (let r = 0; r < t.length; r++) {
+    if (scores[r] < t[r])
+      return { rounds: r, failMargin: scores[r] / t[r], fullClear: false, final: cum * bustKeep };
+    cum += scores[r];
+    if (r === t.length - 1) return { rounds: t.length, failMargin: NaN, fullClear: true, final: cum * bonus };
+    if (mids[r + 1] < pushRatio * t[r + 1])
+      return { rounds: r + 1, failMargin: NaN, fullClear: false, final: cum };
+  }
+  return { rounds: t.length, failMargin: NaN, fullClear: true, final: cum * bonus };
+}
+
 export function randomRounds(
   scores: number[],
   coins: boolean[],
@@ -528,6 +645,10 @@ function mcP3(
   /** Ticket G: assistedPushGate value — measure assisted-reached states with
    * the band-policy continuation. Undefined = v1.0 chaser policy. */
   assistedGate?: number,
+  /** Ticket G2: safeRatio — measure coarseAssisted-reached states with the
+   * coarse plan (bench by raw face) and the push-only-SAFE continuation.
+   * Takes precedence over assistedGate. */
+  coarseRatio?: number,
 ): McP3Raw {
   const R = config.fixtureCount;
   const fielded = config.rows - 1;
@@ -537,15 +658,19 @@ function mcP3(
   let tenseRuns = 0;
   const tenseSpreads: number[] = [];
   for (const bd of data) {
-    const c =
-      assistedGate !== undefined
+    const coarse = coarseRatio !== undefined;
+    const scores = coarse ? bd.coarseScores : bd.chaser;
+    const W = coarse ? bd.coarseW : bd.chaserW;
+    const c = coarse
+      ? signalRounds(bd.coarseScores, bd.coarseMids, t, config.bustKeep, config.fullClearBonus, coarseRatio as number)
+      : assistedGate !== undefined
         ? bandRounds(bd.chaser, bd.mids, t, config.bustKeep, config.fullClearBonus, assistedGate)
         : chaserRounds(bd.chaser, t, config.bustKeep, config.fullClearBonus);
     let banked = 0;
     let runTense = false;
     for (let k = 1; k < R; k++) {
       if (c.rounds < k) break;
-      banked += bd.chaser[k - 1];
+      banked += scores[k - 1];
       let sum = 0;
       let sumSq = 0;
       for (let s = 0; s < samples; s++) {
@@ -553,7 +678,7 @@ function mcP3(
         let final = 0;
         for (let j = k; j < R; j++) {
           let score = 0;
-          for (let i = 0; i < fielded; i++) score += bd.chaserW[j * fielded + i] * (1 - f + 2 * f * rng());
+          for (let i = 0; i < fielded; i++) score += W[j * fielded + i] * (1 - f + 2 * f * rng());
           if (score < t[j]) {
             final = cum * config.bustKeep;
             break;
@@ -562,9 +687,11 @@ function mcP3(
           if (j === R - 1) {
             final = cum * config.fullClearBonus;
           } else if (
-            assistedGate !== undefined
-              ? bd.mids[j + 1] * assistedGate < t[j + 1]
-              : score < 1.1 * t[j + 1]
+            coarse
+              ? bd.coarseMids[j + 1] < (coarseRatio as number) * t[j + 1]
+              : assistedGate !== undefined
+                ? bd.mids[j + 1] * assistedGate < t[j + 1]
+                : score < 1.1 * t[j + 1]
           ) {
             final = cum;
             break;
@@ -997,7 +1124,10 @@ function sweepGMode(flags: Map<string, string>): void {
   const bases = parseGrid("bases", [275, 300, 325, 350, 375, 400, 425]);
   const growths = parseGrid("growths", [1.215, 1.24, 1.265, 1.29, 1.315]);
   const bossAxes = parseGrid("axes", [1.0, 1.1, 1.2, 1.3, 1.4]);
-  const kaGrid = parseGrid("kagrid", [0.3, 0.35, 0.4, 0.45, 0.5]);
+  // Ticket G2 bucket-cutoff grids (safeRatio governs the coarseAssisted
+  // push, longshotRatio the coarseReader push; long ≤ safe enforced).
+  const safeGrid = parseGrid("safegrid", [1.1, 1.15, 1.2, 1.25, 1.3, 1.35, 1.4]);
+  const longGrid = parseGrid("longgrid", [0.8, 0.85, 0.9, 0.95, 1.0, 1.05]);
 
   const fullSet = loadCardSetFile(sliceRotationPath);
   // Served slice policy (E5 ruling): generator + DEFAULT tie-break scorer.
@@ -1005,8 +1135,9 @@ function sweepGMode(flags: Map<string, string>): void {
     sliceDeck(`${seedBase}|slice${s}`, fullSet, DAILY_SLICE_CONFIG_V1, sliceTripleScore),
   );
   console.log(
-    `sweepg: ${sliceCount} default-scorer slices of ${fullSet.length} cards, ` +
+    `sweepg (G2): ${sliceCount} default-scorer slices of ${fullSet.length} cards, ` +
       `${boards} boards, |fs|=${fsGrid.length} |hr|=${hrGrid.length} ` +
+      `|safe|=${safeGrid.length} |long|=${longGrid.length} ` +
       `curves=${bases.length * growths.length * bossAxes.length}`,
   );
 
@@ -1015,7 +1146,8 @@ function sweepGMode(flags: Map<string, string>): void {
     hr: number;
     curve: Curve;
     kGreedy: number;
-    kAssisted: number;
+    safeRatio: number;
+    longshotRatio: number;
     distance: number;
     p0: number;
     p0MinSlice: number;
@@ -1053,8 +1185,8 @@ function sweepGMode(flags: Map<string, string>): void {
     console.log(
       `  fs=${fsv.toFixed(4)}: precomputed ${n} boards (${((performance.now() - t0) / 1000).toFixed(0)}s)`,
     );
-    // Reader data per hintReliability (threshold-independent).
-    const readerByHr = hrGrid.map((hr) => data.map((bd) => readerDataFor(bd, config, hr)));
+    // Coarse reader data per hintReliability (threshold-independent).
+    const readerByHr = hrGrid.map((hr) => data.map((bd) => coarseReaderDataFor(bd, config, hr)));
 
     for (const growth of growths) {
       // Per-growth normalized line margins (see evalPlane).
@@ -1100,12 +1232,11 @@ function sweepGMode(flags: Map<string, string>): void {
           const p0MinSlice = Math.min(
             ...sliceClear.map((c, s) => (sliceN[s] === 0 ? 1 : c / sliceN[s])),
           );
-          // Threshold-dependent bot outcomes. Greedy per kGreedy; assisted
-          // per kAssisted (its band-fraction push tolerance — the Ticket G
-          // bot-model knob, kGreedy precedent); reader deferred to per-hr.
+          // Threshold-dependent bot outcomes. Greedy per kGreedy; the coarse
+          // pair per bucket cutoff (Ticket G2): coarseAssisted per safeRatio,
+          // coarseReader per (longshotRatio, hintReliability).
           const gK = KGREEDY_GRID.map(() => ({ rounds: [] as number[], fails: 0, near: 0, finals: [] as number[] }));
-          const aK = kaGrid.map((ka) => ({
-            gate: assistedPushGate(fsv, ka),
+          const aK = safeGrid.map(() => ({
             fc: 0,
             fails: 0,
             near: 0,
@@ -1131,45 +1262,58 @@ function sweepGMode(flags: Map<string, string>): void {
             cRounds.push(c.rounds);
             cFinals.push(c.final);
             if (c.fullClear) chaserFC++;
-            for (const ak of aK) {
-              const a = bandRounds(bd.chaser, bd.mids, t, config.bustKeep, config.fullClearBonus, ak.gate);
-              ak.finals.push(a.final);
-              if (a.fullClear) ak.fc++;
+            for (let ai = 0; ai < safeGrid.length; ai++) {
+              const a = signalRounds(bd.coarseScores, bd.coarseMids, t, config.bustKeep, config.fullClearBonus, safeGrid[ai]);
+              aK[ai].finals.push(a.final);
+              if (a.fullClear) aK[ai].fc++;
               if (!Number.isNaN(a.failMargin)) {
-                ak.fails++;
-                if (a.failMargin >= NEAR_MISS_FLOOR) ak.near++;
+                aK[ai].fails++;
+                if (a.failMargin >= NEAR_MISS_FLOOR) aK[ai].near++;
               }
             }
             const rn = randomRounds(bd.random, bd.coins, t, config.bustKeep, config.fullClearBonus);
             rRounds.push(rn.rounds);
             rnFinals.push(rn.final);
           }
+          // coarseReader medians per (longshotRatio, hintReliability) — safe-
+          // independent, so computed once per curve.
+          const rdMed: number[][] = longGrid.map((long) =>
+            hrGrid.map((_, hi) => {
+              const rdFinals: number[] = [];
+              const rdData = readerByHr[hi];
+              for (let i = 0; i < n; i++) {
+                rdFinals.push(
+                  signalRounds(rdData[i].scores, rdData[i].mids, t, config.bustKeep, config.fullClearBonus, long).final,
+                );
+              }
+              return median(rdFinals);
+            }),
+          );
           const p1a = median(rRounds);
           const p1c = median(cRounds);
           // Shrunk search targets (honest bands: pooled P0-set >=99.4,
-          // per-slice >=99.0, P1d [10,25], P2 [25,60]).
+          // per-slice >=99.0, P1d [10,25], P2 [25,60], P6 >= +3%).
           const shared = [
             Math.max(0, (0.995 - p0) / 0.001),
             Math.max(0, (0.992 - p0MinSlice) / 0.001),
             Math.max(0, p1a - 1),
             out(p1c, 3, 4, 0.5),
           ];
-          // Joint (kAssisted × kGreedy × hintReliability) resolution on the
-          // TOTAL of P1d + P1b + P2 + P6 — resolving ka on P1d alone and
-          // measuring P6 afterwards misses the middle of the P1d↔P6 trade
-          // (both ride the assisted bot's push marginality).
+          // Joint (safeRatio × kGreedy × longshotRatio × hintReliability)
+          // resolution on the TOTAL of P1d + P1b + P2 + P6 + ladder.
+          const cMedJoint = median(cFinals);
           let bestKi = 0;
           let bestAi = 0;
           let bestJoint = Infinity;
           let bestP1b = 0;
           let bestP2 = 0;
           let chosenHr = NaN;
+          let chosenLong = NaN;
           let chosenP6 = -Infinity;
           let chosenReaderMed = NaN;
-          for (let ai = 0; ai < kaGrid.length; ai++) {
+          for (let ai = 0; ai < safeGrid.length; ai++) {
             const p1dDist = out(aK[ai].fc / n, 0.12, 0.23, 0.05);
             const aMedAi = median(aK[ai].finals);
-            // Best kGreedy for this ka (P1b + pooled P2).
             let kiBest = 0;
             let kiDist = Infinity;
             let kiP1b = 0;
@@ -1186,63 +1330,81 @@ function sweepGMode(flags: Map<string, string>): void {
                 kiP2 = p2k;
               }
             }
-            // Best hintReliability for this ka: the LOWEST clearing the
-            // shrunk P6 target (weakest hint still worth reading), else the
-            // best ratio available.
-            let hiHr = NaN;
-            let hiP6 = -Infinity;
-            let hiMed = NaN;
-            for (let hi = 0; hi < hrGrid.length; hi++) {
-              const rdData = readerByHr[hi];
-              const rdFinals: number[] = [];
-              for (let i = 0; i < n; i++) {
-                rdFinals.push(
-                  bandRounds(rdData[i].scores, rdData[i].mids, t, config.bustKeep, config.fullClearBonus, aK[ai].gate).final,
-                );
-              }
-              const med = median(rdFinals);
-              const ratio = med / aMedAi;
-              if (ratio >= 1.1) {
-                hiHr = hrGrid[hi];
-                hiP6 = ratio;
-                hiMed = med;
-                break;
-              }
-              if (ratio > hiP6) {
-                hiHr = hrGrid[hi];
-                hiP6 = ratio;
-                hiMed = med;
+            // Best (longshotRatio, hintReliability) for this safe: the pair
+            // clearing the shrunk P6 target with the LOWEST hr (weakest hint
+            // still worth reading), then the highest long (least aggressive
+            // informed push); else the best ratio available.
+            let liHr = NaN;
+            let liLong = NaN;
+            let liP6 = -Infinity;
+            let liMed = NaN;
+            let cleared = false;
+            for (let hi = 0; hi < hrGrid.length && !cleared; hi++) {
+              for (let li = longGrid.length - 1; li >= 0; li--) {
+                if (longGrid[li] > safeGrid[ai] + 1e-9) continue;
+                const ratio = rdMed[li][hi] / aMedAi;
+                if (ratio >= 1.05) {
+                  liHr = hrGrid[hi];
+                  liLong = longGrid[li];
+                  liP6 = ratio;
+                  liMed = rdMed[li][hi];
+                  cleared = true;
+                  break;
+                }
+                if (ratio > liP6) {
+                  liHr = hrGrid[hi];
+                  liLong = longGrid[li];
+                  liP6 = ratio;
+                  liMed = rdMed[li][hi];
+                }
               }
             }
-            const p6DistAi = Math.max(0, (1.1 - hiP6) / 0.02);
-            const jd = p1dDist + kiDist + p6DistAi;
+            const p6DistAi = Math.max(0, (1.05 - liP6) / 0.02);
+            // Ladder terms (chaser ≤ coarseAssisted ≤ coarseReader) inside
+            // the selection. The chaser leg demands a +3% CUSHION: the two
+            // bots sit within slice-lottery noise of each other, so a config
+            // that merely ties on the sweep seed flips to BROKEN on honest
+            // re-measure (observed: +1.2% at sweep ⇒ −2.9% at accept).
+            const ladderDistAi =
+              Math.max(0, (1.08 * cMedJoint - aMedAi) / cMedJoint) / 0.02 +
+              Math.max(0, (aMedAi - liMed) / aMedAi) / 0.02;
+            const jd = p1dDist + kiDist + p6DistAi + ladderDistAi;
             if (jd < bestJoint) {
               bestJoint = jd;
               bestAi = ai;
               bestKi = kiBest;
               bestP1b = kiP1b;
               bestP2 = kiP2;
-              chosenHr = hiHr;
-              chosenP6 = hiP6;
-              chosenReaderMed = hiMed;
+              chosenHr = liHr;
+              chosenLong = liLong;
+              chosenP6 = liP6;
+              chosenReaderMed = liMed;
             }
           }
           const p1d = aK[bestAi].fc / n;
           const aMed = median(aK[bestAi].finals);
-          const p6Dist = Math.max(0, (1.1 - chosenP6) / 0.02);
+          const p6Dist = Math.max(0, (1.05 - chosenP6) / 0.02);
+          // Ladder is a Ticket G2 requirement ("monotone in every
+          // measurement"), so violations cost distance: chaser must sit at
+          // or below coarseAssisted, coarseAssisted at or below coarseReader.
+          const ladderDist =
+            Math.max(0, (cMedJoint - aMed) / cMedJoint) / 0.02 +
+            Math.max(0, (aMed - chosenReaderMed) / aMed) / 0.02;
           const dParts = [
             ...shared,
             out(p1d, 0.12, 0.23, 0.05),
             out(bestP1b, 2, 2, 0.5),
             out(bestP2, 0.27, 0.55, 0.05),
             p6Dist,
+            ladderDist,
           ];
           all.push({
             fs: fsv,
             hr: chosenHr,
             curve: { base, growth, bossAxis },
             kGreedy: KGREEDY_GRID[bestKi],
-            kAssisted: kaGrid[bestAi],
+            safeRatio: safeGrid[bestAi],
+            longshotRatio: chosenLong,
             distance: dParts.reduce((x, y) => x + y, 0),
             p0,
             p0MinSlice,
@@ -1264,8 +1426,8 @@ function sweepGMode(flags: Map<string, string>): void {
               random: median(rnFinals),
               greedy: median(gK[bestKi].finals),
               chaser: median(cFinals),
-              assisted: aMed,
-              reader: chosenReaderMed,
+              coarseAssisted: aMed,
+              coarseReader: chosenReaderMed,
             },
           });
         }
@@ -1275,23 +1437,36 @@ function sweepGMode(flags: Map<string, string>): void {
     // Stage 2 for this fs: real-MC P3 (assisted policy) + P4 on the fs's
     // shortlist (needs `data`, which is discarded when the fs loop advances).
     const fsCands = all.filter((c) => c.fs === fsv).sort((a, b) => a.distance - b.distance);
-    const shortlist = fsCands.slice(0, Number(flags.get("shortlist") ?? 12));
+    const keep = Number(flags.get("shortlist") ?? 12);
+    // Stratified: the head by distance plus a spread over the next tier, so
+    // stage-2 P3a (unknowable analytically) gets measured off the corner too.
+    const head = fsCands.slice(0, keep);
+    const tail = fsCands.slice(keep, keep + 120).filter((_, i) => i % 8 === 0);
+    const shortlist = [...head, ...tail];
     for (const cand of shortlist) {
       const t = thresholdsFor(cand.curve, R);
-      const raw = mcP3(
+      // v1.2 split: P3a from the chaser-policy MC, P3b from the coarse MC.
+      const rawA = mcP3(
         data,
         config,
         t,
         rngFromString(`p3g|${cand.curve.base}|${cand.curve.growth}|${cand.curve.bossAxis}|${fsv}`),
         96,
-        assistedPushGate(fsv, cand.kAssisted),
       );
-      const { p3a, p3b } = mcP3Derive(raw);
-      cand.p3a = p3a;
-      cand.p3b = p3b;
+      const rawC = mcP3(
+        data,
+        config,
+        t,
+        rngFromString(`p3gc|${cand.curve.base}|${cand.curve.growth}|${cand.curve.bossAxis}|${fsv}`),
+        96,
+        undefined,
+        cand.safeRatio,
+      );
+      cand.p3a = mcP3Derive(rawA).p3a;
+      cand.p3b = rawC.tenseSpreads.length ? median(rawC.tenseSpreads) : NaN;
       cand.p4 = diversityRate(data, config, t, config.fullClearBonus);
-      const p3aDist = Math.max(0, (0.45 - p3a) / 0.1);
-      const p3bDist = Number.isNaN(p3b) ? 5 : Math.max(0, (0.3 - p3b) / 0.1);
+      const p3aDist = Math.max(0, (0.45 - cand.p3a) / 0.1);
+      const p3bDist = Number.isNaN(cand.p3b) ? 5 : Math.max(0, (0.3 - cand.p3b) / 0.1);
       const p4Dist = Math.max(0, (0.72 - cand.p4) / 0.1);
       cand.distance += p3aDist + p3bDist + p4Dist;
     }
@@ -1307,8 +1482,9 @@ function sweepGMode(flags: Map<string, string>): void {
   console.log(`\ntop Ticket G candidates (stage-2-scored):`);
   for (const c of ranked.slice(0, 12)) {
     console.log(
-      `  fs=${c.fs.toFixed(4)} hr=${c.hr} base=${c.curve.base} growth=${c.curve.growth} ` +
-        `axis=${c.curve.bossAxis} k=${c.kGreedy} ka=${c.kAssisted} dist=${c.distance.toFixed(3)} | ` +
+      `  fs=${c.fs.toFixed(4)} hr=${c.hr} safe=${c.safeRatio} long=${c.longshotRatio} ` +
+        `base=${c.curve.base} growth=${c.curve.growth} ` +
+        `axis=${c.curve.bossAxis} k=${c.kGreedy} dist=${c.distance.toFixed(3)} | ` +
         `P0=${(c.p0 * 100).toFixed(2)}%(min ${(c.p0MinSlice * 100).toFixed(2)}%) P1a=${c.p1a} ` +
         `P1b=${c.p1b} P1c=${c.p1c} P1d=${(c.p1d * 100).toFixed(1)}% P2=${(c.p2 * 100).toFixed(1)}% ` +
         `P3a=${(c.p3a * 100).toFixed(1)}% P3b=${Number.isNaN(c.p3b) ? "n/a" : (c.p3b * 100).toFixed(1) + "%"} ` +
@@ -1330,6 +1506,7 @@ function sweepGMode(flags: Map<string, string>): void {
       formSpread: winner.fs,
       thresholds: curveToThresholds(winner.curve),
       hints: { hintReliability: winner.hr },
+      clearance: { safeRatio: winner.safeRatio, longshotRatio: winner.longshotRatio },
     };
     console.log(`\nwinner ladder medians: ${JSON.stringify(winner.medians)}`);
     console.log(`\nwinner config (verify with --eval --slicerotation --defaultscorer):`);
@@ -1340,7 +1517,7 @@ function sweepGMode(flags: Map<string, string>): void {
     fs.writeFileSync(
       outPath,
       JSON.stringify(
-        { config: winnerConfig, kGreedy: winner.kGreedy, kAssisted: winner.kAssisted, top: ranked.slice(0, 12) },
+        { config: winnerConfig, kGreedy: winner.kGreedy, top: ranked.slice(0, 12) },
         null,
         2,
       ),
@@ -1430,7 +1607,12 @@ function main(): void {
     const P5_EVERY = 97;
     // Ticket G — a config with hints is measured on profile v1.1: P1d gates
     // assisted, P2 pools greedy+assisted, P3 runs on assisted, P6 added.
-    const v11 = Boolean(config.hints);
+    // Ticket G2 — a config with clearance buckets is measured on profile
+    // v1.2: the coarse pair replaces the exact-band pair.
+    const v12 = Boolean(config.clearance);
+    const v11 = Boolean(config.hints) && !v12;
+    const vNew = v11 || v12;
+    const clearanceCfg = config.clearance ?? { safeRatio: NaN, longshotRatio: NaN };
     const hintRel = config.hints?.hintReliability ?? 1 / 3;
     const aGate = assistedPushGate(config.formSpread, kAssisted);
 
@@ -1468,6 +1650,8 @@ function main(): void {
     };
     const byRoundAll = Array.from({ length: R }, () => 0);
     const p3All: McP3Raw = { runs: 0, tenseRuns: 0, states: 0, tense: 0, tenseSpreads: [] };
+    /** v1.2: pooled tense-state spreads under the coarseAssisted policy (P3b). */
+    const coarseSpreadsAll: number[] = [];
     let p4Weighted = 0;
     let p5Checked = 0;
     let p5Ok = true;
@@ -1494,6 +1678,8 @@ function main(): void {
             runChaser(ctx),
             runAssisted(ctx, kAssisted),
             runReader(ctx, kAssisted),
+            runCoarseAssisted(ctx),
+            runCoarseReader(ctx),
             runRandom(ctx, rngFromString(`${seedBase}#${i}|randombot`)),
             runOracle(ctx).result,
           ];
@@ -1525,16 +1711,24 @@ function main(): void {
         if (c.fullClear) chaserFC++;
         // Ticket G: assisted (band policy on the same squad/bench) and reader
         // (posterior-weighted band policy) — the v1.1 shipped-player models.
-        const a = bandRounds(bd.chaser, bd.mids, t, config.bustKeep, config.fullClearBonus, aGate);
+        // Ticket G2: the coarse pair (signal policy on the raw-face bench)
+        // takes their place in the profile when clearance is configured.
+        const a = v12
+          ? signalRounds(bd.coarseScores, bd.coarseMids, t, config.bustKeep, config.fullClearBonus, clearanceCfg.safeRatio)
+          : bandRounds(bd.chaser, bd.mids, t, config.bustKeep, config.fullClearBonus, aGate);
         finalsAll.assisted.push(a.final);
         if (a.fullClear) assistedFC++;
-        const rd = readerDataFor(bd, config, hintRel);
-        const rdOut = bandRounds(rd.scores, rd.mids, t, config.bustKeep, config.fullClearBonus, aGate);
+        const rd = v12
+          ? coarseReaderDataFor(bd, config, hintRel)
+          : readerDataFor(bd, config, hintRel);
+        const rdOut = v12
+          ? signalRounds(rd.scores, rd.mids, t, config.bustKeep, config.fullClearBonus, clearanceCfg.longshotRatio)
+          : bandRounds(rd.scores, rd.mids, t, config.bustKeep, config.fullClearBonus, aGate);
         finalsAll.reader.push(rdOut.final);
         // P2 pools greedy + the profile's shipped-player bot (v1.0 chaser,
-        // v1.1 assisted).
-        const partner = v11 ? a : c;
-        if (v11) {
+        // v1.1 assisted, v1.2 coarseAssisted).
+        const partner = vNew ? a : c;
+        if (vNew) {
           if (!Number.isNaN(partner.failMargin)) {
             fails++;
             if (partner.failMargin >= NEAR_MISS_FLOOR) {
@@ -1555,8 +1749,22 @@ function main(): void {
       }
       if (data.length === 0) continue;
       const n = data.length;
-      const p3 = mcP3(data, config, t, rngFromString(`${seedBase}|eval|set${s}`), 192, v11 ? aGate : undefined);
-      const { p3a, p3b } = mcP3Derive(p3);
+      // v1.2 split (Ticket G2): P3a from the CHASER-policy MC (the v1.0
+      // instrument), P3b from the coarseAssisted-policy MC.
+      const p3 = mcP3(
+        data,
+        config,
+        t,
+        rngFromString(`${seedBase}|eval|set${s}`),
+        192,
+        v11 ? aGate : undefined,
+        undefined,
+      );
+      const p3c = v12
+        ? mcP3(data, config, t, rngFromString(`${seedBase}|evalc|set${s}`), 192, undefined, clearanceCfg.safeRatio)
+        : null;
+      const { p3a, p3b: p3bChaser } = mcP3Derive(p3);
+      const p3b = p3c ? (p3c.tenseSpreads.length ? median(p3c.tenseSpreads) : NaN) : p3bChaser;
       const p4 = diversityRate(data, config, t, config.fullClearBonus);
       perSet.push({
         set: s,
@@ -1565,7 +1773,7 @@ function main(): void {
         p1a: median(rRounds),
         p1b: median(gRounds),
         p1c: median(cRounds),
-        p1d: (v11 ? assistedFC : chaserFC) / n,
+        p1d: (vNew ? assistedFC : chaserFC) / n,
         fails,
         nearMisses,
         p3a,
@@ -1585,6 +1793,7 @@ function main(): void {
       p3All.states += p3.states;
       p3All.tense += p3.tense;
       p3All.tenseSpreads.push(...p3.tenseSpreads);
+      if (p3c) coarseSpreadsAll.push(...p3c.tenseSpreads);
       p4Weighted += p4 * n;
       console.log(
         `  set ${s}: ${n} boards done (${((performance.now() - t0) / 1000).toFixed(0)}s elapsed)`,
@@ -1593,9 +1802,9 @@ function main(): void {
 
     const total = gAll.length;
     const pooledP3 = mcP3Derive(p3All);
-    // Ticket G amended slice-rotation bars (profile v1.1 only): pooled P0-set
+    // Ticket G amended slice-rotation bars (profiles v1.1/v1.2): pooled P0-set
     // >= 99.4%, per-slice >= 99.0%, would-be reroll alarm at 1%.
-    const amendedBars = Boolean(v11 && sliceRotationPath);
+    const amendedBars = Boolean(vNew && sliceRotationPath);
     const criteria = evaluateCriteria({
       oracleFullClearRate: fullClearableAll / total,
       // The analytic detector IS the full-clear enumeration, so every dead
@@ -1615,13 +1824,18 @@ function main(): void {
       p3TenseRunFrac: pooledP3.p3a,
       p3States: p3All.states,
       p3PerStateTenseFrac: pooledP3.perState,
-      p3TenseMedianSpread: pooledP3.p3b,
+      p3TenseMedianSpread: v12
+        ? coarseSpreadsAll.length
+          ? median(coarseSpreadsAll)
+          : NaN
+        : pooledP3.p3b,
       p4Rate: p4Weighted / total,
       p5Checked,
       p5Ok,
     }, {
       p0SetGate,
       profileV11: v11,
+      profileV12: v12,
       p0SetBar: amendedBars ? 0.994 : undefined,
       sliceBars: amendedBars
         ? {
@@ -1651,12 +1865,41 @@ function main(): void {
     const passed = criteria.filter((c) => c.pass).length;
     console.log(`\ncriteria: ${passed}/${criteria.length} PASS`);
 
-    if (v11) {
-      // Ticket G ladder (report-only): random < greedy < chaser < assisted <= reader.
-      const ladder = (["random", "greedy", "chaser", "assisted", "reader"] as const)
-        .map((n) => `${n}=${median(finalsAll[n]).toFixed(0)}`)
-        .join(" < ");
-      console.log(`\nladder (median final score, want nondecreasing): ${ladder}`);
+    if (vNew) {
+      // Ticket G/G2 ladder: random < greedy < chaser < (coarse)assisted <=
+      // (coarse)reader — a v1.1/v1.2 profile requirement, printed from the
+      // same pooled finals the criteria used.
+      const label: Record<string, string> = v12
+        ? { assisted: "coarseAssisted", reader: "coarseReader" }
+        : {};
+      const meds = (["random", "greedy", "chaser", "assisted", "reader"] as const).map((n) => ({
+        name: label[n] ?? n,
+        med: median(finalsAll[n]),
+      }));
+      if (v12) {
+        // Ticket G2 two-chain reading (the ticket text carries no operator
+        // between chaser and coarseAssisted — FLAGGED in DECISIONS.md for
+        // owner affirmation): backbone random < greedy < chaser, and
+        // coarseAssisted ≤ coarseReader. The chaser↔coarseAssisted leg is
+        // reported unordered (measured within slice-lottery noise).
+        const backbone = meds[0].med <= meds[1].med && meds[1].med <= meds[2].med;
+        const pair = meds[3].med <= meds[4].med;
+        console.log(
+          `\nladder medians: ` +
+            meds.map((m) => `${m.name}=${m.med.toFixed(0)}`).join(", ") +
+            ` — backbone(random<=greedy<=chaser) ${backbone ? "MONOTONE" : "BROKEN"}, ` +
+            `pair(coarseAssisted<=coarseReader) ${pair ? "MONOTONE" : "BROKEN"}; ` +
+            `chaser->coarseAssisted (unordered leg, reported): ` +
+            `${(((meds[3].med - meds[2].med) / meds[2].med) * 100).toFixed(1)}%`,
+        );
+      } else {
+        const monotone = meds.every((m, i) => i === 0 || meds[i - 1].med <= m.med);
+        console.log(
+          `\nladder (median final score, want nondecreasing): ` +
+            meds.map((m) => `${m.name}=${m.med.toFixed(0)}`).join(" < ") +
+            ` — ${monotone ? "MONOTONE" : "BROKEN"}`,
+        );
+      }
     }
 
     const att = nearMissAttribution(byRoundAll);

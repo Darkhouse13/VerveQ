@@ -19,9 +19,19 @@ import {
 } from "../../src/lib/drawEngine";
 import { buildContext, type BoardContext } from "./boardContext";
 import { runOracle } from "./oracle";
-import { assistedPushGate, runAssisted, runChaser, runGreedy, runRandom, runReader } from "./bots";
+import {
+  assistedPushGate,
+  runAssisted,
+  runChaser,
+  runCoarseAssisted,
+  runCoarseReader,
+  runGreedy,
+  runRandom,
+  runReader,
+} from "./bots";
 import {
   buildChaserPlan,
+  buildCoarsePlan,
   evalPushAtState,
   evaluateCriteria,
   finalizeBotStats,
@@ -120,13 +130,18 @@ export function evaluateConfig(config: EngineConfig, opts: EvaluateOptions): Con
   // Ticket G: a config with hints is measured against profile v1.1 (P1d on
   // assisted, P2 pools greedy+assisted, P3 on assisted, P6 added). Configs
   // without hints keep the exact v1.0 measurement for reproducibility.
-  const v11 = Boolean(config.hints);
+  // Ticket G2: a config with clearance buckets is measured against profile
+  // v1.2 (coarseAssisted/coarseReader as the shipped-player pair).
+  const v12 = Boolean(config.clearance);
+  const v11 = Boolean(config.hints) && !v12;
 
   const oracleAcc = newBotAccumulator("oracle");
   const greedyAcc = newBotAccumulator("greedy");
   const chaserAcc = newBotAccumulator("chaser");
   const assistedAcc = newBotAccumulator("assisted");
   const readerAcc = newBotAccumulator("reader");
+  const coarseAssistedAcc = newBotAccumulator("coarseAssisted");
+  const coarseReaderAcc = newBotAccumulator("coarseReader");
   const randomAcc = newBotAccumulator("random");
 
   const oracleNodes: number[] = [];
@@ -139,6 +154,8 @@ export function evaluateConfig(config: EngineConfig, opts: EvaluateOptions): Con
   const p3Gaps: number[] = [];
   const p3Spreads: number[] = [];
   const p3TenseMask: boolean[] = [];
+  /** v1.2: tense-state spreads under the coarseAssisted policy (P3b source). */
+  const coarseTenseSpreads: number[] = [];
   let tenseRuns = 0;
 
   let p5Checked = 0;
@@ -169,6 +186,10 @@ export function evaluateConfig(config: EngineConfig, opts: EvaluateOptions): Con
     recordBotRun(assistedAcc, assisted);
     const reader = runReader(ctx, kAssisted);
     recordBotRun(readerAcc, reader);
+    const coarseAssisted = runCoarseAssisted(ctx);
+    recordBotRun(coarseAssistedAcc, coarseAssisted);
+    const coarseReader = runCoarseReader(ctx);
+    recordBotRun(coarseReaderAcc, coarseReader);
     const random = runRandom(ctx, rngFromString(`${boardSeed}|randombot`));
     recordBotRun(randomAcc, random);
 
@@ -178,7 +199,11 @@ export function evaluateConfig(config: EngineConfig, opts: EvaluateOptions): Con
     // Run-level: a run is "tense" when any of its states is. Profile v1.0
     // measures the chaser; v1.1 (Ticket G) measures assisted, whose
     // continuation policy is the band-centre push rule.
-    const p3Bot = v11 ? assisted : chaser;
+    // v1.2 (Ticket G2) splits P3: P3a stays on the CHASER (the v1.0
+    // manufactured-marginality instrument — the ticket relocates only
+    // "P2/P3b" to coarseAssisted), while P3b's tense-state spreads come from
+    // the coarseAssisted-policy MC. v1.0/v1.1 keep a single source.
+    const p3Bot = v12 ? chaser : v11 ? assisted : chaser;
     let runTense = false;
     if (p3Bot.roundsCleared >= 1) {
       const squadIdxs = p3Bot.choiceLog
@@ -209,10 +234,47 @@ export function evaluateConfig(config: EngineConfig, opts: EvaluateOptions): Con
       }
     }
     if (runTense) tenseRuns++;
+    // v1.2 second pass: coarseAssisted-policy tense-state spreads (P3b).
+    if (v12 && coarseAssisted.roundsCleared >= 1) {
+      const squadIdxs = coarseAssisted.choiceLog
+        .filter((c) => c.type === "pick")
+        .map((c, row) => row * ctx.offers + (c.type === "pick" ? c.offerIndex : 0));
+      const plan = buildCoarsePlan(ctx, squadIdxs);
+      const mids = {
+        mids: planBandMids(ctx, plan),
+        pushRatio: (config.clearance as { safeRatio: number }).safeRatio,
+      };
+      let banked = 0;
+      for (let round = 1; round < config.fixtureCount; round++) {
+        if (coarseAssisted.roundsCleared < round) break;
+        banked += coarseAssisted.rounds[round - 1].score;
+        const { evGap, spread } = evalPushAtState(
+          ctx,
+          plan,
+          round,
+          banked,
+          rngFromString(`${boardSeed}|p3c|r${round}`),
+          opts.p3Samples,
+          mids,
+        );
+        if (Math.abs(evGap) <= TENSE_SPREAD_RATIO * spread) coarseTenseSpreads.push(spread);
+      }
+    }
 
     if (opts.p5Every > 0 && i % opts.p5Every === 0) {
       p5Checked++;
-      if (!determinismSpotCheck(ctx, [greedy, chaser, assisted, reader, random, oracle.result]))
+      if (
+        !determinismSpotCheck(ctx, [
+          greedy,
+          chaser,
+          assisted,
+          reader,
+          coarseAssisted,
+          coarseReader,
+          random,
+          oracle.result,
+        ])
+      )
         p5Ok = false;
     }
   }
@@ -225,12 +287,14 @@ export function evaluateConfig(config: EngineConfig, opts: EvaluateOptions): Con
     chaser: finalizeBotStats(chaserAcc, maxRounds),
     assisted: finalizeBotStats(assistedAcc, maxRounds),
     reader: finalizeBotStats(readerAcc, maxRounds),
+    coarseAssisted: finalizeBotStats(coarseAssistedAcc, maxRounds),
+    coarseReader: finalizeBotStats(coarseReaderAcc, maxRounds),
     random: finalizeBotStats(randomAcc, maxRounds),
   };
 
   // P2 pool: greedy + the profile's shipped-player bot (chaser at v1.0,
-  // assisted at v1.1 — Ticket G).
-  const p2Partner = v11 ? bots.assisted : bots.chaser;
+  // assisted at v1.1, coarseAssisted at v1.2 — Tickets G/G2).
+  const p2Partner = v12 ? bots.coarseAssisted : v11 ? bots.assisted : bots.chaser;
   const pooledFails = bots.greedy.busts + p2Partner.busts;
   const pooledNearMisses = bots.greedy.nearMisses + p2Partner.nearMisses;
   const p2Attribution = nearMissAttribution(
@@ -274,21 +338,25 @@ export function evaluateConfig(config: EngineConfig, opts: EvaluateOptions): Con
       greedyMedianRounds: bots.greedy.medianRounds,
       chaserMedianRounds: bots.chaser.medianRounds,
       chaserFullClearRate: bots.chaser.fullClearRate,
-      assistedFullClearRate: bots.assisted.fullClearRate,
-      assistedMedianScore: bots.assisted.scoreP50,
-      readerMedianScore: bots.reader.scoreP50,
+      assistedFullClearRate: (v12 ? bots.coarseAssisted : bots.assisted).fullClearRate,
+      assistedMedianScore: (v12 ? bots.coarseAssisted : bots.assisted).scoreP50,
+      readerMedianScore: (v12 ? bots.coarseReader : bots.reader).scoreP50,
       pooledNearMissRate: pooledFails === 0 ? 0 : pooledNearMisses / pooledFails,
       pooledFails,
       p3Runs: n,
       p3TenseRunFrac: tenseRuns / n,
       p3States: p3Gaps.length,
       p3PerStateTenseFrac: tenseFrac,
-      p3TenseMedianSpread: tenseMedianSpread,
+      p3TenseMedianSpread: v12
+        ? coarseTenseSpreads.length
+          ? median(coarseTenseSpreads)
+          : NaN
+        : tenseMedianSpread,
       p4Rate: diversityBoards / n,
       p5Checked,
       p5Ok,
     },
-    { profileV11: v11 },
+    { profileV11: v11, profileV12: v12 },
   );
 
   return {

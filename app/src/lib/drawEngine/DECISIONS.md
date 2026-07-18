@@ -314,6 +314,77 @@ Suggested (not applied — owner rulings required):
    (e.g. [35%, 55%]) and drop P3a to a diagnostic — a deliberate profile
    redesign, not a tune.
 
+## Ticket G2 (owner-ordered, 2026-07-18): coarse clearance signal + c13-2 — PASS 13/13
+
+The owner's answer to STOP-G: replace the exact F3-band player with a
+COARSELY-informed one, so tight decisions stay tense and hints have
+something to resolve. Landed:
+
+- **clearance.ts** — `clearanceSignal(bandMid, threshold, cfg)` →
+  SAFE | TIGHT | LONGSHOT with knob cutoffs (`EngineConfig.clearance`
+  { safeRatio, longshotRatio }, ADDITIVE — SAFE at ≥ safeRatio×t, LONGSHOT
+  below longshotRatio×t), plus `bandMidFor` (= the F3 band centre, proven
+  equal to formless scoreRound by contract test). ONE definition shared by
+  UI and bots.
+- **bots.ts** — `coarseAssisted` (chain-first draft; bench = lowest RAW face,
+  rating × fixture modifier, no synergy accounting; pushes ONLY on SAFE) and
+  `coarseReader` (bench by posterior face; signal recomputed on the
+  hint-posterior band centre; pushes on anything not posterior-LONGSHOT —
+  hints demote cold TIGHTs to bank and promote hot LONGSHOTs to push). Both
+  bucket cutoffs are live: safeRatio governs the unassisted push,
+  longshotRatio the informed one.
+- **Profile v1.2** (configs with `clearance`): P1d [10, 25%] on
+  coarseAssisted; P2 pools greedy+coarseAssisted; P3b (tense-state spread ≥
+  30%) on the coarseAssisted policy; P6 ≥ +3% (coarseReader over
+  coarseAssisted); amended slice bars unchanged (pooled ≥ 99.4, per-slice ≥
+  99.0, reroll alarm 1%, default-scorer slices).
+- **v1.2 P3 SPLIT (session interpretation, FLAGGED for owner affirmation):**
+  the ticket relocates "P2/P3b" to coarseAssisted and names P3a separately —
+  read as: **P3a stays on the CHASER**, the v1.0 manufactured-marginality
+  instrument. Empirical basis: P3a on ANY forward-looking (mid-projecting)
+  bot, exact or coarse, maxes ~26–27% across ~15k swept combinations
+  (G1+G2), while the chaser scores 45–52% on the same slices — its
+  backward-looking 1.1× rule pushes into states a mid-projection correctly
+  avoids, which is precisely the tension P3a was built to certify. If the
+  owner meant P3a-on-coarseAssisted, the honest answer is: unreachable
+  (frontier ~27%), and this becomes a STOP again.
+- **Ladder (two-chain reading, FLAGGED for owner affirmation):** the ticket's
+  ladder text carries no operator between chaser and coarseAssisted
+  ("random < greedy < chaser coarseAssisted ≤ coarseReader"). Read as two
+  chains — backbone random < greedy < chaser AND coarseAssisted ≤
+  coarseReader — which is design-coherent (the coarse pair deliberately
+  models a mediocre player; chaser FC runs 30%, above the shipped-player
+  band). Measured: the chaser↔coarseAssisted leg is slice-lottery-dominated
+  (−2.0% / +1.4% across the two acceptance seeds; sweep margins up to +7.7%
+  do not survive re-measure) and CANNOT be made robustly positive while P1d
+  caps coarseAssisted at 25% — under a strict chaser < coarseAssisted
+  reading, Ticket G2 is a STOP on that leg alone. Both specified chains held
+  monotone in every measurement.
+
+**c13-2 ACCEPTED (13/13, selection-free, twice)** — configs/c13v2.ts
+(fs 0.48; thresholds base 375 × growth 1.29, no boss shape; hints 0.6;
+clearance 1.15/1.05; content knobs pinned from c13-1; bot knob kGreedy 0.9):
+
+- seed accept-g2 (20 default-scorer slices × 500): P0-set 99.81% (worst
+  slice 99.40%, reroll 0.19%), P1a 1, P1b 2, P1c 4, P1d 18.6% (chaser FC
+  29.6% diagnostic), P2 57.3%, P3a 51.5%, P3b 73.1%, P4 97.5%, P5 104/104,
+  P6 +7.6% — 13/13.
+- seed accept-g2-confirm (independent, controls the two-candidates-on-one-
+  seed multiplicity — an earlier safe-1.15/fs-0.45 candidate passed 13/13 on
+  accept-g2 but broke the strict-reading ladder leg and was rejected):
+  P0-set 99.71% (worst slice 99.20%, reroll 0.29%), P1d 18.7%, P2 56.4%,
+  P3a 52.3%, P3b 74.7%, P4 97.1%, P6 +6.4% — 13/13, and the full 5-bot
+  ladder monotone even under the strict reading (734 < 1685 < 3494 < 3542 <
+  3769).
+
+Sweep provenance: calibrate --sweepg (G2 mode — formSpread ×
+hintReliability × safeRatio × longshotRatio × threshold plane, kGreedy per
+curve, joint selection incl. P6 and ladder cushion, stage-2 split-P3 MC),
+campaigns sweep-g2a…g2g on 20 default-scorer slices × 4000 boards; winner
+from sweep-g2f. NOT ACTIVATED: serving stays on c13-1 (no hints, no
+clearance); activation awaits the owner's dev replay + rulings on the two
+flagged readings.
+
 ## Harness honesty notes (Ticket 0.2 methodology)
 
 - **Card-set lottery**: the card set is derived from the evaluation seed, so

@@ -65,7 +65,7 @@ export function renderEval(ev: ConfigEval): string {
   lines.push(`boards=${ev.boards} seed=${ev.seedBase}`);
   lines.push("");
   const header = [
-    "bot".padEnd(8),
+    "bot".padEnd(14),
     "medRnds".padEnd(8),
     "rounds 0..5".padEnd(30),
     "p10".padEnd(8),
@@ -77,12 +77,12 @@ export function renderEval(ev: ConfigEval): string {
     "nearmiss",
   ].join(" ");
   lines.push(header);
-  for (const name of ["oracle", "greedy", "chaser", "assisted", "reader", "random"]) {
+  for (const name of ["oracle", "greedy", "chaser", "assisted", "reader", "coarseAssisted", "coarseReader", "random"]) {
     const b = ev.bots[name];
     if (!b) continue; // pre-Ticket-G artifacts have no assisted/reader
     lines.push(
       [
-        name.padEnd(8),
+        name.padEnd(14),
         String(b.medianRounds).padEnd(8),
         b.roundsDist.join("/").padEnd(30),
         b.scoreP10.toFixed(0).padEnd(8),
@@ -129,7 +129,14 @@ export function renderEval(ev: ConfigEval): string {
     const ladder = ["random", "greedy", "chaser", "assisted", "reader"]
       .map((n) => `${n}=${ev.bots[n].scoreP50.toFixed(0)}`)
       .join(" < ");
-    lines.push(`ladder (median final score, want nondecreasing): ${ladder}`);
+    lines.push(`ladder v1.1 (median final score, want nondecreasing): ${ladder}`);
+  }
+  if (ev.bots.coarseAssisted && ev.bots.coarseReader) {
+    // Ticket G2 ladder: random < greedy < chaser < coarseAssisted <= coarseReader.
+    const ladder = ["random", "greedy", "chaser", "coarseAssisted", "coarseReader"]
+      .map((n) => `${n}=${ev.bots[n].scoreP50.toFixed(0)}`)
+      .join(" < ");
+    lines.push(`ladder v1.2 (median final score, want nondecreasing): ${ladder}`);
   }
   lines.push(`p4: line diversity on ${pct(ev.p4Rate)} of boards`);
   lines.push("");

@@ -45,6 +45,20 @@ kGreedy × kAssisted). Outcome: **STOP** — P3a and P6 are structurally
 unreachable while P1d holds (one marginality dial, three masters); closest
 config passes 11/13. Full ruling in drawEngine/DECISIONS.md (Ticket G).
 
+## Ticket G2 (coarse clearance signal — c13-2 ACCEPTED)
+
+`clearance.ts` adds the SAFE/TIGHT/LONGSHOT bucket signal (knob cutoffs,
+shared UI/bot definition); `bots.ts` adds `coarseAssisted` (raw-face bench,
+pushes only SAFE) and `coarseReader` (posterior bench + signal, pushes
+anything not posterior-LONGSHOT). Configs with `clearance` are measured on
+profile v1.2: P1d/P2 on coarseAssisted, P3 SPLIT (P3a on the chaser — the
+v1.0 instrument; P3b on the coarse policy), P6 ≥ +3%, amended slice bars.
+`calibrate --sweepg` sweeps fs × hintReliability × bucket cutoffs × the
+threshold plane. Outcome: **c13-2 PASS 13/13 selection-free on two
+independent seeds** (configs/c13v2.ts — NOT activated; serving stays c13-1).
+Two flagged interpretations (P3 split; ladder two-chain reading) await owner
+affirmation — full ruling in drawEngine/DECISIONS.md (Ticket G2).
+
 ## Status
 
 Ticket 0.4: P0 restructured into two tiers by owner ruling (STOP-4 accepted;

@@ -4,7 +4,7 @@
  * by the sweep ranking.
  */
 
-import { scoreRound, type EngineConfig } from "../../src/lib/drawEngine";
+import { scoreRound, squadSynergies, type EngineConfig } from "../../src/lib/drawEngine";
 import type { BoardContext } from "./boardContext";
 
 export function percentile(sorted: number[], p: number): number {
@@ -181,6 +181,34 @@ export function buildChaserPlan(ctx: BoardContext, squadCardIdxs: number[]): Cha
 }
 
 /**
+ * Ticket G2 — the coarse bots' bench plan: per round, bench the lowest raw
+ * face (rating × fixtureMult, ctx.ratingMod — mirrors bots.ts coarseBenchFor
+ * exactly: strict <, ascending index) and record the fielded five's synergy
+ * multiplier. Form-independent, so it can be fixed before any resampling.
+ */
+export function buildCoarsePlan(ctx: BoardContext, squadCardIdxs: number[]): ChaserRoundPlan[] {
+  const squad = squadCardIdxs.map((i) => ctx.cards[i]);
+  return ctx.board.fixtures.map((fixture, r) => {
+    let worst = 0;
+    let worstFace = Infinity;
+    for (let i = 0; i < squad.length; i++) {
+      const face = ctx.ratingMod[r * ctx.N + squadCardIdxs[i]];
+      if (face < worstFace) {
+        worstFace = face;
+        worst = i;
+      }
+    }
+    const fielded = squad.filter((_, j) => j !== worst);
+    let syn = 1;
+    for (const s of squadSynergies(fielded, ctx.config)) syn *= s.mult;
+    return {
+      fieldedIdxs: squadCardIdxs.filter((_, j) => j !== worst),
+      synMult: syn,
+    };
+  });
+}
+
+/**
  * Band centre per round for a plan's fielded five: Σ(rating × fixtureMult) ×
  * synergyMult — the F3 band centre the assisted policy pushes on (Ticket G).
  */
@@ -210,8 +238,10 @@ export function evalPushAtState(
   banked: number,
   rng: () => number,
   samples: number,
-  /** Band centres + push gate for the assisted policy (Ticket G). */
-  assisted?: { mids: number[]; pushGate: number },
+  /** Band centres + push rule for the assisted/coarse policy (Tickets G/G2):
+   * push iff mids[j] × pushGate ≥ t[j] (v1.1 gate form) or
+   * mids[j] ≥ pushRatio × t[j] (v1.2 signal form; used when set). */
+  assisted?: { mids: number[]; pushGate?: number; pushRatio?: number },
 ): { evGap: number; spread: number } {
   const { config, ratingMod, thresholds, N, R } = ctx;
   const f = config.formSpread;
@@ -234,7 +264,9 @@ export function evalPushAtState(
         final = cum * config.fullClearBonus;
       } else if (
         assisted
-          ? assisted.mids[j + 1] * assisted.pushGate < thresholds[j + 1]
+          ? assisted.pushRatio !== undefined
+            ? assisted.mids[j + 1] < assisted.pushRatio * thresholds[j + 1]
+            : assisted.mids[j + 1] * (assisted.pushGate ?? 1) < thresholds[j + 1]
           : score < 1.1 * thresholds[j + 1]
       ) {
         final = cum;
@@ -316,6 +348,13 @@ export interface CriteriaOptions {
    */
   profileV11?: boolean;
   /**
+   * Ticket G2 — profile v1.2 (clearance buckets): as v1.1 but the measured
+   * bots are coarseAssisted/coarseReader (fed through the same ProfileInputs
+   * fields) and P6's bar drops to +3% (coarseReader ≥ 1.03 × coarseAssisted).
+   * Takes precedence over profileV11.
+   */
+  profileV12?: boolean;
+  /**
    * Ticket G slice-rotation bars (amended acceptance): per-slice P0 floor and
    * the would-be-reroll alarm. Emitted as extra criteria when provided.
    */
@@ -380,11 +419,13 @@ export function evaluateCriteria(m: ProfileInputs, opts?: CriteriaOptions): Crit
   );
   // Ticket G (profile v1.1): P1d gates the ASSISTED bot (the shipped-human
   // model); chaser FC stays visible as a diagnostic. Band unchanged.
-  if (opts?.profileV11) {
+  // Ticket G2 (v1.2): the measured bot is coarseAssisted.
+  if (opts?.profileV12 || opts?.profileV11) {
+    const bot = opts?.profileV12 ? "coarseAssisted" : "assisted";
     const fc = m.assistedFullClearRate ?? NaN;
     push(
       "P1d",
-      "assisted full-clear rate in [10%,25%] (Ticket G; chaser FC = diagnostic)",
+      `${bot} full-clear rate in [10%,25%] (Ticket ${opts?.profileV12 ? "G2" : "G"}; chaser FC = diagnostic)`,
       Number.isNaN(fc) ? 10 : outside(fc, 0.1, 0.25, 0.05),
       `${(fc * 100).toFixed(1)}% (chaser ${(m.chaserFullClearRate * 100).toFixed(1)}%)`,
     );
@@ -401,20 +442,20 @@ export function evaluateCriteria(m: ProfileInputs, opts?: CriteriaOptions): Crit
   // rational play is accepted as a genre property (see DECISIONS.md STOP-3).
   push(
     "P2",
-    `near-miss 25-60% of failed rounds (greedy+${opts?.profileV11 ? "assisted" : "chaser"}; 60% = degeneracy alarm)`,
+    `near-miss 25-60% of failed rounds (greedy+${opts?.profileV12 ? "coarseAssisted" : opts?.profileV11 ? "assisted" : "chaser"}; 60% = degeneracy alarm)`,
     outside(m.pooledNearMissRate, 0.25, 0.6, 0.05),
     `${(m.pooledNearMissRate * 100).toFixed(1)}% of ${m.pooledFails} fails`,
   );
   push(
     "P3a",
-    `>=40% of ${opts?.profileV11 ? "assisted" : "chaser"} runs hit >=1 tense state (|EV gap| <= 0.5 x stdev(push))`,
+    `>=40% of ${opts?.profileV12 ? "chaser (v1.2 split: P3a stays on the v1.0 instrument)" : opts?.profileV11 ? "assisted" : "chaser"} runs hit >=1 tense state (|EV gap| <= 0.5 x stdev(push))`,
     Math.max(0, (0.4 - m.p3TenseRunFrac) / 0.1),
     `${(m.p3TenseRunFrac * 100).toFixed(1)}% of ${m.p3Runs} runs ` +
       `(per-state ${(m.p3PerStateTenseFrac * 100).toFixed(1)}% of ${m.p3States})`,
   );
   push(
     "P3b",
-    "among tense states, stdev(push) >= 30% of banked (median)",
+    `among tense states${opts?.profileV12 ? " (coarseAssisted policy — v1.2 split)" : ""}, stdev(push) >= 30% of banked (median)`,
     Number.isNaN(m.p3TenseMedianSpread) ? 5 : Math.max(0, (0.3 - m.p3TenseMedianSpread) / 0.1),
     Number.isNaN(m.p3TenseMedianSpread)
       ? "no tense states"
@@ -428,17 +469,21 @@ export function evaluateCriteria(m: ProfileInputs, opts?: CriteriaOptions): Crit
   );
   push("P5", "determinism spot-checks (full property tests in vitest)", m.p5Ok ? 0 : 10, `${m.p5Checked} boards re-replayed, ${m.p5Ok ? "all identical" : "MISMATCH"}`);
   // Ticket G P6: hints must be worth reading — reader's median final score
-  // exceeds assisted's by >=8%.
-  if (opts?.profileV11) {
+  // exceeds assisted's by >=8% (v1.1) / coarseReader by >=3% (v1.2, the
+  // STOP-G honest-frontier re-bar).
+  if (opts?.profileV12 || opts?.profileV11) {
+    const v12 = Boolean(opts?.profileV12);
+    const bar = v12 ? 1.03 : 1.08;
+    const [botR, botA] = v12 ? ["coarseReader", "coarseAssisted"] : ["reader", "assisted"];
     const a = m.assistedMedianScore ?? NaN;
     const r = m.readerMedianScore ?? NaN;
     const ratio = r / a;
     push(
       "P6",
-      "reader median final score >= 1.08 x assisted median (hints worth reading; Ticket G)",
-      !Number.isFinite(ratio) ? 10 : Math.max(0, (1.08 - ratio) / 0.02),
+      `${botR} median final score >= ${bar} x ${botA} median (hints worth reading; Ticket ${v12 ? "G2" : "G"})`,
+      !Number.isFinite(ratio) ? 10 : Math.max(0, (bar - ratio) / 0.02),
       Number.isFinite(ratio)
-        ? `reader ${r.toFixed(0)} vs assisted ${a.toFixed(0)} (${((ratio - 1) * 100).toFixed(1)}% gap)`
+        ? `${botR} ${r.toFixed(0)} vs ${botA} ${a.toFixed(0)} (${((ratio - 1) * 100).toFixed(1)}% gap)`
         : "missing median scores",
     );
   }
