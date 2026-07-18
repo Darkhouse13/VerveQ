@@ -20,7 +20,16 @@
 
 import { v } from "convex/values";
 import { internalMutation, internalQuery } from "./_generated/server";
-import { formHint, generateCardSet, type EngineConfig, type PositionId } from "../src/lib/drawEngine";
+import {
+  formHint,
+  generateBoard,
+  generateCardSet,
+  replay,
+  type ChoiceLog,
+  type EngineConfig,
+  type PositionId,
+} from "../src/lib/drawEngine";
+import { loadCardSet } from "./drawBoards";
 import { C13V1_CONFIG, C13V1_CONFIG_VERSION } from "../src/lib/drawEngine/configs/c13v1";
 import { C13V2_CONFIG, C13V2_CONFIG_VERSION } from "../src/lib/drawEngine/configs/c13v2";
 // The committed real card set (selector artifact; byte-guarded by
@@ -296,6 +305,95 @@ export const previewServing = internalQuery({
                 : null,
           }
         : null,
+    };
+  },
+});
+
+/**
+ * Ticket G3 — smoke verification for a date's runs (read-only). For every
+ * run on the dateKey: regenerate the board from the row's PINNED slice ids +
+ * configVersion (exactly the B2 replay-gate recipe), replay the stored
+ * choiceLog, and compare outcome/score/rounds to the stored result. Also
+ * counts draw_replay_reject funnel events for the date. Nothing is written.
+ * Run: npx convex run drawSeed:verifySmokeRun '{"dateKey":"YYYY-MM-DD"}'
+ */
+export const verifySmokeRun = internalQuery({
+  args: { dateKey: v.optional(v.string()) },
+  handler: async (ctx, args) => {
+    const dateKey = args.dateKey ?? new Date().toISOString().slice(0, 10);
+    const boardDoc = await ctx.db
+      .query("drawDailyBoards")
+      .withIndex("by_dateKey", (q) => q.eq("dateKey", dateKey))
+      .first();
+    if (!boardDoc) return { dateKey, board: null, runs: [] };
+    const config = resolveDrawConfig(boardDoc.configVersion);
+    const fullSet = await loadCardSet(ctx, boardDoc.setVersion);
+    let cardSet = fullSet;
+    if (boardDoc.sliceCardIds) {
+      const byId = new Map(fullSet.map((c) => [c.id, c]));
+      cardSet = boardDoc.sliceCardIds.flatMap((id) => {
+        const card = byId.get(id);
+        return card ? [card] : [];
+      });
+    }
+    const regenerated = generateBoard(boardDoc.boardSeed, cardSet, config);
+
+    const runs = await ctx.db
+      .query("drawRuns")
+      .withIndex("by_date_score", (q) => q.eq("dateKey", dateKey))
+      .collect();
+    const reports = runs.map((run) => {
+      let replayed: { finalScore: number; outcome: string; roundsCleared: number } | null = null;
+      let replayError: string | null = null;
+      try {
+        const result = replay(regenerated, config, run.choiceLog as ChoiceLog);
+        replayed = {
+          finalScore: result.finalScore,
+          outcome: result.outcome,
+          roundsCleared: result.roundsCleared,
+        };
+      } catch (error) {
+        replayError = error instanceof Error ? error.message : String(error);
+      }
+      const stored = run.result ?? null;
+      const identical =
+        replayed !== null &&
+        stored !== null &&
+        replayed.finalScore === stored.finalScore &&
+        replayed.outcome === stored.outcome &&
+        replayed.roundsCleared === stored.roundsCleared;
+      return {
+        status: run.status,
+        score: run.score ?? null,
+        roundsCleared: stored?.roundsCleared ?? null,
+        draftLineHash: run.draftLineHash ?? null,
+        choices: (run.choiceLog as unknown[]).length,
+        completedAt: run.completedAt ?? null,
+        replayIdentity: run.completedAt ? (identical ? "IDENTICAL" : "MISMATCH") : "in-progress",
+        replayError,
+        replayedScore: replayed?.finalScore ?? null,
+      };
+    });
+
+    const rejects = (
+      await ctx.db
+        .query("funnelEvents")
+        .withIndex("by_type_ts", (q) => q.eq("type", "draw_replay_reject"))
+        .collect()
+    ).filter((e) => (e.meta as { dateKey?: string })?.dateKey === dateKey);
+
+    return {
+      dateKey,
+      board: {
+        configVersion: boardDoc.configVersion,
+        setVersion: boardDoc.setVersion,
+        boardSeed: boardDoc.boardSeed.slice(0, 5) + "...", // scheme only, never the full seed in logs
+        sliceCards: boardDoc.sliceCardIds?.length ?? null,
+        hintsServed: Boolean(config.hints),
+        clearanceServed: Boolean(config.clearance),
+      },
+      runs: reports,
+      replayRejectEvents: rejects.length,
     };
   },
 });
