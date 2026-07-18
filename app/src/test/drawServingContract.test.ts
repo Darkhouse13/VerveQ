@@ -576,3 +576,80 @@ describe("leaderboard and rarity", () => {
     expect(rarity.sharePct).toBe(100);
   });
 });
+
+// ── dailyDigest (Ticket K follow-up: read-only launch-day telemetry) ──
+
+describe("dailyDigest", () => {
+  it("aggregates a date's runs, decisions and share funnel from stored rows", async () => {
+    const env = await makeEnv();
+    const alice = await makeUser(env, "digest_alice");
+    const bob = await makeUser(env, "digest_bob");
+    await enable(env);
+
+    actAs(alice);
+    const done = (await playToCompletion(env)).run;
+    actAs(bob);
+    await startRun(env); // in-progress: counts as started, never as completed
+
+    // Share funnel: one view + one convert for today, one view for another
+    // date that must NOT leak into the digest.
+    await env.db.insert("funnelEvents", {
+      type: "draw_share_view", actor: "anon", ts: 1, meta: { dateKey: env.today },
+    });
+    await env.db.insert("funnelEvents", {
+      type: "draw_share_view", actor: "anon", ts: 2, meta: { dateKey: "1999-01-01" },
+    });
+    await env.db.insert("funnelEvents", {
+      type: "draw_share_convert", actor: "anon", ts: 3, meta: { dateKey: env.today },
+    });
+
+    const digest = (await handlerOf(drawSeed.dailyDigest)(env.ctx, {
+      dateKey: env.today,
+    })) as {
+      dateKey: string;
+      runsStarted: number;
+      runsCompleted: number;
+      outcomes: Record<"banked" | "busted" | "fullclear", { count: number; pct: number | null }>;
+      medianScore: number | null;
+      roundsClearedHistogram: number[];
+      pushRateAfterClear: number | null;
+      shareViews: number;
+      shareConverts: number;
+    };
+
+    expect(digest.dateKey).toBe(env.today);
+    expect(digest.runsStarted).toBe(2);
+    expect(digest.runsCompleted).toBe(1);
+
+    // Exactly the one completed run, filed under its actual outcome at 100%.
+    const outcome = done.outcome as "banked" | "busted" | "fullclear";
+    expect(digest.outcomes[outcome]).toEqual({ count: 1, pct: 100 });
+    const totalOutcomes =
+      digest.outcomes.banked.count + digest.outcomes.busted.count + digest.outcomes.fullclear.count;
+    expect(totalOutcomes).toBe(1);
+
+    expect(digest.medianScore).toBe(done.finalScore);
+
+    const roundsCleared = done.rounds.filter((r) => r.cleared).length;
+    expect(digest.roundsClearedHistogram[roundsCleared]).toBe(1);
+    expect(digest.roundsClearedHistogram.reduce((a, b) => a + b, 0)).toBe(1);
+
+    // playToCompletion always pushes after a clear, never banks: the rate is
+    // 100 whenever any post-clear decision happened (a round-1 bust has none).
+    const pushDecisions = Math.max(0, roundsCleared - (outcome === "fullclear" ? 1 : 0));
+    expect(digest.pushRateAfterClear).toBe(pushDecisions > 0 ? 100 : null);
+
+    expect(digest.shareViews).toBe(1);
+    expect(digest.shareConverts).toBe(1);
+  });
+
+  it("returns an all-empty digest for a date with no board activity", async () => {
+    const env = await makeEnv();
+    const digest = (await handlerOf(drawSeed.dailyDigest)(env.ctx, {
+      dateKey: "2001-01-01",
+    })) as { runsStarted: number; medianScore: number | null; pushRateAfterClear: number | null };
+    expect(digest.runsStarted).toBe(0);
+    expect(digest.medianScore).toBeNull();
+    expect(digest.pushRateAfterClear).toBeNull();
+  });
+});

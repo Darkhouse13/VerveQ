@@ -401,6 +401,85 @@ export const verifySmokeRun = internalQuery({
   },
 });
 
+/**
+ * Ops digest for a date's board (read-only, launch-day telemetry). Everything
+ * is computed from stored rows — no engine replay, no writes:
+ *  - started/completed run counts (started = row exists, completed = result);
+ *  - outcome split over completed runs (banked/busted/fullclear, count + %);
+ *  - median finalScore over completed runs;
+ *  - rounds-cleared histogram (index 0..5) over completed runs;
+ *  - push-rate after clears: of every post-clear decision in the choiceLogs
+ *    (type "push" or "bank" — the only two ways a cleared round continues),
+ *    the fraction that pushed;
+ *  - share funnel: draw_share_view / draw_share_convert counts for the date.
+ * Run: npx convex run drawSeed:dailyDigest '{"dateKey":"YYYY-MM-DD"}'
+ */
+export const dailyDigest = internalQuery({
+  args: { dateKey: v.optional(v.string()) },
+  handler: async (ctx, args) => {
+    const dateKey = args.dateKey ?? new Date().toISOString().slice(0, 10);
+    const runs = await ctx.db
+      .query("drawRuns")
+      .withIndex("by_date_score", (q) => q.eq("dateKey", dateKey))
+      .collect();
+    const completed = runs.flatMap((run) =>
+      run.completedAt !== undefined && run.result ? [{ run, result: run.result }] : [],
+    );
+
+    const outcomeCounts = { banked: 0, busted: 0, fullclear: 0 };
+    const roundsClearedHistogram = [0, 0, 0, 0, 0, 0];
+    const scores: number[] = [];
+    let pushes = 0;
+    let banks = 0;
+    for (const { run, result } of completed) {
+      outcomeCounts[result.outcome] += 1;
+      roundsClearedHistogram[Math.min(result.roundsCleared, 5)] += 1;
+      scores.push(result.finalScore);
+      for (const choice of run.choiceLog) {
+        if (choice.type === "push") pushes += 1;
+        else if (choice.type === "bank") banks += 1;
+      }
+    }
+
+    scores.sort((a, b) => a - b);
+    const medianScore =
+      scores.length === 0
+        ? null
+        : scores.length % 2 === 1
+          ? scores[(scores.length - 1) / 2]
+          : (scores[scores.length / 2 - 1] + scores[scores.length / 2]) / 2;
+    const pct = (n: number) =>
+      completed.length === 0 ? null : Math.round((n / completed.length) * 1000) / 10;
+
+    const shareCount = async (type: "draw_share_view" | "draw_share_convert") =>
+      (
+        await ctx.db
+          .query("funnelEvents")
+          .withIndex("by_type_ts", (q) => q.eq("type", type))
+          .collect()
+      ).filter((e) => (e.meta as { dateKey?: string } | undefined)?.dateKey === dateKey)
+        .length;
+
+    return {
+      dateKey,
+      runsStarted: runs.length,
+      runsCompleted: completed.length,
+      outcomes: {
+        banked: { count: outcomeCounts.banked, pct: pct(outcomeCounts.banked) },
+        busted: { count: outcomeCounts.busted, pct: pct(outcomeCounts.busted) },
+        fullclear: { count: outcomeCounts.fullclear, pct: pct(outcomeCounts.fullclear) },
+      },
+      medianScore,
+      roundsClearedHistogram,
+      // pushes / (pushes + banks); null until any completed run decided.
+      pushRateAfterClear:
+        pushes + banks === 0 ? null : Math.round((pushes / (pushes + banks)) * 1000) / 10,
+      shareViews: await shareCount("draw_share_view"),
+      shareConverts: await shareCount("draw_share_convert"),
+    };
+  },
+});
+
 /** Ops readout: npx convex run drawSeed:showSettings */
 export const showSettings = internalQuery({
   args: {},
