@@ -28,6 +28,11 @@ vi.mock("@/lib/flags", () => ({
   get LEARN_ENABLED() {
     return false;
   },
+  // THE DRAW home card (Ticket H) stays dark here: flag off ⇒ it renders
+  // nothing and fires no query.
+  get DRAW_ENABLED() {
+    return false;
+  },
 }));
 
 // Passthrough i18n that keeps interpolation visible: t("home.greeting",

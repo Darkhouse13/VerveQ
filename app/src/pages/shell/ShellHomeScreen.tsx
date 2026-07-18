@@ -16,6 +16,7 @@ import { NeoCard } from "@/components/neo/NeoCard";
 import { NeoAvatar } from "@/components/neo/NeoAvatar";
 import { NeoBadge } from "@/components/neo/NeoBadge";
 import { NeoButton } from "@/components/neo/NeoButton";
+import { HomeDrawCard } from "@/components/draw/HomeDrawCard";
 import { ShellLayout } from "@/components/shell/ShellLayout";
 import { SHELL_ROUTES } from "@/lib/shellRoutes";
 import { RANKED_CAPABILITIES, tierFromElo, tierProgress } from "@/lib/rankedLadder";
@@ -169,6 +170,11 @@ export default function ShellHomeScreen() {
             )}
           </div>
         </div>
+
+        {/* THE DRAW home hero (Ticket H) — TOP of Home. Self-gating: with the
+            build flag off, or when the server gate throws, it renders nothing
+            and the Home below is byte-identical for non-draw users. */}
+        <HomeDrawCard />
 
         {/* One tree, two breakpoints: mobile stacks in DOM order; desktop is a
             never-scroll 3-column grid (pillars · pillars/dailies · ladder/forge),

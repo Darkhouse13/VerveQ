@@ -1,0 +1,858 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`HomeDrawCard — no layout shift for non-draw users > flag off: Home renders unchanged (snapshot) and fires no draw query 1`] = `
+<div>
+  <div
+    class="w-full bg-background text-foreground shell-canvas-bg fixed inset-0 z-40 h-[100dvh] overflow-hidden flex flex-col"
+  >
+    <nav
+      class="hidden md:block shrink-0 border-b-[3px] border-border bg-background"
+    >
+      <div
+        class="mx-auto w-full max-w-6xl flex items-center gap-2 px-8 py-3"
+      >
+        <button
+          class="font-heading font-bold text-lg tracking-tight mr-4 cursor-pointer"
+        >
+          VerveQ
+        </button>
+        <div
+          class="flex items-center gap-1"
+        >
+          <button
+            class="inline-flex items-center gap-2 px-4 py-2 rounded-lg font-heading font-bold text-sm uppercase tracking-wide transition-all cursor-pointer neo-border neo-shadow bg-primary text-primary-foreground"
+          >
+            <svg
+              class="lucide lucide-house"
+              fill="none"
+              height="18"
+              stroke="currentColor"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2.5"
+              viewBox="0 0 24 24"
+              width="18"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8"
+              />
+              <path
+                d="M3 10a2 2 0 0 1 .709-1.528l7-5.999a2 2 0 0 1 2.582 0l7 5.999A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"
+              />
+            </svg>
+            nav.home
+          </button>
+          <button
+            class="inline-flex items-center gap-2 px-4 py-2 rounded-lg font-heading font-bold text-sm uppercase tracking-wide transition-all cursor-pointer text-muted-foreground hover:bg-muted"
+          >
+            <svg
+              class="lucide lucide-swords"
+              fill="none"
+              height="18"
+              stroke="currentColor"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2.5"
+              viewBox="0 0 24 24"
+              width="18"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <polyline
+                points="14.5 17.5 3 6 3 3 6 3 17.5 14.5"
+              />
+              <line
+                x1="13"
+                x2="19"
+                y1="19"
+                y2="13"
+              />
+              <line
+                x1="16"
+                x2="20"
+                y1="16"
+                y2="20"
+              />
+              <line
+                x1="19"
+                x2="21"
+                y1="21"
+                y2="19"
+              />
+              <polyline
+                points="14.5 6.5 18 3 21 3 21 6 17.5 9.5"
+              />
+              <line
+                x1="5"
+                x2="9"
+                y1="14"
+                y2="18"
+              />
+              <line
+                x1="7"
+                x2="4"
+                y1="17"
+                y2="20"
+              />
+              <line
+                x1="3"
+                x2="5"
+                y1="19"
+                y2="21"
+              />
+            </svg>
+            nav.compete
+          </button>
+          <button
+            class="inline-flex items-center gap-2 px-4 py-2 rounded-lg font-heading font-bold text-sm uppercase tracking-wide transition-all cursor-pointer text-muted-foreground hover:bg-muted"
+          >
+            <svg
+              class="lucide lucide-trophy"
+              fill="none"
+              height="18"
+              stroke="currentColor"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2.5"
+              viewBox="0 0 24 24"
+              width="18"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"
+              />
+              <path
+                d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"
+              />
+              <path
+                d="M4 22h16"
+              />
+              <path
+                d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"
+              />
+              <path
+                d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"
+              />
+              <path
+                d="M18 2H6v7a6 6 0 0 0 12 0V2Z"
+              />
+            </svg>
+            nav.ranks
+          </button>
+          <button
+            class="inline-flex items-center gap-2 px-4 py-2 rounded-lg font-heading font-bold text-sm uppercase tracking-wide transition-all cursor-pointer text-muted-foreground hover:bg-muted"
+          >
+            <svg
+              class="lucide lucide-user"
+              fill="none"
+              height="18"
+              stroke="currentColor"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2.5"
+              viewBox="0 0 24 24"
+              width="18"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"
+              />
+              <circle
+                cx="12"
+                cy="7"
+                r="4"
+              />
+            </svg>
+            nav.profile
+          </button>
+        </div>
+      </div>
+    </nav>
+    <div
+      class="contents xl:flex xl:flex-col xl:w-full xl:flex-1 xl:min-h-0 xl:max-h-[50rem] xl:my-auto"
+    >
+      <main
+        class="flex-1 min-h-0 w-full mx-auto max-w-md md:max-w-6xl px-5 md:px-8 overflow-y-auto overflow-x-hidden scrollbar-none md:overflow-hidden pb-4 md:pb-6"
+      >
+        <div
+          class="min-h-full md:min-h-0 md:h-full flex flex-col"
+        >
+          <div
+            class="flex items-center justify-between pt-4 pb-3 md:pt-5 md:pb-4 shrink-0"
+          >
+            <div
+              class="flex items-center gap-2.5"
+            >
+              <div
+                aria-hidden="true"
+                class="neo-border w-8 h-8 md:w-10 md:h-10 rounded-lg bg-foreground text-background grid place-items-center font-heading font-black text-lg md:text-xl -rotate-[4deg]"
+              >
+                V
+              </div>
+              <span
+                class="font-heading font-black text-xl md:text-2xl tracking-tight"
+              >
+                Verve
+                <span
+                  class="text-primary"
+                >
+                  Q
+                </span>
+              </span>
+            </div>
+            <div
+              class="flex items-center gap-2"
+            >
+              <button
+                aria-label="zara"
+                class="transition-transform hover:-translate-x-[2px] hover:-translate-y-[2px] active:translate-x-[2px] active:translate-y-[2px]"
+                type="button"
+              >
+                <div
+                  class="neo-border neo-shadow rounded-full font-heading font-bold flex items-center justify-center w-8 h-8 text-xs md:w-10 md:h-10 bg-hot-pink text-hot-pink-foreground"
+                >
+                  Z
+                </div>
+              </button>
+            </div>
+          </div>
+          <div
+            class="flex flex-col gap-3 md:grid md:grid-cols-[3fr_3fr_4fr] md:grid-rows-[1.5fr_0.9fr] md:gap-4 md:flex-1 md:min-h-0"
+          >
+            <div
+              class="flex flex-col gap-3 min-h-0"
+            >
+              <p
+                class="font-mono text-[11px] font-bold uppercase tracking-[0.16em] text-muted-foreground"
+              >
+                home.today.eyebrow
+              </p>
+              <button
+                class="neo-border rounded-lg bg-yellow text-yellow-foreground neo-shadow-lg p-4 flex flex-col gap-1.5 min-h-0 flex-1 transition-transform hover:-translate-x-[2px] hover:-translate-y-[2px] active:translate-x-[2px] active:translate-y-[2px] text-left w-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                type="button"
+              >
+                <svg
+                  class="lucide lucide-star"
+                  fill="none"
+                  height="24"
+                  stroke="currentColor"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2.5"
+                  viewBox="0 0 24 24"
+                  width="24"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    d="M11.525 2.295a.53.53 0 0 1 .95 0l2.31 4.679a2.123 2.123 0 0 0 1.595 1.16l5.166.756a.53.53 0 0 1 .294.904l-3.736 3.638a2.123 2.123 0 0 0-.611 1.878l.882 5.14a.53.53 0 0 1-.771.56l-4.618-2.428a2.122 2.122 0 0 0-1.973 0L6.396 21.01a.53.53 0 0 1-.77-.56l.881-5.139a2.122 2.122 0 0 0-.611-1.879L2.16 9.795a.53.53 0 0 1 .294-.906l5.165-.755a2.122 2.122 0 0 0 1.597-1.16z"
+                  />
+                </svg>
+                <p
+                  class="font-heading font-black uppercase text-lg md:text-xl leading-none mt-auto"
+                >
+                  modes.daily.worldCupName
+                </p>
+                <p
+                  class="font-mono text-[10.5px] uppercase text-muted-foreground"
+                >
+                  home.hooks.resetsIn
+                </p>
+              </button>
+              <button
+                class="neo-border rounded-lg bg-accent text-accent-foreground neo-shadow-lg p-4 flex flex-col gap-1.5 min-h-0 flex-1 transition-transform hover:-translate-x-[2px] hover:-translate-y-[2px] active:translate-x-[2px] active:translate-y-[2px] text-left w-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                type="button"
+              >
+                <svg
+                  class="lucide lucide-calendar-heart"
+                  fill="none"
+                  height="24"
+                  stroke="currentColor"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2.5"
+                  viewBox="0 0 24 24"
+                  width="24"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    d="M3 10h18V6a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h7"
+                  />
+                  <path
+                    d="M8 2v4"
+                  />
+                  <path
+                    d="M16 2v4"
+                  />
+                  <path
+                    d="M21.29 14.7a2.43 2.43 0 0 0-2.65-.52c-.3.12-.57.3-.8.53l-.34.34-.35-.34a2.43 2.43 0 0 0-2.65-.53c-.3.12-.56.3-.79.53-.95.94-1 2.53.2 3.74L17.5 22l3.6-3.55c1.2-1.21 1.14-2.8.19-3.74Z"
+                  />
+                </svg>
+                <p
+                  class="font-heading font-black uppercase text-lg md:text-xl leading-none mt-auto"
+                >
+                  modes.dailySurvival.name
+                </p>
+                <p
+                  class="font-mono text-[10.5px] uppercase text-muted-foreground"
+                >
+                  modes.dailySurvival.desc
+                </p>
+              </button>
+            </div>
+            <button
+              class="neo-border rounded-lg bg-primary text-primary-foreground neo-shadow-lg p-5 flex flex-col min-h-0 overflow-hidden transition-transform hover:-translate-x-[2px] hover:-translate-y-[2px] active:translate-x-[2px] active:translate-y-[2px] text-left w-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+              type="button"
+            >
+              <div
+                class="flex items-start justify-between"
+              >
+                <span
+                  class="neo-border neo-shadow inline-flex items-center font-heading font-bold uppercase tracking-wide rounded-full px-3 py-1 text-[10px] bg-foreground text-background"
+                >
+                  home.pillars.competeChip
+                </span>
+                <span
+                  aria-hidden="true"
+                  class="text-[26px] leading-none"
+                >
+                  ⚡
+                </span>
+              </div>
+              <p
+                class="font-heading font-black uppercase text-[34px] md:text-[46px] leading-[0.95] mt-auto pt-3"
+              >
+                home.pillars.competeTitle
+              </p>
+              <p
+                class="text-sm font-medium opacity-90 mt-2 max-w-[280px]"
+              >
+                home.pillars.competeBody
+              </p>
+              <div
+                class="flex flex-wrap items-center gap-2 mt-3.5"
+              >
+                <span
+                  class="neo-border neo-shadow inline-flex items-center font-heading font-bold uppercase tracking-wide rounded-full px-3 py-1 text-[10px] bg-card text-foreground"
+                >
+                  home.stats.unranked
+                </span>
+              </div>
+            </button>
+            <div
+              class="flex flex-col gap-2.5 min-h-0 md:col-span-2 md:col-start-1 md:row-start-2"
+            >
+              <p
+                class="font-mono text-[11px] font-bold uppercase tracking-[0.16em] text-muted-foreground"
+              >
+                <span
+                  class="md:hidden"
+                >
+                  home.hooks.eyebrowShort
+                </span>
+                <span
+                  class="hidden md:inline"
+                >
+                  home.hooks.eyebrow
+                </span>
+              </p>
+              <div
+                class="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-3.5 md:flex-1 md:min-h-0"
+              >
+                <button
+                  class="neo-border rounded-lg bg-hot-pink text-hot-pink-foreground neo-shadow p-3.5 flex flex-col gap-1.5 min-h-0 transition-transform hover:-translate-x-[2px] hover:-translate-y-[2px] active:translate-x-[2px] active:translate-y-[2px] text-left w-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                  type="button"
+                >
+                  <svg
+                    class="lucide lucide-users"
+                    fill="none"
+                    height="22"
+                    stroke="currentColor"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2.5"
+                    viewBox="0 0 24 24"
+                    width="22"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"
+                    />
+                    <circle
+                      cx="9"
+                      cy="7"
+                      r="4"
+                    />
+                    <path
+                      d="M22 21v-2a4 4 0 0 0-3-3.87"
+                    />
+                    <path
+                      d="M16 3.13a4 4 0 0 1 0 7.75"
+                    />
+                  </svg>
+                  <p
+                    class="font-heading font-bold text-base leading-none"
+                  >
+                    modes.duel.name
+                  </p>
+                  <p
+                    class="font-mono text-[10.5px] uppercase text-muted-foreground"
+                  >
+                    modes.duel.desc
+                  </p>
+                </button>
+                <button
+                  class="neo-border rounded-lg bg-card text-card-foreground neo-shadow p-3.5 flex flex-col gap-1.5 min-h-0 transition-transform hover:-translate-x-[2px] hover:-translate-y-[2px] active:translate-x-[2px] active:translate-y-[2px] text-left w-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                  type="button"
+                >
+                  <svg
+                    class="lucide lucide-swords"
+                    fill="none"
+                    height="22"
+                    stroke="currentColor"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2.5"
+                    viewBox="0 0 24 24"
+                    width="22"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <polyline
+                      points="14.5 17.5 3 6 3 3 6 3 17.5 14.5"
+                    />
+                    <line
+                      x1="13"
+                      x2="19"
+                      y1="19"
+                      y2="13"
+                    />
+                    <line
+                      x1="16"
+                      x2="20"
+                      y1="16"
+                      y2="20"
+                    />
+                    <line
+                      x1="19"
+                      x2="21"
+                      y1="21"
+                      y2="19"
+                    />
+                    <polyline
+                      points="14.5 6.5 18 3 21 3 21 6 17.5 9.5"
+                    />
+                    <line
+                      x1="5"
+                      x2="9"
+                      y1="14"
+                      y2="18"
+                    />
+                    <line
+                      x1="7"
+                      x2="4"
+                      y1="17"
+                      y2="20"
+                    />
+                    <line
+                      x1="3"
+                      x2="5"
+                      y1="19"
+                      y2="21"
+                    />
+                  </svg>
+                  <p
+                    class="font-heading font-bold text-base leading-none"
+                  >
+                    modes.arena.name
+                  </p>
+                  <p
+                    class="font-mono text-[10.5px] uppercase text-muted-foreground"
+                  >
+                    modes.arena.desc
+                  </p>
+                </button>
+                <button
+                  class="neo-border rounded-lg bg-card text-card-foreground neo-shadow p-3.5 flex flex-col gap-1.5 min-h-0 transition-transform hover:-translate-x-[2px] hover:-translate-y-[2px] active:translate-x-[2px] active:translate-y-[2px] text-left w-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+                  type="button"
+                >
+                  <svg
+                    class="lucide lucide-brain"
+                    fill="none"
+                    height="22"
+                    stroke="currentColor"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2.5"
+                    viewBox="0 0 24 24"
+                    width="22"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      d="M12 5a3 3 0 1 0-5.997.125 4 4 0 0 0-2.526 5.77 4 4 0 0 0 .556 6.588A4 4 0 1 0 12 18Z"
+                    />
+                    <path
+                      d="M12 5a3 3 0 1 1 5.997.125 4 4 0 0 1 2.526 5.77 4 4 0 0 1-.556 6.588A4 4 0 1 1 12 18Z"
+                    />
+                    <path
+                      d="M15 13a4.5 4.5 0 0 1-3-4 4.5 4.5 0 0 1-3 4"
+                    />
+                    <path
+                      d="M17.599 6.5a3 3 0 0 0 .399-1.375"
+                    />
+                    <path
+                      d="M6.003 5.125A3 3 0 0 0 6.401 6.5"
+                    />
+                    <path
+                      d="M3.477 10.896a4 4 0 0 1 .585-.396"
+                    />
+                    <path
+                      d="M19.938 10.5a4 4 0 0 1 .585.396"
+                    />
+                    <path
+                      d="M6 18a4 4 0 0 1-1.967-.516"
+                    />
+                    <path
+                      d="M19.967 17.484A4 4 0 0 1 18 18"
+                    />
+                  </svg>
+                  <p
+                    class="font-heading font-bold text-base leading-none"
+                  >
+                    modes.quiz.name
+                  </p>
+                  <p
+                    class="font-mono text-[10.5px] uppercase text-muted-foreground"
+                  >
+                    home.hooks.quizSub
+                  </p>
+                </button>
+              </div>
+            </div>
+            <button
+              class="neo-border rounded-lg bg-hot-pink text-hot-pink-foreground neo-shadow-lg p-4 flex items-center gap-3.5 min-h-0 md:col-start-3 md:row-start-2 transition-transform hover:-translate-x-[2px] hover:-translate-y-[2px] active:translate-x-[2px] active:translate-y-[2px] text-left w-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+              type="button"
+            >
+              <svg
+                class="lucide lucide-hammer shrink-0"
+                fill="none"
+                height="28"
+                stroke="currentColor"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2.5"
+                viewBox="0 0 24 24"
+                width="28"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  d="m15 12-8.373 8.373a1 1 0 1 1-3-3L12 9"
+                />
+                <path
+                  d="m18 15 4-4"
+                />
+                <path
+                  d="m21.5 11.5-1.914-1.914A2 2 0 0 1 19 8.172V7l-2.26-2.26a6 6 0 0 0-4.202-1.756L9 2.96l.92.82A6.18 6.18 0 0 1 12 8.4V10l2 2h1.172a2 2 0 0 1 1.414.586L18.5 14.5"
+                />
+              </svg>
+              <div
+                class="min-w-0"
+              >
+                <p
+                  class="font-heading font-bold text-[19px] leading-tight"
+                >
+                  forge.title
+                </p>
+                <p
+                  class="text-[12.5px] opacity-90"
+                >
+                  forge.subtitle
+                </p>
+              </div>
+              <span
+                aria-hidden="true"
+                class="ml-auto font-heading font-black text-xl"
+              >
+                →
+              </span>
+            </button>
+            <button
+              class="neo-border neo-shadow-lg rounded-lg bg-foreground text-background text-left w-full p-[18px] flex flex-col min-h-0 overflow-hidden md:col-start-3 md:row-start-1 transition-transform hover:-translate-x-[2px] hover:-translate-y-[2px] active:translate-x-[2px] active:translate-y-[2px]"
+              type="button"
+            >
+              <div
+                class="flex items-center justify-between gap-2"
+              >
+                <span
+                  class="font-mono text-[11px] font-bold uppercase tracking-[0.16em] text-yellow"
+                >
+                  ranks.ladder
+                </span>
+                <span
+                  class="rounded-full border-2 border-background bg-yellow text-yellow-foreground px-3 py-1 font-heading font-bold uppercase tracking-wide text-[10px]"
+                >
+                  ranks.rankedChip
+                </span>
+              </div>
+              <div
+                class="flex items-center gap-3 mt-3 md:mt-4"
+              >
+                <div
+                  class="neo-border border-background/40 bg-background/15 w-[50px] h-[50px] md:w-[62px] md:h-[62px] shrink-0 rounded-[10px] -rotate-6 grid place-items-center"
+                >
+                  <svg
+                    class="lucide lucide-lock text-background/70"
+                    fill="none"
+                    height="24"
+                    stroke="currentColor"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2.5"
+                    viewBox="0 0 24 24"
+                    width="24"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <rect
+                      height="11"
+                      rx="2"
+                      ry="2"
+                      width="18"
+                      x="3"
+                      y="11"
+                    />
+                    <path
+                      d="M7 11V7a5 5 0 0 1 10 0v4"
+                    />
+                  </svg>
+                </div>
+                <div
+                  class="min-w-0"
+                >
+                  <p
+                    class="font-heading font-black text-2xl md:text-3xl leading-none"
+                  >
+                    ranks.locked.title
+                  </p>
+                  <p
+                    class="font-mono text-xs text-yellow mt-1"
+                  >
+                    ranks.locked.chip
+                  </p>
+                </div>
+              </div>
+              <div
+                class="h-3 border-2 border-background/40 rounded-full mt-3 overflow-hidden"
+              />
+              <div
+                class="flex items-center justify-between mt-auto pt-3.5"
+              >
+                <span
+                  class="flex items-baseline gap-1.5 font-mono text-[11px] text-background/60"
+                >
+                  <span>
+                    ranks.eloRating
+                  </span>
+                  <span>
+                    —
+                  </span>
+                </span>
+                <span
+                  class="font-heading font-bold text-[13px] uppercase text-yellow"
+                >
+                  home.ranksCard.view
+                   →
+                </span>
+              </div>
+            </button>
+          </div>
+          <p
+            class="shrink-0 text-center text-[11px] text-muted-foreground pt-3.5 pb-1"
+          >
+            home.supportCoffeePrefix
+             
+            <a
+              class="font-bold underline underline-offset-2 transition-colors hover:text-foreground"
+              href="https://buymeacoffee.com/verveq"
+              rel="noreferrer noopener"
+              target="_blank"
+            >
+              home.supportCoffeeLink
+            </a>
+          </p>
+        </div>
+      </main>
+    </div>
+    <nav
+      class="md:hidden shrink-0 border-t-[3px] border-border bg-background pb-[env(safe-area-inset-bottom)]"
+    >
+      <div
+        class="flex max-w-md mx-auto"
+      >
+        <button
+          class="flex-1 flex flex-col items-center gap-0.5 py-2.5 transition-colors relative cursor-pointer text-primary"
+        >
+          <div
+            class="absolute top-0 left-1/2 -translate-x-1/2 w-8 h-[3px] bg-primary rounded-b-full"
+          />
+          <svg
+            class="lucide lucide-house"
+            fill="none"
+            height="22"
+            stroke="currentColor"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2.5"
+            viewBox="0 0 24 24"
+            width="22"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8"
+            />
+            <path
+              d="M3 10a2 2 0 0 1 .709-1.528l7-5.999a2 2 0 0 1 2.582 0l7 5.999A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"
+            />
+          </svg>
+          <span
+            class="text-[10px] font-heading font-bold uppercase"
+          >
+            nav.home
+          </span>
+        </button>
+        <button
+          class="flex-1 flex flex-col items-center gap-0.5 py-2.5 transition-colors relative cursor-pointer text-muted-foreground"
+        >
+          <svg
+            class="lucide lucide-swords"
+            fill="none"
+            height="22"
+            stroke="currentColor"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2.5"
+            viewBox="0 0 24 24"
+            width="22"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <polyline
+              points="14.5 17.5 3 6 3 3 6 3 17.5 14.5"
+            />
+            <line
+              x1="13"
+              x2="19"
+              y1="19"
+              y2="13"
+            />
+            <line
+              x1="16"
+              x2="20"
+              y1="16"
+              y2="20"
+            />
+            <line
+              x1="19"
+              x2="21"
+              y1="21"
+              y2="19"
+            />
+            <polyline
+              points="14.5 6.5 18 3 21 3 21 6 17.5 9.5"
+            />
+            <line
+              x1="5"
+              x2="9"
+              y1="14"
+              y2="18"
+            />
+            <line
+              x1="7"
+              x2="4"
+              y1="17"
+              y2="20"
+            />
+            <line
+              x1="3"
+              x2="5"
+              y1="19"
+              y2="21"
+            />
+          </svg>
+          <span
+            class="text-[10px] font-heading font-bold uppercase"
+          >
+            nav.compete
+          </span>
+        </button>
+        <button
+          class="flex-1 flex flex-col items-center gap-0.5 py-2.5 transition-colors relative cursor-pointer text-muted-foreground"
+        >
+          <svg
+            class="lucide lucide-trophy"
+            fill="none"
+            height="22"
+            stroke="currentColor"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2.5"
+            viewBox="0 0 24 24"
+            width="22"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"
+            />
+            <path
+              d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"
+            />
+            <path
+              d="M4 22h16"
+            />
+            <path
+              d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"
+            />
+            <path
+              d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"
+            />
+            <path
+              d="M18 2H6v7a6 6 0 0 0 12 0V2Z"
+            />
+          </svg>
+          <span
+            class="text-[10px] font-heading font-bold uppercase"
+          >
+            nav.ranks
+          </span>
+        </button>
+        <button
+          class="flex-1 flex flex-col items-center gap-0.5 py-2.5 transition-colors relative cursor-pointer text-muted-foreground"
+        >
+          <svg
+            class="lucide lucide-user"
+            fill="none"
+            height="22"
+            stroke="currentColor"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2.5"
+            viewBox="0 0 24 24"
+            width="22"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"
+            />
+            <circle
+              cx="12"
+              cy="7"
+              r="4"
+            />
+          </svg>
+          <span
+            class="text-[10px] font-heading font-bold uppercase"
+          >
+            nav.profile
+          </span>
+        </button>
+      </div>
+    </nav>
+  </div>
+</div>
+`;
