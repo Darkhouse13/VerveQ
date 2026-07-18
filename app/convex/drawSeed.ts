@@ -30,6 +30,7 @@ import {
   type PositionId,
 } from "../src/lib/drawEngine";
 import { loadCardSet } from "./drawBoards";
+import { boardNumberForDate } from "./lib/drawDaily";
 import { C13V1_CONFIG, C13V1_CONFIG_VERSION } from "../src/lib/drawEngine/configs/c13v1";
 import { C13V2_CONFIG, C13V2_CONFIG_VERSION } from "../src/lib/drawEngine/configs/c13v2";
 // The committed real card set (selector artifact; byte-guarded by
@@ -286,6 +287,8 @@ export const previewServing = internalQuery({
       todayBoard: board
         ? {
             dateKey: board.dateKey,
+            // Same pure function getToday stamps on payloads — epoch proof.
+            boardNumber: boardNumberForDate(board.dateKey),
             configVersion: board.configVersion,
             setVersion: board.setVersion,
             rerollIndex: board.rerollIndex,

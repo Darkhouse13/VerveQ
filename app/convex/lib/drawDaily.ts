@@ -27,9 +27,9 @@ const MS_PER_DAY = 24 * 60 * 60 * 1000;
  * OWNER-SETTABLE — must be fixed before the flag opens to non-testers. Moving
  * it after launch renumbers every board (shared screenshots and the "#N" in
  * share text stop matching), so it is safe to change only while the mode is
- * dark. 2026-07-01 is a placeholder carried over from Ticket B's mock.
+ * dark. Set to the real launch day (Ticket K); 2026-07-18 is BOARD #1.
  */
-export const DRAW_LAUNCH_EPOCH_DATE_KEY = "2026-07-01";
+export const DRAW_LAUNCH_EPOCH_DATE_KEY = "2026-07-18";
 
 /**
  * Human board number for a UTC dateKey. The launch epoch day is BOARD #1;
