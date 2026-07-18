@@ -107,6 +107,7 @@ interface ServerRun {
   completedAt: number | null;
   boardReveal: { rows: ServerCard[][] } | null;
   hints: DrawHintsEntry[] | null;
+  shareSlug: string | null;
   choiceLog: unknown;
 }
 
@@ -240,6 +241,8 @@ function runView(run: ServerRun): DrawRunView {
       run.hints === null || run.hints === undefined
         ? null
         : run.hints.map((h) => ({ fixtureIndex: h.fixtureIndex, byCard: { ...h.byCard } })),
+    // Ticket I — share slug passthrough (done runs only; server truth).
+    shareSlug: run.shareSlug ?? null,
   };
 }
 

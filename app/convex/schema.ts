@@ -160,6 +160,13 @@ export default defineSchema({
       v.literal("draw_bust"),
       v.literal("draw_fullclear"),
       v.literal("draw_replay_reject"),
+      // THE DRAW share-link landing (Ticket I, the link_tap/link_opened
+      // precedent). draw_share_view fires server-side from
+      // drawShare.getSharedRun (actor "anon" — no auth at open time);
+      // draw_share_convert fires when the landing CTA is tapped. Both carry
+      // the slug in refLinkCode.
+      v.literal("draw_share_view"),
+      v.literal("draw_share_convert"),
     ),
     actor: v.string(),
     refLinkCode: v.optional(v.string()),
@@ -1298,9 +1305,15 @@ export default defineSchema({
     ),
     startedAt: v.number(),
     completedAt: v.optional(v.number()),
+    // Ticket I — public share-link slug ("DR" + 10 chars, duels.linkCode
+    // scheme), allocated at run completion (and backfilled for older
+    // completed runs). Looked up unauthenticated by drawShare.getSharedRun,
+    // which serves ONLY the spoiler-free summary.
+    shareSlug: v.optional(v.string()),
   })
     .index("by_user_date", ["userId", "dateKey"])
-    .index("by_date_score", ["dateKey", "score"]),
+    .index("by_date_score", ["dateKey", "score"])
+    .index("by_shareSlug", ["shareSlug"]),
 
   // Daily-draw streak — consecutive UTC dateKeys with a completed run. Own
   // table so profile.ts / the users table stay untouched.

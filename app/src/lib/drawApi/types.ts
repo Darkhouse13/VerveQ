@@ -162,6 +162,12 @@ export interface DrawRunView {
    * phases.
    */
   hints?: DrawHintsEntry[] | null;
+  /**
+   * Ticket I — the caller's share-link slug, served only once the run is done
+   * (allocated by the completing choice). Null while live; absent on the mock
+   * (the share URL then falls back to the mode link).
+   */
+  shareSlug?: string | null;
 }
 
 export interface DrawLeaderboardEntry {

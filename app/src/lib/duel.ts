@@ -1,4 +1,5 @@
 import type { TFunction } from "i18next";
+import { getShareBaseUrl } from "./shareBase";
 
 const GUEST_TOKEN_STORAGE_PREFIX = "verveq_duel_guest_token::";
 const ALPHABET =
@@ -71,14 +72,6 @@ export function peekPendingDuelAttach(): PendingDuelAttach | null {
   } catch {
     return null;
   }
-}
-
-const DEFAULT_SHARE_BASE_URL = "https://verveq.com";
-
-function getShareBaseUrl(): string {
-  const configured = import.meta.env.VITE_SHARE_BASE_URL?.trim();
-  if (configured) return configured.replace(/\/+$/, "");
-  return DEFAULT_SHARE_BASE_URL;
 }
 
 // Duel links are shared on the vanity host: verveq.com/s/d/:linkCode, which

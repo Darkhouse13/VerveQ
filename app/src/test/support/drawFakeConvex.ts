@@ -32,6 +32,7 @@ const INDEXES: Record<string, Record<string, string[]>> = {
   drawRuns: {
     by_user_date: ["userId", "dateKey"],
     by_date_score: ["dateKey", "score"],
+    by_shareSlug: ["shareSlug"],
   },
   drawStreaks: { by_user: ["userId"] },
   funnelEvents: {

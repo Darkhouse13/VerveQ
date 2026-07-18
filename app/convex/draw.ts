@@ -51,6 +51,7 @@ import {
 import { DRAW_DISABLED_MESSAGE, DRAW_SIGN_IN_REQUIRED } from "./lib/drawMessages";
 import { MS_PER_DAY } from "./lib/streaks";
 import { userActorKey } from "./funnel";
+import { generateUniqueRunShareSlug } from "./drawShare";
 
 /**
  * The UTC day BOARD #1 goes live on — OWNER-SETTABLE, must be fixed before the
@@ -225,6 +226,10 @@ function runView(boardDoc: StoredBoard, state: RunState, run: Doc<"drawRuns">) {
     finalScore: state.finalScore,
     draftLineHash: run.draftLineHash ?? null,
     completedAt: run.completedAt ?? null,
+    // Ticket I — the caller's own share slug, present only once the run is
+    // done (it is allocated by the completing submitChoice). Serves the
+    // result screen's /s/r/ share link; the slug reveals nothing by itself.
+    shareSlug: done ? (run.shareSlug ?? null) : null,
     // Post-completion full board reveal (rows only — never the seed).
     boardReveal: done ? { rows: board.rows.map((row) => row.map(cardView)) } : null,
     // Ticket G3 — hint chips for the current decision horizon (or null).
@@ -500,10 +505,14 @@ export const submitChoice = mutation({
       }
       const result = gate.result;
       const status = result.outcome; // banked | busted | fullclear
+      // Ticket I — share slug allocated with the result, atomically: every
+      // completed run is shareable the moment its result exists.
+      const shareSlug = run.shareSlug ?? (await generateUniqueRunShareSlug(ctx));
       await ctx.db.patch(run._id, {
         choiceLog: next.choiceLog,
         status,
         draftLineHash,
+        shareSlug,
         score: result.finalScore,
         result: {
           finalScore: result.finalScore,

@@ -7,48 +7,21 @@
  * locks this in against the full card set.
  */
 
-import type { RoundBreakdown, RunOutcome, SynergyFamily } from "@/lib/drawEngine";
+import type { RunOutcome } from "@/lib/drawEngine";
 import type { DrawRarity } from "@/lib/drawApi/types";
-import { formatMult, spacedTag } from "./meta";
 import { showRarity } from "./rarity";
 
-export const OUTCOME_LABEL: Record<RunOutcome, string> = {
-  banked: "BANKED",
-  busted: "BUSTED",
-  fullclear: "FULL CLEAR",
-};
+// Ticket I — the trail/identity builders moved to convex/lib/drawShare (the
+// lib/drawMessages pattern): the share-landing server payload is built by the
+// SAME functions this screen renders with, so the two can never disagree.
+// The engine's RoundBreakdown satisfies the lib's structural ShareRound.
+import { OUTCOME_LABEL } from "../../../convex/lib/drawShare";
 
-/** Rounds emoji trail: 🟩 cleared, 💥 bust; 🏦 bank / 👑 full clear cap. */
-export function buildTrail(rounds: RoundBreakdown[], outcome: RunOutcome): string {
-  const marks: string[] = rounds.map((r) => (r.cleared ? "🟩" : "💥"));
-  if (outcome === "banked") marks.push("🏦");
-  if (outcome === "fullclear") marks.push("👑");
-  return marks.join("");
-}
-
-const FAMILY_WORD: Record<SynergyFamily, string> = {
-  club: "SPINE",
-  nation: "BLOC",
-  era: "WAVE",
-};
-
-/**
- * Build identity line from the largest FIELDED chain across the run, e.g.
- * "CLUB D SPINE ×1.63". Chains come from granted round synergies (fielded
- * cards only, by engine contract) — tags, never card names.
- */
-export function buildIdentity(rounds: RoundBreakdown[]): string | null {
-  let best: { family: SynergyFamily; tag: string; chain: number; mult: number } | null = null;
-  for (const round of rounds) {
-    for (const s of round.synergies) {
-      if (!best || s.chain > best.chain || (s.chain === best.chain && s.mult > best.mult)) {
-        best = s;
-      }
-    }
-  }
-  if (!best) return null;
-  return `${spacedTag(best.tag)} ${FAMILY_WORD[best.family]} ${formatMult(best.mult)}`;
-}
+export {
+  OUTCOME_LABEL,
+  buildIdentity,
+  buildTrail,
+} from "../../../convex/lib/drawShare";
 
 export interface ShareCardData {
   boardNumber: number;

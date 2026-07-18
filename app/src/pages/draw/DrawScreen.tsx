@@ -23,6 +23,7 @@ import {
 import { NeoButton } from "@/components/neo/NeoButton";
 import { NeoCard } from "@/components/neo/NeoCard";
 import { createDrawApi } from "@/lib/drawApi";
+import { buildRunShareUrl, drawModeUrl } from "@/lib/drawShareLinks";
 import type {
   DrawApi,
   DrawLeaderboardEntry,
@@ -168,7 +169,13 @@ export function DrawExperience({ api, revealMs = 380 }: DrawExperienceProps) {
   );
 
   const exit = useCallback(() => navigate("/"), [navigate]);
-  const shareUrl = `${window.location.origin}/draw`;
+  // Ticket I — canonical origin, never window.location.origin (a localhost /
+  // preview origin would be baked into every shared result). A finished run
+  // shares its own /s/r/ landing link; pre-slug views (mock) fall back to the
+  // mode URL.
+  const shareUrl = view?.shareSlug
+    ? buildRunShareUrl(view.shareSlug)
+    : drawModeUrl();
 
   return (
     <div className="fixed inset-0 z-40 bg-background text-foreground overflow-hidden">

@@ -147,6 +147,7 @@ function runWith(overrides: Partial<ServerRun>): ServerRun {
     completedAt: null,
     boardReveal: null,
     hints: null,
+    shareSlug: null,
     choiceLog: [],
     ...overrides,
   };

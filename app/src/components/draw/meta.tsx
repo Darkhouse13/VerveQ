@@ -35,21 +35,11 @@ export const FAMILY_LABEL: Record<SynergyFamily, string> = {
   era: "ERA",
 };
 
-/** "CLUB_D" → "D", "NATION_C" → "C", "ERA_1990s" → "90s". */
-export function shortTag(tag: string): string {
-  if (tag.startsWith("ERA_")) return tag.replace(/^ERA_..(..s)$/, "$1");
-  return tag.replace(/^[A-Z]+_/, "");
-}
+// Ticket I — tag/multiplier formatting moved to convex/lib/drawShare so the
+// server-built share-landing payload uses the exact same formatters.
+import { formatMult, shortTag } from "../../../convex/lib/drawShare";
 
-/** "CLUB_D" → "CLUB D" (identity/share lines). */
-export function spacedTag(tag: string): string {
-  if (tag.startsWith("ERA_")) return `${shortTag(tag)} ERA`;
-  return tag.replace("_", " ");
-}
-
-export function formatMult(mult: number): string {
-  return `×${(Math.round(mult * 100) / 100).toString()}`;
-}
+export { formatMult, shortTag, spacedTag } from "../../../convex/lib/drawShare";
 
 /** One fixture modifier as a compact chip label, e.g. "DEF ×2.69", "PRE-90s ×1.78". */
 export function modifierLabel(mod: FixtureModifier): string {
