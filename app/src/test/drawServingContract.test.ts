@@ -34,8 +34,13 @@ vi.mock("@convex-dev/auth/server", () => ({
   }),
 }));
 
+import { ConvexError } from "convex/values";
 import * as draw from "../../convex/draw";
 import { DRAW_DISABLED_MESSAGE, nextDrawStreak } from "../../convex/draw";
+import {
+  DRAW_AUTH_REQUIRED_CODE,
+  DRAW_DISABLED_CODE,
+} from "../../convex/lib/drawMessages";
 import * as drawSeed from "../../convex/drawSeed";
 import * as drawBoards from "../../convex/drawBoards";
 import {
@@ -144,6 +149,18 @@ describe("drawSettings flag gate", () => {
     await expect(handlerOf(draw.startRun)(env.ctx, {})).rejects.toThrow(
       DRAW_DISABLED_MESSAGE,
     );
+    // Ticket K1 — the gate must be a ConvexError carrying a machine code:
+    // prod redacts plain-Error messages, so data.code is the only signal a
+    // prod client receives. The sentence rides along as data.message.
+    const gateError: unknown = await handlerOf(draw.getToday)(env.ctx, {}).then(
+      () => null,
+      (e: unknown) => e,
+    );
+    expect(gateError).toBeInstanceOf(ConvexError);
+    expect((gateError as ConvexError<Record<string, string>>).data).toEqual({
+      code: DRAW_DISABLED_CODE,
+      message: DRAW_DISABLED_MESSAGE,
+    });
 
     // Tester allowlist admits while still disabled.
     await enable(env, [tester], false);
@@ -160,11 +177,20 @@ describe("drawSettings flag gate", () => {
     const opened = (await handlerOf(draw.getToday)(env.ctx, {})) as { dateKey: string };
     expect(opened.dateKey).toBe(env.today);
 
-    // No auth at all is always rejected.
+    // No auth at all is always rejected — also as a coded ConvexError (K1).
     actAs(null);
     await expect(handlerOf(draw.getToday)(env.ctx, {})).rejects.toThrow(
       "Sign in required",
     );
+    const authError: unknown = await handlerOf(draw.getToday)(env.ctx, {}).then(
+      () => null,
+      (e: unknown) => e,
+    );
+    expect(authError).toBeInstanceOf(ConvexError);
+    expect((authError as ConvexError<Record<string, string>>).data).toEqual({
+      code: DRAW_AUTH_REQUIRED_CODE,
+      message: "Sign in required",
+    });
   });
 });
 

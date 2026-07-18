@@ -13,10 +13,13 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Navigate, useNavigate } from "react-router-dom";
 import { useConvex } from "convex/react";
+import { ConvexError } from "convex/values";
 import { Flame } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { DRAW_ENABLED } from "@/lib/flags";
 import {
+  DRAW_AUTH_REQUIRED_CODE,
+  DRAW_DISABLED_CODE,
   DRAW_DISABLED_MESSAGE,
   DRAW_SIGN_IN_REQUIRED,
 } from "../../../convex/lib/drawMessages";
@@ -56,14 +59,31 @@ interface DrawExperienceProps {
  * session ("Sign in required"), the replay gate, or the network — so failures
  * are surfaced rather than swallowed.
  */
+/**
+ * Machine code off a server throw (Ticket K1). requireDrawUser throws
+ * ConvexError({ code, message }); data survives prod redaction, the message
+ * does not — so the code is the ONLY signal a prod client can rely on.
+ */
+function codeOf(error: unknown): string | null {
+  if (error instanceof ConvexError) {
+    const data: unknown = error.data;
+    if (typeof data === "object" && data !== null && "code" in data) {
+      const code = (data as { code: unknown }).code;
+      if (typeof code === "string") return code;
+    }
+  }
+  return null;
+}
+
 function messageOf(error: unknown): string {
+  const code = codeOf(error);
   const raw = error instanceof Error ? error.message : String(error);
-  // Convex wraps a thrown server Error with its own framing, so match on the
-  // sentence draw.ts threw rather than on equality.
-  if (raw.includes(DRAW_SIGN_IN_REQUIRED)) {
+  // Code first (prod redacts sentences); the sentence match stays as the
+  // dev/legacy fallback only — dev deployments pass messages through.
+  if (code === DRAW_AUTH_REQUIRED_CODE || raw.includes(DRAW_SIGN_IN_REQUIRED)) {
     return "Couldn't start a guest session. Check your connection and retry.";
   }
-  if (raw.includes(DRAW_DISABLED_MESSAGE)) {
+  if (code === DRAW_DISABLED_CODE || raw.includes(DRAW_DISABLED_MESSAGE)) {
     return `${DRAW_DISABLED_MESSAGE}.`;
   }
   return raw;

@@ -16,3 +16,15 @@ export const DRAW_DISABLED_MESSAGE = "THE DRAW is not open yet";
 
 /** Thrown when no authenticated identity reaches a draw function. */
 export const DRAW_SIGN_IN_REQUIRED = "Sign in required";
+
+/**
+ * Machine codes for the same two states (Ticket K1). Convex PRODUCTION
+ * deployments redact plain-Error messages to "Server Error", so the sentences
+ * above never reach a prod client — only ConvexError data survives. The
+ * server throws ConvexError({ code, message }) and the client matches on
+ * `code` first; the sentences stay as display copy and as the dev/legacy
+ * fallback (dev deployments and the LocalMockApi's pre-K1 behavior pass
+ * messages through).
+ */
+export const DRAW_DISABLED_CODE = "DRAW_DISABLED";
+export const DRAW_AUTH_REQUIRED_CODE = "AUTH_REQUIRED";

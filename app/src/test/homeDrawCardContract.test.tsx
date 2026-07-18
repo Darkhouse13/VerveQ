@@ -19,7 +19,8 @@ import { act, fireEvent, render, screen, within } from "@testing-library/react";
 import { MemoryRouter, Route, Routes } from "react-router-dom";
 import type { FunctionReference, FunctionReturnType } from "convex/server";
 import { getFunctionName } from "convex/server";
-import { DRAW_DISABLED_MESSAGE } from "../../convex/lib/drawMessages";
+import { ConvexError } from "convex/values";
+import { DRAW_DISABLED_CODE, DRAW_DISABLED_MESSAGE } from "../../convex/lib/drawMessages";
 import { api } from "../../convex/_generated/api";
 import type { RoundBreakdown } from "@/lib/drawEngine";
 
@@ -311,6 +312,16 @@ describe("HomeDrawCard — container + gating", () => {
 
   it("server gate throw hides the card silently (flag off / not a tester)", async () => {
     convexMock.client.query.mockRejectedValue(new Error(DRAW_DISABLED_MESSAGE));
+    renderCardRoute();
+    await flush();
+
+    expect(screen.queryByTestId("home-draw-card")).toBeNull();
+  });
+
+  it("prod-shaped gate throw (ConvexError code, redacted message) hides the card silently", async () => {
+    // Ticket K1: on prod the sentence never arrives — only ConvexError data
+    // does. The card must stay silently absent on the code alone.
+    convexMock.client.query.mockRejectedValue(new ConvexError({ code: DRAW_DISABLED_CODE }));
     renderCardRoute();
     await flush();
 

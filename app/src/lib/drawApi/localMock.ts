@@ -50,7 +50,10 @@ import type {
   DrawToday,
 } from "./types";
 import { MOCK_CARD_SET_SEED, MOCK_ENGINE_CONFIG } from "./mockConfig";
+import { ConvexError } from "convex/values";
 import {
+  DRAW_AUTH_REQUIRED_CODE,
+  DRAW_DISABLED_CODE,
   DRAW_DISABLED_MESSAGE,
   DRAW_SIGN_IN_REQUIRED,
 } from "../../../convex/lib/drawMessages";
@@ -85,10 +88,18 @@ interface StorageLike {
  */
 export type DrawFaultMode = "authFailure" | "gateClosed" | "networkError";
 
-const FAULT_MESSAGE: Record<DrawFaultMode, string> = {
-  authFailure: DRAW_SIGN_IN_REQUIRED,
-  gateClosed: DRAW_DISABLED_MESSAGE,
-  networkError: "Failed to fetch",
+/**
+ * authFailure/gateClosed mirror the real server exactly (Ticket K1):
+ * requireDrawUser throws ConvexError({ code, message }), because prod redacts
+ * plain-Error messages and only ConvexError data survives. networkError stays
+ * a plain Error — the network layer really does throw those.
+ */
+const FAULT_ERROR: Record<DrawFaultMode, () => Error> = {
+  authFailure: () =>
+    new ConvexError({ code: DRAW_AUTH_REQUIRED_CODE, message: DRAW_SIGN_IN_REQUIRED }),
+  gateClosed: () =>
+    new ConvexError({ code: DRAW_DISABLED_CODE, message: DRAW_DISABLED_MESSAGE }),
+  networkError: () => new Error("Failed to fetch"),
 };
 
 export interface LocalMockApiOptions {
@@ -212,9 +223,9 @@ export class LocalMockApi implements DrawApi {
     this.fault = fault;
   }
 
-  /** Rejects with the server's own sentence when a fault mode is armed. */
+  /** Rejects with the server's own error shape when a fault mode is armed. */
   private failIfFaulted(): void {
-    if (this.fault !== null) throw new Error(FAULT_MESSAGE[this.fault]);
+    if (this.fault !== null) throw FAULT_ERROR[this.fault]();
   }
 
   // ---- DrawApi ------------------------------------------------------------

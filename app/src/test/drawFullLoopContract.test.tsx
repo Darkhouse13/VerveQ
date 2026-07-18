@@ -4,12 +4,17 @@
  * fullclear → result → share card render. Also locks the UI-side choice
  * submission ordering: a double-tap on an offer submits exactly one pick.
  */
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { MemoryRouter } from "react-router-dom";
+import { ConvexError } from "convex/values";
 import { LocalMockApi } from "@/lib/drawApi";
 import { DrawExperience } from "@/pages/draw/DrawScreen";
 import type { DrawFaultMode } from "@/lib/drawApi/localMock";
+import {
+  DRAW_AUTH_REQUIRED_CODE,
+  DRAW_DISABLED_CODE,
+} from "../../convex/lib/drawMessages";
 
 const FIXED_NOW = Date.parse("2026-07-16T12:00:00.000Z");
 
@@ -151,6 +156,38 @@ describe("Draw failure surfacing", () => {
 
   it("translates a lost session into an actionable message, not a raw throw", async () => {
     renderFaulted("authFailure");
+    expect(await screen.findByTestId("draw-error")).toBeInTheDocument();
+    expect(screen.getByText(/Couldn't start a guest session/)).toBeInTheDocument();
+  });
+
+  // Ticket K1 — prod redaction: the sentence NEVER reaches a prod client, so
+  // the ConvexError code alone (no message anywhere in the error) must be
+  // enough to reach each designed state. This is the case the dev deployment
+  // and the sentence-carrying mock faults above structurally cannot catch.
+  it("recognizes the flag gate by ConvexError code alone (prod-redacted shape)", async () => {
+    const api = new LocalMockApi({ now: () => FIXED_NOW, storage: null });
+    vi.spyOn(api, "getToday").mockRejectedValue(
+      new ConvexError({ code: DRAW_DISABLED_CODE }),
+    );
+    render(
+      <MemoryRouter initialEntries={["/draw"]}>
+        <DrawExperience api={api} revealMs={0} />
+      </MemoryRouter>,
+    );
+    expect(await screen.findByTestId("draw-error")).toBeInTheDocument();
+    expect(screen.getByText(/THE DRAW is not open yet\./)).toBeInTheDocument();
+  });
+
+  it("recognizes a lost session by ConvexError code alone (prod-redacted shape)", async () => {
+    const api = new LocalMockApi({ now: () => FIXED_NOW, storage: null });
+    vi.spyOn(api, "getToday").mockRejectedValue(
+      new ConvexError({ code: DRAW_AUTH_REQUIRED_CODE }),
+    );
+    render(
+      <MemoryRouter initialEntries={["/draw"]}>
+        <DrawExperience api={api} revealMs={0} />
+      </MemoryRouter>,
+    );
     expect(await screen.findByTestId("draw-error")).toBeInTheDocument();
     expect(screen.getByText(/Couldn't start a guest session/)).toBeInTheDocument();
   });

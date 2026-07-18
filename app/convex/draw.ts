@@ -20,7 +20,7 @@
  * tester membership. Guests (anonymous auth users) play like anyone else.
  */
 
-import { v } from "convex/values";
+import { ConvexError, v } from "convex/values";
 import { mutation, query } from "./_generated/server";
 import type { MutationCtx, QueryCtx } from "./_generated/server";
 import type { Doc, Id } from "./_generated/dataModel";
@@ -48,7 +48,12 @@ import {
   boardNumberForDate,
   nextBoardAtForDate,
 } from "./lib/drawDaily";
-import { DRAW_DISABLED_MESSAGE, DRAW_SIGN_IN_REQUIRED } from "./lib/drawMessages";
+import {
+  DRAW_AUTH_REQUIRED_CODE,
+  DRAW_DISABLED_CODE,
+  DRAW_DISABLED_MESSAGE,
+  DRAW_SIGN_IN_REQUIRED,
+} from "./lib/drawMessages";
 import { MS_PER_DAY } from "./lib/streaks";
 import { userActorKey } from "./funnel";
 import { generateUniqueRunShareSlug } from "./drawShare";
@@ -74,12 +79,19 @@ async function requireDrawUser(
   ctx: Pick<QueryCtx, "db" | "auth">,
 ): Promise<{ userId: Id<"users">; settings: Doc<"drawSettings"> }> {
   const userId = await getAuthUserId(ctx as QueryCtx);
-  if (!userId) throw new Error(SIGN_IN_REQUIRED);
+  // ConvexError, not Error (Ticket K1): prod redacts plain-Error messages to
+  // "Server Error", so the client matches on data.code — only ConvexError
+  // data crosses a prod deployment intact.
+  if (!userId) {
+    throw new ConvexError({ code: DRAW_AUTH_REQUIRED_CODE, message: SIGN_IN_REQUIRED });
+  }
   const settings = await ctx.db.query("drawSettings").first();
   // No settings row ⇒ the mode was never provisioned ⇒ closed for everyone.
-  if (!settings) throw new Error(DRAW_DISABLED_MESSAGE);
+  if (!settings) {
+    throw new ConvexError({ code: DRAW_DISABLED_CODE, message: DRAW_DISABLED_MESSAGE });
+  }
   if (!settings.enabled && !settings.testerUserIds.includes(userId)) {
-    throw new Error(DRAW_DISABLED_MESSAGE);
+    throw new ConvexError({ code: DRAW_DISABLED_CODE, message: DRAW_DISABLED_MESSAGE });
   }
   return { userId, settings };
 }
