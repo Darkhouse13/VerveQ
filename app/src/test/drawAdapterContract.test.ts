@@ -326,6 +326,11 @@ describe("adapter rename map", () => {
       fullClearBonus: DRAW_ACTIVE_CONFIG.fullClearBonus,
       formSpread: DRAW_ACTIVE_CONFIG.formSpread,
       maxSynergyFamilies: DRAW_ACTIVE_CONFIG.maxSynergyFamilies,
+      // Ticket G3 (c13-2): the hint reliability and the clearance-signal
+      // bucket cutoffs are published rules — same logic as formSpread above:
+      // per-card hints stay server-computed (the seed is what protects them).
+      hintReliability: DRAW_ACTIVE_CONFIG.hints!.hintReliability,
+      clearance: DRAW_ACTIVE_CONFIG.clearance,
     });
     // The board-generation knobs stay out of the client contract entirely:
     // these WOULD narrow the board, and nothing in the UI needs them.

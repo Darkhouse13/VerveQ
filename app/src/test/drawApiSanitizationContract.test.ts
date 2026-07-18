@@ -175,6 +175,50 @@ describe("DrawApi sanitization contract", () => {
     expect(a.boardNumber).toBe(b.boardNumber);
   });
 
+  // ── Ticket G3: hints + clearance buckets are design-public PRE-round;
+  //    exact band values never were an API concern (client arithmetic), but
+  //    the hint payload must stay bucket-strings-only and horizon-scoped. ──
+
+  it("serves the hint/clearance rules knobs (published rules of the game)", async () => {
+    const today = await mkApi().getToday();
+    expect(today.rules.hintReliability).toBe(MOCK_ENGINE_CONFIG.hints!.hintReliability);
+    expect(today.rules.clearance).toEqual(MOCK_ENGINE_CONFIG.clearance);
+  });
+
+  it("serves hint chips pre-round: bench phase carries the upcoming fixture's hints for the squad only", async () => {
+    const api = mkApi();
+    let view = await api.startRun();
+    // No hints during the draft — the squad isn't formed yet.
+    while (view.phase === "draft") {
+      expect(view.hints ?? null).toBeNull();
+      view = await api.submitChoice({ type: "pick", offerIndex: 0 });
+    }
+    // Bench phase: exactly one entry, for the fixture about to be played.
+    expect(view.phase).toBe("bench");
+    expect(view.hints).toHaveLength(1);
+    const entry = view.hints![0];
+    expect(entry.fixtureIndex).toBe(view.fixtureIndex);
+    const squadIds = view.squad.map((c) => c.id).sort();
+    expect(Object.keys(entry.byCard).sort()).toEqual(squadIds);
+    for (const hint of Object.values(entry.byCard)) {
+      expect(["COLD", "NEUTRAL", "HOT"]).toContain(hint);
+    }
+    // Still no form anywhere pre-resolution — a hint is a bucket, not a draw.
+    expect(collectKeys(view).has("form")).toBe(false);
+
+    // Decision phase: the NEXT fixture's hints (the push horizon), only that.
+    view = await api.submitChoice({ type: "bench", squadIndex: 0 });
+    if (view.phase === "decision") {
+      expect(view.hints).toHaveLength(1);
+      expect(view.hints![0].fixtureIndex).toBe(view.fixtureIndex + 1);
+    }
+  });
+
+  it("hints are deterministic and shared: two users see identical chips", async () => {
+    const [a, b] = await Promise.all([draftAll(mkApi()), draftAll(mkApi())]);
+    expect(a.hints).toEqual(b.hints);
+  });
+
   it("P0-runtime: the served board is full-clearable via the reroll chain", async () => {
     const cardSet = generateCardSet(MOCK_CARD_SET_SEED, MOCK_ENGINE_CONFIG.cardGen);
     const { board, rerolls } = resolveBoardForDate("2026-07-16", cardSet, MOCK_ENGINE_CONFIG);

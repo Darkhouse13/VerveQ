@@ -98,6 +98,7 @@ const ChallengeArenaScreen = lazy(() => import("./pages/ChallengeArenaScreen"));
 // the screen itself; unlinked from any nav. Lazy so it stays out of the main
 // bundle; with the flag off the route just bounces to "/".
 const DrawScreen = lazy(() => import("./pages/draw/DrawScreen"));
+const DrawMockHarness = lazy(() => import("./pages/draw/DrawMockHarness"));
 
 const convex = new ConvexReactClient(
   import.meta.env.VITE_CONVEX_URL as string,
@@ -513,6 +514,9 @@ const AppRoutes = () => (
             {/* THE DRAW — dev/preview only, flag-gated (VITE_DRAW_ENABLED),
                 not linked from home, nav, or any mode grid. */}
             <Route path="/draw" element={<DrawScreen />} />
+            {/* DEV-only mock harness (Ticket G3): LocalMockApi-driven, for
+                visual QA of the c13-2 UI. Redirects home in prod builds. */}
+            <Route path="/draw-harness" element={<DrawMockHarness />} />
             {/* Public legal pages — no auth, no flag gate (launch/app-store
                 requirements; must render regardless of rollout state). */}
             <Route path="/privacy" element={<PrivacyScreen />} />

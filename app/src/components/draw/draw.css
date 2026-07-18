@@ -134,3 +134,57 @@
   .draw-ghost-seg { opacity: 0.6; }
   .draw-offer-selected { transition: none; }
 }
+
+/* ── Ticket G3: staged reveal + verdict punch ─────────────────────────── */
+
+/* A per-card contribution landing in the strip. */
+@keyframes draw-reveal-land {
+  0% { opacity: 0; transform: translateY(4px) scale(1.4); }
+  60% { opacity: 1; transform: translateY(0) scale(1.15); }
+  100% { opacity: 1; transform: none; }
+}
+.draw-reveal-land {
+  animation: draw-reveal-land 220ms ease-out both;
+}
+
+/* The synergy multiplier stamping onto the fixture card. */
+@keyframes draw-reveal-stamp {
+  0% { opacity: 0; transform: scale(1.6); }
+  70% { opacity: 1; transform: scale(0.95); }
+  100% { opacity: 1; transform: none; }
+}
+.draw-reveal-stamp {
+  animation: draw-reveal-stamp 260ms ease-out both;
+}
+
+/* CLEARED / FAILED slamming in after the beat. */
+@keyframes draw-reveal-verdict {
+  0% { opacity: 0; transform: scale(2); }
+  60% { opacity: 1; transform: scale(0.9); }
+  100% { opacity: 1; transform: none; }
+}
+.draw-reveal-verdict {
+  animation: draw-reveal-verdict 300ms cubic-bezier(0.2, 1.4, 0.4, 1) both;
+}
+
+/* Bust: a hard shake on the whole stage. */
+@keyframes draw-punch-bust {
+  0%, 100% { transform: none; }
+  15% { transform: translateX(-6px); }
+  35% { transform: translateX(5px); }
+  55% { transform: translateX(-3px); }
+  75% { transform: translateX(2px); }
+}
+.draw-punch-bust {
+  animation: draw-punch-bust 420ms ease-in-out 1;
+}
+
+/* Full clear: a triumphant pop. */
+@keyframes draw-punch-clear {
+  0% { transform: scale(1); }
+  35% { transform: scale(1.02); }
+  100% { transform: scale(1); }
+}
+.draw-punch-clear {
+  animation: draw-punch-clear 500ms cubic-bezier(0.2, 1.4, 0.4, 1) 1;
+}

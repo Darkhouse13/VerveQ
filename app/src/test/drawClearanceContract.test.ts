@@ -53,7 +53,7 @@ describe("clearanceSignal semantics", () => {
   });
 });
 
-describe("c13-2 module (Ticket G2 — accepted, NOT activated)", () => {
+describe("c13-2 module (Ticket G2 — accepted; activated by G3)", () => {
   it("pins the accepted c13-2 knobs (a retune must be a NEW version module)", () => {
     expect(C13V2_CONFIG_VERSION).toBe("c13-2");
     expect(C13V2_CONFIG.formSpread).toBe(0.48);
@@ -73,11 +73,11 @@ describe("c13-2 module (Ticket G2 — accepted, NOT activated)", () => {
     expect(C13V2_CONFIG.fullClearBonus).toBe(C13V1_CONFIG.fullClearBonus);
   });
 
-  it("c13-2 is NOT the active serving config (activation is a separate owner ticket)", () => {
-    expect(DRAW_CONFIG_VERSION).toBe("c13-1");
-    expect(DRAW_ACTIVE_CONFIG).toBe(C13V1_CONFIG);
-    expect(DRAW_ACTIVE_CONFIG.hints).toBeUndefined();
-    expect(DRAW_ACTIVE_CONFIG.clearance).toBeUndefined();
+  it("c13-2 IS the active serving config (Ticket G3 activation)", () => {
+    expect(DRAW_CONFIG_VERSION).toBe("c13-2");
+    expect(DRAW_ACTIVE_CONFIG).toBe(C13V2_CONFIG);
+    expect(DRAW_ACTIVE_CONFIG.hints).toEqual({ hintReliability: 0.6 });
+    expect(DRAW_ACTIVE_CONFIG.clearance).toEqual({ safeRatio: 1.15, longshotRatio: 1.05 });
   });
 });
 

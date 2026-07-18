@@ -2,12 +2,12 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Crown, Info } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { NeoButton } from "@/components/neo/NeoButton";
-import type { Card, Fixture, RoundBreakdown } from "@/lib/drawEngine";
+import type { Card, Fixture, FormHint, RoundBreakdown } from "@/lib/drawEngine";
 import type { DrawRules, DrawRunView } from "@/lib/drawApi/types";
 import { archetypeMeta, modifierLabel, formatMult } from "./meta";
 import { DIR_ARROW, effectTokens } from "./fixtureEffects";
-import { bustKeepValue, projectRound } from "./projection";
-import { ProjectedBand } from "./ProjectedBand";
+import { bustKeepValue } from "./projection";
+import { ClearanceMeter } from "./ClearanceMeter";
 import { FixtureSheet } from "./FixtureSheet";
 import { CardDetailSheet } from "./CardDetailSheet";
 import { CoachMark } from "./CoachMark";
@@ -21,7 +21,11 @@ interface RoundStageProps {
   view: DrawRunView;
   rules: DrawRules;
   locked: boolean;
-  /** Reveal beat before the decision panel appears; tests pass 0. */
+  /**
+   * Ticket G3 reveal staging: per-beat duration of the staged resolution
+   * (contributions land one by one, multiplier stamps, total, verdict —
+   * ~2.5–3.5s all in, skippable on tap). Tests pass 0 for an instant reveal.
+   */
   revealMs?: number;
   onBench: (squadIndex: number) => void;
   onBank: () => void;
@@ -33,19 +37,29 @@ interface RoundStageProps {
 /** Long-press opens a card's detail without firing its bench tap (F7). */
 const LONG_PRESS_MS = 450;
 
+/** Ticket G3 — hint chip glyphs (🔥 / — / ❄). */
+const HINT_GLYPH: Record<FormHint, string> = {
+  HOT: "🔥",
+  NEUTRAL: "—",
+  COLD: "❄",
+};
+
 /**
- * S3 — round view (LAYOUT_SPEC "Round view" + Ticket F, 628px of the 812px
- * budget): fixture card w/ effect line + threshold, tap-to-bench squad strip
- * (exactly one benched, changeable until CONFIRM), synergy meters on the
- * fielded five, the projected band / score bar, the stake panel, then
- * BANK / PUSH. Bust and full-clear states end here with a CONTINUE out.
- * No scroll.
+ * S3 — round view (LAYOUT_SPEC "Round view" + Tickets F/G3, 628px of the
+ * 812px budget): fixture card w/ effect line + threshold, tap-to-bench squad
+ * strip with form-hint chips (exactly one benched, changeable until CONFIRM),
+ * synergy meters on the fielded five, the clearance meter / score bar, the
+ * stake panel, then BANK / PUSH. Score resolution is a STAGED sequence
+ * (Ticket G3): per-card contributions land one by one, the multiplier stamps,
+ * then the total meets the threshold with a deliberate beat before
+ * CLEAR/FAIL — pacing, not latency theater; a tap skips it. Bust and
+ * full-clear states end here with a CONTINUE out. No scroll.
  */
 export function RoundStage({
   view,
   rules,
   locked,
-  revealMs = 900,
+  revealMs = 380,
   onBench,
   onBank,
   onPush,
@@ -54,17 +68,40 @@ export function RoundStage({
   // Rounds already shown to the player. Initialized to the mounted view so a
   // resumed run (reload mid-decision) doesn't replay the reveal animation.
   const [seenRounds, setSeenRounds] = useState(() => view.rounds.length);
+  const [revealStep, setRevealStep] = useState(0);
   const [selected, setSelected] = useState<number | null>(null);
   const [sheetFixture, setSheetFixture] = useState<Fixture | null>(null);
   const [sheetCard, setSheetCard] = useState<Card | null>(null);
   const coach = useCoachMarks();
 
   const pendingReveal = view.rounds.length > seenRounds;
+  const lastRound: RoundBreakdown | null = view.rounds[view.rounds.length - 1] ?? null;
+  const fieldedCount = lastRound?.cards.length ?? 0;
+  // Beats: one per fielded card, then multiplier stamp, then total, then the
+  // verdict. The verdict beat is deliberately longer (see effect below).
+  const revealSteps = fieldedCount + 3;
+
+  const finishReveal = useCallback(() => {
+    setSeenRounds(view.rounds.length);
+    setRevealStep(0);
+  }, [view.rounds.length]);
+
   useEffect(() => {
     if (!pendingReveal) return;
-    const timer = window.setTimeout(() => setSeenRounds(view.rounds.length), revealMs);
+    if (revealMs === 0) {
+      finishReveal();
+      return;
+    }
+    if (revealStep >= revealSteps) {
+      // The beat after CLEAR/FAIL lands — long enough to read the verdict.
+      const timer = window.setTimeout(finishReveal, revealMs * 1.6);
+      return () => window.clearTimeout(timer);
+    }
+    // The pause BEFORE the total meets the threshold is the tension beat.
+    const beat = revealStep === fieldedCount + 1 ? revealMs * 1.4 : revealMs;
+    const timer = window.setTimeout(() => setRevealStep((s) => s + 1), beat);
     return () => window.clearTimeout(timer);
-  }, [pendingReveal, view.rounds.length, revealMs]);
+  }, [pendingReveal, revealStep, revealSteps, revealMs, fieldedCount, finishReveal]);
 
   // A new fixture (after PUSH) starts with a clean bench choice.
   useEffect(() => {
@@ -79,7 +116,12 @@ export function RoundStage({
         ? "decision"
         : "done";
 
-  const lastRound: RoundBreakdown | null = view.rounds[view.rounds.length - 1] ?? null;
+  // Reveal staging visibility gates. Outside a pending reveal everything is
+  // shown (resumed runs, decision phase, done states).
+  const synergyShown = !pendingReveal || revealStep > fieldedCount;
+  const totalShown = !pendingReveal || revealStep > fieldedCount + 1;
+  const verdictShown = !pendingReveal || revealStep >= revealSteps;
+
   // In select mode the strip/bar frame the UPCOMING fixture; once a round has
   // resolved they show the fixture just played.
   const shownFixtureIndex =
@@ -98,13 +140,15 @@ export function RoundStage({
   }, [mode, selected, view.squad, lastRound]);
 
   const resolved = mode !== "select" && lastRound !== null;
-  const score = resolved ? lastRound.score : null;
+  const score = resolved && totalShown ? lastRound!.score : null;
   const fillPct = score === null ? 0 : Math.min((score / fixture.threshold) * 100, 115);
 
   const perCard = useMemo(() => {
-    const map = new Map<string, { contribution: number; form: number }>();
+    const map = new Map<string, { contribution: number; form: number; order: number }>();
     if (resolved && lastRound) {
-      for (const c of lastRound.cards) map.set(c.cardId, { contribution: c.contribution, form: c.form });
+      lastRound.cards.forEach((c, order) =>
+        map.set(c.cardId, { contribution: c.contribution, form: c.form, order }),
+      );
     }
     return map;
   }, [resolved, lastRound]);
@@ -112,21 +156,16 @@ export function RoundStage({
   const nextFixture = view.fixtures[view.fixtureIndex + 1] ?? null;
 
   /**
-   * F3a — the band for the five that would take the pitch under the current
-   * bench selection. Recomputed on every toggle: this is what makes benching a
-   * decision rather than a formality. Only meaningful once exactly one card is
-   * benched, so it stays null until then.
+   * Ticket G3 — the hint chips' source: the served entry for the fixture the
+   * chips describe (the one being benched for, or the next one at a
+   * decision). Never derived client-side — hints are seeded server-side.
    */
-  const selectBand = useMemo(() => {
-    if (mode !== "select" || selected === null) return null;
-    return projectRound(meterCards, fixture, rules);
-  }, [mode, selected, meterCards, fixture, rules]);
-
-  /** F3b — what the SAME five would face if the player pushes on. */
-  const pushBand = useMemo(() => {
-    if (mode !== "decision" || nextFixture === null) return null;
-    return projectRound(meterCards, nextFixture, rules);
-  }, [mode, nextFixture, meterCards, rules]);
+  const hintByCard: Record<string, FormHint> | null = useMemo(() => {
+    const wanted =
+      mode === "select" ? view.fixtureIndex : mode === "decision" ? view.fixtureIndex + 1 : null;
+    if (wanted === null) return null;
+    return view.hints?.find((h) => h.fixtureIndex === wanted)?.byCard ?? null;
+  }, [mode, view.fixtureIndex, view.hints]);
 
   // ── F7 long-press ────────────────────────────────────────────────────────
   const pressTimer = useRef<number | null>(null);
@@ -164,15 +203,35 @@ export function RoundStage({
     setSelected(index);
   };
 
+  // Ticket G3 — the ONE hint coach mark, first run only: it takes the bench
+  // slot once the bench mark has been dismissed and hints are on the table.
+  const hintsAvailable = hintByCard !== null;
+  const selectCoachId =
+    coach.seen.has("bench") && hintsAvailable ? ("hints" as const) : ("bench" as const);
+
+  // Ticket G3 — bust / full-clear get their own punch once the verdict lands.
+  const punchClass =
+    mode !== "select" && verdictShown && view.phase === "done"
+      ? view.outcome === "busted"
+        ? "draw-punch-bust"
+        : view.outcome === "fullclear"
+          ? "draw-punch-clear"
+          : undefined
+      : undefined;
+
   return (
     <div
-      className="relative flex flex-col flex-1 min-h-0"
+      className={cn("relative flex flex-col flex-1 min-h-0", punchClass)}
       style={{ gap: LAYOUT.sectionGap }}
       data-testid="draw-round-stage"
+      // A tap during the staged reveal skips straight to the verdict.
+      onPointerDown={pendingReveal ? finishReveal : undefined}
+      data-revealing={pendingReveal ? "true" : undefined}
     >
       {/* Fixture card — archetype, effect line, modifiers, threshold; the
-          resolution math once the round has played (form revealed per card in
-          the strip below). Tappable for the same sheet the strip opens (F1b). */}
+          resolution math lands with the multiplier stamp of the staged reveal
+          (form revealed per card in the strip below). Tappable for the same
+          sheet the strip opens (F1b). */}
       <button
         type="button"
         onClick={() => setSheetFixture(fixture)}
@@ -238,21 +297,48 @@ export function RoundStage({
             </span>
           ))}
         </div>
-        {resolved && lastRound && (
+        {resolved && lastRound && synergyShown && (
           <p className="font-mono font-bold text-[11px] mt-auto" data-testid="draw-round-math">
-            {Math.round(lastRound.baseSum)} {formatMult(lastRound.synergyMult)} ={" "}
-            <span className={lastRound.cleared ? "text-success" : "text-destructive"}>
-              {Math.round(lastRound.score)}
-            </span>{" "}
-            {lastRound.cleared ? "CLEARED" : "FAILED"}
+            <span className="draw-reveal-stamp inline-block">
+              {Math.round(lastRound.baseSum)} {formatMult(lastRound.synergyMult)}
+            </span>
+            {totalShown && (
+              <>
+                {" "}
+                ={" "}
+                <span
+                  className={cn(
+                    verdictShown
+                      ? lastRound.cleared
+                        ? "text-success"
+                        : "text-destructive"
+                      : "text-foreground",
+                  )}
+                >
+                  {Math.round(lastRound.score)}
+                </span>
+              </>
+            )}
+            {verdictShown && (
+              <span
+                className={cn(
+                  "draw-reveal-verdict inline-block ml-1",
+                  lastRound.cleared ? "text-success" : "text-destructive",
+                )}
+                data-testid="draw-round-verdict"
+              >
+                {lastRound.cleared ? "CLEARED" : "FAILED"}
+              </span>
+            )}
           </p>
         )}
       </button>
 
       {/* Tap-to-bench squad strip (Ticket 0.2 D2): before the reveal it is the
-          bench selector; after, it shows the fielded five with their revealed
-          form + contribution, the benched card visually on the bench.
-          Long-press any chip for its detail sheet (F7). */}
+          bench selector — each chip carrying its form-hint glyph (G3) — after,
+          the fielded five land one by one with their revealed form +
+          contribution, the benched card visually on the bench. Long-press any
+          chip for its detail sheet (F7). */}
       <div
           className="flex shrink-0"
           style={{ height: LAYOUT.benchStripH, gap: LAYOUT.squadChipGap }}
@@ -261,6 +347,9 @@ export function RoundStage({
           {view.squad.map((card, i) => {
             const benchedNow = mode === "select" ? selected === i : lastRound?.benchedCardId === card.id;
             const stat = perCard.get(card.id);
+            const statShown =
+              stat !== undefined && (!pendingReveal || revealStep > stat.order);
+            const hint = hintByCard?.[card.id];
             return (
               <div key={card.id} className="flex-1 min-w-0 flex flex-col" style={{ gap: 4 }}>
                 <button
@@ -273,19 +362,32 @@ export function RoundStage({
                   onContextMenu={(e) => e.preventDefault()}
                   aria-pressed={mode === "select" ? selected === i : undefined}
                   className={cn(
-                    "neo-border rounded-lg bg-card flex flex-col items-center justify-center min-w-0 px-0.5 touch-none",
+                    "relative neo-border rounded-lg bg-card flex flex-col items-center justify-center min-w-0 px-0.5 touch-none",
                     mode === "select" && "cursor-pointer neo-shadow-sm active:neo-shadow-pressed",
                     benchedNow && "draw-benched",
                   )}
                   style={{ height: 64 }}
                   data-testid={`draw-squad-chip-${i}`}
                 >
+                  {hint !== undefined && (
+                    <span
+                      className="absolute top-0.5 right-0.5 text-[9px] leading-none"
+                      data-testid={`draw-hint-chip-${i}`}
+                      data-hint={hint}
+                      aria-label={`form hint: ${hint.toLowerCase()}`}
+                    >
+                      {HINT_GLYPH[hint]}
+                    </span>
+                  )}
                   <span className="font-mono font-bold text-base leading-none">{card.rating}</span>
                   <span className="font-heading font-bold text-[8px] leading-tight text-muted-foreground">
                     {card.position}
                   </span>
-                  {stat && (
-                    <span className="font-mono font-bold text-[9px] leading-none">
+                  {statShown && stat && (
+                    <span
+                      className="font-mono font-bold text-[9px] leading-none draw-reveal-land"
+                      data-testid={`draw-contribution-${i}`}
+                    >
                       {stat.form >= 1 ? "▲" : "▼"}
                       {Math.round(stat.contribution)}
                     </span>
@@ -308,10 +410,11 @@ export function RoundStage({
 
       <SynergyMeters cards={meterCards} synergyTable={rules.synergyTable} />
 
-      {/* One 56px slot: the projected band while choosing (F3a), the resolved
-          score once the round has played. */}
-      {mode === "select" && selectBand !== null ? (
-        <ProjectedBand band={selectBand} threshold={fixture.threshold} label="YOUR FIVE" />
+      {/* One 56px slot: the clearance meter while choosing (G3 — the coarse
+          SAFE/TIGHT/LONGSHOT read that replaced the exact band), the resolved
+          score once the staged reveal reaches the total. */}
+      {mode === "select" && selected !== null ? (
+        <ClearanceMeter fielded={meterCards} fixture={fixture} rules={rules} label="YOUR FIVE" />
       ) : (
         <div
           className="neo-border rounded-lg bg-card flex flex-col justify-center px-3 shrink-0"
@@ -326,7 +429,13 @@ export function RoundStage({
             <div
               className={cn(
                 "draw-bar-fill h-full rounded-full",
-                score === null ? "bg-muted" : lastRound?.cleared ? "bg-success" : "bg-destructive",
+                score === null
+                  ? "bg-muted"
+                  : verdictShown
+                    ? lastRound?.cleared
+                      ? "bg-success"
+                      : "bg-destructive"
+                    : "bg-foreground/50",
               )}
               style={{ width: `${fillPct}%` }}
             />
@@ -341,12 +450,13 @@ export function RoundStage({
         style={{ height: DECISION_INFO_H, gap: 4 }}
         data-testid="draw-stake-panel"
       >
-        {mode === "decision" && pushBand !== null && nextFixture !== null && (
-          <ProjectedBand
-            band={pushBand}
-            threshold={nextFixture.threshold}
+        {mode === "decision" && nextFixture !== null && (
+          <ClearanceMeter
+            fielded={meterCards}
+            fixture={nextFixture}
+            rules={rules}
             label="IF YOU PUSH"
-            testId="draw-push-band"
+            testId="draw-push-meter"
           />
         )}
         <div className="flex items-center justify-between px-1">
@@ -441,11 +551,12 @@ export function RoundStage({
       </div>
 
       {/* Pinned to the stage's bottom slack — see CoachMark. The bench and
-          bank/push marks land directly under the button they describe, without
-          covering the band or the stake panel that button acts on. */}
+          bank/push marks land directly under the button they describe; the
+          hint mark (G3, one, first-run) takes the bench slot once the bench
+          mark is dismissed and hint chips are visible. */}
       {(mode === "select" || mode === "decision") && (
         <CoachMark
-          id={mode === "select" ? "bench" : "decision"}
+          id={mode === "select" ? selectCoachId : "decision"}
           seen={coach.seen}
           onDismiss={coach.dismiss}
           onSkipAll={coach.skipAll}

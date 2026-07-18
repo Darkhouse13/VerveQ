@@ -20,8 +20,9 @@
 
 import { v } from "convex/values";
 import { internalMutation, internalQuery } from "./_generated/server";
-import { generateCardSet, type EngineConfig, type PositionId } from "../src/lib/drawEngine";
+import { formHint, generateCardSet, type EngineConfig, type PositionId } from "../src/lib/drawEngine";
 import { C13V1_CONFIG, C13V1_CONFIG_VERSION } from "../src/lib/drawEngine/configs/c13v1";
+import { C13V2_CONFIG, C13V2_CONFIG_VERSION } from "../src/lib/drawEngine/configs/c13v2";
 // The committed real card set (selector artifact; byte-guarded by
 // drawCardSetSelectorContract). Bundled at deploy time — the DB seed is a
 // FULL SYNC of this file under DRAW_REAL_SET_VERSION.
@@ -43,14 +44,19 @@ interface RealCandidateCard {
 export const DRAW_SET_VERSION = "synthetic-v1";
 export const DRAW_REAL_SET_VERSION = "real-v4";
 export const DRAW_CARD_SET_SEED = "accept-0.3|cards0";
-export const DRAW_CONFIG_VERSION = C13V1_CONFIG_VERSION;
+// Ticket G3 — c13-2 (engine v1.1 hints + clearance buckets, accepted 13/13
+// under profile v1.2) is the ACTIVE config for new settings and new boards.
+// c13-1 stays registered: historical drawDailyBoards rows pin it by
+// configVersion and must replay forever.
+export const DRAW_CONFIG_VERSION = C13V2_CONFIG_VERSION;
 
 const DRAW_CONFIGS: Record<string, EngineConfig> = {
   [C13V1_CONFIG_VERSION]: C13V1_CONFIG,
+  [C13V2_CONFIG_VERSION]: C13V2_CONFIG,
 };
 
 /** The currently pinned serving config (read-only export for scripts/tests). */
-export const DRAW_ACTIVE_CONFIG: EngineConfig = C13V1_CONFIG;
+export const DRAW_ACTIVE_CONFIG: EngineConfig = C13V2_CONFIG;
 
 export function resolveDrawConfig(configVersion: string): EngineConfig {
   const config = DRAW_CONFIGS[configVersion];
@@ -234,6 +240,63 @@ export const updateSettings = internalMutation({
       testerUserIds,
     });
     return await ctx.db.get(settings._id);
+  },
+});
+
+/**
+ * Ticket G3 — ops proof of what the serving layer would publish, without the
+ * auth gate getToday sits behind: the active configVersion, the published
+ * hint/clearance rules, today's board pin, and a sample hint computed the
+ * same way runView's hintsView does. Read-only; leaks bucket strings only
+ * (never the seed value itself in a meaningful form — the boardSeed is
+ * internal already and is NOT returned here).
+ * Run: npx convex run drawSeed:previewServing
+ */
+export const previewServing = internalQuery({
+  args: {},
+  handler: async (ctx) => {
+    const settings = await ctx.db.query("drawSettings").first();
+    if (!settings) return { settings: null };
+    const config = resolveDrawConfig(settings.configVersion);
+    const today = new Date().toISOString().slice(0, 10);
+    const board = await ctx.db
+      .query("drawDailyBoards")
+      .withIndex("by_dateKey", (q) => q.eq("dateKey", today))
+      .first();
+    const firstCardId = board?.board.rows[0]?.[0]?.id ?? null;
+    return {
+      enabled: settings.enabled,
+      configVersion: settings.configVersion,
+      activeSetVersion: settings.activeSetVersion,
+      publishedRules: {
+        formSpread: config.formSpread,
+        thresholds: config.thresholds,
+        hintReliability: config.hints?.hintReliability ?? null,
+        clearance: config.clearance ?? null,
+      },
+      todayBoard: board
+        ? {
+            dateKey: board.dateKey,
+            configVersion: board.configVersion,
+            setVersion: board.setVersion,
+            rerollIndex: board.rerollIndex,
+            sliceCardCount: board.sliceCardIds?.length ?? null,
+            sampleHint:
+              config.hints && firstCardId
+                ? {
+                    cardId: firstCardId,
+                    fixtureIndex: 0,
+                    hint: formHint(
+                      board.boardSeed,
+                      firstCardId,
+                      0,
+                      config.hints.hintReliability,
+                    ),
+                  }
+                : null,
+          }
+        : null,
+    };
   },
 });
 

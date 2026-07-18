@@ -14,6 +14,7 @@
 
 import { describe, expect, it } from "vitest";
 import { C13V1_CONFIG, C13V1_CONFIG_VERSION } from "@/lib/drawEngine/configs/c13v1";
+import { C13V2_CONFIG, C13V2_CONFIG_VERSION } from "@/lib/drawEngine/configs/c13v2";
 import { MOCK_ENGINE_CONFIG } from "@/lib/drawApi/mockConfig";
 import {
   DRAW_ACTIVE_CONFIG,
@@ -30,13 +31,17 @@ describe("draw config single-source", () => {
   it("both sides are the SAME object — not two copies that happen to match", () => {
     // Deep-equality alone would still pass if someone re-pasted the literal.
     // Identity is what makes a divergent copy impossible to introduce without
-    // deleting the shared import.
-    expect(MOCK_ENGINE_CONFIG).toBe(C13V1_CONFIG);
-    expect(DRAW_ACTIVE_CONFIG).toBe(C13V1_CONFIG);
+    // deleting the shared import. Ticket G3: the active config is c13-2.
+    expect(MOCK_ENGINE_CONFIG).toBe(C13V2_CONFIG);
+    expect(DRAW_ACTIVE_CONFIG).toBe(C13V2_CONFIG);
   });
 
   it("the registered configVersion resolves to the shared config", () => {
-    expect(DRAW_CONFIG_VERSION).toBe(C13V1_CONFIG_VERSION);
+    expect(DRAW_CONFIG_VERSION).toBe(C13V2_CONFIG_VERSION);
+    expect(resolveDrawConfig(C13V2_CONFIG_VERSION)).toBe(C13V2_CONFIG);
+  });
+
+  it("c13-1 stays registered — historical boards pin it by configVersion", () => {
     expect(resolveDrawConfig(C13V1_CONFIG_VERSION)).toBe(C13V1_CONFIG);
   });
 
@@ -68,5 +73,6 @@ describe("draw config single-source", () => {
 
   it("carries no bot knobs — kGreedy is a sim concern, not a serving one", () => {
     expect(C13V1_CONFIG as unknown as Record<string, unknown>).not.toHaveProperty("kGreedy");
+    expect(C13V2_CONFIG as unknown as Record<string, unknown>).not.toHaveProperty("kGreedy");
   });
 });

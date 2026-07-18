@@ -18,10 +18,10 @@
 import { describe, it, expect } from "vitest";
 import { ConvexDrawApi } from "@/lib/drawApi";
 import type { DrawConvexClient } from "@/lib/drawApi";
-import { C13V1_CONFIG } from "@/lib/drawEngine/configs/c13v1";
+import { C13V2_CONFIG } from "@/lib/drawEngine/configs/c13v2";
 import { MOCK_ENGINE_CONFIG } from "@/lib/drawApi/mockConfig";
 
-/** What convex/draw.ts#rulesView sends since E5 — the full DrawRules shape. */
+/** What convex/draw.ts#rulesView sends since E5/G3 — the full DrawRules shape. */
 const SERVER_RULES = {
   rows: 6,
   offersPerRow: 3,
@@ -29,8 +29,10 @@ const SERVER_RULES = {
   synergyTable: [1, 1, 1, 1.335, 1.4818, 1.6285],
   bustKeep: 0.1501,
   fullClearBonus: 1.4664,
-  formSpread: C13V1_CONFIG.formSpread,
-  maxSynergyFamilies: C13V1_CONFIG.maxSynergyFamilies,
+  formSpread: C13V2_CONFIG.formSpread,
+  maxSynergyFamilies: C13V2_CONFIG.maxSynergyFamilies,
+  hintReliability: C13V2_CONFIG.hints!.hintReliability,
+  clearance: { ...C13V2_CONFIG.clearance! },
 };
 
 const FIXTURES = [
@@ -76,11 +78,14 @@ describe("Draw rules are server-supplied (Ticket F → E5)", () => {
     const today = await api.getToday();
 
     // convex/draw.ts rulesView reads resolveDrawConfig(...)'s config, which is
-    // the same C13V1_CONFIG object the mock uses (single-source contract), so
-    // the wire values equal the pinned knobs.
-    expect(today.rules.formSpread).toBe(C13V1_CONFIG.formSpread);
-    expect(today.rules.maxSynergyFamilies).toBe(C13V1_CONFIG.maxSynergyFamilies);
+    // the same C13V2_CONFIG object the mock uses (single-source contract), so
+    // the wire values equal the pinned knobs (Ticket G3: incl. the hint
+    // reliability + clearance cutoffs).
+    expect(today.rules.formSpread).toBe(C13V2_CONFIG.formSpread);
+    expect(today.rules.maxSynergyFamilies).toBe(C13V2_CONFIG.maxSynergyFamilies);
     expect(today.rules.formSpread).toBe(MOCK_ENGINE_CONFIG.formSpread);
+    expect(today.rules.hintReliability).toBe(C13V2_CONFIG.hints!.hintReliability);
+    expect(today.rules.clearance).toEqual(C13V2_CONFIG.clearance);
   });
 
   it("still copies field-by-field — no server payload is spread through", async () => {
@@ -93,9 +98,11 @@ describe("Draw rules are server-supplied (Ticket F → E5)", () => {
     // server payload must not ride along into the client contract.
     expect(Object.keys(today.rules).sort()).toEqual([
       "bustKeep",
+      "clearance",
       "fixtureCount",
       "formSpread",
       "fullClearBonus",
+      "hintReliability",
       "maxSynergyFamilies",
       "offersPerRow",
       "rows",

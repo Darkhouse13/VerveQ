@@ -44,7 +44,7 @@ type Stage = "loading" | "entry" | "play" | "result" | "error";
 
 interface DrawExperienceProps {
   api: DrawApi;
-  /** Round-reveal beat; tests pass 0. */
+  /** Per-beat duration of the staged reveal (Ticket G3); tests pass 0. */
   revealMs?: number;
 }
 
@@ -69,7 +69,7 @@ function messageOf(error: unknown): string {
 }
 
 /** The full mock-driven experience. Exported ungated for component tests. */
-export function DrawExperience({ api, revealMs = 900 }: DrawExperienceProps) {
+export function DrawExperience({ api, revealMs = 380 }: DrawExperienceProps) {
   const navigate = useNavigate();
   const [stage, setStage] = useState<Stage>("loading");
   const [today, setToday] = useState<DrawToday | null>(null);

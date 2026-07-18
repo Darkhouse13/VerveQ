@@ -55,6 +55,7 @@
 import { api } from "../../../convex/_generated/api";
 import type {
   DrawApi,
+  DrawHintsEntry,
   DrawLeaderboardEntry,
   DrawRarity,
   DrawRules,
@@ -105,6 +106,7 @@ interface ServerRun {
   draftLineHash: string | null;
   completedAt: number | null;
   boardReveal: { rows: ServerCard[][] } | null;
+  hints: DrawHintsEntry[] | null;
   choiceLog: unknown;
 }
 
@@ -205,6 +207,13 @@ function rulesView(rules: ServerRules): DrawRules {
     fullClearBonus: rules.fullClearBonus,
     formSpread: rules.formSpread,
     maxSynergyFamilies: rules.maxSynergyFamilies,
+    // Ticket G3 — published hint/clearance rules (absent on pre-v1.1 configs).
+    ...(rules.hintReliability !== undefined
+      ? { hintReliability: rules.hintReliability }
+      : {}),
+    ...(rules.clearance !== undefined
+      ? { clearance: { safeRatio: rules.clearance.safeRatio, longshotRatio: rules.clearance.longshotRatio } }
+      : {}),
   };
 }
 
@@ -226,6 +235,11 @@ function runView(run: ServerRun): DrawRunView {
     fullBoard: run.boardReveal === null ? null : run.boardReveal.rows.map((r) => r.map(card)),
     status: run.status,
     draftLineHash: run.draftLineHash,
+    // Ticket G3 — hint chips: field-by-field copy, bucket strings only.
+    hints:
+      run.hints === null || run.hints === undefined
+        ? null
+        : run.hints.map((h) => ({ fixtureIndex: h.fixtureIndex, byCard: { ...h.byCard } })),
   };
 }
 

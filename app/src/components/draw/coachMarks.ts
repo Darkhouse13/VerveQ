@@ -16,14 +16,16 @@ import { useCallback, useState } from "react";
 
 export const DRAW_COACH_KEY = "drawCoachV1";
 
-export type CoachId = "draft" | "bench" | "decision";
+export type CoachId = "draft" | "bench" | "hints" | "decision";
 
 /** Order is the order they can fire in; used by "skip all". */
-export const COACH_IDS: readonly CoachId[] = ["draft", "bench", "decision"];
+export const COACH_IDS: readonly CoachId[] = ["draft", "bench", "hints", "decision"];
 
 export const COACH_COPY: Record<CoachId, string> = {
   draft: "Pick 1 of 3. Chain 3+ of the same CLUB, NATION, or ERA for multipliers.",
   bench: "Sit one. Only the five on the pitch score — chains count fielded players only.",
+  // Ticket G3 — the one hint mark, first run only.
+  hints: "Hints are rumors. Mostly true.",
   decision:
     "BANK keeps your points. PUSH risks them against the next fixture. Bust and you keep scraps.",
 };

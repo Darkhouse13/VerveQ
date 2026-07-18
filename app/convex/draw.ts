@@ -27,6 +27,7 @@ import type { Doc, Id } from "./_generated/dataModel";
 import { getAuthUserId } from "@convex-dev/auth/server";
 import {
   applyChoice,
+  formHint,
   generateBoard,
   initRun,
   replay,
@@ -155,11 +156,51 @@ function rulesView(config: EngineConfig) {
     fullClearBonus: config.fullClearBonus,
     formSpread: config.formSpread,
     maxSynergyFamilies: config.maxSynergyFamilies,
+    // Ticket G3 (c13-2): the hint reliability and the clearance-signal bucket
+    // cutoffs are PUBLISHED RULES (like formSpread) — the client meter and
+    // hint copy read them; per-card hints are computed server-side only.
+    ...(config.hints ? { hintReliability: config.hints.hintReliability } : {}),
+    ...(config.clearance ? { clearance: { ...config.clearance } } : {}),
   };
+}
+
+/**
+ * Ticket G3 — pre-round form hints for the squad (engine v1.1, design-public
+ * by the hints sanitization contract). Computed HERE because only the server
+ * holds the boardSeed; the payload carries bucket strings, never the seed or
+ * a form value. Scope is the player's current decision horizon: the fixture
+ * being benched for, or the NEXT fixture at a bank/push decision — rounds
+ * beyond it are not served (they are derivable by design, but the payload
+ * stays minimal and fail-closed).
+ */
+function hintsView(
+  boardDoc: StoredBoard,
+  config: EngineConfig,
+  state: RunState,
+): Array<{ fixtureIndex: number; byCard: Record<string, string> }> | null {
+  if (!config.hints) return null;
+  const fixtureIndexes =
+    state.phase === "bench"
+      ? [state.fixtureIndex]
+      : state.phase === "decision" && state.fixtureIndex + 1 < config.fixtureCount
+        ? [state.fixtureIndex + 1]
+        : [];
+  if (fixtureIndexes.length === 0) return null;
+  const reliability = config.hints.hintReliability;
+  return fixtureIndexes.map((fixtureIndex) => ({
+    fixtureIndex,
+    byCard: Object.fromEntries(
+      state.squad.map((cardId) => [
+        cardId,
+        formHint(boardDoc.boardSeed, cardId, fixtureIndex, reliability),
+      ]),
+    ),
+  }));
 }
 
 function runView(boardDoc: StoredBoard, state: RunState, run: Doc<"drawRuns">) {
   const board = boardDoc.board;
+  const config = resolveDrawConfig(boardDoc.configVersion);
   const byId = new Map<string, DrawCardView>();
   for (const row of board.rows) for (const card of row) byId.set(card.id, cardView(card));
   const done = state.phase === "done";
@@ -186,6 +227,8 @@ function runView(boardDoc: StoredBoard, state: RunState, run: Doc<"drawRuns">) {
     completedAt: run.completedAt ?? null,
     // Post-completion full board reveal (rows only — never the seed).
     boardReveal: done ? { rows: board.rows.map((row) => row.map(cardView)) } : null,
+    // Ticket G3 — hint chips for the current decision horizon (or null).
+    hints: hintsView(boardDoc, config, state),
     choiceLog: state.choiceLog,
   };
 }

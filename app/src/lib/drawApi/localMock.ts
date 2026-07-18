@@ -24,6 +24,7 @@
 import {
   applyChoice,
   deserializeRunState,
+  formHint,
   generateBoard,
   generateCardSet,
   initRun,
@@ -238,6 +239,11 @@ export class LocalMockApi implements DrawApi {
         fullClearBonus: this.config.fullClearBonus,
         formSpread: this.config.formSpread,
         maxSynergyFamilies: this.config.maxSynergyFamilies,
+        // Ticket G3 — published rules (mirrors convex/draw.ts rulesView).
+        ...(this.config.hints
+          ? { hintReliability: this.config.hints.hintReliability }
+          : {}),
+        ...(this.config.clearance ? { clearance: { ...this.config.clearance } } : {}),
       },
       nextBoardAt: nextBoardAtForDate(dateKey),
     });
@@ -362,7 +368,34 @@ export class LocalMockApi implements DrawApi {
       outcome: state.outcome,
       finalScore: state.finalScore,
       fullBoard: state.phase === "done" ? board.rows : null,
+      hints: this.hintsFor(board, state),
     });
+  }
+
+  /**
+   * Ticket G3 — hint chips (mirrors convex/draw.ts hintsView): the fixture
+   * being benched for, or the next fixture at a decision. Bucket strings
+   * only; the seed stays inside this module.
+   */
+  private hintsFor(board: BoardSpec, state: RunState): DrawRunView["hints"] {
+    const hints = this.config.hints;
+    if (!hints) return null;
+    const fixtureIndexes =
+      state.phase === "bench"
+        ? [state.fixtureIndex]
+        : state.phase === "decision" && state.fixtureIndex + 1 < this.config.fixtureCount
+          ? [state.fixtureIndex + 1]
+          : [];
+    if (fixtureIndexes.length === 0) return null;
+    return fixtureIndexes.map((fixtureIndex) => ({
+      fixtureIndex,
+      byCard: Object.fromEntries(
+        state.squad.map((cardId) => [
+          cardId,
+          formHint(board.seed, cardId, fixtureIndex, hints.hintReliability),
+        ]),
+      ),
+    }));
   }
 
   private runKey(dateKey: string): string {

@@ -25,7 +25,9 @@
 import type {
   Card,
   Choice,
+  ClearanceConfig,
   Fixture,
+  FormHint,
   RoundBreakdown,
   RunOutcome,
   RunPhase,
@@ -61,6 +63,33 @@ export interface DrawRules {
   formSpread: number;
   /** Cap on granted synergy families — squadSynergies applies it (F3 band). */
   maxSynergyFamilies: number;
+  /**
+   * Ticket G3 (engine v1.1 / c13-2). Present only when the serving config has
+   * hints: P(a card's hint names its realized form band). Published so the
+   * client can COPY it ("mostly true") — never to derive hints, which are
+   * seeded server-side and served per card via DrawRunView.hints.
+   */
+  hintReliability?: number;
+  /**
+   * Ticket G3 — the coarse clearance-signal bucket cutoffs, served so the
+   * client meter and the engine share ONE definition via clearanceFor. Like
+   * formSpread these are published rules of the game, not board content.
+   */
+  clearance?: ClearanceConfig;
+}
+
+/**
+ * Ticket G3 — pre-round form hints for the squad, per upcoming fixture.
+ * Design-public (engine v1.1 sanitization contract): a hint narrows the
+ * posterior over form BANDS with published reliability; the realized form
+ * still appears only in played-round breakdowns. Served for the fixture about
+ * to be benched (bench phase) or the next fixture (decision phase) — never
+ * for rounds beyond the player's current horizon.
+ */
+export interface DrawHintsEntry {
+  fixtureIndex: number;
+  /** cardId → hint, for every squad card. */
+  byCard: Record<string, FormHint>;
 }
 
 /** Today's board as seen BEFORE (and outside) a run. */
@@ -127,6 +156,12 @@ export interface DrawRunView {
    * getRarity aggregates on. Passthrough; absent on the mock.
    */
   draftLineHash?: string | null;
+  /**
+   * Ticket G3 — form hint chips (see DrawHintsEntry). Null when the serving
+   * config has no hints (pre-v1.1 configs) or outside the bench/decision
+   * phases.
+   */
+  hints?: DrawHintsEntry[] | null;
 }
 
 export interface DrawLeaderboardEntry {
