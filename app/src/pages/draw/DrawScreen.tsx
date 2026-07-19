@@ -198,7 +198,7 @@ export function DrawExperience({ api, revealMs = 380 }: DrawExperienceProps) {
     : drawModeUrl();
 
   return (
-    <div className="theme-draw fixed inset-0 z-40 bg-background text-foreground overflow-hidden">
+    <div className="theme-draw fixed inset-0 z-40 h-[100dvh] bg-background text-foreground overflow-hidden">
       <div
         className="mx-auto h-full w-full flex flex-col"
         style={{
@@ -299,21 +299,41 @@ export function DrawExperience({ api, revealMs = 380 }: DrawExperienceProps) {
           </div>
         )}
 
+        {/* H1 — the play stages must scroll when the stack exceeds the (dynamic)
+            viewport: on small phones the resolved-round stack (~806px) overran
+            the fixed, overflow-hidden overlay and BANK/PUSH fell below an
+            unscrollable fold. Same single-container pattern the result stage
+            already uses; the stage root is min-h-full so it still FILLS the
+            wrapper when short (coach-mark bottom slack intact) and only grows —
+            and scrolls — when it doesn't fit. Bottom padding clears the iOS
+            home indicator. */}
         {stage === "play" && view && today && view.phase === "draft" && (
-          <DraftStage view={view} rules={today.rules} locked={busy} onPick={(i) => submit({ type: "pick", offerIndex: i })} />
+          <div
+            className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden"
+            data-testid="draw-play-scroll"
+            style={{ paddingBottom: "calc(env(safe-area-inset-bottom) + 8px)" }}
+          >
+            <DraftStage view={view} rules={today.rules} locked={busy} onPick={(i) => submit({ type: "pick", offerIndex: i })} />
+          </div>
         )}
 
         {stage === "play" && view && today && view.phase !== "draft" && (
-          <RoundStage
-            view={view}
-            rules={today.rules}
-            locked={busy}
-            revealMs={revealMs}
-            onBench={(i) => submit({ type: "bench", squadIndex: i })}
-            onBank={() => submit({ type: "bank" })}
-            onPush={() => submit({ type: "push" })}
-            onContinue={loadResult}
-          />
+          <div
+            className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden"
+            data-testid="draw-play-scroll"
+            style={{ paddingBottom: "calc(env(safe-area-inset-bottom) + 8px)" }}
+          >
+            <RoundStage
+              view={view}
+              rules={today.rules}
+              locked={busy}
+              revealMs={revealMs}
+              onBench={(i) => submit({ type: "bench", squadIndex: i })}
+              onBank={() => submit({ type: "bank" })}
+              onPush={() => submit({ type: "push" })}
+              onContinue={loadResult}
+            />
+          </div>
         )}
 
         {stage === "result" && view && (

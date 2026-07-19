@@ -261,7 +261,7 @@ export function RoundStage({
 
   return (
     <div
-      className={cn("relative flex flex-col flex-1 min-h-0", punchClass)}
+      className={cn("relative flex flex-col min-h-full", punchClass)}
       style={{ gap: LAYOUT.sectionGap }}
       data-testid="draw-round-stage"
       // A tap during the staged reveal skips straight to the verdict.
