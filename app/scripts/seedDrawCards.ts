@@ -32,8 +32,8 @@ function main() {
   const argv = process.argv.slice(2);
   const flags = new Set(argv);
   const execute = flags.has("--execute");
-  // E5: `--set real-v4` seeds the committed real set via drawSeed:seedRealCards
-  // (full sync of drawCardsReal.candidates.json); default stays synthetic.
+  // E5: `--set real-v5` seeds the committed real set via drawSeed:seedRealCards
+  // (full sync of drawCardsReal.candidates.v5.json); default stays synthetic.
   const setArg = argv.includes("--set") ? argv[argv.indexOf("--set") + 1] : DRAW_SET_VERSION;
   if (setArg !== DRAW_SET_VERSION && setArg !== DRAW_REAL_SET_VERSION) {
     throw new Error(`unknown --set "${setArg}" (know: ${DRAW_SET_VERSION}, ${DRAW_REAL_SET_VERSION})`);
@@ -56,7 +56,7 @@ function main() {
       "..",
       "convex",
       "data",
-      "drawCardsReal.candidates.json",
+      "drawCardsReal.candidates.v5.json",
     );
     const cards = JSON.parse(fs.readFileSync(p, "utf8")) as {
       cardId: string;

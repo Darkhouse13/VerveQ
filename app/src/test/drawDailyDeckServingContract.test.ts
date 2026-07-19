@@ -2,7 +2,7 @@
  * Ticket E5 — Daily Deck serving contract.
  *
  * Covers, against the REAL handlers + real engine on the in-memory fake:
- *  - a large (real-v4) active set is served as a per-dateKey SLICE: the board
+ *  - a large (real-v5) active set is served as a per-dateKey SLICE: the board
  *    row pins sliceCardIds (id-sorted, subset of the set) + sliceConfigVersion,
  *    and every board card comes from the slice;
  *  - slice determinism: regeneration reproduces the identical slice + board
@@ -49,7 +49,7 @@ interface Env {
 }
 
 /** Seed synthetic (creates settings) + real set; optionally activate real. */
-async function makeEnv(activeSet: "synthetic-v1" | "real-v4"): Promise<Env> {
+async function makeEnv(activeSet: "synthetic-v1" | "real-v5"): Promise<Env> {
   const db = new FakeDb();
   const ctx = { db, auth: {} as Record<string, never> };
   await handlerOf(drawSeed.seedSyntheticCards)(ctx, {});
@@ -99,8 +99,8 @@ beforeEach(() => {
 });
 
 describe("Daily Deck slicing (Ticket E5)", () => {
-  it("serves a real-v4 day as a pinned slice; every board card is from it", async () => {
-    const env = await makeEnv("real-v4");
+  it("serves a real-v5 day as a pinned slice; every board card is from it", async () => {
+    const env = await makeEnv("real-v5");
     await drawBoards.ensureDailyBoard(env.ctx as never, env.today);
     const board = env.db.rows("drawDailyBoards")[0];
 
@@ -109,7 +109,7 @@ describe("Daily Deck slicing (Ticket E5)", () => {
     expect(sliceIds).toHaveLength(DAILY_SLICE_CONFIG_V1.sliceSize);
     expect(sliceIds).toEqual([...sliceIds].sort());
     const realIds = new Set(
-      env.db.rows("drawCards").filter((c) => c.setVersion === "real-v4").map((c) => c.cardId),
+      env.db.rows("drawCards").filter((c) => c.setVersion === "real-v5").map((c) => c.cardId),
     );
     for (const id of sliceIds) expect(realIds.has(id)).toBe(true);
 
@@ -132,7 +132,7 @@ describe("Daily Deck slicing (Ticket E5)", () => {
   });
 
   it("regeneration is deterministic: identical slice + board, then a no-op", async () => {
-    const env = await makeEnv("real-v4");
+    const env = await makeEnv("real-v5");
     await drawBoards.ensureDailyBoard(env.ctx as never, env.today);
     const first = env.db.rows("drawDailyBoards")[0];
 
@@ -151,7 +151,7 @@ describe("Daily Deck slicing (Ticket E5)", () => {
   });
 
   it("regenerateBoardForDate fails closed: refuses while enabled or with runs", async () => {
-    const env = await makeEnv("real-v4");
+    const env = await makeEnv("real-v5");
     await drawBoards.ensureDailyBoard(env.ctx as never, env.today);
 
     await env.db.patch(env.settingsId, { enabled: true });
@@ -176,7 +176,7 @@ describe("Daily Deck slicing (Ticket E5)", () => {
   });
 
   it("seedRealCards is a full idempotent sync of the committed artifact", async () => {
-    const env = await makeEnv("real-v4");
+    const env = await makeEnv("real-v5");
     const again = (await handlerOf(drawSeed.seedRealCards)(env.ctx, {})) as {
       cards: number;
       inserted: number;
@@ -197,7 +197,7 @@ describe("Daily Deck slicing (Ticket E5)", () => {
       era: "≤70s",
       eraIndex: 0,
       position: "GK",
-      setVersion: "real-v4",
+      setVersion: "real-v5",
       synthetic: false,
     });
     const sweep = (await handlerOf(drawSeed.seedRealCards)(env.ctx, {})) as { deleted: number };
@@ -205,7 +205,7 @@ describe("Daily Deck slicing (Ticket E5)", () => {
   });
 
   it("B2 replay gate accepts a completed run on a sliced board", async () => {
-    const env = await makeEnv("real-v4");
+    const env = await makeEnv("real-v5");
     const tester = await env.db.insert("users", { username: "slice_tester" });
     const settings = env.db.rows("drawSettings")[0];
     await env.db.patch(settings._id, { enabled: false, testerUserIds: [tester] });

@@ -33,10 +33,15 @@ import { loadCardSet } from "./drawBoards";
 import { boardNumberForDate } from "./lib/drawDaily";
 import { C13V1_CONFIG, C13V1_CONFIG_VERSION } from "../src/lib/drawEngine/configs/c13v1";
 import { C13V2_CONFIG, C13V2_CONFIG_VERSION } from "../src/lib/drawEngine/configs/c13v2";
-// The committed real card set (selector artifact; byte-guarded by
-// drawCardSetSelectorContract). Bundled at deploy time — the DB seed is a
+// The committed real card set. Bundled at deploy time — the DB seed is a
 // FULL SYNC of this file under DRAW_REAL_SET_VERSION.
-import realCards from "./data/drawCardsReal.candidates.json";
+//
+// Ticket E5-F — real-v5 is the editorial-rating pass (docs/RATING_ANCHORS.md):
+// v4 ratings + 12 position moves replaced, all other CIE facts byte-identical.
+// It ships as a NEW setVersion, additive alongside real-v4 (whose DB rows and
+// board replay-identity are pinned forever). The v4 artifact and its byte-exact
+// generator contract (drawDataRulesContract) are untouched.
+import realCards from "./data/drawCardsReal.candidates.v5.json";
 
 /** Row shape of drawCardsReal.candidates.json (E5 seeding reads a subset). */
 interface RealCandidateCard {
@@ -52,7 +57,9 @@ interface RealCandidateCard {
 }
 
 export const DRAW_SET_VERSION = "synthetic-v1";
-export const DRAW_REAL_SET_VERSION = "real-v4";
+// Ticket E5-F: the editorial-rating set. Additive — real-v4 rows stay in the
+// DB and keep serving any historical board pinned to them.
+export const DRAW_REAL_SET_VERSION = "real-v5";
 export const DRAW_CARD_SET_SEED = "accept-0.3|cards0";
 // Ticket G3 — c13-2 (engine v1.1 hints + clearance buckets, accepted 13/13
 // under profile v1.2) is the ACTIVE config for new settings and new boards.
@@ -139,13 +146,13 @@ export const seedSyntheticCards = internalMutation({
 });
 
 /**
- * Ticket E5 — seed the REAL card set from the committed selector artifact
- * (app/convex/data/drawCardsReal.candidates.json, built + guarded by
- * scripts/buildDrawCardSet.ts). FULL SYNC by (setVersion, cardId): upserts
- * every committed card and deletes stale rows of this setVersion, so the DB
- * set always equals the committed artifact exactly. Seeding never activates
+ * Ticket E5 — seed the REAL card set from the committed artifact
+ * (app/convex/data/drawCardsReal.candidates.v5.json). FULL SYNC by
+ * (setVersion, cardId): upserts every committed card and deletes stale rows of
+ * THIS setVersion only, so the DB set for real-v5 always equals the committed
+ * artifact exactly and real-v4 rows are never touched. Seeding never activates
  * anything — activeSetVersion switches only via updateSettings.
- * Run: npx tsx scripts/seedDrawCards.ts --set real-v4 --execute
+ * Run: npx tsx scripts/seedDrawCards.ts --set real-v5 --execute
  */
 export const seedRealCards = internalMutation({
   args: {},
