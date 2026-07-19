@@ -2,8 +2,30 @@ import { Crown, Check } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { Fixture } from "@/lib/drawEngine";
 import { archetypeMeta } from "./meta";
-import { effectLine } from "./fixtureEffects";
+import { descriptorLine, effectLine } from "./fixtureEffects";
 import { LAYOUT } from "./layout";
+
+/**
+ * D4 — the entry mount's chip height. UI-local (like NEXT_FIXTURE_H etc. in
+ * layout.ts), NOT a LAYOUT change: the draft-strip mount keeps
+ * LAYOUT.fixtureStripH and the draft layout budget is untouched. The entry
+ * screen has the slack — its CTA sits on mt-auto below a stack far under the
+ * 812px budget.
+ */
+const ENTRY_STRIP_H = LAYOUT.fixtureStripH + 16;
+
+/**
+ * D4 — descriptor for the entry mount, fail-closed: an inexpressible modifier
+ * shape renders NO line (and logs the shape) rather than wrong words.
+ */
+function entryDescriptor(fixture: Fixture): string | null {
+  try {
+    return descriptorLine(fixture);
+  } catch (err) {
+    console.warn(String(err));
+    return null;
+  }
+}
 
 interface FixtureStripProps {
   fixtures: Fixture[];
@@ -15,6 +37,11 @@ interface FixtureStripProps {
   bustedIndex?: number | null;
   /** F1b — tap a chip for its detail sheet. Chips are inert when omitted. */
   onSelect?: (fixture: Fixture) => void;
+  /**
+   * D4 — "entry" adds a plain-words descriptor line per chip (and the extra
+   * height it needs); the default "draft" mount is byte-identical to before.
+   */
+  variant?: "entry" | "draft";
 }
 
 /**
@@ -33,11 +60,15 @@ export function FixtureStrip({
   clearedCount,
   bustedIndex = null,
   onSelect,
+  variant = "draft",
 }: FixtureStripProps) {
   return (
     <div
       className="flex shrink-0"
-      style={{ height: LAYOUT.fixtureStripH, gap: LAYOUT.fixtureChipGap }}
+      style={{
+        height: variant === "entry" ? ENTRY_STRIP_H : LAYOUT.fixtureStripH,
+        gap: LAYOUT.fixtureChipGap,
+      }}
       data-testid="draw-fixture-strip"
     >
       {fixtures.map((fixture) => {
@@ -76,6 +107,17 @@ export function FixtureStrip({
             <span className="font-heading font-bold text-[7px] leading-none tracking-wide truncate max-w-full">
               {label}
             </span>
+            {variant === "entry" && (() => {
+              const descriptor = entryDescriptor(fixture);
+              return descriptor ? (
+                <span
+                  className="text-[7px] leading-tight max-w-full text-balance opacity-90"
+                  data-testid={`draw-fixture-descriptor-${fixture.index}`}
+                >
+                  {descriptor}
+                </span>
+              ) : null;
+            })()}
             <span
               className="font-mono font-bold text-[7px] leading-none truncate max-w-full opacity-90"
               data-testid={`draw-fixture-effect-${fixture.index}`}

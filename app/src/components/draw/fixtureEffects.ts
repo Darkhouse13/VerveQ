@@ -121,6 +121,75 @@ export function effectSentences(fixture: Fixture): string[] {
   );
 }
 
+/** Position → the lowercase plural the entry-tile descriptor uses (D4). */
+const DESCRIPTOR_NOUN: Record<PositionId, string> = {
+  GK: "keepers",
+  DEF: "defenders",
+  MID: "midfielders",
+  ATT: "attackers",
+};
+
+/**
+ * D4 — a modifier shape the descriptor mapping cannot express. Thrown, never
+ * guessed around: wrong plain words on the entry screen are worse than no
+ * line, so the caller renders nothing and the shape gets reported.
+ */
+export class DescriptorShapeError extends Error {
+  constructor(fixture: Fixture, reason: string) {
+    super(`descriptorLine: ${fixture.archetypeId} — ${reason}`);
+    this.name = "DescriptorShapeError";
+  }
+}
+
+/**
+ * D4 — the entry-tile plain-words line, e.g. "defenders shine · attackers
+ * fade" (WALL) or "90s and later shine" (NEW WAVE). GENERATED from the
+ * fixture's own modifiers — same derivation law as the rest of this module —
+ * so a config retune can never desync the words from the numbers.
+ *
+ * Expressible shapes (everything in c13-1/c13-2): exactly one boost (a
+ * position or an era bound) plus at most one position cut. Anything else —
+ * era cuts, tag modifiers, ×1 modifiers, multiple boosts — throws
+ * DescriptorShapeError rather than rendering wrong words.
+ */
+export function descriptorLine(fixture: Fixture): string {
+  const boosts: FixtureModifier[] = [];
+  const cuts: FixtureModifier[] = [];
+  for (const mod of fixture.modifiers) {
+    if (mod.mult > 1) boosts.push(mod);
+    else if (mod.mult < 1) cuts.push(mod);
+    else throw new DescriptorShapeError(fixture, `flat ×1 modifier (${mod.kind})`);
+  }
+  if (boosts.length !== 1)
+    throw new DescriptorShapeError(fixture, `${boosts.length} boosts (need exactly 1)`);
+  if (cuts.length > 1)
+    throw new DescriptorShapeError(fixture, `${cuts.length} cuts (at most 1)`);
+
+  const boost = boosts[0];
+  let line: string;
+  if (boost.kind === "position") {
+    const noun = DESCRIPTOR_NOUN[boost.value as PositionId];
+    if (!noun) throw new DescriptorShapeError(fixture, `unknown position ${String(boost.value)}`);
+    line = `${noun} shine`;
+  } else if (boost.kind === "eraBefore") {
+    line = `${shortTag(eraTag((boost.value as number) - 1))} and earlier shine`;
+  } else if (boost.kind === "eraAtLeast") {
+    line = `${shortTag(eraTag(boost.value as number))} and later shine`;
+  } else {
+    throw new DescriptorShapeError(fixture, `boost kind ${boost.kind} has no mapping`);
+  }
+
+  const cut = cuts[0];
+  if (cut) {
+    if (cut.kind !== "position")
+      throw new DescriptorShapeError(fixture, `cut kind ${cut.kind} has no mapping`);
+    const noun = DESCRIPTOR_NOUN[cut.value as PositionId];
+    if (!noun) throw new DescriptorShapeError(fixture, `unknown position ${String(cut.value)}`);
+    line += ` · ${noun} fade`;
+  }
+  return line;
+}
+
 /**
  * How this fixture treats ONE card — the mini-gauntlet cell (F2b) and the
  * per-card row in the sheet. Delegates the matching rules to the engine's

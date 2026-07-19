@@ -271,12 +271,13 @@ export function DrawExperience({ api, revealMs = 380 }: DrawExperienceProps) {
                 before the first pick. */}
             <div>
               <p className="font-heading font-bold text-xs tracking-wide mb-1.5">THE GAUNTLET</p>
-              <FixtureStrip fixtures={today.fixtures} activeIndex={null} clearedCount={0} />
+              <FixtureStrip fixtures={today.fixtures} activeIndex={null} clearedCount={0} variant="entry" />
             </div>
 
             <p className="text-xs text-muted-foreground leading-snug">
-              Draft 6 from 18 — one row at a time. Each round, bench one; five play.
-              Clear the fixture, then BANK your points or PUSH deeper. Bust and you
+              Tonight's gauntlet: five opponents, each favoring different
+              players. Draft a squad of six, field five, and run the table.
+              Clear one, then BANK your points or PUSH deeper — bust and you
               keep scraps.
             </p>
 
