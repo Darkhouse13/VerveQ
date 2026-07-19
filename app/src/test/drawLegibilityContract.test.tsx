@@ -10,7 +10,7 @@
  * snapshot of the shipped config.
  */
 
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, beforeEach } from "vitest";
 import { render, screen, within, fireEvent } from "@testing-library/react";
 import { LocalMockApi } from "@/lib/drawApi";
 import { MOCK_ENGINE_CONFIG } from "@/lib/drawApi/mockConfig";
@@ -26,6 +26,7 @@ import {
   cardEffect,
 } from "@/components/draw/fixtureEffects";
 import { tagCode, tagName } from "@/components/draw/tags";
+import { DRAW_INTRO_KEY } from "@/components/draw/coachMarks";
 
 const FIXED_NOW = Date.parse("2026-07-16T12:00:00.000Z");
 const noop = () => {};
@@ -128,6 +129,13 @@ describe("F1 — fixture effect derivation", () => {
 });
 
 describe("F2 — pick impact", () => {
+  // D2 — the fit strip is withheld only on a player's very first board; these
+  // F2 tests exercise the established-player state where it renders, so mark
+  // this client as already introduced.
+  beforeEach(() => {
+    window.localStorage.setItem(DRAW_INTRO_KEY, "1");
+  });
+
   it("first tap selects and does NOT pick; second tap on the card confirms", async () => {
     const { draft, today } = await views();
     const picks: number[] = [];

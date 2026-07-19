@@ -16,9 +16,16 @@ import { useCallback, useState } from "react";
 
 export const DRAW_COACH_KEY = "drawCoachV1";
 
-export type CoachId = "draft" | "bench" | "hints" | "decision";
+export type CoachId = "draft" | "bench" | "hints" | "decision" | "introduced";
 
-/** Order is the order they can fire in; used by "skip all". */
+/**
+ * Order is the order they can fire in; used by "skip all".
+ *
+ * "introduced" (D2) is deliberately NOT here: its persistence is the separate
+ * `drawIntroducedV1` sentinel (useDrawIntro), written only at the trigger point
+ * (fixture 1 resolved) — never mid-draft. Folding it into skip-all's set would
+ * let a SKIP ALL on the draft mark un-hide the first-run UI before the trigger.
+ */
 export const COACH_IDS: readonly CoachId[] = ["draft", "bench", "hints", "decision"];
 
 export const COACH_COPY: Record<CoachId, string> = {
@@ -28,6 +35,9 @@ export const COACH_COPY: Record<CoachId, string> = {
   hints: "Hints are rumors. Mostly true.",
   decision:
     "BANK keeps your points. PUSH risks them against the next fixture. Bust and you keep scraps.",
+  // Ticket D2 — the ONE first-run introduction, fired after fixture 1 resolves.
+  introduced:
+    "🔥/❄ show a player's form once rounds resolve. F1–F5 show how each card fits the five fixtures. Both are live from now on.",
 };
 
 function readSeen(): Set<CoachId> {
@@ -75,4 +85,60 @@ export function useCoachMarks() {
   }, []);
 
   return { seen, dismiss, skipAll };
+}
+
+// ── Ticket D2 — first-run de-noising sentinel ──────────────────────────────
+
+/**
+ * Client-only "this player has been introduced to form + fixture-fit" flag.
+ *
+ * Kept SEPARATE from the coach seen-set on purpose (Ruling 2 / Option 1):
+ * SKIP ALL writes the seen-set the instant it is pressed, but the intro
+ * sentinel must be written ONLY at the trigger point (fixture 1 resolved), so
+ * the fit strip and the bench form icons stay hidden through the whole first
+ * draft and round 1 and un-hide exactly once — never mid-draft.
+ *
+ * "First-run" for the gate is simply: this key is absent. It is NOT inferred
+ * from the seen-set being empty (that set is populated the moment the first
+ * draft offer is selected — DraftStage), which would mis-fire mid-first-draft.
+ */
+export const DRAW_INTRO_KEY = "drawIntroducedV1";
+
+function readIntroduced(): boolean {
+  try {
+    return window.localStorage.getItem(DRAW_INTRO_KEY) === "1";
+  } catch {
+    // Storage unavailable (private mode): treat as ALREADY introduced — show
+    // everything. The convention from the coach marks (never a state we can't
+    // persist the exit from): a first-run player we can't remember introducing
+    // must not be trapped in a hidden-UI mode forever.
+    return true;
+  }
+}
+
+function writeIntroduced(): void {
+  try {
+    window.localStorage.setItem(DRAW_INTRO_KEY, "1");
+  } catch {
+    /* private mode / quota — un-hidden this session, may re-hide next run. */
+  }
+}
+
+/**
+ * `introduced` is reactive: false for a first-run player until `markIntroduced`
+ * fires (at the intro mark's dismissal, or when SKIP-ALL suppresses it at the
+ * trigger). Because nothing writes the sentinel during the draft or round-1
+ * selection, `introduced` is stable there — the un-hide happens only at the
+ * trigger point, as specified.
+ */
+export function useDrawIntro() {
+  const [introduced, setIntroduced] = useState<boolean>(() => readIntroduced());
+  const markIntroduced = useCallback(() => {
+    setIntroduced((prev) => {
+      if (prev) return prev;
+      writeIntroduced();
+      return true;
+    });
+  }, []);
+  return { introduced, markIntroduced };
 }

@@ -123,16 +123,25 @@
   animation: draw-coach-in 0.2s ease-out both;
 }
 
-/* Every Ticket F motion is decorative — honor the OS setting. */
+/* Every Ticket F/G3/D1 motion is decorative — honor the OS setting. The
+   staged reveal's beats also collapse to an instant render component-side
+   (RoundStage reads the same media query), so the ledger appears whole with
+   no animation and identical content. */
 @media (prefers-reduced-motion: reduce) {
   .draw-ghost-seg,
   .draw-ghost-chip,
   .draw-sheet-in,
-  .draw-coach-in {
+  .draw-coach-in,
+  .draw-reveal-land,
+  .draw-reveal-stamp,
+  .draw-reveal-verdict,
+  .draw-punch-bust,
+  .draw-punch-clear {
     animation: none;
   }
   .draw-ghost-seg { opacity: 0.6; }
-  .draw-offer-selected { transition: none; }
+  .draw-offer-selected,
+  .draw-bar-fill { transition: none; }
 }
 
 /* ── Ticket G3: staged reveal + verdict punch ─────────────────────────── */
@@ -157,7 +166,7 @@
   animation: draw-reveal-stamp 260ms ease-out both;
 }
 
-/* CLEARED / FAILED slamming in after the beat. */
+/* CLEARED / BUSTED slamming in after the beat. */
 @keyframes draw-reveal-verdict {
   0% { opacity: 0; transform: scale(2); }
   60% { opacity: 1; transform: scale(0.9); }
@@ -187,4 +196,73 @@
 }
 .draw-punch-clear {
   animation: draw-punch-clear 500ms cubic-bezier(0.2, 1.4, 0.4, 1) 1;
+}
+
+/* ── Ticket D3: scoped dark-surface punch pass ──────────────────────────────
+ * `.theme-draw` is applied to the /draw overlay root ONLY (DrawScreen.tsx).
+ * It is a SCOPING PREFIX for the targeted dark-surface utilities below — NOT a
+ * blanket :root-style token override (the .theme-learn pattern). The reason:
+ * ResultStage + ShareCard render inside the SAME overlay root and are out of
+ * scope for this pass, so a blanket `--card`/`--foreground` override would leak
+ * straight into them. Instead each dark region opts in by class and re-declares
+ * its tokens LOCALLY:
+ *   --border           lime, else the near-black border vanishes on the fill;
+ *   --neo-shadow-color  kept near-black — these are dark ISLANDS on the still
+ *                       cream stage, so the chunky offset stays visible (it
+ *                       is re-declared, not inherited, so a `.dark` ambient
+ *                       theme can't quietly flip it to light-grey);
+ *   --muted-foreground  lightened, else `text-muted-foreground` labels vanish;
+ *   --success           brightened for legible green TEXT on ink (the fill use
+ *                       just reads punchier); result-card green is untouched.
+ * Nothing here restyles a shared/out-of-scope surface: the rules only match
+ * elements that carry the opt-in classes, and ResultStage/ShareCard carry none.
+ */
+.theme-draw .draw-surface-dark {
+  background-color: hsl(0 0% 7%);
+  color: hsl(30 100% 97%);
+  --border: 75 100% 55%;
+  --neo-shadow-color: 0 0% 7%;
+  --muted-foreground: 30 18% 72%;
+  --success: 152 80% 52%;
+}
+
+/* Threshold-bar rail inside the dark frame — bg-muted is a LIGHT rail, so it
+ * would read as a filled bar on ink. A dark-grey rail lets the fill carry the
+ * signal. */
+.theme-draw .draw-bar-track {
+  background-color: hsl(0 0% 22%);
+}
+
+/* D3.1 — lime-border restraint. Lime edges are reserved for the fixture card
+ * and the coach mark; secondary dark frames (ledger, threshold bar) drop back
+ * to the same quiet grey the entry tiles use, so the accent isn't diluted
+ * across four framed boxes. Declared AFTER .draw-surface-dark so it wins the
+ * --border slot on elements carrying both classes. */
+.theme-draw .draw-border-quiet {
+  --border: 0 0% 38%;
+}
+
+/* Fixture-strip default (upcoming) tiles: a filled dark surface instead of the
+ * cream outline. The base rule preserves the ORIGINAL cream look outside the
+ * themed root (FixtureStrip is also rendered standalone in unit tests). The
+ * border here is a quiet grey, NOT lime, so the colored state tiles (orange
+ * active / green cleared / red busted) stay the focal pops rather than a wall
+ * of five lime edges. */
+.draw-tile-dark {
+  background-color: hsl(var(--card));
+  color: hsl(var(--card-foreground));
+}
+.theme-draw .draw-tile-dark {
+  background-color: hsl(0 0% 14%);
+  color: hsl(30 100% 97%);
+  --border: 0 0% 38%;
+  --muted-foreground: 30 18% 72%;
+}
+
+/* Coach mark on the darkened stage: the bubble is already near-black
+ * (bg-foreground), so its near-black border reads as no border. A lime edge
+ * gives it a crisp outline against the ink without touching CoachMark's own
+ * markup outside the draw scope. */
+.theme-draw .draw-coach-card {
+  --border: 75 100% 55%;
 }

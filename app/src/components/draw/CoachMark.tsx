@@ -60,7 +60,7 @@ export function CoachMark({ id, seen, onDismiss, onSkipAll }: CoachMarkProps) {
       data-testid={`draw-coach-${id}`}
       role="status"
     >
-      <div className="neo-border neo-shadow rounded-lg bg-foreground text-background p-2.5 mx-1 pointer-events-auto max-w-full draw-coach-in">
+      <div className="draw-coach-card neo-border neo-shadow rounded-lg bg-foreground text-background p-2.5 mx-1 pointer-events-auto max-w-full draw-coach-in">
         <p className="text-[11px] leading-snug font-medium">{COACH_COPY[id]}</p>
         <div className="flex items-center gap-2 mt-2">
           <NeoButton

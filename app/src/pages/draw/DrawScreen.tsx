@@ -198,7 +198,7 @@ export function DrawExperience({ api, revealMs = 380 }: DrawExperienceProps) {
     : drawModeUrl();
 
   return (
-    <div className="fixed inset-0 z-40 bg-background text-foreground overflow-hidden">
+    <div className="theme-draw fixed inset-0 z-40 bg-background text-foreground overflow-hidden">
       <div
         className="mx-auto h-full w-full flex flex-col"
         style={{

@@ -61,7 +61,7 @@ export function FixtureStrip({
                   ? "bg-destructive text-destructive-foreground"
                   : active
                     ? "bg-primary text-primary-foreground neo-shadow-sm"
-                    : "bg-card text-card-foreground opacity-90",
+                    : "draw-tile-dark opacity-90",
             )}
             data-testid={`draw-fixture-chip-${fixture.index}`}
           >

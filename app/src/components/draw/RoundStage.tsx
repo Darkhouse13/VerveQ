@@ -4,14 +4,15 @@ import { cn } from "@/lib/utils";
 import { NeoButton } from "@/components/neo/NeoButton";
 import type { Card, Fixture, FormHint, RoundBreakdown } from "@/lib/drawEngine";
 import type { DrawRules, DrawRunView } from "@/lib/drawApi/types";
-import { archetypeMeta, modifierLabel, formatMult } from "./meta";
+import { archetypeMeta, modifierLabel } from "./meta";
 import { DIR_ARROW, effectTokens } from "./fixtureEffects";
 import { bustKeepValue } from "./projection";
 import { ClearanceMeter } from "./ClearanceMeter";
+import { ResolutionLedger } from "./ResolutionLedger";
 import { FixtureSheet } from "./FixtureSheet";
 import { CardDetailSheet } from "./CardDetailSheet";
 import { CoachMark } from "./CoachMark";
-import { useCoachMarks } from "./coachMarks";
+import { COACH_IDS, useCoachMarks, useDrawIntro } from "./coachMarks";
 import { SynergyMeters } from "./SynergyMeters";
 import { DECISION_INFO_H, LAYOUT } from "./layout";
 
@@ -45,15 +46,17 @@ const HINT_GLYPH: Record<FormHint, string> = {
 };
 
 /**
- * S3 — round view (LAYOUT_SPEC "Round view" + Tickets F/G3, 628px of the
- * 812px budget): fixture card w/ effect line + threshold, tap-to-bench squad
- * strip with form-hint chips (exactly one benched, changeable until CONFIRM),
- * synergy meters on the fielded five, the clearance meter / score bar, the
- * stake panel, then BANK / PUSH. Score resolution is a STAGED sequence
- * (Ticket G3): per-card contributions land one by one, the multiplier stamps,
- * then the total meets the threshold with a deliberate beat before
- * CLEAR/FAIL — pacing, not latency theater; a tap skips it. Bust and
- * full-clear states end here with a CONTINUE out. No scroll.
+ * S3 — round view (LAYOUT_SPEC "Round view" + Tickets F/G3/D1, 628px of the
+ * 812px budget + the ledger's ≤158px, 786px worst case): fixture card w/
+ * effect line + threshold, tap-to-bench squad strip with form-hint chips
+ * (exactly one benched, changeable until CONFIRM), synergy meters on the
+ * fielded five, the clearance meter / score bar, the stake panel, then
+ * BANK / PUSH. Score resolution is a STAGED LEDGER (Ticket G3 beats, D1
+ * content): per-card contribution lines land one by one in engine order,
+ * then YOUR FIVE, then one line per granted chain, then the total meets the
+ * threshold after a deliberate tension beat, then CLEARED/BUSTED — pacing,
+ * not latency theater; a tap skips it. Bust and full-clear states end here
+ * with a CONTINUE out. No scroll.
  */
 export function RoundStage({
   view,
@@ -73,35 +76,54 @@ export function RoundStage({
   const [sheetFixture, setSheetFixture] = useState<Fixture | null>(null);
   const [sheetCard, setSheetCard] = useState<Card | null>(null);
   const coach = useCoachMarks();
+  // D2 — first-run de-noising. `introduced` is false for a first-run player
+  // until the intro mark lands (after fixture 1 resolves): while false the
+  // bench form icons stay hidden and the intro mark is armed.
+  const { introduced, markIntroduced } = useDrawIntro();
 
   const pendingReveal = view.rounds.length > seenRounds;
   const lastRound: RoundBreakdown | null = view.rounds[view.rounds.length - 1] ?? null;
   const fieldedCount = lastRound?.cards.length ?? 0;
-  // Beats: one per fielded card, then multiplier stamp, then total, then the
-  // verdict. The verdict beat is deliberately longer (see effect below).
-  const revealSteps = fieldedCount + 3;
+  // D1 — granted chains each get their own beat between YOUR FIVE and the
+  // total. synergies[] only ever carries granted families (engine contract),
+  // so payload order IS display order.
+  const chainCount = lastRound?.synergies.length ?? 0;
+  // Beats: one per fielded card, then YOUR FIVE, then one per granted chain,
+  // then the total, then the verdict. The verdict beat is deliberately longer
+  // (see effect below).
+  const revealSteps = fieldedCount + chainCount + 3;
 
   const finishReveal = useCallback(() => {
     setSeenRounds(view.rounds.length);
     setRevealStep(0);
   }, [view.rounds.length]);
 
+  // D1 — honor the OS reduce-motion setting the same way revealMs 0 does:
+  // every beat lands at once and the CSS kills the entrance animations. The
+  // rendered ledger is identical, only the staging is skipped.
+  const reducedMotion = useMemo(
+    () =>
+      typeof window.matchMedia === "function" &&
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches,
+    [],
+  );
+
   useEffect(() => {
     if (!pendingReveal) return;
-    if (revealMs === 0) {
+    if (revealMs === 0 || reducedMotion) {
       finishReveal();
       return;
     }
     if (revealStep >= revealSteps) {
-      // The beat after CLEAR/FAIL lands — long enough to read the verdict.
+      // The beat after CLEARED/BUSTED lands — long enough to read the verdict.
       const timer = window.setTimeout(finishReveal, revealMs * 1.6);
       return () => window.clearTimeout(timer);
     }
     // The pause BEFORE the total meets the threshold is the tension beat.
-    const beat = revealStep === fieldedCount + 1 ? revealMs * 1.4 : revealMs;
+    const beat = revealStep === fieldedCount + 1 + chainCount ? revealMs * 1.4 : revealMs;
     const timer = window.setTimeout(() => setRevealStep((s) => s + 1), beat);
     return () => window.clearTimeout(timer);
-  }, [pendingReveal, revealStep, revealSteps, revealMs, fieldedCount, finishReveal]);
+  }, [pendingReveal, revealStep, revealSteps, revealMs, fieldedCount, chainCount, finishReveal, reducedMotion]);
 
   // A new fixture (after PUSH) starts with a clean bench choice.
   useEffect(() => {
@@ -116,11 +138,25 @@ export function RoundStage({
         ? "decision"
         : "done";
 
-  // Reveal staging visibility gates. Outside a pending reveal everything is
-  // shown (resumed runs, decision phase, done states).
-  const synergyShown = !pendingReveal || revealStep > fieldedCount;
-  const totalShown = !pendingReveal || revealStep > fieldedCount + 1;
+  // Reveal staging visibility gates (the ledger reads the same beats for its
+  // card/base/chain lines). Outside a pending reveal everything is shown
+  // (resumed runs, decision phase, done states).
+  const totalShown = !pendingReveal || revealStep > fieldedCount + 1 + chainCount;
   const verdictShown = !pendingReveal || revealStep >= revealSteps;
+
+  // D2 — the first-run introduction fires ONCE, at the trigger point: fixture 1
+  // resolved (decision phase, verdict landed — the tap-skip path reaches the
+  // same state). It teaches both form icons and the fit strip, which the ledger
+  // has just demonstrated with real numbers.
+  const skippedAllCoaching = COACH_IDS.every((id) => coach.seen.has(id));
+  const atIntroTrigger = !introduced && mode === "decision" && verdictShown;
+  const showIntroMark = atIntroTrigger && !skippedAllCoaching;
+
+  // If the player already chose SKIP ALL, the mark is suppressed — but the
+  // introduction still COMPLETES at the trigger: sentinel written, UI un-hidden.
+  useEffect(() => {
+    if (atIntroTrigger && skippedAllCoaching) markIntroduced();
+  }, [atIntroTrigger, skippedAllCoaching, markIntroduced]);
 
   // In select mode the strip/bar frame the UPCOMING fixture; once a round has
   // resolved they show the fixture just played.
@@ -205,9 +241,13 @@ export function RoundStage({
 
   // Ticket G3 — the ONE hint coach mark, first run only: it takes the bench
   // slot once the bench mark has been dismissed and hints are on the table.
+  // D2 — the "hints are rumors" mark teaches the form icons, so it can't fire
+  // while they are still hidden on a first run: the intro mark introduces them.
   const hintsAvailable = hintByCard !== null;
   const selectCoachId =
-    coach.seen.has("bench") && hintsAvailable ? ("hints" as const) : ("bench" as const);
+    coach.seen.has("bench") && hintsAvailable && introduced
+      ? ("hints" as const)
+      : ("bench" as const);
 
   // Ticket G3 — bust / full-clear get their own punch once the verdict lands.
   const punchClass =
@@ -228,14 +268,14 @@ export function RoundStage({
       onPointerDown={pendingReveal ? finishReveal : undefined}
       data-revealing={pendingReveal ? "true" : undefined}
     >
-      {/* Fixture card — archetype, effect line, modifiers, threshold; the
-          resolution math lands with the multiplier stamp of the staged reveal
-          (form revealed per card in the strip below). Tappable for the same
-          sheet the strip opens (F1b). */}
+      {/* Fixture card — archetype, effect line, modifiers, threshold. The
+          resolution math moved OUT of this card in D1: it is the staged
+          ledger below (form revealed per card in the strip as well).
+          Tappable for the same sheet the strip opens (F1b). */}
       <button
         type="button"
         onClick={() => setSheetFixture(fixture)}
-        className="neo-border neo-shadow rounded-lg bg-card flex flex-col p-3 shrink-0 text-left w-full cursor-pointer active:neo-shadow-pressed"
+        className="draw-surface-dark neo-border neo-shadow rounded-lg bg-card flex flex-col p-3 shrink-0 text-left w-full cursor-pointer active:neo-shadow-pressed"
         style={{ height: LAYOUT.fixtureCardH }}
         data-testid="draw-fixture-card"
       >
@@ -258,7 +298,7 @@ export function RoundStage({
           <span className="ml-auto font-heading font-bold text-[9px] text-muted-foreground">
             CLEAR AT
           </span>
-          <span className="font-mono font-bold text-2xl leading-none">{fixture.threshold}</span>
+          <span className="font-mono font-bold text-2xl leading-none text-accent">{fixture.threshold}</span>
         </div>
 
         {/* F1a — the effect in one line, above the exact multipliers. */}
@@ -290,49 +330,29 @@ export function RoundStage({
               key={i}
               className={cn(
                 "neo-border rounded font-mono font-bold text-[9px] px-1.5 py-0.5",
-                mod.mult >= 1 ? "bg-accent text-accent-foreground" : "bg-muted text-muted-foreground",
+                mod.mult >= 1 ? "bg-accent text-accent-foreground" : "bg-muted text-foreground",
               )}
             >
               {modifierLabel(mod)}
             </span>
           ))}
         </div>
-        {resolved && lastRound && synergyShown && (
-          <p className="font-mono font-bold text-[11px] mt-auto" data-testid="draw-round-math">
-            <span className="draw-reveal-stamp inline-block">
-              {Math.round(lastRound.baseSum)} {formatMult(lastRound.synergyMult)}
-            </span>
-            {totalShown && (
-              <>
-                {" "}
-                ={" "}
-                <span
-                  className={cn(
-                    verdictShown
-                      ? lastRound.cleared
-                        ? "text-success"
-                        : "text-destructive"
-                      : "text-foreground",
-                  )}
-                >
-                  {Math.round(lastRound.score)}
-                </span>
-              </>
-            )}
-            {verdictShown && (
-              <span
-                className={cn(
-                  "draw-reveal-verdict inline-block ml-1",
-                  lastRound.cleared ? "text-success" : "text-destructive",
-                )}
-                data-testid="draw-round-verdict"
-              >
-                {lastRound.cleared ? "CLEARED" : "FAILED"}
-              </span>
-            )}
-          </p>
-        )}
       </button>
+
+      {/* D1 — the staged resolution ledger. Present only for the fixture just
+          played (never while benching the next one), at its full height from
+          the first reveal frame so nothing below it moves as lines land. */}
+      {resolved && lastRound && (
+        <ResolutionLedger
+          round={lastRound}
+          squad={view.squad}
+          fixtureLabel={label}
+          pendingReveal={pendingReveal}
+          revealStep={revealStep}
+          totalShown={totalShown}
+          verdictShown={verdictShown}
+        />
+      )}
 
       {/* Tap-to-bench squad strip (Ticket 0.2 D2): before the reveal it is the
           bench selector — each chip carrying its form-hint glyph (G3) — after,
@@ -369,7 +389,9 @@ export function RoundStage({
                   style={{ height: 64 }}
                   data-testid={`draw-squad-chip-${i}`}
                 >
-                  {hint !== undefined && (
+                  {/* D2 — form icons withheld on the first-run bench strip until
+                      the fixture-1 introduction (render-level, not CSS). */}
+                  {hint !== undefined && introduced && (
                     <span
                       className="absolute top-0.5 right-0.5 text-[9px] leading-none"
                       data-testid={`draw-hint-chip-${i}`}
@@ -417,7 +439,7 @@ export function RoundStage({
         <ClearanceMeter fielded={meterCards} fixture={fixture} rules={rules} label="YOUR FIVE" />
       ) : (
         <div
-          className="neo-border rounded-lg bg-card flex flex-col justify-center px-3 shrink-0"
+          className="draw-surface-dark draw-border-quiet neo-border rounded-lg bg-card flex flex-col justify-center px-3 shrink-0"
           style={{ height: LAYOUT.thresholdBarH }}
           data-testid="draw-threshold-bar"
         >
@@ -425,7 +447,7 @@ export function RoundStage({
             <span data-testid="draw-round-score">{score === null ? "—" : Math.round(score)}</span>
             <span className="text-muted-foreground">/ {fixture.threshold}</span>
           </div>
-          <div className="neo-border rounded-full h-3.5 bg-muted overflow-hidden">
+          <div className="draw-bar-track neo-border rounded-full h-3.5 bg-muted overflow-hidden">
             <div
               className={cn(
                 "draw-bar-fill h-full rounded-full",
@@ -435,7 +457,7 @@ export function RoundStage({
                     ? lastRound?.cleared
                       ? "bg-success"
                       : "bg-destructive"
-                    : "bg-foreground/50",
+                    : "bg-accent",
               )}
               style={{ width: `${fillPct}%` }}
             />
@@ -506,6 +528,10 @@ export function RoundStage({
                 className="h-full flex-col gap-0"
                 disabled={locked}
                 onClick={() => {
+                  // D2.1 — leaving the fixture-1 decision with the intro mark up
+                  // still counts as introduced (the mark promised "live from now
+                  // on"): un-hide for the next board even though BANK ends the run.
+                  if (showIntroMark) markIntroduced();
                   coach.dismiss("decision");
                   onBank();
                 }}
@@ -521,6 +547,10 @@ export function RoundStage({
                 className="h-full flex-col gap-0"
                 disabled={locked}
                 onClick={() => {
+                  // D2.1 — same as BANK: seeing the intro mark and pushing on
+                  // completes the introduction, so the fit strip / form icons are
+                  // live from fixture 2 onward, never re-hidden nor re-taught.
+                  if (showIntroMark) markIntroduced();
                   coach.dismiss("decision");
                   onPush();
                 }}
@@ -554,13 +584,29 @@ export function RoundStage({
           bank/push marks land directly under the button they describe; the
           hint mark (G3, one, first-run) takes the bench slot once the bench
           mark is dismissed and hint chips are visible. */}
-      {(mode === "select" || mode === "decision") && (
+      {/* D2 — at the fixture-1 trigger the introduction takes the slot; its
+          GOT IT / SKIP ALL both complete the intro (write the sentinel), which
+          un-hides the form icons and fit strip for the rest of the run and
+          forever after. Otherwise the usual per-surface mark. */}
+      {showIntroMark ? (
         <CoachMark
-          id={mode === "select" ? selectCoachId : "decision"}
+          id="introduced"
           seen={coach.seen}
-          onDismiss={coach.dismiss}
-          onSkipAll={coach.skipAll}
+          onDismiss={markIntroduced}
+          onSkipAll={() => {
+            coach.skipAll();
+            markIntroduced();
+          }}
         />
+      ) : (
+        (mode === "select" || mode === "decision") && (
+          <CoachMark
+            id={mode === "select" ? selectCoachId : "decision"}
+            seen={coach.seen}
+            onDismiss={coach.dismiss}
+            onSkipAll={coach.skipAll}
+          />
+        )
       )}
 
       <FixtureSheet

@@ -23,6 +23,13 @@ interface PickImpactProps {
   /** The selected offer; null renders the reserved slot with its prompt. */
   card: Card | null;
   fixtures: Fixture[];
+  /**
+   * Ticket D2 — first-run de-noising. When true, the strip's CONTENT (the
+   * "{NAME} VS THE GAUNTLET" label + the F1–F5 cells) is not rendered, but the
+   * reserved PICK_IMPACT_H slot is held open so the draft stack keeps its
+   * budgeted height and nothing below shifts when the strip is introduced.
+   */
+  hidden?: boolean;
 }
 
 const DIR_CLASS = {
@@ -31,14 +38,15 @@ const DIR_CLASS = {
   flat: "bg-muted text-muted-foreground",
 } as const;
 
-export function PickImpact({ card, fixtures }: PickImpactProps) {
+export function PickImpact({ card, fixtures, hidden = false }: PickImpactProps) {
   return (
     <div
       className="shrink-0 flex flex-col justify-center"
       style={{ height: PICK_IMPACT_H }}
       data-testid="draw-pick-impact"
+      data-hidden={hidden ? "true" : undefined}
     >
-      {card === null ? (
+      {hidden ? null : card === null ? (
         <p className="font-heading font-bold text-[10px] text-center text-muted-foreground tracking-wide">
           TAP A CARD TO SEE WHAT IT DOES
         </p>

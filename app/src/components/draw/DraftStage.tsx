@@ -10,7 +10,7 @@ import { NextFixtureLine } from "./NextFixtureLine";
 import { PickImpact } from "./PickImpact";
 import { SynergyMeters } from "./SynergyMeters";
 import { CoachMark } from "./CoachMark";
-import { useCoachMarks } from "./coachMarks";
+import { useCoachMarks, useDrawIntro } from "./coachMarks";
 import { LAYOUT } from "./layout";
 
 interface DraftStageProps {
@@ -40,6 +40,10 @@ export function DraftStage({ view, rules, locked, onPick }: DraftStageProps) {
   const [selected, setSelected] = useState<number | null>(null);
   const [sheetFixture, setSheetFixture] = useState<Fixture | null>(null);
   const coach = useCoachMarks();
+  // D2 — on the player's very first board the fit strip is withheld until it is
+  // introduced after fixture 1 (RoundStage owns the trigger). The sentinel is
+  // never written during the draft, so this stays stable for the whole draft.
+  const { introduced } = useDrawIntro();
 
   // A new row is a new decision — never carry a selection across it (the
   // offers behind the index have changed).
@@ -121,8 +125,9 @@ export function DraftStage({ view, rules, locked, onPick }: DraftStageProps) {
         ))}
       </div>
 
-      {/* F2b — mini-gauntlet for the selected offer. */}
-      <PickImpact card={selectedCard} fixtures={view.fixtures} />
+      {/* F2b — mini-gauntlet for the selected offer. D2 — withheld (slot
+          reserved) until the first-run introduction. */}
+      <PickImpact card={selectedCard} fixtures={view.fixtures} hidden={!introduced} />
 
       {/* Row progress dots + picks-remaining. */}
       <div
