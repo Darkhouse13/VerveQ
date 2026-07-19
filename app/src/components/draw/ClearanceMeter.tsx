@@ -15,6 +15,9 @@
  * arithmetic beyond assembling the narrow config, exactly the squadSynergies
  * pattern the meters already use. Exact numbers (scores, contributions,
  * forms) remain post-resolution only.
+ *
+ * Amended by D5: draft-phase book-value projection permitted; round-phase ban
+ * unchanged.
  */
 
 import { cn } from "@/lib/utils";

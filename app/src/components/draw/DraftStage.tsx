@@ -8,6 +8,7 @@ import { FixtureStrip } from "./FixtureStrip";
 import { FixtureSheet } from "./FixtureSheet";
 import { NextFixtureLine } from "./NextFixtureLine";
 import { PickImpact } from "./PickImpact";
+import { DraftProjection } from "./DraftProjection";
 import { SynergyMeters } from "./SynergyMeters";
 import { CoachMark } from "./CoachMark";
 import { useCoachMarks, useDrawIntro } from "./coachMarks";
@@ -128,6 +129,13 @@ export function DraftStage({ view, rules, locked, onPick }: DraftStageProps) {
       {/* F2b — mini-gauntlet for the selected offer. D2 — withheld (slot
           reserved) until the first-run introduction. */}
       <PickImpact card={selectedCard} fixtures={view.fixtures} hidden={!introduced} />
+
+      {/* D5 — ON PAPER: the drafted squad's exact best-five book value per
+          fixture, updated per confirmed pick. STOP-G's exact-number ban is
+          scoped to the round phase; this draft-phase projection is the D5
+          amendment. Shows for first-run players too (their consequence
+          instrument in place of the still-gated fit strip above). */}
+      <DraftProjection squad={view.squad} fixtures={view.fixtures} rules={rules} />
 
       {/* Row progress dots + picks-remaining. */}
       <div

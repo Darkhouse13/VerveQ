@@ -34,12 +34,23 @@ export const NEXT_FIXTURE_H = 36;
 /** F2b — mini-gauntlet + synergy impact of the selected offer. */
 export const PICK_IMPACT_H = 40;
 
+/**
+ * D5 — the "ON PAPER" book-value projection panel: a header line + one row per
+ * fixture (5). Sized to hold all five rows at the draft's compact type without
+ * scroll. UI-local, like the Ticket F sections above.
+ */
+export const PROJECTION_H = 112;
+
 /** F3b — projected band for the next fixture + banked / bust-keeps. */
 export const DECISION_INFO_H = 76;
 
 /**
- * Draft view stack, top to bottom (LAYOUT_SPEC "Draft view" + Ticket F).
- * 48+64+36+88+190+40+24+44 + 7×12 = 618.
+ * Draft view stack, top to bottom (LAYOUT_SPEC "Draft view" + Ticket F + D5).
+ * Before D5: 48+64+36+88+190+40+24+44 + 7×12 = 618.
+ * D5 adds the 112px ON PAPER projection panel (PROJECTION_H) between the fit
+ * strip and the row dots:
+ * 48+64+36+88+190+40+112+24+44 + 8×12 = 742, still under the 812px budget
+ * (70px spare) — no existing element shrank.
  */
 export const DRAFT_SECTIONS = [
   LAYOUT.topBarH,
@@ -48,6 +59,7 @@ export const DRAFT_SECTIONS = [
   SYNERGY_METERS_H,
   LAYOUT.offerCardMaxH,
   PICK_IMPACT_H,
+  PROJECTION_H,
   LAYOUT.rowDotsH,
   LAYOUT.scoreBarH,
 ] as const;

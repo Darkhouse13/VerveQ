@@ -21,6 +21,9 @@
  * player cannot tell a 55% push from an 80% one, so tight decisions stay
  * genuinely tense and hints have something to resolve.
  *
+ * Amended by D5: draft-phase book-value projection permitted; round-phase ban
+ * unchanged.
+ *
  * Pure; no I/O, no seeds, no Math.random.
  */
 

@@ -16,6 +16,7 @@ import {
   DRAFT_SECTIONS,
   NEXT_FIXTURE_H,
   PICK_IMPACT_H,
+  PROJECTION_H,
   ROUND_SECTIONS,
   HEIGHT_BUDGET,
   LAYOUT,
@@ -49,15 +50,16 @@ describe("Draw layout budget (LAYOUT_SPEC 390×844)", () => {
   });
 
   it("the stage section stacks match the spec totals and fit the 812px budget", () => {
-    // LAYOUT_SPEC + Ticket F: draft 48+64+36+88+190+40+24+44 + 7×12 = 618;
-    // round 48+140+92+88+56+76+56 + 6×12 = 628; budget 844 − 2×16 = 812.
+    // LAYOUT_SPEC + Ticket F + D5:
+    //   draft 48+64+36+88+190+40+112+24+44 + 8×12 = 742 (was 618 pre-D5);
+    //   round 48+140+92+88+56+76+56 + 6×12 = 628; budget 844 − 2×16 = 812.
     //
-    // Ticket F added 100px to the draft (F1c's next-fixture line, F2b's
-    // mini-gauntlet) and 88px to the round (F3b's stake panel), against the
-    // 294px/272px of headroom the two views had. Both still fit with ~190px
-    // spare and neither view scrolls.
+    // D5 added the 112px ON PAPER projection panel (PROJECTION_H) to the draft:
+    // 618 → 742, consuming 124px (panel + one 12px gap) of the ~194px the draft
+    // had spare. It still fits with 70px to spare and no existing element was
+    // shrunk to make room; neither view scrolls.
     expect(HEIGHT_BUDGET).toBe(812);
-    expect(stackedHeight(DRAFT_SECTIONS)).toBe(618);
+    expect(stackedHeight(DRAFT_SECTIONS)).toBe(742);
     expect(stackedHeight(ROUND_SECTIONS)).toBe(628);
     expect(stackedHeight(DRAFT_SECTIONS)).toBeLessThanOrEqual(HEIGHT_BUDGET);
     expect(stackedHeight(ROUND_SECTIONS)).toBeLessThanOrEqual(HEIGHT_BUDGET);
@@ -74,6 +76,8 @@ describe("Draw layout budget (LAYOUT_SPEC 390×844)", () => {
     // Ticket F sections carry their budgeted heights too.
     expect(screen.getByTestId("draw-next-fixture").style.height).toBe(`${NEXT_FIXTURE_H}px`);
     expect(screen.getByTestId("draw-pick-impact").style.height).toBe(`${PICK_IMPACT_H}px`);
+    // D5 — the ON PAPER projection panel renders at its budgeted height.
+    expect(screen.getByTestId("draw-projection").style.height).toBe(`${PROJECTION_H}px`);
     // One active row of exactly 3 offers — never more on screen.
     expect(screen.getAllByTestId(/draw-offer-\d/)).toHaveLength(MOCK_ENGINE_CONFIG.offersPerRow);
   });
