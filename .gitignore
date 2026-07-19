@@ -251,11 +251,18 @@ app/.ops/
 !app/scripts/drawSim/*.md
 # Data and temporary data cleaning folders
 data/
+# real-v5 editorial rating artifacts are canonical product data (Ticket E5) —
+# re-include them out of the blanket data/ ignore.
+!data/
+data/*
+!data/ratings-v5/
+!data/ratings-v5/*
 !app/convex/data/
 app/convex/data/*
 !app/convex/data/football_career_paths.json
 !app/convex/data/playersSourced.json
 !app/convex/data/drawCardsReal.candidates.json
+!app/convex/data/drawCardsReal.candidates.v5.json
 !app/convex/data/drawCardsReal.dossier.json
 !app/convex/data/drawCardsReal.BUILD_NOTES.md
 !app/convex/data/ownerPositionRulings.json

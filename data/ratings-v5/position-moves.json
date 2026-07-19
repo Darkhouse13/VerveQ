@@ -1,0 +1,110 @@
+[
+  {
+    "cardId": "real_0025",
+    "name": "Wayne Rooney",
+    "from": "MID",
+    "to": "ATT",
+    "reason": "England & Man Utd all-time top scorer — a striker, not a midfielder",
+    "needsRerate": false,
+    "applied": true
+  },
+  {
+    "cardId": "real_0327",
+    "name": "John Stones",
+    "from": "MID",
+    "to": "DEF",
+    "reason": "A centre-back his entire career (Everton/City/England)",
+    "needsRerate": false,
+    "applied": true
+  },
+  {
+    "cardId": "real_0190",
+    "name": "Hulk",
+    "from": "MID",
+    "to": "ATT",
+    "reason": "A powerful goal-scoring forward/winger, never a central midfielder",
+    "needsRerate": false,
+    "applied": true
+  },
+  {
+    "cardId": "real_0168",
+    "name": "Roberto Firmino",
+    "from": "MID",
+    "to": "ATT",
+    "reason": "Liverpool's first-choice centre-forward / false-9",
+    "needsRerate": false,
+    "applied": true
+  },
+  {
+    "cardId": "real_0047",
+    "name": "Lukas Podolski",
+    "from": "MID",
+    "to": "ATT",
+    "reason": "A striker/forward for Germany and clubs",
+    "needsRerate": false,
+    "applied": true
+  },
+  {
+    "cardId": "real_0125",
+    "name": "Yaya Touré",
+    "from": "DEF",
+    "to": "MID",
+    "reason": "A dominant box-to-box central midfielder (emergency CB only)",
+    "needsRerate": false,
+    "applied": true
+  },
+  {
+    "cardId": "real_0336",
+    "name": "Sulley Muntari",
+    "from": "DEF",
+    "to": "MID",
+    "reason": "A central midfielder (Inter/Milan/Ghana), not a defender",
+    "needsRerate": false,
+    "applied": true
+  },
+  {
+    "cardId": "real_0319",
+    "name": "Lorenzo Insigne",
+    "from": "MID",
+    "to": "ATT",
+    "reason": "A left winger/forward (Napoli/Italy) — wide forward per standing rule",
+    "needsRerate": false,
+    "applied": true
+  },
+  {
+    "cardId": "real_0339",
+    "name": "Federico Chiesa",
+    "from": "MID",
+    "to": "ATT",
+    "reason": "A winger/forward — wide forward per standing rule",
+    "needsRerate": false,
+    "applied": true
+  },
+  {
+    "cardId": "real_0353",
+    "name": "Douglas Costa",
+    "from": "MID",
+    "to": "ATT",
+    "reason": "An out-and-out winger — wide forward per standing rule",
+    "needsRerate": false,
+    "applied": true
+  },
+  {
+    "cardId": "real_0285",
+    "name": "Paul Breitner",
+    "from": "DEF",
+    "to": "MID",
+    "reason": "Won the 1982 World Cup as a central midfielder; left-back only early on",
+    "needsRerate": false,
+    "applied": true
+  },
+  {
+    "cardId": "real_0038",
+    "name": "Thomas Müller",
+    "from": "MID",
+    "to": "ATT",
+    "reason": "Plays as a forward / second striker (owner ruling)",
+    "needsRerate": false,
+    "applied": true
+  }
+]

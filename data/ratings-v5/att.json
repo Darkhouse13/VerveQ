@@ -1,0 +1,739 @@
+{
+  "_meta": {
+    "position": "ATT",
+    "count": 137,
+    "ruling": "ratingV5 = editorial peak-career/era-relative rating per docs/RATING_ANCHORS.md. Set-wide +1 was applied to MID/DEF non-movers; 12 position-movers were re-rated against their destination class (position-moves.json)."
+  },
+  "ratings": [
+    {
+      "cardId": "real_0001",
+      "name": "Lionel Messi",
+      "ratingV5": 95,
+      "note": "owner override: the GOAT — the first 95 spent; eight Ballon d'Ors, a World Cup, the most complete attacker the game has seen"
+    },
+    {
+      "cardId": "real_0002",
+      "name": "Cristiano Ronaldo",
+      "ratingV5": 94,
+      "note": "owner override: alone at 94 among attackers — five Ballon d'Ors and one of the two defining forwards of his era"
+    },
+    {
+      "cardId": "real_0003",
+      "name": "Pelé",
+      "ratingV5": 93,
+      "note": "owner override: all-time great, restructured off the 94 tier — three World Cups and roughly a thousand goals"
+    },
+    {
+      "cardId": "real_0004",
+      "name": "Diego Maradona",
+      "ratingV5": 93,
+      "note": "owner override: all-time great, restructured off the 94 tier — carried Argentina to the 1986 World Cup single-handedly"
+    },
+    {
+      "cardId": "real_0005",
+      "name": "Neymar",
+      "ratingV5": 92,
+      "note": "One of the finest forwards of his generation — Barça's treble front three, PSG's record signing and Brazil's talisman at his peak"
+    },
+    {
+      "cardId": "real_0008",
+      "name": "Kylian Mbappé",
+      "ratingV5": 93,
+      "note": "A generational forward — 2018 World Cup winner, a World Cup final hat-trick, serial Golden Boots; already on an all-time trajectory"
+    },
+    {
+      "cardId": "real_0009",
+      "name": "Johan Cruyff",
+      "ratingV5": 93,
+      "note": "owner override: all-time great, restructured off the 94 tier — three Ballon d'Ors and the embodiment of Total Football"
+    },
+    {
+      "cardId": "real_0010",
+      "name": "Ronaldo Nazário",
+      "ratingV5": 93,
+      "note": "owner override: all-time great, restructured off the 94 tier — two Ballon d'Ors and 'Il Fenomeno', the most devastating striker at peak"
+    },
+    {
+      "cardId": "real_0011",
+      "name": "Zlatan Ibrahimović",
+      "ratingV5": 90,
+      "note": "A prolific, dominant centre-forward across seven top leagues for two decades — at peak elite and unplayable, Sweden's greatest"
+    },
+    {
+      "cardId": "real_0013",
+      "name": "Ronaldinho",
+      "ratingV5": 92,
+      "note": "Two-time World Player and the 2005 Ballon d'Or — at his peak the most joyful, unplayable footballer on earth"
+    },
+    {
+      "cardId": "real_0014",
+      "name": "Luis Suárez",
+      "ratingV5": 92,
+      "note": "owner override: elevated to 92 — a European Golden Boot machine at Liverpool and Barça's treble front three, an all-time great"
+    },
+    {
+      "cardId": "real_0017",
+      "name": "Karim Benzema",
+      "ratingV5": 91,
+      "note": "owner override: elevated to 91 — the 2022 Ballon d'Or, Real Madrid's complete striker and talisman, an all-time great"
+    },
+    {
+      "cardId": "real_0018",
+      "name": "Robert Lewandowski",
+      "ratingV5": 91,
+      "note": "A relentless goalscoring machine — the best striker in the world across 2020-21, prolific for Bayern, Barça and Poland"
+    },
+    {
+      "cardId": "real_0023",
+      "name": "Thierry Henry",
+      "ratingV5": 92,
+      "note": "Arsenal's greatest ever; at his peak the most complete and unstoppable forward in the world, France's record scorer for years"
+    },
+    {
+      "cardId": "real_0024",
+      "name": "Mohamed Salah",
+      "ratingV5": 88
+    },
+    {
+      "cardId": "real_0025",
+      "name": "Wayne Rooney",
+      "ratingV5": 87,
+      "note": "Peak world-class centre-forward/second striker — England & Man Utd's record scorer; sits with Kane 89 / Drogba 87 in the ATT class"
+    },
+    {
+      "cardId": "real_0026",
+      "name": "Miroslav Klose",
+      "ratingV5": 85
+    },
+    {
+      "cardId": "real_0028",
+      "name": "Antoine Griezmann",
+      "ratingV5": 86,
+      "note": "owner override"
+    },
+    {
+      "cardId": "real_0031",
+      "name": "Robin van Persie",
+      "ratingV5": 86,
+      "note": "owner override"
+    },
+    {
+      "cardId": "real_0034",
+      "name": "Eusébio",
+      "ratingV5": 93,
+      "note": "Ballon d'Or 1965 and the 1966 World Cup's top scorer; Benfica's Black Panther, one of the greatest forwards of all time"
+    },
+    {
+      "cardId": "real_0036",
+      "name": "George Weah",
+      "ratingV5": 90,
+      "note": "The 1995 Ballon d'Or — still the only African winner — and FIFA World Player; a complete forward at his Milan/PSG peak"
+    },
+    {
+      "cardId": "real_0037",
+      "name": "Gareth Bale",
+      "ratingV5": 85
+    },
+    {
+      "cardId": "real_0038",
+      "name": "Thomas Müller",
+      "ratingV5": 87,
+      "note": "A World Cup Golden Boot 'Raumdeuter' with elite forward output for two Bayern trebles — world-class peak; matches prior 87 vs ATT peers"
+    },
+    {
+      "cardId": "real_0039",
+      "name": "Ferenc Puskás",
+      "ratingV5": 93,
+      "note": "One of the greatest goalscorers the game has seen — the Magical Magyars' talisman and a Real Madrid great"
+    },
+    {
+      "cardId": "real_0040",
+      "name": "Harry Kane",
+      "ratingV5": 89,
+      "note": "owner override"
+    },
+    {
+      "cardId": "real_0042",
+      "name": "Eden Hazard",
+      "ratingV5": 88,
+      "note": "owner override"
+    },
+    {
+      "cardId": "real_0043",
+      "name": "Erling Haaland",
+      "ratingV5": 88
+    },
+    {
+      "cardId": "real_0044",
+      "name": "Arjen Robben",
+      "ratingV5": 88
+    },
+    {
+      "cardId": "real_0046",
+      "name": "Samuel Eto'o",
+      "ratingV5": 88
+    },
+    {
+      "cardId": "real_0047",
+      "name": "Lukas Podolski",
+      "ratingV5": 75,
+      "note": "Germany's thunderous-left-foot forward, prolific for country — very good international level in ATT"
+    },
+    {
+      "cardId": "real_0048",
+      "name": "Sadio Mané",
+      "ratingV5": 84
+    },
+    {
+      "cardId": "real_0050",
+      "name": "Fernando Torres",
+      "ratingV5": 84
+    },
+    {
+      "cardId": "real_0051",
+      "name": "Gerd Müller",
+      "ratingV5": 92,
+      "note": "The greatest pure goalscorer of his era — a 1974 World Cup winner and record scorer, Bayern's Der Bomber"
+    },
+    {
+      "cardId": "real_0052",
+      "name": "Didier Drogba",
+      "ratingV5": 87
+    },
+    {
+      "cardId": "real_0053",
+      "name": "Roberto Baggio",
+      "ratingV5": 89
+    },
+    {
+      "cardId": "real_0054",
+      "name": "Sergio Agüero",
+      "ratingV5": 88
+    },
+    {
+      "cardId": "real_0055",
+      "name": "Alfredo Di Stéfano",
+      "ratingV5": 93,
+      "note": "owner override: all-time great, restructured off the 94 tier — dominated the 1950s with five straight European Cups"
+    },
+    {
+      "cardId": "real_0056",
+      "name": "James Rodríguez",
+      "ratingV5": 78
+    },
+    {
+      "cardId": "real_0058",
+      "name": "Mario Balotelli",
+      "ratingV5": 72
+    },
+    {
+      "cardId": "real_0059",
+      "name": "Olivier Giroud",
+      "ratingV5": 80,
+      "note": "owner override"
+    },
+    {
+      "cardId": "real_0060",
+      "name": "Franck Ribéry",
+      "ratingV5": 88
+    },
+    {
+      "cardId": "real_0061",
+      "name": "Romelu Lukaku",
+      "ratingV5": 85,
+      "note": "owner override"
+    },
+    {
+      "cardId": "real_0062",
+      "name": "Marco van Basten",
+      "ratingV5": 93,
+      "note": "Three Ballon d'Ors and the greatest centre-forward of his era; a Milan and Netherlands (Euro 88) great before injury cut it short"
+    },
+    {
+      "cardId": "real_0064",
+      "name": "Diego Forlán",
+      "ratingV5": 84,
+      "note": "owner override"
+    },
+    {
+      "cardId": "real_0066",
+      "name": "Andriy Shevchenko",
+      "ratingV5": 89
+    },
+    {
+      "cardId": "real_0070",
+      "name": "Ousmane Dembélé",
+      "ratingV5": 87,
+      "note": "owner override"
+    },
+    {
+      "cardId": "real_0071",
+      "name": "Marcus Rashford",
+      "ratingV5": 74
+    },
+    {
+      "cardId": "real_0073",
+      "name": "Alessandro Del Piero",
+      "ratingV5": 88
+    },
+    {
+      "cardId": "real_0074",
+      "name": "David Villa",
+      "ratingV5": 85
+    },
+    {
+      "cardId": "real_0075",
+      "name": "Edinson Cavani",
+      "ratingV5": 84
+    },
+    {
+      "cardId": "real_0077",
+      "name": "Ángel Di María",
+      "ratingV5": 85
+    },
+    {
+      "cardId": "real_0081",
+      "name": "Raúl",
+      "ratingV5": 87
+    },
+    {
+      "cardId": "real_0089",
+      "name": "Eric Cantona",
+      "ratingV5": 85
+    },
+    {
+      "cardId": "real_0090",
+      "name": "Romário",
+      "ratingV5": 92,
+      "note": "The 1994 Ballon d'Or and World Cup winner; one of the greatest penalty-box finishers the game has ever seen"
+    },
+    {
+      "cardId": "real_0092",
+      "name": "Vinícius Júnior",
+      "ratingV5": 85
+    },
+    {
+      "cardId": "real_0094",
+      "name": "Luís Figo",
+      "ratingV5": 89
+    },
+    {
+      "cardId": "real_0095",
+      "name": "Michael Owen",
+      "ratingV5": 84
+    },
+    {
+      "cardId": "real_0096",
+      "name": "Garrincha",
+      "ratingV5": 92,
+      "note": "The 1962 World Cup genius and one of the greatest dribblers ever — Brazil's joy incarnate alongside Pelé"
+    },
+    {
+      "cardId": "real_0097",
+      "name": "Rivaldo",
+      "ratingV5": 90,
+      "note": "The 1999 Ballon d'Or; a magical left foot who dragged Brazil to the 2002 World Cup and starred in Barça's attack"
+    },
+    {
+      "cardId": "real_0100",
+      "name": "Hernán Crespo",
+      "ratingV5": 78
+    },
+    {
+      "cardId": "real_0101",
+      "name": "Paulo Dybala",
+      "ratingV5": 80
+    },
+    {
+      "cardId": "real_0103",
+      "name": "Riyad Mahrez",
+      "ratingV5": 84,
+      "note": "owner override"
+    },
+    {
+      "cardId": "real_0107",
+      "name": "Dennis Bergkamp",
+      "ratingV5": 88
+    },
+    {
+      "cardId": "real_0108",
+      "name": "Son Heung-min",
+      "ratingV5": 84
+    },
+    {
+      "cardId": "real_0111",
+      "name": "Jürgen Klinsmann",
+      "ratingV5": 85
+    },
+    {
+      "cardId": "real_0112",
+      "name": "Robinho",
+      "ratingV5": 74
+    },
+    {
+      "cardId": "real_0121",
+      "name": "Carlos Tevez",
+      "ratingV5": 82
+    },
+    {
+      "cardId": "real_0126",
+      "name": "Mario Mandžukić",
+      "ratingV5": 82,
+      "note": "owner override"
+    },
+    {
+      "cardId": "real_0127",
+      "name": "Keisuke Honda",
+      "ratingV5": 70
+    },
+    {
+      "cardId": "real_0128",
+      "name": "Philippe Coutinho",
+      "ratingV5": 76
+    },
+    {
+      "cardId": "real_0129",
+      "name": "Raheem Sterling",
+      "ratingV5": 78
+    },
+    {
+      "cardId": "real_0130",
+      "name": "Ruud van Nistelrooy",
+      "ratingV5": 85
+    },
+    {
+      "cardId": "real_0132",
+      "name": "Alan Shearer",
+      "ratingV5": 86
+    },
+    {
+      "cardId": "real_0133",
+      "name": "Gonzalo Higuaín",
+      "ratingV5": 85,
+      "note": "owner override"
+    },
+    {
+      "cardId": "real_0136",
+      "name": "Juan Mata",
+      "ratingV5": 72
+    },
+    {
+      "cardId": "real_0143",
+      "name": "Nani",
+      "ratingV5": 74
+    },
+    {
+      "cardId": "real_0146",
+      "name": "Alexis Sánchez",
+      "ratingV5": 80
+    },
+    {
+      "cardId": "real_0149",
+      "name": "Pierre-Emerick Aubameyang",
+      "ratingV5": 80
+    },
+    {
+      "cardId": "real_0150",
+      "name": "Diego Costa",
+      "ratingV5": 78
+    },
+    {
+      "cardId": "real_0153",
+      "name": "Ivan Perišić",
+      "ratingV5": 74
+    },
+    {
+      "cardId": "real_0154",
+      "name": "Hristo Stoichkov",
+      "ratingV5": 88
+    },
+    {
+      "cardId": "real_0156",
+      "name": "Mario Gómez",
+      "ratingV5": 74
+    },
+    {
+      "cardId": "real_0161",
+      "name": "Diogo Jota",
+      "ratingV5": 74
+    },
+    {
+      "cardId": "real_0162",
+      "name": "Xherdan Shaqiri",
+      "ratingV5": 70
+    },
+    {
+      "cardId": "real_0165",
+      "name": "Andrey Arshavin",
+      "ratingV5": 74
+    },
+    {
+      "cardId": "real_0168",
+      "name": "Roberto Firmino",
+      "ratingV5": 79,
+      "note": "Liverpool's selfless false-9 through a CL/PL peak — top of the very-good band among attackers"
+    },
+    {
+      "cardId": "real_0174",
+      "name": "Nicolas Anelka",
+      "ratingV5": 78
+    },
+    {
+      "cardId": "real_0177",
+      "name": "Klaas-Jan Huntelaar",
+      "ratingV5": 74
+    },
+    {
+      "cardId": "real_0178",
+      "name": "Emmanuel Adebayor",
+      "ratingV5": 74
+    },
+    {
+      "cardId": "real_0179",
+      "name": "Álvaro Morata",
+      "ratingV5": 72
+    },
+    {
+      "cardId": "real_0181",
+      "name": "Edin Džeko",
+      "ratingV5": 76
+    },
+    {
+      "cardId": "real_0182",
+      "name": "Javier Hernández",
+      "ratingV5": 72
+    },
+    {
+      "cardId": "real_0183",
+      "name": "Gabriel Batistuta",
+      "ratingV5": 87
+    },
+    {
+      "cardId": "real_0184",
+      "name": "Mario Kempes",
+      "ratingV5": 84
+    },
+    {
+      "cardId": "real_0185",
+      "name": "David Trezeguet",
+      "ratingV5": 80
+    },
+    {
+      "cardId": "real_0186",
+      "name": "Memphis Depay",
+      "ratingV5": 74
+    },
+    {
+      "cardId": "real_0189",
+      "name": "André Schürrle",
+      "ratingV5": 68
+    },
+    {
+      "cardId": "real_0190",
+      "name": "Hulk",
+      "ratingV5": 77,
+      "note": "A powerful, prolific goal-scoring forward/winger (Porto/Zenit/Brazil) — very good in the ATT class"
+    },
+    {
+      "cardId": "real_0191",
+      "name": "Filippo Inzaghi",
+      "ratingV5": 86,
+      "note": "owner override"
+    },
+    {
+      "cardId": "real_0199",
+      "name": "Luis Enrique",
+      "ratingV5": 78
+    },
+    {
+      "cardId": "real_0202",
+      "name": "Shinji Okazaki",
+      "ratingV5": 65
+    },
+    {
+      "cardId": "real_0205",
+      "name": "Radamel Falcao",
+      "ratingV5": 84
+    },
+    {
+      "cardId": "real_0210",
+      "name": "Dirk Kuyt",
+      "ratingV5": 72
+    },
+    {
+      "cardId": "real_0211",
+      "name": "Theo Walcott",
+      "ratingV5": 66
+    },
+    {
+      "cardId": "real_0215",
+      "name": "Jamie Vardy",
+      "ratingV5": 74
+    },
+    {
+      "cardId": "real_0218",
+      "name": "Ole Gunnar Solskjær",
+      "ratingV5": 74
+    },
+    {
+      "cardId": "real_0229",
+      "name": "Mauro Icardi",
+      "ratingV5": 74
+    },
+    {
+      "cardId": "real_0230",
+      "name": "Karl-Heinz Rummenigge",
+      "ratingV5": 90,
+      "note": "Two Ballon d'Ors and West Germany's talisman; Bayern's prolific forward and captain of the early 1980s"
+    },
+    {
+      "cardId": "real_0232",
+      "name": "Antonio Valencia",
+      "ratingV5": 72
+    },
+    {
+      "cardId": "real_0236",
+      "name": "Alberto Gilardino",
+      "ratingV5": 72
+    },
+    {
+      "cardId": "real_0238",
+      "name": "Ricardo Quaresma",
+      "ratingV5": 72
+    },
+    {
+      "cardId": "real_0239",
+      "name": "Davor Šuker",
+      "ratingV5": 80
+    },
+    {
+      "cardId": "real_0242",
+      "name": "Divock Origi",
+      "ratingV5": 65
+    },
+    {
+      "cardId": "real_0249",
+      "name": "Freddie Ljungberg",
+      "ratingV5": 74
+    },
+    {
+      "cardId": "real_0251",
+      "name": "Kevin Keegan",
+      "ratingV5": 87
+    },
+    {
+      "cardId": "real_0255",
+      "name": "Danny Welbeck",
+      "ratingV5": 66
+    },
+    {
+      "cardId": "real_0263",
+      "name": "Kazuyoshi Miura",
+      "ratingV5": 62
+    },
+    {
+      "cardId": "real_0264",
+      "name": "Roberto Mancini",
+      "ratingV5": 74
+    },
+    {
+      "cardId": "real_0265",
+      "name": "Ansu Fati",
+      "ratingV5": 66
+    },
+    {
+      "cardId": "real_0267",
+      "name": "Sócrates",
+      "ratingV5": 86
+    },
+    {
+      "cardId": "real_0270",
+      "name": "Kevin-Prince Boateng",
+      "ratingV5": 68
+    },
+    {
+      "cardId": "real_0271",
+      "name": "Leroy Sané",
+      "ratingV5": 76
+    },
+    {
+      "cardId": "real_0272",
+      "name": "Nicklas Bendtner",
+      "ratingV5": 63
+    },
+    {
+      "cardId": "real_0274",
+      "name": "Robbie Keane",
+      "ratingV5": 74
+    },
+    {
+      "cardId": "real_0280",
+      "name": "Aleksandr Kerzhakov",
+      "ratingV5": 68
+    },
+    {
+      "cardId": "real_0281",
+      "name": "Lautaro Martínez",
+      "ratingV5": 84,
+      "note": "owner override"
+    },
+    {
+      "cardId": "real_0283",
+      "name": "Denis Cheryshev",
+      "ratingV5": 64
+    },
+    {
+      "cardId": "real_0319",
+      "name": "Lorenzo Insigne",
+      "ratingV5": 76,
+      "note": "A gifted left winger/forward (Napoli/Italy, Euro 2020) — very good in the ATT class"
+    },
+    {
+      "cardId": "real_0324",
+      "name": "Just Fontaine",
+      "ratingV5": 84
+    },
+    {
+      "cardId": "real_0339",
+      "name": "Federico Chiesa",
+      "ratingV5": 75,
+      "note": "A direct winger/forward (Euro 2020, Juve/Italy) — very good international level in ATT"
+    },
+    {
+      "cardId": "real_0353",
+      "name": "Douglas Costa",
+      "ratingV5": 74,
+      "note": "An explosive out-and-out winger (Bayern/Juve/Brazil) — solid-to-very-good among attackers"
+    },
+    {
+      "cardId": "real_0354",
+      "name": "Zbigniew Boniek",
+      "ratingV5": 82
+    },
+    {
+      "cardId": "real_0358",
+      "name": "Roger Milla",
+      "ratingV5": 74
+    },
+    {
+      "cardId": "real_0416",
+      "name": "Jairzinho",
+      "ratingV5": 86
+    },
+    {
+      "cardId": "real_0417",
+      "name": "Vahid Halilhodžić",
+      "ratingV5": 66
+    },
+    {
+      "cardId": "real_0418",
+      "name": "Francisco Gento",
+      "ratingV5": 84
+    },
+    {
+      "cardId": "real_0420",
+      "name": "Allan Simonsen",
+      "ratingV5": 79
+    }
+  ]
+}

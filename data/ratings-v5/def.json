@@ -1,0 +1,659 @@
+{
+  "_meta": {
+    "position": "DEF",
+    "count": 127,
+    "ruling": "ratingV5 = editorial peak-career/era-relative rating per docs/RATING_ANCHORS.md. Set-wide +1 was applied to MID/DEF non-movers; 12 position-movers were re-rated against their destination class (position-moves.json)."
+  },
+  "ratings": [
+    {
+      "cardId": "real_0012",
+      "name": "Franz Beckenbauer",
+      "ratingV5": 95,
+      "note": "owner ruling — designated DEF GOAT: authored 94, set-wide +1 lands him on exactly 95 (capped). Greatest defender ever: invented the modern attacking libero, two Ballon d'Ors, World Cup as player and manager."
+    },
+    {
+      "cardId": "real_0045",
+      "name": "Gerard Piqué",
+      "ratingV5": 90,
+      "note": "owner override: World Cup + Euro + complete Barça-era CB résumé places him above the 88 band, below the 90 tier"
+    },
+    {
+      "cardId": "real_0057",
+      "name": "Sergio Ramos",
+      "ratingV5": 92,
+      "note": "Era-defining centre-back — four Champions Leagues, a World Cup and two Euros; a decisive big-game defender and scorer, Real Madrid and Spain captain"
+    },
+    {
+      "cardId": "real_0067",
+      "name": "Philipp Lahm",
+      "ratingV5": 91,
+      "note": "The best full-back of his era on either flank and a World Cup-winning captain — Guardiola's 'most intelligent player I ever trained'"
+    },
+    {
+      "cardId": "real_0072",
+      "name": "Lothar Matthäus",
+      "ratingV5": 91,
+      "note": "1990 Ballon d'Or and World Cup winner; a dominant sweeper/all-action defender — an all-time great in the shirt he is carried in"
+    },
+    {
+      "cardId": "real_0076",
+      "name": "Dani Alves",
+      "ratingV5": 91,
+      "note": "Most-decorated player in football history; at Barcelona peak, unarguably the best right-back in the world"
+    },
+    {
+      "cardId": "real_0078",
+      "name": "Roberto Carlos",
+      "ratingV5": 91,
+      "note": "Redefined the attacking full-back — the greatest left-back going forward the game has seen; World Cup 2002, a decade at Real Madrid's peak"
+    },
+    {
+      "cardId": "real_0080",
+      "name": "Fabio Cannavaro",
+      "ratingV5": 91,
+      "note": "2006 Ballon d'Or — the only modern centre-back to win it — as World Cup-winning captain; peak the best defender alive"
+    },
+    {
+      "cardId": "real_0087",
+      "name": "Paolo Maldini",
+      "ratingV5": 94,
+      "note": "Consensus top-two defender of all time; a 25-year one-club great at both left-back and centre-back — era-transcending peak"
+    },
+    {
+      "cardId": "real_0091",
+      "name": "Jordi Alba",
+      "ratingV5": 85
+    },
+    {
+      "cardId": "real_0093",
+      "name": "Marcelo Vieira",
+      "ratingV5": 87
+    },
+    {
+      "cardId": "real_0098",
+      "name": "John Terry",
+      "ratingV5": 88
+    },
+    {
+      "cardId": "real_0099",
+      "name": "Jérôme Boateng",
+      "ratingV5": 86
+    },
+    {
+      "cardId": "real_0102",
+      "name": "Raphaël Varane",
+      "ratingV5": 86
+    },
+    {
+      "cardId": "real_0106",
+      "name": "Nemanja Vidić",
+      "ratingV5": 88
+    },
+    {
+      "cardId": "real_0117",
+      "name": "Diego Godín",
+      "ratingV5": 87
+    },
+    {
+      "cardId": "real_0120",
+      "name": "Pepe",
+      "ratingV5": 86
+    },
+    {
+      "cardId": "real_0123",
+      "name": "Mats Hummels",
+      "ratingV5": 87
+    },
+    {
+      "cardId": "real_0135",
+      "name": "Javier Mascherano",
+      "ratingV5": 83
+    },
+    {
+      "cardId": "real_0138",
+      "name": "Lilian Thuram",
+      "ratingV5": 88
+    },
+    {
+      "cardId": "real_0144",
+      "name": "Rio Ferdinand",
+      "ratingV5": 89
+    },
+    {
+      "cardId": "real_0145",
+      "name": "Virgil van Dijk",
+      "ratingV5": 90,
+      "note": "Not 90+ but flagged: 2018-2020 he was the best centre-back in the world and a Ballon d'Or runner-up who transformed Liverpool's defence"
+    },
+    {
+      "cardId": "real_0147",
+      "name": "David Luiz",
+      "ratingV5": 77
+    },
+    {
+      "cardId": "real_0148",
+      "name": "Thiago Silva",
+      "ratingV5": 89
+    },
+    {
+      "cardId": "real_0151",
+      "name": "Giorgio Chiellini",
+      "ratingV5": 88
+    },
+    {
+      "cardId": "real_0158",
+      "name": "Ashley Cole",
+      "ratingV5": 87
+    },
+    {
+      "cardId": "real_0163",
+      "name": "Achraf Hakimi",
+      "ratingV5": 83
+    },
+    {
+      "cardId": "real_0167",
+      "name": "Javier Zanetti",
+      "ratingV5": 87
+    },
+    {
+      "cardId": "real_0169",
+      "name": "Ashley Young",
+      "ratingV5": 71
+    },
+    {
+      "cardId": "real_0172",
+      "name": "Harry Maguire",
+      "ratingV5": 69
+    },
+    {
+      "cardId": "real_0175",
+      "name": "Leonardo Bonucci",
+      "ratingV5": 85
+    },
+    {
+      "cardId": "real_0187",
+      "name": "Patrice Evra",
+      "ratingV5": 81
+    },
+    {
+      "cardId": "real_0192",
+      "name": "Samuel Umtiti",
+      "ratingV5": 71
+    },
+    {
+      "cardId": "real_0196",
+      "name": "Ronald Koeman",
+      "ratingV5": 88
+    },
+    {
+      "cardId": "real_0197",
+      "name": "Éric Abidal",
+      "ratingV5": 79
+    },
+    {
+      "cardId": "real_0200",
+      "name": "Yuto Nagatomo",
+      "ratingV5": 65
+    },
+    {
+      "cardId": "real_0208",
+      "name": "Vincent Kompany",
+      "ratingV5": 87
+    },
+    {
+      "cardId": "real_0213",
+      "name": "David Alaba",
+      "ratingV5": 86
+    },
+    {
+      "cardId": "real_0214",
+      "name": "Dejan Lovren",
+      "ratingV5": 67
+    },
+    {
+      "cardId": "real_0220",
+      "name": "César Azpilicueta",
+      "ratingV5": 79
+    },
+    {
+      "cardId": "real_0223",
+      "name": "Per Mertesacker",
+      "ratingV5": 71
+    },
+    {
+      "cardId": "real_0225",
+      "name": "Luke Shaw",
+      "ratingV5": 75
+    },
+    {
+      "cardId": "real_0234",
+      "name": "Branislav Ivanović",
+      "ratingV5": 77
+    },
+    {
+      "cardId": "real_0243",
+      "name": "Fábio Coentrão",
+      "ratingV5": 72
+    },
+    {
+      "cardId": "real_0245",
+      "name": "Nacho",
+      "ratingV5": 73
+    },
+    {
+      "cardId": "real_0246",
+      "name": "Ricardo Carvalho",
+      "ratingV5": 81
+    },
+    {
+      "cardId": "real_0247",
+      "name": "Antonio Rüdiger",
+      "ratingV5": 81
+    },
+    {
+      "cardId": "real_0252",
+      "name": "Cafu",
+      "ratingV5": 91,
+      "note": "Greatest right-back tier — three straight World Cup finals, two-time champion, peak the best RB in the world"
+    },
+    {
+      "cardId": "real_0256",
+      "name": "Bacary Sagna",
+      "ratingV5": 75
+    },
+    {
+      "cardId": "real_0261",
+      "name": "Maya Yoshida",
+      "ratingV5": 66
+    },
+    {
+      "cardId": "real_0269",
+      "name": "Toby Alderweireld",
+      "ratingV5": 79
+    },
+    {
+      "cardId": "real_0276",
+      "name": "Leighton Baines",
+      "ratingV5": 73
+    },
+    {
+      "cardId": "real_0277",
+      "name": "James Milner",
+      "ratingV5": 73
+    },
+    {
+      "cardId": "real_0278",
+      "name": "Bruno Alves",
+      "ratingV5": 72
+    },
+    {
+      "cardId": "real_0279",
+      "name": "Marcel Desailly",
+      "ratingV5": 87
+    },
+    {
+      "cardId": "real_0284",
+      "name": "Trent Alexander-Arnold",
+      "ratingV5": 86
+    },
+    {
+      "cardId": "real_0287",
+      "name": "Kyle Walker",
+      "ratingV5": 83
+    },
+    {
+      "cardId": "real_0290",
+      "name": "Nicolás Otamendi",
+      "ratingV5": 73
+    },
+    {
+      "cardId": "real_0295",
+      "name": "Benjamin Pavard",
+      "ratingV5": 75
+    },
+    {
+      "cardId": "real_0298",
+      "name": "Jan Vertonghen",
+      "ratingV5": 77
+    },
+    {
+      "cardId": "real_0299",
+      "name": "Kolo Touré",
+      "ratingV5": 73
+    },
+    {
+      "cardId": "real_0306",
+      "name": "Alessandro Nesta",
+      "ratingV5": 91,
+      "note": "Peak consensus top-tier centre-back — elegance and reading of the game that defined Serie A defending in the early 2000s"
+    },
+    {
+      "cardId": "real_0315",
+      "name": "Andrea Barzagli",
+      "ratingV5": 80
+    },
+    {
+      "cardId": "real_0317",
+      "name": "Andreas Brehme",
+      "ratingV5": 85
+    },
+    {
+      "cardId": "real_0318",
+      "name": "Giovanni van Bronckhorst",
+      "ratingV5": 75
+    },
+    {
+      "cardId": "real_0320",
+      "name": "Marco Materazzi",
+      "ratingV5": 73
+    },
+    {
+      "cardId": "real_0321",
+      "name": "Rafael Márquez",
+      "ratingV5": 79
+    },
+    {
+      "cardId": "real_0327",
+      "name": "John Stones",
+      "ratingV5": 77,
+      "note": "A dependable ball-playing CB (City treble, England) — very good against DEF peers, short of the elite tier"
+    },
+    {
+      "cardId": "real_0333",
+      "name": "Maicon",
+      "ratingV5": 83
+    },
+    {
+      "cardId": "real_0334",
+      "name": "Laurent Blanc",
+      "ratingV5": 83
+    },
+    {
+      "cardId": "real_0342",
+      "name": "Bixente Lizarazu",
+      "ratingV5": 83
+    },
+    {
+      "cardId": "real_0346",
+      "name": "Lucas Hernández",
+      "ratingV5": 75
+    },
+    {
+      "cardId": "real_0348",
+      "name": "William Gallas",
+      "ratingV5": 75
+    },
+    {
+      "cardId": "real_0359",
+      "name": "Yuri Zhirkov",
+      "ratingV5": 67
+    },
+    {
+      "cardId": "real_0360",
+      "name": "John Arne Riise",
+      "ratingV5": 69
+    },
+    {
+      "cardId": "real_0363",
+      "name": "Matthijs de Ligt",
+      "ratingV5": 82
+    },
+    {
+      "cardId": "real_0364",
+      "name": "Nacho Monreal",
+      "ratingV5": 69
+    },
+    {
+      "cardId": "real_0366",
+      "name": "João Cancelo",
+      "ratingV5": 83
+    },
+    {
+      "cardId": "real_0367",
+      "name": "Lucas Digne",
+      "ratingV5": 71
+    },
+    {
+      "cardId": "real_0368",
+      "name": "Daniel Passarella",
+      "ratingV5": 89
+    },
+    {
+      "cardId": "real_0369",
+      "name": "Andreas Christensen",
+      "ratingV5": 74
+    },
+    {
+      "cardId": "real_0370",
+      "name": "Daniel Agger",
+      "ratingV5": 73
+    },
+    {
+      "cardId": "real_0371",
+      "name": "Bobby Moore",
+      "ratingV5": 91,
+      "note": "1966 World Cup-winning captain; era-defining reader of the game — Pelé named him the greatest defender he faced"
+    },
+    {
+      "cardId": "real_0372",
+      "name": "Simon Kjær",
+      "ratingV5": 69
+    },
+    {
+      "cardId": "real_0373",
+      "name": "Aleksandar Kolarov",
+      "ratingV5": 75
+    },
+    {
+      "cardId": "real_0375",
+      "name": "Frank de Boer",
+      "ratingV5": 83
+    },
+    {
+      "cardId": "real_0376",
+      "name": "Filipe Luís",
+      "ratingV5": 74
+    },
+    {
+      "cardId": "real_0377",
+      "name": "Marquinhos",
+      "ratingV5": 82
+    },
+    {
+      "cardId": "real_0378",
+      "name": "Jules Koundé",
+      "ratingV5": 77
+    },
+    {
+      "cardId": "real_0379",
+      "name": "Juan Cuadrado",
+      "ratingV5": 69
+    },
+    {
+      "cardId": "real_0381",
+      "name": "Kieran Trippier",
+      "ratingV5": 75
+    },
+    {
+      "cardId": "real_0382",
+      "name": "Lúcio",
+      "ratingV5": 83
+    },
+    {
+      "cardId": "real_0383",
+      "name": "Gianluca Zambrotta",
+      "ratingV5": 79
+    },
+    {
+      "cardId": "real_0384",
+      "name": "Martin Škrtel",
+      "ratingV5": 67
+    },
+    {
+      "cardId": "real_0385",
+      "name": "Walter Samuel",
+      "ratingV5": 77
+    },
+    {
+      "cardId": "real_0386",
+      "name": "Stefan de Vrij",
+      "ratingV5": 73
+    },
+    {
+      "cardId": "real_0388",
+      "name": "Éder Militão",
+      "ratingV5": 78,
+      "note": "owner override"
+    },
+    {
+      "cardId": "real_0389",
+      "name": "Domagoj Vida",
+      "ratingV5": 66
+    },
+    {
+      "cardId": "real_0390",
+      "name": "John Heitinga",
+      "ratingV5": 66
+    },
+    {
+      "cardId": "real_0391",
+      "name": "Andrew Robertson",
+      "ratingV5": 85
+    },
+    {
+      "cardId": "real_0392",
+      "name": "Nélson Semedo",
+      "ratingV5": 67
+    },
+    {
+      "cardId": "real_0393",
+      "name": "Presnel Kimpembe",
+      "ratingV5": 69
+    },
+    {
+      "cardId": "real_0394",
+      "name": "Martín Cáceres",
+      "ratingV5": 65
+    },
+    {
+      "cardId": "real_0395",
+      "name": "Fernando Hierro",
+      "ratingV5": 86
+    },
+    {
+      "cardId": "real_0396",
+      "name": "Alphonso Davies",
+      "ratingV5": 82
+    },
+    {
+      "cardId": "real_0397",
+      "name": "Ibrahima Konaté",
+      "ratingV5": 75
+    },
+    {
+      "cardId": "real_0398",
+      "name": "Kalidou Koulibaly",
+      "ratingV5": 84
+    },
+    {
+      "cardId": "real_0399",
+      "name": "Aymeric Laporte",
+      "ratingV5": 81
+    },
+    {
+      "cardId": "real_0400",
+      "name": "Reece James",
+      "ratingV5": 79
+    },
+    {
+      "cardId": "real_0401",
+      "name": "Mehdi Benatia",
+      "ratingV5": 69
+    },
+    {
+      "cardId": "real_0402",
+      "name": "Guido Buchwald",
+      "ratingV5": 73
+    },
+    {
+      "cardId": "real_0403",
+      "name": "Roberto Ayala",
+      "ratingV5": 77
+    },
+    {
+      "cardId": "real_0404",
+      "name": "Philippe Mexès",
+      "ratingV5": 66
+    },
+    {
+      "cardId": "real_0405",
+      "name": "Takehiro Tomiyasu",
+      "ratingV5": 69
+    },
+    {
+      "cardId": "real_0406",
+      "name": "Lucas Neill",
+      "ratingV5": 64
+    },
+    {
+      "cardId": "real_0407",
+      "name": "Daniel Van Buyten",
+      "ratingV5": 69
+    },
+    {
+      "cardId": "real_0408",
+      "name": "Niklas Süle",
+      "ratingV5": 69
+    },
+    {
+      "cardId": "real_0409",
+      "name": "Christian Panucci",
+      "ratingV5": 75
+    },
+    {
+      "cardId": "real_0410",
+      "name": "Alex Song",
+      "ratingV5": 69
+    },
+    {
+      "cardId": "real_0411",
+      "name": "Sami Hyypiä",
+      "ratingV5": 77
+    },
+    {
+      "cardId": "real_0412",
+      "name": "Sol Campbell",
+      "ratingV5": 81
+    },
+    {
+      "cardId": "real_0413",
+      "name": "Théo Hernandez",
+      "ratingV5": 79
+    },
+    {
+      "cardId": "real_0414",
+      "name": "Siniša Mihajlović",
+      "ratingV5": 75
+    },
+    {
+      "cardId": "real_0415",
+      "name": "Šime Vrsaljko",
+      "ratingV5": 66
+    },
+    {
+      "cardId": "real_0421",
+      "name": "Gaetano Scirea",
+      "ratingV5": 89
+    },
+    {
+      "cardId": "real_0423",
+      "name": "Claudio Gentile",
+      "ratingV5": 85
+    },
+    {
+      "cardId": "real_0424",
+      "name": "Antonio Cabrini",
+      "ratingV5": 84
+    }
+  ]
+}

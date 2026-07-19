@@ -1,0 +1,236 @@
+{
+  "_meta": {
+    "position": "GK",
+    "count": 43,
+    "ruling": "ratingV5 = editorial peak-career/era-relative rating per docs/RATING_ANCHORS.md. Set-wide +1 was applied to MID/DEF non-movers; 12 position-movers were re-rated against their destination class (position-moves.json)."
+  },
+  "ratings": [
+    {
+      "cardId": "real_0016",
+      "name": "Gianluigi Buffon",
+      "ratingV5": 94,
+      "note": "owner override: elevated to 94 — arguably the greatest keeper of all time, World Cup 2006 and two decades at the top"
+    },
+    {
+      "cardId": "real_0027",
+      "name": "Iker Casillas",
+      "ratingV5": 91,
+      "note": "San Iker — Real Madrid and Spain's greatest keeper, a World Cup and two Euros; at peak the best in the world"
+    },
+    {
+      "cardId": "real_0029",
+      "name": "Manuel Neuer",
+      "ratingV5": 95,
+      "note": "owner override: goalkeeper GOAT — the second 95 spent; redefined the sweeper-keeper and a World Cup 2014 winner"
+    },
+    {
+      "cardId": "real_0063",
+      "name": "Thibaut Courtois",
+      "ratingV5": 93,
+      "note": "owner override: elevated to 93 — a modern great, the 2022 Champions League final masterclass, Real Madrid and Belgium"
+    },
+    {
+      "cardId": "real_0082",
+      "name": "Hugo Lloris",
+      "ratingV5": 80
+    },
+    {
+      "cardId": "real_0085",
+      "name": "Oliver Kahn",
+      "ratingV5": 90,
+      "note": "The only goalkeeper named best player of a World Cup (2002); a titan of shot-stopping and will for Bayern and Germany"
+    },
+    {
+      "cardId": "real_0086",
+      "name": "David de Gea",
+      "ratingV5": 82
+    },
+    {
+      "cardId": "real_0109",
+      "name": "Edwin van der Sar",
+      "ratingV5": 88
+    },
+    {
+      "cardId": "real_0124",
+      "name": "Pepe Reina",
+      "ratingV5": 78
+    },
+    {
+      "cardId": "real_0131",
+      "name": "Petr Čech",
+      "ratingV5": 91,
+      "note": "owner override: elevated to 91 — Chelsea's clean-sheet record-holder, at peak the best in the Premier League"
+    },
+    {
+      "cardId": "real_0139",
+      "name": "Alisson Becker",
+      "ratingV5": 87
+    },
+    {
+      "cardId": "real_0142",
+      "name": "Víctor Valdés",
+      "ratingV5": 82
+    },
+    {
+      "cardId": "real_0157",
+      "name": "Keylor Navas",
+      "ratingV5": 89,
+      "note": "owner override"
+    },
+    {
+      "cardId": "real_0160",
+      "name": "Wojciech Szczęsny",
+      "ratingV5": 74
+    },
+    {
+      "cardId": "real_0171",
+      "name": "Marc-André ter Stegen",
+      "ratingV5": 84
+    },
+    {
+      "cardId": "real_0194",
+      "name": "Dino Zoff",
+      "ratingV5": 90,
+      "note": "The 1982 World Cup-winning captain at 40; Juventus and Italy's imperious keeper — an all-time great of the position"
+    },
+    {
+      "cardId": "real_0204",
+      "name": "Jordan Pickford",
+      "ratingV5": 80,
+      "note": "owner override"
+    },
+    {
+      "cardId": "real_0222",
+      "name": "Jens Lehmann",
+      "ratingV5": 80
+    },
+    {
+      "cardId": "real_0235",
+      "name": "Peter Schmeichel",
+      "ratingV5": 90,
+      "note": "The best goalkeeper in the world through the 1990s — Manchester United's treble keeper and Denmark's Euro 92 hero"
+    },
+    {
+      "cardId": "real_0253",
+      "name": "Júlio César",
+      "ratingV5": 82
+    },
+    {
+      "cardId": "real_0259",
+      "name": "Gianluigi Donnarumma",
+      "ratingV5": 84
+    },
+    {
+      "cardId": "real_0260",
+      "name": "Sergio Romero",
+      "ratingV5": 70
+    },
+    {
+      "cardId": "real_0262",
+      "name": "Kasper Schmeichel",
+      "ratingV5": 78
+    },
+    {
+      "cardId": "real_0275",
+      "name": "Joe Hart",
+      "ratingV5": 76
+    },
+    {
+      "cardId": "real_0293",
+      "name": "Fabien Barthez",
+      "ratingV5": 82
+    },
+    {
+      "cardId": "real_0297",
+      "name": "Claudio Bravo",
+      "ratingV5": 76
+    },
+    {
+      "cardId": "real_0305",
+      "name": "Guillermo Ochoa",
+      "ratingV5": 74
+    },
+    {
+      "cardId": "real_0310",
+      "name": "Kepa Arrizabalaga",
+      "ratingV5": 70
+    },
+    {
+      "cardId": "real_0312",
+      "name": "Emiliano Martínez",
+      "ratingV5": 84
+    },
+    {
+      "cardId": "real_0328",
+      "name": "Rui Patrício",
+      "ratingV5": 76
+    },
+    {
+      "cardId": "real_0337",
+      "name": "Gordon Banks",
+      "ratingV5": 90,
+      "note": "The 1966 World Cup winner and author of 'that save' against Pelé — era-relative one of the greatest keepers ever"
+    },
+    {
+      "cardId": "real_0349",
+      "name": "Tim Howard",
+      "ratingV5": 74
+    },
+    {
+      "cardId": "real_0350",
+      "name": "Jan Oblak",
+      "ratingV5": 87
+    },
+    {
+      "cardId": "real_0357",
+      "name": "Simon Mignolet",
+      "ratingV5": 70
+    },
+    {
+      "cardId": "real_0361",
+      "name": "Steve Mandanda",
+      "ratingV5": 72
+    },
+    {
+      "cardId": "real_0362",
+      "name": "Fernando Muslera",
+      "ratingV5": 74
+    },
+    {
+      "cardId": "real_0365",
+      "name": "David Ospina",
+      "ratingV5": 70
+    },
+    {
+      "cardId": "real_0374",
+      "name": "Samir Handanović",
+      "ratingV5": 78
+    },
+    {
+      "cardId": "real_0380",
+      "name": "Yann Sommer",
+      "ratingV5": 85,
+      "note": "owner override"
+    },
+    {
+      "cardId": "real_0387",
+      "name": "Peter Shilton",
+      "ratingV5": 88
+    },
+    {
+      "cardId": "real_0426",
+      "name": "Harald Schumacher",
+      "ratingV5": 84
+    },
+    {
+      "cardId": "real_0429",
+      "name": "Ricardo Zamora",
+      "ratingV5": 84
+    },
+    {
+      "cardId": "real_0430",
+      "name": "Jean-Marie Pfaff",
+      "ratingV5": 82
+    }
+  ]
+}
