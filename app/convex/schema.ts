@@ -107,6 +107,22 @@ export default defineSchema({
     // Updated (debounced) by funnel.sessionHeartbeat on app load; used for
     // retention metrics like D7-of-defeated-players.
     lastSeenAt: v.optional(v.number()),
+    // ── Weekend Fantasy: favorite club (FW-1) ──
+    // DRAFT_ROOM_SPEC v1.0 §Favorite-club exemption: each user logs ONE
+    // favorite club at profile level; the per-club cap of 3 does not apply to
+    // it. Anti-gaming: a CHANGE takes effect only after a 4-gameweek cooldown
+    // (ledger item 7), and the club in force when a room arms / a squad is
+    // built is the one that counts — never changeable mid-draft.
+    //
+    // Three fields, not two, because the cooldown needs to name two clubs at
+    // once: the one still in force and the one waiting to replace it.
+    // `favoriteClub` is always the club IN FORCE now; `favoriteClubPending` +
+    // `favoriteClubEffectiveFrom` (a fantasyGameweeks.gwNumber) describe the
+    // queued change. Resolution lives in lib/fantasyFavoriteClub.ts — nothing
+    // else may read these fields raw.
+    favoriteClub: v.optional(v.string()),
+    favoriteClubPending: v.optional(v.string()),
+    favoriteClubEffectiveFrom: v.optional(v.number()),
     // Convex Auth fields
     email: v.optional(v.string()),
     emailVerificationTime: v.optional(v.number()),
@@ -1323,4 +1339,156 @@ export default defineSchema({
     best: v.number(),
     lastPlayedDateKey: v.string(),
   }).index("by_user", ["userId"]),
+
+  // ── Weekend Fantasy (FW-1: data model + per-fixture lock engine) ──
+  //
+  // Specs: BUDGET_MODE_SPEC.md v1.0, DRAFT_ROOM_SPEC.md v1.0,
+  // SCORING_SPEC.md v0.4.1 (research/fantasy/specs/).
+  //
+  // This is the DATA LAYER only. No scoring, no voting, no reclamation court,
+  // no crew-room draft state machine (FW-3), no feed ingestion (FW-2).
+
+  // One weekend. `gwNumber` is OUR ordinal — a calendar window across the five
+  // leagues, NOT any league's round number (Bundesliga plays 34 rounds to the
+  // others' 38, so no league's numbering could serve). FW-2 owns how a
+  // gameweek is constituted; this layer only stores and orders the ordinal,
+  // which is what the 4-gameweek favorite-club cooldown counts in.
+  //
+  // finalityAt is Tuesday 23:59 Europe/Paris (FW-1 STOP-5 ruling), computed by
+  // lib/fantasyConstants.finalityAtOrAfter.
+  fantasyGameweeks: defineTable({
+    season: v.string(), // e.g. "2026-2027"
+    gwNumber: v.number(),
+    leagueIds: v.array(v.number()),
+    status: v.union(
+      v.literal("upcoming"),
+      v.literal("live"),
+      v.literal("settling"),
+      v.literal("final"),
+    ),
+    finalityAt: v.number(),
+  })
+    .index("by_season_gwNumber", ["season", "gwNumber"])
+    .index("by_status", ["status"]),
+
+  // kickoffAt is THE lock timestamp — the single fact the whole lock engine
+  // turns on (BUDGET_MODE §Deadlines: "Each player locks individually at his
+  // fixture's kickoff"). Clubs are provider team ids kept as opaque strings;
+  // there is deliberately no clubs table at this layer.
+  //
+  // homeGoals/awayGoals are the MatchContext source SCORING_SPEC v0.4.1
+  // requires for clean sheets and the concession penalty (the feed's
+  // goals.conceded is keeper-only — see the FS-1 phase-2 report, G0). Stored
+  // here so the scoring ticket has somewhere to read them from; nothing in
+  // FW-1 computes with them.
+  fantasyFixtures: defineTable({
+    gameweekId: v.id("fantasyGameweeks"),
+    leagueId: v.number(),
+    providerFixtureId: v.string(),
+    kickoffAt: v.number(),
+    status: v.union(
+      v.literal("scheduled"),
+      v.literal("live"),
+      v.literal("finished"),
+      v.literal("postponed"),
+    ),
+    homeClubId: v.string(),
+    awayClubId: v.string(),
+    homeGoals: v.optional(v.number()),
+    awayGoals: v.optional(v.number()),
+  })
+    .index("by_gameweek_kickoff", ["gameweekId", "kickoffAt"])
+    .index("by_gameweek_home", ["gameweekId", "homeClubId"])
+    .index("by_gameweek_away", ["gameweekId", "awayClubId"])
+    .index("by_providerFixtureId", ["providerFixtureId"]),
+
+  // `feedPosition` is the NOMINAL position off the feed. It is not what a
+  // player is scored as: SCORING_SPEC v0.4.1 §Position templates scores the
+  // slot the user FIELDED, and §Position mismatch dampens when the verdict
+  // position disagrees. Nominal position is therefore an editorial/UI hint
+  // here, never a build-time constraint — BUDGET_MODE and DRAFT_ROOM both lock
+  // "all-positions-eligible, no position quotas at build".
+  //
+  // `price` is null until the pricing pass (BUDGET_MODE open item 1). In
+  // BUDGET context a null price REJECTS the selection (FW-1 STOP-4, fail
+  // closed); in crew context there is no budget at all, so it is irrelevant.
+  fantasyPlayers: defineTable({
+    providerPlayerId: v.string(),
+    name: v.string(),
+    clubId: v.string(),
+    leagueId: v.number(),
+    feedPosition: v.union(
+      v.literal("GK"),
+      v.literal("DEF"),
+      v.literal("MID"),
+      v.literal("ATT"),
+    ),
+    price: v.union(v.number(), v.null()),
+    active: v.boolean(),
+  })
+    .index("by_providerPlayerId", ["providerPlayerId"])
+    .index("by_club", ["clubId"])
+    .index("by_active_club", ["active", "clubId"]),
+
+  // One squad per (user, gameweek, context). Budget and crew squads are
+  // independent rosters scored by the same pipeline; BUDGET_MODE §Interaction
+  // with draft mode: "Nothing in either mode's state references the other."
+  //
+  // `crewRoomId` is an OPAQUE STRING on purpose: the crew-room table is FW-3's
+  // to define, and v.id() cannot reference a table that does not exist yet.
+  // `contextKey` denormalizes ("budget" | "crew:<roomId>") purely so the
+  // one-squad-per-context uniqueness is a single index lookup rather than a
+  // scan-and-filter.
+  //
+  // `favoriteClubAtBuild` snapshots the club in force when the squad was
+  // created — DRAFT_ROOM §Favorite-club exemption: "the favorite in force when
+  // the room arms is the one that counts — never changeable mid-draft". Every
+  // club-cap check on this squad reads the snapshot, never the live user doc.
+  //
+  // Formation is NOT stored: it is exactly the multiset of the XI slots'
+  // slotRoles, and storing it too would create a second source of truth that
+  // could drift from the slots. See lib/fantasySquadRules.formationOf.
+  fantasySquads: defineTable({
+    userId: v.id("users"),
+    gameweekId: v.id("fantasyGameweeks"),
+    context: v.union(v.literal("budget"), v.literal("crew")),
+    crewRoomId: v.optional(v.string()),
+    contextKey: v.string(),
+    favoriteClubAtBuild: v.union(v.string(), v.null()),
+    createdAt: v.number(),
+  })
+    .index("by_user_gameweek_contextKey", ["userId", "gameweekId", "contextKey"])
+    .index("by_gameweek", ["gameweekId"])
+    .index("by_user", ["userId"]),
+
+  // Exactly SQUAD_SIZE (13) rows per squad, always — slotIndex 0..12, created
+  // up front by createSquad. `playerId` is optional because an UNFILLED slot is
+  // a legitimate terminal state: BUDGET_MODE §Deadlines, "Unfilled slots at
+  // their last possible lock simply score zero — no auto-fill in budget mode".
+  // Modelling the empty slot as a row rather than a missing row is what makes
+  // the squad's shape well-defined before it is filled.
+  //
+  // lockedAt/committedPrice are stamped by fantasyLocks.lockSweep once the
+  // slot's player's fixture has kicked off. They are a RECORD of the lock, not
+  // the lock itself: the authoritative test is always live fixture data
+  // (fantasyLocks.isSlotLocked), so a slot whose fixture has started is
+  // immutable whether or not the sweep has run yet. That is what makes the
+  // sweep safe to run late.
+  fantasySquadSlots: defineTable({
+    squadId: v.id("fantasySquads"),
+    slotIndex: v.number(), // 0..12
+    playerId: v.optional(v.id("fantasyPlayers")),
+    slotRole: v.union(
+      v.literal("GK"),
+      v.literal("DEF"),
+      v.literal("MID"),
+      v.literal("ATT"),
+    ),
+    isFinisher: v.boolean(),
+    lockedAt: v.optional(v.number()),
+    committedPrice: v.optional(v.number()),
+  })
+    .index("by_squad", ["squadId"])
+    .index("by_squad_slotIndex", ["squadId", "slotIndex"])
+    .index("by_player", ["playerId"]),
 });

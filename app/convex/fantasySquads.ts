@@ -1,0 +1,494 @@
+/**
+ * Weekend Fantasy — squad mutations (FW-1 Phase 2).
+ *
+ * Server-authoritative throughout, in the house posture (convex/draw.ts): the
+ * client submits an intent, the server rebuilds the resulting squad from its
+ * own data, validates every invariant against it, and only then writes. No
+ * lock state, price, formation or favorite club is ever accepted from a
+ * client, and no edit is applied unless the squad it produces is fully legal.
+ *
+ * Specs: BUDGET_MODE_SPEC.md v1.0, DRAFT_ROOM_SPEC.md v1.0.
+ *
+ * Rules live in lib/fantasySquadRules.ts (pure) and lib/fantasyFavoriteClub.ts
+ * (pure); locks live in fantasyLocks.ts. This module is the thin authorized
+ * wrapper around them.
+ */
+
+import { v } from "convex/values";
+import { mutation, query } from "./_generated/server";
+import type { MutationCtx, QueryCtx } from "./_generated/server";
+import type { Doc, Id } from "./_generated/dataModel";
+import { getAuthUserId } from "@convex-dev/auth/server";
+import {
+  BUDGET_LIMIT,
+  FINISHER_COUNT,
+  SQUAD_SIZE,
+  type SlotRole,
+} from "./lib/fantasyConstants";
+import {
+  describeViolations,
+  validateFormation,
+  validateSquad,
+  type PlayerSnapshot,
+  type SlotSnapshot,
+} from "./lib/fantasySquadRules";
+import {
+  planFavoriteClubChange,
+  resolveFavoriteClub,
+} from "./lib/fantasyFavoriteClub";
+import {
+  FIXTURE_MISSING_MESSAGE,
+  fixtureForClub,
+  kickoffHasPassed,
+  lockStateForSlots,
+} from "./fantasyLocks";
+
+export const SIGN_IN_REQUIRED = "Sign in to build a fantasy squad.";
+export const SQUAD_NOT_FOUND = "Squad not found.";
+export const NOT_YOUR_SQUAD = "That squad belongs to another user.";
+export const SLOT_LOCKED =
+  "That player's match has kicked off — his slot is locked for this gameweek.";
+export const PLAYER_ALREADY_STARTED =
+  "That player's match has already kicked off; he can no longer be selected.";
+export const GAMEWEEK_CLOSED = "This gameweek is no longer open for edits.";
+
+const slotRoleValidator = v.union(
+  v.literal("GK"),
+  v.literal("DEF"),
+  v.literal("MID"),
+  v.literal("ATT"),
+);
+
+// ── helpers ──
+
+const slotRole = (role: string): SlotRole => role as SlotRole;
+
+/** A gameweek accepts edits while it is upcoming or live; per-fixture locks do
+ *  the fine-grained work. Once settling/final, the weekend is over. */
+function gameweekAcceptsEdits(gameweek: Doc<"fantasyGameweeks">): boolean {
+  return gameweek.status === "upcoming" || gameweek.status === "live";
+}
+
+function toSlotSnapshot(
+  slot: Doc<"fantasySquadSlots">,
+  override?: Partial<SlotSnapshot>,
+): SlotSnapshot {
+  return {
+    slotIndex: slot.slotIndex,
+    slotRole: slot.slotRole,
+    isFinisher: slot.isFinisher,
+    playerId: slot.playerId ?? null,
+    lockedAt: slot.lockedAt ?? null,
+    committedPrice: slot.committedPrice ?? null,
+    ...override,
+  };
+}
+
+function toPlayerSnapshot(player: Doc<"fantasyPlayers">): PlayerSnapshot {
+  return {
+    _id: player._id,
+    clubId: player.clubId,
+    price: player.price,
+    active: player.active,
+    name: player.name,
+  };
+}
+
+async function requireUserId(ctx: MutationCtx | QueryCtx): Promise<Id<"users">> {
+  const userId = await getAuthUserId(ctx);
+  if (userId === null) throw new Error(SIGN_IN_REQUIRED);
+  return userId;
+}
+
+async function loadOwnedSquad(
+  ctx: MutationCtx,
+  squadId: Id<"fantasySquads">,
+  userId: Id<"users">,
+): Promise<{ squad: Doc<"fantasySquads">; gameweek: Doc<"fantasyGameweeks"> }> {
+  const squad = await ctx.db.get(squadId);
+  if (squad === null) throw new Error(SQUAD_NOT_FOUND);
+  if (squad.userId !== userId) throw new Error(NOT_YOUR_SQUAD);
+
+  const gameweek = await ctx.db.get(squad.gameweekId);
+  if (gameweek === null) throw new Error(SQUAD_NOT_FOUND);
+  if (!gameweekAcceptsEdits(gameweek)) throw new Error(GAMEWEEK_CLOSED);
+
+  return { squad, gameweek };
+}
+
+/** Load every player referenced by a slot set, keyed by id. */
+async function loadPlayers(
+  ctx: MutationCtx | QueryCtx,
+  slots: readonly SlotSnapshot[],
+): Promise<Map<string, PlayerSnapshot>> {
+  const byId = new Map<string, PlayerSnapshot>();
+  for (const slot of slots) {
+    if (slot.playerId === null || byId.has(slot.playerId)) continue;
+    const player = await ctx.db.get(slot.playerId as Id<"fantasyPlayers">);
+    if (player !== null) byId.set(player._id, toPlayerSnapshot(player));
+  }
+  return byId;
+}
+
+/**
+ * Validate the squad an edit WOULD produce, and throw if it is illegal.
+ * Nothing is written before this returns.
+ */
+async function assertPostEditSquadLegal(
+  ctx: MutationCtx,
+  squad: Doc<"fantasySquads">,
+  postEdit: readonly SlotSnapshot[],
+  lockedByIndex: ReadonlyMap<number, boolean>,
+): Promise<void> {
+  const playersById = await loadPlayers(ctx, postEdit);
+  const result = validateSquad({
+    slots: postEdit,
+    playersById,
+    favoriteClub: squad.favoriteClubAtBuild,
+    context: squad.context,
+    isLocked: (slot) => lockedByIndex.get(slot.slotIndex) === true,
+    budgetLimit: BUDGET_LIMIT,
+  });
+  if (!result.ok) throw new Error(describeViolations(result));
+}
+
+// ── createSquad ──
+
+/**
+ * Create the (user, gameweek, context) squad and materialize its 13 slots.
+ *
+ * `formation` describes the XI; `finisherRoles` gives the two finishers their
+ * own slotRoles. Both are required rather than defaulted: FW-1 STOP-3 rules
+ * finisher roles free, and DRAFT_ROOM's 4-4-2 default team sheet is explicitly
+ * FW-3's to apply, so inventing a default here would pre-empt that ticket.
+ *
+ * The favorite club is resolved ONCE, here, and snapshotted onto the squad —
+ * DRAFT_ROOM §Favorite-club exemption: "the favorite in force when the room
+ * arms is the one that counts".
+ */
+export const createSquad = mutation({
+  args: {
+    gameweekId: v.id("fantasyGameweeks"),
+    context: v.union(v.literal("budget"), v.literal("crew")),
+    crewRoomId: v.optional(v.string()),
+    formation: v.object({
+      GK: v.number(),
+      DEF: v.number(),
+      MID: v.number(),
+      ATT: v.number(),
+    }),
+    finisherRoles: v.array(slotRoleValidator),
+  },
+  handler: async (ctx, { gameweekId, context, crewRoomId, formation, finisherRoles }) => {
+    const userId = await requireUserId(ctx);
+
+    const gameweek = await ctx.db.get(gameweekId);
+    if (gameweek === null) throw new Error("Gameweek not found.");
+    if (!gameweekAcceptsEdits(gameweek)) throw new Error(GAMEWEEK_CLOSED);
+
+    if (context === "crew" && crewRoomId === undefined) {
+      throw new Error("A crew squad needs a crew room.");
+    }
+    if (context === "budget" && crewRoomId !== undefined) {
+      throw new Error("A budget squad has no crew room.");
+    }
+    if (finisherRoles.length !== FINISHER_COUNT) {
+      throw new Error(`A squad needs exactly ${FINISHER_COUNT} finisher roles.`);
+    }
+
+    const shape = validateFormation(formation);
+    if (!shape.ok) throw new Error(describeViolations(shape));
+
+    const contextKey = context === "budget" ? "budget" : `crew:${crewRoomId}`;
+    const existing = await ctx.db
+      .query("fantasySquads")
+      .withIndex("by_user_gameweek_contextKey", (q) =>
+        q.eq("userId", userId).eq("gameweekId", gameweekId).eq("contextKey", contextKey),
+      )
+      .first();
+    if (existing !== null) {
+      throw new Error("You already have a squad for this gameweek.");
+    }
+
+    const user = await ctx.db.get(userId);
+    const favoriteClubAtBuild =
+      user === null ? null : resolveFavoriteClub(user, gameweek.gwNumber);
+
+    const squadId = await ctx.db.insert("fantasySquads", {
+      userId,
+      gameweekId,
+      context,
+      ...(crewRoomId === undefined ? {} : { crewRoomId }),
+      contextKey,
+      favoriteClubAtBuild,
+      createdAt: Date.now(),
+    });
+
+    // XI slots first (0..10) in formation order, then the finishers (11, 12).
+    const xiRoles: SlotRole[] = [];
+    for (const role of ["GK", "DEF", "MID", "ATT"] as const) {
+      for (let i = 0; i < formation[role]; i += 1) xiRoles.push(role);
+    }
+
+    let slotIndex = 0;
+    for (const role of xiRoles) {
+      await ctx.db.insert("fantasySquadSlots", {
+        squadId,
+        slotIndex,
+        slotRole: role,
+        isFinisher: false,
+      });
+      slotIndex += 1;
+    }
+    for (const role of finisherRoles) {
+      await ctx.db.insert("fantasySquadSlots", {
+        squadId,
+        slotIndex,
+        slotRole: slotRole(role),
+        isFinisher: true,
+      });
+      slotIndex += 1;
+    }
+
+    if (slotIndex !== SQUAD_SIZE) {
+      // Unreachable while validateFormation passes and finisherRoles is 2 —
+      // asserted rather than assumed, because a wrong slot count would corrupt
+      // every later invariant silently.
+      throw new Error(`Internal: built ${slotIndex} slots, expected ${SQUAD_SIZE}.`);
+    }
+
+    return { squadId, favoriteClubAtBuild };
+  },
+});
+
+// ── setSlot ──
+
+/**
+ * Edit one slot: swap the player, move it between XI and finisher, or change
+ * its slotRole. Omitted fields are left alone; `playerId: null` empties the
+ * slot (legal — BUDGET_MODE lets an unfilled slot ride and score zero).
+ *
+ * Rejects, in order: a locked target slot; a player whose own fixture has
+ * already kicked off; then any squad-level invariant the edit would break.
+ */
+export const setSlot = mutation({
+  args: {
+    squadId: v.id("fantasySquads"),
+    slotIndex: v.number(),
+    playerId: v.optional(v.union(v.id("fantasyPlayers"), v.null())),
+    slotRole: v.optional(slotRoleValidator),
+    isFinisher: v.optional(v.boolean()),
+  },
+  handler: async (ctx, args) => {
+    const userId = await requireUserId(ctx);
+    const { squad, gameweek } = await loadOwnedSquad(ctx, args.squadId, userId);
+    const now = Date.now();
+
+    const slots = await ctx.db
+      .query("fantasySquadSlots")
+      .withIndex("by_squad", (q) => q.eq("squadId", squad._id))
+      .collect();
+
+    const target = slots.find((s) => s.slotIndex === args.slotIndex);
+    if (target === undefined) throw new Error(`No slot ${args.slotIndex} in this squad.`);
+
+    const lockedByIndex = await lockStateForSlots(ctx, gameweek._id, slots, now);
+
+    // A locked slot is frozen in player, slot AND position — no exceptions,
+    // and this check comes before anything else so a locked slot can never be
+    // reached by a formation-shaped argument either.
+    if (lockedByIndex.get(target.slotIndex) === true) throw new Error(SLOT_LOCKED);
+
+    // Selecting a player whose match is already underway is rejected too —
+    // BUDGET_MODE §Deadlines & editing (v1.0.1): "A player whose own fixture
+    // has kicked off cannot be swapped IN (prevents hindsight selection)."
+    if (args.playerId !== undefined && args.playerId !== null) {
+      const player = await ctx.db.get(args.playerId);
+      if (player === null) throw new Error("Player not found.");
+      if (!player.active) throw new Error(`${player.name} is not available this gameweek.`);
+
+      const fixture = await fixtureForClub(ctx, gameweek._id, player.clubId);
+      if (fixture === null) throw new Error(FIXTURE_MISSING_MESSAGE);
+      if (kickoffHasPassed(fixture.kickoffAt, now)) throw new Error(PLAYER_ALREADY_STARTED);
+    }
+
+    const postEdit = slots.map((slot) =>
+      slot.slotIndex === args.slotIndex
+        ? toSlotSnapshot(slot, {
+            ...(args.playerId === undefined ? {} : { playerId: args.playerId }),
+            ...(args.slotRole === undefined ? {} : { slotRole: slotRole(args.slotRole) }),
+            ...(args.isFinisher === undefined ? {} : { isFinisher: args.isFinisher }),
+          })
+        : toSlotSnapshot(slot),
+    );
+
+    await assertPostEditSquadLegal(ctx, squad, postEdit, lockedByIndex);
+
+    await ctx.db.patch(target._id, {
+      ...(args.playerId === undefined
+        ? {}
+        : { playerId: args.playerId === null ? undefined : args.playerId }),
+      ...(args.slotRole === undefined ? {} : { slotRole: slotRole(args.slotRole) }),
+      ...(args.isFinisher === undefined ? {} : { isFinisher: args.isFinisher }),
+    });
+
+    return { ok: true };
+  },
+});
+
+// ── setFormation ──
+
+/**
+ * Reassign slotRole / isFinisher across the whole squad in one atomic call.
+ *
+ * This exists because a formation change is NOT expressible as a sequence of
+ * setSlot calls: every intermediate state of such a sequence violates the
+ * structural rule (move one DEF to MID and you momentarily have 4 DEF and 5
+ * MID summing to a legal 11 only by luck — and 3-5-3 in the general case), and
+ * setSlot validates every call. Requiring atomicity is what keeps "no
+ * transiently illegal squad" true without making legal formations unreachable.
+ *
+ * A locked slot may not have its role or finisher status changed — BUDGET_MODE
+ * §Deadlines: "that slot is frozen (player, slot, position)". A formation that
+ * would need to re-role a locked slot is therefore rejected outright rather
+ * than partially applied.
+ */
+export const setFormation = mutation({
+  args: {
+    squadId: v.id("fantasySquads"),
+    slots: v.array(
+      v.object({
+        slotIndex: v.number(),
+        slotRole: slotRoleValidator,
+        isFinisher: v.boolean(),
+      }),
+    ),
+  },
+  handler: async (ctx, args) => {
+    const userId = await requireUserId(ctx);
+    const { squad, gameweek } = await loadOwnedSquad(ctx, args.squadId, userId);
+    const now = Date.now();
+
+    const slots = await ctx.db
+      .query("fantasySquadSlots")
+      .withIndex("by_squad", (q) => q.eq("squadId", squad._id))
+      .collect();
+
+    if (args.slots.length !== slots.length) {
+      throw new Error(`A formation change must describe all ${slots.length} slots.`);
+    }
+
+    const desired = new Map(args.slots.map((s) => [s.slotIndex, s]));
+    const lockedByIndex = await lockStateForSlots(ctx, gameweek._id, slots, now);
+
+    for (const slot of slots) {
+      const next = desired.get(slot.slotIndex);
+      if (next === undefined) throw new Error(`Formation change omits slot ${slot.slotIndex}.`);
+      if (lockedByIndex.get(slot.slotIndex) !== true) continue;
+      if (next.slotRole !== slot.slotRole || next.isFinisher !== slot.isFinisher) {
+        throw new Error(SLOT_LOCKED);
+      }
+    }
+
+    const postEdit = slots.map((slot) => {
+      const next = desired.get(slot.slotIndex)!;
+      return toSlotSnapshot(slot, {
+        slotRole: slotRole(next.slotRole),
+        isFinisher: next.isFinisher,
+      });
+    });
+
+    await assertPostEditSquadLegal(ctx, squad, postEdit, lockedByIndex);
+
+    for (const slot of slots) {
+      const next = desired.get(slot.slotIndex)!;
+      if (next.slotRole === slot.slotRole && next.isFinisher === slot.isFinisher) continue;
+      await ctx.db.patch(slot._id, {
+        slotRole: slotRole(next.slotRole),
+        isFinisher: next.isFinisher,
+      });
+    }
+
+    return { ok: true };
+  },
+});
+
+// ── favorite club ──
+
+/**
+ * Set the profile-level favorite club, under the 4-gameweek cooldown.
+ *
+ * Not in the ticket's mutation list, but the cooldown is unreachable — and
+ * therefore untestable end-to-end — without a way to set the field. The whole
+ * rule lives in lib/fantasyFavoriteClub; this is authorization plus a patch.
+ *
+ * `gwNumber` comes from the CURRENT gameweek on the server, never the client.
+ */
+export const setFavoriteClub = mutation({
+  args: { clubId: v.string(), gameweekId: v.id("fantasyGameweeks") },
+  handler: async (ctx, { clubId, gameweekId }) => {
+    const userId = await requireUserId(ctx);
+    const user = await ctx.db.get(userId);
+    if (user === null) throw new Error(SIGN_IN_REQUIRED);
+
+    const gameweek = await ctx.db.get(gameweekId);
+    if (gameweek === null) throw new Error("Gameweek not found.");
+
+    const patch = planFavoriteClubChange(user, gameweek.gwNumber, clubId);
+    await ctx.db.patch(userId, patch);
+
+    return {
+      inForce: patch.favoriteClub ?? null,
+      pending: patch.favoriteClubPending ?? null,
+      effectiveFrom: patch.favoriteClubEffectiveFrom ?? null,
+    };
+  },
+});
+
+// ── read ──
+
+/** The caller's squad for a gameweek/context, with live lock state per slot. */
+export const getSquad = query({
+  args: {
+    gameweekId: v.id("fantasyGameweeks"),
+    context: v.union(v.literal("budget"), v.literal("crew")),
+    crewRoomId: v.optional(v.string()),
+  },
+  handler: async (ctx, { gameweekId, context, crewRoomId }) => {
+    const userId = await getAuthUserId(ctx);
+    if (userId === null) return null;
+
+    const contextKey = context === "budget" ? "budget" : `crew:${crewRoomId}`;
+    const squad = await ctx.db
+      .query("fantasySquads")
+      .withIndex("by_user_gameweek_contextKey", (q) =>
+        q.eq("userId", userId).eq("gameweekId", gameweekId).eq("contextKey", contextKey),
+      )
+      .first();
+    if (squad === null) return null;
+
+    const slots = await ctx.db
+      .query("fantasySquadSlots")
+      .withIndex("by_squad", (q) => q.eq("squadId", squad._id))
+      .collect();
+
+    const lockedByIndex = await lockStateForSlots(ctx, gameweekId, slots, Date.now());
+
+    return {
+      squadId: squad._id,
+      context: squad.context,
+      favoriteClubAtBuild: squad.favoriteClubAtBuild,
+      slots: slots
+        .slice()
+        .sort((a, b) => a.slotIndex - b.slotIndex)
+        .map((slot) => ({
+          slotIndex: slot.slotIndex,
+          slotRole: slot.slotRole,
+          isFinisher: slot.isFinisher,
+          playerId: slot.playerId ?? null,
+          locked: lockedByIndex.get(slot.slotIndex) === true,
+          committedPrice: slot.committedPrice ?? null,
+        })),
+    };
+  },
+});
