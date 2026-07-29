@@ -73,6 +73,11 @@ A timed multiple-choice trivia game with 10 questions per session.
 **Scoring:**
 - Base score: 100 points per correct answer
 - Time bonus: Faster answers earn more points (linear decay from 100% at 1 second to 0% at 10 seconds)
+- A serve grace is written off before the decay starts, because the server
+  stamps a question as served before it even reaches the player's screen:
+  1.5s in solo quiz (`QUIZ_SERVE_GRACE_SEC`), 2.5s in Daily
+  (`DAILY_SERVE_GRACE_SEC`), 2.5s in duels (`DUEL_GRACE_SEC`) — see
+  `app/convex/lib/scoring.ts` and docs/PERF_RESPONSIVENESS_AUDIT.md
 - Final score is the sum of all time-weighted correct answers
 
 **Difficulty levels:**
@@ -82,7 +87,7 @@ A timed multiple-choice trivia game with 10 questions per session.
 
 **Image-based questions:**
 - Some questions include images: stadium identification, team badge recognition, and player silhouettes
-- Maximum 3 image questions per session, with no consecutive image questions
+- Maximum 2 image questions per session, with no consecutive image questions (`MAX_IMAGE_QUESTIONS`, lib/imageQuestions.ts)
 - Images support tap-to-zoom for better visibility
 - Knowledge `enterprise_logos` and `which_came_first` content is arena/duel-only and excluded from MCQ quiz, Blitz, and Daily Quiz pools.
 
@@ -228,7 +233,7 @@ A 60-second rapid-fire quiz that tests speed and accuracy under pressure.
 - No per-question time limit — the global 60-second timer is the constraint
 
 **Special mechanics:**
-- Image question limits apply (max 3 per session, no consecutive)
+- Image question limits apply (max 2 per session, no consecutive)
 - Anti-cheat: Tab-switching auto-marks the current answer as wrong
 - High scores are tracked globally and per-sport via the `blitzScores` table
 
@@ -324,7 +329,7 @@ Both Daily Quiz and **Daily Survival** are playable.
 **Special mechanics:**
 - Seeded shuffling ensures fairness — every player faces the same challenge
 - Once attempted, results are final until the next UTC day
-- Image question limits apply (max 3, no consecutive)
+- Image question limits apply (max 2, no consecutive)
 
 ---
 
