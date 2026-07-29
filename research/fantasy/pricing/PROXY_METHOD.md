@@ -101,26 +101,34 @@ pool's.
 **Flagged players** carry no proxy and default to the **4.0 floor**. They are
 listed in FLAGS.md grouped by club for the owner's editorial pass.
 
-## Anchor design (owner ruling FW-PR1b)
+## Anchor design → direct value pricing (owner rulings FW-PR1b, FW-PR1c)
 
-Uniform anchor points are replaced by **per-position price points**, so that
-price is denominated in expected points across positions: a uniform grid gave
-GK a 13.0 ceiling its proxy band (2.26–5.75/90) cannot approach while MID
-runs to 13.33/90. Each position's ceiling is read from its proxy maximum
-rounded to the 0.5 scale; the 4.0 floor and 0.5-step scale are unchanged:
+FW-PR1b first replaced uniform anchor points with per-position points
+(ceilings from proxy maxima rounded to the 0.5 scale: MID 13.0 / ATT 12.5 /
+DEF 9.0 / GK 6.0, the GK grid compressed to 5 anchors over its 2.26–5.75
+band). FW-PR1c then **retired quantile-anchor slotting entirely**: slotting
+by evenly spaced rank quantiles ties price to *rank*, not to *expected
+points*, so wherever the proxy distribution is non-uniform the two decouple —
+measured at the MID 11.5 anchor slot, which carried a 7.41 proxy against a
+13.33 position maximum because the elite tail is thin. Direct mapping keeps
+the FW-PR1b ceilings and makes price a function of the proxy itself:
 
-| Pos | Proxy max /90 | Anchor points |
-| --- | --- | --- |
-| MID | 13.33 | 13.0 / 11.5 / 10.0 / 8.5 / 7.0 / 5.5 / 4.0 |
-| ATT | 12.27 | 12.5 / 11.0 / 9.5 / 8.0 / 6.5 / 5.0 / 4.0 |
-| DEF | 9.09 | 9.0 / 8.0 / 7.0 / 6.0 / 5.5 / 4.5 / 4.0 |
-| GK | 5.75 | 6.0 / 5.5 / 5.0 / 4.5 / 4.0 — **compressed to 5 anchors** due to band width |
+```
+price = roundHalfUpTo0.5( clamp(proxy, 4.0, ceiling[pos]) )
+ceilings: MID 13.0 / ATT 12.5 / DEF 9.0 / GK 6.0
+```
 
-Grid is 26 slots (7+7+7+5). Slotting is position-internal as before: top
-anchor = the position's #1 by proxy, floor anchor = the bottom of the
-position, evenly spaced proxy-rank quantiles between. The promoted cohort's
-4.0–6.5 band is unchanged and now overlaps the full GK range and the lower
-DEF anchors by design — it remains cohort-internal.
+Applied per pool: **topfive** by the formula above; **promoted** by the
+4.0–6.5 band ordered by cohort-internal per-position rank
+(`price = min(6.5 − 0.5 × round(5 × (rank−1)/(N−1)), ceiling[pos])` — the
+ceiling term binds only for GK, whose 6.0 ceiling sits below the band top);
+**flagged** at the 4.0 floor. Full list: `price-draft.json`, asserted for
+partition coverage, scale/range, and price-monotonicity in proxy within
+every pool+position.
+
+**Phase C is superseded accordingly:** with no anchors there is no
+interpolation step. Remaining Phase C work is seeding the prices plus
+applying `overrides.json` last (unchanged contract — overrides always win).
 
 ## Owner price overrides (Phase B mechanism)
 

@@ -1,17 +1,21 @@
 /**
- * TICKET FW-PR1 Step 4 — Phase B owner artifacts, generated from
- * proxy-scores.json. Deterministic: same input, same markdown.
+ * TICKET FW-PR1 Step 4 (amended FW-PR1c) — Phase B owner artifacts, generated
+ * from proxy-scores.json + price-draft.json. Deterministic: same input, same
+ * markdown.
  *
- *   ANCHOR_GRID.md      28 slots (4 positions × 7 price points), top-five pool
- *                       ONLY (owner ruling item 5), candidate + 2 alternates.
+ *   PRICE_REVIEW.md     the Phase B owner artifact under direct value pricing
+ *                       (FW-PR1c): top 25 per position by draft price, price
+ *                       histograms per half-step, promoted top-15.
  *   FLAGS.md            (a) floor-flagged players by club, most prominent
  *                       first; (b) top-30 proxy-rank vs minutes-rank gaps.
- *   DISTRIBUTION.md     per-position proxy deciles, top-five pool, promoted
- *                       cohort appendix.
- *   PROMOTED_COHORT.md  13 clubs, cohort-internal ordering, proposed 4.0–6.5
- *                       mapping (owner ruling item 2).
+ *   DISTRIBUTION.md     per-position proxy deciles + price histograms.
+ *   PROMOTED_COHORT.md  13 clubs, cohort-internal ordering, 4.0–6.5 band
+ *                       mapping (owner rulings FW-PR1 item 2 / FW-PR1c).
  *
- * Run: npx tsx pricing/build-artifacts.ts
+ * ANCHOR_GRID.md is retired (FW-PR1c) and no longer generated — the file on
+ * disk is a pointer note.
+ *
+ * Run: npx tsx pricing/price-draft.ts && npx tsx pricing/build-artifacts.ts
  */
 
 import fs from 'node:fs';
@@ -22,20 +26,9 @@ const PRICING_DIR = path.dirname(fileURLToPath(import.meta.url));
 
 const POSITIONS = ['GK', 'DEF', 'MID', 'ATT'] as const;
 
-/**
- * FW-PR1b ruling: per-position anchor points so price tracks expected points
- * across positions — a 13.0 is a MID/ATT ceiling the GK band cannot reach
- * (proxy max 5.75). Ceilings read from each position's proxy maximum rounded
- * to the 0.5 scale; GK compressed to 5 anchors over its 2.26–5.75 band.
- * Common 4.0 floor. 26 slots total, asserted below.
- */
-const ANCHOR_PRICES: Record<(typeof POSITIONS)[number], readonly number[]> = {
-  MID: [13.0, 11.5, 10.0, 8.5, 7.0, 5.5, 4.0],
-  ATT: [12.5, 11.0, 9.5, 8.0, 6.5, 5.0, 4.0],
-  DEF: [9.0, 8.0, 7.0, 6.0, 5.5, 4.5, 4.0],
-  GK: [6.0, 5.5, 5.0, 4.5, 4.0],
-};
-const EXPECTED_SLOT_COUNT = 26;
+/** FW-PR1c ruling: direct value pricing. Ceilings from proxy maxima on scale. */
+const CEILING: Record<(typeof POSITIONS)[number], number> = { MID: 13.0, ATT: 12.5, DEF: 9.0, GK: 6.0 };
+const FLOOR = 4.0;
 const PROMOTED_BAND_TOP = 6.5;
 const PROMOTED_BAND_FLOOR = 4.0;
 const RANK_GAP_TOP_N = 30;
@@ -62,13 +55,48 @@ interface Flagged {
   partialApps: number;
 }
 
+interface Priced {
+  apiFootballId: number;
+  name: string;
+  club: string;
+  position: (typeof POSITIONS)[number];
+  pool: 'topfive' | 'promoted' | 'flagged';
+  proxy: number | null;
+  minutes: number;
+  price: number;
+}
+
 const data = JSON.parse(fs.readFileSync(path.join(PRICING_DIR, 'proxy-scores.json'), 'utf-8')) as {
   manifest: { generatedAt: string; counts: Record<string, number> };
   players: Scored[];
   flagged: Flagged[];
 };
+const draft = JSON.parse(fs.readFileSync(path.join(PRICING_DIR, 'price-draft.json'), 'utf-8')) as {
+  manifest: { generatedAt: string };
+  players: Priced[];
+};
 
 const f2 = (x: number): string => x.toFixed(2);
+const f1 = (x: number): string => x.toFixed(1);
+
+/** Half-steps from a position's ceiling down to the 4.0 floor. */
+function halfSteps(pos: (typeof POSITIONS)[number]): number[] {
+  const out: number[] = [];
+  for (let p = CEILING[pos]; p >= FLOOR - 1e-9; p -= 0.5) out.push(Math.round(p * 2) / 2);
+  return out;
+}
+
+/** Per-position histogram rows: price → counts per pool. */
+function histogram(pos: (typeof POSITIONS)[number]): string {
+  const group = draft.players.filter((p) => p.position === pos);
+  let out = `| Price | topfive | promoted | flagged | total |\n| --- | --- | --- | --- | --- |\n`;
+  for (const price of halfSteps(pos)) {
+    const at = group.filter((p) => p.price === price);
+    const c = (pool: Priced['pool']): number => at.filter((p) => p.pool === pool).length;
+    out += `| ${f1(price)} | ${c('topfive')} | ${c('promoted')} | ${c('flagged')} | ${at.length} |\n`;
+  }
+  return out;
+}
 const byProxyDesc = (a: Scored, b: Scored): number => b.proxy - a.proxy;
 
 function quantile(sorted: number[], q: number): number {
@@ -81,49 +109,36 @@ function quantile(sorted: number[], q: number): number {
 const header = (title: string): string =>
   `# ${title}\n\n_Generated ${data.manifest.generatedAt} from proxy-scores.json (SCORING_SPEC v0.5.1 proxy — a RANKING signal, not scores; method and declared approximations in PROXY_METHOD.md)._\n\n`;
 
-// -------------------------------------------------------------- ANCHOR_GRID.md
+// ------------------------------------------------------------- PRICE_REVIEW.md
 {
-  // FW-PR1b gate: grid arithmetic must match the ruling exactly.
-  const slotCount = POSITIONS.reduce((sum, pos) => sum + ANCHOR_PRICES[pos].length, 0);
-  if (slotCount !== EXPECTED_SLOT_COUNT) {
-    throw new Error(`STOP: grid arithmetic — ${slotCount} slots, ruling says ${EXPECTED_SLOT_COUNT}`);
-  }
-  for (const pos of POSITIONS) {
-    const points = ANCHOR_PRICES[pos];
-    const onScale = points.every((p) => p >= 4.0 && Math.round(p * 2) === p * 2);
-    const descending = points.every((p, i) => i === 0 || p < points[i - 1]);
-    if (!onScale || !descending || points[points.length - 1] !== 4.0) {
-      throw new Error(`STOP: ${pos} anchor points malformed: ${points.join('/')}`);
-    }
-  }
-
-  let md = header('FW-PR1b — Anchor grid (Phase B owner pass)');
-  md += `**${EXPECTED_SLOT_COUNT} slots on per-position price points (owner ruling FW-PR1b).** Prices are denominated in expected points: a uniform 13.0-per-position grid would hand GK and DEF ceilings their proxy bands never reach (GK tops out at 5.75/90, MID at 13.33/90), so each position's ceiling is read from its own proxy maximum rounded to the 0.5 scale — MID 13.0, ATT 12.5, DEF 9.0, GK 6.0 (compressed to 5 anchors over its narrow band). Common 4.0 floor.\n\nCandidates are drawn from the **top-five proxied pool only** (${data.manifest.counts.topfive} players; promoted cohort and flagged players are priced separately). Top anchor = the position's #1 by proxy; floor anchor = the bottom of the position; evenly spaced proxy-rank quantiles between. Each slot: candidate plus the two nearest alternates. Confirm or swap each slot; interpolation between confirmed anchors is Phase C.\n`;
+  let md = header('FW-PR1c — Price review (Phase B owner pass)');
+  md += `**Direct value pricing (owner ruling FW-PR1c).** The quantile anchor grid is retired — it decoupled price from expected points wherever the distribution is non-uniform. Draft price = proxy clamped to [4.0, position ceiling], rounded half-up to the 0.5 scale (ceilings MID 13.0 / ATT 12.5 / DEF 9.0 / GK 6.0). Promoted cohort: 4.0–6.5 band by cohort-internal rank (GK band-top capped at the 6.0 position ceiling). Flagged: 4.0 floor. overrides.json applies LAST in Phase C and always wins. Full list: price-draft.json (${draft.players.length} players).\n`;
 
   for (const pos of POSITIONS) {
-    const pool = data.players.filter((p) => p.pool === 'topfive' && p.position === pos).sort(byProxyDesc);
-    const points = ANCHOR_PRICES[pos];
-    md += `\n## ${pos} (${pool.length} proxied, ${points.length} anchors)\n\n`;
-    md += `| Price | Candidate | Proxy /90 | Minutes | Alternate A | Alternate B |\n`;
-    md += `| --- | --- | --- | --- | --- | --- |\n`;
-    points.forEach((price, i) => {
-      const q = i / (points.length - 1);
-      const idx = Math.round(q * (pool.length - 1));
-      // Alternates: the two nearest distinct neighbours, pulled inward at the
-      // ends so every slot carries exactly two.
-      const altIdx =
-        idx === 0 ? [idx + 1, idx + 2] : idx === pool.length - 1 ? [idx - 1, idx - 2] : [idx - 1, idx + 1];
-      const cand = pool[idx];
-      const alts = altIdx.map((j) => pool[j]);
-      // FW-PR1b gate: candidate + 2 alternates, three distinct proxy scores.
-      if (alts.some((p) => p === undefined) || new Set([cand, ...alts].map((p) => p.proxy)).size !== 3) {
-        throw new Error(`STOP: ${pos} lacks depth at the ${price.toFixed(1)} point (idx ${idx} of ${pool.length})`);
-      }
-      const cell = (p: Scored): string => `${p.name} (${p.clubName}) ${f2(p.proxy)}, ${p.minutes}'`;
-      md += `| **${price.toFixed(1)}** | **${cand.name}** (${cand.clubName}) | ${f2(cand.proxy)} | ${cand.minutes}' | ${cell(alts[0])} | ${cell(alts[1])} |\n`;
+    const top = draft.players
+      .filter((p) => p.position === pos && p.pool === 'topfive')
+      .sort((a, b) => b.price - a.price || (b.proxy ?? 0) - (a.proxy ?? 0))
+      .slice(0, 25);
+    md += `\n## ${pos} — top 25 by draft price\n\n| # | Player | Club | Price | Proxy /90 | Minutes |\n| --- | --- | --- | --- | --- | --- |\n`;
+    top.forEach((p, i) => {
+      md += `| ${i + 1} | ${p.name} | ${p.club} | **${f1(p.price)}** | ${f2(p.proxy ?? 0)} | ${p.minutes}' |\n`;
     });
   }
-  fs.writeFileSync(path.join(PRICING_DIR, 'ANCHOR_GRID.md'), md);
+
+  md += `\n# Price histograms (count at each half-step, all pools)\n`;
+  for (const pos of POSITIONS) {
+    md += `\n## ${pos}\n\n${histogram(pos)}`;
+  }
+
+  const promotedTop = draft.players
+    .filter((p) => p.pool === 'promoted')
+    .sort((a, b) => (b.proxy ?? 0) - (a.proxy ?? 0))
+    .slice(0, 15);
+  md += `\n# Promoted cohort — top 15 (cohort-internal proxy, band prices)\n\n| # | Player | Club | Pos | Band price | Proxy /90 (cohort) | Minutes |\n| --- | --- | --- | --- | --- | --- | --- |\n`;
+  promotedTop.forEach((p, i) => {
+    md += `| ${i + 1} | ${p.name} | ${p.club} | ${p.position} | **${f1(p.price)}** | ${f2(p.proxy ?? 0)} | ${p.minutes}' |\n`;
+  });
+  fs.writeFileSync(path.join(PRICING_DIR, 'PRICE_REVIEW.md'), md);
 }
 
 // -------------------------------------------------------------------- FLAGS.md
@@ -171,35 +186,30 @@ const header = (title: string): string =>
 
 // ------------------------------------------------------------- DISTRIBUTION.md
 {
-  let md = header('FW-PR1 — Proxy distribution (the shape being anchored)');
-  md += `Deciles of shrunk proxy per 90, by position. d10 = 10th percentile (weak end), d90 = 90th (strong end).\n\n`;
-  md += `**Anchor price points are per position (owner ruling FW-PR1b)**, ceilings read from each position's proxy maximum rounded to the 0.5 scale, so price is denominated in expected points:\n\n`;
-  for (const pos of POSITIONS) {
-    md += `- ${pos}: ${ANCHOR_PRICES[pos].map((p) => p.toFixed(1)).join(' / ')} (${ANCHOR_PRICES[pos].length} anchors)\n`;
-  }
-  md += `\n`;
+  let md = header('FW-PR1 — Proxy distribution and draft prices');
+  md += `Deciles of shrunk proxy per 90, by position. d10 = 10th percentile (weak end), d90 = 90th (strong end). Under direct value pricing (FW-PR1c) price = clamp+round of proxy, so the decile tables read straight onto the price histograms that follow (ceilings MID 13.0 / ATT 12.5 / DEF 9.0 / GK 6.0, common 4.0 floor).\n\n`;
 
-  const table = (players: Scored[], label: string, withAnchors: boolean): string => {
-    const anchorCol = withAnchors ? ' Anchor points |' : '';
-    const anchorSep = withAnchors ? ' --- |' : '';
-    let out = `## ${label}\n\n| Pos | n | min | d10 | d20 | d30 | d40 | median | d60 | d70 | d80 | d90 | max |${anchorCol}\n| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |${anchorSep}\n`;
+  const table = (players: Scored[], label: string): string => {
+    let out = `## ${label}\n\n| Pos | n | min | d10 | d20 | d30 | d40 | median | d60 | d70 | d80 | d90 | max |\n| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |\n`;
     for (const pos of POSITIONS) {
       const values = players.filter((p) => p.position === pos).map((p) => p.proxy).sort((a, b) => a - b);
       if (values.length === 0) continue;
       const cells = [0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9].map((q) => f2(quantile(values, q)));
-      const anchors = withAnchors ? ` ${ANCHOR_PRICES[pos].map((p) => p.toFixed(1)).join(' / ')} |` : '';
-      out += `| ${pos} | ${values.length} | ${f2(values[0])} | ${cells.join(' | ')} | ${f2(values[values.length - 1])} |${anchors}\n`;
+      out += `| ${pos} | ${values.length} | ${f2(values[0])} | ${cells.join(' | ')} | ${f2(values[values.length - 1])} |\n`;
     }
     return out + '\n';
   };
 
-  md += table(data.players.filter((p) => p.pool === 'topfive'), `Top-five pool (${data.manifest.counts.topfive}) — the anchor-grid population`, true);
+  md += table(data.players.filter((p) => p.pool === 'topfive'), `Top-five pool (${data.manifest.counts.topfive}) — priced by the direct formula`);
   md += table(
     data.players.filter((p) => p.pool === 'promoted'),
     `Promoted cohort (${data.manifest.counts.promoted}) — COHORT-INTERNAL scale, not comparable to the table above`,
-    false,
   );
   md += `Flagged (no proxy, 4.0 floor): ${data.flagged.length}. Universe total ${data.manifest.counts.topfive + data.manifest.counts.promoted + data.flagged.length}.\n`;
+  md += `\n# Draft price histograms (all pools; from price-draft.json)\n`;
+  for (const pos of POSITIONS) {
+    md += `\n## ${pos}\n\n${histogram(pos)}`;
+  }
   fs.writeFileSync(path.join(PRICING_DIR, 'DISTRIBUTION.md'), md);
 }
 
@@ -207,24 +217,24 @@ const header = (title: string): string =>
 {
   const cohort = data.players.filter((p) => p.pool === 'promoted');
   let md = header('FW-PR1 — Promoted cohort (Phase B owner pass)');
-  md += `${cohort.length} players at the 13 promoted clubs, proxied on their 2025-26 **second-division** aggregates. COHORT-INTERNAL ordering only — these proxies are never comparable to the top-five pool, and no cross-league discount exists (owner ruling). Pricing rule: **4.0–6.5 band, ordered by cohort-internal rank**; the proposed mapping below distributes each position across the band by rank quantile in 0.5 steps. Any exception above 6.5 is an owner-named override in overrides.json, never automatic.\n\nNote (FW-PR1b): with per-position anchor points, this 4.0–6.5 band now overlaps the full GK range (4.0–6.0) and the lower DEF anchors (4.0–6.0) **by design** — promoted pricing remains cohort-internal and is unaffected by the anchor re-slice.\n\n`;
+  md += `${cohort.length} players at the 13 promoted clubs, proxied on their 2025-26 **second-division** aggregates. COHORT-INTERNAL ordering only — these proxies are never comparable to the top-five pool, and no cross-league discount exists (owner ruling). Pricing rule: **4.0–6.5 band, ordered by cohort-internal rank**. Any exception above 6.5 is an owner-named override in overrides.json, never automatic.\n\n**Band mapping (FW-PR1c, rank → half-step):** within each position, sorted by cohort proxy descending, \`price = min(6.5 − 0.5 × round(5 × (rank−1)/(N−1)), position ceiling)\` — rank #1 takes the band top, the last rank takes 4.0, ranks between spread evenly across the six half-steps. The position-ceiling term binds only for GK, whose 6.0 ceiling (FW-PR1c) sits below the 6.5 band top; the 4.0–6.5 band otherwise overlaps the full GK price range and the lower DEF range by design — promoted pricing remains cohort-internal.\n\n`;
   const clubCounts = new Map<string, number>();
   for (const p of cohort) clubCounts.set(p.clubName, (clubCounts.get(p.clubName) ?? 0) + 1);
   md += `Clubs: ${[...clubCounts.entries()].sort((a, b) => b[1] - a[1]).map(([c, n]) => `${c} (${n})`).join(', ')}. `;
   md += `Cohort members without usable second-division minutes are in FLAGS.md at the 4.0 floor.\n`;
 
-  const steps = Math.round((PROMOTED_BAND_TOP - PROMOTED_BAND_FLOOR) / 0.5); // 5
+  // Prices come from price-draft.json — the single source of truth — rather
+  // than recomputing the mapping here and risking drift.
+  const draftPrice = new Map(draft.players.map((p) => [p.apiFootballId, p.price]));
   for (const pos of POSITIONS) {
     const pool = cohort.filter((p) => p.position === pos).sort(byProxyDesc);
     if (pool.length === 0) continue;
-    md += `\n## ${pos} (${pool.length})\n\n| # | Player | Club | Proxy /90 (cohort) | Minutes | Proposed price |\n| --- | --- | --- | --- | --- | --- |\n`;
+    md += `\n## ${pos} (${pool.length})\n\n| # | Player | Club | Proxy /90 (cohort) | Minutes | Band price |\n| --- | --- | --- | --- | --- | --- |\n`;
     pool.forEach((p, i) => {
-      const q = pool.length === 1 ? 0 : i / (pool.length - 1);
-      const price = PROMOTED_BAND_TOP - 0.5 * Math.round(q * steps);
-      md += `| ${i + 1} | ${p.name} | ${p.clubName} | ${f2(p.proxy)} | ${p.minutes}' | ${price.toFixed(1)} |\n`;
+      md += `| ${i + 1} | ${p.name} | ${p.clubName} | ${f2(p.proxy)} | ${p.minutes}' | ${f1(draftPrice.get(p.apiFootballId) as number)} |\n`;
     });
   }
   fs.writeFileSync(path.join(PRICING_DIR, 'PROMOTED_COHORT.md'), md);
 }
 
-console.log('wrote ANCHOR_GRID.md, FLAGS.md, DISTRIBUTION.md, PROMOTED_COHORT.md');
+console.log('wrote PRICE_REVIEW.md, FLAGS.md, DISTRIBUTION.md, PROMOTED_COHORT.md');

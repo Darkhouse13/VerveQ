@@ -2,18 +2,18 @@
 
 _Generated 2026-07-29T15:37:22.617Z from proxy-scores.json (SCORING_SPEC v0.5.1 proxy — a RANKING signal, not scores; method and declared approximations in PROXY_METHOD.md)._
 
-257 players at the 13 promoted clubs, proxied on their 2025-26 **second-division** aggregates. COHORT-INTERNAL ordering only — these proxies are never comparable to the top-five pool, and no cross-league discount exists (owner ruling). Pricing rule: **4.0–6.5 band, ordered by cohort-internal rank**; the proposed mapping below distributes each position across the band by rank quantile in 0.5 steps. Any exception above 6.5 is an owner-named override in overrides.json, never automatic.
+257 players at the 13 promoted clubs, proxied on their 2025-26 **second-division** aggregates. COHORT-INTERNAL ordering only — these proxies are never comparable to the top-five pool, and no cross-league discount exists (owner ruling). Pricing rule: **4.0–6.5 band, ordered by cohort-internal rank**. Any exception above 6.5 is an owner-named override in overrides.json, never automatic.
 
-Note (FW-PR1b): with per-position anchor points, this 4.0–6.5 band now overlaps the full GK range (4.0–6.0) and the lower DEF anchors (4.0–6.0) **by design** — promoted pricing remains cohort-internal and is unaffected by the anchor re-slice.
+**Band mapping (FW-PR1c, rank → half-step):** within each position, sorted by cohort proxy descending, `price = min(6.5 − 0.5 × round(5 × (rank−1)/(N−1)), position ceiling)` — rank #1 takes the band top, the last rank takes 4.0, ranks between spread evenly across the six half-steps. The position-ceiling term binds only for GK, whose 6.0 ceiling (FW-PR1c) sits below the 6.5 band top; the 4.0–6.5 band otherwise overlaps the full GK price range and the lower DEF range by design — promoted pricing remains cohort-internal.
 
 Clubs: Venezia (25), FC Schalke 04 (22), Hull City (22), Ipswich (20), Le Mans (20), Frosinone (20), Estac Troyes (19), SV Elversberg (19), Coventry (19), Malaga (19), Deportivo La Coruna (19), Monza (17), Racing Santander (16). Cohort members without usable second-division minutes are in FLAGS.md at the 4.0 floor.
 
 ## GK (16)
 
-| # | Player | Club | Proxy /90 (cohort) | Minutes | Proposed price |
+| # | Player | Club | Proxy /90 (cohort) | Minutes | Band price |
 | --- | --- | --- | --- | --- | --- |
-| 1 | L. Palmisani | Frosinone | 5.42 | 3422' | 6.5 |
-| 2 | F. Stanković | Venezia | 4.84 | 3427' | 6.5 |
+| 1 | L. Palmisani | Frosinone | 5.42 | 3422' | 6.0 |
+| 2 | F. Stanković | Venezia | 4.84 | 3427' | 6.0 |
 | 3 | L. Karius | FC Schalke 04 | 4.66 | 2700' | 6.0 |
 | 4 | D. Thiam | Monza | 4.61 | 3795' | 6.0 |
 | 5 | C. Walton | Ipswich | 4.39 | 3306' | 6.0 |
@@ -31,7 +31,7 @@ Clubs: Venezia (25), FC Schalke 04 (22), Hull City (22), Ipswich (20), Le Mans (
 
 ## DEF (92)
 
-| # | Player | Club | Proxy /90 (cohort) | Minutes | Proposed price |
+| # | Player | Club | Proxy /90 (cohort) | Minutes | Band price |
 | --- | --- | --- | --- | --- | --- |
 | 1 | R. Haps | Venezia | 7.40 | 1223' | 6.5 |
 | 2 | G. Cittadini | Frosinone | 7.19 | 1234' | 6.5 |
@@ -128,7 +128,7 @@ Clubs: Venezia (25), FC Schalke 04 (22), Hull City (22), Ipswich (20), Le Mans (
 
 ## MID (86)
 
-| # | Player | Club | Proxy /90 (cohort) | Minutes | Proposed price |
+| # | Player | Club | Proxy /90 (cohort) | Minutes | Band price |
 | --- | --- | --- | --- | --- | --- |
 | 1 | David Larrubia | Malaga | 9.14 | 3542' | 6.5 |
 | 2 | J. Yeboah | Venezia | 9.02 | 2614' | 6.5 |
@@ -219,7 +219,7 @@ Clubs: Venezia (25), FC Schalke 04 (22), Hull City (22), Ipswich (20), Le Mans (
 
 ## ATT (63)
 
-| # | Player | Club | Proxy /90 (cohort) | Minutes | Proposed price |
+| # | Player | Club | Proxy /90 (cohort) | Minutes | Band price |
 | --- | --- | --- | --- | --- | --- |
 | 1 | Asier Villalibre | Racing Santander | 9.36 | 1340' | 6.5 |
 | 2 | Iñigo Vicente | Racing Santander | 8.68 | 3284' | 6.5 |
