@@ -1,12 +1,24 @@
-# Weekend Fantasy — Draft Room Spec (v1.0.2)
+# Weekend Fantasy — Draft Room Spec (v1.1.0)
 
-Status: **v1.0.2 — LOCKED by owner.** Every ⚑ item is
+Status: **v1.1.0 — LOCKED by owner.** Every ⚑ item is
 resolved in the owner ledger at the foot of this document; the ⚑
 markers are kept as provenance of what was once open, not as live
 questions.
 
 ## Changelog
 
+- v1.1.0 — **auto-pick and the default team sheet are price-based**
+  (owner ruling, FW-3 STOP report 2026-07-29). The FW-3 owner rulings
+  R1 and R6 (2026-07-29) supersede ledger items 2 and 3 as locked on
+  2026-07-28: "highest v5 editorial rating" predates the FW-PR1c
+  direct-value pricing pass, after which no v5 editorial rating exists
+  on the players table — `pricing/price-final.json` (price, proxy,
+  pool) is the value surface that shipped. Auto-pick is best available
+  by **price desc**, tiebreak **proxy desc**, then **pool priority
+  topfive > promoted > flagged**, constrained so the remaining sheet
+  stays completable; the default sheet is 4-4-2 assigned **by price**,
+  finishers the **two lowest-priced**. §Auto-pick, §Default team sheet
+  and ledger items 2–3 are amended in place; no other rule changes.
 - v1.0.2 — the favorite-change cooldown is **28 calendar days**,
   measured as a timestamp, not 4 gameweeks (owner STOP-F ruling,
   re-issued at the FW-2-RUN closeout 2026-07-29 after the original
@@ -108,9 +120,13 @@ Arena-derived, server-clocked throughout:
 
 ## Auto-pick, disconnects
 
-- Bank empty ⇒ **auto-pick fires: highest v5 editorial rating still
-  available** (deterministic, transparent, argues for itself),
-  instantly, for every remaining pick. ⚑ (rule choice still open)
+- Bank empty ⇒ **auto-pick fires: best available by price descending**
+  (v1.1.0; was "highest v5 editorial rating still available", which no
+  longer exists post-FW-PR1c) — tiebreak proxy descending, then pool
+  priority topfive > promoted > flagged, constrained so the remaining
+  sheet stays completable (club cap). Deterministic, transparent,
+  argues for itself; instantly, for every remaining pick. ⚑ (was open;
+  ruled, then re-ruled v1.1.0)
 - Disconnection does not pause the draft. Bank drains on the absent
   drafter's turns; reconnect resumes the live seat with whatever
   bank remains. No host-pause at launch (abuse surface; revisit on
@@ -124,10 +140,12 @@ Arena-derived, server-clocked throughout:
 ## Default team sheet rule ⚑
 
 If a squad is unarranged when its first fixture locks: server assigns
-4-4-2, slots filled by editorial rating descending within nominal
-feed positions, two lowest-rated as finishers. Crude by design —
-arranging your team is the game; the default exists so absence never
-breaks the room, not to be good.
+4-4-2, slots filled **by price** (v1.1.0; was "by editorial rating
+descending within nominal feed positions") — the GK slot takes the
+cheapest nominal GK if one was drafted, else a documented best-fit
+fallback — with the **two lowest-priced** as finishers (was "two
+lowest-rated"). Crude by design — arranging your team is the game;
+the default exists so absence never breaks the room, not to be good.
 
 ## Draft log
 
@@ -164,9 +182,16 @@ cumulative points. All placeholders — pick your ladder.
 All LOCKED by owner 2026-07-28:
 1. Founding shape: per-gameweek ephemeral drafts + persistent crew
    meta. LOCKED.
-2. Auto-pick: highest v5 editorial rating available. LOCKED.
-3. Default team sheet: 4-4-2, rating-descending within nominal feed
-   positions, two lowest-rated as finishers. LOCKED.
+2. Auto-pick: best available by price desc, tiebreak proxy desc, then
+   pool priority topfive > promoted > flagged, constrained so the
+   remaining sheet stays completable. LOCKED (amended v1.1.0, FW-3
+   ruling R1 2026-07-29; was "highest v5 editorial rating available",
+   which predates FW-PR1c direct-value pricing).
+3. Default team sheet: 4-4-2 assigned by price, GK slot = cheapest
+   nominal GK if drafted else documented best-fit, two lowest-priced
+   as finishers. LOCKED (amended v1.1.0, FW-3 ruling R6 2026-07-29;
+   was rating-descending within nominal feed positions, two
+   lowest-rated as finishers).
 4. No host-pause at launch. LOCKED.
 5. Tie-breaks — weekend: highest single-player score, then fewest
    auto-picks, then shared. Crew table: head-to-head weekend wins,
