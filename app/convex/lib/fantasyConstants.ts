@@ -81,16 +81,20 @@ export const FAVORITE_CLUB_COOLDOWN_MS = FAVORITE_CLUB_COOLDOWN_DAYS * 86_400_00
 // ── budget ──
 
 /**
- * PLACEHOLDER. BUDGET_MODE §Squad construction prices the budget as "principle
- * LOCKED, number pending" and open item 1 defers it to the pricing pass; the
- * FW-1 STOP-4 ruling (2026-07-28) fixes 100.0 as the placeholder so the budget
- * invariant is implemented and tested now. Replacing this constant with the
- * real number is the whole of the change — no code moves.
+ * The squad budget: what all 13 slots may cost together.
+ *
+ * BUDGET_MODE_SPEC v1.1.0 §Budget (owner ruling 2026-07-29, FW-PR3) — LOCKED at
+ * 91.0, in the same units as `pricing/price-final.json` (the 4.0-13.0 scale in
+ * 0.5 steps). It buys a two-elite core carried by a 5.9-average eleven, or three
+ * elites filled near the floor; the all-9.0 balanced squad (113.5) and max-stars
+ * (138.0) are out of reach. Basis: `pricing/BUDGET_ANALYSIS.md`.
+ *
+ * This replaces FW-1's `PLACEHOLDER_PENDING_PRICING_PASS = 100.0` and the thin
+ * `BUDGET_LIMIT` alias that existed only to keep callers off the placeholder's
+ * name. The placeholder was designed so that arriving at the real number moved
+ * no code, and it did not: only this constant changed value.
  */
-export const PLACEHOLDER_PENDING_PRICING_PASS = 100.0;
-
-/** The budget ceiling in force. Alias kept deliberately thin — see above. */
-export const BUDGET_LIMIT = PLACEHOLDER_PENDING_PRICING_PASS;
+export const SQUAD_BUDGET = 91.0;
 
 // ── price scale ──
 

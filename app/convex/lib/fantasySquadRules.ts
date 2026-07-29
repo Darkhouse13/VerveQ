@@ -15,11 +15,11 @@
  */
 
 import {
-  BUDGET_LIMIT,
   FINISHER_COUNT,
   FORMATION_BOUNDS,
   PER_CLUB_CAP,
   SLOT_ROLES,
+  SQUAD_BUDGET,
   SQUAD_SIZE,
   XI_SIZE,
   type SlotRole,
@@ -266,7 +266,7 @@ export function validateBudget(
   slots: readonly SlotSnapshot[],
   playersById: ReadonlyMap<string, PlayerSnapshot>,
   isLocked: (slot: SlotSnapshot) => boolean,
-  limit: number = BUDGET_LIMIT,
+  limit: number = SQUAD_BUDGET,
 ): RuleResult & { breakdown?: BudgetBreakdown } {
   let committed = 0;
   let live = 0;

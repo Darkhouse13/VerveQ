@@ -12,11 +12,10 @@
 import { describe, expect, it } from "vitest";
 
 import {
-  BUDGET_LIMIT,
   FAVORITE_CLUB_COOLDOWN_DAYS,
   FAVORITE_CLUB_COOLDOWN_MS,
   PER_CLUB_CAP,
-  PLACEHOLDER_PENDING_PRICING_PASS,
+  SQUAD_BUDGET,
   SQUAD_SIZE,
   zonedWallClockToEpochMs,
   type SlotRole,
@@ -230,10 +229,12 @@ describe("per-club cap with favorite-club exemption (DRAFT_ROOM v1.0 ledger 6+8)
 
 // ── budget ──
 
-describe("budget invariant (BUDGET_MODE v1.0 §Deadlines & editing)", () => {
-  it("uses the placeholder constant pending the pricing pass", () => {
-    expect(BUDGET_LIMIT).toBe(PLACEHOLDER_PENDING_PRICING_PASS);
-    expect(PLACEHOLDER_PENDING_PRICING_PASS).toBe(100.0);
+describe("budget invariant (BUDGET_MODE v1.1.0 §Budget, §Deadlines & editing)", () => {
+  it("carries the budget the spec locked, on the price scale's grid", () => {
+    expect(SQUAD_BUDGET).toBe(91.0);
+    // The budget is spent in 0.5 steps, so a budget off that grid would leave a
+    // permanently unspendable remainder.
+    expect(SQUAD_BUDGET * 2).toBe(Math.round(SQUAD_BUDGET * 2));
   });
 
   it("sums filled slots and ignores unfilled ones", () => {

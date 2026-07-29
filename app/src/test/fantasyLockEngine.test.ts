@@ -46,6 +46,7 @@ import {
   PLAYER_ALREADY_STARTED,
   SLOT_LOCKED,
 } from "../../convex/fantasySquads";
+import { SQUAD_BUDGET } from "../../convex/lib/fantasyConstants";
 
 const createSquad = handlerOf(fantasySquads.createSquad);
 const setSlot = handlerOf(fantasySquads.setSlot);
@@ -226,20 +227,24 @@ describe("budget invariant across a partial lock (BUDGET_MODE §Deadlines & edit
 
   it("counts committed cost against the budget when editing an unlocked slot", async () => {
     const squadId = await newBudgetSquad();
-    await setPrice("SAT_A_1", 90);
+    // Spend all but 1.0 of the budget on the Saturday slot, then lock it. Stated
+    // against SQUAD_BUDGET rather than the number of the day: what is under test
+    // is that committed cost counts, not what the budget happens to be.
+    const remaining = 1.0;
+    await setPrice("SAT_A_1", SQUAD_BUDGET - remaining);
     await setSlot(world.ctx, { squadId, slotIndex: 0, playerId: world.players.SAT_A_1 });
 
     vi.setSystemTime(SATURDAY + 1000);
     await lockSweep(world.ctx, { gameweekId: world.gameweekId });
 
-    // 90 committed. A 20.0 Sunday pick would total 110 > 100 ⇒ rejected…
-    await setPrice("SUN_A_1", 20);
+    // A Sunday pick that overshoots what is left goes over the budget ⇒ rejected…
+    await setPrice("SUN_A_1", remaining + 1.0);
     await expect(
       setSlot(world.ctx, { squadId, slotIndex: 1, playerId: world.players.SUN_A_1 }),
     ).rejects.toThrow(/budget/i);
 
-    // …while a 10.0 pick totals exactly 100 and is accepted.
-    await setPrice("SUN_A_2", 10);
+    // …while one that lands exactly on the budget is accepted.
+    await setPrice("SUN_A_2", remaining);
     await expect(
       setSlot(world.ctx, { squadId, slotIndex: 1, playerId: world.players.SUN_A_2 }),
     ).resolves.toEqual({ ok: true });

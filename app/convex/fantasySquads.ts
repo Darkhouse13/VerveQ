@@ -20,8 +20,8 @@ import type { MutationCtx, QueryCtx } from "./_generated/server";
 import type { Doc, Id } from "./_generated/dataModel";
 import { getAuthUserId } from "@convex-dev/auth/server";
 import {
-  BUDGET_LIMIT,
   FINISHER_COUNT,
+  SQUAD_BUDGET,
   SQUAD_SIZE,
   type SlotRole,
 } from "./lib/fantasyConstants";
@@ -147,7 +147,7 @@ async function assertPostEditSquadLegal(
     favoriteClub: squad.favoriteClubAtBuild,
     context: squad.context,
     isLocked: (slot) => lockedByIndex.get(slot.slotIndex) === true,
-    budgetLimit: BUDGET_LIMIT,
+    budgetLimit: SQUAD_BUDGET,
   });
   if (!result.ok) throw new Error(describeViolations(result));
 }
