@@ -92,6 +92,34 @@ export const PLACEHOLDER_PENDING_PRICING_PASS = 100.0;
 /** The budget ceiling in force. Alias kept deliberately thin — see above. */
 export const BUDGET_LIMIT = PLACEHOLDER_PENDING_PRICING_PASS;
 
+// ── price scale ──
+
+/**
+ * The editorial price scale: 4.0 to 13.0 in 0.5 steps.
+ *
+ * Fixed by the pricing pass (research/fantasy/pricing/PROXY_METHOD.md
+ * §Anchor design → direct value pricing, owner rulings FW-PR1b/FW-PR1c): the
+ * floor is every unproxied player's price and the top is the MID ceiling, the
+ * highest of the four. The per-position ceilings (MID 13.0 / ATT 12.5 / DEF 9.0
+ * / GK 6.0) are NOT here on purpose — they gate the draft formula only, and the
+ * FW-PR2 owner ruling exempts editorial overrides from them (Lamine Yamal is
+ * priced 13.0 as an attacker). This scale is the one rule every stored price
+ * obeys, which is exactly why it is the one the write path checks.
+ */
+export const PRICE_MIN = 4.0;
+export const PRICE_MAX = 13.0;
+export const PRICE_STEP = 0.5;
+
+/** Whether a price is a legal point on the scale above. */
+export function isOnPriceScale(price: number): boolean {
+  return (
+    Number.isFinite(price) &&
+    price >= PRICE_MIN &&
+    price <= PRICE_MAX &&
+    Math.round(price / PRICE_STEP) === price / PRICE_STEP
+  );
+}
+
 // ── leagues ──
 
 /**

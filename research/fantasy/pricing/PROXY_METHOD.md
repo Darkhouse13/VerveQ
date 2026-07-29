@@ -148,3 +148,28 @@ so an override always wins. Shape:
 Any flagged or promoted player (or anyone else) may appear here; prices must
 sit on the 4.0–13.0 half-point scale. proxy.ts and the artifacts do not read
 it — it is a Phase C input.
+
+## Phase C — done (FW-PR2, 2026-07-29)
+
+25 Phase B rulings landed in `overrides.json` (ids resolved from
+`price-draft.json` by exact name+club; each entry carries the name and club it
+was resolved against, and `price-final.ts` re-checks them). `price-final.ts`
+applies the file last and writes `price-final.json` — 2,895 rows, partition
+unchanged, exactly 25 rows differing from the draft and that set identical to
+the override set.
+
+**What an override is exempt from (owner ruling FW-PR2).** An override binds
+only to the global 4.0–13.0 half-step scale. Post-override output is exempt
+from the per-position ceilings and from monotonicity in proxy — Lamine Yamal is
+priced 13.0 against an ATT ceiling of 12.5 and that is intended. Both gates
+still run in `price-draft.ts` against the pre-override draft, unchanged, which
+is the only place they describe a rule rather than contradict one.
+
+Prices are seeded to DEV (`admired-warthog-495`) by
+`app/convex/fantasyIngest.applyPrices`, driven by
+`app/scripts/seedFantasyPrices.ts`; a patch of one field, never a table
+replace, because `fantasySquadSlots.playerId` references these rows. Verified
+by re-export against the pre-seed snapshot: 2,895 non-null prices matching the
+file, zero diffs in any other field. Costing the result for the budget decision
+is `pricing/BUDGET_ANALYSIS.md`; the budget number itself remains open
+(BUDGET_MODE open item 1).

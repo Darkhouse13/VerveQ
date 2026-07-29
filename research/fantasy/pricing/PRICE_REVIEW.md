@@ -8,29 +8,29 @@ _Generated 2026-07-29T15:37:22.617Z from proxy-scores.json (SCORING_SPEC v0.5.1 
 
 | # | Player | Club | Price | Proxy /90 | Minutes |
 | --- | --- | --- | --- | --- | --- |
-| 1 | M. Safonov | Paris Saint Germain | **6.0** | 5.75 | 1350' |
-| 2 | D. Greif | Lyon | **5.5** | 5.31 | 2700' |
-| 3 | L. Chevalier | Paris Saint Germain | **5.5** | 5.31 | 1530' |
+| 1 | M. Safonov | Paris Saint Germain | **5.5** | 5.75 | 1350' |
+| 2 | D. Greif | Lyon | **5.0** | 5.31 | 2700' |
+| 3 | L. Chevalier | Paris Saint Germain | **4.5** | 5.31 | 1530' |
 | 4 | J. Butez | Como | **5.0** | 5.18 | 3420' |
-| 5 | W. Szczęsny | Barcelona | **5.0** | 5.14 | 720' |
+| 5 | W. Szczęsny | Barcelona | **4.0** | 5.14 | 720' |
 | 6 | M. Svilar | AS Roma | **5.0** | 5.02 | 3427' |
 | 7 | V. Milinković-Savić | Napoli | **5.0** | 4.98 | 2520' |
 | 8 | M. Maignan | AC Milan | **5.0** | 4.86 | 3303' |
 | 9 | I. Provedel | Inter | **5.0** | 4.83 | 2430' |
-| 10 | Dani Cárdenas | Rayo Vallecano | **5.0** | 4.79 | 360' |
-| 11 | David Raya | Arsenal | **4.5** | 4.70 | 3330' |
-| 12 | G. Kobel | Borussia Dortmund | **4.5** | 4.68 | 3060' |
+| 10 | Dani Cárdenas | Rayo Vallecano | **4.5** | 4.79 | 360' |
+| 11 | David Raya | Arsenal | **6.0** | 4.70 | 3330' |
+| 12 | G. Kobel | Borussia Dortmund | **5.0** | 4.68 | 3060' |
 | 13 | M. Carnesecchi | Atalanta | **4.5** | 4.64 | 3330' |
 | 14 | R. Risser | Lens | **4.5** | 4.62 | 2970' |
 | 15 | M. Perin | Juventus | **4.5** | 4.61 | 771' |
 | 16 | H. Koffi | Lens | **4.5** | 4.55 | 2659' |
 | 17 | M. Nicolas | Borussia Mönchengladbach | **4.5** | 4.53 | 3060' |
-| 18 | Joan García | Barcelona | **4.5** | 4.53 | 2700' |
+| 18 | Joan García | Barcelona | **5.5** | 4.53 | 2700' |
 | 19 | M. Di Gregorio | Juventus | **4.5** | 4.52 | 2655' |
 | 20 | E. Motta | Lazio | **4.5** | 4.49 | 810' |
-| 21 | G. Donnarumma | Manchester City | **4.5** | 4.46 | 3060' |
+| 21 | G. Donnarumma | Manchester City | **5.5** | 4.46 | 3060' |
 | 22 | Z. Suzuki | Parma | **4.5** | 4.45 | 1800' |
-| 23 | A. Meret | Napoli | **4.5** | 4.44 | 980' |
+| 23 | A. Meret | Napoli | **4.0** | 4.44 | 980' |
 | 24 | J. Urbig | Bayern München | **4.5** | 4.43 | 1110' |
 | 25 | M. Vandevoordt | RB Leipzig | **4.5** | 4.43 | 1051' |
 
@@ -40,26 +40,26 @@ _Generated 2026-07-29T15:37:22.617Z from proxy-scores.json (SCORING_SPEC v0.5.1 
 | --- | --- | --- | --- | --- | --- |
 | 1 | Nuno Mendes | Paris Saint Germain | **9.0** | 9.09 | 1251' |
 | 2 | F. Dimarco | Inter | **9.0** | 8.77 | 2704' |
-| 3 | D. Rensch | AS Roma | **8.5** | 8.33 | 1203' |
+| 3 | D. Rensch | AS Roma | **8.0** | 8.33 | 1203' |
 | 4 | M. Mittelstädt | VfB Stuttgart | **8.0** | 8.24 | 2195' |
-| 5 | Gabriel Magalhães | Arsenal | **7.5** | 7.67 | 2751' |
+| 5 | Gabriel Magalhães | Arsenal | **8.5** | 7.67 | 2751' |
 | 6 | R. Bensebaïni | Borussia Dortmund | **7.5** | 7.38 | 1529' |
-| 7 | J. Timber | Arsenal | **7.5** | 7.32 | 2457' |
+| 7 | J. Timber | Arsenal | **8.0** | 7.32 | 2457' |
 | 8 | B. Okoh | Auxerre | **7.0** | 7.13 | 1011' |
 | 9 | Marc Pubill | Atletico Madrid | **7.0** | 7.10 | 1382' |
-| 10 | R. Araújo | Barcelona | **7.0** | 7.08 | 1072' |
+| 10 | R. Araújo | Barcelona | **6.5** | 7.08 | 1072' |
 | 11 | Éder Militão | Real Madrid | **7.0** | 6.98 | 1141' |
 | 12 | Kim Min-Jae | Bayern München | **7.0** | 6.94 | 1621' |
 | 13 | N. Nartey | VfB Stuttgart | **7.0** | 6.93 | 1262' |
-| 14 | N. Schlotterbeck | Borussia Dortmund | **7.0** | 6.86 | 2520' |
+| 14 | N. Schlotterbeck | Borussia Dortmund | **7.5** | 6.86 | 2520' |
 | 15 | P. Hincapié | Arsenal | **7.0** | 6.83 | 1882' |
 | 16 | P. Dorgu | Manchester United | **7.0** | 6.81 | 1461' |
 | 17 | Y. Bisseck | Inter | **6.5** | 6.67 | 1922' |
 | 18 | R. Kluivert | Lyon | **6.5** | 6.55 | 805' |
-| 19 | J. Ryerson | Borussia Dortmund | **6.5** | 6.54 | 2272' |
+| 19 | J. Ryerson | Borussia Dortmund | **7.5** | 6.54 | 2272' |
 | 20 | G. Scalvini | Atalanta | **6.5** | 6.49 | 1817' |
-| 21 | W. Pacho | Paris Saint Germain | **6.5** | 6.46 | 1915' |
-| 22 | A. Bastoni | Inter | **6.5** | 6.44 | 2249' |
+| 21 | W. Pacho | Paris Saint Germain | **8.0** | 6.46 | 1915' |
+| 22 | A. Bastoni | Inter | **7.5** | 6.44 | 2249' |
 | 23 | Bremer | Juventus | **6.5** | 6.43 | 2175' |
 | 24 | M. Guéhi | Manchester City | **6.5** | 6.40 | 3150' |
 | 25 | Beraldo | Paris Saint Germain | **6.5** | 6.38 | 1570' |
@@ -69,16 +69,16 @@ _Generated 2026-07-29T15:37:22.617Z from proxy-scores.json (SCORING_SPEC v0.5.1 
 | # | Player | Club | Price | Proxy /90 | Minutes |
 | --- | --- | --- | --- | --- | --- |
 | 1 | M. Olise | Bayern München | **13.0** | 13.33 | 2317' |
-| 2 | R. Cherki | Manchester City | **11.0** | 11.01 | 1806' |
+| 2 | R. Cherki | Manchester City | **10.0** | 11.01 | 1806' |
 | 3 | Pedri | Barcelona | **11.0** | 11.00 | 2107' |
-| 4 | A. Güler | Real Madrid | **11.0** | 10.97 | 2026' |
-| 5 | H. Çalhanoğlu | Inter | **11.0** | 10.87 | 1650' |
+| 4 | A. Güler | Real Madrid | **10.0** | 10.97 | 2026' |
+| 5 | H. Çalhanoğlu | Inter | **9.5** | 10.87 | 1650' |
 | 6 | Fermín | Barcelona | **11.0** | 10.82 | 1797' |
 | 7 | Bruno Fernandes | Manchester United | **10.5** | 10.51 | 3066' |
 | 8 | Lee Kang-In | Atletico Madrid | **10.5** | 10.25 | 1522' |
 | 9 | M. Baturina | Como | **10.0** | 10.17 | 1591' |
 | 10 | L. Karl | Bayern München | **10.0** | 10.12 | 1282' |
-| 11 | J. Bellingham | Real Madrid | **10.0** | 10.05 | 1917' |
+| 11 | J. Bellingham | Real Madrid | **11.0** | 10.05 | 1917' |
 | 12 | Senny Mayulu | Paris Saint Germain | **10.0** | 9.89 | 1681' |
 | 13 | N. Paz | Como | **10.0** | 9.84 | 2884' |
 | 14 | J. Musiala | Bayern München | **10.0** | 9.78 | 685' |
@@ -99,9 +99,9 @@ _Generated 2026-07-29T15:37:22.617Z from proxy-scores.json (SCORING_SPEC v0.5.1 
 | # | Player | Club | Price | Proxy /90 | Minutes |
 | --- | --- | --- | --- | --- | --- |
 | 1 | H. Kane | Bayern München | **12.5** | 12.27 | 2382' |
-| 2 | O. Dembélé | Paris Saint Germain | **12.0** | 12.09 | 1062' |
-| 3 | Lamine Yamal | Barcelona | **12.0** | 12.01 | 2268' |
-| 4 | Kylian Mbappé | Real Madrid | **11.0** | 10.88 | 2604' |
+| 2 | O. Dembélé | Paris Saint Germain | **11.5** | 12.09 | 1062' |
+| 3 | Lamine Yamal | Barcelona | **13.0** | 12.01 | 2268' |
+| 4 | Kylian Mbappé | Real Madrid | **12.0** | 10.88 | 2604' |
 | 5 | Raphinha | Barcelona | **10.0** | 10.12 | 1388' |
 | 6 | L. Díaz | Bayern München | **9.5** | 9.71 | 2450' |
 | 7 | Y. Diomande | RB Leipzig | **9.0** | 8.86 | 2476' |

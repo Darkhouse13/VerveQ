@@ -1,5 +1,34 @@
 {
-  "$comment": "FW-PR1 owner price overrides (PROXY_METHOD.md §Owner price overrides). Phase B rulings land here; Phase C applies this file LAST, after interpolation, so an override always wins. Prices must sit on the 4.0-13.0 half-point scale. Keys are API-Football player ids.",
+  "$comment": "FW-PR1 owner price overrides (PROXY_METHOD.md §Owner price overrides). Phase B rulings land here; Phase C applies this file LAST, after the draft formula, so an override always wins. Prices must sit on the 4.0-13.0 half-point scale. Keys are API-Football player ids, resolved from price-draft.json by exact (name, club) match — `name`/`club` are carried on each entry as human-readable annotations so a wrong id can be caught by eye; price-final.ts asserts they still match the draft row. FW-PR2 ruling: overrides bind ONLY to the global 4.0-13.0 half-step scale. Post-override output is EXEMPT from the per-position ceilings and from price-monotonicity in proxy (Lamine Yamal 13.0 above the ATT 12.5 ceiling is owner-intended); those gates govern the pre-override draft only, unchanged.",
   "version": 1,
-  "overrides": {}
+  "overrides": {
+    "2068": { "price": 5.5, "reason": "Phase B owner editorial", "date": "2026-07-29", "name": "M. Safonov", "club": "Paris Saint Germain" },
+    "61142": { "price": 5.0, "reason": "Phase B owner editorial", "date": "2026-07-29", "name": "D. Greif", "club": "Lyon" },
+    "162453": { "price": 4.5, "reason": "Phase B owner editorial", "date": "2026-07-29", "name": "L. Chevalier", "club": "Paris Saint Germain" },
+    "851": { "price": 4.0, "reason": "Phase B owner editorial", "date": "2026-07-29", "name": "W. Szczęsny", "club": "Barcelona" },
+    "156488": { "price": 4.5, "reason": "Phase B owner editorial", "date": "2026-07-29", "name": "Dani Cárdenas", "club": "Rayo Vallecano" },
+    "19465": { "price": 6.0, "reason": "Phase B owner editorial", "date": "2026-07-29", "name": "David Raya", "club": "Arsenal" },
+    "25282": { "price": 5.0, "reason": "Phase B owner editorial", "date": "2026-07-29", "name": "G. Kobel", "club": "Borussia Dortmund" },
+    "182718": { "price": 5.5, "reason": "Phase B owner editorial", "date": "2026-07-29", "name": "Joan García", "club": "Barcelona" },
+    "1622": { "price": 5.5, "reason": "Phase B owner editorial", "date": "2026-07-29", "name": "G. Donnarumma", "club": "Manchester City" },
+    "312": { "price": 4.0, "reason": "Phase B owner editorial", "date": "2026-07-29", "name": "A. Meret", "club": "Napoli" },
+
+    "162452": { "price": 8.0, "reason": "Phase B owner editorial", "date": "2026-07-29", "name": "D. Rensch", "club": "AS Roma" },
+    "22224": { "price": 8.5, "reason": "Phase B owner editorial", "date": "2026-07-29", "name": "Gabriel Magalhães", "club": "Arsenal" },
+    "38746": { "price": 8.0, "reason": "Phase B owner editorial", "date": "2026-07-29", "name": "J. Timber", "club": "Arsenal" },
+    "101814": { "price": 6.5, "reason": "Phase B owner editorial", "date": "2026-07-29", "name": "R. Araújo", "club": "Barcelona" },
+    "26243": { "price": 7.5, "reason": "Phase B owner editorial", "date": "2026-07-29", "name": "N. Schlotterbeck", "club": "Borussia Dortmund" },
+    "24845": { "price": 7.5, "reason": "Phase B owner editorial", "date": "2026-07-29", "name": "J. Ryerson", "club": "Borussia Dortmund" },
+    "16367": { "price": 8.0, "reason": "Phase B owner editorial", "date": "2026-07-29", "name": "W. Pacho", "club": "Paris Saint Germain" },
+    "31009": { "price": 7.5, "reason": "Phase B owner editorial", "date": "2026-07-29", "name": "A. Bastoni", "club": "Inter" },
+
+    "156477": { "price": 10.0, "reason": "Phase B owner editorial", "date": "2026-07-29", "name": "R. Cherki", "club": "Manchester City" },
+    "291964": { "price": 10.0, "reason": "Phase B owner editorial", "date": "2026-07-29", "name": "A. Güler", "club": "Real Madrid" },
+    "1640": { "price": 9.5, "reason": "Phase B owner editorial", "date": "2026-07-29", "name": "H. Çalhanoğlu", "club": "Inter" },
+    "129718": { "price": 11.0, "reason": "Phase B owner editorial", "date": "2026-07-29", "name": "J. Bellingham", "club": "Real Madrid" },
+
+    "153": { "price": 11.5, "reason": "Phase B owner editorial", "date": "2026-07-29", "name": "O. Dembélé", "club": "Paris Saint Germain" },
+    "386828": { "price": 13.0, "reason": "Phase B owner editorial", "date": "2026-07-29", "name": "Lamine Yamal", "club": "Barcelona" },
+    "278": { "price": 12.0, "reason": "Phase B owner editorial", "date": "2026-07-29", "name": "Kylian Mbappé", "club": "Real Madrid" }
+  }
 }

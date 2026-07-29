@@ -44,7 +44,7 @@ import {
   fetchSquad,
   type FeedFixture,
 } from "./fantasyApiFootball";
-import { LEAGUE_IDS } from "./lib/fantasyConstants";
+import { isOnPriceScale, LEAGUE_IDS, PRICE_MAX, PRICE_MIN } from "./lib/fantasyConstants";
 import { constituteGameweeks, seasonLabel, windowFor } from "./lib/fantasyGameweekWindows";
 
 /**
@@ -499,6 +499,70 @@ export const applyClubPlayers = internalMutation({
     }
 
     return { created, updated, deactivated };
+  },
+});
+
+const priceUpsertValidator = v.object({
+  providerPlayerId: v.string(),
+  price: v.number(),
+});
+
+/**
+ * Write editorial prices onto existing player rows (FW-PR2 Phase C).
+ *
+ * The counterpart to `applyClubPlayers`, which creates players with a null
+ * price and never touches the field again: this is the pricing pass that fills
+ * it, and it is the ONLY write path that does.
+ *
+ * Strictly additive. It patches `price` and nothing else — no create, no
+ * deactivate, no name/club/position refresh — so a price run can never move a
+ * player between clubs or resurrect one ingestion retired. A provider id with
+ * no row is REPORTED, not inserted: an id the pricing universe knows and the
+ * table does not means the two have drifted, and inventing a row here would
+ * bury that.
+ *
+ * Prices are checked against the 4.0-13.0 half-step scale and the whole chunk
+ * is rejected on the first offender. Fail closed and fail whole: a mutation is
+ * one transaction, so a rejected chunk writes nothing and can simply be re-run
+ * after the input is fixed.
+ *
+ * Chunked by the caller (scripts/seedFantasyPrices.ts) — 2,895 index lookups
+ * plus patches is more than one transaction should carry.
+ */
+export const applyPrices = internalMutation({
+  args: { prices: v.array(priceUpsertValidator) },
+  handler: async (ctx, { prices }) => {
+    for (const { providerPlayerId, price } of prices) {
+      if (!isOnPriceScale(price)) {
+        throw new Error(
+          `Price ${price} for player ${providerPlayerId} is not on the ${PRICE_MIN}-${PRICE_MAX} half-step scale.`,
+        );
+      }
+    }
+
+    let updated = 0;
+    let unchanged = 0;
+    const missing: string[] = [];
+
+    for (const { providerPlayerId, price } of prices) {
+      const player = await ctx.db
+        .query("fantasyPlayers")
+        .withIndex("by_providerPlayerId", (q) => q.eq("providerPlayerId", providerPlayerId))
+        .first();
+
+      if (player === null) {
+        missing.push(providerPlayerId);
+        continue;
+      }
+      if (player.price === price) {
+        unchanged += 1;
+        continue;
+      }
+      await ctx.db.patch(player._id, { price });
+      updated += 1;
+    }
+
+    return { requested: prices.length, updated, unchanged, missing };
   },
 });
 
