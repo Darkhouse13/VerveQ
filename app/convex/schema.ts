@@ -1386,11 +1386,21 @@ export default defineSchema({
     leagueId: v.number(),
     providerFixtureId: v.string(),
     kickoffAt: v.number(),
+    // "cancelled" and "abandoned" are FW-2 additions, and they are NOT the same
+    // fact. CANC is called off before anyone kicks a ball; ABD started and was
+    // stopped. The standing rule on abandoned/voided fixtures is "record the
+    // status, do not invent scoring semantics", and recording it requires
+    // somewhere to record it — collapsing ABD into "cancelled" would assert a
+    // match never happened when it half did, which is precisely the invention
+    // the rule forbids. Neither value carries any scoring meaning here; what a
+    // scoring pass does with an abandoned fixture is an open owner decision.
     status: v.union(
       v.literal("scheduled"),
       v.literal("live"),
       v.literal("finished"),
       v.literal("postponed"),
+      v.literal("cancelled"),
+      v.literal("abandoned"),
     ),
     homeClubId: v.string(),
     awayClubId: v.string(),

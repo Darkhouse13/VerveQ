@@ -170,7 +170,7 @@ export function zonedWallClockToEpochMs(
 }
 
 /** The Europe/Paris calendar date (y/m/d) and weekday at an instant. */
-function zonedDateParts(
+export function zonedDateParts(
   epochMs: number,
   timeZone: string,
 ): { year: number; month: number; day: number; weekday: number } {
