@@ -213,7 +213,7 @@ async function lastLogSeq(ctx: Ctx, roomId: Id<"fantasyDraftRooms">): Promise<nu
   return last === null ? -1 : last.seq;
 }
 
-async function pickEntries(
+export async function pickEntries(
   ctx: Ctx,
   roomId: Id<"fantasyDraftRooms">,
 ): Promise<Doc<"fantasyDraftLog">[]> {
@@ -230,7 +230,7 @@ async function pickEntries(
  * and the gameweek's fixture map. Loaded at most once per mutation and shared
  * across a whole auto-pick chain — the reads are the expensive part.
  */
-async function loadPool(
+export async function loadPool(
   ctx: Ctx,
   gameweekId: Id<"fantasyGameweeks">,
 ): Promise<{
@@ -277,7 +277,7 @@ async function loadPool(
 }
 
 /** A seat's club counts so far, from the pick log. */
-function clubCountsFor(
+export function clubCountsFor(
   seatIndex: number,
   picks: readonly Doc<"fantasyDraftLog">[],
   playersById: ReadonlyMap<string, Doc<"fantasyPlayers">>,
@@ -305,14 +305,16 @@ function clubCountsFor(
 // room, the loser re-runs against fresh state and hits a guard. There is no
 // LM5-style read-window to reason about.
 
-interface PickToApply {
+export interface PickToApply {
   seatIndex: number;
   playerId: Id<"fantasyPlayers">;
   auto: boolean;
   elapsedMs: number;
 }
 
-async function applyPickAndAdvance(
+/** Exported (not registered) for fantasyDraftSim, which drives simulated
+ *  drafts through the REAL write path rather than a parallel one. */
+export async function applyPickAndAdvance(
   ctx: MutationCtx,
   room: Room,
   first: PickToApply,

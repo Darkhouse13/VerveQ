@@ -44,6 +44,23 @@ const INDEXES: Record<string, Record<string, string[]>> = {
     by_squad_slotIndex: ["squadId", "slotIndex"],
     by_player: ["playerId"],
   },
+  // FW-3 draft-room tables (schema.ts §THE WEEKEND crew draft rooms).
+  fantasyCrews: { by_code: ["code"] },
+  fantasyCrewMembers: {
+    by_crew: ["crewId"],
+    by_user: ["userId"],
+    by_crew_user: ["crewId", "userId"],
+  },
+  fantasyDraftRooms: {
+    by_crew: ["crewId"],
+    by_crew_gameweek: ["crewId", "gameweekId"],
+    by_status: ["status"],
+  },
+  fantasyDraftLog: {
+    by_room_seq: ["roomId", "seq"],
+    by_room_player: ["roomId", "playerId"],
+  },
+  fantasyDraftPoolMeta: { by_player: ["playerId"] },
   users: { by_username: ["username"] },
 };
 
