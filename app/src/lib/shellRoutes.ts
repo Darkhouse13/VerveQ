@@ -73,6 +73,12 @@ export const SHELL_ROUTES = {
   dailyPlay: "/v2/daily",
   /** `/v2/arena/:code` */
   arenaPlay: (code: string) => `/v2/arena/${code}`,
+  /** THE WEEKEND crew draft rooms (FW-3). Hub: my crews, create, join. */
+  weekendCrews: "/v2/weekend/crews",
+  /** `/v2/weekend/crew/:code` — a crew's page (members, rooms, crew table). */
+  weekendCrew: (code: string) => `/v2/weekend/crew/${code}`,
+  /** `/v2/weekend/draft/:roomId` — one gameweek's draft room. */
+  weekendDraft: (roomId: string) => `/v2/weekend/draft/${roomId}`,
 } as const;
 
 /** Route patterns registered in App.tsx (params un-filled). */
@@ -96,6 +102,9 @@ export const SHELL_ROUTE_PATTERNS = {
   dailyPlay: "/v2/daily",
   arena: "/v2/arena",
   arenaPlay: "/v2/arena/:code",
+  weekendCrews: "/v2/weekend/crews",
+  weekendCrew: "/v2/weekend/crew/:code",
+  weekendDraft: "/v2/weekend/draft/:roomId",
 } as const;
 
 /**

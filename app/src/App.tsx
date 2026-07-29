@@ -84,6 +84,10 @@ const CareerPathPlayScreen = lazyWithRetry(() => import("./pages/shell/play/Care
 const VerveGridPlayScreen = lazyWithRetry(() => import("./pages/shell/play/VerveGridPlayScreen"));
 const DailyQuizPlayScreen = lazyWithRetry(() => import("./pages/shell/play/DailyQuizPlayScreen"));
 const ArenaPlayScreen = lazyWithRetry(() => import("./pages/shell/play/ArenaPlayScreen"));
+// THE WEEKEND crew draft rooms (FW-3).
+const WeekendCrewsScreen = lazyWithRetry(() => import("./pages/shell/weekend/WeekendCrewsScreen"));
+const CrewScreen = lazyWithRetry(() => import("./pages/shell/weekend/CrewScreen"));
+const DraftRoomScreen = lazyWithRetry(() => import("./pages/shell/weekend/DraftRoomScreen"));
 
 const DuelPlayScreen = lazyWithRetry(() => import("./pages/DuelPlayScreen"));
 const DuelLinkScreen = lazyWithRetry(() => import("./pages/DuelLinkScreen"));
@@ -513,6 +517,13 @@ const AppRoutes = () => (
             {/* Arena (multi-user) is username-only playable; the screen onboards
                 inline so a shared invite link never drops its lobby code. */}
             <Route path="/v2/arena/:code" element={<ShellGate><ArenaPlayScreen /></ShellGate>} />
+            {/* THE WEEKEND crew draft rooms (FW-3). Username tier, Arena-style:
+                crews are the social unit; UsernameOnlyRoute preserves ?next= so
+                a shared crew link onboards and lands back on the crew page,
+                where the screen attempts the idempotent code join. */}
+            <Route path="/v2/weekend/crews" element={<ShellGate><UsernameOnlyRoute><WeekendCrewsScreen /></UsernameOnlyRoute></ShellGate>} />
+            <Route path="/v2/weekend/crew/:code" element={<ShellGate><UsernameOnlyRoute><CrewScreen /></UsernameOnlyRoute></ShellGate>} />
+            <Route path="/v2/weekend/draft/:roomId" element={<ShellGate><UsernameOnlyRoute><DraftRoomScreen /></UsernameOnlyRoute></ShellGate>} />
             {/* THE DRAW — dev/preview only, flag-gated (VITE_DRAW_ENABLED),
                 not linked from home, nav, or any mode grid. */}
             <Route path="/draw" element={<DrawScreen />} />
