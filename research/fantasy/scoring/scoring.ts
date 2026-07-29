@@ -33,10 +33,12 @@
  *      defeat. `concededAgainst`.
  *
  *  G3  The decisive-moment multiplier (formerly "closer") applies to
- *      timestamped events only — goals, assists, penalty events. A feed-data
- *      limit, now stated in the spec: tackles, saves, key passes, dribbles,
- *      blocks and duels arrive as match totals with no clock. The multiplier is
- *      consequently weaker for defensive and goalkeeping finishers.
+ *      timestamped events only. A feed-data limit, now stated in the spec:
+ *      tackles, saves, key passes, dribbles, blocks and duels arrive as match
+ *      totals with no clock, so the multiplier is consequently weaker for
+ *      defensive and goalkeeping finishers. v0.4's basis (goals, assists,
+ *      penalty events) was narrowed by v0.5.0 P6a — see above — to goals and
+ *      assists only.
  *
  *  G4  Entry-minute events are INCLUSIVE: minute >= entryMinute. A goal in the
  *      same minute as the substitution counts.
@@ -466,7 +468,8 @@ export function scorePlayer(
   const slot = fieldedSlot.position;
 
   // --- event counts. A starter's events all count whenever they fell; a
-  // finisher's are filtered to strictly after their entry minute (G4).
+  // finisher's are filtered to their entry minute onward — entry minute
+  // INCLUSIVE (G4).
   const counts = isFinisher
     ? countsFromEvents(events, entryMinute as number)
     : countsFromStats(stats);
@@ -638,8 +641,8 @@ export function formatPoints(points: number): string {
   // Ties round AWAY FROM ZERO, so -5.75 displays as -5.8 and 5.75 as 5.8.
   // Math.round would break both ties toward +infinity and render -5.75 as -5.7,
   // shrinking negative scores and growing positive ones by the same half-tenth.
-  // v0.4 does not name a tie-break rule; symmetry is the defensible default for
-  // a value that can legitimately be negative.
+  // v0.5.0 §Rounding names the rule explicitly ("ties rounded away from zero,
+  // −5.75 → −5.8, 5.75 → 5.8"); this implements that spec text.
   const scaled = points * 10;
   const magnitude = Math.round(Math.abs(scaled));
   const rounded = (scaled < 0 ? -magnitude : magnitude) / 10;

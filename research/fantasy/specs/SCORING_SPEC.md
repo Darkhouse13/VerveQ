@@ -1,15 +1,29 @@
-# Weekend Fantasy — Base Scoring Formula (v0.5.0)
+# Weekend Fantasy — Base Scoring Formula (v0.5.1)
 
-Status: **v0.5.0 — LOCKED by owner** (assists position-weighted; no
+Status: **v0.5.1 — LOCKED by owner** (assists position-weighted; no
 captaincy locked). The constants below are no longer placeholders:
 they were calibrated by the FS-1 sim harness
 (`reports/fs1-phase4-calibration-2026-07-29.md`) and settled by owner
-rulings on proposals P1–P8. **The spec remains LOCKED at v0.5.0 —
-neither structure nor constants change without a new owner ruling
-backed by a new measurement.**
+rulings on proposals P1–P8. **The spec remains LOCKED — v0.5.1 is
+editorial only, scoring structure and constants are unchanged since
+v0.5.0, and neither changes without a new owner ruling backed by a new
+measurement.**
 
 ## Changelog
 
+- v0.5.1 — editorial closeout of the v0.5.0 blind verification
+  (`reports/fs1-blind-verify-v050-2026-07-29.md`); **no scoring
+  change**:
+  - universal-table goal range corrected "+4 to +8" → "+5 to +8" (the
+    templates pay +5 to +8; no position pays +4);
+  - card pricing stated explicitly: yellows and a red on the same row
+    are additive (second-yellow dismissal = −1 −1 −4 = −6);
+  - design principle 4's MID defensive cap bind rate restated
+    precisely (8.16% of 60+ MID rows, calibration sample; 6.35% of
+    term rows in phase-4b);
+  - ramp quantisation pinned: 2 dp, round half-up.
+  The freeze stands: LOCKED, no structural or constant change without
+  a new owner ruling backed by a new measurement.
 - v0.5.0 — FS-1 Phase 4 calibration rulings (owner rulings on P1–P8,
   basis `reports/fs1-phase4-calibration-2026-07-29.md`):
   - **P1 accepted** — appearance is a flat +1 for any minutes played
@@ -67,15 +81,16 @@ backed by a new measurement.**
    bind rarely and exist to stop pathological tackle-farming rather
    than to shape ordinary scores. One deliberate exception: after the
    v0.5.0 MID defensive rate increase (P5), the MID combined
-   defensive cap binds on ~8% of term rows **by design** — that is
-   the P5/P3 interaction the owner accepted.
+   defensive cap binds on 8.16% of 60+ MID rows (phase-4 calibration
+   sample; 6.35% over all rows carrying the term in phase-4b)
+   **by design** — that is the P5/P3 interaction the owner accepted.
 
 ## Universal events (all positions)
 
 | Event | Points |
 |---|---|
 | Appearance (any minutes played) | +1 |
-| Goal (weighted by position, see templates) | +4 to +8 |
+| Goal (weighted by position, see templates) | +5 to +8 |
 | Assist (weighted by position, see templates) | +3 to +6 |
 | Team win, if played 60+ | +1 |
 | Team draw, if played 60+ | +0.5 |
@@ -85,6 +100,12 @@ backed by a new measurement.**
 | Penalty missed | −3 |
 | Penalty won | +2 |
 | Penalty conceded | −2 |
+
+Card points are **additive within a row**: yellows and a red on the
+same stat line each price separately, so a second-yellow dismissal —
+which the feed reports as two yellows plus a red — scores
+−1 −1 −4 = **−6**. The feed carries no second-yellow event type
+(design principle 3), so both red types price −4.
 
 Appearance is deliberately flat (P1): one ledger line, +1 for any
 minutes, no 60-minute tier. The 60-minute threshold still gates the
@@ -143,8 +164,9 @@ maximum stays +2, zero stays zero) and the qualifying volumes
 (≥ 6 contested, ≥ 40 passes). The old cliff positions (60% duels,
 88% completion) now sit at the ramp midpoint and pay +1; full +2
 requires 70% / 92%, and the ramp reaches zero at 50% / 84%. The +2 top end was deliberately NOT
-raised. Ramp points are computed and shown to **2 dp** so the ledger
-line still reconstructs by hand — e.g. "duel dominance 63.2% → +1.32".
+raised. Ramp points are computed and shown to **2 dp, rounded
+half-up** (0.625 → 0.63) so the ledger line still reconstructs by
+hand — e.g. "duel dominance 63.2% → +1.32".
 
 ### ATT
 - Goal: +5 · Assist: +3
@@ -254,7 +276,8 @@ numbers.
    (the cap bound on 2.2% of destroyer rows) and is withdrawn.
    The ruled fix is the rate: +0.5 → +0.7 per action, cap unchanged;
    this closes roughly a sixth of the gap and deliberately brings the
-   cap into play on ~8% of MID term rows (see design principle 4).
+   cap into play on ~8% of 60+ MID rows (see design principle 4 for
+   the precise figures).
 3. **Win/draw subsidy — measured, halved (P2).** At +2/+1 the
    team-result terms were 12.8% of all positive point mass, and
    participation another 31.7% (report §2) — nearly half the system's

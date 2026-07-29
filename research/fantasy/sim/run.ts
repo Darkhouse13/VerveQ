@@ -3,6 +3,7 @@
  *
  *   npx tsx sim/run.ts              # full sweep, N=2000/generator/gameweek
  *   npx tsx sim/run.ts --n 200      # quick pass while iterating
+ *   npx tsx sim/run.ts --dump-rows rows.json   # + per-row scored dump (FW-S2b)
  *
  * PURE: reads `data/` through `sim/dataset.ts`, scores through
  * `scoring/scoring.ts`, and writes a JSON result to stdout or `--out`. No
@@ -61,6 +62,8 @@ function flag(name: string, fallback: number): number {
 const N_PER_GENERATOR = flag('n', 2000);
 const OUT_INDEX = argv.indexOf('--out');
 const OUT_PATH = OUT_INDEX === -1 ? null : argv[OUT_INDEX + 1];
+const DUMP_INDEX = argv.indexOf('--dump-rows');
+const DUMP_PATH = DUMP_INDEX === -1 ? null : argv[DUMP_INDEX + 1];
 const BASE_SEED = flag('seed', 20260729);
 
 function log(line: string): void {
@@ -266,6 +269,33 @@ for (const row of dataset.rows) {
   const { points, ledger } = baseScoreOf(row, DEFAULT_CAPS);
   baseByKey.set(rowKey(row), points);
   ledgerByKey.set(rowKey(row), ledger);
+}
+
+// ---- opt-in per-row dump (`--dump-rows <path>`), FW-S2b -------------------
+// Every row's baseline score with its full term breakdown, so a verifier can
+// recompute any score by hand from the spec without re-deriving the dataset.
+// Rows are scored exactly as the baseline above: starter in the nominal
+// position, default caps, crowd 0. Writing the dump is strictly additive —
+// without the flag, the run and its report output are byte-identical.
+if (DUMP_PATH !== null && DUMP_PATH !== undefined) {
+  const rowsDump = dataset.rows.map((row) => ({
+    key: rowKey(row),
+    fixtureId: row.fixtureId,
+    playerId: row.playerId,
+    playerName: row.playerName,
+    feedPosition: row.feedPosition,
+    minutes: row.stats.minutes,
+    total: baseByKey.get(rowKey(row)) ?? 0,
+    terms: (ledgerByKey.get(rowKey(row)) ?? []).map((entry) => ({
+      code: entry.code,
+      points: entry.points,
+      ...(entry.note === undefined ? {} : { note: entry.note }),
+    })),
+  }));
+  const target = path.isAbsolute(DUMP_PATH) ? DUMP_PATH : path.join(PACKAGE_ROOT, DUMP_PATH);
+  fs.mkdirSync(path.dirname(target), { recursive: true });
+  fs.writeFileSync(target, `${JSON.stringify(rowsDump, null, 2)}\n`);
+  log(`wrote per-row dump ${target} (${rowsDump.length} rows)`);
 }
 
 // ---- A. per-position distributions -----------------------------------------
