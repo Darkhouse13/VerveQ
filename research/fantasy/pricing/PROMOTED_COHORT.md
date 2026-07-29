@@ -4,6 +4,8 @@ _Generated 2026-07-29T15:37:22.617Z from proxy-scores.json (SCORING_SPEC v0.5.1 
 
 257 players at the 13 promoted clubs, proxied on their 2025-26 **second-division** aggregates. COHORT-INTERNAL ordering only — these proxies are never comparable to the top-five pool, and no cross-league discount exists (owner ruling). Pricing rule: **4.0–6.5 band, ordered by cohort-internal rank**; the proposed mapping below distributes each position across the band by rank quantile in 0.5 steps. Any exception above 6.5 is an owner-named override in overrides.json, never automatic.
 
+Note (FW-PR1b): with per-position anchor points, this 4.0–6.5 band now overlaps the full GK range (4.0–6.0) and the lower DEF anchors (4.0–6.0) **by design** — promoted pricing remains cohort-internal and is unaffected by the anchor re-slice.
+
 Clubs: Venezia (25), FC Schalke 04 (22), Hull City (22), Ipswich (20), Le Mans (20), Frosinone (20), Estac Troyes (19), SV Elversberg (19), Coventry (19), Malaga (19), Deportivo La Coruna (19), Monza (17), Racing Santander (16). Cohort members without usable second-division minutes are in FLAGS.md at the 4.0 floor.
 
 ## GK (16)

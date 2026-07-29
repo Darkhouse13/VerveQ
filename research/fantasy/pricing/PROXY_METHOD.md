@@ -101,6 +101,27 @@ pool's.
 **Flagged players** carry no proxy and default to the **4.0 floor**. They are
 listed in FLAGS.md grouped by club for the owner's editorial pass.
 
+## Anchor design (owner ruling FW-PR1b)
+
+Uniform anchor points are replaced by **per-position price points**, so that
+price is denominated in expected points across positions: a uniform grid gave
+GK a 13.0 ceiling its proxy band (2.26–5.75/90) cannot approach while MID
+runs to 13.33/90. Each position's ceiling is read from its proxy maximum
+rounded to the 0.5 scale; the 4.0 floor and 0.5-step scale are unchanged:
+
+| Pos | Proxy max /90 | Anchor points |
+| --- | --- | --- |
+| MID | 13.33 | 13.0 / 11.5 / 10.0 / 8.5 / 7.0 / 5.5 / 4.0 |
+| ATT | 12.27 | 12.5 / 11.0 / 9.5 / 8.0 / 6.5 / 5.0 / 4.0 |
+| DEF | 9.09 | 9.0 / 8.0 / 7.0 / 6.0 / 5.5 / 4.5 / 4.0 |
+| GK | 5.75 | 6.0 / 5.5 / 5.0 / 4.5 / 4.0 — **compressed to 5 anchors** due to band width |
+
+Grid is 26 slots (7+7+7+5). Slotting is position-internal as before: top
+anchor = the position's #1 by proxy, floor anchor = the bottom of the
+position, evenly spaced proxy-rank quantiles between. The promoted cohort's
+4.0–6.5 band is unchanged and now overlaps the full GK range and the lower
+DEF anchors by design — it remains cohort-internal.
+
 ## Owner price overrides (Phase B mechanism)
 
 `pricing/overrides.json` — committed, initially empty. Phase B rulings attach
