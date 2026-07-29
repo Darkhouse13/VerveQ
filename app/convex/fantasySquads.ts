@@ -48,6 +48,8 @@ export const SQUAD_NOT_FOUND = "Squad not found.";
 export const NOT_YOUR_SQUAD = "That squad belongs to another user.";
 export const SLOT_LOCKED =
   "That player's match has kicked off — his slot is locked for this gameweek.";
+export const CREW_SQUAD_PLAYERS_FIXED =
+  "A crew squad's players are set by the draft — rearrange your sheet, but the 13 are the 13.";
 export const PLAYER_ALREADY_STARTED =
   "That player's match has already kicked off; he can no longer be selected.";
 export const GAMEWEEK_CLOSED = "This gameweek is no longer open for edits.";
@@ -293,6 +295,14 @@ export const setSlot = mutation({
 
     const target = slots.find((s) => s.slotIndex === args.slotIndex);
     if (target === undefined) throw new Error(`No slot ${args.slotIndex} in this squad.`);
+
+    // FW-3: a crew squad's 13 players ARE the draft. DRAFT_ROOM locks unique
+    // ownership within the room and puts trades out of scope, so the sheet
+    // may be rearranged (slotRole, XI/finisher) but never re-manned — and
+    // emptying a slot would break the drafted 13-players-13-slots bijection.
+    if (squad.context === "crew" && args.playerId !== undefined) {
+      throw new Error(CREW_SQUAD_PLAYERS_FIXED);
+    }
 
     const lockedByIndex = await lockStateForSlots(ctx, gameweek._id, slots, now);
 

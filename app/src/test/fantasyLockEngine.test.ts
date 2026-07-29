@@ -250,7 +250,7 @@ describe("budget invariant across a partial lock (BUDGET_MODE §Deadlines & edit
     ).resolves.toEqual({ ok: true });
   });
 
-  it("rejects an unpriced player in budget context and accepts him in crew context", async () => {
+  it("rejects an unpriced player in budget context; crew squads refuse player swaps outright", async () => {
     await setPrice("SUN_A_1", null);
 
     const budgetSquad = await newBudgetSquad();
@@ -258,6 +258,10 @@ describe("budget invariant across a partial lock (BUDGET_MODE §Deadlines & edit
       setSlot(world.ctx, { squadId: budgetSquad, slotIndex: 0, playerId: world.players.SUN_A_1 }),
     ).rejects.toThrow(/no editorial price/i);
 
+    // FW-3 changed the crew contract: a crew squad's 13 players are fixed by
+    // the draft (materialized server-side), so setSlot never accepts a
+    // playerId change in crew context — priced or not. Crew price-blindness
+    // itself is a pure rule, covered in fantasySquadRules.test.ts.
     const { squadId: crewSquad } = (await createSquad(world.ctx, {
       gameweekId: world.gameweekId,
       context: "crew",
@@ -268,7 +272,7 @@ describe("budget invariant across a partial lock (BUDGET_MODE §Deadlines & edit
 
     await expect(
       setSlot(world.ctx, { squadId: crewSquad, slotIndex: 0, playerId: world.players.SUN_A_1 }),
-    ).resolves.toEqual({ ok: true });
+    ).rejects.toThrow(/the 13 are the 13/i);
   });
 });
 
@@ -631,7 +635,12 @@ describe("lockSweep is idempotent and late-safe", () => {
       formation: FOUR_FOUR_TWO,
       finisherRoles: [...TWO_ATT_FINISHERS],
     })) as { squadId: string };
-    await setSlot(world.ctx, { squadId, slotIndex: 0, playerId: world.players.SAT_A_1 });
+    // Crew slots are filled by FW-3 draft materialization (a direct insert),
+    // never by setSlot — mirror that write path here.
+    const slot0 = world.db
+      .rows("fantasySquadSlots")
+      .find((s) => s.squadId === squadId && s.slotIndex === 0)!;
+    await world.db.patch(slot0._id, { playerId: world.players.SAT_A_1 });
 
     vi.setSystemTime(SATURDAY + 1000);
     await lockSweep(world.ctx, {});
