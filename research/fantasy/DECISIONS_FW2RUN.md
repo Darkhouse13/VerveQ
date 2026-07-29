@@ -516,3 +516,106 @@ a deliverable — as untracked working-tree state one `git clean` from gone.
 
 **What is NOT in it:** `data/` (the raw API sample) and `.env` remain gitignored,
 as `.gitignore` lines 277-281 intend.
+
+---
+
+## D15 — CLOSEOUT: owner rulings STOP-E and STOP-F landed. Commit `c2a5da0`
+
+Both D9 and the parallel-finality question are **resolved by the owner** and
+implemented. One commit,
+`c2a5da08cd66ea637e8c09cc8042ce324e070d6c`, 9 files, +340/−248.
+`npm run check` green: **101 test files, 1,007 tests**.
+
+### STOP-F — favorite-club cooldown is 28 CALENDAR DAYS (resolves D9)
+
+**Spec:** `DRAFT_ROOM_SPEC.md` → **v1.0.2**. Header, changelog, the
+§Favorite-club exemption paragraph, and ledger item 7 all amended. No other rule
+touched.
+
+**Code:** `FAVORITE_CLUB_COOLDOWN_GAMEWEEKS = 4` → `FAVORITE_CLUB_COOLDOWN_DAYS
+= 28` + `FAVORITE_CLUB_COOLDOWN_MS`. Every function in
+`lib/fantasyFavoriteClub.ts` takes `now` (epoch ms) where it took `gwNumber`.
+`users.favoriteClubEffectiveFrom` is now a **timestamp**; the schema comment
+says so explicitly, including that it used to be a gwNumber.
+
+**API change:** `fantasySquads.setFavoriteClub` **drops its `gameweekId`
+argument**. Under a time-based cooldown a gameweek is not an input to the
+decision, and accepting one would invite a caller to believe it mattered.
+Verified no caller passes it — the mutation has no frontend consumer.
+
+**Migration: none needed, and this was checked rather than assumed.** No user
+row on dev carries `favoriteClub`, `favoriteClubPending` or
+`favoriteClubEffectiveFrom` (the columns do not appear in the users table at
+all). Had any row carried the old gwNumber, a small integer such as `7` would
+have been read as a 1970 epoch timestamp and settled the pending change
+instantly — a silent wrong answer, not a crash. Any future environment that
+*does* have rows set needs that conversion before this commit is deployed there.
+
+**Tests:** the cooldown suite is rewritten around a fixed instant, including the
+boundary the old integer version could not express (inert at `cut − 1ms`, live
+at `cut`), and a regression test named for the reason STOP-F exists — a
+congested fortnight in which four gameweeks elapse must NOT satisfy the
+cooldown.
+
+### STOP-E — one finality rule
+
+`fantasyConstants.finalityAtOrAfter` is **deleted**, along with
+`FINALITY_WEEKDAY` (which existed only to serve it) and that module's now-unused
+`MS_PER_DAY`. All consumers read
+`fantasyGameweekWindows.windowFor(instant).finalityAt`. No parallel functions,
+as instructed.
+
+It had **no production consumers** — only tests — so nothing in the running
+system changed behaviour. This reverses the judgment recorded in D7, where I
+kept both functions to avoid rewriting a landed FW-1 function; the owner's
+ruling is the better call, and the reasoning is now in the code: two finality
+functions in one namespace invite a caller to pick the wrong one, and the wrong
+one fails silently by returning a plausible timestamp up to four days late.
+
+**Test coverage was moved, not dropped.** The Paris wall-clock assertions (CET
+22:59Z vs CEST 21:59Z, both DST switchovers) moved from
+`fantasySquadRules.test.ts` to `fantasyGameweekWindows.test.ts` and now run
+against `windowFor().finalityAt`, extended to cover midweek rounds settling
+Friday in both seasons. A new invariant was added while moving them: across a
+full year of kickoffs, every gameweek's finality is strictly after the kickoff
+and at or after the window's close. What remained behind is the
+`zonedWallClockToEpochMs` primitive those tests were really exercising.
+
+### One self-inflicted bug, caught and fixed before commit
+
+The first draft of the lock-engine cooldown test wrapped itself in
+`vi.useFakeTimers()` / `finally { vi.useRealTimers() }` — without noticing that
+the file's `beforeEach` **already** installs a fake clock and `afterEach`
+restores it. Tearing the harness's clock down mid-suite is a genuine
+cross-test-contamination bug. The tests now only call `setSystemTime`.
+
+### Pre-existing flake found while verifying, NOT fixed (out of scope)
+
+`src/test/arenaLifecycleIntegration.test.ts` › *"samples expanded
+general-knowledge and capital pools across arena seeds"* fails intermittently in
+full parallel runs (observed ~2 times in ~15). **It is unrelated to fantasy** —
+no fantasy imports — and it is genuinely nondeterministic:
+
+- `challengeArenas.randomArenaCode()` uses `crypto.getRandomValues`, unseeded.
+- `challengeArenas.start` derives the content seed as
+  `hashString(\`${arena._id}:${arena.code}:${now}\`)` — so the arena `code`, and
+  therefore the sampled question set, is different on every single run.
+- The test creates 24 arenas and asserts *statistical thresholds* on the union
+  of sampled checksums (`> 80`, `> 70`, `> 40`).
+
+A random draw against a fixed threshold fails some fraction of the time. It
+passed 30+ times in isolation and 5/5 at HEAD without this commit's changes,
+which is consistent with a low-probability flake rather than a regression.
+
+**Left untouched deliberately:** challenge arena is a non-fantasy mode, and the
+hard boundary says those stay untouched. Flagged here for the owner. The fix, if
+wanted, is to seed the arena code deterministically in tests or to assert on a
+fixed-seed sample rather than a random one.
+
+### D6 — unchanged, owner is handling it
+
+No orphan rows deleted, no draw code landed, as instructed. **The DEV deployment
+still runs the pre-closeout functions**: this commit was not pushed, because
+pushing master's schema to dev still fails on that same drift. FW-2's
+bootstrapped data (1,752 fixtures / 49 gameweeks / 2,896 players) is untouched
+and intact.
