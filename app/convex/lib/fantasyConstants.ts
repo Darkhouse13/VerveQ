@@ -50,6 +50,31 @@ export const FORMATION_BOUNDS: Readonly<Record<SlotRole, { min: number; max: num
   ATT: { min: 1, max: 3 },
 };
 
+// ── draft rooms (FW-3) ──
+
+/** DRAFT_ROOM §Room parameters: "Crew size | 2 minimum, 8 maximum (hard cap)". LOCKED. */
+export const CREW_MIN_DRAFTERS = 2;
+export const CREW_MAX_DRAFTERS = 8;
+
+/** DRAFT_ROOM ledger item 6: "chess-clock 30s × 13 = 390s bank". LOCKED. */
+export const PICK_BANK_MS_PER_ROUND = 30_000;
+export const DRAFT_BANK_MS = PICK_BANK_MS_PER_ROUND * SQUAD_SIZE; // 390_000
+
+/**
+ * DRAFT_ROOM §Lifecycle 2: ORDER REVEAL is "revealed as a moment (this is a
+ * screen people screenshot; give it drama)". The duration is presentation, not
+ * rule — long enough to read, short enough that nobody's bank is at stake
+ * (banks only drain from DRAFTING).
+ */
+export const ORDER_REVEAL_MS = 5_000;
+
+/**
+ * How long an unarmed lobby lives before the sweep abandons it. Arena
+ * precedent (ARENA_TTL_MS, 3h): "An abandoned room costs nothing" — but an
+ * immortal one clutters every crew query forever.
+ */
+export const DRAFT_ROOM_LOBBY_TTL_MS = 3 * 60 * 60 * 1000;
+
 // ── club cap ──
 
 /**

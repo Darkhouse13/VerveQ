@@ -1534,4 +1534,148 @@ export default defineSchema({
   })
     .index("by_userId", ["userId"])
     .index("by_email", ["email"]),
+
+  // ── THE WEEKEND crew draft rooms (Ticket FW-3) ──
+  //
+  // DRAFT_ROOM_SPEC v1.1.0. The crew is the persistent thing ("a room persists
+  // as a *crew*. Same code, same people"); a draft room is one gameweek's
+  // ephemeral draft inside it. fantasySquads.crewRoomId (an opaque string by
+  // FW-1 design) holds a fantasyDraftRooms id — this is the table that field
+  // was waiting for.
+
+  // The share code lives on the CREW, not the room — §Founding shape: "same
+  // code, same people, every weekend". Arena's code alphabet and join flow are
+  // the inherited pattern (§Room parameters: "Join | share-code, Arena
+  // pattern").
+  fantasyCrews: defineTable({
+    code: v.string(),
+    name: v.string(),
+    createdBy: v.id("users"),
+    createdAt: v.number(),
+  }).index("by_code", ["code"]),
+
+  // One row per (crew, user), forever — membership history is cheap and the
+  // crew table (standings) wants to render past members. `active` false means
+  // "left the crew"; rejoining flips it back rather than duplicating the row.
+  // No liveness fields here on purpose (INSIDE_OUT_AUDIT LM4): presence has no
+  // consumer in this design — disconnection changes nothing about a draft.
+  fantasyCrewMembers: defineTable({
+    crewId: v.id("fantasyCrews"),
+    userId: v.id("users"),
+    nameSnapshot: v.string(),
+    active: v.boolean(),
+    joinedAt: v.number(),
+  })
+    .index("by_crew", ["crewId"])
+    .index("by_user", ["userId"])
+    .index("by_crew_user", ["crewId", "userId"]),
+
+  // One draft per crew per gameweek. Arena-derived single-doc state machine:
+  // lobby → order_reveal → drafting → completed (abandoned = lobby that
+  // expired; a DRAFTING room can never abandon — banks drain to zero and
+  // auto-picks finish it, which is what makes the terminal state guaranteed).
+  //
+  // Seats are FROZEN at arm time (FW-3 ruling R7): nobody joins or leaves the
+  // seat array once status leaves "lobby". `favoriteClubAtArm` is stamped on
+  // every seat at arm — "the favorite in force when the room arms is the one
+  // that counts — never changeable mid-draft" (§Favorite-club exemption) — and
+  // is what both draft-time club-cap checks and the materialized squad's
+  // favoriteClubAtBuild read.
+  //
+  // ALL timer state is server timestamps + persisted banks (LM12): a client
+  // renders the chess clock from turnStartedAt + seats[i].bankMs and its own
+  // clock-offset correction, never from a client-side countdown authority.
+  // `bankMs` only ever changes when a pick lands, so (turnStartedAt, bankMs)
+  // is sufficient to reconstruct the running clock from a cold load in every
+  // state (LM7).
+  fantasyDraftRooms: defineTable({
+    crewId: v.id("fantasyCrews"),
+    gameweekId: v.id("fantasyGameweeks"),
+    status: v.union(
+      v.literal("lobby"),
+      v.literal("order_reveal"),
+      v.literal("drafting"),
+      v.literal("completed"),
+      v.literal("abandoned"),
+    ),
+    createdBy: v.id("users"),
+    createdAt: v.number(),
+    seats: v.array(
+      v.object({
+        userId: v.id("users"),
+        nameSnapshot: v.string(),
+        ready: v.boolean(),
+        joinedAt: v.number(),
+        /** Absent until the room arms; null = no favorite in force at arm. */
+        favoriteClubAtArm: v.optional(v.union(v.string(), v.null())),
+        /** Chess-clock bank remaining, ms. Drains only on picks (R2). */
+        bankMs: v.number(),
+      }),
+    ),
+    /** RNG seed for the snake order, set at arm and recorded in the log (R4). */
+    seed: v.optional(v.string()),
+    /** Seat indexes in round-1 pick order; even rounds reverse it (snake). */
+    snakeOrder: v.optional(v.array(v.number())),
+    orderRevealedAt: v.optional(v.number()),
+    draftStartedAt: v.optional(v.number()),
+    /** 0-based overall pick cursor; the turn is derived from it + snakeOrder. */
+    currentPickIndex: v.optional(v.number()),
+    /** Server instant the current turn's clock started draining. */
+    turnStartedAt: v.optional(v.number()),
+    completedAt: v.optional(v.number()),
+    /** Lobby TTL, consumed by the draftRoomSweep cron (LM4: persisted state
+     *  has a consumer). Ignored once the room leaves "lobby". */
+    expiresAt: v.number(),
+  })
+    .index("by_crew", ["crewId"])
+    .index("by_crew_gameweek", ["crewId", "gameweekId"])
+    .index("by_status", ["status"]),
+
+  // The draft log IS the picks table. The ticket lists "picks" and "draft log"
+  // as two artifacts; they are one append-only table here so the operational
+  // record and the recap/replay ledger can never drift apart. Entry 0 is the
+  // seed entry (R4); every later entry is a pick. `seq` is dense from 0 in
+  // append order, so "reconstruct the draft" is a single by_room_seq scan.
+  //
+  // Pick exclusivity is crew-internal only (R7): the by_room_player index is
+  // the uniqueness check's read path, and nothing outside the room ever reads
+  // ownership from here.
+  fantasyDraftLog: defineTable({
+    roomId: v.id("fantasyDraftRooms"),
+    seq: v.number(),
+    entryType: v.union(v.literal("seed"), v.literal("pick")),
+    at: v.number(),
+    // seed entry fields
+    seed: v.optional(v.string()),
+    snakeOrder: v.optional(v.array(v.number())),
+    // pick entry fields
+    pickNumber: v.optional(v.number()), // 1-based overall
+    round: v.optional(v.number()), // 1..13
+    seatIndex: v.optional(v.number()),
+    userId: v.optional(v.id("users")),
+    playerId: v.optional(v.id("fantasyPlayers")),
+    auto: v.optional(v.boolean()),
+    /** Clock this pick consumed, ms (full remaining bank for a timeout pick). */
+    elapsedMs: v.optional(v.number()),
+    bankAfterMs: v.optional(v.number()),
+  })
+    .index("by_room_seq", ["roomId", "seq"])
+    .index("by_room_player", ["roomId", "playerId"]),
+
+  // Auto-pick ordering metadata (FW-3 ruling R1), a SIDE table so
+  // fantasyPlayers stays untouched (P1 constraint: additive tables only).
+  // Seeded from research/fantasy/pricing/price-final.json — pool is the
+  // pricing cohort (topfive > promoted > flagged is the R1 tie ladder), proxy
+  // is the FW-PR1 proxy score (null for the flagged cohort, which never had
+  // one). One row per player; players missing a row sort last, which fails
+  // safe: auto-pick prefers known quantities.
+  fantasyDraftPoolMeta: defineTable({
+    playerId: v.id("fantasyPlayers"),
+    pool: v.union(
+      v.literal("topfive"),
+      v.literal("promoted"),
+      v.literal("flagged"),
+    ),
+    proxy: v.union(v.number(), v.null()),
+  }).index("by_player", ["playerId"]),
 });
