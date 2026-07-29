@@ -13,6 +13,76 @@ const drawPosition = v.union(
   v.literal("ATT"),
 );
 
+// ── Weekend Fantasy scoring validators (FW-4) ──
+//
+// Exported because the ingest mutation's arguments and these table shapes must
+// be the SAME validator, not two that agree today. `fantasyScores.ts` imports
+// them from here, and `lib/fantasyScoring.ts` carries a two-way type assertion
+// proving `fantasyPlayerStatsValidator` still describes the engine's
+// `PlayerMatchStats` exactly — a field added to one and not the other is a
+// compile error rather than a silently unscored stat.
+export const fantasySlot = v.union(
+  v.literal("GK"),
+  v.literal("DEF"),
+  v.literal("MID"),
+  v.literal("ATT"),
+);
+
+/**
+ * One player's aggregate line for one fixture, every field a COUNT.
+ *
+ * Mirrors SCORING_SPEC v0.5.1 design principle 3 — only stats the feed was
+ * measured to carry. `passesAccurate` is the feed's `passes.accuracy`, which is
+ * an accurate-pass count shipped as a string despite the name (measured: 22 of
+ * 26 on probe fixture 1208061); `ownGoals` comes from the timed-events feed
+ * because the stat line does not carry it.
+ */
+export const fantasyPlayerStatsValidator = v.object({
+  minutes: v.number(),
+  goals: v.number(),
+  assists: v.number(),
+  shotsTotal: v.number(),
+  shotsOn: v.number(),
+  keyPasses: v.number(),
+  passesTotal: v.number(),
+  passesAccurate: v.number(),
+  dribblesAttempted: v.number(),
+  dribblesCompleted: v.number(),
+  tackles: v.number(),
+  interceptions: v.number(),
+  blocks: v.number(),
+  duelsTotal: v.number(),
+  duelsWon: v.number(),
+  foulsCommitted: v.number(),
+  foulsDrawn: v.number(),
+  yellowCards: v.number(),
+  redCards: v.number(),
+  saves: v.number(),
+  penaltiesWon: v.number(),
+  penaltiesConceded: v.number(),
+  penaltiesScored: v.number(),
+  penaltiesMissed: v.number(),
+  penaltiesSaved: v.number(),
+  ownGoals: v.number(),
+  wasSubstitute: v.boolean(),
+});
+
+/** A timed event, clock-placed. Only these categories carry a minute. */
+export const fantasyTimedEventValidator = v.object({
+  minute: v.number(),
+  kind: v.union(
+    v.literal("goal"),
+    v.literal("assist"),
+    v.literal("yellowCard"),
+    v.literal("redCard"),
+    v.literal("ownGoal"),
+    v.literal("penaltyWon"),
+    v.literal("penaltyConceded"),
+    v.literal("penaltyMissed"),
+    v.literal("penaltySaved"),
+  ),
+});
+
 const drawCardSnapshot = v.object({
   id: v.string(),
   name: v.string(),
@@ -1742,4 +1812,187 @@ export default defineSchema({
      *  the artifact's club label rides along here for the draft board UI). */
     clubName: v.optional(v.string()),
   }).index("by_player", ["playerId"]),
+
+  // ── THE WEEKEND scoring execution pipeline (Ticket FW-4) ──
+  //
+  // SCORING_SPEC.md v0.5.1 is the scoring authority and is LOCKED; the engine
+  // that implements it is lib/fantasyScoring.ts (FW-4 ruling R1 — one engine,
+  // moved out of research/, driven by both the sim harness and this pipeline).
+  // These four tables are the pipeline's own state and are strictly ADDITIVE:
+  // no FW-1/FW-2/FW-3 table or field is altered by this ticket.
+  //
+  // The shape follows the ticket's rulings directly:
+  //   R2  post-fixture ingest, idempotent on a stat hash
+  //   R3  two states — provisional on ingest, final at the gameweek's
+  //       finality instant (which FW-2 derives; nothing here recomputes it)
+  //   R4  raw stats kept per (player, fixture) with a content hash, and score
+  //       rows VERSIONED rather than overwritten
+  //   R5  baseScore and crowdFactor stored separately, total derived
+  //   R6  the verdict position stored on the score row, so a reclamation-court
+  //       ruling can re-score against a changed verdict later
+  //   R7  a fixture is scoreable only when FT-class AND both feeds are
+  //       present; anything else stays unscored and reads "awaiting data"
+
+  // The raw feed line for one player in one fixture, APPEND-ONLY and versioned.
+  //
+  // Append-only rather than patched-in-place because R4 makes the raw rows the
+  // audit trail: every score version records the `statHash`/`rawRevision` it was
+  // computed from, and that reference is only worth having if the revision it
+  // names is still readable. It is also what lets a post-finality revision be
+  // "recorded as raw" (R4) without a score row to hang it on.
+  //
+  // Growth is bounded by real revisions, not by cron runs: an ingest that sees
+  // an unchanged hash writes nothing at all.
+  //
+  // `feedPosition` is the VERDICT position for this fixture (R6) — the lineup
+  // position the feed reported for this appearance, which is not the same fact
+  // as fantasyPlayers.feedPosition (a nominal, squad-list position). Null when
+  // the feed carried no position, which leaves the row unscoreable rather than
+  // guessing a template.
+  fantasyFixtureStats: defineTable({
+    fixtureId: v.id("fantasyFixtures"),
+    gameweekId: v.id("fantasyGameweeks"),
+    providerPlayerId: v.string(),
+    /** Absent when the feed names a player the player universe does not carry. */
+    playerId: v.optional(v.id("fantasyPlayers")),
+    clubId: v.string(),
+    /** 1-based, monotonic per (fixture, player). Highest revision is current. */
+    revision: v.number(),
+    /** Content hash over the stat line + events + entry minute. R2/R4's key. */
+    statHash: v.string(),
+    feedPosition: v.union(fantasySlot, v.null()),
+    stats: fantasyPlayerStatsValidator,
+    /** This player's clock-placed events, in feed order. */
+    events: v.array(fantasyTimedEventValidator),
+    /** Null for a starter — never 0, which would credit a whole match (G4). */
+    entryMinute: v.union(v.number(), v.null()),
+    /** The provider's status short code when this revision was read. */
+    providerStatus: v.string(),
+    ingestedAt: v.number(),
+  })
+    // One index serves both reads: eq(fixtureId) walks a fixture's whole set in
+    // player/revision order, and eq(fixtureId).eq(providerPlayerId) with
+    // order("desc") is the current revision in a single lookup.
+    .index("by_fixture_player_revision", ["fixtureId", "providerPlayerId", "revision"])
+    .index("by_gameweek", ["gameweekId"]),
+
+  // One VERSION of one player's score, for one fixture, THROUGH ONE FIELDED
+  // SLOT. That last clause is why a score row is not simply per (player,
+  // fixture): SCORING_SPEC §Position templates scores "the slot position the
+  // user fielded", so the same stat line scores four different ways as a
+  // starter and four more as a finisher (whose events are entry-filtered and
+  // whose late goals carry the ×1.25 decisive-moment multiplier). The pipeline
+  // therefore materializes all eight contexts per scored player-fixture, and
+  // squad aggregation reads the one its slot names.
+  //
+  // Materializing all eight — rather than only the contexts some squad actually
+  // fielded — keeps this table a pure function of the fixture's raw stats. A
+  // demand-driven alternative would have to fan out from a fixture to every
+  // squad slot holding one of its players, which is unbounded in ownership and
+  // would put a popular player's 100k slots inside one ingest transaction.
+  //
+  // It also makes ABSENCE meaningful, which R7 requires: eight rows exist for
+  // every player of a scored fixture, so "no row" means "not scored" and never
+  // "scored zero". An honest zero (a player who did not appear, or a starter
+  // fielded in a finisher slot) is a row whose baseScore is 0.
+  //
+  // IMMUTABLE NUMBERS. `baseScore`, `crowdFactor` and `verdictPosition` are
+  // written once, at insert. A changed stat hash before finality inserts a NEW
+  // version (`revisedFrom` naming the one it supersedes, and the superseded row
+  // patched with `supersededByVersion` so "current" is a field read rather than
+  // a max-scan); after finality it changes nothing here at all. `state` is the
+  // one field that transitions — provisional → final, at the gameweek's
+  // finality instant — and it moves a LABEL, never a number.
+  fantasyPlayerScores: defineTable({
+    gameweekId: v.id("fantasyGameweeks"),
+    fixtureId: v.id("fantasyFixtures"),
+    providerPlayerId: v.string(),
+    playerId: v.optional(v.id("fantasyPlayers")),
+    /** `<providerPlayerId>:<fieldedSlot>:<role>` — the scoring context, one
+     *  string so a slot's score is one indexed lookup. */
+    contextKey: v.string(),
+    fieldedSlot: fantasySlot,
+    role: v.union(v.literal("starter"), v.literal("finisher")),
+    /** 1-based, monotonic per (fixture, contextKey). */
+    version: v.number(),
+    state: v.union(v.literal("provisional"), v.literal("final")),
+    /** Engine output at crowdFactor 0: template + mismatch dampener applied. */
+    baseScore: v.number(),
+    /** Signed fraction, clamped to ±0.15 BY THE PIPELINE (R5). 0 at launch. */
+    crowdFactor: v.number(),
+    /** The feed's lineup position for this appearance (R6). */
+    verdictPosition: fantasySlot,
+    /** Which raw revision produced these numbers. */
+    statHash: v.string(),
+    rawRevision: v.number(),
+    /** The version this one revises. Absent on version 1. */
+    revisedFrom: v.optional(v.number()),
+    /** Present on a superseded version; absent on the current one. */
+    supersededByVersion: v.optional(v.number()),
+    /** SCORING_SPEC version the engine implemented when this row was written. */
+    specVersion: v.string(),
+    scoredAt: v.number(),
+    finalizedAt: v.optional(v.number()),
+  })
+    .index("by_fixture_context_version", ["fixtureId", "contextKey", "version"])
+    .index("by_gameweek_context_version", ["gameweekId", "contextKey", "version"])
+    .index("by_gameweek_state", ["gameweekId", "state"]),
+
+  // Per-fixture ingest/score status — the row that answers "why does this
+  // player read awaiting data?" without re-reading the feed.
+  //
+  // `state` is deliberately two values and neither of them is "failed": a
+  // fixture the pipeline cannot score yet is `awaiting_data` with the reasons
+  // recorded, which is a true statement about the DATA rather than a verdict on
+  // the fixture. `unscoreableReason` is set only for the case the ticket makes a
+  // STOP condition — FT-class with a structurally missing feed — so it is
+  // queryable rather than buried in a log line.
+  fantasyFixtureScoring: defineTable({
+    fixtureId: v.id("fantasyFixtures"),
+    gameweekId: v.id("fantasyGameweeks"),
+    state: v.union(v.literal("awaiting_data"), v.literal("scored")),
+    /** Hash over the whole fixture's player set. R2's fixture-level no-op. */
+    fixtureStatHash: v.optional(v.string()),
+    providerStatus: v.string(),
+    hasPlayerStats: v.boolean(),
+    hasEvents: v.boolean(),
+    playerRows: v.number(),
+    scoredPlayerRows: v.optional(v.number()),
+    /** How many times a changed hash re-scored this fixture (R4). */
+    revisions: v.number(),
+    /** Raw revisions recorded after finality, which changed no score (R4). */
+    postFinalityRevisions: v.optional(v.number()),
+    unscoreableReason: v.optional(v.string()),
+    firstScoredAt: v.optional(v.number()),
+    scoredAt: v.optional(v.number()),
+    lastAttemptAt: v.number(),
+  })
+    .index("by_fixture", ["fixtureId"])
+    .index("by_gameweek_state", ["gameweekId", "state"]),
+
+  // Gameweek-level scoring status: which of R3's two states every total in this
+  // gameweek is in, plus the 6h-before-finality alert R7 asks for.
+  //
+  // finalityAt is NOT copied here. FW-2 owns the cut and `applyGameweeks` can
+  // still move it when a kickoff changes, so every consumer reads
+  // `fantasyGameweeks.finalityAt` live. A cached copy would be a second answer
+  // to a question that must only have one.
+  fantasyGameweekScoring: defineTable({
+    gameweekId: v.id("fantasyGameweeks"),
+    state: v.union(v.literal("provisional"), v.literal("final")),
+    fixturesTotal: v.number(),
+    fixturesScored: v.number(),
+    firstScoredAt: v.optional(v.number()),
+    lastScoredAt: v.optional(v.number()),
+    finalizedAt: v.optional(v.number()),
+    /** Score rows the finalization pass flipped. Idempotence evidence. */
+    scoreRowsFinalized: v.optional(v.number()),
+    /** R7's alert: set once, 6h or less before finality, if anything is
+     *  unscored. Queryable by design — a log line alone is not a surface. */
+    unscoredAlertAt: v.optional(v.number()),
+    unscoredAlertCount: v.optional(v.number()),
+    unscoredAlertFixtures: v.optional(v.array(v.string())),
+  })
+    .index("by_gameweek", ["gameweekId"])
+    .index("by_state", ["state"]),
 });
