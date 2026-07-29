@@ -1,6 +1,14 @@
 import { defineSchema, defineTable } from "convex/server";
 import { v } from "convex/values";
 import { authTables } from "@convex-dev/auth/server";
+// Weekend Fantasy scoring validators (FW-4). Defined in lib/ so a function
+// module can import the SAME objects without importing the whole schema —
+// see lib/fantasyScoreValidators.ts.
+import {
+  fantasyPlayerStatsValidator,
+  fantasySlot,
+  fantasyTimedEventValidator,
+} from "./lib/fantasyScoreValidators";
 
 // ── THE DRAW shared validators ──
 // Mirror the frozen engine CONTRACT v1.0 shapes (app/src/lib/drawEngine/
@@ -12,76 +20,6 @@ const drawPosition = v.union(
   v.literal("MID"),
   v.literal("ATT"),
 );
-
-// ── Weekend Fantasy scoring validators (FW-4) ──
-//
-// Exported because the ingest mutation's arguments and these table shapes must
-// be the SAME validator, not two that agree today. `fantasyScores.ts` imports
-// them from here, and `lib/fantasyScorePipeline.ts` carries a two-way type
-// assertion proving `fantasyPlayerStatsValidator` still describes the engine's
-// `PlayerMatchStats` exactly — a field added to one and not the other is a
-// compile error rather than a silently unscored stat.
-export const fantasySlot = v.union(
-  v.literal("GK"),
-  v.literal("DEF"),
-  v.literal("MID"),
-  v.literal("ATT"),
-);
-
-/**
- * One player's aggregate line for one fixture, every field a COUNT.
- *
- * Mirrors SCORING_SPEC v0.5.1 design principle 3 — only stats the feed was
- * measured to carry. `passesAccurate` is the feed's `passes.accuracy`, which is
- * an accurate-pass count shipped as a string despite the name (measured: 22 of
- * 26 on probe fixture 1208061); `ownGoals` comes from the timed-events feed
- * because the stat line does not carry it.
- */
-export const fantasyPlayerStatsValidator = v.object({
-  minutes: v.number(),
-  goals: v.number(),
-  assists: v.number(),
-  shotsTotal: v.number(),
-  shotsOn: v.number(),
-  keyPasses: v.number(),
-  passesTotal: v.number(),
-  passesAccurate: v.number(),
-  dribblesAttempted: v.number(),
-  dribblesCompleted: v.number(),
-  tackles: v.number(),
-  interceptions: v.number(),
-  blocks: v.number(),
-  duelsTotal: v.number(),
-  duelsWon: v.number(),
-  foulsCommitted: v.number(),
-  foulsDrawn: v.number(),
-  yellowCards: v.number(),
-  redCards: v.number(),
-  saves: v.number(),
-  penaltiesWon: v.number(),
-  penaltiesConceded: v.number(),
-  penaltiesScored: v.number(),
-  penaltiesMissed: v.number(),
-  penaltiesSaved: v.number(),
-  ownGoals: v.number(),
-  wasSubstitute: v.boolean(),
-});
-
-/** A timed event, clock-placed. Only these categories carry a minute. */
-export const fantasyTimedEventValidator = v.object({
-  minute: v.number(),
-  kind: v.union(
-    v.literal("goal"),
-    v.literal("assist"),
-    v.literal("yellowCard"),
-    v.literal("redCard"),
-    v.literal("ownGoal"),
-    v.literal("penaltyWon"),
-    v.literal("penaltyConceded"),
-    v.literal("penaltyMissed"),
-    v.literal("penaltySaved"),
-  ),
-});
 
 const drawCardSnapshot = v.object({
   id: v.string(),
@@ -1562,6 +1500,34 @@ export default defineSchema({
     createdAt: v.number(),
     /** Crew squads only; absent on budget squads and on pre-FW-3R rows. */
     arrangedByUser: v.optional(v.boolean()),
+
+    // ── FW-4: the settled weekend total, stamped once at the cut ──
+    //
+    // The ONE additive optional field FW-4 writes on an FW-1 table, and the
+    // ticket's rulings require it: the crew table's cumulative points are a sum
+    // over every weekend a crew has played, and deriving each of those totals
+    // from thirteen slot lookups apiece would make one crew page cost thousands
+    // of reads by April. Stamped by `fantasyScores.stampSquadFinalTotals` only
+    // when `now >= gameweek.finalityAt`, and never rewritten.
+    //
+    // It cannot drift from the score rows, because it materializes data that is
+    // by then IMMUTABLE (past the cut nothing writes a score — FW-4 R4). It is
+    // not a cache of a moving number; it is a record of a settled one. A future
+    // reclamation-court re-score is the one thing that would invalidate it, and
+    // that ticket must clear this field for the gameweeks it touches.
+    //
+    // `awaitingSlots > 0` means the weekend settled with a hole in it — the total
+    // is everything that WAS scored, and the count is what stops a surface
+    // presenting it as complete (R7).
+    finalScore: v.optional(
+      v.object({
+        total: v.number(),
+        scoredSlots: v.number(),
+        awaitingSlots: v.number(),
+        emptySlots: v.number(),
+        at: v.number(),
+      }),
+    ),
   })
     .index("by_user_gameweek_contextKey", ["userId", "gameweekId", "contextKey"])
     .index("by_gameweek", ["gameweekId"])

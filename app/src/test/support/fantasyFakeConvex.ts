@@ -61,6 +61,25 @@ const INDEXES: Record<string, Record<string, string[]>> = {
     by_room_player: ["roomId", "playerId"],
   },
   fantasyDraftPoolMeta: { by_player: ["playerId"] },
+  // FW-4 scoring pipeline tables (schema.ts §THE WEEKEND scoring execution
+  // pipeline).
+  fantasyFixtureStats: {
+    by_fixture_player_revision: ["fixtureId", "providerPlayerId", "revision"],
+    by_gameweek: ["gameweekId"],
+  },
+  fantasyPlayerScores: {
+    by_fixture_player_version: ["fixtureId", "providerPlayerId", "version"],
+    by_gameweek_player_version: ["gameweekId", "providerPlayerId", "version"],
+    by_gameweek_state: ["gameweekId", "state"],
+  },
+  fantasyFixtureScoring: {
+    by_fixture: ["fixtureId"],
+    by_gameweek_state: ["gameweekId", "state"],
+  },
+  fantasyGameweekScoring: {
+    by_gameweek: ["gameweekId"],
+    by_state: ["state"],
+  },
   users: { by_username: ["username"] },
 };
 
@@ -138,6 +157,8 @@ export class FakeDb {
 
   query(table: string) {
     const filters: Array<{ op: "eq" | "gte" | "lte"; field: string; value: unknown }> = [];
+    /** Post-index predicates from `.filter()`. See filterBuilder below. */
+    const predicates: Array<(row: Row) => boolean> = [];
     let indexFields: string[] = [];
     let desc = false;
 
@@ -147,7 +168,7 @@ export class FakeDb {
         if (op === "eq") return actual === value;
         if (op === "gte") return compareValues(actual, value) >= 0;
         return compareValues(actual, value) <= 0;
-      });
+      }) && predicates.every((predicate) => predicate(row));
 
     const sorted = (): Row[] => {
       const out = this.rows(table).filter(matches);
@@ -181,7 +202,53 @@ export class FakeDb {
       },
     };
 
+    /**
+     * The `.filter()` expression vocabulary, enough for what the fantasy
+     * handlers actually use.
+     *
+     * `q.field(name)` returns an accessor rather than a value, because the real
+     * Convex builder composes expressions before it ever sees a row — and the
+     * one filter FW-4's finalization pass depends on is
+     * `q.eq(q.field("supersededByVersion"), undefined)`, i.e. "the row has no
+     * such field". Modelling `field` as an accessor is what makes that work
+     * against a missing key rather than throwing.
+     */
+    type Accessor = (row: Row) => unknown;
+    const asAccessor = (value: unknown): Accessor =>
+      typeof value === "function" ? (value as Accessor) : () => value;
+    const filterBuilder = {
+      field: (name: string): Accessor => (row: Row) => row[name],
+      eq: (left: unknown, right: unknown) => (row: Row) =>
+        asAccessor(left)(row) === asAccessor(right)(row),
+      neq: (left: unknown, right: unknown) => (row: Row) =>
+        asAccessor(left)(row) !== asAccessor(right)(row),
+      gt: (left: unknown, right: unknown) => (row: Row) =>
+        compareValues(asAccessor(left)(row), asAccessor(right)(row)) > 0,
+      gte: (left: unknown, right: unknown) => (row: Row) =>
+        compareValues(asAccessor(left)(row), asAccessor(right)(row)) >= 0,
+      lt: (left: unknown, right: unknown) => (row: Row) =>
+        compareValues(asAccessor(left)(row), asAccessor(right)(row)) < 0,
+      lte: (left: unknown, right: unknown) => (row: Row) =>
+        compareValues(asAccessor(left)(row), asAccessor(right)(row)) <= 0,
+      and:
+        (...parts: Array<(row: Row) => boolean>) =>
+        (row: Row) =>
+          parts.every((part) => part(row)),
+      or:
+        (...parts: Array<(row: Row) => boolean>) =>
+        (row: Row) =>
+          parts.some((part) => part(row)),
+      not:
+        (part: (row: Row) => boolean) =>
+        (row: Row) =>
+          !part(row),
+    };
+
     const builder = {
+      filter(expression: (q: typeof filterBuilder) => (row: Row) => boolean) {
+        predicates.push(expression(filterBuilder));
+        return builder;
+      },
       withIndex(name: string, cb?: (q: typeof rangeBuilder) => unknown) {
         const known = INDEXES[table]?.[name];
         if (known === undefined) {

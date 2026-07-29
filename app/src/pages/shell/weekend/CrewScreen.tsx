@@ -1,11 +1,22 @@
 /**
- * THE WEEKEND — a crew's page (FW-3): code card, members, and the crew table.
+ * THE WEEKEND — a crew's page (FW-3 + FW-4): code card, members, crew table.
  *
  * Deep-link friendly the way ArenaPlayScreen is: landing here with a code you
  * are not yet a member of attempts ONE idempotent join (ref latch), so a
- * shared crew link is itself the invite. The crew table lists every weekend's
- * room; standings numbers wait for the scoring pipeline and are explicitly
- * placeholders until then — no invented values.
+ * shared crew link is itself the invite.
+ *
+ * ── The standings column (FW-4 P6) ──
+ *
+ * It used to read "points: awaits scoring pipeline". The pipeline exists now, so
+ * it carries real cumulative points — and where a weekend has no scores yet it
+ * SAYS SO rather than showing a zero. That distinction is a ruling (FW-4 R7): an
+ * honest zero and missing data must never render alike, so `points === null`
+ * renders as "awaiting", never as 0.0, and a total drawn from a gameweek that has
+ * not settled is labelled provisional (R3).
+ *
+ * Ties are shown as ties. The tie-break ladders are RULED but deferred
+ * (DRAFT_ROOM_SPEC v1.2.0 §Explicitly deferred), and `tieBreaksApplied: false`
+ * comes down in the payload so this screen cannot imply a settled ladder.
  */
 import { useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
@@ -14,6 +25,10 @@ import { useMutation, useQuery } from "convex/react";
 import { toast } from "sonner";
 import { Check, Copy, Share2, Swords } from "lucide-react";
 import { api } from "../../../../convex/_generated/api";
+// The engine's own display rule (SCORING_SPEC §Rounding: 1 dp, ties away from
+// zero). Imported rather than reimplemented so the screen cannot round a score
+// differently from the ledger it came from.
+import { formatPoints } from "../../../../convex/lib/fantasyScoring";
 import { NeoCard } from "@/components/neo/NeoCard";
 import { NeoButton } from "@/components/neo/NeoButton";
 import { NeoBadge } from "@/components/neo/NeoBadge";
@@ -33,6 +48,7 @@ export default function CrewScreen() {
   const { t } = useTranslation();
   const { code = "" } = useParams();
   const crew = useQuery(api.fantasyDraftRooms.getCrew, { code });
+  const table = useQuery(api.fantasyScores.getCrewTable, { code });
   const joinCrew = useMutation(api.fantasyDraftRooms.joinCrew);
   const createRoom = useMutation(api.fantasyDraftRooms.createRoom);
 
@@ -127,6 +143,7 @@ export default function CrewScreen() {
   }
 
   const liveRoom = crew.rooms.find((r) => r.status !== "completed");
+  const myRow = table?.rows.find((row) => row.userId === crew.isMe);
 
   return (
     <ShellLayout
@@ -192,6 +209,80 @@ export default function CrewScreen() {
 
         <div>
           <p className="font-mono text-[11px] font-bold uppercase tracking-[0.16em] text-muted-foreground mb-2">
+            {t("weekend.standings", { defaultValue: "Standings" })}
+          </p>
+          {table === undefined ? (
+            <NeoCard className="py-4 text-center">
+              <p className="text-sm text-muted-foreground">
+                {t("common.loading", { defaultValue: "Loading…" })}
+              </p>
+            </NeoCard>
+          ) : table === null || table.rows.length === 0 ? (
+            <NeoCard className="py-4 text-center">
+              <p className="text-sm text-muted-foreground">
+                {t("weekend.noStandings", {
+                  defaultValue: "Standings appear once a weekend has been drafted and scored.",
+                })}
+              </p>
+            </NeoCard>
+          ) : (
+            <>
+              <NeoCard className="p-0 overflow-hidden">
+                {table.rows.map((row, index) => (
+                  <div
+                    key={row.userId}
+                    className={`flex items-center justify-between gap-2 px-3 py-2.5 ${
+                      index > 0 ? "border-t-2 border-border" : ""
+                    }`}
+                  >
+                    <div className="flex items-center gap-2 min-w-0">
+                      <span className="font-mono text-xs font-bold text-muted-foreground w-7 shrink-0">
+                        {row.tied ? `T${row.rank}` : row.rank}
+                      </span>
+                      <span className="font-heading font-bold text-sm truncate">{row.name}</span>
+                      {row.userId === crew.isMe && (
+                        <NeoBadge color="primary">
+                          {t("weekend.you", { defaultValue: "you" })}
+                        </NeoBadge>
+                      )}
+                    </div>
+                    <div className="text-right shrink-0">
+                      {row.cumulativePoints === null ? (
+                        // R7: no scores yet is NOT zero, and must not look like it.
+                        <span className="text-[11px] text-muted-foreground">
+                          {t("weekend.awaitingData", { defaultValue: "awaiting data" })}
+                        </span>
+                      ) : (
+                        <>
+                          <span className="font-mono font-bold text-base">
+                            {formatPoints(row.cumulativePoints)}
+                          </span>
+                          <span className="ml-1 text-[10px] text-muted-foreground">
+                            {t("weekend.pts", { defaultValue: "pts" })}
+                          </span>
+                          {row.provisional && (
+                            <p className="text-[10px] font-mono uppercase tracking-wide text-muted-foreground">
+                              {t("weekend.provisional", { defaultValue: "provisional" })}
+                            </p>
+                          )}
+                        </>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </NeoCard>
+              <p className="mt-1.5 text-[10px] leading-snug text-muted-foreground">
+                {t("weekend.standingsNote", {
+                  defaultValue:
+                    "Ordered by cumulative points; ties are shown as tied. Provisional totals can still change until the gameweek settles.",
+                })}
+              </p>
+            </>
+          )}
+        </div>
+
+        <div>
+          <p className="font-mono text-[11px] font-bold uppercase tracking-[0.16em] text-muted-foreground mb-2">
             {t("weekend.crewTable", { defaultValue: "Crew table" })}
           </p>
           {crew.rooms.length === 0 ? (
@@ -209,6 +300,10 @@ export default function CrewScreen() {
                   label: room.status,
                   color: "muted" as const,
                 };
+                // The caller's own line for this weekend. `points === null` means
+                // nothing of his sheet has been scored yet — which is a different
+                // statement from "he scored nothing", and reads differently.
+                const mine = myRow?.weekends.find((w) => w.roomId === room.roomId);
                 return (
                   <NeoCard
                     key={room.roomId}
@@ -225,10 +320,15 @@ export default function CrewScreen() {
                         {room.seatCount}{" "}
                         {t("weekend.drafters", { defaultValue: "drafters" })}
                         {" · "}
-                        {/* Cumulative squad points land with the scoring
-                            pipeline; until then this column says so instead
-                            of inventing numbers. */}
-                        {t("weekend.pointsPending", { defaultValue: "points: awaits scoring pipeline" })}
+                        {mine === undefined
+                          ? t("weekend.notSeated", { defaultValue: "you did not draft this one" })
+                          : mine.points === null
+                            ? t("weekend.awaitingData", { defaultValue: "awaiting data" })
+                            : `${formatPoints(mine.points)} ${t("weekend.pts", { defaultValue: "pts" })}${
+                                mine.state === "final" && mine.awaitingSlots === 0
+                                  ? ""
+                                  : ` · ${t("weekend.provisional", { defaultValue: "provisional" })}`
+                              }`}
                       </p>
                     </div>
                     <NeoBadge color={status.color}>{status.label}</NeoBadge>

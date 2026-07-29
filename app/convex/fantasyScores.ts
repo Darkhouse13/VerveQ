@@ -42,10 +42,12 @@
  */
 
 import { v } from "convex/values";
-import { internalAction, internalMutation, internalQuery } from "./_generated/server";
+import { getAuthUserId } from "@convex-dev/auth/server";
+import { internalAction, internalMutation, internalQuery, query } from "./_generated/server";
 import type { MutationCtx, QueryCtx } from "./_generated/server";
 import { internal } from "./_generated/api";
 import type { Doc, Id } from "./_generated/dataModel";
+import { fixtureForClub, lockStateForSlots } from "./fantasyLocks";
 import {
   ApiFootballClient,
   credentialsFromEnv,
@@ -56,8 +58,8 @@ import {
   fantasyPlayerStatsValidator,
   fantasySlot,
   fantasyTimedEventValidator,
-} from "./schema";
-import { SCORING_SPEC_VERSION } from "./lib/fantasyScoring";
+} from "./lib/fantasyScoreValidators";
+import { SCORING_SPEC_VERSION, type Slot, type SlotRole } from "./lib/fantasyScoring";
 import {
   matchContextFor,
   slotFromFeedPosition,
@@ -69,9 +71,11 @@ import {
   assertCrowdFactorInBand,
   fixtureInputHashOf,
   FT_CLASS_STATUS,
+  isMismatch,
   scoreAllContexts,
   scoreabilityOf,
   statHashOf,
+  totalFor,
   type PlayerFixtureLine,
 } from "./lib/fantasyScorePipeline";
 
@@ -982,6 +986,79 @@ export const finalizeGameweekChunk = internalMutation({
   },
 });
 
+export interface StampSquadTotalsResult {
+  gwNumber: number;
+  /** False when called before the cut — a total is only settled after it. */
+  eligible: boolean;
+  stamped: number;
+  alreadyStamped: number;
+  /** True when every squad in the gameweek carries a stamped total. */
+  done: boolean;
+}
+
+/** Squads stamped per transaction. Each costs ~26 indexed reads. */
+const STAMP_CHUNK = 25;
+
+/**
+ * Stamp each squad's settled weekend total onto `fantasySquads.finalScore`.
+ *
+ * Runs after the score rows of a gameweek have gone final, and only then: the
+ * numbers it records cannot move afterwards (R4), which is what makes a stored
+ * total a record rather than a cache. Idempotent — a squad that already carries
+ * one is skipped, so re-running writes nothing.
+ *
+ * This exists for the crew table. Cumulative points are a sum over every weekend
+ * a crew has played, and re-deriving each of those from thirteen slot lookups
+ * would make one crew page cost thousands of reads by the end of a season.
+ */
+export const stampSquadFinalTotals = internalMutation({
+  args: {
+    gameweekId: v.id("fantasyGameweeks"),
+    now: v.optional(v.number()),
+    limit: v.optional(v.number()),
+  },
+  handler: async (ctx, args): Promise<StampSquadTotalsResult> => {
+    const now = args.now ?? Date.now();
+    const limit = args.limit ?? STAMP_CHUNK;
+
+    const gameweek = await ctx.db.get(args.gameweekId);
+    if (gameweek === null) throw new Error("Gameweek not found.");
+    if (now < gameweek.finalityAt) {
+      return { gwNumber: gameweek.gwNumber, eligible: false, stamped: 0, alreadyStamped: 0, done: false };
+    }
+
+    const squads = await ctx.db
+      .query("fantasySquads")
+      .withIndex("by_gameweek", (q) => q.eq("gameweekId", gameweek._id))
+      .collect();
+
+    let stamped = 0;
+    let alreadyStamped = 0;
+    for (const squad of squads) {
+      if (squad.finalScore !== undefined) {
+        alreadyStamped += 1;
+        continue;
+      }
+      if (stamped >= limit) {
+        return { gwNumber: gameweek.gwNumber, eligible: true, stamped, alreadyStamped, done: false };
+      }
+      const score = await squadScore(ctx, squad, gameweek, now, false);
+      await ctx.db.patch(squad._id, {
+        finalScore: {
+          total: score.total,
+          scoredSlots: score.scoredSlots,
+          awaitingSlots: score.awaitingSlots,
+          emptySlots: score.emptySlots,
+          at: now,
+        },
+      });
+      stamped += 1;
+    }
+
+    return { gwNumber: gameweek.gwNumber, eligible: true, stamped, alreadyStamped, done: true };
+  },
+});
+
 export interface UnscoredAlertResult {
   gwNumber: number;
   season: string;
@@ -1078,6 +1155,8 @@ export interface SettleGameweeksResult {
   now: number;
   finalized: FinalizeChunkResult[];
   alerted: UnscoredAlertResult[];
+  /** Squads whose settled weekend total was stamped, per gameweek. */
+  stampedSquads: { gwNumber: number; squads: number }[];
   candidates: number;
 }
 
@@ -1098,6 +1177,7 @@ export const settleGameweeks = internalAction({
 
     const finalized: FinalizeChunkResult[] = [];
     const alerted: UnscoredAlertResult[] = [];
+    const stampedSquads: { gwNumber: number; squads: number }[] = [];
 
     for (const candidate of plan.candidates) {
       if (candidate.needsAlert) {
@@ -1136,6 +1216,29 @@ export const settleGameweeks = internalAction({
           `[FW-4] finalized ${last.season} GW${last.gwNumber}: ${last.fixturesScored}/${last.fixturesTotal} fixtures scored, ` +
             `${last.unscoredAtFinality} unscored at the cut, state ${last.gameweekState}`,
         );
+
+        // Stamp the settled weekend totals only once the score rows are all
+        // final — a total stamped mid-flip would be a partial sum wearing a
+        // settled label.
+        if (last.done) {
+          let stampGuard = 0;
+          let totalStamped = 0;
+          while (stampGuard < 400) {
+            stampGuard += 1;
+            const stamp: StampSquadTotalsResult = await ctx.runMutation(
+              internal.fantasyScores.stampSquadFinalTotals,
+              {
+                gameweekId: candidate.gameweekId,
+                ...(args.now === undefined ? {} : { now: args.now }),
+              },
+            );
+            totalStamped += stamp.stamped;
+            if (!stamp.eligible || stamp.done) break;
+          }
+          if (totalStamped > 0) {
+            stampedSquads.push({ gwNumber: last.gwNumber, squads: totalStamped });
+          }
+        }
       }
     }
 
@@ -1143,7 +1246,503 @@ export const settleGameweeks = internalAction({
       now: plan.now,
       finalized,
       alerted,
+      stampedSquads,
       candidates: plan.candidates.length,
+    };
+  },
+});
+
+// ───────────────────────────────────────────────── squad aggregation (R3/R7)
+//
+// P5: "player-fixture scores → squad gameweek totals, honoring FW-1
+// lineup/finisher/lock semantics. Unscored players contribute nothing and are
+// reported as awaiting, not as 0."
+//
+// The two sentences are one rule seen from both ends. A slot with no score adds
+// NOTHING to the total (not zero — nothing), and the fact that it is waiting
+// travels with the total so no surface can present an incomplete number as a
+// finished one. `points: null` is how a slot says "no number yet"; `0` is only
+// ever a number the engine produced.
+
+/** Why a slot has no points. Never conflated with a score OF zero. */
+export type SlotScoreState =
+  /** A score row exists for this player, in this gameweek, for this fielded slot. */
+  | "scored"
+  /** The slot is filled and the pipeline has no score for him yet (R7). */
+  | "awaiting"
+  /** No player in the slot. BUDGET_MODE: an unfilled slot scores zero, honestly. */
+  | "empty";
+
+export interface SlotScore {
+  slotIndex: number;
+  slotRole: Slot;
+  isFinisher: boolean;
+  playerId: Id<"fantasyPlayers"> | null;
+  playerName: string | null;
+  clubId: string | null;
+  /** FW-1's live lock test, not the sweep's stamp. */
+  locked: boolean;
+  state: SlotScoreState;
+  /** Present when state is "awaiting" — what the surface should say instead of 0. */
+  awaitingReason: string | null;
+  /** null unless state is "scored". NEVER 0 as a stand-in for "no data". */
+  points: number | null;
+  baseScore: number | null;
+  crowdFactor: number | null;
+  verdictPosition: Slot | null;
+  /** True when the ×0.75 dampener applied to this slot (R6). */
+  mismatch: boolean;
+  version: number | null;
+  rowState: "provisional" | "final" | null;
+}
+
+export interface SquadScore {
+  squadId: Id<"fantasySquads">;
+  userId: Id<"users">;
+  context: "budget" | "crew";
+  gameweekId: Id<"fantasyGameweeks">;
+  season: string;
+  gwNumber: number;
+  /**
+   * R3's state for this total, derived from FW-2's INSTANT rather than from the
+   * finalization row.
+   *
+   * The instant is the authority: past it, the ingest path will not write another
+   * score, so the total cannot move and calling it "provisional" would be false —
+   * even in the fifteen minutes before the settlement cron stamps the rows.
+   * `finalizedAt` is exposed alongside so an operator can still see whether the
+   * stamp has landed.
+   */
+  state: "provisional" | "final";
+  finalityAt: number;
+  finalizedAt: number | null;
+  /** Sum of the SCORED slots only. Awaiting slots contribute nothing. */
+  total: number;
+  scoredSlots: number;
+  awaitingSlots: number;
+  emptySlots: number;
+  /** True while any filled slot is still awaiting data: `total` is incomplete. */
+  awaiting: boolean;
+  slots: SlotScore[];
+}
+
+/**
+ * Score one squad from the stored player-fixture rows.
+ *
+ * `withReasons` controls a per-slot fixture lookup used only to explain an
+ * awaiting slot ("his match hasn't finished", "postponed", the pipeline's own
+ * recorded reason). The crew table skips it — it aggregates dozens of squads and
+ * only needs the counts — while a single squad view asks for it, because "awaiting"
+ * with no reason is the kind of blank a user reads as a bug.
+ */
+export async function squadScore(
+  ctx: QueryCtx,
+  squad: Doc<"fantasySquads">,
+  gameweek: Doc<"fantasyGameweeks">,
+  now: number,
+  withReasons: boolean,
+): Promise<SquadScore> {
+  const slots = await ctx.db
+    .query("fantasySquadSlots")
+    .withIndex("by_squad", (q) => q.eq("squadId", squad._id))
+    .collect();
+  slots.sort((a, b) => a.slotIndex - b.slotIndex);
+
+  const lockedByIndex = await lockStateForSlots(ctx, gameweek._id, slots, now);
+  const gwScoring = await gameweekScoringRow(ctx, gameweek._id);
+
+  const out: SlotScore[] = [];
+  let total = 0;
+  let scoredSlots = 0;
+  let awaitingSlots = 0;
+  let emptySlots = 0;
+
+  for (const slot of slots) {
+    const base: SlotScore = {
+      slotIndex: slot.slotIndex,
+      slotRole: slot.slotRole,
+      isFinisher: slot.isFinisher,
+      playerId: slot.playerId ?? null,
+      playerName: null,
+      clubId: null,
+      locked: lockedByIndex.get(slot.slotIndex) === true,
+      state: "empty",
+      awaitingReason: null,
+      points: null,
+      baseScore: null,
+      crowdFactor: null,
+      verdictPosition: null,
+      mismatch: false,
+      version: null,
+      rowState: null,
+    };
+
+    if (slot.playerId === undefined) {
+      emptySlots += 1;
+      out.push(base);
+      continue;
+    }
+
+    const player = await ctx.db.get(slot.playerId);
+    if (player === null) {
+      // FW-1 deactivates rather than deletes, so this is a broken invariant and
+      // not an expected state. Reported as awaiting — never as a zero, which
+      // would silently cost the user points he may be owed.
+      awaitingSlots += 1;
+      out.push({
+        ...base,
+        state: "awaiting",
+        awaitingReason: "that player's record is unavailable",
+      });
+      continue;
+    }
+
+    const row = await currentScoreRow(ctx, gameweek._id, player.providerPlayerId);
+    const role: SlotRole = slot.isFinisher ? "finisher" : "starter";
+
+    if (row === null) {
+      awaitingSlots += 1;
+      out.push({
+        ...base,
+        playerName: player.name,
+        clubId: player.clubId,
+        state: "awaiting",
+        awaitingReason: withReasons
+          ? await awaitingReasonFor(ctx, gameweek._id, player)
+          : "awaiting data",
+      });
+      continue;
+    }
+
+    // R5's derivation, through the engine's own expression: the stored base and
+    // factor are kept apart and the total is computed, never stored.
+    const points = totalFor(row.baseScores, slot.slotRole, role, row.crowdFactor);
+    total = cleanTotal(total + points);
+    scoredSlots += 1;
+    out.push({
+      ...base,
+      playerName: player.name,
+      clubId: player.clubId,
+      state: "scored",
+      points,
+      baseScore: row.baseScores[role][slot.slotRole],
+      crowdFactor: row.crowdFactor,
+      verdictPosition: row.verdictPosition,
+      mismatch: isMismatch(row.verdictPosition, slot.slotRole),
+      version: row.version,
+      rowState: row.state,
+    });
+  }
+
+  return {
+    squadId: squad._id,
+    userId: squad.userId,
+    context: squad.context,
+    gameweekId: gameweek._id,
+    season: gameweek.season,
+    gwNumber: gameweek.gwNumber,
+    state: now >= gameweek.finalityAt ? "final" : "provisional",
+    finalityAt: gameweek.finalityAt,
+    finalizedAt: gwScoring?.finalizedAt ?? null,
+    total,
+    scoredSlots,
+    awaitingSlots,
+    emptySlots,
+    awaiting: awaitingSlots > 0,
+    slots: out,
+  };
+}
+
+/**
+ * Why this player has no score yet, in words a surface can show.
+ *
+ * Reads the fixture and the pipeline's own status row rather than guessing: "his
+ * match hasn't finished" and "the feed has not supplied this fixture" are
+ * different things to a user, and the second one is the pipeline's fault rather
+ * than football's.
+ */
+async function awaitingReasonFor(
+  ctx: QueryCtx,
+  gameweekId: Id<"fantasyGameweeks">,
+  player: Doc<"fantasyPlayers">,
+): Promise<string> {
+  const fixture = await fixtureForClub(ctx, gameweekId, player.clubId);
+  if (fixture === null) return "no fixture for his club in this gameweek";
+
+  const scoring = await fixtureScoringRow(ctx, fixture._id);
+  if (scoring?.notScoredReason !== undefined && scoring.notScoredReason !== null) {
+    return scoring.notScoredReason;
+  }
+  if (fixture.status !== FT_CLASS_STATUS) return `his match is ${fixture.status}`;
+  return "awaiting data for his match";
+}
+
+/** Sum without accumulating IEEE-754 noise across thirteen slots. */
+function cleanTotal(value: number): number {
+  return Math.round(value * 1e9) / 1e9;
+}
+
+/**
+ * The caller's own squad score for a gameweek.
+ *
+ * Deliberately a NEW query rather than a widening of `fantasySquads.getSquad`:
+ * that one is FW-1's contract and its consumers (the lock-engine suites) assert
+ * its shape. Scores are also only interesting once a weekend is underway, so a
+ * separate subscription is what a client actually wants.
+ */
+export const getSquadScore = query({
+  args: {
+    gameweekId: v.id("fantasyGameweeks"),
+    context: v.union(v.literal("budget"), v.literal("crew")),
+    crewRoomId: v.optional(v.string()),
+  },
+  handler: async (ctx, args): Promise<SquadScore | null> => {
+    const userId = await getAuthUserId(ctx);
+    if (userId === null) return null;
+
+    const contextKey = args.context === "budget" ? "budget" : `crew:${args.crewRoomId}`;
+    const squad = await ctx.db
+      .query("fantasySquads")
+      .withIndex("by_user_gameweek_contextKey", (q) =>
+        q.eq("userId", userId).eq("gameweekId", args.gameweekId).eq("contextKey", contextKey),
+      )
+      .first();
+    if (squad === null) return null;
+
+    const gameweek = await ctx.db.get(args.gameweekId);
+    if (gameweek === null) return null;
+
+    return squadScore(ctx, squad, gameweek, Date.now(), true);
+  },
+});
+
+// ─────────────────────────────────────────────────────── the crew table (P6)
+//
+// FW-3 shipped the crew page with the standings column reading "points: awaits
+// scoring pipeline". This is the pipeline. The column now carries real numbers,
+// and where a weekend has no numbers yet it says so rather than showing a zero.
+//
+// TIE-BREAKS ARE NOT IMPLEMENTED HERE, deliberately. DRAFT_ROOM_SPEC v1.2.0
+// ledger item 5 rules the ladders (crew table: head-to-head weekend wins, then
+// cumulative points) and its §Explicitly deferred section schedules them as
+// later work; this ticket orders by cumulative points and DISPLAYS a tie as a
+// tie. `tieBreaksApplied: false` travels in the payload so no client can
+// mistake the ordering for a settled ladder.
+
+export interface CrewWeekendScore {
+  roomId: Id<"fantasyDraftRooms">;
+  gameweekId: Id<"fantasyGameweeks">;
+  gwNumber: number;
+  season: string;
+  /** null when this member's weekend has no scored slot at all — never 0. */
+  points: number | null;
+  state: "provisional" | "final";
+  scoredSlots: number;
+  awaitingSlots: number;
+  /** True when the total came from the stamped settled figure. */
+  settled: boolean;
+}
+
+export interface CrewTableRow {
+  userId: Id<"users">;
+  name: string;
+  /** Sum over the weekends that have scores. null when none have (R7). */
+  cumulativePoints: number | null;
+  scoredWeekends: number;
+  awaitingWeekends: number;
+  /** True while any counted weekend is still provisional or incomplete. */
+  provisional: boolean;
+  /** Shared rank on a tie; 1-based. */
+  rank: number;
+  tied: boolean;
+  weekends: CrewWeekendScore[];
+}
+
+export interface CrewTable {
+  crewId: Id<"fantasyCrews">;
+  code: string;
+  name: string;
+  rows: CrewTableRow[];
+  weekends: {
+    roomId: Id<"fantasyDraftRooms">;
+    gameweekId: Id<"fantasyGameweeks">;
+    gwNumber: number;
+    season: string;
+    state: "provisional" | "final";
+    /** False while the gameweek has no scored fixture at all. */
+    anyScored: boolean;
+  }[];
+  /** DRAFT_ROOM_SPEC v1.2.0 §Explicitly deferred — ladders are ruled, not built. */
+  tieBreaksApplied: false;
+}
+
+/**
+ * The crew table: cumulative points per member, and each weekend's result.
+ *
+ * Only COMPLETED rooms count — a room still drafting has no sheets to score. A
+ * settled weekend is read from the squad's stamped `finalScore`; the weekend in
+ * flight is derived live from the score rows, which is the only one that can
+ * still move.
+ */
+export const getCrewTable = query({
+  args: { code: v.string() },
+  handler: async (ctx, args): Promise<CrewTable | null> => {
+    const userId = await getAuthUserId(ctx);
+    if (userId === null) return null;
+
+    const crew = await ctx.db
+      .query("fantasyCrews")
+      .withIndex("by_code", (q) => q.eq("code", args.code.trim().toUpperCase()))
+      .first();
+    if (crew === null) return null;
+
+    // Crew-internal, like every other crew read (DRAFT_ROOM §Room parameters):
+    // the table is visible to members and to nobody else.
+    const membership = await ctx.db
+      .query("fantasyCrewMembers")
+      .withIndex("by_crew_user", (q) => q.eq("crewId", crew._id).eq("userId", userId))
+      .first();
+    if (membership === null || !membership.active) return null;
+
+    const members = (
+      await ctx.db
+        .query("fantasyCrewMembers")
+        .withIndex("by_crew", (q) => q.eq("crewId", crew._id))
+        .collect()
+    ).filter((m) => m.active);
+
+    const rooms = (
+      await ctx.db
+        .query("fantasyDraftRooms")
+        .withIndex("by_crew", (q) => q.eq("crewId", crew._id))
+        .collect()
+    ).filter((room) => room.status === "completed");
+
+    const now = Date.now();
+    const weekends: CrewTable["weekends"] = [];
+    const byMember = new Map<string, CrewWeekendScore[]>();
+    for (const member of members) byMember.set(member.userId, []);
+
+    for (const room of rooms) {
+      const gameweek = await ctx.db.get(room.gameweekId);
+      if (gameweek === null) continue;
+
+      const gwScoring = await gameweekScoringRow(ctx, gameweek._id);
+      const anyScored = (gwScoring?.fixturesScored ?? 0) > 0;
+      const state: "provisional" | "final" =
+        now >= gameweek.finalityAt ? "final" : "provisional";
+
+      weekends.push({
+        roomId: room._id,
+        gameweekId: gameweek._id,
+        gwNumber: gameweek.gwNumber,
+        season: gameweek.season,
+        state,
+        anyScored,
+      });
+
+      for (const member of members) {
+        const squad = await ctx.db
+          .query("fantasySquads")
+          .withIndex("by_user_gameweek_contextKey", (q) =>
+            q
+              .eq("userId", member.userId)
+              .eq("gameweekId", gameweek._id)
+              .eq("contextKey", `crew:${room._id}`),
+          )
+          .first();
+        if (squad === null) continue; // not seated in that draft
+
+        const entry: CrewWeekendScore = {
+          roomId: room._id,
+          gameweekId: gameweek._id,
+          gwNumber: gameweek.gwNumber,
+          season: gameweek.season,
+          points: null,
+          state,
+          scoredSlots: 0,
+          awaitingSlots: 0,
+          settled: false,
+        };
+
+        if (squad.finalScore !== undefined) {
+          // Settled: read the stamped figure rather than 13 lookups.
+          entry.points = squad.finalScore.scoredSlots > 0 ? squad.finalScore.total : null;
+          entry.scoredSlots = squad.finalScore.scoredSlots;
+          entry.awaitingSlots = squad.finalScore.awaitingSlots;
+          entry.settled = true;
+        } else if (anyScored) {
+          // The weekend in flight — the only one whose numbers can still change.
+          const score = await squadScore(ctx, squad, gameweek, now, false);
+          entry.points = score.scoredSlots > 0 ? score.total : null;
+          entry.scoredSlots = score.scoredSlots;
+          entry.awaitingSlots = score.awaitingSlots;
+        }
+        // else: nothing in this gameweek is scored yet, so the weekend reads as
+        // awaiting for everyone and costs no per-slot reads at all.
+
+        byMember.get(member.userId)?.push(entry);
+      }
+    }
+
+    weekends.sort((a, b) => a.gwNumber - b.gwNumber);
+
+    const rows: CrewTableRow[] = members.map((member) => {
+      const entries = (byMember.get(member.userId) ?? []).sort((a, b) => a.gwNumber - b.gwNumber);
+      const scored = entries.filter((e) => e.points !== null);
+      const cumulativePoints =
+        scored.length === 0
+          ? null
+          : cleanTotal(scored.reduce((sum, e) => sum + (e.points ?? 0), 0));
+      return {
+        userId: member.userId,
+        name: member.nameSnapshot,
+        cumulativePoints,
+        scoredWeekends: scored.length,
+        awaitingWeekends: entries.length - scored.length,
+        provisional:
+          entries.some((e) => e.state === "provisional") || entries.some((e) => e.awaitingSlots > 0),
+        rank: 0,
+        tied: false,
+        weekends: entries,
+      };
+    });
+
+    // Order by cumulative points, highest first. A member with nothing scored has
+    // no number at all and sorts last — not as a zero, which would rank him
+    // alongside somebody who genuinely scored nothing.
+    rows.sort((a, b) => {
+      if (a.cumulativePoints === null && b.cumulativePoints === null) {
+        return a.name < b.name ? -1 : a.name > b.name ? 1 : 0;
+      }
+      if (a.cumulativePoints === null) return 1;
+      if (b.cumulativePoints === null) return -1;
+      return b.cumulativePoints - a.cumulativePoints;
+    });
+
+    // Shared rank on equal points: the tie is DISPLAYED, never broken (A12).
+    let rank = 0;
+    let previous: number | null | undefined;
+    rows.forEach((row, index) => {
+      if (index === 0 || row.cumulativePoints !== previous) {
+        rank = index + 1;
+        previous = row.cumulativePoints;
+      }
+      row.rank = rank;
+      row.tied = false;
+    });
+    for (const row of rows) {
+      row.tied =
+        rows.filter((other) => other.rank === row.rank).length > 1 && row.cumulativePoints !== null;
+    }
+
+    return {
+      crewId: crew._id,
+      code: crew.code,
+      name: crew.name,
+      rows,
+      weekends,
+      tieBreaksApplied: false,
     };
   },
 });

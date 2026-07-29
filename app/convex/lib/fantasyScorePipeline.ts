@@ -23,7 +23,7 @@ import {
   type SlotRole,
   type TimedPlayerEvent,
 } from "./fantasyScoring";
-import { fantasyPlayerStatsValidator } from "../schema";
+import { fantasyPlayerStatsValidator } from "./fantasyScoreValidators";
 
 // ─────────────────────────────────────────────────────── validator ↔ engine
 

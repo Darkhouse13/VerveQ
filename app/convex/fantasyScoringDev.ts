@@ -33,7 +33,7 @@
 import { v } from "convex/values";
 import { internalMutation, internalQuery } from "./_generated/server";
 import type { Doc, Id } from "./_generated/dataModel";
-import { fantasySlot } from "./schema";
+import { fantasySlot } from "./lib/fantasyScoreValidators";
 
 export const SYNTHETIC_SEASON_PREFIX = "SYNTH-";
 export const SYNTHETIC_ID_PREFIX = "synth-";
