@@ -110,16 +110,19 @@ export default defineSchema({
     // ── Weekend Fantasy: favorite club (FW-1) ──
     // DRAFT_ROOM_SPEC v1.0 §Favorite-club exemption: each user logs ONE
     // favorite club at profile level; the per-club cap of 3 does not apply to
-    // it. Anti-gaming: a CHANGE takes effect only after a 4-gameweek cooldown
-    // (ledger item 7), and the club in force when a room arms / a squad is
-    // built is the one that counts — never changeable mid-draft.
+    // it. Anti-gaming: a CHANGE takes effect only 28 CALENDAR DAYS later
+    // (DRAFT_ROOM v1.0.2 ledger item 7 / owner STOP-F), and the club in force
+    // when a room arms / a squad is built is the one that counts — never
+    // changeable mid-draft.
     //
     // Three fields, not two, because the cooldown needs to name two clubs at
     // once: the one still in force and the one waiting to replace it.
     // `favoriteClub` is always the club IN FORCE now; `favoriteClubPending` +
-    // `favoriteClubEffectiveFrom` (a fantasyGameweeks.gwNumber) describe the
-    // queued change. Resolution lives in lib/fantasyFavoriteClub.ts — nothing
-    // else may read these fields raw.
+    // `favoriteClubEffectiveFrom` (an EPOCH-MS TIMESTAMP — it held a
+    // fantasyGameweeks.gwNumber before v1.0.2) describe the queued change.
+    // Resolution lives in lib/fantasyFavoriteClub.ts — nothing else may read
+    // these fields raw. No migration was needed at the semantic change: no
+    // user row had any of the three fields set (verified on dev 2026-07-29).
     favoriteClub: v.optional(v.string()),
     favoriteClubPending: v.optional(v.string()),
     favoriteClubEffectiveFrom: v.optional(v.number()),
@@ -1354,8 +1357,11 @@ export default defineSchema({
   // gameweek is constituted; this layer only stores and orders the ordinal,
   // which is what the 4-gameweek favorite-club cooldown counts in.
   //
-  // finalityAt is Tuesday 23:59 Europe/Paris (FW-1 STOP-5 ruling), computed by
-  // lib/fantasyConstants.finalityAtOrAfter.
+  // finalityAt is 23:59 Europe/Paris on the day after the gameweek's window
+  // closes — Tuesday for a weekend window, Friday for a midweek one. Computed
+  // by lib/fantasyGameweekWindows.windowFor(kickoff).finalityAt, which is the
+  // single source of truth since the owner's STOP-E ruling retired
+  // fantasyConstants.finalityAtOrAfter (Tuesday-only).
   fantasyGameweeks: defineTable({
     season: v.string(), // e.g. "2026-2027"
     gwNumber: v.number(),

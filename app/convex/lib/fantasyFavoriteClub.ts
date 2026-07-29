@@ -1,12 +1,30 @@
 /**
- * Weekend Fantasy — favorite-club resolution under the 4-gameweek cooldown.
+ * Weekend Fantasy — favorite-club resolution under the 28-day cooldown.
  *
- * DRAFT_ROOM_SPEC v1.0 §Favorite-club exemption + ledger items 7 and 8:
+ * DRAFT_ROOM_SPEC v1.0.2 §Favorite-club exemption + ledger items 7 and 8:
  *   "each user logs ONE favorite club at profile level. The 3-per-club cap
- *    doesn't apply to it. Anti-gaming: favorite changes take effect after a
- *    4-gameweek cooldown, and the favorite in force when the room arms is the
+ *    doesn't apply to it. Anti-gaming: favorite changes take effect 28 days
+ *    after the change, and the favorite in force when the room arms is the
  *    one that counts — never changeable mid-draft. Exemption applies
  *    identically in budget mode."
+ *
+ * ── The cooldown is measured in TIME, not gameweeks (STOP-F) ──
+ *
+ * FW-1 implemented this as "gwNumber + 4" and stored a gameweek ordinal in
+ * `users.favoriteClubEffectiveFrom`. The owner's STOP-F ruling, re-issued at
+ * the FW-2-RUN closeout (2026-07-29), fixes it at **28 calendar days** held as
+ * an epoch-millisecond timestamp.
+ *
+ * The two are not interchangeable, which is why this is a rewrite rather than a
+ * renamed constant: once midweek gameweeks exist — and FW-2 bootstrapped a
+ * season with 13 of them in 49 — four gameweeks can elapse in as little as
+ * about two calendar weeks. A user could pick a congested stretch of the
+ * fixture list and halve their own anti-gaming cooldown, which is exactly the
+ * behaviour the rule exists to stop.
+ *
+ * Every function below therefore takes `now` (epoch ms) where it used to take
+ * `gwNumber`. The parameter is passed in rather than read from the clock so the
+ * module stays pure and every rule is a unit test.
  *
  * PURE — no Convex, no clock. The user doc is passed in as a plain snapshot so
  * every rule below is a unit test, not an integration test.
@@ -28,12 +46,13 @@
  * `resolveFavoriteClub` and `planFavoriteClubChange` move.
  */
 
-import { FAVORITE_CLUB_COOLDOWN_GAMEWEEKS } from "./fantasyConstants";
+import { FAVORITE_CLUB_COOLDOWN_MS } from "./fantasyConstants";
 
 /** The favorite-club fields of a user doc, as plain data. */
 export interface FavoriteClubState {
   readonly favoriteClub?: string | null;
   readonly favoriteClubPending?: string | null;
+  /** Epoch ms the queued change becomes live. Was a gwNumber before v1.0.2. */
   readonly favoriteClubEffectiveFrom?: number | null;
 }
 
@@ -45,30 +64,31 @@ export interface FavoriteClubPatch {
 }
 
 /**
- * Fold a queued change into the in-force club if it has come due by
- * `gwNumber`. This is the one place the cooldown comparison is written.
+ * Fold a queued change into the in-force club if it has come due at `now`.
+ * This is the one place the cooldown comparison is written.
  *
- * Note the boundary: `gwNumber >= effectiveFrom`. A change queued during GW n
- * gets effectiveFrom = n + 4, so it is inert for GW n, n+1, n+2 and n+3, and
- * live from GW n+4 — "does not apply until GW+4", exactly.
+ * Note the boundary: `now >= effectiveFrom`. A change made at instant t gets
+ * effectiveFrom = t + 28 days, so it is inert for the whole 28 days and live
+ * from the first millisecond of day 29 — "takes effect 28 days after the
+ * change", exactly.
  */
 function settle(
   state: FavoriteClubState,
-  gwNumber: number,
+  now: number,
 ): { inForce: string | null; pending: string | null; effectiveFrom: number | null } {
   const current = state.favoriteClub ?? null;
   const pending = state.favoriteClubPending ?? null;
   const effectiveFrom = state.favoriteClubEffectiveFrom ?? null;
 
-  if (pending !== null && effectiveFrom !== null && gwNumber >= effectiveFrom) {
+  if (pending !== null && effectiveFrom !== null && now >= effectiveFrom) {
     return { inForce: pending, pending: null, effectiveFrom: null };
   }
   return { inForce: current, pending, effectiveFrom };
 }
 
 /**
- * The club whose players are exempt from the per-club cap for a squad built in
- * `gwNumber`. Returns null when the user has never set one.
+ * The club whose players are exempt from the per-club cap for a squad built at
+ * `now`. Returns null when the user has never set one.
  *
  * Callers must resolve this ONCE, at squad-build / room-arm time, and snapshot
  * it onto the squad (fantasySquads.favoriteClubAtBuild). Re-resolving it later
@@ -77,44 +97,44 @@ function settle(
  */
 export function resolveFavoriteClub(
   state: FavoriteClubState,
-  gwNumber: number,
+  now: number,
 ): string | null {
-  return settle(state, gwNumber).inForce;
+  return settle(state, now).inForce;
 }
 
-/** Whether a queued change is still waiting at `gwNumber`. */
+/** Whether a queued change is still waiting at `now`. */
 export function hasPendingFavoriteChange(
   state: FavoriteClubState,
-  gwNumber: number,
+  now: number,
 ): boolean {
-  return settle(state, gwNumber).pending !== null;
+  return settle(state, now).pending !== null;
 }
 
-/** The gameweek a queued change becomes live, or null if nothing is queued. */
+/** The instant (epoch ms) a queued change becomes live, or null if none is queued. */
 export function pendingFavoriteEffectiveFrom(
   state: FavoriteClubState,
-  gwNumber: number,
+  now: number,
 ): number | null {
-  return settle(state, gwNumber).effectiveFrom;
+  return settle(state, now).effectiveFrom;
 }
 
 /**
- * Build the user-doc patch for setting the favorite club to `nextClub` during
- * `gwNumber`.
+ * Build the user-doc patch for setting the favorite club to `nextClub` at
+ * instant `now`.
  *
  * Four cases:
  *  - no club ever set        ⇒ immediate (S2)
  *  - set to the club already in force ⇒ cancels any queued change; the user is
- *    reverting, and making a revert wait four weekends would be perverse
+ *    reverting, and making a revert wait 28 days would be perverse
  *  - a due change exists     ⇒ settled first, then the new change queued off it
- *  - otherwise               ⇒ queued for gwNumber + 4, old club stays (S1)
+ *  - otherwise               ⇒ queued for now + 28 days, old club stays (S1)
  */
 export function planFavoriteClubChange(
   state: FavoriteClubState,
-  gwNumber: number,
+  now: number,
   nextClub: string,
 ): FavoriteClubPatch {
-  const { inForce } = settle(state, gwNumber);
+  const { inForce } = settle(state, now);
 
   if (inForce === null) {
     return {
@@ -135,6 +155,6 @@ export function planFavoriteClubChange(
   return {
     favoriteClub: inForce,
     favoriteClubPending: nextClub,
-    favoriteClubEffectiveFrom: gwNumber + FAVORITE_CLUB_COOLDOWN_GAMEWEEKS,
+    favoriteClubEffectiveFrom: now + FAVORITE_CLUB_COOLDOWN_MS,
   };
 }

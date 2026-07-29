@@ -16,9 +16,11 @@
  *  2. DST. The windows are built from Paris wall-clock arithmetic, not from
  *     adding 4x86 400 000 ms, so the two switchover weekends are an hour
  *     shorter and longer respectively — and still start and end at midnight.
- *  3. Agreement with FW-1. `finalityAtOrAfter` and the new window finality
- *     must give the SAME answer for every weekend kickoff, or FW-1's landed
- *     lock engine and FW-2's ingestion disagree about when a gameweek settles.
+ *  3. The Paris wall clock itself. Finality is 23:59 LOCAL, so the same rule
+ *     lands on a different UTC instant in winter (CET) than in summer (CEST).
+ *     These assertions moved here from fantasySquadRules.test.ts when the
+ *     owner's STOP-E ruling deleted `finalityAtOrAfter`; they are the reason
+ *     that suite existed and they still need a home.
  *
  * No database, no clock, no network.
  */
@@ -27,7 +29,6 @@ import { describe, expect, it } from "vitest";
 
 import {
   FINALITY_TIME_ZONE,
-  finalityAtOrAfter,
   zonedWallClockToEpochMs,
 } from "../../convex/lib/fantasyConstants";
 import {
@@ -110,13 +111,15 @@ describe("windowFor — midweek windows", () => {
   });
 
   it("settles a midweek gameweek on FRIDAY, not the following Tuesday", () => {
-    // The whole reason finalityForWindow exists rather than reusing FW-1's
-    // finalityAtOrAfter, which only ever answers "Tuesday".
+    // The whole reason a window-derived finality exists: FW-1's deleted
+    // finalityAtOrAfter only ever answered "Tuesday", which is four days late
+    // for every midweek round.
     const wednesday = paris(WED.y, WED.m, WED.d, 20, 0);
     expect(windowFor(wednesday).finalityAt).toBe(
       paris(NEXT_FRI.y, NEXT_FRI.m, NEXT_FRI.d, 23, 59),
     );
-    expect(windowFor(wednesday).finalityAt).not.toBe(finalityAtOrAfter(wednesday));
+    const tuesdayAfter = paris(2026, 9, 1, 23, 59); // the answer FW-1 would give
+    expect(windowFor(wednesday).finalityAt).not.toBe(tuesdayAfter);
   });
 });
 
@@ -185,22 +188,69 @@ describe("windowFor — DST", () => {
   });
 });
 
-describe("agreement with the landed FW-1 finality rule", () => {
-  it("matches finalityAtOrAfter for every weekend kickoff across a season", () => {
-    // FW-1's STOP-5 ruling and FW-2's constitution must not disagree about when
-    // a weekend settles. Walk a year of Friday-to-Monday kickoffs, DST included.
-    let checked = 0;
+describe("finality lands on 23:59 Paris wall clock", () => {
+  /**
+   * Built from formatToParts rather than format() so the assertion pins the
+   * wall clock and not an ICU version's comma placement.
+   */
+  const partsInParis = (t: number): string => {
+    const parts = new Intl.DateTimeFormat("en-GB", {
+      timeZone: FINALITY_TIME_ZONE,
+      hourCycle: "h23",
+      weekday: "short",
+      hour: "2-digit",
+      minute: "2-digit",
+    }).formatToParts(new Date(t));
+    const at = (type: string): string => parts.find((p) => p.type === type)?.value ?? "";
+    return `${at("weekday")} ${at("hour")}:${at("minute")}`;
+  };
+
+  it("lands on Tuesday 23:59 Paris for a winter weekend (CET, UTC+1)", () => {
+    const janSaturday = paris(2027, 1, 9, 15, 0); // Sat 2027-01-09
+    const finality = windowFor(janSaturday).finalityAt;
+    expect(partsInParis(finality)).toBe("Tue 23:59");
+    // 23:59 CET == 22:59Z
+    expect(new Date(finality).toISOString()).toBe("2027-01-12T22:59:00.000Z");
+  });
+
+  it("lands on Tuesday 23:59 Paris for a summer weekend (CEST, UTC+2)", () => {
+    const augSaturday = paris(2026, 8, 15, 15, 0); // Sat 2026-08-15
+    const finality = windowFor(augSaturday).finalityAt;
+    expect(partsInParis(finality)).toBe("Tue 23:59");
+    // 23:59 CEST == 21:59Z — an hour earlier in UTC than the winter cut. A
+    // fixed UTC+1 would have put this at 22:59Z, i.e. 00:59 local Wednesday.
+    expect(new Date(finality).toISOString()).toBe("2026-08-18T21:59:00.000Z");
+  });
+
+  it("lands on Friday 23:59 Paris for a midweek round, in both seasons", () => {
+    const janWednesday = paris(2027, 1, 6, 20, 0);
+    const augWednesday = paris(2026, 8, 19, 20, 0);
+    expect(partsInParis(windowFor(janWednesday).finalityAt)).toBe("Fri 23:59");
+    expect(partsInParis(windowFor(augWednesday).finalityAt)).toBe("Fri 23:59");
+  });
+
+  it("is the same local wall clock on both sides of the DST switch", () => {
+    // Paris springs forward 2027-03-28; these two weekends straddle it.
+    const before = windowFor(paris(2027, 3, 20, 15, 0)).finalityAt;
+    const after = windowFor(paris(2027, 4, 3, 15, 0)).finalityAt;
+    expect(partsInParis(before)).toBe("Tue 23:59");
+    expect(partsInParis(after)).toBe("Tue 23:59");
+    // …but a different UTC offset, which is exactly what "wall clock" means.
+    expect(new Date(before).getUTCHours()).toBe(22);
+    expect(new Date(after).getUTCHours()).toBe(21);
+  });
+
+  it("gives every gameweek of a season a finality strictly after its last kickoff", () => {
+    // The invariant that actually matters downstream: a gameweek can never
+    // settle before a fixture in it has finished.
     for (let week = 0; week < 52; week += 1) {
-      const friday = paris(2026, 8, 21, 12, 0) + week * 7 * 86_400_000;
-      for (let dayOffset = 0; dayOffset < 4; dayOffset += 1) {
-        const kickoff = friday + dayOffset * 86_400_000;
+      for (const dayOffset of [0, 1, 2, 3, 4, 5, 6]) {
+        const kickoff = paris(2026, 8, 21, 20, 0) + (week * 7 + dayOffset) * 86_400_000;
         const window = windowFor(kickoff);
-        if (window.kind !== "weekend") continue; // DST can shift the 12:00 anchor
-        expect(window.finalityAt).toBe(finalityAtOrAfter(kickoff));
-        checked += 1;
+        expect(window.finalityAt).toBeGreaterThan(kickoff);
+        expect(window.finalityAt).toBeGreaterThanOrEqual(window.endsAt);
       }
     }
-    expect(checked).toBeGreaterThan(180);
   });
 });
 

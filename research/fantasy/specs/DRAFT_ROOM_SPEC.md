@@ -1,12 +1,23 @@
-# Weekend Fantasy — Draft Room Spec (v1.0)
+# Weekend Fantasy — Draft Room Spec (v1.0.2)
 
-Status: **v1.0 — LOCKED by owner 2026-07-28.** Every ⚑ item is
+Status: **v1.0.2 — LOCKED by owner.** Every ⚑ item is
 resolved in the owner ledger at the foot of this document; the ⚑
 markers are kept as provenance of what was once open, not as live
 questions.
 
 ## Changelog
 
+- v1.0.2 — the favorite-change cooldown is **28 calendar days**,
+  measured as a timestamp, not 4 gameweeks (owner STOP-F ruling,
+  re-issued at the FW-2-RUN closeout 2026-07-29 after the original
+  ruling was lost). The gameweek count and the day count are not
+  interchangeable: FW-2-RUN's gameweek constitution admits midweek
+  windows, and the bootstrapped 2026-2027 season has 13 midweek
+  gameweeks in 49, so "4 gameweeks" can span anywhere from ~2 to ~4
+  calendar weeks depending on where in the calendar it starts. Days
+  are what the anti-gaming rule actually meant. Ledger item 7 and the
+  §Favorite-club exemption paragraph are amended to match; no other
+  rule changes.
 - v1.0 — header/status corrected to match the owner decision ledger
   (FW-1 Phase 0, STOP-1 ruling 2026-07-28): the repo file was a stale
   download of a pre-lock revision, and its header contradicted its own
@@ -65,7 +76,8 @@ min × crew size, worst case.
 **Favorite-club exemption:** each user logs ONE favorite club at
 profile level. The 3-per-club cap doesn't apply to it (a fan may
 draft their whole back line). Anti-gaming: favorite changes take
-effect after a 4-gameweek cooldown ⚑ (constant is placeholder), and
+effect **28 days after the change** (v1.0.2; was "a 4-gameweek
+cooldown ⚑ (constant is placeholder)"), and
 the favorite in force when the room arms is the one that counts —
 never changeable mid-draft. Exemption applies identically in budget
 mode ⚑ (pending owner confirm).
@@ -161,5 +173,7 @@ All LOCKED by owner 2026-07-28:
    then cumulative points. LOCKED.
 6. Crew 2–8 hard cap; chess-clock 30s × 13 = 390s bank; club cap 3
    with favorite-club exemption. LOCKED.
-7. Favorite-change cooldown: 4 gameweeks. LOCKED.
+7. Favorite-change cooldown: **28 calendar days**, measured from the
+   instant of the change as a timestamp. LOCKED (STOP-F; amended from
+   "4 gameweeks" in v1.0.2).
 8. Favorite exemption applies in budget mode too. LOCKED.

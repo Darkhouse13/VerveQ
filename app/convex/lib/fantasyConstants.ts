@@ -63,11 +63,20 @@ export const FORMATION_BOUNDS: Readonly<Record<SlotRole, { min: number; max: num
 export const PER_CLUB_CAP = 3;
 
 /**
- * DRAFT_ROOM §Favorite-club exemption + ledger item 7: a favorite-club CHANGE
- * takes effect after a 4-gameweek cooldown. Counted in OUR weekend ordinals
- * (fantasyGameweeks.gwNumber), not any league's round number.
+ * DRAFT_ROOM v1.0.2 §Favorite-club exemption + ledger item 7: a favorite-club
+ * CHANGE takes effect **28 calendar days** after it is made, measured as a
+ * timestamp.
+ *
+ * Days, not gameweeks (owner STOP-F ruling, re-issued at the FW-2-RUN closeout
+ * 2026-07-29). The two are not interchangeable once midweek gameweeks exist:
+ * the bootstrapped 2026-2027 season has 13 midweek windows in 49 gameweeks, so
+ * "4 gameweeks" spans anywhere from about two to about four calendar weeks
+ * depending on where in the calendar the change lands. A user could shorten
+ * their own anti-gaming cooldown by timing it against a congested fixture list,
+ * which is precisely what the rule exists to prevent.
  */
-export const FAVORITE_CLUB_COOLDOWN_GAMEWEEKS = 4;
+export const FAVORITE_CLUB_COOLDOWN_DAYS = 28;
+export const FAVORITE_CLUB_COOLDOWN_MS = FAVORITE_CLUB_COOLDOWN_DAYS * 86_400_000;
 
 // ── budget ──
 
@@ -99,22 +108,33 @@ export function isKnownLeagueId(id: number): id is LeagueId {
 // ── finality ──
 
 /**
- * The finality cut: Tuesday 23:59 Europe/Paris.
+ * The finality cut: 23:59 **Europe/Paris wall clock**.
  *
- * BUDGET_MODE §Founding shape and DRAFT_ROOM §Lifecycle state 6 both fix
- * Tuesday 23:59; the FW-1 STOP-5 ruling (2026-07-28) resolves the spec's
- * imprecise "CET" to **Europe/Paris wall clock**. CET is a fixed UTC+1, but
- * Paris runs CEST (UTC+2) for most of a football season, so a fixed offset
- * would drift an hour against the user's local Tuesday from late March to late
- * October. Users live in local time; the wall clock is what was meant.
+ * The FW-1 STOP-5 ruling (2026-07-28) resolved the specs' imprecise "CET" to
+ * Europe/Paris wall clock. CET is a fixed UTC+1, but Paris runs CEST (UTC+2)
+ * for most of a football season, so a fixed offset would drift an hour against
+ * the user's local evening from late March to late October. Users live in local
+ * time; the wall clock is what was meant.
+ *
+ * ── Which DAY is no longer decided here (STOP-E, 2026-07-29) ──
+ *
+ * FW-1 also shipped `finalityAtOrAfter`, which answered "the first **Tuesday**
+ * 23:59 at or after this instant". That was correct while a gameweek was
+ * assumed to be a weekend and nothing else. FW-2's gameweek constitution admits
+ * midweek windows, which settle on **Friday**, so a fixed weekday cannot
+ * express the rule any more.
+ *
+ * Per the owner's STOP-E ruling that function is **deleted rather than kept
+ * alongside** the general one — two finality functions in one namespace is an
+ * invitation for a caller to pick the wrong one, and the wrong one fails
+ * silently by returning a plausible timestamp four days late. The single
+ * source of truth is now `lib/fantasyGameweekWindows.windowFor(instant).finalityAt`,
+ * which derives the day from the window the instant belongs to. The HOUR and
+ * MINUTE below are still the shared cut and are consumed from there.
  */
 export const FINALITY_TIME_ZONE = "Europe/Paris";
-/** 0 = Sunday … 2 = Tuesday. */
-export const FINALITY_WEEKDAY = 2;
 export const FINALITY_HOUR = 23;
 export const FINALITY_MINUTE = 59;
-
-const MS_PER_DAY = 86_400_000;
 
 /**
  * The UTC offset (ms) that `timeZone` is running at the instant `epochMs`.
@@ -182,48 +202,4 @@ export function zonedDateParts(
     day: shifted.getUTCDate(),
     weekday: shifted.getUTCDay(),
   };
-}
-
-/**
- * The finality instant for the weekend containing `instant`: the first
- * Tuesday 23:59 Europe/Paris at or after it.
- *
- * A gameweek stores this as `finalityAt`; FW-2 (ingestion) is what actually
- * calls it when it constitutes a gameweek. Exposed here so the rule lives with
- * the constants that define it rather than in the ingestion ticket.
- */
-export function finalityAtOrAfter(
-  instant: number,
-  timeZone: string = FINALITY_TIME_ZONE,
-): number {
-  const { year, month, day, weekday } = zonedDateParts(instant, timeZone);
-  const daysAhead = (FINALITY_WEEKDAY - weekday + 7) % 7;
-
-  // Build the candidate from the local date advanced by whole days. Adding
-  // days to the UTC-shifted date and re-reading its parts keeps month/year
-  // rollover correct without any calendar arithmetic of our own.
-  const shiftedBase = Date.UTC(year, month - 1, day) + daysAhead * MS_PER_DAY;
-  const target = new Date(shiftedBase);
-  const candidate = zonedWallClockToEpochMs(
-    target.getUTCFullYear(),
-    target.getUTCMonth() + 1,
-    target.getUTCDate(),
-    FINALITY_HOUR,
-    FINALITY_MINUTE,
-    timeZone,
-  );
-
-  // Already past this week's cut (e.g. Tuesday 23:59:30) ⇒ next week's.
-  if (candidate < instant) {
-    const nextWeek = new Date(shiftedBase + 7 * MS_PER_DAY);
-    return zonedWallClockToEpochMs(
-      nextWeek.getUTCFullYear(),
-      nextWeek.getUTCMonth() + 1,
-      nextWeek.getUTCDate(),
-      FINALITY_HOUR,
-      FINALITY_MINUTE,
-      timeZone,
-    );
-  }
-  return candidate;
 }

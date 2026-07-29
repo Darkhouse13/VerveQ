@@ -13,12 +13,11 @@ import { describe, expect, it } from "vitest";
 
 import {
   BUDGET_LIMIT,
-  FAVORITE_CLUB_COOLDOWN_GAMEWEEKS,
-  FINALITY_TIME_ZONE,
+  FAVORITE_CLUB_COOLDOWN_DAYS,
+  FAVORITE_CLUB_COOLDOWN_MS,
   PER_CLUB_CAP,
   PLACEHOLDER_PENDING_PRICING_PASS,
   SQUAD_SIZE,
-  finalityAtOrAfter,
   zonedWallClockToEpochMs,
   type SlotRole,
 } from "../../convex/lib/fantasyConstants";
@@ -324,130 +323,118 @@ describe("budget invariant (BUDGET_MODE v1.0 §Deadlines & editing)", () => {
 
 // ── favorite club cooldown ──
 
-describe("favorite-club 4-gameweek cooldown (DRAFT_ROOM v1.0 ledger 7)", () => {
-  it("applies the first-ever favorite immediately (FW-1 ruling S2)", () => {
-    const patch = planFavoriteClubChange({}, 3, "ARSENAL");
-    expect(patch.favoriteClub).toBe("ARSENAL");
-    expect(patch.favoriteClubPending).toBeUndefined();
-    expect(resolveFavoriteClub(patch, 3)).toBe("ARSENAL");
+describe("favorite-club 28-day cooldown (DRAFT_ROOM v1.0.2 ledger 7 / STOP-F)", () => {
+  // A fixed instant, so nothing here reads the wall clock. Sat 2026-08-15 12:00Z.
+  const T0 = Date.UTC(2026, 7, 15, 12, 0);
+  const DAY = 86_400_000;
+
+  it("holds the cooldown as 28 calendar days", () => {
+    expect(FAVORITE_CLUB_COOLDOWN_DAYS).toBe(28);
+    expect(FAVORITE_CLUB_COOLDOWN_MS).toBe(28 * DAY);
   });
 
-  it("a change made in GW3 does not apply until GW7 (= GW+4)", () => {
+  it("applies the first-ever favorite immediately (FW-1 ruling S2)", () => {
+    const patch = planFavoriteClubChange({}, T0, "ARSENAL");
+    expect(patch.favoriteClub).toBe("ARSENAL");
+    expect(patch.favoriteClubPending).toBeUndefined();
+    expect(resolveFavoriteClub(patch, T0)).toBe("ARSENAL");
+  });
+
+  it("a change made at T does not apply until T + 28 days", () => {
     const before = { favoriteClub: "ARSENAL" };
-    const patch = planFavoriteClubChange(before, 3, "SPURS");
+    const patch = planFavoriteClubChange(before, T0, "SPURS");
 
-    expect(patch.favoriteClubEffectiveFrom).toBe(3 + FAVORITE_CLUB_COOLDOWN_GAMEWEEKS);
-    expect(patch.favoriteClubEffectiveFrom).toBe(7);
+    expect(patch.favoriteClubEffectiveFrom).toBe(T0 + FAVORITE_CLUB_COOLDOWN_MS);
+    expect(patch.favoriteClubEffectiveFrom).toBe(T0 + 28 * DAY);
 
-    // Inert for GW3, 4, 5, 6 — the old club is still the one in force (S1).
-    for (const gw of [3, 4, 5, 6]) {
-      expect(resolveFavoriteClub(patch, gw)).toBe("ARSENAL");
+    // Inert for the whole 28 days — the old club is still in force (S1).
+    for (const days of [0, 1, 13, 27]) {
+      expect(resolveFavoriteClub(patch, T0 + days * DAY)).toBe("ARSENAL");
     }
-    // Live from GW7 onward.
-    for (const gw of [7, 8, 99]) {
-      expect(resolveFavoriteClub(patch, gw)).toBe("SPURS");
+    // Live from day 28 onward.
+    for (const days of [28, 29, 400]) {
+      expect(resolveFavoriteClub(patch, T0 + days * DAY)).toBe("SPURS");
     }
+  });
+
+  it("is inert one millisecond before the cut and live exactly on it", () => {
+    // The boundary the old gameweek-integer version could not express at all.
+    const patch = planFavoriteClubChange({ favoriteClub: "ARSENAL" }, T0, "SPURS");
+    const cut = patch.favoriteClubEffectiveFrom as number;
+    expect(resolveFavoriteClub(patch, cut - 1)).toBe("ARSENAL");
+    expect(resolveFavoriteClub(patch, cut)).toBe("SPURS");
+  });
+
+  it("does not shorten across a congested fixture list", () => {
+    // The whole reason for STOP-F. Under the old rule four gameweeks could
+    // elapse in ~2 calendar weeks when midweek rounds intervene; under this one
+    // the elapsed TIME is the only thing that counts, so a busy fortnight
+    // changes nothing.
+    const patch = planFavoriteClubChange({ favoriteClub: "ARSENAL" }, T0, "SPURS");
+    const fourteenDaysAndSixGameweeksLater = T0 + 14 * DAY;
+    expect(resolveFavoriteClub(patch, fourteenDaysAndSixGameweeksLater)).toBe("ARSENAL");
   });
 
   it("the exemption follows the club in force, not the queued one", () => {
-    const patch = planFavoriteClubChange({ favoriteClub: "ARSENAL" }, 3, "SPURS");
+    const patch = planFavoriteClubChange({ favoriteClub: "ARSENAL" }, T0, "SPURS");
     const slots = squadOf(FOUR_FOUR_TWO).map((s, i) =>
       i < 4 ? { ...s, playerId: `s${i}` } : s,
     );
     const pool = poolOf(...[0, 1, 2, 3].map((i) => player({ _id: `s${i}`, clubId: "SPURS" })));
 
-    // Four Spurs players in GW4: the change has not landed, so no exemption.
-    expect(validateClubCap(slots, pool, resolveFavoriteClub(patch, 4)).ok).toBe(false);
-    // The same squad in GW7: Spurs is now the favorite, so it is legal.
-    expect(validateClubCap(slots, pool, resolveFavoriteClub(patch, 7)).ok).toBe(true);
+    // Four Spurs players a week in: the change has not landed, so no exemption.
+    expect(validateClubCap(slots, pool, resolveFavoriteClub(patch, T0 + 7 * DAY)).ok).toBe(false);
+    // The same squad after the cooldown: Spurs is the favorite, so it is legal.
+    expect(validateClubCap(slots, pool, resolveFavoriteClub(patch, T0 + 28 * DAY)).ok).toBe(true);
   });
 
   it("reverting to the club already in force cancels the queued change", () => {
-    const queued = planFavoriteClubChange({ favoriteClub: "ARSENAL" }, 3, "SPURS");
-    const reverted = planFavoriteClubChange(queued, 4, "ARSENAL");
+    const queued = planFavoriteClubChange({ favoriteClub: "ARSENAL" }, T0, "SPURS");
+    const reverted = planFavoriteClubChange(queued, T0 + DAY, "ARSENAL");
     expect(reverted.favoriteClub).toBe("ARSENAL");
     expect(reverted.favoriteClubPending).toBeUndefined();
-    expect(resolveFavoriteClub(reverted, 99)).toBe("ARSENAL");
+    expect(resolveFavoriteClub(reverted, T0 + 400 * DAY)).toBe("ARSENAL");
   });
 
   it("a second change queues off the settled club, restarting the cooldown", () => {
-    const first = planFavoriteClubChange({ favoriteClub: "ARSENAL" }, 3, "SPURS");
-    // By GW7 Spurs has landed; changing again then runs to GW11.
-    const second = planFavoriteClubChange(first, 7, "CHELSEA");
+    const first = planFavoriteClubChange({ favoriteClub: "ARSENAL" }, T0, "SPURS");
+    // By day 28 Spurs has landed; changing again then runs to day 56.
+    const second = planFavoriteClubChange(first, T0 + 28 * DAY, "CHELSEA");
     expect(second.favoriteClub).toBe("SPURS");
-    expect(second.favoriteClubEffectiveFrom).toBe(11);
-    expect(resolveFavoriteClub(second, 10)).toBe("SPURS");
-    expect(resolveFavoriteClub(second, 11)).toBe("CHELSEA");
+    expect(second.favoriteClubEffectiveFrom).toBe(T0 + 56 * DAY);
+    expect(resolveFavoriteClub(second, T0 + 55 * DAY)).toBe("SPURS");
+    expect(resolveFavoriteClub(second, T0 + 56 * DAY)).toBe("CHELSEA");
   });
 
   it("returns null when no favorite was ever set", () => {
-    expect(resolveFavoriteClub({}, 5)).toBeNull();
+    expect(resolveFavoriteClub({}, T0)).toBeNull();
   });
 });
 
-// ── finality ──
+// ── zoned wall clock ──
+//
+// The "finality cut" suite that used to sit here tested
+// fantasyConstants.finalityAtOrAfter, which the owner's STOP-E ruling deleted
+// (a fixed Tuesday cannot express a midweek gameweek settling on Friday). Its
+// coverage — Paris wall clock, CET vs CEST, both DST switches — moved to
+// fantasyGameweekWindows.test.ts, against windowFor().finalityAt.
+//
+// What remains here is the primitive those tests were really leaning on, and
+// which fantasyConstants still owns.
 
-describe("finality cut: Tuesday 23:59 Europe/Paris (FW-1 STOP-5)", () => {
-  /**
-   * "Tue 23:59" in Paris. Built from formatToParts rather than format() so the
-   * assertion pins the wall clock and not an ICU version's comma placement.
-   */
-  const partsInParis = (t: number) => {
-    const parts = new Intl.DateTimeFormat("en-GB", {
-      timeZone: FINALITY_TIME_ZONE,
-      hourCycle: "h23",
-      weekday: "short",
-      hour: "2-digit",
-      minute: "2-digit",
-    }).formatToParts(new Date(t));
-    const at = (type: string) => parts.find((p) => p.type === type)?.value ?? "";
-    return `${at("weekday")} ${at("hour")}:${at("minute")}`;
-  };
-
-  it("lands on Tuesday 23:59 Paris time in winter (CET, UTC+1)", () => {
-    const janSaturday = Date.UTC(2027, 0, 9, 12, 0); // Sat 2027-01-09
-    const finality = finalityAtOrAfter(janSaturday);
-    expect(partsInParis(finality)).toBe("Tue 23:59");
-    // 23:59 CET == 22:59Z
-    expect(new Date(finality).toISOString()).toBe("2027-01-12T22:59:00.000Z");
-  });
-
-  it("lands on Tuesday 23:59 Paris time in summer (CEST, UTC+2)", () => {
-    const augSaturday = Date.UTC(2026, 7, 15, 12, 0); // Sat 2026-08-15
-    const finality = finalityAtOrAfter(augSaturday);
-    expect(partsInParis(finality)).toBe("Tue 23:59");
-    // 23:59 CEST == 21:59Z — an hour earlier in UTC than the winter cut. A
-    // fixed UTC+1 would have put this at 22:59Z, i.e. 00:59 local Wednesday.
-    expect(new Date(finality).toISOString()).toBe("2026-08-18T21:59:00.000Z");
-  });
-
-  it("is the same local wall clock on both sides of the DST switch", () => {
-    // Paris springs forward 2027-03-28; these two weekends straddle it.
-    const before = finalityAtOrAfter(Date.UTC(2027, 2, 20, 12, 0));
-    const after = finalityAtOrAfter(Date.UTC(2027, 2, 30, 12, 0));
-    expect(partsInParis(before)).toBe("Tue 23:59");
-    expect(partsInParis(after)).toBe("Tue 23:59");
-    // …but a different UTC offset, which is exactly what "wall clock" means.
-    expect(new Date(before).getUTCHours()).toBe(22);
-    expect(new Date(after).getUTCHours()).toBe(21);
-  });
-
-  it("rolls to next Tuesday once this week's cut has passed", () => {
-    const cut = finalityAtOrAfter(Date.UTC(2026, 7, 15, 12, 0));
-    const justAfter = finalityAtOrAfter(cut + 60_000);
-    expect(justAfter - cut).toBe(7 * 86_400_000);
-    expect(partsInParis(justAfter)).toBe("Tue 23:59");
-  });
-
-  it("returns the cut itself when asked at exactly that instant", () => {
-    const cut = finalityAtOrAfter(Date.UTC(2026, 7, 15, 12, 0));
-    expect(finalityAtOrAfter(cut)).toBe(cut);
-  });
-
+describe("zonedWallClockToEpochMs (FW-1 STOP-5: Europe/Paris wall clock)", () => {
   it("round-trips a wall clock through the DST gap without drifting a day", () => {
     // 2027-03-28 02:30 Paris does not exist (clocks jump 02:00 -> 03:00).
     // The resolver must still land on that morning, not the previous day.
     const resolved = zonedWallClockToEpochMs(2027, 3, 28, 2, 30);
     expect(new Date(resolved).toISOString().slice(0, 10)).toBe("2027-03-28");
+  });
+
+  it("resolves the same wall clock to different instants across DST", () => {
+    // 23:59 Paris is 22:59Z in winter (CET) and 21:59Z in summer (CEST).
+    const winter = zonedWallClockToEpochMs(2027, 1, 12, 23, 59);
+    const summer = zonedWallClockToEpochMs(2026, 8, 18, 23, 59);
+    expect(new Date(winter).toISOString()).toBe("2027-01-12T22:59:00.000Z");
+    expect(new Date(summer).toISOString()).toBe("2026-08-18T21:59:00.000Z");
   });
 });

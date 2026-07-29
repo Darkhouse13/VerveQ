@@ -281,7 +281,7 @@ describe("per-club cap and the favorite-club exemption, end to end", () => {
   });
 
   it("allows a 4th when that club is the favorite in force at build time", async () => {
-    await setFavoriteClub(world.ctx, { clubId: "SAT_A", gameweekId: world.gameweekId });
+    await setFavoriteClub(world.ctx, { clubId: "SAT_A" });
     const squadId = await newBudgetSquad();
 
     const squad = world.db.rows("fantasySquads").find((r) => r._id === squadId);
@@ -301,7 +301,7 @@ describe("per-club cap and the favorite-club exemption, end to end", () => {
     }
 
     // Setting SAT_A as favorite now applies immediately at profile level…
-    await setFavoriteClub(world.ctx, { clubId: "SAT_A", gameweekId: world.gameweekId });
+    await setFavoriteClub(world.ctx, { clubId: "SAT_A" });
     // …but this squad was built before it, so its snapshot is still null.
     await expect(
       setSlot(world.ctx, { squadId, slotIndex: 3, playerId: world.players.SAT_A_4 }),
@@ -311,7 +311,9 @@ describe("per-club cap and the favorite-club exemption, end to end", () => {
 
 // ── favorite cooldown, end to end ──
 
-describe("favorite-club cooldown, end to end (DRAFT_ROOM v1.0 ledger 7)", () => {
+describe("favorite-club cooldown, end to end (DRAFT_ROOM v1.0.2 ledger 7 / STOP-F)", () => {
+  const DAY = 86_400_000;
+
   async function gameweek(gwNumber: number): Promise<string> {
     return await world.db.insert("fantasyGameweeks", {
       season: "2026-2027",
@@ -322,25 +324,38 @@ describe("favorite-club cooldown, end to end (DRAFT_ROOM v1.0 ledger 7)", () => 
     });
   }
 
-  it("a change in GW3 leaves the old club in force through GW6 and lands in GW7", async () => {
-    await setFavoriteClub(world.ctx, { clubId: "SAT_A", gameweekId: world.gameweekId });
+  /**
+   * The cooldown is wall-clock time and the handler reads `Date.now()`, so
+   * these tests MOVE the clock rather than incrementing a gameweek number.
+   * That is the whole point of STOP-F: the gameweek a squad belongs to no
+   * longer has any bearing on whether a favorite change has landed.
+   *
+   * The clock is already faked by `beforeEach` (pinned to THURSDAY) and
+   * restored by `afterEach`. These tests only call `setSystemTime` — installing
+   * and tearing down their own fake timers would disable the harness's clock
+   * for whatever ran next in the file.
+   */
+  it("leaves the old club in force for 28 days, then lands", async () => {
+    const t0 = THURSDAY;
 
-    const gw3 = world.gameweekId; // seeded at gwNumber 3
-    const result = (await setFavoriteClub(world.ctx, {
-      clubId: "SAT_B",
-      gameweekId: gw3,
-    })) as { inForce: string; pending: string; effectiveFrom: number };
+    await setFavoriteClub(world.ctx, { clubId: "SAT_A" });
+    const result = (await setFavoriteClub(world.ctx, { clubId: "SAT_B" })) as {
+      inForce: string;
+      pending: string;
+      effectiveFrom: number;
+    };
 
     expect(result).toMatchObject({
       inForce: "SAT_A",
       pending: "SAT_B",
-      effectiveFrom: 7,
+      effectiveFrom: t0 + 28 * DAY,
     });
 
-    // A squad built in GW6 still snapshots the OLD club.
-    const gw6 = await gameweek(6);
+    // Day 27 — still the OLD club, regardless of which gameweek we build in.
+    vi.setSystemTime(t0 + 27 * DAY);
+    const early = await gameweek(6);
     const { squadId: sixth } = (await createSquad(world.ctx, {
-      gameweekId: gw6,
+      gameweekId: early,
       context: "budget",
       formation: FOUR_FOUR_TWO,
       finisherRoles: [...TWO_ATT_FINISHERS],
@@ -349,10 +364,11 @@ describe("favorite-club cooldown, end to end (DRAFT_ROOM v1.0 ledger 7)", () => 
       world.db.rows("fantasySquads").find((r) => r._id === sixth)?.favoriteClubAtBuild,
     ).toBe("SAT_A");
 
-    // A squad built in GW7 snapshots the new one.
-    const gw7 = await gameweek(7);
+    // Day 28 — the change has landed.
+    vi.setSystemTime(t0 + 28 * DAY);
+    const late = await gameweek(7);
     const { squadId: seventh } = (await createSquad(world.ctx, {
-      gameweekId: gw7,
+      gameweekId: late,
       context: "budget",
       formation: FOUR_FOUR_TWO,
       finisherRoles: [...TWO_ATT_FINISHERS],
@@ -360,6 +376,29 @@ describe("favorite-club cooldown, end to end (DRAFT_ROOM v1.0 ledger 7)", () => 
     expect(
       world.db.rows("fantasySquads").find((r) => r._id === seventh)?.favoriteClubAtBuild,
     ).toBe("SAT_B");
+  });
+
+  it("does not land early just because many gameweeks have passed", async () => {
+    // The regression STOP-F exists to prevent: under the old 4-gameweek rule a
+    // congested fortnight (weekend + midweek + weekend + midweek) satisfied the
+    // cooldown in about 14 days. Elapsed time is now the only thing that counts.
+    const t0 = THURSDAY;
+
+    await setFavoriteClub(world.ctx, { clubId: "SAT_A" });
+    await setFavoriteClub(world.ctx, { clubId: "SAT_B" });
+
+    vi.setSystemTime(t0 + 14 * DAY);
+    for (const gwNumber of [4, 5, 6, 7]) await gameweek(gwNumber);
+    const gw = await gameweek(8);
+    const { squadId } = (await createSquad(world.ctx, {
+      gameweekId: gw,
+      context: "budget",
+      formation: FOUR_FOUR_TWO,
+      finisherRoles: [...TWO_ATT_FINISHERS],
+    })) as { squadId: string };
+    expect(
+      world.db.rows("fantasySquads").find((r) => r._id === squadId)?.favoriteClubAtBuild,
+    ).toBe("SAT_A");
   });
 });
 

@@ -211,8 +211,10 @@ export const createSquad = mutation({
     }
 
     const user = await ctx.db.get(userId);
+    // The cooldown is measured in time, not gameweeks (DRAFT_ROOM v1.0.2
+    // ledger 7 / STOP-F), so this resolves against the clock at build time.
     const favoriteClubAtBuild =
-      user === null ? null : resolveFavoriteClub(user, gameweek.gwNumber);
+      user === null ? null : resolveFavoriteClub(user, Date.now());
 
     const squadId = await ctx.db.insert("fantasySquads", {
       userId,
@@ -416,25 +418,25 @@ export const setFormation = mutation({
 // ── favorite club ──
 
 /**
- * Set the profile-level favorite club, under the 4-gameweek cooldown.
+ * Set the profile-level favorite club, under the 28-day cooldown.
  *
  * Not in the ticket's mutation list, but the cooldown is unreachable — and
  * therefore untestable end-to-end — without a way to set the field. The whole
  * rule lives in lib/fantasyFavoriteClub; this is authorization plus a patch.
  *
- * `gwNumber` comes from the CURRENT gameweek on the server, never the client.
+ * The instant comes from the SERVER clock, never the client. It no longer takes
+ * a gameweekId: under DRAFT_ROOM v1.0.2 the cooldown is 28 calendar days, so a
+ * gameweek is not an input to this decision at all. Passing one would invite a
+ * caller to believe it affected the outcome.
  */
 export const setFavoriteClub = mutation({
-  args: { clubId: v.string(), gameweekId: v.id("fantasyGameweeks") },
-  handler: async (ctx, { clubId, gameweekId }) => {
+  args: { clubId: v.string() },
+  handler: async (ctx, { clubId }) => {
     const userId = await requireUserId(ctx);
     const user = await ctx.db.get(userId);
     if (user === null) throw new Error(SIGN_IN_REQUIRED);
 
-    const gameweek = await ctx.db.get(gameweekId);
-    if (gameweek === null) throw new Error("Gameweek not found.");
-
-    const patch = planFavoriteClubChange(user, gameweek.gwNumber, clubId);
+    const patch = planFavoriteClubChange(user, Date.now(), clubId);
     await ctx.db.patch(userId, patch);
 
     return {

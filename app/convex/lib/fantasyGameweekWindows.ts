@@ -20,20 +20,18 @@
  * South American broadcasts and not worth being wrong about. The wording is
  * preserved in the names; the arithmetic uses the half-open form.
  *
- * ── Relationship to `fantasyConstants.finalityAtOrAfter` ──
+ * ── This is the ONLY finality rule (STOP-E) ──
  *
- * FW-1 shipped `finalityAtOrAfter` = "the first Tuesday 23:59 Paris at or after
- * an instant", under the STOP-5 ruling, when a gameweek was assumed to be a
- * weekend and nothing else. For a weekend window the two agree exactly: any
- * Friday–Monday kickoff resolves to that week's Tuesday 23:59 either way.
+ * FW-1 shipped `fantasyConstants.finalityAtOrAfter` = "the first Tuesday 23:59
+ * Paris at or after an instant", from a time when a gameweek was assumed to be
+ * a weekend and nothing else. For a weekend window the two agree exactly; they
+ * diverge for MIDWEEK windows, which must settle on Friday.
  *
- * They diverge for MIDWEEK windows, which FW-1 did not model: a Wednesday
- * fixture must settle on Friday 23:59, and `finalityAtOrAfter` would say the
- * following Tuesday. `finalityForWindow` below is the general rule and is what
- * ingestion uses. `finalityAtOrAfter` is left exactly as it is — it is correct
- * within its stated scope, it has tests asserting that scope, and quietly
- * rewriting a landed FW-1 function to mean something broader is how a ticket
- * boundary turns into a regression.
+ * Per the owner's STOP-E ruling (2026-07-29) that function was DELETED rather
+ * than kept alongside this one. Two finality functions in one namespace is an
+ * invitation for a caller to pick the wrong one, and the wrong one does not
+ * fail loudly — it returns a plausible timestamp up to four days late. Every
+ * consumer now reads `windowFor(instant).finalityAt`.
  *
  * PURE: no Convex imports, no `Date.now()`. Every function is a total function
  * of its arguments, which is what makes the whole thing directly unit testable.
