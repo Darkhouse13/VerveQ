@@ -1287,24 +1287,6 @@ export default defineSchema({
       fixtures: v.array(drawFixture),
     }),
     generatedAt: v.number(),
-    // ── EXPERIMENT-STAGE (daily slice). Data only; code lands separately. ──
-    // Written by an in-flight daily-slice experiment whose code was never
-    // committed — it was pushed to a dev deployment from a working tree that
-    // has since been discarded, and no branch, stash, worktree or reachable
-    // git object contains it (searched exhaustively 2026-07-29). The rows are
-    // the only surviving artefact, which is why the fields are declared here
-    // rather than the rows deleted.
-    //
-    // Declared v.optional so both shapes are legal: 13 of 14 dev boards carry
-    // them, and the board for 2026-07-16 predates the experiment. Nothing in
-    // the committed codebase reads or writes either field.
-    //
-    // Measured on dev: sliceCardIds is always 46 card ids ("real_0001", …) and
-    // sliceConfigVersion has a single value, "daily-slice-v1". Neither is
-    // constrained further here — pinning a length or a version literal would
-    // invent a contract the absent code never agreed to.
-    sliceCardIds: v.optional(v.array(v.string())),
-    sliceConfigVersion: v.optional(v.string()),
   }).index("by_dateKey", ["dateKey"]),
 
   // One run per user per dateKey (enforced server-side in draw.startRun).
