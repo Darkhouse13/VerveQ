@@ -619,3 +619,97 @@ still runs the pre-closeout functions**: this commit was not pushed, because
 pushing master's schema to dev still fails on that same drift. FW-2's
 bootstrapped data (1,752 fixtures / 49 gameweeks / 2,896 players) is untouched
 and intact.
+
+---
+
+## D16 — D6 RESOLVED: DRAW schema drift landed. Commit `c4e746d`
+
+Ticket D6-FIX, owner-approved after a Phase 0 recon. **D6 is closed.**
+
+**Commit:** `c4e746d2b8946ddb470eff8ea6c09e77bfa6bd01` — 1 file, +42/−1,
+`app/convex/schema.ts` only. `npm run check` green (101 files, 1,007 tests).
+
+### What the drift actually was
+
+Recon was done from a **full snapshot export**, not sampling — every table's
+document keys diffed against `schema.ts`, and every literal-union field checked
+for undeclared values. Exhaustive result:
+
+| Table | Field / value | Type | Rows |
+| --- | --- | --- | --- |
+| `drawDailyBoards` | `sliceCardIds` | `string[]`, always length 46 | **13 of 14** |
+| `drawDailyBoards` | `sliceConfigVersion` | `string`, only `"daily-slice-v1"` | **13 of 14** |
+| `drawRuns` | `shareSlug` | `string`, 12ch `A-Z0-9`, `DR`-prefixed, unique | **3 of 3** |
+| `funnelEvents` | `type: "draw_share_view"` | union literal | 4 |
+| `funnelEvents` | `type: "draw_share_convert"` | union literal | 1 |
+
+Plus the missing `drawRuns.by_shareSlug` index.
+
+**Two corrections to figures I reported in D6.** Both were sampling artefacts,
+and both are why the export was worth doing:
+
+1. `drawDailyBoards` drift is **13 rows, not 1**. Only the 2026-07-16 board
+   predates the experiment.
+2. The orphan-table count is **11, not 9** (list below).
+
+### The code is unrecoverable — verified, not assumed
+
+Searched every local and remote branch, all three draw worktrees *including
+their uncommitted working-tree changes*, `git stash` (empty), and dangling
+commits and blobs via `git fsck`. **No hit anywhere.** The experiments were
+pushed to dev from a working tree that was later discarded.
+
+That is the whole argument for the chosen fix: **the rows on dev are the only
+surviving artefact of both experiments**, so they are described rather than
+deleted.
+
+### What the data says the feature was
+
+Each `shareSlug` appears verbatim as `funnelEvents.refLinkCode` on the
+`draw_share_*` rows, with `{dateKey}` as meta and `actor: "anon"` — e.g. slug
+`DR8GS8XCKNNX` has one view and one convert. So: a share-your-run experiment
+where the slug is the public link code and `by_shareSlug` resolves it back to
+the run. `sliceCardIds`/`sliceConfigVersion` are a separate daily-slice
+experiment on the board generator.
+
+### Deliberately under-constrained
+
+Every field is `v.optional` and nothing is pinned beyond what the data proves.
+`sliceCardIds` is *always* 46 ids and `sliceConfigVersion` *always*
+`"daily-slice-v1"` on dev, but fixing a length or a version literal would invent
+a contract the absent code never agreed to. Optional is also simply correct:
+the 2026-07-16 board has no slice fields, and an unshared run has no slug.
+
+### Verification
+
+Snapshot exported **before and after** the push and compared:
+
+- **Every table's row count unchanged** (all 72, not just the touched ones).
+- `drawDailyBoards`, `drawRuns`, `funnelEvents`, `fantasyFixtures`,
+  `fantasyGameweeks`, `fantasyPlayers` all **byte-identical by content hash**.
+- Fantasy bootstrap intact: **1,752 fixtures, 49 contiguous gameweeks (1..49),
+  2,895 players, every price null**.
+- Index restored as `["shareSlug", "_creationTime"]` — exactly the shape the
+  original deletion notice reported.
+- **Master now pushes clean, and a second push is a no-op.**
+
+Pre-change snapshot retained this session as `dev-snapshot.zip`.
+
+### Flagged for a future owner ticket — NOT touched
+
+**11 tables exist on dev with no `schema.ts` entry, all with 0 rows**, left over
+from removed subsystems:
+
+`challengeHeadToHeads`, `challengeMatchHistory`, `challenges`, `gridIndex`,
+`liveMatches`, `multiplayerMatches`, `statFacts`, `whoAmIApprovedClues`,
+`whoAmIClues`, `whoAmIClueTranslations`, `whoAmISessions`
+
+Being empty they do not block schema validation — this is deployment cruft, not
+a schema problem, and clearing it is a separate decision.
+
+### One unrelated thing noticed, left alone
+
+`app/src/lib/drawEngine/DECISIONS.md` carries an **uncommitted owner amendment**
+(the E5-arc Tier-2 acceptance criterion, 99.5% → 99.4% with a per-slice floor,
+dated 2026-07-25). It predates this session and is nobody's business but the
+owner's, so it was neither staged nor reverted. It is still uncommitted.
