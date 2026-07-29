@@ -17,8 +17,8 @@ const drawPosition = v.union(
 //
 // Exported because the ingest mutation's arguments and these table shapes must
 // be the SAME validator, not two that agree today. `fantasyScores.ts` imports
-// them from here, and `lib/fantasyScoring.ts` carries a two-way type assertion
-// proving `fantasyPlayerStatsValidator` still describes the engine's
+// them from here, and `lib/fantasyScorePipeline.ts` carries a two-way type
+// assertion proving `fantasyPlayerStatsValidator` still describes the engine's
 // `PlayerMatchStats` exactly — a field added to one and not the other is a
 // compile error rather than a silently unscored stat.
 export const fantasySlot = v.union(
@@ -1866,8 +1866,10 @@ export default defineSchema({
     events: v.array(fantasyTimedEventValidator),
     /** Null for a starter — never 0, which would credit a whole match (G4). */
     entryMinute: v.union(v.number(), v.null()),
-    /** The provider's status short code when this revision was read. */
-    providerStatus: v.string(),
+    /** The fixture's lifecycle status when this revision was read. FW-2 stores
+     *  the MAPPED status, not the provider's short code, so this is that:
+     *  "finished" and not "FT". */
+    fixtureStatus: v.string(),
     ingestedAt: v.number(),
   })
     // One index serves both reads: eq(fixtureId) walks a fixture's whole set in
@@ -1876,27 +1878,30 @@ export default defineSchema({
     .index("by_fixture_player_revision", ["fixtureId", "providerPlayerId", "revision"])
     .index("by_gameweek", ["gameweekId"]),
 
-  // One VERSION of one player's score, for one fixture, THROUGH ONE FIELDED
-  // SLOT. That last clause is why a score row is not simply per (player,
-  // fixture): SCORING_SPEC §Position templates scores "the slot position the
-  // user fielded", so the same stat line scores four different ways as a
-  // starter and four more as a finisher (whose events are entry-filtered and
-  // whose late goals carry the ×1.25 decisive-moment multiplier). The pipeline
-  // therefore materializes all eight contexts per scored player-fixture, and
-  // squad aggregation reads the one its slot names.
+  // One VERSION of one player's score for one fixture — carrying the score in
+  // EVERY FIELDED SLOT, because a score is not a property of the player alone.
   //
-  // Materializing all eight — rather than only the contexts some squad actually
-  // fielded — keeps this table a pure function of the fixture's raw stats. A
-  // demand-driven alternative would have to fan out from a fixture to every
-  // squad slot holding one of its players, which is unbounded in ownership and
-  // would put a popular player's 100k slots inside one ingest transaction.
+  // SCORING_SPEC §Position templates scores "the slot position the user
+  // fielded", so one stat line scores four different ways as a starter and four
+  // more as a finisher (whose events are entry-filtered and whose late goals
+  // carry the ×1.25 decisive-moment multiplier). `baseScores` is that 4×2 grid,
+  // and squad aggregation reads the cell its slot names. The eight numbers ride
+  // on ONE row rather than in eight rows because a feed revision revises a
+  // player's LINE — all eight cells at once — so one row per (player, fixture)
+  // is one version per thing that actually changes.
   //
-  // It also makes ABSENCE meaningful, which R7 requires: eight rows exist for
-  // every player of a scored fixture, so "no row" means "not scored" and never
-  // "scored zero". An honest zero (a player who did not appear, or a starter
-  // fielded in a finisher slot) is a row whose baseScore is 0.
+  // Squad-independent by construction: this table is a pure function of the
+  // fixture's raw stats. A demand-driven alternative (score only the contexts
+  // some squad fielded) would have to fan out from a fixture to every squad slot
+  // holding one of its players, which is unbounded in ownership and would put a
+  // popular player's 100k slots inside one ingest transaction.
   //
-  // IMMUTABLE NUMBERS. `baseScore`, `crowdFactor` and `verdictPosition` are
+  // It also makes ABSENCE meaningful, which R7 requires: a row exists for every
+  // player of a scored fixture, so "no row" means "not scored" and never "scored
+  // zero". An honest zero — a player who did not appear, or a starter fielded in
+  // a finisher slot — is a row whose cells are 0.
+  //
+  // IMMUTABLE NUMBERS. `baseScores`, `crowdFactor` and `verdictPosition` are
   // written once, at insert. A changed stat hash before finality inserts a NEW
   // version (`revisedFrom` naming the one it supersedes, and the superseded row
   // patched with `supersededByVersion` so "current" is a field read rather than
@@ -1908,20 +1913,44 @@ export default defineSchema({
     fixtureId: v.id("fantasyFixtures"),
     providerPlayerId: v.string(),
     playerId: v.optional(v.id("fantasyPlayers")),
-    /** `<providerPlayerId>:<fieldedSlot>:<role>` — the scoring context, one
-     *  string so a slot's score is one indexed lookup. */
-    contextKey: v.string(),
-    fieldedSlot: fantasySlot,
-    role: v.union(v.literal("starter"), v.literal("finisher")),
-    /** 1-based, monotonic per (fixture, contextKey). */
+    /** 1-based, monotonic per (fixture, player). */
     version: v.number(),
     state: v.union(v.literal("provisional"), v.literal("final")),
-    /** Engine output at crowdFactor 0: template + mismatch dampener applied. */
-    baseScore: v.number(),
-    /** Signed fraction, clamped to ±0.15 BY THE PIPELINE (R5). 0 at launch. */
+    /**
+     * Engine output at crowdFactor 0 — template + mismatch dampener applied —
+     * for each of the eight ways the slot the user fielded can name.
+     *
+     * R5 keeps base and crowd apart and DERIVES the total, so nothing here is a
+     * final number: `applyCrowdFactor(baseScores[role][slot], crowdFactor)` is.
+     */
+    baseScores: v.object({
+      starter: v.object({
+        GK: v.number(),
+        DEF: v.number(),
+        MID: v.number(),
+        ATT: v.number(),
+      }),
+      finisher: v.object({
+        GK: v.number(),
+        DEF: v.number(),
+        MID: v.number(),
+        ATT: v.number(),
+      }),
+    }),
+    /** Signed fraction, enforced within ±0.15 BY THE PIPELINE (R5). 0 at launch. */
     crowdFactor: v.number(),
-    /** The feed's lineup position for this appearance (R6). */
-    verdictPosition: fantasySlot,
+    /**
+     * The feed's lineup position for THIS appearance — the verdict the mismatch
+     * dampener compares the fielded slot against (R6), stored so a reclamation
+     * court ruling can re-score against a changed verdict later.
+     *
+     * Null only when the feed carried no position AND the player played no
+     * minutes: the engine returns 0 for a 0-minute line before it reaches any
+     * template, so no verdict is needed to score that row and inventing one
+     * would be the only lie available. A played line with no position leaves the
+     * whole fixture `awaiting_data` instead.
+     */
+    verdictPosition: v.union(fantasySlot, v.null()),
     /** Which raw revision produced these numbers. */
     statHash: v.string(),
     rawRevision: v.number(),
@@ -1934,8 +1963,8 @@ export default defineSchema({
     scoredAt: v.number(),
     finalizedAt: v.optional(v.number()),
   })
-    .index("by_fixture_context_version", ["fixtureId", "contextKey", "version"])
-    .index("by_gameweek_context_version", ["gameweekId", "contextKey", "version"])
+    .index("by_fixture_player_version", ["fixtureId", "providerPlayerId", "version"])
+    .index("by_gameweek_player_version", ["gameweekId", "providerPlayerId", "version"])
     .index("by_gameweek_state", ["gameweekId", "state"]),
 
   // Per-fixture ingest/score status — the row that answers "why does this
@@ -1951,9 +1980,18 @@ export default defineSchema({
     fixtureId: v.id("fantasyFixtures"),
     gameweekId: v.id("fantasyGameweeks"),
     state: v.union(v.literal("awaiting_data"), v.literal("scored")),
-    /** Hash over the whole fixture's player set. R2's fixture-level no-op. */
-    fixtureStatHash: v.optional(v.string()),
-    providerStatus: v.string(),
+    /**
+     * Hash over EVERY INPUT to this fixture's scoring pass — its players' stat
+     * hashes and their crowd factors. R2's fixture-level no-op turns on it.
+     *
+     * Crowd factors are in here even though they are not feed data and are
+     * absent from a per-player stat hash: without them, a fixture whose votes
+     * moved and whose stats did not would be waved through as "already
+     * ingested" once CROWD_VOTING ships.
+     */
+    fixtureInputHash: v.optional(v.string()),
+    /** The MAPPED fixture status at the last attempt ("finished", not "FT"). */
+    fixtureStatus: v.string(),
     hasPlayerStats: v.boolean(),
     hasEvents: v.boolean(),
     playerRows: v.number(),
@@ -1962,6 +2000,13 @@ export default defineSchema({
     revisions: v.number(),
     /** Raw revisions recorded after finality, which changed no score (R4). */
     postFinalityRevisions: v.optional(v.number()),
+    /**
+     * Re-reads spent looking for a revision on an ALREADY SCORED fixture.
+     * R4 requires a changed hash to be noticed before finality, which means
+     * re-reading a settled fixture; this counter is what stops that being an
+     * unbounded poll. See REVISION_CHECK_BUDGET in fantasyScores.ts.
+     */
+    revisionChecks: v.optional(v.number()),
     unscoreableReason: v.optional(v.string()),
     firstScoredAt: v.optional(v.number()),
     scoredAt: v.optional(v.number()),
@@ -1987,11 +2032,27 @@ export default defineSchema({
     finalizedAt: v.optional(v.number()),
     /** Score rows the finalization pass flipped. Idempotence evidence. */
     scoreRowsFinalized: v.optional(v.number()),
-    /** R7's alert: set once, 6h or less before finality, if anything is
-     *  unscored. Queryable by design — a log line alone is not a surface. */
+    /**
+     * R7's alert: set 6h or less before finality if anything in the gameweek is
+     * unscored. Queryable by design — a log line alone is not a surface.
+     *
+     * Each entry carries the fixture's status and reason, because "unscored"
+     * covers two very different things: a POSTPONED fixture that will never be
+     * scored in this window (nothing is broken) and an FT-class fixture the feed
+     * has not supplied data for (something is). An operator needs to tell them
+     * apart at a glance, before the cut.
+     */
     unscoredAlertAt: v.optional(v.number()),
     unscoredAlertCount: v.optional(v.number()),
-    unscoredAlertFixtures: v.optional(v.array(v.string())),
+    unscoredAlertFixtures: v.optional(
+      v.array(
+        v.object({
+          providerFixtureId: v.string(),
+          fixtureStatus: v.string(),
+          reason: v.union(v.string(), v.null()),
+        }),
+      ),
+    ),
   })
     .index("by_gameweek", ["gameweekId"])
     .index("by_state", ["state"]),

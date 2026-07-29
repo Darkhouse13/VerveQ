@@ -23,6 +23,15 @@ crons.daily("draw-daily-board", { hourUTC: 0, minuteUTC: 2 }, internal.drawBoard
 // 5 requests per sync x 96 runs/day = ~480/day against a measured 7,500/day cap.
 crons.cron("fantasy-sync-fixtures", "0,15,30,45 * * * *", internal.fantasyIngest.syncFixtures, {});
 crons.cron("fantasy-lock-sweep", "5,20,35,50 * * * *", internal.fantasyLocks.lockSweep, {});
+// Weekend Fantasy scoring (FW-4). POST-FIXTURE ONLY — a fixture is read once it
+// is FT-class and more than 2h past kickoff (ruling R2), never in play. Runs at
+// :10 past each quarter, i.e. AFTER the :00/:15/:30/:45 fixture sync, because the
+// pass decides what is scoreable from FW-2's fixture status rather than by asking
+// the feed for it again. Idempotent: a fixture whose stat hash has not changed
+// writes nothing at all, so a tick that finds nothing costs one query and zero
+// requests. The action prints its call plan before every pull and refuses to
+// spend if a gameweek projects past 500 calls.
+crons.cron("fantasy-score-fixtures", "10,25,40,55 * * * *", internal.fantasyScores.scoreDueFixtures, {});
 // FW-3 draft rooms: expires dead lobbies and re-drives any room whose
 // scheduled hop was lost. Every action is a guarded no-op on a healthy room,
 // so the tight interval buys stall-recovery, not load.

@@ -23,6 +23,8 @@
  * as an empty result.
  */
 
+import type { FeedStatBlock, MatchEvent } from "./lib/fantasyFeedStats";
+
 /** api-sports.io direct. RapidAPI uses a different host and header pair. */
 const API_BASE_URL = "https://v3.football.api-sports.io";
 const RAPIDAPI_HOST = "api-football-v1.p.rapidapi.com";
@@ -249,4 +251,49 @@ export async function fetchSquad(
   teamId: number,
 ): Promise<FeedSquad[]> {
   return client.get<FeedSquad[]>("/players/squads", { team: teamId });
+}
+
+// ────────────────────────────── scoring reads (FW-4, additive to this client)
+//
+// Two endpoints, two calls per fixture, and the scoring pipeline reads BOTH or
+// scores nothing (FW-4 R7): the per-player stat lines carry no clock and no own
+// goals, and the events feed carries no aggregate counts. Either one alone would
+// silently under-score somebody.
+//
+// The shapes are the measured ones and live in lib/fantasyFeedStats.ts, which is
+// also what normalises them — this file only performs the request.
+
+export interface FeedFixturePlayerRow {
+  player: { id: number; name: string };
+  /** One entry per fixture; index 0 is this fixture's line. */
+  statistics: FeedStatBlock[];
+}
+
+export interface FeedFixturePlayers {
+  team: { id: number; name: string };
+  players: FeedFixturePlayerRow[];
+}
+
+/** Per-player aggregate lines for one fixture. 1 request. */
+export async function fetchFixturePlayers(
+  client: ApiFootballClient,
+  providerFixtureId: string,
+): Promise<FeedFixturePlayers[]> {
+  return client.get<FeedFixturePlayers[]>("/fixtures/players", { fixture: providerFixtureId });
+}
+
+/**
+ * Timed events for one fixture. 1 request.
+ *
+ * An empty array counts as "events not present" and leaves the fixture unscored
+ * (R7, fail-closed). That is deliberate rather than pedantic: a finished match
+ * always carries at least its substitutions — 1,734 of them across the
+ * 192-fixture FS-1 sample, every one with an incoming player id — so an empty
+ * events response for an FT fixture is a feed failure, not a quiet match.
+ */
+export async function fetchFixtureEvents(
+  client: ApiFootballClient,
+  providerFixtureId: string,
+): Promise<MatchEvent[]> {
+  return client.get<MatchEvent[]>("/fixtures/events", { fixture: providerFixtureId });
 }
