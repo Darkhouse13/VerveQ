@@ -3,13 +3,13 @@
  *
  * A RANKING signal, not a score. Method (full write-up in PROXY_METHOD.md):
  *
- *  - Every scoring constant is sourced from scoring/scoring.ts BY CONSTRUCTION,
+ *  - Every scoring constant is sourced from app/convex/lib/fantasyScoring.ts BY CONSTRUCTION,
  *    not by copy: the exported v0.5.1 `scorePlayer` engine is driven with a
  *    synthetic 90-minute stat line built from the player's per-90 season rates
  *    (so caps apply to per-90 rates, ramps evaluate at season-average rates),
  *    and the context-dependent values (clean sheet, win, draw, concession
  *    unit) are recovered per position by probing the engine with controlled
- *    context diffs. scoring/ stays read-only; the constants cannot drift.
+ *    context diffs. The engine module stays read-only; the constants cannot drift.
  *
  *  - Clean sheets / concessions / team result cannot come from the player's
  *    aggregate row (keeper-only `conceded`, no result split), so they enter as
@@ -37,8 +37,13 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import { scorePlayer } from '../scoring/scoring.ts';
-import { emptyStats, type MatchContext, type PlayerMatchStats, type Slot } from '../scoring/types.ts';
+import {
+  scorePlayer,
+  emptyStats,
+  type MatchContext,
+  type PlayerMatchStats,
+  type Slot,
+} from '../../../app/convex/lib/fantasyScoring.ts';
 
 const PRICING_DIR = path.dirname(fileURLToPath(import.meta.url));
 const DATA_DIR = path.join(PRICING_DIR, 'data');
@@ -433,7 +438,7 @@ function main(): void {
         manifest: {
           generatedAt: new Date().toISOString(),
           method: 'PROXY_METHOD.md',
-          engine: 'scoring/scoring.ts (SCORING_SPEC v0.5.1), driven, not copied',
+          engine: 'app/convex/lib/fantasyScoring.ts (SCORING_SPEC v0.5.1), driven, not copied',
           probes,
           medians,
           counts: { topfive: topfive.length, promoted: promoted.length, flagged: flagged.length },

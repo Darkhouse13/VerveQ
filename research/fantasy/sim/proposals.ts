@@ -10,8 +10,12 @@
  *   npx tsx sim/proposals.ts
  */
 
-import { scorePlayer, DEFAULT_CAPS, type CapConfig } from '../scoring/scoring.ts';
-import type { LedgerEntry } from '../scoring/types.ts';
+import {
+  scorePlayer,
+  DEFAULT_CAPS,
+  type CapConfig,
+  type LedgerEntry,
+} from '../../../app/convex/lib/fantasyScoring.ts';
 import { loadDataset, type PlayerFixtureRow } from './dataset.ts';
 import { rowKey } from './squads.ts';
 

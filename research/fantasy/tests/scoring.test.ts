@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { formatPoints, scorePlayer } from '../scoring/scoring.ts';
 import {
+  formatPoints,
+  scorePlayer,
   emptyStats,
   type FieldedSlot,
   type MatchContext,
@@ -8,7 +9,7 @@ import {
   type ScoringInput,
   type Slot,
   type TimedPlayerEvent,
-} from '../scoring/types.ts';
+} from '../../../app/convex/lib/fantasyScoring.ts';
 
 /**
  * Hand-computed acceptance cases for SCORING_SPEC.md v0.5.0.

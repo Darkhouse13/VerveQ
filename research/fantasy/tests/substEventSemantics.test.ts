@@ -6,7 +6,7 @@ import {
   isSubstitution,
   outgoingPlayerId,
   type MatchEvent,
-} from '../scoring/events.ts';
+} from '../../../app/convex/lib/fantasyFeedStats.ts';
 
 /**
  * Guards the single most dangerous misreading available in this feed.

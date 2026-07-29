@@ -1,8 +1,34 @@
 /**
- * SCORING_SPEC.md v0.5.0 — the scoring engine.
+ * SCORING_SPEC.md v0.5.1 — THE scoring engine. One engine, this file.
  *
- * Pure and deterministic: same input, same output, no I/O, no clock, no RNG.
- * Implements v0.5.0 exactly as written.
+ * ── Why this file is here and not in research/ (FW-4 ruling R1) ──
+ *
+ * It was `research/fantasy/scoring/scoring.ts` (+ `types.ts`), where the FS-1
+ * calibration harness could reach it and the shipped product could not. Convex
+ * bundles from `app/convex/`, so a production scoring pass could only have got
+ * at it by copying it — and a copied scoring engine is two engines that agree
+ * until the first time someone edits one. So the engine moved HERE and the sim
+ * harness now imports it from this path: same file, two callers, and the FW-4
+ * regression gate asserts the live Convex path and the harness produce identical
+ * numbers for identical inputs. `research/fantasy/scoring/MOVED.md` is the
+ * pointer left at the old location.
+ *
+ * The move was byte-preserving for the arithmetic. `types.ts` was folded in
+ * (the harness's types cannot live outside the Convex bundle either), and
+ * `applyCrowdFactor` was extracted from the crowd block below so the PIPELINE
+ * can derive a total from a stored baseScore through the same expression the
+ * engine uses — see R5, which stores base and factor separately. Nothing else
+ * changed: the acceptance suite and the 2000-squad sweep both reproduce their
+ * pre-move outputs exactly.
+ *
+ * ── What this file is ──
+ *
+ * Pure and deterministic: same input, same output, no I/O, no clock, no RNG, and
+ * NO Convex import — the research harness has no `convex` dependency, and this
+ * file staying dependency-free is what keeps it importable from both sides.
+ *
+ * Implements v0.5.1 exactly as written (v0.5.1 was an editorial closeout of
+ * v0.5.0; no constant or structure changed).
  *
  * v0.5.0 applied the owner's rulings on the FS-1 Phase 4 calibration
  * (reports/fs1-phase4-calibration-2026-07-29.md). Where each lives here:
@@ -54,20 +80,178 @@
  * v0.4.1 settled the one consequence of G5 that Phase 2 flagged and did not fix:
  * the crowd factor now MIRRORS against a negative base —
  * `base >= 0 ? base x (1 + f) : base x (1 - f)` — so a positive crowd verdict
- * shrinks a negative score toward zero instead of deepening it. See the crowd
- * block in `scorePlayer`.
+ * shrinks a negative score toward zero instead of deepening it. See
+ * `applyCrowdFactor`.
  */
 
-import type {
-  FieldedSlot,
-  LedgerEntry,
-  PlayerMatchStats,
-  ScoreResult,
-  ScoringInput,
-  Slot,
-  TimedEventKind,
-  TimedPlayerEvent,
-} from './types.ts';
+/** The SCORING_SPEC version this engine implements. Stamped on every score row. */
+export const SCORING_SPEC_VERSION = '0.5.1';
+
+// ------------------------------------------------------------------ data shapes
+//
+// Formerly research/fantasy/scoring/types.ts. Pure data: no I/O, no dependency
+// on the feed client, no dependency on THE DRAW.
+
+export type Slot = 'GK' | 'DEF' | 'MID' | 'ATT';
+export type SlotRole = 'starter' | 'finisher';
+
+/** Which of the XI + 2 finisher slots the user played this player in. */
+export interface FieldedSlot {
+  readonly position: Slot;
+  readonly role: SlotRole;
+}
+
+/**
+ * One player's aggregate line for one match, normalised from the feed.
+ *
+ * The feed encodes "did not record this" as null; the normaliser converts that
+ * to 0, which the phase-1 probe proved is what it means (goal events reconcile
+ * exactly against the summed non-null totals). Every field here is a count, not
+ * a rate — including `passesAccurate`, which the feed ships as an accurate-pass
+ * COUNT despite being named `accuracy`.
+ */
+export interface PlayerMatchStats {
+  readonly minutes: number;
+  readonly goals: number;
+  readonly assists: number;
+  readonly shotsTotal: number;
+  readonly shotsOn: number;
+  readonly keyPasses: number;
+  readonly passesTotal: number;
+  readonly passesAccurate: number;
+  readonly dribblesAttempted: number;
+  readonly dribblesCompleted: number;
+  /** Tackles ATTEMPTED. The feed has no won/lost split (v0.3 §3). */
+  readonly tackles: number;
+  readonly interceptions: number;
+  readonly blocks: number;
+  readonly duelsTotal: number;
+  readonly duelsWon: number;
+  readonly foulsCommitted: number;
+  readonly foulsDrawn: number;
+  readonly yellowCards: number;
+  /** Second yellow and straight red are indistinguishable in the feed; v0.3 prices both at -4. */
+  readonly redCards: number;
+  readonly saves: number;
+  readonly penaltiesWon: number;
+  readonly penaltiesConceded: number;
+  readonly penaltiesScored: number;
+  readonly penaltiesMissed: number;
+  readonly penaltiesSaved: number;
+  /** From the timed-events feed; the per-player stat line does not carry it. */
+  readonly ownGoals: number;
+  readonly wasSubstitute: boolean;
+}
+
+/**
+ * Match-level facts the player's own stat line cannot supply.
+ *
+ * MEASURED (phase-1 probe, fixture 1208070): `goals.conceded` on the feed is a
+ * GOALKEEPER statistic. West Ham conceded three; only their keeper's row shows
+ * 3 and every outfield row shows 0. Reading clean sheets or the -1-per-2-conceded
+ * term off an outfield player's own line would therefore hand every defender in
+ * a 0-3 defeat a clean sheet. Team goals against must come from the fixture.
+ */
+export interface MatchContext {
+  readonly teamGoalsFor: number;
+  readonly teamGoalsAgainst: number;
+  readonly result: 'win' | 'draw' | 'loss';
+}
+
+/**
+ * The timed-event categories. Only these can be placed on the clock, which is
+ * what the finisher rules in v0.3 §Finishers require.
+ */
+export type TimedEventKind =
+  | 'goal'
+  | 'assist'
+  | 'yellowCard'
+  | 'redCard'
+  | 'ownGoal'
+  | 'penaltyWon'
+  | 'penaltyConceded'
+  | 'penaltyMissed'
+  | 'penaltySaved';
+
+export interface TimedPlayerEvent {
+  /** Whole-minute clock position, stoppage time included (90+4 -> 94). */
+  readonly minute: number;
+  readonly kind: TimedEventKind;
+}
+
+export interface ScoringInput {
+  readonly stats: PlayerMatchStats;
+  readonly context: MatchContext;
+  /**
+   * This player's timed events in this fixture. Required for a finisher (their
+   * entry filter and the post-75' multiplier are both clock-dependent) and
+   * ignored for a starter, whose events all count regardless of when they fell.
+   */
+  readonly events: readonly TimedPlayerEvent[];
+}
+
+/**
+ * One itemised line of the match ledger (v0.3 §Design principles item 2).
+ *
+ * `points` on every entry sums exactly to the returned total — multiplier
+ * entries carry the delta they introduced rather than a factor to re-apply. That
+ * is what makes the ledger reconstructable by addition alone.
+ */
+export interface LedgerEntry {
+  /** Stable machine key, e.g. `def.tackles`, `finisher.closer`. */
+  readonly code: string;
+  readonly label: string;
+  /** Units of the thing, where it is a countable. */
+  readonly count?: number;
+  /** Points per unit. */
+  readonly unit?: number;
+  /** count x unit, before any cap. Present when a cap could bite. */
+  readonly raw?: number;
+  readonly cap?: number;
+  /** Multiplicative factor, for multiplier lines. */
+  readonly factor?: number;
+  /** Contribution to the total. Sums across all entries to `points`. */
+  readonly points: number;
+  readonly note?: string;
+}
+
+export interface ScoreResult {
+  readonly points: number;
+  readonly ledger: readonly LedgerEntry[];
+}
+
+export function emptyStats(overrides: Partial<PlayerMatchStats> = {}): PlayerMatchStats {
+  return {
+    minutes: 0,
+    goals: 0,
+    assists: 0,
+    shotsTotal: 0,
+    shotsOn: 0,
+    keyPasses: 0,
+    passesTotal: 0,
+    passesAccurate: 0,
+    dribblesAttempted: 0,
+    dribblesCompleted: 0,
+    tackles: 0,
+    interceptions: 0,
+    blocks: 0,
+    duelsTotal: 0,
+    duelsWon: 0,
+    foulsCommitted: 0,
+    foulsDrawn: 0,
+    yellowCards: 0,
+    redCards: 0,
+    saves: 0,
+    penaltiesWon: 0,
+    penaltiesConceded: 0,
+    penaltiesScored: 0,
+    penaltiesMissed: 0,
+    penaltiesSaved: 0,
+    ownGoals: 0,
+    wasSubstitute: false,
+    ...overrides,
+  };
+}
 
 // ------------------------------------------------------------------ constants
 
@@ -126,6 +310,17 @@ const ATT_DRIBBLE = 0.5;
 const ATT_DRIBBLE_CAP = 3;
 
 /**
+ * The launch crowd clamp — SCORING_SPEC §Crowd multiplier, ±15% (P7).
+ *
+ * Exported because THE PIPELINE enforces it, not the engine (FW-4 ruling R5):
+ * `scorePlayer` applies whatever factor it is handed, and the ingest path
+ * REJECTS a factor outside this band fail-closed rather than clamping one
+ * silently. A clamp applied here would turn a bad upstream number into a
+ * plausible score instead of an error.
+ */
+export const CROWD_FACTOR_LIMIT = 0.15;
+
+/**
  * ── Cap overrides, for Phase 3 sensitivity sweeps only ──
  *
  * Every value defaults to the spec's. `scorePlayer` called without a `caps`
@@ -136,7 +331,7 @@ const ATT_DRIBBLE_CAP = 3;
  * reading the spec: a cap that never binds is decoration, and one that binds on
  * every row has flattened the stat it was meant to temper. TICKET FS-1 asks for
  * 0.5x and 2x. Overriding a constant is strictly a HARNESS capability — the
- * report proposes, it never sets.
+ * report proposes, it never sets, and the pipeline never passes this argument.
  */
 export interface CapConfig {
   readonly gkSave: number;
@@ -429,9 +624,10 @@ function attackerEntries(stats: PlayerMatchStats, caps: CapConfig): LedgerEntry[
  *
  * @param entryMinute Minute the player came on, or null for a starter and for
  *   an unused finisher. Never 0 for a substitute — see `entryMinute` in
- *   events.ts, where null is deliberately distinct from 0.
+ *   fantasyFeedStats.ts, where null is deliberately distinct from 0.
  * @param crowdFactor Signed fraction, e.g. +0.15 for the launch clamp ceiling.
- *   v0.3 §Crowd multiplier: final = base x (1 + crowd_factor).
+ *   v0.3 §Crowd multiplier: final = base x (1 + crowd_factor). The band is NOT
+ *   enforced here — see CROWD_FACTOR_LIMIT.
  */
 export function scorePlayer(
   input: ScoringInput,
@@ -602,12 +798,11 @@ export function scorePlayer(
   // a positive crowd verdict shrinks a negative score toward zero rather than
   // deepening it: the factor is a judgment direction, not a raw scalar.
   if (crowdFactor !== 0) {
-    const factor = total >= 0 ? 1 + crowdFactor : 1 - crowdFactor;
-    const delta = clean(total * (factor - 1));
+    const delta = crowdDelta(total, crowdFactor);
     ledger.push({
       code: 'crowd',
       label: 'Crowd multiplier',
-      factor: clean(factor),
+      factor: clean(crowdMultiplier(total, crowdFactor)),
       points: delta,
       note: total < 0 ? 'mirrored against a negative base (v0.4.1)' : undefined,
     });
@@ -630,6 +825,33 @@ export function scorePlayer(
  */
 function applyMismatch(total: number): number {
   return total >= 0 ? clean(total * MISMATCH_DAMPENER) : total;
+}
+
+/** The signed multiplier a crowd factor applies to a base. Mirrors below zero. */
+function crowdMultiplier(base: number, crowdFactor: number): number {
+  return base >= 0 ? 1 + crowdFactor : 1 - crowdFactor;
+}
+
+/** The crowd factor's contribution to a base — the ledger line's `points`. */
+function crowdDelta(base: number, crowdFactor: number): number {
+  return clean(base * (crowdMultiplier(base, crowdFactor) - 1));
+}
+
+/**
+ * base + the crowd factor's contribution — SCORING_SPEC §Crowd multiplier:
+ *
+ *     final = base >= 0 ? base x (1 + f) : base x (1 - f)
+ *
+ * Exported and used by `scorePlayer` itself, so the ONE definition of this
+ * expression serves both callers. FW-4 R5 stores `baseScore` and `crowdFactor`
+ * separately and derives the total on read; a second copy of the mirroring rule
+ * living in the read path is exactly the drift this avoids — and the mirroring
+ * is the subtle half (a positive crowd verdict must shrink a negative score
+ * toward zero, never deepen it).
+ */
+export function applyCrowdFactor(base: number, crowdFactor: number): number {
+  if (crowdFactor === 0) return base;
+  return clean(base + crowdDelta(base, crowdFactor));
 }
 
 /**

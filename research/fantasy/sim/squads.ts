@@ -39,7 +39,7 @@
  * squads, which carry no budget at all.
  */
 
-import type { Slot } from '../scoring/types.ts';
+import type { Slot } from '../../../app/convex/lib/fantasyScoring.ts';
 import type { Gameweek, PlayerFixtureRow } from './dataset.ts';
 
 export const SQUAD_SIZE = 13;

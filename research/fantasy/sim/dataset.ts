@@ -13,7 +13,8 @@
  *                              player row — `goals.conceded` is keeper-only, so
  *                              reading it off an outfield line would award every
  *                              defender in a 0-3 defeat a clean sheet
- *                              (types.ts MatchContext, measured in the probe).
+ *                              (see MatchContext in the engine, measured in the
+ *                              probe).
  *   fixtures/<league>/<id>     per-player aggregate counts.
  *   events/<league>/<id>       own goals and the clock. The stat line carries
  *                              neither.
@@ -32,12 +33,19 @@ import type {
   MatchContext,
   PlayerMatchStats,
   Slot,
-  TimedEventKind,
   TimedPlayerEvent,
-} from '../scoring/types.ts';
-import { emptyStats } from '../scoring/types.ts';
-import type { MatchEvent } from '../scoring/events.ts';
-import { entryMinute, eventMinute, incomingPlayerId, isSubstitution } from '../scoring/events.ts';
+} from '../../../app/convex/lib/fantasyScoring.ts';
+import type { FeedStatBlock, MatchEvent } from '../../../app/convex/lib/fantasyFeedStats.ts';
+import {
+  entryMinute,
+  feedNumber,
+  incomingPlayerId,
+  isSubstitution,
+  matchContextFor,
+  slotFromFeedPosition,
+  statsFromFeed,
+  timedEventsByPlayer,
+} from '../../../app/convex/lib/fantasyFeedStats.ts';
 
 const PACKAGE_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 export const DATA_DIR = path.join(PACKAGE_ROOT, 'data');
@@ -55,7 +63,7 @@ interface FeedFixtureListing {
 
 interface FeedPlayerRow {
   player: { id: number; name: string };
-  statistics: Record<string, any>[];
+  statistics: FeedStatBlock[];
 }
 
 interface FeedPlayersFile {
@@ -125,131 +133,18 @@ export interface Dataset {
 }
 
 // ------------------------------------------------------------------- normalisation
-
-/**
- * The feed's null means "did not record this", measured in the phase-1 probe by
- * reconciling goal events against summed non-null totals. This is the ONLY
- * interpretation applied to a raw value anywhere in the harness.
- */
-function n(value: unknown): number {
-  if (value === null || value === undefined) return 0;
-  const parsed = typeof value === 'string' ? Number.parseFloat(value) : Number(value);
-  return Number.isFinite(parsed) ? parsed : 0;
-}
-
-/** `games.position` is a single letter. Anything else is left null and reported. */
-function slotFromFeedPosition(raw: unknown): Slot | null {
-  switch (String(raw ?? '').toUpperCase()) {
-    case 'G':
-      return 'GK';
-    case 'D':
-      return 'DEF';
-    case 'M':
-      return 'MID';
-    case 'F':
-      return 'ATT';
-    default:
-      return null;
-  }
-}
-
-export function statsFromFeed(statistics: Record<string, any> | undefined): PlayerMatchStats {
-  const s = statistics ?? {};
-  return emptyStats({
-    minutes: n(s.games?.minutes),
-    goals: n(s.goals?.total),
-    assists: n(s.goals?.assists),
-    shotsTotal: n(s.shots?.total),
-    shotsOn: n(s.shots?.on),
-    keyPasses: n(s.passes?.key),
-    passesTotal: n(s.passes?.total),
-    // Named "accuracy", shipped as an accurate-pass COUNT, and shipped as a
-    // string. Measured in the probe; see fetch/config.ts REQUIRED_STATS.
-    passesAccurate: n(s.passes?.accuracy),
-    dribblesAttempted: n(s.dribbles?.attempts),
-    dribblesCompleted: n(s.dribbles?.success),
-    tackles: n(s.tackles?.total),
-    interceptions: n(s.tackles?.interceptions),
-    blocks: n(s.tackles?.blocks),
-    duelsTotal: n(s.duels?.total),
-    duelsWon: n(s.duels?.won),
-    foulsCommitted: n(s.fouls?.committed),
-    foulsDrawn: n(s.fouls?.drawn),
-    yellowCards: n(s.cards?.yellow),
-    redCards: n(s.cards?.red),
-    saves: n(s.goals?.saves),
-    penaltiesWon: n(s.penalty?.won),
-    // The feed's own spelling. Not a typo here.
-    penaltiesConceded: n(s.penalty?.commited),
-    penaltiesScored: n(s.penalty?.scored),
-    penaltiesMissed: n(s.penalty?.missed),
-    penaltiesSaved: n(s.penalty?.saved),
-    ownGoals: 0, // filled from events below — the stat line does not carry it
-    wasSubstitute: s.games?.substitute === true,
-  });
-}
-
-/**
- * Timed events per player id.
- *
- * Only the categories `TimedEventKind` admits are emitted, because only those
- * can be placed on the clock — which is the whole reason SCORING_SPEC §Finishers
- * needs this feed. Deliberately NOT emitted:
- *
- *  - `Var | *` rows. They annotate a decision, they are not the event. Counting
- *    "Goal cancelled" as a goal would be an outright fabrication; integrity.ts
- *    checks separately whether the cancelled goal was already excluded from the
- *    Goal rows (it reconciles event goals against the fixture score).
- *  - `subst`. Not a scoring event; consumed for entry minutes only.
- *  - Penalty SAVED. There is no event detail for it anywhere in the 3,209-event
- *    sample — the stat line carries `penalty.saved` untimed. A GK finisher's
- *    penalty save therefore cannot be clock-placed, which is a measured feed
- *    limit reported in the calibration report, not a modelling choice.
- */
-function timedEventsByPlayer(
-  events: readonly MatchEvent[],
-): Map<number, TimedPlayerEvent[]> {
-  const byPlayer = new Map<number, TimedPlayerEvent[]>();
-  const push = (playerId: number | null, minute: number | null, kind: TimedEventKind): void => {
-    if (playerId === null || minute === null) return;
-    const list = byPlayer.get(playerId) ?? [];
-    list.push({ minute, kind });
-    byPlayer.set(playerId, list);
-  };
-
-  for (const event of events) {
-    const minute = eventMinute(event);
-    const type = event.type?.toLowerCase() ?? '';
-    const detail = event.detail?.toLowerCase() ?? '';
-
-    if (type === 'goal') {
-      if (detail.includes('own goal')) {
-        push(event.player.id, minute, 'ownGoal');
-        continue;
-      }
-      if (detail.includes('missed penalty')) {
-        push(event.player.id, minute, 'penaltyMissed');
-        continue;
-      }
-      // "Normal Goal" and "Penalty" both score as a goal; the penalty-scored
-      // count itself lives on the stat line and is not separately priced.
-      push(event.player.id, minute, 'goal');
-      push(event.assist.id, minute, 'assist');
-      continue;
-    }
-
-    if (type === 'card') {
-      // No second-yellow detail exists anywhere in the sample (measured:
-      // 780 "Yellow Card", 38 "Red Card", zero "Second Yellow"). v0.4.1 prices
-      // both reds at -4, so the missing split costs nothing.
-      if (detail.includes('red')) push(event.player.id, minute, 'redCard');
-      else if (detail.includes('yellow')) push(event.player.id, minute, 'yellowCard');
-      continue;
-    }
-  }
-
-  return byPlayer;
-}
+//
+// The normalisers themselves are NOT here any more: `statsFromFeed`,
+// `slotFromFeedPosition`, `timedEventsByPlayer`, `matchContextFor` and the
+// null→0 primitive live in `app/convex/lib/fantasyFeedStats.ts` alongside the
+// engine (FW-4 R1 — one engine, and one translation into it, driven by both this
+// harness and the live pipeline). This module keeps the file I/O and the round
+// grouping, which are the harness's alone.
+//
+// The single interpretation applied to any raw feed value is still that null
+// means "did not record this" and becomes 0 — measured in the phase-1 probe by
+// reconciling goal events against summed non-null totals. Nothing here invents,
+// estimates or backfills.
 
 // ------------------------------------------------------------------- loading
 
@@ -286,8 +181,8 @@ export function loadDataset(): Dataset {
         awayClubId: entry.teams.away.id,
         homeName: entry.teams.home.name,
         awayName: entry.teams.away.name,
-        homeGoals: n(entry.goals.home),
-        awayGoals: n(entry.goals.away),
+        homeGoals: feedNumber(entry.goals.home),
+        awayGoals: feedNumber(entry.goals.away),
       };
       fixtures.push(meta);
       roundOf.set(meta.fixtureId, { leagueId: meta.leagueId, round: meta.round });
@@ -310,11 +205,7 @@ export function loadDataset(): Dataset {
       const isHome = teamBlock.team.id === meta.homeClubId;
       const goalsFor = isHome ? meta.homeGoals : meta.awayGoals;
       const goalsAgainst = isHome ? meta.awayGoals : meta.homeGoals;
-      const context: MatchContext = {
-        teamGoalsFor: goalsFor,
-        teamGoalsAgainst: goalsAgainst,
-        result: goalsFor > goalsAgainst ? 'win' : goalsFor === goalsAgainst ? 'draw' : 'loss',
-      };
+      const context: MatchContext = matchContextFor(goalsFor, goalsAgainst);
 
       for (const row of teamBlock.players ?? []) {
         const statistics = row.statistics?.[0];

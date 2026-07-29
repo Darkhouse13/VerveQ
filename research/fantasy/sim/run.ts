@@ -5,8 +5,10 @@
  *   npx tsx sim/run.ts --n 200      # quick pass while iterating
  *   npx tsx sim/run.ts --dump-rows rows.json   # + per-row scored dump (FW-S2b)
  *
- * PURE: reads `data/` through `sim/dataset.ts`, scores through
- * `scoring/scoring.ts`, and writes a JSON result to stdout or `--out`. No
+ * PURE: reads `data/` through `sim/dataset.ts`, scores through the shipped
+ * engine (`app/convex/lib/fantasyScoring.ts` — FW-4 R1 moved it there; this
+ * harness and the live pipeline now call the same file), and writes a JSON
+ * result to stdout or `--out`. No
  * network, no clock in the computation (only in the "generated at" stamp),
  * seeded RNG throughout, so two runs of the same sweep are identical.
  *
@@ -36,8 +38,14 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { scorePlayer, DEFAULT_CAPS, scaledCaps, type CapConfig } from '../scoring/scoring.ts';
-import type { LedgerEntry, Slot } from '../scoring/types.ts';
+import {
+  scorePlayer,
+  DEFAULT_CAPS,
+  scaledCaps,
+  type CapConfig,
+  type LedgerEntry,
+  type Slot,
+} from '../../../app/convex/lib/fantasyScoring.ts';
 import { eventsFromEntry, loadDataset, type Gameweek, type PlayerFixtureRow } from './dataset.ts';
 import {
   GENERATOR_NAMES,
