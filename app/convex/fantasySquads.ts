@@ -7,7 +7,7 @@
  * lock state, price, formation or favorite club is ever accepted from a
  * client, and no edit is applied unless the squad it produces is fully legal.
  *
- * Specs: BUDGET_MODE_SPEC.md v1.0, DRAFT_ROOM_SPEC.md v1.0.
+ * Specs: BUDGET_MODE_SPEC.md v1.1.0, DRAFT_ROOM_SPEC.md v1.1.0.
  *
  * Rules live in lib/fantasySquadRules.ts (pure) and lib/fantasyFavoriteClub.ts
  * (pure); locks live in fantasyLocks.ts. This module is the thin authorized
@@ -50,6 +50,8 @@ export const SLOT_LOCKED =
   "That player's match has kicked off — his slot is locked for this gameweek.";
 export const CREW_SQUAD_PLAYERS_FIXED =
   "A crew squad's players are set by the draft — rearrange your sheet, but the 13 are the 13.";
+export const CREW_SQUAD_DRAFT_ONLY =
+  "Crew squads are created by the draft, not by hand — finish the draft and your sheet appears.";
 export const PLAYER_ALREADY_STARTED =
   "That player's match has already kicked off; he can no longer be selected.";
 export const GAMEWEEK_CLOSED = "This gameweek is no longer open for edits.";
@@ -136,6 +138,28 @@ async function loadPlayers(
  * Validate the squad an edit WOULD produce, and throw if it is illegal.
  * Nothing is written before this returns.
  */
+/**
+ * Item 6: mark a crew sheet as the drafter's own work.
+ *
+ * The R6 default is applied EAGERLY at materialization (owner ruling: eager
+ * is safer for cold loads), which makes a default sheet byte-identical to a
+ * deliberate one — so "has this drafter arranged their team?" had no answer
+ * at all. This bit is that answer. Set on the first arrangement edit that
+ * actually commits, and never unset: a sheet that has been touched stays
+ * touched even if the drafter puts everything back.
+ *
+ * Budget squads do not carry it — they have no server-authored default to be
+ * distinguished from.
+ */
+async function markArranged(
+  ctx: MutationCtx,
+  squad: Doc<"fantasySquads">,
+): Promise<void> {
+  if (squad.context !== "crew") return;
+  if (squad.arrangedByUser === true) return;
+  await ctx.db.patch(squad._id, { arrangedByUser: true });
+}
+
 async function assertPostEditSquadLegal(
   ctx: MutationCtx,
   squad: Doc<"fantasySquads">,
@@ -157,12 +181,26 @@ async function assertPostEditSquadLegal(
 // ── createSquad ──
 
 /**
- * Create the (user, gameweek, context) squad and materialize its 13 slots.
+ * Create the caller's BUDGET squad for a gameweek and materialize its 13 slots.
  *
  * `formation` describes the XI; `finisherRoles` gives the two finishers their
  * own slotRoles. Both are required rather than defaulted: FW-1 STOP-3 rules
  * finisher roles free, and DRAFT_ROOM's 4-4-2 default team sheet is explicitly
  * FW-3's to apply, so inventing a default here would pre-empt that ticket.
+ *
+ * ── F1: crew squads are draft output only ──
+ *
+ * `context` still accepts the literal so the argument shape is unchanged and
+ * a stale client gets a clear message rather than a validator error — but a
+ * crew squad is REFUSED here, unconditionally. This path never verified that
+ * the caller was seated in `crewRoomId`, or that the room existed; a drafter
+ * could mint an empty 13-slot squad at their own live room's contextKey, and
+ * materialization would then skip them and discard their entire drafted 13
+ * into a sheet no code path could fill (setSlot refuses to man crew squads).
+ *
+ * The only writer of crew squads is now
+ * `fantasyDraftRooms.materializeRoomSquads`, which acts for every seat of a
+ * completed draft at once and cannot be reached from a client.
  *
  * The favorite club is resolved ONCE, here, and snapshotted onto the squad —
  * DRAFT_ROOM §Favorite-club exemption: "the favorite in force when the room
@@ -184,14 +222,15 @@ export const createSquad = mutation({
   handler: async (ctx, { gameweekId, context, crewRoomId, formation, finisherRoles }) => {
     const userId = await requireUserId(ctx);
 
+    // Before anything else, including any read: there is no argument
+    // combination that makes a crew squad from a public call.
+    if (context === "crew") throw new Error(CREW_SQUAD_DRAFT_ONLY);
+
     const gameweek = await ctx.db.get(gameweekId);
     if (gameweek === null) throw new Error("Gameweek not found.");
     if (!gameweekAcceptsEdits(gameweek)) throw new Error(GAMEWEEK_CLOSED);
 
-    if (context === "crew" && crewRoomId === undefined) {
-      throw new Error("A crew squad needs a crew room.");
-    }
-    if (context === "budget" && crewRoomId !== undefined) {
+    if (crewRoomId !== undefined) {
       throw new Error("A budget squad has no crew room.");
     }
     if (finisherRoles.length !== FINISHER_COUNT) {
@@ -201,7 +240,7 @@ export const createSquad = mutation({
     const shape = validateFormation(formation);
     if (!shape.ok) throw new Error(describeViolations(shape));
 
-    const contextKey = context === "budget" ? "budget" : `crew:${crewRoomId}`;
+    const contextKey = "budget";
     const existing = await ctx.db
       .query("fantasySquads")
       .withIndex("by_user_gameweek_contextKey", (q) =>
@@ -221,8 +260,7 @@ export const createSquad = mutation({
     const squadId = await ctx.db.insert("fantasySquads", {
       userId,
       gameweekId,
-      context,
-      ...(crewRoomId === undefined ? {} : { crewRoomId }),
+      context: "budget",
       contextKey,
       favoriteClubAtBuild,
       createdAt: Date.now(),
@@ -343,6 +381,7 @@ export const setSlot = mutation({
       ...(args.slotRole === undefined ? {} : { slotRole: slotRole(args.slotRole) }),
       ...(args.isFinisher === undefined ? {} : { isFinisher: args.isFinisher }),
     });
+    await markArranged(ctx, squad);
 
     return { ok: true };
   },
@@ -412,6 +451,7 @@ export const setFormation = mutation({
 
     await assertPostEditSquadLegal(ctx, squad, postEdit, lockedByIndex);
 
+    let changed = 0;
     for (const slot of slots) {
       const next = desired.get(slot.slotIndex)!;
       if (next.slotRole === slot.slotRole && next.isFinisher === slot.isFinisher) continue;
@@ -419,7 +459,10 @@ export const setFormation = mutation({
         slotRole: slotRole(next.slotRole),
         isFinisher: next.isFinisher,
       });
+      changed += 1;
     }
+    // A formation call that changes nothing is not an arrangement (item 6).
+    if (changed > 0) await markArranged(ctx, squad);
 
     return { ok: true };
   },
@@ -490,6 +533,8 @@ export const getSquad = query({
       squadId: squad._id,
       context: squad.context,
       favoriteClubAtBuild: squad.favoriteClubAtBuild,
+      /** Crew sheets only: false while still on the R6 default (item 6). */
+      arrangedByUser: squad.arrangedByUser ?? null,
       slots: slots
         .slice()
         .sort((a, b) => a.slotIndex - b.slotIndex)

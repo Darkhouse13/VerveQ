@@ -16,10 +16,14 @@ import {
   clubCapBlocks,
   defaultSheetAssignment,
   elapsedOnTurn,
+  hasNoFixture,
+  hasStartedFixture,
+  hasUnstartedFixture,
   hashString,
   reconstructDraft,
   seatIndexForPick,
   selectAutoPick,
+  selectAutoPickWithRung,
   snakeOrderFor,
   totalPicks,
   type AutoPickContext,
@@ -201,10 +205,108 @@ describe("auto-pick selection (R1 constraint ladder, R5 fixture skip)", () => {
     const thin = [poolPlayer({ _id: "benchOnly", hasFixture: false, kickoffAt: null })];
     expect(selectAutoPick(thin, ctx())?._id).toBe("benchOnly");
 
-    // Rung 3: even cap-blocked beats wedging the draft.
+    // Rung 4: even cap-blocked beats wedging the draft.
     expect(selectAutoPick(pool.slice(0, 1), ctx({ clubCounts: capped }))?._id).toBe("cappedClub");
 
     expect(selectAutoPick([], ctx())).toBeNull();
+  });
+});
+
+// ── FW-3R F2: the four-rung eligibility ladder ──
+
+describe("auto-pick eligibility ladder (F2: started fixtures demoted)", () => {
+  const ctx = (over: Partial<AutoPickContext> = {}): AutoPickContext => ({
+    pickedPlayerIds: new Set<string>(),
+    clubCounts: new Map<string, number>(),
+    favoriteClub: null,
+    now: 1_000,
+    ...over,
+  });
+
+  const unstarted = (id: string, price: number) =>
+    poolPlayer({ _id: id, price, kickoffAt: 9_000 });
+  const noFixture = (id: string, price: number) =>
+    poolPlayer({ _id: id, price, hasFixture: false, kickoffAt: null });
+  const started = (id: string, price: number) =>
+    poolPlayer({ _id: id, price, kickoffAt: 500 });
+
+  it("prefers a cheap unstarted player over a dear no-fixture or started one", () => {
+    const pool = [started("dearStarted", 13), noFixture("dearBench", 12), unstarted("cheap", 4)];
+    const choice = selectAutoPickWithRung(pool, ctx());
+    expect(choice?.player._id).toBe("cheap");
+    expect(choice?.rung).toBe(1);
+  });
+
+  /**
+   * The finding itself. The old ladder's rung 2 dropped has-fixture and
+   * not-started together, so the dear started player outranked the cheap
+   * no-fixture one — handing the bot a pick makePick denies a human.
+   */
+  it("prefers ANY no-fixture player over a started one, however dear (the F2 fix)", () => {
+    const pool = [started("dearStarted", 13), noFixture("cheapBench", 4)];
+    const choice = selectAutoPickWithRung(pool, ctx());
+    expect(choice?.player._id).toBe("cheapBench");
+    expect(choice?.rung).toBe(2);
+  });
+
+  it("reaches rung 3 ONLY when rungs 1 and 2 are empty", () => {
+    const startedOnly = [started("s1", 9), started("s2", 13)];
+    // Nothing unstarted, nothing benched: rung 3 is forced, and takes the
+    // best of a bad lot under the same R1 comparator.
+    const forced = selectAutoPickWithRung(startedOnly, ctx());
+    expect(forced?.rung).toBe(3);
+    expect(forced?.player._id).toBe("s2");
+
+    // Add a single cap-legal candidate at rung 1 or 2 and rung 3 goes unused,
+    // even though the started player is dearer than both.
+    for (const [rescue, expectedRung] of [
+      [unstarted("u", 4), 1],
+      [noFixture("b", 4), 2],
+    ] as const) {
+      const choice = selectAutoPickWithRung([...startedOnly, rescue], ctx());
+      expect(choice?.rung).toBe(expectedRung);
+      expect(choice?.player._id).toBe(rescue._id);
+    }
+  });
+
+  it("reaches rung 4 only when the cap blocks every remaining player", () => {
+    const capped = new Map([["club-1", 3]]);
+    const pool = [poolPlayer({ _id: "onlyOne", price: 8, clubId: "club-1", kickoffAt: 9_000 })];
+    const choice = selectAutoPickWithRung(pool, ctx({ clubCounts: capped }));
+    expect(choice?.rung).toBe(4);
+    expect(choice?.player._id).toBe("onlyOne");
+
+    // The same player at rung 1 the moment the cap stops applying.
+    expect(
+      selectAutoPickWithRung(pool, ctx({ clubCounts: capped, favoriteClub: "club-1" }))?.rung,
+    ).toBe(1);
+  });
+
+  it("classifies every player into exactly one fixture state", () => {
+    const now = 1_000;
+    const cases = [unstarted("u", 5), noFixture("b", 5), started("s", 5)];
+    for (const player of cases) {
+      const states = [
+        hasUnstartedFixture(player, now),
+        hasNoFixture(player),
+        hasStartedFixture(player, now),
+      ];
+      expect(states.filter(Boolean)).toHaveLength(1);
+    }
+    // Inconsistent data (a fixture with no kickoff) fails conservatively —
+    // into "started", the rung the bot reaches for last.
+    const noKickoff = poolPlayer({ _id: "odd", hasFixture: true, kickoffAt: null });
+    expect(hasStartedFixture(noKickoff, now)).toBe(true);
+    expect(hasUnstartedFixture(noKickoff, now)).toBe(false);
+  });
+
+  it("keeps the ladder deterministic: same pool and context, same choice", () => {
+    const pool = [started("s1", 9), started("s2", 9), noFixture("b1", 9), noFixture("b2", 9)];
+    const first = selectAutoPickWithRung(pool, ctx());
+    const shuffled = [pool[3], pool[1], pool[0], pool[2]];
+    const second = selectAutoPickWithRung(shuffled, ctx());
+    expect(second?.player._id).toBe(first?.player._id);
+    expect(second?.rung).toBe(first?.rung);
   });
 });
 
@@ -298,7 +400,19 @@ describe("draft-log reconstruction (§Draft log; determinism gate)", () => {
   function scriptedLog(seed: string, drafters: number): DraftLogEntry[] {
     const snakeOrder = snakeOrderFor(drafters, seed);
     const entries: DraftLogEntry[] = [
-      { seq: 0, entryType: "seed", seed, snakeOrder },
+      {
+        seq: 0,
+        entryType: "seed",
+        seed,
+        snakeOrder,
+        // FW-3R item 5a: the arm-time seat table rides on the seed entry.
+        seats: Array.from({ length: drafters }, (_, seatIndex) => ({
+          seatIndex,
+          userId: `user-${seatIndex}`,
+          nameSnapshot: `drafter${seatIndex}`,
+          favoriteClubAtArm: seatIndex === 0 ? "C00" : null,
+        })),
+      },
     ];
     const banks = Array.from({ length: drafters }, () => DRAFT_BANK_MS);
     for (let p = 0; p < totalPicks(drafters); p += 1) {
@@ -312,6 +426,7 @@ describe("draft-log reconstruction (§Draft log; determinism gate)", () => {
         round: Math.floor(p / drafters) + 1,
         seatIndex,
         playerId: `player-${p}`,
+        providerPlayerId: `provider-${p}`, // item 5b
         auto: p % 7 === 0,
         elapsedMs,
         bankAfterMs: banks[seatIndex],
@@ -330,6 +445,61 @@ describe("draft-log reconstruction (§Draft log; determinism gate)", () => {
     for (const bank of result.bankBySeat.values()) {
       expect(bank).toBe(DRAFT_BANK_MS - 13_000);
     }
+  });
+
+  // ── FW-3R item 5: the log must defend itself ──
+
+  it("rebuilds the arm-time seat table, including the club-cap exemption", () => {
+    const result = reconstructDraft(scriptedLog("seat-table", 4), DRAFT_BANK_MS);
+    expect(result.seats).toHaveLength(4);
+    expect(result.seats.map((s) => s.seatIndex)).toEqual([0, 1, 2, 3]);
+    // The one fact that used to live only on the room doc: without it, no
+    // reader of the log could tell why seat 0 may hold 5 players from C00.
+    expect(result.seats[0].favoriteClubAtArm).toBe("C00");
+    expect(result.seats[1].favoriteClubAtArm).toBeNull();
+    expect(result.seats.every((s) => s.nameSnapshot !== "")).toBe(true);
+  });
+
+  it("rebuilds every seat's squad by provider id, so it survives the players table", () => {
+    const result = reconstructDraft(scriptedLog("provider", 4), DRAFT_BANK_MS);
+    expect([...result.providerPicksBySeat.values()].map((l) => l.length)).toEqual([13, 13, 13, 13]);
+    // Same picks, addressed by the identifier that outlives a deleted row.
+    for (const [seat, ids] of result.providerPicksBySeat) {
+      expect(ids).toHaveLength(result.picksBySeat.get(seat)!.length);
+    }
+  });
+
+  it("rejects a seed entry whose seat table is missing or incomplete", () => {
+    const log = scriptedLog("seats-missing", 3);
+    const noSeats = [{ ...log[0], seats: undefined }, ...log.slice(1)];
+    expect(reconstructDraft(noSeats, DRAFT_BANK_MS).problems.join(" ")).toMatch(
+      /describes 0 seats/,
+    );
+
+    const short = [
+      { ...log[0], seats: (log[0].seats ?? []).slice(0, 2) },
+      ...log.slice(1),
+    ];
+    const shortResult = reconstructDraft(short, DRAFT_BANK_MS);
+    expect(shortResult.ok).toBe(false);
+    expect(shortResult.problems.join(" ")).toMatch(/seat 2 0 times/);
+  });
+
+  it("rejects picks with no provider id, and a provider id reused across picks", () => {
+    const log = scriptedLog("provider-bad", 2);
+    const stripped = log.map((e, i) =>
+      i === 3 ? { ...e, providerPlayerId: undefined } : e,
+    );
+    expect(reconstructDraft(stripped, DRAFT_BANK_MS).problems.join(" ")).toMatch(
+      /no providerPlayerId/,
+    );
+
+    const reused = log.map((e, i) =>
+      i === 3 ? { ...e, providerPlayerId: log[2].providerPlayerId } : e,
+    );
+    expect(reconstructDraft(reused, DRAFT_BANK_MS).problems.join(" ")).toMatch(
+      /provider player .* picked twice/,
+    );
   });
 
   it("replay determinism: the same seed scripts the identical log", () => {

@@ -5,9 +5,12 @@
  * fantasy namespace may re-declare one of these inline: when the pricing pass
  * or a sim run moves a number, it moves here and nowhere else.
  *
- * Specs (research/fantasy/specs/):
- *   - BUDGET_MODE_SPEC.md v1.0 (LOCKED 2026-07-28)
- *   - DRAFT_ROOM_SPEC.md v1.0 (LOCKED 2026-07-28)
+ * Specs (research/fantasy/specs/) — the versions these constants actually
+ * implement, not the versions they were first written against:
+ *   - BUDGET_MODE_SPEC.md v1.1.0 (SQUAD_BUDGET 91.0, owner ruling FW-PR3)
+ *   - DRAFT_ROOM_SPEC.md v1.1.0 (price-based auto-pick and default sheet),
+ *     including the v1.0.2 amendment that makes the favorite-club cooldown
+ *     28 calendar days rather than 4 gameweeks
  *   - SCORING_SPEC.md v0.4.1 (APPROVED)
  *
  * This module is PURE: no Convex imports, no clock reads except where a

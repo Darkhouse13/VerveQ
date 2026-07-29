@@ -43,6 +43,7 @@ vi.mock("@convex-dev/auth/server", () => ({
 import * as fantasySquads from "../../convex/fantasySquads";
 import * as fantasyLocks from "../../convex/fantasyLocks";
 import {
+  CREW_SQUAD_DRAFT_ONLY,
   PLAYER_ALREADY_STARTED,
   SLOT_LOCKED,
 } from "../../convex/fantasySquads";
@@ -79,6 +80,49 @@ async function newBudgetSquad(): Promise<string> {
     formation: FOUR_FOUR_TWO,
     finisherRoles: [...TWO_ATT_FINISHERS],
   })) as { squadId: string };
+  return squadId;
+}
+
+/**
+ * A crew squad, written the way FW-3's `materializeRoomSquads` writes one.
+ *
+ * Since FW-3R (finding F1) `createSquad` refuses crew context from every
+ * public path — crew squads are draft output only, and the sole writer is the
+ * draft-room materializer. These suites are about the LOCK engine, not about
+ * how a squad came to exist, so they mirror the materializer's rows directly.
+ *
+ * `players` fills slot 0 upward; omitted slots stay empty, which is what an
+ * unfilled FW-1 slot legitimately looks like.
+ */
+async function insertCrewSquad(
+  crewRoomId: string,
+  players: string[] = [],
+): Promise<string> {
+  const squadId = await world.db.insert("fantasySquads", {
+    userId: world.userId,
+    gameweekId: world.gameweekId,
+    context: "crew",
+    crewRoomId,
+    contextKey: `crew:${crewRoomId}`,
+    favoriteClubAtBuild: null,
+    createdAt: Date.now(),
+    arrangedByUser: false,
+  });
+  const roles = [
+    "GK",
+    ...Array(4).fill("DEF"),
+    ...Array(4).fill("MID"),
+    ...Array(2).fill("ATT"),
+  ];
+  for (let slotIndex = 0; slotIndex < 13; slotIndex += 1) {
+    await world.db.insert("fantasySquadSlots", {
+      squadId,
+      slotIndex,
+      ...(players[slotIndex] === undefined ? {} : { playerId: players[slotIndex] }),
+      slotRole: slotIndex < 11 ? roles[slotIndex] : "ATT",
+      isFinisher: slotIndex >= 11,
+    });
+  }
   return squadId;
 }
 
@@ -262,13 +306,7 @@ describe("budget invariant across a partial lock (BUDGET_MODE §Deadlines & edit
     // the draft (materialized server-side), so setSlot never accepts a
     // playerId change in crew context — priced or not. Crew price-blindness
     // itself is a pure rule, covered in fantasySquadRules.test.ts.
-    const { squadId: crewSquad } = (await createSquad(world.ctx, {
-      gameweekId: world.gameweekId,
-      context: "crew",
-      crewRoomId: "room-1",
-      formation: FOUR_FOUR_TWO,
-      finisherRoles: [...TWO_ATT_FINISHERS],
-    })) as { squadId: string };
+    const crewSquad = await insertCrewSquad("room-1");
 
     await expect(
       setSlot(world.ctx, { squadId: crewSquad, slotIndex: 0, playerId: world.players.SUN_A_1 }),
@@ -628,19 +666,8 @@ describe("lockSweep is idempotent and late-safe", () => {
   });
 
   it("stamps lockedAt but no committedPrice for a crew squad (crew has no budget)", async () => {
-    const { squadId } = (await createSquad(world.ctx, {
-      gameweekId: world.gameweekId,
-      context: "crew",
-      crewRoomId: "room-9",
-      formation: FOUR_FOUR_TWO,
-      finisherRoles: [...TWO_ATT_FINISHERS],
-    })) as { squadId: string };
-    // Crew slots are filled by FW-3 draft materialization (a direct insert),
-    // never by setSlot — mirror that write path here.
-    const slot0 = world.db
-      .rows("fantasySquadSlots")
-      .find((s) => s.squadId === squadId && s.slotIndex === 0)!;
-    await world.db.patch(slot0._id, { playerId: world.players.SAT_A_1 });
+    // Crew slots are filled by FW-3 draft materialization, never by setSlot.
+    const squadId = await insertCrewSquad("room-9", [world.players.SAT_A_1]);
 
     vi.setSystemTime(SATURDAY + 1000);
     await lockSweep(world.ctx, {});
@@ -687,21 +714,31 @@ describe("squad uniqueness", () => {
     await expect(newBudgetSquad()).rejects.toThrow(/already have a squad/);
   });
 
-  it("allows a budget squad and a crew squad side by side", async () => {
-    await newBudgetSquad();
-    await expect(
-      createSquad(world.ctx, {
-        gameweekId: world.gameweekId,
-        context: "crew",
-        crewRoomId: "room-1",
-        formation: FOUR_FOUR_TWO,
-        finisherRoles: [...TWO_ATT_FINISHERS],
-      }),
-    ).resolves.toMatchObject({ squadId: expect.any(String) });
+  it("allows a budget squad and a materialized crew squad side by side", async () => {
+    const budget = await newBudgetSquad();
+    const crew = await insertCrewSquad("room-1");
+    // Independent rosters at distinct contextKeys (BUDGET_MODE §Interaction
+    // with draft mode: "Nothing in either mode's state references the other").
+    expect(budget).not.toBe(crew);
+    const keys = world.db
+      .rows("fantasySquads")
+      .filter((s) => s.userId === world.userId)
+      .map((s) => s.contextKey);
+    expect(new Set(keys)).toEqual(new Set(["budget", "crew:room-1"]));
   });
 
   it("allows squads in two different crew rooms", async () => {
-    for (const crewRoomId of ["room-1", "room-2"]) {
+    const first = await insertCrewSquad("room-1");
+    const second = await insertCrewSquad("room-2");
+    expect(first).not.toBe(second);
+  });
+
+  // ── FW-3R F1: crew squads are draft output only ──
+
+  it("refuses to mint a crew squad from the public path, whatever the arguments", async () => {
+    // The exact call that used to work — and whose empty 13 slots then made
+    // materialization skip the seat and discard its drafted squad entirely.
+    for (const crewRoomId of ["room-1", "not-an-id", ""]) {
       await expect(
         createSquad(world.ctx, {
           gameweekId: world.gameweekId,
@@ -710,7 +747,65 @@ describe("squad uniqueness", () => {
           formation: FOUR_FOUR_TWO,
           finisherRoles: [...TWO_ATT_FINISHERS],
         }),
-      ).resolves.toMatchObject({ squadId: expect.any(String) });
+      ).rejects.toThrow(CREW_SQUAD_DRAFT_ONLY);
     }
+    // Omitting crewRoomId does not sneak one through either.
+    await expect(
+      createSquad(world.ctx, {
+        gameweekId: world.gameweekId,
+        context: "crew",
+        formation: FOUR_FOUR_TWO,
+        finisherRoles: [...TWO_ATT_FINISHERS],
+      }),
+    ).rejects.toThrow(CREW_SQUAD_DRAFT_ONLY);
+
+    expect(world.db.rows("fantasySquads")).toHaveLength(0);
+    expect(world.db.rows("fantasySquadSlots")).toHaveLength(0);
+  });
+
+  it("refuses a crewRoomId on a budget squad, so no crew row can appear sideways", async () => {
+    await expect(
+      createSquad(world.ctx, {
+        gameweekId: world.gameweekId,
+        context: "budget",
+        crewRoomId: "room-1",
+        formation: FOUR_FOUR_TWO,
+        finisherRoles: [...TWO_ATT_FINISHERS],
+      }),
+    ).rejects.toThrow(/no crew room/i);
+    expect(world.db.rows("fantasySquads")).toHaveLength(0);
+  });
+
+  it("is the ONLY public squad writer: no public mutation creates crew context", async () => {
+    // The structural claim behind F1, asserted rather than assumed. Every
+    // public (non-internal) mutation exported by fantasySquads.ts is driven
+    // with crew-shaped arguments; none may leave a crew squad behind.
+    const publicMutations = Object.entries(fantasySquads).filter(([, fn]) => {
+      if (fn === null || (typeof fn !== "object" && typeof fn !== "function")) return false;
+      const marked = fn as { isMutation?: boolean; isPublic?: boolean };
+      return marked.isMutation === true && marked.isPublic === true;
+    });
+    expect(publicMutations.map(([name]) => name).sort()).toEqual([
+      "createSquad",
+      "setFavoriteClub",
+      "setFormation",
+      "setSlot",
+    ]);
+
+    const crewish = {
+      gameweekId: world.gameweekId,
+      context: "crew",
+      crewRoomId: "room-1",
+      formation: FOUR_FOUR_TWO,
+      finisherRoles: [...TWO_ATT_FINISHERS],
+      squadId: "fantasySquads;999",
+      slotIndex: 0,
+      slots: [],
+      clubId: "SAT_A",
+    };
+    for (const [, fn] of publicMutations) {
+      await handlerOf(fn)(world.ctx, crewish).catch(() => undefined);
+    }
+    expect(world.db.rows("fantasySquads").filter((s) => s.context === "crew")).toHaveLength(0);
   });
 });

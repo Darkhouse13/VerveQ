@@ -1359,8 +1359,13 @@ export default defineSchema({
   // One weekend. `gwNumber` is OUR ordinal — a calendar window across the five
   // leagues, NOT any league's round number (Bundesliga plays 34 rounds to the
   // others' 38, so no league's numbering could serve). FW-2 owns how a
-  // gameweek is constituted; this layer only stores and orders the ordinal,
-  // which is what the 4-gameweek favorite-club cooldown counts in.
+  // gameweek is constituted; this layer only stores and orders the ordinal.
+  //
+  // The ordinal is NOT what the favorite-club cooldown counts in: under
+  // DRAFT_ROOM_SPEC v1.0.2 (owner STOP-F ruling) that cooldown is **28
+  // calendar days**, measured from the instant of the change as a timestamp,
+  // precisely because a gameweek count is not a fixed span once midweek
+  // windows exist. See lib/fantasyConstants.FAVORITE_CLUB_COOLDOWN_DAYS.
   //
   // finalityAt is 23:59 Europe/Paris on the day after the gameweek's window
   // closes — Tuesday for a weekend window, Friday for a midweek one. Computed
@@ -1469,6 +1474,14 @@ export default defineSchema({
   // Formation is NOT stored: it is exactly the multiset of the XI slots'
   // slotRoles, and storing it too would create a second source of truth that
   // could drift from the slots. See lib/fantasySquadRules.formationOf.
+  //
+  // `arrangedByUser` (FW-3R item 6) distinguishes a sheet the drafter has
+  // touched from one still carrying the R6 default. Materialization writes
+  // false; the first successful setSlot/setFormation on a crew squad flips it
+  // true. The default is still applied EAGERLY at draft completion rather than
+  // at first lock (owner ruling: eager is safer for cold loads) — this bit is
+  // what the eager write would otherwise have destroyed, since a default sheet
+  // is byte-indistinguishable from a deliberate one.
   fantasySquads: defineTable({
     userId: v.id("users"),
     gameweekId: v.id("fantasyGameweeks"),
@@ -1477,6 +1490,8 @@ export default defineSchema({
     contextKey: v.string(),
     favoriteClubAtBuild: v.union(v.string(), v.null()),
     createdAt: v.number(),
+    /** Crew squads only; absent on budget squads and on pre-FW-3R rows. */
+    arrangedByUser: v.optional(v.boolean()),
   })
     .index("by_user_gameweek_contextKey", ["userId", "gameweekId", "contextKey"])
     .index("by_gameweek", ["gameweekId"])
@@ -1626,6 +1641,30 @@ export default defineSchema({
     /** Lobby TTL, consumed by the draftRoomSweep cron (LM4: persisted state
      *  has a consumer). Ignored once the room leaves "lobby". */
     expiresAt: v.number(),
+
+    // ── FW-3R item 3: no permanent wedge ──
+    //
+    // Sheet materialization no longer runs inside the pick transaction, so a
+    // sheet failure can no longer abort the draft. `sheetsMaterializedAt`
+    // stamps the completed handoff; the sweep re-kicks any completed room
+    // still missing it.
+    sheetsMaterializedAt: v.optional(v.number()),
+    /**
+     * Consecutive sweep re-kicks that did NOT move the room on. Incremented by
+     * the sweep in its own (non-throwing) transaction — a failing re-kick
+     * rolls its own writes back, so the count can never be written by the
+     * attempt it is counting. Reset to 0 by any successful advance.
+     */
+    recoveryAttempts: v.optional(v.number()),
+    /**
+     * Set once recoveryAttempts passes the budget: the sweep stops re-kicking
+     * and leaves the room for an operator rather than throwing on a cron
+     * forever. Cleared by any successful advance. A stuck room is still a
+     * legitimate `drafting`/`completed` room — this is a flag, not a status,
+     * so no client rendering path has to learn a new state.
+     */
+    stuckAt: v.optional(v.number()),
+    stuckReason: v.optional(v.string()),
   })
     .index("by_crew", ["crewId"])
     .index("by_crew_gameweek", ["crewId", "gameweekId"])
@@ -1640,6 +1679,13 @@ export default defineSchema({
   // Pick exclusivity is crew-internal only (R7): the by_room_player index is
   // the uniqueness check's read path, and nothing outside the room ever reads
   // ownership from here.
+  //
+  // FW-3R item 5 makes the log SELF-DEFENDING: a completed draft reconstructs
+  // from these rows alone, surviving loss of the room doc or of a
+  // fantasyPlayers row. Two facts were previously reachable only by joining
+  // out — the seat table (names, and the arm-time favorite club that is the
+  // only justification for a cap-breaching pick) and a player identifier that
+  // outlives the players table. Both now ride on the log itself.
   fantasyDraftLog: defineTable({
     roomId: v.id("fantasyDraftRooms"),
     seq: v.number(),
@@ -1648,12 +1694,26 @@ export default defineSchema({
     // seed entry fields
     seed: v.optional(v.string()),
     snakeOrder: v.optional(v.array(v.number())),
+    /** The arm-time seat table (item 5a). Seed entry only, seats 0..n-1. */
+    seats: v.optional(
+      v.array(
+        v.object({
+          seatIndex: v.number(),
+          userId: v.id("users"),
+          nameSnapshot: v.string(),
+          favoriteClubAtArm: v.union(v.string(), v.null()),
+        }),
+      ),
+    ),
     // pick entry fields
     pickNumber: v.optional(v.number()), // 1-based overall
     round: v.optional(v.number()), // 1..13
     seatIndex: v.optional(v.number()),
     userId: v.optional(v.id("users")),
     playerId: v.optional(v.id("fantasyPlayers")),
+    /** The provider's stable player id (item 5b) — environment-independent,
+     *  and the identifier that survives deletion of the fantasyPlayers row. */
+    providerPlayerId: v.optional(v.string()),
     auto: v.optional(v.boolean()),
     /** Clock this pick consumed, ms (full remaining bank for a timeout pick). */
     elapsedMs: v.optional(v.number()),

@@ -1,7 +1,9 @@
 /**
  * Weekend Fantasy — the draft engine, as pure functions (FW-3).
  *
- * DRAFT_ROOM_SPEC v1.1.0 plus the seven FW-3 owner rulings (2026-07-29).
+ * DRAFT_ROOM_SPEC v1.1.0 plus the seven FW-3 owner rulings (2026-07-29) and
+ * the FW-3R remediation of blind-verify findings F2 (the auto-pick
+ * eligibility ladder) and F5 (the self-defending draft log).
  * Everything the draft-room mutations decide is defined exactly once here —
  * snake order, chess-clock math, auto-pick selection, the default team sheet,
  * log reconstruction — so the whole rule surface is unit-testable without a
@@ -218,51 +220,124 @@ export function clubCapBlocks(
   return (clubCounts.get(clubId) ?? 0) >= PER_CLUB_CAP;
 }
 
+// The three fixture states a pool player can be in, relative to an instant.
+// Mutually exclusive and exhaustive, which is what lets the ladder below
+// order them without a rung ever silently admitting a neighbour's cohort.
+
+/** Has a fixture this gameweek that has not kicked off — freely draftable. */
+export function hasUnstartedFixture(p: DraftPoolPlayer, now: number): boolean {
+  return p.hasFixture && p.kickoffAt !== null && p.kickoffAt > now;
+}
+
+/** Has no fixture this gameweek: legal to hold, simply scores nothing (R5). */
+export function hasNoFixture(p: DraftPoolPlayer): boolean {
+  return !p.hasFixture;
+}
+
 /**
- * Choose the auto-pick: best available under the R1 order, "constrained so
- * the remaining sheet stays completable".
+ * Has a fixture that is already underway or finished. `makePick` REJECTS
+ * these for humans (PLAYER_STARTED, the FW-1 hindsight rule), so auto-pick
+ * must not reach for one while any other cohort can still serve.
  *
- * Eligibility relaxes down a documented ladder rather than failing:
- *   1. unpicked, active, cap-legal, has a fixture that has NOT kicked off —
- *      the normal case. R5 makes auto-pick skip no-fixture players; the
- *      unstarted requirement is the FW-1 hindsight rule (a player whose match
- *      is underway cannot be swapped IN) applied to picks.
- *   2. drop the fixture requirements — if every fixture-having, cap-legal
- *      player is somehow gone, a no-fixture player (who simply scores nothing
- *      this weekend, R5) is still a completable sheet.
- *   3. drop the cap too — unreachable with a real pool (≈96 clubs × cap 3
- *      dwarfs 13 picks), kept so the draft TERMINATES on any input rather
- *      than wedging a room; a rung-3 pick means the pool itself was broken.
+ * A fixture-having player with a null kickoff is inconsistent data; it is
+ * folded in here rather than into the unstarted rung so the ambiguity fails
+ * in the conservative direction.
+ */
+export function hasStartedFixture(p: DraftPoolPlayer, now: number): boolean {
+  return p.hasFixture && (p.kickoffAt === null || p.kickoffAt <= now);
+}
+
+/** A rung of the eligibility ladder, in the order `selectAutoPick` tries them. */
+export interface AutoPickRung {
+  /** 1-based, matching the documentation and the FW-3R ticket's numbering. */
+  readonly rung: number;
+  readonly label: string;
+  readonly admits: (p: DraftPoolPlayer, ctx: AutoPickContext) => boolean;
+}
+
+/**
+ * The eligibility ladder (FW-3R item 2, superseding the FW-3 three-rung one).
+ *
+ * The governing principle is now explicit: **the bot must never take a pick
+ * `makePick` would deny a human, except as the last resort that keeps the
+ * draft terminating.** The old ladder's rung 2 read "drop the fixture
+ * requirements", which dropped has-fixture AND not-started together — so a
+ * started player (denied to humans) outranked a no-fixture player (allowed to
+ * humans) whenever the started one was dearer. Late in a live gameweek, when
+ * every unstarted player is gone, that made EVERY auto-pick a hindsight pick.
+ *
+ * Each rung states honestly what it admits:
+ *   1. cap-legal, fixture not yet kicked off — the normal case, and the only
+ *      rung whose picks a human could also have made.
+ *   2. cap-legal, NO fixture this gameweek — scores nothing this weekend (R5),
+ *      but a human may pick these too, so the bot may prefer them to anything
+ *      hindsight-tainted.
+ *   3. cap-legal, fixture ALREADY STARTED — a pick `makePick` denies a human.
+ *      Reached only when rungs 1 and 2 are both empty, i.e. every unpicked
+ *      cap-legal player in all five leagues is already underway.
+ *   4. everything unpicked and active, cap included — the termination
+ *      guarantee. Unreachable with a real pool (≈96 clubs × cap 3 dwarfs 13
+ *      picks); a rung-4 pick means the pool itself was broken, and taking it
+ *      beats wedging the room (spec §Auto-pick: the draft must finish).
  *
  * Within every rung the R1 comparator decides, so the choice is deterministic
  * whichever rung serves it.
  */
-export function selectAutoPick(
+export const AUTO_PICK_RUNGS: readonly AutoPickRung[] = [
+  {
+    rung: 1,
+    label: "cap-legal, fixture not started",
+    admits: (p, ctx) => capAllows(p, ctx) && hasUnstartedFixture(p, ctx.now),
+  },
+  {
+    rung: 2,
+    label: "cap-legal, no fixture this gameweek",
+    admits: (p, ctx) => capAllows(p, ctx) && hasNoFixture(p),
+  },
+  {
+    rung: 3,
+    label: "cap-legal, fixture already started",
+    admits: (p, ctx) => capAllows(p, ctx) && hasStartedFixture(p, ctx.now),
+  },
+  {
+    rung: 4,
+    label: "any unpicked active player (termination guarantee)",
+    admits: () => true,
+  },
+];
+
+function capAllows(p: DraftPoolPlayer, ctx: AutoPickContext): boolean {
+  return !clubCapBlocks(p.clubId, ctx.clubCounts, ctx.favoriteClub);
+}
+
+/**
+ * Choose the auto-pick and report WHICH rung served it — the form the tests
+ * and the sim assert on, since "rung 3 was reached" is exactly the claim that
+ * needs to be observable rather than inferred.
+ */
+export function selectAutoPickWithRung(
   pool: readonly DraftPoolPlayer[],
   ctx: AutoPickContext,
-): DraftPoolPlayer | null {
+): { player: DraftPoolPlayer; rung: number } | null {
   const unpicked = pool.filter(
     (p) => p.active && !ctx.pickedPlayerIds.has(p._id),
   );
 
-  const capOk = (p: DraftPoolPlayer) =>
-    !clubCapBlocks(p.clubId, ctx.clubCounts, ctx.favoriteClub);
-  const playable = (p: DraftPoolPlayer) =>
-    p.hasFixture && p.kickoffAt !== null && p.kickoffAt > ctx.now;
-
-  const rungs: Array<(p: DraftPoolPlayer) => boolean> = [
-    (p) => capOk(p) && playable(p),
-    (p) => capOk(p),
-    () => true,
-  ];
-
-  for (const rung of rungs) {
-    const candidates = unpicked.filter(rung);
+  for (const rung of AUTO_PICK_RUNGS) {
+    const candidates = unpicked.filter((p) => rung.admits(p, ctx));
     if (candidates.length > 0) {
-      return candidates.sort(autoPickComparator)[0];
+      return { player: candidates.sort(autoPickComparator)[0], rung: rung.rung };
     }
   }
   return null; // pool exhausted outright — 13×8 picks can't do this to 2,895
+}
+
+/** Best available under the ladder above, or null if the pool is empty. */
+export function selectAutoPick(
+  pool: readonly DraftPoolPlayer[],
+  ctx: AutoPickContext,
+): DraftPoolPlayer | null {
+  return selectAutoPickWithRung(pool, ctx)?.player ?? null;
 }
 
 // ── default team sheet (ruling R6) ──
@@ -392,16 +467,26 @@ export function defaultSheetAssignment(
 
 // ── draft-log reconstruction (ticket gate) ──
 
+/** The per-seat facts the seed entry carries (FW-3R item 5a). */
+export interface DraftLogSeat {
+  readonly seatIndex: number;
+  readonly userId?: string | undefined;
+  readonly nameSnapshot: string;
+  readonly favoriteClubAtArm: string | null;
+}
+
 /** A draft-log row reduced to plain data, in `seq` order. */
 export interface DraftLogEntry {
   readonly seq: number;
   readonly entryType: "seed" | "pick";
   readonly seed?: string | undefined;
   readonly snakeOrder?: readonly number[] | undefined;
+  readonly seats?: readonly DraftLogSeat[] | undefined;
   readonly pickNumber?: number | undefined;
   readonly round?: number | undefined;
   readonly seatIndex?: number | undefined;
   readonly playerId?: string | undefined;
+  readonly providerPlayerId?: string | undefined;
   readonly auto?: boolean | undefined;
   readonly elapsedMs?: number | undefined;
   readonly bankAfterMs?: number | undefined;
@@ -412,8 +497,16 @@ export interface DraftReconstruction {
   readonly problems: readonly string[];
   readonly seed: string | null;
   readonly snakeOrder: readonly number[];
+  /** The arm-time seat table, from the seed entry (item 5a). */
+  readonly seats: readonly DraftLogSeat[];
   /** seatIndex → playerIds in the order that seat drafted them. */
   readonly picksBySeat: ReadonlyMap<number, readonly string[]>;
+  /**
+   * seatIndex → provider player ids, in pick order. The environment- and
+   * fantasyPlayers-independent form of the same fact (item 5b): this survives
+   * loss of a fantasyPlayers row, which `picksBySeat` does not.
+   */
+  readonly providerPicksBySeat: ReadonlyMap<number, readonly string[]>;
   /** seatIndex → bank remaining after its last pick. */
   readonly bankBySeat: ReadonlyMap<number, number>;
 }
@@ -425,10 +518,18 @@ export interface DraftReconstruction {
  *
  * Checks: dense seq from 0; entry 0 is the seed entry; the logged snakeOrder
  * is exactly what the logged seed regenerates (R4 — the seed is recorded so
- * the shuffle can be audited); picks numbered 1..N in seq order with the seat
- * the snake demands; no player picked twice (exclusivity); per-seat banks
- * start at the full bank, never go negative, and match each entry's
- * bankAfterMs.
+ * the shuffle can be audited); the seed entry's seat table covers seats
+ * 0..n-1 exactly once, carrying each seat's name and arm-time favorite club
+ * (item 5a — the club-cap exemption in force is otherwise unauditable from
+ * the log, since it lives only on the room doc); picks numbered 1..N in seq
+ * order with the seat the snake demands; every pick carrying a provider id
+ * that agrees with its playerId (item 5b); no player picked twice
+ * (exclusivity), by either identifier; per-seat banks start at the full bank,
+ * never go negative, and match each entry's bankAfterMs.
+ *
+ * The bar this function enforces is the FW-3R goal: a completed draft
+ * reconstructs from `fantasyDraftLog` rows alone, surviving loss of the room
+ * doc and of any `fantasyPlayers` row.
  */
 export function reconstructDraft(
   entries: readonly DraftLogEntry[],
@@ -445,6 +546,7 @@ export function reconstructDraft(
   const seed = head?.entryType === "seed" ? (head.seed ?? null) : null;
   const snakeOrder =
     head?.entryType === "seed" ? (head.snakeOrder ?? []) : [];
+  const seats = head?.entryType === "seed" ? (head.seats ?? []) : [];
   if (seed === null || snakeOrder.length === 0) {
     problems.push("log does not open with a seed entry");
   } else {
@@ -454,9 +556,32 @@ export function reconstructDraft(
     }
   }
 
+  // Item 5a: the seat table must be complete, or the log cannot explain its
+  // own club-cap decisions once the room doc is gone.
+  if (snakeOrder.length > 0) {
+    if (seats.length !== snakeOrder.length) {
+      problems.push(
+        `seed entry describes ${seats.length} seats; the snake order has ${snakeOrder.length}`,
+      );
+    }
+    for (let seatIndex = 0; seatIndex < snakeOrder.length; seatIndex += 1) {
+      const matches = seats.filter((s) => s.seatIndex === seatIndex);
+      if (matches.length !== 1) {
+        problems.push(
+          `seed entry describes seat ${seatIndex} ${matches.length} times; expected exactly once`,
+        );
+      } else if (matches[0].nameSnapshot === "") {
+        problems.push(`seat ${seatIndex} has no nameSnapshot in the seed entry`);
+      }
+    }
+  }
+
   const picksBySeat = new Map<number, string[]>();
+  const providerPicksBySeat = new Map<number, string[]>();
   const bankBySeat = new Map<number, number>();
   const seenPlayers = new Set<string>();
+  const seenProviderIds = new Set<string>();
+  const providerByPlayer = new Map<string, string>();
   let pickCount = 0;
 
   for (const entry of sorted.slice(1)) {
@@ -485,6 +610,29 @@ export function reconstructDraft(
       seenPlayers.add(entry.playerId);
     }
 
+    // Item 5b: the provider id is the identifier that outlives the players
+    // table, so it is required, must agree with playerId wherever both are
+    // present, and carries exclusivity in its own right.
+    if (entry.providerPlayerId === undefined) {
+      problems.push(`pick ${pickCount} has no providerPlayerId`);
+    } else {
+      if (seenProviderIds.has(entry.providerPlayerId)) {
+        problems.push(
+          `pick ${pickCount}: provider player ${entry.providerPlayerId} picked twice (exclusivity)`,
+        );
+      }
+      seenProviderIds.add(entry.providerPlayerId);
+      if (entry.playerId !== undefined) {
+        const known = providerByPlayer.get(entry.playerId);
+        if (known !== undefined && known !== entry.providerPlayerId) {
+          problems.push(
+            `pick ${pickCount}: playerId maps to provider ${known} elsewhere in the log`,
+          );
+        }
+        providerByPlayer.set(entry.playerId, entry.providerPlayerId);
+      }
+    }
+
     const seat = entry.seatIndex ?? -1;
     const bankBefore = bankBySeat.get(seat) ?? fullBankMs;
     const bankAfter = bankBefore - (entry.elapsedMs ?? 0);
@@ -499,6 +647,11 @@ export function reconstructDraft(
       const list = picksBySeat.get(seat) ?? [];
       list.push(entry.playerId);
       picksBySeat.set(seat, list);
+    }
+    if (entry.providerPlayerId !== undefined) {
+      const list = providerPicksBySeat.get(seat) ?? [];
+      list.push(entry.providerPlayerId);
+      providerPicksBySeat.set(seat, list);
     }
   }
 
@@ -519,7 +672,9 @@ export function reconstructDraft(
     problems,
     seed,
     snakeOrder,
+    seats,
     picksBySeat,
+    providerPicksBySeat,
     bankBySeat,
   };
 }

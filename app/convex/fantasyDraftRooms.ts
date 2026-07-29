@@ -27,11 +27,39 @@
  * LM7 (resume gaps): getRoom serves a complete render model for EVERY status,
  * derived only from persisted fields — a cold page load mid-draft
  * reconstructs the board, the clock and the turn from one query.
+ *
+ * ── FW-3R (blind-verify remediation, findings F1–F4) ──
+ *
+ * F1: crew squads are DRAFT OUTPUT ONLY. `fantasySquads.createSquad` refuses
+ * crew context outright; the sole writer is `materializeRoomSquads` below.
+ * The old "a squad already exists, so this is a retry" skip is gone — an
+ * existing squad is accepted only if its filled slots ARE the drafted 13, and
+ * anything else stops loudly instead of leaving a drafter with an empty sheet.
+ *
+ * F2: the auto-pick eligibility ladder (lib/fantasyDraftEngine.AUTO_PICK_RUNGS)
+ * demotes started-fixture players below no-fixture ones, so the bot no longer
+ * takes a pick `makePick` denies a human until nothing else is left.
+ *
+ * F3: no permanent wedge. Sheet materialization is scheduled AFTER the final
+ * pick commits, so a sheet failure cannot abort the draft; the sweep counts
+ * unproductive re-kicks and flags a room stuck after MAX_RECOVERY_ATTEMPTS
+ * rather than throwing on a cron forever; `forceAbandonRoom` is the operator
+ * escape hatch.
+ *
+ * F5 (log): the seed entry carries the arm-time seat table and every pick
+ * carries a provider player id, so a completed draft reconstructs from
+ * fantasyDraftLog alone — see lib/fantasyDraftEngine.reconstructDraft.
+ *
+ * Auth posture for the lobby mutations: each public mutation resolves the
+ * caller and delegates to a `…For(ctx, userId, …)` core. The cores are the
+ * real write path, which is what lets fantasyDraftSim drive an authentic
+ * lobby → arm → draft → complete run without sessions to authenticate.
  */
 
 import { v } from "convex/values";
 import {
   internalMutation,
+  internalQuery,
   mutation,
   query,
   type MutationCtx,
@@ -89,6 +117,27 @@ export const NO_OPEN_GAMEWEEK = "No gameweek is open for drafting right now.";
  */
 const SWEEP_SLACK_MS = 10_000;
 const SWEEP_BATCH = 50;
+
+/**
+ * How many consecutive UNPRODUCTIVE sweep re-kicks a room gets before the
+ * sweep stops driving it and flags it stuck (FW-3R item 3b).
+ *
+ * "Unproductive" is the only thing the sweep can honestly count. A re-kick
+ * that throws rolls its own writes back, so the failing attempt can never
+ * record its own failure — the count is therefore written by the SWEEP, in
+ * its own non-throwing transaction, and reset to zero by any advance that
+ * actually commits. Three is enough to ride out a transient (a lost schedule,
+ * a concurrent write) and short enough that a genuinely broken room stops
+ * costing a cron slot every five minutes.
+ */
+export const MAX_RECOVERY_ATTEMPTS = 3;
+
+/** Cleared on every productive advance — the room is demonstrably moving. */
+const RECOVERY_CLEARED = {
+  recoveryAttempts: 0,
+  stuckAt: undefined,
+  stuckReason: undefined,
+} as const;
 
 type Ctx = MutationCtx | QueryCtx;
 type Room = Doc<"fantasyDraftRooms">;
@@ -308,6 +357,9 @@ export function clubCountsFor(
 export interface PickToApply {
   seatIndex: number;
   playerId: Id<"fantasyPlayers">;
+  /** Item 5b: recorded on the log row so it outlives the players table.
+   *  Required rather than looked up, because every caller already has it. */
+  providerPlayerId: string;
   auto: boolean;
   elapsedMs: number;
 }
@@ -354,6 +406,7 @@ export async function applyPickAndAdvance(
       seatIndex: pick.seatIndex,
       userId: seats[pick.seatIndex].userId,
       playerId: pick.playerId,
+      providerPlayerId: pick.providerPlayerId,
       auto: pick.auto,
       elapsedMs: pick.elapsedMs,
       bankAfterMs: seat.bankMs,
@@ -374,6 +427,9 @@ export async function applyPickAndAdvance(
         seats,
         currentPickIndex: pickIndex,
         turnStartedAt: now,
+        // The room demonstrably advanced, so whatever the sweep was worried
+        // about is over (item 3b).
+        ...RECOVERY_CLEARED,
       });
       await ctx.scheduler.runAfter(
         seat.bankMs,
@@ -402,20 +458,32 @@ export async function applyPickAndAdvance(
     await writePick({
       seatIndex,
       playerId: choice._id as Id<"fantasyPlayers">,
+      providerPlayerId: choice.providerPlayerId,
       auto: true,
       elapsedMs: 0, // an empty bank spends nothing; the emptying pick spent it
     });
   }
 
   // Draft complete.
+  //
+  // F3a: the sheet handoff is SCHEDULED, not inlined. Materialization reads
+  // fantasyPlayers and writes two other tables; folding it into this
+  // transaction meant any failure there rolled back the final pick too,
+  // leaving the room one pick short of done with a cron re-throwing on it
+  // forever. The draft's own record now commits first and unconditionally;
+  // the sheet is a separate, idempotent, retryable step (and the sweep
+  // re-kicks it if the schedule is lost).
   await ctx.db.patch(room._id, {
     seats,
     currentPickIndex: total,
     turnStartedAt: undefined,
     status: "completed",
     completedAt: now,
+    ...RECOVERY_CLEARED,
   });
-  await materializeSquads(ctx, { ...room, seats }, now);
+  await ctx.scheduler.runAfter(0, internal.fantasyDraftRooms.materializeRoomSquads, {
+    roomId: room._id,
+  });
 }
 
 /**
@@ -423,7 +491,7 @@ export async function applyPickAndAdvance(
  * arrives after its bank died (R2 leaves that pick to the bot either way).
  * Idempotent by guard: wrong status or a moved cursor means the work is done.
  */
-async function runTurnTimeout(
+export async function runTurnTimeout(
   ctx: MutationCtx,
   room: Room,
   expectedPickIndex: number,
@@ -466,6 +534,7 @@ async function runTurnTimeout(
     {
       seatIndex,
       playerId: choice._id as Id<"fantasyPlayers">,
+      providerPlayerId: choice.providerPlayerId,
       auto: true,
       elapsedMs: seat.bankMs, // the timeout drains the bank to zero
     },
@@ -475,36 +544,42 @@ async function runTurnTimeout(
 
 // ── sheet handoff (P3) ──
 
+export const SHEET_HANDOFF_CONFLICT =
+  "Sheet handoff stopped: a crew squad already exists for this seat and it is not the drafted 13.";
+
 /**
  * Materialize every seat's drafted 13 into the FW-1 squad model, with the R6
- * default arrangement. Runs inside the completing mutation, so a completed
- * room and its squads appear atomically — there is no state in which the
- * draft is over but a drafter has no sheet (LM7: every state cold-loads).
+ * default arrangement.
  *
  * Inserts rows directly rather than calling fantasySquads.createSquad: that
- * mutation authorizes THE CALLER, and the completing transaction acts for all
- * seats at once (including a leaver's — ruling R7: their squad persists and
- * auto-manages). The rows written are exactly the shape createSquad writes.
+ * mutation authorizes THE CALLER (and, since F1, refuses crew context from
+ * any public path at all), while this acts for every seat at once —
+ * including a leaver's, whose squad persists and auto-manages (ruling R7).
+ * This function is now the ONLY writer of crew squads in the codebase.
+ *
+ * ── F1: the blind skip is gone ──
+ *
+ * This used to `continue` past any pre-existing squad at (userId, gameweekId,
+ * contextKey), on the assumption that such a row could only be its own retry.
+ * It could also be a squad the drafter minted themselves through the public
+ * createSquad — 13 EMPTY slots at the same contextKey — and the skip then
+ * silently discarded their entire drafted 13, leaving a sheet no code path
+ * could ever fill. An existing squad is now accepted only if its filled slots
+ * ARE the drafted 13 exactly (a genuine retry); anything else STOPS. Nothing
+ * here overwrites, and nothing here continues past a mismatch.
  */
-async function materializeSquads(ctx: MutationCtx, room: Room, now: number): Promise<void> {
+export async function materializeSquadsForRoom(
+  ctx: MutationCtx,
+  room: Room,
+  now: number,
+): Promise<{ created: number; alreadyPresent: number }> {
   const picks = await pickEntries(ctx, room._id);
   const contextKey = `crew:${room._id}`;
+  let created = 0;
+  let alreadyPresent = 0;
 
   for (let seatIndex = 0; seatIndex < room.seats.length; seatIndex += 1) {
     const seat = room.seats[seatIndex];
-
-    // Idempotency: a completed draft materializes once. If a retry of the
-    // completing mutation re-runs this, the existing squad is the answer.
-    const existing = await ctx.db
-      .query("fantasySquads")
-      .withIndex("by_user_gameweek_contextKey", (q) =>
-        q
-          .eq("userId", seat.userId)
-          .eq("gameweekId", room.gameweekId)
-          .eq("contextKey", contextKey),
-      )
-      .first();
-    if (existing !== null) continue;
 
     const seatPicks = picks
       .filter((p) => p.seatIndex === seatIndex && p.playerId !== undefined)
@@ -515,11 +590,49 @@ async function materializeSquads(ctx: MutationCtx, room: Room, now: number): Pro
       );
     }
 
-    const drafted = [];
+    const existing = await ctx.db
+      .query("fantasySquads")
+      .withIndex("by_user_gameweek_contextKey", (q) =>
+        q
+          .eq("userId", seat.userId)
+          .eq("gameweekId", room.gameweekId)
+          .eq("contextKey", contextKey),
+      )
+      .first();
+
+    if (existing !== null) {
+      const slots = await ctx.db
+        .query("fantasySquadSlots")
+        .withIndex("by_squad", (q) => q.eq("squadId", existing._id))
+        .collect();
+      const filled = slots
+        .map((s) => s.playerId as string | undefined)
+        .filter((id): id is string => id !== undefined);
+      const drafted = seatPicks.map((p) => p.playerId as string);
+      const sameSet =
+        filled.length === drafted.length &&
+        new Set(filled).size === drafted.length &&
+        drafted.every((id) => filled.includes(id));
+
+      if (slots.length === SQUAD_SIZE && sameSet) {
+        // A genuine retry: this seat's sheet already IS the drafted 13.
+        // Leave it exactly as it is — the drafter may have rearranged it.
+        alreadyPresent += 1;
+        continue;
+      }
+
+      throw new Error(
+        `${SHEET_HANDOFF_CONFLICT} room=${room._id} seat=${seatIndex} ` +
+          `squad=${existing._id} slots=${slots.length} filled=${filled.length} ` +
+          `drafted=${drafted.length}`,
+      );
+    }
+
+    const draftedPlayers = [];
     for (const pick of seatPicks) {
       const player = await ctx.db.get(pick.playerId!);
       if (player === null) throw new Error("Internal: drafted player vanished.");
-      drafted.push({
+      draftedPlayers.push({
         _id: player._id as string,
         providerPlayerId: player.providerPlayerId,
         price: player.price,
@@ -538,9 +651,13 @@ async function materializeSquads(ctx: MutationCtx, room: Room, now: number): Pro
       // FW-1 sheet mutations will ever run on this squad.
       favoriteClubAtBuild: seat.favoriteClubAtArm ?? null,
       createdAt: now,
+      // Item 6: the R6 default is applied eagerly (owner ruling: safer for
+      // cold loads), so this bit is the only thing that still knows the
+      // drafter has not touched it.
+      arrangedByUser: false,
     });
 
-    for (const slot of defaultSheetAssignment(drafted)) {
+    for (const slot of defaultSheetAssignment(draftedPlayers)) {
       await ctx.db.insert("fantasySquadSlots", {
         squadId,
         slotIndex: slot.slotIndex,
@@ -549,74 +666,123 @@ async function materializeSquads(ctx: MutationCtx, room: Room, now: number): Pro
         isFinisher: slot.isFinisher,
       });
     }
+    created += 1;
   }
+
+  return { created, alreadyPresent };
 }
+
+/**
+ * The scheduled sheet handoff (F3a). Idempotent and retryable: it no-ops on a
+ * room that is not completed or is already stamped, and stamps only after
+ * every seat is served. A STOP-AND-REPORT conflict throws, which rolls this
+ * step back and leaves `sheetsMaterializedAt` unset — the sweep will retry it
+ * MAX_RECOVERY_ATTEMPTS times and then flag the room stuck for an operator,
+ * which is the intended end state for a conflict a human has to look at.
+ */
+export async function runMaterializeRoomSquads(
+  ctx: MutationCtx,
+  roomId: Id<"fantasyDraftRooms">,
+  now: number,
+): Promise<{ skipped: string | null; created?: number; alreadyPresent?: number }> {
+  const room = await ctx.db.get(roomId);
+  if (room === null) return { skipped: "no-room" };
+  if (room.status !== "completed") return { skipped: "not-completed" };
+  if (room.sheetsMaterializedAt !== undefined) {
+    return { skipped: "already-materialized" };
+  }
+
+  const result = await materializeSquadsForRoom(ctx, room, now);
+  await ctx.db.patch(roomId, {
+    sheetsMaterializedAt: now,
+    ...RECOVERY_CLEARED,
+  });
+  return { skipped: null, ...result };
+}
+
+export const materializeRoomSquads = internalMutation({
+  args: { roomId: v.id("fantasyDraftRooms") },
+  handler: async (ctx, { roomId }) =>
+    await runMaterializeRoomSquads(ctx, roomId, Date.now()),
+});
 
 // ── crew mutations ──
 
+export async function createCrewFor(
+  ctx: MutationCtx,
+  userId: Id<"users">,
+  name: string,
+): Promise<{ crewId: Id<"fantasyCrews">; code: string }> {
+  const user = await assertUsernameRequiredUser(ctx, userId);
+
+  const trimmed = name.trim();
+  if (trimmed.length < 2 || trimmed.length > 32) {
+    throw new Error("A crew name is 2–32 characters.");
+  }
+
+  const now = Date.now();
+  const code = await generateUniqueCrewCode(ctx);
+  const crewId = await ctx.db.insert("fantasyCrews", {
+    code,
+    name: trimmed,
+    createdBy: userId,
+    createdAt: now,
+  });
+  await ctx.db.insert("fantasyCrewMembers", {
+    crewId,
+    userId,
+    nameSnapshot: user.username ?? "Host",
+    active: true,
+    joinedAt: now,
+  });
+  return { crewId, code };
+}
+
 export const createCrew = mutation({
   args: { name: v.string() },
-  handler: async (ctx, { name }) => {
-    const userId = await requireUserId(ctx);
-    const user = await assertUsernameRequiredUser(ctx, userId);
-
-    const trimmed = name.trim();
-    if (trimmed.length < 2 || trimmed.length > 32) {
-      throw new Error("A crew name is 2–32 characters.");
-    }
-
-    const now = Date.now();
-    const code = await generateUniqueCrewCode(ctx);
-    const crewId = await ctx.db.insert("fantasyCrews", {
-      code,
-      name: trimmed,
-      createdBy: userId,
-      createdAt: now,
-    });
-    await ctx.db.insert("fantasyCrewMembers", {
-      crewId,
-      userId,
-      nameSnapshot: user.username ?? "Host",
-      active: true,
-      joinedAt: now,
-    });
-    return { crewId, code };
-  },
+  handler: async (ctx, { name }) =>
+    await createCrewFor(ctx, await requireUserId(ctx), name),
 });
+
+export async function joinCrewFor(
+  ctx: MutationCtx,
+  userId: Id<"users">,
+  code: string,
+): Promise<{ crewId: Id<"fantasyCrews">; code: string }> {
+  const user = await assertUsernameRequiredUser(ctx, userId);
+
+  const crew = await ctx.db
+    .query("fantasyCrews")
+    .withIndex("by_code", (q) => q.eq("code", normalizeCode(code)))
+    .first();
+  if (crew === null) throw new Error(CREW_NOT_FOUND);
+
+  const existing = await membershipOf(ctx, crew._id, userId);
+  if (existing !== null && existing.active) {
+    return { crewId: crew._id, code: crew.code }; // idempotent rejoin
+  }
+
+  const members = await activeMembers(ctx, crew._id);
+  if (members.length >= CREW_MAX_DRAFTERS) throw new Error(CREW_FULL);
+
+  if (existing !== null) {
+    await ctx.db.patch(existing._id, { active: true });
+  } else {
+    await ctx.db.insert("fantasyCrewMembers", {
+      crewId: crew._id,
+      userId,
+      nameSnapshot: user.username ?? "Drafter",
+      active: true,
+      joinedAt: Date.now(),
+    });
+  }
+  return { crewId: crew._id, code: crew.code };
+}
 
 export const joinCrew = mutation({
   args: { code: v.string() },
-  handler: async (ctx, { code }) => {
-    const userId = await requireUserId(ctx);
-    const user = await assertUsernameRequiredUser(ctx, userId);
-
-    const crew = await ctx.db
-      .query("fantasyCrews")
-      .withIndex("by_code", (q) => q.eq("code", normalizeCode(code)))
-      .first();
-    if (crew === null) throw new Error(CREW_NOT_FOUND);
-
-    const existing = await membershipOf(ctx, crew._id, userId);
-    if (existing !== null && existing.active) {
-      return { crewId: crew._id, code: crew.code }; // idempotent rejoin
-    }
-
-    const members = await activeMembers(ctx, crew._id);
-    if (members.length >= CREW_MAX_DRAFTERS) throw new Error(CREW_FULL);
-
-    if (existing !== null) {
-      await ctx.db.patch(existing._id, { active: true });
-    } else {
-      await ctx.db.insert("fantasyCrewMembers", {
-        crewId: crew._id,
-        userId,
-        nameSnapshot: user.username ?? "Drafter",
-        active: true,
-        joinedAt: Date.now(),
-      });
-    }
-    return { crewId: crew._id, code: crew.code };
-  },
+  handler: async (ctx, { code }) =>
+    await joinCrewFor(ctx, await requireUserId(ctx), code),
 });
 
 export const leaveCrew = mutation({
@@ -634,71 +800,83 @@ export const leaveCrew = mutation({
 
 // ── room mutations ──
 
+export async function createRoomFor(
+  ctx: MutationCtx,
+  userId: Id<"users">,
+  crewId: Id<"fantasyCrews">,
+): Promise<{ roomId: Id<"fantasyDraftRooms"> }> {
+  const member = await requireActiveMember(ctx, crewId, userId);
+  const gameweek = await targetGameweek(ctx);
+
+  const siblings = await ctx.db
+    .query("fantasyDraftRooms")
+    .withIndex("by_crew_gameweek", (q) =>
+      q.eq("crewId", crewId).eq("gameweekId", gameweek._id),
+    )
+    .collect();
+  if (siblings.some((room) => room.status !== "abandoned")) {
+    throw new Error(ROOM_ALREADY_OPEN);
+  }
+
+  const now = Date.now();
+  const roomId = await ctx.db.insert("fantasyDraftRooms", {
+    crewId,
+    gameweekId: gameweek._id,
+    status: "lobby",
+    createdBy: userId,
+    createdAt: now,
+    seats: [
+      {
+        userId,
+        nameSnapshot: member.nameSnapshot,
+        ready: false,
+        joinedAt: now,
+        bankMs: DRAFT_BANK_MS,
+      },
+    ],
+    expiresAt: now + DRAFT_ROOM_LOBBY_TTL_MS,
+  });
+  return { roomId };
+}
+
 export const createRoom = mutation({
   args: { crewId: v.id("fantasyCrews") },
-  handler: async (ctx, { crewId }) => {
-    const userId = await requireUserId(ctx);
-    const member = await requireActiveMember(ctx, crewId, userId);
-    const gameweek = await targetGameweek(ctx);
-
-    const siblings = await ctx.db
-      .query("fantasyDraftRooms")
-      .withIndex("by_crew_gameweek", (q) =>
-        q.eq("crewId", crewId).eq("gameweekId", gameweek._id),
-      )
-      .collect();
-    if (siblings.some((room) => room.status !== "abandoned")) {
-      throw new Error(ROOM_ALREADY_OPEN);
-    }
-
-    const now = Date.now();
-    const roomId = await ctx.db.insert("fantasyDraftRooms", {
-      crewId,
-      gameweekId: gameweek._id,
-      status: "lobby",
-      createdBy: userId,
-      createdAt: now,
-      seats: [
-        {
-          userId,
-          nameSnapshot: member.nameSnapshot,
-          ready: false,
-          joinedAt: now,
-          bankMs: DRAFT_BANK_MS,
-        },
-      ],
-      expiresAt: now + DRAFT_ROOM_LOBBY_TTL_MS,
-    });
-    return { roomId };
-  },
+  handler: async (ctx, { crewId }) =>
+    await createRoomFor(ctx, await requireUserId(ctx), crewId),
 });
+
+export async function joinRoomFor(
+  ctx: MutationCtx,
+  userId: Id<"users">,
+  roomId: Id<"fantasyDraftRooms">,
+): Promise<{ roomId: Id<"fantasyDraftRooms"> }> {
+  const room = await ctx.db.get(roomId);
+  if (room === null) throw new Error(ROOM_NOT_FOUND);
+  const member = await requireActiveMember(ctx, room.crewId, userId);
+  assertLobby(room); // R7: seats freeze at arm; joining later is not a thing
+
+  if (seatIndexOf(room, userId) >= 0) return { roomId }; // idempotent
+  if (room.seats.length >= CREW_MAX_DRAFTERS) throw new Error(CREW_FULL);
+
+  await ctx.db.patch(roomId, {
+    seats: [
+      ...room.seats,
+      {
+        userId,
+        nameSnapshot: member.nameSnapshot,
+        ready: false,
+        joinedAt: Date.now(),
+        bankMs: DRAFT_BANK_MS,
+      },
+    ],
+  });
+  return { roomId };
+}
 
 export const joinRoom = mutation({
   args: { roomId: v.id("fantasyDraftRooms") },
-  handler: async (ctx, { roomId }) => {
-    const userId = await requireUserId(ctx);
-    const room = await ctx.db.get(roomId);
-    if (room === null) throw new Error(ROOM_NOT_FOUND);
-    const member = await requireActiveMember(ctx, room.crewId, userId);
-    assertLobby(room); // R7: seats freeze at arm; joining later is not a thing
-
-    if (seatIndexOf(room, userId) >= 0) return { roomId }; // idempotent
-    if (room.seats.length >= CREW_MAX_DRAFTERS) throw new Error(CREW_FULL);
-
-    await ctx.db.patch(roomId, {
-      seats: [
-        ...room.seats,
-        {
-          userId,
-          nameSnapshot: member.nameSnapshot,
-          ready: false,
-          joinedAt: Date.now(),
-          bankMs: DRAFT_BANK_MS,
-        },
-      ],
-    });
-    return { roomId };
-  },
+  handler: async (ctx, { roomId }) =>
+    await joinRoomFor(ctx, await requireUserId(ctx), roomId),
 });
 
 export const leaveRoom = mutation({
@@ -727,23 +905,30 @@ export const leaveRoom = mutation({
   },
 });
 
+export async function setSeatReadyFor(
+  ctx: MutationCtx,
+  userId: Id<"users">,
+  roomId: Id<"fantasyDraftRooms">,
+  ready: boolean,
+): Promise<{ ready: boolean }> {
+  const room = await ctx.db.get(roomId);
+  if (room === null) throw new Error(ROOM_NOT_FOUND);
+  assertLobby(room);
+
+  const seatIndex = seatIndexOf(room, userId);
+  if (seatIndex < 0) throw new Error(NOT_A_MEMBER);
+
+  const seats = room.seats.map((seat, i) =>
+    i === seatIndex ? { ...seat, ready } : seat,
+  );
+  await ctx.db.patch(roomId, { seats });
+  return { ready };
+}
+
 export const setSeatReady = mutation({
   args: { roomId: v.id("fantasyDraftRooms"), ready: v.boolean() },
-  handler: async (ctx, { roomId, ready }) => {
-    const userId = await requireUserId(ctx);
-    const room = await ctx.db.get(roomId);
-    if (room === null) throw new Error(ROOM_NOT_FOUND);
-    assertLobby(room);
-
-    const seatIndex = seatIndexOf(room, userId);
-    if (seatIndex < 0) throw new Error(NOT_A_MEMBER);
-
-    const seats = room.seats.map((seat, i) =>
-      i === seatIndex ? { ...seat, ready } : seat,
-    );
-    await ctx.db.patch(roomId, { seats });
-    return { ready };
-  },
+  handler: async (ctx, { roomId, ready }) =>
+    await setSeatReadyFor(ctx, await requireUserId(ctx), roomId, ready),
 });
 
 /**
@@ -752,168 +937,207 @@ export const setSeatReady = mutation({
  * immutable), each seat's favorite-in-force (§Favorite-club exemption), the
  * R4 seed + snake order (log entry 0), and schedules the reveal→drafting hop.
  */
+export async function armDraftFor(
+  ctx: MutationCtx,
+  userId: Id<"users">,
+  roomId: Id<"fantasyDraftRooms">,
+  now: number = Date.now(),
+): Promise<{ seed: string; snakeOrder: number[] }> {
+  const room = await ctx.db.get(roomId);
+  if (room === null) throw new Error(ROOM_NOT_FOUND);
+  assertLobby(room);
+  if (room.createdBy !== userId) throw new Error(NOT_ROOM_CREATOR);
+  if (room.seats.length < CREW_MIN_DRAFTERS) throw new Error(NOT_ENOUGH_DRAFTERS);
+  if (!room.seats.every((seat) => seat.ready)) throw new Error(NOT_ALL_READY);
+
+  const crew = await ctx.db.get(room.crewId);
+  if (crew === null) throw new Error(ROOM_NOT_FOUND);
+
+  const seats: Seat[] = [];
+  for (const seat of room.seats) {
+    const user = await ctx.db.get(seat.userId);
+    seats.push({
+      ...seat,
+      favoriteClubAtArm: user === null ? null : resolveFavoriteClub(user, now),
+    });
+  }
+
+  const seed = hashString(`${room._id}:${crew.code}:${now}`);
+  const snakeOrder = snakeOrderFor(seats.length, seed);
+
+  await ctx.db.insert("fantasyDraftLog", {
+    roomId,
+    seq: 0,
+    entryType: "seed",
+    at: now,
+    seed,
+    snakeOrder,
+    // Item 5a. The arm-time favorite is the ONLY justification for a
+    // cap-breaching pick, and it lived solely on the room doc — so from the
+    // log alone nobody could audit why a seat legally holds five players from
+    // one club. It rides on the record it justifies now.
+    seats: seats.map((seat, seatIndex) => ({
+      seatIndex,
+      userId: seat.userId,
+      nameSnapshot: seat.nameSnapshot,
+      favoriteClubAtArm: seat.favoriteClubAtArm ?? null,
+    })),
+  });
+  await ctx.db.patch(roomId, {
+    seats,
+    status: "order_reveal",
+    seed,
+    snakeOrder,
+    orderRevealedAt: now,
+  });
+  await ctx.scheduler.runAfter(ORDER_REVEAL_MS, internal.fantasyDraftRooms.beginDrafting, {
+    roomId,
+  });
+  return { seed, snakeOrder };
+}
+
 export const armDraft = mutation({
   args: { roomId: v.id("fantasyDraftRooms") },
-  handler: async (ctx, { roomId }) => {
-    const userId = await requireUserId(ctx);
-    const room = await ctx.db.get(roomId);
-    if (room === null) throw new Error(ROOM_NOT_FOUND);
-    assertLobby(room);
-    if (room.createdBy !== userId) throw new Error(NOT_ROOM_CREATOR);
-    if (room.seats.length < CREW_MIN_DRAFTERS) throw new Error(NOT_ENOUGH_DRAFTERS);
-    if (!room.seats.every((seat) => seat.ready)) throw new Error(NOT_ALL_READY);
-
-    const now = Date.now();
-    const crew = await ctx.db.get(room.crewId);
-    if (crew === null) throw new Error(ROOM_NOT_FOUND);
-
-    const seats: Seat[] = [];
-    for (const seat of room.seats) {
-      const user = await ctx.db.get(seat.userId);
-      seats.push({
-        ...seat,
-        favoriteClubAtArm: user === null ? null : resolveFavoriteClub(user, now),
-      });
-    }
-
-    const seed = hashString(`${room._id}:${crew.code}:${now}`);
-    const snakeOrder = snakeOrderFor(seats.length, seed);
-
-    await ctx.db.insert("fantasyDraftLog", {
-      roomId,
-      seq: 0,
-      entryType: "seed",
-      at: now,
-      seed,
-      snakeOrder,
-    });
-    await ctx.db.patch(roomId, {
-      seats,
-      status: "order_reveal",
-      seed,
-      snakeOrder,
-      orderRevealedAt: now,
-    });
-    await ctx.scheduler.runAfter(ORDER_REVEAL_MS, internal.fantasyDraftRooms.beginDrafting, {
-      roomId,
-    });
-    return { seed, snakeOrder };
-  },
+  handler: async (ctx, { roomId }) =>
+    await armDraftFor(ctx, await requireUserId(ctx), roomId),
 });
+
+export async function runBeginDrafting(
+  ctx: MutationCtx,
+  roomId: Id<"fantasyDraftRooms">,
+  now: number,
+): Promise<void> {
+  const room = await ctx.db.get(roomId);
+  if (room === null) return;
+  if (room.status !== "order_reveal") return; // idempotent (LM8)
+  if (room.snakeOrder === undefined) return;
+
+  const firstSeat = room.seats[seatIndexForPick(room.snakeOrder, 0)];
+  await ctx.db.patch(roomId, {
+    status: "drafting",
+    draftStartedAt: now,
+    currentPickIndex: 0,
+    turnStartedAt: now,
+    ...RECOVERY_CLEARED,
+  });
+  await ctx.scheduler.runAfter(firstSeat.bankMs, internal.fantasyDraftRooms.turnTimeout, {
+    roomId,
+    expectedPickIndex: 0,
+  });
+}
 
 export const beginDrafting = internalMutation({
   args: { roomId: v.id("fantasyDraftRooms") },
   handler: async (ctx, { roomId }) => {
-    const room = await ctx.db.get(roomId);
-    if (room === null) return;
-    if (room.status !== "order_reveal") return; // idempotent (LM8)
-    if (room.snakeOrder === undefined) return;
-
-    const now = Date.now();
-    const firstSeat = room.seats[seatIndexForPick(room.snakeOrder, 0)];
-    await ctx.db.patch(roomId, {
-      status: "drafting",
-      draftStartedAt: now,
-      currentPickIndex: 0,
-      turnStartedAt: now,
-    });
-    await ctx.scheduler.runAfter(firstSeat.bankMs, internal.fantasyDraftRooms.turnTimeout, {
-      roomId,
-      expectedPickIndex: 0,
-    });
+    await runBeginDrafting(ctx, roomId, Date.now());
   },
 });
+
+/**
+ * `now` is a parameter with a server-clock default rather than a read: the
+ * public mutation always takes the real clock, and fantasyDraftSim drives a
+ * virtual one so a simulated draft can span a 390s bank inside a single
+ * transaction. It is never reachable from a client (the mutation below does
+ * not accept it), so this is not a route to LM12 client-clock authority.
+ */
+export async function makePickFor(
+  ctx: MutationCtx,
+  userId: Id<"users">,
+  roomId: Id<"fantasyDraftRooms">,
+  playerId: Id<"fantasyPlayers">,
+  now: number = Date.now(),
+): Promise<{ auto: boolean }> {
+  const room = await ctx.db.get(roomId);
+  if (room === null) throw new Error(ROOM_NOT_FOUND);
+  if (room.status !== "drafting") throw new Error(NOT_YOUR_TURN);
+  if (
+    room.snakeOrder === undefined ||
+    room.currentPickIndex === undefined ||
+    room.turnStartedAt === undefined
+  ) {
+    throw new Error(NOT_YOUR_TURN);
+  }
+
+  const seatIndex = seatIndexForPick(room.snakeOrder, room.currentPickIndex);
+  if (room.seats[seatIndex].userId !== userId) throw new Error(NOT_YOUR_TURN);
+
+  const seat = room.seats[seatIndex];
+
+  // Bank already dead: ruling R2 gives this pick to the bot, whoever's
+  // mutation lands first. Same outcome as the scheduled timeout — the human
+  // choice arrived after the clock took the turn away.
+  if (bankExhausted(room.turnStartedAt, now, seat.bankMs)) {
+    await runTurnTimeout(ctx, room, room.currentPickIndex, now);
+    return { auto: true as const };
+  }
+
+  const player = await ctx.db.get(playerId);
+  if (player === null) throw new Error("Player not found.");
+  if (!player.active) throw new Error(`${player.name} is not available this season.`);
+
+  // Crew-internal exclusivity (unique ownership within the room, R7).
+  const alreadyPicked = await ctx.db
+    .query("fantasyDraftLog")
+    .withIndex("by_room_player", (q) => q.eq("roomId", roomId).eq("playerId", playerId))
+    .first();
+  if (alreadyPicked !== null) throw new Error(PLAYER_TAKEN);
+
+  // R5: a player with NO fixture this gameweek is human-pickable (badged in
+  // the UI, skipped only by auto-pick). A player whose fixture has STARTED
+  // is not — the FW-1 hindsight rule, same as swapping into a budget squad.
+  const fixtures = await ctx.db
+    .query("fantasyFixtures")
+    .withIndex("by_gameweek_home", (q) =>
+      q.eq("gameweekId", room.gameweekId).eq("homeClubId", player.clubId),
+    )
+    .collect();
+  const awayFixtures = await ctx.db
+    .query("fantasyFixtures")
+    .withIndex("by_gameweek_away", (q) =>
+      q.eq("gameweekId", room.gameweekId).eq("awayClubId", player.clubId),
+    )
+    .collect();
+  const kickoffs = [...fixtures, ...awayFixtures].map((f) => f.kickoffAt);
+  if (kickoffs.length > 0 && Math.min(...kickoffs) <= now) {
+    throw new Error(PLAYER_STARTED);
+  }
+
+  // Club cap, against the arm-time favorite snapshot.
+  const picks = await pickEntries(ctx, roomId);
+  const playersById = new Map<string, Doc<"fantasyPlayers">>();
+  for (const entry of picks) {
+    if (entry.playerId === undefined) continue;
+    if (playersById.has(entry.playerId)) continue;
+    const picked = await ctx.db.get(entry.playerId);
+    if (picked !== null) playersById.set(picked._id, picked);
+  }
+  const counts = clubCountsFor(seatIndex, picks, playersById);
+  if (clubCapBlocks(player.clubId, counts, seat.favoriteClubAtArm ?? null)) {
+    throw new Error(CLUB_CAP_REACHED);
+  }
+
+  await applyPickAndAdvance(
+    ctx,
+    room,
+    {
+      seatIndex,
+      playerId,
+      providerPlayerId: player.providerPlayerId,
+      auto: false,
+      elapsedMs: elapsedOnTurn(room.turnStartedAt, now, seat.bankMs),
+    },
+    now,
+  );
+  return { auto: false as const };
+}
 
 export const makePick = mutation({
   args: {
     roomId: v.id("fantasyDraftRooms"),
     playerId: v.id("fantasyPlayers"),
   },
-  handler: async (ctx, { roomId, playerId }) => {
-    const userId = await requireUserId(ctx);
-    const room = await ctx.db.get(roomId);
-    if (room === null) throw new Error(ROOM_NOT_FOUND);
-    if (room.status !== "drafting") throw new Error(NOT_YOUR_TURN);
-    if (
-      room.snakeOrder === undefined ||
-      room.currentPickIndex === undefined ||
-      room.turnStartedAt === undefined
-    ) {
-      throw new Error(NOT_YOUR_TURN);
-    }
-
-    const seatIndex = seatIndexForPick(room.snakeOrder, room.currentPickIndex);
-    if (room.seats[seatIndex].userId !== userId) throw new Error(NOT_YOUR_TURN);
-
-    const now = Date.now();
-    const seat = room.seats[seatIndex];
-
-    // Bank already dead: ruling R2 gives this pick to the bot, whoever's
-    // mutation lands first. Same outcome as the scheduled timeout — the human
-    // choice arrived after the clock took the turn away.
-    if (bankExhausted(room.turnStartedAt, now, seat.bankMs)) {
-      await runTurnTimeout(ctx, room, room.currentPickIndex, now);
-      return { auto: true as const };
-    }
-
-    const player = await ctx.db.get(playerId);
-    if (player === null) throw new Error("Player not found.");
-    if (!player.active) throw new Error(`${player.name} is not available this season.`);
-
-    // Crew-internal exclusivity (unique ownership within the room, R7).
-    const alreadyPicked = await ctx.db
-      .query("fantasyDraftLog")
-      .withIndex("by_room_player", (q) => q.eq("roomId", roomId).eq("playerId", playerId))
-      .first();
-    if (alreadyPicked !== null) throw new Error(PLAYER_TAKEN);
-
-    // R5: a player with NO fixture this gameweek is human-pickable (badged in
-    // the UI, skipped only by auto-pick). A player whose fixture has STARTED
-    // is not — the FW-1 hindsight rule, same as swapping into a budget squad.
-    const fixtures = await ctx.db
-      .query("fantasyFixtures")
-      .withIndex("by_gameweek_home", (q) =>
-        q.eq("gameweekId", room.gameweekId).eq("homeClubId", player.clubId),
-      )
-      .collect();
-    const awayFixtures = await ctx.db
-      .query("fantasyFixtures")
-      .withIndex("by_gameweek_away", (q) =>
-        q.eq("gameweekId", room.gameweekId).eq("awayClubId", player.clubId),
-      )
-      .collect();
-    const kickoffs = [...fixtures, ...awayFixtures].map((f) => f.kickoffAt);
-    if (kickoffs.length > 0 && Math.min(...kickoffs) <= now) {
-      throw new Error(PLAYER_STARTED);
-    }
-
-    // Club cap, against the arm-time favorite snapshot.
-    const picks = await pickEntries(ctx, roomId);
-    const playersById = new Map<string, Doc<"fantasyPlayers">>();
-    for (const entry of picks) {
-      if (entry.playerId === undefined) continue;
-      if (playersById.has(entry.playerId)) continue;
-      const picked = await ctx.db.get(entry.playerId);
-      if (picked !== null) playersById.set(picked._id, picked);
-    }
-    const counts = clubCountsFor(seatIndex, picks, playersById);
-    if (clubCapBlocks(player.clubId, counts, seat.favoriteClubAtArm ?? null)) {
-      throw new Error(CLUB_CAP_REACHED);
-    }
-
-    await applyPickAndAdvance(
-      ctx,
-      room,
-      {
-        seatIndex,
-        playerId,
-        auto: false,
-        elapsedMs: elapsedOnTurn(room.turnStartedAt, now, seat.bankMs),
-      },
-      now,
-    );
-    return { auto: false as const };
-  },
+  handler: async (ctx, { roomId, playerId }) =>
+    await makePickFor(ctx, await requireUserId(ctx), roomId, playerId),
 });
 
 export const turnTimeout = internalMutation({
@@ -930,11 +1154,23 @@ export const turnTimeout = internalMutation({
 
 /**
  * The safety net (cron): expires dead lobbies, and re-drives any room whose
- * scheduled hop was lost — a stuck order_reveal or an overdue turn. Every
- * action delegates to the same guarded functions the scheduler uses, so
- * sweeping a healthy room is a no-op by construction (LM8), and a lost
- * schedule costs at most one sweep interval of stall (LM4's fix: the
- * persisted timers have a consumer).
+ * scheduled hop was lost — a stuck order_reveal, an overdue turn, or a
+ * completed draft whose sheet handoff never ran. Every action delegates to
+ * the same guarded functions the scheduler uses, so sweeping a healthy room
+ * is a no-op by construction (LM8), and a lost schedule costs at most one
+ * sweep interval of stall (LM4's fix: the persisted timers have a consumer).
+ *
+ * ── F3b: the re-kick is budgeted ──
+ *
+ * A re-kick that throws rolls its own writes back, so a failing hop can never
+ * record its own failure — which is how a genuinely broken room used to get a
+ * cron throwing at it every five minutes for ever. The budget is therefore
+ * counted HERE, in the sweep's own transaction, which never throws: each pass
+ * that finds a room still needing the same rescue increments
+ * `recoveryAttempts`, and any hop that actually commits an advance resets it
+ * to 0 (RECOVERY_CLEARED). Past MAX_RECOVERY_ATTEMPTS the sweep stops driving
+ * the room and stamps `stuckAt`/`stuckReason` for an operator, who can clear
+ * it with `forceAbandonRoom`.
  */
 export const draftRoomSweep = internalMutation({
   args: {},
@@ -942,6 +1178,27 @@ export const draftRoomSweep = internalMutation({
     const now = Date.now();
     let expired = 0;
     let rekicked = 0;
+    let stuck = 0;
+
+    /**
+     * Spend one unit of a room's recovery budget. Returns true if the caller
+     * should drive the hop, false if the room has just been flagged stuck.
+     */
+    const budgetAllows = async (room: Room, reason: string): Promise<boolean> => {
+      if (room.stuckAt !== undefined) return false; // already flagged; hands off
+      const attempts = (room.recoveryAttempts ?? 0) + 1;
+      if (attempts > MAX_RECOVERY_ATTEMPTS) {
+        await ctx.db.patch(room._id, {
+          stuckAt: now,
+          stuckReason: `${reason} (no progress after ${MAX_RECOVERY_ATTEMPTS} sweep re-kicks)`,
+        });
+        stuck += 1;
+        return false;
+      }
+      await ctx.db.patch(room._id, { recoveryAttempts: attempts });
+      rekicked += 1;
+      return true;
+    };
 
     const lobbies = await ctx.db
       .query("fantasyDraftRooms")
@@ -960,10 +1217,10 @@ export const draftRoomSweep = internalMutation({
       .take(SWEEP_BATCH);
     for (const room of revealing) {
       if ((room.orderRevealedAt ?? 0) + ORDER_REVEAL_MS + SWEEP_SLACK_MS <= now) {
+        if (!(await budgetAllows(room, "order reveal never began drafting"))) continue;
         await ctx.scheduler.runAfter(0, internal.fantasyDraftRooms.beginDrafting, {
           roomId: room._id,
         });
-        rekicked += 1;
       }
     }
 
@@ -981,19 +1238,103 @@ export const draftRoomSweep = internalMutation({
       }
       const seat = room.seats[seatIndexForPick(room.snakeOrder, room.currentPickIndex)];
       if (room.turnStartedAt + seat.bankMs + SWEEP_SLACK_MS <= now) {
+        const reason = `turn ${room.currentPickIndex} overdue`;
+        if (!(await budgetAllows(room, reason))) continue;
         await ctx.scheduler.runAfter(0, internal.fantasyDraftRooms.turnTimeout, {
           roomId: room._id,
           expectedPickIndex: room.currentPickIndex,
         });
-        rekicked += 1;
       }
     }
 
-    return { expired, rekicked, now };
+    // F3a's other half: materialization is scheduled, so it can be lost —
+    // and a completed draft with no sheets is exactly the state the old
+    // inline version crashed the whole draft to avoid.
+    const completed = await ctx.db
+      .query("fantasyDraftRooms")
+      .withIndex("by_status", (q) => q.eq("status", "completed"))
+      .take(SWEEP_BATCH);
+    for (const room of completed) {
+      if (room.sheetsMaterializedAt !== undefined) continue;
+      if ((room.completedAt ?? 0) + SWEEP_SLACK_MS > now) continue; // give it a beat
+      if (!(await budgetAllows(room, "sheet handoff did not complete"))) continue;
+      await ctx.scheduler.runAfter(0, internal.fantasyDraftRooms.materializeRoomSquads, {
+        roomId: room._id,
+      });
+    }
+
+    return { expired, rekicked, stuck, now };
+  },
+});
+
+/**
+ * The operator escape hatch (F3c) for a room the sweep has given up on.
+ *
+ * `internalMutation`, so it is unreachable from any client: internal
+ * functions are not in the public API surface Convex exposes to the browser,
+ * and nothing in src/ can name it. Reached only by `npx convex run` or by
+ * another server-side function.
+ *
+ * Refuses a completed room whose sheets already materialized: those squads
+ * are live weekend state, and abandoning the room they came from would strand
+ * them. That case is not a wedge and does not need this hammer.
+ */
+export const forceAbandonRoom = internalMutation({
+  args: {
+    roomId: v.id("fantasyDraftRooms"),
+    reason: v.string(),
+  },
+  handler: async (ctx, { roomId, reason }) => {
+    const room = await ctx.db.get(roomId);
+    if (room === null) throw new Error(ROOM_NOT_FOUND);
+    if (room.status === "abandoned") {
+      return { ok: true as const, alreadyAbandoned: true as const };
+    }
+    if (room.status === "completed" && room.sheetsMaterializedAt !== undefined) {
+      throw new Error(
+        "Refusing to abandon a completed room whose squads are materialized — " +
+          "its sheets are live weekend state.",
+      );
+    }
+
+    await ctx.db.patch(roomId, {
+      status: "abandoned",
+      turnStartedAt: undefined,
+      stuckAt: Date.now(),
+      stuckReason: `force-abandoned: ${reason}`,
+    });
+    return {
+      ok: true as const,
+      alreadyAbandoned: false as const,
+      previousStatus: room.status,
+    };
   },
 });
 
 // ── queries ──
+
+/**
+ * May this user READ this room and its draft log? (FW-3R item 7.)
+ *
+ * "Was seated in this room", not "is an active crew member". A drafter who
+ * later leaves the crew still played that draft: their picks are in the log,
+ * their squad still scores the weekend, and the crew will still argue about
+ * it. Gating reads on live membership meant leaving the crew erased their own
+ * draft from their view — including one already finished. Seats are frozen at
+ * arm (R7), so "was seated" is a permanent, tamper-proof fact.
+ *
+ * Write paths are unchanged: leaving still ends the ability to join rooms,
+ * ready up, or arm. This is read access only.
+ */
+async function canReadRoom(
+  ctx: Ctx,
+  room: Room,
+  userId: Id<"users">,
+): Promise<boolean> {
+  if (seatIndexOf(room, userId) >= 0) return true;
+  const membership = await membershipOf(ctx, room.crewId, userId);
+  return membership !== null && membership.active;
+}
 
 /**
  * The crew page read model: crew, members, rooms (the crew table skeleton).
@@ -1108,9 +1449,7 @@ export const getRoom = query({
     if (roomId === null) return null;
     const room = await ctx.db.get(roomId);
     if (room === null) return null;
-
-    const membership = await membershipOf(ctx, room.crewId, userId);
-    if (membership === null || !membership.active) return null;
+    if (!(await canReadRoom(ctx, room, userId))) return null;
 
     const crew = await ctx.db.get(room.crewId);
     const gameweek = await ctx.db.get(room.gameweekId);
@@ -1121,6 +1460,23 @@ export const getRoom = query({
 
     const seatIndex = seatIndexOf(room, userId);
     const turnSeatIndex = currentSeatIndex(room);
+    const serverNow = Date.now();
+
+    // Item 8: the clock arrives derived, not as homework. `bankMs` is the
+    // seat's PERSISTED bank, which only moves when a pick lands — so the seat
+    // on the clock is draining right now and every client was obliged to
+    // compute that drain itself from turnStartedAt. One of them getting the
+    // arithmetic wrong is a clock that disagrees with the server's, which is
+    // the LM12 failure wearing a different hat.
+    const turnBankRemainingMs =
+      turnSeatIndex === null || room.turnStartedAt === undefined
+        ? null
+        : room.seats[turnSeatIndex].bankMs -
+          elapsedOnTurn(
+            room.turnStartedAt,
+            serverNow,
+            room.seats[turnSeatIndex].bankMs,
+          );
 
     return {
       roomId: room._id,
@@ -1146,8 +1502,14 @@ export const getRoom = query({
       currentPickIndex: room.currentPickIndex ?? null,
       turnSeatIndex,
       turnStartedAt: room.turnStartedAt ?? null,
+      /** Live bank of the seat on the clock at `serverNow` (item 8). */
+      turnBankRemainingMs,
       totalPicks: totalPicks(room.seats.length),
       completedAt: room.completedAt ?? null,
+      /** Lobby TTL — the client can show how long an unarmed room has left. */
+      expiresAt: room.expiresAt,
+      sheetsMaterializedAt: room.sheetsMaterializedAt ?? null,
+      stuckAt: room.stuckAt ?? null,
       picks: entries
         .filter((e) => e.entryType === "pick")
         .map((e) => ({
@@ -1161,7 +1523,7 @@ export const getRoom = query({
           bankAfterMs: e.bankAfterMs ?? 0,
           at: e.at,
         })),
-      serverNow: Date.now(),
+      serverNow,
     };
   },
 });
@@ -1182,8 +1544,9 @@ export const getDraftPool = query({
     if (roomId === null) return null;
     const room = await ctx.db.get(roomId);
     if (room === null) return null;
-    const membership = await membershipOf(ctx, room.crewId, userId);
-    if (membership === null || !membership.active) return null;
+    // Same gate as getRoom (item 7): a leaver can still read the board of a
+    // draft they played, which is what makes their own recap render.
+    if (!(await canReadRoom(ctx, room, userId))) return null;
 
     const { pool, playersById } = await loadPool(ctx, room.gameweekId);
     const metaRows = await ctx.db.query("fantasyDraftPoolMeta").collect();
@@ -1207,6 +1570,79 @@ export const getDraftPool = query({
           kickoffAt: p.kickoffAt,
         };
       });
+  },
+});
+
+/**
+ * FW-3R item 1c — the phantom crew-squad audit.
+ *
+ * Before F1, `fantasySquads.createSquad` accepted `context: "crew"` from any
+ * authenticated caller with no room lookup at all, so two kinds of junk row
+ * could exist: a squad for a room its owner was never seated in, and a squad
+ * whose slots are empty because materialization skipped it (the F1 brick).
+ * This reports them; it deletes nothing, by ticket instruction.
+ */
+export const auditCrewSquads = internalQuery({
+  args: {},
+  handler: async (ctx) => {
+    const squads = await ctx.db.query("fantasySquads").collect();
+    const crewSquads = squads.filter((s) => s.context === "crew");
+
+    const findings: Array<{
+      squadId: string;
+      userId: string;
+      crewRoomId: string | null;
+      problems: string[];
+      slotCount: number;
+      filledSlots: number;
+    }> = [];
+
+    for (const squad of crewSquads) {
+      const problems: string[] = [];
+      const slots = await ctx.db
+        .query("fantasySquadSlots")
+        .withIndex("by_squad", (q) => q.eq("squadId", squad._id))
+        .collect();
+      const filled = slots.filter((s) => s.playerId !== undefined).length;
+
+      if (slots.length !== SQUAD_SIZE) problems.push(`slot count ${slots.length} != ${SQUAD_SIZE}`);
+      if (filled !== SQUAD_SIZE) problems.push(`${SQUAD_SIZE - filled} unfilled slots`);
+
+      const roomId =
+        squad.crewRoomId === undefined
+          ? null
+          : ctx.db.normalizeId("fantasyDraftRooms", squad.crewRoomId);
+      if (squad.crewRoomId === undefined) {
+        problems.push("crew squad with no crewRoomId");
+      } else if (roomId === null) {
+        problems.push(`crewRoomId "${squad.crewRoomId}" is not a draft-room id`);
+      } else {
+        const room = await ctx.db.get(roomId);
+        if (room === null) {
+          problems.push("crewRoomId points at no room");
+        } else if (!room.seats.some((seat) => seat.userId === squad.userId)) {
+          problems.push("owner was never seated in that room (phantom)");
+        }
+      }
+
+      if (problems.length > 0) {
+        findings.push({
+          squadId: squad._id,
+          userId: squad.userId,
+          crewRoomId: squad.crewRoomId ?? null,
+          problems,
+          slotCount: slots.length,
+          filledSlots: filled,
+        });
+      }
+    }
+
+    return {
+      crewSquadsTotal: crewSquads.length,
+      squadsTotal: squads.length,
+      phantomCount: findings.length,
+      findings,
+    };
   },
 });
 

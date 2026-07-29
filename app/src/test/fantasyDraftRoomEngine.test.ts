@@ -42,6 +42,7 @@ vi.mock("@convex-dev/auth/server", () => ({
 }));
 
 import * as draftRooms from "../../convex/fantasyDraftRooms";
+import * as fantasySquads from "../../convex/fantasySquads";
 import {
   CLUB_CAP_REACHED,
   NOT_ALL_READY,
@@ -59,6 +60,7 @@ import {
   seatIndexForPick,
   snakeOrderFor,
   totalPicks,
+  type DraftLogSeat,
 } from "../../convex/lib/fantasyDraftEngine";
 import {
   formationOf,
@@ -77,6 +79,12 @@ const beginDrafting = handlerOf(draftRooms.beginDrafting);
 const makePick = handlerOf(draftRooms.makePick);
 const turnTimeout = handlerOf(draftRooms.turnTimeout);
 const draftRoomSweep = handlerOf(draftRooms.draftRoomSweep);
+const materializeRoomSquads = handlerOf(draftRooms.materializeRoomSquads);
+const forceAbandonRoom = handlerOf(draftRooms.forceAbandonRoom);
+const leaveCrew = handlerOf(draftRooms.leaveCrew);
+const getRoom = handlerOf(draftRooms.getRoom);
+const getDraftPool = handlerOf(draftRooms.getDraftPool);
+const setFormation = handlerOf(fantasySquads.setFormation);
 
 let world: DraftWorld;
 
@@ -85,27 +93,39 @@ function asUser(userId: string) {
 }
 
 /**
+ * Dispatch a captured hop to the handler it was actually scheduled for,
+ * keyed on the exported name in the reference (`module:export`). Dispatching
+ * on argument shape would be wrong now that FW-3R added a second
+ * `{ roomId }`-shaped hop.
+ */
+const HOPS: Record<string, (ctx: unknown, args: unknown) => Promise<unknown>> = {
+  beginDrafting,
+  turnTimeout,
+  materializeRoomSquads,
+};
+
+const hopName = (fn: string): string => fn.split(":").pop() ?? fn;
+
+/**
  * Drive captured scheduled hops, oldest first (optionally filtered).
  * `dueOnly` drives only hops whose delay has elapsed on the fake clock —
  * needed wherever an early-fired turnTimeout would legitimately re-arm
  * itself forever against a frozen clock.
  */
 async function drainScheduled(
-  pred: (args: Record<string, unknown>) => boolean = () => true,
+  pred: (args: Record<string, unknown>, fn: string) => boolean = () => true,
   opts: { dueOnly?: boolean } = {},
 ) {
   const due = (s: { delayMs: number; scheduledAt: number }) =>
     opts.dueOnly !== true || s.scheduledAt + s.delayMs <= Date.now();
   // Newly scheduled hops during draining join the queue and get driven too.
   for (let guard = 0; guard < 500; guard += 1) {
-    const index = world.scheduled.findIndex((s) => pred(s.args) && due(s));
+    const index = world.scheduled.findIndex((s) => pred(s.args, s.fn) && due(s));
     if (index === -1) return;
     const [entry] = world.scheduled.splice(index, 1);
-    if ("expectedPickIndex" in entry.args) {
-      await turnTimeout(world.ctx, entry.args);
-    } else {
-      await beginDrafting(world.ctx, entry.args);
-    }
+    const hop = HOPS[hopName(entry.fn)];
+    if (hop === undefined) throw new Error(`drainScheduled: unknown hop ${entry.fn}`);
+    await hop(world.ctx, entry.args);
   }
   throw new Error("drainScheduled: runaway scheduling");
 }
@@ -145,7 +165,7 @@ async function armedRoom(count: number): Promise<{ roomId: string; snakeOrder: n
   asUser(world.userIds[0]);
   await setSeatReady(world.ctx, { roomId, ready: true });
   await armDraft(world.ctx, { roomId });
-  await drainScheduled((args) => !("expectedPickIndex" in args)); // the reveal hop
+  await drainScheduled((_args, fn) => fn.endsWith(":beginDrafting")); // the reveal hop
   const snakeOrder = room(roomId).snakeOrder as number[];
   return { roomId, snakeOrder };
 }
@@ -178,6 +198,27 @@ function availablePlayerFor(roomId: string, opts: { clubId?: string } = {}): str
     );
   if (candidates.length === 0) throw new Error("no available player");
   return candidates[0]._id;
+}
+
+/**
+ * Draft an armed room out to `completed` with deliberate picks only.
+ *
+ * Stops there deliberately: since F3a the sheet handoff is a SEPARATE
+ * scheduled step, and several suites below need the window between the final
+ * pick committing and the sheets existing.
+ */
+async function runDraftToCompletion(roomId: string): Promise<void> {
+  const seats = room(roomId).seats as Array<{ userId: string }>;
+  let clock = Date.now();
+  for (let guard = 0; guard < 200; guard += 1) {
+    if (room(roomId).status !== "drafting") return;
+    const { seatIndex } = onClock(roomId);
+    clock += 1_000;
+    vi.setSystemTime(clock);
+    asUser(seats[seatIndex].userId);
+    await makePick(world.ctx, { roomId, playerId: availablePlayerFor(roomId) });
+  }
+  throw new Error("runDraftToCompletion: draft never completed");
 }
 
 beforeEach(async () => {
@@ -499,6 +540,9 @@ describe("a full draft, end to end (2, 3 and 4 drafters)", () => {
       asUser(seats[seatIndex].userId);
       await makePick(world.ctx, { roomId, playerId: availablePlayerFor(roomId) });
     }
+    // F3a: the sheet handoff is scheduled after the final pick commits, so a
+    // completed draft has no squads until its hop runs.
+    await drainScheduled((_args, fn) => fn.endsWith(":materializeRoomSquads"));
     return roomId;
   }
 
@@ -518,10 +562,12 @@ describe("a full draft, end to end (2, 3 and 4 drafters)", () => {
           entryType: e.entryType as "seed" | "pick",
           seed: e.seed as string | undefined,
           snakeOrder: e.snakeOrder as number[] | undefined,
+          seats: e.seats as DraftLogSeat[] | undefined,
           pickNumber: e.pickNumber as number | undefined,
           round: e.round as number | undefined,
           seatIndex: e.seatIndex as number | undefined,
           playerId: e.playerId as string | undefined,
+          providerPlayerId: e.providerPlayerId as string | undefined,
           auto: e.auto as boolean | undefined,
           elapsedMs: e.elapsedMs as number | undefined,
           bankAfterMs: e.bankAfterMs as number | undefined,
@@ -612,5 +658,327 @@ describe("a full draft, end to end (2, 3 and 4 drafters)", () => {
     const second = await runOnce();
     expect(second).toEqual(first);
     expect(first.length).toBe(totalPicks(4) + 1);
+  });
+});
+
+// ── FW-3R: remediation of the blind-verify findings ──
+
+describe("F1: crew squads are draft output only", () => {
+  /**
+   * The finding, end to end. A seated drafter mints an empty crew squad at
+   * their own live room's contextKey; materialization used to skip the seat
+   * and silently discard their drafted 13 into a sheet nothing could fill.
+   *
+   * The public route is now closed (asserted in fantasyLockEngine.test.ts),
+   * so the row is forged directly here — which is also the only way the
+   * pre-FW-3R rows already on a deployment could have got there.
+   */
+  it("STOPS rather than skipping when an existing crew squad is not the drafted 13", async () => {
+    const { roomId } = await armedRoom(2);
+    const seats = room(roomId).seats as Array<{ userId: string }>;
+
+    const phantomId = await world.db.insert("fantasySquads", {
+      userId: seats[0].userId,
+      gameweekId: world.gameweekId,
+      context: "crew",
+      crewRoomId: roomId,
+      contextKey: `crew:${roomId}`,
+      favoriteClubAtBuild: null,
+      createdAt: Date.now(),
+    });
+    for (let slotIndex = 0; slotIndex < SQUAD_SIZE; slotIndex += 1) {
+      await world.db.insert("fantasySquadSlots", {
+        squadId: phantomId,
+        slotIndex,
+        slotRole: "MID",
+        isFinisher: slotIndex >= 11,
+      });
+    }
+
+    await runDraftToCompletion(roomId);
+    expect(room(roomId).status).toBe("completed"); // the draft still finished
+
+    // The handoff refuses, loudly, naming the room and seat.
+    await expect(materializeRoomSquads(world.ctx, { roomId })).rejects.toThrow(
+      /Sheet handoff stopped/,
+    );
+    // Nothing was overwritten and nothing was invented.
+    expect(room(roomId).sheetsMaterializedAt).toBeUndefined();
+    const slots = world.db.rows("fantasySquadSlots").filter((s) => s.squadId === phantomId);
+    expect(slots.every((s) => s.playerId === undefined)).toBe(true);
+    expect(
+      world.db.rows("fantasySquads").filter((s) => s.crewRoomId === roomId),
+    ).toHaveLength(1);
+  });
+
+  it("accepts a genuine retry: an existing squad that IS the drafted 13", async () => {
+    const { roomId } = await armedRoom(2);
+    await runDraftToCompletion(roomId);
+    await drainScheduled((_a, fn) => fn.endsWith(":materializeRoomSquads"));
+    const stamp = room(roomId).sheetsMaterializedAt;
+    expect(stamp).toBeTypeOf("number");
+
+    // Re-running is a no-op while the stamp stands...
+    await materializeRoomSquads(world.ctx, { roomId });
+    expect(room(roomId).sheetsMaterializedAt).toBe(stamp);
+
+    // ...and still a no-op if the stamp is lost, because the squads match.
+    await world.db.patch(roomId, { sheetsMaterializedAt: undefined });
+    const before = world.db.rows("fantasySquads").length;
+    await expect(materializeRoomSquads(world.ctx, { roomId })).resolves.toMatchObject({
+      alreadyPresent: 2,
+      created: 0,
+    });
+    expect(world.db.rows("fantasySquads")).toHaveLength(before);
+  });
+});
+
+describe("F3: no permanent wedge", () => {
+  it("commits the final pick before the sheet handoff, so a sheet failure cannot abort the draft", async () => {
+    const { roomId } = await armedRoom(2);
+    await runDraftToCompletion(roomId);
+
+    // The draft is over and recorded; the sheets are not written yet.
+    expect(room(roomId).status).toBe("completed");
+    expect(room(roomId).sheetsMaterializedAt).toBeUndefined();
+    expect(logEntries(roomId).filter((e) => e.entryType === "pick")).toHaveLength(
+      totalPicks(2),
+    );
+    expect(world.db.rows("fantasySquads")).toHaveLength(0);
+
+    // Break the handoff: a drafted player vanishes.
+    const victim = logEntries(roomId).find((e) => e.entryType === "pick")!.playerId as string;
+    await world.db.delete(victim);
+    await expect(materializeRoomSquads(world.ctx, { roomId })).rejects.toThrow(/vanished/);
+
+    // The draft's own record is untouched by the failure.
+    expect(room(roomId).status).toBe("completed");
+    expect(logEntries(roomId).filter((e) => e.entryType === "pick")).toHaveLength(
+      totalPicks(2),
+    );
+  });
+
+  it("gives up after 3 unproductive sweeps and flags the room stuck instead of looping", async () => {
+    const { roomId } = await armedRoom(2);
+    world.scheduled.length = 0;
+    // A turn that will never be driven: the sweep is the only actor.
+    vi.setSystemTime(DRAFT_LOBBY_NOW + DRAFT_BANK_MS + 60_000);
+
+    for (const expected of [1, 2, 3]) {
+      const result = (await draftRoomSweep(world.ctx, {})) as { rekicked: number };
+      expect(result.rekicked).toBe(1);
+      expect(room(roomId).recoveryAttempts).toBe(expected);
+      expect(room(roomId).stuckAt).toBeUndefined();
+      world.scheduled.length = 0; // the hop is "lost" every time
+    }
+
+    const giveUp = (await draftRoomSweep(world.ctx, {})) as { rekicked: number; stuck: number };
+    expect(giveUp.stuck).toBe(1);
+    expect(giveUp.rekicked).toBe(0);
+    expect(room(roomId).stuckAt).toBeTypeOf("number");
+    expect(room(roomId).stuckReason).toMatch(/overdue/);
+    expect(world.scheduled).toHaveLength(0); // nothing scheduled any more
+
+    // And it stays given up: no further sweep re-kicks or re-flags it.
+    const after = (await draftRoomSweep(world.ctx, {})) as { rekicked: number; stuck: number };
+    expect(after).toMatchObject({ rekicked: 0, stuck: 0 });
+    expect(world.scheduled).toHaveLength(0);
+  });
+
+  it("resets the recovery budget the moment the room actually advances", async () => {
+    const { roomId } = await armedRoom(2);
+    world.scheduled.length = 0;
+    vi.setSystemTime(DRAFT_LOBBY_NOW + DRAFT_BANK_MS + 60_000);
+
+    await draftRoomSweep(world.ctx, {});
+    expect(room(roomId).recoveryAttempts).toBe(1);
+
+    // Drive the hop this time: the auto-pick advances the cursor.
+    await drainScheduled(() => true, { dueOnly: true });
+    expect(room(roomId).recoveryAttempts).toBe(0);
+    expect(room(roomId).stuckAt).toBeUndefined();
+  });
+
+  it("re-kicks a completed room whose sheet handoff was lost", async () => {
+    const { roomId } = await armedRoom(2);
+    await runDraftToCompletion(roomId);
+    world.scheduled.length = 0; // the materialization hop never ran
+
+    vi.setSystemTime(Date.now() + 60_000);
+    const result = (await draftRoomSweep(world.ctx, {})) as { rekicked: number };
+    expect(result.rekicked).toBe(1);
+    await drainScheduled((_a, fn) => fn.endsWith(":materializeRoomSquads"));
+    expect(room(roomId).sheetsMaterializedAt).toBeTypeOf("number");
+    expect(world.db.rows("fantasySquads")).toHaveLength(2);
+  });
+
+  it("forceAbandonRoom is internal-only, frees a stuck room, and protects live sheets", async () => {
+    // Structural: not reachable from any client path.
+    const marked = draftRooms.forceAbandonRoom as unknown as {
+      isInternal?: boolean;
+      isPublic?: boolean;
+    };
+    expect(marked.isInternal).toBe(true);
+    expect(marked.isPublic).toBeUndefined();
+
+    const { roomId } = await armedRoom(2);
+    await forceAbandonRoom(world.ctx, { roomId, reason: "wedged in test" });
+    expect(room(roomId).status).toBe("abandoned");
+    expect(room(roomId).stuckReason).toMatch(/force-abandoned: wedged in test/);
+    expect(room(roomId).turnStartedAt).toBeUndefined();
+
+    // Idempotent.
+    await expect(
+      forceAbandonRoom(world.ctx, { roomId, reason: "again" }),
+    ).resolves.toMatchObject({ alreadyAbandoned: true });
+
+    // But it will not strand live weekend state.
+    const { roomId: other } = await armedRoom(3);
+    await runDraftToCompletion(other);
+    await drainScheduled((_a, fn) => fn.endsWith(":materializeRoomSquads"));
+    await expect(
+      forceAbandonRoom(world.ctx, { roomId: other, reason: "no" }),
+    ).rejects.toThrow(/materialized/);
+  });
+});
+
+describe("item 5: the draft log defends itself", () => {
+  it("carries the arm-time seat table and a provider id on every pick", async () => {
+    const { roomId } = await armedRoom(3);
+    const seats = room(roomId).seats as Array<{ userId: string }>;
+    await world.db.patch(seats[0].userId, { favoriteClub: "C00" });
+    await runDraftToCompletion(roomId);
+
+    const [seed, ...picks] = logEntries(roomId);
+    expect(seed.seats).toHaveLength(3);
+    expect((seed.seats as Array<{ nameSnapshot: string }>).every((s) => s.nameSnapshot !== ""))
+      .toBe(true);
+    expect(picks.every((p) => typeof p.providerPlayerId === "string")).toBe(true);
+
+    // The whole point: reconstruct with the room doc and the players gone.
+    const entries = logEntries(roomId).map((e) => ({
+      seq: e.seq as number,
+      entryType: e.entryType as "seed" | "pick",
+      seed: e.seed as string | undefined,
+      snakeOrder: e.snakeOrder as number[] | undefined,
+      seats: e.seats as DraftLogSeat[] | undefined,
+      pickNumber: e.pickNumber as number | undefined,
+      seatIndex: e.seatIndex as number | undefined,
+      playerId: e.playerId as string | undefined,
+      providerPlayerId: e.providerPlayerId as string | undefined,
+      elapsedMs: e.elapsedMs as number | undefined,
+      bankAfterMs: e.bankAfterMs as number | undefined,
+    }));
+    await world.db.delete(roomId);
+    for (const player of world.db.rows("fantasyPlayers")) await world.db.delete(player._id);
+
+    const rebuilt = reconstructDraft(entries, DRAFT_BANK_MS);
+    expect(rebuilt.problems).toEqual([]);
+    expect(rebuilt.seats).toHaveLength(3);
+    expect([...rebuilt.providerPicksBySeat.values()].every((l) => l.length === SQUAD_SIZE))
+      .toBe(true);
+  });
+});
+
+describe("items 6-8: arranged bit, leaver reads, cold load", () => {
+  it("marks a materialized sheet unarranged, and flips it on the first real edit", async () => {
+    const { roomId } = await armedRoom(2);
+    await runDraftToCompletion(roomId);
+    await drainScheduled((_a, fn) => fn.endsWith(":materializeRoomSquads"));
+
+    const squad = world.db.rows("fantasySquads").find((s) => s.crewRoomId === roomId)!;
+    expect(squad.arrangedByUser).toBe(false);
+
+    asUser(squad.userId as string);
+    const slots = world.db
+      .rows("fantasySquadSlots")
+      .filter((s) => s.squadId === squad._id)
+      .sort((a, b) => (a.slotIndex as number) - (b.slotIndex as number));
+
+    // A no-op formation call is not an arrangement.
+    await setFormation(world.ctx, {
+      squadId: squad._id,
+      slots: slots.map((s) => ({
+        slotIndex: s.slotIndex as number,
+        slotRole: s.slotRole as string,
+        isFinisher: s.isFinisher as boolean,
+      })),
+    });
+    expect(
+      world.db.rows("fantasySquads").find((s) => s._id === squad._id)!.arrangedByUser,
+    ).toBe(false);
+
+    // Swapping a DEF and a MID role is.
+    const def = slots.find((s) => s.slotRole === "DEF" && !s.isFinisher)!;
+    const mid = slots.find((s) => s.slotRole === "MID" && !s.isFinisher)!;
+    await setFormation(world.ctx, {
+      squadId: squad._id,
+      slots: slots.map((s) => ({
+        slotIndex: s.slotIndex as number,
+        slotRole:
+          s._id === def._id ? "MID" : s._id === mid._id ? "DEF" : (s.slotRole as string),
+        isFinisher: s.isFinisher as boolean,
+      })),
+    });
+    expect(
+      world.db.rows("fantasySquads").find((s) => s._id === squad._id)!.arrangedByUser,
+    ).toBe(true);
+  });
+
+  it("keeps a leaver's read access to a draft they played, but not their write access", async () => {
+    const { roomId } = await armedRoom(2);
+    await runDraftToCompletion(roomId);
+    const seats = room(roomId).seats as Array<{ userId: string }>;
+    const leaver = seats[1].userId;
+    const crewId = room(roomId).crewId as string;
+
+    asUser(leaver);
+    expect(await getRoom(world.ctx, { roomId })).not.toBeNull();
+    await leaveCrew(world.ctx, { crewId });
+
+    // Still reads the draft they played — log, board and all.
+    const view = (await getRoom(world.ctx, { roomId })) as { picks: unknown[] } | null;
+    expect(view).not.toBeNull();
+    expect(view!.picks).toHaveLength(totalPicks(2));
+    expect(await getDraftPool(world.ctx, { roomId })).not.toBeNull();
+
+    // A crew member who was never seated, and then leaves, gets nothing.
+    asUser(world.userIds[5]);
+    const crewCode = (world.db.rows("fantasyCrews").find((c) => c._id === crewId)!).code as string;
+    await joinCrew(world.ctx, { code: crewCode });
+    expect(await getRoom(world.ctx, { roomId })).not.toBeNull(); // active member
+    await leaveCrew(world.ctx, { crewId });
+    expect(await getRoom(world.ctx, { roomId })).toBeNull(); // never seated
+
+    // Writes are unchanged by item 7: the leaver cannot start a new room.
+    asUser(leaver);
+    await expect(createRoom(world.ctx, { crewId })).rejects.toThrow(/not a member/i);
+  });
+
+  it("serves the lobby TTL and the live bank so no client derives drain itself", async () => {
+    const { roomId } = await armedRoom(2);
+    const { userId } = onClock(roomId);
+    asUser(userId);
+
+    vi.setSystemTime(DRAFT_LOBBY_NOW + 7_000);
+    const view = (await getRoom(world.ctx, { roomId })) as {
+      turnBankRemainingMs: number | null;
+      expiresAt: number;
+      serverNow: number;
+      seats: Array<{ bankMs: number }>;
+      turnSeatIndex: number | null;
+    };
+    // The persisted bank has not moved; the derived one has.
+    expect(view.seats[view.turnSeatIndex!].bankMs).toBe(DRAFT_BANK_MS);
+    expect(view.turnBankRemainingMs).toBe(DRAFT_BANK_MS - 7_000);
+    expect(view.serverNow).toBe(DRAFT_LOBBY_NOW + 7_000);
+    expect(view.expiresAt).toBeGreaterThan(view.serverNow);
+
+    // Outside a live turn there is no clock to serve.
+    await runDraftToCompletion(roomId);
+    const done = (await getRoom(world.ctx, { roomId })) as {
+      turnBankRemainingMs: number | null;
+    };
+    expect(done.turnBankRemainingMs).toBeNull();
   });
 });

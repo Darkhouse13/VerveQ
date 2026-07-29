@@ -14,12 +14,22 @@
  * seat under the club cap is 12×3+6=42 ≥ 13).
  */
 
+import { getFunctionName, type FunctionReference } from "convex/server";
+
 import { FakeDb, makeCtx, type FakeCtx } from "./fantasyFakeConvex";
 
 export interface ScheduledCall {
   delayMs: number;
   args: Record<string, unknown>;
   scheduledAt: number;
+  /**
+   * Convex function name of the scheduled target, e.g.
+   * "fantasyDraftRooms.js:materializeRoomSquads". Captured because FW-3R
+   * added a second `{ roomId }`-shaped hop (the sheet handoff), and a
+   * harness that dispatched on argument shape would have silently driven the
+   * wrong function.
+   */
+  fn: string;
 }
 
 export type DraftCtx = FakeCtx & {
@@ -53,8 +63,13 @@ export async function seedDraftWorld(
   const ctx: DraftCtx = {
     ...makeCtx(db),
     scheduler: {
-      runAfter: async (ms, _ref, args) => {
-        scheduled.push({ delayMs: ms, args, scheduledAt: Date.now() });
+      runAfter: async (ms, ref, args) => {
+        scheduled.push({
+          delayMs: ms,
+          args,
+          scheduledAt: Date.now(),
+          fn: getFunctionName(ref as FunctionReference<"mutation">),
+        });
       },
     },
   };

@@ -101,6 +101,17 @@ export class FakeDb {
     return this.table(table).get(id) ?? null;
   }
 
+  /**
+   * Mirrors ctx.db.normalizeId: an id string is valid for a table only if it
+   * belongs to that table, and null otherwise. Ids here are `table;n`, so the
+   * prefix carries the same information a real Convex id encodes — which
+   * matters because getRoom/getDraftPool take a bare string from the client
+   * and this is the check that rejects a hand-made one.
+   */
+  normalizeId(table: string, id: string): string | null {
+    return id.startsWith(`${table};`) && this.table(table).has(id) ? id : null;
+  }
+
   async patch(id: string, fields: Record<string, unknown>): Promise<void> {
     const row = await this.get(id);
     if (!row) throw new Error(`patch: no row ${id}`);
