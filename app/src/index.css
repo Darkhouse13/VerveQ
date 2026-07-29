@@ -277,3 +277,24 @@
   0% { transform: translateY(0); opacity: 1; }
   100% { transform: translateY(-40px); opacity: 0; }
 }
+
+/* Honour the OS "reduce motion" setting for the app-wide effect animations —
+   until now only draw.css did. The infinite ones (pulse-urgent's 40px-blur
+   text-shadow, fire-pulse's whole-surface background pulse) are also the most
+   expensive per-frame paints in the app, so this doubles as a jank valve for
+   the users most likely to feel it. One-shot feedback cues (shake, flash) are
+   shortened rather than removed so grading feedback stays perceivable. */
+@media (prefers-reduced-motion: reduce) {
+  .animate-pulse-urgent,
+  .on-fire-bg {
+    animation: none;
+  }
+  .animate-shake,
+  .animate-flash-red,
+  .animate-shake-horizontal,
+  .animate-float-up,
+  .animate-slide-up {
+    animation-duration: 0.01s;
+    animation-iteration-count: 1;
+  }
+}

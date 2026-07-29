@@ -12,7 +12,7 @@
  * language AND can't suspend on a lazy namespace load (it sits above the
  * app-level <Suspense>).
  */
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
 import { Globe } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
@@ -28,7 +28,23 @@ export function FirstRunLanguagePrompt() {
   const location = useLocation();
   const [open, setOpen] = useState(() => V2_SHELL_ENABLED && !hasChosenLanguage());
 
-  if (!open || SUPPRESSED_PATHS.has(location.pathname)) return null;
+  // Insurance against the modal's body locks outliving it: Radix dialogs put
+  // pointer-events:none on <body> while open, and an abrupt teardown mid-open
+  // can strand it — which eats every click and scroll for the whole session.
+  useEffect(
+    () => () => {
+      document.body.style.removeProperty("pointer-events");
+    },
+    [],
+  );
+
+  if (!open) return null;
+
+  // Public legal pages must never be covered by the prompt. Drive this through
+  // the `open` prop rather than an early return: unmounting a Radix dialog
+  // WHILE open skips its close path (scroll/pointer-lock release), which is
+  // exactly the "app stopped responding to clicks" failure mode.
+  const suppressed = SUPPRESSED_PATHS.has(location.pathname);
 
   const active = i18n.resolvedLanguage ?? i18n.language;
 
@@ -46,7 +62,7 @@ export function FirstRunLanguagePrompt() {
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open && !suppressed} onOpenChange={onOpenChange}>
       <DialogContent className="neo-border neo-shadow-lg bg-card max-w-sm">
         <DialogHeader>
           <div className="flex justify-center">

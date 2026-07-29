@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 
 interface BlitzClockProps {
   endTimeMs: number;
@@ -16,12 +16,19 @@ export function BlitzClock({ endTimeMs, onExpired, penaltyFlash, onTick }: Blitz
   const [remaining, setRemaining] = useState(() =>
     Math.max(0, Math.ceil((endTimeMs - Date.now()) / 1000)),
   );
+  const lastTicked = useRef<number | null>(null);
 
   useEffect(() => {
     const id = setInterval(() => {
       const r = Math.max(0, Math.ceil((endTimeMs - Date.now()) / 1000));
       setRemaining(r);
-      onTick?.(r);
+      // The 100ms interval keeps the displayed second accurate, but the parent
+      // only needs to hear about WHOLE-second changes — calling onTick on every
+      // interval re-rendered the entire play screen at 10Hz for nothing.
+      if (lastTicked.current !== r) {
+        lastTicked.current = r;
+        onTick?.(r);
+      }
       if (r <= 0) {
         clearInterval(id);
         onExpired();

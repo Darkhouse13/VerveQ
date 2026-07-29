@@ -23,7 +23,8 @@
  * (`/v2/account` — sign in / create account / play as guest) via the shell
  * route guards; the bare username ask stays for guest play and invite flows.
  */
-import { lazy, Suspense } from "react";
+import { Suspense } from "react";
+import { lazyWithRetry } from "@/lib/lazyWithRetry";
 import { Navigate, useLocation, useSearchParams } from "react-router-dom";
 import { Loader2 } from "lucide-react";
 import { V2_SHELL_ENABLED } from "@/lib/flags";
@@ -35,7 +36,7 @@ import HomeScreen from "@/pages/HomeScreen";
 
 // Cold-entry landing for signed-out, context-free visitors. Lazy so the
 // signed-in path never pays for it.
-const ColdEntryScreen = lazy(() => import("@/pages/shell/ColdEntryScreen"));
+const ColdEntryScreen = lazyWithRetry(() => import("@/pages/shell/ColdEntryScreen"));
 
 /** Neutral splash while auth settles / the cold-entry chunk loads — never
  * flash the cold-entry at a signed-in user or vice versa. */

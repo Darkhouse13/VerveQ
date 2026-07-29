@@ -2,7 +2,8 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { ConvexReactClient } from "convex/react";
 import { ConvexAuthProvider } from "@convex-dev/auth/react";
-import { lazy, Suspense } from "react";
+import { Suspense } from "react";
+import { lazyWithRetry } from "./lib/lazyWithRetry";
 import { AuthProvider } from "./contexts/AuthContext";
 import { ProtectedRoute, UsernameRequiredRoute } from "./components/ProtectedRoute";
 import { ErrorBoundary } from "./components/ErrorBoundary";
@@ -36,70 +37,70 @@ import {
 // Rollback-only v1 mode screens: with the v2 shell flag on they sit behind
 // V2Redirect and never render, so they load lazily to stay out of the main
 // bundle. Flag-off (rollback) loads them through the app-level Suspense.
-const SportSelectScreen = lazy(() => import("./pages/SportSelectScreen"));
-const QuizScreen = lazy(() => import("./pages/QuizScreen"));
-const SurvivalScreen = lazy(() => import("./pages/SurvivalScreen"));
-const LeaderboardScreen = lazy(() => import("./pages/LeaderboardScreen"));
-const ProfileScreen = lazy(() => import("./pages/ProfileScreen"));
-const DailyQuizScreen = lazy(() => import("./pages/DailyQuizScreen"));
-const BlitzScreen = lazy(() => import("./pages/BlitzScreen"));
-const HigherLowerScreen = lazy(() => import("./pages/HigherLowerScreen"));
-const VerveGridScreen = lazy(() => import("./pages/VerveGridScreen"));
-const LearnPrototypeScreen = lazy(() => import("./pages/LearnPrototypeScreen"));
-const LearnNodePickerScreen = lazy(() => import("./pages/LearnNodePickerScreen"));
-const LearnLadderScreen = lazy(() => import("./pages/LearnLadderScreen"));
+const SportSelectScreen = lazyWithRetry(() => import("./pages/SportSelectScreen"));
+const QuizScreen = lazyWithRetry(() => import("./pages/QuizScreen"));
+const SurvivalScreen = lazyWithRetry(() => import("./pages/SurvivalScreen"));
+const LeaderboardScreen = lazyWithRetry(() => import("./pages/LeaderboardScreen"));
+const ProfileScreen = lazyWithRetry(() => import("./pages/ProfileScreen"));
+const DailyQuizScreen = lazyWithRetry(() => import("./pages/DailyQuizScreen"));
+const BlitzScreen = lazyWithRetry(() => import("./pages/BlitzScreen"));
+const HigherLowerScreen = lazyWithRetry(() => import("./pages/HigherLowerScreen"));
+const VerveGridScreen = lazyWithRetry(() => import("./pages/VerveGridScreen"));
+const LearnPrototypeScreen = lazyWithRetry(() => import("./pages/LearnPrototypeScreen"));
+const LearnNodePickerScreen = lazyWithRetry(() => import("./pages/LearnNodePickerScreen"));
+const LearnLadderScreen = lazyWithRetry(() => import("./pages/LearnLadderScreen"));
 
 // v2 unified shell (additive, flag-gated via VITE_V2_SHELL_ENABLED). Lazy so it
 // stays out of the main bundle; ShellGate redirects to /home when the flag is off.
-const ShellHomeScreen = lazy(() => import("./pages/shell/ShellHomeScreen"));
+const ShellHomeScreen = lazyWithRetry(() => import("./pages/shell/ShellHomeScreen"));
 // With Sport→Football the only live path, /compete lands directly on the mode
 // grid (the old category/sport chooser screens were removed).
-const CompeteModeGridScreen = lazy(() => import("./pages/shell/CompeteModeGridScreen"));
-const RanksScreen = lazy(() => import("./pages/shell/RanksScreen"));
-const ShellProfileScreen = lazy(() => import("./pages/shell/ShellProfileScreen"));
-const SettingsScreen = lazy(() => import("./pages/shell/SettingsScreen"));
-const AccountChoiceScreen = lazy(() => import("./pages/shell/AccountChoiceScreen"));
-const WelcomeScreen = lazy(() => import("./pages/shell/WelcomeScreen"));
-const UpgradeScreen = lazy(() => import("./pages/shell/UpgradeScreen"));
-const ArenaHubScreen = lazy(() => import("./pages/shell/ArenaHubScreen"));
-const ShellLeaderboardScreen = lazy(() => import("./pages/shell/ShellLeaderboardScreen"));
+const CompeteModeGridScreen = lazyWithRetry(() => import("./pages/shell/CompeteModeGridScreen"));
+const RanksScreen = lazyWithRetry(() => import("./pages/shell/RanksScreen"));
+const ShellProfileScreen = lazyWithRetry(() => import("./pages/shell/ShellProfileScreen"));
+const SettingsScreen = lazyWithRetry(() => import("./pages/shell/SettingsScreen"));
+const AccountChoiceScreen = lazyWithRetry(() => import("./pages/shell/AccountChoiceScreen"));
+const WelcomeScreen = lazyWithRetry(() => import("./pages/shell/WelcomeScreen"));
+const UpgradeScreen = lazyWithRetry(() => import("./pages/shell/UpgradeScreen"));
+const ArenaHubScreen = lazyWithRetry(() => import("./pages/shell/ArenaHubScreen"));
+const ShellLeaderboardScreen = lazyWithRetry(() => import("./pages/shell/ShellLeaderboardScreen"));
 
 // Public legal pages — flag-independent (app-store / launch necessities).
-const PrivacyScreen = lazy(() => import("./pages/legal/PrivacyScreen"));
-const TermsScreen = lazy(() => import("./pages/legal/TermsScreen"));
+const PrivacyScreen = lazyWithRetry(() => import("./pages/legal/PrivacyScreen"));
+const TermsScreen = lazyWithRetry(() => import("./pages/legal/TermsScreen"));
 
 // Learn v2 (the Learn pillar) — additive, flag-gated, lazy.
-const LearnEntryScreen = lazy(() => import("./pages/shell/learn/LearnEntryScreen"));
-const LearnRunnerScreen = lazy(() => import("./pages/shell/learn/LearnRunnerScreen"));
-const LearnReviewScreen = lazy(() => import("./pages/shell/learn/LearnReviewScreen"));
-const LearnMasteryScreen = lazy(() => import("./pages/shell/learn/LearnMasteryScreen"));
+const LearnEntryScreen = lazyWithRetry(() => import("./pages/shell/learn/LearnEntryScreen"));
+const LearnRunnerScreen = lazyWithRetry(() => import("./pages/shell/learn/LearnRunnerScreen"));
+const LearnReviewScreen = lazyWithRetry(() => import("./pages/shell/learn/LearnReviewScreen"));
+const LearnMasteryScreen = lazyWithRetry(() => import("./pages/shell/learn/LearnMasteryScreen"));
 
 // In-game prototype layout (migrated modes) — additive, flag-gated, lazy.
-const QuizPlayScreen = lazy(() => import("./pages/shell/play/QuizPlayScreen"));
-const BlitzPlayScreen = lazy(() => import("./pages/shell/play/BlitzPlayScreen"));
-const SurvivalPlayScreen = lazy(() => import("./pages/shell/play/SurvivalPlayScreen"));
-const HigherLowerPlayScreen = lazy(() => import("./pages/shell/play/HigherLowerPlayScreen"));
-const CareerPathPlayScreen = lazy(() => import("./pages/shell/play/CareerPathPlayScreen"));
-const VerveGridPlayScreen = lazy(() => import("./pages/shell/play/VerveGridPlayScreen"));
-const DailyQuizPlayScreen = lazy(() => import("./pages/shell/play/DailyQuizPlayScreen"));
-const ArenaPlayScreen = lazy(() => import("./pages/shell/play/ArenaPlayScreen"));
+const QuizPlayScreen = lazyWithRetry(() => import("./pages/shell/play/QuizPlayScreen"));
+const BlitzPlayScreen = lazyWithRetry(() => import("./pages/shell/play/BlitzPlayScreen"));
+const SurvivalPlayScreen = lazyWithRetry(() => import("./pages/shell/play/SurvivalPlayScreen"));
+const HigherLowerPlayScreen = lazyWithRetry(() => import("./pages/shell/play/HigherLowerPlayScreen"));
+const CareerPathPlayScreen = lazyWithRetry(() => import("./pages/shell/play/CareerPathPlayScreen"));
+const VerveGridPlayScreen = lazyWithRetry(() => import("./pages/shell/play/VerveGridPlayScreen"));
+const DailyQuizPlayScreen = lazyWithRetry(() => import("./pages/shell/play/DailyQuizPlayScreen"));
+const ArenaPlayScreen = lazyWithRetry(() => import("./pages/shell/play/ArenaPlayScreen"));
 
-const DuelPlayScreen = lazy(() => import("./pages/DuelPlayScreen"));
-const DuelLinkScreen = lazy(() => import("./pages/DuelLinkScreen"));
-const DuelResultScreen = lazy(() => import("./pages/DuelResultScreen"));
-const DuelHistoryScreen = lazy(() => import("./pages/DuelHistoryScreen"));
-const RivalsListScreen = lazy(() => import("./pages/RivalsScreen"));
-const RivalDetailScreen = lazy(() =>
+const DuelPlayScreen = lazyWithRetry(() => import("./pages/DuelPlayScreen"));
+const DuelLinkScreen = lazyWithRetry(() => import("./pages/DuelLinkScreen"));
+const DuelResultScreen = lazyWithRetry(() => import("./pages/DuelResultScreen"));
+const DuelHistoryScreen = lazyWithRetry(() => import("./pages/DuelHistoryScreen"));
+const RivalsListScreen = lazyWithRetry(() => import("./pages/RivalsScreen"));
+const RivalDetailScreen = lazyWithRetry(() =>
   import("./pages/RivalsScreen").then((m) => ({ default: m.RivalDetailScreen })),
 );
-const ChallengeArenaScreen = lazy(() => import("./pages/ChallengeArenaScreen"));
+const ChallengeArenaScreen = lazyWithRetry(() => import("./pages/ChallengeArenaScreen"));
 
 // THE DRAW (Ticket B) — mock-driven, flag-gated via VITE_DRAW_ENABLED inside
 // the screen itself; unlinked from any nav. Lazy so it stays out of the main
 // bundle; with the flag off the route just bounces to "/".
-const DrawScreen = lazy(() => import("./pages/draw/DrawScreen"));
-const DrawMockHarness = lazy(() => import("./pages/draw/DrawMockHarness"));
-const DrawShareLanding = lazy(() => import("./pages/draw/DrawShareLanding"));
+const DrawScreen = lazyWithRetry(() => import("./pages/draw/DrawScreen"));
+const DrawMockHarness = lazyWithRetry(() => import("./pages/draw/DrawMockHarness"));
+const DrawShareLanding = lazyWithRetry(() => import("./pages/draw/DrawShareLanding"));
 
 const convex = new ConvexReactClient(
   import.meta.env.VITE_CONVEX_URL as string,

@@ -2,7 +2,10 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- viewport-fit=cover makes env(safe-area-inset-*) resolve on notched
+         iPhones — without it the bottom nav's safe-area padding is 0 and its
+         tap targets sit inside the home-indicator gesture zone. -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <link rel="icon" type="image/png" href="/vq-logo.png" />
     <link rel="apple-touch-icon" href="/vq-logo.png" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />

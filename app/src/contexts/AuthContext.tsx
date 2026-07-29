@@ -3,6 +3,7 @@ import {
   useContext,
   useCallback,
   useEffect,
+  useMemo,
   useRef,
   useState,
   type ReactNode,
@@ -757,48 +758,77 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     resetIdentity();
   }, [convexSignOut]);
 
-  const authUser: AuthUser | null = localGuestActive && !user
-    ? LOCAL_GUEST_USER
-    : user
-      ? {
-          _id: user._id,
-          username: user.username ?? "",
-          displayName: user.displayName,
-          isGuest: user.isGuest ?? user.isAnonymous ?? false,
-          totalGames: user.totalGames ?? 0,
-          avatarUrl: user.avatarUrl,
-          preferredDailySport: user.preferredDailySport,
-        }
-      : null;
-
-  return (
-    <AuthContext.Provider
-      value={{
-        user: authUser,
-        isAuthenticated,
-        isGuest,
-        isLoading,
-        accountState,
-        isAnonymous,
-        hasUsername,
-        isUsernameOnly,
-        isFullAccount,
-        username: serverUsername,
-        startAnonymousSession,
-        claimUsername,
-        upgradeAccount,
-        signUp,
-        signIn,
-        requestPasswordReset,
-        confirmPasswordReset,
-        loginAsGuest,
-        logout,
-        signOutToGuest,
-      }}
-    >
-      {children}
-    </AuthContext.Provider>
+  const authUser: AuthUser | null = useMemo(
+    () =>
+      localGuestActive && !user
+        ? LOCAL_GUEST_USER
+        : user
+          ? {
+              _id: user._id,
+              username: user.username ?? "",
+              displayName: user.displayName,
+              isGuest: user.isGuest ?? user.isAnonymous ?? false,
+              totalGames: user.totalGames ?? 0,
+              avatarUrl: user.avatarUrl,
+              preferredDailySport: user.preferredDailySport,
+            }
+          : null,
+    [localGuestActive, user],
   );
+
+  // Memoized: this provider sits above the router, so a fresh value object on
+  // every render re-rendered every useAuth() consumer in the app (the whole
+  // route tree) on each auth tick. The action callbacks are all useCallback'd
+  // and the flags derive from `user`, so identity now changes only when the
+  // underlying auth state actually does.
+  const value = useMemo<AuthContextValue>(
+    () => ({
+      user: authUser,
+      isAuthenticated,
+      isGuest,
+      isLoading,
+      accountState,
+      isAnonymous,
+      hasUsername,
+      isUsernameOnly,
+      isFullAccount,
+      username: serverUsername,
+      startAnonymousSession,
+      claimUsername,
+      upgradeAccount,
+      signUp,
+      signIn,
+      requestPasswordReset,
+      confirmPasswordReset,
+      loginAsGuest,
+      logout,
+      signOutToGuest,
+    }),
+    [
+      authUser,
+      isAuthenticated,
+      isGuest,
+      isLoading,
+      accountState,
+      isAnonymous,
+      hasUsername,
+      isUsernameOnly,
+      isFullAccount,
+      serverUsername,
+      startAnonymousSession,
+      claimUsername,
+      upgradeAccount,
+      signUp,
+      signIn,
+      requestPasswordReset,
+      confirmPasswordReset,
+      loginAsGuest,
+      logout,
+      signOutToGuest,
+    ],
+  );
+
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
 
 export function useAuth(): AuthContextValue {

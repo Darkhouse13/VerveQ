@@ -1,8 +1,10 @@
 import { cn } from "@/lib/utils";
+import { useEffect } from "react";
 import type { ReactNode } from "react";
 import { ArrowLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { ShellNav, ShellTopNav } from "./ShellNav";
+import { prefetchShellTabs } from "@/lib/shellPrefetch";
 
 interface ShellLayoutProps {
   /** Optional eyebrow title rendered in the header. */
@@ -72,6 +74,12 @@ export function ShellLayout({
   children,
 }: ShellLayoutProps) {
   const navigate = useNavigate();
+
+  // Warm the other tab chunks once the shell is on screen, so tab taps swap
+  // instantly instead of waiting on a lazy-chunk fetch (idempotent, idle-time).
+  useEffect(() => {
+    prefetchShellTabs();
+  }, []);
 
   return (
     <div

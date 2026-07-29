@@ -40,6 +40,7 @@ evidence that a game exists. A navigation that mints no session is silent.
 | `game_started` | a session mutation **resolves** with an id | `mode`, `entry_source`, `is_authenticated`, `account_state`, `start_trigger` |
 | `game_completed` | a real terminal state with a real outcome | `mode`, `score`, `questions_answered`, `duration_seconds`, `result` |
 | `game_abandoned` | left mid-game (unmount, or `pagehide`) | `mode`, `questions_answered_before_exit`, and `exit_signal` **on the `pagehide` path only** |
+| `perf_vitals` | once per page lifetime, on `pagehide` (skipped when nothing was measured) | `worst_inp_ms`, `high_inp_count` (interactions >200ms), `interaction_count`, `long_task_count`, `long_task_total_ms`, `device_memory_gb`, `cpu_cores`, `connection_type` — field responsiveness data (`app/src/lib/perfVitals.ts`); no per-interaction events, no PII |
 
 `start_trigger` is load-bearing. **Every mode provisions its session in a mount
 effect, and Career Path has no play CTA at all** — so arriving *is* starting.

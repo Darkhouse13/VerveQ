@@ -20,7 +20,7 @@ exports[`HomeDrawCard — no layout shift for non-draw users > flag off: Home re
           class="flex items-center gap-1"
         >
           <button
-            class="inline-flex items-center gap-2 px-4 py-2 rounded-lg font-heading font-bold text-sm uppercase tracking-wide transition-all cursor-pointer neo-border neo-shadow bg-primary text-primary-foreground"
+            class="inline-flex items-center gap-2 px-4 py-2 rounded-lg font-heading font-bold text-sm uppercase tracking-wide transition-all cursor-pointer active:opacity-60 neo-border neo-shadow bg-primary text-primary-foreground"
           >
             <svg
               class="lucide lucide-house"
@@ -44,7 +44,7 @@ exports[`HomeDrawCard — no layout shift for non-draw users > flag off: Home re
             nav.home
           </button>
           <button
-            class="inline-flex items-center gap-2 px-4 py-2 rounded-lg font-heading font-bold text-sm uppercase tracking-wide transition-all cursor-pointer text-muted-foreground hover:bg-muted"
+            class="inline-flex items-center gap-2 px-4 py-2 rounded-lg font-heading font-bold text-sm uppercase tracking-wide transition-all cursor-pointer active:opacity-60 text-muted-foreground hover:bg-muted"
           >
             <svg
               class="lucide lucide-swords"
@@ -104,7 +104,7 @@ exports[`HomeDrawCard — no layout shift for non-draw users > flag off: Home re
             nav.compete
           </button>
           <button
-            class="inline-flex items-center gap-2 px-4 py-2 rounded-lg font-heading font-bold text-sm uppercase tracking-wide transition-all cursor-pointer text-muted-foreground hover:bg-muted"
+            class="inline-flex items-center gap-2 px-4 py-2 rounded-lg font-heading font-bold text-sm uppercase tracking-wide transition-all cursor-pointer active:opacity-60 text-muted-foreground hover:bg-muted"
           >
             <svg
               class="lucide lucide-trophy"
@@ -140,7 +140,7 @@ exports[`HomeDrawCard — no layout shift for non-draw users > flag off: Home re
             nav.ranks
           </button>
           <button
-            class="inline-flex items-center gap-2 px-4 py-2 rounded-lg font-heading font-bold text-sm uppercase tracking-wide transition-all cursor-pointer text-muted-foreground hover:bg-muted"
+            class="inline-flex items-center gap-2 px-4 py-2 rounded-lg font-heading font-bold text-sm uppercase tracking-wide transition-all cursor-pointer active:opacity-60 text-muted-foreground hover:bg-muted"
           >
             <svg
               class="lucide lucide-user"
@@ -687,7 +687,7 @@ exports[`HomeDrawCard — no layout shift for non-draw users > flag off: Home re
         class="flex max-w-md mx-auto"
       >
         <button
-          class="flex-1 flex flex-col items-center gap-0.5 py-2.5 transition-colors relative cursor-pointer text-primary"
+          class="flex-1 flex flex-col items-center gap-0.5 py-2.5 transition-colors relative cursor-pointer active:opacity-60 text-primary"
         >
           <div
             class="absolute top-0 left-1/2 -translate-x-1/2 w-8 h-[3px] bg-primary rounded-b-full"
@@ -718,7 +718,7 @@ exports[`HomeDrawCard — no layout shift for non-draw users > flag off: Home re
           </span>
         </button>
         <button
-          class="flex-1 flex flex-col items-center gap-0.5 py-2.5 transition-colors relative cursor-pointer text-muted-foreground"
+          class="flex-1 flex flex-col items-center gap-0.5 py-2.5 transition-colors relative cursor-pointer active:opacity-60 text-muted-foreground"
         >
           <svg
             class="lucide lucide-swords"
@@ -782,7 +782,7 @@ exports[`HomeDrawCard — no layout shift for non-draw users > flag off: Home re
           </span>
         </button>
         <button
-          class="flex-1 flex flex-col items-center gap-0.5 py-2.5 transition-colors relative cursor-pointer text-muted-foreground"
+          class="flex-1 flex flex-col items-center gap-0.5 py-2.5 transition-colors relative cursor-pointer active:opacity-60 text-muted-foreground"
         >
           <svg
             class="lucide lucide-trophy"
@@ -822,7 +822,7 @@ exports[`HomeDrawCard — no layout shift for non-draw users > flag off: Home re
           </span>
         </button>
         <button
-          class="flex-1 flex flex-col items-center gap-0.5 py-2.5 transition-colors relative cursor-pointer text-muted-foreground"
+          class="flex-1 flex flex-col items-center gap-0.5 py-2.5 transition-colors relative cursor-pointer active:opacity-60 text-muted-foreground"
         >
           <svg
             class="lucide lucide-user"

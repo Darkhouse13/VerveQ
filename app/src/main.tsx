@@ -6,6 +6,7 @@ import { initSentry } from "./lib/sentry";
 import { initAnalytics } from "./lib/analytics";
 import { captureEntrySource } from "./lib/entrySource";
 import { armExitAbandonReporting } from "./lib/gameAnalytics";
+import { armPerfVitals } from "./lib/perfVitals";
 import "./index.css";
 
 // Before first render so global handlers catch everything from frame one.
@@ -21,6 +22,9 @@ captureEntrySource(window.location.pathname, window.location.search);
 // Closing the tab mid-game tears down the JS context without React running any
 // unmount cleanup, so the screens' own abandon handling never sees it.
 armExitAbandonReporting();
+// Field responsiveness data (worst INP, long tasks) — one summary event per
+// page lifetime on pagehide; no-ops wherever analytics itself no-ops.
+armPerfVitals();
 
 createRoot(document.getElementById("root")!).render(
   <I18nextProvider i18n={i18n}>

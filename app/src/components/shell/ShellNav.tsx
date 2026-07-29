@@ -1,6 +1,7 @@
 import { cn } from "@/lib/utils";
 import { Home, Swords, Trophy, User } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
+import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { SHELL_ROUTES } from "@/lib/shellRoutes";
@@ -23,12 +24,29 @@ const TABS: NavTab[] = [
 function useTabs() {
   const { t } = useTranslation();
   const location = useLocation();
-  const isActive = (tab: NavTab) =>
+  const navigate = useNavigate();
+  // The router's v7_startTransition keeps the OLD screen painted while the
+  // next route's chunk loads, so location.pathname (and with it the active
+  // highlight) lags the tap by the whole chunk fetch. pendingPath moves the
+  // highlight the instant the tab is pressed — the tap is acknowledged even
+  // when the screen swap takes a while.
+  const [pendingPath, setPendingPath] = useState<string | null>(null);
+  useEffect(() => {
+    setPendingPath(null);
+  }, [location.pathname]);
+
+  const isCurrent = (tab: NavTab) =>
     tab.match === SHELL_ROUTES.home
       ? location.pathname === SHELL_ROUTES.home
       : location.pathname === tab.match ||
         location.pathname.startsWith(tab.match + "/");
-  return { t, tabs: TABS, isActive };
+  const isActive = (tab: NavTab) =>
+    pendingPath !== null ? tab.path === pendingPath : isCurrent(tab);
+  const go = (tab: NavTab) => {
+    if (!isCurrent(tab)) setPendingPath(tab.path);
+    navigate(tab.path);
+  };
+  return { t, tabs: TABS, isActive, go };
 }
 
 /**
@@ -37,8 +55,7 @@ function useTabs() {
  * remaining height and the page never scrolls.
  */
 export function ShellNav() {
-  const navigate = useNavigate();
-  const { t, tabs, isActive } = useTabs();
+  const { t, tabs, isActive, go } = useTabs();
 
   return (
     <nav className="md:hidden shrink-0 border-t-[3px] border-border bg-background pb-[env(safe-area-inset-bottom)]">
@@ -48,9 +65,9 @@ export function ShellNav() {
           return (
             <button
               key={tab.path}
-              onClick={() => navigate(tab.path)}
+              onClick={() => go(tab)}
               className={cn(
-                "flex-1 flex flex-col items-center gap-0.5 py-2.5 transition-colors relative cursor-pointer",
+                "flex-1 flex flex-col items-center gap-0.5 py-2.5 transition-colors relative cursor-pointer active:opacity-60",
                 active ? "text-primary" : "text-muted-foreground",
               )}
             >
@@ -72,7 +89,7 @@ export function ShellNav() {
 /** Desktop top strip — fixed-height row that keeps the viewport never-scroll. */
 export function ShellTopNav() {
   const navigate = useNavigate();
-  const { t, tabs, isActive } = useTabs();
+  const { t, tabs, isActive, go } = useTabs();
 
   return (
     <nav className="hidden md:block shrink-0 border-b-[3px] border-border bg-background">
@@ -89,9 +106,9 @@ export function ShellTopNav() {
             return (
               <button
                 key={tab.path}
-                onClick={() => navigate(tab.path)}
+                onClick={() => go(tab)}
                 className={cn(
-                  "inline-flex items-center gap-2 px-4 py-2 rounded-lg font-heading font-bold text-sm uppercase tracking-wide transition-all cursor-pointer",
+                  "inline-flex items-center gap-2 px-4 py-2 rounded-lg font-heading font-bold text-sm uppercase tracking-wide transition-all cursor-pointer active:opacity-60",
                   active
                     ? "neo-border neo-shadow bg-primary text-primary-foreground"
                     : "text-muted-foreground hover:bg-muted",
