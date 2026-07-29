@@ -7,6 +7,9 @@ calibrated by the sim harness (same gate discipline as c13). The
 
 ## Changelog
 
+- v0.4.1a — xG note reworded to "provider-specific" (the previous
+  "at this price tier" was tied to the free tier and is no longer
+  accurate; no scoring change)
 - v0.4.1 — crowd factor mirrors against negative bases
 - v0.4 — Phase 2 gap rulings (G1–G6)
 - v0.3 — feed-reality amendment per phase1 schema probe (2026-07-27)
@@ -32,7 +35,7 @@ calibrated by the sim harness (same gate discipline as c13). The
    conceded; penalties won, conceded, scored, missed and saved. Own
    goals and substitution entry minutes come from the timed-events
    feed rather than the per-player stat line. No xG dependency
-   (coverage is inconsistent at this price tier).
+   (coverage is provider-specific).
 4. **Anti-farming.** Volume stats have caps so tackle-farming on a
    bad team doesn't outscore actual quality.
 
