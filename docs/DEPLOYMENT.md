@@ -1,10 +1,13 @@
 # VerveQ Deployment Runbook
 
-> **Merging to `master` is a production release.** It deploys the Convex
-> backend — functions *and* schema — to prod `different-lynx-153`, and then
-> republishes the frontend. There is no such thing as a frontend-only release
-> through CI, and no confirmation step. Read "What a master push does" before
-> merging.
+> **Merging to `master` is a FRONTEND production release.** It republishes
+> the SPA bundle to the host, with no confirmation step. The Convex backend
+> (functions *and* schema, prod `different-lynx-153`) is **never deployed by
+> CI** — Ticket 0.1 C4 removed that step, and every backend deploy is a
+> manual owner action (see "What a master push does"). A master push whose
+> frontend depends on undeployed Convex functions ships a frontend that
+> fails those calls until the owner deploys the backend. Read "What a master
+> push does" before merging.
 
 This runbook describes the host topology, the image-based publish mechanics,
 and rollback. It is **not** the trigger for a normal release: the deploy
@@ -18,21 +21,27 @@ Publishes are **image-based and durable by construction**: every release builds 
 ## What a master push does
 
 Defined entirely in [`.github/workflows/deploy.yml`](../.github/workflows/deploy.yml).
-Trigger: `push: branches: [master]`, plus a manual `workflow_dispatch`
-(`deploy.yml:8-16`). A single `deploy` job runs two publishes **in order**:
+Trigger: `push: branches: [master]`, plus a manual `workflow_dispatch`. A
+single `deploy` job runs ONE publish:
 
-1. **Convex backend → production.** `npx convex deploy` in `app/`
-   (`deploy.yml:42-56`), guarded by `if: env.CONVEX_DEPLOY_KEY != ''`
-   (`:43`). That secret is configured, so the step runs on every push; the
-   key resolves the target, which is the prod deployment
-   `different-lynx-153`. Functions and schema both ship.
-   `--allow-deleting-large-indexes` is only ever passed on a manual dispatch —
-   push-triggered deploys stay fail-closed so a schema change that drops
-   non-empty indexes needs an explicit operator decision (`deploy.yml:46-49`).
-2. **Frontend → the host over SSH** (`deploy.yml:63-76`). The server pins the
-   deploy key to a forced command, so the literal `deploy` argument is
-   ignored; it triggers the same image-based publish documented below
-   (`deploy.yml:5-6`, `:73-75`).
+- **Frontend → the host over SSH.** The server pins the deploy key to a
+  forced command, so the literal `deploy` argument is ignored; it triggers
+  the same image-based publish documented below.
+
+**The Convex backend is NOT part of CI.** Ticket 0.1 C4 removed the
+`npx convex deploy` step from the workflow; backend releases are a manual
+owner action, from a provably clean tree on latest `master`:
+
+```bash
+cd app
+CONVEX_DEPLOY_KEY=<prod key> npx convex deploy   # targets prod different-lynx-153
+# PowerShell: $env:CONVEX_DEPLOY_KEY = "<prod key>"; npx convex deploy
+```
+
+Functions and schema both ship. Deploy the backend BEFORE (or with) any
+master push whose frontend calls new Convex functions; until then those
+calls reject at runtime (surfaces built to the fail-closed convention, e.g.
+the Home draw card and THE WEEKEND teaser, simply stay hidden).
 
 **The two steps are sequential, not atomic.** Convex goes first, and the SSH
 step carries no `if:` condition, so it inherits the implicit `success()`:
@@ -59,9 +68,9 @@ finish rather than cancelling it mid-build.
 - Host: `178.104.196.36`. DNS verified 2026-06-12: `verveq.com` and `www.verveq.com` both resolve A-only to this IP (no AAAA/CNAME, checked against 1.1.1.1 as well as the local resolver), so QA no longer needs to pin the host.
 - Container: `verveq-web`, image `verveq-web:<git-sha>-<stamp>`.
 - Fronting: Traefik (`coolify-proxy`) routes `verveq.com`/`www.verveq.com` to the container's nginx on port 80. Routing and TLS come **entirely from labels passed at `docker run`** (see `deploy/recreate-from-image.sh`); TLS certs live in Traefik's acme store and survive container recreation.
-- The container is **not managed by Coolify**. It is still auto-redeployed on every push to `master` — not by Coolify, but by `deploy.yml`'s SSH step, which triggers the host-side forced command that runs the scripts below (`deploy.yml:63-76`). Running those scripts by hand is the manual/rollback path, not the only path.
+- The container is **not managed by Coolify**. It is still auto-redeployed on every push to `master` — not by Coolify, but by `deploy.yml`'s SSH step, which triggers the host-side forced command that runs the scripts below. Running those scripts by hand is the manual/rollback path, not the only path.
 - Image contents: static SPA bundle at `/usr/share/nginx/html` + `deploy/nginx.conf` at `/etc/nginx/conf.d/default.conf`, baked in by `deploy/Dockerfile`. No host volume mounts.
-- Backend: **a master push deploys Convex to prod before it touches the frontend** (`deploy.yml:42-56`), so a CI release is never frontend-only. The only frontend-only publish is running the scripts below directly on the host, which bypasses the workflow and leaves the deployed Convex functions as they are. Production builds use `VITE_CONVEX_URL=https://different-lynx-153.convex.cloud` and `VITE_CONVEX_SITE_URL=https://different-lynx-153.convex.site`.
+- Backend: **a master push never touches Convex** — every CI release is frontend-only (Ticket 0.1 C4), and the backend ships only via the owner's manual `npx convex deploy` (see "What a master push does"). Production builds use `VITE_CONVEX_URL=https://different-lynx-153.convex.cloud` and `VITE_CONVEX_SITE_URL=https://different-lynx-153.convex.site`.
 - Duel share vanity route: nginx proxies `verveq.com/s/d/*` (page + `card.png`) to the Convex `.site` httpAction (`deploy/nginx.conf` `location ^~ /s/d/`), forwarding path and `User-Agent` intact. The Convex deployment carries `SHARE_PUBLIC_BASE_URL=https://verveq.com` so `og:image` URLs are emitted on the vanity host (`npx convex env set SHARE_PUBLIC_BASE_URL https://verveq.com`).
 
 ## Publish
