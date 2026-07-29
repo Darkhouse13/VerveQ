@@ -468,6 +468,10 @@ export default defineSchema({
     usageCount: v.number(),
     imageId: v.optional(v.id("_storage")),
     imageUrl: v.optional(v.string()),
+    // Where the imageId blob was originally fetched from (seed pipeline).
+    // Retained so a lost/corrupt storage blob is re-fetchable instead of
+    // unrecoverable — never served to clients.
+    imageSourceUrl: v.optional(v.string()),
     // Score-mode verification provenance; only present on rows seeded from
     // CIE score batches (sport "arena_knowledge").
     provenance: v.optional(
@@ -704,6 +708,7 @@ export default defineSchema({
           explanation: v.optional(v.string()),
           category: v.string(),
           imageId: v.optional(v.id("_storage")),
+          imageUrl: v.optional(v.string()),
         }),
       ),
     ),

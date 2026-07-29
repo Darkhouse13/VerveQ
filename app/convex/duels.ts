@@ -22,6 +22,7 @@ import {
 import { assertClientSport } from "./lib/sports";
 import { selectQuestionsWithImageCap } from "./lib/imageQuestions";
 import { calculateDuelTimeScore, normalizeAnswer } from "./lib/scoring";
+import { resolveQuestionImageUrl } from "./lib/questionServe";
 import {
   guestActorKey,
   markDefeat,
@@ -295,9 +296,7 @@ async function publicQuestion(
     .first();
   if (!question) throw new Error("Question not found");
 
-  const imageUrl = question.imageId
-    ? await ctx.storage.getUrl(question.imageId)
-    : null;
+  const imageUrl = await resolveQuestionImageUrl(ctx, question);
   // Display-translate, grade-canonical (docs/I18N_CONTENT_DESIGN.md): each
   // viewer submits the canonical optionValues; options may be localized labels.
   const orderedValues = orderAnswerOptions(

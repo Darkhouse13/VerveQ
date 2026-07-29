@@ -1,3 +1,13 @@
+// Solo quiz stamps questionStartedAt server-side the moment getQuestion runs,
+// so the response's network leg, the client render, and the image decode all
+// elapse before the player can read a word. Written off before the speed decay
+// starts (same rationale as DUEL_GRACE_SEC below; smaller because only one
+// network leg precedes display — duels also carry the reveal pause).
+export const QUIZ_SERVE_GRACE_SEC = 1.5;
+// Daily stamps a question as served when the PREVIOUS answer is submitted, so
+// like duels it swallows the reveal pause plus two network legs.
+export const DAILY_SERVE_GRACE_SEC = 2.5;
+
 export function calculateTimeScore(
   basePoints: number,
   timeTaken: number,

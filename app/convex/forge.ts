@@ -165,6 +165,29 @@ export const submit = mutation({
       throw new Error("Correct answer must be one of the options");
     }
 
+    // The submitted image must exist in storage and be something every
+    // player's browser can render — approved submissions flow straight into
+    // the live quizQuestions pool, so an unrenderable blob (HEIC) or a
+    // dangling upload here becomes a broken image question for everyone.
+    // The dropzone re-encodes to JPEG/PNG before uploading; this is the
+    // server-side backstop for clients that bypass it.
+    if (args.imageId) {
+      const imageMeta = await ctx.db.system.get(args.imageId);
+      if (!imageMeta) {
+        throw new Error("Image upload not found — please re-upload");
+      }
+      const renderableTypes = ["image/jpeg", "image/png", "image/webp"];
+      if (
+        !imageMeta.contentType ||
+        !renderableTypes.includes(imageMeta.contentType)
+      ) {
+        throw new Error("Unsupported image format. Use JPG, PNG, or WebP.");
+      }
+      if (imageMeta.size > 2 * 1024 * 1024) {
+        throw new Error("Image too large (max 2MB)");
+      }
+    }
+
     const checksum = generateChecksum(args.question, args.options);
 
     // Check against existing quiz pool

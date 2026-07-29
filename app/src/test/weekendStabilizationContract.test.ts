@@ -221,18 +221,20 @@ describe("weekend stabilization daily challenge", () => {
         questionIndex: 0,
       })) as Record<string, unknown>;
 
+      // 4s measured minus DAILY_SERVE_GRACE_SEC (2.5) = 1.5s scored time →
+      // round(100 * (10 - 1.5) / 9) = 94.
       expect(result).toMatchObject({
         correct: true,
-        totalScore: 67,
+        totalScore: 94,
         correctAnswer: "A",
         explanation: "Snapshot explanation",
-        timeTaken: 4,
+        timeTaken: 1.5,
       });
       expect(patch).toHaveBeenCalledWith(
         "attempt_1",
         expect.objectContaining({
-          score: 67,
-          results: [{ correct: true, timeTaken: 4, score: 67 }],
+          score: 94,
+          results: [{ correct: true, timeTaken: 1.5, score: 94 }],
         }),
       );
     } finally {

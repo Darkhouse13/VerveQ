@@ -16,7 +16,8 @@ import {
   isWorldCupThemedQuestion,
   seededShuffle,
 } from "./lib/daily";
-import { normalizeAnswer } from "./lib/scoring";
+import { DAILY_SERVE_GRACE_SEC, normalizeAnswer } from "./lib/scoring";
+import { resolveQuestionImageUrl } from "./lib/questionServe";
 import { recordPlayForStreak } from "./lib/streaks";
 import { orderAnswerOptions } from "./lib/answerOptions";
 import { questionHasImage } from "./lib/imageQuestions";
@@ -53,6 +54,7 @@ type QuizQuestionSnapshot = {
   explanation?: string;
   category: string;
   imageId?: Id<"_storage">;
+  imageUrl?: string;
 };
 
 function snapshotQuestion(question: {
@@ -63,6 +65,7 @@ function snapshotQuestion(question: {
   explanation?: string;
   category: string;
   imageId?: Id<"_storage">;
+  imageUrl?: string;
 }): QuizQuestionSnapshot {
   assertStandardMcqQuestion(question);
 
@@ -74,6 +77,9 @@ function snapshotQuestion(question: {
     ...(question.explanation ? { explanation: question.explanation } : {}),
     category: question.category,
     ...(question.imageId ? { imageId: question.imageId } : {}),
+    // Both image kinds survive the freeze — the serve path falls back
+    // imageUrl → imageId, and the cap counted both at generation time.
+    ...(question.imageUrl ? { imageUrl: question.imageUrl } : {}),
   };
 }
 
@@ -640,9 +646,7 @@ export const getQuestion = query({
     const question = snapshot ?? snapshotQuestion(liveQuestion);
     assertStandardMcqQuestion(question);
 
-    const imageUrl = question.imageId
-      ? await ctx.storage.getUrl(question.imageId)
-      : null;
+    const imageUrl = await resolveQuestionImageUrl(ctx, question);
 
     // Display-translate, grade-canonical (docs/I18N_CONTENT_DESIGN.md). The
     // snapshot's options are canonical English already in display order, so they
@@ -768,7 +772,13 @@ export const submitAnswer = mutation({
       normalizeAnswer(answer) === normalizeAnswer(question.correctAnswer);
     const now = Date.now();
     const startedAt = getDailyQuestionStartedAt(attempt, questionIndex);
-    const timeTaken = Math.max(0, (now - startedAt) / 1000);
+    // The serve grace writes off delivery dead time (the stamp is set when the
+    // PREVIOUS answer lands, so the reveal pause and two network legs elapse
+    // before the player can read a word) — same rationale as DUEL_GRACE_SEC.
+    const timeTaken = Math.max(
+      0,
+      (now - startedAt) / 1000 - DAILY_SERVE_GRACE_SEC,
+    );
 
     let score = 0;
     if (isCorrect) {

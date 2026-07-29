@@ -43,6 +43,16 @@ interface QuestionData {
   checksum: string;
   category: string;
   imageUrl?: string | null;
+  // Server hint: the next planned question's image, warmed into the browser
+  // cache while this question is on screen. Never rendered directly.
+  nextImageUrl?: string | null;
+}
+
+/** Warm the browser cache so the next question's image paints instantly. */
+function preloadImage(url: string | null | undefined) {
+  if (!url) return;
+  const img = new Image();
+  img.src = url;
 }
 
 export interface SoloQuizState {
@@ -105,6 +115,16 @@ export function useSoloQuiz(): SoloQuizState {
   const completeQuizMut = useMutation(api.games.completeQuiz);
   const penalizeTabSwitchMut = useMutation(api.quizSessions.penalizeTabSwitch);
 
+  const applyQuestion = useCallback((q: QuestionData) => {
+    setQuestion(q);
+    setRevealedAnswer(null);
+    setSelected(null);
+    setRevealed(false);
+    setCheckResult(null);
+    setTimer(0);
+    preloadImage(q.nextImageUrl);
+  }, []);
+
   const fetchQuestion = useCallback(
     async (sid: Id<"quizSessions">) => {
       setLoading(true);
@@ -113,19 +133,14 @@ export function useSoloQuiz(): SoloQuizState {
           sessionId: sid,
           locale: i18n.resolvedLanguage ?? i18n.language,
         });
-        setQuestion(q);
-        setRevealedAnswer(null);
-        setSelected(null);
-        setRevealed(false);
-        setCheckResult(null);
-        setTimer(0);
+        applyQuestion(q);
       } catch {
         toast.error(t("quiz.loadQuestionFailed"));
       } finally {
         setLoading(false);
       }
     },
-    [getQuestionMut, t, i18n],
+    [getQuestionMut, applyQuestion, t, i18n],
   );
 
   // Read through a ref, NOT as a dependency of the mount-once effect below:
@@ -138,16 +153,27 @@ export function useSoloQuiz(): SoloQuizState {
   useEffect(() => {
     (async () => {
       try {
-        const { sessionId: sid } = await createSessionMut({
+        // Question 1 ships with the session itself — one round trip before the
+        // player sees anything instead of two.
+        const { sessionId: sid, firstQuestion } = await createSessionMut({
           sport,
           mode: isCameFirst ? "came_first" : "quiz",
           difficulty,
+          withFirstQuestion: true,
+          locale: i18n.resolvedLanguage ?? i18n.language,
         });
         // A game genuinely began — the server minted the session. `came_first`
         // is a quiz variant, not a mode of its own (same as GameResultState).
         startRun(sid, "quiz", { accountState: accountStateRef.current });
         setSessionId(sid);
-        await fetchQuestion(sid);
+        if (firstQuestion) {
+          applyQuestion(firstQuestion);
+          setLoading(false);
+        } else {
+          // Empty plan (or a backend that predates merged starts): fall back
+          // to the separate first fetch.
+          await fetchQuestion(sid);
+        }
       } catch {
         toast.error(t("quiz.startSessionFailed"));
       }

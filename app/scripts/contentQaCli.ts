@@ -167,6 +167,10 @@ function makeImageReferenceExists(
   publicRoot: string,
 ): NonNullable<ContentQaOptions["imageReferenceExists"]> {
   return (ref: ImageReference, _question: ContentQuestionSeed) => {
+    // Offline harness limits: an imageId can only be shape-checked here (the
+    // storage blob lives in the deployment); remote URLs are not fetched. The
+    // deployment-side complement that actually verifies blobs exist and are
+    // renderable is `npx convex run opsContentIntegrity:auditQuestionImages`.
     if (ref.field === "imageId") return ref.value.trim().length > 0;
     const resolved = resolveImageUrl(ref.value, batchPath, publicRoot);
     return resolved === null ? true : existsSync(resolved);

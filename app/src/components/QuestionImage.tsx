@@ -30,12 +30,34 @@ export function QuestionImage({
   const [loading, setLoading] = useState(true);
   const [errored, setErrored] = useState(false);
   const [attempt, setAttempt] = useState(0);
+  const [renderedUrl, setRenderedUrl] = useState(imageUrl);
   const retryTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const imgRef = useRef<HTMLImageElement | null>(null);
 
-  useEffect(() => {
+  // Reset for a new URL during render, NOT in a passive effect. A post-paint
+  // effect reset races the <img>'s load event: on a cache hit the browser can
+  // fire `load` (→ loading=false) before the effect runs (→ loading=true),
+  // and since `load` never fires twice the overlay is stranded on screen
+  // forever. Resetting synchronously here commits loading=true together with
+  // the new <img> element, so no load event can precede it.
+  if (imageUrl !== renderedUrl) {
+    setRenderedUrl(imageUrl);
     setLoading(true);
     setErrored(false);
     setAttempt(0);
+  }
+
+  // Belt and braces for the same race: if the image finished decoding before
+  // React attached its handlers (img.complete on an instant cache hit), the
+  // load event is already gone — reconcile from the element itself.
+  useEffect(() => {
+    const img = imgRef.current;
+    if (img && img.complete && img.naturalWidth > 0) {
+      setLoading(false);
+    }
+  }, [imageUrl, attempt]);
+
+  useEffect(() => {
     return () => {
       if (retryTimer.current) {
         clearTimeout(retryTimer.current);
@@ -71,6 +93,7 @@ export function QuestionImage({
           )}
           <img
             key={`${imageUrl}::${attempt}`}
+            ref={imgRef}
             src={imageUrl}
             alt={alt}
             decoding="async"

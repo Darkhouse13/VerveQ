@@ -9,6 +9,10 @@ import {
 } from "./lib/authz";
 import { assertClientSport } from "./lib/sports";
 import { pickQuestionPool, planQuestionSequence } from "./lib/imageQuestions";
+import {
+  peekNextPlannedImageUrl,
+  resolveQuestionImageUrl,
+} from "./lib/questionServe";
 import { normalizeAnswer } from "./lib/scoring";
 import { advanceStreak, utcDayNumber } from "./lib/streaks";
 import { orderAnswerOptions } from "./lib/answerOptions";
@@ -49,9 +53,47 @@ async function collectBlitzCandidates(ctx: MutationCtx, sport: string) {
   return allQuestions.filter(isStandardMcqQuestion);
 }
 
+/** The client-facing question payload (correctAnswer/explanation withheld). */
+async function buildQuestionPayload(
+  ctx: MutationCtx,
+  pick: Doc<"quizQuestions">,
+  locale: string | undefined,
+  nextImageUrl: string | null,
+) {
+  const imageUrl = await resolveQuestionImageUrl(ctx, pick);
+
+  // Display-translate, grade-canonical (docs/I18N_CONTENT_DESIGN.md): canonical
+  // optionValues are submitted; options may be localized labels. For en /
+  // untranslated, optionValues === options (no-op). correctAnswer + explanation
+  // are withheld until submitAnswer.
+  const orderedValues = orderAnswerOptions(pick.options, pick.correctAnswer, pick.checksum);
+  const translation = await fetchQuestionTranslation(ctx, pick.checksum, locale);
+  const localized = composeLocalizedQuestion(pick, orderedValues, translation);
+  return {
+    question: localized.question,
+    options: localized.options,
+    optionValues: localized.optionValues,
+    checksum: pick.checksum,
+    imageUrl,
+    // Warm-the-cache hint for the NEXT planned question's image (null when the
+    // next question is text-only). Purely advisory — never displayed directly.
+    nextImageUrl,
+  };
+}
+
 export const start = mutation({
-  args: { sport: v.string() },
-  handler: async (ctx, { sport }) => {
+  args: {
+    sport: v.string(),
+    // When true, the first question ships in this same response (one round
+    // trip instead of two before the player sees anything, and the 60s clock
+    // anchors right where play actually becomes possible). Optional so the
+    // previous bundle's start→getQuestion sequence keeps working during the
+    // backend-first deploy window (getQuestion would otherwise reject on the
+    // already-set currentChecksum).
+    withFirstQuestion: v.optional(v.boolean()),
+    locale: v.optional(v.string()),
+  },
+  handler: async (ctx, { sport, withFirstQuestion, locale }) => {
     const userId = await getAuthUserId(ctx);
     if (!userId) throw new Error("Not authenticated");
     await assertUsernameRequiredUser(ctx, userId);
@@ -63,7 +105,28 @@ export const start = mutation({
       BLITZ_PLANNED_QUESTIONS,
     );
 
-    // Anchor the clock AFTER planning so the collect doesn't eat play time.
+    let firstQuestion = null;
+    let usedChecksums: string[] = [];
+    let currentChecksum: string | undefined;
+    if (withFirstQuestion && plannedChecksums.length > 0) {
+      const firstPick = candidates.find(
+        (c) => c.checksum === plannedChecksums[0],
+      );
+      if (firstPick) {
+        assertStandardMcqQuestion(firstPick);
+        usedChecksums = [firstPick.checksum];
+        currentChecksum = firstPick.checksum;
+        firstQuestion = await buildQuestionPayload(
+          ctx,
+          firstPick,
+          locale,
+          await peekNextPlannedImageUrl(ctx, plannedChecksums, usedChecksums),
+        );
+      }
+    }
+
+    // Anchor the clock AFTER planning (and after building the first-question
+    // payload) so none of that server work eats play time.
     const now = Date.now();
     const sessionId = await ctx.db.insert("blitzSessions", {
       userId,
@@ -72,13 +135,14 @@ export const start = mutation({
       correctCount: 0,
       wrongCount: 0,
       plannedChecksums,
-      usedChecksums: [],
+      usedChecksums,
+      ...(currentChecksum ? { currentChecksum } : {}),
       gameOver: false,
       startedAt: now,
       endTimeMs: now + BLITZ_DURATION_MS,
     });
 
-    return { sessionId, endTimeMs: now + BLITZ_DURATION_MS };
+    return { sessionId, endTimeMs: now + BLITZ_DURATION_MS, firstQuestion };
   },
 });
 
@@ -144,29 +208,22 @@ export const getQuestion = mutation({
     assertStandardMcqQuestion(pick);
 
     // Track used checksum
+    const usedChecksums = [...session.usedChecksums, pick.checksum];
     await ctx.db.patch(sessionId, {
-      usedChecksums: [...session.usedChecksums, pick.checksum],
+      usedChecksums,
       currentChecksum: pick.checksum,
     });
 
-    const imageUrl = pick.imageId
-      ? await ctx.storage.getUrl(pick.imageId)
-      : null;
-
-    // Display-translate, grade-canonical (docs/I18N_CONTENT_DESIGN.md): canonical
-    // optionValues are submitted; options may be localized labels. For en /
-    // untranslated, optionValues === options (no-op). correctAnswer + explanation
-    // are withheld until submitAnswer.
-    const orderedValues = orderAnswerOptions(pick.options, pick.correctAnswer, pick.checksum);
-    const translation = await fetchQuestionTranslation(ctx, pick.checksum, locale);
-    const localized = composeLocalizedQuestion(pick, orderedValues, translation);
-    return {
-      question: localized.question,
-      options: localized.options,
-      optionValues: localized.optionValues,
-      checksum: pick.checksum,
-      imageUrl,
-    };
+    return await buildQuestionPayload(
+      ctx,
+      pick,
+      locale,
+      await peekNextPlannedImageUrl(
+        ctx,
+        session.plannedChecksums,
+        usedChecksums,
+      ),
+    );
   },
 });
 

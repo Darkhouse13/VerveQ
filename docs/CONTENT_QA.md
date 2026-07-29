@@ -28,7 +28,11 @@ arrays of rows with `checksum`, or newline-delimited text.
 
 The harness is deterministic and does not require network access. Local
 `imageUrl` values are resolved against `app/public` by default; remote HTTP(S)
-URLs are treated as present but are not fetched.
+URLs are treated as present but are not fetched. `imageId` values are likewise
+only shape-checked offline — the deployment-side complement that verifies
+storage blobs actually exist and are browser-renderable is
+`npx convex run opsContentIntegrity:auditQuestionImages` (add `--prod` for the
+live pool).
 
 ## Finding Codes
 

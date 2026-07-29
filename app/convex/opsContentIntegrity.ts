@@ -32,6 +32,78 @@ export const countQuizQuestions = internalQuery({
   },
 });
 
+// Audit every image-bearing question row against what will actually render at
+// serve time: an imageId must resolve to a live storage blob with a
+// browser-renderable content type, and an imageUrl (same-origin asset path)
+// is reported for eyeballing. Run via
+//   npx convex run opsContentIntegrity:auditQuestionImages
+// This is the resolvability check the offline QA harness cannot do (it never
+// sees storage — docs/CONTENT_QA.md), so dangling IDs from deleted blobs or
+// cross-deployment seeds surface here instead of as blank images in play.
+// Storage metadata reads are system operations with a hard per-query budget,
+// so the audit walks the image-bearing rows in checksum order `max` at a time;
+// re-run with the returned nextCursor until it comes back null.
+export const auditQuestionImages = internalQuery({
+  args: { cursor: v.optional(v.string()), max: v.optional(v.number()) },
+  handler: async (ctx, { cursor, max = 500 }) => {
+    const all = await ctx.db.query("quizQuestions").collect();
+    const withStorageImage = all
+      .filter((row) => row.imageId)
+      .sort((a, b) => (a.checksum < b.checksum ? -1 : 1));
+    const startIndex = cursor
+      ? withStorageImage.findIndex((row) => row.checksum > cursor)
+      : 0;
+    const slice =
+      startIndex < 0 ? [] : withStorageImage.slice(startIndex, startIndex + max);
+
+    const renderableTypes = ["image/jpeg", "image/png", "image/webp", "image/svg+xml", "image/gif"];
+    const dangling: Array<{ checksum: string; sport: string; imageId: string }> = [];
+    const unrenderable: Array<{
+      checksum: string;
+      sport: string;
+      contentType: string | undefined;
+      sizeBytes: number;
+    }> = [];
+    const oversized: Array<{ checksum: string; sport: string; sizeBytes: number }> = [];
+    for (const row of slice) {
+      const meta = await ctx.db.system.get(row.imageId!);
+      if (!meta) {
+        dangling.push({ checksum: row.checksum, sport: row.sport, imageId: row.imageId! });
+        continue;
+      }
+      if (!meta.contentType || !renderableTypes.includes(meta.contentType)) {
+        unrenderable.push({
+          checksum: row.checksum,
+          sport: row.sport,
+          contentType: meta.contentType ?? undefined,
+          sizeBytes: meta.size,
+        });
+      }
+      if (meta.size > 2 * 1024 * 1024) {
+        oversized.push({ checksum: row.checksum, sport: row.sport, sizeBytes: meta.size });
+      }
+    }
+
+    const lastAudited = slice[slice.length - 1];
+    const hasMore =
+      !!lastAudited &&
+      withStorageImage.some((row) => row.checksum > lastAudited.checksum);
+    return {
+      totalQuestions: all.length,
+      storageImages: withStorageImage.length,
+      urlImages: all.filter((row) => row.imageUrl).length,
+      auditedThisPage: slice.length,
+      nextCursor: hasMore ? lastAudited.checksum : null,
+      danglingCount: dangling.length,
+      dangling,
+      unrenderableCount: unrenderable.length,
+      unrenderable,
+      oversizedCount: oversized.length,
+      oversized,
+    };
+  },
+});
+
 export const exportPoolByChecksumPrefixes = internalQuery({
   args: { prefixes: v.array(v.string()) },
   handler: async (ctx, { prefixes }) => {

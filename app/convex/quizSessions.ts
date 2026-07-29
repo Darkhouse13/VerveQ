@@ -4,8 +4,16 @@ import { v } from "convex/values";
 import { getAuthUserId } from "@convex-dev/auth/server";
 import { assertFullAccountUser } from "./lib/authz";
 import { assertClientSport } from "./lib/sports";
-import { calculateTimeScore, normalizeAnswer } from "./lib/scoring";
+import {
+  calculateTimeScore,
+  normalizeAnswer,
+  QUIZ_SERVE_GRACE_SEC,
+} from "./lib/scoring";
 import { pickQuestionPool, planQuestionSequence } from "./lib/imageQuestions";
+import {
+  peekNextPlannedImageUrl,
+  resolveQuestionImageUrl,
+} from "./lib/questionServe";
 import { orderAnswerOptions } from "./lib/answerOptions";
 import {
   composeLocalizedQuestion,
@@ -54,6 +62,41 @@ function sessionDifficulty(session: {
     : session.difficulty ?? "intermediate";
 }
 
+/** The client-facing question payload (correctAnswer/explanation withheld). */
+async function buildQuestionPayload(
+  ctx: MutationCtx,
+  picked: Doc<"quizQuestions">,
+  locale: string | undefined,
+  nextImageUrl: string | null,
+) {
+  const imageUrl = await resolveQuestionImageUrl(ctx, picked);
+
+  // Display-translate, grade-canonical: serve localized labels plus the
+  // canonical `optionValues` the client submits, so grading (which compares
+  // the submission to the English correctAnswer) and the checksum are
+  // untouched. For en / untranslated, optionValues === options (no-op).
+  // correctAnswer + explanation are withheld until checkAnswer.
+  const orderedValues = orderAnswerOptions(picked.options, picked.correctAnswer, picked.checksum);
+  const translation = await fetchQuestionTranslation(
+    ctx,
+    picked.checksum,
+    locale,
+  );
+  const localized = composeLocalizedQuestion(picked, orderedValues, translation);
+  return {
+    question: localized.question,
+    options: localized.options,
+    optionValues: localized.optionValues,
+    difficulty: picked.difficulty,
+    checksum: picked.checksum,
+    category: picked.category,
+    imageUrl,
+    // Warm-the-cache hint for the NEXT planned question's image (null when the
+    // next question is text-only). Purely advisory — never displayed directly.
+    nextImageUrl,
+  };
+}
+
 export const createSession = mutation({
   args: {
     sport: v.string(),
@@ -61,8 +104,14 @@ export const createSession = mutation({
     difficulty: v.optional(
       v.union(v.literal("easy"), v.literal("intermediate"), v.literal("hard")),
     ),
+    // When true, question 1 ships in this same response — one round trip
+    // instead of two before the player sees anything. Optional so the previous
+    // bundle's createSession→getQuestion sequence keeps working during the
+    // backend-first deploy window.
+    withFirstQuestion: v.optional(v.boolean()),
+    locale: v.optional(v.string()),
   },
-  handler: async (ctx, { sport, mode, difficulty }) => {
+  handler: async (ctx, { sport, mode, difficulty, withFirstQuestion, locale }) => {
     const userId = await getAuthUserId(ctx);
     if (!userId) throw new Error("Not authenticated");
     await assertFullAccountUser(ctx, userId);
@@ -82,21 +131,46 @@ export const createSession = mutation({
       QUIZ_PLANNED_QUESTIONS,
     );
 
+    let firstQuestion = null;
+    let usedChecksums: string[] = [];
+    let currentChecksum: string | undefined;
+    if (withFirstQuestion && plannedChecksums.length > 0) {
+      const firstPick = candidates.find(
+        (c) => c.checksum === plannedChecksums[0],
+      );
+      if (firstPick) {
+        usedChecksums = [firstPick.checksum];
+        currentChecksum = firstPick.checksum;
+        firstQuestion = await buildQuestionPayload(
+          ctx,
+          firstPick,
+          locale,
+          await peekNextPlannedImageUrl(ctx, plannedChecksums, usedChecksums),
+        );
+      }
+    }
+
+    // Stamp the first question's serve time AFTER building its payload so the
+    // translation/image lookups don't count against the player's answer time.
+    const now = Date.now();
     const sessionId = await ctx.db.insert("quizSessions", {
       userId,
       sport,
       mode: normalizedMode,
       difficulty: normalizedDifficulty,
       plannedChecksums,
-      usedChecksums: [],
+      usedChecksums,
+      ...(currentChecksum
+        ? { currentChecksum, questionStartedAt: now }
+        : {}),
       score: 0,
       correctCount: 0,
       totalAnswers: 0,
       sumAnswerTimeMs: 0,
       completed: false,
-      expiresAt: Date.now() + SESSION_TTL_MS,
+      expiresAt: now + SESSION_TTL_MS,
     });
-    return { sessionId };
+    return { sessionId, firstQuestion };
   },
 });
 
@@ -163,38 +237,27 @@ export const getQuestion = mutation({
       assertStandardMcqQuestion(picked);
     }
 
-    const now = Date.now();
+    const usedChecksums = [...session.usedChecksums, picked.checksum];
+    const payload = await buildQuestionPayload(
+      ctx,
+      picked,
+      locale,
+      await peekNextPlannedImageUrl(
+        ctx,
+        session.plannedChecksums,
+        usedChecksums,
+      ),
+    );
+
+    // Stamp the serve time AFTER building the payload so the translation and
+    // image lookups above don't count against the player's answer time.
     await ctx.db.patch(sessionId, {
-      usedChecksums: [...session.usedChecksums, picked.checksum],
+      usedChecksums,
       currentChecksum: picked.checksum,
-      questionStartedAt: now,
+      questionStartedAt: Date.now(),
     });
 
-    const imageUrl = picked.imageId
-      ? await ctx.storage.getUrl(picked.imageId)
-      : null;
-
-    // Display-translate, grade-canonical: serve localized labels plus the
-    // canonical `optionValues` the client submits, so grading (which compares
-    // the submission to the English correctAnswer) and the checksum are
-    // untouched. For en / untranslated, optionValues === options (no-op).
-    // correctAnswer + explanation are withheld until checkAnswer.
-    const orderedValues = orderAnswerOptions(picked.options, picked.correctAnswer, picked.checksum);
-    const translation = await fetchQuestionTranslation(
-      ctx,
-      picked.checksum,
-      locale,
-    );
-    const localized = composeLocalizedQuestion(picked, orderedValues, translation);
-    return {
-      question: localized.question,
-      options: localized.options,
-      optionValues: localized.optionValues,
-      difficulty: picked.difficulty,
-      checksum: picked.checksum,
-      category: picked.category,
-      imageUrl,
-    };
+    return payload;
   },
 });
 
@@ -241,7 +304,10 @@ export const checkAnswer = mutation({
       0,
       now - (session.questionStartedAt ?? now),
     );
-    const timeTakenSec = timeTakenMs / 1000;
+    // The serve grace writes off the delivery dead time (network leg, render,
+    // image decode) the server-side stamp unavoidably includes — without it
+    // the ≤1s full-score window is unreachable on any real connection.
+    const timeTakenSec = Math.max(0, timeTakenMs / 1000 - QUIZ_SERVE_GRACE_SEC);
     const score = isCorrect
       ? calculateTimeScore(QUESTION_BASE_POINTS, timeTakenSec)
       : 0;

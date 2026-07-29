@@ -241,6 +241,7 @@ export const insertImageQuestion = internalMutation({
     bucket: v.string(),
     checksum: v.string(),
     imageId: v.optional(v.id("_storage")),
+    imageSourceUrl: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
     const existing = await ctx.db
@@ -287,6 +288,11 @@ export const seedImageBatch = internalAction({
     let inserted = 0;
     let failed = 0;
 
+    // Only store what every player's browser can render; anything else is a
+    // guaranteed-broken image question at serve time.
+    const renderableTypes = ["image/jpeg", "image/png", "image/webp", "image/svg+xml", "image/gif"];
+    const maxBytes = 2 * 1024 * 1024;
+
     for (const { imageUrl, ...questionData } of questions) {
       try {
         // Download image from external URL
@@ -298,11 +304,27 @@ export const seedImageBatch = internalAction({
         }
 
         const blob = await response.blob();
+        const contentType = blob.type.split(";")[0].trim();
+        if (!renderableTypes.includes(contentType)) {
+          console.warn(
+            `Skipping non-renderable image (${contentType || "unknown type"}): ${imageUrl}`,
+          );
+          failed++;
+          continue;
+        }
+        if (blob.size > maxBytes) {
+          console.warn(
+            `Skipping oversized image (${blob.size} bytes > ${maxBytes}): ${imageUrl}`,
+          );
+          failed++;
+          continue;
+        }
         const storageId = await ctx.storage.store(blob);
 
         const result = await ctx.runMutation(
           internal.seedQuestions.insertImageQuestion,
-          { ...questionData, imageId: storageId },
+          // Retain the source URL so a lost blob is re-fetchable later.
+          { ...questionData, imageId: storageId, imageSourceUrl: imageUrl },
         );
 
         if (result.inserted) inserted++;

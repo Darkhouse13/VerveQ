@@ -6,6 +6,42 @@ import type { Id } from "../../convex/_generated/dataModel";
 
 const MAX_FILE_SIZE = 2 * 1024 * 1024; // 2MB
 const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp", "image/heic", "image/heif"];
+// Question images render in a ~320px-tall letterbox; anything beyond this edge
+// length is wasted bytes on every player's connection.
+const MAX_EDGE_PX = 1280;
+const JPEG_QUALITY = 0.85;
+
+/**
+ * Decode + downscale + re-encode before upload, so storage only ever holds
+ * browser-renderable, size-bounded images. This is what keeps HEIC out of the
+ * pool: Safari (where HEIC uploads come from) decodes it natively and we
+ * re-encode to JPEG; a browser that can't decode the file rejects here with a
+ * clear error instead of shipping a blob other players' browsers choke on.
+ * PNG stays PNG (badge images need their alpha channel); everything else
+ * becomes JPEG.
+ */
+async function normalizeImage(file: File): Promise<Blob> {
+  const bitmap = await createImageBitmap(file);
+  try {
+    const scale = Math.min(1, MAX_EDGE_PX / Math.max(bitmap.width, bitmap.height));
+    const width = Math.max(1, Math.round(bitmap.width * scale));
+    const height = Math.max(1, Math.round(bitmap.height * scale));
+    const canvas = document.createElement("canvas");
+    canvas.width = width;
+    canvas.height = height;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) throw new Error("canvas unavailable");
+    ctx.drawImage(bitmap, 0, 0, width, height);
+    const outType = file.type === "image/png" ? "image/png" : "image/jpeg";
+    const blob = await new Promise<Blob | null>((resolve) =>
+      canvas.toBlob(resolve, outType, JPEG_QUALITY),
+    );
+    if (!blob) throw new Error("encode failed");
+    return blob;
+  } finally {
+    bitmap.close();
+  }
+}
 
 interface ImageDropzoneProps {
   imageId: Id<"_storage"> | null;
@@ -36,15 +72,24 @@ export function ImageDropzone({ imageId, onUpload, onRemove }: ImageDropzoneProp
 
     setUploading(true);
     try {
+      let normalized: Blob;
+      try {
+        normalized = await normalizeImage(file);
+      } catch {
+        // Couldn't decode locally (e.g. HEIC outside Safari) — the pool must
+        // never receive a blob this very browser can't render.
+        setError("Couldn't read that image. Try a JPG, PNG, or WebP.");
+        return;
+      }
       const uploadUrl = await generateUploadUrl();
       const res = await fetch(uploadUrl, {
         method: "POST",
-        headers: { "Content-Type": file.type },
-        body: file,
+        headers: { "Content-Type": normalized.type },
+        body: normalized,
       });
       if (!res.ok) throw new Error("Upload request failed");
       const { storageId } = await res.json();
-      setPreview(URL.createObjectURL(file));
+      setPreview(URL.createObjectURL(normalized));
       onUpload(storageId);
     } catch {
       setError("Upload failed. Please try again.");

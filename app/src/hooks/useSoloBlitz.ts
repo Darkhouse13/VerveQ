@@ -32,6 +32,16 @@ interface QuestionData {
   optionValues: string[];
   checksum: string;
   imageUrl?: string | null;
+  // Server hint: the next planned question's image, warmed into the browser
+  // cache while this question is on screen. Never rendered directly.
+  nextImageUrl?: string | null;
+}
+
+/** Warm the browser cache so the next question's image paints instantly. */
+function preloadImage(url: string | null | undefined) {
+  if (!url) return;
+  const img = new Image();
+  img.src = url;
 }
 
 export interface SoloBlitzState {
@@ -138,6 +148,14 @@ export function useSoloBlitz(): SoloBlitzState {
     }
   }, [endGameMut, navigate, sport, gameOver]);
 
+  const applyQuestion = useCallback((q: QuestionData) => {
+    setQuestion(q);
+    setRevealedAnswer(null);
+    setSelected(null);
+    setRevealed(false);
+    preloadImage(q.nextImageUrl);
+  }, []);
+
   const fetchQuestion = useCallback(
     async (sid: Id<"blitzSessions">) => {
       try {
@@ -145,23 +163,28 @@ export function useSoloBlitz(): SoloBlitzState {
           sessionId: sid,
           locale: i18n.resolvedLanguage ?? i18n.language,
         });
-        setQuestion(q);
-        setRevealedAnswer(null);
-        setSelected(null);
-        setRevealed(false);
+        applyQuestion(q);
       } catch {
         // Time expired or no more questions — server is the authority.
         void finishGame();
       }
     },
-    [getQuestionMut, finishGame, i18n],
+    [getQuestionMut, applyQuestion, finishGame, i18n],
   );
 
   useEffect(() => {
     (async () => {
       try {
-        const { sessionId: sid, endTimeMs: serverEndTimeMs } = await startMut({
+        // The first question ships with start itself: one round trip before
+        // play instead of two, so the 60s clock loses none of it.
+        const {
+          sessionId: sid,
+          endTimeMs: serverEndTimeMs,
+          firstQuestion,
+        } = await startMut({
           sport,
+          withFirstQuestion: true,
+          locale: i18n.resolvedLanguage ?? i18n.language,
         });
         // A game genuinely began — the server minted a session. Fired on that
         // resolution rather than on mount, so passing through this route (or a
@@ -169,11 +192,13 @@ export function useSoloBlitz(): SoloBlitzState {
         startRun(sid, "blitz", { accountState: accountStateRef.current });
         setSessionId(sid);
         sessionRef.current = sid;
-        const q = await getQuestionMut({
-          sessionId: sid,
-          locale: i18n.resolvedLanguage ?? i18n.language,
-        });
-        setQuestion(q);
+        if (firstQuestion) {
+          applyQuestion(firstQuestion);
+        } else {
+          // Empty plan (or a backend that predates merged starts): fall back
+          // to the separate first fetch.
+          await fetchQuestion(sid);
+        }
         setEndTimeMs(serverEndTimeMs);
         setLoading(false);
       } catch {
@@ -260,8 +285,25 @@ export function useSoloBlitz(): SoloBlitzState {
           return;
         }
 
+        // Fire the next-question fetch NOW, overlapped with the reveal pause,
+        // instead of after it — the pause and the round trip run concurrently,
+        // so each question costs max(pause, network) of the 60s clock rather
+        // than pause + network. The catch mirrors fetchQuestion: a rejection
+        // means time expired / no more questions, and the server is the
+        // authority on both.
+        const nextQuestionPromise = getQuestionMut({
+          sessionId,
+          locale: i18n.resolvedLanguage ?? i18n.language,
+        }).catch(() => null);
         setTimeout(() => {
-          void fetchQuestion(sessionId);
+          void (async () => {
+            const q = await nextQuestionPromise;
+            if (q) {
+              applyQuestion(q);
+            } else {
+              void finishGame();
+            }
+          })();
         }, res.correct ? 400 : 800);
       } catch {
         void finishGame();
@@ -270,7 +312,7 @@ export function useSoloBlitz(): SoloBlitzState {
         setChecking(false);
       }
     },
-    [revealed, checking, question, sessionId, gameOver, submitAnswerMut, finishGame, fetchQuestion],
+    [revealed, checking, question, sessionId, gameOver, submitAnswerMut, finishGame, getQuestionMut, applyQuestion, i18n],
   );
 
   const correctIdx =

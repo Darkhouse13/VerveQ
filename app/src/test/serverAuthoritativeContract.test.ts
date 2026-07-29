@@ -263,18 +263,19 @@ describe("BLOCKER-2: correctness is derived from stored answers", () => {
       timeTaken: 0.1,
     })) as Record<string, unknown>;
 
+    // 4s measured minus DAILY_SERVE_GRACE_SEC (2.5) = 1.5s scored time.
     expect(result).toMatchObject({
       correct: false,
       score: 0,
       totalScore: 0,
-      timeTaken: 4,
+      timeTaken: 1.5,
       correctAnswer: "Stored Answer",
     });
     expect(patch).toHaveBeenCalledWith(
       "attempt_1",
       expect.objectContaining({
         score: 0,
-        results: [{ correct: false, timeTaken: 4, score: 0 }],
+        results: [{ correct: false, timeTaken: 1.5, score: 0 }],
       }),
     );
   });
@@ -632,16 +633,18 @@ describe("BLOCKER-5: daily attempts enforce ownership and server time", () => {
       timeTaken: 0.1,
     })) as Record<string, unknown>;
 
+    // 4s measured minus DAILY_SERVE_GRACE_SEC (2.5) = 1.5s scored time →
+    // round(100 * (10 - 1.5) / 9) = 94. The client's forged 0.1 is ignored.
     expect(result).toMatchObject({
       correct: true,
-      score: 67,
-      totalScore: 67,
-      timeTaken: 4,
+      score: 94,
+      totalScore: 94,
+      timeTaken: 1.5,
     });
     expect(patch).toHaveBeenCalledWith(
       "attempt_1",
       expect.objectContaining({
-        score: 67,
+        score: 94,
         currentQuestionStartedAt: Date.now(),
         questionStartedAts: [startedAt, Date.now()],
       }),
