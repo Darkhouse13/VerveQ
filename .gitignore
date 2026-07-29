@@ -282,3 +282,9 @@ app/convex/data/*
 !app/convex/data/survival_initials_map_tennis.json
 !app/convex/data/tennis_player_metadata.json
 data_cleaning/
+
+# Content factory (Remotion promo/video lane) is LOCAL-ONLY tooling — owner
+# ruling 2026-07-29: nothing under it is ever pushed to the GitHub repo. The
+# directory exclusion sits LAST so no earlier !re-include (e.g. tools/**/*.md)
+# can reach inside it — git cannot re-include below an excluded directory.
+tools/content-factory/
