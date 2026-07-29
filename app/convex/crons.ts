@@ -23,5 +23,9 @@ crons.daily("draw-daily-board", { hourUTC: 0, minuteUTC: 2 }, internal.drawBoard
 // 5 requests per sync x 96 runs/day = ~480/day against a measured 7,500/day cap.
 crons.cron("fantasy-sync-fixtures", "0,15,30,45 * * * *", internal.fantasyIngest.syncFixtures, {});
 crons.cron("fantasy-lock-sweep", "5,20,35,50 * * * *", internal.fantasyLocks.lockSweep, {});
+// FW-3 draft rooms: expires dead lobbies and re-drives any room whose
+// scheduled hop was lost. Every action is a guarded no-op on a healthy room,
+// so the tight interval buys stall-recovery, not load.
+crons.interval("fantasy-draft-room-sweep", { minutes: 5 }, internal.fantasyDraftRooms.draftRoomSweep, {});
 
 export default crons;

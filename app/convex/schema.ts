@@ -1677,5 +1677,9 @@ export default defineSchema({
       v.literal("flagged"),
     ),
     proxy: v.union(v.number(), v.null()),
+    /** Display name for the player's club (fantasyPlayers.clubId is an opaque
+     *  provider id and there is deliberately no clubs table at this layer —
+     *  the artifact's club label rides along here for the draft board UI). */
+    clubName: v.optional(v.string()),
   }).index("by_player", ["playerId"]),
 });
