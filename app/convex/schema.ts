@@ -1507,4 +1507,26 @@ export default defineSchema({
     .index("by_squad", ["squadId"])
     .index("by_squad_slotIndex", ["squadId", "slotIndex"])
     .index("by_player", ["playerId"]),
+
+  // ── THE WEEKEND pre-launch waitlist (Ticket FW-P1) ──
+  //
+  // One row per interested identity, where an identity is EXACTLY ONE of a
+  // Convex user (one-tap join from the home teaser) or a normalized email
+  // (anonymous visitors). The invariant is enforced by the two mutations in
+  // fantasyWaitlist.ts — each writes only its own identity field — and joins
+  // are idempotent per identity (same user/email twice = the original row).
+  //
+  // Emails NEVER leave the server: getTeaserStatus serves only a boolean and
+  // a count, and nothing else reads this table. `source` is the coarse
+  // acquisition tag captured at join time (utm_source ?? ref off the URL, else
+  // the internal placement tag "home_teaser") — same attribution vocabulary as
+  // funnelEvents meta.source.
+  fantasyWaitlist: defineTable({
+    userId: v.optional(v.id("users")),
+    email: v.optional(v.string()),
+    createdAt: v.number(),
+    source: v.optional(v.string()),
+  })
+    .index("by_userId", ["userId"])
+    .index("by_email", ["email"]),
 });

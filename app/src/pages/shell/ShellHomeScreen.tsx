@@ -17,6 +17,7 @@ import { NeoAvatar } from "@/components/neo/NeoAvatar";
 import { NeoBadge } from "@/components/neo/NeoBadge";
 import { NeoButton } from "@/components/neo/NeoButton";
 import { HomeDrawCard } from "@/components/draw/HomeDrawCard";
+import { HomeWeekendTeaser } from "@/components/weekend/HomeWeekendTeaser";
 import { ShellLayout } from "@/components/shell/ShellLayout";
 import { SHELL_ROUTES } from "@/lib/shellRoutes";
 import { RANKED_CAPABILITIES, tierFromElo, tierProgress } from "@/lib/rankedLadder";
@@ -175,6 +176,12 @@ export default function ShellHomeScreen() {
             build flag off, or when the server gate throws, it renders nothing
             and the Home below is byte-identical for non-draw users. */}
         <HomeDrawCard />
+
+        {/* THE WEEKEND teaser + waitlist (Ticket FW-P1) — hero slot under the
+            Draw card. Runtime-gated on the waitlist backend answering: until
+            the prod Convex deploy (or on any failure) it renders nothing and
+            Home is exactly as before. */}
+        <HomeWeekendTeaser />
 
         {/* One tree, two breakpoints: mobile stacks in DOM order; desktop is a
             never-scroll 3-column grid (pillars · pillars/dailies · ladder/forge),

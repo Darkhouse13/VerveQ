@@ -50,6 +50,12 @@ vi.mock("convex/react", () => ({
     queryMock.calls.push(args);
     return queryMock.value;
   },
+  // The WEEKEND teaser's status read rejects ⇒ the card hides itself and this
+  // contract sees the onboarded Home exactly as before.
+  useConvex: () => ({
+    query: () => Promise.reject(new Error("no backend in this contract")),
+    mutation: () => Promise.reject(new Error("no backend in this contract")),
+  }),
 }));
 
 vi.mock("@/contexts/AuthContext", () => ({

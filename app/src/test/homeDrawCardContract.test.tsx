@@ -445,7 +445,13 @@ describe("HomeDrawCard — no layout shift for non-draw users", () => {
     await flush();
 
     expect(screen.queryByTestId("home-draw-card")).toBeNull();
-    expect(convexMock.client.query).not.toHaveBeenCalled();
+    // The WEEKEND teaser (FW-P1) shares this client for its own status read
+    // (which resolves undefined here ⇒ the teaser hides itself), so the
+    // assertion is scoped to draw:* — the fact under test.
+    const drawQueries = convexMock.client.query.mock.calls.filter(([ref]) =>
+      nameOf(ref).startsWith("draw:"),
+    );
+    expect(drawQueries).toHaveLength(0);
     expect(container).toMatchSnapshot();
   });
 

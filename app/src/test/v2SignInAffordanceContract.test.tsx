@@ -43,6 +43,12 @@ vi.mock("react-i18next", () => ({
 
 vi.mock("convex/react", () => ({
   useQuery: () => undefined,
+  // The WEEKEND teaser's status read rejects ⇒ the card hides itself and the
+  // sign-in affordance contract sees Home exactly as before.
+  useConvex: () => ({
+    query: () => Promise.reject(new Error("no backend in this contract")),
+    mutation: () => Promise.reject(new Error("no backend in this contract")),
+  }),
 }));
 
 vi.mock("@/contexts/AuthContext", () => ({
