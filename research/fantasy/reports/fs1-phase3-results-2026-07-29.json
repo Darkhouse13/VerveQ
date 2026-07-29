@@ -1,0 +1,983 @@
+{
+  "meta": {
+    "spec": "SCORING_SPEC.md v0.4.1",
+    "generatedAt": "2026-07-29T10:24:57.782Z",
+    "seed": 20260729,
+    "squadsPerGeneratorPerGameweek": 2000,
+    "gameweeks": 20,
+    "playerFixtureRows": 8110,
+    "season": 2024,
+    "crowdNoise": 0.4
+  },
+  "perPositionAllRows": {
+    "GK": {
+      "n": 916,
+      "mean": 2.163,
+      "sd": 3.348,
+      "min": -3,
+      "p10": 0,
+      "p25": 0,
+      "median": 0,
+      "p75": 3.5,
+      "p90": 9,
+      "p99": 12,
+      "max": 16.5
+    },
+    "DEF": {
+      "n": 2563,
+      "mean": 3.456,
+      "sd": 3.923,
+      "min": -5.3,
+      "p10": 0,
+      "p25": 0,
+      "median": 2,
+      "p75": 5.6,
+      "p90": 9.5,
+      "p99": 14.7,
+      "max": 25.6
+    },
+    "MID": {
+      "n": 2905,
+      "mean": 4.327,
+      "sd": 4.169,
+      "min": -5,
+      "p10": 0,
+      "p25": 1,
+      "median": 3.5,
+      "p75": 6.8,
+      "p90": 10,
+      "p99": 17.2,
+      "max": 29
+    },
+    "ATT": {
+      "n": 1726,
+      "mean": 3.304,
+      "sd": 3.876,
+      "min": -5,
+      "p10": 0,
+      "p25": 1,
+      "median": 1.8,
+      "p75": 4.8,
+      "p90": 9.5,
+      "p99": 16,
+      "max": 26.8
+    }
+  },
+  "perPositionPlayedOnly": {
+    "GK": {
+      "n": 388,
+      "mean": 5.107,
+      "sd": 3.381,
+      "min": -3,
+      "p10": 1.5,
+      "p25": 2.5,
+      "median": 4,
+      "p75": 8,
+      "p90": 10,
+      "p99": 15.5,
+      "max": 16.5
+    },
+    "DEF": {
+      "n": 1849,
+      "mean": 4.791,
+      "sd": 3.865,
+      "min": -5.3,
+      "p10": 1,
+      "p25": 1.6,
+      "median": 3.9,
+      "p75": 7.6,
+      "p90": 10.4,
+      "p99": 15.4,
+      "max": 25.6
+    },
+    "MID": {
+      "n": 2349,
+      "mean": 5.352,
+      "sd": 4.002,
+      "min": -5,
+      "p10": 1,
+      "p25": 2,
+      "median": 4.5,
+      "p75": 7.3,
+      "p90": 10.9,
+      "p99": 18.2,
+      "max": 29
+    },
+    "ATT": {
+      "n": 1372,
+      "mean": 4.156,
+      "sd": 3.918,
+      "min": -5,
+      "p10": 1,
+      "p25": 1,
+      "median": 2.8,
+      "p75": 5.9,
+      "p90": 10,
+      "p99": 16.5,
+      "max": 26.8
+    }
+  },
+  "termAttribution": [
+    {
+      "code": "minutes.60plus",
+      "rowsWithTerm": 3906,
+      "totalPoints": 7812,
+      "meanWhenPresent": 2,
+      "shareOfPositivePoints": 0.2511
+    },
+    {
+      "code": "goals",
+      "rowsWithTerm": 497,
+      "totalPoints": 3117,
+      "meanWhenPresent": 6.272,
+      "shareOfPositivePoints": 0.1002
+    },
+    {
+      "code": "result.win",
+      "rowsWithTerm": 1464,
+      "totalPoints": 2928,
+      "meanWhenPresent": 2,
+      "shareOfPositivePoints": 0.0941
+    },
+    {
+      "code": "mid.defensive",
+      "rowsWithTerm": 1686,
+      "totalPoints": 2188,
+      "meanWhenPresent": 1.298,
+      "shareOfPositivePoints": 0.0703
+    },
+    {
+      "code": "minutes.under60",
+      "rowsWithTerm": 2052,
+      "totalPoints": 2052,
+      "meanWhenPresent": 1,
+      "shareOfPositivePoints": 0.066
+    },
+    {
+      "code": "assists",
+      "rowsWithTerm": 368,
+      "totalPoints": 1564,
+      "meanWhenPresent": 4.25,
+      "shareOfPositivePoints": 0.0503
+    },
+    {
+      "code": "mid.keyPasses",
+      "rowsWithTerm": 1130,
+      "totalPoints": 1555.2,
+      "meanWhenPresent": 1.376,
+      "shareOfPositivePoints": 0.05
+    },
+    {
+      "code": "def.cleanSheet",
+      "rowsWithTerm": 329,
+      "totalPoints": 1316,
+      "meanWhenPresent": 4,
+      "shareOfPositivePoints": 0.0423
+    },
+    {
+      "code": "result.draw",
+      "rowsWithTerm": 1061,
+      "totalPoints": 1061,
+      "meanWhenPresent": 1,
+      "shareOfPositivePoints": 0.0341
+    },
+    {
+      "code": "def.tackles",
+      "rowsWithTerm": 1218,
+      "totalPoints": 1010.6,
+      "meanWhenPresent": 0.83,
+      "shareOfPositivePoints": 0.0325
+    },
+    {
+      "code": "def.duels",
+      "rowsWithTerm": 475,
+      "totalPoints": 950,
+      "meanWhenPresent": 2,
+      "shareOfPositivePoints": 0.0305
+    },
+    {
+      "code": "def.interceptions",
+      "rowsWithTerm": 960,
+      "totalPoints": 926.4,
+      "meanWhenPresent": 0.965,
+      "shareOfPositivePoints": 0.0298
+    },
+    {
+      "code": "mid.dribbles",
+      "rowsWithTerm": 922,
+      "totalPoints": 718.5,
+      "meanWhenPresent": 0.779,
+      "shareOfPositivePoints": 0.0231
+    },
+    {
+      "code": "att.keyPasses",
+      "rowsWithTerm": 598,
+      "totalPoints": 718.4,
+      "meanWhenPresent": 1.201,
+      "shareOfPositivePoints": 0.0231
+    },
+    {
+      "code": "mid.passCompletion",
+      "rowsWithTerm": 269,
+      "totalPoints": 538,
+      "meanWhenPresent": 2,
+      "shareOfPositivePoints": 0.0173
+    },
+    {
+      "code": "gk.saves",
+      "rowsWithTerm": 356,
+      "totalPoints": 529.5,
+      "meanWhenPresent": 1.487,
+      "shareOfPositivePoints": 0.017
+    },
+    {
+      "code": "gk.cleanSheet",
+      "rowsWithTerm": 91,
+      "totalPoints": 455,
+      "meanWhenPresent": 5,
+      "shareOfPositivePoints": 0.0146
+    },
+    {
+      "code": "def.blocks",
+      "rowsWithTerm": 573,
+      "totalPoints": 402,
+      "meanWhenPresent": 0.702,
+      "shareOfPositivePoints": 0.0129
+    },
+    {
+      "code": "att.dribbles",
+      "rowsWithTerm": 509,
+      "totalPoints": 392,
+      "meanWhenPresent": 0.77,
+      "shareOfPositivePoints": 0.0126
+    },
+    {
+      "code": "mid.cleanSheet",
+      "rowsWithTerm": 370,
+      "totalPoints": 370,
+      "meanWhenPresent": 1,
+      "shareOfPositivePoints": 0.0119
+    },
+    {
+      "code": "att.shotsOn",
+      "rowsWithTerm": 522,
+      "totalPoints": 368,
+      "meanWhenPresent": 0.705,
+      "shareOfPositivePoints": 0.0118
+    },
+    {
+      "code": "penalty.won",
+      "rowsWithTerm": 43,
+      "totalPoints": 88,
+      "meanWhenPresent": 2.047,
+      "shareOfPositivePoints": 0.0028
+    },
+    {
+      "code": "gk.penaltySaved",
+      "rowsWithTerm": 9,
+      "totalPoints": 54,
+      "meanWhenPresent": 6,
+      "shareOfPositivePoints": 0.0017
+    },
+    {
+      "code": "penalty.missed",
+      "rowsWithTerm": 10,
+      "totalPoints": -30,
+      "meanWhenPresent": -3,
+      "shareOfPositivePoints": 0
+    },
+    {
+      "code": "ownGoals",
+      "rowsWithTerm": 18,
+      "totalPoints": -54,
+      "meanWhenPresent": -3,
+      "shareOfPositivePoints": 0
+    },
+    {
+      "code": "penalty.conceded",
+      "rowsWithTerm": 57,
+      "totalPoints": -114,
+      "meanWhenPresent": -2,
+      "shareOfPositivePoints": 0
+    },
+    {
+      "code": "cards.red",
+      "rowsWithTerm": 38,
+      "totalPoints": -152,
+      "meanWhenPresent": -4,
+      "shareOfPositivePoints": 0
+    },
+    {
+      "code": "gk.conceded",
+      "rowsWithTerm": 168,
+      "totalPoints": -197,
+      "meanWhenPresent": -1.173,
+      "shareOfPositivePoints": 0
+    },
+    {
+      "code": "def.conceded",
+      "rowsWithTerm": 582,
+      "totalPoints": -676,
+      "meanWhenPresent": -1.162,
+      "shareOfPositivePoints": 0
+    },
+    {
+      "code": "cards.yellow",
+      "rowsWithTerm": 760,
+      "totalPoints": -778,
+      "meanWhenPresent": -1.024,
+      "shareOfPositivePoints": 0
+    }
+  ],
+  "capBindRates": {
+    "gk.saves": {
+      "rowsWithTerm": 356,
+      "bound": 5,
+      "bindRate": 0.014,
+      "meanRaw": 1.497,
+      "meanLostToCap": 0.01
+    },
+    "def.tackles": {
+      "rowsWithTerm": 1218,
+      "bound": 3,
+      "bindRate": 0.0025,
+      "meanRaw": 0.831,
+      "meanLostToCap": 0.001
+    },
+    "def.interceptions": {
+      "rowsWithTerm": 960,
+      "bound": 4,
+      "bindRate": 0.0042,
+      "meanRaw": 0.969,
+      "meanLostToCap": 0.004
+    },
+    "def.blocks": {
+      "rowsWithTerm": 573,
+      "bound": 2,
+      "bindRate": 0.0035,
+      "meanRaw": 0.703,
+      "meanLostToCap": 0.002
+    },
+    "mid.defensive": {
+      "rowsWithTerm": 1686,
+      "bound": 8,
+      "bindRate": 0.0047,
+      "meanRaw": 1.302,
+      "meanLostToCap": 0.004
+    },
+    "mid.keyPasses": {
+      "rowsWithTerm": 1130,
+      "bound": 9,
+      "bindRate": 0.008,
+      "meanRaw": 1.385,
+      "meanLostToCap": 0.008
+    },
+    "mid.dribbles": {
+      "rowsWithTerm": 922,
+      "bound": 18,
+      "bindRate": 0.0195,
+      "meanRaw": 0.796,
+      "meanLostToCap": 0.016
+    },
+    "att.shotsOn": {
+      "rowsWithTerm": 522,
+      "bound": 3,
+      "bindRate": 0.0057,
+      "meanRaw": 0.708,
+      "meanLostToCap": 0.003
+    },
+    "att.keyPasses": {
+      "rowsWithTerm": 598,
+      "bound": 4,
+      "bindRate": 0.0067,
+      "meanRaw": 1.209,
+      "meanLostToCap": 0.008
+    },
+    "att.dribbles": {
+      "rowsWithTerm": 509,
+      "bound": 3,
+      "bindRate": 0.0059,
+      "meanRaw": 0.773,
+      "meanLostToCap": 0.003
+    }
+  },
+  "capSensitivity": {
+    "x0.5": {
+      "overall": {
+        "n": 5958,
+        "mean": 4.758,
+        "sd": 3.802,
+        "min": -5.3,
+        "p10": 1,
+        "p25": 1.8,
+        "median": 3.8,
+        "p75": 6.8,
+        "p90": 10.1,
+        "p99": 16,
+        "max": 27
+      },
+      "byPosition": {
+        "GK": {
+          "n": 388,
+          "mean": 4.939,
+          "sd": 3.344,
+          "min": -3,
+          "p10": 1.5,
+          "p25": 2.5,
+          "median": 4,
+          "p75": 8,
+          "p90": 10,
+          "p99": 15.5,
+          "max": 16.5
+        },
+        "DEF": {
+          "n": 1849,
+          "mean": 4.707,
+          "sd": 3.809,
+          "min": -5.3,
+          "p10": 1,
+          "p25": 1.6,
+          "median": 3.8,
+          "p75": 7.4,
+          "p90": 10.2,
+          "p99": 15,
+          "max": 25.5
+        },
+        "MID": {
+          "n": 2349,
+          "mean": 5.159,
+          "sd": 3.806,
+          "min": -5,
+          "p10": 1,
+          "p25": 2,
+          "median": 4.5,
+          "p75": 7,
+          "p90": 10.5,
+          "p99": 17.1,
+          "max": 27
+        },
+        "ATT": {
+          "n": 1372,
+          "mean": 4.09,
+          "sd": 3.81,
+          "min": -5,
+          "p10": 1,
+          "p25": 1,
+          "median": 2.8,
+          "p75": 5.8,
+          "p90": 10,
+          "p99": 16,
+          "max": 25.8
+        }
+      },
+      "meanDeltaVsSpec": -0.128
+    },
+    "x1": {
+      "overall": {
+        "n": 5958,
+        "mean": 4.886,
+        "sd": 3.93,
+        "min": -5.3,
+        "p10": 1,
+        "p25": 1.8,
+        "median": 4,
+        "p75": 7.1,
+        "p90": 10.4,
+        "p99": 16.6,
+        "max": 29
+      },
+      "byPosition": {
+        "GK": {
+          "n": 388,
+          "mean": 5.107,
+          "sd": 3.381,
+          "min": -3,
+          "p10": 1.5,
+          "p25": 2.5,
+          "median": 4,
+          "p75": 8,
+          "p90": 10,
+          "p99": 15.5,
+          "max": 16.5
+        },
+        "DEF": {
+          "n": 1849,
+          "mean": 4.791,
+          "sd": 3.865,
+          "min": -5.3,
+          "p10": 1,
+          "p25": 1.6,
+          "median": 3.9,
+          "p75": 7.6,
+          "p90": 10.4,
+          "p99": 15.4,
+          "max": 25.6
+        },
+        "MID": {
+          "n": 2349,
+          "mean": 5.352,
+          "sd": 4.002,
+          "min": -5,
+          "p10": 1,
+          "p25": 2,
+          "median": 4.5,
+          "p75": 7.3,
+          "p90": 10.9,
+          "p99": 18.2,
+          "max": 29
+        },
+        "ATT": {
+          "n": 1372,
+          "mean": 4.156,
+          "sd": 3.918,
+          "min": -5,
+          "p10": 1,
+          "p25": 1,
+          "median": 2.8,
+          "p75": 5.9,
+          "p90": 10,
+          "p99": 16.5,
+          "max": 26.8
+        }
+      },
+      "meanDeltaVsSpec": 0
+    },
+    "x2": {
+      "overall": {
+        "n": 5958,
+        "mean": 4.894,
+        "sd": 3.944,
+        "min": -5.3,
+        "p10": 1,
+        "p25": 1.8,
+        "median": 4,
+        "p75": 7.1,
+        "p90": 10.5,
+        "p99": 16.8,
+        "max": 29
+      },
+      "byPosition": {
+        "GK": {
+          "n": 388,
+          "mean": 5.116,
+          "sd": 3.391,
+          "min": -3,
+          "p10": 1.5,
+          "p25": 2.5,
+          "median": 4,
+          "p75": 8,
+          "p90": 10,
+          "p99": 15.5,
+          "max": 16.5
+        },
+        "DEF": {
+          "n": 1849,
+          "mean": 4.794,
+          "sd": 3.868,
+          "min": -5.3,
+          "p10": 1,
+          "p25": 1.6,
+          "median": 3.9,
+          "p75": 7.6,
+          "p90": 10.4,
+          "p99": 15.4,
+          "max": 25.6
+        },
+        "MID": {
+          "n": 2349,
+          "mean": 5.365,
+          "sd": 4.024,
+          "min": -5,
+          "p10": 1,
+          "p25": 2,
+          "median": 4.5,
+          "p75": 7.3,
+          "p90": 10.9,
+          "p99": 18.2,
+          "max": 29
+        },
+        "ATT": {
+          "n": 1372,
+          "mean": 4.162,
+          "sd": 3.932,
+          "min": -5,
+          "p10": 1,
+          "p25": 1,
+          "median": 2.8,
+          "p75": 5.9,
+          "p90": 10,
+          "p99": 16.9,
+          "max": 26.8
+        }
+      },
+      "meanDeltaVsSpec": 0.008
+    }
+  },
+  "stepFunctionCliffs": {
+    "duelBonus": {
+      "eligibleRows": 1031,
+      "paid": 475,
+      "payRate": 0.4607,
+      "withinFivePointsOfThreshold": 203,
+      "cliffExposureRate": 0.1969,
+      "flippedSignOfScore": 7
+    },
+    "passBonus": {
+      "eligibleRows": 560,
+      "paid": 269,
+      "payRate": 0.4804,
+      "withinThreePointsOfThreshold": 213,
+      "cliffExposureRate": 0.3804,
+      "flippedSignOfScore": 1
+    }
+  },
+  "midDestroyer": {
+    "midRows60Plus": 1521,
+    "destroyerRows": 178,
+    "creatorRows": 444,
+    "destroyerScore": {
+      "n": 178,
+      "mean": 6.298,
+      "sd": 2.548,
+      "min": 1,
+      "p10": 4,
+      "p25": 4.5,
+      "median": 5.5,
+      "p75": 7.5,
+      "p90": 9,
+      "p99": 15,
+      "max": 20.5
+    },
+    "creatorScore": {
+      "n": 444,
+      "mean": 9.498,
+      "sd": 3.992,
+      "min": -0.9,
+      "p10": 5.1,
+      "p25": 6.6,
+      "median": 9,
+      "p75": 11.6,
+      "p90": 15,
+      "p99": 22.2,
+      "max": 29
+    },
+    "allMidScore": {
+      "n": 1521,
+      "mean": 7.092,
+      "sd": 3.748,
+      "min": -0.9,
+      "p10": 3.3,
+      "p25": 4.5,
+      "median": 6.3,
+      "p75": 9,
+      "p90": 12.3,
+      "p99": 19.1,
+      "max": 29
+    },
+    "defensiveCapBoundOnDestroyers": 4
+  },
+  "finisherReachability": {
+    "substitutionsInSample": 1734,
+    "enteredBefore75": 955,
+    "withAnyPost75TimedEvent": 104,
+    "byNominalPosition": {
+      "GK": {
+        "substitutions": 4,
+        "withPost75TimedEvent": 0
+      },
+      "DEF": {
+        "substitutions": 415,
+        "withPost75TimedEvent": 12
+      },
+      "MID": {
+        "substitutions": 661,
+        "withPost75TimedEvent": 34
+      },
+      "ATT": {
+        "substitutions": 654,
+        "withPost75TimedEvent": 58
+      }
+    }
+  },
+  "generators": [
+    {
+      "generator": "random",
+      "squads": 40000,
+      "totalsBySpec": {
+        "n": 40000,
+        "mean": 30.809,
+        "sd": 11.34,
+        "min": -1.6,
+        "p10": 16.95,
+        "p25": 22.7,
+        "median": 29.95,
+        "p75": 37.9,
+        "p90": 45.875,
+        "p99": 61.175,
+        "max": 91.125
+      },
+      "unfilledSlotRate": 0,
+      "mismatchedSlotRate": 0.7149,
+      "clamp": {
+        "0%": {
+          "totals": {
+            "n": 40000,
+            "mean": 30.809,
+            "sd": 11.34,
+            "min": -1.6,
+            "p10": 16.95,
+            "p25": 22.7,
+            "median": 29.95,
+            "p75": 37.9,
+            "p90": 45.875,
+            "p99": 61.175,
+            "max": 91.125
+          },
+          "spearmanVsUnclamped": 1,
+          "pairInversionRate": 0,
+          "meanAbsShift": 0
+        },
+        "10%": {
+          "totals": {
+            "n": 40000,
+            "mean": 31.845,
+            "sd": 11.918,
+            "min": -1.706,
+            "p10": 17.33,
+            "p25": 23.315,
+            "median": 30.892,
+            "p75": 39.224,
+            "p90": 47.656,
+            "p99": 63.918,
+            "max": 97.001
+          },
+          "spearmanVsUnclamped": 0.99943,
+          "pairInversionRate": 0.00976,
+          "meanAbsShift": 1.041
+        },
+        "15%": {
+          "totals": {
+            "n": 40000,
+            "mean": 32.35,
+            "sd": 12.207,
+            "min": -1.756,
+            "p10": 17.443,
+            "p25": 23.628,
+            "median": 31.342,
+            "p75": 39.926,
+            "p90": 48.6,
+            "p99": 65.219,
+            "max": 98.226
+          },
+          "spearmanVsUnclamped": 0.99879,
+          "pairInversionRate": 0.01431,
+          "meanAbsShift": 1.548
+        },
+        "25%": {
+          "totals": {
+            "n": 40000,
+            "mean": 33.39,
+            "sd": 12.798,
+            "min": -1.868,
+            "p10": 17.793,
+            "p25": 24.178,
+            "median": 32.336,
+            "p75": 41.252,
+            "p90": 50.428,
+            "p99": 67.902,
+            "max": 104.33
+          },
+          "spearmanVsUnclamped": 0.99686,
+          "pairInversionRate": 0.02351,
+          "meanAbsShift": 2.593
+        }
+      }
+    },
+    {
+      "generator": "form",
+      "squads": 40000,
+      "totalsBySpec": {
+        "n": 40000,
+        "mean": 51.102,
+        "sd": 14.529,
+        "min": 5.6,
+        "p10": 33,
+        "p25": 40.9,
+        "median": 50.3,
+        "p75": 60.5,
+        "p90": 70.1,
+        "p99": 88.6,
+        "max": 129.6
+      },
+      "unfilledSlotRate": 0,
+      "mismatchedSlotRate": 0,
+      "clamp": {
+        "0%": {
+          "totals": {
+            "n": 40000,
+            "mean": 51.102,
+            "sd": 14.529,
+            "min": 5.6,
+            "p10": 33,
+            "p25": 40.9,
+            "median": 50.3,
+            "p75": 60.5,
+            "p90": 70.1,
+            "p99": 88.6,
+            "max": 129.6
+          },
+          "spearmanVsUnclamped": 1,
+          "pairInversionRate": 0,
+          "meanAbsShift": 0
+        },
+        "10%": {
+          "totals": {
+            "n": 40000,
+            "mean": 53.001,
+            "sd": 15.361,
+            "min": 5.475,
+            "p10": 33.913,
+            "p25": 42.167,
+            "median": 52.117,
+            "p75": 62.888,
+            "p90": 73.044,
+            "p99": 92.935,
+            "max": 136.84
+          },
+          "spearmanVsUnclamped": 0.99935,
+          "pairInversionRate": 0.00959,
+          "meanAbsShift": 1.9
+        },
+        "15%": {
+          "totals": {
+            "n": 40000,
+            "mean": 53.901,
+            "sd": 15.769,
+            "min": 5.557,
+            "p10": 34.337,
+            "p25": 42.794,
+            "median": 52.971,
+            "p75": 63.99,
+            "p90": 74.568,
+            "p99": 95.008,
+            "max": 139.729
+          },
+          "spearmanVsUnclamped": 0.99857,
+          "pairInversionRate": 0.01503,
+          "meanAbsShift": 2.8
+        },
+        "25%": {
+          "totals": {
+            "n": 40000,
+            "mean": 55.77,
+            "sd": 16.59,
+            "min": 5.709,
+            "p10": 35.174,
+            "p25": 44.07,
+            "median": 54.722,
+            "p75": 66.412,
+            "p90": 77.474,
+            "p99": 99.362,
+            "max": 146.797
+          },
+          "spearmanVsUnclamped": 0.99633,
+          "pairInversionRate": 0.02522,
+          "meanAbsShift": 4.671
+        }
+      }
+    },
+    {
+      "generator": "chalk",
+      "squads": 40000,
+      "totalsBySpec": {
+        "n": 40000,
+        "mean": 111.052,
+        "sd": 16.939,
+        "min": 57.4,
+        "p10": 90.6,
+        "p25": 99.3,
+        "median": 109.7,
+        "p75": 121.3,
+        "p90": 133.5,
+        "p99": 157.2,
+        "max": 192.1
+      },
+      "unfilledSlotRate": 0,
+      "mismatchedSlotRate": 0,
+      "clamp": {
+        "0%": {
+          "totals": {
+            "n": 40000,
+            "mean": 111.052,
+            "sd": 16.939,
+            "min": 57.4,
+            "p10": 90.6,
+            "p25": 99.3,
+            "median": 109.7,
+            "p75": 121.3,
+            "p90": 133.5,
+            "p99": 157.2,
+            "max": 192.1
+          },
+          "spearmanVsUnclamped": 1,
+          "pairInversionRate": 0,
+          "meanAbsShift": 0
+        },
+        "10%": {
+          "totals": {
+            "n": 40000,
+            "mean": 116.605,
+            "sd": 18.084,
+            "min": 58.988,
+            "p10": 94.834,
+            "p25": 104.007,
+            "median": 115.111,
+            "p75": 127.616,
+            "p90": 140.492,
+            "p99": 165.846,
+            "max": 201.367
+          },
+          "spearmanVsUnclamped": 0.99876,
+          "pairInversionRate": 0.01393,
+          "meanAbsShift": 5.552
+        },
+        "15%": {
+          "totals": {
+            "n": 40000,
+            "mean": 119.334,
+            "sd": 18.733,
+            "min": 60.581,
+            "p10": 96.777,
+            "p25": 106.296,
+            "median": 117.768,
+            "p75": 130.685,
+            "p90": 144.144,
+            "p99": 170.045,
+            "max": 208.928
+          },
+          "spearmanVsUnclamped": 0.9974,
+          "pairInversionRate": 0.02127,
+          "meanAbsShift": 8.282
+        },
+        "25%": {
+          "totals": {
+            "n": 40000,
+            "mean": 125.011,
+            "sd": 20.11,
+            "min": 63.768,
+            "p10": 100.854,
+            "p25": 110.91,
+            "median": 123.196,
+            "p75": 137.24,
+            "p90": 151.884,
+            "p99": 179.406,
+            "max": 217.114
+          },
+          "spearmanVsUnclamped": 0.99382,
+          "pairInversionRate": 0.03333,
+          "meanAbsShift": 13.958
+        }
+      }
+    }
+  ]
+}

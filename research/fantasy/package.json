@@ -1,0 +1,23 @@
+{
+  "name": "verveq-research-fantasy",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Standalone sim harness for calibrating the weekend-fantasy scoring formula (SCORING_SPEC.md v0.4.1). Research tooling; ships nothing to users.",
+  "scripts": {
+    "check": "tsc --noEmit && vitest run",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "fetch": "tsx fetch/run.ts",
+    "fetch:plan": "tsx fetch/run.ts --dry-run",
+    "sim": "tsx sim/run.ts",
+    "sim:integrity": "tsx sim/integrity.ts",
+    "sim:proposals": "tsx sim/proposals.ts"
+  },
+  "devDependencies": {
+    "@types/node": "^22.16.5",
+    "tsx": "^4.20.3",
+    "typescript": "^5.8.3",
+    "vitest": "^4.1.5"
+  }
+}
