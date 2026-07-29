@@ -1,0 +1,14 @@
+# Line-ending policy (Ticket CRLF-FIX, per the FW-P1 diagnosis): history
+# stores LF, and nothing may depend on the checkout machine's autocrlf
+# setting again — a since-removed autocrlf=true once left ~500 worktree
+# files CRLF and every diff unreadable. `text=auto` normalizes text files
+# to LF in the repository regardless of local git config; binaries are
+# auto-detected and left alone. Shell scripts additionally pin the
+# WORKTREE to LF (eol=lf) — bash rejects CRLF scripts, so they must never
+# be smudged to CRLF even on a machine that sets core.autocrlf=true.
+#
+# .ops/ keeps its own stricter .gitattributes (-text on captured
+# artifacts): deeper-level attributes win, so byte-fidelity there is
+# unaffected by the rules here.
+* text=auto
+*.sh text eol=lf
