@@ -1,12 +1,36 @@
-# Weekend Fantasy — Base Scoring Formula (v0.4.1)
+# Weekend Fantasy — Base Scoring Formula (v0.5.0)
 
-Status: **v0.4.1 — APPROVED by owner** (assists position-weighted; no
-captaincy locked). Every number below is a placeholder to be
-calibrated by the sim harness (same gate discipline as c13). The
-*structure* is what's up for review, not the constants.
+Status: **v0.5.0 — LOCKED by owner** (assists position-weighted; no
+captaincy locked). The constants below are no longer placeholders:
+they were calibrated by the FS-1 sim harness
+(`reports/fs1-phase4-calibration-2026-07-29.md`) and settled by owner
+rulings on proposals P1–P8. **The spec remains LOCKED at v0.5.0 —
+neither structure nor constants change without a new owner ruling
+backed by a new measurement.**
 
 ## Changelog
 
+- v0.5.0 — FS-1 Phase 4 calibration rulings (owner rulings on P1–P8,
+  basis `reports/fs1-phase4-calibration-2026-07-29.md`):
+  - **P1 accepted** — appearance is a flat +1 for any minutes played
+    (the 60+ minute point drops from +2 to +1; one ledger line).
+  - **P2 accepted, simple form** — team win +2 → +1, draw +1 → +0.5.
+    The contribution-gated alternative was rejected.
+  - **P3 rejected / P3b accepted** — no cap value changes; design
+    principle 4 reworded to name the caps as outlier circuit-breakers.
+  - **P4 accepted** — both step bonuses (DEF duels, MID pass
+    completion) replaced by linear ramps with endpoints and
+    qualifying volumes preserved.
+  - **P5 accepted** — MID defensive rate +0.5 → +0.7 per action, cap
+    unchanged at 4; supersedes the former Known-tensions candidate
+    fix (raising the cap), which FS-1 measured as inert.
+  - **P6 accepted, option (a)** — the ×1.25 decisive-moment
+    multiplier applies only to a finisher's goal and assist events
+    after 75'; declared an attacking mechanic.
+  - **P7 accepted** — crowd clamp stays ±15% (re-validate against
+    real vote data post-launch).
+  - **P8** — no scoring change; ATT boom-or-bust distribution
+    recorded as accepted design in Known tensions.
 - v0.4.1a — xG note reworded to "provider-specific" (the previous
   "at this price tier" was tied to the free tier and is no longer
   accurate; no scoring change)
@@ -36,25 +60,38 @@ calibrated by the sim harness (same gate discipline as c13). The
    goals and substitution entry minutes come from the timed-events
    feed rather than the per-player stat line. No xG dependency
    (coverage is provider-specific).
-4. **Anti-farming.** Volume stats have caps so tackle-farming on a
-   bad team doesn't outscore actual quality.
+4. **Anti-farming, sized as circuit-breakers.** Volume stats have
+   caps, but the caps are **outlier circuit-breakers, not an active
+   balancing mechanism**: each is sized at or above ~p95 of the
+   volumes actually observed in the top-5 leagues (FS-1 §3), so they
+   bind rarely and exist to stop pathological tackle-farming rather
+   than to shape ordinary scores. One deliberate exception: after the
+   v0.5.0 MID defensive rate increase (P5), the MID combined
+   defensive cap binds on ~8% of term rows **by design** — that is
+   the P5/P3 interaction the owner accepted.
 
 ## Universal events (all positions)
 
 | Event | Points |
 |---|---|
-| Played 1–59 min | +1 |
-| Played 60+ min | +2 |
+| Appearance (any minutes played) | +1 |
 | Goal (weighted by position, see templates) | +4 to +8 |
 | Assist (weighted by position, see templates) | +3 to +6 |
-| Team win, if played 60+ | +2 |
-| Team draw, if played 60+ | +1 |
+| Team win, if played 60+ | +1 |
+| Team draw, if played 60+ | +0.5 |
 | Yellow card | −1 |
 | Second yellow / straight red | −4 |
 | Own goal | −3 |
 | Penalty missed | −3 |
 | Penalty won | +2 |
 | Penalty conceded | −2 |
+
+Appearance is deliberately flat (P1): one ledger line, +1 for any
+minutes, no 60-minute tier. The 60-minute threshold still gates the
+team-result points, clean sheets and the concession penalty — it is
+the appearance *reward* that no longer scales with it. The win/draw
+points carry no contribution condition: the gated alternative in the
+FS-1 report was considered and **rejected** (P2, simple form).
 
 ## Position templates
 
@@ -82,17 +119,32 @@ would award the whole back four a clean sheet.
 - Clean sheet: +4
 - Tackle (attempted): +0.4 (cap +3) · Interception: +0.6 (cap +3)
 - Block: +0.5 (cap +2)
-- Duels won ≥ 60% with ≥ 6 contested: +2
+- Duel-dominance ramp (≥ 6 contested):
+  **+2 × clamp((duelRate − 0.50) / 0.20, 0, 1)**, where duelRate =
+  duels won ÷ duels contested
 - Each 2 goals conceded: −1
 
 ### MID  ← the Rodri fix lives here
 - Goal: +6 · Assist: +4
-- Tackle (attempted) or interception: +0.5 (combined cap +4)
+- Tackle (attempted) or interception: +0.7 (combined cap +4)
 - Key pass: +0.8 (cap +4)
 - Dribble completed: +0.5 (cap +2)
-- Pass completion ≥ 0.88 with ≥ 40 total passes: +2, where
+- Pass-completion ramp (≥ 40 total passes):
+  **+2 × clamp((completion − 0.84) / 0.08, 0, 1)**, where
   completion = accurate passes ÷ total passes (both counts, per feed)
 - Clean sheet: +1
+
+**Ramps, not steps (P4).** v0.4.1's two threshold bonuses (duels
+≥ 60% → +2; completion ≥ 88% → +2) were step functions sitting almost
+exactly on the median of their eligible populations — FS-1 §4 measured
+38% of eligible midfielders within 3pp of the pass cliff. v0.5.0
+replaces both with linear ramps that preserve the endpoints (the
+maximum stays +2, zero stays zero) and the qualifying volumes
+(≥ 6 contested, ≥ 40 passes). The old cliff positions (60% duels,
+88% completion) now sit at the ramp midpoint and pay +1; full +2
+requires 70% / 92%, and the ramp reaches zero at 50% / 84%. The +2 top end was deliberately NOT
+raised. Ramp points are computed and shown to **2 dp** so the ledger
+line still reconstructs by hand — e.g. "duel dominance 63.2% → +1.32".
 
 ### ATT
 - Goal: +5 · Assist: +3
@@ -110,18 +162,25 @@ uses for goals, extended to assists by owner decision.
 - Score **only** from events at or after their entry minute —
   entry-minute events are **inclusive**. No participation floor:
   unused finisher = 0.
-- All positive event points earned after the 75th minute are
+- A finisher's **goal and assist events after the 75th minute** are
   multiplied by **×1.25** (the **decisive-moment multiplier**).
   Applies to starters too? **No** — finisher slots only, otherwise
   it's just late-game inflation for everyone.
-- The decisive-moment multiplier applies to **timestamped events
-  only** — goals, assists and penalty events. This is a feed-data
-  limit, not a design choice: the feed carries tackles, saves, key
-  passes, dribbles, blocks and duels as match totals with no clock,
-  so they cannot be placed after the 75th minute. The multiplier is
-  therefore weaker for defensive and goalkeeping finishers than for
-  attacking ones.
-- Universal minutes points replaced by: any appearance as sub = +1.
+- The decisive-moment multiplier is an **attacking mechanic by
+  ruling** (P6a, v0.5.0): it applies to goal and assist events only,
+  not to penalty events or anything else. The DEF/GK path is
+  **intentionally absent**, and here is why it cannot be otherwise:
+  the feed carries no clock for defensive actions (tackles, blocks,
+  duels, saves arrive as match totals) and **no event at all for a
+  saved penalty** (`penalty.saved` exists only on the un-clocked stat
+  line) — FS-1 §6/§10. v0.4.1 applied the multiplier to "positive
+  timestamped events" including penalties won/saved, which reached an
+  attacking finisher 3.1× more often than a defensive one and never
+  reached a goalkeeper in 192 fixtures; v0.5.0 makes the asymmetry
+  deliberate instead of incidental.
+- Appearance as sub = +1 (same flat appearance point as everyone
+  else since v0.5.0; a finisher's is labelled separately in the
+  ledger because it has no 60-minute history to inherit).
 
 ## Position mismatch (locked mechanics, draft numbers)
 
@@ -135,12 +194,21 @@ uses for goals, extended to assists by owner decision.
   Correctness is its own reward; the asymmetry the owner asked for
   comes from the dampener, not a bonus.
 
-## Crowd multiplier (hook only — sized by sims)
+## Crowd multiplier
 
 crowd_factor is derived from the pairwise-vote ELO for that player's
 gameweek performance, clamped to **±15%** at launch. Players below
 the vote-liquidity threshold get crowd_factor = 0 (base score
-stands). Threshold and clamp are sim-gated.
+stands).
+
+The ±15% clamp is **ruled, with a caveat** (P7, v0.5.0): FS-1 §7
+measured it as a tiebreaker rather than a re-ranker (~1.5% pair
+inversions for a realistic user, linear in the clamp, no threshold
+effect anywhere in ±10–25%). But FS-1's crowd model is an
+**assumption**, not a measurement (report §1.4) — CROWD_VOTING has
+not shipped and no vote data exists. **Re-validate this clamp against
+real vote data post-launch before treating it as settled.** The
+vote-liquidity threshold remains sim-gated.
 
 The factor mirrors against a negative base:
 
@@ -167,14 +235,35 @@ with ties rounded **away from zero** (−5.75 → −5.8, 5.75 → 5.8).
 - **No price changes from ownership.** Locked earlier.
 - **No autosubs.** Locked earlier (per-fixture lock times instead).
 
-## Known tensions for sim review
+## Known tensions — measured and ruled (FS-1, 2026-07-29)
 
-1. Duels/pass-accuracy threshold bonuses are step functions — cliff
-   effects at 59.9% vs 60.1%. Sims should check how often scores
-   hinge on them.
-2. MID template may still undervalue pure destroyers if their
-   key-pass count is near zero. Candidate fix: raise the combined
-   defensive cap for MID.
-3. Win/draw points reward players on strong teams regardless of
-   personal performance. Kept small (+2) deliberately; sims to verify
-   it doesn't dominate.
+Items 1–3 below were open "sims to verify" questions until FS-1
+measured them (`reports/fs1-phase4-calibration-2026-07-29.md`) and
+the owner ruled. They are recorded here so the reasoning survives the
+numbers.
+
+1. **Step-function cliffs — measured, removed (P4).** The duel and
+   pass-completion bonuses were step functions sitting near the
+   median of their eligible populations: pay rates ~46–48%, with 38%
+   of eligible midfielders within 3pp of the pass line (report §4).
+   v0.5.0 replaced both with the linear ramps in the templates above.
+2. **MID destroyers — measured, rate raised (P5).** Destroyers
+   (0 key passes, ≥4 defensive actions) scored −33.69% vs creators at
+   the mean (report §5). The v0.4.1 candidate fix recorded here —
+   raising the combined defensive cap — was measured as **inert**
+   (the cap bound on 2.2% of destroyer rows) and is withdrawn.
+   The ruled fix is the rate: +0.5 → +0.7 per action, cap unchanged;
+   this closes roughly a sixth of the gap and deliberately brings the
+   cap into play on ~8% of MID term rows (see design principle 4).
+3. **Win/draw subsidy — measured, halved (P2).** At +2/+1 the
+   team-result terms were 12.8% of all positive point mass, and
+   participation another 31.7% (report §2) — nearly half the system's
+   points earned before any individually distinguishable act. v0.5.0
+   cut appearance to a flat +1 (P1) and win/draw to +1/+0.5 (P2).
+4. **ATT is boom-or-bust by accepted design (P8).** A typical
+   attacking performance scores less than a typical midfield one
+   (median 2.8 vs 4.5 at v0.4.1) while the p90s are nearly identical;
+   the position's reputation is carried by its tail. The obvious
+   lever — raising the shot-on-target rate — was **measured
+   ineffective** (report §8: mean moved 4.156 → 4.264, median
+   unchanged), and must not be re-proposed without new evidence.

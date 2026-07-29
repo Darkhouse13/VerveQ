@@ -1,8 +1,26 @@
 /**
- * SCORING_SPEC.md v0.4 — the scoring engine.
+ * SCORING_SPEC.md v0.5.0 — the scoring engine.
  *
  * Pure and deterministic: same input, same output, no I/O, no clock, no RNG.
- * Implements v0.4 exactly as written.
+ * Implements v0.5.0 exactly as written.
+ *
+ * v0.5.0 applied the owner's rulings on the FS-1 Phase 4 calibration
+ * (reports/fs1-phase4-calibration-2026-07-29.md). Where each lives here:
+ *
+ *  P1  Appearance is a flat +1 for any minutes, one ledger line. The 60-minute
+ *      threshold still gates team result, clean sheets and concessions.
+ *  P2  Win +1, draw +0.5 (simple form; no contribution gate).
+ *  P4  The duel and pass-completion step bonuses are linear ramps:
+ *      DEF duels  +2 x clamp((rate - 0.50) / 0.20, 0, 1) on >= 6 contested;
+ *      MID passes +2 x clamp((completion - 0.84) / 0.08, 0, 1) on >= 40 passes.
+ *      Ramp points are quantised to 2 dp (`ramp2`) so the ledger line still
+ *      reconstructs by hand from the displayed rate.
+ *  P5  MID defensive rate +0.5 -> +0.7 per action, combined cap unchanged at 4.
+ *  P6a The decisive-moment multiplier applies ONLY to a finisher's goal and
+ *      assist events after 75' — an attacking mechanic by ruling. See
+ *      DECISIVE_KINDS: penalty events are structurally excluded from the basis.
+ *  P3b/P7/P8 changed no constants (cap wording, crowd clamp kept at +/-15%,
+ *      ATT distribution accepted); they live in the spec, not here.
  *
  * v0.4 settled the six gaps Phase 2 found in v0.3. The rulings, and where each
  * one lives in this file:
@@ -56,12 +74,11 @@ const GOAL_POINTS: Record<Slot, number> = { GK: 8, DEF: 7, MID: 6, ATT: 5 };
 const ASSIST_POINTS: Record<Slot, number> = { GK: 6, DEF: 5, MID: 4, ATT: 3 };
 const CLEAN_SHEET_POINTS: Record<Slot, number> = { GK: 5, DEF: 4, MID: 1, ATT: 0 };
 
-/** v0.3 §Universal events. */
-const MINUTES_UNDER_60 = 1;
-const MINUTES_60_PLUS = 2;
+/** v0.5.0 §Universal events. */
+const APPEARANCE = 1; // flat, any minutes (P1)
 const SUB_APPEARANCE = 1;
-const WIN_POINTS = 2;
-const DRAW_POINTS = 1;
+const WIN_POINTS = 1; // P2
+const DRAW_POINTS = 0.5; // P2
 const YELLOW_CARD = -1;
 const RED_CARD = -4;
 const OWN_GOAL = -3;
@@ -81,19 +98,21 @@ const DEF_INTERCEPTION = 0.6;
 const DEF_INTERCEPTION_CAP = 3;
 const DEF_BLOCK = 0.5;
 const DEF_BLOCK_CAP = 2;
-const DEF_DUEL_BONUS = 2;
-const DEF_DUEL_RATE = 0.6;
+const DEF_DUEL_MAX = 2; // ramp top end — NOT raised in v0.5.0 (P4)
+const DEF_DUEL_RAMP_FLOOR = 0.5;
+const DEF_DUEL_RAMP_WIDTH = 0.2;
 const DEF_DUEL_MIN_CONTESTED = 6;
 
 /** MID template. */
-const MID_DEFENSIVE = 0.5;
+const MID_DEFENSIVE = 0.7; // P5: rate raised, cap unchanged
 const MID_DEFENSIVE_CAP = 4;
 const MID_KEY_PASS = 0.8;
 const MID_KEY_PASS_CAP = 4;
 const MID_DRIBBLE = 0.5;
 const MID_DRIBBLE_CAP = 2;
-const MID_PASS_BONUS = 2;
-const MID_PASS_COMPLETION = 0.88;
+const MID_PASS_MAX = 2; // ramp top end — NOT raised in v0.5.0 (P4)
+const MID_PASS_RAMP_FLOOR = 0.84;
+const MID_PASS_RAMP_WIDTH = 0.08;
 const MID_PASS_MIN_TOTAL = 40;
 
 /** ATT template. */
@@ -108,8 +127,8 @@ const ATT_DRIBBLE_CAP = 3;
  * ── Cap overrides, for Phase 3 sensitivity sweeps only ──
  *
  * Every value defaults to the spec's. `scorePlayer` called without a `caps`
- * argument implements SCORING_SPEC v0.4.1 exactly as written, which is what
- * the 33 Phase 2 tests assert and what this engine is for.
+ * argument implements SCORING_SPEC v0.5.0 exactly as written, which is what
+ * the acceptance tests assert and what this engine is for.
  *
  * The sweep exists because "are the caps the right size?" is unanswerable by
  * reading the spec: a cap that never binds is decoration, and one that binds on
@@ -167,13 +186,14 @@ const MISMATCH_DAMPENER = 0.75;
 /** Clean sheets and the concession penalty both require this (G1, G2). */
 const QUALIFYING_MINUTES = 60;
 
-/** Timed events that can earn the decisive-moment multiplier: positive only (G3). */
-const POSITIVE_TIMED_KINDS: readonly TimedEventKind[] = [
-  'goal',
-  'assist',
-  'penaltyWon',
-  'penaltySaved',
-];
+/**
+ * Timed events that can earn the decisive-moment multiplier: a finisher's goals
+ * and assists ONLY (v0.5.0 P6a — an attacking mechanic by ruling). Penalty
+ * events are deliberately not in this list; their exclusion is what makes the
+ * "multiplier never fires on a non-goal/assist event" guarantee structural
+ * rather than checked.
+ */
+const DECISIVE_KINDS: readonly TimedEventKind[] = ['goal', 'assist'];
 
 // -------------------------------------------------------------------- helpers
 
@@ -189,6 +209,20 @@ function clean(value: number): number {
 function capped(count: number, unit: number, cap: number): { raw: number; points: number } {
   const raw = clean(count * unit);
   return { raw, points: Math.min(raw, cap) };
+}
+
+/**
+ * A v0.5.0 P4 linear ramp: max x clamp((rate - floor) / width, 0, 1), quantised
+ * to 2 dp. The quantisation is part of the term's DEFINITION, not display
+ * convenience: the spec requires the ledger line to reconstruct by hand
+ * ("duel dominance 63.2% -> +1.32"), which only holds if the points the engine
+ * sums are the same 2 dp value the ledger shows. This is not a G6 violation —
+ * G6 forbids rounding the TOTAL to display precision, not defining a term at a
+ * finite resolution.
+ */
+function ramp2(rate: number, floor: number, width: number, max: number): number {
+  const t = Math.min(1, Math.max(0, (rate - floor) / width));
+  return Math.round(max * t * 100) / 100;
 }
 
 /** Event counts, resolved differently for starters and finishers. */
@@ -292,18 +326,19 @@ function defenderEntries(stats: PlayerMatchStats, cleanSheet: boolean, conceded:
     const { raw, points } = capped(stats.blocks, DEF_BLOCK, caps.defBlock);
     out.push({ code: 'def.blocks', label: 'Blocks', count: stats.blocks, unit: DEF_BLOCK, raw, cap: caps.defBlock, points });
   }
-  // Step function. v0.3 §Known tensions item 1 asks the sims to measure how
-  // often a score hinges on this cliff, so the rate is recorded even when the
-  // bonus does not pay.
+  // Linear ramp (v0.5.0 P4) — the v0.4.1 step at 60% was measured as a cliff
+  // with ~20% of eligible rows within 5pp of it (FS-1 §4). Zero at 50%, +2 at
+  // 70%, qualifying volume unchanged.
   if (stats.duelsTotal >= DEF_DUEL_MIN_CONTESTED) {
     const rate = stats.duelsWon / stats.duelsTotal;
-    if (rate >= DEF_DUEL_RATE) {
+    const points = ramp2(rate, DEF_DUEL_RAMP_FLOOR, DEF_DUEL_RAMP_WIDTH, DEF_DUEL_MAX);
+    if (points > 0) {
       out.push({
         code: 'def.duels',
         label: 'Duel dominance',
         count: stats.duelsWon,
-        points: DEF_DUEL_BONUS,
-        note: `${stats.duelsWon}/${stats.duelsTotal} = ${(rate * 100).toFixed(1)}% >= 60% on >= 6 contested`,
+        points,
+        note: `${stats.duelsWon}/${stats.duelsTotal} = ${(rate * 100).toFixed(1)}% on >= 6 contested; ramp 0 at 50%, +2 at 70% (2 dp)`,
       });
     }
   }
@@ -346,14 +381,17 @@ function midfielderEntries(stats: PlayerMatchStats, cleanSheet: boolean, caps: C
     out.push({ code: 'mid.dribbles', label: 'Dribbles completed', count: stats.dribblesCompleted, unit: MID_DRIBBLE, raw, cap: caps.midDribble, points });
   }
   // completion = accurate passes / total passes, both counts (v0.3 MID).
+  // Linear ramp (v0.5.0 P4) — the v0.4.1 step at 88% sat on the median of its
+  // eligible population (FS-1 §4). Zero at 84%, +2 at 92%, >= 40 passes.
   if (stats.passesTotal >= MID_PASS_MIN_TOTAL) {
     const completion = stats.passesAccurate / stats.passesTotal;
-    if (completion >= MID_PASS_COMPLETION) {
+    const points = ramp2(completion, MID_PASS_RAMP_FLOOR, MID_PASS_RAMP_WIDTH, MID_PASS_MAX);
+    if (points > 0) {
       out.push({
         code: 'mid.passCompletion',
         label: 'Pass completion',
-        points: MID_PASS_BONUS,
-        note: `${stats.passesAccurate}/${stats.passesTotal} = ${(completion * 100).toFixed(1)}% >= 88% on >= 40 passes`,
+        points,
+        note: `${stats.passesAccurate}/${stats.passesTotal} = ${(completion * 100).toFixed(1)}% on >= 40 passes; ramp 0 at 84%, +2 at 92% (2 dp)`,
       });
     }
   }
@@ -445,14 +483,12 @@ export function scorePlayer(
     }
   }
 
-  // --- minutes. v0.3 §Finishers replaces the universal minutes points with a
-  // flat appearance point for a finisher.
+  // --- minutes. v0.5.0 P1: appearance is a flat +1 for any minutes, one
+  // ledger line. A finisher's keeps its own code, same value.
   if (isFinisher) {
     ledger.push({ code: 'minutes.subAppearance', label: 'Appearance as finisher', points: SUB_APPEARANCE });
-  } else if (stats.minutes >= 60) {
-    ledger.push({ code: 'minutes.60plus', label: 'Played 60+ min', count: stats.minutes, points: MINUTES_60_PLUS });
   } else {
-    ledger.push({ code: 'minutes.under60', label: 'Played 1-59 min', count: stats.minutes, points: MINUTES_UNDER_60 });
+    ledger.push({ code: 'minutes.appearance', label: 'Appearance', count: stats.minutes, points: APPEARANCE });
   }
 
   // --- goals and assists, position-weighted.
@@ -522,12 +558,13 @@ export function scorePlayer(
 
   let total = clean(ledger.reduce((sum, entry) => sum + entry.points, 0));
 
-  // --- closer multiplier. Finisher slots only, positive TIMED events only (G3).
+  // --- decisive-moment multiplier. Finisher slots only, goal and assist
+  // events only (v0.5.0 P6a — attacking mechanic by ruling).
   if (isFinisher) {
     const decisiveBasis = events
       .filter((event) => event.minute >= (entryMinute as number))
       .filter((event) => event.minute > DECISIVE_MOMENT_AFTER_MINUTE)
-      .filter((event) => POSITIVE_TIMED_KINDS.includes(event.kind))
+      .filter((event) => DECISIVE_KINDS.includes(event.kind))
       .reduce((sum, event) => sum + timedEventValue(event.kind, slot), 0);
 
     const delta = clean(decisiveBasis * (DECISIVE_MOMENT_MULTIPLIER - 1));
@@ -539,7 +576,7 @@ export function scorePlayer(
         factor: DECISIVE_MOMENT_MULTIPLIER,
         raw: decisiveBasis,
         points: delta,
-        note: 'timestamped events only — the feed cannot place tackles, saves or key passes on the clock (G3)',
+        note: 'goals and assists only — an attacking mechanic by ruling (P6a); the feed carries no clock for defensive actions or penalty saves',
       });
     }
   }
@@ -602,7 +639,7 @@ export function formatPoints(points: number): string {
   // Math.round would break both ties toward +infinity and render -5.75 as -5.7,
   // shrinking negative scores and growing positive ones by the same half-tenth.
   // v0.4 does not name a tie-break rule; symmetry is the defensible default for
-  // a value that can legitimately be negative, and -5.75 is reachable (case 20).
+  // a value that can legitimately be negative.
   const scaled = points * 10;
   const magnitude = Math.round(Math.abs(scaled));
   const rounded = (scaled < 0 ? -magnitude : magnitude) / 10;
@@ -610,17 +647,17 @@ export function formatPoints(points: number): string {
   return (rounded === 0 ? 0 : rounded).toFixed(1);
 }
 
-/** Point value of a single timed event in a given slot, for the decisive basis. */
+/**
+ * Point value of a single timed event in a given slot, for the decisive basis.
+ * Only DECISIVE_KINDS can reach this (P6a); anything else values at 0, so even
+ * a future widening of the filter list could not silently multiply a penalty.
+ */
 function timedEventValue(kind: TimedEventKind, slot: Slot): number {
   switch (kind) {
     case 'goal':
       return GOAL_POINTS[slot];
     case 'assist':
       return ASSIST_POINTS[slot];
-    case 'penaltyWon':
-      return PENALTY_WON;
-    case 'penaltySaved':
-      return slot === 'GK' ? GK_PENALTY_SAVED : 0;
     default:
       return 0;
   }

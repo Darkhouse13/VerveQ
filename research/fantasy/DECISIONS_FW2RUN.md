@@ -451,6 +451,7 @@ slots), `form` (realistic; **leave-one-out**, weighted by each player's mean
 score in the *other* sampled rounds of his league, so it never sees the gameweek
 it is picking for), and `chalk` (hindsight upper band). Squad totals: 30.81 /
 51.10 / 111.05.
+(v0.5.0 re-run: 41.48 / 98.77 — see fs1-phase4b-v050-delta.md)
 
 **Phase 4** — `reports/fs1-phase4-calibration-2026-07-29.md`. Numbers and
 PROPOSALS only, no PASS/FAIL verdicts anywhere, no spec edits. SCORING_SPEC

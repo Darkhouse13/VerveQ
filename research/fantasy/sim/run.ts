@@ -22,9 +22,10 @@
  *     good teams regardless of performance; attribution is how you see it.
  *  C. Cap bind rates and the 0.5x/2x sensitivity sweep. A cap that never binds
  *     is decoration; one that binds on nearly every row has flattened the stat.
- *  D. Step-function cliffs (duels >= 60% on >= 6 contested; pass completion
- *     >= 88% on >= 40 passes). §Known tensions item 1 asks how often a score
- *     hinges on them.
+ *  D. Ramp deltas. v0.5.0 (P4) replaced the duel and pass-completion step
+ *     bonuses with linear ramps; this measures how many rows the ramps move
+ *     relative to the old v0.4.1 cliffs, and by how much. The FW-S2 acceptance
+ *     gate requires that no row move by more than 1.0 pt.
  *  E. The MID destroyer case — §Known tensions item 2.
  *  F. Crowd clamp stability at +/-10/15/25%: does the multiplier reorder squads,
  *     and by how much?
@@ -368,63 +369,77 @@ for (const k of [0.5, 1, 2]) {
   };
 }
 
-// ---- D. step-function cliffs ------------------------------------------------
-function cliffAnalysis() {
-  let duelEligible = 0;
-  let duelPaid = 0;
-  let duelNear = 0; // within 5 percentage points of the 60% line
-  let passEligible = 0;
-  let passPaid = 0;
-  let passNear = 0; // within 3 percentage points of the 88% line
-  let duelDecisiveOnScore = 0;
-  let passDecisiveOnScore = 0;
+// ---- D. ramp deltas vs the old cliffs (v0.5.0 P4) ---------------------------
+function rampAnalysis() {
+  // Mirrors scoring.ts `ramp2`: max x clamp((rate - floor) / width, 0, 1), 2 dp.
+  const ramp2 = (rate: number, floor: number, width: number, max: number): number =>
+    Math.round(max * Math.min(1, Math.max(0, (rate - floor) / width)) * 100) / 100;
 
-  for (const row of dataset.rows) {
-    if (row.stats.minutes <= 0) continue;
-    const base = baseByKey.get(rowKey(row)) ?? 0;
-
-    if (row.feedPosition === 'DEF' && row.stats.duelsTotal >= 6) {
-      duelEligible += 1;
-      const rate = row.stats.duelsWon / row.stats.duelsTotal;
-      if (rate >= 0.6) {
-        duelPaid += 1;
-        // Would removing the +2 change the sign or drop it below the median?
-        if (base - 2 < 0 && base >= 0) duelDecisiveOnScore += 1;
-      }
-      if (Math.abs(rate - 0.6) <= 0.05) duelNear += 1;
-    }
-
-    if (row.feedPosition === 'MID' && row.stats.passesTotal >= 40) {
-      passEligible += 1;
-      const completion = row.stats.passesAccurate / row.stats.passesTotal;
-      if (completion >= 0.88) {
-        passPaid += 1;
-        if (base - 2 < 0 && base >= 0) passDecisiveOnScore += 1;
-      }
-      if (Math.abs(completion - 0.88) <= 0.03) passNear += 1;
-    }
+  interface RampDelta {
+    eligibleRows: number;
+    rowsWithTermNow: number;
+    changedRows: number;
+    gainedRows: number;
+    lostRows: number;
+    meanDeltaOnChanged: number;
+    maxGain: number;
+    maxLoss: number;
+    maxAbsMove: number;
   }
 
+  const measure = (
+    eligible: readonly { rate: number }[],
+    oldThreshold: number,
+    floor: number,
+    width: number,
+  ): RampDelta => {
+    let changed = 0;
+    let gained = 0;
+    let lost = 0;
+    let deltaSum = 0;
+    let maxGain = 0;
+    let maxLoss = 0;
+    let withTerm = 0;
+    for (const { rate } of eligible) {
+      const oldBonus = rate >= oldThreshold ? 2 : 0;
+      const newBonus = ramp2(rate, floor, width, 2);
+      if (newBonus > 0) withTerm += 1;
+      const delta = round(newBonus - oldBonus, 4);
+      if (delta === 0) continue;
+      changed += 1;
+      deltaSum += delta;
+      if (delta > 0) gained += 1;
+      else lost += 1;
+      if (delta > maxGain) maxGain = delta;
+      if (delta < maxLoss) maxLoss = delta;
+    }
+    return {
+      eligibleRows: eligible.length,
+      rowsWithTermNow: withTerm,
+      changedRows: changed,
+      gainedRows: gained,
+      lostRows: lost,
+      meanDeltaOnChanged: changed === 0 ? 0 : round(deltaSum / changed),
+      maxGain: round(maxGain),
+      maxLoss: round(maxLoss),
+      maxAbsMove: round(Math.max(maxGain, -maxLoss)),
+    };
+  };
+
+  const played = dataset.rows.filter((r) => r.stats.minutes > 0);
+  const duelEligible = played
+    .filter((r) => r.feedPosition === 'DEF' && r.stats.duelsTotal >= 6)
+    .map((r) => ({ rate: r.stats.duelsWon / r.stats.duelsTotal }));
+  const passEligible = played
+    .filter((r) => r.feedPosition === 'MID' && r.stats.passesTotal >= 40)
+    .map((r) => ({ rate: r.stats.passesAccurate / r.stats.passesTotal }));
+
   return {
-    duelBonus: {
-      eligibleRows: duelEligible,
-      paid: duelPaid,
-      payRate: duelEligible === 0 ? 0 : round(duelPaid / duelEligible, 4),
-      withinFivePointsOfThreshold: duelNear,
-      cliffExposureRate: duelEligible === 0 ? 0 : round(duelNear / duelEligible, 4),
-      flippedSignOfScore: duelDecisiveOnScore,
-    },
-    passBonus: {
-      eligibleRows: passEligible,
-      paid: passPaid,
-      payRate: passEligible === 0 ? 0 : round(passPaid / passEligible, 4),
-      withinThreePointsOfThreshold: passNear,
-      cliffExposureRate: passEligible === 0 ? 0 : round(passNear / passEligible, 4),
-      flippedSignOfScore: passDecisiveOnScore,
-    },
+    duelRamp: measure(duelEligible, 0.6, 0.5, 0.2),
+    passRamp: measure(passEligible, 0.88, 0.84, 0.08),
   };
 }
-const cliffs = cliffAnalysis();
+const ramps = rampAnalysis();
 
 // ---- E. the MID destroyer ---------------------------------------------------
 const midRows = dataset.rows.filter((r) => r.feedPosition === 'MID' && r.stats.minutes >= 60);
@@ -437,8 +452,9 @@ const midDestroyer = {
   destroyerScore: describe(destroyers.map((r) => baseByKey.get(rowKey(r)) ?? 0)),
   creatorScore: describe(creators.map((r) => baseByKey.get(rowKey(r)) ?? 0)),
   allMidScore: describe(midRows.map((r) => baseByKey.get(rowKey(r)) ?? 0)),
+  // 0.7 = the v0.5.0 MID defensive rate (P5); scoring.ts does not export it.
   defensiveCapBoundOnDestroyers: destroyers.filter((r) =>
-    (r.stats.tackles + r.stats.interceptions) * 0.5 > DEFAULT_CAPS.midDefensive,
+    (r.stats.tackles + r.stats.interceptions) * 0.7 > DEFAULT_CAPS.midDefensive,
   ).length,
 };
 
@@ -569,7 +585,7 @@ const finisherAnalysis = {
 // ---- result -----------------------------------------------------------------
 const result = {
   meta: {
-    spec: 'SCORING_SPEC.md v0.4.1',
+    spec: 'SCORING_SPEC.md v0.5.0',
     generatedAt: new Date().toISOString(),
     seed: BASE_SEED,
     squadsPerGeneratorPerGameweek: N_PER_GENERATOR,
@@ -583,7 +599,7 @@ const result = {
   termAttribution: attribution,
   capBindRates: capBind,
   capSensitivity: capSweep,
-  stepFunctionCliffs: cliffs,
+  rampAnalysis: ramps,
   midDestroyer,
   finisherReachability: finisherAnalysis,
   generators: generatorResults,

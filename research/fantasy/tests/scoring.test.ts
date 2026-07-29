@@ -11,7 +11,7 @@ import {
 } from '../scoring/types.ts';
 
 /**
- * Hand-computed acceptance cases for SCORING_SPEC.md v0.4.1.
+ * Hand-computed acceptance cases for SCORING_SPEC.md v0.5.0.
  *
  * Every expected number below was worked out on paper from the spec text first
  * and is shown as an addition in the comment above its assertion. None was
@@ -20,7 +20,11 @@ import {
  *
  * Cases 14, 16, 17 and 20 are re-pinned from v0.3 to the v0.4 gap rulings;
  * cases 22-26 cover the rulings that had no v0.3 equivalent; case 20 was
- * re-pinned again and case 27 added for the v0.4.1 crowd mirror.
+ * re-pinned again and case 27 added for the v0.4.1 crowd mirror. The v0.5.0
+ * FS-1 rulings re-pinned most totals (flat +1 appearance, win +1/draw +0.5,
+ * MID defensive +0.7, duel/pass ramps, decisive multiplier on goals and
+ * assists only); cases 4, 5, 7 and 14 changed BEHAVIOUR, not just totals, and
+ * say so in their comments.
  */
 
 function ctx(overrides: Partial<MatchContext> = {}): MatchContext {
@@ -46,12 +50,12 @@ function expectLedgerReconciles(result: { points: number; ledger: readonly { poi
 
 describe('GK template', () => {
   it('case 1 — clean sheet, saves under the cap, win', () => {
-    // minutes 60+        +2
-    // team win (60+)     +2
+    // appearance         +1
+    // team win (60+)     +1
     // saves 5 x 0.5      +2.5   (cap 4, not binding)
     // clean sheet GK     +5
     // conceded 0 -> floor(0/2) = 0
-    //                  = 11.5
+    //                  = 9.5
     const result = scorePlayer(
       input({ minutes: 90, saves: 5 }, ctx({ teamGoalsFor: 2, teamGoalsAgainst: 0, result: 'win' })),
       starter('GK'),
@@ -59,18 +63,18 @@ describe('GK template', () => {
       null,
       0,
     );
-    expect(result.points).toBeCloseTo(11.5, 9);
+    expect(result.points).toBeCloseTo(9.5, 9);
     expectLedgerReconciles(result);
   });
 
   it('case 2 — save cap binds, penalty saved, two goals conceded', () => {
-    // minutes 60+                    +2
+    // appearance                     +1
     // loss                            0
     // saves 12 x 0.5 = 6 -> cap      +4
     // clean sheet                     0  (conceded 3)
     // conceded 3 -> floor(3/2) = 1   -1
     // penalty saved 1 x 6            +6
-    //                              = 11
+    //                              = 10
     const result = scorePlayer(
       input({ minutes: 90, saves: 12, penaltiesSaved: 1 }, ctx({ teamGoalsAgainst: 3, result: 'loss' })),
       starter('GK'),
@@ -78,21 +82,21 @@ describe('GK template', () => {
       null,
       0,
     );
-    expect(result.points).toBeCloseTo(11, 9);
+    expect(result.points).toBeCloseTo(10, 9);
     expectLedgerReconciles(result);
   });
 });
 
 describe('DEF template', () => {
-  it('case 3 — clean sheet, duel bonus, no cap binding', () => {
-    // minutes 60+           +2
-    // win                   +2
+  it('case 3 — clean sheet, duel ramp at full payout, no cap binding', () => {
+    // appearance            +1
+    // win                   +1
     // clean sheet DEF       +4
     // tackles 5 x 0.4       +2      (cap 3)
     // interceptions 4 x 0.6 +2.4    (cap 3)
     // blocks 3 x 0.5        +1.5    (cap 2)
-    // duels 7/10 = 70% >= 60% on 10 >= 6 contested  +2
-    //                     = 15.9
+    // duels 7/10 = 70% -> ramp clamp((0.70-0.50)/0.20) = 1 -> full  +2
+    //                     = 13.9
     const result = scorePlayer(
       input(
         { minutes: 90, tackles: 5, interceptions: 4, blocks: 3, duelsWon: 7, duelsTotal: 10 },
@@ -103,19 +107,21 @@ describe('DEF template', () => {
       null,
       0,
     );
-    expect(result.points).toBeCloseTo(15.9, 9);
+    expect(result.points).toBeCloseTo(13.9, 9);
     expectLedgerReconciles(result);
   });
 
-  it('case 4 — every cap binds, duel rate just under the cliff', () => {
-    // minutes 60+                          +2
+  it('case 4 — every cap binds; a rate the old cliff zeroed now earns ramp points', () => {
+    // Under v0.4.1 the 55.6% duel rate paid nothing (cliff at 60%). The v0.5.0
+    // ramp pays it proportionally — this is the discontinuity P4 removed.
+    // appearance                           +1
     // loss                                  0
     // tackles 10 x 0.4 = 4      -> cap 3   +3
     // interceptions 8 x 0.6 = 4.8 -> cap 3 +3
     // blocks 6 x 0.5 = 3        -> cap 2   +2
-    // duels 5/9 = 55.6% < 60%               0
+    // duels 5/9 = 55.56% -> ramp 2 x (0.05556/0.20) = 0.5556 -> 2 dp  +0.56
     // conceded 4 -> floor(4/2) = 2         -2
-    //                                    = 8
+    //                                    = 7.56
     const result = scorePlayer(
       input(
         { minutes: 90, tackles: 10, interceptions: 8, blocks: 6, duelsWon: 5, duelsTotal: 9 },
@@ -126,17 +132,17 @@ describe('DEF template', () => {
       null,
       0,
     );
-    expect(result.points).toBeCloseTo(8, 9);
+    expect(result.points).toBeCloseTo(7.56, 9);
     expectLedgerReconciles(result);
-    expect(result.ledger.find((e) => e.code === 'def.duels')).toBeUndefined();
+    expect(result.ledger.find((e) => e.code === 'def.duels')?.points).toBeCloseTo(0.56, 9);
   });
 
-  it('case 5 — duel threshold is inclusive at exactly 60%', () => {
-    // minutes 60+                        +2
-    // draw                               +1
-    // duels 6/10 = exactly 60% on 10     +2
+  it('case 5 — the old 60% threshold is now the ramp midpoint, worth +1', () => {
+    // appearance                         +1
+    // draw                               +0.5
+    // duels 6/10 = 60% -> ramp 2 x (0.10/0.20) = +1.00
     // conceded 1 -> floor(1/2) = 0        0
-    //                                  = 5
+    //                                  = 2.5
     const result = scorePlayer(
       input({ minutes: 90, duelsWon: 6, duelsTotal: 10 }, ctx({ teamGoalsAgainst: 1, result: 'draw' })),
       starter('DEF'),
@@ -144,22 +150,22 @@ describe('DEF template', () => {
       null,
       0,
     );
-    expect(result.points).toBeCloseTo(5, 9);
+    expect(result.points).toBeCloseTo(2.5, 9);
     expectLedgerReconciles(result);
   });
 });
 
 describe('MID template', () => {
-  it('case 6 — the destroyer: combined defensive cap binds, pass bonus pays', () => {
-    // minutes 60+                                 +2
-    // win                                         +2
-    // (tackles 6 + interceptions 5) = 11 x 0.5
-    //   = 5.5 -> combined cap 4                   +4
+  it('case 6 — the destroyer: combined defensive cap binds, pass ramp at full payout', () => {
+    // appearance                                  +1
+    // win                                         +1
+    // (tackles 6 + interceptions 5) = 11 x 0.7
+    //   = 7.7 -> combined cap 4                   +4
     // key passes 0                                 0
     // dribbles 1 x 0.5                            +0.5  (cap 2)
-    // completion 74/80 = 92.5% >= 88% on 80 >= 40 +2
+    // completion 74/80 = 92.5% -> ramp clamp((0.925-0.84)/0.08) = 1 -> full +2
     // clean sheet MID                             +1
-    //                                           = 11.5
+    //                                           = 9.5
     const result = scorePlayer(
       input(
         { minutes: 90, tackles: 6, interceptions: 5, dribblesCompleted: 1, passesTotal: 80, passesAccurate: 74 },
@@ -170,18 +176,19 @@ describe('MID template', () => {
       null,
       0,
     );
-    expect(result.points).toBeCloseTo(11.5, 9);
+    expect(result.points).toBeCloseTo(9.5, 9);
     expectLedgerReconciles(result);
   });
 
-  it('case 7 — pass completion just under the cliff', () => {
-    // minutes 60+                          +2
+  it('case 7 — a completion the old cliff zeroed now earns ramp points', () => {
+    // Under v0.4.1, 86% < 88% paid nothing. The v0.5.0 ramp pays it.
+    // appearance                           +1
     // loss                                  0
-    // (2 + 1) = 3 x 0.5                    +1.5
+    // (2 + 1) = 3 x 0.7                    +2.1
     // key passes 3 x 0.8                   +2.4  (cap 4)
-    // completion 43/50 = 86% < 88%          0
+    // completion 43/50 = 86% -> ramp 2 x (0.02/0.08) = +0.50
     // clean sheet: conceded 2               0
-    //                                    = 5.9
+    //                                    = 6
     const result = scorePlayer(
       input(
         { minutes: 90, tackles: 2, interceptions: 1, keyPasses: 3, passesTotal: 50, passesAccurate: 43 },
@@ -192,18 +199,19 @@ describe('MID template', () => {
       null,
       0,
     );
-    expect(result.points).toBeCloseTo(5.9, 9);
+    expect(result.points).toBeCloseTo(6, 9);
     expectLedgerReconciles(result);
-    expect(result.ledger.find((e) => e.code === 'mid.passCompletion')).toBeUndefined();
+    expect(result.ledger.find((e) => e.code === 'mid.passCompletion')?.points).toBeCloseTo(0.5, 9);
   });
 
   it('case 8 — 100% completion still fails the >= 40 total-passes gate', () => {
-    // minutes 60+                       +2
-    // win                               +2
+    // The ramp preserved the qualifying volume (P4): under 40 passes, no term.
+    // appearance                        +1
+    // win                               +1
     // key passes 6 x 0.8 = 4.8 -> cap 4 +4
     // completion 39/39 = 100% but 39 < 40 total  0
     // clean sheet MID                   +1
-    //                                 = 9
+    //                                 = 7
     const result = scorePlayer(
       input(
         { minutes: 90, keyPasses: 6, passesTotal: 39, passesAccurate: 39 },
@@ -214,22 +222,22 @@ describe('MID template', () => {
       null,
       0,
     );
-    expect(result.points).toBeCloseTo(9, 9);
+    expect(result.points).toBeCloseTo(7, 9);
     expectLedgerReconciles(result);
   });
 });
 
 describe('ATT template', () => {
   it('case 9 — brace plus assist, shot cap binds', () => {
-    // minutes 60+                        +2
+    // appearance                         +1
     // goals 2 x 5 (ATT)                 +10
     // assists 1 x 3 (ATT)                +3
-    // win                                +2
+    // win                                +1
     // shots on 5 x 0.5 = 2.5 -> cap 2    +2
     // key passes 2 x 0.8                 +1.6  (cap 4)
     // dribbles 4 x 0.5                   +2    (cap 3)
     // conceded 2: ATT takes no negative   0
-    //                                  = 22.6
+    //                                  = 20.6
     const result = scorePlayer(
       input(
         { minutes: 90, goals: 2, assists: 1, shotsOn: 5, keyPasses: 2, dribblesCompleted: 4 },
@@ -240,13 +248,15 @@ describe('ATT template', () => {
       null,
       0,
     );
-    expect(result.points).toBeCloseTo(22.6, 9);
+    expect(result.points).toBeCloseTo(20.6, 9);
     expectLedgerReconciles(result);
     expect(result.ledger.find((e) => e.code === 'att.cleanSheet')).toBeUndefined();
   });
 
   it('case 10 — under 60 minutes forfeits the win points', () => {
-    // minutes 1-59            +1
+    // The appearance point is flat now, but the 60-minute gate on the
+    // team-result points survives P1/P2 untouched.
+    // appearance              +1
     // goals 1 x 5             +5
     // win but minutes < 60     0
     // shots on 2 x 0.5        +1
@@ -273,7 +283,7 @@ describe('finishers', () => {
     // win but minutes 30 < 60      0
     // shots on 1 x 0.5            +0.5
     //   base                     = 9.5
-    // closer: post-75 positive timed events = the 82' goal, worth 5
+    // decisive: post-75 goal/assist events = the 82' goal, worth 5
     //         delta = 5 x 0.25   +1.25
     //                          = 10.75
     const events: TimedPlayerEvent[] = [
@@ -307,8 +317,8 @@ describe('finishers', () => {
     // yellow (65') excluded     0
     // minutes 20 < 60           0
     //   base                  = 7
-    // closer: 80' goal worth 6, delta = 6 x 0.25  +1.5
-    //                                           = 8.5
+    // decisive: 80' goal worth 6, delta = 6 x 0.25  +1.5
+    //                                              = 8.5
     const events: TimedPlayerEvent[] = [
       { minute: 65, kind: 'yellowCard' },
       { minute: 80, kind: 'goal' },
@@ -342,18 +352,18 @@ describe('finishers', () => {
     expect(result.ledger[0].code).toBe('finisher.unused');
   });
 
-  it('case 14 — the decisive-moment multiplier reaches only timestamped events (G3)', () => {
-    // Came on at 70'. Six tackles' worth of work in the last twenty minutes
-    // earns no bonus, because the feed does not timestamp tackles. Only the
-    // 88' penalty won can be placed after the 75th minute.
+  it('case 14 — the decisive-moment multiplier is goals and assists only (v0.5.0 P6a)', () => {
+    // Came on at 70'. Under v0.4.1 the 88' penalty won took the multiplier
+    // (basis 2, delta +0.5); v0.5.0 rules the multiplier an attacking
+    // mechanic — a penalty won still scores its +2, but is never multiplied.
+    // The tackles never could be: the feed does not timestamp them.
     // appearance                        +1
     // penalty won (88') 1 x 2           +2
     // minutes 20 < 60                    0
     // tackles 6 x 0.4 = 2.4             +2.4  (DEF cap 3)
     // conceded: 20 < 60 min, no penalty  0    (v0.4 G2)
-    //   base                           = 5.4
-    // decisive basis = 2 (the penalty only), delta = 2 x 0.25  +0.5
-    //                                                        = 5.9
+    // decisive basis = 0 -> no multiplier line
+    //                                  = 5.4
     const events: TimedPlayerEvent[] = [{ minute: 88, kind: 'penaltyWon' }];
     const result = scorePlayer(
       input(
@@ -366,9 +376,10 @@ describe('finishers', () => {
       70,
       0,
     );
-    expect(result.points).toBeCloseTo(5.9, 9);
+    expect(result.points).toBeCloseTo(5.4, 9);
     expectLedgerReconciles(result);
-    expect(result.ledger.find((e) => e.code === 'finisher.decisiveMoment')?.raw).toBeCloseTo(2, 9);
+    expect(result.ledger.find((e) => e.code === 'finisher.decisiveMoment')).toBeUndefined();
+    expect(result.ledger.find((e) => e.code === 'penalty.won')?.points).toBeCloseTo(2, 9);
   });
 
   it('case 22 — an event in the entry minute itself counts (v0.4 G4, inclusive)', () => {
@@ -401,12 +412,12 @@ describe('finishers', () => {
 describe('position mismatch', () => {
   it('case 15 — the 0.75 dampener on a positive score', () => {
     // Fielded DEF, verdict MID.
-    // minutes 60+       +2
-    // win               +2
+    // appearance        +1
+    // win               +1
     // clean sheet DEF   +4
     // tackles 5 x 0.4   +2
-    //   base          = 10
-    // mismatch: 10 x 0.75 = 7.5
+    //   base          = 8
+    // mismatch: 8 x 0.75 = 6
     const result = scorePlayer(
       input({ minutes: 90, tackles: 5 }, ctx({ teamGoalsFor: 1, teamGoalsAgainst: 0, result: 'win' })),
       starter('DEF'),
@@ -414,20 +425,20 @@ describe('position mismatch', () => {
       null,
       0,
     );
-    expect(result.points).toBeCloseTo(7.5, 9);
+    expect(result.points).toBeCloseTo(6, 9);
     expectLedgerReconciles(result);
-    expect(result.ledger.find((e) => e.code === 'mismatch.dampener')?.points).toBeCloseTo(-2.5, 9);
+    expect(result.ledger.find((e) => e.code === 'mismatch.dampener')?.points).toBeCloseTo(-2, 9);
   });
 
   it('case 16 — a negative base passes through the mismatch undamped (v0.4 G5)', () => {
     // Fielded DEF, verdict ATT.
-    // minutes 60+                    +2
+    // appearance                     +1
     // loss                            0
     // conceded 4 -> floor(4/2) = 2   -2   (90 min, so the 60+ gate is met)
     // yellow                         -1
     // red                            -4
-    //   base                       = -5
-    // mismatch: base is negative, so x0.75 does NOT apply. -5 passes through.
+    //   base                       = -6
+    // mismatch: base is negative, so x0.75 does NOT apply. -6 passes through.
     const result = scorePlayer(
       input({ minutes: 90, yellowCards: 1, redCards: 1 }, ctx({ teamGoalsAgainst: 4, result: 'loss' })),
       starter('DEF'),
@@ -435,18 +446,18 @@ describe('position mismatch', () => {
       null,
       0,
     );
-    expect(result.points).toBeCloseTo(-5, 9);
+    expect(result.points).toBeCloseTo(-6, 9);
     expectLedgerReconciles(result);
     expect(result.ledger.find((e) => e.code === 'mismatch.dampener')?.points).toBe(0);
     expect(result.ledger.find((e) => e.code === 'mismatch.dampener')?.note).toContain('undamped');
   });
 
   it('case 17 — mis-slotting never outscores correct slotting (v0.4 G5)', () => {
-    // Identical stats to case 16, fielded DEF with verdict DEF: base -5 again.
+    // Identical stats to case 16, fielded DEF with verdict DEF: base -6 again.
     //
-    // Under v0.3 these two diverged (-5 correct vs 0 mis-slotted), so holding a
-    // sent-off player made deliberate mis-slotting worth +5. v0.4 removes the
-    // floor, and the pair now agree — which is the property the ruling asks for.
+    // Under v0.3 these two diverged (correct-slot negative vs 0 mis-slotted), so
+    // holding a sent-off player made deliberate mis-slotting profitable. v0.4
+    // removed the floor, and the pair agree — the property the ruling asks for.
     const wrong = scorePlayer(
       input({ minutes: 90, yellowCards: 1, redCards: 1 }, ctx({ teamGoalsAgainst: 4, result: 'loss' })),
       starter('DEF'),
@@ -461,7 +472,7 @@ describe('position mismatch', () => {
       null,
       0,
     );
-    expect(right.points).toBeCloseTo(-5, 9);
+    expect(right.points).toBeCloseTo(-6, 9);
     expect(wrong.points).toBeLessThanOrEqual(right.points);
     expectLedgerReconciles(right);
   });
@@ -469,9 +480,9 @@ describe('position mismatch', () => {
 
 describe('crowd multiplier', () => {
   it('case 18 — +15% and -15% clamp ends applied to the same base', () => {
-    // Case 1's goalkeeper, base 11.5.
-    //   +15%: 11.5 x 1.15 = 13.225
-    //   -15%: 11.5 x 0.85 =  9.775
+    // Case 1's goalkeeper, base 9.5.
+    //   +15%: 9.5 x 1.15 = 10.925
+    //   -15%: 9.5 x 0.85 =  8.075
     const build = (crowd: number) =>
       scorePlayer(
         input({ minutes: 90, saves: 5 }, ctx({ teamGoalsFor: 2, teamGoalsAgainst: 0, result: 'win' })),
@@ -481,16 +492,16 @@ describe('crowd multiplier', () => {
         crowd,
       );
 
-    expect(build(0.15).points).toBeCloseTo(13.225, 9);
-    expect(build(-0.15).points).toBeCloseTo(9.775, 9);
-    expect(build(0).points).toBeCloseTo(11.5, 9);
+    expect(build(0.15).points).toBeCloseTo(10.925, 9);
+    expect(build(-0.15).points).toBeCloseTo(8.075, 9);
+    expect(build(0).points).toBeCloseTo(9.5, 9);
     expectLedgerReconciles(build(0.15));
     expectLedgerReconciles(build(-0.15));
   });
 
   it('case 19 — crowd applies after the mismatch dampener, not before', () => {
-    // Case 15's base 10, damped to 7.5, then +10%: 7.5 x 1.1 = 8.25.
-    // Applying crowd first would give 10 x 1.1 x 0.75 = 8.25 as well, so the
+    // Case 15's base 8, damped to 6, then +10%: 6 x 1.1 = 6.6.
+    // Applying crowd first would give 8 x 1.1 x 0.75 = 6.6 as well, so the
     // orders coincide for a positive score — but not once the zero floor bites,
     // which is why the order is pinned here and in case 20.
     const result = scorePlayer(
@@ -500,17 +511,17 @@ describe('crowd multiplier', () => {
       null,
       0.1,
     );
-    expect(result.points).toBeCloseTo(8.25, 9);
+    expect(result.points).toBeCloseTo(6.6, 9);
     expectLedgerReconciles(result);
   });
 
   it('case 20 — a positive crowd factor shrinks a negative base toward zero (v0.4.1)', () => {
-    // Case 16's base is -5 and survives the mismatch undamped, so the crowd
+    // Case 16's base is -6 and survives the mismatch undamped, so the crowd
     // factor lands on a negative number. v0.4.1 mirrors it:
-    //   base < 0  ->  base x (1 - f) = -5 x (1 - 0.15) = -5 x 0.85 = -4.25
+    //   base < 0  ->  base x (1 - f) = -6 x (1 - 0.15) = -6 x 0.85 = -5.1
     //
-    // Under v0.4 this was -5.75: a player the crowd LIKED, who was sent off, was
-    // punished harder for being liked. The mirror removes that.
+    // Under v0.4 the factor deepened the deficit: a player the crowd LIKED, who
+    // was sent off, was punished harder for being liked. The mirror removes that.
     const result = scorePlayer(
       input({ minutes: 90, yellowCards: 1, redCards: 1 }, ctx({ teamGoalsAgainst: 4, result: 'loss' })),
       starter('DEF'),
@@ -518,19 +529,19 @@ describe('crowd multiplier', () => {
       null,
       0.15,
     );
-    expect(result.points).toBeCloseTo(-4.25, 9);
+    expect(result.points).toBeCloseTo(-5.1, 9);
     expectLedgerReconciles(result);
     expect(result.ledger.find((e) => e.code === 'crowd')?.note).toContain('mirrored');
   });
 
   it('case 27 — the crowd factor is a judgment direction on both signs (v0.4.1)', () => {
-    // Same -5 base at both clamp ends:
-    //   f = +0.15  ->  -5 x (1 - 0.15) = -4.25   approval shrinks the deficit
-    //   f = -0.15  ->  -5 x (1 + 0.15) = -5.75   disapproval deepens it
+    // Same -6 base at both clamp ends:
+    //   f = +0.15  ->  -6 x (1 - 0.15) = -5.1   approval shrinks the deficit
+    //   f = -0.15  ->  -6 x (1 + 0.15) = -6.9   disapproval deepens it
     //
     // And the positive-base direction is unchanged, so the mirror does not flip
     // the meaning of the factor for a player who scored well:
-    //   base 11.5, f = +0.15 -> 13.225  (case 18)
+    //   base 9.5, f = +0.15 -> 10.925  (case 18)
     const negative = (crowd: number) =>
       scorePlayer(
         input({ minutes: 90, yellowCards: 1, redCards: 1 }, ctx({ teamGoalsAgainst: 4, result: 'loss' })),
@@ -540,9 +551,9 @@ describe('crowd multiplier', () => {
         crowd,
       );
 
-    expect(negative(0.15).points).toBeCloseTo(-4.25, 9);
-    expect(negative(-0.15).points).toBeCloseTo(-5.75, 9);
-    expect(negative(0).points).toBeCloseTo(-5, 9);
+    expect(negative(0.15).points).toBeCloseTo(-5.1, 9);
+    expect(negative(-0.15).points).toBeCloseTo(-6.9, 9);
+    expect(negative(0).points).toBeCloseTo(-6, 9);
 
     // The invariant the ruling asks for: a higher crowd verdict is never worse,
     // whatever the sign of the base.
@@ -562,7 +573,7 @@ describe('crowd multiplier', () => {
 
 describe('60-minute qualifiers (v0.4 G1/G2)', () => {
   it('case 23 — a sub-60 defender collects no clean sheet', () => {
-    // minutes 1-59                              +1
+    // appearance                                +1
     // win but minutes < 60                       0
     // clean sheet requires 60+ minutes           0
     // tackles 3 x 0.4                           +1.2
@@ -581,7 +592,7 @@ describe('60-minute qualifiers (v0.4 G1/G2)', () => {
 
   it('case 24 — a sub-60 defender also escapes the concession penalty', () => {
     // Same 45 minutes, but the team ships four.
-    // minutes 1-59                              +1
+    // appearance                                +1
     // loss                                       0
     // concession penalty requires 60+ minutes    0   (would have been -2)
     // tackles 3 x 0.4                           +1.2
@@ -603,11 +614,11 @@ describe('60-minute qualifiers (v0.4 G1/G2)', () => {
 
   it('case 25 — a goalkeeper on exactly 60 minutes qualifies for both', () => {
     // The gate is >= 60, so 60 exactly is inside it.
-    // minutes 60+           +2
-    // draw                  +1
+    // appearance            +1
+    // draw (60+)            +0.5
     // saves 4 x 0.5         +2
     // clean sheet GK        +5
-    //                     = 10
+    //                     = 8.5
     const result = scorePlayer(
       input({ minutes: 60, saves: 4 }, ctx({ teamGoalsFor: 0, teamGoalsAgainst: 0, result: 'draw' })),
       starter('GK'),
@@ -615,19 +626,19 @@ describe('60-minute qualifiers (v0.4 G1/G2)', () => {
       null,
       0,
     );
-    expect(result.points).toBeCloseTo(10, 9);
+    expect(result.points).toBeCloseTo(8.5, 9);
     expectLedgerReconciles(result);
   });
 });
 
 describe('display rounding (v0.4 G6)', () => {
   it('case 26 — the engine returns unrounded, display rounds to 1 dp', () => {
-    // Case 3's defender scores 15.9 exactly; case 7's midfielder 5.9.
+    // Case 3's defender scores 13.9 exactly; case 7's midfielder 6.0.
     // formatPoints is display-only and must never be used before comparing.
     expect(formatPoints(15.9)).toBe('15.9');
     expect(formatPoints(5.94)).toBe('5.9');
     expect(formatPoints(5.95)).toBe('6.0');
-    // Ties round away from zero, symmetrically. -5.75 is reachable (case 20).
+    // Ties round away from zero, symmetrically — the value can be negative.
     expect(formatPoints(-5.75)).toBe('-5.8');
     expect(formatPoints(5.75)).toBe('5.8');
     // -0.04 must not render as "-0.0" on a leaderboard.
