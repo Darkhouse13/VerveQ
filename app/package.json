@@ -26,6 +26,7 @@
     "draw:sim": "npx tsx scripts/drawSim/sim.ts",
     "draw:sweep": "npx tsx scripts/drawSim/sweep.ts",
     "draw:layoutcheck": "npx tsx scripts/drawSim/layoutcheck.ts",
+    "fantasy:scoring-gate": "npx tsx scripts/fantasyScoringRegression.ts",
     "test": "vitest run",
     "test:watch": "vitest"
   },
