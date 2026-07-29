@@ -191,6 +191,15 @@ oracle gate. The two-tier acceptance architecture:
   Tier-2 acceptance run (CIE card-set ticket). Set 0 of the 0.3 rotation
   (99.70%) shows this is achievable without touching the config.
 
+> **AMENDED (owner, E5 arc 2026-07-19; ruled and recorded 2026-07-25).** The
+> Tier-2 pooled figure above is superseded: **99.5% → 99.4%**, with a per-slice
+> floor (**≥ 98.5%**, i.e. ≤ 3 dead at N = 200) and a concentration cap (**≤ 1
+> slice at the floor**) added alongside it. c13-2 and c13-3 re-scored PASS under
+> the amended criterion from existing logs. P0-config and P0-runtime above are
+> untouched. Governing text: [`docs/DECISIONS.md`](../../../../docs/DECISIONS.md)
+> § "DECISION (backfill) — P0-slice acceptance criterion, owner-signed". The
+> original bullet is left unrewritten by design.
+
 Empirical support for the STOP-3 ruling, from the 0.3 C2 attribution
 diagnostic: **96.2% of pooled near-miss fails are entered by a chosen push**
 (round ≥ 2); only 3.8% come from the forced round 1. Near-miss clustering is
