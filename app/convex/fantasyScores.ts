@@ -167,6 +167,8 @@ export interface ApplyFixtureStatsResult {
   scoreable: boolean;
   awaitingReason: string | null;
   unscoreableReason: string | null;
+  /** Why this fixture holds no scores, when it holds none. */
+  notScoredReason: string | null;
   /** True when the gameweek is past its finality instant: raw only (R4). */
   afterFinality: boolean;
   rawRevisionsWritten: number;
@@ -516,6 +518,7 @@ export const applyFixtureStats = internalMutation({
         scoreable: true,
         awaitingReason: null,
         unscoreableReason: null,
+        notScoredReason: null,
         afterFinality,
         rawRevisionsWritten: 0,
         scoreVersionsWritten: 0,
@@ -638,18 +641,31 @@ export const applyFixtureStats = internalMutation({
     }
 
     // ── fixture status row ──
-    const scored = scoreability.scoreable && !afterFinality;
-    const state: Doc<"fantasyFixtureScoring">["state"] = scoreability.scoreable
-      ? "scored"
-      : "awaiting_data";
-    const scoredPlayerRows = scoreability.scoreable ? lines.length : 0;
+    //
+    // "scored" means THIS FIXTURE HAS SCORE ROWS — not "its data looked fine".
+    // The difference is a fixture whose feed arrived after the cut: the stats are
+    // perfectly good, they are recorded as raw, and no score exists or ever will
+    // (R4). Labelling that "scored" would tell every read surface its players
+    // have totals, and R7's whole point is that a player with no score reads
+    // "awaiting data" rather than zero.
+    const hadScores = existing !== null && existing.state === "scored";
+    const wroteScores = scoreability.scoreable && !afterFinality;
+    const scored = wroteScores || hadScores;
+    const state: Doc<"fantasyFixtureScoring">["state"] = scored ? "scored" : "awaiting_data";
+    const scoredPlayerRows = scored ? lines.length : 0;
+    const notScoredReason = scored
+      ? null
+      : (scoreability.unscoreableReason ??
+        (afterFinality
+          ? "the feed arrived after this gameweek's finality instant: recorded as raw, scores unchanged (R4)"
+          : scoreability.awaitingReason));
 
     if (existing === null) {
       await ctx.db.insert("fantasyFixtureScoring", {
         fixtureId: fixture._id,
         gameweekId: gameweek._id,
         state,
-        ...(scoreability.scoreable ? { fixtureInputHash } : {}),
+        ...(wroteScores ? { fixtureInputHash } : {}),
         fixtureStatus: fixture.status,
         hasPlayerStats: args.hasPlayerStats && args.rows.length > 0,
         hasEvents: args.hasEvents,
@@ -660,16 +676,14 @@ export const applyFixtureStats = internalMutation({
           ? { postFinalityRevisions: rawRevisionsWritten }
           : {}),
         revisionChecks: 0,
-        ...(scoreability.unscoreableReason === null
-          ? {}
-          : { unscoreableReason: scoreability.unscoreableReason }),
+        ...(notScoredReason === null ? {} : { notScoredReason }),
         ...(scored ? { firstScoredAt: now, scoredAt: now } : {}),
         lastAttemptAt: now,
       });
     } else {
       await ctx.db.patch(existing._id, {
         state,
-        ...(scoreability.scoreable ? { fixtureInputHash } : {}),
+        ...(wroteScores ? { fixtureInputHash } : {}),
         fixtureStatus: fixture.status,
         hasPlayerStats: args.hasPlayerStats && args.rows.length > 0,
         hasEvents: args.hasEvents,
@@ -682,7 +696,7 @@ export const applyFixtureStats = internalMutation({
         // A changed hash resets the revision-check budget: the fixture moved, so
         // it earns a fresh look for the correction after the correction.
         revisionChecks: existing.fixtureInputHash === fixtureInputHash ? (existing.revisionChecks ?? 0) : 0,
-        unscoreableReason: scoreability.unscoreableReason ?? undefined,
+        notScoredReason: notScoredReason ?? undefined,
         ...(scored
           ? { scoredAt: now, firstScoredAt: existing.firstScoredAt ?? now }
           : {}),
@@ -695,7 +709,7 @@ export const applyFixtureStats = internalMutation({
 
     if (scoreability.unscoreableReason !== null) {
       // FT-class and still not scoreable is the ticket's STOP condition. It is
-      // logged loudly AND left on the fixture row (`unscoreableReason`) so it is
+      // logged loudly AND left on the fixture row (`notScoredReason`) so it is
       // queryable; the 6h alert reads the same fact.
       console.error(
         `[FW-4] fixture ${args.providerFixtureId} (GW${gameweek.gwNumber}) is ${scoreability.unscoreableReason}`,
@@ -709,6 +723,7 @@ export const applyFixtureStats = internalMutation({
       scoreable: scoreability.scoreable,
       awaitingReason: scoreability.awaitingReason,
       unscoreableReason: scoreability.unscoreableReason,
+      notScoredReason,
       afterFinality,
       rawRevisionsWritten,
       scoreVersionsWritten,
@@ -716,6 +731,419 @@ export const applyFixtureStats = internalMutation({
       finalizedScoresLeftAlone,
       playerRows: lines.length,
       fixtureInputHash,
+    };
+  },
+});
+
+// ──────────────────────────────────────────────── finalization + the alert
+//
+// R3: "provisional on fixture ingest; final at the gameweek's finality instant
+// (from FW-2). Finalization is a cron consuming FW-2's instant, idempotent."
+//
+// R7: "Alert (log + a queryable flag) if any fixture in a gameweek is unscored
+// 6h before the finality instant."
+
+/** How long before the cut R7's alert fires. */
+export const UNSCORED_ALERT_LEAD_MS = 6 * 60 * 60 * 1000;
+
+/** Score rows flipped per transaction. A busy gameweek carries ~1,800 of them. */
+const FINALIZE_CHUNK = 200;
+
+export interface SettlementCandidate {
+  gameweekId: Id<"fantasyGameweeks">;
+  season: string;
+  gwNumber: number;
+  finalityAt: number;
+  scoringState: "provisional" | "final" | null;
+  fixturesTotal: number;
+  fixturesScored: number;
+  /** Fixtures with no `scored` status row. Postponements included, with reasons. */
+  unscored: { providerFixtureId: string; fixtureStatus: string; reason: string | null }[];
+  needsFinalization: boolean;
+  needsAlert: boolean;
+  msToFinality: number;
+}
+
+export interface SettlementPlan {
+  now: number;
+  candidates: SettlementCandidate[];
+}
+
+/**
+ * Which gameweeks need settling, and which need the 6h alert.
+ *
+ * A gameweek needs finalization when `now >= finalityAt` and its scoring row is
+ * not `final` yet. It needs an alert when the cut is 6h or less away, has not
+ * passed, something is unscored, and no alert has been written — once, not on
+ * every tick, because an alert that repeats is an alert nobody reads.
+ */
+export const settlementPlan = internalQuery({
+  args: { now: v.optional(v.number()) },
+  handler: async (ctx, args): Promise<SettlementPlan> => {
+    const now = args.now ?? Date.now();
+    const gameweeks = await ctx.db.query("fantasyGameweeks").collect();
+    const candidates: SettlementCandidate[] = [];
+
+    for (const gameweek of gameweeks) {
+      const msToFinality = gameweek.finalityAt - now;
+      const withinAlertWindow = msToFinality > 0 && msToFinality <= UNSCORED_ALERT_LEAD_MS;
+      const pastCut = msToFinality <= 0;
+      if (!withinAlertWindow && !pastCut) continue;
+
+      const scoring = await gameweekScoringRow(ctx, gameweek._id);
+      if (pastCut && scoring?.state === "final") continue; // already settled
+      if (withinAlertWindow && scoring?.unscoredAlertAt !== undefined) continue; // already alerted
+
+      const fixtures = await ctx.db
+        .query("fantasyFixtures")
+        .withIndex("by_gameweek_kickoff", (q) => q.eq("gameweekId", gameweek._id))
+        .collect();
+      if (fixtures.length === 0) continue; // a window with no fixtures is not a gameweek
+
+      const unscored: SettlementCandidate["unscored"] = [];
+      let fixturesScored = 0;
+      for (const fixture of fixtures) {
+        const row = await fixtureScoringRow(ctx, fixture._id);
+        if (row !== null && row.state === "scored") {
+          fixturesScored += 1;
+          continue;
+        }
+        unscored.push({
+          providerFixtureId: fixture.providerFixtureId,
+          fixtureStatus: fixture.status,
+          reason: row?.notScoredReason ?? null,
+        });
+      }
+
+      const needsAlert = withinAlertWindow && unscored.length > 0;
+      const needsFinalization = pastCut;
+      if (!needsAlert && !needsFinalization) continue;
+
+      candidates.push({
+        gameweekId: gameweek._id,
+        season: gameweek.season,
+        gwNumber: gameweek.gwNumber,
+        finalityAt: gameweek.finalityAt,
+        scoringState: scoring?.state ?? null,
+        fixturesTotal: fixtures.length,
+        fixturesScored,
+        unscored,
+        needsFinalization,
+        needsAlert,
+        msToFinality,
+      });
+    }
+
+    candidates.sort((a, b) => a.finalityAt - b.finalityAt);
+    return { now, candidates };
+  },
+});
+
+export interface FinalizeChunkResult {
+  gwNumber: number;
+  season: string;
+  finalityAt: number;
+  /** False when called before the cut: finalization refuses to run early. */
+  eligible: boolean;
+  rowsFinalized: number;
+  /** True when no provisional current-version row remains. */
+  done: boolean;
+  gameweekState: "provisional" | "final";
+  fixturesScored: number;
+  fixturesTotal: number;
+  unscoredAtFinality: number;
+}
+
+/**
+ * Flip one chunk of a gameweek's current score rows from provisional to final.
+ *
+ * IDEMPOTENT three times over: it refuses to run before the cut, it only ever
+ * touches rows whose state is still `provisional`, and a second call after the
+ * last chunk finds nothing and returns done. Re-running it produces byte-
+ * identical rows, because `finalizedAt` is only written on the transition.
+ *
+ * SUPERSEDED VERSIONS ARE LEFT ALONE, on purpose. A row that was replaced before
+ * the cut was never the final number, and relabelling it `final` would say it
+ * was. `supersededByVersion` is what marks it, and the filter here is what keeps
+ * the pass from finding it again forever.
+ *
+ * The only field it writes on a score row is `state` (plus the `finalizedAt`
+ * stamp) — R4's guarantee that no code path updates a finalized SCORE holds
+ * because no code path here touches baseScores, crowdFactor or verdictPosition.
+ */
+export const finalizeGameweekChunk = internalMutation({
+  args: {
+    gameweekId: v.id("fantasyGameweeks"),
+    now: v.optional(v.number()),
+    limit: v.optional(v.number()),
+  },
+  handler: async (ctx, args): Promise<FinalizeChunkResult> => {
+    const now = args.now ?? Date.now();
+    const limit = args.limit ?? FINALIZE_CHUNK;
+
+    const gameweek = await ctx.db.get(args.gameweekId);
+    if (gameweek === null) throw new Error("Gameweek not found.");
+
+    // FW-2's instant, consumed. Nothing here derives or second-guesses it.
+    if (now < gameweek.finalityAt) {
+      const scoring = await gameweekScoringRow(ctx, gameweek._id);
+      return {
+        gwNumber: gameweek.gwNumber,
+        season: gameweek.season,
+        finalityAt: gameweek.finalityAt,
+        eligible: false,
+        rowsFinalized: 0,
+        done: false,
+        gameweekState: scoring?.state ?? "provisional",
+        fixturesScored: scoring?.fixturesScored ?? 0,
+        fixturesTotal: scoring?.fixturesTotal ?? 0,
+        unscoredAtFinality: 0,
+      };
+    }
+
+    const provisional = await ctx.db
+      .query("fantasyPlayerScores")
+      .withIndex("by_gameweek_state", (q) =>
+        q.eq("gameweekId", gameweek._id).eq("state", "provisional"),
+      )
+      .filter((q) => q.eq(q.field("supersededByVersion"), undefined))
+      .take(limit);
+
+    for (const row of provisional) {
+      await ctx.db.patch(row._id, { state: "final", finalizedAt: now });
+    }
+
+    const done = provisional.length < limit;
+
+    // Counts come from the fixture rows, not from a running total, so a re-run
+    // cannot drift them.
+    const fixtures = await ctx.db
+      .query("fantasyFixtures")
+      .withIndex("by_gameweek_kickoff", (q) => q.eq("gameweekId", gameweek._id))
+      .collect();
+    const scoredFixtures = await ctx.db
+      .query("fantasyFixtureScoring")
+      .withIndex("by_gameweek_state", (q) =>
+        q.eq("gameweekId", gameweek._id).eq("state", "scored"),
+      )
+      .collect();
+
+    const existing = await gameweekScoringRow(ctx, gameweek._id);
+    const alreadyFinalized = existing?.scoreRowsFinalized ?? 0;
+    const totalFinalized = alreadyFinalized + provisional.length;
+
+    if (existing === null) {
+      await ctx.db.insert("fantasyGameweekScoring", {
+        gameweekId: gameweek._id,
+        state: done ? "final" : "provisional",
+        fixturesTotal: fixtures.length,
+        fixturesScored: scoredFixtures.length,
+        ...(done ? { finalizedAt: now } : {}),
+        scoreRowsFinalized: totalFinalized,
+      });
+    } else {
+      await ctx.db.patch(existing._id, {
+        state: done ? "final" : existing.state,
+        fixturesTotal: fixtures.length,
+        fixturesScored: scoredFixtures.length,
+        scoreRowsFinalized: totalFinalized,
+        ...(done && existing.finalizedAt === undefined ? { finalizedAt: now } : {}),
+      });
+    }
+
+    // ── the one write outside this ticket's own tables ──
+    //
+    // `fantasyGameweeks.status` is FW-1/FW-2's lifecycle field, and its schema
+    // comment reserves this exact write: "a lifecycle field driven by the passage
+    // of time and (later) by settlement". Settlement is this pass.
+    //
+    // It is not cosmetic. `fantasyDraftRooms.targetGameweek` picks the
+    // earliest-finality gameweek whose status is upcoming|live, so with nothing
+    // ever moving the field, every crew room opened after the first weekend would
+    // target that dead first weekend forever. Writing "final" at the cut is what
+    // lets the draft room advance — and it correctly closes squad edits, which
+    // `fantasySquads.gameweekAcceptsEdits` gates on the same field.
+    if (done && gameweek.status !== "final") {
+      await ctx.db.patch(gameweek._id, { status: "final" });
+    }
+
+    return {
+      gwNumber: gameweek.gwNumber,
+      season: gameweek.season,
+      finalityAt: gameweek.finalityAt,
+      eligible: true,
+      rowsFinalized: provisional.length,
+      done,
+      gameweekState: done ? "final" : (existing?.state ?? "provisional"),
+      fixturesScored: scoredFixtures.length,
+      fixturesTotal: fixtures.length,
+      unscoredAtFinality: fixtures.length - scoredFixtures.length,
+    };
+  },
+});
+
+export interface UnscoredAlertResult {
+  gwNumber: number;
+  season: string;
+  written: boolean;
+  unscoredCount: number;
+  hoursToFinality: number;
+}
+
+/**
+ * R7's alert: a log line AND a queryable flag, written once per gameweek.
+ *
+ * Both halves are required by the ruling and neither is redundant. The log is
+ * what an operator watching the deployment sees at 6h; the flag is what a
+ * dashboard, a test, or a later investigation can ask about — a log line that has
+ * scrolled away is not a surface.
+ *
+ * The payload records each unscored fixture's STATUS and reason, because
+ * "unscored" spans a postponement that will never be scored in this window
+ * (nothing is broken) and an FT-class fixture the feed has not supplied
+ * (something is). An alert that could not tell them apart would be noise within
+ * a season.
+ */
+export const writeUnscoredAlert = internalMutation({
+  args: {
+    gameweekId: v.id("fantasyGameweeks"),
+    now: v.optional(v.number()),
+    unscored: v.array(
+      v.object({
+        providerFixtureId: v.string(),
+        fixtureStatus: v.string(),
+        reason: v.union(v.string(), v.null()),
+      }),
+    ),
+  },
+  handler: async (ctx, args): Promise<UnscoredAlertResult> => {
+    const now = args.now ?? Date.now();
+    const gameweek = await ctx.db.get(args.gameweekId);
+    if (gameweek === null) throw new Error("Gameweek not found.");
+
+    const hoursToFinality = (gameweek.finalityAt - now) / 3_600_000;
+    const existing = await gameweekScoringRow(ctx, gameweek._id);
+
+    if (existing?.unscoredAlertAt !== undefined) {
+      return {
+        gwNumber: gameweek.gwNumber,
+        season: gameweek.season,
+        written: false,
+        unscoredCount: existing.unscoredAlertCount ?? 0,
+        hoursToFinality,
+      };
+    }
+
+    const fields = {
+      unscoredAlertAt: now,
+      unscoredAlertCount: args.unscored.length,
+      unscoredAlertFixtures: args.unscored,
+    };
+
+    if (existing === null) {
+      const fixtures = await ctx.db
+        .query("fantasyFixtures")
+        .withIndex("by_gameweek_kickoff", (q) => q.eq("gameweekId", gameweek._id))
+        .collect();
+      await ctx.db.insert("fantasyGameweekScoring", {
+        gameweekId: gameweek._id,
+        state: "provisional",
+        fixturesTotal: fixtures.length,
+        fixturesScored: fixtures.length - args.unscored.length,
+        ...fields,
+      });
+    } else {
+      await ctx.db.patch(existing._id, fields);
+    }
+
+    console.error(
+      `[FW-4 ALERT] ${gameweek.season} GW${gameweek.gwNumber}: ${args.unscored.length} fixture(s) unscored ` +
+        `${hoursToFinality.toFixed(1)}h before finality — ` +
+        args.unscored
+          .map((f) => `${f.providerFixtureId} (${f.fixtureStatus}${f.reason === null ? "" : `: ${f.reason}`})`)
+          .join(", "),
+    );
+
+    return {
+      gwNumber: gameweek.gwNumber,
+      season: gameweek.season,
+      written: true,
+      unscoredCount: args.unscored.length,
+      hoursToFinality,
+    };
+  },
+});
+
+export interface SettleGameweeksResult {
+  now: number;
+  finalized: FinalizeChunkResult[];
+  alerted: UnscoredAlertResult[];
+  candidates: number;
+}
+
+/**
+ * The settlement cron: finalize what is past the cut, alert on what is 6h from
+ * it.
+ *
+ * An action rather than a mutation because a busy gameweek's ~1,800 score rows
+ * cannot be flipped in one transaction, and looping chunked mutations is the
+ * house pattern for that (FW-2 D10a). It makes no network request at all.
+ */
+export const settleGameweeks = internalAction({
+  args: { now: v.optional(v.number()) },
+  handler: async (ctx, args): Promise<SettleGameweeksResult> => {
+    const plan: SettlementPlan = await ctx.runQuery(internal.fantasyScores.settlementPlan, {
+      ...(args.now === undefined ? {} : { now: args.now }),
+    });
+
+    const finalized: FinalizeChunkResult[] = [];
+    const alerted: UnscoredAlertResult[] = [];
+
+    for (const candidate of plan.candidates) {
+      if (candidate.needsAlert) {
+        const result: UnscoredAlertResult = await ctx.runMutation(
+          internal.fantasyScores.writeUnscoredAlert,
+          {
+            gameweekId: candidate.gameweekId,
+            unscored: candidate.unscored,
+            ...(args.now === undefined ? {} : { now: args.now }),
+          },
+        );
+        if (result.written) alerted.push(result);
+      }
+
+      if (!candidate.needsFinalization) continue;
+
+      // Chunk until done. Bounded by construction: every chunk either flips
+      // `limit` rows or is the last one.
+      let guard = 0;
+      let last: FinalizeChunkResult | null = null;
+      while (guard < 200) {
+        guard += 1;
+        const result: FinalizeChunkResult = await ctx.runMutation(
+          internal.fantasyScores.finalizeGameweekChunk,
+          {
+            gameweekId: candidate.gameweekId,
+            ...(args.now === undefined ? {} : { now: args.now }),
+          },
+        );
+        last = result;
+        if (!result.eligible || result.done) break;
+      }
+      if (last !== null) {
+        finalized.push(last);
+        console.log(
+          `[FW-4] finalized ${last.season} GW${last.gwNumber}: ${last.fixturesScored}/${last.fixturesTotal} fixtures scored, ` +
+            `${last.unscoredAtFinality} unscored at the cut, state ${last.gameweekState}`,
+        );
+      }
+    }
+
+    return {
+      now: plan.now,
+      finalized,
+      alerted,
+      candidates: plan.candidates.length,
     };
   },
 });

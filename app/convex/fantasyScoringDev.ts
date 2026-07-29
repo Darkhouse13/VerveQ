@@ -299,7 +299,7 @@ export const syntheticStatus = internalQuery({
         revisions: row?.revisions ?? 0,
         revisionChecks: row?.revisionChecks ?? 0,
         postFinalityRevisions: row?.postFinalityRevisions ?? 0,
-        unscoreableReason: row?.unscoreableReason ?? null,
+        notScoredReason: row?.notScoredReason ?? null,
       });
     }
 

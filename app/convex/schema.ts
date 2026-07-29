@@ -1970,12 +1970,13 @@ export default defineSchema({
   // Per-fixture ingest/score status — the row that answers "why does this
   // player read awaiting data?" without re-reading the feed.
   //
-  // `state` is deliberately two values and neither of them is "failed": a
-  // fixture the pipeline cannot score yet is `awaiting_data` with the reasons
-  // recorded, which is a true statement about the DATA rather than a verdict on
-  // the fixture. `unscoreableReason` is set only for the case the ticket makes a
-  // STOP condition — FT-class with a structurally missing feed — so it is
-  // queryable rather than buried in a log line.
+  // `state` says exactly one thing: DOES THIS FIXTURE HAVE SCORE ROWS. It is not
+  // a verdict on the feed, and "scored" is never set for a fixture that produced
+  // no scores — including one whose data arrived in perfect order but after the
+  // gameweek's cut, which is recorded as raw and scores nothing (R4). Anything
+  // else would tell a read surface that a player has a total when he has none,
+  // and R7 turns on that distinction: no row means awaiting data, a stored 0
+  // means an honest zero. `notScoredReason` carries which case it is.
   fantasyFixtureScoring: defineTable({
     fixtureId: v.id("fantasyFixtures"),
     gameweekId: v.id("fantasyGameweeks"),
@@ -2007,7 +2008,18 @@ export default defineSchema({
      * unbounded poll. See REVISION_CHECK_BUDGET in fantasyScores.ts.
      */
     revisionChecks: v.optional(v.number()),
-    unscoreableReason: v.optional(v.string()),
+    /**
+     * Why this fixture holds no score rows, when `state` is awaiting_data.
+     *
+     * Two distinguishable cases share the field, and the text says which:
+     *  - "FT-class but structurally unscoreable: …" is a DATA failure and the
+     *    ticket's STOP condition — the feed is missing something a score needs.
+     *  - "the feed arrived after this gameweek's finality instant …" is not a
+     *    failure at all: the stats are recorded as raw and the window is shut
+     *    (R4), so the fixture will never carry scores and its players correctly
+     *    read "awaiting data" forever rather than zero.
+     */
+    notScoredReason: v.optional(v.string()),
     firstScoredAt: v.optional(v.number()),
     scoredAt: v.optional(v.number()),
     lastAttemptAt: v.number(),

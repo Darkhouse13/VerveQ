@@ -32,6 +32,11 @@ crons.cron("fantasy-lock-sweep", "5,20,35,50 * * * *", internal.fantasyLocks.loc
 // requests. The action prints its call plan before every pull and refuses to
 // spend if a gameweek projects past 500 calls.
 crons.cron("fantasy-score-fixtures", "10,25,40,55 * * * *", internal.fantasyScores.scoreDueFixtures, {});
+// Settlement (FW-4 R3/R7): flips a gameweek's totals provisional -> final at the
+// finality instant FW-2 derived, and writes the unscored alert 6h before it.
+// Quarter-hourly so a total is labelled final within 15 minutes of the cut, and
+// so the 6h alert lands inside its window; it makes no network request at all.
+crons.cron("fantasy-settle-gameweeks", "2,17,32,47 * * * *", internal.fantasyScores.settleGameweeks, {});
 // FW-3 draft rooms: expires dead lobbies and re-drives any room whose
 // scheduled hop was lost. Every action is a guarded no-op on a healthy room,
 // so the tight interval buys stall-recovery, not load.
