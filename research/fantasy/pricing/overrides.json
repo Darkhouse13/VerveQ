@@ -1,0 +1,5 @@
+{
+  "$comment": "FW-PR1 owner price overrides (PROXY_METHOD.md §Owner price overrides). Phase B rulings land here; Phase C applies this file LAST, after interpolation, so an override always wins. Prices must sit on the 4.0-13.0 half-point scale. Keys are API-Football player ids.",
+  "version": 1,
+  "overrides": {}
+}
