@@ -250,7 +250,7 @@ exports[`HomeDrawCard — no layout shift for non-draw users > flag off: Home re
                 <p
                   class="font-heading font-black uppercase text-lg md:text-xl leading-none mt-auto"
                 >
-                  modes.daily.worldCupName
+                  modes.daily.name
                 </p>
                 <p
                   class="font-mono text-[10.5px] uppercase text-muted-foreground"
