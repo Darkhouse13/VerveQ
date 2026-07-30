@@ -81,6 +81,8 @@ export const SHELL_ROUTES = {
   weekendDraft: (roomId: string) => `/v2/weekend/draft/${roomId}`,
   /** THE WEEKEND budget squad — build a fresh 13 under budget (O1). */
   weekendSquad: "/v2/weekend/squad",
+  /** THE WEEKEND crowd voting stack (O2). */
+  weekendVote: "/v2/weekend/vote",
 } as const;
 
 /** Route patterns registered in App.tsx (params un-filled). */
@@ -108,6 +110,7 @@ export const SHELL_ROUTE_PATTERNS = {
   weekendCrew: "/v2/weekend/crew/:code",
   weekendDraft: "/v2/weekend/draft/:roomId",
   weekendSquad: "/v2/weekend/squad",
+  weekendVote: "/v2/weekend/vote",
 } as const;
 
 /**

@@ -48,6 +48,12 @@ import type { MutationCtx, QueryCtx } from "./_generated/server";
 import { internal } from "./_generated/api";
 import type { Doc, Id } from "./_generated/dataModel";
 import { fixtureForClub, lockStateForSlots } from "./fantasyLocks";
+// Type-only, so the runtime module graph stays acyclic (fantasyCrowdVoting
+// imports this module's helpers; the calls below go through `internal.…`).
+import type {
+  ApplyCrowdFactorsResult,
+  RaterAccuracyResult,
+} from "./fantasyCrowdVoting";
 import {
   ApiFootballClient,
   credentialsFromEnv,
@@ -1317,6 +1323,29 @@ export const settleGameweeks = internalAction({
 
       if (!candidate.needsFinalization) continue;
 
+      // O2: the frozen crowd factors land FIRST, as new provisional versions,
+      // so the finalizer below flips rows that already carry them ("the
+      // factor applied is the frozen one" — CROWD_VOTING §Rating math). The
+      // mutation refuses before the cut and on a settled gameweek, and
+      // converges to zero writes, so re-entry is as safe as the rest.
+      let crowdGuard = 0;
+      while (crowdGuard < 100) {
+        crowdGuard += 1;
+        const crowd: ApplyCrowdFactorsResult = await ctx.runMutation(
+          internal.fantasyCrowdVoting.applyCrowdFactorsForGameweek,
+          {
+            gameweekId: candidate.gameweekId,
+            ...(args.now === undefined ? {} : { now: args.now }),
+          },
+        );
+        if (crowd.written > 0) {
+          console.log(
+            `[FW-LAUNCH O2] crowd factors: ${crowd.written} version(s) written, ${crowd.insufficient} below threshold`,
+          );
+        }
+        if (crowd.done) break;
+      }
+
       // Chunk until done. Bounded by construction: every chunk either flips
       // `limit` rows or is the last one.
       let guard = 0;
@@ -1364,6 +1393,21 @@ export const settleGameweeks = internalAction({
           console.log(
             `[FW-4] settled ${last.season} GW${last.gwNumber}: ${totalStamped} squad total(s) stamped this run`,
           );
+
+          // O2: once settled, score the raters against the frozen consensus
+          // (the sealed second game). Idempotent — scored users are skipped.
+          let raterGuard = 0;
+          while (raterGuard < 50) {
+            raterGuard += 1;
+            const rater: RaterAccuracyResult = await ctx.runMutation(
+              internal.fantasyCrowdVoting.scoreRaterAccuracy,
+              {
+                gameweekId: candidate.gameweekId,
+                ...(args.now === undefined ? {} : { now: args.now }),
+              },
+            );
+            if (rater.done) break;
+          }
         }
       }
     }
@@ -1437,6 +1481,13 @@ export interface SlotScore {
   mismatch: boolean;
   version: number | null;
   rowState: "provisional" | "final" | null;
+  /**
+   * O2: this gameweek's crowd vote count for the slot's player, fetched only
+   * `withReasons` (single-squad views). Lets the surface render "insufficient
+   * votes" — visible, not silent — when a settled factor is 0 for lack of
+   * liquidity rather than by verdict (CROWD_VOTING §Rating math).
+   */
+  crowdVotes: number | null;
 }
 
 export interface SquadScore {
@@ -1521,6 +1572,7 @@ export async function squadScore(
       mismatch: false,
       version: null,
       rowState: null,
+      crowdVotes: null,
     };
 
     if (slot.playerId === undefined) {
@@ -1589,6 +1641,21 @@ export async function squadScore(
     const points = totalFor(row.baseScores, slot.slotRole, role, row.crowdFactor);
     total = cleanTotal(total + points);
     scoredSlots += 1;
+
+    // O2: vote liquidity, single-squad views only (same withReasons economy
+    // as the awaiting reasons). Read inline rather than via fantasyCrowdVoting
+    // to keep the module graph acyclic — that module imports this one.
+    let crowdVotes: number | null = null;
+    if (withReasons) {
+      const rating = await ctx.db
+        .query("fantasyCrowdRatings")
+        .withIndex("by_gameweek_player", (q) =>
+          q.eq("gameweekId", gameweek._id).eq("playerId", slot.playerId!),
+        )
+        .first();
+      crowdVotes = rating?.voteCount ?? 0;
+    }
+
     out.push({
       ...base,
       playerName: player.name,
@@ -1601,6 +1668,7 @@ export async function squadScore(
       mismatch: isMismatch(row.verdictPosition, slot.slotRole),
       version: row.version,
       rowState: row.state,
+      crowdVotes,
     });
   }
 

@@ -31,6 +31,7 @@ import { ArrowLeftRight, Lock, Plus, X } from "lucide-react";
 import { api } from "../../../../convex/_generated/api";
 import type { Id } from "../../../../convex/_generated/dataModel";
 import { formatPoints } from "../../../../convex/lib/fantasyScoring";
+import { CROWD_LIQUIDITY_THRESHOLD } from "../../../../convex/lib/fantasyCrowd";
 import {
   FORMATION_BOUNDS,
   SLOT_ROLES,
@@ -370,6 +371,18 @@ export function SlotScoreCell({ score }: { score: SlotScoreRow }) {
       </span>
     );
   }
+  // O2 crowd line, settled rows only: a non-zero factor shows its direction;
+  // a zero factor for lack of liquidity says so — visible, not silent.
+  const settled = score.rowState === "final";
+  const crowdLabel =
+    settled && score.crowdFactor !== null && score.crowdFactor !== 0
+      ? t("weekend.crowdFactor", {
+          defaultValue: "crowd {{pct}}%",
+          pct: `${score.crowdFactor > 0 ? "+" : ""}${Math.round(score.crowdFactor * 100)}`,
+        })
+      : settled && (score.crowdVotes ?? 0) < CROWD_LIQUIDITY_THRESHOLD && score.version !== null
+        ? t("weekend.insufficientVotes", { defaultValue: "insufficient votes" })
+        : null;
   return (
     <span className="text-right">
       <span className="font-mono font-bold tabular-nums">{formatPoints(score.points)}</span>
@@ -381,6 +394,11 @@ export function SlotScoreCell({ score }: { score: SlotScoreRow }) {
       {score.mismatch && (
         <span className="block text-[10px] font-mono uppercase text-muted-foreground">
           {t("weekend.mismatchApplied", { defaultValue: "×0.75 mismatch" })}
+        </span>
+      )}
+      {crowdLabel !== null && (
+        <span className="block text-[10px] font-mono uppercase text-muted-foreground">
+          {crowdLabel}
         </span>
       )}
     </span>

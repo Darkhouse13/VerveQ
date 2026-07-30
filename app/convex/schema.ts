@@ -2050,4 +2050,73 @@ export default defineSchema({
   })
     .index("by_gameweek", ["gameweekId"])
     .index("by_state", ["state"]),
+
+  // ─────────────────────────────────────────── WEEKEND FANTASY: crowd voting
+  //
+  // FW-LAUNCH O2, CROWD_VOTING_SPEC v1.0.1. Pairwise served votes become a
+  // per-gameweek Elo per player; at settlement the frozen ratings derive the
+  // crowd factor (lib/fantasyCrowd.deriveCrowdFactors — in ±15% band by
+  // construction), which reaches scores ONLY as new fantasyPlayerScores
+  // versions through the pipeline's own invariants. Nothing in these three
+  // tables is a scoring number: ratings are mutable vote state, and rule 5
+  // (immutable scores) begins where fantasyPlayerScores begins.
+
+  /**
+   * One served pair per row — serving IS the record. Single-use per user
+   * (by_user_gameweek_pairKey with the canonical pairKey), counted against
+   * the per-gameweek serve cap, and the anti-abuse surface: a vote can only
+   * exist for a pair the SERVER chose to serve this user.
+   */
+  fantasyCrowdPairs: defineTable({
+    gameweekId: v.id("fantasyGameweeks"),
+    userId: v.id("users"),
+    playerAId: v.id("fantasyPlayers"),
+    playerBId: v.id("fantasyPlayers"),
+    fixtureAId: v.id("fantasyFixtures"),
+    fixtureBId: v.id("fantasyFixtures"),
+    /** Canonical `${minPlayerId}:${maxPlayerId}` — order-independent. */
+    pairKey: v.string(),
+    servedAt: v.number(),
+    status: v.union(v.literal("served"), v.literal("voted"), v.literal("skipped")),
+    /** "a" | "b" once voted; absent while served and forever on a skip. */
+    choice: v.optional(v.union(v.literal("a"), v.literal("b"))),
+    votedAt: v.optional(v.number()),
+  })
+    .index("by_user_gameweek", ["userId", "gameweekId"])
+    .index("by_user_gameweek_pairKey", ["userId", "gameweekId", "pairKey"])
+    .index("by_gameweek_status", ["gameweekId", "status"]),
+
+  /**
+   * Per-gameweek Elo per appeared player. Created lazily at a player's first
+   * vote (start 1500), moved by every vote (K=32), frozen in effect at
+   * finality because castVote refuses once the window closes. `voteCount` is
+   * the liquidity measure the threshold reads.
+   */
+  fantasyCrowdRatings: defineTable({
+    gameweekId: v.id("fantasyGameweeks"),
+    playerId: v.id("fantasyPlayers"),
+    /** Denormalized so factor application can meet fantasyPlayerScores
+     *  (keyed by provider id) without a join per player. */
+    providerPlayerId: v.string(),
+    rating: v.number(),
+    voteCount: v.number(),
+  })
+    .index("by_gameweek_player", ["gameweekId", "playerId"])
+    .index("by_gameweek", ["gameweekId"]),
+
+  /**
+   * The sealed second game: per (user, gameweek) accuracy against the frozen
+   * consensus, written once by the post-settlement scoring job. Rolling
+   * accuracy sums these rows; the reclamation court reads it as vote weight
+   * (0.5 + accuracy) — the one place it has teeth.
+   */
+  fantasyCrowdRaterStats: defineTable({
+    userId: v.id("users"),
+    gameweekId: v.id("fantasyGameweeks"),
+    scoredVotes: v.number(),
+    accurateVotes: v.number(),
+    scoredAt: v.number(),
+  })
+    .index("by_user", ["userId"])
+    .index("by_gameweek_user", ["gameweekId", "userId"]),
 });

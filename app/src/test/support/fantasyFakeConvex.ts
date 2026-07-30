@@ -80,6 +80,20 @@ const INDEXES: Record<string, Record<string, string[]>> = {
     by_gameweek: ["gameweekId"],
     by_state: ["state"],
   },
+  // O2 crowd voting tables (schema.ts §WEEKEND FANTASY: crowd voting).
+  fantasyCrowdPairs: {
+    by_user_gameweek: ["userId", "gameweekId"],
+    by_user_gameweek_pairKey: ["userId", "gameweekId", "pairKey"],
+    by_gameweek_status: ["gameweekId", "status"],
+  },
+  fantasyCrowdRatings: {
+    by_gameweek_player: ["gameweekId", "playerId"],
+    by_gameweek: ["gameweekId"],
+  },
+  fantasyCrowdRaterStats: {
+    by_user: ["userId"],
+    by_gameweek_user: ["gameweekId", "userId"],
+  },
   users: { by_username: ["username"] },
 };
 
