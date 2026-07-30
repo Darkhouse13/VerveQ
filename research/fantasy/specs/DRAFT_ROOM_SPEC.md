@@ -1,6 +1,6 @@
-# Weekend Fantasy — Draft Room Spec (v1.2.0)
+# Weekend Fantasy — Draft Room Spec (v1.2.1)
 
-Status: **v1.2.0 — LOCKED by owner.** Every ⚑ item is
+Status: **v1.2.1 — LOCKED by owner.** Every ⚑ item is
 resolved in the owner ledger at the foot of this document, and every ⚑
 statement in the body has been amended to read as ruled; the ⚑ markers
 are kept as provenance of what was once open, not as live questions.
@@ -9,6 +9,14 @@ scheduled as work — they are deferred, not missing.
 
 ## Changelog
 
+- v1.2.1 — **the crew table exists** (FW-4 scoring pipeline, doc-only
+  patch). §Explicitly deferred no longer lists the crew table /
+  standings as blocked on the scoring pipeline: the pipeline shipped
+  and `fantasyScores.getCrewTable` serves cumulative points per member
+  with each weekend's result. Only the tie-break ladders remain
+  deferred — ties are displayed as ties, and the payload carries
+  `tieBreaksApplied: false` so no client can mistake the ordering for
+  a settled ladder. No rule changes.
 - v1.2.0 — **the spec is reconciled with the engine as built** (owner
   ruling 2026-07-29, ticket FW-3S). No rule changes: a blind
   verification of v1.1.0 against `app/convex/fantasyDraft*` found the
@@ -447,13 +455,17 @@ here so a future reader — or a verification pass — reads them as
 deferred rather than missing, which is the state they were in when the
 v1.1.0 blind verification flagged them:
 
-- **The tie-break ladders above, and the crew table / standings**
-  (weekend wins, cumulative points, head-to-head). Blocked on the
-  **scoring execution pipeline**: every input a standings table needs
-  is a scored weekend, and nothing scores a weekend yet. The retention
-  meta in §Founding shape describes the product this becomes; the draft
-  engine's job is to leave a correct, self-defending record behind for
-  it, which it does.
+- **The tie-break ladders above** (weekend wins, then cumulative
+  points, then head-to-head). The crew table itself is no longer
+  deferred: the scoring execution pipeline shipped (FW-4) and
+  `fantasyScores.getCrewTable` serves the standings — cumulative
+  points per member, each weekend's result, settled weekends read from
+  the stamped totals. What remains deferred is only the ladder that
+  would BREAK a tie: the table orders by cumulative points, displays a
+  tie as a tie, and returns `tieBreaksApplied: false` in the payload
+  so no client can mistake the ordering for a settled ladder. The
+  ladder's inputs (auto-pick flags, weekend wins) are all recorded, so
+  implementing it is a consumer, not a migration.
 - **LIVE and SETTLED as room phases.** §Lifecycle keeps them as the
   cycle's shape, but the room's own status machine terminates at
   COMPLETED and those two phases are carried by the gameweek. Promoting

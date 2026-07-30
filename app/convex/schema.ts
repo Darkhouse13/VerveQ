@@ -1384,6 +1384,13 @@ export default defineSchema({
     season: v.string(), // e.g. "2026-2027"
     gwNumber: v.number(),
     leagueIds: v.array(v.number()),
+    // A lifecycle field driven by the passage of time and by SETTLEMENT — and
+    // settlement is its one writer today (FW-4, E5 rider):
+    // `fantasyScores.finalizeGameweekChunk` patches "final" once the gameweek's
+    // score rows are all flipped at the cut, which is what lets the crew draft
+    // room advance past a dead weekend and closes squad edits. Ingestion never
+    // writes it (see fantasyIngest.applyGameweeks), and nothing yet promotes
+    // "live"/"settling" — those transitions still need an owner rule.
     status: v.union(
       v.literal("upcoming"),
       v.literal("live"),
@@ -1995,6 +2002,15 @@ export default defineSchema({
 
   // Gameweek-level scoring status: which of R3's two states every total in this
   // gameweek is in, plus the 6h-before-finality alert R7 asks for.
+  //
+  // `state: "final"` is THE SETTLEMENT STAMP (FW-4R N2/N3), written as the last
+  // act of settling: every current score row flipped AND every squad's total
+  // stamped (`fantasyScores.stampSquadFinalTotals` → markGameweekSettled). Every
+  // user-facing "final" label derives from this field, never from
+  // `now >= finalityAt` — the instant can MOVE when FW-2 re-windows a gameweek,
+  // and a label read off it could revert in front of a user; this stamp only
+  // ever goes one way. A crash mid-settlement leaves it "provisional", which is
+  // what makes the settlement cron revisit and finish the job.
   //
   // finalityAt is NOT copied here. FW-2 owns the cut and `applyGameweeks` can
   // still move it when a kickoff changes, so every consumer reads

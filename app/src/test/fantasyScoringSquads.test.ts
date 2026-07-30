@@ -14,6 +14,10 @@
  *
  * Every expected number is hand-computed from SCORING_SPEC v0.5.1 in the comment
  * above its assertion.
+ *
+ * FW-4R adds, in this file: N2 (the "final" label derives from the settlement
+ * stamp, never from the movable instant) and N5 (a fielded player absent from a
+ * SCORED fixture is an honest 0 — "did not appear" — not eternal awaiting).
  */
 
 import { beforeEach, describe, expect, it, vi } from "vitest";
@@ -165,6 +169,7 @@ function squadScoreNow() {
       mismatch: boolean;
       locked: boolean;
       awaitingReason: string | null;
+      zeroReason: string | null;
       rowState: string | null;
       playerName: string | null;
     }[];
@@ -209,12 +214,14 @@ describe("P5 — squad aggregation", () => {
 
     const score = await squadScoreNow();
 
-    // 8.5 + 7.6 + 0 + 0.75 = 16.85. The nine slots whose fixtures have not been
-    // scored contribute NOTHING — not zero — which is why the total is 16.85 and
-    // not "16.85 out of a completed weekend".
+    // 8.5 + 7.6 + 0 + 0.75 = 16.85. The seven slots whose fixtures have not
+    // been scored contribute NOTHING — not zero — which is why the total is
+    // 16.85 and not "16.85 out of a completed weekend". Slots 3 and 4 (SAT_B_1,
+    // SAT_B_2) had their fixture scored WITHOUT a line for them: that is a
+    // resolved, honest 0 (N5), so they count as scored and add nothing.
     expect(score.total).toBe(16.85);
-    expect(score.scoredSlots).toBe(4);
-    expect(score.awaitingSlots).toBe(9);
+    expect(score.scoredSlots).toBe(6);
+    expect(score.awaitingSlots).toBe(7);
     expect(score.emptySlots).toBe(0);
     expect(score.awaiting).toBe(true);
     expect(score.state).toBe("provisional");
@@ -223,6 +230,8 @@ describe("P5 — squad aggregation", () => {
     expect(slot(0).points).toBe(8.5);
     expect(slot(1).points).toBe(7.6);
     expect(slot(2).points).toBe(0);
+    expect(slot(3).points).toBe(0);
+    expect(slot(3).zeroReason).toBe("did not appear");
     expect(slot(5).points).toBe(0.75);
     expect(slot(0).rowState).toBe("provisional");
   });
@@ -234,12 +243,23 @@ describe("P5 — squad aggregation", () => {
 
     const score = await squadScoreNow();
     const zero = score.slots.find((s) => s.slotIndex === 2)!; // played 0 minutes
+    const absent = score.slots.find((s) => s.slotIndex === 3)!; // no line in a scored fixture
     const waiting = score.slots.find((s) => s.slotIndex === 6)!; // f-sat-2, unscored
 
     // The zero is a NUMBER, with a score row behind it.
     expect(zero.state).toBe("scored");
     expect(zero.points).toBe(0);
     expect(zero.awaitingReason).toBeNull();
+    expect(zero.zeroReason).toBeNull(); // the row itself explains this 0
+    expect(zero.rowState).toBe("provisional");
+
+    // The did-not-appear zero is ALSO a number (N5) — resolved without a row,
+    // and `zeroReason` is what says so.
+    expect(absent.state).toBe("scored");
+    expect(absent.points).toBe(0);
+    expect(absent.zeroReason).toBe("did not appear");
+    expect(absent.rowState).toBeNull(); // no row behind it
+    expect(absent.baseScore).toBeNull();
 
     // The awaiting slot has NO number at all, and says why.
     expect(waiting.state).toBe("awaiting");
@@ -275,7 +295,7 @@ describe("P5 — squad aggregation", () => {
     expect(empty.state).toBe("empty");
     expect(empty.points).toBeNull();
     expect(score.emptySlots).toBe(1);
-    expect(score.awaitingSlots).toBe(8);
+    expect(score.awaitingSlots).toBe(6);
     // BUDGET_MODE: "unfilled slots simply score zero" — it costs the total
     // nothing and is not a data failure, so it is not counted as awaiting.
     expect(score.total).toBe(16.85);
@@ -311,31 +331,48 @@ describe("P5 — squad aggregation", () => {
     expect(defenderInGoal.mismatch).toBe(true);
   });
 
-  it("marks the total final from the finality instant, before the cron stamps it", async () => {
+  it("derives the 'final' label from the settlement stamp — no flicker when the cut moves (N2)", async () => {
     await buildSquad();
     vi.setSystemTime(AFTER_SATURDAY);
     await scoreSaturdayOne();
 
     const gameweek = world.db.rows("fantasyGameweeks")[0];
-    vi.setSystemTime((gameweek.finalityAt as number) + 1_000);
+    const cut = gameweek.finalityAt as number;
+    vi.setSystemTime(cut + 1_000);
 
-    // No finalization has run yet: the score ROWS still say provisional…
-    const score = await squadScoreNow();
-    expect(score.slots.find((s) => s.slotIndex === 0)!.rowState).toBe("provisional");
-    // …but the TOTAL is already final, because past the cut nothing can write a
-    // score, so calling it provisional would be false.
-    expect(score.state).toBe("final");
+    // Past the cut, before the settlement cron: still provisional. The label is
+    // allowed to be LATE; it is never allowed to be retractable.
+    let score = await squadScoreNow();
+    expect(score.state).toBe("provisional");
     expect(score.finalizedAt).toBeNull();
 
-    await finalizeGameweekChunk(world.ctx, {
-      gameweekId: world.gameweekId,
-      now: (gameweek.finalityAt as number) + 1_000,
-    });
-    const settled = await squadScoreNow();
-    expect(settled.state).toBe("final");
-    expect(settled.finalizedAt).toBe((gameweek.finalityAt as number) + 1_000);
-    expect(settled.slots.find((s) => s.slotIndex === 0)!.rowState).toBe("final");
-    expect(settled.total).toBe(16.85); // unchanged by settling
+    // FW-2 re-windows the gameweek (a postponed fixture moved the cut a day
+    // out). Under the old instant-derived label this is exactly the flicker:
+    // final at cut+1s, provisional again now. The stamp-derived label never
+    // said final, so there is nothing to revert.
+    await world.db.patch(gameweek._id as string, { finalityAt: cut + 86_400_000 });
+    score = await squadScoreNow();
+    expect(score.state).toBe("provisional");
+
+    // Settle at the NEW cut. Rows flipping alone is not settlement (N3)…
+    const newCut = cut + 86_400_000 + 1_000;
+    vi.setSystemTime(newCut);
+    await finalizeGameweekChunk(world.ctx, { gameweekId: world.gameweekId, now: newCut });
+    score = await squadScoreNow();
+    expect(score.slots.find((s) => s.slotIndex === 0)!.rowState).toBe("final");
+    expect(score.state).toBe("provisional");
+
+    // …the squad stamps completing is, and only then does the label flip.
+    await stampSquadFinalTotals(world.ctx, { gameweekId: world.gameweekId, now: newCut });
+    score = await squadScoreNow();
+    expect(score.state).toBe("final");
+    expect(score.finalizedAt).toBe(newCut);
+    expect(score.total).toBe(16.85); // unchanged by settling
+
+    // And once stamped, a cut moving again cannot un-say it.
+    await world.db.patch(gameweek._id as string, { finalityAt: newCut + 86_400_000 });
+    score = await squadScoreNow();
+    expect(score.state).toBe("final");
   });
 
   it("stamps the settled weekend total on the squad, once", async () => {
@@ -362,8 +399,8 @@ describe("P5 — squad aggregation", () => {
     const squad = (await world.db.get(squadId))!;
     expect(squad.finalScore).toEqual({
       total: 16.85,
-      scoredSlots: 4,
-      awaitingSlots: 9,
+      scoredSlots: 6, // the two did-not-appear zeros count as resolved (N5)
+      awaitingSlots: 7,
       emptySlots: 0,
       at: cut,
     });
@@ -375,6 +412,66 @@ describe("P5 — squad aggregation", () => {
     expect(again.stamped).toBe(0);
     expect(again.alreadyStamped).toBe(1);
     expect((await world.db.get(squadId))!.finalScore).toEqual(squad.finalScore);
+  });
+
+  it("resolves a fielded player absent from a scored fixture — the eternal-awaiting scenario (N5)", async () => {
+    await buildSquad();
+    vi.setSystemTime(AFTER_SATURDAY);
+    await scoreSaturdayOne();
+
+    // SAT_B_1 (slot 3) is fielded; f-sat-1 IS scored; the feed carried no line
+    // for him — he was not in the matchday squad. Nothing will ever produce his
+    // row, so before FW-4R he read "awaiting data" forever and his squad never
+    // stopped being incomplete. Now he is a resolved, honest 0.
+    let score = await squadScoreNow();
+    const absent = score.slots.find((s) => s.slotIndex === 3)!;
+    expect(absent.state).toBe("scored");
+    expect(absent.points).toBe(0);
+    expect(absent.zeroReason).toBe("did not appear");
+    expect(score.awaiting).toBe(true); // f-sat-2 and f-sun-1 are still unscored
+
+    // Score the remaining fixtures with lines for NO fielded player at all —
+    // the hardest case: every remaining slot must resolve as did-not-appear.
+    await finishFixture("f-sat-2", 1, 1);
+    await applyFixtureStats(world.ctx, {
+      providerFixtureId: "f-sat-2",
+      hasPlayerStats: true,
+      hasEvents: true,
+      now: AFTER_SATURDAY,
+      rows: [row("SAT_C_4", "SAT_C", "MID", { minutes: 90 })],
+    });
+    await finishFixture("f-sun-1", 0, 0);
+    await applyFixtureStats(world.ctx, {
+      providerFixtureId: "f-sun-1",
+      hasPlayerStats: true,
+      hasEvents: true,
+      now: SUNDAY + 3 * 3_600_000,
+      rows: [row("SUN_B_1", "SUN_B", "GK", { minutes: 90 })],
+    });
+
+    vi.setSystemTime(SUNDAY + 3 * 3_600_000);
+    score = await squadScoreNow();
+    // Every fixture this squad fields a player in is scored: the awaiting flag
+    // clears, absentees included, and the nine did-not-appear slots add nothing.
+    expect(score.scoredSlots).toBe(13);
+    expect(score.awaitingSlots).toBe(0);
+    expect(score.awaiting).toBe(false);
+    expect(score.total).toBe(16.85);
+
+    // Settlement then stamps a COMPLETE record — awaitingSlots 0 — so the crew
+    // table's provisional flag has nothing to hang on either.
+    const gameweek = world.db.rows("fantasyGameweeks")[0];
+    const cut = (gameweek.finalityAt as number) + 1_000;
+    await finalizeGameweekChunk(world.ctx, { gameweekId: world.gameweekId, now: cut });
+    await stampSquadFinalTotals(world.ctx, { gameweekId: world.gameweekId, now: cut });
+    const squad = world.db.rows("fantasySquads")[0];
+    expect(squad.finalScore).toEqual({
+      total: 16.85,
+      scoredSlots: 13,
+      awaitingSlots: 0,
+      emptySlots: 0,
+      at: cut,
+    });
   });
 });
 
@@ -480,11 +577,14 @@ describe("P6 — the crew table", () => {
   it("carries real cumulative points, and never a zero for a scoreless weekend", async () => {
     const other = await world.db.insert("users", { username: "other" });
     const { roomId } = await seedCrew([world.userId, other]);
-    // Mine holds the two scoring SAT_A players; theirs holds nobody who scored.
+    // Mine holds the two scoring SAT_A players; theirs holds nobody whose
+    // fixture has even been scored — all of it is f-sat-2 or f-sun-1, both
+    // unscored. (No f-sat-1 club player: under N5 a player absent from a SCORED
+    // fixture is a resolved 0, which would make their weekend a number.)
     await seedCrewSheet(world.userId, roomId, SHEET);
     await seedCrewSheet(other, roomId, [
       "SUN_A_1", "SUN_A_2", "SUN_A_3", "SUN_B_1", "SUN_B_2", "SUN_B_3",
-      "SAT_C_4", "SAT_C_5", "SAT_C_6", "SAT_D_4", "SAT_D_5", "SAT_D_6", "SAT_A_4",
+      "SAT_C_4", "SAT_C_5", "SAT_C_6", "SAT_D_4", "SAT_D_5", "SAT_D_6", "SUN_A_4",
     ]);
 
     vi.setSystemTime(AFTER_SATURDAY);
@@ -530,6 +630,15 @@ describe("P6 — the crew table", () => {
       leagueIds: [39],
       status: "final",
       finalityAt: THURSDAY - 86_400_000,
+    });
+    // A settled gameweek carries the settlement stamp — the fact every "final"
+    // label derives from (N2).
+    await world.db.insert("fantasyGameweekScoring", {
+      gameweekId: priorGameweekId,
+      state: "final",
+      fixturesTotal: 0,
+      fixturesScored: 0,
+      finalizedAt: THURSDAY - 86_400_000,
     });
     const priorRoomId = await world.db.insert("fantasyDraftRooms", {
       crewId,

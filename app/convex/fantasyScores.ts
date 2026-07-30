@@ -102,11 +102,37 @@ export const SCORING_DELAY_AFTER_KICKOFF_MS = 2 * 60 * 60 * 1000;
  * corrections that actually happen (they land within a day, not within a week).
  *
  * The budget is per fixture and is what keeps a gameweek's LIFETIME spend at
- * fixtures x 3 x 2 requests — 288 for the biggest gameweek in the bootstrapped
- * season, against the ticket's 500 ceiling.
+ * fixtures x 4 x 2 requests (first read + budget + last-look) — 384 for the
+ * biggest gameweek in the bootstrapped season, against the ticket's 500 ceiling.
+ *
+ * THE BUDGET BOUNDS SPEND; IT CANNOT BOUND THE BLIND TAIL (FW-4R N1). A fixture
+ * scored early in a long window spends both checks within twelve hours and is
+ * then blind for the days between its last check and the cut — exactly where a
+ * late correction would slip past R4. The last-look sweep below is what bounds
+ * that tail: at finality−8h every scored fixture in the settling gameweek is
+ * re-read once more, whatever its counter says.
  */
 export const REVISION_CHECK_BUDGET = 2;
 const REVISION_CHECK_INTERVAL_MS = 6 * 60 * 60 * 1000;
+
+/**
+ * The last-look sweep (FW-4R N1): how far before the cut every scored fixture
+ * of a settling gameweek is re-read one final time.
+ *
+ * Eight hours is late enough that the corrections a whole weekend produces have
+ * landed, and early enough that a revision it catches still takes the normal
+ * pre-finality path — a NEW score version (R4), visible to users before their
+ * totals settle. An unchanged hash is R2's no-op.
+ *
+ * ONCE PER GAMEWEEK, WITHOUT A NEW FIELD. The sweep's record is the fixture's
+ * own `lastAttemptAt`: a fixture is due for its last look only while that stamp
+ * predates the window's start, and the read itself — no-op included — moves the
+ * stamp past it. Re-running the plan therefore re-proposes nothing, and a
+ * fixture first scored INSIDE the window is never proposed at all (its blind
+ * tail is already shorter than the lead). If FW-2 moves the cut later, the
+ * window moves with it and the sweep honestly runs again for the new tail.
+ */
+export const LAST_LOOK_LEAD_MS = 8 * 60 * 60 * 1000;
 
 /** A fixture that came back unscoreable is retried, but not on every tick. */
 const AWAITING_RETRY_INTERVAL_MS = 30 * 60 * 1000;
@@ -135,8 +161,12 @@ export interface PlannedFixture {
   season: string;
   kickoffAt: number;
   fixtureStatus: string;
-  /** "first" = never scored; "revision" = scored, re-reading for a change. */
-  readKind: "first" | "retry" | "revision";
+  /**
+   * "first" = never scored; "retry" = unscoreable last time, trying again;
+   * "revision" = scored, one of the budgeted early re-reads; "lastLook" =
+   * scored, the once-per-gameweek finality−8h sweep (FW-4R N1).
+   */
+  readKind: "first" | "retry" | "revision" | "lastLook";
   revisionChecks: number;
 }
 
@@ -148,7 +178,7 @@ export interface PlannedGameweek {
   fixturesInGameweek: number;
   fixturesDueNow: number;
   callsThisRun: number;
-  /** Lifetime ceiling: fixtures x (1 first read + budget) x 2 calls. */
+  /** Lifetime ceiling: fixtures x (1 first read + budget + 1 last look) x 2 calls. */
   projectedCallsForGameweek: number;
 }
 
@@ -317,8 +347,15 @@ export const scoringPlan = internalQuery({
         } else if (scoring.state === "awaiting_data") {
           if (now - scoring.lastAttemptAt >= AWAITING_RETRY_INTERVAL_MS) readKind = "retry";
         } else {
+          // The last look outranks the budget test: it exists precisely for the
+          // fixture whose counter is spent (see LAST_LOOK_LEAD_MS). `lastAttemptAt`
+          // is both the trigger and the record — the read stamps it past the
+          // window's start, so the sweep runs once per gameweek by construction.
+          const lastLookFrom = gameweek.finalityAt - LAST_LOOK_LEAD_MS;
           const checks = scoring.revisionChecks ?? 0;
-          if (
+          if (now >= lastLookFrom && scoring.lastAttemptAt < lastLookFrom) {
+            readKind = "lastLook";
+          } else if (
             checks < REVISION_CHECK_BUDGET &&
             now - scoring.lastAttemptAt >= REVISION_CHECK_INTERVAL_MS
           ) {
@@ -350,7 +387,7 @@ export const scoringPlan = internalQuery({
         fixturesDueNow: dueHere,
         callsThisRun: dueHere * CALLS_PER_FIXTURE,
         projectedCallsForGameweek:
-          allFixtures.length * (1 + REVISION_CHECK_BUDGET) * CALLS_PER_FIXTURE,
+          allFixtures.length * (1 + REVISION_CHECK_BUDGET + 1) * CALLS_PER_FIXTURE,
       });
     }
 
@@ -504,7 +541,9 @@ export const applyFixtureStats = internalMutation({
     // ONLY field that moves is the poll bookkeeping (lastAttemptAt and the
     // revision-check counter), which is a fact about this pipeline's polling and
     // not about the fixture's data — and it is what stops the pipeline re-reading
-    // a settled fixture forever.
+    // a settled fixture forever. `lastAttemptAt` moving is also what marks a
+    // last-look re-read done (FW-4R N1): once it passes the window's start, the
+    // plan cannot propose the fixture again.
     if (
       existing !== null &&
       existing.state === "scored" &&
@@ -776,10 +815,17 @@ export interface SettlementPlan {
 /**
  * Which gameweeks need settling, and which need the 6h alert.
  *
- * A gameweek needs finalization when `now >= finalityAt` and its scoring row is
- * not `final` yet. It needs an alert when the cut is 6h or less away, has not
- * passed, something is unscored, and no alert has been written — once, not on
- * every tick, because an alert that repeats is an alert nobody reads.
+ * A gameweek needs settlement work when `now >= finalityAt` and its scoring row
+ * is not `final` yet — where "final" is only written once BOTH halves of
+ * settlement are done: every current score row flipped AND every squad's total
+ * stamped (FW-4R N2/N3). That is what makes this plan the retry path for the
+ * crash window between the two: finalize done, stamp lost, and the gameweek is
+ * still a candidate on the next tick, where the (idempotent) finalize pass
+ * flips nothing and the stamp pass completes the job.
+ *
+ * It needs an alert when the cut is 6h or less away, has not passed, something
+ * is unscored, and no alert has been written — once, not on every tick, because
+ * an alert that repeats is an alert nobody reads.
  */
 export const settlementPlan = internalQuery({
   args: { now: v.optional(v.number()) },
@@ -795,7 +841,9 @@ export const settlementPlan = internalQuery({
       if (!withinAlertWindow && !pastCut) continue;
 
       const scoring = await gameweekScoringRow(ctx, gameweek._id);
-      if (pastCut && scoring?.state === "final") continue; // already settled
+      // "final" means FULLY settled — rows flipped and totals stamped. A crash
+      // between the two leaves it provisional, so it is revisited here (N3).
+      if (pastCut && scoring?.state === "final") continue;
       if (withinAlertWindow && scoring?.unscoredAlertAt !== undefined) continue; // already alerted
 
       const fixtures = await ctx.db
@@ -865,6 +913,12 @@ export interface FinalizeChunkResult {
  * touches rows whose state is still `provisional`, and a second call after the
  * last chunk finds nothing and returns done. Re-running it produces byte-
  * identical rows, because `finalizedAt` is only written on the transition.
+ *
+ * IT DOES NOT MARK THE GAMEWEEK SETTLED (FW-4R N3). `fantasyGameweekScoring.state`
+ * flips to "final" only when the OTHER half of settlement — the squad-total
+ * stamps — has also completed, in `stampSquadFinalTotals`. Rows-flipped with the
+ * gameweek row still provisional is exactly the crash window the settlement plan
+ * retries, and marking it settled here would close that window unstamped.
  *
  * SUPERSEDED VERSIONS ARE LEFT ALONE, on purpose. A row that was replaced before
  * the cut was never the final number, and relabelling it `final` would say it
@@ -936,22 +990,21 @@ export const finalizeGameweekChunk = internalMutation({
     const alreadyFinalized = existing?.scoreRowsFinalized ?? 0;
     const totalFinalized = alreadyFinalized + provisional.length;
 
+    // `state` is deliberately not touched: it says "settled", and settlement is
+    // not done until the squad totals are stamped too (N3).
     if (existing === null) {
       await ctx.db.insert("fantasyGameweekScoring", {
         gameweekId: gameweek._id,
-        state: done ? "final" : "provisional",
+        state: "provisional",
         fixturesTotal: fixtures.length,
         fixturesScored: scoredFixtures.length,
-        ...(done ? { finalizedAt: now } : {}),
         scoreRowsFinalized: totalFinalized,
       });
     } else {
       await ctx.db.patch(existing._id, {
-        state: done ? "final" : existing.state,
         fixturesTotal: fixtures.length,
         fixturesScored: scoredFixtures.length,
         scoreRowsFinalized: totalFinalized,
-        ...(done && existing.finalizedAt === undefined ? { finalizedAt: now } : {}),
       });
     }
 
@@ -978,7 +1031,9 @@ export const finalizeGameweekChunk = internalMutation({
       eligible: true,
       rowsFinalized: provisional.length,
       done,
-      gameweekState: done ? "final" : (existing?.state ?? "provisional"),
+      // Still "provisional" even when done: the gameweek is settled by the
+      // stamping pass, not by this one (N3).
+      gameweekState: existing?.state ?? "provisional",
       fixturesScored: scoredFixtures.length,
       fixturesTotal: fixtures.length,
       unscoredAtFinality: fixtures.length - scoredFixtures.length,
@@ -1000,7 +1055,8 @@ export interface StampSquadTotalsResult {
 const STAMP_CHUNK = 25;
 
 /**
- * Stamp each squad's settled weekend total onto `fantasySquads.finalScore`.
+ * Stamp each squad's settled weekend total onto `fantasySquads.finalScore`,
+ * and — once every squad carries one — mark the gameweek SETTLED.
  *
  * Runs after the score rows of a gameweek have gone final, and only then: the
  * numbers it records cannot move afterwards (R4), which is what makes a stored
@@ -1010,6 +1066,14 @@ const STAMP_CHUNK = 25;
  * This exists for the crew table. Cumulative points are a sum over every weekend
  * a crew has played, and re-deriving each of those from thirteen slot lookups
  * would make one crew page cost thousands of reads by the end of a season.
+ *
+ * THE SETTLEMENT STAMP LIVES HERE (FW-4R N2/N3). `fantasyGameweekScoring.state`
+ * flips to "final" only when the last squad is stamped — the last write of the
+ * whole settlement sequence — because that stamp is what every user-facing
+ * "final" label derives from, and a label written before the work is done is a
+ * label a crash can make a lie. Guarded: it refuses to mark settled while any
+ * current-version score row is still provisional, so calling this pass out of
+ * order cannot skip finalization.
  */
 export const stampSquadFinalTotals = internalMutation({
   args: {
@@ -1055,9 +1119,62 @@ export const stampSquadFinalTotals = internalMutation({
       stamped += 1;
     }
 
+    // Every squad in the gameweek is stamped (there may be none at all): the
+    // settlement sequence is complete, and only now may the gameweek say so.
+    await markGameweekSettled(ctx, gameweek, now);
+
     return { gwNumber: gameweek.gwNumber, eligible: true, stamped, alreadyStamped, done: true };
   },
 });
+
+/**
+ * The settlement stamp: `fantasyGameweekScoring.state = "final"`, written once,
+ * as the LAST act of settling a gameweek.
+ *
+ * Refuses while any current-version score row is still provisional — the stamp
+ * asserts "nothing here can change AND every derived record is written", and a
+ * caller that reached this out of order must not be able to fake that. The
+ * refusal is silent rather than a throw because the settlement cron will simply
+ * complete the missing half and land here again (N3).
+ */
+async function markGameweekSettled(
+  ctx: MutationCtx,
+  gameweek: Doc<"fantasyGameweeks">,
+  now: number,
+): Promise<void> {
+  const provisionalLeft = await ctx.db
+    .query("fantasyPlayerScores")
+    .withIndex("by_gameweek_state", (q) =>
+      q.eq("gameweekId", gameweek._id).eq("state", "provisional"),
+    )
+    .filter((q) => q.eq(q.field("supersededByVersion"), undefined))
+    .first();
+  if (provisionalLeft !== null) return;
+
+  const existing = await gameweekScoringRow(ctx, gameweek._id);
+  if (existing === null) {
+    // Reachable only when stamping ran on a gameweek nothing ever scored or
+    // finalized (it holds no score rows at all). Settled-empty is still settled.
+    const fixtures = await ctx.db
+      .query("fantasyFixtures")
+      .withIndex("by_gameweek_kickoff", (q) => q.eq("gameweekId", gameweek._id))
+      .collect();
+    await ctx.db.insert("fantasyGameweekScoring", {
+      gameweekId: gameweek._id,
+      state: "final",
+      fixturesTotal: fixtures.length,
+      fixturesScored: 0,
+      finalizedAt: now,
+    });
+    return;
+  }
+  if (existing.state !== "final") {
+    await ctx.db.patch(existing._id, {
+      state: "final",
+      ...(existing.finalizedAt === undefined ? { finalizedAt: now } : {}),
+    });
+  }
+}
 
 export interface UnscoredAlertResult {
   gwNumber: number;
@@ -1167,6 +1284,12 @@ export interface SettleGameweeksResult {
  * An action rather than a mutation because a busy gameweek's ~1,800 score rows
  * cannot be flipped in one transaction, and looping chunked mutations is the
  * house pattern for that (FW-2 D10a). It makes no network request at all.
+ *
+ * CRASH-SAFE BY RE-ENTRY (N3): the sequence per gameweek is flip rows → stamp
+ * squads → mark settled, every step idempotent, and the settled mark is the
+ * last write. Die anywhere in the middle and the plan proposes the gameweek
+ * again next tick; the steps already done flip/stamp nothing and the sequence
+ * runs to the mark.
  */
 export const settleGameweeks = internalAction({
   args: { now: v.optional(v.number()) },
@@ -1214,7 +1337,7 @@ export const settleGameweeks = internalAction({
         finalized.push(last);
         console.log(
           `[FW-4] finalized ${last.season} GW${last.gwNumber}: ${last.fixturesScored}/${last.fixturesTotal} fixtures scored, ` +
-            `${last.unscoredAtFinality} unscored at the cut, state ${last.gameweekState}`,
+            `${last.unscoredAtFinality} unscored at the cut`,
         );
 
         // Stamp the settled weekend totals only once the score rows are all
@@ -1238,6 +1361,9 @@ export const settleGameweeks = internalAction({
           if (totalStamped > 0) {
             stampedSquads.push({ gwNumber: last.gwNumber, squads: totalStamped });
           }
+          console.log(
+            `[FW-4] settled ${last.season} GW${last.gwNumber}: ${totalStamped} squad total(s) stamped this run`,
+          );
         }
       }
     }
@@ -1262,13 +1388,23 @@ export const settleGameweeks = internalAction({
 // NOTHING to the total (not zero — nothing), and the fact that it is waiting
 // travels with the total so no surface can present an incomplete number as a
 // finished one. `points: null` is how a slot says "no number yet"; `0` is only
-// ever a number the engine produced.
+// ever a number that was RESOLVED — the engine scored his line to 0, or his
+// fixture was scored without a line for him at all, which is the one absence
+// that is an answer rather than a wait: he did not appear (FW-4R N5).
 
 /** Why a slot has no points. Never conflated with a score OF zero. */
 export type SlotScoreState =
-  /** A score row exists for this player, in this gameweek, for this fielded slot. */
+  /**
+   * The slot has a NUMBER: a score row exists for this player, or his fixture
+   * was scored without a line for him — he was not in the matchday squad, and
+   * that is an honest 0 with `zeroReason` saying so (FW-4R N5).
+   */
   | "scored"
-  /** The slot is filled and the pipeline has no score for him yet (R7). */
+  /**
+   * The slot is filled and the player's fixture is not scored yet (R7).
+   * Reserved for UNSCORED fixtures: once a fixture is scored, every fielded
+   * player of it has a number, present in the feed or not (N5).
+   */
   | "awaiting"
   /** No player in the slot. BUDGET_MODE: an unfilled slot scores zero, honestly. */
   | "empty";
@@ -1285,6 +1421,13 @@ export interface SlotScore {
   state: SlotScoreState;
   /** Present when state is "awaiting" — what the surface should say instead of 0. */
   awaitingReason: string | null;
+  /**
+   * Present on a scored slot whose 0 has no score row behind it: the fixture
+   * was scored and this player had no line in it ("did not appear", N5). The
+   * per-score fields below (baseScore, version, rowState…) stay null on such a
+   * slot, and this is what says the 0 is a resolution, not a missing row.
+   */
+  zeroReason: string | null;
   /** null unless state is "scored". NEVER 0 as a stand-in for "no data". */
   points: number | null;
   baseScore: number | null;
@@ -1304,14 +1447,16 @@ export interface SquadScore {
   season: string;
   gwNumber: number;
   /**
-   * R3's state for this total, derived from FW-2's INSTANT rather than from the
-   * finalization row.
+   * R3's state for this total, derived from the SETTLEMENT STAMP
+   * (`fantasyGameweekScoring.state`), never from `now >= finalityAt` (FW-4R N2).
    *
-   * The instant is the authority: past it, the ingest path will not write another
-   * score, so the total cannot move and calling it "provisional" would be false —
-   * even in the fifteen minutes before the settlement cron stamps the rows.
-   * `finalizedAt` is exposed alongside so an operator can still see whether the
-   * stamp has landed.
+   * The instant cannot carry a user-facing label, because FW-2 can MOVE it: a
+   * postponed fixture re-windows the gameweek and `applyGameweeks` shifts
+   * `finalityAt` later, and a label that read "final" off the old instant would
+   * revert to "provisional" in front of the user. The stamp only ever moves
+   * provisional → final, so a label derived from it cannot flicker. The cost is
+   * honesty's direction: in the minutes between the cut and the settlement cron
+   * the total still reads "provisional" — a late label, never a wrong one.
    */
   state: "provisional" | "final";
   finalityAt: number;
@@ -1368,6 +1513,7 @@ export async function squadScore(
       locked: lockedByIndex.get(slot.slotIndex) === true,
       state: "empty",
       awaitingReason: null,
+      zeroReason: null,
       points: null,
       baseScore: null,
       crowdFactor: null,
@@ -1401,6 +1547,30 @@ export async function squadScore(
     const role: SlotRole = slot.isFinisher ? "finisher" : "starter";
 
     if (row === null) {
+      // No score row. Which of two very different facts is it? His fixture is
+      // not scored (awaiting, R7) — or his fixture IS scored and the feed had
+      // no line for him, meaning he was not in the matchday squad at all. The
+      // second is not missing data: every line the fixture produced has been
+      // scored, and a player outside the squad list scores what an unused
+      // player scores — an honest 0 (N5). Without this, one left-out player
+      // reads "awaiting data" forever and his squad never stops being
+      // provisional, because no later ingest will ever produce his row.
+      const fixture = await fixtureForClub(ctx, gameweek._id, player.clubId);
+      const fixtureScoring = fixture === null ? null : await fixtureScoringRow(ctx, fixture._id);
+
+      if (fixtureScoring?.state === "scored") {
+        scoredSlots += 1; // contributes 0 to the total, and counts as resolved
+        out.push({
+          ...base,
+          playerName: player.name,
+          clubId: player.clubId,
+          state: "scored",
+          zeroReason: "did not appear",
+          points: 0,
+        });
+        continue;
+      }
+
       awaitingSlots += 1;
       out.push({
         ...base,
@@ -1408,7 +1578,7 @@ export async function squadScore(
         clubId: player.clubId,
         state: "awaiting",
         awaitingReason: withReasons
-          ? await awaitingReasonFor(ctx, gameweek._id, player)
+          ? awaitingReasonFor(fixture, fixtureScoring)
           : "awaiting data",
       });
       continue;
@@ -1441,7 +1611,7 @@ export async function squadScore(
     gameweekId: gameweek._id,
     season: gameweek.season,
     gwNumber: gameweek.gwNumber,
-    state: now >= gameweek.finalityAt ? "final" : "provisional",
+    state: gwScoring?.state === "final" ? "final" : "provisional",
     finalityAt: gameweek.finalityAt,
     finalizedAt: gwScoring?.finalizedAt ?? null,
     total,
@@ -1459,17 +1629,14 @@ export async function squadScore(
  * Reads the fixture and the pipeline's own status row rather than guessing: "his
  * match hasn't finished" and "the feed has not supplied this fixture" are
  * different things to a user, and the second one is the pipeline's fault rather
- * than football's.
+ * than football's. Takes the already-fetched docs — the caller needed them
+ * anyway, to tell awaiting from did-not-appear (N5).
  */
-async function awaitingReasonFor(
-  ctx: QueryCtx,
-  gameweekId: Id<"fantasyGameweeks">,
-  player: Doc<"fantasyPlayers">,
-): Promise<string> {
-  const fixture = await fixtureForClub(ctx, gameweekId, player.clubId);
+function awaitingReasonFor(
+  fixture: Doc<"fantasyFixtures"> | null,
+  scoring: Doc<"fantasyFixtureScoring"> | null,
+): string {
   if (fixture === null) return "no fixture for his club in this gameweek";
-
-  const scoring = await fixtureScoringRow(ctx, fixture._id);
   if (scoring?.notScoredReason !== undefined && scoring.notScoredReason !== null) {
     return scoring.notScoredReason;
   }
@@ -1629,8 +1796,10 @@ export const getCrewTable = query({
 
       const gwScoring = await gameweekScoringRow(ctx, gameweek._id);
       const anyScored = (gwScoring?.fixturesScored ?? 0) > 0;
+      // From the settlement stamp, like every user-facing "final" (N2): a label
+      // derived from the movable instant could revert when FW-2 re-windows.
       const state: "provisional" | "final" =
-        now >= gameweek.finalityAt ? "final" : "provisional";
+        gwScoring?.state === "final" ? "final" : "provisional";
 
       weekends.push({
         roomId: room._id,
@@ -1819,6 +1988,13 @@ export const scoreDueFixtures = internalAction({
       `[FW-4 call plan] ${plan.fixtures.length} fixture(s) due, ${plan.callsThisRun} request(s) this run ` +
         `(${CALLS_PER_FIXTURE}/fixture: /fixtures/players + /fixtures/events)`,
     );
+    const lastLooks = plan.fixtures.filter((f) => f.readKind === "lastLook").length;
+    if (lastLooks > 0) {
+      console.log(
+        `[FW-4 call plan]   ${lastLooks} of these are the finality−8h last-look sweep (FW-4R N1), ` +
+          `${lastLooks * CALLS_PER_FIXTURE} request(s)`,
+      );
+    }
     for (const gw of plan.gameweeks) {
       console.log(
         `[FW-4 call plan]   ${gw.season} GW${gw.gwNumber}: ${gw.fixturesDueNow}/${gw.fixturesInGameweek} fixtures due, ` +

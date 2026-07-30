@@ -21,6 +21,13 @@
  *   unscored ≠ zero                          → "R7 — scoreability"
  *   mismatch applied only on a mismatch      → "R6 — the verdict"
  *   squad aggregation, hand-computed         → fantasyScoringSquads.test.ts
+ *
+ * FW-4R (the blind-verify remediation) adds:
+ *
+ *   last-look re-check at finality−8h        → "N1 — the last-look sweep"
+ *   settlement retry across the crash window → "N3 — settlement retry"
+ *   starter in a finisher slot is designed   → "N4 — the unused-finisher note"
+ *   did-not-appear resolves to an honest 0   → fantasyScoringSquads.test.ts
  */
 
 import { beforeEach, describe, expect, it } from "vitest";
@@ -34,13 +41,15 @@ import {
 } from "./support/fantasyFakeConvex";
 
 import * as fantasyScores from "../../convex/fantasyScores";
-import { emptyStats, type PlayerMatchStats } from "../../convex/lib/fantasyScoring";
+import { emptyStats, scorePlayer, type PlayerMatchStats } from "../../convex/lib/fantasyScoring";
+import { matchContextFor } from "../../convex/lib/fantasyFeedStats";
 import { CROWD_FACTOR_OUT_OF_BAND } from "../../convex/lib/fantasyScorePipeline";
 
 const applyFixtureStats = handlerOf(fantasyScores.applyFixtureStats);
 const scoringPlan = handlerOf(fantasyScores.scoringPlan);
 const settlementPlan = handlerOf(fantasyScores.settlementPlan);
 const finalizeGameweekChunk = handlerOf(fantasyScores.finalizeGameweekChunk);
+const stampSquadFinalTotals = handlerOf(fantasyScores.stampSquadFinalTotals);
 const writeUnscoredAlert = handlerOf(fantasyScores.writeUnscoredAlert);
 
 /** Two hours and change after the Saturday kickoff: the earliest read (R2). */
@@ -718,13 +727,13 @@ describe("the call plan (R2 cadence + the 500-call gate)", () => {
     expect(plan.fixtures[0].readKind).toBe("first");
     expect(plan.callsThisRun).toBe(2);
     expect(plan.notFinished.map((f) => f.providerFixtureId)).toEqual(["f-sat-2"]);
-    // 3 fixtures x (1 first read + 2 revision checks) x 2 calls = 18
+    // 3 fixtures x (1 first read + 2 revision checks + 1 last look) x 2 calls = 24
     expect(plan.gameweeks[0].fixturesInGameweek).toBe(3);
-    expect(plan.gameweeks[0].projectedCallsForGameweek).toBe(18);
+    expect(plan.gameweeks[0].projectedCallsForGameweek).toBe(24);
   });
 
   it("flags a gameweek whose projected spend would break the 500-call ceiling", async () => {
-    // 84 fixtures x 3 reads x 2 calls = 504 > 500. The gate is arithmetic on the
+    // 63 fixtures x 4 reads x 2 calls = 504 > 500. The gate is arithmetic on the
     // gameweek, not on the run, so it fires before a single request is made.
     const gameweekId = await world.db.insert("fantasyGameweeks", {
       season: "2026-2027",
@@ -733,7 +742,7 @@ describe("the call plan (R2 cadence + the 500-call gate)", () => {
       status: "upcoming",
       finalityAt: SUNDAY + 5 * 86_400_000,
     });
-    for (let i = 0; i < 84; i += 1) {
+    for (let i = 0; i < 63; i += 1) {
       await world.db.insert("fantasyFixtures", {
         gameweekId,
         leagueId: 39,
@@ -753,5 +762,206 @@ describe("the call plan (R2 cadence + the 500-call gate)", () => {
     expect(plan.overBudget).toHaveLength(1);
     expect(plan.overBudget[0].gwNumber).toBe(99);
     expect(plan.overBudget[0].projectedCallsForGameweek).toBe(504);
+  });
+});
+
+describe("N1 — the last-look sweep (finality−8h)", () => {
+  // Seeded finality is SUNDAY + 2 days = SATURDAY + 72h, so the window opens at
+  // SATURDAY + 64h. Every instant below is stated relative to those two marks.
+  const finalityAt = () => world.db.rows("fantasyGameweeks")[0].finalityAt as number;
+
+  beforeEach(async () => {
+    await finishFixture("f-sat-1", 2, 0);
+  });
+
+  async function planned(now: number) {
+    const plan = (await scoringPlan(world.ctx, { now })) as {
+      fixtures: { providerFixtureId: string; readKind: string }[];
+    };
+    return plan.fixtures.filter((f) => f.providerFixtureId === "f-sat-1");
+  }
+
+  it("re-checks a scored fixture once inside the window, even with the budget spent", async () => {
+    await ingest("f-sat-1", [KEEPER()]);
+    // Spend both budgeted early checks (6h apart), well before the window.
+    await ingest("f-sat-1", [KEEPER()], { now: AFTER_SATURDAY + 7 * 3_600_000 });
+    await ingest("f-sat-1", [KEEPER()], { now: AFTER_SATURDAY + 14 * 3_600_000 });
+
+    // Budget spent, window not open: nothing is due.
+    expect(await planned(finalityAt() - 20 * 3_600_000)).toHaveLength(0);
+
+    // Window open (finality−7h): due exactly once, as a last look.
+    const due = await planned(finalityAt() - 7 * 3_600_000);
+    expect(due).toHaveLength(1);
+    expect(due[0].readKind).toBe("lastLook");
+
+    // The read itself — a no-op here — is what marks the look done: the plan
+    // proposes nothing on the next tick, so the sweep runs once per gameweek.
+    const again = await ingest("f-sat-1", [KEEPER()], {
+      now: finalityAt() - 7 * 3_600_000,
+    });
+    expect(again.noop).toBe(true);
+    expect(await planned(finalityAt() - 6 * 3_600_000)).toHaveLength(0);
+  });
+
+  it("does not last-look a fixture first scored inside the window — no blind tail to bound", async () => {
+    await ingest("f-sat-1", [KEEPER()], { now: finalityAt() - 7 * 3_600_000 });
+    const due = await planned(finalityAt() - 6 * 3_600_000);
+    expect(due).toHaveLength(0);
+  });
+
+  it("a revision caught at the last look lands as a NEW version through the normal path", async () => {
+    await ingest("f-sat-1", [MIDFIELDER()]);
+    await ingest("f-sat-1", [MIDFIELDER()], { now: AFTER_SATURDAY + 7 * 3_600_000 });
+    await ingest("f-sat-1", [MIDFIELDER()], { now: AFTER_SATURDAY + 14 * 3_600_000 });
+
+    // The correction the early checks were too early to see: one more key pass,
+    // landing at the last look (finality−7h), still before the cut.
+    const result = await ingest("f-sat-1", [
+      row("SAT_B_4", "SAT_B", "MID", {
+        minutes: 90,
+        tackles: 5,
+        interceptions: 2,
+        keyPasses: 4,
+        passesTotal: 50,
+        passesAccurate: 46,
+      }),
+    ], { now: finalityAt() - 7 * 3_600_000 });
+
+    expect(result.afterFinality).toBe(false);
+    expect(result.scoreVersionsWritten).toBe(1);
+
+    // R4's shape, unchanged by WHO noticed: v1 superseded but readable at 9.4,
+    // v2 current at 1 + 4 + (4 x 0.8) + 2 = 10.2.
+    const versions = scoreRows("SAT_B_4");
+    expect(versions).toHaveLength(2);
+    expect(grid(versions[0]).starter.MID).toBe(9.4);
+    expect(versions[0].supersededByVersion).toBe(2);
+    expect(grid(versions[1]).starter.MID).toBe(10.2);
+    expect(versions[1].state).toBe("provisional");
+
+    // And it settles as the number the last look caught.
+    await finalizeGameweekChunk(world.ctx, {
+      gameweekId: world.gameweekId,
+      now: finalityAt(),
+    });
+    expect(scoreRows("SAT_B_4")[1].state).toBe("final");
+  });
+});
+
+describe("N3 — settlement retry across the crash window", () => {
+  const finalityAt = () => world.db.rows("fantasyGameweeks")[0].finalityAt as number;
+
+  beforeEach(async () => {
+    await finishFixture("f-sat-1", 2, 0);
+    await ingest("f-sat-1", [KEEPER()]);
+  });
+
+  function gwScoring() {
+    return world.db.rows("fantasyGameweekScoring")[0];
+  }
+
+  it("finalize done + stamp lost leaves the gameweek unsettled, and the next run completes it", async () => {
+    const cut = finalityAt() + 1_000;
+
+    // Step 1 of the settle sequence runs; the crash eats step 2 (the stamps).
+    const flip = (await finalizeGameweekChunk(world.ctx, {
+      gameweekId: world.gameweekId,
+      now: cut,
+    })) as { done: boolean; rowsFinalized: number };
+    expect(flip.done).toBe(true);
+    expect(flip.rowsFinalized).toBe(1);
+
+    // The rows are final; the SETTLEMENT is not — the stamp is the last write,
+    // so the label a user sees can never get ahead of the work (N2).
+    expect(scoreRows("SAT_A_1")[0].state).toBe("final");
+    expect(gwScoring().state).toBe("provisional");
+
+    // The next tick's plan still proposes the gameweek: state≠final IS the
+    // retry marker, no extra bookkeeping field required.
+    const replan = (await settlementPlan(world.ctx, { now: cut + 60_000 })) as {
+      candidates: { needsFinalization: boolean }[];
+    };
+    expect(replan.candidates).toHaveLength(1);
+    expect(replan.candidates[0].needsFinalization).toBe(true);
+
+    // Finalize again (idempotent, flips nothing), then the stamps complete —
+    // and completing them is what marks the gameweek settled.
+    const reflip = (await finalizeGameweekChunk(world.ctx, {
+      gameweekId: world.gameweekId,
+      now: cut + 60_000,
+    })) as { done: boolean; rowsFinalized: number };
+    expect(reflip.done).toBe(true);
+    expect(reflip.rowsFinalized).toBe(0);
+
+    const stamp = (await stampSquadFinalTotals(world.ctx, {
+      gameweekId: world.gameweekId,
+      now: cut + 60_000,
+    })) as { done: boolean };
+    expect(stamp.done).toBe(true);
+    expect(gwScoring().state).toBe("final");
+    expect(gwScoring().finalizedAt).toBe(cut + 60_000);
+
+    // Settled means silent: the plan never proposes this gameweek again.
+    const after = (await settlementPlan(world.ctx, { now: cut + 120_000 })) as {
+      candidates: unknown[];
+    };
+    expect(after.candidates).toHaveLength(0);
+  });
+
+  it("stamping out of order cannot mark a gameweek settled over provisional rows", async () => {
+    // A direct stamp call past the cut, with finalization never run: totals are
+    // immutable past the cut so the stamped numbers are fine, but the gameweek
+    // must NOT read settled while current rows are still provisional.
+    const stamp = (await stampSquadFinalTotals(world.ctx, {
+      gameweekId: world.gameweekId,
+      now: finalityAt() + 1_000,
+    })) as { done: boolean };
+    expect(stamp.done).toBe(true);
+    expect(world.db.rows("fantasyGameweekScoring")[0].state).toBe("provisional");
+  });
+});
+
+describe("N4 — the unused-finisher note tells design from data fault", () => {
+  const context = matchContextFor(2, 0);
+
+  it("calls a STARTER fielded in a finisher slot a designed outcome", async () => {
+    // 90 minutes, wasSubstitute false: he began the match. A finisher slot
+    // scores post-entry play only and a starter has no entry — §Finishers, by
+    // design, and the note must not cry DATA INCONSISTENCY at it.
+    const result = scorePlayer(
+      { stats: emptyStats({ minutes: 90 }), context, events: [] },
+      { position: "ATT", role: "finisher" },
+      "ATT",
+      null,
+      0,
+    );
+    expect(result.points).toBe(0);
+    expect(result.ledger[0].code).toBe("finisher.unused");
+    expect(result.ledger[0].note).toMatch(/designed outcome/);
+    expect(result.ledger[0].note).not.toMatch(/DATA INCONSISTENCY/);
+  });
+
+  it("still flags a SUBSTITUTE with minutes but no entry event as inconsistent data", async () => {
+    const result = scorePlayer(
+      { stats: emptyStats({ minutes: 20, wasSubstitute: true }), context, events: [] },
+      { position: "ATT", role: "finisher" },
+      "ATT",
+      null,
+      0,
+    );
+    expect(result.points).toBe(0);
+    expect(result.ledger[0].note).toMatch(/DATA INCONSISTENCY/);
+  });
+
+  it("keeps 'Did not appear' for the genuinely unused finisher", async () => {
+    const result = scorePlayer(
+      { stats: emptyStats({ minutes: 0 }), context, events: [] },
+      { position: "ATT", role: "finisher" },
+      "ATT",
+      null,
+      0,
+    );
+    expect(result.ledger[0].note).toBe("Did not appear");
   });
 });

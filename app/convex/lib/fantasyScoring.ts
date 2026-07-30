@@ -642,14 +642,22 @@ export function scorePlayer(
   const ledger: LedgerEntry[] = [];
 
   // --- unused finisher: v0.3 §Finishers, "no participation floor".
+  //
+  // Minutes with no entry minute splits on `wasSubstitute` (FW-4R N4). A
+  // STARTER has no entry by definition — he did not come on, he began — so a
+  // starter fielded in a finisher slot is the DESIGNED outcome of §Finishers
+  // (post-entry play only), not a data fault. Only a substitute whose entry
+  // event the feed dropped is an actual inconsistency.
   if (isFinisher && (stats.minutes <= 0 || entryMinute === null)) {
-    const inconsistent = stats.minutes > 0 && entryMinute === null;
+    const playedWithoutEntry = stats.minutes > 0 && entryMinute === null;
     ledger.push({
       code: 'finisher.unused',
       label: 'Unused finisher',
       points: 0,
-      note: inconsistent
-        ? `DATA INCONSISTENCY: ${stats.minutes} minutes played but no entry minute in the events feed; scored as unused`
+      note: playedWithoutEntry
+        ? stats.wasSubstitute
+          ? `DATA INCONSISTENCY: ${stats.minutes} minutes as a substitute but no entry minute in the events feed; scored as unused`
+          : `started the match (${stats.minutes} minutes): a finisher slot scores post-entry play only, and a starter has no entry (§Finishers) — designed outcome, scored as unused`
         : 'Did not appear',
     });
     return { points: 0, ledger };

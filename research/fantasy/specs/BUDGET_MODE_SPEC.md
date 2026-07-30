@@ -1,6 +1,6 @@
-# Weekend Fantasy — Budget Mode Spec (v1.1.0)
+# Weekend Fantasy — Budget Mode Spec (v1.1.1)
 
-Status: **v1.1.0 — LOCKED by owner 2026-07-29 (squad budget set at
+Status: **v1.1.1 — LOCKED by owner 2026-07-29 (squad budget set at
 91.0).** Founding ruling LOCKED: **fresh squad weekly**. The budget is
 now a real number, not a placeholder; the price tick remains pending
 FS-1 calibration. The *rules* below are settled and change by owner
@@ -8,6 +8,10 @@ ticket only — this amendment was itself an owner ticket (FW-PR3).
 
 ## Changelog
 
+- v1.1.1 — doc-only patch: open item 1 now names the constant as it
+  shipped — `SQUAD_BUDGET = 91.0` in `app/convex/lib/fantasyConstants.ts`
+  (commit 4ff2a28) — instead of the pre-pricing placeholder name, which
+  no longer exists in code. No rule changes.
 - v1.1.0 — **squad budget set: 91.0** (FW-PR3, owner ruling
   2026-07-29). Open item 1's budget half is closed and the §Squad
   construction row moves from "principle LOCKED, number pending" to
@@ -164,11 +168,11 @@ references the other.
 
 1. ~~Budget number~~ — **RESOLVED: 91.0** by owner 2026-07-29
    (FW-PR3). See §Budget. The pricing pass has priced the full pool
-   (`pricing/price-final.json`, 2,895 players); in code the number
-   replaces the placeholder constant
-   (`PLACEHOLDER_PENDING_PRICING_PASS = 100.0`) with no other change,
-   exactly as FW-1 STOP-4 designed for. **Price tick — still open**,
-   pending FS-1 calibration. The fail-closed rule is permanent and not
+   (`pricing/price-final.json`, 2,895 players); in code the constant
+   is `SQUAD_BUDGET = 91.0` in `app/convex/lib/fantasyConstants.ts`
+   (wired in commit 4ff2a28), exactly the single-constant swap FW-1
+   STOP-4 designed for. **Price tick — still open**, pending FS-1
+   calibration. The fail-closed rule is permanent and not
    contingent on that: an unpriced player is **rejected** from a budget
    squad, whatever the tick turns out to be (FW-1 STOP-4 ruling
    2026-07-28).
