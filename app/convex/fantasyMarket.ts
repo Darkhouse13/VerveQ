@@ -9,9 +9,11 @@
  * Spec: BUDGET_MODE_SPEC.md v1.1.1.
  */
 
+import { v } from "convex/values";
 import { query } from "./_generated/server";
 import type { Doc } from "./_generated/dataModel";
 import { findOpenGameweek } from "./fantasyDraftRooms";
+import { fixtureForClub } from "./fantasyLocks";
 
 /**
  * The gameweek a budget squad builds for: the open (upcoming or live)
@@ -99,5 +101,20 @@ export const getMarket = query({
       finalityAt: gameweek.finalityAt,
       players: market,
     };
+  },
+});
+
+/**
+ * The open gameweek's fixture id for a club (earliest kickoff — the same
+ * rule the lock engine uses). The court's file-a-claim flow resolves a
+ * player's fixture through this; the filing mutation re-validates it.
+ */
+export const getFixtureForClub = query({
+  args: { clubId: v.string() },
+  handler: async (ctx, { clubId }) => {
+    const gameweek = await findOpenGameweek(ctx);
+    if (gameweek === null) return null;
+    const fixture = await fixtureForClub(ctx, gameweek._id, clubId);
+    return fixture?._id ?? null;
   },
 });

@@ -494,6 +494,21 @@ export const applyFixtureStats = internalMutation({
     let playedRowsWithoutPosition = 0;
     let rowsWithUnknownClub = 0;
 
+    // O3: a PASSED reclamation-court verdict overrides the feed's position
+    // for the rest of this gameweek — a revision landing between a ruling
+    // and finality must re-score WITH the ruling, not reset it to the feed.
+    // Read inline (fantasyCourt imports this module; a value import back
+    // would cycle the runtime graph).
+    const passedClaims = await ctx.db
+      .query("fantasyCourtClaims")
+      .withIndex("by_gameweek_status", (q) =>
+        q.eq("gameweekId", gameweek._id).eq("status", "passed"),
+      )
+      .collect();
+    const courtVerdictByPlayer = new Map(
+      passedClaims.map((c) => [c.providerPlayerId, c.claimedPosition]),
+    );
+
     const lines: (PlayerFixtureLine & {
       providerPlayerId: string;
       clubId: string;
@@ -522,7 +537,8 @@ export const applyFixtureStats = internalMutation({
         ),
         events: row.events,
         entryMinute: row.entryMinute,
-        verdictPosition: row.feedPosition,
+        verdictPosition:
+          courtVerdictByPlayer.get(row.providerPlayerId) ?? row.feedPosition,
         crowdFactor: row.crowdFactor ?? 0,
         statHash: "",
       };

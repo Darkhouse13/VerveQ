@@ -83,6 +83,8 @@ export const SHELL_ROUTES = {
   weekendSquad: "/v2/weekend/squad",
   /** THE WEEKEND crowd voting stack (O2). */
   weekendVote: "/v2/weekend/vote",
+  /** THE WEEKEND reclamation court (O3). */
+  weekendCourt: "/v2/weekend/court",
 } as const;
 
 /** Route patterns registered in App.tsx (params un-filled). */
@@ -111,6 +113,7 @@ export const SHELL_ROUTE_PATTERNS = {
   weekendDraft: "/v2/weekend/draft/:roomId",
   weekendSquad: "/v2/weekend/squad",
   weekendVote: "/v2/weekend/vote",
+  weekendCourt: "/v2/weekend/court",
 } as const;
 
 /**

@@ -94,6 +94,20 @@ const INDEXES: Record<string, Record<string, string[]>> = {
     by_user: ["userId"],
     by_gameweek_user: ["gameweekId", "userId"],
   },
+  // O3 reclamation-court tables (schema.ts §WEEKEND FANTASY: reclamation court).
+  fantasyCourtClaims: {
+    by_gameweek_status: ["gameweekId", "status"],
+    by_gameweek_claimKey: ["gameweekId", "providerPlayerId", "fixtureId", "claimedPosition"],
+    by_filer_gameweek: ["filedBy", "gameweekId"],
+  },
+  fantasyCourtEndorsements: {
+    by_claim_user: ["claimId", "userId"],
+    by_claim: ["claimId"],
+  },
+  fantasyCourtVotes: {
+    by_claim_user: ["claimId", "userId"],
+    by_claim: ["claimId"],
+  },
   users: { by_username: ["username"] },
 };
 

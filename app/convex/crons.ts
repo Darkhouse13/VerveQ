@@ -37,6 +37,12 @@ crons.cron("fantasy-score-fixtures", "10,25,40,55 * * * *", internal.fantasyScor
 // Quarter-hourly so a total is labelled final within 15 minutes of the cut, and
 // so the 6h alert lands inside its window; it makes no network request at all.
 crons.cron("fantasy-settle-gameweeks", "2,17,32,47 * * * *", internal.fantasyScores.settleGameweeks, {});
+// Reclamation court (FW-LAUNCH O3): kills sub-threshold claims at Monday
+// 23:59 and resolves trials in the Tuesday 21:00-23:59 verdict window —
+// BEFORE the settlement above stamps the gameweek, by construction: runs at
+// :7/:22/:37/:52 so a verdict never waits on the same tick that settles.
+// Guarded no-op outside those windows; settled gameweeks are skipped whole.
+crons.cron("fantasy-court-resolve", "7,22,37,52 * * * *", internal.fantasyCourt.resolveDueClaims, {});
 // FW-3 draft rooms: expires dead lobbies and re-drives any room whose
 // scheduled hop was lost. Every action is a guarded no-op on a healthy room,
 // so the tight interval buys stall-recovery, not load.

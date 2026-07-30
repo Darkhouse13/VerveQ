@@ -2119,4 +2119,93 @@ export default defineSchema({
   })
     .index("by_user", ["userId"])
     .index("by_gameweek_user", ["gameweekId", "userId"]),
+
+  // ──────────────────────────────────────── WEEKEND FANTASY: reclamation court
+  //
+  // FW-LAUNCH O3, RECLAMATION_COURT_SPEC v1.0.1. The court hears POSITION
+  // VERDICTS only. A passed claim's effect on scores is a NEW
+  // fantasyPlayerScores version re-scored against the changed verdict —
+  // rule 5 stands: no court path mutates a number, and a settled gameweek
+  // is immune to everything here. A passed claim is ALSO the standing
+  // override the ingest path reads, so a later feed revision cannot reset a
+  // ruling before finality.
+
+  /**
+   * One claim per (gameweek, player, fixture, claimed position) — duplicate
+   * filings merge into the first as endorsements (no split courts). Status
+   * walks filing → trial → passed | failed, or filing → died (short of the
+   * threshold at Monday 23:59). Tallies are stamped at resolution and public
+   * by design: the court's history is content.
+   */
+  fantasyCourtClaims: defineTable({
+    gameweekId: v.id("fantasyGameweeks"),
+    fixtureId: v.id("fantasyFixtures"),
+    providerPlayerId: v.string(),
+    playerId: v.optional(v.id("fantasyPlayers")),
+    claimedPosition: fantasySlot,
+    /** The verdict in force when the claim was filed — the ballot's "the
+     *  feed says". */
+    positionAtFiling: v.union(fantasySlot, v.null()),
+    filedBy: v.id("users"),
+    argument: v.string(),
+    filedAt: v.number(),
+    status: v.union(
+      v.literal("filing"),
+      v.literal("trial"),
+      v.literal("died"),
+      v.literal("passed"),
+      v.literal("failed"),
+    ),
+    /** Endorsement count, denormalized (the filer counts as the first). */
+    endorsements: v.number(),
+    /** The one counter-argument slot, first-come. */
+    rebuttal: v.optional(
+      v.object({ userId: v.id("users"), text: v.string(), at: v.number() }),
+    ),
+    trialOpenedAt: v.optional(v.number()),
+    resolvedAt: v.optional(v.number()),
+    /** Stamped at resolution — the public log. */
+    tallies: v.optional(
+      v.object({
+        rawVotes: v.number(),
+        rawYes: v.number(),
+        rawNo: v.number(),
+        weightedYes: v.number(),
+        weightedNo: v.number(),
+        quorum: v.number(),
+      }),
+    ),
+  })
+    .index("by_gameweek_status", ["gameweekId", "status"])
+    .index("by_gameweek_claimKey", [
+      "gameweekId",
+      "providerPlayerId",
+      "fixtureId",
+      "claimedPosition",
+    ])
+    .index("by_filer_gameweek", ["filedBy", "gameweekId"]),
+
+  /** One endorsement per (claim, user); costless, not rate-limited. */
+  fantasyCourtEndorsements: defineTable({
+    claimId: v.id("fantasyCourtClaims"),
+    userId: v.id("users"),
+    at: v.number(),
+  })
+    .index("by_claim_user", ["claimId", "userId"])
+    .index("by_claim", ["claimId"]),
+
+  /**
+   * One trial vote per (claim, user), weight snapshotted at vote time
+   * (0.5 + rolling rater accuracy). The filer and anyone holding the player
+   * this gameweek never get a row — excluded at cast time, LOCKED.
+   */
+  fantasyCourtVotes: defineTable({
+    claimId: v.id("fantasyCourtClaims"),
+    userId: v.id("users"),
+    vote: v.union(v.literal("yes"), v.literal("no")),
+    weight: v.number(),
+    at: v.number(),
+  })
+    .index("by_claim_user", ["claimId", "userId"])
+    .index("by_claim", ["claimId"]),
 });
