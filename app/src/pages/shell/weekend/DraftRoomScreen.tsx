@@ -458,10 +458,12 @@ export function CompletedView({
   room,
   pool,
   onBackToCrew,
+  onArrangeSheet,
 }: {
   room: DraftRoom;
   pool: DraftPool | null | undefined;
   onBackToCrew: () => void;
+  onArrangeSheet: (roomId: string) => void;
 }) {
   const { t } = useTranslation();
   const playerById = useMemo(() => {
@@ -489,6 +491,13 @@ export function CompletedView({
           </p>
         )}
       </NeoCard>
+      <NeoButton
+        variant="primary"
+        size="full"
+        onClick={() => onArrangeSheet(room.roomId)}
+      >
+        {t("weekend.arrangeSheet", { defaultValue: "Arrange your sheet" })}
+      </NeoButton>
       <PicksGrid room={room} playerById={playerById} />
       <DraftLogView room={room} playerById={playerById} />
       <NeoButton variant="secondary" size="full" onClick={onBackToCrew}>
@@ -601,7 +610,12 @@ export default function DraftRoomScreen() {
             }
           />
         ) : room.status === "completed" ? (
-          <CompletedView room={room} pool={pool} onBackToCrew={onBackToCrew} />
+          <CompletedView
+            room={room}
+            pool={pool}
+            onBackToCrew={onBackToCrew}
+            onArrangeSheet={(id) => navigate(SHELL_ROUTES.weekendSheet(id))}
+          />
         ) : (
           <NeoCard className="text-center py-6">
             <p className="text-sm text-muted-foreground">

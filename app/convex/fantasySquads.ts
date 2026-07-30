@@ -558,6 +558,70 @@ export const setFavoriteClub = mutation({
 
 // ── read ──
 
+/**
+ * The caller's CREW sheet for one room, resolved from the roomId alone —
+ * the sheet screen's entry query (FW-LAUNCH O5: the sheet was writable via
+ * setFormation but had no surface). Authorization is ownership: the caller
+ * sees a payload only when THEY hold the squad at this room's contextKey.
+ */
+export const getMyCrewSheet = query({
+  args: { roomId: v.id("fantasyDraftRooms") },
+  handler: async (ctx, { roomId }) => {
+    const userId = await getAuthUserId(ctx);
+    if (userId === null) return null;
+    const room = await ctx.db.get(roomId);
+    if (room === null) return null;
+    const gameweek = await ctx.db.get(room.gameweekId);
+    if (gameweek === null) return null;
+
+    const squad = await ctx.db
+      .query("fantasySquads")
+      .withIndex("by_user_gameweek_contextKey", (q) =>
+        q
+          .eq("userId", userId)
+          .eq("gameweekId", room.gameweekId)
+          .eq("contextKey", `crew:${roomId}`),
+      )
+      .first();
+    if (squad === null) return null;
+
+    const slots = await ctx.db
+      .query("fantasySquadSlots")
+      .withIndex("by_squad", (q) => q.eq("squadId", squad._id))
+      .collect();
+    const lockedByIndex = await lockStateForSlots(ctx, room.gameweekId, slots, Date.now());
+    const snapshots = slots.map((slot) => toSlotSnapshot(slot));
+    const playersById = await loadPlayers(ctx, snapshots);
+
+    return {
+      squadId: squad._id,
+      gameweekId: room.gameweekId,
+      gwNumber: gameweek.gwNumber,
+      gameweekStatus: gameweek.status,
+      crewRoomId: roomId as string,
+      arrangedByUser: squad.arrangedByUser ?? null,
+      slots: slots
+        .slice()
+        .sort((a, b) => a.slotIndex - b.slotIndex)
+        .map((slot) => {
+          const player =
+            slot.playerId === undefined ? undefined : playersById.get(slot.playerId);
+          return {
+            slotIndex: slot.slotIndex,
+            slotRole: slot.slotRole,
+            isFinisher: slot.isFinisher,
+            playerId: slot.playerId ?? null,
+            playerName: player?.name ?? null,
+            playerClubId: player?.clubId ?? null,
+            playerPrice: player?.price ?? null,
+            locked: lockedByIndex.get(slot.slotIndex) === true,
+            committedPrice: slot.committedPrice ?? null,
+          };
+        }),
+    };
+  },
+});
+
 /** The caller's squad for a gameweek/context, with live lock state per slot. */
 export const getSquad = query({
   args: {

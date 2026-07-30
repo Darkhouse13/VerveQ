@@ -1848,7 +1848,19 @@ export const getCrewTable = query({
   handler: async (ctx, args): Promise<CrewTable | null> => {
     const userId = await getAuthUserId(ctx);
     if (userId === null) return null;
+    return crewTableFor(ctx, args.code, userId);
+  },
+});
 
+/** The crew-table core, sans authentication — the seam the O5 integration
+ *  sim reads through (fantasySquads' `…For` precedent). */
+export async function crewTableFor(
+  ctx: QueryCtx,
+  code: string,
+  userId: Id<"users">,
+): Promise<CrewTable | null> {
+  {
+    const args = { code };
     const crew = await ctx.db
       .query("fantasyCrews")
       .withIndex("by_code", (q) => q.eq("code", args.code.trim().toUpperCase()))
@@ -2097,8 +2109,8 @@ export const getCrewTable = query({
       weekends,
       tieBreaksApplied: true,
     };
-  },
-});
+  }
+}
 
 /**
  * Recount a gameweek's scoring status.

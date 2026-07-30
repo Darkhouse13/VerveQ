@@ -258,6 +258,7 @@ export function SlotRow({
   score,
   swapArmed,
   editable,
+  playersFixed = false,
   onAssign,
   onClear,
   onSwap,
@@ -267,6 +268,8 @@ export function SlotRow({
   score: SlotScoreRow | undefined;
   swapArmed: boolean;
   editable: boolean;
+  /** Crew sheets: the 13 are the 13 — arrange, never re-man (FW-3). */
+  playersFixed?: boolean;
   onAssign: () => void;
   onClear: () => void;
   onSwap: () => void;
@@ -330,25 +333,26 @@ export function SlotRow({
             >
               <ArrowLeftRight size={14} strokeWidth={3} />
             </NeoButton>
-            {filled ? (
-              <NeoButton
-                variant="ghost"
-                size="sm"
-                aria-label={t("weekend.clearSlot", { defaultValue: "Clear" })}
-                onClick={onClear}
-              >
-                <X size={14} strokeWidth={3} />
-              </NeoButton>
-            ) : (
-              <NeoButton
-                variant="primary"
-                size="sm"
-                aria-label={t("weekend.fillSlot", { defaultValue: "Add" })}
-                onClick={onAssign}
-              >
-                <Plus size={14} strokeWidth={3} />
-              </NeoButton>
-            )}
+            {!playersFixed &&
+              (filled ? (
+                <NeoButton
+                  variant="ghost"
+                  size="sm"
+                  aria-label={t("weekend.clearSlot", { defaultValue: "Clear" })}
+                  onClick={onClear}
+                >
+                  <X size={14} strokeWidth={3} />
+                </NeoButton>
+              ) : (
+                <NeoButton
+                  variant="primary"
+                  size="sm"
+                  aria-label={t("weekend.fillSlot", { defaultValue: "Add" })}
+                  onClick={onAssign}
+                >
+                  <Plus size={14} strokeWidth={3} />
+                </NeoButton>
+              ))}
           </>
         )}
         {editable && slot.locked && filled && (
@@ -527,7 +531,11 @@ export function PlayerPickerDialog({
             const taken = inSquad.has(player.playerId);
             const unpriced = player.price === null;
             const over = player.price !== null && player.price > remaining;
-            const pickable = !started && !taken && !unpriced;
+            // Unlike the draft (R5), budget mode cannot take a fixtureless
+            // player: the swap-in ban is checked against his kickoff, and
+            // with no fixture the server fails closed. Mirror that here.
+            const noFixture = player.kickoffAt === null;
+            const pickable = !started && !taken && !unpriced && !noFixture;
             return (
               <NeoCard
                 key={player.playerId}
@@ -545,7 +553,7 @@ export function PlayerPickerDialog({
                   </p>
                 </div>
                 <div className="flex items-center gap-2 shrink-0">
-                  {player.kickoffAt === null && (
+                  {noFixture && (
                     <NeoBadge color="yellow" size="sm">
                       {t("weekend.noFixture", { defaultValue: "No match" })}
                     </NeoBadge>
@@ -609,15 +617,18 @@ export function SquadView({
   score,
   nominalByPlayer,
   editable,
+  playersFixed = false,
   swapSource,
   onAssign,
   onClear,
   onSwap,
 }: {
-  squad: BudgetSquad;
+  /** Structural: the budget squad payload, or a crew sheet with budget null. */
+  squad: Pick<BudgetSquad, "slots"> & { budget: BudgetSquad["budget"] | null };
   score: BudgetSquadScore | null | undefined;
   nominalByPlayer: ReadonlyMap<string, SlotRole>;
   editable: boolean;
+  playersFixed?: boolean;
   swapSource: number | null;
   onAssign: (slotIndex: number) => void;
   onClear: (slotIndex: number) => void;
@@ -643,15 +654,21 @@ export function SquadView({
       score={scoreBySlot.get(slot.slotIndex)}
       swapArmed={swapSource === slot.slotIndex}
       editable={editable}
+      playersFixed={playersFixed}
       onAssign={() => onAssign(slot.slotIndex)}
       onClear={() => onClear(slot.slotIndex)}
       onSwap={() => onSwap(slot.slotIndex)}
     />
   );
 
+  // The score header appears once something is resolved or awaited — an
+  // untouched squad before the weekend has no number worth headlining.
+  const scoreWorthShowing =
+    score != null && (score.scoredSlots > 0 || score.awaitingSlots > 0);
+
   return (
     <div className="flex flex-col gap-4">
-      {score !== null && score !== undefined && <ScoreHeader score={score} />}
+      {scoreWorthShowing && score != null && <ScoreHeader score={score} />}
       {squad.budget !== null && <BudgetBar budget={squad.budget} />}
 
       {swapSource !== null && (
