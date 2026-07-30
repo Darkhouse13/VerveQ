@@ -43,7 +43,7 @@ export function humanizeServerError(
  * means "recognised but never show the server text" — the call-site fallback is
  * used instead (for leaky internals like question counts or config names).
  */
-type ErrorRule = { test: RegExp; message: string };
+type ErrorRule = { test: RegExp; message: string; passthrough?: true };
 
 const ERROR_RULES: ErrorRule[] = [
   // — Connectivity (Convex client / fetch failures) —
@@ -110,6 +110,18 @@ const ERROR_RULES: ErrorRule[] = [
     message: "Too many tries from your network. Please try again in a bit.",
   },
 
+  // — Weekend fantasy (fantasySquads / fantasySquadRules) —
+  // These modules throw CURATED user-facing copy: the budget message carries
+  // the exact totals, the cap message names the club, the lock messages say
+  // which rule bit. Swallowing them into a generic fallback would delete the
+  // validation feedback BUDGET_MODE's build surface owes the player, so they
+  // pass through verbatim (matched on their distinctive phrasings only).
+  {
+    test: /of a .* budget|players from one club|match has (already )?kicked off|no editorial price|already have a squad for this gameweek|gameweek is no longer open|squad belongs to another|created by the draft|set by the draft|finisher|formation must|may not occupy two slots/i,
+    message: "",
+    passthrough: true,
+  },
+
   // — Out of sync / locked state —
   {
     test: /out of order|is not active|is locked|already (completed|finished|answered)|must be answered|not your turn|out of range/i,
@@ -134,7 +146,10 @@ export function friendlyError(
   const cleaned = humanizeServerError(error, "");
   if (cleaned) {
     for (const rule of ERROR_RULES) {
-      if (rule.test.test(cleaned)) return rule.message || fallback;
+      if (rule.test.test(cleaned)) {
+        if (rule.passthrough) return cleaned;
+        return rule.message || fallback;
+      }
     }
   }
   // Unrecognised (or nothing legible left) — never leak; show the contextual

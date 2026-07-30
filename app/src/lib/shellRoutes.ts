@@ -79,6 +79,8 @@ export const SHELL_ROUTES = {
   weekendCrew: (code: string) => `/v2/weekend/crew/${code}`,
   /** `/v2/weekend/draft/:roomId` — one gameweek's draft room. */
   weekendDraft: (roomId: string) => `/v2/weekend/draft/${roomId}`,
+  /** THE WEEKEND budget squad — build a fresh 13 under budget (O1). */
+  weekendSquad: "/v2/weekend/squad",
 } as const;
 
 /** Route patterns registered in App.tsx (params un-filled). */
@@ -105,6 +107,7 @@ export const SHELL_ROUTE_PATTERNS = {
   weekendCrews: "/v2/weekend/crews",
   weekendCrew: "/v2/weekend/crew/:code",
   weekendDraft: "/v2/weekend/draft/:roomId",
+  weekendSquad: "/v2/weekend/squad",
 } as const;
 
 /**

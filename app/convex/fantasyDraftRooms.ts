@@ -218,6 +218,16 @@ async function requireActiveMember(
  * by pick (the FW-1 hindsight rule), never the whole gameweek.
  */
 async function targetGameweek(ctx: Ctx): Promise<Doc<"fantasyGameweeks">> {
+  const found = await findOpenGameweek(ctx);
+  if (found === null) throw new Error(NO_OPEN_GAMEWEEK);
+  return found;
+}
+
+/** Same rule, null instead of a throw — for read surfaces that render "no
+ *  open gameweek" rather than erroring (budget mode's landing query). */
+export async function findOpenGameweek(
+  ctx: Ctx,
+): Promise<Doc<"fantasyGameweeks"> | null> {
   const candidates: Doc<"fantasyGameweeks">[] = [];
   for (const status of ["upcoming", "live"] as const) {
     candidates.push(
@@ -227,7 +237,7 @@ async function targetGameweek(ctx: Ctx): Promise<Doc<"fantasyGameweeks">> {
         .collect()),
     );
   }
-  if (candidates.length === 0) throw new Error(NO_OPEN_GAMEWEEK);
+  if (candidates.length === 0) return null;
   return candidates.reduce((a, b) => (b.finalityAt < a.finalityAt ? b : a));
 }
 

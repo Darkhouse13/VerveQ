@@ -27,6 +27,7 @@ import {
 } from "./lib/fantasyConstants";
 import {
   describeViolations,
+  validateBudget,
   validateFormation,
   validateSquad,
   type PlayerSnapshot,
@@ -529,23 +530,47 @@ export const getSquad = query({
 
     const lockedByIndex = await lockStateForSlots(ctx, gameweekId, slots, Date.now());
 
+    const snapshots = slots.map((slot) => toSlotSnapshot(slot));
+    const playersById = await loadPlayers(ctx, snapshots);
+
+    // Budget context only: the live spend breakdown (committed + unlocked ≤
+    // limit), recomputed from the same inputs every edit is validated against.
+    // A stored squad is always legal, so this is display state, not a verdict.
+    const budget =
+      squad.context === "budget"
+        ? (validateBudget(
+            snapshots,
+            playersById,
+            (slot) => lockedByIndex.get(slot.slotIndex) === true,
+            SQUAD_BUDGET,
+          ).breakdown ?? null)
+        : null;
+
     return {
       squadId: squad._id,
       context: squad.context,
       favoriteClubAtBuild: squad.favoriteClubAtBuild,
       /** Crew sheets only: false while still on the R6 default (item 6). */
       arrangedByUser: squad.arrangedByUser ?? null,
+      budget,
       slots: slots
         .slice()
         .sort((a, b) => a.slotIndex - b.slotIndex)
-        .map((slot) => ({
-          slotIndex: slot.slotIndex,
-          slotRole: slot.slotRole,
-          isFinisher: slot.isFinisher,
-          playerId: slot.playerId ?? null,
-          locked: lockedByIndex.get(slot.slotIndex) === true,
-          committedPrice: slot.committedPrice ?? null,
-        })),
+        .map((slot) => {
+          const player =
+            slot.playerId === undefined ? undefined : playersById.get(slot.playerId);
+          return {
+            slotIndex: slot.slotIndex,
+            slotRole: slot.slotRole,
+            isFinisher: slot.isFinisher,
+            playerId: slot.playerId ?? null,
+            playerName: player?.name ?? null,
+            playerClubId: player?.clubId ?? null,
+            playerPrice: player?.price ?? null,
+            locked: lockedByIndex.get(slot.slotIndex) === true,
+            committedPrice: slot.committedPrice ?? null,
+          };
+        }),
     };
   },
 });

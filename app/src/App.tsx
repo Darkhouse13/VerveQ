@@ -88,6 +88,8 @@ const ArenaPlayScreen = lazyWithRetry(() => import("./pages/shell/play/ArenaPlay
 const WeekendCrewsScreen = lazyWithRetry(() => import("./pages/shell/weekend/WeekendCrewsScreen"));
 const CrewScreen = lazyWithRetry(() => import("./pages/shell/weekend/CrewScreen"));
 const DraftRoomScreen = lazyWithRetry(() => import("./pages/shell/weekend/DraftRoomScreen"));
+// THE WEEKEND budget mode (FW-LAUNCH O1) — unlinked from any nav until launch.
+const BudgetSquadScreen = lazyWithRetry(() => import("./pages/shell/weekend/BudgetSquadScreen"));
 
 const DuelPlayScreen = lazyWithRetry(() => import("./pages/DuelPlayScreen"));
 const DuelLinkScreen = lazyWithRetry(() => import("./pages/DuelLinkScreen"));
@@ -524,6 +526,10 @@ const AppRoutes = () => (
             <Route path="/v2/weekend/crews" element={<ShellGate><UsernameOnlyRoute><WeekendCrewsScreen /></UsernameOnlyRoute></ShellGate>} />
             <Route path="/v2/weekend/crew/:code" element={<ShellGate><UsernameOnlyRoute><CrewScreen /></UsernameOnlyRoute></ShellGate>} />
             <Route path="/v2/weekend/draft/:roomId" element={<ShellGate><UsernameOnlyRoute><DraftRoomScreen /></UsernameOnlyRoute></ShellGate>} />
+            {/* THE WEEKEND budget mode (FW-LAUNCH O1). Unlinked from any nav;
+                the screen itself gates on the backend answering (fail-closed,
+                HomeWeekendTeaser-style), so the frontend can ship first. */}
+            <Route path="/v2/weekend/squad" element={<ShellGate><UsernameOnlyRoute><BudgetSquadScreen /></UsernameOnlyRoute></ShellGate>} />
             {/* THE DRAW — dev/preview only, flag-gated (VITE_DRAW_ENABLED),
                 not linked from home, nav, or any mode grid. */}
             <Route path="/draw" element={<DrawScreen />} />

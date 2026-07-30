@@ -237,6 +237,32 @@ describe("budget invariant (BUDGET_MODE v1.1.0 §Budget, §Deadlines & editing)"
     expect(SQUAD_BUDGET * 2).toBe(Math.round(SQUAD_BUDGET * 2));
   });
 
+  it("accepts a 13 costing exactly 91.0 at the real limit (O1e boundary)", () => {
+    // 13 × 7.0 = 91.0 — the whole budget spent to the last half-step.
+    const slots = squadOf(FOUR_FOUR_TWO).map((s, i) => ({ ...s, playerId: `p${i}` }));
+    const pool = poolOf(
+      ...Array.from({ length: SQUAD_SIZE }, (_, i) => player({ _id: `p${i}`, price: 7.0 })),
+    );
+    const result = validateBudget(slots, pool, NEVER_LOCKED);
+    expect(result.ok).toBe(true);
+    expect(result.breakdown?.total).toBe(91.0);
+    expect(result.breakdown?.limit).toBe(SQUAD_BUDGET);
+  });
+
+  it("rejects a 13 costing 91.5 at the real limit (O1e boundary)", () => {
+    // One half-step over: twelve at 7.0 plus one at 7.5.
+    const slots = squadOf(FOUR_FOUR_TWO).map((s, i) => ({ ...s, playerId: `p${i}` }));
+    const pool = poolOf(
+      ...Array.from({ length: SQUAD_SIZE }, (_, i) =>
+        player({ _id: `p${i}`, price: i === 0 ? 7.5 : 7.0 }),
+      ),
+    );
+    const result = validateBudget(slots, pool, NEVER_LOCKED);
+    expect(result.ok).toBe(false);
+    expect(result.violations.map((v) => v.code)).toContain("budget_exceeded");
+    expect(result.breakdown?.total).toBe(91.5);
+  });
+
   it("sums filled slots and ignores unfilled ones", () => {
     const slots = squadOf(FOUR_FOUR_TWO).map((s, i) =>
       i < 3 ? { ...s, playerId: `p${i}` } : s,
