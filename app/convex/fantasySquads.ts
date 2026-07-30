@@ -226,14 +226,38 @@ export const createSquad = mutation({
     // Before anything else, including any read: there is no argument
     // combination that makes a crew squad from a public call.
     if (context === "crew") throw new Error(CREW_SQUAD_DRAFT_ONLY);
+    if (crewRoomId !== undefined) {
+      throw new Error("A budget squad has no crew room.");
+    }
 
+    return createBudgetSquadFor(ctx, userId, { gameweekId, formation, finisherRoles });
+  },
+});
+
+/**
+ * The budget-squad creation core, sans authentication — the seam the DEV
+ * walkthrough sim drives (fantasyDraftSim precedent: the sim has no sessions,
+ * so it calls the core the public mutation delegates to; the authorization
+ * wrapper is the only thing it does not exercise).
+ */
+export async function createBudgetSquadFor(
+  ctx: MutationCtx,
+  userId: Id<"users">,
+  {
+    gameweekId,
+    formation,
+    finisherRoles,
+  }: {
+    gameweekId: Id<"fantasyGameweeks">;
+    formation: Record<SlotRole, number>;
+    finisherRoles: SlotRole[];
+  },
+): Promise<{ squadId: Id<"fantasySquads">; favoriteClubAtBuild: string | null }> {
+  {
     const gameweek = await ctx.db.get(gameweekId);
     if (gameweek === null) throw new Error("Gameweek not found.");
     if (!gameweekAcceptsEdits(gameweek)) throw new Error(GAMEWEEK_CLOSED);
 
-    if (crewRoomId !== undefined) {
-      throw new Error("A budget squad has no crew room.");
-    }
     if (finisherRoles.length !== FINISHER_COUNT) {
       throw new Error(`A squad needs exactly ${FINISHER_COUNT} finisher roles.`);
     }
@@ -301,8 +325,8 @@ export const createSquad = mutation({
     }
 
     return { squadId, favoriteClubAtBuild };
-  },
-});
+  }
+}
 
 // ── setSlot ──
 
@@ -324,6 +348,23 @@ export const setSlot = mutation({
   },
   handler: async (ctx, args) => {
     const userId = await requireUserId(ctx);
+    return setSlotFor(ctx, userId, args);
+  },
+});
+
+/** The setSlot core, sans authentication — see createBudgetSquadFor. */
+export async function setSlotFor(
+  ctx: MutationCtx,
+  userId: Id<"users">,
+  args: {
+    squadId: Id<"fantasySquads">;
+    slotIndex: number;
+    playerId?: Id<"fantasyPlayers"> | null;
+    slotRole?: SlotRole;
+    isFinisher?: boolean;
+  },
+): Promise<{ ok: true }> {
+  {
     const { squad, gameweek } = await loadOwnedSquad(ctx, args.squadId, userId);
     const now = Date.now();
 
@@ -385,8 +426,8 @@ export const setSlot = mutation({
     await markArranged(ctx, squad);
 
     return { ok: true };
-  },
-});
+  }
+}
 
 // ── setFormation ──
 
@@ -418,6 +459,20 @@ export const setFormation = mutation({
   },
   handler: async (ctx, args) => {
     const userId = await requireUserId(ctx);
+    return setFormationFor(ctx, userId, args);
+  },
+});
+
+/** The setFormation core, sans authentication — see createBudgetSquadFor. */
+export async function setFormationFor(
+  ctx: MutationCtx,
+  userId: Id<"users">,
+  args: {
+    squadId: Id<"fantasySquads">;
+    slots: Array<{ slotIndex: number; slotRole: SlotRole; isFinisher: boolean }>;
+  },
+): Promise<{ ok: true }> {
+  {
     const { squad, gameweek } = await loadOwnedSquad(ctx, args.squadId, userId);
     const now = Date.now();
 
@@ -466,8 +521,8 @@ export const setFormation = mutation({
     if (changed > 0) await markArranged(ctx, squad);
 
     return { ok: true };
-  },
-});
+  }
+}
 
 // ── favorite club ──
 
