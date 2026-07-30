@@ -591,7 +591,7 @@ describe("P6 — the crew table", () => {
     await scoreSaturdayOne();
 
     const table = (await crewTable())!;
-    expect(table.tieBreaksApplied).toBe(false);
+    expect(table.tieBreaksApplied).toBe(true);
     expect(table.weekends).toHaveLength(1);
     expect(table.weekends[0].anyScored).toBe(true);
 
@@ -681,8 +681,10 @@ describe("P6 — the crew table", () => {
     expect(theirs.tied).toBe(false);
     expect(theirs.weekends.find((w) => w.gwNumber === 2)!.settled).toBe(true);
 
-    // Now make it a dead heat and check the tie is DISPLAYED, not broken: the
-    // ladders are ruled but deferred (DRAFT_ROOM_SPEC v1.2.0).
+    // Now make it a dead heat. The ladder runs (O4) — and EXHAUSTS here:
+    // identical sheets tie the live weekend on every rung, and the settled
+    // prior weekend is a points tie with no slot or draft-log data behind
+    // it, so no rung can decide. The exhausted ladder is a DISPLAYED tie.
     const mySquad = world.db
       .rows("fantasySquads")
       .find((s) => s.userId === world.userId && s.gameweekId === priorGameweekId)!;
@@ -694,7 +696,80 @@ describe("P6 — the crew table", () => {
     expect(tiedTable.rows.map((r) => r.cumulativePoints)).toEqual([36.85, 36.85]);
     expect(tiedTable.rows.map((r) => r.rank)).toEqual([1, 1]);
     expect(tiedTable.rows.every((r) => r.tied)).toBe(true);
-    expect(tiedTable.tieBreaksApplied).toBe(false);
+    expect(tiedTable.tieBreaksApplied).toBe(true);
+  });
+
+  it("breaks a cumulative tie by head-to-head weekend wins (O4, ledger 5)", async () => {
+    const other = await world.db.insert("users", { username: "other" });
+    const { crewId, roomId } = await seedCrew([world.userId, other]);
+    // Identical live sheets: the in-flight weekend ties on every rung.
+    await seedCrewSheet(world.userId, roomId, SHEET);
+    await seedCrewSheet(other, roomId, SHEET);
+
+    // Three settled prior weekends with EQUAL season sums (25 each) but a
+    // 2–1 head-to-head record: mine 10–9, 10–9, 5–7.
+    const priors: [number, number][] = [
+      [10, 9],
+      [10, 9],
+      [5, 7],
+    ];
+    for (let i = 0; i < priors.length; i += 1) {
+      const gwId = await world.db.insert("fantasyGameweeks", {
+        season: "2026-2027",
+        gwNumber: 10 + i,
+        leagueIds: [39],
+        status: "final",
+        finalityAt: THURSDAY - (i + 1) * 86_400_000,
+      });
+      await world.db.insert("fantasyGameweekScoring", {
+        gameweekId: gwId,
+        state: "final",
+        fixturesTotal: 0,
+        fixturesScored: 0,
+        finalizedAt: THURSDAY - (i + 1) * 86_400_000,
+      });
+      const priorRoomId = await world.db.insert("fantasyDraftRooms", {
+        crewId,
+        gameweekId: gwId,
+        status: "completed",
+        createdBy: world.userId,
+        createdAt: THURSDAY - 10 * 86_400_000,
+        seats: [],
+        expiresAt: THURSDAY,
+      });
+      for (const [userId, total] of [
+        [world.userId, priors[i][0]],
+        [other, priors[i][1]],
+      ] as const) {
+        await world.db.insert("fantasySquads", {
+          userId,
+          gameweekId: gwId,
+          context: "crew",
+          crewRoomId: priorRoomId,
+          contextKey: `crew:${priorRoomId}`,
+          favoriteClubAtBuild: null,
+          createdAt: THURSDAY - 10 * 86_400_000,
+          finalScore: { total, scoredSlots: 13, awaitingSlots: 0, emptySlots: 0, at: THURSDAY },
+        });
+      }
+    }
+
+    vi.setSystemTime(AFTER_SATURDAY);
+    await scoreSaturdayOne();
+
+    const table = (await crewTable())!;
+    const mine = table.rows.find((r) => r.userId === world.userId)!;
+    const theirs = table.rows.find((r) => r.userId === other)!;
+
+    // Equal cumulative points…
+    expect(mine.cumulativePoints).toBe(theirs.cumulativePoints);
+    // …but the head-to-head record (2 weekend wins to 1) breaks the tie.
+    expect(table.tieBreaksApplied).toBe(true);
+    expect(mine.rank).toBe(1);
+    expect(theirs.rank).toBe(2);
+    expect(mine.tied).toBe(false);
+    expect(theirs.tied).toBe(false);
+    expect(table.rows[0].userId).toBe(world.userId);
   });
 
   it("skips a room that is still drafting — there are no sheets to score", async () => {

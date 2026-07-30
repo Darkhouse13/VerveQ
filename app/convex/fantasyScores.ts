@@ -55,6 +55,11 @@ import type {
   RaterAccuracyResult,
 } from "./fantasyCrowdVoting";
 import {
+  orderTiedGroup,
+  type TiedGroupMember,
+  type WeekendComparable,
+} from "./lib/fantasyTieBreaks";
+import {
   ApiFootballClient,
   credentialsFromEnv,
   fetchFixtureEvents,
@@ -1823,8 +1828,11 @@ export interface CrewTable {
     /** False while the gameweek has no scored fixture at all. */
     anyScored: boolean;
   }[];
-  /** DRAFT_ROOM_SPEC v1.2.0 §Explicitly deferred — ladders are ruled, not built. */
-  tieBreaksApplied: false;
+  /** DRAFT_ROOM_SPEC v1.2.1 ledger item 5 — the ladders are BUILT (FW-LAUNCH
+   *  O4): equal cumulative points break by head-to-head weekend wins, each
+   *  weekend decided by points → highest single-player score → fewest
+   *  auto-picks; an exhausted ladder stays a displayed tie. */
+  tieBreaksApplied: true;
 }
 
 /**
@@ -1973,7 +1981,10 @@ export const getCrewTable = query({
       return b.cumulativePoints - a.cumulativePoints;
     });
 
-    // Shared rank on equal points: the tie is DISPLAYED, never broken (A12).
+    // Shared rank on equal points, then the LADDER (O4, ledger item 5):
+    // equal cumulative points break by head-to-head weekend wins, each
+    // weekend decided by points → top single-player score → fewest
+    // auto-picks. An exhausted ladder is still displayed as a tie.
     let rank = 0;
     let previous: number | null | undefined;
     rows.forEach((row, index) => {
@@ -1984,9 +1995,98 @@ export const getCrewTable = query({
       row.rank = rank;
       row.tied = false;
     });
-    for (const row of rows) {
-      row.tied =
-        rows.filter((other) => other.rank === row.rank).length > 1 && row.cumulativePoints !== null;
+
+    // Ladder inputs are fetched lazily, for tied clusters only — the top
+    // single-player score needs per-slot reads and the auto-pick counts need
+    // the draft log, neither of which the untied table should pay for.
+    const autoPicksByRoom = new Map<string, Map<string, number>>();
+    const autoPicksFor = async (
+      room: Doc<"fantasyDraftRooms">,
+      memberId: Id<"users">,
+    ): Promise<number | null> => {
+      let byUser = autoPicksByRoom.get(room._id);
+      if (byUser === undefined) {
+        byUser = new Map<string, number>();
+        const entries = await ctx.db
+          .query("fantasyDraftLog")
+          .withIndex("by_room_seq", (q) => q.eq("roomId", room._id))
+          .collect();
+        for (const seat of room.seats) byUser.set(seat.userId, 0);
+        for (const entry of entries) {
+          if (entry.entryType !== "pick" || entry.auto !== true) continue;
+          const seat = room.seats[entry.seatIndex];
+          if (seat === undefined) continue;
+          byUser.set(seat.userId, (byUser.get(seat.userId) ?? 0) + 1);
+        }
+        autoPicksByRoom.set(room._id, byUser);
+      }
+      return byUser.get(memberId) ?? null;
+    };
+
+    const topPlayerScoreFor = async (
+      room: Doc<"fantasyDraftRooms">,
+      memberId: Id<"users">,
+    ): Promise<number | null> => {
+      const gameweek = await ctx.db.get(room.gameweekId);
+      if (gameweek === null) return null;
+      const squad = await ctx.db
+        .query("fantasySquads")
+        .withIndex("by_user_gameweek_contextKey", (q) =>
+          q
+            .eq("userId", memberId)
+            .eq("gameweekId", gameweek._id)
+            .eq("contextKey", `crew:${room._id}`),
+        )
+        .first();
+      if (squad === null) return null;
+      const score = await squadScore(ctx, squad, gameweek, now, false);
+      let top: number | null = null;
+      for (const slot of score.slots) {
+        if (slot.state !== "scored" || slot.points === null) continue;
+        if (top === null || slot.points > top) top = slot.points;
+      }
+      return top;
+    };
+
+    const roomById = new Map(rooms.map((room) => [room._id as string, room]));
+    let index = 0;
+    while (index < rows.length) {
+      const cluster = rows.filter((row) => row.rank === rows[index].rank);
+      if (cluster.length < 2 || rows[index].cumulativePoints === null) {
+        index += cluster.length;
+        continue;
+      }
+
+      const groupMembers: TiedGroupMember<Id<"users">>[] = [];
+      for (const row of cluster) {
+        const comparable = new Map<string, WeekendComparable>();
+        for (const entry of row.weekends) {
+          const room = roomById.get(entry.roomId);
+          if (room === undefined) continue;
+          comparable.set(entry.roomId, {
+            points: entry.points,
+            topPlayerScore: await topPlayerScoreFor(room, row.userId),
+            autoPicks: await autoPicksFor(room, row.userId),
+          });
+        }
+        groupMembers.push({ key: row.userId, weekends: comparable });
+      }
+
+      const ordered = orderTiedGroup(groupMembers);
+      const baseRank = rows[index].rank;
+      const rowByUser = new Map(cluster.map((row) => [row.userId as string, row]));
+      ordered.forEach((result) => {
+        const row = rowByUser.get(result.key);
+        if (row === undefined) return;
+        row.rank = baseRank + result.subRank;
+        row.tied = result.stillTied;
+      });
+      // Reorder the cluster's slice to match the ladder.
+      const slice = ordered
+        .map((result) => rowByUser.get(result.key))
+        .filter((row): row is CrewTableRow => row !== undefined);
+      rows.splice(index, slice.length, ...slice);
+      index += cluster.length;
     }
 
     return {
@@ -1995,7 +2095,7 @@ export const getCrewTable = query({
       name: crew.name,
       rows,
       weekends,
-      tieBreaksApplied: false,
+      tieBreaksApplied: true,
     };
   },
 });

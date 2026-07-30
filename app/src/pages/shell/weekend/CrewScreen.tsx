@@ -14,9 +14,11 @@
  * renders as "awaiting", never as 0.0, and a total drawn from a gameweek that has
  * not settled is labelled provisional (R3).
  *
- * Ties are shown as ties. The tie-break ladders are RULED but deferred
- * (DRAFT_ROOM_SPEC v1.2.0 §Explicitly deferred), and `tieBreaksApplied: false`
- * comes down in the payload so this screen cannot imply a settled ladder.
+ * Tie-breaks (FW-LAUNCH O4, DRAFT_ROOM ledger 5): the server applies the
+ * ladders — equal cumulative points break by head-to-head weekend wins,
+ * each weekend by points → top single player → fewest auto-picks — and
+ * `tieBreaksApplied: true` comes down in the payload. A row still marked
+ * `tied` means the ladder EXHAUSTED, and the tie is displayed as a tie.
  */
 import { useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
@@ -274,7 +276,7 @@ export default function CrewScreen() {
               <p className="mt-1.5 text-[10px] leading-snug text-muted-foreground">
                 {t("weekend.standingsNote", {
                   defaultValue:
-                    "Ordered by cumulative points; ties are shown as tied. Provisional totals can still change until the gameweek settles.",
+                    "Ordered by cumulative points; a points tie breaks by head-to-head weekend wins, and a T-rank means still level after that. Provisional totals can still change until the gameweek settles.",
                 })}
               </p>
             </>
