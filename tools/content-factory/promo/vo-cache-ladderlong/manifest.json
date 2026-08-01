@@ -1,0 +1,899 @@
+{
+  "voice": "Charlie",
+  "lines": [
+    {
+      "key": "open",
+      "slot": "open",
+      "text": "Ten career paths. They get harder. How far do you get?",
+      "dur": 4.16,
+      "words": [
+        {
+          "word": "Ten",
+          "t0": 0,
+          "t1": 0.24
+        },
+        {
+          "word": "career",
+          "t0": 0.297,
+          "t1": 0.64
+        },
+        {
+          "word": "paths.",
+          "t0": 0.72,
+          "t1": 1.4400000000000002
+        },
+        {
+          "word": "They",
+          "t0": 1.504,
+          "t1": 1.7600000000000002
+        },
+        {
+          "word": "get",
+          "t0": 1.8000000000000003,
+          "t1": 1.9200000000000002
+        },
+        {
+          "word": "harder.",
+          "t0": 1.989,
+          "t1": 2.72
+        },
+        {
+          "word": "How",
+          "t0": 2.8400000000000003,
+          "t1": 3.2
+        },
+        {
+          "word": "far",
+          "t0": 3.2600000000000002,
+          "t1": 3.4400000000000004
+        },
+        {
+          "word": "do",
+          "t0": 3.467,
+          "t1": 3.5200000000000005
+        },
+        {
+          "word": "you",
+          "t0": 3.56,
+          "t1": 3.68
+        },
+        {
+          "word": "get?",
+          "t0": 3.74,
+          "t1": 4.16
+        }
+      ]
+    },
+    {
+      "key": "n2",
+      "slot": "count",
+      "text": "Number two.",
+      "dur": 0.96,
+      "words": [
+        {
+          "word": "Number",
+          "t0": 0,
+          "t1": 0.24
+        },
+        {
+          "word": "two.",
+          "t0": 0.34,
+          "t1": 0.96
+        }
+      ]
+    },
+    {
+      "key": "n3",
+      "slot": "count",
+      "text": "Number three.",
+      "dur": 1.2000000000000002,
+      "words": [
+        {
+          "word": "Number",
+          "t0": 0,
+          "t1": 0.24
+        },
+        {
+          "word": "three.",
+          "t0": 0.307,
+          "t1": 1.2000000000000002
+        }
+      ]
+    },
+    {
+      "key": "n4",
+      "slot": "count",
+      "text": "Number four.",
+      "dur": 0.96,
+      "words": [
+        {
+          "word": "Number",
+          "t0": 0,
+          "t1": 0.24
+        },
+        {
+          "word": "four.",
+          "t0": 0.32,
+          "t1": 0.96
+        }
+      ]
+    },
+    {
+      "key": "n5",
+      "slot": "count",
+      "text": "Halfway. Number five.",
+      "dur": 2.24,
+      "words": [
+        {
+          "word": "Halfway.",
+          "t0": 0,
+          "t1": 0.64
+        },
+        {
+          "word": "Number",
+          "t0": 0.766,
+          "t1": 1.52
+        },
+        {
+          "word": "five.",
+          "t0": 1.6320000000000001,
+          "t1": 2.24
+        }
+      ]
+    },
+    {
+      "key": "n6",
+      "slot": "count",
+      "text": "Number six.",
+      "dur": 1.12,
+      "words": [
+        {
+          "word": "Number",
+          "t0": 0,
+          "t1": 0.32
+        },
+        {
+          "word": "six.",
+          "t0": 0.44,
+          "t1": 1.12
+        }
+      ]
+    },
+    {
+      "key": "n7",
+      "slot": "count",
+      "text": "Number seven.",
+      "dur": 1.04,
+      "words": [
+        {
+          "word": "Number",
+          "t0": 0,
+          "t1": 0.32
+        },
+        {
+          "word": "seven.",
+          "t0": 0.4,
+          "t1": 1.04
+        }
+      ]
+    },
+    {
+      "key": "n8",
+      "slot": "count",
+      "text": "Number eight.",
+      "dur": 0.64,
+      "words": [
+        {
+          "word": "Number",
+          "t0": 0,
+          "t1": 0.24
+        },
+        {
+          "word": "eight.",
+          "t0": 0.293,
+          "t1": 0.64
+        }
+      ]
+    },
+    {
+      "key": "n9",
+      "slot": "count",
+      "text": "Number nine. Last answer.",
+      "dur": 1.9200000000000002,
+      "words": [
+        {
+          "word": "Number",
+          "t0": 0,
+          "t1": 0.16
+        },
+        {
+          "word": "nine.",
+          "t0": 0.24,
+          "t1": 0.64
+        },
+        {
+          "word": "Last",
+          "t0": 0.752,
+          "t1": 1.2000000000000002
+        },
+        {
+          "word": "answer.",
+          "t0": 1.2570000000000001,
+          "t1": 1.9200000000000002
+        }
+      ]
+    },
+    {
+      "key": "n10",
+      "slot": "count",
+      "text": "Number ten. Good luck.",
+      "dur": 1.8399999999999999,
+      "words": [
+        {
+          "word": "Number",
+          "t0": 0,
+          "t1": 0.24
+        },
+        {
+          "word": "ten.",
+          "t0": 0.34,
+          "t1": 1
+        },
+        {
+          "word": "Good",
+          "t0": 1.072,
+          "t1": 1.3599999999999999
+        },
+        {
+          "word": "luck.",
+          "t0": 1.424,
+          "t1": 1.8399999999999999
+        }
+      ]
+    },
+    {
+      "key": "withhold",
+      "slot": "withhold",
+      "text": "This one I'm not telling you. Comments, or nowhere.",
+      "dur": 4.16,
+      "words": [
+        {
+          "word": "This",
+          "t0": 0,
+          "t1": 0.24
+        },
+        {
+          "word": "one",
+          "t0": 0.3,
+          "t1": 0.48
+        },
+        {
+          "word": "I'm",
+          "t0": 0.64,
+          "t1": 0.88
+        },
+        {
+          "word": "not",
+          "t0": 0.94,
+          "t1": 1.12
+        },
+        {
+          "word": "telling",
+          "t0": 1.17,
+          "t1": 1.52
+        },
+        {
+          "word": "you.",
+          "t0": 1.58,
+          "t1": 2.36
+        },
+        {
+          "word": "Comments,",
+          "t0": 2.427,
+          "t1": 3.04
+        },
+        {
+          "word": "or",
+          "t0": 3.1470000000000002,
+          "t1": 3.36
+        },
+        {
+          "word": "nowhere.",
+          "t0": 3.42,
+          "t1": 4.16
+        }
+      ]
+    },
+    {
+      "key": "cta",
+      "slot": "cta",
+      "text": "So how far did you actually get?",
+      "dur": 2.08,
+      "words": [
+        {
+          "word": "So",
+          "t0": 0,
+          "t1": 0.24
+        },
+        {
+          "word": "how",
+          "t0": 0.32,
+          "t1": 0.56
+        },
+        {
+          "word": "far",
+          "t0": 0.6,
+          "t1": 0.72
+        },
+        {
+          "word": "did",
+          "t0": 0.78,
+          "t1": 0.96
+        },
+        {
+          "word": "you",
+          "t0": 0.98,
+          "t1": 1.04
+        },
+        {
+          "word": "actually",
+          "t0": 1.093,
+          "t1": 1.52
+        },
+        {
+          "word": "get?",
+          "t0": 1.6400000000000001,
+          "t1": 2.08
+        }
+      ]
+    },
+    {
+      "key": "all-timers-a1",
+      "slot": "answer",
+      "text": "Pelé.",
+      "dur": 1.04,
+      "words": [
+        {
+          "word": "Pelé.",
+          "t0": 0,
+          "t1": 1.04
+        }
+      ]
+    },
+    {
+      "key": "all-timers-a2",
+      "slot": "answer",
+      "text": "Steven Gerrard.",
+      "dur": 1.3599999999999999,
+      "words": [
+        {
+          "word": "Steven",
+          "t0": 0,
+          "t1": 0.4
+        },
+        {
+          "word": "Gerrard.",
+          "t0": 0.48000000000000004,
+          "t1": 1.3599999999999999
+        }
+      ]
+    },
+    {
+      "key": "all-timers-a3",
+      "slot": "answer",
+      "text": "Piqué.",
+      "dur": 0.8,
+      "words": [
+        {
+          "word": "Piqué.",
+          "t0": 0,
+          "t1": 0.8
+        }
+      ]
+    },
+    {
+      "key": "all-timers-a4",
+      "slot": "answer",
+      "text": "Toni Kroos.",
+      "dur": 1.04,
+      "words": [
+        {
+          "word": "Toni",
+          "t0": 0,
+          "t1": 0.24
+        },
+        {
+          "word": "Kroos.",
+          "t0": 0.3,
+          "t1": 1.04
+        }
+      ]
+    },
+    {
+      "key": "all-timers-a5",
+      "slot": "answer",
+      "text": "Marcelo.",
+      "dur": 0.96,
+      "words": [
+        {
+          "word": "Marcelo.",
+          "t0": 0,
+          "t1": 0.96
+        }
+      ]
+    },
+    {
+      "key": "all-timers-a6",
+      "slot": "answer",
+      "text": "Shevchenko.",
+      "dur": 1.04,
+      "words": [
+        {
+          "word": "Shevchenko.",
+          "t0": 0,
+          "t1": 1.04
+        }
+      ]
+    },
+    {
+      "key": "all-timers-a7",
+      "slot": "answer",
+      "text": "Mo Salah.",
+      "dur": 0.96,
+      "words": [
+        {
+          "word": "Mo",
+          "t0": 0,
+          "t1": 0.24
+        },
+        {
+          "word": "Salah.",
+          "t0": 0.32,
+          "t1": 0.96
+        }
+      ]
+    },
+    {
+      "key": "all-timers-a8",
+      "slot": "answer",
+      "text": "Pirlo.",
+      "dur": 0.48,
+      "words": [
+        {
+          "word": "Pirlo.",
+          "t0": 0,
+          "t1": 0.48
+        }
+      ]
+    },
+    {
+      "key": "all-timers-a9",
+      "slot": "answer",
+      "text": "Pavel Nedvěd.",
+      "dur": 1.12,
+      "words": [
+        {
+          "word": "Pavel",
+          "t0": 0,
+          "t1": 0.32
+        },
+        {
+          "word": "Nedvěd.",
+          "t0": 0.38,
+          "t1": 1.12
+        }
+      ]
+    },
+    {
+      "key": "premier-league-a1",
+      "slot": "answer",
+      "text": "Declan Rice.",
+      "dur": 1.04,
+      "words": [
+        {
+          "word": "Declan",
+          "t0": 0,
+          "t1": 0.32
+        },
+        {
+          "word": "Rice.",
+          "t0": 0.4,
+          "t1": 1.04
+        }
+      ]
+    },
+    {
+      "key": "premier-league-a2",
+      "slot": "answer",
+      "text": "Trent Alexander-Arnold.",
+      "dur": 1.76,
+      "words": [
+        {
+          "word": "Trent",
+          "t0": 0,
+          "t1": 0.4
+        },
+        {
+          "word": "Alexander-Arnold.",
+          "t0": 0.464,
+          "t1": 1.76
+        }
+      ]
+    },
+    {
+      "key": "premier-league-a3",
+      "slot": "answer",
+      "text": "Courtois.",
+      "dur": 0.8800000000000001,
+      "words": [
+        {
+          "word": "Courtois.",
+          "t0": 0,
+          "t1": 0.8800000000000001
+        }
+      ]
+    },
+    {
+      "key": "premier-league-a4",
+      "slot": "answer",
+      "text": "Son.",
+      "dur": 0.72,
+      "words": [
+        {
+          "word": "Son.",
+          "t0": 0,
+          "t1": 0.72
+        }
+      ]
+    },
+    {
+      "key": "premier-league-a5",
+      "slot": "answer",
+      "text": "Frank Lampard.",
+      "dur": 1.28,
+      "words": [
+        {
+          "word": "Frank",
+          "t0": 0,
+          "t1": 0.32
+        },
+        {
+          "word": "Lampard.",
+          "t0": 0.4,
+          "t1": 1.28
+        }
+      ]
+    },
+    {
+      "key": "premier-league-a6",
+      "slot": "answer",
+      "text": "Kanté.",
+      "dur": 0.56,
+      "words": [
+        {
+          "word": "Kanté.",
+          "t0": 0,
+          "t1": 0.56
+        }
+      ]
+    },
+    {
+      "key": "premier-league-a7",
+      "slot": "answer",
+      "text": "De Bruyne.",
+      "dur": 0.72,
+      "words": [
+        {
+          "word": "De",
+          "t0": 0,
+          "t1": 0.08
+        },
+        {
+          "word": "Bruyne.",
+          "t0": 0.16,
+          "t1": 0.72
+        }
+      ]
+    },
+    {
+      "key": "premier-league-a8",
+      "slot": "answer",
+      "text": "Vidić.",
+      "dur": 0.56,
+      "words": [
+        {
+          "word": "Vidić.",
+          "t0": 0,
+          "t1": 0.56
+        }
+      ]
+    },
+    {
+      "key": "premier-league-a9",
+      "slot": "answer",
+      "text": "Emile Heskey.",
+      "dur": 1.28,
+      "words": [
+        {
+          "word": "Emile",
+          "t0": 0,
+          "t1": 0.4
+        },
+        {
+          "word": "Heskey.",
+          "t0": 0.48,
+          "t1": 1.28
+        }
+      ]
+    },
+    {
+      "key": "modern-a1",
+      "slot": "answer",
+      "text": "Wirtz.",
+      "dur": 1.12,
+      "words": [
+        {
+          "word": "Wirtz.",
+          "t0": 0,
+          "t1": 1.12
+        }
+      ]
+    },
+    {
+      "key": "modern-a2",
+      "slot": "answer",
+      "text": "Lautaro.",
+      "dur": 1.04,
+      "words": [
+        {
+          "word": "Lautaro.",
+          "t0": 0,
+          "t1": 1.04
+        }
+      ]
+    },
+    {
+      "key": "modern-a3",
+      "slot": "answer",
+      "text": "Julián Álvarez.",
+      "dur": 1.68,
+      "words": [
+        {
+          "word": "Julián",
+          "t0": 0,
+          "t1": 0.56
+        },
+        {
+          "word": "Álvarez.",
+          "t0": 0.7200000000000001,
+          "t1": 1.68
+        }
+      ]
+    },
+    {
+      "key": "modern-a4",
+      "slot": "answer",
+      "text": "Hakimi.",
+      "dur": 0.8800000000000001,
+      "words": [
+        {
+          "word": "Hakimi.",
+          "t0": 0,
+          "t1": 0.8800000000000001
+        }
+      ]
+    },
+    {
+      "key": "modern-a5",
+      "slot": "answer",
+      "text": "Dembélé.",
+      "dur": 0.8,
+      "words": [
+        {
+          "word": "Dembélé.",
+          "t0": 0,
+          "t1": 0.8
+        }
+      ]
+    },
+    {
+      "key": "modern-a6",
+      "slot": "answer",
+      "text": "Luis Díaz.",
+      "dur": 1.28,
+      "words": [
+        {
+          "word": "Luis",
+          "t0": 0,
+          "t1": 0.4
+        },
+        {
+          "word": "Díaz.",
+          "t0": 0.48,
+          "t1": 1.28
+        }
+      ]
+    },
+    {
+      "key": "modern-a7",
+      "slot": "answer",
+      "text": "Bruno Fernandes.",
+      "dur": 1.6,
+      "words": [
+        {
+          "word": "Bruno",
+          "t0": 0,
+          "t1": 0.4
+        },
+        {
+          "word": "Fernandes.",
+          "t0": 0.48000000000000004,
+          "t1": 1.6
+        }
+      ]
+    },
+    {
+      "key": "modern-a8",
+      "slot": "answer",
+      "text": "Isak.",
+      "dur": 0.8800000000000001,
+      "words": [
+        {
+          "word": "Isak.",
+          "t0": 0,
+          "t1": 0.8800000000000001
+        }
+      ]
+    },
+    {
+      "key": "modern-a9",
+      "slot": "answer",
+      "text": "Sadio Mané.",
+      "dur": 1.28,
+      "words": [
+        {
+          "word": "Sadio",
+          "t0": 0,
+          "t1": 0.48
+        },
+        {
+          "word": "Mané.",
+          "t0": 0.58,
+          "t1": 1.28
+        }
+      ]
+    },
+    {
+      "key": "journeymen-a1",
+      "slot": "answer",
+      "text": "Busquets.",
+      "dur": 1.04,
+      "words": [
+        {
+          "word": "Busquets.",
+          "t0": 0,
+          "t1": 1.04
+        }
+      ]
+    },
+    {
+      "key": "journeymen-a2",
+      "slot": "answer",
+      "text": "Thomas Müller.",
+      "dur": 1.44,
+      "words": [
+        {
+          "word": "Thomas",
+          "t0": 0,
+          "t1": 0.4
+        },
+        {
+          "word": "Müller.",
+          "t0": 0.503,
+          "t1": 1.44
+        }
+      ]
+    },
+    {
+      "key": "journeymen-a3",
+      "slot": "answer",
+      "text": "Schweinsteiger.",
+      "dur": 1.04,
+      "words": [
+        {
+          "word": "Schweinsteiger.",
+          "t0": 0,
+          "t1": 1.04
+        }
+      ]
+    },
+    {
+      "key": "journeymen-a4",
+      "slot": "answer",
+      "text": "Varane.",
+      "dur": 0.64,
+      "words": [
+        {
+          "word": "Varane.",
+          "t0": 0,
+          "t1": 0.64
+        }
+      ]
+    },
+    {
+      "key": "journeymen-a5",
+      "slot": "answer",
+      "text": "Dybala.",
+      "dur": 0.64,
+      "words": [
+        {
+          "word": "Dybala.",
+          "t0": 0,
+          "t1": 0.64
+        }
+      ]
+    },
+    {
+      "key": "journeymen-a6",
+      "slot": "answer",
+      "text": "Griezmann.",
+      "dur": 0.72,
+      "words": [
+        {
+          "word": "Griezmann.",
+          "t0": 0,
+          "t1": 0.72
+        }
+      ]
+    },
+    {
+      "key": "journeymen-a7",
+      "slot": "answer",
+      "text": "David Silva.",
+      "dur": 1.3599999999999999,
+      "words": [
+        {
+          "word": "David",
+          "t0": 0,
+          "t1": 0.4
+        },
+        {
+          "word": "Silva.",
+          "t0": 0.507,
+          "t1": 1.3599999999999999
+        }
+      ]
+    },
+    {
+      "key": "journeymen-a8",
+      "slot": "answer",
+      "text": "Harry Kane.",
+      "dur": 1.12,
+      "words": [
+        {
+          "word": "Harry",
+          "t0": 0,
+          "t1": 0.24
+        },
+        {
+          "word": "Kane.",
+          "t0": 0.352,
+          "t1": 1.12
+        }
+      ]
+    },
+    {
+      "key": "journeymen-a9",
+      "slot": "answer",
+      "text": "Vertonghen.",
+      "dur": 0.72,
+      "words": [
+        {
+          "word": "Vertonghen.",
+          "t0": 0,
+          "t1": 0.72
+        }
+      ]
+    }
+  ]
+}

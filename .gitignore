@@ -8,16 +8,7 @@ complete_image_seed_data.json
 verveq_seed_data.json
 
 # Data pipeline cache
-# E0.4: careerPath/ is COMMITTED — it is the only input the pure data guards
-# (cp-assert, selector --check) can re-derive from, and while it was ignored those
-# guards SKIPPED on any fresh checkout, so CI never actually ran them. Note the
-# shape: `scripts/cache/*` rather than `scripts/cache/`, because git cannot
-# re-include a path whose PARENT DIRECTORY is excluded — `!scripts/cache/careerPath/`
-# under a `scripts/cache/` rule silently does nothing.
-scripts/cache/*
-!scripts/cache/careerPath/
-# (full-run.log stays out via the global *.log rule below — it is a transcript of one
-# run, not an input to any rule.)
+scripts/cache/
 
 # Sports data pipeline output
 scripts/data/
@@ -249,29 +240,29 @@ app/.ops/
 !.github/pull_request_template.md
 !app/src/lib/drawEngine/*.md
 !app/scripts/drawSim/*.md
+# Mode-candidate sim harness: its reports are the deliverable, so they must be
+# committable alongside the adapter that produced them.
+!research/modes/**/*.md
+# Weekend-fantasy scoring harness (FS-1). Same rule as modes above, plus one
+# more: SCORING_SPEC.md is the owner-approved source of truth the scoring engine
+# is asserted against, so it must travel with the code that implements it.
+# The raw API sample under research/fantasy/data/ stays ignored via `data/`
+# below, and research/fantasy/.env via the .env rules above — both re-stated
+# explicitly at the end of this file so neither depends on a distant pattern.
+!research/fantasy/**/*.md
+# Content-factory fact-check logs. tools/**/*.md above covers the lane's README,
+# but these two sit at the repo root and were being dropped — and the promo
+# timelines cite them BY NAME as the source of record for every claim on screen
+# (see nottelling/ and longchain/). A clone that renders the videos but not the
+# evidence behind them is exactly the gap that shipped a wrong number.
+!/RESEARCH_DIGEST.md
+!/SCRIPTS_PHASE2.md
 # Data and temporary data cleaning folders
 data/
-# real-v5 editorial rating artifacts are canonical product data (Ticket E5) —
-# re-include them out of the blanket data/ ignore.
-!data/
-data/*
-!data/ratings-v5/
-!data/ratings-v5/*
 !app/convex/data/
 app/convex/data/*
 !app/convex/data/football_career_paths.json
 !app/convex/data/playersSourced.json
-!app/convex/data/drawCardsReal.candidates.json
-!app/convex/data/drawCardsReal.candidates.v5.json
-!app/convex/data/drawCardsReal.dossier.json
-!app/convex/data/drawCardsReal.BUILD_NOTES.md
-!app/convex/data/ownerPositionRulings.json
-!app/convex/data/ownerNationRulings.json
-!app/convex/data/ownerDebutRulings.json
-!app/convex/data/ownerDisputedStatements.json
-!app/convex/data/ownerCitedOverrides.json
-!app/convex/data/ownerEraRestores.json
-!app/convex/data/drawCardsReal.verify2.json
 !app/convex/data/clubAliases.json
 !app/convex/data/playerAdditions.json
 !app/convex/data/football_player_metadata.json
@@ -283,8 +274,21 @@ app/convex/data/*
 !app/convex/data/tennis_player_metadata.json
 data_cleaning/
 
-# Content factory (Remotion promo/video lane) is LOCAL-ONLY tooling — owner
-# ruling 2026-07-29: nothing under it is ever pushed to the GitHub repo. The
-# directory exclusion sits LAST so no earlier !re-include (e.g. tools/**/*.md)
-# can reach inside it — git cannot re-include below an excluded directory.
-tools/content-factory/
+# FS-1 weekend-fantasy harness: raw API sample and credentials. Both are
+# already covered by the `data/` and `.env` rules above; re-stated here so the
+# guarantee is local to the package and survives edits to those rules.
+research/fantasy/data/
+research/fantasy/.env
+
+# Content factory (Remotion promo/video lane) — owner ruling 2026-08-01
+# SUPERSEDES the 2026-07-29 local-only ruling (commit 4378216). Factory SOURCES
+# now track in the main repo; only generated output stays out. See
+# docs/DECISIONS.md and tools/content-factory/.gitignore, which excludes the
+# three generated trees (out/, public/sfx/, public/promo/) at their own level —
+# they are re-derived by sfx/gen.mjs and promo/*-audio.mjs before every render.
+#
+# Why the rule is not simply deleted: the earlier exclusion sat LAST so no
+# earlier !re-include could reach inside it. Nothing replaces it here, because
+# the generated trees are excluded from inside the directory instead, which is
+# the only way to exclude some children while tracking their siblings — git
+# cannot re-include below an excluded parent.

@@ -27,6 +27,58 @@ Newest first.
 
 ---
 
+## DECISION 2026-08-01 — Content-factory sources track in the main repo
+
+**Supersedes the 2026-07-29 local-only ruling** recorded in commit `4378216`
+("chore: untrack tools/content-factory — local-only lane, never pushed"), which
+removed the 14 tracked skeleton files from the index and excluded the directory
+in `.gitignore`.
+
+The ruling now is: **factory sources track in the main repo; generated output
+stays ignored.** Generated means the three trees excluded by
+`tools/content-factory/.gitignore` — `out/`, `public/sfx/`, `public/promo/` —
+all re-derived by `sfx/gen.mjs` and `promo/*-audio.mjs` before every render.
+Everything else tracks, including the committed source assets the render depends
+on and cannot reproduce: `public/dave/*` (AI source footage — checked in so a
+batch never depends on a re-roll), `public/product/*` (screen recordings) and
+the VO caches `promo/vo-cache/` + `promo/vo-cache-ladderlong/` (so a clone with
+no `FAL_KEY` still renders the narrated pieces).
+
+**Why the reversal was forced.** Under the local-only rule the entire promo,
+Dave and retention lanes lived only in a working tree. Commit `24884db`
+("chore(content-factory): track the promo + dave lanes", 2026-07-26) had already
+tried to fix exactly this — it added 143 files — but it lived on branch
+`content/batch-next-stier-casting`, which was reset back to master on 2026-07-27
+00:17, orphaning it. The work survived only as a dangling object and would have
+been pruned by `gc` around 2026-08-10. It is now preserved on `rescue-batch-next`
+(at `24884db`) and `content/batch-next-stier-casting` (restored to its true tip
+`ede1233`).
+
+That branch was **not** merged into master: `git merge-tree` showed 10 conflicts
+(one content, nine modify/delete) whose default resolution would have reverted
+`ledger.json` from 92 spent ids to 45 — freeing 40 ids for the quiz lane to
+re-post — and un-registered `LadderLong` from `Root.tsx`. Master's working tree
+already held the newest content of every one of those files, so the sources were
+added directly on master instead. The orphaned history is preserved on the two
+branches above rather than merged.
+
+## DECISION 2026-08-01 — No trending sound on narrated formats
+
+The daily-workflow instruction in `tools/content-factory/README.md` — upload the
+MP4, then add a trending sound in-app — **does not apply to any format carrying a
+voiceover**, currently `semi-final` and the four `ladder-long` editions.
+
+Two reasons, one measured and one structural. Measured: all four faceless winners
+coded in `research/ig-competitor-sweep/FACELESS_WINNER_SPEC.md` (§ spec #11) ran
+original audio with `music_info: null` and `is_trending_in_clips: false` — a
+trending sound is not what carried them. Structural: `ladder-long` is paced *by*
+the voice (the count-in, the 3-2-1, the spoken withhold), so a song over the top
+fights the thing the format is built on.
+
+Silent formats keep the trending-sound step; it still helps distribution there.
+
+---
+
 ## DECISION 2026-07-29 — Draft-room auto-pick and default sheet are price-based
 
 The FW-3 owner rulings R1 and R6 (2026-07-29) **supersede** DRAFT_ROOM_SPEC
