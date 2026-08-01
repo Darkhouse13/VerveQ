@@ -9,7 +9,10 @@ Pipeline: TikHub v1 `fetch_user_info_by_username_v2` → `fetch_user_reels` (lat
 21 reels → **4 qualifying at ≥50K** → full-resolution `video_versions` download → ffmpeg frame
 sampling (0/3/10/25s + 50%/90%, a 0.2s-step hook strip, and a 1-frame-per-1.5s full-length
 contact-sheet watch) + PCM envelope, band-energy and cross-correlation audio analysis.
-**API spend: $0.006** (4 calls × $0.0015; session cap $2.00, balance $4.11 → $4.10).
+**API spend: $0.006** — 4 billed runs × $0.0015, confirmed per-run from `monid runs list`
+(2 × `fetch_user_info_by_username_v2`, 2 × `fetch_user_reels`; all `COMPLETED`, no 4xx/5xx,
+no retries). Session cap $2.00; wallet reads $4.11 before and after — the spend is below the
+displayed cent.
 
 Both accounts are live and public. 4 qualifying reels ≥ the 3-reel floor, so no STOP.
 
