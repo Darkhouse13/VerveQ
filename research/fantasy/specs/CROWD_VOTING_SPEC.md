@@ -1,11 +1,24 @@
-# Weekend Fantasy — Crowd Voting Spec (v1.0.1)
+# Weekend Fantasy — Crowd Voting Spec (v1.1.0)
 
-Status: **v1.0.1 — LOCKED, owner confirmed all [MY CALL] items
+Status: **v1.1.0 — LOCKED, owner confirmed all [MY CALL] items
 2026-07-28.** Constants are placeholders pending sim/live data;
 changes by owner ticket only.
 
 ## Changelog
 
+- v1.1.0 — verification sync (owner ticket FW-VS1, 2026-08-01),
+  citing the cross-model blind verification of FW-LAUNCH and the
+  FW-CR1 remediation (commit b9d0918). Two statements, no behavior
+  changes:
+  - §Rating math: the freeze **groups each player by his score row's
+    CURRENT verdict position at freeze time** — a player moved by a
+    reclamation-court ruling before finality is percentiled within
+    the group he was ruled into, re-percentiling both affected groups
+    for all members (see RECLAMATION_COURT §Effects).
+  - §Rating math: **where "insufficient votes" renders** — the squad
+    score surfaces (`SlotScoreCell`, shared by the budget-squad and
+    crew-sheet views), on settled rows whose factor is 0 for lack of
+    liquidity.
 - v1.0.1 — timezone amendment per FW-1 STOP-5 ruling: all "CET" time
   references become "Europe/Paris". No other content changes.
 - v1.0 — owner confirmed all [MY CALL] items 2026-07-28.
@@ -53,10 +66,21 @@ per player, which becomes the crowd_factor in SCORING_SPEC v0.4.1
   factor from just re-ranking attackers over defenders — it asks
   "how good was he *for his role this weekend*," which is the
   eye-test question.
+- **The group is keyed on each score row's CURRENT `verdictPosition`
+  at freeze time (stated v1.1.0).** A player whose position a
+  reclamation-court ruling moved before finality is percentiled
+  within the group he was ruled INTO, and both affected groups
+  re-percentile for all their members at the freeze — his role is
+  what the court ruled, and "for his role" follows it
+  (RECLAMATION_COURT §Effects states the same interaction from the
+  court's side).
 - **Liquidity threshold (LOCKED principle):** fewer than 25 votes
   [placeholder] ⇒ crowd_factor = 0, base score stands. Below-
-  threshold players show "insufficient votes" on their ledger —
-  visible, not silent.
+  threshold players show "insufficient votes" — visible, not silent.
+  **Where it renders (v1.1.0):** the squad score surfaces —
+  `SlotScoreCell`, shared by the budget-squad and crew-sheet views —
+  on settled rows whose factor is 0 for lack of liquidity rather than
+  by verdict.
 - Ratings freeze at finality; the factor applied is the frozen one.
 
 ## Rater accuracy (the sealed second game) [MY CALL]

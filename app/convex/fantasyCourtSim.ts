@@ -34,6 +34,17 @@
  * Crew squads are never fabricated (F1).
  *
  * Run:  npx convex run fantasyCourtSim:simulateCourtWalkthrough '{"salt":"o3"}'
+ *
+ * FW-VS1 data contract: pass `"keepData": true` to SKIP the purge phase and
+ * leave every row on DEV for independent inspection — the report then names
+ * the exact purge commands (also listed here, ORDER MATTERS — the lag
+ * gameweek first with `purgeUsers: false`, because the sim users are shared
+ * across both gameweeks and the holder's scaffold squad is reached through
+ * them):
+ *   npx convex run fantasyCourtSim:purgeCourtSimData '{"gameweekId":"<lag id>","purgeUsers":false}'
+ *   npx convex run fantasyCourtSim:purgeCourtSimData '{"gameweekId":"<main id>"}'
+ *   npx convex run fantasyScoringDev:purgeSynthetic '{"season":"SYNTH-O3-COURT"}'
+ * All three are idempotent — a second pass deletes zero rows.
  */
 
 import { v } from "convex/values";
@@ -671,8 +682,13 @@ export const purgeCourtSimData = internalMutation({
 // ── the walkthrough ──
 
 export const simulateCourtWalkthrough = internalAction({
-  args: { salt: v.optional(v.string()) },
-  handler: async (ctx, { salt }): Promise<Record<string, unknown>> => {
+  args: {
+    salt: v.optional(v.string()),
+    /** FW-VS1: true skips the purge phase so a verifier can inspect the rows;
+     *  the report then carries the exact purge commands. Default: purge. */
+    keepData: v.optional(v.boolean()),
+  },
+  handler: async (ctx, { salt, keepData }): Promise<Record<string, unknown>> => {
     const tag = (salt ?? "o3").toLowerCase().replace(/[^a-z0-9_]/g, "").slice(0, 8) || "o3";
     const report: Record<string, unknown> = {};
     const now = Date.now();
@@ -1104,18 +1120,32 @@ export const simulateCourtWalkthrough = internalAction({
 
     // 12 · purge clean — the lag gameweek first, because the users it shares
     //      with GW903 are what the last purge walks to reach the scaffolds.
-    const lagPurge = await ctx.runMutation(internal.fantasyCourtSim.purgeCourtSimData, {
-      gameweekId: lagGameweekId,
-      purgeUsers: false,
-    });
-    const courtPurge = await ctx.runMutation(internal.fantasyCourtSim.purgeCourtSimData, {
-      gameweekId,
-    });
-    report.lagPurged = lagPurge;
-    const synthPurge = await ctx.runMutation(internal.fantasyScoringDev.purgeSynthetic, {
-      season: SIM_SEASON,
-    });
-    report.purged = { court: courtPurge, synthetic: synthPurge };
+    //      With keepData the phase is skipped whole and the report carries
+    //      the same three commands, in the same order, for the verifier.
+    if (keepData === true) {
+      report.kept = {
+        gameweekId,
+        lagGameweekId,
+        purgeCommands: [
+          `npx convex run fantasyCourtSim:purgeCourtSimData '{"gameweekId":"${lagGameweekId}","purgeUsers":false}'`,
+          `npx convex run fantasyCourtSim:purgeCourtSimData '{"gameweekId":"${gameweekId}"}'`,
+          `npx convex run fantasyScoringDev:purgeSynthetic '{"season":"${SIM_SEASON}"}'`,
+        ],
+      };
+    } else {
+      const lagPurge = await ctx.runMutation(internal.fantasyCourtSim.purgeCourtSimData, {
+        gameweekId: lagGameweekId,
+        purgeUsers: false,
+      });
+      const courtPurge = await ctx.runMutation(internal.fantasyCourtSim.purgeCourtSimData, {
+        gameweekId,
+      });
+      report.lagPurged = lagPurge;
+      const synthPurge = await ctx.runMutation(internal.fantasyScoringDev.purgeSynthetic, {
+        season: SIM_SEASON,
+      });
+      report.purged = { court: courtPurge, synthetic: synthPurge };
+    }
 
     report.verdictLine = "PASS";
     return report;

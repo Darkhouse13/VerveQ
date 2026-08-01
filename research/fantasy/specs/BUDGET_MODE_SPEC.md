@@ -1,13 +1,32 @@
-# Weekend Fantasy — Budget Mode Spec (v1.1.1)
+# Weekend Fantasy — Budget Mode Spec (v1.2.0)
 
-Status: **v1.1.1 — LOCKED by owner 2026-07-29 (squad budget set at
-91.0).** Founding ruling LOCKED: **fresh squad weekly**. The budget is
-now a real number, not a placeholder; the price tick remains pending
-FS-1 calibration. The *rules* below are settled and change by owner
-ticket only — this amendment was itself an owner ticket (FW-PR3).
+Status: **v1.2.0 — LOCKED by owner (squad budget 91.0, set
+2026-07-29).** Founding ruling LOCKED: **fresh squad weekly**. The
+budget is a real number; the price tick remains pending FS-1
+calibration. The *rules* below are settled and change by owner ticket
+only — every amendment here was itself an owner ticket (FW-PR3,
+FW-VS1).
 
 ## Changelog
 
+- v1.2.0 — verification sync (owner ticket FW-VS1, 2026-08-01),
+  citing the cross-model blind verification of FW-LAUNCH and the
+  FW-CR1 remediation (commit b9d0918). No behavior changes — each
+  item writes down what is already ruled or built:
+  - §Squad construction: the favorite-exemption cooldown reads **28
+    calendar days** (DRAFT_ROOM ledger item 7, owner STOP-F ruling).
+    The prior "4-GW change cooldown" phrasing was the exact reading
+    that ruling retired — gameweek counts and day counts diverge once
+    midweek gameweeks exist, and days are what the anti-gaming rule
+    meant.
+  - §Squad construction: the **duplicate-player prohibition** is
+    stated — each player at most once per squad. Enforced since FW-1
+    (`validateSquadShape`, violation code `duplicate_player`) but
+    unstated; the code's own comment flagged the omission.
+  - §Squad construction: **cooldown behavior** stated — during a
+    cooldown the prior favorite remains in force, and a first-ever
+    favorite selection is immediate (the FW-1 S1/S2 rulings recorded
+    in `lib/fantasyFavoriteClub.ts`, now spec text).
 - v1.1.1 — doc-only patch: open item 1 now names the constant as it
   shipped — `SQUAD_BUDGET = 91.0` in `app/convex/lib/fantasyConstants.ts`
   (commit 4ff2a28) — instead of the pre-pricing placeholder name, which
@@ -61,7 +80,8 @@ season-burdened.
 | Squad | 13: XI + 2 finishers | LOCKED |
 | Formation | any shape satisfying the structural rule below, user-chosen | LOCKED |
 | Position quotas at build | none — all-positions-eligible; mismatch rule prices the risk | LOCKED |
-| Per-club cap | 3, favorite-club exempt (4-GW change cooldown) | LOCKED |
+| Per-club cap | 3, favorite-club exempt (28-day change cooldown — see below) | LOCKED |
+| Duplicate players | none — each player at most once per squad | LOCKED |
 | Budget | **91.0** for the 13 slots — see §Budget | LOCKED |
 | Price tick | pending pricing pass | open |
 | Prices | editorial (v5-scale derived), identical for all users, static within a gameweek, repriced weekly by editorial review | LOCKED |
@@ -86,6 +106,22 @@ The **2 finisher slots carry their own slotRole** (GK/DEF/MID/ATT),
 chosen freely and unconstrained by the XI's shape — consistent with
 all-positions-eligible. The structural rule governs the XI only.
 (FW-1 STOP-3 ruling 2026-07-28.)
+
+**Duplicate-player prohibition (LOCKED, stated v1.2.0).** Each player
+may occupy at most one slot per squad: a squad is 13 *players*, not 13
+slot references. Enforced since FW-1 (`validateSquadShape`, violation
+code `duplicate_player`); stated here so the omission can never be
+read as permission.
+
+**Favorite-club cooldown behavior (LOCKED — DRAFT_ROOM ledger items
+7–8 + the FW-1 S1/S2 rulings, stated v1.2.0).** The cooldown on
+favorite *changes* is **28 calendar days**, measured as a timestamp
+from the instant of the change (never a gameweek count). During the
+cooldown the PRIOR favorite remains in force — "changes take effect
+after a cooldown" describes when the new club starts, not a gap with
+no exemption (S1). A FIRST-EVER favorite selection takes effect
+immediately: the cooldown is on changes, and a first set has no prior
+club to game against (S2).
 
 ## Budget (LOCKED, FW-PR3 owner ruling 2026-07-29)
 

@@ -56,6 +56,12 @@
  * Run:  npx convex run fantasyDraftSim:simulateDraft '{"salt":"gate-1"}'
  *       npx convex run fantasyDraftSim:simulateDraft '{"salt":"gate-1","mode":"timeout"}'
  *       npx convex run fantasyDraftSim:purgeSimData
+ *
+ * FW-VS1 data contract (uniform across the fantasy sims): the run KEEPS its
+ * rows — crew, room, log, materialized sheets — so a verifier can inspect
+ * them; `keepData` is accepted for CLI uniformity and this sim always
+ * behaves as `keepData: true`. The named purge is
+ * `fantasyDraftSim:purgeSimData`, idempotent: a second run deletes zero rows.
  */
 
 import { v } from "convex/values";
@@ -129,6 +135,9 @@ export const simulateDraft = internalMutation({
      * running against a small deployment.
      */
     silentFromRound: v.optional(v.number()),
+    /** FW-VS1 uniform contract. This sim ALWAYS keeps its rows (the flag is
+     *  accepted for CLI uniformity); purge: purgeSimData, idempotent. */
+    keepData: v.optional(v.boolean()),
   },
   handler: async (
     ctx,
@@ -367,6 +376,7 @@ export const simulateDraft = internalMutation({
     return {
       mode,
       silentFromRound: mode === "timeout" ? silentFromRound : null,
+      dataKept: "always — purge with fantasyDraftSim:purgeSimData (idempotent)",
       roomId,
       seed,
       snakeOrder,

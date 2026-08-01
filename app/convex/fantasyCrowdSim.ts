@@ -15,6 +15,13 @@
  *
  * Run:  npx convex run fantasyCrowdSim:simulateCrowdWalkthrough '{"salt":"o2"}'
  *       (purges are the walkthrough's own last phase)
+ *
+ * FW-VS1 data contract: pass `"keepData": true` to SKIP the purge phase and
+ * leave every row on DEV for independent inspection — the report then names
+ * the exact purge commands (also listed here):
+ *   npx convex run fantasyCrowdSim:purgeSimCrowdData '{"gameweekId":"<id from the report>"}'
+ *   npx convex run fantasyScoringDev:purgeSynthetic '{"season":"SYNTH-O2-CROWD"}'
+ * Both are idempotent — a second run deletes zero rows.
  */
 
 import { v } from "convex/values";
@@ -251,8 +258,13 @@ export const purgeSimCrowdData = internalMutation({
 // ── the walkthrough ──
 
 export const simulateCrowdWalkthrough = internalAction({
-  args: { salt: v.optional(v.string()) },
-  handler: async (ctx, { salt }): Promise<Record<string, unknown>> => {
+  args: {
+    salt: v.optional(v.string()),
+    /** FW-VS1: true skips the purge phase so a verifier can inspect the rows;
+     *  the report then carries the exact purge commands. Default: purge. */
+    keepData: v.optional(v.boolean()),
+  },
+  handler: async (ctx, { salt, keepData }): Promise<Record<string, unknown>> => {
     const tag = (salt ?? "o2").toLowerCase().replace(/[^a-z0-9_]/g, "").slice(0, 8) || "o2";
     const report: Record<string, unknown> = {};
     const now = Date.now();
@@ -423,14 +435,24 @@ export const simulateCrowdWalkthrough = internalAction({
     }
     report.raterAccuracy = "5 voters scored, unanimous, all accurate";
 
-    // 11 · purge clean, both layers.
-    const crowdPurge = await ctx.runMutation(internal.fantasyCrowdSim.purgeSimCrowdData, {
-      gameweekId,
-    });
-    const synthPurge = await ctx.runMutation(internal.fantasyScoringDev.purgeSynthetic, {
-      season: SIM_SEASON,
-    });
-    report.purged = { crowd: crowdPurge, synthetic: synthPurge };
+    // 11 · purge clean, both layers — unless the verifier asked to inspect.
+    if (keepData === true) {
+      report.kept = {
+        gameweekId,
+        purgeCommands: [
+          `npx convex run fantasyCrowdSim:purgeSimCrowdData '{"gameweekId":"${gameweekId}"}'`,
+          `npx convex run fantasyScoringDev:purgeSynthetic '{"season":"${SIM_SEASON}"}'`,
+        ],
+      };
+    } else {
+      const crowdPurge = await ctx.runMutation(internal.fantasyCrowdSim.purgeSimCrowdData, {
+        gameweekId,
+      });
+      const synthPurge = await ctx.runMutation(internal.fantasyScoringDev.purgeSynthetic, {
+        season: SIM_SEASON,
+      });
+      report.purged = { crowd: crowdPurge, synthetic: synthPurge };
+    }
 
     report.verdict = "PASS";
     return report;

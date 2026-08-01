@@ -223,16 +223,27 @@ export const createSquad = mutation({
   handler: async (ctx, { gameweekId, context, crewRoomId, formation, finisherRoles }) => {
     const userId = await requireUserId(ctx);
 
-    // Before anything else, including any read: there is no argument
-    // combination that makes a crew squad from a public call.
-    if (context === "crew") throw new Error(CREW_SQUAD_DRAFT_ONLY);
-    if (crewRoomId !== undefined) {
-      throw new Error("A budget squad has no crew room.");
-    }
+    assertPublicSquadCreateArgs(context, crewRoomId);
 
     return createBudgetSquadFor(ctx, userId, { gameweekId, formation, finisherRoles });
   },
 });
+
+/**
+ * The F1 argument gate, verbatim from the wrapper above (extracted FW-VS1 so
+ * the DEV sim can exercise the same throw — a pure refactor, no behavior
+ * change): before anything else, including any read, there is no argument
+ * combination that makes a crew squad from a public call.
+ */
+export function assertPublicSquadCreateArgs(
+  context: "budget" | "crew",
+  crewRoomId: string | undefined,
+): void {
+  if (context === "crew") throw new Error(CREW_SQUAD_DRAFT_ONLY);
+  if (crewRoomId !== undefined) {
+    throw new Error("A budget squad has no crew room.");
+  }
+}
 
 /**
  * The budget-squad creation core, sans authentication — the seam the DEV

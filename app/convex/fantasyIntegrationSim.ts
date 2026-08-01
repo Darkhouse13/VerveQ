@@ -18,6 +18,15 @@
  * minutes, in a gameweek only it owns.
  *
  * Run:  npx convex run fantasyIntegrationSim:simulateWeekendLoop '{"salt":"o5"}'
+ *
+ * FW-VS1 data contract: pass `"keepData": true` to SKIP the purge phase and
+ * leave the whole settled weekend on DEV — squads, scores, crew table, court
+ * log — for independent inspection (`loopState` with the ids from the report
+ * reads it back, crew table included). The report then names the exact purge
+ * commands (also listed here):
+ *   npx convex run fantasyIntegrationSim:purgeLoopData '{"gameweekId":"<id from the report>"}'
+ *   npx convex run fantasyScoringDev:purgeSynthetic '{"season":"SYNTH-O5-LOOP"}'
+ * Both are idempotent — a second run deletes zero rows.
  */
 
 import { v } from "convex/values";
@@ -730,8 +739,14 @@ export const purgeUiRun = internalMutation({
 // ── the loop ──
 
 export const simulateWeekendLoop = internalAction({
-  args: { salt: v.optional(v.string()) },
-  handler: async (ctx, { salt }): Promise<Record<string, unknown>> => {
+  args: {
+    salt: v.optional(v.string()),
+    /** FW-VS1: true skips the purge phase so a verifier can inspect the rows;
+     *  the report then carries the exact purge commands and a ready-to-run
+     *  `loopState` probe. Default: purge. */
+    keepData: v.optional(v.boolean()),
+  },
+  handler: async (ctx, { salt, keepData }): Promise<Record<string, unknown>> => {
     const tag = (salt ?? "o5").toLowerCase().replace(/[^a-z0-9_]/g, "").slice(0, 8) || "o5";
     const report: Record<string, unknown> = {};
     const now = Date.now();
@@ -944,14 +959,31 @@ export const simulateWeekendLoop = internalAction({
     );
     if (immune.eligible) fail("settled gameweek accepted a factor application.");
 
-    // 11 · purge clean, everything.
-    const loopPurge = await ctx.runMutation(internal.fantasyIntegrationSim.purgeLoopData, {
-      gameweekId,
-    });
-    const synthPurge = await ctx.runMutation(internal.fantasyScoringDev.purgeSynthetic, {
-      season: SIM_SEASON,
-    });
-    report.purged = { loop: loopPurge, synthetic: synthPurge };
+    // 11 · purge clean, everything — unless the verifier asked to inspect.
+    if (keepData === true) {
+      report.kept = {
+        gameweekId,
+        crewCode: crew.crewCode,
+        memberUserId: drafterA,
+        budgetUserId: budgetUser,
+        stateProbe:
+          `npx convex run fantasyIntegrationSim:loopState ` +
+          `'{"gameweekId":"${gameweekId}","crewCode":"${crew.crewCode}",` +
+          `"memberUserId":"${drafterA}","budgetUserId":"${budgetUser}"}'`,
+        purgeCommands: [
+          `npx convex run fantasyIntegrationSim:purgeLoopData '{"gameweekId":"${gameweekId}"}'`,
+          `npx convex run fantasyScoringDev:purgeSynthetic '{"season":"${SIM_SEASON}"}'`,
+        ],
+      };
+    } else {
+      const loopPurge = await ctx.runMutation(internal.fantasyIntegrationSim.purgeLoopData, {
+        gameweekId,
+      });
+      const synthPurge = await ctx.runMutation(internal.fantasyScoringDev.purgeSynthetic, {
+        season: SIM_SEASON,
+      });
+      report.purged = { loop: loopPurge, synthetic: synthPurge };
+    }
 
     report.verdict = "PASS";
     return report;

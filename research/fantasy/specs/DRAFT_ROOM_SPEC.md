@@ -1,6 +1,6 @@
-# Weekend Fantasy — Draft Room Spec (v1.2.1)
+# Weekend Fantasy — Draft Room Spec (v1.3.0)
 
-Status: **v1.2.1 — LOCKED by owner.** Every ⚑ item is
+Status: **v1.3.0 — LOCKED by owner.** Every ⚑ item is
 resolved in the owner ledger at the foot of this document, and every ⚑
 statement in the body has been amended to read as ruled; the ⚑ markers
 are kept as provenance of what was once open, not as live questions.
@@ -9,6 +9,23 @@ scheduled as work — they are deferred, not missing.
 
 ## Changelog
 
+- v1.3.0 — **the tie-break ladders are BUILT** (FW-LAUNCH O4;
+  verification sync FW-VS1 2026-08-01, citing the cross-model blind
+  verification of FW-LAUNCH and the FW-CR1 remediation, commit
+  b9d0918). Three amendments, no rule changes:
+  - §Tie-breaks / §Explicitly deferred: `fantasyScores.getCrewTable`
+    now applies the full crew-table ladder and the payload carries
+    **`tieBreaksApplied: true`** — the deferred note is closed.
+  - The §Explicitly-deferred paraphrase of the ladder ("weekend wins,
+    then cumulative points, then head-to-head") implied an order
+    found nowhere in §Tie-breaks or ledger item 5; it is corrected to
+    the ruled ladder — a crew-table tie is EQUAL CUMULATIVE POINTS,
+    broken by head-to-head weekend wins, then still level stays a
+    displayed tie.
+  - §Tie-breaks states the **missing-data policy** the implementation
+    carries: a null weekend total abstains from every rung, a rung
+    unavailable on either side falls through, and an exhausted ladder
+    is a DISPLAYED tie. No rung invents a fact.
 - v1.2.1 — **the crew table exists** (FW-4 scoring pipeline, doc-only
   patch). §Explicitly deferred no longer lists the crew table /
   standings as blocked on the scoring pipeline: the pipeline shipped
@@ -443,10 +460,21 @@ both the ledger and this document's freeze claim):
 - **Crew table tie:** head-to-head weekend wins, then cumulative
   points.
 
-"Fewer auto-picks" is already recordable — every auto-pick is flagged
-in the draft log — so the ladder's inputs exist even though its
-consumer does not yet. Implementation is deferred, not undecided; see
-below.
+**BUILT (FW-LAUNCH O4, recorded v1.3.0).** `fantasyScores.getCrewTable`
+applies the crew-table ladder: rows order by cumulative points, and a
+cluster on EQUAL cumulative points breaks by head-to-head weekend wins
+— each weekend both members contested decided by points first, then
+the weekend ladder's rungs (highest single-player score, then fewest
+auto-picks, read from the draft log's auto flags). Members still level
+when the ladder is exhausted stay a DISPLAYED tie. The payload carries
+`tieBreaksApplied: true`. Pure ladder: `lib/fantasyTieBreaks.ts`.
+
+**Missing-data policy (LOCKED, stated v1.3.0).** No rung invents a
+fact: a weekend where either side's total is **null** decides nothing
+— it abstains from every rung (null is "nothing scored", never 0); a
+rung whose input is unavailable on either side falls through to the
+next; a ladder exhausted with the members still level is a DISPLAYED
+tie, not an arbitrary order.
 
 ## Explicitly deferred (owner ruling 2026-07-29)
 
@@ -455,17 +483,16 @@ here so a future reader — or a verification pass — reads them as
 deferred rather than missing, which is the state they were in when the
 v1.1.0 blind verification flagged them:
 
-- **The tie-break ladders above** (weekend wins, then cumulative
-  points, then head-to-head). The crew table itself is no longer
-  deferred: the scoring execution pipeline shipped (FW-4) and
-  `fantasyScores.getCrewTable` serves the standings — cumulative
-  points per member, each weekend's result, settled weekends read from
-  the stamped totals. What remains deferred is only the ladder that
-  would BREAK a tie: the table orders by cumulative points, displays a
-  tie as a tie, and returns `tieBreaksApplied: false` in the payload
-  so no client can mistake the ordering for a settled ladder. The
-  ladder's inputs (auto-pick flags, weekend wins) are all recorded, so
-  implementing it is a consumer, not a migration.
+- ~~The tie-break ladders above~~ — **BUILT** (FW-LAUNCH O4, recorded
+  v1.3.0; nothing here remains deferred). The crew table shipped with
+  FW-4 and the ladder shipped with O4: a crew-table tie (EQUAL
+  cumulative points) breaks by head-to-head weekend wins, then still
+  level stays a displayed tie — exactly §Tie-breaks and ledger item 5.
+  The payload now carries **`tieBreaksApplied: true`**. (This bullet
+  formerly paraphrased the ladder as "weekend wins, then cumulative
+  points, then head-to-head", an order stated nowhere else in this
+  document; corrected v1.3.0 — §Tie-breaks and the ledger are the
+  authority.)
 - **LIVE and SETTLED as room phases.** §Lifecycle keeps them as the
   cycle's shape, but the room's own status machine terminates at
   COMPLETED and those two phases are carried by the gameweek. Promoting
