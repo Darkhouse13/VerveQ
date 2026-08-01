@@ -21,6 +21,14 @@
  *     group he was ruled into and the group he left re-percentiles.
  *   · the rebuttal's TRIAL gate (item 3) — refused during filing, slot intact.
  *
+ * FW-CR2 adds the STAMP BINDING (O3-F1): a third synthetic gameweek, two
+ * fixtures ingested WITHOUT events — raw stats on record, no score rows —
+ * each carrying a claim with a passing jury. Inside the verdict window the
+ * resolver must HOLD both (tally recorded, no stamp: `passed` binds to
+ * `rescoreForVerdict` reporting written). One fixture then scores late
+ * in-window and its claim must resolve on retry; the other never scores and
+ * its claim must expire at finality with the held tally preserved.
+ *
  * Postures as its siblings: internal-only, tagged (`simcourt_*`), purged by
  * id. TWO direct table writes sit outside product paths, both on synthetic
  * rows only:
@@ -37,14 +45,15 @@
  *
  * FW-VS1 data contract: pass `"keepData": true` to SKIP the purge phase and
  * leave every row on DEV for independent inspection — the report then names
- * the exact purge commands (also listed here, ORDER MATTERS — the lag
- * gameweek first with `purgeUsers: false`, because the sim users are shared
- * across both gameweeks and the holder's scaffold squad is reached through
- * them):
+ * the exact purge commands (also listed here, ORDER MATTERS — the lag and
+ * stamp gameweeks first with `purgeUsers: false`, because the sim users are
+ * shared across all three gameweeks and the holder's scaffold squad is
+ * reached through them):
  *   npx convex run fantasyCourtSim:purgeCourtSimData '{"gameweekId":"<lag id>","purgeUsers":false}'
+ *   npx convex run fantasyCourtSim:purgeCourtSimData '{"gameweekId":"<stamp id>","purgeUsers":false}'
  *   npx convex run fantasyCourtSim:purgeCourtSimData '{"gameweekId":"<main id>"}'
  *   npx convex run fantasyScoringDev:purgeSynthetic '{"season":"SYNTH-O3-COURT"}'
- * All three are idempotent — a second pass deletes zero rows.
+ * All four are idempotent — a second pass deletes zero rows.
  */
 
 import { v } from "convex/values";
@@ -89,6 +98,43 @@ const LAG_PLAYERS = [
     providerPlayerId: "synth-o3l-p1",
     name: "Synth Lag MID 1",
     clubId: "SYNTH-O3D",
+    feedPosition: "MID" as const,
+  },
+];
+
+/** The stamp-binding gameweek (FW-CR2 item 1): its own clock, TWO fixtures,
+ *  both ingested WITHOUT events — FT-class raw stats land (so filing works)
+ *  but R7 keeps them unscoreable, so no score row exists for the re-score to
+ *  revise. One fixture then scores late inside the verdict window; the other
+ *  never does. */
+const SIM_GW_STAMP = 905;
+const SIM_FIXTURE_LATE = "synth-o3-court-late";
+const SIM_FIXTURE_NEVER = "synth-o3-court-never";
+const STAMP_PLAYERS_LATE = [
+  {
+    providerPlayerId: "synth-o3s-p0",
+    name: "Synth Stamp DEF 0",
+    clubId: "SYNTH-O3E",
+    feedPosition: "DEF" as const,
+  },
+  {
+    providerPlayerId: "synth-o3s-p1",
+    name: "Synth Stamp MID 1",
+    clubId: "SYNTH-O3F",
+    feedPosition: "MID" as const,
+  },
+];
+const STAMP_PLAYERS_NEVER = [
+  {
+    providerPlayerId: "synth-o3s-p2",
+    name: "Synth Stamp DEF 2",
+    clubId: "SYNTH-O3G",
+    feedPosition: "DEF" as const,
+  },
+  {
+    providerPlayerId: "synth-o3s-p3",
+    name: "Synth Stamp MID 3",
+    clubId: "SYNTH-O3H",
     feedPosition: "MID" as const,
   },
 ];
@@ -473,6 +519,67 @@ export const courtSimLagVotes = internalMutation({
       .withIndex("by_claim", (q) => q.eq("claimId", args.claimId))
       .collect();
     return { votes: votes.length };
+  },
+});
+
+// ── the stamp-binding gameweek (FW-CR2 item 1) ──
+
+/**
+ * File one stamp-gameweek claim (DEF → MID) and endorse it onto the docket.
+ * Generic over fixture and target because the scenario needs two claims — one
+ * on the fixture that scores late, one on the fixture that never does. The
+ * gameweek's clock is 25h from finality here: an ordinary filing through the
+ * ordinary cores, on an appearance whose fixture has raw stats but no score.
+ */
+export const courtSimStampFile = internalMutation({
+  args: {
+    gameweekId: v.id("fantasyGameweeks"),
+    providerFixtureId: v.string(),
+    providerPlayerId: v.string(),
+    filer: v.id("users"),
+    endorsers: v.array(v.id("users")),
+  },
+  handler: async (ctx, args) => {
+    const gameweek = await ctx.db.get(args.gameweekId);
+    if (gameweek === null) fail("stamp gameweek missing.");
+    const now = Date.now();
+
+    const player = await ctx.db
+      .query("fantasyPlayers")
+      .withIndex("by_providerPlayerId", (q) =>
+        q.eq("providerPlayerId", args.providerPlayerId),
+      )
+      .first();
+    const fixture = await ctx.db
+      .query("fantasyFixtures")
+      .withIndex("by_providerFixtureId", (q) =>
+        q.eq("providerFixtureId", args.providerFixtureId),
+      )
+      .first();
+    if (player === null || fixture === null) fail("stamp fixture rows missing.");
+
+    const filed = await fileClaimFor(
+      ctx,
+      args.filer,
+      gameweek,
+      {
+        playerId: player._id,
+        fixtureId: fixture._id,
+        claimedPosition: "MID",
+        argument: "Held his line in midfield, not defence.",
+      },
+      now,
+    );
+    for (const userId of args.endorsers) {
+      await endorseClaimFor(ctx, userId, filed.claimId, now);
+    }
+    const claim = await ctx.db.get(filed.claimId);
+    if (claim?.status !== "trial") {
+      fail(
+        `stamp claim on ${args.providerFixtureId} should be on trial at ${claim?.endorsements} endorsements, is "${claim?.status}".`,
+      );
+    }
+    return { claimId: filed.claimId, endorsements: claim.endorsements };
   },
 });
 
@@ -994,6 +1101,262 @@ export const simulateCourtWalkthrough = internalAction({
         "31-juror passing claim expired at finality: no verdict, no tallies, no score version";
     }
 
+    // 8c · THE STAMP BINDING (FW-CR2 item 1, the critical one).
+    //
+    //      A verdict stamp must bind to the score write: `passed` may be
+    //      stamped ONLY when the re-score landed in the same resolution pass.
+    //      The trigger is O3-F1's: a claim filed on an appearance whose
+    //      fixture has raw stats but NO score rows (ingested without events —
+    //      R7 keeps it unscoreable), reaching a passing jury inside the
+    //      verdict window. Two claims on two such fixtures, one gameweek:
+    //      the LATE fixture then scores inside the window and its claim must
+    //      resolve on retry; the NEVER fixture stays unscored and its claim
+    //      must expire at finality with the tally preserved.
+    let stampGameweekId: Id<"fantasyGameweeks">;
+    {
+      const stampSeeded: { gameweekId: Id<"fantasyGameweeks"> } = await ctx.runMutation(
+        internal.fantasyScoringDev.seedSyntheticFixture,
+        {
+          season: SIM_SEASON,
+          gwNumber: SIM_GW_STAMP,
+          finalityAt: Date.now() + 25 * 60 * 60 * 1000,
+          providerFixtureId: SIM_FIXTURE_LATE,
+          kickoffAt: Date.now() - 3 * 60 * 60 * 1000,
+          homeClubId: "SYNTH-O3E",
+          awayClubId: "SYNTH-O3F",
+          homeGoals: 2,
+          awayGoals: 0,
+          players: STAMP_PLAYERS_LATE,
+        },
+      );
+      stampGameweekId = stampSeeded.gameweekId;
+      await ctx.runMutation(internal.fantasyScoringDev.seedSyntheticFixture, {
+        season: SIM_SEASON,
+        gwNumber: SIM_GW_STAMP,
+        finalityAt: Date.now() + 25 * 60 * 60 * 1000,
+        providerFixtureId: SIM_FIXTURE_NEVER,
+        kickoffAt: Date.now() - 3 * 60 * 60 * 1000,
+        homeClubId: "SYNTH-O3G",
+        awayClubId: "SYNTH-O3H",
+        homeGoals: 0,
+        awayGoals: 0,
+        players: STAMP_PLAYERS_NEVER,
+      });
+
+      // Ingest BOTH fixtures without events: raw rows land (filing needs an
+      // appearance on record), scores cannot (R7) — the fixtures are exactly
+      // "not yet scored".
+      for (const [providerFixtureId, players] of [
+        [SIM_FIXTURE_LATE, STAMP_PLAYERS_LATE],
+        [SIM_FIXTURE_NEVER, STAMP_PLAYERS_NEVER],
+      ] as const) {
+        await ctx.runMutation(internal.fantasyScores.applyFixtureStats, {
+          providerFixtureId,
+          hasPlayerStats: true,
+          hasEvents: false,
+          rows: players.map((p) => ({
+            providerPlayerId: p.providerPlayerId,
+            clubId: p.clubId,
+            feedPosition: p.feedPosition,
+            stats: baseStats,
+            events: [] as { minute: number; kind: "goal" }[],
+            entryMinute: null,
+          })),
+        });
+      }
+      type StampScoreRow = { providerPlayerId: string; version: number; verdictPosition: string | null };
+      let stampScores: StampScoreRow[] = await ctx.runQuery(
+        internal.fantasyScoringDev.syntheticScoreRows,
+        { season: SIM_SEASON, gwNumber: SIM_GW_STAMP },
+      );
+      if (stampScores.length !== 0) {
+        fail(`the events-less fixtures were scored anyway: ${stampScores.length} rows.`);
+      }
+
+      // Two claims through the ordinary cores, each seated with a jury that
+      // passes it outright (31 unanimous yes ≥ quorum 30).
+      const lateFiled: { claimId: Id<"fantasyCourtClaims"> } = await ctx.runMutation(
+        internal.fantasyCourtSim.courtSimStampFile,
+        {
+          gameweekId: stampGameweekId,
+          providerFixtureId: SIM_FIXTURE_LATE,
+          providerPlayerId: STAMP_PLAYERS_LATE[0].providerPlayerId,
+          filer: users[22],
+          endorsers: users.slice(0, 14),
+        },
+      );
+      const neverFiled: { claimId: Id<"fantasyCourtClaims"> } = await ctx.runMutation(
+        internal.fantasyCourtSim.courtSimStampFile,
+        {
+          gameweekId: stampGameweekId,
+          providerFixtureId: SIM_FIXTURE_NEVER,
+          providerPlayerId: STAMP_PLAYERS_NEVER[0].providerPlayerId,
+          filer: users[23],
+          endorsers: users.slice(0, 14),
+        },
+      );
+      const lateVotes: { votes: number } = await ctx.runMutation(
+        internal.fantasyCourtSim.courtSimLagVotes,
+        {
+          claimId: lateFiled.claimId,
+          yesVoters: [...users.slice(0, 20), ...users.slice(23, 34)],
+        },
+      );
+      const neverVotes: { votes: number } = await ctx.runMutation(
+        internal.fantasyCourtSim.courtSimLagVotes,
+        {
+          claimId: neverFiled.claimId,
+          yesVoters: [...users.slice(0, 20), users[22], ...users.slice(24, 34)],
+        },
+      );
+      if (lateVotes.votes !== 31 || neverVotes.votes !== 31) {
+        fail(`stamp juries seated ${lateVotes.votes}/${neverVotes.votes} jurors, expected 31 each.`);
+      }
+
+      // Into the verdict window (finality 2h out ⇒ voting closed 59m ago),
+      // fixtures still unscored. The resolver must HOLD: both trials pass the
+      // vote test, neither re-score can land, so neither claim may be stamped.
+      await ctx.runMutation(internal.fantasyScoringDev.setSyntheticFinality, {
+        season: SIM_SEASON,
+        gwNumber: SIM_GW_STAMP,
+        finalityAt: Date.now() + 2 * 60 * 60 * 1000,
+      });
+      const heldPass: { passed: number; rescored: number } = await ctx.runMutation(
+        internal.fantasyCourt.resolveDueClaims,
+        {},
+      );
+      // Counts are REPORTED, states are ASSERTED (the DEV court cron may share
+      // the work) — but a `passed` from this pass is asserted impossible: on
+      // an unscored fixture there is nothing a verdict could have landed on.
+      report.stampHeldPass = heldPass;
+      stampScores = await ctx.runQuery(internal.fantasyScoringDev.syntheticScoreRows, {
+        season: SIM_SEASON,
+        gwNumber: SIM_GW_STAMP,
+      });
+      for (const [label, claimId] of [
+        ["late", lateFiled.claimId],
+        ["never", neverFiled.claimId],
+      ] as const) {
+        const held: { status: string; tallies: { rawVotes: number } | null; resolvedAt: number | null } | null =
+          await ctx.runQuery(internal.fantasyCourtSim.courtSimClaim, { claimId });
+        if (held?.status !== "trial") {
+          fail(
+            `O3-F1 NEGATIVE CONTROL TRIPPED: the ${label} claim on an UNSCORED fixture resolved ` +
+              `"${held?.status}" while ${stampScores.length} score versions exist for its gameweek — ` +
+              "the passed stamp is not bound to the score write (rescoreForVerdict written:false was ignored).",
+          );
+        }
+        if (held.tallies === null || held.tallies.rawVotes !== 31) {
+          fail(`the held ${label} claim did not record its passing tally: ${JSON.stringify(held.tallies)}.`);
+        }
+        if (held.resolvedAt !== null) {
+          fail(`the held ${label} claim carries resolvedAt — held is not resolved.`);
+        }
+      }
+      if (stampScores.length !== 0) {
+        fail(`the held pass wrote score versions: ${stampScores.length}.`);
+      }
+
+      // The LATE fixture scores — late, INSIDE the window. The next pass must
+      // resolve its held claim: verdict stamped WITH the re-score landing.
+      await ctx.runMutation(internal.fantasyScores.applyFixtureStats, {
+        providerFixtureId: SIM_FIXTURE_LATE,
+        hasPlayerStats: true,
+        hasEvents: true,
+        rows: STAMP_PLAYERS_LATE.map((p) => ({
+          providerPlayerId: p.providerPlayerId,
+          clubId: p.clubId,
+          feedPosition: p.feedPosition,
+          stats: baseStats,
+          events: [] as { minute: number; kind: "goal" }[],
+          entryMinute: null,
+        })),
+      });
+      const retryPass: { passed: number; rescored: number } = await ctx.runMutation(
+        internal.fantasyCourt.resolveDueClaims,
+        {},
+      );
+      report.stampRetryPass = retryPass;
+      const lateClaim: { status: string; tallies: { rawVotes: number } | null; resolvedAt: number | null } | null =
+        await ctx.runQuery(internal.fantasyCourtSim.courtSimClaim, { claimId: lateFiled.claimId });
+      if (lateClaim?.status !== "passed") {
+        fail(`the late claim resolved "${lateClaim?.status}" once its fixture scored — expected passed.`);
+      }
+      if (lateClaim.tallies === null || lateClaim.tallies.rawVotes !== 31) {
+        fail(`the resolved late claim lost its tally: ${JSON.stringify(lateClaim.tallies)}.`);
+      }
+      if (lateClaim.resolvedAt === null) fail("the resolved late claim carries no resolvedAt.");
+      stampScores = await ctx.runQuery(internal.fantasyScoringDev.syntheticScoreRows, {
+        season: SIM_SEASON,
+        gwNumber: SIM_GW_STAMP,
+      });
+      {
+        const late = stampScores
+          .filter((r) => r.providerPlayerId === STAMP_PLAYERS_LATE[0].providerPlayerId)
+          .sort((a, b) => a.version - b.version);
+        if (late.length !== 2 || late[1].verdictPosition !== "MID") {
+          fail(
+            `the late claim's stamp landed without its re-score: versions ${late.length}, ` +
+              `current verdict "${late[late.length - 1]?.verdictPosition}".`,
+          );
+        }
+        const neverRows = stampScores.filter(
+          (r) =>
+            r.providerPlayerId === STAMP_PLAYERS_NEVER[0].providerPlayerId ||
+            r.providerPlayerId === STAMP_PLAYERS_NEVER[1].providerPlayerId,
+        );
+        if (neverRows.length !== 0) fail("the unscored fixture grew score rows.");
+      }
+      const neverStillHeld: { status: string } | null = await ctx.runQuery(
+        internal.fantasyCourtSim.courtSimClaim,
+        { claimId: neverFiled.claimId },
+      );
+      if (neverStillHeld?.status !== "trial") {
+        fail(`the never claim moved to "${neverStillHeld?.status}" while its fixture stayed unscored.`);
+      }
+
+      // The NEVER fixture never scores. Finality passes with the claim still
+      // held: the expiry path stamps it expired — tallies PRESERVED (the vote
+      // is a fact on record), no verdict, no score effect.
+      await ctx.runMutation(internal.fantasyScoringDev.setSyntheticFinality, {
+        season: SIM_SEASON,
+        gwNumber: SIM_GW_STAMP,
+        finalityAt: Date.now() - 60 * 1000,
+      });
+      const expiryPass: { passed: number; rescored: number; expired: number } =
+        await ctx.runMutation(internal.fantasyCourt.resolveDueClaims, {});
+      report.stampExpiryPass = expiryPass;
+      const neverClaim: { status: string; tallies: { rawVotes: number } | null; resolvedAt: number | null } | null =
+        await ctx.runQuery(internal.fantasyCourtSim.courtSimClaim, { claimId: neverFiled.claimId });
+      if (neverClaim?.status !== "expired") {
+        fail(`the never claim resolved "${neverClaim?.status}" at finality — it must expire.`);
+      }
+      if (neverClaim.tallies === null || neverClaim.tallies.rawVotes !== 31) {
+        fail(
+          `the expired never claim lost its held tally: ${JSON.stringify(neverClaim.tallies)} — ` +
+            "FW-CR2 preserves the vote's record, it refuses only the verdict.",
+        );
+      }
+      if (neverClaim.resolvedAt === null) fail("the never claim's expiry left no timestamp.");
+      stampScores = await ctx.runQuery(internal.fantasyScoringDev.syntheticScoreRows, {
+        season: SIM_SEASON,
+        gwNumber: SIM_GW_STAMP,
+      });
+      if (stampScores.length !== 3) {
+        fail(`stamp gameweek score versions moved after expiry: expected 3, got ${stampScores.length}.`);
+      }
+      const lateStillPassed: { status: string } | null = await ctx.runQuery(
+        internal.fantasyCourtSim.courtSimClaim,
+        { claimId: lateFiled.claimId },
+      );
+      if (lateStillPassed?.status !== "passed") {
+        fail(`the expiry pass touched the resolved late claim: "${lateStillPassed?.status}".`);
+      }
+      report.stampBinding =
+        "held while unscored (tally recorded, no stamp), passed WITH the re-score once the fixture " +
+        "scored in-window, expired at finality with tally preserved when it never did";
+    }
+
     // 9 · a feed revision AFTER the ruling keeps the ruled verdict.
     await ctx.runMutation(internal.fantasyScores.applyFixtureStats, {
       providerFixtureId: SIM_FIXTURE,
@@ -1118,16 +1481,18 @@ export const simulateCourtWalkthrough = internalAction({
     });
     if (rows.length !== before) fail("the resolver wrote versions on a settled gameweek.");
 
-    // 12 · purge clean — the lag gameweek first, because the users it shares
-    //      with GW903 are what the last purge walks to reach the scaffolds.
-    //      With keepData the phase is skipped whole and the report carries
-    //      the same three commands, in the same order, for the verifier.
+    // 12 · purge clean — the lag and stamp gameweeks first, because the users
+    //      they share with GW903 are what the last purge walks to reach the
+    //      scaffolds. With keepData the phase is skipped whole and the report
+    //      carries the same four commands, in the same order, for the verifier.
     if (keepData === true) {
       report.kept = {
         gameweekId,
         lagGameweekId,
+        stampGameweekId,
         purgeCommands: [
           `npx convex run fantasyCourtSim:purgeCourtSimData '{"gameweekId":"${lagGameweekId}","purgeUsers":false}'`,
+          `npx convex run fantasyCourtSim:purgeCourtSimData '{"gameweekId":"${stampGameweekId}","purgeUsers":false}'`,
           `npx convex run fantasyCourtSim:purgeCourtSimData '{"gameweekId":"${gameweekId}"}'`,
           `npx convex run fantasyScoringDev:purgeSynthetic '{"season":"${SIM_SEASON}"}'`,
         ],
@@ -1137,10 +1502,15 @@ export const simulateCourtWalkthrough = internalAction({
         gameweekId: lagGameweekId,
         purgeUsers: false,
       });
+      const stampPurge = await ctx.runMutation(internal.fantasyCourtSim.purgeCourtSimData, {
+        gameweekId: stampGameweekId,
+        purgeUsers: false,
+      });
       const courtPurge = await ctx.runMutation(internal.fantasyCourtSim.purgeCourtSimData, {
         gameweekId,
       });
       report.lagPurged = lagPurge;
+      report.stampPurged = stampPurge;
       const synthPurge = await ctx.runMutation(internal.fantasyScoringDev.purgeSynthetic, {
         season: SIM_SEASON,
       });

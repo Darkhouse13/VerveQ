@@ -12,7 +12,9 @@
  * re-scored through the engine (scoreAllContexts) from the CURRENT stored
  * stat revision with the changed verdict — never a mutation (rule 5). A
  * passed claim is also the standing override applyFixtureStats reads, so a
- * later feed revision before finality cannot reset a ruling.
+ * later feed revision before finality cannot reset a ruling. The `passed`
+ * stamp itself BINDS to that write (FW-CR2): it exists only where the
+ * re-score landed in the same resolution pass.
  *
  * Hard invariant, enforced twice over: no court path touches a settled
  * gameweek — every write here re-checks the settlement stamp, and the
@@ -519,6 +521,9 @@ export interface ResolveDueClaimsResult {
   failed: number;
   expired: number;
   rescored: number;
+  /** Trials that PASSED the vote test but whose re-score could not land this
+   *  pass (FW-CR2) — tally recorded, no stamp, retried while the window holds. */
+  held: number;
   gameweeksTouched: number;
 }
 
@@ -528,9 +533,13 @@ export interface ResolveDueClaimsResult {
  *
  *   before finality — claims short of threshold die at Monday 23:59, and
  *     trials RESOLVE inside the verdict window (Tuesday 21:00–23:59): a
- *     verdict is stamped and, when it passes, the re-score lands with it.
+ *     verdict is stamped and, when it passes, the re-score lands with it —
+ *     the stamp and the write are ONE act (FW-CR2): a passing trial whose
+ *     re-score cannot land is HELD (tally recorded, status unchanged) and
+ *     retried by every later pass inside the window.
  *   at/after finality — nothing is judged. Whatever is still open is stamped
- *     `expired`: no verdict, no tallies, no score touched.
+ *     `expired`: no verdict, no score touched (a held trial's recorded tally
+ *     stays — the vote is a fact; only the verdict is refused).
  *
  * The reason for the split is the settlement lag. `finalityAt` is an instant
  * but the settlement stamp is a cron, so there is a window in which the
@@ -554,6 +563,7 @@ export const resolveDueClaims = internalMutation({
       failed: 0,
       expired: 0,
       rescored: 0,
+      held: 0,
       gameweeksTouched: 0,
     };
 
@@ -583,8 +593,11 @@ export const resolveDueClaims = internalMutation({
             )
             .collect();
           for (const claim of open) {
-            // Unresolved at finality. No verdict, no tallies, no re-score —
-            // the ONLY thing recorded is that the clock ran out.
+            // Unresolved at finality. No verdict, no re-score — what is
+            // recorded is that the clock ran out. A tally is present only if
+            // an in-window pass held the trial (passed the vote, no landable
+            // score — FW-CR2): the vote is a fact and stays on record; the
+            // verdict is the thing finality refuses.
             await ctx.db.patch(claim._id, { status: "expired", resolvedAt: now });
             result.expired += 1;
             touched = true;
@@ -650,14 +663,28 @@ export const resolveDueClaims = internalMutation({
             quorum,
           };
           if (passes) {
+            // FW-CR2 item 1: the stamp BINDS to the write. `passed` may be
+            // stamped ONLY when the re-score landed in this same pass — an
+            // outcome the numbers did not get is not an outcome, and that
+            // holds at the write itself, not just at the finality boundary.
+            // A passing trial whose re-score cannot land (say, a fixture with
+            // stats on record but not yet scored) stays ON TRIAL with its
+            // tally recorded, and every later pass inside the window retries
+            // it; still unwritten at finality, the expiry pass above stamps
+            // it expired — tally preserved, no verdict, no score effect.
             const rescore = await rescoreForVerdict(ctx, claim, now);
-            await ctx.db.patch(claim._id, {
-              status: "passed",
-              resolvedAt: now,
-              tallies,
-            });
-            result.passed += 1;
-            if (rescore.written) result.rescored += 1;
+            if (rescore.written) {
+              await ctx.db.patch(claim._id, {
+                status: "passed",
+                resolvedAt: now,
+                tallies,
+              });
+              result.passed += 1;
+              result.rescored += 1;
+            } else {
+              await ctx.db.patch(claim._id, { tallies });
+              result.held += 1;
+            }
           } else {
             await ctx.db.patch(claim._id, { status: "failed", resolvedAt: now, tallies });
             result.failed += 1;

@@ -1,14 +1,26 @@
-# Weekend Fantasy — Budget Mode Spec (v1.2.0)
+# Weekend Fantasy — Budget Mode Spec (v1.3.0)
 
-Status: **v1.2.0 — LOCKED by owner (squad budget 91.0, set
+Status: **v1.3.0 — LOCKED by owner (squad budget 91.0, set
 2026-07-29).** Founding ruling LOCKED: **fresh squad weekly**. The
 budget is a real number; the price tick remains pending FS-1
 calibration. The *rules* below are settled and change by owner ticket
 only — every amendment here was itself an owner ticket (FW-PR3,
-FW-VS1).
+FW-VS1, FW-CR2).
 
 ## Changelog
 
+- v1.3.0 — **player eligibility stated** (owner ticket FW-CR2,
+  2026-08-01), citing the round-2 cross-model blind verification of
+  the FW-VS1 package
+  (`reports/fwlaunch-blind-verify-o1-2026-08-01.md`, finding O1-F1:
+  the server enforced an eligibility rule no spec sentence
+  authorized). No behavior change — the rule has been live since
+  FW-1: **a budget squad may only field players who are active and
+  have a fixture in the target gameweek; anything else is
+  server-rejected.** This is a DELIBERATE divergence from draft
+  mode's no-fixture rule (DRAFT_ROOM §Fixture eligibility / ledger
+  item 12, where a no-fixture player is human-pickable and badged) —
+  rationale in §Squad construction.
 - v1.2.0 — verification sync (owner ticket FW-VS1, 2026-08-01),
   citing the cross-model blind verification of FW-LAUNCH and the
   FW-CR1 remediation (commit b9d0918). No behavior changes — each
@@ -82,6 +94,7 @@ season-burdened.
 | Position quotas at build | none — all-positions-eligible; mismatch rule prices the risk | LOCKED |
 | Per-club cap | 3, favorite-club exempt (28-day change cooldown — see below) | LOCKED |
 | Duplicate players | none — each player at most once per squad | LOCKED |
+| Player eligibility | active, with a fixture in the target gameweek — server-rejected otherwise (v1.3.0) | LOCKED |
 | Budget | **91.0** for the 13 slots — see §Budget | LOCKED |
 | Price tick | pending pricing pass | open |
 | Prices | editorial (v5-scale derived), identical for all users, static within a gameweek, repriced weekly by editorial review | LOCKED |
@@ -112,6 +125,24 @@ may occupy at most one slot per squad: a squad is 13 *players*, not 13
 slot references. Enforced since FW-1 (`validateSquadShape`, violation
 code `duplicate_player`); stated here so the omission can never be
 read as permission.
+
+**Player eligibility (LOCKED, stated v1.3.0).** A budget squad may
+only field players who are **active** and whose club **has a fixture
+in the target gameweek** — the server rejects any other selection at
+slot-set time (live since FW-1: `fantasySquads.setSlotFor`). This is
+a deliberate divergence from draft mode, where a no-fixture player is
+human-pickable and badged (DRAFT_ROOM §Fixture eligibility, ledger
+item 12). The two modes differ because their scarcity differs: a
+draft's scarcity is uniqueness, so deliberately benching a
+no-fixture player is a meaningful roster move against seven
+opponents drafting from the same pool; a budget squad is rebuilt
+fresh weekly under a price budget, so a player who cannot play this
+weekend is never a roster-continuity fact — he is a trap that burns
+budget for a guaranteed zero. Fresh-weekly squads mean there is no
+legitimate reason to hold him, so the server refuses the pick rather
+than badging it. (An unfilled slot remains legal and scores zero —
+absence is the user's own loss; a can't-play pick dressed as a
+choice is not.)
 
 **Favorite-club cooldown behavior (LOCKED — DRAFT_ROOM ledger items
 7–8 + the FW-1 S1/S2 rulings, stated v1.2.0).** The cooldown on

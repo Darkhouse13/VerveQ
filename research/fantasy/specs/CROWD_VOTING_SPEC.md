@@ -1,11 +1,22 @@
-# Weekend Fantasy — Crowd Voting Spec (v1.1.0)
+# Weekend Fantasy — Crowd Voting Spec (v1.2.0)
 
-Status: **v1.1.0 — LOCKED, owner confirmed all [MY CALL] items
+Status: **v1.2.0 — LOCKED, owner confirmed all [MY CALL] items
 2026-07-28.** Constants are placeholders pending sim/live data;
 changes by owner ticket only.
 
 ## Changelog
 
+- v1.2.0 — **the percentile population stated** (owner ticket FW-CR2,
+  2026-08-01), citing the round-2 cross-model blind verification of
+  the FW-VS1 package
+  (`reports/fwlaunch-blind-verify-o2-2026-08-01.md`, finding O2-F3:
+  the implementation excluded sub-threshold players from the
+  percentile denominator with no spec sentence behind it). No
+  behavior change — built since O2 (`deriveCrowdFactors`): **players
+  below the 25-vote liquidity threshold are EXCLUDED from their
+  verdict-position group's percentile population.** They neither
+  receive a factor (their own is 0, `insufficientVotes` flagged) nor
+  shape anyone else's percentile. §Rating math.
 - v1.1.0 — verification sync (owner ticket FW-VS1, 2026-08-01),
   citing the cross-model blind verification of FW-LAUNCH and the
   FW-CR1 remediation (commit b9d0918). Two statements, no behavior
@@ -77,6 +88,14 @@ per player, which becomes the crowd_factor in SCORING_SPEC v0.4.1
 - **Liquidity threshold (LOCKED principle):** fewer than 25 votes
   [placeholder] ⇒ crowd_factor = 0, base score stands. Below-
   threshold players show "insufficient votes" — visible, not silent.
+  **And they are excluded from the percentile population (stated
+  v1.2.0):** the group a liquid player is percentiled within contains
+  only the group's liquid members. A below-threshold rating is not
+  evidence — a handful of votes is noise, and letting it shape where
+  the group's median falls would push liquid players' factors around
+  with data the threshold already ruled unusable. Sub-threshold
+  players neither receive nor shape factors: factor 0,
+  `insufficientVotes` flagged.
   **Where it renders (v1.1.0):** the squad score surfaces —
   `SlotScoreCell`, shared by the budget-squad and crew-sheet views —
   on settled rows whose factor is 0 for lack of liquidity rather than

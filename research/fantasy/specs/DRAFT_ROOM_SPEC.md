@@ -1,6 +1,6 @@
-# Weekend Fantasy — Draft Room Spec (v1.3.0)
+# Weekend Fantasy — Draft Room Spec (v1.3.1)
 
-Status: **v1.3.0 — LOCKED by owner.** Every ⚑ item is
+Status: **v1.3.1 — LOCKED by owner.** Every ⚑ item is
 resolved in the owner ledger at the foot of this document, and every ⚑
 statement in the body has been amended to read as ruled; the ⚑ markers
 are kept as provenance of what was once open, not as live questions.
@@ -9,6 +9,23 @@ scheduled as work — they are deferred, not missing.
 
 ## Changelog
 
+- v1.3.1 — **ledger item 5's crew-table clause rewritten** (owner
+  ticket FW-CR2, 2026-08-01), citing the round-2 cross-model blind
+  verification of the FW-VS1 package
+  (`reports/fwlaunch-blind-verify-o4-2026-08-01.md`, finding O4-F1
+  High: the three places this document states the crew-table ladder
+  did not agree — §Tie-breaks and §Explicitly deferred put equal
+  cumulative points before head-to-head, while ledger item 5's
+  shorthand "head-to-head weekend wins, then cumulative points" read
+  as a primary H2H ordering). No rule change — §Tie-breaks, the
+  implementation, and the pure library always carried the ruled
+  ladder. Item 5 now states it unambiguously: **the crew table's
+  primary ordering is cumulative points; equal cumulative points are
+  broken by head-to-head weekend wins; still level is a displayed
+  tie.** The arrow/comma shorthand ("H2H → cumulative") is RETIRED
+  in this document as ambiguous — it never said what the sequence
+  ranked. §Tie-breaks' ruled bullet is reworded to match §Explicitly
+  deferred word for word; all three places now read identically.
 - v1.3.0 — **the tie-break ladders are BUILT** (FW-LAUNCH O4;
   verification sync FW-VS1 2026-08-01, citing the cross-model blind
   verification of FW-LAUNCH and the FW-CR1 remediation, commit
@@ -457,8 +474,11 @@ both the ledger and this document's freeze claim):
 
 - **Weekend tie:** (1) higher single-player score, (2) fewer
   auto-picks, (3) shared.
-- **Crew table tie:** head-to-head weekend wins, then cumulative
-  points.
+- **Crew table (v1.3.1 wording; the ladder is unchanged):** the
+  primary ordering is **cumulative points**; a tie — EQUAL cumulative
+  points — breaks by **head-to-head weekend wins**; still level is a
+  **displayed tie**. Head-to-head is a tie-break only: it never
+  reorders members whose cumulative points differ.
 
 **BUILT (FW-LAUNCH O4, recorded v1.3.0).** `fantasyScores.getCrewTable`
 applies the crew-table ladder: rows order by cumulative points, and a
@@ -547,9 +567,14 @@ amendments noted on each); items 9–14 LOCKED by owner 2026-07-29.
    lowest-rated as finishers; finisher base, fallback and eager timing
    stated v1.2.0, items 10–11 below).
 4. No host-pause at launch. LOCKED.
-5. Tie-breaks — weekend: highest single-player score, then fewest
-   auto-picks, then shared. Crew table: head-to-head weekend wins,
-   then cumulative points. LOCKED.
+5. Tie-breaks — weekend: a points tie breaks by highest
+   single-player score, then fewest auto-picks, then is shared. Crew
+   table: the primary ordering is cumulative points; equal cumulative
+   points are broken by head-to-head weekend wins; still level is a
+   displayed tie. LOCKED (crew-table clause rewritten v1.3.1 — the
+   prior shorthand "head-to-head weekend wins, then cumulative
+   points" read as a primary H2H ordering found nowhere else in this
+   document; the ruled ladder itself is unchanged).
 6. Crew 2–8 hard cap; chess-clock 30s × 13 = 390s bank; club cap 3
    with favorite-club exemption. LOCKED.
 7. Favorite-change cooldown: **28 calendar days**, measured from the

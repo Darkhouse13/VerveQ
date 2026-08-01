@@ -1,11 +1,26 @@
-# Weekend Fantasy — Reclamation Court Spec (v1.1.0)
+# Weekend Fantasy — Reclamation Court Spec (v1.2.0)
 
-Status: **v1.1.0 — LOCKED, owner confirmed all [MY CALL] items
+Status: **v1.2.0 — LOCKED, owner confirmed all [MY CALL] items
 2026-07-28.** Constants are placeholders; changes by owner ticket
 only.
 
 ## Changelog
 
+- v1.2.0 — **the passed stamp binds to the score write** (owner
+  ticket FW-CR2, 2026-08-01), citing the round-2 cross-model blind
+  verification of the FW-VS1 package
+  (`reports/fwlaunch-blind-verify-o3-2026-08-01.md`, finding O3-F1
+  Critical): the resolver could stamp a claim `passed` when the
+  re-score reported nothing written — e.g. a claim filed on an
+  appearance whose fixture had raw stats on record but was never
+  scored — leaving a public ruling no score ever received. The rule,
+  now stated and enforced: **a claim may be stamped `passed` only
+  when its re-score has landed in the same resolution pass.** A
+  passing trial whose re-score cannot land stays on trial with its
+  tally recorded and is retried by every resolution pass inside
+  [voting close, finality); still unwritten at finality it EXPIRES —
+  tally preserved, no verdict, no score effect. §Timeline
+  (Resolution vs expiry), §Trial, §Effects amended.
 - v1.1.0 — verification sync (owner ticket FW-VS1, 2026-08-01),
   citing the cross-model blind verification of FW-LAUNCH and the
   FW-CR1 remediation (commit b9d0918):
@@ -58,16 +73,32 @@ only inside the verdict window — **[Tuesday 21:00, Tuesday 23:59)**,
 i.e. [voting close, finality), half-open at both ends. At or after
 finality no verdict is applicable at all: any claim still open (in
 filing or on trial) **EXPIRES** — stamped "expired — unresolved at
-finality", with no verdict, no tallies, and no score effect. Expired
-is not an outcome: it is distinct from *failed* (the jury refused it)
-and from *died* (it never reached a hearing). The invariant this
-split protects: **the court's history never asserts an outcome the
-scores did not receive** — after finality the re-score is forbidden
-(scores are frozen), so a verdict stamped there would be a ruling the
-numbers never got. The resolver's cadence guarantees at least one
-resolution pass inside every verdict window (its widest silence, 15
-minutes, fits inside the 2h59m window), so expiry is a fault path,
-not a routine one.
+finality", with no verdict and no score effect. Expired is not an
+outcome: it is distinct from *failed* (the jury refused it) and from
+*died* (it never reached a hearing). The invariant this split
+protects: **the court's history never asserts an outcome the scores
+did not receive** — after finality the re-score is forbidden (scores
+are frozen), so a verdict stamped there would be a ruling the numbers
+never got. The resolver's cadence guarantees at least one resolution
+pass inside every verdict window (its widest silence, 15 minutes,
+fits inside the 2h59m window), so expiry is a fault path, not a
+routine one.
+
+**The stamp binds to the write (v1.2.0, FW-CR2).** The same
+invariant, enforced at the write itself and not only at the finality
+boundary: **`passed` may be stamped only when the verdict's re-score
+has landed in the same resolution pass.** A trial that passes the
+vote test while its re-score cannot land — the canonical case is a
+claim filed on an appearance whose fixture has raw stats on record
+but no score rows yet — is **HELD**: it stays on trial, its passing
+tally is recorded, and every subsequent resolution pass inside the
+verdict window retries it, resolving the moment the score becomes
+revisable. Still unwritten at finality, the expiry path stamps it
+expired. An expired claim therefore carries a tally exactly when an
+in-window pass held it: the tally is the vote's record and stays; the
+verdict is what finality refuses. (The v1.1.0 phrase "no tallies" on
+expiry described the only expiry then possible — a claim that never
+reached an in-window resolution pass; for those, nothing changes.)
 
 ## Filing (rate-limit model, LOCKED)
 
@@ -118,13 +149,20 @@ not a routine one.
   at finality **expires** rather than failing (v1.1.0, see §Timeline):
   fail-closed on time, but an expiry is the clock's doing, not a
   jury's verdict, and the record says so.
+- Passing the vote test is necessary but **not sufficient** for the
+  `passed` stamp (v1.2.0, see §Timeline): the stamp lands only with
+  the re-score. A passing trial whose re-score cannot land is held on
+  trial — tally recorded — and retried while the verdict window
+  holds; at finality it expires with the tally preserved.
 
 ## Effects of a passed verdict
 
 - The player's verdict position changes for that gameweek,
   everywhere: mismatch dampeners recompute, position-group
   percentiles for crowd_factor recompute, all affected squads
-  re-score. One atomic re-score at verdict time.
+  re-score. One atomic re-score at verdict time — **and the stamp and
+  the re-score are one act (v1.2.0)**: `passed` exists in the court's
+  history only where that re-score landed.
 - **Crowd-freeze interaction (stated v1.1.0).** The re-score lands
   BEFORE finality, and the crowd-factor freeze derives each player's
   position group from his score row's CURRENT verdict at freeze time

@@ -1,4 +1,4 @@
-# THE WEEKEND — Blind Verification Package (FW-LAUNCH O6b, 2026-07-30; repaired FW-VS1, 2026-08-01)
+# THE WEEKEND — Blind Verification Package (FW-LAUNCH O6b, 2026-07-30; repaired FW-VS1 + FW-CR2, 2026-08-01)
 
 Briefs for a FRESH verifier session per objective O1–O4, modeled on
 the FS-1/FW-3/FW-4 verification passes (see
@@ -10,6 +10,18 @@ The FW-VS1 repair: every command below now exists and runs as
 written; the O2/O3 live tasks use the sims' `keepData` contract so
 before-counts are independently inspectable; O4 requires no
 test-file access; each brief names its purge commands explicitly.
+
+The FW-CR2 repair (after the round-2 verification, reports
+`fwlaunch-blind-verify-o1..o4-2026-08-01.md`): every input gap the
+round-2 reports flagged is closed — O1 can verify unfilled-slot
+scoring (the `squadScore` region is a named input), O2's second-vote
+attempt is runnable (the crowd walkthrough exercises the used-pair
+rejection server-side and reports it) and the crew-sheet surface is
+named, O3 can verify the crowd-freeze regrouping in-compartment (the
+freeze/derivation files are named inputs). Spec versions cited below
+are the FW-CR2 revisions; the O3 walkthrough now covers the FW-CR2
+stamp-binding scenarios and keeps THREE gameweeks with FOUR purge
+commands.
 
 Ground rules for every brief:
 - **The building session must not verify itself** — these briefs were
@@ -45,9 +57,12 @@ The sims' shared data contract (FW-VS1):
 
 ## Brief O1 — Budget mode
 
-**Inputs**: `specs/BUDGET_MODE_SPEC.md` (v1.2.0);
+**Inputs**: `specs/BUDGET_MODE_SPEC.md` (v1.3.0);
 `app/convex/lib/{fantasyConstants,fantasySquadRules,fantasyFavoriteClub}.ts`;
 `app/convex/{fantasySquads,fantasyMarket,fantasyLocks}.ts`;
+`app/convex/fantasyScores.ts` (the `squadScore` region ONLY — the
+slot-aggregation function where an unfilled slot contributes nothing
+to the total; FW-CR2, closes O1-F2);
 `app/src/pages/shell/weekend/BudgetSquadScreen.tsx`;
 `app/src/test/{fantasySquadRules,fantasyLockEngine,fantasyBudgetSquadUi}.test*`;
 `app/convex/fantasyBudgetSim.ts` (run + read — its boundary phase is
@@ -62,10 +77,17 @@ prohibition (v1.2.0 — each player at most once per squad,
 cooldown, first-ever set immediate — v1.2.0, snapshot at build);
 budget 91.0 with the committed+live invariant across partial locks;
 per-fixture locks (out AND the v1.0.1 swap-in ban); unpriced players
-rejected fail-closed (STOP-4); unfilled slots ride and score zero;
-fresh squad weekly (contextKey per gameweek); crew squads never
-creatable from a public call (F1 — `assertPublicSquadCreateArgs`, the
-guard the public wrapper calls first).
+rejected fail-closed (STOP-4); player eligibility — active with a
+fixture in the target gameweek, server-rejected otherwise (v1.3.0,
+the deliberate divergence from draft's no-fixture rule; closes
+O1-F1); unfilled slots ride and score zero — verify BOTH halves: the
+null slot is legal and costless (`fantasySquadRules`) and the
+`squadScore` aggregation gives an empty slot nothing while counting
+it `emptySlots`, so its contribution to the total is exactly zero
+(the named `fantasyScores.ts` region; closes O1-F2); fresh squad
+weekly (contextKey per gameweek); crew squads never creatable from a
+public call (F1 — `assertPublicSquadCreateArgs`, the guard the
+public wrapper calls first).
 
 **Adversarial tasks**: the sim's FW-VS1 boundary phase demonstrates,
 server-side, in one transaction-local synthetic world: a 13 summing
@@ -94,7 +116,7 @@ twice; the second run must report zero deletions.
 
 ## Brief O2 — Crowd voting
 
-**Inputs**: `specs/CROWD_VOTING_SPEC.md` (v1.1.0) and
+**Inputs**: `specs/CROWD_VOTING_SPEC.md` (v1.2.0) and
 `specs/SCORING_SPEC.md` §Crowd multiplier;
 `app/convex/lib/{fantasyCrowd,fantasyScoring,fantasyScorePipeline}.ts`;
 `app/convex/{fantasyCrowdVoting,fantasyScores}.ts` (the settlement
@@ -104,6 +126,9 @@ hook and the score-version insert sites); `app/convex/schema.ts`
 `app/src/pages/shell/weekend/BudgetSquadScreen.tsx` (`SlotScoreCell`
 — the v1.1.0 "insufficient votes" surface, shared by the budget and
 crew-sheet views);
+`app/src/pages/shell/weekend/CrewSheetScreen.tsx` (FW-CR2, closes
+O2-F2 — verify the crew sheet actually renders `SlotScoreCell`, so
+the "insufficient votes" surface exists on BOTH squad views);
 `app/convex/fantasyCrowdSim.ts` (run only).
 
 **Conformance checklist**: pairwise only, server-served, never
@@ -114,8 +139,10 @@ settlement stamp; per-gameweek Elo from 1500 at K=32, one update per
 vote; factor = percentile-within-verdict-position mapped onto
 [−0.15, +0.15], median 0 — the group keyed on each row's CURRENT
 `verdictPosition` at freeze time (v1.1.0, court-ruled rows in their
-ruled group); liquidity threshold 25 ⇒ factor 0 and a VISIBLE
-"insufficient votes" on the squad score surfaces; ratings frozen at
+ruled group); liquidity threshold 25 ⇒ factor 0, a VISIBLE
+"insufficient votes" on the squad score surfaces, AND exclusion from
+the group's percentile population — sub-threshold players neither
+receive nor shape factors (v1.2.0, closes O2-F3); ratings frozen at
 finality and the frozen factor applied; conflict exclusion at serve
 time over BOTH squad contexts; single-use pairs (canonical key);
 300-serve cap; rater accuracy scored only post-settlement against
@@ -132,14 +159,20 @@ net, never the mechanism. Verify totals derive exclusively through
 
 **Adversarial tasks**: hand `deriveCrowdFactors` adversarial ratings
 (±10⁶, NaN-adjacent counts) and confirm band + flags; attempt a
-second vote on a voted pair, a vote after close, and a factor
-application before finality and after settlement (all must refuse);
-confirm a crowd version copies `baseScores`/`statHash` verbatim and
-stamps supersession.
+second vote on a voted pair — RUNNABLE (FW-CR2, closes O2-F1): the
+walkthrough's own `probeSecondVote` phase re-ballots a pair voter 0
+already voted, server-side through `castVoteFor`, while voting is
+still OPEN (so the refusal can only be the used-pair check), and the
+report's `secondVoteRejected` field carries the refusal verbatim —
+confirm it reads "That pair has already been answered." and verify
+the static gate order (used-pair before window); attempt a vote
+after close, and a factor application before finality and after
+settlement (all must refuse); confirm a crowd version copies
+`baseScores`/`statHash` verbatim and stamps supersession.
 
 **Live DEV task**:
 `npx convex run fantasyCrowdSim:simulateCrowdWalkthrough '{"salt":"verify","keepData":true}'`
-→ PASS with a `kept` block. Inspect the kept rows independently
+→ PASS with a `kept` block and `secondVoteRejected` present. Inspect the kept rows independently
 BEFORE purging (before-counts are yours, not the report's):
 `npx convex run fantasyCrowdSim:simCrowdState '{"gameweekId":"<kept.gameweekId>"}'`
 and
@@ -155,12 +188,18 @@ above and confirm they read empty.
 
 ## Brief O3 — Reclamation court
 
-**Inputs**: `specs/RECLAMATION_COURT_SPEC.md` (v1.1.0);
+**Inputs**: `specs/RECLAMATION_COURT_SPEC.md` (v1.2.0);
 `app/convex/lib/fantasyCourtRules.ts`; `app/convex/fantasyCourt.ts`;
 `app/convex/fantasyScores.ts` (the court-override read in
 `applyFixtureStats` and the finality gates); `app/convex/schema.ts`
 (court tables); `app/src/test/fantasyCourtRules.test.ts`;
 `app/src/pages/shell/weekend/CourtScreen.tsx`;
+`app/convex/lib/fantasyCrowd.ts` (`deriveCrowdFactors`) and
+`app/convex/fantasyCrowdVoting.ts`
+(`applyCrowdFactorsForGameweek` — the freeze) (FW-CR2, closes O3-F2:
+the crowd-freeze regrouping interaction is verifiable inside this
+compartment — read them for the grouping-by-CURRENT-verdict claim,
+not for O2's checklist);
 `app/convex/fantasyCourtSim.ts` (run only);
 `research/fantasy/DECISIONS_NEEDED.md` (OWNER DECISION 1 is now
 closed in spec v1.1.0 — confirm the definitions agree).
@@ -181,35 +220,55 @@ opening immediately; one first-come 280-char rebuttal, TRIAL-ONLY
 filer and any holder of the player in ANY squad this gameweek; votes
 weighted 0.5 + rolling rater accuracy; passes at quorum
 max(30, 1%·actives) AND ≥ 60% weighted yes; no appeals — a trial
-still open at finality EXPIRES, distinct from failed and died; a
+still open at finality EXPIRES, distinct from failed and died; the
+v1.2.0 stamp binding — `passed` may be stamped ONLY when the
+re-score landed in the same pass; a passing trial with no landable
+score is HELD on trial (tally recorded, `held` counted) and retried
+in-window, expiring at finality with the tally PRESERVED (an expired
+claim carries a tally exactly when an in-window pass held it); a
 passed verdict changes the verdict EVERYWHERE via one re-score; the
 public tallies log; the crowd-freeze regrouping interaction
-(§Effects, v1.1.0) — the freeze groups by CURRENT verdict.
+(§Effects, v1.1.0) — the freeze groups by CURRENT verdict, now
+statically verifiable from the named freeze/derivation inputs.
 
 **The hard invariant, adversarially**: no court path touches a
 settled gameweek, no path mutates an existing score version, and no
-outcome is stamped that the scores did not receive (the FW-CR1
-settlement-lag scenario: past finality but not yet stamped settled, a
-passing jury's claim must expire, not pass). Verify: every court
-write re-checks the settlement stamp; the re-score refuses final rows
-and past-finality clocks and inserts version N+1 with supersession;
-`verdictPosition` on the row is insert-only. Also verify the override
-read: a feed revision between a ruling and finality re-scores WITH
-the ruled position.
+outcome is stamped that the scores did not receive — at EITHER
+boundary: the FW-CR1 settlement-lag scenario (past finality but not
+yet stamped settled, a passing jury's claim must expire, not pass)
+AND the FW-CR2 stamp-binding scenario (a passing jury's claim on an
+UNSCORED fixture must be held, not stamped — `passed` binds to
+`rescoreForVerdict` reporting `written: true` in the same pass).
+Verify: every court write re-checks the settlement stamp; the
+re-score refuses final rows and past-finality clocks and inserts
+version N+1 with supersession; the resolver's passed branch tests
+`rescore.written` before stamping; `verdictPosition` on the row is
+insert-only. Also verify the override read: a feed revision between
+a ruling and finality re-scores WITH the ruled position.
 
 **Live DEV task**:
 `npx convex run fantasyCourtSim:simulateCourtWalkthrough '{"salt":"verify","keepData":true}'`
-→ PASS with a `kept` block (two gameweeks: main + the settlement-lag
-one). Independently recompute the verdict from the reported tallies
-via `trialPasses`; confirm the lag claim reads `expired` with null
-tallies. Inspect the kept rows BEFORE purging:
+→ PASS with a `kept` block (three gameweeks: main, the
+settlement-lag one, and the FW-CR2 stamp-binding one). Independently
+recompute the verdict from the reported tallies via `trialPasses`;
+confirm the lag claim reads `expired` with null tallies; confirm the
+stamp gameweek's claims read one `passed` (on the fixture that
+scored late in-window, with its re-scored version present) and one
+`expired` WITH a 31-juror tally preserved (held in-window, fixture
+never scored, zero score rows) — the report's `stampHeldPass` /
+`stampRetryPass` / `stampExpiryPass` counters narrate the three
+resolver passes. Inspect the kept rows BEFORE purging:
 `npx convex run fantasyCourtSim:courtSimClaims '{"gameweekId":"<kept.gameweekId>"}'`
-and
+(and with `<kept.lagGameweekId>` / `<kept.stampGameweekId>`) and
 `npx convex run fantasyScoringDev:syntheticStatus '{"season":"SYNTH-O3-COURT","gwNumber":903}'`
-(and `"gwNumber":904` for the lag gameweek).
-**Purge** (the three commands from `kept.purgeCommands`, IN ORDER —
-lag gameweek first with `purgeUsers: false`):
+(and `"gwNumber":904` for the lag gameweek, `"gwNumber":905` for the
+stamp gameweek — 905's `never` fixture must read `awaiting_data`
+with a `notScoredReason`, not scored).
+**Purge** (the four commands from `kept.purgeCommands`, IN ORDER —
+the lag and stamp gameweeks first with `purgeUsers: false`):
 `npx convex run fantasyCourtSim:purgeCourtSimData '{"gameweekId":"<kept.lagGameweekId>","purgeUsers":false}'`
+then
+`npx convex run fantasyCourtSim:purgeCourtSimData '{"gameweekId":"<kept.stampGameweekId>","purgeUsers":false}'`
 then
 `npx convex run fantasyCourtSim:purgeCourtSimData '{"gameweekId":"<kept.gameweekId>"}'`
 then
@@ -221,10 +280,13 @@ confirm empty.
 
 ## Brief O4 — Tie-break ladders
 
-**Inputs**: `specs/DRAFT_ROOM_SPEC.md` (v1.3.0) ledger item 5 +
-§Tie-breaks (the §Explicitly-deferred paraphrase was corrected and
-the ladders recorded BUILT in v1.3.0 — confirm the three places now
-agree); `app/convex/lib/fantasyTieBreaks.ts`;
+**Inputs**: `specs/DRAFT_ROOM_SPEC.md` (v1.3.1) ledger item 5 +
+§Tie-breaks (the §Explicitly-deferred paraphrase was corrected in
+v1.3.0 and ledger item 5's crew-table clause rewritten in v1.3.1
+after the round-2 finding O4-F1 — confirm §Tie-breaks, §Explicitly
+deferred and ledger item 5 now state the SAME ladder: cumulative
+points primary, equal points broken by head-to-head weekend wins,
+still level a displayed tie); `app/convex/lib/fantasyTieBreaks.ts`;
 `app/convex/fantasyScores.ts` (`getCrewTable`/`crewTableFor`);
 `app/convex/fantasyIntegrationSim.ts` (run only — the live path).
 **No test files are inputs to this brief**, and none are needed:

@@ -4,6 +4,9 @@
  * The O2 DONE gate, scripted against a SYNTHETIC gameweek through the real
  * paths: votes cast → factor derived in band → score version created →
  * superseded version still readable → settled gameweek immune → purge clean.
+ * FW-CR2 adds the SECOND-VOTE probe (verify-package O2): a re-ballot on a
+ * voted pair, refused server-side by the used-pair check while voting is
+ * still open — the walkthrough report carries the refusal verbatim.
  *
  * Same postures as its siblings: internal-only; drives the shipped cores
  * (`servePairFor`, `castVoteFor`) and the shipped internal mutations
@@ -33,7 +36,7 @@ import {
   CROWD_LIQUIDITY_THRESHOLD,
 } from "./lib/fantasyCrowd";
 import { castVoteFor, servePairFor } from "./fantasyCrowdVoting";
-import { VOTING_CLOSED } from "./fantasyCrowdVoting";
+import { PAIR_ALREADY_USED, VOTING_CLOSED } from "./fantasyCrowdVoting";
 
 const SIM_USERNAME_PREFIX = "simcrowd_";
 const SIM_SEASON = "SYNTH-O2-CROWD";
@@ -119,13 +122,17 @@ export const castAllPairsFor = internalMutation({
     gameweekId: v.id("fantasyGameweeks"),
     leaveLastUnvoted: v.optional(v.boolean()),
   },
-  handler: async (ctx, args): Promise<{ served: number; voted: number; openPairId: string | null }> => {
+  handler: async (
+    ctx,
+    args,
+  ): Promise<{ served: number; voted: number; openPairId: string | null; votedPairId: string | null }> => {
     const gameweek = await ctx.db.get(args.gameweekId);
     if (gameweek === null) fail("synthetic gameweek missing.");
     const now = Date.now();
     let served = 0;
     let voted = 0;
     let openPairId: Id<"fantasyCrowdPairs"> | null = null;
+    let votedPairId: Id<"fantasyCrowdPairs"> | null = null;
     for (let guard = 0; guard < 100; guard += 1) {
       const serve = await servePairFor(ctx, args.userId, gameweek, now);
       if (serve.status !== "served") break;
@@ -144,8 +151,31 @@ export const castAllPairsFor = internalMutation({
         now,
       );
       voted += 1;
+      votedPairId = serve.pairId;
     }
-    return { served, voted, openPairId };
+    return { served, voted, openPairId, votedPairId };
+  },
+});
+
+/**
+ * FW-CR2 (verify-package O2): the used-pair rejection, exercised server-side.
+ * A second ballot on an already-voted pair must refuse with PAIR_ALREADY_USED
+ * — the single-use check sits BEFORE the window check and before any rating
+ * write, so this probe runs while voting is still open and moves nothing.
+ */
+export const probeSecondVote = internalMutation({
+  args: { userId: v.id("users"), pairId: v.id("fantasyCrowdPairs") },
+  handler: async (ctx, args): Promise<string> => {
+    try {
+      await castVoteFor(ctx, args.userId, args.pairId, "a", Date.now());
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      if (!message.includes(PAIR_ALREADY_USED)) {
+        fail(`second vote rejected for the wrong reason: ${message}`);
+      }
+      return message;
+    }
+    return fail("a SECOND vote landed on an already-voted pair.");
   },
 });
 
@@ -310,18 +340,33 @@ export const simulateCrowdWalkthrough = internalAction({
       { salt: tag },
     );
     let openPairId: string | null = null;
+    let votedPairId: string | null = null;
     let totalVotes = 0;
     for (let i = 0; i < voters.length; i += 1) {
-      const round: { served: number; voted: number; openPairId: string | null } =
-        await ctx.runMutation(internal.fantasyCrowdSim.castAllPairsFor, {
-          userId: voters[i],
-          gameweekId,
-          ...(i === 0 ? { leaveLastUnvoted: true } : {}),
-        });
+      const round: {
+        served: number;
+        voted: number;
+        openPairId: string | null;
+        votedPairId: string | null;
+      } = await ctx.runMutation(internal.fantasyCrowdSim.castAllPairsFor, {
+        userId: voters[i],
+        gameweekId,
+        ...(i === 0 ? { leaveLastUnvoted: true } : {}),
+      });
       totalVotes += round.voted;
       if (round.openPairId !== null) openPairId = round.openPairId;
+      if (i === 0) votedPairId = round.votedPairId;
     }
     report.votesCast = totalVotes;
+
+    // 3b · single-use pairs (FW-CR2, verify-package O2): a second ballot on a
+    //      pair voter 0 already voted must refuse — while voting is still
+    //      OPEN, so the refusal can only be the used-pair rejection.
+    if (votedPairId === null) fail("no voted pair was captured for the second-vote probe.");
+    report.secondVoteRejected = await ctx.runMutation(
+      internal.fantasyCrowdSim.probeSecondVote,
+      { userId: voters[0], pairId: votedPairId as Id<"fantasyCrowdPairs"> },
+    );
 
     // 4 · liquidity check: every player must clear the threshold.
     const state: {
