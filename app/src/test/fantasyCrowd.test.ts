@@ -128,6 +128,26 @@ describe("crowd factor derivation (spec §Rating math)", () => {
     expect(factorOf(results, "a")?.insufficientVotes).toBe(false);
   });
 
+  it("treats a non-finite vote count as below-threshold (O2-F1)", () => {
+    // NaN slips past `< threshold` (NaN comparisons are false) and Infinity
+    // is no count a ballot box can produce: both are liquidity NOBODY
+    // demonstrated, so both are flagged and kept out of the population.
+    const results = deriveCrowdFactors([
+      entry({ playerId: "nan", rating: 2000, voteCount: Number.NaN }),
+      entry({ playerId: "inf", rating: 2000, voteCount: Number.POSITIVE_INFINITY }),
+      entry({ playerId: "a", rating: 1450 }),
+      entry({ playerId: "b", rating: 1550 }),
+    ]);
+    for (const id of ["nan", "inf"]) {
+      expect(factorOf(results, id)?.factor).toBe(0);
+      expect(factorOf(results, id)?.insufficientVotes).toBe(true);
+    }
+    // Excluded from the percentile population: a and b still sit at the
+    // two-player extremes, undragged by the malformed 2000 ratings.
+    expect(factorOf(results, "a")?.factor).toBeCloseTo(-CROWD_FACTOR_MAX, 12);
+    expect(factorOf(results, "b")?.factor).toBeCloseTo(CROWD_FACTOR_MAX, 12);
+  });
+
   it("gives rating ties identical factors", () => {
     const results = deriveCrowdFactors([
       entry({ playerId: "t1", rating: 1500 }),

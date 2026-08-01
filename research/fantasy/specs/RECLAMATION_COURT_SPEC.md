@@ -1,11 +1,19 @@
-# Weekend Fantasy — Reclamation Court Spec (v1.2.0)
+# Weekend Fantasy — Reclamation Court Spec (v1.2.1)
 
-Status: **v1.2.0 — LOCKED, owner confirmed all [MY CALL] items
+Status: **v1.2.1 — LOCKED, owner confirmed all [MY CALL] items
 2026-07-28.** Constants are placeholders; changes by owner ticket
 only.
 
 ## Changelog
 
+- v1.2.1 — **filing constitutes the first endorsement** (owner
+  ticket FW-CR3, 2026-08-01), citing the round-3 cross-model blind
+  verification (`reports/fwlaunch-blind-verify-o3-2026-08-01.md`,
+  finding O3-F1): the implementation counts a new filing as its own
+  first endorsement toward the trial threshold — rule-shaped
+  behavior the spec did not state. Now stated: **filing a claim
+  constitutes its first endorsement; the filer is endorser #1 toward
+  the threshold.** §Endorsement threshold amended.
 - v1.2.0 — **the passed stamp binds to the score write** (owner
   ticket FW-CR2, 2026-08-01), citing the round-2 cross-model blind
   verification of the FW-VS1 package
@@ -115,6 +123,8 @@ reached an in-window resolution pass; for those, nothing changes.)
   users)** endorsements [placeholders]. Absolute floor stops
   three-friend collusion at small scale; the percentage keeps trial
   volume sane as the base grows.
+- Filing a claim constitutes its first endorsement: the filer is
+  endorser #1 toward the threshold (v1.2.1).
 - **"Gameweek active users" (DEFINED v1.1.0, owner ruling
   2026-07-30):** the distinct users holding at least one squad in the
   gameweek, any context — budget or crew. The same number feeds the

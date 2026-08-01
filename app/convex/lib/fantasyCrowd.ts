@@ -81,8 +81,9 @@ export interface CrowdRatingEntry {
 export interface CrowdFactorResult {
   readonly playerId: string;
   readonly factor: number;
-  /** True when voteCount < CROWD_LIQUIDITY_THRESHOLD: factor is 0 and the
-   *  surface says "insufficient votes" rather than nothing. */
+  /** True when voteCount < CROWD_LIQUIDITY_THRESHOLD or is not a finite
+   *  number: factor is 0 and the surface says "insufficient votes" rather
+   *  than nothing. */
   readonly insufficientVotes: boolean;
 }
 
@@ -106,7 +107,10 @@ export function deriveCrowdFactors(
   const liquid = new Map<SlotRole, CrowdRatingEntry[]>();
 
   for (const entry of entries) {
-    if (entry.voteCount < CROWD_LIQUIDITY_THRESHOLD) {
+    // A non-finite count is not evidence of any votes at all: NaN would slip
+    // past `< threshold` (NaN comparisons are false) and Infinity is no count
+    // a ballot box can produce — both are below-threshold by definition.
+    if (!Number.isFinite(entry.voteCount) || entry.voteCount < CROWD_LIQUIDITY_THRESHOLD) {
       results.push({ playerId: entry.playerId, factor: 0, insufficientVotes: true });
       continue;
     }

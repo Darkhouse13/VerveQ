@@ -316,6 +316,10 @@ stays a displayed tie.
 - null points on one side of a weekend → `compareWeekendResult`
   returns 0 whatever the other rungs say; a null rung input
   (topPlayerScore or autoPicks) falls through to the next rung;
+- an all-null cluster (every member's deciding inputs null — the
+  ladder exhausted with no facts, round-3 finding O4-F1) → all
+  members share subRank 0 with `stillTied: true`, and the crew
+  wrapper renders the shared rank `tied: true`;
 - hand-recompute at least one multi-member scenario's ranks from the
   spec text alone and confirm the library agrees.
 

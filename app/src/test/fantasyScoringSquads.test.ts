@@ -699,6 +699,36 @@ describe("P6 — the crew table", () => {
     expect(tiedTable.tieBreaksApplied).toBe(true);
   });
 
+  it("shows an all-null cluster as a displayed tie at shared rank (O4-F1)", async () => {
+    const other = await world.db.insert("users", { username: "other" });
+    const third = await world.db.insert("users", { username: "third" });
+    const { roomId } = await seedCrew([world.userId, other, third]);
+    // Mine scores 16.85; the other two hold sheets with nothing scored, so
+    // both their cumulative totals stay null — the ladder is exhausted with
+    // no facts, and by ledger 5 that is still a DISPLAYED tie.
+    await seedCrewSheet(world.userId, roomId, SHEET);
+    const unscored = [
+      "SUN_A_1", "SUN_A_2", "SUN_A_3", "SUN_B_1", "SUN_B_2", "SUN_B_3",
+      "SAT_C_4", "SAT_C_5", "SAT_C_6", "SAT_D_4", "SAT_D_5", "SAT_D_6", "SUN_A_4",
+    ];
+    await seedCrewSheet(other, roomId, unscored);
+    await seedCrewSheet(third, roomId, unscored);
+
+    vi.setSystemTime(AFTER_SATURDAY);
+    await scoreSaturdayOne();
+
+    const table = (await crewTable())!;
+    const mine = table.rows.find((r) => r.userId === world.userId)!;
+    expect(mine.rank).toBe(1);
+    expect(mine.tied).toBe(false);
+
+    const nulls = table.rows.filter((r) => r.cumulativePoints === null);
+    expect(nulls.map((r) => r.userId).sort()).toEqual([other, third].sort());
+    // Shared rank below the scored member, and — the fix — tied:true.
+    expect(nulls.every((r) => r.rank === 2)).toBe(true);
+    expect(nulls.every((r) => r.tied)).toBe(true);
+  });
+
   it("breaks a cumulative tie by head-to-head weekend wins (O4, ledger 5)", async () => {
     const other = await world.db.insert("users", { username: "other" });
     const { crewId, roomId } = await seedCrew([world.userId, other]);

@@ -2064,7 +2064,16 @@ export async function crewTableFor(
     let index = 0;
     while (index < rows.length) {
       const cluster = rows.filter((row) => row.rank === rows[index].rank);
-      if (cluster.length < 2 || rows[index].cumulativePoints === null) {
+      if (cluster.length >= 2 && rows[index].cumulativePoints === null) {
+        // An all-null cluster IS the exhausted ladder: nobody has a scored
+        // weekend, so every head-to-head rung abstains and no fact separates
+        // the members — the shared rank is a DISPLAYED tie, and the ladder's
+        // lazy inputs stay unfetched because they could decide nothing.
+        for (const row of cluster) row.tied = true;
+        index += cluster.length;
+        continue;
+      }
+      if (cluster.length < 2) {
         index += cluster.length;
         continue;
       }

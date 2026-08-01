@@ -95,6 +95,19 @@ describe("crew-table ladder (equal cumulative → head-to-head weekend wins)", (
     expect(result.every((r) => r.subRank === 0)).toBe(true);
   });
 
+  it("stays a displayed tie when every deciding input is null (all-null cluster)", () => {
+    // Ladder exhausted with no facts at all: every rung abstains, nothing
+    // separates the members, and the shared rank must still read as tied.
+    const nothing = weekend({ points: null, topPlayerScore: null, autoPicks: null });
+    const result = orderTiedGroup([
+      { key: "A", weekends: new Map([["r1", nothing]]) },
+      { key: "B", weekends: new Map([["r1", nothing]]) },
+    ]);
+    expect(result.every((r) => r.h2hWins === 0)).toBe(true);
+    expect(result.every((r) => r.subRank === 0)).toBe(true);
+    expect(result.every((r) => r.stillTied)).toBe(true);
+  });
+
   it("only compares weekends both members contested", () => {
     const result = orderTiedGroup([
       {
