@@ -22,7 +22,7 @@ let acc = 0;
 for (const [k, d] of SCENES) { START[k] = acc; acc += d; }
 const TOTAL = acc; // 720
 
-const mix = new Mixer(TOTAL, FPS);
+const mix = new Mixer("the-decision", TOTAL, FPS);
 
 // HOOK — the counter races (slot-machine ticks), slams shut on 2,431 at f20
 for (let f = 0; f < 20; f += 2) mix.add(tick(), f, 0.55); // the spin

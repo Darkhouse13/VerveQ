@@ -23,7 +23,7 @@ let acc = 0;
 for (const [k, d] of SCENES) { START[k] = acc; acc += d; }
 const TOTAL = acc; // 416
 
-const mix = new Mixer(TOTAL, FPS);
+const mix = new Mixer("tutorial", TOTAL, FPS);
 
 // the classroom groove — polite, tidy, C major
 const C2 = 65.4, F2 = 87.3;

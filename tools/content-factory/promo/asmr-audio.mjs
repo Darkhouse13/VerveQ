@@ -36,7 +36,7 @@ const thock = (freq = 175) => {
   return o;
 };
 
-const mix = new Mixer(TOTAL, FPS);
+const mix = new Mixer("asmr", TOTAL, FPS);
 
 // soft pentatonic bed — F A C D, lazy, all the way through
 const BED = [349, 440, 523, 587];

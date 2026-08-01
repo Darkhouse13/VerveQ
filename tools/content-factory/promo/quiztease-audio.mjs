@@ -19,7 +19,7 @@ let acc = 0;
 for (const [k, d] of SCENES) { START[k] = acc; acc += d; }
 const TOTAL = acc; // 594
 
-const mix = new Mixer(TOTAL, FPS);
+const mix = new Mixer("quiz", TOTAL, FPS);
 
 // HOOK — a stab + a low pulse, clock starts
 mix.add(impact(), 0, 0.8);

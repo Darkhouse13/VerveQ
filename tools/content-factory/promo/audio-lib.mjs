@@ -3,6 +3,26 @@
 // so the three videos sound like one brand while each arranges its own track.
 // (audio-gen.mjs — the first promo — predates this lib and stays self-contained;
 // promos #2/#3 build on this.)
+//
+// SEEDING (changed 2026-08-01 — see docs/DECISIONS.md, "SFX seed epoch")
+//
+// The noise generator used to be ONE module-level `makeRng(1337)` shared by
+// every synth in the process. That made a bed's noise depend on how many synth
+// calls had already run — so `node promo/x-audio.mjs` and `npm run promo`,
+// which imports ~29 audio modules that each build at import time, produced
+// DIFFERENT beds for the same promo. A clean-clone test caught it: identical
+// video frames, different audio.
+//
+// Now each promo seeds its own stream from its stable name, using the same
+// salting philosophy as the visual variant axes (src/variants.ts): FNV-1a of
+// `name + "|sfx"` into mulberry32. A promo's bed is therefore a pure function
+// of its name and its arrangement — identical regardless of entry point,
+// import order, or which other promos are in the same process.
+//
+// Seeding happens in the Mixer constructor, which every arrangement builds
+// before its first synth call, so there is no separate step to forget. Calling
+// a noise-using synth with no Mixer constructed is a hard error rather than
+// silent nondeterminism.
 export const SR = 44100;
 
 export const makeRng = (seed) => {
@@ -14,8 +34,42 @@ export const makeRng = (seed) => {
     return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
   };
 };
-const rng = makeRng(1337);
-const noise = () => rng() * 2 - 1;
+// FNV-1a, mirrored from src/variants.ts so the audio and visual lanes salt
+// their seeds the same way.
+export const fnv1a = (str) => {
+  let h = 0x811c9dc5;
+  for (let i = 0; i < str.length; i++) {
+    h ^= str.charCodeAt(i);
+    h = Math.imul(h, 0x01000193);
+  }
+  return h >>> 0;
+};
+
+let rng = null;
+let seededAs = null;
+
+// Start a promo's noise stream. Idempotent for a given name, so re-seeding the
+// same promo mid-arrangement is a no-op rather than a rewind.
+export const seedSfx = (name) => {
+  if (!name || typeof name !== "string") {
+    throw new Error("seedSfx(name): a stable promo name is required — it IS the seed.");
+  }
+  rng = makeRng(fnv1a(name + "|sfx"));
+  seededAs = name;
+  return name;
+};
+
+export const currentSfxSeed = () => seededAs;
+
+const noise = () => {
+  if (rng === null) {
+    throw new Error(
+      "audio-lib: a noise synth ran before any Mixer was constructed, so its " +
+        "stream is unseeded. Construct `new Mixer(name, …)` first — the name is the seed.",
+    );
+  }
+  return rng() * 2 - 1;
+};
 const buf = (dur) => new Float32Array(Math.floor(SR * dur));
 
 export const kick = () => {
@@ -215,7 +269,11 @@ export const encodeWav = (samples) => {
 
 // A master-buffer mixer that maps frames→samples at a given fps.
 export class Mixer {
-  constructor(totalFrames, fps = 30, tailSec = 1.2) {
+  // `name` is first and required: it is this promo's SFX seed, and putting it
+  // first makes it impossible to add a Mixer without choosing one.
+  constructor(name, totalFrames, fps = 30, tailSec = 1.2) {
+    seedSfx(name);
+    this.name = name;
     this.fps = fps;
     this.buf = new Float32Array(Math.round((totalFrames / fps) * SR) + Math.floor(SR * tailSec));
   }

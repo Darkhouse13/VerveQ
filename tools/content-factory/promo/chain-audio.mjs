@@ -19,7 +19,7 @@ const NAME_AT = [0, 45, 90, 135];
 const FADE_FROM = 300;
 const CARET_PERIOD = 15;
 
-const mix = new Mixer(TOTAL, FPS, 0); // NO tail — the wav ends exactly at the seam
+const mix = new Mixer("chain", TOTAL, FPS, 0); // NO tail — the wav ends exactly at the seam
 
 // engine: 22 kicks, the first one masking the loop point
 for (let f = 0; f < TOTAL; f += BEAT) mix.add(kick(), f, 0.8);

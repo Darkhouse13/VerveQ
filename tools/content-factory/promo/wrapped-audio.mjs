@@ -20,7 +20,7 @@ let acc = 0;
 for (const [k, d] of SCENES) { START[k] = acc; acc += d; }
 const TOTAL = acc; // 385
 
-const mix = new Mixer(TOTAL, FPS);
+const mix = new Mixer("wrapped", TOTAL, FPS);
 
 // the pop groove: I–vi–IV–V in C (C2 A1 F1 G1), one chord per bar
 const ROOTS = [65.41, 55, 43.65, 49];

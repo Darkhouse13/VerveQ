@@ -23,7 +23,7 @@ const ANSWER_AT = 62;
 const YOURTURN_AT = 92;
 const CLUBS_PER_RUNG = 3;
 
-const mix = new Mixer(TOTAL, FPS);
+const mix = new Mixer("ladder", TOTAL, FPS);
 
 // a heartbeat under the whole climb, tightening on the last rung
 for (let f = 0; f < STEP * 4; f += 21) mix.add(kick(), f, 0.5);

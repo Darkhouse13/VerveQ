@@ -62,6 +62,31 @@ already held the newest content of every one of those files, so the sources were
 added directly on master instead. The orphaned history is preserved on the two
 branches above rather than merged.
 
+## DECISION 2026-08-01 — SFX seed epoch accepted; batch-1 MP4s grandfathered
+
+`tools/content-factory/promo/audio-lib.mjs` shared **one** module-level
+`makeRng(1337)` across every synth in the process, so a promo's noise depended on
+how many synth calls had already run. `node promo/x-audio.mjs` and
+`npm run promo` — which imports ~29 audio modules that each build their
+arrangement at import time — produced **different beds for the same promo**. The
+clean-clone test in LADDER-LONG-TRACK-3 caught it: byte-identical video frames,
+different audio.
+
+Fixed by seeding per promo from its stable name (FNV-1a of `name + "|sfx"`, the
+same salting as the visual variant axes), in the `Mixer` constructor so there is
+no separate step to forget.
+
+**The ruling is that the resulting epoch is accepted.** Every promo's SFX bed
+changes at this commit. Video is unaffected — frames are byte-identical across
+the change; only the noise component of the audio moves.
+
+**Batch-1 `ladder-long` MP4s are grandfathered as final artifacts.** The four
+files in `tools/content-factory/out/2026-08-01/` were rendered before the seed
+change, verified (21/21 VO cues on frame, all sampled frames matching a clean
+clone), and are the ones that ship. They are **not** re-rendered to pick up the
+new bed. Anything re-rendered from here — including a re-cut of those four —
+carries the new bed, and that is expected, not a regression.
+
 ## DECISION 2026-08-01 — No trending sound on narrated formats
 
 The daily-workflow instruction in `tools/content-factory/README.md` — upload the

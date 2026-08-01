@@ -20,7 +20,7 @@ let acc = 0;
 for (const [k, d] of SCENES) { START[k] = acc; acc += d; }
 const TOTAL = acc; // 440
 
-const mix = new Mixer(TOTAL, FPS);
+const mix = new Mixer("remember", TOTAL, FPS);
 
 // the warm bed: lazy kick 1 & 3, soft clap on 3, long subs, F-major roots
 const ROOTS = [43.65, 55, 58.27, 49]; // F1 A1 Bb1 G1

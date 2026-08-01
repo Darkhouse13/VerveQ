@@ -20,7 +20,7 @@ const DEST_LEN = 15, STATUS_LEN = 9, STAGGER = 1.6, SPIN_FRAMES = 26;
 const BOARDING_AT = 268;
 const ROW_SETTLE = Math.round((DEST_LEN + STATUS_LEN) * STAGGER + SPIN_FRAMES); // ≈ 64
 
-const mix = new Mixer(TOTAL, FPS);
+const mix = new Mixer("departures", TOTAL, FPS);
 
 // airport room tone — overlapping long noise bells, very low
 for (let f = 0; f < TOTAL - 40; f += 55) mix.add(whoosh(2.2), f, 0.14);

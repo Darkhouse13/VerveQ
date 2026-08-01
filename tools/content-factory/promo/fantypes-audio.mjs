@@ -21,7 +21,7 @@ let acc = 0;
 for (const [k, d] of SCENES) { START[k] = acc; acc += d; }
 const TOTAL = acc; // 493
 
-const mix = new Mixer(TOTAL, FPS);
+const mix = new Mixer("fan-types", TOTAL, FPS);
 
 // the strut: kick on 1 and the "and of 2", claps on 2 & 4, swung hats,
 // walking A-minor bass (A1 C2 A1 G1)

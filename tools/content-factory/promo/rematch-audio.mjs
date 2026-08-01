@@ -21,7 +21,7 @@ let acc = 0;
 for (const [k, d] of SCENES) { START[k] = acc; acc += d; }
 const TOTAL = acc; // 468
 
-const mix = new Mixer(TOTAL, FPS);
+const mix = new Mixer("rematch", TOTAL, FPS);
 
 // LOSS — grief: one hit, a low A-minor drone, a lonely heartbeat
 mix.add(impact(), 0, 0.9); // "I LOST 9-4." already on screen

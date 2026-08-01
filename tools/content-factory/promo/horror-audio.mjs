@@ -21,7 +21,7 @@ let acc = 0;
 for (const [k, d] of SCENES) { START[k] = acc; acc += d; }
 const TOTAL = acc; // 402
 
-const mix = new Mixer(TOTAL, FPS);
+const mix = new Mixer("horror", TOTAL, FPS);
 
 // the heartbeat: lub-DUB every pulse (soft kick, then a harder one 8f later)
 const heartbeat = (from, to, g = 1.0) => {

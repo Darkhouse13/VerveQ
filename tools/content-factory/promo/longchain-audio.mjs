@@ -34,7 +34,7 @@ const P_ANSWER = 225;
 const P_FACT = 270;
 const CARET_PERIOD = 15;
 
-const mix = new Mixer(TOTAL, FPS, 0); // NO tail — the wav ends exactly at the seam
+const mix = new Mixer("long-chain", TOTAL, FPS, 0); // NO tail — the wav ends exactly at the seam
 
 // ---- engine ----
 // nothing under the b-roll: the clip's own room tone carries the cold open,

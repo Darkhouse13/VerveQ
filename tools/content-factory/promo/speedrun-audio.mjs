@@ -40,7 +40,7 @@ const square = (freq, dur = 0.14) => {
   return o;
 };
 
-const mix = new Mixer(TOTAL, FPS);
+const mix = new Mixer("speedrun", TOTAL, FPS);
 
 // E-minor chip run: E4 G4 A4 B4 | E4 G4 B4 E5 — one note per beat
 const RUNUP = [330, 392, 440, 494, 330, 392, 494, 659];

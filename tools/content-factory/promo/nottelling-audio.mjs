@@ -29,7 +29,7 @@ const CTA_AT = 930;
 const FADE_FROM = 1020;
 const CARET_PERIOD = 15;
 
-const mix = new Mixer(TOTAL, FPS, 0); // NO tail — the wav ends exactly at the seam
+const mix = new Mixer("not-telling", TOTAL, FPS, 0); // NO tail — the wav ends exactly at the seam
 
 // engine — drops back under the product act so the recording is heard
 for (let f = 0; f < TOTAL; f += BEAT) mix.add(kick(), f, f < PROD_AT ? 0.78 : 0.4);

@@ -21,7 +21,7 @@ let acc = 0;
 for (const [k, d] of SCENES) { START[k] = acc; acc += d; }
 const TOTAL = acc; // 396
 
-const mix = new Mixer(TOTAL, FPS);
+const mix = new Mixer("anthem", TOTAL, FPS);
 
 // CHANT — a hit per word: kick + alternating bass stab, hats on the 8ths
 const CHANT_ROOTS = [41.2, 41.2, 49, 49, 55, 55, 61.74, 61.74]; // E1 E1 G1 G1 A1 A1 B1 B1

@@ -18,7 +18,7 @@ const CLOCK_FRAMES = 300;
 const REVEAL_AT = [300, 318];
 const VERDICT_AT = 336;
 
-const mix = new Mixer(TOTAL, FPS);
+const mix = new Mixer("wall", TOTAL, FPS);
 
 // the clock: one tick a second, then double-time for the last three
 for (let f = 0; f < CLOCK_FRAMES; f += 30) {

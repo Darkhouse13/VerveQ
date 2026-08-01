@@ -26,7 +26,7 @@ const PROD_AT = 345;
 const FADE_FROM = 425;
 const CARET_PERIOD = 15;
 
-const mix = new Mixer(TOTAL, FPS, 0); // NO tail — the wav ends exactly at the seam
+const mix = new Mixer("pick-a-side", TOTAL, FPS, 0); // NO tail — the wav ends exactly at the seam
 
 // engine — thins out under the product act so the recording sits in the clear
 for (let f = 0; f < TOTAL; f += BEAT) mix.add(kick(), f, f < PROD_AT ? 0.8 : 0.42);

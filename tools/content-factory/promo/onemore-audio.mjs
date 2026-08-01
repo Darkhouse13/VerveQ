@@ -21,7 +21,7 @@ let acc = 0;
 for (const [k, d] of SCENES) { START[k] = acc; acc += d; }
 const TOTAL = acc; // 392
 
-const mix = new Mixer(TOTAL, FPS);
+const mix = new Mixer("one-more", TOTAL, FPS);
 
 // HOOK — bedside quiet: a tick on every colon blink, a slow sub heartbeat
 for (let f = 0; f < START.spiral; f += BEAT) mix.add(tick(), f, 0.7);

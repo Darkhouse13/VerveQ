@@ -48,8 +48,8 @@ const KEYS = {
   warning: { root: 41.2, sting: 164.8 }, // E — institutional dread
 };
 
-const arrange = ({ root, sting }) => {
-  const mix = new Mixer(TOTAL, FPS);
+const arrange = (name, { root, sting }) => {
+  const mix = new Mixer(`dave-${name}`, TOTAL, FPS);
 
   // THE VERDICT — lands on the hard cut. The biggest hit in the piece: the cut
   // is the punchline and the score's job is to make it felt.
@@ -120,7 +120,7 @@ export const ensureDaveAudio = (outDir = OUT, force = false) => {
   for (const [name, key] of Object.entries(KEYS)) {
     const fp = path.join(outDir, `dave-${name}.wav`);
     if (!force && existsSync(fp)) continue;
-    writeFileSync(fp, encodeWav(arrange(key)));
+    writeFileSync(fp, encodeWav(arrange(name, key)));
     wrote++;
   }
   return wrote;

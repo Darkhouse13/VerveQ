@@ -20,7 +20,7 @@ const TOTAL = 360;
 const STEP = 60;
 const TYPING_FROM = 42, TYPING_TO = 58;
 
-const mix = new Mixer(TOTAL, FPS, 0); // NO tail buffer — the wav ends at the seam
+const mix = new Mixer("loop", TOTAL, FPS, 0); // NO tail buffer — the wav ends at the seam
 
 // the engine: kick every beat (24 kicks, first at 0 = the seam masker)
 for (let f = 0; f < TOTAL; f += BEAT) mix.add(kick(), f, 0.85);

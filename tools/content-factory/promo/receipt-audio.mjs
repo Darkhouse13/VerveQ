@@ -23,7 +23,7 @@ const BARCODE_AT = 298;
 const TEAR_AT = 322;
 const STAMP_AT = 344;
 
-const mix = new Mixer(TOTAL, FPS);
+const mix = new Mixer("receipt", TOTAL, FPS);
 
 // open on the printer waking up (hook is already on screen)
 mix.add(impact(), 0, 0.8);

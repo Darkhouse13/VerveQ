@@ -21,7 +21,7 @@ let acc = 0;
 for (const [k, d] of SCENES) { START[k] = acc; acc += d; }
 const TOTAL = acc; // 456
 
-const mix = new Mixer(TOTAL, FPS);
+const mix = new Mixer("license", TOTAL, FPS);
 
 // the march: kick 1 & 3, dry tick backbeat on 2 & 4 (stamp-stamp), spare bass
 const march = (from, to, g = 1.0) => {

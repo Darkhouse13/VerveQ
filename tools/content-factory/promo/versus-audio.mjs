@@ -19,7 +19,7 @@ let acc = 0;
 for (const [k, d] of SCENES) { START[k] = acc; acc += d; }
 const TOTAL = acc; // 540
 
-const mix = new Mixer(TOTAL, FPS);
+const mix = new Mixer("versus", TOTAL, FPS);
 
 // HOOK — tense drone + word-slam impacts, pink turn "HE DOESN'T" hit
 mix.add(sub(41, 3.0), 0, 0.45);

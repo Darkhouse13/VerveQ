@@ -74,9 +74,35 @@ low, and varied by the variant's **sound kit** (deep/punchy · bright/clicky ·
 soft/woody) so videos also *sound* like their own edition. The sounds are
 synthesized from math with a seeded PRNG (`node sfx/gen.mjs`, run automatically
 before render and studio), so they're original — nothing sourced, nothing
-licensed, byte-identical on every regenerate. The `public/sfx/` WAVs are
-generated, not committed. **Music is still never baked in** — you add a
-trending sound in the app on top of these accents (see the daily workflow).
+licensed. The `public/sfx/` WAVs are generated, not committed. **Music is still
+never baked in** — you add a trending sound in the app on top of these accents
+(see the daily workflow).
+
+### What "deterministic" guarantees, exactly
+
+Each promo's bed is seeded from **its own stable name** — FNV-1a of
+`name + "|sfx"` into mulberry32, the same salting the visual variant axes use
+(`src/variants.ts`), so adding a promo never reshuffles an existing one's noise.
+Seeding happens in the `Mixer` constructor, which is why `name` is its first and
+required argument.
+
+The guarantee that follows is **per-promo and entry-point independent**: a bed is
+a pure function of its name and its arrangement. `node promo/ladder-audio.mjs`
+and `npm run promo` produce byte-identical WAVs, regardless of import order or
+which other promos share the process. Calling a noise-using synth before any
+`Mixer` exists throws rather than emitting unseeded audio.
+
+> **Soundtrack epoch — 2026-08-01.** Before this date the library shared ONE
+> module-level `makeRng(1337)` across every synth in the process, so a bed
+> depended on how many synth calls had already run. `node promo/x-audio.mjs` and
+> `npm run promo` (which imports ~29 audio modules that each build at import
+> time) produced *different* beds for the same promo. A clean-clone test caught
+> it: identical video frames, different audio.
+>
+> Re-rendering anything from before 2026-08-01 therefore yields a **different SFX
+> bed**. Video is unaffected — frames are byte-identical across the change. The
+> batch-1 `ladder-long` MP4s in `out/2026-08-01/` are grandfathered as final
+> artifacts and are not re-rendered; see `docs/DECISIONS.md`.
 
 ## Rules (deliberate, don't "fix")
 

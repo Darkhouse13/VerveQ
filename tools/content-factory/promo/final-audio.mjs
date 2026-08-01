@@ -21,7 +21,7 @@ let acc = 0;
 for (const [k, d] of SCENES) { START[k] = acc; acc += d; }
 const TOTAL = acc; // 416
 
-const mix = new Mixer(TOTAL, FPS);
+const mix = new Mixer("final", TOTAL, FPS);
 
 // the stadium engine: four-on-the-floor + offbeat open hats + G1/C2 bass
 const G1 = 49, C2 = 65.4, D2 = 73.4;

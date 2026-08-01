@@ -53,7 +53,7 @@ const cue = (key, needle) => {
   return START[key] + Math.round(line.words[w].t0 * FPS);
 };
 
-const mix = new Mixer(TOTAL, FPS);
+const mix = new Mixer("semi-final", TOTAL, FPS);
 
 // NEVER — dread. One impact, a long A1 drone, and a stab on the word itself.
 mix.add(impact(), 0, 0.95);

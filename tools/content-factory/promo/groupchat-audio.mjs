@@ -20,7 +20,7 @@ let acc = 0;
 for (const [k, d] of SCENES) { START[k] = acc; acc += d; }
 const TOTAL = acc; // 377
 
-const mix = new Mixer(TOTAL, FPS);
+const mix = new Mixer("group-chat", TOTAL, FPS);
 
 // message pops: received = low pair, sent = high pair (classic chat sound feel)
 const popIn = (f, g = 0.6) => { mix.add(blip(470), f, g); mix.add(blip(590), f + 2, g * 0.7); };

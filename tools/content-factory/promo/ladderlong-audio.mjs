@@ -72,8 +72,8 @@ export const readEditions = () => {
 // nine resolutions, climbing
 const SOLVE = [523, 554, 587, 622, 659, 698, 740, 784, 831];
 
-const buildEdition = (counts) => {
-  const mix = new Mixer(TOTAL, FPS);
+const buildEdition = (slug, counts) => {
+  const mix = new Mixer(`ladder-long-${slug}`, TOTAL, FPS);
 
   // heartbeat under the whole climb, tightening for the unanswered rung
   for (let f = 0; f < STEP * 9; f += 21) mix.add(kick(), f, 0.46);
@@ -128,7 +128,7 @@ export const ensureLadderLongAudio = (outDir = OUT, force = false) => {
   for (const ed of readEditions()) {
     const fp = path.join(outDir, `ladderlong-${ed.slug}.wav`);
     if (!force && existsSync(fp)) continue;
-    writeFileSync(fp, encodeWav(buildEdition(ed.counts)));
+    writeFileSync(fp, encodeWav(buildEdition(ed.slug, ed.counts)));
     written++;
   }
   return written;
