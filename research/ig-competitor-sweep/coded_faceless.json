@@ -1,0 +1,391 @@
+{
+  "study": "FACELESS-CODE",
+  "date": "2026-08-01",
+  "method": "TikHub v1 (fetch_user_info_by_username_v2 -> fetch_user_reels) latest page per account; every reel with play_count >= 50000 downloaded at full video_versions resolution and coded from the actual video (ffmpeg frame sampling at 0/3/10/25s + 50%/90%, a 0.0-1.0s hook strip at 0.2s steps, a full 1-frame-per-1.5s contact sheet watch, plus PCM envelope / band-energy / cross-correlation audio analysis).",
+  "api_spend_usd": 0.006,
+  "qualifying_threshold_play_count": 50000,
+  "n_qualifying": 4,
+  "n_page_sampled": 21,
+  "coder_note": "Single-rater coding, but derived from the full video rather than thumbnails. Structural timings (question cadence, silence gaps, answer-reveal times) are measured programmatically, not eyeballed. VO word readings come from the on-screen subtitle band; no speech-to-text was available locally, so the literal VO wording is partial.",
+  "reels": [
+    {
+      "account": "pitch.quiz",
+      "code": "DarQc7xqfO0",
+      "url": "https://www.instagram.com/reel/DarQc7xqfO0/",
+      "posted": "2026-07-12",
+      "play_count": 232932,
+      "like_count": 7936,
+      "comment_count": 206,
+      "comment_rate": 0.00088,
+      "duration_s": 42.21,
+      "resolution": "716x1274",
+      "fps": 30,
+      "format": "transfer-path",
+      "caption": "GUESS THE FOOTBALL PLAYERS BY THEIR TRANSFER | #footballplayer #football #footballquiz #soccer #fifaworldcup",
+      "file": "videos/pitch.quiz_DarQc7xqfO0.mp4",
+
+      "structure": {
+        "question_count": 6,
+        "seconds_per_question": 7.02,
+        "cadence_is_metronomic": true,
+        "cadence_evidence": "audio silence gaps begin at 5.85 / 12.87 / 19.89 / 26.90 / 33.93 / 40.94 s -> deltas 7.017, 7.017, 7.015, 7.023, 7.018",
+        "per_question_beats": "~4.0s question card (club badges + draining timer) -> ~1.0s blank wipe -> ~2.0s answer card (player cutout + name pill)",
+        "intro_card": false,
+        "outro_card": true,
+        "timeline": [
+          {"t": 0.0,  "event": "Q1 live at frame 0: AS Monaco 2015 >> PSG 2017 / Real Madrid 2024; timer full and already draining"},
+          {"t": 4.0,  "event": "blank wipe"},
+          {"t": 6.0,  "event": "A1 reveal: Kylian Mbappe cutout + white pill 'KYLIAN MBAPPE'; timer bar empty"},
+          {"t": 7.0,  "event": "Q2: Barcelona 2004 >> PSG 2021 / Inter Miami 2023"},
+          {"t": 12.0, "event": "A2 reveal: Lionel Messi"},
+          {"t": 14.0, "event": "Q3: AC Milan 2015 >> PSG 2021 / Man City 2025 (scene cut detected at 14.0)"},
+          {"t": 19.0, "event": "A3 reveal: Gianluigi Donnarumma"},
+          {"t": 21.0, "event": "Q4 (4-club path): Real Madrid 2016 >> BVB 2018 / Inter 2020 >> PSG 2021"},
+          {"t": 27.0, "event": "A4 reveal: Achraf Hakimi"},
+          {"t": 28.0, "event": "Q5 (4-club path): Hamburg 2009 >> Leverkusen 2013 / Tottenham 2015 >> LAFC 2025 (scene cut at 28.0)"},
+          {"t": 33.0, "event": "A5 reveal: Son Heung-min"},
+          {"t": 34.0, "event": "Q6 ESCALATION: card flips to yellow/orange, logo recolours; Benfica 2013 >> Monaco 2014 / Man City 2017 >> Real Madrid 2026"},
+          {"t": 40.9, "event": "NO answer card. Full-screen CTA 'LEAVE YOUR ANSWER IN THE COMMENTS', held to 42.21 in silence"}
+        ],
+        "escalation_labelling": "no numeric counter. Escalates two ways: (a) transfer-path length 3 clubs for Q1-Q3 -> 4 clubs for Q4-Q6; (b) colour state change - Q1-Q5 cyan-to-purple gradient, Q6 yellow-to-orange with the logo recoloured to match"
+      },
+
+      "voice": {
+        "vo_present": false,
+        "subtitles_present": false,
+        "read_style": "n/a",
+        "pacing_role": "none - the clock does the pacing, not a narrator",
+        "evidence": "no caption/subtitle pixels anywhere across a 1-frame-per-1.5s full-length sheet; median PCM level -62.3 dB (audio is silent most of the time); onsets are metronomic at ~0.20/0.40s intervals, not speech-rate; bass band (<200 Hz) at -65.9 dB rules out both a music bed and a male voice fundamental"
+      },
+
+      "text": {
+        "style": "designed",
+        "native_ig_caption_style": false,
+        "typeface": "bold condensed geometric sans, all-caps (Montserrat/Poppins ExtraBold family)",
+        "question_render": "club crests in a 2x2 grid joined by chevron arrows, year in large white numerals under each crest",
+        "answer_render": "background-removed player cutout, full-bleed, over the gradient; name in black caps inside a white rounded pill directly beneath",
+        "options_shown": false,
+        "brand_bug": "PITCH QUIZ lockup pinned top-centre for the whole runtime; animates with a flip on card transitions"
+      },
+
+      "withholding": {
+        "answers_resolved_on_screen": 5,
+        "answers_withheld": 1,
+        "which_withheld": "Q6 only - the final and hardest (4-club path ending at Real Madrid 2026)",
+        "cta_mechanic": "the withheld question IS the CTA. When Q6's timer empties, the video cuts to a full-screen card reading 'LEAVE YOUR ANSWER IN THE COMMENTS' and holds it for the last ~1.3s over silence. One specific unanswered thing to type, arriving at the exact moment the clock runs out.",
+        "cta_in_caption": false
+      },
+
+      "hook": {
+        "t0_content": "Q1 fully legible at frame 0 - both crest rows, both years, brand bug, and a full cyan candy-striped timer bar",
+        "motion_already_underway": true,
+        "motion_evidence": "the timer bar measurably drains inside the first second: full at 0.0s, ~85% at 0.4s, ~68% at 1.0s",
+        "cold_open": true,
+        "intro_or_title_card": false
+      },
+
+      "audio_bed": {
+        "audio_type": "original_sounds",
+        "music_info": null,
+        "trending": false,
+        "is_original": true,
+        "description": "percussive tick/countdown bed plus one loud reveal sting per question; true digital silence in the ~1.2s between questions",
+        "tick_interval_s": [0.20, 0.40],
+        "stereo": true,
+        "side_channel_db": -34.9,
+        "mean_volume_db": -21.5,
+        "music_under_vo": "n/a - no VO"
+      },
+
+      "loop": {
+        "end_cuts_back_to_start": false,
+        "evidence": "final 1.5s is the yellow CTA card with an empty timer; frame 0 is a blue Q1 card with a full timer. No visual continuity."
+      }
+    },
+
+    {
+      "account": "gugum.trivia",
+      "code": "DbVz61pqM76",
+      "url": "https://www.instagram.com/reel/DbVz61pqM76/",
+      "posted": "2026-07-28",
+      "play_count": 193529,
+      "like_count": 5813,
+      "comment_count": 524,
+      "comment_rate": 0.00271,
+      "duration_s": 70.40,
+      "resolution": "720x1280",
+      "fps": 30,
+      "format": "country-by-shape",
+      "caption": "Can you guess the country by its shape? If you get 10/10 you're true Map Master 🥇 #guesstheflag #quiz #trivia",
+      "file": "videos/gugum.trivia_DbVz61pqM76.mp4",
+
+      "structure": {
+        "question_count": 10,
+        "seconds_per_question": 5.6,
+        "cadence_is_metronomic": true,
+        "cadence_evidence": "counter-badge transitions at 0.4 / 7.9 / 13.4 / 18.8 / 27.9 / 34.1 / 39.8 / 45.6 / 51.2 / 56.9 / 64.9 / 70.2 s; steady ~5.6s with two deliberately stretched beats (~9.0s at Q4, ~8.0s before Q10)",
+        "per_question_beats": "white country silhouette held ~4s -> silhouette fills with that country's flag on reveal -> answer name is written into the persistent 10-slot answer sheet and stays there",
+        "intro_card": true,
+        "intro_length_s": 7.5,
+        "outro_card": false,
+        "answers": ["Mexico","Italy","Brazil","United Kingdom","Indonesia","Australia","Thailand","Portugal","Ireland","Turkey"],
+        "answer_reveal_times_s": [11.6, 17.1, 22.4, 31.6, 37.8, 43.5, 49.2, 55.0, 60.6, 68.6],
+        "inter_reveal_gaps_s": [5.5, 5.3, 9.2, 6.2, 5.7, 5.7, 5.8, 5.6, 8.0],
+        "escalation_labelling": "numeric counter badge top-left, '00' during the intro then '01'...'10'; plus a 10-slot answer sheet visible from frame 0 that fills in as the game proceeds - the viewer can see both how many questions remain and their own running score"
+      },
+
+      "voice": {
+        "vo_present": true,
+        "subtitles_present": true,
+        "subtitle_style": "word-by-word 'karaoke' auto-captions - one word at a time, centred, white bold with a dark outline, with a scale-pop on emphasised words (the word 'forget' renders small then large across two consecutive states)",
+        "read_style": "TTS-sounding / machine-assembled, not a fresh human read",
+        "read_style_evidence": "the first 11.75s of PCM is BIT-IDENTICAL to sibling episode DbYCstGqZf9, and a second block 13.4-17.2s is identical too - 22% of the track is shared verbatim between episodes. A human re-reading a script cannot produce bit-identical audio. The pattern is a fixed carrier VO with only the answer-name inserts swapped.",
+        "pacing_role": "reads the setup, counts the questions in ('First...', 'Second...', 'the last one'), names each answer at the reveal, and delivers the spoken comment CTA",
+        "onset_rate_per_s": 3.40,
+        "vo_words_read_off_subtitles": {
+          "0.0-6.2": ["Can","you","guess","the","shape?","If","out","a","map","one"],
+          "12.1": ["Mexico"],
+          "56.7-57.1": ["one"],
+          "61.2": ["Ireland"],
+          "61.8-64.6": ["The","forget","forget","tell","comment"],
+          "69.2": ["Turkey"]
+        }
+      },
+
+      "text": {
+        "style": "designed",
+        "native_ig_caption_style": "mixed - the template chrome is designed, but the VO subtitles are native-IG-style plain white auto-captions",
+        "typeface": "rounded bold italic sans (Baloo/Comfortaa family) on a flat dark-teal field",
+        "background": "flat single-colour dark teal, no gradient, no texture, no imagery",
+        "question_render": "plain white country silhouette, centred, no options offered",
+        "answer_render": "silhouette fills with the country's flag; the name is written into a numbered white chip in the running answer sheet",
+        "options_shown": false,
+        "brand_bug": "Gugum Trivia mascot logo pinned top-centre; title line 'Guess the country by its Shape' persists for the whole runtime"
+      },
+
+      "withholding": {
+        "answers_resolved_on_screen": 10,
+        "answers_withheld": 0,
+        "which_withheld": "none - every answer resolves on screen and persists in the answer sheet",
+        "cta_mechanic": "score-based, not answer-based. The VO delivers a spoken comment ask at ~63-65s ('...don't forget to tell... comment...') just before the final question, and the caption sets the bar ('If you get 10/10 you're true Map Master'). The viewer is asked to type their SCORE, not a withheld answer.",
+        "cta_in_caption": true
+      },
+
+      "hook": {
+        "t0_content": "template chrome only at exactly 0.0s (logo, title, '00' badge, empty 10-slot answer sheet, 'Loading...' bar) - the empty sheet advertises a 10-question game before anything is asked",
+        "motion_already_underway": true,
+        "motion_evidence": "rapid-fire teaser montage: a different flag-filled country map every ~0.2s (Portugal 0.2s, Australia 0.4s, UK 0.6s, Italy 0.8s, Turkey 1.0s) - about 5 cuts per second, and the VO's first subtitled word lands by 0.6s",
+        "cold_open": false,
+        "intro_or_title_card": "the title line is permanent chrome rather than a separate card, and it is overlaid on the moving teaser montage - so there is no static title beat"
+      },
+
+      "audio_bed": {
+        "audio_type": "original_sounds",
+        "music_info": null,
+        "trending": false,
+        "is_original": true,
+        "description": "voice-dominant. No continuous music bed - the speech band (300-3400 Hz, -21.6 dB) leads the low band (-24.5 dB) and the high band (-30.7 dB), and the envelope shows ~33 sub -35 dB gaps consistent with phrase pauses",
+        "stereo": false,
+        "side_channel_db": -70.4,
+        "mean_volume_db": -18.7,
+        "music_under_vo": "none detectable"
+      },
+
+      "loop": {
+        "end_cuts_back_to_start": false,
+        "evidence": "ends on the completed board (all 10 chips filled, counter '10', Turkey revealed); frame 0 is the empty board with counter '00'. The template chrome is identical across the cut, so a replay is continuous in LAYOUT, but the game state snaps from full to empty. Not a designed seamless loop."
+      }
+    },
+
+    {
+      "account": "gugum.trivia",
+      "code": "DbYCstGqZf9",
+      "url": "https://www.instagram.com/reel/DbYCstGqZf9/",
+      "posted": "2026-07-29",
+      "play_count": 81223,
+      "like_count": 1426,
+      "comment_count": 99,
+      "comment_rate": 0.00122,
+      "duration_s": 69.56,
+      "resolution": "720x1280",
+      "fps": 30,
+      "format": "country-by-shape",
+      "caption": "Guess the country by its shape | Medium level - Can you get 10 out of 10? 🤔🥇 #guessthecountry #quiz #trivia",
+      "file": "videos/gugum.trivia_DbYCstGqZf9.mp4",
+
+      "structure": {
+        "question_count": 10,
+        "seconds_per_question": 5.6,
+        "cadence_is_metronomic": true,
+        "cadence_evidence": "answer-sheet updates at 11.6 / 17.1 / 22.6 / 31.5 / 37.1 / 42.8 / 48.2 / 53.8 / 59.4 / 67.4 s; counter transitions at 0.4 / 7.9 / 13.4 / 18.9 / 27.8 / 33.4 / 38.9 / 44.5 / 50.1 / 55.6 / 63.5 / 69.5 - within ~0.1s of the sibling episode at every beat",
+        "per_question_beats": "identical to DbVz61pqM76 - silhouette held, then flag fill on reveal, then the name lands in the answer sheet",
+        "intro_card": true,
+        "intro_length_s": 7.5,
+        "outro_card": false,
+        "answers": ["France","Netherland","Belgium","Switzerland","Estonia","Iceland","India","Slovenia","Sweden","North Macedonia"],
+        "answer_reveal_times_s": [11.6, 17.1, 22.6, 31.5, 37.1, 42.6, 48.2, 53.8, 59.2, 67.2],
+        "inter_reveal_gaps_s": [5.5, 5.5, 8.9, 5.6, 5.5, 5.6, 5.6, 5.4, 8.0],
+        "escalation_labelling": "numeric counter '00'->'10' plus the filling 10-slot answer sheet; the caption adds an explicit difficulty tier ('Medium level') that the video itself never states"
+      },
+
+      "voice": {
+        "vo_present": true,
+        "subtitles_present": true,
+        "subtitle_style": "word-by-word karaoke auto-captions, white bold with dark outline, scale-pop on emphasis",
+        "read_style": "TTS-sounding / machine-assembled",
+        "read_style_evidence": "shares a bit-identical 11.75s opening and a bit-identical 13.4-17.2s block with DbVz61pqM76 (22% of the track verbatim); envelope correlation of the first 7s against that episode is r = +1.000",
+        "pacing_role": "reads the setup, counts questions in, names each answer at reveal, delivers the comment CTA",
+        "onset_rate_per_s": 3.51
+      },
+
+      "text": {
+        "style": "designed",
+        "native_ig_caption_style": "mixed - designed chrome, native-style VO subtitles",
+        "typeface": "rounded bold italic sans on flat dark teal",
+        "background": "flat single-colour dark teal",
+        "question_render": "plain white country silhouette, no options",
+        "answer_render": "flag fill + name written into a numbered white chip in the running answer sheet",
+        "options_shown": false,
+        "brand_bug": "Gugum Trivia mascot logo top-centre, permanent title line"
+      },
+
+      "withholding": {
+        "answers_resolved_on_screen": 10,
+        "answers_withheld": 0,
+        "which_withheld": "none",
+        "cta_mechanic": "score-based - caption asks 'Can you get 10 out of 10?' and the VO delivers a spoken comment ask before the last question",
+        "cta_in_caption": true
+      },
+
+      "hook": {
+        "t0_content": "template chrome + empty 10-slot answer sheet at 0.0s",
+        "motion_already_underway": true,
+        "motion_evidence": "same teaser montage device - a new flag-filled map every ~0.2s through the first second; first subtitled VO word by 0.6s",
+        "cold_open": false,
+        "intro_or_title_card": "permanent title chrome over a moving montage; no static title beat"
+      },
+
+      "audio_bed": {
+        "audio_type": "original_sounds",
+        "music_info": null,
+        "trending": false,
+        "is_original": true,
+        "description": "voice-dominant, no continuous music bed; 31 sub -35 dB phrase gaps",
+        "stereo": false,
+        "side_channel_db": -70.0,
+        "mean_volume_db": -18.5,
+        "music_under_vo": "none detectable"
+      },
+
+      "loop": {
+        "end_cuts_back_to_start": false,
+        "evidence": "ends on the completed board; frame 0 is the empty board. Chrome continuous, game state resets."
+      }
+    },
+
+    {
+      "account": "gugum.trivia",
+      "code": "DbdyQacKNeF",
+      "url": "https://www.instagram.com/reel/DbdyQacKNeF/",
+      "posted": "2026-07-31",
+      "play_count": 68843,
+      "like_count": 2259,
+      "comment_count": 148,
+      "comment_rate": 0.00215,
+      "duration_s": 73.07,
+      "resolution": "720x1280",
+      "fps": 30,
+      "format": "player-nationality",
+      "caption": "Guess the national teams of 10 football star | Can you get 10 out of 10? 🤔🥇 #footballquiz #trivia #quizchallenge",
+      "file": "videos/gugum.trivia_DbdyQacKNeF.mp4",
+
+      "structure": {
+        "question_count": 10,
+        "seconds_per_question": 5.6,
+        "cadence_is_metronomic": true,
+        "cadence_evidence": "answer-sheet updates at 14.8 / 20.2 / 26.1 / 35.1 / 40.6 / 46.2 / 51.9 / 57.4 / 63.0 / 71.1 s; counter transitions at 0.4 / 11.0 / 16.6 / 22.4 / 31.4 / 36.9 / 42.5 / 48.1 / 53.8 / 59.2 / 67.2 / 73.0",
+        "per_question_beats": "real player photo held ~4s -> reveal swaps to that player's national flag with the country name labelled -> name lands in the running answer sheet",
+        "intro_card": true,
+        "intro_length_s": 10.6,
+        "outro_card": false,
+        "answers": ["Slovenia","United States","Sweden","Senegal","Colombia","Switzerland","France","Russia","Argentina","Portugal"],
+        "subjects": ["Benjamin Sesko","Christian Pulisic","Alexander Isak","Sadio Mane","Luis Diaz","Granit Xhaka","Kylian Mbappe","Matvey Safonov","Lionel Messi","Cristiano Ronaldo"],
+        "answer_reveal_times_s": [14.8, 20.2, 26.1, 35.1, 40.6, 46.1, 51.9, 57.4, 62.9, 71.0],
+        "inter_reveal_gaps_s": [5.4, 5.9, 9.0, 5.5, 5.5, 5.8, 5.5, 5.5, 8.1],
+        "escalation_labelling": "numeric counter '00'->'10' plus the filling answer sheet; subject fame escalates deliberately - opens on Sesko/Pulisic/Isak and closes on Messi (Q9) then Ronaldo (Q10)"
+      },
+
+      "voice": {
+        "vo_present": true,
+        "subtitles_present": true,
+        "subtitle_style": "word-by-word karaoke auto-captions, white bold with dark outline",
+        "read_style": "TTS-sounding / machine-assembled",
+        "read_style_evidence": "same template pipeline as the shape series, but a different per-series VO asset - envelope correlation against the shape episodes is only r = +0.203 over the first 7s, versus r = +1.000 between the two shape episodes",
+        "pacing_role": "reads the setup, counts questions in ('First...', 'three', 'Eighth'), names each answer at reveal",
+        "onset_rate_per_s": 3.61
+      },
+
+      "text": {
+        "style": "designed",
+        "native_ig_caption_style": "mixed - designed chrome, native-style VO subtitles",
+        "typeface": "rounded bold italic sans on flat dark teal; title uses two-colour emphasis - white body with the key noun in yellow ('National Teams', '10 Football Stars')",
+        "background": "flat single-colour dark teal",
+        "question_render": "real agency player photograph in a rounded card, no options",
+        "answer_render": "national flag in a rounded card with the country name on a white chip beneath; name also written into the running answer sheet",
+        "options_shown": false,
+        "brand_bug": "Gugum Trivia mascot logo top-centre, permanent title line"
+      },
+
+      "withholding": {
+        "answers_resolved_on_screen": 10,
+        "answers_withheld": 0,
+        "which_withheld": "none",
+        "cta_mechanic": "score-based - caption asks 'Can you get 10 out of 10?'",
+        "cta_in_caption": true
+      },
+
+      "hook": {
+        "t0_content": "template chrome + empty 10-slot answer sheet at 0.0s",
+        "motion_already_underway": true,
+        "motion_evidence": "spoiler-montage hook - a different labelled subject or flag every ~0.2s (Mbappe 0.2s, Senegal 0.4s, Slovenia 0.6s, Safonov 0.8s, Luis Diaz 1.0s), cycling the actual answers before the game starts; first subtitled VO word by 0.6s",
+        "cold_open": false,
+        "intro_or_title_card": "permanent title chrome over a moving montage"
+      },
+
+      "audio_bed": {
+        "audio_type": "original_sounds",
+        "music_info": null,
+        "trending": false,
+        "is_original": true,
+        "description": "voice-dominant, no continuous music bed; 29 sub -35 dB phrase gaps",
+        "stereo": false,
+        "side_channel_db": -74.6,
+        "mean_volume_db": -18.4,
+        "music_under_vo": "none detectable"
+      },
+
+      "loop": {
+        "end_cuts_back_to_start": false,
+        "evidence": "ends on the completed board with Portugal revealed; frame 0 is the empty board. Chrome continuous, game state resets."
+      }
+    }
+  ],
+
+  "format_context_from_same_pages": {
+    "note": "median play_count by format across the sampled page - shows the winners are format-driven, not account-driven",
+    "gugum.trivia": {
+      "country-by-shape": {"n": 3, "median": 81223, "max": 193529},
+      "player-nationality": {"n": 3, "median": 3294, "max": 68843},
+      "country-by-flag": {"n": 4, "median": 18214, "max": 33314},
+      "capital-city": {"n": 1, "median": 5789, "max": 5789},
+      "brand-logo": {"n": 1, "median": 1601, "max": 1601},
+      "posting_cadence_per_week": 12.0
+    },
+    "pitch.quiz": {
+      "transfer-path": {"n": 1, "median": 232932, "max": 232932},
+      "nation-club-jersey": {"n": 7, "median": 3087, "max": 34653},
+      "distorted-logo": {"n": 1, "median": 1788, "max": 1788},
+      "posting_cadence_per_week": 2.6
+    }
+  }
+}
