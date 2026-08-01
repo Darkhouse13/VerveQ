@@ -9,8 +9,12 @@ import {
   COURT_ENDORSEMENT_FLOOR,
   COURT_PASS_SHARE,
   COURT_QUORUM_FLOOR,
+  COURT_RESOLVE_MINUTES,
+  cadenceCoversVerdictWindow,
   endorsementThresholdOf,
   filingClosesAt,
+  inVerdictWindow,
+  maxGapOfHourlyMinutes,
   quorumOf,
   trialPasses,
   validArgument,
@@ -20,6 +24,7 @@ import {
 // Tuesday 23:59 Europe/Paris, some week — the exact value is irrelevant to
 // the offsets under test.
 const FINALITY = 1_790_000_000_000;
+const MINUTE = 60 * 1000;
 
 describe("court timeline (spec §Timeline)", () => {
   it("closes filing 24h before finality (Monday 23:59)", () => {
@@ -80,6 +85,68 @@ describe("trial pass test (quorum AND ≥ 60% weighted yes)", () => {
 
   it("fails an empty ballot even at quorum zero", () => {
     expect(trialPasses({ rawVotes: 0, weightedYes: 0, weightedNo: 0, quorum: 0 })).toBe(false);
+  });
+});
+
+describe("the verdict window (FW-CR1 item 1: resolution ≠ expiry)", () => {
+  it("opens when voting closes and SHUTS at finality, exclusive", () => {
+    expect(inVerdictWindow(FINALITY, votingClosesAt(FINALITY))).toBe(true);
+    expect(inVerdictWindow(FINALITY, FINALITY - 1)).toBe(true);
+    // The critical boundary: at finality no verdict is applicable at all.
+    expect(inVerdictWindow(FINALITY, FINALITY)).toBe(false);
+    expect(inVerdictWindow(FINALITY, FINALITY + 1)).toBe(false);
+  });
+
+  it("is shut before voting closes — a trial in progress is not judged", () => {
+    expect(inVerdictWindow(FINALITY, votingClosesAt(FINALITY) - 1)).toBe(false);
+    expect(inVerdictWindow(FINALITY, filingClosesAt(FINALITY))).toBe(false);
+  });
+
+  it("stays shut through the settlement lag — the bug it exists to kill", () => {
+    // The settlement cron is quarter-hourly, so a gameweek can sit past its
+    // cut and un-stamped for minutes. Every instant in there refuses a verdict.
+    for (const lag of [1, 5, 15, 60, 6 * 60]) {
+      expect(inVerdictWindow(FINALITY, FINALITY + lag * MINUTE)).toBe(false);
+    }
+  });
+});
+
+describe("resolver cadence (the window must never be missed)", () => {
+  it("measures the widest silence of an hourly schedule, wrap included", () => {
+    expect(maxGapOfHourlyMinutes([0, 30])).toBe(30 * 60 * 1000);
+    expect(maxGapOfHourlyMinutes([0, 15, 30, 45])).toBe(15 * 60 * 1000);
+    expect(maxGapOfHourlyMinutes([0, 1])).toBe(59 * 60 * 1000); // the wrap dominates
+    expect(maxGapOfHourlyMinutes([7])).toBe(60 * 60 * 1000);
+  });
+
+  it("the shipped cadence lands a resolution pass inside every window", () => {
+    expect(maxGapOfHourlyMinutes(COURT_RESOLVE_MINUTES)).toBe(15 * 60 * 1000);
+    expect(cadenceCoversVerdictWindow(COURT_RESOLVE_MINUTES)).toBe(true);
+
+    // Exhaustive rather than argued: every minute-aligned finality instant in
+    // a day has a tick in [votingClosesAt, finalityAt).
+    const dayStart = FINALITY - (FINALITY % (24 * 60 * MINUTE));
+    for (let m = 0; m < 24 * 60; m += 1) {
+      const finalityAt = dayStart + m * MINUTE;
+      const hits = [];
+      for (let tick = finalityAt - 4 * 60 * MINUTE; tick < finalityAt; tick += MINUTE) {
+        const minute = Math.floor(tick / MINUTE) % 60;
+        if (!COURT_RESOLVE_MINUTES.includes(minute as (typeof COURT_RESOLVE_MINUTES)[number])) {
+          continue;
+        }
+        if (inVerdictWindow(finalityAt, tick)) hits.push(tick);
+      }
+      expect(hits.length).toBeGreaterThan(0);
+    }
+  });
+
+  it("breaks if either side of the coupling moves the wrong way", () => {
+    // Thin the cron to hourly against a 30-minute window: uncovered.
+    expect(cadenceCoversVerdictWindow([7], 30 * 60 * 1000)).toBe(false);
+    // Keep the cron and shrink the voting lead below its widest silence: also
+    // uncovered — the guarantee is a property of the pair, not of the cron.
+    expect(cadenceCoversVerdictWindow(COURT_RESOLVE_MINUTES, 10 * 60 * 1000)).toBe(false);
+    expect(cadenceCoversVerdictWindow(COURT_RESOLVE_MINUTES, 15 * 60 * 1000)).toBe(true);
   });
 });
 

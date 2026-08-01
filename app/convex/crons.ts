@@ -1,5 +1,6 @@
 import { cronJobs } from "convex/server";
 import { internal } from "./_generated/api";
+import { COURT_RESOLVE_MINUTES } from "./lib/fantasyCourtRules";
 
 const crons = cronJobs();
 
@@ -42,7 +43,16 @@ crons.cron("fantasy-settle-gameweeks", "2,17,32,47 * * * *", internal.fantasySco
 // BEFORE the settlement above stamps the gameweek, by construction: runs at
 // :7/:22/:37/:52 so a verdict never waits on the same tick that settles.
 // Guarded no-op outside those windows; settled gameweeks are skipped whole.
-crons.cron("fantasy-court-resolve", "7,22,37,52 * * * *", internal.fantasyCourt.resolveDueClaims, {});
+// FW-CR1: the minutes come from the rules module, where the court suite
+// asserts that this cadence's widest silence (15m) fits inside the verdict
+// window (2h59m) — so a resolution pass ALWAYS lands before finality, and the
+// at/after-finality expiry pass is a fault path rather than a routine one.
+crons.cron(
+  "fantasy-court-resolve",
+  `${COURT_RESOLVE_MINUTES.join(",")} * * * *`,
+  internal.fantasyCourt.resolveDueClaims,
+  {},
+);
 // FW-3 draft rooms: expires dead lobbies and re-drives any room whose
 // scheduled hop was lost. Every action is a guarded no-op on a healthy room,
 // so the tight interval buys stall-recovery, not load.

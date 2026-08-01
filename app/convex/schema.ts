@@ -2155,6 +2155,12 @@ export default defineSchema({
       v.literal("died"),
       v.literal("passed"),
       v.literal("failed"),
+      /** FW-CR1: still open when the gameweek's clock reached finality. NOT an
+       *  outcome — no verdict was applied and no score moved; the court simply
+       *  ran out of time. Distinct from "failed" (the jury refused it) and
+       *  from "died" (it never reached a hearing) precisely so history never
+       *  asserts a ruling the scores did not receive. */
+      v.literal("expired"),
     ),
     /** Endorsement count, denormalized (the filer counts as the first). */
     endorsements: v.number(),

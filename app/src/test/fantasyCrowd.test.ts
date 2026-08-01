@@ -143,6 +143,68 @@ describe("crowd factor derivation (spec §Rating math)", () => {
   });
 });
 
+describe("court-ruled regrouping at the freeze (FW-CR1 item 2)", () => {
+  // A court verdict moves a player's verdictPosition BEFORE finality; the
+  // freeze then reads each row's CURRENT verdict. So the ruled player is
+  // percentiled among the group he was RULED into, and the group he left
+  // re-percentiles over whoever remains. Both sides of that are asserted
+  // against the same population, ruled and un-ruled.
+  const RULED = [
+    entry({ playerId: "d1", verdictPosition: "DEF", rating: 1700 }),
+    entry({ playerId: "d2", verdictPosition: "DEF", rating: 1600 }),
+    entry({ playerId: "moved", verdictPosition: "DEF", rating: 1500 }), // ruled MID→DEF
+    entry({ playerId: "m1", verdictPosition: "MID", rating: 1400 }),
+  ];
+  const UNRULED = [
+    entry({ playerId: "d1", verdictPosition: "DEF", rating: 1700 }),
+    entry({ playerId: "d2", verdictPosition: "DEF", rating: 1600 }),
+    entry({ playerId: "moved", verdictPosition: "MID", rating: 1500 }),
+    entry({ playerId: "m1", verdictPosition: "MID", rating: 1400 }),
+  ];
+
+  it("derives the moved player's factor from the RULED group's population", () => {
+    const ruled = deriveCrowdFactors(RULED);
+    // Bottom of a three-man DEF group — not the top of the two-man MID group
+    // he would have led had the ruling been ignored.
+    expect(factorOf(ruled, "moved")?.factor).toBeCloseTo(-CROWD_FACTOR_MAX, 12);
+    expect(factorOf(deriveCrowdFactors(UNRULED), "moved")?.factor).toBeCloseTo(
+      CROWD_FACTOR_MAX,
+      12,
+    );
+  });
+
+  it("re-percentiles the group he joined over the ruled population", () => {
+    const ruled = deriveCrowdFactors(RULED);
+    // d2 was the floor of a two-man DEF group; the arrival makes him its median.
+    expect(factorOf(ruled, "d2")?.factor).toBeCloseTo(0, 12);
+    expect(factorOf(ruled, "d1")?.factor).toBeCloseTo(CROWD_FACTOR_MAX, 12);
+    expect(factorOf(deriveCrowdFactors(UNRULED), "d2")?.factor).toBeCloseTo(
+      -CROWD_FACTOR_MAX,
+      12,
+    );
+  });
+
+  it("leaves the vacated group consistent — the remainder re-percentiles", () => {
+    const ruled = deriveCrowdFactors(RULED);
+    // m1 is alone in MID once the ruling lands: his group's median, factor 0
+    // and NOT flagged (he has the votes; his population shrank).
+    expect(factorOf(ruled, "m1")?.factor).toBe(0);
+    expect(factorOf(ruled, "m1")?.insufficientVotes).toBe(false);
+    expect(factorOf(deriveCrowdFactors(UNRULED), "m1")?.factor).toBeCloseTo(
+      -CROWD_FACTOR_MAX,
+      12,
+    );
+  });
+
+  it("keeps every derived factor in band on both sides of a ruling", () => {
+    for (const set of [RULED, UNRULED]) {
+      for (const result of deriveCrowdFactors(set)) {
+        expect(Math.abs(result.factor)).toBeLessThanOrEqual(CROWD_FACTOR_MAX);
+      }
+    }
+  });
+});
+
 // ── rater accuracy ──
 
 describe("rater accuracy (the sealed second game)", () => {

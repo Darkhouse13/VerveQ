@@ -42,12 +42,58 @@ export const COURT_QUORUM_FLOOR = 30;
 export const COURT_QUORUM_FRACTION = 0.01;
 export const COURT_PASS_SHARE = 0.6;
 
+/** The resolver cron's minute marks (crons.ts drives the string from this). */
+export const COURT_RESOLVE_MINUTES = [7, 22, 37, 52] as const;
+
 export function filingClosesAt(finalityAt: number): number {
   return finalityAt - COURT_FILING_CLOSE_LEAD_MS;
 }
 
 export function votingClosesAt(finalityAt: number): number {
   return finalityAt - COURT_VOTING_CLOSE_LEAD_MS;
+}
+
+/**
+ * The verdict window: [votingClosesAt, finalityAt). Half-open at BOTH ends on
+ * purpose — a verdict may be applied once voting has shut and only while the
+ * gameweek's own clock is still short of the cut.
+ *
+ * FW-CR1 item 1: resolution and expiry are different acts. At or after
+ * finality no verdict is applicable at all (R4 forbids the re-score), so
+ * stamping one there would put an outcome in the court's history that the
+ * scores never received. This predicate is the single place that boundary is
+ * expressed.
+ */
+export function inVerdictWindow(finalityAt: number, now: number): boolean {
+  return now >= votingClosesAt(finalityAt) && now < finalityAt;
+}
+
+/** The widest silence, in ms, of an hourly schedule fired at these minutes. */
+export function maxGapOfHourlyMinutes(minutes: readonly number[]): number {
+  if (minutes.length === 0) return 60 * 60 * 1000;
+  const sorted = [...minutes].sort((a, b) => a - b);
+  let widest = 60 - sorted[sorted.length - 1] + sorted[0]; // the wrap
+  for (let i = 1; i < sorted.length; i += 1) {
+    widest = Math.max(widest, sorted[i] - sorted[i - 1]);
+  }
+  return widest * 60 * 1000;
+}
+
+/**
+ * Does a schedule fired at these minutes ALWAYS land inside the verdict
+ * window? True exactly when its widest silence fits inside the window: an
+ * interval at least as long as the largest gap cannot dodge every tick.
+ *
+ * The court's cadence must satisfy this or the split above would turn missed
+ * verdicts into expiries — correct, but silently lossy. The window argument is
+ * explicit because the coupling runs BOTH ways: shortening the voting lead is
+ * as capable of breaking the guarantee as thinning the cron.
+ */
+export function cadenceCoversVerdictWindow(
+  minutes: readonly number[],
+  windowMs: number = COURT_VOTING_CLOSE_LEAD_MS,
+): boolean {
+  return maxGapOfHourlyMinutes(minutes) <= windowMs;
 }
 
 /**

@@ -520,7 +520,7 @@ export const purgeLoopData = internalMutation({
       await ctx.db.delete(row._id);
       deleted += 1;
     }
-    for (const status of ["filing", "trial", "died", "passed", "failed"] as const) {
+    for (const status of ["filing", "trial", "died", "passed", "failed", "expired"] as const) {
       const claims = await ctx.db
         .query("fantasyCourtClaims")
         .withIndex("by_gameweek_status", (q) =>

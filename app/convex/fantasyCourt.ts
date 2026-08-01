@@ -31,6 +31,7 @@ import {
   COURT_FILINGS_PER_GAMEWEEK,
   endorsementThresholdOf,
   filingClosesAt,
+  inVerdictWindow,
   quorumOf,
   trialPasses,
   validArgument,
@@ -279,7 +280,11 @@ export async function rebutClaimFor(
   const claim = await ctx.db.get(claimId);
   if (claim === null) throw new Error(CLAIM_NOT_FOUND);
   await assertNotSettled(ctx, claim.gameweekId);
-  if (claim.status !== "filing" && claim.status !== "trial") throw new Error(NOT_ON_TRIAL);
+  // FW-CR1 item 3: the rebuttal is a TRIAL feature. A claim still gathering
+  // endorsements has no hearing to answer, and a counter-argument spent there
+  // would burn the single slot before any juror could read it — the slot must
+  // survive filing intact.
+  if (claim.status !== "trial") throw new Error(NOT_ON_TRIAL);
   if (claim.rebuttal !== undefined) throw new Error(REBUTTAL_TAKEN);
   if (!validArgument(text)) throw new Error(BAD_ARGUMENT);
   const gameweek = await ctx.db.get(claim.gameweekId);
@@ -356,7 +361,7 @@ export const getCourtDocket = query({
     if (gameweek === null) return null;
 
     const claims: Doc<"fantasyCourtClaims">[] = [];
-    for (const status of ["filing", "trial", "passed", "failed", "died"] as const) {
+    for (const status of ["filing", "trial", "passed", "failed", "died", "expired"] as const) {
       claims.push(
         ...(await ctx.db
           .query("fantasyCourtClaims")
@@ -512,15 +517,32 @@ export interface ResolveDueClaimsResult {
   died: number;
   passed: number;
   failed: number;
+  expired: number;
   rescored: number;
   gameweeksTouched: number;
 }
 
 /**
- * The court's clock, cron-driven: claims short of threshold die at Monday
- * 23:59; trials resolve in the Tuesday 21:00–23:59 window; anything still
- * on trial when a gameweek settles fails on time (no appeals — the next
- * gameweek is never blocked). Settled gameweeks are skipped whole.
+ * The court's clock, cron-driven. Two acts, split at the finality instant
+ * (FW-CR1 item 1):
+ *
+ *   before finality — claims short of threshold die at Monday 23:59, and
+ *     trials RESOLVE inside the verdict window (Tuesday 21:00–23:59): a
+ *     verdict is stamped and, when it passes, the re-score lands with it.
+ *   at/after finality — nothing is judged. Whatever is still open is stamped
+ *     `expired`: no verdict, no tallies, no score touched.
+ *
+ * The reason for the split is the settlement lag. `finalityAt` is an instant
+ * but the settlement stamp is a cron, so there is a window in which the
+ * gameweek is past its cut and not yet labelled `final`. The old single pass
+ * fired there, stamped a claim `passed`, and then watched `rescoreForVerdict`
+ * refuse it under R4 — leaving the court asserting a ruling the scores never
+ * received. An outcome the numbers did not get is not an outcome.
+ *
+ * The window is never missed in practice: it is 2h59m wide against a 15-minute
+ * cadence (`cadenceCoversVerdictWindow`, asserted in the rules suite), so a
+ * trial expires only if the resolver itself was down for the whole evening.
+ * Settled gameweeks are skipped whole, as before.
  */
 export const resolveDueClaims = internalMutation({
   args: { now: v.optional(v.number()) },
@@ -530,6 +552,7 @@ export const resolveDueClaims = internalMutation({
       died: 0,
       passed: 0,
       failed: 0,
+      expired: 0,
       rescored: 0,
       gameweeksTouched: 0,
     };
@@ -550,6 +573,27 @@ export const resolveDueClaims = internalMutation({
 
       let touched = false;
 
+      // ── the expiry pass: at/after finality, nothing is judged ──
+      if (now >= gameweek.finalityAt) {
+        for (const status of ["filing", "trial"] as const) {
+          const open = await ctx.db
+            .query("fantasyCourtClaims")
+            .withIndex("by_gameweek_status", (q) =>
+              q.eq("gameweekId", gameweek._id).eq("status", status),
+            )
+            .collect();
+          for (const claim of open) {
+            // Unresolved at finality. No verdict, no tallies, no re-score —
+            // the ONLY thing recorded is that the clock ran out.
+            await ctx.db.patch(claim._id, { status: "expired", resolvedAt: now });
+            result.expired += 1;
+            touched = true;
+          }
+        }
+        if (touched) result.gameweeksTouched += 1;
+        continue;
+      }
+
       if (now >= filingClosesAt(gameweek.finalityAt)) {
         const filing = await ctx.db
           .query("fantasyCourtClaims")
@@ -565,7 +609,7 @@ export const resolveDueClaims = internalMutation({
         }
       }
 
-      if (now >= votingClosesAt(gameweek.finalityAt)) {
+      if (inVerdictWindow(gameweek.finalityAt, now)) {
         const trials = await ctx.db
           .query("fantasyCourtClaims")
           .withIndex("by_gameweek_status", (q) =>

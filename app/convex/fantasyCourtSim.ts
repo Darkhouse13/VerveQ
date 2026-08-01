@@ -1,5 +1,6 @@
 /**
- * Weekend Fantasy — the reclamation-court DEV walkthrough (FW-LAUNCH O3).
+ * Weekend Fantasy — the reclamation-court DEV walkthrough (FW-LAUNCH O3,
+ * extended by FW-CR1).
  *
  * The O3 DONE gate against a SYNTHETIC gameweek, through the real cores:
  * file → rule → re-scored version appears with the prior readable →
@@ -9,12 +10,28 @@
  * revision AFTER the ruling that must keep the ruled verdict, and settled-
  * gameweek immunity.
  *
+ * FW-CR1 adds three:
+ *   · the SETTLEMENT-LAG EXPIRY PATH (item 1) — a second synthetic gameweek
+ *     carrying a claim whose votes WOULD pass, resolved for the first time
+ *     after its own finality instant. It must expire, not rule: no verdict,
+ *     no tallies, not one new score version. Two gameweeks on two clocks
+ *     through ONE resolver call also prove the split is per-gameweek.
+ *   · the CROWD REGROUPING check (item 2) — the freeze reads each row's
+ *     CURRENT verdict, so the court-moved player is percentiled among the
+ *     group he was ruled into and the group he left re-percentiles.
+ *   · the rebuttal's TRIAL gate (item 3) — refused during filing, slot intact.
+ *
  * Postures as its siblings: internal-only, tagged (`simcourt_*`), purged by
- * id. The ONE direct table write outside product paths is the holder's
- * scaffold squad (a budget-context squad row + one slot) — synthetic
- * players are unpriced by design so no product path could build it, and the
- * juror-exclusion rule cannot be exercised without a holder. Crew squads
- * are never fabricated (F1).
+ * id. TWO direct table writes sit outside product paths, both on synthetic
+ * rows only:
+ *   · the holder's scaffold squad (a budget-context squad row + one slot) —
+ *     synthetic players are unpriced by design so no product path could build
+ *     it, and the juror-exclusion rule cannot be exercised without a holder;
+ *   · the crowd rating rows for the regrouping check — reaching the liquidity
+ *     threshold through the real Elo path costs 100+ pair votes per run, and
+ *     that path is already covered end-to-end by fantasyCrowdSim. What is
+ *     under test here is the FREEZE's grouping, which reads ratings as data.
+ * Crew squads are never fabricated (F1).
  *
  * Run:  npx convex run fantasyCourtSim:simulateCourtWalkthrough '{"salt":"o3"}'
  */
@@ -34,8 +51,10 @@ import {
   FILING_CLOSED,
   FILING_LIMIT_REACHED,
   GAMEWEEK_SETTLED,
+  NOT_ON_TRIAL,
   REBUTTAL_TAKEN,
 } from "./fantasyCourt";
+import { CROWD_FACTOR_MAX } from "./lib/fantasyCrowd";
 import type { Slot } from "./lib/fantasyScoring";
 
 const SIM_USERNAME_PREFIX = "simcourt_";
@@ -43,6 +62,43 @@ const SIM_SEASON = "SYNTH-O3-COURT";
 const SIM_GW = 903;
 const SIM_FIXTURE = "synth-o3-court-1";
 const SIM_USER_COUNT = 40; // u0 = filer; plenty of endorsers + 31 jurors
+
+/** The settlement-lag gameweek: same synthetic season, its own clock. */
+const SIM_GW_LAG = 904;
+const SIM_FIXTURE_LAG = "synth-o3-court-lag";
+/** The lag claim's target and one team-mate, so the fixture is a real match. */
+const LAG_PLAYERS = [
+  {
+    providerPlayerId: "synth-o3l-p0",
+    name: "Synth Lag DEF 0",
+    clubId: "SYNTH-O3C",
+    feedPosition: "DEF" as const,
+  },
+  {
+    providerPlayerId: "synth-o3l-p1",
+    name: "Synth Lag MID 1",
+    clubId: "SYNTH-O3D",
+    feedPosition: "MID" as const,
+  },
+];
+
+/**
+ * The frozen-factor fixture for item 2. Ratings are chosen so the two
+ * hypotheses DISAGREE IN SIGN for the court-moved player: p4 is the floor of
+ * the DEF group he was ruled into (−15%) and would be the ceiling of the MID
+ * group he left (+15%). p5, alone in MID once the ruling lands, sits at his
+ * group's median rather than at the bottom he would hold beside p4.
+ */
+const CROWD_SCAFFOLD = [
+  { providerPlayerId: "synth-o3c-p0", rating: 1550 }, // GK
+  { providerPlayerId: "synth-o3c-p1", rating: 1450 }, // GK
+  { providerPlayerId: "synth-o3c-p2", rating: 1700 }, // DEF
+  { providerPlayerId: "synth-o3c-p3", rating: 1600 }, // DEF
+  { providerPlayerId: "synth-o3c-p4", rating: 1500 }, // MID → ruled DEF
+  { providerPlayerId: "synth-o3c-p5", rating: 1400 }, // MID (left alone)
+  { providerPlayerId: "synth-o3c-p6", rating: 1650 }, // ATT
+  { providerPlayerId: "synth-o3c-p7", rating: 1350 }, // ATT
+];
 
 function fail(message: string): never {
   throw new Error(`WALKTHROUGH FAILED: ${message}`);
@@ -260,7 +316,21 @@ export const courtSimPhaseFile = internalMutation({
       fail(`merged claim has ${merged?.endorsements} endorsements, expected 2.`);
     }
 
-    return { claim1Id: claim1.claimId, claim2Id: claim2.claimId, limitMsg };
+    // FW-CR1 item 3: the rebuttal is a trial feature. Refused here, on a claim
+    // still gathering endorsements — and the slot must survive to the hearing,
+    // which the trial phase then proves by spending it.
+    if (merged.status !== "filing") fail("claim1 is not in filing status for the rebuttal probe.");
+    const earlyRebuttalMsg = await expectRejection(
+      () => rebutClaimFor(ctx, args.duplicateFiler, claim1.claimId, "Not so.", now),
+      NOT_ON_TRIAL,
+      "rebuttal during filing",
+    );
+    const untouched = await ctx.db.get(claim1.claimId);
+    if (untouched?.rebuttal !== undefined) {
+      fail("the refused rebuttal still landed on the claim.");
+    }
+
+    return { claim1Id: claim1.claimId, claim2Id: claim2.claimId, limitMsg, earlyRebuttalMsg };
   },
 });
 
@@ -326,6 +396,129 @@ export const courtSimPhaseTrial = internalMutation({
   },
 });
 
+// ── the settlement-lag gameweek (FW-CR1 item 1) ──
+
+/**
+ * File the lag claim and endorse it onto the docket. Its gameweek's clock is
+ * still 25h from finality here, so this is an ordinary filing through the
+ * ordinary cores — nothing about it is special until the resolver arrives late.
+ */
+export const courtSimLagFile = internalMutation({
+  args: {
+    gameweekId: v.id("fantasyGameweeks"),
+    filer: v.id("users"),
+    endorsers: v.array(v.id("users")),
+  },
+  handler: async (ctx, args) => {
+    const gameweek = await ctx.db.get(args.gameweekId);
+    if (gameweek === null) fail("lag gameweek missing.");
+    const now = Date.now();
+
+    const player = await ctx.db
+      .query("fantasyPlayers")
+      .withIndex("by_providerPlayerId", (q) =>
+        q.eq("providerPlayerId", LAG_PLAYERS[0].providerPlayerId),
+      )
+      .first();
+    const fixture = await ctx.db
+      .query("fantasyFixtures")
+      .withIndex("by_providerFixtureId", (q) => q.eq("providerFixtureId", SIM_FIXTURE_LAG))
+      .first();
+    if (player === null || fixture === null) fail("lag fixture rows missing.");
+
+    const filed = await fileClaimFor(
+      ctx,
+      args.filer,
+      gameweek,
+      {
+        playerId: player._id,
+        fixtureId: fixture._id,
+        claimedPosition: "MID",
+        argument: "He played in midfield the whole way.",
+      },
+      now,
+    );
+    for (const userId of args.endorsers) {
+      await endorseClaimFor(ctx, userId, filed.claimId, now);
+    }
+    const claim = await ctx.db.get(filed.claimId);
+    if (claim?.status !== "trial") {
+      fail(`lag claim should be on trial at ${claim?.endorsements} endorsements, is "${claim?.status}".`);
+    }
+    return { claimId: filed.claimId, endorsements: claim.endorsements };
+  },
+});
+
+/** Seat a passing jury on the lag claim — the verdict it must never receive. */
+export const courtSimLagVotes = internalMutation({
+  args: { claimId: v.id("fantasyCourtClaims"), yesVoters: v.array(v.id("users")) },
+  handler: async (ctx, args) => {
+    const now = Date.now();
+    for (const userId of args.yesVoters) {
+      await castCourtVoteFor(ctx, userId, args.claimId, "yes", now);
+    }
+    const votes = await ctx.db
+      .query("fantasyCourtVotes")
+      .withIndex("by_claim", (q) => q.eq("claimId", args.claimId))
+      .collect();
+    return { votes: votes.length };
+  },
+});
+
+export const courtSimClaim = internalQuery({
+  args: { claimId: v.id("fantasyCourtClaims") },
+  handler: async (ctx, { claimId }) => {
+    const claim = await ctx.db.get(claimId);
+    if (claim === null) return null;
+    return {
+      status: claim.status,
+      resolvedAt: claim.resolvedAt ?? null,
+      tallies: claim.tallies ?? null,
+      claimedPosition: claim.claimedPosition,
+      providerPlayerId: claim.providerPlayerId,
+    };
+  },
+});
+
+// ── crowd ratings scaffold (FW-CR1 item 2) ──
+
+/**
+ * Write this gameweek's crowd ratings directly. See the module header for why
+ * this is a direct write; the guard is the same one every purge uses.
+ */
+export const scaffoldCrowdRatings = internalMutation({
+  args: {
+    gameweekId: v.id("fantasyGameweeks"),
+    voteCount: v.number(),
+    rows: v.array(v.object({ providerPlayerId: v.string(), rating: v.number() })),
+  },
+  handler: async (ctx, args) => {
+    const gameweek = await ctx.db.get(args.gameweekId);
+    if (gameweek === null || !gameweek.season.startsWith("SYNTH-")) {
+      throw new Error("scaffoldCrowdRatings refuses a non-synthetic gameweek.");
+    }
+    let written = 0;
+    for (const row of args.rows) {
+      const player = await ctx.db
+        .query("fantasyPlayers")
+        .withIndex("by_providerPlayerId", (q) =>
+          q.eq("providerPlayerId", row.providerPlayerId),
+        )
+        .first();
+      if (player === null) fail(`crowd scaffold: player ${row.providerPlayerId} missing.`);
+      await ctx.db.insert("fantasyCrowdRatings", {
+        gameweekId: args.gameweekId,
+        playerId: player._id,
+        providerPlayerId: row.providerPlayerId,
+        rating: row.rating,
+        voteCount: args.voteCount,
+      });
+      written += 1;
+    }
+    return { written };
+  },
+});
+
 export const courtSimProbeClosed = internalMutation({
   args: { gameweekId: v.id("fantasyGameweeks"), filer: v.id("users") },
   handler: async (ctx, args): Promise<string> => {
@@ -375,7 +568,7 @@ export const courtSimClaims = internalQuery({
   args: { gameweekId: v.id("fantasyGameweeks") },
   handler: async (ctx, { gameweekId }) => {
     const claims: Doc<"fantasyCourtClaims">[] = [];
-    for (const status of ["filing", "trial", "died", "passed", "failed"] as const) {
+    for (const status of ["filing", "trial", "died", "passed", "failed", "expired"] as const) {
       claims.push(
         ...(await ctx.db
           .query("fantasyCourtClaims")
@@ -397,14 +590,20 @@ export const courtSimClaims = internalQuery({
 });
 
 export const purgeCourtSimData = internalMutation({
-  args: { gameweekId: v.id("fantasyGameweeks") },
-  handler: async (ctx, { gameweekId }) => {
+  args: {
+    gameweekId: v.id("fantasyGameweeks"),
+    /** The sim users are shared across the walkthrough's two gameweeks, and
+     *  the holder's scaffold squad is reached THROUGH them — so only the last
+     *  purge of a run takes them. Defaults to taking them (single-gameweek use). */
+    purgeUsers: v.optional(v.boolean()),
+  },
+  handler: async (ctx, { gameweekId, purgeUsers }) => {
     const gameweek = await ctx.db.get(gameweekId);
     if (gameweek !== null && !gameweek.season.startsWith("SYNTH-")) {
       throw new Error("purgeCourtSimData refuses a non-synthetic gameweek.");
     }
     let deleted = 0;
-    for (const status of ["filing", "trial", "died", "passed", "failed"] as const) {
+    for (const status of ["filing", "trial", "died", "passed", "failed", "expired"] as const) {
       const claims = await ctx.db
         .query("fantasyCourtClaims")
         .withIndex("by_gameweek_status", (q) =>
@@ -426,8 +625,18 @@ export const purgeCourtSimData = internalMutation({
         deleted += 1;
       }
     }
+    // The crowd ratings scaffolded for the regrouping check (FW-CR1 item 2).
+    const ratings = await ctx.db
+      .query("fantasyCrowdRatings")
+      .withIndex("by_gameweek", (q) => q.eq("gameweekId", gameweekId))
+      .collect();
+    for (const row of ratings) {
+      await ctx.db.delete(row._id);
+      deleted += 1;
+    }
     // Sim users and the holder's scaffold squad.
     let deletedUsers = 0;
+    if (purgeUsers === false) return { deleted, deletedUsers };
     const users = await ctx.db
       .query("users")
       .withIndex("by_username", (q) =>
@@ -512,14 +721,22 @@ export const simulateCourtWalkthrough = internalAction({
       playerId: targetPlayer._id,
     });
 
-    // 3 · filing: two claims, rate limit, duplicate merge.
-    const filedPhase: { claim1Id: Id<"fantasyCourtClaims">; claim2Id: Id<"fantasyCourtClaims">; limitMsg: string } =
-      await ctx.runMutation(internal.fantasyCourtSim.courtSimPhaseFile, {
-        gameweekId,
-        filer,
-        duplicateFiler,
-      });
-    report.filing = { rateLimit: filedPhase.limitMsg, duplicateMerged: true };
+    // 3 · filing: two claims, rate limit, duplicate merge, rebuttal refused.
+    const filedPhase: {
+      claim1Id: Id<"fantasyCourtClaims">;
+      claim2Id: Id<"fantasyCourtClaims">;
+      limitMsg: string;
+      earlyRebuttalMsg: string;
+    } = await ctx.runMutation(internal.fantasyCourtSim.courtSimPhaseFile, {
+      gameweekId,
+      filer,
+      duplicateFiler,
+    });
+    report.filing = {
+      rateLimit: filedPhase.limitMsg,
+      duplicateMerged: true,
+      rebuttalDuringFiling: filedPhase.earlyRebuttalMsg,
+    };
 
     // 4 · endorse claim1 to the threshold (floor 15; filer + duplicate = 2).
     const endorsed: { status?: string; endorsements?: number } = await ctx.runMutation(
@@ -531,7 +748,8 @@ export const simulateCourtWalkthrough = internalAction({
     }
     report.trialOpened = endorsed.endorsements;
 
-    // 5 · trial: rebuttal (once), juror exclusions, 28 yes / 3 no.
+    // 5 · trial: the rebuttal slot spent (proving it survived filing), juror
+    //     exclusions, 28 yes / 3 no.
     const trial: Record<string, string> = await ctx.runMutation(
       internal.fantasyCourtSim.courtSimPhaseTrial,
       {
@@ -545,6 +763,7 @@ export const simulateCourtWalkthrough = internalAction({
       },
     );
     report.trial = trial;
+    report.rebuttalSlotSurvivedFiling = true;
 
     // 6 · the resolver is a no-op while both windows are open.
     await ctx.runMutation(internal.fantasyCourt.resolveDueClaims, {});
@@ -558,6 +777,61 @@ export const simulateCourtWalkthrough = internalAction({
       fail("resolver acted while the windows were still open.");
     }
     report.earlyResolverNoop = true;
+
+    // 6b · the settlement-lag gameweek: a second synthetic week on its OWN
+    //      clock, carrying a claim with a jury that would pass it. Filed and
+    //      seated here, while its finality is still 25h out.
+    const lagSeeded: { gameweekId: Id<"fantasyGameweeks"> } = await ctx.runMutation(
+      internal.fantasyScoringDev.seedSyntheticFixture,
+      {
+        season: SIM_SEASON,
+        gwNumber: SIM_GW_LAG,
+        finalityAt: Date.now() + 25 * 60 * 60 * 1000,
+        providerFixtureId: SIM_FIXTURE_LAG,
+        kickoffAt: Date.now() - 3 * 60 * 60 * 1000,
+        homeClubId: "SYNTH-O3C",
+        awayClubId: "SYNTH-O3D",
+        homeGoals: 1,
+        awayGoals: 1,
+        players: LAG_PLAYERS,
+      },
+    );
+    const lagGameweekId = lagSeeded.gameweekId;
+    await ctx.runMutation(internal.fantasyScores.applyFixtureStats, {
+      providerFixtureId: SIM_FIXTURE_LAG,
+      hasPlayerStats: true,
+      hasEvents: true,
+      rows: LAG_PLAYERS.map((p) => ({
+        providerPlayerId: p.providerPlayerId,
+        clubId: p.clubId,
+        feedPosition: p.feedPosition,
+        stats: baseStats,
+        events: [] as { minute: number; kind: "goal" }[],
+        entryMinute: null,
+      })),
+    });
+    const lagFiled: { claimId: Id<"fantasyCourtClaims">; endorsements: number } =
+      await ctx.runMutation(internal.fantasyCourtSim.courtSimLagFile, {
+        gameweekId: lagGameweekId,
+        filer: users[20],
+        endorsers: users.slice(0, 14), // + the filer = the floor of 15
+      });
+    const lagVotes: { votes: number } = await ctx.runMutation(
+      internal.fantasyCourtSim.courtSimLagVotes,
+      {
+        claimId: lagFiled.claimId,
+        // 31 unanimous yes at weight 1.0 — quorum 30, share 100%. This claim
+        // passes the trial test outright; only the clock stops it.
+        yesVoters: [...users.slice(0, 20), ...users.slice(21, 32)],
+      },
+    );
+    if (lagVotes.votes !== 31) fail(`lag claim seated ${lagVotes.votes} jurors, expected 31.`);
+    const lagScoresBefore: { providerPlayerId: string; version: number; verdictPosition: string | null }[] =
+      await ctx.runQuery(internal.fantasyScoringDev.syntheticScoreRows, {
+        season: SIM_SEASON,
+        gwNumber: SIM_GW_LAG,
+      });
+    report.lagSeeded = { endorsements: lagFiled.endorsements, jurors: lagVotes.votes };
 
     // 7 · Monday 23:59 passes: the sub-threshold claim dies.
     await ctx.runMutation(internal.fantasyScoringDev.setSyntheticFinality, {
@@ -621,6 +895,89 @@ export const simulateCourtWalkthrough = internalAction({
     }
     report.rescore = "v2 = ruled DEF, prior readable + superseded, factor preserved";
 
+    // 8b · THE SETTLEMENT-LAG EXPIRY PATH (FW-CR1 item 1, the critical one).
+    //
+    //      The pass above ran inside GW903's verdict window and left GW904
+    //      alone — its own clock was nowhere near a window. Now GW904 goes
+    //      PAST finality with its trial still open and un-judged, exactly as a
+    //      missed resolver tick leaves it, and the gameweek is NOT yet stamped
+    //      settled: the lag. The resolver must refuse the verdict and expire
+    //      the claim instead.
+    {
+      const lagStillOpen: { status: string } | null = await ctx.runQuery(
+        internal.fantasyCourtSim.courtSimClaim,
+        { claimId: lagFiled.claimId },
+      );
+      if (lagStillOpen?.status !== "trial") {
+        fail(`the GW903 verdict pass moved the lag claim to "${lagStillOpen?.status}".`);
+      }
+
+      await ctx.runMutation(internal.fantasyScoringDev.setSyntheticFinality, {
+        season: SIM_SEASON,
+        gwNumber: SIM_GW_LAG,
+        finalityAt: Date.now() - 60 * 1000,
+      });
+      const lagStatus: { gameweekScoring: { state: string } | null } | null =
+        await ctx.runQuery(internal.fantasyScoringDev.syntheticStatus, {
+          season: SIM_SEASON,
+          gwNumber: SIM_GW_LAG,
+        });
+      if (lagStatus?.gameweekScoring?.state === "final") {
+        fail("the lag gameweek settled before the probe — this is not the lag scenario.");
+      }
+
+      const resolved: { expired: number; passed: number; rescored: number } =
+        await ctx.runMutation(internal.fantasyCourt.resolveDueClaims, {});
+      if (resolved.passed !== 0 || resolved.rescored !== 0) {
+        fail(
+          `a verdict was applied at/after finality: passed=${resolved.passed}, rescored=${resolved.rescored}.`,
+        );
+      }
+      // The COUNT is reported, not asserted: this runs on DEV, where the court
+      // cron fires every 15 minutes and may legitimately have expired the claim
+      // in the second between the finality move and this call. The claim's own
+      // state below is the assertion either way.
+      report.lagResolverCounts = resolved;
+
+      const lagClaim: {
+        status: string;
+        tallies: unknown;
+        resolvedAt: number | null;
+      } | null = await ctx.runQuery(internal.fantasyCourtSim.courtSimClaim, {
+        claimId: lagFiled.claimId,
+      });
+      if (lagClaim?.status !== "expired") {
+        fail(`the lag claim resolved "${lagClaim?.status}" — history asserts an outcome.`);
+      }
+      if (lagClaim.tallies !== null) fail("an expired claim carries a verdict's tallies.");
+      if (lagClaim.resolvedAt === null) fail("the expiry left no timestamp.");
+
+      // And the scores it never reached: not one version, not one verdict.
+      const lagScoresAfter: {
+        providerPlayerId: string;
+        version: number;
+        verdictPosition: string | null;
+      }[] = await ctx.runQuery(internal.fantasyScoringDev.syntheticScoreRows, {
+        season: SIM_SEASON,
+        gwNumber: SIM_GW_LAG,
+      });
+      if (lagScoresAfter.length !== lagScoresBefore.length) {
+        fail(
+          `the expiry wrote score versions: ${lagScoresBefore.length} → ${lagScoresAfter.length}.`,
+        );
+      }
+      const lagTarget = lagScoresAfter.find(
+        (r) => r.providerPlayerId === LAG_PLAYERS[0].providerPlayerId,
+      );
+      if (lagTarget?.verdictPosition !== LAG_PLAYERS[0].feedPosition) {
+        fail(
+          `the expired claim moved the verdict to "${lagTarget?.verdictPosition}" — it must stay ${LAG_PLAYERS[0].feedPosition}.`,
+        );
+      }
+      report.settlementLagExpiry =
+        "31-juror passing claim expired at finality: no verdict, no tallies, no score version";
+    }
+
     // 9 · a feed revision AFTER the ruling keeps the ruled verdict.
     await ctx.runMutation(internal.fantasyScores.applyFixtureStats, {
       providerFixtureId: SIM_FIXTURE,
@@ -655,6 +1012,82 @@ export const simulateCourtWalkthrough = internalAction({
       { gameweekId, filer: users[37] },
     );
 
+    // 10b · CROWD REGROUPING UNDER A PASSED VERDICT (FW-CR1 item 2).
+    //
+    //       The freeze runs after finality and derives each player's factor
+    //       from his row's CURRENT verdict — so p4, ruled MID→DEF in step 8,
+    //       is percentiled among the DEFs and the MID group he left
+    //       re-percentiles over whoever remains. The ratings are picked so the
+    //       two readings disagree in SIGN: nothing here passes by accident.
+    await ctx.runMutation(internal.fantasyCourtSim.scaffoldCrowdRatings, {
+      gameweekId,
+      voteCount: 30, // clear of the liquidity threshold: every row is liquid
+      rows: CROWD_SCAFFOLD,
+    });
+    const frozen: {
+      written: number;
+      unchanged: number;
+      insufficient: number;
+      done: boolean;
+    } = await ctx.runMutation(internal.fantasyCrowdVoting.applyCrowdFactorsForGameweek, {
+      gameweekId,
+    });
+    // Every liquid player is derived; the two whose frozen factor IS the
+    // default 0 (the ruled group's median and the vacated group's lone member)
+    // need no version — the pass is idempotent, not blind.
+    if (frozen.written + frozen.unchanged !== CROWD_SCAFFOLD.length || frozen.insufficient !== 0) {
+      fail(
+        `crowd freeze covered ${frozen.written}+${frozen.unchanged}/${CROWD_SCAFFOLD.length} (${frozen.insufficient} illiquid) — ` +
+          "if this says 0+0, the DEV settlement cron stamped the gameweek between phases 10 and 10b; re-run.",
+      );
+    }
+    if (frozen.written !== 6) fail(`expected 6 non-zero factors, got ${frozen.written}.`);
+    rows = await ctx.runQuery(internal.fantasyScoringDev.syntheticScoreRows, {
+      season: SIM_SEASON,
+      gwNumber: SIM_GW,
+    });
+    {
+      const near = (a: number, b: number) => Math.abs(a - b) < 1e-12;
+      const current = (providerPlayerId: string) =>
+        rows
+          .filter((r) => r.providerPlayerId === providerPlayerId)
+          .sort((a, b) => b.version - a.version)[0];
+
+      const moved = current("synth-o3c-p4");
+      if (moved.verdictPosition !== "DEF") fail("the frozen version lost the ruled verdict.");
+      // The floor of the three-man DEF group he was RULED into. Had the freeze
+      // grouped him by his filed position he would be the MID group's ceiling,
+      // i.e. +15% — the assertion below is the whole determination.
+      if (!near(moved.crowdFactor, -CROWD_FACTOR_MAX)) {
+        fail(
+          `court-moved player froze at ${moved.crowdFactor}, expected ${-CROWD_FACTOR_MAX} (the ruled group's floor).`,
+        );
+      }
+      // The group he joined re-percentiled around him: p3 was the floor of a
+      // two-man DEF group and is now its median.
+      if (!near(current("synth-o3c-p3").crowdFactor, 0)) {
+        fail(`the receiving group did not re-percentile: p3 froze at ${current("synth-o3c-p3").crowdFactor}.`);
+      }
+      if (!near(current("synth-o3c-p2").crowdFactor, CROWD_FACTOR_MAX)) {
+        fail(`the receiving group's ceiling moved: p2 froze at ${current("synth-o3c-p2").crowdFactor}.`);
+      }
+      // The vacated group is consistent: p5 is alone in MID, so his group's
+      // median — not the −15% floor he held while p4 was still beside him.
+      const vacated = current("synth-o3c-p5");
+      if (vacated.verdictPosition !== "MID" || vacated.crowdFactor !== 0) {
+        fail(
+          `the vacated group is inconsistent: p5 froze at ${vacated.crowdFactor} as ${vacated.verdictPosition}.`,
+        );
+      }
+      for (const row of rows) {
+        if (Math.abs(row.crowdFactor) > CROWD_FACTOR_MAX) {
+          fail(`${row.providerPlayerId} v${row.version} carries an out-of-band factor.`);
+        }
+      }
+    }
+    report.crowdRegrouping =
+      "ruled DEF floor −15% (would be +15% as a MID), receiving group re-percentiled, vacated MID at median";
+
     // 11 · settle; the gameweek is then immune to every court write.
     await ctx.runAction(internal.fantasyScores.settleGameweeks, {});
     report.settledImmune = await ctx.runMutation(internal.fantasyCourtSim.courtSimProbeSettled, {
@@ -669,10 +1102,16 @@ export const simulateCourtWalkthrough = internalAction({
     });
     if (rows.length !== before) fail("the resolver wrote versions on a settled gameweek.");
 
-    // 12 · purge clean.
+    // 12 · purge clean — the lag gameweek first, because the users it shares
+    //      with GW903 are what the last purge walks to reach the scaffolds.
+    const lagPurge = await ctx.runMutation(internal.fantasyCourtSim.purgeCourtSimData, {
+      gameweekId: lagGameweekId,
+      purgeUsers: false,
+    });
     const courtPurge = await ctx.runMutation(internal.fantasyCourtSim.purgeCourtSimData, {
       gameweekId,
     });
+    report.lagPurged = lagPurge;
     const synthPurge = await ctx.runMutation(internal.fantasyScoringDev.purgeSynthetic, {
       season: SIM_SEASON,
     });

@@ -45,6 +45,9 @@ const STATUS_BADGES: Record<
   passed: { label: "passed", color: "success" },
   failed: { label: "failed", color: "destructive" },
   died: { label: "died", color: "muted" },
+  // FW-CR1: unresolved at finality. Deliberately not a verdict colour — no
+  // ruling was applied and no score moved.
+  expired: { label: "expired", color: "muted" },
 };
 
 export function ClaimCard({
@@ -135,6 +138,14 @@ export function ClaimCard({
             rawYes: claim.tallies.rawYes,
             rawNo: claim.tallies.rawNo,
             n: claim.tallies.rawVotes,
+          })}
+        </p>
+      )}
+
+      {claim.status === "expired" && (
+        <p className="text-[11px] font-mono text-muted-foreground mt-2">
+          {t("weekend.claimExpiredNote", {
+            defaultValue: "unresolved at finality — no ruling applied, no score moved",
           })}
         </p>
       )}
@@ -309,7 +320,11 @@ export default function CourtScreen() {
   const trials = docket?.claims.filter((c) => c.status === "trial") ?? [];
   const decided =
     docket?.claims.filter(
-      (c) => c.status === "passed" || c.status === "failed" || c.status === "died",
+      (c) =>
+        c.status === "passed" ||
+        c.status === "failed" ||
+        c.status === "died" ||
+        c.status === "expired",
     ) ?? [];
 
   const section = (title: string, claims: CourtClaim[]) =>
