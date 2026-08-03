@@ -82,6 +82,22 @@ export function scrubEvent(event: ErrorEvent): ErrorEvent {
   return event;
 }
 
+/**
+ * Errors thrown by scripts that in-app browsers (Instagram/Facebook WebViews)
+ * inject into the page itself — their native bridge dying is not our bug and
+ * not actionable. Strings match as substrings, regexes as-is (Sentry
+ * inboundFilters semantics). Injected frames can carry our page URL as the
+ * filename, so URL-based filtering can't catch these; match on message.
+ */
+export const IGNORE_ERROR_PATTERNS: (string | RegExp)[] = [
+  // Android WebView: page JS posts to a bridge object the host app already
+  // tore down ("Error invoking postMessage: Java object is gone").
+  "Java object is gone",
+  // iOS WKWebView: injected pagehide handlers dereference
+  // window.webkit.messageHandlers after the handler was removed.
+  /window\.webkit\.messageHandlers/,
+];
+
 export function initSentry(): void {
   const dsn = import.meta.env.VITE_SENTRY_DSN;
   if (!import.meta.env.PROD || !dsn) return;
@@ -98,6 +114,7 @@ export function initSentry(): void {
     // default — drop it so nothing leaves the client unless an error occurs.
     integrations: (defaults) =>
       defaults.filter((integration) => integration.name !== "BrowserSession"),
+    ignoreErrors: IGNORE_ERROR_PATTERNS,
     beforeSend: scrubEvent,
     beforeBreadcrumb: scrubBreadcrumb,
   });

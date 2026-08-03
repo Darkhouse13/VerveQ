@@ -24,7 +24,12 @@ vi.mock("@sentry/react", () => ({
 
 import * as Sentry from "@sentry/react";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
-import { initSentry, scrubEvent, scrubBreadcrumb } from "@/lib/sentry";
+import {
+  initSentry,
+  scrubEvent,
+  scrubBreadcrumb,
+  IGNORE_ERROR_PATTERNS,
+} from "@/lib/sentry";
 import type { ErrorEvent } from "@sentry/react";
 
 // The path must flow through a parameter (same shape as
@@ -142,6 +147,35 @@ describe("PII scrub fails closed", () => {
     const scrubbed = scrubEvent(event);
     expect(scrubbed.breadcrumbs).toHaveLength(1);
     expect(scrubbed.breadcrumbs?.[0].category).toBe("navigation");
+  });
+});
+
+describe("in-app-browser bridge errors are ignored", () => {
+  // Sentry inboundFilters semantics: strings match as substrings, regexes
+  // as-is against the error message.
+  const ignored = (message: string) =>
+    IGNORE_ERROR_PATTERNS.some((pattern) =>
+      typeof pattern === "string"
+        ? message.includes(pattern)
+        : pattern.test(message),
+    );
+
+  it("matches the injected WebView bridge failures seen in production", () => {
+    expect(
+      ignored("Error invoking postMessage: Java object is gone"),
+    ).toBe(true);
+    expect(
+      ignored(
+        "undefined is not an object (evaluating 'window.webkit.messageHandlers')",
+      ),
+    ).toBe(true);
+  });
+
+  it("does not swallow real app errors", () => {
+    expect(ignored("boom: forced render error")).toBe(false);
+    expect(
+      ignored("Failed to fetch dynamically imported module: /assets/x.js"),
+    ).toBe(false);
   });
 });
 
