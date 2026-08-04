@@ -52,6 +52,31 @@ describe("compete grid advertises only startable modes", () => {
       "dailySurvival",
     ]);
   });
+
+  /**
+   * The ranked set is the honesty contract behind the grid's sections: a mode
+   * is `ranked` iff its finalizer writes ELO, and the screen derives RANKED vs
+   * JUST-FOR-FUN from that flag alone.
+   *
+   * CR-1 added Survival. `convex/games.ts completeSurvival` asserts ranked
+   * eligibility and writes `userRatings` with mode "survival", so filing it
+   * under a "these don't affect your rank" sub-line was a false claim. Pinning
+   * the exact set here means adding or removing a ranked mode is a deliberate
+   * edit, not a silent side effect of touching the tile config.
+   */
+  it("marks exactly the ELO-writing modes as ranked", () => {
+    expect(COMPETE_MODE_TILES.filter((t) => t.ranked).map((t) => t.key)).toEqual([
+      "quiz",
+      "survival",
+    ]);
+  });
+
+  it("keeps Daily Survival casual — the server refuses to rank it", () => {
+    // convex/games.ts rejects ranked completion for `dailyDate` runs, so the
+    // shared daily run must never carry the ranked flag.
+    const daily = COMPETE_MODE_TILES.find((t) => t.key === "dailySurvival");
+    expect(daily?.ranked).toBeUndefined();
+  });
 });
 
 describe("profile stat continuity", () => {

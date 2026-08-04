@@ -103,14 +103,15 @@
     "chooseMode": "Choose a mode",
     "modeGridHint": "{{sport}} · pick how you want to play",
     "sections": {
+      "today": "Today",
       "solo": "Solo modes",
       "ranked": "Ranked",
-      "casual": "Casual",
+      "casual": "Just for fun",
       "knowledge": "General knowledge",
       "friends": "With friends"
     },
     "rankedBadge": "Counts toward your ELO",
-    "casualHint": "Just for fun — these don't affect your rank."
+    "casualHint": "These don't affect your rank."
   },
   "modes": {
     "quiz": { "name": "Quiz", "desc": "10 questions, time-based scoring" },

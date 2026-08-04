@@ -117,12 +117,18 @@ describe("Daily Survival contract", () => {
     // Regression pin: the tile existed in COMPETE_MODE_TILES while the screen
     // rendered from its own key lists, so the mode shipped with no visible
     // entry point. The screen must look the tile up AND print its copy.
+    //
+    // CR-1 moved it into the TODAY section and made the copy generic, so the
+    // pin now follows that path: the key is in the rendered TODAY list, that
+    // list is resolved through the real tile config, and the row prints the
+    // tile's own i18n copy.
     const screen = readFileSync(
       "src/pages/shell/CompeteModeGridScreen.tsx",
       "utf8",
     );
-    expect(screen).toContain('key === "dailySurvival"');
-    expect(screen).toContain("modes.dailySurvival.name");
+    expect(screen).toMatch(/TODAY_KEYS\s*=\s*\[[^\]]*"dailySurvival"/);
+    expect(screen).toContain("tilesByKeys(TODAY_KEYS)");
+    expect(screen).toContain("modes.${m.key}.name");
   });
 
   it("rejects identities without a username", async () => {

@@ -15,11 +15,15 @@ export interface ModeTile {
   to: (sport: string) => string;
   /**
    * Whether finishing this mode moves the player's ELO — the SINGLE source of
-   * truth for the Compete grid's RANKED vs CASUAL split (the screen derives its
-   * sections from this flag, never a hardcoded key list). Set on a mode iff its
-   * server finalizer writes `userRatings` AND that ladder is surfaced to the
-   * player. Quiz only today: Survival also writes ELO, but its ladder isn't
-   * shown, so it stays casual until that's surfaced — a one-line flip here.
+   * truth for the Compete grid's RANKED vs JUST-FOR-FUN split (the screen
+   * derives its sections from this flag, never a hardcoded key list). Set on a
+   * mode iff its server finalizer writes `userRatings`.
+   *
+   * The test is "does it write ELO", NOT "is its ladder surfaced yet" (CR-1
+   * owner ruling). Survival writes ELO, so it is ranked: filing it under the
+   * casual section put it beneath a "these don't affect your rank" sub-line
+   * that was simply false. An unsurfaced ladder is a gap in Ranks, not a
+   * licence to mislabel the mode here.
    */
   ranked?: boolean;
 }
@@ -41,7 +45,12 @@ export const COMPETE_MODE_TILES: ModeTile[] = [
   { key: "arena", icon: Swords, color: "pink", to: () => SHELL_ROUTES.arena },
   { key: "duel", icon: Users, color: "yellow", to: () => SHELL_ROUTES.duels },
   // Survival + Blitz are migrated to the shell prototype layout (solo).
-  { key: "survival", icon: Heart, color: "primary", to: (s) => `/v2/survival?sport=${s}` },
+  // Survival is RANKED: its finalizer (convex/games.ts `completeSurvival`)
+  // asserts ranked eligibility and writes `userRatings` with mode "survival",
+  // and its route is `FullAccountRoute` like Quiz's — the two ranked modes gate
+  // identically. Daily Survival is explicitly exempt server-side (games.ts:198-202
+  // rejects `dailyDate` runs), which is why that tile belongs in TODAY, not here.
+  { key: "survival", icon: Heart, color: "primary", ranked: true, to: (s) => `/v2/survival?sport=${s}` },
   { key: "blitz", icon: Zap, color: "pink", to: (s) => `/v2/blitz?sport=${s}` },
   // Higher/Lower + VerveGrid are the curated solo modes with difficulty tiers, so
   // they route through the shared difficulty picker first (like Quiz) — the player
