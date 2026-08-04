@@ -24,7 +24,11 @@
 
   var TOKEN = "phc_BowB32VMjQxMAg3QLPUxm2yVpDVVKviT9z9bVZ7zY8rs";
   var API_HOST = "https://eu.i.posthog.com";
-  var PROD_HOSTS = ["verveq.com", "www.verveq.com"];
+  // Apex only. nginx 301s the www host to the apex before any HTML is served
+  // (SEO-1), so this file can never execute there; listing that host would
+  // only let stale or cached pages keep reporting into the baseline after the
+  // canonical consolidation.
+  var PROD_HOSTS = ["verveq.com"];
 
   var isProdHost = PROD_HOSTS.indexOf(location.hostname) !== -1;
   var isTest = /[?&]vq_test=1(?:&|$)/.test(location.search);

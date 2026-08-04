@@ -30,6 +30,7 @@ import NotFound from "./pages/NotFound";
 import { ShellGate } from "./components/shell/ShellGate";
 import { ShellLayout } from "./components/shell/ShellLayout";
 import { FirstRunLanguagePrompt } from "./components/shell/FirstRunLanguagePrompt";
+import { RouteMeta } from "./components/RouteMeta";
 import {
   UsernameOnlyRoute,
   FullAccountRoute,
@@ -132,6 +133,9 @@ const AppRoutes = () => (
         future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
       >
         <AnalyticsPageviews />
+        {/* Per-route title/description/canonical. Without it every SPA route
+            keeps the homepage head for the whole session. */}
+        <RouteMeta />
         {/* safe-pt covers the v1 screens, which render in normal document flow
             rather than inside one of the `fixed inset-0` shell frames. The
             frames are position:fixed and this wrapper creates no containing
