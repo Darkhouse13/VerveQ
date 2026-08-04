@@ -58,7 +58,20 @@ export function ShellNav() {
   const { t, tabs, isActive, go } = useTabs();
 
   return (
-    <nav className="md:hidden shrink-0 border-t-[3px] border-border bg-background pb-[env(safe-area-inset-bottom)]">
+    // Near-black surface so the bar reads as its own object rather than as
+    // more page — bg-background is the same cream as the canvas, which is why
+    // the home-indicator strip below it looked like an unmanaged gap even
+    // though the nav was already painting it.
+    //
+    // The bottom inset ABSORBS the row's own 10px rather than stacking on it
+    // (the buttons below drop to pt-2.5 and this carries their bottom
+    // padding), so a notched device gets 34px under the labels instead of 44.
+    // max() keeps the normal-tab case at exactly the 10px it has today.
+    // border-border is `0 0% 7%` — the same value the surface just became, so
+    // as a separator it disappeared exactly where it is needed: Home's cards
+    // are near-black too, and mid-scroll one can sit flush against the bar.
+    // border-background/40 is the codebase's existing on-dark divider tint.
+    <nav className="md:hidden shrink-0 border-t-[3px] border-background/40 bg-foreground pb-[max(0.625rem,env(safe-area-inset-bottom))]">
       <div className="flex max-w-md mx-auto">
         {tabs.map((tab) => {
           const active = isActive(tab);
@@ -67,12 +80,16 @@ export function ShellNav() {
               key={tab.path}
               onClick={() => go(tab)}
               className={cn(
-                "flex-1 flex flex-col items-center gap-0.5 py-2.5 transition-colors relative cursor-pointer active:opacity-60",
-                active ? "text-primary" : "text-muted-foreground",
+                "flex-1 flex flex-col items-center gap-0.5 pt-2.5 transition-colors relative cursor-pointer active:opacity-60",
+                // On near-black: lime for the active tab (the brand accent —
+                // the orange primary muddies against this surface), and the
+                // codebase's established muted-on-dark tint for the rest
+                // (matches GridStage's bg-foreground header).
+                active ? "text-accent" : "text-background/60",
               )}
             >
               {active && (
-                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-8 h-[3px] bg-primary rounded-b-full" />
+                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-8 h-[3px] bg-accent rounded-b-full" />
               )}
               <tab.icon size={22} strokeWidth={2.5} />
               <span className="text-[10px] font-heading font-bold uppercase">

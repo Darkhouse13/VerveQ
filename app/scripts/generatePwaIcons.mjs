@@ -35,6 +35,27 @@ const BRAND_INK = { r: 18, g: 18, b: 18, alpha: 1 };
 // the artwork is inset to fit that safe zone with the disc fully intact.
 const MASKABLE_SAFE_RATIO = 0.8;
 
+/**
+ * The disc's lime, read out of the source rather than hardcoded.
+ *
+ * It has to be the LOGO's exact lime, not the `--accent` token: the token is
+ * hsl(75 100% 55%) = rgb(198,255,26) while the disc is rgb(198,255,0), and
+ * filling a full-bleed field with the token would leave the disc's rim
+ * visible as a ring — precisely what full-bleed has to avoid. Sampling keeps
+ * the field welded to the artwork if the logo is ever redrawn.
+ *
+ * Sampled mid-height, 6% in from the left: inside the inscribed disc, clear of
+ * both the transparent corners and the VQ letterforms.
+ */
+async function discColor() {
+  const { data, info } = await sharp(SOURCE).raw().toBuffer({ resolveWithObject: true });
+  const x = Math.round(info.width * 0.06);
+  const y = Math.round(info.height * 0.5);
+  const i = (y * info.width + x) * info.channels;
+  if (data[i + 3] !== 255) throw new Error("sample point is not opaque — logo geometry changed");
+  return { r: data[i], g: data[i + 1], b: data[i + 2], alpha: 1 };
+}
+
 /** Transparent-background resize, for contexts that honour alpha. */
 async function writeTransparent(size, outName) {
   const out = path.join(publicDir, outName);
@@ -63,6 +84,36 @@ async function writeOnInk(size, outName, scale) {
   return out;
 }
 
+/**
+ * Full-bleed icon for iOS. iOS reads apple-touch-icon (never the manifest's
+ * icon list), ignores alpha, and applies its own corner mask — so it wants
+ * artwork that fills the square edge to edge. The PWA-1 disc-on-a-field
+ * version read as a small logo stranded in a dead square.
+ *
+ * The trick is that the field IS the disc's own lime: compositing the logo
+ * over it makes the disc dissolve into the background and leaves only the VQ
+ * mark, so the lime runs to all four edges while the mark keeps the exact
+ * proportions it has in the maskable icon (same `scale`).
+ */
+async function writeFullBleed(size, outName, scale) {
+  const out = path.join(publicDir, outName);
+  const lime = await discColor();
+  const artwork = Math.round(size * scale);
+  const logo = await sharp(SOURCE).resize(artwork, artwork, { fit: "contain" }).png().toBuffer();
+
+  await sharp({ create: { width: size, height: size, channels: 4, background: lime } })
+    .composite([{ input: logo, gravity: "centre" }])
+    // Drop the alpha channel outright — "opaque" for iOS means no alpha at
+    // all, not merely alpha=255. flatten() composites any transparency onto
+    // the field; removeAlpha() then drops the now-redundant channel, which
+    // flatten() on its own does not do for a 4-channel pipeline.
+    .flatten({ background: lime })
+    .removeAlpha()
+    .png({ compressionLevel: 9 })
+    .toFile(out);
+  return out;
+}
+
 const written = [
   // Standard any-purpose icons. Transparency preserved so the disc reads as a
   // disc wherever the launcher paints its own background.
@@ -70,8 +121,12 @@ const written = [
   await writeTransparent(512, "pwa-512x512.png"),
   // Maskable: opaque field + inset artwork, so no mask shape can clip the mark.
   await writeOnInk(512, "pwa-maskable-512x512.png", MASKABLE_SAFE_RATIO),
-  // iOS ignores alpha and composites onto black; flattening here makes the
-  // home-screen result deterministic instead of device-dependent.
+  // iOS home screen. Same mark scale as the maskable icon above, on a lime
+  // field that reaches every edge.
+  await writeFullBleed(180, "apple-touch-icon.png", MASKABLE_SAFE_RATIO),
+  // Superseded by apple-touch-icon.png above and no longer referenced by
+  // index.html; still emitted because vite.config.ts's `includeAssets` names
+  // it, and that file is outside this ticket's scope.
   await writeOnInk(180, "apple-touch-icon-180x180.png", 1),
 ];
 

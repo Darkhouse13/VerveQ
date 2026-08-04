@@ -23,7 +23,10 @@ export function BottomNav() {
   const badge = unread?.count ?? 0;
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 border-t-[3px] border-border bg-background safe-pb">
+    // Same near-black treatment as the v2 ShellNav, kept in step so the
+    // rollback seam doesn't hand back a cream bar. See ShellNav for why the
+    // surface changed and why the inset absorbs rather than stacks.
+    <nav className="fixed bottom-0 left-0 right-0 z-50 border-t-[3px] border-background/40 bg-foreground pb-[max(0.625rem,env(safe-area-inset-bottom))]">
       <div className="flex max-w-md mx-auto">
         {tabs.map((tab) => {
           const active = location.pathname === tab.path;
@@ -33,12 +36,12 @@ export function BottomNav() {
               key={tab.path}
               onClick={() => navigate(tab.path)}
               className={cn(
-                "flex-1 flex flex-col items-center gap-0.5 py-2.5 transition-colors relative cursor-pointer",
-                active ? "text-primary" : "text-muted-foreground"
+                "flex-1 flex flex-col items-center gap-0.5 pt-2.5 transition-colors relative cursor-pointer",
+                active ? "text-accent" : "text-background/60"
               )}
             >
               {active && (
-                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-8 h-[3px] bg-primary rounded-b-full" />
+                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-8 h-[3px] bg-accent rounded-b-full" />
               )}
               <div className="relative">
                 <tab.icon size={22} strokeWidth={2.5} />
