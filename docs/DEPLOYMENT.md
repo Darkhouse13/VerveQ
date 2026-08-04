@@ -43,21 +43,31 @@ master push whose frontend calls new Convex functions; until then those
 calls reject at runtime (surfaces built to the fail-closed convention, e.g.
 the Home draw card and THE WEEKEND teaser, simply stay hidden).
 
-**The two steps are sequential, not atomic.** Convex goes first, and the SSH
-step carries no `if:` condition, so it inherits the implicit `success()`:
+**There is no CI ordering to reason about — there is only one CI step.**
+Ticket 0.1 C4 removed `npx convex deploy` from the workflow, so the two
+releases are fully independent: the frontend ships automatically on push, the
+backend ships whenever the owner runs the command above, and neither gates,
+triggers, or rolls back the other. (An earlier revision of this file described
+a sequential Convex-then-frontend CI job with a `success()` dependency between
+the steps. That job no longer exists; the description was stale and has been
+removed. Where this file and `deploy.yml` disagree, the workflow is the truth
+— see the top of this section.)
 
-- Convex fails → the frontend step is skipped; nothing ships.
-- Convex succeeds, frontend fails → **the new backend is already live on prod
-  behind the old bundle**, and nothing rolls it back automatically. Recover by
-  re-running the frontend publish, or roll the backend back with its own
-  deploy.
-- Both succeed → there is still a window, between the two steps, where the new
-  backend serves the old frontend.
+What that independence actually costs you, and the resulting rule:
 
-Plan schema and API changes around that ordering: a Convex contract change
-always lands before the frontend that depends on it. Backward-compatible
-backend changes are safe; a breaking one is visible to live users for the
-length of the frontend build.
+- **Frontend pushed without its backend** → the new bundle calls Convex
+  functions that aren't deployed, and those calls reject at runtime until the
+  owner deploys. This is the common failure and the reason for the rule below.
+- **Backend deployed without its frontend** → the new backend serves the old
+  bundle, for as long as you leave it. Harmless if the change is
+  backward-compatible; user-visible immediately if it isn't.
+- **Frontend publish fails** → nothing ships; production keeps serving the
+  previous image. Roll forward or back with the publish/rollback commands
+  below.
+
+So: **a Convex contract change always lands before the frontend that depends
+on it**, and breaking backend changes want the two releases close together.
+Backward-compatible backend changes can ship whenever.
 
 `concurrency: group: verveq-deploy` with `cancel-in-progress: false`
 (`deploy.yml:20-22`) allows one deploy at a time and lets an in-flight run

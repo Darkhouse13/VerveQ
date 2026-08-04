@@ -7,6 +7,7 @@ import { initAnalytics } from "./lib/analytics";
 import { captureEntrySource } from "./lib/entrySource";
 import { armExitAbandonReporting } from "./lib/gameAnalytics";
 import { armPerfVitals } from "./lib/perfVitals";
+import { registerServiceWorker } from "./lib/pwa";
 import "./index.css";
 
 // Before first render so global handlers catch everything from frame one.
@@ -25,6 +26,9 @@ armExitAbandonReporting();
 // Field responsiveness data (worst INP, long tasks) — one summary event per
 // page lifetime on pagehide; no-ops wherever analytics itself no-ops.
 armPerfVitals();
+// App-shell service worker (Workbox, autoUpdate). Production builds only —
+// no sw.js is emitted under `vite dev`. Never intercepts Convex or PostHog.
+registerServiceWorker();
 
 createRoot(document.getElementById("root")!).render(
   <I18nextProvider i18n={i18n}>

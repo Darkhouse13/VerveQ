@@ -7,7 +7,18 @@
          tap targets sit inside the home-indicator gesture zone. -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <link rel="icon" type="image/png" href="/vq-logo.png" />
-    <link rel="apple-touch-icon" href="/vq-logo.png" />
+    <!-- iOS ignores the manifest's icon list and alpha channels alike, so it
+         gets its own pre-flattened 180x180 (scripts/generatePwaIcons.mjs). -->
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon-180x180.png" />
+    <!-- Home-screen launches run without Safari chrome. black-translucent puts
+         the app behind the status bar, which the viewport-fit=cover +
+         safe-area padding above already accounts for. -->
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="VerveQ" />
+    <!-- Matches the manifest's theme_color (near-black brand ink #121212). -->
+    <meta name="theme-color" content="#121212" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600;700&display=swap" />

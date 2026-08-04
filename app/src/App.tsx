@@ -8,6 +8,7 @@ import { AuthProvider } from "./contexts/AuthContext";
 import { ProtectedRoute, UsernameRequiredRoute } from "./components/ProtectedRoute";
 import { ErrorBoundary } from "./components/ErrorBoundary";
 import { AnalyticsPageviews } from "./components/AnalyticsPageviews";
+import { InstallPrompt } from "./components/InstallPrompt";
 // Flag-gated entry routing: v1 LoginScreen/HomeScreen when off, v2 shell
 // landing when VITE_V2_SHELL_ENABLED is on. Keeps "/" and "/home" as a clean
 // rollback seam (the only routes whose default destination the flag flips).
@@ -134,6 +135,9 @@ const AppRoutes = () => (
         <div className="max-w-md mx-auto min-h-screen relative">
           {/* One-time language chooser, overlays whatever screen loads first. */}
           <FirstRunLanguagePrompt />
+          {/* Add-to-home-screen bar. Renders nothing unless the browser can
+              actually install and the user hasn't already dismissed it. */}
+          <InstallPrompt />
           <Routes>
             <Route path="/" element={<EntryRoute />} />
             <Route
