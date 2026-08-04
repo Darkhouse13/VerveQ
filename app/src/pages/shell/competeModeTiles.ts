@@ -52,12 +52,15 @@ export const COMPETE_MODE_TILES: ModeTile[] = [
   // rejects `dailyDate` runs), which is why that tile belongs in TODAY, not here.
   { key: "survival", icon: Heart, color: "primary", ranked: true, to: (s) => `/v2/survival?sport=${s}` },
   { key: "blitz", icon: Zap, color: "pink", to: (s) => `/v2/blitz?sport=${s}` },
-  // Higher/Lower + VerveGrid are the curated solo modes with difficulty tiers, so
-  // they route through the shared difficulty picker first (like Quiz) — the player
-  // chooses easy/medium/hard up front and the picker deep-links into the v2 play
-  // screen with `?difficulty=`. Career Path has no tiers, so it launches directly.
-  { key: "higherLower", icon: TrendingUp, color: "success", to: (s) => `/difficulty?sport=${s}&mode=higher-lower` },
-  { key: "verveGrid", icon: Grid3X3, color: "blue", to: (s) => `/difficulty?sport=${s}&mode=verve-grid` },
+  // Higher/Lower + VerveGrid launch DIRECTLY, like Career Path. They used to
+  // route via the shared difficulty picker, which cost a cold visitor an extra
+  // screen before the mode and — while that picker was still gated — dropped
+  // them on "/" with no explanation (FR-0 Part 2.2). Both play screens already
+  // self-manage the tier: `parseDifficulty(null)` defaults to easy
+  // (lib/difficulty.ts), which is the tier the picker's own default led with.
+  // The picker stays reachable at /difficulty for the modes that still use it.
+  { key: "higherLower", icon: TrendingUp, color: "success", to: (s) => `/v2/higher-lower?sport=${s}` },
+  { key: "verveGrid", icon: Grid3X3, color: "blue", to: (s) => `/v2/verve-grid?sport=${s}` },
   { key: "careerPath", icon: Route, color: "yellow", to: (s) => `/v2/career-path?sport=${s}` },
   // Daily is migrated to the shell — reuses the Quiz prototype layout via the DAILY session.
   { key: "daily", icon: Timer, color: "primary", to: (s) => `/v2/daily?sport=${s}` },

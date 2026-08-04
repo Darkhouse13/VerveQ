@@ -377,8 +377,16 @@ describe("Guest account-required route contracts", () => {
 
     // WaitingRoomScreen/LiveMatchScreen left this list 2026-07 when the dead
     // Live Match surface was removed outright (routes deleted, not un-guarded).
+    //
+    // DifficultyScreen left it 2026-08 (FR-1A) because it never belonged: the
+    // invariant here is "session-writing game routes", and the picker writes
+    // nothing — it imports no Convex client, runs no mutation or query, and
+    // only reads query params and navigates. Its guard's logged-out branch is a
+    // bare `Navigate to="/"` with no ?next=, so keeping it bought no backend
+    // protection and cost cold visitors their intent on five Compete tiles
+    // (FR-0 Part 2.2). The screens below all DO provision or write sessions, so
+    // they stay guarded.
     for (const screen of [
-      "DifficultyScreen",
       "QuizScreen",
       "SurvivalScreen",
       "ChallengeScreen",

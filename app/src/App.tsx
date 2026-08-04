@@ -186,14 +186,18 @@ const AppRoutes = () => (
                 </V2Redirect>
               }
             />
-            <Route
-              path="/difficulty"
-              element={
-                <UsernameRequiredRoute>
-                  <DifficultyScreen />
-                </UsernameRequiredRoute>
-              }
-            />
+            {/* The difficulty picker is PURE CLIENT STATE: it reads query params
+                and navigates — it calls no Convex function and needs no
+                identity (see pages/DifficultyScreen). It used to sit behind the
+                v1 UsernameRequiredRoute, whose logged-out branch is a bare
+                `Navigate to="/"` with no ?next=, so a cold visitor tapping
+                Quiz / Knowledge Quiz / Which Came First on the Compete grid was
+                silently dumped on the landing page with their intent discarded
+                (FR-0 Part 2.2). Ungated, the picker renders for everyone and
+                the real gate stays exactly where the server enforces it — one
+                step later, on the mode route, which preserves intent via
+                ?next=. */}
+            <Route path="/difficulty" element={<DifficultyScreen />} />
             <Route
               path="/quiz"
               element={
@@ -466,13 +470,19 @@ const AppRoutes = () => (
                 </ShellGate>
               }
             />
+            {/* Forge is FULL-ACCOUNT, not username-only: every write asserts a
+                full account server-side (convex/forge.ts submitQuestion /
+                reviewQuestion) and its reads return empty for anyone else. The
+                username-only guard here admitted users the backend then
+                rejected, so the UI showed an empty Forge that errored on submit
+                (FR-0 Part 4c). The route now mirrors the server's own rule. */}
             <Route
               path="/v2/forge"
               element={
                 <ShellGate>
-                  <UsernameOnlyRoute>
+                  <FullAccountRoute>
                     <ShellLayout embed><ForgeScreen embedded /></ShellLayout>
-                  </UsernameOnlyRoute>
+                  </FullAccountRoute>
                 </ShellGate>
               }
             />
