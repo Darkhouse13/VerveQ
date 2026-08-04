@@ -87,6 +87,11 @@ ENV_PREFIX="VITE_CONVEX_URL='$CONVEX_URL' VITE_RELEASE_SHA='$RELEASE_SHA'"
 [[ -n "${VITE_CONVEX_SITE_URL:-}" ]] && ENV_PREFIX="$ENV_PREFIX VITE_CONVEX_SITE_URL='$VITE_CONVEX_SITE_URL'"
 [[ -n "${VITE_V2_SHELL_ENABLED:-}" ]] && ENV_PREFIX="$ENV_PREFIX VITE_V2_SHELL_ENABLED='$VITE_V2_SHELL_ENABLED'"
 [[ -n "${VITE_DRAW_ENABLED:-}" ]] && ENV_PREFIX="$ENV_PREFIX VITE_DRAW_ENABLED='$VITE_DRAW_ENABLED'"
+# FR-1B anonymous-first identity. Leave UNSET until the Convex backend carrying
+# lib/authz.assertSessionUser is live on prod: the frontend mints silent
+# anonymous sessions only when this is 'true', and an older backend still
+# answers those sessions with "Username required".
+[[ -n "${VITE_ANONYMOUS_FIRST_ENABLED:-}" ]] && ENV_PREFIX="$ENV_PREFIX VITE_ANONYMOUS_FIRST_ENABLED='$VITE_ANONYMOUS_FIRST_ENABLED'"
 [[ -n "${VITE_SENTRY_DSN:-}" ]] && ENV_PREFIX="$ENV_PREFIX VITE_SENTRY_DSN='$VITE_SENTRY_DSN'"
 [[ -n "${VITE_POSTHOG_KEY:-}" ]] && ENV_PREFIX="$ENV_PREFIX VITE_POSTHOG_KEY='$VITE_POSTHOG_KEY'"
 [[ -n "${VITE_POSTHOG_HOST:-}" ]] && ENV_PREFIX="$ENV_PREFIX VITE_POSTHOG_HOST='$VITE_POSTHOG_HOST'"

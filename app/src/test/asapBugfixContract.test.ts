@@ -329,8 +329,14 @@ describe("ASAP bugfix contracts", () => {
     })) as Record<string, unknown>;
 
     expect(res).toMatchObject({ score: 700, correctCount: 7, wrongCount: 1 });
-    // Anonymous players are not ranked-eligible, so no leaderboard row is written.
-    expect(insert).not.toHaveBeenCalled();
+    // FR-1B: the run is recorded for an anonymous player too. Persistence and
+    // publication are separate — `getHighScores` decides who is LISTED, and
+    // gating the insert here would have thrown the score away, leaving a later
+    // name claim with nothing to reveal.
+    expect(insert).toHaveBeenCalledWith(
+      "blitzScores",
+      expect.objectContaining({ userId: "stub_user", score: 700 }),
+    );
   });
 
   it("blitz endGame still refuses to bank a run with real time left on the clock", async () => {

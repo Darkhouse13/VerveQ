@@ -386,14 +386,22 @@ describe("Guest account-required route contracts", () => {
     // protection and cost cold visitors their intent on five Compete tiles
     // (FR-0 Part 2.2). The screens below all DO provision or write sessions, so
     // they stay guarded.
+    //
+    // DailyResultScreen/BlitzResultScreen left it 2026-08 (FR-1B) for the same
+    // reason as DifficultyScreen: they provision nothing. Both render a result
+    // handed to them in `location.state` — no start mutation, no session write.
+    // Their run was already played, under a guard, on the route that DID write
+    // it. They moved DOWN to SessionRoute (still guarded, at the identity tier)
+    // because the v1 username gate turned an anonymous player's finish line
+    // into a wall, and because the post-run claim prompt lives on these two
+    // screens and could never render above that tier. They are asserted at
+    // their new tier in anonymousFirstIdentityContract.test.ts.
     for (const screen of [
       "QuizScreen",
       "SurvivalScreen",
       "ChallengeScreen",
       "DailyQuizScreen",
-      "DailyResultScreen",
       "BlitzScreen",
-      "BlitzResultScreen",
       "ForgeScreen",
       "HigherLowerScreen",
       "VerveGridScreen",

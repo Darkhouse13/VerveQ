@@ -95,6 +95,17 @@ interface AuthContextValue {
   /** Start a real Convex anonymous session (replaces the tab-local guest for v2). */
   startAnonymousSession: () => Promise<void>;
   /**
+   * Guarantee a server identity WITHOUT any UI (FR-1B rung 1). Resolves true
+   * once `users.me` is visible — either because the visitor already had a
+   * session or because one was silently minted here. Resolves false when
+   * minting is refused (the IP permit gate) or never propagates; the caller
+   * must then fall back to the account chooser rather than dead-end.
+   *
+   * Never navigates, never opens a modal, and never throws: a guard renders on
+   * the result, so a rejection has to be a value, not an exception.
+   */
+  ensureSession: () => Promise<boolean>;
+  /**
    * Claim a username for the current anonymous session (no password). Rejects
    * duplicates with no auto-suffixing. Passes a persisted device nonce and the
    * optional invite code for server-side rate limiting / scoping.
@@ -524,6 +535,45 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
+  // Block until ANY identity is visible to queries (anonymous or credentialed).
+  // Same propagation window as waitForAnonymousSession, but tier-agnostic: this
+  // one only answers "can the caller safely fire a mutation now?".
+  const waitForAnySession = useCallback(async (): Promise<boolean> => {
+    const deadline = Date.now() + ANON_PROPAGATION_TIMEOUT_MS;
+    for (;;) {
+      if (userRef.current != null) return true;
+      if (Date.now() >= deadline) return false;
+      await wait(ANON_PROPAGATION_POLL_MS);
+    }
+  }, []);
+
+  // Silent anonymous minting. Deduped through a ref-held promise because the
+  // guard calls this from an effect: React 18 StrictMode double-invokes it in
+  // dev, and two concurrent callers would otherwise mint two identities (and
+  // burn two IP permits) for one visitor.
+  const mintingRef = useRef<Promise<boolean> | null>(null);
+  const ensureSession = useCallback(async (): Promise<boolean> => {
+    if (userRef.current != null) return true;
+    if (mintingRef.current) return mintingRef.current;
+    const attempt = (async () => {
+      try {
+        await startAnonymousSession();
+        // The session is worthless to callers until `users.me` resolves — the
+        // signal every server handler's getAuthUserId depends on.
+        return await waitForAnySession();
+      } catch {
+        // Permit gate, offline, storage-blocked: all are "no session", and the
+        // caller's fallback (the account chooser, intent preserved) is the
+        // same for each. The error itself is not actionable here.
+        return false;
+      } finally {
+        mintingRef.current = null;
+      }
+    })();
+    mintingRef.current = attempt;
+    return attempt;
+  }, [startAnonymousSession, waitForAnySession]);
+
   // Claim a username for the current anonymous session. Right after
   // signIn("anonymous") the server may not yet see the anonymous identity, so
   // we wait on the reactive auth state (users.me) to propagate FIRST rather
@@ -794,6 +844,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       isFullAccount,
       username: serverUsername,
       startAnonymousSession,
+      ensureSession,
       claimUsername,
       upgradeAccount,
       signUp,
@@ -816,6 +867,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       isFullAccount,
       serverUsername,
       startAnonymousSession,
+      ensureSession,
       claimUsername,
       upgradeAccount,
       signUp,

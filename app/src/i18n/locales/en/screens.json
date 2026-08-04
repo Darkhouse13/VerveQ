@@ -516,6 +516,21 @@
     "settingUp": "Setting up…",
     "footer": "Username-only play is casual and unranked. You can add an email and password later to save your progress and go ranked."
   },
+  "claimName": {
+    "titleBoard": "You're not on the board yet",
+    "title": "You're playing without a name",
+    "bodyBoard": "Claim a name and this score goes on the board.",
+    "body": "Claim one and your results carry it — on leaderboards, in duels and arenas.",
+    "cta": "CLAIM MY NAME",
+    "dismiss": "keep playing",
+    "placeholder": "username",
+    "label": "Username",
+    "rule": "3–24 characters: lowercase letters, numbers, underscores.",
+    "invalid": "Username must be 3-24 lowercase letters, numbers, or underscores.",
+    "genericError": "Could not claim that name. Try another one.",
+    "doneOnBoard": "You're on the board as @{{handle}}.",
+    "done": "Your name is @{{handle}}."
+  },
   "authError": {
     "invalid_username": "Username must be 3-24 lowercase letters, numbers, or underscores.",
     "username_taken": "That username is taken. Try another one.",

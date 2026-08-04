@@ -69,7 +69,7 @@ export function UsernameOnlyOnboarding({
   const {
     accountState,
     hasUsername,
-    startAnonymousSession,
+    ensureSession,
     claimUsername,
   } = useAuth();
   const [username, setUsername] = useState("");
@@ -104,10 +104,17 @@ export function UsernameOnlyOnboarding({
       }
       setSubmitting(true);
       try {
-        // Per the design flow: sign in anonymously, THEN claim the username.
-        // claimUsername() rides out the brief auth-propagation window itself.
-        if (accountState === "loggedOut") {
-          await startAnonymousSession();
+        // Per the design flow: get a session, THEN claim the username. This
+        // goes through the SAME ensureSession() the silent path uses, so
+        // minting has one implementation (and one in-flight dedupe) whether it
+        // is triggered by this form or by SessionRoute — the form is no longer
+        // the sole owner of anonymous sign-in. claimUsername() rides out the
+        // brief auth-propagation window itself.
+        if (accountState === "loggedOut" && !(await ensureSession())) {
+          throw new AuthError(
+            "unknown",
+            "Could not establish a guest session. Please try again.",
+          );
         }
         await claimUsername(normalized, { inviteCode });
         // Fires only on a claim that actually SUCCEEDED. Deliberately not
@@ -140,7 +147,7 @@ export function UsernameOnlyOnboarding({
       accountState,
       normalized,
       inviteCode,
-      startAnonymousSession,
+      ensureSession,
       claimUsername,
       onComplete,
       t,

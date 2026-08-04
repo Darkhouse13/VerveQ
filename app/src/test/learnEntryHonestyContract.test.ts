@@ -197,10 +197,15 @@ describe("Learn entry honesty (source contract)", () => {
 describe("Learn route containment (source contract)", () => {
   const app = read("../App.tsx");
 
+  // "A server identity" is literal here: learn.ts gates every function with
+  // `requireUserId` and reads no username anywhere, so SessionRoute (any
+  // session, anonymous included) is exactly as strict as the backend.
+  // UsernameOnlyRoute was stricter than the thing it guarded — FR-1A logged
+  // that mismatch and FR-1B closed it.
   it("gates the v2 learn surfaces behind a server identity", () => {
     for (const route of ["/v2/learn", "/v2/learn/run", "/v2/learn/review", "/v2/learn/mastery"]) {
       const line = app.split("\n").find((l) => l.includes(`path="${route}"`));
-      expect(line, `${route} should be gated`).toContain("UsernameOnlyRoute");
+      expect(line, `${route} should be gated`).toContain("SessionRoute");
     }
   });
 

@@ -4,7 +4,7 @@ import { getAuthUserId } from "@convex-dev/auth/server";
 import { findBestMatch } from "./lib/fuzzy";
 import {
   assertFullAccountUser,
-  assertUsernameRequiredUser,
+  assertSessionUser,
 } from "./lib/authz";
 import { getTodayUTC } from "./lib/daily";
 import { recordPlayForStreak } from "./lib/streaks";
@@ -1248,9 +1248,9 @@ export const startDailyGame = mutation({
   handler: async (ctx) => {
     const userId = await getAuthUserId(ctx);
     if (!userId) throw new Error("Not authenticated");
-    // Username tier (anonymous OK): the daily is the habit loop and never
-    // writes ELO — one-attempt-per-day only needs a server identity.
-    await assertUsernameRequiredUser(ctx, userId);
+    // Identity tier: the daily is the habit loop and never writes ELO —
+    // one-attempt-per-day only needs a server identity, anonymous included.
+    await assertSessionUser(ctx, userId);
 
     const date = getTodayUTC();
     const existing = await ctx.db

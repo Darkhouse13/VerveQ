@@ -32,6 +32,7 @@ import { ShellLayout } from "./components/shell/ShellLayout";
 import { FirstRunLanguagePrompt } from "./components/shell/FirstRunLanguagePrompt";
 import { RouteMeta } from "./components/RouteMeta";
 import {
+  SessionRoute,
   UsernameOnlyRoute,
   FullAccountRoute,
 } from "./components/shell/ShellRouteGuards";
@@ -324,9 +325,14 @@ const AppRoutes = () => (
             <Route
               path="/daily-results"
               element={
-                <UsernameRequiredRoute>
+                /* The exit screen of a SessionRoute mode, so it sits on the
+                   same tier as the mode itself. Under the v1 username gate an
+                   anonymous player finished their run and hit a wall instead of
+                   their score — and the post-run claim prompt, which lives on
+                   this screen, could never render. */
+                <SessionRoute>
                   <DailyResultScreen />
-                </UsernameRequiredRoute>
+                </SessionRoute>
               }
             />
             <Route
@@ -342,9 +348,14 @@ const AppRoutes = () => (
             <Route
               path="/blitz-results"
               element={
-                <UsernameRequiredRoute>
+                /* The exit screen of a SessionRoute mode, so it sits on the
+                   same tier as the mode itself. Under the v1 username gate an
+                   anonymous player finished their run and hit a wall instead of
+                   their score — and the post-run claim prompt, which lives on
+                   this screen, could never render. */
+                <SessionRoute>
                   <BlitzResultScreen />
-                </UsernameRequiredRoute>
+                </SessionRoute>
               }
             />
             {/* Live Match was removed 2026-07: nothing in the product could
@@ -511,10 +522,10 @@ const AppRoutes = () => (
               }
             />
             {/* Learn v2 — Learn pillar (entry / run / review / mastery). */}
-            <Route path="/v2/learn" element={<ShellGate><UsernameOnlyRoute><LearnEntryScreen /></UsernameOnlyRoute></ShellGate>} />
-            <Route path="/v2/learn/run" element={<ShellGate><UsernameOnlyRoute><LearnRunnerScreen /></UsernameOnlyRoute></ShellGate>} />
-            <Route path="/v2/learn/review" element={<ShellGate><UsernameOnlyRoute><LearnReviewScreen /></UsernameOnlyRoute></ShellGate>} />
-            <Route path="/v2/learn/mastery" element={<ShellGate><UsernameOnlyRoute><LearnMasteryScreen /></UsernameOnlyRoute></ShellGate>} />
+            <Route path="/v2/learn" element={<ShellGate><SessionRoute><LearnEntryScreen /></SessionRoute></ShellGate>} />
+            <Route path="/v2/learn/run" element={<ShellGate><SessionRoute><LearnRunnerScreen /></SessionRoute></ShellGate>} />
+            <Route path="/v2/learn/review" element={<ShellGate><SessionRoute><LearnReviewScreen /></SessionRoute></ShellGate>} />
+            <Route path="/v2/learn/mastery" element={<ShellGate><SessionRoute><LearnMasteryScreen /></SessionRoute></ShellGate>} />
             {/* In-game prototype layout — migrated modes. Gating reflects the
                 server's eligibility (convex/lib/authz.ts): ranked modes require a
                 full account; casual/social modes admit anyone with a username
@@ -523,8 +534,8 @@ const AppRoutes = () => (
             <Route path="/v2/quiz" element={<ShellGate><FullAccountRoute><QuizPlayScreen /></FullAccountRoute></ShellGate>} />
             <Route path="/v2/survival" element={<ShellGate><FullAccountRoute><SurvivalPlayScreen /></FullAccountRoute></ShellGate>} />
             {/* Casual/social: username-only playable. */}
-            <Route path="/v2/blitz" element={<ShellGate><UsernameOnlyRoute><BlitzPlayScreen /></UsernameOnlyRoute></ShellGate>} />
-            <Route path="/v2/higher-lower" element={<ShellGate><UsernameOnlyRoute><HigherLowerPlayScreen /></UsernameOnlyRoute></ShellGate>} />
+            <Route path="/v2/blitz" element={<ShellGate><SessionRoute><BlitzPlayScreen /></SessionRoute></ShellGate>} />
+            <Route path="/v2/higher-lower" element={<ShellGate><SessionRoute><HigherLowerPlayScreen /></SessionRoute></ShellGate>} />
             {/* Career Path is the marketed mode: GUEST-PLAYABLE with zero login.
                 No route guard — a logged-out visitor plays instantly via a client
                 guestToken (careerPath.ts accepts unauthenticated guests). */}
@@ -533,15 +544,15 @@ const AppRoutes = () => (
                 Public redirect into Career Path with attribution preserved
                 (a bare hit gets ?ref=play); see lib/playShortLink.ts. */}
             <Route path="/play" element={<PlayShortLinkRoute />} />
-            <Route path="/v2/verve-grid" element={<ShellGate><UsernameOnlyRoute><VerveGridPlayScreen /></UsernameOnlyRoute></ShellGate>} />
+            <Route path="/v2/verve-grid" element={<ShellGate><SessionRoute><VerveGridPlayScreen /></SessionRoute></ShellGate>} />
             {/* Daily reuses the migrated Quiz view but runs the DAILY session.
                 Username tier (anonymous OK): the daily is the habit loop, so a
                 one-tap guest must reach it — attempts and streaks key off the
                 server identity, and the daily never touches ELO. */}
-            <Route path="/v2/daily" element={<ShellGate><UsernameOnlyRoute><DailyQuizPlayScreen /></UsernameOnlyRoute></ShellGate>} />
+            <Route path="/v2/daily" element={<ShellGate><SessionRoute><DailyQuizPlayScreen /></SessionRoute></ShellGate>} />
             {/* Daily Survival — the same SurvivalPlayScreen running the shared
                 daily queue. Username tier like the daily quiz: casual, no ELO. */}
-            <Route path="/v2/daily-survival" element={<ShellGate><UsernameOnlyRoute><SurvivalPlayScreen daily /></UsernameOnlyRoute></ShellGate>} />
+            <Route path="/v2/daily-survival" element={<ShellGate><SessionRoute><SurvivalPlayScreen daily /></SessionRoute></ShellGate>} />
             {/* Arena (multi-user) is username-only playable; the screen onboards
                 inline so a shared invite link never drops its lobby code. */}
             <Route path="/v2/arena/:code" element={<ShellGate><ArenaPlayScreen /></ShellGate>} />

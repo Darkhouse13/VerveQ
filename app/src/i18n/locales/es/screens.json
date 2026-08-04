@@ -516,6 +516,21 @@
     "settingUp": "Configurando…",
     "footer": "El juego solo con nombre de usuario es casual y sin clasificar. Puedes añadir un correo y una contraseña más tarde para guardar tu progreso y pasar a clasificatorio."
   },
+  "claimName": {
+    "titleBoard": "Aún no estás en la tabla",
+    "title": "Estás jugando sin nombre",
+    "bodyBoard": "Reclama un nombre y esta puntuación entra en la tabla.",
+    "body": "Reclama uno y tus resultados lo llevarán — en tablas, duelos y arenas.",
+    "cta": "RECLAMAR MI NOMBRE",
+    "dismiss": "seguir jugando",
+    "placeholder": "usuario",
+    "label": "Nombre de usuario",
+    "rule": "3–24 caracteres: minúsculas, números y guiones bajos.",
+    "invalid": "El nombre debe tener 3-24 minúsculas, números o guiones bajos.",
+    "genericError": "No se pudo reclamar ese nombre. Prueba con otro.",
+    "doneOnBoard": "Estás en la tabla como @{{handle}}.",
+    "done": "Tu nombre es @{{handle}}."
+  },
   "authError": {
     "invalid_username": "El nombre de usuario debe tener de 3 a 24 letras minúsculas, números o guiones bajos.",
     "username_taken": "Ese nombre de usuario ya está cogido. Prueba con otro.",

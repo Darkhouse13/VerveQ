@@ -3,6 +3,7 @@ import { NeoButton } from "@/components/neo/NeoButton";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Zap } from "lucide-react";
+import { ClaimNamePrompt } from "@/components/shell/onboarding/ClaimNamePrompt";
 
 interface BlitzResultState {
   score: number;
@@ -46,6 +47,11 @@ export default function BlitzResultScreen() {
           <p className="font-heading font-bold text-lg">{t("blitzResult.newHighScore")}</p>
         </NeoCard>
       )}
+
+      {/* Blitz HAS a public board, and this run's score row is already
+          written — claiming a name is what makes it visible, at the score
+          just set. So the board promise here is literally true. */}
+      <ClaimNamePrompt board="blitz" source="blitz" />
 
       <div className="grid grid-cols-2 gap-2.5 w-full mb-8">
         {stats.map((s) => (

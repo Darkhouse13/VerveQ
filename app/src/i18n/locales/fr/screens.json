@@ -516,6 +516,21 @@
     "settingUp": "Configuration…",
     "footer": "Le jeu en pseudo uniquement est détente et non classé. Tu pourras ajouter un e-mail et un mot de passe plus tard pour sauvegarder ta progression et passer en classé."
   },
+  "claimName": {
+    "titleBoard": "Tu n'es pas encore au classement",
+    "title": "Tu joues sans nom",
+    "bodyBoard": "Choisis un nom et ce score entre au classement.",
+    "body": "Choisis-en un et tes résultats le porteront — classements, duels et arènes.",
+    "cta": "CHOISIR MON NOM",
+    "dismiss": "continuer à jouer",
+    "placeholder": "pseudo",
+    "label": "Pseudo",
+    "rule": "3–24 caractères : minuscules, chiffres, tirets bas.",
+    "invalid": "Le pseudo doit faire 3-24 minuscules, chiffres ou tirets bas.",
+    "genericError": "Impossible de réserver ce nom. Essaie-en un autre.",
+    "doneOnBoard": "Tu es au classement sous @{{handle}}.",
+    "done": "Ton nom est @{{handle}}."
+  },
   "authError": {
     "invalid_username": "Le pseudo doit comporter 3 à 24 lettres minuscules, chiffres ou tirets bas.",
     "username_taken": "Ce pseudo est déjà pris. Essaies-en un autre.",

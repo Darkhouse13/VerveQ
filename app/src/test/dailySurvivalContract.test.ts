@@ -131,15 +131,29 @@ describe("Daily Survival contract", () => {
     expect(screen).toContain("modes.${m.key}.name");
   });
 
-  it("rejects identities without a username", async () => {
+  // FR-1B: identity tier, not username tier. Daily Survival never writes ELO
+  // and keys its one-attempt-per-day rule on `userId`, so a nameless anonymous
+  // session plays; the name claim moves to the result screen.
+  it("admits a nameless anonymous identity", async () => {
     authState.userId = "bare_user";
     const fake = makeFakeDb({
       bare_user: { _table: "users", isAnonymous: true },
     });
 
+    const started = (await handlerOf(survivalSessions.startDailyGame)(
+      { db: fake.db },
+      {},
+    )) as { resumed: boolean; challenge: { initials: string } };
+    expect(started.resumed).toBe(false);
+    expect(started.challenge.initials.length).toBeGreaterThanOrEqual(2);
+  });
+
+  it("still rejects a run with no session at all", async () => {
+    authState.userId = null;
+    const fake = makeFakeDb({});
     await expect(
       handlerOf(survivalSessions.startDailyGame)({ db: fake.db }, {}),
-    ).rejects.toThrow(/username required/i);
+    ).rejects.toThrow(/not authenticated/i);
   });
 
   it("serves every player the same frozen run and enforces one attempt per day", async () => {

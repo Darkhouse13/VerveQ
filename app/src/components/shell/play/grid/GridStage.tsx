@@ -11,7 +11,7 @@
  * The board owns the prompt (the row × column criteria). The rails are ambient
  * (status + your picks) and content-blind by contract (answer-leak guard).
  */
-import { useEffect, useState } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import { LogOut } from "lucide-react";
 import { GridRunPanel, GridPickLogPanel, GridStrip } from "@/components/shell/play/ambient/grid";
@@ -26,6 +26,12 @@ interface GridStageProps {
   subtitle?: string;
   onExit: () => void;
   onHome: () => void;
+  /**
+   * Optional pre-board slot, above the HUD strip on mobile and above the board
+   * on desktop. Used for the pre-run tier picker; the stage stays presentation
+   * -only and does not know what the node means.
+   */
+  header?: ReactNode;
 }
 
 /** True below the md breakpoint — drives the board's compact sizing, live on resize. */
@@ -43,7 +49,7 @@ function useIsCompact(): boolean {
   return compact;
 }
 
-export function GridStage({ vm, subtitle, onExit, onHome }: GridStageProps) {
+export function GridStage({ vm, subtitle, onExit, onHome, header }: GridStageProps) {
   const { t } = useTranslation("play");
   const isCompact = useIsCompact();
   const stats: GridRunStats = {
@@ -93,13 +99,15 @@ export function GridStage({ vm, subtitle, onExit, onHome }: GridStageProps) {
 
         {/* mobile HUD strip */}
         <div className="md:hidden px-3 pt-3">
+          {header}
           <GridStrip stats={stats} />
         </div>
 
         {/* board centerpiece — top-aligned on mobile so the board sits directly
             under the HUD strip (no mid-screen gap); centered on desktop. */}
-        <div className="flex-1 min-h-0 flex items-start md:items-center justify-center p-3 md:p-0 overflow-hidden">
-          <div className="w-full min-w-0 max-w-[32rem] md:max-w-none md:h-full grid place-items-center">
+        <div className="flex-1 min-h-0 flex flex-col items-stretch md:items-stretch justify-start md:justify-center p-3 md:p-0 overflow-hidden">
+          {header && <div className="hidden md:block shrink-0">{header}</div>}
+          <div className="w-full min-w-0 max-w-[32rem] md:max-w-none md:flex-1 md:min-h-0 mx-auto grid place-items-center">
             <GridBoard
               rows={vm.rows}
               cols={vm.cols}

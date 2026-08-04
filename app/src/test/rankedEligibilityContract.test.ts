@@ -177,19 +177,45 @@ describe("ranked eligibility guardrail", () => {
     );
   });
 
-  it("still rejects Daily attempts from identities without a username", async () => {
+  // FR-1B drops the Daily one more rung, from username to IDENTITY. No daily
+  // handler reads `username` — every attempt, result and streak write keys on
+  // `userId` — so a silently minted anonymous session is enough to play, and
+  // the name is asked for AFTER the run (the result-screen claim prompt)
+  // instead of blocking the way in.
+  it("admits a nameless anonymous identity to the Daily", async () => {
     authState.userId = "bare_user";
+    const insert = vi.fn(async () => "attempt_1");
     const ctx = {
       db: {
         get: vi.fn(async () => ({ _id: "bare_user", isAnonymous: true })),
+        query: () => ({
+          withIndex: () => ({ first: async () => null }),
+        }),
+        insert,
       },
     };
 
+    const result = (await handlerOf(dailyChallenge.startAttempt)(ctx, {
+      sport: "football",
+      mode: "quiz",
+    })) as { attemptId: string };
+
+    expect(result.attemptId).toBe("attempt_1");
+    // The attempt is real and owned — the score it will carry is exactly the
+    // score a later name claim publishes.
+    expect(insert).toHaveBeenCalledWith(
+      "dailyAttempts",
+      expect.objectContaining({ userId: "bare_user", mode: "quiz" }),
+    );
+  });
+
+  it("still rejects a Daily attempt with no session at all", async () => {
+    authState.userId = null;
     await expect(
-      handlerOf(dailyChallenge.startAttempt)(ctx, {
-        sport: "football",
-        mode: "quiz",
-      }),
-    ).rejects.toThrow(/username required/i);
+      handlerOf(dailyChallenge.startAttempt)(
+        { db: { get: vi.fn() } },
+        { sport: "football", mode: "quiz" },
+      ),
+    ).rejects.toThrow(/not authenticated/i);
   });
 });

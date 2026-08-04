@@ -1,12 +1,16 @@
 import { internalMutation, mutation, query, type MutationCtx } from "./_generated/server";
 import { v } from "convex/values";
 import { getAuthUserId } from "@convex-dev/auth/server";
-// The daily is username-tier (anonymous OK): it is the habit loop, it never
-// writes ELO, and attempts/streaks key off the server identity — so a one-tap
-// guest with a username may play. Ranked modes keep their full-account gates.
+// The daily is IDENTITY-tier (FR-1B): it is the habit loop, it never writes
+// ELO, and every attempt/streak write keys off `userId` alone — no handler
+// below reads `username`. So a silently-minted anonymous session may play,
+// and the name claim happens after the run as a reward, not before it as a
+// toll. Ranked modes keep their full-account gates; public boards keep their
+// own rung-2 rule (lib/authz.isBoardEligibleUserDoc), so an anonymous run
+// records a real score that simply is not listed until a name is claimed.
 import {
-  assertUsernameRequiredUser,
-  isUsernameRequiredUserDoc,
+  assertSessionUser,
+  isSessionUserDoc,
 } from "./lib/authz";
 import { assertClientSport } from "./lib/sports";
 import { ensureDailySurvivalChallenge } from "./survivalSessions";
@@ -472,7 +476,7 @@ export const getAttemptStatus = query({
   handler: async (ctx, { sport, mode }) => {
     const userId = await getAuthUserId(ctx);
     if (!userId) return null;
-    if (!isUsernameRequiredUserDoc(await ctx.db.get(userId))) return null;
+    if (!isSessionUserDoc(await ctx.db.get(userId))) return null;
 
     const date = getTodayUTC();
     const now = Date.now();
@@ -514,7 +518,7 @@ export const startAttempt = mutation({
 
     const userId = await getAuthUserId(ctx);
     if (!userId) throw new Error("Not authenticated");
-    await assertUsernameRequiredUser(ctx, userId);
+    await assertSessionUser(ctx, userId);
 
     const date = getTodayUTC();
     const now = Date.now();
@@ -606,7 +610,7 @@ export const getQuestion = query({
   handler: async (ctx, { attemptId, questionIndex, locale }) => {
     const userId = await getAuthUserId(ctx);
     if (!userId) throw new Error("Not authenticated");
-    await assertUsernameRequiredUser(ctx, userId);
+    await assertSessionUser(ctx, userId);
     const attempt = await ctx.db.get(attemptId);
     if (!attempt) throw new Error("Attempt not found");
     if (attempt.userId !== userId) {
@@ -703,7 +707,7 @@ export const submitAnswer = mutation({
   handler: async (ctx, { attemptId, answer, questionIndex }) => {
     const userId = await getAuthUserId(ctx);
     if (!userId) throw new Error("Not authenticated");
-    await assertUsernameRequiredUser(ctx, userId);
+    await assertSessionUser(ctx, userId);
     const attempt = await ctx.db.get(attemptId);
     if (!attempt) throw new Error("Attempt not found");
     if (attempt.userId !== userId) {
@@ -824,7 +828,7 @@ export const forfeit = mutation({
   handler: async (ctx, { attemptId }) => {
     const userId = await getAuthUserId(ctx);
     if (!userId) throw new Error("Not authenticated");
-    await assertUsernameRequiredUser(ctx, userId);
+    await assertSessionUser(ctx, userId);
     const attempt = await ctx.db.get(attemptId);
     if (!attempt) throw new Error("Attempt not found");
     if (attempt.userId !== userId) {
@@ -845,7 +849,7 @@ export const completeAttempt = mutation({
   handler: async (ctx, { attemptId }) => {
     const userId = await getAuthUserId(ctx);
     if (!userId) throw new Error("Not authenticated");
-    await assertUsernameRequiredUser(ctx, userId);
+    await assertSessionUser(ctx, userId);
     const attempt = await ctx.db.get(attemptId);
     if (!attempt) throw new Error("Attempt not found");
     if (attempt.userId !== userId) {

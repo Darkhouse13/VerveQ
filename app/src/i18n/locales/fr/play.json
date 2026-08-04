@@ -324,5 +324,11 @@
     "easy": "Facile",
     "intermediate": "Moyen",
     "hard": "Difficile"
+  },
+  "tier": {
+    "label": "Difficulté",
+    "easy": "Facile",
+    "intermediate": "Moyen",
+    "hard": "Difficile"
   }
 }

@@ -6,6 +6,7 @@ import { Calendar, Copy, Check, Share2 } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
+import { ClaimNamePrompt } from "@/components/shell/onboarding/ClaimNamePrompt";
 import { getTodayUTC, isWorldCupEditionActive } from "../../convex/lib/daily";
 
 interface DailyResultState {
@@ -161,6 +162,12 @@ export default function DailyResultScreen() {
           </div>
         </NeoCard>
       )}
+
+      {/* Below the score and the share block on purpose: the player sees and
+          can share their result before anything is asked of them. The Daily
+          has no public board of its own, so no `board` is passed and the copy
+          promises none. */}
+      <ClaimNamePrompt source={state.mode} />
 
       <div className="grid grid-cols-2 gap-2.5 w-full mb-8">
         {stats.map((s) => (

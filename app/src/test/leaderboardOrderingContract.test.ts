@@ -9,7 +9,8 @@
  *    holds one row per user-sport-mode — collapsing to the user's best rating
  *    is what keeps a multi-mode player from filling several slots),
  *  - server-assigned ranks 1..n with no duplicates or gaps,
- *  - zero-game rows and ranked-ineligible (anonymous/guest) users excluded,
+ *  - zero-game rows and ranked-ineligible (anonymous/guest) users excluded
+ *    from the ELO board, and unnamed users excluded from EVERY board,
  *  - Blitz: one entry per user (best run), even with many runs on file.
  */
 import { describe, expect, it } from "vitest";
@@ -25,11 +26,19 @@ function handlerOf<T>(fn: T): (ctx: unknown, args: unknown) => Promise<unknown> 
   return f._handler;
 }
 
-const USERS: Record<string, { _id: string; username: string; isAnonymous: boolean }> = {
+const USERS: Record<
+  string,
+  { _id: string; username?: string; isAnonymous: boolean }
+> = {
   u_alice: { _id: "u_alice", username: "alice", isAnonymous: false },
   u_bob: { _id: "u_bob", username: "bob", isAnonymous: false },
   u_cara: { _id: "u_cara", username: "cara", isAnonymous: false },
+  // Anonymous WITH a claimed name — the username-only tier. Ranked-ineligible
+  // (no ELO board) but board-eligible on casual boards.
   u_anon: { _id: "u_anon", username: "ghost", isAnonymous: true },
+  // Anonymous with NO name — silently minted, has never claimed. Appears on
+  // no public board anywhere.
+  u_nameless: { _id: "u_nameless", isAnonymous: true },
 };
 
 type RatingRow = {
@@ -158,6 +167,7 @@ describe("getLeaderboard — scoped (sport+mode) board", () => {
 describe("blitz getHighScores — one entry per user", () => {
   it("keeps each user's best run only, ranked in score order", async () => {
     const scores = [
+      { userId: "u_nameless", sport: "football", score: 99, correctCount: 30, wrongCount: 0, playedAt: 5 },
       { userId: "u_anon", sport: "football", score: 60, correctCount: 20, wrongCount: 1, playedAt: 4 },
       { userId: "u_alice", sport: "football", score: 50, correctCount: 18, wrongCount: 2, playedAt: 3 },
       { userId: "u_alice", sport: "football", score: 45, correctCount: 16, wrongCount: 2, playedAt: 2 },
@@ -181,8 +191,17 @@ describe("blitz getHighScores — one entry per user", () => {
       limit: 20,
     })) as { entries: Array<{ rank: number; userId: string; score: number }> };
 
-    expect(result.entries.map((e) => e.userId)).toEqual(["u_alice", "u_bob"]);
-    expect(result.entries.map((e) => e.score)).toEqual([50, 40]);
-    expect(result.entries.map((e) => e.rank)).toEqual([1, 2]);
+    // Blitz is casual, so the board is rung 2 (a claimed name), NOT rung 3:
+    // the username-only user is listed. The nameless anonymous user tops the
+    // raw score list and is still absent — the only thing keeping them off is
+    // the missing name, and claiming one would seat them at 99 with no
+    // backfill, because the row is already on file.
+    expect(result.entries.map((e) => e.userId)).toEqual([
+      "u_anon",
+      "u_alice",
+      "u_bob",
+    ]);
+    expect(result.entries.map((e) => e.score)).toEqual([60, 50, 40]);
+    expect(result.entries.map((e) => e.rank)).toEqual([1, 2, 3]);
   });
 });

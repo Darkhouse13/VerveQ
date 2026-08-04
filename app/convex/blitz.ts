@@ -3,9 +3,8 @@ import type { Doc } from "./_generated/dataModel";
 import { v } from "convex/values";
 import { getAuthUserId } from "@convex-dev/auth/server";
 import {
-  assertUsernameRequiredUser,
-  isRankedEligibleUserDoc,
-  isRankedEligibleUserId,
+  assertSessionUser,
+  isBoardEligibleUserDoc,
 } from "./lib/authz";
 import { assertClientSport } from "./lib/sports";
 import { pickQuestionPool, planQuestionSequence } from "./lib/imageQuestions";
@@ -96,7 +95,9 @@ export const start = mutation({
   handler: async (ctx, { sport, withFirstQuestion, locale }) => {
     const userId = await getAuthUserId(ctx);
     if (!userId) throw new Error("Not authenticated");
-    await assertUsernameRequiredUser(ctx, userId);
+    // Identity tier: Blitz is casual, keys every write on userId, and never
+    // reads username. A silent anonymous session is enough to play.
+    await assertSessionUser(ctx, userId);
     assertClientSport(sport);
 
     const candidates = await collectBlitzCandidates(ctx, sport);
@@ -330,16 +331,20 @@ export const endGame = mutation({
       throw new Error("Cannot save an unfinished Blitz session");
     }
 
-    if (await isRankedEligibleUserId(ctx, session.userId)) {
-      await ctx.db.insert("blitzScores", {
-        userId: session.userId,
-        sport: session.sport,
-        score: session.score,
-        correctCount: session.correctCount,
-        wrongCount: session.wrongCount,
-        playedAt: now,
-      });
-    }
+    // Record the run unconditionally. Persistence and PUBLICATION are separate
+    // questions (FR-1B Part 4): the row is keyed on userId and belongs to the
+    // player the moment they set it, while `getHighScores` decides who is
+    // listed. Gating the INSERT on eligibility — as this did — meant an
+    // anonymous player's score was thrown away, so claiming a name later had
+    // nothing to reveal and the claim prompt would have been a lie.
+    await ctx.db.insert("blitzScores", {
+      userId: session.userId,
+      sport: session.sport,
+      score: session.score,
+      correctCount: session.correctCount,
+      wrongCount: session.wrongCount,
+      playedAt: now,
+    });
 
     await ctx.db.patch(sessionId, {
       gameOver: true,
@@ -398,7 +403,12 @@ export const getHighScores = query({
       if (seen.has(s.userId)) continue;
       seen.add(s.userId);
       const user = await ctx.db.get(s.userId);
-      if (!isRankedEligibleUserDoc(user)) continue;
+      // Rung 2, not rung 3: Blitz is a casual mode with no ELO, so the board
+      // lists everyone who has CLAIMED a name — full accounts and
+      // username-only alike. Anonymous users are filtered out here and only
+      // here: their runs are written to `blitzScores` normally and start
+      // appearing, at the score they already set, the moment they claim.
+      if (!isBoardEligibleUserDoc(user)) continue;
       entries.push({
         rank: entries.length + 1,
         userId: s.userId,

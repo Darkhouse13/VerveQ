@@ -22,7 +22,8 @@ import { NeoBadge } from "@/components/neo/NeoBadge";
 import { PlayStage } from "@/components/shell/play/PlayStage";
 import { MetricsPanel, AmbientStrip } from "@/components/shell/play/ambient";
 import { SHELL_ROUTES } from "@/lib/shellRoutes";
-import { parseDifficulty } from "@/lib/difficulty";
+import { parseDifficulty, type Difficulty } from "@/lib/difficulty";
+import { TierControl } from "@/components/shell/play/TierControl";
 import { useAntiCheat } from "@/hooks/useAntiCheat";
 import { useAuth } from "@/contexts/AuthContext";
 import {
@@ -86,12 +87,24 @@ export default function HigherLowerPlayScreen() {
   );
 
   const navigate = useNavigate();
-  const [params] = useSearchParams();
+  const [params, setParams] = useSearchParams();
   const sport = params.get("sport") || "football";
   const isSupportedSport = SUPPORTED_HIGHER_LOWER_SPORTS.has(sport);
-  // Tier is chosen on the difficulty picker and carried in the URL; a direct
-  // deep link (no param) falls back to easy.
+  // Tier lives in the URL; a direct deep link (no param) falls back to easy.
+  // The in-screen TierControl writes here, and the start effect keys on it, so
+  // the URL stays the one place the run's tier is decided.
   const difficulty = parseDifficulty(params.get("difficulty"));
+
+  const pickTier = useCallback(
+    (tier: Difficulty) => {
+      const nextParams = new URLSearchParams(params);
+      nextParams.set("difficulty", tier);
+      // replace: Back should leave the mode, not walk the player through every
+      // tier they auditioned.
+      setParams(nextParams, { replace: true });
+    },
+    [params, setParams],
+  );
 
   const startSessionMut = useMutation(api.higherLower.startSession);
   const makeGuessMut = useMutation(api.higherLower.makeGuess);
@@ -368,6 +381,11 @@ export default function HigherLowerPlayScreen() {
     );
   }
 
+  // No call made yet: score and streak are both untouched and the run has not
+  // ended. A single guess moves one of these, so the control disappears after
+  // the first decision.
+  const preRun = !gameOver && score === 0 && streak === 0 && !feedback;
+
   return (
     <PlayStage
       title={t("higherLower.title")}
@@ -387,6 +405,17 @@ export default function HigherLowerPlayScreen() {
         {/* Stat context — collapsed to one line (league · season · stat). The
             shell's top bar already frames the "Who has more?" question, so the
             body just names the stat; the badge colour encodes team vs player. */}
+        {/* Pre-run only: once a call has been made the tier is locked for the
+            run (the server already dealt this pool at that ceiling). */}
+        {preRun && (
+          <TierControl
+            value={difficulty}
+            onChange={pickTier}
+            disabled={loading}
+            className="shrink-0 mb-2"
+          />
+        )}
+
         <div className="shrink-0 flex flex-wrap items-center justify-center gap-1.5 text-center mb-2">
           <NeoBadge color="yellow" size="sm">{displayLabel}</NeoBadge>
           {seasonDisplay && (

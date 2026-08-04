@@ -38,3 +38,23 @@ export const V2_SHELL_ENABLED = import.meta.env.VITE_V2_SHELL_ENABLED === "true"
  * until the Home ticket links the mode.
  */
 export const DRAW_ENABLED = import.meta.env.VITE_DRAW_ENABLED === "true";
+
+/**
+ * Gates ANONYMOUS-FIRST identity (FR-1B): a cold visitor gets a silently
+ * minted Convex anonymous session on entry to a session-requiring surface,
+ * and the name claim moves AFTER play (the post-result claim prompt) instead
+ * of before it (the account chooser).
+ *
+ * Default OFF, and OFF must be byte-for-byte the pre-FR-1B behaviour:
+ * `SessionRoute` falls back to the username gate and the claim prompt never
+ * renders. This is not a taste flag — it is the DEPLOYMENT.md ordering rule
+ * (docs/DEPLOYMENT.md, "What a master push does"). A master push publishes the
+ * frontend immediately while the Convex backend is a manual owner deploy, so
+ * between those two events the new bundle would be talking to a backend whose
+ * daily/blitz/grid handlers still demand a username — every silently-minted
+ * visitor would hit a hard `Username required` on their first action. With the
+ * flag OFF that window is a no-op; the owner flips it to `true` only after the
+ * backend is live (see the runbook in the FR-1B report).
+ */
+export const ANONYMOUS_FIRST_ENABLED =
+  import.meta.env.VITE_ANONYMOUS_FIRST_ENABLED === "true";
