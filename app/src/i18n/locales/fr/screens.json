@@ -518,9 +518,9 @@
   },
   "claimName": {
     "titleBoard": "Tu n'es pas encore au classement",
-    "title": "Tu joues sans nom",
+    "title": "Cette partie n'est associée à aucun nom",
     "bodyBoard": "Choisis un nom et ce score entre au classement.",
-    "body": "Choisis-en un et tes résultats le porteront — classements, duels et arènes.",
+    "body": "Choisis un nom et ta série et ton historique te suivent.",
     "cta": "CHOISIR MON NOM",
     "dismiss": "continuer à jouer",
     "placeholder": "pseudo",

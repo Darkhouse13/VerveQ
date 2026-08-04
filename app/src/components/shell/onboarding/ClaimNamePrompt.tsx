@@ -17,8 +17,15 @@
  *
  * Truthfulness: `board` names the public board the claim actually puts this
  * result on, and drives the copy. Passing it for a mode with no public board
- * would promise a listing that does not exist, so it is optional and the
- * no-board copy talks only about the name itself.
+ * would promise a listing that does not exist, so it is optional.
+ *
+ * The no-board copy must name NO board, and that is stricter than it sounds.
+ * Its first version said results would "carry your name — on leaderboards, in
+ * duels and arenas", which reads as generic but is the same false promise in
+ * looser words: the Daily has no board of its own, so blind verification
+ * O-FR1B refuted it. Per the owner ruling the no-board strings now speak only
+ * to what a claim actually changes for a Daily player — the run becoming
+ * attached to a name — and mention no board, leaderboard, duel or arena.
  */
 import { useCallback, useState, type FormEvent } from "react";
 import { useTranslation } from "react-i18next";
@@ -129,7 +136,9 @@ export function ClaimNamePrompt({ board, source }: ClaimNamePromptProps) {
           ? t("claimName.titleBoard", {
               defaultValue: "You're not on the board yet",
             })
-          : t("claimName.title", { defaultValue: "You're playing without a name" })}
+          : t("claimName.title", {
+              defaultValue: "This run isn't saved to a name",
+            })}
       </p>
       <p className="text-sm text-muted-foreground text-center mt-1 mb-3">
         {board
@@ -138,7 +147,7 @@ export function ClaimNamePrompt({ board, source }: ClaimNamePromptProps) {
             })
           : t("claimName.body", {
               defaultValue:
-                "Claim one and your results carry it — on leaderboards, in duels and arenas.",
+                "Claim a name and your streak and history stick with you.",
             })}
       </p>
 

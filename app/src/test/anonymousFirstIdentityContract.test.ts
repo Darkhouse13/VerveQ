@@ -228,6 +228,57 @@ describe("FR-1B claim prompt", () => {
       /<ClaimNamePrompt board="blitz"/,
     );
   });
+
+  /**
+   * The check above only proves the `board` PROP is withheld from the Daily —
+   * which is exactly why the original no-board COPY still promised
+   * "leaderboards, in duels and arenas" and shipped. Blind verification O-FR1B
+   * refuted it. Withholding the prop is worthless if the string it selects
+   * names a board anyway, so the strings themselves are now the contract.
+   *
+   * Asserted across every locale: a translator adding "clasificación" or
+   * "classement" to the no-board body re-breaks the ruling just as surely as
+   * the English did.
+   */
+  it("keeps every board word out of the no-board copy, in every locale", () => {
+    const BOARD_WORDS =
+      /board|leaderboard|duel|arena|tabla|clasific|classement|duelo|arène/i;
+
+    for (const locale of ["en", "es", "fr"]) {
+      const screens = JSON.parse(
+        read(`../i18n/locales/${locale}/screens.json`),
+      ) as { claimName: Record<string, string> };
+      const { title, body, titleBoard, bodyBoard } = screens.claimName;
+
+      expect(title, `${locale}.claimName.title names a board`).not.toMatch(
+        BOARD_WORDS,
+      );
+      expect(body, `${locale}.claimName.body names a board`).not.toMatch(
+        BOARD_WORDS,
+      );
+      // The Blitz variant is the one place a board may be named — if these
+      // stopped naming one, the board-eligible prompt would have gone vague
+      // instead of the Daily one going honest.
+      expect(titleBoard, `${locale}.claimName.titleBoard`).toMatch(BOARD_WORDS);
+      expect(bodyBoard, `${locale}.claimName.bodyBoard`).toMatch(BOARD_WORDS);
+    }
+  });
+
+  it("carries no board word in the component's inline fallbacks either", () => {
+    // `defaultValue` is what renders if a key goes missing, so the forbidden
+    // copy must not survive in the source as a fallback.
+    const source = read("../components/shell/onboarding/ClaimNamePrompt.tsx");
+    const noBodyFallback = source.match(
+      /claimName\.body",\s*\{\s*defaultValue:\s*\n?\s*"([^"]+)"/,
+    );
+    const noTitleFallback = source.match(
+      /claimName\.title",\s*\{\s*\n?\s*defaultValue:\s*"([^"]+)"/,
+    );
+    expect(noBodyFallback?.[1], "no-board body fallback").toBeTruthy();
+    expect(noTitleFallback?.[1], "no-board title fallback").toBeTruthy();
+    expect(noBodyFallback![1]).not.toMatch(/board|leaderboard|duel|arena/i);
+    expect(noTitleFallback![1]).not.toMatch(/board|leaderboard|duel|arena/i);
+  });
 });
 
 describe("FR-1B in-screen tier control", () => {

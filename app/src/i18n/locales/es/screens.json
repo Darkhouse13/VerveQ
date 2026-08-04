@@ -518,9 +518,9 @@
   },
   "claimName": {
     "titleBoard": "Aún no estás en la tabla",
-    "title": "Estás jugando sin nombre",
+    "title": "Esta partida no está guardada con un nombre",
     "bodyBoard": "Reclama un nombre y esta puntuación entra en la tabla.",
-    "body": "Reclama uno y tus resultados lo llevarán — en tablas, duelos y arenas.",
+    "body": "Reclama un nombre y tu racha y tu historial te acompañan.",
     "cta": "RECLAMAR MI NOMBRE",
     "dismiss": "seguir jugando",
     "placeholder": "usuario",

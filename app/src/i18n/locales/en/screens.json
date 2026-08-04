@@ -518,9 +518,9 @@
   },
   "claimName": {
     "titleBoard": "You're not on the board yet",
-    "title": "You're playing without a name",
+    "title": "This run isn't saved to a name",
     "bodyBoard": "Claim a name and this score goes on the board.",
-    "body": "Claim one and your results carry it — on leaderboards, in duels and arenas.",
+    "body": "Claim a name and your streak and history stick with you.",
     "cta": "CLAIM MY NAME",
     "dismiss": "keep playing",
     "placeholder": "username",
