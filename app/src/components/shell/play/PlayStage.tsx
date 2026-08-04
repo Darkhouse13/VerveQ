@@ -77,6 +77,9 @@ export function PlayStage({
         "bg-background text-foreground shell-canvas-bg flex flex-col",
         // Fill the viewport and never scroll — on every device.
         "fixed inset-0 z-40 h-[100dvh] overflow-hidden",
+        // iOS standalone insets: keeps the round pill / score header clear of
+        // the status bar and the answer CTAs clear of the home indicator.
+        "safe-pt safe-pb",
       )}
     >
       {(title || onExit || headerRight) && (

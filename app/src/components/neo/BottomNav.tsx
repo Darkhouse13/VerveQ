@@ -23,7 +23,7 @@ export function BottomNav() {
   const badge = unread?.count ?? 0;
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 border-t-[3px] border-border bg-background">
+    <nav className="fixed bottom-0 left-0 right-0 z-50 border-t-[3px] border-border bg-background safe-pb">
       <div className="flex max-w-md mx-auto">
         {tabs.map((tab) => {
           const active = location.pathname === tab.path;

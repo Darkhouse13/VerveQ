@@ -229,6 +229,26 @@
   .scrollbar-none::-webkit-scrollbar {
     display: none;
   }
+
+  /*
+   * Safe-area insets for the iOS standalone (home-screen) launch, where the
+   * webview runs edge-to-edge under the status bar and home indicator —
+   * index.html carries viewport-fit=cover and
+   * apple-mobile-web-app-status-bar-style=black-translucent, so the content
+   * itself has to reserve those strips.
+   *
+   * Inert everywhere else: env(safe-area-inset-*) resolves to 0 in a normal
+   * browser tab, on non-notched devices, and on desktop, so applying these is
+   * a no-op outside standalone. Elements that already carry padding use the
+   * `max(existing, env(...))` form inline instead, so the inset can only ever
+   * grow the padding, never shrink it.
+   */
+  .safe-pt {
+    padding-top: env(safe-area-inset-top);
+  }
+  .safe-pb {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
 }
 
 @keyframes screen-shake {

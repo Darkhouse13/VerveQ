@@ -25,7 +25,7 @@ export default function JoinArenaModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-background overflow-y-auto">
+    <div className="fixed inset-0 z-50 bg-background overflow-y-auto safe-pt safe-pb">
       <div className="max-w-md mx-auto min-h-screen flex flex-col">
         <div className="flex items-center justify-between px-5 pt-4 pb-2">
           <button

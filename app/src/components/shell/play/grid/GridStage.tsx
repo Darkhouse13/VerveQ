@@ -56,9 +56,13 @@ export function GridStage({ vm, subtitle, onExit, onHome }: GridStageProps) {
   const picks: GridPickItem[] = vm.picks;
 
   return (
-    <div className="w-full bg-background text-foreground shell-canvas-bg flex flex-col fixed inset-0 z-40 h-[100dvh] overflow-hidden">
-      {/* broadcast bar */}
-      <header className="shrink-0 w-full bg-foreground text-background border-b-2 border-black">
+    <div className="w-full bg-background text-foreground shell-canvas-bg flex flex-col fixed inset-0 z-40 h-[100dvh] overflow-hidden safe-pb">
+      {/* broadcast bar. Unlike the other frames the top inset goes on the
+          header rather than the frame: the bar is bg-foreground against a
+          bg-background frame, so padding the frame would strand a pale strip
+          above it. Padding the header carries its own dark fill up under the
+          iOS status bar instead. */}
+      <header className="shrink-0 w-full bg-foreground text-background border-b-2 border-black safe-pt">
         <div className="flex items-center gap-3 px-4 py-2.5 md:px-6">
           <button
             type="button"

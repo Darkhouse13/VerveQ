@@ -3,7 +3,7 @@
 exports[`HomeDrawCard — no layout shift for non-draw users > flag off: Home renders unchanged (snapshot) and fires no draw query 1`] = `
 <div>
   <div
-    class="w-full bg-background text-foreground shell-canvas-bg fixed inset-0 z-40 h-[100dvh] overflow-hidden flex flex-col"
+    class="w-full bg-background text-foreground shell-canvas-bg fixed inset-0 z-40 h-[100dvh] overflow-hidden flex flex-col safe-pt"
   >
     <nav
       class="hidden md:block shrink-0 border-b-[3px] border-border bg-background"

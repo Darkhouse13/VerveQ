@@ -132,7 +132,12 @@ const AppRoutes = () => (
         future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
       >
         <AnalyticsPageviews />
-        <div className="max-w-md mx-auto min-h-screen relative">
+        {/* safe-pt covers the v1 screens, which render in normal document flow
+            rather than inside one of the `fixed inset-0` shell frames. The
+            frames are position:fixed and this wrapper creates no containing
+            block for them (position:relative doesn't), so they keep their own
+            inset and never double up with this one. */}
+        <div className="max-w-md mx-auto min-h-screen relative safe-pt">
           {/* One-time language chooser, overlays whatever screen loads first. */}
           <FirstRunLanguagePrompt />
           {/* Add-to-home-screen bar. Renders nothing unless the browser can

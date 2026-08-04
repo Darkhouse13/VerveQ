@@ -18,6 +18,8 @@ export function LearnShell({ children }: { children: ReactNode }) {
         // Fill the viewport and never scroll — on every device (matches
         // ShellLayout's discipline). Screens keep internal scroll valves.
         "fixed inset-0 z-40 h-[100dvh] overflow-hidden",
+        // iOS standalone insets (matches ShellLayout).
+        "safe-pt safe-pb",
       )}
     >
       {/* Desktop canvas group (matches ShellLayout): `contents` is a no-op

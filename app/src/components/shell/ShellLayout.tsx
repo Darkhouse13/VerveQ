@@ -89,6 +89,16 @@ export function ShellLayout({
         // Fill the viewport and never scroll — on every device.
         "fixed inset-0 z-40 h-[100dvh] overflow-hidden",
         "flex flex-col",
+        // iOS standalone runs this frame under the status bar. Padding the
+        // frame (not the header) keeps the inset strip painted in the frame's
+        // own background, and border-box means h-[100dvh] still resolves to the
+        // viewport — `main` just gets correspondingly less room.
+        "safe-pt",
+        // The bottom inset normally belongs to ShellNav, which sits in-flow at
+        // the foot of this column and carries its own. With the nav hidden
+        // there is nothing below `main`, so the frame takes it instead —
+        // applying both would double the padding.
+        hideNav && "safe-pb",
       )}
     >
       {!hideNav && <ShellTopNav />}

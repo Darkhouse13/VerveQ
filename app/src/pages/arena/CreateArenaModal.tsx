@@ -148,7 +148,7 @@ export default function CreateArenaModal({
   };
 
   return (
-    <div className="fixed inset-0 z-[100] flex flex-col bg-background overflow-hidden md:items-center md:justify-center md:bg-background/80 md:backdrop-blur-sm md:p-6">
+    <div className="fixed inset-0 z-[100] safe-pt flex flex-col bg-background overflow-hidden md:items-center md:justify-center md:bg-background/80 md:backdrop-blur-sm md:p-6">
       <div className="w-full md:max-w-md mx-auto flex flex-col bg-background h-dvh max-h-dvh md:h-auto md:max-h-[88dvh] md:neo-border md:neo-shadow-lg md:rounded-xl md:overflow-hidden">
         <div className="flex items-center justify-between px-5 pt-4 pb-3 shrink-0">
           <button

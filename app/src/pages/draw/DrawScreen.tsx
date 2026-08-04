@@ -197,8 +197,11 @@ export function DrawExperience({ api, revealMs = 380 }: DrawExperienceProps) {
     ? buildRunShareUrl(view.shareSlug)
     : drawModeUrl();
 
+  // safe-pt only: the bottom inset is already carried per-stage by the scroll
+  // containers below, and doubling it here would push BANK/PUSH up by the
+  // home-indicator height twice.
   return (
-    <div className="theme-draw fixed inset-0 z-40 h-[100dvh] bg-background text-foreground overflow-hidden">
+    <div className="theme-draw fixed inset-0 z-40 h-[100dvh] bg-background text-foreground overflow-hidden safe-pt">
       <div
         className="mx-auto h-full w-full flex flex-col"
         style={{
@@ -338,7 +341,9 @@ export function DrawExperience({ api, revealMs = 380 }: DrawExperienceProps) {
         )}
 
         {stage === "result" && view && (
-          <div className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden px-0.5 -mx-0.5">
+          // safe-pb to match the draft/play scrollers above — without it the
+          // result stage's last row sits under the home indicator.
+          <div className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden px-0.5 -mx-0.5 safe-pb">
             <ResultStage
               view={view}
               rarity={rarity}

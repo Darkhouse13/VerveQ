@@ -61,7 +61,9 @@ export function GridSearchSheet({
       onClick={onClose}
     >
       <div
-        className="w-full md:max-w-md bg-background neo-border neo-shadow-lg md:rounded-xl rounded-t-xl flex flex-col max-h-[85dvh] min-h-0 animate-slide-up"
+        // Bottom sheet on mobile (`items-end` on the backdrop), so it needs the
+        // home-indicator inset; md+ it is centred and env() contributes nothing.
+        className="w-full md:max-w-md bg-background neo-border neo-shadow-lg md:rounded-xl rounded-t-xl flex flex-col max-h-[85dvh] min-h-0 animate-slide-up safe-pb"
         onClick={(e) => e.stopPropagation()}
       >
         {/* header — criteria only (the prompt) */}
