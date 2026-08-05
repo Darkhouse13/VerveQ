@@ -126,7 +126,7 @@ export default function ShellHomeScreen() {
 
   return (
     <ShellLayout>
-      <div className="min-h-full md:min-h-0 md:h-full flex flex-col">
+      <div className="min-h-full md:min-h-0 flex flex-col">
         {/* Brand bar — V mark + wordmark left, streak + identity right */}
         <div className="flex items-center justify-between pt-4 pb-3 md:pt-5 md:pb-4 shrink-0">
           <div className="flex items-center gap-2.5">
@@ -186,7 +186,7 @@ export default function ShellHomeScreen() {
         {/* One tree, two breakpoints: mobile stacks in DOM order; desktop is a
             never-scroll 3-column grid (pillars · pillars/dailies · ladder/forge),
             ratios from the prototype (left 1.5fr split in two, right 1fr). */}
-        <div className="flex flex-col gap-3 md:grid md:grid-cols-[3fr_3fr_4fr] md:grid-rows-[1.5fr_0.9fr] md:gap-4 md:flex-1 md:min-h-0">
+        <div className="flex flex-col gap-3 md:grid md:grid-cols-[3fr_3fr_4fr] md:grid-rows-[auto_auto] md:gap-4 md:content-start">
           {/* TODAY pillar — the daily slate leads the home. Two cards, one
               habit: the shared quiz and the shared survival run, both with
               honest played/reset state read from the server. */}
@@ -266,7 +266,7 @@ export default function ShellHomeScreen() {
               <span className="md:hidden">{t("home.hooks.eyebrowShort")}</span>
               <span className="hidden md:inline">{t("home.hooks.eyebrow")}</span>
             </p>
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-3.5 md:flex-1 md:min-h-0">
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-3.5">
               {/* Duels take the strip's lead slot (the dailies moved up to the
                   TODAY pillar) — head-to-head is the "settle it" thesis. */}
               <NeoCard

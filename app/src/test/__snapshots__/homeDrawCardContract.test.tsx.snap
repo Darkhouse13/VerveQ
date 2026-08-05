@@ -169,13 +169,13 @@ exports[`HomeDrawCard — no layout shift for non-draw users > flag off: Home re
       </div>
     </nav>
     <div
-      class="contents xl:flex xl:flex-col xl:w-full xl:flex-1 xl:min-h-0 xl:max-h-[50rem] xl:mb-auto"
+      class="contents xl:flex xl:flex-col xl:w-full xl:flex-1 xl:min-h-0"
     >
       <main
         class="flex-1 min-h-0 w-full mx-auto max-w-md md:max-w-6xl px-5 md:px-8 overflow-y-auto overflow-x-hidden scrollbar-none md:overflow-hidden pb-4 md:pb-6"
       >
         <div
-          class="min-h-full md:min-h-0 md:h-full flex flex-col"
+          class="min-h-full md:min-h-0 flex flex-col"
         >
           <div
             class="flex items-center justify-between pt-4 pb-3 md:pt-5 md:pb-4 shrink-0"
@@ -217,7 +217,7 @@ exports[`HomeDrawCard — no layout shift for non-draw users > flag off: Home re
             </div>
           </div>
           <div
-            class="flex flex-col gap-3 md:grid md:grid-cols-[3fr_3fr_4fr] md:grid-rows-[1.5fr_0.9fr] md:gap-4 md:flex-1 md:min-h-0"
+            class="flex flex-col gap-3 md:grid md:grid-cols-[3fr_3fr_4fr] md:grid-rows-[auto_auto] md:gap-4 md:content-start"
           >
             <div
               class="flex flex-col gap-3 min-h-0"
@@ -356,7 +356,7 @@ exports[`HomeDrawCard — no layout shift for non-draw users > flag off: Home re
                 </span>
               </p>
               <div
-                class="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-3.5 md:flex-1 md:min-h-0"
+                class="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-3.5"
               >
                 <button
                   class="neo-border rounded-lg bg-hot-pink text-hot-pink-foreground neo-shadow p-3.5 flex flex-col gap-1.5 min-h-0 transition-transform hover:-translate-x-[2px] hover:-translate-y-[2px] active:translate-x-[2px] active:translate-y-[2px] text-left w-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"

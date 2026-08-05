@@ -54,10 +54,10 @@ interface ShellLayoutProps {
  *    horizontal scrollbar.
  *  - Desktop (md+): the header and top nav are fixed-height and `main` is
  *    `overflow-hidden` — never scrolls.
- *  - Large desktop (xl+): the header + main group is additionally bounded to a
- *    laptop-equivalent height and vertically centered, so tall monitors get a
- *    proportioned canvas instead of content stretched to fill the viewport.
- *    The cap only bites on tall viewports — short xl windows are unchanged.
+ *  - Large desktop (xl+): the frame fills the viewport like every other
+ *    breakpoint. There is no height cap; a tall monitor shows MORE content,
+ *    never bigger content, because each screen sizes its own cards from their
+ *    content rather than from the frame (HF-3B).
  */
 export function ShellLayout({
   title,
@@ -104,18 +104,29 @@ export function ShellLayout({
       {!hideNav && <ShellTopNav />}
 
       {/* Desktop canvas group: `contents` is a no-op below xl, keeping those
-          layouts byte-identical; at xl+ it becomes the bounded, centered
-          flex column the header and main lay out inside. */}
-      {/* The height cap stays — it is what keeps a tall monitor from stretching
-          a short screen's content into a smear. What changed (HF-2) is where
-          the leftover height goes: `my-auto` split it evenly ABOVE and below,
-          so the taller the viewport the further down the page began. Measured
-          at 1600x1200 that was a 166px empty band before any content, and it
-          grows with viewport height (~286px at 1600x1440). Sending the whole
-          remainder downwards with `mb-auto` top-aligns the canvas under the
-          nav; the cap still bites, the dead band just falls below the fold
-          where an unfilled page normally ends. */}
-      <div className="contents xl:flex xl:flex-col xl:w-full xl:flex-1 xl:min-h-0 xl:max-h-[50rem] xl:mb-auto">
+          layouts byte-identical; at xl+ it becomes the flex column the header
+          and main lay out inside.
+
+          This carried `xl:max-h-[50rem]` from 378c561 (2026-06-11), which
+          capped the frame at a laptop-equivalent height because letting it
+          fill "balloons hero cards and fill regions into empty color panels"
+          on tall monitors. That defect was real, but the cap treated the
+          symptom: the cards ballooned because the SCREENS sized them from the
+          frame (fr rows, `md:flex-1` under `md:h-full`), so any frame height
+          fed straight into card height. HF-3B fixed that at the source —
+          ShellHomeScreen and RanksScreen now size cards from their content —
+          and with cards no longer frame-derived the cap has nothing left to
+          protect. It cost real behaviour to keep: it stranded ~400px of dead
+          space below the fold at 1600x1200 and forced Compete to scroll while
+          a third of the screen sat empty.
+
+          Measured consequence of removing it (HF-3B Census B): card
+          dimensions identical at 1280x657 / 1440x900 / 1600x1200, mobile and
+          tablet byte-identical, more tiles visible per screen. The cap also
+          hid a second bug in the same mechanism — at 1280x657 those same fr
+          rows CRUSHED cards to 51px, well under natural size. Content-height
+          fixes both directions. */}
+      <div className="contents xl:flex xl:flex-col xl:w-full xl:flex-1 xl:min-h-0">
       {(title || back || headerRight) && (
         <header className="shrink-0 w-full">
           <div

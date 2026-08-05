@@ -474,7 +474,7 @@ export default function RanksScreen() {
       headerRight={<NeoBadge color="muted">{t("ranks.boardScope")}</NeoBadge>}
     >
       {/* Desktop — never-scroll, hero | ladder | board */}
-      <div className="hidden md:grid md:grid-cols-[1.05fr_1.35fr_1fr] md:gap-4 md:h-full md:min-h-0">
+      <div className="hidden md:grid md:grid-cols-[1.05fr_1.35fr_1fr] md:gap-4 md:min-h-0 md:items-start">
         <div className="flex flex-col min-h-0">{hero}</div>
         <div className="min-h-0">{ladder}</div>
         <div className="flex flex-col min-h-0">{boardCard}</div>

@@ -27,6 +27,32 @@ Newest first.
 
 ---
 
+## DECISION 2026-08-05 — Geometry baselines must be checked for cross-viewport invariance before being declared canonical
+
+**Ruled during HF-3B.** A measured layout value is only a *baseline* if it holds
+across viewports. Otherwise it is an artifact of the viewport it was measured
+at, and pinning to it freezes a bug.
+
+HF-3 censused the v2 home cards at 1600×1200 and reported e.g. "Duels/Arena/Quiz
+207×130". HF-3B then set those as the canonical sizes to preserve. They were not
+sizes the cards had — they were what `grid-rows-[1.5fr_0.9fr]` yields from an
+800px frame. The same tile measured **207×51 at 1280×657**: the fr rows crushed
+it as readily as they ballooned it. The acceptance criterion built on that
+premise ("dimensions pixel-identical to the capped census, all viewports") was
+unsatisfiable by construction, because the census held two different heights for
+one card.
+
+**The rule:** before calling a measured value canonical, measure it at ≥2
+viewport heights and confirm it does not move. If it moves, it is frame-derived
+and the correct target is the content-true value, not any single observation.
+
+Applied consequence: the v2 shell now sizes cards from content, so a taller
+screen shows MORE cards, never bigger ones — and `xl:max-h-[50rem]`
+(`378c561`, 2026-06-11), which existed only to stop frame-derived cards
+ballooning, was removed as no longer load-bearing.
+
+---
+
 ## DECISION 2026-08-01 — Content-factory sources track in the main repo
 
 **Supersedes the 2026-07-29 local-only ruling** recorded in commit `4378216`
