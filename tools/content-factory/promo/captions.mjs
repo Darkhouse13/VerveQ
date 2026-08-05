@@ -9,25 +9,44 @@
 // same funnel: every CLICKABLE link is tagged, distinct per channel, with
 // utm_content distinct per asset. On-screen end-cards stay clean "verveq.com".
 //
+// WHICH PATH, AND WHY IT IS `/weekend` AND NOT `/`.
+//
+// These links land on `/weekend`, the short link added by WKND-FUNNEL
+// (app/src/lib/weekendDeepLink.ts — written for this batch by name). That is not
+// a preference; the bare `/` in campaign/kits/bio-links-kit.md is a MEASURED
+// dead end. A signed-out visitor on `/` gets the cold-entry taste round, which
+// carries no WEEKEND card at all, so reel traffic could not reach the waitlist
+// without first playing a round. The 30-day read behind that fix: 5 Instagram
+// visitors, 4 saw the card, 0 tapped. `/weekend` routes to Home with the teaser
+// pinned to the top of the first screen, behind the build flag only — no
+// session guard, no account, no round.
+//
+// Attribution survives the hop: weekendShortLinkTarget() preserves incoming
+// params, and the teaser reads `utm_source ?? ref` for its own source property,
+// so the tags below land on every waitlist event the visit produces.
+//
 // WHICH LINK THESE TWO CAPTIONS ASSUME. The video says "link in bio" and the
-// card says LINK IN BIO, so the destination a viewer actually reaches is the
-// CHANNEL BIO LINK — `utm_content=bio`, already pasted per
-// campaign/kits/bio-links-kit.md. That link is not repeated here; it is a
-// one-time profile setting, not a per-post paste, and re-stating it invites a
-// second untagged variant.
-// The per-asset links below are for the placements that take their own URL (IG
-// story sticker, YouTube description, an X cross-post) and they carry
+// card says LINK IN BIO, so what a viewer actually reaches is the CHANNEL BIO
+// LINK. It is shown below for checking rather than pasting — it is a one-time
+// profile setting, and re-stating it as a per-post line invites a second,
+// untagged variant.
+//
+// !! The kit's bio URLs still point at the bare `/`. Until they are repointed at
+// `/weekend`, "link in bio" on these two lands on the taste round and the last
+// hop of this funnel is the exact defect WKND-FUNNEL just measured and fixed.
+//
+// The per-asset links are for placements that take their own URL (IG story
+// sticker, YouTube description, an X cross-post), carrying
 // `utm_content=<promo-slug>` so a join from this quiz is separable from a join
-// from the stinger. If the bio link has NOT been set, these captions' "link in
-// bio" resolves to an untagged profile URL — set the bio first.
+// from the stinger.
 const WKND_UTM = (source, content) =>
-  `https://verveq.com/?utm_source=${source}&utm_medium=social&utm_campaign=weekend26&utm_content=${content}`;
+  `https://verveq.com/weekend?utm_source=${source}&utm_medium=social&utm_campaign=weekend26&utm_content=${content}`;
 
 const wkndLinks = (slug) =>
   [
     "",
     "LINKS — paste per platform, never post untagged:",
-    `  Bio link (what \"link in bio\" resolves to): ${WKND_UTM("tiktok", "bio")}`,
+    `  Bio link — CHECK THIS IS WHAT THE PROFILE POINTS AT: ${WKND_UTM("tiktok", "bio")}`,
     `  IG story sticker: ${WKND_UTM("instagram", slug)}`,
     `  YouTube description: ${WKND_UTM("youtube", slug)}`,
     `  X (if cross-posted): ${WKND_UTM("x", slug)}`,

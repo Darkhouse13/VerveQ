@@ -160,21 +160,39 @@ both asks and before the `verveq.com` line: it never displaces a comment ask,
 because the comment is what ranks the post and the waitlist click happens to
 people who have already stopped scrolling.
 
-**Which link.** The video says "link in bio" and the card says LINK IN BIO, so
-what a viewer actually reaches is the **channel bio link** —
-`utm_content=bio`, already specified in `campaign/kits/bio-links-kit.md`. The
-captions do not restate it as a paste-able line, because it is a one-time profile
-setting and re-stating it invites a second, untagged variant.
+**Which link, and which path.** The video says "link in bio" and the card says
+LINK IN BIO, so what a viewer actually reaches is the **channel bio link**. Every
+link in these captions lands on **`/weekend`**, not the bare `/`.
+
+That is not a preference. `WKND-FUNNEL` (`ea66823`, landed while this batch was
+being cut) added `app/src/lib/weekendDeepLink.ts` and names this batch in its own
+docstring — it exists because the bare `/` is a **measured** dead end. A
+signed-out visitor on `/` gets the cold-entry taste round, which carries no
+WEEKEND card at all, so reel traffic could not reach the waitlist without first
+playing a round and tapping through to Home. The 30-day read behind it: **5
+Instagram visitors, 4 saw the card, 0 tapped.** `/weekend` lands on Home with the
+teaser pinned to the top of the first screen, behind the build flag only — no
+session guard, no account, no round. Attribution survives the hop:
+`weekendShortLinkTarget()` preserves incoming params and the teaser reads
+`utm_source ?? ref`, so these tags reach every waitlist event the visit produces.
 
 The per-asset tagged links in each caption's `LINKS` block are for the placements
 that take their own URL — IG story sticker, YouTube description, an X cross-post
 — and carry `utm_content=ladder-long-five-leagues` / `-one-squad` so a join from
 this quiz is separable from a join from the stinger.
 
-> **Flagged for the owner:** if the bio links from `bio-links-kit.md` have not
-> been pasted yet, "link in bio" on these two resolves to an **untagged** profile
-> URL and the campaign's own funnel rule is broken at the last hop. That kit is
-> ~10 minutes and is a prerequisite for posting these, not a parallel task.
+> **BLOCKING for the owner, and it is now a different job than it was this
+> morning.** `campaign/kits/bio-links-kit.md` still points all four channel bios
+> at the bare `/` — the surface `WKND-FUNNEL` just proved cannot reach the card.
+> Pasting that kit as written does **not** unblock these two: "link in bio" would
+> land on the taste round. The bios need `https://verveq.com/weekend?…` with the
+> same tags. The captions print the bio link they assume at the top of their
+> `LINKS` block so it can be checked against the profile before posting.
+>
+> Out of scope for this ticket and left for the owner's call: the kit itself, and
+> `weekend/captions.mjs` (the stinger's and manifesto's links), which point at the
+> same bare `/` and have the same problem. Repointing those changes assets that
+> are already posted, which is a campaign decision rather than a batch one.
 
 Campaign rules honoured: launch copy says "late August" and never a date (CT-1),
 no sim-tunable number appears anywhere (shapes, not constants), no invented

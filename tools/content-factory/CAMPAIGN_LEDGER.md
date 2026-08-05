@@ -27,7 +27,7 @@ asset state; update it every loop.
 | `wknd-stinger` (8.0s ident) | Tease | **RENDERED, frame-0 verified** | `out/2026-07-29/wknd-stinger.mp4` + caption `.txt` (tagged links inside) | Post to TT/IG/YT; attach to X thread post 1 and pin |
 | `wknd-manifesto` (18.6s flagship) | Tease | **RENDERED, verified** (frame-0, creed, shapes, silent deadpan, CTA) | `out/2026-07-29/wknd-manifesto.mp4` + caption `.txt` | Post ~2 days after stinger |
 | Week-0 X thread (7 posts) | Tease | **READY TO POST** | `campaign/x/week0-thread.md` | Post, pin post 1 |
-| Bio links (4 channels) | Week 0 | **KIT READY** (~10 min) | `campaign/kits/bio-links-kit.md` | Paste 4 URLs |
+| Bio links (4 channels) | Week 0 | **KIT STALE — URLs point at bare `/`**, which `WKND-FUNNEL` (ea66823) measured as a dead end for reel traffic (5 IG visitors, 4 saw the card, 0 tapped; `/` serves the cold-entry taste round, no WEEKEND card). Repoint at `/weekend`, same tags. | `campaign/kits/bio-links-kit.md` | Paste 4 URLs — **as `https://verveq.com/weekend?…`**, not as written |
 | Teaser-card recording | Week 0 | **KIT READY** (~20 min) | `campaign/kits/teaser-recording-kit.md` | Record 2 clips → `public/product/weekend-teaser-*.mp4` |
 | `ladder-long-five-leagues` (78.0s quiz) | Argue I | **RENDERED — PROOF ONLY**, 20 VO lines unwritten (no `FAL_KEY`) | `out/2026-08-05/verveq-ladder-long-five-leagues.mp4` + caption `.txt` (tagged links inside); see `LADDER_LONG_BATCH2_5.md` | Run the VO command (§6), re-render, then post. **Bio links kit is a prerequisite** — "link in bio" is the CTA |
 | `ladder-long-one-squad` (78.0s quiz) | Argue I | **RENDERED — PROOF ONLY**, same 20 lines | `out/2026-08-05/verveq-ladder-long-one-squad.mp4` + caption `.txt` | as above |
