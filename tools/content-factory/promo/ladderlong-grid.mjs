@@ -94,10 +94,15 @@ export const readEditions = () => {
     while ((r = rungRe.exec(chunk)) !== null) counts.push((r[1].match(/"/g) ?? []).length / 2);
     const b = chunk.match(/\bbatch:\s*(\d)/);
     const gname = chunk.match(/\bgrid:\s*(GRID_\w+)/);
+    // Optional third axis (batch 2.5): which campaign's closing copy this
+    // edition speaks. Absent on every edition that is not a campaign cut, so
+    // unlike batch/grid a miss here is legal rather than fatal.
+    const camp = chunk.match(/\bcampaign:\s*"([a-z-]+)"/);
     return {
       slug: mark.slug,
       batch: b ? Number(b[1]) : 0,
       grid: gname ? GRIDS[gname[1]] : undefined,
+      campaign: camp ? camp[1] : undefined,
       counts,
     };
   });

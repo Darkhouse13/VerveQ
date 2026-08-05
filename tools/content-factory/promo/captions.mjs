@@ -4,6 +4,35 @@
 // each is a single hand-tuned block matched to that video's angle: a hook, a
 // comment-bait line (comments are the ranking signal), the verveq.com CTA, and
 // discovery hashtags. English only — same reason as everywhere else.
+// ---- campaign link tagging (batch 2.5, THE WEEKEND) ----
+// Mirrors weekend/captions.mjs exactly, because it is the same campaign and the
+// same funnel: every CLICKABLE link is tagged, distinct per channel, with
+// utm_content distinct per asset. On-screen end-cards stay clean "verveq.com".
+//
+// WHICH LINK THESE TWO CAPTIONS ASSUME. The video says "link in bio" and the
+// card says LINK IN BIO, so the destination a viewer actually reaches is the
+// CHANNEL BIO LINK — `utm_content=bio`, already pasted per
+// campaign/kits/bio-links-kit.md. That link is not repeated here; it is a
+// one-time profile setting, not a per-post paste, and re-stating it invites a
+// second untagged variant.
+// The per-asset links below are for the placements that take their own URL (IG
+// story sticker, YouTube description, an X cross-post) and they carry
+// `utm_content=<promo-slug>` so a join from this quiz is separable from a join
+// from the stinger. If the bio link has NOT been set, these captions' "link in
+// bio" resolves to an untagged profile URL — set the bio first.
+const WKND_UTM = (source, content) =>
+  `https://verveq.com/?utm_source=${source}&utm_medium=social&utm_campaign=weekend26&utm_content=${content}`;
+
+const wkndLinks = (slug) =>
+  [
+    "",
+    "LINKS — paste per platform, never post untagged:",
+    `  Bio link (what \"link in bio\" resolves to): ${WKND_UTM("tiktok", "bio")}`,
+    `  IG story sticker: ${WKND_UTM("instagram", slug)}`,
+    `  YouTube description: ${WKND_UTM("youtube", slug)}`,
+    `  X (if cross-posted): ${WKND_UTM("x", slug)}`,
+  ].join("\n");
+
 export const PROMO_CAPTIONS = {
   "settle-it":
     "You think you know football? One app, every mode, a new challenge every " +
@@ -353,6 +382,50 @@ export const PROMO_CAPTIONS = {
     "we're still not typing it.\n\n" +
     "New gauntlet daily. Career Path mode — free, no sign-up: verveq.com\n\n" +
     "#football #footballquiz #careerpath #guesstheplayer #footballtiktok",
+
+  // ---- LADDER-LONG batch 2.5 (2026-08-05) — the two WEEKEND-cast editions.
+  //
+  // Batch 2's caption shape is kept intact, including the order it fought for:
+  // SCORE ASK FIRST (typeable by someone who bailed at rung 4), withhold second
+  // (only typeable by someone who reached 68s). The campaign paragraph is a
+  // THIRD block that sits after both asks and before the verveq.com line — it
+  // never displaces a comment ask, because the comment is still what ranks the
+  // post and the waitlist click is the thing that happens to people who already
+  // stopped scrolling.
+  //
+  // Unchanged from every other caption in this lane: club paths verbatim from
+  // football_career_paths.json, no honours, no counts, no invented facts, and
+  // the withheld name appears nowhere — not here, not in the video, not in the
+  // filename. Campaign rules on top: launch copy says "late August" and never a
+  // date, and no sim-tunable number appears anywhere.
+  "ladder-long-five-leagues":
+    "Ten career paths. One player from each of the five big leagues — then " +
+    "all five over again 🌍\n\n" +
+    "What's your score out of nine? Drop the number 👇\n\n" +
+    // cp-kvaratskhelia, path verbatim. Name never stated, here or in the video.
+    "Then rung 10, the one we never answer: Dinamo Tbilisi → Rustavi → " +
+    "Lokomotiv Moscow → Rubin Kazan → Dinamo Batumi → Napoli → Paris " +
+    "Saint-Germain. Four clubs you can't place, two you can.\n\n" +
+    "Every name on this board is one you could draft this weekend. THE " +
+    "WEEKEND — five leagues, one squad, a fresh draft every week and no " +
+    "season-long grind. Late August, waitlist open now → link in bio.\n\n" +
+    "New gauntlet daily. Career Path mode — free, no sign-up: verveq.com\n\n" +
+    "#football #footballquiz #careerpath #fantasyfootball #footballtiktok" +
+    wkndLinks("ladder-long-five-leagues"),
+
+  "ladder-long-one-squad":
+    "Ten career paths. Ten players you could actually draft this weekend 📋\n\n" +
+    "Score out of nine in the comments — the rail was right there 👇\n\n" +
+    // cp-kim-min-jae, path verbatim.
+    "And rung 10, which stays blank: Gyeongju KHNP → Jeonbuk Hyundai Motors → " +
+    "Beijing Guoan → Fenerbahçe → Napoli → Bayern Munich. Nobody gets from the " +
+    "first two to the last two by accident.\n\n" +
+    "Draft them for real — THE WEEKEND. Five leagues, one squad, a fresh draft " +
+    "every week, and the crowd rates the players instead of an algorithm. Late " +
+    "August, waitlist open now → link in bio.\n\n" +
+    "New gauntlet daily. Career Path mode — free, no sign-up: verveq.com\n\n" +
+    "#football #footballquiz #careerpath #fantasyfootball #footballtiktok" +
+    wkndLinks("ladder-long-one-squad"),
 };
 
 export const buildPromoCaption = (name) => PROMO_CAPTIONS[name] ?? "";

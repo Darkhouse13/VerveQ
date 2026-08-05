@@ -34,12 +34,22 @@ export const vo = (key: string): VoLine | undefined => BY_KEY.get(key);
 // and `n5` ("Halfway. Number five.") measured 2.24s. It is the single carrier
 // line the fast grid cannot hold, so the fast arm says `n5f` instead. The other
 // eight count-ins measured <=1.92s and are shared by both paces unchanged.
+// TWO MORE ARE CAMPAIGN-DEPENDENT (batch 2.5), and they are the only things the
+// `campaign` field touches in the whole piece:
+//   open -> open3  `five-leagues` alone opens on THE WEEKEND's own pitch
+//                  ("Ten career paths. Five leagues. One squad."). `one-squad`
+//                  stays on `open2` — its deck argues the same case by casting.
+//   cta  -> cta3   both campaign editions close on the draft ask instead of the
+//                  score ask. The score ask does not disappear; it stays on the
+//                  card and in the caption, and only the VOICE moves.
 export const cuesFor = (ed: Edition): { key: string; at: number }[] => {
   const g = ed.grid;
   const f = cueFrames(ed);
   const b2 = ed.batch === 2;
   const fast = g.step < 210;
-  const cues: { key: string; at: number }[] = [{ key: b2 ? "open2" : "open", at: 0 }];
+  const wknd = ed.campaign === "weekend";
+  const open = ed.slug === "five-leagues" ? "open3" : b2 ? "open2" : "open";
+  const cues: { key: string; at: number }[] = [{ key: open, at: 0 }];
   f.counts.forEach((at, k) => {
     const n = k + 2; // n2…n10
     cues.push({ key: n === 5 && fast ? "n5f" : `n${n}`, at });
@@ -47,6 +57,6 @@ export const cuesFor = (ed: Edition): { key: string; at: number }[] => {
   f.answers.forEach((at, k) => cues.push({ key: `${ed.slug}-a${k + 1}`, at }));
   cues.push({ key: "withhold", at: f.withhold });
   if (b2) cues.push({ key: "follow", at: f.follow });
-  cues.push({ key: b2 ? "cta2" : "cta", at: f.cta });
+  cues.push({ key: wknd ? "cta3" : b2 ? "cta2" : "cta", at: f.cta });
   return cues.filter((c) => BY_KEY.has(c.key));
 };

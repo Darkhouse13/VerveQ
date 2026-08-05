@@ -140,6 +140,21 @@ export type Edition = {
   // the component for everyone.
   batch: 1 | 2;
   grid: Grid;
+  // WHICH CAMPAIGN, if any — a THIRD orthogonal field, for the same reason the
+  // first two are orthogonal to each other.
+  //
+  // Batch 2.5 (2026-08-05) is a CASTING variant: it reuses batch 2's surface set
+  // EXACTLY — score rail, follow card, `?/9` ask — and changes one line of
+  // closing copy plus the wordmark that line points at. Neither existing field
+  // could carry that. Gating the swap on `batch` would have invented a batch 3
+  // and dragged a whole surface set behind a copy change, which is the precise
+  // thing that would contaminate the cadence A/B still running underneath.
+  // Gating it on `grid` would have welded a campaign to a pace.
+  //
+  // So the campaign is its own axis and it gates exactly two things: the closing
+  // VO key (`cta2` -> `cta3`) and the wordmark block on the CTA card. Nothing
+  // else in the piece reads this field.
+  campaign?: "weekend";
   rungs: Rung[]; // exactly 10; index 9 is withheld
 };
 
@@ -324,6 +339,78 @@ export const EDITIONS: Edition[] = [
       { id: "cp-pires", tier: "IMPOSSIBLE", answer: "PIRÈS", clubs: ["Reims","Metz","Marseille","Arsenal","Villarreal","Aston Villa","FC Goa"] },
       // WITHHELD
       { id: "cp-robben", tier: "IMPOSSIBLE", answer: "ROBBEN", clubs: ["Groningen","PSV Eindhoven","Chelsea","Real Madrid","Bayern Munich","Groningen"] },
+    ],
+  },
+  // ---- BATCH 2.5 (2026-08-05) — the two WEEKEND-cast editions ----
+  //
+  // Batch 2's spec is FROZEN here, deliberately and completely: same surfaces
+  // (score rail, follow card, `?/9`), same carrier, same 7.00s control grid, no
+  // trending sound. The cadence A/B is still being read off batch 2's four
+  // editions, and a campaign edition that also moved a format variable would
+  // add a confound to a live experiment for no gain.
+  //
+  // BOTH RUN 7.00s CONTROL. The 5.50s arm is still unproven — that is the entire
+  // point of the batch-2 A/B, which has not reported yet — and campaign assets
+  // are the last place to spend an untested variable. If the fast arm wins, the
+  // next campaign cut can take it with evidence.
+  //
+  // What DOES vary is casting intent and one line of closing copy. Both decks
+  // are CURRENT players only, because both are arguing for a mode you draft with
+  // this weekend's actual teams: a retired name is a fine quiz answer and a
+  // terrible advert for a live draft.
+  {
+    slug: "five-leagues",
+    title: "FIVE LEAGUES, ONE SQUAD",
+    batch: 2,
+    grid: GRID_7,
+    campaign: "weekend",
+    rungs: [
+      // THE PREMISE IS THE STRUCTURE. THE WEEKEND's pitch is "five leagues, one
+      // squad", so the deck is TWO FULL PASSES THROUGH THE FIVE LEAGUES, in the
+      // same order both times — rungs 1-5 are one player currently in each of
+      // La Liga / Bundesliga / Serie A / Premier League / Ligue 1, and rungs
+      // 6-10 are a second one each. Nothing on screen announces that (the card
+      // shows clubs, not competitions), but it is why the deck can carry the
+      // claim, and it means the withheld rung cannot be the only thing holding a
+      // league up: every league is represented in the ANSWERED nine as well.
+      { id: "cp-dani-carvajal", tier: "EASY", answer: "CARVAJAL", clubs: ["Bayer Leverkusen","Real Madrid"] },
+      { id: "cp-kimmich", tier: "EASY", answer: "KIMMICH", clubs: ["RB Leipzig","Bayern Munich"] },
+      { id: "cp-pulisic", tier: "MEDIUM", answer: "PULISIC", clubs: ["Borussia Dortmund","Chelsea","AC Milan"] },
+      { id: "cp-alisson", tier: "MEDIUM", answer: "ALISSON", clubs: ["Internacional","Roma","Liverpool"] },
+      { id: "cp-vitinha", tier: "MEDIUM", answer: "VITINHA", clubs: ["Porto","Wolverhampton Wanderers","Porto","Paris Saint-Germain"] },
+      { id: "cp-vlahovic", tier: "HARD", answer: "VLAHOVIĆ", clubs: ["Partizan Belgrade","Fiorentina","Juventus"] },
+      { id: "cp-michael-olise", tier: "HARD", answer: "OLISE", clubs: ["Reading","Crystal Palace","Bayern Munich"] },
+      { id: "cp-raphinha", tier: "HARD", answer: "RAPHINHA", clubs: ["Vitória de Guimarães","Sporting CP","Rennes","Leeds United","Barcelona"] },
+      { id: "cp-andrew-robertson", tier: "IMPOSSIBLE", answer: "ROBERTSON", clubs: ["Queen's Park","Dundee United","Hull City","Liverpool"] },
+      // WITHHELD — obscure head (four clubs nobody outside Georgia and Russia
+      // can place), famous tail (Napoli -> PSG), and still the Ligue 1 slot.
+      { id: "cp-kvaratskhelia", tier: "IMPOSSIBLE", answer: "KVARATSKHELIA", clubs: ["Dinamo Tbilisi","Rustavi","Lokomotiv Moscow","Rubin Kazan","Dinamo Batumi","Napoli","Paris Saint-Germain"] },
+    ],
+  },
+  {
+    slug: "one-squad",
+    title: "THE DRAFT BOARD",
+    batch: 2,
+    grid: GRID_7,
+    campaign: "weekend",
+    rungs: [
+      // TEN PLAYERS A DRAFTER COULD ACTUALLY PICK THIS MONTH, cast in the shape
+      // of a squad rather than a highlight reel: one keeper, three defenders,
+      // three midfielders, three forwards. `number-ones` proved a positional
+      // deck reads as a different puzzle even though the card never states a
+      // position — the shape is felt, not announced.
+      { id: "cp-rodrygo", tier: "EASY", answer: "RODRYGO", clubs: ["Santos","Real Madrid"] },
+      { id: "cp-davies", tier: "EASY", answer: "DAVIES", clubs: ["Vancouver Whitecaps","Bayern Munich"] },
+      { id: "cp-mike-maignan", tier: "MEDIUM", answer: "MAIGNAN", clubs: ["Lille","AC Milan"] },
+      { id: "cp-valverde", tier: "MEDIUM", answer: "VALVERDE", clubs: ["Peñarol","Deportivo La Coruña","Real Madrid"] },
+      { id: "cp-alessandro-bastoni", tier: "MEDIUM", answer: "BASTONI", clubs: ["Atalanta","Parma","Inter Milan"] },
+      { id: "cp-frenkie-de-jong", tier: "HARD", answer: "DE JONG", clubs: ["Willem II","Ajax","Barcelona"] },
+      { id: "cp-bruno-guimaraes", tier: "HARD", answer: "BRUNO GUIMARÃES", clubs: ["Audax","Athletico Paranaense","Lyon","Newcastle United"] },
+      { id: "cp-rasmus-hojlund", tier: "HARD", answer: "HØJLUND", clubs: ["Copenhagen","Sturm Graz","Atalanta","Manchester United","Napoli"] },
+      { id: "cp-gnabry", tier: "IMPOSSIBLE", answer: "GNABRY", clubs: ["Arsenal","West Bromwich Albion","Werder Bremen","Hoffenheim","Bayern Munich"] },
+      // WITHHELD — a Korean power-company side and a Chinese one into Napoli and
+      // Bayern. Same law as every rung 10: unguessable head, reachable tail.
+      { id: "cp-kim-min-jae", tier: "IMPOSSIBLE", answer: "KIM MIN-JAE", clubs: ["Gyeongju KHNP","Jeonbuk Hyundai Motors","Beijing Guoan","Fenerbahçe","Napoli","Bayern Munich"] },
     ],
   },
 ];

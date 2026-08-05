@@ -183,6 +183,7 @@ properties this lane is built around, and none of them is "shorter":
 | `chain` | `Chain` | relay: "played for both — I'll start, your turn" | 11.0s | slot 5, and Ronaldo |
 | `wall` | `Wall` | 3×3 wall of nine paths under a 10s clock | 13.0s | seven of nine answers |
 | `ladder-long-*` | `LadderLong-*` | ten paths, easy→impossible, metronomic rungs, narrated | 76.0 / 78.0 / 63.0s | rung 10's answer |
+| `ladder-long-five-leagues`, `-one-squad` | `LadderLong-*` | as above, cast for THE WEEKEND, campaign closer | 78.0s | rung 10's answer |
 
 `chain` leaves out the single most famous qualifying player deliberately —
 being the one to point out the obvious omission is the most reliable comment
@@ -197,7 +198,7 @@ quiz lane will later post a single-path video for a player these already spent.
 npm run promo -- ladder chain wall
 ```
 
-### `ladder-long` — the lane rebuilt on measured cadence (8 editions, narrated)
+### `ladder-long` — the lane rebuilt on measured cadence (10 editions, narrated)
 
 `ladder` was built before we had measured anything. Two studies since:
 
@@ -238,7 +239,7 @@ VO slot at 2.00s in both arms, so answer takes are pace-independent.
 | follow-hook card | — | 2.00s | 2.00s |
 | CTA card | 3.00s | 3.00s | 3.00s |
 | running score rail | — | yes, `/9` | yes, `/9` |
-| editions | `all-timers`, `premier-league`, `modern`, `journeymen` | `number-ones`, `hard-way-up` | `old-guard`, `grand-tour` |
+| editions | `all-timers`, `premier-league`, `modern`, `journeymen` | `number-ones`, `hard-way-up`, + batch 2.5's `five-leagues`, `one-squad` | `old-guard`, `grand-tour` |
 
 Tiers are 2 EASY / 3 MEDIUM / 3 HARD / 2 IMPOSSIBLE in every edition, and rung 10 is
 never drawn, never spoken, and named only by its club path in the caption.
@@ -260,12 +261,31 @@ at 68s, so the only people who could answer it were the ones who had already wat
 - **the follow hook** — one card and one line before the CTA, positioning tomorrow's
   puzzle rather than the brand. It is the only beat in the piece that resolves upward.
 
+**Batch 2.5 (2026-08-05) — two campaign cuts, and a third orthogonal field.**
+`five-leagues` and `one-squad` are cast for THE WEEKEND (see `CAMPAIGN_LEDGER.md`).
+They freeze batch 2's spec *exactly* — same surfaces, same carrier, both on the 7.00s
+control grid — because the cadence A/B has not reported yet and a campaign cut that
+also moved a format variable would confound a live experiment. The only deltas are
+casting intent (both decks are **current players only**, so the quiz argues for a mode
+you draft with this weekend's teams) and one line of closing copy.
+
+That copy swap rides a third field, `campaign`, orthogonal to both `batch` and `grid`
+for the same reason those two are orthogonal to each other: gating it on `batch` would
+have dragged a whole surface set behind a copy change, and gating it on `grid` would
+have welded a campaign to a pace. It reaches exactly two things — the closing VO key
+(`cta2` → `cta3`) and the wordmark block on the CTA card. The campaign's look is
+allowed on that card and nowhere else in the lane, so its total exposure is the card's
+own 3.00s, and it is set in brand type rather than as artwork (the no-imagery rule
+covers logos as much as crests). The comment asks do not move: `?/9` and `AND NUMBER
+10` stay on the card, and the captions still lead with the score.
+
 ```
 npm run promo -- ladder-long-all-timers        # one edition
 npm run promo -- ladder-long-old-guard ladder-long-grand-tour
+npm run promo -- ladder-long-five-leagues ladder-long-one-squad
 ```
 
-**Casting is a production step, not a lookup.** All forty paths are S-tier names
+**Casting is a production step, not a lookup.** Every path in the lane is an S-tier name
 (casting law, `ladder/timeline.ts`), capped at 7 clubs so a whole path always fits the
 card — that is a *selection* constraint and never a licence to truncate a longer path.
 Rung 10 obeys the stricter half of the law: an obscure head so it isn't free, a famous

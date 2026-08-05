@@ -29,6 +29,8 @@ asset state; update it every loop.
 | Week-0 X thread (7 posts) | Tease | **READY TO POST** | `campaign/x/week0-thread.md` | Post, pin post 1 |
 | Bio links (4 channels) | Week 0 | **KIT READY** (~10 min) | `campaign/kits/bio-links-kit.md` | Paste 4 URLs |
 | Teaser-card recording | Week 0 | **KIT READY** (~20 min) | `campaign/kits/teaser-recording-kit.md` | Record 2 clips → `public/product/weekend-teaser-*.mp4` |
+| `ladder-long-five-leagues` (78.0s quiz) | Argue I | **RENDERED — PROOF ONLY**, 20 VO lines unwritten (no `FAL_KEY`) | `out/2026-08-05/verveq-ladder-long-five-leagues.mp4` + caption `.txt` (tagged links inside); see `LADDER_LONG_BATCH2_5.md` | Run the VO command (§6), re-render, then post. **Bio links kit is a prerequisite** — "link in bio" is the CTA |
+| `ladder-long-one-squad` (78.0s quiz) | Argue I | **RENDERED — PROOF ONLY**, same 20 lines | `out/2026-08-05/verveq-ladder-long-one-squad.mp4` + caption `.txt` | as above |
 | `wknd-bench` | Argue I | queued (next loop) | — | — |
 | Dave × WEEKEND film kit (`dave-bench`) | Argue I | queued — prompts + envelope workflow to spec (~45 min owner shoot, Higgsfield credits) | — | Shoot when kit lands (Aug 4–10 calendar slot) |
 | `wknd-referee` | Argue II | queued | — | — |
@@ -43,7 +45,10 @@ asset state; update it every loop.
 
 - **Jul 29 – Aug 3 (TEASE)**: stinger + manifesto + thread out; owner
   does bio links + teaser recording.
-- **Aug 4 – 10 (ARGUE I)**: `wknd-bench` + Dave shoot window.
+- **Aug 4 – 10 (ARGUE I)**: `wknd-bench` + Dave shoot window, plus the two
+  WEEKEND-cast `ladder-long` quizzes (the retention lane pointed at the
+  waitlist — the format is already proven, only the casting and the closing
+  line are campaign).
 - **Aug 11 – 17 (ARGUE II)**: `wknd-referee`, `wknd-deadseason`.
 - **Aug 18 – 23 (RIDE THE SEASON, opens Aug 21–22)**: `wknd-removed`,
   `wknd-draftnight`; count phase if A1 floor passed.

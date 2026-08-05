@@ -84,12 +84,16 @@ export const planLines = () => {
     const g = ed.grid;
     const b2 = ed.batch === 2;
     const fast = g.step < GRIDS.GRID_7.step;
-    add(b2 ? "open2" : "open", "open", g);
+    const wknd = ed.campaign === "weekend";
+    // `five-leagues` states the mode's own pitch as the quiz's premise, so it is
+    // the one edition with its own open. `one-squad` keeps `open2` — the deck
+    // makes that argument by casting, and does not need the voice to say it.
+    add(ed.slug === "five-leagues" ? "open3" : b2 ? "open2" : "open", "open", g);
     for (let n = 2; n <= 10; n++) add(n === 5 && fast ? "n5f" : `n${n}`, "count", g);
     for (let k = 1; k <= 9; k++) add(`${ed.slug}-a${k}`, "answer", g);
     add("withhold", "withhold", g);
     if (b2) add("follow", "follow", g);
-    add(b2 ? "cta2" : "cta", "cta", g);
+    add(wknd ? "cta3" : b2 ? "cta2" : "cta", "cta", g);
   }
   return plan;
 };
@@ -169,6 +173,46 @@ export const SHARED = [
   // "out of nine" was the cut, for the same reason as `open2`: the card is
   // showing "? / 9" in 168pt lime while this is spoken. Both asks survive intact.
   { key: "cta2", slot: "cta", text: "Your score? And number ten?" },
+
+  // ---- BATCH 2.5 (2026-08-05) — the two WEEKEND-cast editions ----
+  // Two lines, and they are the whole copy delta. Everything else in the
+  // carrier is batch 2's, unchanged and un-rebilled.
+
+  // `open3` — `five-leagues` only, and it is THE WEEKEND's own pitch used as the
+  // quiz's premise. The campaign's stinger opens on "FIVE LEAGUES." and the
+  // mode's one-line description is "five leagues, one squad"; saying it over ten
+  // career paths makes the quiz an argument for the mode instead of an advert
+  // bolted to the end of one. `one-squad` deliberately does NOT get this — its
+  // deck makes the same case by casting, and two editions opening on the same
+  // slogan would read as a template.
+  //
+  // Budget is the 7.00s arm's 5.00s (both campaign editions run the control
+  // grid), so this line has 1.50s more room than `open2` had to live inside.
+  { key: "open3", slot: "open", text: "Ten career paths. Five leagues. One squad." },
+
+  // `cta3` — the closer for both campaign editions. The comment asks do NOT
+  // leave: they stay on the card in 168pt and 86pt exactly as batch 2 shipped
+  // them, and the captions still lead with the score. What changes is what the
+  // VOICE spends its last three seconds on, because the card cannot say this
+  // and the caption is read after the fact.
+  //
+  // NOT MEASURED YET — no FAL_KEY in this environment (see LADDER_LONG_BATCH2_5.md
+  // §6). Predicted at ~3.5s against a 3.00s slot on batch 2's measured rate for
+  // this voice (~2.5 words/sec on short sentences: `cta2`'s 8-word draft came
+  // back at 3.20s), so EXPECT the fit check to throw here.
+  //
+  // The fallback is pre-approved and the rule that picks it is batch 2's, not a
+  // fresh judgement: WHEN A LINE OVERRUNS, CUT WHATEVER THE SCREEN IS ALREADY
+  // SAYING. The card carries the wordmark in 96pt lime while this plays, so the
+  // clause that goes is "THE WEEKEND" and the swap is:
+  //
+  //     text: "Draft them for real. Link in bio."
+  //
+  // Both halves of the ask survive that cut — the instruction and the pointer —
+  // and the wordmark is on screen either way. Re-running after the edit re-bills
+  // this line ONLY; the manifest keys on text, so the 18 answers below are
+  // served from cache.
+  { key: "cta3", slot: "cta", text: "Draft them for real. THE WEEKEND — link in bio." },
 ];
 
 // ---- the nine answer names per edition ----
@@ -195,6 +239,16 @@ export const ANSWERS = {
   "hard-way-up": ["Cole Palmer.", "Cody Gakpo.", "Rafael Leão.", "John Stones.", "Maguire.", "Mahrez.", "Osimhen.", "Jorginho.", "Gyökeres."],
   "old-guard": ["Van Basten.", "Xavi.", "Nesta.", "Lilian Thuram.", "Emmanuel Petit.", "Miroslav Klose.", "Gattuso.", "Desailly.", "Roberto Baggio."],
   "grand-tour": ["Vinícius.", "Rúben Dias.", "Tchouaméni.", "De Ligt.", "David Alaba.", "Kovačić.", "Çalhanoğlu.", "Xabi Alonso.", "Robert Pirès."],
+
+  // ---- batch 2.5 ----
+  // Same law, third time: a surname of three or more syllables goes alone, a
+  // one- or two-syllable surname is given its first name because Charlie draws
+  // a short lone word out ("Gerrard." 2.32s vs "Steven Gerrard." 1.36s). So
+  // Kimmich, Davies, Maignan, Højlund, Gnabry and Olise are named in full, and
+  // Carvajal, Pulisic, Alisson, Vitinha, Vlahović, Raphinha, Rodrygo, Bastoni
+  // are not. Nine long, both of them — rung 10 has no take, in either deck.
+  "five-leagues": ["Carvajal.", "Joshua Kimmich.", "Pulisic.", "Alisson.", "Vitinha.", "Vlahović.", "Michael Olise.", "Raphinha.", "Andrew Robertson."],
+  "one-squad": ["Rodrygo.", "Alphonso Davies.", "Mike Maignan.", "Federico Valverde.", "Bastoni.", "Frenkie de Jong.", "Bruno Guimarães.", "Rasmus Højlund.", "Serge Gnabry."],
 };
 
 export const LINES = [

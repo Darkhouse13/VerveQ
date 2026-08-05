@@ -183,6 +183,8 @@ export const LadderLong: React.FC<{ slug?: string }> = ({ slug = "all-timers" })
   const { clubIn: CLUB_IN, clubGap: CLUB_GAP, thinkAt: THINK_AT, tickAt: TICK_AT, answerAt: ANSWER_AT } = g;
   const WITHHELD_AT = ANSWER_AT; // rung 10: the demand lands where an answer would
   const b2 = ed.batch === 2;
+  // Batch 2.5. Gates ONE block, on ONE card, for 3.00s — see the CTA below.
+  const wknd = ed.campaign === "weekend";
   const frame = useCurrentFrame();
   const { i, phase, follow, cta } = locate(frame, ed);
   const ended = follow || cta; // either closing card is up; the rung grid is done
@@ -595,9 +597,58 @@ export const LadderLong: React.FC<{ slug?: string }> = ({ slug = "all-timers" })
               </div>
             </>
           )}
+          {/* THE WEEKEND WORDMARK — batch 2.5 only, and the ONLY frame of this
+              lane where the campaign's look is allowed on screen. It lives on
+              the CTA card and nowhere else, so its total exposure is the card's
+              own 90f / 3.00s and it can never overlap a rung.
+              Set in brand type (FONTS.head, same as the campaign's stinger sets
+              it) rather than as artwork — the standing no-imagery rule covers
+              logos as much as crests and likenesses, and lime on ink is the
+              campaign's own palette, not a new one. */}
+          {wknd && (
+            <div style={{ marginTop: 48, textAlign: "center" }}>
+              <div
+                style={{
+                  fontFamily: FONTS.head,
+                  fontWeight: 700,
+                  fontSize: 30,
+                  letterSpacing: 8,
+                  color: COLORS.cream,
+                  opacity: 0.8,
+                }}
+              >
+                THE
+              </div>
+              <div
+                style={{
+                  fontFamily: FONTS.head,
+                  fontWeight: 700,
+                  fontSize: 96,
+                  lineHeight: 0.94,
+                  letterSpacing: -3,
+                  color: COLORS.lime,
+                }}
+              >
+                WEEKEND
+              </div>
+              <div
+                style={{
+                  marginTop: 14,
+                  fontFamily: FONTS.mono,
+                  fontWeight: 700,
+                  fontSize: 24,
+                  letterSpacing: 2,
+                  color: COLORS.cream,
+                  opacity: 0.75,
+                }}
+              >
+                DRAFT THEM FOR REAL · LINK IN BIO
+              </div>
+            </div>
+          )}
           <div
             style={{
-              marginTop: 56,
+              marginTop: wknd ? 40 : 56,
               fontFamily: FONTS.mono,
               fontWeight: 700,
               fontSize: 26,
