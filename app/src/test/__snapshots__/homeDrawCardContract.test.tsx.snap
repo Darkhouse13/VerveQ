@@ -169,7 +169,7 @@ exports[`HomeDrawCard — no layout shift for non-draw users > flag off: Home re
       </div>
     </nav>
     <div
-      class="contents xl:flex xl:flex-col xl:w-full xl:flex-1 xl:min-h-0 xl:max-h-[50rem] xl:my-auto"
+      class="contents xl:flex xl:flex-col xl:w-full xl:flex-1 xl:min-h-0 xl:max-h-[50rem] xl:mb-auto"
     >
       <main
         class="flex-1 min-h-0 w-full mx-auto max-w-md md:max-w-6xl px-5 md:px-8 overflow-y-auto overflow-x-hidden scrollbar-none md:overflow-hidden pb-4 md:pb-6"

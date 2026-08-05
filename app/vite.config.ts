@@ -31,6 +31,32 @@ const POSTHOG_URL_PATTERN = /^https:\/\/[^/]+\.posthog\.com\//;
 // — both as a navigation (denylist) and as a subresource (NetworkOnly).
 const SHARE_ROUTE_PATTERN = /^\/s\/d\//;
 
+// ── The static layer ────────────────────────────────────────────────────────
+// nginx serves these from disk (`location /` → `try_files $uri $uri/`) and the
+// SPA router has no route for any of them. They are NOT SPA paths, so a
+// navigation must reach the network; answering one from `navigateFallback`
+// hands back index.html and the app renders its own 404.
+//
+// This is not hypothetical: /games/* shipped missing from the denylist, so a
+// first-time visitor (no SW yet) and a crawler got the real SEO landing pages
+// while any RETURNING visitor — precisely the population the SW exists for —
+// got a 404. A denylist gap fails asymmetrically like this by construction,
+// which is why the set below is derived from nginx + public/ rather than from
+// the one case that was observed.
+//
+// /privacy and /terms are deliberately absent: those ARE SPA routes
+// (App.tsx:585-586) and must keep falling back to the shell. Same for
+// /s/r/:slug (App.tsx:579) — only /s/d/ is proxied away from the SPA.
+const STATIC_PAGES_PATTERN = /^\/games(?:\/|$)/;
+const STATIC_ASSET_DIR_PATTERN = /^\/(?:og|arena-logos)\//;
+const WEBMANIFEST_PATTERN = /^\/manifest\.webmanifest$/;
+// Mirrors deploy/nginx.conf's `location ~* \.(js|css|png|...)$` rule. Catches
+// /sw.js, /workbox-*.js, /vq-logo.png, /placeholder.svg, /pwa-*.png and the
+// apple-touch icons in one place instead of enumerating files that change.
+// Safe as a blanket rule because no SPA route ends in a file extension.
+const STATIC_FILE_EXT_PATTERN =
+  /\.(?:js|css|png|jpe?g|gif|ico|svg|webp|woff2?)$/i;
+
 // Source-map upload to Sentry runs only when the deploy host provides the
 // full credential set (plus the release SHA the maps belong to). When it
 // does: maps are built as 'hidden' (no sourceMappingURL reference in the
@@ -107,10 +133,13 @@ export default defineConfig(({ mode }) => ({
         // index.html out of the precache and soft-404 as the app.
         navigateFallbackDenylist: [
           SHARE_ROUTE_PATTERN,
+          STATIC_PAGES_PATTERN,
+          STATIC_ASSET_DIR_PATTERN,
+          WEBMANIFEST_PATTERN,
+          STATIC_FILE_EXT_PATTERN,
           /^\/healthz$/,
           /^\/robots\.txt$/,
           /^\/sitemap\.xml$/,
-          /^\/og\//,
           /\.map$/,
         ],
         runtimeCaching: [

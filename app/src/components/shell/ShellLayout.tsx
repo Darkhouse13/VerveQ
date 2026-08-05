@@ -106,7 +106,16 @@ export function ShellLayout({
       {/* Desktop canvas group: `contents` is a no-op below xl, keeping those
           layouts byte-identical; at xl+ it becomes the bounded, centered
           flex column the header and main lay out inside. */}
-      <div className="contents xl:flex xl:flex-col xl:w-full xl:flex-1 xl:min-h-0 xl:max-h-[50rem] xl:my-auto">
+      {/* The height cap stays — it is what keeps a tall monitor from stretching
+          a short screen's content into a smear. What changed (HF-2) is where
+          the leftover height goes: `my-auto` split it evenly ABOVE and below,
+          so the taller the viewport the further down the page began. Measured
+          at 1600x1200 that was a 166px empty band before any content, and it
+          grows with viewport height (~286px at 1600x1440). Sending the whole
+          remainder downwards with `mb-auto` top-aligns the canvas under the
+          nav; the cap still bites, the dead band just falls below the fold
+          where an unfilled page normally ends. */}
+      <div className="contents xl:flex xl:flex-col xl:w-full xl:flex-1 xl:min-h-0 xl:max-h-[50rem] xl:mb-auto">
       {(title || back || headerRight) && (
         <header className="shrink-0 w-full">
           <div
