@@ -1,11 +1,8 @@
 # LADDER-LONG — batch 2 of 2 (2026-08-05)
 
-Four editions rendered. **Forty new VO lines are NOT generated** — there is no
-`FAL_KEY` in this environment — so the four MP4s in `out/2026-08-05/` are
-**proofs**, not shipping cuts. Everything else is complete: casting, both grids,
-the scoreboard, the follow hook, the SFX beds, the captions and the ledger.
-
-See §7 for the one command that finishes them.
+Four editions rendered, **narrated, complete.** Forty new VO lines generated
+against the owner's `FAL_KEY` and cached to `promo/vo-cache-ladderlong/` — the
+cache now holds all 88 lines and renders are offline from here.
 
 ---
 
@@ -191,7 +188,7 @@ Two new guards came with it:
 - **`--plan`** — prints every line's derived slot budget and which paces speak it,
   generating nothing.
 
-## 7. VO state — 40 lines outstanding, and what it costs
+## 7. VO state — done, cached, offline from here
 
 Slot budgets are now *derived* from the grid rather than written down, and a line
 spoken by both arms is held to the tighter of the two:
@@ -210,24 +207,34 @@ and all 48 still fit — zero re-voicing, no re-billing.** The one carrier line 
 2.00s window), so the fast arm says `n5f` ("Halfway. Five.") instead. The halfway
 marker is a retention beat and worth keeping; "Number" is the part that can go.
 
-**40 lines to generate** — 36 answers + `open2` + `n5f` + `follow` + `cta2`:
+**40 lines generated** — 36 answers + `open2` + `n5f` + `follow` + `cta2` — with the
+48 existing lines served from cache and not re-billed. Final: **88/88 fit, zero
+overruns.**
 
-```
-FAL_KEY=… node promo/ladderlong-vo.mjs
-npm run promo -- ladder-long-number-ones ladder-long-hard-way-up \
-                 ladder-long-old-guard ladder-long-grand-tour
-```
+The fit check threw twice on the real take, and both throws were right. Note *which*
+lines: the prediction going in was that the short lone surnames would drag, as
+`"Gerrard."` did in batch 1. **Every one of the 36 answer names fit first time**
+(0.56s–1.68s against a 2.00s slot; the shortest was `"Mahrez."`). What overran was
+the opposite — the two longest new sentences:
 
-The 48 existing lines are served from cache and **not re-billed** — the manifest keys
-on the text. Generation measures every new line against its slot and **throws** on
-overrun, so a line that doesn't fit fails loudly rather than talking over the next
-beat. Batch 1 had two such throws (`n10` and `all-timers-a2`) and both were real; if
-one of these forty overruns, shorten the line, never the grid. The likeliest
-candidates are the short lone surnames (`Xavi.`, `Nesta.`, `Maguire.`) — batch 1
-learned that Charlie draws those out, which is why the one- and two-syllable names
-below already carry a first name.
+| line | measured | slot | fix |
+|---|---|---|---|
+| `open2` "Ten career paths. They get harder. Keep score." | 3.76s | 3.50s | → "Ten career paths. Keep score." (2.64s) |
+| `cta2` "Your score out of nine? And number ten?" | 3.20s | 3.00s | → "Your score? And number ten?" (2.72s) |
 
-## 8. Renders — proofs, not cuts
+Both cuts removed a clause the **card was already showing while the line played** —
+the header reads "10 CAREER PATHS. THEY GET WORSE." in 88pt, and the CTA shows
+"? / 9" in 168pt lime. That is batch 1's `n10` lesson again ("the tier pill already
+says IMPOSSIBLE, so the voice spends its beat on stakes instead of repeating the
+card"), and it is worth stating as a rule: **when a line overruns, the first thing to
+cut is whatever the screen is already saying.** Both asks and the score seed survive
+intact; only the duplication went.
+
+Note also that the binding constraint on both was the **5.50s arm** — at 7.00s alone
+each would have fit. The A/B tightened the copy for the control arm too, which is a
+real cost of sharing one carrier and worth knowing before the next cadence test.
+
+## 8. Renders
 
 ```
 out/2026-08-05/verveq-ladder-long-number-ones.mp4   78.06s  5.77 MB  (+ .txt)
@@ -236,12 +243,26 @@ out/2026-08-05/verveq-ladder-long-old-guard.mp4     63.06s  4.72 MB  (+ .txt)
 out/2026-08-05/verveq-ladder-long-grand-tour.mp4    63.06s  4.99 MB  (+ .txt)
 ```
 
-All 1080×1920, 30fps, h264 + AAC. They carry the SFX bed and the eleven shared
-carrier lines that were already cached, which is enough to confirm the count-ins land
-correctly against the new 5.50s grid. They are silent at all forty new cues.
+All 1080×1920, 30fps, h264 + AAC.
 
-Verified on the rendered files: rung-10 answers appear in **zero** captions, zero
-filenames, and never on the rail (which holds `?????` through both closing cards).
+### VO placement, verified
+
+"The voice is in there" is not proof it landed where it should. Each render's audio
+was differenced against its own pure SFX bed (`public/promo/ladderlong-<slug>.wav`) at
+100ms resolution: the bed is scaled by the least-squares gain that best explains the
+render, and whatever energy is left over is the voice.
+
+**22/22 cues carry voice energy on frame, in all four editions** — `open2` at 0.00s,
+each count-in on its rung boundary, each answer at `answerAt`, `withhold`, `follow`
+and `cta2` on their cards. The weakest margin across all 88 cues was **31× the
+baseline**, so nothing is marginal. The 5.50s arm's cues are as clean as the 7.00s
+arm's, which is the specific thing that could have gone wrong when the grid moved.
+
+### The withhold, verified
+
+Rung-10 answers appear in **zero** captions, **zero** filenames, **zero** VO lines
+(the ANSWERS arrays are nine long by construction), and never on the rail — which
+holds `?????` through the follow card and the CTA.
 
 ## 9. What did NOT change
 

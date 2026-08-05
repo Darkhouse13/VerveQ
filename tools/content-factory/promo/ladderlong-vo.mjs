@@ -134,13 +134,18 @@ export const SHARED = [
   // answer it were the ones who had already watched 68 seconds. These make the
   // piece askable from the start and give a reason to come back.
 
-  // `open2` replaces `open` for batch 2. It spends its last two words seeding
-  // the scoreboard instead of echoing the on-screen header — "HOW FAR DO YOU
-  // GET?" is already set in 88pt type at the top of frame 0, and a voice that
-  // reads the screen aloud is wasted. Note the budget: this line is spoken by
-  // BOTH arms and so has to clear the 5.50s arm's first answer at 3.50s, a full
-  // 1.50s tighter than the window batch 1's `open` was written to.
-  { key: "open2", slot: "open", text: "Ten career paths. They get harder. Keep score." },
+  // `open2` replaces `open` for batch 2, seeding the scoreboard instead of
+  // echoing the on-screen header. This line is spoken by BOTH arms, so it has to
+  // clear the 5.50s arm's first answer at 3.50s — a full 1.50s tighter than the
+  // window batch 1's `open` was written to.
+  //
+  // "Ten career paths. They get harder. Keep score." measured 3.76s against that
+  // 3.50s slot. The clause that went is the one the screen already carries twice:
+  // the header reads "10 CAREER PATHS. THEY GET WORSE." in 88pt at frame 0, and
+  // the tier pill escalates EASY->IMPOSSIBLE in front of you. Same call as batch
+  // 1's `n10` — the voice spends its beat on the thing that is NOT on the card,
+  // and here that is the score. 3.76s -> comfortably inside 3.50s.
+  { key: "open2", slot: "open", text: "Ten career paths. Keep score." },
 
   // The one carrier line the fast grid cannot hold. "Halfway. Number five."
   // measured 2.24s against the 5.50s arm's 2.00s count-in budget, so the fast
@@ -159,7 +164,11 @@ export const SHARED = [
   // second. That order is the point — the score is answerable by everyone who
   // watched any of it, the name only by the ones who lasted, and the cheap ask
   // going first is what turns a scroll-away into a comment.
-  { key: "cta2", slot: "cta", text: "Your score out of nine? And number ten?" },
+  //
+  // "Your score out of nine? And number ten?" measured 3.20s in a 3.00s slot.
+  // "out of nine" was the cut, for the same reason as `open2`: the card is
+  // showing "? / 9" in 168pt lime while this is spoken. Both asks survive intact.
+  { key: "cta2", slot: "cta", text: "Your score? And number ten?" },
 ];
 
 // ---- the nine answer names per edition ----

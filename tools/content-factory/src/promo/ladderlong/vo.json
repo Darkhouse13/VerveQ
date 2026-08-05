@@ -348,6 +348,113 @@
       ]
     },
     {
+      "key": "open2",
+      "slot": "open",
+      "text": "Ten career paths. Keep score.",
+      "dur": 2.64,
+      "words": [
+        {
+          "word": "Ten",
+          "t0": 0,
+          "t1": 0.24
+        },
+        {
+          "word": "career",
+          "t0": 0.286,
+          "t1": 0.56
+        },
+        {
+          "word": "paths.",
+          "t0": 0.653,
+          "t1": 1.56
+        },
+        {
+          "word": "Keep",
+          "t0": 1.6480000000000001,
+          "t1": 2
+        },
+        {
+          "word": "score.",
+          "t0": 2.067,
+          "t1": 2.64
+        }
+      ]
+    },
+    {
+      "key": "n5f",
+      "slot": "count",
+      "text": "Halfway. Five.",
+      "dur": 1.92,
+      "words": [
+        {
+          "word": "Halfway.",
+          "t0": 0,
+          "t1": 0.64
+        },
+        {
+          "word": "Five.",
+          "t0": 0.864,
+          "t1": 1.92
+        }
+      ]
+    },
+    {
+      "key": "follow",
+      "slot": "follow",
+      "text": "New gauntlet daily.",
+      "dur": 1.68,
+      "words": [
+        {
+          "word": "New",
+          "t0": 0,
+          "t1": 0.24
+        },
+        {
+          "word": "gauntlet",
+          "t0": 0.293,
+          "t1": 0.8
+        },
+        {
+          "word": "daily.",
+          "t0": 0.907,
+          "t1": 1.68
+        }
+      ]
+    },
+    {
+      "key": "cta2",
+      "slot": "cta",
+      "text": "Your score? And number ten?",
+      "dur": 2.72,
+      "words": [
+        {
+          "word": "Your",
+          "t0": 0,
+          "t1": 0.16
+        },
+        {
+          "word": "score?",
+          "t0": 0.227,
+          "t1": 0.64
+        },
+        {
+          "word": "And",
+          "t0": 0.94,
+          "t1": 1.8399999999999999
+        },
+        {
+          "word": "number",
+          "t0": 1.874,
+          "t1": 2.08
+        },
+        {
+          "word": "ten?",
+          "t0": 2.18,
+          "t1": 2.72
+        }
+      ]
+    },
+    {
       "key": "all-timers-a1",
       "slot": "answer",
       "text": "Pelé.",
@@ -892,6 +999,579 @@
           "word": "Vertonghen.",
           "t0": 0,
           "t1": 0.72
+        }
+      ]
+    },
+    {
+      "key": "number-ones-a1",
+      "slot": "answer",
+      "text": "Manuel Neuer.",
+      "dur": 1.28,
+      "words": [
+        {
+          "word": "Manuel",
+          "t0": 0,
+          "t1": 0.56
+        },
+        {
+          "word": "Neuer.",
+          "t0": 0.667,
+          "t1": 1.28
+        }
+      ]
+    },
+    {
+      "key": "number-ones-a2",
+      "slot": "answer",
+      "text": "Casillas.",
+      "dur": 0.88,
+      "words": [
+        {
+          "word": "Casillas.",
+          "t0": 0,
+          "t1": 0.88
+        }
+      ]
+    },
+    {
+      "key": "number-ones-a3",
+      "slot": "answer",
+      "text": "Donnarumma.",
+      "dur": 0.8,
+      "words": [
+        {
+          "word": "Donnarumma.",
+          "t0": 0,
+          "t1": 0.8
+        }
+      ]
+    },
+    {
+      "key": "number-ones-a4",
+      "slot": "answer",
+      "text": "De Gea.",
+      "dur": 0.56,
+      "words": [
+        {
+          "word": "De",
+          "t0": 0,
+          "t1": 0.16
+        },
+        {
+          "word": "Gea.",
+          "t0": 0.213,
+          "t1": 0.56
+        }
+      ]
+    },
+    {
+      "key": "number-ones-a5",
+      "slot": "answer",
+      "text": "Hugo Lloris.",
+      "dur": 1.12,
+      "words": [
+        {
+          "word": "Hugo",
+          "t0": 0,
+          "t1": 0.32
+        },
+        {
+          "word": "Lloris.",
+          "t0": 0.36,
+          "t1": 1.12
+        }
+      ]
+    },
+    {
+      "key": "number-ones-a6",
+      "slot": "answer",
+      "text": "Petr Čech.",
+      "dur": 0.88,
+      "words": [
+        {
+          "word": "Petr",
+          "t0": 0,
+          "t1": 0.24
+        },
+        {
+          "word": "Čech.",
+          "t0": 0.32,
+          "t1": 0.88
+        }
+      ]
+    },
+    {
+      "key": "number-ones-a7",
+      "slot": "answer",
+      "text": "Van der Sar.",
+      "dur": 0.96,
+      "words": [
+        {
+          "word": "Van",
+          "t0": 0,
+          "t1": 0.16
+        },
+        {
+          "word": "der",
+          "t0": 0.2,
+          "t1": 0.32
+        },
+        {
+          "word": "Sar.",
+          "t0": 0.42,
+          "t1": 0.96
+        }
+      ]
+    },
+    {
+      "key": "number-ones-a8",
+      "slot": "answer",
+      "text": "Ederson.",
+      "dur": 0.96,
+      "words": [
+        {
+          "word": "Ederson.",
+          "t0": 0,
+          "t1": 0.96
+        }
+      ]
+    },
+    {
+      "key": "number-ones-a9",
+      "slot": "answer",
+      "text": "Fabien Barthez.",
+      "dur": 1.5999999999999999,
+      "words": [
+        {
+          "word": "Fabien",
+          "t0": 0,
+          "t1": 0.48
+        },
+        {
+          "word": "Barthez.",
+          "t0": 0.5599999999999999,
+          "t1": 1.5999999999999999
+        }
+      ]
+    },
+    {
+      "key": "hard-way-up-a1",
+      "slot": "answer",
+      "text": "Cole Palmer.",
+      "dur": 1.04,
+      "words": [
+        {
+          "word": "Cole",
+          "t0": 0,
+          "t1": 0.24
+        },
+        {
+          "word": "Palmer.",
+          "t0": 0.309,
+          "t1": 1.04
+        }
+      ]
+    },
+    {
+      "key": "hard-way-up-a2",
+      "slot": "answer",
+      "text": "Cody Gakpo.",
+      "dur": 1.12,
+      "words": [
+        {
+          "word": "Cody",
+          "t0": 0,
+          "t1": 0.24
+        },
+        {
+          "word": "Gakpo.",
+          "t0": 0.32,
+          "t1": 1.12
+        }
+      ]
+    },
+    {
+      "key": "hard-way-up-a3",
+      "slot": "answer",
+      "text": "Rafael Leão.",
+      "dur": 1.5999999999999999,
+      "words": [
+        {
+          "word": "Rafael",
+          "t0": 0,
+          "t1": 0.64
+        },
+        {
+          "word": "Leão.",
+          "t0": 0.773,
+          "t1": 1.5999999999999999
+        }
+      ]
+    },
+    {
+      "key": "hard-way-up-a4",
+      "slot": "answer",
+      "text": "John Stones.",
+      "dur": 1.2,
+      "words": [
+        {
+          "word": "John",
+          "t0": 0,
+          "t1": 0.24
+        },
+        {
+          "word": "Stones.",
+          "t0": 0.33099999999999996,
+          "t1": 1.2
+        }
+      ]
+    },
+    {
+      "key": "hard-way-up-a5",
+      "slot": "answer",
+      "text": "Maguire.",
+      "dur": 0.96,
+      "words": [
+        {
+          "word": "Maguire.",
+          "t0": 0,
+          "t1": 0.96
+        }
+      ]
+    },
+    {
+      "key": "hard-way-up-a6",
+      "slot": "answer",
+      "text": "Mahrez.",
+      "dur": 0.56,
+      "words": [
+        {
+          "word": "Mahrez.",
+          "t0": 0,
+          "t1": 0.56
+        }
+      ]
+    },
+    {
+      "key": "hard-way-up-a7",
+      "slot": "answer",
+      "text": "Osimhen.",
+      "dur": 1.2000000000000002,
+      "words": [
+        {
+          "word": "Osimhen.",
+          "t0": 0,
+          "t1": 1.2000000000000002
+        }
+      ]
+    },
+    {
+      "key": "hard-way-up-a8",
+      "slot": "answer",
+      "text": "Jorginho.",
+      "dur": 0.96,
+      "words": [
+        {
+          "word": "Jorginho.",
+          "t0": 0,
+          "t1": 0.96
+        }
+      ]
+    },
+    {
+      "key": "hard-way-up-a9",
+      "slot": "answer",
+      "text": "Gyökeres.",
+      "dur": 0.96,
+      "words": [
+        {
+          "word": "Gyökeres.",
+          "t0": 0,
+          "t1": 0.96
+        }
+      ]
+    },
+    {
+      "key": "old-guard-a1",
+      "slot": "answer",
+      "text": "Van Basten.",
+      "dur": 1.12,
+      "words": [
+        {
+          "word": "Van",
+          "t0": 0,
+          "t1": 0.24
+        },
+        {
+          "word": "Basten.",
+          "t0": 0.32,
+          "t1": 1.12
+        }
+      ]
+    },
+    {
+      "key": "old-guard-a2",
+      "slot": "answer",
+      "text": "Xavi.",
+      "dur": 0.72,
+      "words": [
+        {
+          "word": "Xavi.",
+          "t0": 0,
+          "t1": 0.72
+        }
+      ]
+    },
+    {
+      "key": "old-guard-a3",
+      "slot": "answer",
+      "text": "Nesta.",
+      "dur": 0.72,
+      "words": [
+        {
+          "word": "Nesta.",
+          "t0": 0,
+          "t1": 0.72
+        }
+      ]
+    },
+    {
+      "key": "old-guard-a4",
+      "slot": "answer",
+      "text": "Lilian Thuram.",
+      "dur": 1.3599999999999999,
+      "words": [
+        {
+          "word": "Lilian",
+          "t0": 0,
+          "t1": 0.48
+        },
+        {
+          "word": "Thuram.",
+          "t0": 0.576,
+          "t1": 1.3599999999999999
+        }
+      ]
+    },
+    {
+      "key": "old-guard-a5",
+      "slot": "answer",
+      "text": "Emmanuel Petit.",
+      "dur": 1.52,
+      "words": [
+        {
+          "word": "Emmanuel",
+          "t0": 0,
+          "t1": 0.64
+        },
+        {
+          "word": "Petit.",
+          "t0": 0.747,
+          "t1": 1.52
+        }
+      ]
+    },
+    {
+      "key": "old-guard-a6",
+      "slot": "answer",
+      "text": "Miroslav Klose.",
+      "dur": 1.68,
+      "words": [
+        {
+          "word": "Miroslav",
+          "t0": 0,
+          "t1": 0.72
+        },
+        {
+          "word": "Klose.",
+          "t0": 0.88,
+          "t1": 1.68
+        }
+      ]
+    },
+    {
+      "key": "old-guard-a7",
+      "slot": "answer",
+      "text": "Gattuso.",
+      "dur": 0.72,
+      "words": [
+        {
+          "word": "Gattuso.",
+          "t0": 0,
+          "t1": 0.72
+        }
+      ]
+    },
+    {
+      "key": "old-guard-a8",
+      "slot": "answer",
+      "text": "Desailly.",
+      "dur": 0.72,
+      "words": [
+        {
+          "word": "Desailly.",
+          "t0": 0,
+          "t1": 0.72
+        }
+      ]
+    },
+    {
+      "key": "old-guard-a9",
+      "slot": "answer",
+      "text": "Roberto Baggio.",
+      "dur": 1.5999999999999999,
+      "words": [
+        {
+          "word": "Roberto",
+          "t0": 0,
+          "t1": 0.64
+        },
+        {
+          "word": "Baggio.",
+          "t0": 0.76,
+          "t1": 1.5999999999999999
+        }
+      ]
+    },
+    {
+      "key": "grand-tour-a1",
+      "slot": "answer",
+      "text": "Vinícius.",
+      "dur": 1.12,
+      "words": [
+        {
+          "word": "Vinícius.",
+          "t0": 0,
+          "t1": 1.12
+        }
+      ]
+    },
+    {
+      "key": "grand-tour-a2",
+      "slot": "answer",
+      "text": "Rúben Dias.",
+      "dur": 1.28,
+      "words": [
+        {
+          "word": "Rúben",
+          "t0": 0,
+          "t1": 0.4
+        },
+        {
+          "word": "Dias.",
+          "t0": 0.528,
+          "t1": 1.28
+        }
+      ]
+    },
+    {
+      "key": "grand-tour-a3",
+      "slot": "answer",
+      "text": "Tchouaméni.",
+      "dur": 1.28,
+      "words": [
+        {
+          "word": "Tchouaméni.",
+          "t0": 0,
+          "t1": 1.28
+        }
+      ]
+    },
+    {
+      "key": "grand-tour-a4",
+      "slot": "answer",
+      "text": "De Ligt.",
+      "dur": 0.64,
+      "words": [
+        {
+          "word": "De",
+          "t0": 0,
+          "t1": 0.08
+        },
+        {
+          "word": "Ligt.",
+          "t0": 0.12,
+          "t1": 0.64
+        }
+      ]
+    },
+    {
+      "key": "grand-tour-a5",
+      "slot": "answer",
+      "text": "David Alaba.",
+      "dur": 1.28,
+      "words": [
+        {
+          "word": "David",
+          "t0": 0,
+          "t1": 0.4
+        },
+        {
+          "word": "Alaba.",
+          "t0": 0.507,
+          "t1": 1.28
+        }
+      ]
+    },
+    {
+      "key": "grand-tour-a6",
+      "slot": "answer",
+      "text": "Kovačić.",
+      "dur": 0.8,
+      "words": [
+        {
+          "word": "Kovačić.",
+          "t0": 0,
+          "t1": 0.8
+        }
+      ]
+    },
+    {
+      "key": "grand-tour-a7",
+      "slot": "answer",
+      "text": "Çalhanoğlu.",
+      "dur": 1.12,
+      "words": [
+        {
+          "word": "Çalhanoğlu.",
+          "t0": 0,
+          "t1": 1.12
+        }
+      ]
+    },
+    {
+      "key": "grand-tour-a8",
+      "slot": "answer",
+      "text": "Xabi Alonso.",
+      "dur": 1.28,
+      "words": [
+        {
+          "word": "Xabi",
+          "t0": 0,
+          "t1": 0.4
+        },
+        {
+          "word": "Alonso.",
+          "t0": 0.491,
+          "t1": 1.28
+        }
+      ]
+    },
+    {
+      "key": "grand-tour-a9",
+      "slot": "answer",
+      "text": "Robert Pirès.",
+      "dur": 1.52,
+      "words": [
+        {
+          "word": "Robert",
+          "t0": 0,
+          "t1": 0.48
+        },
+        {
+          "word": "Pirès.",
+          "t0": 0.5599999999999999,
+          "t1": 1.52
         }
       ]
     }
