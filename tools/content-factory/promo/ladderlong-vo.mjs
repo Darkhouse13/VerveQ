@@ -196,23 +196,33 @@ export const SHARED = [
   // VOICE spends its last three seconds on, because the card cannot say this
   // and the caption is read after the fact.
   //
-  // NOT MEASURED YET — no FAL_KEY in this environment (see LADDER_LONG_BATCH2_5.md
-  // §6). Predicted at ~3.5s against a 3.00s slot on batch 2's measured rate for
-  // this voice (~2.5 words/sec on short sentences: `cta2`'s 8-word draft came
-  // back at 3.20s), so EXPECT the fit check to throw here.
+  // The predicted overrun happened, and it was NOT a word-count problem —
+  // which is the part worth keeping. "Draft them for real. THE WEEKEND — link
+  // in bio." came back at 4.72s against a 3.00s slot: +1.72s, where the word
+  // count alone predicts ~3.5s. Fitting a two-term model to this voice's
+  // measured carrier (`cta` 7w/1 sentence 2.08s, `follow` 3w/1 2.08→1.68s,
+  // `open2` and `cta2` both 5w/2 at 2.64/2.72s) gives ~0.93s per SENTENCE
+  // BOUNDARY and only ~0.16s per word. The extra ~1.2s is the em dash and the
+  // capitalised "THE WEEKEND" — Charlie reads a dash as a full stop and gives
+  // an all-caps proper noun its own emphasis beat.
   //
-  // The fallback is pre-approved and the rule that picks it is batch 2's, not a
-  // fresh judgement: WHEN A LINE OVERRUNS, CUT WHATEVER THE SCREEN IS ALREADY
-  // SAYING. The card carries the wordmark in 96pt lime while this plays, so the
-  // clause that goes is "THE WEEKEND" and the swap is:
+  // So the cut was batch 2's rule (cut whatever the screen is already saying —
+  // the card carries the wordmark in 96pt lime while this plays) and the
+  // punctuation lesson on top: PUNCTUATION IS THE EXPENSIVE PART OF A SLOT, NOT
+  // LENGTH. Prose in this carrier should reach for the fewest sentence
+  // boundaries, not the fewest words.
   //
-  //     text: "Draft them for real. Link in bio."
+  //     4.72s  "Draft them for real. THE WEEKEND — link in bio."  10w, 3 breaks
+  //     2.72s  "Draft them for real. Link in bio."                 7w, 2 breaks
   //
-  // Both halves of the ask survive that cut — the instruction and the pointer —
-  // and the wordmark is on screen either way. Re-running after the edit re-bills
-  // this line ONLY; the manifest keys on text, so the 18 answers below are
-  // served from cache.
-  { key: "cta3", slot: "cta", text: "Draft them for real. THE WEEKEND — link in bio." },
+  // The re-take CONFIRMS the model rather than just clearing the slot: 2.72s is
+  // the exact duration of `cta2` ("Your score? And number ten?"), which is two
+  // words SHORTER at the same two sentence boundaries. Dropping three words and
+  // one boundary bought 2.00s; the words were worth ~0.5s of it.
+  //
+  // Both halves of the ask survive — the instruction and the pointer — and the
+  // wordmark is on screen either way.
+  { key: "cta3", slot: "cta", text: "Draft them for real. Link in bio." },
 ];
 
 // ---- the nine answer names per edition ----

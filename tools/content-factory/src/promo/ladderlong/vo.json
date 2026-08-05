@@ -455,6 +455,92 @@
       ]
     },
     {
+      "key": "open3",
+      "slot": "open",
+      "text": "Ten career paths. Five leagues. One squad.",
+      "dur": 4.48,
+      "words": [
+        {
+          "word": "Ten",
+          "t0": 0,
+          "t1": 0.24
+        },
+        {
+          "word": "career",
+          "t0": 0.297,
+          "t1": 0.64
+        },
+        {
+          "word": "paths.",
+          "t0": 0.733,
+          "t1": 1.28
+        },
+        {
+          "word": "Five",
+          "t0": 1.456,
+          "t1": 2.16
+        },
+        {
+          "word": "leagues.",
+          "t0": 2.22,
+          "t1": 3.3600000000000003
+        },
+        {
+          "word": "One",
+          "t0": 3.42,
+          "t1": 3.6
+        },
+        {
+          "word": "squad.",
+          "t0": 3.72,
+          "t1": 4.48
+        }
+      ]
+    },
+    {
+      "key": "cta3",
+      "slot": "cta",
+      "text": "Draft them for real. Link in bio.",
+      "dur": 2.7199999999999998,
+      "words": [
+        {
+          "word": "Draft",
+          "t0": 0,
+          "t1": 0.24
+        },
+        {
+          "word": "them",
+          "t0": 0.272,
+          "t1": 0.4
+        },
+        {
+          "word": "for",
+          "t0": 0.44,
+          "t1": 0.56
+        },
+        {
+          "word": "real.",
+          "t0": 0.64,
+          "t1": 1.36
+        },
+        {
+          "word": "Link",
+          "t0": 1.44,
+          "t1": 1.7600000000000002
+        },
+        {
+          "word": "in",
+          "t0": 1.84,
+          "t1": 2
+        },
+        {
+          "word": "bio.",
+          "t0": 2.1,
+          "t1": 2.7199999999999998
+        }
+      ]
+    },
+    {
       "key": "all-timers-a1",
       "slot": "answer",
       "text": "Pelé.",
@@ -1572,6 +1658,295 @@
           "word": "Pirès.",
           "t0": 0.5599999999999999,
           "t1": 1.52
+        }
+      ]
+    },
+    {
+      "key": "five-leagues-a1",
+      "slot": "answer",
+      "text": "Carvajal.",
+      "dur": 0.96,
+      "words": [
+        {
+          "word": "Carvajal.",
+          "t0": 0,
+          "t1": 0.96
+        }
+      ]
+    },
+    {
+      "key": "five-leagues-a2",
+      "slot": "answer",
+      "text": "Joshua Kimmich.",
+      "dur": 1.2,
+      "words": [
+        {
+          "word": "Joshua",
+          "t0": 0,
+          "t1": 0.4
+        },
+        {
+          "word": "Kimmich.",
+          "t0": 0.48,
+          "t1": 1.2
+        }
+      ]
+    },
+    {
+      "key": "five-leagues-a3",
+      "slot": "answer",
+      "text": "Pulisic.",
+      "dur": 0.72,
+      "words": [
+        {
+          "word": "Pulisic.",
+          "t0": 0,
+          "t1": 0.72
+        }
+      ]
+    },
+    {
+      "key": "five-leagues-a4",
+      "slot": "answer",
+      "text": "Alisson.",
+      "dur": 0.88,
+      "words": [
+        {
+          "word": "Alisson.",
+          "t0": 0,
+          "t1": 0.88
+        }
+      ]
+    },
+    {
+      "key": "five-leagues-a5",
+      "slot": "answer",
+      "text": "Vitinha.",
+      "dur": 0.64,
+      "words": [
+        {
+          "word": "Vitinha.",
+          "t0": 0,
+          "t1": 0.64
+        }
+      ]
+    },
+    {
+      "key": "five-leagues-a6",
+      "slot": "answer",
+      "text": "Vlahović.",
+      "dur": 1.44,
+      "words": [
+        {
+          "word": "Vlahović.",
+          "t0": 0,
+          "t1": 1.44
+        }
+      ]
+    },
+    {
+      "key": "five-leagues-a7",
+      "slot": "answer",
+      "text": "Michael Olise.",
+      "dur": 1.2000000000000002,
+      "words": [
+        {
+          "word": "Michael",
+          "t0": 0,
+          "t1": 0.32
+        },
+        {
+          "word": "Olise.",
+          "t0": 0.4,
+          "t1": 1.2000000000000002
+        }
+      ]
+    },
+    {
+      "key": "five-leagues-a8",
+      "slot": "answer",
+      "text": "Raphinha.",
+      "dur": 0.72,
+      "words": [
+        {
+          "word": "Raphinha.",
+          "t0": 0,
+          "t1": 0.72
+        }
+      ]
+    },
+    {
+      "key": "five-leagues-a9",
+      "slot": "answer",
+      "text": "Andrew Robertson.",
+      "dur": 1.28,
+      "words": [
+        {
+          "word": "Andrew",
+          "t0": 0,
+          "t1": 0.32
+        },
+        {
+          "word": "Robertson.",
+          "t0": 0.384,
+          "t1": 1.28
+        }
+      ]
+    },
+    {
+      "key": "one-squad-a1",
+      "slot": "answer",
+      "text": "Rodrygo.",
+      "dur": 0.96,
+      "words": [
+        {
+          "word": "Rodrygo.",
+          "t0": 0,
+          "t1": 0.96
+        }
+      ]
+    },
+    {
+      "key": "one-squad-a2",
+      "slot": "answer",
+      "text": "Alphonso Davies.",
+      "dur": 1.68,
+      "words": [
+        {
+          "word": "Alphonso",
+          "t0": 0,
+          "t1": 0.72
+        },
+        {
+          "word": "Davies.",
+          "t0": 0.823,
+          "t1": 1.68
+        }
+      ]
+    },
+    {
+      "key": "one-squad-a3",
+      "slot": "answer",
+      "text": "Mike Maignan.",
+      "dur": 1.28,
+      "words": [
+        {
+          "word": "Mike",
+          "t0": 0,
+          "t1": 0.32
+        },
+        {
+          "word": "Maignan.",
+          "t0": 0.48,
+          "t1": 1.28
+        }
+      ]
+    },
+    {
+      "key": "one-squad-a4",
+      "slot": "answer",
+      "text": "Federico Valverde.",
+      "dur": 1.6,
+      "words": [
+        {
+          "word": "Federico",
+          "t0": 0,
+          "t1": 0.56
+        },
+        {
+          "word": "Valverde.",
+          "t0": 0.66,
+          "t1": 1.6
+        }
+      ]
+    },
+    {
+      "key": "one-squad-a5",
+      "slot": "answer",
+      "text": "Bastoni.",
+      "dur": 0.96,
+      "words": [
+        {
+          "word": "Bastoni.",
+          "t0": 0,
+          "t1": 0.96
+        }
+      ]
+    },
+    {
+      "key": "one-squad-a6",
+      "slot": "answer",
+      "text": "Frenkie de Jong.",
+      "dur": 0.96,
+      "words": [
+        {
+          "word": "Frenkie",
+          "t0": 0,
+          "t1": 0.32
+        },
+        {
+          "word": "de",
+          "t0": 0.373,
+          "t1": 0.48
+        },
+        {
+          "word": "Jong.",
+          "t0": 0.544,
+          "t1": 0.96
+        }
+      ]
+    },
+    {
+      "key": "one-squad-a7",
+      "slot": "answer",
+      "text": "Bruno Guimarães.",
+      "dur": 1.68,
+      "words": [
+        {
+          "word": "Bruno",
+          "t0": 0,
+          "t1": 0.4
+        },
+        {
+          "word": "Guimarães.",
+          "t0": 0.507,
+          "t1": 1.68
+        }
+      ]
+    },
+    {
+      "key": "one-squad-a8",
+      "slot": "answer",
+      "text": "Rasmus Højlund.",
+      "dur": 1.6,
+      "words": [
+        {
+          "word": "Rasmus",
+          "t0": 0,
+          "t1": 0.56
+        },
+        {
+          "word": "Højlund.",
+          "t0": 0.68,
+          "t1": 1.6
+        }
+      ]
+    },
+    {
+      "key": "one-squad-a9",
+      "slot": "answer",
+      "text": "Serge Gnabry.",
+      "dur": 1.44,
+      "words": [
+        {
+          "word": "Serge",
+          "t0": 0,
+          "t1": 0.4
+        },
+        {
+          "word": "Gnabry.",
+          "t0": 0.507,
+          "t1": 1.44
         }
       ]
     }

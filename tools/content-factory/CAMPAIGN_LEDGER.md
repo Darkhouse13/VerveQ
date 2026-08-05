@@ -29,8 +29,8 @@ asset state; update it every loop.
 | Week-0 X thread (7 posts) | Tease | **READY TO POST** | `campaign/x/week0-thread.md` | Post, pin post 1 |
 | Bio links (4 channels) | Week 0 | **KIT STALE — URLs point at bare `/`**, which `WKND-FUNNEL` (ea66823) measured as a dead end for reel traffic (5 IG visitors, 4 saw the card, 0 tapped; `/` serves the cold-entry taste round, no WEEKEND card). Repoint at `/weekend`, same tags. | `campaign/kits/bio-links-kit.md` | Paste 4 URLs — **as `https://verveq.com/weekend?…`**, not as written |
 | Teaser-card recording | Week 0 | **KIT READY** (~20 min) | `campaign/kits/teaser-recording-kit.md` | Record 2 clips → `public/product/weekend-teaser-*.mp4` |
-| `ladder-long-five-leagues` (78.0s quiz) | Argue I | **RENDERED — PROOF ONLY**, 20 VO lines unwritten (no `FAL_KEY`) | `out/2026-08-05/verveq-ladder-long-five-leagues.mp4` + caption `.txt` (tagged links inside); see `LADDER_LONG_BATCH2_5.md` | Run the VO command (§6), re-render, then post. **Bio links kit is a prerequisite** — "link in bio" is the CTA |
-| `ladder-long-one-squad` (78.0s quiz) | Argue I | **RENDERED — PROOF ONLY**, same 20 lines | `out/2026-08-05/verveq-ladder-long-one-squad.mp4` + caption `.txt` | as above |
+| `ladder-long-five-leagues` (78.0s quiz) | Argue I | **RENDERED, NARRATED, verified** (22/22 VO cues on frame, withhold, batch 1+2 byte-identical) | `out/2026-08-05/verveq-ladder-long-five-leagues.mp4` + caption `.txt` (tagged links inside); see `LADDER_LONG_BATCH2_5.md` | Post — but **repoint the bio links at `/weekend` first**; "link in bio" is the CTA and the kit is stale |
+| `ladder-long-one-squad` (78.0s quiz) | Argue I | **RENDERED, NARRATED, verified** (22/22 cues) | `out/2026-08-05/verveq-ladder-long-one-squad.mp4` + caption `.txt` | as above |
 | `wknd-bench` | Argue I | queued (next loop) | — | — |
 | Dave × WEEKEND film kit (`dave-bench`) | Argue I | queued — prompts + envelope workflow to spec (~45 min owner shoot, Higgsfield credits) | — | Shoot when kit lands (Aug 4–10 calendar slot) |
 | `wknd-referee` | Argue II | queued | — | — |

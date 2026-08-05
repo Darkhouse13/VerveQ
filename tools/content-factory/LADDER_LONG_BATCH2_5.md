@@ -1,9 +1,8 @@
 # LADDER-LONG — batch 2.5, the two WEEKEND-cast editions (2026-08-05)
 
-Two editions rendered. **Sources and visuals complete; the 20 new VO lines are
-NOT generated — there is no `FAL_KEY` in this environment.** The two MP4s in
-`out/2026-08-05/` are PROOFS and must not be posted. §6 has the one command that
-finishes them.
+Two editions rendered, **narrated, complete.** Twenty new VO lines generated
+against the owner's `FAL_KEY` and cached to `promo/vo-cache-ladderlong/` — the
+cache now holds all 108 lines and renders are offline from here.
 
 ---
 
@@ -227,61 +226,108 @@ the rendered `.txt` files and the output filenames.
 **Coverage.** `checkCoverage()` passes on 108 lines across 10 editions — nothing
 scripted that is never played, nothing played that is never scripted.
 
-## 6. VO state — NOT DONE, and the exact reason
+### VO placement, verified — and the method batch 2 documented does not work here
 
-**20 lines are unwritten: 18 answers + `open3` + `cta3`.** There is no `FAL_KEY`
-in this environment. The 88 lines already cached are untouched and will not be
-re-billed; the manifest keys on text.
+"The voice is in there" is not proof it landed where it should. Batch 2 differenced
+each render against its own pure SFX bed, scaling the bed by the least-squares gain
+that best explains the render and calling the leftover energy the voice. Run in the
+**sample domain** on these renders, that fit **collapses**: it returns a gain of
+**−0.039**, i.e. it concludes the bed explains nothing. The render is AAC at 48k
+stereo and the bed is PCM at 44.1k mono, so decoding and resampling shift sample
+phase, and sample-wise correlation of broadband content dies with a fraction of a
+sample of skew. A "difference" against a bed scaled by ~0 is just the render, and
+every cue would have "passed" on the bed's own slams.
 
-```
-FAL_KEY=… node promo/ladderlong-vo.mjs
-npm run promo -- ladder-long-five-leagues ladder-long-one-squad
-```
+Redone in the **envelope domain** — 100ms RMS of both, gain fitted on the
+envelopes, which is what "at 100ms resolution" has to mean for the check to be
+sound — the fit behaves: **gain 0.85**, the bed explaining most of the render, and
+the residual is the voice.
 
-The soft path named all 20 missing cues at render time and marked both outputs as
-proofs. **Do not post the current MP4s** — the format's pacing *is* the voice.
+**22/22 cues carry voice energy on frame in both editions**, 44/44 across the
+batch: `open3`/`open2` at 0.00s, each count-in on its rung boundary, each answer at
+`answerAt`, `withhold`, `follow` and `cta3` on their cards. Baseline is the median
+off-cue residual.
 
-### Derived budgets, and the one line expected to throw
+The weakest margin is `n6` — 11.2× and 10.5× — an order below its neighbours, so it
+was checked rather than waved through. **Control: the shipped, already-verified
+`number-ones` scores `n6` at 10.6× under the identical implementation.** The three
+editions share that take and that grid, and rung 6's boundary sits under a club-slam
+run, so more of the bin is bed and the scaled bed subtracts more of it. The dip is a
+property of the measurement, not of these renders. Every other cue sits between 28×
+and 169×.
 
-| line | slot | budget | paces | text |
+## 6. VO — done, cached, offline from here
+
+**20 lines generated** — 18 answers + `open3` + `cta3` — with the 88 existing
+lines served from cache and not re-billed. Final: **108/108 fit, zero overruns.**
+
+| line | slot | budget | measured | |
 |---|---|---|---|---|
-| `open3` | open | 5.00s | 7.00 | "Ten career paths. Five leagues. One squad." |
-| `cta3` | cta | **3.00s** | 7.00 | "Draft them for real. THE WEEKEND — link in bio." |
-| 18 × answer | answer | 2.00s | 7.00 | see `ANSWERS` |
+| `open3` | open | 5.00s | **4.48s** | fits |
+| `cta3` | cta | 3.00s | 4.72s → **2.72s** | re-taken |
+| 18 × answer | answer | 2.00s | 0.64–1.68s | all fit first time |
 
-`open3` has room — it is spoken only by the control arm, so it gets the full
-5.00s rather than the 3.50s that forced `open2`'s rewrite.
+**All 18 answer names fit first time**, 0.64s ("Vitinha.") to 1.68s ("Alphonso
+Davies." / "Bruno Guimarães.") against a 2.00s slot. `open3` had room by
+construction — it is spoken only by the control arm, so it gets the full 5.00s
+rather than the 3.50s that forced `open2`'s rewrite.
 
-**`cta3` is predicted to overrun.** On this voice's measured rate (~2.5 words/sec
-on short sentences; `cta2`'s 8-word draft came back at 3.20s), nine words will
-not fit 3.00s. **The fallback is pre-approved and the rule that picks it is batch
-2's, not a fresh judgement — when a line overruns, cut whatever the screen is
-already saying.** The card carries the wordmark in 96pt lime while this plays, so
-the clause that goes is "THE WEEKEND":
+### The one throw, and what it actually taught
+
+`cta3` overran as predicted, but **not for the predicted reason, and that is the
+part worth keeping.**
 
 ```
-text: "Draft them for real. Link in bio."
+4.72s / 3.00s   "Draft them for real. THE WEEKEND — link in bio."   10w, 3 breaks
+2.72s / 3.00s   "Draft them for real. Link in bio."                  7w, 2 breaks
 ```
 
-Both halves of the ask survive that cut — the instruction and the pointer — and
-the wordmark is on screen either way. It is written into the source next to the
-line. Re-running after the edit re-bills **that line only**.
+The prediction was ~3.5s on a words-per-second rate. It came back at **4.72s**,
++1.72s over. Fitting a two-term model to this voice's own measured carrier
+(`cta` 7w/1 sentence 2.08s, `follow` 3w/1 1.68s, `open2` and `cta2` both 5w/2 at
+2.64s and 2.72s) gives **~0.93s per sentence boundary and only ~0.16s per word**.
+The missing ~1.2s is the em dash and the capitalised "THE WEEKEND": Charlie reads
+a dash as a full stop and gives an all-caps proper noun its own emphasis beat.
+
+The re-take **confirms the model rather than merely clearing the slot**: 2.72s is
+the *exact* duration of `cta2` ("Your score? And number ten?"), which is two words
+*shorter* at the same two boundaries. Dropping three words and one boundary bought
+2.00s, and the words were worth about a quarter of it.
+
+So there is a second rule alongside batch 2's, and it is the one that would have
+made the first prediction right:
+
+> **Punctuation is the expensive part of a slot, not length.** Prose written to
+> this carrier should reach for the fewest sentence boundaries, not the fewest
+> words — and an em dash costs a full stop.
+
+The cut itself is still batch 2's rule (cut whatever the screen is already
+saying — the card carries the wordmark in 96pt lime while the line plays). Both
+halves of the ask survive: the instruction and the pointer.
 
 The answer takes follow batch 1's paid-for lesson a third time: a surname of three
 or more syllables goes alone, a one- or two-syllable surname is given its first
 name because Charlie draws a short lone word out ("Gerrard." 2.32s vs "Steven
 Gerrard." 1.36s). So Kimmich, Davies, Maignan, Højlund, Gnabry and Olise are named
 in full; Carvajal, Pulisic, Alisson, Vitinha, Vlahović, Raphinha, Rodrygo and
-Bastoni are not.
+Bastoni are not. The rule held: the six full-name takes average 1.44s and the
+eight lone surnames 0.94s, with no lone surname anywhere near the slot.
 
 ## 7. Renders
 
 ```
-out/2026-08-05/verveq-ladder-long-five-leagues.mp4   78.00s  5.76 MB  (+ .txt)   PROOF
-out/2026-08-05/verveq-ladder-long-one-squad.mp4      78.00s  5.77 MB  (+ .txt)   PROOF
+out/2026-08-05/verveq-ladder-long-five-leagues.mp4   78.00s  5.76 MB  (+ .txt)
+out/2026-08-05/verveq-ladder-long-one-squad.mp4      78.00s  5.77 MB  (+ .txt)
 ```
 
-1080×1920, 30fps, h264 + AAC, 2340f each.
+1080×1920, 30fps, h264 + AAC, 2340f each. Narrated and postable once the bio
+links are repointed (§4).
+
+The byte sizes are unchanged from the silent proofs, which is expected and not a
+sign the re-render did not take: the video stream is identical (the VO changes no
+pixels) and the AAC track is constant-bitrate over an unchanged duration, so a
+track carrying voice and a track carrying silence weigh the same. The evidence
+that the voice is there is §5's envelope check, which ran against these files.
 
 ## 8. What did NOT change
 
