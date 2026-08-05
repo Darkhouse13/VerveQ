@@ -20,6 +20,8 @@ marked as such.
 | Game loop registry | `app/src/lib/gameAnalytics.ts` |
 | Entry door (provenance) | `app/src/lib/entrySource.ts` |
 | SEO curiosity funnel | `app/public/games/funnel.js` |
+| WEEKEND waitlist funnel | `app/src/components/weekend/HomeWeekendTeaser.tsx` |
+| `/weekend` deep link | `app/src/lib/weekendDeepLink.ts` |
 | Server-origin capture | `app/convex/lib/posthogServer.ts` |
 | Scripted verification pass | `app/scripts/analyticsVerificationPass.mjs` |
 
@@ -135,6 +137,51 @@ so on the same origin the static pages and the SPA **share one anonymous
 `/` is one person. Config mirrors `lib/analytics.ts` — notably
 `persistence: "localStorage"`; if these pages used cookies while the SPA used
 localStorage they would never share an id and the funnel would measure nothing.
+
+### THE WEEKEND waitlist (Home teaser)
+
+The pre-launch waitlist funnel (`components/weekend/HomeWeekendTeaser`). Unlike
+the SEO funnel this lives on the **app** Home, so there is no "page" to bound
+it — the card is one block in a scrolling column.
+
+| Event | Fires when | Properties |
+| --- | --- | --- |
+| `teaser_viewed` | the gate query **resolves** (i.e. the card mounted) | `source` |
+| `waitlist_card_viewed` | the card is **≥50% in viewport** *and* the tab is foregrounded | `source`, `placement` |
+| `waitlist_join_clicked` | the CTA is pressed / the email form submitted | `method` (`user` \| `email`), `source` |
+| `waitlist_joined` | the mutation reports a **new** row (`joined: true`) | `method`, `source` |
+
+`teaser_viewed` and `waitlist_card_viewed` are **not** duplicates, and the gap
+between them is the point. The first fires on mount and answers "was the card
+rendered"; the second applies the same viewport rule as `landing_cta_shown` and
+answers "did a human see it". Read against each other over 2026-07-29 → 08-05
+the first counted **111 events from 17 people** — it re-fires on every return to
+Home, so it is a *render* count, not a reach count. Prefer
+`uniq(distinct_id)` over `count()` on it, and prefer `waitlist_card_viewed` for
+anything funnel-shaped.
+
+`waitlist_joined` fires only on a genuinely new row, so re-tapping an existing
+membership is a `waitlist_join_clicked` with no join — the pair is the
+idempotency check, not a drop-off.
+
+`placement` (`top` \| `default`) records where on Home the card was rendered:
+`top` is a `?w=1` visit (the `/weekend` short link, `lib/weekendDeepLink`),
+`default` is below the Draw hero. It exists so above-fold tap-rate can be
+**measured** rather than assumed.
+
+`source` is `utm_source ?? ref` read from the URL **at mount** (`readColdSource`),
+else the literal `home_teaser`. Read that fallback carefully: it is not a
+traffic source, it is *the absence of one*. Because it is read on Home, any
+visitor who arrived on a different route and navigated to Home has already lost
+their params — which is why every waitlist event captured before WKND-FUNNEL
+carries `home_teaser`, including traffic that demonstrably came from Instagram.
+The `/weekend` link fixes this for its own traffic by landing directly on Home
+with attribution intact; deep links that route through another screen first
+still cannot attribute, and joining on `distinct_id` to the session's first
+`$pageview` is the honest way to recover it.
+
+**Privacy:** the email string goes to the join mutation and nowhere else — it is
+never a property on any of these events.
 
 ### Server-origin
 

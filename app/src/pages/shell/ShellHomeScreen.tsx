@@ -1,4 +1,4 @@
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useQuery } from "convex/react";
 import {
@@ -20,6 +20,7 @@ import { HomeDrawCard } from "@/components/draw/HomeDrawCard";
 import { HomeWeekendTeaser } from "@/components/weekend/HomeWeekendTeaser";
 import { ShellLayout } from "@/components/shell/ShellLayout";
 import { SHELL_ROUTES } from "@/lib/shellRoutes";
+import { isWeekendTopRequested } from "@/lib/weekendDeepLink";
 import { RANKED_CAPABILITIES, tierFromElo, tierProgress } from "@/lib/rankedLadder";
 import { useAuth } from "@/contexts/AuthContext";
 import { usePreferredDailySport } from "@/hooks/usePreferredDailySport";
@@ -67,8 +68,13 @@ const COFFEE_URL = "https://buymeacoffee.com/verveq";
 
 export default function ShellHomeScreen() {
   const navigate = useNavigate();
+  const { search } = useLocation();
   const { t } = useTranslation();
   const { user, hasUsername, accountState } = useAuth();
+  // `?w=1` (the /weekend short link) leads Home with the WEEKEND teaser rather
+  // than the Draw card. Read per render from the live location so an in-app
+  // navigation that drops the param restores the default order.
+  const weekendFirst = isWeekendTopRequested(search);
   // Any server identity with a username — anonymous (username-only) or full —
   // is an onboarded user whose home reflects them. `hasUsername` is the
   // server-authoritative signal; tab-local guests have no server identity and
@@ -172,16 +178,25 @@ export default function ShellHomeScreen() {
           </div>
         </div>
 
-        {/* THE DRAW home hero (Ticket H) — TOP of Home. Self-gating: with the
-            build flag off, or when the server gate throws, it renders nothing
-            and the Home below is byte-identical for non-draw users. */}
-        <HomeDrawCard />
-
-        {/* THE WEEKEND teaser + waitlist (Ticket FW-P1) — hero slot under the
-            Draw card. Runtime-gated on the waitlist backend answering: until
-            the prod Convex deploy (or on any failure) it renders nothing and
-            Home is exactly as before. */}
-        <HomeWeekendTeaser />
+        {/* THE DRAW home hero (Ticket H) + THE WEEKEND teaser (FW-P1).
+            Default order is Draw-then-Weekend. A `?w=1` visit (the /weekend
+            short link, WKND-FUNNEL) SWAPS them so the lime waitlist CTA is the
+            first thing in the viewport — reel traffic was promised the fantasy
+            mode, not the Draw board. Nothing else about either card changes,
+            and a visit without the param renders the original order exactly.
+            Both stay self-gating: with their flags/backends absent they render
+            nothing and the swap is a no-op. */}
+        {weekendFirst ? (
+          <>
+            <HomeWeekendTeaser />
+            <HomeDrawCard />
+          </>
+        ) : (
+          <>
+            <HomeDrawCard />
+            <HomeWeekendTeaser />
+          </>
+        )}
 
         {/* One tree, two breakpoints: mobile stacks in DOM order; desktop is a
             never-scroll 3-column grid (pillars · pillars/dailies · ladder/forge),

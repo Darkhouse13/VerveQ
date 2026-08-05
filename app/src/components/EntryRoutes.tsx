@@ -30,6 +30,7 @@ import { Loader2 } from "lucide-react";
 import { V2_SHELL_ENABLED } from "@/lib/flags";
 import { SHELL_ROUTES } from "@/lib/shellRoutes";
 import { playShortLinkTarget } from "@/lib/playShortLink";
+import { weekendShortLinkTarget } from "@/lib/weekendDeepLink";
 import { useAuth } from "@/contexts/AuthContext";
 import LoginScreen from "@/pages/LoginScreen";
 import HomeScreen from "@/pages/HomeScreen";
@@ -84,4 +85,15 @@ export function HomeRoute() {
 export function PlayShortLinkRoute() {
   const { search } = useLocation();
   return <Navigate to={playShortLinkTarget(search)} replace />;
+}
+
+/** `/weekend` — the off-platform short link for THE WEEKEND (reel captions,
+ * the bio link). Redirects onto the shell Home with the teaser pinned to the
+ * top of the viewport, preserving attribution params. Unlike a bare `/`, this
+ * never routes through the cold-entry taste round — which carries no WEEKEND
+ * card — so an anonymous visitor reaches the waitlist CTA directly. See
+ * lib/weekendDeepLink.ts. */
+export function WeekendShortLinkRoute() {
+  const { search } = useLocation();
+  return <Navigate to={weekendShortLinkTarget(search)} replace />;
 }

@@ -31,13 +31,14 @@
  * mirroring HomeDrawCard.
  */
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useConvex } from "convex/react";
 import type { FunctionReturnType } from "convex/server";
 import { CalendarRange } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { track } from "@/lib/analytics";
 import { readColdSource } from "@/lib/coldSession";
+import { isWeekendTopRequested } from "@/lib/weekendDeepLink";
 import { api } from "../../../convex/_generated/api";
 import { NeoButton } from "@/components/neo/NeoButton";
 import { NeoInput } from "@/components/neo/NeoInput";
@@ -74,6 +75,68 @@ export interface HomeWeekendTeaserViewProps {
   error: string | null;
   onJoinUser: () => void;
   onJoinEmail: (email: string) => void;
+  /** Fired ONCE, when the card is genuinely on screen (see useOnceVisible).
+   *  Optional so the contract tests can drive the view without a viewport. */
+  onVisible?: () => void;
+}
+
+/**
+ * Fire `onVisible` once the element is genuinely on screen — half of it in the
+ * viewport AND the tab foregrounded, the same rule the SEO funnel's
+ * `landing_cta_shown` uses (`public/games/funnel.js`).
+ *
+ * Both halves matter. Intersection alone is satisfied by a backgrounded or
+ * prerendered tab that no human has looked at; `document.visibilityState`
+ * alone says nothing about whether this particular card was scrolled to. On a
+ * Home where the card can sit below a hero, mounting is not seeing.
+ *
+ * Without IntersectionObserver (old Safari) it reports NOTHING rather than
+ * guessing — a missing step is honest, a fabricated one corrupts the funnel.
+ */
+function useOnceVisible(
+  ref: React.RefObject<HTMLElement | null>,
+  onVisible?: () => void,
+) {
+  const firedRef = useRef(false);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el || !onVisible || firedRef.current) return;
+    if (typeof IntersectionObserver === "undefined") return;
+
+    const fireIfVisible = () => {
+      if (firedRef.current) return;
+      if (document.visibilityState !== "visible") return;
+      firedRef.current = true;
+      observer.disconnect();
+      document.removeEventListener("visibilitychange", onVisibilityChange);
+      onVisible();
+    };
+
+    // A card that is already in view while the tab is BACKGROUNDED would
+    // otherwise never report: the observer fires once, is rejected on
+    // visibility, and never fires again because nothing intersects anew when
+    // the human returns. Re-checking on foreground closes that hole.
+    let intersecting = false;
+    const onVisibilityChange = () => {
+      if (intersecting) fireIfVisible();
+    };
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          intersecting = entry.isIntersecting;
+          if (entry.isIntersecting) fireIfVisible();
+        }
+      },
+      { threshold: 0.5 },
+    );
+    observer.observe(el);
+    document.addEventListener("visibilitychange", onVisibilityChange);
+    return () => {
+      observer.disconnect();
+      document.removeEventListener("visibilitychange", onVisibilityChange);
+    };
+  }, [ref, onVisible]);
 }
 
 /** Pure view — no data access; the contract tests drive this directly. */
@@ -85,12 +148,19 @@ export function HomeWeekendTeaserView({
   error,
   onJoinUser,
   onJoinEmail,
+  onVisible,
 }: HomeWeekendTeaserViewProps) {
   const [email, setEmail] = useState("");
+  const rootRef = useRef<HTMLDivElement>(null);
+  useOnceVisible(rootRef, onVisible);
   return (
     // Bottom spacing lives on the card's own root (HomeDrawCard idiom) so
     // its absence leaves no trace in the Home column.
-    <div className="shrink-0 pb-3 md:pb-4" data-testid="home-weekend-teaser">
+    <div
+      ref={rootRef}
+      className="shrink-0 pb-3 md:pb-4"
+      data-testid="home-weekend-teaser"
+    >
       <div className="neo-border neo-shadow-lg rounded-lg bg-foreground text-background p-4 md:p-5 flex flex-col md:flex-row md:items-center gap-4 md:gap-6">
         {/* Pitch column */}
         <div className="min-w-0 md:flex-1">
@@ -231,6 +301,31 @@ function HomeWeekendTeaserInner() {
   }
   const source = sourceRef.current;
 
+  // Where on Home this card was rendered. `?w=1` (the /weekend short link)
+  // leads with the card; anything else has it below the Draw hero. Read from
+  // the same mount-time URL as `source` above, and carried on the viewport
+  // event so tap-rate can be compared BY PLACEMENT rather than assumed.
+  const placementRef = useRef<string | undefined>(undefined);
+  if (placementRef.current === undefined) {
+    placementRef.current =
+      typeof window !== "undefined" &&
+      isWeekendTopRequested(window.location.search)
+        ? "top"
+        : "default";
+  }
+  const placement = placementRef.current;
+
+  // Viewport-qualified "the human actually saw it". Distinct from
+  // `teaser_viewed`, which fires when the card MOUNTS — on a Home where the
+  // card can sit below the fold those are very different populations, and the
+  // gap between them is exactly the thing this funnel needs to measure.
+  const seen = useRef(false);
+  const onVisible = useCallback(() => {
+    if (seen.current) return;
+    seen.current = true;
+    track("waitlist_card_viewed", { source, placement });
+  }, [source, placement]);
+
   useEffect(() => {
     if (!settled) return;
     let cancelled = false;
@@ -313,6 +408,7 @@ function HomeWeekendTeaserInner() {
       error={error}
       onJoinUser={() => void joinAsUser()}
       onJoinEmail={(email) => void joinWithEmail(email)}
+      onVisible={onVisible}
     />
   );
 }

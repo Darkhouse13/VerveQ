@@ -12,7 +12,12 @@ import { InstallPrompt } from "./components/InstallPrompt";
 // Flag-gated entry routing: v1 LoginScreen/HomeScreen when off, v2 shell
 // landing when VITE_V2_SHELL_ENABLED is on. Keeps "/" and "/home" as a clean
 // rollback seam (the only routes whose default destination the flag flips).
-import { EntryRoute, HomeRoute, PlayShortLinkRoute } from "./components/EntryRoutes";
+import {
+  EntryRoute,
+  HomeRoute,
+  PlayShortLinkRoute,
+  WeekendShortLinkRoute,
+} from "./components/EntryRoutes";
 // Deep-link aliases: with the v2 shell live, v1 mode URLs (and spelling
 // variants like /vervegrid) forward to the v2 surface for that mode so shared
 // links land on the mode they name. Flag-off renders children unchanged.
@@ -544,6 +549,12 @@ const AppRoutes = () => (
                 Public redirect into Career Path with attribution preserved
                 (a bare hit gets ?ref=play); see lib/playShortLink.ts. */}
             <Route path="/play" element={<PlayShortLinkRoute />} />
+            {/* /weekend — the short link for WEEKEND reel captions + the bio
+                link. Public redirect onto Home with the teaser pinned to the
+                top of the viewport (a bare hit gets ?ref=weekend); see
+                lib/weekendDeepLink.ts. Bypasses the cold-entry landing, which
+                carries no WEEKEND card. */}
+            <Route path="/weekend" element={<WeekendShortLinkRoute />} />
             <Route path="/v2/verve-grid" element={<ShellGate><SessionRoute><VerveGridPlayScreen /></SessionRoute></ShellGate>} />
             {/* Daily reuses the migrated Quiz view but runs the DAILY session.
                 Username tier (anonymous OK): the daily is the habit loop, so a
