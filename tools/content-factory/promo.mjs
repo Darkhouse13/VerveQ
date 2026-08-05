@@ -35,6 +35,7 @@ import { ensureDrawAudio } from "./promo/draw-audio.mjs";
 import { ensureLadderAudio } from "./promo/ladder-audio.mjs";
 import { ensureLadderLongAudio } from "./promo/ladderlong-audio.mjs";
 import { ensureLadderLongVo } from "./promo/ladderlong-vo.mjs";
+import { readEditions as readLadderLongEditions } from "./promo/ladderlong-grid.mjs";
 import { ensureChainAudio } from "./promo/chain-audio.mjs";
 import { ensureWallAudio } from "./promo/wall-audio.mjs";
 import { ensurePickASideAudio } from "./promo/pickaside-audio.mjs";
@@ -86,13 +87,18 @@ const PROMOS = [
   { name: "pick-a-side", id: "PickASide", audio: ensurePickASideAudio },
   { name: "long-chain", id: "LongChain", audio: ensureLongChainAudio },
   { name: "not-telling", id: "NotTelling", audio: ensureNotTellingAudio },
-  // LADDER-LONG (2026-08-01) — the retention lane rebuilt on FACELESS_WINNER_SPEC:
-  // ten rungs at a metronomic 7.00s, nine answered, rung 10 withheld and asked
-  // for out loud. Four editions off one component; the VO carrier is shared
-  // across all four (promo/ladderlong-vo.mjs) exactly as the winners' is.
-  ...["all-timers", "premier-league", "modern", "journeymen"].map((slug) => ({
-    name: `ladder-long-${slug}`,
-    id: `LadderLong-${slug}`,
+  // LADDER-LONG — the retention lane rebuilt on FACELESS_WINNER_SPEC: ten rungs,
+  // nine answered, rung 10 withheld and asked for out loud. One component, and
+  // the VO carrier is shared across every edition (promo/ladderlong-vo.mjs)
+  // exactly as the winners' is.
+  //   batch 1 (2026-08-01) — four editions at a metronomic 7.00s/rung.
+  //   batch 2 (2026-08-05) — four more, running a CADENCE A/B (two at 7.00s,
+  //     two at 5.50s) over a new running-scoreboard surface and a follow hook.
+  // Derived from the editions table rather than listed, so adding a ninth
+  // edition stays a one-file change in src/promo/ladderlong/timeline.ts.
+  ...readLadderLongEditions().map((ed) => ({
+    name: `ladder-long-${ed.slug}`,
+    id: `LadderLong-${ed.slug}`,
     audio: ensureLadderLongAudio,
     vo: () => ensureLadderLongVo({ soft: true }),
   })),

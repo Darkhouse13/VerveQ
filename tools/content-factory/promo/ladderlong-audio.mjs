@@ -15,69 +15,39 @@
 // resolves a step higher, the tick bed tightens as the tiers get harder, and
 // rung 10 gets a riser that never resolves — no ding, because nothing on screen
 // answers it either.
-import { writeFileSync, mkdirSync, existsSync, readFileSync } from "node:fs";
+import { writeFileSync, mkdirSync, existsSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { Mixer, encodeWav, kick, hat, impact, tick, ding, blip, riser, stinger, whoosh } from "./audio-lib.mjs";
+import { FPS, readEditions, totalOf, followAt, ctaAt, followFrames } from "./ladderlong-grid.mjs";
 
-const FPS = 30;
 const dir = path.dirname(fileURLToPath(import.meta.url));
 const OUT = path.join(dir, "..", "public", "promo");
-const TIMELINE = path.join(dir, "..", "src", "promo", "ladderlong", "timeline.ts");
 
-// MUST match src/promo/ladderlong/timeline.ts
-const STEP = 210;
-const LAST = 300;
-const CTA = 90;
-const TOTAL = STEP * 9 + LAST + CTA; // 2280 = 76.0s
-const CTA_AT = STEP * 9 + LAST;
-const CLUB_IN = 8;
-const CLUB_GAP = 10;
-const THINK_AT = 70;
-const TICK_AT = [75, 105, 135];
-const ANSWER_AT = 150;
-const WITHHELD_AT = 150;
-
-// ---- derive each edition's per-rung club counts from timeline.ts ----
-export const readEditions = () => {
-  const src = readFileSync(TIMELINE, "utf8");
-  const body = src.slice(src.indexOf("export const EDITIONS"));
-  const editions = [];
-  const slugRe = /slug:\s*"([a-z-]+)"/g;
-  let m;
-  const marks = [];
-  while ((m = slugRe.exec(body)) !== null) marks.push({ slug: m[1], at: m.index });
-  for (let k = 0; k < marks.length; k++) {
-    const chunk = body.slice(marks[k].at, k + 1 < marks.length ? marks[k + 1].at : body.length);
-    const counts = [];
-    const rungRe = /\bclubs:\s*\[([^\]]*)\]/g;
-    let r;
-    while ((r = rungRe.exec(chunk)) !== null) {
-      const n = (r[1].match(/"/g) ?? []).length / 2;
-      counts.push(n);
-    }
-    editions.push({ slug: marks[k].slug, counts });
-  }
-  const bad = editions.filter((e) => e.counts.length !== 10 || e.counts.some((c) => c < 1 || c > 7));
-  if (editions.length === 0 || bad.length > 0) {
-    throw new Error(
-      `ladderlong-audio: failed to parse timeline.ts (${editions.length} editions, ` +
-        `${bad.map((b) => `${b.slug}:${b.counts.length}`).join(",")} malformed). ` +
-        `The casting format changed — fix the parser, do not hand-copy the counts.`,
-    );
-  }
-  return editions;
-};
+// The grid is no longer mirrored here by hand. Batch 2 runs two cadences and a
+// per-edition length, so promo/ladderlong-grid.mjs parses both grids and the
+// edition table straight out of timeline.ts — see the header there for why.
+export { readEditions };
 
 // nine resolutions, climbing
 const SOLVE = [523, 554, 587, 622, 659, 698, 740, 784, 831];
 
-const buildEdition = (slug, counts) => {
+const buildEdition = (ed) => {
+  const { slug, counts, grid: g } = ed;
+  const { step: STEP, last: LAST, clubIn: CLUB_IN, clubGap: CLUB_GAP, thinkAt: THINK_AT, tickAt: TICK_AT, answerAt: ANSWER_AT } = g;
+  const WITHHELD_AT = ANSWER_AT;
+  const TOTAL = totalOf(ed);
+  const FOLLOW_AT = followAt(ed);
+  const CTA_AT = ctaAt(ed);
   const mix = new Mixer(`ladder-long-${slug}`, TOTAL, FPS);
 
-  // heartbeat under the whole climb, tightening for the unanswered rung
+  // Heartbeat under the whole climb, tightening for the unanswered rung. The
+  // pulse spacings are in FRAMES and stay put across both cadences on purpose:
+  // the bed is a 120 BPM clock, and it is the RUNGS that get shorter against
+  // it, not the tempo that changes. A viewer who sees both should hear the same
+  // record playing underneath at two different densities of event.
   for (let f = 0; f < STEP * 9; f += 21) mix.add(kick(), f, 0.46);
-  for (let f = STEP * 9; f < CTA_AT; f += 14) mix.add(kick(), f, 0.6);
+  for (let f = STEP * 9; f < FOLLOW_AT; f += 14) mix.add(kick(), f, 0.6);
 
   for (let i = 0; i < 10; i++) {
     const base = i * STEP;
@@ -114,6 +84,16 @@ const buildEdition = (slug, counts) => {
     }
   }
 
+  // the follow-hook card (batch 2 only) — the one beat in the piece that
+  // RESOLVES upward. Rung 10 deliberately left its riser hanging; this lands a
+  // clean fifth above the closing stinger so "there's another one tomorrow"
+  // sounds like an answer rather than another question.
+  if (followFrames(ed) > 0) {
+    mix.add(whoosh(0.4), FOLLOW_AT - 6, 0.38);
+    mix.add(impact(), FOLLOW_AT, 0.72);
+    mix.add(stinger(220, 1.5), FOLLOW_AT + 2, 0.4);
+  }
+
   // the closing card
   mix.add(whoosh(0.45), CTA_AT - 6, 0.42);
   mix.add(impact(), CTA_AT, 0.8);
@@ -128,7 +108,7 @@ export const ensureLadderLongAudio = (outDir = OUT, force = false) => {
   for (const ed of readEditions()) {
     const fp = path.join(outDir, `ladderlong-${ed.slug}.wav`);
     if (!force && existsSync(fp)) continue;
-    writeFileSync(fp, encodeWav(buildEdition(ed.slug, ed.counts)));
+    writeFileSync(fp, encodeWav(buildEdition(ed)));
     written++;
   }
   return written;
@@ -136,7 +116,12 @@ export const ensureLadderLongAudio = (outDir = OUT, force = false) => {
 
 if (import.meta.url === pathToFileURL(process.argv[1]).href) {
   const eds = readEditions();
-  for (const e of eds) console.log(`  ${e.slug.padEnd(16)} clubs/rung: ${e.counts.join(",")}`);
+  for (const e of eds) {
+    console.log(
+      `  ${e.slug.padEnd(16)} batch ${e.batch}  ${(e.grid.step / FPS).toFixed(2)}s/rung  ` +
+        `${(totalOf(e) / FPS).toFixed(2)}s  clubs/rung: ${e.counts.join(",")}`,
+    );
+  }
   const n = ensureLadderLongAudio(OUT, process.argv.includes("--force"));
-  console.log(n === 0 ? "ladderlong wavs present." : `Wrote ${n} ladderlong wav(s) (${(TOTAL / FPS).toFixed(1)}s each)`);
+  console.log(n === 0 ? "ladderlong wavs present." : `Wrote ${n} ladderlong wav(s)`);
 }

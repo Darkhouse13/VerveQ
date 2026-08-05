@@ -300,6 +300,59 @@ export const PROMO_CAPTIONS = {
     "corrected by strangers, which is the point.\n\n" +
     "Career Path mode — free, no sign-up: verveq.com\n\n" +
     "#football #footballquiz #careerpath #guesstheplayer #footballtiktok",
+
+  // ---- LADDER-LONG batch 2 (2026-08-05) — the cadence A/B + running score.
+  //
+  // One change from batch 1's caption shape, and it mirrors the change on
+  // screen: the SCORE ASK LEADS. Batch 1 put the withhold first and the score
+  // second, which is the right order for the people who finished and the wrong
+  // order for everyone else — and everyone else is most of them. "x/9" is
+  // typeable by someone who bailed at rung 4; the name is only typeable by
+  // someone who reached 68s. Cheap ask first.
+  //
+  // Unchanged: club paths are verbatim from football_career_paths.json, and the
+  // withheld name appears nowhere — not in the caption, not in the video, not
+  // in the filename.
+  "ladder-long-number-ones":
+    "Ten career paths. Every single one of them a goalkeeper 🧤\n\n" +
+    "What's your score out of nine? Drop the number 👇\n\n" +
+    // cp-schmeichel, path verbatim. Name never stated, here or in the video.
+    "Then rung 10, which we never answered: Gladsaxe-Hero → Hvidovre → " +
+    "Brøndby → Manchester United → Sporting CP → Aston Villa → Manchester " +
+    "City. Nobody starts a career in a stranger place and ends it at two of " +
+    "those.\n\n" +
+    "New gauntlet daily. Career Path mode — free, no sign-up: verveq.com\n\n" +
+    "#football #footballquiz #goalkeeper #careerpath #footballtiktok",
+
+  "ladder-long-hard-way-up":
+    "Ten career paths that all started a very long way down 🪜\n\n" +
+    "Score out of nine in the comments — be honest, the rail was right " +
+    "there 👇\n\n" +
+    // cp-vardy, path verbatim.
+    "And rung 10, the one we kept: Stocksbridge Park Steels → FC Halifax " +
+    "Town → Fleetwood Town → Leicester City → Cremonese. If you know it you " +
+    "already know it.\n\n" +
+    "New gauntlet daily. Career Path mode — free, no sign-up: verveq.com\n\n" +
+    "#football #footballquiz #careerpath #guesstheplayer #footballtiktok",
+
+  "ladder-long-old-guard":
+    "Ten career paths from back when the shirts were baggy 🧠\n\n" +
+    "How many of the nine did you get? Number in the comments 👇\n\n" +
+    // cp-zola, path verbatim.
+    "Rung 10 we're not answering: Nuorese → Torres → Napoli → Parma → " +
+    "Chelsea → Cagliari. Two of those clubs are the tell.\n\n" +
+    "New gauntlet daily. Career Path mode — free, no sign-up: verveq.com\n\n" +
+    "#football #footballquiz #retrofootball #careerpath #footballtiktok",
+
+  "ladder-long-grand-tour":
+    "Ten career paths, and barely one of them stayed in a single country ✈️\n\n" +
+    "Your score out of nine 👇\n\n" +
+    // cp-robben, path verbatim.
+    "Rung 10 stays blank: Groningen → PSV Eindhoven → Chelsea → Real Madrid " +
+    "→ Bayern Munich → Groningen. He finished exactly where he started and " +
+    "we're still not typing it.\n\n" +
+    "New gauntlet daily. Career Path mode — free, no sign-up: verveq.com\n\n" +
+    "#football #footballquiz #careerpath #guesstheplayer #footballtiktok",
 };
 
 export const buildPromoCaption = (name) => PROMO_CAPTIONS[name] ?? "";

@@ -182,7 +182,7 @@ properties this lane is built around, and none of them is "shorter":
 | `ladder` | `Ladder` | five career paths, easy→impossible, rail fills as you go | 16.0s | rung 5's answer |
 | `chain` | `Chain` | relay: "played for both — I'll start, your turn" | 11.0s | slot 5, and Ronaldo |
 | `wall` | `Wall` | 3×3 wall of nine paths under a 10s clock | 13.0s | seven of nine answers |
-| `ladder-long-*` | `LadderLong-*` | ten paths, easy→impossible, metronomic 7.00s rungs, narrated | 76.0s | rung 10's answer |
+| `ladder-long-*` | `LadderLong-*` | ten paths, easy→impossible, metronomic rungs, narrated | 76.0 / 78.0 / 63.0s | rung 10's answer |
 
 `chain` leaves out the single most famous qualifying player deliberately —
 being the one to point out the obvious omission is the most reliable comment
@@ -197,7 +197,7 @@ quiz lane will later post a single-path video for a player these already spent.
 npm run promo -- ladder chain wall
 ```
 
-### `ladder-long` — the lane rebuilt on measured cadence (4 editions, narrated)
+### `ladder-long` — the lane rebuilt on measured cadence (8 editions, narrated)
 
 `ladder` was built before we had measured anything. Two studies since:
 
@@ -210,25 +210,59 @@ npm run promo -- ladder chain wall
 
 Those measure different axes and don't contradict each other. `ladder-long` takes the
 length from the first and the cadence from the second: **ten rungs at a metronomic
-7.00s, 76.0s total.** Nine resolve on screen; rung 10 never does, and the voice says
-so out loud.
+beat.** Nine resolve on screen; rung 10 never does, and the voice says so out loud.
 
 The tenth slot is the point. Spec #26: a persistent 10-slot scoreboard was the
 strongest single differentiator in that cohort — the reels carrying one averaged
 0.0020 comment rate vs 0.00088 without, and the best hit 0.00271 at 70s. Ten rungs
 is what turns the rail into a scoreboard a viewer counts themselves against.
 
-| | |
-|---|---|
-| length | 76.0s (152 beats @ 120 BPM) |
-| shape | 9 × 7.00s answered rungs + 1 × 10.00s withheld + 3.00s CTA card |
-| tiers | 2 EASY / 3 MEDIUM / 3 HARD / 2 IMPOSSIBLE |
-| withheld | rung 10 — never drawn, never spoken, named only by its club path in the caption |
-| editions | `all-timers`, `premier-league`, `modern`, `journeymen` |
+**Batch 2 (2026-08-05) runs a cadence A/B, and it is the whole reason the grid is
+per-edition.** The measured band is 5.5–7.02s per question and both ends of it are
+winners, so the band cannot tell you where to live. Batch 2 asks it directly: two
+editions at pitch.quiz's 7.00s, two at gugum's 5.50s. Everything else is held
+constant, including total length inside H3's 60–90s band. Pace is assigned *across*
+eras (one legacy deck and one modern deck in each arm) so "which pace won" can never
+be read as "which casting won".
+
+The fast grid takes its 1.50s out of the **guess window**, never out of the answer:
+`answerAt` moves up so a resolved answer still holds a full 2.00s, and the 3-2-1
+tightens from one tick per two beats to one per beat. That is what keeps the answer
+VO slot at 2.00s in both arms, so answer takes are pace-independent.
+
+| | batch 1 | batch 2 @ 7.00s | batch 2 @ 5.50s |
+|---|---|---|---|
+| length | 76.0s (152 beats) | 78.0s (156 beats) | 63.0s (126 beats) |
+| answered rungs | 9 × 7.00s | 9 × 7.00s | 9 × 5.50s |
+| withheld rung | 10.00s | 10.00s | 8.50s |
+| follow-hook card | — | 2.00s | 2.00s |
+| CTA card | 3.00s | 3.00s | 3.00s |
+| running score rail | — | yes, `/9` | yes, `/9` |
+| editions | `all-timers`, `premier-league`, `modern`, `journeymen` | `number-ones`, `hard-way-up` | `old-guard`, `grand-tour` |
+
+Tiers are 2 EASY / 3 MEDIUM / 3 HARD / 2 IMPOSSIBLE in every edition, and rung 10 is
+never drawn, never spoken, and named only by its club path in the caption.
+
+**Batch 1 is frozen.** Those four are already posted, so their sources have to keep
+rendering exactly what went out: they stay at 76.0s with no score rail, no follow card
+and their original closing copy. Everything batch 2 adds is gated on the edition's
+`batch` field, not bolted onto the component for everyone. `batch` and `grid` are
+orthogonal — `grid` is the cadence under test, `batch` is the surface.
+
+**The two batch-2 surfaces**, both aimed at the same hole. Batch 1's only ask arrived
+at 68s, so the only people who could answer it were the ones who had already watched
+68 seconds:
+
+- **the running score rail** — nine pips (not ten; rung 10 is withheld and so is not
+  something a viewer can have scored), filling as rungs resolve, under a `?/9` that
+  states the denominator from frame 0. It makes the piece askable at every exit point:
+  "6/9" is typeable by someone about to scroll at rung 6.
+- **the follow hook** — one card and one line before the CTA, positioning tomorrow's
+  puzzle rather than the brand. It is the only beat in the piece that resolves upward.
 
 ```
 npm run promo -- ladder-long-all-timers        # one edition
-npm run promo -- ladder-long-modern ladder-long-journeymen
+npm run promo -- ladder-long-old-guard ladder-long-grand-tour
 ```
 
 **Casting is a production step, not a lookup.** All forty paths are S-tier names
@@ -254,19 +288,29 @@ Voice is **`Charlie`** — brisk quiz-host, picked against the register the spec
 2.39 words/sec across the semi-final would blow every slot.
 
 ```
+node promo/ladderlong-vo.mjs --plan             # slot budgets, generates nothing
 FAL_KEY=… node promo/ladderlong-vo.mjs          # generate + cache (once)
 FAL_KEY=… node promo/ladderlong-vo.mjs --force  # re-voice everything
 ```
 
-Without a key **and** without a cached take the editions still render — silent, with
-the SFX bed only — behind a loud warning. That exists so the visual grid can be
-proofed before spending a credit. **A silent cut must never be posted**: the pacing is
-the voice.
+Slot budgets are **derived from the grid**, not written down, and a line that plays in
+both arms is held to the tighter of the two. That is why `--plan` exists: it prints
+what every line has to hit, and which paces speak it, before a credit is spent. At
+5.50s the count-in window drops from 2.50s to 2.00s, which exactly one carrier line
+could not hold — `n5` ("Halfway. Number five.", measured 2.24s) — so the fast arm says
+`n5f` ("Halfway. Five.") instead. The other eight count-ins were already under 2.00s
+and are shared by both paces unchanged.
 
-`promo/ladderlong-audio.mjs` *parses* the casting out of `timeline.ts` rather than
-mirroring it by hand, because the club slams land per club and the four editions have
-different path lengths. The grid constants are still hand-mirrored — re-time one,
-re-time both.
+Missing lines degrade **per line**, not all-or-nothing: a clone with no key still
+renders, with whatever the cache holds, behind a warning that names every silent line.
+That exists so the visual grid can be proofed before spending a credit. **A proof must
+never be posted**: the pacing is the voice.
+
+`promo/ladderlong-grid.mjs` *parses* both grids and the whole edition table out of
+`timeline.ts`, and `ladderlong-audio.mjs` / `ladderlong-vo.mjs` / `promo.mjs` all read
+it from there. Nothing about this format is hand-mirrored any more — with two grids
+and a per-edition length there were three copies of the same numbers, and a drift here
+is inaudible until a voice line lands on top of a countdown.
 
 ### `semi-final` — the dated one-off (and the only narrated promo)
 

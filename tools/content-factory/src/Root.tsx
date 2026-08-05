@@ -51,7 +51,7 @@ import { TOTAL as LADDER_TOTAL, FPS as LADDER_FPS } from "./promo/ladder/timelin
 import { LadderLong } from "./promo/ladderlong/LadderLong";
 import {
   EDITIONS as LL_EDITIONS,
-  TOTAL as LL_TOTAL,
+  totalOf as llTotalOf,
   FPS as LL_FPS,
 } from "./promo/ladderlong/timeline";
 import { Chain } from "./promo/chain/Chain";
@@ -380,7 +380,10 @@ export const RemotionRoot: React.FC = () => (
     {/* LADDER-LONG — the retention lane at the cadence the faceless winners
         actually run. One component, one row of casting per edition (same shape
         as the Dave lane), so a fifth edition is a table entry in
-        src/promo/ladderlong/timeline.ts and nothing else. */}
+        src/promo/ladderlong/timeline.ts and nothing else. Duration is derived
+        PER EDITION because batch 2 runs a cadence A/B — 78.00s at 7.00s/rung,
+        63.00s at 5.50s/rung — while batch 1 stays pinned at the 76.00s it
+        shipped as. */}
     {LL_EDITIONS.map((ed) => (
       <Composition
         key={ed.slug}
@@ -389,7 +392,7 @@ export const RemotionRoot: React.FC = () => (
         fps={LL_FPS}
         width={1080}
         height={1920}
-        durationInFrames={LL_TOTAL}
+        durationInFrames={llTotalOf(ed)}
         defaultProps={{ slug: ed.slug }}
       />
     ))}

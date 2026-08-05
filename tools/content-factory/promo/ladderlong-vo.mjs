@@ -35,6 +35,7 @@
 import { writeFileSync, mkdirSync, existsSync, readFileSync, copyFileSync, readdirSync, unlinkSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
+import { FPS, FOLLOW_CARD, GRIDS, readEditions } from "./ladderlong-grid.mjs";
 
 const dir = path.dirname(fileURLToPath(import.meta.url));
 const CACHE = path.join(dir, "vo-cache-ladderlong");
@@ -44,19 +45,60 @@ const MODEL = "https://fal.run/fal-ai/elevenlabs/tts/eleven-v3";
 
 export const VOICE = "Charlie";
 
-// ---- slot budgets (seconds). MUST mirror src/promo/ladderlong/timeline.ts. ----
-// An answered rung is 210f/7.00s; rung 10 is 300f/10.00s.
-const FPS = 30;
-// Each budget is the distance to the next thing that must not be talked over,
-// which is NOT the same boundary for every slot:
-const BUDGET = {
-  open: 150 / FPS, // 5.00s — rung 1's setup may run through the guess window;
-  //                          it only has to clear before the first answer lands.
-  count: 75 / FPS, // 2.50s — a count-in must clear before that rung's first
-  //                          tick, so the 3-2-1 is heard in the clear.
-  answer: 60 / FPS, // 2.00s — ANSWER_AT 150f to rung end 210f
-  withhold: 150 / FPS, // 5.00s — WITHHELD_AT 150f to rung-10 end 300f
-  cta: 90 / FPS, //     3.00s — the closing card
+// ---- slot budgets, DERIVED from the grid rather than mirrored ----
+// Batch 2 runs two cadences, so there is no longer one budget per slot: the
+// same carrier line has to survive whichever paces schedule it. Each budget is
+// the distance to the next thing that must not be talked over, and that
+// boundary is a different frame in each grid:
+const budgetsOf = (g) => ({
+  open: g.answerAt / FPS, //     rung 1's setup may run through the guess window;
+  //                             it only has to clear before the first answer.
+  //                             7.00s: 5.00s   5.50s: 3.50s
+  count: g.tickAt[0] / FPS, //   a count-in must clear before that rung's first
+  //                             tick, so the 3-2-1 is heard in the clear.
+  //                             7.00s: 2.50s   5.50s: 2.00s
+  answer: (g.step - g.answerAt) / FPS, // 2.00s at BOTH paces, by construction —
+  //                             the fast grid takes its time out of the guess
+  //                             window, never out of the answer.
+  withhold: (g.last - g.answerAt) / FPS, // 5.00s at both paces, likewise.
+  follow: FOLLOW_CARD / FPS, //  2.00s — a card, so pace-independent.
+  cta: g.cta / FPS, //           3.00s — likewise.
+});
+
+// Which lines play at which paces. Mirrors cuesFor() in
+// src/promo/ladderlong/vo.ts — if these two ever disagree, the cue-frame check
+// in the render verification catches it, because a key that is budgeted here
+// but never scheduled there simply never plays.
+//
+// A line's real budget is the TIGHTEST of the grids that schedule it: `open2`
+// is spoken by both arms, so it has to fit the 5.50s arm's 3.50s window even
+// though the 7.00s arm would give it 5.00s.
+export const planLines = () => {
+  const plan = new Map(); // key -> { slot, grids: Grid[] }
+  const add = (key, slot, g) => {
+    const e = plan.get(key) ?? { slot, grids: [] };
+    e.grids.push(g);
+    plan.set(key, e);
+  };
+  for (const ed of readEditions()) {
+    const g = ed.grid;
+    const b2 = ed.batch === 2;
+    const fast = g.step < GRIDS.GRID_7.step;
+    add(b2 ? "open2" : "open", "open", g);
+    for (let n = 2; n <= 10; n++) add(n === 5 && fast ? "n5f" : `n${n}`, "count", g);
+    for (let k = 1; k <= 9; k++) add(`${ed.slug}-a${k}`, "answer", g);
+    add("withhold", "withhold", g);
+    if (b2) add("follow", "follow", g);
+    add(b2 ? "cta2" : "cta", "cta", g);
+  }
+  return plan;
+};
+
+// budget for one key = min over every grid that schedules it
+export const budgetFor = (plan, key) => {
+  const e = plan.get(key);
+  if (!e) return undefined;
+  return Math.min(...e.grids.map((g) => budgetsOf(g)[e.slot]));
 };
 
 // ---- the shared carrier, generated once and reused by all four editions ----
@@ -85,6 +127,39 @@ export const SHARED = [
   // answerable in one word.
   { key: "withhold", slot: "withhold", text: "This one I'm not telling you. Comments, or nowhere." },
   { key: "cta", slot: "cta", text: "So how far did you actually get?" },
+
+  // ---- BATCH 2 (2026-08-05) ----
+  // Four lines, and every one of them exists because batch 1 left a comment on
+  // the table. Batch 1's only ask arrived at 68s, so the only people who could
+  // answer it were the ones who had already watched 68 seconds. These make the
+  // piece askable from the start and give a reason to come back.
+
+  // `open2` replaces `open` for batch 2. It spends its last two words seeding
+  // the scoreboard instead of echoing the on-screen header — "HOW FAR DO YOU
+  // GET?" is already set in 88pt type at the top of frame 0, and a voice that
+  // reads the screen aloud is wasted. Note the budget: this line is spoken by
+  // BOTH arms and so has to clear the 5.50s arm's first answer at 3.50s, a full
+  // 1.50s tighter than the window batch 1's `open` was written to.
+  { key: "open2", slot: "open", text: "Ten career paths. They get harder. Keep score." },
+
+  // The one carrier line the fast grid cannot hold. "Halfway. Number five."
+  // measured 2.24s against the 5.50s arm's 2.00s count-in budget, so the fast
+  // arm says this instead — the halfway marker is the retention beat and is
+  // worth keeping; "Number" is the part that can go.
+  { key: "n5f", slot: "count", text: "Halfway. Five." },
+
+  // The follow hook, and it is deliberately a CONTENT promise. "Follow us" is a
+  // brand ask and gets brand-ask numbers; the only thing a viewer who just
+  // played one of these wants is another one, so the line offers exactly that
+  // and nothing else. Lands on its own card, before the comment ask, so the two
+  // asks never compete for the same breath.
+  { key: "follow", slot: "follow", text: "New gauntlet daily." },
+
+  // `cta2` replaces `cta` for batch 2: it asks for the SCORE first and the name
+  // second. That order is the point — the score is answerable by everyone who
+  // watched any of it, the name only by the ones who lasted, and the cheap ask
+  // going first is what turns a scroll-away into a comment.
+  { key: "cta2", slot: "cta", text: "Your score out of nine? And number ten?" },
 ];
 
 // ---- the nine answer names per edition ----
@@ -98,6 +173,19 @@ export const ANSWERS = {
   "premier-league": ["Declan Rice.", "Trent Alexander-Arnold.", "Courtois.", "Son.", "Frank Lampard.", "Kanté.", "De Bruyne.", "Vidić.", "Emile Heskey."],
   modern: ["Wirtz.", "Lautaro.", "Julián Álvarez.", "Hakimi.", "Dembélé.", "Luis Díaz.", "Bruno Fernandes.", "Isak.", "Sadio Mané."],
   journeymen: ["Busquets.", "Thomas Müller.", "Schweinsteiger.", "Varane.", "Dybala.", "Griezmann.", "David Silva.", "Harry Kane.", "Vertonghen."],
+
+  // ---- batch 2 ----
+  // Same rule as batch 1, plus the lesson batch 1 paid for: Charlie draws a
+  // LONE SHORT SURNAME out ("Gerrard." came back at 2.32s in a 2.00s slot,
+  // where "Steven Gerrard." reads in 1.36s). So the one- and two-syllable
+  // surnames below are given their first name and the long ones are not.
+  // Rung 10's name is never generated in any edition — these arrays are nine
+  // long, and that is the withhold enforced in the only place the spoken words
+  // exist.
+  "number-ones": ["Manuel Neuer.", "Casillas.", "Donnarumma.", "De Gea.", "Hugo Lloris.", "Petr Čech.", "Van der Sar.", "Ederson.", "Fabien Barthez."],
+  "hard-way-up": ["Cole Palmer.", "Cody Gakpo.", "Rafael Leão.", "John Stones.", "Maguire.", "Mahrez.", "Osimhen.", "Jorginho.", "Gyökeres."],
+  "old-guard": ["Van Basten.", "Xavi.", "Nesta.", "Lilian Thuram.", "Emmanuel Petit.", "Miroslav Klose.", "Gattuso.", "Desailly.", "Roberto Baggio."],
+  "grand-tour": ["Vinícius.", "Rúben Dias.", "Tchouaméni.", "De Ligt.", "David Alaba.", "Kovačić.", "Çalhanoğlu.", "Xabi Alonso.", "Robert Pirès."],
 };
 
 export const LINES = [
@@ -163,42 +251,85 @@ const generate = async (line) => {
 // replaces the semi-final's "read the printed durations and re-quantise the
 // timeline" step — here the timeline does not move, so the copy has to give.
 export const checkFit = (manifest) => {
+  const plan = planLines();
   const over = [];
   for (const l of manifest.lines) {
-    const budget = BUDGET[l.slot];
+    const budget = budgetFor(plan, l.key);
     if (budget && l.dur > budget) over.push({ ...l, budget, overBy: l.dur - budget });
   }
   return over;
 };
 
+// The scripted lines and the editions table have to describe the same batch.
+// Either direction of drift is silent and expensive: a line nothing schedules
+// is a credit spent on audio that never plays, and a cue nothing scripts is a
+// rung that goes out mute. Both are caught here, before generation.
+export const checkCoverage = () => {
+  const plan = planLines();
+  const scripted = new Set(LINES.map((l) => l.key));
+  const scheduled = new Set(plan.keys());
+  const unscheduled = [...scripted].filter((k) => !scheduled.has(k));
+  const unscripted = [...scheduled].filter((k) => !scripted.has(k));
+  if (unscheduled.length > 0 || unscripted.length > 0) {
+    throw new Error(
+      `ladderlong-vo: script/timeline mismatch.\n` +
+        (unscheduled.length ? `  scripted but never played: ${unscheduled.join(", ")}\n` : "") +
+        (unscripted.length ? `  played but never scripted: ${unscripted.join(", ")}\n` : "") +
+        `  Every edition in timeline.ts needs nine ANSWERS entries under its slug.`,
+    );
+  }
+  return plan;
+};
+
 let warned = false;
 
-// `soft` lets a batch render WITHOUT a voice track when no key and no cache are
-// available, so the visual grid can still be proofed. It is deliberately loud:
-// shipping a silent cut believing it is narrated is the one mistake this format
-// cannot survive, so the warning names the exact command that fixes it.
-export const ensureLadderLongVo = async ({ force = false, soft = false } = {}) => {
-  if (soft && !existsSync(MANIFEST) && !(process.env.FAL_KEY || process.env.FAL_API_KEY)) {
-    if (!warned) {
-      warned = true;
-      console.warn(
-        "\n  ####################################################################\n" +
-          "  #  ladder-long: NO VOICEOVER. No FAL_KEY and no cached take, so    #\n" +
-          "  #  these renders will be SILENT except for the SFX bed.            #\n" +
-          "  #  DO NOT POST THEM as-is — the format's pacing is the voice.      #\n" +
-          "  #                                                                  #\n" +
-          "  #    FAL_KEY=… node promo/ladderlong-vo.mjs                        #\n" +
-          "  #    npm run promo -- ladder-long-all-timers  (…and the other 3)   #\n" +
-          "  ####################################################################\n",
-      );
-    }
-    return null;
+const missingWarning = (missing) => {
+  if (warned) return;
+  warned = true;
+  const w = (t) => console.warn("  #  " + t.padEnd(66) + "#");
+  console.warn("\n  " + "#".repeat(70));
+  w(`ladder-long: ${missing.length} VO LINE(S) MISSING — this render is a PROOF.`);
+  w("");
+  w("The visual grid, the cadence and the SFX are real. The lines below");
+  w("are SILENT, and every rung that needed one plays with no voice.");
+  w("DO NOT POST a proof — the format's pacing IS the voice.");
+  w("");
+  for (const chunk of missing.reduce((a, k, i) => {
+    if (i % 4 === 0) a.push([]);
+    a[a.length - 1].push(k);
+    return a;
+  }, [])) {
+    w("    " + chunk.join("  "));
   }
+  w("");
+  w("Generate them (each line is cached forever after, and the 48");
+  w("already-cached lines are NOT re-billed — the manifest keys on text):");
+  w("");
+  w("    FAL_KEY=… node promo/ladderlong-vo.mjs");
+  w("    npm run promo -- ladder-long-<edition>");
+  console.warn("  " + "#".repeat(70) + "\n");
+};
+
+// `soft` lets a batch render with whatever voice is cached, so the visual grid
+// can be proofed before anyone spends a credit. It degrades PER LINE, not
+// all-or-nothing: batch 2 shares eleven of batch 1's carrier lines, so a
+// keyless clone can still hear the count-ins land against the new 5.50s grid
+// even though the forty new lines have never been generated.
+//
+// It is deliberately loud either way. Shipping a proof believing it is narrated
+// is the one mistake this format cannot survive, so the warning names every
+// missing line and the exact command that fixes it.
+export const ensureLadderLongVo = async ({ force = false, soft = false } = {}) => {
+  // Cheap and fatal, and it runs BEFORE the first credit is spent.
+  checkCoverage();
+
   const have = existsSync(MANIFEST) && !force ? JSON.parse(readFileSync(MANIFEST, "utf8")) : { voice: VOICE, lines: [] };
   const byKey = new Map((have.lines ?? []).map((l) => [l.key, l]));
   const stale = have.voice !== VOICE;
 
+  const haveKey = Boolean(process.env.FAL_KEY || process.env.FAL_API_KEY);
   const out = [];
+  const missing = [];
   for (const line of LINES) {
     const cached = byKey.get(line.key);
     const fresh = cached && !stale && !force && cached.text === line.text && existsSync(path.join(CACHE, `${line.key}.mp3`));
@@ -206,10 +337,15 @@ export const ensureLadderLongVo = async ({ force = false, soft = false } = {}) =
       out.push({ ...cached, slot: line.slot });
       continue;
     }
+    if (soft && !haveKey) {
+      missing.push(line.key);
+      continue;
+    }
     process.stdout.write(`  vo: ${line.key}…`);
     out.push(await generate(line));
     console.log(" ok");
   }
+  if (missing.length > 0) missingWarning(missing);
 
   const manifest = { voice: VOICE, lines: out };
   mkdirSync(CACHE, { recursive: true });
@@ -221,6 +357,7 @@ export const ensureLadderLongVo = async ({ force = false, soft = false } = {}) =
   if (over.length > 0) {
     for (const o of over) {
       console.error(`  OVERRUN ${o.key}: ${o.dur.toFixed(2)}s in a ${o.budget.toFixed(2)}s slot (+${o.overBy.toFixed(2)}s) — "${o.text}"`);
+      console.error(`           (tightest of the ${planLines().get(o.key).grids.map((g) => `${(g.step / FPS).toFixed(2)}s`).join(" + ")} arm(s) that speak it)`);
     }
     throw new Error(`${over.length} VO line(s) overrun their slot. Shorten the line; do not stretch the grid.`);
   }
@@ -239,14 +376,28 @@ export const ensureLadderLongVo = async ({ force = false, soft = false } = {}) =
 };
 
 if (process.argv[1] && process.argv[1].endsWith("ladderlong-vo.mjs")) {
+  // --plan prints the slot budget every line has to hit, WITHOUT generating
+  // anything. That is the only way to see what the fast arm demands before
+  // spending a credit on a line that will be rejected for overrunning it.
+  if (process.argv.includes("--plan")) {
+    const plan = checkCoverage();
+    console.log(`voice=${VOICE}  ${LINES.length} lines across ${readEditions().length} editions\n`);
+    for (const l of LINES) {
+      const paces = plan.get(l.key).grids.map((g) => (g.step / FPS).toFixed(2)).sort();
+      const uniq = [...new Set(paces)].join("+");
+      console.log(`  ${l.key.padEnd(22)} ${l.slot.padEnd(9)} ${budgetFor(plan, l.key).toFixed(2)}s  [${uniq}]  "${l.text}"`);
+    }
+    process.exit(0);
+  }
   const m = await ensureLadderLongVo({ force: process.argv.includes("--force") });
+  const plan = planLines();
   const shared = m.lines.filter((l) => l.slot !== "answer");
   const total = m.lines.reduce((a, l) => a + l.dur, 0);
   const words = m.lines.reduce((a, l) => a + l.text.split(/\s+/).length, 0);
   console.log(`\nvoice=${m.voice}  ${m.lines.length} lines (${shared.length} shared carrier + ${m.lines.length - shared.length} answers)`);
   console.log(`${total.toFixed(2)}s of speech, ${words} words -> ${(words / total).toFixed(2)} words/sec measured`);
   for (const l of m.lines) {
-    const b = BUDGET[l.slot];
-    console.log(`  ${l.key.padEnd(20)} ${l.dur.toFixed(2)}s / ${b ? b.toFixed(2) : "  - "}s  "${l.text}"`);
+    const b = budgetFor(plan, l.key);
+    console.log(`  ${l.key.padEnd(22)} ${l.dur.toFixed(2)}s / ${b ? b.toFixed(2) : "  - "}s  "${l.text}"`);
   }
 }
