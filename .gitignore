@@ -59,6 +59,12 @@ MANIFEST
 pip-log.txt
 pip-delete-this-directory.txt
 
+# Playwright run output. `test-results/` holds `.last-run.json` plus per-failure
+# screenshots and error-context dumps; it is rewritten on every `npx playwright
+# test`. Untracked it dirtied the working tree, which the prod Convex deploy
+# gate reads as debris (docs/DEPLOYMENT.md wants a provably clean tree).
+app/test-results/
+
 # Unit test / coverage reports
 htmlcov/
 .tox/

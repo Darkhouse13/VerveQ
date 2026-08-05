@@ -111,6 +111,8 @@ Required Convex dashboard env vars: `RESEND_API_KEY`, `EMAIL_FROM`, `CONVEX_SITE
 
 ## Docs status
 
+**Canonical decision log:** [`docs/DECISIONS.md`](docs/DECISIONS.md) — the single record of owner decisions that bind future work. Backfilled entries point at the authoritative wording rather than copying it, and open questions are listed at the foot of the file.
+
 Audited against the code on 2026-07-15. The docs previously listed here as
 "trustworthy today" were not — five of the six carried a specific false claim,
 so the list is now stated per-doc with its known defect.

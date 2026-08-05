@@ -1,0 +1,20 @@
+{
+  "name": "verveq-research-modes",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Standalone sim harness for evaluating unbuilt game-mode candidates. Research tooling; ships nothing to users.",
+  "scripts": {
+    "check": "tsc --noEmit && vitest run",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "sim": "tsx harness/run.ts",
+    "sim:calibration": "tsx harness/run.ts --candidate calib-trivia && tsx harness/run.ts --candidate calib-skill && tsx harness/run.ts --candidate calib-secret"
+  },
+  "devDependencies": {
+    "@types/node": "^22.16.5",
+    "tsx": "^4.20.3",
+    "typescript": "^5.8.3",
+    "vitest": "^4.1.5"
+  }
+}
