@@ -27,6 +27,37 @@ Newest first.
 
 ---
 
+## DECISION 2026-08-10 — 7.00s is the standing pace; the 5.50s arm is retired
+
+**Ruled in the CHAIN-LONG-B1 ticket.** The batch-2 cadence A/B has reported:
+the two 7.00s control editions took **2.5K and 1.5K**; the two 5.50s editions
+took **1.6K and 563** (figures as stated in the owner ticket). The measured
+5.5–7.02s winner band contains both paces, but this account's audience lives at
+the slow end of it.
+
+**7.00s per rung/slot is the standing pace for every future gauntlet-lane
+cut.** No new edition renders on the 5.50s grid without a new owner ticket.
+`GRID_5_5` stays in `tools/content-factory/src/promo/ladderlong/timeline.ts` —
+`old-guard` and `grand-tour` are posted and their sources must keep reproducing
+what went out — but it is closed to new editions.
+
+## DECISION 2026-08-10 — The experiment lane: ladder banks its slots; one slot a week runs one new format
+
+**Ruled in the CHAIN-LONG-B1 ticket.** The weekly slate is now structured:
+
+- **`ladder-long` is the banker** at ~4 slots/week, on the standing 7.00s pace.
+- **1 slot/week is the experiment lane**: it runs exactly **one** new format at
+  a time, judged against the ladder band — **560–2.5K**, the spread of the four
+  batch-2 editions above — at **n=2–3 editions**, then **kept or killed**. Two
+  new formats never run in the same week; a result that can't be attributed is
+  not a result.
+
+First occupant: `chain-long` (CHAIN-LONG-B1, 2026-08-10) — the relay mechanic
+wearing the ladder-long winner spec. Sources at
+`tools/content-factory/src/promo/chainlong/`.
+
+---
+
 ## DECISION 2026-08-05 — Geometry baselines must be checked for cross-viewport invariance before being declared canonical
 
 **Ruled during HF-3B.** A measured layout value is only a *baseline* if it holds
