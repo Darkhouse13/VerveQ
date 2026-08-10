@@ -56,6 +56,12 @@ import {
 } from "./promo/ladderlong/timeline";
 import { Chain } from "./promo/chain/Chain";
 import { TOTAL as CHAIN_TOTAL, FPS as CHAIN_FPS } from "./promo/chain/timeline";
+import { ChainLong } from "./promo/chainlong/ChainLong";
+import {
+  EDITIONS as CL_EDITIONS,
+  totalOf as clTotalOf,
+  FPS as CL_FPS,
+} from "./promo/chainlong/timeline";
 import { Wall } from "./promo/wall/Wall";
 import { TOTAL as WALL_TOTAL, FPS as WALL_FPS } from "./promo/wall/timeline";
 import { PickASide } from "./promo/pickaside/PickASide";
@@ -393,6 +399,23 @@ export const RemotionRoot: React.FC = () => (
         width={1080}
         height={1920}
         durationInFrames={llTotalOf(ed)}
+        defaultProps={{ slug: ed.slug }}
+      />
+    ))}
+
+    {/* CHAIN-LONG — the experiment lane's first occupant (CHAIN-LONG-B1):
+        the relay mechanic on the standing 7.00s winner grid. Same one-row-per
+        -edition shape as ladder-long; a third edition is a table entry in
+        src/promo/chainlong/timeline.ts and nothing else. */}
+    {CL_EDITIONS.map((ed) => (
+      <Composition
+        key={ed.slug}
+        id={`ChainLong-${ed.slug}`}
+        component={ChainLong}
+        fps={CL_FPS}
+        width={1080}
+        height={1920}
+        durationInFrames={clTotalOf(ed)}
         defaultProps={{ slug: ed.slug }}
       />
     ))}

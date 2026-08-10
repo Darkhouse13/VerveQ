@@ -37,6 +37,9 @@ import { ensureLadderLongAudio } from "./promo/ladderlong-audio.mjs";
 import { ensureLadderLongVo } from "./promo/ladderlong-vo.mjs";
 import { readEditions as readLadderLongEditions } from "./promo/ladderlong-grid.mjs";
 import { ensureChainAudio } from "./promo/chain-audio.mjs";
+import { ensureChainLongAudio } from "./promo/chainlong-audio.mjs";
+import { ensureChainLongVo } from "./promo/chainlong-vo.mjs";
+import { readEditions as readChainLongEditions } from "./promo/chainlong-grid.mjs";
 import { ensureWallAudio } from "./promo/wall-audio.mjs";
 import { ensurePickASideAudio } from "./promo/pickaside-audio.mjs";
 import { ensureLongChainAudio } from "./promo/longchain-audio.mjs";
@@ -101,6 +104,18 @@ const PROMOS = [
     id: `LadderLong-${ed.slug}`,
     audio: ensureLadderLongAudio,
     vo: () => ensureLadderLongVo({ soft: true }),
+  })),
+  // CHAIN-LONG — the experiment lane's first occupant (CHAIN-LONG-B1): the
+  // relay mechanic on the standing 7.00s grid. One slot/week runs ONE new
+  // format, judged vs the ladder band at n=2-3, kept or killed — see
+  // docs/DECISIONS.md 2026-08-10. Carrier is partly inherited from
+  // ladder-long's cache (promo/chainlong-vo.mjs), so the two lanes sound like
+  // one series, which they are.
+  ...readChainLongEditions().map((ed) => ({
+    name: `chain-long-${ed.slug}`,
+    id: `ChainLong-${ed.slug}`,
+    audio: ensureChainLongAudio,
+    vo: () => ensureChainLongVo({ soft: true }),
   })),
 ];
 

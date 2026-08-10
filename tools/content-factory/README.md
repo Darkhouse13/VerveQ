@@ -159,7 +159,7 @@ npm run promo -- versus           # render one
 npm run promo -- rematch remember license   # or any subset
 ```
 
-## The retention lane (`ladder`, `chain`, `wall`, `ladder-long`)
+## The retention lane (`ladder`, `chain`, `wall`, `ladder-long`, `chain-long`)
 
 Four formats that exist because of a measurement, not a brief. Sampling the
 football-quiz reels that actually travel, the single-puzzle reveal — one career
@@ -184,6 +184,7 @@ properties this lane is built around, and none of them is "shorter":
 | `wall` | `Wall` | 3×3 wall of nine paths under a 10s clock | 13.0s | seven of nine answers |
 | `ladder-long-*` | `LadderLong-*` | ten paths, easy→impossible, metronomic rungs, narrated | 76.0 / 78.0 / 63.0s | rung 10's answer |
 | `ladder-long-five-leagues`, `-one-squad` | `LadderLong-*` | as above, cast for THE WEEKEND, campaign closer | 78.0s | rung 10's answer |
+| `chain-long-*` | `ChainLong-*` | relay on the winner grid: one club pair, 9 both-club names, narrated | 76.0s | slot 10, and the obvious one |
 
 `chain` leaves out the single most famous qualifying player deliberately —
 being the one to point out the obvious omission is the most reliable comment
@@ -331,6 +332,53 @@ never be posted**: the pacing is the voice.
 it from there. Nothing about this format is hand-mirrored any more — with two grids
 and a per-edition length there were three copies of the same numbers, and a drift here
 is inaudible until a voice line lands on top of a countdown.
+
+### `chain-long` — the relay on the winner grid (the experiment lane's first format)
+
+The cadence A/B reported and **7.00s is the standing pace; the 5.50s arm is
+retired** (`docs/DECISIONS.md`, 2026-08-10). The same ruling structured the
+week: `ladder-long` banks ~4 slots as the banker, and **one slot a week runs
+exactly one new format**, judged against the ladder band (560–2.5K) at n=2–3
+editions, then kept or killed. `chain-long` is the first occupant.
+
+It is `chain`'s relay mechanic wearing `ladder-long`'s batch-2 spec: **one
+club pair per edition, ten slots at a metronomic 7.00s, every slot a player
+whose dataset path carries both clubs.** Nine names stamp down a single chain
+rail; slot 10 blinks "your turn" from frame 0 and is never filled. 76.0s
+(9×7.00s + an 8.00s hand-over + the follow card + the CTA), score strip
+(`?/9`, "KEEP COUNT"), follow hook and closer reused whole from batch 2.
+
+**Two withholds run at once, and both are spoken.** Slot 10 is handed over out
+loud ("Slot ten is yours."), and the cast deliberately excludes the pair's
+single most famous qualifier — the closer confesses it ("And we left out the
+obvious one.") the way `chain` pioneered, because being the one to point out
+the obvious omission is the cheapest comment there is. **Withhold discipline
+covers both**: the omitted player is never named in VO, captions, cards, or
+files — including this one and the batch doc — and his path is never shown, so
+he is **not** spent in `ledger.json` (the `chain` precedent). The nine cast
+ids per edition are spent as usual.
+
+**The VO carrier is partly inherited.** Every ladder-long line whose slot and
+copy fit is copied from `promo/vo-cache-ladderlong/` and never re-billed —
+`n2`…`n9`, `follow`, `cta2` — which is spec #13 taken across formats: the two
+lanes sound like one series because they literally share a take. The chain
+grid pins its count-in and answer windows to GRID_7 precisely so those cached
+takes stay valid. Chain-only lines (`openc`, `turn`, `omission`, 9 answers per
+edition) live in `promo/vo-cache-chainlong/`. Same fit-check law: the grid
+leads, an overrun throws, shorten the line.
+
+```
+node promo/chainlong-vo.mjs --plan             # budgets + reuse/bill table
+FAL_KEY=… node promo/chainlong-vo.mjs          # generate + cache (once)
+npm run promo -- chain-long-liverpool-city chain-long-chelsea-marseille
+```
+
+Paths never render in this format — the rail is names-only, the plates carry
+the pair — so the Gullit (consecutive-duplicate clubs) pattern has no surface
+here; the all-caps rail still obeys the McTominay principle. The bed is its
+own identity (`chain-long-<slug>` seeds, `promo/chainlong-audio.mjs`), grid
+parsed from `src/promo/chainlong/timeline.ts` via `promo/chainlong-grid.mjs`.
+No trending sound — narrated format, standing rule.
 
 ### `semi-final` — the dated one-off (and the only narrated promo)
 

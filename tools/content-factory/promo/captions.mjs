@@ -445,6 +445,42 @@ export const PROMO_CAPTIONS = {
     "New gauntlet daily. Career Path mode — free, no sign-up: verveq.com\n\n" +
     "#football #footballquiz #careerpath #fantasyfootball #footballtiktok" +
     wkndLinks("ladder-long-one-squad"),
+
+  // ---- CHAIN-LONG batch 1 (2026-08-10) — the experiment lane's first format.
+  //
+  // Caption shape is batch 2's law with the relay's own asks: SCORE ASK FIRST
+  // (a number is typeable by someone who bailed at slot 4), then the TWO
+  // withholds this format runs — the omission and slot 10 — pointed at by
+  // name-of-slot, never by name-of-player. The omission is never identified
+  // here in any form (withhold discipline, CHAIN-LONG-B1: not in VO, captions,
+  // cards, or files), and unlike ladder-long there is NO path printed — a path
+  // is a fingerprint, and the caption that prints one has named him.
+  //
+  // Facts law unchanged: nothing asserted the dataset does not carry. "Every
+  // one of them played for both" is the dataset's own claim about the nine
+  // names on screen; no counts, no honours, no "only man to". Standard links,
+  // NOT campaign — a first read of a new format carries zero extra variables,
+  // and the campaign field stays available for a WEEKEND-cast edition later.
+  "chain-long-liverpool-city":
+    "Liverpool AND Manchester City. Nine names on the board — every one of " +
+    "them played for both 🔗\n\n" +
+    "How many of the nine did you actually know? Drop the number 👇\n\n" +
+    "Slot 10 is empty on purpose. And the obvious one? We left him out. You " +
+    "already know who it is, and it's killing you.\n\n" +
+    "Career Path mode — free, no sign-up: verveq.com\n\n" +
+    "So: who did we leave out — and who's your slot 10? 👇\n\n" +
+    "#football #footballquiz #liverpool #mancity #footballtiktok",
+
+  "chain-long-chelsea-marseille":
+    "Chelsea AND Marseille. Nine names, one chain — every one of them played " +
+    "for both 🔗\n\n" +
+    "Your score out of nine in the comments — be honest, the rail counted " +
+    "with you 👇\n\n" +
+    "Slot 10 stays empty. And yes, we left out the obvious one. On purpose. " +
+    "Saying it first is the whole game.\n\n" +
+    "Career Path mode — free, no sign-up: verveq.com\n\n" +
+    "Who's the one we left out — and who's your slot 10? 👇\n\n" +
+    "#football #footballquiz #chelsea #marseille #footballtiktok",
 };
 
 export const buildPromoCaption = (name) => PROMO_CAPTIONS[name] ?? "";

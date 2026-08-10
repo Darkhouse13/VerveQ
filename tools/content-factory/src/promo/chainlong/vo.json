@@ -1,0 +1,628 @@
+{
+  "voice": "Charlie",
+  "lines": [
+    {
+      "key": "openc",
+      "slot": "open",
+      "text": "Ten slots, everyone played for both. Keep count.",
+      "dur": 3.52,
+      "words": [
+        {
+          "word": "Ten",
+          "t0": 0,
+          "t1": 0.24
+        },
+        {
+          "word": "slots,",
+          "t0": 0.32,
+          "t1": 1.12
+        },
+        {
+          "word": "everyone",
+          "t0": 1.164,
+          "t1": 1.52
+        },
+        {
+          "word": "played",
+          "t0": 1.566,
+          "t1": 1.84
+        },
+        {
+          "word": "for",
+          "t0": 1.88,
+          "t1": 2
+        },
+        {
+          "word": "both.",
+          "t0": 2.08,
+          "t1": 2.68
+        },
+        {
+          "word": "Keep",
+          "t0": 2.7359999999999998,
+          "t1": 2.96
+        },
+        {
+          "word": "count.",
+          "t0": 3.027,
+          "t1": 3.52
+        }
+      ]
+    },
+    {
+      "key": "n2",
+      "slot": "count",
+      "text": "Number two.",
+      "dur": 0.96,
+      "words": [
+        {
+          "word": "Number",
+          "t0": 0,
+          "t1": 0.24
+        },
+        {
+          "word": "two.",
+          "t0": 0.34,
+          "t1": 0.96
+        }
+      ]
+    },
+    {
+      "key": "n3",
+      "slot": "count",
+      "text": "Number three.",
+      "dur": 1.2000000000000002,
+      "words": [
+        {
+          "word": "Number",
+          "t0": 0,
+          "t1": 0.24
+        },
+        {
+          "word": "three.",
+          "t0": 0.307,
+          "t1": 1.2000000000000002
+        }
+      ]
+    },
+    {
+      "key": "n4",
+      "slot": "count",
+      "text": "Number four.",
+      "dur": 0.96,
+      "words": [
+        {
+          "word": "Number",
+          "t0": 0,
+          "t1": 0.24
+        },
+        {
+          "word": "four.",
+          "t0": 0.32,
+          "t1": 0.96
+        }
+      ]
+    },
+    {
+      "key": "n5",
+      "slot": "count",
+      "text": "Halfway. Number five.",
+      "dur": 2.24,
+      "words": [
+        {
+          "word": "Halfway.",
+          "t0": 0,
+          "t1": 0.64
+        },
+        {
+          "word": "Number",
+          "t0": 0.766,
+          "t1": 1.52
+        },
+        {
+          "word": "five.",
+          "t0": 1.6320000000000001,
+          "t1": 2.24
+        }
+      ]
+    },
+    {
+      "key": "n6",
+      "slot": "count",
+      "text": "Number six.",
+      "dur": 1.12,
+      "words": [
+        {
+          "word": "Number",
+          "t0": 0,
+          "t1": 0.32
+        },
+        {
+          "word": "six.",
+          "t0": 0.44,
+          "t1": 1.12
+        }
+      ]
+    },
+    {
+      "key": "n7",
+      "slot": "count",
+      "text": "Number seven.",
+      "dur": 1.04,
+      "words": [
+        {
+          "word": "Number",
+          "t0": 0,
+          "t1": 0.32
+        },
+        {
+          "word": "seven.",
+          "t0": 0.4,
+          "t1": 1.04
+        }
+      ]
+    },
+    {
+      "key": "n8",
+      "slot": "count",
+      "text": "Number eight.",
+      "dur": 0.64,
+      "words": [
+        {
+          "word": "Number",
+          "t0": 0,
+          "t1": 0.24
+        },
+        {
+          "word": "eight.",
+          "t0": 0.293,
+          "t1": 0.64
+        }
+      ]
+    },
+    {
+      "key": "n9",
+      "slot": "count",
+      "text": "Number nine. Last answer.",
+      "dur": 1.9200000000000002,
+      "words": [
+        {
+          "word": "Number",
+          "t0": 0,
+          "t1": 0.16
+        },
+        {
+          "word": "nine.",
+          "t0": 0.24,
+          "t1": 0.64
+        },
+        {
+          "word": "Last",
+          "t0": 0.752,
+          "t1": 1.2000000000000002
+        },
+        {
+          "word": "answer.",
+          "t0": 1.2570000000000001,
+          "t1": 1.9200000000000002
+        }
+      ]
+    },
+    {
+      "key": "turn",
+      "slot": "turn",
+      "text": "Slot ten is yours.",
+      "dur": 2.08,
+      "words": [
+        {
+          "word": "Slot",
+          "t0": 0,
+          "t1": 0.32
+        },
+        {
+          "word": "ten",
+          "t0": 0.44,
+          "t1": 0.8
+        },
+        {
+          "word": "is",
+          "t0": 0.9870000000000001,
+          "t1": 1.36
+        },
+        {
+          "word": "yours.",
+          "t0": 1.4400000000000002,
+          "t1": 2.08
+        }
+      ]
+    },
+    {
+      "key": "omission",
+      "slot": "omission",
+      "text": "And we left out the obvious one.",
+      "dur": 2,
+      "words": [
+        {
+          "word": "And",
+          "t0": 0,
+          "t1": 0.24
+        },
+        {
+          "word": "we",
+          "t0": 0.293,
+          "t1": 0.4
+        },
+        {
+          "word": "left",
+          "t0": 0.464,
+          "t1": 0.72
+        },
+        {
+          "word": "out",
+          "t0": 0.76,
+          "t1": 0.88
+        },
+        {
+          "word": "the",
+          "t0": 0.9199999999999999,
+          "t1": 1.04
+        },
+        {
+          "word": "obvious",
+          "t0": 1.0899999999999999,
+          "t1": 1.44
+        },
+        {
+          "word": "one.",
+          "t0": 1.52,
+          "t1": 2
+        }
+      ]
+    },
+    {
+      "key": "follow",
+      "slot": "follow",
+      "text": "New gauntlet daily.",
+      "dur": 1.68,
+      "words": [
+        {
+          "word": "New",
+          "t0": 0,
+          "t1": 0.24
+        },
+        {
+          "word": "gauntlet",
+          "t0": 0.293,
+          "t1": 0.8
+        },
+        {
+          "word": "daily.",
+          "t0": 0.907,
+          "t1": 1.68
+        }
+      ]
+    },
+    {
+      "key": "cta2",
+      "slot": "cta",
+      "text": "Your score? And number ten?",
+      "dur": 2.72,
+      "words": [
+        {
+          "word": "Your",
+          "t0": 0,
+          "t1": 0.16
+        },
+        {
+          "word": "score?",
+          "t0": 0.227,
+          "t1": 0.64
+        },
+        {
+          "word": "And",
+          "t0": 0.94,
+          "t1": 1.8399999999999999
+        },
+        {
+          "word": "number",
+          "t0": 1.874,
+          "t1": 2.08
+        },
+        {
+          "word": "ten?",
+          "t0": 2.18,
+          "t1": 2.72
+        }
+      ]
+    },
+    {
+      "key": "liverpool-city-a1",
+      "slot": "answer",
+      "text": "James Milner.",
+      "dur": 1.12,
+      "words": [
+        {
+          "word": "James",
+          "t0": 0,
+          "t1": 0.4
+        },
+        {
+          "word": "Milner.",
+          "t0": 0.46,
+          "t1": 1.12
+        }
+      ]
+    },
+    {
+      "key": "liverpool-city-a2",
+      "slot": "answer",
+      "text": "Balotelli.",
+      "dur": 0.88,
+      "words": [
+        {
+          "word": "Balotelli.",
+          "t0": 0,
+          "t1": 0.88
+        }
+      ]
+    },
+    {
+      "key": "liverpool-city-a3",
+      "slot": "answer",
+      "text": "Daniel Sturridge.",
+      "dur": 1.3599999999999999,
+      "words": [
+        {
+          "word": "Daniel",
+          "t0": 0,
+          "t1": 0.4
+        },
+        {
+          "word": "Sturridge.",
+          "t0": 0.48,
+          "t1": 1.3599999999999999
+        }
+      ]
+    },
+    {
+      "key": "liverpool-city-a4",
+      "slot": "answer",
+      "text": "Robbie Fowler.",
+      "dur": 1.12,
+      "words": [
+        {
+          "word": "Robbie",
+          "t0": 0,
+          "t1": 0.32
+        },
+        {
+          "word": "Fowler.",
+          "t0": 0.389,
+          "t1": 1.12
+        }
+      ]
+    },
+    {
+      "key": "liverpool-city-a5",
+      "slot": "answer",
+      "text": "Kolo Touré.",
+      "dur": 1.2,
+      "words": [
+        {
+          "word": "Kolo",
+          "t0": 0,
+          "t1": 0.32
+        },
+        {
+          "word": "Touré.",
+          "t0": 0.4,
+          "t1": 1.2
+        }
+      ]
+    },
+    {
+      "key": "liverpool-city-a6",
+      "slot": "answer",
+      "text": "Anelka.",
+      "dur": 0.8800000000000001,
+      "words": [
+        {
+          "word": "Anelka.",
+          "t0": 0,
+          "t1": 0.8800000000000001
+        }
+      ]
+    },
+    {
+      "key": "liverpool-city-a7",
+      "slot": "answer",
+      "text": "Bellamy.",
+      "dur": 0.8,
+      "words": [
+        {
+          "word": "Bellamy.",
+          "t0": 0,
+          "t1": 0.8
+        }
+      ]
+    },
+    {
+      "key": "liverpool-city-a8",
+      "slot": "answer",
+      "text": "Didi Hamann.",
+      "dur": 1.2000000000000002,
+      "words": [
+        {
+          "word": "Didi",
+          "t0": 0,
+          "t1": 0.32
+        },
+        {
+          "word": "Hamann.",
+          "t0": 0.4,
+          "t1": 1.2000000000000002
+        }
+      ]
+    },
+    {
+      "key": "liverpool-city-a9",
+      "slot": "answer",
+      "text": "David James.",
+      "dur": 1.28,
+      "words": [
+        {
+          "word": "David",
+          "t0": 0,
+          "t1": 0.4
+        },
+        {
+          "word": "James.",
+          "t0": 0.493,
+          "t1": 1.28
+        }
+      ]
+    },
+    {
+      "key": "chelsea-marseille-a1",
+      "slot": "answer",
+      "text": "Aubameyang.",
+      "dur": 0.96,
+      "words": [
+        {
+          "word": "Aubameyang.",
+          "t0": 0,
+          "t1": 0.96
+        }
+      ]
+    },
+    {
+      "key": "chelsea-marseille-a2",
+      "slot": "answer",
+      "text": "Azpilicueta.",
+      "dur": 1.04,
+      "words": [
+        {
+          "word": "Azpilicueta.",
+          "t0": 0,
+          "t1": 1.04
+        }
+      ]
+    },
+    {
+      "key": "chelsea-marseille-a3",
+      "slot": "answer",
+      "text": "Batshuayi.",
+      "dur": 0.9600000000000001,
+      "words": [
+        {
+          "word": "Batshuayi.",
+          "t0": 0,
+          "t1": 0.9600000000000001
+        }
+      ]
+    },
+    {
+      "key": "chelsea-marseille-a4",
+      "slot": "answer",
+      "text": "Makélélé.",
+      "dur": 0.72,
+      "words": [
+        {
+          "word": "Makélélé.",
+          "t0": 0,
+          "t1": 0.72
+        }
+      ]
+    },
+    {
+      "key": "chelsea-marseille-a5",
+      "slot": "answer",
+      "text": "William Gallas.",
+      "dur": 1.28,
+      "words": [
+        {
+          "word": "William",
+          "t0": 0,
+          "t1": 0.4
+        },
+        {
+          "word": "Gallas.",
+          "t0": 0.52,
+          "t1": 1.28
+        }
+      ]
+    },
+    {
+      "key": "chelsea-marseille-a6",
+      "slot": "answer",
+      "text": "Frank Leboeuf.",
+      "dur": 1.2,
+      "words": [
+        {
+          "word": "Frank",
+          "t0": 0,
+          "t1": 0.32
+        },
+        {
+          "word": "Leboeuf.",
+          "t0": 0.453,
+          "t1": 1.2
+        }
+      ]
+    },
+    {
+      "key": "chelsea-marseille-a7",
+      "slot": "answer",
+      "text": "Lassana Diarra.",
+      "dur": 1.36,
+      "words": [
+        {
+          "word": "Lassana",
+          "t0": 0,
+          "t1": 0.56
+        },
+        {
+          "word": "Diarra.",
+          "t0": 0.64,
+          "t1": 1.36
+        }
+      ]
+    },
+    {
+      "key": "chelsea-marseille-a8",
+      "slot": "answer",
+      "text": "George Weah.",
+      "dur": 1.12,
+      "words": [
+        {
+          "word": "George",
+          "t0": 0,
+          "t1": 0.32
+        },
+        {
+          "word": "Weah.",
+          "t0": 0.4,
+          "t1": 1.12
+        }
+      ]
+    },
+    {
+      "key": "chelsea-marseille-a9",
+      "slot": "answer",
+      "text": "Didier Deschamps.",
+      "dur": 1.2,
+      "words": [
+        {
+          "word": "Didier",
+          "t0": 0,
+          "t1": 0.4
+        },
+        {
+          "word": "Deschamps.",
+          "t0": 0.48,
+          "t1": 1.2
+        }
+      ]
+    }
+  ]
+}
