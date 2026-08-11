@@ -19,6 +19,7 @@ import { NeoInput } from "@/components/neo/NeoInput";
 import { ShellLayout } from "@/components/shell/ShellLayout";
 import { SHELL_ROUTES } from "@/lib/shellRoutes";
 import { friendlyError } from "@/lib/errors";
+import { track } from "@/lib/analytics";
 
 export default function WeekendCrewsScreen() {
   const navigate = useNavigate();
@@ -38,6 +39,9 @@ export default function WeekendCrewsScreen() {
     setBusy(true);
     try {
       const { code: newCode } = await createCrew({ name });
+      // Fires only on the server confirming the crew (ANALYTICS.md: real
+      // state transitions, never clicks that might fail).
+      track("weekend_crew_created");
       navigate(SHELL_ROUTES.weekendCrew(newCode));
     } catch (e) {
       toast.error(friendlyError(e, t("weekend.crewCreateFailed", { defaultValue: "Could not create the crew." })));
@@ -51,6 +55,7 @@ export default function WeekendCrewsScreen() {
     setBusy(true);
     try {
       const { code: joinedCode } = await joinCrew({ code });
+      track("weekend_crew_joined");
       navigate(SHELL_ROUTES.weekendCrew(joinedCode));
     } catch (e) {
       toast.error(friendlyError(e, t("weekend.crewJoinFailed", { defaultValue: "Could not join that crew." })));

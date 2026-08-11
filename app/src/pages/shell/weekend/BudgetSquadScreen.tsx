@@ -7,11 +7,10 @@
  * surfaces the server's answers (budget breakdown, lock state, violations as
  * toasts).
  *
- * Availability gating follows HomeWeekendTeaser: the entry query runs
+ * Availability gating follows the retired FW-P1 teaser pattern: the entry query runs
  * imperatively and any rejection (backend not deployed yet, network) renders
- * the quiet "no board open" card — fail closed and silent, no build flag. The
- * route is registered but UNLINKED from any nav (the FW-3/FW-4 idiom), so the
- * prod frontend can ship ahead of the backend deploy.
+ * the quiet "no board open" card — fail closed and silent, no build flag.
+ * Linked from the WEEKEND hub since FW-GO.
  *
  * Score surfaces reuse FW-4's vocabulary verbatim: `points === null` renders
  * as awaiting (never 0.0), the honest zero carries its zeroReason, and the
@@ -47,6 +46,7 @@ import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { ShellLayout } from "@/components/shell/ShellLayout";
 import { SHELL_ROUTES } from "@/lib/shellRoutes";
 import { friendlyError } from "@/lib/errors";
+import { track } from "@/lib/analytics";
 
 export type OpenGameweek = NonNullable<
   FunctionReturnType<typeof api.fantasyMarket.getOpenGameweek>
@@ -710,7 +710,7 @@ export default function BudgetSquadScreen() {
   const convex = useConvex();
   const [gate, setGate] = useState<Gate>({ state: "checking" });
 
-  // Fail-closed availability gate (HomeWeekendTeaser precedent): an
+  // Fail-closed availability gate (the FW-P1 teaser precedent): an
   // imperative query so an undeployed backend rejects into the catch instead
   // of throwing into the render tree. Any failure = the quiet closed card.
   useEffect(() => {
@@ -844,6 +844,13 @@ export default function BudgetSquadScreen() {
                       context: "budget",
                       formation,
                       finisherRoles: [...finisherRoles],
+                    }).then((created) => {
+                      // Real server transition (ANALYTICS.md): the squad row
+                      // exists. gw_number, never identity, rides along.
+                      track("weekend_squad_created", {
+                        gw_number: gate.gameweek.gwNumber,
+                      });
+                      return created;
                     }),
                   t("weekend.createFailed", {
                     defaultValue: "Could not create your squad.",

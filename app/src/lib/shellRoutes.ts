@@ -73,6 +73,9 @@ export const SHELL_ROUTES = {
   dailyPlay: "/v2/daily",
   /** `/v2/arena/:code` */
   arenaPlay: (code: string) => `/v2/arena/${code}`,
+  /** THE WEEKEND hub (FW-GO) — the mode's public front door: budget squad,
+   *  crews, the vote stack and the court, one screen each. */
+  weekend: "/v2/weekend",
   /** THE WEEKEND crew draft rooms (FW-3). Hub: my crews, create, join. */
   weekendCrews: "/v2/weekend/crews",
   /** `/v2/weekend/crew/:code` — a crew's page (members, rooms, crew table). */
@@ -110,6 +113,7 @@ export const SHELL_ROUTE_PATTERNS = {
   dailyPlay: "/v2/daily",
   arena: "/v2/arena",
   arenaPlay: "/v2/arena/:code",
+  weekend: "/v2/weekend",
   weekendCrews: "/v2/weekend/crews",
   weekendCrew: "/v2/weekend/crew/:code",
   weekendDraft: "/v2/weekend/draft/:roomId",

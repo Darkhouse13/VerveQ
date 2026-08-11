@@ -92,11 +92,11 @@ const CareerPathPlayScreen = lazyWithRetry(() => import("./pages/shell/play/Care
 const VerveGridPlayScreen = lazyWithRetry(() => import("./pages/shell/play/VerveGridPlayScreen"));
 const DailyQuizPlayScreen = lazyWithRetry(() => import("./pages/shell/play/DailyQuizPlayScreen"));
 const ArenaPlayScreen = lazyWithRetry(() => import("./pages/shell/play/ArenaPlayScreen"));
-// THE WEEKEND crew draft rooms (FW-3).
+// THE WEEKEND (FW-GO: launched, publicly linked). Hub first, then the surfaces.
+const WeekendHubScreen = lazyWithRetry(() => import("./pages/shell/weekend/WeekendHubScreen"));
 const WeekendCrewsScreen = lazyWithRetry(() => import("./pages/shell/weekend/WeekendCrewsScreen"));
 const CrewScreen = lazyWithRetry(() => import("./pages/shell/weekend/CrewScreen"));
 const DraftRoomScreen = lazyWithRetry(() => import("./pages/shell/weekend/DraftRoomScreen"));
-// THE WEEKEND budget mode (FW-LAUNCH O1) — unlinked from any nav until launch.
 const BudgetSquadScreen = lazyWithRetry(() => import("./pages/shell/weekend/BudgetSquadScreen"));
 const VoteScreen = lazyWithRetry(() => import("./pages/shell/weekend/VoteScreen"));
 const CourtScreen = lazyWithRetry(() => import("./pages/shell/weekend/CourtScreen"));
@@ -550,10 +550,9 @@ const AppRoutes = () => (
                 (a bare hit gets ?ref=play); see lib/playShortLink.ts. */}
             <Route path="/play" element={<PlayShortLinkRoute />} />
             {/* /weekend — the short link for WEEKEND reel captions + the bio
-                link. Public redirect onto Home with the teaser pinned to the
-                top of the viewport (a bare hit gets ?ref=weekend); see
-                lib/weekendDeepLink.ts. Bypasses the cold-entry landing, which
-                carries no WEEKEND card. */}
+                link. Public redirect onto the WEEKEND hub (a bare hit gets
+                ?ref=weekend); see lib/weekendDeepLink.ts. Bypasses the
+                cold-entry landing so promo traffic lands on the mode itself. */}
             <Route path="/weekend" element={<WeekendShortLinkRoute />} />
             <Route path="/v2/verve-grid" element={<ShellGate><SessionRoute><VerveGridPlayScreen /></SessionRoute></ShellGate>} />
             {/* Daily reuses the migrated Quiz view but runs the DAILY session.
@@ -567,6 +566,10 @@ const AppRoutes = () => (
             {/* Arena (multi-user) is username-only playable; the screen onboards
                 inline so a shared invite link never drops its lobby code. */}
             <Route path="/v2/arena/:code" element={<ShellGate><ArenaPlayScreen /></ShellGate>} />
+            {/* THE WEEKEND hub (FW-GO) — the mode's public front door. ShellGate
+                only, no session guard: a short-link visitor sees the mode before
+                being asked for anything; each door's route keeps its own tier. */}
+            <Route path="/v2/weekend" element={<ShellGate><WeekendHubScreen /></ShellGate>} />
             {/* THE WEEKEND crew draft rooms (FW-3). Username tier, Arena-style:
                 crews are the social unit; UsernameOnlyRoute preserves ?next= so
                 a shared crew link onboards and lands back on the crew page,
@@ -574,9 +577,8 @@ const AppRoutes = () => (
             <Route path="/v2/weekend/crews" element={<ShellGate><UsernameOnlyRoute><WeekendCrewsScreen /></UsernameOnlyRoute></ShellGate>} />
             <Route path="/v2/weekend/crew/:code" element={<ShellGate><UsernameOnlyRoute><CrewScreen /></UsernameOnlyRoute></ShellGate>} />
             <Route path="/v2/weekend/draft/:roomId" element={<ShellGate><UsernameOnlyRoute><DraftRoomScreen /></UsernameOnlyRoute></ShellGate>} />
-            {/* THE WEEKEND budget mode (FW-LAUNCH O1). Unlinked from any nav;
-                the screen itself gates on the backend answering (fail-closed,
-                HomeWeekendTeaser-style), so the frontend can ship first. */}
+            {/* THE WEEKEND budget mode (FW-LAUNCH O1). Linked from the hub; the
+                screen still gates on the backend answering (fail-closed). */}
             <Route path="/v2/weekend/squad" element={<ShellGate><UsernameOnlyRoute><BudgetSquadScreen /></UsernameOnlyRoute></ShellGate>} />
             <Route path="/v2/weekend/vote" element={<ShellGate><UsernameOnlyRoute><VoteScreen /></UsernameOnlyRoute></ShellGate>} />
             <Route path="/v2/weekend/court" element={<ShellGate><UsernameOnlyRoute><CourtScreen /></UsernameOnlyRoute></ShellGate>} />

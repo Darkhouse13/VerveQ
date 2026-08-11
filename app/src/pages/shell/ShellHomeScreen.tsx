@@ -17,7 +17,7 @@ import { NeoAvatar } from "@/components/neo/NeoAvatar";
 import { NeoBadge } from "@/components/neo/NeoBadge";
 import { NeoButton } from "@/components/neo/NeoButton";
 import { HomeDrawCard } from "@/components/draw/HomeDrawCard";
-import { HomeWeekendTeaser } from "@/components/weekend/HomeWeekendTeaser";
+import { HomeWeekendCard } from "@/components/weekend/HomeWeekendCard";
 import { ShellLayout } from "@/components/shell/ShellLayout";
 import { SHELL_ROUTES } from "@/lib/shellRoutes";
 import { isWeekendTopRequested } from "@/lib/weekendDeepLink";
@@ -178,23 +178,20 @@ export default function ShellHomeScreen() {
           </div>
         </div>
 
-        {/* THE DRAW home hero (Ticket H) + THE WEEKEND teaser (FW-P1).
-            Default order is Draw-then-Weekend. A `?w=1` visit (the /weekend
-            short link, WKND-FUNNEL) SWAPS them so the lime waitlist CTA is the
-            first thing in the viewport — reel traffic was promised the fantasy
-            mode, not the Draw board. Nothing else about either card changes,
-            and a visit without the param renders the original order exactly.
-            Both stay self-gating: with their flags/backends absent they render
-            nothing and the swap is a no-op. */}
+        {/* THE DRAW home hero (Ticket H) + THE WEEKEND entry card (FW-GO).
+            Default order is Draw-then-Weekend. A `?w=1` visit (old /weekend
+            short links; the link itself now targets the hub) SWAPS them so the
+            lime WEEKEND CTA is the first thing in the viewport. The Draw card
+            stays self-gating; the WEEKEND card is static — the mode is live. */}
         {weekendFirst ? (
           <>
-            <HomeWeekendTeaser />
+            <HomeWeekendCard />
             <HomeDrawCard />
           </>
         ) : (
           <>
             <HomeDrawCard />
-            <HomeWeekendTeaser />
+            <HomeWeekendCard />
           </>
         )}
 

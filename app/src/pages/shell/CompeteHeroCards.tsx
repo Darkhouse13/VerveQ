@@ -2,15 +2,13 @@
  * Compete hero tier (CR-1) — the two flagship cards above the mode sections.
  *
  * Both are full-width, near-black, lime-typed cards in the Profile rank-card /
- * HomeWeekendTeaser family, so the top of Compete reads as "the big things"
+ * HomeWeekendCard family, so the top of Compete reads as "the big things"
  * before the mode catalogue starts. Neither carries a section label — the tier
  * IS the label.
  *
- * THE WEEKEND has no route of its own: the pre-launch surface is the Home
- * teaser component (components/weekend/HomeWeekendTeaser), which is a card, not
- * a screen. So the tile opens that exact component inside a dialog rather than
- * navigating — one waitlist implementation, one set of analytics events, no
- * fork.
+ * THE WEEKEND is LIVE (FW-GO): the card navigates straight to the mode's hub.
+ * The pre-launch waitlist dialog this card used to open shipped with FW-P1 and
+ * was retired at launch along with the `waitlist_*` events.
  *
  * THE DRAW reuses HomeDrawCard's build-flag gate verbatim: with DRAW_ENABLED
  * off the inner component never mounts — no hooks, no layout slot — so the tile
@@ -21,25 +19,19 @@
  *
  * Copy is English-only, matching the Draw and Weekend surfaces it fronts.
  */
-import { useEffect, useState, type ReactNode } from "react";
+import type { ReactNode } from "react";
 import { useNavigate } from "react-router-dom";
 import { CalendarRange, Layers } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { NeoCard } from "@/components/neo/NeoCard";
 import { NeoBadge } from "@/components/neo/NeoBadge";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-} from "@/components/ui/dialog";
 import { DRAW_ENABLED } from "@/lib/flags";
-import { HomeWeekendTeaser } from "@/components/weekend/HomeWeekendTeaser";
+import { track } from "@/lib/analytics";
+import { SHELL_ROUTES } from "@/lib/shellRoutes";
 
 /**
  * The shared flagship shell. `bg-foreground` + `text-accent` is the ranked-card
- * palette one step louder; the title uses the HomeWeekendTeaser display ramp
+ * palette one step louder; the title uses the HomeWeekendCard display ramp
  * (34px → 42px) so the Compete tile and the surface it opens read as one thing.
  */
 function HeroCard({
@@ -85,91 +77,30 @@ function HeroCard({
 }
 
 /**
- * THE WEEKEND — opens the Home waitlist teaser in a dialog.
+ * THE WEEKEND — navigates to the mode's hub (FW-GO: launched).
  *
- * The teaser owns its identity split (one-tap for signed-in users, email
- * capture for anonymous ones), its analytics, and its failure behaviour; this
- * component only provides the container.
+ * `weekend_entry_clicked` is the entry-funnel event (a real tap, per
+ * ANALYTICS.md — landing on the hub route itself fires nothing).
  */
 export function WeekendHeroCard() {
-  const [open, setOpen] = useState(false);
-
-  // Radix puts pointer-events:none on <body> while a dialog is open; an abrupt
-  // teardown mid-open can strand it and eat every click for the session. Same
-  // insurance as FirstRunLanguagePrompt.
-  useEffect(
-    () => () => {
-      document.body.style.removeProperty("pointer-events");
-    },
-    [],
-  );
-
+  const navigate = useNavigate();
   return (
-    <>
-      <HeroCard
-        icon={CalendarRange}
-        eyebrow="New mode"
-        title="The Weekend"
-        sub="Draft the whole European football weekend."
-        badge={
-          <NeoBadge color="accent" className="border-background shrink-0">
-            Late August
-          </NeoBadge>
-        }
-        onClick={() => setOpen(true)}
-        testId="compete-hero-weekend"
-      />
-      <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="neo-border neo-shadow-lg bg-card max-w-lg p-4 md:p-5">
-          <DialogHeader className="sr-only">
-            <DialogTitle>The Weekend</DialogTitle>
-            <DialogDescription>
-              Join the waitlist for THE WEEKEND, the upcoming fantasy football
-              mode.
-            </DialogDescription>
-          </DialogHeader>
-          <WeekendSheetBody />
-        </DialogContent>
-      </Dialog>
-    </>
-  );
-}
-
-/**
- * Dialog body: the real teaser, plus a fallback for the case where it renders
- * nothing.
- *
- * The teaser is runtime-gated and fails silent — it returns null until
- * `fantasyWaitlist.getTeaserStatus` answers, and forever if the waitlist
- * backend is undeployed. On Home that is invisible (the card just isn't
- * there); in a dialog the user has explicitly asked for it, so an empty sheet
- * would be a dead end.
- *
- * The teaser exposes no "I am visible" signal, so the fallback is hidden
- * declaratively instead: the sibling combinator below hides anything following
- * the teaser's root once that root exists. No polling, no timing race.
- */
-function WeekendSheetBody() {
-  const [waited, setWaited] = useState(false);
-  useEffect(() => {
-    const id = setTimeout(() => setWaited(true), 2500);
-    return () => clearTimeout(id);
-  }, []);
-
-  return (
-    <div className="[&>[data-testid=home-weekend-teaser]~*]:hidden">
-      <HomeWeekendTeaser />
-      <div data-testid="weekend-sheet-fallback">
-        <p className="font-heading font-black uppercase text-2xl leading-none">
-          The Weekend
-        </p>
-        <p className="text-sm text-muted-foreground mt-2">
-          {waited
-            ? "The waitlist isn't open yet. It kicks off with the season — late August."
-            : "Loading the waitlist…"}
-        </p>
-      </div>
-    </div>
+    <HeroCard
+      icon={CalendarRange}
+      eyebrow="New mode"
+      title="The Weekend"
+      sub="Draft the whole European football weekend."
+      badge={
+        <NeoBadge color="accent" className="border-background shrink-0">
+          Live
+        </NeoBadge>
+      }
+      onClick={() => {
+        track("weekend_entry_clicked", { source: "compete_hero", placement: "compete_hero" });
+        navigate(SHELL_ROUTES.weekend);
+      }}
+      testId="compete-hero-weekend"
+    />
   );
 }
 

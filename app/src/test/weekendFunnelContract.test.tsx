@@ -1,29 +1,26 @@
 /**
- * WKND-FUNNEL contract — the waitlist deep link and the viewport-qualified
- * "card was actually seen" event.
+ * WKND-FUNNEL contract — FW-GO revision.
  *
- * Two things are locked here, and both exist because of what the 30-day
- * PostHog read showed:
+ * The pre-launch funnel (waitlist teaser + `waitlist_card_viewed`) retired
+ * with the launch; its contract lives in git history. What this suite locks
+ * now:
  *
- *  1. `/weekend` lands on Home with the teaser FIRST. Reel traffic was
- *     previously sent to `/play`, which redirects into Career Path and never
- *     renders the WEEKEND card at all; a bare `/` is worse still for the
- *     target audience, since a signed-out visitor gets the cold-entry taste
- *     round (also no card). The short link must therefore go straight to the
- *     shell Home — which has no session guard — carrying attribution.
+ *  1. `/weekend` lands on the WEEKEND HUB (`/v2/weekend`) carrying
+ *     attribution — reel traffic promised the fantasy mode gets the mode
+ *     itself, not a Home card. Bare hits are tagged `ref=weekend` so
+ *     short-link traffic is never bucketed as direct; incoming utm_* params
+ *     survive untouched.
  *
- *  2. `waitlist_card_viewed` fires on genuine visibility, NOT on mount.
- *     `teaser_viewed` fires when the gate query resolves, so it counted 111
- *     events from 17 people, including people who never scrolled to the card.
- *     The new event mirrors the SEO funnel's `landing_cta_shown` rule
- *     (>=50% in viewport AND the tab foregrounded) and carries `placement`,
- *     so tap-rate above the fold can be compared with tap-rate below it.
+ *  2. Old `?w=1` links still reorder Home (WEEKEND card first) — the param
+ *     outlives the link that minted it, so nothing breaks for pre-launch
+ *     captions that shipped with `/v2?w=1`.
  *
- * The existing three events are deliberately UNTOUCHED — aliasing them would
- * double-count every conversion already captured.
+ *  3. The Home entry card renders in both orders without any server read —
+ *     the launched mode's entry point cannot be gated off by a backend
+ *     hiccup.
  */
 import { describe, expect, it, vi, beforeEach, afterEach } from "vitest";
-import { render, screen, act } from "@testing-library/react";
+import { render, act } from "@testing-library/react";
 import { MemoryRouter, Route, Routes } from "react-router-dom";
 import { getFunctionName, type FunctionReference } from "convex/server";
 
@@ -32,16 +29,16 @@ import {
   isWeekendTopRequested,
   WEEKEND_SHORT_LINK_DEFAULT_REF,
 } from "@/lib/weekendDeepLink";
+import { SHELL_ROUTES } from "@/lib/shellRoutes";
 
 // ---------------------------------------------------------------------------
 // 1. The deep link
 // ---------------------------------------------------------------------------
 
-describe("/weekend short link", () => {
-  it("lands on the shell Home with the teaser pinned to the top", () => {
+describe("/weekend short link (FW-GO: the hub is the destination)", () => {
+  it("lands on the WEEKEND hub", () => {
     const target = weekendShortLinkTarget("");
-    expect(target.startsWith("/v2?")).toBe(true);
-    expect(isWeekendTopRequested(new URL(target, "https://x").search)).toBe(true);
+    expect(target.startsWith(`${SHELL_ROUTES.weekend}?`)).toBe(true);
   });
 
   it("tags bare hits so short-link traffic is never bucketed as direct", () => {
@@ -58,14 +55,20 @@ describe("/weekend short link", () => {
         "https://x",
       ).search,
     );
-    // The whole point of the bio link: utm_source must survive to the teaser,
-    // which reads `utm_source ?? ref` for its own `source` property.
     expect(params.get("utm_source")).toBe("ig");
     expect(params.get("utm_medium")).toBe("social");
     expect(params.get("ref")).toBeNull();
   });
 
-  it("does not claim the top slot for an ordinary Home visit", () => {
+  it("no longer mints the ?w=1 Home-reorder param — the hub needs no pin", () => {
+    const params = new URLSearchParams(
+      new URL(weekendShortLinkTarget(""), "https://x").search,
+    );
+    expect(params.get("w")).toBeNull();
+  });
+
+  it("still honours ?w=1 for Home visits from old links", () => {
+    expect(isWeekendTopRequested("?w=1")).toBe(true);
     expect(isWeekendTopRequested("")).toBe(false);
     expect(isWeekendTopRequested("?ref=ig")).toBe(false);
     expect(isWeekendTopRequested("?w=0")).toBe(false);
@@ -73,7 +76,7 @@ describe("/weekend short link", () => {
 });
 
 // ---------------------------------------------------------------------------
-// 2. The viewport-qualified event
+// 2. The Home reorder old ?w=1 links still produce
 // ---------------------------------------------------------------------------
 
 const authMock = vi.hoisted(() => ({ value: {} as Record<string, unknown> }));
@@ -90,8 +93,8 @@ const trackMock = vi.hoisted(() => ({
 vi.mock("@/contexts/AuthContext", () => ({ useAuth: () => authMock.value }));
 vi.mock("convex/react", () => ({
   useConvex: () => convexMock.client,
-  // Home's own numbers are honesty-gated on undefined; the funnel contract
-  // cares only about card ORDER, so serving nothing is the right fixture.
+  // Home's own numbers are honesty-gated on undefined; this contract cares
+  // only about card ORDER, so serving nothing is the right fixture.
   useQuery: () => undefined,
 }));
 vi.mock("@/lib/flags", () => ({
@@ -112,7 +115,6 @@ vi.mock("@/lib/analytics", () => ({
 }));
 vi.mock("@/lib/coldSession", () => ({ readColdSource: () => undefined }));
 
-import { HomeWeekendTeaser } from "@/components/weekend/HomeWeekendTeaser";
 import ShellHomeScreen from "@/pages/shell/ShellHomeScreen";
 
 /** Minimal server-shaped Draw payload — just enough for the card to render,
@@ -141,66 +143,6 @@ const DRAW_TODAY = {
   run: null,
 };
 
-/** Controllable IntersectionObserver — jsdom ships none. */
-const observers: Array<{
-  cb: IntersectionObserverCallback;
-  el: Element | null;
-  disconnected: boolean;
-}> = [];
-
-function installObserver() {
-  observers.length = 0;
-  class FakeIO {
-    cb: IntersectionObserverCallback;
-    entry: { cb: IntersectionObserverCallback; el: Element | null; disconnected: boolean };
-    constructor(cb: IntersectionObserverCallback) {
-      this.cb = cb;
-      this.entry = { cb, el: null, disconnected: false };
-      observers.push(this.entry);
-    }
-    observe(el: Element) {
-      this.entry.el = el;
-    }
-    disconnect() {
-      this.entry.disconnected = true;
-    }
-    unobserve() {}
-    takeRecords() {
-      return [];
-    }
-  }
-  vi.stubGlobal("IntersectionObserver", FakeIO as unknown as typeof IntersectionObserver);
-}
-
-/** Drive the observer as the browser would. */
-function scrollIntoView(isIntersecting = true) {
-  act(() => {
-    for (const o of observers) {
-      if (o.disconnected) continue;
-      o.cb(
-        [{ isIntersecting } as IntersectionObserverEntry],
-        {} as IntersectionObserver,
-      );
-    }
-  });
-}
-
-function setVisibility(state: "visible" | "hidden") {
-  Object.defineProperty(document, "visibilityState", {
-    value: state,
-    configurable: true,
-  });
-}
-
-async function renderTeaser() {
-  const utils = render(<HomeWeekendTeaser />);
-  await act(async () => {});
-  return utils;
-}
-
-const viewedCalls = () =>
-  trackMock.calls.filter(([e]) => e === "waitlist_card_viewed");
-
 beforeEach(() => {
   convexMock.client.query.mockReset();
   convexMock.client.mutation.mockReset();
@@ -212,13 +154,10 @@ beforeEach(() => {
     );
     if (name.startsWith("draw:getToday")) return DRAW_TODAY;
     if (name.startsWith("draw:getLeaderboard")) return { me: null };
-    return { member: false, count: 0 };
+    return null;
   });
-  convexMock.client.mutation.mockResolvedValue({ ok: true, joined: true });
   trackMock.calls.length = 0;
   authMock.value = { hasUsername: true, accountState: "usernameOnly" };
-  installObserver();
-  setVisibility("visible");
   window.history.replaceState({}, "", "/v2");
 });
 
@@ -226,93 +165,6 @@ afterEach(() => {
   vi.unstubAllGlobals();
   window.history.replaceState({}, "", "/");
 });
-
-describe("waitlist_card_viewed", () => {
-  it("does NOT fire on mount — mounting is not seeing", async () => {
-    await renderTeaser();
-    // The card is rendered and the gate resolved...
-    expect(screen.getByTestId("home-weekend-teaser")).toBeInTheDocument();
-    expect(trackMock.calls.some(([e]) => e === "teaser_viewed")).toBe(true);
-    // ...but nobody has scrolled to it.
-    expect(viewedCalls()).toHaveLength(0);
-  });
-
-  it("fires once the card is genuinely on screen", async () => {
-    await renderTeaser();
-    scrollIntoView();
-    expect(viewedCalls()).toHaveLength(1);
-  });
-
-  it("never fires twice, however much the card scrolls in and out", async () => {
-    await renderTeaser();
-    scrollIntoView();
-    scrollIntoView(false);
-    scrollIntoView();
-    expect(viewedCalls()).toHaveLength(1);
-  });
-
-  it("does not count a backgrounded tab as seen", async () => {
-    setVisibility("hidden");
-    await renderTeaser();
-    scrollIntoView();
-    expect(viewedCalls()).toHaveLength(0);
-  });
-
-  it("reports when a backgrounded tab with the card in view is returned to", async () => {
-    setVisibility("hidden");
-    await renderTeaser();
-    scrollIntoView();
-    expect(viewedCalls()).toHaveLength(0);
-    setVisibility("visible");
-    act(() => {
-      document.dispatchEvent(new Event("visibilitychange"));
-    });
-    expect(viewedCalls()).toHaveLength(1);
-  });
-
-  it("reports nothing at all when IntersectionObserver is absent", async () => {
-    vi.stubGlobal("IntersectionObserver", undefined);
-    await renderTeaser();
-    // A missing step is honest; a fabricated one corrupts the funnel.
-    expect(viewedCalls()).toHaveLength(0);
-  });
-
-  it("carries placement so above-fold tap-rate is measurable", async () => {
-    window.history.replaceState({}, "", "/v2?w=1");
-    await renderTeaser();
-    scrollIntoView();
-    expect(viewedCalls()[0][1]).toMatchObject({ placement: "top" });
-  });
-
-  it("marks an ordinary Home visit as the default placement", async () => {
-    await renderTeaser();
-    scrollIntoView();
-    expect(viewedCalls()[0][1]).toMatchObject({ placement: "default" });
-  });
-
-  it("never carries an email address", async () => {
-    window.history.replaceState({}, "", "/v2?w=1&utm_source=ig");
-    await renderTeaser();
-    scrollIntoView();
-    const props = JSON.stringify(viewedCalls()[0][1]);
-    expect(props).not.toContain("@");
-  });
-
-  it("leaves the three existing events untouched (no double-counting)", async () => {
-    await renderTeaser();
-    scrollIntoView();
-    // teaser_viewed still fires exactly once, on the gate resolving.
-    expect(trackMock.calls.filter(([e]) => e === "teaser_viewed")).toHaveLength(1);
-    // And no alias of the tap/submit events was introduced.
-    const names = trackMock.calls.map(([e]) => e);
-    expect(names).not.toContain("waitlist_cta_tapped");
-    expect(names).not.toContain("waitlist_submitted");
-  });
-});
-
-// ---------------------------------------------------------------------------
-// 3. The Home reorder the deep link exists to produce
-// ---------------------------------------------------------------------------
 
 describe("Home card order", () => {
   /** DOM position of the two hero cards, or -1 when a card is absent. */
@@ -327,16 +179,15 @@ describe("Home card order", () => {
     await act(async () => {});
     const html = container.innerHTML;
     return {
-      weekend: html.indexOf('data-testid="home-weekend-teaser"'),
+      weekend: html.indexOf('data-testid="home-weekend-card"'),
       draw: html.indexOf('data-testid="home-draw-card"'),
     };
   }
 
-  it("leads with the WEEKEND card on a ?w=1 visit", async () => {
+  it("leads with the WEEKEND card on a ?w=1 visit (old links keep working)", async () => {
     const { weekend, draw } = await renderHomeAt("/v2?w=1");
     expect(weekend).toBeGreaterThanOrEqual(0);
     expect(draw).toBeGreaterThanOrEqual(0);
-    // The lime CTA is what a reel visitor was promised — it comes first.
     expect(weekend).toBeLessThan(draw);
   });
 
@@ -345,5 +196,12 @@ describe("Home card order", () => {
     expect(weekend).toBeGreaterThanOrEqual(0);
     expect(draw).toBeGreaterThanOrEqual(0);
     expect(draw).toBeLessThan(weekend);
+  });
+
+  it("renders the WEEKEND entry card with no server read behind it", async () => {
+    // Every query resolves null (see the mock) — the launched mode's entry
+    // point must render regardless.
+    const { weekend } = await renderHomeAt("/v2");
+    expect(weekend).toBeGreaterThanOrEqual(0);
   });
 });
