@@ -446,6 +446,22 @@ export const PROMO_CAPTIONS = {
     "#football #footballquiz #careerpath #fantasyfootball #footballtiktok" +
     wkndLinks("ladder-long-one-squad"),
 
+  // ---- LADDER-LONG "THE DUGOUT" (2026-08-11) — first deck cut after the
+  // cadence A/B reported. Not a campaign edition, so batch 2's caption law
+  // applies unchanged: score ask first, withhold second, daily line, tags.
+  // The hook states the deck's premise the way number-ones' did — the card
+  // never says it, the caption may: it is the casting claim the Edition
+  // verified two sources deep, not a dataset assertion.
+  "ladder-long-dugout":
+    "Ten career paths. Every one of these men ended up a manager 📋\n\n" +
+    "What's your score out of nine? Drop the number 👇\n\n" +
+    // cp-fabio-grosso, path verbatim. Name never stated, here or in the video.
+    "Rung 10 we're not answering: Renato Curi Angolana → Chieti → Perugia → " +
+    "Palermo → Inter Milan → Lyon → Juventus. Two clubs you can't place, then " +
+    "a run you definitely can. Still not typing it.\n\n" +
+    "New gauntlet daily. Career Path mode — free, no sign-up: verveq.com\n\n" +
+    "#football #footballquiz #careerpath #guesstheplayer #footballtiktok",
+
   // ---- CHAIN-LONG batch 1 (2026-08-10) — the experiment lane's first format.
   //
   // Caption shape is batch 2's law with the relay's own asks: SCORE ASK FIRST
