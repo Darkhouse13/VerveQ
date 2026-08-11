@@ -37,20 +37,26 @@ import {
   type SlotRole,
 } from "../../../../convex/lib/fantasyConstants";
 import {
-  FORMATION_PRESETS,
+  FORMATION_CATALOGUE,
   currentShape,
-  planFormationChange,
-  shapeLabel,
+  resolveFormation,
   shapeToFormation,
   type FormationPlan,
-  type FormationShape,
-  type PlannerSlot,
+  type NamedFormation,
 } from "@/lib/weekendFormations";
+import {
+  loadDisplayFormation,
+  saveDisplayFormation,
+} from "@/lib/weekendDisplayFormation";
 import { NeoCard } from "@/components/neo/NeoCard";
 import { NeoButton } from "@/components/neo/NeoButton";
 import { NeoBadge } from "@/components/neo/NeoBadge";
 import { NeoInput } from "@/components/neo/NeoInput";
 import { PitchView } from "@/components/weekend/PitchView";
+import {
+  FormationChooser,
+  FormationSection,
+} from "@/components/weekend/FormationChooser";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { ShellLayout } from "@/components/shell/ShellLayout";
 import { SHELL_ROUTES } from "@/lib/shellRoutes";
@@ -72,41 +78,10 @@ export type SlotScoreRow = BudgetSquadScore["slots"][number];
 
 const MARKET_RESULT_CAP = 40;
 
-// ── formation picker (create) ──
+// ── squad creation (the setup page — R1's full chooser) ──
 
 // Unexported (react-refresh/only-export-components): consumed only here.
-const DEFAULT_SHAPE: FormationShape = { DEF: 4, MID: 4, ATT: 2 };
 const DEFAULT_FINISHERS: readonly [SlotRole, SlotRole] = ["MID", "ATT"];
-
-/** D3: one tap, a shape — never a stepper. */
-export function FormationChips({
-  value,
-  disabledLabels,
-  onSelect,
-}: {
-  value: string | null;
-  /** Chips a locked arrangement makes unreachable (with the current label active). */
-  disabledLabels?: ReadonlySet<string>;
-  onSelect: (shape: FormationShape, label: string) => void;
-}) {
-  return (
-    <div className="grid grid-cols-4 gap-1.5" data-testid="formation-chips">
-      {FORMATION_PRESETS.map((preset) => (
-        <NeoButton
-          key={preset.label}
-          variant={value === preset.label ? "primary" : "outline"}
-          size="sm"
-          className="font-mono tabular-nums px-2"
-          disabled={disabledLabels?.has(preset.label) ?? false}
-          aria-pressed={value === preset.label}
-          onClick={() => onSelect(preset.shape, preset.label)}
-        >
-          {preset.label}
-        </NeoButton>
-      ))}
-    </div>
-  );
-}
 
 export function CreateSquadView({
   gwNumber,
@@ -117,11 +92,12 @@ export function CreateSquadView({
   onCreate: (
     formation: Record<SlotRole, number>,
     finisherRoles: [SlotRole, SlotRole],
+    formationName: string,
   ) => void;
   busy: boolean;
 }) {
   const { t } = useTranslation();
-  const [shape, setShape] = useState<FormationShape>(DEFAULT_SHAPE);
+  const [formation, setFormation] = useState<NamedFormation>(FORMATION_CATALOGUE[0]);
   const [finishers, setFinishers] = useState<[SlotRole, SlotRole]>([
     ...DEFAULT_FINISHERS,
   ]);
@@ -139,121 +115,28 @@ export function CreateSquadView({
         </p>
       </NeoCard>
 
-      <div>
-        <p className="font-mono text-[11px] font-bold uppercase tracking-[0.16em] text-muted-foreground mb-2">
-          {t("weekend.shape", { defaultValue: "Your shape" })}
-        </p>
-        <FormationChips
-          value={shapeLabel(shape)}
-          onSelect={(next) => setShape(next)}
-        />
-        <p className="text-[11px] text-muted-foreground mt-2">
-          {t("weekend.shapeNote", {
-            defaultValue: "Change it any time before kick-off — nothing is set in stone yet.",
-          })}
-        </p>
-      </div>
-
-      <div>
-        <p className="font-mono text-[11px] font-bold uppercase tracking-[0.16em] text-muted-foreground mb-2">
-          {t("weekend.finisherRoles", { defaultValue: "Your finishers" })}
-        </p>
-        {[0, 1].map((i) => (
-          <div key={i} className="flex gap-1.5 mb-1.5">
-            {SLOT_ROLES.map((role) => (
-              <NeoButton
-                key={role}
-                variant={finishers[i] === role ? "primary" : "outline"}
-                size="sm"
-                className="flex-1"
-                onClick={() => {
-                  const next: [SlotRole, SlotRole] = [...finishers];
-                  next[i] = role;
-                  setFinishers(next);
-                }}
-              >
-                {role}
-              </NeoButton>
-            ))}
-          </div>
-        ))}
-        <p className="text-[11px] text-muted-foreground">
-          {t("weekend.finisherNote", {
-            defaultValue:
-              "Finishers score only from their entry minute — any position, free of your shape.",
-          })}
-        </p>
-      </div>
+      <FormationChooser
+        selectedName={formation.name}
+        busy={busy}
+        onSelectFormation={setFormation}
+        finishers={finishers.map((role, i) => ({ id: i, role, locked: false }))}
+        onFinisherRole={(id, role) => {
+          const next: [SlotRole, SlotRole] = [...finishers];
+          next[id] = role;
+          setFinishers(next);
+        }}
+      />
 
       <NeoButton
         variant="primary"
         size="full"
         disabled={busy}
-        onClick={() => onCreate(shapeToFormation(shape), finishers)}
+        onClick={() =>
+          onCreate(shapeToFormation(formation.shape), finishers, formation.name)
+        }
       >
         {t("weekend.startBuilding", { defaultValue: "Start building" })}
       </NeoButton>
-    </div>
-  );
-}
-
-// ── formation editor (squad screen) ──
-
-/**
- * The persistent way BACK into the shape (the owner's #1 defect): chips on
- * the squad screen itself, live until locks bite. Each chip is planned
- * against the CURRENT slots — a shape the locked arrangement cannot reach
- * renders disabled rather than failing on tap. The parent decides what a
- * plan with displaced players means (budget: clear into the tray; crew:
- * players hold their slot and field out of listed position).
- */
-export function FormationSection({
-  slots,
-  editable,
-  onApply,
-}: {
-  slots: ReadonlyArray<PlannerSlot>;
-  editable: boolean;
-  onApply: (
-    plan: FormationPlan,
-    label: string,
-  ) => void;
-}) {
-  const { t } = useTranslation();
-  const label = shapeLabel(currentShape(slots));
-
-  const disabledLabels = useMemo(() => {
-    const set = new Set<string>();
-    for (const preset of FORMATION_PRESETS) {
-      if (!planFormationChange(slots, preset.shape).ok) set.add(preset.label);
-    }
-    return set;
-  }, [slots]);
-
-  if (!editable) {
-    return (
-      <p className="font-mono text-[11px] font-bold uppercase tracking-[0.16em] text-muted-foreground">
-        {t("weekend.shapeLockedLine", {
-          defaultValue: "Set up in a {{label}}",
-          label,
-        })}
-      </p>
-    );
-  }
-
-  return (
-    <div data-testid="formation-section">
-      <p className="font-mono text-[11px] font-bold uppercase tracking-[0.16em] text-muted-foreground mb-2">
-        {t("weekend.shapeLine", { defaultValue: "Shape — {{label}}", label })}
-      </p>
-      <FormationChips
-        value={label}
-        disabledLabels={disabledLabels}
-        onSelect={(shape, nextLabel) => {
-          const plan = planFormationChange(slots, shape);
-          if (plan.ok && plan.changesAnything) onApply(plan, nextLabel);
-        }}
-      />
     </div>
   );
 }
@@ -651,6 +534,7 @@ export function SquadView({
   editable,
   playersFixed = false,
   swapSource,
+  formationRows = null,
   onAssign,
   onClear,
   onSwap,
@@ -662,6 +546,8 @@ export function SquadView({
   editable: boolean;
   playersFixed?: boolean;
   swapSource: number | null;
+  /** R2 display layout for the pitch rows (from the squad's named formation). */
+  formationRows?: NamedFormation["rows"] | null;
   onAssign: (slotIndex: number) => void;
   onClear: (slotIndex: number) => void;
   onSwap: (slotIndex: number) => void;
@@ -734,6 +620,7 @@ export function SquadView({
         nominalByPlayer={nominalByPlayer}
         editable={editable}
         swapSource={swapSource}
+        formationRows={formationRows}
         onSlotTap={handleTap}
       />
 
@@ -887,9 +774,22 @@ export default function BudgetSquadScreen() {
   const [tray, setTray] = useState<Array<{ playerId: string; name: string }>>([]);
   const [confirmShape, setConfirmShape] = useState<{
     plan: FormationPlan;
-    label: string;
+    name: string;
     names: string[];
   } | null>(null);
+  /** R2: the squad's display formation NAME — client-side only, per squad. */
+  const [displayName, setDisplayName] = useState<string | null>(null);
+  useEffect(() => {
+    setDisplayName(
+      squad?.squadId != null ? loadDisplayFormation(squad.squadId) : null,
+    );
+  }, [squad?.squadId]);
+  const displayFormation =
+    squad != null ? resolveFormation(displayName, currentShape(squad.slots)) : null;
+  const rememberFormation = (name: string) => {
+    if (squad?.squadId != null) saveDisplayFormation(squad.squadId, name);
+    setDisplayName(name);
+  };
 
   const run = (fn: () => Promise<unknown>, fallback: string) => {
     if (busy) return;
@@ -952,9 +852,11 @@ export default function BudgetSquadScreen() {
   /** Execute a planned shape change: relabel first (atomic, always legal),
    *  then clear each displaced slot into the tray. A clear that fails leaves
    *  the player fielded out of role with the visible mismatch hint — degraded
-   *  loudly, never silently. */
+   *  loudly, never silently. The display NAME is remembered only once the
+   *  band change actually lands. */
   const runShapeChange = (
     plan: FormationPlan,
+    formationName: string,
   ) => {
     if (squad === null || squad === undefined) return;
     const nameBySlot = new Map(
@@ -962,6 +864,7 @@ export default function BudgetSquadScreen() {
     );
     run(async () => {
       await setFormationMutation({ squadId: squad.squadId, slots: plan.payload });
+      rememberFormation(formationName);
       const cleared: Array<{ playerId: string; name: string }> = [];
       for (const d of plan.displaced) {
         await setSlot({ squadId: squad.squadId, slotIndex: d.slotIndex, playerId: null });
@@ -974,6 +877,28 @@ export default function BudgetSquadScreen() {
         ]);
       }
     }, t("weekend.shapeFailed", { defaultValue: "Couldn't switch the shape." }));
+  };
+
+  /** R1: finisher role change from the chooser sheet — one slot relabelled,
+   *  the player (if any) stays on. The server validates as ever. */
+  const setFinisherRole = (slotIndex: number, role: SlotRole) => {
+    if (squad === null || squad === undefined) return;
+    const target = squad.slots.find((s) => s.slotIndex === slotIndex);
+    if (target === undefined || target.slotRole === role) return;
+    run(
+      () =>
+        setFormationMutation({
+          squadId: squad.squadId,
+          slots: squad.slots.map((s) => ({
+            slotIndex: s.slotIndex,
+            slotRole: s.slotIndex === slotIndex ? role : s.slotRole,
+            isFinisher: s.isFinisher,
+          })),
+        }),
+      t("weekend.finisherRoleFailed", {
+        defaultValue: "Couldn't change that finisher role.",
+      }),
+    );
   };
 
   /** Bring a displaced player back on: first open unlocked XI slot, else an
@@ -1026,7 +951,7 @@ export default function BudgetSquadScreen() {
             <CreateSquadView
               gwNumber={gate.gameweek.gwNumber}
               busy={busy}
-              onCreate={(formation, finisherRoles) =>
+              onCreate={(formation, finisherRoles, formationName) =>
                 run(
                   () =>
                     createSquad({
@@ -1040,6 +965,11 @@ export default function BudgetSquadScreen() {
                       track("weekend_squad_created", {
                         gw_number: gate.gameweek.gwNumber,
                       });
+                      // The chosen display name survives the reload (R2).
+                      if (created?.squadId != null) {
+                        saveDisplayFormation(created.squadId, formationName);
+                      }
+                      setDisplayName(formationName);
                       return created;
                     }),
                   t("weekend.createFailed", {
@@ -1062,21 +992,25 @@ export default function BudgetSquadScreen() {
             <FormationSection
               slots={squad.slots}
               editable={editable}
-              onApply={(plan, label) => {
+              displayFormation={displayFormation}
+              busy={busy}
+              onRelayout={(formation) => rememberFormation(formation.name)}
+              onShapePlan={(formation, plan) => {
                 if (plan.displaced.length > 0) {
                   setConfirmShape({
                     plan,
-                    label,
+                    name: formation.name,
                     names: plan.displaced.map(
                       (d) =>
                         squad.slots.find((s) => s.slotIndex === d.slotIndex)?.playerName ??
                         "…",
                     ),
                   });
-                } else {
-                  runShapeChange(plan);
+                } else if (plan.changesAnything) {
+                  runShapeChange(plan, formation.name);
                 }
               }}
+              onFinisherRole={setFinisherRole}
             />
             <DisplacedTray
               players={tray.filter((p) => !inSquad.has(p.playerId))}
@@ -1091,6 +1025,7 @@ export default function BudgetSquadScreen() {
               nominalByPlayer={nominalByPlayer}
               editable={editable}
               swapSource={swapSource}
+              formationRows={displayFormation?.rows ?? null}
               onAssign={(slotIndex) => setPickerSlot(slotIndex)}
               onClear={(slotIndex) =>
                 run(
@@ -1143,7 +1078,7 @@ export default function BudgetSquadScreen() {
                 <DialogTitle className="font-heading font-bold text-lg">
                   {t("weekend.shapeConfirmTitle", {
                     defaultValue: "Switch to {{label}}?",
-                    label: confirmShape?.label ?? "",
+                    label: confirmShape?.name ?? "",
                   })}
                 </DialogTitle>
                 <p className="text-sm">
@@ -1169,7 +1104,7 @@ export default function BudgetSquadScreen() {
                     onClick={() => {
                       const pending = confirmShape;
                       setConfirmShape(null);
-                      if (pending !== null) runShapeChange(pending.plan);
+                      if (pending !== null) runShapeChange(pending.plan, pending.name);
                     }}
                   >
                     {t("weekend.shapeConfirmGo", { defaultValue: "Switch shape" })}

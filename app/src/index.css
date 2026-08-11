@@ -208,6 +208,13 @@
     );
   }
 
+  /* THE WEEKEND formation chooser bottom sheet (FW-POLISH-2 R1): slides up
+     from the foot, preserving the centring translate — the DrawSheet motion,
+     weekend-local. */
+  .weekend-sheet-in {
+    animation: weekend-sheet-in 0.22s cubic-bezier(0.22, 0.9, 0.3, 1) both;
+  }
+
   /* Big-desktop canvas backdrop (≥1440px): a faint dot grid in the foreground
      ink so the space around the height-bounded shell reads as a designed
      surface rather than empty background. Width-gated so phone/tablet/laptop
@@ -351,6 +358,11 @@
   100% { transform: translateY(-40px); opacity: 0; }
 }
 
+@keyframes weekend-sheet-in {
+  0% { transform: translate(-50%, 100%); }
+  100% { transform: translate(-50%, 0); }
+}
+
 /* Honour the OS "reduce motion" setting for the app-wide effect animations —
    until now only draw.css did. The infinite ones (pulse-urgent's 40px-blur
    text-shadow, fire-pulse's whole-surface background pulse) are also the most
@@ -366,7 +378,8 @@
   .animate-flash-red,
   .animate-shake-horizontal,
   .animate-float-up,
-  .animate-slide-up {
+  .animate-slide-up,
+  .weekend-sheet-in {
     animation-duration: 0.01s;
     animation-iteration-count: 1;
   }

@@ -13,12 +13,15 @@ import {
   type SlotRole,
 } from "../../convex/lib/fantasyConstants";
 import {
-  FORMATION_PRESETS,
+  FORMATION_CATALOGUE,
   currentShape,
+  formationsForShape,
   isLegalShape,
   planFormationChange,
-  shapeLabel,
+  resolveFormation,
+  sameShape,
   shapeToFormation,
+  type FormationShape,
   type PlannerSlot,
 } from "@/lib/weekendFormations";
 
@@ -63,40 +66,101 @@ const ROLES_442: SlotRole[] = [
   "ATT",
 ];
 
-describe("formation preset catalogue", () => {
-  it("contains exactly D3's seven shapes, all legal under the server bounds", () => {
-    expect(FORMATION_PRESETS.map((p) => p.label)).toEqual([
+/** Every band count the server's bounds admit, as shapes. */
+function allLegalShapes(): FormationShape[] {
+  const legal: FormationShape[] = [];
+  for (let def = FORMATION_BOUNDS.DEF.min; def <= FORMATION_BOUNDS.DEF.max; def++) {
+    for (let mid = FORMATION_BOUNDS.MID.min; mid <= FORMATION_BOUNDS.MID.max; mid++) {
+      for (let att = FORMATION_BOUNDS.ATT.min; att <= FORMATION_BOUNDS.ATT.max; att++) {
+        if (1 + def + mid + att === XI_SIZE) legal.push({ DEF: def, MID: mid, ATT: att });
+      }
+    }
+  }
+  return legal;
+}
+
+describe("famous-formation catalogue (FW-POLISH-2 R2)", () => {
+  it("is exactly the ruling's list, in the ruling's order", () => {
+    expect(FORMATION_CATALOGUE.map((f) => f.name)).toEqual([
       "4-4-2",
+      "4-4-1-1",
+      "4-1-2-1-2",
       "4-3-3",
-      "3-5-2",
-      "3-4-3",
-      "5-3-2",
+      "4-2-3-1",
       "4-5-1",
+      "4-1-4-1",
+      "4-3-2-1",
+      "3-5-2",
+      "3-1-4-2",
+      "3-4-3",
+      "3-4-2-1",
+      "5-3-2",
       "5-4-1",
+      "5-2-3",
     ]);
-    for (const preset of FORMATION_PRESETS) {
-      expect(isLegalShape(preset.shape), preset.label).toBe(true);
-      expect(shapeLabel(preset.shape)).toBe(preset.label);
-      const formation = shapeToFormation(preset.shape);
+  });
+
+  it("maps every entry to a legal band count", () => {
+    for (const f of FORMATION_CATALOGUE) {
+      expect(isLegalShape(f.shape), f.name).toBe(true);
+      const formation = shapeToFormation(f.shape);
       expect(SLOT_ROLES.reduce((sum, r) => sum + formation[r], 0)).toBe(XI_SIZE);
     }
   });
 
-  it("covers the in-bounds catalogue except 5-2-3, which D3's list omits", () => {
-    // The D3 ruling lists seven chips and calls them "the legal shapes" — but
-    // the structural bounds also admit 5-2-3. The explicit list governs the
-    // UI; this test pins BOTH facts so a bounds change or a quiet eighth chip
-    // is caught, and the 5-2-3 omission stays a recorded decision, not drift.
-    const legal: string[] = [];
-    for (let def = FORMATION_BOUNDS.DEF.min; def <= FORMATION_BOUNDS.DEF.max; def++) {
-      for (let mid = FORMATION_BOUNDS.MID.min; mid <= FORMATION_BOUNDS.MID.max; mid++) {
-        for (let att = FORMATION_BOUNDS.ATT.min; att <= FORMATION_BOUNDS.ATT.max; att++) {
-          if (1 + def + mid + att === XI_SIZE) legal.push(`${def}-${mid}-${att}`);
-        }
-      }
+  it("gives every legal band count at least one entry — including 5-2-3", () => {
+    for (const shape of allLegalShapes()) {
+      const entries = formationsForShape(shape);
+      expect(
+        entries.length,
+        `${shape.DEF}-${shape.MID}-${shape.ATT} has no catalogue entry`,
+      ).toBeGreaterThanOrEqual(1);
     }
-    const offered = FORMATION_PRESETS.map((p) => p.label);
-    expect(legal.sort()).toEqual([...offered, "5-2-3"].sort());
+  });
+
+  it("lays every entry's rows out to the full XI, consistent with its band", () => {
+    for (const f of FORMATION_CATALOGUE) {
+      const total = f.rows.reduce((sum, r) => sum + r.count, 0);
+      expect(total, `${f.name} rows must sum to the XI`).toBe(XI_SIZE);
+      // The GK row leads, alone.
+      expect(f.rows[0]).toEqual({ role: "GK", count: 1 });
+      // Per-role row totals equal the band count the server stores.
+      const formation = shapeToFormation(f.shape);
+      for (const role of SLOT_ROLES) {
+        expect(
+          f.rows.filter((r) => r.role === role).reduce((sum, r) => sum + r.count, 0),
+          `${f.name} ${role} rows must match the band`,
+        ).toBe(formation[role]);
+      }
+      // Rows keep band order (a MID row never sits behind a DEF row).
+      const order = f.rows.map((r) => SLOT_ROLES.indexOf(r.role));
+      expect([...order].sort((a, b) => a - b), `${f.name} rows in band order`).toEqual(
+        order,
+      );
+      // No empty rows.
+      for (const r of f.rows) expect(r.count, `${f.name} empty row`).toBeGreaterThan(0);
+    }
+  });
+
+  it("keeps names unique", () => {
+    const names = FORMATION_CATALOGUE.map((f) => f.name);
+    expect(new Set(names).size).toBe(names.length);
+  });
+
+  it("resolves a stored name while it matches the band, else the band's first entry", () => {
+    const shape451: FormationShape = { DEF: 4, MID: 5, ATT: 1 };
+    // Remembered same-band choice wins.
+    expect(resolveFormation("4-1-4-1", shape451)?.name).toBe("4-1-4-1");
+    // A remembered name from ANOTHER band falls back to the first-listed entry.
+    expect(resolveFormation("4-4-2", shape451)?.name).toBe("4-2-3-1");
+    // Nothing remembered → first-listed too.
+    expect(resolveFormation(null, shape451)?.name).toBe("4-2-3-1");
+    // Sanity: first-listed entries really share the band.
+    for (const shape of allLegalShapes()) {
+      const first = resolveFormation(null, shape);
+      expect(first).not.toBeNull();
+      expect(sameShape(first!.shape, shape)).toBe(true);
+    }
   });
 });
 

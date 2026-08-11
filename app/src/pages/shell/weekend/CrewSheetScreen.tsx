@@ -26,8 +26,17 @@ import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { ShellLayout } from "@/components/shell/ShellLayout";
 import { SHELL_ROUTES } from "@/lib/shellRoutes";
 import { friendlyError } from "@/lib/errors";
-import type { FormationPlan } from "@/lib/weekendFormations";
-import { FormationSection, SquadView } from "./BudgetSquadScreen";
+import {
+  currentShape,
+  resolveFormation,
+  type FormationPlan,
+} from "@/lib/weekendFormations";
+import {
+  loadDisplayFormation,
+  saveDisplayFormation,
+} from "@/lib/weekendDisplayFormation";
+import { FormationSection } from "@/components/weekend/FormationChooser";
+import { SquadView } from "./BudgetSquadScreen";
 
 export type CrewSheet = NonNullable<
   FunctionReturnType<typeof api.fantasySquads.getMyCrewSheet>
@@ -47,9 +56,11 @@ export default function CrewSheetScreen() {
    *  crew sheet nobody can leave the 13, so "displaced" means out-of-role. */
   const [confirmShape, setConfirmShape] = useState<{
     plan: FormationPlan;
-    label: string;
+    name: string;
     names: string[];
   } | null>(null);
+  /** R2: display formation name, client-side per squad. */
+  const [displayName, setDisplayName] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -90,6 +101,18 @@ export default function CrewSheetScreen() {
   const editable =
     sheet != null && (sheet.gameweekStatus === "upcoming" || sheet.gameweekStatus === "live");
 
+  useEffect(() => {
+    setDisplayName(
+      sheet?.squadId != null ? loadDisplayFormation(sheet.squadId) : null,
+    );
+  }, [sheet?.squadId]);
+  const displayFormation =
+    sheet != null ? resolveFormation(displayName, currentShape(sheet.slots)) : null;
+  const rememberFormation = (name: string) => {
+    if (sheet?.squadId != null) saveDisplayFormation(sheet.squadId, name);
+    setDisplayName(name);
+  };
+
   const swapSlots = (a: number, b: number) => {
     if (sheet == null || busy) return;
     const byIndex = new Map(sheet.slots.map((s) => [s.slotIndex, s]));
@@ -121,15 +144,46 @@ export default function CrewSheetScreen() {
 
   const runShapeChange = (
     plan: FormationPlan,
+    formationName: string,
   ) => {
     if (sheet == null || busy) return;
     setBusy(true);
     void setFormationMutation({ squadId: sheet.squadId, slots: plan.payload })
+      .then(() => rememberFormation(formationName))
       .catch((e: unknown) =>
         toast.error(
           friendlyError(
             e,
             t("weekend.shapeFailed", { defaultValue: "Couldn't switch the shape." }),
+          ),
+        ),
+      )
+      .finally(() => setBusy(false));
+  };
+
+  /** R1: finisher role change from the chooser sheet — the player stays on
+   *  (the 13 are the 13); an out-of-listed-position finisher just carries the
+   *  visible mismatch hint, as after a swap. */
+  const setFinisherRole = (slotIndex: number, role: SlotRole) => {
+    if (sheet == null || busy) return;
+    const target = sheet.slots.find((s) => s.slotIndex === slotIndex);
+    if (target === undefined || target.slotRole === role) return;
+    setBusy(true);
+    void setFormationMutation({
+      squadId: sheet.squadId,
+      slots: sheet.slots.map((s) => ({
+        slotIndex: s.slotIndex,
+        slotRole: s.slotIndex === slotIndex ? role : s.slotRole,
+        isFinisher: s.isFinisher,
+      })),
+    })
+      .catch((e: unknown) =>
+        toast.error(
+          friendlyError(
+            e,
+            t("weekend.finisherRoleFailed", {
+              defaultValue: "Couldn't change that finisher role.",
+            }),
           ),
         ),
       )
@@ -170,21 +224,25 @@ export default function CrewSheetScreen() {
             <FormationSection
               slots={sheet.slots}
               editable={editable}
-              onApply={(plan, label) => {
+              displayFormation={displayFormation}
+              busy={busy}
+              onRelayout={(formation) => rememberFormation(formation.name)}
+              onShapePlan={(formation, plan) => {
                 if (plan.displaced.length > 0) {
                   setConfirmShape({
                     plan,
-                    label,
+                    name: formation.name,
                     names: plan.displaced.map(
                       (d) =>
                         sheet.slots.find((s) => s.slotIndex === d.slotIndex)?.playerName ??
                         "…",
                     ),
                   });
-                } else {
-                  runShapeChange(plan);
+                } else if (plan.changesAnything) {
+                  runShapeChange(plan, formation.name);
                 }
               }}
+              onFinisherRole={setFinisherRole}
             />
             <SquadView
               squad={{ budget: null, slots: sheet.slots }}
@@ -193,6 +251,7 @@ export default function CrewSheetScreen() {
               editable={editable}
               playersFixed
               swapSource={swapSource}
+              formationRows={displayFormation?.rows ?? null}
               onAssign={() => undefined}
               onClear={() => undefined}
               onSwap={(slotIndex) => {
@@ -215,7 +274,7 @@ export default function CrewSheetScreen() {
                 <DialogTitle className="font-heading font-bold text-lg">
                   {t("weekend.shapeConfirmTitle", {
                     defaultValue: "Switch to {{label}}?",
-                    label: confirmShape?.label ?? "",
+                    label: confirmShape?.name ?? "",
                   })}
                 </DialogTitle>
                 <p className="text-sm">
@@ -241,7 +300,7 @@ export default function CrewSheetScreen() {
                     onClick={() => {
                       const pending = confirmShape;
                       setConfirmShape(null);
-                      if (pending !== null) runShapeChange(pending.plan);
+                      if (pending !== null) runShapeChange(pending.plan, pending.name);
                     }}
                   >
                     {t("weekend.shapeConfirmGo", { defaultValue: "Switch shape" })}

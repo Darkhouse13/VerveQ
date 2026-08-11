@@ -27,6 +27,7 @@ import { Lock, Plus } from "lucide-react";
 import { formatPoints } from "../../../convex/lib/fantasyScoring";
 import { CROWD_LIQUIDITY_THRESHOLD } from "../../../convex/lib/fantasyCrowd";
 import type { SlotRole } from "../../../convex/lib/fantasyConstants";
+import type { FormationRow } from "@/lib/weekendFormations";
 import { cn } from "@/lib/utils";
 
 /** Structural chip inputs — BudgetSlot and crew-sheet slots both satisfy it. */
@@ -149,7 +150,8 @@ export function SlotChip({
       className={cn(
         "w-[64px] min-h-[58px] rounded-md px-1 py-1 flex flex-col items-center justify-center gap-0 text-center transition-all select-none",
         // Chips contrast the PITCH (always dark), independent of the page
-        // theme: cream shirts on dark turf, dark chip ink, lime mini-shadow.
+        // theme: cream shirts on dark turf, dark chip ink, quiet dark
+        // mini-shadow (R4 — offset shadows never cast in lime).
         filled
           ? "border-2 border-[hsl(0_0%_7%)] neo-shadow-sm bg-[hsl(30_100%_97%)] text-[hsl(0_0%_7%)]"
           : "border-2 border-dashed border-[hsl(75_100%_55%/0.55)] text-[hsl(30_100%_97%/0.92)] bg-[hsl(0_0%_100%/0.04)]",
@@ -198,6 +200,7 @@ export function PitchView({
   nominalByPlayer,
   editable,
   swapSource,
+  formationRows,
   onSlotTap,
 }: {
   slots: ReadonlyArray<PitchSlot>;
@@ -205,11 +208,44 @@ export function PitchView({
   nominalByPlayer: ReadonlyMap<string, SlotRole>;
   editable: boolean;
   swapSource: number | null;
+  /** R2 display layout (GK row first). Absent/mismatched → one row per role. */
+  formationRows?: ReadonlyArray<FormationRow> | null;
   onSlotTap: (slotIndex: number) => void;
 }) {
   const { t } = useTranslation();
   const xi = slots.filter((s) => !s.isFinisher);
   const finishers = slots.filter((s) => s.isFinisher);
+
+  // Slice the XI into visual rows. The named layout applies only while its
+  // per-role totals match the actual slots (they can drift for a render
+  // between a band change and the store update) — otherwise fall back to the
+  // plain one-row-per-role reading, which is always consistent.
+  const byRole = new Map<SlotRole, PitchSlot[]>(
+    ROW_ORDER.map((role) => [
+      role,
+      xi.filter((s) => s.slotRole === role).sort((a, b) => a.slotIndex - b.slotIndex),
+    ]),
+  );
+  const layoutMatches =
+    formationRows != null &&
+    ROW_ORDER.every(
+      (role) =>
+        formationRows
+          .filter((r) => r.role === role)
+          .reduce((sum, r) => sum + r.count, 0) === (byRole.get(role)?.length ?? 0),
+    );
+  const rows: PitchSlot[][] = [];
+  if (layoutMatches && formationRows != null) {
+    const cursor = new Map<SlotRole, number>();
+    for (const rowSpec of formationRows) {
+      const pool = byRole.get(rowSpec.role) ?? [];
+      const from = cursor.get(rowSpec.role) ?? 0;
+      rows.push(pool.slice(from, from + rowSpec.count));
+      cursor.set(rowSpec.role, from + rowSpec.count);
+    }
+  } else {
+    for (const role of ROW_ORDER) rows.push(byRole.get(role) ?? []);
+  }
 
   const chip = (slot: PitchSlot) => (
     <SlotChip
@@ -242,11 +278,13 @@ export function PitchView({
 
         <div
           className="relative grid py-3 px-1 min-h-[420px]"
-          style={{ gridTemplateRows: "0.8fr 1fr 1fr 1fr" }}
+          style={{
+            gridTemplateRows: `0.8fr${" 1fr".repeat(Math.max(rows.length - 1, 0))}`,
+          }}
         >
-          {ROW_ORDER.map((role) => (
-            <div key={role} className="flex items-center justify-evenly">
-              {xi.filter((s) => s.slotRole === role).map(chip)}
+          {rows.map((rowSlots, i) => (
+            <div key={i} className="flex items-center justify-evenly">
+              {rowSlots.map(chip)}
             </div>
           ))}
         </div>

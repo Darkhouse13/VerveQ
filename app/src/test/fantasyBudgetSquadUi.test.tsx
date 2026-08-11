@@ -16,7 +16,7 @@
  */
 
 import { describe, expect, it, vi, beforeEach, type Mock } from "vitest";
-import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+import { render, screen, fireEvent, waitFor, within } from "@testing-library/react";
 import { MemoryRouter, Route, Routes } from "react-router-dom";
 import { getFunctionName } from "convex/server";
 
@@ -171,6 +171,9 @@ beforeEach(() => {
     [SCORE_QUERY]: null,
   };
   toastMock.error.mockClear();
+  // The R2 display-formation memory is keyed by squadId and every test uses
+  // "squad1" — clear it so a prior test's choice can't leak into a label.
+  localStorage.clear();
 });
 
 describe("budget squad screen — availability gate", () => {
@@ -182,18 +185,31 @@ describe("budget squad screen — availability gate", () => {
     expect(toastMock.error).not.toHaveBeenCalled();
   });
 
-  it("offers the formation preset chips when there is a board but no squad yet", async () => {
+  it("offers the full famous-formation chooser when there is a board but no squad yet", async () => {
     renderScreen();
     expect(await screen.findByText("Start building")).toBeInTheDocument();
-    // D3: shapes, not steppers — all seven chips, 4-4-2 pre-selected.
-    for (const label of ["4-4-2", "4-3-3", "3-5-2", "3-4-3", "5-3-2", "4-5-1", "5-4-1"]) {
-      expect(screen.getByText(label)).toBeInTheDocument();
+    // R2: the whole catalogue — named formations, never a stepper. Spot-pin
+    // one name per band group plus the restored 5-2-3.
+    for (const name of [
+      "4-4-2",
+      "4-1-2-1-2",
+      "4-3-3",
+      "4-2-3-1",
+      "3-1-4-2",
+      "3-4-2-1",
+      "5-3-2",
+      "5-4-1",
+      "5-2-3",
+    ]) {
+      expect(screen.getByText(name)).toBeInTheDocument();
     }
     expect(screen.getByText("4-4-2").closest("button")).toHaveAttribute(
       "aria-pressed",
       "true",
     );
     expect(screen.queryByLabelText("MID +")).not.toBeInTheDocument();
+    // R1: the setup page carries the finisher section too — one chooser.
+    expect(screen.getByText("Your finishers")).toBeInTheDocument();
   });
 });
 
@@ -227,13 +243,25 @@ function fullSquad(filled: number[] = [], locked: number[] = []) {
   return squadWith(slots);
 }
 
-describe("budget squad screen — formation editable after confirmation (FW-POLISH O1)", () => {
-  it("switches shape from the squad screen in one tap when nobody is displaced", async () => {
+describe("budget squad screen — the ONE chooser behind the shape label (FW-POLISH-2 R1)", () => {
+  it("has no inline chips; the tappable SHAPE label opens the sheet", async () => {
     queryMock.results[SQUAD_QUERY] = fullSquad([1, 2, 3]);
     renderScreen();
-    // The persistent entry point: chips ON the squad screen, current shape named.
-    expect(await screen.findByText("Shape — 4-4-2")).toBeInTheDocument();
-    fireEvent.click(screen.getByText("3-5-2"));
+    const label = await screen.findByTestId("shape-label");
+    expect(label).toHaveTextContent("Shape — 4-4-2");
+    // R1: the chip rows are gone from the pitch screen until the sheet opens.
+    expect(screen.queryByTestId("formation-chips")).not.toBeInTheDocument();
+    fireEvent.click(label);
+    expect(await screen.findByTestId("formation-chips")).toBeInTheDocument();
+    // The sheet is the SAME chooser: shape section AND finisher section.
+    expect(screen.getByText("Your finishers")).toBeInTheDocument();
+  });
+
+  it("switches band from the sheet in one tap when nobody is displaced", async () => {
+    queryMock.results[SQUAD_QUERY] = fullSquad([1, 2, 3]);
+    renderScreen();
+    fireEvent.click(await screen.findByTestId("shape-label"));
+    fireEvent.click(await screen.findByText("3-5-2"));
     await waitFor(() => expect(queryMock.mutations[SET_FORMATION]).toHaveBeenCalled());
     const payload = queryMock.mutations[SET_FORMATION].mock.calls[0][0] as {
       slots: Array<{ slotRole: string; isFinisher: boolean }>;
@@ -244,6 +272,51 @@ describe("budget squad screen — formation editable after confirmation (FW-POLI
     ).toHaveLength(5);
     // Nobody displaced — no slot was cleared.
     expect(queryMock.mutations[SET_SLOT]).not.toHaveBeenCalled();
+  });
+
+  it("re-lays out a same-band formation with NO mutation, and remembers it", async () => {
+    queryMock.results[SQUAD_QUERY] = fullSquad([1, 2, 3]);
+    renderScreen();
+    fireEvent.click(await screen.findByTestId("shape-label"));
+    // 4-1-2-1-2 shares the 4/4/2 band with the current shape: pure re-layout.
+    fireEvent.click(await screen.findByText("4-1-2-1-2"));
+    await waitFor(() =>
+      expect(screen.getByTestId("shape-label")).toHaveTextContent(
+        "Shape — 4-1-2-1-2",
+      ),
+    );
+    expect(queryMock.mutations[SET_FORMATION]).not.toHaveBeenCalled();
+    expect(queryMock.mutations[SET_SLOT]).not.toHaveBeenCalled();
+    // The pitch renders the diamond's SIX rows (GK/4/1/2/1/2), not role rows.
+    const pitch = screen.getByTestId("weekend-pitch");
+    const grid = pitch.querySelector(".grid") as HTMLElement;
+    expect(grid.children).toHaveLength(6);
+    expect(
+      [...grid.children].map((row) => row.querySelectorAll("button").length),
+    ).toEqual([1, 4, 1, 2, 1, 2]);
+  });
+
+  it("changes a finisher's role from the sheet via setFormation", async () => {
+    queryMock.results[SQUAD_QUERY] = fullSquad();
+    renderScreen();
+    fireEvent.click(await screen.findByTestId("shape-label"));
+    // Finisher slot 11 is MID today; retag him DEF.
+    const finisherRows = await screen.findByText("Your finishers");
+    const section = finisherRows.parentElement as HTMLElement;
+    const defButtons = within(section).getAllByRole("button", { name: "DEF" });
+    fireEvent.click(defButtons[0]);
+    await waitFor(() => expect(queryMock.mutations[SET_FORMATION]).toHaveBeenCalled());
+    const payload = queryMock.mutations[SET_FORMATION].mock.calls[0][0] as {
+      slots: Array<{ slotIndex: number; slotRole: string; isFinisher: boolean }>;
+    };
+    expect(payload.slots.find((s) => s.slotIndex === 11)).toEqual({
+      slotIndex: 11,
+      slotRole: "DEF",
+      isFinisher: true,
+    });
+    // Every other slot rides through untouched.
+    expect(payload.slots.filter((s) => s.isFinisher)).toHaveLength(2);
+    expect(payload.slots.find((s) => s.slotIndex === 12)?.slotRole).toBe("ATT");
   });
 
   it("asks before displacing a pick, then clears him into the visible tray", async () => {
@@ -265,6 +338,7 @@ describe("budget squad screen — formation editable after confirmation (FW-POLI
       return { ok: true };
     });
     renderScreen();
+    fireEvent.click(await screen.findByTestId("shape-label"));
     fireEvent.click(await screen.findByText("3-5-2"));
     // The confirm names the pick; nothing has been sent yet.
     expect(await screen.findByText(/no room for Player 4/)).toBeInTheDocument();
@@ -294,13 +368,16 @@ describe("budget squad screen — formation editable after confirmation (FW-POLI
     expect(await screen.findByText("Who changes the game late?")).toBeInTheDocument();
   });
 
-  it("disables shapes the locked arrangement cannot reach", async () => {
+  it("disables formations the locked arrangement cannot reach", async () => {
     queryMock.results[SQUAD_QUERY] = fullSquad([9, 10], [9, 10]);
     renderScreen();
-    // Two locked ATT → the one-ATT shapes are unreachable, the rest live.
-    expect((await screen.findByText("4-5-1")).closest("button")).toBeDisabled();
-    expect(screen.getByText("5-4-1").closest("button")).toBeDisabled();
+    fireEvent.click(await screen.findByTestId("shape-label"));
+    // Two locked ATT → every one-ATT formation is unreachable, the rest live.
+    for (const name of ["4-2-3-1", "4-5-1", "4-1-4-1", "4-3-2-1", "5-4-1"]) {
+      expect((await screen.findByText(name)).closest("button"), name).toBeDisabled();
+    }
     expect(screen.getByText("3-5-2").closest("button")).not.toBeDisabled();
+    expect(screen.getByText("4-4-1-1").closest("button")).not.toBeDisabled();
   });
 });
 

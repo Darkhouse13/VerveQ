@@ -4,11 +4,11 @@
  * Football players think in shapes, not steppers (owner ruling D3). This
  * module owns the two client-side facts that follow from that:
  *
- *  1. The preset catalogue: every XI shape a normal person would name that is
- *     legal under FORMATION_BOUNDS (GK 1 / DEF 3-5 / MID 2-5 / ATT 1-3).
- *     The server keeps enforcing the structural rule — these chips are a
- *     rendering of it, and `presetsAreLegal` proves the catalogue against the
- *     bounds in the test suite so the two can never drift.
+ *  1. The famous-formation catalogue (FW-POLISH-2 R2): every named shape maps
+ *     a display name + pitch ROW layout onto a band count that is legal under
+ *     FORMATION_BOUNDS (GK 1 / DEF 3-5 / MID 2-5 / ATT 1-3). The server keeps
+ *     enforcing band counts and never learns display names; the test suite
+ *     pins catalogue-vs-bounds coverage so the two can never drift.
  *
  *  2. `planFormationChange`: given the current 13 slots and a target shape,
  *     the single setFormation payload that reaches it. Locked slots keep
@@ -35,23 +35,80 @@ export interface FormationShape {
   readonly ATT: number;
 }
 
-/** D3's chip list, in the ruling's order. */
-export const FORMATION_PRESETS: ReadonlyArray<{
-  label: string;
-  shape: FormationShape;
-}> = [
-  { label: "4-4-2", shape: { DEF: 4, MID: 4, ATT: 2 } },
-  { label: "4-3-3", shape: { DEF: 4, MID: 3, ATT: 3 } },
-  { label: "3-5-2", shape: { DEF: 3, MID: 5, ATT: 2 } },
-  { label: "3-4-3", shape: { DEF: 3, MID: 4, ATT: 3 } },
-  { label: "5-3-2", shape: { DEF: 5, MID: 3, ATT: 2 } },
-  { label: "4-5-1", shape: { DEF: 4, MID: 5, ATT: 1 } },
-  { label: "5-4-1", shape: { DEF: 5, MID: 4, ATT: 1 } },
+/** One visual pitch row: `count` chips of `role`, defence nearest the goal. */
+export interface FormationRow {
+  readonly role: SlotRole;
+  readonly count: number;
+}
+
+/**
+ * A famous formation: a display NAME, the band count the server actually
+ * stores (shape), and the pitch row layout that makes a 4-2-3-1 look like a
+ * 4-2-3-1. Presentational only (FW-POLISH-2 R2): the server keeps enforcing
+ * band counts; same-band entries differ purely in how the rows render.
+ */
+export interface NamedFormation {
+  readonly name: string;
+  readonly shape: FormationShape;
+  /** GK row first, then back line → attack. Counts sum to the full XI. */
+  readonly rows: ReadonlyArray<FormationRow>;
+}
+
+const GK_ROW: FormationRow = { role: "GK", count: 1 };
+const row = (role: SlotRole, count: number): FormationRow => ({ role, count });
+
+/**
+ * R2's catalogue, in the ruling's order (band groups adjacent; the FIRST
+ * entry of a band group is that band's default display name). Every legal
+ * band count appears at least once — including 5-2-3, which the old
+ * seven-chip list deliberately omitted and R2 explicitly restores.
+ */
+export const FORMATION_CATALOGUE: ReadonlyArray<NamedFormation> = [
+  // DEF 4 / MID 4 / ATT 2
+  { name: "4-4-2", shape: { DEF: 4, MID: 4, ATT: 2 }, rows: [GK_ROW, row("DEF", 4), row("MID", 4), row("ATT", 2)] },
+  { name: "4-4-1-1", shape: { DEF: 4, MID: 4, ATT: 2 }, rows: [GK_ROW, row("DEF", 4), row("MID", 4), row("ATT", 1), row("ATT", 1)] },
+  { name: "4-1-2-1-2", shape: { DEF: 4, MID: 4, ATT: 2 }, rows: [GK_ROW, row("DEF", 4), row("MID", 1), row("MID", 2), row("MID", 1), row("ATT", 2)] },
+  // DEF 4 / MID 3 / ATT 3
+  { name: "4-3-3", shape: { DEF: 4, MID: 3, ATT: 3 }, rows: [GK_ROW, row("DEF", 4), row("MID", 3), row("ATT", 3)] },
+  // DEF 4 / MID 5 / ATT 1
+  { name: "4-2-3-1", shape: { DEF: 4, MID: 5, ATT: 1 }, rows: [GK_ROW, row("DEF", 4), row("MID", 2), row("MID", 3), row("ATT", 1)] },
+  { name: "4-5-1", shape: { DEF: 4, MID: 5, ATT: 1 }, rows: [GK_ROW, row("DEF", 4), row("MID", 5), row("ATT", 1)] },
+  { name: "4-1-4-1", shape: { DEF: 4, MID: 5, ATT: 1 }, rows: [GK_ROW, row("DEF", 4), row("MID", 1), row("MID", 4), row("ATT", 1)] },
+  { name: "4-3-2-1", shape: { DEF: 4, MID: 5, ATT: 1 }, rows: [GK_ROW, row("DEF", 4), row("MID", 3), row("MID", 2), row("ATT", 1)] },
+  // DEF 3 / MID 5 / ATT 2
+  { name: "3-5-2", shape: { DEF: 3, MID: 5, ATT: 2 }, rows: [GK_ROW, row("DEF", 3), row("MID", 5), row("ATT", 2)] },
+  { name: "3-1-4-2", shape: { DEF: 3, MID: 5, ATT: 2 }, rows: [GK_ROW, row("DEF", 3), row("MID", 1), row("MID", 4), row("ATT", 2)] },
+  // DEF 3 / MID 4 / ATT 3
+  { name: "3-4-3", shape: { DEF: 3, MID: 4, ATT: 3 }, rows: [GK_ROW, row("DEF", 3), row("MID", 4), row("ATT", 3)] },
+  { name: "3-4-2-1", shape: { DEF: 3, MID: 4, ATT: 3 }, rows: [GK_ROW, row("DEF", 3), row("MID", 4), row("ATT", 2), row("ATT", 1)] },
+  // DEF 5
+  { name: "5-3-2", shape: { DEF: 5, MID: 3, ATT: 2 }, rows: [GK_ROW, row("DEF", 5), row("MID", 3), row("ATT", 2)] },
+  { name: "5-4-1", shape: { DEF: 5, MID: 4, ATT: 1 }, rows: [GK_ROW, row("DEF", 5), row("MID", 4), row("ATT", 1)] },
+  { name: "5-2-3", shape: { DEF: 5, MID: 2, ATT: 3 }, rows: [GK_ROW, row("DEF", 5), row("MID", 2), row("ATT", 3)] },
 ];
 
-/** "4-4-2"-style label for any XI role count (works for non-preset shapes). */
-export function shapeLabel(shape: FormationShape): string {
-  return `${shape.DEF}-${shape.MID}-${shape.ATT}`;
+export function sameShape(a: FormationShape, b: FormationShape): boolean {
+  return a.DEF === b.DEF && a.MID === b.MID && a.ATT === b.ATT;
+}
+
+/** Catalogue entries whose band count is `shape`, in catalogue order. */
+export function formationsForShape(shape: FormationShape): NamedFormation[] {
+  return FORMATION_CATALOGUE.filter((f) => sameShape(f.shape, shape));
+}
+
+/**
+ * The display formation for a squad whose XI currently counts `shape`:
+ * the remembered `name` when it still matches the band, else the band's
+ * first-listed entry (the reload default R2 allows), else null — a shape
+ * outside the catalogue renders as plain per-role rows.
+ */
+export function resolveFormation(
+  name: string | null,
+  shape: FormationShape,
+): NamedFormation | null {
+  const stored = FORMATION_CATALOGUE.find((f) => f.name === name);
+  if (stored !== undefined && sameShape(stored.shape, shape)) return stored;
+  return formationsForShape(shape)[0] ?? null;
 }
 
 export function shapeToFormation(shape: FormationShape): Record<SlotRole, number> {
