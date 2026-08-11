@@ -90,11 +90,14 @@
    * `.theme-weekend` on WEEKEND route containers ONLY — every other mode
    * keeps its palette untouched. Same Neo primitives (chunky borders, hard
    * offset shadows); the canvas flips near-black (#0d0d0d family), lime
-   * #c6ff00 becomes the working accent (primary AND accent slots), borders
-   * go warm-light so the brutalist ink reads on the dark ground, and the
-   * offset shadows cast in lime. Cream survives as ink, as the player chips
-   * on the pitch (explicit fills in PitchView), and inside the vivid door
-   * cards — the inversion of the old 70%-cream surface ratio.
+   * #c6ff00 becomes the working accent (primary AND accent slots), and
+   * borders go warm-light so the brutalist ink reads on the dark ground.
+   * Offset shadows cast NEAR-BLACK (FW-POLISH-2 R4): lime halos behind
+   * saturated cards on the dark canvas were glare on phone eyes — lime
+   * survives only as the working accent (chips, CTAs, badges). Cream
+   * survives as ink, as the player chips on the pitch (explicit fills in
+   * PitchView), and inside the vivid door cards — the inversion of the old
+   * 70%-cream surface ratio.
    */
   .theme-weekend {
     --background: 0 0% 5%;          /* #0d0d0d */
@@ -116,7 +119,7 @@
     --input: 30 40% 90%;
     --ring: 74 100% 50%;
 
-    --neo-shadow-color: 74 100% 50%; /* lime offset shadows */
+    --neo-shadow-color: 0 0% 0%; /* quiet dark offsets — never lime (R4) */
   }
 
   .theme-learn {
