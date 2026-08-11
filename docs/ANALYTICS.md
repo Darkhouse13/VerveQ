@@ -20,7 +20,7 @@ marked as such.
 | Game loop registry | `app/src/lib/gameAnalytics.ts` |
 | Entry door (provenance) | `app/src/lib/entrySource.ts` |
 | SEO curiosity funnel | `app/public/games/funnel.js` |
-| WEEKEND waitlist funnel | `app/src/components/weekend/HomeWeekendTeaser.tsx` |
+| WEEKEND entry + mode actions | `app/src/components/weekend/HomeWeekendCard.tsx`, `app/src/pages/shell/CompeteHeroCards.tsx`, `app/src/pages/shell/weekend/{BudgetSquadScreen,WeekendCrewsScreen}.tsx` |
 | `/weekend` deep link | `app/src/lib/weekendDeepLink.ts` |
 | Server-origin capture | `app/convex/lib/posthogServer.ts` |
 | Scripted verification pass | `app/scripts/analyticsVerificationPass.mjs` |
@@ -138,11 +138,42 @@ so on the same origin the static pages and the SPA **share one anonymous
 `persistence: "localStorage"`; if these pages used cookies while the SPA used
 localStorage they would never share an id and the funnel would measure nothing.
 
-### THE WEEKEND waitlist (Home teaser)
+### THE WEEKEND (live mode)
 
-The pre-launch waitlist funnel (`components/weekend/HomeWeekendTeaser`). Unlike
-the SEO funnel this lives on the **app** Home, so there is no "page" to bound
-it — the card is one block in a scrolling column.
+The launched mode's events (FW-SHIP). All four obey the governing rule the
+hard way: the entry events fire on a **press**, the mode events fire when the
+**server confirms the state transition** — reaching `/v2/weekend` or any
+surface under it fires nothing at all.
+
+| Event | Fires when | Properties |
+| --- | --- | --- |
+| `weekend_entry_clicked` | the PLAY NOW CTA is pressed (Home entry card) or the Compete hero card is tapped | `source`, `placement` (`home_card` \| `compete_hero`) |
+| `weekend_squad_created` | `fantasySquads.createSquad` **resolves** — the budget squad row exists | `gw_number` |
+| `weekend_crew_created` | `fantasyDraftRooms.createCrew` **resolves** | — |
+| `weekend_crew_joined` | `fantasyDraftRooms.joinCrew` **resolves** | — |
+
+`source` keeps the waitlist funnel's vocabulary: `utm_source ?? ref` read from
+the URL at mount (`readColdSource`), else the literal `home_card`. The same
+fallback caveat as the retired funnel applies — the literal means *the absence
+of an attributed source*, and the `/weekend` short link (which now lands on
+the hub, `lib/weekendDeepLink`) is what keeps promo traffic attributed.
+
+Draft picks, votes and court filings deliberately carry no events yet: each is
+a high-frequency in-mode action whose honest measure is the server's own
+tables, and instrumenting them is a product decision, not a default.
+
+### THE WEEKEND waitlist (Home teaser) — HISTORICAL
+
+> **Retired with FW-SHIP** (owner launch ruling 2026-08-01; the retiring
+> frontend shipped 2026-08-11). The teaser component is deleted and none of
+> the four events below fires anymore; they remain documented so historical
+> dashboards keep reading correctly. The `fantasyWaitlist` backend stays
+> deployed but uncalled. Do not reuse these event names.
+
+The pre-launch waitlist funnel (`components/weekend/HomeWeekendTeaser`, now
+deleted — see git history). Unlike the SEO funnel this lived on the **app**
+Home, so there was no "page" to bound it — the card was one block in a
+scrolling column.
 
 | Event | Fires when | Properties |
 | --- | --- | --- |
