@@ -282,6 +282,18 @@ describe("budget squad screen — formation editable after confirmation (FW-POLI
     expect(screen.getByText("Player 4")).toBeInTheDocument();
   });
 
+  it("asks each slot's question in football, not database (O4)", async () => {
+    queryMock.results[SQUAD_QUERY] = fullSquad();
+    renderScreen();
+    // Empty GK chip → the picker asks the position's question.
+    fireEvent.click(await screen.findByTestId("pitch-slot-0"));
+    expect(await screen.findByText("Who starts between the sticks?")).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Close" }));
+    // Empty finisher chip → the finisher's question.
+    fireEvent.click(screen.getByTestId("pitch-slot-11"));
+    expect(await screen.findByText("Who changes the game late?")).toBeInTheDocument();
+  });
+
   it("disables shapes the locked arrangement cannot reach", async () => {
     queryMock.results[SQUAD_QUERY] = fullSquad([9, 10], [9, 10]);
     renderScreen();

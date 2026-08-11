@@ -314,7 +314,7 @@ export function DraftBoardView({
                 {/* R5: no fixture this gameweek — pickable, but say so. */}
                 {!player.hasFixture && (
                   <NeoBadge color="yellow">
-                    {t("weekend.noFixture", { defaultValue: "No match" })}
+                    {t("weekend.noFixture", { defaultValue: "No fixture" })}
                   </NeoBadge>
                 )}
                 {started && (

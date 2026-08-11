@@ -265,3 +265,25 @@ Append-only. One entry per loop iteration: objective, what landed
 - Check green 139 files.
 - Parked: none.
 - Next: O4 copy pass.
+
+## Iteration 4 — 2026-08-11 — O4 copy pass: DONE
+
+- Objective: O4. COMPLETE (deliberately surgical — most WEEKEND copy
+  already carries the confident register: "the eye test", "He did /
+  Feed's right", "the 13 are the 13", "That pick didn't land").
+- Landed: position-voiced picker prompts replacing "Pick for the
+  {{role}} slot" — GK "Who starts between the sticks?", DEF "Who
+  holds the back line?", MID "Who runs the midfield?", ATT "Who
+  leads the line?", finishers "Who changes the game late?" (new
+  `finisher` prop threads the slot kind); create card counts
+  "shirts" not "slots"; "Finisher slots" → "Your finishers"; the
+  draft pool's badge now matches D4's "No fixture" (same key had
+  drifted). Contract test pins the GK + finisher prompts.
+- Not touched, on purpose: FW-4 score vocabulary (settled /
+  provisional / awaiting data / did not appear / insufficient votes)
+  — locked semantics, already honest words; every toast string
+  (server's words surface verbatim); ANALYTICS.md event names —
+  zero analytics changes anywhere this mission so far.
+- Check green 139 files.
+- Parked: none.
+- Next: O5 mobile QA.

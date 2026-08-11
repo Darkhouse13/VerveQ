@@ -134,7 +134,7 @@ export function CreateSquadView({
         </p>
         <p className="font-heading font-bold text-2xl">GW {gwNumber}</p>
         <p className="font-mono text-[11px] text-muted-foreground tracking-[0.16em] uppercase mt-1">
-          13 {t("weekend.slots", { defaultValue: "slots" })} ·{" "}
+          13 {t("weekend.slots", { defaultValue: "shirts" })} ·{" "}
           {SQUAD_BUDGET.toFixed(1)} {t("weekend.budget", { defaultValue: "budget" })}
         </p>
       </NeoCard>
@@ -156,7 +156,7 @@ export function CreateSquadView({
 
       <div>
         <p className="font-mono text-[11px] font-bold uppercase tracking-[0.16em] text-muted-foreground mb-2">
-          {t("weekend.finisherRoles", { defaultValue: "Finisher slots" })}
+          {t("weekend.finisherRoles", { defaultValue: "Your finishers" })}
         </p>
         {[0, 1].map((i) => (
           <div key={i} className="flex gap-1.5 mb-1.5">
@@ -431,6 +431,7 @@ export function ScoreHeader({ score }: { score: BudgetSquadScore }) {
 export function PlayerPickerDialog({
   open,
   slotRole,
+  finisher = false,
   market,
   leagues,
   inSquad,
@@ -441,6 +442,8 @@ export function PlayerPickerDialog({
 }: {
   open: boolean;
   slotRole: SlotRole | null;
+  /** Finisher slots ask a different question than the XI's positions. */
+  finisher?: boolean;
   market: Market | null | undefined;
   /** Which leagues actually play this window (D4) — null/undefined hides the line. */
   leagues?: ReadonlyArray<{ leagueId: number }> | null;
@@ -451,6 +454,19 @@ export function PlayerPickerDialog({
   onClose: () => void;
 }) {
   const { t } = useTranslation();
+
+  // O4: the slot asks its question in football, not in database.
+  const prompt = finisher
+    ? t("weekend.pickFinisher", { defaultValue: "Who changes the game late?" })
+    : slotRole === "GK"
+      ? t("weekend.pickGk", { defaultValue: "Who starts between the sticks?" })
+      : slotRole === "DEF"
+        ? t("weekend.pickDef", { defaultValue: "Who holds the back line?" })
+        : slotRole === "MID"
+          ? t("weekend.pickMid", { defaultValue: "Who runs the midfield?" })
+          : slotRole === "ATT"
+            ? t("weekend.pickAtt", { defaultValue: "Who leads the line?" })
+            : t("weekend.pickAny", { defaultValue: "Who makes your 13?" });
   const [search, setSearch] = useState("");
   const [position, setPosition] = useState<SlotRole | "ALL">(slotRole ?? "ALL");
   const [affordableOnly, setAffordableOnly] = useState(false);
@@ -489,11 +505,8 @@ export function PlayerPickerDialog({
   return (
     <Dialog open={open} onOpenChange={(next) => !next && onClose()}>
       <DialogContent className="theme-weekend neo-border neo-shadow-lg rounded-xl bg-background max-w-sm mx-auto max-h-[85dvh] flex flex-col">
-        <DialogTitle className="font-heading font-bold text-lg">
-          {t("weekend.pickFor", {
-            defaultValue: "Pick for the {{role}} slot",
-            role: slotRole ?? "",
-          })}
+        <DialogTitle className="font-heading font-bold text-lg" data-testid="picker-prompt">
+          {prompt}
         </DialogTitle>
         {leagues != null && leagues.length > 0 && (
           <p className="font-mono text-[10px] font-bold uppercase tracking-[0.16em] text-muted-foreground -mt-2">
@@ -905,10 +918,10 @@ export default function BudgetSquadScreen() {
 
   const editable = gate.state === "open" && gate.gameweek.status !== "final";
 
-  const pickerRole =
-    pickerSlot === null
-      ? null
-      : (squad?.slots.find((s) => s.slotIndex === pickerSlot)?.slotRole ?? null);
+  const pickerSlotRow =
+    pickerSlot === null ? undefined : squad?.slots.find((s) => s.slotIndex === pickerSlot);
+  const pickerRole = pickerSlotRow?.slotRole ?? null;
+  const pickerFinisher = pickerSlotRow?.isFinisher ?? false;
 
   /** Swap two slots' (slotRole, isFinisher) atomically — the only legal way
    *  to traverse XI↔finisher or trade roles, since each setSlot call must
@@ -1100,6 +1113,7 @@ export default function BudgetSquadScreen() {
             <PlayerPickerDialog
               open={pickerSlot !== null}
               slotRole={pickerRole}
+              finisher={pickerFinisher}
               market={market}
               leagues={weekendLeagues?.leagues ?? null}
               inSquad={inSquad}
