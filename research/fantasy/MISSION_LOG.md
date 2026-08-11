@@ -341,3 +341,90 @@ Append-only. One entry per loop iteration: objective, what landed
 - Mission totals: 6 commits (aae5683..74ee46d + this doc commit),
   0 parked decisions, 0 analytics changes, 1 sanctioned backend
   query, prod verified live on a phone viewport.
+
+# MISSION FW-POLISH-2 — formation UX consolidation + dark-canvas glare (2026-08-11)
+
+Scope: app/src WEEKEND surfaces + the shared bottom nav (R3 only).
+Zero backend changes of any kind (verified: no convex/ file in the
+diff); prod shipped by CI frontend deploy alone.
+
+## O1+O2 — 2026-08-11 — one chooser + famous-formation catalogue: DONE (7275062)
+
+- R1: `FormationChooser` (shape + finishers) is the single chooser —
+  inline on the setup page above START BUILDING, and the SAME
+  component as a bottom sheet (DrawSheet-pattern Radix primitives,
+  `weekend-sheet-in` slide-up) opened from the pitch header's
+  now-tappable "SHAPE — …" label. The pitch screen's inline chip rows
+  are gone. Finisher roles editable from the sheet via the same atomic
+  setFormation (locked finishers frozen); lock-awareness + displaced
+  tray unchanged.
+- R2: 15 named formations over the unchanged band counts, every legal
+  band covered (5-2-3 restored per the ruling — supersedes FW-POLISH's
+  pinned omission). Same-band switch = pure re-layout: NO mutation,
+  nobody displaced, client-side only. PitchView renders the named ROW
+  layout (4-2-3-1 → rows 4/2/3/1; diamond → 4/1/2/1/2) with a
+  per-role fallback on any slots/layout mismatch. Display name
+  persists client-side per squad (localStorage keyed by squadId;
+  reload defaults to the band's first-listed name — 4/5/1 defaults to
+  4-2-3-1 by the ruling's order).
+- Tests pin: exact catalogue list+order, per-entry band legality,
+  band coverage incl. 5-2-3, rows sum to the XI (GK row leads, band
+  order, no empty rows), name uniqueness, stored-name resolution,
+  no-mutation re-layout, sheet-driven finisher change, unreachable
+  formations disabled under locks.
+
+## O3 — 2026-08-11 — flush dark nav: DONE (0053d54)
+
+- Root cause found in review: the nav used THEME TOKENS
+  (bg-foreground/text-background) that flip inside .theme-weekend —
+  the nav rendered as a cream slab on WEEKEND routes — plus a light
+  border-t halo (background/40) on every route.
+- Fix: literal chrome — pinned near-black surface hsl(0 0% 7%),
+  muted-cream tints, lime active accent, border removed. Dark nav on
+  cream screens (intended) keeps its look minus the halo.
+- Proof committed (chromeProof.spec.ts + chrome-*-380-before/after):
+  compete diff confined to nav rows (y=2112..2159/2321), quiz
+  byte-identical, home diff = nav + one live countdown digit,
+  weekend-hub cream slab → flush dark. Snapshot re-pinned
+  (homeDrawCardContract).
+
+## O4 — 2026-08-11 — dark-canvas shadows: DONE (856a57e)
+
+- `.theme-weekend { --neo-shadow-color: 0 0% 0% }` — one token, every
+  neo-shadow consumer inside the theme quiets (hub doors, picker
+  rows, dialogs, tray, pitch chips). Lime survives as working accent
+  only. Non-WEEKEND routes share none of these tokens (O3's pairs
+  prove zero diff, nav excepted).
+
+## O5 — 2026-08-11 — 380px full loop: DONE (cb0f878)
+
+- weekendMobile loop extended: setup chooser (15 chips incl. 5-2-3,
+  finisher section) → pitch build → no-inline-chips assertion → sheet
+  open via label → same-band re-layout to the diamond (no mutation
+  path, six pitch rows asserted) → band change to 3-5-2 with the
+  displaced tray → bring-back-on → finisher retag from the sheet
+  (aria-pressed round-trip) → crew → lobby → drafted sheet → vote →
+  court. Zero console errors, zero horizontal scroll, PASS 17s,
+  purge clean. New artifacts: create-chooser, shape-sheet,
+  pitch-diamond.
+
+## O6 — 2026-08-11 — ship: DONE. **GOAL REACHED.**
+
+- check green before every commit (139 files / 1,493 tests at ship;
+  sole eslint warning pre-existing in draw/ClearanceMeter.tsx).
+- Push cb0f878; CI deploy + Check workflows both success. NO backend
+  deploy (none needed — STOP condition never tripped).
+- Deploy verified by chunk content (entry-hash rule honored):
+  BudgetSquadScreen-CorVYChc.js carries 4-1-2-1-2 / 4-2-3-1 / 5-2-3 /
+  "Your shape & finishers" / shape-label; index CSS carries
+  weekend-sheet-in and --neo-shadow-color:0 0% 0% inside
+  .theme-weekend.
+- Live 380px walkthrough on verveq.com: visible bottom nav
+  rgb(18,18,18) border-top 0 on BOTH /v2/weekend and /compete; hub
+  door shadow rgb(0,0,0) 6px offset; setup chooser 15 chips +
+  finisher section; picked 4-2-3-1 → SHAPE — 4-2-3-1 with pitch rows
+  [1,4,2,3,1]; sheet opens from the label; zero console errors, zero
+  horizontal overflow on every screen.
+- QA footprint on prod: guest `fwpolish2_qa`, empty 4-2-3-1 squad
+  (no picks) — same benign-artifact convention as fwpolish_qa.
+- Parked: none.

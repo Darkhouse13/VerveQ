@@ -219,3 +219,19 @@ renders, formation editable live (a real 4-4-2 → 3-5-2 switch), picker
 eligible-only default, zero page errors, zero horizontal scroll. One
 benign QA artifact remains on prod: guest user `fwpolish_qa` with an
 empty 3-5-2 squad (no picks).
+
+## FW-POLISH-2 — prod deploy record (2026-08-11)
+
+Frontend-only ship (formation UX consolidation + dark-canvas glare):
+NO backend deploy — the diff touches app/src and app/e2e exclusively.
+CI deploy on cb0f878 (deploy + Check workflows green). Verified by
+route-chunk content (BudgetSquadScreen chunk carries the R2 catalogue
+strings; CSS carries weekend-sheet-in and the near-black
+--neo-shadow-color inside .theme-weekend). Live 380px walkthrough on
+verveq.com: single chooser on the setup page (15 famous formations +
+finishers), 4-2-3-1 renders as pitch rows [1,4,2,3,1], the chooser
+sheet opens from the tappable SHAPE label, visible bottom nav is
+rgb(18,18,18)/border-0 on WEEKEND and cream routes alike, hub door
+shadows cast rgb(0,0,0), zero console errors, zero horizontal
+overflow. QA artifact: guest `fwpolish2_qa` with an empty 4-2-3-1
+squad (joins fwpolish_qa from FW-POLISH).
