@@ -6,6 +6,14 @@ deploy is the owner's manual step and is NOT done; see §Prod-deploy
 checklist. Mission commits: `136c658..83786e1` (six commits, all on
 master, all green through `npm run check`).
 
+> **UPDATE (owner ruling 2026-08-01, recorded FW-POLISH 2026-08-11):**
+> the Aug 28–30 target above is historical. THE WEEKEND is live NOW
+> (FW-SHIP, §FW-SHIP below); the first playable gameweek is whichever
+> window first has any top-five fixture, and partial gameweeks (1–2
+> leagues playing) are the normal state for the early season. The hub
+> targets the earliest open window by itself — nothing keys off a
+> launch date.
+
 ## Objective status
 
 | Objective | Status | Evidence |

@@ -105,6 +105,38 @@ export const getMarket = query({
 });
 
 /**
+ * Which leagues actually play in the open gameweek — presentation data for
+ * D4 (FW-POLISH): partial gameweeks are the NORMAL state early in the
+ * season, and the surfaces must say "this weekend: Ligue 1 + Premier League"
+ * rather than looking broken. Derived from the fixture rows, never from a
+ * hardcoded schedule; a fixture that will not be played (postponed/cancelled)
+ * does not make its league "playing". Read-only, additive.
+ */
+export const getWeekendLeagues = query({
+  args: {},
+  handler: async (ctx) => {
+    const gameweek = await findOpenGameweek(ctx);
+    if (gameweek === null) return null;
+    const fixtures = await ctx.db
+      .query("fantasyFixtures")
+      .withIndex("by_gameweek_kickoff", (q) => q.eq("gameweekId", gameweek._id))
+      .collect();
+    const fixturesByLeague = new Map<number, number>();
+    for (const fixture of fixtures) {
+      if (fixture.status === "postponed" || fixture.status === "cancelled") continue;
+      fixturesByLeague.set(fixture.leagueId, (fixturesByLeague.get(fixture.leagueId) ?? 0) + 1);
+    }
+    return {
+      gameweekId: gameweek._id,
+      gwNumber: gameweek.gwNumber,
+      leagues: [...fixturesByLeague.entries()]
+        .map(([leagueId, fixtureCount]) => ({ leagueId, fixtureCount }))
+        .sort((a, b) => b.fixtureCount - a.fixtureCount || a.leagueId - b.leagueId),
+    };
+  },
+});
+
+/**
  * The open gameweek's fixture id for a club (earliest kickoff — the same
  * rule the lock engine uses). The court's file-a-claim flow resolves a
  * player's fixture through this; the filing mutation re-validates it.

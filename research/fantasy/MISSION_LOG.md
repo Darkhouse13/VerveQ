@@ -161,3 +161,44 @@ Append-only. One entry per loop iteration: objective, what landed
   owner's manual step per the readiness checklist.
 - Mission totals: 7 commits (136c658..O6), 1 parked decision, 0 API
   calls, 0 spec edits.
+
+# MISSION FW-POLISH — THE WEEKEND: from functional to football (2026-08-11)
+
+## Iteration 1 — 2026-08-11 — O1 ship-blockers: DONE
+
+- Objective: O1. COMPLETE.
+- a) Formation editable after confirmation: `FormationSection` renders
+  D3 preset chips ON the squad screen (and the crew sheet), wired to
+  the existing setFormation. Chips a locked arrangement cannot reach
+  render disabled (planned client-side against the same rule the
+  server enforces). Lock-aware: locked slots pass through verbatim.
+- b) D3 chips replace the +/− steppers in the create view too. The
+  planner (`src/lib/weekendFormations.ts`, pure, 8 unit tests) keeps
+  every filled slot whose role the new shape can hold; the overflow is
+  DISPLACED — budget mode confirms, clears the slot and holds the
+  player in a visible touchline tray ("Bring back on" = first open
+  slot); crew sheets confirm out-of-listed-position instead (the 13
+  are the 13 — nobody can be cleared, FW-3).
+  NOTE (recorded, not parked): D3's chip list has seven shapes and
+  calls them "the legal shapes", but the structural bounds also admit
+  5-2-3. The explicit list governs; the test suite pins both facts.
+  A squad already in 5-2-3 (steppers era) still renders its derived
+  label; no chip is active.
+- c) D4: badge is "No fixture" (muted, not warning-yellow); picker
+  defaults to fixture-holders only with a "Show all" toggle; hub and
+  picker carry "This weekend: <leagues>" derived from a NEW read-only
+  presentation query `fantasyMarket.getWeekendLeagues` (postponed/
+  cancelled fixtures don't count a league as playing). League display
+  names live client-side (`src/lib/leagueNames.ts`), pinned to the
+  ids in fantasyConstants.LEAGUE_IDS / fetch/config.ts. Backend note:
+  this is the mission's sanctioned "new query for presentation data";
+  prod convex will need one deploy at O6, sequenced BEFORE the
+  frontend push (the hub calls it via useQuery).
+- d) Aug-28 sweep: zero references in app/src; LAUNCH_READINESS.md
+  got a dated UPDATE note (historical target, superseded by the
+  2026-08-01 ruling). findOpenGameweek verified: earliest finalityAt
+  among upcoming/live — already the earliest open window; untouched.
+- Check: tsc + lint (1 pre-existing warning, was 2 — two stray const
+  exports un-exported) + 139 test files green + build.
+- Parked: none.
+- Next: O2 pitch view.

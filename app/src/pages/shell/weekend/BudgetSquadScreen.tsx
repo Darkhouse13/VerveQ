@@ -32,12 +32,20 @@ import type { Id } from "../../../../convex/_generated/dataModel";
 import { formatPoints } from "../../../../convex/lib/fantasyScoring";
 import { CROWD_LIQUIDITY_THRESHOLD } from "../../../../convex/lib/fantasyCrowd";
 import {
-  FORMATION_BOUNDS,
   SLOT_ROLES,
   SQUAD_BUDGET,
-  XI_SIZE,
   type SlotRole,
 } from "../../../../convex/lib/fantasyConstants";
+import {
+  FORMATION_PRESETS,
+  currentShape,
+  planFormationChange,
+  shapeLabel,
+  shapeToFormation,
+  type FormationPlan,
+  type FormationShape,
+  type PlannerSlot,
+} from "@/lib/weekendFormations";
 import { NeoCard } from "@/components/neo/NeoCard";
 import { NeoButton } from "@/components/neo/NeoButton";
 import { NeoBadge } from "@/components/neo/NeoBadge";
@@ -46,6 +54,7 @@ import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { ShellLayout } from "@/components/shell/ShellLayout";
 import { SHELL_ROUTES } from "@/lib/shellRoutes";
 import { friendlyError } from "@/lib/errors";
+import { leagueListLine } from "@/lib/leagueNames";
 import { track } from "@/lib/analytics";
 
 export type OpenGameweek = NonNullable<
@@ -64,8 +73,39 @@ const MARKET_RESULT_CAP = 40;
 
 // ── formation picker (create) ──
 
-export const DEFAULT_FORMATION = { GK: 1, DEF: 4, MID: 4, ATT: 2 } as const;
-export const DEFAULT_FINISHERS: readonly [SlotRole, SlotRole] = ["MID", "ATT"];
+// Unexported (react-refresh/only-export-components): consumed only here.
+const DEFAULT_SHAPE: FormationShape = { DEF: 4, MID: 4, ATT: 2 };
+const DEFAULT_FINISHERS: readonly [SlotRole, SlotRole] = ["MID", "ATT"];
+
+/** D3: one tap, a shape — never a stepper. */
+export function FormationChips({
+  value,
+  disabledLabels,
+  onSelect,
+}: {
+  value: string | null;
+  /** Chips a locked arrangement makes unreachable (with the current label active). */
+  disabledLabels?: ReadonlySet<string>;
+  onSelect: (shape: FormationShape, label: string) => void;
+}) {
+  return (
+    <div className="grid grid-cols-4 gap-1.5" data-testid="formation-chips">
+      {FORMATION_PRESETS.map((preset) => (
+        <NeoButton
+          key={preset.label}
+          variant={value === preset.label ? "primary" : "outline"}
+          size="sm"
+          className="font-mono tabular-nums px-2"
+          disabled={disabledLabels?.has(preset.label) ?? false}
+          aria-pressed={value === preset.label}
+          onClick={() => onSelect(preset.shape, preset.label)}
+        >
+          {preset.label}
+        </NeoButton>
+      ))}
+    </div>
+  );
+}
 
 export function CreateSquadView({
   gwNumber,
@@ -80,20 +120,10 @@ export function CreateSquadView({
   busy: boolean;
 }) {
   const { t } = useTranslation();
-  const [formation, setFormation] = useState<Record<SlotRole, number>>({
-    ...DEFAULT_FORMATION,
-  });
+  const [shape, setShape] = useState<FormationShape>(DEFAULT_SHAPE);
   const [finishers, setFinishers] = useState<[SlotRole, SlotRole]>([
     ...DEFAULT_FINISHERS,
   ]);
-  const total = SLOT_ROLES.reduce((sum, role) => sum + formation[role], 0);
-
-  const step = (role: SlotRole, delta: number) => {
-    const bounds = FORMATION_BOUNDS[role];
-    const next = formation[role] + delta;
-    if (next < bounds.min || next > bounds.max) return;
-    setFormation({ ...formation, [role]: next });
-  };
 
   return (
     <div className="flex flex-col gap-4">
@@ -112,46 +142,13 @@ export function CreateSquadView({
         <p className="font-mono text-[11px] font-bold uppercase tracking-[0.16em] text-muted-foreground mb-2">
           {t("weekend.shape", { defaultValue: "Your shape" })}
         </p>
-        <div className="flex flex-col gap-2">
-          {SLOT_ROLES.map((role) => (
-            <NeoCard key={role} className="flex items-center justify-between py-2">
-              <span className="font-heading font-bold text-sm w-10">{role}</span>
-              {role === "GK" ? (
-                <span className="font-mono font-bold text-lg tabular-nums pr-1">1</span>
-              ) : (
-                <div className="flex items-center gap-3">
-                  <NeoButton
-                    variant="outline"
-                    size="sm"
-                    aria-label={`${role} -`}
-                    disabled={formation[role] <= FORMATION_BOUNDS[role].min}
-                    onClick={() => step(role, -1)}
-                  >
-                    −
-                  </NeoButton>
-                  <span className="font-mono font-bold text-lg tabular-nums w-5 text-center">
-                    {formation[role]}
-                  </span>
-                  <NeoButton
-                    variant="outline"
-                    size="sm"
-                    aria-label={`${role} +`}
-                    disabled={formation[role] >= FORMATION_BOUNDS[role].max}
-                    onClick={() => step(role, 1)}
-                  >
-                    +
-                  </NeoButton>
-                </div>
-              )}
-            </NeoCard>
-          ))}
-        </div>
-        <p
-          className={`text-[11px] mt-2 text-center ${total === XI_SIZE ? "text-muted-foreground" : "font-bold text-destructive"}`}
-        >
-          {t("weekend.xiCount", {
-            defaultValue: "XI: {{total}} of 11",
-            total,
+        <FormationChips
+          value={shapeLabel(shape)}
+          onSelect={(next) => setShape(next)}
+        />
+        <p className="text-[11px] text-muted-foreground mt-2">
+          {t("weekend.shapeNote", {
+            defaultValue: "Change it any time before kick-off — nothing is set in stone yet.",
           })}
         </p>
       </div>
@@ -190,12 +187,116 @@ export function CreateSquadView({
       <NeoButton
         variant="primary"
         size="full"
-        disabled={busy || total !== XI_SIZE}
-        onClick={() => onCreate(formation, finishers)}
+        disabled={busy}
+        onClick={() => onCreate(shapeToFormation(shape), finishers)}
       >
         {t("weekend.startBuilding", { defaultValue: "Start building" })}
       </NeoButton>
     </div>
+  );
+}
+
+// ── formation editor (squad screen) ──
+
+/**
+ * The persistent way BACK into the shape (the owner's #1 defect): chips on
+ * the squad screen itself, live until locks bite. Each chip is planned
+ * against the CURRENT slots — a shape the locked arrangement cannot reach
+ * renders disabled rather than failing on tap. The parent decides what a
+ * plan with displaced players means (budget: clear into the tray; crew:
+ * players hold their slot and field out of listed position).
+ */
+export function FormationSection({
+  slots,
+  editable,
+  onApply,
+}: {
+  slots: ReadonlyArray<PlannerSlot>;
+  editable: boolean;
+  onApply: (
+    plan: FormationPlan,
+    label: string,
+  ) => void;
+}) {
+  const { t } = useTranslation();
+  const label = shapeLabel(currentShape(slots));
+
+  const disabledLabels = useMemo(() => {
+    const set = new Set<string>();
+    for (const preset of FORMATION_PRESETS) {
+      if (!planFormationChange(slots, preset.shape).ok) set.add(preset.label);
+    }
+    return set;
+  }, [slots]);
+
+  if (!editable) {
+    return (
+      <p className="font-mono text-[11px] font-bold uppercase tracking-[0.16em] text-muted-foreground">
+        {t("weekend.shapeLockedLine", {
+          defaultValue: "Set up in a {{label}}",
+          label,
+        })}
+      </p>
+    );
+  }
+
+  return (
+    <div data-testid="formation-section">
+      <p className="font-mono text-[11px] font-bold uppercase tracking-[0.16em] text-muted-foreground mb-2">
+        {t("weekend.shapeLine", { defaultValue: "Shape — {{label}}", label })}
+      </p>
+      <FormationChips
+        value={label}
+        disabledLabels={disabledLabels}
+        onSelect={(shape, nextLabel) => {
+          const plan = planFormationChange(slots, shape);
+          if (plan.ok && plan.changesAnything) onApply(plan, nextLabel);
+        }}
+      />
+    </div>
+  );
+}
+
+// ── displaced tray ──
+
+/**
+ * D3: a shape change never silently drops a pick. Players whose slot the new
+ * shape could not hold wait here, one tap from an open slot. They are back
+ * in the market server-side (their slot was cleared) — the tray is the
+ * visible promise that the pick isn't lost.
+ */
+export function DisplacedTray({
+  players,
+  canPlace,
+  onPlace,
+}: {
+  players: ReadonlyArray<{ playerId: string; name: string }>;
+  canPlace: boolean;
+  onPlace: (playerId: string) => void;
+}) {
+  const { t } = useTranslation();
+  if (players.length === 0) return null;
+  return (
+    <NeoCard color="yellow" className="py-2.5" data-testid="displaced-tray">
+      <p className="font-mono text-[11px] font-bold uppercase tracking-[0.16em] mb-1.5">
+        {t("weekend.trayTitle", { defaultValue: "Waiting to come back on" })}
+      </p>
+      <div className="flex flex-col gap-1.5">
+        {players.map((player) => (
+          <div key={player.playerId} className="flex items-center justify-between gap-2">
+            <p className="font-heading font-bold text-sm truncate">{player.name}</p>
+            <NeoButton
+              variant="secondary"
+              size="sm"
+              disabled={!canPlace}
+              onClick={() => onPlace(player.playerId)}
+            >
+              {t("weekend.trayPlace", { defaultValue: "Bring back on" })}
+            </NeoButton>
+          </div>
+        ))}
+      </div>
+    </NeoCard>
   );
 }
 
@@ -443,6 +544,7 @@ export function PlayerPickerDialog({
   open,
   slotRole,
   market,
+  leagues,
   inSquad,
   remaining,
   now,
@@ -452,6 +554,8 @@ export function PlayerPickerDialog({
   open: boolean;
   slotRole: SlotRole | null;
   market: Market | null | undefined;
+  /** Which leagues actually play this window (D4) — null/undefined hides the line. */
+  leagues?: ReadonlyArray<{ leagueId: number }> | null;
   inSquad: ReadonlySet<string>;
   remaining: number;
   now: number;
@@ -462,6 +566,10 @@ export function PlayerPickerDialog({
   const [search, setSearch] = useState("");
   const [position, setPosition] = useState<SlotRole | "ALL">(slotRole ?? "ALL");
   const [affordableOnly, setAffordableOnly] = useState(false);
+  // D4: a partial gameweek is normal — players without a fixture are OUT of
+  // the browse by default, behind an explicit "show all", instead of pages
+  // of badge noise.
+  const [showAll, setShowAll] = useState(false);
 
   // Re-arm the defaults each time the picker opens for a slot.
   useEffect(() => {
@@ -469,6 +577,7 @@ export function PlayerPickerDialog({
       setSearch("");
       setPosition(slotRole ?? "ALL");
       setAffordableOnly(false);
+      setShowAll(false);
     }
   }, [open, slotRole]);
 
@@ -478,6 +587,7 @@ export function PlayerPickerDialog({
     return market.players
       .filter(
         (p) =>
+          (showAll || p.kickoffAt !== null) &&
           (position === "ALL" || p.position === position) &&
           (!affordableOnly || (p.price !== null && p.price <= remaining)) &&
           (needle.length === 0 ||
@@ -486,7 +596,7 @@ export function PlayerPickerDialog({
       )
       .sort((a, b) => (b.price ?? 0) - (a.price ?? 0) || a.name.localeCompare(b.name))
       .slice(0, MARKET_RESULT_CAP);
-  }, [market, search, position, affordableOnly, remaining]);
+  }, [market, search, position, affordableOnly, showAll, remaining]);
 
   return (
     <Dialog open={open} onOpenChange={(next) => !next && onClose()}>
@@ -497,6 +607,14 @@ export function PlayerPickerDialog({
             role: slotRole ?? "",
           })}
         </DialogTitle>
+        {leagues != null && leagues.length > 0 && (
+          <p className="font-mono text-[10px] font-bold uppercase tracking-[0.16em] text-muted-foreground -mt-2">
+            {t("weekend.thisWeekend", {
+              defaultValue: "This weekend: {{leagues}}",
+              leagues: leagueListLine(leagues.map((l) => l.leagueId)),
+            })}
+          </p>
+        )}
 
         <NeoInput
           value={search}
@@ -522,6 +640,14 @@ export function PlayerPickerDialog({
             onClick={() => setAffordableOnly((v) => !v)}
           >
             ≤ {remaining.toFixed(1)}
+          </NeoButton>
+          <NeoButton
+            variant={showAll ? "primary" : "outline"}
+            size="sm"
+            aria-pressed={showAll}
+            onClick={() => setShowAll((v) => !v)}
+          >
+            {t("weekend.showAll", { defaultValue: "Show all" })}
           </NeoButton>
         </div>
 
@@ -554,8 +680,8 @@ export function PlayerPickerDialog({
                 </div>
                 <div className="flex items-center gap-2 shrink-0">
                   {noFixture && (
-                    <NeoBadge color="yellow" size="sm">
-                      {t("weekend.noFixture", { defaultValue: "No match" })}
+                    <NeoBadge color="muted" size="sm">
+                      {t("weekend.noFixture", { defaultValue: "No fixture" })}
                     </NeoBadge>
                   )}
                   {started && (
@@ -601,7 +727,12 @@ export function PlayerPickerDialog({
           )}
           {results.length === 0 && (
             <p className="text-[11px] text-muted-foreground text-center py-4">
-              {t("weekend.noResults", { defaultValue: "Nobody matches those filters." })}
+              {showAll
+                ? t("weekend.noResults", { defaultValue: "Nobody matches those filters." })
+                : t("weekend.noEligibleResults", {
+                    defaultValue:
+                      "Nobody with a fixture this weekend matches — Show all includes the rest.",
+                  })}
             </p>
           )}
         </div>
@@ -735,6 +866,11 @@ export default function BudgetSquadScreen() {
     gameweekId === null ? "skip" : { gameweekId, context: "budget" as const },
   );
   const market = useQuery(api.fantasyMarket.getMarket, gameweekId === null ? "skip" : {});
+  // Skipped until the gate opened — the gate proves this deploy unit answers.
+  const weekendLeagues = useQuery(
+    api.fantasyMarket.getWeekendLeagues,
+    gameweekId === null ? "skip" : {},
+  );
   const score = useQuery(
     api.fantasyScores.getSquadScore,
     gameweekId === null ? "skip" : { gameweekId, context: "budget" as const },
@@ -747,6 +883,13 @@ export default function BudgetSquadScreen() {
   const [busy, setBusy] = useState(false);
   const [pickerSlot, setPickerSlot] = useState<number | null>(null);
   const [swapSource, setSwapSource] = useState<number | null>(null);
+  /** D3 tray: picks a shape change displaced, waiting to be re-placed. */
+  const [tray, setTray] = useState<Array<{ playerId: string; name: string }>>([]);
+  const [confirmShape, setConfirmShape] = useState<{
+    plan: FormationPlan;
+    label: string;
+    names: string[];
+  } | null>(null);
 
   const run = (fn: () => Promise<unknown>, fallback: string) => {
     if (busy) return;
@@ -803,6 +946,52 @@ export default function BudgetSquadScreen() {
     run(
       () => setFormationMutation({ squadId: squad.squadId, slots: payload }),
       t("weekend.swapFailed", { defaultValue: "That swap isn't legal." }),
+    );
+  };
+
+  /** Execute a planned shape change: relabel first (atomic, always legal),
+   *  then clear each displaced slot into the tray. A clear that fails leaves
+   *  the player fielded out of role with the visible mismatch hint — degraded
+   *  loudly, never silently. */
+  const runShapeChange = (
+    plan: FormationPlan,
+  ) => {
+    if (squad === null || squad === undefined) return;
+    const nameBySlot = new Map(
+      squad.slots.map((s) => [s.slotIndex, s.playerName ?? "…"]),
+    );
+    run(async () => {
+      await setFormationMutation({ squadId: squad.squadId, slots: plan.payload });
+      const cleared: Array<{ playerId: string; name: string }> = [];
+      for (const d of plan.displaced) {
+        await setSlot({ squadId: squad.squadId, slotIndex: d.slotIndex, playerId: null });
+        cleared.push({ playerId: d.playerId, name: nameBySlot.get(d.slotIndex) ?? "…" });
+      }
+      if (cleared.length > 0) {
+        setTray((prev) => [
+          ...prev.filter((p) => !cleared.some((c) => c.playerId === p.playerId)),
+          ...cleared,
+        ]);
+      }
+    }, t("weekend.shapeFailed", { defaultValue: "Couldn't switch the shape." }));
+  };
+
+  /** Bring a displaced player back on: first open unlocked XI slot, else an
+   *  open finisher slot. The tray filters itself once he's back in the squad. */
+  const placeFromTray = (playerId: string) => {
+    if (squad === null || squad === undefined) return;
+    const open = [...squad.slots]
+      .sort((a, b) => Number(a.isFinisher) - Number(b.isFinisher) || a.slotIndex - b.slotIndex)
+      .find((s) => s.playerId === null && !s.locked);
+    if (open === undefined) return;
+    run(
+      () =>
+        setSlot({
+          squadId: squad.squadId,
+          slotIndex: open.slotIndex,
+          playerId: playerId as Id<"fantasyPlayers">,
+        }),
+      t("weekend.pickFailed", { defaultValue: "That pick didn't land." }),
     );
   };
 
@@ -869,6 +1058,32 @@ export default function BudgetSquadScreen() {
           )
         ) : (
           <>
+            <FormationSection
+              slots={squad.slots}
+              editable={editable}
+              onApply={(plan, label) => {
+                if (plan.displaced.length > 0) {
+                  setConfirmShape({
+                    plan,
+                    label,
+                    names: plan.displaced.map(
+                      (d) =>
+                        squad.slots.find((s) => s.slotIndex === d.slotIndex)?.playerName ??
+                        "…",
+                    ),
+                  });
+                } else {
+                  runShapeChange(plan);
+                }
+              }}
+            />
+            <DisplacedTray
+              players={tray.filter((p) => !inSquad.has(p.playerId))}
+              canPlace={
+                !busy && squad.slots.some((s) => s.playerId === null && !s.locked)
+              }
+              onPlace={placeFromTray}
+            />
             <SquadView
               squad={squad}
               score={score}
@@ -898,6 +1113,7 @@ export default function BudgetSquadScreen() {
               open={pickerSlot !== null}
               slotRole={pickerRole}
               market={market}
+              leagues={weekendLeagues?.leagues ?? null}
               inSquad={inSquad}
               remaining={remaining}
               now={Date.now()}
@@ -917,6 +1133,48 @@ export default function BudgetSquadScreen() {
               }}
               onClose={() => setPickerSlot(null)}
             />
+            <Dialog
+              open={confirmShape !== null}
+              onOpenChange={(next) => !next && setConfirmShape(null)}
+            >
+              <DialogContent className="neo-border neo-shadow-lg rounded-xl bg-background max-w-sm mx-auto">
+                <DialogTitle className="font-heading font-bold text-lg">
+                  {t("weekend.shapeConfirmTitle", {
+                    defaultValue: "Switch to {{label}}?",
+                    label: confirmShape?.label ?? "",
+                  })}
+                </DialogTitle>
+                <p className="text-sm">
+                  {t("weekend.shapeConfirmBody", {
+                    defaultValue:
+                      "This shape has no room for {{names}} — they'll wait on the touchline, one tap from coming back on.",
+                    names: confirmShape?.names.join(", ") ?? "",
+                  })}
+                </p>
+                <div className="flex gap-2">
+                  <NeoButton
+                    variant="outline"
+                    size="sm"
+                    className="flex-1"
+                    onClick={() => setConfirmShape(null)}
+                  >
+                    {t("weekend.shapeConfirmCancel", { defaultValue: "Keep shape" })}
+                  </NeoButton>
+                  <NeoButton
+                    variant="primary"
+                    size="sm"
+                    className="flex-1"
+                    onClick={() => {
+                      const pending = confirmShape;
+                      setConfirmShape(null);
+                      if (pending !== null) runShapeChange(pending.plan);
+                    }}
+                  >
+                    {t("weekend.shapeConfirmGo", { defaultValue: "Switch shape" })}
+                  </NeoButton>
+                </div>
+              </DialogContent>
+            </Dialog>
           </>
         )}
       </div>

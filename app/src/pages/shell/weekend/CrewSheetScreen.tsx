@@ -21,10 +21,13 @@ import { api } from "../../../../convex/_generated/api";
 import type { Id } from "../../../../convex/_generated/dataModel";
 import type { SlotRole } from "../../../../convex/lib/fantasyConstants";
 import { NeoCard } from "@/components/neo/NeoCard";
+import { NeoButton } from "@/components/neo/NeoButton";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { ShellLayout } from "@/components/shell/ShellLayout";
 import { SHELL_ROUTES } from "@/lib/shellRoutes";
 import { friendlyError } from "@/lib/errors";
-import { SquadView } from "./BudgetSquadScreen";
+import type { FormationPlan } from "@/lib/weekendFormations";
+import { FormationSection, SquadView } from "./BudgetSquadScreen";
 
 export type CrewSheet = NonNullable<
   FunctionReturnType<typeof api.fantasySquads.getMyCrewSheet>
@@ -40,6 +43,13 @@ export default function CrewSheetScreen() {
   const [gate, setGate] = useState<Gate>("checking");
   const [busy, setBusy] = useState(false);
   const [swapSource, setSwapSource] = useState<number | null>(null);
+  /** A shape change that re-roles fielded players awaits this confirm — on a
+   *  crew sheet nobody can leave the 13, so "displaced" means out-of-role. */
+  const [confirmShape, setConfirmShape] = useState<{
+    plan: FormationPlan;
+    label: string;
+    names: string[];
+  } | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -109,6 +119,23 @@ export default function CrewSheetScreen() {
       .finally(() => setBusy(false));
   };
 
+  const runShapeChange = (
+    plan: FormationPlan,
+  ) => {
+    if (sheet == null || busy) return;
+    setBusy(true);
+    void setFormationMutation({ squadId: sheet.squadId, slots: plan.payload })
+      .catch((e: unknown) =>
+        toast.error(
+          friendlyError(
+            e,
+            t("weekend.shapeFailed", { defaultValue: "Couldn't switch the shape." }),
+          ),
+        ),
+      )
+      .finally(() => setBusy(false));
+  };
+
   return (
     <ShellLayout
       title={t("weekend.sheetTitle", { defaultValue: "Your team sheet" })}
@@ -139,6 +166,25 @@ export default function CrewSheetScreen() {
                 defaultValue: "the 13 are the 13 — arrange, don't re-man",
               })}
             </p>
+            <FormationSection
+              slots={sheet.slots}
+              editable={editable}
+              onApply={(plan, label) => {
+                if (plan.displaced.length > 0) {
+                  setConfirmShape({
+                    plan,
+                    label,
+                    names: plan.displaced.map(
+                      (d) =>
+                        sheet.slots.find((s) => s.slotIndex === d.slotIndex)?.playerName ??
+                        "…",
+                    ),
+                  });
+                } else {
+                  runShapeChange(plan);
+                }
+              }}
+            />
             <SquadView
               squad={{ budget: null, slots: sheet.slots }}
               score={score}
@@ -160,6 +206,48 @@ export default function CrewSheetScreen() {
                 }
               }}
             />
+            <Dialog
+              open={confirmShape !== null}
+              onOpenChange={(next) => !next && setConfirmShape(null)}
+            >
+              <DialogContent className="neo-border neo-shadow-lg rounded-xl bg-background max-w-sm mx-auto">
+                <DialogTitle className="font-heading font-bold text-lg">
+                  {t("weekend.shapeConfirmTitle", {
+                    defaultValue: "Switch to {{label}}?",
+                    label: confirmShape?.label ?? "",
+                  })}
+                </DialogTitle>
+                <p className="text-sm">
+                  {t("weekend.crewShapeConfirmBody", {
+                    defaultValue:
+                      "Your 13 all stay on the sheet, but {{names}} would field out of listed position — ×0.75 risk if the verdict agrees.",
+                    names: confirmShape?.names.join(", ") ?? "",
+                  })}
+                </p>
+                <div className="flex gap-2">
+                  <NeoButton
+                    variant="outline"
+                    size="sm"
+                    className="flex-1"
+                    onClick={() => setConfirmShape(null)}
+                  >
+                    {t("weekend.shapeConfirmCancel", { defaultValue: "Keep shape" })}
+                  </NeoButton>
+                  <NeoButton
+                    variant="primary"
+                    size="sm"
+                    className="flex-1"
+                    onClick={() => {
+                      const pending = confirmShape;
+                      setConfirmShape(null);
+                      if (pending !== null) runShapeChange(pending.plan);
+                    }}
+                  >
+                    {t("weekend.shapeConfirmGo", { defaultValue: "Switch shape" })}
+                  </NeoButton>
+                </div>
+              </DialogContent>
+            </Dialog>
           </>
         ) : null}
       </div>

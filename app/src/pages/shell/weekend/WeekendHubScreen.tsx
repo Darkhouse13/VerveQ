@@ -24,6 +24,7 @@ import { NeoCard } from "@/components/neo/NeoCard";
 import { NeoBadge } from "@/components/neo/NeoBadge";
 import { ShellLayout } from "@/components/shell/ShellLayout";
 import { SHELL_ROUTES } from "@/lib/shellRoutes";
+import { leagueListLine } from "@/lib/leagueNames";
 
 type NeoColor = NonNullable<ComponentProps<typeof NeoCard>["color"]>;
 
@@ -67,6 +68,9 @@ export default function WeekendHubScreen() {
   // Informational only — see the header. `undefined` = still loading, `null` =
   // no open board; both render the hub in full.
   const gameweek = useQuery(api.fantasyMarket.getOpenGameweek, {});
+  // D4: say which leagues actually play this window — a partial gameweek is a
+  // feature, not emptiness. Fixture-derived, renders only with data in hand.
+  const weekendLeagues = useQuery(api.fantasyMarket.getWeekendLeagues, {});
 
   return (
     <ShellLayout
@@ -101,6 +105,17 @@ export default function WeekendHubScreen() {
             </p>
           )}
         </div>
+        {weekendLeagues != null && weekendLeagues.leagues.length > 0 && (
+          <p
+            className="font-mono text-[11px] font-bold uppercase tracking-[0.16em] text-muted-foreground -mt-2"
+            data-testid="weekend-hub-leagues-line"
+          >
+            {t("weekend.thisWeekend", {
+              defaultValue: "This weekend: {{leagues}}",
+              leagues: leagueListLine(weekendLeagues.leagues.map((l) => l.leagueId)),
+            })}
+          </p>
+        )}
 
         <HubDoor
           icon={Wallet}

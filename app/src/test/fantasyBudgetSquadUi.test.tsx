@@ -70,6 +70,7 @@ const SQUAD_QUERY = getFunctionName(api.fantasySquads.getSquad);
 const MARKET_QUERY = getFunctionName(api.fantasyMarket.getMarket);
 const SCORE_QUERY = getFunctionName(api.fantasyScores.getSquadScore);
 const SET_SLOT = getFunctionName(api.fantasySquads.setSlot);
+const SET_FORMATION = getFunctionName(api.fantasySquads.setFormation);
 
 const GATE = {
   gameweekId: "gw1",
@@ -181,10 +182,113 @@ describe("budget squad screen — availability gate", () => {
     expect(toastMock.error).not.toHaveBeenCalled();
   });
 
-  it("offers the formation picker when there is a board but no squad yet", async () => {
+  it("offers the formation preset chips when there is a board but no squad yet", async () => {
     renderScreen();
     expect(await screen.findByText("Start building")).toBeInTheDocument();
-    expect(screen.getByText("XI: 11 of 11")).toBeInTheDocument();
+    // D3: shapes, not steppers — all seven chips, 4-4-2 pre-selected.
+    for (const label of ["4-4-2", "4-3-3", "3-5-2", "3-4-3", "5-3-2", "4-5-1", "5-4-1"]) {
+      expect(screen.getByText(label)).toBeInTheDocument();
+    }
+    expect(screen.getByText("4-4-2").closest("button")).toHaveAttribute(
+      "aria-pressed",
+      "true",
+    );
+    expect(screen.queryByLabelText("MID +")).not.toBeInTheDocument();
+  });
+});
+
+/** A full 13-slot 4-4-2 squad (XI + MID/ATT finishers). */
+function fullSquad(filled: number[] = [], locked: number[] = []) {
+  const roles = [
+    "GK",
+    "DEF",
+    "DEF",
+    "DEF",
+    "DEF",
+    "MID",
+    "MID",
+    "MID",
+    "MID",
+    "ATT",
+    "ATT",
+  ];
+  const slots = roles.map((role, i) =>
+    slot({
+      slotIndex: i,
+      slotRole: role,
+      playerId: filled.includes(i) ? `p${i}` : null,
+      playerName: filled.includes(i) ? `Player ${i}` : null,
+      playerPrice: filled.includes(i) ? 5 : null,
+      locked: locked.includes(i),
+    }),
+  );
+  slots.push(slot({ slotIndex: 11, slotRole: "MID", isFinisher: true }));
+  slots.push(slot({ slotIndex: 12, slotRole: "ATT", isFinisher: true }));
+  return squadWith(slots);
+}
+
+describe("budget squad screen — formation editable after confirmation (FW-POLISH O1)", () => {
+  it("switches shape from the squad screen in one tap when nobody is displaced", async () => {
+    queryMock.results[SQUAD_QUERY] = fullSquad([1, 2, 3]);
+    renderScreen();
+    // The persistent entry point: chips ON the squad screen, current shape named.
+    expect(await screen.findByText("Shape — 4-4-2")).toBeInTheDocument();
+    fireEvent.click(screen.getByText("3-5-2"));
+    await waitFor(() => expect(queryMock.mutations[SET_FORMATION]).toHaveBeenCalled());
+    const payload = queryMock.mutations[SET_FORMATION].mock.calls[0][0] as {
+      slots: Array<{ slotRole: string; isFinisher: boolean }>;
+    };
+    expect(payload.slots).toHaveLength(13);
+    expect(
+      payload.slots.filter((s) => !s.isFinisher && s.slotRole === "MID"),
+    ).toHaveLength(5);
+    // Nobody displaced — no slot was cleared.
+    expect(queryMock.mutations[SET_SLOT]).not.toHaveBeenCalled();
+  });
+
+  it("asks before displacing a pick, then clears him into the visible tray", async () => {
+    queryMock.results[SQUAD_QUERY] = fullSquad([1, 2, 3, 4]);
+    // Convex reactivity, simulated: a clear updates the squad payload (the
+    // tray only shows players who are genuinely out of the squad).
+    queryMock.mutations[SET_SLOT] = vi.fn(async (args: { slotIndex: number }) => {
+      const prev = queryMock.results[SQUAD_QUERY] as {
+        slots: Array<{ slotIndex: number } & Record<string, unknown>>;
+      };
+      queryMock.results[SQUAD_QUERY] = {
+        ...prev,
+        slots: prev.slots.map((s) =>
+          s.slotIndex === args.slotIndex
+            ? { ...s, playerId: null, playerName: null, playerPrice: null }
+            : s,
+        ),
+      };
+      return { ok: true };
+    });
+    renderScreen();
+    fireEvent.click(await screen.findByText("3-5-2"));
+    // The confirm names the pick; nothing has been sent yet.
+    expect(await screen.findByText(/no room for Player 4/)).toBeInTheDocument();
+    expect(queryMock.mutations[SET_FORMATION]).not.toHaveBeenCalled();
+
+    fireEvent.click(screen.getByText("Switch shape"));
+    await waitFor(() => expect(queryMock.mutations[SET_FORMATION]).toHaveBeenCalled());
+    await waitFor(() =>
+      expect(queryMock.mutations[SET_SLOT]).toHaveBeenCalledWith(
+        expect.objectContaining({ slotIndex: 4, playerId: null }),
+      ),
+    );
+    // D3: never silently dropped — he waits in the tray.
+    expect(await screen.findByTestId("displaced-tray")).toBeInTheDocument();
+    expect(screen.getByText("Player 4")).toBeInTheDocument();
+  });
+
+  it("disables shapes the locked arrangement cannot reach", async () => {
+    queryMock.results[SQUAD_QUERY] = fullSquad([9, 10], [9, 10]);
+    renderScreen();
+    // Two locked ATT → the one-ATT shapes are unreachable, the rest live.
+    expect((await screen.findByText("4-5-1")).closest("button")).toBeDisabled();
+    expect(screen.getByText("5-4-1").closest("button")).toBeDisabled();
+    expect(screen.getByText("3-5-2").closest("button")).not.toBeDisabled();
   });
 });
 
