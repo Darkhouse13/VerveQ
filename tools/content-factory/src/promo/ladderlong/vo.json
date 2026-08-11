@@ -1949,6 +1949,163 @@
           "t1": 1.44
         }
       ]
+    },
+    {
+      "key": "dugout-a1",
+      "slot": "answer",
+      "text": "Kompany.",
+      "dur": 0.48,
+      "words": [
+        {
+          "word": "Kompany.",
+          "t0": 0,
+          "t1": 0.48
+        }
+      ]
+    },
+    {
+      "key": "dugout-a2",
+      "slot": "answer",
+      "text": "Willy Sagnol.",
+      "dur": 1.12,
+      "words": [
+        {
+          "word": "Willy",
+          "t0": 0,
+          "t1": 0.24
+        },
+        {
+          "word": "Sagnol.",
+          "t0": 0.32,
+          "t1": 1.12
+        }
+      ]
+    },
+    {
+      "key": "dugout-a3",
+      "slot": "answer",
+      "text": "Chris Coleman.",
+      "dur": 0.96,
+      "words": [
+        {
+          "word": "Chris",
+          "t0": 0,
+          "t1": 0.24
+        },
+        {
+          "word": "Coleman.",
+          "t0": 0.3,
+          "t1": 0.96
+        }
+      ]
+    },
+    {
+      "key": "dugout-a4",
+      "slot": "answer",
+      "text": "Slaven Bilić.",
+      "dur": 1.2,
+      "words": [
+        {
+          "word": "Slaven",
+          "t0": 0,
+          "t1": 0.4
+        },
+        {
+          "word": "Bilić.",
+          "t0": 0.48,
+          "t1": 1.2
+        }
+      ]
+    },
+    {
+      "key": "dugout-a5",
+      "slot": "answer",
+      "text": "Sylvinho.",
+      "dur": 0.96,
+      "words": [
+        {
+          "word": "Sylvinho.",
+          "t0": 0,
+          "t1": 0.96
+        }
+      ]
+    },
+    {
+      "key": "dugout-a6",
+      "slot": "answer",
+      "text": "Steve Bruce.",
+      "dur": 1.28,
+      "words": [
+        {
+          "word": "Steve",
+          "t0": 0,
+          "t1": 0.48
+        },
+        {
+          "word": "Bruce.",
+          "t0": 0.573,
+          "t1": 1.28
+        }
+      ]
+    },
+    {
+      "key": "dugout-a7",
+      "slot": "answer",
+      "text": "Frank de Boer.",
+      "dur": 1.28,
+      "words": [
+        {
+          "word": "Frank",
+          "t0": 0,
+          "t1": 0.4
+        },
+        {
+          "word": "de",
+          "t0": 0.507,
+          "t1": 0.72
+        },
+        {
+          "word": "Boer.",
+          "t0": 0.773,
+          "t1": 1.28
+        }
+      ]
+    },
+    {
+      "key": "dugout-a8",
+      "slot": "answer",
+      "text": "Stuart Pearce.",
+      "dur": 1.12,
+      "words": [
+        {
+          "word": "Stuart",
+          "t0": 0,
+          "t1": 0.32
+        },
+        {
+          "word": "Pearce.",
+          "t0": 0.4,
+          "t1": 1.12
+        }
+      ]
+    },
+    {
+      "key": "dugout-a9",
+      "slot": "answer",
+      "text": "Thomas Tuchel.",
+      "dur": 1.3599999999999999,
+      "words": [
+        {
+          "word": "Thomas",
+          "t0": 0,
+          "t1": 0.48
+        },
+        {
+          "word": "Tuchel.",
+          "t0": 0.6,
+          "t1": 1.3599999999999999
+        }
+      ]
     }
   ]
 }

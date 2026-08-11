@@ -259,6 +259,14 @@ export const ANSWERS = {
   // are not. Nine long, both of them — rung 10 has no take, in either deck.
   "five-leagues": ["Carvajal.", "Joshua Kimmich.", "Pulisic.", "Alisson.", "Vitinha.", "Vlahović.", "Michael Olise.", "Raphinha.", "Andrew Robertson."],
   "one-squad": ["Rodrygo.", "Alphonso Davies.", "Mike Maignan.", "Federico Valverde.", "Bastoni.", "Frenkie de Jong.", "Bruno Guimarães.", "Rasmus Højlund.", "Serge Gnabry."],
+
+  // ---- THE DUGOUT (2026-08-11) ----
+  // Same law, fourth time: Kompany and Sylvinho carry three syllables and go
+  // alone; every other surname here is one or two ("Gerrard." 2.32s vs
+  // "Steven Gerrard." 1.36s) and takes its first name — Sagnol, Coleman,
+  // Bilić, Bruce, de Boer (the Frenkie de Jong precedent), Pearce, Tuchel.
+  // Nine long — rung 10 has no take, and the tenth name is never spoken.
+  dugout: ["Kompany.", "Willy Sagnol.", "Chris Coleman.", "Slaven Bilić.", "Sylvinho.", "Steve Bruce.", "Frank de Boer.", "Stuart Pearce.", "Thomas Tuchel."],
 };
 
 export const LINES = [
