@@ -79,14 +79,23 @@ test("THE WEEKEND full loop at 380px: hub → pitch build → shape change → c
   await page.getByRole("textbox").first().fill(RUN_TAG);
   await page.getByRole("button", { name: "Start playing" }).click();
 
-  // ── create: D3 preset chips, never a stepper ──
+  // ── create: R1's ONE chooser — famous formations + finishers, no stepper ──
   await expect(page.getByText("Building for")).toBeVisible({ timeout: 45_000 });
   await expect(page.getByTestId("formation-chips")).toBeVisible();
-  await expect(page.getByRole("button", { name: "4-4-2" })).toHaveAttribute(
+  await expect(page.getByRole("button", { name: "4-4-2", exact: true })).toHaveAttribute(
     "aria-pressed",
     "true",
   );
+  // R2: the catalogue is the full famous list, including the restored 5-2-3.
+  await expect(page.getByRole("button", { name: "4-2-3-1" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "5-2-3" })).toBeVisible();
+  // R1: the setup page carries the finisher section too.
+  await expect(page.getByText("Your finishers")).toBeVisible();
   await expectNoHorizontalScroll(page, "create view");
+  await page.screenshot({
+    path: "e2e/artifacts/weekend-create-chooser-380.png",
+    fullPage: true,
+  });
   await page.getByText("Start building").click();
 
   // ── the pitch: 11 open positions + 2 finishers on the touchline ──
@@ -127,12 +136,41 @@ test("THE WEEKEND full loop at 380px: hub → pitch build → shape change → c
     fullPage: true,
   });
 
-  // ── formation change with players placed: 4-4-2 → 3-5-2 displaces one ──
+  // ── R1: no inline chips on the pitch screen — the SHAPE label opens the
+  //    chooser sheet ──
+  await expect(page.getByTestId("formation-chips")).toHaveCount(0);
+  const shapeLabel = page.getByTestId("shape-label");
+  await expect(shapeLabel).toHaveText(/Shape — 4-4-2/);
+
+  // ── R2 same-band re-layout: 4-4-2 → 4-1-2-1-2 (diamond), NO displacement,
+  //    the pitch re-rows to GK/4/1/2/1/2 ──
+  await shapeLabel.click();
+  await expect(page.getByTestId("formation-sheet")).toBeVisible();
+  await page.waitForTimeout(400); // let the slide-up settle before shooting
+  await page.screenshot({
+    path: "e2e/artifacts/weekend-shape-sheet-380.png",
+    fullPage: false,
+  });
+  await page.getByRole("button", { name: "4-1-2-1-2" }).click();
+  await expect(shapeLabel).toHaveText(/Shape — 4-1-2-1-2/, { timeout: 15_000 });
+  // Let the sheet finish its close animation before shooting the pitch.
+  await expect(page.getByTestId("formation-sheet")).toHaveCount(0, { timeout: 15_000 });
+  expect(await page.locator('[data-testid="weekend-pitch"] .grid > div').count()).toBe(6);
+  // Same band = pure re-layout: no confirm, no tray, every pick still on.
+  await expect(page.getByTestId("displaced-tray")).toHaveCount(0);
+  await expectNoHorizontalScroll(page, "pitch (diamond rows)");
+  await page.screenshot({
+    path: "e2e/artifacts/weekend-pitch-diamond-380.png",
+    fullPage: true,
+  });
+
+  // ── band change with players placed: → 3-5-2 displaces one DEF ──
+  await shapeLabel.click();
   await page.getByRole("button", { name: "3-5-2" }).click();
   await expect(page.getByText(/no room for/)).toBeVisible({ timeout: 15_000 });
   await page.getByRole("button", { name: "Switch shape" }).click();
   // The shape switched and the displaced pick waits, visibly, in the tray.
-  await expect(page.getByText("Shape — 3-5-2")).toBeVisible({ timeout: 30_000 });
+  await expect(shapeLabel).toHaveText(/Shape — 3-5-2/, { timeout: 30_000 });
   await expect(page.getByTestId("displaced-tray")).toBeVisible({ timeout: 30_000 });
   await expectNoHorizontalScroll(page, "pitch (tray)");
   await page.screenshot({
@@ -142,6 +180,20 @@ test("THE WEEKEND full loop at 380px: hub → pitch build → shape change → c
   // One tap brings him back on (first open slot).
   await page.getByRole("button", { name: "Bring back on" }).first().click();
   await expect(page.getByTestId("displaced-tray")).toHaveCount(0, { timeout: 30_000 });
+
+  // ── R1: finisher role change from the SAME sheet ──
+  await shapeLabel.click();
+  const sheet = page.getByTestId("formation-sheet");
+  await expect(sheet).toBeVisible();
+  // The first finisher (slot 11) is MID by default; retag him DEF and wait
+  // for the server round-trip to press the button in.
+  const firstFinisherDef = sheet.getByRole("button", { name: "DEF" }).first();
+  await firstFinisherDef.click();
+  await expect(firstFinisherDef).toHaveAttribute("aria-pressed", "true", {
+    timeout: 30_000,
+  });
+  await page.keyboard.press("Escape");
+  await expect(sheet).toHaveCount(0);
 
   // ── crew: create, land on the crew page, open the lobby ──
   await page.goto("/v2/weekend/crews");
