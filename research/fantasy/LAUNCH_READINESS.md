@@ -133,6 +133,25 @@ Deploy the backend to prod and seed prices (steps 1+3): everything
 else on this list hangs off that deploy, and both entry modes are
 already exercised end-to-end on DEV behind it.
 
+## FW-SHIP — prod bootstrap record (2026-08-11)
+
+Prod (`different-lynx-153`) was found with an EMPTY fantasy data layer at
+the FW-SHIP backend deploy, and was bootstrapped by **DEV clone** (owner
+ruling, Option A) rather than by fresh FW-2 bootstraps: the six data tables
+(fantasyPlayers, fantasyGameweeks, fantasyFixtures, fantasyDraftPoolMeta,
+fantasyTransferEvents, fantasyTransferSweeps) were snapshot-exported from
+`admired-warthog-495` and imported reference-free (document ids re-minted;
+cross-references rewritten by natural key — season/gwNumber, provider
+player id, sweep startedAt; verified 0 dangling refs). Verified post-clone:
+2,895 prices exactly matching price-final.json, 61 transfer-created players
+at 4.0 flagged, 39 departed, 971 transfer events, 50 gameweeks (= DEV).
+API_FOOTBALL_KEY was set on prod the same day (copied from DEV; one shared
+Pro key, combined cron spend ≈ 1,100/day vs the 7,500 cap).
+
+**The seedFantasyPrices DEV-pin STAYS.** The script must never run on prod
+— the clone already carries every price, and `guardTarget()` continues to
+block `different-lynx-153` by design.
+
 ## FW-T1 — Transfer ingestion: prod runbook (added 2026-08-11)
 
 FW-T1 keeps `fantasyPlayers` club-true through transfer windows:
