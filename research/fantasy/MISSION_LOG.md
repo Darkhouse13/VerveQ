@@ -287,3 +287,30 @@ Append-only. One entry per loop iteration: objective, what landed
 - Check green 139 files.
 - Parked: none.
 - Next: O5 mobile QA.
+
+## Iteration 5 — 2026-08-11 — O5 mobile QA: DONE
+
+- Objective: O5. COMPLETE.
+- weekendMobile.spec.ts rewritten as the FW-POLISH loop at 380×844
+  (explicit viewport override) against DEV: hub (doors + D4 league
+  line) → guest onboarding → create via chips (4-4-2 pre-pressed) →
+  empty pitch (13 empty chips counted) → GK + whole back four picked
+  THROUGH the pitch (each position asks its question) → 4-4-2→3-5-2
+  with players placed → displacement confirm → tray visible →
+  "Bring back on" re-places him → crew create (crew named "FW-O5
+  SIM" so purgeUiRun owns it — also fixed weekendGo.spec, whose "GO
+  Smoke Crew" name the purge never matched) → draft lobby (Ready up,
+  two-drafter floor) → server-drafted crew sheet on the pitch (Move
+  without Clear, real setFormation swap) → vote surface → court
+  surface. Vote/court are asserted as honest surfaces; serving a
+  real pair needs finished matches the suite must not fabricate.
+- Every screen: no horizontal scroll. Whole run: zero console
+  errors / page errors (asserted, not eyeballed; dev-only i18n
+  missing-key WARNINGS are pre-existing and are not errors).
+- PASS 14.3s; weekendGo.spec PASS 5.8s after its pitch-tap update.
+- Screenshots committed (FW-LAUNCH convention, e2e/artifacts):
+  weekend-hub/pitch-empty/pitch-manned/shape-tray/lobby/sheet/vote/
+  court-380.png; stale budget-squad-mobile.png + crew-sheet-mobile
+  .png (old list UI) retired.
+- Parked: none.
+- Next: O6 ship.

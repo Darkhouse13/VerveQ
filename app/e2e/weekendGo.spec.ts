@@ -62,8 +62,8 @@ test("FW-GO: short link → hub → budget squad → crew → draft lobby at 380
   await page.getByText("Start building").click();
   await expect(page.getByText("/ 91.0")).toBeVisible({ timeout: 45_000 });
 
-  // One real pick so the squad exists with money moved.
-  await page.getByLabel("Add").first().click();
+  // One real pick through the pitch so the squad exists with money moved.
+  await page.getByTestId("pitch-slot-0").click();
   const firstPick = page.getByRole("button", { name: "Pick", exact: true }).first();
   await expect(firstPick).toBeVisible({ timeout: 45_000 });
   await firstPick.click();
@@ -76,7 +76,7 @@ test("FW-GO: short link → hub → budget squad → crew → draft lobby at 380
   await expect(page.getByText("Create crew")).toBeVisible({ timeout: 30_000 });
   await expectNoHorizontalScroll(page, "crews hub");
   await page.getByText("Create crew").click();
-  await page.getByRole("textbox").first().fill("GO Smoke Crew");
+  await page.getByRole("textbox").first().fill("FW-O5 SIM");
   await page.getByRole("button", { name: /^Create$/ }).click();
   await expect(page.getByText("Crew code")).toBeVisible({ timeout: 30_000 });
   await expectNoHorizontalScroll(page, "crew page");
