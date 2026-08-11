@@ -191,9 +191,18 @@ describe("classifyTransfer — exactly one of the ticket's five classes", () => 
     expect(result.classification).toBe("outgoing");
   });
 
-  it("e. UNRESOLVED: covered origin with a missing destination is logged, never guessed as a departure (R3)", () => {
+  it("d. OUTGOING by the FW-T1b ruling: covered origin with a missing destination is a departure", () => {
     const result = classifyTransfer({
       candidate: candidate({ rawFromClubId: "100", rawToClubId: null }),
+      playerKnown: true,
+      coveredClubIds: COVERED,
+    });
+    expect(result.classification).toBe("outgoing");
+  });
+
+  it("e. UNRESOLVED: a missing destination with an uncovered origin still parks (R3)", () => {
+    const result = classifyTransfer({
+      candidate: candidate({ rawFromClubId: "999", rawToClubId: null }),
       playerKnown: true,
       coveredClubIds: COVERED,
     });

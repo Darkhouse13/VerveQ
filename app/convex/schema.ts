@@ -2274,8 +2274,21 @@ export default defineSchema({
       v.literal("outgoing"),
       v.literal("unresolved"),
     ),
-    /** R3's log line: why this record touched nothing. Unresolved rows only. */
+    /**
+     * R3's log line: why this record touched nothing when it was parked.
+     * KEPT after a retry resolves the row (FW-T1b) — classification then says
+     * what finally happened, and this says why it took more than one pass.
+     */
     unresolvedReason: v.optional(v.string()),
+    /**
+     * FW-T1b: stamped when a later sweep's retry pass resolved a row first
+     * stored "unresolved" — idempotence must not settle failure, so every
+     * sweep re-attempts the unresolved set (fresh squad lookup where the
+     * position was missing) before touching new records. Present exactly on
+     * rows that left "unresolved" by retry; rows resolved on first sight
+     * never carry it.
+     */
+    resolvedAt: v.optional(v.number()),
     /**
      * True when the record was stored WITHOUT applying its club move because a
      * later-dated move for the same player had already been applied — the feed
@@ -2321,6 +2334,17 @@ export default defineSchema({
         /** Records re-seen (already stored) — the idempotence evidence. */
         alreadySeen: v.number(),
         superseded: v.number(),
+      }),
+    ),
+    /** FW-T1b: the retry pass over previously-unresolved rows, run before new
+     *  records each sweep. `calls` are its squad lookups, budgeted in the
+     *  printed call plan alongside everything else. */
+    retries: v.optional(
+      v.object({
+        attempted: v.number(),
+        calls: v.number(),
+        resolved: v.number(),
+        remaining: v.number(),
       }),
     ),
     error: v.optional(v.string()),

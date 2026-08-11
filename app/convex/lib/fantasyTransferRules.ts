@@ -185,11 +185,13 @@ export interface ClassifiedTransfer {
  *    a covered origin, because a player we never carried is new to the
  *    universe wherever the feed says he stood
  *  - destination outside + origin covered → departed (d)
- *  - a null side that would change the ACTION is R3 ambiguity: a covered
- *    origin with no destination could be outgoing or an intra-window
- *    correction, so it resolves to nothing. A null ORIGIN with a covered
- *    destination is admitted — the action (update/create at destination) is
- *    identical whatever the origin was.
+ *  - a null ORIGIN with a covered destination is admitted — the action
+ *    (update/create at destination) is identical whatever the origin was
+ *  - a null DESTINATION with a covered origin is OUTGOING (d) — the FW-T1b
+ *    owner ruling. FW-T1 parked these as unresolved; the ruling reads them
+ *    as what they are on this feed: releases, retirements and moves the
+ *    provider has no destination for, i.e. the player has left the covered
+ *    universe. Row kept, departed, active:false — same as any departure.
  */
 export function classifyTransfer(args: {
   candidate: TransferCandidate;
@@ -210,14 +212,13 @@ export function classifyTransfer(args: {
   }
 
   if (candidate.rawToClubId === null) {
-    // Destination missing entirely. If the origin is covered this LOOKS like a
-    // departure, but asserting one on a half-record would deactivate a player
-    // off data the feed itself did not commit to. R3: log, touch nothing.
+    // Destination missing entirely. With a covered origin this is class d by
+    // the FW-T1b owner ruling (see the header); without one there is nothing
+    // covered to act on and R3 keeps it parked.
+    if (fromCovered) return { classification: "outgoing" };
     return {
       classification: "unresolved",
-      unresolvedReason: fromCovered
-        ? "destination club missing from feed record (origin is covered)"
-        : "destination club missing from feed record",
+      unresolvedReason: "destination club missing from feed record",
     };
   }
 
