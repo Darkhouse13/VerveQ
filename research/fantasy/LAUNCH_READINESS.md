@@ -202,3 +202,20 @@ run the prod backfill once, from `app/` with prod credentials:
 - The daily cron thereafter windows itself from the last successful
   sweep (3-day overlap, overlap is free by record identity) and runs
   year-round — the January window needs no new switch.
+
+## FW-POLISH — prod deploy record (2026-08-11)
+
+Backend deploy #2 to `different-lynx-153` (authorized: owner ruling
+2026-08-01, ship phase; clean tree at 74ee46d): the only function change
+since FW-SHIP is the read-only presentation query
+`fantasyMarket.getWeekendLeagues` (+32 lines, no mutations, no schema).
+Deployed BEFORE the frontend push (the hub calls it via useQuery);
+verified live: `--prod fantasyMarket:getWeekendLeagues` → GW1, 6
+fixtures, league 140. Frontend shipped by CI on the same commit; route
+chunks verified by content (theme-weekend, pitch, picker prompts, "No
+fixture" all present). Live 380px walkthrough on verveq.com passed:
+dark canvas on WEEKEND routes only (#0d0d0d hub vs cream Home), pitch
+renders, formation editable live (a real 4-4-2 → 3-5-2 switch), picker
+eligible-only default, zero page errors, zero horizontal scroll. One
+benign QA artifact remains on prod: guest user `fwpolish_qa` with an
+empty 3-5-2 squad (no picks).

@@ -314,3 +314,30 @@ Append-only. One entry per loop iteration: objective, what landed
   .png (old list UI) retired.
 - Parked: none.
 - Next: O6 ship.
+
+## Iteration 6 — 2026-08-11 — O6 ship: DONE. **GOAL REACHED.**
+
+- Objective: O6 (terminal). COMPLETE.
+- Pre-ship: check green 139 files; full DEV e2e smoke green — the
+  weekend specs on the shared config, anonymousFirst + claimCopy
+  under their documented VITE_ANONYMOUS_FIRST_ENABLED=true env (an
+  earlier blanket run "failed" them only because a stale reused dev
+  server lacked the flag; with the documented env: 9 passed 1
+  skipped). Clean tree at 74ee46d.
+- STOP-and-reconsider honored: backend diff audited before deploy —
+  exactly +32 lines, one read-only query, no mutations, no schema.
+  Proceeded under the standing "new QUERIES for presentation data
+  are fine" rule.
+- Ship order: `npx convex deploy` to different-lynx-153 FIRST
+  (getWeekendLeagues verified answering on prod), then master push;
+  CI deploy workflow success (43s), Check workflow success.
+- Live verification (recorded in LAUNCH_READINESS.md §FW-POLISH):
+  chunk-content greps + scripted 380px walkthrough — Home cream
+  rgb(255,247,240), hub #0d0d0d with "This weekend: La Liga", chips
+  with 4-4-2 pressed, pitch with 13 open positions, live shape
+  switch to 3-5-2 ON PROD, picker eligible-default with Show all
+  off and zero "No fixture" badges, 0px horizontal overflow, no
+  page errors. QA footprint: guest `fwpolish_qa`, empty squad.
+- Mission totals: 6 commits (aae5683..74ee46d + this doc commit),
+  0 parked decisions, 0 analytics changes, 1 sanctioned backend
+  query, prod verified live on a phone viewport.
