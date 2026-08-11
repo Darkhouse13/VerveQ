@@ -132,3 +132,46 @@ Wrinkles:
 Deploy the backend to prod and seed prices (steps 1+3): everything
 else on this list hangs off that deploy, and both entry modes are
 already exercised end-to-end on DEV behind it.
+
+## FW-T1 — Transfer ingestion: prod runbook (added 2026-08-11)
+
+FW-T1 keeps `fantasyPlayers` club-true through transfer windows:
+`fantasyTransferEvents` + `fantasyTransferSweeps` (additive tables),
+an owner-invokable backfill, and a daily sweep cron
+(`fantasy-transfer-sweep`, 04:40 UTC). Rulings: prices static (a new
+player enters at the 4.0 floor, pool "flagged"); existing squads
+grandfathered (the club cap binds at mutation time only, against the
+pre-edit baseline); unresolvable records are logged, never guessed.
+
+**After the owner's manual backend deploy** (`npx convex deploy`
+picks up the two tables, the pipeline, and the cron — the cron
+activates automatically with the deploy and needs no separate step),
+run the prod backfill once, from `app/` with prod credentials:
+
+    npx convex run fantasyTransfers:backfillTransfers --prod
+
+- **Expected call count**: 96 `/transfers` calls (one per covered
+  club) + one `/players/squads` call per destination club that has
+  players new to the universe. The DEV backfill on 2026-08-11 cost
+  **142 calls** (96 + 46); by late August expect roughly 100–200,
+  against the 500-call ceiling the action enforces (it prints the
+  plan first and refuses to spend past the ceiling). Well inside the
+  7,500/day budget alongside the ~480/day fixture sync.
+- **Eyeball in the returned report**:
+  - `counts` — DEV 2026-08-11 for scale: 190 internal, 169
+    incoming-known, 61 incoming-new, 534 outgoing, 17 unresolved.
+  - `unresolved` — the full R3 list. Two kinds: "destination club
+    missing" (feed half-records; harmless, nothing was touched) and
+    "position unavailable … STOP-AND-REPORT" (a new player the feed
+    gave no position for — NOT created, never defaulted; review and
+    decide manually).
+  - `newPlayers` — every created player with club and the 4.0
+    price. All must be price 4.0, pool "flagged".
+  - `positionless` — the STOP-AND-REPORT list again, pulled to the
+    top so it cannot be missed.
+- **Verify idempotence** (optional, ~100 calls): a second run must
+  report `alreadySeen == candidates` and every other count 0 — DEV
+  second run: 971/971 already-seen, zero applied.
+- The daily cron thereafter windows itself from the last successful
+  sweep (3-day overlap, overlap is free by record identity) and runs
+  year-round — the January window needs no new switch.

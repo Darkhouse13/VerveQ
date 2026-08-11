@@ -227,6 +227,93 @@ describe("per-club cap with favorite-club exemption (DRAFT_ROOM v1.0 ledger 6+8)
   });
 });
 
+// ── club-cap grandfathering (FW-T1 ruling R2) ──
+//
+// Transfer ingestion moves players between clubs under standing squads, so a
+// squad built legally can hold 4-from-one-club without any edit. The ruling:
+// the squad is NOT invalidated — the cap binds at mutation time only, against
+// the pre-edit baseline.
+
+describe("club-cap grandfathering after a transfer (FW-T1 R2)", () => {
+  // A squad that WAS legal: big0..big2 from BIG_CLUB plus other3 elsewhere —
+  // then a transfer moved other3 to BIG_CLUB. Pre-edit state = 4 from BIG_CLUB.
+  const grandfatheredSlots = () =>
+    squadOf(FOUR_FOUR_TWO).map((s, i) =>
+      i < 3 ? { ...s, playerId: `big${i}` } : i === 3 ? { ...s, playerId: "moved" } : s,
+    );
+  const postTransferPool = poolOf(
+    ...[0, 1, 2].map((i) => player({ _id: `big${i}`, clubId: "BIG_CLUB" })),
+    player({ _id: "moved", clubId: "BIG_CLUB" }), // transferred in under the squad
+    player({ _id: "elsewhere", clubId: "CLUB_C" }),
+    player({ _id: "fourth", clubId: "BIG_CLUB" }),
+  );
+
+  it("keeps the transferred-over squad legal for an edit that does not touch the over-cap club", () => {
+    const prior = grandfatheredSlots();
+    // Edit: fill slot 5 with a CLUB_C player. BIG_CLUB stays at its inherited 4.
+    const postEdit = prior.map((s, i) => (i === 5 ? { ...s, playerId: "elsewhere" } : s));
+    const result = validateSquad({
+      slots: postEdit,
+      playersById: postTransferPool,
+      favoriteClub: null,
+      context: "crew",
+      isLocked: NEVER_LOCKED,
+      priorSlots: prior,
+    });
+    expect(result.ok).toBe(true);
+  });
+
+  it("still blocks an edit ADDING another player of the over-cap club", () => {
+    const prior = grandfatheredSlots();
+    const postEdit = prior.map((s, i) => (i === 5 ? { ...s, playerId: "fourth" } : s));
+    const result = validateSquad({
+      slots: postEdit,
+      playersById: postTransferPool,
+      favoriteClub: null,
+      context: "crew",
+      isLocked: NEVER_LOCKED,
+      priorSlots: prior,
+    });
+    expect(result.ok).toBe(false);
+    expect(result.violations.map((v) => v.code)).toContain("club_cap");
+  });
+
+  it("still blocks a NEW 4th-club addition on a club that was never over cap", () => {
+    // 3 from CLUB_D already; the baseline for CLUB_D is 3, so a 4th is a plain
+    // cap violation — grandfathering tolerates only what a transfer created.
+    const prior = squadOf(FOUR_FOUR_TWO).map((s, i) =>
+      i < 3 ? { ...s, playerId: `d${i}` } : s,
+    );
+    const dPool = poolOf(
+      ...[0, 1, 2, 3].map((i) => player({ _id: `d${i}`, clubId: "CLUB_D" })),
+    );
+    const postEdit = prior.map((s, i) => (i === 5 ? { ...s, playerId: "d3" } : s));
+    const result = validateClubCap(
+      postEdit,
+      dPool,
+      null,
+      new Map([["CLUB_D", 3]]),
+    );
+    expect(result.ok).toBe(false);
+    expect(result.violations.map((v) => v.code)).toContain("club_cap");
+  });
+
+  it("allows reducing the over-cap club while staying above the cap (5 → 4)", () => {
+    const result = validateClubCap(
+      grandfatheredSlots(),
+      postTransferPool,
+      null,
+      new Map([["BIG_CLUB", 5]]),
+    );
+    expect(result.ok).toBe(true);
+  });
+
+  it("binds the strict cap when no baseline is given (createSquad path)", () => {
+    const result = validateClubCap(grandfatheredSlots(), postTransferPool, null);
+    expect(result.ok).toBe(false);
+  });
+});
+
 // ── budget ──
 
 describe("budget invariant (BUDGET_MODE v1.1.0 §Budget, §Deadlines & editing)", () => {

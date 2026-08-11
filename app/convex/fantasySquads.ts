@@ -166,8 +166,16 @@ async function assertPostEditSquadLegal(
   squad: Doc<"fantasySquads">,
   postEdit: readonly SlotSnapshot[],
   lockedByIndex: ReadonlyMap<number, boolean>,
+  /**
+   * The PRE-EDIT slots, for the FW-T1 R2 club-cap grandfather: a transfer can
+   * push a standing squad over the cap, and the edit that must then still work
+   * is one that does not raise the over-cap club's count. Players are loaded
+   * over BOTH sets — a swapped-out player belongs to the baseline even though
+   * no post-edit slot names him.
+   */
+  priorSlots: readonly SlotSnapshot[],
 ): Promise<void> {
-  const playersById = await loadPlayers(ctx, postEdit);
+  const playersById = await loadPlayers(ctx, [...postEdit, ...priorSlots]);
   const result = validateSquad({
     slots: postEdit,
     playersById,
@@ -175,6 +183,7 @@ async function assertPostEditSquadLegal(
     context: squad.context,
     isLocked: (slot) => lockedByIndex.get(slot.slotIndex) === true,
     budgetLimit: SQUAD_BUDGET,
+    priorSlots,
   });
   if (!result.ok) throw new Error(describeViolations(result));
 }
@@ -425,7 +434,13 @@ export async function setSlotFor(
         : toSlotSnapshot(slot),
     );
 
-    await assertPostEditSquadLegal(ctx, squad, postEdit, lockedByIndex);
+    await assertPostEditSquadLegal(
+      ctx,
+      squad,
+      postEdit,
+      lockedByIndex,
+      slots.map((slot) => toSlotSnapshot(slot)),
+    );
 
     await ctx.db.patch(target._id, {
       ...(args.playerId === undefined
@@ -516,7 +531,13 @@ export async function setFormationFor(
       });
     });
 
-    await assertPostEditSquadLegal(ctx, squad, postEdit, lockedByIndex);
+    await assertPostEditSquadLegal(
+      ctx,
+      squad,
+      postEdit,
+      lockedByIndex,
+      slots.map((slot) => toSlotSnapshot(slot)),
+    );
 
     let changed = 0;
     for (const slot of slots) {

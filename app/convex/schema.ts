@@ -1466,6 +1466,16 @@ export default defineSchema({
     ),
     price: v.union(v.number(), v.null()),
     active: v.boolean(),
+    /**
+     * FW-T1 (additive): stamped when the transfer pipeline classifies this
+     * player OUTGOING (covered → outside). `active: false` is what excludes
+     * him from selection — this field says WHY, distinguishing "left the
+     * covered universe" from a squad-refresh deactivation. `clubId` keeps the
+     * covered club he left: historic squads and score rows join through it,
+     * and an outside club id would masquerade as covered in those joins.
+     * Cleared (with `active: true`) if a later transfer brings him back.
+     */
+    departedAt: v.optional(v.number()),
   })
     .index("by_providerPlayerId", ["providerPlayerId"])
     .index("by_club", ["clubId"])
@@ -2214,4 +2224,105 @@ export default defineSchema({
   })
     .index("by_claim_user", ["claimId", "userId"])
     .index("by_claim", ["claimId"]),
+
+  // ──────────────────────────────── WEEKEND FANTASY: transfer ingestion (FW-T1)
+  //
+  // Roster truth for the players table during (and after) transfer windows.
+  // STRICTLY ADDITIVE to FW-1..4. Rulings (owner, 2026-08-01):
+  //   R1  prices are static — this pipeline never writes a price except the
+  //       4.0 floor on a player it CREATES (flagged-pool rule)
+  //   R2  existing squads are grandfathered — nothing here touches a squad
+  //   R3  fail-closed on ambiguity — unresolvable records are logged for
+  //       owner review, never guessed, never auto-created from a fuzzy match
+
+  /**
+   * One provider transfer record, seen once, forever. The feed's /transfers
+   * endpoint carries NO transfer id, so provider identity is the composite
+   * `providerTransferKey` — player + date + raw from/to team ids — which is
+   * exactly the tuple the provider itself uses to distinguish records.
+   * Idempotence (P1): a sweep that re-sees a stored key writes nothing.
+   *
+   * Club ids: OUR club ids ARE provider team ids kept as opaque strings
+   * (FW-1: "there is deliberately no clubs table at this layer"), so the raw
+   * feed ids stored here double as our ids exactly when the covered flags say
+   * so. Both sides are stored raw and always; coverage is the boolean pair.
+   */
+  fantasyTransferEvents: defineTable({
+    providerTransferKey: v.string(),
+    providerPlayerId: v.string(),
+    /** Feed's display name — what the owner reviews an unresolved row by. */
+    playerName: v.string(),
+    /** Feed date, YYYY-MM-DD. Lexicographic order IS chronological order. */
+    transferDate: v.string(),
+    /** Raw feed team ids as strings; null when the feed omitted the side. */
+    rawFromClubId: v.union(v.string(), v.null()),
+    rawToClubId: v.union(v.string(), v.null()),
+    fromCovered: v.boolean(),
+    toCovered: v.boolean(),
+    /** Ours, when the player resolved against fantasyPlayers. Absent on
+     *  unresolved rows and on outgoing records for players we never carried. */
+    playerId: v.optional(v.id("fantasyPlayers")),
+    /** The feed's raw `type` ("€ 25m", "Loan", "Free", "N/A", …). */
+    transferType: v.union(v.string(), v.null()),
+    /** Loans follow the same rules on current club; the flag is recorded
+     *  because the feed provides one (type contains "loan"). */
+    loan: v.boolean(),
+    classification: v.union(
+      v.literal("internal"),
+      v.literal("incoming_known"),
+      v.literal("incoming_new"),
+      v.literal("outgoing"),
+      v.literal("unresolved"),
+    ),
+    /** R3's log line: why this record touched nothing. Unresolved rows only. */
+    unresolvedReason: v.optional(v.string()),
+    /**
+     * True when the record was stored WITHOUT applying its club move because a
+     * later-dated move for the same player had already been applied — the feed
+     * backfilling history out of order must not regress current club.
+     */
+    superseded: v.optional(v.boolean()),
+    processedAt: v.number(),
+    sweepId: v.id("fantasyTransferSweeps"),
+  })
+    .index("by_key", ["providerTransferKey"])
+    .index("by_classification", ["classification"])
+    .index("by_player_date", ["providerPlayerId", "transferDate"]),
+
+  /**
+   * One row per sweep run — the pipeline's budget ledger and the cron's
+   * windowing state. The daily sweep windows itself from the latest SUCCEEDED
+   * row (minus an overlap margin; idempotence makes overlap free), so a failed
+   * run widens the next window instead of losing days.
+   */
+  fantasyTransferSweeps: defineTable({
+    kind: v.union(v.literal("backfill"), v.literal("cron")),
+    status: v.union(
+      v.literal("running"),
+      v.literal("succeeded"),
+      v.literal("failed"),
+    ),
+    /** Inclusive lower bound (YYYY-MM-DD) on transfer dates this run swept. */
+    windowFromDay: v.string(),
+    startedAt: v.number(),
+    finishedAt: v.optional(v.number()),
+    /** The printed call plan's projection, and what was actually spent. */
+    callsPlanned: v.number(),
+    callsMade: v.optional(v.number()),
+    /** Provider's own remaining-today count after the run's last request. */
+    dailyRemaining: v.optional(v.union(v.number(), v.null())),
+    counts: v.optional(
+      v.object({
+        internal: v.number(),
+        incomingKnown: v.number(),
+        incomingNew: v.number(),
+        outgoing: v.number(),
+        unresolved: v.number(),
+        /** Records re-seen (already stored) — the idempotence evidence. */
+        alreadySeen: v.number(),
+        superseded: v.number(),
+      }),
+    ),
+    error: v.optional(v.string()),
+  }).index("by_status", ["status"]),
 });

@@ -630,8 +630,10 @@ export const gameweekAudit = internalQuery({
 
 // --------------------------------------------------------------- fetch layer
 
-/** Feed position strings → our four slot roles. Unknown/absent maps to null. */
-function mapFeedPosition(raw: string | null | undefined): "GK" | "DEF" | "MID" | "ATT" | null {
+/** Feed position strings → our four slot roles. Unknown/absent maps to null.
+ *  Exported for FW-T1's transfer pipeline, which creates players off the same
+ *  squad feed and must map positions identically or drift from bootstrap. */
+export function mapFeedPosition(raw: string | null | undefined): "GK" | "DEF" | "MID" | "ATT" | null {
   switch ((raw ?? "").toLowerCase()) {
     case "goalkeeper":
       return "GK";

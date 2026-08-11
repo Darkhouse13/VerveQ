@@ -53,6 +53,14 @@ crons.cron(
   internal.fantasyCourt.resolveDueClaims,
   {},
 );
+// Transfer ingestion (FW-T1): daily sweep of all 96 covered clubs' transfer
+// records, windowed since the last successful run (3-day overlap; record
+// identity makes overlap a no-op). 96 base calls/day + 1 per destination club
+// with unknown incoming players, against the same 7,500/day cap the ~480/day
+// fixture sync draws on; the action prints its call plan first and refuses a
+// run projecting past 500. 04:40 UTC sits clear of the :00/:15/:30/:45 sync
+// bursts and of the 00:xx daily jobs. Runs year-round — January exists.
+crons.daily("fantasy-transfer-sweep", { hourUTC: 4, minuteUTC: 40 }, internal.fantasyTransfers.sweepTransfers, {});
 // FW-3 draft rooms: expires dead lobbies and re-drives any room whose
 // scheduled hop was lost. Every action is a guarded no-op on a healthy room,
 // so the tight interval buys stall-recovery, not load.

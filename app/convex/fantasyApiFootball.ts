@@ -282,6 +282,44 @@ export async function fetchFixturePlayers(
   return client.get<FeedFixturePlayers[]>("/fixtures/players", { fixture: providerFixtureId });
 }
 
+// ────────────────────────────── transfer reads (FW-T1, additive to this client)
+//
+// One endpoint, queried per team. The response is the transfer HISTORY of every
+// player the team was ever party to — not a windowed list — so the caller
+// filters by date and by whether either side is a covered club. The endpoint
+// does not page (no `page` parameter exists on /transfers), and it carries NO
+// transfer id: identity is (player, date, from-team, to-team), which is what
+// the ingestion keys on.
+//
+// Every field except the player id has been observed null on live data at some
+// point in this feed's history, so the shape below trusts nothing.
+
+export interface FeedTransferMove {
+  /** YYYY-MM-DD, or null on malformed rows. */
+  date: string | null;
+  /** "€ 25.5m" | "Loan" | "Free" | "N/A" | null — a label, not an enum. */
+  type: string | null;
+  teams: {
+    in: { id: number | null; name: string | null } | null;
+    out: { id: number | null; name: string | null } | null;
+  } | null;
+}
+
+export interface FeedTransferEntry {
+  player: { id: number | null; name: string | null };
+  /** Provider's own last-updated stamp for this player's history. */
+  update: string;
+  transfers: FeedTransferMove[] | null;
+}
+
+/** Every transfer record involving one team. 1 request; the feed does not page it. */
+export async function fetchTeamTransfers(
+  client: ApiFootballClient,
+  teamId: string | number,
+): Promise<FeedTransferEntry[]> {
+  return client.get<FeedTransferEntry[]>("/transfers", { team: teamId });
+}
+
 /**
  * Timed events for one fixture. 1 request.
  *

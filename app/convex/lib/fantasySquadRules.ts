@@ -197,11 +197,25 @@ export function validateSlotFormation(slots: readonly SlotSnapshot[]): RuleResul
  *
  * Counts every filled slot, locked or not: the cap is a property of the squad
  * of 13, and a locked slot is still one of the 13.
+ *
+ * ── Grandfathering (FW-T1, owner ruling R2) ──
+ *
+ * Clubs MOVE under a squad now that transfer ingestion updates players'
+ * clubs: a squad built legally can wake up holding 4 from one club without
+ * any edit having happened. The ruling: "a transfer that pushes a squad over
+ * the club cap does NOT invalidate it; the cap applies at mutation time
+ * only." `grandfathered` carries the PRE-EDIT per-club counts, and a club's
+ * allowance is max(cap, its pre-edit count) — so an edit may never RAISE an
+ * over-cap club's count (a new 4th-from-one-club is still blocked, and a 4th
+ * of the grandfathered club would be a 5th, also blocked), while an edit that
+ * leaves it alone, or reduces it, passes. Without the baseline (createSquad,
+ * and every caller predating FW-T1) the strict cap binds unchanged.
  */
 export function validateClubCap(
   slots: readonly SlotSnapshot[],
   playersById: ReadonlyMap<string, PlayerSnapshot>,
   favoriteClub: string | null,
+  grandfathered?: ReadonlyMap<string, number>,
 ): RuleResult {
   const perClub = new Map<string, number>();
 
@@ -220,7 +234,8 @@ export function validateClubCap(
   const violations: Violation[] = [];
   for (const [clubId, count] of perClub) {
     if (favoriteClub !== null && clubId === favoriteClub) continue; // exempt
-    if (count > PER_CLUB_CAP) {
+    const allowed = Math.max(PER_CLUB_CAP, grandfathered?.get(clubId) ?? 0);
+    if (count > allowed) {
       violations.push({
         code: "club_cap",
         message: `At most ${PER_CLUB_CAP} players from one club (${clubId} has ${count}). Your favorite club is exempt.`,
@@ -229,6 +244,27 @@ export function validateClubCap(
   }
 
   return violations.length === 0 ? OK : { ok: false, violations };
+}
+
+/**
+ * The pre-edit per-club counts `validateClubCap` grandfathers against.
+ *
+ * A prior slot whose player row is missing from `playersById` contributes
+ * nothing: the baseline is a tolerance, and the safe failure is LESS
+ * tolerance, not a thrown error on data the edit never touched.
+ */
+export function clubCountsOf(
+  slots: readonly SlotSnapshot[],
+  playersById: ReadonlyMap<string, PlayerSnapshot>,
+): Map<string, number> {
+  const perClub = new Map<string, number>();
+  for (const slot of slots) {
+    if (slot.playerId === null) continue;
+    const player = playersById.get(slot.playerId);
+    if (player === undefined) continue;
+    perClub.set(player.clubId, (perClub.get(player.clubId) ?? 0) + 1);
+  }
+  return perClub;
 }
 
 // ── budget ──
@@ -322,6 +358,12 @@ export function validateBudget(
  * Every invariant that must hold after any mutation. The mutations call this
  * on the POST-EDIT slot set, so an edit is accepted only if the squad it
  * produces is legal — there is no such thing as a transiently illegal squad.
+ *
+ * `priorSlots` is the PRE-EDIT slot set, and exists for exactly one rule: the
+ * club-cap grandfather (FW-T1 R2 — see validateClubCap). Callers validating a
+ * squad that has no prior state (createSquad) omit it and get the strict cap.
+ * `playersById` must then cover the players of BOTH sets — a swap's outgoing
+ * player is part of the baseline even though no post-edit slot names him.
  */
 export function validateSquad(args: {
   slots: readonly SlotSnapshot[];
@@ -330,13 +372,19 @@ export function validateSquad(args: {
   context: SquadContext;
   isLocked: (slot: SlotSnapshot) => boolean;
   budgetLimit?: number;
+  priorSlots?: readonly SlotSnapshot[];
 }): RuleResult {
-  const { slots, playersById, favoriteClub, context, isLocked, budgetLimit } = args;
+  const { slots, playersById, favoriteClub, context, isLocked, budgetLimit, priorSlots } = args;
 
   const structural = combine(
     validateSquadShape(slots),
     validateSlotFormation(slots),
-    validateClubCap(slots, playersById, favoriteClub),
+    validateClubCap(
+      slots,
+      playersById,
+      favoriteClub,
+      priorSlots === undefined ? undefined : clubCountsOf(priorSlots, playersById),
+    ),
   );
 
   // Crew rooms have no budget at all (DRAFT_ROOM §Room parameters), so an
