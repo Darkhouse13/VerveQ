@@ -413,6 +413,68 @@ export const EDITIONS: Edition[] = [
       { id: "cp-kim-min-jae", tier: "IMPOSSIBLE", answer: "KIM MIN-JAE", clubs: ["Gyeongju KHNP","Jeonbuk Hyundai Motors","Beijing Guoan","Fenerbahçe","Napoli","Bayern Munich"] },
     ],
   },
+  // ---- THE DUGOUT (2026-08-11) — first deck cut after the A/B reported ----
+  //
+  // GRID_7 here is the STANDING PACE, not the control arm. The batch-2 cadence
+  // A/B reported and the 5.50s arm is retired (docs/DECISIONS.md, 2026-08-10),
+  // so 7.00s is now what a deck takes because it WON, not because it is the
+  // default. `batch: 2` is unchanged and means the surface set — score rail,
+  // follow card, `?/9` — which this deck inherits whole. No campaign.
+  //
+  // THE THEME IS A REVEAL, NOT A CATEGORY. `number-ones` established that a
+  // positional deck reads as a different puzzle even though the card never
+  // states a position. This one leans on that twice over: the card shows only
+  // clubs the man PLAYED for, so "he was a defender" is what you solve and "he
+  // became a manager" is what you're left holding. Nothing on screen says
+  // either. The rail is still just clubs and a name.
+  //
+  // THE BAR, and it is the casting constraint that actually bound this deck:
+  //   • primary position defender (CB/FB/WB) for the MAJORITY of the senior
+  //     playing career, and
+  //   • PERMANENT first-team manager of a top-5-league club or a senior
+  //     national team — no caretakers, no interims, no youth or B-team, no
+  //     assistant spells.
+  // Ambiguity on either clause excludes, and that cost the two biggest names
+  // available. Koeman and Southgate are both classified "defender AND
+  // midfielder" at source; a deck whose entire premise is "every one of these
+  // was a defender" cannot carry a rung that needs an argument to stand up.
+  // Where a man has both a caretaker and a permanent spell, it is the permanent
+  // one that qualified him — Sagnol on Bordeaux and not his 2017 Bayern week,
+  // Pearce on Manchester City and not Forest.
+  //
+  // PATHS: six are copied whole from football_career_paths.json; four (Coleman,
+  // Bilić, Sylvinho, Tuchel) are not in that dataset and are cast here directly,
+  // which the rung type already allows since ladder-long resolves clubs off the
+  // Edition and never off the dataset. Two clubs are deliberately ABSENT because
+  // they carry no senior appearances — Coleman's Manchester City (YTS trainee,
+  // 0 apps) and Tuchel's Augsburg (released at 19, never a first-team player).
+  // Putting either on a card would make the puzzle unsolvable AND untrue.
+  {
+    slug: "dugout",
+    title: "THE DUGOUT",
+    batch: 2,
+    grid: GRID_7,
+    rungs: [
+      { id: "cp-vincent-kompany", tier: "EASY", answer: "KOMPANY", clubs: ["Anderlecht","Hamburger SV","Manchester City","Anderlecht"] },
+      { id: "cp-willy-sagnol", tier: "EASY", answer: "SAGNOL", clubs: ["Saint-Étienne","Monaco","Bayern Munich"] },
+      { id: "cp-chris-coleman", tier: "MEDIUM", answer: "COLEMAN", clubs: ["Swansea City","Crystal Palace","Blackburn Rovers","Fulham"] },
+      { id: "cp-slaven-bilic", tier: "MEDIUM", answer: "BILIĆ", clubs: ["Hajduk Split","Karlsruher SC","West Ham United","Everton","Hajduk Split"] },
+      { id: "cp-sylvinho", tier: "MEDIUM", answer: "SYLVINHO", clubs: ["Corinthians","Arsenal","Celta Vigo","Barcelona","Manchester City"] },
+      { id: "cp-steve-bruce", tier: "HARD", answer: "BRUCE", clubs: ["Gillingham","Norwich City","Manchester United","Birmingham City","Sheffield United"] },
+      { id: "cp-frank-de-boer", tier: "HARD", answer: "DE BOER", clubs: ["Ajax","Barcelona","Galatasaray","Rangers","Al-Rayyan","Al-Shamal"] },
+      { id: "cp-stuart-pearce", tier: "HARD", answer: "PEARCE", clubs: ["Wealdstone","Coventry City","Nottingham Forest","Newcastle United","West Ham United","Manchester City"] },
+      // Two clubs, both unplaceable, and the shortest path in the deck — the
+      // card gives you almost nothing, which is the point: the name is enormous
+      // and the career it came out of is not. Answered on screen, per the law:
+      // TUCHEL is a name a casual fan knows on sight even if the clubs aren't.
+      { id: "cp-thomas-tuchel", tier: "IMPOSSIBLE", answer: "TUCHEL", clubs: ["Stuttgarter Kickers","SSV Ulm"] },
+      // WITHHELD — an Abruzzo village side and a Serie C club into Inter, Lyon
+      // and Juventus. Textbook rung 10: the head is unguessable, the tail is
+      // famous enough that the answer is reachable, and the name is one a
+      // casual fan can actually supply (the 2006 final penalty).
+      { id: "cp-fabio-grosso", tier: "IMPOSSIBLE", answer: "GROSSO", clubs: ["Renato Curi Angolana","Chieti","Perugia","Palermo","Inter Milan","Lyon","Juventus"] },
+    ],
+  },
 ];
 
 export const editionBySlug = (slug: string): Edition => {
