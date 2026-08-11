@@ -545,6 +545,7 @@ export default function DraftRoomScreen() {
 
   return (
     <ShellLayout
+      theme="theme-weekend"
       title={room?.crew?.name ?? t("weekend.draftTitle", { defaultValue: "Draft room" })}
       back
       onBack={onBackToCrew}

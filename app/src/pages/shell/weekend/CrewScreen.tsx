@@ -116,7 +116,7 @@ export default function CrewScreen() {
 
   if (crew === undefined || (crew === null && joinFailed === null)) {
     return (
-      <ShellLayout title={t("weekend.crewTitle", { defaultValue: "Crew" })} back scroll>
+      <ShellLayout theme="theme-weekend" title={t("weekend.crewTitle", { defaultValue: "Crew" })} back scroll>
         <NeoCard className="text-center py-6 md:max-w-md md:mx-auto">
           <p className="text-sm text-muted-foreground">
             {t("common.loading", { defaultValue: "Loading…" })}
@@ -128,7 +128,7 @@ export default function CrewScreen() {
 
   if (crew === null) {
     return (
-      <ShellLayout title={t("weekend.crewTitle", { defaultValue: "Crew" })} back scroll>
+      <ShellLayout theme="theme-weekend" title={t("weekend.crewTitle", { defaultValue: "Crew" })} back scroll>
         <NeoCard color="destructive" className="text-center py-6 md:max-w-md md:mx-auto">
           <p className="font-heading font-bold">{joinFailed}</p>
           <NeoButton
@@ -149,6 +149,7 @@ export default function CrewScreen() {
 
   return (
     <ShellLayout
+      theme="theme-weekend"
       title={crew.name}
       back
       onBack={() => navigate(SHELL_ROUTES.weekendCrews)}

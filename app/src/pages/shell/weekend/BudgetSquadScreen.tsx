@@ -488,7 +488,7 @@ export function PlayerPickerDialog({
 
   return (
     <Dialog open={open} onOpenChange={(next) => !next && onClose()}>
-      <DialogContent className="neo-border neo-shadow-lg rounded-xl bg-background max-w-sm mx-auto max-h-[85dvh] flex flex-col">
+      <DialogContent className="theme-weekend neo-border neo-shadow-lg rounded-xl bg-background max-w-sm mx-auto max-h-[85dvh] flex flex-col">
         <DialogTitle className="font-heading font-bold text-lg">
           {t("weekend.pickFor", {
             defaultValue: "Pick for the {{role}} slot",
@@ -728,7 +728,7 @@ export function SquadView({
         open={sheetSlot !== null}
         onOpenChange={(next) => !next && setSheetSlot(null)}
       >
-        <DialogContent className="neo-border neo-shadow-lg rounded-xl bg-background max-w-sm mx-auto">
+        <DialogContent className="theme-weekend neo-border neo-shadow-lg rounded-xl bg-background max-w-sm mx-auto">
           {sheet !== undefined && sheet.playerId !== null && (
             <>
               <DialogTitle className="font-heading font-bold text-lg pr-8">
@@ -984,6 +984,7 @@ export default function BudgetSquadScreen() {
 
   return (
     <ShellLayout
+      theme="theme-weekend"
       title={t("weekend.budgetTitle", { defaultValue: "Your weekend 13" })}
       back
       onBack={() => navigate(SHELL_ROUTES.compete)}
@@ -1124,7 +1125,7 @@ export default function BudgetSquadScreen() {
               open={confirmShape !== null}
               onOpenChange={(next) => !next && setConfirmShape(null)}
             >
-              <DialogContent className="neo-border neo-shadow-lg rounded-xl bg-background max-w-sm mx-auto">
+              <DialogContent className="theme-weekend neo-border neo-shadow-lg rounded-xl bg-background max-w-sm mx-auto">
                 <DialogTitle className="font-heading font-bold text-lg">
                   {t("weekend.shapeConfirmTitle", {
                     defaultValue: "Switch to {{label}}?",

@@ -212,6 +212,7 @@ export default function VoteScreen() {
 
   return (
     <ShellLayout
+      theme="theme-weekend"
       title={t("weekend.voteTitle", { defaultValue: "The eye test" })}
       back
       onBack={() => navigate(SHELL_ROUTES.compete)}

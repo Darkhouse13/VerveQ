@@ -234,3 +234,34 @@ Append-only. One entry per loop iteration: objective, what landed
   sheet (11 tests, including a new chip-state contract).
 - Parked: none.
 - Next: O3 dark-first WEEKEND canvas.
+
+## Iteration 3 — 2026-08-11 — O3 dark-first WEEKEND canvas: DONE
+
+- Objective: O3. COMPLETE.
+- `.theme-weekend` token block (index.css), applied via ShellLayout's
+  existing `theme` prop on all 10 WEEKEND layout sites plus the five
+  portaled DialogContents (portals leave the themed container, so the
+  class re-enters it). Canvas 0 0% 5% (#0d0d0d), cream ink, lime
+  #c6ff00 in BOTH the primary and accent slots, warm-light borders,
+  lime offset shadows. Same Neo primitives throughout — no component
+  changed, only tokens. Pitch chips got explicit cream fills (they
+  contrast the always-dark turf, not the page theme): cream shirts on
+  dark turf is where the demoted cream now lives, alongside the vivid
+  four-door cards.
+- Zero non-WEEKEND diff PROVEN, not eyeballed: 380px screenshots of
+  Home (/v2), Compete (/compete) and the daily quiz screen
+  (/v2/daily) taken from the pre-change tree (git stash) and the
+  themed tree against the same DEV backend — pixel-compared with PIL,
+  all three identical. Evidence committed under
+  app/e2e/artifacts/fw-polish/ (o3-before-*/o3-after-*).
+- Visual smoke on DEV (simloop_-owned, purged after: purgeUiRun
+  deleted 14 rows + 1 user): hub with "This weekend: La Liga" (the
+  D4 line working against a genuinely partial GW1), create view with
+  chips, empty pitch, picker (eligible-only default, Show all,
+  league line), manned pitch. Screenshots committed same directory.
+- DEV convex updated (`npx convex dev --once`) so getWeekendLeagues
+  answers on DEV — prod needs the same one deploy at O6, BEFORE the
+  frontend push.
+- Check green 139 files.
+- Parked: none.
+- Next: O4 copy pass.

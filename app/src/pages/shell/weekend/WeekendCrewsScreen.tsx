@@ -66,6 +66,7 @@ export default function WeekendCrewsScreen() {
 
   return (
     <ShellLayout
+      theme="theme-weekend"
       title={t("weekend.crewsTitle", { defaultValue: "Crews" })}
       subtitle={t("weekend.crewsSubtitle", {
         defaultValue: "Draft a team for THE weekend with your crew.",

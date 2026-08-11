@@ -138,6 +138,7 @@ export default function CrewSheetScreen() {
 
   return (
     <ShellLayout
+      theme="theme-weekend"
       title={t("weekend.sheetTitle", { defaultValue: "Your team sheet" })}
       back
       onBack={() => navigate(SHELL_ROUTES.weekendCrews)}
@@ -210,7 +211,7 @@ export default function CrewSheetScreen() {
               open={confirmShape !== null}
               onOpenChange={(next) => !next && setConfirmShape(null)}
             >
-              <DialogContent className="neo-border neo-shadow-lg rounded-xl bg-background max-w-sm mx-auto">
+              <DialogContent className="theme-weekend neo-border neo-shadow-lg rounded-xl bg-background max-w-sm mx-auto">
                 <DialogTitle className="font-heading font-bold text-lg">
                   {t("weekend.shapeConfirmTitle", {
                     defaultValue: "Switch to {{label}}?",

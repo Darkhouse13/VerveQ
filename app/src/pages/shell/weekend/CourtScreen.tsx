@@ -198,7 +198,7 @@ export function FileClaimDialog({
 
   return (
     <Dialog open={open} onOpenChange={(next) => !next && onClose()}>
-      <DialogContent className="neo-border neo-shadow-lg rounded-xl bg-background max-w-sm mx-auto max-h-[85dvh] flex flex-col">
+      <DialogContent className="theme-weekend neo-border neo-shadow-lg rounded-xl bg-background max-w-sm mx-auto max-h-[85dvh] flex flex-col">
         <DialogTitle className="font-heading font-bold text-lg">
           {t("weekend.fileClaim", { defaultValue: "File a claim" })}
         </DialogTitle>
@@ -361,6 +361,7 @@ export default function CourtScreen() {
 
   return (
     <ShellLayout
+      theme="theme-weekend"
       title={t("weekend.courtTitle", { defaultValue: "Reclamation court" })}
       back
       onBack={() => navigate(SHELL_ROUTES.compete)}

@@ -148,9 +148,10 @@ export function SlotChip({
       onClick={onTap}
       className={cn(
         "w-[64px] min-h-[58px] rounded-md px-1 py-1 flex flex-col items-center justify-center gap-0 text-center transition-all select-none",
-        // Empty chips contrast the PITCH (always dark), not the page canvas.
+        // Chips contrast the PITCH (always dark), independent of the page
+        // theme: cream shirts on dark turf, dark chip ink, lime mini-shadow.
         filled
-          ? "neo-border neo-shadow-sm bg-card text-card-foreground"
+          ? "border-2 border-[hsl(0_0%_7%)] neo-shadow-sm bg-[hsl(30_100%_97%)] text-[hsl(0_0%_7%)]"
           : "border-2 border-dashed border-[hsl(75_100%_55%/0.55)] text-[hsl(30_100%_97%/0.92)] bg-[hsl(0_0%_100%/0.04)]",
         swapArmed && "bg-yellow text-yellow-foreground ring-2 ring-ring",
         state === "locked" && "opacity-85",

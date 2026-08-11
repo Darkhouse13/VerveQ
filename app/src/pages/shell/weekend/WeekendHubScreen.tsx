@@ -74,6 +74,7 @@ export default function WeekendHubScreen() {
 
   return (
     <ShellLayout
+      theme="theme-weekend"
       title={t("weekend.hubTitle", { defaultValue: "The Weekend" })}
       subtitle={t("weekend.hubSubtitle", {
         defaultValue: "Draft the whole European football weekend.",
