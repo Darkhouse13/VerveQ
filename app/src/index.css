@@ -155,6 +155,25 @@
     @apply neo-border neo-shadow rounded-lg;
   }
 
+  /*
+   * THE WEEKEND pitch (FW-POLISH O2): a stylized football pitch drawn with
+   * CSS only — striped turf via repeating-linear-gradient, markings as
+   * bordered divs in PitchView.tsx. Tokenized (--pitch-*) so the WEEKEND
+   * theme owns the palette in one place; deliberately dark regardless of the
+   * surrounding canvas — the pitch IS the mode's identity anchor.
+   */
+  .weekend-pitch {
+    --pitch-line: 75 100% 55% / 0.4;
+    background-color: hsl(140 30% 11%);
+    background-image: repeating-linear-gradient(
+      to bottom,
+      hsl(140 30% 11%) 0,
+      hsl(140 30% 11%) 44px,
+      hsl(140 28% 13.5%) 44px,
+      hsl(140 28% 13.5%) 88px
+    );
+  }
+
   /* Big-desktop canvas backdrop (≥1440px): a faint dot grid in the foreground
      ink so the space around the height-bounded shell reads as a designed
      surface rather than empty background. Width-gated so phone/tablet/laptop

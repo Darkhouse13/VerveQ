@@ -50,6 +50,7 @@ import { NeoCard } from "@/components/neo/NeoCard";
 import { NeoButton } from "@/components/neo/NeoButton";
 import { NeoBadge } from "@/components/neo/NeoBadge";
 import { NeoInput } from "@/components/neo/NeoInput";
+import { PitchView } from "@/components/weekend/PitchView";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { ShellLayout } from "@/components/shell/ShellLayout";
 import { SHELL_ROUTES } from "@/lib/shellRoutes";
@@ -345,125 +346,12 @@ export function BudgetBar({ budget }: { budget: NonNullable<BudgetSquad["budget"
   );
 }
 
-// ── slot rows ──
+// ── slot detail (the sheet behind a chip tap) ──
 
 /** The nominal-position mismatch hint: a browsing warning, never a block —
  *  all-positions-eligible, the ×0.75 dampener prices the risk at scoring. */
 function nominalMismatch(slot: BudgetSlot, nominal: SlotRole | undefined): boolean {
   return nominal !== undefined && nominal !== slot.slotRole;
-}
-
-export function SlotRow({
-  slot,
-  nominalPosition,
-  score,
-  swapArmed,
-  editable,
-  playersFixed = false,
-  onAssign,
-  onClear,
-  onSwap,
-}: {
-  slot: BudgetSlot;
-  nominalPosition: SlotRole | undefined;
-  score: SlotScoreRow | undefined;
-  swapArmed: boolean;
-  editable: boolean;
-  /** Crew sheets: the 13 are the 13 — arrange, never re-man (FW-3). */
-  playersFixed?: boolean;
-  onAssign: () => void;
-  onClear: () => void;
-  onSwap: () => void;
-}) {
-  const { t } = useTranslation();
-  const filled = slot.playerId !== null;
-  const price = slot.locked ? (slot.committedPrice ?? slot.playerPrice) : slot.playerPrice;
-
-  return (
-    <NeoCard
-      color={swapArmed ? "yellow" : "default"}
-      className="flex items-center justify-between py-2 gap-2"
-    >
-      <div className="flex items-center gap-2 min-w-0">
-        <NeoBadge color={slot.isFinisher ? "pink" : "muted"} size="sm" className="shrink-0">
-          {slot.isFinisher ? `F·${slot.slotRole}` : slot.slotRole}
-        </NeoBadge>
-        <div className="min-w-0">
-          {filled ? (
-            <>
-              <p className="font-heading font-bold text-sm truncate">
-                {slot.playerName ?? "…"}
-                {slot.locked && (
-                  <Lock size={11} strokeWidth={3} className="inline ml-1 -mt-0.5" />
-                )}
-              </p>
-              {nominalMismatch(slot, nominalPosition) && (
-                <p className="text-[10px] font-mono uppercase text-muted-foreground">
-                  {t("weekend.nominalMismatch", {
-                    defaultValue: "listed {{pos}} — ×0.75 risk if the verdict agrees",
-                    pos: nominalPosition,
-                  })}
-                </p>
-              )}
-            </>
-          ) : (
-            <p className="text-sm text-muted-foreground">
-              {t("weekend.emptySlot", { defaultValue: "Empty — scores 0" })}
-            </p>
-          )}
-        </div>
-      </div>
-
-      <div className="flex items-center gap-2 shrink-0">
-        {score !== undefined && score.state !== "empty" ? (
-          <SlotScoreCell score={score} />
-        ) : (
-          filled && (
-            <span className="font-mono font-bold tabular-nums">
-              {price === null ? "—" : price.toFixed(1)}
-            </span>
-          )
-        )}
-        {editable && !slot.locked && (
-          <>
-            <NeoButton
-              variant="ghost"
-              size="sm"
-              aria-label={t("weekend.moveSlot", { defaultValue: "Move" })}
-              onClick={onSwap}
-            >
-              <ArrowLeftRight size={14} strokeWidth={3} />
-            </NeoButton>
-            {!playersFixed &&
-              (filled ? (
-                <NeoButton
-                  variant="ghost"
-                  size="sm"
-                  aria-label={t("weekend.clearSlot", { defaultValue: "Clear" })}
-                  onClick={onClear}
-                >
-                  <X size={14} strokeWidth={3} />
-                </NeoButton>
-              ) : (
-                <NeoButton
-                  variant="primary"
-                  size="sm"
-                  aria-label={t("weekend.fillSlot", { defaultValue: "Add" })}
-                  onClick={onAssign}
-                >
-                  <Plus size={14} strokeWidth={3} />
-                </NeoButton>
-              ))}
-          </>
-        )}
-        {editable && slot.locked && filled && (
-          <NeoBadge color="muted" size="sm">
-            {t("weekend.lockedBadge", { defaultValue: "Locked" })}
-          </NeoBadge>
-        )}
-      </div>
-    </NeoCard>
-  );
 }
 
 /** FW-4 vocabulary, verbatim: awaiting is never 0.0; the honest zero says why. */
@@ -741,7 +629,7 @@ export function PlayerPickerDialog({
   );
 }
 
-// ── squad view ──
+// ── squad view (the pitch, D2) ──
 
 export function SquadView({
   squad,
@@ -766,31 +654,46 @@ export function SquadView({
   onSwap: (slotIndex: number) => void;
 }) {
   const { t } = useTranslation();
+  /** The chip whose detail sheet is open. */
+  const [sheetSlot, setSheetSlot] = useState<number | null>(null);
+
   const scoreBySlot = useMemo(() => {
     const map = new Map<number, SlotScoreRow>();
     for (const row of score?.slots ?? []) map.set(row.slotIndex, row);
     return map;
   }, [score]);
 
-  const xi = squad.slots.filter((s) => !s.isFinisher);
-  const finishers = squad.slots.filter((s) => s.isFinisher);
-
-  const renderSlot = (slot: BudgetSlot) => (
-    <SlotRow
-      key={slot.slotIndex}
-      slot={slot}
-      nominalPosition={
-        slot.playerId === null ? undefined : nominalByPlayer.get(slot.playerId)
-      }
-      score={scoreBySlot.get(slot.slotIndex)}
-      swapArmed={swapSource === slot.slotIndex}
-      editable={editable}
-      playersFixed={playersFixed}
-      onAssign={() => onAssign(slot.slotIndex)}
-      onClear={() => onClear(slot.slotIndex)}
-      onSwap={() => onSwap(slot.slotIndex)}
-    />
+  const slotByIndex = useMemo(
+    () => new Map(squad.slots.map((s) => [s.slotIndex, s])),
+    [squad.slots],
   );
+
+  // Tap grammar: an armed swap consumes the tap (parent toggles/swaps); an
+  // open slot goes straight to the picker; a manned slot opens his sheet.
+  const handleTap = (slotIndex: number) => {
+    const slot = slotByIndex.get(slotIndex);
+    if (slot === undefined) return;
+    if (swapSource !== null) {
+      onSwap(slotIndex);
+      return;
+    }
+    if (slot.playerId === null) {
+      if (editable && !slot.locked && !playersFixed) onAssign(slotIndex);
+      return;
+    }
+    setSheetSlot(slotIndex);
+  };
+
+  const sheet = sheetSlot === null ? undefined : slotByIndex.get(sheetSlot);
+  const sheetScore = sheetSlot === null ? undefined : scoreBySlot.get(sheetSlot);
+  const sheetNominal =
+    sheet?.playerId != null ? nominalByPlayer.get(sheet.playerId) : undefined;
+  const sheetPrice =
+    sheet === undefined
+      ? null
+      : sheet.locked
+        ? (sheet.committedPrice ?? sheet.playerPrice)
+        : sheet.playerPrice;
 
   // The score header appears once something is resolved or awaited — an
   // untouched squad before the weekend has no number worth headlining.
@@ -806,24 +709,108 @@ export function SquadView({
         <NeoCard color="yellow" className="py-2 text-center">
           <p className="text-[11px] font-bold">
             {t("weekend.swapPrompt", {
-              defaultValue: "Tap another slot to swap positions — or tap ⇄ again to cancel.",
+              defaultValue: "Now tap where he goes — or tap him again to leave it.",
             })}
           </p>
         </NeoCard>
       )}
 
-      <div>
-        <p className="font-mono text-[11px] font-bold uppercase tracking-[0.16em] text-muted-foreground mb-2">
-          {t("weekend.startingXi", { defaultValue: "Starting XI" })}
-        </p>
-        <div className="flex flex-col gap-1.5">{xi.map(renderSlot)}</div>
-      </div>
-      <div>
-        <p className="font-mono text-[11px] font-bold uppercase tracking-[0.16em] text-muted-foreground mb-2">
-          {t("weekend.finishers", { defaultValue: "Finishers" })}
-        </p>
-        <div className="flex flex-col gap-1.5">{finishers.map(renderSlot)}</div>
-      </div>
+      <PitchView
+        slots={squad.slots}
+        scoreBySlot={scoreBySlot}
+        nominalByPlayer={nominalByPlayer}
+        editable={editable}
+        swapSource={swapSource}
+        onSlotTap={handleTap}
+      />
+
+      <Dialog
+        open={sheetSlot !== null}
+        onOpenChange={(next) => !next && setSheetSlot(null)}
+      >
+        <DialogContent className="neo-border neo-shadow-lg rounded-xl bg-background max-w-sm mx-auto">
+          {sheet !== undefined && sheet.playerId !== null && (
+            <>
+              <DialogTitle className="font-heading font-bold text-lg pr-8">
+                {sheet.playerName ?? "…"}
+              </DialogTitle>
+              <div className="flex items-center gap-2 flex-wrap">
+                <NeoBadge color={sheet.isFinisher ? "pink" : "muted"} size="sm">
+                  {sheet.isFinisher ? `F·${sheet.slotRole}` : sheet.slotRole}
+                </NeoBadge>
+                {sheet.locked && (
+                  <NeoBadge color="muted" size="sm">
+                    {t("weekend.lockedBadge", { defaultValue: "Locked" })}
+                  </NeoBadge>
+                )}
+                {sheetPrice !== null && (
+                  <span className="font-mono font-bold tabular-nums text-sm">
+                    {sheetPrice.toFixed(1)}
+                  </span>
+                )}
+              </div>
+              {nominalMismatch(sheet, sheetNominal) && (
+                <p className="text-[11px] font-mono uppercase text-muted-foreground">
+                  {t("weekend.nominalMismatch", {
+                    defaultValue: "listed {{pos}} — ×0.75 risk if the verdict agrees",
+                    pos: sheetNominal,
+                  })}
+                </p>
+              )}
+              {sheetScore !== undefined && sheetScore.state !== "empty" && (
+                <div className="flex items-center justify-between">
+                  <span className="font-mono text-[11px] font-bold uppercase tracking-[0.16em] text-muted-foreground">
+                    {t("weekend.thisGw", { defaultValue: "This gameweek" })}
+                  </span>
+                  <SlotScoreCell score={sheetScore} />
+                </div>
+              )}
+              {editable && !sheet.locked ? (
+                <div className="flex gap-2">
+                  <NeoButton
+                    variant="outline"
+                    size="sm"
+                    className="flex-1"
+                    aria-label={t("weekend.moveSlot", { defaultValue: "Move" })}
+                    onClick={() => {
+                      const index = sheetSlot;
+                      setSheetSlot(null);
+                      if (index !== null) onSwap(index);
+                    }}
+                  >
+                    <ArrowLeftRight size={14} strokeWidth={3} />
+                    {t("weekend.moveSlot", { defaultValue: "Move" })}
+                  </NeoButton>
+                  {!playersFixed && (
+                    <NeoButton
+                      variant="danger"
+                      size="sm"
+                      className="flex-1"
+                      aria-label={t("weekend.clearSlot", { defaultValue: "Clear" })}
+                      onClick={() => {
+                        const index = sheetSlot;
+                        setSheetSlot(null);
+                        if (index !== null) onClear(index);
+                      }}
+                    >
+                      <X size={14} strokeWidth={3} />
+                      {t("weekend.clearSlot", { defaultValue: "Clear" })}
+                    </NeoButton>
+                  )}
+                </div>
+              ) : (
+                sheet.locked && (
+                  <p className="text-[11px] text-muted-foreground">
+                    {t("weekend.lockedNote", {
+                      defaultValue: "His match has kicked off — this one's played.",
+                    })}
+                  </p>
+                )
+              )}
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

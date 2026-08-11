@@ -292,8 +292,8 @@ describe("budget squad screen — formation editable after confirmation (FW-POLI
   });
 });
 
-describe("budget squad screen — awaiting vs zero (O1e)", () => {
-  it("renders awaiting as words, the honest zero as a labelled 0.0, never alike", async () => {
+describe("budget squad screen — awaiting vs zero (O1e, on the pitch)", () => {
+  it("renders awaiting without a number, the honest zero as a labelled 0.0, never alike", async () => {
     queryMock.results[SQUAD_QUERY] = squadWith([
       slot({
         slotIndex: 0,
@@ -317,13 +317,65 @@ describe("budget squad screen — awaiting vs zero (O1e)", () => {
 
     renderScreen();
 
-    // The awaiting slot renders the words.
-    expect(await screen.findByText("awaiting data")).toBeInTheDocument();
-    // The honest zero renders AS 0.0, with its reason attached (FW-4R N5).
-    expect(screen.getByText("0.0")).toBeInTheDocument();
-    expect(screen.getByText("did not appear")).toBeInTheDocument();
+    // The awaiting chip carries NO number — "…" only (FW-4R N5).
+    const awaitingChip = await screen.findByTestId("pitch-slot-0");
+    expect(awaitingChip).toHaveAttribute("data-chip-state", "awaiting");
+    expect(awaitingChip.textContent).toContain("…");
+    expect(awaitingChip.textContent).not.toContain("0.0");
+    // The honest zero renders AS 0.0, with its DNP marker on the chip.
+    const zeroChip = screen.getByTestId("pitch-slot-1");
+    expect(zeroChip.textContent).toContain("0.0");
+    expect(zeroChip.textContent).toContain("DNP");
     // The total is labelled provisional, from the stamp the server read (N2).
     expect(screen.getByText(/provisional/)).toBeInTheDocument();
+
+    // The detail sheet carries the full FW-4 vocabulary, verbatim.
+    fireEvent.click(zeroChip);
+    expect(await screen.findByText("did not appear")).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Close" }));
+    fireEvent.click(awaitingChip);
+    expect(await screen.findByText("awaiting data")).toBeInTheDocument();
+  });
+
+  it("renders the remaining chip states: empty as a position, mismatch, few votes", async () => {
+    queryMock.results[SQUAD_QUERY] = squadWith([
+      slot({ slotIndex: 0, slotRole: "GK" }),
+      slot({
+        slotIndex: 1,
+        slotRole: "DEF",
+        playerId: "p1",
+        playerName: "Marker Mark",
+        playerPrice: 6,
+        locked: true,
+      }),
+      slot({
+        slotIndex: 2,
+        slotRole: "MID",
+        playerId: "p2",
+        playerName: "Quiet Quinn",
+        playerPrice: 6,
+        locked: true,
+      }),
+    ]);
+    queryMock.results[SCORE_QUERY] = scoreWith([
+      scoreSlot({ slotIndex: 1, points: 4.5, mismatch: true, rowState: "final", version: 2 }),
+      scoreSlot({
+        slotIndex: 2,
+        points: 3,
+        rowState: "final",
+        version: 2,
+        crowdFactor: 0,
+        crowdVotes: 1,
+      }),
+    ]);
+    renderScreen();
+    // An empty slot reads as a position to fill — never a zero-score warning.
+    const empty = await screen.findByTestId("pitch-slot-0");
+    expect(empty).toHaveAttribute("data-chip-state", "empty");
+    expect(empty.textContent).toContain("GK");
+    expect(empty.textContent).not.toMatch(/scores 0/i);
+    expect(screen.getByTestId("pitch-slot-1").textContent).toContain("×0.75");
+    expect(screen.getByTestId("pitch-slot-2").textContent).toContain("few votes");
   });
 
   it("labels a fully settled squad as settled", async () => {
@@ -353,6 +405,8 @@ describe("budget squad screen — edits and locks", () => {
     );
 
     renderScreen();
+    // Chip → sheet → Clear: the server's answer surfaces as the toast.
+    fireEvent.click(await screen.findByTestId("pitch-slot-0"));
     fireEvent.click(await screen.findByLabelText("Clear"));
     await waitFor(() => expect(toastMock.error).toHaveBeenCalled());
     expect(String(toastMock.error.mock.calls[0][0])).toMatch(/locked for this gameweek/);
@@ -372,11 +426,19 @@ describe("budget squad screen — edits and locks", () => {
     ]);
 
     renderScreen();
-    expect(await screen.findByText("Frozen Fred")).toBeInTheDocument();
-    expect(screen.getByText("Locked")).toBeInTheDocument();
-    // One Clear and one Move — Free Frank's only; Frozen Fred offers nothing.
-    expect(screen.getAllByLabelText("Clear")).toHaveLength(1);
-    expect(screen.getAllByLabelText("Move")).toHaveLength(1);
+    // The locked chip states itself, and his sheet offers no Move/Clear.
+    const lockedChip = await screen.findByTestId("pitch-slot-0");
+    expect(lockedChip).toHaveAttribute("data-chip-state", "locked");
+    fireEvent.click(lockedChip);
+    expect(await screen.findByText("Locked")).toBeInTheDocument();
+    expect(screen.queryByLabelText("Clear")).not.toBeInTheDocument();
+    expect(screen.queryByLabelText("Move")).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Close" }));
+
+    // Free Frank's sheet offers both.
+    fireEvent.click(screen.getByTestId("pitch-slot-1"));
+    expect(await screen.findByLabelText("Move")).toBeInTheDocument();
+    expect(screen.getByLabelText("Clear")).toBeInTheDocument();
   });
 
   it("renders the server's budget breakdown, committed and remaining", async () => {

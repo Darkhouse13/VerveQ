@@ -202,3 +202,35 @@ Append-only. One entry per loop iteration: objective, what landed
   exports un-exported) + 139 test files green + build.
 - Parked: none.
 - Next: O2 pitch view.
+
+## Iteration 2 — 2026-08-11 — O2 pitch view: DONE
+
+- Objective: O2. COMPLETE.
+- `PitchView` (components/weekend/PitchView.tsx): CSS-only pitch —
+  striped turf (repeating-linear-gradient), markings as bordered divs
+  (penalty box, six-yard box, arc, centre circle over the halfway
+  line at the foot), goal end at the top per the fantasy convention.
+  No image assets, no crests, no likenesses. XI rows derive from the
+  slots' roles; the two finishers sit on a touchline strip that
+  shares the turf so empty finisher chips read identically.
+- All FW-4 slot states re-rendered at chip size: empty = dashed
+  outline + position + plus (a position to fill — the "Empty —
+  scores 0" row is gone); filled = surname + price; locked = glyph +
+  detail-only sheet; awaiting = "…" and NEVER a number; scored =
+  points with the honest zero AS 0.0 + DNP marker; mismatch = ×0.75
+  marker (or "as {POS}" browsing hint pre-score); insufficient
+  votes = "few votes". The full FW-4 vocabulary (awaiting data /
+  did not appear / crowd % / insufficient votes) renders verbatim in
+  the slot detail sheet one tap away — chip carries the state, sheet
+  carries the sentence. The compact list is fully retired: every
+  state fits, so no fallback was parked.
+- Tap grammar: armed swap consumes the tap; open slot → picker;
+  manned slot → detail sheet with Move / Clear (Clear absent on crew
+  sheets — players fixed). Sheet actions call the same handlers the
+  list used; no mutation paths changed.
+- Both containers (budget squad + crew sheet) render the pitch via
+  the unchanged SquadView contract; SlotRow deleted.
+- Check green 139 files; budget UI suite reworked to drive chips +
+  sheet (11 tests, including a new chip-state contract).
+- Parked: none.
+- Next: O3 dark-first WEEKEND canvas.
