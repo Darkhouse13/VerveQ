@@ -809,16 +809,16 @@ exports[`HomeDrawCard — no layout shift for non-draw users > flag off: Home re
       </main>
     </div>
     <nav
-      class="md:hidden shrink-0 border-t-[3px] border-background/40 bg-foreground pb-[max(0.625rem,env(safe-area-inset-bottom))]"
+      class="md:hidden shrink-0 bg-[hsl(0_0%_7%)] pb-[max(0.625rem,env(safe-area-inset-bottom))]"
     >
       <div
         class="flex max-w-md mx-auto"
       >
         <button
-          class="flex-1 flex flex-col items-center gap-0.5 pt-2.5 transition-colors relative cursor-pointer active:opacity-60 text-accent"
+          class="flex-1 flex flex-col items-center gap-0.5 pt-2.5 transition-colors relative cursor-pointer active:opacity-60 text-[hsl(75_100%_55%)]"
         >
           <div
-            class="absolute top-0 left-1/2 -translate-x-1/2 w-8 h-[3px] bg-accent rounded-b-full"
+            class="absolute top-0 left-1/2 -translate-x-1/2 w-8 h-[3px] bg-[hsl(75_100%_55%)] rounded-b-full"
           />
           <svg
             class="lucide lucide-house"
@@ -846,7 +846,7 @@ exports[`HomeDrawCard — no layout shift for non-draw users > flag off: Home re
           </span>
         </button>
         <button
-          class="flex-1 flex flex-col items-center gap-0.5 pt-2.5 transition-colors relative cursor-pointer active:opacity-60 text-background/60"
+          class="flex-1 flex flex-col items-center gap-0.5 pt-2.5 transition-colors relative cursor-pointer active:opacity-60 text-[hsl(30_100%_97%/0.6)]"
         >
           <svg
             class="lucide lucide-swords"
@@ -910,7 +910,7 @@ exports[`HomeDrawCard — no layout shift for non-draw users > flag off: Home re
           </span>
         </button>
         <button
-          class="flex-1 flex flex-col items-center gap-0.5 pt-2.5 transition-colors relative cursor-pointer active:opacity-60 text-background/60"
+          class="flex-1 flex flex-col items-center gap-0.5 pt-2.5 transition-colors relative cursor-pointer active:opacity-60 text-[hsl(30_100%_97%/0.6)]"
         >
           <svg
             class="lucide lucide-trophy"
@@ -950,7 +950,7 @@ exports[`HomeDrawCard — no layout shift for non-draw users > flag off: Home re
           </span>
         </button>
         <button
-          class="flex-1 flex flex-col items-center gap-0.5 pt-2.5 transition-colors relative cursor-pointer active:opacity-60 text-background/60"
+          class="flex-1 flex flex-col items-center gap-0.5 pt-2.5 transition-colors relative cursor-pointer active:opacity-60 text-[hsl(30_100%_97%/0.6)]"
         >
           <svg
             class="lucide lucide-user"
