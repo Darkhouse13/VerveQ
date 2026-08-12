@@ -816,3 +816,34 @@ back-nav fix, U3 How to Play. Prod deploy authorized for the ship phase.
   DEV closed at 0 crews / 0 simloop users. fwPolishQaPurge.ts added
   (fwShipSmokePurge pattern, two-step fail-closed, prefix-gated) for the
   O6 prod guest sweep.
+
+## O6 — 2026-08-12 — SHIP: DONE. **GOAL REACHED.**
+- Order per DEPLOYMENT.md: backend first — `npx convex deploy` to
+  different-lynx-153 (deleteCrew + canDelete, coverage-epoch numbering,
+  purgeUiRun orphan rule, fwPolishQaPurge). Then master push 6e19c95..22c7280;
+  CI Check + deploy both green.
+- Deploy verified by chunk content (entry-hash rule): CrewScreen chunk
+  carries "Type DELETE to confirm", BudgetSquadScreen chunk carries
+  "All positions", hub chunk + entry carry thisWeekendMany.
+- Prod relabel: the 15-min sync cron re-stamped labels ~8 min after the
+  backend deploy — historical import now GW -1, the opening board GW 1 on
+  the SAME doc id (identity preserved; real squads/rooms untouched);
+  60 windows, 60 unique ordinals, no dupes.
+- LIVE 380px verification on verveq.com — 20/20 PASS: hub reads
+  "GAMEWEEK 1 BOARD IS OPEN"; leagues line collapsed to "This weekend: 4
+  leagues" and expanded to the full Championship + Eredivisie + Liga
+  Portugal + La Liga on tap; guest crew create → delete affordance →
+  typed-confirm (dead until DELETE) → crew gone from hub; squad strip
+  present; GK picker with no tab row, no THIS WEEKEND line, GK-pre-filtered
+  rows; league→club drill landed on Wrexham's keepers in two taps;
+  All-positions mismatch path reachable; zero console errors; zero
+  horizontal scroll everywhere. Live screenshots fwp3-live-*.png.
+- QA footprint SWEPT, not left behind (mission override of the benign-
+  artifact convention): fwPolishQaPurge dryRun → purge removed 58 rows —
+  guests fwpolish_qa + fwpolish2_qa (the standing pair; the wkndsmoke guest
+  was already gone since FW-SHIP's own purge) and this run's fwp3smoke97134,
+  with their squads/slots/auth rows. Zero blockers; fwexpand_qa* left per
+  their standing convention. Post-sweep: real crew + 3 real board squads
+  intact, zero fwpolish*/fwp3smoke*/wkndsmoke* users remain.
+- No parked decisions: no STOP fired this mission (the O1 fork resolved by
+  evidence to case (a); DECISIONS_NEEDED.md unchanged).
