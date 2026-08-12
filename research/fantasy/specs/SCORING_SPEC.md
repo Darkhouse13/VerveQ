@@ -1,6 +1,6 @@
-# Weekend Fantasy — Base Scoring Formula (v0.5.1)
+# Weekend Fantasy — Base Scoring Formula (v0.5.2)
 
-Status: **v0.5.1 — LOCKED by owner** (assists position-weighted; no
+Status: **v0.5.2 — LOCKED by owner** (assists position-weighted; no
 captaincy locked). The constants below are no longer placeholders:
 they were calibrated by the FS-1 sim harness
 (`reports/fs1-phase4-calibration-2026-07-29.md`) and settled by owner
@@ -11,6 +11,17 @@ measurement.**
 
 ## Changelog
 
+- v0.5.2 — **universe-scope context amended, doc-only** (owner ruling
+  FW-EXPAND, 2026-08-02; shipped 2026-08-12). The covered universe is
+  now eight leagues (Eredivisie, Liga Portugal, EFL Championship join
+  the top five). Design principles 3 and 4 are annotated: their
+  measurements (the 2026-07-27 schema probe; the FS-1 §3 cap
+  calibration) were taken on the top-5 leagues and are deliberately
+  NOT re-derived for the expansion — the engine is position-template-
+  based and league-blind, and per the FW-EXPAND R4 ruling **no scoring
+  structure, constant, cap, ramp, threshold or multiplier changes**.
+  An expansion-league fixture scores identically to a top-five one.
+  The freeze stands in full.
 - v0.5.1 — editorial closeout of the v0.5.0 blind verification
   (`reports/fs1-blind-verify-v050-2026-07-29.md`); **no scoring
   change**:
@@ -62,7 +73,9 @@ measurement.**
    score from the match ledger in under a minute. No opaque composite
    indices.
 3. **Feed-realistic.** Only stats the feed was measured to carry for
-   the top-5 leagues (phase1 schema probe, 2026-07-27): minutes;
+   the top-5 leagues (phase1 schema probe, 2026-07-27 — the
+   measurement basis; the universe is eight leagues since v0.5.2 and
+   the stat set is deliberately unchanged): minutes;
    goals; assists; shots total and on target; key passes; accurate
    passes and total passes (both as counts — the feed does not
    supply a completion percentage); dribbles completed and
@@ -77,7 +90,9 @@ measurement.**
 4. **Anti-farming, sized as circuit-breakers.** Volume stats have
    caps, but the caps are **outlier circuit-breakers, not an active
    balancing mechanism**: each is sized at or above ~p95 of the
-   volumes actually observed in the top-5 leagues (FS-1 §3), so they
+   volumes actually observed in the top-5 leagues (FS-1 §3; the
+   calibration basis — kept as-is for the eight-league universe per
+   v0.5.2, unchanged by ruling), so they
    bind rarely and exist to stop pathological tackle-farming rather
    than to shape ordinary scores. One deliberate exception: after the
    v0.5.0 MID defensive rate increase (P5), the MID combined

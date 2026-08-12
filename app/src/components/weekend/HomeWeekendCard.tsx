@@ -26,8 +26,10 @@ import { readColdSource } from "@/lib/coldSession";
 import { SHELL_ROUTES } from "@/lib/shellRoutes";
 import { NeoButton } from "@/components/neo/NeoButton";
 
+// "Eight leagues, one squad" is the FW-EXPAND R3 framing (owner ruling
+// 2026-08-02) — the five-league claim is dead everywhere.
 const BULLETS = [
-  "All five top leagues, one squad",
+  "Eight leagues, one squad",
   "The crowd rates the players, not an algorithm",
   "Fresh draft every week, no season-long grind",
 ] as const;

@@ -1,5 +1,5 @@
 /**
- * SCORING_SPEC.md v0.5.1 — THE scoring engine. One engine, this file.
+ * SCORING_SPEC.md v0.5.2 — THE scoring engine. One engine, this file.
  *
  * ── Why this file is here and not in research/ (FW-4 ruling R1) ──
  *
@@ -27,7 +27,8 @@
  * NO Convex import — the research harness has no `convex` dependency, and this
  * file staying dependency-free is what keeps it importable from both sides.
  *
- * Implements v0.5.1 exactly as written (v0.5.1 was an editorial closeout of
+ * Implements v0.5.2 exactly as written (v0.5.2 is the FW-EXPAND universe-scope
+ * annotation — league-blind engine, zero value changes; v0.5.1 was an editorial closeout of
  * v0.5.0; no constant or structure changed).
  *
  * v0.5.0 applied the owner's rulings on the FS-1 Phase 4 calibration
@@ -85,7 +86,7 @@
  */
 
 /** The SCORING_SPEC version this engine implements. Stamped on every score row. */
-export const SCORING_SPEC_VERSION = '0.5.1';
+export const SCORING_SPEC_VERSION = '0.5.2';
 
 // ------------------------------------------------------------------ data shapes
 //

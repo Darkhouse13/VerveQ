@@ -287,7 +287,7 @@ export interface AutoPickRung {
  *      hindsight-tainted.
  *   3. cap-legal, fixture ALREADY STARTED — a pick `makePick` denies a human.
  *      Reached only when rungs 1 and 2 are both empty, i.e. every unpicked
- *      cap-legal player in all five leagues is already underway.
+ *      cap-legal player in all eight leagues is already underway.
  *   4. everything unpicked and active, cap included — the termination
  *      guarantee. Unreachable with a real pool (≈96 clubs × cap 3 dwarfs 13
  *      picks); a rung-4 pick means the pool itself was broken, and taking it

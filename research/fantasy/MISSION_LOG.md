@@ -570,3 +570,34 @@ back-nav fix, U3 How to Play. Prod deploy authorized for the ship phase.
   new tests (30 pass in the suite; full check 1,503).
 - API spend O3: 168 + 166 (second-run proof) = 334 calls. Day total at
   close: key reports ~6,005 remaining of 7,500 (all consumers combined).
+
+## O4 — 2026-08-12 — R3 copy + spec amendments + R4 invariance: DONE
+
+- Copy: the five-league claim is dead in app/src. "Eight leagues, one
+  squad" is the framing on all three surfaces the ruling names — home
+  card first bullet (was "All five top leagues, one squad"; snapshot
+  re-pinned), compete hero sub, hub subtitle (both replaced "Draft the
+  whole European football weekend."). No locale files carry weekend.*
+  keys, so defaultValue renders everywhere. Code comments swept:
+  fantasyDraftEngine, gameweek test name (fantasyIngest done in O1).
+- Specs: DRAFT_ROOM v1.3.1 → v1.4.0 (minor — a rule statement changed):
+  pool row "all 8 leagues", pool-note count amended with provenance,
+  §auto-pick ladder now names the six-rung pool priority; changelog
+  cites FW-EXPAND 2026-08-02. SCORING_SPEC v0.5.1 → v0.5.2 (doc-only):
+  principles 3+4 annotated that their top-five measurement basis is
+  deliberately NOT re-derived — league-blind engine, zero value
+  changes; freeze restated. SCORING_SPEC_VERSION constant bumped with
+  the doc (the 0.5.0→0.5.1 editorial precedent; write-only provenance
+  stamp, no rescore trigger — verified sole consumer). BUDGET_MODE
+  asserts no league universe (checked — its pool statements are
+  eligibility-only); CROWD_VOTING's never-cross-league rule unaffected.
+- R4: fantasyExpansionInvariance.test.ts pins with literals — budget
+  91.0, price scale 4.0/13.0/0.5, club cap 3 + favorite cooldown 28d,
+  squad 13=11+2, formation bounds, crew 2-8, finality 23:59 Paris, all
+  ten scoring caps, crowd clamp 0.15, court params (filings 2,
+  endorsement 15/0.5%, quorum 30/1%, pass 60%), and the engine's
+  per-position context values recovered by live probes (GK 5/1/0.5/-1,
+  DEF 4/1/0.5/-1, MID 1/1/0.5/0, ATT 0/1/0.5/0). The one deliberate
+  change is pinned too: LEAGUE_IDS === exactly the eight. 8 tests.
+- Scoring engine: ZERO changes (R4 holds by test, not assumption).
+- Check green: 140 files / 1,511 tests.

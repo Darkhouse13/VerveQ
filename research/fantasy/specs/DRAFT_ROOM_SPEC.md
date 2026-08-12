@@ -1,6 +1,6 @@
-# Weekend Fantasy — Draft Room Spec (v1.3.1)
+# Weekend Fantasy — Draft Room Spec (v1.4.0)
 
-Status: **v1.3.1 — LOCKED by owner.** Every ⚑ item is
+Status: **v1.4.0 — LOCKED by owner.** Every ⚑ item is
 resolved in the owner ledger at the foot of this document, and every ⚑
 statement in the body has been amended to read as ruled; the ⚑ markers
 are kept as provenance of what was once open, not as live questions.
@@ -9,6 +9,19 @@ scheduled as work — they are deferred, not missing.
 
 ## Changelog
 
+- v1.4.0 — **universe scope: eight leagues** (owner ruling FW-EXPAND,
+  2026-08-02; shipped 2026-08-12). The covered universe grows from the
+  top five to eight leagues — Eredivisie (88), Liga Portugal (94), EFL
+  Championship (40) join, ids resolved from the feed
+  (`fetch/resolveExpansionLeagues.ts`). Amended here: §Room parameters'
+  player-pool row now reads "all 8 leagues", and the pool note keeps its
+  point — the pool is an INGEST property (`LEAGUE_IDS`), the engine
+  still applies no league filter. The R1 auto-pick tie ladder's pool
+  rung extends: **topfive > promoted > eredivisie > ligaportugal >
+  championship > flagged** (each expansion league is its own pricing
+  cohort per the FW-EXPAND R1 ruling; the rung only ever decides a
+  price-AND-proxy tie). No other rule changes; every LOCKED clock,
+  shape and tie-break value is untouched.
 - v1.3.1 — **ledger item 5's crew-table clause rewritten** (owner
   ticket FW-CR2, 2026-08-01), citing the round-2 cross-model blind
   verification of the FW-VS1 package
@@ -139,13 +152,14 @@ burden. This is the private-league product.
 | Crew size | 2 minimum, 8 maximum (hard cap) | LOCKED |
 | Join | share-code, Arena pattern | inherited |
 | Rounds | 13 (XI + 2 finishers, LOCKED squad shape) | locked shape |
-| Player pool | all 5 leagues (an ingest property — see note below), unique ownership within room | core |
+| Player pool | all 8 leagues (an ingest property — see note below; v1.4.0), unique ownership within room | core |
 | Pick clock | chess-clock bank: 30s × 13 = 390s per drafter, spent freely across picks | LOCKED |
 | Per-club cap | max 3 per squad, EXCEPT unlimited from the drafter's favorite club | LOCKED |
 | Budget | none — scarcity comes from uniqueness, not price | core |
 
-**Player pool — "all 5 leagues" is an INGEST property, not an engine
-one (v1.2.0).** The draft engine applies **no league filter**: the
+**Player pool — "all 8 leagues" is an INGEST property, not an engine
+one (v1.2.0; count amended to eight by v1.4.0).** The draft engine
+applies **no league filter**: the
 draftable pool is every active player row, joined with pool metadata
 and the target gameweek's fixtures. Which leagues are in the players
 table is decided upstream by the FW-2 ingest (`LEAGUE_IDS`), and the
@@ -227,7 +241,9 @@ itself.
 **The ordering (within any rung).** Best available by **price
 descending** (v1.1.0; was "highest v5 editorial rating still
 available", which no longer exists post-FW-PR1c) — tiebreak **proxy
-descending**, then **pool priority topfive > promoted > flagged**, then
+descending**, then **pool priority topfive > promoted > eredivisie >
+ligaportugal > championship > flagged** (v1.4.0; the three expansion
+cohorts sit between promoted and flagged), then
 **`providerPlayerId` ascending** (v1.2.0). That last tiebreak is not an
 editorial preference: the first three do not totally order the pool
 (the whole flagged cohort is priced at the 4.0 floor with no proxy),

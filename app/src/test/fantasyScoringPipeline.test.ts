@@ -189,7 +189,7 @@ describe("scoring one fixture (SCORING_SPEC v0.5.1, by hand)", () => {
     expect(keeper.state).toBe("provisional");
     expect(keeper.verdictPosition).toBe("GK");
     expect(keeper.crowdFactor).toBe(0);
-    expect(keeper.specVersion).toBe("0.5.1");
+    expect(keeper.specVersion).toBe("0.5.2");
 
     // GK, verdict GK, no mismatch:
     //   appearance +1, team win (60+) +1, saves 3 x 0.5 = +1.5, clean sheet +5

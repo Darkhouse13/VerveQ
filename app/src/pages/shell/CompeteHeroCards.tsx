@@ -89,7 +89,7 @@ export function WeekendHeroCard() {
       icon={CalendarRange}
       eyebrow="New mode"
       title="The Weekend"
-      sub="Draft the whole European football weekend."
+      sub="Eight leagues, one squad."
       badge={
         <NeoBadge color="accent" className="border-background shrink-0">
           Live

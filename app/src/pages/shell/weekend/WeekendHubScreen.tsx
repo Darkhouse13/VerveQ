@@ -77,7 +77,7 @@ export default function WeekendHubScreen() {
       theme="theme-weekend"
       title={t("weekend.hubTitle", { defaultValue: "The Weekend" })}
       subtitle={t("weekend.hubSubtitle", {
-        defaultValue: "Draft the whole European football weekend.",
+        defaultValue: "Eight leagues, one squad.",
       })}
       back
       onBack={() => navigate(SHELL_ROUTES.compete)}

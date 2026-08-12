@@ -275,7 +275,7 @@ describe("constituteGameweeks", () => {
     expect(gameweeks[1].kind).toBe("midweek");
   });
 
-  it("dedupes many fixtures across five leagues into one gameweek", () => {
+  it("dedupes many fixtures across many leagues into one gameweek", () => {
     const kickoffs = [
       paris(FRI.y, FRI.m, FRI.d, 20, 45),
       paris(SAT.y, SAT.m, SAT.d, 13, 30),
