@@ -665,3 +665,69 @@ back-nav fix, U3 How to Play. Prod deploy authorized for the ship phase.
 - QA footprint purged via the standing purgeUiRun convention.
 - Check green (1,511). ENOBUFS footnote: getMarket's 4.7k-row payload
   needs maxBuffer on the spec's convexRun helper.
+
+## O7 — 2026-08-12 — SHIP: DONE. **GOAL REACHED.**
+
+- Order per FW-POLISH precedent: backend deploy FIRST (npx convex deploy
+  → different-lynx-153, clean tree at 73a9a5a, ~18:58 UTC), then data
+  import, then master push (CI deploy 44s success, Check 1m54s success).
+- Prod pre-deploy baseline snapshotted (2,958 players all priced, 4 real
+  squads, 50 gameweeks, 1,752 fixtures, 971 events, 0 expansion rows).
+- bootstrapSeason --prod: byte-identical to DEV (2,916 fixtures, 1,164
+  created, 10 windows inserted at the same ordinals, 50 re-stamped).
+  Identity diff: 50/50 kept finalityAt; the open board doc unchanged
+  (real squads unaffected, label 1 → 2). gameweekAudit over ALL 60:
+  clean (0 out-of-window, finality matches everywhere).
+- bootstrapPlayers --prod (88/94/40): 60 clubs, 1,773 created + 9
+  updated = 1,782 — the feed moved between the morning DEV pull and the
+  prod run. FEED-DRIFT LEDGER, each item accounted:
+  (a) Y. Hirakawa + D. Ballard (Bristol City, new squad listings) and
+  G. Kamara (QPR — O3's DEV straggler, corroborated on prod): priced
+  4.0 / pool flagged per the standing newcomer rule. NOTE FOR OWNER:
+  Hirakawa has 855 real league-40 minutes in the aggregates — a cohort
+  price awaits an overrides.json entry (EXPANSION_REVIEW path);
+  quantile re-ranking for one player would have churned 404 prices.
+  (b) I. Bowat (priced 7.0 in the artifact) is no longer in Portsmouth's
+  squad — absent on prod, nothing to price; both import gates flagged
+  him and were overridden by this recorded accounting, not by code.
+  (c) 6 position drifts (feed corrections since morning) — prices stand
+  per BUDGET_MODE's static-within-gameweek + weekly-repricing doctrine.
+- Prices: seedExpansionPrices --live (two-signal guard: --live +
+  CONFIRM_LIVE_DEPLOY) — 1,773 updated + 6 unchanged, 1 missing =
+  Bowat. --verify: 1,779/1,780 artifact prices byte-exact, all
+  deviations the accounted set above. push-expansion-pool --live:
+  1,779 rows + 3 manual = every expansion row carries pool + clubName.
+- Transfers on prod: backfill 168 calls (plan-gated), 1,496 in-window
+  records — 971 already-seen (the old ledger intact), 221 moves
+  applied, 12 position-less STOP-AND-REPORTED (same names as DEV).
+  reactivationPass: 65 candidates → 40 reactivated (Kamara included —
+  prod corroborates him), 24 superseded, 1 fail-closed (Payero),
+  0 departedAt repairs (the prevention fix shipped in this deploy).
+  Second runs: backfill 1,496/1,496 already-seen, reactivation 0
+  writes. Zero-op proven on prod.
+- Final data verification (FW-SHIP P2 discipline): 4,734 players, ZERO
+  unpriced anywhere, zero dangling refs (fixtures/poolMeta/slots/
+  squads), expansion partition exact (318 eredivisie + 329 ligaportugal
+  + 403 championship + 732 flagged = 1,782, all with pool meta), 60
+  unique-ordinal gameweeks, 0 active-with-departedAt, every player in
+  exactly the 8 covered leagues.
+- Deploy verified by chunk content (entry-hash rule honored):
+  WeekendHowToPlayScreen chunk live with the spec copy,
+  BudgetSquadScreen chunk carries the matchup render, hub chunk carries
+  "Eight leagues, one squad".
+- LIVE 380px walkthrough on verveq.com, all green: home bullet; hub
+  line EXACTLY "This weekend: Championship + Eredivisie + Liga
+  Portugal + La Liga"; hub subtitle + "?" affordance; How to Play live
+  (scoring + court sections), back → hub; back ladder squad/court/
+  crews → hub → compete; expansion players PICKABLE with matchup
+  lines — "Ajax · vs Heerenveen (H)", "Benfica · vs Casa Pia (A)",
+  "Wrexham · vs Cardiff (A)"; zero console errors; zero horizontal
+  overflow. (One walkthrough FAIL was the script visiting the court
+  before onboarding — the username gate, not a product bug; re-run
+  with a session passed.)
+- QA footprint on prod: guests fwexpand_qa/2/3/4, empty squads, no
+  picks — the standing benign-artifact convention.
+- API spend O7: 8 + 65 + 3-row patches (0) + 168 + 166 = 407 calls;
+  key reported 5,547 remaining at close (all consumers, shared key).
+- Standing cron spend from tomorrow: sync ~768/day + transfers
+  ~156+/day + scoring per due fixtures, per deployment.
