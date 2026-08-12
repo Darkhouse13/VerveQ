@@ -13,6 +13,10 @@
  *
  * Run: npx tsx pricing/push-expansion-pool.ts
  * Deployment: whatever app/.env.local names (DEV: admired-warthog-495).
+ *
+ * FW-EXPAND O7 live path: `--live` appends `--prod` to every convex run AND
+ * refuses to start unless CONFIRM_LIVE_DEPLOY=different-lynx-153 — the same
+ * two-signal discipline as seedExpansionPrices.ts.
  */
 
 import { execFileSync } from 'node:child_process';
@@ -36,6 +40,13 @@ interface FinalPlayer {
   pool: 'eredivisie' | 'ligaportugal' | 'championship' | 'flagged';
   proxy: number | null;
   price: number;
+}
+
+const live = process.argv.includes('--live');
+if (live && process.env.CONFIRM_LIVE_DEPLOY?.trim() !== 'different-lynx-153') {
+  throw new Error(
+    'STOP: --live requires CONFIRM_LIVE_DEPLOY=different-lynx-153 exactly; generic booleans are refused.',
+  );
 }
 
 const artifact = JSON.parse(fs.readFileSync(FINAL_PATH, 'utf8')) as {
@@ -68,7 +79,13 @@ for (let i = 0; i < entries.length; i += CHUNK_SIZE) {
   const chunk = entries.slice(i, i + CHUNK_SIZE);
   const raw = execFileSync(
     'npx',
-    ['convex', 'run', 'fantasyDraftRooms:upsertDraftPoolMeta', JSON.stringify({ entries: chunk })],
+    [
+      'convex',
+      'run',
+      'fantasyDraftRooms:upsertDraftPoolMeta',
+      JSON.stringify({ entries: chunk }),
+      ...(live ? ['--prod'] : []),
+    ],
     { cwd: APP_DIR, encoding: 'utf8' },
   );
   const result = JSON.parse(raw) as {

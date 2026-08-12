@@ -10,10 +10,14 @@
  *   npx tsx scripts/seedExpansionPrices.ts --execute   # run the mutation
  *   npx tsx scripts/seedExpansionPrices.ts --verify    # re-read and diff
  *
- * DEV-PINNED exactly like its sibling: `guardTarget()` with no allowLive
- * opt-in throws on a resolved live deployment before anything is spawned.
- * Prod receives the expansion data through the O7 import discipline, never
- * through this script.
+ * Target discipline: by default `guardTarget()` refuses a live deployment.
+ * The FW-EXPAND O7 prod import is the ONE authorized live path and demands
+ * BOTH explicit signals the guard requires: pass `--live` (sets allowLive)
+ * AND set CONFIRM_LIVE_DEPLOY=<deployment name> in the environment, with
+ * CONVEX_DEPLOYMENT pointed at prod. Generic booleans are refused by the
+ * guard itself; without both, a live target still throws before any spawn.
+ * (seedFantasyPrices.ts — the 2,895-row top-five sibling — stays DEV-pinned
+ * with no live path at all, per the FW-SHIP ruling.)
  *
  * `--verify` proves the write did what it claimed for THE EXPANSION SLICE:
  * every leagueId-88/94/40 row's price equals the artifact, and no other field
@@ -135,7 +139,11 @@ interface ExportedPlayer {
   active: boolean;
 }
 
-function verifyByReExport(deployment: string, players: PricedPlayer[]): void {
+function verifyByReExport(
+  deployment: string,
+  players: PricedPlayer[],
+  live: boolean,
+): void {
   const zipPath = path.join(
     fs.mkdtempSync(path.join(os.tmpdir(), "fantasy-expansion-verify-")),
     "snapshot.zip",
@@ -201,7 +209,10 @@ function verifyByReExport(deployment: string, players: PricedPlayer[]): void {
       continue;
     }
     const diffs: string[] = [];
-    if (row._id !== base.convexId) diffs.push(`_id ${base.convexId} -> ${row._id}`);
+    // The baseline snapshot is a DEV export; document ids are deployment-
+    // local, so the _id identity check only holds against DEV itself. Every
+    // provider-keyed field below is deployment-independent and still checked.
+    if (!live && row._id !== base.convexId) diffs.push(`_id ${base.convexId} -> ${row._id}`);
     if (row.name !== base.name) diffs.push(`name "${base.name}" -> "${row.name}"`);
     if (row.clubId !== String(base.clubId)) diffs.push(`clubId ${base.clubId} -> ${row.clubId}`);
     if (row.leagueId !== base.leagueId) diffs.push(`leagueId ${base.leagueId} -> ${row.leagueId}`);
@@ -227,9 +238,11 @@ function main(): void {
   const flags = new Set(process.argv.slice(2));
   const execute = flags.has("--execute");
   const verify = flags.has("--verify");
+  const live = flags.has("--live");
 
-  // No allowLive: a live target throws here, before any spawn.
-  const target = guardTarget();
+  // Without --live a live target throws here, before any spawn. With it,
+  // the guard still demands CONFIRM_LIVE_DEPLOY === the deployment name.
+  const target = guardTarget(live ? { allowLive: true } : {});
   const deployment = target.deploymentName;
   if (deployment === null) {
     throw new Error("Could not resolve a deployment NAME to pin the writes to; refusing to guess.");
@@ -241,7 +254,7 @@ function main(): void {
   console.log(`histogram ${priceHistogram(players)}`);
 
   if (verify) {
-    verifyByReExport(deployment, players);
+    verifyByReExport(deployment, players, live);
     return;
   }
 

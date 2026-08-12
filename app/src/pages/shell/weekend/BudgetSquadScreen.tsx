@@ -464,7 +464,9 @@ export function PlayerPickerDialog({
                     data-testid="picker-club-line"
                   >
                     {player.clubName ?? player.clubId}
-                    {player.opponentName !== null && (
+                    {/* != null: also covers `undefined` from a backend that
+                        predates the field — deploy-order tolerance. */}
+                    {player.opponentName != null && (
                       // U1 matchup line: earliest fixture's opponent + venue,
                       // e.g. "Getafe · vs Sevilla (H)". No fixture keeps the
                       // badge, never a fabricated opponent.
