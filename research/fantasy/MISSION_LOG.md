@@ -484,3 +484,50 @@ back-nav fix, U3 How to Play. Prod deploy authorized for the ship phase.
 - API spend day total: 4 (ledgered, research) + 8 + 65 (FW-2 client) =
   77 mission calls; key reported dailyRemaining 6,507 after (shared
   with standing crons). No phase projected anywhere near 1,500.
+
+## O2 — 2026-08-12 — aggregates + R1 cohort pricing: DONE
+
+- Universe snapshot: 1,780 expansion rows exported from DEV (Championship
+  745, Eredivisie 526, Primeira 509) — 1,772 O1-created + 8 pre-existing
+  players now at expansion clubs (7 with stale departedAt → O3's R2 pass).
+- Aggregates pull (pull-expansion-aggregates.ts): plan printed, worst case
+  375 vs STOP 1,500; spent 192 = 123 player pages (88:39, 94:36, 40:48) +
+  66 team-stat pairs + 3 current-club lists; 2,440 rows. +4 probe calls
+  (2025-26 Primeira membership + two team-stat probes) + 1 addendum save.
+- TWO FEED QUIRKS, both resolved fail-closed, no invention:
+  (a) promotion/relegation PLAYOFF entries tagged with the destination
+  league id on non-member clubs (Roda/Waalwijk/Almere/Den Bosch under 88,
+  Torreense under 94; team figures empty). Scope rule: cohort admission
+  and lines use only entries at clubs with 2025-26 season figures —
+  playoff-only players flag with their own reason string.
+  (b) provider id-duplication: Estrela's full Primeira season rides rows
+  as team 28053 ("Estrela Calheta") while membership + figures live under
+  15130 ("Estrela") — verified by probes (28053 played=0, 15130 played=34,
+  rows hold exactly 18 full club-seasons). Alias 28053|94→15130|94 with
+  the evidence in the addendum manifest and proxy-expansion.ts.
+- proxy-expansion.ts: same engine-driven method as proxy.ts (v0.5.1
+  scorePlayer, probes, minutes-weighted club expectations, 900' shrinkage
+  toward OWN-LEAGUE pool medians). Partition assertion extended per R1:
+  eredivisie 318 + ligaportugal 329 + championship 404 + flagged 729 =
+  1,780 exact, per-league splits asserted, team-figure gap 0.
+- price-expansion.ts: band 4.0–7.5, price = min(7.5 − 0.5·round(7·q),
+  ceiling[pos]) per the promoted method — GK 6.0 ceiling bites exactly as
+  the promoted precedent; flagged at 4.0 (this includes relegated-in
+  top-five players: cross-league minutes are banned signal, the owner
+  re-prices names via overrides.json → EXPANSION_REVIEW.md documents the
+  path). Gates: partition 1,780, on-scale, band top, monotonicity per
+  pool|position. overrides.json applied last (0 match the expansion).
+- pricing/EXPANSION_REVIEW.md: top 20 per league (proxy + minutes +
+  price), full price distributions, 10 most prominent flagged per league.
+- Tie ladder: DraftPool + fantasyDraftPoolMeta.pool + poolMetaValidator
+  widened — topfive > promoted > eredivisie > ligaportugal > championship
+  > flagged (expansion cohorts between promoted and flagged; order only
+  ever decides a price-AND-proxy tie). Missing-row sentinel 3→6.
+- Seed: seedExpansionPrices.ts (DEV-pinned sibling of seedFantasyPrices,
+  guardTarget, 8 chunks) — 1,774 updated + 6 unchanged, 0 missing;
+  histogram 7.5:72 7.0:138 6.5:135 6.0:177 5.5:152 5.0:147 4.5:150
+  4.0:809. --verify: every expansion price equals the artifact, 0
+  non-price field diffs vs the pre-pricing snapshot. push-expansion-pool:
+  1,772 created + 8 updated (the moved players re-labeled), every row
+  carries a real clubName (U1 depends on it).
+- API spend O2: 197 calls total; check green (1,498).

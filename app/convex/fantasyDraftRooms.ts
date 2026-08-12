@@ -1660,7 +1660,14 @@ export const auditCrewSquads = internalQuery({
 
 const poolMetaValidator = v.object({
   providerPlayerId: v.string(),
-  pool: v.union(v.literal("topfive"), v.literal("promoted"), v.literal("flagged")),
+  pool: v.union(
+    v.literal("topfive"),
+    v.literal("promoted"),
+    v.literal("eredivisie"),
+    v.literal("ligaportugal"),
+    v.literal("championship"),
+    v.literal("flagged"),
+  ),
   proxy: v.union(v.number(), v.null()),
   clubName: v.optional(v.string()),
 });

@@ -137,7 +137,13 @@ export function bankExhausted(
 
 // ── auto-pick (rulings R1, R2, R5) ──
 
-export type DraftPool = "topfive" | "promoted" | "flagged";
+export type DraftPool =
+  | "topfive"
+  | "promoted"
+  | "eredivisie"
+  | "ligaportugal"
+  | "championship"
+  | "flagged";
 
 /** A pool player reduced to what auto-pick and the board need. */
 export interface DraftPoolPlayer {
@@ -158,12 +164,19 @@ export interface DraftPoolPlayer {
 const POOL_PRIORITY: Record<DraftPool, number> = {
   topfive: 0,
   promoted: 1,
-  flagged: 2,
+  // FW-EXPAND (2026-08-02 ruling): the three expansion cohorts rank between
+  // promoted and flagged — a cohort-internal proxy is a real signal but not a
+  // top-five one; the order among the three follows the ruling's own naming
+  // order and only ever decides a price-AND-proxy tie.
+  eredivisie: 2,
+  ligaportugal: 3,
+  championship: 4,
+  flagged: 5,
 };
 
 /**
  * The R1 total order: price desc → proxy desc → pool priority
- * (topfive > promoted > flagged) → providerPlayerId asc.
+ * (topfive > promoted > expansion cohorts > flagged) → providerPlayerId asc.
  *
  * The last rung is not in the ruling; it exists because R1's three rungs do
  * not totally order the pool (the whole flagged cohort is priced 4.0 with no
@@ -188,8 +201,8 @@ export function autoPickComparator(
   const proxyB = b.proxy ?? Number.NEGATIVE_INFINITY;
   if (proxyA !== proxyB) return proxyB - proxyA;
 
-  const poolA = a.pool === null ? 3 : POOL_PRIORITY[a.pool];
-  const poolB = b.pool === null ? 3 : POOL_PRIORITY[b.pool];
+  const poolA = a.pool === null ? 6 : POOL_PRIORITY[a.pool];
+  const poolB = b.pool === null ? 6 : POOL_PRIORITY[b.pool];
   if (poolA !== poolB) return poolA - poolB;
 
   return a.providerPlayerId < b.providerPlayerId

@@ -1777,16 +1777,22 @@ export default defineSchema({
 
   // Auto-pick ordering metadata (FW-3 ruling R1), a SIDE table so
   // fantasyPlayers stays untouched (P1 constraint: additive tables only).
-  // Seeded from research/fantasy/pricing/price-final.json — pool is the
-  // pricing cohort (topfive > promoted > flagged is the R1 tie ladder), proxy
-  // is the FW-PR1 proxy score (null for the flagged cohort, which never had
-  // one). One row per player; players missing a row sort last, which fails
-  // safe: auto-pick prefers known quantities.
+  // Seeded from research/fantasy/pricing/price-final.json (top-five universe)
+  // and expansion-price-final.json (FW-EXPAND leagues) — pool is the pricing
+  // cohort (topfive > promoted > expansion cohorts > flagged is the R1 tie
+  // ladder), proxy is the pricing proxy score (null for the flagged cohort,
+  // which never had one). One row per player; players missing a row sort
+  // last, which fails safe: auto-pick prefers known quantities.
   fantasyDraftPoolMeta: defineTable({
     playerId: v.id("fantasyPlayers"),
     pool: v.union(
       v.literal("topfive"),
       v.literal("promoted"),
+      // FW-EXPAND (2026-08-02): each expansion league is its own pricing
+      // cohort; in the tie ladder they sit between promoted and flagged.
+      v.literal("eredivisie"),
+      v.literal("ligaportugal"),
+      v.literal("championship"),
       v.literal("flagged"),
     ),
     proxy: v.union(v.number(), v.null()),
