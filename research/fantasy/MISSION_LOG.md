@@ -896,3 +896,29 @@ back-nav fix, U3 How to Play. Prod deploy authorized for the ship phase.
 - chromeProof: stash-before/work-after pairs — home, compete, quiz all
   BYTE-IDENTICAL (cmp), weekend-hub differs (the redesign itself). Stronger
   than the FW-POLISH precedent (no countdown-digit noise this run).
+
+## Phase A SHIP — 2026-08-12: LIVE ON PROD, VERIFIED
+- Order per DEPLOYMENT.md: backend first — npx convex deploy to
+  different-lynx-153 (getWeekendFixtures only; read-only, additive, schema
+  untouched), smoke-verified by --prod run answering GW1 fixtures with
+  resolved club names. Then master push 062aea0..fa6f17c; CI deploy + Check
+  both green.
+- Deploy verified by chunk content (entry-hash rule): entry index-Bjjfleh5
+  carries /v2/weekend/fixtures (route table); FixturesScreen-BpmEctsz
+  carries "every kickoff in your time"; WeekendHubScreen-CwWfZryY carries
+  matchday-countdown + fixtures-rail + "First kickoff in";
+  BudgetSquadScreen-ChBnT2Cp carries the jersey path ("M8.6 1.4") and
+  overflow-y-hidden.
+- LIVE 380px loop on verveq.com — PASS: hub reads "Gameweek 1 board is
+  open"; matchday hero countdown ticked live (2s apart, different values);
+  fixtures rail → /v2/weekend/fixtures with fixture-card count equal to the
+  prod payload; guest wkndsmokefwi29554 built a squad — 13 empty shirt
+  chips, ≥14 SVGs on the pitch, picker filter row computed
+  overflow-x:auto / overflow-y:hidden on the live DOM, one pick landed as a
+  filled shirt; hub then carried "12 spots still open" on the squad status
+  card; zero console errors, zero horizontal scroll. Artifacts
+  fwi-live-*.png committed.
+- QA guest SWEPT: fwPolishQaPurge dryRun (zero blockers) → purge deleted 20
+  rows (user, budget squad, 13 slots, auth account/session/3 tokens);
+  post-sweep dryRun returns zero rows. Nothing was locked (first kickoff is
+  Friday), so the locked-slot blocker could not fire — by design of the run.
