@@ -77,13 +77,19 @@ test("FW-IMMERSE B: wide hub, fixtures, side-by-side build, crew split", async (
   // ── fixtures screen: day groups two-up ──
   await page.getByTestId("fixtures-rail-all").click();
   await expect(page).toHaveURL(/\/v2\/weekend\/fixtures$/);
+  // The hub side panel carries the same testids and stays mounted through
+  // the lazy-route transition — wait for the hub to actually unmount.
+  await expect(page.getByTestId("matchday-hero")).toHaveCount(0, { timeout: 45_000 });
   await expect(page.getByTestId("fixture-card").first()).toBeVisible({ timeout: 45_000 });
-  const days = page.getByTestId("fixture-day");
-  if ((await days.count()) >= 2) {
-    const d0 = (await days.nth(0).boundingBox())!;
-    const d1 = (await days.nth(1).boundingBox())!;
+  // Atomic DOM read (locator handles can race a re-render).
+  const dayTops = await page.evaluate(() =>
+    [...document.querySelectorAll('[data-testid="fixture-day"]')]
+      .slice(0, 2)
+      .map((el) => el.getBoundingClientRect().top),
+  );
+  if (dayTops.length >= 2) {
     expect(
-      Math.abs(d0.y - d1.y),
+      Math.abs(dayTops[0] - dayTops[1]),
       "the first two day groups share a row at xl",
     ).toBeLessThan(4);
   }

@@ -953,3 +953,25 @@ back-nav fix, U3 How to Play. Prod deploy authorized for the ship phase.
   weekend-hub differs ONLY by the live countdown — proven by attribution
   (two after-shots taken moments apart differ from each other the same way,
   so the diff source is the clock, not Phase B).
+
+## Phase B SHIP — 2026-08-13: LIVE ON PROD, VERIFIED. **GOAL REACHED.**
+- Frontend-only ship (no convex file changed in Phase B — no backend
+  deploy). Master push 6af2e73..2e60fa5; CI Check + deploy green.
+- Deploy verified by chunk content: BudgetSquadScreen-D4JfZX0d carries
+  market-panel + "The weekend's market" + "Back to browsing";
+  WeekendHubScreen-DXmY1f5C carries hub-fixtures-panel.
+- LIVE 1366×900 loop on verveq.com — PASS: fixtures panel beside the
+  matchday hero (bounding boxes), horizontal rail absent; fixtures screen
+  day groups two-up; guest wkndsmokefwiw8665 built a squad with pitch and
+  market side by side, idle browse with ZERO Pick buttons, GK slot armed
+  the panel (no modal anywhere), pick landed and the panel returned to
+  browse; zero console errors, zero horizontal scroll. Artifacts
+  fwi-live-wide-*.png committed.
+- Live QA surfaced a real spec hazard (not an app bug): the hub's side
+  panel shares fixture-card/fixture-day testids with the fixtures screen,
+  and the router keeps the hub mounted through the lazy-route transition —
+  a post-click wait can match the OLD page's DOM. Both wide specs now
+  anchor on the hub unmounting (matchday-hero count 0) before reading the
+  fixtures screen. DEV wide spec re-run green with the fix.
+- QA guest SWEPT: fwPolishQaPurge dryRun (zero blockers) → purge deleted
+  19 rows; post-sweep dryRun returns zero.
