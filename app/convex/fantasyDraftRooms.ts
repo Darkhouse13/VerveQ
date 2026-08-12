@@ -94,6 +94,11 @@ import {
 export const SIGN_IN_REQUIRED = "Sign in to draft with a crew.";
 export const CREW_NOT_FOUND = "Crew not found — check the code.";
 export const CREW_FULL = `A crew holds at most ${CREW_MAX_DRAFTERS} drafters.`;
+export const NOT_CREW_CREATOR = "Only the crew's creator can delete it.";
+export const CREW_HAS_COMPLETED_DRAFT =
+  "This crew has a completed draft — its record is protected. You can leave the crew instead.";
+export const CREW_DRAFT_IN_PROGRESS =
+  "A draft is running in this crew; it cannot be deleted until the draft ends.";
 export const NOT_A_MEMBER = "You are not a member of this crew.";
 export const ROOM_NOT_FOUND = "Draft room not found.";
 export const ROOM_NOT_LOBBY = "The draft has already started.";
@@ -808,6 +813,85 @@ export const leaveCrew = mutation({
   },
 });
 
+/**
+ * Delete a crew — creator-only, and ONLY while the crew has zero completed
+ * drafts (FW-POLISH-3 O2 owner ruling). Once any draft completes, the record
+ * (logs, squads, scores) is protected forever and there is no delete path;
+ * "leave crew" remains the exit. A DRAFTING room can never be destroyed, so
+ * a running draft blocks deletion until it terminates. An open lobby or
+ * order_reveal room is cancelled by the deletion: its draft-log rows, any
+ * squads bound to it, and the room doc itself are removed, along with every
+ * membership row and the crew doc. Irreversible — the client's typed-confirm
+ * dialog is UX; this guard is the enforcement.
+ */
+export async function deleteCrewFor(
+  ctx: MutationCtx,
+  userId: Id<"users">,
+  crewId: Id<"fantasyCrews">,
+): Promise<{ ok: true; cancelledRooms: number }> {
+  const crew = await ctx.db.get(crewId);
+  if (crew === null) throw new Error(CREW_NOT_FOUND);
+  if (crew.createdBy !== userId) throw new Error(NOT_CREW_CREATOR);
+
+  const rooms = await ctx.db
+    .query("fantasyDraftRooms")
+    .withIndex("by_crew", (q) => q.eq("crewId", crewId))
+    .collect();
+  if (rooms.some((r) => r.status === "completed")) {
+    throw new Error(CREW_HAS_COMPLETED_DRAFT);
+  }
+  if (rooms.some((r) => r.status === "drafting")) {
+    throw new Error(CREW_DRAFT_IN_PROGRESS);
+  }
+
+  // Cascade in purgeSimData's proven order: log → squad slots → squads →
+  // room → members → crew. Squads cannot exist for a never-completed room
+  // (materialization is completion-only) but are swept anyway so the
+  // invariant is enforced by deletion, not assumed.
+  let cancelledRooms = 0;
+  for (const room of rooms) {
+    const entries = await ctx.db
+      .query("fantasyDraftLog")
+      .withIndex("by_room_seq", (q) => q.eq("roomId", room._id))
+      .collect();
+    for (const entry of entries) await ctx.db.delete(entry._id);
+
+    const squads = await ctx.db
+      .query("fantasySquads")
+      .withIndex("by_gameweek", (q) => q.eq("gameweekId", room.gameweekId))
+      .collect();
+    for (const squad of squads) {
+      if (squad.crewRoomId !== room._id) continue;
+      const slots = await ctx.db
+        .query("fantasySquadSlots")
+        .withIndex("by_squad", (q) => q.eq("squadId", squad._id))
+        .collect();
+      for (const slot of slots) await ctx.db.delete(slot._id);
+      await ctx.db.delete(squad._id);
+    }
+
+    if (room.status === "lobby" || room.status === "order_reveal") {
+      cancelledRooms += 1;
+    }
+    await ctx.db.delete(room._id);
+  }
+
+  const members = await ctx.db
+    .query("fantasyCrewMembers")
+    .withIndex("by_crew", (q) => q.eq("crewId", crewId))
+    .collect();
+  for (const member of members) await ctx.db.delete(member._id);
+
+  await ctx.db.delete(crewId);
+  return { ok: true, cancelledRooms };
+}
+
+export const deleteCrew = mutation({
+  args: { crewId: v.id("fantasyCrews") },
+  handler: async (ctx, { crewId }) =>
+    await deleteCrewFor(ctx, await requireUserId(ctx), crewId),
+});
+
 // ── room mutations ──
 
 export async function createRoomFor(
@@ -1399,6 +1483,13 @@ export const getCrew = query({
       name: crew.name,
       createdBy: crew.createdBy,
       isMe: userId,
+      // Mirrors deleteCrewFor's guard exactly (creator + zero completed
+      // drafts + no running draft) so the UI can show/hide the delete
+      // affordance without re-deriving the rule. `rooms` here is the raw
+      // collect — abandoned rooms are filtered out of roomSummaries only.
+      canDelete:
+        crew.createdBy === userId &&
+        rooms.every((r) => r.status !== "completed" && r.status !== "drafting"),
       members: members
         .filter((m) => m.active)
         .map((m) => ({ userId: m.userId, name: m.nameSnapshot, joinedAt: m.joinedAt })),

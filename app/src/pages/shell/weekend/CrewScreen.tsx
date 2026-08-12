@@ -24,8 +24,9 @@ import { useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useMutation, useQuery } from "convex/react";
+import * as DialogPrimitive from "@radix-ui/react-dialog";
 import { toast } from "sonner";
-import { Check, Copy, Share2, Swords } from "lucide-react";
+import { Check, Copy, Share2, Swords, Trash2, X } from "lucide-react";
 import { api } from "../../../../convex/_generated/api";
 // The engine's own display rule (SCORING_SPEC §Rounding: 1 dp, ties away from
 // zero). Imported rather than reimplemented so the screen cannot round a score
@@ -34,6 +35,7 @@ import { formatPoints } from "../../../../convex/lib/fantasyScoring";
 import { NeoCard } from "@/components/neo/NeoCard";
 import { NeoButton } from "@/components/neo/NeoButton";
 import { NeoBadge } from "@/components/neo/NeoBadge";
+import { NeoInput } from "@/components/neo/NeoInput";
 import { ShellLayout } from "@/components/shell/ShellLayout";
 import { SHELL_ROUTES } from "@/lib/shellRoutes";
 import { friendlyError } from "@/lib/errors";
@@ -53,11 +55,14 @@ export default function CrewScreen() {
   const table = useQuery(api.fantasyScores.getCrewTable, { code });
   const joinCrew = useMutation(api.fantasyDraftRooms.joinCrew);
   const createRoom = useMutation(api.fantasyDraftRooms.createRoom);
+  const deleteCrew = useMutation(api.fantasyDraftRooms.deleteCrew);
 
   const joinAttempted = useRef(false);
   const [joinFailed, setJoinFailed] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  const [deleteConfirmText, setDeleteConfirmText] = useState("");
 
   // Not a member (or crew unknown): try joining by the URL's code, once.
   if (crew === null && !joinAttempted.current) {
@@ -109,6 +114,25 @@ export default function CrewScreen() {
       navigate(SHELL_ROUTES.weekendDraft(roomId));
     } catch (e) {
       toast.error(friendlyError(e, t("weekend.roomCreateFailed", { defaultValue: "Could not open a draft room." })));
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const handleDeleteCrew = async () => {
+    if (busy || crew === null || crew === undefined) return;
+    setBusy(true);
+    try {
+      await deleteCrew({ crewId: crew.crewId });
+      toast.success(
+        t("weekend.crewDeleted", { defaultValue: "Crew deleted." }),
+      );
+      navigate(SHELL_ROUTES.weekendCrews, { replace: true });
+    } catch (e) {
+      toast.error(
+        friendlyError(e, t("weekend.crewDeleteFailed", { defaultValue: "Could not delete the crew." })),
+      );
+      setDeleteOpen(false);
     } finally {
       setBusy(false);
     }
@@ -341,7 +365,82 @@ export default function CrewScreen() {
             </div>
           )}
         </div>
+
+        {/* Creator-only, and ONLY while the crew has no completed draft — the
+            server's deleteCrew guard is the enforcement, `canDelete` merely
+            mirrors it so a protected crew shows no delete path at all
+            (FW-POLISH-3 O2). */}
+        {crew.canDelete && (
+          <button
+            type="button"
+            data-testid="crew-delete-open"
+            onClick={() => {
+              setDeleteConfirmText("");
+              setDeleteOpen(true);
+            }}
+            className="flex items-center justify-center gap-1.5 py-2 font-mono text-[11px] font-bold uppercase tracking-[0.16em] text-muted-foreground active:opacity-60"
+          >
+            <Trash2 size={13} strokeWidth={3} aria-hidden />
+            {t("weekend.deleteCrew", { defaultValue: "Delete crew" })}
+          </button>
+        )}
       </div>
+
+      {/* Typed-confirm sheet (FormationChooser's bottom-sheet precedent). */}
+      <DialogPrimitive.Root open={deleteOpen} onOpenChange={setDeleteOpen}>
+        <DialogPrimitive.Portal>
+          <DialogPrimitive.Overlay className="fixed inset-0 z-50 bg-black/80 data-[state=open]:animate-in data-[state=open]:fade-in-0" />
+          <DialogPrimitive.Content
+            data-testid="crew-delete-sheet"
+            className="theme-weekend weekend-sheet-in fixed bottom-0 left-1/2 -translate-x-1/2 z-50 w-full max-w-sm neo-border neo-shadow-lg rounded-t-xl border-b-0 bg-background text-foreground p-5 pb-[max(1.5rem,env(safe-area-inset-bottom))] flex flex-col gap-4"
+          >
+            <div className="flex items-start justify-between gap-2">
+              <DialogPrimitive.Title className="font-heading font-bold text-lg">
+                {t("weekend.deleteCrewTitle", { defaultValue: "Delete this crew?" })}
+              </DialogPrimitive.Title>
+              <DialogPrimitive.Close
+                className="neo-border rounded bg-card p-1 shrink-0 active:neo-shadow-pressed"
+                aria-label="Close"
+              >
+                <X size={14} strokeWidth={3} />
+              </DialogPrimitive.Close>
+            </div>
+            <p className="text-sm leading-snug text-muted-foreground">
+              {t("weekend.deleteCrewBody", {
+                defaultValue:
+                  "This cancels any open lobby and removes the crew for everyone in it. It cannot be undone.",
+              })}
+            </p>
+            <div>
+              <label
+                htmlFor="crew-delete-confirm"
+                className="block mb-1.5 font-mono text-[11px] font-bold uppercase tracking-[0.16em] text-muted-foreground"
+              >
+                {t("weekend.deleteCrewType", { defaultValue: "Type DELETE to confirm" })}
+              </label>
+              <NeoInput
+                id="crew-delete-confirm"
+                data-testid="crew-delete-confirm-input"
+                value={deleteConfirmText}
+                onChange={(e) => setDeleteConfirmText(e.target.value)}
+                autoComplete="off"
+                autoCapitalize="characters"
+                placeholder="DELETE"
+              />
+            </div>
+            <NeoButton
+              variant="danger"
+              size="full"
+              data-testid="crew-delete-confirm"
+              disabled={busy || deleteConfirmText.trim() !== "DELETE"}
+              onClick={() => void handleDeleteCrew()}
+            >
+              <Trash2 size={16} strokeWidth={3} className="mr-1.5" />
+              {t("weekend.deleteCrewConfirm", { defaultValue: "Delete crew forever" })}
+            </NeoButton>
+          </DialogPrimitive.Content>
+        </DialogPrimitive.Portal>
+      </DialogPrimitive.Root>
     </ShellLayout>
   );
 }
