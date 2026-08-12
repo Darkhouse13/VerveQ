@@ -480,7 +480,7 @@ export function PickerPanel({
             vertically under the finger. Clip the axis and pad the translate's
             travel so nothing is cut off mid-press. */}
         <div
-          className="flex gap-1.5 overflow-x-auto overflow-y-hidden pb-1 shrink-0"
+          className="flex gap-1.5 overflow-x-auto overflow-y-hidden pb-1 shrink-0 scrollbar-none"
           data-testid="picker-filter-row"
         >
           <NeoButton

@@ -975,3 +975,32 @@ back-nav fix, U3 How to Play. Prod deploy authorized for the ship phase.
   fixtures screen. DEV wide spec re-run green with the fix.
 - QA guest SWEPT: fwPolishQaPurge dryRun (zero blockers) → purge deleted
   19 rows; post-sweep dryRun returns zero.
+
+# FW-NIT1 — 2026-08-13 — themed scrollbars + kickoff nowrap: DONE
+- Scrollbars: thin Neo-native bars SCOPED to .theme-weekend (page containers
+  and portalled sheets both carry the class) — NOT global; non-WEEKEND routes
+  keep the platform default, proven byte-identical (home/compete/quiz) by the
+  chromeProof pair. Standard scrollbar-width:thin + scrollbar-color (muted
+  cream #bb9e8166 thumb / transparent track) applied per-element (the props
+  don't inherit) = the Firefox path, verified by computed styles in Chromium
+  (which implements the same standard props); ::-webkit-scrollbar pseudo
+  rules (8px, arrowless, transparent track, padding-clipped rounded thumb)
+  ship for Safari/classic WebKit — 6 rules present in the built CSS (neither
+  Firefox nor WebKit is installed on this box; playwright.config.ts already
+  documents WebKit absent). Declared BEFORE .scrollbar-none so horizontal
+  chip bars (picker filter row — scrollbar-none added — hub rail, draft seat
+  row) keep NO bar; the hub's wide fixtures side panel dropped scrollbar-none
+  to wear the themed bar (a real vertical scroller). Verified facts on the
+  market panel list: scrollHeight>clientHeight, scrollbar-width thin,
+  scrollbar-color cream/transparent, ::-webkit-scrollbar 8px, chip row none.
+  NOTE: overlay scrollbars are compositor-drawn and excluded from CDP
+  screenshots — pixel captures cannot show the thumb; computed styles are
+  the evidence.
+- Kickoff wrap: the time is one non-wrapping unit (whitespace-nowrap on the
+  fixtures-page kickoff cell AND the hub rail time span) and the fixtures
+  row's centre column is intrinsic (min-w-[64px], not w-[64px]) so long club
+  names truncate instead of squeezing the time. Verified: every
+  fixture-kickoff cell computed nowrap + single-line height at 1366; every
+  hub rail card carries a nowrap time at 380.
+- fwnit1-*-{before,after}.png committed at 380 + 1366 (hub rail, fixtures
+  page, picker, club sheet, market panel); npm run check green.

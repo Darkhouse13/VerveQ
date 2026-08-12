@@ -238,7 +238,7 @@ export function FixturesRail({
                       {t("weekend.fixtureVoid", { defaultValue: "OFF" })}
                     </span>
                   ) : (
-                    <span className="font-mono text-[11px] tabular-nums text-right">
+                    <span className="font-mono text-[11px] tabular-nums text-right whitespace-nowrap">
                       <span className="block text-[9px] uppercase text-muted-foreground">
                         {new Date(fixture.kickoffAt).toLocaleDateString(i18n.language, {
                           weekday: "short",
@@ -566,7 +566,9 @@ export default function WeekendHubScreen() {
       {showFixturesPanel && fixtures !== null && (
         <aside
           data-testid="hub-fixtures-panel"
-          className="min-w-0 sticky top-2 max-h-[calc(100dvh-9rem)] overflow-y-auto scrollbar-none flex flex-col gap-2 pb-2"
+          // FW-NIT1: a real vertical scroller wears the themed thin bar —
+          // scrollbar-none stays reserved for horizontal chip rows.
+          className="min-w-0 sticky top-2 max-h-[calc(100dvh-9rem)] overflow-y-auto flex flex-col gap-2 pb-2 pr-1"
         >
           <div className="flex items-baseline justify-between">
             <h2 className="font-mono text-[11px] font-bold uppercase tracking-[0.16em] text-muted-foreground">

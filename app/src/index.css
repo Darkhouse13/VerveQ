@@ -225,6 +225,53 @@
     animation: weekend-score-in 0.55s ease-out both;
   }
 
+  /*
+   * FW-NIT1: Neo-native thin scrollbars on the WEEKEND's dark surfaces —
+   * near-invisible track, muted cream thumb, no arrows. Scoped to
+   * .theme-weekend (page containers AND portalled sheets both carry the
+   * class), so non-WEEKEND routes keep the platform default.
+   * Firefox: scrollbar-width/scrollbar-color are NOT inherited, hence the
+   * `*` descendant. WebKit: pseudo-elements, arrowless. Declared BEFORE
+   * .scrollbar-none so the chip bars' no-bar rule keeps winning the
+   * equal-specificity tie (horizontal chip rows show no bar at all).
+   */
+  .theme-weekend,
+  .theme-weekend * {
+    scrollbar-width: thin;
+    scrollbar-color: hsl(30 30% 62% / 0.4) transparent;
+  }
+  .theme-weekend::-webkit-scrollbar,
+  .theme-weekend ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+    background: transparent;
+  }
+  .theme-weekend::-webkit-scrollbar-track,
+  .theme-weekend ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .theme-weekend::-webkit-scrollbar-thumb,
+  .theme-weekend ::-webkit-scrollbar-thumb {
+    background-color: hsl(30 30% 62% / 0.4);
+    border-radius: 999px;
+    border: 2px solid transparent;
+    background-clip: padding-box;
+  }
+  .theme-weekend::-webkit-scrollbar-thumb:hover,
+  .theme-weekend ::-webkit-scrollbar-thumb:hover {
+    background-color: hsl(30 35% 70% / 0.6);
+  }
+  .theme-weekend::-webkit-scrollbar-button,
+  .theme-weekend ::-webkit-scrollbar-button {
+    display: none;
+    width: 0;
+    height: 0;
+  }
+  .theme-weekend::-webkit-scrollbar-corner,
+  .theme-weekend ::-webkit-scrollbar-corner {
+    background: transparent;
+  }
+
   /* THE WEEKEND formation chooser bottom sheet (FW-POLISH-2 R1): slides up
      from the foot, preserving the centring translate — the DrawSheet motion,
      weekend-local. */

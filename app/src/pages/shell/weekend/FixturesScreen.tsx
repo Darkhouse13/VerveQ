@@ -59,7 +59,7 @@ export function FixtureCard({ fixture, now }: { fixture: WeekendFixtureRow; now:
       </span>
     ) : (
       <span
-        className={`font-mono font-bold text-sm tabular-nums ${
+        className={`font-mono font-bold text-sm tabular-nums whitespace-nowrap ${
           kind === "upcoming" ? "" : "text-muted-foreground"
         }`}
         data-testid="fixture-kickoff"
@@ -95,7 +95,10 @@ export function FixtureCard({ fixture, now }: { fixture: WeekendFixtureRow; now:
         <p className="flex-1 min-w-0 text-right font-heading font-bold text-sm truncate">
           {fixture.homeName ?? fixture.homeClubId}
         </p>
-        <div className="shrink-0 w-[64px] flex flex-col items-center gap-0.5">{centre}</div>
+        {/* min-w, not w: the time is one non-wrapping unit and the column
+            grows to its intrinsic width — long club names truncate instead
+            of squeezing the time onto two lines (FW-NIT1). */}
+        <div className="shrink-0 min-w-[64px] flex flex-col items-center gap-0.5">{centre}</div>
         <p className="flex-1 min-w-0 font-heading font-bold text-sm truncate">
           {fixture.awayName ?? fixture.awayClubId}
         </p>
