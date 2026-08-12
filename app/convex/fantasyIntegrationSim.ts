@@ -669,14 +669,26 @@ export const draftSheetForUser = internalMutation({
 });
 
 /** Remove everything a UI run created: the sim-named crew(s), their rooms,
- *  logs, every simloop_* user and all of those users' squads. */
+ *  logs, every simloop_* user and all of those users' squads — plus crews
+ *  ORPHANED by a previous purge (creator doc gone: a UI-run guest created a
+ *  crew, the run broke before its flow deleted it, and the guest purge left
+ *  the crew behind). The orphan rule keeps the completed-draft protection:
+ *  a crew whose record holds a completed room is never swept by it. */
 export const purgeUiRun = internalMutation({
   args: {},
   handler: async (ctx) => {
     let deleted = 0;
     const crews = await ctx.db.query("fantasyCrews").collect();
     for (const crew of crews) {
-      if (crew.name !== SIM_CREW_NAME) continue;
+      if (crew.name !== SIM_CREW_NAME) {
+        const creatorGone = (await ctx.db.get(crew.createdBy)) === null;
+        if (!creatorGone) continue;
+        const crewRooms = await ctx.db
+          .query("fantasyDraftRooms")
+          .withIndex("by_crew", (q) => q.eq("crewId", crew._id))
+          .collect();
+        if (crewRooms.some((r) => r.status === "completed")) continue;
+      }
       const rooms = await ctx.db
         .query("fantasyDraftRooms")
         .withIndex("by_crew", (q) => q.eq("crewId", crew._id))

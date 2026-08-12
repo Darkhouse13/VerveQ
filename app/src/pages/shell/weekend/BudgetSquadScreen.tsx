@@ -466,7 +466,9 @@ export function PlayerPickerDialog({
             tab row — the picker KNOWS the slot); League/Club drill down in a
             sheet; ≤budget and Show all keep their semantics. Horizontal
             scroll stays inside this row, never the page. */}
-        <div className="flex gap-1.5 overflow-x-auto pb-0.5" data-testid="picker-filter-row">
+        {/* shrink-0: inside the dialog's squeezed flex column this row would
+            otherwise be shrunk vertically and clip the chips. */}
+        <div className="flex gap-1.5 overflow-x-auto pb-0.5 shrink-0" data-testid="picker-filter-row">
           <NeoButton
             variant={leagueFilter !== null ? "primary" : "outline"}
             size="sm"

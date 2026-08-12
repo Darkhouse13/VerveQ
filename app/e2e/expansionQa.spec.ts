@@ -38,6 +38,14 @@ function convexRun(fn: string, args: Record<string, unknown> = {}): unknown {
   }
 }
 
+/** Clear the picker's slot-position pre-filter through its ONE affordance:
+ *  the "All positions" entry in the League/Club filter sheet (FW-POLISH-3 O3). */
+async function enableAllPositions(page: Page) {
+  await page.getByTestId("picker-league-chip").click();
+  await page.getByTestId("picker-all-positions").click();
+  await expect(page.getByTestId("picker-all-positions-chip")).toBeVisible();
+}
+
 async function expectNoHorizontalScroll(page: Page, label: string) {
   const overflow = await page.evaluate(() => {
     const el = document.scrollingElement ?? document.documentElement;
@@ -92,13 +100,20 @@ test("FW-EXPAND: eight leagues seeded, matchup lines, one pick per in-window lea
   const inWindow = weekend!.leagues.map((l) => l.leagueId);
   expect(inWindow.length, "the open window must hold at least one league").toBeGreaterThan(0);
 
-  // ── 1. hub framing: every in-window league named, server order ──
+  // ── 1. hub framing: every in-window league named, server order.
+  //      FW-POLISH-3 O4: 4+ leagues collapse to a count with tap-to-expand. ──
   await page.goto("/v2/weekend");
   const leaguesLine = page.getByTestId("weekend-hub-leagues-line");
   await expect(leaguesLine).toBeVisible({ timeout: 45_000 });
-  await expect(leaguesLine).toContainText(
-    `This weekend: ${inWindow.map((id) => LEAGUE_NAMES[id]).join(" + ")}`,
-  );
+  const joinedLeagues = `This weekend: ${inWindow.map((id) => LEAGUE_NAMES[id]).join(" + ")}`;
+  if (inWindow.length <= 3) {
+    await expect(leaguesLine).toContainText(joinedLeagues);
+  } else {
+    await expect(leaguesLine).toContainText(`This weekend: ${inWindow.length} leagues`);
+    await leaguesLine.click();
+    await expect(leaguesLine).toContainText(joinedLeagues);
+    await leaguesLine.click(); // collapse back — the hub's resting state
+  }
   await page.screenshot({ path: "e2e/artifacts/expansion-hub-380.png", fullPage: true });
 
   // ── guest onboarding through the squad door ──
@@ -142,7 +157,9 @@ test("FW-EXPAND: eight leagues seeded, matchup lines, one pick per in-window lea
   await expect(page.getByRole("button", { name: "Pick", exact: true }).first()).toBeVisible({
     timeout: 45_000,
   });
-  await page.getByRole("button", { name: "ALL", exact: true }).click();
+  // FW-POLISH-3 O3: the tab row is gone — the one all-positions affordance
+  // lives in the League/Club filter sheet.
+  await enableAllPositions(page);
   await page.getByRole("button", { name: "Show all", exact: true }).click();
   const search = page.getByPlaceholder("Search name or club…");
 
@@ -193,9 +210,10 @@ test("FW-EXPAND: eight leagues seeded, matchup lines, one pick per in-window lea
     await page.getByTestId(`pitch-slot-${i}`).click();
     const pickerSearch = page.getByPlaceholder("Search name or club…");
     await expect(pickerSearch).toBeVisible({ timeout: 30_000 });
-    // Position filter to ALL so the club's list is never empty for this
-    // slot's role (all-positions-eligible; mismatch is priced, not banned).
-    await page.getByRole("button", { name: "ALL", exact: true }).click();
+    // Clear the slot's position pre-filter so the club's list is never empty
+    // for this slot's role (all-positions-eligible; mismatch priced, not
+    // banned) — via the sheet's single affordance (FW-POLISH-3 O3).
+    await enableAllPositions(page);
     await pickerSearch.fill(club);
     const pick = page.getByRole("button", { name: "Pick", exact: true }).first();
     await expect(pick, `${club} must offer a pickable player`).toBeEnabled({

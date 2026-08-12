@@ -122,6 +122,10 @@ export default function CrewScreen() {
   const handleDeleteCrew = async () => {
     if (busy || crew === null || crew === undefined) return;
     setBusy(true);
+    // The crew query flips to null the moment the delete commits — latch the
+    // deep-link auto-join so that null is not mistaken for a bad link (which
+    // would fire a doomed joinCrew against the dead code mid-navigation).
+    joinAttempted.current = true;
     try {
       await deleteCrew({ crewId: crew.crewId });
       toast.success(
