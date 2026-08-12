@@ -601,3 +601,39 @@ back-nav fix, U3 How to Play. Prod deploy authorized for the ship phase.
   change is pinned too: LEAGUE_IDS === exactly the eight. 8 tests.
 - Scoring engine: ZERO changes (R4 holds by test, not assumption).
 - Check green: 140 files / 1,511 tests.
+
+## O5 — 2026-08-12 — U1 matchup line + U2 back-nav + U3 How to Play: DONE
+
+- U1: getMarket's per-club earliest-kickoff reduce now carries the whole
+  matchup (opponentClubId + isHome) off the same fixture row the lock
+  rule uses — earliest fixture governs when a window holds two. Opponent
+  names resolve server-side by inverting the per-player pool-meta labels
+  into a clubId→name map (no schema change; the schema deliberately has
+  no clubs table, and TLA codes are not in the feed's ingested shape, so
+  the line reads "Getafe · vs Sevilla (H)" with the feed's short display
+  names — nothing invented). Picker club line renders " · vs X (H|A)";
+  NO FIXTURE rows get null opponent and keep the badge, unchanged.
+- U2 root cause, confirmed as the map predicted: four door screens
+  (squad, vote, court, crews) hardcoded onBack → SHELL_ROUTES.compete,
+  skipping the hub they were entered from — while the crew subtree
+  already parent-chained correctly. Fix: those four point at
+  SHELL_ROUTES.weekend; the hub keeps /compete (its true parent).
+- U3: WeekendHowToPlayScreen at /v2/weekend/how-to-play (ShellGate only,
+  public like the hub), linked from a headerRight "?" (HelpCircle, neo
+  chrome) on the hub. Content STRICTLY from the specs — budget 91.0,
+  prices 4.0–13.0 halves, 13=XI+2, structural shape rule, club cap 3 +
+  favorite (28d cooldown), per-fixture locks + no-hindsight, appearance
+  +1, goals +5..+8 / assists +3..+6 inverted by depth, win +1 / draw
+  +0.5 at 60', clean sheets 5/4/1, −1 per 2 conceded, cards −1/−4
+  (−6 second yellow), caps + the two ramps (up to +2), fielded-slot
+  templates + ×0.75 positive-only dampener, finisher entry-minute
+  scoring + ×1.25 after 75', crowd ±15% with liquidity floor, court
+  (2 filings, filing = first endorsement, max(15, 0.5%) threshold,
+  max(30, 1%) quorum, 60% share, Monday 23:59 close, Tuesday-evening
+  verdicts), crew tie ladder, finality 23:59 Paris day-after. Dark
+  WEEKEND theme, Neo cards, mono eyebrows, mobile-first.
+- e2e: weekendMobile loop extends — U1 matchup regex on the GK picker's
+  first row, U2 ladder (court→hub, squad→hub, crews→hub, hub→compete),
+  U3 "?"→rules screen (sections asserted, no horizontal scroll,
+  screenshot)→back→hub. PASS 19.6s, zero console errors. Check green
+  (1,511).

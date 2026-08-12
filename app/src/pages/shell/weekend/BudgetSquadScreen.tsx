@@ -458,8 +458,20 @@ export function PlayerPickerDialog({
                       {player.position}
                     </span>
                   </p>
-                  <p className="text-[11px] text-muted-foreground truncate">
+                  <p
+                    className="text-[11px] text-muted-foreground truncate"
+                    data-testid="picker-club-line"
+                  >
                     {player.clubName ?? player.clubId}
+                    {player.opponentName !== null && (
+                      // U1 matchup line: earliest fixture's opponent + venue,
+                      // e.g. "Getafe · vs Sevilla (H)". No fixture keeps the
+                      // badge, never a fabricated opponent.
+                      <span className="whitespace-nowrap">
+                        {" · vs "}
+                        {player.opponentName} {player.isHome ? "(H)" : "(A)"}
+                      </span>
+                    )}
                   </p>
                 </div>
                 <div className="flex items-center gap-2 shrink-0">
@@ -925,7 +937,9 @@ export default function BudgetSquadScreen() {
       theme="theme-weekend"
       title={t("weekend.budgetTitle", { defaultValue: "Your weekend 13" })}
       back
-      onBack={() => navigate(SHELL_ROUTES.compete)}
+      // U2: back walks UP the flow — this screen's parent is the hub, not the
+      // compete grid two levels above it.
+      onBack={() => navigate(SHELL_ROUTES.weekend)}
       scroll
     >
       <div className="flex flex-col gap-4 md:max-w-md md:mx-auto md:w-full">

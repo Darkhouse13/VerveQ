@@ -101,6 +101,7 @@ const BudgetSquadScreen = lazyWithRetry(() => import("./pages/shell/weekend/Budg
 const VoteScreen = lazyWithRetry(() => import("./pages/shell/weekend/VoteScreen"));
 const CourtScreen = lazyWithRetry(() => import("./pages/shell/weekend/CourtScreen"));
 const CrewSheetScreen = lazyWithRetry(() => import("./pages/shell/weekend/CrewSheetScreen"));
+const WeekendHowToPlayScreen = lazyWithRetry(() => import("./pages/shell/weekend/WeekendHowToPlayScreen"));
 
 const DuelPlayScreen = lazyWithRetry(() => import("./pages/DuelPlayScreen"));
 const DuelLinkScreen = lazyWithRetry(() => import("./pages/DuelLinkScreen"));
@@ -583,6 +584,9 @@ const AppRoutes = () => (
             <Route path="/v2/weekend/vote" element={<ShellGate><UsernameOnlyRoute><VoteScreen /></UsernameOnlyRoute></ShellGate>} />
             <Route path="/v2/weekend/court" element={<ShellGate><UsernameOnlyRoute><CourtScreen /></UsernameOnlyRoute></ShellGate>} />
             <Route path="/v2/weekend/sheet/:roomId" element={<ShellGate><UsernameOnlyRoute><CrewSheetScreen /></UsernameOnlyRoute></ShellGate>} />
+            {/* THE WEEKEND rules screen (FW-EXPAND U3). Public like the hub —
+                rules need no session. */}
+            <Route path="/v2/weekend/how-to-play" element={<ShellGate><WeekendHowToPlayScreen /></ShellGate>} />
             {/* THE DRAW — dev/preview only, flag-gated (VITE_DRAW_ENABLED),
                 not linked from home, nav, or any mode grid. */}
             <Route path="/draw" element={<DrawScreen />} />

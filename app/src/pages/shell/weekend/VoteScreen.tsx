@@ -215,7 +215,9 @@ export default function VoteScreen() {
       theme="theme-weekend"
       title={t("weekend.voteTitle", { defaultValue: "The eye test" })}
       back
-      onBack={() => navigate(SHELL_ROUTES.compete)}
+      // U2: back walks UP the flow — this door's parent is the hub, not the
+      // compete grid two levels above it.
+      onBack={() => navigate(SHELL_ROUTES.weekend)}
       scroll
     >
       <div className="flex flex-col gap-4 md:max-w-md md:mx-auto md:w-full">

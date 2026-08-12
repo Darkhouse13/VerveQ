@@ -17,7 +17,7 @@ import type { ComponentProps } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useQuery } from "convex/react";
-import { CalendarRange, Gavel, Users, Vote, Wallet } from "lucide-react";
+import { CalendarRange, Gavel, HelpCircle, Users, Vote, Wallet } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { api } from "../../../../convex/_generated/api";
 import { NeoCard } from "@/components/neo/NeoCard";
@@ -81,6 +81,18 @@ export default function WeekendHubScreen() {
       })}
       back
       onBack={() => navigate(SHELL_ROUTES.compete)}
+      headerRight={
+        // U3: the rules screen's natural front door.
+        <button
+          type="button"
+          aria-label={t("weekend.howToPlayTitle", { defaultValue: "How to play" })}
+          data-testid="weekend-how-to-play-button"
+          className="neo-border neo-shadow rounded-lg w-9 h-9 flex items-center justify-center bg-card active:translate-x-0.5 active:translate-y-0.5 active:shadow-none"
+          onClick={() => navigate(SHELL_ROUTES.weekendHowToPlay)}
+        >
+          <HelpCircle size={16} strokeWidth={3} />
+        </button>
+      }
       scroll
     >
       <div className="flex flex-col gap-4 md:max-w-md md:mx-auto md:w-full pb-4">

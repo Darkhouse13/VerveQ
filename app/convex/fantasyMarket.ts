@@ -70,29 +70,60 @@ export const getMarket = query({
       .query("fantasyFixtures")
       .withIndex("by_gameweek_kickoff", (q) => q.eq("gameweekId", gameweek._id))
       .collect();
-    const kickoffByClub = new Map<string, number>();
+    // Earliest fixture per club — the lock-relevant one when a window holds
+    // two (FW-EXPAND U1) — with the matchup facts the fixture row already
+    // carries: who the opponent is, and which side is home.
+    const matchupByClub = new Map<
+      string,
+      { kickoffAt: number; opponentClubId: string; isHome: boolean }
+    >();
     for (const fixture of fixtures) {
       for (const clubId of [fixture.homeClubId, fixture.awayClubId]) {
-        const seen = kickoffByClub.get(clubId);
-        if (seen === undefined || fixture.kickoffAt < seen) {
-          kickoffByClub.set(clubId, fixture.kickoffAt);
+        const isHome = clubId === fixture.homeClubId;
+        const seen = matchupByClub.get(clubId);
+        if (seen === undefined || fixture.kickoffAt < seen.kickoffAt) {
+          matchupByClub.set(clubId, {
+            kickoffAt: fixture.kickoffAt,
+            opponentClubId: isHome ? fixture.awayClubId : fixture.homeClubId,
+            isHome,
+          });
         }
       }
     }
 
+    // clubId → display name, inverted from the per-player pool meta (the one
+    // denormalized club label in the schema — there is deliberately no clubs
+    // table). Any club with at least one labelled player resolves.
+    const clubNameById = new Map<string, string>();
+    for (const player of players) {
+      if (clubNameById.has(player.clubId)) continue;
+      const label = clubNameByPlayer.get(player._id);
+      if (label !== undefined) clubNameById.set(player.clubId, label);
+    }
+
     const market = players
       .filter((player: Doc<"fantasyPlayers">) => player.active)
-      .map((player) => ({
-        playerId: player._id,
-        name: player.name,
-        clubId: player.clubId,
-        clubName: clubNameByPlayer.get(player._id) ?? null,
-        /** Nominal feed position — a browsing hint, never a build constraint
-         *  (all-positions-eligible; the mismatch rule prices the risk). */
-        position: player.feedPosition,
-        price: player.price,
-        kickoffAt: kickoffByClub.get(player.clubId) ?? null,
-      }));
+      .map((player) => {
+        const matchup = matchupByClub.get(player.clubId);
+        return {
+          playerId: player._id,
+          name: player.name,
+          clubId: player.clubId,
+          clubName: clubNameByPlayer.get(player._id) ?? null,
+          /** Nominal feed position — a browsing hint, never a build constraint
+           *  (all-positions-eligible; the mismatch rule prices the risk). */
+          position: player.feedPosition,
+          price: player.price,
+          kickoffAt: matchup?.kickoffAt ?? null,
+          /** U1 matchup line: the earliest fixture's opponent and venue.
+           *  Null exactly when kickoffAt is null (the NO FIXTURE case). */
+          opponentName:
+            matchup === undefined
+              ? null
+              : (clubNameById.get(matchup.opponentClubId) ?? null),
+          isHome: matchup?.isHome ?? null,
+        };
+      });
 
     return {
       gameweekId: gameweek._id,
