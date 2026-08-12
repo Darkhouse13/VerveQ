@@ -542,3 +542,157 @@ describe("budget squad screen — edits and locks", () => {
     expect(screen.getByText(/19\.5 left/)).toBeInTheDocument();
   });
 });
+
+// ── FW-POLISH-3 O3+O4: slot-context picker, league/club filters, leagues line ──
+
+const WEEKEND_LEAGUES_QUERY = getFunctionName(api.fantasyMarket.getWeekendLeagues);
+
+const FUTURE_KICKOFF = 4102444800000;
+
+function marketPlayer(overrides: Record<string, unknown>) {
+  return {
+    playerId: "mp1",
+    name: "Keeper One",
+    clubId: "getafe",
+    leagueId: 140,
+    clubName: "Getafe",
+    position: "GK",
+    price: 5,
+    kickoffAt: FUTURE_KICKOFF,
+    opponentName: "Sevilla",
+    isHome: true,
+    ...overrides,
+  };
+}
+
+function pickerMarket() {
+  return {
+    ...GATE,
+    players: [
+      marketPlayer({}),
+      marketPlayer({
+        playerId: "mp2",
+        name: "Keeper Two",
+        clubId: "ajax",
+        leagueId: 88,
+        clubName: "Ajax",
+        opponentName: "Heerenveen",
+      }),
+      marketPlayer({
+        playerId: "mp3",
+        name: "Mid Man",
+        clubId: "getafe",
+        leagueId: 140,
+        clubName: "Getafe",
+        position: "MID",
+      }),
+    ],
+  };
+}
+
+async function openGkPicker() {
+  queryMock.results[SQUAD_QUERY] = fullSquad();
+  queryMock.results[MARKET_QUERY] = pickerMarket();
+  renderScreen();
+  fireEvent.click(await screen.findByTestId("pitch-slot-0"));
+  return within(await screen.findByRole("dialog"));
+}
+
+describe("budget squad screen — slot-context picker (FW-POLISH-3 O3)", () => {
+  it("pre-filters to the slot's position with NO tab row", async () => {
+    const dialog = await openGkPicker();
+    expect(await dialog.findByText("Keeper One")).toBeInTheDocument();
+    // The MID is filtered out by slot context, not by a tab the user set.
+    expect(dialog.queryByText("Mid Man")).toBeNull();
+    // The old ALL/GK/DEF/MID/ATT row is gone.
+    expect(dialog.queryByRole("button", { name: "ALL" })).toBeNull();
+    expect(dialog.queryByRole("button", { name: "GK" })).toBeNull();
+    expect(dialog.queryByRole("button", { name: "ATT" })).toBeNull();
+  });
+
+  it("drills league → club: a chosen league scopes results and the club sheet", async () => {
+    const dialog = await openGkPicker();
+    fireEvent.click(dialog.getByTestId("picker-league-chip"));
+    const sheet = within(await screen.findByTestId("picker-filter-sheet"));
+    fireEvent.click(sheet.getByText("La Liga"));
+    // League filter applied: the Eredivisie keeper is out.
+    expect(await dialog.findByText("Keeper One")).toBeInTheDocument();
+    expect(dialog.queryByText("Keeper Two")).toBeNull();
+
+    // The club sheet is scoped to the chosen league and searchable.
+    fireEvent.click(dialog.getByTestId("picker-club-chip"));
+    const clubSheet = within(await screen.findByTestId("picker-filter-sheet"));
+    expect(clubSheet.getByText("Getafe")).toBeInTheDocument();
+    expect(clubSheet.queryByText("Ajax")).toBeNull();
+    fireEvent.change(clubSheet.getByTestId("picker-club-search"), {
+      target: { value: "zzz" },
+    });
+    expect(clubSheet.queryByText("Getafe")).toBeNull();
+    fireEvent.change(clubSheet.getByTestId("picker-club-search"), {
+      target: { value: "geta" },
+    });
+    fireEvent.click(clubSheet.getByText("Getafe"));
+    expect(await dialog.findByText("Keeper One")).toBeInTheDocument();
+  });
+
+  it("keeps FW-1's deliberate mismatch pick reachable through ONE affordance", async () => {
+    const dialog = await openGkPicker();
+    expect(dialog.queryByText("Mid Man")).toBeNull();
+    fireEvent.click(dialog.getByTestId("picker-league-chip"));
+    const sheet = within(await screen.findByTestId("picker-filter-sheet"));
+    fireEvent.click(sheet.getByTestId("picker-all-positions"));
+    // Position pre-filter cleared: the out-of-position pick is on the board.
+    expect(await dialog.findByText("Mid Man")).toBeInTheDocument();
+    // And the state is visible (and clearable) in the filter row.
+    expect(dialog.getByTestId("picker-all-positions-chip")).toBeInTheDocument();
+  });
+
+  it("carries no THIS WEEKEND line any more (O4 relocation)", async () => {
+    queryMock.results[WEEKEND_LEAGUES_QUERY] = {
+      gameweekId: "gw1",
+      gwNumber: 3,
+      leagues: [{ leagueId: 140, fixtureCount: 6 }],
+    };
+    const dialog = await openGkPicker();
+    expect(dialog.queryByText(/This weekend:/)).toBeNull();
+  });
+});
+
+describe("budget squad screen — the leagues strip (FW-POLISH-3 O4)", () => {
+  it("renders inline at ≤3 leagues", async () => {
+    queryMock.results[SQUAD_QUERY] = fullSquad();
+    queryMock.results[WEEKEND_LEAGUES_QUERY] = {
+      gameweekId: "gw1",
+      gwNumber: 3,
+      leagues: [
+        { leagueId: 88, fixtureCount: 9 },
+        { leagueId: 94, fixtureCount: 9 },
+      ],
+    };
+    renderScreen();
+    const strip = await screen.findByTestId("squad-leagues-strip");
+    expect(strip.textContent).toContain("This weekend: Eredivisie + Liga Portugal");
+  });
+
+  it("collapses to a count at 4+ and expands on tap to list all", async () => {
+    queryMock.results[SQUAD_QUERY] = fullSquad();
+    queryMock.results[WEEKEND_LEAGUES_QUERY] = {
+      gameweekId: "gw1",
+      gwNumber: 3,
+      leagues: [
+        { leagueId: 40, fixtureCount: 12 },
+        { leagueId: 88, fixtureCount: 9 },
+        { leagueId: 94, fixtureCount: 9 },
+        { leagueId: 140, fixtureCount: 6 },
+      ],
+    };
+    renderScreen();
+    const strip = await screen.findByTestId("squad-leagues-strip");
+    expect(strip.textContent).toContain("This weekend: 4 leagues");
+    expect(strip.textContent).not.toContain("Championship");
+    fireEvent.click(strip);
+    expect(strip.textContent).toContain(
+      "This weekend: Championship + Eredivisie + Liga Portugal + La Liga",
+    );
+  });
+});

@@ -24,7 +24,7 @@ import { NeoCard } from "@/components/neo/NeoCard";
 import { NeoBadge } from "@/components/neo/NeoBadge";
 import { ShellLayout } from "@/components/shell/ShellLayout";
 import { SHELL_ROUTES } from "@/lib/shellRoutes";
-import { leagueListLine } from "@/lib/leagueNames";
+import { WeekendLeaguesLine } from "@/components/weekend/WeekendLeaguesLine";
 
 type NeoColor = NonNullable<ComponentProps<typeof NeoCard>["color"]>;
 
@@ -119,15 +119,11 @@ export default function WeekendHubScreen() {
           )}
         </div>
         {weekendLeagues != null && weekendLeagues.leagues.length > 0 && (
-          <p
-            className="font-mono text-[11px] font-bold uppercase tracking-[0.16em] text-muted-foreground -mt-2"
-            data-testid="weekend-hub-leagues-line"
-          >
-            {t("weekend.thisWeekend", {
-              defaultValue: "This weekend: {{leagues}}",
-              leagues: leagueListLine(weekendLeagues.leagues.map((l) => l.leagueId)),
-            })}
-          </p>
+          <WeekendLeaguesLine
+            leagueIds={weekendLeagues.leagues.map((l) => l.leagueId)}
+            testid="weekend-hub-leagues-line"
+            className="-mt-2"
+          />
         )}
 
         <HubDoor

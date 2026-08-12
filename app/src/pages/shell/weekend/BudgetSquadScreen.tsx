@@ -20,19 +20,19 @@
  * Views are exported for the contract suite; the default export is the data
  * container (house pattern, DraftRoomScreen.tsx).
  */
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useConvex, useMutation, useQuery } from "convex/react";
 import type { FunctionReturnType } from "convex/server";
 import { toast } from "sonner";
-import { ArrowLeftRight, Lock, Plus, X } from "lucide-react";
+import * as DialogPrimitive from "@radix-ui/react-dialog";
+import { ArrowLeftRight, Check, ChevronDown, Lock, Plus, X } from "lucide-react";
 import { api } from "../../../../convex/_generated/api";
 import type { Id } from "../../../../convex/_generated/dataModel";
 import { formatPoints } from "../../../../convex/lib/fantasyScoring";
 import { CROWD_LIQUIDITY_THRESHOLD } from "../../../../convex/lib/fantasyCrowd";
 import {
-  SLOT_ROLES,
   SQUAD_BUDGET,
   type SlotRole,
 } from "../../../../convex/lib/fantasyConstants";
@@ -61,7 +61,8 @@ import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { ShellLayout } from "@/components/shell/ShellLayout";
 import { SHELL_ROUTES } from "@/lib/shellRoutes";
 import { friendlyError } from "@/lib/errors";
-import { leagueListLine } from "@/lib/leagueNames";
+import { leagueName } from "@/lib/leagueNames";
+import { WeekendLeaguesLine } from "@/components/weekend/WeekendLeaguesLine";
 import { track } from "@/lib/analytics";
 
 export type OpenGameweek = NonNullable<
@@ -351,22 +352,72 @@ export function PlayerPickerDialog({
             ? t("weekend.pickAtt", { defaultValue: "Who leads the line?" })
             : t("weekend.pickAny", { defaultValue: "Who makes your 13?" });
   const [search, setSearch] = useState("");
-  const [position, setPosition] = useState<SlotRole | "ALL">(slotRole ?? "ALL");
   const [affordableOnly, setAffordableOnly] = useState(false);
   // D4: a partial gameweek is normal — players without a fixture are OUT of
   // the browse by default, behind an explicit "show all", instead of pages
   // of badge noise.
   const [showAll, setShowAll] = useState(false);
+  // O3 (FW-POLISH-3): the picker opens FROM a slot, so it pre-filters to the
+  // slot's position instead of showing a tab row. That pre-filter is a
+  // FILTER default, not an eligibility rule — FW-1's deliberate
+  // out-of-position pick stays possible through exactly ONE affordance, the
+  // "All positions" entry in the filter sheet, which clears it.
+  const [allPositions, setAllPositions] = useState(false);
+  const [leagueFilter, setLeagueFilter] = useState<number | null>(null);
+  const [clubFilter, setClubFilter] = useState<string | null>(null);
+  const [filterSheet, setFilterSheet] = useState<"league" | "club" | null>(null);
+  const [clubSearch, setClubSearch] = useState("");
 
   // Re-arm the defaults each time the picker opens for a slot.
   useEffect(() => {
     if (open) {
       setSearch("");
-      setPosition(slotRole ?? "ALL");
       setAffordableOnly(false);
       setShowAll(false);
+      setAllPositions(false);
+      setLeagueFilter(null);
+      setClubFilter(null);
+      setFilterSheet(null);
+      setClubSearch("");
     }
   }, [open, slotRole]);
+
+  /** The market's club catalogue, grouped per league — there is deliberately
+   *  no clubs table, so the list is derived from the rows themselves.
+   *  League order: the window's playing leagues first (getWeekendLeagues
+   *  order), then any league only reachable via Show all, by name. */
+  const clubCatalogue = useMemo(() => {
+    const byLeague = new Map<number, Map<string, string>>();
+    for (const p of market?.players ?? []) {
+      const clubs = byLeague.get(p.leagueId) ?? new Map<string, string>();
+      if (!clubs.has(p.clubId)) clubs.set(p.clubId, p.clubName ?? p.clubId);
+      byLeague.set(p.leagueId, clubs);
+    }
+    const weekendOrder = (leagues ?? []).map((l) => l.leagueId);
+    const leagueIds = [...byLeague.keys()].sort((a, b) => {
+      const ia = weekendOrder.indexOf(a);
+      const ib = weekendOrder.indexOf(b);
+      if (ia !== -1 || ib !== -1) {
+        return (ia === -1 ? Infinity : ia) < (ib === -1 ? Infinity : ib) ? -1 : 1;
+      }
+      return leagueName(a).localeCompare(leagueName(b));
+    });
+    return leagueIds.map((leagueId) => ({
+      leagueId,
+      clubs: [...(byLeague.get(leagueId) ?? new Map<string, string>()).entries()]
+        .map(([clubId, name]) => ({ clubId, name }))
+        .sort((a, b) => a.name.localeCompare(b.name)),
+    }));
+  }, [market, leagues]);
+
+  const clubFilterName = useMemo(() => {
+    if (clubFilter === null) return null;
+    for (const group of clubCatalogue) {
+      const club = group.clubs.find((c) => c.clubId === clubFilter);
+      if (club) return club.name;
+    }
+    return null;
+  }, [clubCatalogue, clubFilter]);
 
   const results = useMemo(() => {
     if (market === null || market === undefined) return [];
@@ -375,7 +426,9 @@ export function PlayerPickerDialog({
       .filter(
         (p) =>
           (showAll || p.kickoffAt !== null) &&
-          (position === "ALL" || p.position === position) &&
+          (allPositions || slotRole === null || p.position === slotRole) &&
+          (leagueFilter === null || p.leagueId === leagueFilter) &&
+          (clubFilter === null || p.clubId === clubFilter) &&
           (!affordableOnly || (p.price !== null && p.price <= remaining)) &&
           (needle.length === 0 ||
             p.name.toLowerCase().includes(needle) ||
@@ -383,7 +436,17 @@ export function PlayerPickerDialog({
       )
       .sort((a, b) => (b.price ?? 0) - (a.price ?? 0) || a.name.localeCompare(b.name))
       .slice(0, MARKET_RESULT_CAP);
-  }, [market, search, position, affordableOnly, showAll, remaining]);
+  }, [
+    market,
+    search,
+    slotRole,
+    allPositions,
+    leagueFilter,
+    clubFilter,
+    affordableOnly,
+    showAll,
+    remaining,
+  ]);
 
   return (
     <Dialog open={open} onOpenChange={(next) => !next && onClose()}>
@@ -391,14 +454,6 @@ export function PlayerPickerDialog({
         <DialogTitle className="font-heading font-bold text-lg" data-testid="picker-prompt">
           {prompt}
         </DialogTitle>
-        {leagues != null && leagues.length > 0 && (
-          <p className="font-mono text-[10px] font-bold uppercase tracking-[0.16em] text-muted-foreground -mt-2">
-            {t("weekend.thisWeekend", {
-              defaultValue: "This weekend: {{leagues}}",
-              leagues: leagueListLine(leagues.map((l) => l.leagueId)),
-            })}
-          </p>
-        )}
 
         <NeoInput
           value={search}
@@ -407,20 +462,40 @@ export function PlayerPickerDialog({
             defaultValue: "Search name or club…",
           })}
         />
-        <div className="flex gap-1.5 flex-wrap">
-          {(["ALL", ...SLOT_ROLES] as const).map((p) => (
-            <NeoButton
-              key={p}
-              variant={position === p ? "primary" : "outline"}
-              size="sm"
-              onClick={() => setPosition(p)}
-            >
-              {p}
-            </NeoButton>
-          ))}
+        {/* O3: one-line filter row. The slot's position is the pre-filter (no
+            tab row — the picker KNOWS the slot); League/Club drill down in a
+            sheet; ≤budget and Show all keep their semantics. Horizontal
+            scroll stays inside this row, never the page. */}
+        <div className="flex gap-1.5 overflow-x-auto pb-0.5" data-testid="picker-filter-row">
+          <NeoButton
+            variant={leagueFilter !== null ? "primary" : "outline"}
+            size="sm"
+            className="shrink-0"
+            data-testid="picker-league-chip"
+            onClick={() => setFilterSheet("league")}
+          >
+            {leagueFilter === null
+              ? t("weekend.filterLeague", { defaultValue: "League" })
+              : leagueName(leagueFilter)}
+            <ChevronDown size={12} strokeWidth={3} className="ml-1" aria-hidden />
+          </NeoButton>
+          <NeoButton
+            variant={clubFilter !== null ? "primary" : "outline"}
+            size="sm"
+            className="shrink-0"
+            data-testid="picker-club-chip"
+            onClick={() => {
+              setClubSearch("");
+              setFilterSheet("club");
+            }}
+          >
+            {clubFilterName ?? t("weekend.filterClub", { defaultValue: "Club" })}
+            <ChevronDown size={12} strokeWidth={3} className="ml-1" aria-hidden />
+          </NeoButton>
           <NeoButton
             variant={affordableOnly ? "primary" : "outline"}
             size="sm"
+            className="shrink-0"
             onClick={() => setAffordableOnly((v) => !v)}
           >
             ≤ {remaining.toFixed(1)}
@@ -428,11 +503,25 @@ export function PlayerPickerDialog({
           <NeoButton
             variant={showAll ? "primary" : "outline"}
             size="sm"
+            className="shrink-0"
             aria-pressed={showAll}
             onClick={() => setShowAll((v) => !v)}
           >
             {t("weekend.showAll", { defaultValue: "Show all" })}
           </NeoButton>
+          {allPositions && (
+            <NeoButton
+              variant="primary"
+              size="sm"
+              className="shrink-0"
+              data-testid="picker-all-positions-chip"
+              aria-pressed
+              onClick={() => setAllPositions(false)}
+            >
+              {t("weekend.allPositions", { defaultValue: "All positions" })}
+              <X size={12} strokeWidth={3} className="ml-1" aria-hidden />
+            </NeoButton>
+          )}
         </div>
 
         <div className="flex flex-col gap-1.5 overflow-y-auto min-h-0">
@@ -535,8 +624,180 @@ export function PlayerPickerDialog({
             </p>
           )}
         </div>
+
+        {/* League/Club drill sheet (the FormationChooser bottom-sheet
+            precedent), searchable and grouped by league; a chosen league
+            scopes the club list. Its footer holds THE one out-of-position
+            affordance (O3): "All positions" clears the slot pre-filter so the
+            deliberate mismatch pick FW-1 permits stays reachable without a
+            tab row. */}
+        <DialogPrimitive.Root
+          open={filterSheet !== null}
+          onOpenChange={(next) => !next && setFilterSheet(null)}
+        >
+          <DialogPrimitive.Portal>
+            <DialogPrimitive.Overlay className="fixed inset-0 z-50 bg-black/80 data-[state=open]:animate-in data-[state=open]:fade-in-0" />
+            <DialogPrimitive.Content
+              data-testid="picker-filter-sheet"
+              className="theme-weekend weekend-sheet-in fixed bottom-0 left-1/2 -translate-x-1/2 z-50 w-full max-w-sm neo-border neo-shadow-lg rounded-t-xl border-b-0 bg-background text-foreground p-5 pb-[max(1.5rem,env(safe-area-inset-bottom))] flex flex-col gap-3 max-h-[70dvh]"
+            >
+              <div className="flex items-start justify-between gap-2">
+                <DialogPrimitive.Title className="font-heading font-bold text-lg">
+                  {filterSheet === "club"
+                    ? t("weekend.filterClubTitle", { defaultValue: "Filter by club" })
+                    : t("weekend.filterLeagueTitle", { defaultValue: "Filter by league" })}
+                </DialogPrimitive.Title>
+                <DialogPrimitive.Close
+                  className="neo-border rounded bg-card p-1 shrink-0 active:neo-shadow-pressed"
+                  aria-label="Close"
+                >
+                  <X size={14} strokeWidth={3} />
+                </DialogPrimitive.Close>
+              </div>
+
+              {filterSheet === "club" && (
+                <NeoInput
+                  value={clubSearch}
+                  onChange={(e) => setClubSearch(e.target.value)}
+                  data-testid="picker-club-search"
+                  placeholder={t("weekend.searchClubs", { defaultValue: "Search clubs…" })}
+                />
+              )}
+
+              <div className="flex flex-col gap-1 overflow-y-auto min-h-0">
+                {filterSheet === "league" ? (
+                  <>
+                    <SheetRow
+                      selected={leagueFilter === null}
+                      onClick={() => {
+                        setLeagueFilter(null);
+                        setFilterSheet(null);
+                      }}
+                    >
+                      {t("weekend.allLeagues", { defaultValue: "All leagues" })}
+                    </SheetRow>
+                    {clubCatalogue.map((group) => (
+                      <SheetRow
+                        key={group.leagueId}
+                        selected={leagueFilter === group.leagueId}
+                        onClick={() => {
+                          setLeagueFilter(group.leagueId);
+                          if (
+                            clubFilter !== null &&
+                            !group.clubs.some((c) => c.clubId === clubFilter)
+                          ) {
+                            setClubFilter(null);
+                          }
+                          setFilterSheet(null);
+                        }}
+                      >
+                        {leagueName(group.leagueId)}
+                      </SheetRow>
+                    ))}
+                  </>
+                ) : (
+                  <>
+                    <SheetRow
+                      selected={clubFilter === null}
+                      onClick={() => {
+                        setClubFilter(null);
+                        setFilterSheet(null);
+                      }}
+                    >
+                      {t("weekend.allClubs", { defaultValue: "All clubs" })}
+                    </SheetRow>
+                    {(leagueFilter === null
+                      ? clubCatalogue
+                      : clubCatalogue.filter((g) => g.leagueId === leagueFilter)
+                    ).map((group) => {
+                      const needle = clubSearch.trim().toLowerCase();
+                      const clubs =
+                        needle.length === 0
+                          ? group.clubs
+                          : group.clubs.filter((c) =>
+                              c.name.toLowerCase().includes(needle),
+                            );
+                      if (clubs.length === 0) return null;
+                      return (
+                        <div key={group.leagueId}>
+                          <p className="font-mono text-[10px] font-bold uppercase tracking-[0.16em] text-muted-foreground pt-2 pb-1">
+                            {leagueName(group.leagueId)}
+                          </p>
+                          <div className="flex flex-col gap-1">
+                            {clubs.map((club) => (
+                              <SheetRow
+                                key={club.clubId}
+                                selected={clubFilter === club.clubId}
+                                onClick={() => {
+                                  setClubFilter(club.clubId);
+                                  setLeagueFilter(group.leagueId);
+                                  setFilterSheet(null);
+                                }}
+                              >
+                                {club.name}
+                              </SheetRow>
+                            ))}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </>
+                )}
+              </div>
+
+              <div className="border-t-2 border-border pt-3">
+                <button
+                  type="button"
+                  data-testid="picker-all-positions"
+                  aria-pressed={allPositions}
+                  onClick={() => {
+                    setAllPositions((v) => !v);
+                    setFilterSheet(null);
+                  }}
+                  className="flex w-full items-center justify-between gap-2 text-left active:opacity-60"
+                >
+                  <span>
+                    <span className="block font-heading font-bold text-sm">
+                      {t("weekend.allPositions", { defaultValue: "All positions" })}
+                    </span>
+                    <span className="block text-[11px] text-muted-foreground">
+                      {t("weekend.allPositionsBody", {
+                        defaultValue: "Out-of-position picks carry the ×0.75 risk.",
+                      })}
+                    </span>
+                  </span>
+                  {allPositions && <Check size={16} strokeWidth={3} aria-hidden />}
+                </button>
+              </div>
+            </DialogPrimitive.Content>
+          </DialogPrimitive.Portal>
+        </DialogPrimitive.Root>
       </DialogContent>
     </Dialog>
+  );
+}
+
+/** A tappable row inside the picker's filter sheet. */
+function SheetRow({
+  selected,
+  onClick,
+  children,
+}: {
+  selected: boolean;
+  onClick: () => void;
+  children: ReactNode;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={`flex items-center justify-between gap-2 neo-border rounded px-3 py-2 text-left font-heading font-bold text-sm active:neo-shadow-pressed ${
+        selected ? "bg-primary text-primary-foreground" : "bg-card"
+      }`}
+    >
+      <span className="truncate">{children}</span>
+      {selected && <Check size={14} strokeWidth={3} className="shrink-0" aria-hidden />}
+    </button>
   );
 }
 
@@ -946,6 +1207,16 @@ export default function BudgetSquadScreen() {
       scroll
     >
       <div className="flex flex-col gap-4 md:max-w-md md:mx-auto md:w-full">
+        {/* O4: the leagues line lives here (compact strip) and on the hub —
+            no longer inside the picker, which filters by league instead. */}
+        {gate.state === "open" &&
+          weekendLeagues != null &&
+          weekendLeagues.leagues.length > 0 && (
+            <WeekendLeaguesLine
+              leagueIds={weekendLeagues.leagues.map((l) => l.leagueId)}
+              testid="squad-leagues-strip"
+            />
+          )}
         {gate.state === "checking" || (gate.state === "open" && squad === undefined) ? (
           <NeoCard className="text-center py-6">
             <p className="text-sm text-muted-foreground">
