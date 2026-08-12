@@ -1004,3 +1004,10 @@ back-nav fix, U3 How to Play. Prod deploy authorized for the ship phase.
   hub rail card carries a nowrap time at 380.
 - fwnit1-*-{before,after}.png committed at 380 + 1366 (hub rail, fixtures
   page, picker, club sheet, market panel); npm run check green.
+- LIVE on verveq.com (CI d898197 green, CSS index-Bl1MQDAq): live stylesheet
+  carries scrollbar-width:thin + scrollbar-color:#bb9e8166 transparent +
+  scrollbar-width:none + the webkit block; live DOM computed — hub chip rail
+  "none", theme elements "thin" with the cream/transparent pair, all 36
+  fixture kickoff cells nowrap single-line, hub rail times nowrap; control
+  /compete body scrollbar-width "auto" (platform default — the rule is
+  scoped, not global). fwnit1-live-*.png committed.
