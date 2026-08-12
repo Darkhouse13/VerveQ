@@ -471,12 +471,16 @@ export const applyClubPlayers = internalMutation({
           .first();
 
         if (elsewhere !== null) {
+          // A returning/moved player is reactivated — and the departure stamp
+          // must clear WITH the flag (the schema's contract; FW-EXPAND fixed
+          // this after bootstrap left 7 moved players active-but-departed).
           await ctx.db.patch(elsewhere._id, {
             name: player.name,
             clubId: player.clubId,
             leagueId: player.leagueId,
             feedPosition: player.feedPosition,
             active: true,
+            departedAt: undefined,
           });
           updated += 1;
           continue;
@@ -499,13 +503,15 @@ export const applyClubPlayers = internalMutation({
         current.name !== player.name ||
         current.leagueId !== leagueId ||
         current.feedPosition !== player.feedPosition ||
-        !current.active
+        !current.active ||
+        current.departedAt !== undefined
       ) {
         await ctx.db.patch(current._id, {
           name: player.name,
           leagueId: player.leagueId,
           feedPosition: player.feedPosition,
           active: true,
+          departedAt: undefined,
         });
         updated += 1;
       }

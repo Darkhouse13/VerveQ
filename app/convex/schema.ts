@@ -2296,6 +2296,15 @@ export default defineSchema({
      */
     resolvedAt: v.optional(v.number()),
     /**
+     * FW-EXPAND R2: the classification this row held BEFORE a universe
+     * expansion reclassified it (e.g. "outgoing" on a row whose destination
+     * club joined the covered set). Present exactly on rows the reactivation
+     * pass rewrote; the new classification says what the move now is, this
+     * says what it was — the audit trail mirrors retry's kept
+     * unresolvedReason.
+     */
+    reclassifiedFrom: v.optional(v.string()),
+    /**
      * True when the record was stored WITHOUT applying its club move because a
      * later-dated move for the same player had already been applied — the feed
      * backfilling history out of order must not regress current club.

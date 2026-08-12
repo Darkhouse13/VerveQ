@@ -36,8 +36,8 @@ const RETRY_BACKOFF_MS = 2_000;
 /**
  * Measured 2026-07-29 on the live Pro key: `x-ratelimit-limit` is 300/minute
  * (not the 450 the FS-1 config previously assumed). 250ms between calls is
- * 240/minute — a 20% cushion. Ingestion's biggest single burst is the 96-club
- * player bootstrap, which at this spacing takes ~25s.
+ * 240/minute — a 20% cushion. Ingestion's biggest single burst is the ~156-club
+ * player bootstrap (eight leagues since FW-EXPAND), ~40s at this spacing.
  */
 const REQUEST_SPACING_MS = 250;
 

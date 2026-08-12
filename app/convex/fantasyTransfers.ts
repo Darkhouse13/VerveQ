@@ -45,6 +45,7 @@ import {
   CRON_WINDOW_OVERLAP_DAYS,
   isLoanType,
   laterMoveAlreadyApplied,
+  reactivationCandidate,
   SWEEP_CALL_CEILING,
   TRANSFER_BACKFILL_START_DAY,
   transferKey,
@@ -169,9 +170,9 @@ export interface TransferSweepReport {
 
 /**
  * Everything a sweep decides its plan from, in one query: the covered-club
- * universe (derived from the season's fixture rows — the same 96 clubs FW-2
- * ingested, at zero request cost) and the latest successful sweep, which is
- * what the cron windows itself from.
+ * universe (derived from the season's fixture rows — every club FW-2/FW-EXPAND
+ * ingested, ~156 across eight leagues, at zero request cost) and the latest
+ * successful sweep, which is what the cron windows itself from.
  */
 export const getSweepContext = internalQuery({
   args: {},
@@ -1176,11 +1177,324 @@ export const backfillTransfers = internalAction({
  * (minus a 3-day overlap; idempotence makes overlap free). First run on a
  * fresh deployment falls back to the backfill window, so activating the cron
  * without having run the backfill loses nothing. Runs year-round — the winter
- * window exists, and a quiet month costs 96 calls/day of no-ops.
+ * window exists, and a quiet month costs ~156 calls/day of no-ops.
  */
 export const sweepTransfers = internalAction({
   args: {},
   handler: async (ctx): Promise<TransferSweepReport> => {
     return await runSweep(ctx, "cron", undefined);
+  },
+});
+
+// ────────────────────────────────────────── FW-EXPAND R2: reactivation pass
+
+/** The stored fields the reactivation pass needs from an outgoing row. */
+export const listOutgoingEvents = internalQuery({
+  args: {},
+  handler: async (
+    ctx,
+  ): Promise<
+    {
+      eventId: Id<"fantasyTransferEvents">;
+      classification: string;
+      providerPlayerId: string;
+      playerName: string;
+      transferDate: string;
+      rawToClubId: string | null;
+      superseded: boolean;
+    }[]
+  > => {
+    const rows = await ctx.db
+      .query("fantasyTransferEvents")
+      .withIndex("by_classification", (q) => q.eq("classification", "outgoing"))
+      .collect();
+    return rows.map((row) => ({
+      eventId: row._id,
+      classification: row.classification,
+      providerPlayerId: row.providerPlayerId,
+      playerName: row.playerName,
+      transferDate: row.transferDate,
+      rawToClubId: row.rawToClubId,
+      superseded: row.superseded === true,
+    }));
+  },
+});
+
+export interface ReactivationChunkResult {
+  reactivated: number;
+  superseded: number;
+  skippedAlreadyDone: number;
+  notCorroborated: {
+    providerPlayerId: string;
+    playerName: string;
+    rawToClubId: string;
+    reason: string;
+  }[];
+}
+
+/**
+ * FW-EXPAND R2 — reclassify stored "outgoing" rows whose destination club has
+ * since joined the covered universe, and reactivate their players.
+ *
+ * The rules, in order, per row:
+ *  1. Idempotence: a row no longer classified "outgoing" was handled by an
+ *     earlier chunk/run — skipped.
+ *  2. Out-of-order guard, same as retry: a later-dated APPLIED move wins; the
+ *     row reclassifies with `superseded: true` and moves nobody.
+ *  3. Corroboration: the player's CURRENT club row must equal the event's
+ *     destination. The player bootstrap read every expansion club's squad
+ *     AFTER these transfers happened, so a player the destination's squad
+ *     does not carry has moved on (or the feed omitted him) — reactivating
+ *     him would contradict fresher data. Fail closed, report, leave the row.
+ *  4. Apply via applyMoveToPlayer (the single shared apply path): active,
+ *     departedAt cleared, club/league confirmed. The row keeps its history in
+ *     `reclassifiedFrom` and stamps `resolvedAt`, mirroring the retry trace.
+ */
+export const applyReactivations = internalMutation({
+  args: {
+    events: v.array(
+      v.object({
+        eventId: v.id("fantasyTransferEvents"),
+        toLeagueId: v.number(),
+      }),
+    ),
+  },
+  handler: async (ctx, { events }): Promise<ReactivationChunkResult> => {
+    const result: ReactivationChunkResult = {
+      reactivated: 0,
+      superseded: 0,
+      skippedAlreadyDone: 0,
+      notCorroborated: [],
+    };
+    const now = Date.now();
+
+    for (const { eventId, toLeagueId } of events) {
+      const row = await ctx.db.get(eventId);
+      if (row === null || row.classification !== "outgoing" || row.superseded === true) {
+        result.skippedAlreadyDone += 1;
+        continue;
+      }
+      if (row.rawToClubId === null) {
+        result.skippedAlreadyDone += 1;
+        continue;
+      }
+
+      const reclass = classifyTransfer({
+        candidate: {
+          providerPlayerId: row.providerPlayerId,
+          playerName: row.playerName,
+          transferDate: row.transferDate,
+          rawFromClubId: row.rawFromClubId,
+          rawToClubId: row.rawToClubId,
+          // Club display names are not stored on event rows and play no part
+          // in classification.
+          fromClubName: null,
+          toClubName: null,
+          transferType: row.transferType,
+        },
+        playerKnown: true,
+        coveredClubIds: new Set([row.rawToClubId, ...(row.fromCovered && row.rawFromClubId !== null ? [row.rawFromClubId] : [])]),
+      });
+      if (reclass.classification !== "internal" && reclass.classification !== "incoming_known") {
+        // Cannot happen with toCovered true + playerKnown true; fail closed.
+        result.notCorroborated.push({
+          providerPlayerId: row.providerPlayerId,
+          playerName: row.playerName,
+          rawToClubId: row.rawToClubId,
+          reason: `reclassification produced ${reclass.classification}`,
+        });
+        continue;
+      }
+
+      const priorEvents = await ctx.db
+        .query("fantasyTransferEvents")
+        .withIndex("by_player_date", (q) =>
+          q.eq("providerPlayerId", row.providerPlayerId),
+        )
+        .collect();
+      // Same applied-set as the retry pass: everything but unresolved and
+      // superseded counts — INCLUDING later "outgoing" rows, which position
+      // the player (gone) just as firmly as an incoming move does. A player
+      // whose post-expansion backfill shows him leaving the destination again
+      // must supersede, not reactivate.
+      const appliedDates = priorEvents
+        .filter(
+          (e) =>
+            e._id !== row._id &&
+            e.classification !== "unresolved" &&
+            e.superseded !== true,
+        )
+        .map((e) => e.transferDate);
+      if (laterMoveAlreadyApplied(row.transferDate, appliedDates)) {
+        await ctx.db.patch(row._id, {
+          classification: reclass.classification,
+          reclassifiedFrom: "outgoing",
+          superseded: true,
+          toCovered: true,
+          resolvedAt: now,
+        });
+        result.superseded += 1;
+        continue;
+      }
+
+      const player = await ctx.db
+        .query("fantasyPlayers")
+        .withIndex("by_providerPlayerId", (q) =>
+          q.eq("providerPlayerId", row.providerPlayerId),
+        )
+        .first();
+      if (player === null || player.clubId !== row.rawToClubId) {
+        result.notCorroborated.push({
+          providerPlayerId: row.providerPlayerId,
+          playerName: row.playerName,
+          rawToClubId: row.rawToClubId,
+          reason:
+            player === null
+              ? "no player row (never carried, destination squad does not list him)"
+              : `current club ${player.clubId} != event destination (moved on since)`,
+        });
+        continue;
+      }
+
+      const outcome = await applyMoveToPlayer(
+        ctx,
+        {
+          classification: reclass.classification,
+          providerPlayerId: row.providerPlayerId,
+          playerName: row.playerName,
+          rawToClubId: row.rawToClubId,
+          toLeagueId,
+          toClubName: null, // pool meta club names were seeded by O2; nothing fresher here
+          newPlayerPosition: undefined,
+        },
+        now,
+      );
+      if (outcome.ok === false) {
+        result.notCorroborated.push({
+          providerPlayerId: row.providerPlayerId,
+          playerName: row.playerName,
+          rawToClubId: row.rawToClubId,
+          reason: outcome.reason,
+        });
+        continue;
+      }
+
+      await ctx.db.patch(row._id, {
+        classification: outcome.classification,
+        reclassifiedFrom: "outgoing",
+        toCovered: true,
+        resolvedAt: now,
+        ...(outcome.playerId === undefined ? {} : { playerId: outcome.playerId }),
+      });
+      result.reactivated += 1;
+    }
+
+    return result;
+  },
+});
+
+/**
+ * Repair the `active && departedAt` inconsistency the pre-FW-EXPAND
+ * `applyClubPlayers` could leave behind (it reactivated a returning player
+ * without clearing the departure stamp; fixed at the source in the same
+ * mission). The schema's contract is explicit: departedAt is "cleared (with
+ * active: true) if a later transfer brings him back".
+ */
+export const repairActiveDepartedAt = internalMutation({
+  args: {},
+  handler: async (ctx): Promise<{ repaired: string[] }> => {
+    const rows = await ctx.db
+      .query("fantasyPlayers")
+      .filter((q) =>
+        q.and(q.eq(q.field("active"), true), q.neq(q.field("departedAt"), undefined)),
+      )
+      .collect();
+    for (const row of rows) {
+      await ctx.db.patch(row._id, { departedAt: undefined });
+    }
+    return { repaired: rows.map((r) => `${r.name} (${r.providerPlayerId})`) };
+  },
+});
+
+export interface ReactivationReport {
+  outgoingRows: number;
+  candidates: number;
+  reactivated: number;
+  superseded: number;
+  skippedAlreadyDone: number;
+  notCorroborated: ReactivationChunkResult["notCorroborated"];
+  repairedDepartedAt: string[];
+}
+
+const REACTIVATION_CHUNK = 50;
+
+/**
+ * FW-EXPAND R2 — the owner-invokable reactivation pass:
+ *
+ *   npx convex run fantasyTransfers:reactivationPass
+ *
+ * Zero API calls: everything it needs is already stored. Selects stored
+ * "outgoing" rows whose destination is now covered (the pure
+ * reactivationCandidate rule), reclassifies and reactivates in chunks, then
+ * repairs any lingering active-with-departedAt rows. Idempotent — a second
+ * run finds no candidates (reclassified rows are no longer "outgoing") and
+ * repairs nothing.
+ */
+export const reactivationPass = internalAction({
+  args: {},
+  handler: async (ctx): Promise<ReactivationReport> => {
+    const context: SweepContext = await ctx.runQuery(
+      internal.fantasyTransfers.getSweepContext,
+      {},
+    );
+    const leagueByClub = new Map(
+      context.coveredClubs.map((c) => [c.clubId, c.leagueId]),
+    );
+    const coveredClubIds = new Set(leagueByClub.keys());
+
+    const outgoing = await ctx.runQuery(internal.fantasyTransfers.listOutgoingEvents, {});
+    const candidates = outgoing.filter((row) => reactivationCandidate(row, coveredClubIds));
+    console.log(
+      `[FW-EXPAND R2] ${outgoing.length} outgoing rows, ${candidates.length} with a now-covered destination`,
+    );
+
+    const report: ReactivationReport = {
+      outgoingRows: outgoing.length,
+      candidates: candidates.length,
+      reactivated: 0,
+      superseded: 0,
+      skippedAlreadyDone: 0,
+      notCorroborated: [],
+      repairedDepartedAt: [],
+    };
+
+    for (let i = 0; i < candidates.length; i += REACTIVATION_CHUNK) {
+      const chunk = candidates.slice(i, i + REACTIVATION_CHUNK).map((row) => ({
+        eventId: row.eventId,
+        // The candidate rule guarantees rawToClubId is covered and non-null.
+        toLeagueId: leagueByClub.get(row.rawToClubId as string) as number,
+      }));
+      const result: ReactivationChunkResult = await ctx.runMutation(
+        internal.fantasyTransfers.applyReactivations,
+        { events: chunk },
+      );
+      report.reactivated += result.reactivated;
+      report.superseded += result.superseded;
+      report.skippedAlreadyDone += result.skippedAlreadyDone;
+      report.notCorroborated.push(...result.notCorroborated);
+    }
+
+    const repair = await ctx.runMutation(
+      internal.fantasyTransfers.repairActiveDepartedAt,
+      {},
+    );
+    report.repairedDepartedAt = repair.repaired;
+
+    for (const miss of report.notCorroborated) {
+      console.log(
+        `[FW-EXPAND R2] NOT reactivated: ${miss.playerName} (${miss.providerPlayerId}) -> club ${miss.rawToClubId}: ${miss.reason}`,
+      );
+    }
+    return report;
   },
 });

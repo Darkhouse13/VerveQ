@@ -17,6 +17,7 @@ import {
   collectCandidates,
   isLoanType,
   laterMoveAlreadyApplied,
+  reactivationCandidate,
   transferKey,
   type TransferCandidate,
 } from "../../convex/lib/fantasyTransferRules";
@@ -285,5 +286,50 @@ describe("departed player exclusion (FW-T1 class d downstream)", () => {
       now: 0,
     });
     expect(result).toBeNull();
+  });
+});
+
+describe("reactivationCandidate — FW-EXPAND R2 selection over stored rows", () => {
+  const covered = new Set(["38", "210", "1379"]);
+
+  it("selects an outgoing row whose destination is now covered", () => {
+    expect(
+      reactivationCandidate(
+        { classification: "outgoing", rawToClubId: "38", superseded: false },
+        covered,
+      ),
+    ).toBe(true);
+  });
+
+  it("ignores outgoing rows to still-uncovered destinations", () => {
+    expect(
+      reactivationCandidate(
+        { classification: "outgoing", rawToClubId: "9999" },
+        covered,
+      ),
+    ).toBe(false);
+  });
+
+  it("ignores destination-less departures (releases/retirements)", () => {
+    expect(
+      reactivationCandidate({ classification: "outgoing", rawToClubId: null }, covered),
+    ).toBe(false);
+  });
+
+  it("ignores superseded rows — they never positioned anyone", () => {
+    expect(
+      reactivationCandidate(
+        { classification: "outgoing", rawToClubId: "38", superseded: true },
+        covered,
+      ),
+    ).toBe(false);
+  });
+
+  it("ignores every non-outgoing classification, unresolved included (retry owns those)", () => {
+    for (const classification of ["internal", "incoming_known", "incoming_new", "unresolved"]) {
+      expect(
+        reactivationCandidate({ classification, rawToClubId: "38" }, covered),
+      ).toBe(false);
+    }
   });
 });

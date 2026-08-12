@@ -21,7 +21,8 @@ crons.daily("draw-daily-board", { hourUTC: 0, minuteUTC: 2 }, internal.drawBoard
 // schedules 5 minutes apart rather than one interval pair, because
 // crons.interval gives no ordering guarantee between two jobs and a sweep that
 // ran against a stale kickoff would stamp a lock at the wrong instant.
-// 5 requests per sync x 96 runs/day = ~480/day against a measured 7,500/day cap.
+// 8 requests per sync x 96 runs/day = ~768/day against a measured 7,500/day cap
+// (FW-EXPAND: one request per covered league, eight since 2026-08-12).
 crons.cron("fantasy-sync-fixtures", "0,15,30,45 * * * *", internal.fantasyIngest.syncFixtures, {});
 crons.cron("fantasy-lock-sweep", "5,20,35,50 * * * *", internal.fantasyLocks.lockSweep, {});
 // Weekend Fantasy scoring (FW-4). POST-FIXTURE ONLY — a fixture is read once it
@@ -53,9 +54,10 @@ crons.cron(
   internal.fantasyCourt.resolveDueClaims,
   {},
 );
-// Transfer ingestion (FW-T1): daily sweep of all 96 covered clubs' transfer
-// records, windowed since the last successful run (3-day overlap; record
-// identity makes overlap a no-op). 96 base calls/day + 1 per destination club
+// Transfer ingestion (FW-T1): daily sweep of all ~156 covered clubs' transfer
+// records (FW-EXPAND widened the fixture-derived club set), windowed since the
+// last successful run (3-day overlap; record
+// identity makes overlap a no-op). ~156 base calls/day + 1 per destination club
 // with unknown incoming players, against the same 7,500/day cap the ~480/day
 // fixture sync draws on; the action prints its call plan first and refuses a
 // run projecting past 500. 04:40 UTC sits clear of the :00/:15/:30/:45 sync

@@ -241,6 +241,29 @@ export function classifyTransfer(args: {
  * Same-date moves apply in the deterministic (date, key) order collectCandidates
  * established; an equal date does not block.
  */
+/**
+ * FW-EXPAND R2: is this stored event a reactivation candidate after the
+ * covered universe widened? Exactly the rows first classified "outgoing"
+ * whose recorded destination is NOW a covered club. Superseded rows never
+ * moved anyone and stay historical; unresolved rows have their own retry
+ * pass; anything else already applied a covered-destination move.
+ */
+export function reactivationCandidate(
+  row: {
+    classification: string;
+    rawToClubId: string | null;
+    superseded?: boolean;
+  },
+  coveredClubIds: ReadonlySet<string>,
+): boolean {
+  return (
+    row.classification === "outgoing" &&
+    row.superseded !== true &&
+    row.rawToClubId !== null &&
+    coveredClubIds.has(row.rawToClubId)
+  );
+}
+
 export function laterMoveAlreadyApplied(
   candidateDate: string,
   appliedMoveDatesForPlayer: readonly string[],

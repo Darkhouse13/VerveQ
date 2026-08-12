@@ -531,3 +531,42 @@ back-nav fix, U3 How to Play. Prod deploy authorized for the ship phase.
   1,772 created + 8 updated (the moved players re-labeled), every row
   carries a real clubName (U1 depends on it).
 - API spend O2: 197 calls total; check green (1,498).
+
+## O3 — 2026-08-12 — transfer sweep extension + backfill + R2: DONE
+
+- Club set: NO code change needed — the sweep derives coverage from
+  fantasyFixtures, so O1's bootstrap widened it to 156 clubs by itself.
+  Spend comments/plans recomputed (crons.ts, client, sweep docstrings):
+  sync 8×96 ≈ 768/day, transfer ~156+/day, scoring unchanged.
+- Backfill since 2026-07-01 over all 156 clubs: plan printed (156 base +
+  retry 6 + phase-2 10, ceiling 500), 168 calls. 1,496 in-window records:
+  internal 70, incoming-known 151, incoming-new 0 (+3 created via retry),
+  outgoing 297, unresolved 7 new, already-seen 971 (the whole pre-
+  expansion ledger intact). FW-T1b retry resolved 4 of the 8 standing
+  unresolved. STOP-AND-REPORT: 12 position-less mentions → standing
+  unresolved now 11, all 'position unavailable from feed' (owner review).
+- R2 reactivation pass (fantasyTransfers:reactivationPass, zero API
+  calls, new): stored "outgoing" rows whose destination is now covered
+  reclassify in place (reclassifiedFrom:"outgoing" audit field added to
+  schema; resolvedAt stamped), with the retry pass's out-of-order guard
+  and a CORROBORATION gate — the player's current club row must equal the
+  event destination (the Aug-12 squad bootstrap is fresher than any July
+  record; contradicting it would reactivate ghosts). Results: 65
+  candidates → 39 reactivated (ledger now says internal/incoming_known),
+  24 superseded (later applied move won), 2 fail-closed and reported
+  (M. Payero → 38: no player row, destination squad does not list him;
+  G. Kamara → 72: moved on since). Second run: 0 writes.
+- NEAR-MISS worth recording: the first deployed draft of the pass
+  reported "0 candidates" because listOutgoingEvents omitted the
+  classification field the pure predicate checks — `npm run check`'s tsc
+  caught it (convex dev had pushed it functionally). Tests-green-every-
+  commit is not a formality.
+- departedAt hygiene: applyClubPlayers now clears departedAt whenever it
+  reactivates (both branches — the schema's contract), and a one-shot
+  repairActiveDepartedAt cleared the 7 stale rows O1 flagged (Imray,
+  Gauci, Traoré, Zemura, Ravaglia, Machine, Raghouber). Export-verified:
+  0 active-with-departedAt rows; second run repairs nothing.
+- reactivationCandidate is a pure rule in fantasyTransferRules.ts with 5
+  new tests (30 pass in the suite; full check 1,503).
+- API spend O3: 168 + 166 (second-run proof) = 334 calls. Day total at
+  close: key reports ~6,005 remaining of 7,500 (all consumers combined).
