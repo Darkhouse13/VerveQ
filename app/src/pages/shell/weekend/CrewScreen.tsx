@@ -183,7 +183,10 @@ export default function CrewScreen() {
       onBack={() => navigate(SHELL_ROUTES.weekendCrews)}
       scroll
     >
-      <div className="flex flex-col gap-4 md:max-w-md md:mx-auto md:w-full">
+      {/* B1: at xl the crew splits two-up — code/members/actions beside the
+          standings and crew table (the same sections, same order on phones). */}
+      <div className="flex flex-col gap-4 md:max-w-md md:mx-auto md:w-full xl:max-w-4xl xl:grid xl:grid-cols-2 xl:gap-6 xl:items-start">
+        <div className="flex flex-col gap-4 min-w-0">
         <NeoCard shadow="lg" className="text-center py-5">
           <p className="text-[10px] font-heading uppercase text-muted-foreground mb-1">
             {t("weekend.crewCode", { defaultValue: "Crew code" })}
@@ -237,7 +240,9 @@ export default function CrewScreen() {
             {t("weekend.openRoom", { defaultValue: "Open this weekend's draft" })}
           </NeoButton>
         )}
+        </div>
 
+        <div className="flex flex-col gap-4 min-w-0">
         <div>
           <p className="font-mono text-[11px] font-bold uppercase tracking-[0.16em] text-muted-foreground mb-2">
             {t("weekend.standings", { defaultValue: "Standings" })}
@@ -368,6 +373,7 @@ export default function CrewScreen() {
               })}
             </div>
           )}
+        </div>
         </div>
 
         {/* Creator-only, and ONLY while the crew has no completed draft — the

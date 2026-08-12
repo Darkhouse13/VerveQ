@@ -63,6 +63,7 @@ import { SHELL_ROUTES } from "@/lib/shellRoutes";
 import { friendlyError } from "@/lib/errors";
 import { leagueName } from "@/lib/leagueNames";
 import { WeekendLeaguesLine } from "@/components/weekend/WeekendLeaguesLine";
+import { useWideScreen } from "@/hooks/useWideScreen";
 import { track } from "@/lib/analytics";
 
 export type OpenGameweek = NonNullable<
@@ -312,45 +313,59 @@ export function ScoreHeader({ score }: { score: BudgetSquadScore }) {
 
 // ── player picker ──
 
-export function PlayerPickerDialog({
-  open,
+/**
+ * The picker's whole body — one component, two hosts (B1):
+ *  - phones: inside PlayerPickerDialog, exactly the FW-POLISH-3 picker;
+ *  - wide screens (xl+): inline as the persistent market panel beside the
+ *    pitch. `browse` is the panel's idle state: no slot armed, so the market
+ *    reads as facts — no Pick buttons, no slot pre-filter to clear (the O3
+ *    "All positions" affordance belongs to a slot context and hides here).
+ * Hosts MOUNT a fresh panel per context (key on the slot) — defaults re-arm
+ * by remount, not by effect.
+ */
+export function PickerPanel({
   slotRole,
   finisher = false,
+  browse = false,
+  host,
   market,
   leagues,
   inSquad,
   remaining,
   now,
   onPick,
-  onClose,
 }: {
-  open: boolean;
   slotRole: SlotRole | null;
   /** Finisher slots ask a different question than the XI's positions. */
   finisher?: boolean;
+  /** Idle market browse (wide panel, no slot armed): read-only, no Pick. */
+  browse?: boolean;
+  /** Dialog host renders the prompt as the Radix title (a11y). */
+  host: "dialog" | "panel";
   market: Market | null | undefined;
   /** Which leagues actually play this window (D4) — null/undefined hides the line. */
   leagues?: ReadonlyArray<{ leagueId: number }> | null;
   inSquad: ReadonlySet<string>;
   remaining: number;
   now: number;
-  onPick: (playerId: string) => void;
-  onClose: () => void;
+  onPick?: (playerId: string) => void;
 }) {
   const { t } = useTranslation();
 
   // O4: the slot asks its question in football, not in database.
-  const prompt = finisher
-    ? t("weekend.pickFinisher", { defaultValue: "Who changes the game late?" })
-    : slotRole === "GK"
-      ? t("weekend.pickGk", { defaultValue: "Who starts between the sticks?" })
-      : slotRole === "DEF"
-        ? t("weekend.pickDef", { defaultValue: "Who holds the back line?" })
-        : slotRole === "MID"
-          ? t("weekend.pickMid", { defaultValue: "Who runs the midfield?" })
-          : slotRole === "ATT"
-            ? t("weekend.pickAtt", { defaultValue: "Who leads the line?" })
-            : t("weekend.pickAny", { defaultValue: "Who makes your 13?" });
+  const prompt = browse
+    ? t("weekend.marketBrowse", { defaultValue: "The weekend's market" })
+    : finisher
+      ? t("weekend.pickFinisher", { defaultValue: "Who changes the game late?" })
+      : slotRole === "GK"
+        ? t("weekend.pickGk", { defaultValue: "Who starts between the sticks?" })
+        : slotRole === "DEF"
+          ? t("weekend.pickDef", { defaultValue: "Who holds the back line?" })
+          : slotRole === "MID"
+            ? t("weekend.pickMid", { defaultValue: "Who runs the midfield?" })
+            : slotRole === "ATT"
+              ? t("weekend.pickAtt", { defaultValue: "Who leads the line?" })
+              : t("weekend.pickAny", { defaultValue: "Who makes your 13?" });
   const [search, setSearch] = useState("");
   const [affordableOnly, setAffordableOnly] = useState(false);
   // D4: a partial gameweek is normal — players without a fixture are OUT of
@@ -367,20 +382,6 @@ export function PlayerPickerDialog({
   const [clubFilter, setClubFilter] = useState<string | null>(null);
   const [filterSheet, setFilterSheet] = useState<"league" | "club" | null>(null);
   const [clubSearch, setClubSearch] = useState("");
-
-  // Re-arm the defaults each time the picker opens for a slot.
-  useEffect(() => {
-    if (open) {
-      setSearch("");
-      setAffordableOnly(false);
-      setShowAll(false);
-      setAllPositions(false);
-      setLeagueFilter(null);
-      setClubFilter(null);
-      setFilterSheet(null);
-      setClubSearch("");
-    }
-  }, [open, slotRole]);
 
   /** The market's club catalogue, grouped per league — there is deliberately
    *  no clubs table, so the list is derived from the rows themselves.
@@ -449,11 +450,16 @@ export function PlayerPickerDialog({
   ]);
 
   return (
-    <Dialog open={open} onOpenChange={(next) => !next && onClose()}>
-      <DialogContent className="theme-weekend neo-border neo-shadow-lg rounded-xl bg-background max-w-sm mx-auto max-h-[85dvh] flex flex-col">
-        <DialogTitle className="font-heading font-bold text-lg" data-testid="picker-prompt">
-          {prompt}
-        </DialogTitle>
+    <div className="flex flex-col gap-4 min-h-0">
+        {host === "dialog" ? (
+          <DialogTitle className="font-heading font-bold text-lg" data-testid="picker-prompt">
+            {prompt}
+          </DialogTitle>
+        ) : (
+          <h2 className="font-heading font-bold text-lg" data-testid="picker-prompt">
+            {prompt}
+          </h2>
+        )}
 
         <NeoInput
           value={search}
@@ -603,7 +609,7 @@ export function PlayerPickerDialog({
                       {player.price?.toFixed(1)}
                     </span>
                   )}
-                  {pickable && (
+                  {pickable && onPick !== undefined && (
                     <NeoButton
                       variant="primary"
                       size="sm"
@@ -755,33 +761,83 @@ export function PlayerPickerDialog({
                 )}
               </div>
 
-              <div className="border-t-2 border-border pt-3">
-                <button
-                  type="button"
-                  data-testid="picker-all-positions"
-                  aria-pressed={allPositions}
-                  onClick={() => {
-                    setAllPositions((v) => !v);
-                    setFilterSheet(null);
-                  }}
-                  className="flex w-full items-center justify-between gap-2 text-left active:opacity-60"
-                >
-                  <span>
-                    <span className="block font-heading font-bold text-sm">
-                      {t("weekend.allPositions", { defaultValue: "All positions" })}
+              {/* The O3 mismatch affordance belongs to a SLOT context — the
+                  idle browse has no pre-filter to clear, so it hides there. */}
+              {!browse && (
+                <div className="border-t-2 border-border pt-3">
+                  <button
+                    type="button"
+                    data-testid="picker-all-positions"
+                    aria-pressed={allPositions}
+                    onClick={() => {
+                      setAllPositions((v) => !v);
+                      setFilterSheet(null);
+                    }}
+                    className="flex w-full items-center justify-between gap-2 text-left active:opacity-60"
+                  >
+                    <span>
+                      <span className="block font-heading font-bold text-sm">
+                        {t("weekend.allPositions", { defaultValue: "All positions" })}
+                      </span>
+                      <span className="block text-[11px] text-muted-foreground">
+                        {t("weekend.allPositionsBody", {
+                          defaultValue: "Out-of-position picks carry the ×0.75 risk.",
+                        })}
+                      </span>
                     </span>
-                    <span className="block text-[11px] text-muted-foreground">
-                      {t("weekend.allPositionsBody", {
-                        defaultValue: "Out-of-position picks carry the ×0.75 risk.",
-                      })}
-                    </span>
-                  </span>
-                  {allPositions && <Check size={16} strokeWidth={3} aria-hidden />}
-                </button>
-              </div>
+                    {allPositions && <Check size={16} strokeWidth={3} aria-hidden />}
+                  </button>
+                </div>
+              )}
             </DialogPrimitive.Content>
           </DialogPrimitive.Portal>
         </DialogPrimitive.Root>
+    </div>
+  );
+}
+
+/**
+ * The phone host: the FW-POLISH-3 picker dialog, now a thin shell over
+ * PickerPanel. Radix unmounts closed content, so each open mounts a fresh
+ * panel with re-armed defaults (the remount contract in PickerPanel's doc).
+ */
+export function PlayerPickerDialog({
+  open,
+  slotRole,
+  finisher = false,
+  market,
+  leagues,
+  inSquad,
+  remaining,
+  now,
+  onPick,
+  onClose,
+}: {
+  open: boolean;
+  slotRole: SlotRole | null;
+  finisher?: boolean;
+  market: Market | null | undefined;
+  leagues?: ReadonlyArray<{ leagueId: number }> | null;
+  inSquad: ReadonlySet<string>;
+  remaining: number;
+  now: number;
+  onPick: (playerId: string) => void;
+  onClose: () => void;
+}) {
+  return (
+    <Dialog open={open} onOpenChange={(next) => !next && onClose()}>
+      <DialogContent className="theme-weekend neo-border neo-shadow-lg rounded-xl bg-background max-w-sm mx-auto max-h-[85dvh] flex flex-col">
+        <PickerPanel
+          host="dialog"
+          slotRole={slotRole}
+          finisher={finisher}
+          market={market}
+          leagues={leagues}
+          inSquad={inSquad}
+          remaining={remaining}
+          now={now}
+          onPick={onPick}
+        />
       </DialogContent>
     </Dialog>
   );
@@ -1013,6 +1069,7 @@ export default function BudgetSquadScreen() {
   const { t } = useTranslation();
   const convex = useConvex();
   const [gate, setGate] = useState<Gate>({ state: "checking" });
+  const wide = useWideScreen();
 
   // Fail-closed availability gate (the FW-P1 teaser precedent): an
   // imperative query so an undeployed backend rejects into the catch instead
@@ -1206,6 +1263,27 @@ export default function BudgetSquadScreen() {
     );
   };
 
+  /** Shared by both picker hosts: land the pick, then disarm the slot. */
+  const handlePick = (playerId: string) => {
+    const slotIndex = pickerSlot;
+    setPickerSlot(null);
+    if (slotIndex === null || squad == null) return;
+    run(
+      () =>
+        setSlot({
+          squadId: squad.squadId,
+          slotIndex,
+          playerId: playerId as Id<"fantasyPlayers">,
+        }),
+      t("weekend.pickFailed", { defaultValue: "That pick didn't land." }),
+    );
+  };
+
+  // B1: wide screens hold the market beside the pitch instead of behind a
+  // modal — same PickerPanel, persistent host. JS-gated on the same 1280px
+  // line the xl: classes use, so exactly one host exists at a time.
+  const showMarketPanel = wide && gate.state === "open" && squad != null;
+
   return (
     <ShellLayout
       theme="theme-weekend"
@@ -1216,7 +1294,14 @@ export default function BudgetSquadScreen() {
       onBack={() => navigate(SHELL_ROUTES.weekend)}
       scroll
     >
-      <div className="flex flex-col gap-4 md:max-w-md md:mx-auto md:w-full">
+      <div
+        className={
+          showMarketPanel
+            ? "grid grid-cols-[minmax(0,1fr)_minmax(360px,420px)] gap-6 items-start max-w-5xl mx-auto w-full"
+            : "flex flex-col gap-4 md:max-w-md md:mx-auto md:w-full"
+        }
+      >
+      <div className="flex flex-col gap-4 min-w-0">
         {/* O4: the leagues line lives here (compact strip) and on the hub —
             no longer inside the picker, which filters by league instead. */}
         {gate.state === "open" &&
@@ -1343,31 +1428,20 @@ export default function BudgetSquadScreen() {
                 }
               }}
             />
-            <PlayerPickerDialog
-              open={pickerSlot !== null}
-              slotRole={pickerRole}
-              finisher={pickerFinisher}
-              market={market}
-              leagues={weekendLeagues?.leagues ?? null}
-              inSquad={inSquad}
-              remaining={remaining}
-              now={Date.now()}
-              onPick={(playerId) => {
-                const slotIndex = pickerSlot;
-                setPickerSlot(null);
-                if (slotIndex === null) return;
-                run(
-                  () =>
-                    setSlot({
-                      squadId: squad.squadId,
-                      slotIndex,
-                      playerId: playerId as Id<"fantasyPlayers">,
-                    }),
-                  t("weekend.pickFailed", { defaultValue: "That pick didn't land." }),
-                );
-              }}
-              onClose={() => setPickerSlot(null)}
-            />
+            {!wide && (
+              <PlayerPickerDialog
+                open={pickerSlot !== null}
+                slotRole={pickerRole}
+                finisher={pickerFinisher}
+                market={market}
+                leagues={weekendLeagues?.leagues ?? null}
+                inSquad={inSquad}
+                remaining={remaining}
+                now={Date.now()}
+                onPick={handlePick}
+                onClose={() => setPickerSlot(null)}
+              />
+            )}
             <Dialog
               open={confirmShape !== null}
               onOpenChange={(next) => !next && setConfirmShape(null)}
@@ -1412,6 +1486,40 @@ export default function BudgetSquadScreen() {
             </Dialog>
           </>
         )}
+      </div>
+
+      {showMarketPanel && (
+        <aside
+          data-testid="market-panel"
+          className="min-w-0 sticky top-2 max-h-[calc(100dvh-9rem)] flex flex-col"
+        >
+          <NeoCard shadow="lg" className="flex flex-col min-h-0 overflow-hidden">
+            {pickerSlot !== null && (
+              <button
+                type="button"
+                data-testid="market-panel-browse"
+                onClick={() => setPickerSlot(null)}
+                className="self-start mb-2 font-mono text-[11px] font-bold uppercase tracking-[0.12em] text-muted-foreground active:opacity-60"
+              >
+                ← {t("weekend.backToBrowse", { defaultValue: "Back to browsing" })}
+              </button>
+            )}
+            <PickerPanel
+              key={pickerSlot ?? "browse"}
+              host="panel"
+              browse={pickerSlot === null}
+              slotRole={pickerRole}
+              finisher={pickerFinisher}
+              market={market}
+              leagues={weekendLeagues?.leagues ?? null}
+              inSquad={inSquad}
+              remaining={remaining}
+              now={Date.now()}
+              onPick={pickerSlot === null ? undefined : handlePick}
+            />
+          </NeoCard>
+        </aside>
+      )}
       </div>
     </ShellLayout>
   );

@@ -922,3 +922,34 @@ back-nav fix, U3 How to Play. Prod deploy authorized for the ship phase.
   rows (user, budget squad, 13 slots, auth account/session/3 tokens);
   post-sweep dryRun returns zero rows. Nothing was locked (first kickoff is
   Friday), so the locked-slot blocker could not fire — by design of the run.
+
+## Phase B — 2026-08-12/13 — one experience, every screen width: BUILT, QA GREEN
+- One breakpoint, one authority: useWideScreen (matchMedia 1280px, the xl
+  line) JS-gates which host renders, so the picker can never exist twice.
+  jsdom's matchMedia mock answers false ⇒ every existing contract test keeps
+  exercising the phone paths untouched.
+- Build screen: PickerPanel extracted from the FW-POLISH-3 picker — ONE
+  component, two hosts. Phones keep the dialog verbatim (Radix unmounts
+  closed content ⇒ defaults re-arm by remount). Wide screens hold the panel
+  persistently beside the pitch: idle = read-only market browse (no Pick
+  buttons, and the O3 "All positions" affordance hides — it belongs to a
+  slot pre-filter, which browse doesn't have); arming a slot scopes it to
+  the same slot question with the same filter semantics; picks land through
+  the same handlePick; "Back to browsing" disarms. Eligibility, budget and
+  lock semantics untouched — the panel is a viewport change, not a rules
+  change.
+- Hub: wide swaps the horizontal rail for a persistent day-grouped fixtures
+  panel (FixturesView reused verbatim) beside the matchday column.
+  Fixtures screen tiles day groups two-up at xl. Crew page splits two-up:
+  code/members/actions beside standings/crew table — phone order unchanged.
+- QA: fwImmerseWideQa.spec.ts at 1366×900 (isMobile/hasTouch off) green:
+  panel-beside-hero and market-beside-pitch proven by bounding boxes, no
+  dialog on wide slot-arm, browse has zero Pick buttons, day groups share a
+  row, crew split proven, filter row axes hold in the panel host, crew
+  cleaned up through the typed confirm. 4 fwi-wide-*-1366 screenshots
+  committed. npm run check green (143 files / 1559 tests); fwImmerseQa +
+  fwPolish3Qa re-run green at 380 over the refactor.
+- chromeProof (stash-before/work-after): home, compete, quiz BYTE-IDENTICAL;
+  weekend-hub differs ONLY by the live countdown — proven by attribution
+  (two after-shots taken moments apart differ from each other the same way,
+  so the diff source is the clock, not Phase B).

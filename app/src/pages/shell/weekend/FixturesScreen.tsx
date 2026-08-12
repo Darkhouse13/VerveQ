@@ -131,15 +131,19 @@ export function FixtureCard({ fixture, now }: { fixture: WeekendFixtureRow; now:
 export function FixturesView({
   payload,
   now,
+  className = "",
 }: {
   payload: WeekendFixturesPayload;
   now: number;
+  /** Extra layout classes — the screen tiles day groups two-up at xl; the
+   *  hub's side panel keeps the single column. */
+  className?: string;
 }) {
   const { i18n } = useTranslation();
   const groups = useMemo(() => groupFixturesByDay(payload.fixtures), [payload.fixtures]);
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className={`flex flex-col gap-4 ${className}`}>
       {groups.map((group) => (
         <section key={group.dayStart} data-testid="fixture-day">
           <h2
@@ -212,7 +216,9 @@ export default function FixturesScreen() {
       onBack={() => navigate(SHELL_ROUTES.weekend)}
       scroll
     >
-      <div className="flex flex-col gap-4 md:max-w-md md:mx-auto md:w-full pb-4">
+      {/* B1: the day groups tile two-up at xl — same cards, more of the
+          weekend on screen at once. */}
+      <div className="flex flex-col gap-4 md:max-w-md md:mx-auto md:w-full pb-4 xl:max-w-4xl">
         {gate.state === "checking" ? (
           <NeoCard className="text-center py-6">
             <p className="text-sm text-muted-foreground">
@@ -231,7 +237,11 @@ export default function FixturesScreen() {
             </p>
           </NeoCard>
         ) : (
-          <FixturesView payload={gate.payload} now={now} />
+          <FixturesView
+            payload={gate.payload}
+            now={now}
+            className="xl:grid xl:grid-cols-2 xl:gap-6 xl:items-start"
+          />
         )}
       </div>
     </ShellLayout>

@@ -46,10 +46,12 @@ import {
   nextKickoffAt,
   weekendPulse,
 } from "@/lib/weekendFixtures";
+import { FixturesView } from "./FixturesScreen";
 import type {
   WeekendFixturesPayload,
   WeekendFixtureRow,
 } from "./FixturesScreen";
+import { useWideScreen } from "@/hooks/useWideScreen";
 
 type NeoColor = NonNullable<ComponentProps<typeof NeoCard>["color"]>;
 
@@ -426,6 +428,12 @@ export default function WeekendHubScreen() {
     return () => clearInterval(timer);
   }, [counting]);
 
+  // B1: wide screens hold the weekend's fixtures as a persistent side panel
+  // instead of the horizontal rail — same payload, same day grouping as the
+  // fixtures screen itself.
+  const wide = useWideScreen();
+  const showFixturesPanel = wide && fixtures !== null;
+
   return (
     <ShellLayout
       theme="theme-weekend"
@@ -449,7 +457,14 @@ export default function WeekendHubScreen() {
       }
       scroll
     >
-      <div className="flex flex-col gap-4 md:max-w-md md:mx-auto md:w-full pb-4">
+      <div
+        className={
+          showFixturesPanel
+            ? "grid grid-cols-[minmax(0,1fr)_minmax(340px,400px)] gap-6 items-start max-w-5xl mx-auto w-full pb-4"
+            : "flex flex-col gap-4 md:max-w-md md:mx-auto md:w-full pb-4"
+        }
+      >
+      <div className="flex flex-col gap-4 min-w-0">
         <div className="flex items-center gap-2" data-testid="weekend-hub-board-line">
           <CalendarRange size={14} strokeWidth={3} className="text-muted-foreground shrink-0" />
           {gameweek ? (
@@ -493,7 +508,7 @@ export default function WeekendHubScreen() {
           />
         )}
 
-        {fixtures !== null && (
+        {fixtures !== null && !showFixturesPanel && (
           <FixturesRail
             payload={fixtures}
             now={now}
@@ -546,6 +561,30 @@ export default function WeekendHubScreen() {
             testId="weekend-door-court"
           />
         </div>
+      </div>
+
+      {showFixturesPanel && fixtures !== null && (
+        <aside
+          data-testid="hub-fixtures-panel"
+          className="min-w-0 sticky top-2 max-h-[calc(100dvh-9rem)] overflow-y-auto scrollbar-none flex flex-col gap-2 pb-2"
+        >
+          <div className="flex items-baseline justify-between">
+            <h2 className="font-mono text-[11px] font-bold uppercase tracking-[0.16em] text-muted-foreground">
+              {t("weekend.railTitle", { defaultValue: "This weekend" })}
+            </h2>
+            <button
+              type="button"
+              data-testid="fixtures-rail-all"
+              onClick={() => navigate(SHELL_ROUTES.weekendFixtures)}
+              className="font-mono text-[11px] font-bold uppercase tracking-[0.12em] text-primary flex items-center gap-0.5 active:opacity-60"
+            >
+              {t("weekend.allFixtures", { defaultValue: "All fixtures" })}
+              <ChevronRight size={12} strokeWidth={3} aria-hidden />
+            </button>
+          </div>
+          <FixturesView payload={fixtures} now={now} />
+        </aside>
+      )}
       </div>
     </ShellLayout>
   );
