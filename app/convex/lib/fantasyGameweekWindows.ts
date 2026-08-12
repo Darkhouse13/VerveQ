@@ -193,6 +193,76 @@ export function constituteGameweeks(
     .map((window, index) => ({ ...window, gwNumber: index + 1 }));
 }
 
+/** What the ingest wants a season's gameweek row to say. */
+export interface GameweekWindowUpsert {
+  gwNumber: number;
+  leagueIds: number[];
+  finalityAt: number;
+}
+
+/**
+ * Reconcile stored gameweek rows against a freshly constituted window set —
+ * matching by WINDOW IDENTITY, never by ordinal (FW-EXPAND, 2026-08-12).
+ *
+ * `finalityAt` is the identity: every window's finality instant is unique
+ * (23:59 Paris on the window's own end day; weekend finalities are Tuesdays,
+ * midweek finalities are Fridays, and no two windows share an end day). The
+ * ordinal is NOT identity — it is a label that shifts whenever a fixture set
+ * populates a previously empty window (a new league's midweek round, or a
+ * postponement into an empty week). Before this, the writer matched rows by
+ * `(season, gwNumber)`, so an ordinal shift silently re-purposed every
+ * subsequent row for a different real-world window while squads, scores and
+ * claims kept pointing at the old document ids. Matching by identity keeps
+ * each document bound to its window for life and re-stamps the label instead.
+ *
+ * Rows matching no window are left untouched (they hold history) — but if a
+ * surviving row's ordinal is claimed by the new numbering, the caller must
+ * refuse the whole write: two rows with one ordinal would make
+ * `by_season_gwNumber` lookups ambiguous. Fail closed, report, decide.
+ */
+export function reconcileGameweeks<
+  T extends { gwNumber: number; leagueIds: readonly number[]; finalityAt: number },
+>(
+  existing: readonly T[],
+  windows: readonly GameweekWindowUpsert[],
+): {
+  inserts: GameweekWindowUpsert[];
+  patches: { current: T; gwNumber: number; leagueIds: number[] }[];
+  /** Unmatched stored rows whose ordinal the new numbering claims. */
+  conflicts: T[];
+} {
+  const byFinality = new Map<number, T>();
+  for (const row of existing) {
+    if (!byFinality.has(row.finalityAt)) byFinality.set(row.finalityAt, row);
+  }
+
+  const inserts: GameweekWindowUpsert[] = [];
+  const patches: { current: T; gwNumber: number; leagueIds: number[] }[] = [];
+  const matched = new Set<T>();
+
+  for (const window of windows) {
+    const current = byFinality.get(window.finalityAt);
+    if (current === undefined) {
+      inserts.push(window);
+      continue;
+    }
+    matched.add(current);
+    const sameLeagues =
+      current.leagueIds.length === window.leagueIds.length &&
+      current.leagueIds.every((id, i) => id === window.leagueIds[i]);
+    if (current.gwNumber !== window.gwNumber || !sameLeagues) {
+      patches.push({ current, gwNumber: window.gwNumber, leagueIds: window.leagueIds });
+    }
+  }
+
+  const claimed = new Set(windows.map((w) => w.gwNumber));
+  const conflicts = existing.filter(
+    (row) => !matched.has(row) && claimed.has(row.gwNumber),
+  );
+
+  return { inserts, patches, conflicts };
+}
+
 /**
  * The season label a provider season year maps to, e.g. 2026 → "2026-2027".
  *

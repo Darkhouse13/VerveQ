@@ -428,3 +428,59 @@ diff); prod shipped by CI frontend deploy alone.
 - QA footprint on prod: guest `fwpolish2_qa`, empty 4-2-3-1 squad
   (no picks) — same benign-artifact convention as fwpolish_qa.
 - Parked: none.
+
+# MISSION FW-EXPAND — three new leagues, opening-weekend perfect (2026-08-12)
+
+Scope: universe 5 → 8 leagues (Eredivisie, Liga Portugal, EFL
+Championship), cohort-priced per R1, transfer-current per R2, copy/spec
+amendments per R3, R4 invariance asserted, plus U1 matchup line, U2
+back-nav fix, U3 How to Play. Prod deploy authorized for the ship phase.
+
+## O1 — 2026-08-12 — league resolution + DEV bootstrap: DONE
+
+- League ids resolved FROM THE FEED (never memory), 4 calls on the
+  research ledger (1 refused: the feed rejects search+country combined;
+  3 country listings): Eredivisie=88, Primeira Liga=94, Championship=40,
+  all with 2026 current. Resolver: fetch/resolveExpansionLeagues.ts,
+  fail-closed (exactly one survivor per league or STOP); artifact
+  data/expansion-leagues-2026.json.
+- LEAGUE_IDS widened to 8 (fantasyConstants.ts, provenance comment),
+  display names added (leagueNames.ts — the Record<LeagueId,string>
+  type made the build force this), EXPANSION_LEAGUES added to
+  fetch/config.ts SEPARATE from LEAGUES (the FS-1/top-five pulls stay
+  scoped; widening LEAGUES would have silently changed their budgets).
+- **applyGameweeks re-keyed to WINDOW IDENTITY (finalityAt), not
+  ordinal.** The old (season, gwNumber) upsert silently re-purposed
+  every later gameweek doc when a new window appeared — and the
+  expansion inserts 10 (Championship midweeks + the 88/94 opening
+  weekend the feed says was Aug 7-10, BEFORE the mission's Friday
+  premise). Squads/scores/claims point at doc ids; identity matching
+  keeps each doc bound to its real-world window for life and re-stamps
+  the label instead. Pure planner reconcileGameweeks +5 unit tests
+  (insertion re-stamp, leagueIds patch, orphan-conflict fail-closed).
+  This also fixes a latent bug: a postponement into an empty midweek
+  would have corrupted numbering via the quarter-hourly sync.
+- bootstrapSeason (8 calls): 2,916 fixtures — 39:380, 140:380, 135:380,
+  78:306, 61:306, 88:306, 94:306, 40:552; 1,164 created (=new leagues'
+  total exactly), 10 gameweeks created, 60 total, 50 re-stamped with
+  identity verified (50/50 kept finalityAt; diff in scratchpad).
+- Partition assertion: gameweekAudit over ALL 60 gameweeks —
+  outOfWindowCount=0 and finalityMatchesWindow=true everywhere; every
+  fixture (old and new) is in exactly one window.
+- Pre-coverage GW1 (88/94, Aug 7-10, finished before coverage began):
+  the settle cron marked it final on its own tick — 18 fixtures
+  unscored at the cut is the truthful record for a window with no
+  squads; scoring correctly skips settled gameweeks.
+- Open board verified: GW2 = weekend 2026-08-14→17, SAME doc id as
+  before the expansion (existing squads unaffected), getWeekendLeagues
+  = Championship 12 + Eredivisie 9 + Liga Portugal 9 + La Liga 6.
+- bootstrapPlayers scoped by new leagueIds arg (unknown ids refused;
+  full-universe re-runs would fight the transfer pipeline's
+  active/departed ownership): 60 clubs (40:24, 88:18, 94:18), 1,772
+  created, 0 skipped-no-position, prices null (fail-closed unbuyable
+  until O2 prices them). 8 UPDATED rows = players the universe already
+  knew now at new-league clubs — flagged for the O3 R2 pass
+  (departedAt not cleared by applyClubPlayers; price is stale top-five).
+- API spend day total: 4 (ledgered, research) + 8 + 65 (FW-2 client) =
+  77 mission calls; key reported dailyRemaining 6,507 after (shared
+  with standing crons). No phase projected anywhere near 1,500.

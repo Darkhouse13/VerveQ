@@ -15,6 +15,9 @@ export const LEAGUE_NAMES: Readonly<Record<LeagueId, string>> = {
   135: "Serie A",
   78: "Bundesliga",
   61: "Ligue 1",
+  88: "Eredivisie",
+  94: "Liga Portugal",
+  40: "Championship",
 };
 
 /** Never renders a raw id to a user — an unknown league reads as a league. */

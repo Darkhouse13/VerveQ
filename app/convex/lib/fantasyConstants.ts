@@ -155,10 +155,17 @@ export function isOnPriceScale(price: number): boolean {
 // ── leagues ──
 
 /**
- * DRAFT_ROOM §Room parameters: "all 5 leagues". API-Football v3 league ids,
- * matching research/fantasy/fetch/config.ts (the FS-1 sample's LEAGUES).
+ * The covered-league universe. API-Football v3 league ids, matching
+ * research/fantasy/fetch/config.ts.
+ *
+ * Eight leagues since the FW-EXPAND owner ruling (2026-08-02): the top five,
+ * plus Eredivisie (88), Liga Portugal (94) and the EFL Championship (40) —
+ * the three ids resolved from the feed itself on 2026-08-12
+ * (research/fantasy/fetch/resolveExpansionLeagues.ts), never from memory.
+ * DRAFT_ROOM §Room parameters states the pool as an ingest property of this
+ * list, not an engine rule.
  */
-export const LEAGUE_IDS = [39, 140, 135, 78, 61] as const;
+export const LEAGUE_IDS = [39, 140, 135, 78, 61, 88, 94, 40] as const;
 export type LeagueId = (typeof LEAGUE_IDS)[number];
 
 export function isKnownLeagueId(id: number): id is LeagueId {

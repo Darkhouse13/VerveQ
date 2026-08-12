@@ -33,6 +33,7 @@ import {
 } from "../../convex/lib/fantasyConstants";
 import {
   constituteGameweeks,
+  reconcileGameweeks,
   seasonLabel,
   windowFor,
 } from "../../convex/lib/fantasyGameweekWindows";
@@ -309,6 +310,101 @@ describe("constituteGameweeks", () => {
 
   it("returns nothing for no fixtures", () => {
     expect(constituteGameweeks([])).toEqual([]);
+  });
+});
+
+describe("reconcileGameweeks — window identity survives ordinal shifts (FW-EXPAND)", () => {
+  /** Constitute windows and shape them like the ingest's upsert payload. */
+  function asUpserts(kickoffs: number[], leagueIds: number[] = [39]) {
+    return constituteGameweeks(kickoffs).map((w) => ({
+      gwNumber: w.gwNumber,
+      leagueIds,
+      finalityAt: w.finalityAt,
+    }));
+  }
+
+  const weekendKick = paris(SAT.y, SAT.m, SAT.d, 15, 0);
+  const midweekKick = paris(WED.y, WED.m, WED.d, 20, 0);
+  const nextWeekendKick = paris(NEXT_FRI.y, NEXT_FRI.m, NEXT_FRI.d, 20, 45);
+
+  it("is a no-op when the window set is unchanged", () => {
+    const windows = asUpserts([weekendKick, nextWeekendKick]);
+    const existing = windows.map((w, i) => ({ ...w, id: `doc${i}` }));
+    const plan = reconcileGameweeks(existing, windows);
+    expect(plan.inserts).toEqual([]);
+    expect(plan.patches).toEqual([]);
+    expect(plan.conflicts).toEqual([]);
+  });
+
+  it("inserts a newly populated window and re-stamps later ordinals in place", () => {
+    // Season known so far: two weekend windows numbered 1 and 2. A new
+    // league's midweek round then populates the week between them.
+    const before = asUpserts([weekendKick, nextWeekendKick]);
+    const existing = before.map((w, i) => ({ ...w, id: `doc${i}` }));
+    const after = asUpserts([weekendKick, midweekKick, nextWeekendKick]);
+
+    const plan = reconcileGameweeks(existing, after);
+
+    // The midweek window is the only insert, at ordinal 2.
+    expect(plan.inserts).toHaveLength(1);
+    expect(plan.inserts[0].gwNumber).toBe(2);
+
+    // The second weekend KEEPS ITS DOCUMENT (identity: finalityAt) and only
+    // its label moves 2 → 3. Nothing is re-purposed.
+    expect(plan.patches).toHaveLength(1);
+    expect(plan.patches[0].current.id).toBe("doc1");
+    expect(plan.patches[0].gwNumber).toBe(3);
+    expect(plan.conflicts).toEqual([]);
+  });
+
+  it("patches leagueIds when a window gains a league without moving ordinals", () => {
+    const windows = asUpserts([weekendKick, nextWeekendKick], [39, 88]);
+    const existing = asUpserts([weekendKick, nextWeekendKick], [39]).map((w, i) => ({
+      ...w,
+      id: `doc${i}`,
+    }));
+    const plan = reconcileGameweeks(existing, windows);
+    expect(plan.inserts).toEqual([]);
+    expect(plan.patches).toHaveLength(2);
+    expect(plan.patches.map((p) => p.leagueIds)).toEqual([
+      [39, 88],
+      [39, 88],
+    ]);
+  });
+
+  it("flags a conflict when an orphaned row's ordinal is claimed", () => {
+    // A stored row whose window no longer exists, holding ordinal 2 — while
+    // the fresh numbering also assigns 2. Writing both would make the
+    // by_season_gwNumber lookup ambiguous.
+    const windows = asUpserts([weekendKick, midweekKick, nextWeekendKick]);
+    const orphan = {
+      gwNumber: 2,
+      leagueIds: [39],
+      finalityAt: paris(2027, 6, 29, 23, 59), // matches no constituted window
+      id: "orphan",
+    };
+    const existing = [
+      { ...windows[0], id: "doc0" },
+      orphan,
+      { ...windows[2], id: "doc2" },
+    ];
+    const plan = reconcileGameweeks(existing, windows);
+    expect(plan.conflicts).toHaveLength(1);
+    expect(plan.conflicts[0].id).toBe("orphan");
+  });
+
+  it("leaves an orphaned row alone when its ordinal is not claimed", () => {
+    const windows = asUpserts([weekendKick]);
+    const orphan = {
+      gwNumber: 40,
+      leagueIds: [39],
+      finalityAt: paris(2027, 6, 29, 23, 59),
+      id: "orphan",
+    };
+    const plan = reconcileGameweeks([{ ...windows[0], id: "doc0" }, orphan], windows);
+    expect(plan.inserts).toEqual([]);
+    expect(plan.patches).toEqual([]);
+    expect(plan.conflicts).toEqual([]);
   });
 });
 

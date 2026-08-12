@@ -2,14 +2,16 @@
  * Weekend Fantasy — feed ingestion (FW-2).
  *
  * Turns the API-Football feed into the FW-1 data layer: fixtures grouped into
- * gameweek windows, and a player universe for the five leagues.
+ * gameweek windows, and a player universe for the covered leagues (eight since
+ * FW-EXPAND, 2026-08).
  *
  * ── Shape ──
  *
- *   bootstrapSeason   one-shot. 5 requests. Fixtures for all five leagues →
- *                     windows → gameweeks → fixture rows.
- *   bootstrapPlayers  one-shot. 5 + 96 requests. Every club's squad, prices null.
- *   syncFixtures      cron. 5 requests. A rolling date window, so kickoff
+ *   bootstrapSeason   one-shot. 1 request per league. Fixtures for all covered
+ *                     leagues → windows → gameweeks → fixture rows.
+ *   bootstrapPlayers  one-shot. 1 per league + 1 per club. Every club's squad,
+ *                     prices null. Scopeable to a league subset.
+ *   syncFixtures      cron. 1 request per league. A rolling date window, so kickoff
  *                     changes, postponements and results land without
  *                     re-reading a whole season every quarter hour.
  *
@@ -45,7 +47,12 @@ import {
   type FeedFixture,
 } from "./fantasyApiFootball";
 import { isOnPriceScale, LEAGUE_IDS, PRICE_MAX, PRICE_MIN } from "./lib/fantasyConstants";
-import { constituteGameweeks, seasonLabel, windowFor } from "./lib/fantasyGameweekWindows";
+import {
+  constituteGameweeks,
+  reconcileGameweeks,
+  seasonLabel,
+  windowFor,
+} from "./lib/fantasyGameweekWindows";
 
 /**
  * The season ingestion targets, as API-Football names it (opening calendar
@@ -230,6 +237,14 @@ const fixtureUpsertValidator = v.object({
  * themselves number in the thousands and cannot be written in one go. So the
  * action constitutes the windows purely, writes them here first, and then
  * streams fixtures in chunks that reference the gameweek by its ordinal.
+ *
+ * Rows are matched by WINDOW IDENTITY (`finalityAt`), not by ordinal — see
+ * `reconcileGameweeks` (FW-EXPAND, 2026-08-12). A newly populated window
+ * (an expansion league's midweek round, a postponement into an empty week)
+ * shifts every later ordinal; matching by ordinal would silently re-purpose
+ * each subsequent row for a different real-world window while squads and
+ * scores kept referencing the old documents. Identity matching re-stamps the
+ * `gwNumber` label instead and keeps each document bound to its window.
  */
 export const applyGameweeks = internalMutation({
   args: {
@@ -247,42 +262,47 @@ export const applyGameweeks = internalMutation({
       .query("fantasyGameweeks")
       .withIndex("by_season_gwNumber", (q) => q.eq("season", season))
       .collect();
-    const byNumber = new Map(existing.map((gw) => [gw.gwNumber, gw]));
 
-    let created = 0;
-    let updated = 0;
+    const plan = reconcileGameweeks(existing, windows);
 
-    for (const window of windows) {
-      const current = byNumber.get(window.gwNumber);
-      if (current === undefined) {
-        await ctx.db.insert("fantasyGameweeks", {
-          season,
-          gwNumber: window.gwNumber,
-          leagueIds: window.leagueIds,
-          status: "upcoming",
-          finalityAt: window.finalityAt,
-        });
-        created += 1;
-        continue;
-      }
-
-      // `status` is deliberately NOT written here. It is a lifecycle field
-      // driven by the passage of time and (later) by settlement; an ingestion
-      // pass that reset a "settling" gameweek to "upcoming" every quarter hour
-      // would be a live bug wearing a refresh's clothes.
-      const sameLeagues =
-        current.leagueIds.length === window.leagueIds.length &&
-        current.leagueIds.every((id, i) => id === window.leagueIds[i]);
-      if (current.finalityAt !== window.finalityAt || !sameLeagues) {
-        await ctx.db.patch(current._id, {
-          finalityAt: window.finalityAt,
-          leagueIds: window.leagueIds,
-        });
-        updated += 1;
-      }
+    if (plan.conflicts.length > 0) {
+      // A stored row matching no window now holds an ordinal the new numbering
+      // claims. Two rows with one ordinal would make by_season_gwNumber
+      // ambiguous — refuse the whole write and report.
+      throw new Error(
+        `applyGameweeks: ordinal conflict on gwNumber(s) ${plan.conflicts
+          .map((c) => c.gwNumber)
+          .join(", ")} — stored gameweek(s) match no constituted window but ` +
+          "their ordinals are claimed by the new numbering. Nothing was written.",
+      );
     }
 
-    return { created, updated, total: windows.length };
+    for (const window of plan.inserts) {
+      await ctx.db.insert("fantasyGameweeks", {
+        season,
+        gwNumber: window.gwNumber,
+        leagueIds: window.leagueIds,
+        status: "upcoming",
+        finalityAt: window.finalityAt,
+      });
+    }
+
+    // `status` is deliberately NOT written here. It is a lifecycle field
+    // driven by the passage of time and (later) by settlement; an ingestion
+    // pass that reset a "settling" gameweek to "upcoming" every quarter hour
+    // would be a live bug wearing a refresh's clothes.
+    for (const patch of plan.patches) {
+      await ctx.db.patch(patch.current._id, {
+        gwNumber: patch.gwNumber,
+        leagueIds: patch.leagueIds,
+      });
+    }
+
+    return {
+      created: plan.inserts.length,
+      updated: plan.patches.length,
+      total: windows.length,
+    };
   },
 });
 
@@ -763,9 +783,9 @@ async function applyFixtures(
 }
 
 /**
- * One-shot season bootstrap: every fixture of all five leagues.
+ * One-shot season bootstrap: every fixture of all covered leagues.
  *
- * 5 requests. Safe to re-run — `applySeasonFixtures` upserts.
+ * One request per league (8). Safe to re-run — `applySeasonFixtures` upserts.
  */
 export const bootstrapSeason = internalAction({
   args: { season: v.optional(v.number()) },
@@ -800,9 +820,9 @@ export const bootstrapSeason = internalAction({
 /**
  * Rolling re-read of the fixtures near now.
  *
- * 5 requests per run — one per league over a lookback/lookahead date range,
- * rather than 5 whole-season reads. That is what makes a quarter-hourly cadence
- * affordable: ~480 requests/day against a measured 7,500/day cap.
+ * 8 requests per run — one per league over a lookback/lookahead date range.
+ * That is what makes a quarter-hourly cadence affordable: ~768 requests/day
+ * against a measured 7,500/day cap.
  *
  * The lookback exists because results and abandonments land AFTER kickoff; the
  * lookahead because a postponement is announced before it.
@@ -854,18 +874,39 @@ export const syncFixtures = internalAction({
 });
 
 /**
- * One-shot player bootstrap: every club in the five leagues.
+ * One-shot player bootstrap: every club in the covered leagues.
  *
- * 5 requests (club lists) + one per club (96 in a normal season: 20+20+20+18+18).
- * Prices are left null — BUDGET_MODE open item 1.
+ * One request per league (club lists) + one per club (~156 across the eight
+ * leagues). Prices are left null — BUDGET_MODE open item 1.
+ *
+ * `leagueIds` scopes the run (FW-EXPAND): bootstrapping ONLY the expansion
+ * leagues leaves every existing player row byte-identical — the transfer
+ * pipeline owns those rows' active/departed state, and a full re-run would
+ * both spend ~100 needless calls and fight it (applyClubPlayers sets
+ * `active: true` without clearing `departedAt`). Unknown ids are refused,
+ * never silently fetched.
  *
  * Players whose feed position is missing or unrecognised are counted and
  * skipped, never defaulted. A guessed position would silently mis-drive the
  * §Position mismatch dampener for that player in every gameweek he appears in.
  */
 export const bootstrapPlayers = internalAction({
-  args: { season: v.optional(v.number()) },
-  handler: async (ctx, { season = CURRENT_API_SEASON }): Promise<BootstrapPlayersResult> => {
+  args: {
+    season: v.optional(v.number()),
+    leagueIds: v.optional(v.array(v.number())),
+  },
+  handler: async (
+    ctx,
+    { season = CURRENT_API_SEASON, leagueIds },
+  ): Promise<BootstrapPlayersResult> => {
+    const scope = leagueIds ?? [...LEAGUE_IDS];
+    for (const id of scope) {
+      if (!(LEAGUE_IDS as readonly number[]).includes(id)) {
+        throw new Error(
+          `bootstrapPlayers: league ${id} is not in the covered universe (${LEAGUE_IDS.join(", ")}).`,
+        );
+      }
+    }
     const client = new ApiFootballClient(credentialsFromEnv());
 
     let clubs = 0;
@@ -875,7 +916,7 @@ export const bootstrapPlayers = internalAction({
     let skippedNoPosition = 0;
     const perLeague: Record<number, { clubs: number; players: number }> = {};
 
-    for (const leagueId of LEAGUE_IDS) {
+    for (const leagueId of scope) {
       const teams = await fetchLeagueTeams(client, leagueId, season);
       perLeague[leagueId] = { clubs: teams.length, players: 0 };
 

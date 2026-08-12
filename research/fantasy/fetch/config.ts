@@ -32,6 +32,20 @@ export const LEAGUES: readonly LeagueSpec[] = [
 ] as const;
 
 /**
+ * FW-EXPAND (2026-08-02 ruling) — the three expansion leagues, each priced as
+ * its own cohort. Ids resolved from the feed 2026-08-12 by
+ * fetch/resolveExpansionLeagues.ts (artifact: data/expansion-leagues-2026.json).
+ * Deliberately NOT merged into LEAGUES above: the FS-1 sample and the top-five
+ * pricing pull are scoped to that list, and widening it would silently change
+ * their request budgets.
+ */
+export const EXPANSION_LEAGUES: readonly LeagueSpec[] = [
+  { id: 88, name: 'Eredivisie', country: 'Netherlands', typicalTeams: 18 },
+  { id: 94, name: 'Primeira Liga', country: 'Portugal', typicalTeams: 18 },
+  { id: 40, name: 'Championship', country: 'England', typicalTeams: 24 },
+] as const;
+
+/**
  * Where in the season the four sampled gameweeks sit, as fractions of the
  * league's own round count. Fractions rather than fixed round numbers because
  * Bundesliga plays 34 rounds and the rest play 38 — fixed numbers would bunch
