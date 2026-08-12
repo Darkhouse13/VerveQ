@@ -467,8 +467,16 @@ export function PlayerPickerDialog({
             sheet; ≤budget and Show all keep their semantics. Horizontal
             scroll stays inside this row, never the page. */}
         {/* shrink-0: inside the dialog's squeezed flex column this row would
-            otherwise be shrunk vertically and clip the chips. */}
-        <div className="flex gap-1.5 overflow-x-auto pb-0.5 shrink-0" data-testid="picker-filter-row">
+            otherwise be shrunk vertically and clip the chips.
+            overflow-y-hidden + pb-1: overflow-x-auto alone computes
+            overflow-y to auto, and the chips' pressed-state translate (4px)
+            then grows scrollHeight past clientHeight — the bar scrolls
+            vertically under the finger. Clip the axis and pad the translate's
+            travel so nothing is cut off mid-press. */}
+        <div
+          className="flex gap-1.5 overflow-x-auto overflow-y-hidden pb-1 shrink-0"
+          data-testid="picker-filter-row"
+        >
           <NeoButton
             variant={leagueFilter !== null ? "primary" : "outline"}
             size="sm"

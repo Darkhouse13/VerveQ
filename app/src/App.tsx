@@ -102,6 +102,7 @@ const VoteScreen = lazyWithRetry(() => import("./pages/shell/weekend/VoteScreen"
 const CourtScreen = lazyWithRetry(() => import("./pages/shell/weekend/CourtScreen"));
 const CrewSheetScreen = lazyWithRetry(() => import("./pages/shell/weekend/CrewSheetScreen"));
 const WeekendHowToPlayScreen = lazyWithRetry(() => import("./pages/shell/weekend/WeekendHowToPlayScreen"));
+const FixturesScreen = lazyWithRetry(() => import("./pages/shell/weekend/FixturesScreen"));
 
 const DuelPlayScreen = lazyWithRetry(() => import("./pages/DuelPlayScreen"));
 const DuelLinkScreen = lazyWithRetry(() => import("./pages/DuelLinkScreen"));
@@ -587,6 +588,9 @@ const AppRoutes = () => (
             {/* THE WEEKEND rules screen (FW-EXPAND U3). Public like the hub —
                 rules need no session. */}
             <Route path="/v2/weekend/how-to-play" element={<ShellGate><WeekendHowToPlayScreen /></ShellGate>} />
+            {/* THE WEEKEND fixtures (FW-IMMERSE A3). Public like the hub —
+                the weekend's matchday list is read-only, no session. */}
+            <Route path="/v2/weekend/fixtures" element={<ShellGate><FixturesScreen /></ShellGate>} />
             {/* THE DRAW — dev/preview only, flag-gated (VITE_DRAW_ENABLED),
                 not linked from home, nav, or any mode grid. */}
             <Route path="/draw" element={<DrawScreen />} />

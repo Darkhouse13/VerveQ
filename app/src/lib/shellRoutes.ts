@@ -92,6 +92,8 @@ export const SHELL_ROUTES = {
   weekendSheet: (roomId: string) => `/v2/weekend/sheet/${roomId}`,
   /** THE WEEKEND rules screen (FW-EXPAND U3) — public, like the hub. */
   weekendHowToPlay: "/v2/weekend/how-to-play",
+  /** THE WEEKEND fixtures (FW-IMMERSE A3) — public, read-only matchday list. */
+  weekendFixtures: "/v2/weekend/fixtures",
 } as const;
 
 /** Route patterns registered in App.tsx (params un-filled). */
@@ -124,6 +126,7 @@ export const SHELL_ROUTE_PATTERNS = {
   weekendCourt: "/v2/weekend/court",
   weekendSheet: "/v2/weekend/sheet/:roomId",
   weekendHowToPlay: "/v2/weekend/how-to-play",
+  weekendFixtures: "/v2/weekend/fixtures",
 } as const;
 
 /**

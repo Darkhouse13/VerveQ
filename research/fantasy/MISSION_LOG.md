@@ -847,3 +847,52 @@ back-nav fix, U3 How to Play. Prod deploy authorized for the ship phase.
   intact, zero fwpolish*/fwp3smoke*/wkndsmoke* users remain.
 - No parked decisions: no STOP fired this mission (the O1 fork resolved by
   evidence to case (a); DECISIONS_NEEDED.md unchanged).
+
+# FW-IMMERSE — THE WEEKEND: from menu to matchday
+
+## Phase A — 2026-08-12 — matchday (mobile-first): BUILT, QA GREEN, SHIPPING
+- A1 (filter bar): reproduced with evidence before fixing — the row computed
+  overflow-y:auto (implied by overflow-x-auto) and a pressed chip's
+  neo-shadow-pressed translate (4px) grew scrollHeight 36 vs clientHeight 34,
+  so the bar scrolled vertically under the finger. Fix: overflow-y-hidden +
+  pb-1 so the translate stays inside the padding box. Proven by probe
+  (idle+pressed 36/36, scrollTop pinned 0, horizontal 357>328 preserved) and
+  locked in fwImmerseQa.spec.ts.
+- A2 (pitch): PitchView rebuilt — inline-SVG turf (perspective trapezoid
+  boundary converging to the far goal, 9 graduated mow stripes, floodlight
+  wash + edge vignette, markings projected as ellipses), slots as jersey
+  silhouettes (one generic path, no crest/likeness/asset) over FPL-style
+  name/value plates. All FW-4 chip states preserved verbatim (awaiting "…",
+  honest 0.0+DNP, ×0.75, few votes, as-POS, lock). Placement lands with
+  weekend-chip-in drop; a scored plate pulses once (weekend-score-in);
+  both in the prefers-reduced-motion clamp list. data-testids, chip-state
+  attribute and the .grid>div row contract unchanged — all 1546 unit tests
+  green untouched.
+- A3 (fixtures): new READ-ONLY query fantasyMarket.getWeekendFixtures
+  (by_gameweek_kickoff walk + by_gameweek_state "scored" mirror + bounded
+  per-club label resolution via by_active_club→by_player; ~40 clubs, never
+  the 4.7k-player collect). No mutation, no schema change. Display rules in
+  src/lib/weekendFixtures.ts (15-test contract): scoreline ONLY when the
+  feed carries both goals AND state is live/played (feed 0–0 at FT renders;
+  absent goals never fabricate; abandoned never shows a line), clock only
+  greys (started), local-day grouping, nextKickoffAt skips void/kicked-off.
+  FixturesScreen at /v2/weekend/fixtures — public (ShellGate, the hub's
+  tier), fail-quiet imperative gate (prod predating the query shows the
+  no-board card).
+- A4 (hub): hierarchy inverted — MatchdayHero (countdown to next kickoff w/
+  1s heartbeat, opening-fixture teaser, in-play/played/scored pulse line;
+  in-play count once nothing is ahead; scored/total once played), squad
+  status card (getSquadScore; null for visitors ⇒ absent; settled label from
+  the settlement stamp, NEVER the clock — locked by contract test), fixtures
+  rail (live→upcoming→played, cap 12, all-fixtures → A3), four doors demoted
+  to a 2×2 action grid (testids + titles preserved; bodies shortened).
+  Fixtures payload loads imperatively fail-quiet ⇒ old hub on old backend.
+- Tests: weekendFixturesRules (15) + weekendMatchdayHubContract (13) new;
+  npm run check green end to end; fwImmerseQa.spec.ts full loop at 380px
+  green vs DEV (countdown ticks against server payload, fixture count/day
+  grouping equal server truth, A1 axis assertions, pick lands, squad status
+  card, zero console errors, zero horizontal scroll). 6 fwi-* screenshots
+  committed.
+- chromeProof: stash-before/work-after pairs — home, compete, quiz all
+  BYTE-IDENTICAL (cmp), weekend-hub differs (the redesign itself). Stronger
+  than the FW-POLISH precedent (no countdown-digit noise this run).

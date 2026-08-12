@@ -1,24 +1,26 @@
 /**
- * THE WEEKEND — the pitch (FW-POLISH O2, owner ruling D2).
+ * THE WEEKEND — the pitch (FW-POLISH O2, rebuilt FW-IMMERSE A2).
  *
- * The 13 rendered as a football team, not a form: the XI positioned by
- * formation on a stylized CSS pitch (goal end at the top, halfway line at the
- * foot — the fantasy convention), the two finishers on the touchline strip
- * below. No image assets, no crests, no likenesses — lines and type only.
+ * The 13 rendered as a football team on a pitch that reads as a PLACE, not a
+ * diagram: an inline-SVG turf with perspective (touchlines converge toward
+ * the far goal), graduated mow stripes (near bands deeper — the same cue a
+ * broadcast camera gives), a floodlight wash and edge vignette, and markings
+ * projected into the same perspective. Goal end far (top), halfway line at
+ * the near foot — the fantasy convention, unchanged.
  *
- * Every FW-4 slot state re-renders here, compressed to chip size:
- *   empty          → dashed outline, position label, plus — a position to
- *                    fill, never a zero-score warning
- *   filled         → surname + price
+ * Slots are shirt silhouettes: a generic jersey (no crest, no likeness, no
+ * image asset — one inline path) over FPL-style plates carrying name and
+ * value. Every FW-4 slot state still renders, compressed to chip size:
+ *   empty          → dashed jersey outline, position label, plus
+ *   filled         → cream shirt (finishers pink), surname + price plates
  *   locked         → lock glyph, no edit affordance (tap = detail only)
- *   awaiting data  → "…" in the value line — NEVER a number (FW-4R N5)
- *   scored         → points; the honest zero renders AS 0.0 with its "DNP"
- *                    marker so it can never look like awaiting
+ *   awaiting data  → "…" in the value plate — NEVER a number (FW-4R N5)
+ *   scored         → value plate flips lime with the points; the honest zero
+ *                    renders AS 0.0 with its "DNP" marker
  *   mismatch       → "×0.75" marker (applied) or "as {ROLE}" hint (browsing)
  *   few votes      → settled row whose crowd was below liquidity
- * The full FW-4 vocabulary (awaiting data / did not appear / crowd % /
- * insufficient votes) lives one tap away in the slot detail sheet — the chip
- * carries the state, the sheet carries the sentence.
+ * Placement lands with a drop-in; a freshly scored plate pulses once — both
+ * shortened under prefers-reduced-motion (index.css owns the keyframes).
  *
  * Dumb component: parents own every mutation; taps only report upward.
  */
@@ -74,6 +76,60 @@ function slotChipState(
     return "scored";
   }
   return slot.locked ? "locked" : "filled";
+}
+
+// ── the jersey ──
+
+/** One generic jersey path, 24×22 box: crew neck, raglan sleeves. The only
+ *  "artwork" on the pitch — a silhouette, never a kit, crest or likeness. */
+const JERSEY_PATH =
+  "M8.6 1.4 C9.6 2.7 14.4 2.7 15.4 1.4 L19.2 2.9 L23.2 7.6 L19.7 10.4 L17.9 8.4 " +
+  "L17.9 19.6 Q17.9 21 16.4 21 L7.6 21 Q6.1 21 6.1 19.6 L6.1 8.4 L4.3 10.4 " +
+  "L0.8 7.6 L4.8 2.9 Z";
+
+/** Right-half shade: a quiet one-sided shadow so the shirt reads lit from the
+ *  floodlight side instead of flat. */
+const JERSEY_SHADE_PATH =
+  "M12 2.38 C13.5 2.38 15 2 15.4 1.4 L19.2 2.9 L23.2 7.6 L19.7 10.4 L17.9 8.4 " +
+  "L17.9 19.6 Q17.9 21 16.4 21 L12 21 Z";
+
+function Jersey({
+  variant,
+  swapArmed,
+}: {
+  variant: "xi" | "finisher" | "empty";
+  swapArmed: boolean;
+}) {
+  const fill =
+    variant === "empty"
+      ? "none"
+      : swapArmed
+        ? "hsl(48 100% 60%)"
+        : variant === "finisher"
+          ? "hsl(330 90% 80%)"
+          : "hsl(30 100% 97%)";
+  return (
+    <svg
+      viewBox="0 0 24 22"
+      className="w-[42px] h-[38px]"
+      aria-hidden
+      style={{ filter: "drop-shadow(1.5px 2px 0 hsl(0 0% 0% / 0.55))" }}
+    >
+      <path
+        d={JERSEY_PATH}
+        fill={fill}
+        stroke={
+          variant === "empty" ? "hsl(75 100% 55% / 0.65)" : "hsl(0 0% 7%)"
+        }
+        strokeWidth={variant === "empty" ? 1.1 : 1}
+        strokeDasharray={variant === "empty" ? "2.6 1.8" : undefined}
+        strokeLinejoin="round"
+      />
+      {variant !== "empty" && (
+        <path d={JERSEY_SHADE_PATH} fill="hsl(0 0% 0% / 0.09)" />
+      )}
+    </svg>
+  );
 }
 
 export function SlotChip({
@@ -148,51 +204,182 @@ export function SlotChip({
       }
       onClick={onTap}
       className={cn(
-        "w-[64px] min-h-[58px] rounded-md px-1 py-1 flex flex-col items-center justify-center gap-0 text-center transition-all select-none",
-        // Chips contrast the PITCH (always dark), independent of the page
-        // theme: cream shirts on dark turf, dark chip ink, quiet dark
-        // mini-shadow (R4 — offset shadows never cast in lime).
-        filled
-          ? "border-2 border-[hsl(0_0%_7%)] neo-shadow-sm bg-[hsl(30_100%_97%)] text-[hsl(0_0%_7%)]"
-          : "border-2 border-dashed border-[hsl(75_100%_55%/0.55)] text-[hsl(30_100%_97%/0.92)] bg-[hsl(0_0%_100%/0.04)]",
-        swapArmed && "bg-yellow text-yellow-foreground ring-2 ring-ring",
+        "w-[64px] rounded-md px-0.5 py-1 flex flex-col items-center gap-[3px] text-center transition-all select-none",
+        swapArmed && "ring-2 ring-ring bg-[hsl(48_100%_60%/0.12)]",
         state === "locked" && "opacity-85",
         !editable && !filled && "opacity-60",
       )}
     >
+      {/* Role line above the shirt — filled chips only (an empty chip already
+          says its role under the dashed jersey; twice was noise). */}
+      {filled && (
+        <span className="font-mono text-[8px] font-bold uppercase tracking-[0.12em] leading-none flex items-center gap-0.5 text-[hsl(30_100%_97%/0.85)]">
+          {slot.isFinisher ? `F·${slot.slotRole}` : slot.slotRole}
+          {slot.locked && <Lock size={8} strokeWidth={3} aria-label="locked" />}
+        </span>
+      )}
+
       {filled ? (
-        <>
-          <span className="font-mono text-[8px] font-bold uppercase tracking-[0.12em] leading-none flex items-center gap-0.5">
-            {slot.isFinisher ? `F·${slot.slotRole}` : slot.slotRole}
-            {slot.locked && <Lock size={8} strokeWidth={3} aria-label="locked" />}
+        // Keyed by player: a placement re-mounts this column and the drop-in
+        // keyframe carries the shirt onto the pitch.
+        <span
+          key={slot.playerId ?? undefined}
+          className="weekend-chip-in w-full flex flex-col items-center gap-[2px]"
+        >
+          <span className="relative">
+            <Jersey
+              variant={slot.isFinisher ? "finisher" : "xi"}
+              swapArmed={swapArmed}
+            />
           </span>
-          <span className="font-heading font-bold text-[11px] leading-tight max-w-full truncate">
+          <span className="w-full rounded-[3px] bg-[hsl(30_100%_97%)] text-[hsl(0_0%_7%)] font-heading font-bold text-[9.5px] leading-[13px] px-0.5 truncate neo-shadow-sm border border-[hsl(0_0%_7%)]">
             {surname(slot.playerName ?? "…")}
           </span>
-          <span className="font-mono font-bold text-[11px] tabular-nums leading-tight">
+          <span
+            // Keyed by content: the tick from awaiting to a number (or a
+            // revision) re-mounts the plate and fires its one-shot pulse.
+            key={`v-${valueLine ?? ""}-${state}`}
+            className={cn(
+              "w-full rounded-[3px] font-mono font-bold text-[9.5px] leading-[13px] tabular-nums border border-[hsl(0_0%_7%)]",
+              state === "scored"
+                ? "weekend-score-in bg-[hsl(74_100%_50%)] text-[hsl(0_0%_5%)]"
+                : "bg-[hsl(0_0%_10%)] text-[hsl(30_100%_97%/0.92)]",
+            )}
+          >
             {valueLine}
           </span>
           {micro !== null && (
-            <span className="font-mono text-[8px] uppercase leading-none opacity-75">
+            <span className="font-mono text-[8px] uppercase leading-none text-[hsl(30_100%_97%/0.75)]">
               {micro}
             </span>
           )}
-        </>
+        </span>
       ) : (
-        <>
-          <Plus size={14} strokeWidth={3} aria-hidden />
-          <span className="font-heading font-bold text-[11px] leading-tight">
+        <span className="w-full flex flex-col items-center gap-[2px]">
+          <span className="relative">
+            <Jersey variant="empty" swapArmed={swapArmed} />
+            <Plus
+              size={13}
+              strokeWidth={3}
+              aria-hidden
+              className="absolute left-1/2 top-[55%] -translate-x-1/2 -translate-y-1/2 text-[hsl(75_100%_55%/0.85)]"
+            />
+          </span>
+          <span className="font-heading font-bold text-[10px] leading-tight text-[hsl(30_100%_97%/0.9)]">
             {slot.slotRole}
           </span>
-        </>
+        </span>
       )}
     </button>
   );
 }
 
+// ── the turf ──
+
 /**
- * The pitch itself: markings drawn with borders (no assets), XI rows derived
- * from the slots' roles, finishers on the touchline strip below.
+ * The pitch surface, one inline SVG stretched to the container
+ * (preserveAspectRatio="none"): graduated mow stripes (near bands taller —
+ * the broadcast-camera depth cue), floodlight wash from the far end, edge
+ * vignette, and markings projected into a converging-touchline perspective.
+ * Circles are drawn as ellipses — exactly what perspective does to them.
+ * Decorative; the chips carry every fact.
+ */
+function PitchSurface() {
+  // Band edges of the 9 mow stripes, far → near, heights growing ~15% per
+  // band in a 100×144 space.
+  const bands = [0, 8.6, 18.5, 29.9, 43.0, 58.0, 75.3, 95.2, 118.1, 144];
+  // Perspective: half-width of the pitch at height y (converges far/top).
+  const halfW = (y: number) => 40 + (8 * (y - 5)) / 134;
+  const line = "hsl(78 90% 88% / 0.5)";
+  return (
+    <svg
+      viewBox="0 0 100 144"
+      preserveAspectRatio="none"
+      className="absolute inset-0 w-full h-full"
+      aria-hidden
+    >
+      <defs>
+        <linearGradient id="wknd-turf-depth" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stopColor="hsl(0 0% 0%)" stopOpacity="0.5" />
+          <stop offset="0.3" stopColor="hsl(0 0% 0%)" stopOpacity="0.08" />
+          <stop offset="0.72" stopColor="hsl(0 0% 0%)" stopOpacity="0" />
+          <stop offset="1" stopColor="hsl(0 0% 0%)" stopOpacity="0.22" />
+        </linearGradient>
+        <linearGradient id="wknd-turf-sides" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0" stopColor="hsl(0 0% 0%)" stopOpacity="0.38" />
+          <stop offset="0.1" stopColor="hsl(0 0% 0%)" stopOpacity="0" />
+          <stop offset="0.9" stopColor="hsl(0 0% 0%)" stopOpacity="0" />
+          <stop offset="1" stopColor="hsl(0 0% 0%)" stopOpacity="0.38" />
+        </linearGradient>
+        <radialGradient id="wknd-floodlight" cx="0.5" cy="0.16" r="0.75">
+          <stop offset="0" stopColor="hsl(75 100% 72%)" stopOpacity="0.14" />
+          <stop offset="0.55" stopColor="hsl(75 100% 72%)" stopOpacity="0.04" />
+          <stop offset="1" stopColor="hsl(75 100% 72%)" stopOpacity="0" />
+        </radialGradient>
+      </defs>
+
+      {/* mow stripes */}
+      {bands.slice(0, -1).map((top, i) => (
+        <rect
+          key={top}
+          x="0"
+          y={top}
+          width="100"
+          height={bands[i + 1] - top}
+          fill={i % 2 === 0 ? "hsl(140 34% 10%)" : "hsl(142 30% 13.5%)"}
+        />
+      ))}
+
+      {/* light & depth washes */}
+      <rect x="0" y="0" width="100" height="144" fill="url(#wknd-floodlight)" />
+      <rect x="0" y="0" width="100" height="144" fill="url(#wknd-turf-depth)" />
+      <rect x="0" y="0" width="100" height="144" fill="url(#wknd-turf-sides)" />
+
+      {/* markings, projected */}
+      <g
+        stroke={line}
+        strokeWidth={1.3}
+        fill="none"
+        vectorEffect="non-scaling-stroke"
+      >
+        {/* boundary: touchlines converge toward the far goal */}
+        <path
+          d={`M ${50 - halfW(5)} 5 L ${50 + halfW(5)} 5 L ${50 + halfW(139)} 139 L ${50 - halfW(139)} 139 Z`}
+          vectorEffect="non-scaling-stroke"
+        />
+        {/* penalty area + six-yard box, hung from the far goal line */}
+        <path
+          d={`M ${50 - 0.56 * halfW(5)} 5 L ${50 - 0.56 * halfW(26)} 26 L ${50 + 0.56 * halfW(26)} 26 L ${50 + 0.56 * halfW(5)} 5`}
+          vectorEffect="non-scaling-stroke"
+        />
+        <path
+          d={`M ${50 - 0.27 * halfW(5)} 5 L ${50 - 0.27 * halfW(13.5)} 13.5 L ${50 + 0.27 * halfW(13.5)} 13.5 L ${50 + 0.27 * halfW(5)} 5`}
+          vectorEffect="non-scaling-stroke"
+        />
+        {/* penalty arc (an ellipse — what perspective makes of a circle) */}
+        <path d="M 43.4 26 A 8.4 4.6 0 0 0 56.6 26" vectorEffect="non-scaling-stroke" />
+        {/* halfway line at the near foot + centre circle */}
+        <path d="M 37.2 139 A 12.8 7.6 0 0 1 62.8 139" vectorEffect="non-scaling-stroke" />
+        {/* corner arcs, far end */}
+        <path
+          d={`M ${50 - halfW(5) + 2.4} 5 A 2.4 1.7 0 0 1 ${50 - halfW(5)} 6.9`}
+          vectorEffect="non-scaling-stroke"
+        />
+        <path
+          d={`M ${50 + halfW(5) - 2.4} 5 A 2.4 1.7 0 0 0 ${50 + halfW(5)} 6.9`}
+          vectorEffect="non-scaling-stroke"
+        />
+      </g>
+      {/* penalty spot + centre spot */}
+      <ellipse cx="50" cy="18.5" rx="0.8" ry="0.5" fill={line} />
+      <ellipse cx="50" cy="138.2" rx="0.9" ry="0.55" fill={line} />
+    </svg>
+  );
+}
+
+/**
+ * The pitch itself: SVG turf below, XI rows derived from the slots' roles,
+ * finishers on the touchline strip below.
  */
 export function PitchView({
   slots,
@@ -264,20 +451,10 @@ export function PitchView({
   return (
     <div data-testid="weekend-pitch">
       <div className="weekend-pitch neo-border neo-shadow-lg rounded-xl relative overflow-hidden">
-        {/* Markings: goal end up top, halfway line at the foot. Decorative. */}
-        <div aria-hidden className="absolute inset-0 pointer-events-none">
-          <div className="absolute inset-[3%] border-2 border-[hsl(var(--pitch-line))] rounded-sm" />
-          {/* penalty area + six-yard box, hung from the top boundary */}
-          <div className="absolute top-[3%] left-1/2 -translate-x-1/2 w-[56%] h-[15%] border-2 border-t-0 border-[hsl(var(--pitch-line))]" />
-          <div className="absolute top-[3%] left-1/2 -translate-x-1/2 w-[27%] h-[6.5%] border-2 border-t-0 border-[hsl(var(--pitch-line))]" />
-          {/* penalty arc */}
-          <div className="absolute top-[18%] left-1/2 -translate-x-1/2 w-[18%] h-[6%] border-2 border-t-0 border-[hsl(var(--pitch-line))] rounded-b-full" />
-          {/* centre circle over the halfway line at the foot */}
-          <div className="absolute bottom-[3%] left-1/2 -translate-x-1/2 translate-y-[2px] w-[26%] h-[10%] border-2 border-b-0 border-[hsl(var(--pitch-line))] rounded-t-full" />
-        </div>
+        <PitchSurface />
 
         <div
-          className="relative grid py-3 px-1 min-h-[420px]"
+          className="relative grid py-3 px-1 min-h-[480px]"
           style={{
             gridTemplateRows: `0.8fr${" 1fr".repeat(Math.max(rows.length - 1, 0))}`,
           }}

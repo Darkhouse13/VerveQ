@@ -200,15 +200,29 @@
    * surrounding canvas — the pitch IS the mode's identity anchor.
    */
   .weekend-pitch {
-    --pitch-line: 75 100% 55% / 0.4;
-    background-color: hsl(140 30% 11%);
-    background-image: repeating-linear-gradient(
-      to bottom,
-      hsl(140 30% 11%) 0,
-      hsl(140 30% 11%) 44px,
-      hsl(140 28% 13.5%) 44px,
-      hsl(140 28% 13.5%) 88px
-    );
+    /* FW-IMMERSE A2: the main pitch is painted by PitchView's inline SVG
+       (perspective stripes, floodlight, markings); this class keeps the
+       matching turf under the SVG and on the finisher touchline strip. */
+    background-color: hsl(140 34% 10%);
+    background-image:
+      radial-gradient(120% 60% at 50% 0%, hsl(75 100% 70% / 0.07), transparent 60%),
+      repeating-linear-gradient(
+        to bottom,
+        hsl(140 34% 10%) 0,
+        hsl(140 34% 10%) 44px,
+        hsl(142 30% 13.5%) 44px,
+        hsl(142 30% 13.5%) 88px
+      );
+  }
+
+  /* A shirt landing on the pitch (placement) — one-shot, chip-local. */
+  .weekend-chip-in {
+    animation: weekend-chip-in 0.32s cubic-bezier(0.2, 0.9, 0.3, 1.15) both;
+  }
+
+  /* A value plate flipping to scored — one lime pulse, then still. */
+  .weekend-score-in {
+    animation: weekend-score-in 0.55s ease-out both;
   }
 
   /* THE WEEKEND formation chooser bottom sheet (FW-POLISH-2 R1): slides up
@@ -366,6 +380,16 @@
   100% { transform: translate(-50%, 0); }
 }
 
+@keyframes weekend-chip-in {
+  0% { opacity: 0; transform: translateY(-7px) scale(0.85); }
+  100% { opacity: 1; transform: none; }
+}
+
+@keyframes weekend-score-in {
+  0% { box-shadow: 0 0 0 0 hsl(74 100% 50% / 0.55); }
+  100% { box-shadow: 0 0 0 7px hsl(74 100% 50% / 0); }
+}
+
 /* Honour the OS "reduce motion" setting for the app-wide effect animations —
    until now only draw.css did. The infinite ones (pulse-urgent's 40px-blur
    text-shadow, fire-pulse's whole-surface background pulse) are also the most
@@ -382,7 +406,9 @@
   .animate-shake-horizontal,
   .animate-float-up,
   .animate-slide-up,
-  .weekend-sheet-in {
+  .weekend-sheet-in,
+  .weekend-chip-in,
+  .weekend-score-in {
     animation-duration: 0.01s;
     animation-iteration-count: 1;
   }

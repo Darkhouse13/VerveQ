@@ -169,6 +169,90 @@ export const getWeekendLeagues = query({
 });
 
 /**
+ * The open gameweek's fixtures for display (FW-IMMERSE A3) — the weekend as
+ * a card: every fixture with kickoff, status, club labels, the scoreline the
+ * feed already carries, and whether the scoring pipeline has landed points
+ * for it. Read-only and additive; lock semantics stay with the lock engine —
+ * `kickoffAt` is returned raw and the client's clock only GREYS, never
+ * enforces (the getMarket precedent).
+ *
+ * Club labels resolve per club via a bounded index walk (a few active
+ * players + their pool meta) instead of the full-pool collect getMarket
+ * does — a fixtures list touches ~40 clubs, not ~4.7k players. A club with
+ * no labelled player renders null and the client falls back to the raw id,
+ * degraded loudly, never invented.
+ */
+export const getWeekendFixtures = query({
+  args: {},
+  handler: async (ctx) => {
+    const gameweek = await findOpenGameweek(ctx);
+    if (gameweek === null) return null;
+
+    const fixtures = await ctx.db
+      .query("fantasyFixtures")
+      .withIndex("by_gameweek_kickoff", (q) => q.eq("gameweekId", gameweek._id))
+      .collect();
+
+    // Which fixtures the pipeline has scored — fantasyFixtureScoring is the
+    // per-fixture authority ("points land ~2h after FT" is ITS clock, not
+    // ours; we only mirror its state).
+    const scoredRows = await ctx.db
+      .query("fantasyFixtureScoring")
+      .withIndex("by_gameweek_state", (q) =>
+        q.eq("gameweekId", gameweek._id).eq("state", "scored"),
+      )
+      .collect();
+    const scoredFixtureIds = new Set(scoredRows.map((row) => row.fixtureId));
+
+    const clubIds = new Set<string>();
+    for (const fixture of fixtures) {
+      clubIds.add(fixture.homeClubId);
+      clubIds.add(fixture.awayClubId);
+    }
+    const clubNameById = new Map<string, string>();
+    for (const clubId of clubIds) {
+      const candidates = await ctx.db
+        .query("fantasyPlayers")
+        .withIndex("by_active_club", (q) => q.eq("active", true).eq("clubId", clubId))
+        .take(6);
+      for (const player of candidates) {
+        const meta = await ctx.db
+          .query("fantasyDraftPoolMeta")
+          .withIndex("by_player", (q) => q.eq("playerId", player._id))
+          .first();
+        if (meta?.clubName !== undefined) {
+          clubNameById.set(clubId, meta.clubName);
+          break;
+        }
+      }
+    }
+
+    return {
+      gameweekId: gameweek._id,
+      season: gameweek.season,
+      gwNumber: gameweek.gwNumber,
+      status: gameweek.status,
+      finalityAt: gameweek.finalityAt,
+      fixtures: fixtures.map((fixture) => ({
+        fixtureId: fixture._id,
+        leagueId: fixture.leagueId,
+        kickoffAt: fixture.kickoffAt,
+        status: fixture.status,
+        homeClubId: fixture.homeClubId,
+        awayClubId: fixture.awayClubId,
+        homeName: clubNameById.get(fixture.homeClubId) ?? null,
+        awayName: clubNameById.get(fixture.awayClubId) ?? null,
+        /** Feed facts, never computed: absent goals stay null (a 0 in the
+         *  feed is an honest 0 — the no-data-as-zero rule, schema L1966). */
+        homeGoals: fixture.homeGoals ?? null,
+        awayGoals: fixture.awayGoals ?? null,
+        scored: scoredFixtureIds.has(fixture._id),
+      })),
+    };
+  },
+});
+
+/**
  * The open gameweek's fixture id for a club (earliest kickoff — the same
  * rule the lock engine uses). The court's file-a-claim flow resolves a
  * player's fixture through this; the filing mutation re-validates it.
