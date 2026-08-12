@@ -731,3 +731,88 @@ back-nav fix, U3 How to Play. Prod deploy authorized for the ship phase.
   key reported 5,547 remaining at close (all consumers, shared key).
 - Standing cron spend from tomorrow: sync ~768/day + transfers
   ~156+/day + scoring per due fixtures, per deployment.
+
+# MISSION FW-POLISH-3 — GW label root-cause, crew deletion, slot-context picker, leagues line (2026-08-12)
+
+## O1 — 2026-08-12 — GW label root-cause + coverage-epoch fix: DONE (f86bd25)
+- DIAGNOSIS FIRST, prod read-only. The hub targeted the RIGHT window —
+  findOpenGameweek picks the earliest-finality open board, which is the
+  Aug 14–17 window (Championship+Eredivisie+Liga Portugal+La Liga, 36
+  fixtures, the 5 real squads + 1 room). The LABEL was wrong: that window
+  carried gwNumber 2.
+- Root cause, by evidence: FW-EXPAND's prod bootstrap (2026-08-12 18:58Z)
+  inserted the Aug 7–10 Eredivisie/Liga Portugal opening round — 18 played
+  fixtures — 21 HOURS AFTER its own finality instant (Aug 11 21:59Z
+  Paris). It is the only window on either deployment created after its own
+  finality; zero squads, rooms, or player-score rows reference it (one
+  settlement bookkeeping row only). Chronological numbering handed this
+  never-playable historical import ordinal 1, displacing the real opening
+  board to 2. Ruled case (a) — labeling, window correct — NOT case (c):
+  those 18 fixtures are played and settled; no board can ever open for
+  them, so there is nothing hidden for the owner to see.
+- Fix via the identity-keyed relabel path, never re-purposed docs:
+  SEASON_COVERAGE_START["2026-2027"] = 2026-08-12T00:00Z in
+  fantasyConstants; constituteGameweeks gives windows already final at the
+  epoch non-positive ordinals counting back from -1 (0 stays ingestion's
+  unresolved sentinel), so ordinal 1 is always the first playable window.
+  The 15-min sync cron's reconcileGameweeks re-stamps labels on deploy —
+  no data patch, finalityAt identity and FW-2 derivation untouched.
+- DEV healed by the cron within minutes of the push: import = GW -1,
+  opening board = GW 1, getOpenGameweek reports 1. Prod heals the same way
+  at the O6 backend deploy. 6 new unit tests incl. the reconcile-shift
+  proof (patches land on the SAME docs).
+- Observed hazard, noted not fixed (out of scope, self-healing): a window
+  inserted post-finality enters as status "upcoming" and can transiently
+  win findOpenGameweek until the settle cron flips it "final".
+
+## O2 — 2026-08-12 — crew deletion, owner ruling incl. the guard: DONE
+- deleteCrew + sim-drivable deleteCrewFor core (the …For house split):
+  creator-only; ANY completed draft ⇒ no delete path forever (record
+  protected; leaveCrew stays the exit); a DRAFTING room blocks deletion
+  until it terminates; lobby/order_reveal rooms are cancelled — log rows,
+  bound squads (defensive; none can exist pre-completion), room doc,
+  every membership row, crew doc, in purgeSimData's proven cascade order.
+  3h lobby TTL sweep untouched as backstop.
+- getCrew serves canDelete mirroring the guard exactly, so the UI never
+  re-derives the rule; CrewScreen shows a quiet Delete-crew affordance
+  only when canDelete, opening a typed-confirm bottom sheet (confirm dead
+  until "DELETE" typed), then returns to the crews hub.
+- 8-test engine suite on the in-memory harness: guard both ways,
+  non-creator rejected, drafting block, order_reveal cancellation, full
+  cleanup and the protected record verified by table inspection.
+
+## O3+O4 — 2026-08-12 — slot-aware picker + leagues line relocation: DONE
+- Picker: tab row REMOVED (slot context always exists); slot position is
+  the pre-filter, prompt names it as before. One-line filter row:
+  League ▾ · Club ▾ · ≤budget · Show all (semantics unchanged). League/
+  Club chips open a bottom sheet — clubs searchable, grouped by league,
+  league scopes the club list — all derived from market rows (no clubs
+  table, by design). FW-1's deliberate mismatch keeps ONE affordance: the
+  sheet's "All positions" entry clears the pre-filter (filter default vs
+  scoring-time concept, per the mission's clarified ruling), surfaced as
+  a clearable chip. Top-40 cap was already applied post-filter ⇒
+  per-filter-scope, same search-to-narrow footer.
+- Leagues line: out of the picker; hub + compact squad strip via one
+  WeekendLeaguesLine component — ≤3 leagues inline, 4+ collapse to
+  "This weekend: N leagues ▾" with tap-to-expand. getWeekendLeagues only.
+- 6 new UI contract tests cover both.
+
+## O5 — 2026-08-12 — 380px DEV QA: DONE
+- fwPolish3Qa.spec.ts, full loop against DEV: hub reads GAMEWEEK 1 BOARD
+  IS OPEN (equals server ordinal); crew create → typed-confirm delete →
+  gone from hub; draftSheetForUser's completed-draft crew shows NO delete
+  affordance (screenshot also shows "GW 1 · 2026-2027 · DRAFTED" — the
+  relabel on a real surface); GK picker: no tabs, no THIS WEEKEND line,
+  league→club drill to a named club's keepers in two taps; All-positions
+  path reachable; squad strip collapses at 4 leagues and expands on tap.
+  Zero console errors, zero horizontal scroll, 12 fwp3-* screenshots
+  committed.
+- The QA run caught two real defects, fixed: the deep-link auto-join
+  firing against a just-deleted crew's dead code, and the filter row
+  being flex-shrunk into clipping its chips.
+- expansionQa.spec.ts updated for the new surface; both specs green.
+- Hygiene: purgeUiRun extended to own crews orphaned by a previous guest
+  purge (creator doc gone AND no completed room — the protection stands);
+  DEV closed at 0 crews / 0 simloop users. fwPolishQaPurge.ts added
+  (fwShipSmokePurge pattern, two-step fail-closed, prefix-gated) for the
+  O6 prod guest sweep.
