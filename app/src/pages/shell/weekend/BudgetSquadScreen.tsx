@@ -449,6 +449,7 @@ export function PlayerPickerDialog({
             return (
               <NeoCard
                 key={player.playerId}
+                data-testid="picker-row"
                 className={`flex items-center justify-between py-2 ${!pickable ? "opacity-45" : ""}`}
               >
                 <div className="min-w-0">

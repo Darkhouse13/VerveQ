@@ -109,6 +109,7 @@ export const getMarket = query({
           playerId: player._id,
           name: player.name,
           clubId: player.clubId,
+          leagueId: player.leagueId,
           clubName: clubNameByPlayer.get(player._id) ?? null,
           /** Nominal feed position — a browsing hint, never a build constraint
            *  (all-positions-eligible; the mismatch rule prices the risk). */

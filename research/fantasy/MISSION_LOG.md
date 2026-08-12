@@ -637,3 +637,31 @@ back-nav fix, U3 How to Play. Prod deploy authorized for the ship phase.
   U3 "?"→rules screen (sections asserted, no horizontal scroll,
   screenshot)→back→hub. PASS 19.6s, zero console errors. Check green
   (1,511).
+
+## O6 — 2026-08-12 — full DEV QA at 380px: DONE
+
+- New committed spec e2e/expansionQa.spec.ts, WINDOW-AGNOSTIC by design:
+  it asks the deployment what the open window holds (getWeekendLeagues +
+  getMarket, leagueId added to the market projection — read-only) and
+  asserts against that, so it survives any future window shape.
+- The open window (GW2, Fri 2026-08-14 → Mon 17) holds 4 of the 8
+  leagues: Championship 12 + Eredivisie 9 + Liga Portugal 9 + La Liga 6.
+  The mission's 8-league-squad gate therefore takes its stated fallback:
+  every seeded league visible in the picker, one pick from EACH
+  in-window league.
+- PASS (8.8s): hub line reads exactly "This weekend: Championship +
+  Eredivisie + Liga Portugal + La Liga" (server order); all 8 flagship
+  clubs present under Show all (Arsenal/Barcelona/Juventus/Dortmund/
+  Marseille/Ajax/Benfica/Wrexham); U1 matchup line asserted on a
+  PLAYING club per in-window league (flagships can rest — Barcelona
+  does, staggered opening round; the spec derives a playing club from
+  market data instead of assuming); No fixture badge asserted for
+  out-of-window leagues; 4 picks made, one per in-window league, chip
+  states confirmed; zero horizontal scroll; zero console errors.
+- Screenshot evidence: expansion-hub-380, expansion-picker-380 (Sevilla
+  rows all reading "Sevilla · vs Rayo Vallecano (H)"), expansion-pitch-
+  380. weekendMobile full loop re-run green alongside (17.5s) — its U2
+  back-ladder and U3 How to Play assertions are the O5 gate re-proven.
+- QA footprint purged via the standing purgeUiRun convention.
+- Check green (1,511). ENOBUFS footnote: getMarket's 4.7k-row payload
+  needs maxBuffer on the spec's convexRun helper.
