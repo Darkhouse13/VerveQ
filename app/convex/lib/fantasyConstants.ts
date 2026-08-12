@@ -168,6 +168,26 @@ export function isOnPriceScale(price: number): boolean {
 export const LEAGUE_IDS = [39, 140, 135, 78, 61, 88, 94, 40] as const;
 export type LeagueId = (typeof LEAGUE_IDS)[number];
 
+/**
+ * When THE WEEKEND's coverage of a season began, per season label.
+ *
+ * A window whose finality instant predates this epoch was already settled
+ * before the product could open a board for it — it exists only because a
+ * league's backfill imported its fixtures for history (pricing aggregates,
+ * transfer ledgers). Such a window is a HISTORICAL IMPORT, not a playable
+ * gameweek: no squad, room, or claim can ever bind to it. Numbering gives it
+ * a non-positive ordinal so that "Gameweek 1" is always the first window a
+ * user could actually play (FW-POLISH-3 O1; the 2026-08-12 FW-EXPAND backfill
+ * imported the already-final Aug 7–10 Eredivisie/Liga Portugal round and its
+ * chronological ordinal displaced the real opening board from 1 to 2).
+ *
+ * 2026-08-12T00:00:00Z sits between that imported round's finality
+ * (2026-08-11 23:59 Paris) and the opening board's (2026-08-18 23:59 Paris).
+ */
+export const SEASON_COVERAGE_START: Record<string, number> = {
+  "2026-2027": Date.UTC(2026, 7, 12),
+};
+
 export function isKnownLeagueId(id: number): id is LeagueId {
   return (LEAGUE_IDS as readonly number[]).includes(id);
 }

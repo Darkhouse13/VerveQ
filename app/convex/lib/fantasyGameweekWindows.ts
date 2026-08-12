@@ -176,11 +176,22 @@ function finalityForWindow(
  * (a midweek round is a gameweek in its own right, not a sub-part of the
  * weekend beside it).
  *
+ * `coverageStartAt` (fantasyConstants.SEASON_COVERAGE_START) marks when the
+ * product's coverage of the season began. Windows already past finality at
+ * that instant are historical imports — settled before any board could open,
+ * carrying fixtures only for aggregates — and take non-positive ordinals
+ * counting back from -1 (the import nearest coverage), so ordinal 1 is always
+ * the first PLAYABLE window. 0 is deliberately skipped: ingestion uses 0 as
+ * its "window unresolved" sentinel and a real gameweek must never claim it.
+ * Finality is monotone in window start, so the imports are exactly the
+ * chronological prefix.
+ *
  * Deterministic: same kickoffs in any order produce the same numbering.
  */
 export function constituteGameweeks(
   kickoffs: readonly number[],
   timeZone: string = FINALITY_TIME_ZONE,
+  coverageStartAt?: number,
 ): (GameweekWindow & { gwNumber: number })[] {
   const byKey = new Map<string, GameweekWindow>();
   for (const kickoff of kickoffs) {
@@ -188,9 +199,16 @@ export function constituteGameweeks(
     if (!byKey.has(window.key)) byKey.set(window.key, window);
   }
 
-  return [...byKey.values()]
-    .sort((a, b) => a.startsAt - b.startsAt)
-    .map((window, index) => ({ ...window, gwNumber: index + 1 }));
+  const sorted = [...byKey.values()].sort((a, b) => a.startsAt - b.startsAt);
+  const preCoverage =
+    coverageStartAt === undefined
+      ? 0
+      : sorted.filter((w) => w.finalityAt < coverageStartAt).length;
+  return sorted.map((window, index) => ({
+    ...window,
+    gwNumber:
+      index < preCoverage ? index - preCoverage : index - preCoverage + 1,
+  }));
 }
 
 /** What the ingest wants a season's gameweek row to say. */

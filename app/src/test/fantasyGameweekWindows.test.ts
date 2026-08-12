@@ -311,6 +311,90 @@ describe("constituteGameweeks", () => {
   it("returns nothing for no fixtures", () => {
     expect(constituteGameweeks([])).toEqual([]);
   });
+
+  describe("coverage start — historical imports take non-positive ordinals (FW-POLISH-3 O1)", () => {
+    const importedKick = paris(SAT.y, SAT.m, SAT.d, 15, 0);
+    const openingKick = paris(NEXT_FRI.y, NEXT_FRI.m, NEXT_FRI.d, 20, 45);
+
+    it("gives ordinal 1 to the first playable window, -1 to the import before coverage", () => {
+      const importedFinality = windowFor(importedKick).finalityAt;
+      const coverageStart = importedFinality + 1;
+      const gameweeks = constituteGameweeks(
+        [importedKick, openingKick],
+        undefined,
+        coverageStart,
+      );
+      expect(gameweeks.map((g) => g.gwNumber)).toEqual([-1, 1]);
+    });
+
+    it("never assigns ordinal 0 (ingestion's unresolved sentinel)", () => {
+      const kicks = [
+        importedKick,
+        paris(WED.y, WED.m, WED.d, 20, 0),
+        openingKick,
+      ];
+      const coverageStart = windowFor(openingKick).finalityAt + 1;
+      const gameweeks = constituteGameweeks(kicks, undefined, coverageStart);
+      expect(gameweeks.map((g) => g.gwNumber)).toEqual([-3, -2, -1]);
+      expect(gameweeks.map((g) => g.gwNumber)).not.toContain(0);
+    });
+
+    it("counts back chronologically: the import nearest coverage is -1", () => {
+      const midweekKick = paris(WED.y, WED.m, WED.d, 20, 0);
+      const coverageStart = windowFor(midweekKick).finalityAt + 1;
+      const gameweeks = constituteGameweeks(
+        [importedKick, midweekKick, openingKick],
+        undefined,
+        coverageStart,
+      );
+      expect(gameweeks.map((g) => g.gwNumber)).toEqual([-2, -1, 1]);
+    });
+
+    it("a window still open at coverage start is playable and numbered from 1", () => {
+      // Coverage begins mid-window (the FW-SHIP case): finality has not
+      // passed, a board can open, so it keeps ordinal 1.
+      const coverageStart = windowFor(importedKick).finalityAt - 1;
+      const gameweeks = constituteGameweeks(
+        [importedKick, openingKick],
+        undefined,
+        coverageStart,
+      );
+      expect(gameweeks.map((g) => g.gwNumber)).toEqual([1, 2]);
+    });
+
+    it("without a coverage start the numbering is unchanged", () => {
+      const gameweeks = constituteGameweeks([importedKick, openingKick]);
+      expect(gameweeks.map((g) => g.gwNumber)).toEqual([1, 2]);
+    });
+
+    it("relabeling through reconcile shifts ordinals without touching identity", () => {
+      // The FW-POLISH-3 prod shape: stored rows numbered 1..3 chronologically;
+      // the first is a pre-coverage import. Reconcile must patch labels on the
+      // SAME rows (identity = finalityAt) and insert nothing.
+      const midweekKick = paris(WED.y, WED.m, WED.d, 20, 0);
+      const kicks = [importedKick, midweekKick, openingKick];
+      const stored = constituteGameweeks(kicks).map((w, i) => ({
+        gwNumber: w.gwNumber,
+        leagueIds: [39],
+        finalityAt: w.finalityAt,
+        id: `doc${i}`,
+      }));
+      const coverageStart = windowFor(importedKick).finalityAt + 1;
+      const windows = constituteGameweeks(kicks, undefined, coverageStart).map(
+        (w) => ({ gwNumber: w.gwNumber, leagueIds: [39], finalityAt: w.finalityAt }),
+      );
+      const plan = reconcileGameweeks(stored, windows);
+      expect(plan.inserts).toEqual([]);
+      expect(plan.conflicts).toEqual([]);
+      expect(
+        plan.patches.map((p) => [p.current.id, p.current.gwNumber, p.gwNumber]),
+      ).toEqual([
+        ["doc0", 1, -1],
+        ["doc1", 2, 1],
+        ["doc2", 3, 2],
+      ]);
+    });
+  });
 });
 
 describe("reconcileGameweeks — window identity survives ordinal shifts (FW-EXPAND)", () => {

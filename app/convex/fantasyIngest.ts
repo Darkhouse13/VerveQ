@@ -46,7 +46,13 @@ import {
   fetchSquad,
   type FeedFixture,
 } from "./fantasyApiFootball";
-import { isOnPriceScale, LEAGUE_IDS, PRICE_MAX, PRICE_MIN } from "./lib/fantasyConstants";
+import {
+  isOnPriceScale,
+  LEAGUE_IDS,
+  PRICE_MAX,
+  PRICE_MIN,
+  SEASON_COVERAGE_START,
+} from "./lib/fantasyConstants";
 import {
   constituteGameweeks,
   reconcileGameweeks,
@@ -728,7 +734,11 @@ async function applyFixtures(
    */
   shouldWrite: (entry: { feed: FeedFixture; kickoffAt: number }) => boolean = () => true,
 ): Promise<IngestTotals> {
-  const windows = constituteGameweeks(feeds.map((f) => f.kickoffAt));
+  const windows = constituteGameweeks(
+    feeds.map((f) => f.kickoffAt),
+    undefined,
+    SEASON_COVERAGE_START[seasonLabelValue],
+  );
   const gwNumberByKey = new Map(windows.map((w) => [w.key, w.gwNumber]));
 
   const leaguesInWindow = new Map<string, Set<number>>();
