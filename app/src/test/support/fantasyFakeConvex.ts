@@ -71,7 +71,15 @@ const INDEXES: Record<string, Record<string, string[]>> = {
     by_fixture_player_version: ["fixtureId", "providerPlayerId", "version"],
     by_gameweek_player_version: ["gameweekId", "providerPlayerId", "version"],
     by_gameweek_state: ["gameweekId", "state"],
+    by_player: ["providerPlayerId"],
   },
+  // FW-SCOUT player detail sheet tables (schema.ts §WEEKEND FANTASY: player
+  // detail sheet).
+  fantasyPlayerSeasonStats: {
+    by_player_season: ["providerPlayerId", "season"],
+    by_season: ["season"],
+  },
+  fantasySeasonStatSweeps: { by_status: ["status"] },
   fantasyFixtureScoring: {
     by_fixture: ["fixtureId"],
     by_gameweek_state: ["gameweekId", "state"],
