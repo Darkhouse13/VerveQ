@@ -126,6 +126,19 @@ export class ApiFootballClient {
    * how a cron burns a day's budget discovering that it has no budget.
    */
   async get<T>(endpoint: string, params: Record<string, string | number>): Promise<T> {
+    const { response } = await this.getWithPaging<T>(endpoint, params);
+    return response;
+  }
+
+  /**
+   * As `get`, but the paging block survives. Exists for the ONE paged
+   * endpoint the fantasy namespace uses (/players, FW-SCOUT L3) — every
+   * other endpoint ignores paging and keeps the simpler `get`.
+   */
+  async getWithPaging<T>(
+    endpoint: string,
+    params: Record<string, string | number>,
+  ): Promise<{ response: T; paging: { current: number; total: number } | null }> {
     const search = new URLSearchParams();
     for (const [key, value] of Object.entries(params)) search.set(key, String(value));
     const url = `${this.baseUrl}${endpoint}?${search.toString()}`;
@@ -186,7 +199,10 @@ export class ApiFootballClient {
         throw new ApiFootballError(`provider refused: ${message}`, endpoint, 200);
       }
 
-      return (body.response ?? ([] as unknown)) as T;
+      return {
+        response: (body.response ?? ([] as unknown)) as T,
+        paging: body.paging ?? null,
+      };
     }
 
     throw new ApiFootballError(
@@ -318,6 +334,44 @@ export async function fetchTeamTransfers(
   teamId: string | number,
 ): Promise<FeedTransferEntry[]> {
   return client.get<FeedTransferEntry[]>("/transfers", { team: teamId });
+}
+
+// ─────────────────────── season aggregate reads (FW-SCOUT L3, additive)
+//
+// The ONE paged endpoint the namespace uses: /players?league&season walks
+// the league's player-season aggregates ~20 rows a page. The statistics
+// shape matches the pricing pass's on-disk aggregates (research/fantasy/
+// pricing/data/*aggregates*); only the fields the season-stats sweep sums
+// are typed here — everything else rides along untyped and unread.
+
+export interface FeedSeasonStatEntry {
+  team: { id: number | null; name: string | null } | null;
+  league: { id: number | null; season: number | null } | null;
+  games: { appearences: number | null; minutes: number | null } | null;
+  shots: { on: number | null } | null;
+  goals: { total: number | null; assists: number | null; saves: number | null } | null;
+  passes: { key: number | null } | null;
+  tackles: { total: number | null; interceptions: number | null } | null;
+}
+
+export interface FeedSeasonPlayerRow {
+  player: { id: number | null; name: string | null };
+  statistics: FeedSeasonStatEntry[] | null;
+}
+
+/** One page of a league-season's player aggregates. 1 request. */
+export async function fetchLeaguePlayersPage(
+  client: ApiFootballClient,
+  leagueId: number,
+  season: number,
+  page: number,
+): Promise<{ rows: FeedSeasonPlayerRow[]; paging: { current: number; total: number } | null }> {
+  const { response, paging } = await client.getWithPaging<FeedSeasonPlayerRow[]>("/players", {
+    league: leagueId,
+    season,
+    page,
+  });
+  return { rows: response, paging };
 }
 
 /**

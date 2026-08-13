@@ -67,5 +67,16 @@ crons.daily("fantasy-transfer-sweep", { hourUTC: 4, minuteUTC: 40 }, internal.fa
 // scheduled hop was lost. Every action is a guarded no-op on a healthy room,
 // so the tight interval buys stall-recovery, not load.
 crons.interval("fantasy-draft-room-sweep", { minutes: 5 }, internal.fantasyDraftRooms.draftRoomSweep, {});
+// Season aggregates for the player detail sheet (FW-SCOUT L3): weekly walk of
+// the eight leagues' /players pages into the fantasyPlayerSeasonStats cache
+// ("This season" per 90). Weekly is the honest cadence — the sheet labels the
+// data with pulledAt and season aggregates only move on matchdays. Tuesday
+// 03:23 UTC: after Monday's late fixtures are settled into the feed, clear of
+// the :00/:15/:30/:45 sync bursts, the :10/:25/:40/:55 scoring pass minute
+// (23 ≠ any quarter-cadence minute in use) and the 04:40 transfer sweep. The
+// action prints its call plan first — an 8-probe phase discovers the REAL
+// pagination, and the run refuses to continue past 500 calls (~250 projected
+// weekly against the 7,500/day cap).
+crons.cron("fantasy-season-stats-sweep", "23 3 * * 2", internal.fantasySeasonStats.refreshSeasonStats, {});
 
 export default crons;
