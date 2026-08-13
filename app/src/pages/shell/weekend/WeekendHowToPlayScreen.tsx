@@ -43,6 +43,166 @@ function Rule({ label, children }: { label?: string; children: ReactNode }) {
   );
 }
 
+/* ── FW-RECEIPT P4: one small decorative figure per concept that genuinely
+   needs a picture — the pitch shape, the chess clock, the ×0.75 dampener.
+   Inline SVG on theme tokens only (currentColor + text-primary), static
+   (reduced-motion safe by construction), aria-hidden: the adjacent rule
+   text already says everything these draw. ── */
+
+/** 1 GK · 4 DEF · 3 MID · 3 ATT as dots on a sideways mini-pitch. */
+function PitchShapeFigure() {
+  const band = (x: number, ys: number[]) =>
+    ys.map((y) => <circle key={`${x}-${y}`} cx={x} cy={y} r={5} />);
+  return (
+    <div aria-hidden className="text-muted-foreground mt-1" data-testid="htp-figure-shape">
+      <svg viewBox="0 0 220 96" className="w-full max-w-[260px] h-auto" role="presentation">
+        {/* pitch: outline, halfway line, goal boxes */}
+        <g fill="none" stroke="currentColor" strokeWidth="1.5" opacity="0.45">
+          <rect x="2" y="2" width="216" height="76" rx="6" />
+          <line x1="110" y1="2" x2="110" y2="78" />
+          <rect x="2" y="22" width="18" height="36" />
+          <rect x="200" y="22" width="18" height="36" />
+        </g>
+        <g className="text-primary" fill="currentColor">
+          {band(26, [40])}
+        </g>
+        <g fill="currentColor">
+          {band(68, [14, 31, 49, 66])}
+          {band(124, [20, 40, 60])}
+          {band(178, [20, 40, 60])}
+        </g>
+        <g
+          fill="currentColor"
+          opacity="0.7"
+          fontSize="8"
+          fontFamily="inherit"
+          textAnchor="middle"
+        >
+          <text x="26" y="92">GK</text>
+          <text x="68" y="92">DEF</text>
+          <text x="124" y="92">MID</text>
+          <text x="178" y="92">ATT</text>
+        </g>
+      </svg>
+    </div>
+  );
+}
+
+/** A two-faced chess clock, one side live and pressed. */
+function ChessClockFigure() {
+  return (
+    <div aria-hidden className="text-muted-foreground mt-1" data-testid="htp-figure-clock">
+      <svg viewBox="0 0 200 74" className="w-full max-w-[200px] h-auto" role="presentation">
+        {/* buttons: the live side's plunger sits pressed */}
+        <g fill="currentColor" opacity="0.55">
+          <rect x="48" y="10" width="22" height="10" rx="2" />
+          <rect x="130" y="4" width="22" height="16" rx="2" />
+        </g>
+        {/* body */}
+        <rect
+          x="6"
+          y="18"
+          width="188"
+          height="50"
+          rx="8"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+        />
+        {/* live face */}
+        <g className="text-primary">
+          <rect
+            x="18"
+            y="27"
+            width="74"
+            height="32"
+            rx="4"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+          />
+          <text
+            x="55"
+            y="49"
+            fill="currentColor"
+            fontSize="15"
+            fontFamily="inherit"
+            fontWeight="bold"
+            textAnchor="middle"
+          >
+            0:30
+          </text>
+        </g>
+        {/* waiting face */}
+        <g opacity="0.6">
+          <rect
+            x="108"
+            y="27"
+            width="74"
+            height="32"
+            rx="4"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+          />
+          <text
+            x="145"
+            y="49"
+            fill="currentColor"
+            fontSize="15"
+            fontFamily="inherit"
+            fontWeight="bold"
+            textAnchor="middle"
+          >
+            0:30
+          </text>
+        </g>
+      </svg>
+    </div>
+  );
+}
+
+/** The ×0.75 dampener: the honest-slot bar, then the mis-slot bar with the
+ *  shaved quarter drawn as a dashed ghost. */
+function MismatchFigure() {
+  return (
+    <div aria-hidden className="text-muted-foreground mt-1" data-testid="htp-figure-mismatch">
+      <svg viewBox="0 0 220 64" className="w-full max-w-[260px] h-auto" role="presentation">
+        <g fontSize="8" fontFamily="inherit" fill="currentColor" opacity="0.8">
+          <text x="0" y="12">slot matches the verdict</text>
+          <text x="0" y="44">slot mismatched</text>
+        </g>
+        {/* honest bar: full length */}
+        <rect x="0" y="16" width="160" height="10" rx="2" className="text-primary" fill="currentColor" />
+        {/* mis-slot bar: 75% solid, the lost quarter dashed */}
+        <rect x="0" y="48" width="120" height="10" rx="2" fill="currentColor" opacity="0.6" />
+        <rect
+          x="121"
+          y="48"
+          width="39"
+          height="10"
+          rx="2"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1"
+          strokeDasharray="3 2"
+          opacity="0.5"
+        />
+        <text
+          x="166"
+          y="57"
+          fontSize="9"
+          fontFamily="inherit"
+          fontWeight="bold"
+          fill="currentColor"
+        >
+          ×0.75
+        </text>
+      </svg>
+    </div>
+  );
+}
+
 export default function WeekendHowToPlayScreen() {
   const navigate = useNavigate();
   const { t } = useTranslation("shell");
@@ -81,6 +241,7 @@ export default function WeekendHowToPlayScreen() {
             seconds per round — 390s spent freely across all 13 picks; an
             empty bank auto-picks the rest.
           </Rule>
+          <ChessClockFigure />
         </Section>
 
         <Section eyebrow="Your squad" testId="htp-squad">
@@ -91,6 +252,7 @@ export default function WeekendHowToPlayScreen() {
             exactly 1 GK, 3–5 DEF, 2–5 MID, 1–3 ATT in the XI. Finishers carry
             their own position, chosen freely.
           </Rule>
+          <PitchShapeFigure />
           <Rule label="Club cap:">
             at most 3 players from one club — except your favorite club, which
             is unlimited (changing favorites has a 28-day cooldown).
@@ -132,6 +294,7 @@ export default function WeekendHowToPlayScreen() {
             position, a positive score is dampened ×0.75 — mis-slotting never
             outscores honest slotting.
           </Rule>
+          <MismatchFigure />
           <Rule label="Finishers:">
             score only from their entry minute onward, and their goals and
             assists after the 75th minute are multiplied ×1.25 — the

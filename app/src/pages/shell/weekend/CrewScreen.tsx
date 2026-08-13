@@ -285,8 +285,14 @@ export default function CrewScreen() {
                     <div className="text-right shrink-0">
                       {row.cumulativePoints === null ? (
                         // R7: no scores yet is NOT zero, and must not look like it.
+                        // FW-RECEIPT P2 copy law: "awaiting data" is reserved for
+                        // drafted weekends whose fixtures are unscored. A member
+                        // with no drafted weekend at all has nothing to await —
+                        // that reads "no drafts yet".
                         <span className="text-[11px] text-muted-foreground">
-                          {t("weekend.awaitingData", { defaultValue: "awaiting data" })}
+                          {row.awaitingWeekends === 0
+                            ? t("weekend.noDraftsYet", { defaultValue: "no drafts yet" })
+                            : t("weekend.awaitingData", { defaultValue: "awaiting data" })}
                         </span>
                       ) : (
                         <>

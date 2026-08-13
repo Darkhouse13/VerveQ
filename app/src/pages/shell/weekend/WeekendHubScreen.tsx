@@ -168,10 +168,14 @@ function railRank(fixture: WeekendFixtureRow, now: number): number {
 export function FixturesRail({
   payload,
   now,
+  leagueIds,
   onOpenFixtures,
 }: {
   payload: WeekendFixturesPayload;
   now: number;
+  /** FW-RECEIPT P1: the rail header IS the "This weekend" line, so it carries
+   *  the leagues chip/expander — one statement of the window, not two. */
+  leagueIds?: ReadonlyArray<number>;
   onOpenFixtures: () => void;
 }) {
   const { t, i18n } = useTranslation();
@@ -192,15 +196,23 @@ export function FixturesRail({
 
   return (
     <div data-testid="fixtures-rail">
-      <div className="flex items-baseline justify-between mb-2">
-        <h2 className="font-mono text-[11px] font-bold uppercase tracking-[0.16em] text-muted-foreground">
-          {t("weekend.railTitle", { defaultValue: "This weekend" })}
-        </h2>
+      <div className="flex items-baseline justify-between gap-2 mb-2">
+        {leagueIds !== undefined && leagueIds.length > 0 ? (
+          <WeekendLeaguesLine
+            leagueIds={leagueIds}
+            testid="weekend-hub-leagues-line"
+            className="min-w-0"
+          />
+        ) : (
+          <h2 className="font-mono text-[11px] font-bold uppercase tracking-[0.16em] text-muted-foreground">
+            {t("weekend.railTitle", { defaultValue: "This weekend" })}
+          </h2>
+        )}
         <button
           type="button"
           data-testid="fixtures-rail-all"
           onClick={onOpenFixtures}
-          className="font-mono text-[11px] font-bold uppercase tracking-[0.12em] text-primary flex items-center gap-0.5 active:opacity-60"
+          className="shrink-0 font-mono text-[11px] font-bold uppercase tracking-[0.12em] text-primary flex items-center gap-0.5 active:opacity-60"
         >
           {t("weekend.allFixtures", { defaultValue: "All fixtures" })}
           <ChevronRight size={12} strokeWidth={3} aria-hidden />
@@ -218,39 +230,42 @@ export function FixturesRail({
               onClick={onOpenFixtures}
               className="shrink-0 w-[150px] neo-border rounded-lg bg-card text-card-foreground neo-shadow-sm px-2.5 py-2 text-left active:neo-shadow-pressed"
             >
-              <span className="flex items-center justify-between gap-1.5">
-                <span className="min-w-0 flex flex-col">
-                  <span className="text-[11px] font-heading font-bold leading-tight truncate">
-                    {fixture.homeName ?? fixture.homeClubId}
-                  </span>
-                  <span className="text-[11px] font-heading font-bold leading-tight truncate">
-                    {fixture.awayName ?? fixture.awayClubId}
-                  </span>
+              {/* P3: a grid rather than two stacked columns, so each score
+                  number stays row-paired with its club name when a long name
+                  wraps to a second line (clamped at two). */}
+              <span className="grid grid-cols-[minmax(0,1fr)_auto] gap-x-1.5 items-center">
+                <span className="text-[11px] font-heading font-bold leading-tight line-clamp-2 break-words">
+                  {fixture.homeName ?? fixture.homeClubId}
                 </span>
-                <span className="shrink-0 flex flex-col items-end">
-                  {score !== null ? (
-                    <span className="font-mono font-bold text-sm tabular-nums leading-tight">
-                      <span className="block text-right">{score.home}</span>
-                      <span className="block text-right">{score.away}</span>
-                    </span>
-                  ) : kind === "void" ? (
-                    <span className="font-mono text-[10px] text-muted-foreground">
-                      {t("weekend.fixtureVoid", { defaultValue: "OFF" })}
-                    </span>
-                  ) : (
-                    <span className="font-mono text-[11px] tabular-nums text-right whitespace-nowrap">
-                      <span className="block text-[9px] uppercase text-muted-foreground">
-                        {new Date(fixture.kickoffAt).toLocaleDateString(i18n.language, {
-                          weekday: "short",
-                        })}
-                      </span>
-                      {new Date(fixture.kickoffAt).toLocaleTimeString(i18n.language, {
-                        hour: "numeric",
-                        minute: "2-digit",
+                {score !== null ? (
+                  <span className="font-mono font-bold text-sm tabular-nums leading-tight text-right">
+                    {score.home}
+                  </span>
+                ) : kind === "void" ? (
+                  <span className="row-span-2 font-mono text-[10px] text-muted-foreground text-right">
+                    {t("weekend.fixtureVoid", { defaultValue: "OFF" })}
+                  </span>
+                ) : (
+                  <span className="row-span-2 font-mono text-[11px] tabular-nums text-right whitespace-nowrap">
+                    <span className="block text-[9px] uppercase text-muted-foreground">
+                      {new Date(fixture.kickoffAt).toLocaleDateString(i18n.language, {
+                        weekday: "short",
                       })}
                     </span>
-                  )}
+                    {new Date(fixture.kickoffAt).toLocaleTimeString(i18n.language, {
+                      hour: "numeric",
+                      minute: "2-digit",
+                    })}
+                  </span>
+                )}
+                <span className="text-[11px] font-heading font-bold leading-tight line-clamp-2 break-words">
+                  {fixture.awayName ?? fixture.awayClubId}
                 </span>
+                {score !== null && (
+                  <span className="font-mono font-bold text-sm tabular-nums leading-tight text-right">
+                    {score.away}
+                  </span>
+                )}
               </span>
               <span className="block font-mono text-[9px] uppercase tracking-[0.1em] text-muted-foreground truncate mt-1">
                 {kind === "live" || kind === "started" ? (
@@ -487,7 +502,11 @@ export default function WeekendHubScreen() {
             </p>
           )}
         </div>
-        {weekendLeagues != null && weekendLeagues.leagues.length > 0 && (
+        {/* P1: the leagues line lives in the fixtures-rail header (one "This
+            weekend" on the hub, not two). It renders here standalone only on
+            the fail-quiet path — a backend without the fixtures payload has
+            no rail to carry it. */}
+        {fixtures === null && weekendLeagues != null && weekendLeagues.leagues.length > 0 && (
           <WeekendLeaguesLine
             leagueIds={weekendLeagues.leagues.map((l) => l.leagueId)}
             testid="weekend-hub-leagues-line"
@@ -512,6 +531,7 @@ export default function WeekendHubScreen() {
           <FixturesRail
             payload={fixtures}
             now={now}
+            leagueIds={weekendLeagues?.leagues.map((l) => l.leagueId)}
             onOpenFixtures={() => navigate(SHELL_ROUTES.weekendFixtures)}
           />
         )}
@@ -570,15 +590,23 @@ export default function WeekendHubScreen() {
           // scrollbar-none stays reserved for horizontal chip rows.
           className="min-w-0 sticky top-2 max-h-[calc(100dvh-9rem)] overflow-y-auto flex flex-col gap-2 pb-2 pr-1"
         >
-          <div className="flex items-baseline justify-between">
-            <h2 className="font-mono text-[11px] font-bold uppercase tracking-[0.16em] text-muted-foreground">
-              {t("weekend.railTitle", { defaultValue: "This weekend" })}
-            </h2>
+          <div className="flex items-baseline justify-between gap-2">
+            {weekendLeagues != null && weekendLeagues.leagues.length > 0 ? (
+              <WeekendLeaguesLine
+                leagueIds={weekendLeagues.leagues.map((l) => l.leagueId)}
+                testid="weekend-hub-leagues-line"
+                className="min-w-0"
+              />
+            ) : (
+              <h2 className="font-mono text-[11px] font-bold uppercase tracking-[0.16em] text-muted-foreground">
+                {t("weekend.railTitle", { defaultValue: "This weekend" })}
+              </h2>
+            )}
             <button
               type="button"
               data-testid="fixtures-rail-all"
               onClick={() => navigate(SHELL_ROUTES.weekendFixtures)}
-              className="font-mono text-[11px] font-bold uppercase tracking-[0.12em] text-primary flex items-center gap-0.5 active:opacity-60"
+              className="shrink-0 font-mono text-[11px] font-bold uppercase tracking-[0.12em] text-primary flex items-center gap-0.5 active:opacity-60"
             >
               {t("weekend.allFixtures", { defaultValue: "All fixtures" })}
               <ChevronRight size={12} strokeWidth={3} aria-hidden />

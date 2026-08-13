@@ -92,14 +92,17 @@ export function FixtureCard({ fixture, now }: { fixture: WeekendFixtureRow; now:
   return (
     <NeoCard className="py-2.5 px-3" data-testid="fixture-card">
       <div className="flex items-center gap-2">
-        <p className="flex-1 min-w-0 text-right font-heading font-bold text-sm truncate">
+        {/* FW-RECEIPT P3: the card has vertical room, so a long club name
+            wraps to a second line before it truncates — "Sparta Rott…" was
+            an ellipsis with space to spare. line-clamp-2 keeps the ceiling. */}
+        <p className="flex-1 min-w-0 text-right font-heading font-bold text-sm leading-tight line-clamp-2 break-words">
           {fixture.homeName ?? fixture.homeClubId}
         </p>
         {/* min-w, not w: the time is one non-wrapping unit and the column
-            grows to its intrinsic width — long club names truncate instead
+            grows to its intrinsic width — long club names wrap instead
             of squeezing the time onto two lines (FW-NIT1). */}
         <div className="shrink-0 min-w-[64px] flex flex-col items-center gap-0.5">{centre}</div>
-        <p className="flex-1 min-w-0 font-heading font-bold text-sm truncate">
+        <p className="flex-1 min-w-0 font-heading font-bold text-sm leading-tight line-clamp-2 break-words">
           {fixture.awayName ?? fixture.awayClubId}
         </p>
       </div>

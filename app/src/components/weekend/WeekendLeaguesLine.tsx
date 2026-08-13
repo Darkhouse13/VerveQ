@@ -6,9 +6,10 @@
  * FW-POLISH-3 O4: up to 3 leagues render inline ("This weekend: A + B");
  * at 4+ the line collapses to "This weekend: N leagues ▾" with tap-to-expand
  * listing all — an eight-league window would wrap the joined line into four
- * rows of noise at 380px. Lives on the hub and as a compact squad-screen
- * strip; deliberately NOT in the picker any more (the picker filters by
- * league instead of announcing them).
+ * rows of noise at 380px. Lives in the hub's fixtures-rail header (FW-RECEIPT
+ * P1: the rail title IS this line — one "This weekend", not two) and as a
+ * compact squad-screen strip; deliberately NOT in the picker any more (the
+ * picker filters by league instead of announcing them).
  */
 import { useState } from "react";
 import { useTranslation } from "react-i18next";

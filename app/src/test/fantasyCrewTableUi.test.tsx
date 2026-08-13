@@ -217,6 +217,55 @@ describe("crew table — the screen", () => {
     expect(screen.getAllByText("T1")).toHaveLength(2);
   });
 
+  it("reads 'no drafts yet' for a member with no drafted weekend — never 'awaiting data' (P2 copy law)", () => {
+    // FW-RECEIPT P2: "awaiting data" is reserved for drafted weekends whose
+    // fixtures are unscored. A member with zero entries has nothing to await.
+    queryMock.results[TABLE_QUERY] = tableWith([
+      {
+        userId: "u1",
+        name: "alice",
+        cumulativePoints: null,
+        scoredWeekends: 0,
+        awaitingWeekends: 0,
+        provisional: false,
+        rank: 1,
+        tied: false,
+        weekends: [],
+      },
+      {
+        userId: "u2",
+        name: "bob",
+        cumulativePoints: null,
+        scoredWeekends: 0,
+        awaitingWeekends: 1,
+        provisional: true,
+        rank: 1,
+        tied: false,
+        weekends: [
+          {
+            roomId: "room1",
+            gameweekId: "gw3",
+            gwNumber: 3,
+            season: "2026-2027",
+            points: null,
+            state: "provisional",
+            scoredSlots: 0,
+            awaitingSlots: 13,
+            settled: false,
+          },
+        ],
+      },
+    ]);
+
+    const { container } = renderCrew();
+    // alice never drafted: the standings column says so in draft language.
+    expect(screen.getByText("no drafts yet")).toBeInTheDocument();
+    // bob drafted and awaits scores: the scoring word stays his.
+    expect(screen.getAllByText("awaiting data")).toHaveLength(1);
+    // And still no invented zero anywhere.
+    expect(container.textContent).not.toMatch(/\b0(\.0)?\b/);
+  });
+
   it("says so plainly when there is nothing to stand yet", () => {
     queryMock.results[TABLE_QUERY] = tableWith([]);
     const { container } = renderCrew();
