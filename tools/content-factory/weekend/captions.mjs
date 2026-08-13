@@ -8,17 +8,25 @@
 // X copy is NOT here — the X series runs in the confident-take register and
 // ships from campaign/x/ as post-ready threads. These captions are for
 // TikTok / IG Reels / YouTube Shorts uploads.
+// Post-launch reels point at /weekend directly — WKND-FUNNEL (ea66823)
+// measured bare `/` as a dead end for reel traffic; the tease-era assets
+// above predate that ruling and keep their shipped URLs.
 const UTM = (source, content) =>
   `https://verveq.com/?utm_source=${source}&utm_medium=social&utm_campaign=weekend26&utm_content=${content}`;
+const UTM_WKND = (source, content) =>
+  `https://verveq.com/weekend?utm_source=${source}&utm_medium=social&utm_campaign=weekend26&utm_content=${content}`;
 
-const linkBlock = (slug) => [
-  "",
-  "LINKS — paste per platform, never post untagged:",
-  `  TikTok (bio only; captions aren't clickable): ${UTM("tiktok", "bio")}`,
-  `  IG story sticker / bio: ${UTM("instagram", slug)}`,
-  `  YouTube description: ${UTM("youtube", slug)}`,
-  `  X (if cross-posted): ${UTM("x", slug)}`,
-].join("\n");
+const linkBlock = (slug, toWeekend = false) => {
+  const u = toWeekend ? UTM_WKND : UTM;
+  return [
+    "",
+    "LINKS — paste per platform, never post untagged:",
+    `  TikTok (bio only; captions aren't clickable): ${u("tiktok", "bio")}`,
+    `  IG story sticker / bio: ${u("instagram", slug)}`,
+    `  YouTube description: ${u("youtube", slug)}`,
+    `  X (if cross-posted): ${u("x", slug)}`,
+  ].join("\n");
+};
 
 const CAPTIONS = {
   "wknd-stinger": [
@@ -39,10 +47,44 @@ const CAPTIONS = {
     "",
     "#fantasyfootball #football #premierleague #fpl #fantasydraft",
   ].join("\n"),
+
+  // ── CF-WEEKEND reels (post-launch: live product, no waitlist copy).
+  // Confident-take register, never sponsor voice; comment ask leads; one CTA
+  // line max. Every stat here is FT + double-sourced (REELS_CFWEEKEND.md).
+  "wknd-settleit": [
+    "Paciência or Naujoks. One name, comments — the chat couldn't do it.",
+    "",
+    "Two in three minutes against Nacional, or two away from home in a 0-4. Dave said André Silva. Both of André Silva's were penalties. Dave left the group.",
+    "",
+    "Play it free, no signup → verveq.com/weekend",
+    "",
+    "#football #eredivisie #ligaportugal #fantasyfootball #openingweekend",
+  ].join("\n"),
+  "wknd-referee": [
+    "Same weekend. Same numbers. One word in the comments: Prestianni or Meulensteen.",
+    "",
+    "A goal and an assist each, both against promoted sides, both at home. One in an empty Luz, one in a 4-1. The board prices them 7.5 and 5.0. The stats won't settle this one — that's what the crowd is for.",
+    "",
+    "Play free, no signup → verveq.com/weekend",
+    "",
+    "#football #benfica #eredivisie #ligaportugal #fantasyfootball",
+  ].join("\n"),
+  "wknd-squad": [
+    "13 shirts. 91.0. Eight leagues. Yamal, Olise, Kane and Mbappé all fit — if the other nine cost 4.5 each.",
+    "",
+    "So one of them goes. Which? Comments. My final 13 stays withheld.",
+    "",
+    "Build yours free, no signup → verveq.com/weekend",
+    "",
+    "#fantasyfootball #football #premierleague #laliga #bundesliga",
+  ].join("\n"),
 };
+
+// reels link to /weekend; the tease-era assets keep their shipped bare-/ URLs
+const TO_WEEKEND = new Set(["wknd-settleit", "wknd-referee", "wknd-squad"]);
 
 export const buildWeekendCaption = (slug) => {
   const c = CAPTIONS[slug];
   if (!c) throw new Error(`No caption for ${slug}`);
-  return c + linkBlock(slug) + "\n";
+  return c + linkBlock(slug, TO_WEEKEND.has(slug)) + "\n";
 };

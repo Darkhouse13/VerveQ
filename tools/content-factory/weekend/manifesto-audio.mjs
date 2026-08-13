@@ -23,7 +23,9 @@ let acc = 0;
 for (const [k, d] of SCENES) { START[k] = acc; acc += d; }
 const TOTAL = acc; // 558
 
-const mix = new Mixer(TOTAL, FPS);
+// Post-epoch fix (2026-08-12): name-first Mixer, same reasoning as
+// stinger-audio.mjs — the shipped 2026-07-29 MP4 is grandfathered.
+const mix = new Mixer("wknd-manifesto", TOTAL, FPS);
 
 // GRIND — half-time menace: kick + minor-root bass per pain, the strike buzzes
 const GRIND_ROOTS = [41.2, 43.65, 41.2, 38.89]; // E1 F1 E1 D#1 — uneasy

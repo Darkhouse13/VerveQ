@@ -40,6 +40,17 @@ asset state; update it every loop.
 | `wknd-count` | Count | blocked by A1 (needs real count ≥ 50; render-time input) | — | Report count when ≥ 50 |
 | `wknd-lastcall` | Count | queued (final week) | — | — |
 | README refresh (batches 5–6 + weekend lane) | Bookkeeping | queued, its own line per owner | `README.md` | — |
+| `wknd-settleit` (80.0s reel, CF-WEEKEND R1) | Post-launch | see `REELS_CFWEEKEND.md` for state | `out/2026-08-12/wknd-settleit.mp4` + caption | Post Aug 13 |
+| `wknd-referee` (78.0s reel, CF-WEEKEND R2) | Post-launch | see `REELS_CFWEEKEND.md` | `out/2026-08-12/wknd-referee.mp4` + caption | Post Aug 14 |
+| `wknd-squad` (80.0s reel, CF-WEEKEND R3) | Post-launch | see `REELS_CFWEEKEND.md` | `out/2026-08-12/wknd-squad.mp4` + caption | Post Aug 15 |
+
+**CF-WEEKEND (2026-08-12) note:** these three post-launch reels follow the
+flop post-mortem law — each reel IS the game (real FT receipts, a real
+stat duel, the real board's arithmetic), the product is only the payoff
+frame, and every reel withholds its final answer. Facts and the
+two-source table live in `REELS_CFWEEKEND.md`. Post-launch captions point
+at `/weekend` with tagged links (WKND-FUNNEL ruling); the tease-era assets
+above keep their shipped copy.
 
 ## Cadence (against real dates; copy never names our date)
 

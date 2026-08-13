@@ -1,0 +1,72 @@
+{
+  "_comment": "CF-WEEKEND reels — the ONE timing source of truth. timeline.ts, the weekend/*-audio.mjs beds and weekend/reels-vo.mjs all read THIS file (the ladder-long lesson: hand-mirrored copies drift silently). Frames at 30fps. Each cue's budget is the seconds of clear air before the next thing that must not be talked over; reels-vo.mjs THROWS if a measured take overruns it.",
+  "fps": 30,
+  "settleit": {
+    "scenes": [
+      { "key": "open", "dur": 150 },
+      { "key": "claimA", "dur": 300 },
+      { "key": "claimB", "dur": 300 },
+      { "key": "dave", "dur": 330 },
+      { "key": "escalate", "dur": 480 },
+      { "key": "exit", "dur": 240 },
+      { "key": "turn", "dur": 330 },
+      { "key": "cta", "dur": 270 }
+    ],
+    "cues": [
+      { "key": "si-open", "at": 8, "budget": 4.5 },
+      { "key": "si-recA", "at": 260, "budget": 5.5 },
+      { "key": "si-recB", "at": 560, "budget": 5.5 },
+      { "key": "si-dave", "at": 950, "budget": 5.0 },
+      { "key": "si-mess", "at": 1340, "budget": 4.0 },
+      { "key": "si-exit", "at": 1600, "budget": 6.0 },
+      { "key": "si-turn", "at": 1815, "budget": 9.5 },
+      { "key": "si-cta", "at": 2145, "budget": 8.0 }
+    ]
+  },
+  "referee": {
+    "scenes": [
+      { "key": "open", "dur": 180 },
+      { "key": "rows", "dur": 1260 },
+      { "key": "question", "dur": 300 },
+      { "key": "punch", "dur": 300 },
+      { "key": "cta", "dur": 300 }
+    ],
+    "rowStep": 210,
+    "cues": [
+      { "key": "rf-open", "at": 8, "budget": 5.0 },
+      { "key": "rf-r1", "at": 190, "budget": 5.5 },
+      { "key": "rf-r2", "at": 400, "budget": 5.5 },
+      { "key": "rf-r3", "at": 610, "budget": 5.5 },
+      { "key": "rf-r4", "at": 820, "budget": 5.5 },
+      { "key": "rf-r5", "at": 1030, "budget": 5.5 },
+      { "key": "rf-r6", "at": 1240, "budget": 6.0 },
+      { "key": "rf-q", "at": 1450, "budget": 9.0 },
+      { "key": "rf-punch", "at": 1750, "budget": 9.0 },
+      { "key": "rf-cta", "at": 2050, "budget": 9.0 }
+    ]
+  },
+  "squad": {
+    "scenes": [
+      { "key": "open", "dur": 180 },
+      { "key": "stars", "dur": 840 },
+      { "key": "math", "dur": 300 },
+      { "key": "tradeoff", "dur": 420 },
+      { "key": "gems", "dur": 300 },
+      { "key": "withhold", "dur": 180 },
+      { "key": "cta", "dur": 180 }
+    ],
+    "starStep": 210,
+    "cues": [
+      { "key": "sq-open", "at": 8, "budget": 5.5 },
+      { "key": "sq-s1", "at": 190, "budget": 6.5 },
+      { "key": "sq-s2", "at": 400, "budget": 6.5 },
+      { "key": "sq-s3", "at": 610, "budget": 6.5 },
+      { "key": "sq-s4", "at": 820, "budget": 6.5 },
+      { "key": "sq-math", "at": 1030, "budget": 9.5 },
+      { "key": "sq-trade", "at": 1330, "budget": 13.5 },
+      { "key": "sq-gems", "at": 1750, "budget": 9.5 },
+      { "key": "sq-hold", "at": 2050, "budget": 5.5 },
+      { "key": "sq-cta", "at": 2230, "budget": 5.5 }
+    ]
+  }
+}

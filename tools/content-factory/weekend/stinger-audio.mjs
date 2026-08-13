@@ -20,7 +20,13 @@ let acc = 0;
 for (const [k, d] of SCENES) { START[k] = acc; acc += d; }
 const TOTAL = acc; // 240
 
-const mix = new Mixer(TOTAL, FPS);
+// Post-epoch fix (2026-08-12): audio-lib now REQUIRES the stable name first
+// (it is the seed) and this pre-epoch call threw at import, taking the whole
+// weekend renderer down with it. Re-rendering this bed under its name yields
+// a different (correctly seeded) noise than the shipped 2026-07-29 MP4 —
+// which is exactly the soundtrack-epoch note's case: the posted artifact is
+// grandfathered, the source renders the post-epoch bed.
+const mix = new Mixer("wknd-stinger", TOTAL, FPS);
 
 // DRUM — two lines, a hit per line, hats on the off-beats between
 for (let i = 0; i < 2; i++) {

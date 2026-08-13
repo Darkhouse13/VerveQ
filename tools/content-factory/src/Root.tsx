@@ -76,6 +76,10 @@ import { Stinger } from "./weekend/stinger/Stinger";
 import { TOTAL as WKND_STINGER_TOTAL, FPS as WKND_STINGER_FPS } from "./weekend/stinger/timeline";
 import { Manifesto } from "./weekend/manifesto/Manifesto";
 import { TOTAL as WKND_MANIFESTO_TOTAL, FPS as WKND_MANIFESTO_FPS } from "./weekend/manifesto/timeline";
+import { SettleIt, SETTLEIT_TOTAL } from "./weekend/reels/SettleIt";
+import { Referee, REFEREE_TOTAL } from "./weekend/reels/Referee";
+import { Squad, SQUAD_TOTAL } from "./weekend/reels/Squad";
+import { FPS as WKND_REELS_FPS } from "./weekend/reels/timeline";
 
 // Studio preview default only — render.mjs injects the real entry per video.
 // A loan-heavy path so the LOAN badge is visible in the studio preview.
@@ -365,6 +369,34 @@ export const RemotionRoot: React.FC = () => (
       width={1080}
       height={1920}
       durationInFrames={WKND_MANIFESTO_TOTAL}
+    />
+
+    {/* CF-WEEKEND — the three post-launch reels (each reel IS the game; the
+        product is the payoff frame). Narrated: Charlie via weekend/reels-vo.mjs,
+        timing truth in weekend/reels/grid.json. */}
+    <Composition
+      id="WkndSettleIt"
+      component={SettleIt}
+      fps={WKND_REELS_FPS}
+      width={1080}
+      height={1920}
+      durationInFrames={SETTLEIT_TOTAL}
+    />
+    <Composition
+      id="WkndReferee"
+      component={Referee}
+      fps={WKND_REELS_FPS}
+      width={1080}
+      height={1920}
+      durationInFrames={REFEREE_TOTAL}
+    />
+    <Composition
+      id="WkndSquad"
+      component={Squad}
+      fps={WKND_REELS_FPS}
+      width={1080}
+      height={1920}
+      durationInFrames={SQUAD_TOTAL}
     />
 
     {/* THE DAVE TAPES — the live-action lane. One component, one row of data
