@@ -160,6 +160,55 @@ export interface SquadReceipt {
   crewRank: { rank: number; of: number; tied: boolean } | null;
 }
 
+/**
+ * Where the caller's newest settled BUDGET receipt lives — the squad screen's
+ * way back to a receipt after the settled gameweek stops being the open board
+ * (a settled gameweek is never "open", so `getOpenGameweek` cannot name it).
+ * Crew receipts stay reachable through their room's sheet screen instead.
+ */
+export const latestReceiptRef = query({
+  args: {},
+  handler: async (
+    ctx,
+  ): Promise<{
+    gameweekId: Id<"fantasyGameweeks">;
+    gwNumber: number;
+    season: string;
+    settledAt: number;
+  } | null> => {
+    const userId = await getAuthUserId(ctx);
+    if (userId === null) return null;
+
+    const squads = await ctx.db
+      .query("fantasySquads")
+      .withIndex("by_user", (q) => q.eq("userId", userId))
+      .collect();
+
+    let latest: { squad: Doc<"fantasySquads">; at: number } | null = null;
+    for (const squad of squads) {
+      if (squad.context !== "budget" || squad.finalScore === undefined) continue;
+      if (latest === null || squad.finalScore.at > latest.at) {
+        latest = { squad, at: squad.finalScore.at };
+      }
+    }
+    if (latest === null) return null;
+
+    // The receipt gate is the settlement stamp; a stamped squad in a gameweek
+    // whose stamp is somehow not final yet must not advertise a receipt.
+    const gwScoring = await gameweekScoringRow(ctx, latest.squad.gameweekId);
+    if (gwScoring?.state !== "final") return null;
+    const gameweek = await ctx.db.get(latest.squad.gameweekId);
+    if (gameweek === null) return null;
+
+    return {
+      gameweekId: latest.squad.gameweekId,
+      gwNumber: gameweek.gwNumber,
+      season: gameweek.season,
+      settledAt: latest.at,
+    };
+  },
+});
+
 export const getReceipt = query({
   args: {
     gameweekId: v.id("fantasyGameweeks"),

@@ -36,6 +36,8 @@ import {
   saveDisplayFormation,
 } from "@/lib/weekendDisplayFormation";
 import { FormationSection } from "@/components/weekend/FormationChooser";
+import { SquadTabs } from "@/components/weekend/SquadTabs";
+import { SquadLedgerView } from "@/components/weekend/SquadLedgerView";
 import { SquadView } from "./BudgetSquadScreen";
 
 export type CrewSheet = NonNullable<
@@ -91,6 +93,15 @@ export default function CrewSheetScreen() {
   );
   const marketNominal = useQuery(api.fantasyMarket.getMarket, gate === "open" ? {} : "skip");
   const setFormationMutation = useMutation(api.fantasySquads.setFormation);
+
+  // FW-RECEIPT Part 2: the sheet's weekend ledger, subscribed only on its tab.
+  const [tab, setTab] = useState<"sheet" | "ledger">("sheet");
+  const ledger = useQuery(
+    api.fantasyLedger.getSquadLedger,
+    gate === "open" && sheet != null && tab === "ledger"
+      ? { gameweekId: sheet.gameweekId, context: "crew" as const, crewRoomId: roomId }
+      : "skip",
+  );
 
   const nominalByPlayer = useMemo(() => {
     const map = new Map<string, SlotRole>();
@@ -221,6 +232,35 @@ export default function CrewSheetScreen() {
                 defaultValue: "the 13 are the 13 — arrange, don't re-man",
               })}
             </p>
+            <SquadTabs
+              tabs={[
+                {
+                  key: "sheet" as const,
+                  label: t("weekend.tabSheet", { defaultValue: "Sheet" }),
+                  testid: "squad-tab-squad",
+                },
+                {
+                  key: "ledger" as const,
+                  label: t("weekend.tabLedger", { defaultValue: "Ledger" }),
+                  testid: "squad-tab-ledger",
+                },
+              ]}
+              active={tab}
+              onSelect={(key) => setTab(key)}
+            />
+            {tab === "ledger" && (
+              <SquadLedgerView
+                ledger={ledger}
+                {...(ledger != null && ledger.state === "final"
+                  ? {
+                      onOpenReceipt: () =>
+                        navigate(SHELL_ROUTES.weekendReceipt(sheet.gameweekId, roomId)),
+                    }
+                  : {})}
+              />
+            )}
+            {tab === "sheet" && (
+            <>
             <FormationSection
               slots={sheet.slots}
               editable={editable}
@@ -266,6 +306,8 @@ export default function CrewSheetScreen() {
                 }
               }}
             />
+            </>
+            )}
             <Dialog
               open={confirmShape !== null}
               onOpenChange={(next) => !next && setConfirmShape(null)}

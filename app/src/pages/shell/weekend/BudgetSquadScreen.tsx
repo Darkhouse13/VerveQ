@@ -27,7 +27,7 @@ import { useConvex, useMutation, useQuery } from "convex/react";
 import type { FunctionReturnType } from "convex/server";
 import { toast } from "sonner";
 import * as DialogPrimitive from "@radix-ui/react-dialog";
-import { ArrowLeftRight, Check, ChevronDown, Lock, Plus, X } from "lucide-react";
+import { ArrowLeftRight, Check, ChevronDown, ChevronRight, Lock, Plus, X } from "lucide-react";
 import { api } from "../../../../convex/_generated/api";
 import type { Id } from "../../../../convex/_generated/dataModel";
 import { formatPoints } from "../../../../convex/lib/fantasyScoring";
@@ -64,6 +64,8 @@ import { SHELL_ROUTES } from "@/lib/shellRoutes";
 import { friendlyError } from "@/lib/errors";
 import { leagueName } from "@/lib/leagueNames";
 import { WeekendLeaguesLine } from "@/components/weekend/WeekendLeaguesLine";
+import { SquadTabs } from "@/components/weekend/SquadTabs";
+import { SquadLedgerView } from "@/components/weekend/SquadLedgerView";
 import { useWideScreen } from "@/hooks/useWideScreen";
 import { track } from "@/lib/analytics";
 
@@ -1149,6 +1151,20 @@ export default function BudgetSquadScreen() {
     gameweekId === null ? "skip" : { gameweekId, context: "budget" as const },
   );
 
+  // FW-RECEIPT: the squad's weekend as a timeline — subscribed only while its
+  // tab is open (thirteen version-chains re-derived per push is a read the
+  // squad tab doesn't need).
+  const [tab, setTab] = useState<"squad" | "ledger">("squad");
+  const ledger = useQuery(
+    api.fantasyLedger.getSquadLedger,
+    gameweekId === null || tab !== "ledger"
+      ? "skip"
+      : { gameweekId, context: "budget" as const },
+  );
+  // The way back to a settled weekend's receipt once its board has closed —
+  // a settled gameweek is never the open one.
+  const latestReceipt = useQuery(api.fantasyReceipts.latestReceiptRef, {});
+
   const createSquad = useMutation(api.fantasySquads.createSquad);
   const setSlot = useMutation(api.fantasySquads.setSlot);
   const setFormationMutation = useMutation(api.fantasySquads.setFormation);
@@ -1325,7 +1341,7 @@ export default function BudgetSquadScreen() {
   // B1: wide screens hold the market beside the pitch instead of behind a
   // modal — same PickerPanel, persistent host. JS-gated on the same 1280px
   // line the xl: classes use, so exactly one host exists at a time.
-  const showMarketPanel = wide && gate.state === "open" && squad != null;
+  const showMarketPanel = wide && gate.state === "open" && squad != null && tab === "squad";
 
   return (
     <ShellLayout
@@ -1355,6 +1371,24 @@ export default function BudgetSquadScreen() {
               testid="squad-leagues-strip"
             />
           )}
+        {/* FW-RECEIPT: the newest settled weekend's receipt, reachable after
+            its board closed (a settled gameweek is never the open one). */}
+        {latestReceipt != null && (
+          <NeoCard
+            color="success"
+            onClick={() => navigate(SHELL_ROUTES.weekendReceipt(latestReceipt.gameweekId))}
+            className="flex items-center justify-between gap-2 py-2.5 text-left"
+            data-testid="squad-receipt-chip"
+          >
+            <p className="font-heading font-bold text-sm min-w-0 truncate">
+              {t("weekend.receiptChip", {
+                defaultValue: "Gameweek {{gw}} settled — your receipt is in",
+                gw: latestReceipt.gwNumber,
+              })}
+            </p>
+            <ChevronRight size={16} strokeWidth={3} className="shrink-0" aria-hidden />
+          </NeoCard>
+        )}
         {gate.state === "checking" || (gate.state === "open" && squad === undefined) ? (
           <NeoCard className="text-center py-6">
             <p className="text-sm text-muted-foreground">
@@ -1415,6 +1449,36 @@ export default function BudgetSquadScreen() {
           )
         ) : (
           <>
+            {/* FW-RECEIPT Part 2: the squad and its weekend's story, one
+                screen, two tabs. */}
+            <SquadTabs
+              tabs={[
+                {
+                  key: "squad" as const,
+                  label: t("weekend.tabSquad", { defaultValue: "Squad" }),
+                  testid: "squad-tab-squad",
+                },
+                {
+                  key: "ledger" as const,
+                  label: t("weekend.tabLedger", { defaultValue: "Ledger" }),
+                  testid: "squad-tab-ledger",
+                },
+              ]}
+              active={tab}
+              onSelect={(key) => setTab(key)}
+            />
+            {tab === "ledger" ? (
+              <SquadLedgerView
+                ledger={ledger}
+                {...(ledger != null && ledger.state === "final"
+                  ? {
+                      onOpenReceipt: () =>
+                        navigate(SHELL_ROUTES.weekendReceipt(gate.gameweek.gameweekId)),
+                    }
+                  : {})}
+              />
+            ) : (
+              <>
             <FormationSection
               slots={squad.slots}
               editable={editable}
@@ -1527,6 +1591,8 @@ export default function BudgetSquadScreen() {
                 </div>
               </DialogContent>
             </Dialog>
+              </>
+            )}
           </>
         )}
       </div>

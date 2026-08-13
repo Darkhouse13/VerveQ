@@ -103,6 +103,7 @@ const CourtScreen = lazyWithRetry(() => import("./pages/shell/weekend/CourtScree
 const CrewSheetScreen = lazyWithRetry(() => import("./pages/shell/weekend/CrewSheetScreen"));
 const WeekendHowToPlayScreen = lazyWithRetry(() => import("./pages/shell/weekend/WeekendHowToPlayScreen"));
 const FixturesScreen = lazyWithRetry(() => import("./pages/shell/weekend/FixturesScreen"));
+const WeekendReceiptScreen = lazyWithRetry(() => import("./pages/shell/weekend/WeekendReceiptScreen"));
 
 const DuelPlayScreen = lazyWithRetry(() => import("./pages/DuelPlayScreen"));
 const DuelLinkScreen = lazyWithRetry(() => import("./pages/DuelLinkScreen"));
@@ -591,6 +592,9 @@ const AppRoutes = () => (
             {/* THE WEEKEND fixtures (FW-IMMERSE A3). Public like the hub —
                 the weekend's matchday list is read-only, no session. */}
             <Route path="/v2/weekend/fixtures" element={<ShellGate><FixturesScreen /></ShellGate>} />
+            {/* THE WEEKEND settlement receipt (FW-RECEIPT). Username tier —
+                a receipt is the caller's own squad, settled. */}
+            <Route path="/v2/weekend/receipt/:gameweekId" element={<ShellGate><UsernameOnlyRoute><WeekendReceiptScreen /></UsernameOnlyRoute></ShellGate>} />
             {/* THE DRAW — dev/preview only, flag-gated (VITE_DRAW_ENABLED),
                 not linked from home, nav, or any mode grid. */}
             <Route path="/draw" element={<DrawScreen />} />
