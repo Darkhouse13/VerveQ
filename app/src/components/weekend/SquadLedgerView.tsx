@@ -109,9 +109,10 @@ function Entry({
       return (
         <div>
           <div className="flex items-center justify-between gap-2">
-            <p className="font-heading font-bold text-sm min-w-0 truncate">
-              {event.playerName}
-              <span className="font-mono ml-2">{signed(event.points)}</span>
+            {/* The number never truncates — the name yields first. */}
+            <p className="font-heading font-bold text-sm min-w-0 flex-1 flex items-baseline gap-2">
+              <span className="truncate min-w-0">{event.playerName}</span>
+              <span className="font-mono shrink-0">{signed(event.points)}</span>
             </p>
             <div className="flex items-center gap-1.5 shrink-0">
               <RoleBadge slotRole={event.slotRole} isFinisher={event.isFinisher} />
@@ -122,7 +123,9 @@ function Entry({
             <p className="text-[11px] text-muted-foreground mt-1 leading-snug">
               {event.terms
                 .map((term) =>
-                  term.count !== undefined && term.count > 1
+                  // ×count only where the term is per-unit (unit present) —
+                  // an appearance line's count is minutes, not a multiplier.
+                  term.unit !== undefined && term.count !== undefined && term.count > 1
                     ? `${term.label.toLowerCase()} ×${term.count} ${signed(term.points)}`
                     : `${term.label.toLowerCase()} ${signed(term.points)}`,
                 )

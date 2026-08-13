@@ -529,6 +529,15 @@ export const purgeLoopData = internalMutation({
       await ctx.db.delete(row._id);
       deleted += 1;
     }
+    // FW-RECEIPT: the settlement's percentile stamps for this gameweek.
+    const stampRows = await ctx.db
+      .query("fantasyGameweekPercentiles")
+      .withIndex("by_gameweek", (q) => q.eq("gameweekId", gameweekId))
+      .collect();
+    for (const row of stampRows) {
+      await ctx.db.delete(row._id);
+      deleted += 1;
+    }
     for (const status of ["filing", "trial", "died", "passed", "failed", "expired"] as const) {
       const claims = await ctx.db
         .query("fantasyCourtClaims")
@@ -576,6 +585,15 @@ export const purgeLoopData = internalMutation({
           await ctx.db.delete(slot._id);
           deleted += 1;
         }
+        // FW-RECEIPT: the squad's percentile stamp, wherever it was earned.
+        const stamp = await ctx.db
+          .query("fantasyGameweekPercentiles")
+          .withIndex("by_squad", (q) => q.eq("squadId", squad._id))
+          .first();
+        if (stamp !== null) {
+          await ctx.db.delete(stamp._id);
+          deleted += 1;
+        }
         await ctx.db.delete(squad._id);
         deleted += 1;
       }
@@ -584,6 +602,204 @@ export const purgeLoopData = internalMutation({
     }
 
     return { deleted, deletedUsers };
+  },
+});
+
+// ── FW-RECEIPT QA scaffolding ──
+//
+// The receipt mission's DEV proof: a browser-onboarded guest (simloop_*, so
+// the purge owns them) gets the sim's six-pick budget squad in the synthetic
+// gameweek, flanked by two weaker rival squads (a percentile population of
+// three) and five voters (every player past the liquidity threshold). The
+// E2E then watches the REAL surfaces: the ledger tab mid-flight, a feed
+// revision landing as an honest diff, and — after the real settleGameweeks
+// call-site fires — the receipt with its stamped percentile.
+
+/** The rivals' four picks: cap-legal (3 × club B + 1 × club A), strictly
+ *  weaker than the guest's six — the percentile has something to say. */
+const RECEIPT_RIVAL_PICKS = ["synth-o5l-p1", "synth-o5l-p3", "synth-o5l-p5", "synth-o5l-p6"];
+
+export const receiptQaBuildWorld = internalMutation({
+  args: {
+    guestUsername: v.string(),
+    salt: v.string(),
+    gameweekId: v.id("fantasyGameweeks"),
+  },
+  handler: async (
+    ctx,
+    args,
+  ): Promise<{ guestId: Id<"users">; rivals: Id<"users">[]; voters: Id<"users">[] }> => {
+    if (!args.guestUsername.startsWith(SIM_USERNAME_PREFIX)) {
+      throw new Error(`receiptQaBuildWorld requires a ${SIM_USERNAME_PREFIX}* username.`);
+    }
+    const guest = await ctx.db
+      .query("users")
+      .withIndex("by_username", (q) => q.eq("username", args.guestUsername))
+      .first();
+    if (guest === null) fail(`no user named ${args.guestUsername}.`);
+
+    const mint = async (suffix: string): Promise<Id<"users">> => {
+      const username = `${SIM_USERNAME_PREFIX}${args.salt}${suffix}`.slice(0, 24);
+      const existing = await ctx.db
+        .query("users")
+        .withIndex("by_username", (q) => q.eq("username", username))
+        .first();
+      if (existing !== null) fail(`sim user ${username} already exists — purge first.`);
+      return ctx.db.insert("users", { username });
+    };
+
+    const rivals: Id<"users">[] = [];
+    for (let i = 0; i < 2; i += 1) rivals.push(await mint(`r${i}`));
+    const voters: Id<"users">[] = [];
+    for (let i = 0; i < 5; i += 1) voters.push(await mint(`v${i}`));
+
+    // The rivals' squads, through the shipped write path.
+    for (const rival of rivals) {
+      const { squadId } = await createBudgetSquadFor(ctx, rival, {
+        gameweekId: args.gameweekId,
+        formation: { GK: 1, DEF: 4, MID: 4, ATT: 2 },
+        finisherRoles: ["MID", "ATT"],
+      });
+      for (let slotIndex = 0; slotIndex < RECEIPT_RIVAL_PICKS.length; slotIndex += 1) {
+        const player = await ctx.db
+          .query("fantasyPlayers")
+          .withIndex("by_providerPlayerId", (q) =>
+            q.eq("providerPlayerId", RECEIPT_RIVAL_PICKS[slotIndex]),
+          )
+          .first();
+        if (player === null) fail(`rival pick ${RECEIPT_RIVAL_PICKS[slotIndex]} missing.`);
+        await setSlotFor(ctx, rival, { squadId, slotIndex, playerId: player._id });
+      }
+    }
+
+    return { guestId: guest._id, rivals, voters };
+  },
+});
+
+/** The percentile stamps of a gameweek — the read the proofs assert on. */
+export const percentileStamps = internalQuery({
+  args: { gameweekId: v.id("fantasyGameweeks") },
+  handler: async (ctx, args) => {
+    const rows = await ctx.db
+      .query("fantasyGameweekPercentiles")
+      .withIndex("by_gameweek", (q) => q.eq("gameweekId", args.gameweekId))
+      .collect();
+    return rows
+      .map((row) => ({
+        userId: row.userId,
+        total: row.total,
+        beatCount: row.beatCount,
+        population: row.population,
+        computedAt: row.computedAt,
+      }))
+      .sort((a, b) => b.total - a.total);
+  },
+});
+
+export const receiptQaSetup = internalAction({
+  args: { guestUsername: v.string(), salt: v.optional(v.string()) },
+  handler: async (ctx, args): Promise<Record<string, unknown>> => {
+    const tag =
+      (args.salt ?? "rcpt").toLowerCase().replace(/[^a-z0-9_]/g, "").slice(0, 8) || "rcpt";
+    const now = Date.now();
+
+    const seeded: { gameweekId: Id<"fantasyGameweeks"> } = await ctx.runMutation(
+      internal.fantasyScoringDev.seedSyntheticFixture,
+      {
+        season: SIM_SEASON,
+        gwNumber: SIM_GW,
+        finalityAt: now + 26 * 60 * 60 * 1000,
+        providerFixtureId: SIM_FIXTURE,
+        kickoffAt: now + 60 * 60 * 1000,
+        homeClubId: "SYNTH-O5A",
+        awayClubId: "SYNTH-O5B",
+        homeGoals: 0,
+        awayGoals: 0,
+        players: SIM_PLAYERS,
+      },
+    );
+    const gameweekId = seeded.gameweekId;
+    await ctx.runMutation(internal.fantasyIntegrationSim.prepareLoopWorld, {});
+    const world: { guestId: Id<"users">; rivals: Id<"users">[]; voters: Id<"users">[] } =
+      await ctx.runMutation(internal.fantasyIntegrationSim.receiptQaBuildWorld, {
+        guestUsername: args.guestUsername,
+        salt: tag,
+        gameweekId,
+      });
+    // The guest's six-pick squad — the same shipped path the sim's budget
+    // user takes, so the guest's UI shows the world the sim asserts on.
+    await ctx.runMutation(internal.fantasyIntegrationSim.buildLoopBudget, {
+      userId: world.guestId,
+      gameweekId,
+    });
+
+    // The weekend happens: fixture finishes, first ingest lands provisional
+    // scores, and the crowd votes every player past the liquidity threshold.
+    await ctx.runMutation(internal.fantasyIntegrationSim.finishLoopFixture, {});
+    await ctx.runMutation(internal.fantasyScores.applyFixtureStats, {
+      providerFixtureId: SIM_FIXTURE,
+      hasPlayerStats: true,
+      hasEvents: true,
+      rows: feedRows(1),
+    });
+    for (const voter of world.voters) {
+      await ctx.runMutation(internal.fantasyCrowdSim.castAllPairsFor, {
+        userId: voter,
+        gameweekId,
+      });
+    }
+
+    return { gameweekId, guestId: world.guestId, rivals: world.rivals.length };
+  },
+});
+
+/** A feed correction lands: the DEF's tackles 2 → 5 (+1.2 at 0.4/tackle) —
+ *  the ledger's honest-diff case, on a player the guest fields. */
+export const receiptQaRevise = internalAction({
+  args: {},
+  handler: async (ctx): Promise<Record<string, unknown>> => {
+    const rows = feedRows(1).map((row) =>
+      row.providerPlayerId === "synth-o5l-p2"
+        ? { ...row, stats: { ...row.stats, tackles: 5 } }
+        : row,
+    );
+    const result: { scoreVersionsWritten?: number } = await ctx.runMutation(
+      internal.fantasyScores.applyFixtureStats,
+      { providerFixtureId: SIM_FIXTURE, hasPlayerStats: true, hasEvents: true, rows },
+    );
+    if ((result.scoreVersionsWritten ?? 0) < 1) {
+      fail(`revision wrote ${result.scoreVersionsWritten ?? 0} versions, expected ≥ 1.`);
+    }
+    return { revised: true, scoreVersionsWritten: result.scoreVersionsWritten };
+  },
+});
+
+/** Finality passes and the REAL settlement driver runs — including the
+ *  FW-RECEIPT percentile call-site. Asserts the stamps it left behind. */
+export const receiptQaSettle = internalAction({
+  args: { gameweekId: v.id("fantasyGameweeks") },
+  handler: async (ctx, args): Promise<Record<string, unknown>> => {
+    await ctx.runMutation(internal.fantasyScoringDev.setSyntheticFinality, {
+      season: SIM_SEASON,
+      gwNumber: SIM_GW,
+      finalityAt: Date.now() - 60 * 1000,
+    });
+    await ctx.runAction(internal.fantasyScores.settleGameweeks, {});
+
+    const stamps = await ctx.runQuery(internal.fantasyIntegrationSim.percentileStamps, {
+      gameweekId: args.gameweekId,
+    });
+    if (stamps.length !== 3) {
+      fail(`expected 3 percentile stamps (guest + 2 rivals), got ${stamps.length}.`);
+    }
+    if (stamps.some((s) => s.population !== 3)) {
+      fail(`every stamp must carry population 3: ${JSON.stringify(stamps)}.`);
+    }
+    // The guest's six picks outscore the rivals' four: highest total beats 2.
+    if (stamps[0].beatCount !== 2) {
+      fail(`the top squad should beat 2, got ${stamps[0].beatCount}.`);
+    }
+    return { stamps };
   },
 });
 
@@ -736,6 +952,15 @@ export const purgeUiRun = internalMutation({
           .collect();
         for (const slot of slots) {
           await ctx.db.delete(slot._id);
+          deleted += 1;
+        }
+        // FW-RECEIPT: the squad's percentile stamp, wherever it was earned.
+        const stamp = await ctx.db
+          .query("fantasyGameweekPercentiles")
+          .withIndex("by_squad", (q) => q.eq("squadId", squad._id))
+          .first();
+        if (stamp !== null) {
+          await ctx.db.delete(stamp._id);
           deleted += 1;
         }
         await ctx.db.delete(squad._id);
@@ -959,6 +1184,17 @@ export const simulateWeekendLoop = internalAction({
       factoredSlots: factored.length,
       crewRanks: state.table.rows.map((r) => `${r.rank}${r.tied ? "T" : ""}`),
     };
+
+    // FW-RECEIPT: the settlement driver's percentile call-site fired — one
+    // stamp for the loop's single numbered budget squad, none for the crew
+    // sheets (crew squads never enter the percentile population).
+    const stamps = await ctx.runQuery(internal.fantasyIntegrationSim.percentileStamps, {
+      gameweekId,
+    });
+    if (stamps.length !== 1 || stamps[0].population !== 1 || stamps[0].beatCount !== 0) {
+      fail(`percentile stamps expected [1 row, 0/1], got ${JSON.stringify(stamps)}.`);
+    }
+    report.percentileStamp = stamps[0];
 
     // 10 · settled means immune, everywhere.
     report.settledCourtImmune = await ctx.runMutation(

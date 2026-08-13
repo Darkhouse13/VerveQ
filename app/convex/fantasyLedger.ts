@@ -43,6 +43,10 @@ export interface LedgerTerm {
   code: string;
   label: string;
   count?: number;
+  /** Points per unit — present only on per-unit terms. The surface uses its
+   *  presence to decide whether "×count" is meaningful (an appearance line
+   *  carries count = minutes, which is not a multiplier to show). */
+  unit?: number;
   points: number;
 }
 
@@ -176,6 +180,7 @@ function termsOf(
       code: entry.code,
       label: entry.label,
       ...(entry.count === undefined ? {} : { count: entry.count }),
+      ...(entry.unit === undefined ? {} : { unit: entry.unit }),
       points: entry.points,
     }));
 }
