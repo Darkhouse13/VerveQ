@@ -65,8 +65,13 @@ async function clubLabel(ctx: QueryCtx, clubId: string): Promise<string | null> 
 }
 
 export const getPlayerCard = query({
-  args: { playerId: v.id("fantasyPlayers") },
-  handler: async (ctx, { playerId }) => {
+  // A bare string, normalized here (the getRoom/getDraftPool precedent):
+  // read models hand the client string ids, and this is the check that
+  // rejects a hand-made one with null instead of a validator throw.
+  args: { playerId: v.string() },
+  handler: async (ctx, args) => {
+    const playerId = ctx.db.normalizeId("fantasyPlayers", args.playerId);
+    if (playerId === null) return null;
     const player = await ctx.db.get(playerId);
     if (player === null) return null;
 

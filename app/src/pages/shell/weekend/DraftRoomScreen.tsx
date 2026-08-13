@@ -11,7 +11,7 @@
  * Views are exported for the contract suite; the default export is the data
  * container (house pattern, ChallengeArenaScreen.tsx).
  */
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useMutation, useQuery } from "convex/react";
@@ -24,6 +24,7 @@ import { NeoCard } from "@/components/neo/NeoCard";
 import { NeoButton } from "@/components/neo/NeoButton";
 import { NeoBadge } from "@/components/neo/NeoBadge";
 import { NeoInput } from "@/components/neo/NeoInput";
+import { PlayerSheet } from "@/components/weekend/PlayerSheet";
 import { ShellLayout } from "@/components/shell/ShellLayout";
 import { SHELL_ROUTES } from "@/lib/shellRoutes";
 import { useClockOffset, useTick } from "@/lib/arena";
@@ -197,6 +198,14 @@ export function DraftBoardView({
   const { t } = useTranslation();
   const [search, setSearch] = useState("");
   const [showLog, setShowLog] = useState(false);
+  // FW-SCOUT: the player whose detail sheet is open. Clock-safe by design:
+  // the sheet echoes the running bank when it's my turn (clockLine below),
+  // and the effect closes it the moment the pick pointer moves — a sheet
+  // left open across an auto-pick must not cover a NEW turn's clock.
+  const [detailPlayer, setDetailPlayer] = useState<string | null>(null);
+  useEffect(() => {
+    setDetailPlayer(null);
+  }, [room.currentPickIndex]);
 
   const playerById = useMemo(() => {
     const map = new Map<string, PoolPlayer>();
@@ -299,7 +308,14 @@ export function DraftBoardView({
               key={player.playerId}
               className={`flex items-center justify-between py-2 ${takenSeat !== undefined || started ? "opacity-45" : ""}`}
             >
-              <div className="min-w-0">
+              {/* FW-SCOUT: the row BODY opens the detail sheet; PICK stays a
+                  sibling (same recipe as the budget picker rows). */}
+              <button
+                type="button"
+                data-testid="draft-row-body"
+                className="min-w-0 flex-1 text-left active:opacity-60"
+                onClick={() => setDetailPlayer(player.playerId)}
+              >
                 <p className="font-heading font-bold text-sm truncate">
                   {player.name}
                   <span className="ml-1.5 font-mono text-[10px] text-muted-foreground uppercase">
@@ -309,7 +325,7 @@ export function DraftBoardView({
                 <p className="text-[11px] text-muted-foreground truncate">
                   {player.clubName ?? player.clubId}
                 </p>
-              </div>
+              </button>
               <div className="flex items-center gap-2 shrink-0">
                 {/* R5: no fixture this gameweek — pickable, but say so. */}
                 {!player.hasFixture && (
@@ -353,6 +369,27 @@ export function DraftBoardView({
           </p>
         )}
       </div>
+
+      {/* FW-SCOUT: player detail sheet. On my turn the bank rides INSIDE the
+          sheet, so opening it can never hide a clock that is spending. */}
+      <PlayerSheet
+        playerId={detailPlayer}
+        onClose={() => setDetailPlayer(null)}
+        surface="draft"
+        clockLine={
+          myTurn ? (
+            <NeoCard color="primary" className="flex items-center justify-between py-2">
+              <span className="font-heading font-bold text-sm">
+                {t("weekend.yourPick", { defaultValue: "Your pick" })}
+              </span>
+              <span className="font-mono font-bold text-lg tabular-nums">
+                <Timer size={13} strokeWidth={3} className="inline mr-1 -mt-0.5" />
+                {formatBank(turnRemaining)}
+              </span>
+            </NeoCard>
+          ) : undefined
+        }
+      />
     </div>
   );
 }

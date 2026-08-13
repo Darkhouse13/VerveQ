@@ -53,6 +53,7 @@ import { NeoButton } from "@/components/neo/NeoButton";
 import { NeoBadge } from "@/components/neo/NeoBadge";
 import { NeoInput } from "@/components/neo/NeoInput";
 import { PitchView } from "@/components/weekend/PitchView";
+import { PlayerSheet } from "@/components/weekend/PlayerSheet";
 import {
   FormationChooser,
   FormationSection,
@@ -382,6 +383,12 @@ export function PickerPanel({
   const [clubFilter, setClubFilter] = useState<string | null>(null);
   const [filterSheet, setFilterSheet] = useState<"league" | "club" | null>(null);
   const [clubSearch, setClubSearch] = useState("");
+  // FW-SCOUT: the player whose detail sheet is open, living INSIDE the panel
+  // so both hosts get it identically (a nested Radix dialog in the phone
+  // host — the filter sheet's proven precedent). The host's remount contract
+  // (key on slot) closes it with the panel, which is correct: a new slot
+  // context is a new question.
+  const [detailPlayer, setDetailPlayer] = useState<Id<"fantasyPlayers"> | null>(null);
 
   /** The market's club catalogue, grouped per league — there is deliberately
    *  no clubs table, so the list is derived from the rows themselves.
@@ -557,7 +564,17 @@ export function PickerPanel({
                 data-testid="picker-row"
                 className={`flex items-center justify-between py-2 ${!pickable ? "opacity-45" : ""}`}
               >
-                <div className="min-w-0">
+                {/* FW-SCOUT: the row BODY opens the detail sheet; PICK stays
+                    its own sibling button so the two taps can never collide.
+                    A button here, not onClick on the NeoCard — the card
+                    would render as a <button> and nest the PICK button
+                    inside it (invalid HTML, double-fire). */}
+                <button
+                  type="button"
+                  data-testid="picker-row-body"
+                  className="min-w-0 flex-1 text-left active:opacity-60"
+                  onClick={() => setDetailPlayer(player.playerId)}
+                >
                   <p className="font-heading font-bold text-sm truncate">
                     {player.name}
                     <span className="ml-1.5 font-mono text-[10px] text-muted-foreground uppercase">
@@ -581,7 +598,7 @@ export function PickerPanel({
                       </span>
                     )}
                   </p>
-                </div>
+                </button>
                 <div className="flex items-center gap-2 shrink-0">
                   {noFixture && (
                     <NeoBadge color="muted" size="sm">
@@ -792,6 +809,13 @@ export function PickerPanel({
             </DialogPrimitive.Content>
           </DialogPrimitive.Portal>
         </DialogPrimitive.Root>
+
+        {/* FW-SCOUT: player detail sheet, from the row body. */}
+        <PlayerSheet
+          playerId={detailPlayer}
+          onClose={() => setDetailPlayer(null)}
+          surface="picker"
+        />
     </div>
   );
 }
@@ -897,6 +921,10 @@ export function SquadView({
   const { t } = useTranslation();
   /** The chip whose detail sheet is open. */
   const [sheetSlot, setSheetSlot] = useState<number | null>(null);
+  /** FW-SCOUT: the player whose full stats sheet is open (stacked over the
+   *  slot dialog — the nested-Radix precedent). Covers the pitch AND the
+   *  crew sheet, which renders this same SquadView. */
+  const [statsPlayer, setStatsPlayer] = useState<Id<"fantasyPlayers"> | null>(null);
 
   const scoreBySlot = useMemo(() => {
     const map = new Map<number, SlotScoreRow>();
@@ -1007,6 +1035,14 @@ export function SquadView({
                   <SlotScoreCell score={sheetScore} />
                 </div>
               )}
+              <NeoButton
+                variant="outline"
+                size="sm"
+                data-testid="slot-sheet-stats"
+                onClick={() => setStatsPlayer(sheet.playerId)}
+              >
+                {t("weekend.seasonStats", { defaultValue: "Season stats & form" })}
+              </NeoButton>
               {editable && !sheet.locked ? (
                 <div className="flex gap-2">
                   <NeoButton
@@ -1053,6 +1089,13 @@ export function SquadView({
           )}
         </DialogContent>
       </Dialog>
+
+      {/* FW-SCOUT: full stats, stacked over the slot dialog. */}
+      <PlayerSheet
+        playerId={statsPlayer}
+        onClose={() => setStatsPlayer(null)}
+        surface="pitch"
+      />
     </div>
   );
 }
