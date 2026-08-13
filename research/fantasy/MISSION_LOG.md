@@ -1248,3 +1248,90 @@ against stored prices on both deployments.
 - REPRICE_REVIEW.md's old→new baseline is pinned to a990a87, the commit before
   this mission — `HEAD` was wrong the moment the mission's own commit landed
   (a re-run reported all 4,667 players unchanged; caught and fixed).
+
+# FW-REPRICE-2 — 2026-08-14 — snapshot re-cut + the 70 unpriced arrivals: DONE. **GOAL REACHED.**
+
+Owner override: run mid-GW1, price freeze WAIVED for this mission; in
+exchange squad protection was a hard gate (G1) and the seeds were held to
+the price-field-only discipline (G2). Both held — see below.
+
+## The re-cut (OWNER DECISION 5 ruled option c — the precondition)
+
+- `pricing/recut-snapshots.ts` (new): ONE export of prod
+  (different-lynx-153, the universe's authority), split by current
+  leagueId — 39/140/135/78/61 → core, 40/88/94 → expansion. 2,895 + 1,780
+  overlapping files → **2,953 + 1,783 disjoint** (4,736 = the whole table,
+  inactive rows included so coverage can be asserted at zero). The 8
+  OWNER DECISION 5 double rows (19824, 25502, 31098, 403277, 196856,
+  334878, 394935, 7029) collapsed to single rows at current clubs.
+- Every hard-coded universe count updated: reprice.ts, both seeds, both
+  pool pushes, price-draft/price-final/price-expansion/budget-analysis.
+- DEV re-synced to the same universe (`scripts/syncDevUniverse.ts`, new;
+  write path fantasyIngest:applyClubPlayers, whole prod-active rosters
+  only): created Hirakawa + Ballard (the FW-EXPAND prod-only bootstrap
+  drift), moved G. Kamara to QPR/40/active (prod state), patched 6
+  feedPosition drifts, deactivated I. Bowat. Re-diff after: zero.
+
+## The gap, priced (zero API calls)
+
+`repriceCoverage.ts` census (not the prompt's count): 70 active prod rows
+covered by neither artifact, all at 4.0. Re-run of the UNCHANGED
+FW-REPRICE pipeline over the re-cut universe priced them from minutes
+already on disk: **30 off real 2025-26 minutes** — L. Sinayoko 8.5
+(2,780'), P. Pagis 8.0, Florentino/M. Abline/K. Koulierakis 7.5
+(Koulierakis 2,698'), R. Kolo Muani 5.5 (1,682'), Y. Hirakawa 4.5 (855',
+closing the FW-EXPAND owner note without an override) — and **40
+genuinely thin, flagged 4.0** (the locked newcomer rule: no 2025-26
+minutes in the 12 pricing leagues and no rescuable prior season).
+Previously covered prices: 4,663 of 4,666 byte-identical. The 3 moves,
+each a drift correction: S. Bocoum 5.0→4.0 (left the promoted cohort for
+AC Milan; cohort prices do not travel), R. Burrell 5.5→6.0 and
+Kieran Morgan 4.5→5.0 (prod's newer position read, re-normalised).
+
+## G1 / G2 — the hard gates, measured
+
+- G1 pre-seed AND post-seed, both deployments: prod 5 budget squads
+  re-cost at the new prices **+0.0 each** (13/13 the full one; none holds
+  a repriced player unlocked), 0 grandfathered, 0 referencing a player
+  absent from the artifacts; DEV 0 budget squads. No squad over-basis,
+  none UNEDITABLE (allowance = max(91.0, pre-edit basis) cannot shrink,
+  and a null price — the only true uneditable path — is unwritable by the
+  seed).
+- G2: fresh per-deployment pre-seed snapshots, then --verify by full
+  re-export on both: prices equal the artifacts everywhere, **0 diffs in
+  any other field**, locks/scores/eligibility untouched (the only prod
+  mutation invoked was fantasyIngest:applyPrices + the poolMeta side
+  table).
+
+## Seed + verification (both deployments)
+
+- prod: core 20 updated / 2,933 unchanged / 0 missing; expansion 3
+  updated / 1,780 unchanged / **0 missing — the I. Bowat truthful-STOP is
+  gone naturally** (he is out of the re-cut universe; prod never had the
+  row; DEV's row now inactive and reported as the single covered-by-
+  neither residue, by design). DEV: core 20, expansion 4 (Hirakawa +
+  Ballard null→priced).
+- R2/R3 green in every pass, file AND stored prices, both deployments
+  (518 groups, 2,585 comparisons, 0 violations; R3 max 4 at a ceiling).
+- Draft-pool metadata rebuilt WHOLE on both deployments (push-draft-pool
+  gained the two-signal --live path under the mission's whole-push
+  condition): 2,953 + 1,783 rows, 0 missing, cohorts from the re-cut
+  artifacts — closes FW-REPRICE's deferred "pool/proxy not re-pushed"
+  item; crew auto-pick now ranks on the availability-aware signal.
+- `repriceCoverage`: prod **UNCOVERED 0**; DEV 1 = the inactive Bowat
+  row. Zero unpriced actives everywhere. G. Kamara's stale-pool note is
+  gone from the expansion verify.
+- Cross-artifact contradiction: structurally dead — the files are
+  disjoint, and gateRowsFromArtifacts still throws should they ever
+  disagree again.
+
+## Docs
+
+- OWNER DECISION 5 CLOSED (option c executed); OWNER DECISION 1 marked
+  RULED — the 2026-07-30 owner ruling was already locked into
+  RECLAMATION_COURT_SPEC.md v1.1.0 §Endorsement threshold ("distinct
+  users holding at least one squad in the gameweek, any context"); the
+  queue entry had simply never been closed.
+- PROXY_METHOD.md §FW-REPRICE-2 states the re-cut and its measured
+  effects; REPRICE_REVIEW.md regenerated with a "re-cut gap" section and
+  fresh R1 measurements.

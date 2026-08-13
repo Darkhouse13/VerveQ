@@ -19,17 +19,27 @@ filename, which is unchanged.
 
 | # | Decision | Mission | Status |
 |---|----------|---------|--------|
-| 1 | "gameweek active users" definition (court thresholds) | FW-LAUNCH | open |
+| 1 | "gameweek active users" definition (court thresholds) | FW-LAUNCH | RULED — spec v1.1.0 |
 | 2 | ownership display at scale | FW-SCOUT | open |
 | 3 | the top-five mapping changed shape | FW-REPRICE | open |
 | 4 | R2's three boundaries | FW-REPRICE | open |
-| 5 | eight players in both universe snapshots | FW-REPRICE | open |
+| 5 | eight players in both universe snapshots | FW-REPRICE | CLOSED — option (c) executed |
 | 6 | the prior-season constants | FW-REPRICE | open |
 
 ## OWNER DECISION 1 — "gameweek active users" definition (court thresholds)
 
-RECLAMATION_COURT_SPEC v1.0.1 sets the endorsement threshold at
-max(15, 0.5% of gameweek active users) and quorum at max(30, 1%),
+**RULED (marked 2026-08-14, FW-REPRICE-2 doc sweep).** The owner ruled this
+2026-07-30 and the ruling is already IN the locked spec — this entry was
+simply never closed. Citation:
+`research/fantasy/specs/RECLAMATION_COURT_SPEC.md` v1.1.0 (verification
+sync, owner ticket FW-VS1), §Endorsement threshold: *"Gameweek active users"
+(DEFINED v1.1.0, owner ruling 2026-07-30): the distinct users holding at
+least one squad in the gameweek, any context — budget or crew.* That is
+option (a) below, exactly as implemented; the same number feeds the trial
+quorum.
+
+Original entry: RECLAMATION_COURT_SPEC v1.0.1 sets the endorsement threshold
+at max(15, 0.5% of gameweek active users) and quorum at max(30, 1%),
 but never defines "gameweek active users". Options: (a) distinct
 squad-holding users that gameweek (measurable, what I implemented);
 (b) users with any fantasy action (votes/filings included); (c) app-
@@ -84,6 +94,19 @@ across pools, which contradicts the locked cohort separation. Meanwhile: (a) —
 0 violations, and the Porto case the mission names is asserted, not exempted.
 
 ## OWNER DECISION 5 — eight players are in both universe snapshots (FW-REPRICE)
+
+**CLOSED (2026-08-14, FW-REPRICE-2).** The owner ruled option (c) — re-export
+both snapshots from the live table and regenerate — and FW-REPRICE-2 executed
+it: `pricing/recut-snapshots.ts` cuts both files from ONE prod export split
+by current league (2,953 core + 1,783 expansion, disjoint by construction),
+every hard-coded consumer count updated, DEV aligned by
+`scripts/syncDevUniverse.ts`, both deployments re-seeded and verified with 0
+diffs and 0 uncovered rows on prod. The 8 double rows collapsed to single
+rows at their current clubs; the interim identical-row emission described
+below is retired (kept in reprice.ts as a guard should snapshots ever
+overlap again).
+
+Original entry:
 
 `players-seed-snapshot.json` (2026-07-29) and
 `expansion-players-snapshot.json` (2026-08-12) both contain 8 apiFootballIds,
