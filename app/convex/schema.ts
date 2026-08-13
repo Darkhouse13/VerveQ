@@ -2074,6 +2074,30 @@ export default defineSchema({
     .index("by_gameweek", ["gameweekId"])
     .index("by_state", ["state"]),
 
+  /**
+   * FW-RECEIPT: the settlement-stamped percentile rollup, one row per budget
+   * squad whose settled weekend produced a number (`finalScore.scoredSlots >
+   * 0` — no number, no row, never a 0). Written once by
+   * `fantasyReceipts.stampGameweekPercentiles` after the gameweek's
+   * settlement stamp goes final (the `finalScore` precedent, per OWNER
+   * DECISION 2's endorsed shape), then immutable: the receipt reads it, at
+   * any scale, without deriving anything at read time. `total` echoes the
+   * squad's stamped total so the row is self-auditing.
+   */
+  fantasyGameweekPercentiles: defineTable({
+    gameweekId: v.id("fantasyGameweeks"),
+    squadId: v.id("fantasySquads"),
+    userId: v.id("users"),
+    total: v.number(),
+    /** Budget squads of this gameweek with a strictly lower settled total. */
+    beatCount: v.number(),
+    /** Budget squads of this gameweek with a number, self included. */
+    population: v.number(),
+    computedAt: v.number(),
+  })
+    .index("by_squad", ["squadId"])
+    .index("by_gameweek", ["gameweekId"]),
+
   // ─────────────────────────────────────────── WEEKEND FANTASY: crowd voting
   //
   // FW-LAUNCH O2, CROWD_VOTING_SPEC v1.0.1. Pairwise served votes become a

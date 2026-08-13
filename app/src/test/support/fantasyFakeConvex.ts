@@ -88,6 +88,11 @@ const INDEXES: Record<string, Record<string, string[]>> = {
     by_gameweek: ["gameweekId"],
     by_state: ["state"],
   },
+  // FW-RECEIPT: the settlement-stamped percentile rollup.
+  fantasyGameweekPercentiles: {
+    by_squad: ["squadId"],
+    by_gameweek: ["gameweekId"],
+  },
   // O2 crowd voting tables (schema.ts §WEEKEND FANTASY: crowd voting).
   fantasyCrowdPairs: {
     by_user_gameweek: ["userId", "gameweekId"],

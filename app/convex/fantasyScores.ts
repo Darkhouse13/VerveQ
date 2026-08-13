@@ -1429,6 +1429,23 @@ export const settleGameweeks = internalAction({
             );
             if (rater.done) break;
           }
+
+          // FW-RECEIPT: the percentile rollup — additive, writes only its own
+          // table, and self-guarding on the settlement stamp (it refuses until
+          // `fantasyGameweekScoring.state === "final"`, so a tick that reaches
+          // here before the stamp simply retries next tick).
+          let percentileGuard = 0;
+          while (percentileGuard < 50) {
+            percentileGuard += 1;
+            const stamp = await ctx.runMutation(
+              internal.fantasyReceipts.stampGameweekPercentiles,
+              {
+                gameweekId: candidate.gameweekId,
+                ...(args.now === undefined ? {} : { now: args.now }),
+              },
+            );
+            if (!stamp.eligible || stamp.done) break;
+          }
         }
       }
     }
