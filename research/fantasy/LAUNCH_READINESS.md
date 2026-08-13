@@ -274,3 +274,33 @@ Player detail sheet (stats for strategists) live on verveq.com before GW1.
   lane, another session's WIP) — outside the shipped surface.
 - L3 (current-season weekly refresh cron) NOT YET deployed — follows as
   its own backend deploy with its first-run plan-vs-actual report.
+
+## FW-SCOUT L3 — prod deploy record (2026-08-13)
+
+Current-season weekly refresh live; the sheet's "This season" block now
+serves real 2026-27 minutes.
+
+- Backend deploy (c8702a6 → different-lynx-153): fantasySeasonStats
+  module + getWithPaging on the API client + the weekly cron
+  (fantasy-season-stats-sweep, Tuesday 03:23 UTC, offset justified in
+  crons.ts). Crons activate with the deploy.
+- First real runs, PLAN vs ACTUAL (the mission's ~200-400 estimate,
+  verified against real pagination): the 8 page-1 probes discovered that
+  only Eredivisie (20 pages) and Primeira Liga (20 pages) carry 2026-27
+  player rows yet — the other six leagues' seasons haven't started in
+  the feed. Exact plan 46 calls; actual 46, on DEV and on prod alike
+  (92 total mission spend for L3; L1/L2 spent zero). 798 feed rows,
+  545 players cached with in-scope minutes, 50 unknown feed players
+  counted and skipped, 0 unchanged (first write). Provider daily
+  remaining after DEV run: 6,257. Both runs ledgered in
+  fantasySeasonStatSweeps (status succeeded, callsPlanned == callsMade).
+  NOTE: weekly spend will grow toward ~250-300 calls once all eight
+  leagues have season rows (~20-30 pages each) — still far under the
+  500-call ceiling the action enforces.
+- Live verify: prod /api/query getPlayerCard (T. Fukui, Arouca) serves
+  BOTH seasons — 2026-27 api-refresh (90′, club rates null = absent)
+  above the 2025-26 pricing-seed line; LIVE 380px walkthrough on
+  verveq.com (guest wkndsmokescout3) rendered "Early season — 1 apps,
+  90′" with last season's grid primary, matchup line, zero console
+  errors (screenshot e2e/artifacts/fws-live-thisseason-380.png). Guest
+  swept via fwPolishQaPurge (19 rows), residue 0.
