@@ -47,7 +47,8 @@ const PRICE_FINAL_PATH = path.join(PRICING_DIR, "expansion-price-final.json");
 const BASELINE_PATH = path.join(PRICING_DIR, "data", "expansion-players-snapshot.json");
 
 const CHUNK_SIZE = 250;
-const EXPECTED_ROWS = 1_780;
+/** FW-REPRICE-2 re-cut (2026-08-14): 1,780 before. */
+const EXPECTED_ROWS = 1_783;
 const EXPANSION_LEAGUE_IDS = new Set([88, 94, 40]);
 const BAND_TOP = 7.5;
 

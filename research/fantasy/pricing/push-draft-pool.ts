@@ -18,6 +18,13 @@
  *
  * Run: npx tsx pricing/push-draft-pool.ts
  * Deployment: whatever app/.env.local names (DEV: admired-warthog-495).
+ *
+ * FW-REPRICE-2 live path: `--live` appends `--prod` to every convex run AND
+ * refuses to start unless CONFIRM_LIVE_DEPLOY=different-lynx-153 — the same
+ * two-signal discipline as push-expansion-pool.ts. FW-REPRICE parked the live
+ * push because a half-push would leave prod's two cohorts inconsistent; the
+ * mission that opened this path (FW-REPRICE-2) pushes BOTH artifacts, whole,
+ * in one sitting, which is the stated condition for it.
  */
 
 import { execFileSync } from 'node:child_process';
@@ -29,7 +36,8 @@ const PRICING_DIR = path.dirname(fileURLToPath(import.meta.url));
 const FINAL_PATH = path.join(PRICING_DIR, 'price-final.json');
 const APP_DIR = path.join(PRICING_DIR, '..', '..', '..', 'app');
 
-const UNIVERSE_SIZE = 2_895;
+/** FW-REPRICE-2 re-cut (2026-08-14): 2,895 before. */
+const UNIVERSE_SIZE = 2_953;
 const CHUNK_SIZE = 250;
 
 interface FinalPlayer {
@@ -41,6 +49,13 @@ interface FinalPlayer {
   pool: 'topfive' | 'promoted' | 'flagged';
   proxy: number | null;
   price: number;
+}
+
+const live = process.argv.includes('--live');
+if (live && process.env.CONFIRM_LIVE_DEPLOY?.trim() !== 'different-lynx-153') {
+  throw new Error(
+    'STOP: --live requires CONFIRM_LIVE_DEPLOY=different-lynx-153 exactly; generic booleans are refused.',
+  );
 }
 
 const artifact = JSON.parse(fs.readFileSync(FINAL_PATH, 'utf8')) as {
@@ -68,7 +83,13 @@ for (let i = 0; i < entries.length; i += CHUNK_SIZE) {
   const chunk = entries.slice(i, i + CHUNK_SIZE);
   const raw = execFileSync(
     'npx',
-    ['convex', 'run', 'fantasyDraftRooms:upsertDraftPoolMeta', JSON.stringify({ entries: chunk })],
+    [
+      'convex',
+      'run',
+      'fantasyDraftRooms:upsertDraftPoolMeta',
+      JSON.stringify({ entries: chunk }),
+      ...(live ? ['--prod'] : []),
+    ],
     { cwd: APP_DIR, encoding: 'utf8' },
   );
   const result = JSON.parse(raw) as {

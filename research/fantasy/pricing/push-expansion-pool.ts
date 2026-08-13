@@ -28,7 +28,8 @@ const PRICING_DIR = path.dirname(fileURLToPath(import.meta.url));
 const FINAL_PATH = path.join(PRICING_DIR, 'expansion-price-final.json');
 const APP_DIR = path.join(PRICING_DIR, '..', '..', '..', 'app');
 
-const UNIVERSE_SIZE = 1_780;
+/** FW-REPRICE-2 re-cut (2026-08-14): 1,780 before. */
+const UNIVERSE_SIZE = 1_783;
 const CHUNK_SIZE = 250;
 
 interface FinalPlayer {

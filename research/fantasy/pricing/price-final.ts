@@ -39,7 +39,8 @@ const DRAFT_PATH = path.join(PRICING_DIR, 'price-draft.json');
 const OVERRIDES_PATH = path.join(PRICING_DIR, 'overrides.json');
 const OUT_PATH = path.join(PRICING_DIR, 'price-final.json');
 
-const UNIVERSE_SIZE = 2_895;
+// FW-REPRICE-2 re-cut (2026-08-14): 2,895 before.
+const UNIVERSE_SIZE = 2_953;
 const EXPECTED_OVERRIDES = 25;
 const SCALE_MIN = 4.0;
 const SCALE_MAX = 13.0;

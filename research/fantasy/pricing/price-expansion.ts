@@ -34,7 +34,8 @@ const OVERRIDES_PATH = path.join(PRICING_DIR, 'overrides.json');
 const OUT_PATH = path.join(PRICING_DIR, 'expansion-price-final.json');
 const REVIEW_PATH = path.join(PRICING_DIR, 'EXPANSION_REVIEW.md');
 
-const UNIVERSE_SIZE = 1_780;
+// FW-REPRICE-2 re-cut (2026-08-14): 1,780 before.
+const UNIVERSE_SIZE = 1_783;
 const FLOOR = 4.0;
 const BAND_TOP = 7.5;
 const BAND_STEPS = 7; // 7.5 → 4.0 in 0.5 steps (8 levels)

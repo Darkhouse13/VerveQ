@@ -96,7 +96,8 @@ const finalFile = JSON.parse(fs.readFileSync(FINAL_PATH, 'utf-8')) as {
   players: Player[];
 };
 const PLAYERS = finalFile.players;
-if (PLAYERS.length !== 2_895) throw new Error(`STOP: ${PLAYERS.length} players, expected 2895`);
+// FW-REPRICE-2 re-cut (2026-08-14): 2,895 before.
+if (PLAYERS.length !== 2_953) throw new Error(`STOP: ${PLAYERS.length} players, expected 2953`);
 
 const CLUBS = [...new Set(PLAYERS.map((p) => p.club))].sort();
 const clubIndex = new Map(CLUBS.map((c, i) => [c, i]));

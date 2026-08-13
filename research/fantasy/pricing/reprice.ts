@@ -4,8 +4,8 @@
  * Regenerates BOTH price artifacts from one signal, in one run, because the R2
  * within-club gate spans clubs in both universes and cannot be asserted from
  * either half alone:
- *   pricing/price-final.json            2,895 core rows (top-five + promoted)
- *   pricing/expansion-price-final.json  1,780 expansion rows (88 / 94 / 40)
+ *   pricing/price-final.json            2,953 core rows (top-five + promoted)
+ *   pricing/expansion-price-final.json  1,783 expansion rows (88 / 94 / 40)
  *
  * ── The problem ──
  *
@@ -107,8 +107,10 @@ const CORE_OUT = path.join(PRICING_DIR, 'price-final.json');
 const EXPANSION_OUT = path.join(PRICING_DIR, 'expansion-price-final.json');
 const OVERRIDES_PATH = path.join(PRICING_DIR, 'overrides.json');
 
-const CORE_UNIVERSE_SIZE = 2_895;
-const EXPANSION_UNIVERSE_SIZE = 1_780;
+// FW-REPRICE-2 re-cut (2026-08-14): one prod export split by current league,
+// so the files are disjoint and cover the whole table. 2,895/1,780 before.
+const CORE_UNIVERSE_SIZE = 2_953;
+const EXPANSION_UNIVERSE_SIZE = 1_783;
 
 const TOP5 = new Set([39, 140, 135, 78, 61]);
 const SECOND_TIER = new Set([40, 141, 136, 79, 62]);
@@ -148,14 +150,20 @@ function read(name: string): Raw {
 }
 
 /**
- * The last commit BEFORE FW-REPRICE, pinned rather than `HEAD`.
+ * The last commit BEFORE the current reprice, pinned rather than `HEAD`.
  *
  * `HEAD` was wrong the moment the mission's own commit landed: a re-run then
  * compared the new prices against themselves and reported all 4,667 players
  * unchanged. The "old" column means the prices this mission replaced, which is
  * a fixed point in history, so it is named as one.
+ *
+ * FW-REPRICE-2 (2026-08-14): re-pinned from a990a87 (pre-FW-REPRICE) to
+ * 0de861f, the commit whose artifacts FW-REPRICE seeded live — those are the
+ * prices this pass replaces. Players in NEITHER old artifact (the re-cut gap)
+ * carry oldPrice null in the artifact; on both deployments every one of them
+ * was live at the 4.0 floor, measured by repriceCoverage.ts 2026-08-14.
  */
-const PRE_REPRICE_COMMIT = 'a990a87';
+const PRE_REPRICE_COMMIT = '0de861f';
 
 /** The committed artifact this run replaces — the "old" column of the review. */
 function oldPricesFromGit(relPath: string): Map<number, number> {
@@ -353,7 +361,13 @@ function main(): void {
     });
   }
 
-  // ── the two snapshots OVERLAP; price each player exactly once ──────────────
+  // ── the two snapshots must not overlap; price each player exactly once ────
+  //
+  // FW-REPRICE-2 (2026-08-14): the snapshots are re-cut from ONE prod export,
+  // split by current league, so the overlap is 0 by construction and the
+  // machinery below is kept as a guard — if a future snapshot pair overlaps
+  // again, each shared player is still priced once, at his current club, and
+  // emitted identically into both files. The history that made this necessary:
   //
   // MEASURED 2026-08-13: 8 apiFootballIds appear in both universe snapshots,
   // with the SAME convexId and different clubs — one database row, snapshotted
@@ -560,7 +574,7 @@ function main(): void {
 
   const manifest = {
     generatedAt: new Date().toISOString(),
-    mission: 'FW-REPRICE (2026-08-13) — availability-aware repricing',
+    mission: 'FW-REPRICE-2 (2026-08-14) — snapshot re-cut + gap repricing, method unchanged from FW-REPRICE',
     sourceCommit,
     sourceDirty,
     method: 'PROXY_METHOD.md §FW-REPRICE',
@@ -788,6 +802,25 @@ function writeReview(
   for (const r of big) {
     L.push(
       `| ${r.name}${r.overridden ? ' *(override)*' : ''} | ${r.clubName} | ${r.position} | ${r.pool} | ${r.minutes} | ${r.availability.toFixed(2)} | ${r.oldPrice!.toFixed(1)} | ${r.price.toFixed(1)} | ${delta(r) > 0 ? '+' : ''}${delta(r).toFixed(1)} | ${r.seasonUsed} |`,
+    );
+  }
+  L.push('');
+
+  // ── the re-cut gap (FW-REPRICE-2) ──
+  const gap = priced.filter((r) => r.oldPrice === null);
+  L.push(`## The re-cut gap — players in neither old artifact (${gap.length})`);
+  L.push('');
+  L.push(
+    'Rows FW-T1 transfer ingestion created after the old snapshots were cut. ' +
+      'Every one sat at the 4.0 floor on both deployments (repriceCoverage.ts, 2026-08-14) ' +
+      'while the table below shows what the pipeline prices them at from the minutes on disk.',
+  );
+  L.push('');
+  L.push('| Player | Club | Pos | Pool | Min | Prior min | Avail | Season | New |');
+  L.push('|--------|------|-----|------|-----|-----------|-------|--------|-----|');
+  for (const r of [...gap].sort((a, b) => b.price - a.price || b.minutes - a.minutes || a.name.localeCompare(b.name))) {
+    L.push(
+      `| ${r.name}${r.overridden ? ' *(override)*' : ''} | ${r.clubName} | ${r.position} | ${r.pool} | ${r.minutes} | ${r.priorMinutes} | ${r.availability.toFixed(2)} | ${r.seasonUsed} | **${r.price.toFixed(1)}** |`,
     );
   }
   L.push('');

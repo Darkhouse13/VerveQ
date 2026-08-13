@@ -29,7 +29,8 @@ import { fileURLToPath } from 'node:url';
 const PRICING_DIR = path.dirname(fileURLToPath(import.meta.url));
 const OUT_PATH = path.join(PRICING_DIR, 'price-draft.json');
 
-const UNIVERSE_SIZE = 2_895;
+// FW-REPRICE-2 re-cut (2026-08-14): 2,895 before.
+const UNIVERSE_SIZE = 2_953;
 const FLOOR = 4.0;
 const CEILING: Record<string, number> = { MID: 13.0, ATT: 12.5, DEF: 9.0, GK: 6.0 };
 const PROMOTED_BAND_TOP = 6.5;

@@ -75,10 +75,11 @@ const BASELINE_PATH = path.resolve(
   "players-seed-snapshot.json",
 );
 
-/** Chunk size. 2,895 rows is one index read + one patch each — far more than
+/** Chunk size. 2,953 rows is one index read + one patch each — far more than
  *  a single transaction should carry, and small chunks keep a failure local. */
 const CHUNK_SIZE = 250;
-const EXPECTED_ROWS = 2_895;
+/** FW-REPRICE-2 re-cut (2026-08-14): 2,895 before. */
+const EXPECTED_ROWS = 2_953;
 
 interface PricedPlayer {
   apiFootballId: number;

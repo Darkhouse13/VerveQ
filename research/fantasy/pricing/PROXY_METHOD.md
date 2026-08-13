@@ -356,3 +356,47 @@ to the half point, so everyone within a quarter-point of the top shares it, and
 in the narrow promoted band (4.0–6.5) a quarter point is 10% of the whole band
 — four players land there with no compression at all. Every count is reported,
 not just the failures.
+
+# FW-REPRICE-2 — snapshot re-cut (2026-08-14)
+
+Method unchanged: same signal, same season selection, same mapping, same
+gates, same overrides contract. What changed is the UNIVERSE the method runs
+over.
+
+## The re-cut (OWNER DECISION 5, ruled option c)
+
+The two universe snapshots were two reads of the same drifting table twelve
+days apart (2026-07-29 core, 2026-08-12 expansion). That is what put 8
+players in both files at different clubs, left ~70 active prod rows in
+neither, and made the two `--verify` passes contradict each other.
+
+`pricing/recut-snapshots.ts` now cuts BOTH snapshots from ONE prod export
+(different-lynx-153 — the deployment users play on is the universe's
+authority), split by current leagueId:
+
+- leagues 39/140/135/78/61 → `players-seed-snapshot.json` — 2,953 rows
+- leagues 40/88/94 → `expansion-players-snapshot.json` — 1,783 rows
+
+Disjoint by construction; a player is snapshotted once, at his current club,
+which is what decides his pool. Inactive (departed) rows are kept in the
+universe so the artifacts cover the whole table and `repriceCoverage.ts` can
+demand zero uncovered rows instead of ledgering seventy. DEV is aligned to
+the same universe by `app/scripts/syncDevUniverse.ts` (write path:
+`fantasyIngest:applyClubPlayers`, prod-active rosters, whole clubs only).
+
+## What the wider universe changed (measured)
+
+4,663 of 4,666 previously covered prices byte-identical. The 3 moves:
+S. Bocoum 5.0→4.0 (left Troyes for AC Milan; a promoted-cohort price cannot
+follow a player out of the cohort — flagged at his new club), R. Burrell
+5.5→6.0 and Kieran Morgan 4.5→5.0 (prod's newer feed read reclassified their
+positions; they re-normalised in the correct pool+position). The 70-row gap
+priced from the minutes already on disk: 30 off real 2025-26 minutes (top:
+L. Sinayoko 8.5, P. Pagis 8.0, Florentino/M. Abline/K. Koulierakis 7.5),
+40 genuinely thin, flagged at the 4.0 floor. Zero API calls spent.
+
+The prior-season limit stated in the pull section stands: a 2025-26 arrival
+from OUTSIDE the 12 pricing leagues (António Silva, J. Maja, the Sunderland
+signings) has no rescuable prior season by construction and prices at the
+flagged floor until he plays. That is the locked newcomer rule, not an
+accident.
