@@ -179,7 +179,7 @@ describe("FW-SCOUT — PlayerSheet display law", () => {
     const grid = screen.getByTestId("player-sheet-last-season");
     // 139 saves × 90 / 3060' = 4.09
     expect(grid.textContent).toContain("4.09");
-    expect(grid.textContent).toContain("Club clean sheets /match");
+    expect(grid.textContent).toContain("Club clean sheets");
     expect(grid.textContent).toContain("0.32");
     expect(screen.getByText(/club rates per match/)).toBeInTheDocument();
   });

@@ -294,11 +294,13 @@ function SeasonBlock({
   if (position === "GK" || position === "DEF") {
     if (line.csRate !== null) {
       hasClubRates = true;
-      stats.push({ key: "cs", label: t("weekend.statCsRate", { defaultValue: "Club clean sheets /match" }), value: line.csRate.toFixed(2) });
+      // The unit lives in the footer note ("club rates per match") — a
+      // longer label truncates at 380px and hides the unit entirely.
+      stats.push({ key: "cs", label: t("weekend.statCsRate", { defaultValue: "Club clean sheets" }), value: line.csRate.toFixed(2) });
     }
     if (line.gaPerMatch !== null) {
       hasClubRates = true;
-      stats.push({ key: "ga", label: t("weekend.statGaRate", { defaultValue: "Club conceded /match" }), value: line.gaPerMatch.toFixed(2) });
+      stats.push({ key: "ga", label: t("weekend.statGaRate", { defaultValue: "Club conceded" }), value: line.gaPerMatch.toFixed(2) });
     }
   }
 
