@@ -1011,3 +1011,102 @@ back-nav fix, U3 How to Play. Prod deploy authorized for the ship phase.
   fixture kickoff cells nowrap single-line, hub rail times nowrap; control
   /compete body scrollbar-width "auto" (platform default — the rule is
   scoped, not global). fwnit1-live-*.png committed.
+
+# FW-RECEIPT — 2026-08-13 — the weekend texts you back: DONE. **GOAL REACHED.**
+
+Commits 07fcb86..7803a5b (6), live on verveq.com 2026-08-13 evening — before
+Friday's first kickoff. Prod convex deployed FIRST (fantasyGameweekPercentiles
+indexes added on different-lynx-153), then CI (Check + deploy green, 7803a5b).
+
+## Part 1 — polish (07fcb86)
+- P1: one "This weekend" on the hub — WeekendLeaguesLine IS the fixtures-rail
+  header (and the wide panel's); standalone renders only on the fail-quiet
+  no-fixtures path. e2e weekendMobile + expansionQa still green (testid kept).
+- P2 copy law: crew standings read "no drafts yet" when a member has no
+  drafted weekend (cumulativePoints null + awaitingWeekends 0); "awaiting
+  data" stays reserved for drafted-but-unscored. Pinned in
+  fantasyCrewTableUi.test.tsx. Sweep found no other leak (SlotScoreCell,
+  crew room lines, PitchView "…" all fixture-scoped).
+- P3: fixture club names wrap to two lines before truncating — line-clamp-2
+  on the fixtures-page card and the hub rail card (rail regridded
+  2-col so each score stays row-paired with its wrapped name; kickoff block
+  row-spans). FW-NIT1's nowrap time column untouched.
+- P4: three static inline-SVG figures in How to Play (chess clock, pitch
+  shape 1-4-3-3 dots, ×0.75 shaved-quarter bar) on currentColor/text-primary
+  only; aria-hidden; no animation.
+
+## Part 2 — the live ledger (16601b2, e24daa6)
+- convex/fantasyLedger.getSquadLedger: reverse-chron timeline derived
+  ENTIRELY from existing rows — squad createdAt, slot lockedAt (the sweep's
+  kickoff-valued stamp), every fantasyPlayerScores version (points via
+  totalFor), passed court claims, the settlement stamp. Writes nothing.
+- Term narration re-derives through the engine: explainContext's FIRST
+  caller, fed the exact fantasyFixtureStats revision each version names +
+  current fixture context, gated on statHashOf(line) === row.statHash
+  (context is in the hash, so a moved fixture score fails closed to a
+  points-only entry — no invented stories). Revisions classify
+  stats/crowd/court and carry term-level diffs ("tackles (attempted) 2→5,
+  +1.2"). Awaiting is ABSENT (no entry), never zero. 5 tests
+  (fantasyLedger.test.ts) incl. the hash-gate degradation.
+- UI: SquadTabs (Squad|Ledger on BudgetSquadScreen, Sheet|Ledger on
+  CrewSheetScreen), SquadLedgerView composes match-language copy
+  client-side; ledger subscribed only while its tab is open; settled entry
+  carries the receipt door. ×count renders only on per-unit terms (the
+  engine's appearance count is minutes).
+
+## Part 3 — the settlement receipt (dda634d, e24daa6)
+- Additive table fantasyGameweekPercentiles (by_squad, by_gameweek): one
+  immutable row per budget squad WITH a number (finalScore.scoredSlots > 0;
+  no number → no row, the crew-table/liquidity exclusion precedent).
+  beatCount = strictly-lower settled totals; population includes self.
+- stampGameweekPercentiles: chunked, idempotent, guarded on
+  fantasyGameweekScoring.state === "final" (scoreRaterAccuracy's pattern) —
+  NOT on "the cron reached me". Reached from settleGameweeks via one
+  additive loop after the rater pass; no existing settlement write touched.
+- getReceipt: null until settled; then stamped total, squadScore's 13,
+  best/worst contributors (facts; null under two scored slots), crowd
+  movements, percentile (budget) or room rank from stamped totals (crew).
+  latestReceiptRef = the way back once the settled board closes (a settled
+  gameweek is never the open one). 8 tests (fantasyReceipts.test.ts).
+- WeekendReceiptScreen at /v2/weekend/receipt/:gameweekId (?room= for crew):
+  dark Neo 9:16 card, no crests/likenesses. Share = painted 1080×1920 PNG
+  (lib/receiptImage, hand-drawn canvas, no rasterising dep) through Web
+  Share files → text share → clipboard; download saves the PNG.
+
+## DEV synthetic settlement proof (d34dd7c)
+fwReceiptQa.spec.ts on admired-warthog-495: UI guest + sim six-pick squad +
+2 weaker rivals + 5 voters in SYNTH-O5-LOOP GW905 → Ledger tab (6 scored
+entries, match language) → feed correction lands as the honest diff → REAL
+settleGameweeks fires the percentile call-site (stamps asserted: population
+3, guest beats 2) → receipt chip → rendered card "Beat 67% of budget
+squads", captured at 380px (fwr-receipt-card-380.png) + wide. The o5 loop
+now asserts the stamp at step 9; purgeLoopData/purgeUiRun own the new
+table. All data purged (post-purge zero).
+
+## QA + SHIP + LIVE (7803a5b + live pass)
+- fwrPolishQa.spec.ts green; regression sweep green (weekendMobile,
+  expansionQa, fwImmerseQa, fwImmerseWideQa, fwPolish3Qa). npm run check
+  green per commit (1586 tests at HEAD).
+- chromeProof 9f7aac5 vs HEAD: compete + quiz BYTE-IDENTICAL (cmp); home
+  diff attributed to the Daily Challenge reset clock ticking a minute
+  between shots (after-vs-after identical); weekend hub differs by design.
+- LIVE verveq.com: entry index-BvdTZ5q2 carries /v2/weekend/receipt;
+  WeekendReceiptScreen-Bhl4t5q2 carries the card + percentile copy;
+  hub/squad/htp/fixtures/crew chunks carry the merged header, squad-tab-
+  ledger, the three figures, line-clamp-2, "no drafts yet". Scripted 380px
+  walkthrough PASS (fwr-live-*.png committed): merged header count 1,
+  clamp live, figures live, guest → create squad → Ledger tab narrates
+  "The 13 assembled", receipt route shows the honest "No receipt yet" card
+  (prod settles first on Tue 2026-08-18). Zero console errors, no
+  horizontal scroll.
+- QA guests SWEPT: prod wkndsmokefwr26154 via fwPolishQaPurge dryRun (zero
+  blockers) → purge (20 rows) → post-sweep dryRun zero. DEV purges
+  idempotent-zero.
+
+Prod receipt goes hot at first settlement (Tue 2026-08-18 ~23:59 Paris cut):
+the cron's settleGameweeks tail stamps fantasyGameweekPercentiles for GW1.
+Judgment calls: percentile renders only at population > 1 (a population of
+one reads "no standing to claim" honestly); best/worst suppressed under two
+scored slots (one player is not a comparison); the settled gameweek's ledger
+is reachable while the board is open and from crew sheets after — the
+receipt is the settled-state surface for budget squads.
