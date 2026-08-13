@@ -235,3 +235,42 @@ rgb(18,18,18)/border-0 on WEEKEND and cream routes alike, hub door
 shadows cast rgb(0,0,0), zero console errors, zero horizontal
 overflow. QA artifact: guest `fwpolish2_qa` with an empty 4-2-3-1
 squad (joins fwpolish_qa from FW-POLISH).
+
+## FW-SCOUT L1+L2 — prod deploy record (2026-08-13)
+
+Player detail sheet (stats for strategists) live on verveq.com before GW1.
+
+- Order per FW-EXPAND precedent: backend deploy FIRST (`npx convex deploy -y`
+  → different-lynx-153, from c1da384; added fantasyPlayerSeasonStats,
+  fantasySeasonStatSweeps, fantasyPlayerScores.by_player — all additive),
+  then data import, then master push (CI deploy 39s success).
+- Seed: seedSeasonStats --live (two-signal guard: --live +
+  CONFIRM_LIVE_DEPLOY) — created 4,666 of the artifact's 4,667, missing 1
+  = I. Bowat (284473), EXACTLY the FW-EXPAND accounted absence (no prod
+  fantasyPlayers row since he left Portsmouth pre-bootstrap); gate
+  overridden by this recorded accounting, not by code. Re-run: 4,666
+  unchanged, 0 created — idempotence proven on prod. --verify by full
+  re-export: all 4,666 stored rows byte-equal the artifact, 0 stray rows,
+  the single deviation is Bowat.
+- Frontend verified by chunk content (entry-hash rule honored): entry
+  stamps release c1da384; BudgetSquadScreen chunk carries "Season stats &
+  form" + picker-row-body; PlayerSheet-CY9YIbd2.js carries player-sheet,
+  getPlayerCard and the sparse-history copy; DraftRoomScreen chunk carries
+  draft-row-body.
+- Data plane verified live: unauthenticated POST /api/query
+  fantasyPlayerCard:getPlayerCard (Drommel) returns the seeded Eredivisie
+  line (3060', 139 saves), the GW1 PEC Zwolle (H) matchup, pool
+  "eredivisie", ownership hidden (3 squads < 10 floor), empty history.
+- LIVE 380px walkthrough on verveq.com (guest wkndsmokescout2): sheet
+  opens from a picker row; name/eyebrow/pool line/4.09 saves per 90/
+  "34 apps · 3060′"/matchup/sparse-history copy all rendered; ownership
+  line absent; zero console errors. Screenshot committed
+  (e2e/artifacts/fws-live-sheet-380.png).
+- QA footprint: guests wkndsmokescout1/2 created, then SWEPT via
+  fwPolishQaPurge dryRun → purge (38 rows: 2 users, 2 empty squads,
+  26 slots, 8 auth rows); post-purge dryRun residue 0.
+- Tree note: app/ was clean at c1da384; concurrent uncommitted churn
+  existed only under tools/content-factory/ (the active CF-WEEKEND reels
+  lane, another session's WIP) — outside the shipped surface.
+- L3 (current-season weekly refresh cron) NOT YET deployed — follows as
+  its own backend deploy with its first-run plan-vs-actual report.
