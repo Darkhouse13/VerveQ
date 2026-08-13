@@ -78,9 +78,11 @@ interface Components {
   interceptions: number;
   shotsOn: number;
   saves: number;
-  /** minutes-weighted CLUB rates (expectation terms, PROXY_METHOD.md appr. 4) */
-  csRate: number;
-  gaPerMatch: number;
+  /** minutes-weighted CLUB rates (expectation terms, PROXY_METHOD.md appr. 4);
+   *  null when NO counted minutes fall at a club we hold season figures for —
+   *  absent, never a fabricated zero */
+  csRate: number | null;
+  gaPerMatch: number | null;
 }
 
 interface TeamRates {
@@ -101,9 +103,11 @@ function sumComponents(entries: Raw[], teamRates: Map<string, TeamRates>): Compo
   const line: Components = {
     minutes: 0, apps: 0, goals: 0, assists: 0, keyPasses: 0,
     tackles: 0, interceptions: 0, shotsOn: 0, saves: 0,
-    csRate: 0, gaPerMatch: 0,
+    csRate: null, gaPerMatch: null,
   };
   let ratedMinutes = 0;
+  let csSum = 0;
+  let gaSum = 0;
   for (const s of entries) {
     const minutes = n(s.games?.minutes);
     line.minutes += minutes;
@@ -118,13 +122,13 @@ function sumComponents(entries: Raw[], teamRates: Map<string, TeamRates>): Compo
     const rates = teamRates.get(`${s.team?.id}|${s.league?.id}`);
     if (rates !== undefined) {
       ratedMinutes += minutes;
-      line.csRate += minutes * rates.csRate;
-      line.gaPerMatch += minutes * rates.gaPerMatch;
+      csSum += minutes * rates.csRate;
+      gaSum += minutes * rates.gaPerMatch;
     }
   }
   if (ratedMinutes > 0) {
-    line.csRate = Number((line.csRate / ratedMinutes).toFixed(4));
-    line.gaPerMatch = Number((line.gaPerMatch / ratedMinutes).toFixed(4));
+    line.csRate = Number((csSum / ratedMinutes).toFixed(4));
+    line.gaPerMatch = Number((gaSum / ratedMinutes).toFixed(4));
   }
   return line;
 }

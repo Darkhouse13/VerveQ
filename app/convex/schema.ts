@@ -1954,7 +1954,14 @@ export default defineSchema({
   })
     .index("by_fixture_player_version", ["fixtureId", "providerPlayerId", "version"])
     .index("by_gameweek_player_version", ["gameweekId", "providerPlayerId", "version"])
-    .index("by_gameweek_state", ["gameweekId", "state"]),
+    .index("by_gameweek_state", ["gameweekId", "state"])
+    // FW-SCOUT (additive): the player detail sheet reads one player's score
+    // history ACROSS gameweeks — the two existing indexes both lead with a
+    // fixture or gameweek id and cannot serve that. Row volume per player is
+    // bounded by fixtures played × revisions, so an unqualified player scan
+    // is small; current-version filtering stays a field read
+    // (`supersededByVersion` absent), same as every other reader.
+    .index("by_player", ["providerPlayerId"]),
 
   // Per-fixture ingest/score status — the row that answers "why does this
   // player read awaiting data?" without re-reading the feed.
@@ -2360,6 +2367,110 @@ export default defineSchema({
         calls: v.number(),
         resolved: v.number(),
         remaining: v.number(),
+      }),
+    ),
+    error: v.optional(v.string()),
+  }).index("by_status", ["status"]),
+
+  // ──────────────────────────────── WEEKEND FANTASY: player detail sheet (FW-SCOUT)
+  //
+  // Servable season aggregates behind the player detail sheet. STRICTLY
+  // ADDITIVE to FW-1..T1: nothing here is read by scoring, eligibility,
+  // locks or pricing, and no existing table gains a field.
+  //
+  // PRODUCT LAW (FW-SCOUT): these rows carry STATS, never a recommendation —
+  // no rating, no rank, no composite of any kind is stored or derivable here
+  // beyond what a calculator gives anyone. Per-90 views are derived at
+  // display time from the raw totals; a stat we do not hold renders as
+  // absent, never as 0.
+
+  /**
+   * One season line per (player, season). Two writers, disjoint by `source`:
+   *
+   *   pricing-seed — the one-time FW-SCOUT L1 import of the 2025-26 season
+   *     components from research/fantasy/pricing/season-components-2025-26
+   *     .json (itself gate-verified row-for-row against the FW-PR1/FW-EXPAND
+   *     proxy artifacts, so every number traces to the pricing pass).
+   *   api-refresh — the FW-SCOUT L3 weekly cron's current-season cache,
+   *     upserted in place (this is a cache of provider season aggregates,
+   *     not an event log; `pulledAt` says how stale it is).
+   *
+   * ABSENCE SEMANTICS, in R7's spirit: `line: null` means the covering pass
+   * looked and found NO in-scope season football for the player (the
+   * flagged-pool case) — the sheet says so honestly. `partial` optionally
+   * carries the out-of-scope minutes the pricing pass saw (cups, playoff-only,
+   * other leagues) so "what exists" can be shown without presenting it as a
+   * league season line. No row at all means no pass has covered the player
+   * yet (e.g. a transfer arrival created after the seed) — "no season data on
+   * record", never zero.
+   */
+  fantasyPlayerSeasonStats: defineTable({
+    /** Provider identity, the cross-deployment key (FW-4 precedent). */
+    providerPlayerId: v.string(),
+    /** Pricing-artifact season label: "2025-26", "2026-27". */
+    season: v.string(),
+    source: v.union(v.literal("pricing-seed"), v.literal("api-refresh")),
+    pulledAt: v.number(),
+    /** Leagues the counted entries came from, for the honesty label
+     *  ("2025-26, per 90 — Eredivisie"). Empty when `line` is null. */
+    leagueIds: v.array(v.number()),
+    leagueLabel: v.string(),
+    /** Raw season totals — display derives per-90. Null = looked, nothing
+     *  in scope. csRate/gaPerMatch are minutes-weighted CLUB expectation
+     *  rates (PROXY_METHOD.md approximation 4), the clean-sheet/concession
+     *  exposure the sheet shows for GK/DEF; null on api-refresh rows (the
+     *  weekly pull carries no club figures — absent, not zero). */
+    line: v.union(
+      v.null(),
+      v.object({
+        minutes: v.number(),
+        apps: v.number(),
+        goals: v.number(),
+        assists: v.number(),
+        keyPasses: v.number(),
+        tackles: v.number(),
+        interceptions: v.number(),
+        shotsOn: v.number(),
+        saves: v.number(),
+        csRate: v.union(v.number(), v.null()),
+        gaPerMatch: v.union(v.number(), v.null()),
+      }),
+    ),
+    /** Flagged-pool context: 2025-26 minutes seen OUTSIDE the pool scope. */
+    partial: v.optional(v.object({ minutes: v.number(), apps: v.number() })),
+  })
+    .index("by_player_season", ["providerPlayerId", "season"])
+    .index("by_season", ["season"]),
+
+  /**
+   * One row per L3 refresh run — the sweep's budget ledger, mirroring
+   * fantasyTransferSweeps: the printed call plan's projection lands in
+   * `callsPlanned` before the first request, actuals after.
+   */
+  fantasySeasonStatSweeps: defineTable({
+    kind: v.union(v.literal("manual"), v.literal("cron")),
+    status: v.union(
+      v.literal("running"),
+      v.literal("succeeded"),
+      v.literal("failed"),
+    ),
+    /** Season the sweep pulled, pricing-artifact label ("2026-27"). */
+    season: v.string(),
+    startedAt: v.number(),
+    finishedAt: v.optional(v.number()),
+    callsPlanned: v.number(),
+    callsMade: v.optional(v.number()),
+    /** Provider's own remaining-today count after the run's last request. */
+    dailyRemaining: v.optional(v.union(v.number(), v.null())),
+    counts: v.optional(
+      v.object({
+        leaguesSwept: v.number(),
+        pagesFetched: v.number(),
+        playersSeen: v.number(),
+        rowsUpserted: v.number(),
+        rowsUnchanged: v.number(),
+        /** Feed players with no fantasyPlayers row — reported, never created. */
+        unknownPlayers: v.number(),
       }),
     ),
     error: v.optional(v.string()),

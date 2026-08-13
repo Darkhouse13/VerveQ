@@ -1,6 +1,6 @@
 {
  "manifest": {
-  "generatedAt": "2026-08-13T12:49:10.067Z",
+  "generatedAt": "2026-08-13T12:52:43.289Z",
   "season": "2025-26",
   "method": "FW-SCOUT L1: season-line components via the exact proxy.ts / proxy-expansion.ts entry selection; gate-verified against proxy-scores.json + expansion-proxy-scores.json (pool, minutes, apps) per universe, then deduped across universes (expansion wins, matching current fantasyDraftPoolMeta; a superseded top-five season line is carried onto flagged expansion rows — the sheet shows what exists). csRate/gaPerMatch are minutes-weighted CLUB expectation rates (PROXY_METHOD.md approximation 4), not player stats. No scalar, no rank, no composite.",
   "counts": {

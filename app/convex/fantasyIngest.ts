@@ -598,6 +598,144 @@ export const applyPrices = internalMutation({
   },
 });
 
+const seasonLineValidator = v.object({
+  minutes: v.number(),
+  apps: v.number(),
+  goals: v.number(),
+  assists: v.number(),
+  keyPasses: v.number(),
+  tackles: v.number(),
+  interceptions: v.number(),
+  shotsOn: v.number(),
+  saves: v.number(),
+  csRate: v.union(v.number(), v.null()),
+  gaPerMatch: v.union(v.number(), v.null()),
+});
+
+const seasonStatUpsertValidator = v.object({
+  providerPlayerId: v.string(),
+  season: v.string(),
+  source: v.union(v.literal("pricing-seed"), v.literal("api-refresh")),
+  pulledAt: v.number(),
+  leagueIds: v.array(v.number()),
+  leagueLabel: v.string(),
+  line: v.union(v.null(), seasonLineValidator),
+  partial: v.optional(v.object({ minutes: v.number(), apps: v.number() })),
+});
+
+/**
+ * Upsert season lines for the player detail sheet (FW-SCOUT L1 seed + L3
+ * refresh). The applyPrices discipline, on the FW-SCOUT table:
+ *
+ *  - additive: writes ONLY fantasyPlayerSeasonStats, keyed
+ *    (providerPlayerId, season). Never touches fantasyPlayers.
+ *  - a provider id with no fantasyPlayers row is REPORTED in `missing`, not
+ *    inserted — a season line for a player the universe does not carry means
+ *    artifact and table have drifted, and burying that would be worse than
+ *    stopping.
+ *  - whole-chunk validation first, fail whole: one transaction, a rejected
+ *    chunk writes nothing and is simply re-run after the input is fixed.
+ *  - idempotent: an identical row (everything but pulledAt) counts
+ *    `unchanged` and is not patched, so re-runs leave pulledAt as evidence
+ *    of when the content actually last moved.
+ *
+ * PRODUCT LAW: rows carry raw totals only. Nothing here computes, stores or
+ * accepts a rating, rank or composite.
+ */
+export const applySeasonStats = internalMutation({
+  args: { rows: v.array(seasonStatUpsertValidator) },
+  handler: async (ctx, { rows }) => {
+    for (const row of rows) {
+      if (!/^\d{4}-\d{2}$/.test(row.season)) {
+        throw new Error(`season "${row.season}" is not a pricing-artifact season label (YYYY-YY)`);
+      }
+      const line = row.line;
+      if (line !== null) {
+        const counts = [
+          line.minutes, line.apps, line.goals, line.assists, line.keyPasses,
+          line.tackles, line.interceptions, line.shotsOn, line.saves,
+        ];
+        if (counts.some((c) => !Number.isFinite(c) || c < 0)) {
+          throw new Error(`player ${row.providerPlayerId}: negative or non-finite season total`);
+        }
+        if (line.minutes === 0) {
+          throw new Error(`player ${row.providerPlayerId}: a season line with 0 minutes must be null, not zeros`);
+        }
+        if (row.leagueIds.length === 0 || row.leagueLabel.length === 0) {
+          throw new Error(`player ${row.providerPlayerId}: a season line must name its league scope`);
+        }
+      } else if (row.leagueIds.length > 0 || row.leagueLabel.length > 0) {
+        throw new Error(`player ${row.providerPlayerId}: league scope on a null line`);
+      }
+    }
+
+    let created = 0;
+    let updated = 0;
+    let unchanged = 0;
+    const missing: string[] = [];
+
+    for (const row of rows) {
+      const player = await ctx.db
+        .query("fantasyPlayers")
+        .withIndex("by_providerPlayerId", (q) => q.eq("providerPlayerId", row.providerPlayerId))
+        .first();
+      if (player === null) {
+        missing.push(row.providerPlayerId);
+        continue;
+      }
+
+      const existing = await ctx.db
+        .query("fantasyPlayerSeasonStats")
+        .withIndex("by_player_season", (q) =>
+          q.eq("providerPlayerId", row.providerPlayerId).eq("season", row.season),
+        )
+        .first();
+
+      if (existing === null) {
+        await ctx.db.insert("fantasyPlayerSeasonStats", row);
+        created += 1;
+        continue;
+      }
+
+      const lineKeys = [
+        "minutes", "apps", "goals", "assists", "keyPasses",
+        "tackles", "interceptions", "shotsOn", "saves", "csRate", "gaPerMatch",
+      ] as const;
+      const sameLine =
+        existing.line === null || row.line === null
+          ? existing.line === row.line
+          : lineKeys.every((k) => existing.line![k] === row.line![k]);
+      const samePartial =
+        existing.partial === undefined || row.partial === undefined
+          ? existing.partial === row.partial
+          : existing.partial.minutes === row.partial.minutes &&
+            existing.partial.apps === row.partial.apps;
+      const same =
+        existing.source === row.source &&
+        existing.leagueLabel === row.leagueLabel &&
+        existing.leagueIds.length === row.leagueIds.length &&
+        existing.leagueIds.every((id, i) => id === row.leagueIds[i]) &&
+        sameLine &&
+        samePartial;
+      if (same) {
+        unchanged += 1;
+        continue;
+      }
+      await ctx.db.patch(existing._id, {
+        source: row.source,
+        pulledAt: row.pulledAt,
+        leagueIds: row.leagueIds,
+        leagueLabel: row.leagueLabel,
+        line: row.line,
+        partial: row.partial,
+      });
+      updated += 1;
+    }
+
+    return { requested: rows.length, created, updated, unchanged, missing };
+  },
+});
+
 /**
  * Audit one gameweek: does every fixture filed under it actually kick off
  * inside its window?
