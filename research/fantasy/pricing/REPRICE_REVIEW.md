@@ -2015,6 +2015,15 @@ undefined club+position groups of two or more, across 156 clubs, 2575 leader-vs-
 | D. van der Haar | PEC Zwolle | DEF | 22 | 1835 | 0.30 | 5.5 | 4.5 |
 | M. Venturi | Venezia | MID | 198 | 1814 | 0.29 | 5.5 | 4.5 |
 
+## R1 — squads grandfathered by the reprice
+
+A squad the reprice pushes over 91.0 stays legal at its pre-edit cost (`validateBudget`, mirroring the club-cap grandfather); an edit that makes it cost MORE is still blocked. Counted per deployment by `app/scripts/repriceSquadImpact.ts`, which re-costs every standing budget squad at the new prices and writes the result next to this file.
+
+| Deployment | Budget squads | Grandfathered | Measured |
+|------------|---------------|---------------|----------|
+| admired-warthog-495 | 0 | **0** | 2026-08-13 |
+| different-lynx-153 | 5 | **0** | 2026-08-13 |
+
 ## Owner overrides (25, applied last and unchanged)
 
 | Player | Club | Formula price | Override |

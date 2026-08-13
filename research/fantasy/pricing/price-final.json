@@ -1,8 +1,8 @@
 {
  "manifest": {
-  "generatedAt": "2026-08-13T21:57:17.150Z",
+  "generatedAt": "2026-08-13T22:37:47.997Z",
   "mission": "FW-REPRICE (2026-08-13) — availability-aware repricing",
-  "sourceCommit": "a990a8738e8da918999c17cc6724520cbd2eb3bc",
+  "sourceCommit": "4cee1031c17014662e4739eadcbc101ffbdca51d",
   "sourceDirty": true,
   "method": "PROXY_METHOD.md §FW-REPRICE",
   "formula": "signal = per90 x availability; price = round0.5(4 + (bandTop - 4) x signal/sMax(pool,position)); flagged: 4",

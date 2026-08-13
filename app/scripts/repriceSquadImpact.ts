@@ -147,6 +147,32 @@ function main(): void {
     }
   }
 
+  // Written where REPRICE_REVIEW.md can pick it up, so the R1 count in the
+  // review is a measurement with a provenance rather than a typed-in number.
+  const outPath = path.join(PRICING_DIR, "data", `r1-impact-${deployment}.json`);
+  fs.mkdirSync(path.dirname(outPath), { recursive: true });
+  fs.writeFileSync(
+    outPath,
+    JSON.stringify(
+      {
+        measuredAt: new Date().toISOString(),
+        deployment,
+        budgetSquads,
+        crewSquads,
+        grandfathered: overBudget,
+        squadBudget: SQUAD_BUDGET,
+        squads: every.map((e) => ({
+          oldTotal: Number(e.oldTotal.toFixed(1)),
+          newTotal: Number(e.newTotal.toFixed(1)),
+          filled: e.filled,
+        })),
+      },
+      null,
+      1,
+    ),
+  );
+  console.log(`wrote ${path.basename(outPath)}`);
+
   console.log(`squads: ${budgetSquads} budget, ${crewSquads} crew (crew has no budget — not affected)`);
   console.log(`budget squads with fewer than ${SQUAD_SIZE} filled slots: ${filledIncomplete}`);
   console.log(`budget squads referencing a player absent from the artifacts: ${unknownPlayer}`);

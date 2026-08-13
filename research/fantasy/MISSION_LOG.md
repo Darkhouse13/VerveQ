@@ -1226,3 +1226,25 @@ against stored prices on both deployments.
   but `push-draft-pool.ts` has no authorized live path and a half-push would
   leave prod's two cohorts inconsistent. No regression; deferred deliberately.
 - OWNER DECISIONS 3–6 added to DECISIONS_NEEDED.md.
+
+## SHIP + LIVE (2026-08-13)
+
+- Convex functions deployed to prod (different-lynx-153) and DEV; no schema
+  change, no index deleted. The budget bar reads `allowance ?? limit`, so the
+  frontend tolerates a server that predates the field — CI ships the frontend
+  on its own and Convex is deployed by hand, and the two crossed here in the
+  wrong order (prod Convex first) without consequence because of that fallback.
+- CI green on 4cee103: Check 2m56s, deploy 33s.
+- `npm run check` green at HEAD: 148 test files, 1,598 tests, 0 lint errors.
+- LIVE verveq.com, scripted at 380px (`e2e/fwRepriceLive.spec.ts`, artifact
+  `e2e/artifacts/fw-reprice-porto-live-380.png`): guest → GK slot → picker →
+  **Diogo Costa 6.0; Cláudio Ramos 4.0; J. Afonso 4.0; Andorinha 4.0.** All
+  four were 6.0 before this mission. Zero console errors. The assertion is the
+  mission's sentence, not a hard-coded number: the most-played keeper must
+  outprice every other keeper at his club.
+- QA guests SWEPT: prod `fantasyIntegrationSim:purgeUiRun` removed 14 rows / 2
+  simloop_* users; re-run idempotent-zero; prod back to 5 budget squads, 0
+  grandfathered.
+- REPRICE_REVIEW.md's old→new baseline is pinned to a990a87, the commit before
+  this mission — `HEAD` was wrong the moment the mission's own commit landed
+  (a re-run reported all 4,667 players unchanged; caught and fixed).

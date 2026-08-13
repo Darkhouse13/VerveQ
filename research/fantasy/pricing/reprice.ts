@@ -147,9 +147,19 @@ function read(name: string): Raw {
   return JSON.parse(fs.readFileSync(path.join(DATA_DIR, name), 'utf-8'));
 }
 
+/**
+ * The last commit BEFORE FW-REPRICE, pinned rather than `HEAD`.
+ *
+ * `HEAD` was wrong the moment the mission's own commit landed: a re-run then
+ * compared the new prices against themselves and reported all 4,667 players
+ * unchanged. The "old" column means the prices this mission replaced, which is
+ * a fixed point in history, so it is named as one.
+ */
+const PRE_REPRICE_COMMIT = 'a990a87';
+
 /** The committed artifact this run replaces — the "old" column of the review. */
 function oldPricesFromGit(relPath: string): Map<number, number> {
-  const raw = execFileSync('git', ['show', `HEAD:${relPath}`], {
+  const raw = execFileSync('git', ['show', `${PRE_REPRICE_COMMIT}:${relPath}`], {
     cwd: PRICING_DIR,
     encoding: 'utf-8',
     maxBuffer: 256 * 1024 * 1024,
@@ -800,6 +810,36 @@ function writeReview(
     }
     L.push('');
   }
+  // ── R1, measured on each deployment ──
+  L.push('## R1 — squads grandfathered by the reprice');
+  L.push('');
+  L.push(
+    'A squad the reprice pushes over 91.0 stays legal at its pre-edit cost ' +
+      '(`validateBudget`, mirroring the club-cap grandfather); an edit that makes it cost MORE is ' +
+      'still blocked. Counted per deployment by `app/scripts/repriceSquadImpact.ts`, which re-costs ' +
+      'every standing budget squad at the new prices and writes the result next to this file.',
+  );
+  L.push('');
+  const impacts = fs
+    .readdirSync(DATA_DIR)
+    .filter((f) => f.startsWith('r1-impact-') && f.endsWith('.json'))
+    .sort();
+  if (impacts.length === 0) {
+    L.push('_No measurement on disk — run `npx tsx scripts/repriceSquadImpact.ts` per deployment._');
+  } else {
+    L.push('| Deployment | Budget squads | Grandfathered | Measured |');
+    L.push('|------------|---------------|---------------|----------|');
+    for (const f of impacts) {
+      const m = JSON.parse(fs.readFileSync(path.join(DATA_DIR, f), 'utf-8')) as {
+        deployment: string; budgetSquads: number; grandfathered: number; measuredAt: string;
+      };
+      L.push(
+        `| ${m.deployment} | ${m.budgetSquads} | **${m.grandfathered}** | ${m.measuredAt.slice(0, 10)} |`,
+      );
+    }
+  }
+  L.push('');
+
   L.push(`## Owner overrides (${applied.length}, applied last and unchanged)`);
   L.push('');
   L.push('| Player | Club | Formula price | Override |');
