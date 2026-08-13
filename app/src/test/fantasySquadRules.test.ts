@@ -26,6 +26,7 @@ import {
   validateClubCap,
   validateFormation,
   validateSquad,
+  totalCostOf,
   validateSquadShape,
   type PlayerSnapshot,
   type SlotSnapshot,
@@ -403,6 +404,96 @@ describe("budget invariant (BUDGET_MODE v1.1.0 §Budget, §Deadlines & editing)"
     const result = validateBudget(slots, pool, NEVER_LOCKED, 100);
     expect(result.ok).toBe(false);
     expect(result.violations.map((v) => v.code)).toContain("unpriced_player");
+  });
+
+  // ── FW-REPRICE R1: repricing grandfathers a standing squad ──
+  //
+  // The club-cap grandfather's twin. A squad built legally can be pushed over
+  // 91.0 by a reprice with no edit having happened; the ruling keeps it legal
+  // on a pre-edit basis, and still blocks any edit that adds cost.
+
+  /** 13 players at 7.5 = 97.5 — a squad a reprice pushed 6.5 over budget. */
+  const overBudgetSlots = () =>
+    squadOf(FOUR_FOUR_TWO).map((s, i) => ({ ...s, playerId: `p${i}` }));
+  const overBudgetPool = poolOf(
+    ...Array.from({ length: SQUAD_SIZE }, (_, i) => player({ _id: `p${i}`, price: 7.5 })),
+    player({ _id: "cheap", price: 5.0 }),
+    player({ _id: "dear", price: 9.0 }),
+  );
+
+  it("computes the pre-edit basis the grandfather is measured against", () => {
+    expect(totalCostOf(overBudgetSlots(), overBudgetPool, NEVER_LOCKED)).toBe(97.5);
+  });
+
+  it("keeps a squad the reprice pushed over 91.0 legal, untouched", () => {
+    const result = validateBudget(
+      overBudgetSlots(),
+      overBudgetPool,
+      NEVER_LOCKED,
+      SQUAD_BUDGET,
+      97.5,
+    );
+    expect(result.ok).toBe(true);
+    expect(result.breakdown).toMatchObject({ total: 97.5, limit: 91.0, allowance: 97.5 });
+  });
+
+  it("allows an edit that reduces an over-budget squad but stays above 91.0", () => {
+    // swap one 7.5 for a 5.0: 97.5 -> 95.0, still over the budget, still legal
+    const slots = overBudgetSlots().map((s, i) => (i === 0 ? { ...s, playerId: "cheap" } : s));
+    const result = validateBudget(slots, overBudgetPool, NEVER_LOCKED, SQUAD_BUDGET, 97.5);
+    expect(result.ok).toBe(true);
+    expect(result.breakdown?.total).toBe(95.0);
+  });
+
+  it("BLOCKS an edit that makes an over-budget squad cost more", () => {
+    // swap one 7.5 for a 9.0: 97.5 -> 99.0. Above the pre-edit basis, so no.
+    const slots = overBudgetSlots().map((s, i) => (i === 0 ? { ...s, playerId: "dear" } : s));
+    const result = validateBudget(slots, overBudgetPool, NEVER_LOCKED, SQUAD_BUDGET, 97.5);
+    expect(result.ok).toBe(false);
+    expect(result.violations.map((v) => v.code)).toContain("budget_exceeded");
+  });
+
+  it("binds the strict 91.0 limit when no baseline is given (createSquad path)", () => {
+    const result = validateBudget(overBudgetSlots(), overBudgetPool, NEVER_LOCKED, SQUAD_BUDGET);
+    expect(result.ok).toBe(false);
+    expect(result.breakdown?.allowance).toBe(SQUAD_BUDGET);
+  });
+
+  it("never lowers the allowance below the budget for an under-budget squad", () => {
+    // A cheap squad's pre-edit basis must not become its new ceiling: it can
+    // still spend up to the full 91.0.
+    const slots = squadOf(FOUR_FOUR_TWO).map((s, i) => ({ ...s, playerId: `q${i}` }));
+    const pool = poolOf(
+      ...Array.from({ length: SQUAD_SIZE }, (_, i) => player({ _id: `q${i}`, price: 5.0 })),
+    );
+    const result = validateBudget(slots, pool, NEVER_LOCKED, SQUAD_BUDGET, 40.0);
+    expect(result.ok).toBe(true);
+    expect(result.breakdown?.allowance).toBe(SQUAD_BUDGET);
+  });
+
+  it("threads the grandfather through validateSquad via priorSlots", () => {
+    const prior = overBudgetSlots();
+    // identical post-edit squad: legal, because the basis says it already was
+    expect(
+      validateSquad({
+        slots: prior,
+        playersById: overBudgetPool,
+        favoriteClub: null,
+        context: "budget",
+        isLocked: NEVER_LOCKED,
+        priorSlots: prior,
+      }).ok,
+    ).toBe(true);
+    // the same squad with no baseline is over budget and rejected
+    expect(
+      validateSquad({
+        slots: prior,
+        playersById: overBudgetPool,
+        favoriteClub: null,
+        context: "budget",
+        isLocked: NEVER_LOCKED,
+      }).ok,
+    ).toBe(false);
   });
 
   it("runs no budget check at all in crew context — unpriced players are legal there", () => {

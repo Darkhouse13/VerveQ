@@ -1110,3 +1110,119 @@ one reads "no standing to claim" honestly); best/worst suppressed under two
 scored slots (one player is not a comparison); the settled gameweek's ledger
 is reachable while the board is open and from crew sheets after — the
 receipt is the settled-state surface for budget squads.
+
+---
+
+# FW-REPRICE — 2026-08-13 — availability-aware repricing: DONE. **GOAL REACHED.**
+
+Objective: reprice all ~4,700 players on a signal that includes whether the
+player actually plays, live on prod before Friday's first kickoff (Telstar v
+Sparta, 2026-08-14 ~19:00 London). Deadline met — prices live and verified on
+both deployments 2026-08-13.
+
+## Root cause, not patch
+
+Old price = per-90 proxy with shrinkage. Two faults compounded: nothing asked
+whether the player plays, and shrinkage pulled low-minute players TOWARD the
+position median, so the less a man played the more he was priced like a median
+one. FC Porto's four keepers all sat at 6.0 because the rank-quantile cohort
+mapping put the top half of a 30-keeper cohort above the 6.0 GK ceiling and the
+clamp flattened 15 of 30 onto it.
+
+New signal is `per90 × availability`, availability = minutes over a full season
+of the player's own league, minutes-weighted across clubs. **Shrinkage is
+retired** — availability does its job correctly. Method and every constant:
+`pricing/PROXY_METHOD.md` §FW-REPRICE.
+
+## What landed
+
+- `pricing/lib/proxyEngine.ts` — the per-90 engine extracted from proxy.ts and
+  proxy-expansion.ts, which had grown field-for-field copies. Extraction proved
+  faithful: both regenerate their artifacts with all 2,160 + 1,051 scored and
+  735 + 729 flagged rows BYTE-IDENTICAL (the only delta is a manifest
+  provenance string stale since the scoring engine moved in July).
+- `pricing/lib/availability.ts` — modal league season length × 90 as the
+  denominator. Robust to two measured hazards: five clubs report 1–3 matches in
+  a top-five season (a single appearance would read as 100% available) and
+  play-offs inflate others past the round count.
+- `pricing/pull-prior-season.ts` — 2024-25 aggregates for the under-900' rule.
+  853 calls, plus 246 burned by a first run that aborted on a 60-page cap the
+  2024-25 Championship exceeded at 61; both ledgered in the manifest, against
+  the 1,500 STOP. Per-player pulls were impossible (2,621 candidates).
+- `pricing/reprice.ts` — one run, both universes, because R2 spans clubs in
+  both. 4,667 distinct players priced.
+- `pricing/lib/gates.ts` — R2 and R3, run by reprice.ts AND by both seed
+  scripts against the prices read back off each deployment.
+- R1 grandfather in `convex/lib/fantasySquadRules.ts` + the budget bar.
+
+## The mapping had to change shape (parked as OWNER DECISION 3)
+
+R3 says "spread by signal, ceiling reserved for the top". Applied to the
+top-five pool too, not only the cohorts. Forced, not preferred: MEASURED, a
+direct clamp of the new signal puts 587/644 top-five DEF, 461/607 MID and
+132/143 GK on the 4.0 floor, because a median availability of 0.43 drags the
+distribution under the floor — the same flattening R3 forbids, aimed downward,
+and it makes the mission's own goal arithmetically impossible. Every locked
+constraint intact; budget still binding (most expensive legal 13: 141.0 →
+143.5 against 91.0; mean price 4.99 → 5.06).
+
+## R2 needed three documented boundaries (parked as OWNER DECISION 4)
+
+The first run produced 12 inversions. They decomposed exactly: 5 were
+cross-pool pairs at promoted clubs (ordering a 4.0–6.5 cohort price against a
+4.0–13.0 one IS the cross-league comparison the lock forbids), 5 were genuine
+per-90 superiority at +8.3% to +10.5% (van Hecke over Senesi, Antony over
+Hernández, Thomasson over Rongier), 2 had a "leader" who played 571' and 453' —
+clubs with no clear starter at all. So R2 compares within a POOL, binds only
+where the leader reached 900', and exempts on a 5% per-90 margin. Final: **0
+violations** over 2,575 comparisons across all 156 clubs.
+
+## Results
+
+- Porto proof: Costa (2,907', availability 0.950) **6.0**; J. Afonso (180')
+  4.0; Cláudio Ramos (135') 4.0; Andorinha (18') 4.0. Was 6.0/6.0/6.0/6.0.
+- R3: max 4 players at any pool+position ceiling (was 15 of 30 Liga Portugal
+  keepers at 6.0). Bound 5, every count reported.
+- Moves: 1,914 unchanged, 818 at 0.5, 727 at 1.0, 1,149 at 1.5–2.5, 59 at 3.0+.
+- Grandfathered by R1: **0 of 5 prod budget squads** (measured by
+  `scripts/repriceSquadImpact.ts`, not assumed).
+- 135 players priced off 2024-25 under the season-selection rule.
+
+## Seed + verification
+
+DEV (admired-warthog-495) then prod (different-lynx-153). `seedFantasyPrices.ts`
+gained the authorized live path — it was DEV-pinned because prod's table was
+once bootstrapped by cloning DEV, and cloning is not available to a deployment
+holding user squads. Both live paths demand `--live` AND
+`CONFIRM_LIVE_DEPLOY=different-lynx-153`; generic booleans refused (re-proved
+before use).
+
+Two verification instruments were repaired first, both broken since FW-EXPAND:
+`--verify` compared the WHOLE 4,7xx-row table against the 2,895-row core
+artifact and against a 2026-07-29 baseline, reporting 3,749 problems on a seed
+that was correct. It now scopes to the union of both artifacts and prefers a
+per-deployment pre-seed snapshot (`--snapshot`), so "nothing but price moved"
+is a claim about THIS seed rather than about a fortnight of transfer ingestion.
+
+Result: prod 2,895 core + 1,779 expansion prices equal to the artifacts, **0
+diffs in any other field** against a true pre-seed snapshot, R2/R3 green
+against stored prices on both deployments.
+
+## Parked, not hidden
+
+- 70 active prod rows (68 on DEV) are covered by NEITHER artifact and sit at
+  4.0 — created by FW-T1 transfer ingestion after the universe snapshots were
+  cut, so they were never in the pricing universe. 13 have ≥900' of 2025-26
+  top-five minutes already on disk (Kolo Muani 1,682', Sinayoko 2,780',
+  Koulierakis 2,698'). NOT a regression — they were 4.0 before this mission —
+  but real mispricing. `scripts/repriceCoverage.ts` names them every run.
+- I. Bowat (284473) is in the expansion artifact and has no prod row: the
+  FW-EXPAND Hirakawa/Bowat feed-drift follow-up. The expansion seed STOPs on it
+  on prod; left as a truthful stop rather than silenced.
+- G. Kamara (1754) sits in an expansion league on prod while priced by the core
+  artifact — stale pool after a transfer, same family as OWNER DECISION 5.
+- Draft-pool metadata (`pool`, `proxy`) NOT re-pushed. The artifacts now carry
+  the signal in `proxy`, which would make crew auto-pick availability-aware,
+  but `push-draft-pool.ts` has no authorized live path and a half-push would
+  leave prod's two cohorts inconsistent. No regression; deferred deliberately.
+- OWNER DECISIONS 3–6 added to DECISIONS_NEEDED.md.

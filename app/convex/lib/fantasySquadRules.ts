@@ -274,6 +274,12 @@ export interface BudgetBreakdown {
   readonly live: number;
   readonly total: number;
   readonly limit: number;
+  /**
+   * What this squad is actually held to: `max(limit, pre-edit total)`. Equal to
+   * `limit` for every squad that was under budget when the edit began, and
+   * above it only for a squad grandfathered by FW-REPRICE R1.
+   */
+  readonly allowance: number;
 }
 
 /**
@@ -297,12 +303,30 @@ export interface BudgetBreakdown {
  *
  * A null price fails closed (FW-1 STOP-4) — an unpriced player cannot enter a
  * budget squad at all.
+ *
+ * ── Grandfathering (FW-REPRICE, owner ruling R1) ──
+ *
+ * PRICES MOVE under a squad now that repricing is a thing the project does: a
+ * squad built legally at 90.5 can wake up costing 92.0 without any edit having
+ * happened, exactly as a squad can wake up holding four players from one club
+ * after a transfer. The ruling is the club cap's, word for word in shape: "any
+ * squad whose 13 now cost over 91.0 stays legal ... pre-edit basis; adding cost
+ * above the cap still blocked."
+ *
+ * So `grandfatheredTotal` carries the PRE-EDIT cost and the allowance is
+ * `max(limit, grandfatheredTotal)`. An edit that leaves an over-budget squad
+ * alone, or makes it cheaper, passes; one that makes it MORE expensive is
+ * blocked even when it stays under the grandfathered total's own ceiling —
+ * because the ceiling moves down with it, never up. Without the baseline
+ * (createSquad, and every caller predating this ticket) the strict limit binds
+ * unchanged.
  */
 export function validateBudget(
   slots: readonly SlotSnapshot[],
   playersById: ReadonlyMap<string, PlayerSnapshot>,
   isLocked: (slot: SlotSnapshot) => boolean,
   limit: number = SQUAD_BUDGET,
+  grandfatheredTotal?: number,
 ): RuleResult & { breakdown?: BudgetBreakdown } {
   let committed = 0;
   let live = 0;
@@ -334,22 +358,54 @@ export function validateBudget(
   }
 
   const total = committed + live;
-  const breakdown: BudgetBreakdown = { committed, live, total, limit };
+  // Rounded to the half point the prices themselves live on: summing 13 floats
+  // can leave 91.000000000000014, and a squad must not be rejected by binary
+  // representation. Prices are all multiples of 0.5, so any real overspend is
+  // at least 0.5 and survives the rounding.
+  const allowance = Math.round(Math.max(limit, grandfatheredTotal ?? 0) * 2) / 2;
+  const breakdown: BudgetBreakdown = { committed, live, total, limit, allowance };
 
-  if (total > limit) {
+  if (Math.round(total * 2) / 2 > allowance) {
     return {
       ok: false,
       breakdown,
       violations: [
         {
           code: "budget_exceeded",
-          message: `Squad costs ${total.toFixed(1)} of a ${limit.toFixed(1)} budget (${committed.toFixed(1)} already committed to locked slots).`,
+          message:
+            allowance > limit
+              ? `Squad costs ${total.toFixed(1)}. Repricing left it above the ${limit.toFixed(1)} budget, so it stays legal at ${allowance.toFixed(1)}, but a change cannot make it cost more.`
+              : `Squad costs ${total.toFixed(1)} of a ${limit.toFixed(1)} budget (${committed.toFixed(1)} already committed to locked slots).`,
         },
       ],
     };
   }
 
   return { ok: true, violations: [], breakdown };
+}
+
+/**
+ * The pre-edit total cost `validateBudget` grandfathers against — the budget
+ * sibling of `clubCountsOf`, and tolerant in the same direction. A prior slot
+ * whose player row is missing, or who has no price, contributes nothing: the
+ * baseline is a tolerance, and the safe failure is LESS tolerance rather than
+ * a thrown error on data the edit never touched.
+ */
+export function totalCostOf(
+  slots: readonly SlotSnapshot[],
+  playersById: ReadonlyMap<string, PlayerSnapshot>,
+  isLocked: (slot: SlotSnapshot) => boolean,
+): number {
+  let total = 0;
+  for (const slot of slots) {
+    if (slot.playerId === null) continue;
+    const player = playersById.get(slot.playerId);
+    if (player === undefined) continue;
+    const price = isLocked(slot) ? (slot.committedPrice ?? player.price) : player.price;
+    if (price === null) continue;
+    total += price;
+  }
+  return total;
 }
 
 // ── whole-squad gate ──
@@ -359,9 +415,10 @@ export function validateBudget(
  * on the POST-EDIT slot set, so an edit is accepted only if the squad it
  * produces is legal — there is no such thing as a transiently illegal squad.
  *
- * `priorSlots` is the PRE-EDIT slot set, and exists for exactly one rule: the
- * club-cap grandfather (FW-T1 R2 — see validateClubCap). Callers validating a
- * squad that has no prior state (createSquad) omit it and get the strict cap.
+ * `priorSlots` is the PRE-EDIT slot set, and exists for exactly two rules: the
+ * club-cap grandfather (FW-T1 R2 — see validateClubCap) and the budget
+ * grandfather (FW-REPRICE R1 — see validateBudget). Callers validating a squad
+ * that has no prior state (createSquad) omit it and get both strict limits.
  * `playersById` must then cover the players of BOTH sets — a swap's outgoing
  * player is part of the baseline even though no post-edit slot names him.
  */
@@ -391,7 +448,16 @@ export function validateSquad(args: {
   // unpriced player is legal there — do not even look at prices.
   if (context === "crew") return structural;
 
-  return combine(structural, validateBudget(slots, playersById, isLocked, budgetLimit));
+  return combine(
+    structural,
+    validateBudget(
+      slots,
+      playersById,
+      isLocked,
+      budgetLimit,
+      priorSlots === undefined ? undefined : totalCostOf(priorSlots, playersById, isLocked),
+    ),
+  );
 }
 
 /** Render violations into one thrown-error sentence. */

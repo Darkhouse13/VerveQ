@@ -40,6 +40,8 @@ lib64/
 !app/convex/lib/**
 !app/scripts/lib/
 !app/scripts/lib/**
+!research/fantasy/pricing/lib/
+!research/fantasy/pricing/lib/**
 parts/
 sdist/
 var/

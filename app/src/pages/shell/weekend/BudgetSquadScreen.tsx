@@ -193,8 +193,16 @@ export function DisplacedTray({
 
 export function BudgetBar({ budget }: { budget: NonNullable<BudgetSquad["budget"]> }) {
   const { t } = useTranslation();
-  const remaining = budget.limit - budget.total;
-  const pct = Math.min(100, (budget.total / budget.limit) * 100);
+  // FW-REPRICE R1: a squad the reprice pushed over 91.0 stays legal at its
+  // pre-edit cost, so the bar must measure against what actually binds. For
+  // everyone else `allowance` IS `limit` and nothing below reads differently.
+  // `?? limit` is a deploy-window guard, not defensive habit: CI ships the
+  // frontend on its own and Convex is deployed by hand, so a build of this
+  // page can be live for a while against a server that predates `allowance`.
+  const ceiling = budget.allowance ?? budget.limit;
+  const grandfathered = ceiling > budget.limit;
+  const remaining = ceiling - budget.total;
+  const pct = Math.min(100, (budget.total / ceiling) * 100);
   return (
     <NeoCard shadow="lg" className="py-3">
       <div className="flex items-baseline justify-between mb-1.5">
@@ -203,7 +211,7 @@ export function BudgetBar({ budget }: { budget: NonNullable<BudgetSquad["budget"
         </span>
         <span className="font-mono font-bold tabular-nums">
           {budget.total.toFixed(1)}
-          <span className="text-muted-foreground"> / {budget.limit.toFixed(1)}</span>
+          <span className="text-muted-foreground"> / {ceiling.toFixed(1)}</span>
         </span>
       </div>
       <div className="neo-border rounded h-3 overflow-hidden bg-muted/40">
@@ -213,7 +221,7 @@ export function BudgetBar({ budget }: { budget: NonNullable<BudgetSquad["budget"
           role="progressbar"
           aria-valuenow={budget.total}
           aria-valuemin={0}
-          aria-valuemax={budget.limit}
+          aria-valuemax={ceiling}
         />
       </div>
       <div className="flex justify-between mt-1.5 text-[11px] text-muted-foreground">
@@ -230,6 +238,15 @@ export function BudgetBar({ budget }: { budget: NonNullable<BudgetSquad["budget"
           })}
         </span>
       </div>
+      {grandfathered && (
+        <p className="mt-1.5 text-[11px] text-muted-foreground">
+          {t("weekend.budgetGrandfathered", {
+            defaultValue:
+              "New prices put this squad over the {{limit}} budget. It stays legal — but a change cannot make it cost more.",
+            limit: budget.limit.toFixed(1),
+          })}
+        </p>
+      )}
     </NeoCard>
   );
 }
@@ -1215,8 +1232,13 @@ export default function BudgetSquadScreen() {
     return set;
   }, [squad]);
 
+  // Against `allowance`, not `limit` — see BudgetBar. A grandfathered squad's
+  // headroom is zero, not negative, and the picker must price affordability
+  // off the ceiling that actually binds.
   const remaining =
-    squad?.budget == null ? SQUAD_BUDGET : squad.budget.limit - squad.budget.total;
+    squad?.budget == null
+      ? SQUAD_BUDGET
+      : (squad.budget.allowance ?? squad.budget.limit) - squad.budget.total;
 
   const editable = gate.state === "open" && gate.gameweek.status !== "final";
 

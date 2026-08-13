@@ -1,8 +1,8 @@
 {
  "manifest": {
-  "generatedAt": "2026-07-29T15:37:22.617Z",
+  "generatedAt": "2026-08-13T21:31:57.217Z",
   "method": "PROXY_METHOD.md",
-  "engine": "scoring/scoring.ts (SCORING_SPEC v0.5.1), driven, not copied",
+  "engine": "app/convex/lib/fantasyScoring.ts (SCORING_SPEC v0.5.1), driven, not copied",
   "probes": {
    "GK": {
     "cleanSheet": 5,

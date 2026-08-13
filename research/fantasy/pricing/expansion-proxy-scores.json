@@ -1,6 +1,6 @@
 {
  "manifest": {
-  "generatedAt": "2026-08-12T17:58:02.119Z",
+  "generatedAt": "2026-08-13T21:31:57.720Z",
   "method": "PROXY_METHOD.md, applied per-league per R1 (FW-EXPAND owner ruling 2026-08-02)",
   "engine": "app/convex/lib/fantasyScoring.ts (SCORING_SPEC v0.5.1), driven, not copied",
   "probes": {
