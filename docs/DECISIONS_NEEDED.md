@@ -1,9 +1,30 @@
-# FW-LAUNCH — Decisions Needed
+# DECISIONS NEEDED — the open queue
 
-Parked decisions for the owner. Numbered, append-only. Each entry:
-context (≤5 lines), options, and what was done meanwhile (always the
-most restrictive reading that lets work continue, or the slice
-skipped entirely).
+**Decisions waiting on the owner.** Nothing here is settled; every entry is a
+question I could not answer from the spec, the code, or an existing ruling.
+
+This is the counterpart to [DECISIONS.md](DECISIONS.md), which records
+decisions already MADE. If you are looking for "what do I need to rule on",
+it is this file. If you are looking for "what was ruled", it is that one.
+
+Numbered, append-only. Each entry carries: context (≤5 lines), the options,
+and **what was done meanwhile** — always the most restrictive reading that let
+work continue, or the slice skipped entirely. So nothing is blocked waiting on
+you; a ruling either confirms what shipped or redirects it.
+
+Entries opened across FW-LAUNCH, FW-SCOUT and FW-REPRICE. Moved here from
+`research/fantasy/DECISIONS_NEEDED.md` on 2026-08-13 so it sits with the other
+docs rather than buried in the research tree; prose elsewhere refers to it by
+filename, which is unchanged.
+
+| # | Decision | Mission | Status |
+|---|----------|---------|--------|
+| 1 | "gameweek active users" definition (court thresholds) | FW-LAUNCH | open |
+| 2 | ownership display at scale | FW-SCOUT | open |
+| 3 | the top-five mapping changed shape | FW-REPRICE | open |
+| 4 | R2's three boundaries | FW-REPRICE | open |
+| 5 | eight players in both universe snapshots | FW-REPRICE | open |
+| 6 | the prior-season constants | FW-REPRICE | open |
 
 ## OWNER DECISION 1 — "gameweek active users" definition (court thresholds)
 

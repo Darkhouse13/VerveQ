@@ -23,6 +23,11 @@ still absent from the tree when R0.2 went looking for it on 2026-07-25.*
 copies of several files cited below. Every pointer here is to the canonical
 `app/` path.
 
+**Open questions live elsewhere.** This file is decisions already MADE.
+Decisions still waiting on the owner are in
+[DECISIONS_NEEDED.md](DECISIONS_NEEDED.md) — 6 open as of 2026-08-13. When one
+of those is ruled, the ruling is recorded here and its entry there is closed.
+
 Newest first.
 
 ---
