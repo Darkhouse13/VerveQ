@@ -148,7 +148,7 @@ surface under it fires nothing at all.
 | Event | Fires when | Properties |
 | --- | --- | --- |
 | `weekend_entry_clicked` | the PLAY NOW CTA is pressed (Home entry card) or the Compete hero card is tapped | `source`, `placement` (`home_card` \| `compete_hero`) |
-| `weekend_squad_created` | `fantasySquads.createSquad` **resolves** — the budget squad row exists | `gw_number` |
+| `weekend_squad_created` | `fantasySquads.createSquad` **resolves** — the budget squad row exists | `gw_number`, `entry` (`builder` \| `hub`) |
 | `weekend_crew_created` | `fantasyDraftRooms.createCrew` **resolves** | — |
 | `weekend_crew_joined` | `fantasyDraftRooms.joinCrew` **resolves** | — |
 
@@ -161,6 +161,26 @@ the hub, `lib/weekendDeepLink`) is what keeps promo traffic attributed.
 Draft picks, votes and court filings deliberately carry no events yet: each is
 a high-frequency in-mode action whose honest measure is the server's own
 tables, and instrumenting them is a product decision, not a default.
+
+#### Paid direct-to-builder entry (WKND-ENTRY)
+
+`/weekend?start=budget` — the campaign-link variant of the short link — lands
+directly in the budget-squad builder (`/v2/weekend/squad`) instead of the hub.
+The redirect consumes `start` and mints `entry=builder` onto the landed URL,
+and `scrubSearch` allowlists `entry`, so the builder's `$pageview` carries it
+in `$current_url`. `weekend_squad_created`'s `entry` property (`builder` when
+the tag is on the URL at create time, else `hub`) splits the two funnels at
+the conversion event itself:
+
+- **hub entry** (organic): `$pageview /v2/weekend` → `$pageview
+  /v2/weekend/squad` → `weekend_squad_created` (`entry: hub`)
+- **builder entry** (paid): `$pageview /v2/weekend/squad?entry=builder…` →
+  `weekend_squad_created` (`entry: builder`)
+
+UTM params ride the redirect untouched (ea66823 rule); `fbclid` survives in
+the browser URL for the pixel but is still scrubbed from analytics URLs. A
+bare `/weekend` (the bio link) is untouched — `start` is a paid-campaign-only
+param.
 
 ### THE WEEKEND waitlist (Home teaser) — HISTORICAL
 

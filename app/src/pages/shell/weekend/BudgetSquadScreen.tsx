@@ -21,7 +21,7 @@
  * container (house pattern, DraftRoomScreen.tsx).
  */
 import { useEffect, useMemo, useState, type ReactNode } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useConvex, useMutation, useQuery } from "convex/react";
 import type { FunctionReturnType } from "convex/server";
@@ -68,6 +68,7 @@ import { SquadTabs } from "@/components/weekend/SquadTabs";
 import { SquadLedgerView } from "@/components/weekend/SquadLedgerView";
 import { useWideScreen } from "@/hooks/useWideScreen";
 import { track } from "@/lib/analytics";
+import { isBuilderEntry } from "@/lib/weekendDeepLink";
 
 export type OpenGameweek = NonNullable<
   FunctionReturnType<typeof api.fantasyMarket.getOpenGameweek>
@@ -1128,6 +1129,7 @@ type Gate =
 
 export default function BudgetSquadScreen() {
   const navigate = useNavigate();
+  const { search } = useLocation();
   const { t } = useTranslation();
   const convex = useConvex();
   const [gate, setGate] = useState<Gate>({ state: "checking" });
@@ -1444,8 +1446,11 @@ export default function BudgetSquadScreen() {
                     }).then((created) => {
                       // Real server transition (ANALYTICS.md): the squad row
                       // exists. gw_number, never identity, rides along.
+                      // `entry` splits the paid direct-to-builder funnel from
+                      // hub-entry; the redirect's tag is still on this URL.
                       track("weekend_squad_created", {
                         gw_number: gate.gameweek.gwNumber,
+                        entry: isBuilderEntry(search) ? "builder" : "hub",
                       });
                       // The chosen display name survives the reload (R2).
                       if (created?.squadId != null) {

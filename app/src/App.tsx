@@ -554,8 +554,10 @@ const AppRoutes = () => (
             <Route path="/play" element={<PlayShortLinkRoute />} />
             {/* /weekend — the short link for WEEKEND reel captions + the bio
                 link. Public redirect onto the WEEKEND hub (a bare hit gets
-                ?ref=weekend); see lib/weekendDeepLink.ts. Bypasses the
-                cold-entry landing so promo traffic lands on the mode itself. */}
+                ?ref=weekend), or straight into the budget-squad builder for
+                paid links carrying ?start=budget (WKND-ENTRY); see
+                lib/weekendDeepLink.ts. Bypasses the cold-entry landing so
+                promo traffic lands on the mode itself. */}
             <Route path="/weekend" element={<WeekendShortLinkRoute />} />
             <Route path="/v2/verve-grid" element={<ShellGate><SessionRoute><VerveGridPlayScreen /></SessionRoute></ShellGate>} />
             {/* Daily reuses the migrated Quiz view but runs the DAILY session.
@@ -581,8 +583,13 @@ const AppRoutes = () => (
             <Route path="/v2/weekend/crew/:code" element={<ShellGate><UsernameOnlyRoute><CrewScreen /></UsernameOnlyRoute></ShellGate>} />
             <Route path="/v2/weekend/draft/:roomId" element={<ShellGate><UsernameOnlyRoute><DraftRoomScreen /></UsernameOnlyRoute></ShellGate>} />
             {/* THE WEEKEND budget mode (FW-LAUNCH O1). Linked from the hub; the
-                screen still gates on the backend answering (fail-closed). */}
-            <Route path="/v2/weekend/squad" element={<ShellGate><UsernameOnlyRoute><BudgetSquadScreen /></UsernameOnlyRoute></ShellGate>} />
+                screen still gates on the backend answering (fail-closed).
+                SessionRoute, not UsernameOnlyRoute (WKND-ENTRY): the budget
+                squad is solo — no other human sees a name — and the server
+                asserts only an identity (fantasySquads.requireUserId), so the
+                username gate here was stricter than the backend and blocked
+                the paid direct-to-builder entry. */}
+            <Route path="/v2/weekend/squad" element={<ShellGate><SessionRoute><BudgetSquadScreen /></SessionRoute></ShellGate>} />
             <Route path="/v2/weekend/vote" element={<ShellGate><UsernameOnlyRoute><VoteScreen /></UsernameOnlyRoute></ShellGate>} />
             <Route path="/v2/weekend/court" element={<ShellGate><UsernameOnlyRoute><CourtScreen /></UsernameOnlyRoute></ShellGate>} />
             <Route path="/v2/weekend/sheet/:roomId" element={<ShellGate><UsernameOnlyRoute><CrewSheetScreen /></UsernameOnlyRoute></ShellGate>} />

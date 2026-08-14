@@ -81,12 +81,16 @@ export function scrubPath(pathname: string): string {
     .replace(/^\/rivals\/[^/]+$/, "/rivals/:id");
 }
 
-/** Keep only attribution params; everything else (next=, codes) is dropped. */
+/** Keep only attribution params; everything else (next=, codes) is dropped.
+ *  `entry` is the short-link landing tag (weekendDeepLink.ts, WKND-ENTRY) —
+ *  attribution, not payload, so pageviews may carry it. */
 export function scrubSearch(search: string): string {
   const params = new URLSearchParams(search);
   const kept = new URLSearchParams();
   for (const [key, value] of params) {
-    if (key === "ref" || key.startsWith("utm_")) kept.set(key, value);
+    if (key === "ref" || key === "entry" || key.startsWith("utm_")) {
+      kept.set(key, value);
+    }
   }
   const serialized = kept.toString();
   return serialized ? `?${serialized}` : "";

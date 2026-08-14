@@ -27,6 +27,7 @@ import { getFunctionName, type FunctionReference } from "convex/server";
 import {
   weekendShortLinkTarget,
   isWeekendTopRequested,
+  isBuilderEntry,
   WEEKEND_SHORT_LINK_DEFAULT_REF,
 } from "@/lib/weekendDeepLink";
 import { SHELL_ROUTES } from "@/lib/shellRoutes";
@@ -72,6 +73,66 @@ describe("/weekend short link (FW-GO: the hub is the destination)", () => {
     expect(isWeekendTopRequested("")).toBe(false);
     expect(isWeekendTopRequested("?ref=ig")).toBe(false);
     expect(isWeekendTopRequested("?w=0")).toBe(false);
+  });
+});
+
+describe("/weekend?start=budget (WKND-ENTRY: paid direct-to-builder)", () => {
+  it("lands in the budget-squad builder, not the hub", () => {
+    const target = weekendShortLinkTarget("?start=budget");
+    expect(target.startsWith(`${SHELL_ROUTES.weekendSquad}?`)).toBe(true);
+  });
+
+  it("consumes start and mints entry=builder for the funnel split", () => {
+    const params = new URLSearchParams(
+      new URL(weekendShortLinkTarget("?start=budget"), "https://x").search,
+    );
+    expect(params.get("start")).toBeNull();
+    expect(params.get("entry")).toBe("builder");
+  });
+
+  it("preserves campaign attribution through the redirect (ea66823 rule)", () => {
+    const params = new URLSearchParams(
+      new URL(
+        weekendShortLinkTarget(
+          "?start=budget&utm_source=ig&utm_campaign=c2&fbclid=abc123",
+        ),
+        "https://x",
+      ).search,
+    );
+    expect(params.get("utm_source")).toBe("ig");
+    expect(params.get("utm_campaign")).toBe("c2");
+    expect(params.get("fbclid")).toBe("abc123");
+    expect(params.get("ref")).toBeNull();
+  });
+
+  it("tags a bare campaign hit with ref=weekend like the hub link does", () => {
+    const params = new URLSearchParams(
+      new URL(weekendShortLinkTarget("?start=budget"), "https://x").search,
+    );
+    expect(params.get("ref")).toBe(WEEKEND_SHORT_LINK_DEFAULT_REF);
+  });
+
+  it("an unknown start value degrades to the hub, never a broken screen", () => {
+    const target = weekendShortLinkTarget("?start=nope&utm_source=ig");
+    expect(target.startsWith(`${SHELL_ROUTES.weekend}?`)).toBe(true);
+    const params = new URLSearchParams(new URL(target, "https://x").search);
+    expect(params.get("entry")).toBeNull();
+    expect(params.get("utm_source")).toBe("ig");
+  });
+
+  it("a bare /weekend keeps landing on the hub with no entry tag", () => {
+    const target = weekendShortLinkTarget("");
+    expect(target.startsWith(`${SHELL_ROUTES.weekend}?`)).toBe(true);
+    expect(
+      new URLSearchParams(new URL(target, "https://x").search).get("entry"),
+    ).toBeNull();
+  });
+
+  it("isBuilderEntry reads the tag off the landed URL", () => {
+    expect(isBuilderEntry("?entry=builder")).toBe(true);
+    expect(isBuilderEntry("?entry=builder&utm_source=ig")).toBe(true);
+    expect(isBuilderEntry("")).toBe(false);
+    expect(isBuilderEntry("?entry=hub")).toBe(false);
   });
 });
 

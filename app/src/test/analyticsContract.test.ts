@@ -53,6 +53,13 @@ describe("analytics privacy scrubbing", () => {
     );
     expect(scrubSearch("")).toBe("");
   });
+
+  it("keeps the entry landing tag (WKND-ENTRY funnel split)", () => {
+    expect(scrubSearch("?entry=builder&ref=weekend")).toBe(
+      "?entry=builder&ref=weekend",
+    );
+    expect(scrubSearch("?entry=builder&fbclid=abc")).toBe("?entry=builder");
+  });
 });
 
 describe("analytics fail-closed init", () => {
