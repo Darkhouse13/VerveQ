@@ -1,0 +1,21 @@
+{
+ "assets": [
+  "wknd-dilemma-1",
+  "wknd-dilemma-2"
+ ],
+ "status": "RENDERED + VERIFIED, NOT YET POSTED (no live metrics; boost pending) \u2014 coded on format properties from DILEMMA.md + out/2026-08-14 renders",
+ "decision_shape": {
+  "wknd-dilemma-1": "a-vs-b (one 9.5 premium vs two shirts summing 9.5)",
+  "wknd-dilemma-2": "a-vs-b (same price, same position, home/away + SUN/MON lock opposed)"
+ },
+ "resolve": "withhold (THE WITHHOLD LAW \u2014 no verdict in VO, caption or card; no winner state in the composition)",
+ "duration_s": 20.0,
+ "frame0": "designed graphics \u2014 question + both option cards + draining clock, already in motion; no face, no countdown card",
+ "frame0_face": false,
+ "text_style": "designed brand typography (WEEKEND ink/lime); no subtitle captions",
+ "vo": true,
+ "comment_cta": "NO RIGHT ANSWER / PICK IN THE COMMENTS closer; caption leads with the vote ask",
+ "urgency": "no countdown baked; live board prices re-verified per render; day tags only (SUN/MON lock days on cards)",
+ "deadline_pegged": "partial \u2014 lock days on cards, no deadline in question or caption lead",
+ "success_metric": "560\u20132.5K views at n=2\u20133 AND comments/1000 co-primary (5/1000 = keep signal)"
+}
