@@ -2106,6 +2106,1603 @@
           "t1": 1.3599999999999999
         }
       ]
+    },
+    {
+      "key": "south-american-kings-a1",
+      "slot": "answer",
+      "text": "Kaká.",
+      "dur": 0.8800000000000001,
+      "words": [
+        {
+          "word": "Kaká.",
+          "t0": 0,
+          "t1": 0.8800000000000001
+        }
+      ]
+    },
+    {
+      "key": "south-american-kings-a2",
+      "slot": "answer",
+      "text": "Zico.",
+      "dur": 0.72,
+      "words": [
+        {
+          "word": "Zico.",
+          "t0": 0,
+          "t1": 0.72
+        }
+      ]
+    },
+    {
+      "key": "south-american-kings-a3",
+      "slot": "answer",
+      "text": "Cafu.",
+      "dur": 0.8,
+      "words": [
+        {
+          "word": "Cafu.",
+          "t0": 0,
+          "t1": 0.8
+        }
+      ]
+    },
+    {
+      "key": "south-american-kings-a4",
+      "slot": "answer",
+      "text": "Batistuta.",
+      "dur": 1.12,
+      "words": [
+        {
+          "word": "Batistuta.",
+          "t0": 0,
+          "t1": 1.12
+        }
+      ]
+    },
+    {
+      "key": "south-american-kings-a5",
+      "slot": "answer",
+      "text": "Firmino.",
+      "dur": 1.76,
+      "words": [
+        {
+          "word": "Firmino.",
+          "t0": 0,
+          "t1": 1.76
+        }
+      ]
+    },
+    {
+      "key": "south-american-kings-a6",
+      "slot": "answer",
+      "text": "Zanetti.",
+      "dur": 0.64,
+      "words": [
+        {
+          "word": "Zanetti.",
+          "t0": 0,
+          "t1": 0.64
+        }
+      ]
+    },
+    {
+      "key": "south-american-kings-a7",
+      "slot": "answer",
+      "text": "Sócrates.",
+      "dur": 1.04,
+      "words": [
+        {
+          "word": "Sócrates.",
+          "t0": 0,
+          "t1": 1.04
+        }
+      ]
+    },
+    {
+      "key": "south-american-kings-a8",
+      "slot": "answer",
+      "text": "Lavezzi.",
+      "dur": 0.8,
+      "words": [
+        {
+          "word": "Lavezzi.",
+          "t0": 0,
+          "t1": 0.8
+        }
+      ]
+    },
+    {
+      "key": "south-american-kings-a9",
+      "slot": "answer",
+      "text": "Júlio César.",
+      "dur": 1.3599999999999999,
+      "words": [
+        {
+          "word": "Júlio",
+          "t0": 0,
+          "t1": 0.4
+        },
+        {
+          "word": "César.",
+          "t0": 0.56,
+          "t1": 1.3599999999999999
+        }
+      ]
+    },
+    {
+      "key": "one-club-almost-a1",
+      "slot": "answer",
+      "text": "De Rossi.",
+      "dur": 1.76,
+      "words": [
+        {
+          "word": "De",
+          "t0": 0,
+          "t1": 0.08
+        },
+        {
+          "word": "Rossi.",
+          "t0": 0.16,
+          "t1": 1.76
+        }
+      ]
+    },
+    {
+      "key": "one-club-almost-a2",
+      "slot": "answer",
+      "text": "Oliver Kahn.",
+      "dur": 1.04,
+      "words": [
+        {
+          "word": "Oliver",
+          "t0": 0,
+          "t1": 0.4
+        },
+        {
+          "word": "Kahn.",
+          "t0": 0.48000000000000004,
+          "t1": 1.04
+        }
+      ]
+    },
+    {
+      "key": "one-club-almost-a3",
+      "slot": "answer",
+      "text": "Philipp Lahm.",
+      "dur": 1.04,
+      "words": [
+        {
+          "word": "Philipp",
+          "t0": 0,
+          "t1": 0.32
+        },
+        {
+          "word": "Lahm.",
+          "t0": 0.4,
+          "t1": 1.04
+        }
+      ]
+    },
+    {
+      "key": "one-club-almost-a4",
+      "slot": "answer",
+      "text": "John Terry.",
+      "dur": 0.96,
+      "words": [
+        {
+          "word": "John",
+          "t0": 0,
+          "t1": 0.24
+        },
+        {
+          "word": "Terry.",
+          "t0": 0.307,
+          "t1": 0.96
+        }
+      ]
+    },
+    {
+      "key": "one-club-almost-a5",
+      "slot": "answer",
+      "text": "Ter Stegen.",
+      "dur": 1.04,
+      "words": [
+        {
+          "word": "Ter",
+          "t0": 0,
+          "t1": 0.24
+        },
+        {
+          "word": "Stegen.",
+          "t0": 0.3,
+          "t1": 1.04
+        }
+      ]
+    },
+    {
+      "key": "one-club-almost-a6",
+      "slot": "answer",
+      "text": "Del Piero.",
+      "dur": 0.8,
+      "words": [
+        {
+          "word": "Del",
+          "t0": 0,
+          "t1": 0.16
+        },
+        {
+          "word": "Piero.",
+          "t0": 0.24,
+          "t1": 0.8
+        }
+      ]
+    },
+    {
+      "key": "one-club-almost-a7",
+      "slot": "answer",
+      "text": "Víctor Valdés.",
+      "dur": 1.52,
+      "words": [
+        {
+          "word": "Víctor",
+          "t0": 0,
+          "t1": 0.4
+        },
+        {
+          "word": "Valdés.",
+          "t0": 0.52,
+          "t1": 1.52
+        }
+      ]
+    },
+    {
+      "key": "one-club-almost-a8",
+      "slot": "answer",
+      "text": "Chiellini.",
+      "dur": 0.56,
+      "words": [
+        {
+          "word": "Chiellini.",
+          "t0": 0,
+          "t1": 0.56
+        }
+      ]
+    },
+    {
+      "key": "one-club-almost-a9",
+      "slot": "answer",
+      "text": "Montella.",
+      "dur": 1.92,
+      "words": [
+        {
+          "word": "Montella.",
+          "t0": 0,
+          "t1": 1.92
+        }
+      ]
+    },
+    {
+      "key": "bosman-bargains-a1",
+      "slot": "answer",
+      "text": "Michael Ballack.",
+      "dur": 1.04,
+      "words": [
+        {
+          "word": "Michael",
+          "t0": 0,
+          "t1": 0.32
+        },
+        {
+          "word": "Ballack.",
+          "t0": 0.4,
+          "t1": 1.04
+        }
+      ]
+    },
+    {
+      "key": "bosman-bargains-a2",
+      "slot": "answer",
+      "text": "Rüdiger.",
+      "dur": 0.8800000000000001,
+      "words": [
+        {
+          "word": "Rüdiger.",
+          "t0": 0,
+          "t1": 0.8800000000000001
+        }
+      ]
+    },
+    {
+      "key": "bosman-bargains-a3",
+      "slot": "answer",
+      "text": "Paul Pogba.",
+      "dur": 1.04,
+      "words": [
+        {
+          "word": "Paul",
+          "t0": 0,
+          "t1": 0.24
+        },
+        {
+          "word": "Pogba.",
+          "t0": 0.32,
+          "t1": 1.04
+        }
+      ]
+    },
+    {
+      "key": "bosman-bargains-a4",
+      "slot": "answer",
+      "text": "Gündoğan.",
+      "dur": 1.3599999999999999,
+      "words": [
+        {
+          "word": "Gündoğan.",
+          "t0": 0,
+          "t1": 1.3599999999999999
+        }
+      ]
+    },
+    {
+      "key": "bosman-bargains-a5",
+      "slot": "answer",
+      "text": "Memphis Depay.",
+      "dur": 1.28,
+      "words": [
+        {
+          "word": "Memphis",
+          "t0": 0,
+          "t1": 0.4
+        },
+        {
+          "word": "Depay.",
+          "t0": 0.48,
+          "t1": 1.28
+        }
+      ]
+    },
+    {
+      "key": "bosman-bargains-a6",
+      "slot": "answer",
+      "text": "Wijnaldum.",
+      "dur": 0.88,
+      "words": [
+        {
+          "word": "Wijnaldum.",
+          "t0": 0,
+          "t1": 0.88
+        }
+      ]
+    },
+    {
+      "key": "bosman-bargains-a7",
+      "slot": "answer",
+      "text": "Wojciech Szczęsny.",
+      "dur": 1.6,
+      "words": [
+        {
+          "word": "Wojciech",
+          "t0": 0,
+          "t1": 0.48
+        },
+        {
+          "word": "Szczęsny.",
+          "t0": 0.587,
+          "t1": 1.6
+        }
+      ]
+    },
+    {
+      "key": "bosman-bargains-a8",
+      "slot": "answer",
+      "text": "Flamini.",
+      "dur": 0.8800000000000001,
+      "words": [
+        {
+          "word": "Flamini.",
+          "t0": 0,
+          "t1": 0.8800000000000001
+        }
+      ]
+    },
+    {
+      "key": "bosman-bargains-a9",
+      "slot": "answer",
+      "text": "Juan Mata.",
+      "dur": 1.12,
+      "words": [
+        {
+          "word": "Juan",
+          "t0": 0,
+          "t1": 0.24
+        },
+        {
+          "word": "Mata.",
+          "t0": 0.352,
+          "t1": 1.12
+        }
+      ]
+    },
+    {
+      "key": "absurd-loop-a1",
+      "slot": "answer",
+      "text": "Marcus Rashford.",
+      "dur": 1.3599999999999999,
+      "words": [
+        {
+          "word": "Marcus",
+          "t0": 0,
+          "t1": 0.4
+        },
+        {
+          "word": "Rashford.",
+          "t0": 0.496,
+          "t1": 1.3599999999999999
+        }
+      ]
+    },
+    {
+      "key": "absurd-loop-a2",
+      "slot": "answer",
+      "text": "Jack Grealish.",
+      "dur": 1.44,
+      "words": [
+        {
+          "word": "Jack",
+          "t0": 0,
+          "t1": 0.32
+        },
+        {
+          "word": "Grealish.",
+          "t0": 0.48,
+          "t1": 1.44
+        }
+      ]
+    },
+    {
+      "key": "absurd-loop-a3",
+      "slot": "answer",
+      "text": "Mats Hummels.",
+      "dur": 1.28,
+      "words": [
+        {
+          "word": "Mats",
+          "t0": 0,
+          "t1": 0.4
+        },
+        {
+          "word": "Hummels.",
+          "t0": 0.48,
+          "t1": 1.28
+        }
+      ]
+    },
+    {
+      "key": "absurd-loop-a4",
+      "slot": "answer",
+      "text": "Pepe.",
+      "dur": 0.72,
+      "words": [
+        {
+          "word": "Pepe.",
+          "t0": 0,
+          "t1": 0.72
+        }
+      ]
+    },
+    {
+      "key": "absurd-loop-a5",
+      "slot": "answer",
+      "text": "Fernandinho.",
+      "dur": 1.12,
+      "words": [
+        {
+          "word": "Fernandinho.",
+          "t0": 0,
+          "t1": 1.12
+        }
+      ]
+    },
+    {
+      "key": "absurd-loop-a6",
+      "slot": "answer",
+      "text": "Overmars.",
+      "dur": 0.96,
+      "words": [
+        {
+          "word": "Overmars.",
+          "t0": 0,
+          "t1": 0.96
+        }
+      ]
+    },
+    {
+      "key": "absurd-loop-a7",
+      "slot": "answer",
+      "text": "Mario Gómez.",
+      "dur": 1.2000000000000002,
+      "words": [
+        {
+          "word": "Mario",
+          "t0": 0,
+          "t1": 0.32
+        },
+        {
+          "word": "Gómez.",
+          "t0": 0.4,
+          "t1": 1.2000000000000002
+        }
+      ]
+    },
+    {
+      "key": "absurd-loop-a8",
+      "slot": "answer",
+      "text": "Rui Costa.",
+      "dur": 1.12,
+      "words": [
+        {
+          "word": "Rui",
+          "t0": 0,
+          "t1": 0.24
+        },
+        {
+          "word": "Costa.",
+          "t0": 0.33299999999999996,
+          "t1": 1.12
+        }
+      ]
+    },
+    {
+      "key": "absurd-loop-a9",
+      "slot": "answer",
+      "text": "Frank Rijkaard.",
+      "dur": 1.44,
+      "words": [
+        {
+          "word": "Frank",
+          "t0": 0,
+          "t1": 0.4
+        },
+        {
+          "word": "Rijkaard.",
+          "t0": 0.52,
+          "t1": 1.44
+        }
+      ]
+    },
+    {
+      "key": "cup-final-men-a1",
+      "slot": "answer",
+      "text": "Mario Götze.",
+      "dur": 1.04,
+      "words": [
+        {
+          "word": "Mario",
+          "t0": 0,
+          "t1": 0.32
+        },
+        {
+          "word": "Götze.",
+          "t0": 0.4,
+          "t1": 1.04
+        }
+      ]
+    },
+    {
+      "key": "cup-final-men-a2",
+      "slot": "answer",
+      "text": "Solskjær.",
+      "dur": 0.64,
+      "words": [
+        {
+          "word": "Solskjær.",
+          "t0": 0,
+          "t1": 0.64
+        }
+      ]
+    },
+    {
+      "key": "cup-final-men-a3",
+      "slot": "answer",
+      "text": "Origi.",
+      "dur": 0.8,
+      "words": [
+        {
+          "word": "Origi.",
+          "t0": 0,
+          "t1": 0.8
+        }
+      ]
+    },
+    {
+      "key": "cup-final-men-a4",
+      "slot": "answer",
+      "text": "Kingsley Coman.",
+      "dur": 1.12,
+      "words": [
+        {
+          "word": "Kingsley",
+          "t0": 0,
+          "t1": 0.48
+        },
+        {
+          "word": "Coman.",
+          "t0": 0.5599999999999999,
+          "t1": 1.12
+        }
+      ]
+    },
+    {
+      "key": "cup-final-men-a5",
+      "slot": "answer",
+      "text": "Diego Milito.",
+      "dur": 1.3599999999999999,
+      "words": [
+        {
+          "word": "Diego",
+          "t0": 0,
+          "t1": 0.4
+        },
+        {
+          "word": "Milito.",
+          "t0": 0.48000000000000004,
+          "t1": 1.3599999999999999
+        }
+      ]
+    },
+    {
+      "key": "cup-final-men-a6",
+      "slot": "answer",
+      "text": "Filippo Inzaghi.",
+      "dur": 1.6,
+      "words": [
+        {
+          "word": "Filippo",
+          "t0": 0,
+          "t1": 0.48
+        },
+        {
+          "word": "Inzaghi.",
+          "t0": 0.587,
+          "t1": 1.6
+        }
+      ]
+    },
+    {
+      "key": "cup-final-men-a7",
+      "slot": "answer",
+      "text": "Mijatović.",
+      "dur": 1.2000000000000002,
+      "words": [
+        {
+          "word": "Mijatović.",
+          "t0": 0,
+          "t1": 1.2000000000000002
+        }
+      ]
+    },
+    {
+      "key": "cup-final-men-a8",
+      "slot": "answer",
+      "text": "Andreas Brehme.",
+      "dur": 1.3599999999999999,
+      "words": [
+        {
+          "word": "Andreas",
+          "t0": 0,
+          "t1": 0.56
+        },
+        {
+          "word": "Brehme.",
+          "t0": 0.6,
+          "t1": 1.3599999999999999
+        }
+      ]
+    },
+    {
+      "key": "cup-final-men-a9",
+      "slot": "answer",
+      "text": "Panenka.",
+      "dur": 0.8,
+      "words": [
+        {
+          "word": "Panenka.",
+          "t0": 0,
+          "t1": 0.8
+        }
+      ]
+    },
+    {
+      "key": "journeymen-deluxe-a1",
+      "slot": "answer",
+      "text": "Cavani.",
+      "dur": 1.6800000000000002,
+      "words": [
+        {
+          "word": "Cavani.",
+          "t0": 0,
+          "t1": 1.6800000000000002
+        }
+      ]
+    },
+    {
+      "key": "journeymen-deluxe-a2",
+      "slot": "answer",
+      "text": "Patrick Kluivert.",
+      "dur": 1.28,
+      "words": [
+        {
+          "word": "Patrick",
+          "t0": 0,
+          "t1": 0.4
+        },
+        {
+          "word": "Kluivert.",
+          "t0": 0.52,
+          "t1": 1.28
+        }
+      ]
+    },
+    {
+      "key": "journeymen-deluxe-a3",
+      "slot": "answer",
+      "text": "João Félix.",
+      "dur": 1.44,
+      "words": [
+        {
+          "word": "João",
+          "t0": 0,
+          "t1": 0.4
+        },
+        {
+          "word": "Félix.",
+          "t0": 0.48,
+          "t1": 1.44
+        }
+      ]
+    },
+    {
+      "key": "journeymen-deluxe-a4",
+      "slot": "answer",
+      "text": "Samir Nasri.",
+      "dur": 1.28,
+      "words": [
+        {
+          "word": "Samir",
+          "t0": 0,
+          "t1": 0.4
+        },
+        {
+          "word": "Nasri.",
+          "t0": 0.5,
+          "t1": 1.28
+        }
+      ]
+    },
+    {
+      "key": "journeymen-deluxe-a5",
+      "slot": "answer",
+      "text": "André Schürrle.",
+      "dur": 1.2000000000000002,
+      "words": [
+        {
+          "word": "André",
+          "t0": 0,
+          "t1": 0.32
+        },
+        {
+          "word": "Schürrle.",
+          "t0": 0.38,
+          "t1": 1.2000000000000002
+        }
+      ]
+    },
+    {
+      "key": "journeymen-deluxe-a6",
+      "slot": "answer",
+      "text": "Okocha.",
+      "dur": 0.64,
+      "words": [
+        {
+          "word": "Okocha.",
+          "t0": 0,
+          "t1": 0.64
+        }
+      ]
+    },
+    {
+      "key": "journeymen-deluxe-a7",
+      "slot": "answer",
+      "text": "Axel Witsel.",
+      "dur": 1.2,
+      "words": [
+        {
+          "word": "Axel",
+          "t0": 0,
+          "t1": 0.4
+        },
+        {
+          "word": "Witsel.",
+          "t0": 0.48,
+          "t1": 1.2
+        }
+      ]
+    },
+    {
+      "key": "journeymen-deluxe-a8",
+      "slot": "answer",
+      "text": "Yann Sommer.",
+      "dur": 1.6,
+      "words": [
+        {
+          "word": "Yann",
+          "t0": 0,
+          "t1": 0.4
+        },
+        {
+          "word": "Sommer.",
+          "t0": 0.526,
+          "t1": 1.6
+        }
+      ]
+    },
+    {
+      "key": "journeymen-deluxe-a9",
+      "slot": "answer",
+      "text": "Marek Hamšík.",
+      "dur": 1.12,
+      "words": [
+        {
+          "word": "Marek",
+          "t0": 0,
+          "t1": 0.32
+        },
+        {
+          "word": "Hamšík.",
+          "t0": 0.42,
+          "t1": 1.12
+        }
+      ]
+    },
+    {
+      "key": "number-nines-a1",
+      "slot": "answer",
+      "text": "Icardi.",
+      "dur": 0.8800000000000001,
+      "words": [
+        {
+          "word": "Icardi.",
+          "t0": 0,
+          "t1": 0.8800000000000001
+        }
+      ]
+    },
+    {
+      "key": "number-nines-a2",
+      "slot": "answer",
+      "text": "Darwin Núñez.",
+      "dur": 1.68,
+      "words": [
+        {
+          "word": "Darwin",
+          "t0": 0,
+          "t1": 0.56
+        },
+        {
+          "word": "Núñez.",
+          "t0": 0.76,
+          "t1": 1.68
+        }
+      ]
+    },
+    {
+      "key": "number-nines-a3",
+      "slot": "answer",
+      "text": "Mitrović.",
+      "dur": 1.28,
+      "words": [
+        {
+          "word": "Mitrović.",
+          "t0": 0,
+          "t1": 1.28
+        }
+      ]
+    },
+    {
+      "key": "number-nines-a4",
+      "slot": "answer",
+      "text": "Benjamin Šeško.",
+      "dur": 1.3599999999999999,
+      "words": [
+        {
+          "word": "Benjamin",
+          "t0": 0,
+          "t1": 0.4
+        },
+        {
+          "word": "Šeško.",
+          "t0": 0.52,
+          "t1": 1.3599999999999999
+        }
+      ]
+    },
+    {
+      "key": "number-nines-a5",
+      "slot": "answer",
+      "text": "Gabriel Barbosa.",
+      "dur": 1.44,
+      "words": [
+        {
+          "word": "Gabriel",
+          "t0": 0,
+          "t1": 0.48
+        },
+        {
+          "word": "Barbosa.",
+          "t0": 0.5599999999999999,
+          "t1": 1.44
+        }
+      ]
+    },
+    {
+      "key": "number-nines-a6",
+      "slot": "answer",
+      "text": "Giovane Élber.",
+      "dur": 1.68,
+      "words": [
+        {
+          "word": "Giovane",
+          "t0": 0,
+          "t1": 0.64
+        },
+        {
+          "word": "Élber.",
+          "t0": 0.8,
+          "t1": 1.68
+        }
+      ]
+    },
+    {
+      "key": "number-nines-a7",
+      "slot": "answer",
+      "text": "Zapata.",
+      "dur": 0.64,
+      "words": [
+        {
+          "word": "Zapata.",
+          "t0": 0,
+          "t1": 0.64
+        }
+      ]
+    },
+    {
+      "key": "number-nines-a8",
+      "slot": "answer",
+      "text": "Retegui.",
+      "dur": 0.64,
+      "words": [
+        {
+          "word": "Retegui.",
+          "t0": 0,
+          "t1": 0.64
+        }
+      ]
+    },
+    {
+      "key": "number-nines-a9",
+      "slot": "answer",
+      "text": "Ian Wright.",
+      "dur": 2,
+      "words": [
+        {
+          "word": "Ian",
+          "t0": 0,
+          "t1": 0.32
+        },
+        {
+          "word": "Wright.",
+          "t0": 0.366,
+          "t1": 2
+        }
+      ]
+    },
+    {
+      "key": "never-left-england-a1",
+      "slot": "answer",
+      "text": "Rio Ferdinand.",
+      "dur": 1.2,
+      "words": [
+        {
+          "word": "Rio",
+          "t0": 0,
+          "t1": 0.32
+        },
+        {
+          "word": "Ferdinand.",
+          "t0": 0.384,
+          "t1": 1.2
+        }
+      ]
+    },
+    {
+      "key": "never-left-england-a2",
+      "slot": "answer",
+      "text": "Anthony Gordon.",
+      "dur": 1.44,
+      "words": [
+        {
+          "word": "Anthony",
+          "t0": 0,
+          "t1": 0.56
+        },
+        {
+          "word": "Gordon.",
+          "t0": 0.651,
+          "t1": 1.44
+        }
+      ]
+    },
+    {
+      "key": "never-left-england-a3",
+      "slot": "answer",
+      "text": "Eberechi Eze.",
+      "dur": 1.68,
+      "words": [
+        {
+          "word": "Eberechi",
+          "t0": 0,
+          "t1": 0.64
+        },
+        {
+          "word": "Eze.",
+          "t0": 0.88,
+          "t1": 1.68
+        }
+      ]
+    },
+    {
+      "key": "never-left-england-a4",
+      "slot": "answer",
+      "text": "Michael Carrick.",
+      "dur": 0.8800000000000001,
+      "words": [
+        {
+          "word": "Michael",
+          "t0": 0,
+          "t1": 0.24
+        },
+        {
+          "word": "Carrick.",
+          "t0": 0.304,
+          "t1": 0.8800000000000001
+        }
+      ]
+    },
+    {
+      "key": "never-left-england-a5",
+      "slot": "answer",
+      "text": "Lallana.",
+      "dur": 0.8,
+      "words": [
+        {
+          "word": "Lallana.",
+          "t0": 0,
+          "t1": 0.8
+        }
+      ]
+    },
+    {
+      "key": "never-left-england-a6",
+      "slot": "answer",
+      "text": "Danny Welbeck.",
+      "dur": 1.28,
+      "words": [
+        {
+          "word": "Danny",
+          "t0": 0,
+          "t1": 0.4
+        },
+        {
+          "word": "Welbeck.",
+          "t0": 0.5,
+          "t1": 1.28
+        }
+      ]
+    },
+    {
+      "key": "never-left-england-a7",
+      "slot": "answer",
+      "text": "Gareth Barry.",
+      "dur": 1.12,
+      "words": [
+        {
+          "word": "Gareth",
+          "t0": 0,
+          "t1": 0.32
+        },
+        {
+          "word": "Barry.",
+          "t0": 0.4,
+          "t1": 1.12
+        }
+      ]
+    },
+    {
+      "key": "never-left-england-a8",
+      "slot": "answer",
+      "text": "Theo Walcott.",
+      "dur": 1.2,
+      "words": [
+        {
+          "word": "Theo",
+          "t0": 0,
+          "t1": 0.32
+        },
+        {
+          "word": "Walcott.",
+          "t0": 0.42,
+          "t1": 1.2
+        }
+      ]
+    },
+    {
+      "key": "never-left-england-a9",
+      "slot": "answer",
+      "text": "Stewart Downing.",
+      "dur": 1.12,
+      "words": [
+        {
+          "word": "Stewart",
+          "t0": 0,
+          "t1": 0.32
+        },
+        {
+          "word": "Downing.",
+          "t0": 0.38,
+          "t1": 1.12
+        }
+      ]
+    },
+    {
+      "key": "goat-tier-a1",
+      "slot": "answer",
+      "text": "Ferenc Puskás.",
+      "dur": 1.68,
+      "words": [
+        {
+          "word": "Ferenc",
+          "t0": 0,
+          "t1": 0.48
+        },
+        {
+          "word": "Puskás.",
+          "t0": 0.6,
+          "t1": 1.68
+        }
+      ]
+    },
+    {
+      "key": "goat-tier-a2",
+      "slot": "answer",
+      "text": "Van Persie.",
+      "dur": 1.04,
+      "words": [
+        {
+          "word": "Van",
+          "t0": 0,
+          "t1": 0.16
+        },
+        {
+          "word": "Persie.",
+          "t0": 0.24,
+          "t1": 1.04
+        }
+      ]
+    },
+    {
+      "key": "goat-tier-a3",
+      "slot": "answer",
+      "text": "Roy Keane.",
+      "dur": 1.04,
+      "words": [
+        {
+          "word": "Roy",
+          "t0": 0,
+          "t1": 0.24
+        },
+        {
+          "word": "Keane.",
+          "t0": 0.32,
+          "t1": 1.04
+        }
+      ]
+    },
+    {
+      "key": "goat-tier-a4",
+      "slot": "answer",
+      "text": "Gareth Bale.",
+      "dur": 1.2000000000000002,
+      "words": [
+        {
+          "word": "Gareth",
+          "t0": 0,
+          "t1": 0.4
+        },
+        {
+          "word": "Bale.",
+          "t0": 0.496,
+          "t1": 1.2000000000000002
+        }
+      ]
+    },
+    {
+      "key": "goat-tier-a5",
+      "slot": "answer",
+      "text": "Cannavaro.",
+      "dur": 1.12,
+      "words": [
+        {
+          "word": "Cannavaro.",
+          "t0": 0,
+          "t1": 1.12
+        }
+      ]
+    },
+    {
+      "key": "goat-tier-a6",
+      "slot": "answer",
+      "text": "Johan Cruyff.",
+      "dur": 1.28,
+      "words": [
+        {
+          "word": "Johan",
+          "t0": 0,
+          "t1": 0.4
+        },
+        {
+          "word": "Cruyff.",
+          "t0": 0.46,
+          "t1": 1.28
+        }
+      ]
+    },
+    {
+      "key": "goat-tier-a7",
+      "slot": "answer",
+      "text": "Di Stéfano.",
+      "dur": 1.12,
+      "words": [
+        {
+          "word": "Di",
+          "t0": 0,
+          "t1": 0.08
+        },
+        {
+          "word": "Stéfano.",
+          "t0": 0.187,
+          "t1": 1.12
+        }
+      ]
+    },
+    {
+      "key": "goat-tier-a8",
+      "slot": "answer",
+      "text": "Bobby Moore.",
+      "dur": 0.96,
+      "words": [
+        {
+          "word": "Bobby",
+          "t0": 0,
+          "t1": 0.32
+        },
+        {
+          "word": "Moore.",
+          "t0": 0.373,
+          "t1": 0.96
+        }
+      ]
+    },
+    {
+      "key": "goat-tier-a9",
+      "slot": "answer",
+      "text": "Garrincha.",
+      "dur": 0.8800000000000001,
+      "words": [
+        {
+          "word": "Garrincha.",
+          "t0": 0,
+          "t1": 0.8800000000000001
+        }
+      ]
+    },
+    {
+      "key": "five-leagues-2-a1",
+      "slot": "answer",
+      "text": "Pedri.",
+      "dur": 0.64,
+      "words": [
+        {
+          "word": "Pedri.",
+          "t0": 0,
+          "t1": 0.64
+        }
+      ]
+    },
+    {
+      "key": "five-leagues-2-a2",
+      "slot": "answer",
+      "text": "Goretzka.",
+      "dur": 0.72,
+      "words": [
+        {
+          "word": "Goretzka.",
+          "t0": 0,
+          "t1": 0.72
+        }
+      ]
+    },
+    {
+      "key": "five-leagues-2-a3",
+      "slot": "answer",
+      "text": "Marcus Thuram.",
+      "dur": 1.28,
+      "words": [
+        {
+          "word": "Marcus",
+          "t0": 0,
+          "t1": 0.4
+        },
+        {
+          "word": "Thuram.",
+          "t0": 0.464,
+          "t1": 1.28
+        }
+      ]
+    },
+    {
+      "key": "five-leagues-2-a4",
+      "slot": "answer",
+      "text": "Szoboszlai.",
+      "dur": 0.96,
+      "words": [
+        {
+          "word": "Szoboszlai.",
+          "t0": 0,
+          "t1": 0.96
+        }
+      ]
+    },
+    {
+      "key": "five-leagues-2-a5",
+      "slot": "answer",
+      "text": "Balogun.",
+      "dur": 0.8,
+      "words": [
+        {
+          "word": "Balogun.",
+          "t0": 0,
+          "t1": 0.8
+        }
+      ]
+    },
+    {
+      "key": "five-leagues-2-a6",
+      "slot": "answer",
+      "text": "Christensen.",
+      "dur": 0.96,
+      "words": [
+        {
+          "word": "Christensen.",
+          "t0": 0,
+          "t1": 0.96
+        }
+      ]
+    },
+    {
+      "key": "five-leagues-2-a7",
+      "slot": "answer",
+      "text": "Patrik Schick.",
+      "dur": 1.04,
+      "words": [
+        {
+          "word": "Patrik",
+          "t0": 0,
+          "t1": 0.4
+        },
+        {
+          "word": "Schick.",
+          "t0": 0.46,
+          "t1": 1.04
+        }
+      ]
+    },
+    {
+      "key": "five-leagues-2-a8",
+      "slot": "answer",
+      "text": "Christopher Nkunku.",
+      "dur": 1.76,
+      "words": [
+        {
+          "word": "Christopher",
+          "t0": 0,
+          "t1": 0.56
+        },
+        {
+          "word": "Nkunku.",
+          "t0": 0.76,
+          "t1": 1.76
+        }
+      ]
+    },
+    {
+      "key": "five-leagues-2-a9",
+      "slot": "answer",
+      "text": "Gallagher.",
+      "dur": 1.68,
+      "words": [
+        {
+          "word": "Gallagher.",
+          "t0": 0,
+          "t1": 1.68
+        }
+      ]
+    },
+    {
+      "key": "differentials-a1",
+      "slot": "answer",
+      "text": "Bryan Mbeumo.",
+      "dur": 1.44,
+      "words": [
+        {
+          "word": "Bryan",
+          "t0": 0,
+          "t1": 0.4
+        },
+        {
+          "word": "Mbeumo.",
+          "t0": 0.56,
+          "t1": 1.44
+        }
+      ]
+    },
+    {
+      "key": "differentials-a2",
+      "slot": "answer",
+      "text": "Mohammed Kudus.",
+      "dur": 1.3599999999999999,
+      "words": [
+        {
+          "word": "Mohammed",
+          "t0": 0,
+          "t1": 0.48
+        },
+        {
+          "word": "Kudus.",
+          "t0": 0.56,
+          "t1": 1.3599999999999999
+        }
+      ]
+    },
+    {
+      "key": "differentials-a3",
+      "slot": "answer",
+      "text": "Matheus Cunha.",
+      "dur": 1.5999999999999999,
+      "words": [
+        {
+          "word": "Matheus",
+          "t0": 0,
+          "t1": 0.64
+        },
+        {
+          "word": "Cunha.",
+          "t0": 0.8,
+          "t1": 1.5999999999999999
+        }
+      ]
+    },
+    {
+      "key": "differentials-a4",
+      "slot": "answer",
+      "text": "Ollie Watkins.",
+      "dur": 1.04,
+      "words": [
+        {
+          "word": "Ollie",
+          "t0": 0,
+          "t1": 0.24
+        },
+        {
+          "word": "Watkins.",
+          "t0": 0.32,
+          "t1": 1.04
+        }
+      ]
+    },
+    {
+      "key": "differentials-a5",
+      "slot": "answer",
+      "text": "Dani Olmo.",
+      "dur": 1.3599999999999999,
+      "words": [
+        {
+          "word": "Dani",
+          "t0": 0,
+          "t1": 0.4
+        },
+        {
+          "word": "Olmo.",
+          "t0": 0.533,
+          "t1": 1.3599999999999999
+        }
+      ]
+    },
+    {
+      "key": "differentials-a6",
+      "slot": "answer",
+      "text": "Kepa.",
+      "dur": 0.72,
+      "words": [
+        {
+          "word": "Kepa.",
+          "t0": 0,
+          "t1": 0.72
+        }
+      ]
+    },
+    {
+      "key": "differentials-a7",
+      "slot": "answer",
+      "text": "Douglas Luiz.",
+      "dur": 1.3599999999999999,
+      "words": [
+        {
+          "word": "Douglas",
+          "t0": 0,
+          "t1": 0.48
+        },
+        {
+          "word": "Luiz.",
+          "t0": 0.56,
+          "t1": 1.3599999999999999
+        }
+      ]
+    },
+    {
+      "key": "differentials-a8",
+      "slot": "answer",
+      "text": "Granit Xhaka.",
+      "dur": 1.44,
+      "words": [
+        {
+          "word": "Granit",
+          "t0": 0,
+          "t1": 0.4
+        },
+        {
+          "word": "Xhaka.",
+          "t0": 0.6000000000000001,
+          "t1": 1.44
+        }
+      ]
+    },
+    {
+      "key": "differentials-a9",
+      "slot": "answer",
+      "text": "Lo Celso.",
+      "dur": 0.88,
+      "words": [
+        {
+          "word": "Lo",
+          "t0": 0,
+          "t1": 0.16
+        },
+        {
+          "word": "Celso.",
+          "t0": 0.24,
+          "t1": 0.88
+        }
+      ]
     }
   ]
 }

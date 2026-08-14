@@ -71,7 +71,7 @@ const followMatch = src.match(/export const FOLLOW_CARD = (\d+);/);
 if (!followMatch) throw new Error("ladderlong-grid: FOLLOW_CARD not found in timeline.ts");
 export const FOLLOW_CARD = Number(followMatch[1]);
 
-export const followFrames = (ed) => (ed.batch === 2 ? FOLLOW_CARD : 0);
+export const followFrames = (ed) => (ed.batch >= 2 ? FOLLOW_CARD : 0);
 export const totalOf = (ed) => ed.grid.step * 9 + ed.grid.last + followFrames(ed) + ed.grid.cta;
 export const followAt = (ed) => ed.grid.step * 9 + ed.grid.last;
 export const ctaAt = (ed) => followAt(ed) + followFrames(ed);
@@ -82,7 +82,8 @@ export const ctaAt = (ed) => followAt(ed) + followFrames(ed);
 export const readEditions = () => {
   const body = src.slice(src.indexOf("export const EDITIONS"));
   const marks = [];
-  const slugRe = /slug:\s*"([a-z-]+)"/g;
+  // digits are legal in slugs since batch 3's "five-leagues-2"
+  const slugRe = /slug:\s*"([a-z0-9-]+)"/g;
   let m;
   while ((m = slugRe.exec(body)) !== null) marks.push({ slug: m[1], at: m.index });
 
@@ -108,7 +109,7 @@ export const readEditions = () => {
   });
 
   const bad = editions.filter(
-    (e) => e.counts.length !== 10 || e.counts.some((c) => c < 1 || c > 7) || !e.grid || (e.batch !== 1 && e.batch !== 2),
+    (e) => e.counts.length !== 10 || e.counts.some((c) => c < 1 || c > 7) || !e.grid || (e.batch !== 1 && e.batch !== 2 && e.batch !== 3),
   );
   if (editions.length === 0 || bad.length > 0) {
     throw new Error(

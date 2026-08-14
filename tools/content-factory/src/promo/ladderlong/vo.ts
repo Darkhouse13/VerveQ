@@ -45,10 +45,12 @@ export const vo = (key: string): VoLine | undefined => BY_KEY.get(key);
 export const cuesFor = (ed: Edition): { key: string; at: number }[] => {
   const g = ed.grid;
   const f = cueFrames(ed);
-  const b2 = ed.batch === 2;
+  const b2 = ed.batch >= 2; // batch 3 speaks batch 2's carrier unchanged
   const fast = g.step < 210;
   const wknd = ed.campaign === "weekend";
-  const open = ed.slug === "five-leagues" ? "open3" : b2 ? "open2" : "open";
+  // `five-leagues-2` (batch 3) reopens on the same cached pitch line — the
+  // deck is the same premise re-cast, and a second take would be a re-bill.
+  const open = ed.slug === "five-leagues" || ed.slug === "five-leagues-2" ? "open3" : b2 ? "open2" : "open";
   const cues: { key: string; at: number }[] = [{ key: open, at: 0 }];
   f.counts.forEach((at, k) => {
     const n = k + 2; // n2…n10

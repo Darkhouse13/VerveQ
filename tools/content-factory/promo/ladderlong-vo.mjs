@@ -82,13 +82,15 @@ export const planLines = () => {
   };
   for (const ed of readEditions()) {
     const g = ed.grid;
-    const b2 = ed.batch === 2;
+    const b2 = ed.batch >= 2; // batch 3 speaks batch 2's carrier unchanged
     const fast = g.step < GRIDS.GRID_7.step;
     const wknd = ed.campaign === "weekend";
     // `five-leagues` states the mode's own pitch as the quiz's premise, so it is
     // the one edition with its own open. `one-squad` keeps `open2` — the deck
     // makes that argument by casting, and does not need the voice to say it.
-    add(ed.slug === "five-leagues" ? "open3" : b2 ? "open2" : "open", "open", g);
+    // `five-leagues-2` (batch 3) is the same premise re-cast and reuses the
+    // cached take rather than re-billing a second one.
+    add(ed.slug === "five-leagues" || ed.slug === "five-leagues-2" ? "open3" : b2 ? "open2" : "open", "open", g);
     for (let n = 2; n <= 10; n++) add(n === 5 && fast ? "n5f" : `n${n}`, "count", g);
     for (let k = 1; k <= 9; k++) add(`${ed.slug}-a${k}`, "answer", g);
     add("withhold", "withhold", g);
@@ -267,6 +269,27 @@ export const ANSWERS = {
   // Bilić, Bruce, de Boer (the Frenkie de Jong precedent), Pearce, Tuchel.
   // Nine long — rung 10 has no take, and the tenth name is never spoken.
   dugout: ["Kompany.", "Willy Sagnol.", "Chris Coleman.", "Slaven Bilić.", "Sylvinho.", "Steve Bruce.", "Frank de Boer.", "Stuart Pearce.", "Thomas Tuchel."],
+
+  // ---- BATCH 3 (2026-08-14) — LADDER-LONG-B3, eleven editions ----
+  // Same syllable law, fifth time: a surname of three-plus syllables goes
+  // alone, a one- or two-syllable surname takes its first name ("Gerrard."
+  // 2.32s vs "Steven Gerrard." 1.36s). Mononyms follow the "Xavi." precedent
+  // and go alone (Kaká, Zico, Cafu, Pepe, Pedri, Kepa, Garrincha). Ambiguous
+  // surnames take the disambiguating first name even when long enough to go
+  // alone: "Filippo Inzaghi." (Simone), "Rio Ferdinand." (Les, Anton),
+  // "Marcus Thuram." (Lilian is already spent on a card, Khéphren is current).
+  // Nine long, all eleven — rung 10 has no take, in any deck, ever.
+  "south-american-kings": ["Kaká.", "Zico.", "Cafu.", "Batistuta.", "Firmino.", "Zanetti.", "Sócrates.", "Lavezzi.", "Júlio César."],
+  "one-club-almost": ["De Rossi.", "Oliver Kahn.", "Philipp Lahm.", "John Terry.", "Ter Stegen.", "Del Piero.", "Víctor Valdés.", "Chiellini.", "Montella."],
+  "bosman-bargains": ["Michael Ballack.", "Rüdiger.", "Paul Pogba.", "Gündoğan.", "Memphis Depay.", "Wijnaldum.", "Wojciech Szczęsny.", "Flamini.", "Juan Mata."],
+  "absurd-loop": ["Marcus Rashford.", "Jack Grealish.", "Mats Hummels.", "Pepe.", "Fernandinho.", "Overmars.", "Mario Gómez.", "Rui Costa.", "Frank Rijkaard."],
+  "cup-final-men": ["Mario Götze.", "Solskjær.", "Origi.", "Kingsley Coman.", "Diego Milito.", "Filippo Inzaghi.", "Mijatović.", "Andreas Brehme.", "Panenka."],
+  "journeymen-deluxe": ["Cavani.", "Patrick Kluivert.", "João Félix.", "Samir Nasri.", "André Schürrle.", "Okocha.", "Axel Witsel.", "Yann Sommer.", "Marek Hamšík."],
+  "number-nines": ["Icardi.", "Darwin Núñez.", "Mitrović.", "Benjamin Šeško.", "Gabriel Barbosa.", "Giovane Élber.", "Zapata.", "Retegui.", "Ian Wright."],
+  "never-left-england": ["Rio Ferdinand.", "Anthony Gordon.", "Eberechi Eze.", "Michael Carrick.", "Lallana.", "Danny Welbeck.", "Gareth Barry.", "Theo Walcott.", "Stewart Downing."],
+  "goat-tier": ["Ferenc Puskás.", "Van Persie.", "Roy Keane.", "Gareth Bale.", "Cannavaro.", "Johan Cruyff.", "Di Stéfano.", "Bobby Moore.", "Garrincha."],
+  "five-leagues-2": ["Pedri.", "Goretzka.", "Marcus Thuram.", "Szoboszlai.", "Balogun.", "Christensen.", "Patrik Schick.", "Christopher Nkunku.", "Gallagher."],
+  "differentials": ["Bryan Mbeumo.", "Mohammed Kudus.", "Matheus Cunha.", "Ollie Watkins.", "Dani Olmo.", "Kepa.", "Douglas Luiz.", "Granit Xhaka.", "Lo Celso."],
 };
 
 export const LINES = [

@@ -115,7 +115,7 @@ export const GRID_5_5: Grid = {
 // Both batch-2 lengths stay inside RESEARCH_DIGEST H3's 60-90s band, which is
 // the point of testing cadence rather than length: the band is held constant.
 export const FOLLOW_CARD = 60; // 2.00s (4 beats)
-export const followFrames = (ed: Edition): number => (ed.batch === 2 ? FOLLOW_CARD : 0);
+export const followFrames = (ed: Edition): number => (ed.batch >= 2 ? FOLLOW_CARD : 0);
 export const totalOf = (ed: Edition): number => ed.grid.step * 9 + ed.grid.last + followFrames(ed) + ed.grid.cta;
 export const followAt = (ed: Edition): number => ed.grid.step * 9 + ed.grid.last;
 export const ctaAt = (ed: Edition): number => followAt(ed) + followFrames(ed);
@@ -138,7 +138,16 @@ export type Edition = {
   // closing copy — so its four sources still render exactly what was posted on
   // 2026-08-01. Everything batch 2 adds is gated on this field, not bolted onto
   // the component for everyone.
-  batch: 1 | 2;
+  //
+  // BATCH 3 (2026-08-14, LADDER-LONG-B3) = batch 2's surface set PLUS burned
+  // native-style subtitles on every VO line (MONID-SWEEP-2: 89% of the niche's
+  // winners carry subtitle-style captions; we carried none). Subtitles are a
+  // SURFACE, so they ride `batch` exactly the way the score rail and follow
+  // card did — gating them anywhere else would either re-render the eleven
+  // already-posted editions (batch <= 2 must stay bit-stable) or weld a
+  // surface to a cadence or a campaign. Gates read `>= 2` / `>= 3`, so batch 3
+  // inherits everything batch 2 shipped.
+  batch: 1 | 2 | 3;
   grid: Grid;
   // WHICH CAMPAIGN, if any — a THIRD orthogonal field, for the same reason the
   // first two are orthogonal to each other.
@@ -473,6 +482,297 @@ export const EDITIONS: Edition[] = [
       // famous enough that the answer is reachable, and the name is one a
       // casual fan can actually supply (the 2006 final penalty).
       { id: "cp-fabio-grosso", tier: "IMPOSSIBLE", answer: "GROSSO", clubs: ["Renato Curi Angolana","Chieti","Perugia","Palermo","Inter Milan","Lyon","Juventus"] },
+    ],
+  },
+  // ---- BATCH 3 (2026-08-14) — LADDER-LONG-B3, the SLATE_AUG15-31 run ----
+  //
+  // Eleven editions for the Aug 15-31 slate (rows 1,3,4,6,9,11,12,14,16 banker
+  // + 8,15 WEEKEND-cast). All on GRID_7 — the standing pace since the A/B
+  // reported — and all `batch: 3`: batch 2's full surface set plus the burned
+  // native-style subtitles (see the Edition type). The two campaign editions
+  // reuse `open3`/`cta3` from the batch-2.5 cache, so the only new VO in this
+  // batch is the 9x11 answer names.
+  //
+  // Casting is per the slate's themes. Every path below is copied WHOLE from
+  // football_career_paths.json (loans flattened to the bare club name), checked
+  // against ledger.json AND every cast timeline by id, alias-checked against
+  // the spent families (cp-marcelo/-vieira, cp-alisson/-becker,
+  // cp-ederson/-moraes — none used), and scanned for consecutive-duplicate
+  // clubs (the Gullit pattern — this dropped Mac Allister and Gvardiol, whose
+  // dataset paths open on a doubled club). No Mc-prefix surname is cast
+  // anywhere (the McTominay all-caps rule).
+  {
+    slug: "south-american-kings",
+    title: "SOUTH AMERICAN KINGS",
+    batch: 3,
+    grid: GRID_7,
+    // Brazilian/Argentine legends, all with European careers on the card.
+    // Rung 10: an obscure Recife head into Lyon — and the man the free kick
+    // still belongs to, so the answer is reachable.
+    rungs: [
+      { id: "cp-kaka", tier: "EASY", answer: "KAKÁ", clubs: ["São Paulo","AC Milan","Real Madrid","AC Milan","São Paulo","Orlando City"] },
+      { id: "cp-zico", tier: "EASY", answer: "ZICO", clubs: ["Flamengo","Udinese","Flamengo","Kashima Antlers"] },
+      { id: "cp-cafu", tier: "MEDIUM", answer: "CAFU", clubs: ["São Paulo","Real Zaragoza","Juventude","Palmeiras","Roma","AC Milan"] },
+      { id: "cp-batistuta", tier: "MEDIUM", answer: "BATISTUTA", clubs: ["Newell's Old Boys","River Plate","Boca Juniors","Fiorentina","Roma","Inter Milan","Al-Arabi"] },
+      { id: "cp-firmino", tier: "MEDIUM", answer: "FIRMINO", clubs: ["Figueirense","Hoffenheim","Liverpool","Al-Ahli","Al Sadd"] },
+      { id: "cp-javier-zanetti", tier: "HARD", answer: "ZANETTI", clubs: ["Talleres de Remedios de Escalada","Banfield","Inter Milan"] },
+      { id: "cp-socrates", tier: "HARD", answer: "SÓCRATES", clubs: ["Botafogo-SP","Corinthians","Fiorentina","Flamengo","Santos","Botafogo-SP","Garforth Town"] },
+      { id: "cp-ezequiel-lavezzi", tier: "HARD", answer: "LAVEZZI", clubs: ["Estudiantes (BA)","San Lorenzo","Napoli","Paris Saint-Germain","Hebei China Fortune"] },
+      { id: "cp-julio-cesar", tier: "IMPOSSIBLE", answer: "JÚLIO CÉSAR", clubs: ["Flamengo","Chievo","Inter Milan","Queens Park Rangers","Toronto FC","Benfica","Flamengo"] },
+      // WITHHELD
+      { id: "cp-juninho-pernambucano", tier: "IMPOSSIBLE", answer: "JUNINHO", clubs: ["Sport Recife","Vasco da Gama","Lyon","Al-Gharafa","Vasco da Gama","New York Red Bulls","Vasco da Gama"] },
+    ],
+  },
+  {
+    slug: "one-club-almost",
+    title: "ONE-CLUB MEN, ALMOST",
+    batch: 3,
+    grid: GRID_7,
+    // Men you remember at exactly one club — and the clubs you don't. The
+    // premise never goes on screen (the card shows clubs, the caption may say
+    // it); every answered rung is a one-club identity with a surprise on the
+    // card. Rung 10 is the purest form of it: Celta's own, and the two spells
+    // away that nobody files under his name.
+    rungs: [
+      { id: "cp-daniele-de-rossi", tier: "EASY", answer: "DE ROSSI", clubs: ["Roma","Boca Juniors"] },
+      { id: "cp-kahn", tier: "EASY", answer: "KAHN", clubs: ["Karlsruher SC","Bayern Munich"] },
+      { id: "cp-philipp-lahm", tier: "MEDIUM", answer: "LAHM", clubs: ["Bayern Munich","VfB Stuttgart","Bayern Munich"] },
+      { id: "cp-john-terry", tier: "MEDIUM", answer: "TERRY", clubs: ["Chelsea","Nottingham Forest","Chelsea","Aston Villa"] },
+      { id: "cp-marc-andre-ter-stegen", tier: "MEDIUM", answer: "TER STEGEN", clubs: ["Borussia Mönchengladbach","Barcelona","Girona"] },
+      { id: "cp-del-piero", tier: "HARD", answer: "DEL PIERO", clubs: ["Padova","Juventus","Sydney FC","Delhi Dynamos"] },
+      { id: "cp-victor-valdes", tier: "HARD", answer: "VALDÉS", clubs: ["Barcelona","Manchester United","Standard Liège","Middlesbrough"] },
+      { id: "cp-giorgio-chiellini", tier: "HARD", answer: "CHIELLINI", clubs: ["Livorno","Roma","Livorno","Fiorentina","Juventus","Los Angeles FC"] },
+      { id: "cp-vincenzo-montella", tier: "IMPOSSIBLE", answer: "MONTELLA", clubs: ["Empoli","Genoa","Sampdoria","Roma","Fulham","Sampdoria","Roma"] },
+      // WITHHELD
+      { id: "cp-iago-aspas", tier: "IMPOSSIBLE", answer: "ASPAS", clubs: ["Celta Vigo","Liverpool","Sevilla","Celta Vigo"] },
+    ],
+  },
+  {
+    slug: "bosman-bargains",
+    title: "BOSMAN BARGAINS",
+    batch: 3,
+    grid: GRID_7,
+    // Careers that turn on a famous free transfer. That is a CASTING claim,
+    // not a dataset one (the dataset carries no fees), so it is verified per
+    // man, the dugout way: Ballack (Bayern->Chelsea '06 free, Chelsea->
+    // Leverkusen '10 free), Rüdiger (Real '22 free), Pogba (Juventus '12 AND
+    // '22, both free), Gündoğan (Barcelona '23 free), Depay (Barcelona '21
+    // free), Wijnaldum (PSG '21 free), Szczęsny (Barcelona '24 free),
+    // Flamini (Milan '08 free, Arsenal '13 free — twice over), Mata
+    // (Galatasaray '22 free), Cambiasso (Real->Inter '04, the Bosman the
+    // format is named for in every retelling, Leicester '14 free). The
+    // caption states the shape ("built on free transfers"), never a fee.
+    rungs: [
+      { id: "cp-michael-ballack", tier: "EASY", answer: "BALLACK", clubs: ["Chemnitzer FC","Kaiserslautern","Bayer Leverkusen","Bayern Munich","Chelsea","Bayer Leverkusen"] },
+      { id: "cp-rudiger", tier: "EASY", answer: "RÜDIGER", clubs: ["VfB Stuttgart","Roma","Chelsea","Real Madrid"] },
+      { id: "cp-pogba", tier: "MEDIUM", answer: "POGBA", clubs: ["Manchester United","Juventus","Manchester United","Juventus","Monaco"] },
+      { id: "cp-gundogan", tier: "MEDIUM", answer: "GÜNDOĞAN", clubs: ["Nürnberg","Borussia Dortmund","Manchester City","Barcelona","Manchester City","Galatasaray"] },
+      { id: "cp-depay", tier: "MEDIUM", answer: "DEPAY", clubs: ["PSV Eindhoven","Manchester United","Lyon","Barcelona","Atlético Madrid","Corinthians"] },
+      { id: "cp-wijnaldum", tier: "HARD", answer: "WIJNALDUM", clubs: ["Feyenoord","PSV","Newcastle United","Liverpool","Paris Saint-Germain","Roma","Al-Ettifaq"] },
+      { id: "cp-szczesny", tier: "HARD", answer: "SZCZĘSNY", clubs: ["Arsenal","Brentford","Arsenal","Roma","Juventus","Barcelona"] },
+      { id: "cp-flamini", tier: "HARD", answer: "FLAMINI", clubs: ["Marseille","Arsenal","AC Milan","Arsenal","Crystal Palace","Getafe"] },
+      { id: "cp-mata", tier: "IMPOSSIBLE", answer: "MATA", clubs: ["Valencia","Chelsea","Manchester United","Galatasaray","Vissel Kobe","Western Sydney Wanderers","Melbourne Victory"] },
+      // WITHHELD
+      { id: "cp-cambiasso", tier: "IMPOSSIBLE", answer: "CAMBIASSO", clubs: ["Independiente","River Plate","Real Madrid","Inter Milan","Leicester City","Olympiacos"] },
+    ],
+  },
+  {
+    slug: "absurd-loop",
+    title: "THE ABSURD LOOP",
+    batch: 3,
+    grid: GRID_7,
+    // The weekly share-bait slot (the Anderlecht->Hamburg->City->Anderlecht
+    // precedent — 18 shares). EVERY path in this deck loops: a club recurs, or
+    // the path ends where it began. Rung 10 is the deck's own thesis — the
+    // only man on the card who goes home TWICE, which is what the caption's
+    // hook points at and the video never resolves.
+    rungs: [
+      { id: "cp-rashford", tier: "EASY", answer: "RASHFORD", clubs: ["Manchester United","Aston Villa","Barcelona","Manchester United"] },
+      { id: "cp-grealish", tier: "EASY", answer: "GREALISH", clubs: ["Aston Villa","Notts County","Aston Villa","Manchester City","Everton","Manchester City"] },
+      { id: "cp-hummels", tier: "MEDIUM", answer: "HUMMELS", clubs: ["Bayern Munich","Borussia Dortmund","Bayern Munich","Borussia Dortmund","Roma"] },
+      { id: "cp-pepe", tier: "MEDIUM", answer: "PEPE", clubs: ["Marítimo","Porto","Real Madrid","Beşiktaş","Porto"] },
+      { id: "cp-fernandinho", tier: "MEDIUM", answer: "FERNANDINHO", clubs: ["Athletico Paranaense","Shakhtar Donetsk","Manchester City","Athletico Paranaense"] },
+      { id: "cp-marc-overmars", tier: "HARD", answer: "OVERMARS", clubs: ["Go Ahead Eagles","Willem II","Ajax","Arsenal","Barcelona","Go Ahead Eagles"] },
+      { id: "cp-mario-gomez", tier: "HARD", answer: "MARIO GÓMEZ", clubs: ["VfB Stuttgart","Bayern Munich","Fiorentina","Beşiktaş","VfL Wolfsburg","VfB Stuttgart"] },
+      { id: "cp-rui-costa", tier: "HARD", answer: "RUI COSTA", clubs: ["Benfica","Fafe","Fiorentina","AC Milan","Benfica"] },
+      { id: "cp-frank-rijkaard", tier: "IMPOSSIBLE", answer: "RIJKAARD", clubs: ["Ajax","Sporting CP","Real Zaragoza","AC Milan","Ajax"] },
+      // WITHHELD — Newell's three times: he leaves twice and goes home twice.
+      { id: "cp-maxi-rodriguez", tier: "IMPOSSIBLE", answer: "MAXI RODRÍGUEZ", clubs: ["Newell's Old Boys","Espanyol","Atlético Madrid","Liverpool","Newell's Old Boys","Peñarol","Newell's Old Boys"] },
+    ],
+  },
+  {
+    slug: "cup-final-men",
+    title: "CUP FINAL MEN",
+    batch: 3,
+    grid: GRID_7,
+    // Players a single final made. Casting claim verified per man (the dugout
+    // precedent): Götze 2014 WC winner, Solskjær 1999 CL winner, Origi 2019
+    // CL, Coman 2020 CL winner v PSG, Milito both goals Madrid 2010, Filippo
+    // Inzaghi both goals Athens 2007, Mijatović the 1998 Real winner,
+    // Brehme the 1990 WC penalty, Panenka Euro '76 — the penalty carries his
+    // name. Rung 10: Istanbul 2005's opening scorer, obscure Czech head,
+    // Liverpool in the middle so the answer is reachable.
+    rungs: [
+      { id: "cp-gotze", tier: "EASY", answer: "GÖTZE", clubs: ["Borussia Dortmund","Bayern Munich","Borussia Dortmund","PSV Eindhoven","Eintracht Frankfurt"] },
+      { id: "cp-ole-gunnar-solskjaer", tier: "EASY", answer: "SOLSKJÆR", clubs: ["Clausenengen","Molde","Manchester United"] },
+      { id: "cp-divock-origi", tier: "MEDIUM", answer: "ORIGI", clubs: ["Lille","Liverpool","Wolfsburg","AC Milan","Nottingham Forest"] },
+      { id: "cp-coman", tier: "MEDIUM", answer: "COMAN", clubs: ["Paris Saint-Germain","Juventus","Bayern Munich","Al Nassr"] },
+      { id: "cp-milito", tier: "MEDIUM", answer: "MILITO", clubs: ["Racing Club","Genoa","Real Zaragoza","Genoa","Inter Milan","Racing Club"] },
+      { id: "cp-filippo-inzaghi", tier: "HARD", answer: "INZAGHI", clubs: ["Piacenza","AlbinoLeffe","Hellas Verona","Parma","Atalanta","Juventus","AC Milan"] },
+      { id: "cp-predrag-mijatovic", tier: "HARD", answer: "MIJATOVIĆ", clubs: ["Budućnost Titograd","Partizan Belgrade","Valencia","Real Madrid","Fiorentina","Levante"] },
+      { id: "cp-andreas-brehme", tier: "HARD", answer: "BREHME", clubs: ["HSV Barmbek-Uhlenhorst","1. FC Saarbrücken","1. FC Kaiserslautern","Bayern Munich","Inter Milan","Real Zaragoza","1. FC Kaiserslautern"] },
+      { id: "cp-antonin-panenka", tier: "IMPOSSIBLE", answer: "PANENKA", clubs: ["Bohemians Prague","Rapid Vienna","VSE St. Pölten","Slovan Vienna"] },
+      // WITHHELD
+      { id: "cp-vladimir-smicer", tier: "IMPOSSIBLE", answer: "ŠMICER", clubs: ["Slavia Prague","Lens","Liverpool","Bordeaux","Slavia Prague"] },
+    ],
+  },
+  {
+    slug: "journeymen-deluxe",
+    title: "JOURNEYMEN DELUXE",
+    batch: 3,
+    grid: GRID_7,
+    // Every rung a full seven-club card — the cap used as the theme. Famous
+    // tails throughout, per the slate. Rung 10: two Belgian lower-league
+    // stints nobody can place, into Brighton and Arsenal.
+    rungs: [
+      { id: "cp-cavani", tier: "EASY", answer: "CAVANI", clubs: ["Danubio","Palermo","Napoli","Paris Saint-Germain","Manchester United","Valencia","Boca Juniors"] },
+      { id: "cp-kluivert", tier: "EASY", answer: "KLUIVERT", clubs: ["Ajax","AC Milan","Barcelona","Newcastle United","Valencia","PSV Eindhoven","Lille"] },
+      { id: "cp-joao-felix", tier: "MEDIUM", answer: "JOÃO FÉLIX", clubs: ["Benfica","Atlético Madrid","Chelsea","Barcelona","Chelsea","AC Milan","Al-Nassr"] },
+      { id: "cp-nasri", tier: "MEDIUM", answer: "NASRI", clubs: ["Marseille","Arsenal","Manchester City","Sevilla","Antalyaspor","West Ham United","Anderlecht"] },
+      { id: "cp-schurrle", tier: "MEDIUM", answer: "SCHÜRRLE", clubs: ["Mainz 05","Bayer Leverkusen","Chelsea","VfL Wolfsburg","Borussia Dortmund","Fulham","Spartak Moscow"] },
+      { id: "cp-okocha", tier: "HARD", answer: "OKOCHA", clubs: ["Borussia Neunkirchen","Eintracht Frankfurt","Fenerbahçe","Paris Saint-Germain","Bolton Wanderers","Qatar SC","Hull City"] },
+      { id: "cp-witsel", tier: "HARD", answer: "WITSEL", clubs: ["Standard Liège","Benfica","Zenit","Tianjin Quanjian","Borussia Dortmund","Atlético Madrid","Girona"] },
+      { id: "cp-yann-sommer", tier: "HARD", answer: "SOMMER", clubs: ["Basel","Vaduz","Grasshoppers","Basel","Borussia Mönchengladbach","Bayern Munich","Inter Milan"] },
+      { id: "cp-hamsik", tier: "IMPOSSIBLE", answer: "HAMŠÍK", clubs: ["Slovan Bratislava","Brescia","Napoli","Dalian Professional","IFK Göteborg","Trabzonspor","RSC Hamsik Academy"] },
+      // WITHHELD
+      { id: "cp-leandro-trossard", tier: "IMPOSSIBLE", answer: "TROSSARD", clubs: ["Genk","Lommel United","Westerlo","Lommel United","OH Leuven","Brighton & Hove Albion","Arsenal"] },
+    ],
+  },
+  {
+    slug: "number-nines",
+    title: "THE NUMBER NINES",
+    batch: 3,
+    grid: GRID_7,
+    // Pure strikers across eras — Wright and Élber to Šeško. Positional decks
+    // read as their own puzzle (the number-ones finding); nothing on screen
+    // says it. Rung 10: Empoli -> Iperzola -> Varese -> Viareggio is as
+    // obscure as this dataset gets, and the Udinese tail is the tell.
+    rungs: [
+      { id: "cp-icardi", tier: "EASY", answer: "ICARDI", clubs: ["Sampdoria","Inter Milan","Paris Saint-Germain","Galatasaray"] },
+      { id: "cp-darwin", tier: "EASY", answer: "NÚÑEZ", clubs: ["Peñarol","Almería","Benfica","Liverpool","Al Hilal"] },
+      { id: "cp-aleksandar-mitrovic", tier: "MEDIUM", answer: "MITROVIĆ", clubs: ["Teleoptik","Partizan Belgrade","Anderlecht","Newcastle United","Fulham","Al Hilal","Al-Rayyan"] },
+      { id: "cp-benjamin-sesko", tier: "MEDIUM", answer: "ŠEŠKO", clubs: ["Red Bull Salzburg","Liefering","Red Bull Salzburg","RB Leipzig","Manchester United"] },
+      { id: "cp-gabriel-barbosa", tier: "MEDIUM", answer: "GABRIEL BARBOSA", clubs: ["Santos","Inter Milan","Benfica","Santos","Flamengo","Cruzeiro","Santos"] },
+      { id: "cp-giovane-elber", tier: "HARD", answer: "ÉLBER", clubs: ["AC Milan","Grasshoppers","VfB Stuttgart","Bayern Munich","Lyon","Borussia Mönchengladbach","Cruzeiro"] },
+      { id: "cp-zapata", tier: "HARD", answer: "ZAPATA", clubs: ["América de Cali","Estudiantes","Napoli","Udinese","Sampdoria","Atalanta","Torino"] },
+      { id: "cp-mateo-retegui", tier: "HARD", answer: "RETEGUI", clubs: ["Boca Juniors","Estudiantes","Talleres","Tigre","Genoa","Atalanta","Al-Qadsiah"] },
+      { id: "cp-ian-wright", tier: "IMPOSSIBLE", answer: "IAN WRIGHT", clubs: ["Greenwich Borough","Crystal Palace","Arsenal","West Ham United","Nottingham Forest","Celtic","Burnley"] },
+      // WITHHELD
+      { id: "cp-di-natale", tier: "IMPOSSIBLE", answer: "DI NATALE", clubs: ["Empoli","Iperzola","Varese","Viareggio","Empoli","Udinese"] },
+    ],
+  },
+  {
+    slug: "never-left-england",
+    title: "NEVER LEFT ENGLAND",
+    batch: 3,
+    grid: GRID_7,
+    // The strongest market, all-English paths: every club on every card is an
+    // English-pyramid side (checked club-by-club — this is why Grealish plays
+    // in the loop deck and not here, and why no Swansea/Cardiff path was
+    // cast). Rung 10: Peterborough -> Birmingham -> QPR before the Arsenal
+    // years — obscure head, enormous tail.
+    rungs: [
+      { id: "cp-ferdinand", tier: "EASY", answer: "FERDINAND", clubs: ["West Ham United","AFC Bournemouth","West Ham United","Leeds United","Manchester United","Queens Park Rangers"] },
+      { id: "cp-anthony-gordon", tier: "EASY", answer: "GORDON", clubs: ["Everton","Preston North End","Newcastle United"] },
+      { id: "cp-eberechi-eze", tier: "MEDIUM", answer: "EZE", clubs: ["Queens Park Rangers","Wycombe Wanderers","Crystal Palace","Arsenal"] },
+      { id: "cp-michael-carrick", tier: "MEDIUM", answer: "CARRICK", clubs: ["West Ham United","Swindon Town","Birmingham City","West Ham United","Tottenham Hotspur","Manchester United"] },
+      { id: "cp-adam-lallana", tier: "MEDIUM", answer: "LALLANA", clubs: ["Southampton","Bournemouth","Liverpool","Brighton & Hove Albion","Southampton"] },
+      { id: "cp-danny-welbeck", tier: "HARD", answer: "WELBECK", clubs: ["Manchester United","Preston North End","Sunderland","Arsenal","Watford","Brighton & Hove Albion"] },
+      { id: "cp-gareth-barry", tier: "HARD", answer: "GARETH BARRY", clubs: ["Aston Villa","Manchester City","Everton","West Bromwich Albion"] },
+      { id: "cp-theo-walcott", tier: "HARD", answer: "WALCOTT", clubs: ["Southampton","Arsenal","Everton","Southampton"] },
+      { id: "cp-stewart-downing", tier: "IMPOSSIBLE", answer: "DOWNING", clubs: ["Middlesbrough","Sunderland","Aston Villa","Liverpool","West Ham United","Middlesbrough","Blackburn Rovers"] },
+      // WITHHELD
+      { id: "cp-david-seaman", tier: "IMPOSSIBLE", answer: "SEAMAN", clubs: ["Peterborough United","Birmingham City","Queens Park Rangers","Arsenal","Manchester City"] },
+    ],
+  },
+  {
+    slug: "goat-tier",
+    title: "THE GOAT TIER",
+    batch: 3,
+    grid: GRID_7,
+    // The month's close: highest recognition available in the unspent pool —
+    // every answered name is one the viewer KNOWS, and the escalation is
+    // purely how strange the route reads. Rung 10: nobody remembers where
+    // Souness started, everybody can supply him once Liverpool lands.
+    rungs: [
+      { id: "cp-ferenc-puskas", tier: "EASY", answer: "PUSKÁS", clubs: ["Budapest Honvéd","Real Madrid"] },
+      { id: "cp-van-persie", tier: "EASY", answer: "VAN PERSIE", clubs: ["Feyenoord","Arsenal","Manchester United","Fenerbahçe","Feyenoord"] },
+      { id: "cp-roy-keane", tier: "MEDIUM", answer: "ROY KEANE", clubs: ["Cobh Ramblers","Nottingham Forest","Manchester United","Celtic"] },
+      { id: "cp-bale", tier: "MEDIUM", answer: "BALE", clubs: ["Southampton","Tottenham Hotspur","Real Madrid","Tottenham Hotspur","Real Madrid","Los Angeles FC"] },
+      { id: "cp-cannavaro", tier: "MEDIUM", answer: "CANNAVARO", clubs: ["Napoli","Parma","Inter Milan","Juventus","Real Madrid","Juventus","Al-Ahli Dubai"] },
+      { id: "cp-cruyff", tier: "HARD", answer: "CRUYFF", clubs: ["Ajax","Barcelona","Los Angeles Aztecs","Washington Diplomats","Levante","Ajax","Feyenoord"] },
+      { id: "cp-alfredo-di-stefano", tier: "HARD", answer: "DI STÉFANO", clubs: ["River Plate","Huracán","River Plate","Millonarios","Real Madrid","Espanyol"] },
+      { id: "cp-bobby-moore", tier: "HARD", answer: "BOBBY MOORE", clubs: ["West Ham United","Fulham","San Antonio Thunder","Seattle Sounders","Herning Fremad","Eastern AA","Carolina Lightnin'"] },
+      { id: "cp-garrincha", tier: "IMPOSSIBLE", answer: "GARRINCHA", clubs: ["Serrano","Botafogo","Corinthians","Atlético Junior","Flamengo","Sacrofano","Olaria"] },
+      // WITHHELD
+      { id: "cp-graeme-souness", tier: "IMPOSSIBLE", answer: "SOUNESS", clubs: ["Tottenham Hotspur","Montreal Olympique","Middlesbrough","West Adelaide","Liverpool","Sampdoria","Rangers"] },
+    ],
+  },
+  // The two WEEKEND-cast rows (slate 8 and 15). Same campaign contract as
+  // batch 2.5: `campaign` gates the closing VO key (`cta2` -> `cta3`) and the
+  // wordmark block, nothing else. Both decks are CURRENT players only — the
+  // quiz argues for a live draft, and THE WEEKEND is live now, so `cta3`
+  // ("Draft them for real. Link in bio.") is reused from cache verbatim.
+  {
+    slug: "five-leagues-2",
+    title: "FIVE LEAGUES, ONE SQUAD II",
+    batch: 3,
+    grid: GRID_7,
+    campaign: "weekend",
+    // Same structure as the original: TWO FULL PASSES through the five
+    // leagues in the same order (La Liga / Bundesliga / Serie A / Premier
+    // League / Ligue 1), current club per the dataset's own last-club column.
+    // Every league is represented in the ANSWERED nine (Balogun carries
+    // Ligue 1's answered slot), so the claim never rests on the withheld
+    // rung. Opens on `open3` — the mode's own pitch, cached since batch 2.5.
+    rungs: [
+      { id: "cp-pedri", tier: "EASY", answer: "PEDRI", clubs: ["Las Palmas","Barcelona"] },
+      { id: "cp-leon-goretzka", tier: "EASY", answer: "GORETZKA", clubs: ["Bochum","Schalke 04","Bayern Munich"] },
+      { id: "cp-marcus-thuram", tier: "MEDIUM", answer: "MARCUS THURAM", clubs: ["Sochaux","Guingamp","Borussia Mönchengladbach","Inter Milan"] },
+      { id: "cp-dominik-szoboszlai", tier: "MEDIUM", answer: "SZOBOSZLAI", clubs: ["FC Liefering","Red Bull Salzburg","RB Leipzig","Liverpool"] },
+      { id: "cp-folarin-balogun", tier: "MEDIUM", answer: "BALOGUN", clubs: ["Arsenal","Middlesbrough","Reims","Monaco"] },
+      { id: "cp-andreas-christensen", tier: "HARD", answer: "CHRISTENSEN", clubs: ["Chelsea","Borussia Mönchengladbach","Chelsea","Barcelona"] },
+      { id: "cp-patrik-schick", tier: "HARD", answer: "SCHICK", clubs: ["Sparta Prague","Bohemians 1905","Sampdoria","Roma","RB Leipzig","Bayer Leverkusen"] },
+      { id: "cp-christopher-nkunku", tier: "HARD", answer: "NKUNKU", clubs: ["Paris Saint-Germain","RB Leipzig","Chelsea","AC Milan"] },
+      { id: "cp-conor-gallagher", tier: "IMPOSSIBLE", answer: "GALLAGHER", clubs: ["Chelsea","Charlton Athletic","Swansea City","West Bromwich Albion","Crystal Palace","Atlético Madrid","Tottenham Hotspur"] },
+      // WITHHELD — the Ligue 1 slot of the second pass: an Amiens head, a
+      // Spurs middle famous enough that the answer is reachable.
+      { id: "cp-tanguy-ndombele", tier: "IMPOSSIBLE", answer: "NDOMBELE", clubs: ["Amiens","Lyon","Tottenham Hotspur","Lyon","Napoli","Galatasaray","Nice"] },
+    ],
+  },
+  {
+    slug: "differentials",
+    title: "THE DIFFERENTIALS",
+    batch: 3,
+    grid: GRID_7,
+    campaign: "weekend",
+    // Draftable current players whose PATHS are the puzzle — names a
+    // football-native viewer knows, routes their mates can't reconstruct.
+    // All ten are at top-five-league clubs per the dataset's last-club
+    // column. Rung 10 is the best withhold in the batch: Highworth Town ->
+    // Bristol City -> Bath City -> Newport County, ending at Manchester City.
+    rungs: [
+      { id: "cp-bryan-mbeumo", tier: "EASY", answer: "MBEUMO", clubs: ["Troyes","Brentford","Manchester United"] },
+      { id: "cp-mohammed-kudus", tier: "EASY", answer: "KUDUS", clubs: ["Nordsjælland","Ajax","West Ham United","Tottenham Hotspur"] },
+      { id: "cp-matheus-cunha", tier: "MEDIUM", answer: "CUNHA", clubs: ["Sion","RB Leipzig","Hertha BSC","Atlético Madrid","Wolverhampton Wanderers","Manchester United"] },
+      { id: "cp-ollie-watkins", tier: "MEDIUM", answer: "WATKINS", clubs: ["Exeter City","Weston-super-Mare","Brentford","Aston Villa"] },
+      { id: "cp-dani-olmo", tier: "MEDIUM", answer: "OLMO", clubs: ["Dinamo Zagreb","RB Leipzig","Barcelona"] },
+      { id: "cp-kepa-arrizabalaga", tier: "HARD", answer: "KEPA", clubs: ["Ponferradina","Real Valladolid","Athletic Bilbao","Chelsea","Real Madrid","Bournemouth","Arsenal"] },
+      { id: "cp-douglas-luiz", tier: "HARD", answer: "DOUGLAS LUIZ", clubs: ["Vasco da Gama","Manchester City","Girona","Aston Villa","Juventus","Nottingham Forest","Aston Villa"] },
+      { id: "cp-xhaka", tier: "HARD", answer: "XHAKA", clubs: ["Basel","Borussia Mönchengladbach","Arsenal","Bayer Leverkusen","Sunderland"] },
+      { id: "cp-giovani-lo-celso", tier: "IMPOSSIBLE", answer: "LO CELSO", clubs: ["Rosario Central","Paris Saint-Germain","Real Betis","Tottenham Hotspur","Villarreal","Tottenham Hotspur","Real Betis"] },
+      // WITHHELD
+      { id: "cp-antoine-semenyo", tier: "IMPOSSIBLE", answer: "SEMENYO", clubs: ["Highworth Town","Bristol City","Bath City","Newport County","Sunderland","Bournemouth","Manchester City"] },
     ],
   },
 ];

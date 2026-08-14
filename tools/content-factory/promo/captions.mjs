@@ -462,6 +462,139 @@ export const PROMO_CAPTIONS = {
     "New gauntlet daily. Career Path mode — free, no sign-up: verveq.com\n\n" +
     "#football #footballquiz #careerpath #guesstheplayer #footballtiktok",
 
+  // ---- LADDER-LONG batch 3 (2026-08-14, LADDER-LONG-B3) — the Aug 15-31
+  // slate's eleven editions. Batch 2's caption law unchanged: score ask first,
+  // withheld path second (verbatim from football_career_paths.json, name
+  // nowhere), daily line, tags. A theme hook may lead the caption where the
+  // deck's casting was verified for it (the dugout precedent) — it is a
+  // casting claim, never a dataset assertion, and never a fee, count or
+  // honour. The two WEEKEND-cast entries carry the campaign block THIRD,
+  // after both asks — and THE WEEKEND is LIVE now, so the copy says so
+  // (no date, CT-1 stands) and every tagged link lands on /weekend.
+  "ladder-long-south-american-kings":
+    "Ten career paths. Brazilian and Argentine royalty, all of them made in " +
+    "Europe too 👑\n\n" +
+    "What's your score out of nine? Drop the number 👇\n\n" +
+    // cp-juninho-pernambucano, path verbatim. Name never stated, here or in the video.
+    "Then rung 10, which we never answered: Sport Recife → Vasco da Gama → " +
+    "Lyon → Al-Gharafa → Vasco da Gama → New York Red Bulls → Vasco da Gama. " +
+    "The middle club is the giveaway, if you were watching in the 2000s.\n\n" +
+    "New gauntlet daily. Career Path mode — free, no sign-up: verveq.com\n\n" +
+    "#football #footballquiz #careerpath #guesstheplayer #footballtiktok",
+
+  "ladder-long-one-club-almost":
+    "Ten men you remember at exactly one club. The cards say otherwise 🧠\n\n" +
+    "Score out of nine in the comments — be honest, the rail counted with " +
+    "you 👇\n\n" +
+    // cp-iago-aspas, path verbatim.
+    "Rung 10 stays blank: Celta Vigo → Liverpool → Sevilla → Celta Vigo. He " +
+    "went away twice, came home, and never left again. Still not typing " +
+    "it.\n\n" +
+    "New gauntlet daily. Career Path mode — free, no sign-up: verveq.com\n\n" +
+    "#football #footballquiz #careerpath #guesstheplayer #footballtiktok",
+
+  "ladder-long-bosman-bargains":
+    "Ten careers built on free transfers. Not one of these paths needed a " +
+    "record fee 🧾\n\n" +
+    "What's your score out of nine? Number in the comments 👇\n\n" +
+    // cp-cambiasso, path verbatim.
+    "Rung 10, the one we kept: Independiente → River Plate → Real Madrid → " +
+    "Inter Milan → Leicester City → Olympiacos. Madrid let him walk and " +
+    "spent the next decade watching what walked.\n\n" +
+    "New gauntlet daily. Career Path mode — free, no sign-up: verveq.com\n\n" +
+    "#football #footballquiz #careerpath #guesstheplayer #footballtiktok",
+
+  "ladder-long-absurd-loop":
+    "Ten career paths and every single one is a loop. One of them goes home. " +
+    "Twice 🔁\n\n" +
+    "Score out of nine first 👇\n\n" +
+    // cp-maxi-rodriguez, path verbatim.
+    "Then rung 10, the man who couldn't stay away: Newell's Old Boys → " +
+    "Espanyol → Atlético Madrid → Liverpool → Newell's Old Boys → Peñarol → " +
+    "Newell's Old Boys. Three spells at the same club and we're still not " +
+    "naming him.\n\n" +
+    "New gauntlet daily. Career Path mode — free, no sign-up: verveq.com\n\n" +
+    "#football #footballquiz #careerpath #guesstheplayer #footballtiktok",
+
+  "ladder-long-cup-final-men":
+    "Ten careers. One final each made them 🏆\n\n" +
+    "How many of the nine did you get? Drop the number 👇\n\n" +
+    // cp-vladimir-smicer, path verbatim.
+    "Rung 10 we're not answering: Slavia Prague → Lens → Liverpool → " +
+    "Bordeaux → Slavia Prague. If you know what happened in Istanbul, you " +
+    "know exactly who this is.\n\n" +
+    "New gauntlet daily. Career Path mode — free, no sign-up: verveq.com\n\n" +
+    "#football #footballquiz #championsleague #careerpath #footballtiktok",
+
+  "ladder-long-journeymen-deluxe":
+    "Ten career paths. Seven clubs each. Nobody stayed anywhere 🧳\n\n" +
+    "Your score out of nine 👇\n\n" +
+    // cp-leandro-trossard, path verbatim.
+    "Rung 10 stays sealed: Genk → Lommel United → Westerlo → Lommel United → " +
+    "OH Leuven → Brighton → Arsenal. Five Belgian clubs deep before anyone " +
+    "in England had heard the name.\n\n" +
+    "New gauntlet daily. Career Path mode — free, no sign-up: verveq.com\n\n" +
+    "#football #footballquiz #careerpath #guesstheplayer #footballtiktok",
+
+  "ladder-long-number-nines":
+    "Ten number nines, easy to impossible ⚽\n\n" +
+    "Score out of nine in the comments — the rail was right there 👇\n\n" +
+    // cp-di-natale, path verbatim.
+    "And rung 10, which we never answered: Empoli → Iperzola → Varese → " +
+    "Viareggio → Empoli → Udinese. One club at the end is the entire " +
+    "career, and the entire clue.\n\n" +
+    "New gauntlet daily. Career Path mode — free, no sign-up: verveq.com\n\n" +
+    "#football #footballquiz #striker #careerpath #footballtiktok",
+
+  "ladder-long-never-left-england":
+    "Ten career paths. Not one club outside England on any card 🏴\n\n" +
+    "What's your score out of nine? Drop the number 👇\n\n" +
+    // cp-david-seaman, path verbatim.
+    "Rung 10, the one we kept: Peterborough United → Birmingham City → " +
+    "Queens Park Rangers → Arsenal → Manchester City. The last two clubs " +
+    "give it away — the first three are why nobody gets it from the top.\n\n" +
+    "New gauntlet daily. Career Path mode — free, no sign-up: verveq.com\n\n" +
+    "#football #footballquiz #premierleague #careerpath #footballtiktok",
+
+  "ladder-long-goat-tier":
+    "Ten career paths. You know all ten names. Prove it 🐐\n\n" +
+    "Score out of nine first — then the one we didn't answer 👇\n\n" +
+    // cp-graeme-souness, path verbatim.
+    "Rung 10: Tottenham → Montreal Olympique → Middlesbrough → West " +
+    "Adelaide → Liverpool → Sampdoria → Rangers. Nobody remembers where it " +
+    "started. Everybody knows where it peaked.\n\n" +
+    "New gauntlet daily. Career Path mode — free, no sign-up: verveq.com\n\n" +
+    "#football #footballquiz #careerpath #guesstheplayer #footballtiktok",
+
+  "ladder-long-five-leagues-2":
+    "Ten career paths. One player from each of the five big leagues — then " +
+    "all five over again 🌍\n\n" +
+    "What's your score out of nine? Drop the number 👇\n\n" +
+    // cp-tanguy-ndombele, path verbatim. Name never stated, here or in the video.
+    "Then rung 10, the one we never answer: Amiens → Lyon → Tottenham → " +
+    "Lyon → Napoli → Galatasaray → Nice. The London club in the middle is " +
+    "the tell — and the reason you'll kick yourself.\n\n" +
+    "Every name on this board is one you could draft tonight. THE WEEKEND " +
+    "is LIVE — five leagues, one squad, a fresh draft every week, no " +
+    "season-long grind. Pick for real → link in bio.\n\n" +
+    "New gauntlet daily. Career Path mode — free, no sign-up: verveq.com\n\n" +
+    "#football #footballquiz #careerpath #fantasyfootball #footballtiktok" +
+    wkndLinks("ladder-long-five-leagues-2"),
+
+  "ladder-long-differentials":
+    "Ten paths your mates can't name. Every one of them is draftable this " +
+    "weekend 📋\n\n" +
+    "Score out of nine in the comments — be honest 👇\n\n" +
+    // cp-antoine-semenyo, path verbatim.
+    "Rung 10 stays blank: Highworth Town → Bristol City → Bath City → " +
+    "Newport County → Sunderland → Bournemouth → Manchester City. From " +
+    "step one to step seven is the whole point of this game.\n\n" +
+    "Draft them for real — THE WEEKEND is LIVE. Five leagues, one squad, a " +
+    "fresh draft every week. Pick before kickoff → link in bio.\n\n" +
+    "New gauntlet daily. Career Path mode — free, no sign-up: verveq.com\n\n" +
+    "#football #footballquiz #careerpath #fantasyfootball #footballtiktok" +
+    wkndLinks("ladder-long-differentials"),
+
   // ---- CHAIN-LONG batch 1 (2026-08-10) — the experiment lane's first format.
   //
   // Caption shape is batch 2's law with the relay's own asks: SCORE ASK FIRST

@@ -1,8 +1,8 @@
 import React from "react";
 import { AbsoluteFill, Audio, Easing, Sequence, interpolate, staticFile, useCurrentFrame } from "remotion";
 import { COLORS, FONTS, neoShadow } from "../kit";
-import { Edition, editionBySlug, locate } from "./timeline";
-import { cuesFor, hasVo } from "./vo";
+import { Edition, FPS, editionBySlug, locate } from "./timeline";
+import { cuesFor, hasVo, vo } from "./vo";
 
 // See timeline.ts for why this format exists and why it is ten rungs.
 //
@@ -177,12 +177,116 @@ const ScoreRail: React.FC<{ ed: Edition; active: number; phase: number; ended: b
   );
 };
 
+// BURNED SUBTITLES — batch 3's surface (LADDER-LONG-B3, 2026-08-14).
+//
+// MONID-SWEEP-2 measured the niche: 89% of winning reels carry subtitle-style
+// captions on screen and we carried none, and FACELESS_WINNER_SPEC #14 already
+// said it for this cohort — "if you use VO, subtitle it word-by-word with
+// native-IG-style white bold captions and a scale-pop on the emphasised word."
+//
+// So this is deliberately NOT brand type. White heavy sans with a dark
+// outline, the look IG's own caption tool burns, per the spec — a subtitle
+// that looks designed reads as chrome, and the finding is about subtitles
+// that read as subtitles. It is the one element in the lane exempt from the
+// cream/ink/brand-type law, exactly as wide as that finding and no wider.
+//
+// Words key off the VO manifest's per-character timestamps (the same data the
+// semi-final lip-synced its cards with), so each word lands on the frame it is
+// spoken and the current word pops. No transcript risk — the manifest text IS
+// what the voice was generated from, so unlike the Dave lane's footage this
+// caption cannot drift from its audio.
+const SUB_FONT = '"Inter", "Helvetica Neue", Arial, sans-serif';
+const SUB_OUTLINE =
+  "0 4px 0 rgba(0,0,0,0.9), 2px 2px 0 rgba(0,0,0,0.9), -2px 2px 0 rgba(0,0,0,0.9), 2px -2px 0 rgba(0,0,0,0.9), -2px -2px 0 rgba(0,0,0,0.9), 0 0 18px rgba(0,0,0,0.35)";
+
+const Subtitles: React.FC<{ ed: Edition; frame: number; ended: boolean }> = ({ ed, frame, ended }) => {
+  const cues = cuesFor(ed);
+  // latest cue whose line is still being spoken (plus a 12f linger, clipped so
+  // a lingering line can never overlap the next cue's first word)
+  let line: { words: { word: string; t0: number; t1: number }[]; at: number } | null = null;
+  for (let k = 0; k < cues.length; k++) {
+    const c = cues[k];
+    if (frame < c.at) break;
+    const l = vo(c.key);
+    if (!l || !l.words || l.words.length === 0) continue;
+    const endF = c.at + Math.ceil(l.words[l.words.length - 1].t1 * FPS) + 12;
+    const cutF = k + 1 < cues.length ? Math.min(endF, cues[k + 1].at) : endF;
+    if (frame < cutF) line = { words: l.words, at: c.at };
+    else line = null;
+  }
+  if (!line) return null;
+  const t = (frame - line.at) / FPS;
+  // One SENTENCE CHUNK at a time, the way native karaoke captions phrase —
+  // and the reason the band can hold a single line that never wraps into the
+  // rail: the longest chunk in the carrier ("This one I'm not telling you.")
+  // is six words, where the whole line is nine.
+  const chunks: { word: string; t0: number; t1: number }[][] = [[]];
+  for (const w of line.words) {
+    chunks[chunks.length - 1].push(w);
+    if (/[.!?,]$/.test(w.word)) chunks.push([]);
+  }
+  const parts = chunks.filter((c) => c.length > 0);
+  let chunk = parts[0];
+  for (let k = 0; k < parts.length; k++) {
+    if (t >= parts[k][0].t0) chunk = parts[k];
+  }
+  const spoken = chunk.filter((w) => t >= w.t0);
+  if (spoken.length === 0) return null;
+  return (
+    <div
+      style={{
+        position: "absolute",
+        // Over the rung grid the band sits in the card/rail seam, clear of the
+        // clubs, the answer chip and the rail names; on the closing cards it
+        // drops to the bottom band, clear of their centered type and inside
+        // the 320px bottom safe zone.
+        top: ended ? 1548 : 1002,
+        left: 60,
+        right: 60,
+        textAlign: "center",
+        whiteSpace: "nowrap",
+        pointerEvents: "none",
+      }}
+    >
+      {spoken.map((w, k) => {
+        const isCurrent = k === spoken.length - 1 && t < w.t1 + 0.08;
+        const pop = interpolate(t - w.t0, [0, 0.12], [1.22, 1], {
+          extrapolateLeft: "clamp",
+          extrapolateRight: "clamp",
+          easing: Easing.out(Easing.cubic),
+        });
+        return (
+          <span
+            key={`${line!.at}-${w.t0}-${k}`}
+            style={{
+              display: "inline-block",
+              margin: "0 6px",
+              fontFamily: SUB_FONT,
+              fontWeight: 800,
+              fontSize: 38,
+              lineHeight: 1.1,
+              letterSpacing: 0.5,
+              color: isCurrent ? "#FFFFFF" : "rgba(255,255,255,0.92)",
+              textShadow: SUB_OUTLINE,
+              transform: `scale(${isCurrent ? pop : 1})`,
+              textTransform: "none",
+            }}
+          >
+            {w.word}
+          </span>
+        );
+      })}
+    </div>
+  );
+};
+
 export const LadderLong: React.FC<{ slug?: string }> = ({ slug = "all-timers" }) => {
   const ed = editionBySlug(slug);
   const g = ed.grid;
   const { clubIn: CLUB_IN, clubGap: CLUB_GAP, thinkAt: THINK_AT, tickAt: TICK_AT, answerAt: ANSWER_AT } = g;
   const WITHHELD_AT = ANSWER_AT; // rung 10: the demand lands where an answer would
-  const b2 = ed.batch === 2;
+  const b2 = ed.batch >= 2; // batch 3 inherits batch 2's whole surface set
+  const subs = ed.batch >= 3; // burned subtitles — batch 3's one addition
   // Batch 2.5. Gates ONE block, on ONE card, for 3.00s — see the CTA below.
   const wknd = ed.campaign === "weekend";
   const frame = useCurrentFrame();
@@ -661,6 +765,10 @@ export const LadderLong: React.FC<{ slug?: string }> = ({ slug = "all-timers" })
           </div>
         </AbsoluteFill>
       )}
+
+      {/* burned subtitles — batch 3 only, above every card so a line spoken
+          over the follow hook or the CTA still reads. See Subtitles above. */}
+      {subs && hasVo && <Subtitles ed={ed} frame={frame} ended={ended} />}
 
       {/* CTA strip — deliberately small; the comment is the ask, not the click */}
       {!ended && (
