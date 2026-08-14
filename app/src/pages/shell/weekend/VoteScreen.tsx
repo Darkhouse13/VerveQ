@@ -27,12 +27,27 @@ import { NeoBadge } from "@/components/neo/NeoBadge";
 import { ShellLayout } from "@/components/shell/ShellLayout";
 import { SHELL_ROUTES } from "@/lib/shellRoutes";
 import { friendlyError } from "@/lib/errors";
+import { leagueName } from "@/lib/leagueNames";
+import {
+  kickoffDayTag,
+  orientedScore,
+  voteCardEvents,
+  type VoteCardEvent,
+} from "@/lib/weekendVoteCard";
 
 export type VotingStatus = NonNullable<
   FunctionReturnType<typeof api.fantasyCrowdVoting.getVotingStatus>
 >;
 export type ServeResult = FunctionReturnType<typeof api.fantasyCrowdVoting.servePair>;
 export type ServedPair = Extract<ServeResult, { status: "served" }>;
+
+/** EYE-TEST-CONTEXT: factual events only, rendered as glyphs — a goal, an
+ *  assist, a red. Yellows and anything derived are excluded by ruling. */
+const EVENT_GLYPHS: Record<VoteCardEvent["kind"], string> = {
+  goal: "⚽",
+  assist: "🅰️",
+  red: "🟥",
+};
 
 export function PairCard({
   player,
@@ -43,27 +58,114 @@ export function PairCard({
   onPick: () => void;
   busy: boolean;
 }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { fixture } = player;
-  const scoreline =
-    fixture.homeGoals === null || fixture.awayGoals === null
-      ? null
-      : `${fixture.homeGoals}–${fixture.awayGoals}`;
+  const score = orientedScore(player);
+  const events = voteCardEvents(player);
+  // Degraded-loudly fallbacks (the fixtures-screen rule): a club without a
+  // label renders its raw id, never an invented name.
+  const club = player.clubName ?? player.clubId;
+  const opponent = player.opponentName ?? player.opponentClubId;
+  const venue = player.isHome
+    ? t("weekend.homeShort", { defaultValue: "H" })
+    : t("weekend.awayShort", { defaultValue: "A" });
+
+  // Old-backend tolerance: frontend CI ships on push while the Convex deploy
+  // is manual (DEPLOYMENT topology), so a pre-EYE-TEST-CONTEXT payload can
+  // reach this card. Without `minutes` there is no memory to locate — render
+  // the pre-context card (raw scoreline) instead of a page of undefineds.
+  // (The widened cast keeps TS from narrowing `player` to never: the CURRENT
+  // type always carries minutes; only an old backend's payload does not.)
+  if ((player as { minutes?: number }).minutes === undefined) {
+    return (
+      <NeoCard
+        shadow="lg"
+        className="flex-1 min-w-0 text-center py-4 px-2.5 disabled:opacity-60"
+        onClick={busy ? undefined : onPick}
+      >
+        <NeoBadge color="muted" size="sm">
+          {player.position}
+        </NeoBadge>
+        <p className="font-heading font-bold text-lg leading-tight mt-2">{player.name}</p>
+        <p className="text-[11px] text-muted-foreground mt-1">
+          {fixture.homeGoals === null || fixture.awayGoals === null
+            ? t("weekend.fullTime", { defaultValue: "full time" })
+            : `${fixture.homeGoals}–${fixture.awayGoals}`}
+        </p>
+      </NeoCard>
+    );
+  }
+
   return (
     <NeoCard
       shadow="lg"
-      className="flex-1 text-center py-5 disabled:opacity-60"
+      className="flex-1 min-w-0 text-center py-4 px-2.5 disabled:opacity-60"
       onClick={busy ? undefined : onPick}
     >
       <NeoBadge color="muted" size="sm">
         {player.position}
       </NeoBadge>
       <p className="font-heading font-bold text-lg leading-tight mt-2">{player.name}</p>
-      <p className="text-[11px] text-muted-foreground mt-1">
-        {scoreline === null
-          ? t("weekend.fullTime", { defaultValue: "full time" })
-          : scoreline}
+      {/* where the memory happened: club, opponent, venue */}
+      <p
+        // clamp-3, not the fixtures screen's clamp-2: the venue letter closes
+        // the line and is a fact the card must keep — the longest real pair
+        // ("Borussia Mönchengladbach · vs Bayern München (A)") needs three
+        // lines at half-viewport width before it would truncate.
+        className="text-[11px] text-muted-foreground leading-snug mt-1 line-clamp-3 break-words"
+        data-testid="vote-card-match"
+      >
+        {t("weekend.voteMatchLine", {
+          defaultValue: "{{club}} · vs {{opponent}} ({{venue}})",
+          club,
+          opponent,
+          venue,
+        })}
       </p>
+      <p
+        className="font-mono text-[10px] uppercase tracking-[0.12em] text-muted-foreground mt-0.5"
+        data-testid="vote-card-league"
+      >
+        {leagueName(fixture.leagueId)} · {kickoffDayTag(fixture.kickoffAt, i18n.language)}
+      </p>
+      {/* the score from his side — his team's number is the marked one */}
+      <p className="font-mono font-bold tabular-nums mt-1.5" data-testid="vote-card-score">
+        {score === null ? (
+          <span className="text-[11px] text-muted-foreground font-normal">
+            {t("weekend.fullTime", { defaultValue: "full time" })}
+          </span>
+        ) : (
+          <>
+            <span className="border-b-2 border-primary" data-testid="vote-card-score-us">
+              {score.us}
+            </span>
+            <span className="text-muted-foreground">–{score.them}</span>
+          </>
+        )}
+      </p>
+      <p
+        className="font-mono text-[11px] text-muted-foreground mt-0.5"
+        data-testid="vote-card-minutes"
+      >
+        {t("weekend.minutesPlayed", {
+          defaultValue: "{{minutes}}'",
+          minutes: player.minutes,
+        })}
+      </p>
+      {events.length > 0 && (
+        <p className="text-xs mt-1 leading-none" data-testid="vote-card-events">
+          {events.map((event) => (
+            <span key={event.kind} className="mx-0.5 whitespace-nowrap">
+              {EVENT_GLYPHS[event.kind]}
+              {event.count > 1 && (
+                <span className="font-mono text-[10px] text-muted-foreground">
+                  ×{event.count}
+                </span>
+              )}
+            </span>
+          ))}
+        </p>
+      )}
     </NeoCard>
   );
 }

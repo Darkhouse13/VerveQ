@@ -32,6 +32,28 @@ Newest first.
 
 ---
 
+## DECISION 2026-08-14 — The eye-test vote card carries facts only, never an evaluative number
+
+**Ticket EYE-TEST-CONTEXT.** The vote card gained the memory's address — club,
+opponent, venue, league, kickoff day, scoreline oriented to the player's side,
+minutes played, factual event icons (goals, assists, a red card) — and is
+excluded, by this ruling, from ever carrying anything evaluative: **no fantasy
+points, no ratings, no xG or derived metrics, no ownership.** The eye test
+measures the crowd's eye, and any evaluative number on the card re-anchors the
+vote to an algorithm. Yellow cards are also excluded, as noise rather than
+principle. The card locates the memory; it never argues.
+
+Recorded in code at `app/convex/lib/fantasyCrowd.ts` (`ServeCardContext`
+docblock — the served payload's one context shape) and
+`app/src/lib/weekendVoteCard.ts` (header); the payload assembly is
+`app/convex/fantasyCrowdVoting.ts` (`ServedPlayer`). Kin to the FW-SCOUT
+product law ("stats, never a recommendation" —
+`app/convex/fantasyPlayerCard.ts` header): same principle, applied to the
+voting surface, where the stakes are higher because the card sits directly
+under the ballot.
+
+---
+
 ## DECISION 2026-08-14 — Native subtitles: one factory-wide treatment, the DILEMMA one
 
 **Backfilled from DILEMMA-B1, where it was resolved but recorded only in

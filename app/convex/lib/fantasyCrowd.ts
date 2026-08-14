@@ -167,3 +167,72 @@ export function raterWeightOf(accurateVotes: number, scoredVotes: number): numbe
   if (scoredVotes === 0) return 1.0;
   return 0.5 + accurateVotes / scoredVotes;
 }
+
+// ── the card's memory (EYE-TEST-CONTEXT) ──
+
+/** The fixture line the card locates the memory in — stored feed facts only
+ *  (fantasyFixtures). Absent goals stay null, never 0. */
+export interface ServeCardFixture {
+  leagueId: number;
+  kickoffAt: number;
+  homeClubId: string;
+  awayClubId: string;
+  homeGoals: number | null;
+  awayGoals: number | null;
+}
+
+/**
+ * Everything EYE-TEST-CONTEXT adds to a served card: where the memory
+ * happened (club, opponent, venue, league, day), how much of it there was
+ * (minutes), and the factual events (goals, assists, a red). Nothing
+ * evaluative — points, ratings, derived metrics are excluded BY RULING
+ * (docs/DECISIONS.md): any evaluative number on the card re-anchors the
+ * vote to an algorithm. The card locates the memory; it never argues.
+ */
+export interface ServeCardContext {
+  /** The club the player APPEARED for in this fixture — the STAT ROW's
+   *  clubId, not the players table's, so a transfer between the appearance
+   *  and the serve cannot misattribute the memory. */
+  clubId: string;
+  clubName: string | null;
+  opponentClubId: string;
+  opponentName: string | null;
+  isHome: boolean;
+  minutes: number;
+  goals: number;
+  assists: number;
+  /** A red is shown as a fact, not a count — the feed's redCards collapsed. */
+  redCard: boolean;
+  fixture: ServeCardFixture;
+}
+
+/**
+ * Pure card-context mapping for one served player. Orientation keys off the
+ * side he appeared FOR: a clubId matching neither fixture side (feed
+ * corruption) orients as away, so the opponent shown is the home side — a
+ * true fact of the fixture even in the degraded case. Club labels resolve
+ * through the passed map; a club without a label stays null (degraded
+ * loudly, never invented — the getWeekendFixtures rule).
+ */
+export function serveCardContextOf(args: {
+  appearedClubId: string;
+  stats: { minutes: number; goals: number; assists: number; redCards: number };
+  fixture: ServeCardFixture;
+  clubNames: ReadonlyMap<string, string>;
+}): ServeCardContext {
+  const { appearedClubId, stats, fixture, clubNames } = args;
+  const isHome = appearedClubId === fixture.homeClubId;
+  const opponentClubId = isHome ? fixture.awayClubId : fixture.homeClubId;
+  return {
+    clubId: appearedClubId,
+    clubName: clubNames.get(appearedClubId) ?? null,
+    opponentClubId,
+    opponentName: clubNames.get(opponentClubId) ?? null,
+    isHome,
+    minutes: stats.minutes,
+    goals: stats.goals,
+    assists: stats.assists,
+    redCard: stats.redCards > 0,
+    fixture,
+  };
+}

@@ -99,6 +99,7 @@ const CrewScreen = lazyWithRetry(() => import("./pages/shell/weekend/CrewScreen"
 const DraftRoomScreen = lazyWithRetry(() => import("./pages/shell/weekend/DraftRoomScreen"));
 const BudgetSquadScreen = lazyWithRetry(() => import("./pages/shell/weekend/BudgetSquadScreen"));
 const VoteScreen = lazyWithRetry(() => import("./pages/shell/weekend/VoteScreen"));
+const VoteCardHarness = lazyWithRetry(() => import("./pages/shell/weekend/VoteCardHarness"));
 const CourtScreen = lazyWithRetry(() => import("./pages/shell/weekend/CourtScreen"));
 const CrewSheetScreen = lazyWithRetry(() => import("./pages/shell/weekend/CrewSheetScreen"));
 const WeekendHowToPlayScreen = lazyWithRetry(() => import("./pages/shell/weekend/WeekendHowToPlayScreen"));
@@ -591,6 +592,9 @@ const AppRoutes = () => (
                 the paid direct-to-builder entry. */}
             <Route path="/v2/weekend/squad" element={<ShellGate><SessionRoute><BudgetSquadScreen /></SessionRoute></ShellGate>} />
             <Route path="/v2/weekend/vote" element={<ShellGate><UsernameOnlyRoute><VoteScreen /></UsernameOnlyRoute></ShellGate>} />
+            {/* DEV-only vote-card harness (EYE-TEST-CONTEXT; DrawMockHarness
+                precedent): fabricated pair, no auth. Redirects home in prod. */}
+            <Route path="/v2/weekend/vote-harness" element={<ShellGate><VoteCardHarness /></ShellGate>} />
             <Route path="/v2/weekend/court" element={<ShellGate><UsernameOnlyRoute><CourtScreen /></UsernameOnlyRoute></ShellGate>} />
             <Route path="/v2/weekend/sheet/:roomId" element={<ShellGate><UsernameOnlyRoute><CrewSheetScreen /></UsernameOnlyRoute></ShellGate>} />
             {/* THE WEEKEND rules screen (FW-EXPAND U3). Public like the hub —

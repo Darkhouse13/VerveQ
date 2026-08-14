@@ -35,9 +35,12 @@ import {
   deriveCrowdFactors,
   eloUpdate,
   pairKeyOf,
+  serveCardContextOf,
   type CrowdRatingEntry,
+  type ServeCardContext,
 } from "./lib/fantasyCrowd";
 import { assertCrowdFactorInBand } from "./lib/fantasyScorePipeline";
+import { clubLabel } from "./fantasyPlayerCard";
 import { findOpenGameweek } from "./fantasyDraftRooms";
 import { currentScoreRow, gameweekScoringRow } from "./fantasyScores";
 
@@ -76,6 +79,9 @@ interface AppearedPlayer {
   providerPlayerId: string;
   fixtureId: Id<"fantasyFixtures">;
   leagueId: number;
+  /** The current stat revision — the served card's memory (minutes, factual
+   *  events, appeared-for club) rides on it (EYE-TEST-CONTEXT). */
+  statRow: Doc<"fantasyFixtureStats">;
 }
 
 /**
@@ -121,6 +127,7 @@ async function appearedPlayers(
       providerPlayerId: row.providerPlayerId,
       fixtureId: row.fixtureId,
       leagueId: fixture.leagueId,
+      statRow: row,
     });
   }
   return appeared;
@@ -165,17 +172,15 @@ export type ServeResult =
       players: [ServedPlayer, ServedPlayer];
     };
 
-export interface ServedPlayer {
+/** One served card: identity plus the card's memory (EYE-TEST-CONTEXT).
+ *  The context fields — appeared-for club, opponent, venue, fixture line,
+ *  minutes, factual events — come from lib/fantasyCrowd.serveCardContextOf;
+ *  everything on it is a stored fact of fantasyFixtures / the current
+ *  fantasyFixtureStats revision. Nothing evaluative, by ruling. */
+export interface ServedPlayer extends ServeCardContext {
   playerId: Id<"fantasyPlayers">;
   name: string;
-  clubId: string;
   position: "GK" | "DEF" | "MID" | "ATT";
-  fixture: {
-    homeClubId: string;
-    awayClubId: string;
-    homeGoals: number | null;
-    awayGoals: number | null;
-  };
 }
 
 /**
@@ -253,24 +258,46 @@ export async function servePairFor(
         servedAt: now,
         status: "served",
       });
-      const players = await Promise.all(
-        [target, partner].map(async (p): Promise<ServedPlayer> => {
-          const doc = await ctx.db.get(p.playerId);
-          const fixture = await ctx.db.get(p.fixtureId);
-          return {
-            playerId: p.playerId,
-            name: doc?.name ?? "…",
-            clubId: doc?.clubId ?? "",
-            position: doc?.feedPosition ?? "MID",
+      const sides = [target, partner];
+      const docs = await Promise.all(
+        sides.map(async (p) => ({
+          player: await ctx.db.get(p.playerId),
+          fixture: await ctx.db.get(p.fixtureId),
+        })),
+      );
+      // Club labels for both sides of both fixtures via the bounded
+      // pool-meta walk (getWeekendFixtures precedent) — at most four clubs
+      // per serve, and a same-fixture pair shares its two.
+      const clubNames = new Map<string, string>();
+      for (const { fixture } of docs) {
+        for (const clubId of [fixture?.homeClubId, fixture?.awayClubId]) {
+          if (clubId === undefined || clubNames.has(clubId)) continue;
+          const label = await clubLabel(ctx, clubId);
+          if (label !== null) clubNames.set(clubId, label);
+        }
+      }
+      const players = sides.map((p, i): ServedPlayer => {
+        const doc = docs[i].player;
+        const fixture = docs[i].fixture;
+        return {
+          playerId: p.playerId,
+          name: doc?.name ?? "…",
+          position: doc?.feedPosition ?? "MID",
+          ...serveCardContextOf({
+            appearedClubId: p.statRow.clubId,
+            stats: p.statRow.stats,
             fixture: {
+              leagueId: fixture?.leagueId ?? p.leagueId,
+              kickoffAt: fixture?.kickoffAt ?? 0,
               homeClubId: fixture?.homeClubId ?? "",
               awayClubId: fixture?.awayClubId ?? "",
               homeGoals: fixture?.homeGoals ?? null,
               awayGoals: fixture?.awayGoals ?? null,
             },
-          };
-        }),
-      );
+            clubNames,
+          }),
+        };
+      });
       return {
         status: "served",
         pairId,

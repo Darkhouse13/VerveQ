@@ -24,7 +24,7 @@
 import { v } from "convex/values";
 import { query } from "./_generated/server";
 import type { Doc, Id } from "./_generated/dataModel";
-import type { QueryCtx } from "./_generated/server";
+import type { MutationCtx, QueryCtx } from "./_generated/server";
 import { findOpenGameweek } from "./fantasyDraftRooms";
 import { fixtureForClub } from "./fantasyLocks";
 import { applyCrowdFactor } from "./lib/fantasyScoring";
@@ -48,8 +48,13 @@ const OWNERSHIP_MAX_SQUADS = 2_000;
 
 /** clubId → display label via a bounded walk (getWeekendFixtures precedent):
  *  a few active players of the club, first labelled pool-meta row wins.
- *  Null when no labelled player exists — degraded loudly, never invented. */
-async function clubLabel(ctx: QueryCtx, clubId: string): Promise<string | null> {
+ *  Null when no labelled player exists — degraded loudly, never invented.
+ *  Exported for the crowd-voting serve payload (EYE-TEST-CONTEXT), whose
+ *  cards resolve at most four club labels per serve through this walk. */
+export async function clubLabel(
+  ctx: QueryCtx | MutationCtx,
+  clubId: string,
+): Promise<string | null> {
   const candidates = await ctx.db
     .query("fantasyPlayers")
     .withIndex("by_active_club", (q) => q.eq("active", true).eq("clubId", clubId))

@@ -20,8 +20,10 @@ import {
   eloUpdate,
   pairKeyOf,
   raterWeightOf,
+  serveCardContextOf,
   type CrowdFactorResult,
   type CrowdRatingEntry,
+  type ServeCardFixture,
 } from "../../convex/lib/fantasyCrowd";
 
 function entry(over: Partial<CrowdRatingEntry> & { playerId: string }): CrowdRatingEntry {
@@ -222,6 +224,100 @@ describe("court-ruled regrouping at the freeze (FW-CR1 item 2)", () => {
         expect(Math.abs(result.factor)).toBeLessThanOrEqual(CROWD_FACTOR_MAX);
       }
     }
+  });
+});
+
+// ── the card's memory (EYE-TEST-CONTEXT) ──
+
+describe("serve card context (EYE-TEST-CONTEXT query mapping)", () => {
+  const FIXTURE: ServeCardFixture = {
+    leagueId: 140,
+    kickoffAt: 1_755_361_800_000,
+    homeClubId: "club-home",
+    awayClubId: "club-away",
+    homeGoals: 3,
+    awayGoals: 1,
+  };
+  const LINE = { minutes: 78, goals: 2, assists: 1, redCards: 0 };
+  const NAMES = new Map([
+    ["club-home", "Girona"],
+    ["club-away", "Sevilla"],
+  ]);
+
+  it("orients a home appearance: his club, the away opponent, isHome", () => {
+    const card = serveCardContextOf({
+      appearedClubId: "club-home",
+      stats: LINE,
+      fixture: FIXTURE,
+      clubNames: NAMES,
+    });
+    expect(card.isHome).toBe(true);
+    expect(card.clubId).toBe("club-home");
+    expect(card.clubName).toBe("Girona");
+    expect(card.opponentClubId).toBe("club-away");
+    expect(card.opponentName).toBe("Sevilla");
+  });
+
+  it("orients an away appearance the other way round", () => {
+    const card = serveCardContextOf({
+      appearedClubId: "club-away",
+      stats: LINE,
+      fixture: FIXTURE,
+      clubNames: NAMES,
+    });
+    expect(card.isHome).toBe(false);
+    expect(card.clubName).toBe("Sevilla");
+    expect(card.opponentName).toBe("Girona");
+  });
+
+  it("passes the stat line through as facts and collapses reds to a boolean", () => {
+    const card = serveCardContextOf({
+      appearedClubId: "club-home",
+      stats: { minutes: 90, goals: 0, assists: 0, redCards: 1 },
+      fixture: FIXTURE,
+      clubNames: NAMES,
+    });
+    expect(card.minutes).toBe(90);
+    expect(card.goals).toBe(0);
+    expect(card.assists).toBe(0);
+    expect(card.redCard).toBe(true);
+    expect(
+      serveCardContextOf({
+        appearedClubId: "club-home",
+        stats: LINE,
+        fixture: FIXTURE,
+        clubNames: NAMES,
+      }).redCard,
+    ).toBe(false);
+  });
+
+  it("keeps absent goals null and unlabelled clubs null — degraded, never invented", () => {
+    const card = serveCardContextOf({
+      appearedClubId: "club-home",
+      stats: LINE,
+      fixture: { ...FIXTURE, homeGoals: null, awayGoals: null },
+      clubNames: new Map(),
+    });
+    expect(card.fixture.homeGoals).toBeNull();
+    expect(card.fixture.awayGoals).toBeNull();
+    expect(card.clubName).toBeNull();
+    expect(card.opponentName).toBeNull();
+    // The raw ids survive for the client's loud fallback.
+    expect(card.clubId).toBe("club-home");
+    expect(card.opponentClubId).toBe("club-away");
+  });
+
+  it("orients a side-matching-neither clubId as away, opponent = home side", () => {
+    // Feed corruption case: the shown opponent is still a true fact of the
+    // fixture (its home side), and nothing throws.
+    const card = serveCardContextOf({
+      appearedClubId: "club-elsewhere",
+      stats: LINE,
+      fixture: FIXTURE,
+      clubNames: NAMES,
+    });
+    expect(card.isHome).toBe(false);
+    expect(card.opponentClubId).toBe("club-home");
   });
 });
 
