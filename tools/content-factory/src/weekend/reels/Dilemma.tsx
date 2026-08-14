@@ -10,8 +10,8 @@
 // marking either. There is no winner state in this file to accidentally ship.
 //
 // FRAME 0 IS THE TASK, ALREADY MOVING: the question, both option cards and the
-// draining clock are all on screen at frame 0 — the drain bar mid-drain, the
-// clock mid-tick-pulse, the stripes scrolling. Nothing fades up and nothing
+// draining clock are all on screen at frame 0 — the bar already losing width,
+// the clock mid-tick-pulse, the stripes scrolling. Nothing fades up and nothing
 // scales in from an overscale (that would push the header out through the top
 // of the safe area on exactly those frames). No countdown card, no logo
 // bumper, no black frame — hard cuts everywhere, and the chrome is identical
@@ -41,9 +41,8 @@ export const DILEMMA_EDITIONS = EDITIONS;
 const fmt = (n: number) => n.toFixed(1);
 
 // ── the decide clock ───────────────────────────────────────────────────────
-// Counts the reel down in whole seconds and refills/drains a bar each second:
-// the "clock draining" the format opens on, and the continuous per-frame motion
-// that keeps every 0.75s sample pair distinct for the motion gate.
+// Counts the reel down in whole seconds. The bar below it (TimeDrain) is the
+// same number drawn as a width, so the two never disagree.
 const Clock: React.FC<{ abs: number; total: number }> = ({ abs, total }) => {
   const left = Math.max(0, Math.ceil((total - abs) / FPS));
   const tickAge = abs % FPS;
@@ -68,16 +67,19 @@ const Clock: React.FC<{ abs: number; total: number }> = ({ abs, total }) => {
   );
 };
 
-// Height is a MOTION-GATE parameter, not only a look. The bar refills each
-// second, so between two samples 0.75s apart its width changes by either 75% or
-// 25% of the track depending on phase — 25% is the worst case and it is the one
-// that has to clear 0.2% of the frame on its own. At 20px it cleared only
-// ~0.19% and the gate failed three windows; at 32px the same worst case is
-// ~0.37%, comfortably clear, and nothing else in the piece has to carry motion.
-const DRAIN_H = 32;
-const SecondDrain: React.FC<{ abs: number }> = ({ abs }) => (
+// The bar IS the clock, drawn. It drains once across the whole runtime, so its
+// width always equals the fraction of the reel left to run and it agrees with
+// the DECIDE IN numeral above it at every frame.
+//
+// It used to refill every second — a sawtooth — because that gave the motion
+// gate an easy 0.37% per sample. But a bar that resets each second reports
+// nothing about the time remaining; it was decoration pretending to be a meter,
+// and two things on screen were telling different stories about the same clock.
+// The gate is the thing that changed (see verify-reels.mjs), not the truth.
+const DRAIN_H = 28;
+const TimeDrain: React.FC<{ abs: number; total: number }> = ({ abs, total }) => (
   <div style={{ width: "100%", height: DRAIN_H, borderRadius: DRAIN_H / 2, background: "hsl(75 100% 55% / 0.16)", overflow: "hidden", border: `2px solid hsl(30 100% 97% / 0.25)` }}>
-    <div style={{ width: `${(1 - (abs % FPS) / FPS) * 100}%`, height: "100%", background: COLORS.lime }} />
+    <div style={{ width: `${Math.max(0, 1 - abs / total) * 100}%`, height: "100%", background: COLORS.lime }} />
   </div>
 );
 
@@ -274,7 +276,7 @@ const Frame: React.FC<{
         </div>
 
         <div style={{ marginTop: 14 }}>
-          <SecondDrain abs={abs} />
+          <TimeDrain abs={abs} total={total} />
         </div>
 
         {/* the two options — same component, same geometry, no winner state.
@@ -405,7 +407,7 @@ const Closer: React.FC<SceneProps> = ({ start, total }) => {
           <Clock abs={abs} total={total} />
         </div>
         <div style={{ position: "absolute", top: 58, left: 0, right: 0 }}>
-          <SecondDrain abs={abs} />
+          <TimeDrain abs={abs} total={total} />
         </div>
         <div style={{ position: "absolute", top: 190, left: 0, right: 0, display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center" }}>
           <Slam frame={frame} fps={fps} from={1.4} damping={10}>

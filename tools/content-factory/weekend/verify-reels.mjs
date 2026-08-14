@@ -60,10 +60,18 @@ if (only.length > 0) REELS = REELS.filter(([slug]) => only.includes(slug));
 const DENSEST = { settleit: 1540, referee: 1330, squad: 1500, boost: 250, dilemma1: 300, dilemma2: 300 };
 
 // reels built under the DOPAMINE LAW — the motion gate applies
-// DILEMMA-B1 opts in: the format's premise is a clock running down, so a static
-// stretch would be a lie about the piece as well as a retention hole. The
-// per-second drain bar (960x20) plus the flipping clock digits carry it.
-const MOTION_GATED = new Set(["wknd-42h", "wknd-dilemma-1", "wknd-dilemma-2"]);
+// Paid, cold-traffic pieces only. wknd-42h is built on the DOPAMINE LAW and a
+// static stretch there is a real defect.
+//
+// the-dilemma was gated here at first and it was a mistake worth recording: it
+// is a READ-AND-DECIDE format — two option cards a viewer has to actually read
+// before the 3-2-1 — so its held frames are the point, exactly like the still
+// CTA tails that keep the three organic reels ungated. Holding it to 0.2% per
+// 0.75s did not make the reel better; it made the time bar refill every second
+// so the gate had something to measure, which put a meter on screen that
+// reported nothing. Gate removed, bar made truthful. If a future format wants
+// this gate, it should be because motion is the thesis, not to pass a check.
+const MOTION_GATED = new Set(["wknd-42h"]);
 const MOTION_STEP_S = 0.75;
 const MOTION_MIN_FRAC = 0.002; // ≥0.2% of pixels changed by >20 luma
 const MOTION_MIN_DELTA = 20;

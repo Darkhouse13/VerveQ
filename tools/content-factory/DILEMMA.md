@@ -18,8 +18,7 @@ node weekend/render-dilemma.mjs wknd-dilemma-2  # one
 It (1) re-pulls prod `fantasyMarket:getMarket` and re-verifies EVERY on-screen
 fact — every price, position, opponent, venue, kickoff, both side totals and the
 edition-1 superlative — any drift THROWS; (2) fit-checks/refreshes VO; (3)
-renders + captions via `weekend.mjs`; (4) runs the delivery gate incl. the motion
-gate.
+renders + captions via `weekend.mjs`; (4) runs the delivery gate.
 
 There is **no countdown baked into the picture**, so unlike `wknd-42h` there is
 no 15-minute posting window. But the PRICES are live: if the board is repriced
@@ -40,13 +39,18 @@ is not a trade. Asserted per render by `weekend/dilemma-live.mjs`.
 
 ## Spine → grid (`grid.json` `dilemma1`/`dilemma2`, 600f, identical shape)
 
-| scene | frames | on screen | continuous ticker |
-|---|---|---|---|
-| task | 0–90 | frame 0 IS the task: question + both option cards + draining clock, already in motion | decide clock + second-drain |
-| sideA | 90–216 | card A lit (lime border, deeper shadow), card B to 0.42; A's rows nudge on the 18f cadence | clock + drain + row nudges |
-| sideB | 216–342 | the same, mirrored | as above |
-| count | 342–450 | 3–2–1 on a 36f step, scrimmed over BOTH cards, neither marked | clock + drain + numeral |
-| closer | 450–600 | NO RIGHT ANSWER. / PICK IN THE COMMENTS. / VERVEQ.COM/WEEKEND / OR PICK FOR REAL · FREE, NO SIGNUP | clock + drain + card pops |
+| scene | frames | on screen |
+|---|---|---|
+| task | 0–90 | frame 0 IS the task: question + both option cards + draining clock, already in motion |
+| sideA | 90–216 | card A lit (lime border, deeper shadow), card B to 0.42; A's rows nudge on the 18f cadence |
+| sideB | 216–342 | the same, mirrored |
+| count | 342–450 | 3–2–1 on a 36f step, scrimmed over BOTH cards, neither marked |
+| closer | 450–600 | NO RIGHT ANSWER. / PICK IN THE COMMENTS. / VERVEQ.COM/WEEKEND / OR PICK FOR REAL · FREE, NO SIGNUP |
+
+The `DECIDE IN` numeral and the bar under the question are **the same clock**:
+the bar's width is the fraction of the runtime left, so it drains once, monotonically,
+across the 20s. Measured on rendered pixels — f0 99.6%, f150 74.6%, f300 49.8%,
+f470 21.5%, f540 10.0%, f599 0.1%, against 100/75/50/21.7/10/0.2 expected.
 
 Frame 0 carries no countdown card, no logo bumper and no fade — hard cuts
 throughout, and the chrome is identical across scenes so a cut is seamless.
@@ -116,11 +120,18 @@ fixture fails the render.
 
 ## Gates (transcript: `out/2026-08-14/wknd-dilemma-{1,2}-verify.txt`)
 
-Standard reel gate (container, duration, 5/5 VO cues on frame, no dead air,
-safe-zone strips, frame-0 luma) **plus the motion gate** — this format opts in,
-because its premise is a clock running down and a static stretch would be a lie
-about the piece. Final: **ALL CHECKS PASSED** on both, safe zone worst YMAX 39
-(limit 110), motion weakest pair 0.32% (floor 0.20%).
+Standard reel gate: container, duration, 5/5 VO cues on frame, no dead air,
+safe-zone strips, frame-0 luma. Final: **ALL CHECKS PASSED** on both, safe zone
+worst YMAX 39 (limit 110).
+
+**NOT motion-gated, deliberately.** It was at first, and that was the wrong
+call: `the-dilemma` is a read-and-decide format — two option cards the viewer
+has to actually read before the 3-2-1 — so its held frames are the point, the
+same reason the three organic reels stay ungated for their still CTA tails. The
+gate did not improve the reel; it made the time bar refill every second so there
+was something to measure, which put a meter on screen that reported nothing
+about the time left. Gate dropped, bar made truthful. Motion gating belongs to
+pieces where motion is the thesis — `wknd-42h` and its DOPAMINE LAW.
 
 Two real defects were caught by the gate and fixed at the source, never by
 softening a threshold:
@@ -128,10 +139,9 @@ softening a threshold:
 - **Safe zone, YMAX 217 on both side strips.** The lit card scaled 1.02, which
   moved a full-safe-width card's lime border to x=50.4 and x=1029.6 — inside both
   chrome strips. Replaced with a 3px lift; the cards also gained a 14px inset.
-- **Motion, 0.19% across three windows.** The second-drain bar refills each
-  second, so between samples 0.75s apart it changes by 75% *or* 25% of its track
-  depending on phase, and 25% at 20px tall was under the floor. Bar height 20 →
-  32; worst case is now ~0.37%.
+- **Motion, 0.19% across three windows.** Fixed the wrong way first — by making
+  the bar a per-second sawtooth so it always cleared the floor. See above: the
+  gate came off and the bar became a real meter instead.
 
 A third defect the gate cannot see was caught on the stills: side B's second
 player was staggered in on the row cadence, so **Berghuis vanished at f216 and
