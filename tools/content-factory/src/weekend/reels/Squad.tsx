@@ -4,7 +4,7 @@
 // game; the product frame arrives only at the end.
 import React from "react";
 import { AbsoluteFill, Audio, Sequence, interpolate, staticFile, useCurrentFrame, useVideoConfig } from "remotion";
-import { COLORS, FONTS, Slam, Ground, Stripes, Pill, spr, inOut, shake, neoShadow } from "../../promo/kit";
+import { COLORS, FONTS, Slam, Ground, Stripes, Pill, SafeArea, spr, inOut, shake, neoShadow } from "../../promo/kit";
 import { FPS, SQUAD, SQUAD_BUDGET, SQUAD_SLOTS, SQUAD_STARS, SQUAD_GEMS, startsOf, totalOf } from "./timeline";
 import { hasVo, vo } from "./vo";
 
@@ -21,7 +21,7 @@ const BudgetBar: React.FC<{ left: number; pulse?: boolean }> = ({ left, pulse })
   const hot = frac < 0.5;
   const flash = pulse ? 0.75 + 0.25 * Math.sin(frame / 3) : 1;
   return (
-    <div style={{ position: "absolute", top: 176, left: 44, right: 44 }}>
+    <div style={{ position: "absolute", top: 84, left: 0, right: 0 }}>
       <div style={{ display: "flex", justifyContent: "space-between", fontFamily: FONTS.mono, fontWeight: 700, fontSize: 26, letterSpacing: 3, color: COLORS.cream, marginBottom: 10 }}>
         <span style={{ opacity: 0.55 }}>BUDGET</span>
         <span style={{ color: hot ? COLORS.red : COLORS.lime, opacity: flash }}>{fmt(left)} LEFT</span>
@@ -34,7 +34,7 @@ const BudgetBar: React.FC<{ left: number; pulse?: boolean }> = ({ left, pulse })
 };
 
 const SlotRack: React.FC<{ filled: number }> = ({ filled }) => (
-  <div style={{ position: "absolute", top: 250, left: 44, right: 44, display: "flex", gap: 10 }}>
+  <div style={{ position: "absolute", top: 158, left: 0, right: 0, display: "flex", gap: 10 }}>
     {Array.from({ length: SQUAD_SLOTS }, (_, i) => (
       <div key={i} style={{ flex: 1, height: 46, borderRadius: 9, border: `3px solid ${i < filled ? COLORS.lime : "hsl(30 100% 97% / 0.3)"}`, background: i < filled ? COLORS.lime : "transparent" }} />
     ))}
@@ -48,12 +48,14 @@ const Board: React.FC<{ children: React.ReactNode; left: number; filled: number;
       <Ground color={COLORS.ink}>
         <Stripes frame={frame} color={COLORS.lime} ground={COLORS.ink} opacity={0.05} />
       </Ground>
-      <div style={{ position: "absolute", top: 66, left: 0, right: 0, textAlign: "center", fontFamily: FONTS.mono, fontWeight: 700, fontSize: 30, letterSpacing: 5, color: COLORS.cream }}>
-        <span style={{ opacity: 0.9 }}>13 SHIRTS · 91.0 · 8 LEAGUES</span>
-      </div>
-      <BudgetBar left={left} pulse={pulse} />
-      <SlotRack filled={filled} />
-      {children}
+      <SafeArea>
+        <div style={{ position: "absolute", top: 0, left: 0, right: 0, textAlign: "center", fontFamily: FONTS.mono, fontWeight: 700, fontSize: 30, letterSpacing: 5, color: COLORS.cream }}>
+          <span style={{ opacity: 0.9 }}>13 SHIRTS · 91.0 · 8 LEAGUES</span>
+        </div>
+        <BudgetBar left={left} pulse={pulse} />
+        <SlotRack filled={filled} />
+        {children}
+      </SafeArea>
     </>
   );
 };
@@ -66,17 +68,22 @@ const Open: React.FC<{ dur: number }> = ({ dur }) => {
   return (
     <AbsoluteFill style={exit}>
       <Board left={SQUAD_BUDGET} filled={0}>
-        <div style={{ position: "absolute", inset: 0, top: 340, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", textAlign: "center", padding: "0 60px" }}>
+        <div style={{ position: "absolute", left: 0, right: 0, top: 230, bottom: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", textAlign: "center" }}>
           {/* pre-landed punch, NOT a Slam: readable on frame 0 with the settle
               still moving — the batch-1 retention law (70% gone before 3s on a
-              static open; a faded-in open is worse, it's a BLANK frame 0). */}
+              static open; a faded-in open is worse, it's a BLANK frame 0).
+              v2: the hook leads with the four names, not the abstract number. */}
           <div style={{ transform: `scale(${interpolate(frame, [0, 5], [1.08, 1], { extrapolateRight: "clamp" })})` }}>
-            <div style={{ fontFamily: FONTS.head, fontWeight: 700, fontSize: 210, letterSpacing: -8, lineHeight: 0.9, color: COLORS.lime, textShadow: `12px 12px 0 ${COLORS.ink}` }}>91.0</div>
-            <div style={{ fontFamily: FONTS.head, fontWeight: 700, fontSize: 92, letterSpacing: -2, color: COLORS.cream, marginTop: 26 }}>13 SHIRTS.</div>
+            <div style={{ fontFamily: FONTS.head, fontWeight: 700, fontSize: 86, letterSpacing: -2, lineHeight: 1.02, color: COLORS.cream, textShadow: `8px 8px 0 ${COLORS.ink}` }}>
+              MBAPPÉ. YAMAL.<br />KANE. OLISE.
+            </div>
+            <div style={{ fontFamily: FONTS.head, fontWeight: 700, fontSize: 118, letterSpacing: -4, lineHeight: 0.95, color: COLORS.lime, textShadow: `9px 9px 0 ${COLORS.ink}`, marginTop: 34 }}>
+              THEY DON'T<br />ALL FIT.
+            </div>
           </div>
           <Slam frame={frame} fps={fps} delay={22} from={1.3} damping={11}>
             <div style={{ marginTop: 56 }}>
-              <Pill bg={COLORS.cream} fg={COLORS.ink} size={38} rot={-1.5}>LET'S BUILD.</Pill>
+              <Pill bg={COLORS.cream} fg={COLORS.ink} size={38} rot={-1.5}>91.0. LET'S BUILD.</Pill>
             </div>
           </Slam>
         </div>
@@ -98,7 +105,7 @@ const Stars: React.FC<{ dur: number }> = ({ dur }) => {
   return (
     <AbsoluteFill style={exit}>
       <Board left={Math.round(left * 2) / 2} filled={landed}>
-        <div style={{ position: "absolute", top: 420, left: 44, right: 44, display: "flex", flexDirection: "column", gap: 24 }}>
+        <div style={{ position: "absolute", top: 240, left: 16, right: 16, display: "flex", flexDirection: "column", gap: 24 }}>
           {SQUAD_STARS.slice(0, landed).map((star, i) => {
             const at = i * STEP;
             const s = spr(frame, fps, at, 9, 15);
@@ -131,7 +138,7 @@ const MathCard: React.FC<{ dur: number }> = ({ dur }) => {
   return (
     <AbsoluteFill style={exit}>
       <Board left={40.5} filled={4} pulse>
-        <div style={{ position: "absolute", inset: 0, top: 300, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", textAlign: "center", padding: "0 60px" }}>
+        <div style={{ position: "absolute", left: 0, right: 0, top: 230, bottom: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", textAlign: "center" }}>
           <Slam frame={frame} fps={fps} from={1.5} damping={10}>
             <div style={{ fontFamily: FONTS.head, fontWeight: 700, fontSize: 108, letterSpacing: -3, lineHeight: 0.95, color: COLORS.cream, textShadow: `9px 9px 0 ${COLORS.ink}` }}>
               9 SHIRTS LEFT.<br />40.5 TO SPEND.
@@ -157,12 +164,12 @@ const Tradeoff: React.FC<{ dur: number }> = ({ dur }) => {
   return (
     <AbsoluteFill style={exit}>
       <Board left={40.5} filled={4} pulse>
-        <div style={{ position: "absolute", top: 360, left: 0, right: 0, textAlign: "center" }}>
+        <div style={{ position: "absolute", top: 220, left: 0, right: 0, textAlign: "center" }}>
           <Slam frame={frame} fps={fps} from={1.5} damping={9}>
             <div style={{ fontFamily: FONTS.head, fontWeight: 700, fontSize: 120, letterSpacing: -4, color: COLORS.red, textShadow: `9px 9px 0 ${COLORS.ink}` }}>ONE HAS TO GO.</div>
           </Slam>
         </div>
-        <div style={{ position: "absolute", top: 560, left: 44, right: 44, display: "flex", flexDirection: "column", gap: 22 }}>
+        <div style={{ position: "absolute", top: 390, left: 20, right: 20, display: "flex", flexDirection: "column", gap: 22 }}>
           {SQUAD_STARS.map((star, i) => {
             const isHot = i === hot;
             return (
@@ -174,7 +181,7 @@ const Tradeoff: React.FC<{ dur: number }> = ({ dur }) => {
             );
           })}
         </div>
-        <div style={{ position: "absolute", bottom: 130, left: 0, right: 0, textAlign: "center", fontFamily: FONTS.mono, fontWeight: 700, fontSize: 30, letterSpacing: 3, color: COLORS.cream, opacity: 0.7 }}>
+        <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, textAlign: "center", fontFamily: FONTS.mono, fontWeight: 700, fontSize: 30, letterSpacing: 3, color: COLORS.cream, opacity: 0.7 }}>
           DROP KANE → 5.3 A SHIRT FOR TEN
         </div>
       </Board>
@@ -189,12 +196,12 @@ const Gems: React.FC<{ dur: number }> = ({ dur }) => {
   return (
     <AbsoluteFill style={exit}>
       <Board left={40.5} filled={4}>
-        <div style={{ position: "absolute", top: 370, left: 0, right: 0, textAlign: "center" }}>
+        <div style={{ position: "absolute", top: 220, left: 0, right: 0, textAlign: "center" }}>
           <Slam frame={frame} fps={fps} from={1.4} damping={10}>
-            <div style={{ fontFamily: FONTS.head, fontWeight: 700, fontSize: 86, letterSpacing: -2, color: COLORS.lime, textShadow: `8px 8px 0 ${COLORS.ink}` }}>THE BIN SCORED<br />THIS WEEKEND.</div>
+            <div style={{ fontFamily: FONTS.head, fontWeight: 700, fontSize: 86, letterSpacing: -2, color: COLORS.lime, textShadow: `8px 8px 0 ${COLORS.ink}` }}>THE BIN HAS<br />FAMOUS NAMES.</div>
           </Slam>
         </div>
-        <div style={{ position: "absolute", top: 660, left: 44, right: 44, display: "flex", flexDirection: "column", gap: 24 }}>
+        <div style={{ position: "absolute", top: 500, left: 16, right: 16, display: "flex", flexDirection: "column", gap: 24 }}>
           {SQUAD_GEMS.map((gem, i) => {
             const at = 30 + i * 70;
             const s = spr(frame, fps, at, 10, 15);
@@ -226,7 +233,7 @@ const Withhold: React.FC<{ dur: number }> = ({ dur }) => {
       <Ground color={COLORS.ink}>
         <Stripes frame={frame} color={COLORS.cream} ground={COLORS.ink} opacity={0.05} />
       </Ground>
-      <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", textAlign: "center", padding: "0 64px" }}>
+      <SafeArea center>
         <Slam frame={frame} fps={fps} from={1.5} damping={10}>
           <div style={{ fontFamily: FONTS.head, fontWeight: 700, fontSize: 116, letterSpacing: -4, lineHeight: 0.95, color: COLORS.cream, textShadow: `10px 10px 0 ${COLORS.ink}` }}>
             MY FINAL 13?<br />
@@ -236,7 +243,7 @@ const Withhold: React.FC<{ dur: number }> = ({ dur }) => {
         <div style={{ marginTop: 64, transform: `scale(${0.7 + second * 0.3})`, opacity: Math.min(1, second * 2) }}>
           <Pill bg={COLORS.red} fg={COLORS.cream} size={42} rot={1.5}>WHO GOES? COMMENTS.</Pill>
         </div>
-      </div>
+      </SafeArea>
     </AbsoluteFill>
   );
 };
@@ -250,7 +257,7 @@ const Cta: React.FC<{ dur: number }> = ({ dur }) => {
     <AbsoluteFill>
       <Ground color={COLORS.ink} />
       <div style={{ position: "absolute", inset: 0, background: COLORS.lime, opacity: flash * 0.9 }} />
-      <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", textAlign: "center" }}>
+      <SafeArea center>
         <Slam frame={frame} fps={fps} from={1.4} damping={10}>
           <div style={{ fontFamily: FONTS.head, fontWeight: 700, fontSize: 64, letterSpacing: 7, color: COLORS.cream }}>THE WEEKEND</div>
         </Slam>
@@ -258,7 +265,7 @@ const Cta: React.FC<{ dur: number }> = ({ dur }) => {
           <div style={{ background: COLORS.lime, color: COLORS.ink, fontFamily: FONTS.head, fontWeight: 700, fontSize: 64, padding: "24px 56px", border: `6px solid ${COLORS.cream}`, borderRadius: 18, boxShadow: `10px 10px 0 ${COLORS.cream}` }}>VERVEQ.COM</div>
           <div style={{ marginTop: 26, fontFamily: FONTS.body, fontWeight: 500, fontSize: 38, color: COLORS.cream, opacity: 0.85 }}>Play free · no signup</div>
         </div>
-      </div>
+      </SafeArea>
     </AbsoluteFill>
   );
 };

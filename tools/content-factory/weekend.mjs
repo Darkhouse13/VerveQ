@@ -14,6 +14,8 @@ import { ensureWkndManifestoAudio } from "./weekend/manifesto-audio.mjs";
 import { ensureWkndSettleItAudio } from "./weekend/settleit-audio.mjs";
 import { ensureWkndRefereeAudio } from "./weekend/referee-audio.mjs";
 import { ensureWkndSquadAudio } from "./weekend/squad-audio.mjs";
+import { ensureWkndBoostAudio } from "./weekend/boost-audio.mjs";
+import { ensureWkndDilemmaAudio } from "./weekend/dilemma-audio.mjs";
 import { buildWeekendCaption } from "./weekend/captions.mjs";
 
 const dir = path.dirname(fileURLToPath(import.meta.url));
@@ -30,6 +32,15 @@ const ASSETS = [
   { name: "wknd-settleit", id: "WkndSettleIt", audio: ensureWkndSettleItAudio },
   { name: "wknd-referee", id: "WkndReferee", audio: ensureWkndRefereeAudio },
   { name: "wknd-squad", id: "WkndSquad", audio: ensureWkndSquadAudio },
+  // CF-42H paid-boost reel — render via weekend/render-42h.mjs (refreshes the
+  // live countdown + re-verifies every fact on prod first), not directly.
+  { name: "wknd-42h", id: "Wknd42h", audio: ensureWkndBoostAudio },
+  // DILEMMA-B1 — the experiment lane's second occupant. Render via
+  // weekend/render-dilemma.mjs (re-verifies every price on prod first), not
+  // directly: a wrong price under "no right answer" branding is the one
+  // failure this format cannot survive.
+  { name: "wknd-dilemma-1", id: "WkndDilemma-d1", audio: ensureWkndDilemmaAudio("wknd-dilemma-1") },
+  { name: "wknd-dilemma-2", id: "WkndDilemma-d2", audio: ensureWkndDilemmaAudio("wknd-dilemma-2") },
 ];
 
 const want = process.argv.slice(2);

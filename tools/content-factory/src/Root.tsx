@@ -79,6 +79,8 @@ import { TOTAL as WKND_MANIFESTO_TOTAL, FPS as WKND_MANIFESTO_FPS } from "./week
 import { SettleIt, SETTLEIT_TOTAL } from "./weekend/reels/SettleIt";
 import { Referee, REFEREE_TOTAL } from "./weekend/reels/Referee";
 import { Squad, SQUAD_TOTAL } from "./weekend/reels/Squad";
+import { Boost, BOOST_TOTAL } from "./weekend/reels/Boost";
+import { Dilemma, DILEMMA_EDITIONS, dilemmaTotal } from "./weekend/reels/Dilemma";
 import { FPS as WKND_REELS_FPS } from "./weekend/reels/timeline";
 
 // Studio preview default only — render.mjs injects the real entry per video.
@@ -398,6 +400,38 @@ export const RemotionRoot: React.FC = () => (
       height={1920}
       durationInFrames={SQUAD_TOTAL}
     />
+    {/* CF-42H — the paid-boost conversion reel. Facts re-verified against
+        prod by weekend/boost-live.mjs on every render; render via
+        weekend/render-42h.mjs (the one command), never straight weekend.mjs. */}
+    <Composition
+      id="Wknd42h"
+      component={Boost}
+      fps={WKND_REELS_FPS}
+      width={1080}
+      height={1920}
+      durationInFrames={BOOST_TOTAL}
+    />
+
+    {/* DILEMMA-B1 — "the-dilemma", the experiment lane's second occupant
+        (chain-long killed on the lane law, 2026-08-14). One real draft decision
+        per edition and NO resolution; the format exists to carry the live CTA
+        and to collect votes, so comments/1000 is a co-primary read. Casting +
+        prices are the prod board's, re-verified on every render by
+        weekend/dilemma-live.mjs — render via weekend/render-dilemma.mjs (the
+        one command), never straight weekend.mjs. A third edition is a row in
+        src/weekend/reels/dilemma-facts.json plus its grid entry, nothing else. */}
+    {DILEMMA_EDITIONS.map((ed) => (
+      <Composition
+        key={ed.slug}
+        id={`WkndDilemma-${ed.id}`}
+        component={Dilemma}
+        fps={WKND_REELS_FPS}
+        width={1080}
+        height={1920}
+        durationInFrames={dilemmaTotal(ed.id)}
+        defaultProps={{ id: ed.id }}
+      />
+    ))}
 
     {/* THE DAVE TAPES — the live-action lane. One component, one row of data
         per film, so a fifth film is a clip plus a table entry rather than

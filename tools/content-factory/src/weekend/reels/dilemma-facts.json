@@ -1,0 +1,126 @@
+{
+  "_comment": "DILEMMA-B1 fact base — one real draft decision per edition. EVERY name, price, position, opponent, venue and kickoff here is the prod board's own (fantasyMarket:getMarket on different-lynx-153, pulled 2026-08-14) and is RE-VERIFIED against prod by weekend/dilemma-live.mjs on every render: a drifted price, a moved fixture or a lost fixture FAILS the render. Never career_paths.json, never memory. Day tags only (FRI/SAT/SUN/MON) — no timezone claims on screen. THE SELECTABILITY LAW: every player named here must have a fixture in the open gameweek, because budget-mode WEEKEND squads server-REJECT a fixtureless pick (app/convex/fantasySquads.ts:422, FIXTURE_MISSING_MESSAGE) — a dilemma offering an unpickable player is not a dilemma, it is a wrong answer under a 'no right answer' banner. THE NEUTRALITY LAW: both sides of an edition must cost exactly the same, or the trade is not a trade. Both are asserted by the gate.",
+  "gw": 1,
+  "budget": 91.0,
+  "slots": 13,
+  "editions": [
+    {
+      "slug": "wknd-dilemma-1",
+      "id": "d1",
+      "stake": 9.5,
+      "kicker": "ONE, OR TWO?",
+      "question": ["9.5 TO SPEND.", "ONE PLAYER,", "OR TWO?"],
+      "claim": {
+        "kind": "maxPricedWithFixture",
+        "board": "Aleix Febas",
+        "tag": "MOST EXPENSIVE PLAYER WITH A FIXTURE",
+        "_comment": "On-screen claim, so it is gated: the highest price among players WITH a fixture this gameweek must be exactly `stake` and must be held by this one player alone. A reprice that ties or overtakes him throws."
+      },
+      "sides": [
+        {
+          "key": "A",
+          "total": 9.5,
+          "note": "ONE SLOT",
+          "players": [
+            {
+              "board": "Aleix Febas",
+              "display": "FEBAS",
+              "club": "Celta Vigo",
+              "chip": "CELTA VIGO",
+              "pos": "MID",
+              "price": 9.5,
+              "opponent": "Osasuna",
+              "oppChip": "OSASUNA",
+              "isHome": true,
+              "day": "SUN",
+              "atIso": "2026-08-16T19:30:00.000Z"
+            }
+          ]
+        },
+        {
+          "key": "B",
+          "total": 9.5,
+          "note": "TWO SLOTS",
+          "players": [
+            {
+              "board": "K. Dolberg",
+              "display": "DOLBERG",
+              "club": "Ajax",
+              "chip": "AJAX",
+              "pos": "ATT",
+              "price": 4.5,
+              "opponent": "Heerenveen",
+              "oppChip": "HEERENVEEN",
+              "isHome": true,
+              "day": "SUN",
+              "atIso": "2026-08-16T14:45:00.000Z"
+            },
+            {
+              "board": "S. Berghuis",
+              "display": "BERGHUIS",
+              "club": "Ajax",
+              "chip": "AJAX",
+              "pos": "ATT",
+              "price": 5.0,
+              "opponent": "Heerenveen",
+              "oppChip": "HEERENVEEN",
+              "isHome": true,
+              "day": "SUN",
+              "atIso": "2026-08-16T14:45:00.000Z"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "slug": "wknd-dilemma-2",
+      "id": "d2",
+      "stake": 8.0,
+      "kicker": "SAME PRICE.",
+      "question": ["8.0 EACH.", "TWO STRIKERS,", "ONE SLOT."],
+      "claim": null,
+      "sides": [
+        {
+          "key": "A",
+          "total": 8.0,
+          "note": "LOCKS MONDAY",
+          "players": [
+            {
+              "board": "P. Aubameyang",
+              "display": "AUBAMEYANG",
+              "club": "Deportivo La Coruna",
+              "chip": "DEPORTIVO",
+              "pos": "ATT",
+              "price": 8.0,
+              "opponent": "Elche",
+              "oppChip": "ELCHE",
+              "isHome": true,
+              "day": "MON",
+              "atIso": "2026-08-17T19:00:00.000Z"
+            }
+          ]
+        },
+        {
+          "key": "B",
+          "total": 8.0,
+          "note": "LOCKS SUNDAY",
+          "players": [
+            {
+              "board": "A. Budimir",
+              "display": "BUDIMIR",
+              "club": "Osasuna",
+              "chip": "OSASUNA",
+              "pos": "ATT",
+              "price": 8.0,
+              "opponent": "Celta Vigo",
+              "oppChip": "CELTA VIGO",
+              "isHome": false,
+              "day": "SUN",
+              "atIso": "2026-08-16T19:30:00.000Z"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

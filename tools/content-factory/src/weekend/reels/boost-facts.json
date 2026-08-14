@@ -1,0 +1,37 @@
+{
+  "_comment": "CF-42H fact base — every entry verified against prod fantasyMarket:getMarket (different-lynx-153) at authoring (2026-08-13) AND re-verified by weekend/boost-live.mjs on every render: a drifted price, moved fixture or woken big league FAILS the render. Fixture day tags only (FRI/SAT/SUN/MON) — no timezone claims on screen. Squad sums to exactly 91.0; Yamal carries no fixture this GW — his 13.0 is a board price (the same receipt the shipped wknd-squad reel uses), never a match claim.",
+  "gw": 1,
+  "budget": 91.0,
+  "slots": 13,
+  "firstKickoff": { "home": "Telstar", "away": "Sparta Rotterdam", "atIso": "2026-08-14T18:00:00.000Z", "league": "EREDIVISIE" },
+  "asleepLeagueIds": [39, 61, 78, 135],
+  "asleepNames": ["PREMIER LEAGUE", "BUNDESLIGA", "SERIE A", "LIGUE 1"],
+  "fixtureCount": 36,
+  "activeLeagueCount": 4,
+  "cards": [
+    { "home": "TELSTAR", "away": "SPARTA", "homeFull": "Telstar", "awayFull": "Sparta Rotterdam", "league": "EREDIVISIE", "day": "FRI", "atIso": "2026-08-14T18:00:00.000Z" },
+    { "home": "WOLVES", "away": "BLACKBURN", "homeFull": "Wolves", "awayFull": "Blackburn", "league": "CHAMPIONSHIP", "day": "FRI", "atIso": "2026-08-14T19:00:00.000Z" },
+    { "home": "SPORTING", "away": "GUIMARÃES", "homeFull": "Sporting CP", "awayFull": "Guimaraes", "league": "LIGA PORTUGAL", "day": "FRI", "atIso": "2026-08-14T19:15:00.000Z" },
+    { "home": "SEVILLA", "away": "RAYO", "homeFull": "Sevilla", "awayFull": "Rayo Vallecano", "league": "LA LIGA", "day": "SAT", "atIso": "2026-08-15T19:30:00.000Z" },
+    { "home": "AJAX", "away": "HEERENVEEN", "homeFull": "Ajax", "awayFull": "Heerenveen", "league": "EREDIVISIE", "day": "SUN", "atIso": "2026-08-16T14:45:00.000Z" },
+    { "home": "CASA PIA", "away": "BENFICA", "homeFull": "Casa Pia", "awayFull": "Benfica", "league": "LIGA PORTUGAL", "day": "MON", "atIso": "2026-08-17T19:15:00.000Z" }
+  ],
+  "squad": [
+    { "name": "José Sá", "surname": "SÁ", "club": "Wolves", "chip": "WOLVES", "pos": "GK", "price": 4.0, "finisher": false },
+    { "name": "I. Perišić", "surname": "PERIŠIĆ", "club": "PSV Eindhoven", "chip": "PSV", "pos": "DEF", "price": 7.5, "finisher": false },
+    { "name": "Gonçalo Inácio", "surname": "INÁCIO", "club": "Sporting CP", "chip": "SPORTING", "pos": "DEF", "price": 7.5, "finisher": false },
+    { "name": "J. Kiwior", "surname": "KIWIOR", "club": "FC Porto", "chip": "PORTO", "pos": "DEF", "price": 7.5, "finisher": false },
+    { "name": "K. Itakura", "surname": "ITAKURA", "club": "Ajax", "chip": "AJAX", "pos": "DEF", "price": 7.0, "finisher": false },
+    { "name": "J. Veerman", "surname": "VEERMAN", "club": "PSV Eindhoven", "chip": "PSV", "pos": "MID", "price": 7.5, "finisher": false },
+    { "name": "Pote", "surname": "POTE", "club": "Sporting CP", "chip": "SPORTING", "pos": "MID", "price": 7.5, "finisher": false },
+    { "name": "João Moutinho", "surname": "MOUTINHO", "club": "SC Braga", "chip": "BRAGA", "pos": "MID", "price": 7.0, "finisher": false },
+    { "name": "Lamine Yamal", "surname": "YAMAL", "club": "Barcelona", "chip": "BARCELONA", "pos": "ATT", "price": 13.0, "finisher": false },
+    { "name": "V. Pavlidis", "surname": "PAVLIDIS", "club": "Benfica", "chip": "BENFICA", "pos": "ATT", "price": 7.5, "finisher": false },
+    { "name": "R. Vargas", "surname": "VARGAS", "club": "Sevilla", "chip": "SEVILLA", "pos": "MID", "price": 6.5, "finisher": false },
+    { "name": "B. Brereton", "surname": "BRERETON", "club": "Southampton", "chip": "SOTON", "pos": "ATT", "price": 4.5, "finisher": true },
+    { "name": "Marcos Alonso", "surname": "ALONSO", "club": "Celta Vigo", "chip": "CELTA", "pos": "DEF", "price": 4.0, "finisher": true }
+  ],
+  "fillCount": 8,
+  "squeezeIndex": 8,
+  "squeezeAlt": { "count": 3, "price": 4.5 }
+}

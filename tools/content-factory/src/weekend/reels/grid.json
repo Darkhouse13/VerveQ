@@ -45,6 +45,65 @@
       { "key": "rf-cta", "at": 2050, "budget": 9.0 }
     ]
   },
+  "boost": {
+    "_comment": "CF-42H — 32.0s paid-boost conversion reel. DOPAMINE LAW: every scene carries a continuous meaningful ticker (countdown / bar drain / card cadence) so no 0.75s sample pair is static; scene boundaries are hard cuts on VO beats. cardStep = fixture slam cadence (22f ≈ 0.73s), shirtStep = pitch fill cadence.",
+    "scenes": [
+      { "key": "open", "dur": 90 },
+      { "key": "fixtures", "dur": 180 },
+      { "key": "fill", "dur": 180 },
+      { "key": "squeeze", "dur": 180 },
+      { "key": "rules", "dur": 180 },
+      { "key": "cta", "dur": 150 }
+    ],
+    "cardStep": 22,
+    "shirtStep": 21,
+    "cues": [
+      { "key": "bo-open", "at": 4, "budget": 2.8 },
+      { "key": "bo-contra", "at": 94, "budget": 5.8 },
+      { "key": "bo-fill", "at": 274, "budget": 5.8 },
+      { "key": "bo-squeeze", "at": 454, "budget": 5.8 },
+      { "key": "bo-r1", "at": 634, "budget": 1.7 },
+      { "key": "bo-r2", "at": 689, "budget": 1.7 },
+      { "key": "bo-r3", "at": 744, "budget": 2.2 },
+      { "key": "bo-cta", "at": 814, "budget": 4.8 }
+    ]
+  },
+  "dilemma1": {
+    "_comment": "DILEMMA-B1 — 20.0s, the experiment lane's second occupant. Frame 0 is the TASK already in motion: stake plate + both option cards on screen, second-drain bar draining. No countdown card, no black frame, no logo bumper. dl-hold and dl-cta are SHARED with dilemma2 (identical text, one cached take, billed once) — the runner keys the cache on cue key, so a shared key is a shared take by construction. rowStep = the detail-row reveal cadence inside a side scene.",
+    "scenes": [
+      { "key": "task", "dur": 90 },
+      { "key": "sideA", "dur": 126 },
+      { "key": "sideB", "dur": 126 },
+      { "key": "count", "dur": 108 },
+      { "key": "closer", "dur": 150 }
+    ],
+    "rowStep": 18,
+    "cues": [
+      { "key": "d1-q", "at": 4, "budget": 2.8 },
+      { "key": "d1-a", "at": 94, "budget": 4.0 },
+      { "key": "d1-b", "at": 220, "budget": 4.0 },
+      { "key": "dl-hold", "at": 346, "budget": 3.4 },
+      { "key": "dl-cta", "at": 456, "budget": 4.8 }
+    ]
+  },
+  "dilemma2": {
+    "_comment": "DILEMMA-B1 edition 2 — same grid as dilemma1 (the format's spine is fixed; only the casting changes), so the bed generator and the composition read one shape for both.",
+    "scenes": [
+      { "key": "task", "dur": 90 },
+      { "key": "sideA", "dur": 126 },
+      { "key": "sideB", "dur": 126 },
+      { "key": "count", "dur": 108 },
+      { "key": "closer", "dur": 150 }
+    ],
+    "rowStep": 18,
+    "cues": [
+      { "key": "d2-q", "at": 4, "budget": 2.8 },
+      { "key": "d2-a", "at": 94, "budget": 4.0 },
+      { "key": "d2-b", "at": 220, "budget": 4.0 },
+      { "key": "dl-hold", "at": 346, "budget": 3.4 },
+      { "key": "dl-cta", "at": 456, "budget": 4.8 }
+    ]
+  },
   "squad": {
     "scenes": [
       { "key": "open", "dur": 180 },

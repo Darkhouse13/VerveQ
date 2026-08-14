@@ -32,6 +32,53 @@ Newest first.
 
 ---
 
+## DECISION 2026-08-14 — `chain-long` is KILLED; the experiment lane's slot passes to `the-dilemma`
+
+**Ruled in the DILEMMA-B1 ticket.** `chain-long` ran as the experiment lane's
+first occupant (CHAIN-LONG-B1, 2026-08-10) and has now reported at **n=2**:
+**514 and 286 views** (figures as stated in the owner ticket). Both sit under
+the **560 floor** of the 560–2.5K ladder band that the 2026-08-10 lane law set
+as the keep/kill test, so the lane law applies as written: **killed, not
+iterated.**
+
+**Sources stay.** `tools/content-factory/src/promo/chainlong/` and its two
+editions in `EDITIONS` are not deleted — the posted cuts must keep
+reproducing, the same grandfathering principle as `GRID_5_5` in the entry
+below. The format is **closed to new editions without a new owner ticket**.
+
+The freed slot goes to the lane's second occupant, **`the-dilemma`**
+(DILEMMA-B1, 2026-08-14) — one real draft decision per edition, no resolution,
+judged on the same 560–2.5K band at n=2–3 **plus comments/1000 as a
+co-primary**, because this format's job is votes rather than watch time. Sources
+at `tools/content-factory/src/weekend/reels/Dilemma.tsx`; format doc at
+`tools/content-factory/DILEMMA.md`.
+
+## DECISION 2026-08-14 — Standalone product/promo reels are RETIRED, permanently
+
+**Ruled in the DILEMMA-B1 ticket.** A reel whose *subject* is the product has
+now returned a sub-300 result **five consecutive times** — THE GRIND, ONE
+SQUAD, 2431 PTS, 36-games and Olise, spanning a **35–289** band (figures as
+stated in the owner ticket). Five is past the point where the next one is worth
+the slot.
+
+**The standalone promo lane is closed permanently. Product marketing ships only
+inside participation formats** — the pieces where the viewer is playing, arguing
+or voting, and the product is the payoff frame rather than the subject. This is
+the post-flop ruling already written into
+`tools/content-factory/src/weekend/reels/timeline.ts` ("anything that looks like
+an ad dies; native trivia first, product as the payoff frame, never the
+subject"), now promoted from a per-reel note to a standing lane rule.
+
+**No future session revives the promo lane out of hope.** Reviving it takes a
+new owner ticket that says so explicitly; a run of good results in other lanes
+is not a reason, and neither is a new idea for an ad.
+
+Not affected: paid placements, which are a different instrument with a
+different register and their own gate — `wknd-42h` (CF-42H) is a conversion
+asset bought in front of cold traffic, not an organic slot competing on reach.
+
+---
+
 ## DECISION 2026-08-10 — 7.00s is the standing pace; the 5.50s arm is retired
 
 **Ruled in the CHAIN-LONG-B1 ticket.** The batch-2 cadence A/B has reported:

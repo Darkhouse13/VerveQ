@@ -52,39 +52,91 @@ const CAPTIONS = {
   // Confident-take register, never sponsor voice; comment ask leads; one CTA
   // line max. Every stat here is FT + double-sourced (REELS_CFWEEKEND.md).
   "wknd-settleit": [
-    "Paciência or Naujoks. One name, comments — the chat couldn't do it.",
+    "Yamal or Mbappé. One name, comments — the group chat couldn't do it.",
     "",
-    "Two in three minutes against Nacional, or two away from home in a 0-4. Dave said André Silva. Both of André Silva's were penalties. Dave left the group.",
+    "The board says 13.0 vs 12.0. Dave brought up Dembélé's Ballon d'Or and got fact-checked. Dave left the group.",
     "",
     "Play it free, no signup → verveq.com/weekend",
     "",
-    "#football #eredivisie #ligaportugal #fantasyfootball #openingweekend",
+    "#football #yamal #mbappe #ballondor #fantasyfootball",
   ].join("\n"),
   "wknd-referee": [
-    "Same weekend. Same numbers. One word in the comments: Prestianni or Meulensteen.",
+    "Olise costs more than Mbappé. Kane costs more than Bellingham. The Ballon d'Or holder is priced below a 19-year-old.",
     "",
-    "A goal and an assist each, both against promoted sides, both at home. One in an empty Luz, one in a 4-1. The board prices them 7.5 and 5.0. The stats won't settle this one — that's what the crowd is for.",
+    "Six price checks. I'm not deciding a single one — worst price on the board goes in the comments, and the crowd is the referee.",
     "",
     "Play free, no signup → verveq.com/weekend",
     "",
-    "#football #benfica #eredivisie #ligaportugal #fantasyfootball",
+    "#football #mbappe #kane #bellingham #fantasyfootball",
   ].join("\n"),
   "wknd-squad": [
-    "13 shirts. 91.0. Eight leagues. Yamal, Olise, Kane and Mbappé all fit — if the other nine cost 4.5 each.",
+    "Mbappé, Yamal, Kane and Olise all fit in one squad — if the other nine shirts cost 4.5 each.",
     "",
-    "So one of them goes. Which? Comments. My final 13 stays withheld.",
+    "13 shirts. 91.0. Eight leagues. So one superstar goes. Which? Comments. My final 13 stays withheld. (Gyökeres is 5.5 by the way. Szczęsny is 4.0.)",
     "",
     "Build yours free, no signup → verveq.com/weekend",
     "",
-    "#fantasyfootball #football #premierleague #laliga #bundesliga",
+    "#fantasyfootball #football #mbappe #yamal #premierleague",
+  ].join("\n"),
+
+  // ── CF-42H paid-boost reel. Conversion register: declarative, zero
+  // ad-speak, the deadline said like a fact, ONE CTA line. The caption shows
+  // the clean domain (IG captions aren't clickable — standing doctrine
+  // above); the tagged link is the BOOST DESTINATION URL, set in the boost
+  // flow, utm_source=ig & utm_medium=boost per ticket, campaign/content per
+  // CT-1. The block below the rule is operator setup, never caption text.
+  "wknd-42h": [
+    "36 games. 4 leagues. 13 players on a 91.0 budget — and every player locks at his own kickoff.",
+    "",
+    "The first of the 36 kicks off Friday. Telstar–Sparta opens the weekend.",
+    "",
+    "Play free, no signup → verveq.com/weekend",
+    "",
+    "——— BOOST SETUP — not caption text, do not paste above the line ———",
+    "Destination URL (the boost flow's website field; captions aren't clickable):",
+    "  https://verveq.com/weekend?utm_source=ig&utm_medium=boost&utm_campaign=weekend26&utm_content=wknd-42h",
+    "CTA button: Play Game (fallback: Learn More)",
+  ].join("\n"),
+
+  // ── DILEMMA-B1 · the-dilemma. The VOTE ASK LEADS — this format's job is
+  // comments, and comments/1000 is a co-primary read against the ladder band.
+  // Then the live-now urgency, then the one CTA line. THE WITHHOLD LAW APPLIES
+  // TO THE CAPTION TOO: neither caption names a side, hints at one, or asks a
+  // question with a right answer in it. Every price is the prod board's, gated
+  // by weekend/dilemma-live.mjs on each render.
+  "wknd-dilemma-1": [
+    "A or B? Same money either way — put your pick in the comments.",
+    "",
+    "9.5 buys you Febas of Celta, the most expensive player with a fixture this weekend. Or it buys you Dolberg AND Berghuis, both of them Ajax, both at home. One slot or two. I'm not telling you which — I genuinely don't know.",
+    "",
+    "Live now — first kickoff Friday, and every player locks at his own kickoff, so the Sunday names are still yours to change.",
+    "",
+    "Play free, no signup → verveq.com/weekend",
+    "",
+    "#fantasyfootball #football #laliga #eredivisie #ajax",
+  ].join("\n"),
+  "wknd-dilemma-2": [
+    "Two strikers, 8.0 each, one slot. A or B in the comments.",
+    "",
+    "Aubameyang at Deportivo, at home to Elche on Monday night. Or Budimir at Osasuna, away at Celta on Sunday. Same price, same position, and the board has nothing else to say about it.",
+    "",
+    "Live now — first kickoff Friday, and every player locks at his own kickoff, so one of these two is still live a day after the other.",
+    "",
+    "Play free, no signup → verveq.com/weekend",
+    "",
+    "#fantasyfootball #football #laliga #aubameyang #budimir",
   ].join("\n"),
 };
 
 // reels link to /weekend; the tease-era assets keep their shipped bare-/ URLs
-const TO_WEEKEND = new Set(["wknd-settleit", "wknd-referee", "wknd-squad"]);
+const TO_WEEKEND = new Set(["wknd-settleit", "wknd-referee", "wknd-squad", "wknd-dilemma-1", "wknd-dilemma-2"]);
+// paid placements carry their one tagged link inline — appending the organic
+// multi-platform block would hand the booster an untagged-link decision again
+const SELF_LINKED = new Set(["wknd-42h"]);
 
 export const buildWeekendCaption = (slug) => {
   const c = CAPTIONS[slug];
   if (!c) throw new Error(`No caption for ${slug}`);
+  if (SELF_LINKED.has(slug)) return c + "\n";
   return c + linkBlock(slug, TO_WEEKEND.has(slug)) + "\n";
 };

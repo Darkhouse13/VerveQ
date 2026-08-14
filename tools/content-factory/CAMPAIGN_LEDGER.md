@@ -40,17 +40,26 @@ asset state; update it every loop.
 | `wknd-count` | Count | blocked by A1 (needs real count ≥ 50; render-time input) | — | Report count when ≥ 50 |
 | `wknd-lastcall` | Count | queued (final week) | — | — |
 | README refresh (batches 5–6 + weekend lane) | Bookkeeping | queued, its own line per owner | `README.md` | — |
-| `wknd-settleit` (80.0s reel, CF-WEEKEND R1) | Post-launch | see `REELS_CFWEEKEND.md` for state | `out/2026-08-12/wknd-settleit.mp4` + caption | Post Aug 13 |
-| `wknd-referee` (78.0s reel, CF-WEEKEND R2) | Post-launch | see `REELS_CFWEEKEND.md` | `out/2026-08-12/wknd-referee.mp4` + caption | Post Aug 14 |
-| `wknd-squad` (80.0s reel, CF-WEEKEND R3) | Post-launch | see `REELS_CFWEEKEND.md` | `out/2026-08-12/wknd-squad.mp4` + caption | Post Aug 15 |
+| `wknd-settleit` (80.0s reel, CF-WEEKEND R1 **v2**) | Post-launch | RENDERED + VERIFIED (see `REELS_CFWEEKEND.md`) | `out/2026-08-13/wknd-settleit.mp4` + caption | Post Aug 13 |
+| `wknd-referee` (78.0s reel, CF-WEEKEND R2 **v2**) | Post-launch | RENDERED + VERIFIED | `out/2026-08-13/wknd-referee.mp4` + caption | Post Aug 14 |
+| `wknd-squad` (80.0s reel, CF-WEEKEND R3 **v2**) | Post-launch | RENDERED + VERIFIED | `out/2026-08-13/wknd-squad.mp4` + caption | Post Aug 15 |
+| `wknd-dilemma-1` (20.0s, DILEMMA-B1 ed. 1) | Post-launch / experiment lane | **RENDERED + VERIFIED** (see `DILEMMA.md`) | `out/2026-08-14/wknd-dilemma-1.mp4` + caption | Re-run `node weekend/render-dilemma.mjs` then post |
+| `wknd-dilemma-2` (20.0s, DILEMMA-B1 ed. 2) | Post-launch / experiment lane | **RENDERED + VERIFIED** | `out/2026-08-14/wknd-dilemma-2.mp4` + caption | Post on a separate day from ed. 1 — two editions on one day contaminates the read |
 
-**CF-WEEKEND (2026-08-12) note:** these three post-launch reels follow the
-flop post-mortem law — each reel IS the game (real FT receipts, a real
-stat duel, the real board's arithmetic), the product is only the payoff
-frame, and every reel withholds its final answer. Facts and the
-two-source table live in `REELS_CFWEEKEND.md`. Post-launch captions point
-at `/weekend` with tagged links (WKND-FUNNEL ruling); the tease-era assets
-above keep their shipped copy.
+**CF-SAFEZONE (2026-08-13):** all three v2 reels re-rendered inside the
+platform safe zone (top 220 / bottom 320 / sides 60) — `SAFE` +
+`<SafeArea>` in `src/promo/kit.tsx` are now the STANDING DEFAULT for
+every future format, and `verify-reels.mjs` asserts the zone on rendered
+frames. Grandfathered older MP4s untouched.
+
+**CF-WEEKEND note (v2, 2026-08-13):** v1 was rejected on casting (owner:
+unknown Eredivisie/LP names carry no relatability) and its renders are
+deleted. v2 recasts everything around superstars — Yamal/Mbappé chat
+argument, THE BOARD vs YOUR EYES price checks (Olise 13.0 > Mbappé 12.0
+on frame 0), the four-star 91.0 build — with the live board's own prices
+as the receipts. Each reel is still the game, product still only the
+payoff frame, every final answer still withheld. Facts + verification:
+`REELS_CFWEEKEND.md`. Captions point at `/weekend`, tagged.
 
 ## Cadence (against real dates; copy never names our date)
 
@@ -77,3 +86,58 @@ above keep their shipped copy.
 - `weekend/captions.mjs` — captions with per-channel tagged links
   (`utm_campaign=weekend26`, `utm_source=<channel>`,
   `utm_content=<slug|bio>`).
+
+## DILEMMA-B1 (2026-08-14) — `the-dilemma`, the experiment lane's new occupant
+
+Two rulings landed first, both in
+[`docs/DECISIONS.md`](../../docs/DECISIONS.md): **`chain-long` is KILLED** (514
+and 286 at n=2, both under the 560 floor — sources stay so the posted cuts
+reproduce, format closed to new editions) and **standalone product/promo reels
+are RETIRED permanently** (fifth consecutive sub-300; product marketing ships
+only inside participation formats from here, and paid placements like
+`wknd-42h` are unaffected — different instrument, different gate).
+
+The freed slot runs `the-dilemma`: 20.0s, one real draft decision per edition,
+**no resolution**, built to collect votes. Frame 0 is the task already in motion
+— question, both option cards, draining clock, no countdown card and no black
+frame. Facts + gates: `DILEMMA.md`. **Judged on the 560–2.5K band at n=2–3 AND
+on comments/1000 as a co-primary** — a 700-view edition at 5/1000 comments is a
+keep signal, so report both.
+
+Every price is the live prod board's, re-verified per render by
+`weekend/dilemma-live.mjs` (drift throws). **No ledger spend** — no career paths
+are shown, so no ids are consumed and `ledger.json` is untouched (chain
+precedent). Captions lead with the vote ask, then the live-now urgency, then one
+tagged `/weekend` CTA.
+
+**The ticket's Yamal-shaped marquee trade was not buildable and was recast** —
+the 12.0+ names have no GW1 fixture, and budget mode *server-rejects* a
+fixtureless pick, so offering one under a "no right answer" banner would have
+been worse than a wrong price. Reasoning + citations in `DILEMMA.md`.
+
+**Heads-up, unrelated to this ticket — `wknd-42h` is currently UN-RENDERABLE.**
+FW-REPRICE-2 (`14bbd3a`, 2026-08-14) landed after its fact base was cut and
+moved **9 of its 13 squad prices**: Perišić 7.5→7.0, Inácio 7.5→7.0, Kiwior
+7.5→7.0, Itakura 7.0→5.5, Moutinho 7.0→6.5, Pavlidis 7.5→7.0, Vargas 6.5→7.0,
+Brereton 4.5→6.0, Marcos Alonso 4.0→6.5 (verified: `node weekend/boost-live.mjs`
+throws on all nine). The gate is working exactly as designed — it refuses to
+render stale rather than shipping a wrong price — but the reel cannot go out
+until `boost-facts.json` is re-cut to a 13 that still sums to exactly 91.0, and
+its Telstar–Sparta countdown dies at Fri 18:00 UTC. **Owner call: re-cut or let
+this one go.**
+
+## CF-42H (2026-08-13) — `wknd-42h`, the paid-boost conversion reel
+
+First PAID asset in the lane — conversion register, not engagement bait:
+no withheld answer, no comment ask, one CTA twice. 32.0s: live countdown
+to the real first kickoff (Telstar–Sparta, Fri 18:00 UTC) → six real GW1
+fixture cards ("the big leagues are asleep" — checked by league id, still
+gated per render) → the product pitch filling with 13 real board-priced
+shirts to exactly 91.0 (Yamal 13.0 squeeze vs 3×4.5) → three rule stamps →
+verveq.com/weekend. Facts + gates: `REEL_42H.md`. Countdown + spoken hours
+are LIVE — **re-render via `node weekend/render-42h.mjs` right before
+posting** (the one command; it re-verifies every fact on prod and throws
+on drift). New standing gate: `verify-reels.mjs` motion gate (0.75s
+samples, every consecutive pair ≥0.2% px changed) for motion-gated reels.
+Caption stays clean; the tagged link is the boost DESTINATION URL
+(`utm_source=ig&utm_medium=boost&utm_campaign=weekend26&utm_content=wknd-42h`).

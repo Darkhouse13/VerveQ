@@ -29,64 +29,139 @@ export const VOICE = "Charlie";
 
 // key → budget (seconds), straight from the grid — the single timing truth.
 const BUDGETS = new Map();
-for (const reel of ["settleit", "referee", "squad"]) {
+// dilemma1/dilemma2 deliberately SHARE two cue keys (dl-hold, dl-cta) — same
+// text, one cached take, billed once. Identical budgets, so the last write wins
+// harmlessly; a future edition that needs a different budget for a shared key
+// must give it its own key instead.
+for (const reel of ["settleit", "referee", "squad", "boost", "dilemma1", "dilemma2"]) {
   for (const cue of GRID[reel].cues) BUDGETS.set(cue.key, cue.budget);
 }
+
+// CF-42H: the spoken hours number is LIVE — stamped by weekend/boost-live.mjs
+// at render time. A changed hour changes the line text, which is exactly what
+// invalidates the cached take (the cache is keyed on text).
+const LIVE = JSON.parse(readFileSync(path.join(dir, "..", "src", "weekend", "reels", "boost-live.json"), "utf8"));
 
 // ---- the lines. One entry per grid cue; keys must match grid.json exactly.
 export const LINES = [
   // R1 · SETTLE IT — Charlie is the neutral voice reading the receipts. The
   // personas live in the bubbles; the voice never takes a side (the reel must
   // not resolve).
-  { key: "si-open", text: "Player of the weekend. The chat has thoughts." },
-  { key: "si-recA", text: "Two goals. Three minutes. Nineteenth and twenty-first." },
-  { key: "si-recB", text: "Also two. Away from home. Four nil." },
-  { key: "si-dave", text: "Two penalties. Both from the monitor. Dave." },
-  { key: "si-mess", text: "Forty messages. Still no referee." },
+  // ", right now" cut (4.56s in 4.50s): JAMIE's frame-0 bubble already says it.
+  { key: "si-open", text: "Best player on earth. The chat has thoughts." },
+  { key: "si-recA", text: "Mbappé. The board says twelve." },
+  { key: "si-recB", text: "Yamal. Thirteen. Top of the board, at nineteen." },
+  { key: "si-dave", text: "Dembélé won the Ballon d'Or. Last season, Dave." },
+  { key: "si-mess", text: "Forty messages. Still no answer." },
   { key: "si-exit", text: "Dave left. The argument didn't." },
   { key: "si-turn", text: "This exact argument. There's a scoreboard for it now. Every league, one weekend, one score." },
   // "Then settle it properly." was the cut (8.48s → the card already says
   // SETTLE IT in a pill; batch-2 rule — never voice what the screen carries).
-  { key: "si-cta", text: "Paciência or Naujoks? Comments. Play free, no signup, verveq dot com." },
+  { key: "si-cta", text: "Yamal or Mbappé? Comments. Play free, no signup, verveq dot com." },
 
   // R2 · REFEREE — metronomic row reads at the standing 7.00s pace.
-  { key: "rf-open", text: "Two performances. Same numbers. You're the referee." },
-  { key: "rf-r1", text: "Goals. One each." },
-  { key: "rf-r2", text: "Assists. Also one each." },
-  { key: "rf-r3", text: "Benfica dropped points. Go Ahead won by three." },
-  { key: "rf-r4", text: "Both against promoted sides." },
-  { key: "rf-r5", text: "The Luz, behind closed doors. Deventer, opening day." },
-  { key: "rf-r6", text: "The board says seven and a half. And five." },
-  { key: "rf-q", text: "So who was better? I'm not deciding. That's the point." },
+  { key: "rf-open", text: "The board priced every superstar in Europe. You're the referee." },
+  { key: "rf-r1", text: "Olise, thirteen. Mbappé, twelve." },
+  { key: "rf-r2", text: "Kane, twelve and a half. Bellingham, eleven." },
+  { key: "rf-r3", text: "Cherki, ten. Foden, nine and a half." },
+  { key: "rf-r4", text: "Nico Paz, ten. Gyökeres, five and a half." },
+  { key: "rf-r5", text: "Dembélé, eleven and a half. The Ballon d'Or holder." },
+  { key: "rf-r6", text: "Lee Kang-in and Bruno. Ten and a half. Both." },
+  { key: "rf-q", text: "Is the board right? I'm not deciding. That's the point." },
   // Mechanic shape, manifesto-verbatim register — never a sim-tunable number.
   { key: "rf-punch", text: "In THE WEEKEND, the crowd is the referee. The crowd rates the players. Not an algorithm." },
-  { key: "rf-cta", text: "Prestianni or Meulensteen. One word. Then play free, no signup, verveq dot com." },
+  { key: "rf-cta", text: "Worst price on the board? Comments. Then play free, no signup, verveq dot com." },
 
   // R3 · SQUAD — the board's arithmetic, spoken as it drains.
   // "Eight leagues." cut (5.92s in 5.50s): the frame-0 board reads
   // "13 SHIRTS · 91.0 · 8 LEAGUES" — the screen already says it.
-  { key: "sq-open", text: "Thirteen shirts. Ninety-one to spend. Build." },
+  { key: "sq-open", text: "Four superstars. Ninety-one points. They don't all fit." },
   { key: "sq-s1", text: "Lamine Yamal. Top of the board. Thirteen." },
   { key: "sq-s2", text: "Olise. Also thirteen. That's twenty-six on two shirts." },
   { key: "sq-s3", text: "Harry Kane. Twelve and a half." },
   { key: "sq-s4", text: "Mbappé. Twelve. And now we have a problem." },
   { key: "sq-math", text: "Nine shirts left. Forty and a half to spend. Four-fifty a shirt. Welcome to the bin." },
   { key: "sq-trade", text: "One of them goes. Drop Kane, and ten shirts get five-three each. Drop Mbappé? Say it out loud. Go on." },
-  { key: "sq-gems", text: "And the bin scores. Brandt, four. Michut, four and a half. Ask PSV." },
+  { key: "sq-gems", text: "And down in the bin. Gyökeres, five and a half. Chiesa, five. Szczęsny, four." },
   // "Comments." cut (6.00s in 5.50s): the card carries "WHO GOES? COMMENTS."
   // — a lone short word is a full boundary at Charlie's rate.
   { key: "sq-hold", text: "My thirteen stays with me. Who goes?" },
   { key: "sq-cta", text: "Build yours. Free, no signup, verveq dot com." },
+
+  // CF-42H · BOOST — conversion register: declarative, no withheld answer, no
+  // comment ask. The hours number is live (boost-live.json); everything else
+  // is board fact. bo-r1..r3 are the three rule hits — near-metronomic.
+  { key: "bo-open", text: `You have ${LIVE.hoursWord} hours.` },
+  { key: "bo-contra", text: "The big leagues are asleep. Good. The weekend kicks off anyway." },
+  // CF-42H copy ruling (owner, 2026-08-13): cold traffic gets PLAIN words —
+  // "players" not the lane's "shirts", and the 91 always carries its unit.
+  { key: "bo-fill", text: "Thirteen players. Ninety-one budget. Watch the bar drain." },
+  // "flat" cut: the re-take ran 7.04s in 5.80 (take variance, not word count)
+  { key: "bo-squeeze", text: "Yamal, thirteen. Or three players at four and a half. Choose." },
+  { key: "bo-r1", text: "Thirteen players." },
+  { key: "bo-r2", text: "Ninety-one budget." },
+  { key: "bo-r3", text: "Every player locks at his own kickoff." },
+  { key: "bo-cta", text: "No signup. No app. verveq dot com, slash weekend." },
+
+  // DILEMMA-B1 · THE DILEMMA — Charlie reads BOTH sides and takes neither. The
+  // withhold is the format, so no line may contain a preference, a lean, or a
+  // "but": each side gets the same shape (name, club, fixture, price) and the
+  // closer states that there is no answer rather than hiding one. Every number
+  // here is the prod board's, gated by weekend/dilemma-live.mjs.
+  //
+  // COMMA-FREE BY CONSTRUCTION. Draft 1 punctuated these as appositives
+  // ("Febas, Celta, at home to Osasuna, the most expensive…") and 7 of 8 lines
+  // came back over budget — that batch is what re-priced the comma in
+  // `estimate` above. Rewritten to run on a single terminal boundary each and
+  // carry the same facts as connected phrases. Nothing was dropped to fit
+  // except detail the CARD already shows (the opponent on d1-b, the shared
+  // position on d2-b) — the batch-2 rule: never voice what the screen carries.
+  { key: "d1-q", text: "Nine and a half on one player or two?" },
+  { key: "d1-a", text: "Febas of Celta is the most expensive player playing." },
+  { key: "d1-b", text: "Or Dolberg and Berghuis for four and a half and five." },
+
+  { key: "d2-q", text: "Two strikers at eight flat for one slot." },
+  { key: "d2-a", text: "Aubameyang of Deportivo at home to Elche on Monday night." },
+  { key: "d2-b", text: "Or Budimir of Osasuna away at Celta on Sunday." },
+
+  // SHARED by both editions (one key = one take = billed once). The 3-2-1 is
+  // voiced because this lane is paced by the voice, and the beats line up with
+  // the composition's 36f numeral step.
+  { key: "dl-hold", text: "Three. Two. One." },
+  // The closing CARD carries "NO RIGHT ANSWER." at 104px, "PICK IN THE
+  // COMMENTS." at 64px, the URL and "FREE, NO SIGNUP" — so the voice does not
+  // repeat any of it and lands as the terse punch over the top. That is the
+  // batch-2 rule taken to its end, and it is what finally fit: the same ask at
+  // 16 words measured 6.40s in a 4.80s slot. "for real" then came out too: it
+  // measured 4.80s and, after its one permitted re-roll, 4.96s — and the card
+  // says OR PICK FOR REAL directly under the URL. The voice names the two
+  // doors; the screen says what is behind them.
+  { key: "dl-cta", text: "Comments or verveq dot com slash weekend." },
 ];
 
-// rough pre-spend estimate from the measured two-term model (README: fitting
-// Charlie's carrier gave ~0.93s/sentence boundary + ~0.16s/word; an all-caps
-// proper noun adds its own emphasis beat).
+// rough pre-spend estimate from the measured model (README: fitting Charlie's
+// carrier gave ~0.93s/sentence boundary + ~0.16s/word; an all-caps proper noun
+// adds its own emphasis beat).
+//
+// DILEMMA-B1 amendment (2026-08-14): THE COMMA IS PRICED. The two-term model
+// charged only [.!?—] and so under-predicted every comma-heavy line — the first
+// dilemma batch estimated 8/8 inside budget and came back 7/8 OVER, the worst
+// by +2.08s on a line carrying three commas. Charlie takes a near-full beat at
+// a comma, so it is now charged at 0.9s, essentially a boundary. Measured
+// against that batch the amended model over-predicts on 6 of 8 and lands within
+// 0.1s on another — the safe direction for a guard whose whole job is to catch
+// an overrun BEFORE the credit is spent.
+//
+// The corollary for copy: a spaced em-dash is the worst buy on the board. It is
+// charged as a word (the split is on whitespace) AND as a boundary, ~1.09s for
+// one pause. Prefer restructuring to a single terminal boundary over punctuating
+// a long line.
 const estimate = (text) => {
   const words = text.split(/\s+/).length;
   const boundaries = (text.match(/[.!?—]+/g) ?? []).length;
+  const commas = (text.match(/,/g) ?? []).length;
   const caps = (text.match(/\b[A-Z]{2,}\b/g) ?? []).length;
-  return words * 0.16 + boundaries * 0.93 + caps * 0.3;
+  return words * 0.16 + boundaries * 0.93 + commas * 0.9 + caps * 0.3;
 };
 
 const key = () => process.env.FAL_KEY || process.env.FAL_API_KEY || "";

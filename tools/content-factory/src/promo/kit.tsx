@@ -124,6 +124,32 @@ export const Ground: React.FC<{ color: string; children?: React.ReactNode; style
   <div style={{ position: "absolute", inset: 0, background: color, overflow: "hidden", ...style }}>{children}</div>
 );
 
+// ── platform safe zone (CF-SAFEZONE, 2026-08-13) — STANDING DEFAULT ──
+// On Instagram/TikTok a 9:16 frame loses the top ~200px to platform chrome
+// (username, Reels header) and the bottom ~300px to caption/actions. Text or
+// any critical element there is simply not seen. Every composition from this
+// date forward puts ALL text and critical UI inside SafeArea; only grounds,
+// stripes, and full-bleed flashes may touch the chrome strips. Grandfathered
+// MP4s are untouched, but a re-render of an old format must adopt this.
+// verify-reels.mjs (and future lane verifiers) assert this on rendered
+// frames — bright pixels in the chrome strips fail the gate.
+export const SAFE = { top: 220, bottom: 320, x: 60 } as const;
+export const SafeArea: React.FC<{ center?: boolean; style?: React.CSSProperties; children: React.ReactNode }> = ({ center, style, children }) => (
+  <div
+    style={{
+      position: "absolute",
+      top: SAFE.top,
+      bottom: SAFE.bottom,
+      left: SAFE.x,
+      right: SAFE.x,
+      ...(center ? { display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", textAlign: "center" } : {}),
+      ...style,
+    }}
+  >
+    {children}
+  </div>
+);
+
 // subtle animated diagonal stripes to keep grounds alive (scrolls with frame)
 export const Stripes: React.FC<{ frame: number; color: string; ground: string; opacity?: number }> = ({ frame, color, ground, opacity = 0.08 }) => {
   const shift = (frame * 1.4) % 120;

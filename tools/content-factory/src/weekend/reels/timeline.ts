@@ -24,9 +24,9 @@ export const FPS: number = grid.fps;
 export type Scene = { key: string; dur: number };
 export type Cue = { key: string; at: number; budget: number };
 
-type ReelGrid = { scenes: Scene[]; cues: Cue[]; rowStep?: number; starStep?: number };
+type ReelGrid = { scenes: Scene[]; cues: Cue[]; rowStep?: number; starStep?: number; cardStep?: number; shirtStep?: number };
 
-const reel = (name: "settleit" | "referee" | "squad"): ReelGrid => grid[name] as ReelGrid;
+const reel = (name: "settleit" | "referee" | "squad" | "boost" | "dilemma1" | "dilemma2"): ReelGrid => grid[name] as ReelGrid;
 
 export const startsOf = (scenes: Scene[]): Record<string, number> => {
   const out: Record<string, number> = {};
@@ -42,6 +42,41 @@ export const totalOf = (scenes: Scene[]): number => scenes.reduce((a, s) => a + 
 export const SETTLEIT = reel("settleit");
 export const REFEREE = reel("referee");
 export const SQUAD = reel("squad");
+// CF-42H — the paid-boost conversion reel; facts live in boost-facts.json
+// (re-verified against prod on every render by weekend/boost-live.mjs) and
+// the volatile countdown in boost-live.json (stamped at render time).
+export const BOOST = reel("boost");
+
+// ── DILEMMA-B1 — the experiment lane's second occupant (chain-long killed,
+// 2026-08-14). One real draft decision per edition; both sides cost the same;
+// the reel NEVER says which side is right, in VO, caption or card. Casting +
+// prices live in dilemma-facts.json and are re-verified against prod by
+// weekend/dilemma-live.mjs on every render (drift throws). Both editions run
+// the SAME grid — the spine is the format, only the casting changes.
+export type DilemmaPlayer = {
+  board: string; // the prod board's own name string — what the gate matches on
+  display: string; // what the card shows
+  club: string;
+  chip: string;
+  pos: string;
+  price: number;
+  opponent: string;
+  oppChip: string;
+  isHome: boolean;
+  day: string;
+  atIso: string;
+};
+export type DilemmaSide = { key: string; total: number; note: string; players: DilemmaPlayer[] };
+export type DilemmaEdition = {
+  slug: string;
+  id: string;
+  stake: number;
+  kicker: string;
+  question: string[];
+  claim: { kind: string; board: string; tag: string } | null;
+  sides: DilemmaSide[];
+};
+export const DILEMMA_GRID: Record<string, ReelGrid> = { d1: reel("dilemma1"), d2: reel("dilemma2") };
 
 // ─────────────────────────────────────────────────────────── R1 · SETTLE IT
 // The group chat is canon (DAVE / JAMIE / MO — fifteen promos deep). The
@@ -56,52 +91,55 @@ export type ChatMsg = {
   kind?: "text" | "system" | "voicenote" | "typing";
 };
 
-// Receipt cards — the stat slams between bubbles. Facts:
-//   Paciência 19' 21', Santa Clara 2–2 Nacional ..... ESPN 20260810 + VSP
-//   Naujoks 31' 69', Cambuur 0–4 Excelsior .......... NLW + ESPN 20260807
-//   André Silva 9' pen + Gabri Veiga 44' pen, both VAR,
-//     Porto 2–0 Alverca ............................. ESPN + VSP (mins) + OJ + NAM (VAR/pens)
-//   Liziero 36' + Baeza 45' pulled it to 2–2 by HT ... ESPN 20260810 + VSP
-//   Cambuur promoted, at home ....................... NLW + NOS ("gepromoveerd Cambuur")
-//   Prices Paciência 6.0 / Naujoks 6.5 .............. prod getMarket 2026-08-12
+// v2 (owner note, 2026-08-13): FAMOUS NAMES ONLY. The argument is the eternal
+// one — best on earth, right now — and the receipts are the LIVE BOARD's own
+// prices (product facts, zero sourcing risk) plus exactly two verified
+// football facts:
+//   Ballon d'Or 2025 = Dembélé ....... verified in-repo 2026-07-16 (dave
+//     films fact-check) + ballondor.com / L'Équipe
+//   Yamal is 19 ...................... born 13 Jul 2007 (FCB official +
+//     transfermarkt) → 19 as of Aug 2026
+//   Prices Yamal 13.0 / Mbappé 12.0 / Olise 13.0 / Kane 12.5 /
+//     Bellingham (Real Madrid) 11.0 / Dembélé 11.5 .. prod getMarket 2026-08-13
+// Bubble slots (counts + frames) are FROZEN — the bed mirrors them.
 export const SETTLEIT_CHAT: { scene: string; msgs: ChatMsg[] }[] = [
   {
     scene: "open",
-    msgs: [{ at: 0, side: "left", sender: "JAMIE", text: "player of the weekend. go." }],
+    msgs: [{ at: 0, side: "left", sender: "JAMIE", text: "best player on earth. right now. go." }],
   },
   {
     scene: "claimA",
     msgs: [
-      { at: 8, side: "left", sender: "MO", text: "Paciência. two goals in THREE minutes." },
-      { at: 150, side: "left", text: "19th and 21st. blink and you missed the argument" },
+      { at: 8, side: "left", sender: "MO", text: "Mbappé. next question." },
+      { at: 150, side: "left", text: "he's still the answer. don't overthink it" },
     ],
   },
   {
     scene: "claimB",
     msgs: [
-      { at: 8, side: "right", sender: "JAMIE", text: "Naujoks. two AWAY from home. four nil." },
-      { at: 150, side: "right", text: "a brace in a 0-4. that's a statement not a cameo" },
+      { at: 8, side: "right", sender: "JAMIE", text: "Yamal. it stopped being close last season." },
+      { at: 150, side: "right", text: "he's NINETEEN. it's not fair" },
     ],
   },
   {
     scene: "dave",
     msgs: [
-      { at: 8, side: "left", sender: "DAVE", text: "andré silva got two as well??" },
-      { at: 120, side: "left", sender: "MO", text: "penalties dave" },
-      { at: 170, side: "right", sender: "JAMIE", text: "both of them" },
-      { at: 220, side: "left", sender: "MO", text: "VAR gave both. the ref walked to the screen twice" },
-      { at: 285, side: "left", sender: "DAVE", text: "still count???" },
+      { at: 8, side: "left", sender: "DAVE", text: "dembélé won the ballon d'or tho??" },
+      { at: 120, side: "left", sender: "MO", text: "that was last season dave" },
+      { at: 170, side: "right", sender: "JAMIE", text: "we're talking about NOW" },
+      { at: 220, side: "left", sender: "MO", text: "board's got him at 11.5 anyway" },
+      { at: 285, side: "left", sender: "DAVE", text: "third??? behind a teenager???" },
     ],
   },
   {
     scene: "escalate",
     msgs: [
-      { at: 8, side: "left", sender: "MO", text: "paciência is 6.0 on the board btw" },
-      { at: 75, side: "right", sender: "JAMIE", text: "naujoks is 6.5. the board agrees with ME" },
-      { at: 150, side: "left", sender: "MO", text: "santa clara were 2-0 up in 21 minutes" },
-      { at: 220, side: "right", sender: "JAMIE", text: "and it finished 2-2. they blew it by HALF TIME" },
-      { at: 290, side: "left", sender: "MO", text: "excelsior beat up a promoted side. congrats" },
-      { at: 355, side: "right", sender: "JAMIE", text: "IN THEIR OWN GROUND. four nil AWAY" },
+      { at: 8, side: "left", sender: "MO", text: "olise is on 13.0. same as yamal" },
+      { at: 75, side: "right", sender: "JAMIE", text: "OLISE?? above mbappé???" },
+      { at: 150, side: "left", sender: "MO", text: "kane's 12.5. also above him" },
+      { at: 220, side: "right", sender: "JAMIE", text: "the board is drunk" },
+      { at: 290, side: "left", sender: "MO", text: "or you are" },
+      { at: 355, side: "right", sender: "JAMIE", text: "bellingham at 11 is criminal btw" },
       { at: 420, side: "left", sender: "MO", kind: "voicenote", text: "0:47" },
       { at: 455, side: "left", sender: "DAVE", text: "lads it's 1am" },
     ],
@@ -116,34 +154,30 @@ export const SETTLEIT_CHAT: { scene: string; msgs: ChatMsg[] }[] = [
   },
 ];
 
-export type Receipt = { scene: string; at: number; title: string; lines: string[] };
+export type Receipt = { scene: string; at: number; kicker: string; title: string; lines: string[] };
 export const SETTLEIT_RECEIPTS: Receipt[] = [
-  { scene: "claimA", at: 70, title: "SANTA CLARA 2-2 NACIONAL", lines: ["PACIÊNCIA 19' 21'"] },
-  { scene: "claimB", at: 70, title: "CAMBUUR 0-4 EXCELSIOR", lines: ["NAUJOKS 31' 69'"] },
-  { scene: "dave", at: 235, title: "PORTO 2-0 ALVERCA", lines: ["9' PEN · 44' PEN"] },
+  { scene: "claimA", at: 70, kicker: "THE LIVE BOARD", title: "MBAPPÉ · REAL MADRID", lines: ["12.0"] },
+  { scene: "claimB", at: 70, kicker: "THE LIVE BOARD", title: "YAMAL · BARCELONA", lines: ["13.0"] },
+  { scene: "dave", at: 235, kicker: "FACT CHECK", title: "BALLON D'OR 2025", lines: ["DEMBÉLÉ"] },
 ];
 
 // ──────────────────────────────────────────────────────────── R2 · REFEREE
-// Same topline, six tie-breaker rows, none of them breaks the tie. Facts:
-//   Prestianni goal 58' + assist (for Pavlidis 10') .. ESPN match 401885485 + MF/VAV + slbenfica.pt
-//   Meulensteen goal 61' + assist (for Tengstedt) .... NLW + ESPN (goal) · VI + SD (assist)
-//   Benfica 2-2 Académico de Viseu (home) ............ ESPN + VSP + OJ
-//   Go Ahead 4-1 Willem II (home) .................... NLW + ESPN
-//   Both opponents promoted .......................... VAV/MF (Viseu, "first top-flight in 37y") · VI/omroepbrabant (Willem II)
-//   Luz behind closed doors .......................... VAV + ABL/DN
-//   Prices 7.5 / 5.0 ................................. prod getMarket 2026-08-12
-export type VsRow = { label: string; a: string; b: string };
-export const REFEREE_CAST = {
-  a: { name: "PRESTIANNI", club: "BENFICA", league: "LIGA PORTUGAL" },
-  b: { name: "MEULENSTEEN", club: "GO AHEAD EAGLES", league: "EREDIVISIE" },
-};
+// v2 (owner note, 2026-08-13): the duel is now THE BOARD vs YOUR EYES — six
+// of the live board's most argue-able price calls, superstars only, verdict
+// withheld. Every number is the prod market's own (getMarket 2026-08-13);
+// club chips disambiguate on screen (two J. Bellinghams exist in the pool —
+// Jude/Real Madrid 11.0 is the one shown, Jobe/Dortmund 6.5 is not). The one
+// football fact: Dembélé holds the 2025 Ballon d'Or (verified in-repo
+// 2026-07-16 + ballondor.com), still holder until Sept 2026.
+export type VsCard = { name: string; club: string; price: number };
+export type VsRow = { label: string; a: VsCard; b: VsCard };
 export const REFEREE_ROWS: VsRow[] = [
-  { label: "GOALS", a: "1  (58')", b: "1  (61')" },
-  { label: "ASSISTS", a: "1", b: "1" },
-  { label: "RESULT", a: "DREW 2-2 AT HOME", b: "WON 4-1 AT HOME" },
-  { label: "OPPONENT", a: "PROMOTED", b: "PROMOTED" },
-  { label: "STAGE", a: "THE LUZ, CLOSED DOORS", b: "DEVENTER, OPENING DAY" },
-  { label: "PRICE ON THE BOARD", a: "7.5", b: "5.0" },
+  { label: "THE HEADLINE", a: { name: "OLISE", club: "BAYERN", price: 13.0 }, b: { name: "MBAPPÉ", club: "REAL MADRID", price: 12.0 } },
+  { label: "AGREE?", a: { name: "KANE", club: "BAYERN", price: 12.5 }, b: { name: "BELLINGHAM", club: "REAL MADRID", price: 11.0 } },
+  { label: "SAME DRESSING ROOM", a: { name: "CHERKI", club: "MAN CITY", price: 10.0 }, b: { name: "FODEN", club: "MAN CITY", price: 9.5 } },
+  { label: "READ IT AGAIN", a: { name: "NICO PAZ", club: "COMO", price: 10.0 }, b: { name: "GYÖKERES", club: "ARSENAL", price: 5.5 } },
+  { label: "THE BALLON D'OR GAP", a: { name: "DEMBÉLÉ", club: "PSG", price: 11.5 }, b: { name: "YAMAL", club: "BARCELONA", price: 13.0 } },
+  { label: "SAME PRICE", a: { name: "LEE KANG-IN", club: "ATLÉTICO", price: 10.5 }, b: { name: "BRUNO", club: "MAN UTD", price: 10.5 } },
 ];
 
 // ─────────────────────────────────────────────────────────────── R3 · SQUAD
@@ -165,8 +199,10 @@ export const SQUAD_STARS: StarPick[] = [
   { name: "KANE", club: "BAYERN", price: 12.5 },
   { name: "MBAPPÉ", club: "REAL MADRID", price: 12.0 },
 ];
+// v2: famous names at shock prices — the receipt line is the price itself
+// (board facts only, no match claims to source).
 export const SQUAD_GEMS: { name: string; club: string; price: number; receipt: string }[] = [
-  { name: "BRANDT", club: "AJAX", price: 4.0, receipt: "DEBUT GOAL, 90+5'" },
-  { name: "MICHUT", club: "FORTUNA", price: 4.5, receipt: "90+2' AT THE CHAMPIONS" },
-  { name: "ANDRÉ SILVA", club: "PORTO", price: 4.0, receipt: "2 GOALS (BOTH PENS)" },
+  { name: "GYÖKERES", club: "ARSENAL", price: 5.5, receipt: "YES. REALLY." },
+  { name: "CHIESA", club: "LIVERPOOL", price: 5.0, receipt: "FIVE. FLAT." },
+  { name: "SZCZĘSNY", club: "BARCELONA", price: 4.0, receipt: "THE FLOOR." },
 ];
