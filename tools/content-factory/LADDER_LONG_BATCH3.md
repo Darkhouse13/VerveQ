@@ -183,17 +183,17 @@ all landing on `/weekend`.
 ## 7. Renders
 
 ```
-out/2026-08-14/verveq-ladder-long-south-american-kings.mp4   78.00s  6.48 MB  (+ .txt)
-out/2026-08-14/verveq-ladder-long-one-club-almost.mp4        78.00s  6.22 MB  (+ .txt)
-out/2026-08-14/verveq-ladder-long-bosman-bargains.mp4        78.00s  6.61 MB  (+ .txt)
-out/2026-08-14/verveq-ladder-long-absurd-loop.mp4            78.00s  6.64 MB  (+ .txt)
-out/2026-08-14/verveq-ladder-long-cup-final-men.mp4          78.00s  6.49 MB  (+ .txt)
-out/2026-08-14/verveq-ladder-long-journeymen-deluxe.mp4      78.00s  6.65 MB  (+ .txt)
-out/2026-08-14/verveq-ladder-long-number-nines.mp4           78.00s  6.44 MB  (+ .txt)
-out/2026-08-14/verveq-ladder-long-never-left-england.mp4     78.00s  6.80 MB  (+ .txt)
-out/2026-08-14/verveq-ladder-long-goat-tier.mp4              78.00s  6.66 MB  (+ .txt)
-out/2026-08-14/verveq-ladder-long-five-leagues-2.mp4         78.00s  6.56 MB  (+ .txt)
-out/2026-08-14/verveq-ladder-long-differentials.mp4          78.00s  6.60 MB  (+ .txt)
+out/2026-08-14/ladder-long-b3/verveq-ladder-long-south-american-kings.mp4   78.00s  6.48 MB  (+ .txt)
+out/2026-08-14/ladder-long-b3/verveq-ladder-long-one-club-almost.mp4        78.00s  6.22 MB  (+ .txt)
+out/2026-08-14/ladder-long-b3/verveq-ladder-long-bosman-bargains.mp4        78.00s  6.61 MB  (+ .txt)
+out/2026-08-14/ladder-long-b3/verveq-ladder-long-absurd-loop.mp4            78.00s  6.64 MB  (+ .txt)
+out/2026-08-14/ladder-long-b3/verveq-ladder-long-cup-final-men.mp4          78.00s  6.49 MB  (+ .txt)
+out/2026-08-14/ladder-long-b3/verveq-ladder-long-journeymen-deluxe.mp4      78.00s  6.65 MB  (+ .txt)
+out/2026-08-14/ladder-long-b3/verveq-ladder-long-number-nines.mp4           78.00s  6.44 MB  (+ .txt)
+out/2026-08-14/ladder-long-b3/verveq-ladder-long-never-left-england.mp4     78.00s  6.80 MB  (+ .txt)
+out/2026-08-14/ladder-long-b3/verveq-ladder-long-goat-tier.mp4              78.00s  6.66 MB  (+ .txt)
+out/2026-08-14/ladder-long-b3/verveq-ladder-long-five-leagues-2.mp4         78.00s  6.56 MB  (+ .txt)
+out/2026-08-14/ladder-long-b3/verveq-ladder-long-differentials.mp4          78.00s  6.60 MB  (+ .txt)
 ```
 
 All 1080×1920, 30fps, h264 + AAC, 2340f (ffprobe-counted, 11/11). The four
