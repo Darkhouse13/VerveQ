@@ -32,6 +32,38 @@ Newest first.
 
 ---
 
+## DECISION 2026-08-14 — Native subtitles: one factory-wide treatment, the DILEMMA one
+
+**Backfilled from DILEMMA-B1, where it was resolved but recorded only in
+component comments (`src/weekend/reels/DilemmaV2.tsx`) — which is how
+LADDER-LONG-B3's first cut shipped a divergent version and had to be redone
+the same day.** Recorded here so the next lane inherits it instead of
+reinventing it.
+
+Every narrated format that burns subtitles (MONID-SWEEP-2: 89% of niche
+winners carry them) uses **one treatment**:
+
+- **Chunks shown whole** — a word-timed chunk lands as one readable block,
+  never accumulating word-by-word. Chunks break on terminal punctuation
+  (`.!?,`) or at **4 words**, the auto-caption cadence.
+- **Bottom-centered inside `SafeArea`** (`bottom: 0` of the safe region, so
+  the block's baseline sits at the top of the platform caption strip) —
+  where every platform burns its own captions, on every scene of the piece.
+  One overlay for the whole reel, driven by absolute frame; a chunk bridges
+  to the next chunk of its own cue but never across inter-cue silence
+  (8-frame release when the voice stops).
+- **Style**: sentence case, `FONTS.body`, weight 700, **46px**, white,
+  four-corner 3px black stroke + `0 6px 0 #000`, `maxWidth 880`. Deliberately
+  NOT brand type — the one standing exemption from the cream/ink/brand-type
+  law, exactly as wide as the sweep finding.
+- If a lane has UI where the band lands, **the UI moves, not the caption**
+  (ladder-long's batch-3 score rail lifted 14px; posted batches keep their
+  shipped geometry).
+
+Word timings come from the VO manifest (ElevenLabs character timestamps), so
+the subtitle text is by construction the TTS input — no transcript drift, and
+a withheld rung can never leak through a caption because it has no take.
+
 ## DECISION 2026-08-14 — `chain-long` is KILLED; the experiment lane's slot passes to `the-dilemma`
 
 **Ruled in the DILEMMA-B1 ticket.** `chain-long` ran as the experiment lane's

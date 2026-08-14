@@ -19,22 +19,26 @@ so nothing here touches the retired 5.50s arm.
 **(b) `batch: 3` — burned native-style subtitles**, the one new surface.
 MONID-SWEEP-2 measured the niche: **89% (31/35) of coded winners carry
 subtitle-style captions on screen; we carried none** (−89pt, the largest gap
-in the study). FACELESS_WINNER_SPEC #14 already said it for this cohort:
-*"If you use VO, subtitle it word-by-word with native-IG-style white bold
-captions and a scale-pop on the emphasised word."* So batch 3 burns them:
+in the study). The treatment is **the DILEMMA-resolved one, adopted verbatim**
+(now recorded in docs/DECISIONS.md 2026-08-14 "Native subtitles"; this
+batch's first cut shipped a divergent word-pop version parked mid-frame and
+was redone the same day against that ruling):
 
-- **Word-by-word karaoke, one sentence chunk at a time**, keyed off the VO
-  manifest's per-character timestamps — each word lands on the frame it is
-  spoken, the current word scale-pops. Because the manifest text IS the TTS
-  input, the subtitle can never drift from the audio (the failure mode that
-  forced the Dave lane onto title cards does not exist here).
-- **Native-IG look, deliberately NOT brand type** (heavy white sans, dark
-  outline). The finding is about subtitles that read as subtitles; a designed
-  caption reads as chrome. This is the lane's one exemption from the
-  cream/ink/brand-type law, exactly as wide as the finding and no wider.
-- **Placement**: in the card/rail seam during the rungs (covers neither clubs,
-  answer chip, nor rail names — QA'd on stills), dropping to the bottom band
-  on the follow/CTA cards, inside the standing safe zones.
+- **Chunks shown whole** — a word-timed chunk lands as one readable block,
+  broken on terminal punctuation or at 4 words (the auto-caption cadence),
+  never accumulating word-by-word. One overlay for the whole piece, driven by
+  absolute frame, with the DilemmaV2 bridge rule (a chunk holds to the next
+  chunk of its own cue; 8f release when the voice stops).
+- **Bottom-centered inside SafeArea** — the platform-caption position, on
+  every surface of the piece (rungs, follow card, CTA). The batch-3 score
+  rail lifts 14px (1472 → 1458) so the band has its own strip; posted batches
+  keep their shipped geometry.
+- **Style**: sentence case, `FONTS.body` 700 / 46px, white on a four-corner
+  black stroke, maxWidth 880 — deliberately NOT brand type, the lane's one
+  exemption from the cream/ink/brand-type law.
+- Because the manifest text IS the TTS input, the subtitle can never drift
+  from the audio, and a withheld rung can never leak through a caption —
+  rung 10 has no take.
 
 Subtitles ride `batch` exactly the way the score rail and follow card did:
 gates read `>= 2` / `>= 3`, so batch 3 inherits batch 2's whole surface set
@@ -163,10 +167,9 @@ median off-cue residual (`journeymen-deluxe` `n2`) — every edition's weakest
 cue sits between 73× and 82×, an order above the 10.5× that passed after
 being checked in batch 2.5. Nothing is marginal.
 
-**Subtitle QA on stills**: band sits in the card/rail seam clear of the card
-border, the clubs, the answer chip and the rail; drops to the bottom band on
-the closing cards; sentence-chunking keeps every line to a single unwrapped
-row.
+**Subtitle QA on stills**: band bottom-centered in SafeArea on all three
+surfaces (rung, withhold, CTA), clear of the lifted score rail; whole-chunk
+display never exceeds one line at the 4-word cap.
 
 ## 6. Captions
 

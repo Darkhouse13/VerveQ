@@ -1,6 +1,6 @@
 import React from "react";
 import { AbsoluteFill, Audio, Easing, Sequence, interpolate, staticFile, useCurrentFrame } from "remotion";
-import { COLORS, FONTS, neoShadow } from "../kit";
+import { COLORS, FONTS, SafeArea, neoShadow } from "../kit";
 import { Edition, FPS, editionBySlug, locate } from "./timeline";
 import { cuesFor, hasVo, vo } from "./vo";
 
@@ -123,6 +123,10 @@ const ScoreRail: React.FC<{ ed: Edition; active: number; phase: number; ended: b
   phase,
   ended,
 }) => {
+  // Batch 3 lifts the strip 14px so the subtitle band (bottom of SafeArea,
+  // the DILEMMA-resolved position) clears its shadow. Batch 2's editions are
+  // posted and keep their shipped 1472.
+  const top = ed.batch >= 3 ? 1458 : 1472;
   const ANSWER_AT = ed.grid.answerAt;
   const justFilled = !ended && active < 9 && phase >= ANSWER_AT;
   const resolved = ended ? 9 : Math.min(9, active + (justFilled ? 1 : 0));
@@ -135,7 +139,7 @@ const ScoreRail: React.FC<{ ed: Edition; active: number; phase: number; ended: b
     <div
       style={{
         position: "absolute",
-        top: 1472,
+        top,
         left: 60,
         right: 60,
         display: "flex",
@@ -184,99 +188,68 @@ const ScoreRail: React.FC<{ ed: Edition; active: number; phase: number; ended: b
 // said it for this cohort — "if you use VO, subtitle it word-by-word with
 // native-IG-style white bold captions and a scale-pop on the emphasised word."
 //
-// So this is deliberately NOT brand type. White heavy sans with a dark
-// outline, the look IG's own caption tool burns, per the spec — a subtitle
-// that looks designed reads as chrome, and the finding is about subtitles
-// that read as subtitles. It is the one element in the lane exempt from the
-// cream/ink/brand-type law, exactly as wide as that finding and no wider.
-//
-// Words key off the VO manifest's per-character timestamps (the same data the
-// semi-final lip-synced its cards with), so each word lands on the frame it is
-// spoken and the current word pops. No transcript risk — the manifest text IS
-// what the voice was generated from, so unlike the Dave lane's footage this
-// caption cannot drift from its audio.
-const SUB_FONT = '"Inter", "Helvetica Neue", Arial, sans-serif';
-const SUB_OUTLINE =
-  "0 4px 0 rgba(0,0,0,0.9), 2px 2px 0 rgba(0,0,0,0.9), -2px 2px 0 rgba(0,0,0,0.9), 2px -2px 0 rgba(0,0,0,0.9), -2px -2px 0 rgba(0,0,0,0.9), 0 0 18px rgba(0,0,0,0.35)";
+// The treatment is the one DILEMMA-B1 resolved and DilemmaV2.tsx carries (and
+// this lane now follows it verbatim rather than reinventing it): word-timed
+// chunks shown WHOLE — a chunk lands as one readable block, never a word at a
+// time — broken on terminal punctuation or at 4 words (the auto-caption
+// cadence), bottom-centered inside SafeArea so it reads where every platform
+// burns its own captions. Sentence case, body face, white on a black stroke —
+// deliberately NOT the brand type. It is the one element in the lane exempt
+// from the cream/ink/brand-type law, exactly as wide as that finding and no
+// wider. No transcript risk — the manifest text IS what the voice was
+// generated from.
+type SubChunk = { text: string; from: number; to: number; cue: string };
+const chunksOf = (cues: { key: string; at: number }[]): SubChunk[] => {
+  const out: SubChunk[] = [];
+  for (const cue of cues) {
+    const line = vo(cue.key);
+    if (!line?.words?.length) continue;
+    let cur: { words: string[]; t0: number; t1: number } | null = null;
+    const flush = () => {
+      if (cur) out.push({ text: cur.words.join(" "), from: cue.at + Math.round(cur.t0 * FPS), to: cue.at + Math.round(cur.t1 * FPS), cue: cue.key });
+      cur = null;
+    };
+    for (const w of line.words) {
+      if (!cur) cur = { words: [], t0: w.t0, t1: w.t1 };
+      cur.words.push(w.word);
+      cur.t1 = w.t1;
+      // chunk breaks on terminal punctuation or at 4 words — the auto-caption cadence
+      if (/[.!?,]$/.test(w.word) || cur.words.length >= 4) flush();
+    }
+    flush();
+  }
+  // a chunk bridges to the next chunk of ITS OWN cue (no flicker inside a
+  // line) but never across the silence between cues — when the voice stops,
+  // the caption goes with it (a short 8f release). Same rule as DilemmaV2.
+  for (let i = 0; i < out.length; i++) {
+    const next = out[i + 1];
+    out[i].to = next && next.cue === out[i].cue ? Math.max(out[i].to, next.from) : out[i].to + 8;
+  }
+  return out;
+};
 
-const Subtitles: React.FC<{ ed: Edition; frame: number; ended: boolean }> = ({ ed, frame, ended }) => {
-  const cues = cuesFor(ed);
-  // latest cue whose line is still being spoken (plus a 12f linger, clipped so
-  // a lingering line can never overlap the next cue's first word)
-  let line: { words: { word: string; t0: number; t1: number }[]; at: number } | null = null;
-  for (let k = 0; k < cues.length; k++) {
-    const c = cues[k];
-    if (frame < c.at) break;
-    const l = vo(c.key);
-    if (!l || !l.words || l.words.length === 0) continue;
-    const endF = c.at + Math.ceil(l.words[l.words.length - 1].t1 * FPS) + 12;
-    const cutF = k + 1 < cues.length ? Math.min(endF, cues[k + 1].at) : endF;
-    if (frame < cutF) line = { words: l.words, at: c.at };
-    else line = null;
-  }
-  if (!line) return null;
-  const t = (frame - line.at) / FPS;
-  // One SENTENCE CHUNK at a time, the way native karaoke captions phrase —
-  // and the reason the band can hold a single line that never wraps into the
-  // rail: the longest chunk in the carrier ("This one I'm not telling you.")
-  // is six words, where the whole line is nine.
-  const chunks: { word: string; t0: number; t1: number }[][] = [[]];
-  for (const w of line.words) {
-    chunks[chunks.length - 1].push(w);
-    if (/[.!?,]$/.test(w.word)) chunks.push([]);
-  }
-  const parts = chunks.filter((c) => c.length > 0);
-  let chunk = parts[0];
-  for (let k = 0; k < parts.length; k++) {
-    if (t >= parts[k][0].t0) chunk = parts[k];
-  }
-  const spoken = chunk.filter((w) => t >= w.t0);
-  if (spoken.length === 0) return null;
+const Subtitles: React.FC<{ chunks: SubChunk[]; abs: number }> = ({ chunks, abs }) => {
+  const cur = chunks.find((c) => abs >= c.from && abs < c.to);
+  if (!cur) return null;
   return (
-    <div
-      style={{
-        position: "absolute",
-        // Over the rung grid the band sits in the card/rail seam, clear of the
-        // clubs, the answer chip and the rail names; on the closing cards it
-        // drops to the bottom band, clear of their centered type and inside
-        // the 320px bottom safe zone.
-        top: ended ? 1548 : 1002,
-        left: 60,
-        right: 60,
-        textAlign: "center",
-        whiteSpace: "nowrap",
-        pointerEvents: "none",
-      }}
-    >
-      {spoken.map((w, k) => {
-        const isCurrent = k === spoken.length - 1 && t < w.t1 + 0.08;
-        const pop = interpolate(t - w.t0, [0, 0.12], [1.22, 1], {
-          extrapolateLeft: "clamp",
-          extrapolateRight: "clamp",
-          easing: Easing.out(Easing.cubic),
-        });
-        return (
-          <span
-            key={`${line!.at}-${w.t0}-${k}`}
-            style={{
-              display: "inline-block",
-              margin: "0 6px",
-              fontFamily: SUB_FONT,
-              fontWeight: 800,
-              fontSize: 38,
-              lineHeight: 1.1,
-              letterSpacing: 0.5,
-              color: isCurrent ? "#FFFFFF" : "rgba(255,255,255,0.92)",
-              textShadow: SUB_OUTLINE,
-              transform: `scale(${isCurrent ? pop : 1})`,
-              textTransform: "none",
-            }}
-          >
-            {w.word}
-          </span>
-        );
-      })}
-    </div>
+    <SafeArea>
+      <div style={{ position: "absolute", left: 0, right: 0, bottom: 0, display: "flex", justifyContent: "center" }}>
+        <div
+          style={{
+            fontFamily: FONTS.body,
+            fontWeight: 700,
+            fontSize: 46,
+            lineHeight: 1.15,
+            color: "#FFFFFF",
+            textAlign: "center",
+            maxWidth: 880,
+            textShadow: "-3px -3px 0 #000, 3px -3px 0 #000, -3px 3px 0 #000, 3px 3px 0 #000, 0 6px 0 #000",
+          }}
+        >
+          {cur.text}
+        </div>
+      </div>
+    </SafeArea>
   );
 };
 
@@ -767,8 +740,9 @@ export const LadderLong: React.FC<{ slug?: string }> = ({ slug = "all-timers" })
       )}
 
       {/* burned subtitles — batch 3 only, above every card so a line spoken
-          over the follow hook or the CTA still reads. See Subtitles above. */}
-      {subs && hasVo && <Subtitles ed={ed} frame={frame} ended={ended} />}
+          over the follow hook or the CTA still reads. One overlay for the
+          whole piece, absolute-frame driven. See Subtitles above. */}
+      {subs && hasVo && <Subtitles chunks={chunksOf(cues)} abs={frame} />}
 
       {/* CTA strip — deliberately small; the comment is the ask, not the click */}
       {!ended && (
