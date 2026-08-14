@@ -104,6 +104,22 @@
       { "key": "dl-cta", "at": 456, "budget": 4.8 }
     ]
   },
+  "dilemmaS": {
+    "_comment": "DILEMMA-WEEKLY v2 spine (MONID-SWEEP-2 amendments) — 402f = 13.4s, inside the 10–14s target that exits the niche's 12–40s dead zone DOWNWARD. The a/b side reads are GONE: at this length the cards + subtitles carry the sides, and the voice carries only the question (with the deadline), the 3-2-1 and the CTA — the prompt-bait register the sweep validated. dilemmaS is the SMOKE edition's grid; a real v2 edition copies this block verbatim and swaps only the q cue key (d3-q, d4-q, …). Shared keys dl-hold/dl-cta keep their cached takes; their v2 budgets are tighter than v1's and reels-vo keeps the MINIMUM budget for a shared key, which both takes still fit (2.80/3.00, 3.12/3.20).",
+    "scenes": [
+      { "key": "task", "dur": 72 },
+      { "key": "sideA", "dur": 72 },
+      { "key": "sideB", "dur": 72 },
+      { "key": "count", "dur": 90 },
+      { "key": "closer", "dur": 96 }
+    ],
+    "rowStep": 18,
+    "cues": [
+      { "key": "d2-q", "at": 4, "budget": 2.8 },
+      { "key": "dl-hold", "at": 216, "budget": 3.0 },
+      { "key": "dl-cta", "at": 306, "budget": 3.2 }
+    ]
+  },
   "squad": {
     "scenes": [
       { "key": "open", "dur": 180 },

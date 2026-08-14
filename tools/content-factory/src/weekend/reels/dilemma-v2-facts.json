@@ -1,0 +1,61 @@
+{
+  "_comment": "DILEMMA-WEEKLY v2 fact base (MONID-SWEEP-2 amendments) — SEPARATE from dilemma-facts.json on purpose: the v1 file backs the POST-AS-BUILT paid-vs-organic twin and must not move. Everything the v1 file's laws say applies here unchanged (prod board is the only source, selectability, neutrality, per-club cap, day tags only — no timezone claims on screen), verified per render by weekend/dilemma-v2-live.mjs. v2 adds three gated obligations per edition: (1) DEADLINE — deadlineDay must equal the UTC day tag of the EARLIEST kickoff among the edition's named players (once the first of them locks, the choice is gone), and the on-screen question, the spoken question and the caption lead must all carry that day; (2) RECEIPTS — every side carries exactly ONE receipt row and the gate RECOMPUTES its text from the live board (an uncitable receipt cannot render — the ticket's STOP, made structural); (3) REGISTER — the question is spoken first-person, not brand caps. `proof: true` marks a mechanism-proof edition that reuses a cached VO take: board facts, receipts, deadlineDay and the question line are still fully gated, but the spoken-line and caption deadline checks are relaxed and the gate prints NOT FOR POSTING. Kinds implemented: clubDearest (side's lone player is uniquely his club's highest-priced pickable player), costMoreCount (exactly N pickable players cost more). lastGwPoints is allowed from Thu 2026-08-21 (GW1 settles Aug 18 21:59) but is deliberately NOT implemented until prod exposes a settlement query — an unknown kind throws, which is the STOP.",
+  "gw": 1,
+  "editions": [
+    {
+      "slug": "wknd-dilemma-smoke",
+      "id": "dS",
+      "grid": "dilemmaS",
+      "proof": true,
+      "stake": 8.0,
+      "deadlineDay": "SUN",
+      "deadlineWord": "Sunday",
+      "qKey": "d2-q",
+      "question": ["One slot at 8.0.", "Aubameyang or Budimir", "before Sunday's lock?"],
+      "sides": [
+        {
+          "key": "A",
+          "total": 8.0,
+          "note": "LOCKS MONDAY",
+          "receipt": { "kind": "clubDearest", "tag": "DEPORTIVO'S DEAREST PLAYER" },
+          "players": [
+            {
+              "board": "P. Aubameyang",
+              "display": "AUBAMEYANG",
+              "club": "Deportivo La Coruna",
+              "chip": "DEPORTIVO",
+              "pos": "ATT",
+              "price": 8.0,
+              "opponent": "Elche",
+              "oppChip": "ELCHE",
+              "isHome": true,
+              "day": "MON",
+              "atIso": "2026-08-17T19:00:00.000Z"
+            }
+          ]
+        },
+        {
+          "key": "B",
+          "total": 8.0,
+          "note": "LOCKS SUNDAY",
+          "receipt": { "kind": "clubDearest", "tag": "OSASUNA'S DEAREST PLAYER" },
+          "players": [
+            {
+              "board": "A. Budimir",
+              "display": "BUDIMIR",
+              "club": "Osasuna",
+              "chip": "OSASUNA",
+              "pos": "ATT",
+              "price": 8.0,
+              "opponent": "Celta Vigo",
+              "oppChip": "CELTA VIGO",
+              "isHome": false,
+              "day": "SUN",
+              "atIso": "2026-08-16T19:30:00.000Z"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

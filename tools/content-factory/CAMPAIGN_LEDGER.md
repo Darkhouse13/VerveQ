@@ -43,8 +43,9 @@ asset state; update it every loop.
 | `wknd-settleit` (80.0s reel, CF-WEEKEND R1 **v2**) | Post-launch | RENDERED + VERIFIED (see `REELS_CFWEEKEND.md`) | `out/2026-08-13/wknd-settleit.mp4` + caption | Post Aug 13 |
 | `wknd-referee` (78.0s reel, CF-WEEKEND R2 **v2**) | Post-launch | RENDERED + VERIFIED | `out/2026-08-13/wknd-referee.mp4` + caption | Post Aug 14 |
 | `wknd-squad` (80.0s reel, CF-WEEKEND R3 **v2**) | Post-launch | RENDERED + VERIFIED | `out/2026-08-13/wknd-squad.mp4` + caption | Post Aug 15 |
-| `wknd-dilemma-1` (20.0s, DILEMMA-B1 ed. 1) | Post-launch / experiment lane | **RENDERED + VERIFIED** (see `DILEMMA.md`) | `out/2026-08-14/wknd-dilemma-1.mp4` + caption | Re-run `node weekend/render-dilemma.mjs` then post |
+| `wknd-dilemma-1` (20.0s, DILEMMA-B1 ed. 1) | Post-launch / experiment lane | **RENDERED + VERIFIED** (see `DILEMMA.md`) — DILEMMA-WEEKLY slot #2 (Sat 16): POST-AS-BUILT, the paid-vs-organic twin; caption now leads with the Sunday deadline | `out/2026-08-14/wknd-dilemma-1.mp4` + caption | Sat 16: re-run `node weekend/render-dilemma.mjs wknd-dilemma-1`, post. Reports alongside the n=3 read but does not count |
 | `wknd-dilemma-2` (20.0s, DILEMMA-B1 ed. 2) | Post-launch / experiment lane | **RENDERED + VERIFIED** | `out/2026-08-14/wknd-dilemma-2.mp4` + caption | Post on a separate day from ed. 1 — two editions on one day contaminates the read |
+| `wknd-dilemma-smoke` (13.4s, DILEMMA-WEEKLY v2 spine) | Experiment lane tooling | **MECHANISM PROOF — NEVER POSTED.** Proves the MONID-SWEEP-2 amended spine (subtitles, spoken deadline, gated receipts) end-to-end on the live GW1 board; excluded from no-arg render/verify runs | `out/2026-08-14/wknd-dilemma-smoke.mp4` (gate: ALL CHECKS PASSED); `DILEMMA_WEEKLY_1.md` | Slots #5/#7/#10 (Tue 19/Thu 21/Sun 24) cast day-of per the runbook — GW2 board unqueryable until GW1 finality Tue 21:59 UTC (ticket STOP) |
 
 **CF-SAFEZONE (2026-08-13):** all three v2 reels re-rendered inside the
 platform safe zone (top 220 / bottom 320 / sides 60) — `SAFE` +

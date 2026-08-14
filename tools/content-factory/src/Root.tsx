@@ -81,6 +81,7 @@ import { Referee, REFEREE_TOTAL } from "./weekend/reels/Referee";
 import { Squad, SQUAD_TOTAL } from "./weekend/reels/Squad";
 import { Boost, BOOST_TOTAL } from "./weekend/reels/Boost";
 import { Dilemma, DILEMMA_EDITIONS, dilemmaTotal } from "./weekend/reels/Dilemma";
+import { DilemmaV2, DILEMMA_V2_EDITIONS, dilemmaV2Total } from "./weekend/reels/DilemmaV2";
 import { FPS as WKND_REELS_FPS } from "./weekend/reels/timeline";
 
 // Studio preview default only — render.mjs injects the real entry per video.
@@ -429,6 +430,25 @@ export const RemotionRoot: React.FC = () => (
         width={1080}
         height={1920}
         durationInFrames={dilemmaTotal(ed.id)}
+        defaultProps={{ id: ed.id }}
+      />
+    ))}
+
+    {/* DILEMMA-WEEKLY v2 — the MONID-SWEEP-2 amended spine (13.4s, subtitles,
+        spoken deadline, gated receipt rows) for editions posted from Tue
+        2026-08-19. v1 above stays FROZEN: it backs the post-as-built
+        paid-vs-organic twin. Facts: dilemma-v2-facts.json, gated by
+        weekend/dilemma-v2-live.mjs; render via weekend/render-dilemma.mjs
+        (the one command), never straight weekend.mjs. */}
+    {DILEMMA_V2_EDITIONS.map((ed) => (
+      <Composition
+        key={ed.slug}
+        id={`WkndDilemmaV2-${ed.id}`}
+        component={DilemmaV2}
+        fps={WKND_REELS_FPS}
+        width={1080}
+        height={1920}
+        durationInFrames={dilemmaV2Total(ed.id)}
         defaultProps={{ id: ed.id }}
       />
     ))}

@@ -104,16 +104,37 @@ const CAPTIONS = {
   // TO THE CAPTION TOO: neither caption names a side, hints at one, or asks a
   // question with a right answer in it. Every price is the prod board's, gated
   // by weekend/dilemma-live.mjs on each render.
+  // DILEMMA-WEEKLY slot #2 (Sat 2026-08-16): POST-AS-BUILT — the video is the
+  // paid-vs-organic twin and carries no new variables; the caption is free
+  // (ticket law) and carries the live CTA + the deadline line. All three named
+  // players lock Sunday (earliest kickoff Sun 14:45 UTC, re-verified per
+  // render by dilemma-live.mjs), so Sunday is the day the decision expires —
+  // day words only, never a clock time.
   "wknd-dilemma-1": [
-    "A or B? Same money either way — put your pick in the comments.",
+    "A or B? Same money either way — pick in the comments before Sunday's lock.",
     "",
     "9.5 buys you Febas of Celta, the most expensive player with a fixture this weekend. Or it buys you Dolberg AND Berghuis, both of them Ajax, both at home. One slot or two. I'm not telling you which — I genuinely don't know.",
     "",
-    "Live now — first kickoff Friday, and every player locks at his own kickoff, so the Sunday names are still yours to change.",
+    "Live now — every player locks at his own kickoff, and all three of these kick off Sunday. The pick is open till then.",
     "",
     "Play free, no signup → verveq.com/weekend",
     "",
     "#fantasyfootball #football #laliga #eredivisie #ajax",
+  ].join("\n"),
+  // DILEMMA-WEEKLY v2 MECHANISM PROOF — never posted. The caption exists so
+  // the render pipeline and the v2 gate's caption-lead deadline check run the
+  // same path a real edition will; the banner line makes it unpostable by
+  // accident. Real v2 editions (slots #5/#7/#10) copy this shape WITHOUT the
+  // banner: vote ask + deadline lead, receipts line, one CTA line.
+  "wknd-dilemma-smoke": [
+    "*** MECHANISM PROOF — NOT FOR POSTING (cached v1 take under d2-q) ***",
+    "A or B? Same price, one slot — pick in the comments before Sunday's lock.",
+    "",
+    "Aubameyang, Deportivo's dearest player, at home to Elche on Monday. Or Budimir, Osasuna's dearest, away at Celta on Sunday. Once the first of them kicks off, the choice is gone.",
+    "",
+    "Play free, no signup → verveq.com/weekend",
+    "",
+    "#fantasyfootball #football #laliga #aubameyang #budimir",
   ].join("\n"),
   "wknd-dilemma-2": [
     "Two strikers, 8.0 each, one slot. A or B in the comments.",
@@ -129,7 +150,7 @@ const CAPTIONS = {
 };
 
 // reels link to /weekend; the tease-era assets keep their shipped bare-/ URLs
-const TO_WEEKEND = new Set(["wknd-settleit", "wknd-referee", "wknd-squad", "wknd-dilemma-1", "wknd-dilemma-2"]);
+const TO_WEEKEND = new Set(["wknd-settleit", "wknd-referee", "wknd-squad", "wknd-dilemma-1", "wknd-dilemma-2", "wknd-dilemma-smoke"]);
 // paid placements carry their one tagged link inline — appending the organic
 // multi-platform block would hand the booster an untagged-link decision again
 const SELF_LINKED = new Set(["wknd-42h"]);

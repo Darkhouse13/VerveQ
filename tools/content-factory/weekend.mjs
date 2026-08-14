@@ -16,6 +16,7 @@ import { ensureWkndRefereeAudio } from "./weekend/referee-audio.mjs";
 import { ensureWkndSquadAudio } from "./weekend/squad-audio.mjs";
 import { ensureWkndBoostAudio } from "./weekend/boost-audio.mjs";
 import { ensureWkndDilemmaAudio } from "./weekend/dilemma-audio.mjs";
+import { ensureWkndDilemmaV2Audio } from "./weekend/dilemma-v2-audio.mjs";
 import { buildWeekendCaption } from "./weekend/captions.mjs";
 
 const dir = path.dirname(fileURLToPath(import.meta.url));
@@ -41,6 +42,9 @@ const ASSETS = [
   // failure this format cannot survive.
   { name: "wknd-dilemma-1", id: "WkndDilemma-d1", audio: ensureWkndDilemmaAudio("wknd-dilemma-1") },
   { name: "wknd-dilemma-2", id: "WkndDilemma-d2", audio: ensureWkndDilemmaAudio("wknd-dilemma-2") },
+  // DILEMMA-WEEKLY v2 (MONID-SWEEP-2 spine) — render via render-dilemma.mjs,
+  // never directly. The smoke edition is a MECHANISM PROOF: never posted.
+  { name: "wknd-dilemma-smoke", id: "WkndDilemmaV2-dS", audio: ensureWkndDilemmaV2Audio("wknd-dilemma-smoke") },
 ];
 
 const want = process.argv.slice(2);

@@ -78,6 +78,33 @@ export type DilemmaEdition = {
 };
 export const DILEMMA_GRID: Record<string, ReelGrid> = { d1: reel("dilemma1"), d2: reel("dilemma2") };
 
+// ── DILEMMA-WEEKLY v2 (MONID-SWEEP-2 amendments, 2026-08-14) — the amended
+// spine for editions posted from Tue 2026-08-19 on: 13.4s (the 12–40s dead
+// zone exited downward), no a/b side reads (cards + subtitles carry the
+// sides), the question spoken first-person WITH the deadline day, and one
+// gated receipt row per card. v1 above is FROZEN — it backs the post-as-built
+// paid-vs-organic twin. Facts: dilemma-v2-facts.json, gated by
+// weekend/dilemma-v2-live.mjs (which also recomputes every receipt from the
+// live board — an uncitable receipt throws).
+export type DilemmaV2Side = DilemmaSide & { receipt: { kind: string; tag: string } };
+export type DilemmaV2Edition = {
+  slug: string;
+  id: string;
+  grid: string; // grid.json key — dilemmaS for the smoke; a real edition copies that block and swaps the q cue key
+  proof?: boolean; // mechanism-proof edition: NOT FOR POSTING, relaxed spoken/caption deadline checks only
+  stake: number;
+  deadlineDay: string; // GATED: UTC day tag of the earliest kickoff among named players
+  deadlineWord: string; // the spoken/written form the question + caption must carry
+  qKey: string; // the question's VO cue key (a real edition owns its dN-q; the smoke reuses d2-q's cached take)
+  question: string[];
+  sides: DilemmaV2Side[];
+};
+export const dilemmaV2Grid = (gridKey: string): ReelGrid => {
+  const g = (grid as Record<string, unknown>)[gridKey] as ReelGrid | undefined;
+  if (!g) throw new Error(`timeline: no grid "${gridKey}" for a v2 dilemma edition`);
+  return g;
+};
+
 // ─────────────────────────────────────────────────────────── R1 · SETTLE IT
 // The group chat is canon (DAVE / JAMIE / MO — fifteen promos deep). The
 // argument is real: player of the opening weekend, and the receipts are FT

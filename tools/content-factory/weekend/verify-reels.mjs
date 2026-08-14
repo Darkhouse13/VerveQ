@@ -46,6 +46,7 @@ let REELS = [
   ["wknd-42h", "boost"],
   ["wknd-dilemma-1", "dilemma1"],
   ["wknd-dilemma-2", "dilemma2"],
+  ["wknd-dilemma-smoke", "dilemmaS"],
 ];
 // optional slug filter after the date arg — render-42h.mjs verifies only its
 // own reel so the one-command flow doesn't demand the other three MP4s
@@ -57,7 +58,8 @@ if (only.length > 0) REELS = REELS.filter(([slug]) => only.includes(slug));
 // cards + stamp). Also exported as the "dense" before/after still.
 // dilemma: mid-sideB, both option cards up and every row of the read side
 // landed — the most elements this format ever holds at once.
-const DENSEST = { settleit: 1540, referee: 1330, squad: 1500, boost: 250, dilemma1: 300, dilemma2: 300 };
+// dilemmaS (v2): mid-sideB f180 — both cards + receipts up, read side's rows landed
+const DENSEST = { settleit: 1540, referee: 1330, squad: 1500, boost: 250, dilemma1: 300, dilemma2: 300, dilemmaS: 180 };
 
 // reels built under the DOPAMINE LAW — the motion gate applies
 // Paid, cold-traffic pieces only. wknd-42h is built on the DOPAMINE LAW and a

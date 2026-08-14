@@ -168,3 +168,21 @@ Final fits (measured / budget): `d1-q` 2.80/2.80 · `d1-a` 3.44/4.00 ·
 Per the lane law, judged at **n=2–3** against the **560–2.5K** ladder band —
 **plus comments/1000 as a co-primary**, because this format's job is votes, not
 watch time. A 700-view edition at 5/1000 comments is a keep signal. Report both.
+
+> **Calibration amendment (MONID-SWEEP-2, 2026-08-14):** the niche's best-ever
+> ask-bait runs ~1.8 comments/1000 against a 0.32 median — treat **≥1.5/1000 as
+> elite** and 5/1000 as extraordinary, per the sweep.
+
+## v2 — the amended spine (DILEMMA-WEEKLY, from Tue 2026-08-19)
+
+Everything above describes **v1**, which is FROZEN: `wknd-dilemma-1` is the
+boosted creative's post-as-built organic twin and must keep rendering exactly
+what shipped. Editions posted from Tue 2026-08-19 run the **v2 spine** —
+13.4s, native word-timed subtitles, the deadline in the spoken question and
+caption lead, one board-recomputed receipt row per card, no a/b side reads —
+per the MONID-SWEEP-2 amendments. Both laws above bind v2 unchanged.
+Spine: `src/weekend/reels/DilemmaV2.tsx` + `dilemma-v2-facts.json` +
+`grid.json dilemmaS`, gated by `weekend/dilemma-v2-live.mjs`. The one command
+is unchanged (`weekend/render-dilemma.mjs` routes each edition to its gate).
+Ticket record, proof render and the day-of casting runbook:
+**`DILEMMA_WEEKLY_1.md`**.

@@ -29,12 +29,16 @@ export const VOICE = "Charlie";
 
 // key → budget (seconds), straight from the grid — the single timing truth.
 const BUDGETS = new Map();
-// dilemma1/dilemma2 deliberately SHARE two cue keys (dl-hold, dl-cta) — same
-// text, one cached take, billed once. Identical budgets, so the last write wins
-// harmlessly; a future edition that needs a different budget for a shared key
-// must give it its own key instead.
-for (const reel of ["settleit", "referee", "squad", "boost", "dilemma1", "dilemma2"]) {
-  for (const cue of GRID[reel].cues) BUDGETS.set(cue.key, cue.budget);
+// Every grid entry with cues is in scope (a new dilemma-v2 edition is a grid
+// block + a facts row, nothing to edit here). Editions deliberately SHARE cue
+// keys (dl-hold/dl-cta across all dilemmas, d2-q reused by the v2 smoke) —
+// same text, one cached take, billed once. Where a shared key's budgets
+// differ (the 13.4s v2 spine is tighter than the 20s v1), the MINIMUM wins:
+// a take that fits the tightest slot fits them all, and the guard must fail
+// before the spend, never after.
+for (const reel of Object.values(GRID)) {
+  if (!reel || typeof reel !== "object" || !Array.isArray(reel.cues)) continue;
+  for (const cue of reel.cues) BUDGETS.set(cue.key, Math.min(cue.budget, BUDGETS.get(cue.key) ?? Infinity));
 }
 
 // CF-42H: the spoken hours number is LIVE — stamped by weekend/boost-live.mjs
