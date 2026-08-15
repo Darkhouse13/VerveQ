@@ -178,6 +178,11 @@
     "pathsSolved": "Parcours trouvés",
     "totalPoints": "{{score}} points au total",
     "playAgain": "Rejouer",
+    "shareResult": "Partager le résultat",
+    "shareCopied": "Résultat copié — envoie-le à un ami !",
+    "shareFailed": "Impossible de partager le résultat. Réessaie.",
+    "classicShareText": "J'ai marqué {{score}} points dans Parcours de carrière sur VerveQ ⚽\nPeux-tu me battre ?",
+    "ladderShareText": "J'ai trouvé {{correct}} parcours sur 10 et marqué {{score}} points dans le Défi 10 Parcours de VerveQ ⚽\nPeux-tu me battre ?",
     "tiers": {
       "easy": "Facile",
       "medium": "Moyen",

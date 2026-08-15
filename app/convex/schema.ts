@@ -1225,6 +1225,13 @@ export default defineSchema({
     // two-mode Career Path entry screen shipped.
     mode: v.optional(v.union(v.literal("classic"), v.literal("ladder"))),
     ladderRound: v.optional(v.number()),
+    // The full advertised run stays server-side. IDs encode player names, so
+    // this queue must never be projected by a public query or mutation.
+    ladderEntryIds: v.optional(v.array(v.string())),
+    // Prepared ladder rounds begin after the previous answer reveal. Keeping
+    // this server-authored makes the 30-second window fair even when the next
+    // prompt is delivered in the previous round's terminal response.
+    startsAt: v.optional(v.number()),
     deadlineAt: v.optional(v.number()),
     resolution: v.optional(v.union(
       v.literal("guessed"),

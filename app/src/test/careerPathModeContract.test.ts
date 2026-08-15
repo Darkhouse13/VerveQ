@@ -187,7 +187,7 @@ describe("10 Path Challenge contract", () => {
 
   it("matches the advertised 2/3/3/2 escalating ten-path shape", () => {
     expect(screen).toContain("const ROUND_COUNT = 10");
-    expect(screen).toMatch(/"easy", "easy",\s*"medium", "medium", "medium",\s*"hard", "hard", "hard",\s*"impossible", "impossible"/);
+    expect(backend).toMatch(/"easy", "easy",\s*"medium", "medium", "medium",\s*"hard", "hard", "hard",\s*"impossible", "impossible"/);
     expect(backend).toContain("export const CAREER_PATH_LADDER_ROUNDS = 10");
   });
 
@@ -201,8 +201,32 @@ describe("10 Path Challenge contract", () => {
   });
 
   it("does not repeat a path inside one challenge and caps paths like the reels", () => {
-    expect(screen).toContain("excludedEntryIds: usedEntryIdsRef.current");
+    expect(backend).toContain("buildLadderEntryQueue");
+    expect(backend).toContain("ladderEntryIds: session.ladderEntryIds");
+    expect(screen).not.toContain("excludedEntryIds");
     expect(backend).toContain("entry.clubs.length <= 7");
+  });
+
+  it("prepares the next rung in the terminal mutation without exposing player IDs", () => {
+    expect(backend).toContain("prepareNextLadderRound");
+    expect(backend).toContain("...(nextRound ? { nextRound } : {})");
+    expect(screen).toContain("response.nextRound as PreparedRound");
+    expect(screen).toContain("nextRound.startsAt - Date.now()");
+    expect(screen).not.toContain("startRound(roundIndex + 1)");
+  });
+
+  it("makes the revealed player the result card's strongest readable line", () => {
+    expect(screen).toContain('font-heading text-2xl font-bold leading-tight');
+    expect(screen).toContain('t("careerPath.itWas", { name: result.answerName })');
+  });
+
+  it("offers result sharing from both Career Path finish states", () => {
+    const classic = read("src/pages/shell/play/CareerPathClassicGame.tsx");
+    expect(classic).toContain("shareCareerPathResult");
+    expect(classic).toContain('careerPath.classicShareText');
+    expect(screen).toContain("shareCareerPathResult");
+    expect(screen).toContain('careerPath.ladderShareText');
+    expect(read("src/lib/careerPathShare.ts")).toContain("`${getShareBaseUrl()}/play`");
   });
 
   it("tracks the full ladder as one distinct run, not ten inflated starts", () => {

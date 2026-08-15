@@ -178,6 +178,11 @@
     "pathsSolved": "Trayectorias acertadas",
     "totalPoints": "{{score}} puntos totales",
     "playAgain": "Jugar de nuevo",
+    "shareResult": "Compartir resultado",
+    "shareCopied": "Resultado copiado — ¡envíaselo a un amigo!",
+    "shareFailed": "No se pudo compartir el resultado. Inténtalo de nuevo.",
+    "classicShareText": "Conseguí {{score}} puntos en Trayectoria de VerveQ ⚽\n¿Puedes superarme?",
+    "ladderShareText": "Adiviné {{correct}} de 10 trayectorias y conseguí {{score}} puntos en el Reto de 10 Trayectorias de VerveQ ⚽\n¿Puedes superarme?",
     "tiers": {
       "easy": "Fácil",
       "medium": "Medio",

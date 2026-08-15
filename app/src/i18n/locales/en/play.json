@@ -178,6 +178,11 @@
     "pathsSolved": "Paths solved",
     "totalPoints": "{{score}} total points",
     "playAgain": "Play Again",
+    "shareResult": "Share Result",
+    "shareCopied": "Result copied — send it to a friend!",
+    "shareFailed": "Couldn't share the result. Try again.",
+    "classicShareText": "I scored {{score}} points on VerveQ Career Path ⚽\nCan you beat me?",
+    "ladderShareText": "I solved {{correct}}/10 paths and scored {{score}} points in VerveQ's 10 Path Challenge ⚽\nCan you beat me?",
     "tiers": {
       "easy": "Easy",
       "medium": "Medium",

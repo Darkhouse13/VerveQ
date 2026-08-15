@@ -20,7 +20,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { useMutation } from "convex/react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
-import { User, AlertTriangle, Shirt } from "lucide-react";
+import { User, AlertTriangle, Share2, Shirt } from "lucide-react";
 import { NeoCard } from "@/components/neo/NeoCard";
 import { NeoButton } from "@/components/neo/NeoButton";
 import { NeoInput } from "@/components/neo/NeoInput";
@@ -39,6 +39,7 @@ import {
 } from "@/lib/coldSession";
 import { useAuth } from "@/contexts/AuthContext";
 import { startRun, completeRun, abandonRun } from "@/lib/gameAnalytics";
+import { shareCareerPathResult } from "@/lib/careerPathShare";
 
 const SUPPORTED_CAREER_PATH_SPORTS = new Set(["football"]);
 const START_CHALLENGE_TIMEOUT_MS = 8000;
@@ -112,6 +113,15 @@ export default function CareerPathClassicGame() {
 
   const inputRef = useRef<HTMLInputElement>(null);
   const trimmedGuess = guess.trim();
+
+  const handleShare = async () => {
+    if (!result) return;
+    const outcome = await shareCareerPathResult(
+      t("careerPath.classicShareText", { score: result.score }),
+    );
+    if (outcome === "copied") toast.success(t("careerPath.shareCopied"));
+    if (outcome === "failed") toast.error(t("careerPath.shareFailed"));
+  };
 
   // Top-of-funnel instrumentation, mirroring ColdEntryScreen's taste round:
   // fired at most once per mount via these refs, deduped once-per-visitor on
@@ -489,6 +499,9 @@ export default function CareerPathClassicGame() {
               <p className="font-mono font-bold text-3xl mt-2">{result.score}</p>
               <p className="text-xs opacity-80 mt-1">{t("careerPath.pointsEarned")}</p>
             </NeoCard>
+            <NeoButton variant="accent" size="lg" className="w-full" onClick={() => void handleShare()}>
+              <Share2 size={17} /> {t("careerPath.shareResult")}
+            </NeoButton>
             {/* Guests played with zero friction — invite (never force) an account. */}
             {!hasUsername && (
               <NeoCard color="default" className="text-center py-3 px-4">

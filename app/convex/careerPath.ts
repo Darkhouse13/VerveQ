@@ -1,6 +1,6 @@
 import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
-import type { Id } from "./_generated/dataModel";
+import type { Doc, Id } from "./_generated/dataModel";
 import type { QueryCtx, MutationCtx } from "./_generated/server";
 import { getAuthUserId } from "@convex-dev/auth/server";
 import { findBestMatch } from "./lib/fuzzy";
@@ -87,12 +87,19 @@ export const CAREER_PATH_MAX_GUESSES = 3;
 export const CAREER_PATH_SPORT = "football";
 export const CAREER_PATH_LADDER_ROUNDS = 10;
 export const CAREER_PATH_LADDER_ROUND_MS = 30_000;
+export const CAREER_PATH_LADDER_REVEAL_MS = 1_300;
 
 const CAREER_PATH_MODES = ["classic", "ladder"] as const;
 type CareerPathMode = (typeof CAREER_PATH_MODES)[number];
 
 const LADDER_DIFFICULTIES = ["easy", "medium", "hard", "impossible"] as const;
 type LadderDifficulty = (typeof LADDER_DIFFICULTIES)[number];
+const LADDER_ROUND_DIFFICULTIES: readonly LadderDifficulty[] = [
+  "easy", "easy",
+  "medium", "medium", "medium",
+  "hard", "hard", "hard",
+  "impossible", "impossible",
+];
 
 const DEFAULT_DIFFICULTY_WEIGHTS = [
   { difficulty: "easy", weight: 0.3 },
@@ -144,8 +151,19 @@ function getLadderEntries(difficulty: LadderDifficulty): CareerPathEntry[] {
   return densePaths.length >= 2 ? densePaths : entries;
 }
 
-function isLadderDifficulty(value: string): value is LadderDifficulty {
-  return (LADDER_DIFFICULTIES as readonly string[]).includes(value);
+/** Select the advertised 2/3/3/2 run once. The name-bearing IDs never leave
+ * Convex; subsequent rounds inherit this queue through their session rows. */
+export function buildLadderEntryQueue(random: () => number = Math.random): string[] {
+  const used = new Set<string>();
+  return LADDER_ROUND_DIFFICULTIES.map((difficulty) => {
+    const candidates = getLadderEntries(difficulty).filter((entry) => !used.has(entry.id));
+    if (candidates.length === 0) {
+      throw new Error(`Not enough unique ${difficulty} career paths for the ladder`);
+    }
+    const entry = candidates[Math.floor(random() * candidates.length)];
+    used.add(entry.id);
+    return entry.id;
+  });
 }
 
 function chooseWeightedDifficultyPool<
@@ -200,7 +218,7 @@ export const startChallenge = mutation({
   },
   handler: async (
     ctx,
-    { sport, difficulty, mode = "classic", ladderRound, excludedEntryIds, guestToken },
+    { sport, difficulty, mode = "classic", guestToken },
   ) => {
     const actor = await resolveActor(ctx, guestToken);
     if (!actor.userId && !actor.guestHash) {
@@ -216,28 +234,19 @@ export const startChallenge = mutation({
       throw new Error("Unknown Career Path mode");
     }
 
-    if (mode === "ladder") {
-      if (!difficulty || !isLadderDifficulty(difficulty)) {
-        throw new Error("A valid ladder difficulty is required");
-      }
-      if (
-        !Number.isInteger(ladderRound) ||
-        !ladderRound ||
-        ladderRound < 1 ||
-        ladderRound > CAREER_PATH_LADDER_ROUNDS
-      ) {
-        throw new Error("A valid ladder round is required");
-      }
-    }
+    let entry: CareerPathEntry;
+    let sessionDifficulty: string;
+    let ladderEntryIds: string[] | undefined;
 
-    let entries: CareerPathEntry[];
-    if (difficulty) {
-      entries = mode === "ladder" && isLadderDifficulty(difficulty)
-        ? getLadderEntries(difficulty)
-        : getEntriesForDifficulty(difficulty);
-      if (entries.length === 0) {
-        throw new Error("No career paths available for this difficulty");
-      }
+    if (mode === "ladder") {
+      ladderEntryIds = buildLadderEntryQueue();
+      entry = ENTRIES.find((candidate) => candidate.id === ladderEntryIds![0])!;
+      sessionDifficulty = LADDER_ROUND_DIFFICULTIES[0];
+    } else if (difficulty) {
+      const entries = getEntriesForDifficulty(difficulty);
+      if (entries.length === 0) throw new Error("No career paths available for this difficulty");
+      entry = entries[Math.floor(Math.random() * entries.length)];
+      sessionDifficulty = entry.difficulty;
     } else {
       const selectedPool = chooseWeightedDifficultyPool(
         DEFAULT_DIFFICULTY_WEIGHTS.map(({ difficulty: poolDifficulty, weight }) => ({
@@ -249,16 +258,15 @@ export const startChallenge = mutation({
       if (!selectedPool) {
         throw new Error("Career Path is not available right now");
       }
-      entries = selectedPool.entries as CareerPathEntry[];
+      const entries = selectedPool.entries as CareerPathEntry[];
+      entry = entries[Math.floor(Math.random() * entries.length)];
+      sessionDifficulty = entry.difficulty;
     }
 
-    const excluded = new Set((excludedEntryIds ?? []).slice(0, CAREER_PATH_LADDER_ROUNDS));
-    const unseenEntries = entries.filter((entry) => !excluded.has(entry.id));
-    if (unseenEntries.length > 0) entries = unseenEntries;
-
-    const entry = entries[Math.floor(Math.random() * entries.length)];
-    const deadlineAt = mode === "ladder"
-      ? Date.now() + CAREER_PATH_LADDER_ROUND_MS
+    const now = Date.now();
+    const startsAt = mode === "ladder" ? now : undefined;
+    const deadlineAt = startsAt !== undefined
+      ? startsAt + CAREER_PATH_LADDER_ROUND_MS
       : undefined;
 
     const sessionId = await ctx.db.insert("careerPathSessions", {
@@ -268,9 +276,9 @@ export const startChallenge = mutation({
       entryId: entry.id,
       answerName: entry.answerName,
       clubs: entry.clubs,
-      difficulty: mode === "ladder" ? difficulty! : entry.difficulty,
+      difficulty: sessionDifficulty,
       mode,
-      ...(ladderRound ? { ladderRound } : {}),
+      ...(mode === "ladder" ? { ladderRound: 1, ladderEntryIds, startsAt } : {}),
       ...(deadlineAt ? { deadlineAt } : {}),
       score: BASE_SCORE,
       status: "active",
@@ -283,11 +291,10 @@ export const startChallenge = mutation({
 
     return {
       sessionId,
-      entryId: entry.id,
       clubs: entry.clubs,
-      difficulty: mode === "ladder" ? difficulty! : entry.difficulty,
+      difficulty: sessionDifficulty,
       mode,
-      ...(ladderRound ? { ladderRound } : {}),
+      ...(mode === "ladder" ? { ladderRound: 1, startsAt } : {}),
       ...(deadlineAt ? { deadlineAt } : {}),
       score: BASE_SCORE,
       maxGuesses: CAREER_PATH_MAX_GUESSES,
@@ -318,6 +325,7 @@ type SubmitGuessResult = {
   maxGuesses?: number;
   guesses?: CareerPathGuess[];
   resolution?: "guessed" | "timed_out";
+  nextRound?: PreparedLadderRound;
 };
 
 async function incrementCompletedCareerGame(
@@ -327,6 +335,81 @@ async function incrementCompletedCareerGame(
   if (!session.userId) return;
   if (session.mode === "ladder" && session.ladderRound !== CAREER_PATH_LADDER_ROUNDS) return;
   await incrementTotalGames(ctx, session.userId);
+}
+
+type PreparedLadderRound = {
+  sessionId: Id<"careerPathSessions">;
+  clubs: CareerPathClub[];
+  difficulty: LadderDifficulty;
+  mode: "ladder";
+  ladderRound: number;
+  startsAt: number;
+  deadlineAt: number;
+  score: number;
+  maxGuesses: number;
+  wrongGuessCount: number;
+  guesses: never[];
+};
+
+/** Create the next rung inside the mutation that settles the current one.
+ * The browser receives only public prompt data; the queued ID and answer stay
+ * in the new server session. Its clock begins when the reveal ends. */
+async function prepareNextLadderRound(
+  ctx: MutationCtx,
+  session: Doc<"careerPathSessions">,
+): Promise<PreparedLadderRound | null> {
+  const currentRound = session.ladderRound ?? 0;
+  if (
+    session.mode !== "ladder" ||
+    currentRound >= CAREER_PATH_LADDER_ROUNDS ||
+    session.ladderEntryIds?.length !== CAREER_PATH_LADDER_ROUNDS
+  ) {
+    return null;
+  }
+
+  const nextRound = currentRound + 1;
+  const entryId = session.ladderEntryIds[nextRound - 1];
+  const entry = ENTRIES.find((candidate) => candidate.id === entryId);
+  if (!entry) throw new Error("Queued career path is unavailable");
+
+  const startsAt = Date.now() + CAREER_PATH_LADDER_REVEAL_MS;
+  const deadlineAt = startsAt + CAREER_PATH_LADDER_ROUND_MS;
+  const difficulty = LADDER_ROUND_DIFFICULTIES[nextRound - 1];
+  const sessionId = await ctx.db.insert("careerPathSessions", {
+    ...(session.userId ? { userId: session.userId } : {}),
+    ...(session.guestTokenHash ? { guestTokenHash: session.guestTokenHash } : {}),
+    sport: session.sport,
+    entryId,
+    answerName: entry.answerName,
+    clubs: entry.clubs,
+    difficulty,
+    mode: "ladder",
+    ladderRound: nextRound,
+    ladderEntryIds: session.ladderEntryIds,
+    startsAt,
+    deadlineAt,
+    score: BASE_SCORE,
+    status: "active",
+    expiresAt: Date.now() + SESSION_TTL_MS,
+    closeCallCount: 0,
+    guesses: [],
+    maxGuesses: CAREER_PATH_MAX_GUESSES,
+    wrongGuessCount: 0,
+  });
+
+  return {
+    sessionId,
+    clubs: entry.clubs,
+    difficulty,
+    mode: "ladder",
+    ladderRound: nextRound,
+    startsAt,
+    deadlineAt,
+    score: BASE_SCORE,
+    maxGuesses: CAREER_PATH_MAX_GUESSES,
+    wrongGuessCount: 0,
+    guesses: [],
+  };
 }
 
 export const submitGuess = mutation({
@@ -343,6 +426,9 @@ export const submitGuess = mutation({
       throw new Error("Not authorized");
     }
     if (session.status !== "active") throw new Error("Game is not active");
+    if (session.mode === "ladder" && session.startsAt && Date.now() < session.startsAt) {
+      throw new Error("Round has not started");
+    }
     if (session.mode === "ladder" && session.deadlineAt && Date.now() >= session.deadlineAt) {
       await incrementCompletedCareerGame(ctx, session);
       await ctx.db.patch(sessionId, {
@@ -350,6 +436,7 @@ export const submitGuess = mutation({
         score: 0,
         resolution: "timed_out",
       });
+      const nextRound = await prepareNextLadderRound(ctx, session);
       return {
         correct: false,
         closeCall: false,
@@ -358,6 +445,7 @@ export const submitGuess = mutation({
         score: 0,
         gameOver: true,
         resolution: "timed_out",
+        ...(nextRound ? { nextRound } : {}),
       };
     }
     if (Date.now() > session.expiresAt) {
@@ -374,6 +462,7 @@ export const submitGuess = mutation({
     if (result.matched) {
       await incrementCompletedCareerGame(ctx, session);
       await ctx.db.patch(sessionId, { status: "correct", resolution: "guessed" });
+      const nextRound = await prepareNextLadderRound(ctx, session);
       return {
         correct: true,
         closeCall: false,
@@ -382,6 +471,7 @@ export const submitGuess = mutation({
         score: session.score,
         gameOver: true,
         resolution: "guessed",
+        ...(nextRound ? { nextRound } : {}),
       };
     }
 
@@ -439,6 +529,7 @@ export const submitGuess = mutation({
       wrongGuessCount,
       ...(gameOver ? { resolution: "guessed" as const } : {}),
     });
+    const nextRound = gameOver ? await prepareNextLadderRound(ctx, session) : null;
     const response = {
       correct: false,
       closeCall: false,
@@ -450,7 +541,12 @@ export const submitGuess = mutation({
       guesses,
     };
     return gameOver
-      ? { ...response, answerName: session.answerName, resolution: "guessed" as const }
+      ? {
+          ...response,
+          answerName: session.answerName,
+          resolution: "guessed" as const,
+          ...(nextRound ? { nextRound } : {}),
+        }
       : response;
   },
 });
@@ -472,12 +568,16 @@ export const resolveLadderChallenge = mutation({
     if (!ownsSession(session, actor)) throw new Error("Not authorized");
     if (session.mode !== "ladder") throw new Error("This is not a ladder session");
     if (session.status !== "active") throw new Error("Game is not active");
+    if (session.startsAt && Date.now() < session.startsAt) {
+      throw new Error("Round has not started");
+    }
     if (reason === "timed_out" && session.deadlineAt && Date.now() < session.deadlineAt) {
       throw new Error("Round timer is still running");
     }
 
     await incrementCompletedCareerGame(ctx, session);
     await ctx.db.patch(sessionId, { status: "failed", score: 0, resolution: reason });
+    const nextRound = await prepareNextLadderRound(ctx, session);
     return {
       correct: false,
       closeCall: false,
@@ -486,6 +586,7 @@ export const resolveLadderChallenge = mutation({
       score: 0,
       gameOver: true,
       resolution: reason,
+      ...(nextRound ? { nextRound } : {}),
     };
   },
 });

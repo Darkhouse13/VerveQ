@@ -12,13 +12,13 @@ describe("game mode pending feedback contract", () => {
   });
 
   it("Career Path shows immediate checking feedback while the guess mutation is in flight", () => {
-    const source = [
-      read("src/pages/shell/play/CareerPathClassicGame.tsx"),
-      read("src/pages/shell/play/CareerPathLadderGame.tsx"),
-    ].join("\n");
+    const classic = read("src/pages/shell/play/CareerPathClassicGame.tsx");
+    const ladder = read("src/pages/shell/play/CareerPathLadderGame.tsx");
+    const source = [classic, ladder].join("\n");
 
     expect(source).toContain('t("careerPath.checking")');
-    expect(source).toContain("submitting");
+    expect(classic).toContain("submitting");
+    expect(ladder).toContain('pendingAction === "guess"');
   });
 
   it("Survival help action shows immediate loading feedback while the ladder mutation is in flight", () => {

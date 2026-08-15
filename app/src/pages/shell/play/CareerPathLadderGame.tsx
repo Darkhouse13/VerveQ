@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { useMutation } from "convex/react";
 import { useTranslation } from "react-i18next";
-import { AlertTriangle, RotateCcw, Shirt, SkipForward, Timer, Trophy, User } from "lucide-react";
+import { AlertTriangle, RotateCcw, Share2, Shirt, SkipForward, Timer, Trophy, User } from "lucide-react";
 import { NeoBadge } from "@/components/neo/NeoBadge";
 import { NeoButton } from "@/components/neo/NeoButton";
 import { NeoCard } from "@/components/neo/NeoCard";
@@ -19,7 +19,9 @@ import {
   startRun,
 } from "@/lib/gameAnalytics";
 import { SHELL_ROUTES } from "@/lib/shellRoutes";
+import { shareCareerPathResult } from "@/lib/careerPathShare";
 import { cn } from "@/lib/utils";
+import { toast } from "sonner";
 import { api } from "../../../../convex/_generated/api";
 import type { Id } from "../../../../convex/_generated/dataModel";
 import { clubsForDisplay, type CareerPathClub } from "../../../../convex/lib/careerPathClubs";
@@ -27,14 +29,7 @@ import { clubsForDisplay, type CareerPathClub } from "../../../../convex/lib/car
 const ROUND_COUNT = 10;
 const REVEAL_MS = 1_300;
 const START_TIMEOUT_MS = 8_000;
-const LADDER_TIERS = [
-  "easy", "easy",
-  "medium", "medium", "medium",
-  "hard", "hard", "hard",
-  "impossible", "impossible",
-] as const;
-
-type LadderTier = (typeof LADDER_TIERS)[number];
+type LadderTier = "easy" | "medium" | "hard" | "impossible";
 type Resolution = "guessed" | "skipped" | "timed_out";
 type GuessHistoryItem = {
   guessName: string;
@@ -49,6 +44,19 @@ type RoundResult = {
   score: number;
   resolution: Resolution;
 };
+type PreparedRound = {
+  sessionId: Id<"careerPathSessions">;
+  clubs: CareerPathClub[];
+  difficulty: string;
+  ladderRound: number;
+  startsAt: number;
+  deadlineAt: number;
+  score: number;
+  maxGuesses: number;
+  wrongGuessCount: number;
+  guesses: GuessHistoryItem[];
+};
+type PendingAction = "guess" | "skip" | "timeout" | null;
 
 function withTimeout<T>(promise: Promise<T>, timeoutMs: number): Promise<T> {
   return new Promise((resolve, reject) => {
@@ -97,7 +105,7 @@ export default function CareerPathLadderGame({ onChooseMode }: { onChooseMode: (
   const [deadlineAt, setDeadlineAt] = useState<number | null>(null);
   const [secondsLeft, setSecondsLeft] = useState(30);
   const [result, setResult] = useState<RoundResult | null>(null);
-  const [submitting, setSubmitting] = useState(false);
+  const [pendingAction, setPendingAction] = useState<PendingAction>(null);
   const [closeCallShake, setCloseCallShake] = useState(false);
   const [totalScore, setTotalScore] = useState(0);
   const [results, setResults] = useState<RoundResult[]>([]);
@@ -106,7 +114,7 @@ export default function CareerPathLadderGame({ onChooseMode }: { onChooseMode: (
   const inputRef = useRef<HTMLInputElement>(null);
   const startedRef = useRef(false);
   const runIdRef = useRef<string | null>(null);
-  const usedEntryIdsRef = useRef<string[]>([]);
+  const preparedNextRoundRef = useRef<PreparedRound | null>(null);
   const resolvedSessionRef = useRef<string | null>(null);
   const resolutionInFlightRef = useRef(false);
   const totalScoreRef = useRef(0);
@@ -116,7 +124,27 @@ export default function CareerPathLadderGame({ onChooseMode }: { onChooseMode: (
   const accountStateRef = useRef(accountState);
   accountStateRef.current = accountState;
 
-  const startRound = useCallback(async (nextRoundIndex: number) => {
+  const applyPreparedRound = useCallback((round: PreparedRound) => {
+    preparedNextRoundRef.current = null;
+    resolvedSessionRef.current = null;
+    resolutionInFlightRef.current = false;
+    setPendingAction(null);
+    setResult(null);
+    setGuess("");
+    setCloseCallShake(false);
+    setSessionId(round.sessionId);
+    setRoundIndex(round.ladderRound - 1);
+    setClubs(round.clubs);
+    setDifficulty(round.difficulty as LadderTier);
+    setScore(round.score);
+    setMaxGuesses(round.maxGuesses ?? 3);
+    setWrongGuessCount(round.wrongGuessCount ?? 0);
+    setGuessHistory(round.guesses ?? []);
+    setDeadlineAt(round.deadlineAt);
+    setSecondsLeft(Math.max(0, Math.ceil((round.deadlineAt - Date.now()) / 1000)));
+  }, []);
+
+  const startLadder = useCallback(async () => {
     setLoading(true);
     setStartupError(false);
     setResult(null);
@@ -126,15 +154,11 @@ export default function CareerPathLadderGame({ onChooseMode }: { onChooseMode: (
     resolutionInFlightRef.current = false;
 
     try {
-      const tier = LADDER_TIERS[nextRoundIndex];
       const response = await withTimeout(
         startChallenge({
           sport,
           guestToken,
           mode: "ladder",
-          difficulty: tier,
-          ladderRound: nextRoundIndex + 1,
-          excludedEntryIds: usedEntryIdsRef.current,
         }),
         START_TIMEOUT_MS,
       );
@@ -156,17 +180,7 @@ export default function CareerPathLadderGame({ onChooseMode }: { onChooseMode: (
         }).catch(() => {});
       }
 
-      usedEntryIdsRef.current.push(response.entryId);
-      setSessionId(response.sessionId);
-      setRoundIndex(nextRoundIndex);
-      setClubs(response.clubs);
-      setDifficulty(tier);
-      setScore(response.score);
-      setMaxGuesses(response.maxGuesses ?? 3);
-      setWrongGuessCount(response.wrongGuessCount ?? 0);
-      setGuessHistory(response.guesses ?? []);
-      setDeadlineAt(response.deadlineAt ?? Date.now() + 30_000);
-      setSecondsLeft(30);
+      applyPreparedRound(response as PreparedRound);
     } catch (error) {
       console.error("Failed to start career ladder round:", error);
       setSessionId(null);
@@ -174,19 +188,20 @@ export default function CareerPathLadderGame({ onChooseMode }: { onChooseMode: (
     } finally {
       setLoading(false);
     }
-  }, [guestToken, recordCareerPathEvent, sport, startChallenge]);
+  }, [applyPreparedRound, guestToken, recordCareerPathEvent, sport, startChallenge]);
 
   useEffect(() => {
     if (startedRef.current) return;
     startedRef.current = true;
-    void startRound(0);
-  }, [startRound]);
+    void startLadder();
+  }, [startLadder]);
 
-  const settleRound = useCallback((nextResult: RoundResult) => {
+  const settleRound = useCallback((nextResult: RoundResult, nextRound?: PreparedRound) => {
     if (!sessionId || resolvedSessionRef.current === sessionId) return;
     resolvedSessionRef.current = sessionId;
     resolutionInFlightRef.current = false;
-    setSubmitting(false);
+    preparedNextRoundRef.current = nextRound ?? null;
+    setPendingAction(null);
     setDeadlineAt(null);
     setResult(nextResult);
     const nextTotal = totalScoreRef.current + nextResult.score;
@@ -200,7 +215,7 @@ export default function CareerPathLadderGame({ onChooseMode }: { onChooseMode: (
   const resolveWithoutGuess = useCallback(async (reason: "skipped" | "timed_out") => {
     if (!sessionId || result || resolutionInFlightRef.current) return;
     resolutionInFlightRef.current = true;
-    setSubmitting(true);
+    setPendingAction(reason === "skipped" ? "skip" : "timeout");
     try {
       const response = await resolveLadderChallenge({ sessionId, reason, guestToken });
       settleRound({
@@ -208,10 +223,10 @@ export default function CareerPathLadderGame({ onChooseMode }: { onChooseMode: (
         answerName: response.answerName,
         score: response.score,
         resolution: reason,
-      });
+      }, response.nextRound as PreparedRound | undefined);
     } catch (error) {
       resolutionInFlightRef.current = false;
-      setSubmitting(false);
+      setPendingAction(null);
       // The 200ms clock interval retries an early timeout naturally while the
       // round is still active. Do not schedule a detached retry here: a guess
       // can resolve in the same instant and make that old session terminal.
@@ -235,9 +250,19 @@ export default function CareerPathLadderGame({ onChooseMode }: { onChooseMode: (
 
   useEffect(() => {
     if (!result) return;
+    const nextRound = preparedNextRoundRef.current;
+    const transitionDelay = nextRound
+      ? Math.max(0, nextRound.startsAt - Date.now())
+      : REVEAL_MS;
     const timeoutId = window.setTimeout(() => {
+      if (nextRound) {
+        applyPreparedRound(nextRound);
+        return;
+      }
+
       if (roundIndex < ROUND_COUNT - 1) {
-        void startRound(roundIndex + 1);
+        setResult(null);
+        setStartupError(true);
         return;
       }
 
@@ -253,16 +278,16 @@ export default function CareerPathLadderGame({ onChooseMode }: { onChooseMode: (
           stage: "completed",
         }).catch(() => {});
       }
-    }, REVEAL_MS);
+    }, transitionDelay);
     return () => window.clearTimeout(timeoutId);
-  }, [recordCareerPathEvent, result, roundIndex, startRound]);
+  }, [applyPreparedRound, recordCareerPathEvent, result, roundIndex]);
 
   useEffect(() => () => abandonRun(runIdRef.current), []);
 
   const handleSubmitGuess = async () => {
     const submittedGuess = guess.trim();
-    if (!sessionId || !submittedGuess || submitting || result) return;
-    setSubmitting(true);
+    if (!sessionId || !submittedGuess || pendingAction || result) return;
+    setPendingAction("guess");
     try {
       const response = await submitGuess({ sessionId, guess: submittedGuess, guestToken });
       if (response.closeCall) {
@@ -284,7 +309,7 @@ export default function CareerPathLadderGame({ onChooseMode }: { onChooseMode: (
           answerName: response.answerName,
           score: response.score,
           resolution: response.resolution === "timed_out" ? "timed_out" : "guessed",
-        });
+        }, response.nextRound as PreparedRound | undefined);
       } else {
         setGuess("");
         inputRef.current?.focus();
@@ -292,12 +317,12 @@ export default function CareerPathLadderGame({ onChooseMode }: { onChooseMode: (
     } catch (error) {
       console.error("Career ladder guess failed:", error);
     } finally {
-      setSubmitting(false);
+      setPendingAction(null);
     }
   };
 
   const restart = () => {
-    usedEntryIdsRef.current = [];
+    preparedNextRoundRef.current = null;
     resultsRef.current = [];
     totalScoreRef.current = 0;
     runIdRef.current = null;
@@ -307,13 +332,21 @@ export default function CareerPathLadderGame({ onChooseMode }: { onChooseMode: (
     setResults([]);
     setTotalScore(0);
     setFinished(false);
-    void startRound(0);
+    void startLadder();
   };
 
   const correctCount = results.filter((item) => item.correct).length;
   const guessesRemaining = Math.max(0, maxGuesses - wrongGuessCount);
   const metrics = { score: totalScore + (result ? 0 : score), lives: guessesRemaining };
   const clockPercent = Math.max(0, Math.min(100, (secondsLeft / 30) * 100));
+
+  const handleShare = async () => {
+    const outcome = await shareCareerPathResult(
+      t("careerPath.ladderShareText", { correct: correctCount, score: totalScore }),
+    );
+    if (outcome === "copied") toast.success(t("careerPath.shareCopied"));
+    if (outcome === "failed") toast.error(t("careerPath.shareFailed"));
+  };
 
   if (finished) {
     return (
@@ -336,6 +369,10 @@ export default function CareerPathLadderGame({ onChooseMode }: { onChooseMode: (
             </div>
             <p className="mt-5 font-mono text-xl font-bold">{t("careerPath.totalPoints", { score: totalScore })}</p>
           </NeoCard>
+
+          <NeoButton variant="accent" size="lg" className="mt-4 w-full" onClick={() => void handleShare()}>
+            <Share2 size={17} /> {t("careerPath.shareResult")}
+          </NeoButton>
 
           {!hasUsername && (
             <NeoCard color="default" className="mt-4 text-center py-3 px-4">
@@ -381,7 +418,7 @@ export default function CareerPathLadderGame({ onChooseMode }: { onChooseMode: (
           <NeoCard color="accent" className="text-center py-8 px-6">
             <p className="font-heading text-2xl font-bold">{t("careerPath.startFailedTitle")}</p>
             <p className="mt-3 font-body text-sm text-muted-foreground">{t("careerPath.startFailedMessage")}</p>
-            <NeoButton className="mt-6 w-full" variant="primary" size="lg" onClick={() => void startRound(roundIndex)}>
+            <NeoButton className="mt-6 w-full" variant="primary" size="lg" onClick={() => void startLadder()}>
               {t("careerPath.tryAgain")}
             </NeoButton>
           </NeoCard>
@@ -472,10 +509,10 @@ export default function CareerPathLadderGame({ onChooseMode }: { onChooseMode: (
               onKeyDown={(event) => event.key === "Enter" && void handleSubmitGuess()}
             />
             <div className="grid grid-cols-[1fr_auto] gap-3">
-              <NeoButton variant="primary" size="lg" onClick={() => void handleSubmitGuess()} disabled={!guess.trim() || submitting}>
-                <User size={16} /> {submitting ? t("careerPath.checking") : t("careerPath.guess")}
+              <NeoButton variant="primary" size="lg" onClick={() => void handleSubmitGuess()} disabled={!guess.trim() || pendingAction !== null}>
+                <User size={16} /> {pendingAction === "guess" ? t("careerPath.checking") : t("careerPath.guess")}
               </NeoButton>
-              <NeoButton variant="secondary" size="lg" onClick={() => void resolveWithoutGuess("skipped")} disabled={submitting}>
+              <NeoButton variant="secondary" size="lg" onClick={() => void resolveWithoutGuess("skipped")} disabled={pendingAction !== null}>
                 <SkipForward size={16} /> {t("careerPath.skip")}
               </NeoButton>
             </div>
@@ -494,7 +531,11 @@ export default function CareerPathLadderGame({ onChooseMode }: { onChooseMode: (
                     ? t("careerPath.skipped")
                     : t("careerPath.resultWrong")}
             </p>
-            {result.answerName && <p className="mt-1 font-body text-sm">{t("careerPath.itWas", { name: result.answerName })}</p>}
+            {result.answerName && (
+              <p className="mt-2 font-heading text-2xl font-bold leading-tight">
+                {t("careerPath.itWas", { name: result.answerName })}
+              </p>
+            )}
             <p className="mt-2 font-mono text-xs font-bold uppercase">{t("careerPath.nextPathLoading")}</p>
           </NeoCard>
         )}
