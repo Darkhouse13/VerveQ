@@ -255,7 +255,11 @@ export const getWatchedFixtures = query({
     const userId = await getAuthUserId(ctx);
     const gameweek = await findOpenGameweek(ctx);
     if (gameweek === null) return null;
-    if (userId === null) return { gameweekId: gameweek._id, selected: null };
+    // One shape from both branches: a signed-out caller has never been asked
+    // and has retired nothing.
+    if (userId === null) {
+      return { gameweekId: gameweek._id, selected: null, unseen: [] };
+    }
     const row = await watchedRowOf(ctx, userId, gameweek._id);
     return {
       gameweekId: gameweek._id,
