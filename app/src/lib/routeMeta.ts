@@ -90,6 +90,11 @@ export const ROUTE_META: Record<string, RouteMeta> = {
     description:
       "Where you stand in VerveQ football trivia: global ELO rankings, mode leaderboards and the players ahead of you. Updated as games finish.",
   },
+  "/v2/weekend/leaderboard": {
+    title: "The Weekend Leaderboard | VerveQ",
+    description:
+      "Live global standings for The Weekend fantasy game: provisional budget-squad points update as each fixture is scored.",
+  },
 };
 
 /** Search-result truncation budgets — asserted in the contract test. */

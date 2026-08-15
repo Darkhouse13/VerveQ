@@ -55,6 +55,7 @@ const createSquad = handlerOf(fantasySquads.createSquad);
 const setSlot = handlerOf(fantasySquads.setSlot);
 const applyFixtureStats = handlerOf(fantasyScores.applyFixtureStats);
 const getSquadScore = handlerOf(fantasyScores.getSquadScore);
+const getWeekendLeaderboard = handlerOf(fantasyScores.getWeekendLeaderboard);
 const getCrewTable = handlerOf(fantasyScores.getCrewTable);
 const finalizeGameweekChunk = handlerOf(fantasyScores.finalizeGameweekChunk);
 const stampSquadFinalTotals = handlerOf(fantasyScores.stampSquadFinalTotals);
@@ -472,6 +473,57 @@ describe("P5 — squad aggregation", () => {
       emptySlots: 0,
       at: cut,
     });
+  });
+});
+
+describe("global weekend leaderboard", () => {
+  it("reacts to provisional scores, shares tied ranks, and excludes crew squads", async () => {
+    await buildSquad();
+
+    const rivalId = await world.db.insert("users", { username: "rival" });
+    authMock.getAuthUserId.mockImplementation(async () => rivalId);
+    await buildSquad();
+    authMock.getAuthUserId.mockImplementation(async () => world.userId);
+
+    // A crew sheet in the same gameweek is a different competition. Its mere
+    // presence must not change even the leaderboard's participant count.
+    await world.db.insert("fantasySquads", {
+      userId: world.userId,
+      gameweekId: world.gameweekId,
+      context: "crew",
+      crewRoomId: "room-1",
+      contextKey: "crew:room-1",
+      favoriteClubAtBuild: null,
+      createdAt: THURSDAY,
+    });
+
+    const before = (await getWeekendLeaderboard(world.ctx, {
+      gameweekId: world.gameweekId,
+    })) as {
+      state: string;
+      participants: number;
+      ranked: number;
+      rows: Array<{ rank: number; name: string; total: number; tied: boolean; isYou: boolean }>;
+    };
+    expect(before.participants).toBe(2);
+    expect(before.ranked).toBe(0);
+    expect(before.rows).toEqual([]);
+
+    vi.setSystemTime(AFTER_SATURDAY);
+    await scoreSaturdayOne();
+
+    const live = (await getWeekendLeaderboard(world.ctx, {
+      gameweekId: world.gameweekId,
+    })) as typeof before;
+    expect(live.state).toBe("provisional");
+    expect(live.participants).toBe(2);
+    expect(live.ranked).toBe(2);
+    expect(live.rows).toHaveLength(2);
+    expect(live.rows.map((row) => row.total)).toEqual([16.85, 16.85]);
+    expect(live.rows.map((row) => row.rank)).toEqual([1, 1]);
+    expect(live.rows.every((row) => row.tied)).toBe(true);
+    expect(live.rows.find((row) => row.name === "tester")?.isYou).toBe(true);
+    expect(live.rows.some((row) => row.name === "rival")).toBe(true);
   });
 });
 

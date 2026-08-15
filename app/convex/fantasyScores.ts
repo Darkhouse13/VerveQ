@@ -1789,6 +1789,108 @@ export const getSquadScore = query({
   },
 });
 
+// ─────────────────────────────────────────────── the global weekend board
+
+export interface WeekendLeaderboardRow {
+  /** Competition rank: equal totals share a place. */
+  rank: number;
+  name: string;
+  total: number;
+  scoredSlots: number;
+  awaitingSlots: number;
+  emptySlots: number;
+  tied: boolean;
+  isYou: boolean;
+}
+
+export interface WeekendLeaderboard {
+  gameweekId: Id<"fantasyGameweeks">;
+  season: string;
+  gwNumber: number;
+  state: "provisional" | "final";
+  /** Every budget squad entered in this gameweek, including those awaiting all data. */
+  participants: number;
+  /** Squads with at least one resolved slot and therefore an honest total. */
+  ranked: number;
+  rows: WeekendLeaderboardRow[];
+}
+
+/**
+ * The general THE WEEKEND leaderboard: budget squads only, never crew sheets.
+ *
+ * It deliberately derives live totals through `squadScore`, the same function
+ * used by the squad card and receipt. Convex subscriptions then invalidate this
+ * query whenever a score version lands, so provisional standings move with the
+ * scoring pipeline without a second cache or write path. A squad with no
+ * resolved player is absent rather than presented as an invented zero.
+ */
+export const getWeekendLeaderboard = query({
+  args: { gameweekId: v.id("fantasyGameweeks") },
+  handler: async (ctx, args): Promise<WeekendLeaderboard | null> => {
+    const gameweek = await ctx.db.get(args.gameweekId);
+    if (gameweek === null) return null;
+
+    const callerId = await getAuthUserId(ctx);
+    const squads = (
+      await ctx.db
+        .query("fantasySquads")
+        .withIndex("by_gameweek", (q) => q.eq("gameweekId", gameweek._id))
+        .collect()
+    ).filter((squad) => squad.context === "budget");
+
+    const sortable: Array<WeekendLeaderboardRow & { userId: Id<"users"> }> = [];
+    const now = Date.now();
+    for (const squad of squads) {
+      const score =
+        squad.finalScore !== undefined
+          ? squad.finalScore
+          : await squadScore(ctx, squad, gameweek, now, false);
+      if (score.scoredSlots === 0) continue;
+
+      const user = await ctx.db.get(squad.userId);
+      sortable.push({
+        rank: 0,
+        name: user?.username ?? user?.displayName ?? "Weekend player",
+        total: score.total,
+        scoredSlots: score.scoredSlots,
+        awaitingSlots: score.awaitingSlots,
+        emptySlots: score.emptySlots,
+        tied: false,
+        isYou: callerId === squad.userId,
+        userId: squad.userId,
+      });
+    }
+
+    sortable.sort(
+      (a, b) =>
+        b.total - a.total ||
+        a.name.localeCompare(b.name) ||
+        (a.userId < b.userId ? -1 : a.userId > b.userId ? 1 : 0),
+    );
+
+    let rank = 0;
+    let previousTotal: number | undefined;
+    sortable.forEach((row, index) => {
+      if (index === 0 || row.total !== previousTotal) rank = index + 1;
+      row.rank = rank;
+      row.tied =
+        sortable[index - 1]?.total === row.total || sortable[index + 1]?.total === row.total;
+      previousTotal = row.total;
+    });
+
+    const gwScoring = await gameweekScoringRow(ctx, gameweek._id);
+    return {
+      gameweekId: gameweek._id,
+      season: gameweek.season,
+      gwNumber: gameweek.gwNumber,
+      state: gwScoring?.state === "final" ? "final" : "provisional",
+      participants: squads.length,
+      ranked: sortable.length,
+      rows: sortable.map(({ userId: _userId, ...row }) => row),
+    };
+  },
+});
+
 // ─────────────────────────────────────────────────────── the crew table (P6)
 //
 // FW-3 shipped the crew page with the standings column reading "points: awaits

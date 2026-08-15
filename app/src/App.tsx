@@ -104,6 +104,7 @@ const CourtScreen = lazyWithRetry(() => import("./pages/shell/weekend/CourtScree
 const CrewSheetScreen = lazyWithRetry(() => import("./pages/shell/weekend/CrewSheetScreen"));
 const WeekendHowToPlayScreen = lazyWithRetry(() => import("./pages/shell/weekend/WeekendHowToPlayScreen"));
 const FixturesScreen = lazyWithRetry(() => import("./pages/shell/weekend/FixturesScreen"));
+const WeekendLeaderboardScreen = lazyWithRetry(() => import("./pages/shell/weekend/WeekendLeaderboardScreen"));
 const WeekendReceiptScreen = lazyWithRetry(() => import("./pages/shell/weekend/WeekendReceiptScreen"));
 
 const DuelPlayScreen = lazyWithRetry(() => import("./pages/DuelPlayScreen"));
@@ -603,6 +604,9 @@ const AppRoutes = () => (
             {/* THE WEEKEND fixtures (FW-IMMERSE A3). Public like the hub —
                 the weekend's matchday list is read-only, no session. */}
             <Route path="/v2/weekend/fixtures" element={<ShellGate><FixturesScreen /></ShellGate>} />
+            {/* Global THE WEEKEND table — public like the fixtures, and scoped
+                strictly to budget squads for the open gameweek. */}
+            <Route path="/v2/weekend/leaderboard" element={<ShellGate><WeekendLeaderboardScreen /></ShellGate>} />
             {/* THE WEEKEND settlement receipt (FW-RECEIPT). Username tier —
                 a receipt is the caller's own squad, settled. */}
             <Route path="/v2/weekend/receipt/:gameweekId" element={<ShellGate><UsernameOnlyRoute><WeekendReceiptScreen /></UsernameOnlyRoute></ShellGate>} />

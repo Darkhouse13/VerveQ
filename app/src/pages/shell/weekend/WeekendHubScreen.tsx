@@ -26,6 +26,7 @@ import {
   ChevronRight,
   Gavel,
   HelpCircle,
+  Trophy,
   Users,
   Vote,
   Wallet,
@@ -539,6 +540,27 @@ export default function WeekendHubScreen() {
         <h2 className="font-mono text-[11px] font-bold uppercase tracking-[0.16em] text-muted-foreground -mb-1">
           {t("weekend.playTitle", { defaultValue: "Play the weekend" })}
         </h2>
+        <NeoCard
+          shadow="lg"
+          onClick={() => navigate(SHELL_ROUTES.weekendLeaderboard)}
+          className="flex items-center gap-3 text-left"
+          data-testid="weekend-door-leaderboard"
+        >
+          <div className="neo-border rounded-lg bg-primary text-primary-foreground p-2 shrink-0">
+            <Trophy size={18} strokeWidth={2.5} aria-hidden />
+          </div>
+          <div className="min-w-0 flex-1">
+            <p className="font-heading font-bold text-base leading-tight">
+              {t("weekend.leaderboardTitle", { defaultValue: "Leaderboard" })}
+            </p>
+            <p className="text-[11px] text-muted-foreground mt-0.5 leading-snug">
+              {t("weekend.leaderboardDoorBody", {
+                defaultValue: "See how every budget squad is scoring.",
+              })}
+            </p>
+          </div>
+          <ChevronRight size={18} strokeWidth={3} className="shrink-0" aria-hidden />
+        </NeoCard>
         <div className="grid grid-cols-2 gap-3">
           <HubDoor
             icon={Wallet}

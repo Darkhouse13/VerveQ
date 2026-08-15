@@ -94,6 +94,8 @@ export const SHELL_ROUTES = {
   weekendHowToPlay: "/v2/weekend/how-to-play",
   /** THE WEEKEND fixtures (FW-IMMERSE A3) — public, read-only matchday list. */
   weekendFixtures: "/v2/weekend/fixtures",
+  /** THE WEEKEND global gameweek table — budget squads only, live + provisional. */
+  weekendLeaderboard: "/v2/weekend/leaderboard",
   /** `/v2/weekend/receipt/:gameweekId` — a settled gameweek's receipt
    *  (FW-RECEIPT); `?room=<roomId>` addresses a crew sheet's receipt. */
   weekendReceipt: (gameweekId: string, roomId?: string) =>
@@ -131,6 +133,7 @@ export const SHELL_ROUTE_PATTERNS = {
   weekendSheet: "/v2/weekend/sheet/:roomId",
   weekendHowToPlay: "/v2/weekend/how-to-play",
   weekendFixtures: "/v2/weekend/fixtures",
+  weekendLeaderboard: "/v2/weekend/leaderboard",
   weekendReceipt: "/v2/weekend/receipt/:gameweekId",
 } as const;
 
