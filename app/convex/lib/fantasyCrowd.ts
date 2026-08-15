@@ -34,6 +34,23 @@ export const CROWD_LIQUIDITY_THRESHOLD = 25;
 /** Pairs served per user per gameweek. [placeholder 300] */
 export const CROWD_SERVE_CAP_PER_GAMEWEEK = 300;
 
+/**
+ * TODAY'S TEN (EYE-TEST-TEN). The session's goal — what the surface asks of a
+ * voter today. It is NOT a cap: past the tenth the stack keeps serving for
+ * volunteers, and CROWD_SERVE_CAP_PER_GAMEWEEK remains the only ceiling.
+ * A goal you can finish is the thing that kills the chore; "N / 300" was a
+ * progress bar toward exhaustion.
+ */
+export const CROWD_SESSION_GOAL = 10;
+
+/**
+ * Fewer votes than this on a pair and the reveal says "you're one of the
+ * first" instead of a percentage. Three votes is not a crowd, and a
+ * fake-precise "67%" off two other people is the kind of number the card is
+ * banned from arguing with. [placeholder 5]
+ */
+export const CROWD_REVEAL_MIN_VOTES = 5;
+
 /** The clamp half-width the factor maps onto. SCORING_SPEC v0.5.1 (P7). */
 export const CROWD_FACTOR_MAX = 0.15;
 
@@ -234,5 +251,184 @@ export function serveCardContextOf(args: {
     assists: stats.assists,
     redCard: stats.redCards > 0,
     fixture,
+  };
+}
+
+// ── the picker + the cascade (EYE-TEST-TEN) ──
+
+/**
+ * What the fixture picker recorded for one (user, gameweek).
+ *
+ *   null  — never asked. The picker is the first screen of the session.
+ *   []    — asked and answered "I didn't watch anything this weekend". A
+ *           VALID, RECORDED answer, not an error and not an absence: the
+ *           difference between the two is exactly why this is an array on a
+ *           row rather than a nullable field.
+ */
+export type WatchedSelection = readonly string[] | null;
+
+export type ServeGate =
+  | { kind: "needs_picker" }
+  | { kind: "no_fixtures" }
+  | { kind: "ok"; fixtureIds: ReadonlySet<string> };
+
+/** The gate every serve passes before a pair is chosen. */
+export function serveGateOf(selection: WatchedSelection): ServeGate {
+  if (selection === null) return { kind: "needs_picker" };
+  const fixtureIds = new Set(selection);
+  if (fixtureIds.size === 0) return { kind: "no_fixtures" };
+  return { kind: "ok", fixtureIds };
+}
+
+/**
+ * The voteable population for one user: appeared players from the fixtures he
+ * SAID he watched, minus the players he owns this gameweek.
+ *
+ * Both filters are serve-time (LOCKED for conflicts, new here for the
+ * picker). Because it runs before partner selection, a cross-fixture pair can
+ * only ever span two SELECTED fixtures — the picker constrains both sides of
+ * the pair, not just the one the serve targeted.
+ */
+export function eligibleForSelection<P extends { playerId: string; fixtureId: string }>(
+  players: readonly P[],
+  selectedFixtureIds: ReadonlySet<string>,
+  conflictedPlayerIds: ReadonlySet<string>,
+): P[] {
+  return players.filter(
+    (p) => selectedFixtureIds.has(p.fixtureId) && !conflictedPlayerIds.has(p.playerId),
+  );
+}
+
+/** Which side(s) of a pair a didn't-see marks unseen. */
+export type UnseenSide = "a" | "b" | "both";
+
+/**
+ * The fixtures a didn't-see retires. A pair can span two fixtures (the
+ * context cards made that visible), so "didn't see him" is per CARD and
+ * retires only that card's fixture; the combined button — offered only when
+ * both cards share a fixture — retires the one they share.
+ */
+export function unseenFixturesOf(
+  side: UnseenSide,
+  fixtureAId: string,
+  fixtureBId: string,
+): string[] {
+  if (side === "a") return [fixtureAId];
+  if (side === "b") return [fixtureBId];
+  return fixtureAId === fixtureBId ? [fixtureAId] : [fixtureAId, fixtureBId];
+}
+
+/**
+ * The cascade: a didn't-see removes that fixture from the user's picker
+ * selection, which is what makes "never serve me a pair from that game
+ * again" true for the REST of the gameweek rather than just for this pair —
+ * serving reads the selection, so retiring the fixture excludes every
+ * remaining pair drawn from it in one move.
+ */
+export function selectionAfterCascade(
+  selection: readonly string[],
+  retired: readonly string[],
+): string[] {
+  const drop = new Set(retired);
+  return selection.filter((fixtureId) => !drop.has(fixtureId));
+}
+
+// ── Today's Ten ──
+
+/** How far back a client-supplied day start is allowed to sit. A local
+ *  midnight is at most 26h behind UTC-now (UTC+14 through UTC−12); 36h is
+ *  that with room, and anything older is not "today" in any timezone. */
+export const CROWD_DAY_WINDOW_MAX_MS = 36 * 60 * 60 * 1000;
+
+/**
+ * The instant the voter's "today" began. The client may pass its own LOCAL
+ * midnight — it alone knows the device's timezone, and "Today's Ten" should
+ * roll over at the voter's midnight, not Greenwich's. The value is clamped,
+ * not trusted: a future, non-finite, or stale-beyond-36h claim falls back to
+ * UTC midnight.
+ *
+ * Nothing rides on this but a counter with no reward attached, which is why a
+ * client-supplied boundary is safe here and would not be anywhere near the
+ * scoring path.
+ */
+export function todayStartOf(now: number, clientDayStart?: number | null): number {
+  const utcMidnight = Math.floor(now / 86_400_000) * 86_400_000;
+  if (clientDayStart === undefined || clientDayStart === null) return utcMidnight;
+  if (!Number.isFinite(clientDayStart)) return utcMidnight;
+  if (clientDayStart > now) return utcMidnight;
+  if (now - clientDayStart > CROWD_DAY_WINDOW_MAX_MS) return utcMidnight;
+  return clientDayStart;
+}
+
+export interface TodaysTenProgress {
+  /** Votes cast today. Keeps counting past the goal — volunteers are not
+   *  told their extra work stopped registering. */
+  voted: number;
+  goal: number;
+  complete: boolean;
+}
+
+/**
+ * Today's Ten from the user's own answered pairs. Only VOTES count: a
+ * didn't-see is an honest answer but not a judgment, and a ten made of skips
+ * would thank the voter for nothing. The exhaustion done-state is serving's
+ * job — a voter who picked two games can finish long before ten exist.
+ */
+export function todaysTenOf(
+  votedAtTimes: readonly (number | undefined)[],
+  dayStart: number,
+): TodaysTenProgress {
+  let voted = 0;
+  for (const at of votedAtTimes) {
+    if (at !== undefined && Number.isFinite(at) && at >= dayStart) voted += 1;
+  }
+  return { voted, goal: CROWD_SESSION_GOAL, complete: voted >= CROWD_SESSION_GOAL };
+}
+
+// ── the consensus reveal ──
+
+export interface ConsensusReveal {
+  /** Votes on this pair, the caller's included. */
+  total: number;
+  /** Votes that went the caller's way, the caller's own included. */
+  withYou: number;
+  /** The caller's share, 0–100. Null below CROWD_REVEAL_MIN_VOTES — the
+   *  surface says "one of the first" rather than inventing precision. */
+  percent: number | null;
+  lowSample: boolean;
+  /** True when the caller is in the larger share. Drives which sentence the
+   *  surface speaks, never a different number. */
+  majority: boolean;
+}
+
+/**
+ * The reveal, from the pair's stored votes.
+ *
+ * Shown ONLY after the vote lands, never before (EYE-TEST-TEN ruling,
+ * docs/DECISIONS.md): the card is banned from arguing, and a crowd number in
+ * front of the ballot is the loudest argument there is.
+ *
+ * Rounding is honest at the ends: a lone dissenter caps the display at 99%
+ * rather than reading 100%, and a lone agreer floors at 1% rather than 0% —
+ * a percentage must never erase a vote that exists.
+ */
+export function consensusRevealOf(withYou: number, total: number): ConsensusReveal {
+  // The caller's own vote is always in the tally; a count that says otherwise
+  // is a read race, not a fact about the crowd.
+  const safeTotal = Math.max(total, withYou, 1);
+  const safeWithYou = Math.max(withYou, 0);
+  const lowSample = safeTotal < CROWD_REVEAL_MIN_VOTES;
+  let percent: number | null = null;
+  if (!lowSample) {
+    percent = Math.round((safeWithYou / safeTotal) * 100);
+    if (percent === 100 && safeWithYou < safeTotal) percent = 99;
+    if (percent === 0 && safeWithYou > 0) percent = 1;
+  }
+  return {
+    total: safeTotal,
+    withYou: safeWithYou,
+    percent,
+    lowSample,
+    majority: safeWithYou * 2 > safeTotal,
   };
 }

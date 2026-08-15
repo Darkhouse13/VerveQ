@@ -4,8 +4,9 @@
  * Runs against the DEV-only harness (/v2/weekend/vote-harness): a fabricated
  * served pair, no auth, no dependency on DEV having finished fixtures inside
  * a live voting window. Asserts the ticket's fit rule — two FULL cards and
- * the DIDN'T WATCH button visible with NO scroll in either axis — plus every
- * new card fact (club · opponent · venue, league · day, oriented score with
+ * the skip affordance visible with NO scroll in either axis (EYE-TEST-TEN
+ * turned that one DIDN'T WATCH button into a per-card "didn't see him") —
+ * plus every new card fact (club · opponent · venue, league · day, oriented score with
  * the player's side marked, minutes, factual event glyphs), console-error-
  * free, screenshot committed to e2e/artifacts/.
  */
@@ -32,7 +33,7 @@ async function expectFullyInViewport(page: Page, locator: ReturnType<Page["locat
   expect(box!.x + box!.width, `${label} must not overflow right`).toBeLessThanOrEqual(380);
 }
 
-test("EYE-TEST-CONTEXT: two full context cards + DIDN'T WATCH fit 380px without scroll", async ({
+test("EYE-TEST-CONTEXT: two full context cards + the skip affordance fit 380px without scroll", async ({
   page,
 }) => {
   const consoleErrors: string[] = [];
@@ -88,9 +89,16 @@ test("EYE-TEST-CONTEXT: two full context cards + DIDN'T WATCH fit 380px without 
   await expect(cards).toHaveCount(2);
   await expectFullyInViewport(page, cards.nth(0), "card A");
   await expectFullyInViewport(page, cards.nth(1), "card B");
-  const didntWatch = page.getByRole("button", { name: /didn't watch/i });
-  await expect(didntWatch).toBeVisible();
-  await expectFullyInViewport(page, didntWatch, "DIDN'T WATCH");
+  // EYE-TEST-TEN replaced the single DIDN'T WATCH with a per-card "didn't see
+  // him" (a pair can span two fixtures, and the cascade must know which game
+  // was missed). The FIT rule is unchanged and still the point of this test:
+  // both cards AND the skip affordance visible with no scroll.
+  const didntSeeA = page.getByTestId("didnt-see-a");
+  const didntSeeB = page.getByTestId("didnt-see-b");
+  await expect(didntSeeA).toBeVisible();
+  await expect(didntSeeB).toBeVisible();
+  await expectFullyInViewport(page, didntSeeA, "didn't-see A");
+  await expectFullyInViewport(page, didntSeeB, "didn't-see B");
 
   const overflow = await page.evaluate(() => {
     const el = document.scrollingElement ?? document.documentElement;

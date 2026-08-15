@@ -34,8 +34,9 @@ import type { Doc, Id } from "./_generated/dataModel";
 import {
   CROWD_FACTOR_MAX,
   CROWD_LIQUIDITY_THRESHOLD,
+  CROWD_REVEAL_MIN_VOTES,
 } from "./lib/fantasyCrowd";
-import { castVoteFor, servePairFor } from "./fantasyCrowdVoting";
+import { castVoteFor, servePairFor, setWatchedFixturesFor } from "./fantasyCrowdVoting";
 import { PAIR_ALREADY_USED, VOTING_CLOSED } from "./fantasyCrowdVoting";
 
 const SIM_USERNAME_PREFIX = "simcrowd_";
@@ -109,6 +110,21 @@ export const createSimVoters = internalMutation({
   },
 });
 
+/** EYE-TEST-TEN: the session-rules probe's own voter, tagged like the rest so
+ *  the purge sweeps him and his picker row with the others. */
+export const createProbeVoter = internalMutation({
+  args: { salt: v.string() },
+  handler: async (ctx, { salt }): Promise<Id<"users">> => {
+    const username = `${SIM_USERNAME_PREFIX}${salt}_p`.slice(0, 24);
+    const existing = await ctx.db
+      .query("users")
+      .withIndex("by_username", (q) => q.eq("username", username))
+      .first();
+    if (existing !== null) fail(`sim user ${username} already exists — purge first.`);
+    return await ctx.db.insert("users", { username });
+  },
+});
+
 /**
  * Exhaust one voter's stack through the real serve/vote cores. Choice is
  * deterministic and IDENTICAL for every voter — the lower playerId "won" —
@@ -129,6 +145,24 @@ export const castAllPairsFor = internalMutation({
     const gameweek = await ctx.db.get(args.gameweekId);
     if (gameweek === null) fail("synthetic gameweek missing.");
     const now = Date.now();
+
+    // EYE-TEST-TEN: the fixture picker is the session's first screen, and
+    // serving refuses ("needs_picker") until it is answered. The walkthrough
+    // answers it through the REAL core — the voter says he caught every
+    // synthetic fixture — so the serve loop below exercises the shipped gate
+    // rather than a bypass.
+    const fixtures = await ctx.db
+      .query("fantasyFixtures")
+      .withIndex("by_gameweek_kickoff", (q) => q.eq("gameweekId", args.gameweekId))
+      .collect();
+    await setWatchedFixturesFor(
+      ctx,
+      args.userId,
+      gameweek,
+      fixtures.map((f) => f._id),
+      now,
+    );
+
     let served = 0;
     let voted = 0;
     let openPairId: Id<"fantasyCrowdPairs"> | null = null;
@@ -192,6 +226,100 @@ export const probeVoteAfterClose = internalMutation({
       return message;
     }
     return fail("a vote landed AFTER the voting window closed.");
+  },
+});
+
+/**
+ * EYE-TEST-TEN (verify-package): the session's two new server rules, probed
+ * against real stored data by one extra voter.
+ *
+ *  1. THE REVEAL is an aggregate of the pair's STORED votes across users, read
+ *     after the caller's own vote lands — so a voter joining a unanimous crowd
+ *     of five reads 100% and counts himself inside it. Nothing is
+ *     denormalized: this is the same quantity settlement freezes.
+ *  2. THE CASCADE retires a FIXTURE, not a pair. After one "didn't see him"
+ *     on the only synthetic fixture, the picker selection is empty, serving
+ *     answers `no_fixtures` rather than dealing another pair from it, and a
+ *     re-add through the picker is REFUSED — "never again" outlives the save.
+ *
+ * Votes in the same unanimous direction as every other voter, so it does not
+ * disturb the walkthrough's consensus or accuracy assertions.
+ */
+export const probeSessionRules = internalMutation({
+  args: { userId: v.id("users"), gameweekId: v.id("fantasyGameweeks") },
+  handler: async (ctx, args): Promise<Record<string, unknown>> => {
+    const gameweek = await ctx.db.get(args.gameweekId);
+    if (gameweek === null) fail("synthetic gameweek missing.");
+    const now = Date.now();
+
+    const fixtures = await ctx.db
+      .query("fantasyFixtures")
+      .withIndex("by_gameweek_kickoff", (q) => q.eq("gameweekId", args.gameweekId))
+      .collect();
+    const fixtureIds = fixtures.map((f) => f._id);
+
+    // The picker gates serving: unanswered means no pair, not an empty pair.
+    const beforePicker = await servePairFor(ctx, args.userId, gameweek, now);
+    if (beforePicker.status !== "needs_picker") {
+      fail(`serving before the picker returned "${beforePicker.status}", expected needs_picker.`);
+    }
+    await setWatchedFixturesFor(ctx, args.userId, gameweek, fixtureIds, now);
+
+    // 1 · the reveal, from stored votes across users.
+    const first = await servePairFor(ctx, args.userId, gameweek, now);
+    if (first.status !== "served") fail(`probe voter got "${first.status}", expected a pair.`);
+    const [a, b] = first.players;
+    const voted = await castVoteFor(
+      ctx,
+      args.userId,
+      first.pairId,
+      a.playerId < b.playerId ? "a" : "b",
+      now,
+    );
+    if (voted.reveal === null) fail("a real vote returned no consensus reveal.");
+    if (voted.reveal.total < CROWD_REVEAL_MIN_VOTES) {
+      fail(`reveal saw ${voted.reveal.total} votes — below the sample floor, unexpectedly.`);
+    }
+    if (voted.reveal.withYou !== voted.reveal.total || voted.reveal.percent !== 100) {
+      fail(
+        `unanimous crowd read ${voted.reveal.withYou}/${voted.reveal.total} = ${voted.reveal.percent}%, expected 100%.`,
+      );
+    }
+
+    // 2 · the cascade: one didn't-see retires the whole game.
+    const second = await servePairFor(ctx, args.userId, gameweek, now);
+    if (second.status !== "served") fail(`probe voter got "${second.status}", expected a pair.`);
+    const unseen = await castVoteFor(ctx, args.userId, second.pairId, "unseen_a", now);
+    if (unseen.reveal !== null) fail("a didn't-see was paid with a consensus reveal.");
+
+    const afterCascade = await ctx.db
+      .query("fantasyCrowdWatched")
+      .withIndex("by_user_gameweek", (q) =>
+        q.eq("userId", args.userId).eq("gameweekId", args.gameweekId),
+      )
+      .first();
+    if (afterCascade === null) fail("the picker row vanished on a didn't-see.");
+    if (afterCascade.fixtureIds.length !== 0) {
+      fail(`the retired fixture is still selected: ${afterCascade.fixtureIds.join(",")}`);
+    }
+    const nextServe = await servePairFor(ctx, args.userId, gameweek, now);
+    if (nextServe.status !== "no_fixtures") {
+      fail(`serving after the cascade returned "${nextServe.status}", expected no_fixtures.`);
+    }
+
+    // 3 · "never again" outlives a picker re-save.
+    const readd = await setWatchedFixturesFor(ctx, args.userId, gameweek, fixtureIds, now);
+    if (readd.selected.length !== 0) {
+      fail(`a retired fixture was re-added through the picker: ${readd.selected.join(",")}`);
+    }
+
+    return {
+      pickerGated: "serving refused before the picker was answered",
+      reveal: `${voted.reveal.withYou}/${voted.reveal.total} = ${voted.reveal.percent}% (unanimous crowd, caller counted inside it)`,
+      didntSeeUnpaid: "no reveal on a didn't-see",
+      cascade: "one didn't-see emptied the selection; serving answered no_fixtures",
+      readdRefused: `re-adding ${fixtureIds.length} retired fixture(s) through the picker selected 0`,
+    };
   },
 });
 
@@ -268,6 +396,27 @@ export const purgeSimCrowdData = internalMutation({
     for (const row of raterStats) {
       await ctx.db.delete(row._id);
       deleted += 1;
+    }
+    // EYE-TEST-TEN: the picker rows the walkthrough's voters answered. Keyed
+    // by (user, gameweek) with no by_gameweek index, so they are collected
+    // per sim voter — the same users the purge below deletes.
+    for (const user of await ctx.db
+      .query("users")
+      .withIndex("by_username", (q) =>
+        q.gte("username", SIM_USERNAME_PREFIX).lt("username", SIM_USERNAME_PREFIX + "\uffff"),
+      )
+      .take(100)) {
+      if (!user.username?.startsWith(SIM_USERNAME_PREFIX)) continue;
+      const watched = await ctx.db
+        .query("fantasyCrowdWatched")
+        .withIndex("by_user_gameweek", (q) =>
+          q.eq("userId", user._id).eq("gameweekId", gameweekId),
+        )
+        .collect();
+      for (const row of watched) {
+        await ctx.db.delete(row._id);
+        deleted += 1;
+      }
     }
     let deletedUsers = 0;
     const users = await ctx.db
@@ -367,6 +516,19 @@ export const simulateCrowdWalkthrough = internalAction({
       internal.fantasyCrowdSim.probeSecondVote,
       { userId: voters[0], pairId: votedPairId as Id<"fantasyCrowdPairs"> },
     );
+
+    // 3c · EYE-TEST-TEN: the picker gate, the reveal aggregate, the cascade
+    //      and its durability — one extra voter, voting in the same unanimous
+    //      direction so the consensus and accuracy assertions below are
+    //      untouched (he adds exactly one rater row, counted for at step 10).
+    const probeVoter: Id<"users"> = await ctx.runMutation(
+      internal.fantasyCrowdSim.createProbeVoter,
+      { salt: tag },
+    );
+    report.sessionRules = await ctx.runMutation(internal.fantasyCrowdSim.probeSessionRules, {
+      userId: probeVoter,
+      gameweekId,
+    });
 
     // 4 · liquidity check: every player must clear the threshold.
     const state: {
@@ -470,15 +632,18 @@ export const simulateCrowdWalkthrough = internalAction({
     // 10 · rater accuracy: unanimous voters all score 1.0.
     const settledState: { raterStats: { scoredVotes: number; accurateVotes: number }[] } =
       await ctx.runQuery(internal.fantasyCrowdSim.simCrowdState, { gameweekId });
-    if (settledState.raterStats.length !== SIM_VOTERS) {
-      fail(`expected ${SIM_VOTERS} rater rows, got ${settledState.raterStats.length}.`);
+    // SIM_VOTERS + the EYE-TEST-TEN session-rules probe voter, who cast one
+    // vote in the same unanimous direction (his didn't-see is not a vote and
+    // scores nothing — the weightlessness rule, exercised here).
+    if (settledState.raterStats.length !== SIM_VOTERS + 1) {
+      fail(`expected ${SIM_VOTERS + 1} rater rows, got ${settledState.raterStats.length}.`);
     }
     for (const rater of settledState.raterStats) {
       if (rater.scoredVotes === 0 || rater.accurateVotes !== rater.scoredVotes) {
         fail(`unanimous voter scored ${rater.accurateVotes}/${rater.scoredVotes} — expected all accurate.`);
       }
     }
-    report.raterAccuracy = "5 voters scored, unanimous, all accurate";
+    report.raterAccuracy = `${SIM_VOTERS + 1} voters scored (${SIM_VOTERS} + the session-rules probe), unanimous, all accurate`;
 
     // 11 · purge clean, both layers — unless the verifier asked to inspect.
     if (keepData === true) {

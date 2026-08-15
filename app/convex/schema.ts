@@ -2127,11 +2127,52 @@ export default defineSchema({
     status: v.union(v.literal("served"), v.literal("voted"), v.literal("skipped")),
     /** "a" | "b" once voted; absent while served and forever on a skip. */
     choice: v.optional(v.union(v.literal("a"), v.literal("b"))),
+    /**
+     * EYE-TEST-TEN. Which side the voter said he didn't see — "both" is the
+     * combined button, offered only when the two cards share a fixture.
+     * Present only on `skipped` rows. Recorded because "I didn't see him" is
+     * an answer worth keeping, and WEIGHTLESS by construction: castVote
+     * returns on this branch before any Elo touch, so no rating row moves and
+     * scoreRaterAccuracy (status "voted" only) never reads it.
+     */
+    unseen: v.optional(
+      v.union(v.literal("a"), v.literal("b"), v.literal("both")),
+    ),
     votedAt: v.optional(v.number()),
   })
     .index("by_user_gameweek", ["userId", "gameweekId"])
     .index("by_user_gameweek_pairKey", ["userId", "gameweekId", "pairKey"])
-    .index("by_gameweek_status", ["gameweekId", "status"]),
+    .index("by_gameweek_status", ["gameweekId", "status"])
+    /** EYE-TEST-TEN: the post-vote consensus reveal reads one pair's votes
+     *  across users. Deliberately NOT a denormalized tally — the stored pairs
+     *  stay the single source of truth for consensus, so the reveal a voter
+     *  sees and the frozen consensus settlement scores can never disagree. */
+    .index("by_gameweek_pairKey_status", ["gameweekId", "pairKey", "status"]),
+
+  /**
+   * EYE-TEST-TEN — the fixture picker's answer: which games this user says he
+   * CAUGHT this gameweek. One row per (user, gameweek); serving draws pairs
+   * only from these fixtures.
+   *
+   * The array is the answer, and its absence is a different answer: no row
+   * means "never asked" (the picker is the session's first screen), an EMPTY
+   * array means "I didn't watch anything this weekend" — recorded, valid, and
+   * never an error. A didn't-see cascades by removing that fixture from here.
+   */
+  fantasyCrowdWatched: defineTable({
+    userId: v.id("users"),
+    gameweekId: v.id("fantasyGameweeks"),
+    fixtureIds: v.array(v.id("fantasyFixtures")),
+    /**
+     * Fixtures retired by a didn't-see, kept SEPARATELY from `fixtureIds` so
+     * the cascade is durable: "never serves them a pair from an unseen fixture
+     * again" would otherwise last only until the next picker save, where a tap
+     * could resurrect a game the voter had already answered for. The picker
+     * shows these as retired rather than as unpicked.
+     */
+    unseenFixtureIds: v.optional(v.array(v.id("fantasyFixtures"))),
+    updatedAt: v.number(),
+  }).index("by_user_gameweek", ["userId", "gameweekId"]),
 
   /**
    * Per-gameweek Elo per appeared player. Created lazily at a player's first

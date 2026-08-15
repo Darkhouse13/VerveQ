@@ -31,13 +31,24 @@ import {
   CROWD_LIQUIDITY_THRESHOLD,
   CROWD_ELO_START,
   CROWD_SERVE_CAP_PER_GAMEWEEK,
+  CROWD_SESSION_GOAL,
   consensusOf,
+  consensusRevealOf,
   deriveCrowdFactors,
+  eligibleForSelection,
   eloUpdate,
   pairKeyOf,
+  selectionAfterCascade,
   serveCardContextOf,
+  serveGateOf,
+  todayStartOf,
+  todaysTenOf,
+  unseenFixturesOf,
+  type ConsensusReveal,
   type CrowdRatingEntry,
   type ServeCardContext,
+  type TodaysTenProgress,
+  type UnseenSide,
 } from "./lib/fantasyCrowd";
 import { assertCrowdFactorInBand } from "./lib/fantasyScorePipeline";
 import { clubLabel } from "./fantasyPlayerCard";
@@ -158,17 +169,123 @@ async function conflictedPlayerIds(
   return conflicted;
 }
 
+// ── the fixture picker (EYE-TEST-TEN) ──
+
+/** The user's picker row for a gameweek, or null if never asked. */
+async function watchedRowOf(
+  ctx: MutationCtx | QueryCtx,
+  userId: Id<"users">,
+  gameweekId: Id<"fantasyGameweeks">,
+): Promise<Doc<"fantasyCrowdWatched"> | null> {
+  return await ctx.db
+    .query("fantasyCrowdWatched")
+    .withIndex("by_user_gameweek", (q) =>
+      q.eq("userId", userId).eq("gameweekId", gameweekId),
+    )
+    .first();
+}
+
+/**
+ * Record which games the user says he caught. Ids are validated against THIS
+ * gameweek's fixtures and deduped — a fixture from another gameweek (or a
+ * fabricated id) is dropped rather than stored, so the selection can never
+ * widen the voteable population beyond what serving would allow anyway.
+ *
+ * An empty list is accepted and stored: "didn't watch anything this weekend"
+ * is an answer, and the row's existence is what distinguishes it from never
+ * having been asked.
+ *
+ * A fixture already retired by a didn't-see is dropped too. That is what makes
+ * "never serves them a pair from an unseen fixture again" hold for the whole
+ * gameweek rather than until the next save: the voter has already answered for
+ * that game, and the re-edit exists for games he never spoke about.
+ */
+export async function setWatchedFixturesFor(
+  ctx: MutationCtx,
+  userId: Id<"users">,
+  gameweek: Doc<"fantasyGameweeks">,
+  fixtureIds: readonly Id<"fantasyFixtures">[],
+  now: number,
+): Promise<{ selected: Id<"fantasyFixtures">[]; unseen: Id<"fantasyFixtures">[] }> {
+  const gameweekFixtures = await ctx.db
+    .query("fantasyFixtures")
+    .withIndex("by_gameweek_kickoff", (q) => q.eq("gameweekId", gameweek._id))
+    .collect();
+  const known = new Set<string>(gameweekFixtures.map((f) => f._id));
+  const existing = await watchedRowOf(ctx, userId, gameweek._id);
+  const unseen = existing?.unseenFixtureIds ?? [];
+
+  const requested: Id<"fantasyFixtures">[] = [];
+  const seen = new Set<string>();
+  for (const fixtureId of fixtureIds) {
+    if (!known.has(fixtureId) || seen.has(fixtureId)) continue;
+    seen.add(fixtureId);
+    requested.push(fixtureId);
+  }
+  const selected = selectionAfterCascade(requested, unseen) as Id<"fantasyFixtures">[];
+
+  if (existing === null) {
+    await ctx.db.insert("fantasyCrowdWatched", {
+      userId,
+      gameweekId: gameweek._id,
+      fixtureIds: selected,
+      updatedAt: now,
+    });
+  } else {
+    await ctx.db.patch(existing._id, { fixtureIds: selected, updatedAt: now });
+  }
+  return { selected, unseen: [...unseen] };
+}
+
+export const setWatchedFixtures = mutation({
+  args: { fixtureIds: v.array(v.id("fantasyFixtures")) },
+  handler: async (ctx, { fixtureIds }) => {
+    const userId = await requireUserId(ctx);
+    const gameweek = await findOpenGameweek(ctx);
+    if (gameweek === null) throw new Error(VOTING_CLOSED);
+    return setWatchedFixturesFor(ctx, userId, gameweek, fixtureIds, Date.now());
+  },
+});
+
+/** The picker's current answer, for the "+ add games" re-edit. Null selection
+ *  = never asked; an empty array = answered "nothing". */
+export const getWatchedFixtures = query({
+  args: {},
+  handler: async (ctx) => {
+    const userId = await getAuthUserId(ctx);
+    const gameweek = await findOpenGameweek(ctx);
+    if (gameweek === null) return null;
+    if (userId === null) return { gameweekId: gameweek._id, selected: null };
+    const row = await watchedRowOf(ctx, userId, gameweek._id);
+    return {
+      gameweekId: gameweek._id,
+      selected: row === null ? null : row.fixtureIds,
+      /** Retired by a didn't-see — the picker shows these as answered-for
+       *  rather than as unpicked, so a tap that would do nothing isn't
+       *  offered. */
+      unseen: row?.unseenFixtureIds ?? [],
+    };
+  },
+});
+
 // ── serving ──
 
 export type ServeResult =
   | { status: "closed" }
-  | { status: "cap_reached"; served: number; cap: number }
-  | { status: "exhausted"; served: number; cap: number }
+  /** EYE-TEST-TEN: the picker has never been answered for this gameweek —
+   *  the session's first screen, not an error. */
+  | { status: "needs_picker" }
+  /** Answered, but nothing is selected — either "didn't watch anything" or
+   *  every picked game has since been retired by a didn't-see. */
+  | { status: "no_fixtures" }
+  | { status: "cap_reached"; served: number; cap: number; progress: TodaysTenProgress }
+  | { status: "exhausted"; served: number; cap: number; progress: TodaysTenProgress }
   | {
       status: "served";
       pairId: Id<"fantasyCrowdPairs">;
       served: number;
       cap: number;
+      progress: TodaysTenProgress;
       players: [ServedPlayer, ServedPlayer];
     };
 
@@ -179,6 +296,11 @@ export type ServeResult =
  *  fantasyFixtureStats revision. Nothing evaluative, by ruling. */
 export interface ServedPlayer extends ServeCardContext {
   playerId: Id<"fantasyPlayers">;
+  /** EYE-TEST-TEN: which game this card's memory belongs to. The surface
+   *  compares the two sides' ids to decide whether ONE combined didn't-see
+   *  button is honest, and sends it back so the cascade retires the right
+   *  fixture. */
+  fixtureId: Id<"fantasyFixtures">;
   name: string;
   position: "GK" | "DEF" | "MID" | "ATT";
 }
@@ -197,8 +319,18 @@ export async function servePairFor(
   userId: Id<"users">,
   gameweek: Doc<"fantasyGameweeks">,
   now: number,
+  clientDayStart?: number | null,
 ): Promise<ServeResult> {
   if (!(await votingWindowOpen(ctx, gameweek, now))) return { status: "closed" };
+
+  // The picker gates serving BEFORE any pair is chosen or inserted: a voter
+  // who has not answered it gets the first screen, never a pair he then has
+  // to skip. Both gate exits are pre-insert, so neither burns a pair or a
+  // serve-cap slot.
+  const watched = await watchedRowOf(ctx, userId, gameweek._id);
+  const gate = serveGateOf(watched?.fixtureIds ?? null);
+  if (gate.kind === "needs_picker") return { status: "needs_picker" };
+  if (gate.kind === "no_fixtures") return { status: "no_fixtures" };
 
   const priorPairs = await ctx.db
     .query("fantasyCrowdPairs")
@@ -206,20 +338,30 @@ export async function servePairFor(
       q.eq("userId", userId).eq("gameweekId", gameweek._id),
     )
     .collect();
+  const progress = todaysTenOf(
+    priorPairs.filter((p) => p.status === "voted").map((p) => p.votedAt),
+    todayStartOf(now, clientDayStart),
+  );
   if (priorPairs.length >= CROWD_SERVE_CAP_PER_GAMEWEEK) {
     return {
       status: "cap_reached",
       served: priorPairs.length,
       cap: CROWD_SERVE_CAP_PER_GAMEWEEK,
+      progress,
     };
   }
   const servedKeys = new Set(priorPairs.map((p) => p.pairKey));
 
   const appeared = await appearedPlayers(ctx, gameweek._id);
   const conflicted = await conflictedPlayerIds(ctx, userId, gameweek._id);
-  const eligible = appeared.filter((p) => !conflicted.has(p.playerId));
+  const eligible = eligibleForSelection(appeared, gate.fixtureIds, conflicted);
   if (eligible.length < 2) {
-    return { status: "exhausted", served: priorPairs.length, cap: CROWD_SERVE_CAP_PER_GAMEWEEK };
+    return {
+      status: "exhausted",
+      served: priorPairs.length,
+      cap: CROWD_SERVE_CAP_PER_GAMEWEEK,
+      progress,
+    };
   }
 
   const ratings = await ctx.db
@@ -281,6 +423,7 @@ export async function servePairFor(
         const fixture = docs[i].fixture;
         return {
           playerId: p.playerId,
+          fixtureId: p.fixtureId,
           name: doc?.name ?? "…",
           position: doc?.feedPosition ?? "MID",
           ...serveCardContextOf({
@@ -303,45 +446,162 @@ export async function servePairFor(
         pairId,
         served: priorPairs.length + 1,
         cap: CROWD_SERVE_CAP_PER_GAMEWEEK,
+        progress,
         players: [players[0], players[1]],
       };
     }
   }
 
-  return { status: "exhausted", served: priorPairs.length, cap: CROWD_SERVE_CAP_PER_GAMEWEEK };
+  return {
+    status: "exhausted",
+    served: priorPairs.length,
+    cap: CROWD_SERVE_CAP_PER_GAMEWEEK,
+    progress,
+  };
 }
 
 export const servePair = mutation({
-  args: {},
-  handler: async (ctx): Promise<ServeResult> => {
+  args: {
+    /** The client's local midnight, so Today's Ten rolls over at the voter's
+     *  midnight. Clamped server-side (lib/fantasyCrowd.todayStartOf). */
+    dayStartAt: v.optional(v.number()),
+  },
+  handler: async (ctx, { dayStartAt }): Promise<ServeResult> => {
     const userId = await requireUserId(ctx);
     const gameweek = await findOpenGameweek(ctx);
     if (gameweek === null) return { status: "closed" };
-    return servePairFor(ctx, userId, gameweek, Date.now());
+    return servePairFor(ctx, userId, gameweek, Date.now(), dayStartAt);
   },
 });
 
 // ── voting ──
 
+/**
+ * The tap. "a" | "b" is a judgment; the rest are didn't-sees.
+ *
+ * `unseen_a` / `unseen_b` are the per-card "didn't see him" — a pair can span
+ * two fixtures, so one card's answer must not retire the other's game.
+ * `skip` is the combined button, offered only when both cards share a
+ * fixture, and remains the wire name a pre-EYE-TEST-TEN client sends.
+ */
+export type VoteChoice = "a" | "b" | "unseen_a" | "unseen_b" | "skip";
+
+export interface CastVoteResult {
+  ok: true;
+  /** Post-vote only. A didn't-see gets NO reveal — it is not a vote, and
+   *  paying it with a crowd number would make not-watching worth farming. */
+  reveal: ConsensusReveal | null;
+  progress: TodaysTenProgress;
+}
+
+const UNSEEN_SIDE: Record<"unseen_a" | "unseen_b" | "skip", UnseenSide> = {
+  unseen_a: "a",
+  unseen_b: "b",
+  skip: "both",
+};
+
+/** Today's Ten for a user, from their answered pairs. */
+async function progressFor(
+  ctx: MutationCtx | QueryCtx,
+  userId: Id<"users">,
+  gameweekId: Id<"fantasyGameweeks">,
+  now: number,
+  clientDayStart?: number | null,
+): Promise<TodaysTenProgress> {
+  const pairs = await ctx.db
+    .query("fantasyCrowdPairs")
+    .withIndex("by_user_gameweek", (q) =>
+      q.eq("userId", userId).eq("gameweekId", gameweekId),
+    )
+    .collect();
+  return todaysTenOf(
+    pairs.filter((p) => p.status === "voted").map((p) => p.votedAt),
+    todayStartOf(now, clientDayStart),
+  );
+}
+
+/**
+ * The reveal for the pair the caller just voted on.
+ *
+ * Counted from the stored pairs themselves (by_gameweek_pairKey_status),
+ * in the CANONICAL direction — two users can be dealt the same pair with A
+ * and B swapped, so "a" is meaningless across rows; the winner's playerId is
+ * not. Same orientation rule scoreRaterAccuracy uses, so the number a voter
+ * sees live and the frozen consensus he is scored against are the same
+ * quantity read at two different times.
+ */
+async function revealFor(
+  ctx: MutationCtx,
+  pair: Doc<"fantasyCrowdPairs">,
+  callerWinnerId: Id<"fantasyPlayers">,
+): Promise<ConsensusReveal> {
+  const voted = await ctx.db
+    .query("fantasyCrowdPairs")
+    .withIndex("by_gameweek_pairKey_status", (q) =>
+      q.eq("gameweekId", pair.gameweekId).eq("pairKey", pair.pairKey).eq("status", "voted"),
+    )
+    .collect();
+  let withYou = 0;
+  for (const row of voted) {
+    const winnerId = row.choice === "a" ? row.playerAId : row.playerBId;
+    if (winnerId === callerWinnerId) withYou += 1;
+  }
+  return consensusRevealOf(withYou, voted.length);
+}
+
 export async function castVoteFor(
   ctx: MutationCtx,
   userId: Id<"users">,
   pairId: Id<"fantasyCrowdPairs">,
-  choice: "a" | "b" | "skip",
+  choice: VoteChoice,
   now: number,
-): Promise<{ ok: true }> {
+  clientDayStart?: number | null,
+): Promise<CastVoteResult> {
   const pair = await ctx.db.get(pairId);
   if (pair === null || pair.userId !== userId) throw new Error(PAIR_NOT_FOUND);
+  // Single-use, checked BEFORE anything is written or read back to the
+  // caller: a pair already answered cannot be re-answered, which is also what
+  // stops a voter re-requesting a reveal for a pair whose crowd has since
+  // moved.
   if (pair.status !== "served") throw new Error(PAIR_ALREADY_USED);
 
   const gameweek = await ctx.db.get(pair.gameweekId);
   if (gameweek === null) throw new Error(PAIR_NOT_FOUND);
   if (!(await votingWindowOpen(ctx, gameweek, now))) throw new Error(VOTING_CLOSED);
 
-  if (choice === "skip") {
-    // "Didn't watch" — costless, no update, no penalty (LOCKED).
-    await ctx.db.patch(pair._id, { status: "skipped", votedAt: now });
-    return { ok: true };
+  if (choice !== "a" && choice !== "b") {
+    // A didn't-see — costless, no Elo update, no penalty (LOCKED). This
+    // branch returns before any rating row is touched, which is where "carries
+    // no weight in the crowd factor" is enforced rather than merely intended:
+    // deriveCrowdFactors reads fantasyCrowdRatings, and nothing here writes
+    // one. scoreRaterAccuracy is likewise blind to it (status "voted" only).
+    const side = UNSEEN_SIDE[choice];
+    await ctx.db.patch(pair._id, { status: "skipped", unseen: side, votedAt: now });
+
+    // The cascade: retire the fixture(s) he says he didn't see from his
+    // picker selection, so every REMAINING pair drawn from that game is
+    // excluded for the rest of the gameweek — not just this one.
+    const retired = unseenFixturesOf(side, pair.fixtureAId, pair.fixtureBId);
+    const watched = await watchedRowOf(ctx, userId, pair.gameweekId);
+    if (watched !== null) {
+      const nextSelected = selectionAfterCascade(watched.fixtureIds, retired);
+      // Remembered separately, so a later "+ add games" save cannot resurrect
+      // a game he has already answered for (the "never again" half of the
+      // cascade rule).
+      const nextUnseen = [
+        ...new Set([...(watched.unseenFixtureIds ?? []), ...retired]),
+      ] as Id<"fantasyFixtures">[];
+      await ctx.db.patch(watched._id, {
+        fixtureIds: nextSelected as Id<"fantasyFixtures">[],
+        unseenFixtureIds: nextUnseen,
+        updatedAt: now,
+      });
+    }
+    return {
+      ok: true,
+      reveal: null,
+      progress: await progressFor(ctx, userId, pair.gameweekId, now, clientDayStart),
+    };
   }
 
   const ratingRowOf = async (
@@ -373,31 +633,49 @@ export async function castVoteFor(
   await ctx.db.patch(rowA._id, { rating: next.a, voteCount: rowA.voteCount + 1 });
   await ctx.db.patch(rowB._id, { rating: next.b, voteCount: rowB.voteCount + 1 });
   await ctx.db.patch(pair._id, { status: "voted", choice, votedAt: now });
-  return { ok: true };
+
+  // Read the tally AFTER the write, so the caller is inside his own crowd —
+  // "68% went with you" counts the vote he just cast.
+  const reveal = await revealFor(ctx, pair, choice === "a" ? pair.playerAId : pair.playerBId);
+  return {
+    ok: true as const,
+    reveal,
+    progress: await progressFor(ctx, userId, pair.gameweekId, now, clientDayStart),
+  };
 }
 
 export const castVote = mutation({
   args: {
     pairId: v.id("fantasyCrowdPairs"),
-    choice: v.union(v.literal("a"), v.literal("b"), v.literal("skip")),
+    choice: v.union(
+      v.literal("a"),
+      v.literal("b"),
+      v.literal("unseen_a"),
+      v.literal("unseen_b"),
+      v.literal("skip"),
+    ),
+    dayStartAt: v.optional(v.number()),
   },
-  handler: async (ctx, { pairId, choice }) => {
+  handler: async (ctx, { pairId, choice, dayStartAt }): Promise<CastVoteResult> => {
     const userId = await requireUserId(ctx);
-    return castVoteFor(ctx, userId, pairId, choice, Date.now());
+    return castVoteFor(ctx, userId, pairId, choice, Date.now(), dayStartAt);
   },
 });
 
 // ── status read ──
 
 export const getVotingStatus = query({
-  args: {},
-  handler: async (ctx) => {
+  args: { dayStartAt: v.optional(v.number()) },
+  handler: async (ctx, { dayStartAt }) => {
     const userId = await getAuthUserId(ctx);
     const gameweek = await findOpenGameweek(ctx);
     if (gameweek === null) return null;
-    const open = await votingWindowOpen(ctx, gameweek, Date.now());
+    const now = Date.now();
+    const open = await votingWindowOpen(ctx, gameweek, now);
     let served = 0;
     let voted = 0;
+    let progress = todaysTenOf([], todayStartOf(now, dayStartAt));
+    let pickerAnswered = false;
     if (userId !== null) {
       const pairs = await ctx.db
         .query("fantasyCrowdPairs")
@@ -407,6 +685,11 @@ export const getVotingStatus = query({
         .collect();
       served = pairs.length;
       voted = pairs.filter((p) => p.status === "voted").length;
+      progress = todaysTenOf(
+        pairs.filter((p) => p.status === "voted").map((p) => p.votedAt),
+        todayStartOf(now, dayStartAt),
+      );
+      pickerAnswered = (await watchedRowOf(ctx, userId, gameweek._id)) !== null;
     }
     return {
       gameweekId: gameweek._id,
@@ -415,7 +698,12 @@ export const getVotingStatus = query({
       open,
       served,
       voted,
+      /** The gameweek ceiling, unchanged. The surface no longer counts
+       *  toward it (EYE-TEST-TEN) — `progress` is what a session is about. */
       cap: CROWD_SERVE_CAP_PER_GAMEWEEK,
+      goal: CROWD_SESSION_GOAL,
+      progress,
+      pickerAnswered,
     };
   },
 });

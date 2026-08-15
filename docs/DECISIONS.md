@@ -32,6 +32,36 @@ Newest first.
 
 ---
 
+## DECISION 2026-08-15 — The crowd number is POST-VOTE only; pre-vote anchoring is banned
+
+**Ticket EYE-TEST-TEN.** The vote surface now shows the voter where the crowd
+landed — "68% went with you" / "You're with the 32%" — and that reveal is
+shown **only after the tap has landed**. No crowd share, tally, vote count,
+lean, or bar may be rendered before the vote, on either card or anywhere on the
+ballot screen.
+
+This extends the EYE-TEST-CONTEXT ruling below rather than qualifying it: that
+ruling banned evaluative numbers from the card because they re-anchor the vote
+to an algorithm, and a crowd percentage in front of the ballot is the same
+failure with a louder voice — it re-anchors the vote to other people. **The card
+never argues, and neither does the crowd until the voter has spoken.**
+
+Two sub-rulings, same principle:
+
+- **Below a real sample there is no number at all.** Under
+  `CROWD_REVEAL_MIN_VOTES` the surface says "you're one of the first on this
+  one" rather than a fake-precise percentage off two other people.
+- **A didn't-see earns no reveal.** It is not a vote; paying it with a crowd
+  number would make not-watching worth farming.
+
+Recorded in code at `app/convex/lib/fantasyCrowd.ts`
+(`consensusRevealOf` docblock — the reveal's one derivation) and
+`app/src/lib/weekendVoteCard.ts` (`revealTone`); the post-vote read order is
+`app/convex/fantasyCrowdVoting.ts` (`castVoteFor`, where the tally is read
+*after* the write so the voter counts inside his own crowd).
+
+---
+
 ## DECISION 2026-08-14 — The eye-test vote card carries facts only, never an evaluative number
 
 **Ticket EYE-TEST-CONTEXT.** The vote card gained the memory's address — club,

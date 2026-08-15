@@ -53,3 +53,40 @@ export function voteCardEvents(player: {
   if (player.redCard) events.push({ kind: "red", count: 1 });
   return events;
 }
+
+// ── the consensus reveal (EYE-TEST-TEN) ──
+
+/**
+ * Which sentence the reveal speaks. The number itself is always the voter's
+ * OWN share — only the framing changes — so the surface never has two
+ * percentages to confuse.
+ *
+ *   first   — below the sample threshold: no percentage exists to show
+ *   with    — the voter is in the larger share
+ *   against — the voter is in the smaller share
+ *
+ * Reveal copy is POST-VOTE only (docs/DECISIONS.md): nothing here is ever
+ * rendered before the tap, because a crowd number in front of the ballot is
+ * the card arguing.
+ */
+export type RevealTone = "first" | "with" | "against";
+
+export function revealTone(reveal: {
+  percent: number | null;
+  lowSample: boolean;
+  majority: boolean;
+}): RevealTone {
+  if (reveal.lowSample || reveal.percent === null) return "first";
+  return reveal.majority ? "with" : "against";
+}
+
+// ── Today's Ten ──
+
+/** The device's local midnight — what "today" means to the voter. Sent with
+ *  serve/vote so the ten rolls over at his midnight, not Greenwich's; the
+ *  server clamps it (lib/fantasyCrowd.todayStartOf). */
+export function localDayStart(now: number = Date.now()): number {
+  const day = new Date(now);
+  day.setHours(0, 0, 0, 0);
+  return day.getTime();
+}
