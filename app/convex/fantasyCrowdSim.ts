@@ -35,8 +35,14 @@ import {
   CROWD_FACTOR_MAX,
   CROWD_LIQUIDITY_THRESHOLD,
   CROWD_REVEAL_MIN_VOTES,
+  CROWD_UNDO_WINDOW_MS,
 } from "./lib/fantasyCrowd";
-import { castVoteFor, servePairFor, setWatchedFixturesFor } from "./fantasyCrowdVoting";
+import {
+  castVoteFor,
+  servePairFor,
+  setWatchedFixturesFor,
+  undoUnseenFor,
+} from "./fantasyCrowdVoting";
 import { PAIR_ALREADY_USED, VOTING_CLOSED } from "./fantasyCrowdVoting";
 
 const SIM_USERNAME_PREFIX = "simcrowd_";
@@ -241,9 +247,17 @@ export const probeVoteAfterClose = internalMutation({
  *     on the only synthetic fixture, the picker selection is empty, serving
  *     answers `no_fixtures` rather than dealing another pair from it, and a
  *     re-add through the picker is REFUSED — "never again" outlives the save.
+ *  3. THE UNDO (EYE-TEST-SERVE) gives back the GAME and not the PAIR: inside
+ *     the five-second window the fixture returns to the selection and leaves
+ *     the retirement ledger, while the pair stays `skipped` and re-answering
+ *     it still hits the used-pair refusal. A second undo is refused, and past
+ *     the window the retirement is permanent — which also leaves the probe
+ *     voter exactly where rule 2 left him.
  *
  * Votes in the same unanimous direction as every other voter, so it does not
- * disturb the walkthrough's consensus or accuracy assertions.
+ * disturb the walkthrough's consensus or accuracy assertions. Its didn't-sees
+ * are weightless by construction (no Elo touch), so the extra ones rule 3
+ * needs cost the consensus nothing.
  */
 export const probeSessionRules = internalMutation({
   args: { userId: v.id("users"), gameweekId: v.id("fantasyGameweeks") },
@@ -313,12 +327,79 @@ export const probeSessionRules = internalMutation({
       fail(`a retired fixture was re-added through the picker: ${readd.selected.join(",")}`);
     }
 
+    // 4 · EYE-TEST-SERVE — the undo gives back the GAME, never the PAIR.
+    if (unseen.undo === null) fail("a didn't-see that retired a game offered no undo.");
+    if (unseen.undo.fixtures.length !== 1) {
+      fail(`the undo offered ${unseen.undo.fixtures.length} fixture(s), expected 1.`);
+    }
+    await undoUnseenFor(ctx, args.userId, second.pairId, now);
+    const afterUndo = await ctx.db
+      .query("fantasyCrowdWatched")
+      .withIndex("by_user_gameweek", (q) =>
+        q.eq("userId", args.userId).eq("gameweekId", args.gameweekId),
+      )
+      .first();
+    if (afterUndo === null) fail("the picker row vanished on an undo.");
+    if (afterUndo.fixtureIds.length !== fixtureIds.length) {
+      fail(`the undo restored ${afterUndo.fixtureIds.length} fixture(s), expected ${fixtureIds.length}.`);
+    }
+    if ((afterUndo.unseenFixtureIds ?? []).length !== 0) {
+      fail("the undo left the game on the retirement ledger.");
+    }
+    // The pair itself stays answered — the take-back is not a second ballot.
+    const undonePair = await ctx.db.get(second.pairId);
+    if (undonePair === null || undonePair.status !== "skipped") {
+      fail(`the undone pair reads "${undonePair?.status}", expected it to stay skipped.`);
+    }
+    let reAnswerRefused = "";
+    try {
+      await castVoteFor(ctx, args.userId, second.pairId, "a", now);
+      fail("an undone pair accepted a second answer.");
+    } catch (error) {
+      reAnswerRefused = error instanceof Error ? error.message : String(error);
+    }
+    if (reAnswerRefused !== PAIR_ALREADY_USED) {
+      fail(`re-answering an undone pair failed with "${reAnswerRefused}", expected the used-pair refusal.`);
+    }
+    let secondUndoRefused = "";
+    try {
+      await undoUnseenFor(ctx, args.userId, second.pairId, now);
+      fail("a retirement was taken back twice.");
+    } catch (error) {
+      secondUndoRefused = error instanceof Error ? error.message : String(error);
+    }
+
+    // 5 · past the window the retirement is permanent (EYE-TEST-TEN ruling),
+    //     which also puts the probe voter back in the cascade's end state.
+    const third = await servePairFor(ctx, args.userId, gameweek, now);
+    if (third.status !== "served") fail(`probe voter got "${third.status}", expected a pair.`);
+    await castVoteFor(ctx, args.userId, third.pairId, "unseen_a", now);
+    let lateUndoRefused = "";
+    try {
+      await undoUnseenFor(ctx, args.userId, third.pairId, now + CROWD_UNDO_WINDOW_MS + 1);
+      fail("a retirement was taken back after the window closed.");
+    } catch (error) {
+      lateUndoRefused = error instanceof Error ? error.message : String(error);
+    }
+    const finalWatched = await ctx.db
+      .query("fantasyCrowdWatched")
+      .withIndex("by_user_gameweek", (q) =>
+        q.eq("userId", args.userId).eq("gameweekId", args.gameweekId),
+      )
+      .first();
+    if (finalWatched === null || finalWatched.fixtureIds.length !== 0) {
+      fail("the expired undo left the retired game on the selection.");
+    }
+
     return {
       pickerGated: "serving refused before the picker was answered",
       reveal: `${voted.reveal.withYou}/${voted.reveal.total} = ${voted.reveal.percent}% (unanimous crowd, caller counted inside it)`,
       didntSeeUnpaid: "no reveal on a didn't-see",
       cascade: "one didn't-see emptied the selection; serving answered no_fixtures",
       readdRefused: `re-adding ${fixtureIds.length} retired fixture(s) through the picker selected 0`,
+      undoRestored: `the game came back to the selection and left the ledger; the pair stayed skipped ("${reAnswerRefused}")`,
+      secondUndoRefused,
+      lateUndoRefused,
     };
   },
 });

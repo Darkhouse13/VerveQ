@@ -28,6 +28,17 @@ describe("career path registration", () => {
     expect(tile!.ranked).toBeUndefined(); // casual — no ELO writes
   });
 
+  it("offers both modes from every career path entry point before starting play", () => {
+    const entry = read("src/pages/shell/play/CareerPathPlayScreen.tsx");
+    expect(entry).toContain('type CareerPathMode = "classic" | "ladder"');
+    expect(entry).toContain('setMode("classic")');
+    expect(entry).toContain('setMode("ladder")');
+    expect(entry).toContain("<CareerPathClassicGame />");
+    expect(entry).toContain("<CareerPathLadderGame");
+    // The picker itself must not mint a session behind the language modal.
+    expect(entry).not.toContain("api.careerPath.startChallenge");
+  });
+
   it("declares tile copy in every locale", () => {
     for (const locale of ["en", "fr", "es"]) {
       const shell = JSON.parse(read(`src/i18n/locales/${locale}/shell.json`));
@@ -40,7 +51,7 @@ describe("career path registration", () => {
 });
 
 describe("career path offers no autocomplete help", () => {
-  const screen = read("src/pages/shell/play/CareerPathPlayScreen.tsx");
+  const screen = read("src/pages/shell/play/CareerPathClassicGame.tsx");
   const backend = read("convex/careerPath.ts");
 
   it("the play screen never queries for player suggestions", () => {
@@ -84,7 +95,7 @@ describe("career path is guest-playable (zero login)", () => {
     expect(backend).toContain("guestToken");
     expect(backend).toContain("guestTokenHash");
     // Guests have no user record, so play-count writes must be user-gated.
-    expect(backend).toContain("if (actor.userId) await incrementTotalGames");
+    expect(backend).toContain("if (!session.userId) return");
   });
 });
 
@@ -103,13 +114,14 @@ describe("career path social funnel", () => {
   });
 
   it("the play screen records started/completed top-of-funnel events", () => {
-    const screen = read("src/pages/shell/play/CareerPathPlayScreen.tsx");
-    expect(screen).toContain("api.funnel.recordCareerPathEvent");
-    expect(screen).toContain('stage: "started"');
-    expect(screen).toContain('stage: "completed"');
-    // Attribution reads off this route's own URL (?ref / ?utm_source), the
-    // same coldSession helper the taste round uses.
-    expect(screen).toContain("readColdSource");
+    const classic = read("src/pages/shell/play/CareerPathClassicGame.tsx");
+    const ladder = read("src/pages/shell/play/CareerPathLadderGame.tsx");
+    for (const screen of [classic, ladder]) {
+      expect(screen).toContain("api.funnel.recordCareerPathEvent");
+      expect(screen).toContain('stage: "started"');
+      expect(screen).toContain('stage: "completed"');
+      expect(screen).toContain("readColdSource");
+    }
   });
 
   it("the funnel events and readout exist server-side", () => {
@@ -163,8 +175,39 @@ describe("career path still starts a REAL new game on an explicit action", () =>
   it("wires Next player / Try again straight to startGame", () => {
     // The arrival guard (see analyticsContract) is idempotency on arrival, NOT
     // global start suppression: an explicit replay must still mint a session.
-    expect(read("src/pages/shell/play/CareerPathPlayScreen.tsx")).toContain(
+    expect(read("src/pages/shell/play/CareerPathClassicGame.tsx")).toContain(
       "onClick={startGame}",
     );
+  });
+});
+
+describe("10 Path Challenge contract", () => {
+  const screen = read("src/pages/shell/play/CareerPathLadderGame.tsx");
+  const backend = read("convex/careerPath.ts");
+
+  it("matches the advertised 2/3/3/2 escalating ten-path shape", () => {
+    expect(screen).toContain("const ROUND_COUNT = 10");
+    expect(screen).toMatch(/"easy", "easy",\s*"medium", "medium", "medium",\s*"hard", "hard", "hard",\s*"impossible", "impossible"/);
+    expect(backend).toContain("export const CAREER_PATH_LADDER_ROUNDS = 10");
+  });
+
+  it("gives every path an authoritative 30-second deadline and a skip", () => {
+    expect(backend).toContain("export const CAREER_PATH_LADDER_ROUND_MS = 30_000");
+    expect(backend).toContain("export const resolveLadderChallenge");
+    expect(backend).toContain('v.literal("skipped")');
+    expect(backend).toContain('v.literal("timed_out")');
+    expect(screen).toContain('resolveWithoutGuess("skipped")');
+    expect(screen).toContain('resolveWithoutGuess("timed_out")');
+  });
+
+  it("does not repeat a path inside one challenge and caps paths like the reels", () => {
+    expect(screen).toContain("excludedEntryIds: usedEntryIdsRef.current");
+    expect(backend).toContain("entry.clubs.length <= 7");
+  });
+
+  it("tracks the full ladder as one distinct run, not ten inflated starts", () => {
+    expect(screen).toContain('startRun(response.sessionId, "career-path-ladder"');
+    expect(screen).toContain("if (!runIdRef.current)");
+    expect(screen).toContain("questionsAnswered: ROUND_COUNT");
   });
 });

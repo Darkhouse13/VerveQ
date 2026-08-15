@@ -15,6 +15,8 @@
  *   reveal-minority  — the same reveal from the smaller share
  *   reveal-first     — below the sample threshold: no percentage at all
  *   done             — Today's Ten done-state + the quiet "keep going"
+ *   undo             — the five-second "Retired … · Undo" toast (EYE-TEST-SERVE),
+ *                      fired by a button so it can be caught mid-life
  *
  * The stack payloads deliberately stress the layout: long club names, a
  * two-goal-one-assist line against a red-card line, one home and one away
@@ -24,15 +26,19 @@ import { Navigate, useNavigate, useSearchParams } from "react-router-dom";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { ShellLayout } from "@/components/shell/ShellLayout";
+import { CROWD_UNDO_WINDOW_MS } from "../../../../convex/lib/fantasyCrowd";
 import { SHELL_ROUTES } from "@/lib/shellRoutes";
+import { NeoButton } from "@/components/neo/NeoButton";
 import {
   DoneView,
   FixturePickerView,
   RevealView,
   VoteStackView,
+  showUndoToast,
   type ConsensusReveal,
   type PickerFixture,
   type ServedPair,
+  type UndoOffer,
 } from "./VoteScreen";
 
 const SATURDAY_KICKOFF = Date.UTC(2026, 7, 15, 16, 30); // Sat 2026-08-15
@@ -168,6 +174,14 @@ const REVEAL_FIRST = {
   majority: false,
 } as ConsensusReveal;
 
+/** EYE-TEST-SERVE: the take-back offer as the server sends it, minus the
+ *  stamp — `expiresAt` is taken at fire time so the toast lives its full
+ *  window however long the harness has been open. */
+const HARNESS_UNDO = {
+  pairId: "harness-pair",
+  fixtures: [{ fixtureId: "harness-fixture-1", label: "Real Sociedad — Athletic Club" }],
+} as unknown as UndoOffer;
+
 export default function VoteCardHarness() {
   const navigate = useNavigate();
   const { t } = useTranslation();
@@ -203,6 +217,30 @@ export default function VoteCardHarness() {
       <RevealView reveal={REVEAL_MINORITY} />
     ) : view === "reveal-first" ? (
       <RevealView reveal={REVEAL_FIRST} />
+    ) : view === "undo" ? (
+      // The toast is the surface here, not the page: the stack behind it is
+      // the pair the voter has already moved on to when the offer appears.
+      <div className="flex flex-col gap-3">
+        <NeoButton
+          size="full"
+          data-testid="harness-undo-fire"
+          onClick={() =>
+            showUndoToast(
+              { ...HARNESS_UNDO, expiresAt: Date.now() + CROWD_UNDO_WINDOW_MS },
+              t,
+              () => Promise.resolve(),
+            )
+          }
+        >
+          Fire the undo toast
+        </NeoButton>
+        <VoteStackView
+          serve={HARNESS_PAIR}
+          busy={false}
+          onVote={() => undefined}
+          onEditPicker={() => undefined}
+        />
+      </div>
     ) : view === "done" ? (
       <DoneView
         progress={{ voted: 10, goal: 10 }}

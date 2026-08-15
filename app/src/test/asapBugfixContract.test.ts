@@ -206,7 +206,7 @@ describe("ASAP bugfix contracts", () => {
   });
 
   it("Career Path updates the visible score after close-call penalties", () => {
-    const source = read("src/pages/shell/play/CareerPathPlayScreen.tsx");
+    const source = read("src/pages/shell/play/CareerPathClassicGame.tsx");
 
     expect(source).toContain("if (res.closeCall)");
     expect(source).toContain("setScore(res.score)");

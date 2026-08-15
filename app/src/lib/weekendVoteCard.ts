@@ -8,6 +8,8 @@
  * derived metrics.
  */
 
+import { CROWD_UNDO_WINDOW_MS } from "../../convex/lib/fantasyCrowd";
+
 export interface OrientedScore {
   us: number;
   them: number;
@@ -78,6 +80,31 @@ export function revealTone(reveal: {
 }): RevealTone {
   if (reveal.lowSample || reveal.percent === null) return "first";
   return reveal.majority ? "with" : "against";
+}
+
+// ── the didn't-see undo (EYE-TEST-SERVE) ──
+
+/**
+ * How long the undo toast may live: what is LEFT of the server's offer, not a
+ * fresh five seconds. The round trip has already spent some of the window, and
+ * a toast that outlives the offer would put an Undo button on screen that the
+ * server has decided to refuse.
+ *
+ * Clamped above by the window itself, so a clock-skewed client cannot leave
+ * the toast up indefinitely, and floored at 0 — a caller showing nothing is
+ * the honest answer to an offer that has already died in flight.
+ */
+export function undoToastMs(expiresAt: number, now: number = Date.now()): number {
+  if (!Number.isFinite(expiresAt)) return 0;
+  const remaining = expiresAt - now;
+  if (remaining <= 0) return 0;
+  return Math.min(remaining, CROWD_UNDO_WINDOW_MS);
+}
+
+/** The toast's subject: the retired game(s), as the server labelled them.
+ *  Two only when a combined didn't-see spanned two fixtures. */
+export function undoFixtureLine(fixtures: readonly { label: string }[]): string {
+  return fixtures.map((fixture) => fixture.label).join(" · ");
 }
 
 // ── Today's Ten ──

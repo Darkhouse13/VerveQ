@@ -30,6 +30,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
+import type { TFunction } from "i18next";
 import { useConvex, useMutation } from "convex/react";
 import type { FunctionReturnType } from "convex/server";
 import { toast } from "sonner";
@@ -49,6 +50,8 @@ import {
   localDayStart,
   orientedScore,
   revealTone,
+  undoFixtureLine,
+  undoToastMs,
   voteCardEvents,
   type VoteCardEvent,
 } from "@/lib/weekendVoteCard";
@@ -60,6 +63,9 @@ export type ServeResult = FunctionReturnType<typeof api.fantasyCrowdVoting.serve
 export type ServedPair = Extract<ServeResult, { status: "served" }>;
 export type CastVoteResult = FunctionReturnType<typeof api.fantasyCrowdVoting.castVote>;
 export type ConsensusReveal = NonNullable<CastVoteResult["reveal"]>;
+/** EYE-TEST-SERVE: the five-second take-back the server offers after a
+ *  didn't-see that actually retired a game. */
+export type UndoOffer = NonNullable<CastVoteResult["undo"]>;
 export type WeekendFixtures = NonNullable<
   FunctionReturnType<typeof api.fantasyMarket.getWeekendFixtures>
 >;
@@ -212,6 +218,66 @@ export function FixturePickerView({
             : t("weekend.pickerContinue", { defaultValue: "Continue" })}
       </NeoButton>
     </div>
+  );
+}
+
+// ── the undo toast (EYE-TEST-SERVE) ──
+
+/**
+ * The five-second take-back for a didn't-see, as a toast — "Retired Real
+ * Sociedad — Athletic Club · Undo".
+ *
+ * A toast rather than an inline control on purpose: the stack has already
+ * moved to the next pair by the time this appears, and an undo that stopped
+ * the session to ask would cost more than the mis-tap it fixes. It lives
+ * exactly as long as the server's offer (undoToastMs) — never a fresh five
+ * seconds — so an Undo button is never on screen after the server has started
+ * refusing it, and a toast whose offer died in flight is not shown at all.
+ *
+ * What returns is the GAME, not the pair: the copy says "retired", never
+ * "vote", because the pair stays answered either way.
+ */
+export function showUndoToast(
+  undo: UndoOffer,
+  t: TFunction,
+  run: (pairId: UndoOffer["pairId"]) => Promise<unknown>,
+): void {
+  const duration = undoToastMs(undo.expiresAt);
+  if (duration <= 0) return;
+  const toastId = toast(
+    t("weekend.undoRetired", {
+      defaultValue: "Retired {{fixture}}",
+      fixture: undoFixtureLine(undo.fixtures),
+    }),
+    {
+      duration,
+      action: {
+        label: t("weekend.undoAction", { defaultValue: "Undo" }),
+        onClick: () => {
+          // Spend the affordance immediately. Sonner does not dismiss an
+          // action toast automatically, so without this the same visible Undo
+          // could be tapped again while the first mutation was already in
+          // flight (the server refused it, but the UI still offered it).
+          toast.dismiss(toastId);
+          void run(undo.pairId)
+            .then(() =>
+              toast.success(
+                t("weekend.undoDone", { defaultValue: "Back on your list." }),
+              ),
+            )
+            .catch((e: unknown) =>
+              toast.error(
+                friendlyError(
+                  e,
+                  t("weekend.undoFailed", {
+                    defaultValue: "Too late — that game stays retired.",
+                  }),
+                ),
+              ),
+            );
+        },
+      },
+    },
   );
 }
 
@@ -648,6 +714,7 @@ export default function VoteScreen() {
   const serveMutation = useMutation(api.fantasyCrowdVoting.servePair);
   const castMutation = useMutation(api.fantasyCrowdVoting.castVote);
   const watchedMutation = useMutation(api.fantasyCrowdVoting.setWatchedFixtures);
+  const undoMutation = useMutation(api.fantasyCrowdVoting.undoUnseen);
   const servedOnce = useRef(false);
   // A volunteer past today's ten: the done card fires once, and afterwards the
   // stack keeps serving without counting (uncounted framing, LOCKED copy).
@@ -757,6 +824,14 @@ export default function VoteScreen() {
     setBusy(true);
     castMutation({ pairId: serve.pairId, choice, dayStartAt: localDayStart() })
       .then((result) => {
+        // A didn't-see that retired a game is offered back for five seconds.
+        // Fired before the stack advances so the toast and the next pair
+        // arrive together, and independent of it — an undo that failed to
+        // show must never hold up the session.
+        const undo = result?.undo ?? null;
+        if (undo !== null) {
+          showUndoToast(undo, t, (pairId) => undoMutation({ pairId }));
+        }
         // A didn't-see gets NO reveal (it is not a vote) — straight to the
         // next pair, which the cascade has already narrowed server-side.
         const nextReveal = result?.reveal ?? null;

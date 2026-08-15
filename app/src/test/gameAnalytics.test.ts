@@ -40,6 +40,24 @@ describe("game_started fires on the action, never on routing", () => {
     expect(eventNames()).toEqual(["game_started"]);
   });
 
+  it("keeps the 10-path challenge in its own analytics mode", () => {
+    startRun("ladder_1", "career-path-ladder", {
+      accountState: "loggedOut",
+      startTrigger: "user_action",
+    });
+    for (let index = 0; index < 10; index++) noteQuestionAnswered("ladder_1");
+    completeRun("ladder_1", { score: 7000, questionsAnswered: 10 });
+    expect(eventNames()).toEqual(["game_started", "game_completed"]);
+    expect(trackMock.mock.calls[0][1]).toMatchObject({
+      mode: "career-path-ladder",
+      start_trigger: "user_action",
+    });
+    expect(trackMock.mock.calls[1][1]).toMatchObject({
+      mode: "career-path-ladder",
+      questions_answered: 10,
+    });
+  });
+
   it("counts a genuinely new server session as a new game (Next player)", () => {
     startRun("sess_1", "career-path", { accountState: "loggedOut" });
     completeRun("sess_1", { score: 1 });

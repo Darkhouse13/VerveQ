@@ -1221,6 +1221,16 @@ export default defineSchema({
       ),
     ),
     difficulty: v.string(),
+    // Optional for backwards compatibility with sessions created before the
+    // two-mode Career Path entry screen shipped.
+    mode: v.optional(v.union(v.literal("classic"), v.literal("ladder"))),
+    ladderRound: v.optional(v.number()),
+    deadlineAt: v.optional(v.number()),
+    resolution: v.optional(v.union(
+      v.literal("guessed"),
+      v.literal("skipped"),
+      v.literal("timed_out"),
+    )),
     score: v.number(),
     status: v.union(
       v.literal("active"),
@@ -2138,6 +2148,23 @@ export default defineSchema({
     unseen: v.optional(
       v.union(v.literal("a"), v.literal("b"), v.literal("both")),
     ),
+    /**
+     * EYE-TEST-SERVE. The fixtures this didn't-see ACTUALLY retired — the
+     * ones it removed that were not already retired by an earlier answer.
+     * The undo restores exactly this list and nothing else, which is what
+     * stops one taken-back tap from resurrecting a game a different tap
+     * already closed. Empty/absent means the answer changed no selection and
+     * there is nothing to offer back.
+     */
+    retiredFixtureIds: v.optional(v.array(v.id("fantasyFixtures"))),
+    /**
+     * EYE-TEST-SERVE. When the voter took the retirement back, inside the
+     * five-second window. The row stays `skipped` either way: the PAIR is
+     * used whichever he chooses — an undo restores his selection, never his
+     * chance to answer this pair again. Set once; its presence is also what
+     * refuses a second undo.
+     */
+    cascadeUndoneAt: v.optional(v.number()),
     votedAt: v.optional(v.number()),
   })
     .index("by_user_gameweek", ["userId", "gameweekId"])

@@ -20,6 +20,11 @@
  * Anti-abuse per spec §Anti-abuse: pairs are server-chosen, single-use per
  * user, capped per gameweek, liquidity-targeted, and a user is never served
  * a pair containing any player in any of their squads this gameweek.
+ *
+ * EYE-TEST-SERVE adds two things and changes no rule: serving RANKS the
+ * eligible set by what a vote is worth to the crowd (invisible to the voter),
+ * and a didn't-see can be taken back for five seconds — the selection, never
+ * the pair.
  */
 
 import { v } from "convex/values";
@@ -31,21 +36,31 @@ import {
   CROWD_LIQUIDITY_THRESHOLD,
   CROWD_ELO_START,
   CROWD_SERVE_CAP_PER_GAMEWEEK,
+  CROWD_SERVE_PRICE_LOOKUP_MAX,
   CROWD_SESSION_GOAL,
+  CROWD_UNDO_WINDOW_MS,
   consensusOf,
   consensusRevealOf,
   deriveCrowdFactors,
   eligibleForSelection,
   eloUpdate,
+  newlyRetiredOf,
   pairKeyOf,
+  rankForServing,
   selectionAfterCascade,
+  selectionAfterUndo,
   serveCardContextOf,
   serveGateOf,
+  serveJitterOf,
+  serveValueOf,
   todayStartOf,
   todaysTenOf,
+  undoWindowOpenAt,
+  unseenAfterUndo,
   unseenFixturesOf,
   type ConsensusReveal,
   type CrowdRatingEntry,
+  type ServeCandidate,
   type ServeCardContext,
   type TodaysTenProgress,
   type UnseenSide,
@@ -61,6 +76,13 @@ export const PAIR_NOT_FOUND = "That pair is not yours to vote on.";
 export const PAIR_ALREADY_USED = "That pair has already been answered.";
 export const SERVE_CAP_REACHED =
   "You have reached this gameweek's voting limit — thank you for the eyes.";
+/** EYE-TEST-SERVE. The undo's four refusals, each said plainly: the window is
+ *  short by design and a voter who missed it is told it closed, not that
+ *  something broke. */
+export const UNDO_EXPIRED = "That one's already settled — the game stays retired.";
+export const UNDO_ALREADY_DONE = "You already took that one back.";
+export const UNDO_NOT_UNSEEN = "That answer retired nothing to undo.";
+export const UNDO_NOTHING_TO_RESTORE = "There's nothing to put back.";
 
 // ── shared guards ──
 
@@ -314,9 +336,16 @@ export interface ServedPlayer extends ServeCardContext {
  * without a session, same seam as fantasySquads' `…For` functions).
  *
  * Pair-serving per spec §Pair-serving: same-fixture by default, same-league
- * same-gameweek as fallback, never cross-league; probability weights toward
- * under-voted players; conflicts excluded at serve time; one serve per pair
- * per user, ever.
+ * same-gameweek as fallback, never cross-league; conflicts excluded at serve
+ * time; one serve per pair per user, ever.
+ *
+ * EYE-TEST-SERVE ranks WITHIN that eligible set — coverage, then how contested
+ * the pair is, then draft relevance (lib/fantasyCrowd §smart serving). It is
+ * ordering only: every pair this function could have served before, it can
+ * still serve, and every pair it refused, it still refuses. The spec's
+ * "probability weights toward under-voted players" is now a deterministic
+ * ranking with a per-user tie-break rather than a random one — same intent,
+ * testable.
  */
 export async function servePairFor(
   ctx: MutationCtx,
@@ -372,22 +401,75 @@ export async function servePairFor(
     .query("fantasyCrowdRatings")
     .withIndex("by_gameweek", (q) => q.eq("gameweekId", gameweek._id))
     .collect();
-  const votesByPlayer = new Map(ratings.map((r) => [r.playerId as string, r.voteCount]));
-  const votesOf = (p: AppearedPlayer) => votesByPlayer.get(p.playerId) ?? 0;
+  const ratingByPlayer = new Map(ratings.map((r) => [r.playerId as string, r]));
+  const votesOf = (p: AppearedPlayer) => ratingByPlayer.get(p.playerId)?.voteCount ?? 0;
 
-  // Liquidity targeting: least-voted first; random jitter breaks ties so the
-  // same under-voted head is not hammered in lockstep by every voter.
-  const byLiquidity = [...eligible].sort(
-    (a, b) => votesOf(a) - votesOf(b) || Math.random() - 0.5,
+  // EYE-TEST-SERVE — the ranking's inputs. Coverage and the running split come
+  // from the rating rows already in hand; the draft-relevance term needs a
+  // price, which lives on the player doc, so it is bought for at most
+  // CROWD_SERVE_PRICE_LOOKUP_MAX candidates and spent in COVERAGE order — the
+  // only candidates that can realistically win the ranking. Everyone past the
+  // cap ranks with relevance 0, which is the same direction the coverage term
+  // already put them in. Nothing here narrows `eligible`.
+  const byCoverage = [...eligible].sort(
+    (a, b) => votesOf(a) - votesOf(b) || (a.playerId < b.playerId ? -1 : 1),
   );
+  const priceLookup = byCoverage.slice(0, CROWD_SERVE_PRICE_LOOKUP_MAX);
+  const priceDocs = await Promise.all(priceLookup.map((p) => ctx.db.get(p.playerId)));
+  const priceByPlayer = new Map<string, number>();
+  let maxPrice = 0;
+  priceDocs.forEach((doc, i) => {
+    const price = doc?.price ?? null;
+    if (price === null || !Number.isFinite(price)) return;
+    priceByPlayer.set(priceLookup[i].playerId, price);
+    if (price > maxPrice) maxPrice = price;
+  });
 
-  for (const target of byLiquidity) {
-    // Same fixture first, then same league — never cross-league (LOCKED).
-    const sameFixture = byLiquidity.filter(
-      (p) => p.fixtureId === target.fixtureId && p.playerId !== target.playerId,
+  const candidateOf = (p: AppearedPlayer): ServeCandidate => ({
+    playerId: p.playerId,
+    voteCount: ratingByPlayer.get(p.playerId)?.voteCount ?? 0,
+    rating: ratingByPlayer.get(p.playerId)?.rating ?? CROWD_ELO_START,
+    price: priceByPlayer.get(p.playerId) ?? null,
+  });
+  // Per-user, per-player, and stable: two voters break the same tie in
+  // different orders (nobody hammers one under-voted head in lockstep), and
+  // one voter's serve is a function of stored state rather than of entropy.
+  const jitterOf = (p: AppearedPlayer) => serveJitterOf(`${userId}:${p.playerId}`);
+
+  const rankPlayers = (
+    rows: readonly AppearedPlayer[],
+    target: AppearedPlayer | null,
+  ): AppearedPlayer[] => {
+    const anchor = target === null ? null : candidateOf(target);
+    return rankForServing(
+      rows.map((p) => ({
+        playerId: p.playerId as string,
+        value:
+          anchor === null
+            ? serveValueOf(candidateOf(p), null, maxPrice).value
+            : serveValueOf(anchor, candidateOf(p), maxPrice).value,
+        jitter: jitterOf(p),
+        player: p,
+      })),
+    ).map((row) => row.player);
+  };
+
+  // Targets by their own value to the crowd; partners by the value of the
+  // PAIR, which is where the contested term lives. The tiers below are
+  // unchanged rules, not ranking: same fixture first, then same league, never
+  // cross-league (LOCKED) — the ranking only orders WITHIN each tier.
+  for (const target of rankPlayers(eligible, null)) {
+    const sameFixture = rankPlayers(
+      eligible.filter(
+        (p) => p.fixtureId === target.fixtureId && p.playerId !== target.playerId,
+      ),
+      target,
     );
-    const sameLeague = byLiquidity.filter(
-      (p) => p.fixtureId !== target.fixtureId && p.leagueId === target.leagueId,
+    const sameLeague = rankPlayers(
+      eligible.filter(
+        (p) => p.fixtureId !== target.fixtureId && p.leagueId === target.leagueId,
+      ),
+      target,
     );
     for (const partner of [...sameFixture, ...sameLeague]) {
       const pairKey = pairKeyOf(target.playerId, partner.playerId);
@@ -490,12 +572,31 @@ export const servePair = mutation({
  */
 export type VoteChoice = "a" | "b" | "unseen_a" | "unseen_b" | "skip";
 
+/**
+ * EYE-TEST-SERVE — the five-second take-back, returned only when the answer
+ * actually retired something. The surface renders it as a toast; the server
+ * is what decides whether the offer exists and whether it is still live.
+ */
+export interface UndoOffer {
+  pairId: Id<"fantasyCrowdPairs">;
+  /** The games taken off his list, labelled for the toast line. One, almost
+   *  always; two only for a combined didn't-see spanning two fixtures. */
+  fixtures: { fixtureId: Id<"fantasyFixtures">; label: string }[];
+  /** Server instant the offer dies. The client's timer is cosmetic — the undo
+   *  mutation re-checks the window against the stored stamp. */
+  expiresAt: number;
+}
+
 export interface CastVoteResult {
   ok: true;
   /** Post-vote only. A didn't-see gets NO reveal — it is not a vote, and
    *  paying it with a crowd number would make not-watching worth farming. */
   reveal: ConsensusReveal | null;
   progress: TodaysTenProgress;
+  /** Present only on a didn't-see that retired a game the voter had picked.
+   *  A vote never carries one: the cascade is what is being offered back, and
+   *  a judgment retires nothing. */
+  undo: UndoOffer | null;
 }
 
 const UNSEEN_SIDE: Record<"unseen_a" | "unseen_b" | "skip", UnseenSide> = {
@@ -503,6 +604,24 @@ const UNSEEN_SIDE: Record<"unseen_a" | "unseen_b" | "skip", UnseenSide> = {
   unseen_b: "b",
   skip: "both",
 };
+
+/**
+ * "Real Sociedad — Athletic Club": the retired game, named well enough for a
+ * toast the voter has five seconds to read. Degraded loudly, never invented
+ * (the getWeekendFixtures rule) — a club without a label renders its raw id,
+ * and a fixture that has vanished renders the em dash alone rather than a
+ * guess. At most two fixtures per didn't-see, so at most four club walks.
+ */
+async function fixtureLabel(
+  ctx: MutationCtx,
+  fixtureId: Id<"fantasyFixtures">,
+): Promise<string> {
+  const fixture = await ctx.db.get(fixtureId);
+  if (fixture === null) return "—";
+  const home = (await clubLabel(ctx, fixture.homeClubId)) ?? fixture.homeClubId;
+  const away = (await clubLabel(ctx, fixture.awayClubId)) ?? fixture.awayClubId;
+  return `${home} — ${away}`;
+}
 
 /** Today's Ten for a user, from their answered pairs. */
 async function progressFor(
@@ -587,6 +706,7 @@ export async function castVoteFor(
     // excluded for the rest of the gameweek — not just this one.
     const retired = unseenFixturesOf(side, pair.fixtureAId, pair.fixtureBId);
     const watched = await watchedRowOf(ctx, userId, pair.gameweekId);
+    let undo: UndoOffer | null = null;
     if (watched !== null) {
       const nextSelected = selectionAfterCascade(watched.fixtureIds, retired);
       // Remembered separately, so a later "+ add games" save cannot resurrect
@@ -600,11 +720,36 @@ export async function castVoteFor(
         unseenFixtureIds: nextUnseen,
         updatedAt: now,
       });
+
+      // EYE-TEST-SERVE: what this one answer actually took away, stored so the
+      // undo can be its exact inverse and nothing wider. Written on the pair
+      // row rather than derived later because the selection keeps moving —
+      // by the time an undo arrives, "what did that tap do" is no longer
+      // recoverable from the row it changed.
+      const takenBack = newlyRetiredOf(
+        retired,
+        watched.fixtureIds,
+        watched.unseenFixtureIds ?? [],
+      ) as Id<"fantasyFixtures">[];
+      if (takenBack.length > 0) {
+        await ctx.db.patch(pair._id, { retiredFixtureIds: takenBack });
+        undo = {
+          pairId: pair._id,
+          fixtures: await Promise.all(
+            takenBack.map(async (fixtureId) => ({
+              fixtureId,
+              label: await fixtureLabel(ctx, fixtureId),
+            })),
+          ),
+          expiresAt: now + CROWD_UNDO_WINDOW_MS,
+        };
+      }
     }
     return {
       ok: true,
       reveal: null,
       progress: await progressFor(ctx, userId, pair.gameweekId, now, clientDayStart),
+      undo,
     };
   }
 
@@ -645,6 +790,8 @@ export async function castVoteFor(
     ok: true as const,
     reveal,
     progress: await progressFor(ctx, userId, pair.gameweekId, now, clientDayStart),
+    // A judgment retires nothing, so there is nothing to take back.
+    undo: null,
   };
 }
 
@@ -663,6 +810,76 @@ export const castVote = mutation({
   handler: async (ctx, { pairId, choice, dayStartAt }): Promise<CastVoteResult> => {
     const userId = await requireUserId(ctx);
     return castVoteFor(ctx, userId, pairId, choice, Date.now(), dayStartAt);
+  },
+});
+
+// ── the undo (EYE-TEST-SERVE) ──
+
+export interface UndoUnseenResult {
+  ok: true;
+  /** The games put back on his list. */
+  restored: Id<"fantasyFixtures">[];
+}
+
+/**
+ * Take back a didn't-see's CASCADE, inside the five-second window.
+ *
+ * What comes back is the selection: the retired game returns to the picker's
+ * list and leaves the retirement ledger, so pairs from it are served again.
+ * What does NOT come back is the pair — the row stays `skipped` and its
+ * pairKey stays used, because the voter has already answered it and a pair
+ * answered twice is a pair that could be answered differently twice.
+ *
+ * Past the window the retirement is permanent, per the EYE-TEST-TEN cascade
+ * ruling. This is a mis-tap remedy with the lifetime of the toast that offers
+ * it, not a standing right to reconsider.
+ *
+ * Refuses on a settled/closed gameweek for the same reason castVote does: the
+ * cascade writes a user's voting state, and a closed gameweek's state is done
+ * moving.
+ */
+export async function undoUnseenFor(
+  ctx: MutationCtx,
+  userId: Id<"users">,
+  pairId: Id<"fantasyCrowdPairs">,
+  now: number,
+): Promise<UndoUnseenResult> {
+  const pair = await ctx.db.get(pairId);
+  if (pair === null || pair.userId !== userId) throw new Error(PAIR_NOT_FOUND);
+  if (pair.status !== "skipped") throw new Error(UNDO_NOT_UNSEEN);
+  if (pair.cascadeUndoneAt !== undefined) throw new Error(UNDO_ALREADY_DONE);
+
+  const restored = pair.retiredFixtureIds ?? [];
+  if (restored.length === 0) throw new Error(UNDO_NOTHING_TO_RESTORE);
+  if (!undoWindowOpenAt(pair.votedAt, now)) throw new Error(UNDO_EXPIRED);
+
+  const gameweek = await ctx.db.get(pair.gameweekId);
+  if (gameweek === null) throw new Error(PAIR_NOT_FOUND);
+  if (!(await votingWindowOpen(ctx, gameweek, now))) throw new Error(VOTING_CLOSED);
+
+  const watched = await watchedRowOf(ctx, userId, pair.gameweekId);
+  if (watched === null) throw new Error(UNDO_NOTHING_TO_RESTORE);
+
+  await ctx.db.patch(watched._id, {
+    fixtureIds: selectionAfterUndo(watched.fixtureIds, restored) as Id<"fantasyFixtures">[],
+    unseenFixtureIds: unseenAfterUndo(
+      watched.unseenFixtureIds ?? [],
+      restored,
+    ) as Id<"fantasyFixtures">[],
+    updatedAt: now,
+  });
+  // Stamped, and the list left in place: the row keeps saying what the tap
+  // did and that it was taken back, which is what refuses a second undo.
+  await ctx.db.patch(pair._id, { cascadeUndoneAt: now });
+
+  return { ok: true, restored: [...restored] };
+}
+
+export const undoUnseen = mutation({
+  args: { pairId: v.id("fantasyCrowdPairs") },
+  handler: async (ctx, { pairId }): Promise<UndoUnseenResult> => {
+    const userId = await requireUserId(ctx);
+    return undoUnseenFor(ctx, userId, pairId, Date.now());
   },
 });
 

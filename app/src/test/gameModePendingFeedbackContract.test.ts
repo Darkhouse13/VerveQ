@@ -12,7 +12,10 @@ describe("game mode pending feedback contract", () => {
   });
 
   it("Career Path shows immediate checking feedback while the guess mutation is in flight", () => {
-    const source = read("src/pages/shell/play/CareerPathPlayScreen.tsx");
+    const source = [
+      read("src/pages/shell/play/CareerPathClassicGame.tsx"),
+      read("src/pages/shell/play/CareerPathLadderGame.tsx"),
+    ].join("\n");
 
     expect(source).toContain('t("careerPath.checking")');
     expect(source).toContain("submitting");

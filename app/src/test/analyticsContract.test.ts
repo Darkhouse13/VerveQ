@@ -131,7 +131,7 @@ describe("play screens provision one session per arrival", () => {
   const OWNERS = [
     {
       mode: "career-path",
-      file: "src/pages/shell/play/CareerPathPlayScreen.tsx",
+      file: "src/pages/shell/play/CareerPathClassicGame.tsx",
       startDeps: /\}, \[startChallengeMut[^\]]*\]\);/,
     },
     {

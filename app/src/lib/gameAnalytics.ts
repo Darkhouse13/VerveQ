@@ -32,6 +32,7 @@ export type GameMode =
   | "survival"
   | "daily-survival"
   | "career-path"
+  | "career-path-ladder"
   | "higher-lower"
   | "verve-grid"
   | "arena";
@@ -41,12 +42,12 @@ export type GameResult = "win" | "loss" | "draw";
 /**
  * What actually caused the session to be minted.
  *
- * "auto" — the play screen provisions a session in a mount effect, so arriving
- * IS starting. This is true of EVERY mode today: the visitor's real choice
- * happened one hop earlier (a mode tile, or an off-platform /play link), and
- * Career Path has no play CTA at all. A game_started carrying "auto" therefore
- * includes visitors who bounced in a second without reading the screen — it
- * means "a game was provisioned", NOT "someone chose to play".
+ * "auto" — the play screen provisions a session in a mount effect. For most
+ * modes the visitor's real choice happened one hop earlier. Career Path now has
+ * its own two-mode entry screen: the classic game mounts after that choice,
+ * while the 10-path ladder reports "user_action" explicitly. A game_started
+ * carrying "auto" means "a game was provisioned", not necessarily that someone
+ * answered a question.
  *
  * Read engagement from questions_answered instead: a game_abandoned with
  * questions_answered_before_exit: 0 is the honest "landed but never played"
