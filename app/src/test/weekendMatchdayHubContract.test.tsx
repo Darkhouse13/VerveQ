@@ -186,6 +186,32 @@ describe("SquadStatusCard", () => {
     expect(screen.getByText(/settled/i)).toBeInTheDocument();
   });
 
+  it("puts the live global race on the squad card", () => {
+    render(
+      <SquadStatusCard
+        score={squadScore({ total: 34.5, scoredSlots: 10, awaitingSlots: 3 })}
+        standing={{ rank: 12, ranked: 37, gap: 2.25, movement: 4 }}
+        onOpen={() => {}}
+      />,
+    );
+    expect(screen.getByTestId("weekend-hub-rank")).toHaveTextContent(
+      "#12 globally · 2.3 pts to next · up 4",
+    );
+  });
+
+  it("turns the hub rank into a settled finish and percentile", () => {
+    render(
+      <SquadStatusCard
+        score={squadScore({ total: 61.2, scoredSlots: 13, state: "final" })}
+        standing={{ rank: 9, ranked: 37, gap: 1, movement: null }}
+        onOpen={() => {}}
+      />,
+    );
+    expect(screen.getByTestId("weekend-hub-rank")).toHaveTextContent(
+      "Finished #9 · top 25%",
+    );
+  });
+
   it("taps through to the squad", () => {
     let opened = false;
     render(

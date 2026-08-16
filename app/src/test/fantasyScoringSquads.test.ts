@@ -56,6 +56,7 @@ const setSlot = handlerOf(fantasySquads.setSlot);
 const applyFixtureStats = handlerOf(fantasyScores.applyFixtureStats);
 const getSquadScore = handlerOf(fantasyScores.getSquadScore);
 const getWeekendLeaderboard = handlerOf(fantasyScores.getWeekendLeaderboard);
+const getWeekendSeasonLeaderboard = handlerOf(fantasyScores.getWeekendSeasonLeaderboard);
 const getCrewTable = handlerOf(fantasyScores.getCrewTable);
 const finalizeGameweekChunk = handlerOf(fantasyScores.finalizeGameweekChunk);
 const stampSquadFinalTotals = handlerOf(fantasyScores.stampSquadFinalTotals);
@@ -524,6 +525,130 @@ describe("global weekend leaderboard", () => {
     expect(live.rows.every((row) => row.tied)).toBe(true);
     expect(live.rows.find((row) => row.name === "tester")?.isYou).toBe(true);
     expect(live.rows.some((row) => row.name === "rival")).toBe(true);
+  });
+
+  it("builds cumulative season standings, personal history, podiums, and improvement", async () => {
+    await world.db.patch(world.userId, { username: "alice" });
+    const bobId = await world.db.insert("users", { username: "bob" });
+    const caraId = await world.db.insert("users", { username: "cara" });
+
+    const seedSettledWeek = async (
+      gwNumber: number,
+      scores: Array<{ userId: string; total: number }>,
+    ) => {
+      const gameweekId = await world.db.insert("fantasyGameweeks", {
+        season: "2026-2027",
+        gwNumber,
+        leagueIds: [39],
+        status: "final",
+        finalityAt: THURSDAY - (3 - gwNumber) * 86_400_000,
+      });
+      await world.db.insert("fantasyGameweekScoring", {
+        gameweekId,
+        state: "final",
+        fixturesTotal: 1,
+        fixturesScored: 1,
+        finalizedAt: THURSDAY,
+      });
+      for (const score of scores) {
+        await world.db.insert("fantasySquads", {
+          userId: score.userId,
+          gameweekId,
+          context: "budget",
+          contextKey: "budget",
+          favoriteClubAtBuild: null,
+          createdAt: THURSDAY,
+          finalScore: {
+            total: score.total,
+            scoredSlots: 13,
+            awaitingSlots: 0,
+            emptySlots: 0,
+            at: THURSDAY,
+          },
+        });
+      }
+      return gameweekId;
+    };
+
+    // Internal planning sentinels are not playable weekends and must never
+    // leak into the public season archive or its cumulative totals.
+    await seedSettledWeek(-1, [{ userId: world.userId, total: 999 }]);
+    await seedSettledWeek(1, [
+      { userId: world.userId, total: 10 },
+      { userId: bobId, total: 20 },
+      { userId: caraId, total: 5 },
+    ]);
+    const gw2 = await seedSettledWeek(2, [
+      { userId: world.userId, total: 30 },
+      { userId: bobId, total: 20 },
+    ]);
+    // A crew score cannot enter either the season total or participant count.
+    await world.db.insert("fantasySquads", {
+      userId: caraId,
+      gameweekId: gw2,
+      context: "crew",
+      contextKey: "crew:room-2",
+      crewRoomId: "room-2",
+      favoriteClubAtBuild: null,
+      createdAt: THURSDAY,
+      finalScore: {
+        total: 1_000,
+        scoredSlots: 13,
+        awaitingSlots: 0,
+        emptySlots: 0,
+        at: THURSDAY,
+      },
+    });
+
+    const season = (await getWeekendSeasonLeaderboard(world.ctx, {
+      season: "2026-2027",
+    })) as {
+      state: string;
+      participants: number;
+      ranked: number;
+      rows: Array<{ rank: number; name: string; total: number; playedWeekends: number; tied: boolean }>;
+      weeks: Array<{
+        gwNumber: number;
+        podium: Array<{ rank: number; name: string; total: number }>;
+        mostImproved: { name: string; places: number } | null;
+      }>;
+      me: {
+        rank: number;
+        total: number;
+        playedWeekends: number;
+        bestRank: number;
+        topHalfStreak: number;
+        topTenPercentFinishes: number;
+        changeFromPrevious: number | null;
+        history: Array<{ gwNumber: number; rank: number; percentile: number }>;
+      };
+    };
+
+    expect(season.state).toBe("final");
+    expect(season.participants).toBe(3);
+    expect(season.ranked).toBe(3);
+    expect(season.rows.map((row) => [row.name, row.total, row.rank])).toEqual([
+      ["alice", 40, 1],
+      ["bob", 40, 1],
+      ["cara", 5, 3],
+    ]);
+    expect(season.rows[0]).toMatchObject({ playedWeekends: 2, tied: true });
+    expect(season.me).toMatchObject({
+      rank: 1,
+      total: 40,
+      playedWeekends: 2,
+      bestRank: 1,
+      topHalfStreak: 1,
+      topTenPercentFinishes: 0,
+      changeFromPrevious: 1,
+    });
+    expect(season.me.history.map((week) => [week.gwNumber, week.rank, week.percentile])).toEqual([
+      [2, 1, 50],
+      [1, 2, 67],
+    ]);
+    expect(season.weeks.map((week) => week.gwNumber)).toEqual([2, 1]);
+    expect(season.weeks[0].mostImproved).toEqual({ name: "alice", places: 1 });
+    expect(season.weeks[0].podium.map((row) => row.name)).toEqual(["alice", "bob"]);
   });
 });
 

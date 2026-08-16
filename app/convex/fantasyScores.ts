@@ -1815,6 +1815,91 @@ export interface WeekendLeaderboard {
   rows: WeekendLeaderboardRow[];
 }
 
+interface InternalWeekendLeaderboardRow extends WeekendLeaderboardRow {
+  userId: Id<"users">;
+}
+
+interface BuiltWeekendLeaderboard {
+  state: "provisional" | "final";
+  participants: number;
+  squadUserIds: Set<Id<"users">>;
+  rows: InternalWeekendLeaderboardRow[];
+}
+
+function rankWeekendRows(rows: InternalWeekendLeaderboardRow[]): void {
+  rows.sort(
+    (a, b) =>
+      b.total - a.total ||
+      a.name.localeCompare(b.name) ||
+      (a.userId < b.userId ? -1 : a.userId > b.userId ? 1 : 0),
+  );
+
+  let rank = 0;
+  let previousTotal: number | undefined;
+  rows.forEach((row, index) => {
+    if (index === 0 || row.total !== previousTotal) rank = index + 1;
+    row.rank = rank;
+    row.tied = rows[index - 1]?.total === row.total || rows[index + 1]?.total === row.total;
+    previousTotal = row.total;
+  });
+}
+
+async function buildBudgetWeekendLeaderboard(
+  ctx: QueryCtx,
+  gameweek: Doc<"fantasyGameweeks">,
+  callerId: Id<"users"> | null,
+  now: number,
+  names: Map<Id<"users">, string>,
+): Promise<BuiltWeekendLeaderboard> {
+  const squads = (
+    await ctx.db
+      .query("fantasySquads")
+      .withIndex("by_gameweek", (q) => q.eq("gameweekId", gameweek._id))
+      .collect()
+  ).filter((squad) => squad.context === "budget");
+  const scoring = await gameweekScoringRow(ctx, gameweek._id);
+  const state: "provisional" | "final" = scoring?.state === "final" ? "final" : "provisional";
+  const anyScored = (scoring?.fixturesScored ?? 0) > 0 || state === "final";
+  const rows: InternalWeekendLeaderboardRow[] = [];
+
+  for (const squad of squads) {
+    // Before the first fixture score lands, no squad has an honest number.
+    // Avoid thirteen slot reads per entrant merely to rediscover that fact.
+    if (squad.finalScore === undefined && !anyScored) continue;
+    const score =
+      squad.finalScore !== undefined
+        ? squad.finalScore
+        : await squadScore(ctx, squad, gameweek, now, false);
+    if (score.scoredSlots === 0) continue;
+
+    let name = names.get(squad.userId);
+    if (name === undefined) {
+      const user = await ctx.db.get(squad.userId);
+      name = user?.username ?? user?.displayName ?? "Weekend player";
+      names.set(squad.userId, name);
+    }
+    rows.push({
+      rank: 0,
+      name,
+      total: score.total,
+      scoredSlots: score.scoredSlots,
+      awaitingSlots: score.awaitingSlots,
+      emptySlots: score.emptySlots,
+      tied: false,
+      isYou: callerId === squad.userId,
+      userId: squad.userId,
+    });
+  }
+
+  rankWeekendRows(rows);
+  return {
+    state,
+    participants: squads.length,
+    squadUserIds: new Set(squads.map((squad) => squad.userId)),
+    rows,
+  };
+}
+
 /**
  * The general THE WEEKEND leaderboard: budget squads only, never crew sheets.
  *
@@ -1831,62 +1916,229 @@ export const getWeekendLeaderboard = query({
     if (gameweek === null) return null;
 
     const callerId = await getAuthUserId(ctx);
-    const squads = (
+    const built = await buildBudgetWeekendLeaderboard(
+      ctx,
+      gameweek,
+      callerId,
+      Date.now(),
+      new Map(),
+    );
+    return {
+      gameweekId: gameweek._id,
+      season: gameweek.season,
+      gwNumber: gameweek.gwNumber,
+      state: built.state,
+      participants: built.participants,
+      ranked: built.rows.length,
+      rows: built.rows.map(({ userId: _userId, ...row }) => row),
+    };
+  },
+});
+
+export interface WeekendSeasonLeaderboardRow {
+  rank: number;
+  name: string;
+  total: number;
+  playedWeekends: number;
+  provisional: boolean;
+  tied: boolean;
+  isYou: boolean;
+}
+
+export interface WeekendSeasonHistoryRow {
+  gwNumber: number;
+  total: number;
+  rank: number;
+  population: number;
+  percentile: number;
+}
+
+export interface WeekendPodiumWeek {
+  gwNumber: number;
+  podium: Array<{ rank: number; name: string; total: number }>;
+  mostImproved: { name: string; places: number } | null;
+}
+
+export interface WeekendSeasonLeaderboard {
+  season: string;
+  state: "provisional" | "final";
+  participants: number;
+  ranked: number;
+  rows: WeekendSeasonLeaderboardRow[];
+  weeks: WeekendPodiumWeek[];
+  me: {
+    rank: number;
+    total: number;
+    playedWeekends: number;
+    bestRank: number;
+    topHalfStreak: number;
+    topTenPercentFinishes: number;
+    changeFromPrevious: number | null;
+    history: WeekendSeasonHistoryRow[];
+  } | null;
+}
+
+/**
+ * Season-long budget standings and the small history/reward layer around them.
+ * Settled weekends read immutable `finalScore` stamps; only the in-flight
+ * weekend derives live totals. Nothing here writes a second score or reward
+ * ledger, so the weekly board and season board cannot disagree.
+ */
+export const getWeekendSeasonLeaderboard = query({
+  args: { season: v.string() },
+  handler: async (ctx, args): Promise<WeekendSeasonLeaderboard> => {
+    const callerId = await getAuthUserId(ctx);
+    const gameweeks = (
       await ctx.db
-        .query("fantasySquads")
-        .withIndex("by_gameweek", (q) => q.eq("gameweekId", gameweek._id))
-        .collect()
-    ).filter((squad) => squad.context === "budget");
+      .query("fantasyGameweeks")
+      .withIndex("by_season_gwNumber", (q) => q.eq("season", args.season))
+      .collect()
+    ).filter((gameweek) => gameweek.gwNumber > 0);
+    gameweeks.sort((a, b) => a.gwNumber - b.gwNumber);
 
-    const sortable: Array<WeekendLeaderboardRow & { userId: Id<"users"> }> = [];
+    const names = new Map<Id<"users">, string>();
     const now = Date.now();
-    for (const squad of squads) {
-      const score =
-        squad.finalScore !== undefined
-          ? squad.finalScore
-          : await squadScore(ctx, squad, gameweek, now, false);
-      if (score.scoredSlots === 0) continue;
-
-      const user = await ctx.db.get(squad.userId);
-      sortable.push({
-        rank: 0,
-        name: user?.username ?? user?.displayName ?? "Weekend player",
-        total: score.total,
-        scoredSlots: score.scoredSlots,
-        awaitingSlots: score.awaitingSlots,
-        emptySlots: score.emptySlots,
-        tied: false,
-        isYou: callerId === squad.userId,
-        userId: squad.userId,
-      });
+    const builtWeeks: Array<{
+      gameweek: Doc<"fantasyGameweeks">;
+      board: BuiltWeekendLeaderboard;
+    }> = [];
+    const participantIds = new Set<Id<"users">>();
+    for (const gameweek of gameweeks) {
+      const board = await buildBudgetWeekendLeaderboard(ctx, gameweek, callerId, now, names);
+      board.squadUserIds.forEach((userId) => participantIds.add(userId));
+      builtWeeks.push({ gameweek, board });
     }
 
-    sortable.sort(
+    const aggregates = new Map<
+      Id<"users">,
+      {
+        userId: Id<"users">;
+        name: string;
+        total: number;
+        playedWeekends: number;
+        provisional: boolean;
+        isYou: boolean;
+      }
+    >();
+    for (const { board } of builtWeeks) {
+      for (const row of board.rows) {
+        const current = aggregates.get(row.userId) ?? {
+          userId: row.userId,
+          name: row.name,
+          total: 0,
+          playedWeekends: 0,
+          provisional: false,
+          isYou: row.isYou,
+        };
+        current.total = cleanTotal(current.total + row.total);
+        current.playedWeekends += 1;
+        current.provisional ||= board.state === "provisional";
+        aggregates.set(row.userId, current);
+      }
+    }
+
+    const seasonRows = [...aggregates.values()].sort(
       (a, b) =>
         b.total - a.total ||
         a.name.localeCompare(b.name) ||
         (a.userId < b.userId ? -1 : a.userId > b.userId ? 1 : 0),
     );
-
-    let rank = 0;
+    let seasonRank = 0;
     let previousTotal: number | undefined;
-    sortable.forEach((row, index) => {
-      if (index === 0 || row.total !== previousTotal) rank = index + 1;
-      row.rank = rank;
-      row.tied =
-        sortable[index - 1]?.total === row.total || sortable[index + 1]?.total === row.total;
+    const publicRows: WeekendSeasonLeaderboardRow[] = seasonRows.map((row, index) => {
+      if (index === 0 || row.total !== previousTotal) seasonRank = index + 1;
       previousTotal = row.total;
+      return {
+        rank: seasonRank,
+        name: row.name,
+        total: row.total,
+        playedWeekends: row.playedWeekends,
+        provisional: row.provisional,
+        tied:
+          seasonRows[index - 1]?.total === row.total || seasonRows[index + 1]?.total === row.total,
+        isYou: row.isYou,
+      };
     });
 
-    const gwScoring = await gameweekScoringRow(ctx, gameweek._id);
+    const settledWeeks = builtWeeks.filter(({ board }) => board.state === "final");
+    const weeksAscending: WeekendPodiumWeek[] = settledWeeks.map(({ gameweek, board }, index) => {
+      const previous = settledWeeks[index - 1]?.board;
+      let mostImproved: WeekendPodiumWeek["mostImproved"] = null;
+      if (previous !== undefined) {
+        const previousRanks = new Map(previous.rows.map((row) => [row.userId, row.rank]));
+        for (const row of board.rows) {
+          const previousRank = previousRanks.get(row.userId);
+          if (previousRank === undefined) continue;
+          const places = previousRank - row.rank;
+          if (
+            places > 0 &&
+            (mostImproved === null ||
+              places > mostImproved.places ||
+              (places === mostImproved.places && row.name < mostImproved.name))
+          ) {
+            mostImproved = { name: row.name, places };
+          }
+        }
+      }
+      return {
+        gwNumber: gameweek.gwNumber,
+        podium: board.rows
+          .filter((row) => row.rank <= 3)
+          .map((row) => ({ rank: row.rank, name: row.name, total: row.total })),
+        mostImproved,
+      };
+    });
+
+    const meSeason = publicRows.find((row) => row.isYou) ?? null;
+    const history = settledWeeks
+      .map(({ gameweek, board }): WeekendSeasonHistoryRow | null => {
+        const row = board.rows.find((entry) => entry.isYou);
+        if (row === undefined || board.rows.length === 0) return null;
+        return {
+          gwNumber: gameweek.gwNumber,
+          total: row.total,
+          rank: row.rank,
+          population: board.rows.length,
+          percentile: Math.ceil((row.rank / board.rows.length) * 100),
+        };
+      })
+      .filter((row): row is WeekendSeasonHistoryRow => row !== null)
+      .reverse();
+
+    let topHalfStreak = 0;
+    for (const { board } of [...settledWeeks].reverse()) {
+      const row = board.rows.find((entry) => entry.isYou);
+      if (row === undefined || board.rows.length === 0) break;
+      if (Math.ceil((row.rank / board.rows.length) * 100) > 50) break;
+      topHalfStreak += 1;
+    }
+
+    const me =
+      meSeason === null
+        ? null
+        : {
+            rank: meSeason.rank,
+            total: meSeason.total,
+            playedWeekends: meSeason.playedWeekends,
+            bestRank:
+              history.length === 0
+                ? meSeason.rank
+                : Math.min(...history.map((row) => row.rank)),
+            topHalfStreak,
+            topTenPercentFinishes: history.filter((row) => row.percentile <= 10).length,
+            changeFromPrevious:
+              history.length < 2 ? null : history[1].rank - history[0].rank,
+            history,
+          };
+
     return {
-      gameweekId: gameweek._id,
-      season: gameweek.season,
-      gwNumber: gameweek.gwNumber,
-      state: gwScoring?.state === "final" ? "final" : "provisional",
-      participants: squads.length,
-      ranked: sortable.length,
-      rows: sortable.map(({ userId: _userId, ...row }) => row),
+      season: args.season,
+      state: seasonRows.some((row) => row.provisional) ? "provisional" : "final",
+      participants: participantIds.size,
+      ranked: publicRows.length,
+      rows: publicRows,
+      weeks: weeksAscending.reverse(),
+      me,
     };
   },
 });

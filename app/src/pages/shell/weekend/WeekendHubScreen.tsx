@@ -53,6 +53,7 @@ import type {
   WeekendFixtureRow,
 } from "./FixturesScreen";
 import { useWideScreen } from "@/hooks/useWideScreen";
+import { useWeekendRankMovement } from "@/hooks/useWeekendRankMovement";
 
 type NeoColor = NonNullable<ComponentProps<typeof NeoCard>["color"]>;
 
@@ -296,9 +297,16 @@ export type SquadScorePayload = NonNullable<
 
 export function SquadStatusCard({
   score,
+  standing,
   onOpen,
 }: {
   score: SquadScorePayload & { gwNumber: number };
+  standing?: {
+    rank: number;
+    ranked: number;
+    gap: number | null;
+    movement: number | null;
+  };
   onOpen: () => void;
 }) {
   const { t } = useTranslation();
@@ -358,6 +366,35 @@ export function SquadStatusCard({
                     defaultValue: "Points land ~2h after each full time.",
                   })}
         </p>
+        {standing !== undefined && (
+          <p
+            className="font-mono text-[10px] font-bold uppercase tracking-[0.1em] mt-1.5"
+            data-testid="weekend-hub-rank"
+          >
+            {settled
+              ? t("weekend.finishedRank", {
+                  defaultValue: "Finished #{{rank}} · top {{percent}}%",
+                  rank: standing.rank,
+                  percent: Math.ceil((standing.rank / standing.ranked) * 100),
+                })
+              : standing.gap === null
+                ? t("weekend.leadingGlobal", {
+                    defaultValue: "#{{rank}} globally · leading",
+                    rank: standing.rank,
+                  })
+                : t("weekend.globalRankGap", {
+                    defaultValue: "#{{rank}} globally · {{points}} pts to next",
+                    rank: standing.rank,
+                    points: formatPoints(standing.gap),
+                  })}
+            {standing.movement !== null && standing.movement > 0
+              ? ` · ${t("weekend.upPlaces", {
+                  defaultValue: "up {{count}}",
+                  count: standing.movement,
+                })}`
+              : ""}
+          </p>
+        )}
       </div>
       <ChevronRight size={18} strokeWidth={3} className="shrink-0" aria-hidden />
     </NeoCard>
@@ -434,6 +471,19 @@ export default function WeekendHubScreen() {
     gameweek == null
       ? "skip"
       : { gameweekId: gameweek.gameweekId, context: "budget" as const },
+  );
+  const leaderboard = useQuery(
+    api.fantasyScores.getWeekendLeaderboard,
+    gameweek == null ? "skip" : { gameweekId: gameweek.gameweekId },
+  );
+  const myRankIndex = leaderboard?.rows.findIndex((row) => row.isYou) ?? -1;
+  const myRank = myRankIndex < 0 ? null : leaderboard!.rows[myRankIndex];
+  const rankAbove = myRankIndex > 0 ? leaderboard!.rows[myRankIndex - 1] : null;
+  const rankGap =
+    myRank === null || rankAbove === null ? null : Math.max(0, rankAbove.total - myRank.total);
+  const rankMovement = useWeekendRankMovement(
+    gameweek?.gameweekId ?? null,
+    myRank?.rank ?? null,
   );
 
   // One-second heartbeat while a countdown is on screen; a lazy 30s otherwise.
@@ -524,6 +574,16 @@ export default function WeekendHubScreen() {
         {squadScore != null && gameweek != null && (
           <SquadStatusCard
             score={{ ...squadScore, gwNumber: gameweek.gwNumber }}
+            standing={
+              myRank === null || leaderboard === undefined
+                ? undefined
+                : {
+                    rank: myRank.rank,
+                    ranked: leaderboard.ranked,
+                    gap: rankGap,
+                    movement: rankMovement,
+                  }
+            }
             onOpen={() => navigate(SHELL_ROUTES.weekendSquad)}
           />
         )}
