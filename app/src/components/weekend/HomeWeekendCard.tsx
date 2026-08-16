@@ -20,6 +20,7 @@
 
 import { useRef } from "react";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { CalendarRange } from "lucide-react";
 import { track } from "@/lib/analytics";
 import { readColdSource } from "@/lib/coldSession";
@@ -28,14 +29,18 @@ import { NeoButton } from "@/components/neo/NeoButton";
 
 // "Eight leagues, one squad" is the FW-EXPAND R3 framing (owner ruling
 // 2026-08-02) — the five-league claim is dead everywhere.
-const BULLETS = [
-  "Eight leagues, one squad",
-  "The crowd rates the players, not an algorithm",
-  "Fresh draft every week, no season-long grind",
-] as const;
-
 export function HomeWeekendCard() {
   const navigate = useNavigate();
+  const { t } = useTranslation("shell");
+  const tr = (key: string, fallback: string) => {
+    const translated = t(key, { defaultValue: fallback });
+    return translated === key ? fallback : translated;
+  };
+  const bullets = [
+    tr("weekend.homeBulletLeagues", "Eight leagues, one squad"),
+    tr("weekend.homeBulletCrowd", "The crowd rates the players, not an algorithm"),
+    tr("weekend.homeBulletFresh", "Fresh draft every week, no season-long grind"),
+  ];
 
   // Attribution: utm_source ?? ref from the landing URL, else the placement
   // tag. Read once per mount — the entry's source is where the visit came
@@ -58,16 +63,16 @@ export function HomeWeekendCard() {
         <div className="min-w-0 md:flex-1">
           <p className="font-mono text-[11px] font-bold uppercase tracking-[0.16em] text-accent flex items-center gap-1.5">
             <CalendarRange size={12} strokeWidth={3} />
-            New mode · Live now
+            {tr("weekend.homeEyebrow", "New mode · Live now")}
           </p>
           <p className="font-heading font-black uppercase leading-[0.95] text-[34px] md:text-[42px] text-accent mt-1.5">
-            The Weekend
+            {tr("weekend.hubTitle", "The Weekend")}
           </p>
           <p className="font-heading font-bold text-base md:text-lg leading-tight mt-2">
-            Draft the whole European football weekend.
+            {tr("weekend.homeHeadline", "Draft the whole European football weekend.")}
           </p>
           <ul className="mt-3 flex flex-col gap-1.5">
-            {BULLETS.map((line) => (
+            {bullets.map((line) => (
               <li
                 key={line}
                 className="font-mono text-[11px] uppercase tracking-wide text-background/70 flex gap-2"
@@ -89,10 +94,10 @@ export function HomeWeekendCard() {
             onClick={enter}
             data-testid="weekend-cta-play"
           >
-            Play now
+            {tr("weekend.homePlay", "Play now")}
           </NeoButton>
           <p className="font-mono text-[10.5px] uppercase text-background/60">
-            Budget squad or crew draft — fresh board every weekend.
+            {tr("weekend.homeNote", "Budget squad or crew draft — fresh board every weekend.")}
           </p>
         </div>
       </div>

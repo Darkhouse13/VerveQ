@@ -110,7 +110,7 @@ export function LobbyView({
             </NeoBadge>
             {isCreator && seat.userId !== room.createdBy && availableMembers.length > 0 && (
               <select
-                aria-label={`Replace ${seat.name}`}
+                aria-label={t("weekend.replacePlayer", { defaultValue: "Replace {{name}}", name: seat.name })}
                 className="ml-2 max-w-24 neo-border rounded bg-background px-1 py-1 text-[10px]"
                 defaultValue=""
                 onChange={(event) => {
@@ -118,7 +118,7 @@ export function LobbyView({
                   event.target.value = "";
                 }}
               >
-                <option value="">Replace…</option>
+                <option value="">{t("weekend.replace", { defaultValue: "Replace…" })}</option>
                 {availableMembers.map((member) => <option key={member.userId} value={member.userId}>{member.name}</option>)}
               </select>
             )}
@@ -129,7 +129,7 @@ export function LobbyView({
       {mySeat === null && (
         <NeoButton variant="primary" size="full" disabled={busy || room.seats.length >= 8} onClick={onClaim}>
           <UserPlus size={16} strokeWidth={3} className="mr-1.5" />
-          {room.seats.length >= 8 ? "All 8 seats are claimed" : "Claim a draft seat"}
+          {room.seats.length >= 8 ? t("weekend.allSeatsClaimed", { defaultValue: "All 8 seats are claimed" }) : t("weekend.claimSeat", { defaultValue: "Claim a draft seat" })}
         </NeoButton>
       )}
 
@@ -150,7 +150,7 @@ export function LobbyView({
       {isCreator && (
         <>
           <NeoCard className="py-3">
-            <p className="mb-2 font-heading font-bold text-sm"><CalendarClock size={14} className="mr-1.5 inline" />Plan the draft</p>
+            <p className="mb-2 font-heading font-bold text-sm"><CalendarClock size={14} className="mr-1.5 inline" />{t("weekend.planDraft", { defaultValue: "Plan the draft" })}</p>
             <div className="flex gap-2">
               <input
                 type="datetime-local"
@@ -158,9 +158,9 @@ export function LobbyView({
                 onChange={(event) => setScheduledInput(event.target.value)}
                 className="min-w-0 flex-1 neo-border rounded bg-background px-2 text-xs"
               />
-              <NeoButton variant="secondary" size="sm" disabled={busy} onClick={() => onSchedule?.(scheduledInput === "" ? null : new Date(scheduledInput).getTime())}>Save</NeoButton>
+              <NeoButton variant="secondary" size="sm" disabled={busy} onClick={() => onSchedule?.(scheduledInput === "" ? null : new Date(scheduledInput).getTime())}>{t("weekend.save", { defaultValue: "Save" })}</NeoButton>
             </div>
-            {room.scheduledFor !== null && <p className="mt-2 text-[10px] text-muted-foreground">Planned: {new Date(room.scheduledFor).toLocaleString()}</p>}
+            {room.scheduledFor !== null && <p className="mt-2 text-[10px] text-muted-foreground">{t("weekend.planned", { defaultValue: "Planned: {{date}}", date: new Date(room.scheduledFor).toLocaleString() })}</p>}
           </NeoCard>
           <NeoButton
             variant="danger"
@@ -186,7 +186,7 @@ export function LobbyView({
 
       {mySeat !== null && room.status === "lobby" && (
         <NeoButton variant="ghost" size="sm" disabled={busy} onClick={onLeave}>
-          <LogOut size={14} className="mr-1.5" />Release my seat
+          <LogOut size={14} className="mr-1.5" />{t("weekend.releaseSeat", { defaultValue: "Release my seat" })}
         </NeoButton>
       )}
     </div>
@@ -248,6 +248,7 @@ export function ShortlistPanel({
   onChange: (ids: string[]) => void;
   compact?: boolean;
 }) {
+  const { t } = useTranslation("shell");
   const [search, setSearch] = useState("");
   const byId = useMemo(() => new Map((pool ?? []).map((player) => [player.playerId, player])), [pool]);
   const queued = queuedIds.map((id) => byId.get(id)).filter((player): player is PoolPlayer => player !== undefined);
@@ -268,22 +269,22 @@ export function ShortlistPanel({
   };
   return (
     <NeoCard className="py-3">
-      <p className="font-heading font-bold text-sm"><Star size={14} className="mr-1.5 inline" />Private auto-pick queue</p>
-      <p className="mb-2 text-[10px] text-muted-foreground">Your order is private. On timeout, legal queued players are tried first.</p>
+      <p className="font-heading font-bold text-sm"><Star size={14} className="mr-1.5 inline" />{t("weekend.autoPickQueue", { defaultValue: "Private auto-pick queue" })}</p>
+      <p className="mb-2 text-[10px] text-muted-foreground">{t("weekend.autoPickQueueBody", { defaultValue: "Your order is private. On timeout, legal queued players are tried first." })}</p>
       {queued.length > 0 && (
         <ol className="mb-2 flex flex-col gap-1">
           {queued.map((player, index) => (
             <li key={player.playerId} className="flex items-center gap-1 text-xs">
               <span className="w-5 font-mono text-muted-foreground">{index + 1}</span>
               <span className="min-w-0 flex-1 truncate font-heading font-bold">{player.name}</span>
-              <button type="button" aria-label="Move up" disabled={index === 0} onClick={() => move(index, -1)}><ArrowUp size={13} /></button>
-              <button type="button" aria-label="Move down" disabled={index === queued.length - 1} onClick={() => move(index, 1)}><ArrowDown size={13} /></button>
-              <button type="button" aria-label="Remove" onClick={() => onChange(queuedIds.filter((id) => id !== player.playerId))}><X size={13} /></button>
+              <button type="button" aria-label={t("weekend.moveUp", { defaultValue: "Move up" })} disabled={index === 0} onClick={() => move(index, -1)}><ArrowUp size={13} /></button>
+              <button type="button" aria-label={t("weekend.moveDown", { defaultValue: "Move down" })} disabled={index === queued.length - 1} onClick={() => move(index, 1)}><ArrowDown size={13} /></button>
+              <button type="button" aria-label={t("weekend.remove", { defaultValue: "Remove" })} onClick={() => onChange(queuedIds.filter((id) => id !== player.playerId))}><X size={13} /></button>
             </li>
           ))}
         </ol>
       )}
-      <NeoInput value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Search to add players…" />
+      <NeoInput value={search} onChange={(event) => setSearch(event.target.value)} placeholder={t("weekend.searchAddPlayers", { defaultValue: "Search to add players…" })} />
       {candidates.length > 0 && (
         <div className="mt-2 flex flex-col gap-1">
           {candidates.map((player) => (
@@ -362,10 +363,12 @@ export function DraftBoardView({
             const position = next % order.length;
             return round % 2 === 0 ? order[position] : order[order.length - 1 - position];
           })();
-    if (myTurn) toast.success("Your draft turn is live.");
-    else if (nextSeat === room.mySeatIndex) toast("You are next in the draft.");
+    if (myTurn) toast.success(t("weekend.draftTurnLive", { defaultValue: "Your draft turn is live." }));
+    else if (nextSeat === room.mySeatIndex) {
+      toast(t("weekend.draftTurnNext", { defaultValue: "You are next in the draft." }));
+    }
     notifiedPick.current = room.currentPickIndex;
-  }, [myTurn, room.currentPickIndex, room.mySeatIndex, room.snakeOrder, room.totalPicks]);
+  }, [myTurn, room.currentPickIndex, room.mySeatIndex, room.snakeOrder, room.totalPicks, t]);
 
   const results = useMemo(() => {
     if (pool === null || pool === undefined) return [];
@@ -556,7 +559,7 @@ export function PicksGrid({
       <table className="w-full text-[11px]">
         <thead>
           <tr className="border-b-2 border-border bg-muted/40">
-            <th className="p-1.5 font-mono text-left w-8">R</th>
+            <th className="p-1.5 font-mono text-left w-8">{t("weekend.rankShort", { defaultValue: "R" })}</th>
             {room.seats.map((seat, i) => (
               <th key={seat.userId} className="p-1.5 font-heading text-left whitespace-nowrap">
                 {seat.name}
@@ -776,9 +779,9 @@ export default function DraftRoomScreen() {
                   t("weekend.readyFailed", { defaultValue: "Could not update ready state." }),
                 )
               }
-              onClaim={() => run(() => joinRoom({ roomId: room.roomId }), "Could not claim that seat.")}
-              onLeave={() => run(() => leaveRoom({ roomId: room.roomId }), "Could not release that seat.")}
-              onSchedule={(scheduledFor) => run(() => scheduleRoom({ roomId: room.roomId, scheduledFor }), "Could not save that draft time.")}
+              onClaim={() => run(() => joinRoom({ roomId: room.roomId }), t("weekend.claimSeatFailed", { defaultValue: "Could not claim that seat." }))}
+              onLeave={() => run(() => leaveRoom({ roomId: room.roomId }), t("weekend.releaseSeatFailed", { defaultValue: "Could not release that seat." }))}
+              onSchedule={(scheduledFor) => run(() => scheduleRoom({ roomId: room.roomId, scheduledFor }), t("weekend.saveDraftTimeFailed", { defaultValue: "Could not save that draft time." }))}
               onReplace={(removeUserId, addUserId) =>
                 run(
                   () => replaceRoomSeat({
@@ -786,7 +789,7 @@ export default function DraftRoomScreen() {
                     removeUserId: removeUserId as Id<"users">,
                     addUserId: addUserId as Id<"users">,
                   }),
-                  "Could not replace that seat.",
+                  t("weekend.replaceSeatFailed", { defaultValue: "Could not replace that seat." }),
                 )
               }
               onArm={() =>
@@ -801,7 +804,7 @@ export default function DraftRoomScreen() {
               queuedIds={queue?.playerIds ?? []}
               onChange={(playerIds) => {
                 void setMyDraftQueue({ roomId: room.roomId, playerIds: playerIds as Id<"fantasyPlayers">[] })
-                  .catch((error: unknown) => toast.error(friendlyError(error, "Could not save your shortlist.")));
+                  .catch((error: unknown) => toast.error(friendlyError(error, t("weekend.saveShortlistFailed", { defaultValue: "Could not save your shortlist." }))));
               }}
             />
           </div>
@@ -816,7 +819,7 @@ export default function DraftRoomScreen() {
             queuedIds={queue?.playerIds ?? []}
             onQueueChange={(playerIds) => {
               void setMyDraftQueue({ roomId: room.roomId, playerIds: playerIds as Id<"fantasyPlayers">[] })
-                .catch((error: unknown) => toast.error(friendlyError(error, "Could not save your shortlist.")));
+                .catch((error: unknown) => toast.error(friendlyError(error, t("weekend.saveShortlistFailed", { defaultValue: "Could not save your shortlist." }))));
             }}
             onPick={(playerId) =>
               run(

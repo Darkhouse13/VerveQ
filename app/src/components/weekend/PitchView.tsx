@@ -215,7 +215,13 @@ export function SlotChip({
       {filled && (
         <span className="font-mono text-[8px] font-bold uppercase tracking-[0.12em] leading-none flex items-center gap-0.5 text-[hsl(30_100%_97%/0.85)]">
           {slot.isFinisher ? `F·${slot.slotRole}` : slot.slotRole}
-          {slot.locked && <Lock size={8} strokeWidth={3} aria-label="locked" />}
+          {slot.locked && (
+            <Lock
+              size={8}
+              strokeWidth={3}
+              aria-label={t("weekend.lockedBadge", { defaultValue: "Locked" })}
+            />
+          )}
         </span>
       )}
 

@@ -16,6 +16,7 @@
 import { useState } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
+import type { TFunction } from "i18next";
 import { useQuery } from "convex/react";
 import { toast } from "sonner";
 import { Download, Share2 } from "lucide-react";
@@ -36,20 +37,20 @@ function signed(points: number): string {
 }
 
 /** The share text — the receipt's facts, nothing invented. */
-function shareTextOf(receipt: SquadReceipt): string {
+function shareTextOf(receipt: SquadReceipt, t: TFunction): string {
   const parts: string[] = [
-    `THE WEEKEND — GW${receipt.gwNumber} settled: ${formatPoints(receipt.total)} pts.`,
+    t("weekend.shareReceiptHeader", { defaultValue: "THE WEEKEND — GW{{gw}} settled: {{points}} pts.", gw: receipt.gwNumber, points: formatPoints(receipt.total) }),
   ];
   if (receipt.best !== null) {
-    parts.push(`Best call ${receipt.best.playerName} ${signed(receipt.best.points)}.`);
+    parts.push(t("weekend.shareReceiptBest", { defaultValue: "Best call {{name}} {{points}}.", name: receipt.best.playerName, points: signed(receipt.best.points) }));
   }
   if (receipt.percentile !== null && receipt.percentile.population > 1) {
     parts.push(
-      `Beat ${Math.round((100 * receipt.percentile.beatCount) / receipt.percentile.population)}% of budget squads.`,
+      t("weekend.shareReceiptBeat", { defaultValue: "Beat {{pct}}% of budget squads.", pct: Math.round((100 * receipt.percentile.beatCount) / receipt.percentile.population) }),
     );
   } else if (receipt.crewRank !== null) {
     parts.push(
-      `${receipt.crewRank.tied ? "T" : ""}${receipt.crewRank.rank} of ${receipt.crewRank.of} in the room.`,
+      t("weekend.shareReceiptRank", { defaultValue: "{{rank}} of {{of}} in the room.", rank: `${receipt.crewRank.tied ? "T" : ""}${receipt.crewRank.rank}`, of: receipt.crewRank.of }),
     );
   }
   return parts.join(" ");
@@ -244,7 +245,7 @@ export default function WeekendReceiptScreen() {
   const handleShare = async () => {
     if (receipt == null || busy) return;
     setBusy(true);
-    const text = shareTextOf(receipt);
+    const text = shareTextOf(receipt, t);
     const url = `${window.location.origin}${SHELL_ROUTES.weekend}`;
     try {
       // Best: the painted card itself, where files can be shared.

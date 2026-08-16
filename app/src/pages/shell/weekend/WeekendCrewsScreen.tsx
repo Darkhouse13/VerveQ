@@ -116,7 +116,10 @@ export default function WeekendCrewsScreen() {
                 </p>
                 {crew.scheduledFor !== null && (
                   <p className="text-[10px] text-muted-foreground mt-0.5">
-                    Draft · {new Date(crew.scheduledFor).toLocaleString()}
+                    {t("weekend.scheduledDraft", {
+                      defaultValue: "Draft · {{date}}",
+                      date: new Date(crew.scheduledFor).toLocaleString(),
+                    })}
                   </p>
                 )}
               </div>

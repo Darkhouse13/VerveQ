@@ -16,6 +16,7 @@
 import type { ReactNode } from "react";
 import * as DialogPrimitive from "@radix-ui/react-dialog";
 import { X } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 export function WeekendSheet({
   open,
@@ -36,6 +37,8 @@ export function WeekendSheet({
   testId?: string;
   children: ReactNode;
 }) {
+  const { t } = useTranslation("shell");
+
   return (
     <DialogPrimitive.Root open={open} onOpenChange={onOpenChange}>
       <DialogPrimitive.Portal>
@@ -59,7 +62,7 @@ export function WeekendSheet({
               {badge}
               <DialogPrimitive.Close
                 className="neo-border rounded bg-card p-1 shrink-0 active:neo-shadow-pressed"
-                aria-label="Close"
+                aria-label={t("common.close", { defaultValue: "Close" })}
               >
                 <X size={14} strokeWidth={3} />
               </DialogPrimitive.Close>

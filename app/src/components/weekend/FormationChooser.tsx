@@ -105,7 +105,12 @@ export function FormationChooser({
               </NeoButton>
             ))}
             {finisher.locked && (
-              <Lock size={12} strokeWidth={3} aria-label="locked" className="shrink-0" />
+              <Lock
+                size={12}
+                strokeWidth={3}
+                aria-label={t("weekend.lockedBadge", { defaultValue: "Locked" })}
+                className="shrink-0"
+              />
             )}
           </div>
         ))}
@@ -209,7 +214,7 @@ export function FormationSection({
               </DialogPrimitive.Title>
               <DialogPrimitive.Close
                 className="neo-border rounded bg-card p-1 shrink-0 active:neo-shadow-pressed"
-                aria-label="Close"
+                aria-label={t("common.close", { defaultValue: "Close" })}
               >
                 <X size={14} strokeWidth={3} />
               </DialogPrimitive.Close>

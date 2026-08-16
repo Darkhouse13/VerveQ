@@ -20,6 +20,7 @@
  */
 import { useEffect, useMemo } from "react";
 import { useTranslation } from "react-i18next";
+import type { TFunction } from "i18next";
 import { useQuery } from "convex/react";
 import type { ReactNode } from "react";
 import { api } from "../../../convex/_generated/api";
@@ -31,13 +32,6 @@ import { track } from "@/lib/analytics";
 /** Below this many current-season minutes the sheet shows apps/minutes only —
  *  early-season honesty: last season stays the primary read (FW-SCOUT L3). */
 export const CURRENT_SEASON_MINUTES_THRESHOLD = 180;
-
-const POSITION_LABEL: Record<string, string> = {
-  GK: "Keeper",
-  DEF: "Defender",
-  MID: "Midfielder",
-  ATT: "Attacker",
-};
 
 type Card = NonNullable<ReturnType<typeof usePlayerCard>>;
 type SeasonEntry = Card["seasons"][number];
@@ -55,24 +49,24 @@ function per90(total: number, minutes: number): string {
   return ((total * 90) / minutes).toFixed(2);
 }
 
-function poolLine(pool: string | null, lastSeasonLabel: string | null): string | null {
+function poolLine(pool: string | null, lastSeasonLabel: string | null, translate: TFunction): string | null {
   switch (pool) {
     case "topfive":
       return lastSeasonLabel !== null
-        ? `Priced from 2025-26 ${lastSeasonLabel} form`
-        : "Priced from 2025-26 top-five form";
+        ? translate("weekend.poolPricedForm", { season: lastSeasonLabel })
+        : translate("weekend.poolTopFive", { defaultValue: "Priced from 2025-26 top-five form" });
     case "promoted":
       return lastSeasonLabel !== null
-        ? `Promoted club — priced from 2025-26 ${lastSeasonLabel} form`
-        : "Promoted club — priced from 2025-26 second-division form";
+        ? translate("weekend.poolPromotedForm", { season: lastSeasonLabel })
+        : translate("weekend.poolSecondDivision", { defaultValue: "Promoted club — priced from 2025-26 second-division form" });
     case "eredivisie":
     case "ligaportugal":
     case "championship":
       return lastSeasonLabel !== null
-        ? `Priced from 2025-26 ${lastSeasonLabel} form`
-        : "Priced from 2025-26 league form";
+        ? translate("weekend.poolPricedForm", { season: lastSeasonLabel })
+        : translate("weekend.poolLeague", { defaultValue: "Priced from 2025-26 league form" });
     case "flagged":
-      return "No usable 2025-26 season data — floor priced";
+      return translate("weekend.poolFlagged", { defaultValue: "No usable 2025-26 season data — floor priced" });
     default:
       return null;
   }
@@ -122,7 +116,7 @@ export function PlayerSheet({
       eyebrow={
         card == null
           ? undefined
-          : `${POSITION_LABEL[card.position] ?? card.position} · ${card.clubName ?? card.clubId}`
+          : `${t(`weekend.position_${card.position}`, { defaultValue: card.position })} · ${card.clubName ?? card.clubId}`
       }
       title={card == null ? "…" : card.name}
       badge={
@@ -154,6 +148,7 @@ export function PlayerSheet({
             const provenance = poolLine(
               card.pool,
               lastSeason?.line != null ? lastSeason.leagueLabel : null,
+              t,
             );
             return provenance === null ? null : (
               <p

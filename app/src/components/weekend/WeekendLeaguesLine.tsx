@@ -33,7 +33,7 @@ export function WeekendLeaguesLine({
 
   const base =
     "font-mono text-[11px] font-bold uppercase tracking-[0.16em] text-muted-foreground";
-  const fullLine = t("weekend.thisWeekend", {
+  const fullLine = t("weekend.thisWeekendLine", {
     defaultValue: "This weekend: {{leagues}}",
     leagues: leagueListLine(leagueIds),
   });

@@ -7,7 +7,12 @@
     "comingSoon": "Próximamente",
     "enter": "Entrar",
     "cancel": "Cancelar",
-    "inLearn": "En Aprender"
+    "inLearn": "En Aprender",
+    "close": "Cerrar",
+    "copied": "Copiado",
+    "download": "Descargar",
+    "loading": "Cargando…",
+    "share": "Compartir"
   },
   "nav": {
     "home": "Inicio",
@@ -304,5 +309,546 @@
     "ctaUpgrade": "Guardar mi progreso y pasar a clasificatorio",
     "ctaCreate": "Empezar",
     "later": "Quizá más tarde"
+  },
+  "weekend": {
+    "addGames": "Añadir partidos",
+    "addGamesShort": "+ añadir partidos",
+    "allClubs": "Todos los clubes",
+    "allFixtures": "Todos los partidos",
+    "allLeagues": "Todas las ligas",
+    "allPositions": "Todas las posiciones",
+    "allPositionsBody": "Elegir fuera de posición conlleva el riesgo ×0,75.",
+    "argumentPlaceholder": "Tu argumento en una línea (280 caracteres)…",
+    "armDraft": "Iniciar el draft",
+    "armFailed": "No se pudo iniciar el draft.",
+    "aroundYou": "A tu alrededor",
+    "arrangeSheet": "Ordena tu alineación",
+    "auto": "Auto",
+    "autoPicks": "{{count}} elecciones automáticas",
+    "awaitingData": "esperando datos",
+    "awayShort": "V",
+    "backToBrowse": "Volver a explorar",
+    "backToCrew": "Volver al grupo",
+    "backToCrews": "Volver a grupos",
+    "bankEach": "guardar cada uno",
+    "bestFinish": "Mejor puesto: #{{rank}}",
+    "boardBetween": "Se abre un tablero nuevo cada fin de semana",
+    "boardOpen": "El tablero de la jornada {{gw}} está abierto",
+    "budget": "presupuesto",
+    "budgetGrandfathered": "Los nuevos precios dejan este equipo por encima del presupuesto de {{limit}}. Sigue siendo válido, pero ningún cambio puede aumentar su coste.",
+    "budgetTitle": "Tus 13 del fin de semana",
+    "buildFor": "Construyendo para",
+    "change": "Cambiar",
+    "chipDnp": "NJD",
+    "chipFewVotes": "pocos votos",
+    "chipListed": "como {{pos}}",
+    "chipMismatch": "×0,75",
+    "claimExpiredNote": "sin resolver al cierre — no se aplicó fallo ni cambió la puntuación",
+    "clearFailed": "No se pudo vaciar esa posición.",
+    "clearSlot": "Vaciar",
+    "climbedPlaces": "Subiste {{count}} puestos",
+    "committedCost": "{{cost}} bloqueado",
+    "courtTitle": "Tribunal de reclamaciones",
+    "courtVoteFailed": "Ese voto no se pudo registrar.",
+    "create": "Crear",
+    "createCrew": "Crear grupo",
+    "createFailed": "No se pudo crear tu equipo.",
+    "crewCreateFailed": "No se pudo crear el grupo.",
+    "crewJoinFailed": "No se pudo unir al grupo.",
+    "crewNamePlaceholder": "Leyendas de la liga dominical",
+    "crewShapeConfirmBody": "Tus 13 siguen en la alineación, pero {{names}} jugarían fuera de su posición indicada — riesgo ×0,75 si el veredicto lo confirma.",
+    "crewsSubtitle": "Crea un equipo para EL fin de semana con tu grupo.",
+    "crewsTitle": "Grupos",
+    "crowdFactor": "público {{pct}}%",
+    "crowdShort": "público",
+    "decided": "Resueltas",
+    "didNotAppear": "no apareció",
+    "didntSeeGame": "No vi este partido",
+    "didntSeeHim": "No le vi",
+    "didntWatch": "No lo vi",
+    "doneExhausted": "Esos son todos los partidos que elegiste.",
+    "doneKeepGoing": "Sigue — los pares extra no cuentan, pero ayudan.",
+    "doneTen": "Esos son los diez de hoy.",
+    "doneThanks": "El público te da las gracias.",
+    "doorCourtBodyShort": "Defiende la posición real de un jugador.",
+    "doorCourtTitle": "Tribunal de reclamaciones",
+    "doorCrewsBodyShort": "Un código, elecciones únicas.",
+    "doorCrewsTitle": "Draft de grupo",
+    "doorSquadBodyShort": "Un 13 nuevo bajo presupuesto.",
+    "doorSquadTitle": "Equipo con presupuesto",
+    "doorVoteBodyShort": "El público mueve cada puntuación.",
+    "doorVoteTitle": "Valora el fin de semana",
+    "draftDone": "Draft completado",
+    "draftDoneBody": "Los equipos parten de su alineación predeterminada — ordena el tuyo antes del saque inicial. Cada jugador se puede editar hasta que empiece su partido.",
+    "draftFor": "Draft para",
+    "draftTitle": "Sala de draft",
+    "droppedPlaces": "Bajaste {{count}} puestos",
+    "earlySeason": "Inicio de temporada — {{apps}} partidos, {{minutes}}′. El por-90 se desbloquea en {{threshold}}′.",
+    "emptyChipAria": "Abrir posición {{role}}",
+    "emptyDocket": "No hay reclamaciones este fin de semana. ¿El feed se equivocó de posición? Presenta una.",
+    "endorse": "Merece ser escuchada",
+    "endorseCount": "{{n}} / {{needed}} apoyos",
+    "endorseFailed": "No se pudo apoyar la reclamación.",
+    "enterCode": "Introduce el código del grupo",
+    "fileClaim": "Presentar reclamación",
+    "fileFailed": "No se pudo presentar la reclamación.",
+    "fileIt": "Presentarla",
+    "filingsLeft": "Quedan {{left}} de {{max}} reclamaciones",
+    "filterClub": "Club",
+    "filterClubTitle": "Filtrar por club",
+    "filterLeague": "Liga",
+    "filterLeagueTitle": "Filtrar por liga",
+    "finished": "FT",
+    "finishedRank": "Terminaste #{{rank}} · top {{percent}}%",
+    "finisherNote": "Los finalizadores puntúan desde su minuto de entrada — cualquier posición, sin depender de tu esquema.",
+    "finisherRoleFailed": "No se pudo cambiar ese rol de finalizador.",
+    "finisherRoles": "Tus finalizadores",
+    "finishers": "Finalizadores",
+    "firstKickoffIn": "Primer saque inicial en",
+    "fixtureAbandoned": "Abandonado",
+    "fixtureCancelled": "Cancelado",
+    "fixtureFt": "FT",
+    "fixtureLive": "En directo",
+    "fixtureLocked": "Bloqueado",
+    "fixturePointsIn": "puntos en",
+    "fixturePostponed": "Aplazado",
+    "fixtureVoid": "FUERA",
+    "fixturesSubtitle": "Jornada {{gw}} · cada saque inicial en tu hora",
+    "fixturesTitle": "Partidos",
+    "fullStandings": "Clasificación completa",
+    "fullTime": "final",
+    "gathering": "Reuniendo apoyos",
+    "globalRankGap": "#{{rank}} global · {{points}} pts hasta el siguiente",
+    "gwClosed": "Esta jornada está cerrada — no participaste.",
+    "heActuallyPlayed": "Sí jugó…",
+    "hideLog": "Ocultar registro del draft",
+    "homeShort": "L",
+    "host": "anfitrión",
+    "howToPlayTitle": "Cómo jugar",
+    "hubSubtitle": "Ocho ligas, un equipo.",
+    "hubTitle": "El fin de semana",
+    "idle": "Inactivo",
+    "improvedPlaces": "+{{count}} puestos",
+    "inPlayNow": "En juego ahora",
+    "inPlayTeaser": "{{n}} de {{total}} partidos en juego",
+    "inSquad": "En el equipo",
+    "insufficientVotes": "votos insuficientes",
+    "join": "Unirse",
+    "joinCrew": "Unirse con código",
+    "kickoffTeaserMore": "{{line}} +{{n}} más",
+    "lastSeason": "Temporada pasada",
+    "leaderboardAwaiting": "{{count}} esperando",
+    "leaderboardDoorBody": "Mira cómo puntúan todos los equipos con presupuesto.",
+    "leaderboardFinal": "Clasificación final",
+    "leaderboardFinalBody": "Esta jornada ya está resuelta.",
+    "leaderboardLive": "Clasificación en directo",
+    "leaderboardLiveBody": "Los totales provisionales se actualizan cuando llegan los puntos.",
+    "leaderboardScored": "{{scored}}/13 puntuados",
+    "leaderboardSubtitle": "Jornada {{gw}} · equipos con presupuesto globales",
+    "leaderboardTitle": "Clasificación",
+    "leaderboardWaiting": "Esperando los primeros puntos",
+    "leaderboardWaitingBody": "La tabla aparece cuando llega la puntuación de un jugador.",
+    "leaderboardYou": "Tú",
+    "leading": "Vas en cabeza",
+    "leadingGlobal": "#{{rank}} global · en cabeza",
+    "ledgerCourtRescore": "{{name}} volvió a puntuar por el fallo del tribunal",
+    "ledgerCourtRuled": "El tribunal falló: {{name}} juega de {{position}}.",
+    "ledgerCrowdVerdict": "Veredicto del público sobre {{name}}: {{pct}}",
+    "ledgerFootnote": "Cada línea lleva a un hecho guardado. Los puntos pueden cambiar hasta que se cierre la jornada; los jugadores cuyo partido aún no se ha puntuado todavía no aparecen.",
+    "ledgerLocked": "{{name}} quedó bloqueado al saque inicial.",
+    "ledgerMismatch": "jugó de {{verdict}} en una posición de {{slot}} — ×0,75 en los puntos positivos",
+    "ledgerOpenReceipt": "El recibo",
+    "ledgerRevised": "Revisado: {{name}}",
+    "ledgerRevisedPoints": "{{from}} → {{to}} pts",
+    "ledgerSettled": "Jornada resuelta — {{total}} pts finales.",
+    "ledgerSheetDrafted": "Alineación creada — 13 en la tarjeta.",
+    "ledgerSquadBuilt": "Los 13 reunidos.",
+    "levelWith": "Empatado en #{{rank}}",
+    "live": "En directo",
+    "liveDrafting": "En draft",
+    "loading": "Cargando…",
+    "lobbyOpen": "Sala abierta",
+    "lockedBadge": "Bloqueado",
+    "lockedNote": "Su partido ha empezado — este ya cuenta.",
+    "marketBrowse": "El mercado del fin de semana",
+    "matchdayEyebrow": "Jornada {{gw}} · {{headline}}",
+    "members": "miembros",
+    "minutesPlayed": "{{minutes}}′",
+    "mismatchApplied": "×0,75 fuera de posición",
+    "mostImproved": "Mayor progreso: {{name}} +{{places}}",
+    "moveSlot": "Mover",
+    "nameYourCrew": "Pon nombre a tu grupo",
+    "narrowSearch": "Mostrando los 40 primeros — busca para afinar.",
+    "needTwo": "Un draft necesita al menos 2 participantes.",
+    "nextKickoffIn": "Siguiente saque inicial en",
+    "nextPlace": "Siguiente puesto",
+    "noBoard": "No hay tablero abierto ahora mismo.",
+    "noBoardBody": "Se abre un tablero nuevo cada fin de semana. Vuelve pronto.",
+    "noCrewsBody": "Crea un grupo, comparte el código y forma un equipo nuevo cada fin de semana. Elecciones únicas: cuando se va un jugador, se va.",
+    "noCrewsTitle": "Un código, un grupo, 13 elecciones",
+    "noEligibleResults": "Nadie con partido este fin de semana coincide — Mostrar todo incluye al resto.",
+    "noFixture": "Sin partido",
+    "noFixtureForClaim": "No hay un partido terminado registrado para ese jugador.",
+    "noFixtureLong": "No hay partido este fin de semana.",
+    "noHistory": "Aún no hay jornadas de VerveQ registradas — el historial crece cuando se cierran los fines de semana.",
+    "noResults": "Nadie coincide con esos filtros.",
+    "noSeason": "No hay suficiente fútbol registrado para 2025-26.",
+    "noSheet": "No hay una alineación tuya aquí — aparece cuando termina tu draft.",
+    "nominalMismatch": "indicado como {{pos}} — riesgo ×0,75 si el veredicto lo confirma",
+    "onClock": "{{name}} está en el turno",
+    "onTrial": "En juicio",
+    "orderReveal": "El orden",
+    "ownership": "En el {{pct}}% de los equipos de esta jornada ({{inSquads}}/{{totalSquads}})",
+    "partialSeason": "No hay suficiente fútbol de liga registrado — {{minutes}}′ fuera de las ligas cubiertas.",
+    "per90ClubNote": "por 90 · tasas del club por partido",
+    "per90Note": "por 90 minutos",
+    "pick": "Elegir",
+    "pickAny": "¿Quién forma tus 13?",
+    "pickAtt": "¿Quién lidera el ataque?",
+    "pickDef": "¿Quién sostiene la defensa?",
+    "pickFailed": "No se pudo registrar esa elección.",
+    "pickFinisher": "¿Quién cambia el partido al final?",
+    "pickGk": "¿Quién empieza bajo palos?",
+    "pickMid": "¿Quién manda en el centro?",
+    "pickerBody": "Solo te preguntaremos por jugadores que hayas visto de verdad.",
+    "pickerContinue": "Continuar",
+    "pickerFailed": "No se pudieron guardar tus partidos.",
+    "pickerNone": "No vi ninguno",
+    "pickerNotFinished": "no terminado",
+    "pickerRetired": "no viste este",
+    "pickerSave": "Guardar",
+    "pickerTitle": "¿Qué partidos viste este fin de semana?",
+    "playTitle": "Juega el fin de semana",
+    "played": "Jugados",
+    "playerGone": "Este jugador ya no está registrado.",
+    "points": "Puntos",
+    "pointsToRank": "{{points}} pts hasta el #{{rank}}",
+    "position": "Posición",
+    "provisional": "provisional",
+    "pts": "pts",
+    "pulseLine": "{{inPlay}} en juego · {{played}} jugados · {{scored}} puntuados",
+    "quorumNote": "quórum {{quorum}} · 60% para aprobar",
+    "railTitle": "Este fin de semana",
+    "rank": "Puesto",
+    "rankOf": "de {{count}}",
+    "ready": "Listo",
+    "readyFailed": "No se pudo actualizar el estado.",
+    "readyOn": "Listo — toca para deshacer",
+    "readyUp": "Marcarse listo",
+    "rebuttalPrefix": "Réplica:",
+    "receiptAwaitingNote": "{{n}} posición(es) nunca recibieron datos este fin de semana",
+    "receiptBest": "Mejor elección",
+    "receiptChip": "Jornada {{gw}} resuelta — tu recibo está listo",
+    "receiptCrewRank": "{{rank}} de {{of}} en la sala",
+    "receiptCrowdMany": "El veredicto del público movió {{n}} de tus 13 — el mayor: {{name}} {{pct}}%",
+    "receiptCrowdOne": "El veredicto del público movió a {{name}} {{pct}}%",
+    "receiptDownloadFailed": "No se pudo crear la imagen.",
+    "receiptEyebrow": "El fin de semana — resuelto",
+    "receiptFinal": "pts finales",
+    "receiptNoNumber": "Ningún jugador puntuó este fin de semana — no hay puesto que reclamar.",
+    "receiptNotReady": "Aún no hay recibo.",
+    "receiptNotReadyBody": "El recibo se imprime cuando se cierra la jornada; hasta entonces, el libro de cuentas cuenta la historia.",
+    "receiptPercentile": "Superaste al {{pct}}% de los equipos con presupuesto",
+    "receiptScreenTitle": "Recibo",
+    "receiptTitle": "Recibo de la jornada {{gw}}",
+    "receiptWorst": "Peor elección",
+    "remaining": "Quedan {{amount}}",
+    "revealAgainst": "Estás con el {{percent}}%",
+    "revealFirst": "Eres de los primeros en esta.",
+    "revealWith": "El {{percent}}% coincidió contigo",
+    "roomAbandoned": "Esta sala caducó antes del draft.",
+    "roomGone": "No puedes ver esta sala — únete primero al grupo.",
+    "roundOf": "Ronda {{round}} de 13",
+    "rounds": "rondas",
+    "scoredOfThirteen": "{{scored}}/13 puntuados",
+    "searchClubs": "Buscar clubes…",
+    "searchMarket": "Buscar nombre o club…",
+    "searchPlayer": "¿Qué jugador?",
+    "searchPool": "Buscar entre 2.895 jugadores…",
+    "season": "Temporada",
+    "seasonScale": "{{apps}} partidos · {{minutes}}′",
+    "seasonStandings": "Clasificación de temporada",
+    "seasonStats": "Estadísticas y forma de temporada",
+    "seasonWaiting": "La carrera de temporada empieza aquí",
+    "serveFailed": "No se pudo repartir un par.",
+    "settled": "resuelto",
+    "shape": "Tu esquema",
+    "shapeConfirmBody": "Este esquema no tiene sitio para {{names}} — esperarán en la banda, a un toque de volver.",
+    "shapeConfirmCancel": "Mantener esquema",
+    "shapeConfirmGo": "Cambiar esquema",
+    "shapeConfirmTitle": "¿Cambiar a {{label}}?",
+    "shapeFailed": "No se pudo cambiar el esquema.",
+    "shapeLine": "Esquema — {{label}}",
+    "shapeLockedLine": "Configurado en un {{label}}",
+    "shapeNote": "Cámbialo cuando quieras antes del saque inicial — aún nada es definitivo.",
+    "shapeOpenAria": "Cambiar esquema — ahora {{label}}",
+    "shapeSheetTitle": "Tu esquema y finalizadores",
+    "sheetNote": "los 13 son los 13 — ordénalos, no los vuelvas a elegir",
+    "sheetTitle": "Tu alineación",
+    "showAll": "Mostrar todo",
+    "showLog": "Mostrar registro del draft",
+    "slots": "camisetas",
+    "slotsAwaiting": "{{count}} esperando",
+    "slotsAwaitingBody": "{{count}} esperando · los puntos llegan ~2 h después del final",
+    "snakeNote": "Orden serpiente — el último elige dos veces.",
+    "spent": "Gastado",
+    "squadProgress": "Progreso del equipo",
+    "squadReady": "Tus 13 están dentro",
+    "squadReadyBody": "Los puntos llegan ~2 h después de cada final.",
+    "squadScoredBody": "{{n}} de 13 puntuados",
+    "squadUnfinished": "Quedan {{n}} posiciones libres",
+    "squadUnfinishedBody": "Cada jugador se bloquea en su propio saque inicial.",
+    "startBuilding": "Empezar a construir",
+    "started": "Empezado",
+    "statAssists": "Asistencias",
+    "statCsRate": "Porterías a cero del club",
+    "statGaRate": "Goles encajados del club",
+    "statGoals": "Goles",
+    "statKeyPasses": "Pases clave",
+    "statSaves": "Paradas",
+    "statShotsOn": "Tiros a puerta",
+    "statTacklesInt": "Entradas + intercepciones",
+    "swapFailed": "Ese cambio no es válido.",
+    "swapPrompt": "Ahora toca dónde va — o tócalo otra vez para dejarlo.",
+    "tabLedger": "Libro de cuentas",
+    "tabSheet": "Alineación",
+    "tabSquad": "Equipo",
+    "taken": "Elegido",
+    "tenProgress": "{{voted}} de {{goal}}",
+    "thisGw": "Esta jornada",
+    "thisSeason": "Esta temporada",
+    "thisWeekend": "Este fin de semana",
+    "thisWeekendLine": "Este fin de semana: {{leagues}}",
+    "thisWeekendMany": "Este fin de semana: {{n}} ligas",
+    "tied": "empatado",
+    "topHalfStreak": "Racha en la mitad superior: {{count}}",
+    "topPercent": "Top {{percent}}%",
+    "topTenFinishes": "Top 10% ×{{count}}",
+    "trayPlace": "Volver a poner",
+    "trayTitle": "Esperando para volver",
+    "undoAction": "Deshacer",
+    "undoDone": "De nuevo en tu lista.",
+    "undoFailed": "Demasiado tarde — ese partido sigue retirado.",
+    "undoRetired": "Retirado {{fixture}}",
+    "unknownClub": "(club sin nombre)",
+    "unpriced": "Sin precio todavía",
+    "upPlaces": "subes {{count}}",
+    "verdictTallies": "{{yes}}–{{no}} ponderado ({{rawYes}}–{{rawNo}} bruto, {{n}} jurados)",
+    "verveqPoints": "Puntos VerveQ",
+    "voteCap": "Ese es el límite de este fin de semana.",
+    "voteCapBody": "{{served}} pares servidos — gracias por prestar atención.",
+    "voteExhausted": "No hay más pares por ahora.",
+    "voteExhaustedBody": "Vuelve cuando terminen los próximos partidos.",
+    "voteFailed": "Ese voto no se pudo registrar.",
+    "voteMatchLine": "{{club}} · contra {{opponent}} ({{venue}})",
+    "voteNo": "El feed tiene razón",
+    "voteNoBoardShort": "No hay tablero abierto ahora mismo.",
+    "voteNoGames": "Entonces no hay nada que juzgar.",
+    "voteNoGamesBody": "No elegiste partidos este fin de semana — es una respuesta válida. Añade uno cuando lo veas.",
+    "voteTitle": "La prueba del ojo",
+    "voteYes": "Sí jugó",
+    "votedBadge": "votaste {{v}}",
+    "votingClosed": "Ahora mismo la votación está cerrada.",
+    "votingClosedBody": "La pila se abre al terminar los partidos y se cierra cuando acaba el fin de semana.",
+    "waitingOn": "Esperando a: {{names}}",
+    "weekendPlayed": "Fin de semana jugado",
+    "weekendPlayedTeaser": "partidos con puntos asignados",
+    "weekendsPlayed": "{{count}} fines de semana",
+    "weeklyPodiums": "Podios semanales",
+    "whoBetter": "¿Quién jugó mejor?",
+    "you": "tú",
+    "yourGameweeks": "Tus jornadas",
+    "yourPick": "Tu elección",
+    "yourRace": "Tu carrera",
+    "yourSeason": "Tu temporada",
+    "yourThirteen": "Tus 13 · J {{gw}}",
+    "claim_filing": "reuniendo apoyos",
+    "claim_trial": "en juicio",
+    "claim_passed": "aprobada",
+    "claim_failed": "rechazada",
+    "claim_died": "archivada",
+    "claim_expired": "caducada"
+    ,"homeEyebrow": "Nuevo modo · En directo"
+    ,"homeBulletLeagues": "Ocho ligas, un equipo"
+    ,"homeBulletCrowd": "El público valora a los jugadores, no un algoritmo"
+    ,"homeBulletFresh": "Draft nuevo cada semana, sin temporada eterna"
+    ,"homeHeadline": "Forma todo el fin de semana europeo de fútbol."
+    ,"homePlay": "Jugar ahora"
+    ,"homeNote": "Equipo con presupuesto o draft de grupo — tablero nuevo cada fin de semana."
+    ,"activity": "Actividad"
+    ,"ahead": "{{points}} por delante"
+    ,"allSeatsClaimed": "Las 8 plazas están ocupadas"
+    ,"allTime": "Histórico"
+    ,"allTimeStandings": "Clasificación histórica"
+    ,"appearancesAverage": "{{appearances}} apariciones · {{average}} de media"
+    ,"appsAverage": "{{apps}} partidos · {{average}} de media"
+    ,"autoPickQueue": "Cola privada de elecciones automáticas"
+    ,"autoPickQueueBody": "Tu orden es privado. Si se acaba el tiempo, se prueban primero los jugadores válidos de la cola."
+    ,"awaiting": "esperando"
+    ,"bestFinishLabel": "Mejor puesto"
+    ,"claimSeat": "Reclamar plaza de draft"
+    ,"command": "Comando"
+    ,"copyCodeFailed": "No se pudo copiar el código."
+    ,"creator": "Creador"
+    ,"creatorOnly": "Solo el creador puede acceder"
+    ,"creatorOnlyBody": "Solo la persona que gestiona este grupo puede abrir Crew Command."
+    ,"creatorOpensNext": "El creador abrirá el próximo fin de semana."
+    ,"crewCommandDraftBody": "abre la sala semanal y gestiona su tiempo y sus ocho plazas en la sala de espera."
+    ,"crewCommandHowTitle": "Cómo funciona Crew Command"
+    ,"crewCommandInfoAria": "Cómo funciona Crew Command"
+    ,"crewCommandInviteBody": "comparte el enlace permanente o el código del grupo."
+    ,"crewCommandMembersBody": "elimina a personas inactivas sin borrar los resultados anteriores."
+    ,"crewCommandOwnershipBody": "al salir transfieres el control; solo se puede borrar antes del primer draft completado."
+    ,"crewCommandTitle": "Crew Command"
+    ,"crewCompetition": "Competición de grupo"
+    ,"crewRecapReady": "El resumen del grupo está listo para compartir."
+    ,"crewTitle": "Grupo"
+    ,"deleteCrew": "Borrar grupo"
+    ,"deleteCrewBody": "Esto elimina el grupo para todos. No se puede deshacer."
+    ,"deleteCrewConfirmLabel": "Escribe DELETE para confirmar"
+    ,"deleteCrewFailed": "No se pudo borrar el grupo."
+    ,"deleteCrewForever": "Borrar el grupo para siempre"
+    ,"deleteCrewTitle": "¿Borrar este grupo?"
+    ,"draftLabel": "Draft:"
+    ,"draftRooms": "Salas de draft"
+    ,"drafters": "{{count}} participantes"
+    ,"enterLiveDraft": "Entrar al draft en directo"
+    ,"enterLobby": "Entrar a la sala de espera"
+    ,"gameweek": "Jornada"
+    ,"howBudgetBody": "Forma tus 13 con un presupuesto de 91,0. Los precios van de 4,0 a 13,0 en pasos de medio punto, iguales para todos y fijos durante la jornada."
+    ,"howBudgetLabel": "Equipo con presupuesto."
+    ,"howCardsBody": "amarilla −1, roja −4 (una expulsión por doble amarilla suma −6)."
+    ,"howCardsLabel": "Tarjetas:"
+    ,"howClubCapBody": "como máximo 3 jugadores de un club — salvo tu club favorito, que no tiene límite (cambiar de favorito tiene una espera de 28 días)."
+    ,"howClubCapLabel": "Límite por club:"
+    ,"howCourt": "El tribunal"
+    ,"howCourtBody": "¿Crees que el feed indicó mal la posición de un jugador? Presenta una reclamación: tienes 2 por jornada y presentar cuenta como el primer apoyo. Una reclamación con suficientes apoyos (al menos 15 o el 0,5% de los activos) va a juicio; gana con el 60% y quórum (al menos 30 o el 1%). Las reclamaciones cierran el lunes a las 23:59; los veredictos llegan el martes por la tarde y vuelven a puntuar al jugador antes del cierre."
+    ,"howCrewBody": "2–8 amigos, únete con un código y haz un draft serpiente donde cada jugador solo puede pertenecer a una persona por sala. Cada participante tiene 30 segundos de banco por ronda — 390 s para los 13 picks; si se agota, las elecciones restantes son automáticas."
+    ,"howCrewLabel": "Draft de grupo."
+    ,"howCrowdBody": "Los votos del público, cara a cara sobre actuaciones reales, mueven la puntuación hasta ±15%. Las actuaciones con pocos votos conservan su puntuación base."
+    ,"howCrowdLabel": "Veredicto del público:"
+    ,"howDefendingBody": "Las porterías a cero pagan GK +5 / DEF +4 / MID +1 (60+ minutos); los GK y DEF pierden 1 punto por cada 2 goles encajados. Entradas, intercepciones, bloqueos, paradas, pases clave y regates dan pequeñas cantidades, con límites para que el volumen no se pueda explotar. La excelencia sostenida da hasta +2 mediante bonificaciones de dominio defensivo y precisión de pase."
+    ,"howDefendingLabel": "Defensa:"
+    ,"howDuplicatesBody": "un equipo son 13 jugadores, no 13 posiciones."
+    ,"howDuplicatesLabel": "Sin duplicados:"
+    ,"howFinalityBody": "las puntuaciones se cierran a las 23:59 (hora de París) del día siguiente al cierre de la ventana."
+    ,"howFinalityLabel": "Cierre:"
+    ,"howFinishersBody": "solo puntúan desde su minuto de entrada, y sus goles y asistencias después del minuto 75 reciben ×1,25 — el multiplicador del momento decisivo."
+    ,"howFinishersLabel": "Finalizadores:"
+    ,"howGoalsBody": "los goles pagan +5 a +8 y las asistencias +3 a +6 — cuanto más profunda la posición, más paga (un gol de GK vale +8 y el de un delantero +5)."
+    ,"howGoalsLabel": "Goles y asistencias:"
+    ,"howLocks": "Bloqueos"
+    ,"howLocksBody": "Cada jugador se bloquea en su propio saque inicial. Hasta entonces puedes cambiarlo, recolocarlo y reordenarlo; después la posición queda congelada y el coste comprometido. Un jugador cuyo partido ya empezó no puede entrar — nada de elegir con ventaja retrospectiva. Ajustar el domingo alrededor del sábado bloqueado es parte de la habilidad."
+    ,"howModes": "Dos formas de jugar"
+    ,"howScoring": "Puntuación, en lenguaje claro"
+    ,"howShapeBody": "exactamente 1 GK, 3–5 DEF, 2–5 MID y 1–3 ATT en el XI. Los finalizadores conservan su propia posición, elegida libremente."
+    ,"howShapeLabel": "Cualquier esquema válido:"
+    ,"howShowingBody": "+1 por cualquier minuto jugado."
+    ,"howShowingLabel": "Salir al campo:"
+    ,"howSquad": "Tu equipo"
+    ,"howTableBody": "ordenada por puntos acumulados; los empates se rompen con victorias cara a cara del fin de semana; si sigue el empate, se muestra como tal."
+    ,"howTableLabel": "Tabla de grupos:"
+    ,"howTeamBody": "+1 por ganar, +0,5 por empatar, si el jugador disputó 60+ minutos."
+    ,"howTeamLabel": "Resultado del equipo:"
+    ,"howTemplatesBody": "el jugador puntúa con la plantilla de la posición en la que TÚ lo alineaste. Si el veredicto dice que jugó en otra posición, la puntuación positiva se reduce ×0,75 — colocarlo mal nunca supera a colocarlo bien."
+    ,"howTemplatesLabel": "Plantillas de posición:"
+    ,"howThirteenBody": "un XI más 2 finalizadores (tu banquillo con intención)."
+    ,"howThirteenLabel": "Trece jugadores:"
+    ,"howTies": "Empates y cierre"
+    ,"howWeekend": "El fin de semana"
+    ,"howWeekendBody": "Un equipo para todo el fin de semana europeo de fútbol. Ocho ligas, todos los partidos de la ventana cuentan y el tablero se reinicia en cada jornada — los fines de semana van de viernes a lunes y las ventanas entre semana, de martes a jueves. Sin desgaste de temporada completa."
+    ,"invite": "Invitar"
+    ,"inviteLabel": "Invitar:"
+    ,"latestActivity": "Actividad reciente"
+    ,"leaveCrewFailed": "No se pudo salir del grupo."
+    ,"leaveTransfer": "Salir y transferir el control"
+    ,"loadingStandings": "Cargando clasificación…"
+    ,"markRead": "Marcar como leído · {{count}}"
+    ,"memberRemoved": "Se eliminó a {{name}}."
+    ,"membersLabel": "Miembros:"
+    ,"membershipNote": "No hay límite de miembros. Cada fin de semana tiene ocho plazas de draft."
+    ,"moveDown": "Bajar"
+    ,"moveUp": "Subir"
+    ,"movement": "movimiento"
+    ,"myRecord": "Mi historial"
+    ,"noDraftOpen": "No hay ningún draft abierto"
+    ,"noDraftsYet": "aún no hay drafts"
+    ,"openCrewCommand": "Abrir Crew Command"
+    ,"openDraftFailed": "No se pudo abrir la sala de draft."
+    ,"openNextFromCommand": "Abre el próximo desde Crew Command."
+    ,"ownershipLabel": "Control:"
+    ,"ownershipTitle": "Control"
+    ,"planDraft": "Planificar el draft"
+    ,"planned": "Planificado: {{date}}"
+    ,"podiums": "Podios"
+    ,"rankShort": "P"
+    ,"releaseSeat": "Liberar mi plaza"
+    ,"remove": "Eliminar"
+    ,"removeMemberBody": "Sale del grupo y de cualquier plaza de sala aún no iniciada. Sus resultados anteriores permanecen."
+    ,"removeMemberFailed": "No se pudo eliminar a ese miembro."
+    ,"removeMemberTitle": "¿Eliminar a {{name}}?"
+    ,"replace": "Sustituir…"
+    ,"replacePlayer": "Sustituir a {{name}}"
+    ,"roleAtt": "ATA"
+    ,"roleDef": "DEF"
+    ,"roleGk": "POR"
+    ,"roleMid": "MED"
+    ,"save": "Guardar"
+    ,"searchAddPlayers": "Buscar jugadores para añadir…"
+    ,"seasonTitles": "Títulos de temporada"
+    ,"shareLink": "Compartir enlace"
+    ,"slotMatchesVerdict": "la posición coincide con el veredicto"
+    ,"slotMismatched": "posición incorrecta"
+    ,"standings": "Clasificación"
+    ,"standingsEmpty": "La clasificación aparece cuando un fin de semana se ha drafteado y puntuado."
+    ,"topHalfLabel": "Racha en la mitad superior"
+    ,"trophyCabinet": "Vitrina de trofeos"
+    ,"weekendWrapped": "Fin de semana terminado"
+    ,"weekends": "Fines de semana"
+    ,"weeklyResults": "Resultados semanales"
+    ,"weeklyWins": "Victorias semanales"
+    ,"yourCrewRace": "Tu carrera de grupo"
+    ,"yourRivalries": "Tus rivalidades"
+    ,"copyCode": "Copiar código"
+    ,"crewDeleted": "Grupo borrado."
+    ,"draftInProgress": "Draft en curso"
+    ,"lobbyIsOpen": "La sala está abierta"
+    ,"manage": "Gestionar"
+    ,"openDraftRoom": "Abrir la sala de draft"
+    ,"seatsClaimed": "{{count}} de 8 plazas ocupadas"
+    ,"crewDeleted": "Grupo borrado."
+    ,"poolPricedForm": "Forma de {{season}} de 2025-26"
+    ,"poolTopFive": "Precio según la forma de los cinco mejores de 2025-26"
+    ,"poolPromotedForm": "Club ascendido — precio según su forma de {{season}} de 2025-26"
+    ,"poolSecondDivision": "Club ascendido — precio según la segunda división de 2025-26"
+    ,"poolLeague": "Precio según la forma de liga de 2025-26"
+    ,"poolFlagged": "No hay datos de temporada utilizables para 2025-26 — precio mínimo"
+    ,"position_GK": "Portero"
+    ,"position_DEF": "Defensa"
+    ,"position_MID": "Centrocampista"
+    ,"position_ATT": "Delantero"
+    ,"claimSeatFailed": "No se pudo reclamar esa plaza."
+    ,"releaseSeatFailed": "No se pudo liberar esa plaza."
+    ,"saveDraftTimeFailed": "No se pudo guardar la hora del draft."
+    ,"replaceSeatFailed": "No se pudo sustituir esa plaza."
+    ,"saveShortlistFailed": "No se pudo guardar tu lista."
+    ,"drafted": "Completado"
+    ,"roomStatus": "Estado de la sala"
+    ,"shareJoinText": "Únete a mi grupo del fin de semana en VerveQ."
+    ,"draftTurnLive": "Tu turno de draft está activo."
+    ,"shareReceiptHeader": "EL FIN DE SEMANA — J{{gw}} resuelta: {{points}} pts."
+    ,"shareReceiptBest": "Mejor elección: {{name}} {{points}}."
+    ,"shareReceiptBeat": "Superaste al {{pct}}% de los equipos con presupuesto."
+    ,"shareReceiptRank": "{{rank}} de {{of}} en la sala."
+    ,"draftTurnNext": "Eres el siguiente en el draft."
+    ,"leaveCrew": "Salir del grupo"
+    ,"membersWithCount": "Miembros · {{count}}"
+    ,"removeMemberAria": "Eliminar a {{name}}"
+    ,"final": "Final"
+    ,"scheduledDraft": "Draft · {{date}}"
+    ,"crewRecapTitle": "Resumen de {{name}}"
+    ,"gameweekRecap": "J{{gw}} · resumen"
+    ,"recapClimbed": "{{name}} subió {{count}} puestos"
+    ,"recapMvp": "MVP: {{player}} · {{points}} ({{owner}})"
   }
 }
