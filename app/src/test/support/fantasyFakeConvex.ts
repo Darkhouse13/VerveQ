@@ -51,6 +51,14 @@ const INDEXES: Record<string, Record<string, string[]>> = {
     by_user: ["userId"],
     by_crew_user: ["crewId", "userId"],
   },
+  fantasyDraftQueues: {
+    by_room_user: ["roomId", "userId"],
+    by_room: ["roomId"],
+  },
+  fantasyCrewAlerts: {
+    by_crew_created: ["crewId", "createdAt"],
+    by_crew_dedupe: ["crewId", "dedupeKey"],
+  },
   fantasyDraftRooms: {
     by_crew: ["crewId"],
     by_crew_gameweek: ["crewId", "gameweekId"],

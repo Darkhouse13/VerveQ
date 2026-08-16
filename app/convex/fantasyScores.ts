@@ -2263,6 +2263,7 @@ export async function crewTableFor(
     const now = Date.now();
     const weekends: CrewTable["weekends"] = [];
     const byMember = new Map<string, CrewWeekendScore[]>();
+    const memberById = new Map(members.map((member) => [member.userId as string, member]));
     for (const member of members) byMember.set(member.userId, []);
 
     for (const room of rooms) {
@@ -2285,7 +2286,12 @@ export async function crewTableFor(
         anyScored,
       });
 
-      for (const member of members) {
+      // A persistent crew may be large, but a weekly room has at most eight
+      // seats. Iterate the frozen seat list so this query scales with actual
+      // participation rather than `members × weekends`.
+      for (const seat of room.seats) {
+        const member = memberById.get(seat.userId);
+        if (member === undefined) continue;
         const squad = await ctx.db
           .query("fantasySquads")
           .withIndex("by_user_gameweek_contextKey", (q) =>

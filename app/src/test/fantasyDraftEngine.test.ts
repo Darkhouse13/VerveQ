@@ -24,6 +24,7 @@ import {
   seatIndexForPick,
   selectAutoPick,
   selectAutoPickWithRung,
+  selectQueuedAutoPick,
   snakeOrderFor,
   totalPicks,
   type AutoPickContext,
@@ -121,6 +122,20 @@ describe("chess-clock math", () => {
 // ── R1 auto-pick order ──
 
 describe("auto-pick total order (R1: price desc → proxy desc → pool → provider id)", () => {
+  it("honours private queue order without weakening the eligibility ladder", () => {
+    const legal = poolPlayer({ _id: "legal", price: 5, kickoffAt: 20_000 });
+    const preferred = poolPlayer({ _id: "preferred", price: 4, kickoffAt: 20_000 });
+    const started = poolPlayer({ _id: "started", price: 13, kickoffAt: 1_000 });
+    const context: AutoPickContext = {
+      pickedPlayerIds: new Set(),
+      clubCounts: new Map(),
+      favoriteClub: null,
+      now: 10_000,
+    };
+    expect(selectQueuedAutoPick(["preferred", "legal"], [legal, preferred], context)?._id).toBe("preferred");
+    expect(selectQueuedAutoPick(["started", "legal"], [started, legal], context)?._id).toBe("legal");
+  });
+
   it("orders by each rung in turn", () => {
     const byPrice = [poolPlayer({ _id: "a", price: 9 }), poolPlayer({ _id: "b", price: 13 })];
     expect(byPrice.sort(autoPickComparator)[0]._id).toBe("b");

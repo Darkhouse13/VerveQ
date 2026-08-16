@@ -353,6 +353,34 @@ export function selectAutoPick(
   return selectAutoPickWithRung(pool, ctx)?.player ?? null;
 }
 
+/**
+ * The same eligibility ladder as the generic bot, but with the drafter's
+ * private order winning inside each rung. A queued hindsight pick can never
+ * jump ahead of a legal no-fixture pick; preference never weakens the rules.
+ */
+export function selectQueuedAutoPick(
+  queuedPlayerIds: readonly string[],
+  pool: readonly DraftPoolPlayer[],
+  ctx: AutoPickContext,
+): DraftPoolPlayer | null {
+  if (queuedPlayerIds.length === 0) return null;
+  const byId = new Map(pool.map((player) => [player._id, player]));
+  for (const rung of AUTO_PICK_RUNGS) {
+    for (const playerId of queuedPlayerIds) {
+      const player = byId.get(playerId);
+      if (
+        player !== undefined &&
+        player.active &&
+        !ctx.pickedPlayerIds.has(player._id) &&
+        rung.admits(player, ctx)
+      ) {
+        return player;
+      }
+    }
+  }
+  return null;
+}
+
 // ── default team sheet (ruling R6) ──
 
 export interface DraftedPlayerForSheet {

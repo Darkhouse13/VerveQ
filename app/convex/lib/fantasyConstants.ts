@@ -55,9 +55,11 @@ export const FORMATION_BOUNDS: Readonly<Record<SlotRole, { min: number; max: num
 
 // ── draft rooms (FW-3) ──
 
-/** DRAFT_ROOM §Room parameters: "Crew size | 2 minimum, 8 maximum (hard cap)". LOCKED. */
+/** A weekly draft stays small even though persistent crew membership is open. */
 export const CREW_MIN_DRAFTERS = 2;
-export const CREW_MAX_DRAFTERS = 8;
+export const DRAFT_MAX_DRAFTERS = 8;
+/** Backward-compatible rule name for older callers and invariance tests. */
+export const CREW_MAX_DRAFTERS = DRAFT_MAX_DRAFTERS;
 
 /** DRAFT_ROOM ledger item 6: "chess-clock 30s × 13 = 390s bank". LOCKED. */
 export const PICK_BANK_MS_PER_ROUND = 30_000;

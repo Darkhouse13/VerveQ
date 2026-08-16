@@ -10,7 +10,7 @@ import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useMutation, useQuery } from "convex/react";
 import { toast } from "sonner";
-import { Hash, Plus, Users } from "lucide-react";
+import { Bell, Hash, Plus, Users } from "lucide-react";
 import { api } from "../../../../convex/_generated/api";
 import { NeoCard } from "@/components/neo/NeoCard";
 import { NeoButton } from "@/components/neo/NeoButton";
@@ -114,6 +114,11 @@ export default function WeekendCrewsScreen() {
                   {crew.code} · {crew.memberCount}{" "}
                   {t("weekend.members", { defaultValue: "members" })}
                 </p>
+                {crew.scheduledFor !== null && (
+                  <p className="text-[10px] text-muted-foreground mt-0.5">
+                    Draft · {new Date(crew.scheduledFor).toLocaleString()}
+                  </p>
+                )}
               </div>
               {crew.liveRoomStatus !== null && (
                 <NeoBadge color={crew.liveRoomStatus === "drafting" ? "destructive" : "yellow"}>
@@ -121,6 +126,9 @@ export default function WeekendCrewsScreen() {
                     ? t("weekend.liveDrafting", { defaultValue: "Drafting" })
                     : t("weekend.lobbyOpen", { defaultValue: "Lobby open" })}
                 </NeoBadge>
+              )}
+              {crew.liveRoomStatus === null && crew.unreadAlerts > 0 && (
+                <NeoBadge color="primary"><Bell size={11} className="mr-1" />{crew.unreadAlerts}</NeoBadge>
               )}
             </NeoCard>
           ))

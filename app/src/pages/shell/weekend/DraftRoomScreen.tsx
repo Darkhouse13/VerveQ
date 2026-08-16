@@ -11,13 +11,13 @@
  * Views are exported for the contract suite; the default export is the data
  * container (house pattern, ChallengeArenaScreen.tsx).
  */
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useMutation, useQuery } from "convex/react";
 import type { FunctionReturnType } from "convex/server";
 import { toast } from "sonner";
-import { Bot, Check, ScrollText, Swords, Timer } from "lucide-react";
+import { ArrowDown, ArrowUp, Bot, CalendarClock, Check, LogOut, ScrollText, Star, Swords, Timer, UserPlus, X } from "lucide-react";
 import { api } from "../../../../convex/_generated/api";
 import type { Id } from "../../../../convex/_generated/dataModel";
 import { NeoCard } from "@/components/neo/NeoCard";
@@ -43,11 +43,19 @@ export function LobbyView({
   room,
   onReady,
   onArm,
+  onClaim,
+  onLeave,
+  onSchedule,
+  onReplace,
   busy,
 }: {
   room: DraftRoom;
   onReady: (ready: boolean) => void;
   onArm: () => void;
+  onClaim?: () => void;
+  onLeave?: () => void;
+  onSchedule?: (at: number | null) => void;
+  onReplace?: (removeUserId: string, addUserId: string) => void;
   busy: boolean;
 }) {
   const { t } = useTranslation();
@@ -55,6 +63,15 @@ export function LobbyView({
   const isCreator = mySeat !== null && mySeat.userId === room.createdBy;
   const allReady = room.seats.length >= 2 && room.seats.every((s) => s.ready);
   const waitingOn = room.seats.filter((s) => !s.ready).map((s) => s.name);
+  const [scheduledInput, setScheduledInput] = useState(() => {
+    if (room.scheduledFor === null) return "";
+    const date = new Date(room.scheduledFor);
+    const local = new Date(date.getTime() - date.getTimezoneOffset() * 60_000);
+    return local.toISOString().slice(0, 16);
+  });
+  const availableMembers = room.crewMembers.filter(
+    (member) => !room.seats.some((seat) => seat.userId === member.userId),
+  );
 
   return (
     <div className="flex flex-col gap-4">
@@ -91,9 +108,30 @@ export function LobbyView({
                 ? t("weekend.ready", { defaultValue: "Ready" })
                 : t("weekend.idle", { defaultValue: "Idle" })}
             </NeoBadge>
+            {isCreator && seat.userId !== room.createdBy && availableMembers.length > 0 && (
+              <select
+                aria-label={`Replace ${seat.name}`}
+                className="ml-2 max-w-24 neo-border rounded bg-background px-1 py-1 text-[10px]"
+                defaultValue=""
+                onChange={(event) => {
+                  if (event.target.value !== "") onReplace?.(seat.userId, event.target.value);
+                  event.target.value = "";
+                }}
+              >
+                <option value="">Replace…</option>
+                {availableMembers.map((member) => <option key={member.userId} value={member.userId}>{member.name}</option>)}
+              </select>
+            )}
           </NeoCard>
         ))}
       </div>
+
+      {mySeat === null && (
+        <NeoButton variant="primary" size="full" disabled={busy || room.seats.length >= 8} onClick={onClaim}>
+          <UserPlus size={16} strokeWidth={3} className="mr-1.5" />
+          {room.seats.length >= 8 ? "All 8 seats are claimed" : "Claim a draft seat"}
+        </NeoButton>
+      )}
 
       {mySeat !== null && (
         <NeoButton
@@ -111,6 +149,19 @@ export function LobbyView({
 
       {isCreator && (
         <>
+          <NeoCard className="py-3">
+            <p className="mb-2 font-heading font-bold text-sm"><CalendarClock size={14} className="mr-1.5 inline" />Plan the draft</p>
+            <div className="flex gap-2">
+              <input
+                type="datetime-local"
+                value={scheduledInput}
+                onChange={(event) => setScheduledInput(event.target.value)}
+                className="min-w-0 flex-1 neo-border rounded bg-background px-2 text-xs"
+              />
+              <NeoButton variant="secondary" size="sm" disabled={busy} onClick={() => onSchedule?.(scheduledInput === "" ? null : new Date(scheduledInput).getTime())}>Save</NeoButton>
+            </div>
+            {room.scheduledFor !== null && <p className="mt-2 text-[10px] text-muted-foreground">Planned: {new Date(room.scheduledFor).toLocaleString()}</p>}
+          </NeoCard>
           <NeoButton
             variant="danger"
             size="full"
@@ -131,6 +182,12 @@ export function LobbyView({
             </p>
           )}
         </>
+      )}
+
+      {mySeat !== null && room.status === "lobby" && (
+        <NeoButton variant="ghost" size="sm" disabled={busy} onClick={onLeave}>
+          <LogOut size={14} className="mr-1.5" />Release my seat
+        </NeoButton>
       )}
     </div>
   );
@@ -180,6 +237,67 @@ export function OrderRevealView({ room, serverNow }: { room: DraftRoom; serverNo
   );
 }
 
+export function ShortlistPanel({
+  pool,
+  queuedIds,
+  onChange,
+  compact = false,
+}: {
+  pool: DraftPool | null | undefined;
+  queuedIds: readonly string[];
+  onChange: (ids: string[]) => void;
+  compact?: boolean;
+}) {
+  const [search, setSearch] = useState("");
+  const byId = useMemo(() => new Map((pool ?? []).map((player) => [player.playerId, player])), [pool]);
+  const queued = queuedIds.map((id) => byId.get(id)).filter((player): player is PoolPlayer => player !== undefined);
+  const candidates = (pool ?? [])
+    .filter((player) => !queuedIds.includes(player.playerId))
+    .filter((player) => {
+      const needle = search.trim().toLowerCase();
+      return needle !== "" && (player.name.toLowerCase().includes(needle) || (player.clubName ?? "").toLowerCase().includes(needle));
+    })
+    .sort((a, b) => (b.price ?? 4) - (a.price ?? 4))
+    .slice(0, compact ? 6 : 12);
+  const move = (index: number, direction: -1 | 1) => {
+    const next = [...queuedIds];
+    const target = index + direction;
+    if (target < 0 || target >= next.length) return;
+    [next[index], next[target]] = [next[target], next[index]];
+    onChange(next);
+  };
+  return (
+    <NeoCard className="py-3">
+      <p className="font-heading font-bold text-sm"><Star size={14} className="mr-1.5 inline" />Private auto-pick queue</p>
+      <p className="mb-2 text-[10px] text-muted-foreground">Your order is private. On timeout, legal queued players are tried first.</p>
+      {queued.length > 0 && (
+        <ol className="mb-2 flex flex-col gap-1">
+          {queued.map((player, index) => (
+            <li key={player.playerId} className="flex items-center gap-1 text-xs">
+              <span className="w-5 font-mono text-muted-foreground">{index + 1}</span>
+              <span className="min-w-0 flex-1 truncate font-heading font-bold">{player.name}</span>
+              <button type="button" aria-label="Move up" disabled={index === 0} onClick={() => move(index, -1)}><ArrowUp size={13} /></button>
+              <button type="button" aria-label="Move down" disabled={index === queued.length - 1} onClick={() => move(index, 1)}><ArrowDown size={13} /></button>
+              <button type="button" aria-label="Remove" onClick={() => onChange(queuedIds.filter((id) => id !== player.playerId))}><X size={13} /></button>
+            </li>
+          ))}
+        </ol>
+      )}
+      <NeoInput value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Search to add players…" />
+      {candidates.length > 0 && (
+        <div className="mt-2 flex flex-col gap-1">
+          {candidates.map((player) => (
+            <button key={player.playerId} type="button" className="flex items-center justify-between text-left text-xs" onClick={() => onChange([...queuedIds, player.playerId])}>
+              <span className="truncate">{player.name} · {player.clubName ?? player.clubId}</span>
+              <span className="ml-2 font-mono font-bold">+</span>
+            </button>
+          ))}
+        </div>
+      )}
+    </NeoCard>
+  );
+}
+
 // ── the board ──
 
 export function DraftBoardView({
@@ -187,12 +305,16 @@ export function DraftBoardView({
   pool,
   serverNow,
   onPick,
+  queuedIds = [],
+  onQueueChange,
   busy,
 }: {
   room: DraftRoom;
   pool: DraftPool | null | undefined;
   serverNow: number;
   onPick: (playerId: string) => void;
+  queuedIds?: readonly string[];
+  onQueueChange?: (ids: string[]) => void;
   busy: boolean;
 }) {
   const { t } = useTranslation();
@@ -227,6 +349,23 @@ export function DraftBoardView({
   const turnElapsed = room.turnStartedAt === null ? 0 : Math.max(0, serverNow - room.turnStartedAt);
   const turnRemaining =
     turnSeat === null ? 0 : Math.max(0, turnSeat.bankMs - turnElapsed);
+  const notifiedPick = useRef<number | null>(null);
+  useEffect(() => {
+    if (room.currentPickIndex === null || notifiedPick.current === room.currentPickIndex) return;
+    const nextSeat =
+      room.snakeOrder === null || room.currentPickIndex + 1 >= room.totalPicks
+        ? null
+        : (() => {
+            const order = room.snakeOrder!;
+            const next = room.currentPickIndex! + 1;
+            const round = Math.floor(next / order.length);
+            const position = next % order.length;
+            return round % 2 === 0 ? order[position] : order[order.length - 1 - position];
+          })();
+    if (myTurn) toast.success("Your draft turn is live.");
+    else if (nextSeat === room.mySeatIndex) toast("You are next in the draft.");
+    notifiedPick.current = room.currentPickIndex;
+  }, [myTurn, room.currentPickIndex, room.mySeatIndex, room.snakeOrder, room.totalPicks]);
 
   const results = useMemo(() => {
     if (pool === null || pool === undefined) return [];
@@ -284,6 +423,10 @@ export function DraftBoardView({
       </div>
 
       <PicksGrid room={room} playerById={playerById} />
+
+      {onQueueChange !== undefined && (
+        <ShortlistPanel pool={pool} queuedIds={queuedIds} onChange={onQueueChange} compact />
+      )}
 
       <NeoButton variant="ghost" size="sm" onClick={() => setShowLog((v) => !v)}>
         <ScrollText size={14} strokeWidth={3} className="mr-1.5" />
@@ -554,12 +697,23 @@ export default function DraftRoomScreen() {
   const needsPool =
     room !== null &&
     room !== undefined &&
-    (room.status === "drafting" || room.status === "completed");
+    (room.status === "lobby" || room.status === "drafting" || room.status === "completed");
   const pool = useQuery(api.fantasyDraftRooms.getDraftPool, needsPool ? { roomId } : "skip");
+  const queue = useQuery(
+    api.fantasyDraftRooms.getMyDraftQueue,
+    room !== null && room !== undefined && (room.status === "lobby" || room.status === "drafting")
+      ? { roomId: room.roomId }
+      : "skip",
+  );
 
   const setSeatReady = useMutation(api.fantasyDraftRooms.setSeatReady);
   const armDraft = useMutation(api.fantasyDraftRooms.armDraft);
   const makePick = useMutation(api.fantasyDraftRooms.makePick);
+  const joinRoom = useMutation(api.fantasyDraftRooms.joinRoom);
+  const leaveRoom = useMutation(api.fantasyDraftRooms.leaveRoom);
+  const scheduleRoom = useMutation(api.fantasyDraftRooms.scheduleRoom);
+  const replaceRoomSeat = useMutation(api.fantasyDraftRooms.replaceRoomSeat);
+  const setMyDraftQueue = useMutation(api.fantasyDraftRooms.setMyDraftQueue);
   const [busy, setBusy] = useState(false);
 
   const offset = useClockOffset(room?.serverNow ?? null);
@@ -612,22 +766,45 @@ export default function DraftRoomScreen() {
             </NeoButton>
           </NeoCard>
         ) : room.status === "lobby" ? (
-          <LobbyView
-            room={room}
-            busy={busy}
-            onReady={(ready) =>
-              run(
-                () => setSeatReady({ roomId: room.roomId, ready }),
-                t("weekend.readyFailed", { defaultValue: "Could not update ready state." }),
-              )
-            }
-            onArm={() =>
-              run(
-                () => armDraft({ roomId: room.roomId }),
-                t("weekend.armFailed", { defaultValue: "Could not start the draft." }),
-              )
-            }
-          />
+          <div className="flex flex-col gap-4">
+            <LobbyView
+              room={room}
+              busy={busy}
+              onReady={(ready) =>
+                run(
+                  () => setSeatReady({ roomId: room.roomId, ready }),
+                  t("weekend.readyFailed", { defaultValue: "Could not update ready state." }),
+                )
+              }
+              onClaim={() => run(() => joinRoom({ roomId: room.roomId }), "Could not claim that seat.")}
+              onLeave={() => run(() => leaveRoom({ roomId: room.roomId }), "Could not release that seat.")}
+              onSchedule={(scheduledFor) => run(() => scheduleRoom({ roomId: room.roomId, scheduledFor }), "Could not save that draft time.")}
+              onReplace={(removeUserId, addUserId) =>
+                run(
+                  () => replaceRoomSeat({
+                    roomId: room.roomId,
+                    removeUserId: removeUserId as Id<"users">,
+                    addUserId: addUserId as Id<"users">,
+                  }),
+                  "Could not replace that seat.",
+                )
+              }
+              onArm={() =>
+                run(
+                  () => armDraft({ roomId: room.roomId }),
+                  t("weekend.armFailed", { defaultValue: "Could not start the draft." }),
+                )
+              }
+            />
+            <ShortlistPanel
+              pool={pool}
+              queuedIds={queue?.playerIds ?? []}
+              onChange={(playerIds) => {
+                void setMyDraftQueue({ roomId: room.roomId, playerIds: playerIds as Id<"fantasyPlayers">[] })
+                  .catch((error: unknown) => toast.error(friendlyError(error, "Could not save your shortlist.")));
+              }}
+            />
+          </div>
         ) : room.status === "order_reveal" ? (
           <OrderRevealView room={room} serverNow={serverNow} />
         ) : room.status === "drafting" ? (
@@ -636,6 +813,11 @@ export default function DraftRoomScreen() {
             pool={pool}
             serverNow={serverNow}
             busy={busy}
+            queuedIds={queue?.playerIds ?? []}
+            onQueueChange={(playerIds) => {
+              void setMyDraftQueue({ roomId: room.roomId, playerIds: playerIds as Id<"fantasyPlayers">[] })
+                .catch((error: unknown) => toast.error(friendlyError(error, "Could not save your shortlist.")));
+            }}
             onPick={(playerId) =>
               run(
                 () =>

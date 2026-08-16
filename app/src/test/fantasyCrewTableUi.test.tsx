@@ -41,6 +41,7 @@ import CrewScreen from "@/pages/shell/weekend/CrewScreen";
 
 const CREW_QUERY = getFunctionName(api.fantasyDraftRooms.getCrew);
 const TABLE_QUERY = getFunctionName(api.fantasyScores.getCrewTable);
+const DASHBOARD_QUERY = getFunctionName(api.fantasyCrewDashboard.getDashboard);
 
 const CREW = {
   crewId: "crew1",
@@ -66,6 +67,64 @@ const CREW = {
 };
 
 function tableWith(rows: unknown[]) {
+  const normalized = rows as Array<{
+    userId: string;
+    name: string;
+    cumulativePoints: number | null;
+    scoredWeekends: number;
+    awaitingWeekends: number;
+    provisional: boolean;
+    rank: number;
+    tied: boolean;
+  }>;
+  const scopeRows = normalized.map((row) => ({
+    userId: row.userId,
+    isYou: row.userId === "u1",
+    name: row.name,
+    rank: row.rank,
+    tied: row.tied,
+    total: row.cumulativePoints,
+    appearances: row.scoredWeekends,
+    average:
+      row.cumulativePoints === null || row.scoredWeekends === 0
+        ? null
+        : row.cumulativePoints / row.scoredWeekends,
+    provisional: row.provisional,
+    movement: null,
+    weeklyWins: 0,
+    podiums: 0,
+    bestFinish: null,
+    topHalfStreak: 0,
+    seasonTitles: 0,
+  }));
+  const meRow = scopeRows.find((row) => row.isYou) ?? null;
+  const scope = {
+    rows: scopeRows,
+    weeks: [],
+    me:
+      meRow === null
+        ? null
+        : {
+            rank: meRow.rank,
+            total: meRow.total,
+            appearances: meRow.appearances,
+            average: meRow.average,
+            gapAbove: null,
+            gapBelow: null,
+            movement: null,
+          },
+  };
+  queryMock.results[DASHBOARD_QUERY] = {
+    crewId: "crew1",
+    code: "CREW01",
+    name: "Test Crew",
+    currentSeason: "2026-2027",
+    seasons: ["2026-2027"],
+    season: scope,
+    allTime: scope,
+    rivalries: [],
+    recap: null,
+  };
   return {
     crewId: "crew1",
     code: "CREW01",
@@ -96,7 +155,7 @@ function renderCrew() {
 }
 
 beforeEach(() => {
-  queryMock.results = { [CREW_QUERY]: CREW, [TABLE_QUERY]: undefined };
+  queryMock.results = { [CREW_QUERY]: CREW, [TABLE_QUERY]: undefined, [DASHBOARD_QUERY]: undefined };
 });
 
 describe("crew table — the screen", () => {

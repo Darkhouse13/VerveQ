@@ -26,7 +26,7 @@ import { useTranslation } from "react-i18next";
 import { useMutation, useQuery } from "convex/react";
 import * as DialogPrimitive from "@radix-ui/react-dialog";
 import { toast } from "sonner";
-import { Check, Copy, Share2, Swords, Trash2, X } from "lucide-react";
+import { Bell, Check, Copy, LogOut, Share2, Swords, Trash2, UserMinus, X } from "lucide-react";
 import { api } from "../../../../convex/_generated/api";
 // The engine's own display rule (SCORING_SPEC §Rounding: 1 dp, ties away from
 // zero). Imported rather than reimplemented so the screen cannot round a score
@@ -39,6 +39,7 @@ import { NeoInput } from "@/components/neo/NeoInput";
 import { ShellLayout } from "@/components/shell/ShellLayout";
 import { SHELL_ROUTES } from "@/lib/shellRoutes";
 import { friendlyError } from "@/lib/errors";
+import { CrewCompetitionPanel } from "./CrewCompetitionPanel";
 
 const ROOM_STATUS_LABELS: Record<string, { label: string; color: "yellow" | "destructive" | "success" | "muted" }> = {
   lobby: { label: "Lobby open", color: "yellow" },
@@ -52,10 +53,17 @@ export default function CrewScreen() {
   const { t } = useTranslation();
   const { code = "" } = useParams();
   const crew = useQuery(api.fantasyDraftRooms.getCrew, { code });
-  const table = useQuery(api.fantasyScores.getCrewTable, { code });
+  const dashboard = useQuery(api.fantasyCrewDashboard.getDashboard, { code });
+  const alerts = useQuery(
+    api.fantasyDraftRooms.getCrewAlerts,
+    crew == null ? "skip" : { crewId: crew.crewId },
+  );
   const joinCrew = useMutation(api.fantasyDraftRooms.joinCrew);
   const createRoom = useMutation(api.fantasyDraftRooms.createRoom);
   const deleteCrew = useMutation(api.fantasyDraftRooms.deleteCrew);
+  const leaveCrew = useMutation(api.fantasyDraftRooms.leaveCrew);
+  const removeCrewMember = useMutation(api.fantasyDraftRooms.removeCrewMember);
+  const markCrewAlertsRead = useMutation(api.fantasyDraftRooms.markCrewAlertsRead);
 
   const joinAttempted = useRef(false);
   const [joinFailed, setJoinFailed] = useState<string | null>(null);
@@ -63,6 +71,7 @@ export default function CrewScreen() {
   const [copied, setCopied] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [deleteConfirmText, setDeleteConfirmText] = useState("");
+  const [memberToRemove, setMemberToRemove] = useState<{ userId: string; name: string } | null>(null);
 
   // Not a member (or crew unknown): try joining by the URL's code, once.
   if (crew === null && !joinAttempted.current) {
@@ -142,6 +151,37 @@ export default function CrewScreen() {
     }
   };
 
+  const handleLeaveCrew = async () => {
+    if (busy || crew == null) return;
+    setBusy(true);
+    try {
+      joinAttempted.current = true;
+      await leaveCrew({ crewId: crew.crewId });
+      navigate(SHELL_ROUTES.weekendCrews, { replace: true });
+    } catch (error) {
+      toast.error(friendlyError(error, "Could not leave the crew."));
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const handleRemoveMember = async () => {
+    if (busy || crew == null || memberToRemove === null) return;
+    setBusy(true);
+    try {
+      await removeCrewMember({
+        crewId: crew.crewId,
+        memberUserId: memberToRemove.userId as typeof crew.isMe,
+      });
+      toast.success(`${memberToRemove.name} was removed.`);
+      setMemberToRemove(null);
+    } catch (error) {
+      toast.error(friendlyError(error, "Could not remove that member."));
+    } finally {
+      setBusy(false);
+    }
+  };
+
   if (crew === undefined || (crew === null && joinFailed === null)) {
     return (
       <ShellLayout theme="theme-weekend" title={t("weekend.crewTitle", { defaultValue: "Crew" })} back scroll>
@@ -173,7 +213,6 @@ export default function CrewScreen() {
   }
 
   const liveRoom = crew.rooms.find((r) => r.status !== "completed");
-  const myRow = table?.rows.find((row) => row.userId === crew.isMe);
 
   return (
     <ShellLayout
@@ -212,16 +251,44 @@ export default function CrewScreen() {
 
         <div>
           <p className="font-mono text-[11px] font-bold uppercase tracking-[0.16em] text-muted-foreground mb-2">
-            {t("weekend.members", { defaultValue: "Members" })} · {crew.members.length}/8
+            {t("weekend.members", { defaultValue: "Members" })} · {crew.members.length} · 8 seats each weekend
           </p>
           <div className="flex flex-wrap gap-2">
             {crew.members.map((member) => (
-              <NeoBadge key={member.userId} color={member.userId === crew.isMe ? "primary" : "muted"} size="md">
-                {member.name}
-              </NeoBadge>
+              <span key={member.userId} className="inline-flex items-center gap-1">
+                <NeoBadge color={member.userId === crew.isMe ? "primary" : "muted"} size="md">
+                  {member.name}{member.isCreator ? " · host" : ""}
+                </NeoBadge>
+                {crew.createdBy === crew.isMe && member.userId !== crew.isMe && (
+                  <button type="button" aria-label={`Remove ${member.name}`} onClick={() => setMemberToRemove(member)} className="rounded p-1 text-muted-foreground active:opacity-60">
+                    <UserMinus size={13} />
+                  </button>
+                )}
+              </span>
             ))}
           </div>
         </div>
+
+        {alerts !== undefined && alerts !== null && alerts.alerts.length > 0 && (
+          <NeoCard className="py-3">
+            <div className="flex items-center justify-between gap-2">
+              <p className="font-heading font-bold text-sm"><Bell size={14} className="mr-1.5 inline" />Crew activity</p>
+              {alerts.unread > 0 && (
+                <button type="button" className="font-mono text-[10px] font-bold uppercase text-muted-foreground" onClick={() => void markCrewAlertsRead({ crewId: crew.crewId })}>
+                  Mark read · {alerts.unread}
+                </button>
+              )}
+            </div>
+            <div className="mt-2 flex flex-col gap-2">
+              {alerts.alerts.slice(0, 3).map((alert) => (
+                <button key={alert.alertId} type="button" className="text-left" onClick={() => alert.roomId !== null && navigate(SHELL_ROUTES.weekendDraft(alert.roomId))}>
+                  <p className="text-xs font-heading font-bold">{alert.title}</p>
+                  <p className="text-[10px] text-muted-foreground">{alert.body}</p>
+                </button>
+              ))}
+            </div>
+          </NeoCard>
+        )}
 
         {liveRoom ? (
           <NeoButton
@@ -243,89 +310,11 @@ export default function CrewScreen() {
         </div>
 
         <div className="flex flex-col gap-4 min-w-0">
-        <div>
-          <p className="font-mono text-[11px] font-bold uppercase tracking-[0.16em] text-muted-foreground mb-2">
-            {t("weekend.standings", { defaultValue: "Standings" })}
-          </p>
-          {table === undefined ? (
-            <NeoCard className="py-4 text-center">
-              <p className="text-sm text-muted-foreground">
-                {t("common.loading", { defaultValue: "Loading…" })}
-              </p>
-            </NeoCard>
-          ) : table === null || table.rows.length === 0 ? (
-            <NeoCard className="py-4 text-center">
-              <p className="text-sm text-muted-foreground">
-                {t("weekend.noStandings", {
-                  defaultValue: "Standings appear once a weekend has been drafted and scored.",
-                })}
-              </p>
-            </NeoCard>
-          ) : (
-            <>
-              <NeoCard className="p-0 overflow-hidden">
-                {table.rows.map((row, index) => (
-                  <div
-                    key={row.userId}
-                    className={`flex items-center justify-between gap-2 px-3 py-2.5 ${
-                      index > 0 ? "border-t-2 border-border" : ""
-                    }`}
-                  >
-                    <div className="flex items-center gap-2 min-w-0">
-                      <span className="font-mono text-xs font-bold text-muted-foreground w-7 shrink-0">
-                        {row.tied ? `T${row.rank}` : row.rank}
-                      </span>
-                      <span className="font-heading font-bold text-sm truncate">{row.name}</span>
-                      {row.userId === crew.isMe && (
-                        <NeoBadge color="primary">
-                          {t("weekend.you", { defaultValue: "you" })}
-                        </NeoBadge>
-                      )}
-                    </div>
-                    <div className="text-right shrink-0">
-                      {row.cumulativePoints === null ? (
-                        // R7: no scores yet is NOT zero, and must not look like it.
-                        // FW-RECEIPT P2 copy law: "awaiting data" is reserved for
-                        // drafted weekends whose fixtures are unscored. A member
-                        // with no drafted weekend at all has nothing to await —
-                        // that reads "no drafts yet".
-                        <span className="text-[11px] text-muted-foreground">
-                          {row.awaitingWeekends === 0
-                            ? t("weekend.noDraftsYet", { defaultValue: "no drafts yet" })
-                            : t("weekend.awaitingData", { defaultValue: "awaiting data" })}
-                        </span>
-                      ) : (
-                        <>
-                          <span className="font-mono font-bold text-base">
-                            {formatPoints(row.cumulativePoints)}
-                          </span>
-                          <span className="ml-1 text-[10px] text-muted-foreground">
-                            {t("weekend.pts", { defaultValue: "pts" })}
-                          </span>
-                          {row.provisional && (
-                            <p className="text-[10px] font-mono uppercase tracking-wide text-muted-foreground">
-                              {t("weekend.provisional", { defaultValue: "provisional" })}
-                            </p>
-                          )}
-                        </>
-                      )}
-                    </div>
-                  </div>
-                ))}
-              </NeoCard>
-              <p className="mt-1.5 text-[10px] leading-snug text-muted-foreground">
-                {t("weekend.standingsNote", {
-                  defaultValue:
-                    "Ordered by cumulative points; a points tie breaks by head-to-head weekend wins, and a T-rank means still level after that. Provisional totals can still change until the gameweek settles.",
-                })}
-              </p>
-            </>
-          )}
-        </div>
+        <CrewCompetitionPanel dashboard={dashboard} />
 
         <div>
           <p className="font-mono text-[11px] font-bold uppercase tracking-[0.16em] text-muted-foreground mb-2">
-            {t("weekend.crewTable", { defaultValue: "Crew table" })}
+            {t("weekend.crewTable", { defaultValue: "Draft rooms" })}
           </p>
           {crew.rooms.length === 0 ? (
             <NeoCard className="py-4 text-center">
@@ -345,7 +334,8 @@ export default function CrewScreen() {
                 // The caller's own line for this weekend. `points === null` means
                 // nothing of his sheet has been scored yet — which is a different
                 // statement from "he scored nothing", and reads differently.
-                const mine = myRow?.weekends.find((w) => w.roomId === room.roomId);
+                const dashboardWeek = dashboard?.allTime.weeks.find((week) => week.roomId === room.roomId);
+                const mine = dashboardWeek?.rows.find((row) => row.userId === crew.isMe);
                 return (
                   <NeoCard
                     key={room.roomId}
@@ -367,7 +357,7 @@ export default function CrewScreen() {
                           : mine.points === null
                             ? t("weekend.awaitingData", { defaultValue: "awaiting data" })
                             : `${formatPoints(mine.points)} ${t("weekend.pts", { defaultValue: "pts" })}${
-                                mine.state === "final" && mine.awaitingSlots === 0
+                                dashboardWeek?.state === "final"
                                   ? ""
                                   : ` · ${t("weekend.provisional", { defaultValue: "provisional" })}`
                               }`}
@@ -400,6 +390,9 @@ export default function CrewScreen() {
             {t("weekend.deleteCrew", { defaultValue: "Delete crew" })}
           </button>
         )}
+        <button type="button" onClick={() => void handleLeaveCrew()} className="flex items-center justify-center gap-1.5 py-2 font-mono text-[11px] font-bold uppercase tracking-[0.16em] text-muted-foreground active:opacity-60">
+          <LogOut size={13} strokeWidth={3} />Leave crew
+        </button>
       </div>
 
       {/* Typed-confirm sheet (FormationChooser's bottom-sheet precedent). */}
@@ -454,6 +447,20 @@ export default function CrewScreen() {
               <Trash2 size={16} strokeWidth={3} className="mr-1.5" />
               {t("weekend.deleteCrewConfirm", { defaultValue: "Delete crew forever" })}
             </NeoButton>
+          </DialogPrimitive.Content>
+        </DialogPrimitive.Portal>
+      </DialogPrimitive.Root>
+
+      <DialogPrimitive.Root open={memberToRemove !== null} onOpenChange={(open) => !open && setMemberToRemove(null)}>
+        <DialogPrimitive.Portal>
+          <DialogPrimitive.Overlay className="fixed inset-0 z-50 bg-black/80" />
+          <DialogPrimitive.Content className="theme-weekend fixed bottom-0 left-1/2 z-50 w-full max-w-sm -translate-x-1/2 neo-border neo-shadow-lg rounded-t-xl border-b-0 bg-background p-5 pb-[max(1.5rem,env(safe-area-inset-bottom))]">
+            <DialogPrimitive.Title className="font-heading font-bold text-lg">Remove {memberToRemove?.name}?</DialogPrimitive.Title>
+            <p className="mt-2 text-sm text-muted-foreground">They leave the persistent crew and any unstarted lobby seat. Past drafts and results remain intact.</p>
+            <div className="mt-4 grid grid-cols-2 gap-2">
+              <NeoButton variant="outline" size="md" onClick={() => setMemberToRemove(null)}>Cancel</NeoButton>
+              <NeoButton variant="danger" size="md" disabled={busy} onClick={() => void handleRemoveMember()}>Remove</NeoButton>
+            </div>
           </DialogPrimitive.Content>
         </DialogPrimitive.Portal>
       </DialogPrimitive.Root>

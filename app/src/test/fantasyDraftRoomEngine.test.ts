@@ -45,6 +45,7 @@ import * as draftRooms from "../../convex/fantasyDraftRooms";
 import * as fantasySquads from "../../convex/fantasySquads";
 import {
   CLUB_CAP_REACHED,
+  DRAFT_FULL,
   NOT_ALL_READY,
   NOT_ROOM_CREATOR,
   NOT_YOUR_TURN,
@@ -73,6 +74,11 @@ const createCrew = handlerOf(draftRooms.createCrew);
 const joinCrew = handlerOf(draftRooms.joinCrew);
 const createRoom = handlerOf(draftRooms.createRoom);
 const joinRoom = handlerOf(draftRooms.joinRoom);
+const scheduleRoom = handlerOf(draftRooms.scheduleRoom);
+const replaceRoomSeat = handlerOf(draftRooms.replaceRoomSeat);
+const setMyDraftQueue = handlerOf(draftRooms.setMyDraftQueue);
+const getCrew = handlerOf(draftRooms.getCrew);
+const getCrewAlerts = handlerOf(draftRooms.getCrewAlerts);
 const setSeatReady = handlerOf(draftRooms.setSeatReady);
 const armDraft = handlerOf(draftRooms.armDraft);
 const beginDrafting = handlerOf(draftRooms.beginDrafting);
@@ -235,6 +241,49 @@ afterEach(() => {
 // ── lifecycle ──
 
 describe("lifecycle: lobby → order_reveal → drafting → completed", () => {
+  it("keeps membership open while weekly RSVP seats stay capped at eight", async () => {
+    world = await seedDraftWorld({ users: 10 });
+    asUser(world.userIds[0]);
+    const { crewId, code } = (await createCrew(world.ctx, { name: "Big Crew" })) as {
+      crewId: string;
+      code: string;
+    };
+    for (let index = 1; index < 10; index += 1) {
+      asUser(world.userIds[index]);
+      await joinCrew(world.ctx, { code });
+    }
+    asUser(world.userIds[0]);
+    const crew = (await getCrew(world.ctx, { code })) as { members: unknown[] };
+    expect(crew.members).toHaveLength(10);
+
+    vi.setSystemTime(DRAFT_LOBBY_NOW + 1_000);
+    const { roomId } = (await createRoom(world.ctx, { crewId })) as { roomId: string };
+    for (let index = 1; index < 8; index += 1) {
+      asUser(world.userIds[index]);
+      await joinRoom(world.ctx, { roomId });
+    }
+    asUser(world.userIds[8]);
+    await expect(joinRoom(world.ctx, { roomId })).rejects.toThrow(DRAFT_FULL);
+
+    asUser(world.userIds[0]);
+    const scheduledFor = DRAFT_LOBBY_NOW + 60 * 60_000;
+    await scheduleRoom(world.ctx, { roomId, scheduledFor });
+    expect(world.scheduled.some((call) => call.fn.endsWith(":draftScheduleReminder"))).toBe(true);
+    await replaceRoomSeat(world.ctx, {
+      roomId,
+      removeUserId: world.userIds[7],
+      addUserId: world.userIds[8],
+    });
+    expect((room(roomId).seats as Array<{ userId: string }>).map((seat) => seat.userId)).toContain(world.userIds[8]);
+    expect(room(roomId).scheduledFor).toBe(scheduledFor);
+    // Alerts are one shared event per crew, not ten recipient copies.
+    expect(world.db.rows("fantasyCrewAlerts").length).toBeLessThanOrEqual(10);
+    const alerts = (await getCrewAlerts(world.ctx, { crewId })) as { unread: number };
+    expect(alerts.unread).toBeGreaterThan(0);
+    await leaveCrew(world.ctx, { crewId });
+    expect((await world.db.get(crewId))?.createdBy).toBe(world.userIds[1]);
+  });
+
   it("arms only for the creator, only all-ready, only 2+ seats (R3)", async () => {
     asUser(world.userIds[0]);
     const { crewId, code } = (await createCrew(world.ctx, { name: "Crew" })) as {
@@ -414,6 +463,20 @@ describe("picking: turn order, clock, exclusivity, club cap", () => {
 // ── timeouts and R2 ──
 
 describe("chess-clock timeout and the R2 zero-bank rule", () => {
+  it("uses the drafter's private legal queue before the generic auto-picker", async () => {
+    const { roomId } = await armedRoom(2);
+    const { userId } = onClock(roomId);
+    const queued = world.players[`${world.clubs[0]}_0`];
+    asUser(userId);
+    await setMyDraftQueue(world.ctx, { roomId, playerIds: [queued] });
+    const current = room(roomId);
+    vi.setSystemTime((current.turnStartedAt as number) + DRAFT_BANK_MS);
+    await turnTimeout(world.ctx, { roomId, expectedPickIndex: 0 });
+    const pick = logEntries(roomId).find((entry) => entry.entryType === "pick")!;
+    expect(pick.playerId).toBe(queued);
+    expect(pick.auto).toBe(true);
+  });
+
   it("auto-picks on bank exhaustion, and the sweep hop is idempotent (LM8)", async () => {
     const { roomId } = await armedRoom(2);
     vi.setSystemTime(DRAFT_LOBBY_NOW + DRAFT_BANK_MS + 1);

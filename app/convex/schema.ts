@@ -1650,10 +1650,45 @@ export default defineSchema({
     nameSnapshot: v.string(),
     active: v.boolean(),
     joinedAt: v.number(),
+    alertsReadAt: v.optional(v.number()),
   })
     .index("by_crew", ["crewId"])
     .index("by_user", ["userId"])
     .index("by_crew_user", ["crewId", "userId"]),
+
+  // One private ordered shortlist per drafter and weekly room. Keeping the
+  // queue in one bounded document makes reordering atomic and turns a timeout
+  // lookup into a single indexed read. It is never exposed to another member.
+  fantasyDraftQueues: defineTable({
+    roomId: v.id("fantasyDraftRooms"),
+    userId: v.id("users"),
+    playerIds: v.array(v.id("fantasyPlayers")),
+    updatedAt: v.number(),
+  })
+    .index("by_room_user", ["roomId", "userId"])
+    .index("by_room", ["roomId"]),
+
+  // Small, in-app-only Crew activity feed. One row per CREW event rather than
+  // per recipient keeps notifications O(events), even for a large community.
+  // Each membership stores its own read cursor.
+  fantasyCrewAlerts: defineTable({
+    crewId: v.id("fantasyCrews"),
+    roomId: v.optional(v.id("fantasyDraftRooms")),
+    kind: v.union(
+      v.literal("lobby_opened"),
+      v.literal("draft_scheduled"),
+      v.literal("seat_changed"),
+      v.literal("all_ready"),
+      v.literal("draft_started"),
+    ),
+    title: v.string(),
+    body: v.string(),
+    dedupeKey: v.string(),
+    createdAt: v.number(),
+    readAt: v.optional(v.number()),
+  })
+    .index("by_crew_created", ["crewId", "createdAt"])
+    .index("by_crew_dedupe", ["crewId", "dedupeKey"]),
 
   // One draft per crew per gameweek. Arena-derived single-doc state machine:
   // lobby → order_reveal → drafting → completed (abandoned = lobby that
@@ -1685,6 +1720,8 @@ export default defineSchema({
     ),
     createdBy: v.id("users"),
     createdAt: v.number(),
+    /** Optional time agreed by the crew. The host still starts explicitly. */
+    scheduledFor: v.optional(v.number()),
     seats: v.array(
       v.object({
         userId: v.id("users"),

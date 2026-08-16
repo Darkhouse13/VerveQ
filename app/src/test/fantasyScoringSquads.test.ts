@@ -49,6 +49,7 @@ vi.mock("@convex-dev/auth/server", () => ({
 
 import * as fantasySquads from "../../convex/fantasySquads";
 import * as fantasyScores from "../../convex/fantasyScores";
+import * as fantasyCrewDashboard from "../../convex/fantasyCrewDashboard";
 import { emptyStats, type PlayerMatchStats } from "../../convex/lib/fantasyScoring";
 
 const createSquad = handlerOf(fantasySquads.createSquad);
@@ -58,6 +59,7 @@ const getSquadScore = handlerOf(fantasyScores.getSquadScore);
 const getWeekendLeaderboard = handlerOf(fantasyScores.getWeekendLeaderboard);
 const getWeekendSeasonLeaderboard = handlerOf(fantasyScores.getWeekendSeasonLeaderboard);
 const getCrewTable = handlerOf(fantasyScores.getCrewTable);
+const getCrewDashboard = handlerOf(fantasyCrewDashboard.getDashboard);
 const finalizeGameweekChunk = handlerOf(fantasyScores.finalizeGameweekChunk);
 const stampSquadFinalTotals = handlerOf(fantasyScores.stampSquadFinalTotals);
 
@@ -823,7 +825,13 @@ describe("P6 — the crew table", () => {
       status: "completed",
       createdBy: world.userId,
       createdAt: THURSDAY - 7 * 86_400_000,
-      seats: [],
+      seats: [world.userId, other].map((userId) => ({
+        userId,
+        nameSnapshot: `player-${userId}`,
+        ready: true,
+        joinedAt: THURSDAY,
+        bankMs: 390_000,
+      })),
       expiresAt: THURSDAY,
     });
     for (const [userId, total] of [
@@ -874,6 +882,28 @@ describe("P6 — the crew table", () => {
     expect(tiedTable.rows.map((r) => r.rank)).toEqual([1, 1]);
     expect(tiedTable.rows.every((r) => r.tied)).toBe(true);
     expect(tiedTable.tieBreaksApplied).toBe(true);
+
+    const dashboard = (await getCrewDashboard(world.ctx, { code: CODE })) as {
+      currentSeason: string;
+      season: {
+        rows: Array<{ userId: string; appearances: number; average: number | null; weeklyWins: number }>;
+        weeks: Array<{ gwNumber: number; rows: Array<{ name: string; rank: number | null }> }>;
+        me: { rank: number; gapAbove: number | null } | null;
+      };
+      allTime: { rows: Array<{ rank: number; tied: boolean }> };
+      rivalries: Array<{ wins: number; losses: number; draws: number }>;
+      recap: { gwNumber: number; podium: unknown[] } | null;
+    };
+    expect(dashboard.currentSeason).toBe("2026-2027");
+    expect(dashboard.season.rows.find((row) => row.userId === world.userId)).toMatchObject({
+      appearances: 2,
+      average: 18.425,
+    });
+    expect(dashboard.season.weeks.map((week) => week.gwNumber)).toEqual([3, 2]);
+    expect(dashboard.season.me).toMatchObject({ rank: 1, gapAbove: null });
+    expect(dashboard.allTime.rows.every((row) => row.rank === 1 && row.tied)).toBe(true);
+    expect(dashboard.rivalries[0]).toMatchObject({ wins: 0, losses: 0, draws: 1 });
+    expect(dashboard.recap).toMatchObject({ gwNumber: 2 });
   });
 
   it("shows an all-null cluster as a displayed tie at shared rank (O4-F1)", async () => {
@@ -941,7 +971,13 @@ describe("P6 — the crew table", () => {
         status: "completed",
         createdBy: world.userId,
         createdAt: THURSDAY - 10 * 86_400_000,
-        seats: [],
+        seats: [world.userId, other].map((userId) => ({
+          userId,
+          nameSnapshot: `player-${userId}`,
+          ready: true,
+          joinedAt: THURSDAY,
+          bankMs: 390_000,
+        })),
         expiresAt: THURSDAY,
       });
       for (const [userId, total] of [

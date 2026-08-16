@@ -70,8 +70,8 @@ import type { Doc, Id } from "./_generated/dataModel";
 import { getAuthUserId } from "@convex-dev/auth/server";
 import { assertUsernameRequiredUser } from "./lib/authz";
 import {
-  CREW_MAX_DRAFTERS,
   CREW_MIN_DRAFTERS,
+  DRAFT_MAX_DRAFTERS,
   DRAFT_BANK_MS,
   DRAFT_ROOM_LOBBY_TTL_MS,
   ORDER_REVEAL_MS,
@@ -86,6 +86,7 @@ import {
   hashString,
   seatIndexForPick,
   selectAutoPick,
+  selectQueuedAutoPick,
   snakeOrderFor,
   totalPicks,
   type DraftPoolPlayer,
@@ -93,7 +94,9 @@ import {
 
 export const SIGN_IN_REQUIRED = "Sign in to draft with a crew.";
 export const CREW_NOT_FOUND = "Crew not found — check the code.";
-export const CREW_FULL = `A crew holds at most ${CREW_MAX_DRAFTERS} drafters.`;
+export const DRAFT_FULL = `A weekend draft holds at most ${DRAFT_MAX_DRAFTERS} drafters.`;
+/** Older clients/tests may still import this name; the limit now applies only to a room. */
+export const CREW_FULL = DRAFT_FULL;
 export const NOT_CREW_CREATOR = "Only the crew's creator can delete it.";
 export const CREW_HAS_COMPLETED_DRAFT =
   "This crew has a completed draft — its record is protected. You can leave the crew instead.";
@@ -114,6 +117,7 @@ export const CLUB_CAP_REACHED =
 export const ROOM_ALREADY_OPEN =
   "This crew already has a draft room for this gameweek.";
 export const NO_OPEN_GAMEWEEK = "No gameweek is open for drafting right now.";
+export const MAX_DRAFT_QUEUE = 50;
 
 /**
  * How late a scheduled hop must be before the sweep treats it as lost and
@@ -203,6 +207,44 @@ async function activeMembers(
     .withIndex("by_crew", (q) => q.eq("crewId", crewId))
     .collect();
   return all.filter((m) => m.active);
+}
+
+type CrewAlertKind =
+  | "lobby_opened"
+  | "draft_scheduled"
+  | "seat_changed"
+  | "all_ready"
+  | "draft_started";
+
+/** One shared event row per crew; membership read cursors avoid recipient fanout. */
+async function addCrewAlert(
+  ctx: MutationCtx,
+  args: {
+    crewId: Id<"fantasyCrews">;
+    roomId?: Id<"fantasyDraftRooms">;
+    kind: CrewAlertKind;
+    title: string;
+    body: string;
+    dedupeKey: string;
+    now?: number;
+  },
+): Promise<void> {
+  const existing = await ctx.db
+    .query("fantasyCrewAlerts")
+    .withIndex("by_crew_dedupe", (q) =>
+      q.eq("crewId", args.crewId).eq("dedupeKey", args.dedupeKey),
+    )
+    .first();
+  if (existing !== null) return;
+  await ctx.db.insert("fantasyCrewAlerts", {
+    crewId: args.crewId,
+    ...(args.roomId === undefined ? {} : { roomId: args.roomId }),
+    kind: args.kind,
+    title: args.title,
+    body: args.body,
+    dedupeKey: args.dedupeKey,
+    createdAt: args.now ?? Date.now(),
+  });
 }
 
 async function requireActiveMember(
@@ -356,6 +398,18 @@ export function clubCountsFor(
   return counts;
 }
 
+async function queuedPlayerIdsFor(
+  ctx: Ctx,
+  roomId: Id<"fantasyDraftRooms">,
+  userId: Id<"users">,
+): Promise<Id<"fantasyPlayers">[]> {
+  const queue = await ctx.db
+    .query("fantasyDraftQueues")
+    .withIndex("by_room_user", (q) => q.eq("roomId", roomId).eq("userId", userId))
+    .first();
+  return queue?.playerIds ?? [];
+}
+
 // ── the pick applier ──
 //
 // The single write path every pick goes through, human or auto. It appends
@@ -398,6 +452,7 @@ export async function applyPickAndAdvance(
   // Lazily loaded, at most once, shared across the whole auto-pick chain.
   let poolCache: Awaited<ReturnType<typeof loadPool>> | null = null;
   let picksCache: Doc<"fantasyDraftLog">[] | null = null;
+  const queues = new Map<string, Id<"fantasyPlayers">[]>();
   const loadOnce = async () => {
     poolCache ??= await loadPool(ctx, room.gameweekId);
     picksCache ??= await pickEntries(ctx, room._id);
@@ -458,12 +513,18 @@ export async function applyPickAndAdvance(
     const picked = new Set(
       picks.map((p) => p.playerId as string).filter((id) => id !== undefined),
     );
-    const choice = selectAutoPick(pool, {
+    const context = {
       pickedPlayerIds: picked,
       clubCounts: clubCountsFor(seatIndex, picks, playersById),
       favoriteClub: seat.favoriteClubAtArm ?? null,
       now,
-    });
+    };
+    let queued = queues.get(seat.userId);
+    if (queued === undefined) {
+      queued = await queuedPlayerIdsFor(ctx, room._id, seat.userId);
+      queues.set(seat.userId, queued);
+    }
+    const choice = selectQueuedAutoPick(queued, pool, context) ?? selectAutoPick(pool, context);
     if (choice === null) {
       // 2,895 players cannot be exhausted by ≤104 picks; if we are here the
       // pool itself is gone and completing with a short squad would corrupt
@@ -535,12 +596,14 @@ export async function runTurnTimeout(
   const picked = new Set(
     picks.map((p) => p.playerId as string).filter((id) => id !== undefined),
   );
-  const choice = selectAutoPick(pool, {
+  const context = {
     pickedPlayerIds: picked,
     clubCounts: clubCountsFor(seatIndex, picks, playersById),
     favoriteClub: seat.favoriteClubAtArm ?? null,
     now,
-  });
+  };
+  const queued = await queuedPlayerIdsFor(ctx, room._id, seat.userId);
+  const choice = selectQueuedAutoPick(queued, pool, context) ?? selectAutoPick(pool, context);
   if (choice === null) throw new Error("Internal: draft pool exhausted mid-draft.");
 
   await applyPickAndAdvance(
@@ -777,9 +840,6 @@ export async function joinCrewFor(
     return { crewId: crew._id, code: crew.code }; // idempotent rejoin
   }
 
-  const members = await activeMembers(ctx, crew._id);
-  if (members.length >= CREW_MAX_DRAFTERS) throw new Error(CREW_FULL);
-
   if (existing !== null) {
     await ctx.db.patch(existing._id, { active: true });
   } else {
@@ -805,6 +865,13 @@ export const leaveCrew = mutation({
   handler: async (ctx, { crewId }) => {
     const userId = await requireUserId(ctx);
     const membership = await requireActiveMember(ctx, crewId, userId);
+    const crew = await ctx.db.get(crewId);
+    if (crew !== null && crew.createdBy === userId) {
+      const successor = (await activeMembers(ctx, crewId))
+        .filter((member) => member.userId !== userId)
+        .sort((a, b) => a.joinedAt - b.joinedAt)[0];
+      if (successor !== undefined) await ctx.db.patch(crewId, { createdBy: successor.userId });
+    }
     // Ruling R7 makes this safe mid-draft: an armed room's seats are frozen,
     // so leaving the crew never touches a running or completed draft — the
     // leaver's squad persists and auto-manages via sheet defaults + locks.
@@ -856,6 +923,12 @@ export async function deleteCrewFor(
       .collect();
     for (const entry of entries) await ctx.db.delete(entry._id);
 
+    const queues = await ctx.db
+      .query("fantasyDraftQueues")
+      .withIndex("by_room", (q) => q.eq("roomId", room._id))
+      .collect();
+    for (const queue of queues) await ctx.db.delete(queue._id);
+
     const squads = await ctx.db
       .query("fantasySquads")
       .withIndex("by_gameweek", (q) => q.eq("gameweekId", room.gameweekId))
@@ -881,6 +954,12 @@ export async function deleteCrewFor(
     .withIndex("by_crew", (q) => q.eq("crewId", crewId))
     .collect();
   for (const member of members) await ctx.db.delete(member._id);
+
+  const alerts = await ctx.db
+    .query("fantasyCrewAlerts")
+    .withIndex("by_crew_created", (q) => q.eq("crewId", crewId))
+    .collect();
+  for (const alert of alerts) await ctx.db.delete(alert._id);
 
   await ctx.db.delete(crewId);
   return { ok: true, cancelledRooms };
@@ -930,6 +1009,15 @@ export async function createRoomFor(
     ],
     expiresAt: now + DRAFT_ROOM_LOBBY_TTL_MS,
   });
+  await addCrewAlert(ctx, {
+    crewId,
+    roomId,
+    kind: "lobby_opened",
+    title: "Draft lobby opened",
+    body: `${member.nameSnapshot} opened this weekend's room. Claim one of 8 seats.`,
+    dedupeKey: `${roomId}:opened`,
+    now,
+  });
   return { roomId };
 }
 
@@ -937,6 +1025,221 @@ export const createRoom = mutation({
   args: { crewId: v.id("fantasyCrews") },
   handler: async (ctx, { crewId }) =>
     await createRoomFor(ctx, await requireUserId(ctx), crewId),
+});
+
+/** Host-set calendar hint. Starting remains explicit and all-ready gated. */
+export const scheduleRoom = mutation({
+  args: {
+    roomId: v.id("fantasyDraftRooms"),
+    scheduledFor: v.union(v.number(), v.null()),
+  },
+  handler: async (ctx, { roomId, scheduledFor }) => {
+    const userId = await requireUserId(ctx);
+    const room = await ctx.db.get(roomId);
+    if (room === null) throw new Error(ROOM_NOT_FOUND);
+    assertLobby(room);
+    if (room.createdBy !== userId) throw new Error(NOT_ROOM_CREATOR);
+    if (scheduledFor !== null) {
+      const gameweek = await ctx.db.get(room.gameweekId);
+      if (
+        gameweek === null ||
+        scheduledFor < Date.now() - 5 * 60_000 ||
+        scheduledFor >= gameweek.finalityAt
+      ) {
+        throw new Error("Choose a draft time before this gameweek settles.");
+      }
+    }
+    await ctx.db.patch(roomId, { scheduledFor: scheduledFor ?? undefined });
+    await addCrewAlert(ctx, {
+      crewId: room.crewId,
+      roomId,
+      kind: "draft_scheduled",
+      title: scheduledFor === null ? "Draft time cleared" : "Draft time set",
+      body:
+        scheduledFor === null
+          ? "The host cleared the planned start time."
+          : "The host set the planned start time. Open the lobby for your local time.",
+      dedupeKey: `${roomId}:schedule:${scheduledFor ?? "clear"}`,
+    });
+    if (scheduledFor !== null) {
+      await ctx.scheduler.runAfter(
+        Math.max(0, scheduledFor - Date.now() - 30 * 60_000),
+        internal.fantasyDraftRooms.draftScheduleReminder,
+        { roomId, expectedScheduledFor: scheduledFor },
+      );
+    }
+    return { scheduledFor };
+  },
+});
+
+export const draftScheduleReminder = internalMutation({
+  args: {
+    roomId: v.id("fantasyDraftRooms"),
+    expectedScheduledFor: v.number(),
+  },
+  handler: async (ctx, { roomId, expectedScheduledFor }) => {
+    const room = await ctx.db.get(roomId);
+    if (
+      room === null ||
+      room.status !== "lobby" ||
+      room.scheduledFor !== expectedScheduledFor
+    ) {
+      return;
+    }
+    await addCrewAlert(ctx, {
+      crewId: room.crewId,
+      roomId,
+      kind: "draft_scheduled",
+      title: "Draft starts soon",
+      body: "The planned draft time is 30 minutes away. Claim your seat and ready up.",
+      dedupeKey: `${roomId}:reminder:${expectedScheduledFor}`,
+    });
+  },
+});
+
+/** Replace one claimed lobby seat without disturbing order or other RSVPs. */
+export const replaceRoomSeat = mutation({
+  args: {
+    roomId: v.id("fantasyDraftRooms"),
+    removeUserId: v.id("users"),
+    addUserId: v.id("users"),
+  },
+  handler: async (ctx, { roomId, removeUserId, addUserId }) => {
+    const userId = await requireUserId(ctx);
+    const room = await ctx.db.get(roomId);
+    if (room === null) throw new Error(ROOM_NOT_FOUND);
+    assertLobby(room);
+    if (room.createdBy !== userId) throw new Error(NOT_ROOM_CREATOR);
+    if (removeUserId === room.createdBy) throw new Error("The host cannot replace their own seat.");
+    const removeIndex = seatIndexOf(room, removeUserId);
+    if (removeIndex < 0) throw new Error("That member does not hold a seat.");
+    if (seatIndexOf(room, addUserId) >= 0) throw new Error("That member is already seated.");
+    const added = await requireActiveMember(ctx, room.crewId, addUserId);
+    const seats = room.seats.map((seat, index) =>
+      index === removeIndex
+        ? {
+            userId: addUserId,
+            nameSnapshot: added.nameSnapshot,
+            ready: false,
+            joinedAt: Date.now(),
+            bankMs: DRAFT_BANK_MS,
+          }
+        : seat,
+    );
+    await ctx.db.patch(roomId, { seats });
+    await addCrewAlert(ctx, {
+      crewId: room.crewId,
+      roomId,
+      kind: "seat_changed",
+      title: "Draft seat updated",
+      body: `${added.nameSnapshot} now holds a seat in this weekend's draft.`,
+      dedupeKey: `${roomId}:replace:${removeUserId}:${addUserId}`,
+    });
+    return { ok: true };
+  },
+});
+
+/** Creator moderation for inactive members; historical rooms and scores stay intact. */
+export const removeCrewMember = mutation({
+  args: { crewId: v.id("fantasyCrews"), memberUserId: v.id("users") },
+  handler: async (ctx, { crewId, memberUserId }) => {
+    const userId = await requireUserId(ctx);
+    const crew = await ctx.db.get(crewId);
+    if (crew === null) throw new Error(CREW_NOT_FOUND);
+    if (crew.createdBy !== userId) throw new Error(NOT_CREW_CREATOR);
+    if (memberUserId === userId) throw new Error("Use Leave crew for your own membership.");
+    const membership = await requireActiveMember(ctx, crewId, memberUserId);
+    const rooms = await ctx.db
+      .query("fantasyDraftRooms")
+      .withIndex("by_crew", (q) => q.eq("crewId", crewId))
+      .collect();
+    for (const room of rooms) {
+      if (room.status !== "lobby" || seatIndexOf(room, memberUserId) < 0) continue;
+      await ctx.db.patch(room._id, {
+        seats: room.seats.filter((seat) => seat.userId !== memberUserId),
+      });
+    }
+    await ctx.db.patch(membership._id, { active: false });
+    return { ok: true };
+  },
+});
+
+export const getCrewAlerts = query({
+  args: { crewId: v.id("fantasyCrews") },
+  handler: async (ctx, { crewId }) => {
+    const userId = await getAuthUserId(ctx);
+    if (userId === null) return null;
+    const membership = await membershipOf(ctx, crewId, userId);
+    if (membership === null || !membership.active) return null;
+    const alerts = await ctx.db
+      .query("fantasyCrewAlerts")
+      .withIndex("by_crew_created", (q) => q.eq("crewId", crewId))
+      .order("desc")
+      .take(12);
+    const readAt = membership.alertsReadAt ?? membership.joinedAt;
+    return {
+      unread: alerts.filter((alert) => alert.createdAt > readAt).length,
+      alerts: alerts.map((alert) => ({
+        alertId: alert._id,
+        roomId: alert.roomId ?? null,
+        kind: alert.kind,
+        title: alert.title,
+        body: alert.body,
+        createdAt: alert.createdAt,
+        read: alert.createdAt <= readAt,
+      })),
+    };
+  },
+});
+
+export const markCrewAlertsRead = mutation({
+  args: { crewId: v.id("fantasyCrews") },
+  handler: async (ctx, { crewId }) => {
+    const membership = await requireActiveMember(ctx, crewId, await requireUserId(ctx));
+    await ctx.db.patch(membership._id, { alertsReadAt: Date.now() });
+    return { ok: true };
+  },
+});
+
+export const getMyDraftQueue = query({
+  args: { roomId: v.id("fantasyDraftRooms") },
+  handler: async (ctx, { roomId }) => {
+    const userId = await getAuthUserId(ctx);
+    if (userId === null) return null;
+    const room = await ctx.db.get(roomId);
+    if (room === null || !(await canReadRoom(ctx, room, userId))) return null;
+    const queue = await ctx.db
+      .query("fantasyDraftQueues")
+      .withIndex("by_room_user", (q) => q.eq("roomId", roomId).eq("userId", userId))
+      .first();
+    return { playerIds: queue?.playerIds ?? [] };
+  },
+});
+
+export const setMyDraftQueue = mutation({
+  args: { roomId: v.id("fantasyDraftRooms"), playerIds: v.array(v.id("fantasyPlayers")) },
+  handler: async (ctx, { roomId, playerIds }) => {
+    const userId = await requireUserId(ctx);
+    const room = await ctx.db.get(roomId);
+    if (room === null) throw new Error(ROOM_NOT_FOUND);
+    if (!(await canReadRoom(ctx, room, userId))) throw new Error(NOT_A_MEMBER);
+    if (playerIds.length > MAX_DRAFT_QUEUE) {
+      throw new Error(`Keep your shortlist to ${MAX_DRAFT_QUEUE} players.`);
+    }
+    if (new Set(playerIds).size !== playerIds.length) throw new Error("A shortlist cannot repeat a player.");
+    for (const playerId of playerIds) {
+      const player = await ctx.db.get(playerId);
+      if (player === null || !player.active) throw new Error("That player is no longer available.");
+    }
+    const existing = await ctx.db
+      .query("fantasyDraftQueues")
+      .withIndex("by_room_user", (q) => q.eq("roomId", roomId).eq("userId", userId))
+      .first();
+    const value = { roomId, userId, playerIds, updatedAt: Date.now() };
+    if (existing === null) await ctx.db.insert("fantasyDraftQueues", value);
+    else await ctx.db.patch(existing._id, { playerIds, updatedAt: value.updatedAt });
+    return { playerIds };
+  },
 });
 
 export async function joinRoomFor(
@@ -950,7 +1253,7 @@ export async function joinRoomFor(
   assertLobby(room); // R7: seats freeze at arm; joining later is not a thing
 
   if (seatIndexOf(room, userId) >= 0) return { roomId }; // idempotent
-  if (room.seats.length >= CREW_MAX_DRAFTERS) throw new Error(CREW_FULL);
+  if (room.seats.length >= DRAFT_MAX_DRAFTERS) throw new Error(DRAFT_FULL);
 
   await ctx.db.patch(roomId, {
     seats: [
@@ -963,6 +1266,14 @@ export async function joinRoomFor(
         bankMs: DRAFT_BANK_MS,
       },
     ],
+  });
+  await addCrewAlert(ctx, {
+    crewId: room.crewId,
+    roomId,
+    kind: "seat_changed",
+    title: "Seat claimed",
+    body: `${member.nameSnapshot} joined this weekend's draft.`,
+    dedupeKey: `${roomId}:seat:${userId}:${room.seats.length + 1}`,
   });
   return { roomId };
 }
@@ -1016,6 +1327,16 @@ export async function setSeatReadyFor(
     i === seatIndex ? { ...seat, ready } : seat,
   );
   await ctx.db.patch(roomId, { seats });
+  if (seats.length >= CREW_MIN_DRAFTERS && seats.every((seat) => seat.ready)) {
+    await addCrewAlert(ctx, {
+      crewId: room.crewId,
+      roomId,
+      kind: "all_ready",
+      title: "Everyone is ready",
+      body: "The host can start the draft now.",
+      dedupeKey: `${roomId}:all-ready:${seats.map((seat) => seat.userId).join(",")}`,
+    });
+  }
   return { ready };
 }
 
@@ -1083,6 +1404,15 @@ export async function armDraftFor(
     seed,
     snakeOrder,
     orderRevealedAt: now,
+  });
+  await addCrewAlert(ctx, {
+    crewId: room.crewId,
+    roomId,
+    kind: "draft_started",
+    title: "Draft started",
+    body: `${room.seats.length} drafters are in. The order is being revealed.`,
+    dedupeKey: `${roomId}:started`,
+    now,
   });
   await ctx.scheduler.runAfter(ORDER_REVEAL_MS, internal.fantasyDraftRooms.beginDrafting, {
     roomId,
@@ -1468,6 +1798,7 @@ export const getCrew = query({
         createdBy: room.createdBy,
         seatCount: room.seats.length,
         seated: seatIndexOf(room, userId) >= 0,
+        scheduledFor: room.scheduledFor ?? null,
         completedAt: room.completedAt ?? null,
         gameweek:
           gameweek === null
@@ -1492,7 +1823,12 @@ export const getCrew = query({
         rooms.every((r) => r.status !== "completed" && r.status !== "drafting"),
       members: members
         .filter((m) => m.active)
-        .map((m) => ({ userId: m.userId, name: m.nameSnapshot, joinedAt: m.joinedAt })),
+        .map((m) => ({
+          userId: m.userId,
+          name: m.nameSnapshot,
+          joinedAt: m.joinedAt,
+          isCreator: m.userId === crew.createdBy,
+        })),
       rooms: roomSummaries,
     };
   },
@@ -1523,6 +1859,12 @@ export const listMyCrews = query({
         (r) => r.status === "lobby" || r.status === "order_reveal" || r.status === "drafting",
       );
       const memberCount = (await activeMembers(ctx, crew._id)).length;
+      const recentAlerts = await ctx.db
+        .query("fantasyCrewAlerts")
+        .withIndex("by_crew_created", (q) => q.eq("crewId", crew._id))
+        .order("desc")
+        .take(20);
+      const alertsReadAt = membership.alertsReadAt ?? membership.joinedAt;
       out.push({
         crewId: crew._id,
         code: crew.code,
@@ -1530,6 +1872,8 @@ export const listMyCrews = query({
         memberCount,
         liveRoomId: live?._id ?? null,
         liveRoomStatus: live?.status ?? null,
+        scheduledFor: live?.scheduledFor ?? null,
+        unreadAlerts: recentAlerts.filter((alert) => alert.createdAt > alertsReadAt).length,
       });
     }
     return out;
@@ -1553,6 +1897,7 @@ export const getRoom = query({
     if (!(await canReadRoom(ctx, room, userId))) return null;
 
     const crew = await ctx.db.get(room.crewId);
+    const crewMembers = room.status === "lobby" ? await activeMembers(ctx, room.crewId) : [];
     const gameweek = await ctx.db.get(room.gameweekId);
     const entries = await ctx.db
       .query("fantasyDraftLog")
@@ -1583,11 +1928,16 @@ export const getRoom = query({
       roomId: room._id,
       status: room.status,
       crew: crew === null ? null : { code: crew.code, name: crew.name },
+      crewMembers: crewMembers.map((member) => ({
+        userId: member.userId,
+        name: member.nameSnapshot,
+      })),
       gameweek:
         gameweek === null
           ? null
           : { gwNumber: gameweek.gwNumber, season: gameweek.season, status: gameweek.status },
       createdBy: room.createdBy,
+      scheduledFor: room.scheduledFor ?? null,
       mySeatIndex: seatIndex < 0 ? null : seatIndex,
       seats: room.seats.map((seat) => ({
         userId: seat.userId,
