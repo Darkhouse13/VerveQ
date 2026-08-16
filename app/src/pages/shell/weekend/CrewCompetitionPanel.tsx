@@ -177,40 +177,67 @@ function Recap({ dashboard }: { dashboard: Dashboard }) {
 
 export function CrewCompetitionPanel({ dashboard }: { dashboard: Dashboard | null | undefined }) {
   const [tab, setTab] = useState<"season" | "allTime">("season");
+  const [section, setSection] = useState<"standings" | "record" | "results">("standings");
   if (dashboard === undefined) return <NeoCard className="py-5 text-center text-sm text-muted-foreground">Loading standings…</NeoCard>;
   if (dashboard === null) return null;
   const scope = dashboard[tab];
   return (
     <div className="flex flex-col gap-4">
-      <Recap dashboard={dashboard} />
-      <div className="grid grid-cols-2 gap-2">
-        <NeoButton variant={tab === "season" ? "primary" : "outline"} size="sm" onClick={() => setTab("season")}>
-          <CalendarRange size={14} className="mr-1" />This season
+      <div className="grid grid-cols-3 gap-2" role="tablist" aria-label="Crew competition">
+        <NeoButton variant={section === "standings" ? "primary" : "outline"} size="sm" onClick={() => setSection("standings")}>
+          Standings
         </NeoButton>
-        <NeoButton variant={tab === "allTime" ? "primary" : "outline"} size="sm" onClick={() => setTab("allTime")}>
-          <Trophy size={14} className="mr-1" />All time
+        <NeoButton variant={section === "record" ? "primary" : "outline"} size="sm" onClick={() => setSection("record")}>
+          My record
+        </NeoButton>
+        <NeoButton variant={section === "results" ? "primary" : "outline"} size="sm" onClick={() => setSection("results")}>
+          Weekends
         </NeoButton>
       </div>
-      <RaceCard scope={scope} />
-      <div>
-        <p className="mb-2 font-mono text-[11px] font-bold uppercase tracking-[0.16em] text-muted-foreground">{tab === "season" ? dashboard.currentSeason : "All-time standings"}</p>
-        <Standings scope={scope} />
-      </div>
-      <TrophyCabinet scope={scope} />
-      {dashboard.rivalries.length > 0 && (
-        <div>
-          <p className="mb-2 font-mono text-[11px] font-bold uppercase tracking-[0.16em] text-muted-foreground">Your rivalries</p>
-          <NeoCard className="py-2">
-            {dashboard.rivalries.slice(0, 5).map((rival) => (
-              <div key={rival.userId} className="flex items-center justify-between py-1.5 text-xs">
-                <span className="font-heading font-bold"><Swords size={12} className="mr-1 inline" />{rival.name}</span>
-                <span className="font-mono">{rival.wins}–{rival.losses}–{rival.draws}{rival.streak === null ? "" : ` · ${rival.streak.result} ${rival.streak.length}`}</span>
-              </div>
-            ))}
-          </NeoCard>
-        </div>
+
+      {section === "standings" && (
+        <>
+          <div className="grid grid-cols-2 gap-2">
+            <NeoButton variant={tab === "season" ? "primary" : "outline"} size="sm" onClick={() => setTab("season")}>
+              <CalendarRange size={14} className="mr-1" />This season
+            </NeoButton>
+            <NeoButton variant={tab === "allTime" ? "primary" : "outline"} size="sm" onClick={() => setTab("allTime")}>
+              <Trophy size={14} className="mr-1" />All time
+            </NeoButton>
+          </div>
+          <RaceCard scope={scope} />
+          <div>
+            <p className="mb-2 font-mono text-[11px] font-bold uppercase tracking-[0.16em] text-muted-foreground">{tab === "season" ? dashboard.currentSeason : "All-time standings"}</p>
+            <Standings scope={scope} />
+          </div>
+        </>
       )}
-      <WeeklyResults scope={scope} />
+
+      {section === "record" && (
+        <>
+          <TrophyCabinet scope={scope} />
+          {dashboard.rivalries.length > 0 && (
+            <div>
+              <p className="mb-2 font-mono text-[11px] font-bold uppercase tracking-[0.16em] text-muted-foreground">Your rivalries</p>
+              <NeoCard className="py-2">
+                {dashboard.rivalries.slice(0, 5).map((rival) => (
+                  <div key={rival.userId} className="flex items-center justify-between py-1.5 text-xs">
+                    <span className="font-heading font-bold"><Swords size={12} className="mr-1 inline" />{rival.name}</span>
+                    <span className="font-mono">{rival.wins}–{rival.losses}–{rival.draws}{rival.streak === null ? "" : ` · ${rival.streak.result} ${rival.streak.length}`}</span>
+                  </div>
+                ))}
+              </NeoCard>
+            </div>
+          )}
+        </>
+      )}
+
+      {section === "results" && (
+        <>
+          <Recap dashboard={dashboard} />
+          <WeeklyResults scope={scope} />
+        </>
+      )}
     </div>
   );
 }

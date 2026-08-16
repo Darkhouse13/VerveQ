@@ -96,6 +96,7 @@ const ArenaPlayScreen = lazyWithRetry(() => import("./pages/shell/play/ArenaPlay
 const WeekendHubScreen = lazyWithRetry(() => import("./pages/shell/weekend/WeekendHubScreen"));
 const WeekendCrewsScreen = lazyWithRetry(() => import("./pages/shell/weekend/WeekendCrewsScreen"));
 const CrewScreen = lazyWithRetry(() => import("./pages/shell/weekend/CrewScreen"));
+const CrewCommandScreen = lazyWithRetry(() => import("./pages/shell/weekend/CrewCommandScreen"));
 const DraftRoomScreen = lazyWithRetry(() => import("./pages/shell/weekend/DraftRoomScreen"));
 const BudgetSquadScreen = lazyWithRetry(() => import("./pages/shell/weekend/BudgetSquadScreen"));
 const VoteScreen = lazyWithRetry(() => import("./pages/shell/weekend/VoteScreen"));
@@ -583,6 +584,7 @@ const AppRoutes = () => (
                 where the screen attempts the idempotent code join. */}
             <Route path="/v2/weekend/crews" element={<ShellGate><UsernameOnlyRoute><WeekendCrewsScreen /></UsernameOnlyRoute></ShellGate>} />
             <Route path="/v2/weekend/crew/:code" element={<ShellGate><UsernameOnlyRoute><CrewScreen /></UsernameOnlyRoute></ShellGate>} />
+            <Route path="/v2/weekend/crew/:code/command" element={<ShellGate><UsernameOnlyRoute><CrewCommandScreen /></UsernameOnlyRoute></ShellGate>} />
             <Route path="/v2/weekend/draft/:roomId" element={<ShellGate><UsernameOnlyRoute><DraftRoomScreen /></UsernameOnlyRoute></ShellGate>} />
             {/* THE WEEKEND budget mode (FW-LAUNCH O1). Linked from the hub; the
                 screen still gates on the backend answering (fail-closed).

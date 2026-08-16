@@ -78,8 +78,10 @@ export const SHELL_ROUTES = {
   weekend: "/v2/weekend",
   /** THE WEEKEND crew draft rooms (FW-3). Hub: my crews, create, join. */
   weekendCrews: "/v2/weekend/crews",
-  /** `/v2/weekend/crew/:code` — a crew's page (members, rooms, crew table). */
+  /** `/v2/weekend/crew/:code` — shared competition, record and results. */
   weekendCrew: (code: string) => `/v2/weekend/crew/${code}`,
+  /** Creator-only administration for a Weekend crew. */
+  weekendCrewCommand: (code: string) => `/v2/weekend/crew/${code}/command`,
   /** `/v2/weekend/draft/:roomId` — one gameweek's draft room. */
   weekendDraft: (roomId: string) => `/v2/weekend/draft/${roomId}`,
   /** THE WEEKEND budget squad — build a fresh 13 under budget (O1). */
@@ -126,6 +128,7 @@ export const SHELL_ROUTE_PATTERNS = {
   weekend: "/v2/weekend",
   weekendCrews: "/v2/weekend/crews",
   weekendCrew: "/v2/weekend/crew/:code",
+  weekendCrewCommand: "/v2/weekend/crew/:code/command",
   weekendDraft: "/v2/weekend/draft/:roomId",
   weekendSquad: "/v2/weekend/squad",
   weekendVote: "/v2/weekend/vote",

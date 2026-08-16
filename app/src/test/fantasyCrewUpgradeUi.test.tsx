@@ -129,9 +129,15 @@ describe("Crew upgrade UI", () => {
     };
     render(<CrewCompetitionPanel dashboard={dashboard as never} />);
     expect(screen.getByText("Your crew race")).toBeInTheDocument();
+    expect(screen.queryByText("Trophy cabinet")).not.toBeInTheDocument();
+    expect(screen.queryByText("Weekend wrapped")).not.toBeInTheDocument();
+    fireEvent.click(screen.getByText("My record"));
     expect(screen.getByText("Trophy cabinet")).toBeInTheDocument();
     expect(screen.getByText("Your rivalries")).toBeInTheDocument();
+    expect(screen.queryByText("Your crew race")).not.toBeInTheDocument();
+    fireEvent.click(screen.getByText("Weekends"));
     expect(screen.getByText("Weekend wrapped")).toBeInTheDocument();
     expect(screen.getByText("Weekly results")).toBeInTheDocument();
+    expect(screen.queryByText("Trophy cabinet")).not.toBeInTheDocument();
   });
 });
