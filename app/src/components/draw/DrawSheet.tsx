@@ -47,7 +47,10 @@ export function DrawSheet({
         <DialogPrimitive.Content
           // Centred on the same 390px column the mode renders in, so the sheet
           // reads as part of the screen rather than the browser window.
-          className="fixed bottom-0 left-1/2 -translate-x-1/2 z-50 w-full neo-border neo-shadow-lg rounded-t-xl bg-background text-foreground p-4 pb-[max(1.5rem,env(safe-area-inset-bottom))] flex flex-col gap-3 draw-sheet-in"
+          // The portal is mounted under document.body, outside DrawExperience's
+          // protected root, so it needs its own translation boundary.
+          className="notranslate fixed bottom-0 left-1/2 -translate-x-1/2 z-50 w-full neo-border neo-shadow-lg rounded-t-xl bg-background text-foreground p-4 pb-[max(1.5rem,env(safe-area-inset-bottom))] flex flex-col gap-3 draw-sheet-in"
+          translate="no"
           style={{ maxWidth: LAYOUT.viewportW }}
           data-testid={testId}
         >

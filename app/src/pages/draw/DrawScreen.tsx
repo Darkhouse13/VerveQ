@@ -200,8 +200,14 @@ export function DrawExperience({ api, revealMs = 380 }: DrawExperienceProps) {
   // safe-pt only: the bottom inset is already carried per-stage by the scroll
   // containers below, and doubling it here would push BANK/PUSH up by the
   // home-indicator height twice.
+  // Google Translate rewrites React-managed text nodes with <font> elements.
+  // Protect the mode so a translation pass cannot leave React reconciling a
+  // DOM tree it no longer owns (NotFoundError: removeChild).
   return (
-    <div className="theme-draw fixed inset-0 z-40 h-[100dvh] bg-background text-foreground overflow-hidden safe-pt">
+    <div
+      className="theme-draw notranslate fixed inset-0 z-40 h-[100dvh] bg-background text-foreground overflow-hidden safe-pt"
+      translate="no"
+    >
       <div
         className="mx-auto h-full w-full flex flex-col"
         style={{
@@ -401,7 +407,10 @@ export default function DrawScreen() {
   // we fall through and let DrawExperience surface the error stage.
   if (!authFailed && (accountState === "loading" || accountState === "loggedOut")) {
     return (
-      <div className="fixed inset-0 z-40 bg-background text-foreground flex items-center justify-center">
+      <div
+        className="notranslate fixed inset-0 z-40 bg-background text-foreground flex items-center justify-center"
+        translate="no"
+      >
         <p className="font-heading font-bold animate-pulse">Loading…</p>
       </div>
     );
