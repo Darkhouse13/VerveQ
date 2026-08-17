@@ -1,7 +1,7 @@
 /**
  * SEO-1 contract — the indexable surface's metadata rules, enforced.
  *
- * The static `/games/` layer is the real indexable surface (the SPA is
+ * The static public layer is the real indexable surface (the SPA is
  * client-rendered), so its head tags are load-bearing product surface, not
  * decoration. These assertions exist because every one of them was a
  * hand-check at ticket time and would silently rot otherwise: titles creep
@@ -25,6 +25,7 @@ const read = (p: string) => readFileSync(p, "utf8");
 /** Static pages that make up the indexable surface. */
 const LANDING = "index.html";
 const GAMES_DIR = "public/games";
+const LEGAL_PAGES = ["public/privacy/index.html", "public/terms/index.html"];
 
 function gamePages(): string[] {
   return readdirSync(GAMES_DIR, { withFileTypes: true })
@@ -33,8 +34,8 @@ function gamePages(): string[] {
     .filter(existsSync);
 }
 
-/** Every static HTML page under audit: landing + /games/ index + game pages. */
-const STATIC_PAGES = [LANDING, `${GAMES_DIR}/index.html`, ...gamePages()];
+/** Every static HTML page under audit: landing, game pages, and legal pages. */
+const STATIC_PAGES = [LANDING, `${GAMES_DIR}/index.html`, ...gamePages(), ...LEGAL_PAGES];
 
 const pick = (html: string, re: RegExp) => {
   const m = html.match(re);
@@ -123,9 +124,6 @@ describe("sitemap ↔ static surface", () => {
   const sitemap = read("public/sitemap.xml");
   const locs = [...sitemap.matchAll(/<loc>(.*?)<\/loc>/g)].map((m) => m[1]);
 
-  /** SPA-rendered routes that legitimately have no static file. */
-  const SPA_ROUTES = new Set(["/privacy", "/terms"]);
-
   it("lists only non-www, absolute URLs", () => {
     expect(locs.length).toBeGreaterThan(0);
     for (const loc of locs) {
@@ -137,19 +135,26 @@ describe("sitemap ↔ static surface", () => {
   it("every sitemap URL resolves to a real page (no dead entries)", () => {
     for (const loc of locs) {
       const path = new URL(loc).pathname;
-      if (path === "/" || SPA_ROUTES.has(path)) continue;
-      // /games/foo/ is served from public/games/foo/index.html
-      expect(existsSync(`public${path}index.html`), `${loc} has no static file`).toBe(
+      if (path === "/") continue;
+      // Directory URLs are served from public/<path>/index.html.
+      const staticPath = path.endsWith("/")
+        ? `public${path}index.html`
+        : `public${path}/index.html`;
+      expect(existsSync(staticPath), `${loc} has no static file`).toBe(
         true,
       );
     }
   });
 
-  it("every static game page is in the sitemap (no orphans)", () => {
+  it("every static public page is in the sitemap (no orphans)", () => {
     const paths = new Set(locs.map((l) => new URL(l).pathname));
-    for (const page of [`${GAMES_DIR}/index.html`, ...gamePages()]) {
+    for (const page of [`${GAMES_DIR}/index.html`, ...gamePages(), ...LEGAL_PAGES]) {
       const path = page.replace(/^public/, "").replace(/index\.html$/, "");
-      expect(paths.has(path), `${path} is not in the sitemap`).toBe(true);
+      const withoutTrailingSlash = path.replace(/\/$/, "");
+      expect(
+        paths.has(path) || paths.has(withoutTrailingSlash),
+        `${path} is not in the sitemap`,
+      ).toBe(true);
     }
   });
 });

@@ -1,14 +1,14 @@
 /**
  * Per-route document metadata for the SPA (SEO-1 Part 3).
  *
- * The app is client-rendered, so every route ships the SAME `index.html` head:
+ * The app is client-rendered, so every SPA route ships the SAME `index.html` head:
  * without this table a crawler (and every shared link preview that reads the
  * live DOM) sees the homepage title on `/compete`, `/v2/daily` and everything
- * else. This is the SECONDARY surface — the indexable one is the static
- * `/games/` layer, which is real HTML and is what the sitemap lists. SPA routes
- * are deliberately absent from the sitemap; the metadata here exists so the
- * routes are honestly labelled when they are reached or shared, not to push
- * them into the index.
+ * else. This is the SECONDARY surface — the indexable one is the homepage, the
+ * static legal pages, and the static `/games/` layer, all real HTML listed in
+ * the sitemap. Other SPA routes are deliberately absent from the sitemap; the
+ * metadata here exists so those routes are honestly labelled when reached or
+ * shared, not to push them into the index.
  *
  * Kept as a plain lookup (no dependency — react-helmet-async would be a new
  * runtime dep for a job that is three DOM writes). Pure and exported so the

@@ -44,10 +44,10 @@ const SHARE_ROUTE_PATTERN = /^\/s\/d\//;
 // which is why the set below is derived from nginx + public/ rather than from
 // the one case that was observed.
 //
-// /privacy and /terms are deliberately absent: those ARE SPA routes
-// (App.tsx:585-586) and must keep falling back to the shell. Same for
-// /s/r/:slug (App.tsx:579) — only /s/d/ is proxied away from the SPA.
-const STATIC_PAGES_PATTERN = /^\/games(?:\/|$)/;
+// /games/* and the public legal pages are real static documents in public/
+// and must bypass the SPA fallback. Same for /s/r/:slug (App.tsx:579) — only
+// /s/d/ is proxied away from the SPA.
+const STATIC_PAGES_PATTERN = /^\/(?:games|privacy|terms)(?:\/|$)/;
 const STATIC_ASSET_DIR_PATTERN = /^\/(?:og|arena-logos)\//;
 const WEBMANIFEST_PATTERN = /^\/manifest\.webmanifest$/;
 // Mirrors deploy/nginx.conf's `location ~* \.(js|css|png|...)$` rule. Catches
