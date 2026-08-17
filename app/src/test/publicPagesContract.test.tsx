@@ -85,6 +85,11 @@ describe("nginx serves the crawler files and splits caching", () => {
     expect(nginx).toMatch(/location = \/sitemap\.xml\s*{[^}]*try_files \$uri =404/);
   });
 
+  it("serves legal pages directly at their sitemap URLs", () => {
+    expect(nginx).toMatch(/location = \/privacy\s*{[^}]*try_files \/privacy\/index\.html =404/);
+    expect(nginx).toMatch(/location = \/terms\s*{[^}]*try_files \/terms\/index\.html =404/);
+  });
+
   it("no-cache for the HTML shell, long-cache for hashed assets", () => {
     expect(nginx).toMatch(/location = \/index\.html\s*{[^}]*no-cache/);
     expect(nginx).toMatch(/location \/\s*{[^}]*no-cache/);
