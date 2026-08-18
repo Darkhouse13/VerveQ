@@ -91,7 +91,9 @@ export default function CrewSheetScreen() {
       ? { gameweekId: sheet.gameweekId, context: "crew" as const, crewRoomId: roomId }
       : "skip",
   );
-  const marketNominal = useQuery(api.fantasyMarket.getMarket, gate === "open" ? {} : "skip");
+  // Nominal positions for the sheet's own 13 — all drafted with a fixture, so
+  // the fixture-scoped market covers them without shipping the whole pool.
+  const marketNominal = useQuery(api.fantasyMarket.getMarket, gate === "open" ? { fixtureOnly: true } : "skip");
   const setFormationMutation = useMutation(api.fantasySquads.setFormation);
 
   // FW-RECEIPT Part 2: the sheet's weekend ledger, subscribed only on its tab.

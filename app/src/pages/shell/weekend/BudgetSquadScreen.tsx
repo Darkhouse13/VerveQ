@@ -69,6 +69,10 @@ import { SquadLedgerView } from "@/components/weekend/SquadLedgerView";
 import { useWideScreen } from "@/hooks/useWideScreen";
 import { track } from "@/lib/analytics";
 import { isBuilderEntry } from "@/lib/weekendDeepLink";
+import {
+  readWeekendMarketCache,
+  writeWeekendMarketCache,
+} from "@/lib/weekendMarketCache";
 
 export type OpenGameweek = NonNullable<
   FunctionReturnType<typeof api.fantasyMarket.getOpenGameweek>
@@ -372,6 +376,7 @@ export function PickerPanel({
   onPick?: (playerId: string) => void;
 }) {
   const { t } = useTranslation();
+  const convex = useConvex();
 
   // O4: the slot asks its question in football, not in database.
   const prompt = browse
@@ -393,6 +398,24 @@ export function PickerPanel({
   // the browse by default, behind an explicit "show all", instead of pages
   // of badge noise.
   const [showAll, setShowAll] = useState(false);
+  // The subscribed market is fixture-scoped (the default browse above).
+  // "Show all" needs the fixtureless rest too — pulled imperatively on the
+  // explicit toggle, never on a plain navigation mount.
+  const [fullMarket, setFullMarket] = useState<Market | null>(null);
+  useEffect(() => {
+    if (!showAll) return;
+    let cancelled = false;
+    void convex
+      .query(api.fantasyMarket.getMarket, {})
+      .then((full) => {
+        if (!cancelled) setFullMarket(full);
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, [showAll, convex]);
+  const effectiveMarket = showAll ? (fullMarket ?? market) : market;
   // O3 (FW-POLISH-3): the picker opens FROM a slot, so it pre-filters to the
   // slot's position instead of showing a tab row. That pre-filter is a
   // FILTER default, not an eligibility rule — FW-1's deliberate
@@ -416,7 +439,7 @@ export function PickerPanel({
    *  order), then any league only reachable via Show all, by name. */
   const clubCatalogue = useMemo(() => {
     const byLeague = new Map<number, Map<string, string>>();
-    for (const p of market?.players ?? []) {
+    for (const p of effectiveMarket?.players ?? []) {
       const clubs = byLeague.get(p.leagueId) ?? new Map<string, string>();
       if (!clubs.has(p.clubId)) clubs.set(p.clubId, p.clubName ?? p.clubId);
       byLeague.set(p.leagueId, clubs);
@@ -436,7 +459,7 @@ export function PickerPanel({
         .map(([clubId, name]) => ({ clubId, name }))
         .sort((a, b) => a.name.localeCompare(b.name)),
     }));
-  }, [market, leagues]);
+  }, [effectiveMarket, leagues]);
 
   const clubFilterName = useMemo(() => {
     if (clubFilter === null) return null;
@@ -448,9 +471,9 @@ export function PickerPanel({
   }, [clubCatalogue, clubFilter]);
 
   const results = useMemo(() => {
-    if (market === null || market === undefined) return [];
+    if (effectiveMarket === null || effectiveMarket === undefined) return [];
     const needle = search.trim().toLowerCase();
-    return market.players
+    return effectiveMarket.players
       .filter(
         (p) =>
           (showAll || p.kickoffAt !== null) &&
@@ -465,7 +488,7 @@ export function PickerPanel({
       .sort((a, b) => (b.price ?? 0) - (a.price ?? 0) || a.name.localeCompare(b.name))
       .slice(0, MARKET_RESULT_CAP);
   }, [
-    market,
+    effectiveMarket,
     search,
     slotRole,
     allPositions,
@@ -1159,7 +1182,15 @@ export default function BudgetSquadScreen() {
     api.fantasySquads.getSquad,
     gameweekId === null ? "skip" : { gameweekId, context: "budget" as const },
   );
-  const market = useQuery(api.fantasyMarket.getMarket, gameweekId === null ? "skip" : {});
+  // Scoped to the fixture-having universe — the picker's default browse (D4);
+  // "Show all" fetches the full pool imperatively inside PickerPanel. The
+  // session cache paints a repeat visit instantly while this subscription
+  // re-executes behind it (navigation unmounts drop every query).
+  const marketLive = useQuery(api.fantasyMarket.getMarket, gameweekId === null ? "skip" : { fixtureOnly: true });
+  useEffect(() => {
+    if (marketLive != null) writeWeekendMarketCache(marketLive);
+  }, [marketLive]);
+  const market = marketLive ?? readWeekendMarketCache(gameweekId);
   // Skipped until the gate opened — the gate proves this deploy unit answers.
   const weekendLeagues = useQuery(
     api.fantasyMarket.getWeekendLeagues,

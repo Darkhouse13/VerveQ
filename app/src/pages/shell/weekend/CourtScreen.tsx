@@ -303,7 +303,10 @@ export default function CourtScreen() {
   }, [convex]);
 
   const docket = useQuery(api.fantasyCourt.getCourtDocket, gate === "open" ? {} : "skip");
-  const market = useQuery(api.fantasyMarket.getMarket, filing ? {} : "skip");
+  // Fixture-scoped: a claim is only fileable for a player with a fixture this
+  // weekend (the filing flow resolves his fixture server-side and rejects the
+  // fixtureless), so the search universe is the scoped market, not the pool.
+  const market = useQuery(api.fantasyMarket.getMarket, filing ? { fixtureOnly: true } : "skip");
   const fileClaim = useMutation(api.fantasyCourt.fileClaim);
   const endorseClaim = useMutation(api.fantasyCourt.endorseClaim);
   const castCourtVote = useMutation(api.fantasyCourt.castCourtVote);

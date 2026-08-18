@@ -50,10 +50,19 @@ export const getOpenGameweek = query({
  * Kickoff state is returned as `kickoffAt`, not a computed boolean, so the
  * client's clock decides what to grey out while the server keeps enforcing
  * the hindsight rule on every write.
+ *
+ * `fixtureOnly` narrows the projection to players whose club has a fixture in
+ * the open gameweek (`kickoffAt !== null`) — the universe the build surface
+ * actually shows by default (D4: fixtureless players sit behind an explicit
+ * "Show all", and the server rejects a fixtureless pick regardless). The app
+ * passes it on every navigation mount so the default read ships under half
+ * the rows (measured 2.1k of 4.7k on prod GW1);
+ * the FULL universe stays the no-arg default because the off-app gates
+ * (content-factory live verifies, e2e specs) cite fixtureless board prices.
  */
 export const getMarket = query({
-  args: {},
-  handler: async (ctx) => {
+  args: { fixtureOnly: v.optional(v.boolean()) },
+  handler: async (ctx, args) => {
     const gameweek = await findOpenGameweek(ctx);
     if (gameweek === null) return null;
 
@@ -102,7 +111,10 @@ export const getMarket = query({
     }
 
     const market = players
-      .filter((player: Doc<"fantasyPlayers">) => player.active)
+      .filter(
+        (player: Doc<"fantasyPlayers">) =>
+          player.active && (args.fixtureOnly !== true || matchupByClub.has(player.clubId)),
+      )
       .map((player) => {
         const matchup = matchupByClub.get(player.clubId);
         return {
