@@ -304,3 +304,27 @@ serves real 2026-27 minutes.
   90′" with last season's grid primary, matchup line, zero console
   errors (screenshot e2e/artifacts/fws-live-thisseason-380.png). Guest
   swept via fwPolishQaPurge (19 rows), residue 0.
+
+## Absorption amendment — prod deploy record (2026-08-19)
+
+- Constitution amendment (3a1e9df → different-lynx-153): a midweek window
+  under 5 fixtures (MIDWEEK_ABSORPTION_MIN_FIXTURES) is no longer its own
+  gameweek — its fixtures file under the following weekend window. Trigger:
+  LaLiga's staggered opening round left a 2-fixture "GW2" (Tue-Thu Aug
+  18-20) that pinned every build surface to a 116-player board for the
+  whole week; a 4-fixture repeat was queued for Aug 25-27. Full midweek
+  rounds (9+ fixtures all season, min observed 9 = Bundesliga) stand.
+- Order: backend deploy first (`npx convex deploy -y`), then
+  `fantasyIngest:absorbThinMidweekGameweeks {"season":"2026-2027"}`
+  (dry-run, then real; DEV rehearsed identically first). Absorbed old GW2
+  (2 fixtures → weekend GW2) and old GW4 (4 fixtures → weekend GW3);
+  relabelled 55 rows; gameweek documents keep identity (finalityAt), so
+  nothing re-parented. Both orphans verified UNBOUND (zero squads, rooms,
+  scoring, crowd, court rows) before the write; the mutation re-verifies
+  and fails closed.
+- Post-verify: getOpenGameweek = GW2 weekend:2026-08-21 (66 fixtures, 7
+  leagues, finality Tue Aug 25 23:59 Paris); gameweekAudit GW2 + GW3
+  outOfWindow 0; manual prod syncFixtures returned 58 gameweeks, 0
+  created / 0 updated — the amended constitution reproduces the migrated
+  state exactly. Tonight's stragglers (Atlético-Málaga Wed, Alavés-Rayo
+  Thu) sit inside GW2 and lock per-club at kickoff as usual.
