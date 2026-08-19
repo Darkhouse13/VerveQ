@@ -32,7 +32,9 @@ import {
   zonedWallClockToEpochMs,
 } from "../../convex/lib/fantasyConstants";
 import {
+  absorbingWindowFor,
   constituteGameweeks,
+  MIDWEEK_ABSORPTION_MIN_FIXTURES,
   reconcileGameweeks,
   seasonLabel,
   windowFor,
@@ -255,21 +257,32 @@ describe("finality lands on 23:59 Paris wall clock", () => {
   });
 });
 
+/**
+ * A FULL midweek round: enough fixtures to clear the absorption threshold
+ * (MIDWEEK_ABSORPTION_MIN_FIXTURES). `kickoffs` counts one entry per fixture,
+ * so five Wednesday kickoffs make this window a gameweek in its own right —
+ * fewer and it would fold forward into the next weekend, which is what the
+ * absorption describe block below asserts on purpose.
+ */
+const midweekRound = Array.from({ length: MIDWEEK_ABSORPTION_MIN_FIXTURES }, (_, i) =>
+  paris(WED.y, WED.m, WED.d, 18, i),
+);
+
 describe("constituteGameweeks", () => {
   it("numbers windows chronologically from 1", () => {
     const gameweeks = constituteGameweeks([
       paris(SAT.y, SAT.m, SAT.d, 15, 0),
-      paris(WED.y, WED.m, WED.d, 20, 0),
+      ...midweekRound,
       paris(NEXT_FRI.y, NEXT_FRI.m, NEXT_FRI.d, 20, 45),
     ]);
     expect(gameweeks.map((g) => g.gwNumber)).toEqual([1, 2, 3]);
     expect(gameweeks.map((g) => g.kind)).toEqual(["weekend", "midweek", "weekend"]);
   });
 
-  it("treats a midweek round as a gameweek in its own right", () => {
+  it("treats a FULL midweek round as a gameweek in its own right", () => {
     const gameweeks = constituteGameweeks([
       paris(SAT.y, SAT.m, SAT.d, 15, 0),
-      paris(WED.y, WED.m, WED.d, 20, 0),
+      ...midweekRound,
     ]);
     expect(gameweeks).toHaveLength(2);
     expect(gameweeks[1].kind).toBe("midweek");
@@ -290,7 +303,7 @@ describe("constituteGameweeks", () => {
 
   it("is order-independent", () => {
     const kickoffs = [
-      paris(WED.y, WED.m, WED.d, 20, 0),
+      ...midweekRound,
       paris(SAT.y, SAT.m, SAT.d, 15, 0),
       paris(NEXT_FRI.y, NEXT_FRI.m, NEXT_FRI.d, 20, 45),
     ];
@@ -328,11 +341,7 @@ describe("constituteGameweeks", () => {
     });
 
     it("never assigns ordinal 0 (ingestion's unresolved sentinel)", () => {
-      const kicks = [
-        importedKick,
-        paris(WED.y, WED.m, WED.d, 20, 0),
-        openingKick,
-      ];
+      const kicks = [importedKick, ...midweekRound, openingKick];
       const coverageStart = windowFor(openingKick).finalityAt + 1;
       const gameweeks = constituteGameweeks(kicks, undefined, coverageStart);
       expect(gameweeks.map((g) => g.gwNumber)).toEqual([-3, -2, -1]);
@@ -340,10 +349,9 @@ describe("constituteGameweeks", () => {
     });
 
     it("counts back chronologically: the import nearest coverage is -1", () => {
-      const midweekKick = paris(WED.y, WED.m, WED.d, 20, 0);
-      const coverageStart = windowFor(midweekKick).finalityAt + 1;
+      const coverageStart = windowFor(midweekRound[0]).finalityAt + 1;
       const gameweeks = constituteGameweeks(
-        [importedKick, midweekKick, openingKick],
+        [importedKick, ...midweekRound, openingKick],
         undefined,
         coverageStart,
       );
@@ -371,8 +379,7 @@ describe("constituteGameweeks", () => {
       // The FW-POLISH-3 prod shape: stored rows numbered 1..3 chronologically;
       // the first is a pre-coverage import. Reconcile must patch labels on the
       // SAME rows (identity = finalityAt) and insert nothing.
-      const midweekKick = paris(WED.y, WED.m, WED.d, 20, 0);
-      const kicks = [importedKick, midweekKick, openingKick];
+      const kicks = [importedKick, ...midweekRound, openingKick];
       const stored = constituteGameweeks(kicks).map((w, i) => ({
         gwNumber: w.gwNumber,
         leagueIds: [39],
@@ -397,6 +404,108 @@ describe("constituteGameweeks", () => {
   });
 });
 
+describe("constituteGameweeks — thin midweek absorption (amendment 2026-08-19)", () => {
+  // The prod shape that forced the amendment: LaLiga's staggered opening round
+  // left two fixtures on the Tue/Wed after the opening weekend, and those two
+  // fixtures constituted a whole gameweek that blocked the next weekend's
+  // board for the entire build week.
+  const openingWeekend = [
+    paris(SAT.y - 0, 8, 15, 15, 0), // Sat 2026-08-15
+    paris(2026, 8, 16, 17, 30), // Sun 2026-08-16
+  ];
+  const stragglers = [
+    paris(2026, 8, 19, 21, 0), // Wed 2026-08-19
+    paris(2026, 8, 20, 21, 0), // Thu 2026-08-20
+  ];
+  const nextWeekend = [
+    paris(FRI.y, FRI.m, FRI.d, 20, 45), // Fri 2026-08-21
+    paris(SAT.y, SAT.m, SAT.d, 15, 0),
+    paris(SUN.y, SUN.m, SUN.d, 17, 30),
+  ];
+
+  it("folds a thin midweek window forward into the following weekend", () => {
+    const gameweeks = constituteGameweeks([
+      ...openingWeekend,
+      ...stragglers,
+      ...nextWeekend,
+    ]);
+    expect(gameweeks.map((g) => [g.gwNumber, g.kind])).toEqual([
+      [1, "weekend"],
+      [2, "weekend"],
+    ]);
+    // The absorbed window's key resolves to the weekend gameweek, which is
+    // how ingestion files the straggler fixtures under it.
+    expect(gameweeks[1].keys).toEqual([
+      "weekend:2026-08-21",
+      "midweek:2026-08-18",
+    ]);
+    // Finality stays the weekend's own Tuesday cut — absorption never delays
+    // or advances settlement.
+    expect(gameweeks[1].finalityAt).toBe(paris(TUE.y, TUE.m, TUE.d, 23, 59));
+  });
+
+  it("keeps a window at exactly the threshold as its own gameweek", () => {
+    const atThreshold = Array.from(
+      { length: MIDWEEK_ABSORPTION_MIN_FIXTURES },
+      (_, i) => paris(2026, 8, 19, 18, i),
+    );
+    const gameweeks = constituteGameweeks([...atThreshold, ...nextWeekend]);
+    expect(gameweeks.map((g) => g.kind)).toEqual(["midweek", "weekend"]);
+  });
+
+  it("absorbs at one below the threshold", () => {
+    const oneBelow = Array.from(
+      { length: MIDWEEK_ABSORPTION_MIN_FIXTURES - 1 },
+      (_, i) => paris(2026, 8, 19, 18, i),
+    );
+    const gameweeks = constituteGameweeks([...oneBelow, ...nextWeekend]);
+    expect(gameweeks.map((g) => g.kind)).toEqual(["weekend"]);
+  });
+
+  it("counts fixtures, not distinct kickoff instants", () => {
+    // Five fixtures sharing one kickoff instant are a full round, not a thin
+    // window — `kickoffs` carries one entry per fixture on purpose.
+    const simultaneous = Array.from(
+      { length: MIDWEEK_ABSORPTION_MIN_FIXTURES },
+      () => paris(2026, 8, 19, 21, 0),
+    );
+    const gameweeks = constituteGameweeks([...simultaneous, ...nextWeekend]);
+    expect(gameweeks.map((g) => g.kind)).toEqual(["midweek", "weekend"]);
+  });
+
+  it("constitutes the absorbing weekend even when it has no fixtures of its own", () => {
+    const gameweeks = constituteGameweeks([...openingWeekend, ...stragglers]);
+    expect(gameweeks.map((g) => [g.gwNumber, g.kind])).toEqual([
+      [1, "weekend"],
+      [2, "weekend"],
+    ]);
+    expect(gameweeks[1].keys).toContain("midweek:2026-08-18");
+  });
+
+  it("never absorbs a weekend window, however thin", () => {
+    const gameweeks = constituteGameweeks([
+      paris(2026, 8, 15, 15, 0), // a lone weekend fixture
+      ...nextWeekend,
+    ]);
+    expect(gameweeks).toHaveLength(2);
+    expect(gameweeks[0].keys).toEqual(["weekend:2026-08-14"]);
+  });
+
+  it("absorbingWindowFor maps a midweek window to the weekend that follows it", () => {
+    const midweek = windowFor(stragglers[0]);
+    const host = absorbingWindowFor(midweek);
+    expect(host.kind).toBe("weekend");
+    expect(host.key).toBe("weekend:2026-08-21");
+  });
+
+  it("stays order-independent and deterministic under absorption", () => {
+    const kicks = [...nextWeekend, ...stragglers, ...openingWeekend];
+    expect(constituteGameweeks([...kicks].reverse())).toEqual(
+      constituteGameweeks(kicks),
+    );
+  });
+});
+
 describe("reconcileGameweeks — window identity survives ordinal shifts (FW-EXPAND)", () => {
   /** Constitute windows and shape them like the ingest's upsert payload. */
   function asUpserts(kickoffs: number[], leagueIds: number[] = [39]) {
@@ -408,7 +517,6 @@ describe("reconcileGameweeks — window identity survives ordinal shifts (FW-EXP
   }
 
   const weekendKick = paris(SAT.y, SAT.m, SAT.d, 15, 0);
-  const midweekKick = paris(WED.y, WED.m, WED.d, 20, 0);
   const nextWeekendKick = paris(NEXT_FRI.y, NEXT_FRI.m, NEXT_FRI.d, 20, 45);
 
   it("is a no-op when the window set is unchanged", () => {
@@ -425,7 +533,7 @@ describe("reconcileGameweeks — window identity survives ordinal shifts (FW-EXP
     // league's midweek round then populates the week between them.
     const before = asUpserts([weekendKick, nextWeekendKick]);
     const existing = before.map((w, i) => ({ ...w, id: `doc${i}` }));
-    const after = asUpserts([weekendKick, midweekKick, nextWeekendKick]);
+    const after = asUpserts([weekendKick, ...midweekRound, nextWeekendKick]);
 
     const plan = reconcileGameweeks(existing, after);
 
@@ -460,7 +568,7 @@ describe("reconcileGameweeks — window identity survives ordinal shifts (FW-EXP
     // A stored row whose window no longer exists, holding ordinal 2 — while
     // the fresh numbering also assigns 2. Writing both would make the
     // by_season_gwNumber lookup ambiguous.
-    const windows = asUpserts([weekendKick, midweekKick, nextWeekendKick]);
+    const windows = asUpserts([weekendKick, ...midweekRound, nextWeekendKick]);
     const orphan = {
       gwNumber: 2,
       leagueIds: [39],

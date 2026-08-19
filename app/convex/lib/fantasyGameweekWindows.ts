@@ -47,6 +47,41 @@ import {
 
 const MS_PER_DAY = 86_400_000;
 
+/**
+ * Absorption threshold (constitution amendment, 2026-08-19): a midweek window
+ * holding FEWER than this many fixtures is not a gameweek — its fixtures are
+ * absorbed forward into the following weekend window.
+ *
+ * The problem this solves is the straggler round: LaLiga opened 2026-2027 by
+ * spreading matchday 1 across nine days, leaving two fixtures on the Tue-Thu
+ * after the opening weekend. Under the unamended constitution those two
+ * fixtures constituted a full gameweek — a 116-player board that occupied the
+ * open slot for the whole build week, so the REAL weekend's board could not
+ * open until its own Friday fixtures had already kicked off. The same shape
+ * recurs whenever a postponement lands one or two matches on a Tue-Thu.
+ *
+ * 5 is read off the season's actual distribution: the thin windows are the
+ * straggler tails (2 and 4 fixtures on prod, 2026-08-19) and every genuine
+ * midweek round — a full league matchday played Tue-Thu — has at least 9 (a
+ * Bundesliga round), most 10-12. The gap between 4 and 9 is the line.
+ *
+ * Absorption is FORWARD only, and only for midweek windows. Backward would
+ * extend a gameweek whose finality (Tuesday 23:59) can pass before a Thursday
+ * straggler even kicks off; forward yields a Tue → Mon combined window with
+ * the normal Tuesday finality, and the existing per-club kickoff locks handle
+ * the early fixtures exactly as they handle a Friday 18:00 kickoff today.
+ * Weekend windows are never absorbed regardless of size, so absorption cannot
+ * chain and always terminates.
+ *
+ * Known limitation, accepted: the decision is a function of the window's
+ * OBSERVED fixture count, so a postponement moving a 5th fixture INTO an
+ * already-absorbed window after squads were built would re-constitute it as
+ * its own gameweek and strand the early picks. The pre-amendment constitution
+ * had the mirror-image churn (ordinal shifts on any newly populated window);
+ * `reconcileGameweeks`' fail-closed conflict check is the backstop for both.
+ */
+export const MIDWEEK_ABSORPTION_MIN_FIXTURES = 5;
+
 export type WindowKind = "weekend" | "midweek";
 
 export interface GameweekWindow {
@@ -167,14 +202,39 @@ function finalityForWindow(
 }
 
 /**
+ * The weekend window a midweek window absorbs into: the one beginning the
+ * instant the midweek window ends (Thu 23:59 → Fri 00:00 is the seam, and the
+ * half-open `endsAt` IS Friday 00:00, which `windowFor` places in the weekend).
+ */
+export function absorbingWindowFor(
+  midweek: GameweekWindow,
+  timeZone: string = FINALITY_TIME_ZONE,
+): GameweekWindow {
+  return windowFor(midweek.endsAt, timeZone);
+}
+
+/**
  * Constitute the ordered set of gameweeks covering `kickoffs`.
  *
  * A window with no fixture in it is NOT a gameweek — international breaks and
  * the midweeks of ordinary weeks simply produce no window, which is why the
  * ordinals come from the observed set rather than from counting weeks since
  * the season opener. `gwNumber` is chronological and 1-based across BOTH kinds
- * (a midweek round is a gameweek in its own right, not a sub-part of the
+ * (a FULL midweek round is a gameweek in its own right, not a sub-part of the
  * weekend beside it).
+ *
+ * `kickoffs` carries ONE ENTRY PER FIXTURE, duplicates meaningful: the count
+ * per window is what the absorption rule reads. A midweek window with fewer
+ * than `MIDWEEK_ABSORPTION_MIN_FIXTURES` entries is not constituted — its key
+ * joins the following weekend window's `keys` instead, so its fixtures file
+ * under that gameweek (see the constant's comment for the ruling). The
+ * absorbing weekend window is constituted even when it has no direct fixtures
+ * of its own yet — a straggler pair must always have a home.
+ *
+ * Every returned window carries `keys`: the set of `windowFor(...).key` values
+ * that resolve to it (its own, plus any absorbed midweek's). Callers mapping a
+ * fixture's kickoff to a gameweek MUST resolve through `keys`, never by
+ * comparing against `key` alone.
  *
  * `coverageStartAt` (fantasyConstants.SEASON_COVERAGE_START) marks when the
  * product's coverage of the season began. Windows already past finality at
@@ -192,11 +252,29 @@ export function constituteGameweeks(
   kickoffs: readonly number[],
   timeZone: string = FINALITY_TIME_ZONE,
   coverageStartAt?: number,
-): (GameweekWindow & { gwNumber: number })[] {
+): (GameweekWindow & { gwNumber: number; keys: string[] })[] {
   const byKey = new Map<string, GameweekWindow>();
+  const countByKey = new Map<string, number>();
   for (const kickoff of kickoffs) {
     const window = windowFor(kickoff, timeZone);
     if (!byKey.has(window.key)) byKey.set(window.key, window);
+    countByKey.set(window.key, (countByKey.get(window.key) ?? 0) + 1);
+  }
+
+  // Absorption pass: thin midweek windows fold forward into their weekend.
+  const thin = [...byKey.values()].filter(
+    (w) =>
+      w.kind === "midweek" &&
+      (countByKey.get(w.key) ?? 0) < MIDWEEK_ABSORPTION_MIN_FIXTURES,
+  );
+  const absorbedKeysByHost = new Map<string, string[]>();
+  for (const window of thin) {
+    const host = absorbingWindowFor(window, timeZone);
+    if (!byKey.has(host.key)) byKey.set(host.key, host);
+    byKey.delete(window.key);
+    const absorbed = absorbedKeysByHost.get(host.key) ?? [];
+    absorbed.push(window.key);
+    absorbedKeysByHost.set(host.key, absorbed);
   }
 
   const sorted = [...byKey.values()].sort((a, b) => a.startsAt - b.startsAt);
@@ -208,6 +286,7 @@ export function constituteGameweeks(
     ...window,
     gwNumber:
       index < preCoverage ? index - preCoverage : index - preCoverage + 1,
+    keys: [window.key, ...(absorbedKeysByHost.get(window.key) ?? []).sort()],
   }));
 }
 

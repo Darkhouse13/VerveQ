@@ -35,7 +35,7 @@
 
 import { v } from "convex/values";
 import { internalAction, internalMutation, internalQuery } from "./_generated/server";
-import type { ActionCtx } from "./_generated/server";
+import type { ActionCtx, DatabaseReader } from "./_generated/server";
 import { internal } from "./_generated/api";
 import type { Doc, Id } from "./_generated/dataModel";
 import {
@@ -55,6 +55,7 @@ import {
 } from "./lib/fantasyConstants";
 import {
   constituteGameweeks,
+  MIDWEEK_ABSORPTION_MIN_FIXTURES,
   reconcileGameweeks,
   seasonLabel,
   windowFor,
@@ -766,11 +767,24 @@ export const gameweekAudit = internalQuery({
       .collect();
 
     const kickoffs = fixtures.map((f) => f.kickoffAt).sort((a, b) => a - b);
-    const window = kickoffs.length > 0 ? windowFor(kickoffs[0]) : null;
+    // The gameweek's own window is the one carrying its finality — NOT the
+    // window of the earliest kickoff, which since the absorption amendment
+    // (2026-08-19) can be a thin midweek window filed under this weekend row.
+    const constituted =
+      kickoffs.length > 0
+        ? constituteGameweeks(kickoffs, undefined, undefined)
+        : [];
+    const window =
+      constituted.find((w) => w.finalityAt === gameweek.finalityAt) ??
+      (kickoffs.length > 0 ? { ...windowFor(kickoffs[0]), keys: [] } : null);
 
+    // In-window means: the fixture's own window key is one this gameweek
+    // answers for (its own, or an absorbed thin midweek's).
     const outOfWindow = fixtures.filter((f) => {
       const w = windowFor(f.kickoffAt);
-      return window === null || w.key !== window.key;
+      return (
+        window === null || (w.key !== window.key && !window.keys.includes(w.key))
+      );
     });
 
     return {
@@ -877,7 +891,13 @@ async function applyFixtures(
     undefined,
     SEASON_COVERAGE_START[seasonLabelValue],
   );
-  const gwNumberByKey = new Map(windows.map((w) => [w.key, w.gwNumber]));
+  // A window answers for every key in `keys` — its own plus any thin midweek
+  // it absorbed (constitution amendment 2026-08-19). Resolving through `key`
+  // alone would file a straggler fixture under ordinal 0, the unresolved
+  // sentinel, and applyFixtureChunk would skip it.
+  const gwNumberByKey = new Map(
+    windows.flatMap((w) => w.keys.map((key) => [key, w.gwNumber] as const)),
+  );
 
   const leaguesInWindow = new Map<string, Set<number>>();
   for (const { feed, kickoffAt } of feeds) {
@@ -886,6 +906,10 @@ async function applyFixtures(
     set.add(feed.league.id);
     leaguesInWindow.set(key, set);
   }
+  const leaguesForWindow = (w: { keys: string[] }): number[] =>
+    [
+      ...new Set(w.keys.flatMap((key) => [...(leaguesInWindow.get(key) ?? [])])),
+    ].sort((a, b) => a - b);
 
   const gameweekResult: ApplyGameweeksResult = await ctx.runMutation(
     internal.fantasyIngest.applyGameweeks,
@@ -893,7 +917,7 @@ async function applyFixtures(
       season: seasonLabelValue,
       windows: windows.map((w) => ({
         gwNumber: w.gwNumber,
-        leagueIds: [...(leaguesInWindow.get(w.key) ?? [])].sort((a, b) => a - b),
+        leagueIds: leaguesForWindow(w),
         finalityAt: w.finalityAt,
       })),
     },
@@ -903,6 +927,8 @@ async function applyFixtures(
     .filter(shouldWrite)
     .map(({ feed, kickoffAt }) =>
       toUpsert(feed, gwNumberByKey.get(windowFor(kickoffAt).key) ?? 0),
+      // ?? 0 unreachable by construction — every fetched kickoff's key is in
+      // some window's `keys` — kept as the fail-closed sentinel it always was.
     );
 
   let created = 0;
@@ -1120,3 +1146,384 @@ export const bootstrapPlayers = internalAction({
     };
   },
 });
+
+// ----------------------------------------------------- absorption migration
+
+/**
+ * One-off migration for the absorption amendment (2026-08-19): fold the
+ * already-written thin midweek gameweek rows into their weekend hosts.
+ *
+ * The amendment changes what `constituteGameweeks` produces, but prod already
+ * carried two rows the amended constitution no longer recognises (GW2, two
+ * LaLiga stragglers; GW4, four more). Left in place they would trip
+ * `applyGameweeks`' fail-closed ordinal-conflict check on the next sync —
+ * their ordinals are claimed by the renumbered weekend windows — freezing all
+ * gameweek writes. This migration retires them the way the amendment intends:
+ * fixtures repointed to the weekend row, orphan row deleted, survivors
+ * relabelled through the same `reconcileGameweeks` plan the sync path uses.
+ *
+ * Split action/mutation because the constitution is Intl-heavy: computing
+ * windows over ~2,900 kickoffs blows a mutation's 1-second budget (measured on
+ * DEV, 2026-08-19). The ACTION reads a snapshot and computes the full plan;
+ * `applyAbsorptionPlan` then RE-VERIFIES every precondition against live state
+ * inside one transaction before writing, so the compute/apply gap cannot smuggle
+ * in a stale plan — if anything moved, it throws and changes nothing.
+ *
+ * `dryRun: true` computes and returns the plan without calling the mutation.
+ */
+export const absorbThinMidweekGameweeks = internalAction({
+  args: { season: v.string(), dryRun: v.optional(v.boolean()) },
+  handler: async (
+    ctx,
+    { season, dryRun },
+  ): Promise<{
+    dryRun: boolean;
+    absorbed: {
+      gwNumber: number;
+      finalityAt: number;
+      fixturesMoved: number;
+      hostGwNumber: number;
+    }[];
+    relabelled: { from: number; to: number }[];
+  }> => {
+    const snapshot: AbsorptionSnapshot = await ctx.runQuery(
+      internal.fantasyIngest.absorptionSnapshot,
+      { season },
+    );
+    const { rows, fixtures } = snapshot;
+
+    const windows = constituteGameweeks(
+      fixtures.map((f) => f.kickoffAt),
+      undefined,
+      SEASON_COVERAGE_START[season],
+    );
+    const windowByFinality = new Map(windows.map((w) => [w.finalityAt, w]));
+    const windowByKey = new Map(
+      windows.flatMap((w) => w.keys.map((key) => [key, w] as const)),
+    );
+    const rowByFinality = new Map(rows.map((r) => [r.finalityAt, r]));
+
+    // A row the amended constitution no longer recognises is an absorbed thin
+    // midweek — anything else unrecognised is a state this migration was not
+    // written for, and the guards here and in the apply mutation refuse it.
+    const orphans = rows.filter((r) => !windowByFinality.has(r.finalityAt));
+
+    const absorptions: {
+      gameweekId: Id<"fantasyGameweeks">;
+      gwNumber: number;
+      finalityAt: number;
+      hostGameweekId: Id<"fantasyGameweeks">;
+      hostGwNumber: number;
+      moves: { fixtureId: Id<"fantasyFixtures">; toGameweekId: Id<"fantasyGameweeks"> }[];
+    }[] = [];
+
+    for (const orphan of orphans) {
+      const filed = fixtures.filter((f) => f.gameweekId === orphan._id);
+      if (filed.length >= MIDWEEK_ABSORPTION_MIN_FIXTURES) {
+        throw new Error(
+          `absorbThinMidweekGameweeks: gw ${orphan.gwNumber} holds ` +
+            `${filed.length} fixtures — not thin, refusing`,
+        );
+      }
+      const moves: {
+        fixtureId: Id<"fantasyFixtures">;
+        toGameweekId: Id<"fantasyGameweeks">;
+      }[] = [];
+      let hostGameweekId: Id<"fantasyGameweeks"> | null = null;
+      let hostGwNumber = 0;
+      for (const fixture of filed) {
+        const host = windowByKey.get(windowFor(fixture.kickoffAt).key);
+        const hostRow =
+          host === undefined ? undefined : rowByFinality.get(host.finalityAt);
+        if (host === undefined || hostRow === undefined) {
+          throw new Error(
+            `absorbThinMidweekGameweeks: no host row for fixture of gw ` +
+              `${orphan.gwNumber} — run a sync/bootstrap first`,
+          );
+        }
+        hostGameweekId = hostRow._id;
+        hostGwNumber = host.gwNumber;
+        moves.push({ fixtureId: fixture._id, toGameweekId: hostRow._id });
+      }
+      if (hostGameweekId === null) {
+        throw new Error(
+          `absorbThinMidweekGameweeks: gw ${orphan.gwNumber} matches no ` +
+            `window yet holds no fixtures — nothing to absorb it into; ` +
+            `delete it deliberately or run a sync first`,
+        );
+      }
+      absorptions.push({
+        gameweekId: orphan._id,
+        gwNumber: orphan.gwNumber,
+        finalityAt: orphan.finalityAt,
+        hostGameweekId,
+        hostGwNumber,
+        moves,
+      });
+    }
+
+    // Relabel the survivors exactly as the sync path would: same constitution,
+    // same reconcile plan, leagueIds re-derived from the fixtures themselves.
+    const leaguesByFinality = new Map<number, Set<number>>();
+    for (const fixture of fixtures) {
+      const w = windowByKey.get(windowFor(fixture.kickoffAt).key);
+      if (w === undefined) continue;
+      const set = leaguesByFinality.get(w.finalityAt) ?? new Set<number>();
+      set.add(fixture.leagueId);
+      leaguesByFinality.set(w.finalityAt, set);
+    }
+    const survivors = rows.filter((r) => windowByFinality.has(r.finalityAt));
+    const plan = reconcileGameweeks(
+      survivors,
+      windows.map((w) => ({
+        gwNumber: w.gwNumber,
+        leagueIds: [...(leaguesByFinality.get(w.finalityAt) ?? [])].sort(
+          (a, b) => a - b,
+        ),
+        finalityAt: w.finalityAt,
+      })),
+    );
+    if (plan.conflicts.length > 0 || plan.inserts.length > 0) {
+      throw new Error(
+        `absorbThinMidweekGameweeks: reconcile wants ${plan.inserts.length} ` +
+          `insert(s) and hit ${plan.conflicts.length} conflict(s) — this ` +
+          `migration only relabels; run a sync/bootstrap first`,
+      );
+    }
+    const patches = plan.patches.map((p) => ({
+      gameweekId: p.current._id,
+      fromGwNumber: p.current.gwNumber,
+      gwNumber: p.gwNumber,
+      leagueIds: p.leagueIds,
+    }));
+
+    if (dryRun !== true) {
+      await ctx.runMutation(internal.fantasyIngest.applyAbsorptionPlan, {
+        absorptions: absorptions.map(({ gwNumber: _gw, ...rest }) => rest),
+        patches,
+      });
+    }
+
+    return {
+      dryRun: dryRun === true,
+      absorbed: absorptions.map((a) => ({
+        gwNumber: a.gwNumber,
+        finalityAt: a.finalityAt,
+        fixturesMoved: a.moves.length,
+        hostGwNumber: a.hostGwNumber,
+      })),
+      relabelled: patches.map((p) => ({ from: p.fromGwNumber, to: p.gwNumber })),
+    };
+  },
+});
+
+export interface AbsorptionSnapshot {
+  rows: Doc<"fantasyGameweeks">[];
+  fixtures: {
+    _id: Id<"fantasyFixtures">;
+    gameweekId: Id<"fantasyGameweeks">;
+    kickoffAt: number;
+    leagueId: number;
+  }[];
+}
+
+/** The season's gameweek rows and (slim) fixtures, for the absorption action. */
+export const absorptionSnapshot = internalQuery({
+  args: { season: v.string() },
+  handler: async (ctx, { season }): Promise<AbsorptionSnapshot> => {
+    const rows = await ctx.db
+      .query("fantasyGameweeks")
+      .withIndex("by_season_gwNumber", (q) => q.eq("season", season))
+      .collect();
+    const rowIds = new Set(rows.map((r) => r._id));
+    const fixtures = (await ctx.db.query("fantasyFixtures").collect())
+      .filter((f) => rowIds.has(f.gameweekId))
+      .map((f) => ({
+        _id: f._id,
+        gameweekId: f.gameweekId,
+        kickoffAt: f.kickoffAt,
+        leagueId: f.leagueId,
+      }));
+    return { rows, fixtures };
+  },
+});
+
+/**
+ * Apply an absorption plan, RE-VERIFYING it against live state first — one
+ * transaction, so either every precondition still holds and everything is
+ * written, or nothing is.
+ */
+export const applyAbsorptionPlan = internalMutation({
+  args: {
+    absorptions: v.array(
+      v.object({
+        gameweekId: v.id("fantasyGameweeks"),
+        finalityAt: v.number(),
+        hostGameweekId: v.id("fantasyGameweeks"),
+        hostGwNumber: v.number(),
+        moves: v.array(
+          v.object({
+            fixtureId: v.id("fantasyFixtures"),
+            toGameweekId: v.id("fantasyGameweeks"),
+          }),
+        ),
+      }),
+    ),
+    patches: v.array(
+      v.object({
+        gameweekId: v.id("fantasyGameweeks"),
+        fromGwNumber: v.number(),
+        gwNumber: v.number(),
+        leagueIds: v.array(v.number()),
+      }),
+    ),
+  },
+  handler: async (ctx, { absorptions, patches }): Promise<void> => {
+    for (const absorption of absorptions) {
+      const row = await ctx.db.get(absorption.gameweekId);
+      if (row === null || row.finalityAt !== absorption.finalityAt) {
+        throw new Error("applyAbsorptionPlan: gameweek moved since planning");
+      }
+      if (row.status !== "upcoming") {
+        throw new Error(
+          `applyAbsorptionPlan: gw ${row.gwNumber} has status ` +
+            `"${row.status}", not "upcoming" — refusing to touch history`,
+        );
+      }
+      const filed = await ctx.db
+        .query("fantasyFixtures")
+        .withIndex("by_gameweek_kickoff", (q) =>
+          q.eq("gameweekId", absorption.gameweekId),
+        )
+        .collect();
+      const planned = new Set(absorption.moves.map((m) => m.fixtureId));
+      if (
+        filed.length !== absorption.moves.length ||
+        filed.some((f) => !planned.has(f._id))
+      ) {
+        throw new Error(
+          "applyAbsorptionPlan: fixture set changed since planning — re-run",
+        );
+      }
+      const host = await ctx.db.get(absorption.hostGameweekId);
+      if (host === null) {
+        throw new Error("applyAbsorptionPlan: host gameweek vanished");
+      }
+      await assertGameweekUnbound(ctx, absorption.gameweekId, row.gwNumber);
+
+      for (const move of absorption.moves) {
+        await ctx.db.patch(move.fixtureId, { gameweekId: move.toGameweekId });
+      }
+      await ctx.db.delete(absorption.gameweekId);
+    }
+
+    for (const patch of patches) {
+      const row = await ctx.db.get(patch.gameweekId);
+      if (row === null || row.gwNumber !== patch.fromGwNumber) {
+        throw new Error(
+          "applyAbsorptionPlan: ordinal moved since planning — re-run",
+        );
+      }
+      await ctx.db.patch(patch.gameweekId, {
+        gwNumber: patch.gwNumber,
+        leagueIds: patch.leagueIds,
+      });
+    }
+  },
+});
+
+/**
+ * Throw if anything outside the fixtures table references this gameweek.
+ * Indexed lookups where a gameweek-first index exists; the two tables without
+ * one (draft rooms, crowd-watched) are small (single digits on prod,
+ * 2026-08-19) and swept whole.
+ */
+async function assertGameweekUnbound(
+  ctx: { db: DatabaseReader },
+  gameweekId: Id<"fantasyGameweeks">,
+  gwNumber: number,
+): Promise<void> {
+  const refuse = (table: string): never => {
+    throw new Error(
+      `absorbThinMidweekGameweeks: gw ${gwNumber} is referenced by ` +
+        `${table} — refusing to absorb a bound gameweek`,
+    );
+  };
+
+  if (
+    (await ctx.db
+      .query("fantasySquads")
+      .withIndex("by_gameweek", (q) => q.eq("gameweekId", gameweekId))
+      .first()) !== null
+  )
+    refuse("fantasySquads");
+  if (
+    (await ctx.db
+      .query("fantasyFixtureStats")
+      .withIndex("by_gameweek", (q) => q.eq("gameweekId", gameweekId))
+      .first()) !== null
+  )
+    refuse("fantasyFixtureStats");
+  if (
+    (await ctx.db
+      .query("fantasyPlayerScores")
+      .withIndex("by_gameweek_state", (q) => q.eq("gameweekId", gameweekId))
+      .first()) !== null
+  )
+    refuse("fantasyPlayerScores");
+  if (
+    (await ctx.db
+      .query("fantasyFixtureScoring")
+      .withIndex("by_gameweek_state", (q) => q.eq("gameweekId", gameweekId))
+      .first()) !== null
+  )
+    refuse("fantasyFixtureScoring");
+  if (
+    (await ctx.db
+      .query("fantasyGameweekScoring")
+      .withIndex("by_gameweek", (q) => q.eq("gameweekId", gameweekId))
+      .first()) !== null
+  )
+    refuse("fantasyGameweekScoring");
+  if (
+    (await ctx.db
+      .query("fantasyGameweekPercentiles")
+      .withIndex("by_gameweek", (q) => q.eq("gameweekId", gameweekId))
+      .first()) !== null
+  )
+    refuse("fantasyGameweekPercentiles");
+  if (
+    (await ctx.db
+      .query("fantasyCrowdPairs")
+      .withIndex("by_gameweek_status", (q) => q.eq("gameweekId", gameweekId))
+      .first()) !== null
+  )
+    refuse("fantasyCrowdPairs");
+  if (
+    (await ctx.db
+      .query("fantasyCrowdRatings")
+      .withIndex("by_gameweek", (q) => q.eq("gameweekId", gameweekId))
+      .first()) !== null
+  )
+    refuse("fantasyCrowdRatings");
+  if (
+    (await ctx.db
+      .query("fantasyCrowdRaterStats")
+      .withIndex("by_gameweek_user", (q) => q.eq("gameweekId", gameweekId))
+      .first()) !== null
+  )
+    refuse("fantasyCrowdRaterStats");
+  if (
+    (await ctx.db
+      .query("fantasyCourtClaims")
+      .withIndex("by_gameweek_status", (q) => q.eq("gameweekId", gameweekId))
+      .first()) !== null
+  )
+    refuse("fantasyCourtClaims");
+
+  const rooms = await ctx.db.query("fantasyDraftRooms").collect();
+  if (rooms.some((r) => r.gameweekId === gameweekId)) refuse("fantasyDraftRooms");
+  const watched = await ctx.db.query("fantasyCrowdWatched").collect();
+  if (watched.some((w) => w.gameweekId === gameweekId))
+    refuse("fantasyCrowdWatched");
+}
