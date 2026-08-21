@@ -93,7 +93,7 @@ export type BudgetSquadScore = NonNullable<
 >;
 export type SlotScoreRow = BudgetSquadScore["slots"][number];
 
-const MARKET_RESULT_CAP = 40;
+const MARKET_RESULT_CAP = 130;
 
 // ── squad creation (the setup page — R1's full chooser) ──
 
@@ -790,7 +790,7 @@ export function PickerPanel({
           {results.length === MARKET_RESULT_CAP && (
             <p className="text-[11px] text-muted-foreground text-center">
               {t("weekend.narrowSearch", {
-                defaultValue: "Showing the top 40 — search to narrow.",
+                defaultValue: "Showing the top 130 — search to narrow.",
               })}
             </p>
           )}

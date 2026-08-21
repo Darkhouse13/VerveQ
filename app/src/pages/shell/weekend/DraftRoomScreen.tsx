@@ -35,7 +35,7 @@ export type DraftRoom = NonNullable<FunctionReturnType<typeof api.fantasyDraftRo
 export type DraftPool = NonNullable<FunctionReturnType<typeof api.fantasyDraftRooms.getDraftPool>>;
 export type PoolPlayer = DraftPool[number];
 
-const POOL_RESULT_CAP = 40;
+const POOL_RESULT_CAP = 130;
 
 // ── lobby ──
 
@@ -511,7 +511,7 @@ export function DraftBoardView({
         })}
         {pool !== null && pool !== undefined && results.length === POOL_RESULT_CAP && (
           <p className="text-[11px] text-muted-foreground text-center">
-            {t("weekend.narrowSearch", { defaultValue: "Showing the top 40 — search to narrow." })}
+            {t("weekend.narrowSearch", { defaultValue: "Showing the top 130 — search to narrow." })}
           </p>
         )}
       </div>
