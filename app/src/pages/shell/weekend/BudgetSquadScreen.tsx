@@ -1373,15 +1373,26 @@ export default function BudgetSquadScreen() {
    *  the club's name and point at the one place the exemption is set. */
   const clubCapToast = (e: unknown): boolean => {
     const raw = e instanceof Error ? e.message : "";
-    const hit = /At most (\d+) players from one club \((\S+) has \d+\)/.exec(raw);
+    const hit =
+      /At most (\d+) players from (one|your favorite) club \((\S+) has \d+\)/.exec(raw);
     if (hit === null) return false;
-    const clubId = hit[2];
+    const clubId = hit[3];
     const clubName =
       market?.players.find((p) => p.clubId === clubId)?.clubName ?? clubId;
+    if (hit[2] === "your favorite") {
+      toast.error(
+        t("weekend.clubCapFavoriteFriendly", {
+          defaultValue: "Only {{cap}} from {{club}}, even as your favorite club.",
+          cap: hit[1],
+          club: clubName,
+        }),
+      );
+      return true;
+    }
     toast.error(
       t("weekend.clubCapFriendly", {
         defaultValue:
-          "Only {{cap}} from {{club}} — unless they're your favorite club. Set it once (it's permanent) on the Weekend home.",
+          "Only {{cap}} from {{club}} — your favorite club gets one more. Set it once (it's permanent) on the Weekend home.",
         cap: hit[1],
         club: clubName,
       }),

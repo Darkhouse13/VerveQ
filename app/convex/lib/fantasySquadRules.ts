@@ -16,6 +16,7 @@
 
 import {
   FINISHER_COUNT,
+  FAVORITE_CLUB_CAP,
   FORMATION_BOUNDS,
   PER_CLUB_CAP,
   SLOT_ROLES,
@@ -233,12 +234,17 @@ export function validateClubCap(
 
   const violations: Violation[] = [];
   for (const [clubId, count] of perClub) {
-    if (favoriteClub !== null && clubId === favoriteClub) continue; // exempt
-    const allowed = Math.max(PER_CLUB_CAP, grandfathered?.get(clubId) ?? 0);
+    const isFavorite = favoriteClub !== null && clubId === favoriteClub;
+    const cap = isFavorite ? FAVORITE_CLUB_CAP : PER_CLUB_CAP;
+    const allowed = Math.max(cap, grandfathered?.get(clubId) ?? 0);
     if (count > allowed) {
       violations.push({
         code: "club_cap",
-        message: `At most ${PER_CLUB_CAP} players from one club (${clubId} has ${count}). Your favorite club is exempt.`,
+        // The builder parses this sentence (BudgetSquadScreen clubCapToast) —
+        // keep the "At most N players from <which> club (<id> has M)" shape.
+        message: isFavorite
+          ? `At most ${FAVORITE_CLUB_CAP} players from your favorite club (${clubId} has ${count}).`
+          : `At most ${PER_CLUB_CAP} players from one club (${clubId} has ${count}). Your favorite club gets ${FAVORITE_CLUB_CAP}.`,
       });
     }
   }

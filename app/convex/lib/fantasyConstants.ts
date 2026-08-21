@@ -93,6 +93,13 @@ export const DRAFT_ROOM_LOBBY_TTL_MS = 3 * 60 * 60 * 1000;
 export const PER_CLUB_CAP = 3;
 
 /**
+ * Owner ruling 2026-08-21: the favorite club is NOT unlimited — it gets one
+ * extra player, four instead of three. The favorite is also permanent (see
+ * fantasySquads.setFavoriteClub), so this is a standing +1, not a lever.
+ */
+export const FAVORITE_CLUB_CAP = PER_CLUB_CAP + 1;
+
+/**
  * DRAFT_ROOM v1.0.2 §Favorite-club exemption + ledger item 7: a favorite-club
  * CHANGE takes effect **28 calendar days** after it is made, measured as a
  * timestamp.

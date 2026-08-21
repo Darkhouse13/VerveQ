@@ -14,6 +14,7 @@ import { describe, expect, it } from "vitest";
 import {
   FAVORITE_CLUB_COOLDOWN_DAYS,
   FAVORITE_CLUB_COOLDOWN_MS,
+  FAVORITE_CLUB_CAP,
   PER_CLUB_CAP,
   SQUAD_BUDGET,
   SQUAD_SIZE,
@@ -203,13 +204,18 @@ describe("per-club cap with favorite-club exemption (DRAFT_ROOM v1.0 ledger 6+8)
     expect(validateClubCap(fourFromOneClub(), pool, "BIG_CLUB").ok).toBe(true);
   });
 
-  it("exempts the favorite without limit (all 13 from one club)", () => {
-    const slots = squadOf(FOUR_FOUR_TWO).map((s, i) => ({ ...s, playerId: `all${i}` }));
+  it(`caps the favorite at ${FAVORITE_CLUB_CAP}, not unlimited (owner ruling 2026-08-21)`, () => {
+    expect(FAVORITE_CLUB_CAP).toBe(PER_CLUB_CAP + 1);
+    const slots = squadOf(FOUR_FOUR_TWO).map((s, i) =>
+      i < FAVORITE_CLUB_CAP + 1 ? { ...s, playerId: `all${i}` } : s,
+    );
     const allPool = poolOf(
       ...Array.from({ length: SQUAD_SIZE }, (_, i) => player({ _id: `all${i}`, clubId: "BIG_CLUB" })),
     );
-    expect(validateClubCap(slots, allPool, "BIG_CLUB").ok).toBe(true);
-    expect(validateClubCap(slots, allPool, null).ok).toBe(false);
+    const result = validateClubCap(slots, allPool, "BIG_CLUB");
+    expect(result.ok).toBe(false);
+    expect(result.violations.map((v) => v.code)).toContain("club_cap");
+    expect(result.violations[0]?.message).toMatch(/from your favorite club/);
   });
 
   it("caps each non-favorite club independently", () => {

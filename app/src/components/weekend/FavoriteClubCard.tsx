@@ -12,8 +12,8 @@ import { leagueName } from "@/lib/leagueNames";
 import { friendlyError } from "@/lib/errors";
 
 /**
- * The one place a user sets the profile-level favorite club — the club the
- * 3-per-club cap does not apply to (How to play › Club cap). Lives on the
+ * The one place a user sets the profile-level favorite club — the club that
+ * gets a 4th slot under the 3-per-club cap (How to play › Club cap). Lives on the
  * weekend hub; the How-to-play text and the builder's club-cap error point
  * here.
  *
@@ -119,7 +119,7 @@ export function FavoriteClubCard() {
           <p className="text-[11px] text-muted-foreground mt-0.5 leading-snug">
             {t("weekend.favoriteClubLockedBody", {
               defaultValue:
-                "No club cap for them. Permanent — it can't be changed.",
+                "4 of them allowed instead of 3. Permanent — it can't be changed.",
             })}
           </p>
         </div>
@@ -151,7 +151,7 @@ export function FavoriteClubCard() {
           <p className="text-[11px] text-muted-foreground mt-0.5 leading-snug">
             {t("weekend.favoriteClubEmptyBody", {
               defaultValue:
-                "Pick one — it's exempt from the 3-per-club cap. One choice, for good.",
+                "Pick one — you may field 4 of them instead of 3. One choice, for good.",
             })}
           </p>
         </div>
@@ -252,7 +252,7 @@ export function FavoriteClubCard() {
                 >
                   {t("weekend.favoriteClubConfirmBody", {
                     defaultValue:
-                      "You'll be able to pick any number of {{club}} players in every squad from now on. This choice is permanent and can never be changed.",
+                      "You'll be able to field 4 {{club}} players instead of 3 in every squad from now on. This choice is permanent and can never be changed.",
                     club: candidate.name,
                   })}
                 </p>
