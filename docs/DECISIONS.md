@@ -32,6 +32,77 @@ Newest first.
 
 ---
 
+## DECISION 2026-08-20 — Availability is a REPORT, never a gate; and silence is never an all-clear
+
+**Ticket FW-AVAIL.** THE WEEKEND now shows what the feed says about a player's
+availability for the open gameweek — expected to miss, or doubtful, with the
+provider's own reason. Two rulings bind everything built on it.
+
+**1. Inform only. A flagged player stays fully pickable.** No badge greys a row,
+no validator consults the report, and no server path rejects a pick because the
+feed expects the player to miss. The alternative was considered and refused: the
+provider is late and sometimes wrong, a "Questionable" hamstring starts most
+weekends, and the coverage is uneven enough (see ruling 2) that a block would ban
+real players in some leagues and none in others. The manager is told and the
+manager decides. `Hide flagged` exists as an opt-in filter chip; it is off by
+default and it hides nothing the manager has not asked to hide.
+
+Structural, not a promise: no validator, lock or scoring path reads
+`fantasyPlayerAvailability`, and the surfaces are the only readers.
+
+**2. A league with no report is not a league of fit players.** Measured on
+2026-08-20 across the eight covered leagues, two of them (78 Bundesliga, 94
+Primeira Liga) returned ZERO availability rows for the entire season while
+another returned 310. A surface therefore may not render "available", "fit" or a
+clean badge off the absence of a row. It has exactly three states to say — flagged,
+reported-and-clear, and no-report — and `fantasyAvailabilityCoverage` is what
+distinguishes the last two. This is the FW-4 "absent beats invented" vocabulary
+applied to a new fact.
+
+A read that FAILS keeps the league's existing rows: a refused request is not news
+that everybody recovered.
+
+Recorded in code at `app/convex/lib/fantasyAvailabilityRules.ts` (module
+docblock — both rulings, and `coverageOf` for the second),
+`app/convex/fantasyAvailability.ts` (the sweep's fail-soft contract),
+`app/convex/schema.ts` (`fantasyPlayerAvailability` / `fantasyAvailabilityCoverage`
+table comments) and `app/src/lib/weekendAvailability.ts` (the presentation line).
+Pinned by `app/src/test/fantasyAvailabilityUi.test.tsx`, which fails if a flagged
+row ever loses its Pick button.
+
+---
+
+## DECISION 2026-08-20 — Player-name repair belongs on the write path, not in an overrides table
+
+**Ticket FW-NAMES.** 33 of 4,739 prod players carried a visibly broken display
+name: HTML entity leakage (`J. O&apos;Brien`), mojibake (`JoÃ£o Vasconcelos`,
+`M. LjubiÄ<8D>iÄ<87>`), doubled spaces and stray C1 control characters.
+
+**The repair is a pure function applied at ingest, and there is no per-player
+override table.** Every one of the 33 is a deterministic, reversible ENCODING
+fault rather than a spelling disagreement, and the feed re-sends the same bytes
+on every squad refresh — so a hand-edited row, or a curated overrides file, would
+be silently overwritten by the next ingest and would need re-curating forever.
+Fixing it where the name is written is what makes the fix hold.
+
+Two limits on that function, both load-bearing:
+
+- **It repairs, it does not transliterate.** "Højlund" keeps its ø and
+  "Ljubičić" keeps both carons. The pass restores the character the feed
+  mangled; it never flattens an accent. Search folding is a separate function.
+- **It does not adjudicate the feed's own spelling.** Where the provider's short
+  name is corrupt but its `lastname` field is clean, the repair reproduces the
+  provider's intended character and stops there — e.g. Lens 395589 resolves to
+  `N. Čelik` (caron), which is what the provider's own profile row spells, and
+  not to the `Ç` a reader might expect from the club's country.
+
+Recorded in code at `app/convex/lib/fantasyPlayerName.ts` (module docblock), and
+pinned by `app/src/test/fantasyPlayerName.test.ts`, whose corpus is the 33 real
+prod rows rather than invented examples. `fantasyIngest.repairPlayerNames` is the
+one-shot backfill for rows already stored (dry-run by default, idempotent).
+
+---
+
 ## DECISION 2026-08-15 — The crowd number is POST-VOTE only; pre-vote anchoring is banned
 
 **Ticket EYE-TEST-TEN.** The vote surface now shows the voter where the crowd

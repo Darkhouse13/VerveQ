@@ -60,6 +60,7 @@ import {
   seasonLabel,
   windowFor,
 } from "./lib/fantasyGameweekWindows";
+import { normalizePlayerName } from "./lib/fantasyPlayerName";
 
 /**
  * The season ingestion targets, as API-Football names it (opening calendar
@@ -463,7 +464,12 @@ export const applyClubPlayers = internalMutation({
     let updated = 0;
     const seen = new Set<string>();
 
-    for (const player of players) {
+    for (const raw of players) {
+      // FW-NAMES: the feed's `name` is entity-escaped and, for a minority of
+      // rows, mis-decoded. Repair BEFORE the change-detector below reads it,
+      // so a row already carrying the clean spelling compares equal and the
+      // sync stays a no-op instead of churning every player every run.
+      const player = { ...raw, name: normalizePlayerName(raw.name) };
       seen.add(player.providerPlayerId);
       const current = byProviderId.get(player.providerPlayerId);
 
@@ -532,6 +538,66 @@ export const applyClubPlayers = internalMutation({
     }
 
     return { created, updated, deactivated };
+  },
+});
+
+export interface RepairPlayerNamesResult {
+  scanned: number;
+  repaired: number;
+  dryRun: boolean;
+  changes: { providerPlayerId: string; clubId: string; from: string; to: string }[];
+}
+
+/**
+ * One-shot repair of stored player names (FW-NAMES).
+ *
+ * `applyClubPlayers` now normalises on the way in, but nothing re-reads the
+ * squad feed on a schedule — `bootstrapPlayers` is operator-run — so the rows
+ * already in the table would carry their broken spellings until the next
+ * manual bootstrap. This is the pass that fixes them in place.
+ *
+ * Read-only unless `dryRun` is false, and it reports every change it makes or
+ * would make. Run the dry pass first and read the diff: the normaliser is
+ * deliberate about what it touches, but a name is a person's name, and a
+ * silent bulk rewrite of 4,700 of them is not something to take on trust.
+ *
+ * Safe to re-run. The second pass finds nothing, because the normaliser is
+ * idempotent — which is also the invariant that makes this mutation's write
+ * count bounded rather than growing with every sync.
+ *
+ * `active: false` rows are repaired too. A departed player still appears in
+ * historic squads and receipts, and leaving him mis-spelled there would make
+ * the ledger disagree with the market about who was picked.
+ */
+export const repairPlayerNames = internalMutation({
+  args: { dryRun: v.optional(v.boolean()) },
+  handler: async (ctx, args): Promise<RepairPlayerNamesResult> => {
+    const dryRun = args.dryRun ?? true;
+    const players = await ctx.db.query("fantasyPlayers").collect();
+
+    const changes: RepairPlayerNamesResult["changes"] = [];
+    for (const player of players) {
+      const repaired = normalizePlayerName(player.name);
+      if (repaired === player.name) continue;
+      // The normaliser's empty-name fallback keeps the raw input, so this can
+      // only fire on a row whose name was whitespace to begin with. Report it
+      // and leave it alone rather than writing "" into a squad slot's label.
+      if (repaired === "") continue;
+      changes.push({
+        providerPlayerId: player.providerPlayerId,
+        clubId: player.clubId,
+        from: player.name,
+        to: repaired,
+      });
+      if (!dryRun) await ctx.db.patch(player._id, { name: repaired });
+    }
+
+    return {
+      scanned: players.length,
+      repaired: dryRun ? 0 : changes.length,
+      dryRun,
+      changes,
+    };
   },
 });
 

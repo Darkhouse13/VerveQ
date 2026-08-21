@@ -28,6 +28,11 @@ import { formatPoints } from "../../../convex/lib/fantasyScoring";
 import { NeoBadge } from "@/components/neo/NeoBadge";
 import { WeekendSheet } from "@/components/weekend/WeekendSheet";
 import { track } from "@/lib/analytics";
+import {
+  availabilityBadgeLabel,
+  availabilityColor,
+  availabilityLine,
+} from "@/lib/weekendAvailability";
 
 /** Below this many current-season minutes the sheet shows apps/minutes only —
  *  early-season honesty: last season stays the primary read (FW-SCOUT L3). */
@@ -160,6 +165,7 @@ export function PlayerSheet({
             );
           })()}
 
+          <AvailabilityBlock card={card} />
           <WeekendBlock card={card} />
           {thisSeason !== null && <SeasonBlock entry={thisSeason} position={card.position} current />}
           <SeasonBlock entry={lastSeason} position={card.position} />
@@ -168,6 +174,75 @@ export function PlayerSheet({
         </>
       )}
     </WeekendSheet>
+  );
+}
+
+// ── availability (FW-AVAIL) ──
+
+/**
+ * What the feed says about him for the open weekend, and — when it says
+ * nothing — whether that is silence or an absent report.
+ *
+ * The three states are distinct on purpose:
+ *   flagged      → the status, the feed's own reason, and when it was read;
+ *   clear        → "no availability concern reported", which is a statement
+ *                  about the REPORT, not a medical opinion;
+ *   no report    → his league files none, so we say exactly that.
+ *
+ * The third state is the one this block exists for. Rendering "available" for
+ * a Bundesliga player whose league returned zero rows would be inventing a
+ * fact, and the sheet's standing law is that a thing we do not hold renders
+ * absent rather than optimistic.
+ */
+function AvailabilityBlock({ card }: { card: Card }) {
+  const { t } = useTranslation();
+  const label = t("weekend.availability", { defaultValue: "Availability" });
+
+  if (card.availability != null) {
+    const stamped = new Date(card.availability.updatedAt).toLocaleString(undefined, {
+      weekday: "short",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+    return (
+      <Section label={label}>
+        <div
+          className="flex items-start justify-between gap-2"
+          data-testid="player-sheet-availability"
+        >
+          <p className="text-[11px] font-bold">
+            {availabilityLine(card.availability, t)}
+          </p>
+          <NeoBadge color={availabilityColor(card.availability.status)} size="sm">
+            {availabilityBadgeLabel(card.availability.status, t)}
+          </NeoBadge>
+        </div>
+        <p className="mt-0.5 font-mono text-[10px] uppercase tracking-[0.16em] text-muted-foreground">
+          {t("weekend.availabilityRead", {
+            defaultValue: "Feed read {{when}}",
+            when: stamped,
+          })}
+        </p>
+      </Section>
+    );
+  }
+
+  return (
+    <Section label={label}>
+      <p
+        className="text-[11px] text-muted-foreground"
+        data-testid="player-sheet-availability"
+      >
+        {card.availabilityReported
+          ? t("weekend.availabilityClear", {
+              defaultValue: "No availability concern reported for this weekend.",
+            })
+          : t("weekend.availabilityNoReport", {
+              defaultValue:
+                "His league files no availability report — we do not know either way.",
+            })}
+      </p>
+    </Section>
   );
 }
 

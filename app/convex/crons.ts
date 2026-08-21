@@ -78,5 +78,19 @@ crons.interval("fantasy-draft-room-sweep", { minutes: 5 }, internal.fantasyDraft
 // pagination, and the run refuses to continue past 500 calls (~250 projected
 // weekly against the 7,500/day cap).
 crons.cron("fantasy-season-stats-sweep", "23 3 * * 2", internal.fantasySeasonStats.refreshSeasonStats, {});
+// Availability for the open weekend (FW-AVAIL): who the feed expects to miss
+// his fixture, and who it merely doubts. One /injuries request per league that
+// actually plays in the window — at most 8, so ≤192/day against the 7,500 cap,
+// on top of the ~480/day sync and ~156/day transfer draw.
+//
+// Hourly rather than quarter-hourly: injury news breaks on press-conference
+// and team-news clocks, not on a matchday cadence, and an hour is the right
+// resolution for a report managers act on over days.
+//
+// :43 is the one free minute left in the fantasy namespace — clear of the
+// :00/:15/:30/:45 fixture sync, the :05/:20/:35/:50 lock sweep, the
+// :10/:25/:40/:55 scoring pass, the :02/:17/:32/:47 settle and the
+// :07/:22/:37/:52 court resolve. A no-op with no open gameweek.
+crons.cron("fantasy-availability-sweep", "43 * * * *", internal.fantasyAvailability.refreshAvailability, {});
 
 export default crons;

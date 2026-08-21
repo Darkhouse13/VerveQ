@@ -14,6 +14,7 @@ import { query } from "./_generated/server";
 import type { Doc } from "./_generated/dataModel";
 import { findOpenGameweek } from "./fantasyDraftRooms";
 import { fixtureForClub } from "./fantasyLocks";
+import type { Id } from "./_generated/dataModel";
 
 /**
  * The gameweek a budget squad builds for: the open (upcoming or live)
@@ -100,6 +101,27 @@ export const getMarket = query({
       }
     }
 
+    // ── FW-AVAIL: this weekend's availability report ──
+    //
+    // One index scan of a table that holds at most a few hundred rows for the
+    // open gameweek, joined onto the projection below. A player with no row is
+    // a player with nothing to report, which is NOT the same claim as "fit" —
+    // `availabilityLeagues` is what lets the client tell the two apart.
+    const availabilityRows = await ctx.db
+      .query("fantasyPlayerAvailability")
+      .withIndex("by_gameweek", (q) => q.eq("gameweekId", gameweek._id))
+      .collect();
+    const availabilityByPlayer = new Map(
+      availabilityRows.map((row) => [
+        row.playerId as Id<"fantasyPlayers">,
+        { status: row.status, category: row.category, reason: row.reason },
+      ]),
+    );
+    const coverageRows = await ctx.db
+      .query("fantasyAvailabilityCoverage")
+      .withIndex("by_gameweek", (q) => q.eq("gameweekId", gameweek._id))
+      .collect();
+
     // clubId → display name, inverted from the per-player pool meta (the one
     // denormalized club label in the schema — there is deliberately no clubs
     // table). Any club with at least one labelled player resolves.
@@ -135,6 +157,10 @@ export const getMarket = query({
               ? null
               : (clubNameById.get(matchup.opponentClubId) ?? null),
           isHome: matchup?.isHome ?? null,
+          /** FW-AVAIL. Null = nothing reported for him, which the surfaces
+           *  must not render as "fit" unless his league is in
+           *  `availabilityLeagues` below. */
+          availability: availabilityByPlayer.get(player._id) ?? null,
         };
       });
 
@@ -144,6 +170,15 @@ export const getMarket = query({
       gwNumber: gameweek.gwNumber,
       finalityAt: gameweek.finalityAt,
       players: market,
+      /** FW-AVAIL coverage: the leagues that actually filed a report for this
+       *  gameweek. A league absent from this list has told us nothing, and a
+       *  clean row for one of its players means "unknown", not "available".
+       *  Measured on prod 2026-08-20: 2 of the 8 covered leagues returned no
+       *  availability rows at all, so this is a routine state, not an alarm. */
+      availabilityLeagues: coverageRows
+        .filter((row) => row.rowsInFeed > 0 && row.error === null)
+        .map((row) => row.leagueId)
+        .sort((a, b) => a - b),
     };
   },
 });

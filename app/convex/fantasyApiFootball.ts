@@ -389,3 +389,42 @@ export async function fetchFixtureEvents(
 ): Promise<MatchEvent[]> {
   return client.get<MatchEvent[]>("/fixtures/events", { fixture: providerFixtureId });
 }
+
+// ─────────────────────── availability reads (FW-AVAIL, additive to this client)
+//
+// One endpoint, queried per league-season. The response is NOT "who is injured
+// right now": every row is bound to a specific FIXTURE, and the feed returns
+// rows for several rounds either side of today. Measured 2026-08-20 across the
+// eight covered leagues: 899 rows spanning fixture dates 2026-08-07 to
+// 2026-08-23. The caller therefore joins on `fixture.id` and keeps only the
+// rows belonging to the gameweek it is refreshing — taking the whole response
+// would flag players for matches that have already been played.
+//
+// Coverage is uneven and that is a product fact, not a bug to paper over. In
+// the same measurement leagues 78 (Bundesliga) and 94 (Primeira Liga) returned
+// ZERO rows for the entire season while league 40 returned 310. A league with
+// no rows is a league with no REPORT — it is never evidence that its players
+// are fit, and the surfaces must say so.
+
+export interface FeedInjuryRow {
+  player: {
+    id: number | null;
+    name: string | null;
+    /** "Missing Fixture" | "Questionable" — the only two values observed. */
+    type: string | null;
+    /** Free text: "Knee Injury", "Red Card", "Lacking Match Fitness", … */
+    reason: string | null;
+  } | null;
+  team: { id: number | null; name: string | null } | null;
+  fixture: { id: number | null; date: string | null } | null;
+  league: { id: number | null; season: number | null } | null;
+}
+
+/** Every availability row of one league-season. 1 request; the feed does not page it. */
+export async function fetchLeagueInjuries(
+  client: ApiFootballClient,
+  leagueId: number,
+  season: number,
+): Promise<FeedInjuryRow[]> {
+  return client.get<FeedInjuryRow[]>("/injuries", { league: leagueId, season });
+}

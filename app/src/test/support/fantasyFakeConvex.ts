@@ -88,6 +88,17 @@ const INDEXES: Record<string, Record<string, string[]>> = {
     by_season: ["season"],
   },
   fantasySeasonStatSweeps: { by_status: ["status"] },
+  // FW-AVAIL availability report (schema.ts §fantasyPlayerAvailability).
+  fantasyPlayerAvailability: {
+    by_gameweek_player: ["gameweekId", "playerId"],
+    by_gameweek_league: ["gameweekId", "leagueId"],
+    by_gameweek: ["gameweekId"],
+    by_player: ["playerId"],
+  },
+  fantasyAvailabilityCoverage: {
+    by_gameweek_league: ["gameweekId", "leagueId"],
+    by_gameweek: ["gameweekId"],
+  },
   fantasyFixtureScoring: {
     by_fixture: ["fixtureId"],
     by_gameweek_state: ["gameweekId", "state"],

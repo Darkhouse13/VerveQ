@@ -15,6 +15,7 @@
  */
 
 import type { FeedTransferEntry } from "../fantasyApiFootball";
+import { normalizePlayerName } from "./fantasyPlayerName";
 
 /** Sweeps re-read this many days behind the last success. Overlap is free —
  *  record identity makes a re-seen transfer a no-op — and it is what makes a
@@ -131,7 +132,11 @@ export function collectCandidates(
 
       const candidate: TransferCandidate = {
         providerPlayerId: String(playerId),
-        playerName: entry.player.name ?? `player ${playerId}`,
+        // FW-NAMES: the transfer feed carries the same entity-escaped,
+        // mis-decoded names the squad feed does, and this candidate is what
+        // seeds a NEW fantasyPlayers row (applyTransferChunk, incoming_new).
+        // Repairing here keeps the two ingest paths writing one spelling.
+        playerName: normalizePlayerName(entry.player.name ?? `player ${playerId}`),
         transferDate: move.date,
         rawFromClubId,
         rawToClubId,

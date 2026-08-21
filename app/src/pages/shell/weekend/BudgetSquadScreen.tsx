@@ -28,6 +28,13 @@ import type { FunctionReturnType } from "convex/server";
 import { toast } from "sonner";
 import * as DialogPrimitive from "@radix-ui/react-dialog";
 import { ArrowLeftRight, Check, ChevronDown, ChevronRight, Lock, Plus, X } from "lucide-react";
+import { matchesNameSearch } from "../../../../convex/lib/fantasyPlayerName";
+import {
+  availabilityBadgeLabel,
+  availabilityColor,
+  availabilityLine,
+} from "@/lib/weekendAvailability";
+import type { AvailabilityInfo } from "@/lib/weekendAvailability";
 import { api } from "../../../../convex/_generated/api";
 import type { Id } from "../../../../convex/_generated/dataModel";
 import { formatPoints } from "../../../../convex/lib/fantasyScoring";
@@ -256,6 +263,58 @@ export function BudgetBar({ budget }: { budget: NonNullable<BudgetSquad["budget"
   );
 }
 
+/**
+ * FW-AVAIL — the squad-level headline: how many of your thirteen the feed has
+ * flagged this weekend.
+ *
+ * Deliberately a COUNT and a list of names, not a call to action. It does not
+ * say who to sell, and it does not appear at all when nothing is flagged —
+ * a permanent "0 flagged" strip would train managers to stop reading it, and
+ * would also imply an all-clear this data cannot support (two of the eight
+ * covered leagues file no report at all).
+ *
+ * Locked slots are counted. The manager cannot act on them any more, but the
+ * reason a slot is about to score zero is still the most useful sentence on
+ * the screen.
+ */
+export function SquadAvailabilityNotice({
+  slots,
+}: {
+  slots: ReadonlyArray<Pick<BudgetSlot, "playerName"> & { availability?: AvailabilityInfo | null }>;
+}) {
+  const { t } = useTranslation();
+  const flagged = slots.filter((slot) => slot.availability != null);
+  if (flagged.length === 0) return null;
+
+  const out = flagged.filter((slot) => slot.availability!.status === "out");
+  const names = flagged
+    .map((slot) => slot.playerName)
+    .filter((name): name is string => name !== null)
+    .join(", ");
+
+  return (
+    <NeoCard
+      color={out.length > 0 ? "destructive" : "yellow"}
+      className="py-2"
+      data-testid="squad-availability-notice"
+    >
+      <p className="text-[11px] font-bold">
+        {out.length > 0
+          ? t("weekend.squadFlaggedOut", {
+              defaultValue:
+                "{{count}} of your squad are flagged to miss this weekend.",
+              count: out.length,
+            })
+          : t("weekend.squadFlaggedDoubt", {
+              defaultValue: "{{count}} of your squad are doubtful this weekend.",
+              count: flagged.length,
+            })}
+      </p>
+      <p className="mt-0.5 text-[11px]">{names}</p>
+    </NeoCard>
+  );
+}
+
 // ── slot detail (the sheet behind a chip tap) ──
 
 /** The nominal-position mismatch hint: a browsing warning, never a block —
@@ -422,6 +481,11 @@ export function PickerPanel({
   // out-of-position pick stays possible through exactly ONE affordance, the
   // "All positions" entry in the filter sheet, which clears it.
   const [allPositions, setAllPositions] = useState(false);
+  // FW-AVAIL: an opt-in filter, not a default. The feed's report is often late
+  // and sometimes wrong, so hiding flagged players by default would quietly
+  // remove real options from the board; the manager turns it on when they have
+  // decided they do not want to see them.
+  const [hideFlagged, setHideFlagged] = useState(false);
   const [leagueFilter, setLeagueFilter] = useState<number | null>(null);
   const [clubFilter, setClubFilter] = useState<string | null>(null);
   const [filterSheet, setFilterSheet] = useState<"league" | "club" | null>(null);
@@ -472,7 +536,10 @@ export function PickerPanel({
 
   const results = useMemo(() => {
     if (effectiveMarket === null || effectiveMarket === undefined) return [];
-    const needle = search.trim().toLowerCase();
+    // FW-NAMES: match on the accent-folded key, so "ljubicic" finds Ljubičić
+    // and "hojlund" finds Højlund on a phone keyboard that offers neither
+    // character. The rendered name keeps every accent.
+    const needle = search.trim();
     return effectiveMarket.players
       .filter(
         (p) =>
@@ -481,9 +548,10 @@ export function PickerPanel({
           (leagueFilter === null || p.leagueId === leagueFilter) &&
           (clubFilter === null || p.clubId === clubFilter) &&
           (!affordableOnly || (p.price !== null && p.price <= remaining)) &&
+          (!hideFlagged || p.availability == null) &&
           (needle.length === 0 ||
-            p.name.toLowerCase().includes(needle) ||
-            (p.clubName ?? "").toLowerCase().includes(needle)),
+            matchesNameSearch(p.name, needle) ||
+            matchesNameSearch(p.clubName ?? "", needle)),
       )
       .sort((a, b) => (b.price ?? 0) - (a.price ?? 0) || a.name.localeCompare(b.name))
       .slice(0, MARKET_RESULT_CAP);
@@ -496,6 +564,7 @@ export function PickerPanel({
     clubFilter,
     affordableOnly,
     showAll,
+    hideFlagged,
     remaining,
   ]);
 
@@ -575,6 +644,16 @@ export function PickerPanel({
           >
             {t("weekend.showAll", { defaultValue: "Show all" })}
           </NeoButton>
+          <NeoButton
+            variant={hideFlagged ? "primary" : "outline"}
+            size="sm"
+            className="shrink-0"
+            data-testid="picker-hide-flagged"
+            aria-pressed={hideFlagged}
+            onClick={() => setHideFlagged((v) => !v)}
+          >
+            {t("weekend.hideFlagged", { defaultValue: "Hide flagged" })}
+          </NeoButton>
           {allPositions && (
             <NeoButton
               variant="primary"
@@ -640,9 +719,35 @@ export function PickerPanel({
                         {player.opponentName} {player.isHome ? "(H)" : "(A)"}
                       </span>
                     )}
+                    {/* FW-AVAIL: the feed's own words, on the line the manager
+                        is already reading. Absent when nothing is reported —
+                        which is silence, never an all-clear. */}
+                    {player.availability != null && (
+                      <span
+                        className={
+                          player.availability.status === "out"
+                            ? "text-destructive"
+                            : "text-foreground"
+                        }
+                        data-testid="picker-availability-reason"
+                      >
+                        {" · "}
+                        {player.availability.reason ??
+                          availabilityLine(player.availability, t)}
+                      </span>
+                    )}
                   </p>
                 </button>
                 <div className="flex items-center gap-2 shrink-0">
+                  {player.availability != null && (
+                    <NeoBadge
+                      color={availabilityColor(player.availability.status)}
+                      size="sm"
+                      data-testid="picker-availability-badge"
+                    >
+                      {availabilityBadgeLabel(player.availability.status, t)}
+                    </NeoBadge>
+                  )}
                   {noFixture && (
                     <NeoBadge color="muted" size="sm">
                       {t("weekend.noFixture", { defaultValue: "No fixture" })}
@@ -1016,6 +1121,7 @@ export function SquadView({
     <div className="flex flex-col gap-4">
       {scoreWorthShowing && score != null && <ScoreHeader score={score} />}
       {squad.budget !== null && <BudgetBar budget={squad.budget} />}
+      <SquadAvailabilityNotice slots={squad.slots} />
 
       {swapSource !== null && (
         <NeoCard color="yellow" className="py-2 text-center">
@@ -1062,6 +1168,18 @@ export function SquadView({
                   </span>
                 )}
               </div>
+              {sheet.availability != null && (
+                <p
+                  className={`text-[11px] font-bold ${
+                    sheet.availability.status === "out"
+                      ? "text-destructive"
+                      : "text-foreground"
+                  }`}
+                  data-testid="slot-availability"
+                >
+                  {availabilityLine(sheet.availability, t)}
+                </p>
+              )}
               {nominalMismatch(sheet, sheetNominal) && (
                 <p className="text-[11px] font-mono uppercase text-muted-foreground">
                   {t("weekend.nominalMismatch", {

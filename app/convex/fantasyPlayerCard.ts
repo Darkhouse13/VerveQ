@@ -111,6 +111,44 @@ export const getPlayerCard = query({
       }
     }
 
+    // ---- FW-AVAIL: what the feed says about him for the open weekend ----
+    //
+    // Read against the open gameweek even when he has no fixture in it: a
+    // suspension is worth showing on a blank week, and a null here is silence,
+    // not a clean bill of health. `reported` carries whether his league filed
+    // anything at all, so the sheet can distinguish the two.
+    let availability: {
+      status: "out" | "doubtful";
+      category: "injury" | "suspension" | "other";
+      reason: string | null;
+      updatedAt: number;
+    } | null = null;
+    let availabilityReported = false;
+    if (gameweek !== null) {
+      const row = await ctx.db
+        .query("fantasyPlayerAvailability")
+        .withIndex("by_gameweek_player", (q) =>
+          q.eq("gameweekId", gameweek._id).eq("playerId", playerId),
+        )
+        .first();
+      if (row !== null) {
+        availability = {
+          status: row.status,
+          category: row.category,
+          reason: row.reason,
+          updatedAt: row.updatedAt,
+        };
+      }
+      const coverage = await ctx.db
+        .query("fantasyAvailabilityCoverage")
+        .withIndex("by_gameweek_league", (q) =>
+          q.eq("gameweekId", gameweek._id).eq("leagueId", player.leagueId),
+        )
+        .first();
+      availabilityReported =
+        coverage !== null && coverage.rowsInFeed > 0 && coverage.error === null;
+    }
+
     // ---- season lines (L1 seed + L3 refresh; raw totals, per-90 client-side) ----
     const seasonRows = await ctx.db
       .query("fantasyPlayerSeasonStats")
@@ -217,6 +255,10 @@ export const getPlayerCard = query({
        *  is NOT served — product law. */
       pool: meta?.pool ?? null,
       weekend,
+      /** FW-AVAIL. `availability: null` with `availabilityReported: false`
+       *  means his league filed no report — absence of news, not good news. */
+      availability,
+      availabilityReported,
       seasons,
       ownership,
       history,

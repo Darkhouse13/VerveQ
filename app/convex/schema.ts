@@ -1921,6 +1921,79 @@ export default defineSchema({
     .index("by_fixture_player_revision", ["fixtureId", "providerPlayerId", "revision"])
     .index("by_gameweek", ["gameweekId"]),
 
+  // FW-AVAIL — one player's expected availability for one gameweek.
+  //
+  // A REPORT, not a rule. Nothing in the write path reads this table: a flagged
+  // player is still pickable, still priced, still locks on his kickoff. The
+  // owner ruling on this ticket is that the surfaces tell the manager what the
+  // feed says and leave the decision with them, and keeping the table out of
+  // every validator is what makes that ruling structural rather than a promise.
+  //
+  // Keyed by GAMEWEEK, not by "now". Availability is a claim about a fixture —
+  // the provider's rows are fixture-bound — so a row here means "for this
+  // weekend", and a settled weekend keeps the report it was built under instead
+  // of being retconned by next week's news.
+  //
+  // At most one row per (gameweek, player): a club playing twice in a window
+  // can produce two feed rows, and `collapseForGameweek` keeps the more severe.
+  // The rows are DELETED, not tombstoned, when the feed stops flagging a player
+  // — a recovered player is one who simply has nothing to report.
+  fantasyPlayerAvailability: defineTable({
+    gameweekId: v.id("fantasyGameweeks"),
+    playerId: v.id("fantasyPlayers"),
+    /** Denormalised so the sweep can diff without a join, and so a row still
+     *  identifies its footballer if the player row is later replaced. */
+    providerPlayerId: v.string(),
+    clubId: v.string(),
+    leagueId: v.number(),
+    /** The fixture the claim is about — the kept one on a double gameweek. */
+    providerFixtureId: v.string(),
+    status: v.union(v.literal("out"), v.literal("doubtful")),
+    category: v.union(
+      v.literal("injury"),
+      v.literal("suspension"),
+      v.literal("other"),
+    ),
+    /** The provider's own wording ("Knee Injury", "Red Card"). Null when it
+     *  gave none — never replaced with a guess. */
+    reason: v.union(v.string(), v.null()),
+    /** Raw `player.type`, so a provider vocabulary change is visible in data
+     *  rather than silently collapsing into "doubtful". */
+    rawType: v.string(),
+    updatedAt: v.number(),
+  })
+    .index("by_gameweek_player", ["gameweekId", "playerId"])
+    .index("by_gameweek_league", ["gameweekId", "leagueId"])
+    .index("by_gameweek", ["gameweekId"])
+    .index("by_player", ["playerId"]),
+
+  // FW-AVAIL — did a league report at all, for a given gameweek.
+  //
+  // The honesty half of the feature. On the day this shipped, two of the eight
+  // covered leagues returned zero availability rows for the ENTIRE season while
+  // another returned 310, and without this table a surface cannot tell "nobody
+  // is flagged" from "nobody is watching". `rowsInFeed` counts the whole league
+  // response and `rowsInGameweek` the slice that survived the fixture join;
+  // rowsInFeed === 0 is the coverage gap, and it is what makes a screen say
+  // "no availability report for this league" instead of drawing a clean sheet.
+  //
+  // `error` is set when the provider refused or the request failed. That case
+  // leaves the league's existing availability rows UNTOUCHED — a failed read is
+  // not news that everyone recovered.
+  fantasyAvailabilityCoverage: defineTable({
+    gameweekId: v.id("fantasyGameweeks"),
+    leagueId: v.number(),
+    rowsInFeed: v.number(),
+    rowsInGameweek: v.number(),
+    /** Feed rows naming a player our universe does not carry. Reported, never
+     *  inserted — the applyPrices precedent. */
+    unresolved: v.number(),
+    error: v.union(v.string(), v.null()),
+    sweptAt: v.number(),
+  })
+    .index("by_gameweek_league", ["gameweekId", "leagueId"])
+    .index("by_gameweek", ["gameweekId"]),
+
   // One VERSION of one player's score for one fixture — carrying the score in
   // EVERY FIELDED SLOT, because a score is not a property of the player alone.
   //

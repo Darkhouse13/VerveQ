@@ -591,6 +591,51 @@ export const setFavoriteClub = mutation({
 // ── read ──
 
 /**
+ * FW-AVAIL — this gameweek's availability report for the players in a sheet.
+ *
+ * Shared by `getSquad` and `getMyCrewSheet` so the pitch reads the same way in
+ * budget and crew context. At most thirteen index lookups, none for an empty
+ * sheet.
+ *
+ * Served on the squad rather than joined client-side off the market: the market
+ * the builder subscribes to is fixture-scoped, and a picked player whose
+ * fixture was postponed would drop out of it — taking his flag with him, on
+ * exactly the sheet that most needs to see it.
+ */
+export interface SlotAvailability {
+  status: "out" | "doubtful";
+  category: "injury" | "suspension" | "other";
+  reason: string | null;
+}
+
+async function loadSlotAvailability(
+  ctx: QueryCtx,
+  gameweekId: Id<"fantasyGameweeks">,
+  slots: ReadonlyArray<{ playerId?: Id<"fantasyPlayers"> }>,
+): Promise<Map<Id<"fantasyPlayers">, SlotAvailability>> {
+  const byPlayer = new Map<Id<"fantasyPlayers">, SlotAvailability>();
+  const playerIds = new Set(
+    slots.flatMap((slot) => (slot.playerId === undefined ? [] : [slot.playerId])),
+  );
+  for (const playerId of playerIds) {
+    const row = await ctx.db
+      .query("fantasyPlayerAvailability")
+      .withIndex("by_gameweek_player", (q) =>
+        q.eq("gameweekId", gameweekId).eq("playerId", playerId),
+      )
+      .first();
+    if (row !== null) {
+      byPlayer.set(playerId, {
+        status: row.status,
+        category: row.category,
+        reason: row.reason,
+      });
+    }
+  }
+  return byPlayer;
+}
+
+/**
  * The caller's CREW sheet for one room, resolved from the roomId alone —
  * the sheet screen's entry query (FW-LAUNCH O5: the sheet was writable via
  * setFormation but had no surface). Authorization is ownership: the caller
@@ -624,6 +669,7 @@ export const getMyCrewSheet = query({
     const lockedByIndex = await lockStateForSlots(ctx, room.gameweekId, slots, Date.now());
     const snapshots = slots.map((slot) => toSlotSnapshot(slot));
     const playersById = await loadPlayers(ctx, snapshots);
+    const availabilityByPlayer = await loadSlotAvailability(ctx, room.gameweekId, slots);
 
     return {
       squadId: squad._id,
@@ -648,6 +694,13 @@ export const getMyCrewSheet = query({
             playerPrice: player?.price ?? null,
             locked: lockedByIndex.get(slot.slotIndex) === true,
             committedPrice: slot.committedPrice ?? null,
+            /** FW-AVAIL. Null = nothing reported. A locked slot keeps its
+             *  flag: the manager can no longer act on it, but the reason his
+             *  score is about to be zero is still worth stating. */
+            availability:
+              slot.playerId === undefined
+                ? null
+                : (availabilityByPlayer.get(slot.playerId) ?? null),
           };
         }),
     };
@@ -683,6 +736,7 @@ export const getSquad = query({
 
     const snapshots = slots.map((slot) => toSlotSnapshot(slot));
     const playersById = await loadPlayers(ctx, snapshots);
+    const availabilityByPlayer = await loadSlotAvailability(ctx, gameweekId, slots);
 
     // Budget context only: the live spend breakdown (committed + unlocked ≤
     // limit), recomputed from the same inputs every edit is validated against.
@@ -720,6 +774,13 @@ export const getSquad = query({
             playerPrice: player?.price ?? null,
             locked: lockedByIndex.get(slot.slotIndex) === true,
             committedPrice: slot.committedPrice ?? null,
+            /** FW-AVAIL. Null = nothing reported. A locked slot keeps its
+             *  flag: the manager can no longer act on it, but the reason his
+             *  score is about to be zero is still worth stating. */
+            availability:
+              slot.playerId === undefined
+                ? null
+                : (availabilityByPlayer.get(slot.playerId) ?? null),
           };
         }),
     };
