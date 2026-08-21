@@ -373,9 +373,26 @@ export function DrawExperience({ api, revealMs = 380 }: DrawExperienceProps) {
  * The build-time flag only decides whether the ROUTE renders. The mode's real
  * gate is server-side (drawSettings.enabled + the tester allowlist, checked on
  * every draw function), so a flipped VITE flag alone opens nothing.
+ *
+ * THE GATE IS AN OUTER SHELL, and it has to be. It used to live as an early
+ * `return <Navigate/>` INSIDE the component that owns the play-first effect —
+ * but hooks cannot be conditional, so that effect was registered above the
+ * early return and still ran on the flag-off render. Every logged-out visitor
+ * to /draw on prod therefore had `startAnonymousSession()` fired for them and
+ * a guest identity minted server-side, for a mode that then redirected them
+ * away. `/draw` is not hypothetical traffic: 23 people reached it directly in
+ * the last 60 days (plus 11 from Instagram, still arriving), because the route
+ * is registered unconditionally in App.tsx and the flag only guards what
+ * renders. Splitting the gate out — the same outer/inner shape HomeDrawCard
+ * and DrawHeroCard already use — means the flag-off path mounts no hooks at
+ * all, so nothing is created for a visitor who is about to be bounced.
  */
 export default function DrawScreen() {
-  const enabled = DRAW_ENABLED;
+  if (!DRAW_ENABLED) return <Navigate to="/" replace />;
+  return <DrawScreenInner />;
+}
+
+function DrawScreenInner() {
   const convex = useConvex();
   const api = useMemo(() => createDrawApi(convex), [convex]);
   const { accountState, startAnonymousSession } = useAuth();
@@ -399,8 +416,6 @@ export default function DrawScreen() {
     bootstrapped.current = true;
     startAnonymousSession().catch(() => setAuthFailed(true));
   }, [accountState, startAnonymousSession]);
-
-  if (!enabled) return <Navigate to="/" replace />;
 
   // Session settling or being created. `authFailed` is what stops this from
   // becoming the very "Loading…" hang this ticket exists to kill: on failure
