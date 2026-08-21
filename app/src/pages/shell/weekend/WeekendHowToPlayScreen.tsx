@@ -236,7 +236,7 @@ export default function WeekendHowToPlayScreen() {
           <Rule label={t("weekend.howThirteenLabel", { defaultValue: "Thirteen players:" })}>{t("weekend.howThirteenBody", { defaultValue: "an XI plus 2 finishers (your bench with intent)." })}</Rule>
           <Rule label={t("weekend.howShapeLabel", { defaultValue: "Any shape that adds up:" })}>{t("weekend.howShapeBody", { defaultValue: "exactly 1 GK, 3–5 DEF, 2–5 MID, 1–3 ATT in the XI. Finishers carry their own position, chosen freely." })}</Rule>
           <PitchShapeFigure />
-          <Rule label={t("weekend.howClubCapLabel", { defaultValue: "Club cap:" })}>{t("weekend.howClubCapBody", { defaultValue: "at most 3 players from one club — except your favorite club, which is unlimited (changing favorites has a 28-day cooldown)." })}</Rule>
+          <Rule label={t("weekend.howClubCapLabel", { defaultValue: "Club cap:" })}>{t("weekend.howClubCapBody", { defaultValue: "at most 3 players from one club — except your favorite club, which is unlimited. Set or change it from the Favorite club card on the Weekend home; your first pick applies right away, later changes take 28 days." })}</Rule>
           <Rule label={t("weekend.howDuplicatesLabel", { defaultValue: "No duplicates:" })}>{t("weekend.howDuplicatesBody", { defaultValue: "a squad is 13 players, not 13 slots." })}</Rule>
         </Section>
 

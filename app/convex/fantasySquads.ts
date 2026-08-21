@@ -34,6 +34,8 @@ import {
   type SlotSnapshot,
 } from "./lib/fantasySquadRules";
 import {
+  hasPendingFavoriteChange,
+  pendingFavoriteEffectiveFrom,
   planFavoriteClubChange,
   resolveFavoriteClub,
 } from "./lib/fantasyFavoriteClub";
@@ -570,6 +572,60 @@ export async function setFormationFor(
  * gameweek is not an input to this decision at all. Passing one would invite a
  * caller to believe it affected the outcome.
  */
+/**
+ * The signed-in user's favorite club as the hub shows it: the club in force
+ * now, any queued change and when it lands, plus the club catalogue to pick
+ * from. Anonymous visitors get `signedIn: false` and the catalogue only.
+ *
+ * The catalogue is derived the way getMarket derives it — there is
+ * deliberately no clubs table — from active players and the draft-pool meta
+ * names, grouped per league. Names fall back to the provider club id so a
+ * club missing its meta row is still pickable rather than invisible.
+ */
+export const getFavoriteClub = query({
+  args: {},
+  handler: async (ctx) => {
+    const players = await ctx.db.query("fantasyPlayers").collect();
+    const metaRows = await ctx.db.query("fantasyDraftPoolMeta").collect();
+    const clubNameByPlayer = new Map<string, string>();
+    for (const meta of metaRows) {
+      if (meta.clubName !== undefined) clubNameByPlayer.set(meta.playerId, meta.clubName);
+    }
+    const byClub = new Map<string, { clubId: string; name: string; leagueId: number }>();
+    for (const player of players) {
+      if (!player.active) continue;
+      const seen = byClub.get(player.clubId);
+      const name = clubNameByPlayer.get(player._id);
+      if (seen === undefined) {
+        byClub.set(player.clubId, {
+          clubId: player.clubId,
+          name: name ?? player.clubId,
+          leagueId: player.leagueId,
+        });
+      } else if (seen.name === seen.clubId && name !== undefined) {
+        seen.name = name;
+      }
+    }
+    const clubs = [...byClub.values()].sort(
+      (a, b) => a.leagueId - b.leagueId || a.name.localeCompare(b.name),
+    );
+
+    const userId = await getAuthUserId(ctx);
+    const user = userId === null ? null : await ctx.db.get(userId);
+    if (user === null) {
+      return { signedIn: false as const, inForce: null, pending: null, effectiveFrom: null, clubs };
+    }
+    const now = Date.now();
+    return {
+      signedIn: true as const,
+      inForce: resolveFavoriteClub(user, now),
+      pending: hasPendingFavoriteChange(user, now) ? (user.favoriteClubPending ?? null) : null,
+      effectiveFrom: pendingFavoriteEffectiveFrom(user, now),
+      clubs,
+    };
+  },
+});
+
 export const setFavoriteClub = mutation({
   args: { clubId: v.string() },
   handler: async (ctx, { clubId }) => {

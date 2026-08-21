@@ -39,6 +39,7 @@ import { NeoBadge } from "@/components/neo/NeoBadge";
 import { ShellLayout } from "@/components/shell/ShellLayout";
 import { SHELL_ROUTES } from "@/lib/shellRoutes";
 import { WeekendLeaguesLine } from "@/components/weekend/WeekendLeaguesLine";
+import { FavoriteClubCard } from "@/components/weekend/FavoriteClubCard";
 import { leagueName } from "@/lib/leagueNames";
 import {
   countdownParts,
@@ -663,6 +664,9 @@ export default function WeekendHubScreen() {
             testId="weekend-door-court"
           />
         </div>
+        {/* The profile-level favorite club (exempt from the 3-per-club cap).
+            Renders nothing for anonymous visitors. */}
+        <FavoriteClubCard />
       </div>
 
       {showFixturesPanel && fixtures !== null && (
