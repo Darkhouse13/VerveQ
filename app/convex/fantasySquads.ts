@@ -561,18 +561,6 @@ export async function setFormationFor(
 // ── favorite club ──
 
 /**
- * Set the profile-level favorite club, under the 28-day cooldown.
- *
- * Not in the ticket's mutation list, but the cooldown is unreachable — and
- * therefore untestable end-to-end — without a way to set the field. The whole
- * rule lives in lib/fantasyFavoriteClub; this is authorization plus a patch.
- *
- * The instant comes from the SERVER clock, never the client. It no longer takes
- * a gameweekId: under DRAFT_ROOM v1.0.2 the cooldown is 28 calendar days, so a
- * gameweek is not an input to this decision at all. Passing one would invite a
- * caller to believe it affected the outcome.
- */
-/**
  * The signed-in user's favorite club as the hub shows it: the club in force
  * now, any queued change and when it lands, plus the club catalogue to pick
  * from. Anonymous visitors get `signedIn: false` and the catalogue only.
@@ -626,6 +614,23 @@ export const getFavoriteClub = query({
   },
 });
 
+export const FAVORITE_CLUB_PERMANENT =
+  "Your favorite club is permanent and cannot be changed.";
+
+/**
+ * Set the profile-level favorite club — ONCE.
+ *
+ * Owner ruling 2026-08-21: the favorite club is permanent. The 28-day cooldown
+ * (DRAFT_ROOM v1.0.2 / STOP-F, still implemented in lib/fantasyFavoriteClub)
+ * was not enough — a user could still rotate favorites to stack four from
+ * whichever club they fancied that month. So a user with a club in force or a
+ * change still queued is refused here; only a first-ever selection goes
+ * through, and that path is immediate (S2). The lib's cooldown code still
+ * settles any change queued before this ruling, which is why getFavoriteClub
+ * keeps reporting `pending`.
+ *
+ * The instant comes from the SERVER clock, never the client.
+ */
 export const setFavoriteClub = mutation({
   args: { clubId: v.string() },
   handler: async (ctx, { clubId }) => {
@@ -633,7 +638,11 @@ export const setFavoriteClub = mutation({
     const user = await ctx.db.get(userId);
     if (user === null) throw new Error(SIGN_IN_REQUIRED);
 
-    const patch = planFavoriteClubChange(user, Date.now(), clubId);
+    const now = Date.now();
+    if (resolveFavoriteClub(user, now) !== null || hasPendingFavoriteChange(user, now)) {
+      throw new Error(FAVORITE_CLUB_PERMANENT);
+    }
+    const patch = planFavoriteClubChange(user, now, clubId);
     await ctx.db.patch(userId, patch);
 
     return {

@@ -27,59 +27,67 @@ const clubs = [
   { clubId: "c-liv", name: "Liverpool", leagueId: 39 },
   { clubId: "c-rma", name: "Real Madrid", leagueId: 140 },
 ];
+const unset = {
+  signedIn: true,
+  inForce: null,
+  pending: null,
+  effectiveFrom: null,
+  clubs,
+};
 
-describe("FavoriteClubCard", () => {
+describe("FavoriteClubCard — one permanent choice", () => {
   it("renders nothing for anonymous visitors", () => {
-    queryResult.value = {
-      signedIn: false,
-      inForce: null,
-      pending: null,
-      effectiveFrom: null,
-      clubs,
-    };
+    queryResult.value = { ...unset, signedIn: false };
     const { container } = render(<FavoriteClubCard />);
     expect(container).toBeEmptyDOMElement();
   });
 
-  it("shows the club in force and a pending change with its date", () => {
-    queryResult.value = {
-      signedIn: true,
-      inForce: "c-ars",
-      pending: "c-liv",
-      effectiveFrom: Date.UTC(2026, 8, 18, 12, 0, 0),
-      clubs,
-    };
+  it("once a club is in force the card is locked: no sheet opens", () => {
+    queryResult.value = { ...unset, inForce: "c-ars" };
     render(<FavoriteClubCard />);
     const card = screen.getByTestId("weekend-favorite-club");
     expect(card).toHaveTextContent("Arsenal");
-    expect(card).toHaveTextContent(/Liverpool takes over on/);
+    expect(card).toHaveTextContent(/can't be changed/);
+    fireEvent.click(card);
+    expect(screen.queryByTestId("favorite-club-sheet")).toBeNull();
   });
 
-  it("opens the sheet, filters by search and saves the chosen club", async () => {
-    queryResult.value = {
-      signedIn: true,
-      inForce: null,
-      pending: null,
-      effectiveFrom: null,
-      clubs,
-    };
+  it("warns that the choice is permanent BEFORE the list, then asks to confirm the pick", async () => {
+    queryResult.value = unset;
     setFavoriteClub.mockResolvedValue({
       inForce: "c-rma",
       pending: null,
       effectiveFrom: null,
     });
     render(<FavoriteClubCard />);
-    expect(screen.getByTestId("weekend-favorite-club")).toHaveTextContent(
-      /exempt from the 3-per-club cap/,
-    );
     fireEvent.click(screen.getByTestId("weekend-favorite-club"));
     const sheet = await screen.findByTestId("favorite-club-sheet");
-    expect(sheet).toHaveTextContent("Arsenal");
+    expect(screen.getByTestId("favorite-club-warning")).toHaveTextContent(
+      /can never be changed/,
+    );
+
     fireEvent.change(screen.getByTestId("favorite-club-search"), {
       target: { value: "real" },
     });
     expect(sheet).not.toHaveTextContent("Arsenal");
     fireEvent.click(screen.getByRole("button", { name: "Real Madrid" }));
+
+    // Tapping a club does NOT save yet — the confirm step stands between.
+    expect(setFavoriteClub).not.toHaveBeenCalled();
+    expect(screen.getByTestId("favorite-club-confirm-body")).toHaveTextContent(
+      /Real Madrid/,
+    );
+    expect(screen.getByTestId("favorite-club-confirm-body")).toHaveTextContent(
+      /permanent/,
+    );
+
+    // Back returns to the list without saving.
+    fireEvent.click(screen.getByRole("button", { name: "Back" }));
+    expect(screen.getByTestId("favorite-club-search")).toBeInTheDocument();
+    expect(setFavoriteClub).not.toHaveBeenCalled();
+
+    fireEvent.click(screen.getByRole("button", { name: "Real Madrid" }));
+    fireEvent.click(screen.getByTestId("favorite-club-confirm"));
     await waitFor(() =>
       expect(setFavoriteClub).toHaveBeenCalledWith({ clubId: "c-rma" }),
     );

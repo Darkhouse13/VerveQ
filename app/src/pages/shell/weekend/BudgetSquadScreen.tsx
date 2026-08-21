@@ -1368,11 +1368,40 @@ export default function BudgetSquadScreen() {
     setDisplayName(name);
   };
 
+  /** The server's club-cap refusal names the club by provider id
+   *  ("At most 3 players from one club (42 has 4)...") — translate it into
+   *  the club's name and point at the one place the exemption is set. */
+  const clubCapToast = (e: unknown): boolean => {
+    const raw = e instanceof Error ? e.message : "";
+    const hit = /At most (\d+) players from one club \((\S+) has \d+\)/.exec(raw);
+    if (hit === null) return false;
+    const clubId = hit[2];
+    const clubName =
+      market?.players.find((p) => p.clubId === clubId)?.clubName ?? clubId;
+    toast.error(
+      t("weekend.clubCapFriendly", {
+        defaultValue:
+          "Only {{cap}} from {{club}} — unless they're your favorite club. Set it once (it's permanent) on the Weekend home.",
+        cap: hit[1],
+        club: clubName,
+      }),
+      {
+        action: {
+          label: t("weekend.clubCapAction", { defaultValue: "Set favorite" }),
+          onClick: () => navigate(SHELL_ROUTES.weekend),
+        },
+      },
+    );
+    return true;
+  };
+
   const run = (fn: () => Promise<unknown>, fallback: string) => {
     if (busy) return;
     setBusy(true);
     void fn()
-      .catch((e: unknown) => toast.error(friendlyError(e, fallback)))
+      .catch((e: unknown) => {
+        if (!clubCapToast(e)) toast.error(friendlyError(e, fallback));
+      })
       .finally(() => setBusy(false));
   };
 

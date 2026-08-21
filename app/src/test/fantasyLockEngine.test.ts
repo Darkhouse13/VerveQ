@@ -358,7 +358,7 @@ describe("per-club cap and the favorite-club exemption, end to end", () => {
 
 // ── favorite cooldown, end to end ──
 
-describe("favorite-club cooldown, end to end (DRAFT_ROOM v1.0.2 ledger 7 / STOP-F)", () => {
+describe("favorite club is permanent (owner ruling 2026-08-21)", () => {
   const DAY = 86_400_000;
 
   async function gameweek(gwNumber: number): Promise<string> {
@@ -371,72 +371,25 @@ describe("favorite-club cooldown, end to end (DRAFT_ROOM v1.0.2 ledger 7 / STOP-
     });
   }
 
-  /**
-   * The cooldown is wall-clock time and the handler reads `Date.now()`, so
-   * these tests MOVE the clock rather than incrementing a gameweek number.
-   * That is the whole point of STOP-F: the gameweek a squad belongs to no
-   * longer has any bearing on whether a favorite change has landed.
-   *
-   * The clock is already faked by `beforeEach` (pinned to THURSDAY) and
-   * restored by `afterEach`. These tests only call `setSystemTime` — installing
-   * and tearing down their own fake timers would disable the harness's clock
-   * for whatever ran next in the file.
-   */
-  it("leaves the old club in force for 28 days, then lands", async () => {
-    const t0 = THURSDAY;
-
-    await setFavoriteClub(world.ctx, { clubId: "SAT_A" });
-    const result = (await setFavoriteClub(world.ctx, { clubId: "SAT_B" })) as {
-      inForce: string;
-      pending: string;
-      effectiveFrom: number;
-    };
-
-    expect(result).toMatchObject({
-      inForce: "SAT_A",
-      pending: "SAT_B",
-      effectiveFrom: t0 + 28 * DAY,
-    });
-
-    // Day 27 — still the OLD club, regardless of which gameweek we build in.
-    vi.setSystemTime(t0 + 27 * DAY);
-    const early = await gameweek(6);
-    const { squadId: sixth } = (await createSquad(world.ctx, {
-      gameweekId: early,
-      context: "budget",
-      formation: FOUR_FOUR_TWO,
-      finisherRoles: [...TWO_ATT_FINISHERS],
-    })) as { squadId: string };
-    expect(
-      world.db.rows("fantasySquads").find((r) => r._id === sixth)?.favoriteClubAtBuild,
-    ).toBe("SAT_A");
-
-    // Day 28 — the change has landed.
-    vi.setSystemTime(t0 + 28 * DAY);
-    const late = await gameweek(7);
-    const { squadId: seventh } = (await createSquad(world.ctx, {
-      gameweekId: late,
-      context: "budget",
-      formation: FOUR_FOUR_TWO,
-      finisherRoles: [...TWO_ATT_FINISHERS],
-    })) as { squadId: string };
-    expect(
-      world.db.rows("fantasySquads").find((r) => r._id === seventh)?.favoriteClubAtBuild,
-    ).toBe("SAT_B");
+  it("applies the first-ever selection immediately", async () => {
+    const result = await setFavoriteClub(world.ctx, { clubId: "SAT_A" });
+    expect(result).toMatchObject({ inForce: "SAT_A", pending: null, effectiveFrom: null });
   });
 
-  it("does not land early just because many gameweeks have passed", async () => {
-    // The regression STOP-F exists to prevent: under the old 4-gameweek rule a
-    // congested fortnight (weekend + midweek + weekend + midweek) satisfied the
-    // cooldown in about 14 days. Elapsed time is now the only thing that counts.
+  it("refuses any later change, and the snapshot keeps the first club for good", async () => {
     const t0 = THURSDAY;
-
     await setFavoriteClub(world.ctx, { clubId: "SAT_A" });
-    await setFavoriteClub(world.ctx, { clubId: "SAT_B" });
+    await expect(setFavoriteClub(world.ctx, { clubId: "SAT_B" })).rejects.toThrow(
+      /permanent and cannot be changed/,
+    );
+    // Re-selecting the same club is refused too — there is nothing to change.
+    await expect(setFavoriteClub(world.ctx, { clubId: "SAT_A" })).rejects.toThrow(
+      /permanent and cannot be changed/,
+    );
 
-    vi.setSystemTime(t0 + 14 * DAY);
-    for (const gwNumber of [4, 5, 6, 7]) await gameweek(gwNumber);
-    const gw = await gameweek(8);
+    // Long after the old 28-day cooldown would have elapsed: still SAT_A.
+    vi.setSystemTime(t0 + 60 * DAY);
+    const gw = await gameweek(9);
     const { squadId } = (await createSquad(world.ctx, {
       gameweekId: gw,
       context: "budget",
