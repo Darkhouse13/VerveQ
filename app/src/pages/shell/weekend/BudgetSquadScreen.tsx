@@ -569,7 +569,14 @@ export function PickerPanel({
   ]);
 
   return (
-    <div className="flex flex-col gap-4 min-h-0">
+    /* min-w-0: in the dialog host this root is a grid item (DialogContent is
+       `grid`), and a grid item's automatic minimum width is its content's
+       min-content width — which, for the non-wrapping chip row below, is the
+       full width of every chip laid side by side. Without min-w-0 the row can
+       never be narrower than its chips, so it never overflows and never
+       scrolls; the dialog just clips the last chip. The xl panel host already
+       carries min-w-0 on its wrapper, which is why only the dialog broke. */
+    <div className="flex flex-col gap-4 min-h-0 min-w-0">
         {host === "dialog" ? (
           <DialogTitle className="font-heading font-bold text-lg" data-testid="picker-prompt">
             {prompt}
@@ -599,7 +606,7 @@ export function PickerPanel({
             vertically under the finger. Clip the axis and pad the translate's
             travel so nothing is cut off mid-press. */}
         <div
-          className="flex gap-1.5 overflow-x-auto overflow-y-hidden pb-1 shrink-0 scrollbar-none"
+          className="flex gap-1.5 overflow-x-auto overflow-y-hidden pb-1 shrink-0 min-w-0 w-full scrollbar-none"
           data-testid="picker-filter-row"
         >
           <NeoButton
