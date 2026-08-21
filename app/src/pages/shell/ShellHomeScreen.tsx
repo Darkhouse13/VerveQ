@@ -1,4 +1,4 @@
-import { useLocation, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useQuery } from "convex/react";
 import {
@@ -8,6 +8,7 @@ import {
   Flame,
   Hammer,
   Lock,
+  Route,
   Star,
   Swords,
   Users,
@@ -20,7 +21,6 @@ import { HomeDrawCard } from "@/components/draw/HomeDrawCard";
 import { HomeWeekendCard } from "@/components/weekend/HomeWeekendCard";
 import { ShellLayout } from "@/components/shell/ShellLayout";
 import { SHELL_ROUTES } from "@/lib/shellRoutes";
-import { isWeekendTopRequested } from "@/lib/weekendDeepLink";
 import { RANKED_CAPABILITIES, tierFromElo, tierProgress } from "@/lib/rankedLadder";
 import { useAuth } from "@/contexts/AuthContext";
 import { usePreferredDailySport } from "@/hooks/usePreferredDailySport";
@@ -68,13 +68,8 @@ const COFFEE_URL = "https://buymeacoffee.com/verveq";
 
 export default function ShellHomeScreen() {
   const navigate = useNavigate();
-  const { search } = useLocation();
   const { t } = useTranslation();
   const { user, hasUsername, accountState } = useAuth();
-  // `?w=1` (the /weekend short link) leads Home with the WEEKEND teaser rather
-  // than the Draw card. Read per render from the live location so an in-app
-  // navigation that drops the param restores the default order.
-  const weekendFirst = isWeekendTopRequested(search);
   // Any server identity with a username — anonymous (username-only) or full —
   // is an onboarded user whose home reflects them. `hasUsername` is the
   // server-authoritative signal; tab-local guests have no server identity and
@@ -178,22 +173,21 @@ export default function ShellHomeScreen() {
           </div>
         </div>
 
-        {/* THE DRAW home hero (Ticket H) + THE WEEKEND entry card (FW-GO).
-            Default order is Draw-then-Weekend. A `?w=1` visit (old /weekend
-            short links; the link itself now targets the hub) SWAPS them so the
-            lime WEEKEND CTA is the first thing in the viewport. The Draw card
-            stays self-gating; the WEEKEND card is static — the mode is live. */}
-        {weekendFirst ? (
-          <>
-            <HomeWeekendCard />
-            <HomeDrawCard />
-          </>
-        ) : (
-          <>
-            <HomeDrawCard />
-            <HomeWeekendCard />
-          </>
-        )}
+        {/* THE WEEKEND entry card (FW-GO) + THE DRAW home hero (Ticket H).
+            THE WEEKEND LEADS, UNCONDITIONALLY. The old default was
+            Draw-then-Weekend with `?w=1` swapping them, which was set before
+            either mode had numbers. They do now: THE WEEKEND is the most
+            revisited surface on the app (56 people, 3.5 views each) and the
+            destination of every ad that converts, while THE DRAW is dark on
+            prod and carries no analytics at all — it fires no game events, so
+            there is no reading in which it outranks the flagship. Leaving the
+            old default in place meant the day `VITE_DRAW_ENABLED` flips, a
+            dark, unmeasured mode would silently displace the top of Home.
+            `?w=1` is now a no-op for ORDER (it stays honoured elsewhere) —
+            there is nothing left for it to swap. The Draw card stays
+            self-gating; the WEEKEND card is static, because the mode is live. */}
+        <HomeWeekendCard />
+        <HomeDrawCard />
 
         {/* One tree, two breakpoints: mobile stacks in DOM order; desktop is a
             never-scroll 3-column grid (pillars · pillars/dailies · ladder/forge),
@@ -240,7 +234,39 @@ export default function ShellHomeScreen() {
             </NeoCard>
           </div>
 
-          {/* COMPETE pillar */}
+          {/* CAREER PATH — the most-played mode on the app (73 people in 45
+              days, chained 10.6 completions each, 83% completion at ~34s a
+              run) and, until now, ABSENT FROM HOME ENTIRELY: its only entry
+              point was the Compete grid's "Just for fun" section, the bottom
+              of the screen, under a "these don't affect your rank" sub-line.
+              It sits in the TODAY column because it is the same kind of thing
+              the dailies are — a short, repeatable habit — and a 34-second
+              round is exactly what a home screen should be able to start. */}
+          <div className="flex flex-col gap-3 min-h-0 md:col-start-3 md:row-start-2">
+            <p className={EYEBROW}>{t("home.mostPlayed.eyebrow")}</p>
+            <NeoCard
+              color="yellow"
+              shadow="lg"
+              onClick={() => navigate(`${SHELL_ROUTES.careerPathPlay}?sport=football`)}
+              className={`p-4 flex flex-col gap-1.5 min-h-0 flex-1 ${LIFT}`}
+              data-testid="home-career-path-card"
+            >
+              <Route size={24} strokeWidth={2.5} />
+              <p className="font-heading font-black uppercase text-lg md:text-xl leading-none mt-auto">
+                {t("modes.careerPath.name")}
+              </p>
+              <p className="font-mono text-[10.5px] uppercase text-muted-foreground">
+                {t("modes.careerPath.desc")}
+              </p>
+            </NeoCard>
+          </div>
+
+          {/* COMPETE pillar — moved out of the prime col2/row1 cell to make room
+              for Career Path, and it is the right card to move: COMPETE is
+              duplicated by persistent navigation (the bottom bar on mobile,
+              the top bar on desktop), so a visitor never loses the door. A
+              mode with 73 players and no home presence had nothing else
+              carrying it. */}
           <NeoCard
             color="primary"
             shadow="lg"
@@ -278,9 +304,28 @@ export default function ShellHomeScreen() {
               <span className="md:hidden">{t("home.hooks.eyebrowShort")}</span>
               <span className="hidden md:inline">{t("home.hooks.eyebrow")}</span>
             </p>
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-3.5">
-              {/* Duels take the strip's lead slot (the dailies moved up to the
-                  TODAY pillar) — head-to-head is the "settle it" thesis. */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-3.5">
+              {/* Ordered by measured demand over 45 days (organic sessions
+                  only — paid traffic stripped, so one ad buy cannot reorder
+                  the app): Quiz 20 people, Duels 14, Arena 10. The strip used
+                  to lead with Duels on a "settle it" thesis rather than a
+                  number; the thesis is still right about what the app is FOR,
+                  but it is not evidence about what this strip should open
+                  with. */}
+              <NeoCard
+                onClick={() =>
+                  navigate("/difficulty?sport=football&mode=quiz&target=v2")
+                }
+                className={`p-3.5 flex flex-col gap-1.5 min-h-0 ${LIFT}`}
+              >
+                <Brain size={22} strokeWidth={2.5} />
+                <p className="font-heading font-bold text-base leading-none">
+                  {t("modes.quiz.name")}
+                </p>
+                <p className="font-mono text-[10.5px] uppercase text-muted-foreground">
+                  {t("home.hooks.quizSub")}
+                </p>
+              </NeoCard>
               <NeoCard
                 color="pink"
                 onClick={() => navigate(SHELL_ROUTES.duels)}
@@ -306,41 +351,26 @@ export default function ShellHomeScreen() {
                   {t("modes.arena.desc")}
                 </p>
               </NeoCard>
+              {/* THE FORGE joins the strip rather than holding a cell of its
+                  own. It is the least-reached surface on Home (7 people in 45
+                  days) and it was occupying a full desktop grid cell, which is
+                  the cell Career Path and COMPETE now share between them. It
+                  keeps its colour and its copy — only its footprint shrinks. */}
               <NeoCard
-                onClick={() =>
-                  navigate("/difficulty?sport=football&mode=quiz&target=v2")
-                }
+                color="pink"
+                onClick={() => navigate(SHELL_ROUTES.forge)}
                 className={`p-3.5 flex flex-col gap-1.5 min-h-0 ${LIFT}`}
               >
-                <Brain size={22} strokeWidth={2.5} />
+                <Hammer size={22} strokeWidth={2.5} />
                 <p className="font-heading font-bold text-base leading-none">
-                  {t("modes.quiz.name")}
+                  {t("forge.title")}
                 </p>
                 <p className="font-mono text-[10.5px] uppercase text-muted-foreground">
-                  {t("home.hooks.quizSub")}
+                  {t("forge.subtitle")}
                 </p>
               </NeoCard>
             </div>
           </div>
-
-          {/* The Forge */}
-          <NeoCard
-            color="pink"
-            shadow="lg"
-            onClick={() => navigate(SHELL_ROUTES.forge)}
-            className={`p-4 flex items-center gap-3.5 min-h-0 md:col-start-3 md:row-start-2 ${LIFT}`}
-          >
-            <Hammer size={28} strokeWidth={2.5} className="shrink-0" />
-            <div className="min-w-0">
-              <p className="font-heading font-bold text-[19px] leading-tight">
-                {t("forge.title")}
-              </p>
-              <p className="text-[12.5px] opacity-90">{t("forge.subtitle")}</p>
-            </div>
-            <span aria-hidden className="ml-auto font-heading font-black text-xl">
-              →
-            </span>
-          </NeoCard>
 
           {/* The ladder — dark ranks card */}
           <button

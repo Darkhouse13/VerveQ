@@ -22,10 +22,48 @@ const LIVE_SPORTS = new Set(["football"]);
 // `ranked` flag, never hardcoded: SOLO_KEYS is the full solo set and the
 // just-for-fun list is SOLO minus anything ranked, so flipping a mode's flag
 // (as CR-1 did for Survival) moves it between sections with no edit here.
-const SOLO_KEYS = ["quiz", "survival", "blitz", "higherLower", "verveGrid", "careerPath"];
-const FRIEND_KEYS = ["arena", "duel"];
+//
+// SECTION ORDER IS NOW DEMAND-ORDERED, and that is a deliberate correction.
+// `ranked` (does the mode write ELO) is a CORRECTNESS property and stays the
+// single source of truth for RANKED membership — CR-1 was right that filing a
+// ranked mode under "just for fun" is simply false. What it was never evidence
+// for is PROMINENCE, and it had quietly become that: Career Path, the most
+// played mode in the app, sat in the bottom section because it writes no ELO,
+// while Survival sat in the prime tier on a fifth of its players.
+//
+// Measured over 45 days, organic sessions only (paid traffic stripped, so a
+// single ad buy cannot reorder the app) — people who reached each mode:
+//   Career Path 73 · Daily 43 · Daily Survival 21 · Quiz 20 · Duels 14
+//   Arena 10 · VerveGrid 10 · Survival 8 · Higher/Lower 2 · Blitz 2
+const POPULAR_KEYS = ["careerPath"];
+// Solo set, ordered by demand. Career Path is NOT here any more — it is the
+// MOST PLAYED tier above. Blitz stays last and stays visible on purpose: see
+// the note on TODAY_KEYS below, it looks broken rather than unloved, and
+// hiding it would bury the evidence.
+const SOLO_KEYS = ["quiz", "survival", "verveGrid", "higherLower", "blitz"];
+// Duels 14 people, Arena 10 — same order the Home hooks strip now uses, so a
+// player meets the two social modes in the same order on both surfaces.
+const FRIEND_KEYS = ["duel", "arena"];
 // TODAY's two dailies. Both are casual server-side (convex/games.ts rejects
 // ranked completion for `dailyDate` runs), so neither can drift into RANKED.
+//
+// Daily (43 people) is the app's second-most-reached mode and its best-behaved
+// one — 86% completion at 10 questions and ~91s. It is NOT promoted into MOST
+// PLAYED above, even though the numbers would carry it, because splitting the
+// two dailies to do so would cost more than the one row it gains: they reset
+// together, they are the same habit, and TODAY already sits directly under the
+// hero. Career Path is the placement that was actually wrong.
+//
+// BLITZ: LOW TRAFFIC, AND THE GAME IS FINE. Over 60 days it recorded 12 starts
+// and 11 "completions" of zero questions in 2 seconds, which read at first
+// like a mode ending instantly — but all 11 came from ONE distinct_id inside a
+// single 28-minute window on 2026-08-16, during which the same id also swept
+// verve-grid, daily, daily-survival, weekend and /draw and racked up 27
+// /compete pageviews. That is a QA sweep, not a player, and it is the whole
+// basis of the "broken" reading; the owner has since played a full run by hand
+// and it worked. The one organic run in the window reported honestly (8
+// questions, 53s, score 600). So Blitz is simply the least-reached mode here,
+// which is why it sits last — nothing more is claimed.
 const TODAY_KEYS = ["daily", "dailySurvival"];
 
 // ONE tile spec for every 2-col grid cell (CR-1). Content, not this floor, used
@@ -86,6 +124,7 @@ export default function CompeteModeGridScreen() {
 
   // Window shared with the backend's themed question pool (lib/daily.ts).
   const dailyIsWorldCup = isWorldCupEditionActive(dailySport, getTodayUTC());
+  const popular = tilesByKeys(POPULAR_KEYS);
   const today = tilesByKeys(TODAY_KEYS);
   const ranked = RANKED_MODE_TILES;
   const friends = tilesByKeys(FRIEND_KEYS);
@@ -144,6 +183,27 @@ export default function CompeteModeGridScreen() {
             <WeekendHeroCard />
             <DrawHeroCard />
           </div>
+
+          {/* MOST PLAYED — demand, not ELO. The one tier on this screen ranked
+              by how much a mode is actually played; everything below it keeps
+              its own organising idea (today's resets, what moves your rank,
+              who you play with). See the measurement note above SOLO_KEYS. */}
+          {popular.length > 0 && (
+            <section className="space-y-2.5">
+              <SectionLabel>{t("compete.sections.popular")}</SectionLabel>
+              <div className="grid grid-cols-1 gap-3">
+                {popular.map((m) => (
+                  <RowModeCard
+                    key={m.key}
+                    tile={m}
+                    title={titleFor(m)}
+                    desc={descFor(m)}
+                    onPick={() => navigate(targetFor(m))}
+                  />
+                ))}
+              </div>
+            </section>
+          )}
 
           {/* TODAY — the daily hooks, same targets as the Home cards. */}
           {today.length > 0 && (
@@ -214,10 +274,21 @@ export default function CompeteModeGridScreen() {
             </div>
           </section>
 
-          {/* The collapsed category step's pointer keeps its home here. */}
-          <p className="text-xs text-muted-foreground text-center px-4">
+          {/* The collapsed category step's pointer keeps its home here — but it
+              is a LINK now, not a sentence. Learn ships 21 hand-authored
+              ladders and took ZERO pageviews in 45 days, and the reason is not
+              the content: nothing in the app has ever pointed at /v2/learn.
+              The only links to it come from inside Learn itself, so the single
+              place the product mentions the pillar was this line, which named
+              it and then gave the reader no way to get there. */}
+          <button
+            type="button"
+            onClick={() => navigate(SHELL_ROUTES.learn)}
+            data-testid="compete-learn-link"
+            className="text-xs text-muted-foreground text-center px-4 underline underline-offset-4 hover:text-foreground transition-colors"
+          >
             {t("compete.categoryHint")}
-          </p>
+          </button>
         </div>
       </div>
     </ShellLayout>

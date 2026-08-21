@@ -137,7 +137,7 @@ describe("/weekend?start=budget (WKND-ENTRY: paid direct-to-builder)", () => {
 });
 
 // ---------------------------------------------------------------------------
-// 2. The Home reorder old ?w=1 links still produce
+// 2. Home card order — THE WEEKEND leads, and ?w=1 cannot change that
 // ---------------------------------------------------------------------------
 
 const authMock = vi.hoisted(() => ({ value: {} as Record<string, unknown> }));
@@ -245,18 +245,27 @@ describe("Home card order", () => {
     };
   }
 
-  it("leads with the WEEKEND card on a ?w=1 visit (old links keep working)", async () => {
-    const { weekend, draw } = await renderHomeAt("/v2?w=1");
+  // THE WEEKEND LEADS HOME UNCONDITIONALLY. This pair used to pin the
+  // opposite — Draw-first by default, WEEKEND-first only under `?w=1` — which
+  // was set before either mode had numbers. THE WEEKEND is now the most
+  // revisited surface in the app and the destination of every ad that
+  // converts, while THE DRAW is dark on prod and fires no analytics events at
+  // all, so no reading of the data puts it above the flagship. The `?w=1`
+  // case is kept as a REGRESSION GUARD rather than deleted: old short links
+  // still carry the param, and it must not be able to reorder anything now
+  // that there is nothing left to swap.
+  it("leads with the WEEKEND card on an ordinary visit", async () => {
+    const { weekend, draw } = await renderHomeAt("/v2");
     expect(weekend).toBeGreaterThanOrEqual(0);
     expect(draw).toBeGreaterThanOrEqual(0);
     expect(weekend).toBeLessThan(draw);
   });
 
-  it("keeps the original Draw-first order for an ordinary visit", async () => {
-    const { weekend, draw } = await renderHomeAt("/v2");
+  it("still leads with the WEEKEND card on a ?w=1 visit (old links are a no-op for order)", async () => {
+    const { weekend, draw } = await renderHomeAt("/v2?w=1");
     expect(weekend).toBeGreaterThanOrEqual(0);
     expect(draw).toBeGreaterThanOrEqual(0);
-    expect(draw).toBeLessThan(weekend);
+    expect(weekend).toBeLessThan(draw);
   });
 
   it("renders the WEEKEND entry card with no server read behind it", async () => {

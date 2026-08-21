@@ -71,6 +71,7 @@
       "dueChip": "{{count}} à réviser aujourd'hui"
     },
     "today": { "eyebrow": "Les jeux du jour — les mêmes pour tous" },
+    "mostPlayed": { "eyebrow": "Les plus joués" },
     "hooks": {
       "eyebrow": "Défis du jour · garde la série",
       "eyebrowShort": "Défis du jour",
@@ -108,6 +109,7 @@
     "chooseMode": "Choisis un mode",
     "modeGridHint": "{{sport}} · choisis comment jouer",
     "sections": {
+      "popular": "Les plus joués",
       "today": "Aujourd'hui",
       "solo": "Modes solo",
       "ranked": "Classé",

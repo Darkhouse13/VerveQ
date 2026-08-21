@@ -71,6 +71,7 @@
       "dueChip": "{{count}} due today"
     },
     "today": { "eyebrow": "Today's games — same for everyone" },
+    "mostPlayed": { "eyebrow": "Most played" },
     "hooks": {
       "eyebrow": "Daily hooks · keep the streak",
       "eyebrowShort": "Daily hooks",
@@ -108,6 +109,7 @@
     "chooseMode": "Choose a mode",
     "modeGridHint": "{{sport}} · pick how you want to play",
     "sections": {
+      "popular": "Most played",
       "today": "Today",
       "solo": "Solo modes",
       "ranked": "Ranked",
