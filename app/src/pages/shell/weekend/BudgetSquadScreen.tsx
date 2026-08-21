@@ -74,6 +74,7 @@ import { WeekendLeaguesLine } from "@/components/weekend/WeekendLeaguesLine";
 import { SquadTabs } from "@/components/weekend/SquadTabs";
 import { SquadLedgerView } from "@/components/weekend/SquadLedgerView";
 import { useWideScreen } from "@/hooks/useWideScreen";
+import { useWheelToHorizontalScroll } from "@/hooks/useWheelToHorizontalScroll";
 import { track } from "@/lib/analytics";
 import { isBuilderEntry } from "@/lib/weekendDeepLink";
 import {
@@ -496,6 +497,9 @@ export function PickerPanel({
   // (key on slot) closes it with the panel, which is correct: a new slot
   // context is a new question.
   const [detailPlayer, setDetailPlayer] = useState<Id<"fantasyPlayers"> | null>(null);
+  /* Desktop: the scrollbar is hidden and there is no touch, so a mouse wheel
+     is the only way to reach the chips past the edge. */
+  const filterRowRef = useWheelToHorizontalScroll<HTMLDivElement>();
 
   /** The market's club catalogue, grouped per league — there is deliberately
    *  no clubs table, so the list is derived from the rows themselves.
@@ -606,6 +610,7 @@ export function PickerPanel({
             vertically under the finger. Clip the axis and pad the translate's
             travel so nothing is cut off mid-press. */}
         <div
+          ref={filterRowRef}
           className="flex gap-1.5 overflow-x-auto overflow-y-hidden pb-1 shrink-0 min-w-0 w-full scrollbar-none"
           data-testid="picker-filter-row"
         >
