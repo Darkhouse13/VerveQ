@@ -178,11 +178,14 @@ export default function ShellHomeScreen() {
             Draw-then-Weekend with `?w=1` swapping them, which was set before
             either mode had numbers. They do now: THE WEEKEND is the most
             revisited surface on the app (56 people, 3.5 views each) and the
-            destination of every ad that converts, while THE DRAW is dark on
-            prod and carries no analytics at all — it fires no game events, so
-            there is no reading in which it outranks the flagship. Leaving the
-            old default in place meant the day `VITE_DRAW_ENABLED` flips, a
-            dark, unmeasured mode would silently displace the top of Home.
+            destination of every ad that converts. THE DRAW is LIVE on prod —
+            VITE_DRAW_ENABLED is set in the host CI wrapper, NOT in the
+            procedure DEPLOYMENT.md documents, which still calls the mode dark
+            — and it took 39 people over 60 days. But it carries NO ANALYTICS:
+            no track() call anywhere in its screens and no "draw" member in
+            GameMode, so it fires no game events, and there is no reading of
+            the data in which it outranks the flagship. The old default handed
+            the top of Home to the one mode we cannot measure at all.
             `?w=1` is now a no-op for ORDER (it stays honoured elsewhere) —
             there is nothing left for it to swap. The Draw card stays
             self-gating; the WEEKEND card is static, because the mode is live. */}

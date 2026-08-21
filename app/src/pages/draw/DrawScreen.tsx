@@ -377,15 +377,18 @@ export function DrawExperience({ api, revealMs = 380 }: DrawExperienceProps) {
  * THE GATE IS AN OUTER SHELL, and it has to be. It used to live as an early
  * `return <Navigate/>` INSIDE the component that owns the play-first effect —
  * but hooks cannot be conditional, so that effect was registered above the
- * early return and still ran on the flag-off render. Every logged-out visitor
- * to /draw on prod therefore had `startAnonymousSession()` fired for them and
- * a guest identity minted server-side, for a mode that then redirected them
- * away. `/draw` is not hypothetical traffic: 23 people reached it directly in
- * the last 60 days (plus 11 from Instagram, still arriving), because the route
- * is registered unconditionally in App.tsx and the flag only guards what
- * renders. Splitting the gate out — the same outer/inner shape HomeDrawCard
- * and DrawHeroCard already use — means the flag-off path mounts no hooks at
- * all, so nothing is created for a visitor who is about to be bounced.
+ * early return and still ran on the flag-off render, firing
+ * `startAnonymousSession()` and minting a guest identity server-side for a
+ * visitor who was about to be redirected away.
+ *
+ * PROD IS NOT AFFECTED: VITE_DRAW_ENABLED is set there (host CI wrapper, not
+ * the procedure in DEPLOYMENT.md), so the mode is live and this branch never
+ * runs. Every flag-off build is affected — `npm run dev`, `vite preview`, and
+ * any rollback of the flag — and /draw is reachable in all of them because the
+ * route is registered unconditionally in App.tsx. Splitting the gate out — the
+ * same outer/inner shape HomeDrawCard and DrawHeroCard already use — means the
+ * flag-off path mounts no hooks at all, so nothing is created for a visitor
+ * who is about to be bounced.
  */
 export default function DrawScreen() {
   if (!DRAW_ENABLED) return <Navigate to="/" replace />;
