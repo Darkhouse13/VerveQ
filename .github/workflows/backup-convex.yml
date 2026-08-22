@@ -1,0 +1,159 @@
+name: backup-convex
+
+# Snapshots the PRODUCTION Convex deployment to Cloudflare R2.
+#
+# Why this runs in GitHub Actions and not on the Hetzner box: the box is the
+# thing we cannot rely on. A backup job that lives on the server it is meant to
+# protect stops running in exactly the situation you need it. Nothing here
+# touches the server, and the Convex deploy key never lands on it.
+#
+# Two tiers, because the snapshot is unevenly valuable:
+#   - tables only (~90 MB)  — accounts, ratings, streaks, seasons, questions.
+#     This is the irreplaceable half, and the one that saves you from a bad
+#     migration or a wrong delete in a mutation. Cheap enough to run daily.
+#   - full (~550 MB+)       — adds _storage, which is ~86% of the bytes. Mostly
+#     generated duel share cards (regenerable), but seedQuestions.ts also puts
+#     QUESTION IMAGES there, read back via question.imageId. Those are content,
+#     not cache, so file storage must be captured on a real schedule.
+#
+# Retention is enforced by R2 lifecycle rules on the bucket, keyed to these
+# prefixes — daily/ 14d, weekly/ 56d, monthly/ 190d. If you rename a prefix
+# here, the objects stop expiring and the bill grows quietly. Change both.
+
+on:
+  schedule:
+    - cron: "17 3 * * 1-6"   # Mon-Sat 03:17 UTC — tables only
+    - cron: "17 3 * * 0"     # Sunday 03:17 UTC — full, with file storage
+    - cron: "47 3 1 * *"     # 1st of month 03:47 UTC — full, kept 6 months
+  workflow_dispatch:
+    inputs:
+      tier:
+        description: "Which snapshot to take (use 'manual' before a schema change or backfill)"
+        type: choice
+        default: manual
+        options: [manual, daily, weekly, monthly]
+
+# 03:17 avoids Convex's own 00:00-00:30 cron burst (season check, daily
+# challenge generator, elo decay, draw board, active-users email).
+
+concurrency:
+  group: backup-convex
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  snapshot:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+
+    env:
+      AWS_DEFAULT_REGION: auto
+      # R2 rejects the CRC64NVME checksums newer aws-cli versions send by
+      # default. Both settings are no-ops against a service that accepts them,
+      # so they are safe to keep regardless.
+      AWS_REQUEST_CHECKSUM_CALCULATION: when_required
+      AWS_RESPONSE_CHECKSUM_VALIDATION: when_required
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v5
+
+      - name: Set up Node
+        uses: actions/setup-node@v5
+        with:
+          node-version: 22.x
+
+      - name: Decide tier
+        id: tier
+        run: |
+          set -euo pipefail
+          case "${{ github.event_name }}" in
+            schedule)
+              case "${{ github.event.schedule }}" in
+                "17 3 * * 1-6") TIER=daily   ;;
+                "17 3 * * 0")   TIER=weekly  ;;
+                "47 3 1 * *")   TIER=monthly ;;
+                *) echo "::error::unmapped schedule '${{ github.event.schedule }}' — add it to this case block"; exit 1 ;;
+              esac
+              ;;
+            *) TIER="${{ inputs.tier }}" ;;
+          esac
+          # Only the daily tier skips file storage; everything else is full.
+          if [ "$TIER" = "daily" ]; then STORAGE=""; else STORAGE="--include-file-storage"; fi
+          STAMP="$(date -u +%Y-%m-%dT%H%M%SZ)"
+          echo "tier=$TIER"                                   >> "$GITHUB_OUTPUT"
+          echo "storage_flag=$STORAGE"                        >> "$GITHUB_OUTPUT"
+          echo "key=$TIER/verveq-$STAMP.zip"                  >> "$GITHUB_OUTPUT"
+          echo "Tier: $TIER${STORAGE:+ (with file storage)}"  >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Export Convex production snapshot
+        working-directory: app
+        env:
+          CONVEX_DEPLOY_KEY: ${{ secrets.CONVEX_PROD_DEPLOY_KEY }}
+        run: |
+          set -euo pipefail
+          if [ -z "${CONVEX_DEPLOY_KEY:-}" ]; then
+            echo "::error::CONVEX_PROD_DEPLOY_KEY is not set — refusing to run"; exit 1
+          fi
+          # Pinned to the version this repo develops against, so a CLI release
+          # cannot silently change the archive format under the restore runbook.
+          npx --yes convex@1.40.0 export \
+            --path "$RUNNER_TEMP/snapshot.zip" \
+            ${{ steps.tier.outputs.storage_flag }}
+
+      - name: Verify the archive before trusting it
+        id: verify
+        run: |
+          set -euo pipefail
+          SNAP="$RUNNER_TEMP/snapshot.zip"
+          # An unreadable backup is worse than no backup, because it is
+          # believed. Check it opens and carries the tables we expect BEFORE
+          # anything gets uploaded or an old snapshot expires.
+          unzip -t "$SNAP" > /dev/null
+          for TABLE in users userRatings gameSessions seasons; do
+            if ! unzip -Z1 "$SNAP" | grep -q "^${TABLE}/"; then
+              echo "::error::expected table '${TABLE}' missing from the export — not uploading"; exit 1
+            fi
+          done
+          BYTES="$(stat -c%s "$SNAP")"
+          # A tables-only export that comes back tiny means the export silently
+          # produced an empty database, which has happened to better people.
+          if [ "$BYTES" -lt 5000000 ]; then
+            echo "::error::snapshot is only ${BYTES} bytes — suspiciously small, not uploading"; exit 1
+          fi
+          echo "bytes=$BYTES" >> "$GITHUB_OUTPUT"
+          echo "Archive verified: $(numfmt --to=iec "$BYTES"), $(unzip -Z1 "$SNAP" | wc -l) entries" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload to R2
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
+        run: |
+          set -euo pipefail
+          aws s3 cp "$RUNNER_TEMP/snapshot.zip" \
+            "s3://verveq-backups/${{ steps.tier.outputs.key }}" \
+            --endpoint-url "https://${R2_ACCOUNT_ID}.r2.cloudflarestorage.com" \
+            --only-show-errors
+
+      - name: Confirm the object actually landed
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+          R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
+        run: |
+          set -euo pipefail
+          # "The upload command exited 0" is not the same claim as "the bytes
+          # are in the bucket". Read it back and compare sizes.
+          REMOTE="$(aws s3api head-object \
+            --bucket verveq-backups \
+            --key "${{ steps.tier.outputs.key }}" \
+            --endpoint-url "https://${R2_ACCOUNT_ID}.r2.cloudflarestorage.com" \
+            --query ContentLength --output text)"
+          LOCAL="${{ steps.verify.outputs.bytes }}"
+          if [ "$REMOTE" != "$LOCAL" ]; then
+            echo "::error::size mismatch — local ${LOCAL} bytes, R2 reports ${REMOTE}"; exit 1
+          fi
+          echo "Stored: \`${{ steps.tier.outputs.key }}\` ($(numfmt --to=iec "$REMOTE")) in r2://verveq-backups" >> "$GITHUB_STEP_SUMMARY"
