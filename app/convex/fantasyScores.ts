@@ -151,8 +151,32 @@ const AWAITING_RETRY_INTERVAL_MS = 30 * 60 * 1000;
 /** /fixtures/players + /fixtures/events. */
 export const CALLS_PER_FIXTURE = 2;
 
-/** The ticket's gate: STOP if a gameweek's projected spend exceeds this. */
-export const GAMEWEEK_CALL_BUDGET = 500;
+/**
+ * The gate: a gameweek whose projected LIFETIME spend exceeds this is not read.
+ *
+ * Sized against the real season, because the previous value was sized against
+ * an assumption that expired. It was 500, chosen when "the biggest gameweek in
+ * the bootstrapped season" was 48 fixtures (384 calls). The midweek-absorption
+ * amendment (prod 2026-08-19) merged sub-5-fixture midweek windows into their
+ * weekend, and windows are now much larger: measured on prod for 2026-2027,
+ * the largest is GW3 at 82 fixtures (656 calls) and a typical full weekend is
+ * 78 (624). GW2's 66 fixtures projected 528 against the 500 ceiling, so
+ * `scoreDueFixtures` threw on every run from 2026-08-19 and made no request at
+ * all — five finished fixtures sat unscored for days while the guard refused a
+ * ten-call run over a lifetime projection 5.6% above the line.
+ *
+ * 1600 covers 200 fixtures: 2.4x the largest window this season, so ordinary
+ * growth (postponements folded in, another league, a fuller absorption) cannot
+ * quietly re-trip it. It is still a real circuit breaker — against the
+ * provider's 7,500 requests/day it is ~21% of a single day's quota even if a
+ * whole window were spent inside one day.
+ *
+ * NOTE what this bounds. This is a LIFETIME cap per gameweek; the RATE cap is
+ * DEFAULT_FIXTURE_LIMIT (24 fixtures = 48 calls per run, four runs an hour),
+ * and that is the number that bounds daily exposure. Raising this ceiling does
+ * not raise the peak call rate.
+ */
+export const GAMEWEEK_CALL_BUDGET = 1600;
 
 /** How many fixtures one action run will read. Keeps a run well inside limits. */
 const DEFAULT_FIXTURE_LIMIT = 24;
@@ -340,6 +364,17 @@ export const scoringPlan = internalQuery({
         .withIndex("by_gameweek_kickoff", (q) => q.eq("gameweekId", gameweek._id))
         .collect();
 
+      // Over budget is a fact about THIS gameweek, so it is contained to this
+      // gameweek: its fixtures are not proposed, and every other window keeps
+      // scoring. It used to abort the entire run — one oversized window took
+      // the whole pipeline down with it, which is exactly what happened on
+      // 2026-08-19 and is why nothing scored anywhere for three days. The
+      // gameweek still appears in `overBudget` so the caller can shout about
+      // it; being skipped is never allowed to be silent.
+      const projectedCalls =
+        allFixtures.length * (1 + REVISION_CHECK_BUDGET + 1) * CALLS_PER_FIXTURE;
+      const gameweekOverBudget = projectedCalls > GAMEWEEK_CALL_BUDGET;
+
       let dueHere = 0;
       for (const fixture of fixtures) {
         if (fixture.status !== FT_CLASS_STATUS) {
@@ -376,6 +411,7 @@ export const scoringPlan = internalQuery({
 
         if (readKind === null) continue;
         dueHere += 1;
+        if (gameweekOverBudget) continue;
         due.push({
           providerFixtureId: fixture.providerFixtureId,
           fixtureId: fixture._id,
@@ -396,9 +432,8 @@ export const scoringPlan = internalQuery({
         finalityAt: gameweek.finalityAt,
         fixturesInGameweek: allFixtures.length,
         fixturesDueNow: dueHere,
-        callsThisRun: dueHere * CALLS_PER_FIXTURE,
-        projectedCallsForGameweek:
-          allFixtures.length * (1 + REVISION_CHECK_BUDGET + 1) * CALLS_PER_FIXTURE,
+        callsThisRun: gameweekOverBudget ? 0 : dueHere * CALLS_PER_FIXTURE,
+        projectedCallsForGameweek: projectedCalls,
       });
     }
 
@@ -2590,12 +2625,21 @@ export const scoreDueFixtures = internalAction({
       );
     }
 
+    // An over-budget gameweek is SKIPPED, loudly — it is no longer allowed to
+    // abort the run. Throwing here meant a single oversized window stopped
+    // scoring for every other window too, and because the throw came before
+    // any request, a finished fixture could sit unscored indefinitely with the
+    // pipeline apparently "running" every fifteen minutes. Its fixtures are
+    // already absent from plan.fixtures (scoringPlan), so the run below reads
+    // everything else and this is a report, not a control-flow decision.
     if (plan.overBudget.length > 0) {
       const detail = plan.overBudget
         .map((g) => `${g.season} GW${g.gwNumber} projects ${g.projectedCallsForGameweek}`)
         .join("; ");
-      throw new Error(
-        `[FW-4] STOP: projected gameweek spend exceeds ${GAMEWEEK_CALL_BUDGET} calls (${detail}). No request was made.`,
+      console.error(
+        `[FW-4] SKIPPED — projected gameweek spend exceeds ${GAMEWEEK_CALL_BUDGET} calls (${detail}). ` +
+          `Those gameweeks were NOT read; every other gameweek in this run was. ` +
+          `Their fixtures will settle unscored unless the ceiling is raised before finality.`,
       );
     }
 

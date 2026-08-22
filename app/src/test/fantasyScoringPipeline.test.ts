@@ -732,9 +732,14 @@ describe("the call plan (R2 cadence + the 500-call gate)", () => {
     expect(plan.gameweeks[0].projectedCallsForGameweek).toBe(24);
   });
 
-  it("flags a gameweek whose projected spend would break the 500-call ceiling", async () => {
-    // 63 fixtures x 4 reads x 2 calls = 504 > 500. The gate is arithmetic on the
-    // gameweek, not on the run, so it fires before a single request is made.
+  it("flags a gameweek whose projected spend would break the call ceiling", async () => {
+    // 201 fixtures x 4 reads x 2 calls = 1608 > 1600. The gate is arithmetic on
+    // the gameweek, not on the run, so it fires before a single request is made.
+    //
+    // The ceiling moved 500 -> 1600 because the old value was sized for a
+    // 48-fixture week and the absorption amendment made windows far bigger
+    // (prod 2026-2027: largest is 82 fixtures / 656 calls). At 500 a real
+    // 66-fixture gameweek tripped this gate and scoring stopped dead.
     const gameweekId = await world.db.insert("fantasyGameweeks", {
       season: "2026-2027",
       gwNumber: 99,
@@ -742,7 +747,7 @@ describe("the call plan (R2 cadence + the 500-call gate)", () => {
       status: "upcoming",
       finalityAt: SUNDAY + 5 * 86_400_000,
     });
-    for (let i = 0; i < 63; i += 1) {
+    for (let i = 0; i < 201; i += 1) {
       await world.db.insert("fantasyFixtures", {
         gameweekId,
         leagueId: 39,
@@ -761,7 +766,65 @@ describe("the call plan (R2 cadence + the 500-call gate)", () => {
     };
     expect(plan.overBudget).toHaveLength(1);
     expect(plan.overBudget[0].gwNumber).toBe(99);
-    expect(plan.overBudget[0].projectedCallsForGameweek).toBe(504);
+    expect(plan.overBudget[0].projectedCallsForGameweek).toBe(1608);
+  });
+
+  it("does not flag the largest window a real season actually produces", () => {
+    // Measured on prod for 2026-2027 after the absorption amendment: GW3 is
+    // the biggest at 82 fixtures, a typical full weekend is 78. Both must sit
+    // under the ceiling with room to spare, or the pipeline stops every week.
+    const projected = (fixtures: number) =>
+      fixtures *
+      (1 + fantasyScores.REVISION_CHECK_BUDGET + 1) *
+      fantasyScores.CALLS_PER_FIXTURE;
+    expect(projected(82)).toBe(656);
+    expect(projected(82)).toBeLessThan(fantasyScores.GAMEWEEK_CALL_BUDGET);
+    expect(projected(78)).toBeLessThan(fantasyScores.GAMEWEEK_CALL_BUDGET);
+    // and the headroom is real, not marginal
+    expect(fantasyScores.GAMEWEEK_CALL_BUDGET).toBeGreaterThanOrEqual(projected(82) * 2);
+  });
+
+  it("an over-budget gameweek is skipped WITHOUT starving the others", async () => {
+    // The regression this exists for: the guard used to abort the whole run, so
+    // one oversized window stopped scoring EVERYWHERE. Both windows are seeded
+    // here rather than leaning on the shared world, so the test proves the
+    // containment on its own terms.
+    const seedWindow = async (gwNumber: number, count: number, tag: string) => {
+      const gameweekId = await world.db.insert("fantasyGameweeks", {
+        season: "2026-2027",
+        gwNumber,
+        leagueIds: [39],
+        status: "upcoming",
+        finalityAt: SUNDAY + 5 * 86_400_000,
+      });
+      for (let i = 0; i < count; i += 1) {
+        await world.db.insert("fantasyFixtures", {
+          gameweekId,
+          leagueId: 39,
+          providerFixtureId: `f-${tag}-${i}`,
+          kickoffAt: SATURDAY,
+          status: "finished",
+          homeClubId: "SAT_A",
+          awayClubId: "SAT_B",
+          homeGoals: 1,
+          awayGoals: 0,
+        });
+      }
+    };
+    await seedWindow(98, 201, "huge"); // 1608 calls — over the 1600 ceiling
+    await seedWindow(97, 3, "small"); // 24 calls — comfortably inside it
+
+    const plan = (await scoringPlan(world.ctx, { now: AFTER_SATURDAY })) as {
+      fixtures: { providerFixtureId: string; gwNumber: number }[];
+      overBudget: { gwNumber: number }[];
+    };
+    const flagged = plan.overBudget.map((g) => g.gwNumber);
+    expect(flagged).toContain(98);
+    expect(flagged).not.toContain(97);
+    // not one fixture of the over-budget window is proposed ...
+    expect(plan.fixtures.filter((f) => f.gwNumber === 98)).toHaveLength(0);
+    // ... and the window beside it is read exactly as if the big one were absent
+    expect(plan.fixtures.filter((f) => f.gwNumber === 97)).toHaveLength(3);
   });
 });
 
