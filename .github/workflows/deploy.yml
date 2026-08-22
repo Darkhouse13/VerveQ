@@ -1,12 +1,23 @@
 name: deploy
 
-# Auto-deploy on push to master:
+# Auto-deploy after master passes Check:
 #   Frontend — SSH to the host; a forced command runs the existing
 #   image-based publish (deploy/build-and-run.sh) with rollback kept.
 # The Convex backend is deployed manually (Ticket 0.1 C4 removed it from CI).
 # VerveQ is NOT a Coolify app; this replaces the manual deploy in docs/DEPLOYMENT.md.
+#
+# This used to trigger on `push: branches: [master]`, which meant deploy and
+# Check started at the same instant and never spoke: the gate ran, but it did
+# not gate. A red test could land after players already had the code. Hanging
+# the deploy off Check's completion — and refusing anything but success — makes
+# the suite that already exists actually block a release.
+#
+# workflow_dispatch stays as the deliberate override for a manual redeploy or
+# rollback, where waiting on CI is not what you want.
 on:
-  push:
+  workflow_run:
+    workflows: [Check]
+    types: [completed]
     branches: [master]
   workflow_dispatch:
 
@@ -19,6 +30,12 @@ concurrency:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    # workflow_run fires on completion regardless of outcome, so the guard is
+    # what actually enforces the gate — without it this is the old behaviour
+    # with extra steps. A manual dispatch has no parent run and must still pass.
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      github.event.workflow_run.conclusion == 'success'
     steps:
       - name: Checkout
         uses: actions/checkout@v5
