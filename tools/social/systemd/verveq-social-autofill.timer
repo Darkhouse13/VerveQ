@@ -1,0 +1,13 @@
+[Unit]
+Description=Daily VerveQ feed top-up (catches up after boot if the machine was off)
+
+[Timer]
+OnCalendar=*-*-* 10:00:00
+# The machine is a desktop that is often off: a missed run fires shortly
+# after the next login instead of being skipped.
+Persistent=true
+RandomizedDelaySec=300
+Unit=verveq-social-autofill.service
+
+[Install]
+WantedBy=timers.target

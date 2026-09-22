@@ -1,0 +1,10 @@
+[Unit]
+Description=VerveQ feed: keep the Instagram/Facebook queue a week ahead
+After=network-online.target
+
+[Service]
+Type=oneshot
+WorkingDirectory=/home/darkhouse/verveq
+Environment=PATH=/home/darkhouse/.nvm/versions/node/v24.18.0/bin:/usr/local/bin:/usr/bin:/bin
+ExecStart=/bin/bash -c 'node tools/social/autofill.mjs >> /home/darkhouse/verveq/tools/social/autofill.log 2>&1'
+TimeoutStartSec=3600

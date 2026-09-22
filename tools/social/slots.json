@@ -1,0 +1,17 @@
+{
+  "version": 1,
+  "note": "VerveQ four-a-day feed on Instagram + the Facebook Page, published through VerveQ's OWN Postiz (postiz.verveq.com — never Terralore's). Times are first-guess defaults for a UK/European football audience: still in the morning commute, ladder reel at lunch, quiz after work, concept reel in the evening peak. Facebook runs 10 minutes behind Instagram so the two media fetches never collide. Channel ids are pinned: the publisher posts to these two integrations and nothing else.",
+  "timezone": "Europe/London",
+  "channels": {
+    "instagram": "cmubpeexo0005o184xq3e7yzc",
+    "facebook": "cmubpcsuc0001o1841pfivzmo"
+  },
+  "platformOffsetMinutes": { "instagram": 0, "facebook": 10 },
+  "slots": {
+    "carousel": "08:30",
+    "ladder": "12:30",
+    "question": "17:30",
+    "concept": "20:30"
+  },
+  "lookaheadDays": 7
+}

@@ -1,0 +1,105 @@
+{
+  "note": "Ladder reels for the 12:30 slot, in posting order. Paths are relative to tools/content-factory/out (rendered locally, not in git). Left out on purpose: ladder-long-one-squad and ladder-long-five-leagues (captions pitch the retired WEEKEND waitlist) and the 2026-08-01 all-timers cut (superseded by 2026-08-05).",
+  "reels": [
+    {
+      "id": "ladder-long-goat-tier",
+      "video": "2026-08-14/ladder-long-b3/verveq-ladder-long-goat-tier.mp4",
+      "caption": "2026-08-14/ladder-long-b3/verveq-ladder-long-goat-tier.txt"
+    },
+    {
+      "id": "ladder-long-number-nines",
+      "video": "2026-08-14/ladder-long-b3/verveq-ladder-long-number-nines.mp4",
+      "caption": "2026-08-14/ladder-long-b3/verveq-ladder-long-number-nines.txt"
+    },
+    {
+      "id": "ladder-long-bosman-bargains",
+      "video": "2026-08-14/ladder-long-b3/verveq-ladder-long-bosman-bargains.mp4",
+      "caption": "2026-08-14/ladder-long-b3/verveq-ladder-long-bosman-bargains.txt"
+    },
+    {
+      "id": "ladder-long-cup-final-men",
+      "video": "2026-08-14/ladder-long-b3/verveq-ladder-long-cup-final-men.mp4",
+      "caption": "2026-08-14/ladder-long-b3/verveq-ladder-long-cup-final-men.txt"
+    },
+    {
+      "id": "ladder-long-south-american-kings",
+      "video": "2026-08-14/ladder-long-b3/verveq-ladder-long-south-american-kings.mp4",
+      "caption": "2026-08-14/ladder-long-b3/verveq-ladder-long-south-american-kings.txt"
+    },
+    {
+      "id": "ladder-long-never-left-england",
+      "video": "2026-08-14/ladder-long-b3/verveq-ladder-long-never-left-england.mp4",
+      "caption": "2026-08-14/ladder-long-b3/verveq-ladder-long-never-left-england.txt"
+    },
+    {
+      "id": "ladder-long-journeymen-deluxe",
+      "video": "2026-08-14/ladder-long-b3/verveq-ladder-long-journeymen-deluxe.mp4",
+      "caption": "2026-08-14/ladder-long-b3/verveq-ladder-long-journeymen-deluxe.txt"
+    },
+    {
+      "id": "ladder-long-differentials",
+      "video": "2026-08-14/ladder-long-b3/verveq-ladder-long-differentials.mp4",
+      "caption": "2026-08-14/ladder-long-b3/verveq-ladder-long-differentials.txt"
+    },
+    {
+      "id": "ladder-long-one-club-almost",
+      "video": "2026-08-14/ladder-long-b3/verveq-ladder-long-one-club-almost.mp4",
+      "caption": "2026-08-14/ladder-long-b3/verveq-ladder-long-one-club-almost.txt"
+    },
+    {
+      "id": "ladder-long-absurd-loop",
+      "video": "2026-08-14/ladder-long-b3/verveq-ladder-long-absurd-loop.mp4",
+      "caption": "2026-08-14/ladder-long-b3/verveq-ladder-long-absurd-loop.txt"
+    },
+    {
+      "id": "ladder-long-five-leagues-2",
+      "video": "2026-08-14/ladder-long-b3/verveq-ladder-long-five-leagues-2.mp4",
+      "caption": "2026-08-14/ladder-long-b3/verveq-ladder-long-five-leagues-2.txt"
+    },
+    {
+      "id": "ladder-long-dugout",
+      "video": "2026-08-11/verveq-ladder-long-dugout.mp4",
+      "caption": "2026-08-11/verveq-ladder-long-dugout.txt"
+    },
+    {
+      "id": "ladder-long-all-timers",
+      "video": "2026-08-05/verveq-ladder-long-all-timers.mp4",
+      "caption": "2026-08-05/verveq-ladder-long-all-timers.txt"
+    },
+    {
+      "id": "ladder-long-grand-tour",
+      "video": "2026-08-05/verveq-ladder-long-grand-tour.mp4",
+      "caption": "2026-08-05/verveq-ladder-long-grand-tour.txt"
+    },
+    {
+      "id": "ladder-long-hard-way-up",
+      "video": "2026-08-05/verveq-ladder-long-hard-way-up.mp4",
+      "caption": "2026-08-05/verveq-ladder-long-hard-way-up.txt"
+    },
+    {
+      "id": "ladder-long-number-ones",
+      "video": "2026-08-05/verveq-ladder-long-number-ones.mp4",
+      "caption": "2026-08-05/verveq-ladder-long-number-ones.txt"
+    },
+    {
+      "id": "ladder-long-old-guard",
+      "video": "2026-08-05/verveq-ladder-long-old-guard.mp4",
+      "caption": "2026-08-05/verveq-ladder-long-old-guard.txt"
+    },
+    {
+      "id": "ladder-long-journeymen",
+      "video": "2026-08-01/verveq-ladder-long-journeymen.mp4",
+      "caption": "2026-08-01/verveq-ladder-long-journeymen.txt"
+    },
+    {
+      "id": "ladder-long-modern",
+      "video": "2026-08-01/verveq-ladder-long-modern.mp4",
+      "caption": "2026-08-01/verveq-ladder-long-modern.txt"
+    },
+    {
+      "id": "ladder-long-premier-league",
+      "video": "2026-08-01/verveq-ladder-long-premier-league.mp4",
+      "caption": "2026-08-01/verveq-ladder-long-premier-league.txt"
+    }
+  ]
+}
