@@ -420,6 +420,17 @@ export interface FeedSeasonPlayerRow {
   statistics: FeedSeasonStatEntry[] | null;
 }
 
+/** One player's season aggregates — one entry per team/competition he has
+ *  played for this season. 1 request. Used by the squad reconciler to check a
+ *  departure the squad feed implies against where he has actually appeared. */
+export async function fetchPlayerSeason(
+  client: ApiFootballClient,
+  playerId: string | number,
+  season: number,
+): Promise<FeedSeasonPlayerRow[]> {
+  return client.get<FeedSeasonPlayerRow[]>("/players", { id: playerId, season });
+}
+
 /** One page of a league-season's player aggregates. 1 request. */
 export async function fetchLeaguePlayersPage(
   client: ApiFootballClient,

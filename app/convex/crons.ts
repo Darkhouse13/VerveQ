@@ -63,6 +63,13 @@ crons.cron(
 // run projecting past 500. 04:40 UTC sits clear of the :00/:15/:30/:45 sync
 // bursts and of the 00:xx daily jobs. Runs year-round — January exists.
 crons.daily("fantasy-transfer-sweep", { hourUTC: 4, minuteUTC: 40 }, internal.fantasyTransfers.sweepTransfers, {});
+// FW-T2 squad reconcile: the provider's /transfers feed publishes late and
+// incompletely, so once a week the covered clubs' /players/squads are diffed
+// against our rows and the difference goes through the transfer mutations
+// (fantasySquadReconcile). 156 squad calls + one /players call per implied
+// departure; Thursday 04:50 UTC, after the daily sweep and clear of its
+// rate-limit pauses, so squads are right before the weekend board locks.
+crons.cron("fantasy-squad-reconcile", "50 4 * * 4", internal.fantasySquadReconcile.reconcileSquads, {});
 // FW-3 draft rooms: expires dead lobbies and re-drives any room whose
 // scheduled hop was lost. Every action is a guarded no-op on a healthy room,
 // so the tight interval buys stall-recovery, not load.
