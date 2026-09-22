@@ -29,16 +29,41 @@ import { describe, expect, it } from "vitest";
 
 import {
   FINALITY_TIME_ZONE,
+  LEAGUE_IDS,
   zonedWallClockToEpochMs,
 } from "../../convex/lib/fantasyConstants";
 import {
   absorbingWindowFor,
-  constituteGameweeks,
+  constituteGameweeks as constituteFixtures,
   MIDWEEK_ABSORPTION_MIN_FIXTURES,
+  MIDWEEK_ANCHOR_LEAGUE_IDS,
+  midweekConstitutes,
   reconcileGameweeks,
   seasonLabel,
   windowFor,
 } from "../../convex/lib/fantasyGameweekWindows";
+
+const ANCHOR = MIDWEEK_ANCHOR_LEAGUE_IDS[0]; // Premier League
+const RIDER = 40; // EFL Championship: rides along, never anchors
+
+/** Tag kickoff instants with a league, the shape the constitution reads. */
+function fx(kickoffs: readonly number[], leagueId: number = ANCHOR) {
+  return kickoffs.map((kickoffAt) => ({ kickoffAt, leagueId }));
+}
+
+/**
+ * The pre-re-amendment surface: every fixture from one anchor league, so a
+ * window's total count IS its anchor count and the original constitution
+ * tests keep asserting exactly what they always did. The anchor-league rule
+ * itself is exercised with mixed leagues in its own describe block.
+ */
+function constituteGameweeks(
+  kickoffs: readonly number[],
+  timeZone?: string,
+  coverageStartAt?: number,
+) {
+  return constituteFixtures(fx(kickoffs), timeZone, coverageStartAt);
+}
 
 /** Paris wall clock → epoch ms. Every literal in this file goes through it. */
 function paris(
@@ -503,6 +528,107 @@ describe("constituteGameweeks — thin midweek absorption (amendment 2026-08-19)
     expect(constituteGameweeks([...kicks].reverse())).toEqual(
       constituteGameweeks(kicks),
     );
+  });
+});
+
+describe("constituteGameweeks — anchor-league rule (re-amendment 2026-09-03)", () => {
+  // The prod shape that forced the re-amendment: a full Championship round on
+  // Tue-Wed 2026-09-01/02 plus one LaLiga and one Ligue 1 straggler on the
+  // Thursday — 14 fixtures, which the across-leagues count of 5 constituted
+  // as a "GW4" that blocked the 77-fixture weekend behind it.
+  const championshipRound = fx(
+    Array.from({ length: 12 }, (_, i) => paris(2026, 9, 1 + (i % 2), 20, i)),
+    RIDER,
+  );
+  const stragglers = [
+    { kickoffAt: paris(2026, 9, 3, 20, 45), leagueId: 61 }, // Toulouse-Lille
+    { kickoffAt: paris(2026, 9, 3, 21, 0), leagueId: 140 }, // Real Sociedad-Celta
+  ];
+  const weekend = fx([
+    paris(2026, 9, 4, 20, 45),
+    paris(2026, 9, 5, 15, 0),
+    paris(2026, 9, 6, 17, 30),
+  ]);
+
+  it("mirrors the top five of LEAGUE_IDS", () => {
+    expect([...MIDWEEK_ANCHOR_LEAGUE_IDS]).toEqual([...LEAGUE_IDS.slice(0, 5)]);
+  });
+
+  it("does not constitute a midweek gameweek from a riding league's full round", () => {
+    const gameweeks = constituteFixtures([...championshipRound, ...weekend]);
+    expect(gameweeks.map((g) => [g.gwNumber, g.kind])).toEqual([[1, "weekend"]]);
+    expect(gameweeks[0].keys).toEqual(["weekend:2026-09-04", "midweek:2026-09-01"]);
+  });
+
+  it("absorbs the prod GW4 shape whole — Championship round and stragglers alike", () => {
+    const gameweeks = constituteFixtures([
+      ...championshipRound,
+      ...stragglers,
+      ...weekend,
+    ]);
+    expect(gameweeks).toHaveLength(1);
+    const [host] = gameweeks;
+    for (const fixture of [...championshipRound, ...stragglers]) {
+      expect(host.keys).toContain(windowFor(fixture.kickoffAt).key);
+    }
+    // Finality is the weekend's own Tuesday cut, not the midweek's Friday.
+    expect(host.finalityAt).toBe(paris(2026, 9, 8, 23, 59));
+  });
+
+  it("constitutes a midweek gameweek from an anchor league's full round", () => {
+    const laLigaRound = fx(
+      Array.from({ length: MIDWEEK_ABSORPTION_MIN_FIXTURES }, (_, i) =>
+        paris(2026, 9, 16, 21, i),
+      ),
+      140,
+    );
+    const gameweeks = constituteFixtures([...laLigaRound, ...weekend]);
+    expect(gameweeks.map((g) => g.kind)).toEqual(["weekend", "midweek"]);
+  });
+
+  it("files a lone rider under the midweek gameweek an anchor round constitutes", () => {
+    // A window is a time span, not a league filter: when the midweek stands,
+    // everything in it stands with it.
+    const laLigaRound = fx(
+      Array.from({ length: MIDWEEK_ABSORPTION_MIN_FIXTURES }, (_, i) =>
+        paris(2026, 9, 16, 21, i),
+      ),
+      140,
+    );
+    const rider = { kickoffAt: paris(2026, 9, 17, 20, 0), leagueId: 88 };
+    const gameweeks = constituteFixtures([...laLigaRound, rider, ...weekend]);
+    const midweek = gameweeks.find((g) => g.kind === "midweek");
+    expect(midweek?.keys).toEqual(["midweek:2026-09-15"]);
+    expect(midweek?.keys).toContain(windowFor(rider.kickoffAt).key);
+  });
+
+  it("counts per league, not across anchor leagues", () => {
+    // Four PL + four LaLiga stragglers = eight fixtures, no anchor round.
+    const below = MIDWEEK_ABSORPTION_MIN_FIXTURES - 1;
+    const mixed = [
+      ...fx(Array.from({ length: below }, (_, i) => paris(2026, 9, 2, 20, i)), 39),
+      ...fx(Array.from({ length: below }, (_, i) => paris(2026, 9, 2, 21, i)), 140),
+    ];
+    const gameweeks = constituteFixtures([...mixed, ...weekend]);
+    expect(gameweeks.map((g) => g.kind)).toEqual(["weekend"]);
+  });
+
+  it("midweekConstitutes reads the anchor threshold per league", () => {
+    const at = (leagueId: number, n: number) =>
+      Array.from({ length: n }, () => ({ leagueId }));
+    expect(midweekConstitutes([])).toBe(false);
+    expect(midweekConstitutes(at(RIDER, 12))).toBe(false);
+    expect(midweekConstitutes(at(ANCHOR, MIDWEEK_ABSORPTION_MIN_FIXTURES))).toBe(true);
+    expect(midweekConstitutes(at(ANCHOR, MIDWEEK_ABSORPTION_MIN_FIXTURES - 1))).toBe(false);
+    expect(
+      midweekConstitutes([...at(39, 4), ...at(140, 4), ...at(RIDER, 12)]),
+    ).toBe(false);
+    expect(midweekConstitutes([...at(RIDER, 12), ...at(78, 5)])).toBe(true);
+  });
+
+  it("stays order-independent and deterministic under the anchor rule", () => {
+    const all = [...weekend, ...stragglers, ...championshipRound];
+    expect(constituteFixtures([...all].reverse())).toEqual(constituteFixtures(all));
   });
 });
 

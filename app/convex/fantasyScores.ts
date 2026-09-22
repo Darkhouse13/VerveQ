@@ -160,7 +160,9 @@ export const CALLS_PER_FIXTURE = 2;
  * amendment (prod 2026-08-19) merged sub-5-fixture midweek windows into their
  * weekend, and windows are now much larger: measured on prod for 2026-2027,
  * the largest is GW3 at 82 fixtures (656 calls) and a typical full weekend is
- * 78 (624). GW2's 66 fixtures projected 528 against the 500 ceiling, so
+ * 78 (624). The anchor-league re-amendment (2026-09-03) folds Championship
+ * midweek rounds into the weekend too: 93 fixtures (744 calls) is the new
+ * largest window this season. GW2's 66 fixtures projected 528 against the 500 ceiling, so
  * `scoreDueFixtures` threw on every run from 2026-08-19 and made no request at
  * all — five finished fixtures sat unscored for days while the guard refused a
  * ten-call run over a lifetime projection 5.6% above the line.
@@ -334,7 +336,17 @@ export function isAfterFinality(
  * FW-4's contract forbids.
  */
 export const scoringPlan = internalQuery({
-  args: { now: v.optional(v.number()), limit: v.optional(v.number()) },
+  args: {
+    now: v.optional(v.number()),
+    limit: v.optional(v.number()),
+    /**
+     * Ops-only (2026-09-07): plan ONLY this gameweek, past its finality, and
+     * only the fixtures that never got a score — the catch-up path for a
+     * window that settled unscored while the provider account was suspended.
+     * The cron never passes it.
+     */
+    rescoreGameweekId: v.optional(v.id("fantasyGameweeks")),
+  },
   handler: async (ctx, args): Promise<ScoringPlan> => {
     const now = args.now ?? Date.now();
     const limit = args.limit ?? DEFAULT_FIXTURE_LIMIT;
@@ -349,7 +361,9 @@ export const scoringPlan = internalQuery({
       // Past the cut: nothing here can produce a score any more (R3/R4), so it
       // is not worth a request. Raw revisions are still recorded if something
       // else reads the fixture, but the pipeline stops chasing them.
-      if (now >= gameweek.finalityAt) continue;
+      if (args.rescoreGameweekId !== undefined) {
+        if (gameweek._id !== args.rescoreGameweekId) continue;
+      } else if (now >= gameweek.finalityAt) continue;
 
       const fixtures = await ctx.db
         .query("fantasyFixtures")
@@ -388,7 +402,10 @@ export const scoringPlan = internalQuery({
         const scoring = await fixtureScoringRow(ctx, fixture._id);
         let readKind: PlannedFixture["readKind"] | null = null;
 
-        if (scoring === null) {
+        if (args.rescoreGameweekId !== undefined) {
+          // Catch-up: a fixture with score rows is left exactly as settled.
+          readKind = scoring === null || scoring.state !== "scored" ? "first" : null;
+        } else if (scoring === null) {
           readKind = "first";
         } else if (scoring.state === "awaiting_data") {
           if (now - scoring.lastAttemptAt >= AWAITING_RETRY_INTERVAL_MS) readKind = "retry";
@@ -491,6 +508,8 @@ export const applyFixtureStats = internalMutation({
     hasEvents: v.boolean(),
     rows: v.array(feedRowValidator),
     now: v.optional(v.number()),
+    /** Ops-only catch-up (see scoringPlan.rescoreGameweekId): score past the cut. */
+    ignoreFinality: v.optional(v.boolean()),
   },
   handler: async (ctx, args): Promise<ApplyFixtureStatsResult> => {
     const now = args.now ?? Date.now();
@@ -524,7 +543,8 @@ export const applyFixtureStats = internalMutation({
     }
 
     const gwScoring = await gameweekScoringRow(ctx, gameweek._id);
-    const afterFinality = isAfterFinality(gameweek, gwScoring, now);
+    const afterFinality =
+      args.ignoreFinality === true ? false : isAfterFinality(gameweek, gwScoring, now);
 
     // ── build one scoreable line per feed row ──
     const hasFixtureScore = fixture.homeGoals !== undefined && fixture.awayGoals !== undefined;
@@ -701,7 +721,7 @@ export const applyFixtureStats = internalMutation({
 
         const current = await currentScoreRow(ctx, gameweek._id, line.providerPlayerId);
 
-        if (current !== null && current.state === "final") {
+        if (current !== null && current.state === "final" && args.ignoreFinality !== true) {
           // Unreachable while `afterFinality` is false, because finalization and
           // the cut are the same instant. Asserted rather than assumed: this is
           // the invariant R4 asks for, and a future caller that reaches it gets
@@ -2593,11 +2613,14 @@ export const scoreDueFixtures = internalAction({
     limit: v.optional(v.number()),
     dryRun: v.optional(v.boolean()),
     now: v.optional(v.number()),
+    /** Ops-only catch-up for a gameweek that settled unscored (scoringPlan). */
+    rescoreGameweekId: v.optional(v.id("fantasyGameweeks")),
   },
   handler: async (ctx, args): Promise<ScoreDueFixturesResult> => {
     const plan: ScoringPlan = await ctx.runQuery(internal.fantasyScores.scoringPlan, {
       ...(args.now === undefined ? {} : { now: args.now }),
       ...(args.limit === undefined ? {} : { limit: args.limit }),
+      ...(args.rescoreGameweekId === undefined ? {} : { rescoreGameweekId: args.rescoreGameweekId }),
     });
 
     // ── the call plan, printed every run ──
@@ -2702,6 +2725,7 @@ export const scoreDueFixtures = internalAction({
             hasEvents: events.length > 0,
             rows,
             ...(args.now === undefined ? {} : { now: args.now }),
+            ...(args.rescoreGameweekId === undefined ? {} : { ignoreFinality: true }),
           },
         );
         results.push(result);

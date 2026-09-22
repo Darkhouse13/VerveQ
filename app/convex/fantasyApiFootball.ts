@@ -34,6 +34,18 @@ const MAX_ATTEMPTS = 3;
 const RETRY_BACKOFF_MS = 2_000;
 
 /**
+ * Per-minute quota, read off `x-ratelimit-remaining` on every response. When
+ * it drops to the margin the client pauses until the minute rolls rather than
+ * discovering the wall with a 429. The window length is one minute plus a
+ * second of clock slack; a 429 (or the HTTP-200 `rateLimit` refusal body)
+ * waits out the same window before its retry. Added 2026-09-22 after every
+ * daily transfer sweep since 09-08 died ~90 calls in with "HTTP 429 after 3
+ * attempts" — 2s backoffs never outlast a minute window.
+ */
+const RATE_LIMIT_MARGIN = 5;
+const RATE_LIMIT_WINDOW_MS = 61_000;
+
+/**
  * Measured 2026-07-29 on the live Pro key: `x-ratelimit-limit` is 300/minute
  * (not the 450 the FS-1 config previously assumed). 250ms between calls is
  * 240/minute — a 20% cushion. Ingestion's biggest single burst is the ~156-club
@@ -71,6 +83,15 @@ function errorsToMessage(errors: unknown): string | null {
   return null;
 }
 
+function isRateLimitRefusal(errors: unknown): boolean {
+  return (
+    typeof errors === "object" &&
+    errors !== null &&
+    !Array.isArray(errors) &&
+    "rateLimit" in (errors as Record<string, unknown>)
+  );
+}
+
 function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
@@ -103,8 +124,21 @@ export function credentialsFromEnv(): ApiFootballCredentials {
 
 export class ApiFootballClient {
   private lastRequestAt = 0;
+  /** Do not send before this instant — set when the minute quota is spent. */
+  private pausedUntil = 0;
   /** Provider's own remaining-today count, from the last response seen. */
   public dailyRemaining: number | null = null;
+  /** Provider's remaining-this-minute count, from the last response seen. */
+  public minuteRemaining: number | null = null;
+  /** How many times this client waited out a minute window. Reported, not hidden. */
+  public rateLimitWaits = 0;
+
+  private async waitOutMinute(reason: string): Promise<void> {
+    this.rateLimitWaits += 1;
+    this.pausedUntil = Date.now() + RATE_LIMIT_WINDOW_MS;
+    console.warn(`[api-football] ${reason} — pausing ${RATE_LIMIT_WINDOW_MS}ms for the minute window`);
+    await sleep(RATE_LIMIT_WINDOW_MS);
+  }
 
   constructor(private readonly credentials: ApiFootballCredentials) {}
 
@@ -143,14 +177,15 @@ export class ApiFootballClient {
     for (const [key, value] of Object.entries(params)) search.set(key, String(value));
     const url = `${this.baseUrl}${endpoint}?${search.toString()}`;
 
-    const since = Date.now() - this.lastRequestAt;
-    if (this.lastRequestAt !== 0 && since < REQUEST_SPACING_MS) {
-      await sleep(REQUEST_SPACING_MS - since);
-    }
-
     let lastTransportError: string | null = null;
 
     for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt += 1) {
+      const pause = this.pausedUntil - Date.now();
+      if (pause > 0) await sleep(pause);
+      const since = Date.now() - this.lastRequestAt;
+      if (this.lastRequestAt !== 0 && since < REQUEST_SPACING_MS) {
+        await sleep(REQUEST_SPACING_MS - since);
+      }
       this.lastRequestAt = Date.now();
 
       let response: Response;
@@ -175,10 +210,28 @@ export class ApiFootballClient {
         if (Number.isFinite(parsed)) this.dailyRemaining = parsed;
       }
 
+      const minuteLeft = response.headers.get("x-ratelimit-remaining");
+      if (minuteLeft !== null) {
+        const parsed = Number.parseInt(minuteLeft, 10);
+        if (Number.isFinite(parsed)) {
+          this.minuteRemaining = parsed;
+          if (parsed <= RATE_LIMIT_MARGIN && response.status !== 429) {
+            // Quota spent for this minute: the NEXT request waits, this one
+            // is already answered.
+            this.rateLimitWaits += 1;
+            this.pausedUntil = Date.now() + RATE_LIMIT_WINDOW_MS;
+            console.warn(
+              `[api-football] minute quota at ${parsed} — next request waits ${RATE_LIMIT_WINDOW_MS}ms`,
+            );
+          }
+        }
+      }
+
       if (response.status === 429 || response.status >= 500) {
         lastTransportError = `HTTP ${response.status}`;
         if (attempt < MAX_ATTEMPTS) {
-          await sleep(RETRY_BACKOFF_MS * attempt);
+          if (response.status === 429) await this.waitOutMinute("HTTP 429");
+          else await sleep(RETRY_BACKOFF_MS * attempt);
           continue;
         }
         throw new ApiFootballError(
@@ -195,7 +248,15 @@ export class ApiFootballClient {
       const body = (await response.json()) as Envelope<T>;
       const message = errorsToMessage(body.errors);
       if (message !== null) {
-        // HTTP 200 with a refusal inside. See the module header.
+        // The per-minute wall also arrives as an HTTP 200 with
+        // `errors: { rateLimit: "Too many requests..." }`. That one is the
+        // single refusal worth retrying — it says something different once
+        // the minute rolls. Every other refusal is final (module header).
+        if (isRateLimitRefusal(body.errors) && attempt < MAX_ATTEMPTS) {
+          lastTransportError = "rateLimit refusal";
+          await this.waitOutMinute("provider rateLimit refusal");
+          continue;
+        }
         throw new ApiFootballError(`provider refused: ${message}`, endpoint, 200);
       }
 

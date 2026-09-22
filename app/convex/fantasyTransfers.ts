@@ -42,7 +42,6 @@ import { PRICE_MIN } from "./lib/fantasyConstants";
 import {
   classifyTransfer,
   collectCandidates,
-  CRON_WINDOW_OVERLAP_DAYS,
   isLoanType,
   laterMoveAlreadyApplied,
   reactivationCandidate,
@@ -791,15 +790,14 @@ async function runSweep(
     );
   }
 
-  const windowFromDay =
-    sinceDay ??
-    (kind === "backfill"
-      ? TRANSFER_BACKFILL_START_DAY
-      : context.lastSuccess === null
-        ? TRANSFER_BACKFILL_START_DAY
-        : isoDay(
-            context.lastSuccess.startedAt - CRON_WINDOW_OVERLAP_DAYS * MS_PER_DAY,
-          ));
+  // The cron reads the WHOLE season window every day, not "since the last
+  // success minus 3 days". Measured 2026-09-07: the provider's per-team feed
+  // publishes records weeks after their `date` (moves dated 08-05..08-25
+  // first appeared after 09-01), so any bounded overlap silently drops them.
+  // Re-reading costs nothing on the wire — the 156 team calls are the same
+  // either way — and record identity makes every already-stored row a no-op.
+  const windowFromDay = sinceDay ?? TRANSFER_BACKFILL_START_DAY;
+  void kind;
 
   const coveredClubIds = new Set(context.coveredClubs.map((c) => c.clubId));
   const leagueByClub = new Map(
@@ -1173,11 +1171,9 @@ export const backfillTransfers = internalAction({
 });
 
 /**
- * P4 — the standing daily sweep, windowed since the last successful run
- * (minus a 3-day overlap; idempotence makes overlap free). First run on a
- * fresh deployment falls back to the backfill window, so activating the cron
- * without having run the backfill loses nothing. Runs year-round — the winter
- * window exists, and a quiet month costs ~156 calls/day of no-ops.
+ * P4 — the standing daily sweep over the whole season window (see runSweep
+ * for why a bounded overlap lost late-published records). Runs year-round —
+ * the winter window exists, and a quiet month costs ~156 calls/day of no-ops.
  */
 export const sweepTransfers = internalAction({
   args: {},

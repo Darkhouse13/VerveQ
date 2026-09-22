@@ -17,11 +17,6 @@
 import type { FeedTransferEntry } from "../fantasyApiFootball";
 import { normalizePlayerName } from "./fantasyPlayerName";
 
-/** Sweeps re-read this many days behind the last success. Overlap is free —
- *  record identity makes a re-seen transfer a no-op — and it is what makes a
- *  day the feed backfilled late land anyway. */
-export const CRON_WINDOW_OVERLAP_DAYS = 3;
-
 /** The backfill's inclusive lower bound: squads were seeded from late-July
  *  reads, so the window opens where the seed's knowledge starts going stale. */
 export const TRANSFER_BACKFILL_START_DAY = "2026-07-01";

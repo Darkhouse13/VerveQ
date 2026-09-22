@@ -1,0 +1,786 @@
+{
+ "clubs": {
+  "281": {
+   "name": "Manchester City",
+   "leagueId": 39
+  },
+  "11": {
+   "name": "Arsenal FC",
+   "leagueId": 39
+  },
+  "631": {
+   "name": "Chelsea FC",
+   "leagueId": 39
+  },
+  "31": {
+   "name": "Liverpool FC",
+   "leagueId": 39
+  },
+  "985": {
+   "name": "Manchester United",
+   "leagueId": 39
+  },
+  "148": {
+   "name": "Tottenham Hotspur",
+   "leagueId": 39
+  },
+  "762": {
+   "name": "Newcastle United",
+   "leagueId": 39
+  },
+  "1237": {
+   "name": "Brighton &amp; Hove Albion",
+   "leagueId": 39
+  },
+  "1148": {
+   "name": "Brentford FC",
+   "leagueId": 39
+  },
+  "873": {
+   "name": "Crystal Palace",
+   "leagueId": 39
+  },
+  "989": {
+   "name": "AFC Bournemouth",
+   "leagueId": 39
+  },
+  "405": {
+   "name": "Aston Villa",
+   "leagueId": 39
+  },
+  "703": {
+   "name": "Nottingham Forest",
+   "leagueId": 39
+  },
+  "289": {
+   "name": "Sunderland AFC",
+   "leagueId": 39
+  },
+  "399": {
+   "name": "Leeds United",
+   "leagueId": 39
+  },
+  "931": {
+   "name": "Fulham FC",
+   "leagueId": 39
+  },
+  "29": {
+   "name": "Everton FC",
+   "leagueId": 39
+  },
+  "677": {
+   "name": "Ipswich Town",
+   "leagueId": 39
+  },
+  "990": {
+   "name": "Coventry City",
+   "leagueId": 39
+  },
+  "3008": {
+   "name": "Hull City",
+   "leagueId": 39
+  },
+  "379": {
+   "name": "West Ham United",
+   "leagueId": 40
+  },
+  "543": {
+   "name": "Wolverhampton Wanderers",
+   "leagueId": 40
+  },
+  "180": {
+   "name": "Southampton FC",
+   "leagueId": 40
+  },
+  "1132": {
+   "name": "Burnley FC",
+   "leagueId": 40
+  },
+  "641": {
+   "name": "Middlesbrough FC",
+   "leagueId": 40
+  },
+  "350": {
+   "name": "Sheffield United",
+   "leagueId": 40
+  },
+  "2288": {
+   "name": "Swansea City",
+   "leagueId": 40
+  },
+  "1123": {
+   "name": "Norwich City",
+   "leagueId": 40
+  },
+  "337": {
+   "name": "Birmingham City",
+   "leagueId": 40
+  },
+  "512": {
+   "name": "Stoke City",
+   "leagueId": 40
+  },
+  "1112": {
+   "name": "Wrexham AFC",
+   "leagueId": 40
+  },
+  "1028": {
+   "name": "Millwall FC",
+   "leagueId": 40
+  },
+  "1010": {
+   "name": "Watford FC",
+   "leagueId": 40
+  },
+  "22": {
+   "name": "Derby County",
+   "leagueId": 40
+  },
+  "1039": {
+   "name": "Queens Park Rangers",
+   "leagueId": 40
+  },
+  "698": {
+   "name": "Bristol City",
+   "leagueId": 40
+  },
+  "466": {
+   "name": "Preston North End",
+   "leagueId": 40
+  },
+  "984": {
+   "name": "West Bromwich Albion",
+   "leagueId": 40
+  },
+  "358": {
+   "name": "Charlton Athletic",
+   "leagueId": 40
+  },
+  "355": {
+   "name": "Bolton Wanderers",
+   "leagueId": 40
+  },
+  "1020": {
+   "name": "Portsmouth FC",
+   "leagueId": 40
+  },
+  "164": {
+   "name": "Blackburn Rovers",
+   "leagueId": 40
+  },
+  "603": {
+   "name": "Cardiff City",
+   "leagueId": 40
+  },
+  "1198": {
+   "name": "Lincoln City",
+   "leagueId": 40
+  },
+  "583": {
+   "name": "Paris Saint-Germain",
+   "leagueId": 61
+  },
+  "162": {
+   "name": "AS Monaco",
+   "leagueId": 61
+  },
+  "667": {
+   "name": "RC Strasbourg Alsace",
+   "leagueId": 61
+  },
+  "1041": {
+   "name": "Olympique Lyon",
+   "leagueId": 61
+  },
+  "1082": {
+   "name": "LOSC Lille",
+   "leagueId": 61
+  },
+  "273": {
+   "name": "Stade Rennais FC",
+   "leagueId": 61
+  },
+  "826": {
+   "name": "RC Lens",
+   "leagueId": 61
+  },
+  "244": {
+   "name": "Olympique Marseille",
+   "leagueId": 61
+  },
+  "10004": {
+   "name": "Paris FC",
+   "leagueId": 61
+  },
+  "417": {
+   "name": "OGC Nice",
+   "leagueId": 61
+  },
+  "415": {
+   "name": "FC Toulouse",
+   "leagueId": 61
+  },
+  "290": {
+   "name": "AJ Auxerre",
+   "leagueId": 61
+  },
+  "1158": {
+   "name": "FC Lorient",
+   "leagueId": 61
+  },
+  "3911": {
+   "name": "Stade Brestois 29",
+   "leagueId": 61
+  },
+  "1420": {
+   "name": "Angers SCO",
+   "leagueId": 61
+  },
+  "738": {
+   "name": "Le Havre AC",
+   "leagueId": 61
+  },
+  "1095": {
+   "name": "ESTAC Troyes",
+   "leagueId": 61
+  },
+  "1164": {
+   "name": "Le Mans FC",
+   "leagueId": 61
+  },
+  "27": {
+   "name": "Bayern Munich",
+   "leagueId": 78
+  },
+  "16": {
+   "name": "Borussia Dortmund",
+   "leagueId": 78
+  },
+  "23826": {
+   "name": "RB Leipzig",
+   "leagueId": 78
+  },
+  "15": {
+   "name": "Bayer 04 Leverkusen",
+   "leagueId": 78
+  },
+  "79": {
+   "name": "VfB Stuttgart",
+   "leagueId": 78
+  },
+  "24": {
+   "name": "Eintracht Frankfurt",
+   "leagueId": 78
+  },
+  "533": {
+   "name": "TSG 1899 Hoffenheim",
+   "leagueId": 78
+  },
+  "60": {
+   "name": "SC Freiburg",
+   "leagueId": 78
+  },
+  "167": {
+   "name": "FC Augsburg",
+   "leagueId": 78
+  },
+  "39": {
+   "name": "1.FSV Mainz 05",
+   "leagueId": 78
+  },
+  "3": {
+   "name": "1.FC Köln",
+   "leagueId": 78
+  },
+  "41": {
+   "name": "Hamburger SV",
+   "leagueId": 78
+  },
+  "18": {
+   "name": "Borussia Mönchengladbach",
+   "leagueId": 78
+  },
+  "86": {
+   "name": "SV Werder Bremen",
+   "leagueId": 78
+  },
+  "89": {
+   "name": "1.FC Union Berlin",
+   "leagueId": 78
+  },
+  "33": {
+   "name": "FC Schalke 04",
+   "leagueId": 78
+  },
+  "64": {
+   "name": "SV 07 Elversberg",
+   "leagueId": 78
+  },
+  "127": {
+   "name": "SC Paderborn 07",
+   "leagueId": 78
+  },
+  "383": {
+   "name": "PSV Eindhoven",
+   "leagueId": 88
+  },
+  "610": {
+   "name": "Ajax Amsterdam",
+   "leagueId": 88
+  },
+  "234": {
+   "name": "Feyenoord Rotterdam",
+   "leagueId": 88
+  },
+  "1090": {
+   "name": "AZ Alkmaar",
+   "leagueId": 88
+  },
+  "317": {
+   "name": "FC Twente Enschede",
+   "leagueId": 88
+  },
+  "200": {
+   "name": "FC Utrecht",
+   "leagueId": 88
+  },
+  "306": {
+   "name": "SC Heerenveen",
+   "leagueId": 88
+  },
+  "467": {
+   "name": "NEC Nijmegen",
+   "leagueId": 88
+  },
+  "202": {
+   "name": "FC Groningen",
+   "leagueId": 88
+  },
+  "468": {
+   "name": "Sparta Rotterdam",
+   "leagueId": 88
+  },
+  "1269": {
+   "name": "PEC Zwolle",
+   "leagueId": 88
+  },
+  "1435": {
+   "name": "Go Ahead Eagles",
+   "leagueId": 88
+  },
+  "403": {
+   "name": "Willem II Tilburg",
+   "leagueId": 88
+  },
+  "798": {
+   "name": "Excelsior Rotterdam",
+   "leagueId": 88
+  },
+  "1268": {
+   "name": "ADO Den Haag",
+   "leagueId": 88
+  },
+  "385": {
+   "name": "Fortuna Sittard",
+   "leagueId": 88
+  },
+  "133": {
+   "name": "SC Cambuur Leeuwarden",
+   "leagueId": 88
+  },
+  "1434": {
+   "name": "SC Telstar",
+   "leagueId": 88
+  },
+  "720": {
+   "name": "FC Porto",
+   "leagueId": 94
+  },
+  "336": {
+   "name": "Sporting CP",
+   "leagueId": 94
+  },
+  "294": {
+   "name": "SL Benfica",
+   "leagueId": 94
+  },
+  "1075": {
+   "name": "SC Braga",
+   "leagueId": 94
+  },
+  "3329": {
+   "name": "FC Famalicão",
+   "leagueId": 94
+  },
+  "2420": {
+   "name": "Vitória Guimarães SC",
+   "leagueId": 94
+  },
+  "1465": {
+   "name": "GD Estoril Praia",
+   "leagueId": 94
+  },
+  "2521": {
+   "name": "FC Alverca",
+   "leagueId": 94
+  },
+  "2425": {
+   "name": "Rio Ave FC",
+   "leagueId": 94
+  },
+  "3268": {
+   "name": "Casa Pia AC",
+   "leagueId": 94
+  },
+  "2431": {
+   "name": "CF Estrela Amadora",
+   "leagueId": 94
+  },
+  "8024": {
+   "name": "FC Arouca",
+   "leagueId": 94
+  },
+  "2424": {
+   "name": "Gil Vicente FC",
+   "leagueId": 94
+  },
+  "979": {
+   "name": "Moreirense FC",
+   "leagueId": 94
+  },
+  "2423": {
+   "name": "CD Santa Clara",
+   "leagueId": 94
+  },
+  "982": {
+   "name": "CD Nacional",
+   "leagueId": 94
+  },
+  "7788": {
+   "name": "Académico Viseu FC",
+   "leagueId": 94
+  },
+  "1301": {
+   "name": "CS Marítimo",
+   "leagueId": 94
+  },
+  "46": {
+   "name": "Inter Milan",
+   "leagueId": 135
+  },
+  "506": {
+   "name": "Juventus FC",
+   "leagueId": 135
+  },
+  "1047": {
+   "name": "Como 1907",
+   "leagueId": 135
+  },
+  "12": {
+   "name": "AS Roma",
+   "leagueId": 135
+  },
+  "5": {
+   "name": "AC Milan",
+   "leagueId": 135
+  },
+  "800": {
+   "name": "Atalanta BC",
+   "leagueId": 135
+  },
+  "6195": {
+   "name": "SSC Napoli",
+   "leagueId": 135
+  },
+  "430": {
+   "name": "ACF Fiorentina",
+   "leagueId": 135
+  },
+  "398": {
+   "name": "SS Lazio",
+   "leagueId": 135
+  },
+  "1025": {
+   "name": "Bologna FC 1909",
+   "leagueId": 135
+  },
+  "6574": {
+   "name": "US Sassuolo",
+   "leagueId": 135
+  },
+  "416": {
+   "name": "Torino FC",
+   "leagueId": 135
+  },
+  "252": {
+   "name": "Genoa CFC",
+   "leagueId": 135
+  },
+  "410": {
+   "name": "Udinese Calcio",
+   "leagueId": 135
+  },
+  "130": {
+   "name": "Parma Calcio 1913",
+   "leagueId": 135
+  },
+  "1390": {
+   "name": "Cagliari Calcio",
+   "leagueId": 135
+  },
+  "607": {
+   "name": "Venezia FC",
+   "leagueId": 135
+  },
+  "2919": {
+   "name": "AC Monza",
+   "leagueId": 135
+  },
+  "8970": {
+   "name": "Frosinone Calcio",
+   "leagueId": 135
+  },
+  "1005": {
+   "name": "US Lecce",
+   "leagueId": 135
+  },
+  "418": {
+   "name": "Real Madrid",
+   "leagueId": 140
+  },
+  "131": {
+   "name": "FC Barcelona",
+   "leagueId": 140
+  },
+  "13": {
+   "name": "Atlético de Madrid",
+   "leagueId": 140
+  },
+  "1050": {
+   "name": "Villarreal CF",
+   "leagueId": 140
+  },
+  "681": {
+   "name": "Real Sociedad",
+   "leagueId": 140
+  },
+  "150": {
+   "name": "Real Betis Balompié",
+   "leagueId": 140
+  },
+  "621": {
+   "name": "Athletic Bilbao",
+   "leagueId": 140
+  },
+  "940": {
+   "name": "Celta de Vigo",
+   "leagueId": 140
+  },
+  "368": {
+   "name": "Sevilla FC",
+   "leagueId": 140
+  },
+  "1049": {
+   "name": "Valencia CF",
+   "leagueId": 140
+  },
+  "714": {
+   "name": "RCD Espanyol Barcelona",
+   "leagueId": 140
+  },
+  "897": {
+   "name": "Deportivo A Coruña",
+   "leagueId": 140
+  },
+  "630": {
+   "name": "Racing Santander",
+   "leagueId": 140
+  },
+  "3709": {
+   "name": "Getafe CF",
+   "leagueId": 140
+  },
+  "3368": {
+   "name": "Levante UD",
+   "leagueId": 140
+  },
+  "367": {
+   "name": "Rayo Vallecano",
+   "leagueId": 140
+  },
+  "331": {
+   "name": "CA Osasuna",
+   "leagueId": 140
+  },
+  "1531": {
+   "name": "Elche CF",
+   "leagueId": 140
+  },
+  "1108": {
+   "name": "Deportivo Alavés",
+   "leagueId": 140
+  },
+  "1084": {
+   "name": "Málaga CF",
+   "leagueId": 140
+  }
+ },
+ "tm2our": {
+  "11": "42",
+  "631": "49",
+  "31": "40",
+  "148": "47",
+  "762": "34",
+  "1237": "51",
+  "1148": "55",
+  "873": "52",
+  "989": "35",
+  "405": "66",
+  "703": "65",
+  "289": "746",
+  "399": "63",
+  "931": "36",
+  "29": "45",
+  "677": "57",
+  "990": "1346",
+  "3008": "64",
+  "379": "48",
+  "543": "39",
+  "180": "41",
+  "1132": "44",
+  "641": "70",
+  "350": "62",
+  "2288": "76",
+  "1123": "71",
+  "337": "54",
+  "512": "75",
+  "1112": "1837",
+  "1028": "58",
+  "1010": "38",
+  "22": "69",
+  "1039": "72",
+  "698": "56",
+  "466": "59",
+  "984": "60",
+  "358": "1335",
+  "355": "68",
+  "1020": "1355",
+  "164": "67",
+  "603": "43",
+  "1198": "1379",
+  "583": "85",
+  "162": "91",
+  "667": "95",
+  "1041": "80",
+  "1082": "79",
+  "273": "94",
+  "826": "116",
+  "244": "81",
+  "10004": "114",
+  "417": "84",
+  "415": "96",
+  "290": "108",
+  "1158": "97",
+  "3911": "106",
+  "1420": "77",
+  "738": "111",
+  "1095": "110",
+  "1164": "1298",
+  "27": "157",
+  "16": "165",
+  "23826": "173",
+  "15": "168",
+  "79": "172",
+  "24": "169",
+  "533": "167",
+  "60": "160",
+  "167": "170",
+  "39": "164",
+  "41": "175",
+  "18": "163",
+  "86": "162",
+  "89": "182",
+  "33": "174",
+  "64": "1660",
+  "127": "185",
+  "383": "197",
+  "610": "194",
+  "234": "209",
+  "1090": "201",
+  "317": "415",
+  "200": "207",
+  "306": "210",
+  "467": "413",
+  "202": "202",
+  "468": "426",
+  "1269": "193",
+  "1435": "410",
+  "403": "195",
+  "798": "196",
+  "1268": "198",
+  "385": "205",
+  "133": "420",
+  "1434": "427",
+  "720": "212",
+  "336": "228",
+  "294": "211",
+  "1075": "217",
+  "3329": "242",
+  "2420": "224",
+  "2521": "4724",
+  "2425": "226",
+  "3268": "4716",
+  "8024": "240",
+  "2424": "762",
+  "979": "215",
+  "2423": "227",
+  "982": "225",
+  "7788": "238",
+  "506": "496",
+  "1047": "895",
+  "12": "497",
+  "5": "489",
+  "800": "499",
+  "6195": "492",
+  "430": "502",
+  "398": "487",
+  "1025": "500",
+  "6574": "488",
+  "416": "503",
+  "252": "495",
+  "410": "494",
+  "130": "523",
+  "1390": "490",
+  "607": "517",
+  "2919": "1579",
+  "8970": "512",
+  "1005": "867",
+  "131": "529",
+  "1050": "533",
+  "681": "548",
+  "940": "538",
+  "368": "536",
+  "1049": "532",
+  "630": "4665",
+  "3709": "546",
+  "3368": "539",
+  "367": "728",
+  "1531": "797",
+  "1108": "542",
+  "1084": "535",
+  "281": "50",
+  "985": "33",
+  "3": "192",
+  "1465": "230",
+  "2431": "15130",
+  "1301": "214",
+  "46": "505",
+  "418": "541",
+  "13": "530",
+  "150": "543",
+  "621": "531",
+  "714": "540",
+  "897": "544",
+  "331": "727"
+ }
+}

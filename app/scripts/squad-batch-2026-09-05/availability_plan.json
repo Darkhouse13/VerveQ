@@ -1,0 +1,2754 @@
+{
+"140": {
+"gameweekId": "th71cr371k16vaa8vhh77hjrdn8c8yv6",
+"leagueId": 140,
+"records": [
+{
+"providerPlayerId": "10009",
+"providerFixtureId": "1570365",
+"status": "out",
+"category": "injury",
+"reason": "Cruciate ligament tear",
+"rawType": "tm:injury until 30/09/2026"
+},
+{
+"providerPlayerId": "11379",
+"providerFixtureId": "1570370",
+"status": "out",
+"category": "injury",
+"reason": "Lower leg fracture",
+"rawType": "tm:injury until 22/11/2026"
+},
+{
+"providerPlayerId": "1271",
+"providerFixtureId": "1570365",
+"status": "out",
+"category": "injury",
+"reason": "Muscle injury",
+"rawType": "tm:injury"
+},
+{
+"providerPlayerId": "182602",
+"providerFixtureId": "1570369",
+"status": "out",
+"category": "injury",
+"reason": "Cruciate ligament tear",
+"rawType": "tm:injury until 30/06/2027"
+},
+{
+"providerPlayerId": "338958",
+"providerFixtureId": "1570371",
+"status": "out",
+"category": "injury",
+"reason": "Cruciate ligament tear",
+"rawType": "tm:injury until 10/05/2027"
+},
+{
+"providerPlayerId": "341640",
+"providerFixtureId": "1570365",
+"status": "out",
+"category": "injury",
+"reason": "Muscle injury",
+"rawType": "tm:injury"
+},
+{
+"providerPlayerId": "36884",
+"providerFixtureId": "1570371",
+"status": "out",
+"category": "injury",
+"reason": "Ankle sprain",
+"rawType": "tm:injury until 25/09/2026"
+},
+{
+"providerPlayerId": "47396",
+"providerFixtureId": "1570367",
+"status": "out",
+"category": "injury",
+"reason": "Muscle injury",
+"rawType": "tm:injury"
+},
+{
+"providerPlayerId": "538",
+"providerFixtureId": "1570371",
+"status": "out",
+"category": "injury",
+"reason": "Knee medial ligament tear",
+"rawType": "tm:injury until 30/11/2026"
+},
+{
+"providerPlayerId": "628615",
+"providerFixtureId": "1570372",
+"status": "out",
+"category": "injury",
+"reason": "Ankle injury",
+"rawType": "tm:injury"
+},
+{
+"providerPlayerId": "653",
+"providerFixtureId": "1570365",
+"status": "out",
+"category": "injury",
+"reason": "Tendon rupture",
+"rawType": "tm:injury until 30/04/2027"
+},
+{
+"providerPlayerId": "737",
+"providerFixtureId": "1570366",
+"status": "out",
+"category": "injury",
+"reason": "Cruciate ligament tear",
+"rawType": "tm:injury until 30/11/2026"
+},
+{
+"providerPlayerId": "tm:1124005",
+"providerFixtureId": "1570368",
+"status": "out",
+"category": "injury",
+"reason": "Knee injury",
+"rawType": "tm:injury until 30/06/2027"
+},
+{
+"providerPlayerId": "tm:162038",
+"providerFixtureId": "1570370",
+"status": "out",
+"category": "injury",
+"reason": "unknown injury",
+"rawType": "tm:injury"
+},
+{
+"providerPlayerId": "tm:251845",
+"providerFixtureId": "1570371",
+"status": "out",
+"category": "injury",
+"reason": "Cruciate ligament tear",
+"rawType": "tm:injury until 01/11/2026"
+},
+{
+"providerPlayerId": "tm:34370",
+"providerFixtureId": "1570371",
+"status": "out",
+"category": "injury",
+"reason": "Cruciate ligament tear",
+"rawType": "tm:injury until 01/03/2027"
+},
+{
+"providerPlayerId": "tm:971570",
+"providerFixtureId": "1570365",
+"status": "out",
+"category": "injury",
+"reason": "Muscle injury",
+"rawType": "tm:injury"
+}
+],
+"rowsInFeed": 20,
+"unusable": 0
+},
+"39": {
+"gameweekId": "th71cr371k16vaa8vhh77hjrdn8c8yv6",
+"leagueId": 39,
+"records": [
+{
+"providerPlayerId": "106835",
+"providerFixtureId": "1557389",
+"status": "out",
+"category": "injury",
+"reason": "Hamstring injury",
+"rawType": "tm:injury"
+},
+{
+"providerPlayerId": "138931",
+"providerFixtureId": "1557393",
+"status": "out",
+"category": "injury",
+"reason": "Ankle injury",
+"rawType": "tm:injury"
+},
+{
+"providerPlayerId": "1422",
+"providerFixtureId": "1557394",
+"status": "out",
+"category": "injury",
+"reason": "Calf injury",
+"rawType": "tm:injury"
+},
+{
+"providerPlayerId": "157997",
+"providerFixtureId": "1557390",
+"status": "out",
+"category": "injury",
+"reason": "Knock",
+"rawType": "tm:injury"
+},
+{
+"providerPlayerId": "158694",
+"providerFixtureId": "1557395",
+"status": "out",
+"category": "injury",
+"reason": "Knee injury",
+"rawType": "tm:injury"
+},
+{
+"providerPlayerId": "162016",
+"providerFixtureId": "1557396",
+"status": "out",
+"category": "injury",
+"reason": "Cruciate ligament tear",
+"rawType": "tm:injury until 20/02/2027"
+},
+{
+"providerPlayerId": "162714",
+"providerFixtureId": "1557392",
+"status": "out",
+"category": "injury",
+"reason": "Cruciate ligament tear",
+"rawType": "tm:injury"
+},
+{
+"providerPlayerId": "162991",
+"providerFixtureId": "1557392",
+"status": "out",
+"category": "injury",
+"reason": "Cruciate ligament tear",
+"rawType": "tm:injury until 30/11/2026"
+},
+{
+"providerPlayerId": "174565",
+"providerFixtureId": "1557393",
+"status": "out",
+"category": "injury",
+"reason": "Achilles tendon rupture",
+"rawType": "tm:injury until 31/12/2026"
+},
+{
+"providerPlayerId": "18397",
+"providerFixtureId": "1557393",
+"status": "out",
+"category": "injury",
+"reason": "Knee surgery",
+"rawType": "tm:injury"
+},
+{
+"providerPlayerId": "19025",
+"providerFixtureId": "1557391",
+"status": "out",
+"category": "injury",
+"reason": "Knee surgery",
+"rawType": "tm:injury until 09/10/2026"
+},
+{
+"providerPlayerId": "22090",
+"providerFixtureId": "1557387",
+"status": "out",
+"category": "injury",
+"reason": "Back injury",
+"rawType": "tm:injury"
+},
+{
+"providerPlayerId": "278898",
+"providerFixtureId": "1557391",
+"status": "out",
+"category": "injury",
+"reason": "Knee surgery",
+"rawType": "tm:injury"
+},
+{
+"providerPlayerId": "282124",
+"providerFixtureId": "1557392",
+"status": "out",
+"category": "injury",
+"reason": "Groin injury",
+"rawType": "tm:injury"
+},
+{
+"providerPlayerId": "284",
+"providerFixtureId": "1557393",
+"status": "out",
+"category": "injury",
+"reason": "Muscle injury",
+"rawType": "tm:injury"
+},
+{
+"providerPlayerId": "292",
+"providerFixtureId": "1557387",
+"status": "out",
+"category": "injury",
+"reason": "Forearm fracture",
+"rawType": "tm:injury"
+},
+{
+"providerPlayerId": "2933",
+"providerFixtureId": "1557391",
+"status": "out",
+"category": "injury",
+"reason": "Knee injury",
+"rawType": "tm:injury"
+},
+{
+"providerPlayerId": "30407",
+"providerFixtureId": "1557390",
+"status": "out",
+"category": "injury",
+"reason": "Groin injury",
+"rawType": "tm:injury"
+},
+{
+"providerPlayerId": "30410",
+"providerFixtureId": "1557393",
+"status": "out",
+"category": "injury",
+"reason": "Muscle injury",
+"rawType": "tm:injury until 27/09/2026"
+},
+{
+"providerPlayerId": "305730",
+"providerFixtureId": "1557389",
+"status": "out",
+"category": "injury",
+"reason": "unknown injury",
+"rawType": "tm:injury"
+},
+{
+"providerPlayerId": "336564",
+"providerFixtureId": "1557396",
+"status": "out",
+"category": "injury",
+"reason": "Cruciate ligament tear",
+"rawType": "tm:injury until 28/11/2026"
+},
+{
+"providerPlayerId": "340077",
+"providerFixtureId": "1557395",
+"status": "out",
+"category": "suspension",
+"reason": "Yellow card suspension",
+"rawType": "tm:suspension"
+},
+{
+"providerPlayerId": "356041",
+"providerFixtureId": "1557390",
+"status": "out",
+"category": "injury",
+"reason": "Ankle injury",
+"rawType": "tm:injury until 17/09/2026"
+},
+{
+"providerPlayerId": "37236",
+"providerFixtureId": "1557393",
+"status": "out",
+"category": "injury",
+"reason": "Knee surgery",
+"rawType": "tm:injury"
+},
+{
+"providerPlayerId": "383018",
+"providerFixtureId": "1557387",
+"status": "out",
+"category": "injury",
+"reason": "unknown injury",
+"rawType": "tm:injury"
+},
+{
+"providerPlayerId": "383685",
+"providerFixtureId": "1557389",
+"status": "out",
+"category": "injury",
+"reason": "Foot injury",
+"rawType": "tm:injury"
+},
+{
+"providerPlayerId": "38746",
+"providerFixtureId": "1557387",
+"status": "out",
+"category": "injury",
+"reason": "Groin injury",
+"rawType": "tm:injury"
+},
+{
+"providerPlayerId": "406244",
+"providerFixtureId": "1557392",
+"status": "out",
+"category": "injury",
+"reason": "Knee bruise",
+"rawType": "tm:injury"
+},
+{
+"providerPlayerId": "427",
+"providerFixtureId": "1557394",
+"status": "out",
+"category": "injury",
+"reason": "Thigh problems",
+"rawType": "tm:injury until 11/11/2026"
+},
+{
+"providerPlayerId": "452697",
+"providerFixtureId": "1557388",
+"status": "out",
+"category": "suspension",
+"reason": "Yellow card suspension",
+"rawType": "tm:suspension"
+},
+{
+"providerPlayerId": "514519",
+"providerFixtureId": "1557392",
+"status": "out",
+"category": "injury",
+"reason": "Ankle injury",
+"rawType": "tm:injury"
+},
+{
+"providerPlayerId": "51494",
+"providerFixtureId": "1557390",
+"status": "out",
+"category": "injury",
+"reason": "Cruciate ligament tear",
+"rawType": "tm:injury"
+},
+{
+"providerPlayerId": "575",
+"providerFixtureId": "1557393",
+"status": "out",
+"category": "injury",
+"reason": "Calf problems",
+"rawType": "tm:injury"
+},
+{
+"providerPlayerId": "90590",
+"providerFixtureId": "1557389",
+"status": "out",
+"category": "injury",
+"reason": "Foot injury",
+"rawType": "tm:injury"
+},
+{
+"providerPlayerId": "92993",
+"providerFixtureId": "1557389",
+"status": "out",
+"category": "injury",
+"reason": "Knee injury",
+"rawType": "tm:injury"
+},
+{
+"providerPlayerId": "tm:1071138",
+"providerFixtureId": "1557388",
+"status": "out",
+"category": "injury",
+"reason": "Knee injury",
+"rawType": "tm:injury"
+},
+{
+"providerPlayerId": "tm:1086619",
+"providerFixtureId": "1557393",
+"status": "out",
+"category": "injury",
+"reason": "Cruciate ligament tear",
+"rawType": "tm:injury until 30/09/2026"
+},
+{
+"providerPlayerId": "tm:486604",
+"providerFixtureId": "1557393",
+"status": "out",
+"category": "injury",
+"reason": "Knee injury",
+"rawType": "tm:injury until 01/10/2026"
+},
+{
+"providerPlayerId": "tm:503980",
+"providerFixtureId": "1557392",
+"status": "out",
+"category": "injury",
+"reason": "Ankle injury",
+"rawType": "tm:injury"
+},
+{
+"providerPlayerId": "tm:624258",
+"providerFixtureId": "1557393",
+"status": "out",
+"category": "injury",
+"reason": "Knee surgery",
+"rawType": "tm:injury"
+},
+{
+"providerPlayerId": "tm:648046",
+"providerFixtureId": "1557389",
+"status": "out",
+"category": "injury",
+"reason": "Ankle problems",
+"rawType": "tm:injury"
+},
+{
+"providerPlayerId": "tm:708072",
+"providerFixtureId": "1557396",
+"status": "out",
+"category": "injury",
+"reason": "Knee injury",
+"rawType": "tm:injury until 11/10/2026"
+},
+{
+"providerPlayerId": "tm:950091",
+"providerFixtureId": "1557389",
+"status": "out",
+"category": "injury",
+"reason": "Cruciate ligament tear",
+"rawType": "tm:injury"
+}
+],
+"rowsInFeed": 45,
+"unusable": 0
+},
+"61": {
+"gameweekId": "th71cr371k16vaa8vhh77hjrdn8c8yv6",
+"leagueId": 61,
+"records": [
+{
+"providerPlayerId": "115588",
+"providerFixtureId": "1552750",
+"status": "out",
+"category": "injury",
+"reason": "Cruciate ligament tear",
+"rawType": "tm:injury"
+},
+{
+"providerPlayerId": "135775",
+"providerFixtureId": "1552753",
+"status": "out",
+"category": "injury",
+"reason": "Calf injury",
+"rawType": "tm:injury"
+},
+{
+"providerPlayerId": "174596",
+"providerFixtureId": "1552755",
+"status": "out",
+"category": "injury",
+"reason": "Hip injury",
+"rawType": "tm:injury"
+},
+{
+"providerPlayerId": "174939",
+"providerFixtureId": "1552752",
+"status": "out",
+"category": "injury",
+"reason": "unknown injury",
+"rawType": "tm:injury until 08/09/2026"
+},
+{
+"providerPlayerId": "178708",
+"providerFixtureId": "1552749",
+"status": "out",
+"category": "injury",
+"reason": "Cruciate ligament tear",
+"rawType": "tm:injury until 31/08/2027"
+},
+{
+"providerPlayerId": "20546",
+"providerFixtureId": "1552748",
+"status": "out",
+"category": "injury",
+"reason": "Calf injury",
+"rawType": "tm:injury"
+},
+{
+"providerPlayerId": "20917",
+"providerFixtureId": "1552752",
+"status": "out",
+"category": "injury",
+"reason": "Cruciate ligament tear",
+"rawType": "tm:injury"
+},
+{
+"providerPlayerId": "22229",
+"providerFixtureId": "1552751",
+"status": "out",
+"category": "injury",
+"reason": "Hamstring injury",
+"rawType": "tm:injury"
+},
+{
+"providerPlayerId": "24189",
+"providerFixtureId": "1552752",
+"status": "out",
+"category": "injury",
+"reason": "Ankle sprain",
+"rawType": "tm:injury until 15/09/2026"
+},
+{
+"providerPlayerId": "289555",
+"providerFixtureId": "1552747",
+"status": "out",
+"category": "injury",
+"reason": "Meniscus injury",
+"rawType": "tm:injury"
+},
+{
+"providerPlayerId": "30748",
+"providerFixtureId": "1552750",
+"status": "out",
+"category": "injury",
+"reason": "Cruciate ligament tear",
+"rawType": "tm:injury"
+},
+{
+"providerPlayerId": "322984",
+"providerFixtureId": "1552749",
+"status": "out",
+"category": "injury",
+"reason": "Dead leg",
+"rawType": "tm:injury until 25/10/2026"
+},
+{
+"providerPlayerId": "369556",
+"providerFixtureId": "1552748",
+"status": "out",
+"category": "injury",
+"reason": "Knee injury",
+"rawType": "tm:injury"
+},
+{
+"providerPlayerId": "389322",
+"providerFixtureId": "1552751",
+"status": "out",
+"category": "injury",
+"reason": "Muscle injury",
+"rawType": "tm:injury"
+},
+{
+"providerPlayerId": "390742",
+"providerFixtureId": "1552755",
+"status": "out",
+"category": "injury",
+"reason": "Cruciate ligament tear",
+"rawType": "tm:injury until 31/12/2026"
+},
+{
+"providerPlayerId": "395589",
+"providerFixtureId": "1552749",
+"status": "out",
+"category": "injury",
+"reason": "Meniscus injury",
+"rawType": "tm:injury"
+},
+{
+"providerPlayerId": "395810",
+"providerFixtureId": "1552755",
+"status": "out",
+"category": "injury",
+"reason": "Dead leg",
+"rawType": "tm:injury"
+},
+{
+"providerPlayerId": "513415",
+"providerFixtureId": "1552748",
+"status": "out",
+"category": "injury",
+"reason": "Cruciate ligament tear",
+"rawType": "tm:injury"
+},
+{
+"providerPlayerId": "568478",
+"providerFixtureId": "1552751",
+"status": "out",
+"category": "injury",
+"reason": "Dead leg",
+"rawType": "tm:injury"
+},
+{
+"providerPlayerId": "961",
+"providerFixtureId": "1552748",
+"status": "out",
+"category": "injury",
+"reason": "Achilles tendon rupture",
+"rawType": "tm:injury"
+},
+{
+"providerPlayerId": "tm:126557",
+"providerFixtureId": "1552749",
+"status": "out",
+"category": "injury",
+"reason": "Lower leg fracture",
+"rawType": "tm:injury"
+},
+{
+"providerPlayerId": "tm:138055",
+"providerFixtureId": "1552747",
+"status": "out",
+"category": "injury",
+"reason": "Dead leg",
+"rawType": "tm:injury"
+},
+{
+"providerPlayerId": "tm:161869",
+"providerFixtureId": "1552752",
+"status": "out",
+"category": "suspension",
+"reason": "Red card suspension",
+"rawType": "tm:suspension until 06/09/2026"
+},
+{
+"providerPlayerId": "tm:165793",
+"providerFixtureId": "1552753",
+"status": "out",
+"category": "injury",
+"reason": "Cruciate ligament tear",
+"rawType": "tm:injury"
+},
+{
+"providerPlayerId": "tm:563963",
+"providerFixtureId": "1552753",
+"status": "out",
+"category": "injury",
+"reason": "Cruciate ligament tear",
+"rawType": "tm:injury"
+}
+],
+"rowsInFeed": 27,
+"unusable": 0
+},
+"40": {
+"gameweekId": "th71cr371k16vaa8vhh77hjrdn8c8yv6",
+"leagueId": 40,
+"records": [
+{
+"providerPlayerId": "1137",
+"providerFixtureId": "1563141",
+"status": "out",
+"category": "injury",
+"reason": "fatigue fracture",
+"rawType": "tm:injury"
+},
+{
+"providerPlayerId": "1243",
+"providerFixtureId": "1563142",
+"status": "out",
+"category": "injury",
+"reason": "Ankle injury",
+"rawType": "tm:injury"
+},
+{
+"providerPlayerId": "133200",
+"providerFixtureId": "1563133",
+"status": "out",
+"category": "injury",
+"reason": "unknown injury",
+"rawType": "tm:injury"
+},
+{
+"providerPlayerId": "15745",
+"providerFixtureId": "1563133",
+"status": "out",
+"category": "injury",
+"reason": "Knee injury",
+"rawType": "tm:injury"
+},
+{
+"providerPlayerId": "17395",
+"providerFixtureId": "1563136",
+"status": "out",
+"category": "injury",
+"reason": "Achilles tendon problems",
+"rawType": "tm:injury"
+},
+{
+"providerPlayerId": "17407",
+"providerFixtureId": "1563138",
+"status": "out",
+"category": "injury",
+"reason": "Knee injury",
+"rawType": "tm:injury"
+},
+{
+"providerPlayerId": "17805",
+"providerFixtureId": "1563132",
+"status": "out",
+"category": "injury",
+"reason": "Ankle injury",
+"rawType": "tm:injury"
+},
+{
+"providerPlayerId": "19083",
+"providerFixtureId": "1563142",
+"status": "out",
+"category": "injury",
+"reason": "Calf muscle tear",
+"rawType": "tm:injury"
+},
+{
+"providerPlayerId": "19131",
+"providerFixtureId": "1563138",
+"status": "out",
+"category": "injury",
+"reason": "Foot injury",
+"rawType": "tm:injury"
+},
+{
+"providerPlayerId": "191337",
+"providerFixtureId": "1563134",
+"status": "out",
+"category": "injury",
+"reason": "Ankle injury",
+"rawType": "tm:injury"
+},
+{
+"providerPlayerId": "19152",
+"providerFixtureId": "1563141",
+"status": "out",
+"category": "injury",
+"reason": "Cruciate ligament tear",
+"rawType": "tm:injury"
+},
+{
+"providerPlayerId": "19202",
+"providerFixtureId": "1563131",
+"status": "out",
+"category": "injury",
+"reason": "Cruciate ligament injury",
+"rawType": "tm:injury"
+},
+{
+"providerPlayerId": "19205",
+"providerFixtureId": "1563142",
+"status": "out",
+"category": "injury",
+"reason": "Knee injury",
+"rawType": "tm:injury"
+},
+{
+"providerPlayerId": "19211",
+"providerFixtureId": "1563131",
+"status": "out",
+"category": "injury",
+"reason": "Calf injury",
+"rawType": "tm:injury"
+},
+{
+"providerPlayerId": "19288",
+"providerFixtureId": "1563133",
+"status": "out",
+"category": "injury",
+"reason": "Cruciate ligament tear",
+"rawType": "tm:injury until 30/06/2027"
+},
+{
+"providerPlayerId": "19472",
+"providerFixtureId": "1563142",
+"status": "out",
+"category": "injury",
+"reason": "Leg injury",
+"rawType": "tm:injury"
+},
+{
+"providerPlayerId": "19587",
+"providerFixtureId": "1563133",
+"status": "out",
+"category": "injury",
+"reason": "unknown injury",
+"rawType": "tm:injury"
+},
+{
+"providerPlayerId": "19860",
+"providerFixtureId": "1563142",
+"status": "out",
+"category": "injury",
+"reason": "Calf injury",
+"rawType": "tm:injury"
+},
+{
+"providerPlayerId": "19886",
+"providerFixtureId": "1563137",
+"status": "out",
+"category": "injury",
+"reason": "Knee injury",
+"rawType": "tm:injury"
+},
+{
+"providerPlayerId": "20457",
+"providerFixtureId": "1563140",
+"status": "out",
+"category": "injury",
+"reason": "Achilles tendon rupture",
+"rawType": "tm:injury"
+},
+{
+"providerPlayerId": "231039",
+"providerFixtureId": "1563133",
+"status": "out",
+"category": "injury",
+"reason": "unknown injury",
+"rawType": "tm:injury"
+},
+{
+"providerPlayerId": "282060",
+"providerFixtureId": "1563133",
+"status": "out",
+"category": "injury",
+"reason": "Hamstring injury",
+"rawType": "tm:injury"
+},
+{
+"providerPlayerId": "284367",
+"providerFixtureId": "1563134",
+"status": "out",
+"category": "injury",
+"reason": "Strain in the thigh and gluteal muscles",
+"rawType": "tm:injury"
+},
+{
+"providerPlayerId": "294552",
+"providerFixtureId": "1563139",
+"status": "out",
+"category": "injury",
+"reason": "Knee injury",
+"rawType": "tm:injury"
+},
+{
+"providerPlayerId": "30998",
+"providerFixtureId": "1563136",
+"status": "out",
+"category": "injury",
+"reason": "Hamstring injury",
+"rawType": "tm:injury"
+},
+{
+"providerPlayerId": "310700",
+"providerFixtureId": "1563138",
+"status": "out",
+"category": "injury",
+"reason": "Cruciate ligament tear",
+"rawType": "tm:injury"
+},
+{
+"providerPlayerId": "31098",
+"providerFixtureId": "1563141",
+"status": "out",
+"category": "injury",
+"reason": "Lumbago",
+"rawType": "tm:injury"
+},
+{
+"providerPlayerId": "349224",
+"providerFixtureId": "1563132",
+"status": "out",
+"category": "injury",
+"reason": "unknown injury",
+"rawType": "tm:injury"
+},
+{
+"providerPlayerId": "37760",
+"providerFixtureId": "1563142",
+"status": "out",
+"category": "injury",
+"reason": "Hamstring injury",
+"rawType": "tm:injury"
+},
+{
+"providerPlayerId": "407652",
+"providerFixtureId": "1563142",
+"status": "out",
+"category": "injury",
+"reason": "Achilles tendon rupture",
+"rawType": "tm:injury"
+},
+{
+"providerPlayerId": "44775",
+"providerFixtureId": "1563141",
+"status": "out",
+"category": "injury",
+"reason": "unknown injury",
+"rawType": "tm:injury"
+},
+{
+"providerPlayerId": "7037",
+"providerFixtureId": "1563136",
+"status": "out",
+"category": "injury",
+"reason": "Achilles tendon rupture",
+"rawType": "tm:injury until 15/11/2026"
+},
+{
+"providerPlayerId": "tm:1203715",
+"providerFixtureId": "1563139",
+"status": "out",
+"category": "injury",
+"reason": "Knee injury",
+"rawType": "tm:injury"
+},
+{
+"providerPlayerId": "tm:242606",
+"providerFixtureId": "1563132",
+"status": "out",
+"category": "injury",
+"reason": "Cruciate ligament tear",
+"rawType": "tm:injury until 01/10/2026"
+},
+{
+"providerPlayerId": "tm:535927",
+"providerFixtureId": "1563132",
+"status": "out",
+"category": "injury",
+"reason": "Cruciate ligament injury",
+"rawType": "tm:injury"
+},
+{
+"providerPlayerId": "tm:543729",
+"providerFixtureId": "1563135",
+"status": "out",
+"category": "injury",
+"reason": "Knee injury",
+"rawType": "tm:injury until 01/11/2026"
+},
+{
+"providerPlayerId": "tm:585550",
+"providerFixtureId": "1563134",
+"status": "out",
+"category": "injury",
+"reason": "unknown injury",
+"rawType": "tm:injury"
+},
+{
+"providerPlayerId": "tm:615302",
+"providerFixtureId": "1563138",
+"status": "out",
+"category": "injury",
+"reason": "Cruciate ligament tear",
+"rawType": "tm:injury"
+},
+{
+"providerPlayerId": "tm:667925",
+"providerFixtureId": "1563140",
+"status": "out",
+"category": "injury",
+"reason": "Hamstring injury",
+"rawType": "tm:injury"
+},
+{
+"providerPlayerId": "tm:949477",
+"providerFixtureId": "1563135",
+"status": "out",
+"category": "injury",
+"reason": "Groin injury",
+"rawType": "tm:injury"
+}
+],
+"rowsInFeed": 43,
+"unusable": 0
+},
+"135": {
+"gameweekId": "th71cr371k16vaa8vhh77hjrdn8c8yv6",
+"leagueId": 135,
+"records": [
+{
+"providerPlayerId": "116",
+"providerFixtureId": "1550114",
+"status": "out",
+"category": "injury",
+"reason": "Knee surgery",
+"rawType": "tm:injury until 01/01/2027"
+},
+{
+"providerPlayerId": "120",
+"providerFixtureId": "1550109",
+"status": "out",
+"category": "injury",
+"reason": "Ankle sprain",
+"rawType": "tm:injury"
+},
+{
+"providerPlayerId": "125674",
+"providerFixtureId": "1550114",
+"status": "out",
+"category": "injury",
+"reason": "Thigh problems",
+"rawType": "tm:injury"
+},
+{
+"providerPlayerId": "127011",
+"providerFixtureId": "1550114",
+"status": "out",
+"category": "injury",
+"reason": "Ankle sprain",
+"rawType": "tm:injury"
+},
+{
+"providerPlayerId": "136087",
+"providerFixtureId": "1550110",
+"status": "out",
+"category": "injury",
+"reason": "Cruciate ligament injury",
+"rawType": "tm:injury until 19/10/2026"
+},
+{
+"providerPlayerId": "137976",
+"providerFixtureId": "1550107",
+"status": "out",
+"category": "injury",
+"reason": "Thigh problems",
+"rawType": "tm:injury until 30/09/2026"
+},
+{
+"providerPlayerId": "144740",
+"providerFixtureId": "1550116",
+"status": "out",
+"category": "injury",
+"reason": "Hamstring injury",
+"rawType": "tm:injury until 18/09/2026"
+},
+{
+"providerPlayerId": "14704",
+"providerFixtureId": "1550111",
+"status": "out",
+"category": "injury",
+"reason": "Shoulder injury",
+"rawType": "tm:injury"
+},
+{
+"providerPlayerId": "162561",
+"providerFixtureId": "1550112",
+"status": "out",
+"category": "injury",
+"reason": "Adductor pain",
+"rawType": "tm:injury until 11/09/2026"
+},
+{
+"providerPlayerId": "162907",
+"providerFixtureId": "1550116",
+"status": "out",
+"category": "injury",
+"reason": "Cruciate ligament tear",
+"rawType": "tm:injury until 01/10/2026"
+},
+{
+"providerPlayerId": "1841",
+"providerFixtureId": "1550116",
+"status": "out",
+"category": "injury",
+"reason": "Muscle strain",
+"rawType": "tm:injury"
+},
+{
+"providerPlayerId": "1844",
+"providerFixtureId": "1550116",
+"status": "out",
+"category": "injury",
+"reason": "Hamstring injury",
+"rawType": "tm:injury until 17/09/2026"
+},
+{
+"providerPlayerId": "1852",
+"providerFixtureId": "1550116",
+"status": "out",
+"category": "injury",
+"reason": "Inflammation of pubic bone",
+"rawType": "tm:injury until 15/09/2026"
+},
+{
+"providerPlayerId": "199837",
+"providerFixtureId": "1550107",
+"status": "out",
+"category": "injury",
+"reason": "Inner ligament injury",
+"rawType": "tm:injury until 01/10/2026"
+},
+{
+"providerPlayerId": "212",
+"providerFixtureId": "1550111",
+"status": "out",
+"category": "injury",
+"reason": "Back injury",
+"rawType": "tm:injury until 01/10/2026"
+},
+{
+"providerPlayerId": "2484",
+"providerFixtureId": "1550109",
+"status": "out",
+"category": "injury",
+"reason": "Calf problems",
+"rawType": "tm:injury"
+},
+{
+"providerPlayerId": "2495",
+"providerFixtureId": "1550110",
+"status": "out",
+"category": "injury",
+"reason": "Knee problems",
+"rawType": "tm:injury"
+},
+{
+"providerPlayerId": "26095",
+"providerFixtureId": "1550111",
+"status": "out",
+"category": "injury",
+"reason": "unknown injury",
+"rawType": "tm:injury until 31/10/2026"
+},
+{
+"providerPlayerId": "270507",
+"providerFixtureId": "1550110",
+"status": "out",
+"category": "injury",
+"reason": "Muscle fatigue",
+"rawType": "tm:injury until 08/09/2026"
+},
+{
+"providerPlayerId": "291780",
+"providerFixtureId": "1550108",
+"status": "out",
+"category": "injury",
+"reason": "Arthroscopy",
+"rawType": "tm:injury until 30/09/2026"
+},
+{
+"providerPlayerId": "30436",
+"providerFixtureId": "1550115",
+"status": "out",
+"category": "injury",
+"reason": "Knee injury",
+"rawType": "tm:injury until 01/11/2026"
+},
+{
+"providerPlayerId": "30488",
+"providerFixtureId": "1550108",
+"status": "out",
+"category": "injury",
+"reason": "Hamstring injury",
+"rawType": "tm:injury until 22/09/2026"
+},
+{
+"providerPlayerId": "30554",
+"providerFixtureId": "1550116",
+"status": "out",
+"category": "injury",
+"reason": "Thigh problems",
+"rawType": "tm:injury"
+},
+{
+"providerPlayerId": "30784",
+"providerFixtureId": "1550116",
+"status": "out",
+"category": "injury",
+"reason": "Calf injury",
+"rawType": "tm:injury until 18/09/2026"
+},
+{
+"providerPlayerId": "31226",
+"providerFixtureId": "1550113",
+"status": "out",
+"category": "injury",
+"reason": "Knee surgery",
+"rawType": "tm:injury until 31/10/2026"
+},
+{
+"providerPlayerId": "312615",
+"providerFixtureId": "1550113",
+"status": "out",
+"category": "injury",
+"reason": "Inguinal hernia",
+"rawType": "tm:injury until 08/10/2026"
+},
+{
+"providerPlayerId": "31532",
+"providerFixtureId": "1550115",
+"status": "out",
+"category": "injury",
+"reason": "unknown injury",
+"rawType": "tm:injury"
+},
+{
+"providerPlayerId": "319919",
+"providerFixtureId": "1550108",
+"status": "out",
+"category": "injury",
+"reason": "Hamstring muscle injury",
+"rawType": "tm:injury until 22/09/2026"
+},
+{
+"providerPlayerId": "328046",
+"providerFixtureId": "1550108",
+"status": "out",
+"category": "injury",
+"reason": "Tibia and fibula fracture",
+"rawType": "tm:injury until 03/01/2027"
+},
+{
+"providerPlayerId": "339883",
+"providerFixtureId": "1550114",
+"status": "out",
+"category": "injury",
+"reason": "Broken foot",
+"rawType": "tm:injury until 25/11/2026"
+},
+{
+"providerPlayerId": "340547",
+"providerFixtureId": "1550115",
+"status": "out",
+"category": "injury",
+"reason": "Adductor pain",
+"rawType": "tm:injury"
+},
+{
+"providerPlayerId": "354533",
+"providerFixtureId": "1550112",
+"status": "out",
+"category": "injury",
+"reason": "Achilles tendon rupture",
+"rawType": "tm:injury until 01/10/2026"
+},
+{
+"providerPlayerId": "383026",
+"providerFixtureId": "1550109",
+"status": "out",
+"category": "injury",
+"reason": "Cruciate ligament tear",
+"rawType": "tm:injury until 30/10/2026"
+},
+{
+"providerPlayerId": "388547",
+"providerFixtureId": "1550113",
+"status": "out",
+"category": "injury",
+"reason": "Inner ligament injury",
+"rawType": "tm:injury until 12/10/2026"
+},
+{
+"providerPlayerId": "451504",
+"providerFixtureId": "1550114",
+"status": "out",
+"category": "injury",
+"reason": "Hamstring strain",
+"rawType": "tm:injury until 02/11/2026"
+},
+{
+"providerPlayerId": "452033",
+"providerFixtureId": "1550112",
+"status": "out",
+"category": "injury",
+"reason": "Knee surgery",
+"rawType": "tm:injury until 30/10/2026"
+},
+{
+"providerPlayerId": "544574",
+"providerFixtureId": "1550116",
+"status": "out",
+"category": "injury",
+"reason": "Metatarsal fracture",
+"rawType": "tm:injury"
+},
+{
+"providerPlayerId": "56266",
+"providerFixtureId": "1550110",
+"status": "out",
+"category": "injury",
+"reason": "Shoulder injury",
+"rawType": "tm:injury until 04/12/2026"
+},
+{
+"providerPlayerId": "56473",
+"providerFixtureId": "1550114",
+"status": "out",
+"category": "injury",
+"reason": "Ankle problems",
+"rawType": "tm:injury"
+},
+{
+"providerPlayerId": "584116",
+"providerFixtureId": "1550109",
+"status": "out",
+"category": "injury",
+"reason": "unknown injury",
+"rawType": "tm:injury"
+},
+{
+"providerPlayerId": "63934",
+"providerFixtureId": "1550116",
+"status": "out",
+"category": "injury",
+"reason": "Cruciate ligament surgery",
+"rawType": "tm:injury"
+},
+{
+"providerPlayerId": "786",
+"providerFixtureId": "1550116",
+"status": "out",
+"category": "injury",
+"reason": "Hamstring strain",
+"rawType": "tm:injury until 01/10/2026"
+},
+{
+"providerPlayerId": "8481",
+"providerFixtureId": "1550116",
+"status": "out",
+"category": "injury",
+"reason": "Broken finger",
+"rawType": "tm:injury until 15/09/2026"
+},
+{
+"providerPlayerId": "881",
+"providerFixtureId": "1550115",
+"status": "out",
+"category": "injury",
+"reason": "Pubalgia",
+"rawType": "tm:injury until 07/09/2026"
+},
+{
+"providerPlayerId": "903",
+"providerFixtureId": "1550113",
+"status": "out",
+"category": "injury",
+"reason": "heart problems",
+"rawType": "tm:injury until 01/10/2026"
+},
+{
+"providerPlayerId": "tm:1058354",
+"providerFixtureId": "1550116",
+"status": "out",
+"category": "injury",
+"reason": "Muscle injury",
+"rawType": "tm:injury until 15/09/2026"
+},
+{
+"providerPlayerId": "tm:286297",
+"providerFixtureId": "1550107",
+"status": "out",
+"category": "injury",
+"reason": "Hamstring injury",
+"rawType": "tm:injury until 08/09/2026"
+},
+{
+"providerPlayerId": "tm:364133",
+"providerFixtureId": "1550110",
+"status": "out",
+"category": "injury",
+"reason": "Cruciate ligament tear",
+"rawType": "tm:injury until 01/10/2026"
+},
+{
+"providerPlayerId": "tm:520530",
+"providerFixtureId": "1550108",
+"status": "out",
+"category": "injury",
+"reason": "Cruciate ligament tear",
+"rawType": "tm:injury until 15/09/2026"
+},
+{
+"providerPlayerId": "tm:691825",
+"providerFixtureId": "1550108",
+"status": "out",
+"category": "injury",
+"reason": "Cruciate ligament injury",
+"rawType": "tm:injury until 01/10/2026"
+}
+],
+"rowsInFeed": 51,
+"unusable": 0
+},
+"78": {
+"gameweekId": "th71cr371k16vaa8vhh77hjrdn8c8yv6",
+"leagueId": 78,
+"records": [
+{
+"providerPlayerId": "108640",
+"providerFixtureId": "1575157",
+"status": "out",
+"category": "injury",
+"reason": "Cruciate ligament tear",
+"rawType": "tm:injury"
+},
+{
+"providerPlayerId": "1124",
+"providerFixtureId": "1575151",
+"status": "out",
+"category": "injury",
+"reason": "Achilles tendon problems",
+"rawType": "tm:injury"
+},
+{
+"providerPlayerId": "125418",
+"providerFixtureId": "1575153",
+"status": "out",
+"category": "injury",
+"reason": "Inner knee ligament tear",
+"rawType": "tm:injury"
+},
+{
+"providerPlayerId": "13",
+"providerFixtureId": "1575149",
+"status": "out",
+"category": "injury",
+"reason": "Hamstring injury",
+"rawType": "tm:injury"
+},
+{
+"providerPlayerId": "15592",
+"providerFixtureId": "1575155",
+"status": "out",
+"category": "injury",
+"reason": "Tendon rupture",
+"rawType": "tm:injury"
+},
+{
+"providerPlayerId": "161747",
+"providerFixtureId": "1575151",
+"status": "out",
+"category": "injury",
+"reason": "Knock",
+"rawType": "tm:injury"
+},
+{
+"providerPlayerId": "161922",
+"providerFixtureId": "1575152",
+"status": "out",
+"category": "injury",
+"reason": "Hamstring injury",
+"rawType": "tm:injury"
+},
+{
+"providerPlayerId": "162265",
+"providerFixtureId": "1575154",
+"status": "out",
+"category": "injury",
+"reason": "Shoulder injury",
+"rawType": "tm:injury"
+},
+{
+"providerPlayerId": "162480",
+"providerFixtureId": "1575154",
+"status": "out",
+"category": "injury",
+"reason": "Inner ligament injury",
+"rawType": "tm:injury"
+},
+{
+"providerPlayerId": "163022",
+"providerFixtureId": "1575157",
+"status": "out",
+"category": "injury",
+"reason": "muscular problems",
+"rawType": "tm:injury"
+},
+{
+"providerPlayerId": "177362",
+"providerFixtureId": "1575153",
+"status": "out",
+"category": "injury",
+"reason": "Back problems",
+"rawType": "tm:injury"
+},
+{
+"providerPlayerId": "177807",
+"providerFixtureId": "1575155",
+"status": "out",
+"category": "injury",
+"reason": "Hamstring injury",
+"rawType": "tm:injury"
+},
+{
+"providerPlayerId": "178250",
+"providerFixtureId": "1575153",
+"status": "out",
+"category": "injury",
+"reason": "Cruciate ligament tear",
+"rawType": "tm:injury"
+},
+{
+"providerPlayerId": "180731",
+"providerFixtureId": "1575149",
+"status": "out",
+"category": "injury",
+"reason": "Fitness",
+"rawType": "tm:injury"
+},
+{
+"providerPlayerId": "181812",
+"providerFixtureId": "1575156",
+"status": "out",
+"category": "injury",
+"reason": "Rest",
+"rawType": "tm:injury"
+},
+{
+"providerPlayerId": "191740",
+"providerFixtureId": "1575149",
+"status": "out",
+"category": "injury",
+"reason": "Hamstring injury",
+"rawType": "tm:injury"
+},
+{
+"providerPlayerId": "202501",
+"providerFixtureId": "1575150",
+"status": "out",
+"category": "injury",
+"reason": "Knee problems",
+"rawType": "tm:injury"
+},
+{
+"providerPlayerId": "202736",
+"providerFixtureId": "1575154",
+"status": "out",
+"category": "injury",
+"reason": "Adductor injury",
+"rawType": "tm:injury"
+},
+{
+"providerPlayerId": "203007",
+"providerFixtureId": "1575155",
+"status": "out",
+"category": "injury",
+"reason": "Hamstring injury",
+"rawType": "tm:injury"
+},
+{
+"providerPlayerId": "2194",
+"providerFixtureId": "1575150",
+"status": "out",
+"category": "injury",
+"reason": "Bruised ribs",
+"rawType": "tm:injury"
+},
+{
+"providerPlayerId": "231029",
+"providerFixtureId": "1575151",
+"status": "out",
+"category": "injury",
+"reason": "Back problems",
+"rawType": "tm:injury"
+},
+{
+"providerPlayerId": "24228",
+"providerFixtureId": "1575156",
+"status": "out",
+"category": "injury",
+"reason": "Muscle injury",
+"rawType": "tm:injury"
+},
+{
+"providerPlayerId": "24806",
+"providerFixtureId": "1575149",
+"status": "out",
+"category": "injury",
+"reason": "Muscle injury",
+"rawType": "tm:injury"
+},
+{
+"providerPlayerId": "24826",
+"providerFixtureId": "1575157",
+"status": "out",
+"category": "injury",
+"reason": "Groin injury",
+"rawType": "tm:injury"
+},
+{
+"providerPlayerId": "24839",
+"providerFixtureId": "1575151",
+"status": "out",
+"category": "injury",
+"reason": "Knock",
+"rawType": "tm:injury"
+},
+{
+"providerPlayerId": "25289",
+"providerFixtureId": "1575157",
+"status": "out",
+"category": "injury",
+"reason": "Head injury",
+"rawType": "tm:injury until 07/09/2026"
+},
+{
+"providerPlayerId": "25466",
+"providerFixtureId": "1575156",
+"status": "out",
+"category": "injury",
+"reason": "Hip injury",
+"rawType": "tm:injury"
+},
+{
+"providerPlayerId": "2598",
+"providerFixtureId": "1575152",
+"status": "out",
+"category": "injury",
+"reason": "muscular problems",
+"rawType": "tm:injury"
+},
+{
+"providerPlayerId": "26243",
+"providerFixtureId": "1575150",
+"status": "out",
+"category": "injury",
+"reason": "Inner ligament tear in ankle joint",
+"rawType": "tm:injury"
+},
+{
+"providerPlayerId": "26260",
+"providerFixtureId": "1575149",
+"status": "out",
+"category": "injury",
+"reason": "muscular problems",
+"rawType": "tm:injury"
+},
+{
+"providerPlayerId": "26319",
+"providerFixtureId": "1575155",
+"status": "out",
+"category": "injury",
+"reason": "muscular problems",
+"rawType": "tm:injury"
+},
+{
+"providerPlayerId": "26333",
+"providerFixtureId": "1575157",
+"status": "out",
+"category": "injury",
+"reason": "Adductor pain",
+"rawType": "tm:injury"
+},
+{
+"providerPlayerId": "265363",
+"providerFixtureId": "1575149",
+"status": "out",
+"category": "injury",
+"reason": "Muscle injury",
+"rawType": "tm:injury"
+},
+{
+"providerPlayerId": "266192",
+"providerFixtureId": "1575156",
+"status": "out",
+"category": "injury",
+"reason": "Ankle injury",
+"rawType": "tm:injury"
+},
+{
+"providerPlayerId": "269531",
+"providerFixtureId": "1575152",
+"status": "out",
+"category": "injury",
+"reason": "Back problems",
+"rawType": "tm:injury"
+},
+{
+"providerPlayerId": "270",
+"providerFixtureId": "1575151",
+"status": "out",
+"category": "injury",
+"reason": "Muscle injury",
+"rawType": "tm:injury"
+},
+{
+"providerPlayerId": "280358",
+"providerFixtureId": "1575153",
+"status": "out",
+"category": "injury",
+"reason": "Shoulder injury",
+"rawType": "tm:injury"
+},
+{
+"providerPlayerId": "326102",
+"providerFixtureId": "1575155",
+"status": "out",
+"category": "injury",
+"reason": "Knee problems",
+"rawType": "tm:injury"
+},
+{
+"providerPlayerId": "327993",
+"providerFixtureId": "1575149",
+"status": "out",
+"category": "injury",
+"reason": "Hamstring injury",
+"rawType": "tm:injury until 30/09/2026"
+},
+{
+"providerPlayerId": "328225",
+"providerFixtureId": "1575155",
+"status": "out",
+"category": "injury",
+"reason": "Ankle injury",
+"rawType": "tm:injury"
+},
+{
+"providerPlayerId": "33095",
+"providerFixtureId": "1575153",
+"status": "out",
+"category": "injury",
+"reason": "Neck injury",
+"rawType": "tm:injury"
+},
+{
+"providerPlayerId": "334334",
+"providerFixtureId": "1575155",
+"status": "out",
+"category": "injury",
+"reason": "Cruciate ligament tear",
+"rawType": "tm:injury"
+},
+{
+"providerPlayerId": "343320",
+"providerFixtureId": "1575151",
+"status": "out",
+"category": "injury",
+"reason": "Fitness",
+"rawType": "tm:injury"
+},
+{
+"providerPlayerId": "349344",
+"providerFixtureId": "1575149",
+"status": "out",
+"category": "injury",
+"reason": "Fitness",
+"rawType": "tm:injury"
+},
+{
+"providerPlayerId": "351084",
+"providerFixtureId": "1575153",
+"status": "out",
+"category": "injury",
+"reason": "Fitness",
+"rawType": "tm:injury"
+},
+{
+"providerPlayerId": "373443",
+"providerFixtureId": "1575157",
+"status": "out",
+"category": "injury",
+"reason": "Outer ligament problems",
+"rawType": "tm:injury"
+},
+{
+"providerPlayerId": "380978",
+"providerFixtureId": "1575155",
+"status": "out",
+"category": "injury",
+"reason": "Fitness",
+"rawType": "tm:injury"
+},
+{
+"providerPlayerId": "38798",
+"providerFixtureId": "1575155",
+"status": "out",
+"category": "injury",
+"reason": "Stomach problems",
+"rawType": "tm:injury"
+},
+{
+"providerPlayerId": "413294",
+"providerFixtureId": "1575151",
+"status": "out",
+"category": "injury",
+"reason": "Cruciate ligament tear",
+"rawType": "tm:injury"
+},
+{
+"providerPlayerId": "432310",
+"providerFixtureId": "1575149",
+"status": "out",
+"category": "injury",
+"reason": "Ill",
+"rawType": "tm:injury"
+},
+{
+"providerPlayerId": "444961",
+"providerFixtureId": "1575151",
+"status": "out",
+"category": "injury",
+"reason": "Foot injury",
+"rawType": "tm:injury"
+},
+{
+"providerPlayerId": "45892",
+"providerFixtureId": "1575151",
+"status": "out",
+"category": "injury",
+"reason": "Food poisoning",
+"rawType": "tm:injury"
+},
+{
+"providerPlayerId": "478991",
+"providerFixtureId": "1575150",
+"status": "out",
+"category": "suspension",
+"reason": "Red card suspension",
+"rawType": "tm:suspension until 13/09/2026"
+},
+{
+"providerPlayerId": "503467",
+"providerFixtureId": "1575151",
+"status": "out",
+"category": "injury",
+"reason": "Ill",
+"rawType": "tm:injury"
+},
+{
+"providerPlayerId": "510",
+"providerFixtureId": "1575156",
+"status": "out",
+"category": "injury",
+"reason": "Fitness",
+"rawType": "tm:injury"
+},
+{
+"providerPlayerId": "568733",
+"providerFixtureId": "1575150",
+"status": "out",
+"category": "injury",
+"reason": "Muscle injury",
+"rawType": "tm:injury"
+},
+{
+"providerPlayerId": "583807",
+"providerFixtureId": "1575153",
+"status": "out",
+"category": "injury",
+"reason": "Syndesmosis ligament tear",
+"rawType": "tm:injury"
+},
+{
+"providerPlayerId": "715",
+"providerFixtureId": "1575155",
+"status": "out",
+"category": "injury",
+"reason": "Hamstring injury",
+"rawType": "tm:injury until 31/10/2026"
+},
+{
+"providerPlayerId": "7327",
+"providerFixtureId": "1575150",
+"status": "out",
+"category": "injury",
+"reason": "Adductor pain",
+"rawType": "tm:injury"
+},
+{
+"providerPlayerId": "864",
+"providerFixtureId": "1575150",
+"status": "out",
+"category": "injury",
+"reason": "Cruciate ligament tear",
+"rawType": "tm:injury"
+},
+{
+"providerPlayerId": "88140",
+"providerFixtureId": "1575156",
+"status": "out",
+"category": "suspension",
+"reason": "Red card suspension",
+"rawType": "tm:suspension until 12/09/2026"
+},
+{
+"providerPlayerId": "93016",
+"providerFixtureId": "1575149",
+"status": "out",
+"category": "injury",
+"reason": "Ill",
+"rawType": "tm:injury"
+},
+{
+"providerPlayerId": "979",
+"providerFixtureId": "1575154",
+"status": "out",
+"category": "injury",
+"reason": "Ankle injury",
+"rawType": "tm:injury"
+},
+{
+"providerPlayerId": "tm:1048715",
+"providerFixtureId": "1575154",
+"status": "out",
+"category": "injury",
+"reason": "Shoulder injury",
+"rawType": "tm:injury"
+},
+{
+"providerPlayerId": "tm:1074526",
+"providerFixtureId": "1575155",
+"status": "out",
+"category": "injury",
+"reason": "Cruciate ligament tear",
+"rawType": "tm:injury"
+},
+{
+"providerPlayerId": "tm:1141179",
+"providerFixtureId": "1575150",
+"status": "out",
+"category": "injury",
+"reason": "muscular problems",
+"rawType": "tm:injury"
+},
+{
+"providerPlayerId": "tm:119211",
+"providerFixtureId": "1575155",
+"status": "out",
+"category": "injury",
+"reason": "muscular problems",
+"rawType": "tm:injury"
+},
+{
+"providerPlayerId": "tm:1213681",
+"providerFixtureId": "1575154",
+"status": "out",
+"category": "injury",
+"reason": "Ankle injury",
+"rawType": "tm:injury"
+},
+{
+"providerPlayerId": "tm:1299403",
+"providerFixtureId": "1575157",
+"status": "out",
+"category": "injury",
+"reason": "Back problems",
+"rawType": "tm:injury"
+},
+{
+"providerPlayerId": "tm:1311594",
+"providerFixtureId": "1575150",
+"status": "out",
+"category": "injury",
+"reason": "Patellar tendon problems",
+"rawType": "tm:injury"
+},
+{
+"providerPlayerId": "tm:236981",
+"providerFixtureId": "1575149",
+"status": "out",
+"category": "injury",
+"reason": "Knee injury",
+"rawType": "tm:injury"
+},
+{
+"providerPlayerId": "tm:238639",
+"providerFixtureId": "1575152",
+"status": "out",
+"category": "injury",
+"reason": "unknown injury",
+"rawType": "tm:injury"
+},
+{
+"providerPlayerId": "tm:337036",
+"providerFixtureId": "1575157",
+"status": "out",
+"category": "injury",
+"reason": "Cruciate ligament tear",
+"rawType": "tm:injury until 11/10/2026"
+},
+{
+"providerPlayerId": "tm:448177",
+"providerFixtureId": "1575152",
+"status": "out",
+"category": "injury",
+"reason": "Hamstring injury",
+"rawType": "tm:injury"
+},
+{
+"providerPlayerId": "tm:469957",
+"providerFixtureId": "1575151",
+"status": "out",
+"category": "injury",
+"reason": "unknown injury",
+"rawType": "tm:injury"
+},
+{
+"providerPlayerId": "tm:569457",
+"providerFixtureId": "1575152",
+"status": "out",
+"category": "injury",
+"reason": "Toe injury",
+"rawType": "tm:injury"
+},
+{
+"providerPlayerId": "tm:628331",
+"providerFixtureId": "1575150",
+"status": "out",
+"category": "injury",
+"reason": "Cruciate ligament tear",
+"rawType": "tm:injury"
+},
+{
+"providerPlayerId": "tm:720162",
+"providerFixtureId": "1575149",
+"status": "out",
+"category": "injury",
+"reason": "Hamstring injury",
+"rawType": "tm:injury until 30/09/2026"
+},
+{
+"providerPlayerId": "tm:802560",
+"providerFixtureId": "1575156",
+"status": "out",
+"category": "injury",
+"reason": "Achilles tendon surgery",
+"rawType": "tm:injury"
+}
+],
+"rowsInFeed": 81,
+"unusable": 1
+},
+"88": {
+"gameweekId": "th71cr371k16vaa8vhh77hjrdn8c8yv6",
+"leagueId": 88,
+"records": [
+{
+"providerPlayerId": "1405",
+"providerFixtureId": "1552157",
+"status": "out",
+"category": "injury",
+"reason": "Hamstring injury",
+"rawType": "tm:injury"
+},
+{
+"providerPlayerId": "14343",
+"providerFixtureId": "1552154",
+"status": "out",
+"category": "injury",
+"reason": "Head injury",
+"rawType": "tm:injury"
+},
+{
+"providerPlayerId": "149557",
+"providerFixtureId": "1552155",
+"status": "out",
+"category": "injury",
+"reason": "Knee injury",
+"rawType": "tm:injury"
+},
+{
+"providerPlayerId": "179839",
+"providerFixtureId": "1552159",
+"status": "out",
+"category": "injury",
+"reason": "Groin injury",
+"rawType": "tm:injury"
+},
+{
+"providerPlayerId": "191233",
+"providerFixtureId": "1552156",
+"status": "out",
+"category": "injury",
+"reason": "unknown injury",
+"rawType": "tm:injury"
+},
+{
+"providerPlayerId": "191879",
+"providerFixtureId": "1552158",
+"status": "out",
+"category": "injury",
+"reason": "minor knock",
+"rawType": "tm:injury"
+},
+{
+"providerPlayerId": "203769",
+"providerFixtureId": "1552158",
+"status": "out",
+"category": "injury",
+"reason": "Cruciate ligament tear",
+"rawType": "tm:injury until 01/07/2027"
+},
+{
+"providerPlayerId": "216809",
+"providerFixtureId": "1552161",
+"status": "out",
+"category": "injury",
+"reason": "unknown injury",
+"rawType": "tm:injury"
+},
+{
+"providerPlayerId": "25646",
+"providerFixtureId": "1552156",
+"status": "out",
+"category": "injury",
+"reason": "unknown injury",
+"rawType": "tm:injury"
+},
+{
+"providerPlayerId": "268572",
+"providerFixtureId": "1552161",
+"status": "out",
+"category": "injury",
+"reason": "unknown injury",
+"rawType": "tm:injury"
+},
+{
+"providerPlayerId": "278159",
+"providerFixtureId": "1552154",
+"status": "out",
+"category": "injury",
+"reason": "Knee injury",
+"rawType": "tm:injury"
+},
+{
+"providerPlayerId": "28378",
+"providerFixtureId": "1552161",
+"status": "out",
+"category": "injury",
+"reason": "Knee injury",
+"rawType": "tm:injury"
+},
+{
+"providerPlayerId": "291505",
+"providerFixtureId": "1552159",
+"status": "out",
+"category": "injury",
+"reason": "Cruciate ligament injury",
+"rawType": "tm:injury until 01/01/2027"
+},
+{
+"providerPlayerId": "292553",
+"providerFixtureId": "1552158",
+"status": "out",
+"category": "injury",
+"reason": "unknown injury",
+"rawType": "tm:injury"
+},
+{
+"providerPlayerId": "310037",
+"providerFixtureId": "1552159",
+"status": "out",
+"category": "injury",
+"reason": "Knee injury",
+"rawType": "tm:injury"
+},
+{
+"providerPlayerId": "312903",
+"providerFixtureId": "1552155",
+"status": "out",
+"category": "injury",
+"reason": "unknown injury",
+"rawType": "tm:injury"
+},
+{
+"providerPlayerId": "318416",
+"providerFixtureId": "1552155",
+"status": "out",
+"category": "injury",
+"reason": "Fitness",
+"rawType": "tm:injury"
+},
+{
+"providerPlayerId": "321632",
+"providerFixtureId": "1552157",
+"status": "out",
+"category": "injury",
+"reason": "minor knock",
+"rawType": "tm:injury"
+},
+{
+"providerPlayerId": "321746",
+"providerFixtureId": "1552155",
+"status": "out",
+"category": "injury",
+"reason": "Hamstring injury",
+"rawType": "tm:injury"
+},
+{
+"providerPlayerId": "328120",
+"providerFixtureId": "1552155",
+"status": "out",
+"category": "injury",
+"reason": "unknown injury",
+"rawType": "tm:injury"
+},
+{
+"providerPlayerId": "336678",
+"providerFixtureId": "1552155",
+"status": "out",
+"category": "injury",
+"reason": "unknown injury",
+"rawType": "tm:injury"
+},
+{
+"providerPlayerId": "337587",
+"providerFixtureId": "1552154",
+"status": "out",
+"category": "injury",
+"reason": "Knee surgery",
+"rawType": "tm:injury until 01/01/2027"
+},
+{
+"providerPlayerId": "339169",
+"providerFixtureId": "1552161",
+"status": "out",
+"category": "injury",
+"reason": "unknown injury",
+"rawType": "tm:injury"
+},
+{
+"providerPlayerId": "353808",
+"providerFixtureId": "1552154",
+"status": "out",
+"category": "injury",
+"reason": "Ankle injury",
+"rawType": "tm:injury"
+},
+{
+"providerPlayerId": "357051",
+"providerFixtureId": "1552161",
+"status": "out",
+"category": "injury",
+"reason": "Hamstring injury",
+"rawType": "tm:injury"
+},
+{
+"providerPlayerId": "36932",
+"providerFixtureId": "1552153",
+"status": "out",
+"category": "injury",
+"reason": "unknown injury",
+"rawType": "tm:injury"
+},
+{
+"providerPlayerId": "36987",
+"providerFixtureId": "1552156",
+"status": "out",
+"category": "injury",
+"reason": "minor knock",
+"rawType": "tm:injury"
+},
+{
+"providerPlayerId": "37147",
+"providerFixtureId": "1552154",
+"status": "out",
+"category": "injury",
+"reason": "unknown injury",
+"rawType": "tm:injury"
+},
+{
+"providerPlayerId": "37165",
+"providerFixtureId": "1552155",
+"status": "out",
+"category": "injury",
+"reason": "unknown injury",
+"rawType": "tm:injury"
+},
+{
+"providerPlayerId": "37183",
+"providerFixtureId": "1552155",
+"status": "out",
+"category": "injury",
+"reason": "unknown injury",
+"rawType": "tm:injury"
+},
+{
+"providerPlayerId": "37273",
+"providerFixtureId": "1552161",
+"status": "out",
+"category": "injury",
+"reason": "unknown injury",
+"rawType": "tm:injury"
+},
+{
+"providerPlayerId": "37602",
+"providerFixtureId": "1552159",
+"status": "out",
+"category": "injury",
+"reason": "minor knock",
+"rawType": "tm:injury"
+},
+{
+"providerPlayerId": "377266",
+"providerFixtureId": "1552153",
+"status": "out",
+"category": "injury",
+"reason": "unknown injury",
+"rawType": "tm:injury"
+},
+{
+"providerPlayerId": "37742",
+"providerFixtureId": "1552154",
+"status": "out",
+"category": "injury",
+"reason": "Ankle injury",
+"rawType": "tm:injury"
+},
+{
+"providerPlayerId": "378864",
+"providerFixtureId": "1552156",
+"status": "out",
+"category": "injury",
+"reason": "Hamstring injury",
+"rawType": "tm:injury"
+},
+{
+"providerPlayerId": "37890",
+"providerFixtureId": "1552156",
+"status": "out",
+"category": "injury",
+"reason": "Cruciate ligament tear",
+"rawType": "tm:injury until 01/05/2027"
+},
+{
+"providerPlayerId": "388786",
+"providerFixtureId": "1552159",
+"status": "out",
+"category": "injury",
+"reason": "Groin injury",
+"rawType": "tm:injury"
+},
+{
+"providerPlayerId": "396202",
+"providerFixtureId": "1552156",
+"status": "out",
+"category": "injury",
+"reason": "unknown injury",
+"rawType": "tm:injury"
+},
+{
+"providerPlayerId": "40201",
+"providerFixtureId": "1552161",
+"status": "out",
+"category": "injury",
+"reason": "unknown injury",
+"rawType": "tm:injury"
+},
+{
+"providerPlayerId": "40911",
+"providerFixtureId": "1552154",
+"status": "out",
+"category": "injury",
+"reason": "Knee surgery",
+"rawType": "tm:injury"
+},
+{
+"providerPlayerId": "411824",
+"providerFixtureId": "1552157",
+"status": "out",
+"category": "injury",
+"reason": "Foot injury",
+"rawType": "tm:injury"
+},
+{
+"providerPlayerId": "414188",
+"providerFixtureId": "1552158",
+"status": "out",
+"category": "injury",
+"reason": "Achilles tendon rupture",
+"rawType": "tm:injury until 01/05/2027"
+},
+{
+"providerPlayerId": "43036",
+"providerFixtureId": "1552156",
+"status": "out",
+"category": "injury",
+"reason": "unknown injury",
+"rawType": "tm:injury"
+},
+{
+"providerPlayerId": "431651",
+"providerFixtureId": "1552159",
+"status": "out",
+"category": "injury",
+"reason": "Ankle injury",
+"rawType": "tm:injury"
+},
+{
+"providerPlayerId": "446871",
+"providerFixtureId": "1552158",
+"status": "out",
+"category": "injury",
+"reason": "unknown injury",
+"rawType": "tm:injury"
+},
+{
+"providerPlayerId": "47446",
+"providerFixtureId": "1552154",
+"status": "out",
+"category": "injury",
+"reason": "minor knock",
+"rawType": "tm:injury"
+},
+{
+"providerPlayerId": "47814",
+"providerFixtureId": "1552155",
+"status": "out",
+"category": "injury",
+"reason": "Groin injury",
+"rawType": "tm:injury"
+},
+{
+"providerPlayerId": "480309",
+"providerFixtureId": "1552157",
+"status": "out",
+"category": "injury",
+"reason": "surgery",
+"rawType": "tm:injury"
+},
+{
+"providerPlayerId": "525881",
+"providerFixtureId": "1552153",
+"status": "out",
+"category": "injury",
+"reason": "Ankle injury",
+"rawType": "tm:injury until 08/09/2026"
+},
+{
+"providerPlayerId": "528298",
+"providerFixtureId": "1552154",
+"status": "out",
+"category": "injury",
+"reason": "unknown injury",
+"rawType": "tm:injury"
+},
+{
+"providerPlayerId": "531",
+"providerFixtureId": "1552156",
+"status": "out",
+"category": "injury",
+"reason": "unknown injury",
+"rawType": "tm:injury"
+},
+{
+"providerPlayerId": "625",
+"providerFixtureId": "1552154",
+"status": "out",
+"category": "injury",
+"reason": "unknown injury",
+"rawType": "tm:injury"
+},
+{
+"providerPlayerId": "631615",
+"providerFixtureId": "1552158",
+"status": "out",
+"category": "injury",
+"reason": "unknown injury",
+"rawType": "tm:injury"
+},
+{
+"providerPlayerId": "90957",
+"providerFixtureId": "1552158",
+"status": "out",
+"category": "injury",
+"reason": "Back injury",
+"rawType": "tm:injury"
+},
+{
+"providerPlayerId": "tm:125769",
+"providerFixtureId": "1552160",
+"status": "out",
+"category": "injury",
+"reason": "Hamstring injury",
+"rawType": "tm:injury"
+},
+{
+"providerPlayerId": "tm:182581",
+"providerFixtureId": "1552157",
+"status": "out",
+"category": "injury",
+"reason": "Fitness",
+"rawType": "tm:injury"
+},
+{
+"providerPlayerId": "tm:264857",
+"providerFixtureId": "1552157",
+"status": "out",
+"category": "injury",
+"reason": "Back injury",
+"rawType": "tm:injury"
+},
+{
+"providerPlayerId": "tm:400548",
+"providerFixtureId": "1552155",
+"status": "out",
+"category": "injury",
+"reason": "Knee injury",
+"rawType": "tm:injury until 15/10/2026"
+},
+{
+"providerPlayerId": "tm:486814",
+"providerFixtureId": "1552153",
+"status": "out",
+"category": "injury",
+"reason": "Achilles tendon surgery",
+"rawType": "tm:injury until 01/11/2026"
+},
+{
+"providerPlayerId": "tm:557410",
+"providerFixtureId": "1552155",
+"status": "out",
+"category": "injury",
+"reason": "Knee surgery",
+"rawType": "tm:injury"
+},
+{
+"providerPlayerId": "tm:593862",
+"providerFixtureId": "1552154",
+"status": "out",
+"category": "injury",
+"reason": "Broken leg",
+"rawType": "tm:injury"
+},
+{
+"providerPlayerId": "tm:624698",
+"providerFixtureId": "1552155",
+"status": "out",
+"category": "injury",
+"reason": "Cruciate ligament tear",
+"rawType": "tm:injury until 01/01/2027"
+},
+{
+"providerPlayerId": "tm:658536",
+"providerFixtureId": "1552156",
+"status": "out",
+"category": "injury",
+"reason": "Ankle injury",
+"rawType": "tm:injury until 28/09/2026"
+},
+{
+"providerPlayerId": "tm:690665",
+"providerFixtureId": "1552155",
+"status": "out",
+"category": "injury",
+"reason": "Cruciate ligament injury",
+"rawType": "tm:injury"
+},
+{
+"providerPlayerId": "tm:723008",
+"providerFixtureId": "1552155",
+"status": "out",
+"category": "injury",
+"reason": "Cruciate ligament tear",
+"rawType": "tm:injury"
+},
+{
+"providerPlayerId": "tm:85904",
+"providerFixtureId": "1552155",
+"status": "out",
+"category": "injury",
+"reason": "Broken leg",
+"rawType": "tm:injury"
+},
+{
+"providerPlayerId": "tm:928330",
+"providerFixtureId": "1552157",
+"status": "out",
+"category": "injury",
+"reason": "Groin injury",
+"rawType": "tm:injury"
+},
+{
+"providerPlayerId": "tm:931525",
+"providerFixtureId": "1552160",
+"status": "out",
+"category": "injury",
+"reason": "unknown injury",
+"rawType": "tm:injury"
+},
+{
+"providerPlayerId": "tm:941867",
+"providerFixtureId": "1552157",
+"status": "out",
+"category": "injury",
+"reason": "minor knock",
+"rawType": "tm:injury"
+},
+{
+"providerPlayerId": "tm:963511",
+"providerFixtureId": "1552160",
+"status": "out",
+"category": "injury",
+"reason": "Cruciate ligament surgery",
+"rawType": "tm:injury"
+}
+],
+"rowsInFeed": 74,
+"unusable": 0
+},
+"94": {
+"gameweekId": "th71cr371k16vaa8vhh77hjrdn8c8yv6",
+"leagueId": 94,
+"records": [
+{
+"providerPlayerId": "162535",
+"providerFixtureId": "1575482",
+"status": "out",
+"category": "injury",
+"reason": "unknown injury",
+"rawType": "tm:injury"
+},
+{
+"providerPlayerId": "20884",
+"providerFixtureId": "1575482",
+"status": "out",
+"category": "injury",
+"reason": "Achilles tendon rupture",
+"rawType": "tm:injury"
+},
+{
+"providerPlayerId": "358628",
+"providerFixtureId": "1575485",
+"status": "out",
+"category": "injury",
+"reason": "Cruciate ligament tear",
+"rawType": "tm:injury until 31/10/2026"
+},
+{
+"providerPlayerId": "40386",
+"providerFixtureId": "1575488",
+"status": "out",
+"category": "injury",
+"reason": "Back problems",
+"rawType": "tm:injury"
+},
+{
+"providerPlayerId": "442540",
+"providerFixtureId": "1575485",
+"status": "out",
+"category": "injury",
+"reason": "Muscle injury",
+"rawType": "tm:injury"
+},
+{
+"providerPlayerId": "tm:1178475",
+"providerFixtureId": "1575486",
+"status": "out",
+"category": "injury",
+"reason": "unknown injury",
+"rawType": "tm:injury"
+},
+{
+"providerPlayerId": "tm:1228661",
+"providerFixtureId": "1575485",
+"status": "out",
+"category": "injury",
+"reason": "Pubic bone bruise",
+"rawType": "tm:injury"
+},
+{
+"providerPlayerId": "tm:340524",
+"providerFixtureId": "1575489",
+"status": "out",
+"category": "injury",
+"reason": "unknown injury",
+"rawType": "tm:injury"
+},
+{
+"providerPlayerId": "tm:631996",
+"providerFixtureId": "1575488",
+"status": "out",
+"category": "injury",
+"reason": "Cruciate ligament tear",
+"rawType": "tm:injury"
+},
+{
+"providerPlayerId": "tm:678991",
+"providerFixtureId": "1575489",
+"status": "out",
+"category": "injury",
+"reason": "unknown injury",
+"rawType": "tm:injury"
+},
+{
+"providerPlayerId": "tm:808475",
+"providerFixtureId": "1575488",
+"status": "out",
+"category": "injury",
+"reason": "Cruciate ligament tear",
+"rawType": "tm:injury"
+},
+{
+"providerPlayerId": "tm:971663",
+"providerFixtureId": "1575484",
+"status": "out",
+"category": "injury",
+"reason": "Back problems",
+"rawType": "tm:injury"
+}
+],
+"rowsInFeed": 15,
+"unusable": 0
+}
+}

@@ -48,39 +48,100 @@ import {
 const MS_PER_DAY = 86_400_000;
 
 /**
- * Absorption threshold (constitution amendment, 2026-08-19): a midweek window
- * holding FEWER than this many fixtures is not a gameweek — its fixtures are
- * absorbed forward into the following weekend window.
+ * Absorption rule (constitution amendment 2026-08-19, re-amended 2026-09-03):
+ * a midweek window is a gameweek only when at least one ANCHOR league plays a
+ * full round in it — `MIDWEEK_ABSORPTION_MIN_FIXTURES` or more of THAT
+ * league's fixtures between Tuesday and Thursday. Otherwise the whole window,
+ * every league's fixtures in it, is absorbed forward into the following
+ * weekend window.
  *
- * The problem this solves is the straggler round: LaLiga opened 2026-2027 by
- * spreading matchday 1 across nine days, leaving two fixtures on the Tue-Thu
- * after the opening weekend. Under the unamended constitution those two
- * fixtures constituted a full gameweek — a 116-player board that occupied the
- * open slot for the whole build week, so the REAL weekend's board could not
- * open until its own Friday fixtures had already kicked off. The same shape
- * recurs whenever a postponement lands one or two matches on a Tue-Thu.
+ * The problem the first amendment solved is the straggler round: LaLiga
+ * opened 2026-2027 by spreading matchday 1 across nine days, leaving two
+ * fixtures on the Tue-Thu after the opening weekend. Under the unamended
+ * constitution those two fixtures constituted a full gameweek — a 116-player
+ * board that occupied the open slot for the whole build week, so the REAL
+ * weekend's board could not open until its own Friday fixtures had already
+ * kicked off. That amendment counted fixtures ACROSS leagues: under 5 in
+ * total absorbed, anything else stood.
  *
- * 5 is read off the season's actual distribution: the thin windows are the
- * straggler tails (2 and 4 fixtures on prod, 2026-08-19) and every genuine
- * midweek round — a full league matchday played Tue-Thu — has at least 9 (a
- * Bundesliga round), most 10-12. The gap between 4 and 9 is the line.
+ * The shape that defeated it (prod, 2026-09-03): the Championship plays a
+ * full 12-fixture round on a Tue-Wed roughly every other week, and whenever a
+ * top-flight straggler lands beside it the window reads 13-15 fixtures and
+ * constitutes. A "GW4" of 12 Championship + 1 LaLiga + 1 Ligue 1 fixtures
+ * opened on the Tuesday with finality Friday 23:59, and the 77-fixture
+ * weekend behind it could not open until its own Friday kickoffs — the exact
+ * failure the first amendment was written for, with ten more such windows
+ * queued across the season (nine of them Championship-only). Owner ruling
+ * 2026-09-03: one, two or three games from a league in midweek is not a
+ * gameweek; the weekend board carries them.
+ *
+ * Why anchor leagues rather than "any league with a full round": the
+ * Championship's 46-game calendar is played largely on Tue-Wed and would keep
+ * constituting a board every other midweek on its own — a board on which
+ * seven of the eight leagues have nothing to pick. A midweek board exists for
+ * the midweek rounds of the top five (Premier League, LaLiga, Serie A,
+ * Bundesliga, Ligue 1); Championship, Eredivisie and Liga Portugal fixtures
+ * ride along in whichever window they fall, exactly as a straggler does. When
+ * an anchor round DOES constitute a midweek gameweek, every fixture in that
+ * window files under it — a window is a time span, not a league filter, and
+ * the per-club kickoff locks already handle a lone straggler inside it.
+ *
+ * Why the per-league count is 5: a real round in an anchor league is 9-10
+ * fixtures and a straggler tail is 1-4 (observed 1, 2 and 4 on prod this
+ * season). The gap between 4 and 9 is the line, as it was before.
  *
  * Absorption is FORWARD only, and only for midweek windows. Backward would
  * extend a gameweek whose finality (Tuesday 23:59) can pass before a Thursday
  * straggler even kicks off; forward yields a Tue → Mon combined window with
  * the normal Tuesday finality, and the existing per-club kickoff locks handle
- * the early fixtures exactly as they handle a Friday 18:00 kickoff today.
- * Weekend windows are never absorbed regardless of size, so absorption cannot
- * chain and always terminates.
+ * the early fixtures exactly as they handle a Friday 18:00 kickoff today. A
+ * club that plays twice in the combined window (a Championship side, Tue and
+ * Sat) locks at its first kickoff and is scored per fixture, as any absorbed
+ * straggler's club already was. Weekend windows are never absorbed regardless
+ * of size, so absorption cannot chain and always terminates.
  *
  * Known limitation, accepted: the decision is a function of the window's
- * OBSERVED fixture count, so a postponement moving a 5th fixture INTO an
- * already-absorbed window after squads were built would re-constitute it as
- * its own gameweek and strand the early picks. The pre-amendment constitution
- * had the mirror-image churn (ordinal shifts on any newly populated window);
- * `reconcileGameweeks`' fail-closed conflict check is the backstop for both.
+ * OBSERVED fixtures, so a postponement moving a 5th anchor-league fixture
+ * INTO an already-absorbed window after squads were built would re-constitute
+ * it as its own gameweek and strand the early picks. The pre-amendment
+ * constitution had the mirror-image churn (ordinal shifts on any newly
+ * populated window); `reconcileGameweeks`' fail-closed conflict check is the
+ * backstop for both.
  */
 export const MIDWEEK_ABSORPTION_MIN_FIXTURES = 5;
+
+/**
+ * The leagues whose full midweek round constitutes a midweek gameweek: the
+ * top five. Mirrors the first five entries of `fantasyConstants.LEAGUE_IDS`
+ * (39 Premier League, 140 LaLiga, 135 Serie A, 78 Bundesliga, 61 Ligue 1)
+ * and is spelled out here rather than derived, because the constitution must
+ * not change shape when the ingest list grows by another riding league.
+ */
+export const MIDWEEK_ANCHOR_LEAGUE_IDS: readonly number[] = [39, 140, 135, 78, 61];
+
+/** One fixture as the constitution sees it: when it kicks off, and for whom. */
+export interface FixtureKickoff {
+  readonly kickoffAt: number;
+  readonly leagueId: number;
+}
+
+/**
+ * Does this set of midweek-window fixtures constitute a gameweek? True when
+ * some anchor league has at least `MIDWEEK_ABSORPTION_MIN_FIXTURES` fixtures
+ * in it. Exported so the ingest's migration guard and the constitution agree
+ * by construction rather than by copy.
+ */
+export function midweekConstitutes(
+  fixtures: readonly { readonly leagueId: number }[],
+): boolean {
+  const countByLeague = new Map<number, number>();
+  for (const { leagueId } of fixtures) {
+    countByLeague.set(leagueId, (countByLeague.get(leagueId) ?? 0) + 1);
+  }
+  return MIDWEEK_ANCHOR_LEAGUE_IDS.some(
+    (id) => (countByLeague.get(id) ?? 0) >= MIDWEEK_ABSORPTION_MIN_FIXTURES,
+  );
+}
 
 export type WindowKind = "weekend" | "midweek";
 
@@ -223,13 +284,14 @@ export function absorbingWindowFor(
  * (a FULL midweek round is a gameweek in its own right, not a sub-part of the
  * weekend beside it).
  *
- * `kickoffs` carries ONE ENTRY PER FIXTURE, duplicates meaningful: the count
- * per window is what the absorption rule reads. A midweek window with fewer
- * than `MIDWEEK_ABSORPTION_MIN_FIXTURES` entries is not constituted — its key
- * joins the following weekend window's `keys` instead, so its fixtures file
- * under that gameweek (see the constant's comment for the ruling). The
- * absorbing weekend window is constituted even when it has no direct fixtures
- * of its own yet — a straggler pair must always have a home.
+ * `fixtures` carries ONE ENTRY PER FIXTURE with its league, duplicates
+ * meaningful: the per-league count inside each window is what the absorption
+ * rule reads. A midweek window in which no anchor league reaches
+ * `MIDWEEK_ABSORPTION_MIN_FIXTURES` (`midweekConstitutes`) is not constituted
+ * — its key joins the following weekend window's `keys` instead, so ALL its
+ * fixtures file under that gameweek (see the constant's comment for the
+ * ruling). The absorbing weekend window is constituted even when it has no
+ * direct fixtures of its own yet — a straggler pair must always have a home.
  *
  * Every returned window carries `keys`: the set of `windowFor(...).key` values
  * that resolve to it (its own, plus any absorbed midweek's). Callers mapping a
@@ -249,23 +311,25 @@ export function absorbingWindowFor(
  * Deterministic: same kickoffs in any order produce the same numbering.
  */
 export function constituteGameweeks(
-  kickoffs: readonly number[],
+  fixtures: readonly FixtureKickoff[],
   timeZone: string = FINALITY_TIME_ZONE,
   coverageStartAt?: number,
 ): (GameweekWindow & { gwNumber: number; keys: string[] })[] {
   const byKey = new Map<string, GameweekWindow>();
-  const countByKey = new Map<string, number>();
-  for (const kickoff of kickoffs) {
-    const window = windowFor(kickoff, timeZone);
+  const fixturesByKey = new Map<string, FixtureKickoff[]>();
+  for (const fixture of fixtures) {
+    const window = windowFor(fixture.kickoffAt, timeZone);
     if (!byKey.has(window.key)) byKey.set(window.key, window);
-    countByKey.set(window.key, (countByKey.get(window.key) ?? 0) + 1);
+    const filed = fixturesByKey.get(window.key) ?? [];
+    filed.push(fixture);
+    fixturesByKey.set(window.key, filed);
   }
 
-  // Absorption pass: thin midweek windows fold forward into their weekend.
+  // Absorption pass: midweek windows without an anchor-league round fold
+  // forward into their weekend.
   const thin = [...byKey.values()].filter(
     (w) =>
-      w.kind === "midweek" &&
-      (countByKey.get(w.key) ?? 0) < MIDWEEK_ABSORPTION_MIN_FIXTURES,
+      w.kind === "midweek" && !midweekConstitutes(fixturesByKey.get(w.key) ?? []),
   );
   const absorbedKeysByHost = new Map<string, string[]>();
   for (const window of thin) {

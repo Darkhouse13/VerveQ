@@ -1,0 +1,1864 @@
+confirmed moves 254  outgoing 538  new 531  keep 30  unresolved Counter({('out', 'no-candidate'): 292, ('new', 'no-candidate'): 102, ('move', 'no-candidate'): 67, ('new', 'no-search'): 17, ('out', 'truncated'): 10, ('move', 'ambiguous'): 6, ('move', 'truncated'): 2, ('out', 'ambiguous-covered'): 1})
+report {'new-tm-elsewhere': 141, 'new-dup-of-move': 4}
+out by price [(4, 423), (4.5, 50), (5, 25), (5.5, 16), (6, 10), (6.5, 4), (7, 8), (7.5, 1), (8.5, 1)]
+new by pos Counter({'DEF': 161, 'MID': 161, 'ATT': 157, 'GK': 52})
+
+MOVES
+  Y. Diomande              10.5  RB Leipzig             -> Real Madrid            TM:Yan Diomande @ Real Madrid 
+  E. Fernández             10  Chelsea                -> Manchester City        TM:Enzo Fernández @ Manchester City 
+  Bruno Guimarães          9.5  Newcastle              -> Arsenal                TM:Bruno Guimarães @ Arsenal FC 
+  Diego Moreira            8.5  Strasbourg             -> AC Milan               TM:Diego Moreira @ AC Milan 
+  Omar Marmoush            8  Manchester City        -> Tottenham              TM:Omar Marmoush @ Tottenham Hotspur 
+  M. Akliouche             8  Monaco                 -> Paris Saint Germain    TM:Maghnes Akliouche @ Paris Saint-Germain 
+  M. Fernandez-Pardo       8  Lille                  -> Newcastle              TM:Matias Fernandez-Pardo @ Newcastle United 
+  B. Barcola               8  Paris Saint Germain    -> Liverpool              TM:Bradley Barcola @ Liverpool FC 
+  J. Enciso                8  Strasbourg             -> Ipswich                TM:Julio Enciso @ Ipswich Town 
+  João Palhinha            8  Bayern München         -> Benfica                TM:João Palhinha @ SL Benfica 
+  M. de Roon               8  Atalanta               -> AS Roma                TM:Marten de Roon @ AS Roma 
+  S. Esposito              8  Cagliari               -> Sassuolo               TM:Sebastiano Esposito @ US Sassuolo 
+  R. Mandragora            8  Fiorentina             -> Torino                 TM:Rolando Mandragora @ Torino FC 
+  Ferran Torres            8  Barcelona              -> Paris Saint Germain    TM:Ferran Torres @ Paris Saint-Germain 
+  I. Ndiaye                7.5  Everton                -> Manchester City        TM:Iliman Ndiaye @ Manchester City 
+  C. Jones                 7.5  Liverpool              -> Inter                  TM:Curtis Jones @ Inter Milan 
+  N. Elvedi                7.5  Borussia Mönchengladbach -> Leeds                  TM:Nico Elvedi @ Leeds United 
+  M. Godts                 7.5  Ajax                   -> Paris Saint Germain    TM:Mika Godts @ Paris Saint-Germain 
+  J. Veerman               7.5  PSV Eindhoven          -> Borussia Dortmund      TM:Joey Veerman @ Borussia Dortmund 
+  Y. Fofana                7.5  AC Milan               -> Sevilla                TM:Youssouf Fofana @ Sevilla FC 
+  Rodri                    7  Manchester City        -> Barcelona              TM:Rodri @ FC Barcelona 
+  T. Harwood-Bellis        7  Southampton            -> Aston Villa            TM:Taylor Harwood-Bellis @ Aston Villa 
+  G. Lloris                7  Le Havre               -> Stade Brestois 29      TM:Gautier Lloris @ Stade Brestois 29 
+  Félix Correia            7  Lille                  -> Sevilla                TM:Félix Correia @ Sevilla FC 
+  A. Maitland-Niles        7  Lyon                   -> Everton                TM:Ainsley Maitland-Niles @ Everton FC 
+  A. Ouattara              7  Strasbourg             -> Ipswich                TM:Abdoul Ouattara @ Ipswich Town 
+  G. Doué                  7  Strasbourg             -> Bayer Leverkusen       TM:Guéla Doué @ Bayer 04 Leverkusen 
+  H. Larsson               7  Eintracht Frankfurt    -> Fulham                 TM:Hugo Larsson @ Fulham FC 
+  K. Sano                  7  NEC Nijmegen           -> FSV Mainz 05           TM:Kaishu Sano @ 1.FSV Mainz 05 dest corrected by TM
+  Mateo Pellegrino         7  Parma                  -> Fiorentina             TM:Mateo Pellegrino @ ACF Fiorentina 
+  A. Circati               7  Parma                  -> Benfica                TM:Alessandro Circati @ SL Benfica 
+  A. Pinamonti             7  Sassuolo               -> Lazio                  TM:Andrea Pinamonti @ SS Lazio 
+  Nico González            7  Manchester City        -> Newcastle              TM:Nico González @ Newcastle United ambiguous resolved via new-arrival TM id
+  T. Chalobah              6.5  Chelsea                -> Como                   TM:Trevoh Chalobah @ Como 1907 
+  T. Iroegbunam            6.5  Everton                -> Hull City              TM:Tim Iroegbunam @ Hull City 
+  S. Lukić                 6.5  Fulham                 -> Ipswich                TM:Saša Lukić @ Ipswich Town 
+  N. Woltemade             6.5  Newcastle              -> Juventus               TM:Nick Woltemade @ Juventus FC 
+  O. Hutchinson            6.5  Nottingham Forest      -> AC Milan               TM:Omari Hutchinson @ AC Milan 
+  P. Sarr                  6.5  Tottenham              -> Juventus               TM:Pape Matar Sarr @ Juventus FC 
+  C. Romero                6.5  Tottenham              -> Atlético Madrid        TM:Cristian Romero @ Atlético de Madrid 
+  T. Kehrer                6.5  Monaco                 -> Ajax                   TM:Thilo Kehrer @ Ajax Amsterdam 
+  M. Bard                  6.5  Nice                   -> Leeds                  TM:Melvin Bard @ Leeds United 
+  L. Brassier              6.5  Rennes                 -> Eintracht Frankfurt    TM:Lilian Brassier @ Eintracht Frankfurt 
+  Ilyas Ansah              6.5  Union Berlin           -> Hull City              TM:Ilyas Ansah @ Hull City 
+  A. Ueda                  6.5  Feyenoord              -> Lille                  TM:Ayase Ueda @ LOSC Lille 
+  S. Ouaissa               6.5  NEC Nijmegen           -> PSV Eindhoven          TM:Sami Ouaissa @ PSV Eindhoven 
+  S. Ricci                 6.5  AC Milan               -> Como                   TM:Samuele Ricci @ Como 1907 
+  C. Nkunku                6.5  AC Milan               -> RB Leipzig             TM:Christopher Nkunku @ RB Leipzig 
+  J. Rowe                  6.5  Bologna                -> Atalanta               TM:Jonathan Rowe @ Atalanta BC 
+  J. Lucumí                6.5  Bologna                -> Juventus               TM:Jhon Lucumí @ Juventus FC 
+  A. Guðmundsson           6.5  Fiorentina             -> Lazio                  TM:Albert Gudmundsson @ SS Lazio 
+  M. Kean                  6.5  Fiorentina             -> Como                   TM:Moise Kean @ Como 1907 
+  P. Masini                6.5  Genoa                  -> Frosinone              TM:Patrizio Masini @ Frosinone Calcio 
+  M. Folorunsho            6.5  Napoli                 -> Monza                  TM:Michael Folorunsho @ AC Monza 
+  R. Araújo                6.5  Barcelona              -> Liverpool              TM:Ronald Araujo @ Liverpool FC 
+  Pep Chavarría            6.5  Rayo Vallecano         -> Chelsea                TM:Pep Chavarría @ Chelsea FC 
+  C. Nørgaard              6  Arsenal                -> Everton                TM:Christian Nørgaard @ Everton FC 
+  E. Konsa                 6  Aston Villa            -> Arsenal                TM:Ezri Konsa @ Arsenal FC 
+  L. Digne                 6  Aston Villa            -> Paris Saint Germain    TM:Lucas Digne @ Paris Saint-Germain 
+  M. Solomon               6  Tottenham              -> West Ham               TM:Manor Solomon @ West Ham United 
+  N. Irankunda             6  Watford                -> Sporting CP            TM:Nestory Irankunda @ Sporting CP 
+  L. Balerdi               6  Marseille              -> AS Roma                TM:Leonardo Balerdi @ AS Roma 
+  I. Mbaye                 6  Paris Saint Germain    -> Aston Villa            TM:Ibrahim Mbaye @ Aston Villa 
+  D. Methalie              6  Toulouse               -> Sunderland             TM:Dayann Méthalie @ Sunderland AFC 
+  E. Palacios              6  Bayer Leverkusen       -> Ipswich                TM:Exequiel Palacios @ Ipswich Town 
+  J. Dina Ebimbe           6  Eintracht Frankfurt    -> FC Schalke 04          TM:Junior Dina Ebimbe @ FC Schalke 04 
+  E. Skhiri                6  Eintracht Frankfurt    -> FC Cologne             TM:Ellyes Skhiri @ 1.FC Köln 
+  K. Schlotterbeck         6  FC Augsburg            -> Southampton            TM:Keven Schlotterbeck @ Southampton FC 
+  S. Mbangula              6  Werder Bremen          -> Bologna                TM:Samuel Mbangula @ Bologna FC 1909 
+  J. Šutalo                6  Ajax                   -> Lazio                  TM:Josip Sutalo @ SS Lazio 
+  S. Resink                6  Groningen              -> AZ Alkmaar             TM:Stije Resink @ AZ Alkmaar 
+  N. El Aynaoui            6  AS Roma                -> RB Leipzig             TM:Neil El Aynaoui @ RB Leipzig 
+  M. Prati                 6  Cagliari               -> Racing Santander       TM:Matteo Prati @ Racing Santander 
+  Aarón Martín             6  Genoa                  -> Racing Santander       TM:Aarón Martín @ Racing Santander 
+  Unai Núñez               6  Celta Vigo             -> Espanyol               TM:Unai Núñez @ RCD Espanyol Barcelona 
+  Manu Sánchez             6  Celta Vigo             -> Levante                TM:Manu Sánchez @ Levante UD 
+  André Almeida            6  Valencia               -> Racing Santander       TM:André Almeida @ Racing Santander 
+  B. Brereton              6  Southampton            -> Sheffield Utd          TM:Ben Brereton Díaz @ Sheffield United 
+  E. Martínez              5.5  Aston Villa            -> Chelsea                TM:Emiliano Martínez @ Chelsea FC 
+  L. Kitching              5.5  Coventry               -> Sheffield Utd          TM:Liam Kitching @ Sheffield United 
+  D. McNeil                5.5  Everton                -> Crystal Palace         TM:Dwight McNeil @ Crystal Palace 
+  Morato                   5.5  Nottingham Forest      -> West Ham               TM:Morato @ West Ham United 
+  K. Danso                 5.5  Tottenham              -> Sunderland             TM:Kevin Danso @ Sunderland AFC 
+  L. Dykes                 5.5  Charlton               -> Millwall               TM:Lyndon Dykes @ Millwall FC 
+  M. Osmajić               5.5  Preston                -> Genoa                  TM:Milutin Osmajic @ Genoa CFC 
+  E. Selvik                5.5  Watford                -> Stade Brestois 29      TM:Egil Selvik @ Stade Brestois 29 
+  A. Okonkwo               5.5  Wrexham                -> Charlton               TM:Arthur Okonkwo @ Charlton Athletic 
+  R. Fofana                5.5  Lens                   -> Le Havre               TM:Rayan Fofana @ Le Havre AC 
+  Q. Timber                5.5  Marseille              -> Crystal Palace         TM:Quinten Timber @ Crystal Palace 
+  B. Chilwell              5.5  Strasbourg             -> Crystal Palace         TM:Ben Chilwell @ Crystal Palace 
+  J. Belocian              5.5  Bayer Leverkusen       -> Racing Santander       TM:Jeanuël Belocian @ Racing Santander 
+  Yan Couto                5.5  Borussia Dortmund      -> Como                   TM:Yan Couto @ Como 1907 
+  A. Theate                5.5  Eintracht Frankfurt    -> Bologna                TM:Arthur Theate @ Bologna FC 1909 
+  C. Harder                5.5  RB Leipzig             -> Strasbourg             TM:Conrad Harder @ RC Strasbourg Alsace 
+  E. Dinkçi                5.5  SC Freiburg            -> Werder Bremen          TM:Eren Dinkçi @ SV Werder Bremen 
+  Y. Regeer                5.5  Ajax                   -> Werder Bremen          TM:Youri Regeer @ SV Werder Bremen 
+  K. Itakura               5.5  Ajax                   -> Borussia Mönchengladbach TM:Ko Itakura @ Borussia Mönchengladbach 
+  S. Lammers               5.5  Twente                 -> PSV Eindhoven          TM:Sam Lammers @ PSV Eindhoven 
+  Rodrigo Mora             5.5  FC Porto               -> AS Roma                TM:Rodrigo Mora @ AS Roma 
+  Z. Athekame              5.5  AC Milan               -> Lyon                   TM:Zachary Athekame @ Olympique Lyon 
+  Angeliño                 5.5  AS Roma                -> Deportivo              TM:Angeliño @ Deportivo A Coruña 
+  D. Maldini               5.5  Atalanta               -> Cagliari               TM:Daniel Maldini @ Cagliari Calcio 
+  H. Ahanor                5.5  Atalanta               -> Crystal Palace         TM:Honest Ahanor @ Crystal Palace 
+  R. Piccoli               5.5  Fiorentina             -> Bologna                TM:Roberto Piccoli @ Bologna FC 1909 
+  G. Fabbian               5.5  Fiorentina             -> Parma                  TM:Giovanni Fabbian @ Parma Calcio 1913 
+  M'Bala Nzola             5.5  Fiorentina             -> Cagliari               TM:M&#039;Bala Nzola @ Cagliari Calcio 
+  B. Norton-Cuffy          5.5  Genoa                  -> Hull City              TM:Brooke Norton-Cuffy @ Hull City 
+  Miguel Gutiérrez         5.5  Napoli                 -> Bayer Leverkusen       TM:Miguel Gutiérrez @ Bayer 04 Leverkusen 
+  N. Molina                5.5  Atlético Madrid        -> AS Roma                TM:Nahuel Molina @ AS Roma 
+  M. Ruggeri               5.5  Atlético Madrid        -> Aston Villa            TM:Matteo Ruggeri @ Aston Villa 
+  Marc Casadó              5.5  Barcelona              -> Deportivo              TM:Marc Casadó @ Deportivo A Coruña 
+  Juanlu Sánchez           5.5  Sevilla                -> Bournemouth            TM:Juanlu Sánchez @ AFC Bournemouth 
+  B. Johnson               5.5  Crystal Palace         -> Everton                TM:Brennan Johnson @ Everton FC ambiguous resolved via new-arrival TM id
+  Gabriel Jesus            5  Arsenal                -> Barcelona              TM:Gabriel Jesus @ FC Barcelona 
+  E. Pinnock               5  Brentford              -> Coventry               TM:Ethan Pinnock @ Coventry City 
+  Dário Essugo             5  Chelsea                -> Strasbourg             TM:Dário Essugo @ RC Strasbourg Alsace 
+  T. Adarabioyo            5  Chelsea                -> Tottenham              TM:Tosin Adarabioyo @ Tottenham Hotspur 
+  Robert Sánchez           5  Chelsea                -> Como                   TM:Robert Sánchez @ Como 1907 
+  M. Sarr                  5  Chelsea                -> Real Sociedad          TM:Mamadou Sarr @ Real Sociedad 
+  J. Devenny               5  Crystal Palace         -> Stoke City             TM:Justin Devenny @ Stoke City 
+  C. Drameh                5  Hull City              -> Genoa                  TM:Cody Drameh @ Genoa CFC 
+  L. Millar                5  Hull City              -> Birmingham             TM:Liam Millar @ Birmingham City 
+  G. Hirst                 5  Ipswich                -> Stoke City             TM:George Hirst @ Stoke City 
+  T. Awoniyi               5  Nottingham Forest      -> Coventry               TM:Taiwo Awoniyi @ Coventry City 
+  G. Vicario               5  Tottenham              -> Juventus               TM:Guglielmo Vicario @ Juventus FC 
+  D. Spence                5  Tottenham              -> Inter                  TM:Djed Spence @ Inter Milan 
+  Jay Robinson             5  Southampton            -> Monza                  TM:Jay Robinson @ AC Monza 
+  C. Archer                5  Southampton            -> Auxerre                TM:Cameron Archer @ AJ Auxerre 
+  G. Coudert               5  Stade Brestois 29      -> Burnley                TM:Grégoire Coudert @ Burnley FC 
+  M. Fofana                5  Lyon                   -> Sunderland             TM:Malick Fofana @ Sunderland AFC 
+  F. Medina                5  Marseille              -> Bayer Leverkusen       TM:Facundo Medina @ Bayer 04 Leverkusen 
+  M. Amougou               5  Strasbourg             -> Toulouse               TM:Mathis Amougou @ FC Toulouse 
+  N. Atubolu               5  SC Freiburg            -> Eintracht Frankfurt    TM:Noah Atubolu @ Eintracht Frankfurt 
+  J. Milošević             5  VfB Stuttgart          -> SC Braga               TM:Jovan Milosevic @ SC Braga 
+  C. Driouech              5  PSV Eindhoven          -> Celta Vigo             TM:Couhaib Driouech @ Celta de Vigo 
+  S. Eustáquio             5  FC Porto               -> Swansea                TM:Stephen Eustaquio @ Swansea City 
+  G. Kochorashvili         5  Sporting CP            -> Sevilla                TM:Giorgi Kochorashvili @ Sevilla FC 
+  Daniel Bragança          5  Sporting CP            -> Torino                 TM:Daniel Bragança @ Torino FC 
+  O. Diomande              5  Sporting CP            -> Nottingham Forest      TM:Ousmane Diomande @ Nottingham Forest 
+  T. Dallinga              5  Bologna                -> FC Cologne             TM:Thijs Dallinga @ 1.FC Köln 
+  I. Van der Brempt        5  Como                   -> Sassuolo               TM:Ignace Van der Brempt @ US Sassuolo 
+  N. Kühn                  5  Como                   -> Borussia Mönchengladbach TM:Nicolas Kühn @ Borussia Mönchengladbach 
+  A. Fadera                5  Como                   -> Cagliari               TM:Alieu Fadera @ Cagliari Calcio 
+  D. Frattesi              5  Inter                  -> Lazio                  TM:Davide Frattesi @ SS Lazio 
+  Z. Suzuki                5  Parma                  -> Aston Villa            TM:Zion Suzuki @ Aston Villa 
+  S. Goglichidze           5  Udinese                -> Monza                  TM:Saba Goglichidze @ AC Monza 
+  J. Giménez               5  Atlético Madrid        -> Deportivo              TM:José María Giménez @ Deportivo A Coruña 
+  Franco Mastantuono       5  Real Madrid            -> Fiorentina             TM:Franco Mastantuono @ ACF Fiorentina 
+  Adrià Pedrosa            5  Sevilla                -> Rayo Vallecano         TM:Adrià Pedrosa @ Rayo Vallecano 
+  I. Sulemana              5  Atalanta               -> Sassuolo               TM:Ibrahim Sulemana @ US Sassuolo 
+  Javi López               5  Real Sociedad          -> Feyenoord              TM:Javi López @ Feyenoord Rotterdam dest corrected by TM
+  Charles                  5  Guimaraes              -> Atalanta               TM:Charles De Ketelaere @ Atalanta BC dest corrected by TM
+  Gorosabel                5  Athletic Club          -> Espanyol               TM:Andoni Gorosabel @ RCD Espanyol Barcelona 
+  E. Ünal                  4.5  Bournemouth            -> Getafe                 TM:Enes Ünal @ Getafe CF 
+  B. Badiashile            4.5  Chelsea                -> Napoli                 TM:Benoît Badiashile @ SSC Napoli 
+  N. Patterson             4.5  Everton                -> Torino                 TM:Nathan Patterson @ Torino FC 
+  S. Bornauw               4.5  Leeds                  -> Hamburger SV           TM:Sebastiaan Bornauw @ Hamburger SV 
+  W. Gnonto                4.5  Leeds                  -> Fiorentina             TM:Wilfried Gnonto @ ACF Fiorentina 
+  Lucas Perri              4.5  Leeds                  -> Torino                 TM:Lucas Perri @ Torino FC 
+  A. Ramsdale              4.5  Newcastle              -> Southampton            TM:Aaron Ramsdale @ Southampton FC 
+  J. Seelt                 4.5  Sunderland             -> Swansea                TM:Jenson Seelt @ Swansea City 
+  T. Pembélé               4.5  Sunderland             -> Le Havre               TM:Timothée Pembélé @ Le Havre AC 
+  K. Bielik                4.5  West Brom              -> Cardiff                TM:Krystian Bielik @ Cardiff City 
+  L. Brunt                 4.5  Wrexham                -> Bolton                 TM:Lewis Brunt @ Bolton Wanderers 
+  M. Broholm               4.5  Lille                  -> Utrecht                TM:Marius Broholm @ FC Utrecht 
+  N. Edjouma               4.5  Lille                  -> Stade Brestois 29      TM:Noah Edjouma @ Stade Brestois 29 
+  Kevin Carlos             4.5  Nice                   -> Cagliari               TM:Kevin Carlos @ Cagliari Calcio 
+  M. Zetterer              4.5  Eintracht Frankfurt    -> Leeds                  TM:Michael Zetterer @ Leeds United 
+  N. Nkounkou              4.5  Eintracht Frankfurt    -> Nice                   TM:Niels Nkounkou @ OGC Nice 
+  B. van Duijl             4.5  AZ Alkmaar             -> Cambuur                TM:Billy van Duijl @ SC Cambuur Leeuwarden 
+  C. Tengstedt             4.5  Feyenoord              -> Toulouse               TM:Casper Tengstedt @ FC Toulouse 
+  A. Sliti                 4.5  Feyenoord              -> Excelsior              TM:Aymen Sliti @ Excelsior Rotterdam 
+  V. van Crooij            4.5  NEC Nijmegen           -> Willem II              TM:Vito van Crooij @ Willem II Tilburg 
+  S. Giménez               4.5  AC Milan               -> FC Porto               TM:Santiago Gimenez @ FC Porto 
+  J. Ziółkowski            4.5  AS Roma                -> Monza                  TM:Jan Ziolkowski @ AC Monza 
+  N. Fortini               4.5  Fiorentina             -> Torino                 TM:Niccolò Fortini @ Torino FC 
+  P. Mazzocchi             4.5  Napoli                 -> Venezia                TM:Pasquale Mazzocchi @ Venezia FC 
+  A. Njie                  4.5  Torino                 -> Fiorentina             TM:Alieu Njie @ ACF Fiorentina 
+  I. Ilić                  4.5  Torino                 -> Lecce                  TM:Ivan Ilić @ US Lecce 
+  Rubén Sánchez            4.5  Espanyol               -> Elche                  TM:Rubén Sánchez @ Elche CF 
+  Pablo García             4.5  Real Betis             -> Racing Santander       TM:Pablo García @ Racing Santander 
+  J. Knight                4.5  Portsmouth             -> Bristol City           TM:Jason Knight @ Bristol City move found by TM only
+  J. Ward                  4.5  Swansea                -> Southampton            TM:James Ward-Prowse @ Southampton FC move found by TM only
+  B. Johnson               4.5  Ipswich                -> Stoke City             TM:Ben Johnson @ Stoke City ambiguous resolved via new-arrival TM id
+  S. Iling-Junior          4  Aston Villa            -> Bolton                 TM:Samuel Iling-Junior @ Bolton Wanderers 
+  Marc Guiu                4  Chelsea                -> RB Leipzig             TM:Marc Guiu @ RB Leipzig 
+  F. Jörgensen             4  Chelsea                -> Strasbourg             TM:Filip Jørgensen @ RC Strasbourg Alsace 
+  B. Sosa                  4  Crystal Palace         -> FC Cologne             TM:Borna Sosa @ 1.FC Köln 
+  Rio Cardines             4  Crystal Palace         -> Bristol City           TM:Rio Cardines @ Bristol City 
+  M. Jemide                4  Crystal Palace         -> Alverca                TM:Mofe Jemide @ FC Alverca 
+  Matheus França           4  Crystal Palace         -> Alverca                TM:Matheus França @ FC Alverca 
+  D. Ozoh                  4  Crystal Palace         -> Derby                  TM:David Ozoh @ Derby County 
+  S. Amissah               4  Fulham                 -> Estoril                TM:Sam Amissah @ GD Estoril Praia 
+  A. Kamara                4  Hull City              -> Portsmouth             TM:Abu Kamara @ Portsmouth FC 
+  K. van Oevelen           4  Ipswich                -> Valencia               TM:Kayne van Oevelen @ Valencia CF 
+  J. Piroe                 4  Leeds                  -> West Ham               TM:Joël Piroe @ West Ham United 
+  S. Byram                 4  Leeds                  -> Middlesbrough          TM:Sam Byram @ Middlesbrough FC 
+  H. Elliott               4  Liverpool              -> Valencia               TM:Harvey Elliott @ Valencia CF 
+  J. Monga                 4  Manchester City        -> Swansea                TM:Jeremy Monga @ Swansea City 
+  J. Trafford              4  Manchester City        -> Leeds                  TM:James Trafford @ Leeds United 
+  D. Mukasa                4  Manchester City        -> West Ham               TM:Divine Mukasa @ West Ham United 
+  Max Alleyne              4  Manchester City        -> Burnley                TM:Max Alleyne @ Burnley FC 
+  S. Mfuni                 4  Manchester City        -> Coventry               TM:Stephen Mfuni @ Coventry City 
+  A. Bayındır              4  Manchester United      -> Celta Vigo             TM:Altay Bayındır @ Celta de Vigo 
+  S. Neave                 4  Newcastle              -> Wolves                 TM:Sean Neave @ Wolverhampton Wanderers 
+  Tyler Bindon             4  Nottingham Forest      -> Charlton               TM:Tyler Bindon @ Charlton Athletic 
+  Z. Abbott                4  Nottingham Forest      -> Southampton            TM:Zach Abbott @ Southampton FC 
+  A. Patterson             4  Sunderland             -> Wrexham                TM:Anthony Patterson @ Wrexham AFC 
+  M. Moore                 4  Tottenham              -> FC Cologne             TM:Mikey Moore @ 1.FC Köln 
+  J. Worrall               4  Burnley                -> Wrexham                TM:Joe Worrall @ Wrexham AFC 
+  A. Tuanzebe              4  Burnley                -> Auxerre                TM:Axel Tuanzebe @ AJ Auxerre 
+  Y. Sugawara              4  Southampton            -> Cagliari               TM:Yukinari Sugawara @ Cagliari Calcio 
+  J. Ward-Prowse           4  West Ham               -> Southampton            TM:James Ward-Prowse @ Southampton FC 
+  A. Wan-Bissaka           4  West Ham               -> Aston Villa            TM:Aaron Wan-Bissaka @ Aston Villa 
+  J. Todibo                4  West Ham               -> Lens                   TM:Jean-Clair Todibo @ RC Lens 
+  E. Diouf                 4  West Ham               -> Brentford              TM:El Hadji Malick Diouf @ Brentford FC 
+  D. Møller Wolfe          4  Wolves                 -> Hamburger SV           TM:David Møller Wolfe @ Hamburger SV 
+  D. Bentley               4  Wolves                 -> Coventry               TM:David Bentley @ Coventry City 
+  T. Bair                  4  Auxerre                -> Bolton                 TM:Theo Bair @ Bolton Wanderers 
+  R. Nzingoula             4  Strasbourg             -> West Brom              TM:Rabby Nzingoula @ West Bromwich Albion 
+  N. Mbamba                4  Bayer Leverkusen       -> Lorient                TM:Noah Mbamba @ FC Lorient 
+  A. Tape                  4  Bayer Leverkusen       -> Levante                TM:Axel Tape @ Levante UD 
+  N. Futkeu                4  Eintracht Frankfurt    -> SV Elversberg          TM:Noel Futkeu @ SV 07 Elversberg 
+  L. Jovanović             4  VfB Stuttgart          -> Udinese                TM:Lazar Jovanovic @ Udinese Calcio 
+  M. Dekker                4  AZ Alkmaar             -> Willem II              TM:Maxim Dekker @ Willem II Tilburg 
+  M. Brouwer               4  Utrecht                -> Sparta Rotterdam       TM:Michael Brouwer @ Sparta Rotterdam 
+  C. Twigt                 4  GO Ahead Eagles        -> Willem II              TM:Calvin Twigt @ Willem II Tilburg 
+  L. Plogmann              4  GO Ahead Eagles        -> Cambuur                TM:Luca Plogmann @ SC Cambuur Leeuwarden 
+  A. Jones                 4  PSV Eindhoven          -> Middlesbrough          TM:Alfie Jones @ Middlesbrough FC 
+  S. Bouhoudane            4  PSV Eindhoven          -> Cambuur                TM:Sami Bouhoudane @ SC Cambuur Leeuwarden 
+  Jordy Bawuah             4  PSV Eindhoven          -> Twente                 TM:Jordy Bawuah @ FC Twente Enschede 
+  Tiago Andrade            4  FC Porto               -> Moreirense             TM:Tiago Andrade @ Moreirense FC 
+  João Virgínia            4  Sporting CP            -> Wolves                 TM:João Virgínia @ Wolverhampton Wanderers 
+  Costinha                 4  Guimaraes              -> Brighton               TM:Costinha @ Brighton &amp; Hove Albion dest corrected by TM
+  D. Odogu                 4  AC Milan               -> Toulouse               TM:David Odogu @ FC Toulouse 
+  A. Kostić                4  AC Milan               -> Sparta Rotterdam       TM:Andrej Kostić @ Sparta Rotterdam 
+  E. Touré                 4  Atalanta               -> Parma                  TM:El Bilal Touré @ Parma Calcio 1913 
+  O. Raterink              4  Cagliari               -> ADO Den Haag           TM:Othniël Raterink @ ADO Den Haag 
+  N. Törnqvist             4  Como                   -> Monza                  TM:Noel Törnqvist @ AC Monza 
+  N. Obaretin              4  Napoli                 -> Lorient                TM:Nosa Edward Obaretin @ FC Lorient 
+  R. Ciervo                4  Sassuolo               -> Cagliari               TM:Riccardo Ciervo @ Cagliari Calcio 
+  A. Dembélé               4  Torino                 -> Lecce                  TM:Ali Dembélé @ US Lecce 
+  Branimir Mlačić          4  Udinese                -> Watford                TM:Branimir Mlacic @ Watford FC 
+  M. Farji                 4  Venezia                -> Heerenveen             TM:Marko Farji @ SC Heerenveen 
+  Tomás Marqués            4  Barcelona              -> SC Braga               TM:Tommy Marqués @ SC Braga 
+  Jofre Torrents           4  Barcelona              -> Ajax                   TM:Jofre Torrents @ Ajax Amsterdam 
+  Pablo Ramón              4  Espanyol               -> Racing Santander       TM:Pablo Ramón @ Racing Santander 
+  Joan Jordán              4  Sevilla                -> Estrela                TM:Joan Jordán @ CF Estrela Amadora 
+  Gabriel Silva            4  Sporting CP            -> SC Braga               TM:Gabriel Silva @ SC Braga dest corrected by TM
+  Igor                     4  Brighton               -> Burnley                TM:Igor Biscan @ Burnley FC 
+  E. Clark                 4  Burnley                -> Coventry               TM:Ephron Mason-Clark @ Coventry City move found by TM only
+  N. Madsen                4  Maritimo               -> QPR                    TM:Nicolas Madsen @ Queens Park Rangers move found by TM only
+  José                     4  Moreirense             -> Deportivo              TM:José María Giménez @ Deportivo A Coruña move found by TM only
+  Álvaro García            4  Alaves                 -> Rayo Vallecano         TM:Álvaro García @ Rayo Vallecano move found by TM only
+
+OUT
+  O. Watkins               8.5  Aston Villa            TM:Ollie Watkins @ Al-Hilal SFC (cands 1)
+  I. Louza                 7.5  Watford                TM:Imrân Louza @ Panathinaikos (cands 1)
+  T. Reijnders             7  Manchester City        TM:Tijjani Reijnders @ Al-Qadsiah FC (cands 1)
+  E. Owusu                 7  Auxerre                TM:Elisha Owusu @ Erzurumspor FK (cands 1)
+  B. Embolo                7  Rennes                 TM:Breel Embolo @ Atlanta United FC (cands 1)
+  E. Poku                  7  Bayer Leverkusen       TM:Ernest Poku @ Besiktas JK (cands 1)
+  Rafael Leão              7  AC Milan               TM:Rafael Leão @ Galatasaray (cands 2)
+  B. Djimsiti              7  Atalanta               TM:Berat Djimsiti @ Al-Diriyah FC (cands 1)
+  Carlos Álvarez           7  Levante                TM:Carlos Álvarez @ CF América (cands 5)
+  Álvaro Fernández         7  Real Madrid            TM:Álvaro Fernández @ CF Talavera de la Reina (cands 3)
+  T. Kristensen            6.5  Udinese                TM:Thomas Kristensen @ Bröndby IF (cands None)
+  K. Peprah Oppong         6.5  Nice                   TM:Kojo Peprah Oppong @ Fenerbahce (cands 1)
+  R. Rios                  6.5  Benfica                TM:Richard Ríos @ Al-Ittihad Club (cands 1)
+  L. Banda                 6.5  Lecce                  TM:Lameck Banda @ Swehly SC (cands 1)
+  E. Riis                  6  Bristol City           TM:Emil Riis @ Leicester City (cands 1)
+  Y. Zouaoui               6  Le Havre               TM:Yanis Zouaoui @ Montpellier HSC (cands 2)
+  D. Giannoulis            6  FC Augsburg            TM:Dimitrios Giannoulis @ PAOK Thessaloniki (cands 1)
+  J. Dompé                 6  Hamburger SV           TM:Jean-Luc Dompé @ Konyaspor (cands 1)
+  Sidney Lima              6  Santa Clara            TM:Sidney Lima @ FK Partizan Belgrade (cands 3)
+  A. Romagnoli             6  Lazio                  TM:Alessio Romagnoli @ Al-Sadd SC (cands 1)
+  R. Lukaku                6  Napoli                 TM:Romelu Lukaku @ Fenerbahce (cands 2)
+  O. Sørensen              6  Parma                  TM:Oliver Sørensen @ Celtic FC (cands 1)
+  Peke                     6  Deportivo              TM:Peke Huuhtanen @ MSK Zilina B (cands 1)
+  Chupe                    6  Malaga                 TM:Chupe @ CF San Agustín (cands 2)
+  Gabriel Martinelli       5.5  Arsenal                TM:Gabriel Martinelli @ Al-Hilal SFC (cands 2)
+  T. Kaminski              5.5  Charlton               TM:Thomas Kaminski @ Omonia Nicosia (cands 1)
+  F. Doucouré              5.5  Le Havre               TM:Fodé Doucouré @ FC Nantes (cands 1)
+  M. Eerdhuijzen           5.5  Utrecht                TM:Mike Eerdhuijzen @ KV Mechelen (cands 1)
+  Leonardo Lelo            5.5  SC Braga               TM:Leonardo Lelo @ UD Almería (cands 1)
+  Frederico Venâncio       5.5  Santa Clara            TM:Frederico Venâncio @ Without Club (cands 1)
+  R. Abascal               5.5  Guimaraes              TM:Rodrigo Abascal @ Al-Riyadh SC (cands 1)
+  G. Borrelli              5.5  Cagliari               TM:Gennaro Borrelli @ Caykur Rizespor (cands 1)
+  I. Koutsoupias           5.5  Frosinone              TM:Ilias Koutsoupias @ RSC Anderlecht (cands 2)
+  F. Miretti               5.5  Juventus               TM:Fabio Miretti @ Besiktas JK (cands 1)
+  F. Delli Carri           5.5  Monza                  TM:Filippo Delli Carri @ UC Sampdoria (cands 1)
+  Pedro Obiang             5.5  Monza                  TM:Pedro Obiang @ Deportivo Niefang (cands 1)
+  W. Cheddira              5.5  Napoli                 TM:Walid Cheddira @ US Avellino 1912 (cands 1)
+  M. Pedersen              5.5  Torino                 TM:Mads Pedersen @ Hertha BSC (cands 1)
+  T. Almada                5.5  Atlético Madrid        TM:Thiago Almada @ CA River Plate (cands 1)
+  G. Puerta                5.5  Racing Santander       TM:Gustavo Puerta @ Olympiacos Piraeus (cands 1)
+  A. Gilchrist             5  West Brom              TM:Alfie Gilchrist @ Leyton Orient (cands 2)
+  C. Coady                 5  Wrexham                TM:Conor Coady @ Without Club (cands 2)
+  C. Mbemba                5  Lille                  TM:Chancel Mbemba @ Al-Diriyah FC (cands 1)
+  J. Mvuka                 5  Lorient                TM:Joel Mvuka @ FK Bodø/Glimt (cands 1)
+  A. Omobamidele           5  Strasbourg             TM:Andrew Omobamidele @ RSC Anderlecht (cands 1)
+  M. Sauer                 5  Toulouse               TM:Mário Sauer @ 1.FC Kaiserslautern (cands 1)
+  A. Sieb                  5  Bayern München         TM:Armindo Sieb @ Los Angeles FC (cands 1)
+  A. Hanche-Olsen          5  FSV Mainz 05           TM:Andreas Hanche-Olsen @ Chicago Fire FC (cands 1)
+  T. Gooijer               5  Ajax                   TM:Tristan Gooijer @ Lommel SK (cands 1)
+  J. Lotomba               5  Feyenoord              TM:Jordan Lotomba @ Celtic FC (cands 1)
+  N. Kasanwirjo            5  Feyenoord              TM:Neraysho Kasanwirjo @ SK Brann (cands 2)
+  N. Hopland               5  Heerenveen             TM:Nikolai Hopland @ Randers FC (cands 1)
+  Koki Ogawa               5  NEC Nijmegen           TM:Koki Ogawa @ Machida Zelvia (cands 2)
+  T. Ouwejan               5  NEC Nijmegen           TM:Thomas Ouwejan @ Machida Zelvia (cands 1)
+  S. Hetli                 5  Telstar                TM:Soufiane Hetli @ Wydad Casablanca (cands 1)
+  Bernardo Fontes          5  SC Braga               TM:Bernardo Fontes @ FC Pedras Rubras (cands 1)
+  Jandro Orellana          5  Estoril                TM:Jandro Orellana @ Cádiz CF (cands 1)
+  G. Zappa                 5  Cagliari               TM:Gabriele Zappa @ Hellas Verona (cands 2)
+  Zito Luvumbo             5  Cagliari               TM:Zito Luvumbo @ RCD Mallorca (cands 1)
+  A. Petagna               5  Monza                  TM:Andrea Petagna @ Pisa Sporting Club (cands 1)
+  A. Paleari               5  Torino                 TM:Alberto Paleari @ AEK Larnaca (cands 1)
+  A. Buksa                 5  Udinese                TM:Adam Buksa @ RCD Mallorca (cands 2)
+  Manu Fernández           5  Celta Vigo             TM:Manu Fernández @ Cádiz CF (cands 3)
+  M. Vecino                5  Celta Vigo             TM:Matías Vecino @ Without Club (cands 1)
+  Unai Elgezabal           5  Levante                TM:Unai Elgezabal @ SD Eibar (cands 2)
+  S. Hansen                4.5  Middlesbrough          TM:Sivert Sira Hansen @ Molde FK (cands None)
+  M. Kjølø                 4.5  Twente                 TM:Mathias Kjølø @ Rosenborg BK (cands None)
+  Suleiman Camara          4.5  Racing Santander       TM:Suleiman Camara @ Slovan Bratislava (cands None)
+  L. Bailey                4.5  Aston Villa            TM:Leon Bailey @ Olympiacos Piraeus (cands 1)
+  K. Takai                 4.5  Tottenham              TM:Kota Takai @ Sint-Truidense VV (cands 2)
+  Sidnei Tavares           4.5  Blackburn              TM:Sidnei Tavares @ Wisla Plock (cands 1)
+  Raees Bangura-Williams   4.5  Millwall               TM:Ra&#039;ees Bangura-Williams @ Cambridge United (cands 1)
+  M. Jurásek               4.5  Norwich                TM:Matej Jurasek @ AC Sparta Prague (cands 2)
+  A. Forson                4.5  Norwich                TM:Amankwah Forson @ Hapoel Beer Sheva (cands 1)
+  H. Matthews              4.5  Portsmouth             TM:Hayden Matthews @ Bradford City (cands 1)
+  J. Bursik                4.5  Portsmouth             TM:Josef Bursik @ AFC Wimbledon (cands 2)
+  D. Cornell               4.5  Preston                TM:David Cornell @ Without Club (cands 1)
+  João Henrique            4.5  QPR                    TM:João Henrique @ Without Club (cands 2)
+  J. Quarshie              4.5  Southampton            TM:Joshua Quarshie @ SK Sturm Graz (cands 2)
+  L. Walta                 4.5  Swansea                TM:Leo Walta @ Los Angeles FC (cands 1)
+  J. Pétris                4.5  Watford                TM:Jérémy Petris @ Aris Thessaloniki (cands 1)
+  K. Casey                 4.5  West Ham               TM:Kaelan Casey @ Stevenage FC (cands 1)
+  M. Courcoul              4.5  Angers                 TM:Marius Courcoul @ RAAL La Louvière (cands 1)
+  T. Ollila                4.5  Paris FC               TM:Tuomas Ollila @ EA Guingamp (cands 2)
+  M. Batshuayi             4.5  Eintracht Frankfurt    TM:Michy Batshuayi @ Abha Club (cands 1)
+  E. Bitshiabu             4.5  RB Leipzig             TM:El Chadaille Bitshiabu @ Galatasaray (cands 1)
+  N. Höfler                4.5  SC Freiburg            TM:Nicolas Höfler @ SC Freiburg II (cands 3)
+  C. Gomis                 4.5  FC Schalke 04          TM:Christian Gomis @ CD Tenerife (cands 1)
+  B. Bouanani              4.5  VfB Stuttgart          TM:Badredine Bouanani @ Rangers FC (cands 1)
+  P. Čović                 4.5  Werder Bremen          TM:Patrice Covic @ SG Dynamo Dresden (cands 1)
+  I. Sadiq                 4.5  AZ Alkmaar             TM:Ibrahim Sadiq @ Colorado Rapids (cands 1)
+  S. Henderikx             4.5  Excelsior              TM:Stan Henderikx @ FC Dordrecht (cands 1)
+  A. Verschueren           4.5  Twente                 TM:Arno Verschueren @ SK Beveren (cands 1)
+  Luisinho                 4.5  SC Braga               TM:Luisinho @ Operário FC (cands 6)
+  Paulo Oliveira           4.5  SC Braga               TM:Paulo Oliveira @ Al-Fayha FC (cands 2)
+  K. Osundina              4.5  Casa Pia               TM:Korede Osundina @ Muglaspor (cands 1)
+  K. Nsona                 4.5  Casa Pia               TM:Kelian Nsona @ Rodez AF (cands 2)
+  Rodrigo Pinho            4.5  Estrela                TM:Rodrigo Pinho @ Avs Futebol (cands 2)
+  Diogo Calila             4.5  Santa Clara            TM:Diogo Calila @ MAS Fès (cands 1)
+  Miguel Nóbrega           4.5  Guimaraes              TM:Miguel Nóbrega @ UD Leiria (cands 1)
+  Álvaro Morata            4.5  Como                   TM:Álvaro Morata @ CD Leganés (cands 1)
+  J. Oyono                 4.5  Frosinone              TM:Jérémy Oyono @ Spezia Calcio (cands 1)
+  M. Perin                 4.5  Juventus               TM:Mattia Perin @ Palermo FC (cands 1)
+  J. Lindstrøm             4.5  Napoli                 TM:Jesper Lindstrøm @ Red Bull Salzburg (cands 1)
+  E. Iannoni               4.5  Sassuolo               TM:Edoardo Iannoni @ Hellas Verona (cands 1)
+  Rui Modesto              4.5  Udinese                TM:Rui Modesto @ Vancouver Whitecaps FC (cands 1)
+  A. Okoro                 4.5  Venezia                TM:Alvin Okoro @ FC Südtirol (cands 1)
+  M. Diarra                4.5  Alaves                 TM:Mahamadou Diarra @ Konyaspor (cands 1)
+  Javier Boñar             4.5  Atlético Madrid        TM:Javier Boñar @ Girona FC (cands 1)
+  Carlos Domínguez         4.5  Celta Vigo             TM:Carlos Domínguez @ Real Oviedo (cands 2)
+  C. Patino                4.5  Deportivo              TM:Charlie Patiño @ VfL Bochum (cands 1)
+  Miguel Rubio             4.5  Espanyol               TM:Miguel Rubio @ Real Valladolid CF (cands 1)
+  Álex Sancris             4.5  Getafe                 TM:Álex Sancris @ CD Leganés (cands 1)
+  Dani Sánchez             4.5  Malaga                 TM:Dani Sánchez @ UE Viladecans (cands 6)
+  Álex Forés               4.5  Villarreal             TM:Álex Forés @ Burgos CF (cands 1)
+  O. Lebedenko             4  Guimaraes              TM:Oleksandr Lebedenko @ Viktoriya Sumy (cands None)
+  J. Morcillo              4  Atlético Madrid        TM:Jon Morcillo @ UD Almería (cands None)
+  Isiaka Soukouna          4  Rennes                 TM:Isiaka Soukouna @ Stade Rennais FC B (cands None)
+  Charlie Gray             4  Manchester City        TM:Charlie Gray @ Wigan Athletic (cands None)
+  R. Higgins               4  Groningen              TM:Ruaidhri Higgins @ Without Club (cands None)
+  Anass Bouziane           4  Heerenveen             TM:Anass Bouziane @ SC Heerenveen U21 (cands None)
+  Cardoso Varela           4  FC Porto               TM:Cardoso Varela @ FC Porto B (cands None)
+  Bernardo Conde           4  Parma                  TM:Bernardo Conde @ Avs Futebol (cands None)
+  T. Mulley                4  Aston Villa            TM:Trai-Varn Mulley @ Aston Villa U21 (cands None)
+  Job ter Burg             4  Heerenveen             TM:Job ter Burg @ SC Heerenveen U21 (cands None)
+  Malcom Dacosta           4  Bournemouth            TM:Malcom Dacosta González @ AFC Bournemouth U21 (cands 1)
+  Remy Rees-Dottin         4  Bournemouth            TM:Remy Rees-Dottin @ AFC Bournemouth U21 (cands 1)
+  T. Setford               4  Arsenal                TM:Tommy Setford @ Stevenage FC (cands 1)
+  B. Bailey-Joseph         4  Arsenal                TM:Brando Bailey-Joseph @ Arsenal FC U18 (cands 1)
+  Jaden Dixon              4  Arsenal                TM:Jaden Dixon @ Arsenal FC U21 (cands 1)
+  A. Annous                4  Arsenal                TM:Andre Harriman-Annous @ Arsenal FC U21 (cands 1)
+  M. Salmon                4  Arsenal                TM:Marli Salmon @ Arsenal FC U21 (cands 2)
+  Aidan Borland            4  Aston Villa            TM:Aidan Borland @ Accrington Stanley (cands 1)
+  K. Nedeljković           4  Aston Villa            TM:Kosta Nedeljkovic @ Rangers FC (cands 1)
+  B. Burrows               4  Aston Villa            TM:Bradley Burrows @ Without Club (cands 1)
+  B. Broggio               4  Aston Villa            TM:Ben Broggio @ Stevenage FC (cands 1)
+  T. Carroll               4  Aston Villa            TM:Tom Carroll @ Without Club (cands 1)
+  A. Stokes                4  Brentford              TM:Anthony Stokes @ Blackforge FC (cands 1)
+  J. Stephenson            4  Brentford              TM:Josh Stephenson @ Crewe Alexandra (cands 2)
+  Luka Bentt               4  Brentford              TM:Luka Bentt @ Brentford FC B (cands 1)
+  H. Howell                4  Brighton               TM:Harry Howell @ Leicester City (cands 1)
+  Shumaira Mheuka          4  Chelsea                TM:Shumaira Mheuka @ Celtic FC (cands 1)
+  Harrison Bettoni         4  Chelsea                TM:Harrison Bettoni @ Chelsea FC U21 (cands 1)
+  M. Eboue                 4  Chelsea                TM:Mathis Eboué @ Chelsea FC U21 (cands 1)
+  Denner                   4  Chelsea                TM:Lukas Denner @ SC Triester (cands 5)
+  Max Merrick              4  Chelsea                TM:Max Merrick @ Hartlepool United (cands 1)
+  J. Markelo               4  Coventry               TM:Jahnoah Markelo @ Shabab Al-Ahli Club (cands 1)
+  J. Drakes-Thomas         4  Crystal Palace         TM:Joél Drakes-Thomas @ Crystal Palace U21 (cands 2)
+  J. Rak-Sakyi             4  Crystal Palace         TM:Jesurun Rak-Sakyi @ Kasimpasa (cands 1)
+  T. Adaramola             4  Crystal Palace         TM:Tayo Adaramola @ Cercle Brugge  (cands 1)
+  J. Whitworth             4  Crystal Palace         TM:Joe Whitworth @ Wigan Athletic (cands 1)
+  Malik Olayiwola          4  Everton                TM:Malik Olayiwola @ Everton FC U18 (cands 1)
+  E. Destan                4  Hull City              TM:Enis Destan @ Konyaspor (cands 1)
+  C. Crew                  4  Leeds                  TM:Crew Hartlage @ UMass Minutemen (University of Massachusetts) (cands 1)
+  L. Chambers              4  Liverpool              TM:Luke Chambers @ Liverpool FC U21 (cands 2)
+  Joshua Abe               4  Liverpool              TM:Joshua Abe @ Without Club (cands 2)
+  K. Miściur               4  Liverpool              TM:Kornel Misciur @ Leek Town FC (cands 1)
+  G. Kukonki               4  Manchester United      TM:Godwill Kukonki @ Manchester United U21 (cands 1)
+  J. Moorhouse             4  Manchester United      TM:Jack Moorhouse @ Dundee FC (cands 2)
+  A. Murphy                4  Newcastle              TM:Alex Murphy @ 1.FC Kaiserslautern (cands 1)
+  Keehan Willows           4  Nottingham Forest      TM:Keehan Willows @ Nottingham Forest U21 (cands 1)
+  A. Whitehall             4  Nottingham Forest      TM:Archie Whitehall @ Nottingham Forest U21 (cands 1)
+  J. Sinclair              4  Nottingham Forest      TM:Jerome Sinclair @ Without Club (cands 1)
+  A. Lightfoot             4  Sunderland             TM:Archie Lightfoot @ Sunderland AFC U21 (cands 1)
+  Jenson Jones             4  Sunderland             TM:Jenson Jones @ Sunderland AFC U21 (cands 1)
+  C. Dinsdale              4  Sunderland             TM:Charlie Dinsdale @ Sunderland AFC U21 (cands 1)
+  J. Whittaker             4  Sunderland             TM:Jack Whittaker @ Sunderland AFC U21 (cands 2)
+  L. Hjelde                4  Sunderland             TM:Leo Hjelde @ KV Mechelen (cands 1)
+  T. Tuterov               4  Sunderland             TM:Timur Tuterov @ Sunderland AFC U21 (cands 1)
+  T. Ogunsuyi              4  Sunderland             TM:Trey Samuel-Ogunsuyi @ Sunderland AFC U21 (cands 1)
+  A. Abdullahi             4  Sunderland             TM:Ahmed Abdullahi @ Eyüpspor (cands 3)
+  D. Ajayi                 4  Tottenham              TM:Damola Ajayi @ Barnet FC (cands 1)
+  C. Olusesi               4  Tottenham              TM:Callum Olusesi @ Tottenham Hotspur U21 (cands 1)
+  M. Hardy                 4  Tottenham              TM:Malachi Hardy @ Tottenham Hotspur U21 (cands 1)
+  D. Scarlett              4  Tottenham              TM:Dane Scarlett @ Leyton Orient (cands 1)
+  J. Byfield               4  Tottenham              TM:Jun&#039;ai Byfield @ Tottenham Hotspur U21 (cands 1)
+  J. Donley                4  Tottenham              TM:Jamie Donley @ Luton Town (cands 1)
+  Rio Kyerematen           4  Tottenham              TM:Rio Kyerematen @ Tottenham Hotspur U21 (cands 1)
+  James Rowswell           4  Tottenham              TM:James Rowswell @ Tottenham Hotspur U21 (cands 1)
+  A. Guernier              4  Birmingham             TM:Andrea Guernier @ Without Club (cands 2)
+  Z. Betteka               4  Birmingham             TM:Zaid Betteka @ Spalding United (cands 1)
+  B. Bateman               4  Birmingham             TM:Briar Bateman @ Oxford City (cands 1)
+  Luca McCourtie           4  Birmingham             TM:Luca McCourtie @ Birmingham City U18 (cands 1)
+  M. Mazwi                 4  Birmingham             TM:Mazwi Mncube @ Without Club (cands 4)
+  D. Martin-Moore          4  Birmingham             TM:Dynaeo Martin-Moore @ Birmingham City U21 (cands 1)
+  W. Burrell               4  Birmingham             TM:Warren Burrell @ Harrogate Town (cands 1)
+  I. Tyjon                 4  Blackburn              TM:Igor Tyjon @ Arsenal FC U21 (cands 1)
+  L. Mullarkey-Matthews    4  Blackburn              TM:Lorenze Mullarkey-Matthews @ Blackburn Rovers U21 (cands 1)
+  L. Temple                4  Bolton                 TM:Lewis Temple @ Oldham Athletic (cands 1)
+  C. Christie              4  Bolton                 TM:Christie Elliott @ Without Club (cands 1)
+  A. Murphy                4  Bristol City           TM:Alex Murphy @ 1.FC Kaiserslautern (cands 1)
+  M. Thelwell              4  Bristol City           TM:Marley Thelwell @ Bristol City U21 (cands 1)
+  L. Foster                4  Burnley                TM:Lyle Foster @ Houston Dynamo FC (cands 1)
+  O. Pimlott               4  Burnley                TM:Oliver Pimlott @ Harrogate Town (cands 1)
+  Vernon Masara            4  Burnley                TM:Vernon Masara @ Peterborough United (cands 1)
+  G. Brierley              4  Burnley                TM:George Brierley @ Burnley FC U21 (cands 1)
+  Noah Williams            4  Cardiff                TM:Noah Williams @ Cardiff City U21 (cands 2)
+  A. Debono                4  Cardiff                TM:Aiden Debono @ Munxar Falcons FC (cands 1)
+  Keenan Gough             4  Charlton               TM:Keenan Gough @ Bristol Rovers (cands 1)
+  I. Fullah                4  Charlton               TM:Ibrahim Fullah @ Milton Keynes Dons (cands 1)
+  N. Asiimwe               4  Charlton               TM:Nathan Asiimwe @ Salford City (cands 1)
+  J. Thompson              4  Derby                  TM:Jordhy Thompson @ FC Orenburg (cands 1)
+  A. Kanté                 4  Middlesbrough          TM:Abdoulaye Kanté @ Al-Ettifaq FC (cands 2)
+  Finley Munroe            4  Middlesbrough          TM:Finley Munroe @ Blackpool FC (cands 1)
+  S. Dieng                 4  Middlesbrough          TM:Seny Dieng @ Atromitos Athens (cands 1)
+  Ajay Matthews            4  Millwall               TM:Ajay Matthews @ Exeter City (cands 1)
+  E. Mansor                4  Millwall               TM:Engku Iskandar Engku Mansor @ Malaysian Armed Forces (cands 2)
+  B. Downey                4  Portsmouth             TM:Brandon Downey @ Portsmouth FC U18 (cands 1)
+  Ben Phillipson           4  Portsmouth             TM:Ben Phillipson @ Portsmouth FC U18 (cands 1)
+  Max Hammond              4  Portsmouth             TM:Max Hammond @ Portsmouth FC U18 (cands 1)
+  T. Tarry                 4  Preston                TM:Troy Tarry @ Preston North End U21 (cands 1)
+  J. Pearman               4  QPR                    TM:Jaylan Pearman @ Swindon Town (cands 1)
+  Z. Larkeche              4  QPR                    TM:Ziyad Larkeche @ Barnsley FC (cands 1)
+  T. Akindileni            4  QPR                    TM:Timothy Akindileni @ Queens Park Rangers U21 (cands 1)
+  M. Salamon               4  QPR                    TM:Miklós Salamon @ SV Schattendorf (cands 1)
+  B. Blacker               4  Sheffield Utd          TM:Billy Blacker @ Sheffield United U21 (cands 1)
+  S. Sachdev               4  Sheffield Utd          TM:Sachdev Grewal @ Without Club (cands 2)
+  I. Grbić                 4  Sheffield Utd          TM:Ivo Grbic @ Ludogorets Razgrad (cands 1)
+  N. Oyekunle              4  Southampton            TM:Nicholas Oyekunle @ Leyton Orient (cands 1)
+  D. Downs                 4  Southampton            TM:Damion Downs @ St. Louis CITY SC (cands 3)
+  T. Dobson-Ventura        4  Southampton            TM:Tommy Dobson-Ventura @ Eastleigh FC (cands 1)
+  Sydney Agina             4  Stoke City             TM:Sydney Agina @ Forest Green Rovers  (cands 1)
+  Zavier Massiah-Edwards   4  Watford                TM:Zavier Massiah-Edwards @ Watford FC U21 (cands 1)
+  M. Adu-Poku              4  Watford                TM:Michael Adu-Poku @ Newport County (cands 1)
+  A. Sanghrajka            4  Watford                TM:Amar Sanghrajka @ Queens Park Rangers U21 (cands 1)
+  Travis Akomeah           4  Watford                TM:Travis Akomeah @ Watford FC U21 (cands 1)
+  Alfie Marriott           4  Watford                TM:Alfie Marriott @ Chelmsford City (cands 2)
+  S. Mandey                4  West Brom              TM:Souleyman Mandey @ Grazer AK 1902 (cands 2)
+  Cole Deeming             4  West Brom              TM:Cole Deeming @ Hartlepool United (cands 1)
+  Alex Williams            4  West Brom              TM:Alex Williams @ Hibernian FC (cands 5)
+  P. Fearon                4  West Ham               TM:Preston Fearon @ West Ham United U21 (cands 1)
+  George Earthy            4  West Ham               TM:George Earthy @ Reading FC (cands 1)
+  Junior Robinson          4  West Ham               TM:Junior Robinson @ West Ham United U21 (cands 1)
+  R. Battrum               4  West Ham               TM:Ryan Battrum @ West Ham United U21 (cands 1)
+  Ethan Sutherland         4  Wolves                 TM:Ethan Sutherland @ Exeter City (cands 2)
+  L. Chiwome               4  Wolves                 TM:Leon Chiwome @ Colchester United (cands 1)
+  L. Rawlings              4  Wolves                 TM:Luke Rawlings @ Wolverhampton Wanderers U21 (cands 1)
+  S. Johnstone             4  Wolves                 TM:Scott Johnstone @ Annbank United FC  (cands 1)
+  Oliver McTweed           4  Wrexham                TM:Oliver McTweed @ FC Wrexham U18 (cands 1)
+  Harry Ashfield           4  Wrexham                TM:Harry Ashfield @ Peterborough United (cands 1)
+  Dafydd Edwards           4  Wrexham                TM:Dafydd Edwards @ Penparcau FC (cands 2)
+  Tommy Clayton            4  Wrexham                TM:Tommy Clayton @ FC Wrexham U18 (cands 1)
+  Kiliane Assougrou        4  Auxerre                TM:Kiliane Assougrou @ AJ Auxerre B (cands 1)
+  Mamoudou Cissokho        4  Auxerre                TM:Mamoudou Cissokho @ AJ Auxerre B (cands 2)
+  M. Oyatambwe             4  Monaco                 TM:Matthias Wamu Oyatambwe @ AS Monaco U21 (cands 1)
+  P. Pogba                 4  Monaco                 TM:Paul Pogba @ Without Club (cands 2)
+  Yahia Jlidi              4  Angers                 TM:Yahia Jlidi @ Angers SCO U19 (cands 1)
+  Ibrahim Yayiya Kante     4  Stade Brestois 29      TM:Ibrahim Yayiya Kanté @ Stade Brest 29 B (cands 1)
+  Paul Rivoal              4  Stade Brestois 29      TM:Paul Rivoal @ Stade Brest 29 B (cands 1)
+  N. Jauny                 4  Stade Brestois 29      TM:Noah Jauny @ Francs Borains (cands 1)
+  Rory Davidson            4  Le Havre               TM:Rory Davidson @ Without Club (cands 1)
+  Alex Teixeira            4  Le Havre               TM:Alex Teixeira @ Panserraikos (cands 3)
+  Yanis Beau Djellel       4  Le Havre               TM:Yanis Beau Djellel @ AC Le Havre B (cands 1)
+  M. Bentoumi              4  Le Havre               TM:Mohammed Bentoumi @ Zaytouna FC (cands 1)
+  Thomas Rousseau          4  Le Havre               TM:Thomas Rousseau @ AC Le Havre U19 (cands 1)
+  A. Diabate               4  Le Havre               TM:Ali Badra Diabaté @ Al-Qadsiah FC (cands 1)
+  Lenny Videira            4  Le Mans                TM:Lenny Videira @ Le Mans FC B (cands 1)
+  N. Gane Bernardino       4  Lens                   TM:Nathanaël Gane Bernardino @ RC Lens Espoir (cands 1)
+  Saad Boussadia           4  Lille                  TM:Saad Boussadia @ LOSC Lille B (cands 1)
+  L. Baret                 4  Lille                  TM:Lilian Baret @ Le Puy-en-Velay FC (cands 1)
+  T. Sajous                4  Lille                  TM:Thomas Sajous @ LOSC Lille B (cands 1)
+  K. Hamidi                4  Lille                  TM:Kamel Hamidi @ LOSC Lille B (cands 1)
+  Hamadi Kebe              4  Lille                  TM:Hamadi Kebe @ LOSC Lille U19 (cands 1)
+  Zadig Lanssade           4  Lille                  TM:Zadig Lanssade @ LOSC Lille U19 (cands 1)
+  Mouad Gounfissi          4  Lille                  TM:Mouad Gounfissi @ LOSC Lille U19 (cands 1)
+  L. Leaudais              4  Lorient                TM:Lucas Leaudais @ FC Lorient B (cands 1)
+  J. Hatchi                4  Lorient                TM:Jean-Marc Hatchi @ AG Caennaise (cands 1)
+  E. Genton                4  Lorient                TM:Enzo Genton @ Amiens SC (cands 1)
+  I. Akakpo                4  Lorient                TM:Izak Akakpo @ FC Lorient B (cands 1)
+  E. Molébé                4  Lyon                   TM:Enzo Molebe @ FC Lausanne-Sport (cands 1)
+  Nouhoum Kamissoko        4  Marseille              TM:Nouhoum Kamissoko @ Olympique de Marseille B (cands 1)
+  Ange Lago                4  Marseille              TM:Ange Lago @ Dijon FCO (cands 1)
+  Hilan Hamzaoui Slimani   4  Marseille              TM:Hilan Hamzaoui Slimani @ Olympique de Marseille B (cands 1)
+  Kéfren Ali               4  Nice                   TM:Kéfren Ali @ OGC Nice Espoir (cands 1)
+  Yanis Sofikitis          4  Nice                   TM:Yanis Sofikitis @ Without Club (cands 1)
+  V. Orakpo                4  Nice                   TM:Victor Orakpo @ Genclerbirligi Ankara (cands 1)
+  M. Brignone              4  Nice                   TM:Millan Brignone @ Without Club (cands 1)
+  A. Kvirikadze            4  Paris FC               TM:Andria Kvirikadze @ Paris FC B (cands 1)
+  B. Laurendon             4  Paris Saint Germain    TM:Bilal Laurendon @ Without Club (cands 1)
+  D. Lucea                 4  Paris Saint Germain    TM:Dimitri Lucea @ Paris Saint-Germain Espoirs (cands 1)
+  A. Vignaud               4  Paris Saint Germain    TM:Arthur Vignaud @ Paris Saint-Germain Espoirs (cands 1)
+  Ayoube Akabou            4  Rennes                 TM:Ayoub Akabou @ AD Ceuta FC B (cands 1)
+  Chibuike Ugochukwu       4  Rennes                 TM:Chibuike Ugochukwu @ Stade Rennais FC B (cands 1)
+  Junior Ake               4  Rennes                 TM:Junior Ake @ Stade Rennais FC B (cands 1)
+  Idrissa Sabaly           4  Strasbourg             TM:Idrissa Sabaly @ Red Star FC (cands 1)
+  M. Marechal              4  Strasbourg             TM:Max Maréchal @ Racing Strasbourg B (cands 1)
+  Jean-Baptiste Bosey      4  Strasbourg             TM:Jean-Baptiste Bosey @ Racing Strasbourg B (cands 1)
+  Y. Gomis                 4  Strasbourg             TM:Yoni Gomis @ SK Beveren (cands 1)
+  N. Lahmadi               4  Toulouse               TM:Noah Lahmadi @ Istres Football Club (cands 1)
+  G. Bakhouche Piernas     4  Toulouse               TM:Gaëtan Bakhouche Piernas @ Toulouse FC B (cands 1)
+  T. Garondo               4  Toulouse               TM:Thibaud Garondo @ Toulouse FC B (cands 1)
+  E. Faty                  4  Toulouse               TM:Enzo Faty @ Francs Borains (cands 1)
+  E. Odede                 4  Estac Troyes           TM:Elijah Odede @ Lommel SK (cands 1)
+  Marc Nkoumouck           4  Estac Troyes           TM:Marc-Anthony Nkoumouck @ ESTAC Troyes B (cands 1)
+  L. Vulin                 4  Union Berlin           TM:Lovre Vulin @ NK Pakostane  (cands 3)
+  L. Pepinski              4  Union Berlin           TM:Louis Pepinski @ 1.FC Union Berlin U19 (cands 1)
+  M. Etobe                 4  Union Berlin           TM:Michael Etobe @ 1.FC Union Berlin U19 (cands 1)
+  M. Witschel              4  Union Berlin           TM:Maxim Witschel @ 1.FC Union Berlin U19 (cands 1)
+  T. Blaszczak             4  Union Berlin           TM:Tim Blaszczak @ FSV 63 Luckenwalde (cands 1)
+  J. Mensah                4  Bayer Leverkusen       TM:John Mensah @ Al-Riyadh SC (cands 3)
+  A. Damjanović            4  Bayer Leverkusen       TM:Aleksa Damjanovic @ Bayer 04 Leverkusen U19 (cands 1)
+  S. Rapsch                4  Bayer Leverkusen       TM:Simeon Rapsch @ Bayer 04 Leverkusen U19 (cands 1)
+  Farid Alfa-Ruprecht      4  Bayer Leverkusen       TM:Farid Alfa-Ruprecht @ Hertha BSC (cands 1)
+  V. Manuba                4  Bayern München         TM:Vincent Manuba @ FC Bayern Munich II (cands 1)
+  B. Assomo                4  Bayern München         TM:Bastian Assomo @ FC Bayern Munich II (cands 1)
+  G. Della Rovere          4  Bayern München         TM:Guido Della Rovere @ FC Bayern Munich II (cands 1)
+  Erblin Osmani            4  Bayern München         TM:Erblin Osmani @ FC Bayern Munich U19  (cands 1)
+  Cassiano Kiala           4  Bayern München         TM:Cassiano Kiala @ FC Bayern Munich II (cands 1)
+  Jannis Bärtl             4  Bayern München         TM:Jannis Bärtl @ FC Bayern Munich II (cands 1)
+  Elias Benkara            4  Borussia Dortmund      TM:Elias Benkara @ SpVgg Greuther Fürth (cands 1)
+  A. Azhil                 4  Borussia Dortmund      TM:Ayman Azhil @ Borussia Dortmund II (cands 2)
+  Simon Walde              4  Borussia Mönchengladbach TM:Simon Walde @ Borussia Mönchengladbach II (cands 1)
+  E. İş                    4  Eintracht Frankfurt    TM:Ebu Bekir Is @ Eintracht Frankfurt II (cands 1)
+  Metehan Yildirim         4  Eintracht Frankfurt    TM:Metehan Yildirim @ Eintracht Frankfurt II (cands 1)
+  M. Dills                 4  Eintracht Frankfurt    TM:Marvin Dills @ Eintracht Frankfurt II (cands 1)
+  Ben Exner                4  FC Augsburg            TM:Ben Exner @ FC Augsburg U19 (cands 1)
+  M. Pedersen              4  FC Augsburg            TM:Mads Pedersen @ Hertha BSC (cands 1)
+  Omar Megeed              4  Hamburger SV           TM:Omar Megeed @ SpVgg Greuther Fürth (cands 1)
+  A. Vasiljevic            4  Hamburger SV           TM:Andrej Vasiljevic @ Hamburger SV U19 (cands 1)
+  E. Sahiti                4  Hamburger SV           TM:Emir Sahiti @ Hannover 96 (cands 2)
+  M. Richter               4  FSV Mainz 05           TM:Marco Richter @ Without Club (cands 1)
+  Louis Babatz             4  FSV Mainz 05           TM:Louis Babatz @ 1.FSV Mainz 05 II (cands 1)
+  Luke Gauer               4  FSV Mainz 05           TM:Luke Gauer @ 1.FSV Mainz 05 II (cands 1)
+  D. Imafidon              4  FSV Mainz 05           TM:Daniel Imafidon @ 1.FSV Mainz 05 II (cands 1)
+  F. Moreno Fell           4  FSV Mainz 05           TM:Fabio Moreno Fell @ 1.FSV Mainz 05 II (cands 1)
+  Joyeux Masanka Bungi     4  RB Leipzig             TM:Joyeux Masanka Bungi @ VfB Stuttgart II (cands 1)
+  L. Voufack               4  RB Leipzig             TM:Lionel Voufack @ 1.FC Köln II (cands 1)
+  M. Baur                  4  SC Paderborn 07        TM:Mika Baur @ Celtic FC (cands 2)
+  K. Okpala                4  SC Paderborn 07        TM:Kennedy Okpala @ SG Dynamo Dresden (cands 1)
+  N. Bätzner               4  SC Paderborn 07        TM:Nick Bätzner @ Rot-Weiss Essen (cands 1)
+  A. Kitos                 4  SC Paderborn 07        TM:Angelos Kitos @ Without Club (cands 1)
+  F. Gerezgiher            4  SV Elversberg          TM:Filimon Gerezgiher @ Fortuna Düsseldorf (cands 1)
+  P. Popperl               4  FC Schalke 04          TM:Paul Pöpperl @ Without Club (cands 1)
+  M. Khadr                 4  FC Schalke 04          TM:Mika Khadr @ FC Schalke 04 II (cands 1)
+  Max Grüger               4  FC Schalke 04          TM:Max Grüger @ FC Schalke 04 II (cands 1)
+  Konstantin Aleksa        4  1899 Hoffenheim        TM:Konstantin Aleksa @ TSG 1899 Hoffenheim II (cands 1)
+  Florian Micheler         4  1899 Hoffenheim        TM:Florian Micheler @ TSG 1899 Hoffenheim II (cands 1)
+  L. Penna                 4  VfB Stuttgart          TM:Lauri Penna @ VfB Stuttgart II (cands 1)
+  M. Catovic               4  VfB Stuttgart          TM:Mirza Catovic @ FC Barcelona Atlètic (cands 2)
+  R. Robbemond             4  AZ Alkmaar             TM:Reinier Robbemond @ AZ Alkmaar U21 (cands 1)
+  S. de Grand              4  AZ Alkmaar             TM:Sam de Grand @ Lommel SK (cands 1)
+  M. Carrizo               4  Ajax                   TM:Maher Carrizo @ FC Copenhagen (cands 2)
+  M. van der Lans          4  Ajax                   TM:Mylo van der Lans @ Ajax Amsterdam U21 (cands 1)
+  M. Verkuijl              4  Ajax                   TM:Mark Verkuijl @ Ajax Amsterdam U21 (cands 2)
+  K. Kasanwirjo            4  Ajax                   TM:Kennynho Kasanwirjo @ Ajax Amsterdam U21 (cands 1)
+  C. Setford               4  Ajax                   TM:Charlie Setford @ Ajax Amsterdam U21 (cands 1)
+  P. Reverson              4  Ajax                   TM:Paul Reverson @ De Graafschap Doetinchem (cands 1)
+  Niels Kuppen             4  Excelsior              TM:Niels Kuppen @ Excelsior Rotterdam U19 (cands 1)
+  M. Tielemans             4  Excelsior              TM:Mathijs Tielemans @ Aalborg BK (cands 1)
+  Fedde Raats              4  Excelsior              TM:Fedde Raats @ Excelsior Rotterdam U21 (cands 1)
+  Mika Luijendijk          4  Excelsior              TM:Mika Luijendijk @ MVV Maastricht (cands 1)
+  J. Fortes Rocha          4  Excelsior              TM:Jeyano Fortes Rocha @ Excelsior Rotterdam U21 (cands 1)
+  N. El Hamdaoui           4  Excelsior              TM:Noa el Hamdaoui @ MVV Maastricht (cands 1)
+  Kaid Becker              4  Groningen              TM:Kaid Becker @ FC Groningen U21 (cands 1)
+  Marco Speelman           4  Groningen              TM:Marco Speelman @ FC Groningen U21 (cands 1)
+  Roy Leicester            4  Groningen              TM:Roy Leicester @ FC Groningen U21 (cands 1)
+  Sven Bouland             4  Groningen              TM:Sven Bouland @ MVV Maastricht (cands 1)
+  T. Booth                 4  Twente                 TM:Tommy Booth @ Real Salt Lake City (cands 1)
+  Bjorn Menzo              4  Utrecht                TM:Björn Menzo @ FC Utrecht U21 (cands 1)
+  Nana Gyamfi-Amoah        4  Utrecht                TM:Nana Gyamfi-Amoah @ FC Utrecht U21 (cands 1)
+  J. van Ommeren           4  Utrecht                TM:Jaygo van Ommeren @ FC Utrecht U21 (cands 1)
+  Zidane Iqbal             4  Utrecht                TM:Zidane Iqbal @ Dundee United FC (cands 1)
+  Justin Eversen           4  Utrecht                TM:Justin Eversen @ FC Utrecht U21 (cands 1)
+  J. Schaken               4  Feyenoord              TM:Jerayno Schaken @ Feyenoord U21 (cands 1)
+  A. Nahany                4  Feyenoord              TM:Arman Nahany @ Feyenoord U21 (cands 1)
+  L. Ivanušec              4  Feyenoord              TM:Luka Ivanušec @ GNK Dinamo Zagreb (cands 1)
+  I. Grootfaam             4  Feyenoord              TM:Ilai Grootfaam @ Feyenoord U19 (cands 1)
+  H. Agboluaje             4  Feyenoord              TM:Hakeem Agboluaje @ Feyenoord U21 (cands 1)
+  Amin Laoukili            4  Fortuna Sittard        TM:Amin Laoukili @ Fortuna Sittard U21 (cands 1)
+  W. Elasri                4  Fortuna Sittard        TM:Wassim Elasri @ Bocholt VV (cands 1)
+  L. van Parys             4  Fortuna Sittard        TM:Lars Van Parys @ Patro Eisden Maasmechelen (cands 1)
+  Dylan Boer               4  GO Ahead Eagles        TM:Dylan Boer @ Go Ahead Eagles U17 (cands 1)
+  C. Bonevacia             4  Heerenveen             TM:Christy Bonevacia @ Sreenidi Deccan FC (cands 2)
+  Jeremy van Haalen        4  NEC Nijmegen           TM:Jeremy van Haalen @ NEC Nijmegen U19 (cands 1)
+  Yousri Sbai              4  NEC Nijmegen           TM:Yousri Sbai @ FC Utrecht U21 (cands 1)
+  Mees Rensen              4  NEC Nijmegen           TM:Mees Rensen @ NEC Nijmegen U17 (cands 1)
+  M. Overmars              4  NEC Nijmegen           TM:Marc Overmars @ NEC Nijmegen U21 (cands 1)
+  M. de Troije             4  PEC Zwolle             TM:Maxim de Troije @ PEC Zwolle U21 (cands 1)
+  Rodney Kroeze            4  PEC Zwolle             TM:Rodney Kroeze @ SV Spakenburg (cands 1)
+  S. Calderwood            4  PEC Zwolle             TM:Scott Calderwood @ PEC Zwolle U21 (cands 1)
+  J. Koller                4  PSV Eindhoven          TM:Jan Koller @ SK Sturm Graz (cands 1)
+  L. Vanderbruggen         4  Cambuur                TM:Louka Vanderbruggen @ SC Cambuur-Leeuwarden U21 (cands 1)
+  R. van de Pavert         4  Cambuur                TM:Ryan van de Pavert @ Ajax Amsterdam U21 (cands 1)
+  Jelte Priem              4  Cambuur                TM:Jelte Priem @ Glacis United (cands 1)
+  Amar Bakkati             4  Cambuur                TM:Amar Bakkati @ SC Cambuur-Leeuwarden U21 (cands 1)
+  Rayyan Koubini           4  Telstar                TM:Rayyan Koubini @ Without Club (cands 1)
+  Amin Bouchouari          4  Telstar                TM:Amin Bouchouari @ SC Telstar U19 (cands 1)
+  Kayen Scheepens          4  Willem II              TM:Kayen Scheepens @ Willem II Tilburg U21 (cands 1)
+  Lucas Gabriel            4  Academico Viseu        TM:Lucas Gabriel @ SE Palmeiras São Paulo U20 (cands 1)
+  Simão Silva              4  Academico Viseu        TM:Simão Silva @ Amarante FC (cands 3)
+  Kauã Oliveira            4  Academico Viseu        TM:Kauã Oliveira @ Sporting CP B (cands 4)
+  Tiago Gouveia            4  Benfica                TM:Tiago Gouveia @ Genclerbirligi Ankara (cands 1)
+  Felipe Lima              4  Benfica                TM:Felipe Lima @ SL Benfica B (cands 2)
+  Yanis da Rocha           4  SC Braga               TM:Yanis da Rocha @ Portimonense SAD (cands 1)
+  Claudio                  4  Casa Pia               TM:Claudio Gentile @ Al-Sadd SC (cands 1)
+  Bernardo Lourenço        4  Estoril                TM:Bernardo Lourenço @ Atlético CP (cands 1)
+  Diogo Brasido            4  Estoril                TM:Diogo Brasido @ Avs Futebol (cands 1)
+  L. Bimai                 4  Estoril                TM:Longin Bimai @ Estoril Praia U23 (cands 1)
+  Y. Kalley                4  Estrela                TM:Yahya Kalley @ Dinamo Batumi (cands 1)
+  Dudu                     4  Estrela                TM:Dudu @ Clube Atlético Mineiro (cands 5)
+  André Miranda            4  FC Porto               TM:André Miranda @ FC Porto B (cands 1)
+  André Oliveira           4  FC Porto               TM:Alex Oliveira @ Without Club (cands 3)
+  Bernardo Lima            4  FC Porto               TM:Bernardo Lima @ FC Porto B (cands 1)
+  Eirik Granaas            4  FC Porto               TM:Eirik Granaas @ FC Porto B (cands 1)
+  Luís Gomes               4  FC Porto               TM:Luís Gomes @ CD Celeirós (cands 2)
+  Gonçalo Ribeiro          4  FC Porto               TM:Gonçalo Ribeiro @ FC Porto B (cands 2)
+  Alexandre Guedes         4  Maritimo               TM:Alexandre Guedes @ CD Feirense (cands 1)
+  A. Infante               4  Santa Clara            TM:Armando Infante @ Lipscomb Bisons (Lipscomb University) (cands 1)
+  Darlan                   4  Santa Clara            TM:Darlan @ Buriram United (cands 4)
+  Emanuel Fernandes        4  Santa Clara            TM:Emanuel Fernandes Carneiro @ GD Valpaços (cands 2)
+  Mauro Couto              4  Sporting CP            TM:Mauro Couto @ Sporting CP B (cands 1)
+  Salvador Blopa           4  Sporting CP            TM:Salvador Blopa @ Sporting CP B (cands 1)
+  M. Pittarella            4  AC Milan               TM:Matteo Pittarella @ Milan Futuro (cands 1)
+  J. Sardo                 4  AC Milan               TM:Jacopo Sardo @ Delfino Pescara 1936 (cands 1)
+  M. Valletta              4  AC Milan               TM:Manuel Valletta @ Attard FC (cands 1)
+  R. Żelezny               4  AS Roma                TM:Radoslaw Zelezny @ AC Perugia Calcio (cands 1)
+  Jacopo Mirra             4  AS Roma                TM:Jacopo Mirra @ Atalanta U23 (cands 1)
+  M. Bakker                4  Atalanta               TM:Mitchel Bakker @ Without Club (cands 1)
+  P. Pardel                4  Atalanta               TM:Piotr Pardel @ Atalanta U23 (cands 1)
+  F. Steffanoni            4  Atalanta               TM:Federico Steffanoni @ Atalanta U23 (cands 1)
+  P. Vismara               4  Atalanta               TM:Paolo Vismara @ SS Juve Stabia (cands 1)
+  Matteo Franceschelli     4  Bologna                TM:Matteo Franceschelli @ Bologna Primavera (cands 1)
+  D. Baroncioni            4  Bologna                TM:Davide Baroncioni @ FC Lumezzane (cands 1)
+  Riccardo Gnudi           4  Bologna                TM:Riccardo Gnudi @ Lentigione Calcio (cands 1)
+  F. Castaldo              4  Bologna                TM:Francesco Castaldo @ Bologna Primavera (cands 1)
+  K. Mutandwa              4  Cagliari               TM:Kingstone Mutandwa @ Servette FC (cands 1)
+  N. Cavuoti               4  Cagliari               TM:Nicolò Cavuoti @ Catania FC (cands 1)
+  R. Malfitano             4  Cagliari               TM:Roberto Malfitano @ Barletta 1922 (cands 1)
+  S. Di Paolo              4  Cagliari               TM:Stefano Di Paolo @ SV Neckargerach (cands 1)
+  A. Albarracín            4  Cagliari               TM:Agustín Albarracín @ Albacete Balompié (cands 2)
+  S. Pisati                4  Como                   TM:Samuele Pisati @ Como Primavera (cands 1)
+  L. Bősze                 4  Como                   TM:Levente Bősze @ Como Primavera (cands 1)
+  A. Gabrielloni           4  Como                   TM:Alessandro Gabrielloni @ Palermo FC (cands 1)
+  Andrés Cuenca            4  Como                   TM:Andrés Cuenca @ Sporting Gijón (cands 1)
+  E. Košpo                 4  Fiorentina             TM:Eman Košpo @ Mantova 1911 (cands 1)
+  P. Bonanno               4  Fiorentina             TM:Piergiorgio Bonanno @ Fiorentina Primavera (cands 1)
+  R. Braschi               4  Fiorentina             TM:Riccardo Braschi @ FC Thun (cands 2)
+  Mattia Magalotti         4  Fiorentina             TM:Mattia Magalotti @ Fiorentina Primavera (cands 1)
+  G. Puzzoli               4  Fiorentina             TM:Giorgio Puzzoli @ Alcione Milano (cands 1)
+  K. Barcella              4  Frosinone              TM:Kevin Barcella @ FC Crotone (cands 1)
+  Abdoulie Ndow            4  Frosinone              TM:Abdoulie Ndow @ Cosenza Calcio (cands 1)
+  Filippo Grosso           4  Frosinone              TM:Filippo Grosso @ FC Crotone (cands 1)
+  Kris Gecaj               4  Genoa                  TM:Kris Gecaj @ Genoa U20 (cands 1)
+  Jacopo Grossi            4  Genoa                  TM:Jacopo Grossi @ AC Trento (cands 1)
+  H. Cuenca                4  Genoa                  TM:Hugo Cuenca @ RC Celta Fortuna (cands 1)
+  Gaël Lafont              4  Genoa                  TM:Gaël Lafont @ Genoa U20 (cands 1)
+  E. Lysionok              4  Genoa                  TM:Ernestas Lysionok @ Dolomiti Bellunesi (cands 1)
+  Elia Spicuglia           4  Genoa                  TM:Elia Spicuglia @ Genoa U20 (cands 1)
+  L. Topalović             4  Inter                  TM:Luka Topalović @ Carrarese Calcio 1908 (cands 1)
+  M. Lavelli               4  Inter                  TM:Matteo Lavelli @ Inter U23 (cands 1)
+  Thomas Berenbruch        4  Inter                  TM:Thomas Berenbruch @ US Avellino 1912 (cands 1)
+  M. Spinaccè              4  Inter                  TM:Matteo Spinaccè @ Mantova 1911 (cands 1)
+  I. Kamate                4  Inter                  TM:Issiaka Kamate @ Atlético Madrileño (cands 1)
+  J. Rouhi                 4  Juventus               TM:Jonas Rouhi @ Carrarese Calcio 1908 (cands 1)
+  Javier Gil               4  Juventus               TM:Javier Gil @ Atlético Madrileño (cands 4)
+  S. Gigot                 4  Lazio                  TM:Samuel Gigot @ Without Club (cands 1)
+  G. Artistico             4  Lazio                  TM:Gabriele Artistico @ Calcio Padova (cands 1)
+  Giacomo Giacomone        4  Lazio                  TM:Giacomo Giacomone @ Bologna Primavera (cands 1)
+  Nicolo Pannozzo          4  Lazio                  TM:Nicolò Pannozzo @ Lazio U20 (cands 1)
+  C. Früchtl               4  Lecce                  TM:Christian Früchtl @ Red Bull Salzburg (cands 1)
+  J. Samooja               4  Lecce                  TM:Jasper Samooja @ HJK Helsinki (cands 1)
+  A. Brorsson              4  Monza                  TM:Arvid Brorsson @ Raków Częstochowa (cands 1)
+  S. Pizzignacco           4  Monza                  TM:Semuel Pizzignacco @ Carrarese Calcio 1908 (cands 1)
+  S. Loubao                4  Monza                  TM:Solomon Loubao @ US Catanzaro (cands 1)
+  N. Galazzi               4  Monza                  TM:Nicolas Galazzi @ Calcio Padova (cands 1)
+  C. Garofalo              4  Napoli                 TM:Carlos Garofalo @ ASD Calpazio (cands 1)
+  D. Spinelli              4  Napoli                 TM:David Spinelli @ Napoli Primavera (cands 1)
+  V. Prisco                4  Napoli                 TM:Vincenzo Prisco @ SSC Bari (cands 1)
+  F. Barido                4  Napoli                 TM:Francisco Baridó @ Napoli Primavera (cands 1)
+  G. Astaldi               4  Parma                  TM:Gianluca Astaldi @ US Pianese (cands 1)
+  D. Mikołajewski          4  Parma                  TM:Daniel Mikolajewski @ FC Luzern (cands 2)
+  E. Plicco                4  Parma                  TM:Elia Plicco @ US Sambenedettese (cands 1)
+  Alessandro Cardinali     4  Parma                  TM:Alessandro Cardinali @ Spezia Calcio (cands 1)
+  Edoardo Tigani           4  Parma                  TM:Edoardo Tigani @ CPR Ospitaletto (cands 1)
+  F. Missori               4  Sassuolo               TM:Filippo Missori @ US Avellino 1912 (cands 1)
+  G. Zacchi                4  Sassuolo               TM:Gioele Zacchi @ Union Brescia (cands 1)
+  C. Frangella             4  Sassuolo               TM:Christian Frangella @ Sassuolo Primavera (cands 1)
+  P. Nuamah                4  Sassuolo               TM:Patrick Nuamah @ CE Sabadell FC (cands 1)
+  T. Macchioni             4  Sassuolo               TM:Tommaso Macchioni @ Carrarese Calcio 1908 (cands 1)
+  C. Bianay Balcot         4  Torino                 TM:Côme Bianay Balcot @ Red Star FC (cands 1)
+  W. Acquah                4  Torino                 TM:Wisdom Acquah @ Modena FC (cands 1)
+  E. Bohinen               4  Venezia                TM:Emil Bohinen @ Cesena FC (cands 1)
+  E. Gift                  4  Athletic Club          TM:Elijah Gift @ SD Eibar (cands 1)
+  A. Puric                 4  Atlético Madrid        TM:Aleksa Puric @ Atlético Madrileño (cands 1)
+  T. Seidu                 4  Atlético Madrid        TM:Taufik Seidu @ Atlético Madrileño (cands 1)
+  Javi Serrano             4  Atlético Madrid        TM:Javi Serrano @ Atlético Madrileño (cands 1)
+  Mario de Luis            4  Atlético Madrid        TM:Mario de Luis @ Atlético Madrileño (cands 1)
+  Juan Hernández           4  Barcelona              TM:Juan Hernández @ FC Barcelona Atlètic (cands 8)
+  B. Somuah                4  Celta Vigo             TM:Benjamin Somuah @ SC Fortuna Bonn (cands 2)
+  Coke Carrillo            4  Celta Vigo             TM:Coke Carrillo @ RC Celta Fortuna (cands 1)
+  A. Guerrero              4  Deportivo              TM:Adrián Guerrero @ Debreceni VSC (cands 1)
+  Diego Sanchez            4  Elche                  TM:Diego Sánchez @ Sporting Gijón (cands 9)
+  Álex Sánchez             4  Elche                  TM:Álex Sánchez @ Inter Club d&#039;Escaldes (cands 7)
+  David Delgado            4  Elche                  TM:David Delgado @ Elche Ilicitano (cands 4)
+  Nicolas Estrada          4  Elche                  TM:Nicolás Estrada @ Without Club (cands 1)
+  Alex Herraiz             4  Elche                  TM:Alex Herráiz @ Elche Ilicitano (cands 1)
+  Pol Tristán              4  Espanyol               TM:Pol Tristán @ Without Club (cands 1)
+  Z. Tassounte             4  Getafe                 TM:Zakaria Tassounte @ KSK Tongeren (cands 1)
+  Mady Macalou             4  Getafe                 TM:Mady Macalou @ Getafe CF B (cands 1)
+  Gorka Rivera             4  Getafe                 TM:Gorka Rivera @ Unionistas CF (cands 1)
+  Jorge Montes             4  Getafe                 TM:Jorge Montes @ Getafe CF B (cands 2)
+  Adrián Riquelme          4  Getafe                 TM:Adrián Riquelme @ Getafe CF B (cands 1)
+  Jorge Benito             4  Getafe                 TM:Jorge Benito @ Getafe CF B (cands 1)
+  Dani Martín              4  Levante                TM:Dani Martín @ CD Tenerife (cands 3)
+  H. Nakoha                4  Levante                TM:Huseini Nakoha @ Atlético Levante UD (cands 1)
+  Dani Cervera             4  Levante                TM:Dani Cervera @ Atlético Levante UD (cands 1)
+  T. Abed                  4  Levante                TM:Tay Abed @ Real Valladolid CF (cands 1)
+  E. Alcaniz               4  Levante                TM:Edgar Alcañiz @ Atlético Madrileño (cands 1)
+  Miguel Santaella         4  Malaga                 TM:Miguel Santaella @ Atlético Malagueño (cands 1)
+  Pablo Arriaza            4  Malaga                 TM:Pablo Arriaza @ CD Estepona FS (cands 1)
+  Andrés Céspedes          4  Malaga                 TM:Andrés Céspedes @ Atlético Malagueño (cands 2)
+  D. Stamatakis            4  Osasuna                TM:Dimitrios Stamatakis @ UD Ibiza (cands 1)
+  Iker Benito              4  Osasuna                TM:Iker Benito @ Querétaro FC (cands 1)
+  Laro Gómez               4  Racing Santander       TM:Laro Gómez @ Rayo Cantabria (cands 1)
+  German Mesonero          4  Racing Santander       TM:Germán Mesonero @ Racing Santander U19 (cands 1)
+  Juanpe                   4  Rayo Vallecano         TM:Juanpe @ Atlético de San Luis (cands 8)
+  Pablo Busto              4  Real Betis             TM:Pablo Busto @ UD Ibiza (cands 1)
+  Ivan Corralejo           4  Real Betis             TM:Iván Corralejo @ Betis Deportivo Balompié (cands 1)
+  C. De Roa                4  Real Betis             TM:Carlos de Roa @ Betis Deportivo Balompié (cands 1)
+  Diego Aguado             4  Real Madrid            TM:Diego Aguado @ Real Madrid Castilla (cands 1)
+  Daniel Yañez             4  Real Madrid            TM:Daniel Yáñez @ Real Madrid Castilla (cands 1)
+  Jesús Fortea             4  Real Madrid            TM:Jesús Fortea @ Real Madrid Castilla (cands 1)
+  David Jiménez            4  Real Madrid            TM:David Jiménez @ Real Oviedo (cands 5)
+  T. Folgado               4  Real Sociedad          TM:Theo Folgado @ Real Sociedad B (cands 1)
+  Dani Díaz                4  Real Sociedad          TM:Dani Díaz @ Real Sociedad B (cands 1)
+  Lander Astiazarán        4  Real Sociedad          TM:Lander Astiazaran @ Real Sociedad B (cands 1)
+  Mikel Goti               4  Real Sociedad          TM:Mikel Goti @ Real Oviedo (cands 1)
+  Jon Karrikaburu          4  Real Sociedad          TM:Jon Karrikaburu @ Burgos CF (cands 1)
+  Alex Garcia              4  Real Sociedad          TM:Álex García @ Club Universitario de Sucre (cands 3)
+  F. Gattoni               4  Sevilla                TM:Federico Gattoni @ Ascoli Calcio (cands 1)
+  P. Mercado               4  Sevilla                TM:Patrik Mercado @ Independiente del Valle (cands 1)
+  Alberto Flores           4  Sevilla                TM:Alberto Flores @ Granada CF (cands 1)
+  Vicent Abril             4  Valencia               TM:Vicent Abril @ Gimnàstic de Tarragona (cands 1)
+  Joel Fontanet            4  Valencia               TM:Joel Fontanet @ Valencia Mestalla (cands 1)
+  Aimar Blázquez           4  Valencia               TM:Aimar Blázquez @ Valencia Mestalla (cands 1)
+  Pau Cabanes              4  Villarreal             TM:Pau Cabanes @ CD Eldense (cands 1)
+  Daniel Budesca           4  Villarreal             TM:Daniel Budesca @ Córdoba CF (cands 1)
+  Hugo López               4  Villarreal             TM:Hugo López @ FC Andorra (cands 7)
+
+NEW
+  Max Aarons                 DEF Bournemouth          TM:Max Aarons age 26
+  Julián Araujo              DEF Bournemouth          TM:Julián Araujo age 25
+  Julio Soler                DEF Bournemouth          TM:Julio Soler age 21
+  Daniel Jebbison            ATT Bournemouth          TM:Daniel Jebbison age 23
+  Leon Goretzka              MID Aston Villa          TM:Leon Goretzka age 31
+  Boubacar Kamara            MID Aston Villa          TM:Boubacar Kamara age 26
+  Nicolas Jackson            ATT Aston Villa          TM:Nicolas Jackson age 25
+  Alysson                    ATT Aston Villa          TM:Alysson age 20
+  Benjamin Fredrick          DEF Brentford            TM:Benjamin Fredrick age 21
+  Fábio Carvalho             MID Brentford            TM:Fábio Carvalho age 24
+  Antoni Milambo             MID Brentford            TM:Antoni Milambo age 21
+  Gustavo Nunes              ATT Brentford            TM:Gustavo Nunes age 20
+  Tom McGill                 GK Brighton             TM:Tom McGill age 26
+  Lewis Dunk                 DEF Brighton             TM:Lewis Dunk age 34
+  Jaouen Hadjam              DEF Brighton             TM:Jaouen Hadjam age 23
+  Malick Yalcouyé            MID Brighton             TM:Malick Yalcouyé age 20
+  Chema Andrés               MID Brighton             TM:Chema Andrés age 21
+  Evan Ferguson              ATT Brighton             TM:Evan Ferguson age 21
+  Promise David              ATT Brighton             TM:Promise David age 25
+  Stefanos Tzimas            ATT Brighton             TM:Stefanos Tzimas age 20
+  Ibrahim Osman              ATT Brighton             TM:Ibrahim Osman age 21
+  Mike Penders               GK Chelsea              TM:Mike Penders age 21
+  Aaron Anselmino            DEF Chelsea              TM:Aarón Anselmino age 21
+  Carl Rushworth             GK Coventry             TM:Carl Rushworth age 25
+  Caleb Yirenkyi             MID Coventry             TM:Caleb Yirenkyi age 20
+  Yann Gboho                 ATT Coventry             TM:Yann Gboho age 25
+  Sidiki Cherif              ATT Coventry             TM:Sidiki Chérif age 19
+  Axel Disasi                DEF Crystal Palace       TM:Axel Disasi age 28
+  Takehiro Tomiyasu          DEF Crystal Palace       TM:Takehiro Tomiyasu age 27
+  Anan Khalaili              DEF Crystal Palace       TM:Anan Khalaili age 22
+  Darío Osorio               MID Crystal Palace       TM:Darío Osorio age 22
+  Evann Guessand             ATT Crystal Palace       TM:Evann Guessand age 25
+  Zavier Gozo                ATT Crystal Palace       TM:Zavier Gozo age 19
+  Michael Keane              DEF Everton              TM:Michael Keane age 33
+  Jack Grealish              MID Everton              TM:Jack Grealish age 30
+  Alex Borto                 GK Fulham               TM:Alex Borto age 22
+  David Affengruber          DEF Fulham               TM:David Affengruber age 25
+  Luc de Fougerolles         DEF Fulham               TM:Luc De Fougerolles age 20
+  Konstantinos Tzolakis      GK Hull City            TM:Konstantinos Tzolakis age 23
+  Lucas Herrington           DEF Hull City            TM:Lucas Herrington age 19
+  Lucas Gourna-Douath        MID Hull City            TM:Lucas Gourna-Douath age 23
+  Óscar Zambrano             MID Hull City            TM:Óscar Zambrano age 22
+  Elliot Stroud              MID Hull City            TM:Elliot Stroud age 24
+  Christos Mouzakitis        MID Hull City            TM:Christos Mouzakitis age 19
+  Joe Gelhardt               ATT Hull City            TM:Joe Gelhardt age 24
+  Jean-Mattéo Bahoya         ATT Leeds                TM:Jean-Mattéo Bahoya age 21
+  Vitezslav Jaros            GK Liverpool            TM:Vitezslav Jaros age 25
+  Conor Bradley              DEF Liverpool            TM:Conor Bradley age 23
+  Giovanni Leoni             DEF Liverpool            TM:Giovanni Leoni age 19
+  Josh Wilson-Esbrand        DEF Manchester City      TM:Josh Wilson-Esbrand age 23
+  Vitor Reis                 DEF Manchester City      TM:Vitor Reis age 20
+  Tom Heaton                 GK Manchester United    TM:Tom Heaton age 40
+  Dermot Mee                 GK Manchester United    TM:Dermot Mee age 23
+  Matthijs de Ligt           DEF Manchester United    TM:Matthijs de Ligt age 27
+  Harry Amass                DEF Manchester United    TM:Harry Amass age 19
+  Marcus Rashford            ATT Manchester United    TM:Marcus Rashford age 28
+  Mark Gillespie             GK Newcastle            TM:Mark Gillespie age 34
+  Fabian Schär               DEF Newcastle            TM:Fabian Schär age 34
+  Steven Benda               GK Nottingham Forest    TM:Steven Benda age 27
+  Nicolò Savona              DEF Nottingham Forest    TM:Nicolò Savona age 23
+  Jules Ahoka                MID Sunderland           TM:Jules Ahoka age 20
+  Mohammed Kudus             MID Tottenham            TM:Mohammed Kudus age 26
+  Dejan Kulusevski           MID Tottenham            TM:Dejan Kulusevski age 26
+  Gady Beyuku                DEF Blackburn            TM:Gady Beyuku age 20
+  Sam Morsy                  MID Blackburn            TM:Sam Morsy age 34
+  Gavin Bazunu               GK Bolton               TM:Gavin Bazunu age 24
+  Luke Hutchinson            GK Bolton               TM:Luke Hutchinson age 24
+  Atsuki Ito                 MID Bolton               TM:Atsuki Ito age 28
+  Ryan Hardie                ATT Bolton               TM:Ryan Hardie age 29
+  Jayden Nelson              ATT Bolton               TM:Jayden Nelson age 23
+  Luke McNally               DEF Bristol City         TM:Luke McNally age 26
+  Brian De Keersmaecker      MID Bristol City         TM:Brian De Keersmaecker age 26
+  Elijah Adebayo             ATT Bristol City         TM:Elijah Adebayo age 28
+  Jordan Beyer               DEF Burnley              TM:Jordan Beyer age 26
+  Josh Cullen                MID Burnley              TM:Josh Cullen age 30
+  Reo Hatate                 MID Burnley              TM:Reo Hatate age 28
+  Largie Ramazani            ATT Burnley              TM:Largie Ramazani age 25
+  Dastan Satpaev             ATT Burnley              TM:Dastan Satpaev age 18
+  Oliver Skipp               MID Charlton             TM:Oliver Skipp age 25
+  Timothy Ouma               MID Charlton             TM:Timothy Ouma age 22
+  Micah Mbick                ATT Charlton             TM:Micah Mbick age 19
+  Dion Sanderson             DEF Derby                TM:Dion Sanderson age 26
+  Eiran Cashin               DEF Derby                TM:Eiran Cashin age 24
+  Ryan Hedges                MID Derby                TM:Ryan Hedges age 31
+  Sammie Szmodics            ATT Derby                TM:Sammie Szmodics age 30
+  Mohammed Fuseini           ATT Derby                TM:Mohammed Fuseini age 24
+  Henrik Meister             ATT Derby                TM:Henrik Meister age 22
+  Daniel Oyegoke             DEF Lincoln              TM:Daniel Oyegoke age 23
+  Charlie Parks              DEF Lincoln              TM:Charlie Parks age 19
+  Yunus Konak                MID Lincoln              TM:Yunus Konak age 20
+  Chiedozie Ogbene           ATT Lincoln              TM:Chiedozie Ogbene age 29
+  Ethan Wheatley             ATT Lincoln              TM:Ethan Wheatley age 20
+  Mikkel Ladefoged           ATT Lincoln              TM:Mikkel Ladefoged age 23
+  Ashley Phillips            DEF Middlesbrough        TM:Ashley Phillips age 21
+  Connor Barron              MID Middlesbrough        TM:Connor Barron age 24
+  Amario Cozier-Duberry      MID Middlesbrough        TM:Amario Cozier-Duberry age 21
+  Rokas Pukstas              MID Middlesbrough        TM:Rokas Pukstas age 22
+  Micah Hamilton             ATT Middlesbrough        TM:Micah Hamilton age 22
+  Filip Marschall            GK Millwall             TM:Filip Marschall age 23
+  Jordi Osei-Tutu            DEF Millwall             TM:Jordi Osei-Tutu age 27
+  Massimo Luongo             MID Millwall             TM:Massimo Luongo age 33
+  Mirko Topic                MID Norwich              TM:Mirko Topic age 25
+  Anthony Musaba             ATT Norwich              TM:Anthony Musaba age 25
+  Jacob Farrell              DEF Portsmouth           TM:Jacob Farrell age 23
+  Jayden Meghoma             DEF Portsmouth           TM:Jayden Meghoma age 20
+  Benjamin Arthur            DEF Portsmouth           TM:Benjamin Arthur age 20
+  Márk Kosznovszky           MID Portsmouth           TM:Márk Kosznovszky age 24
+  Marko Milovanovic          ATT Portsmouth           TM:Marko Milovanović age 23
+  Tyrese Shade               ATT Portsmouth           TM:Tyrese Shade age 26
+  Caleb Wiley                DEF Preston              TM:Caleb Wiley age 21
+  Leo Leroy                  MID Preston              TM:Léo Leroy age 26
+  Stanley Mills              MID Preston              TM:Stanley Mills age 22
+  Johnny Kenny               ATT Preston              TM:Johnny Kenny age 23
+  Dennis Cirkin              DEF QPR                  TM:Dennis Cirkin age 24
+  Karamoko Dembele           MID QPR                  TM:Karamoko Dembélé age 23
+  Hamza Choudhury            MID Sheffield Utd        TM:Hamza Choudhury age 28
+  Divin Mubama               ATT Southampton          TM:Divin Mubama age 21
+  Ben Wilmot                 DEF Stoke City           TM:Ben Wilmot age 26
+  Luca Bombino               DEF Stoke City           TM:Luca Bombino age 20
+  Jack McGlynn               MID Stoke City           TM:Jack McGlynn age 23
+  Djibril Soumaré            MID Stoke City           TM:Djibril Soumaré age 23
+  Ato Ampah                  ATT Stoke City           TM:Ato Ampah age 20
+  Tom Iorpenda               MID Swansea              TM:Tom Iorpenda age 21
+  Ross Stewart               ATT Swansea              TM:Ross Stewart age 30
+  Joseph Opoku               ATT Swansea              TM:Joseph Opoku age 21
+  Sam Walker                 GK Watford              TM:Sam Walker age 34
+  Soumaila Coulibaly         DEF Watford              TM:Soumaïla Coulibaly age 22
+  Martín Payero              MID Watford              TM:Martín Payero age 27
+  Stephy Mavididi            ATT Watford              TM:Stephy Mavididi age 28
+  Myron Boadu                ATT Watford              TM:Myron Boadu age 25
+  Toby Collyer               MID West Brom            TM:Toby Collyer age 22
+  Adama Boiro                DEF West Ham             TM:Adama Boiro age 24
+  Arne Engels                MID West Ham             TM:Arne Engels age 22
+  Edvin Austbø               ATT West Ham             TM:Edvin Austbø age 21
+  John Ruddy                 GK Wolves               TM:John Ruddy age 39
+  Jordan James               MID Wolves               TM:Jordan James age 22
+  Enso González              ATT Wolves               TM:Enso González age 21
+  Issa Kaboré                DEF Wrexham              TM:Issa Kaboré age 25
+  Jacques Ekomie             DEF Wrexham              TM:Jacques Ekomié age 23
+  Sebastian Revan            MID Wrexham              TM:Sebastian Revan age 23
+  Rayan Mandengue            DEF Auxerre              TM:Rayan Mandengue age 20
+  Romain Faivre              MID Auxerre              TM:Romain Faivre age 28
+  Pierre Ekwah               MID Auxerre              TM:Pierre Ekwah age 24
+  Lamfia Dioubaté            MID Auxerre              TM:Lamfia Dioubaté age 19
+  Eros Maddy                 ATT Auxerre              TM:Eros Maddy age 25
+  Mohammed Salisu            DEF Monaco               TM:Mohammed Salisu age 27
+  Názinho                    DEF Monaco               TM:Nazinho age 23
+  Christian Mawissa          DEF Monaco               TM:Christian Mawissa age 21
+  Takumi Minamino            MID Monaco               TM:Takumi Minamino age 31
+  Stanis Idumbo              MID Monaco               TM:Stanis Idumbo age 21
+  Haris Belkebla             MID Angers               TM:Haris Belkebla age 32
+  Harouna Djibirin           ATT Angers               TM:Harouna Djibirin age 19
+  Romain Cagnon              GK Stade Brestois 29    TM:Romain Cagnon age 29
+  Mathieu Patouillet         GK Stade Brestois 29    TM:Mathieu Patouillet age 22
+  Mamady Diambou             MID Stade Brestois 29    TM:Mamady Diambou age 23
+  Joseph Nonge               MID Stade Brestois 29    TM:Joseph Nonge age 21
+  Giovani Versini            ATT Stade Brestois 29    TM:Giovani Versini age 22
+  Gauthier Gallon            GK Le Havre             TM:Gauthier Gallon age 33
+  Ahmed Touba                DEF Le Havre             TM:Ahmed Touba age 28
+  Elias Jelert               DEF Le Havre             TM:Elias Jelert age 23
+  Djibril Sidibé             DEF Le Mans              TM:Djibril Sidibé age 34
+  Raúl Torrente              DEF Le Mans              TM:Raúl Torrente age 24
+  Daouda Traoré              MID Le Mans              TM:Daouda Traoré age 20
+  Habib Diallo               ATT Le Mans              TM:Habib Diallo age 31
+  Enzo Vágner                ATT Le Mans              TM:Enzo Vagner age 20
+  Régis Gurtner              GK Lens                 TM:Régis Gurtner age 39
+  Mathieu Gorgelin           GK Lens                 TM:Mathieu Gorgelin age 36
+  Jonathan Gradit            DEF Lens                 TM:Jonathan Gradit age 33
+  Junior Kadile              ATT Lens                 TM:Junior Kadile age 23
+  Orlando Gill               GK Lille                TM:Orlando Gill age 26
+  Maurits Kjaergaard         MID Lille                TM:Maurits Kjærgaard age 23
+  Tiago Morais               ATT Lille                TM:Tiago Morais age 23
+  Srdjan Kuzmic              DEF Lorient              TM:Srdjan Kuzmic age 22
+  Ibrahima Baldé             ATT Lorient              TM:Ibrahima Baldé age 23
+  Keito Nakamura             ATT Lyon                 TM:Keito Nakamura age 26
+  Ulisses Garcia             DEF Marseille            TM:Ulisses Garcia age 30
+  Derek Cornelius            DEF Marseille            TM:Derek Cornelius age 28
+  Bamo Meïté                 DEF Marseille            TM:Bamo Meïté age 24
+  Keyliane Abdallah          ATT Marseille            TM:Keyliane Abdallah age 20
+  Moïse Bombito              DEF Nice                 TM:Moïse Bombito age 26
+  Axel Witsel                MID Nice                 TM:Axel Witsel age 37
+  Issiaga Camara             MID Nice                 TM:Issiaga Camara age 21
+  Gauthier Hein              MID Nice                 TM:Gauthier Hein age 30
+  Elye Wahi                  ATT Nice                 TM:Elye Wahi age 23
+  Mohamed Amoura             ATT Nice                 TM:Mohamed Amoura age 26
+  Yoan Koré                  DEF Paris FC             TM:Yoan Koré age 21
+  Omar Sissoko               ATT Paris FC             TM:Omar Sissoko age 20
+  Quentin Ndjantou           ATT Paris Saint Germain  TM:Quentin Ndjantou age 19
+  Przemyslaw Frankowski      MID Rennes               TM:Przemyslaw Frankowski age 31
+  Ayanda Sishuba             MID Rennes               TM:Ayanda Sishuba age 21
+  Karim Coulibaly            DEF Strasbourg           TM:Karim Coulibaly age 19
+  Jeyland Mitchell           DEF Strasbourg           TM:Jeyland Mitchell age 21
+  Omari Kellyman             MID Strasbourg           TM:Omari Kellyman age 20
+  Deivid Washington          ATT Strasbourg           TM:Deivid Washington age 21
+  Thomas Jørgensen           MID Toulouse             TM:Thomas Jørgensen age 20
+  Niko Sigur                 MID Toulouse             TM:Niko Sigur age 22
+  Sion Oppong                ATT Toulouse             TM:Sion Oppong age 18
+  Dermane Karim              MID Estac Troyes         TM:Dermane Karim age 22
+  Hugo Picard                MID Estac Troyes         TM:Hugo Picard age 23
+  Renaud Ripart              ATT Estac Troyes         TM:Renaud Ripart age 33
+  Timothé Nkada              ATT Estac Troyes         TM:Timothé Nkada age 27
+  Jeremy Le Douaron          ATT Estac Troyes         TM:Jérémy Le Douaron age 28
+  Felix Uduokhai             DEF Union Berlin         TM:Felix Uduokhai age 28
+  Rani Khedira               MID Union Berlin         TM:Rani Khedira age 32
+  Michel Aebischer           MID Union Berlin         TM:Michel Aebischer age 29
+  Kastriot Imeri             MID Union Berlin         TM:Kastriot Imeri age 26
+  Moussa Diaby               ATT Bayer Leverkusen     TM:Moussa Diaby age 27
+  Kauã Prates                DEF Borussia Dortmund    TM:Kauã Prates age 18
+  Giannis Konstantelias      MID Borussia Dortmund    TM:Giannis Konstantelias age 23
+  Ethan Nwaneri              MID Borussia Dortmund    TM:Ethan Nwaneri age 19
+  Konstantinos Karetsas      MID Borussia Dortmund    TM:Konstantinos Karetsas age 18
+  Enzo De Pina Duarte Dos Santos MID Borussia Dortmund    TM:Enzo dos Santos age 17
+  Mussa Kaba                 MID Borussia Dortmund    TM:Mussa Kaba age 17
+  Mathieu Nguefack           MID Borussia Mönchengladbach TM:Mathieu Nguefack age 18
+  Iaia Manco Danfa           ATT Borussia Mönchengladbach TM:Iaia Manco Danfa age 19
+  Jeremiaha Maluze           DEF Eintracht Frankfurt  TM:Jeremiaha Maluze age 21
+  Noël Aséko                 MID Eintracht Frankfurt  TM:Noël Aséko age 20
+  Jessic Ngankam             ATT Eintracht Frankfurt  TM:Jessic Ngankam age 26
+  Tim Breithaupt             MID FC Augsburg          TM:Tim Breithaupt age 24
+  Steve Mounié               ATT FC Augsburg          TM:Steve Mounié age 31
+  Timo Hübers                DEF FC Cologne           TM:Timo Hübers age 30
+  Gil Neves                  MID FC Cologne           TM:Gil Neves age 18
+  Imad Rondic                ATT FC Cologne           TM:Imad Rondic age 27
+  Malek El Mala              ATT FC Cologne           TM:Malek El Mala age 21
+  Fernando Dickes            GK Hamburger SV         TM:Fernando Dickes age 18
+  Zakaria El Ouahdi          DEF Hamburger SV         TM:Zakaria El Ouahdi age 24
+  Fabio Vieira               MID Hamburger SV         TM:Fábio Vieira age 26
+  Terem Moffi                ATT Hamburger SV         TM:Terem Moffi age 27
+  Alexander Røssing-Lelesiit ATT Hamburger SV         TM:Alexander Røssing-Lelesiit age 19
+  Stefan Posch               DEF FSV Mainz 05         TM:Stefan Posch age 29
+  Abdoul Koné                DEF RB Leipzig           TM:Abdoul Koné age 21
+  Viggo Gebel                MID RB Leipzig           TM:Viggo Gebel age 18
+  Benno Kaltefleiter         MID RB Leipzig           TM:Benno Kaltefleiter age 18
+  Florent Muslija            MID SC Freiburg          TM:Florent Muslija age 28
+  Florian Pruhs              GK SC Paderborn 07      TM:Florian Pruhs age 20
+  Tristan Zobel              DEF SC Paderborn 07      TM:Tristan Zobel age 22
+  Marvin Pieringer           ATT SC Paderborn 07      TM:Marvin Pieringer age 26
+  Gabriel Vidovic            ATT SC Paderborn 07      TM:Gabriel Vidovic age 22
+  Deniz Zeitler              ATT SC Paderborn 07      TM:Deniz Zeitler age 19
+  Lasse Eickel               ATT SC Paderborn 07      TM:Lasse Eickel age 18
+  Frank Lehmann              GK SV Elversberg        TM:Frank Lehmann age 37
+  Elias Etringer             GK SV Elversberg        TM:Elias Etringer age 18
+  Edin Dzeko                 ATT FC Schalke 04        TM:Edin Dzeko age 40
+  Emil Höjlund               ATT FC Schalke 04        TM:Emil Højlund age 21
+  Lúkas Petersson            GK 1899 Hoffenheim      TM:Lúkas Petersson age 22
+  Koki Machida               DEF 1899 Hoffenheim      TM:Koki Machida age 29
+  Natnael Abraha             DEF 1899 Hoffenheim      TM:Natnael Abraha age 18
+  Bambasé Conté              MID 1899 Hoffenheim      TM:Bambasé Conté age 23
+  Luis Engelns               MID 1899 Hoffenheim      TM:Luis Engelns age 19
+  Leonidas Stergiou          DEF VfB Stuttgart        TM:Leonidas Stergiou age 24
+  Ertugrul Yigit             MID VfB Stuttgart        TM:Ertugrul Yigit age 17
+  Dzenan Pejcinovic          ATT VfB Stuttgart        TM:Dzenan Pejcinovic age 21
+  Justin Diehl               ATT VfB Stuttgart        TM:Justin Diehl age 21
+  Mitchell Weiser            DEF Werder Bremen        TM:Mitchell Weiser age 32
+  Ludovit Reis               MID Werder Bremen        TM:Ludovit Reis age 26
+  Chuki                      MID Werder Bremen        TM:Chuki age 22
+  Niclas Füllkrug            ATT Werder Bremen        TM:Niclas Füllkrug age 33
+  Caleb Kramer               GK ADO Den Haag         TM:Caleb Kramer age 20
+  Jonas Jensen-Abbew         DEF ADO Den Haag         TM:Jonas Jensen-Abbew age 24
+  Sanyika Bergtop            DEF ADO Den Haag         TM:Sanyika Bergtop age 19
+  Wesley Hoedt               DEF AZ Alkmaar           TM:Wesley Hoedt age 32
+  Valdemar Byskov            MID AZ Alkmaar           TM:Valdemar Byskov age 21
+  Dies Janse                 DEF Ajax                 TM:Dies Janse age 20
+  Sofyan Amrabat             MID Ajax                 TM:Sofyan Amrabat age 30
+  Viktor Tsygankov           ATT Ajax                 TM:Viktor Tsygankov age 28
+  Simon Adingra              ATT Ajax                 TM:Simon Adingra age 24
+  Alireza Jahanbakhsh        ATT Excelsior            TM:Alireza Jahanbakhsh age 33
+  Mario Dominguez            ATT Excelsior            TM:Mario Domínguez age 22
+  Eric Da Silva Moreira      ATT Excelsior            TM:Eric da Silva Moreira age 20
+  Pelle Boevink              GK Groningen            TM:Pelle Boevink age 28
+  Michal Rosiak              DEF Twente               TM:Michal Rosiak age 20
+  Gijs Besselink             MID Twente               TM:Gijs Besselink age 22
+  Filip Thorvaldsen          ATT Twente               TM:Filip Thorvaldsen age 20
+  Arthur Zagre               DEF Utrecht              TM:Arthur Zagré age 24
+  Victor Jensen              MID Utrecht              TM:Victor Jensen age 26
+  Nordin Amrabat             ATT Utrecht              TM:Nordin Amrabat age 39
+  Noah Ohio                  ATT Utrecht              TM:Noah Ohio age 23
+  Sem van Duijn              ATT Utrecht              TM:Sem van Duijn age 22
+  Miliano Jonathans          ATT Utrecht              TM:Miliano Jonathans age 22
+  Artem Stepanov             ATT Utrecht              TM:Artem Stepanov age 19
+  Florian Kastenmeier        GK Feyenoord            TM:Florian Kastenmeier age 29
+  Thomas Beelen              DEF Feyenoord            TM:Thomas Beelen age 25
+  Reiss Nelson               ATT Feyenoord            TM:Reiss Nelson age 26
+  Rodrigo Guth               DEF Fortuna Sittard      TM:Rodrigo Guth age 25
+  Gerrit Nauber              DEF GO Ahead Eagles      TM:Gerrit Nauber age 34
+  Pim Saathof                DEF GO Ahead Eagles      TM:Pim Saathof age 22
+  Tino Jukić                 DEF GO Ahead Eagles      TM:Tino Jukic age 24
+  Robbin Weijenberg          MID GO Ahead Eagles      TM:Robbin Weijenberg age 21
+  Mees Hilgers               DEF Heerenveen           TM:Mees Hilgers age 25
+  Roberts Uldrikis           ATT Heerenveen           TM:Roberts Uldrikis age 28
+  Nikolas Polster            GK NEC Nijmegen         TM:Nikolas Polster age 24
+  Joep Geneste               GK NEC Nijmegen         TM:Joep Geneste age 19
+  Dennis Geiger              MID NEC Nijmegen         TM:Dennis Geiger age 28
+  Sam De Laat                MID NEC Nijmegen         TM:Sam de Laat age 20
+  Filip Yavorov Krastev      MID PEC Zwolle           TM:Filip Krastev age 24
+  Givaro Rahajaän            MID PEC Zwolle           TM:Givaro Rahajaän age 18
+  Lutsharel Geertruida       DEF PSV Eindhoven        TM:Lutsharel Geertruida age 26
+  Filip Kostic               MID PSV Eindhoven        TM:Filip Kostic age 33
+  Mathieu Maertens           MID Cambuur              TM:Mathieu Maertens age 31
+  Devid Eugene Bouah         MID Cambuur              TM:Devid Eugene Bouah age 25
+  Wout Asselman              MID Cambuur              TM:Wout Asselman age 21
+  Daan Visser                MID Cambuur              TM:Daan Visser age 21
+  Jason Ceka                 ATT Cambuur              TM:Jason Ceka age 26
+  Isaac Babadi               MID Sparta Rotterdam     TM:Isaac Babadi age 21
+  Cedric Hatenboer           MID Sparta Rotterdam     TM:Cedric Hatenboer age 21
+  Ronald Koeman              GK Telstar              TM:Ronald Koeman age 31
+  Marvin Peersman            DEF Telstar              TM:Marvin Peersman age 35
+  Gabi Caschili              DEF Telstar              TM:Gabi Caschili age 23
+  Sem Valk                   DEF Telstar              TM:Sem Valk age 24
+  Gerald Alders              DEF Telstar              TM:Gerald Alders age 21
+  Fofin Turay                ATT Telstar              TM:Fofin Turay age 22
+  Maxime Delanghe            GK Willem II            TM:Maxime Delanghe age 25
+  Tonny Vilhena              MID Willem II            TM:Tonny Vilhena age 31
+  Jari Schuurman             MID Willem II            TM:Jari Schuurman age 29
+  Amine Lachkar              MID Willem II            TM:Amine Lachkar age 23
+  Chido Obi                  ATT Willem II            TM:Chido Obi age 18
+  Juan Soriano               GK Academico Viseu      TM:Juan Soriano age 29
+  Valery Fernández           DEF Academico Viseu      TM:Valery Fernández age 26
+  Hugo Gambor                DEF Academico Viseu      TM:Hugo Gambor age 23
+  Andro Babic                MID Academico Viseu      TM:Andro Babic age 21
+  Mohamed Bouldini           ATT Academico Viseu      TM:Mohamed Bouldini age 30
+  Álvaro Zamora              ATT Academico Viseu      TM:Álvaro Zamora age 24
+  Chissumba                  DEF Alverca              TM:Chissumba age 21
+  Diogo Spencer              DEF Alverca              TM:Diogo Spencer age 22
+  Zé Rafael                  MID Alverca              TM:Zé Rafael age 33
+  André Vidigal              MID Alverca              TM:André Vidigal age 28
+  Sabit Abdulai              MID Alverca              TM:Sabit Abdulai age 27
+  Ian Luccas                 MID Alverca              TM:Ian Luccas age 23
+  Rayan Lucas                MID Alverca              TM:Rayan Lucas age 21
+  Dawda Camara               ATT Alverca              TM:Dawda Camara age 23
+  Souffian El Karouani       DEF Benfica              TM:Souffian El Karouani age 25
+  Claudio Echeverri          MID Benfica              TM:Claudio Echeverri age 20
+  Gorby                      MID SC Braga             TM:Gorby age 24
+  Ivanildo Fernandes         DEF Nacional             TM:Ivanildo Fernandes age 30
+  Ulisses                    DEF Nacional             TM:Ulisses age 26
+  Felipe Florencio Da Silva  DEF Casa Pia             TM:Felipe Silva age 24
+  JP                         MID Casa Pia             TM:JP age 21
+  Evans Maurin               ATT Casa Pia             TM:Evans Maurin age 25
+  Benjamin Pauwels           ATT Casa Pia             TM:Benjamin Pauwels age 21
+  Aymen Zouin                ATT Casa Pia             TM:Aymen Zouin age 19
+  Roko Jurišic               DEF Estoril              TM:Roko Jurisic age 24
+  Stelios Andreou            DEF Estoril              TM:Stelios Andreou age 24
+  Axel Camblan               MID Estoril              TM:Axel Camblan age 23
+  Milan Robin                MID Estoril              TM:Milan Robin age 26
+  Nail Omerovic              ATT Estoril              TM:Nail Omerovic age 23
+  Israel Salazar             ATT Estoril              TM:Israel Salazar age 23
+  Vuk Pavićević              MID Estrela              TM:Vuk Pavicevic age 18
+  Jeremy Arévalo             ATT Estrela              TM:Jeremy Arévalo age 21
+  Rodrigo Dudok              ATT Estrela              TM:Rodrigo Dudok age 19
+  Pedro Bondo                DEF Famalicao            TM:Pedro Bondo age 21
+  Víctor Rofino              DEF Famalicao            TM:Víctor Rofino age 24
+  Patricio Salas             ATT Famalicao            TM:Patricio Salas age 22
+  Alberto Costa              DEF FC Porto             TM:Alberto Costa age 22
+  Seko Fofana                MID FC Porto             TM:Seko Fofana age 31
+  Pepê                       ATT FC Porto             TM:Pepe age 29
+  Gabriel Mec                ATT FC Porto             TM:Gabriel Mec age 18
+  Samuel Portugal            GK GIL Vicente          TM:Samuel Portugal age 32
+  Buatu                      DEF GIL Vicente          TM:Buatu age 32
+  Marvin Elimbi              DEF GIL Vicente          TM:Marvin Elimbi age 23
+  Mohamed Bamba              MID GIL Vicente          TM:Mohamed Bamba age 21
+  Mohamed Kaba               ATT GIL Vicente          TM:Mohamed Kaba age 23
+  Bassco Soyer               ATT GIL Vicente          TM:Bassco Soyer age 19
+  Fran Vieites               GK Maritimo             TM:Fran Vieites age 27
+  Ibrahim Alani              MID Maritimo             TM:Ibrahim Alani age 20
+  Mons Bassouamina           ATT Maritimo             TM:Mons Bassouamina age 28
+  Bryan Limbombe             ATT Maritimo             TM:Bryan Limbombe age 25
+  Janderson                  DEF Moreirense           TM:Janderson age 21
+  Pedro Lucas Rodrigues Mendes De Jesus DEF Moreirense           TM:Pedro Jesus age 18
+  Manuel Mendonça            MID Moreirense           TM:Manuel Mendonça age 21
+  Leonardo Vonic             ATT Moreirense           TM:Leonardo Vonić age 23
+  Pedro Amaral               DEF Rio Ave              TM:Pedro Amaral age 29
+  Caike                      DEF Rio Ave              TM:Caike age 21
+  Dai Baldé                  DEF Rio Ave              TM:Dai Baldé age 19
+  Malik Sellouki             MID Rio Ave              TM:Malik Sellouki age 26
+  Brandon Aguilera           MID Rio Ave              TM:Brandon Aguilera age 23
+  Simon Garcia               MID Rio Ave              TM:Simón García age 21
+  Antoine Wenck              MID Rio Ave              TM:Antoine Wenck age 20
+  Miguel Patrício            MID Rio Ave              TM:Miguel Patricío age 19
+  Radek Siler                ATT Rio Ave              TM:Radek Siler age 21
+  Sebastian Clemmensen       ATT Rio Ave              TM:Sebastian Clemmensen age 23
+  MT                         DEF Santa Clara          TM:MT age 25
+  Ythallo                    DEF Santa Clara          TM:Ythallo age 22
+  Kamika                     DEF Santa Clara          TM:Kamika age 22
+  Pedro Jesus                MID Santa Clara          TM:Pedro Jesus age 23
+  Rildo                      ATT Santa Clara          TM:Rildo age 26
+  Brenner                    ATT Santa Clara          TM:Brenner age 24
+  Leo Jacó                   ATT Santa Clara          TM:Léo Jacó age 21
+  Moncef Zekri               DEF Sporting CP          TM:Moncef Zekri age 17
+  Toni Borevkovic            DEF Guimaraes            TM:Toni Borevković age 29
+  Victor Andersson           MID Guimaraes            TM:Victor Andersson age 21
+  Santi Verdi                MID Guimaraes            TM:Santi Verdi age 18
+  Arnel Jakupovic            ATT Guimaraes            TM:Arnel Jakupovic age 28
+  Sankhoun Diawara           DEF AC Milan             TM:Sankhoun Diawara age 20
+  Anass Salah-Eddine         DEF AS Roma              TM:Anass Salah-Eddine age 24
+  Lorenzo Pellegrini         MID AS Roma              TM:Lorenzo Pellegrini age 30
+  Thomas Pompei              GK Atalanta             TM:Thomas Pompei age 20
+  Franck Kessié              MID Atalanta             TM:Franck Kessié age 29
+  Eljif Elmas                MID Atalanta             TM:Eljif Elmas age 26
+  Lorenzo De Silvestri       DEF Bologna              TM:Lorenzo De Silvestri age 38
+  Jay Enem                   ATT Bologna              TM:Jay Enem age 23
+  Giuseppe Aurelio           DEF Cagliari             TM:Giuseppe Aurelio age 26
+  Roberto Gagliardini        MID Cagliari             TM:Roberto Gagliardini age 32
+  Yanis Massolin             MID Cagliari             TM:Yanis Massolin age 23
+  Mauro Vigorito             GK Como                 TM:Mauro Vigorito age 36
+  Willy Kambwala             DEF Como                 TM:Willy Kambwala age 22
+  Jacobo Ramón               DEF Como                 TM:Jacobo Ramón age 21
+  Pedro Gonçalves            MID Fiorentina           TM:Pedro Gonçalves age 28
+  Federico Croci             ATT Fiorentina           TM:Federico Croci age 16
+  Matteo Pisseri             GK Frosinone            TM:Matteo Pisseri age 34
+  Aleksa Terzic              DEF Frosinone            TM:Aleksa Terzić age 27
+  Enzo Tchato                DEF Frosinone            TM:Enzo Tchato age 23
+  Omar Fayed                 DEF Frosinone            TM:Omar Fayed age 23
+  Florian Grillitsch         MID Frosinone            TM:Florian Grillitsch age 31
+  Tomas Bobcek               ATT Frosinone            TM:Tomas Bobcek age 24
+  Antonio Raimondo           ATT Frosinone            TM:Antonio Raimondo age 22
+  Daniel Birligea            ATT Frosinone            TM:Daniel Bîrligea age 26
+  Daniele Sommariva          GK Genoa                TM:Daniele Sommariva age 29
+  Franz Stolz                GK Genoa                TM:Franz Stolz age 25
+  Kingsley Ehizibue          DEF Genoa                TM:Kingsley Ehizibue age 31
+  Djibril Sow                MID Genoa                TM:Djibril Sow age 29
+  Tommaso Baldanzi           MID Genoa                TM:Tommaso Baldanzi age 23
+  Stephan El Shaarawy        ATT Genoa                TM:Stephan El Shaarawy age 33
+  Junior Messias             ATT Genoa                TM:Junior Messias age 35
+  Robinho Junior             ATT Genoa                TM:Robinho Junior age 18
+  Kamil Grabara              GK Juventus             TM:Kamil Grabara age 27
+  Daniele Rugani             DEF Juventus             TM:Daniele Rugani age 32
+  Douglas Luiz               MID Juventus             TM:Douglas Luiz age 28
+  Nico González              ATT Juventus             TM:Nico González age 28
+  Ricardo Bordon             DEF Lazio                TM:Ricardo Bordon age 19
+  Mohamed Kaba               ATT Lecce                TM:Mohamed Kaba age 24
+  Medon Berisha              MID Lecce                TM:Medon Berisha age 22
+  Joel Monteiro              ATT Lecce                TM:Joël Monteiro age 27
+  Idrissa Touré              MID Monza                TM:Idrissa Touré age 28
+  Kevin Martins              ATT Monza                TM:Kevin Martins age 21
+  Cyril Ngonge               ATT Monza                TM:Cyril Ngonge age 26
+  Exequiel Zeballos          ATT Monza                TM:Exequiel Zeballos age 24
+  Claudio Pugliese           GK Napoli               TM:Claudio Pugliese age 18
+  Costantino Favasuli        DEF Napoli               TM:Costantino Favasuli age 22
+  Frank Anguissa             MID Napoli               TM:Frank Anguissa age 30
+  David Neres                ATT Napoli               TM:David Neres age 29
+  Noa Lang                   ATT Napoli               TM:Noa Lang age 27
+  Simone Ghidotti            GK Parma                TM:Simone Ghidotti age 26
+  Diego Carlos               DEF Parma                TM:Diego Carlos age 33
+  Vincent Sierro             MID Parma                TM:Vincent Sierro age 30
+  Abdou-Salam Konate         MID Parma                TM:Abdou-Salam Konate age 19
+  Matija Frigan              ATT Parma                TM:Matija Frigan age 23
+  Thomás De Martis           ATT Parma                TM:Thomás De Martis age 18
+  Simone Lontani             ATT Parma                TM:Simone Lontani age 18
+  Giacomo Satalino           GK Sassuolo             TM:Giacomo Satalino age 27
+  Duje Caleta-Car            DEF Sassuolo             TM:Duje Caleta-Car age 29
+  Fali Candé                 DEF Sassuolo             TM:Fali Candé age 28
+  Fedde Leysen               DEF Sassuolo             TM:Fedde Leysen age 23
+  Edoardo Pieragnolo         DEF Sassuolo             TM:Edoardo Pieragnolo age 23
+  Ricardo Rodríguez          DEF Torino               TM:Ricardo Rodríguez age 34
+  Rafik Belghali             DEF Torino               TM:Rafik Belghali age 24
+  Alessio Cacciamani         MID Torino               TM:Alessio Cacciamani age 19
+  Pietro Pellegri            ATT Torino               TM:Pietro Pellegri age 25
+  Andrea Luongo              ATT Torino               TM:Andrea Luongo age 18
+  Bartosz Mrozek             GK Udinese              TM:Bartosz Mrozek age 26
+  Edoardo Piana              GK Udinese              TM:Edoardo Piana age 22
+  Enzo Ebosse                DEF Udinese              TM:Enzo Ebosse age 27
+  James Abankwah             DEF Udinese              TM:James Abankwah age 22
+  Matteo Palma               DEF Udinese              TM:Matteo Palma age 18
+  David Pejicic              MID Udinese              TM:David Pejičić age 19
+  Lorenzo Montipò            GK Venezia              TM:Lorenzo Montipò age 30
+  Juan Jesus                 DEF Venezia              TM:Juan Jesus age 35
+  Simone Panada              MID Venezia              TM:Simone Panada age 24
+  Saad El Haddad             MID Venezia              TM:Saad El Haddad age 21
+  Toni Fernández             ATT Venezia              TM:Toni Fernández age 18
+  Mohamed Malang Touré       ATT Venezia              TM:Mohamed Malang Touré age 19
+  Nicolás Valentini          DEF Alaves               TM:Nicolás Valentini age 25
+  Carlos Protesoni           MID Alaves               TM:Carlos Protesoni age 28
+  Selu Diallo                MID Alaves               TM:Selu Diallo age 22
+  Arnau Ortiz                ATT Atlético Madrid      TM:Arnau Ortiz age 24
+  Dominik Livakovic          GK Barcelona            TM:Dominik Livakovic age 31
+  João Cancelo               DEF Barcelona            TM:João Cancelo age 32
+  Pau Cubarsí                DEF Barcelona            TM:Pau Cubarsí age 19
+  Brian Fariñas              MID Barcelona            TM:Brian Fariñas age 20
+  Sebastián Cáceres          DEF Celta Vigo           TM:Sebastián Cáceres age 27
+  Adrià Altimira             DEF Deportivo            TM:Adrià Altimira age 25
+  Adama Traoré               ATT Deportivo            TM:Adama Traoré age 30
+  Yeremay Hernández          ATT Deportivo            TM:Yeremay Hernández age 23
+  Bil Nsongo                 ATT Deportivo            TM:Bil Nsongo age 21
+  Kevin Lomónaco             DEF Elche                TM:Kevin Lomónaco age 24
+  Roy Revivo                 DEF Elche                TM:Roy Revivo age 23
+  Matia Barzic               DEF Elche                TM:Matia Barzic age 22
+  Thomas Lemar               MID Elche                TM:Thomas Lemar age 30
+  Facundo Buonanotte         MID Elche                TM:Facundo Buonanotte age 21
+  Ezequiel Ponce             ATT Elche                TM:Ezequiel Ponce age 29
+  Abiel Osorio               ATT Elche                TM:Abiel Osorio age 24
+  Vanja Drkusic              DEF Espanyol             TM:Vanja Drkusic age 26
+  Bryan Zaragoza             ATT Espanyol             TM:Bryan Zaragoza age 24
+  Johan Mojica               DEF Getafe               TM:Johan Mojica age 34
+  Nemanja Gudelj             MID Getafe               TM:Nemanja Gudelj age 34
+  Francho Serrano            MID Getafe               TM:Francho Serrano age 24
+  Christantus Uche           MID Getafe               TM:Christantus Uche age 23
+  Ivan Azón                  ATT Getafe               TM:Iván Azón age 23
+  Mathew Ryan                GK Levante              TM:Mathew Ryan age 34
+  Roger Brugué               MID Levante              TM:Roger Brugué age 29
+  Dani Requena               MID Levante              TM:Dani Requena age 22
+  Thiago Fernández           ATT Levante              TM:Thiago Fernández age 22
+  Juan Berrocal              DEF Malaga               TM:Juan Berrocal age 27
+  Álex Pastor                DEF Malaga               TM:Álex Pastor age 26
+  Adam Aznou                 DEF Malaga               TM:Adam Aznou age 20
+  Pablo Martínez             MID Malaga               TM:Pablo Martínez age 28
+  Jens Cajuste               MID Malaga               TM:Jens Cajuste age 27
+  Carlos Dotor               MID Malaga               TM:Carlos Dotor age 25
+  Adrián Niño                ATT Malaga               TM:Adrián Niño age 22
+  Diego Rico                 DEF Osasuna              TM:Diego Rico age 33
+  Julen Agirrezabala         GK Racing Santander     TM:Julen Agirrezabala age 25
+  Emil Audero                GK Rayo Vallecano       TM:Emil Audero age 29
+  Luiz Felipe                DEF Rayo Vallecano       TM:Luiz Felipe age 29
+  Marash Kumbulla            DEF Rayo Vallecano       TM:Marash Kumbulla age 26
+  Mujaid Sadick              DEF Rayo Vallecano       TM:Mujaid Sadick age 26
+  Raúl de Tomás              ATT Rayo Vallecano       TM:Raúl de Tomás age 31
+  Giorgi Tsitaishvili        ATT Rayo Vallecano       TM:Giorgi Tsitaishvili age 25
+  Dani Ceballos              MID Real Betis           TM:Dani Ceballos age 30
+  Álvaro Carreras            DEF Real Madrid          TM:Álvaro Carreras age 23
+  Endrick                    ATT Real Madrid          TM:Endrick age 20
+  Héctor Fort                DEF Real Sociedad        TM:Héctor Fort age 20
+  Marcão                     DEF Sevilla              TM:Marcão age 30
+  Julio Díaz                 DEF Sevilla              TM:Julio Díaz age 21
+  Robbie Ure                 ATT Sevilla              TM:Robbie Ure age 22
+  Lucas Stassin              ATT Sevilla              TM:Lucas Stassin age 21
+  Pablo Maffeo               DEF Valencia             TM:Pablo Maffeo age 29
+  Arnau Martínez             DEF Valencia             TM:Arnau Martínez age 23
+  Sergi Canós                ATT Valencia             TM:Sergi Canós age 29
+  Diego López                ATT Valencia             TM:Diego López age 24
+  Juan Foyth                 DEF Villarreal           TM:Juan Foyth age 28
+  Nathan Saliba              MID Villarreal           TM:Nathan Saliba age 22
+  Ilias Akhomach             ATT Villarreal           TM:Ilias Akhomach age 22
+
+KEEP
+  Rafa Soares              TM says still at source club  TM:Rafa Soares @ CF Estrela Amadora
+  Álex Calatrava           TM says still at source club  TM:Álex Calatrava @ RCD Espanyol Barcelona
+  Alejandro Gomes Rodriguez TM says still at source club  TM:Alejandro Gomes Rodríguez @ Olympique Lyon
+  D. Akintola              TM confirms current club (ESPN omission)  TM:David Akintola @ Hull City
+  A. Fatawu                TM confirms current club (ESPN omission)  TM:Abdul Fatawu @ Ipswich Town
+  A. Alese                 TM confirms current club (ESPN omission)  TM:Aji Alese @ Sunderland AFC
+  C. Blackett-Taylor       TM confirms current club (ESPN omission)  TM:Corey Blackett-Taylor @ Derby County
+  C. Taylor                TM confirms current club (ESPN omission)  TM:Charlie Taylor @ Derby County
+  A. Zoukrou               TM confirms current club (ESPN omission)  TM:Ackah-Tidiane Zoukrou @ AJ Auxerre
+  Mezian Mesloub           TM confirms current club (ESPN omission)  TM:Mezian Mesloub @ RC Lens
+  A. Tosin                 TM confirms current club (ESPN omission)  TM:Aiyegun Tosin @ FC Lorient
+  Elias Legendre Quiñonez  TM confirms current club (ESPN omission)  TM:Elías Legendre Quiñónez @ Stade Rennais FC
+  S. Boey                  TM confirms current club (ESPN omission)  TM:Sacha Boey @ Bayern Munich
+  D. Bárány                TM confirms current club (ESPN omission)  TM:Donát Bárány @ ADO Den Haag
+  Yamano Olfers            TM confirms current club (ESPN omission)  TM:Yamano Olfers @ SC Telstar
+  Abdelraffie Benzzine     TM confirms current club (ESPN omission)  TM:Abdelraffie Benzzine @ SC Telstar
+  Wesley Gasolina          TM confirms current club (ESPN omission)  TM:Wesley Gasolina @ CD Nacional
+  Francisco Moura          TM confirms current club (ESPN omission)  TM:Francisco Moura @ FC Porto
+  Joelson Fernandes        TM confirms current club (ESPN omission)  TM:Joelson Fernandes @ Gil Vicente FC
+  Ryan Guilherme           TM confirms current club (ESPN omission)  TM:Ryan Guilherme @ Rio Ave FC
+  Fabio Blanco             TM confirms current club (ESPN omission)  TM:Fabio Blanco @ Vitória Guimarães SC
+  E. Lolic                 TM confirms current club (ESPN omission)  TM:Eldin Lolic @ Frosinone Calcio
+  R. Floriani Mussolini    TM confirms current club (ESPN omission)  TM:Romano Floriani Mussolini @ SS Lazio
+  Paco Esteban             TM confirms current club (ESPN omission)  TM:Paco Esteban @ US Lecce
+  M. Llorente              TM confirms current club (ESPN omission)  TM:Marcos Llorente @ Atlético de Madrid
+  Marcos Llorente          TM confirms current club (ESPN omission)  TM:Marcos Llorente @ Atlético de Madrid
+  D. Dakonam               TM confirms current club (ESPN omission)  TM:Dakonam Djené @ Getafe CF
+  Rafita                   TM confirms current club (ESPN omission)  TM:Rafita Garrido @ Málaga CF
+  Manu Hernando            TM confirms current club (ESPN omission)  TM:Manu Hernando @ Racing Santander
+  Íñigo Sainz-Maza         TM confirms current club (ESPN omission)  TM:Íñigo Sainz-Maza @ Racing Santander
+
+UNRESOLVED
+   move no-candidate R. Esse []
+   move no-candidate D. Muñoz []
+   move ambiguous Beto [('Zé Beto', '---'), ('Beto', 'Deportivo Garcilaso'), ('Beto', 'GE Glória (RS)')]
+   move no-candidate C. Scanlon []
+   move no-candidate L. Shahar []
+   move no-candidate J. Jones []
+   move no-candidate Souza []
+   move no-candidate Z. Flemming []
+   move no-candidate I. Olaofe []
+   move no-candidate R. Oné []
+   move no-candidate L. Gibbs []
+   move no-candidate J. Medić []
+   move ambiguous B. Whiteman [('Bobby Whiteman', '---')]
+   move no-candidate C. O'Hare []
+   move no-candidate S. Charles []
+   move no-candidate S. Thomas []
+   move no-candidate Hwang Hee-Chan []
+   move no-candidate R. Del Castillo []
+   move no-candidate O. Mangala []
+   move no-candidate M. Cho []
+   move ambiguous Arthur [('Arthur Melo', 'Santos FC'), ('Arthur Vermeeren', 'Royal Antwerp FC'), ('Arthur Atta', 'ACF Fiorentina'), ('Arthur Theate', 'Bologna FC 1909')]
+   move no-candidate A. Ibrahimović []
+   move no-candidate R. Philippe []
+   move no-candidate A. Thomas []
+   move no-candidate L. Ulrich []
+   move no-candidate R. Schmid []
+   move no-candidate I. Jensen []
+   move no-candidate M. Šín []
+   move no-candidate B. Pereira []
+   move no-candidate A. Santos []
+   move no-candidate F. Ivanović []
+   move no-candidate A. Dedić []
+   move no-candidate I. Mohamed []
+   move no-candidate S. van Hooijdonk []
+   move no-candidate G. Konan []
+   move no-candidate R. Vaz []
+   move no-candidate B. Domínguez []
+   move no-candidate Y. Maye []
+   move no-candidate J. David []
+   move no-candidate B. Dia []
+   move no-candidate P. Ratkov []
+   move no-candidate A. Camara []
+   move no-candidate A. Sidibé []
+   move no-candidate I. Luque []
+   move no-candidate K. Tunde []
+   move ambiguous Manuel Ángel [('Manuel Angel Bustos', 'Xewkija Tigers FC'), ('Manuel Ángel Castillo', 'Sevilla Atlético'), ('Manuel Ángel', 'Nacional FC U20')]
+   move no-candidate Oso []
+   move no-candidate Miguel Brau []
+   move no-candidate IfeanyiIfeanyi Ndukwe []
+   move ambiguous P. Felipe [('Pedro de Felipe', '---')]
+   move no-candidate T. Ndiaye []
+   move no-candidate F. Scott []
+   move no-candidate D. Lawrence []
+   move no-candidate Ephrahim Yeboah []
+   move no-candidate M. Campbell []
+   move no-candidate O. Azeez []
+   move truncated C. Chibueze [('Chibueze Izuogu', 'Without Club')]
+   move no-candidate J. Mohammed []
+   move no-candidate M. Youssouf []
+   move truncated F. Chávez [('Felipe Chávez', '1.FC Magdeburg')]
+   move no-candidate D. Leonard []
+   move no-candidate A. Sousa []
+   move no-candidate V. Maia []
+   move no-candidate M. Bah []
+   move no-candidate M. Pérez []
+   move no-candidate V. Bayo []
+   move ambiguous Álvaro Moreno [('Alvaro Moreno', '---'), ('Álvaro Moreno Ruiz', 'Atlético Madrid C'), ('Álvaro Moreno', 'CF Santomera'), ('Álvaro Moreno', 'EMF CD Cobeña')]
+   move no-candidate Fabio Amadu Uri Baldé []
+   move no-candidate João Pedro Seno Luís Rêgo []
+   move no-candidate M. Luković []
+   move no-candidate N. Þórisson []
+   move no-candidate J. Antiste []
+   move no-candidate Rayane Belid []
+   move no-candidate R. Marina []
+   move no-candidate Julio Díaz del Romo []
+   out no-candidate Z. Christie []
+   out no-candidate C. Stevens []
+   out no-candidate K. Ranson []
+   out no-candidate J. Porter []
+   out ambiguous-covered I. Ibrahim [('Ibrahim Mbaye', 'Aston Villa'), ('Ibrahim Maza', 'Bayer 04 Leverkusen'), ('Ibrahim Afellay', 'Brighton &amp; Hove Albion')]
+   out no-candidate R. Fortes []
+   out no-candidate T. Rowe []
+   out truncated J. Jimoh [('Jamaldeen Jimoh-Aloba', 'Aston Villa U21'), ('Jimoh Aremu', 'Unknown')]
+   out no-candidate Alysson Edward []
+   out no-candidate R. Owen []
+   out no-candidate O. Shield []
+   out no-candidate C. Holland []
+   out no-candidate D. Benamar []
+   out no-candidate G. King []
+   out no-candidate Z. Marsh []
+   out no-candidate G. Finney []
+   out no-candidate W. Tamen []
+   out no-candidate Adam Aznou Ben Cheikh []
+   out no-candidate B. Graham []
+   out no-candidate Elijah Xavier Campbell []
+   out no-candidate H. Parker []
+   out no-candidate Óscar Steven Zambrano Preciado []
+   out no-candidate M. Jacob []
+   out no-candidate C. McCarthy []
+   out no-candidate W. Burns []
+   out no-candidate R. Chadwick-Chaplin []
+   out no-candidate K. Morrison []
+   out no-candidate C. Ramsay []
+   out no-candidate W. Wright []
+   out truncated J. Lambie [('John Lambie', '---')]
+   out truncated Max Thompson [('Max Thompson', '---'), ('Max Thompson', 'Hyde United'), ('Max Thompson', 'Without Club'), ('Max Thompson', 'Without Club')]
+   out no-candidate Park Seung-Soo []
+   out no-candidate L. Sillah []
+   out no-candidate Justin Thomas Hanks []
+   out no-candidate O. Richards []
+   out no-candidate Eric Emanuel da Silva Moreira []
+   out no-candidate Jack Ethan Thompson []
+   out no-candidate G. McDonnell []
+   out no-candidate B. Hammond []
+   out no-candidate Z. Blake []
+   out no-candidate B. Kindon []
+   out no-candidate F. Geragusian []
+   out no-candidate T. Hall []
+   out no-candidate Yang Min-Hyeok []
+   out no-candidate T. Hall []
+   out no-candidate A. Da Silva []
+   out no-candidate V. Joseph []
+   out no-candidate A. Henriksson []
+   out no-candidate George Christopher John Pratt []
+   out no-candidate T. Pitt []
+   out no-candidate C. O'Riordan []
+   out no-candidate Jack Joseph Barrett []
+   out no-candidate H. Irwin []
+   out no-candidate R. Young []
+   out no-candidate B. O'Neill []
+   out no-candidate L. Derrick []
+   out no-candidate B. Pouri-Siewe []
+   out no-candidate K. M. Brown []
+   out no-candidate C. Edwards []
+   out no-candidate D. Kanu []
+   out no-candidate G. Docherty []
+   out no-candidate D. Brown []
+   out no-candidate R. Canoville []
+   out no-candidate C. Allen []
+   out no-candidate I. Gordon []
+   out no-candidate H. Price []
+   out no-candidate O. Thorn []
+   out no-candidate Donald Inyama []
+   out no-candidate Chris Cohen []
+   out no-candidate K. Sène []
+   out no-candidate F. Cartwright []
+   out no-candidate G. McCormick []
+   out no-candidate H. Hunt []
+   out no-candidate J. Daley []
+   out no-candidate S. Kendall []
+   out no-candidate D. Jones []
+   out no-candidate K. Sylvanus []
+   out no-candidate K. Nelson []
+   out no-candidate E. Sutton []
+   out no-candidate L. Scarlett []
+   out no-candidate G. Ikoroha []
+   out truncated T. Smith [('Tommy Smith', '---')]
+   out no-candidate L. Marsh []
+   out no-candidate D. Sasnauskas []
+   out no-candidate H. McGlinchey []
+   out no-candidate M. Sesay []
+   out no-candidate J. O'Brien-Whitmarsh []
+   out no-candidate N. Wood-Gordon []
+   out no-candidate El Hadji Djibril Soumaré []
+   out no-candidate T. Seko []
+   out no-candidate R. Otegbayo []
+   out no-candidate J. Osei Kyremeh []
+   out no-candidate Ruben Curly []
+   out no-candidate Joseph Okopu []
+   out no-candidate K. Gorman []
+   out no-candidate J. Bray []
+   out no-candidate D. Iddrisa []
+   out no-candidate N. Dupont []
+   out no-candidate L. Benjamin []
+   out no-candidate E. Lee []
+   out no-candidate R. Barnett []
+   out no-candidate D. Scarr []
+   out no-candidate E. Saidi []
+   out no-candidate S. Idumbo-Muzambo []
+   out no-candidate Flávio Nazinho []
+   out no-candidate C. Mawissa Elebi []
+   out no-candidate I. Garin []
+   out no-candidate Djibirin Harouna []
+   out no-candidate N. Obougoujacquet []
+   out no-candidate M. Diaw []
+   out no-candidate T. Caro []
+   out no-candidate N. Kemtchoum-Stasiowski []
+   out no-candidate Alexsandro Ribeiro []
+   out no-candidate Matah Yondjio []
+   out no-candidate S. Siba []
+   out no-candidate M. Bley []
+   out no-candidate U. Lamare El Kadmiri []
+   out no-candidate L. Monteiro Alvarenga []
+   out no-candidate E. Sahraoui []
+   out no-candidate T. Bruyère []
+   out truncated C. Immobile [('Ciro Immobile', 'Unknown')]
+   out no-candidate E. Zabi []
+   out no-candidate A. Gory []
+   out no-candidate D. Boly []
+   out no-candidate D. Diongu []
+   out no-candidate L. Frechingues []
+   out no-candidate M. Saka []
+   out no-candidate P. Zenga []
+   out no-candidate F. O. Onambele []
+   out no-candidate S. Barry []
+   out no-candidate T. Kannegieser []
+   out no-candidate O. Engel []
+   out no-candidate Dmytro Bohdanov []
+   out no-candidate M. Djedovic []
+   out no-candidate B. Kir []
+   out no-candidate N. Bomba []
+   out no-candidate L. Prescott []
+   out no-candidate F. Pavic []
+   out no-candidate W. Mike []
+   out no-candidate T. Yamamoto []
+   out no-candidate V. Stange []
+   out no-candidate N. Aséko Nkili []
+   out no-candidate C. Neumann []
+   out truncated T. Yamazaki [('Takato Yamazaki', 'Without Club'), ('Taisei Yamazaki', 'Without Club'), ('Tomohiko Yamazaki', 'Araucária Esporte Clube (PR)')]
+   out no-candidate W. Bøving []
+   out no-candidate W. Ngana []
+   out no-candidate K. Steinmann []
+   out no-candidate William Cole Campbell []
+   out no-candidate Z. Amoussou-Tchibara []
+   out no-candidate A. Donkor []
+   out no-candidate V. Lässig []
+   out no-candidate L. Đurić []
+   out no-candidate A. Skender []
+   out no-candidate A. Vogt []
+   out no-candidate T. van der Leij []
+   out no-candidate Maximilian Tobias Herwerth []
+   out no-candidate José María Andrés Baixauli []
+   out no-candidate Chuky San José []
+   out no-candidate Abdoul Karim Coulibaly []
+   out no-candidate S. Puljhun []
+   out no-candidate Richard Vogt []
+   out no-candidate P. Nash []
+   out no-candidate Don-Angelo Christoffel Annum-Assamoah Konadu []
+   out no-candidate V. van der Velde []
+   out no-candidate A. Hani []
+   out no-candidate G. de Regt []
+   out no-candidate N. Martens []
+   out no-candidate Q. Kraaijvanger []
+   out no-candidate Noam Fritz Emeran []
+   out no-candidate Besnik Mashuku []
+   out no-candidate Petrit Preniqi []
+   out no-candidate Guilherme Martinho Peixoto []
+   out no-candidate D. Min []
+   out no-candidate Emeka Adeile []
+   out no-candidate O. Johnson []
+   out no-candidate L. Brouwers []
+   out no-candidate I. Mulder []
+   out no-candidate R. Bouw []
+   out no-candidate L. Bakker []
+   out no-candidate J. van den Berg []
+   out no-candidate Y. Bruinsma []
+   out no-candidate Y. Jaber el Maftahi []
+   out no-candidate J. Esser []
+   out no-candidate K. Tejan []
+   out no-candidate L. Abildgaard []
+   out no-candidate Zoubdi []
+   out no-candidate M. Essimi Ateba []
+   out no-candidate L. Giordano Giuntini Santiago []
+   out no-candidate Diogo Filipe Spencer Marques []
+   out no-candidate Kauan Gomes []
+   out no-candidate R. Mordomo []
+   out no-candidate Jean-Baptiste Gorby []
+   out no-candidate C. Ramírez []
+   out no-candidate Martim Watts []
+   out no-candidate Renato Bellucci []
+   out truncated Raúl Blanco [('Renato Blanco', 'Unknown')]
+   out no-candidate R. Almeida []
+   out no-candidate Pedro Francisco []
+   out no-candidate Pepê Aquino []
+   out no-candidate D. Gül []
+   out no-candidate Alberto Baio []
+   out no-candidate Andorinha []
+   out no-candidate Gonçalo Maia Pereira []
+   out no-candidate F. Cáseres []
+   out no-candidate M. Elimbi Gilbert []
+   out no-candidate Jonathan Buatu []
+   out truncated Carlos Daniel [('Carlos Daniel Cordone', 'Unknown'), ('Carlos Daniel', 'Al-Jabalain FC')]
+   out no-candidate T. Keating []
+   out no-candidate Rafael Genuino []
+   out no-candidate Luis Fernando Santos Oliveira []
+   out no-candidate Brenner Lucas Gonçalves Santos []
+   out no-candidate João Vasconcelos []
+   out no-candidate José Luís Rocha Tavares []
+   out no-candidate C. Grombahi []
+   out no-candidate Pote []
+   out no-candidate E. Opara []
+   out no-candidate A. Oliveira []
+   out no-candidate S. Bocoum []
+   out no-candidate S. Vos []
+   out no-candidate E. Borsani []
+   out no-candidate F. Nardin []
+   out no-candidate M. Seck []
+   out no-candidate F. Cassa []
+   out no-candidate M. Ilić []
+   out no-candidate A. Russo []
+   out no-candidate G. Ciocci []
+   out no-candidate Willy Kambwala Ndengushi []
+   out no-candidate Jacobo Ramón Naveros []
+   out no-candidate L. Deli []
+   out no-candidate E. Sadotti []
+   out no-candidate G. Bertolini []
+   out no-candidate J. Gelli []
+   out no-candidate N. Corrado []
+   out no-candidate W. L. Ouedraogo []
+   out no-candidate M. Romano []
+   out truncated A. Calligaris [('Aridex Calligaris', '---'), ('Alessandro Calligaris', 'Inter U23')]
+   out no-candidate R. Huli []
+   out no-candidate S. Scaglia []
+   out no-candidate N. Rizzo []
+   out no-candidate S. Fernandes []
+   out no-candidate A. Zambo Anguissa []
+   out no-candidate A. Álvarez []
+   out no-candidate L. Moro []
+   out no-candidate N. Baffoh []
+   out no-candidate K. Leone []
+   out no-candidate M. Pellini []
+   out no-candidate T. Gabellini []
+   out no-candidate F. Anjorin []
+   out no-candidate R. Pirih []
+   out no-candidate Antonio Casas []
+   out truncated B. Bjarkason [('Bjarki Bjarkason', 'FC Südtirol'), ('Bragi Karl Bjarkason', 'UMF Njardvík')]
+   out no-candidate N. Lella []
+   out no-candidate M. Venturi []
+   out no-candidate Carlos Ballestero García []
+   out no-candidate R. Montero []
+   out no-candidate Yusi []
+   out no-candidate C. Benavídez []
+   out no-candidate P. Sanz []
+   out no-candidate S. Sanchez []
+   out no-candidate G. Spina []
+   out no-candidate Álvaro Cortés Moyano []
+   out no-candidate Pau Cubarsí Paredes []
+   out no-candidate Vladimir Silva []
+   out no-candidate O. Marcos []
+   out no-candidate J. Lopez []
+   out no-candidate A. Arcos []
+   out no-candidate Adrià Alti []
+   out no-candidate José Jurado []
+   out no-candidate S. Fernandez []
+   out no-candidate A. Miralles []
+   out no-candidate B. Sina []
+   out no-candidate John Nwankwo []
+   out no-candidate Matia Barzic Gutiérrez []
+   out no-candidate J. Piera []
+   out no-candidate F. Gomez []
+   out no-candidate A. Almansa []
+   out no-candidate A. R. Alcantara []
+   out no-candidate Dela []
+   out no-candidate K. Arriaga []
+   out no-candidate M. Krug []
+   out no-candidate Reque []
+   out no-candidate Brugui []
+   out no-candidate Adrián Niño Heredia []
+   out no-candidate Joseph Otunenche []
+   out no-candidate A. Ochoa []
+   out no-candidate S. Martinez []
+   out no-candidate D. Fuentes []
+   out no-candidate D. Diaz []
+   out no-candidate A. Crespo []
+   out no-candidate B. Attia []
+   out no-candidate S. Calera []
+   out no-candidate S. Franco []
+   out no-candidate E. Eto'o []
+   out no-candidate G. Petit []
+   out no-candidate Ávaro Leiva []
+   out no-candidate J. Navarro Jimenez []
+   out no-candidate L. Fati []
+   out no-candidate M. Serrano []
+   out no-candidate J. Cestero Sancho []
+   out no-candidate K. Kita []
+   out no-candidate I. Munoz []
+   out no-candidate Rubo Iranzo []
+   out no-candidate T. Fernández []
+   new no-candidate Kim Ji-Soo []
+   new no-candidate Jens Hjerto Dahl []
+   new no-candidate Babajide David []
+   new no-candidate Fatawu Issahaku []
+   new no-candidate Allan Elias []
+   new no-candidate Mykhailo Mudryk []
+   new no-candidate Tobias Ritchie []
+   new no-candidate Joshua Edwards []
+   new no-candidate Robert Junior Nkeng []
+   new no-candidate Sacha Natsuki Tsugita Vieira []
+   new no-candidate Forson Amankwah []
+   new no-candidate Gabriel Forsyth []
+   new no-candidate Pape Diallo []
+   new no-candidate Harrison Clarke []
+   new no-candidate Theo Carrol []
+   new no-candidate Joseph Kalulu Kyatengwa []
+   new no-candidate Djylian N'Guessan []
+   new no-candidate Guy Zohouri []
+   new no-candidate Hamza Igmane []
+   new no-candidate Tosin Aiyegun []
+   new no-candidate Justin Bengui Joao []
+   new no-candidate Xavier Junior Mandza Tsiendi []
+   new no-candidate Nathan N'Goumou []
+   new no-candidate Zabi Gueu []
+   new no-candidate Elias Legendre []
+   new no-candidate Hermann Diandaga []
+   new no-candidate Seol Young-Woo []
+   new no-candidate Louey Farhat []
+   new no-candidate N'Diaye Moussa []
+   new no-candidate Barany Donat []
+   new no-candidate Ismail Ka []
+   new no-candidate Ágúst Þorsteinsson []
+   new no-candidate Alvin Vilhelm Valdemar Nordin []
+   new no-candidate Nikolas Panagiotou []
+   new no-candidate Kaylen Reitmaier []
+   new no-candidate Ar'jany Martha []
+   new no-candidate André Paulo []
+   new no-candidate Zakaria Kessary []
+   new no-candidate Nabili Touaizi []
+   new no-candidate Diogo Gonçalves Ferro []
+   new no-candidate Gabrijel Rukavina []
+   new no-candidate Bernardo []
+   new no-candidate Williams Kokolo []
+   new no-candidate Pedro Silva []
+   new no-candidate Martim Gustavo []
+   new no-candidate Song Min-Kyu []
+   new no-candidate Fernando Nava []
+   new no-candidate Mohamed Salah El Boukammiri []
+   new no-candidate Xavier Sintes []
+   new no-candidate Rafa []
+   new no-candidate Moura []
+   new no-candidate Eduardo Ferreira []
+   new no-candidate Guilherme Gomes []
+   new no-candidate Joelson Mendes []
+   new no-candidate Songa Chipyoka []
+   new no-candidate Ryan []
+   new no-candidate Emanuel Moreira []
+   new no-candidate João Gonçalves []
+   new no-candidate Djé []
+   new no-candidate Doqué Seydou Fofana []
+   new no-candidate Frederico Silva []
+   new no-candidate Fernando []
+   new no-candidate Gui []
+   new no-candidate Alan []
+   new no-candidate Léo-Paul Bouyer []
+   new no-candidate Alejandro Cichero []
+   new no-candidate Romano Floriani []
+   new no-candidate Konan N’Dri []
+   new no-candidate Amar Ahmed []
+   new no-candidate Francisco Esteban Sánchez []
+   new no-candidate Rafael Obrador []
+   new no-candidate Calixte Ligue []
+   new no-candidate Youssef Lekhedim []
+   new no-candidate Johaneko Louis Jean []
+   new no-candidate Carlos Martín []
+   new no-candidate Enrique Ribes []
+   new no-candidate José Ángel []
+   new no-candidate Javier Puado []
+   new no-candidate Djené []
+   new no-candidate Ihor Galdin []
+   new no-candidate Adrián de la Fuente []
+   new no-candidate Marc Santos Gavilán []
+   new no-candidate Manel Usedo Domingo []
+   new no-candidate Rafa Garrido []
+   new no-candidate Aarón Moloney []
+   new no-candidate Otu Junior []
+   new no-candidate Eneko Jauregui []
+   new no-candidate Chupete []
+   new no-candidate Juani []
+   new no-candidate Asier Bonel Aicua []
+   new no-candidate Manu []
+   new no-candidate Hugo Pérez Sañudo []
+   new no-candidate Jorge Castellanos Del Olmo []
+   new no-candidate Gnangoro Bouare Samake []
+   new no-candidate Iván Alonso Martín []
+   new no-candidate Javier Navarro []
+   new no-candidate Iker Ortín []
+   new no-candidate Alfonso González []
+   new no-candidate Manuel Ángel Castillo Rodríguez []
+   new no-candidate Jaume Durá I Soler []
+   new no-candidate Cheikh Ahmad Tidiane Thiam []
+   new no-candidate Nizar El Jmili Ben Hamou []
+   new no-search Orest Lebedenko []
+   new no-search Thomas Kristensen []
+   new no-search Javier Morcillo []
+   new no-search Idrissa Soukouna []
+   new no-search Rodrigo Bernardino Soares []
+   new no-search Alberto Calatrava Ragull []
+   new no-search Mekhi Anthony Gray []
+   new no-search Mikkel Hansen []
+   new no-search Harvey Higgins []
+   new no-search Wassim Bouziane []
+   new no-search Nilton Varela []
+   new no-search Jacobo Ortega Conde []
+   new no-search Adrián Rodríguez []
+   new no-search Thijs Muller []
+   new no-search Matchoi Djoló []
+   new no-search Jan Bürger []
+   new no-search Sékou Mara []
