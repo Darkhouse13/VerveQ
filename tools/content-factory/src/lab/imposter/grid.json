@@ -1,0 +1,13 @@
+{
+ "_comment": "SPOT THE IMPOSTER timing truths (frames @30). Composition, sound bed and verifier all read this file. Rounds 1-5: 7.5s each (timer drains 5.0s, flip at revealAt, stamp at stampAt). Round 6 holds the withheld end card: timer + withhold (6.0s). 5*225 + 162 + 180 = 1467f = 48.9s.",
+ "fps": 30,
+ "round": 225,
+ "timerFrom": 10,
+ "timerTo": 160,
+ "revealAt": 162,
+ "flipDur": 12,
+ "stampAt": 174,
+ "withholdAt": 162,
+ "withholdHold": 180,
+ "brandAt": 60
+}

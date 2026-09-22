@@ -3,6 +3,7 @@ import { Composition } from "remotion";
 import { CareerCarousel, carouselSlides, type CareerCarouselProps } from "./CareerCarousel";
 import { QuestionCard, QUESTION_SLIDES, type QuestionCardProps } from "./QuestionCard";
 import { POST_H, POST_W } from "./kit";
+import { StatReceipt, RECEIPT_SLIDES, type StatReceiptProps } from "./StatReceipt";
 
 // Separate entry point (like src/playalong) — feed posts are stills rendered
 // frame-by-frame by posts.mjs, so they stay out of the main reel Root.
@@ -28,8 +29,19 @@ const questionDefaults: QuestionCardProps = {
   accentIndex: 1,
 };
 
+const receiptDefaults: StatReceiptProps = {
+  hero: { name: "Raphinha", short: "Raphinha", club: "Barcelona", apps: 7, goals: 12, assists: 3, price: 7.5 },
+  rivals: [{ name: "Kylian Mbappé", short: "Mbappé", club: "Real Madrid", apps: 7, goals: 7, assists: 2, price: 12 }],
+  competition: "LA LIGA 2026-27",
+  asOf: "22 SEP 2026",
+  headline: "Raphinha has outscored Mbappé.",
+  ask: "Who's the most underrated attacker in Europe right now?",
+  accentIndex: 0,
+};
+
 export const PostsRoot: React.FC = () => (
   <>
+    <Composition id="PostStatReceipt" component={StatReceipt} durationInFrames={RECEIPT_SLIDES} defaultProps={receiptDefaults} {...base} />
     <Composition
       id="PostCareerCarousel"
       component={CareerCarousel}

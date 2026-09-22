@@ -1,0 +1,7 @@
+{
+ "_comment": "LAB lane timing truths (frames @30). Compositions AND sound beds read this file — re-time here, never in two places. guesswho: six 7.0s questions (the last holds 10.0s for the withheld flip) + 5.0s closer = 50.0s. older: ten 6.0s rounds + 5.0s closer = 65.0s. xi: eleven 4.0s plates + 5.0s reveal + 5.0s closer = 54.0s.",
+ "fps": 30,
+ "guesswho": { "q": 210, "qLast": 300, "closer": 150, "timer": 120, "stampAt": 120, "flipStart": 134, "flipStep": 12, "holdCardAt": 160 },
+ "older": { "round": 180, "closer": 150, "timerFrom": 6, "timerTo": 106, "revealAt": 108, "gapAt": 126 },
+ "xi": { "name": 120, "landAt": 8, "reveal": 150, "closer": 150 }
+}

@@ -1,0 +1,46 @@
+{
+  "hero": {
+    "name": "Raphinha",
+    "club": "Barcelona",
+    "apps": 7,
+    "goals": 12,
+    "assists": 3,
+    "price": 7.5,
+    "short": "Raphinha"
+  },
+  "rivals": [
+    {
+      "name": "Kylian Mbappé",
+      "club": "Real Madrid",
+      "apps": 7,
+      "goals": 7,
+      "assists": 2,
+      "price": 12,
+      "short": "Mbappé"
+    },
+    {
+      "name": "Vinícius Júnior",
+      "club": "Real Madrid",
+      "apps": 7,
+      "goals": 1,
+      "assists": 3,
+      "price": 10.5,
+      "short": "Vinícius"
+    },
+    {
+      "name": "Jude Bellingham",
+      "club": "Real Madrid",
+      "apps": 7,
+      "goals": 3,
+      "assists": 2,
+      "price": 11,
+      "short": "Bellingham"
+    }
+  ],
+  "competition": "LA LIGA 2026-27",
+  "asOf": "22 SEP 2026",
+  "headline": "Raphinha has outscored Mbappé, Vinícius and Bellingham. Combined.",
+  "ask": "Who's the most underrated attacker in Europe right now?",
+  "accentIndex": 0,
+  "caption": "Raphinha: 12 La Liga goals in 7 games.\nMbappé, Vinícius and Bellingham: 11. Combined. 🤯\n\nSend this to a Real Madrid fan 😭\n\nWho's the most underrated attacker in Europe right now? 👇\n\nPick your own squad free at verveq.com\n\n#football #laliga #raphinha #barcelona #realmadrid #verveq"
+}

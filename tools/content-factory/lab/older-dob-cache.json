@@ -1,0 +1,119 @@
+{
+ "Jude Bellingham": {
+  "name": "Jude Bellingham",
+  "qid": "Q66241169",
+  "label": "Jude Bellingham",
+  "description": "English footballer (born 2003)",
+  "dob": "2003-06-29",
+  "ref": "https://www.wikidata.org/wiki/Q66241169#P569"
+ },
+ "Luka Modrić": {
+  "name": "Luka Modrić",
+  "qid": "Q483837",
+  "description": "Croatian footballer (born 1985)",
+  "dob": "1985-09-09",
+  "ref": "https://www.wikidata.org/wiki/Q483837#P569"
+ },
+ "Lionel Messi": {
+  "name": "Lionel Messi",
+  "qid": "Q615",
+  "description": "Argentine association football player (born 1987)",
+  "dob": "1987-06-24",
+  "ref": "https://www.wikidata.org/wiki/Q615#P569"
+ },
+ "Cristiano Ronaldo": {
+  "name": "Cristiano Ronaldo",
+  "qid": "Q11571",
+  "label": "Cristiano Ronaldo",
+  "description": "Portuguese association football player (born 1985)",
+  "dob": "1985-02-05",
+  "ref": "https://www.wikidata.org/wiki/Q11571#P569"
+ },
+ "Kylian Mbappé": {
+  "name": "Kylian Mbappé",
+  "qid": "Q21621995",
+  "description": "French association football player (born 1998)",
+  "dob": "1998-12-20",
+  "ref": "https://www.wikidata.org/wiki/Q21621995#P569"
+ },
+ "Neymar": {
+  "name": "Neymar",
+  "qid": "Q142794",
+  "label": "Neymar",
+  "description": "Brazilian footballer (born 1992)",
+  "dob": "1992-02-05",
+  "ref": "https://www.wikidata.org/wiki/Q142794#P569"
+ },
+ "Harry Kane": {
+  "name": "Harry Kane",
+  "qid": "Q969725",
+  "label": "Harry Kane",
+  "description": "English association football player (born 1993)",
+  "dob": "1993-07-28",
+  "ref": "https://www.wikidata.org/wiki/Q969725#P569"
+ },
+ "Erling Haaland": {
+  "name": "Erling Haaland",
+  "qid": "Q28967995",
+  "label": "Erling Haaland",
+  "description": "Norwegian footballer (born 2000)",
+  "dob": "2000-07-21",
+  "ref": "https://www.wikidata.org/wiki/Q28967995#P569"
+ },
+ "Robert Lewandowski": {
+  "name": "Robert Lewandowski",
+  "qid": "Q151269",
+  "label": "Robert Lewandowski",
+  "description": "Polish association football player (born 1988)",
+  "dob": "1988-08-21",
+  "ref": "https://www.wikidata.org/wiki/Q151269#P569"
+ },
+ "Karim Benzema": {
+  "name": "Karim Benzema",
+  "qid": "Q1912",
+  "label": "Karim Benzema",
+  "description": "French footballer (born 1987)",
+  "dob": "1987-12-19",
+  "ref": "https://www.wikidata.org/wiki/Q1912#P569"
+ },
+ "Mohamed Salah": {
+  "name": "Mohamed Salah",
+  "qid": "Q1354960",
+  "label": "Mohamed Salah",
+  "description": "Egyptian association football player (born 1992)",
+  "dob": "1992-06-15",
+  "ref": "https://www.wikidata.org/wiki/Q1354960#P569"
+ },
+ "Kevin De Bruyne": {
+  "name": "Kevin De Bruyne",
+  "qid": "Q357984",
+  "label": "Kevin De Bruyne",
+  "description": "Belgian association football player (born 1991)",
+  "dob": "1991-06-28",
+  "ref": "https://www.wikidata.org/wiki/Q357984#P569"
+ },
+ "Antoine Griezmann": {
+  "name": "Antoine Griezmann",
+  "qid": "Q455462",
+  "label": "Antoine Griezmann",
+  "description": "French footballer (born 1991)",
+  "dob": "1991-03-21",
+  "ref": "https://www.wikidata.org/wiki/Q455462#P569"
+ },
+ "Son Heung-min": {
+  "name": "Son Heung-min",
+  "qid": "Q439722",
+  "label": "Son Heung-min",
+  "description": "South Korean association football player (born 1992)",
+  "dob": "1992-07-08",
+  "ref": "https://www.wikidata.org/wiki/Q439722#P569"
+ },
+ "Vinícius Júnior": {
+  "name": "Vinícius Júnior",
+  "qid": "Q28973866",
+  "label": "Vinícius Júnior",
+  "description": "Brazilian association football player (born 2000)",
+  "dob": "2000-07-12",
+  "ref": "https://www.wikidata.org/wiki/Q28973866#P569"
+ }
+}
