@@ -7,7 +7,7 @@ describe("career path result sharing", () => {
     expect(buildCareerPathSharePayload("I got 7/10")).toEqual({
       title: "VerveQ Career Path",
       text: "I got 7/10",
-      url: "https://verveq.com/play",
+      url: "https://verveq.com/games/career-path/?ref=career_share",
     });
   });
 });

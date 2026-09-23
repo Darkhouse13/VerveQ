@@ -6,12 +6,16 @@ export function buildCareerPathSharePayload(text: string) {
   return {
     title: "VerveQ Career Path",
     text,
-    url: `${getShareBaseUrl()}/play`,
+    // The indexable Career Path page, not the /play redirect: a shared result
+    // posted publicly becomes a real link to a page that can rank, and the
+    // page's Play button opens the game with no load. ref keeps attribution
+    // (entrySource classifies *_share as share-link).
+    url: `${getShareBaseUrl()}/games/career-path/?ref=career_share`,
   };
 }
 
-/** Native share on mobile, clipboard everywhere else. The public CTA stays
- * the marketed /play door; no result slug or backend record is needed. */
+/** Native share on mobile, clipboard everywhere else. No result slug or
+ * backend record is needed. */
 export async function shareCareerPathResult(text: string): Promise<CareerPathShareOutcome> {
   const payload = buildCareerPathSharePayload(text);
 

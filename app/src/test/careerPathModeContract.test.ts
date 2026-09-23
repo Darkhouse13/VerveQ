@@ -226,7 +226,7 @@ describe("10 Path Challenge contract", () => {
     expect(classic).toContain('careerPath.classicShareText');
     expect(screen).toContain("shareCareerPathResult");
     expect(screen).toContain('careerPath.ladderShareText');
-    expect(read("src/lib/careerPathShare.ts")).toContain("`${getShareBaseUrl()}/play`");
+    expect(read("src/lib/careerPathShare.ts")).toContain("`${getShareBaseUrl()}/games/career-path/?ref=career_share`");
   });
 
   it("tracks the full ladder as one distinct run, not ten inflated starts", () => {

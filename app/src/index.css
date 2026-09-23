@@ -355,6 +355,32 @@
   }
 
   /*
+   * The shell's content scroller on desktop: a thin brand-orange thumb on a
+   * transparent track instead of the platform's grey bar. Touch devices keep
+   * no visible bar (.scrollbar-none), so this only switches on from md.
+   * Standard properties only: since Chrome 121, setting scrollbar-color /
+   * scrollbar-width makes the ::-webkit-scrollbar pseudo-elements ignored,
+   * and these render the same in Chrome, Edge, Firefox and Safari 18+.
+   * Declared after .scrollbar-none so it wins the equal-specificity tie.
+   */
+  @media (min-width: 768px) {
+    .scrollbar-shell {
+      scrollbar-width: thin;
+      scrollbar-color: hsl(var(--primary)) transparent;
+      /* Reserve the (transparent) gutter so content doesn't shift sideways
+         between tabs that scroll and tabs that don't. */
+      scrollbar-gutter: stable;
+    }
+    .scrollbar-shell::-webkit-scrollbar {
+      display: block;
+    }
+    /* WEEKEND keeps its own muted thumb on the dark surfaces. */
+    .theme-weekend .scrollbar-shell {
+      scrollbar-color: hsl(30 30% 62% / 0.4) transparent;
+    }
+  }
+
+  /*
    * Safe-area insets for the iOS standalone (home-screen) launch, where the
    * webview runs edge-to-edge under the status bar and home indicator —
    * index.html carries viewport-fit=cover and

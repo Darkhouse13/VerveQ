@@ -24,10 +24,9 @@ interface ShellLayoutProps {
   /** Center the main content within its max width on desktop. */
   center?: boolean;
   /**
-   * Opt out of the never-scroll discipline: let `main` scroll vertically on
-   * every breakpoint (not just mobile). For content-heavy utility screens
-   * (e.g. Settings) whose card stack legitimately exceeds the viewport on
-   * desktop/monitor — without this they'd be clipped by `md:overflow-hidden`.
+   * Historical: `main` now scrolls vertically on every breakpoint for every
+   * screen (desktop used to clip unless this was set). Kept so existing call
+   * sites compile; it no longer changes anything.
    */
   scroll?: boolean;
   /**
@@ -52,8 +51,9 @@ interface ShellLayoutProps {
  *    can't fit very short viewports (and for `embed`ded legacy screens), with
  *    overflow-x always clipped so pressed-state translates never spawn a
  *    horizontal scrollbar.
- *  - Desktop (md+): the header and top nav are fixed-height and `main` is
- *    `overflow-hidden` — never scrolls.
+ *  - Desktop (md+): the header and top nav are fixed-height; `main` scrolls
+ *    vertically when a screen is taller than the window (short monitors), with
+ *    the branded thin scrollbar. A screen that fits shows no bar.
  *  - Large desktop (xl+): the frame fills the viewport like every other
  *    breakpoint. There is no height cap; a tall monitor shows MORE content,
  *    never bigger content, because each screen sizes its own cards from their
@@ -69,7 +69,6 @@ export function ShellLayout({
   theme,
   center = false,
   embed = false,
-  scroll = false,
   className,
   children,
 }: ShellLayoutProps) {
@@ -169,15 +168,20 @@ export function ShellLayout({
             ? // Embedded legacy screen: keep the mobile column width centered,
               // let it scroll internally on every device (the page stays
               // fixed), and let the screen own its padding.
-              "max-w-md overflow-y-auto overflow-x-hidden scrollbar-none"
+              "max-w-md md:max-w-none md:px-[max(0px,calc((100%_-_28rem)/2))] overflow-y-auto overflow-x-hidden scrollbar-none scrollbar-shell"
             : [
-                "max-w-md md:max-w-6xl px-5 md:px-8",
-                // Internal vertical valve for content that can't fit a very
-                // short viewport; desktop never scrolls UNLESS `scroll` is set
-                // (content-heavy utility screens). Horizontal overflow is
-                // always clipped (pressed-state translate).
-                "overflow-y-auto overflow-x-hidden scrollbar-none",
-                scroll ? "" : "md:overflow-hidden",
+                // Desktop: `main` spans the full width so its scrollbar sits
+                // at the window edge (not beside a centered column); the
+                // padding reproduces the old max-w-6xl + px-8 content box.
+                "max-w-md md:max-w-none px-5 md:px-[max(2rem,calc((100%_-_72rem)/2_+_2rem))]",
+                // Vertical scroll on every device. Desktop used to clip
+                // (md:overflow-hidden unless `scroll`), which cut Home and
+                // any other screen off on short monitors (~890px tall) with
+                // no way to reach the rest. A screen that fits shows no bar,
+                // so tall screens are unchanged. Desktop gets the branded thin
+                // bar (.scrollbar-shell); horizontal overflow stays clipped
+                // (pressed-state translate).
+                "overflow-y-auto overflow-x-hidden scrollbar-none scrollbar-shell",
               ],
           hideNav ? "pb-8" : embed ? "pb-4 md:pb-10" : "pb-4 md:pb-6",
           center && "flex flex-col justify-center",
