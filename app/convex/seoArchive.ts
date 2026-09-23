@@ -32,7 +32,13 @@ export const dailyQuizArchive = query({
       if (snapshots.length === 0) continue;
       const questions = [];
       for (const s of snapshots) {
+        // Difficulty lives on the bank row, not the frozen snapshot.
+        const bank = await ctx.db
+          .query("quizQuestions")
+          .withIndex("by_checksum", (q) => q.eq("checksum", s.checksum))
+          .first();
         questions.push({
+          difficulty: bank?.difficulty ?? null,
           question: s.question,
           options: s.options,
           correctAnswer: s.correctAnswer,
