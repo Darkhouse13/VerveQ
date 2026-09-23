@@ -1,0 +1,6752 @@
+{
+"275fc82d012b48ef": {
+"question": "¿Quién es este jugador?",
+"options": [
+"Abdoulaye Kanté",
+"Dies Janse",
+"Giuliano Simeone",
+"Jack Grealish"
+],
+"explanation": "Es Abdoulaye Kanté, centrocampista francés que juega en el Middlesbrough."
+},
+"0a88154a4c3d7e99": {
+"question": "¿Qué delantero francés fichó el Paris Saint-Germain por 95 M€ en la temporada 23/24?",
+"options": [
+"Ousmane Dembélé",
+"Randal Kolo Muani",
+"Goncalo Ramos",
+"Hugo Ekitiké"
+],
+"explanation": null
+},
+"fcc4b6c48268aca0": {
+"question": "¿Quién es este jugador?",
+"options": [
+"Ephron Mason-Clark",
+"Christian Pulisic",
+"Iker Bravo",
+"Ethan Laird"
+],
+"explanation": "Es Ephron Mason-Clark, extremo inglés que juega en el Coventry City."
+},
+"2ece405c2befe8a0": {
+"question": "A fecha de 2024, ¿quién sigue siendo el portero más caro de la historia del fútbol?",
+"options": [
+"Kepa Arrizabalaga",
+"Alisson Becker",
+"Ederson",
+"Gianluigi Donnarumma"
+],
+"explanation": "El fichaje de Kepa por el Chelsea desde el Athletic Club en 2018, por 71,6 millones de libras, sigue siendo el traspaso más caro jamás pagado por un portero."
+},
+"c11a2d3f96a9ddd0": {
+"question": "¿En qué club pasó Iker Casillas la mayor parte de su carrera, ganando tres Champions League?",
+"options": [
+"Barcelona",
+"Real Madrid",
+"Atlético de Madrid",
+"Valencia"
+],
+"explanation": "Casillas disputó 725 partidos con el Real Madrid y ganó cinco títulos de LaLiga y tres Champions League."
+},
+"0ab5d9386dde8ac7": {
+"question": "¿Quién fue el primer ganador del Trofeo Kopa al mejor jugador joven, en 2018?",
+"options": [
+"Erling Haaland",
+"Kylian Mbappé",
+"Pedri",
+"João Félix"
+],
+"explanation": "Kylian Mbappé recibió el primer Trofeo Kopa en 2018, que premia al mejor jugador sub-21."
+},
+"3c13aeb114540258": {
+"question": "¿Qué jugador tiene más asistencias en la historia de la Bundesliga?",
+"options": [
+"Thomas Müller",
+"Franck Ribéry",
+"Andreas Möller",
+"Marco Reus"
+],
+"explanation": null
+},
+"b11d8cc14886a044": {
+"question": "¿Quién es el jugador más joven en marcar en una final del Mundial?",
+"options": [
+"Pelé",
+"Kylian Mbappé",
+"Mario Götze",
+"Ronaldo"
+],
+"explanation": null
+},
+"bc2dd7fa4f88d081": {
+"question": "¿Quién comparte con Gonzalo Higuaín el récord de más goles en una sola temporada de la Serie A (36 goles)?",
+"options": [
+"Cristiano Ronaldo",
+"Zlatan Ibrahimović",
+"Victor Osimhen",
+"Ciro Immobile"
+],
+"explanation": null
+},
+"98c839c5f8dbc504": {
+"question": "Desde 2016, ¿qué tarjeta recibe un defensor que evita una ocasión manifiesta de gol con una falta en su propia área mientras intenta jugar el balón?",
+"options": [
+"Tarjeta amarilla",
+"Tarjeta roja",
+"Tarjeta naranja",
+"Tarjeta verde"
+],
+"explanation": "La reforma de 2016 de la regla del «triple castigo» rebaja la roja a amarilla cuando el defensor disputa realmente el balón dentro del área."
+},
+"49174af6e3ec6160": {
+"question": "¿Cuánto se extiende el área penal desde la línea de meta hacia el terreno de juego?",
+"options": [
+"11 m",
+"16,5 m",
+"9,15 m",
+"5,5 m"
+],
+"explanation": "La Regla 1 sitúa las líneas del área penal a 16,5 m (18 yardas) de los postes, adentrándose 16,5 m en el terreno de juego."
+},
+"7bb6cd3fa520bb4c": {
+"question": "¿A qué equipo pertenece este escudo?",
+"options": [
+"Leicester City",
+"Charlton Athletic",
+"Portsmouth",
+"Swansea City"
+],
+"explanation": "Este escudo pertenece al Leicester City."
+},
+"56d086af27bacabd": {
+"question": "¿De qué club alemán es el Westfalenstadion (Signal Iduna Park)?",
+"options": [
+"Stuttgart",
+"Bayer Leverkusen",
+"Borussia Dortmund",
+"Werder Bremen"
+],
+"explanation": "El Borussia Dortmund juega en el Westfalenstadion, hoy Signal Iduna Park, desde 1974."
+},
+"ebaf6c63a42cccf9": {
+"question": "¿Quién es este jugador?",
+"options": [
+"Adam Aznou",
+"Darragh Lenihan",
+"Callum Burton",
+"Diego Pampín"
+],
+"explanation": "Es Darragh Lenihan, central irlandés que juega en el Middlesbrough."
+},
+"7c898d101ebae32a": {
+"question": "Por detrás de Cristiano Ronaldo, ¿quién es el segundo futbolista masculino con más partidos internacionales, con 202?",
+"options": [
+"Bader Al-Mutawa",
+"Soh Chin Ann",
+"Ahmed Hassan",
+"Hassan Al-Haydos"
+],
+"explanation": "Bader Al-Mutawa, de Kuwait, es el segundo futbolista masculino con más internacionalidades, con 202 partidos."
+},
+"330db0f0da6cb161": {
+"question": "¿Qué jugador ganó la Bota de Oro del Mundial 2002 con 8 goles?",
+"options": [
+"Oliver Neuville",
+"Rivaldo",
+"Miroslav Klose",
+"Ronaldo"
+],
+"explanation": "El brasileño Ronaldo fue el máximo goleador del Mundial 2002 con 8 goles, incluidos los dos de la final ganada a Alemania."
+},
+"1b76e11001cc409b": {
+"question": "¿Con qué selección ganó Peter Schmeichel la Eurocopa de 1992?",
+"options": [
+"Suecia",
+"Dinamarca",
+"Noruega",
+"Países Bajos"
+],
+"explanation": "Schmeichel fue clave en el título de Dinamarca en la Eurocopa 1992, incluida una parada a Marco van Basten en la semifinal."
+},
+"ed163978c22481e5": {
+"question": "¿Quién fue el máximo goleador de la Premier League 2023-24?",
+"options": [
+"Erling Haaland",
+"Mohamed Salah",
+"Harry Kane",
+"Son Heung-min"
+],
+"explanation": null
+},
+"4470f67f25f4348b": {
+"question": "¿Cuál de estos porteros legendarios NO está en el top 10 histórico de partidos en la Serie A?",
+"options": [
+"Gianluigi Buffon",
+"Dino Zoff",
+"Gianluca Pagliuca",
+"Sebastiano Rossi"
+],
+"explanation": null
+},
+"6eaa62c2e8759250": {
+"question": "¿Qué centrocampista japonés ganó dos Bundesligas seguidas con el Borussia Dortmund antes de fichar por el Manchester United?",
+"options": [
+"Hidetoshi Nakata",
+"Keisuke Honda",
+"Makoto Hasebe",
+"Shinji Kagawa"
+],
+"explanation": "Shinji Kagawa ganó la Bundesliga con el Borussia Dortmund en 2011 y 2012 antes de marcharse al Manchester United."
+},
+"348050cc9ed18d33": {
+"question": "¿A qué capitán histórico le retiró el Inter de Milán el dorsal 4?",
+"options": [
+"Walter Zenga",
+"Giacinto Facchetti",
+"Beppe Bergomi",
+"Javier Zanetti"
+],
+"explanation": "El Inter retiró el 4 en 2014, después de que Javier Zanetti disputara 858 partidos con el club."
+},
+"b8869bd1fdc976fa": {
+"question": "¿Quién es este jugador?",
+"options": [
+"Craig Forsyth",
+"Adam Davies",
+"Bruno Saltor",
+"Antoine Colassin"
+],
+"explanation": "Es Adam Davies, portero galés que juega en el Sheffield United."
+},
+"6717e34bb33f57ad": {
+"question": "El apodo «Gunners» del Arsenal viene del lugar de trabajo de sus fundadores. ¿Qué se fabricaba allí?",
+"options": [
+"Textiles",
+"Barcos",
+"Locomotoras",
+"Munición"
+],
+"explanation": "El club lo fundaron trabajadores del Royal Arsenal de Woolwich, que fabricaba munición, armas y explosivos."
+},
+"f05a0f80e54a0aae": {
+"question": "¿Quién es este jugador?",
+"options": [
+"Beto",
+"Albert Stuivenberg",
+"Conor Gallagher",
+"Ferreira"
+],
+"explanation": "Es Beto, portero portugués que juega en el Göztepe."
+},
+"c92eced555e8ee8c": {
+"question": "¿Qué club tiene más títulos en la historia de la liga de primera división de Arabia Saudí?",
+"options": [
+"Al-Nassr",
+"Al-Ittihad",
+"Al-Hilal",
+"Al-Ahli"
+],
+"explanation": "El Al-Hilal tiene el récord de títulos de la primera división saudí, muy por delante del Al-Ittihad, segundo."
+},
+"f8031c79c7a132f1": {
+"question": "¿Quién es el jugador africano más caro de todos los tiempos?",
+"options": [
+"Nicolas Pépé",
+"Mohammed Salah",
+"Victor Osimhen",
+"Sadio Mané"
+],
+"explanation": null
+},
+"6b12dd949ad9130d": {
+"question": "¿Qué selección ganó la Eurocopa 1984?",
+"options": [
+"Países Bajos",
+"España",
+"Alemania Occidental",
+"Francia"
+],
+"explanation": "Francia ganó la Eurocopa 1984 tras vencer 2-0 a España en la final."
+},
+"4d8834ca26b3418d": {
+"question": "¿Qué club argentino ganó tres Copas Libertadores seguidas entre 1968 y 1970?",
+"options": [
+"Independiente",
+"Racing Club",
+"Boca Juniors",
+"Estudiantes"
+],
+"explanation": "Estudiantes de La Plata, dirigido por Osvaldo Zubeldía, ganó tres Copas Libertadores consecutivas en 1968, 1969 y 1970."
+},
+"bd15b8835c9d33ca": {
+"question": "¿Qué jugador ha ganado más títulos de la Ligue 1?",
+"options": [
+"Marco Verratti",
+"Marquinhos",
+"Kylian Mbappé",
+"Thiago Silva"
+],
+"explanation": null
+},
+"11d7c2c2fb66a19a": {
+"question": "¿Cuál de estos fue el traspaso récord mundial en su momento en la temporada 13/14?",
+"options": [
+"Neymar al Barcelona",
+"Luis Suarez al Barcelona",
+"Paul Pogba al Manchester United",
+"Gareth Bale al Real Madrid"
+],
+"explanation": "Gareth Bale fichó por el Real Madrid en 2013 en lo que se consideró ampliamente el traspaso récord mundial de la época."
+},
+"ea80b4f5f6eddd35": {
+"question": "¿A qué equipo pertenece este escudo?",
+"options": [
+"Charlton Athletic",
+"Wrexham",
+"Hull City",
+"Sheffield Wednesday"
+],
+"explanation": "Este escudo pertenece al Sheffield Wednesday."
+},
+"a5f1dc321ecef183": {
+"question": "¿Cuántos goles marcó Kylian Mbappé en su carrera en la Ligue 1?",
+"options": [
+"179",
+"191",
+"187",
+"206"
+],
+"explanation": null
+},
+"3476fae01e6caa06": {
+"question": "¿Quién es el máximo goleador histórico de Costa de Marfil?",
+"options": [
+"Gervinho",
+"Yaya Toure",
+"Salomon Kalou",
+"Didier Drogba"
+],
+"explanation": "Didier Drogba se retiró en 2014 como máximo goleador de Costa de Marfil, con 65 goles en 105 partidos."
+},
+"e84780ddf52b8aaf": {
+"question": "¿Quién es este jugador?",
+"options": [
+"Gatlin O'Donkor",
+"Đorđe Petrović",
+"Fatih Aksoy",
+"Dan Scarr"
+],
+"explanation": "Es Dan Scarr, central inglés que juega en el Wrexham."
+},
+"5078d6193689a794": {
+"question": "¿En qué estadio se jugó la final del Mundial 2010 entre España y Países Bajos?",
+"options": [
+"Cape Town Stadium",
+"Soccer City",
+"Moses Mabhida Stadium",
+"Ellis Park Stadium"
+],
+"explanation": "La final de 2010, que España ganó 1-0 a Países Bajos, se disputó en el Soccer City de Johannesburgo."
+},
+"6be75f188093bd04": {
+"question": "¿Quién tiene el récord de más trofeos de máximo goleador de la Ligue 1, con 6 (2019–24)?",
+"options": [
+"Carlos Bianchi",
+"Kylian Mbappé",
+"Jean-Pierre Papin",
+"Delio Onnis"
+],
+"explanation": null
+},
+"4103a77ac1505ad1": {
+"question": "¿Quién marcó el primer gol en propia puerta de la historia en una final del Mundial, abriendo el marcador en la final de 2018 entre Francia y Croacia?",
+"options": [
+"Mario Mandzukic",
+"Dejan Lovren",
+"Domagoj Vida",
+"Ivan Strinic"
+],
+"explanation": "El autogol de Mario Mandzukic en el minuto 18 fue el primero en una final del Mundial, y Francia acabó ganando 4-2."
+},
+"c5fcd75413b6ab5d": {
+"question": "¿Quién ganó la Bota de Oro de la Eurocopa 2016 con seis goles?",
+"options": [
+"Olivier Giroud",
+"Cristiano Ronaldo",
+"Antoine Griezmann",
+"Gareth Bale"
+],
+"explanation": "El francés Antoine Griezmann terminó la Eurocopa 2016 como máximo goleador con seis goles y ganó la Bota de Oro."
+},
+"5af3a67e07663c6b": {
+"question": "¿Qué jugador tiene el récord de más partidos en la Ligue 1?",
+"options": [
+"Mickaël Landreau",
+"Dominique Dropsy",
+"Jean-Luc Ettori",
+"Alain Giresse"
+],
+"explanation": null
+},
+"16fc767335c93530": {
+"question": "Si el balón entra en la portería rival tras tocar la mano o el brazo de un atacante, aunque sea sin querer, el gol es…",
+"options": [
+"Válido",
+"Anulado",
+"Se repite",
+"Revisado"
+],
+"explanation": "La Regla 12 considera infracción un gol marcado directamente con la mano o el brazo de un atacante, aunque el contacto sea accidental."
+},
+"d4f671f68fcd72a7": {
+"question": "¿Quién es este jugador?",
+"options": [
+"Abdul Fatawu",
+"Carlos Cuesta",
+"Fatih Aksoy",
+"Ivan Provedel"
+],
+"explanation": "Es Fatih Aksoy, defensa turco que juega en el Alanyaspor."
+},
+"ea491f1ddf13ef78": {
+"question": "¿Qué selección ganó la Eurocopa 2000?",
+"options": [
+"Italia",
+"Países Bajos",
+"Alemania",
+"Francia"
+],
+"explanation": null
+},
+"d6fccec1789fd31a": {
+"question": "¿A qué equipo pertenece este escudo?",
+"options": [
+"Middlesbrough",
+"Coventry City",
+"Queens Park Rangers",
+"Preston North End"
+],
+"explanation": "Este escudo pertenece al Preston North End."
+},
+"3a306bbf17e73e08": {
+"question": "¿Cuántos Balones de Oro ha ganado Cristiano Ronaldo?",
+"options": [
+"5",
+"4",
+"3",
+"6"
+],
+"explanation": "Ronaldo ha ganado el Balón de Oro cinco veces: en 2008, 2013, 2014, 2016 y 2017."
+},
+"bf1fdf8bbd07cdfc": {
+"question": "¿Quién es el goleador más joven de la historia de la Bundesliga?",
+"options": [
+"Florian Wirtz",
+"Youssoufa Moukoko",
+"Nuri Sahin",
+"Jamal Musiala"
+],
+"explanation": null
+},
+"31bd2f6aa407f6b7": {
+"question": "¿Qué club ocupa el segundo puesto en el ranking histórico de clubes de la Champions League?",
+"options": [
+"Bayern de Múnich",
+"FC Barcelona",
+"Manchester United",
+"Liverpool"
+],
+"explanation": null
+},
+"d9132fb114495f2b": {
+"question": "¿Cuál es el récord de la racha invicta más larga en partidos oficiales de selecciones masculinas, establecido por Italia entre 2018 y 2021?",
+"options": [
+"37",
+"35",
+"31",
+"40"
+],
+"explanation": "Italia encadenó 37 partidos oficiales sin perder entre octubre de 2018 y septiembre de 2021, un récord mundial."
+},
+"5906f69afceba6f2": {
+"question": "¿Qué club ha ganado más veces la Copa Libertadores?",
+"options": [
+"Peñarol",
+"Boca Juniors",
+"Independiente",
+"Nacional"
+],
+"explanation": "El Independiente de Argentina tiene el récord con siete Copas Libertadores, incluidas cuatro seguidas entre 1972 y 1975."
+},
+"b7acf35bd86f2d8f": {
+"question": "¿Qué selección ocupó el número uno del ranking FIFA durante el periodo consecutivo más largo de la historia (casi 7 años)?",
+"options": [
+"Brasil",
+"Argentina",
+"Alemania",
+"España"
+],
+"explanation": null
+},
+"c6c09b35520049bf": {
+"question": "¿A qué club se unió Cristiano Ronaldo en 2018, donde se convirtió en el primer jugador en ganar la liga en Inglaterra, España e Italia?",
+"options": [
+"AC Milan",
+"Inter de Milán",
+"Juventus",
+"Napoli"
+],
+"explanation": "Ronaldo fichó por la Juventus en 2018 y ganó la Serie A, completando títulos de liga en Inglaterra, España e Italia."
+},
+"391117e029a2830d": {
+"question": "¿Quién ganó las dos primeras ediciones del premio The Best FIFA al mejor jugador, en 2016 y 2017?",
+"options": [
+"Cristiano Ronaldo",
+"Lionel Messi",
+"Luka Modrić",
+"Robert Lewandowski"
+],
+"explanation": "Cristiano Ronaldo se llevó los dos primeros premios The Best FIFA al mejor jugador, en 2016 y 2017."
+},
+"95bdcd3408781398": {
+"question": "Ali Daei, durante años máximo goleador internacional masculino, ¿con qué selección jugaba?",
+"options": [
+"Irak",
+"Arabia Saudí",
+"Irán",
+"Corea del Sur"
+],
+"explanation": "Ali Daei, que tuvo el récord masculino de goles internacionales hasta 2021, jugaba con Irán."
+},
+"087247767913f5ec": {
+"question": "¿Quién es este jugador?",
+"options": [
+"Ianis Hagi",
+"Dani Cárdenas",
+"Callum Burton",
+"Alin Toșca"
+],
+"explanation": "Es Callum Burton, portero inglés que juega en el Wrexham."
+},
+"0b5078a3aefc850e": {
+"question": "¿Qué equipo juega como local en el Philips Stadion?",
+"options": [
+"Vitesse",
+"FC Groningen",
+"PSV Eindhoven",
+"Heerenveen"
+],
+"explanation": null
+},
+"fe6f288158e4576b": {
+"question": "¿Quién es este jugador?",
+"options": [
+"Guillaume François",
+"Giorgi Chakvetadze",
+"Brynjólfur Andersen Willumsson",
+"David Okereke"
+],
+"explanation": "Es Brynjólfur Andersen Willumsson, atacante islandés que juega en el Groningen."
+},
+"2efa3b1d527bdba5": {
+"question": "¿A qué club venció la Atalanta por 3-0 en la final de la Europa League 2023-24?",
+"options": [
+"Marseille",
+"Roma",
+"Liverpool",
+"Bayer Leverkusen"
+],
+"explanation": "La Atalanta ganó 3-0 al Bayer Leverkusen en Dublín y conquistó la Europa League 2024."
+},
+"fd977a0178d4ad04": {
+"question": "¿En qué Mundial ganó el italiano Salvatore Schillaci el Balón de Oro?",
+"options": [
+"1982",
+"1990",
+"1986",
+"1994"
+],
+"explanation": "Salvatore Schillaci ganó el Balón de Oro del Mundial 1990 y además fue el máximo goleador con seis goles."
+},
+"bfb7db8396709965": {
+"question": "El Tottenham Hotspur Stadium, inaugurado en 2019, ¿a qué antiguo estadio sustituyó?",
+"options": [
+"Craven Cottage",
+"Boleyn Ground",
+"The Den",
+"White Hart Lane"
+],
+"explanation": "El nuevo estadio del Tottenham se inauguró en 2019 en el solar de su antiguo campo, White Hart Lane."
+},
+"130832e3cde325f2": {
+"question": "¿Con qué club inglés logró Marcelo Bielsa el ascenso al ganar la EFL Championship 2019-20?",
+"options": [
+"Sheffield United",
+"Norwich City",
+"Leeds United",
+"Watford"
+],
+"explanation": "Marcelo Bielsa ganó la Championship 2019-20 con el Leeds United, poniendo fin a 16 años del club lejos de la máxima categoría."
+},
+"f4ccfd2cf56ec2d6": {
+"question": "¿Quién es este jugador?",
+"options": [
+"David Ozoh",
+"Javi Puado",
+"Bruno Petković",
+"Jonathan Varane"
+],
+"explanation": "Es Bruno Petković, delantero centro croata que juega en el Kocaelispor."
+},
+"9c11c37a00024ae5": {
+"question": "¿Cuántas Serie A consecutivas ganó la Juventus entre 2011-12 y 2019-20?",
+"options": [
+"7",
+"8",
+"9",
+"10"
+],
+"explanation": null
+},
+"cb972304f504874d": {
+"question": "¿Quién es este jugador?",
+"options": [
+"Abde Rebbach",
+"Aidomo Emakhu",
+"Federico Dimarco",
+"Andrija Bulatović"
+],
+"explanation": "Es Aidomo Emakhu, futbolista irlandés que juega en el Millwall."
+},
+"a7256b54c8ca2dd9": {
+"question": "¿En qué estadio se jugó la final del Mundial 1998?",
+"options": [
+"Stadio Olimpico",
+"Wembley Stadium",
+"Stade de France",
+"Stade Vélodrome"
+],
+"explanation": "Francia venció 3-0 a Brasil en la final del Mundial 1998, en el Stade de France de Saint-Denis."
+},
+"814fd2da5f45c104": {
+"question": "¿Qué delantero italiano fue el máximo goleador del Mundial 1982 y ayudó a Italia a levantar el trofeo?",
+"options": [
+"Roberto Baggio",
+"Paolo Rossi",
+"Giuseppe Bergomi",
+"Bruno Conti"
+],
+"explanation": null
+},
+"270e886a7de27d86": {
+"question": "¿Qué club se convirtió en 1967 en el primer equipo británico en ganar la Copa de Europa?",
+"options": [
+"Manchester United",
+"Celtic",
+"Liverpool",
+"Nottingham Forest"
+],
+"explanation": "El Celtic venció al Inter de Milán en la final de 1967 y fue el primer club británico en ganar la Copa de Europa."
+},
+"2cf49ac27ac2ed81": {
+"question": "El apodo de la selección mexicana, «El Tri», es la abreviatura de «El Tricolor». ¿A qué hace referencia?",
+"options": [
+"Sus tres estadios",
+"Sus tres Mundiales",
+"Sus tres capitanes",
+"Los tres colores de su bandera"
+],
+"explanation": "El Tri abrevia El Tricolor, en alusión al verde, blanco y rojo de la bandera y la camiseta de México."
+},
+"f3ae993cd012764b": {
+"question": "¿Qué dorsal llevó David Beckham en el Real Madrid como homenaje a Michael Jordan?",
+"options": [
+"4",
+"7",
+"32",
+"23"
+],
+"explanation": "Con el 7 ocupado por Raúl, Beckham eligió el 23 en el Real Madrid en homenaje a Michael Jordan."
+},
+"1842956ba86ccb92": {
+"question": "¿Cuántos puntos sumó el Manchester City en su temporada récord 2017-18?",
+"options": [
+"98",
+"100",
+"99",
+"93"
+],
+"explanation": null
+},
+"48cc1a329c81464e": {
+"question": "¿Qué portero comparte el récord de más partidos en la historia de LaLiga (622)?",
+"options": [
+"Iker Casillas",
+"Andoni Zubizarreta",
+"Víctor Valdés",
+"Paco Buyo"
+],
+"explanation": null
+},
+"e575c345098f3f07": {
+"question": "¿Quién es este jugador?",
+"options": [
+"Daan van Reeuwijk",
+"Anthony Lopes",
+"Edson Álvarez",
+"Darragh Lenihan"
+],
+"explanation": "Es Daan van Reeuwijk, defensa neerlandés que juega en el NAC Breda."
+},
+"44f30bdb0369de8f": {
+"question": "¿Cómo se llama el trofeo en forma de escudo que se entrega al campeón de la Bundesliga?",
+"options": [
+"DFB-Pokal",
+"Meisterschale",
+"Coupe de Champion",
+"Kaiser-Trophäe"
+],
+"explanation": null
+},
+"c33f30d178050cfc": {
+"question": "¿Qué estadio aparece en esta imagen?",
+"options": [
+"King Power Stadium",
+"The Kassam Stadium",
+"Bramall Lane",
+"Ashton Gate Stadium"
+],
+"explanation": "Es el King Power Stadium, el estadio del Leicester City."
+},
+"1317cf42b1ab17a6": {
+"question": "¿Quién marcó el sexto gol del Barcelona en el descuento para completar el 6-1 al PSG en 2017?",
+"options": [
+"Ivan Rakitic",
+"Luis Suarez",
+"Lionel Messi",
+"Sergi Roberto"
+],
+"explanation": "Sergi Roberto marcó en el minuto 95 el 6-1 que clasificó al Barcelona por 6-5 en el global ante el PSG en 2017."
+},
+"a11220af60d4221e": {
+"question": "¿De quién fue el gol de oro que le dio a Francia la final de la Eurocopa 2000 ante Italia?",
+"options": [
+"Zinedine Zidane",
+"Sylvain Wiltord",
+"David Trezeguet",
+"Thierry Henry"
+],
+"explanation": "El gol de oro de David Trezeguet en la prórroga dio a Francia la victoria por 2-1 sobre Italia en la final de la Eurocopa 2000."
+},
+"68726bd53438879a": {
+"question": "Al lanzarse un penalti, ¿dónde debe tener el portero al menos parte de un pie?",
+"options": [
+"Detrás de la red",
+"En el punto de penalti",
+"Dentro del área chica",
+"Tocando la línea de meta"
+],
+"explanation": "La Regla 14 exige que el portero tenga al menos parte de un pie tocando la línea de meta, en línea con ella o detrás, cuando se golpea el balón."
+},
+"cee274224d99b7de": {
+"question": "¿Quién es el máximo goleador masculino de la historia de los Mundiales?",
+"options": [
+"Miroslav Klose",
+"Ronaldo (Brasil)",
+"Lionel Messi",
+"Gerd Müller"
+],
+"explanation": null
+},
+"e92c62782e8b5b55": {
+"question": "¿Qué jugador es el tercero en la lista histórica de goleadores de la Premier League?",
+"options": [
+"Andy Cole",
+"Wayne Rooney",
+"Frank Lampard",
+"Robbie Fowler"
+],
+"explanation": null
+},
+"d77a43b3054087c0": {
+"question": "¿Contra qué club disputa el Borussia Dortmund la feroz rivalidad conocida como «Revierderby»?",
+"options": [
+"Bayern de Múnich",
+"Schalke 04",
+"Bayer Leverkusen",
+"VfL Bochum"
+],
+"explanation": null
+},
+"6349229f00bcc016": {
+"question": "¿Quién es este jugador?",
+"options": [
+"Ben Sheaf",
+"Daichi Kamada",
+"Altay Bayındır",
+"Harry Darling"
+],
+"explanation": "Es Ben Sheaf, mediocentro defensivo inglés que juega en el Wrexham."
+},
+"ac756d61deb1e657": {
+"question": "¿Con qué club ganó Roberto Mancini una Premier League de infarto en el último suspiro en 2012?",
+"options": [
+"Manchester City",
+"Manchester United",
+"Chelsea",
+"Arsenal"
+],
+"explanation": "El Manchester City de Roberto Mancini ganó la Premier League 2011-12 con un gol en el descuento ante el QPR en la última jornada."
+},
+"515e0ff9b7d351de": {
+"question": "¿Quién es este jugador?",
+"options": [
+"Daniel Peretz",
+"Alex McCarthy",
+"Brahim Ghalidi",
+"Dalangunypole Gomis"
+],
+"explanation": "Es Brahim Ghalidi, delantero marroquí que juega en el NAC Breda."
+},
+"4014e2a82b3df6a2": {
+"question": "¿En qué Juegos Olímpicos ganó Lionel Messi la medalla de oro con Argentina?",
+"options": [
+"Atenas 2004",
+"Pekín 2008",
+"Londres 2012",
+"Río 2016"
+],
+"explanation": "Messi ganó el oro olímpico en Pekín 2008, donde Argentina venció 1-0 a Nigeria en la final."
+},
+"5766700be318b863": {
+"question": "¿En qué Mundial ganó Manuel Neuer el Guante de Oro al mejor portero?",
+"options": [
+"2014",
+"2010",
+"2018",
+"2006"
+],
+"explanation": "Neuer dejó cuatro porterías a cero y ganó el Guante de Oro en el Mundial 2014 que conquistó Alemania."
+},
+"860d382a91a3b784": {
+"question": "¿Quién fue el máximo goleador de LaLiga 2015-16 con 40 goles?",
+"options": [
+"Luis Suárez",
+"Cristiano Ronaldo",
+"Lionel Messi",
+"Neymar Jr."
+],
+"explanation": null
+},
+"b3e655980d8a6608": {
+"question": "¿Quién es el único jugador que ha disputado tres finales de Mundial distintas (1994, 1998 y 2002)?",
+"options": [
+"Pelé",
+"Cafu",
+"Franz Beckenbauer",
+"Lothar Matthäus"
+],
+"explanation": null
+},
+"0a71cbbe7bfa7a72": {
+"question": "¿Quién es el jugador mexicano mejor situado en la lista histórica de goleadores de LaLiga?",
+"options": [
+"Hugo Sánchez",
+"Carlos Vela",
+"Andrés Guardado",
+"Javier Hernández"
+],
+"explanation": null
+},
+"d430a84ff826b158": {
+"question": "¿Quién es este jugador?",
+"options": [
+"Adrien Rabiot",
+"Ander Guevara",
+"Andries Noppert",
+"Ibrahim Osman"
+],
+"explanation": "Es Andries Noppert, portero neerlandés que juega en el Heerenveen."
+},
+"354d0ec8068c5d35": {
+"question": "¿Qué delantero pasó del Inter de Milán al FC Barcelona por 69,5 M€?",
+"options": [
+"Zlatan Ibrahimovic",
+"Lautaro Martínez",
+"Gabriel Batistuta",
+"Hernán Crespo"
+],
+"explanation": null
+},
+"b6e5b4e237785c59": {
+"question": "¿Qué estadio aparece en esta imagen?",
+"options": [
+"Hillsborough",
+"The Den",
+"Deepdale",
+"Carrow Road"
+],
+"explanation": "Es Deepdale, el estadio del Preston North End."
+},
+"339e9c5ec7ee9c9f": {
+"question": "¿Qué delantero uruguayo fue un goleador prolífico tanto en el Groningen como en el Ajax?",
+"options": [
+"Edinson Cavani",
+"Luis Suárez",
+"Diego Forlán",
+"Darwin Núñez"
+],
+"explanation": null
+},
+"965095ecb7d85a5b": {
+"question": "¿Qué club ganó el primer Mundial de Clubes de la FIFA con 32 equipos, en 2025, tras vencer 3-0 al PSG en la final?",
+"options": [
+"PSG",
+"Real Madrid",
+"Manchester City",
+"Chelsea"
+],
+"explanation": null
+},
+"e45ddb7eb19049b6": {
+"question": "¿Quién es el máximo goleador histórico de Inglaterra?",
+"options": [
+"Wayne Rooney",
+"Bobby Charlton",
+"Gary Lineker",
+"Harry Kane"
+],
+"explanation": "Harry Kane es el máximo goleador histórico de Inglaterra tras superar la marca de Wayne Rooney."
+},
+"12d35cbbb70960bc": {
+"question": "¿Qué selección ganó la Eurocopa 1992?",
+"options": [
+"Suecia",
+"Dinamarca",
+"Alemania",
+"Italia"
+],
+"explanation": null
+},
+"4e94bfe570bf6041": {
+"question": "¿Quién fue el máximo asistente de la Eredivisie 2023-24?",
+"options": [
+"Luuk de Jong",
+"Steven Berghuis",
+"Jordy Clasie",
+"Joey Veerman"
+],
+"explanation": null
+},
+"1847d32089e10cd1": {
+"question": "¿Qué portero detuvo el penalti decisivo en la tanda con la que Italia venció a Inglaterra en la final de la Eurocopa 2020?",
+"options": [
+"Gianluigi Donnarumma",
+"Gianluigi Buffon",
+"Salvatore Sirigu",
+"Jordan Pickford"
+],
+"explanation": "Gianluigi Donnarumma le paró el penalti a Bukayo Saka y dio a Italia la Eurocopa 2020 por 3-2 en los penaltis, tras el 1-1 en Wembley."
+},
+"f938c412e0768787": {
+"question": "¿Quién es este jugador?",
+"options": [
+"Boris Radunović",
+"Ben Wilson",
+"Darko Nejašmić",
+"António Silva"
+],
+"explanation": "Es Darko Nejašmić, mediocentro defensivo croata que juega en el NEC Nijmegen."
+},
+"892d0f507e09be61": {
+"question": "¿Quién es la única persona que ha ganado la Bundesliga con tres clubes distintos (como jugador o entrenador)?",
+"options": [
+"Michael Ballack",
+"Felix Magath",
+"Stefan Reuter",
+"Jürgen Kohler"
+],
+"explanation": null
+},
+"0ba2739cfc5d77c6": {
+"question": "¿Quién es este jugador?",
+"options": [
+"Diego Coppola",
+"Daniel Iversen",
+"Aarón Anselmino",
+"Christian Nwachukwu"
+],
+"explanation": "Es Daniel Iversen, portero danés que juega en el Preston North End."
+},
+"c3cfab1da1d3e845": {
+"question": "¿Qué estadio acogió la final de la Champions League 2024-25 entre el Paris Saint-Germain y el Inter de Milán?",
+"options": [
+"Wembley Stadium",
+"Allianz Arena",
+"San Siro",
+"Estádio da Luz"
+],
+"explanation": "La final de la Champions League de 2025 se jugó en el Allianz Arena de Múnich."
+},
+"dc1aebc643ea9a17": {
+"question": "Cesare Maldini (1963) y su hijo Paolo Maldini (2003) levantaron la Copa de Europa como capitanes, ¿de qué club?",
+"options": [
+"Napoli",
+"Inter de Milán",
+"Juventus",
+"AC Milan"
+],
+"explanation": "Cesare y Paolo Maldini llevaron como capitanes al AC Milan a ganar la Copa de Europa, con exactamente 40 años de diferencia."
+},
+"dceacc0b5558a664": {
+"question": "En enero de 2011, ¿qué club fichó a Fernando Torres por 50 millones de libras, entonces récord británico?",
+"options": [
+"Manchester United",
+"Manchester City",
+"Chelsea",
+"Arsenal"
+],
+"explanation": "El Chelsea fichó a Torres procedente del Liverpool por 50 millones de libras el 31 de enero de 2011, récord de traspaso británico, el mismo día en que el Liverpool compró a Andy Carroll."
+},
+"c0401c19434e2290": {
+"question": "¿A qué club se unió Lionel Messi tras dejar el Barcelona en 2021?",
+"options": [
+"Inter Miami",
+"Paris Saint-Germain",
+"Manchester City",
+"Al Nassr"
+],
+"explanation": "Los problemas económicos obligaron a Messi a salir del Barcelona en 2021, y firmó por el Paris Saint-Germain."
+},
+"e2a712bb5db669ea": {
+"question": "¿Cuál es el apodo oficial de la selección masculina de fútbol de Japón?",
+"options": [
+"Samurai Blue",
+"El Sol Naciente",
+"Guerreros Taeguk",
+"Tigres Asiáticos"
+],
+"explanation": null
+},
+"1dbdbddf75357070": {
+"question": "¿Qué dos jugadores compartieron el trofeo de máximo goleador de la Ligue 1 2024-25, con 21 goles cada uno?",
+"options": [
+"Ousmane Dembélé y Mason Greenwood",
+"Kylian Mbappé y Jonathan David",
+"Alexandre Lacazette y Wissam Ben Yedder",
+"Gonçalo Ramos y Pierre-Emerick Aubameyang"
+],
+"explanation": "Ousmane Dembélé y Mason Greenwood terminaron la Ligue 1 2024-25 con 21 goles cada uno."
+},
+"d44897ac6fc6d2c2": {
+"question": "¿En qué temporada fichó Cristiano Ronaldo por la Juventus por 117 M€?",
+"options": [
+"16/17",
+"17/18",
+"18/19",
+"19/20"
+],
+"explanation": null
+},
+"de3bffd8b844f45a": {
+"question": "¿Quién es este jugador?",
+"options": [
+"Bruma",
+"Abdülkadir Ömür",
+"Arthur Chaves",
+"Gibson Yah"
+],
+"explanation": "Es Gibson Yah, centrocampista neerlandés que juega en el FC Volendam."
+},
+"e05f68bfc77b1938": {
+"question": "¿Quién fue el primer futbolista masculino en llegar a 200 partidos internacionales absolutos?",
+"options": [
+"Sergio Ramos",
+"Bader Al-Mutawa",
+"Soh Chin Ann",
+"Cristiano Ronaldo"
+],
+"explanation": "Cristiano Ronaldo alcanzó los 200 partidos con Portugal en junio de 2023."
+},
+"0ddedf9d205168a6": {
+"question": "¿A qué selección venció Australia por 2-1 en la prórroga para ganar la Copa Asiática 2015 en casa?",
+"options": [
+"Corea del Sur",
+"Japón",
+"Irán",
+"Emiratos Árabes Unidos"
+],
+"explanation": "Australia venció 2-1 a Corea del Sur en la prórroga de la final de 2015 en Sídney, con el gol de la victoria de James Troisi."
+},
+"28236bb4b538d0d8": {
+"question": "¿Quién es este jugador?",
+"options": [
+"Brad Potts",
+"Gabri Veiga",
+"Harrison Armstrong",
+"Francisco Sierralta"
+],
+"explanation": "Es Gabri Veiga, mediocentro español que juega en el FC Porto."
+},
+"5477430084a1b132": {
+"question": "¿A cuántas selecciones se amplió por primera vez la fase final en la Eurocopa 2016?",
+"options": [
+"32",
+"16",
+"20",
+"24"
+],
+"explanation": "La Eurocopa 2016 en Francia fue la primera edición ampliada a 24 selecciones, frente al formato anterior de 16."
+},
+"c91ad3335b06f373": {
+"question": "¿En la historia de qué competición es el derbi de Merseyside el partido con más tarjetas rojas?",
+"options": [
+"Premier League",
+"FA Cup",
+"EFL Cup",
+"Champions League"
+],
+"explanation": "El derbi de Merseyside es el partido con más tarjetas rojas de la historia de la Premier League."
+},
+"6899c456d1e06eb5": {
+"question": "¿Qué miembro del equipo arbitral suele gestionar los cambios y mostrar el tablero del tiempo añadido?",
+"options": [
+"Cuarto árbitro",
+"Árbitro asistente",
+"Videoarbitraje (VAR)",
+"Árbitro asistente de reserva"
+],
+"explanation": "El cuarto árbitro ayuda en tareas administrativas como los cambios y la indicación del tiempo añadido mínimo."
+},
+"0e317f16ea4c74d4": {
+"question": "¿Quién es este jugador?",
+"options": [
+"Adrián de la Fuente",
+"Angelo Stiller",
+"Jack Walton",
+"Enzo Díaz"
+],
+"explanation": "Es Jack Walton, portero inglés que juega en el Preston North End."
+},
+"dae6e2cf0672d23b": {
+"question": "¿Quién fue el primer jugador no europeo en ganar el Balón de Oro, en 1995?",
+"options": [
+"Pelé",
+"Diego Maradona",
+"Ronaldo Nazário",
+"George Weah"
+],
+"explanation": null
+},
+"0d4ad3bfdaab6198": {
+"question": "¿Quién es este jugador?",
+"options": [
+"Alemão",
+"Jake Bidwell",
+"András Schäfer",
+"Ephrahim Yeboah"
+],
+"explanation": "Es Ephrahim Yeboah, futbolista italiano que juega en el Bristol City."
+},
+"066bb0e9be9a82d5": {
+"question": "¿Qué club ganó la Champions League en 2025 y 2026, sus dos primeros títulos europeos?",
+"options": [
+"Arsenal",
+"Inter",
+"PSG",
+"Manchester City"
+],
+"explanation": null
+},
+"52afcad1c28da1e3": {
+"question": "¿En qué año se fundó LaLiga?",
+"options": [
+"1922",
+"1932",
+"1929",
+"1934"
+],
+"explanation": null
+},
+"efc3eef298085b6f": {
+"question": "¿Qué jugador marcó en las finales de los Mundiales de 2018 y 2022?",
+"options": [
+"Paul Pogba",
+"Antoine Griezmann",
+"Olivier Giroud",
+"Kylian Mbappe"
+],
+"explanation": "Kylian Mbappe marcó en la final de 2018 y un hat-trick en la de 2022: cuatro goles entre las dos finales."
+},
+"9033c92b3048c28e": {
+"question": "¿Cuál fue aproximadamente el precio del traspaso de Jadon Sancho del Borussia Dortmund al Manchester United?",
+"options": [
+"75 M€",
+"90 M€",
+"85 M€",
+"100 M€"
+],
+"explanation": null
+},
+"0ef8ce164d1a724a": {
+"question": "¿En honor a qué jugador retiró el Napoli su dorsal 10?",
+"options": [
+"Dries Mertens",
+"Marek Hamsik",
+"Diego Maradona",
+"Edinson Cavani"
+],
+"explanation": "El Napoli retiró el 10 en 2000 en honor a Diego Maradona, que lo llevó a ganar dos títulos de la Serie A."
+},
+"4a5d3f762e220781": {
+"question": "¿A qué fogoso personaje histórico inglés está ligado el nombre «Hotspur» del Tottenham?",
+"options": [
+"Sir Thomas More",
+"Sir Walter Raleigh",
+"Sir Francis Drake",
+"Sir Henry Percy"
+],
+"explanation": "El nombre viene de Sir Henry Percy, el caballero apodado «Hotspur» por su rapidez y tenacidad en la batalla."
+},
+"e856dc6760fe4952": {
+"question": "¿Quién es este jugador?",
+"options": [
+"Dan Ndoye",
+"Alberto Moleiro",
+"Abdulkerim Bardakci",
+"Curtis Nelson"
+],
+"explanation": "Es Abdulkerim Bardakci, central turco que juega en el Galatasaray."
+},
+"d725fe7f41f0d275": {
+"question": "¿Qué jugador, con su traspaso del Newcastle al Liverpool, ocupa el 3.er puesto en la lista de fichajes más caros de la historia (récord británico)?",
+"options": [
+"Florian Wirtz",
+"Antoine Griezmann",
+"Philippe Coutinho",
+"Alexander Isak"
+],
+"explanation": null
+},
+"386971d50b878065": {
+"question": "¿Quién tiene más asistencias en la historia de la Champions League?",
+"options": [
+"Lionel Messi",
+"Angel Di Maria",
+"Ryan Giggs",
+"Cristiano Ronaldo"
+],
+"explanation": null
+},
+"80e7e37df47540f1": {
+"question": "¿Qué selección ganó la Eurocopa 1976 al vencer a Alemania Occidental en los penaltis con el famoso «Panenka»?",
+"options": [
+"Yugoslavia",
+"Checoslovaquia",
+"Países Bajos",
+"Bélgica"
+],
+"explanation": "Checoslovaquia venció 5-3 en los penaltis a Alemania Occidental en 1976, la primera gran final decidida en una tanda, sentenciada con la vaselina de Panenka."
+},
+"3bf1d63777c80d53": {
+"question": "¿Qué defensor colombiano marcó un trágico gol en propia puerta en la derrota 1-2 ante Estados Unidos en el Mundial 1994 y fue asesinado días después?",
+"options": [
+"Faustino Asprilla",
+"Carlos Valderrama",
+"Andrés Escobar",
+"Freddy Rincón"
+],
+"explanation": "Andrés Escobar desvió el balón a su propia portería ante Estados Unidos en el Mundial 1994 y fue asesinado a tiros en Medellín el 2 de julio de 1994."
+},
+"9712e3f834d4b6a2": {
+"question": "¿A qué equipo pertenece este escudo?",
+"options": [
+"Twente",
+"AZ Alkmaar",
+"Go Ahead Eagles",
+"SC Telstar"
+],
+"explanation": "Este escudo pertenece al Twente."
+},
+"97de9609ac571cbe": {
+"question": "¿Quién tiene el récord de más goles en una sola Eurocopa, con 9 en la edición de 1984?",
+"options": [
+"Michel Platini",
+"Cristiano Ronaldo",
+"Alan Shearer",
+"Antoine Griezmann"
+],
+"explanation": null
+},
+"23245b053920c1ef": {
+"question": "¿Qué jugador marcó un célebre hat-trick con Inglaterra en la final del Mundial 1966?",
+"options": [
+"Bobby Charlton",
+"Jimmy Greaves",
+"Gary Lineker",
+"Geoff Hurst"
+],
+"explanation": null
+},
+"42fd0ee67f9fefeb": {
+"question": "¿Quién es este jugador?",
+"options": [
+"Francisco Ferreira",
+"Gideon Mensah",
+"Éderson",
+"Abdulkerim Bardakci"
+],
+"explanation": "Es Francisco Ferreira, central portugués que juega en el Benfica."
+},
+"4e2a253de81004b2": {
+"question": "¿Quién tiene el récord masculino de más partidos disputados en Mundiales, con 26?",
+"options": [
+"Lionel Messi",
+"Lothar Matthäus",
+"Miroslav Klose",
+"Cristiano Ronaldo"
+],
+"explanation": "Lionel Messi llegó a los 26 partidos en Mundiales durante la conquista de Argentina en 2022."
+},
+"13da6067b86c42b2": {
+"question": "¿Qué club ganó la Bundesliga en su temporada inaugural?",
+"options": [
+"Borussia Dortmund",
+"Hamburgo",
+"Colonia",
+"Werder Bremen"
+],
+"explanation": null
+},
+"d19d64b3faa61cfb": {
+"question": "¿Quién es este jugador?",
+"options": [
+"Conrad Egan-Riley",
+"Caio Henrique",
+"Carlos Baleba",
+"Ben Gibson"
+],
+"explanation": "Es Ben Gibson, central inglés que juega en el Stoke City."
+},
+"0fcc9f04c2936a3a": {
+"question": "El PSV Eindhoven se fundó en 1913 como club deportivo para empleados, ¿de qué empresa?",
+"options": [
+"Philips",
+"Siemens",
+"Bosch",
+"Bayer"
+],
+"explanation": "PSV significa Philips Sport Vereniging; se fundó el 31 de agosto de 1913 como club para los trabajadores de Philips."
+},
+"067b109f491da56f": {
+"question": "¿En qué club portugués pasó Eusébio la gran mayoría de su carrera?",
+"options": [
+"FC Porto",
+"Sporting de Portugal",
+"Benfica",
+"Boavista"
+],
+"explanation": "Eusébio es el máximo goleador histórico del Benfica, con 473 goles en 440 partidos oficiales."
+},
+"4c14f0932bf73a2e": {
+"question": "Aparte de Messi y Ronaldo, ¿qué jugador ganó el Balón de Oro tres veces?",
+"options": [
+"Franz Beckenbauer",
+"Karl-Heinz Rummenigge",
+"Kevin Keegan",
+"Johan Cruyff"
+],
+"explanation": "Johan Cruyff ganó tres Balones de Oro (1971, 1973 y 1974); los demás de la lista ganaron dos cada uno."
+},
+"6b933b627a6801ba": {
+"question": "¿En honor a qué defensor de un solo club retiró el AC Milan el dorsal 6?",
+"options": [
+"Franco Baresi",
+"Alessandro Costacurta",
+"Mauro Tassotti",
+"Filippo Galli"
+],
+"explanation": "El AC Milan retiró el 6 como homenaje a Franco Baresi tras su larga carrera en el club."
+},
+"412d999498d85329": {
+"question": "¿Quién es este jugador?",
+"options": [
+"Angelo Preciado Quiñónez",
+"Billy Gilmour",
+"Alfie Jones",
+"Alonzo Engwanda"
+],
+"explanation": "Es Alonzo Engwanda, centrocampista belga que juega en el Utrecht."
+},
+"2cc33712a9630197": {
+"question": "¿Quién ganó el Balón de Oro y la Bota de Oro del Mundial femenino 2019?",
+"options": [
+"Alex Morgan",
+"Megan Rapinoe",
+"Ellen White",
+"Rose Lavelle"
+],
+"explanation": "Megan Rapinoe ganó el Balón de Oro y la Bota de Oro (seis goles, superando a las demás por asistencias) en el torneo de 2019."
+},
+"dd609773999ffb93": {
+"question": "¿Quién es este jugador?",
+"options": [
+"Carlens Arcus",
+"Harry Pickering",
+"Carlos Domínguez",
+"Haji Wright"
+],
+"explanation": "Es Haji Wright, delantero centro estadounidense que juega en el Coventry City."
+},
+"9424b39cd072275b": {
+"question": "¿Qué selección ganó sorprendentemente la Eurocopa 1992 tras ser invitada al torneo pocos días antes de su inicio?",
+"options": [
+"Dinamarca",
+"Grecia",
+"Suecia",
+"Yugoslavia"
+],
+"explanation": null
+},
+"521a5be982643108": {
+"question": "¿Qué club sorprendió al fútbol francés al ganar la Ligue 1 2020-21, un punto por delante del Paris Saint-Germain?",
+"options": [
+"Mónaco",
+"Lille",
+"Marsella",
+"Lyon"
+],
+"explanation": null
+},
+"381360fab57c75fe": {
+"question": "¿En qué año se trasladó el Arsenal al norte de Londres, desatando su rivalidad con el Tottenham?",
+"options": [
+"1886",
+"1913",
+"1901",
+"1925"
+],
+"explanation": "La rivalidad del derbi del norte de Londres se intensificó cuando el Arsenal se mudó a Highbury, en el norte de Londres, en 1913."
+},
+"1c4e6b913eae4af6": {
+"question": "Antes de su descenso en 2018, ¿cuál de estos clubes tenía el récord de más empates en la historia de la Bundesliga?",
+"options": [
+"Stuttgart",
+"Hamburgo",
+"Eintracht Frankfurt",
+"Colonia"
+],
+"explanation": null
+},
+"972e6ab6afb6790a": {
+"question": "¿De qué club fichó el Liverpool a Virgil van Dijk?",
+"options": [
+"Celtic",
+"Southampton",
+"Groningen",
+"Aston Villa"
+],
+"explanation": null
+},
+"6ee7cd235535a413": {
+"question": "¿A qué equipo pertenece este escudo?",
+"options": [
+"Sheffield United",
+"Hull City",
+"Coventry City",
+"Sheffield Wednesday"
+],
+"explanation": "Este escudo pertenece al Coventry City."
+},
+"cb7d36f12113568f": {
+"question": "¿Qué delantero brasileño suma 15 goles en Mundiales, por detrás de Messi y Klose?",
+"options": [
+"Ronaldo Nazário",
+"Pelé",
+"Just Fontaine",
+"Gerd Müller"
+],
+"explanation": null
+},
+"cebe35189d8bd17e": {
+"question": "¿Quién es este jugador?",
+"options": [
+"Álex Sancris",
+"Facundo Bernal",
+"Cuiabano",
+"Dies Janse"
+],
+"explanation": "Es Dies Janse, defensa neerlandés que juega en el Groningen."
+},
+"533833da3fa03241": {
+"question": "¿Cuántas veces ha ganado el Liverpool la Champions League?",
+"options": [
+"5",
+"6",
+"7",
+"8"
+],
+"explanation": null
+},
+"c9cd871d24305b04": {
+"question": "¿Quién fue el máximo goleador de la Premier League 2021-22 junto a Mohamed Salah?",
+"options": [
+"Cristiano Ronaldo",
+"Harry Kane",
+"Sadio Mané",
+"Son Heung-min"
+],
+"explanation": null
+},
+"aefc6761c75703a1": {
+"question": "¿Qué jugador es el segundo en la lista de más goles en su carrera sumando todas las competiciones?",
+"options": [
+"Lionel Messi",
+"Romário",
+"Josef Bican",
+"Pelé"
+],
+"explanation": null
+},
+"318be9809d724079": {
+"question": "¿Cuál de estos partidos se jugó en la primera jornada de la historia de la Bundesliga, en agosto de 1963?",
+"options": [
+"Borussia Dortmund vs Werder Bremen",
+"Hamburgo vs Preußen Münster",
+"Colonia vs Saarbrücken",
+"Schalke 04 vs Stuttgart"
+],
+"explanation": null
+},
+"245b51aa66fb9106": {
+"question": "¿Qué entrenador ha dirigido más partidos en la Ligue 1?",
+"options": [
+"Arsène Wenger",
+"Aimé Jacquet",
+"Guy Roux",
+"Didier Deschamps"
+],
+"explanation": null
+},
+"36bde57b281019cf": {
+"question": "¿Quién es el futbolista con más partidos internacionales de la historia, hombre o mujer, con 354?",
+"options": [
+"Christine Sinclair",
+"Kristine Lilly",
+"Carli Lloyd",
+"Abby Wambach"
+],
+"explanation": "Kristine Lilly, de Estados Unidos, es la futbolista con más internacionalidades de la historia, con 354 partidos."
+},
+"278d18ad60dacd5b": {
+"question": "¿Quién es este jugador?",
+"options": [
+"David Toševski",
+"Benjamin Chrisene",
+"Diego Méndez",
+"Danny McNamara"
+],
+"explanation": "Es Danny McNamara, defensa inglés que juega en el Millwall."
+},
+"5e1171acb80bff24": {
+"question": "¿A qué equipo venció 4-1 el Manchester United en Wembley en 1968 para ser el primer club inglés en ganar la Copa de Europa?",
+"options": [
+"Anderlecht",
+"Real Madrid",
+"Partizan",
+"Benfica"
+],
+"explanation": "El Manchester United venció 4-1 al Benfica en la prórroga en Wembley y ganó el máximo trofeo europeo en 1968."
+},
+"051809670fe27821": {
+"question": "¿Quién fue el primer jugador en ganar 8 veces el Trofeo Pichichi (máximo goleador de LaLiga)?",
+"options": [
+"Lionel Messi",
+"Cristiano Ronaldo",
+"Alfredo Di Stéfano",
+"Telmo Zarra"
+],
+"explanation": null
+},
+"f095eb68710d94d6": {
+"question": "¿Qué dos selecciones comparten cuatro Mundiales cada una, solo por detrás de Brasil?",
+"options": [
+"Francia y España",
+"Argentina y Uruguay",
+"Italia y Alemania",
+"Alemania y Argentina"
+],
+"explanation": null
+},
+"482896701396403a": {
+"question": "¿En qué año superó Cristiano Ronaldo a Ali Daei como máximo goleador internacional masculino de la historia?",
+"options": [
+"2021",
+"2019",
+"2018",
+"2023"
+],
+"explanation": "Ronaldo superó la marca de Ali Daei el 1 de septiembre de 2021, con un doblete ante la República de Irlanda."
+},
+"8cefba221cc244a1": {
+"question": "¿De la marca local de qué producto tomó el Borussia Dortmund el nombre «Borussia»?",
+"options": [
+"Café",
+"Cerveza",
+"Cigarrillos",
+"Periódico"
+],
+"explanation": "Fundado en 1909, el club tomó el nombre «Borussia» (Prusia en latín) de la cerveza de la cercana cervecería Borussia."
+},
+"40ee16e6c1af4dfb": {
+"question": "¿Quién fue el primer entrenador en ganar la Premier League?",
+"options": [
+"Kenny Dalglish",
+"George Graham",
+"Sir Alex Ferguson",
+"Howard Wilkinson"
+],
+"explanation": null
+},
+"8843aded682b2654": {
+"question": "Al final de la temporada 2023-24, ¿quién era el máximo goleador en activo de la Serie A?",
+"options": [
+"Lautaro Martínez",
+"Ciro Immobile",
+"Domenico Berardi",
+"Paulo Dybala"
+],
+"explanation": null
+},
+"290d4921ffd343e6": {
+"question": "¿Quién es este jugador?",
+"options": [
+"Bakhtiyor Zaynutdinov",
+"Benjamin Pavard",
+"Etta Eyong",
+"Bruno Peres"
+],
+"explanation": "Es Bruno Peres, lateral derecho brasileño que juega en el Trabzonspor."
+},
+"8757ba8ed799e14f": {
+"question": "¿Quién es este jugador?",
+"options": [
+"Aaron Ramsey",
+"Chris Ramos",
+"Joris van Overeem",
+"Dominique Heintz"
+],
+"explanation": "Es Joris van Overeem, centrocampista neerlandés que juega en el Heerenveen."
+},
+"49905ce90ded9973": {
+"question": "¿En qué estadio, apodado «la caja de bombones», recibe Boca Juniors el Superclásico?",
+"options": [
+"Maracanã",
+"El Monumental",
+"Estadio Centenario",
+"La Bombonera"
+],
+"explanation": "Boca Juniors juega en La Bombonera, apodada «la caja de bombones» por su diseño empinado en forma de D."
+},
+"e9944d3b2338350b": {
+"question": "En 2008-09, ¿cuántos minutos pasó Edwin van der Sar sin encajar en liga, récord de la Premier League?",
+"options": [
+"974",
+"1142",
+"1311",
+"1032"
+],
+"explanation": "Van der Sar estuvo 1311 minutos sin encajar con el Manchester United, un récord de la Premier League confirmado por el Guinness World Records."
+},
+"1daf3b7b921a16f8": {
+"question": "¿Quién fue el capitán de Brasil en la final ganada a Alemania en el Mundial 2002?",
+"options": [
+"Dunga",
+"Cafu",
+"Roberto Carlos",
+"Ronaldo"
+],
+"explanation": "Cafu fue el capitán de Brasil en 2002, en su tercera final de Mundial consecutiva."
+},
+"a65d12a5699352a8": {
+"question": "¿Qué selección ganó la Eurocopa 1988?",
+"options": [
+"Países Bajos",
+"Unión Soviética",
+"Suecia",
+"Italia"
+],
+"explanation": null
+},
+"0ea85c3c74519f70": {
+"question": "¿Quién es este jugador?",
+"options": [
+"Daniel Sales",
+"Dušan Vlahović",
+"Hans Vanaken",
+"Brodie Spencer"
+],
+"explanation": "Es Brodie Spencer, lateral norirlandés que juega en el Oxford United."
+},
+"a37d34d84d51e54b": {
+"question": "¿Quién es este jugador?",
+"options": [
+"Carlos Eduardo",
+"Gerson",
+"Danny Batth",
+"Camutanga"
+],
+"explanation": "Es Danny Batth, defensa central de Inglaterra que juega en el Derby County."
+},
+"df39e72e34b04920": {
+"question": "¿Quién tiene el récord de más hat-tricks en la historia de LaLiga?",
+"options": [
+"Lionel Messi",
+"Telmo Zarra",
+"Cristiano Ronaldo",
+"Alfredo Di Stéfano"
+],
+"explanation": null
+},
+"af3139294f311c88": {
+"question": "El apodo de España, «La Roja», a veces aparece en su forma antigua y completa, «La Furia Roja». ¿Qué significa en inglés?",
+"options": [
+"The Red Wall",
+"The Red Fury",
+"The Red Storm",
+"The Red Army"
+],
+"explanation": "«La Furia Roja» se traduce al inglés como «The Red Fury», término acuñado en torno a los Juegos Olímpicos de 1920 por el estilo aguerrido de España."
+},
+"aa61f7ec31f36d01": {
+"question": "¿En qué año ganó Brasil su última Copa América antes de 2019?",
+"options": [
+"2007",
+"2004",
+"1999",
+"1989"
+],
+"explanation": "La última Copa América de Brasil antes de su triunfo de 2019 fue en 2007, cuando venció 3-0 a Argentina en la final."
+},
+"5de7173f82531f16": {
+"question": "Para estar en posición de fuera de juego, un jugador debe estar más cerca de la línea de meta rival que el balón y que ¿qué jugador?",
+"options": [
+"El rival más cercano",
+"El último rival",
+"El antepenúltimo rival",
+"El penúltimo rival"
+],
+"explanation": "Un atacante está en fuera de juego cuando alguna parte relevante de su cuerpo está más cerca de la línea de meta que el balón y que el penúltimo rival."
+},
+"e989c85095226535": {
+"question": "La selección de Ghana, las «Black Stars», debe su nombre a un símbolo ligado a ¿qué figura?",
+"options": [
+"Haile Selassie",
+"Kwame Nkrumah",
+"Marcus Garvey",
+"Nelson Mandela"
+],
+"explanation": "La Estrella Negra homenajea a la Black Star Line panafricanista de Marcus Garvey y aparece en la bandera de Ghana."
+},
+"b82d47110afcc50d": {
+"question": "¿Quién es este jugador?",
+"options": [
+"Daniël van Kaam",
+"Davie Selke",
+"Gatlin O'Donkor",
+"Diego Llorente"
+],
+"explanation": "Es Gatlin O'Donkor, atacante de Inglaterra que juega en el Oxford United."
+},
+"73f24ee54beac620": {
+"question": "¿Quién es el jugador más joven en alcanzar 100 partidos en la Bundesliga?",
+"options": [
+"Timo Werner",
+"Julian Draxler",
+"Kai Havertz",
+"Erling Haaland"
+],
+"explanation": null
+},
+"c7eaffd5c302fcef": {
+"question": "¿Quién es este jugador?",
+"options": [
+"Abduqodir Khusanov",
+"Gonçalo Ramos",
+"Boubacar Kamara",
+"Balázs Tóth"
+],
+"explanation": "Es Balázs Tóth, portero de Hungría que juega en el Blackburn Rovers."
+},
+"905cb91af83aecd2": {
+"question": "Con un joven Olivier Giroud como figura, ¿qué club ganó milagrosamente su primera Ligue 1 en la temporada 2011-12?",
+"options": [
+"Rennes",
+"Montpellier",
+"Nice",
+"Saint-Étienne"
+],
+"explanation": null
+},
+"7811afc1b83017ca": {
+"question": "¿Qué selección ganó la Copa Africana de Naciones 2021 (disputada a principios de 2022), su primer título continental?",
+"options": [
+"Egipto",
+"Senegal",
+"Costa de Marfil",
+"Argelia"
+],
+"explanation": null
+},
+"b20b4e16e2dbb595": {
+"question": "Antes de Harry Kane en 2023-24, ¿qué jugador tuvo durante 60 años el récord de más goles en una temporada de debut en la Bundesliga?",
+"options": [
+"Marek Mintál",
+"Erling Haaland",
+"Uwe Seeler",
+"Roy Makaay"
+],
+"explanation": null
+},
+"c21204d4257b86d6": {
+"question": "¿Cuál de estos clubes NO ha ganado la Champions League?",
+"options": [
+"Arsenal FC",
+"Celtic FC",
+"Borussia Dortmund",
+"Feyenoord"
+],
+"explanation": null
+},
+"604b34e6389db18a": {
+"question": "¿De qué club fichó el Real Madrid a Aurélien Tchouaméni?",
+"options": [
+"AS Monaco",
+"Stade Rennais",
+"Olympique de Lyon",
+"Girondins de Burdeos"
+],
+"explanation": null
+},
+"4c76e4ee4edff31c": {
+"question": "Beckenbauer ganó el Mundial como capitán de Alemania Occidental en 1974. ¿En qué año lo volvió a ganar como seleccionador?",
+"options": [
+"1994",
+"1982",
+"1986",
+"1990"
+],
+"explanation": "Beckenbauer llevó a Alemania Occidental al título mundial de 1990 como seleccionador, tras haberlo levantado como capitán en 1974."
+},
+"a96c315110d79827": {
+"question": "¿A qué equipo pertenece este escudo?",
+"options": [
+"Kasımpaşa",
+"Beşiktaş",
+"Kocaelispor",
+"Kayserispor"
+],
+"explanation": "Este escudo pertenece al Kayserispor."
+},
+"b6165d247b264deb": {
+"question": "¿De quién fue la icónica volea que sentenció la victoria de Países Bajos sobre la Unión Soviética en la final de la Eurocopa 1988?",
+"options": [
+"Ruud Gullit",
+"Marco van Basten",
+"Frank Rijkaard",
+"Ronald Koeman"
+],
+"explanation": "La espectacular volea desde un ángulo cerrado de Marco van Basten cerró un 2-0 que dio a Países Bajos su primer gran título."
+},
+"0d8400e0a347fde7": {
+"question": "¿Quién es este jugador?",
+"options": [
+"Cuiabano",
+"Ali Ahmed",
+"Aidan Morris",
+"Jefté da Silva Dias"
+],
+"explanation": "Es Ali Ahmed, centrocampista de Canadá que juega en el Norwich City."
+},
+"1e508932602928e5": {
+"question": "¿Qué club inglés proporcionó a la Juventus sus icónicas camisetas a rayas blancas y negras?",
+"options": [
+"Notts County",
+"Newcastle United",
+"Sunderland",
+"Aston Villa"
+],
+"explanation": "A principios del siglo XX, la Juventus sustituyó su desteñida equipación rosa por camisetas a rayas blancas y negras enviadas desde el Notts County."
+},
+"9a66b19596dfbe05": {
+"question": "¿Quién es el máximo goleador argentino en la historia de la Premier League?",
+"options": [
+"Carlos Tevez",
+"Hernán Crespo",
+"Sergio Agüero",
+"Julián Álvarez"
+],
+"explanation": null
+},
+"d3604a894136670b": {
+"question": "Antes de que Antoine Griezmann lo superara en 2025, ¿quién era el extranjero con más partidos en la historia de LaLiga?",
+"options": [
+"Lionel Messi",
+"Marcelo",
+"Dani Alves",
+"Diego Godín"
+],
+"explanation": "Lionel Messi tenía el récord de partidos de un extranjero en LaLiga hasta que Antoine Griezmann lo superó en 2025."
+},
+"43696a557fa07487": {
+"question": "¿Qué club ganó LaLiga en la temporada 2013-14?",
+"options": [
+"Real Madrid",
+"Atlético de Madrid",
+"FC Barcelona",
+"Valencia CF"
+],
+"explanation": null
+},
+"25a8e5c2a0bc35b0": {
+"question": "¿Quién es este jugador?",
+"options": [
+"Guus Til",
+"Ansu Fati",
+"Jonas Föhrenbach",
+"Idrissa Gueye"
+],
+"explanation": "Es Guus Til, mediapunta de Países Bajos que juega en el PSV Eindhoven."
+},
+"8661f928ed0faf1d": {
+"question": "¿Cuántas Copas de Europa consecutivas ganó el Real Madrid con Alfredo Di Stéfano entre 1956 y 1960?",
+"options": [
+"3",
+"5",
+"4",
+"6"
+],
+"explanation": "Di Stéfano brilló mientras el Real Madrid ganaba las cinco primeras Copas de Europa seguidas, de 1956 a 1960, marcando en todas las finales."
+},
+"dc8b5224119ceef7": {
+"question": "¿Quién es este jugador?",
+"options": [
+"Dimitrios Goutas",
+"Jakob Kiilerich Rask",
+"Dan Burn",
+"Ethan Laird"
+],
+"explanation": "Es Ethan Laird, lateral derecho de Inglaterra que juega en el Birmingham City."
+},
+"7c1b5d1290cfd887": {
+"question": "Hervé Renard ganó la Copa Africana de Naciones 2012 como seleccionador de ¿qué país?",
+"options": [
+"Ghana",
+"Zambia",
+"Malí",
+"Gabón"
+],
+"explanation": "Renard llevó a Zambia a ganar la final de 2012 a Costa de Marfil en los penaltis, y repitió la hazaña con Costa de Marfil en 2015."
+},
+"aefba051fc52ecc2": {
+"question": "¿Qué ave aparece en el escudo del Benfica, adoptado en su fundación en 1904?",
+"options": [
+"Cuervo",
+"Halcón",
+"Águila",
+"Búho"
+],
+"explanation": "El escudo del Benfica muestra un águila, símbolo de independencia y nobleza, junto al lema «E pluribus unum»."
+},
+"f53d4a5e35d7076b": {
+"question": "¿Qué torneo ganó Portugal con Cristiano Ronaldo como capitán, su primer gran título internacional?",
+"options": [
+"Eurocopa 2004",
+"Eurocopa 2008",
+"Eurocopa 2012",
+"Eurocopa 2016"
+],
+"explanation": "Portugal ganó su primer gran título en la Eurocopa 2016, al vencer 1-0 a la anfitriona Francia en la final."
+},
+"f2e9e7a27b43e5ac": {
+"question": "¿Quién fue la primera jugadora en ganar el Balón de Oro femenino dos años seguidos, en 2021 y 2022?",
+"options": [
+"Ada Hegerberg",
+"Aitana Bonmati",
+"Alexia Putellas",
+"Megan Rapinoe"
+],
+"explanation": "La española Alexia Putellas ganó el Balón de Oro femenino en 2021 y 2022, la primera en lograrlo dos años consecutivos."
+},
+"13d36540890cd5f8": {
+"question": "¿Cuántas veces ha ganado el AC Milan la Champions League?",
+"options": [
+"5",
+"6",
+"8",
+"7"
+],
+"explanation": null
+},
+"606f57d36790beae": {
+"question": "¿Quién es este jugador?",
+"options": [
+"Evert Linthorst",
+"Andreas Schjelderup",
+"Andrew Robertson",
+"Danny Bakker"
+],
+"explanation": "Es Danny Bakker, centrocampista de Países Bajos que juega en el SC Telstar."
+},
+"802bcaf3cc310889": {
+"question": "¿Qué estadio aparece en esta imagen?",
+"options": [
+"Estádio António Coimbra da Mota",
+"Estádio Municipal 22 de Junho",
+"Estádio de São Miguel",
+"Estádio da Madeira"
+],
+"explanation": "Es el Estádio da Madeira, estadio del Nacional de Madeira."
+},
+"c22c03d649297638": {
+"question": "¿Quién es el portero más caro de todos los tiempos?",
+"options": [
+"Kepa Arrizabalaga",
+"Ederson",
+"Alisson Becker",
+"Thibaut Courtois"
+],
+"explanation": null
+},
+"7ab469b615d68ee1": {
+"question": "¿Qué club ganó las cinco primeras ediciones de la Copa de Europa, de 1956 a 1960?",
+"options": [
+"Benfica",
+"AC Milan",
+"Real Madrid",
+"Ajax"
+],
+"explanation": "El Real Madrid ganó la Copa de Europa en cada una de las cinco primeras temporadas del torneo, de 1955-56 a 1959-60."
+},
+"65dfb504d9e1bcaa": {
+"question": "¿Qué leyenda neerlandesa ganó tres Balones de Oro (1988, 1989, 1992) jugando en el AC Milan?",
+"options": [
+"Johan Cruyff",
+"Marco van Basten",
+"Ruud Gullit",
+"Dennis Bergkamp"
+],
+"explanation": null
+},
+"adf059e850c77f72": {
+"question": "¿Qué jugador tiene el récord de más asistencias de un defensa en la historia de la Premier League?",
+"options": [
+"Ashley Cole",
+"Leighton Baines",
+"Andrew Robertson",
+"Trent Alexander-Arnold"
+],
+"explanation": null
+},
+"95c020f3ae42c53c": {
+"question": "¿Cuántas Copas Libertadores ha ganado Boca Juniors?",
+"options": [
+"6",
+"4",
+"5",
+"7"
+],
+"explanation": "Boca Juniors ha ganado la Copa Libertadores seis veces: 1977, 1978, 2000, 2001, 2003 y 2007."
+},
+"6c0cb16457b8b52b": {
+"question": "¿A qué equipo pertenece este escudo?",
+"options": [
+"Gençlerbirliği",
+"Alanyaspor",
+"Kayserispor",
+"Samsunspor"
+],
+"explanation": "Este escudo pertenece al Alanyaspor."
+},
+"317b95a7bdf0884b": {
+"question": "¿Qué defensa neerlandés fichó la Juventus del Ajax por 85,50 M€?",
+"options": [
+"Virgil van Dijk",
+"Matthijs de Ligt",
+"Jurriën Timber",
+"Sven Botman"
+],
+"explanation": null
+},
+"428f1ddc35b7f989": {
+"question": "¿Quién es este jugador?",
+"options": [
+"Emersonn Correia da Silva",
+"Cameron Pring",
+"Alexandru Maxim",
+"Alieu Njie"
+],
+"explanation": "Es Alexandru Maxim, mediapunta de Rumanía que juega en el Gaziantep."
+},
+"1dd24384180de5e3": {
+"question": "Lionel Scaloni llevó a Argentina a ganar la Copa América en 2021 y ¿en qué otro año?",
+"options": [
+"2025",
+"2019",
+"2023",
+"2024"
+],
+"explanation": "La Argentina de Scaloni ganó la Copa América en 2021 y 2024, con el Mundial de 2022 entre ambas."
+},
+"392f874ae74b6f7b": {
+"question": "¿Qué dos clubes disputan la intensa rivalidad conocida como el «derbi vasco»?",
+"options": [
+"Sevilla FC y Real Betis",
+"Celta de Vigo y Deportivo de La Coruña",
+"Athletic Club y Real Sociedad",
+"Valencia CF y Levante"
+],
+"explanation": null
+},
+"7a2e8765593c7728": {
+"question": "¿Quién marcó el primer «gol de oro» en decidir una gran final, dando la Eurocopa 1996 a Alemania?",
+"options": [
+"Stefan Kuntz",
+"Jürgen Klinsmann",
+"Andreas Möller",
+"Oliver Bierhoff"
+],
+"explanation": "El gol de oro de Oliver Bierhoff en el minuto 95 dio a Alemania el 2-1 ante la República Checa en la final de la Eurocopa 1996 en Wembley."
+},
+"5c06da13469c1082": {
+"question": "¿En qué país se disputó el Mundial Femenino de la FIFA 2019?",
+"options": [
+"Países Bajos",
+"Alemania",
+"Canadá",
+"Francia"
+],
+"explanation": "El Mundial Femenino de la FIFA 2019 se celebró en Francia, y Estados Unidos se proclamó campeón."
+},
+"2caf0cba93b268b3": {
+"question": "¿Quién es este jugador?",
+"options": [
+"Alerrandro",
+"Felix Nmecha",
+"Gennaro Borrelli",
+"Calvin Twigt"
+],
+"explanation": "Es Calvin Twigt, centrocampista de Países Bajos que juega en el Go Ahead Eagles."
+},
+"fc3d5b31b56167a7": {
+"question": "¿Cuántos puntos sumó el Real Madrid en LaLiga 2011-12?",
+"options": [
+"95",
+"98",
+"90",
+"100"
+],
+"explanation": null
+},
+"0ba0fab275ea25a0": {
+"question": "En 2021, el Manchester City pagó el primer traspaso de 100 millones de libras por un jugador británico al fichar a Jack Grealish. ¿De qué club?",
+"options": [
+"Leeds United",
+"Leicester City",
+"Everton",
+"Aston Villa"
+],
+"explanation": "El Manchester City pagó la cláusula de rescisión de 100 millones de libras de Jack Grealish al Aston Villa en agosto de 2021, la primera operación de 100 millones de libras del fútbol británico."
+},
+"33b6db687a4a879f": {
+"question": "¿Quién es este jugador?",
+"options": [
+"Javi Llabrés",
+"Carl Klaus",
+"Abdülkadir Ömür",
+"Joël Drommel"
+],
+"explanation": "Es Joël Drommel, portero de Países Bajos que juega en el Sparta Rotterdam."
+},
+"0ee5ce6cf321b627": {
+"question": "Kasper Schmeichel igualó a su padre Peter, formando la única pareja de padre e hijo biológicos que han ganado la Premier League, al conquistarla en 2016. ¿Con qué club?",
+"options": [
+"Leicester City",
+"Manchester City",
+"Aston Villa",
+"Tottenham Hotspur"
+],
+"explanation": "Kasper Schmeichel ganó la Premier League 2016 con el Leicester City, como su padre Peter con el Manchester United, y son la única pareja de padre e hijo biológicos que la han ganado (Ian Wright y su hijo adoptivo Shaun Wright-Phillips también la ganaron)."
+},
+"c56fa5031ce8f19a": {
+"question": "¿Cuál es el fichaje más caro de la historia de la Premier League?",
+"options": [
+"Moisés Caicedo",
+"Enzo Fernández",
+"Florian Wirtz",
+"Alexander Isak"
+],
+"explanation": null
+},
+"244d73f5a9820847": {
+"question": "¿A qué equipo pertenece este escudo?",
+"options": [
+"Eyüpspor",
+"Beşiktaş",
+"Fenerbahçe",
+"Galatasaray"
+],
+"explanation": "Este escudo pertenece al Galatasaray."
+},
+"1efc1efa2f719eca": {
+"question": "Rafa Benítez fue el artífice del «Milagro de Estambul» en la final de la Champions League de 2005. ¿Qué club dirigía?",
+"options": [
+"Newcastle United",
+"Valencia",
+"Liverpool",
+"Everton"
+],
+"explanation": "El Liverpool de Rafa Benítez remontó un 3-0 y venció al AC Milan en los penaltis en la final de la Champions League de 2005."
+},
+"e08f21b5f32024d5": {
+"question": "¿Quién es este jugador?",
+"options": [
+"Amin Cherni",
+"Carl Rushworth",
+"Ilan Kebbal",
+"Jan Thielmann"
+],
+"explanation": "Es Carl Rushworth, portero de Inglaterra que juega en el Coventry City."
+},
+"4523f7ae8d4c7a47": {
+"question": "¿Qué dorsal hizo famoso Johan Cruyff en el Ajax y en Países Bajos?",
+"options": [
+"10",
+"14",
+"9",
+"7"
+],
+"explanation": "Johan Cruyff popularizó el número 14 a partir de 1970, rompiendo la costumbre de que los titulares llevaran del 1 al 11."
+},
+"5c3a9f8c2a81170d": {
+"question": "¿Quién fue el máximo goleador de LaLiga 2023-24?",
+"options": [
+"Robert Lewandowski",
+"Artem Dovbyk",
+"Karim Benzema",
+"Ante Budimir"
+],
+"explanation": null
+},
+"f64ea51cb9964236": {
+"question": "¿Qué club ha ganado más Mundiales de Clubes de la FIFA (todos los formatos), con 5?",
+"options": [
+"Bayern de Múnich",
+"Barcelona",
+"Real Madrid",
+"Corinthians"
+],
+"explanation": null
+},
+"6c4d060fdd32277f": {
+"question": "¿Qué club brasileño ganó la Copa Libertadores en 1992, 1993 y 2005?",
+"options": [
+"Grêmio",
+"Santos",
+"São Paulo",
+"Cruzeiro"
+],
+"explanation": "São Paulo ganó la Copa Libertadores tres veces: en 1992, 1993 y 2005."
+},
+"4151724916076aee": {
+"question": "¿A qué equipo pertenece este escudo?",
+"options": [
+"Gil Vicente",
+"Casa Pia",
+"Santa Clara",
+"Vitória de Guimarães"
+],
+"explanation": "Este escudo pertenece al Vitória de Guimarães."
+},
+"3f8bbdbd26ae33b9": {
+"question": "¿Quién tiene el récord del hat-trick más rápido de la Ligue 1?",
+"options": [
+"Loïs Openda",
+"Kylian Mbappé",
+"Zlatan Ibrahimović",
+"Jérémy Ménez"
+],
+"explanation": null
+},
+"b9b57da4b3d71149": {
+"question": "¿Qué club ganó LaLiga en la temporada 2020-21?",
+"options": [
+"Real Madrid",
+"Atlético de Madrid",
+"FC Barcelona",
+"Sevilla FC"
+],
+"explanation": null
+},
+"92fe15f614a96c00": {
+"question": "¿En qué año ganó Luis Enrique el triplete con el Barcelona, venciendo a la Juventus en la final de la Champions League?",
+"options": [
+"2015",
+"2009",
+"2011",
+"2013"
+],
+"explanation": "Luis Enrique llevó al Barcelona al triplete de 2015, con un 3-1 a la Juventus en la final de la Champions League en Berlín."
+},
+"552180895a95f961": {
+"question": "El «Dream Team» de Johan Cruyff ganó la primera Copa de Europa del Barcelona en 1992. ¿A qué club venció en la final de Wembley?",
+"options": [
+"Benfica",
+"Sampdoria",
+"Steaua de Bucarest",
+"Estrella Roja de Belgrado"
+],
+"explanation": "El Barcelona de Cruyff venció 1-0 a la Sampdoria en la prórroga en Wembley en 1992, con un gol de falta de Ronald Koeman."
+},
+"745cbcd6a0ea676e": {
+"question": "¿En qué año ganó Chile su primera Copa América?",
+"options": [
+"2007",
+"2015",
+"2011",
+"1991"
+],
+"explanation": "Chile ganó su primera Copa América en 2015, al vencer a Argentina en los penaltis, y la revalidó en 2016."
+},
+"463eeb882bf2ce99": {
+"question": "¿Quién es el máximo goleador histórico de la Serie A?",
+"options": [
+"Francesco Totti",
+"Gunnar Nordahl",
+"Silvio Piola",
+"Giuseppe Meazza"
+],
+"explanation": null
+},
+"b9c66ac935a31fad": {
+"question": "¿A qué equipo pertenece este escudo?",
+"options": [
+"Millwall",
+"Wrexham",
+"Preston North End",
+"Oxford United"
+],
+"explanation": "Este escudo pertenece al Millwall."
+},
+"d15e6d498430174a": {
+"question": "Antes de llegar al Barcelona en 2003, ¿en qué club francés jugó Ronaldinho?",
+"options": [
+"AS Monaco",
+"Olympique de Marsella",
+"Olympique de Lyon",
+"Paris Saint-Germain"
+],
+"explanation": "Ronaldinho jugó en el Paris Saint-Germain de 2001 a 2003 antes de fichar por el Barcelona."
+},
+"6ae9af2e2d862015": {
+"question": "¿Quién es este jugador?",
+"options": [
+"Ali Yeşilyurt",
+"Antoine Griezmann",
+"Dominic Hyam",
+"Carl Klaus"
+],
+"explanation": "Es Dominic Hyam, defensa central de Escocia que juega en el Wrexham."
+},
+"7e38152876eb8a05": {
+"question": "¿Quién fue el máximo goleador de la Copa América 2024, con cinco goles?",
+"options": [
+"Luis Díaz",
+"Lionel Messi",
+"Lautaro Martínez",
+"Darwin Núñez"
+],
+"explanation": "Lautaro Martínez terminó como máximo goleador de la Copa América 2024 con cinco goles."
+},
+"07c4b032be1d2042": {
+"question": "¿Quién es el jugador más caro fichado de un club de la MLS?",
+"options": [
+"Alphonso Davies",
+"Brenden Aaronson",
+"Ricardo Pepi",
+"Miguel Almirón"
+],
+"explanation": null
+},
+"5f270ec0e7bc1314": {
+"question": "¿Quién es el máximo goleador histórico de la Eredivisie?",
+"options": [
+"Willy van der Kuijlen",
+"Ruud van Nistelrooy",
+"Johan Cruyff",
+"Luuk de Jong"
+],
+"explanation": null
+},
+"ac90170fdcaf5d53": {
+"question": "¿Qué superestrella sueca jugó en el Ajax en la Eredivisie?",
+"options": [
+"Zlatan Ibrahimović",
+"Gunnar Nordahl",
+"Henrik Larsson",
+"Freddie Ljungberg"
+],
+"explanation": null
+},
+"52293fadbf3ece0f": {
+"question": "¿Quién es este jugador?",
+"options": [
+"Jonathan de Guzmán",
+"Carlos Vinícius",
+"Amir Rrahmani",
+"Dylan Vente"
+],
+"explanation": "Es Dylan Vente, delantero de Países Bajos que juega en el Heerenveen."
+},
+"9183b5c81c5474f9": {
+"question": "¿Quién es este jugador?",
+"options": [
+"Guilherme Arana",
+"Hidde Jurjus",
+"Admir Mehmedi",
+"Darko Nejašmić"
+],
+"explanation": "Es Admir Mehmedi, delantero de Suiza que juega en el Antalyaspor."
+},
+"87636ef0f8575331": {
+"question": "¿Qué jugador tiene el récord de más tarjetas rojas en la historia de LaLiga?",
+"options": [
+"Diego Godín",
+"Carles Puyol",
+"Fernando Hierro",
+"Sergio Ramos"
+],
+"explanation": "Sergio Ramos tiene el récord histórico de expulsiones en LaLiga, la mayoría durante su etapa en el Real Madrid."
+},
+"6b408abddada34c5": {
+"question": "¿Qué club español vendió a Rodri al Manchester City por su cláusula de 70,00 M€?",
+"options": [
+"Villarreal CF",
+"Real Madrid",
+"Atlético de Madrid",
+"Valencia CF"
+],
+"explanation": null
+},
+"d7c41fed562ed0bf": {
+"question": "El AC Milan retiró el dorsal 3 en honor a ¿qué legendario lateral?",
+"options": [
+"Cafu",
+"Alessandro Nesta",
+"Marcel Desailly",
+"Paolo Maldini"
+],
+"explanation": "El AC Milan retiró el número 3 cuando Paolo Maldini puso fin a su carrera de 25 años en 2009."
+},
+"ccce0a4d2be91b15": {
+"question": "¿Qué jugador ha ganado más títulos de la Bundesliga?",
+"options": [
+"Manuel Neuer",
+"Thomas Müller",
+"Oliver Kahn",
+"Bastian Schweinsteiger"
+],
+"explanation": null
+},
+"3aafd10d592b39db": {
+"question": "¿Quién es este jugador?",
+"options": [
+"Fábio Silva",
+"Ernest Poku",
+"Cristian Chivu",
+"Abdülkadir Ömür"
+],
+"explanation": "Es Abdülkadir Ömür, delantero de Turquía que juega en el Antalyaspor."
+},
+"2e4926f9f8825a7a": {
+"question": "¿Qué entrenador ha ganado más Champions League?",
+"options": [
+"Zinedine Zidane",
+"Bob Paisley",
+"Carlo Ancelotti",
+"Pep Guardiola"
+],
+"explanation": null
+},
+"816550b36075f5f4": {
+"question": "¿Quién es este jugador?",
+"options": [
+"Dango Ouattara",
+"João Mário",
+"Emiliano Martinez",
+"George Long"
+],
+"explanation": "Es George Long, portero de Inglaterra que juega en el Southampton."
+},
+"77d96f8dbdf3026f": {
+"question": "¿Con qué club ganó Arrigo Sacchi dos Copas de Europa seguidas, en 1989 y 1990?",
+"options": [
+"Juventus",
+"Inter de Milán",
+"AC Milan",
+"Napoli"
+],
+"explanation": "El AC Milan de Sacchi ganó la Copa de Europa en 1989 (4-0 al Steaua de Bucarest) y en 1990 (1-0 al Benfica)."
+},
+"8174ba3860ffdf7d": {
+"question": "¿Quién ganó la Bota de Oro del Mundial 2014?",
+"options": [
+"Thomas Müller",
+"James Rodríguez",
+"Lionel Messi",
+"Neymar"
+],
+"explanation": null
+},
+"a6b7629451b7cd94": {
+"question": "¿A qué país venció Alemania en la final del Mundial Femenino 2007?",
+"options": [
+"Brasil",
+"Suecia",
+"Noruega",
+"Estados Unidos"
+],
+"explanation": "Alemania venció 2-0 a Brasil en la final de 2007 y completó el torneo sin encajar un solo gol."
+},
+"a80862e66fd5ae1e": {
+"question": "¿Qué país ha ganado más Copas del Mundo?",
+"options": [
+"Alemania",
+"Italia",
+"Argentina",
+"Brasil"
+],
+"explanation": null
+},
+"82bbc067b044456b": {
+"question": "¿A qué selección venció España 1-0 en la final de la Eurocopa 2008 para acabar con 44 años sin títulos?",
+"options": [
+"Alemania",
+"Italia",
+"Rusia",
+"Países Bajos"
+],
+"explanation": "Fernando Torres marcó el único gol del 1-0 de España a Alemania en Viena para ganar la Eurocopa 2008."
+},
+"008ca960b3b228d0": {
+"question": "¿Quién es este jugador?",
+"options": [
+"António Silva",
+"Freddie Potts",
+"Ewoud Pletinckx",
+"Barış Alper Yılmaz"
+],
+"explanation": "Es Barış Alper Yılmaz, extremo derecho de Turquía que juega en el Galatasaray."
+},
+"d2d3654ea53466f6": {
+"question": "¿Qué club madrileño ganó la final de la Champions League de 2014, la primera final de la Copa de Europa entre dos clubes de la misma ciudad?",
+"options": [
+"Sevilla",
+"Atlético de Madrid",
+"Valencia",
+"Real Madrid"
+],
+"explanation": "El Real Madrid venció 4-1 al Atlético de Madrid tras la prórroga en la final de 2014, la primera final de la Copa de Europa entre dos clubes de una misma ciudad."
+},
+"d39af817d70a3bb6": {
+"question": "¿Qué ciudad acogió la final de la Champions League 2019 entre el Liverpool y el Tottenham Hotspur?",
+"options": [
+"Madrid",
+"Berlín",
+"Estambul",
+"París"
+],
+"explanation": null
+},
+"18250d6d36db4b69": {
+"question": "¿Qué estadio aparece en esta imagen?",
+"options": [
+"Portman Road",
+"Hillsborough",
+"MATRADE Loftus Road",
+"The Valley"
+],
+"explanation": "Es el Hillsborough, estadio del Sheffield Wednesday."
+},
+"a30d2398aeb4e80f": {
+"question": "¿Qué selección llevó Marcello Lippi al título en el Mundial 2006?",
+"options": [
+"Portugal",
+"Francia",
+"Alemania",
+"Italia"
+],
+"explanation": "Marcello Lippi dirigió a Italia al título mundial de 2006, venciendo a Francia en los penaltis en la final."
+},
+"69576342687fdf9d": {
+"question": "¿Quién es este jugador?",
+"options": [
+"Carlos Vicente",
+"Allan Saint-Maximin",
+"George Brown",
+"Bailey-Tye Cadamarteri"
+],
+"explanation": "Es Allan Saint-Maximin, extremo izquierdo de Francia que juega en el Fenerbahçe."
+},
+"effa3f670c82548b": {
+"question": "¿Quién marcó un hat-trick en la final del Mundial Femenino 2015 contra Japón?",
+"options": [
+"Alex Morgan",
+"Carli Lloyd",
+"Megan Rapinoe",
+"Abby Wambach"
+],
+"explanation": "Carli Lloyd marcó tres goles en los primeros 16 minutos del 5-2 de Estados Unidos a Japón en la final de 2015."
+},
+"44914dcb0910348d": {
+"question": "¿Qué equipo acumula más temporadas consecutivas en la máxima categoría francesa (Ligue 1)?",
+"options": [
+"Marseille",
+"Paris Saint-Germain",
+"Lyon",
+"Bordeaux"
+],
+"explanation": null
+},
+"858cb33cad7b7952": {
+"question": "¿Qué estadio aparece en esta imagen?",
+"options": [
+"Euroborg",
+"AFAS Stadion Alkmaar",
+"Philips Stadion",
+"Johan Cruijff ArenA"
+],
+"explanation": "Es el Philips Stadion, estadio del PSV Eindhoven."
+},
+"4cdff44c65858959": {
+"question": "¿Qué club ha ganado más títulos de la K League 1 de Corea del Sur?",
+"options": [
+"Ulsan Hyundai Horang-i",
+"Suwon Samsung Bluewings",
+"Seongnam Ilhwa Chunma",
+"Jeonbuk Hyundai Motors"
+],
+"explanation": "El Jeonbuk Hyundai Motors tiene el récord de títulos de la K League, incluidos cinco seguidos entre 2017 y 2021."
+},
+"e13feaa7e564a1a6": {
+"question": "¿Quién es este jugador?",
+"options": [
+"Elijah Dijkstra",
+"Jens Castrop",
+"Ármin Pécsi",
+"Amadou Mbengue"
+],
+"explanation": "Es Amadou Mbengue, centrocampista de Francia que juega en el Queens Park Rangers."
+},
+"1008e5e38c9d727c": {
+"question": "Sunil Chhetri, cuarto máximo goleador de la historia en selecciones masculinas, representa a ¿qué país?",
+"options": [
+"Indonesia",
+"Irak",
+"Uzbekistán",
+"India"
+],
+"explanation": "Sunil Chhetri, cuarto en la lista histórica de goleadores internacionales masculinos, juega con India."
+},
+"c608f6e2a5576a0d": {
+"question": "¿Qué entrenador ha ganado más títulos de la Premier League?",
+"options": [
+"Arsène Wenger",
+"Pep Guardiola",
+"Sir Alex Ferguson",
+"José Mourinho"
+],
+"explanation": null
+},
+"91a021f9af07d612": {
+"question": "¿Los clubes de qué país han ganado más Champions League?",
+"options": [
+"Inglaterra",
+"Italia",
+"España",
+"Alemania"
+],
+"explanation": null
+},
+"9b04886c2d1bda72": {
+"question": "¿De quién fue el resbalón y el penalti fallado en la tanda de la final de la Champions League 2008, uno de los más recordados de la historia del torneo?",
+"options": [
+"Ashley Cole",
+"Frank Lampard",
+"John Terry",
+"Michael Ballack"
+],
+"explanation": "John Terry resbaló y estrelló en el poste un penalti que habría dado la final de 2008 al Chelsea, que perdió la tanda 6-5 ante el Manchester United."
+},
+"b9e49f929914d0ef": {
+"question": "¿A qué selección venció Italia 3-1 en la final del Mundial 1982?",
+"options": [
+"Polonia",
+"Brasil",
+"Alemania Occidental",
+"Francia"
+],
+"explanation": "Italia venció 3-1 a Alemania Occidental en Madrid para ganar el Mundial 1982, su tercer título."
+},
+"aecdcbd5342d78ac": {
+"question": "¿Quién es este jugador?",
+"options": [
+"Jean Onana",
+"Hector Kyprianou",
+"Bryan Mbeumo",
+"Benedikt Gimber"
+],
+"explanation": "Es Hector Kyprianou, mediocentro defensivo de Chipre que juega en el Watford."
+},
+"6803ae61b90a149b": {
+"question": "¿Cuál es el club más laureado de la historia de la J-League, con el récord de títulos de liga?",
+"options": [
+"Kashima Antlers",
+"Yokohama F. Marinos",
+"Sanfrecce Hiroshima",
+"Kawasaki Frontale"
+],
+"explanation": "El Kashima Antlers es el club más laureado de la J-League, con el récord de títulos de la J1 League."
+},
+"e73cd5959f8a8933": {
+"question": "¿Qué club es el segundo con más títulos de LaLiga?",
+"options": [
+"Athletic Club",
+"Atlético de Madrid",
+"Barcelona",
+"Valencia"
+],
+"explanation": null
+},
+"a3b2ed261ba5a263": {
+"question": "¿Qué estadio aparece en esta imagen?",
+"options": [
+"AFAS Stadion Alkmaar",
+"Stadion Feyenoord",
+"Spartastadion",
+"Euroborg"
+],
+"explanation": "Es el Euroborg, estadio del Groningen."
+},
+"fae1c3e32351f22e": {
+"question": "¿Quién es el máximo goleador histórico de El Clásico?",
+"options": [
+"Alfredo Di Stéfano",
+"Cristiano Ronaldo",
+"Lionel Messi",
+"Raúl"
+],
+"explanation": "Lionel Messi es el máximo goleador histórico de El Clásico, con 26 goles con el Barcelona ante el Real Madrid."
+},
+"b79c1e3e475a24fa": {
+"question": "¿Quién es este jugador?",
+"options": [
+"David Preu",
+"Colby Bishop",
+"Andrei Rațiu",
+"Cesc Fabregas"
+],
+"explanation": "Es Colby Bishop, delantero de Inglaterra que juega en el Portsmouth."
+},
+"862c3d61d061888e": {
+"question": "¿Quién es este jugador?",
+"options": [
+"Idrissa Gueye",
+"Flynn Downes",
+"Alex Cairns",
+"Jayson Molumby"
+],
+"explanation": "Es Flynn Downes, mediocentro de Inglaterra que juega en el Southampton."
+},
+"062ee341a7493cef": {
+"question": "¿Quién es el único portero de la historia que ha ganado el Balón de Oro?",
+"options": [
+"Gianluigi Buffon",
+"Manuel Neuer",
+"Oliver Kahn",
+"Lev Yashin"
+],
+"explanation": null
+},
+"87232e1a223c85a0": {
+"question": "¿Cuántas Ligue 1 consecutivas ganó el Lyon durante su etapa dominante en los años 2000?",
+"options": [
+"7",
+"6",
+"5",
+"8"
+],
+"explanation": null
+},
+"ef2d4f091b24eef5": {
+"question": "¿Quién fue el jugador más joven en marcar un hat-trick en la Ligue 1?",
+"options": [
+"Kylian Mbappé",
+"Eden Hazard",
+"Karim Benzema",
+"Jérémy Ménez"
+],
+"explanation": null
+},
+"62309b7a2eda2e59": {
+"question": "¿Quién es este jugador?",
+"options": [
+"Hiroki Ito",
+"Gjivai Zechiël",
+"Carlos de Pena",
+"Ibrahim Diabaté"
+],
+"explanation": "Es Gjivai Zechiël, mediocentro defensivo de Países Bajos que juega en el Utrecht."
+},
+"4579ce8d080e9b4f": {
+"question": "¿Quién es este jugador?",
+"options": [
+"Brayann Pereira",
+"Ashley Barnes",
+"Dodi",
+"Isaías Delpupo"
+],
+"explanation": "Es Brayann Pereira, lateral derecho de Francia que juega en el NEC Nijmegen."
+},
+"410977d709ab518b": {
+"question": "¿De qué club fichó el Manchester United a Romelu Lukaku por 84,70 M€?",
+"options": [
+"Chelsea FC",
+"Everton FC",
+"Inter de Milán",
+"Anderlecht"
+],
+"explanation": null
+},
+"9c592b87e4550f79": {
+"question": "¿Cuántas Premier League consecutivas ganó el Manchester City entre 2020-21 y 2023-24?",
+"options": [
+"2",
+"3",
+"4",
+"5"
+],
+"explanation": null
+},
+"659625db75837548": {
+"question": "¿Quién es este jugador?",
+"options": [
+"Florian Neuhaus",
+"Donovan Léon",
+"Joël Drommel",
+"Andreas Schjelderup"
+],
+"explanation": "Es Andreas Schjelderup, delantero centro de Noruega que juega en el Benfica."
+},
+"c3e8e9e591c81e4c": {
+"question": "¿Qué leyenda de la Roma es el segundo máximo goleador de la historia de la Serie A?",
+"options": [
+"Gunnar Nordahl",
+"Roberto Baggio",
+"Antonio Di Natale",
+"Francesco Totti"
+],
+"explanation": null
+},
+"8e7ec5cda360f3e6": {
+"question": "¿Quién es este jugador?",
+"options": [
+"Joakim Mæhle",
+"Anas Tajaouart",
+"Bartuğ Elmaz",
+"Aihen Muñoz"
+],
+"explanation": "Es Bartuğ Elmaz, mediocentro defensivo de Turquía que juega en el Fenerbahçe."
+},
+"26ec60e2fd1959b4": {
+"question": "¿Qué jugador ganó el Guante de Oro del Mundial 2022?",
+"options": [
+"Hugo Lloris",
+"Dominik Livaković",
+"Yassine Bounou",
+"Emiliano Martínez"
+],
+"explanation": null
+},
+"dbf0720d766ce464": {
+"question": "¿Qué club tiene el récord de más Ligue 1 consecutivas?",
+"options": [
+"Paris Saint-Germain",
+"Saint-Étienne",
+"Marseille",
+"Lyon"
+],
+"explanation": null
+},
+"e698a8a3578fce23": {
+"question": "¿Qué entrenador italiano ha ganado la liga en las cinco grandes ligas europeas, incluida la Serie A con el AC Milan?",
+"options": [
+"Antonio Conte",
+"Massimiliano Allegri",
+"Roberto Mancini",
+"Carlo Ancelotti"
+],
+"explanation": null
+},
+"6a8b333406571a98": {
+"question": "¿Quién es este jugador?",
+"options": [
+"Eric Junior Dina Ebimbe",
+"Cesare Casadei",
+"Hamza Choudhury",
+"Casper Ankergren"
+],
+"explanation": "Es Hamza Choudhury, mediocentro defensivo de Bangladés que juega en el Leicester City."
+},
+"fba808309d741412": {
+"question": "¿Quién es este jugador?",
+"options": [
+"Ibrahim Fullah",
+"Alex Scott",
+"Bryan Zaragoza",
+"Alfonso Pastor"
+],
+"explanation": "Es Ibrahim Fullah, centrocampista de Inglaterra que juega en el Charlton Athletic."
+},
+"91611ba445ae3f9f": {
+"question": "Giovanni Trapattoni ganó seis Serie A como entrenador de ¿qué club italiano?",
+"options": [
+"AC Milan",
+"Juventus",
+"Inter de Milán",
+"Napoli"
+],
+"explanation": "Giovanni Trapattoni ganó seis Serie A con la Juventus entre 1977 y 1986."
+},
+"812236c0ae4a35cb": {
+"question": "El Inter de Milán se fundó en 1908 tras una escisión de ¿qué club?",
+"options": [
+"Genoa",
+"Juventus",
+"AC Milan",
+"Torino"
+],
+"explanation": "El Inter se fundó el 9 de marzo de 1908 por socios que se separaron del AC Milan porque querían alinear a jugadores extranjeros."
+},
+"5666f470159f69f0": {
+"question": "¿Quién tiene el récord histórico de goles en la Serie A?",
+"options": [
+"Silvio Piola",
+"Francesco Totti",
+"Gunnar Nordahl",
+"Alessandro Del Piero"
+],
+"explanation": null
+},
+"d38c9cbf54d33590": {
+"question": "¿Qué estadio aparece en esta imagen?",
+"options": [
+"Portman Road",
+"The Den",
+"Bramall Lane",
+"Ewood Park"
+],
+"explanation": "Es el Portman Road, estadio del Ipswich Town."
+},
+"35f0812a8e4685f6": {
+"question": "¿A qué equipo pertenece este escudo?",
+"options": [
+"Derby County",
+"Wrexham",
+"Birmingham City",
+"Norwich City"
+],
+"explanation": "Este escudo pertenece al Birmingham City."
+},
+"8fd50728e3c582f0": {
+"question": "El Parc des Princes es el estadio de ¿qué club francés desde 1974?",
+"options": [
+"Olympique de Lyon",
+"Olympique de Marsella",
+"Paris Saint-Germain",
+"AS Monaco"
+],
+"explanation": "El Paris Saint-Germain juega en el Parc des Princes, en el oeste de París, desde julio de 1974."
+},
+"23b0c86e59158141": {
+"question": "¿Quién es el último defensa en ganar el Balón de Oro masculino?",
+"options": [
+"Paolo Maldini",
+"Franz Beckenbauer",
+"Fabio Cannavaro",
+"Sergio Ramos"
+],
+"explanation": "Fabio Cannavaro ganó el Balón de Oro de 2006 tras capitanear a Italia hacia el título mundial, el último defensa en lograrlo."
+},
+"e32cf9648eb08396": {
+"question": "¿Quién es este jugador?",
+"options": [
+"Alex Silva",
+"Britt Assombalonga",
+"Gonçalo Ramos",
+"Fran Vieites"
+],
+"explanation": "Es Fran Vieites, portero de España que juega en el Leicester City."
+},
+"a61985a2b37b79be": {
+"question": "¿Qué club neerlandés ganó tres Copas de Europa consecutivas de 1971 a 1973?",
+"options": [
+"PSV Eindhoven",
+"Feyenoord",
+"Ajax",
+"AZ Alkmaar"
+],
+"explanation": "El Ajax de Johan Cruyff ganó tres Copas de Europa seguidas (1971-1973), la primera racha así desde la del Real Madrid."
+},
+"932ff2004ecd29a3": {
+"question": "¿Quién fue el máximo goleador de la Serie A 2023-24?",
+"options": [
+"Victor Osimhen",
+"Ciro Immobile",
+"Cristiano Ronaldo",
+"Lautaro Martínez"
+],
+"explanation": null
+},
+"99b10fc6ba6c0542": {
+"question": "¿Cuántos goles marcó Ferenc Puskás en el 7-3 del Real Madrid al Eintracht Frankfurt en la final de la Copa de Europa de 1960?",
+"options": [
+"5",
+"3",
+"2",
+"4"
+],
+"explanation": "Ferenc Puskás marcó cuatro y Alfredo Di Stéfano tres en el 7-3 con el que el Real Madrid ganó la final de la Copa de Europa de 1960 en Hampden Park."
+},
+"730d2adaa91e8b5b": {
+"question": "¿Cuál de estos clubes descendió de la Bundesliga al final de la temporada 2024-25?",
+"options": [
+"Augsburg",
+"Mainz 05",
+"Holstein Kiel",
+"Werder Bremen"
+],
+"explanation": "El Holstein Kiel descendió directamente de la Bundesliga en 2024-25."
+},
+"7f90a12e86e05bd7": {
+"question": "¿Quién es este jugador?",
+"options": [
+"Ayoze Pérez",
+"Amin Cherni",
+"Bernardo Folha",
+"Aaron Cresswell"
+],
+"explanation": "Es Amin Cherni, defensa de Francia que juega en el Göztepe."
+},
+"2ddd63642d4c47b8": {
+"question": "¿Quién es este jugador?",
+"options": [
+"Álex Forés",
+"Fábio",
+"Charlie Taylor",
+"Alex Neil"
+],
+"explanation": "Es Charlie Taylor, lateral izquierdo de Inglaterra que juega en el West Bromwich Albion."
+},
+"972703e3794adbb8": {
+"question": "La selección italiana, «Gli Azzurri», viste un azul asociado a ¿qué casa real?",
+"options": [
+"Casa de Saboya",
+"Casa de Borbón",
+"Casa de Habsburgo",
+"Casa de Médici"
+],
+"explanation": "Los Azzurri visten el azul Saboya, color tradicional de la Casa de Saboya, que reinó en el Reino de Italia."
+},
+"1fd9c05a663a3b63": {
+"question": "El Mundial 2026 es la primera edición con ¿cuántas selecciones?",
+"options": [
+"32",
+"48",
+"40",
+"64"
+],
+"explanation": null
+},
+"21048fade096019d": {
+"question": "¿A qué equipo pertenece este escudo?",
+"options": [
+"PEC Zwolle",
+"Ajax",
+"Sparta Rotterdam",
+"Feyenoord"
+],
+"explanation": "Este escudo pertenece al Sparta Rotterdam."
+},
+"532a833f44237bce": {
+"question": "¿Con qué resultado global eliminó el Barcelona al PSG tras su 6-1 en la vuelta de la Champions League 2017?",
+"options": [
+"7-5",
+"6-4",
+"6-5",
+"5-4"
+],
+"explanation": "Tras perder 4-0 en la ida, el 6-1 dio al Barcelona un global de 6-5 ante el PSG en los octavos de final de 2017."
+},
+"127202070600f43a": {
+"question": "¿Quién es este jugador?",
+"options": [
+"George Campbell",
+"Joseph Walsh",
+"Carlos Soler",
+"Alan Matturro"
+],
+"explanation": "Es George Campbell, defensa de Estados Unidos que juega en el West Bromwich Albion."
+},
+"a1cd7eef2fcb648e": {
+"question": "¿Cuántos goles marcó Lionel Messi para convertirse en el máximo goleador histórico de LaLiga?",
+"options": [
+"474",
+"502",
+"432",
+"520"
+],
+"explanation": null
+},
+"929d5f54ce880cb1": {
+"question": "En 1999, Peter Schmeichel fue el capitán del Manchester United en la final de ¿qué competición europea, con la que completaron el triplete?",
+"options": [
+"Champions League",
+"Copa de la UEFA",
+"Recopa de Europa",
+"Supercopa de Europa"
+],
+"explanation": "Con Roy Keane sancionado, Schmeichel fue el capitán del United en la final de la Champions League de 1999 que selló el triplete."
+},
+"6975c71ed5f9e2c7": {
+"question": "¿Quién es este jugador?",
+"options": [
+"Filip Szymczak",
+"Alassane Pléa",
+"Brian De Keersmaecker",
+"Daniele De Rossi"
+],
+"explanation": "Es Brian De Keersmaecker, centrocampista de Bélgica que juega en el Oxford United."
+},
+"ff212dc343318023": {
+"question": "Ghana ganó sus dos primeras Copas Africanas de Naciones en 1963 y ¿en qué otro año?",
+"options": [
+"1970",
+"1968",
+"1965",
+"1972"
+],
+"explanation": "Las Black Stars de Ghana, dirigidas por Charles Gyamfi, ganaron la Copa Africana de forma consecutiva en 1963 y 1965."
+},
+"8ec19ee2c79518b7": {
+"question": "¿Quién fue el primer Jugador Mundial de la FIFA, elegido en 1991?",
+"options": [
+"Marco van Basten",
+"Jean-Pierre Papin",
+"Roberto Baggio",
+"Lothar Matthäus"
+],
+"explanation": "El alemán Lothar Matthäus ganó el primer premio al Jugador Mundial de la FIFA en 1991."
+},
+"b079a2d8c702cd29": {
+"question": "¿Cuántas veces ganó Johan Cruyff el Balón de Oro (Futbolista Europeo del Año)?",
+"options": [
+"3",
+"2",
+"4",
+"1"
+],
+"explanation": "Cruyff ganó el Balón de Oro tres veces: en 1971, 1973 y 1974."
+},
+"1546e11ffc61302c": {
+"question": "¿Qué estadio aparece en esta imagen?",
+"options": [
+"Estádio do Dragão",
+"Estádio da Madeira",
+"Estádio Municipal de Arouca",
+"Estádio da Luz"
+],
+"explanation": "Es el Estádio da Luz, estadio del Benfica."
+},
+"e4f4f0abb3f1ac79": {
+"question": "¿Qué jugador tiene más goles en propia puerta en la historia de la Bundesliga?",
+"options": [
+"Manfred Kaltz",
+"Jérôme Boateng",
+"Mats Hummels",
+"Willi Schulz"
+],
+"explanation": null
+},
+"93b55eb5f14c1661": {
+"question": "¿De qué club llegó Kevin De Bruyne al Manchester City?",
+"options": [
+"VfL Wolfsburg",
+"SV Werder Bremen",
+"Chelsea FC",
+"KRC Genk"
+],
+"explanation": null
+},
+"ece720c71cbdc5be": {
+"question": "¿Qué club es el tercero con más títulos de LaLiga?",
+"options": [
+"Athletic Club",
+"Valencia CF",
+"Real Sociedad",
+"Atlético de Madrid"
+],
+"explanation": null
+},
+"af5043a70df2a9a8": {
+"question": "Gareth Bale empezó su carrera en el Southampton y el Tottenham en ¿qué posición antes de convertirse en un extremo veloz?",
+"options": [
+"Portero",
+"Delantero centro",
+"Lateral izquierdo",
+"Defensa central"
+],
+"explanation": "Bale empezó como lateral izquierdo en el Southampton y el Tottenham antes de que Harry Redknapp lo adelantara a extremo."
+},
+"2e9be6f98d36518a": {
+"question": "¿Quién fue el capitán de Inglaterra en su triunfo en el Mundial de 1966?",
+"options": [
+"Geoff Hurst",
+"Bobby Charlton",
+"Bobby Moore",
+"Gordon Banks"
+],
+"explanation": "Bobby Moore fue el capitán de Inglaterra y levantó el trofeo tras ganar la final de 1966 a Alemania Occidental."
+},
+"9ee442c6d77dcc1c": {
+"question": "¿Quién es este jugador?",
+"options": [
+"Daniel Carvajal",
+"Andri Guðjohnsen",
+"Abdoul Ouattara",
+"Cédric Kipré"
+],
+"explanation": "Es Cédric Kipré, defensa central de Costa de Marfil que juega en el Ipswich Town."
+},
+"3c30ee75c97f3848": {
+"question": "¿Quién es este jugador?",
+"options": [
+"Allan-Romeo Nyom",
+"Gonçalo Franco",
+"Daniel Klein",
+"Anan Khalaili"
+],
+"explanation": "Es Gonçalo Franco, centrocampista de Portugal que juega en el Swansea City."
+},
+"b6406b09aeaec435": {
+"question": "¿Qué club vendió a Wesley Fofana al Chelsea por 80,40 M€?",
+"options": [
+"AS Saint-Étienne",
+"Leicester City",
+"AS Monaco",
+"Olympique de Lyon"
+],
+"explanation": null
+},
+"6e5abc8738596199": {
+"question": "¿Contra qué selección llegó el famoso gol de la «Mano de Dios» de Maradona en el Mundial de 1986?",
+"options": [
+"Inglaterra",
+"Bélgica",
+"Alemania Occidental",
+"Uruguay"
+],
+"explanation": "El gol con la mano de Maradona, la «Mano de Dios», llegó en el 2-1 de Argentina a Inglaterra en los cuartos de final de 1986."
+},
+"8b4a04fecdec78c5": {
+"question": "En 1998, ¿qué club sorprendió a Europa batiendo el récord mundial de traspasos para fichar a Denílson?",
+"options": [
+"Sevilla",
+"Real Madrid",
+"Real Betis",
+"Valencia"
+],
+"explanation": "El modesto Real Betis pagó al São Paulo un récord mundial de 21,5 millones de libras por Denílson en 1998, una cifra asombrosa para la época."
+},
+"c768e0231c18a7fc": {
+"question": "¿Cuánto costó el traspaso récord de Neymar del Barcelona al PSG (en euros de la época)?",
+"options": [
+"144,5 M€",
+"180 M€",
+"200 M€",
+"222 M€"
+],
+"explanation": null
+},
+"5867b10bef9c11c4": {
+"question": "En un balón a tierra, ¿a qué distancia mínima deben quedarse todos los jugadores salvo el que lo recibe?",
+"options": [
+"4 m",
+"2 m",
+"9,15 m",
+"5 m"
+],
+"explanation": "La Regla 8 exige que los demás jugadores de ambos equipos se mantengan al menos a 4 m (4,5 yardas) del balón a tierra hasta que esté en juego."
+},
+"3bf1b9abd62058f9": {
+"question": "¿Quién es este jugador?",
+"options": [
+"Adrien Thomasson",
+"Darko Gyabi",
+"Claudio Giráldez",
+"Christopher Téa Operi"
+],
+"explanation": "Es Darko Gyabi, mediocentro de Inglaterra que juega en el Hull City."
+},
+"2a8382e58abdb79d": {
+"question": "¿Quién ganó la Bota de Oro del Mundial 2018?",
+"options": [
+"Kylian Mbappé",
+"Harry Kane",
+"Antoine Griezmann",
+"Eden Hazard"
+],
+"explanation": null
+},
+"81f9328651a66761": {
+"question": "¿Qué país ganó su primer Mundial en 1978?",
+"options": [
+"Brasil",
+"Países Bajos",
+"Italia",
+"Argentina"
+],
+"explanation": null
+},
+"413ee258a63f85a3": {
+"question": "¿Quién es este jugador?",
+"options": [
+"Benjamin Whiteman",
+"Bazoumana Touré",
+"Christopher Téa Operi",
+"Brandon Austin"
+],
+"explanation": "Es Christopher Téa Operi, defensa de Costa de Marfil que juega en el İstanbul Başakşehir."
+},
+"c0ac81adb7b8c789": {
+"question": "¿Quién es este jugador?",
+"options": [
+"Emir Sahiti",
+"David Preu",
+"Bazoumana Touré",
+"Cengiz Ünder"
+],
+"explanation": "Es Cengiz Ünder, extremo derecho de Turquía que juega en el Beşiktaş."
+},
+"187a98f1dad1e7d9": {
+"question": "¿Quién ganó el Mundial 1982 disputado en España?",
+"options": [
+"Alemania Occidental",
+"Brasil",
+"Italia",
+"Argentina"
+],
+"explanation": null
+},
+"66dc156fe384dcbd": {
+"question": "Antonio Conte ganó la Premier League en su primera temporada, 2016-17, al frente de ¿qué club?",
+"options": [
+"Manchester United",
+"Tottenham Hotspur",
+"Arsenal",
+"Chelsea"
+],
+"explanation": "Antonio Conte ganó la Premier League 2016-17 en su primera temporada como entrenador del Chelsea."
+},
+"aa32f9784d3855bc": {
+"question": "¿Qué jugador argentino es el cuarto con más partidos en la historia de la Serie A?",
+"options": [
+"José Altafini",
+"Mauro Icardi",
+"Lautaro Martínez",
+"Javier Zanetti"
+],
+"explanation": null
+},
+"5f3ec174060ff38a": {
+"question": "¿Qué club ganó la primera Copa Libertadores, en 1960?",
+"options": [
+"Independiente",
+"Peñarol",
+"Santos",
+"Nacional"
+],
+"explanation": "El Peñarol uruguayo ganó la primera Copa Libertadores en 1960 tras vencer en la final al Olimpia de Paraguay."
+},
+"5efc4fad6e34d52a": {
+"question": "¿Qué club ganó la Premier League 2025-26 con Mikel Arteta?",
+"options": [
+"Liverpool",
+"Manchester City",
+"Arsenal",
+"Manchester United"
+],
+"explanation": null
+},
+"38e1b89b80e1a179": {
+"question": "¿Quién es este jugador?",
+"options": [
+"Enzo Díaz",
+"Dalangunypole Gomis",
+"Egil Selvik",
+"Bruny Nsimba"
+],
+"explanation": "Es Egil Selvik, portero noruego que juega en el Watford."
+},
+"f698e1945391d1c8": {
+"question": "¿Quién fue el máximo goleador del Mundial de 1986?",
+"options": [
+"Diego Maradona",
+"Gary Lineker",
+"Careca",
+"Jean-Pierre Papin"
+],
+"explanation": null
+},
+"b335bc59fc0d7468": {
+"question": "¿Quién es este jugador?",
+"options": [
+"Isak Steiner Jensen",
+"Jonathan de Guzmán",
+"Alvaro Arbeloa",
+"Cristian Chivu"
+],
+"explanation": "Es Jonathan de Guzmán, centrocampista neerlandés que juega en el Sparta Rotterdam."
+},
+"7bf050dd2c1ec100": {
+"question": "En 2008, el Manchester City, recién adquirido por Abu Dabi, batió el récord de traspaso británico para fichar a ¿qué delantero brasileño del Real Madrid?",
+"options": [
+"Kaká",
+"Robinho",
+"Adriano",
+"Alexandre Pato"
+],
+"explanation": "El Manchester City fichó a Robinho del Real Madrid el último día del mercado de 2008 por unos 32,5 millones de libras, un récord británico que marcó el inicio de su era de grandes inversiones."
+},
+"3436bf49de87c03d": {
+"question": "¿Quién es este jugador?",
+"options": [
+"Alberto Moleiro",
+"Dyego Sousa",
+"Argyris Darelas",
+"Emran Soglo"
+],
+"explanation": "Es Argyris Darelas, centrocampista griego que juega en el NEC Nijmegen."
+},
+"32903362c7074188": {
+"question": "¿Qué entrenador es famoso por ganar la Champions League con el Oporto y con el Inter de Milán?",
+"options": [
+"Carlo Ancelotti",
+"Jupp Heynckes",
+"Pep Guardiola",
+"José Mourinho"
+],
+"explanation": null
+},
+"01957ebbfc402380": {
+"question": "¿Quién es este jugador?",
+"options": [
+"Donyell Malen",
+"Asier Osambela",
+"David Bates",
+"Eugenio Pizzuto"
+],
+"explanation": "Es Eugenio Pizzuto, centrocampista mexicano que juega en el Braga."
+},
+"0921df34243e7576": {
+"question": "¿Quién es el máximo goleador histórico de la Ligue 1?",
+"options": [
+"Bernard Lacombe",
+"Delio Onnis",
+"Hervé Revelli",
+"Kylian Mbappé"
+],
+"explanation": null
+},
+"769c1dc0a885c7c3": {
+"question": "¿Cómo se llama el prestigioso premio al mejor futbolista joven de Europa menor de 21 años?",
+"options": [
+"Trofeo Kopa",
+"Premio Bravo",
+"Golden Boy",
+"Premio Puskás"
+],
+"explanation": null
+},
+"284a29a815cb90d8": {
+"question": "¿Cuánto costó el traspaso de Harry Maguire al Manchester United?",
+"options": [
+"75,50 M€",
+"87,00 M€",
+"81,20 M€",
+"92,40 M€"
+],
+"explanation": null
+},
+"b9c43c8cffd4640d": {
+"question": "¿Qué estadio aparece en esta imagen?",
+"options": [
+"Abe Lenstra Stadion",
+"AFAS Stadion Alkmaar",
+"711 Stadion",
+"Fortuna Sittard Stadion"
+],
+"explanation": "Es el AFAS Stadion Alkmaar, el estadio del AZ Alkmaar."
+},
+"1df6c945960deed8": {
+"question": "El apodo alternativo de la selección brasileña, \"Canarinho\", hace referencia a ¿qué ave?",
+"options": [
+"Tucán",
+"Loro",
+"Canario",
+"Guacamayo"
+],
+"explanation": "Canarinho significa 'canarito', inspirado en las camisetas amarillas de Brasil, que recuerdan a esta ave."
+},
+"1afa183eed7a2d56": {
+"question": "¿Quién es este jugador?",
+"options": [
+"Himad Abdelli",
+"Jens Stage",
+"Hayden Carter",
+"Davinson Sánchez"
+],
+"explanation": "Es Hayden Carter, defensa central inglés que juega en el Blackburn Rovers."
+},
+"c49c725e05002357": {
+"question": "¿Contra qué selección marcó Miroslav Klose un hat-trick en su debut mundialista, en una goleada 8-0 en 2002?",
+"options": [
+"Camerún",
+"Costa Rica",
+"Arabia Saudí",
+"Túnez"
+],
+"explanation": "Klose marcó tres goles de cabeza en su debut mundialista en el 8-0 de Alemania a Arabia Saudí en 2002."
+},
+"aa0b4fad8831c263": {
+"question": "¿Qué jugador galés ocupa el puesto más alto en la lista histórica de partidos jugados en la Premier League?",
+"options": [
+"Ian Rush",
+"Ryan Giggs",
+"Gary Speed",
+"Gareth Bale"
+],
+"explanation": null
+},
+"c90b21444324aed9": {
+"question": "¿Quién es este jugador?",
+"options": [
+"Abdoulrahmane Harroui",
+"Alfon",
+"Christoph Klarer",
+"Damon Mirani"
+],
+"explanation": "Es Christoph Klarer, defensa central austriaco que juega en el Birmingham City."
+},
+"23b15507c2d62bed": {
+"question": "¿A qué club llegó Alan Shearer en 1996 con un traspaso récord mundial de 15 millones de libras?",
+"options": [
+"Liverpool",
+"Blackburn Rovers",
+"Manchester United",
+"Newcastle United"
+],
+"explanation": "Shearer fichó por el Newcastle United, el club de su ciudad, procedente del Blackburn Rovers en julio de 1996 por 15 millones de libras, récord mundial en aquel momento."
+},
+"9ab18c04bc4bde9b": {
+"question": "¿Con qué selección ha jugado Lucy Bronze a nivel internacional?",
+"options": [
+"Gales",
+"Escocia",
+"Inglaterra",
+"Países Bajos"
+],
+"explanation": "Lucy Bronze es internacional con Inglaterra y ayudó a las Lionesses a ganar la Eurocopa Femenina 2022."
+},
+"924216139e988e54": {
+"question": "¿De qué equipo es este escudo?",
+"options": [
+"Fatih Karagümrük",
+"Gaziantep",
+"Samsunspor",
+"Beşiktaş"
+],
+"explanation": "Este escudo pertenece al Fatih Karagümrük."
+},
+"def9264fde408a20": {
+"question": "¿Qué club ganó la Copa Libertadores 2023 ante Boca Juniors, su primer título en la competición?",
+"options": [
+"Flamengo",
+"Fluminense",
+"Internacional",
+"Grêmio"
+],
+"explanation": "Fluminense ganó su primera Copa Libertadores en 2023 al vencer a Boca Juniors por 2-1 en la prórroga."
+},
+"bc727d8831b89e04": {
+"question": "¿Con qué nombre se fundó originalmente el Manchester United en 1878?",
+"options": [
+"Ardwick AFC",
+"Newton Heath",
+"Manchester Central",
+"Gorton Villa"
+],
+"explanation": "El club fue fundado en 1878 por trabajadores ferroviarios como Newton Heath LYR Football Club y pasó a llamarse Manchester United en 1902."
+},
+"791323e16695e26b": {
+"question": "¿Qué país ha ganado más Copas de Asia, con 4 (1992, 2000, 2004, 2011)?",
+"options": [
+"Irán",
+"Japón",
+"Arabia Saudí",
+"Corea del Sur"
+],
+"explanation": null
+},
+"12df5bcf401b9079": {
+"question": "¿Quién es este jugador?",
+"options": [
+"Gerson",
+"Arthur Okonkwo",
+"Joël Drommel",
+"Adrian"
+],
+"explanation": "Es Arthur Okonkwo, portero inglés que juega en el Wrexham."
+},
+"6032af97cde3b88b": {
+"question": "A fecha de 2026, ¿cuál es el fichaje más caro de la historia del Manchester City?",
+"options": [
+"Jack Grealish",
+"Erling Haaland",
+"Kevin De Bruyne",
+"Rodri"
+],
+"explanation": null
+},
+"6320bb83c33de445": {
+"question": "¿En qué año se convirtió Camerún en la primera selección africana en llegar a cuartos de final de un Mundial?",
+"options": [
+"1982",
+"1986",
+"1990",
+"1994"
+],
+"explanation": "Camerún alcanzó los cuartos de final del Mundial de 1990 en Italia, la primera selección africana en lograrlo, antes de caer ante Inglaterra."
+},
+"6ea827325455f213": {
+"question": "¿Quién es este jugador?",
+"options": [
+"Emran Soglo",
+"Emmanuel Junior Kakou",
+"Aladji Bamba",
+"Caleb Wiley"
+],
+"explanation": "Es Caleb Wiley, defensa estadounidense que juega en el Watford."
+},
+"a83891c1cc27a373": {
+"question": "¿Qué estadio aparece en esta imagen?",
+"options": [
+"Rat Verlegh Stadion",
+"Asito Stadion",
+"Kras Stadion",
+"De Adelaarshorst"
+],
+"explanation": "Es el Rat Verlegh Stadion, el estadio del NAC Breda."
+},
+"c6d746060d873685": {
+"question": "Lionel Messi tiene el récord de Botas de Oro europeas. ¿Cuántas ha ganado?",
+"options": [
+"4",
+"5",
+"6",
+"7"
+],
+"explanation": "Messi es el único jugador que ha ganado seis veces la Bota de Oro europea, todas en el Barcelona."
+},
+"eb2e20428c8fa5ee": {
+"question": "¿Qué jugador tiene el récord de partidos disputados en la Serie A?",
+"options": [
+"Paolo Maldini",
+"Javier Zanetti",
+"Francesco Totti",
+"Gianluigi Buffon"
+],
+"explanation": null
+},
+"6b7cf4277732eaab": {
+"question": "¿Qué jugador es el segundo máximo goleador histórico de LaLiga?",
+"options": [
+"Telmo Zarra",
+"Hugo Sánchez",
+"Raúl",
+"Cristiano Ronaldo"
+],
+"explanation": null
+},
+"48605bcc023066ad": {
+"question": "El Mundial de 2002 lo organizaron Japón y ¿qué otro país?",
+"options": [
+"Corea del Sur",
+"China",
+"Tailandia",
+"Vietnam"
+],
+"explanation": "El Mundial de 2002 fue el primero con dos anfitriones: Japón y Corea del Sur."
+},
+"89aef0846d897b4e": {
+"question": "¿En qué año se jugó la final de Mundial con más goles, el 5-2 de Brasil a Suecia?",
+"options": [
+"1970",
+"1954",
+"1958",
+"1950"
+],
+"explanation": "El 5-2 de Brasil a Suecia en la final de 1958 sigue siendo la final de un Mundial con más goles."
+},
+"7b751761eda41eff": {
+"question": "¿Quién tiene el récord del traspaso más caro de un centrocampista?",
+"options": [
+"Florian Wirtz",
+"Enzo Fernández",
+"Jack Grealish",
+"Moisés Caicedo"
+],
+"explanation": null
+},
+"8d82b5d819673910": {
+"question": "¿Quién es este jugador?",
+"options": [
+"Gustavo Nunes",
+"Cenk Özkacar",
+"Bruma",
+"Emir Yaşar"
+],
+"explanation": "Es Emir Yaşar, portero turco que juega en el Beşiktaş."
+},
+"361fb8592aecf174": {
+"question": "¿Quién es este jugador?",
+"options": [
+"Enis Destan",
+"Francesco Coppola",
+"Boubakary Soumaré",
+"Dante"
+],
+"explanation": "Es Enis Destan, atacante turco que juega en el Hull City."
+},
+"76824e1a67545c57": {
+"question": "¿Quién es este jugador?",
+"options": [
+"Ayase Ueda",
+"Ardon Jashari",
+"Calvin Twigt",
+"Adrian Segecic"
+],
+"explanation": "Es Ayase Ueda, delantero centro japonés que juega en el Feyenoord."
+},
+"83d97db4d11a32d7": {
+"question": "Dino Zoff se convirtió en el campeón del mundo de más edad cuando Italia ganó el Mundial ¿en qué año?",
+"options": [
+"1986",
+"1978",
+"1970",
+"1982"
+],
+"explanation": "Zoff fue el capitán de Italia campeona del Mundial de 1982 con 40 años, lo que le convierte en el campeón del mundo de más edad."
+},
+"923954a939b5b335": {
+"question": "¿Quién tiene el récord de más partidos internacionales en el fútbol masculino?",
+"options": [
+"Bader Al-Mutawa",
+"Cristiano Ronaldo",
+"Lionel Messi",
+"Luka Modrić"
+],
+"explanation": null
+},
+"7729fc1d3301c9d6": {
+"question": "¿Quién es este jugador?",
+"options": [
+"Hannibal Mejbri",
+"Fabián Balbuena",
+"Alan Varela",
+"Fabio Chiarodia"
+],
+"explanation": "Es Alan Varela, mediocentro defensivo argentino que juega en el Oporto."
+},
+"fe184ee25bb9e5fb": {
+"question": "¿Quién es este jugador?",
+"options": [
+"Craig Forsyth",
+"Aaron Meijers",
+"Emil Holm",
+"Arturo Calabresi"
+],
+"explanation": "Es Craig Forsyth, defensa escocés que juega en el Derby County."
+},
+"eac960e127359328": {
+"question": "¿Qué estadio aparece en esta imagen?",
+"options": [
+"De Adelaarshorst",
+"Abe Lenstra Stadion",
+"Rat Verlegh Stadion",
+"Fortuna Sittard Stadion"
+],
+"explanation": "Es el Abe Lenstra Stadion, el estadio del Heerenveen."
+},
+"c3518dadd4a1920f": {
+"question": "¿Quién ganó el Balón de Oro 2025?",
+"options": [
+"Lamine Yamal",
+"Ousmane Dembélé",
+"Vitinha",
+"Mohamed Salah"
+],
+"explanation": null
+},
+"cfb0ea03e468a194": {
+"question": "¿Quién fue el primer jugador en ganar el trofeo de máximo goleador de la Bundesliga siete veces, un récord?",
+"options": [
+"Robert Lewandowski",
+"Gerd Müller",
+"Karl-Heinz Rummenigge",
+"Ulf Kirsten"
+],
+"explanation": null
+},
+"01de5214ac908192": {
+"question": "Lionel Messi batió el récord mundial de goles en un año natural en 2012. ¿Cuántos marcó ese año?",
+"options": [
+"79",
+"91",
+"86",
+"85"
+],
+"explanation": "Messi marcó 91 goles en 2012, récord Guinness de más goles en un año natural."
+},
+"afaa52dd7cd7439c": {
+"question": "¿De qué club llegó Zinedine Zidane al Real Madrid en 2001 con un traspaso récord mundial?",
+"options": [
+"Inter de Milán",
+"Burdeos",
+"Juventus",
+"AC Milan"
+],
+"explanation": "El Real Madrid fichó a Zidane de la Juventus en 2001 por un récord mundial de 77,5 M€ (unos 46 millones de libras), una cifra que se mantuvo ocho años."
+},
+"8d8078eedf72e323": {
+"question": "¿Quién fue el máximo goleador del Mundial de 1970?",
+"options": [
+"Gerd Müller",
+"Pelé",
+"Jairzinho",
+"Bobby Charlton"
+],
+"explanation": null
+},
+"7efae6017241f3e3": {
+"question": "¿Qué selección ganó el Mundial de 1970?",
+"options": [
+"Italia",
+"Brasil",
+"Alemania Occidental",
+"Uruguay"
+],
+"explanation": null
+},
+"eafbc0b49116f8b6": {
+"question": "¿Quién es este jugador?",
+"options": [
+"Léo Andrade",
+"Ernest Poku",
+"David Ozoh",
+"Alberto Flores"
+],
+"explanation": "Es David Ozoh, centrocampista inglés que juega en el Derby County."
+},
+"3e5ef14a6e713de5": {
+"question": "¿Cuántos goles marcó Erling Haaland en su temporada récord 2022-23 de la Premier League?",
+"options": [
+"32",
+"36",
+"34",
+"38"
+],
+"explanation": null
+},
+"4d347f50a2b3cc89": {
+"question": "¿Qué club ha llegado a más finales de la Champions League sin ganar nunca el trofeo?",
+"options": [
+"Valencia CF",
+"Arsenal FC",
+"Atlético de Madrid",
+"AS Monaco"
+],
+"explanation": null
+},
+"0434864530228ae1": {
+"question": "¿Qué selección se convirtió en 2022 en la primera africana de la historia en llegar a las semifinales de un Mundial?",
+"options": [
+"Ghana",
+"Senegal",
+"Marruecos",
+"Nigeria"
+],
+"explanation": null
+},
+"221902118fec4a1b": {
+"question": "¿Quién fue el máximo goleador del Mundial de 2022?",
+"options": [
+"Kylian Mbappé",
+"Lionel Messi",
+"Olivier Giroud",
+"Antoine Griezmann"
+],
+"explanation": null
+},
+"a5919264c69d40c8": {
+"question": "¿Quién es este jugador?",
+"options": [
+"Adama Camara",
+"Lucas Vennegoor of Hesselink",
+"Conor Shaughnessy",
+"Federico Bonazzoli"
+],
+"explanation": "Es Conor Shaughnessy, defensa irlandés que juega en el Portsmouth."
+},
+"f9e9de5d0711d697": {
+"question": "¿A qué selección anfitriona venció Portugal en la final de la Eurocopa 2016?",
+"options": [
+"Alemania",
+"Gales",
+"Francia",
+"Bélgica"
+],
+"explanation": "Portugal venció 1-0 a la anfitriona Francia en la prórroga, con Eder marcando el único gol de la final de la Eurocopa 2016."
+},
+"d83b06b25b1f6399": {
+"question": "¿Quién es el fichaje adolescente más caro de la historia del fútbol?",
+"options": [
+"Anthony Martial",
+"João Félix",
+"Jude Bellingham",
+"Kylian Mbappé"
+],
+"explanation": null
+},
+"df297d7d814c6aae": {
+"question": "El apodo del Atlético de Madrid, \"Los Colchoneros\", hace referencia a ¿qué oficio?",
+"options": [
+"Colchoneros",
+"Albañiles",
+"Pescadores",
+"Herreros"
+],
+"explanation": "Los Colchoneros hace referencia a los fabricantes de colchones: en la posguerra, los colchones usaban la misma tela a rayas rojas y blancas que la camiseta."
+},
+"233f803f6c9bebd5": {
+"question": "¿Quién es este jugador?",
+"options": [
+"Bryan Linssen",
+"Gernot Trauner",
+"Lorenzo Torriani",
+"Gennaro Borrelli"
+],
+"explanation": "Es Bryan Linssen, extremo neerlandés que juega en el NEC Nijmegen."
+},
+"5dd88edf6def9a60": {
+"question": "¿Quién es este jugador?",
+"options": [
+"Dilane Bakwa",
+"Daley Sinkgraven",
+"Conor Shaughnessy",
+"Hiroki Ito"
+],
+"explanation": "Es Daley Sinkgraven, lateral izquierdo neerlandés que juega en el Fortuna Sittard."
+},
+"82e049cd33a62fdc": {
+"question": "¿Qué país ganó la Eurocopa 1996?",
+"options": [
+"Francia",
+"Alemania",
+"Inglaterra",
+"República Checa"
+],
+"explanation": null
+},
+"fb083fbb38757a31": {
+"question": "¿Quién es este jugador?",
+"options": [
+"Jake Bidwell",
+"Daniël van Kaam",
+"Aritz Elustondo",
+"Ante Budimir"
+],
+"explanation": "Es Jake Bidwell, lateral izquierdo inglés que juega en el Coventry City."
+},
+"549f7507ebe17b5b": {
+"question": "¿Quién es este jugador?",
+"options": [
+"Benjamin Cremaschi",
+"Bernardo Folha",
+"Alexander Aravena",
+"Dion De Neve"
+],
+"explanation": "Es Bernardo Folha, centrocampista portugués que juega en el Oporto."
+},
+"a7c3b1d5aad25a38": {
+"question": "¿Qué jugador del Liverpool marcó tras el córner sacado en rápido por Trent Alexander-Arnold en la remontada de semifinales de 2019 ante el Barcelona?",
+"options": [
+"Sadio Mane",
+"Divock Origi",
+"Roberto Firmino",
+"Mohamed Salah"
+],
+"explanation": "Divock Origi remató el córner rápido de Trent Alexander-Arnold para el 4-0, con el que el Liverpool remontó un 3-0 y eliminó al Barcelona por 4-3 en el global en 2019."
+},
+"72a6eaa06b0e168b": {
+"question": "¿Qué selección ha ganado más Copas Africanas de Naciones en la historia?",
+"options": [
+"Camerún",
+"Egipto",
+"Ghana",
+"Nigeria"
+],
+"explanation": null
+},
+"c18a6de7a74ca849": {
+"question": "¿Quién tiene el récord de más goles en una sola temporada de la Bundesliga?",
+"options": [
+"Gerd Müller",
+"Pierre-Emerick Aubameyang",
+"Robert Lewandowski",
+"Lothar Emmerich"
+],
+"explanation": null
+},
+"a68456eb05c282cb": {
+"question": "A fecha de 2026, ¿cuál es el fichaje récord del Arsenal?",
+"options": [
+"Nicolas Pépé",
+"Pierre-Emerick Aubameyang",
+"Declan Rice",
+"Kai Havertz"
+],
+"explanation": null
+},
+"42d2bd5826607081": {
+"question": "¿Quién es este jugador?",
+"options": [
+"Gerrit Nauber",
+"Joel Ideho",
+"Ben Gibson",
+"Andre-Frank Zambo Anguissa"
+],
+"explanation": "Es Gerrit Nauber, defensa alemán que juega en el Go Ahead Eagles."
+},
+"3b588629f2b28b34": {
+"question": "¿Quién fue el jugador más joven en debutar en la Bundesliga?",
+"options": [
+"Jamal Musiala",
+"Nuri Sahin",
+"Jude Bellingham",
+"Youssoufa Moukoko"
+],
+"explanation": null
+},
+"f96d76d15a45fa7c": {
+"question": "¿Quién es este jugador?",
+"options": [
+"Joakim Mæhle",
+"Jerry Afriyie",
+"Francisco Sierralta",
+"Jack Stacey"
+],
+"explanation": "Es Jack Stacey, lateral derecho inglés que juega en el Norwich City."
+},
+"3f87c8fd48fce9fc": {
+"question": "¿Qué selección organizó y ganó la Copa de Asia 2023, venciendo 3-1 a Jordania en la final?",
+"options": [
+"Emiratos Árabes Unidos",
+"Catar",
+"Arabia Saudí",
+"Irak"
+],
+"explanation": "Catar revalidó el título como anfitriona de la Copa de Asia 2023 al vencer 3-1 a Jordania en la final de Lusail, con un hat-trick de penaltis de Akram Afif."
+},
+"57fb80d9071dfc17": {
+"question": "¿De qué equipo es este escudo?",
+"options": [
+"AVS",
+"Casa Pia",
+"Nacional de Madeira",
+"Estoril Praia"
+],
+"explanation": "Este escudo pertenece al Estoril Praia."
+},
+"4f48d17ef91b7e86": {
+"question": "¿Quién es este jugador?",
+"options": [
+"Brandon Aguilera",
+"Brandley Kuwas",
+"Duke Verduin",
+"Genesis Antwi"
+],
+"explanation": "Es Brandon Aguilera, mediapunta costarricense que juega en el Rio Ave."
+},
+"a03af7941c0b0140": {
+"question": "¿Quién marcó el gol de la victoria de Portugal en la prórroga de la final de la Eurocopa 2016?",
+"options": [
+"Cristiano Ronaldo",
+"Éder",
+"Pepe",
+"Ricardo Quaresma"
+],
+"explanation": null
+},
+"8db6ad2bb4766243": {
+"question": "¿Qué club brasileño ganó su primera Copa Libertadores en 1981, liderado por Zico?",
+"options": [
+"Vasco da Gama",
+"Fluminense",
+"Flamengo",
+"Botafogo"
+],
+"explanation": "Flamengo ganó su primera Copa Libertadores en 1981, con un Zico estelar que marcó los dos goles del partido decisivo ante Cobreloa."
+},
+"da81e1443a7aca6e": {
+"question": "¿Qué histórico estadio abandonó el Arsenal en 2006 al mudarse al Emirates Stadium?",
+"options": [
+"Highbury",
+"Upton Park",
+"Maine Road",
+"Roker Park"
+],
+"explanation": "El Arsenal jugó su último partido en Highbury el 7 de mayo de 2006 antes de trasladarse al Emirates."
+},
+"cead5293c31a9690": {
+"question": "¿Qué defensa ganó el Balón de Oro en 2006 tras capitanear a su selección hasta el título mundial?",
+"options": [
+"Fabio Cannavaro",
+"Carles Puyol",
+"Paolo Maldini",
+"John Terry"
+],
+"explanation": null
+},
+"e075225eb660355d": {
+"question": "¿De qué equipo es este escudo?",
+"options": [
+"İstanbul Başakşehir",
+"Trabzonspor",
+"Rizespor",
+"Gençlerbirliği"
+],
+"explanation": "Este escudo pertenece al Rizespor."
+},
+"8db4c0704c48c407": {
+"question": "¿Quién es este jugador?",
+"options": [
+"Felix Agu",
+"David Nemeth",
+"Bryan Mbeumo",
+"Callum Styles"
+],
+"explanation": "Es Callum Styles, centrocampista izquierdo húngaro que juega en el West Bromwich Albion."
+},
+"6beb5d2899a166e4": {
+"question": "¿Qué equipo logró una increíble temporada liguera invicta para ganar la Serie A 2011-12?",
+"options": [
+"AC Milan",
+"Inter de Milán",
+"Juventus",
+"Napoli"
+],
+"explanation": null
+},
+"3775411a39d2f463": {
+"question": "¿Qué país ganó la primera Copa de Asia, celebrada en Hong Kong en 1956?",
+"options": [
+"Irán",
+"Israel",
+"Corea del Sur",
+"Hong Kong"
+],
+"explanation": "Corea del Sur ganó la primera Copa de Asia en 1956, una liguilla de cuatro equipos disputada en Hong Kong, por delante de Israel."
+},
+"4c2df22578508ca3": {
+"question": "¿Qué club inglés ganó milagrosamente dos Copas de Europa consecutivas, en 1979 y 1980, con Brian Clough?",
+"options": [
+"Nottingham Forest",
+"Liverpool",
+"Aston Villa",
+"Leeds United"
+],
+"explanation": null
+},
+"9b247f93ce14ac10": {
+"question": "¿Quién es el goleador más veterano de la historia de los Mundiales, al marcar con 42 años en 1994?",
+"options": [
+"Roger Milla",
+"Rashidi Yekini",
+"George Weah",
+"Abedi Pele"
+],
+"explanation": "El camerunés Roger Milla marcó ante Rusia en 1994 con 42 años y 39 días, el goleador de más edad en la historia de los Mundiales."
+},
+"a46a86d894c11a9a": {
+"question": "¿Qué entrenador llevó a España a ganar el Mundial de 2010?",
+"options": [
+"Vicente del Bosque",
+"Luis Aragones",
+"Fabio Capello",
+"Marcello Lippi"
+],
+"explanation": "Vicente del Bosque dirigió a España a su primer título mundial en 2010, tras vencer 1-0 a los Países Bajos en la final."
+},
+"3bade53ddacf24e0": {
+"question": "Los 15 goles de Ronaldo en Mundiales (alcanzados en 2006) superaron el longevo récord de 14 de ¿qué jugador?",
+"options": [
+"Miroslav Klose",
+"Gerd Müller",
+"Jürgen Klinsmann",
+"Karl-Heinz Rummenigge"
+],
+"explanation": "El 15.º gol mundialista de Ronaldo en 2006 batió el récord de 14 de Gerd Müller, vigente desde 1974."
+},
+"935b835100e1fac2": {
+"question": "¿Qué jugador fue máximo goleador compartido del Mundial de 1994?",
+"options": [
+"Paolo Maldini",
+"Roberto Baggio",
+"Romário",
+"Hristo Stoichkov"
+],
+"explanation": null
+},
+"15b8e2372fb047ba": {
+"question": "¿A qué selección venció Alemania Occidental en la final para ganar el Mundial de 1990?",
+"options": [
+"Italia",
+"Países Bajos",
+"Argentina",
+"Inglaterra"
+],
+"explanation": null
+},
+"2cdb1506ac36e3ad": {
+"question": "Geoff Hurst (1966) es uno de los dos únicos jugadores que han marcado un hat-trick en una final del Mundial. ¿Quién es el otro, que lo logró en 2022?",
+"options": [
+"Gerd Müller",
+"Pelé",
+"Kylian Mbappé",
+"Zinedine Zidane"
+],
+"explanation": null
+},
+"ed21dff4fc9501e8": {
+"question": "¿Qué estadio acogió la primera final de un Mundial, en 1930?",
+"options": [
+"Maracanã",
+"Estadio Monumental",
+"La Bombonera",
+"Estadio Centenario"
+],
+"explanation": "La final de 1930 se jugó en el Estadio Centenario de Montevideo, construido especialmente para el torneo."
+},
+"5fd34f5593f73450": {
+"question": "¿Cuántos goles marcó Miroslav Klose en toda su trayectoria en Mundiales, récord alemán?",
+"options": [
+"15",
+"14",
+"18",
+"16"
+],
+"explanation": null
+},
+"d2765ee6ef818f3c": {
+"question": "¿Cuántos goles marcó Pelé en Mundiales a lo largo de su carrera?",
+"options": [
+"14",
+"12",
+"10",
+"13"
+],
+"explanation": null
+},
+"c613b83f315d2a7d": {
+"question": "¿En qué estadio se jugó la final del Mundial de 1994, decidida por el penalti fallado de Roberto Baggio?",
+"options": [
+"Rose Bowl",
+"Soldier Field",
+"Giants Stadium",
+"Cotton Bowl"
+],
+"explanation": "La final de 1994 en el Rose Bowl de Pasadena terminó 0-0, y Brasil venció 3-2 a Italia en los penaltis tras el fallo de Baggio."
+},
+"8a3ffed40c32c03f": {
+"question": "¿En qué Mundial se utilizó por primera vez el VAR (videoarbitraje)?",
+"options": [
+"2014",
+"2018",
+"2010",
+"2022"
+],
+"explanation": "El VAR debutó en un Mundial en Rusia 2018, después de que la IFAB lo aprobara a principios de ese año."
+},
+"8829c1a4bd959b5d": {
+"question": "¿Qué país organizó el Mundial de 2022?",
+"options": [
+"Arabia Saudí",
+"Emiratos Árabes Unidos",
+"Catar",
+"Kuwait"
+],
+"explanation": null
+},
+"6dbfc46979afa658": {
+"question": "¿Quién marcó el gol más rápido de la historia de los Mundiales (11 segundos) en 2002?",
+"options": [
+"Ronaldo",
+"Clint Dempsey",
+"Hakan Şükür",
+"Asamoah Gyan"
+],
+"explanation": null
+},
+"8adb8e6043b565ce": {
+"question": "¿Quién es el goleador más joven de la historia de los Mundiales, al marcar en el torneo de 1958 con 17 años?",
+"options": [
+"Lionel Messi",
+"Kylian Mbappé",
+"Michael Owen",
+"Pelé"
+],
+"explanation": null
+},
+"71b7a9618e6436a9": {
+"question": "¿Quién tiene el récord de más goles en un solo partido de un Mundial, con 5 ante Camerún en 1994?",
+"options": [
+"Gerd Müller",
+"Just Fontaine",
+"Sándor Kocsis",
+"Oleg Salenko"
+],
+"explanation": null
+},
+"dff3c9e6e6976b90": {
+"question": "¿Qué jugador es el único que ha ganado tres Mundiales como futbolista?",
+"options": [
+"Cafu",
+"Pelé",
+"Diego Maradona",
+"Franz Beckenbauer"
+],
+"explanation": null
+},
+"25f9f472164b0bc3": {
+"question": "¿Con qué edad (en años) se convirtió Roger Milla en el goleador más veterano de la historia de los Mundiales, en el torneo de 1994?",
+"options": [
+"38",
+"40",
+"42",
+"44"
+],
+"explanation": "Milla marcó ante Rusia en Estados Unidos 1994 con 42 años, un récord de goleador más veterano en un Mundial que sigue vigente."
+},
+"d2cc366713ec0a63": {
+"question": "¿Quién marcó el gol de la victoria de España en la prórroga de la final del Mundial de 2010 ante los Países Bajos?",
+"options": [
+"Andres Iniesta",
+"David Villa",
+"Xavi",
+"Fernando Torres"
+],
+"explanation": "Andres Iniesta marcó en el minuto 116 para dar a España el 1-0 ante los Países Bajos y su primer Mundial en 2010."
+},
+"49703cbde09c5784": {
+"question": "¿Quién fue el máximo goleador del Mundial de 2002, con 8 goles?",
+"options": [
+"Ronaldo (Brasil)",
+"Rivaldo (Brasil)",
+"Miroslav Klose (Alemania)",
+"Luis Figo (Portugal)"
+],
+"explanation": null
+},
+"3af5bfb45d01ca88": {
+"question": "¿En qué ciudad de Estados Unidos se jugó la final del Mundial de 1994 (Brasil-Italia), en el Rose Bowl?",
+"options": [
+"Nueva York",
+"Dallas",
+"Pasadena",
+"Orlando"
+],
+"explanation": "La final de 1994 se disputó en el Rose Bowl de Pasadena, donde Brasil venció 3-2 a Italia en los penaltis tras el 0-0."
+},
+"b2fd04700191bba0": {
+"question": "¿Qué delantero fue el máximo goleador del Mundial de 1954, con 11 goles?",
+"options": [
+"Ferenc Puskás",
+"Zoltán Czibor",
+"Nándor Hidegkuti",
+"Sándor Kocsis"
+],
+"explanation": null
+},
+"80d77010e71f67fd": {
+"question": "¿En qué Mundial marcó el húngaro Sandor Kocsis dos hat-tricks?",
+"options": [
+"1962",
+"1950",
+"1958",
+"1954"
+],
+"explanation": "Sandor Kocsis marcó hat-tricks en partidos consecutivos en el Mundial de 1954 y terminó con 11 goles."
+},
+"1eea4238dd5e39e6": {
+"question": "Sándor Kocsis marcó 11 goles en el Mundial de 1954. ¿A cuántos se quedó del récord histórico de 13 en un solo torneo?",
+"options": [
+"4",
+"1",
+"3",
+"2"
+],
+"explanation": null
+},
+"476ca01a8ea46e6b": {
+"question": "A fecha de 2024, ¿cuántos goles había marcado Marta en la historia del Mundial Femenino, récord del torneo?",
+"options": [
+"14",
+"17",
+"15",
+"19"
+],
+"explanation": "Marta marcó 17 goles en seis Mundiales Femeninos, la mayor cifra de cualquier jugadora en la historia de la competición."
+},
+"28e79d63a23d6128": {
+"question": "¿Qué selección dio una famosa sorpresa al vencer 2-1 a Argentina en el Mundial de 2022?",
+"options": [
+"Australia",
+"Irán",
+"Catar",
+"Arabia Saudí"
+],
+"explanation": "Arabia Saudí venció 2-1 a Argentina en la fase de grupos del Mundial de 2022, con el gol de la victoria de Salem Al-Dawsari, en una de las mayores sorpresas del torneo."
+},
+"4ad9f20237bffba8": {
+"question": "¿Qué país ganó el primer Mundial Femenino de la FIFA, en 1991?",
+"options": [
+"Alemania",
+"Países Bajos",
+"Estados Unidos",
+"Noruega"
+],
+"explanation": "Estados Unidos venció 2-1 a Noruega en la final del primer Mundial Femenino de la FIFA, celebrado en China en 1991."
+},
+"ec59033fad6edc9e": {
+"question": "¿Quién es el jugador de más edad en disputar un Mundial, con 45 años en el torneo de 2018?",
+"options": [
+"Roger Milla",
+"Essam El-Hadary",
+"Dino Zoff",
+"Faryd Mondragón"
+],
+"explanation": null
+},
+"c67befbe81fbf48d": {
+"question": "¿Qué seleccionador es el único que ha ganado el Mundial dos veces?",
+"options": [
+"Vittorio Pozzo",
+"Mário Zagallo",
+"Didier Deschamps",
+"Helmut Schön"
+],
+"explanation": "Vittorio Pozzo llevó a Italia a ganar los Mundiales de 1934 y 1938."
+},
+"e9d81a7ad28cf302": {
+"question": "¿Quién ganó el Mundial de 2002 (organizado por Corea del Sur y Japón)?",
+"options": [
+"Brasil",
+"Alemania",
+"Argentina",
+"Francia"
+],
+"explanation": null
+},
+"3e6937c03d70a490": {
+"question": "¿Qué país organizó el Mundial de 2010, el primero celebrado en suelo africano?",
+"options": [
+"Sudáfrica",
+"Nigeria",
+"Egipto",
+"Marruecos"
+],
+"explanation": null
+},
+"c17f5c23b3dca71c": {
+"question": "¿Qué delantero alemán batió el récord histórico de goles en Mundiales durante el 7-1 a Brasil en 2014?",
+"options": [
+"Andre Schurrle",
+"Thomas Muller",
+"Toni Kroos",
+"Miroslav Klose"
+],
+"explanation": "El gol de Miroslav Klose en el 7-1 fue su 16.º en Mundiales, con el que superó a Ronaldo como máximo goleador histórico del torneo."
+},
+"337037c5c1303aa3": {
+"question": "¿Quién fue el primer jugador masculino en marcar en cinco Mundiales distintos?",
+"options": [
+"Pelé",
+"Lionel Messi",
+"Miroslav Klose",
+"Cristiano Ronaldo"
+],
+"explanation": "Cristiano Ronaldo marcó con Portugal en los Mundiales de 2006, 2010, 2014, 2018 y 2022."
+},
+"f93ceebc93525bbd": {
+"question": "Zakumi, el leopardo de pelo verde, fue la mascota oficial de ¿qué Mundial?",
+"options": [
+"1998",
+"2006",
+"2014",
+"2010"
+],
+"explanation": "Zakumi, un leopardo de pelo verde, fue la mascota del Mundial de 2010 en Sudáfrica."
+},
+"5b5fa40455c9d016": {
+"question": "¿Qué país organizó el Mundial de 2014?",
+"options": [
+"Argentina",
+"Brasil",
+"Sudáfrica",
+"Rusia"
+],
+"explanation": null
+},
+"db20f62d92589890": {
+"question": "¿En qué Mundial llevó Garrincha a Brasil a la gloria tras lesionarse Pelé al inicio del torneo?",
+"options": [
+"1958",
+"1962",
+"1966",
+"1954"
+],
+"explanation": "Con Pelé lesionado desde el principio, Garrincha fue la gran figura de Brasil, que revalidó el título mundial en 1962."
+},
+"c269953c3434507a": {
+"question": "En el Mundial de 2010, Kevin-Prince Boateng se enfrentó a su hermano Jérôme (Alemania) en el primer duelo entre hermanos de la historia de los Mundiales. ¿Con qué selección jugaba Kevin-Prince?",
+"options": [
+"Nigeria",
+"Alemania",
+"Ghana",
+"Camerún"
+],
+"explanation": "Kevin-Prince Boateng jugó con Ghana ante la Alemania de Jérôme el 23 de junio de 2010: los primeros hermanos en enfrentarse en un Mundial."
+},
+"9a235186b5796788": {
+"question": "¿Quién fue el máximo goleador del Mundial de 1950?",
+"options": [
+"Leônidas (Brasil)",
+"Ademir (Brasil)",
+"Sándor Kocsis (Hungría)",
+"Zizinho (Brasil)"
+],
+"explanation": null
+},
+"7617ab155e271121": {
+"question": "¿Qué país ganó la final del Mundial de 2022, venciendo a Francia en los penaltis?",
+"options": [
+"Argentina",
+"Brasil",
+"España",
+"Croacia"
+],
+"explanation": "Argentina venció 4-2 a Francia en los penaltis tras un 3-3 para ganar la final del Mundial de 2022 en Lusail."
+},
+"4031615c185cf96a": {
+"question": "¿Quién ganó el Balón de Oro al mejor jugador del Mundial de 2022?",
+"options": [
+"Antoine Griezmann",
+"Kylian Mbappe",
+"Luka Modric",
+"Lionel Messi"
+],
+"explanation": "Lionel Messi ganó el Balón de Oro del Mundial de 2022 tras capitanear a Argentina hasta el título."
+},
+"a57a230ece08dd31": {
+"question": "¿Con qué selección africana brilló Roger Milla en el Mundial de 1990?",
+"options": [
+"Senegal",
+"Nigeria",
+"Camerún",
+"Argelia"
+],
+"explanation": "Roger Milla marcó cuatro goles saliendo desde el banquillo y llevó a los Leones Indomables de Camerún a los cuartos de final del Mundial de 1990."
+},
+"a1ea353f006e841e": {
+"question": "¿Quién es el campeón del mundo de más edad, que levantó el trofeo como capitán de Italia en 1982 con 40 años?",
+"options": [
+"Marco Tardelli",
+"Dino Zoff",
+"Gaetano Scirea",
+"Claudio Gentile"
+],
+"explanation": "El portero Dino Zoff capitaneó a Italia al título de 1982 con 40 años, el campeón del mundo de más edad."
+},
+"92c31e8bbec4a930": {
+"question": "¿Qué país ganó el Mundial Femenino de la FIFA 2023?",
+"options": [
+"Australia",
+"Inglaterra",
+"Suecia",
+"España"
+],
+"explanation": "España ganó su primer Mundial Femenino al vencer 1-0 a Inglaterra en la final de 2023."
+},
+"56d0f8e5345c6af3": {
+"question": "¿Qué país organizó y ganó el Mundial de 1998?",
+"options": [
+"Francia",
+"Brasil",
+"México",
+"Alemania"
+],
+"explanation": null
+},
+"117f4e3d5ad68a43": {
+"question": "¿Quién ganó el Balón de Oro a la mejor jugadora del Mundial Femenino 2023?",
+"options": [
+"Olga Carmona",
+"Alexia Putellas",
+"Lucy Bronze",
+"Aitana Bonmati"
+],
+"explanation": "La española Aitana Bonmati ganó el Balón de Oro del Mundial Femenino 2023 tras brillar en el camino hacia el título."
+},
+"f57f6098d7707646": {
+"question": "¿Qué selección venció a Brasil en el partido decisivo del Mundial de 1950 (el 'Maracanazo')?",
+"options": [
+"Uruguay",
+"Argentina",
+"Inglaterra",
+"Italia"
+],
+"explanation": null
+},
+"654685943fd7a159": {
+"question": "¿Quién fue el capitán de Italia campeona del Mundial de 2006?",
+"options": [
+"Francesco Totti",
+"Gianluigi Buffon",
+"Fabio Cannavaro",
+"Paolo Maldini"
+],
+"explanation": "El defensa Fabio Cannavaro capitaneó a Italia al título del Mundial de 2006 y ganó el Balón de Oro ese año."
+},
+"ddb7f507568cb9c0": {
+"question": "¿Quién fue el máximo goleador del Mundial de 2010?",
+"options": [
+"Wesley Sneijder",
+"Diego Forlán",
+"David Villa",
+"Thomas Müller"
+],
+"explanation": null
+},
+"a55fc4a732e9da1b": {
+"question": "Los hermanos Bobby y Jack Charlton fueron titulares en la final del Mundial de 1966 con ¿qué selección, que ganó el trofeo?",
+"options": [
+"Escocia",
+"Alemania Occidental",
+"Inglaterra",
+"Portugal"
+],
+"explanation": "Bobby Charlton (Manchester United) y su hermano Jack (Leeds United) fueron titulares con Inglaterra en la final del Mundial de 1966, ganada a Alemania Occidental."
+},
+"494c7e6ffb6f70f7": {
+"question": "¿Qué país ganó el Mundial de 1966?",
+"options": [
+"Argentina",
+"Alemania Occidental",
+"Brasil",
+"Inglaterra"
+],
+"explanation": null
+},
+"32c6af0ac2745265": {
+"question": "¿Qué delantero brasileño marcó en las finales de los Mundiales de 1958 y 1962?",
+"options": [
+"Vava",
+"Pele",
+"Didi",
+"Garrincha"
+],
+"explanation": "Vava marcó dos goles en la final de 1958 y otro en la de 1962: goles en dos finales mundialistas con Brasil."
+},
+"6e1c1334069f045c": {
+"question": "¿A qué jugador italiano dio Zinedine Zidane un cabezazo, que le costó la roja en la final del Mundial de 2006?",
+"options": [
+"Gennaro Gattuso",
+"Fabio Cannavaro",
+"Marco Materazzi",
+"Alessandro Del Piero"
+],
+"explanation": "Zidane fue expulsado por dar un cabezazo a Marco Materazzi en la prórroga de la final de 2006, que Italia ganó en los penaltis."
+},
+"6f06b9c80bc68ad0": {
+"question": "¿Cuántos Mundiales ha ganado Brasil?",
+"options": [
+"5",
+"4",
+"6",
+"3"
+],
+"explanation": null
+},
+"2a823bc9fb59b201": {
+"question": "¿Quién marcó un hat-trick con Portugal en el emocionante 3-3 ante España en el Mundial de 2018?",
+"options": [
+"Bernardo Silva",
+"Cristiano Ronaldo",
+"Bruno Fernandes",
+"Andre Silva"
+],
+"explanation": "Un tiro libre de Cristiano Ronaldo al final completó su hat-trick y dio a Portugal un 3-3 ante España en 2018."
+},
+"faa93fc2db8e6562": {
+"question": "¿Quién marcó más goles en una sola edición del Mundial (13 goles en 1958)?",
+"options": [
+"Just Fontaine",
+"Gerd Müller",
+"Ronaldo (Brasil)",
+"Pele"
+],
+"explanation": null
+},
+"8c972dfcd5a10d27": {
+"question": "¿A quién atribuye la FIFA el primer hat-trick de la historia de los Mundiales?",
+"options": [
+"Pedro Cea",
+"Guillermo Stábile",
+"Bert Patenaude",
+"Lucien Laurent"
+],
+"explanation": "La FIFA atribuye a Bert Patenaude, de Estados Unidos, el primer hat-trick mundialista, marcado ante Paraguay en 1930."
+},
+"190c0c439cf500bb": {
+"question": "¿Qué selección llevó Didier Deschamps a ganar el Mundial de 2018?",
+"options": [
+"Francia",
+"Bélgica",
+"Croacia",
+"Inglaterra"
+],
+"explanation": "Didier Deschamps dirigió a Francia al título del Mundial de 2018, tras vencer 4-2 a Croacia en la final."
+},
+"a0d3b6541dee57b3": {
+"question": "Eden Hazard y su hermano menor Thorgan Hazard jugaron con ¿qué selección, que terminó tercera en el Mundial de 2018?",
+"options": [
+"Francia",
+"Bélgica",
+"Países Bajos",
+"Portugal"
+],
+"explanation": "Eden y Thorgan Hazard jugaron con Bélgica, que terminó tercera en el Mundial de 2018."
+},
+"fc7fd9957b770a98": {
+"question": "¿Quién marcó el primer gol de la historia de los Mundiales, con Francia en 1930?",
+"options": [
+"Héctor Castro",
+"Guillermo Stábile",
+"Bert Patenaude",
+"Lucien Laurent"
+],
+"explanation": null
+},
+"a2a9ab51dc679138": {
+"question": "¿Quién fue el máximo goleador del Mundial de 1930?",
+"options": [
+"Guillermo Stábile",
+"Bert Patenaude",
+"Pedro Cea",
+"Héctor Castro"
+],
+"explanation": null
+},
+"8db58fe4945cb8af": {
+"question": "¿Quién fue subcampeón, por detrás de Italia, en el Mundial de 1934?",
+"options": [
+"Checoslovaquia",
+"Austria",
+"Hungría",
+"España"
+],
+"explanation": null
+},
+"3e6acb9ed768a699": {
+"question": "¿Quién es el único jugador que ha marcado hat-tricks en dos Mundiales distintos, en 1994 y 1998?",
+"options": [
+"Claudio Caniggia",
+"Hernan Crespo",
+"Gabriel Batistuta",
+"Diego Maradona"
+],
+"explanation": "El argentino Gabriel Batistuta es el único que ha marcado hat-tricks en dos Mundiales diferentes, 1994 y 1998."
+},
+"d917052a51c692e6": {
+"question": "¿Quién culminó la fluida jugada colectiva de Brasil con el famoso cuarto gol en la final del Mundial de 1970 ante Italia?",
+"options": [
+"Rivellino",
+"Jairzinho",
+"Gerson",
+"Carlos Alberto"
+],
+"explanation": "El capitán Carlos Alberto fusiló el cuarto gol de Brasil en el 4-1 a Italia, rematando uno de los mejores goles colectivos de la historia."
+},
+"a5582ffe298d464a": {
+"question": "¿Qué selección capitaneó Diego Maradona hasta el título en el Mundial de 1986?",
+"options": [
+"Argentina",
+"Brasil",
+"Uruguay",
+"Italia"
+],
+"explanation": "Maradona capitaneó a Argentina al título del Mundial de 1986 y ante Inglaterra marcó tanto la 'Mano de Dios' como el 'Gol del Siglo'."
+},
+"2480a6a8a3912b7a": {
+"question": "¿Qué estadio acogió el partido decisivo del Mundial de 1950, con casi 200.000 espectadores?",
+"options": [
+"Estadio Azteca",
+"Estadio Centenario",
+"Maracanã",
+"Estadio Monumental"
+],
+"explanation": "El Maracanã de Río registró la mayor asistencia de la historia de los Mundiales cuando Uruguay venció a Brasil en el partido final de 1950."
+},
+"e14ec00b21902e5e": {
+"question": "¿Qué club vendió a Raheem Sterling al Chelsea por 56,20 M€?",
+"options": [
+"Liverpool FC",
+"Queens Park Rangers",
+"Manchester City",
+"Arsenal FC"
+],
+"explanation": null
+},
+"67e241c25867b6fb": {
+"question": "¿Quién es este jugador?",
+"options": [
+"Clinton Mata",
+"Andreas Ntoi",
+"Bram Nuytinck",
+"Cherrion Valerius"
+],
+"explanation": "Es Andreas Ntoi, mediocentro defensivo albanés que juega en el Rio Ave."
+},
+"10d0a289f9debde3": {
+"question": "¿Qué jugador es el segundo con más partidos de la historia de la Serie A?",
+"options": [
+"Paolo Maldini",
+"Javier Zanetti",
+"Gianluigi Buffon",
+"Francesco Totti"
+],
+"explanation": null
+},
+"4dbba38203bb87df": {
+"question": "¿Quién es este jugador?",
+"options": [
+"Jérémy Doku",
+"Al-Musrati",
+"Ahmed Kutucu",
+"Azzedine Ounahi"
+],
+"explanation": "Es Ahmed Kutucu, extremo izquierdo turco que juega en el Galatasaray."
+},
+"8c1bf133211586ce": {
+"question": "¿Qué jugador pasó del Barcelona al Real Madrid en 2000 por un traspaso que entonces era récord mundial?",
+"options": [
+"David Beckham",
+"Ronaldo Nazário",
+"Zinedine Zidane",
+"Luís Figo"
+],
+"explanation": "El traspaso de Luís Figo del Barcelona al Real Madrid en 2000 estableció un nuevo récord mundial en aquel momento."
+},
+"6ef54d2d24ade943": {
+"question": "¿Quién es este jugador?",
+"options": [
+"Jeff Hardeveld",
+"Damon Mirani",
+"Antonio Raíllo",
+"Alessandro Bastoni"
+],
+"explanation": "Es Jeff Hardeveld, lateral izquierdo neerlandés que juega en el SC Telstar."
+},
+"76ff53ff52c5072a": {
+"question": "¿Qué centrocampista danés brilló en el Ajax antes de fichar por el Tottenham Hotspur?",
+"options": [
+"Christian Eriksen",
+"Michael Laudrup",
+"Jon Dahl Tomasson",
+"Lasse Schöne"
+],
+"explanation": null
+},
+"4b117f668a7b04c4": {
+"question": "¿Qué dos clubes comparten el récord de títulos de la máxima categoría inglesa (First Division y Premier League sumadas), con 20 cada uno?",
+"options": [
+"Manchester United y Arsenal",
+"Manchester United y Liverpool",
+"Liverpool y Everton",
+"Arsenal y Manchester City"
+],
+"explanation": null
+},
+"07b572759f64b41e": {
+"question": "¿Quién es este jugador?",
+"options": [
+"Bright Osayi-Samuel",
+"Eduardo Quaresma",
+"Alex Cochrane",
+"Álex Forés"
+],
+"explanation": "Es Alex Cochrane, lateral izquierdo inglés que juega en el Birmingham City."
+},
+"a88ea65533e9400d": {
+"question": "¿Qué país tiene el récord de más finales de Mundial disputadas sin haber ganado nunca el torneo?",
+"options": [
+"Hungría",
+"Países Bajos",
+"Checoslovaquia",
+"Suecia"
+],
+"explanation": null
+},
+"11f55c7be92f2f1d": {
+"question": "¿En qué año se fundó la Serie A?",
+"options": [
+"1905",
+"1898",
+"1929",
+"1946"
+],
+"explanation": "La Serie A, con su formato nacional de liga a doble vuelta, comenzó en la temporada 1929-30; 1898 corresponde al anterior Campeonato Italiano de Fútbol."
+},
+"03fb1327c49cf3e4": {
+"question": "¿Qué portero capitaneó a España en su primer título mundial, en 2010?",
+"options": [
+"Iker Casillas",
+"Carles Puyol",
+"Sergio Ramos",
+"Xavi"
+],
+"explanation": "Iker Casillas fue el primer español en levantar la Copa del Mundo, como capitán del equipo campeón en 2010."
+},
+"bead9d590fa50a89": {
+"question": "¿Quién es este jugador?",
+"options": [
+"Cristian Pavón",
+"Abdul Mumin",
+"Ben Brereton Díaz",
+"Alfon"
+],
+"explanation": "Es Ben Brereton Díaz, extremo izquierdo chileno que juega en el Derby County."
+},
+"7c6ba7ad14715c5d": {
+"question": "¿Qué jugador es el segundo máximo goleador internacional masculino de la historia?",
+"options": [
+"Sunil Chhetri",
+"Ali Daei",
+"Lionel Messi",
+"Ferenc Puskás"
+],
+"explanation": null
+},
+"79698b586a3e6d8d": {
+"question": "¿Quién es este jugador?",
+"options": [
+"Aune Selland Heggebø",
+"Christian Gunter",
+"Idrissa Gueye",
+"Adam Dźwigała"
+],
+"explanation": "Es Aune Selland Heggebø, atacante noruego que juega en el West Bromwich Albion."
+},
+"31b9a9b9a2862bef": {
+"question": "¿Qué estadio aparece en esta imagen?",
+"options": [
+"Rat Verlegh Stadion",
+"Philips Stadion",
+"711 Stadion",
+"Fortuna Sittard Stadion"
+],
+"explanation": "Es el 711 Stadion, el estadio del SC Telstar."
+},
+"1c389de022852c86": {
+"question": "¿Cuál fue la racha más larga de títulos de Bundesliga del Bayern de Múnich entre 2010 y 2024?",
+"options": [
+"9",
+"10",
+"11",
+"12"
+],
+"explanation": null
+},
+"88e3b0433524725f": {
+"question": "¿Quién es este jugador?",
+"options": [
+"Emerson Palmieri",
+"Dimitrios Goutas",
+"Anthony Rouault",
+"Diego Rico"
+],
+"explanation": "Es Dimitrios Goutas, defensa central griego que juega en el Gençlerbirliği."
+},
+"1056a2955b4c4a3b": {
+"question": "¿Quién marcó el gol de cabeza de la victoria 1-0 de Grecia en la final de la Eurocopa 2004?",
+"options": [
+"Angelos Charisteas",
+"Theodoros Zagorakis",
+"Traianos Dellas",
+"Angelos Basinas"
+],
+"explanation": "Angelos Charisteas cabeceó un córner en el minuto 57 para marcar el único gol de Grecia en la final de la Eurocopa 2004."
+},
+"9ddf0ec82dc4cb44": {
+"question": "¿Quién es este jugador?",
+"options": [
+"Danel Sinani",
+"Albert Grønbæk",
+"Chadi Riad",
+"Alberto Costa"
+],
+"explanation": "Es Alberto Costa, lateral derecho portugués que juega en el Oporto."
+},
+"d60a4127a4dd4985": {
+"question": "¿Cuántas Premier League ganó Sir Alex Ferguson con el Manchester United?",
+"options": [
+"13",
+"11",
+"8",
+"15"
+],
+"explanation": "Ferguson ganó 13 Premier League con el Manchester United durante sus 26 años en el club."
+},
+"bd575c31aa6d29aa": {
+"question": "¿Qué entrenador tiene el récord de premios al Mejor Entrenador del Mes de la Premier League?",
+"options": [
+"Arsène Wenger",
+"Sir Alex Ferguson",
+"Pep Guardiola",
+"José Mourinho"
+],
+"explanation": null
+},
+"92e2138d0866cd5b": {
+"question": "¿Quién es este jugador?",
+"options": [
+"David Soria",
+"Alexander Bah",
+"Christian Nørgaard",
+"Bryan Limbombe Ekango"
+],
+"explanation": "Es Alexander Bah, lateral derecho danés que juega en el Benfica."
+},
+"3dc803b2034dada7": {
+"question": "¿Cuántas Champions League han ganado en total los clubes neerlandeses?",
+"options": [
+"4",
+"5",
+"7",
+"6"
+],
+"explanation": null
+},
+"68e7395f907ef3a5": {
+"question": "¿Quién tiene el récord de más goles en una sola temporada de la Eredivisie?",
+"options": [
+"Marco van Basten",
+"Coen Dillen",
+"Ruud Geels",
+"Luuk de Jong"
+],
+"explanation": null
+},
+"7551c96f69df0deb": {
+"question": "¿Por cuál de estos jugadores pagó más el Real Madrid?",
+"options": [
+"Luís Figo",
+"Zinedine Zidane",
+"Kaká",
+"Luka Jovic"
+],
+"explanation": null
+},
+"d4d7dc347e25fd96": {
+"question": "¿Quién fue el primer jugador en marcar 100 goles en la Bundesliga?",
+"options": [
+"Uwe Seeler",
+"Gerd Müller",
+"Lothar Emmerich",
+"Klaus Fischer"
+],
+"explanation": null
+},
+"efae2f562ae18f59": {
+"question": "¿Qué portero tiene el récord de más porterías a cero en la historia de la Premier League?",
+"options": [
+"David de Gea",
+"Peter Schmeichel",
+"David Seaman",
+"Petr Čech"
+],
+"explanation": null
+},
+"d0921426f9d36ea7": {
+"question": "¿Quién es el extranjero con más partidos en la historia de LaLiga?",
+"options": [
+"Dani Alves",
+"Karim Benzema",
+"Lionel Messi",
+"Antoine Griezmann"
+],
+"explanation": "Antoine Griezmann superó a Lionel Messi en 2025 y se convirtió en el extranjero con más partidos en la historia de LaLiga."
+},
+"c8c8e484989ff855": {
+"question": "¿Qué equipo tiene el récord de menos goles encajados en una temporada?",
+"options": [
+"Werder Bremen",
+"Bayern de Múnich",
+"VfB Stuttgart",
+"Schalke 04"
+],
+"explanation": null
+},
+"cc8b66a717b7b344": {
+"question": "¿Quién es este jugador?",
+"options": [
+"Do-Yong Yoon",
+"Antonio Cordero",
+"Antony",
+"Axel Henriksson"
+],
+"explanation": "Es Do-Yong Yoon, extremo derecho surcoreano que juega en el Excelsior."
+},
+"ac0af24992be3e1d": {
+"question": "¿Quién es este jugador?",
+"options": [
+"Aji Alese",
+"Emersonn Correia da Silva",
+"Aurelio Oehlers",
+"Archie Gray"
+],
+"explanation": "Es Aurelio Oehlers, delantero neerlandés que juega en el FC Volendam."
+},
+"ee2f34753b173bd7": {
+"question": "¿Quién tiene en solitario el récord de más asistencias en una temporada de la Bundesliga (21)?",
+"options": [
+"Jadon Sancho",
+"Kevin De Bruyne",
+"Florian Wirtz",
+"Thomas Müller"
+],
+"explanation": null
+},
+"919f058cf23e9cbc": {
+"question": "¿Quién es el jugador africano más caro de todos los tiempos?",
+"options": [
+"Victor Osimhen",
+"Mohammed Salah",
+"Nicolas Pépé",
+"Sadio Mané"
+],
+"explanation": null
+},
+"aef846c30fc375b1": {
+"question": "¿Qué jugador hizo historia en 2012 al ser el primero en marcar 5 goles en un partido de la Champions League (contra el Bayer Leverkusen)?",
+"options": [
+"Luiz Adriano",
+"Cristiano Ronaldo",
+"Robert Lewandowski",
+"Lionel Messi"
+],
+"explanation": null
+},
+"b2113c1107758157": {
+"question": "¿Qué estadio aparece en la imagen?",
+"options": [
+"The Coventry Building Society Arena",
+"The Hawthorns",
+"The MKM Stadium",
+"The Valley"
+],
+"explanation": "Es el MKM Stadium, el estadio del Hull City."
+},
+"9e8ae10c2b19d9bb": {
+"question": "Tras su victoria en 2024, ¿qué selección tiene en solitario el récord de títulos de la Copa América (16)?",
+"options": [
+"Uruguay",
+"Brasil",
+"Argentina",
+"Colombia"
+],
+"explanation": null
+},
+"246bfb448c186795": {
+"question": "¿Qué club tiene el triste récord de más finales perdidas de la Copa de Europa/Champions League (7)?",
+"options": [
+"Bayern de Múnich",
+"Benfica",
+"Juventus",
+"Atlético de Madrid"
+],
+"explanation": null
+},
+"3af669f66b5bb191": {
+"question": "¿Qué entrenador ha ganado más títulos de la Premier League?",
+"options": [
+"Arsène Wenger",
+"Bill Shankly",
+"Sir Alex Ferguson",
+"Bob Paisley"
+],
+"explanation": null
+},
+"9a9b17f8f505678a": {
+"question": "¿Qué jugador tiene el récord de más goles en una sola edición de la Champions League?",
+"options": [
+"Cristiano Ronaldo",
+"Robert Lewandowski",
+"Lionel Messi",
+"Erling Haaland"
+],
+"explanation": null
+},
+"ec0db0437e559412": {
+"question": "¿Qué portero tiene el récord histórico de más porterías a cero en la Champions League?",
+"options": [
+"Iker Casillas",
+"Manuel Neuer",
+"Gianluigi Buffon",
+"Petr Čech"
+],
+"explanation": null
+},
+"26d629194b181506": {
+"question": "¿Quién es este jugador?",
+"options": [
+"George Brown",
+"Andy Fisher",
+"Isaac Schmidt",
+"Allan Saint-Maximin"
+],
+"explanation": "Es George Brown, delantero neozelandés que juega en el Sheffield Wednesday."
+},
+"b64ae755e08f9b99": {
+"question": "¿Quién es este jugador?",
+"options": [
+"Léo Andrade",
+"Dies Janse",
+"Anel Ahmedhodzic",
+"Aidomo Emakhu"
+],
+"explanation": "Es Anel Ahmedhodzic, defensa central bosnio que juega en el Feyenoord."
+},
+"2d708e93be07a20c": {
+"question": "¿Cuál de estos jugadores vendió el Borussia Dortmund por más de 100 M€?",
+"options": [
+"Erling Haaland",
+"Ousmane Dembélé",
+"Christian Pulisic",
+"Jadon Sancho"
+],
+"explanation": null
+},
+"565699ef4c92c3f8": {
+"question": "¿Qué estadio aparece en la imagen?",
+"options": [
+"Asito Stadion",
+"Rat Verlegh Stadion",
+"Johan Cruijff ArenA",
+"Philips Stadion"
+],
+"explanation": "Es el Asito Stadion, el estadio del Heracles Almelo."
+},
+"46cba6b1cd5fcc62": {
+"question": "¿Qué equipo tiene el récord de más victorias en una temporada de la Ligue 1 de 38 jornadas?",
+"options": [
+"Olympique de Lyon",
+"Paris Saint-Germain",
+"Olympique de Marsella",
+"Mónaco"
+],
+"explanation": null
+},
+"8630fb369dbb1b58": {
+"question": "¿Quién es el centrocampista más goleador de la historia de la Premier League?",
+"options": [
+"Steven Gerrard",
+"Paul Scholes",
+"Kevin De Bruyne",
+"Frank Lampard"
+],
+"explanation": null
+},
+"277b4742d52ee243": {
+"question": "¿Qué jugador tiene el récord de más partidos en la Bundesliga?",
+"options": [
+"Manfred Kaltz",
+"Oliver Kahn",
+"Karl-Heinz Körbel",
+"Klaus Fichtel"
+],
+"explanation": null
+},
+"4d29ff9eeae7e291": {
+"question": "¿Cuántos goles marcó Cristiano Ronaldo en la temporada 2014-15 para ser el máximo goleador?",
+"options": [
+"48",
+"45",
+"44",
+"51"
+],
+"explanation": null
+},
+"acff38e3572a7ae7": {
+"question": "¿Quién es el segundo máximo goleador histórico de la Premier League?",
+"options": [
+"Wayne Rooney",
+"Andy Cole",
+"Harry Kane",
+"Sergio Agüero"
+],
+"explanation": null
+},
+"f46cc497d64eb8d0": {
+"question": "¿Qué estadio aparece en la imagen?",
+"options": [
+"Goffertstadion",
+"Philips Stadion",
+"MAC³PARK Stadion",
+"Johan Cruijff ArenA"
+],
+"explanation": "Es el Goffertstadion, el estadio del NEC Nijmegen."
+},
+"5279d0e39612b9bd": {
+"question": "Antes de que Joaquín lo igualara en 2023, ¿qué portero tenía en solitario el récord de más partidos en la historia de LaLiga?",
+"options": [
+"Andoni Zubizarreta",
+"Joaquín",
+"Raúl",
+"Iker Casillas"
+],
+"explanation": null
+},
+"1fce5e24551af68e": {
+"question": "¿Qué club africano suele citarse como el más laureado en títulos oficiales?",
+"options": [
+"Real Madrid",
+"Bayern de Múnich",
+"Liverpool",
+"Al Ahly"
+],
+"explanation": "El Al Ahly suele citarse como el club más laureado de África y uno de los más laureados del mundo."
+},
+"10dab28a9ae4b6ae": {
+"question": "¿Contra quién jugaba el Manchester City cuando Sergio Agüero marcó su mítico gol del título en el minuto 94 en 2012?",
+"options": [
+"Queens Park Rangers",
+"Manchester United",
+"Bolton Wanderers",
+"Aston Villa"
+],
+"explanation": null
+},
+"969e162867d39dc6": {
+"question": "¿Qué estadio aparece en la imagen?",
+"options": [
+"Complexo Desportivo FC Alverca",
+"Estádio António Coimbra da Mota",
+"Estádio Municipal de Arouca",
+"Estádio José Alvalade"
+],
+"explanation": "Es el Complexo Desportivo FC Alverca, el estadio del Alverca."
+},
+"0f5c99264b695327": {
+"question": "¿Qué equipo tiene el indeseado récord de menos puntos en una temporada de la Premier League (11 puntos)?",
+"options": [
+"Sunderland",
+"Huddersfield Town",
+"Sheffield United",
+"Derby County"
+],
+"explanation": null
+},
+"a93fdceb58b1f251": {
+"question": "¿Quién es el goleador más veterano de la historia de la Serie A, al marcar un penalti con 41 años?",
+"options": [
+"Francesco Totti",
+"Paolo Maldini",
+"Zlatan Ibrahimović",
+"Fabio Quagliarella"
+],
+"explanation": null
+},
+"f3e586d869ed57e9": {
+"question": "¿Qué selección ganó la Eurocopa 2004?",
+"options": [
+"Portugal",
+"Grecia",
+"Alemania",
+"Italia"
+],
+"explanation": null
+},
+"96e3a5767e7ee850": {
+"question": "¿Qué estadio aparece en la imagen?",
+"options": [
+"MAC³PARK Stadion",
+"Goffertstadion",
+"Stadion Feyenoord",
+"AFAS Stadion Alkmaar"
+],
+"explanation": "Es el Stadion Feyenoord, el estadio del Feyenoord."
+},
+"593b2520784b1f45": {
+"question": "¿Qué estadio aparece en la imagen?",
+"options": [
+"Estádio António Coimbra da Mota",
+"Complexo Desportivo FC Alverca",
+"Estádio de São Miguel",
+"Estádio José Alvalade"
+],
+"explanation": "Es el Estádio António Coimbra da Mota, el estadio del Estoril Praia."
+},
+"0b03f7d56e09a1e7": {
+"question": "¿Qué estadio aparece en la imagen?",
+"options": [
+"De Adelaarshorst",
+"Euroborg",
+"Johan Cruijff ArenA",
+"AFAS Stadion Alkmaar"
+],
+"explanation": "Es el De Adelaarshorst, el estadio del Go Ahead Eagles."
+},
+"0c09c19824a22b06": {
+"question": "¿Qué estadio aparece en la imagen?",
+"options": [
+"Van Donge and De Roo Stadion",
+"Euroborg",
+"De Adelaarshorst",
+"Rat Verlegh Stadion"
+],
+"explanation": "Es el Van Donge and De Roo Stadion, el estadio del Excelsior."
+},
+"2ee113437472d91d": {
+"question": "¿Qué estadio aparece en la imagen?",
+"options": [
+"Estádio Municipal de Braga",
+"Estádio Municipal de Rio Maior",
+"Estádio Municipal de Arouca",
+"Estádio do Dragão"
+],
+"explanation": "Es el Estádio Municipal de Rio Maior, el estadio del Casa Pia."
+},
+"f283f2e9bfd43fdb": {
+"question": "¿Cuántas Ligas ha ganado el FC Barcelona?",
+"options": [
+"25",
+"26",
+"28",
+"27"
+],
+"explanation": null
+},
+"6d4f20b70c31e1af": {
+"question": "¿Qué estadio aparece en la imagen?",
+"options": [
+"Estádio Municipal de Arouca",
+"Estádio da Luz",
+"Estádio João Cardoso",
+"Estádio do Dragão"
+],
+"explanation": "Es el Estádio Municipal de Arouca, el estadio del Arouca."
+},
+"756f7667d4b3bb42": {
+"question": "¿Qué jugador sueco es el tercer máximo goleador histórico de la Serie A?",
+"options": [
+"Kurt Hamrin",
+"Zlatan Ibrahimović",
+"Gunnar Nordahl",
+"Nils Liedholm"
+],
+"explanation": null
+},
+"de7b9479af50d770": {
+"question": "¿A quién fichó el Real Madrid del Mónaco por 75 M€ en la temporada 14/15?",
+"options": [
+"Aurélien Tchouaméni",
+"Thomas Lemar",
+"Kylian Mbappé",
+"James Rodríguez"
+],
+"explanation": null
+},
+"e87a26156da2a2ec": {
+"question": "¿Quién tiene el récord masculino de más goles con su selección?",
+"options": [
+"Ali Daei",
+"Cristiano Ronaldo",
+"Lionel Messi",
+"Miroslav Klose"
+],
+"explanation": null
+},
+"d1ffd378af588a95": {
+"question": "¿Cuál de estos jugadores fue uno de los máximos goleadores del Mundial de 1962?",
+"options": [
+"Eusébio",
+"Garrincha",
+"Gerd Müller",
+"Johan Cruyff"
+],
+"explanation": null
+},
+"df12bcc9aeed6a04": {
+"question": "¿Qué club sigue siendo el primer y único equipo francés en ganar la Champions League (1993)?",
+"options": [
+"Olympique de Marsella",
+"Paris Saint-Germain",
+"Mónaco",
+"Olympique de Lyon"
+],
+"explanation": null
+},
+"0051ae9588fead04": {
+"question": "¿Qué estadio aparece en la imagen?",
+"options": [
+"Estádio José Gomes",
+"Estádio Cidade de Barcelos",
+"Estádio Clube Desportivo das Aves",
+"Estádio Comendador Joaquim de Almeida Freitas"
+],
+"explanation": "Es el Estádio Clube Desportivo das Aves, el estadio del AVS."
+},
+"1452df7886024a57": {
+"question": "¿Qué estadio aparece en la imagen?",
+"options": [
+"Stadion Feyenoord",
+"Fortuna Sittard Stadion",
+"Spartastadion",
+"Philips Stadion"
+],
+"explanation": "Es el Spartastadion, el estadio del Sparta Rotterdam."
+},
+"10dbb654bae8f45c": {
+"question": "¿Qué club dominó el fútbol francés ganando 7 Ligue 1 consecutivas entre 2002 y 2008?",
+"options": [
+"Burdeos",
+"Olympique de Marsella",
+"Paris Saint-Germain",
+"Olympique de Lyon"
+],
+"explanation": null
+},
+"cc24476391e1b2ca": {
+"question": "¿Qué estadio aparece en la imagen?",
+"options": [
+"MAC³PARK Stadion",
+"Kras Stadion",
+"Abe Lenstra Stadion",
+"Johan Cruijff ArenA"
+],
+"explanation": "Es el MAC³PARK Stadion, el estadio del PEC Zwolle."
+},
+"8644c544275327ec": {
+"question": "¿Qué delantero serbio fichó la Juventus por 83,5 M€?",
+"options": [
+"Dusan Vlahovic",
+"Luka Jovic",
+"Aleksandar Mitrovic",
+"Dusan Tadic"
+],
+"explanation": null
+},
+"fd268dc9d3ea3beb": {
+"question": "¿Cuánto costó el traspaso de Kylian Mbappé al Paris Saint-Germain?",
+"options": [
+"190 M€",
+"168 M€",
+"175 M€",
+"180 M€"
+],
+"explanation": null
+},
+"28bcbfe53609797c": {
+"question": "¿Qué dos clubes vendieron a Neymar y a Mbappé al PSG?",
+"options": [
+"FC Barcelona y Mónaco",
+"Real Madrid y Santos",
+"Liverpool y Borussia Dortmund",
+"Juventus e Inter de Milán"
+],
+"explanation": null
+},
+"2abbf386dcfffe24": {
+"question": "¿Qué estadio aparece en la imagen?",
+"options": [
+"Estádio de São Miguel",
+"Complexo Desportivo FC Alverca",
+"Estádio Municipal de Braga",
+"Estádio José Alvalade"
+],
+"explanation": "Es el Estádio Municipal de Braga, el estadio del Braga."
+},
+"85b77ce512d604d0": {
+"question": "¿Qué estadio aparece en la imagen?",
+"options": [
+"Fortuna Sittard Stadion",
+"Goffertstadion",
+"Rat Verlegh Stadion",
+"Asito Stadion"
+],
+"explanation": "Es el Fortuna Sittard Stadion, el estadio del Fortuna Sittard."
+},
+"9ad6d259360fb45a": {
+"question": "¿Quién marcó el gol de la victoria de Portugal en la prórroga de la final de la Eurocopa 2016?",
+"options": [
+"Cristiano Ronaldo",
+"Pepe",
+"Éder",
+"Ricardo Quaresma"
+],
+"explanation": null
+},
+"99d1b4d91a0cecdc": {
+"question": "¿Quién fue en 1995 el primer jugador no europeo en ganar el Balón de Oro?",
+"options": [
+"Pelé",
+"Diego Maradona",
+"George Weah",
+"Ronaldo Nazário"
+],
+"explanation": null
+},
+"7c4c64f5893d3816": {
+"question": "¿Quién tiene el récord de más hat-tricks en la historia de LaLiga?",
+"options": [
+"Cristiano Ronaldo",
+"Telmo Zarra",
+"Lionel Messi",
+"Alfredo Di Stéfano"
+],
+"explanation": null
+},
+"9102df2193a39c01": {
+"question": "Al final de la temporada 2023-24, ¿quién era el jugador en activo con más goles en la Serie A?",
+"options": [
+"Lautaro Martínez",
+"Paulo Dybala",
+"Domenico Berardi",
+"Ciro Immobile"
+],
+"explanation": null
+},
+"5b2e7359deba46d8": {
+"question": "¿Qué selección ganó la Eurocopa 1984?",
+"options": [
+"Francia",
+"España",
+"Alemania Federal",
+"Países Bajos"
+],
+"explanation": "Francia ganó la Eurocopa 1984 tras vencer 2-0 a España en la final."
+},
+"9039292e93c42b9e": {
+"question": "¿Quién es el único portero que comparte el récord de más partidos en la historia de LaLiga (622)?",
+"options": [
+"Iker Casillas",
+"Víctor Valdés",
+"Andoni Zubizarreta",
+"Paco Buyo"
+],
+"explanation": null
+},
+"36657620bf49a4cc": {
+"question": "¿Qué delantero francés fichó el Paris Saint-Germain por 95 M€ en la temporada 23/24?",
+"options": [
+"Ousmane Dembélé",
+"Goncalo Ramos",
+"Randal Kolo Muani",
+"Hugo Ekitiké"
+],
+"explanation": null
+},
+"f1d311ca18c7c170": {
+"question": "¿Quién es el jugador más joven en marcar en una final del Mundial?",
+"options": [
+"Kylian Mbappé",
+"Pelé",
+"Mario Götze",
+"Ronaldo"
+],
+"explanation": null
+},
+"1423531b8ba58b32": {
+"question": "¿Quién es el máximo goleador histórico de la Eredivisie?",
+"options": [
+"Johan Cruyff",
+"Ruud van Nistelrooy",
+"Willy van der Kuijlen",
+"Luuk de Jong"
+],
+"explanation": null
+},
+"1ad290390ad1998f": {
+"question": "¿Qué equipo ganó la Champions League en 2004 dirigido por José Mourinho?",
+"options": [
+"Chelsea",
+"Mónaco",
+"Oporto",
+"Deportivo de La Coruña"
+],
+"explanation": null
+},
+"d3b4f15818411221": {
+"question": "¿Quién es el jugador más caro fichado de un club de la MLS?",
+"options": [
+"Alphonso Davies",
+"Miguel Almirón",
+"Ricardo Pepi",
+"Brenden Aaronson"
+],
+"explanation": null
+},
+"af78ee05365babd9": {
+"question": "¿Quién es el extranjero con más partidos en la historia de LaLiga?",
+"options": [
+"Antoine Griezmann",
+"Karim Benzema",
+"Lionel Messi",
+"Dani Alves"
+],
+"explanation": "Antoine Griezmann superó a Lionel Messi en 2025 y se convirtió en el extranjero con más partidos en la historia de LaLiga."
+},
+"740d9130686dc4ac": {
+"question": "¿Quién es el máximo goleador masculino de la historia de los Mundiales?",
+"options": [
+"Miroslav Klose",
+"Ronaldo (Brasil)",
+"Gerd Müller",
+"Lionel Messi"
+],
+"explanation": null
+},
+"44aaee4ba7d58209": {
+"question": "¿Qué jugador ha ganado más títulos de la Bundesliga como futbolista?",
+"options": [
+"Thomas Müller",
+"Manuel Neuer",
+"Oliver Kahn",
+"Bastian Schweinsteiger"
+],
+"explanation": null
+},
+"6441b2f921b9cafa": {
+"question": "¿Qué estadio aparece en la imagen?",
+"options": [
+"Estádio de São Miguel",
+"Estádio Municipal de Braga",
+"Complexo Desportivo FC Alverca",
+"Estádio José Alvalade"
+],
+"explanation": "Es el Estádio Municipal de Braga, el estadio del Braga."
+},
+"27738f00844496b9": {
+"question": "¿Qué jugador tiene el récord de más partidos en la Serie A?",
+"options": [
+"Paolo Maldini",
+"Gianluigi Buffon",
+"Francesco Totti",
+"Javier Zanetti"
+],
+"explanation": null
+},
+"02f528fac02434ba": {
+"question": "¿Qué estadio aparece en la imagen?",
+"options": [
+"Euroborg",
+"Philips Stadion",
+"AFAS Stadion Alkmaar",
+"Johan Cruijff ArenA"
+],
+"explanation": "Es el Philips Stadion, el estadio del PSV Eindhoven."
+},
+"c14608ff78756b49": {
+"question": "¿En qué año se fundó la Serie A?",
+"options": [
+"1929",
+"1898",
+"1905",
+"1946"
+],
+"explanation": "La Serie A con su formato nacional de liga comenzó en la temporada 1929-30; 1898 corresponde al antiguo Campeonato Italiano de Fútbol."
+},
+"44b147564d417e97": {
+"question": "¿Quién es el goleador más veterano de la historia de la Serie A, al marcar un penalti con 41 años?",
+"options": [
+"Francesco Totti",
+"Paolo Maldini",
+"Fabio Quagliarella",
+"Zlatan Ibrahimović"
+],
+"explanation": null
+},
+"48105341f0b489da": {
+"question": "¿Qué portero tiene más porterías a cero en la historia de la Bundesliga?",
+"options": [
+"Oliver Kahn",
+"Manuel Neuer",
+"Oliver Reck",
+"Frank Rost"
+],
+"explanation": null
+},
+"7f0ac4bd443de76f": {
+"question": "Antes de que Antoine Griezmann lo superara en 2025, ¿quién era el extranjero con más partidos en la historia de LaLiga?",
+"options": [
+"Marcelo",
+"Lionel Messi",
+"Dani Alves",
+"Diego Godín"
+],
+"explanation": "Lionel Messi tenía el récord de partidos de un extranjero en LaLiga hasta que Antoine Griezmann lo superó en 2025."
+},
+"2644b25c6285b2e3": {
+"question": "¿Quién ganó la Bota de Oro del Mundial 2018?",
+"options": [
+"Harry Kane",
+"Kylian Mbappé",
+"Antoine Griezmann",
+"Eden Hazard"
+],
+"explanation": null
+},
+"fa48f349baa17b4e": {
+"question": "¿Qué jugador tiene el récord de más goles en una sola edición de la Champions League?",
+"options": [
+"Lionel Messi",
+"Robert Lewandowski",
+"Cristiano Ronaldo",
+"Erling Haaland"
+],
+"explanation": null
+},
+"dd89918fad278fb0": {
+"question": "Con un joven Olivier Giroud como estrella, ¿qué club ganó milagrosamente su primera Ligue 1 en la temporada 2011-12?",
+"options": [
+"Montpellier",
+"Rennes",
+"Niza",
+"Saint-Étienne"
+],
+"explanation": null
+},
+"79ec6c23b02a0424": {
+"question": "¿Qué estadio aparece en la imagen?",
+"options": [
+"Asito Stadion",
+"Philips Stadion",
+"Kras Stadion",
+"Abe Lenstra Stadion"
+],
+"explanation": "Es el Kras Stadion, el estadio del FC Volendam."
+},
+"436c4faddb3e1f5e": {
+"question": "¿Qué estadio aparece en la imagen?",
+"options": [
+"Kras Stadion",
+"MAC³PARK Stadion",
+"Abe Lenstra Stadion",
+"Johan Cruijff ArenA"
+],
+"explanation": "Es el MAC³PARK Stadion, el estadio del PEC Zwolle."
+},
+"492f0bae67ffebdb": {
+"question": "¿Qué entrenador ha dirigido más partidos en la Ligue 1?",
+"options": [
+"Arsène Wenger",
+"Guy Roux",
+"Aimé Jacquet",
+"Didier Deschamps"
+],
+"explanation": null
+},
+"700cbb7618887b0a": {
+"question": "¿Qué estadio aparece en la imagen?",
+"options": [
+"Kras Stadion",
+"Asito Stadion",
+"Rat Verlegh Stadion",
+"De Adelaarshorst"
+],
+"explanation": "Es el Rat Verlegh Stadion, el estadio del NAC Breda."
+},
+"809d7ed97a6d3303": {
+"question": "¿Quién fue el goleador más joven de la historia de la Bundesliga?",
+"options": [
+"Florian Wirtz",
+"Nuri Sahin",
+"Youssoufa Moukoko",
+"Jamal Musiala"
+],
+"explanation": null
+},
+"2b205ccc5348cb5c": {
+"question": "¿Quién es el centrocampista más goleador de la historia de la Premier League?",
+"options": [
+"Steven Gerrard",
+"Paul Scholes",
+"Frank Lampard",
+"Kevin De Bruyne"
+],
+"explanation": null
+},
+"522b6bc86e711f5b": {
+"question": "¿Cuántos goles marcó Cristiano Ronaldo en la temporada 2014-15 para ser el máximo goleador?",
+"options": [
+"44",
+"45",
+"48",
+"51"
+],
+"explanation": null
+},
+"a8cfc3c00a25b60a": {
+"question": "¿Qué club tiene el récord de más Ligue 1 consecutivas?",
+"options": [
+"Paris Saint-Germain",
+"Olympique de Lyon",
+"Olympique de Marsella",
+"Saint-Étienne"
+],
+"explanation": null
+},
+"863d02216eaebd87": {
+"question": "¿Qué club es segundo en la clasificación histórica de la Champions League?",
+"options": [
+"FC Barcelona",
+"Bayern de Múnich",
+"Manchester United",
+"Liverpool"
+],
+"explanation": null
+},
+"39a2db4ea58a781d": {
+"question": "¿Qué estadio aparece en la imagen?",
+"options": [
+"De Adelaarshorst",
+"Rat Verlegh Stadion",
+"Abe Lenstra Stadion",
+"Fortuna Sittard Stadion"
+],
+"explanation": "Es el Abe Lenstra Stadion, el estadio del Heerenveen."
+},
+"64df4e0550ca80a3": {
+"question": "¿Qué selección ganó sorprendentemente la Eurocopa 1992 tras ser invitada al torneo pocos días antes de empezar?",
+"options": [
+"Grecia",
+"Dinamarca",
+"Suecia",
+"Yugoslavia"
+],
+"explanation": null
+},
+"14b4d810780e2682": {
+"question": "¿Por cuál de estos jugadores pagó más el Real Madrid?",
+"options": [
+"Luís Figo",
+"Kaká",
+"Zinedine Zidane",
+"Luka Jovic"
+],
+"explanation": null
+},
+"6e478275a25c26e0": {
+"question": "¿Quién fue el máximo goleador de la Serie A 2023-24?",
+"options": [
+"Victor Osimhen",
+"Ciro Immobile",
+"Lautaro Martínez",
+"Cristiano Ronaldo"
+],
+"explanation": null
+},
+"b17e227ec1c78ead": {
+"question": "¿Cuál de estos clubes NO ha ganado la Champions League?",
+"options": [
+"Borussia Dortmund",
+"Celtic",
+"Arsenal",
+"Feyenoord"
+],
+"explanation": null
+},
+"b8d6db217ac76146": {
+"question": "¿Qué jugador tiene más asistencias en la historia de la Bundesliga?",
+"options": [
+"Franck Ribéry",
+"Thomas Müller",
+"Andreas Möller",
+"Marco Reus"
+],
+"explanation": null
+},
+"67dfd763bd72bb26": {
+"question": "¿Quién es el jugador más joven en llegar a 100 partidos en la Bundesliga?",
+"options": [
+"Timo Werner",
+"Kai Havertz",
+"Julian Draxler",
+"Erling Haaland"
+],
+"explanation": null
+},
+"601d0534965af47e": {
+"question": "¿Qué jugador ganó el Guante de Oro del Mundial 2022?",
+"options": [
+"Hugo Lloris",
+"Emiliano Martínez",
+"Yassine Bounou",
+"Dominik Livaković"
+],
+"explanation": null
+},
+"a6c2bfcba3bb8dd0": {
+"question": "¿Quién fue el primer entrenador en ganar la Premier League?",
+"options": [
+"Kenny Dalglish",
+"George Graham",
+"Howard Wilkinson",
+"Sir Alex Ferguson"
+],
+"explanation": null
+},
+"b309b76a1fa8457b": {
+"question": "¿Cuánto costó el traspaso de Harry Maguire al Manchester United?",
+"options": [
+"75,5 M€",
+"81,2 M€",
+"87 M€",
+"92,4 M€"
+],
+"explanation": null
+},
+"c7f1e9ecba4fcf5b": {
+"question": "¿Qué defensa ganó el Balón de Oro en 2006 tras capitanear a su selección hasta el título mundial?",
+"options": [
+"Paolo Maldini",
+"Carles Puyol",
+"Fabio Cannavaro",
+"John Terry"
+],
+"explanation": null
+},
+"cf6084203622b184": {
+"question": "¿Qué jugador tiene el récord de más partidos en la Ligue 1?",
+"options": [
+"Jean-Luc Ettori",
+"Dominique Dropsy",
+"Mickaël Landreau",
+"Alain Giresse"
+],
+"explanation": null
+},
+"64d7122eab9aacb0": {
+"question": "¿Entre qué dos clubes se disputa el apasionado 'derbi vasco'?",
+"options": [
+"Sevilla y Real Betis",
+"Athletic Club y Real Sociedad",
+"Celta de Vigo y Deportivo de La Coruña",
+"Valencia y Levante"
+],
+"explanation": null
+},
+"ac26593fc9880a1a": {
+"question": "¿Qué entrenador ha ganado más títulos de la Premier League?",
+"options": [
+"Sir Alex Ferguson",
+"Bill Shankly",
+"Arsène Wenger",
+"Bob Paisley"
+],
+"explanation": null
+},
+"127ca5a5c4eab665": {
+"question": "¿Qué jugador argentino es el cuarto con más partidos en la historia de la Serie A?",
+"options": [
+"José Altafini",
+"Mauro Icardi",
+"Javier Zanetti",
+"Lautaro Martínez"
+],
+"explanation": null
+},
+"2b51b9c33adea91b": {
+"question": "¿Qué estadio aparece en la imagen?",
+"options": [
+"Goffertstadion",
+"Van Donge and De Roo Stadion",
+"711 Stadion",
+"Johan Cruijff ArenA"
+],
+"explanation": "Es el Johan Cruijff ArenA, el estadio del Ajax."
+},
+"34b5fd0f9a9282ed": {
+"question": "¿Qué portero tiene el récord histórico de más porterías a cero en la Champions League?",
+"options": [
+"Iker Casillas",
+"Gianluigi Buffon",
+"Manuel Neuer",
+"Petr Čech"
+],
+"explanation": null
+},
+"d133d7f6b656a5f9": {
+"question": "¿Cuánto costó el traspaso de Kylian Mbappé al Paris Saint-Germain?",
+"options": [
+"190 M€",
+"180 M€",
+"175 M€",
+"168 M€"
+],
+"explanation": null
+},
+"82cfd73d6f3ebb8d": {
+"question": "¿Qué leyenda neerlandesa ganó el Balón de Oro tres veces (1988, 1989 y 1992) jugando en el AC Milan?",
+"options": [
+"Johan Cruyff",
+"Ruud Gullit",
+"Marco van Basten",
+"Dennis Bergkamp"
+],
+"explanation": null
+},
+"416f73c85d4dc9cb": {
+"question": "¿Los clubes de qué país han ganado más Champions League?",
+"options": [
+"Inglaterra",
+"España",
+"Italia",
+"Alemania"
+],
+"explanation": null
+},
+"8aad7d0cbd1a4c87": {
+"question": "¿Quién es el portero más caro de todos los tiempos?",
+"options": [
+"Alisson Becker",
+"Ederson",
+"Kepa Arrizabalaga",
+"Thibaut Courtois"
+],
+"explanation": null
+},
+"18933d750ef25d9d": {
+"question": "¿Qué estadio aparece en la imagen?",
+"options": [
+"Abe Lenstra Stadion",
+"711 Stadion",
+"AFAS Stadion Alkmaar",
+"Fortuna Sittard Stadion"
+],
+"explanation": "Es el AFAS Stadion Alkmaar, el estadio del AZ Alkmaar."
+},
+"dc01b4294e017d66": {
+"question": "¿Quién tiene el récord masculino de más goles con su selección?",
+"options": [
+"Cristiano Ronaldo",
+"Ali Daei",
+"Lionel Messi",
+"Miroslav Klose"
+],
+"explanation": null
+},
+"ce6817cc0b469cf0": {
+"question": "¿Qué selección ganó dos Copas América seguidas, en 2015 y 2016?",
+"options": [
+"Brasil",
+"Uruguay",
+"Chile",
+"Argentina"
+],
+"explanation": null
+},
+"c70d9ccca6011f32": {
+"question": "¿De qué club fichó el Liverpool a Virgil van Dijk?",
+"options": [
+"Celtic",
+"FC Groningen",
+"Southampton",
+"Aston Villa"
+],
+"explanation": null
+},
+"435eeeb5e9632915": {
+"question": "¿Quién ganó la Bota de Oro del Mundial 2014?",
+"options": [
+"James Rodríguez",
+"Thomas Müller",
+"Lionel Messi",
+"Neymar"
+],
+"explanation": null
+},
+"92052977fbb2c2da": {
+"question": "¿De qué club llegó Kevin De Bruyne al Manchester City?",
+"options": [
+"Chelsea",
+"Werder Bremen",
+"Wolfsburgo",
+"Genk"
+],
+"explanation": null
+},
+"a8786bbc39089ced": {
+"question": "¿Qué club vendió a Raheem Sterling al Chelsea por 56,2 M€?",
+"options": [
+"Liverpool",
+"Manchester City",
+"Queens Park Rangers",
+"Arsenal"
+],
+"explanation": null
+},
+"12db76ec5c25cff2": {
+"question": "¿Qué entrenador es famoso por ganar la Champions League con el Oporto y con el Inter de Milán?",
+"options": [
+"Carlo Ancelotti",
+"José Mourinho",
+"Pep Guardiola",
+"Jupp Heynckes"
+],
+"explanation": null
+},
+"9c9d35b84a99a297": {
+"question": "¿Qué selección ha ganado más veces la Copa Africana de Naciones?",
+"options": [
+"Camerún",
+"Nigeria",
+"Ghana",
+"Egipto"
+],
+"explanation": null
+},
+"98827ba1583633e7": {
+"question": "¿Quién tiene en solitario el récord de más asistencias en una temporada de la Bundesliga (21)?",
+"options": [
+"Jadon Sancho",
+"Kevin De Bruyne",
+"Thomas Müller",
+"Florian Wirtz"
+],
+"explanation": null
+},
+"a234a6fd68eabc21": {
+"question": "¿Qué equipo logró una increíble temporada liguera invicta para ganar la Serie A 2011-12?",
+"options": [
+"AC Milan",
+"Juventus",
+"Inter de Milán",
+"Nápoles"
+],
+"explanation": null
+},
+"99284616ac3e6afe": {
+"question": "¿Qué equipo acumula más temporadas consecutivas en la máxima categoría francesa (Ligue 1)?",
+"options": [
+"Olympique de Marsella",
+"Olympique de Lyon",
+"Paris Saint-Germain",
+"Burdeos"
+],
+"explanation": null
+},
+"97250b2b3e6aa176": {
+"question": "¿Qué estadio aparece en la imagen?",
+"options": [
+"Spartastadion",
+"Fortuna Sittard Stadion",
+"Stadion Feyenoord",
+"Philips Stadion"
+],
+"explanation": "Es el Spartastadion, el estadio del Sparta Rotterdam."
+},
+"31561bfc4d03fa51": {
+"question": "¿Cuánto costó aproximadamente el traspaso de Jadon Sancho del Borussia Dortmund al Manchester United?",
+"options": [
+"85 M€",
+"90 M€",
+"75 M€",
+"100 M€"
+],
+"explanation": null
+},
+"c30cfeb0899a9f62": {
+"question": "¿Qué portero tiene el récord de más porterías a cero en la historia de la Premier League?",
+"options": [
+"David de Gea",
+"Peter Schmeichel",
+"Petr Čech",
+"David Seaman"
+],
+"explanation": null
+},
+"99ee5788b4678f60": {
+"question": "¿Quién es el argentino más goleador de la historia de la Premier League?",
+"options": [
+"Carlos Tevez",
+"Sergio Agüero",
+"Hernán Crespo",
+"Julián Álvarez"
+],
+"explanation": null
+},
+"82ad36cf07fb4fa4": {
+"question": "¿Qué equipo tiene el récord de completar una temporada de la Bundesliga sin perder?",
+"options": [
+"Borussia Dortmund",
+"Hamburgo",
+"Bayern de Múnich",
+"Bayer Leverkusen"
+],
+"explanation": null
+},
+"690cdc695027227b": {
+"question": "¿Quién fue el máximo asistente de la Eredivisie 2023-24?",
+"options": [
+"Joey Veerman",
+"Steven Berghuis",
+"Jordy Clasie",
+"Luuk de Jong"
+],
+"explanation": null
+},
+"7bd262afed46d3ba": {
+"question": "¿Qué centrocampista danés brilló en el Ajax antes de fichar por el Tottenham Hotspur?",
+"options": [
+"Michael Laudrup",
+"Christian Eriksen",
+"Jon Dahl Tomasson",
+"Lasse Schöne"
+],
+"explanation": null
+},
+"475a49850d707267": {
+"question": "¿Qué superestrella sueca jugó en el Ajax en la Eredivisie?",
+"options": [
+"Henrik Larsson",
+"Gunnar Nordahl",
+"Zlatan Ibrahimović",
+"Freddie Ljungberg"
+],
+"explanation": null
+},
+"d9863669c884b9df": {
+"question": "¿Cómo se llama el trofeo en forma de escudo que recibe el campeón de la Bundesliga?",
+"options": [
+"Meisterschale",
+"DFB-Pokal",
+"Coupe de Champion",
+"Kaiser-Trophäe"
+],
+"explanation": null
+},
+"32f8894a4819a8a8": {
+"question": "¿Contra quién jugaba el Manchester City cuando Sergio Agüero marcó su mítico gol del título en el minuto 94 en 2012?",
+"options": [
+"Manchester United",
+"Queens Park Rangers",
+"Bolton Wanderers",
+"Aston Villa"
+],
+"explanation": null
+},
+"462fe072c81940ba": {
+"question": "¿Quién es el mexicano mejor situado en la lista histórica de goleadores de LaLiga?",
+"options": [
+"Javier Hernández",
+"Carlos Vela",
+"Andrés Guardado",
+"Hugo Sánchez"
+],
+"explanation": null
+},
+"d6b98ffab70309ba": {
+"question": "¿Qué estadio aparece en la imagen?",
+"options": [
+"AFAS Stadion Alkmaar",
+"Euroborg",
+"Spartastadion",
+"Stadion Feyenoord"
+],
+"explanation": "Es el Euroborg, el estadio del Groningen."
+},
+"84f0ca3d10890205": {
+"question": "¿Qué equipo juega como local en el Philips Stadion?",
+"options": [
+"Vitesse",
+"PSV Eindhoven",
+"FC Groningen",
+"Heerenveen"
+],
+"explanation": null
+},
+"eb6df8a7d2c05c44": {
+"question": "¿Qué estadio aparece en la imagen?",
+"options": [
+"Estádio do Dragão",
+"Estádio da Madeira",
+"Estádio da Luz",
+"Estádio Municipal de Arouca"
+],
+"explanation": "Es el Estádio da Luz, el estadio del Benfica."
+},
+"d8e55afdd20da9e9": {
+"question": "¿Quién tiene el récord de más goles en una sola temporada de la Bundesliga?",
+"options": [
+"Gerd Müller",
+"Robert Lewandowski",
+"Pierre-Emerick Aubameyang",
+"Lothar Emmerich"
+],
+"explanation": null
+},
+"451b3b9eb649134d": {
+"question": "¿Qué estadio aparece en la imagen?",
+"options": [
+"Estádio Municipal de Arouca",
+"Estádio António Coimbra da Mota",
+"Complexo Desportivo FC Alverca",
+"Estádio José Alvalade"
+],
+"explanation": "Es el Complexo Desportivo FC Alverca, el estadio del Alverca."
+},
+"553daf6ae6d7beaf": {
+"question": "A 2026, ¿cuál es el fichaje más caro de la historia del Liverpool?",
+"options": [
+"Alisson Becker",
+"Virgil van Dijk",
+"Darwin Núñez",
+"Florian Wirtz"
+],
+"explanation": null
+},
+"239416c4c7a67feb": {
+"question": "¿Quién tiene el récord del hat-trick más rápido de la Ligue 1?",
+"options": [
+"Jérémy Ménez",
+"Kylian Mbappé",
+"Zlatan Ibrahimović",
+"Loïs Openda"
+],
+"explanation": null
+},
+"0962969852de44a3": {
+"question": "¿Cuántos goles marcó Erling Haaland en su histórica temporada 2022-23 de la Premier League?",
+"options": [
+"32",
+"34",
+"36",
+"38"
+],
+"explanation": null
+},
+"8fb5b6c07198242d": {
+"question": "¿Qué entrenador ha ganado más títulos de la Premier League?",
+"options": [
+"Arsène Wenger",
+"Pep Guardiola",
+"José Mourinho",
+"Sir Alex Ferguson"
+],
+"explanation": null
+},
+"0763e4bffaf14b7a": {
+"question": "¿Qué entrenador tiene el récord de más premios al Entrenador del Mes de la Premier League?",
+"options": [
+"Arsène Wenger",
+"Pep Guardiola",
+"Sir Alex Ferguson",
+"José Mourinho"
+],
+"explanation": null
+},
+"9e930c2a68fa7380": {
+"question": "¿Qué jugador tiene en solitario el récord de más asistencias en una temporada de la Bundesliga?",
+"options": [
+"Jadon Sancho",
+"Emil Forsberg",
+"Kevin De Bruyne",
+"Thomas Müller"
+],
+"explanation": null
+},
+"acad5bc151706219": {
+"question": "¿Qué club ganó LaLiga en la temporada 2013-14?",
+"options": [
+"Real Madrid",
+"FC Barcelona",
+"Atlético de Madrid",
+"Valencia"
+],
+"explanation": null
+},
+"73572171c2887d21": {
+"question": "¿Cuántos puntos sumó el Manchester City en su histórica temporada 2017-18?",
+"options": [
+"98",
+"99",
+"100",
+"93"
+],
+"explanation": null
+},
+"a51b0e95aa2f9c25": {
+"question": "¿Cuál de estos partidos se jugó en la primera jornada de la historia de la Bundesliga, en agosto de 1963?",
+"options": [
+"Borussia Dortmund vs Werder Bremen",
+"Hamburgo vs Preußen Münster",
+"Schalke 04 vs VfB Stuttgart",
+"1. FC Colonia vs 1. FC Saarbrücken"
+],
+"explanation": null
+},
+"b7f9b0356ea43291": {
+"question": "¿Qué selección se convirtió en 2022 en la primera africana en llegar a una semifinal del Mundial?",
+"options": [
+"Ghana",
+"Senegal",
+"Nigeria",
+"Marruecos"
+],
+"explanation": null
+},
+"963246d34222d169": {
+"question": "¿Cuántos goles marcó Kylian Mbappé en su etapa en la Ligue 1?",
+"options": [
+"179",
+"187",
+"191",
+"206"
+],
+"explanation": null
+},
+"42768dc6d1964978": {
+"question": "¿Qué delantero italiano fue el máximo goleador del Mundial 1982 y ayudó a Italia a levantar el trofeo?",
+"options": [
+"Paolo Rossi",
+"Roberto Baggio",
+"Giuseppe Bergomi",
+"Bruno Conti"
+],
+"explanation": null
+},
+"1c94f36ed724eb6e": {
+"question": "Antes de que Joaquín lo igualara en 2023, ¿qué portero tenía en solitario el récord de más partidos en la historia de LaLiga?",
+"options": [
+"Joaquín",
+"Andoni Zubizarreta",
+"Raúl",
+"Iker Casillas"
+],
+"explanation": null
+},
+"319dba78fb80b06c": {
+"question": "Antes de Harry Kane en 2023-24, ¿qué jugador tuvo durante 60 años el récord de más goles en una temporada de debut en la Bundesliga?",
+"options": [
+"Uwe Seeler",
+"Erling Haaland",
+"Marek Mintál",
+"Roy Makaay"
+],
+"explanation": null
+},
+"d09e20e8fa442400": {
+"question": "¿Cómo se llama el prestigioso premio al mejor futbolista joven de Europa menor de 21 años?",
+"options": [
+"Trofeo Kopa",
+"Golden Boy",
+"Premio Bravo",
+"Premio Puskás"
+],
+"explanation": null
+},
+"39cb4bdc1dc15a66": {
+"question": "¿Quién comparte con Gonzalo Higuaín el récord histórico de más goles en una temporada de la Serie A (36 goles)?",
+"options": [
+"Cristiano Ronaldo",
+"Zlatan Ibrahimović",
+"Ciro Immobile",
+"Victor Osimhen"
+],
+"explanation": null
+},
+"3719b32d0f6b9fbb": {
+"question": "A 2026, ¿cuál es el fichaje más caro de la historia del Manchester City?",
+"options": [
+"Kevin De Bruyne",
+"Erling Haaland",
+"Jack Grealish",
+"Rodri"
+],
+"explanation": null
+},
+"7fe664f5d9c3b0eb": {
+"question": "¿Quién es el galés mejor situado en la lista histórica de partidos de la Premier League?",
+"options": [
+"Ian Rush",
+"Gareth Bale",
+"Gary Speed",
+"Ryan Giggs"
+],
+"explanation": null
+},
+"180aeac3990e23f2": {
+"question": "¿Qué selección ganó la Eurocopa 2000?",
+"options": [
+"Francia",
+"Países Bajos",
+"Alemania",
+"Italia"
+],
+"explanation": null
+},
+"421665156a067503": {
+"question": "¿Qué estadio aparece en la imagen?",
+"options": [
+"Rat Verlegh Stadion",
+"Euroborg",
+"De Adelaarshorst",
+"Van Donge and De Roo Stadion"
+],
+"explanation": "Es el Van Donge and De Roo Stadion, el estadio del Excelsior."
+},
+"79f0a048352f6bf5": {
+"question": "¿Qué club ganó LaLiga en la temporada 2020-21?",
+"options": [
+"Real Madrid",
+"FC Barcelona",
+"Atlético de Madrid",
+"Sevilla"
+],
+"explanation": null
+},
+"f7cc854392ec14ab": {
+"question": "¿Qué club es el tercero con más títulos de LaLiga?",
+"options": [
+"Athletic Club",
+"Valencia",
+"Atlético de Madrid",
+"Real Sociedad"
+],
+"explanation": null
+},
+"4211ce2cd8cc9fb6": {
+"question": "¿Quién fue el máximo goleador de LaLiga 2015-16 con 40 goles?",
+"options": [
+"Lionel Messi",
+"Cristiano Ronaldo",
+"Luis Suárez",
+"Neymar Jr."
+],
+"explanation": null
+},
+"b5f8c903fe91a8b9": {
+"question": "¿Quién fue el jugador más joven en marcar un hat-trick en la Ligue 1?",
+"options": [
+"Kylian Mbappé",
+"Jérémy Ménez",
+"Karim Benzema",
+"Eden Hazard"
+],
+"explanation": null
+},
+"b5dadc16d52b983a": {
+"question": "¿Qué jugador marcó un famoso hat-trick con Inglaterra en la final del Mundial de 1966?",
+"options": [
+"Bobby Charlton",
+"Jimmy Greaves",
+"Geoff Hurst",
+"Gary Lineker"
+],
+"explanation": null
+},
+"37aa133629e9fae9": {
+"question": "¿Quién fue el máximo goleador de la Premier League 2023-24?",
+"options": [
+"Mohamed Salah",
+"Erling Haaland",
+"Harry Kane",
+"Son Heung-min"
+],
+"explanation": null
+},
+"800d6bb52f4112d3": {
+"question": "¿De qué club fichó el Manchester United a Romelu Lukaku por 84,7 M€?",
+"options": [
+"Chelsea",
+"Inter de Milán",
+"Everton",
+"Anderlecht"
+],
+"explanation": null
+},
+"56fe73526f2e0bcd": {
+"question": "¿Qué club inglés ganó milagrosamente dos Copas de Europa seguidas, en 1979 y 1980, con Brian Clough en el banquillo?",
+"options": [
+"Aston Villa",
+"Liverpool",
+"Nottingham Forest",
+"Leeds United"
+],
+"explanation": null
+},
+"55afc6d81fe74093": {
+"question": "¿Cuántas Ligue 1 consecutivas ganó el Olympique de Lyon durante su época dorada en los años 2000?",
+"options": [
+"5",
+"6",
+"7",
+"8"
+],
+"explanation": null
+},
+"487f13cc6f1b6034": {
+"question": "¿Quién fue el jugador más joven en debutar en la Bundesliga?",
+"options": [
+"Youssoufa Moukoko",
+"Nuri Sahin",
+"Jude Bellingham",
+"Jamal Musiala"
+],
+"explanation": null
+}
+}

@@ -22,6 +22,7 @@ import { fileURLToPath } from "node:url";
 import { ORIGIN, renderBody, renderHead } from "./lib.mjs";
 import { buildGamePages } from "./pages/games.mjs";
 import { buildQuizArchive } from "./pages/quizArchive.mjs";
+import { buildIntlQuizArchive } from "./pages/quizArchiveIntl.mjs";
 import { buildPlayerPages } from "./pages/players.mjs";
 import { buildHome } from "./pages/home.mjs";
 import { buildAbout } from "./pages/about.mjs";
@@ -112,9 +113,17 @@ function initialsExamples() {
 // ── Assembly ────────────────────────────────────────────────────────────────
 
 /** hreflang: every member of a language group lists all members + x-default. */
-function attachAlternates(pages) {
+function attachAlternates(pages, archiveGroups = []) {
   const byPath = new Map(pages.map((p) => [p.path, p]));
-  for (const group of Object.values(LANG_GROUPS)) {
+  // Quiz archive: English day/topic/hub pages + whichever translations exist.
+  const archive = new Map();
+  for (const g of archiveGroups) {
+    if (!byPath.has(g.en)) continue;
+    const entry = archive.get(g.key) ?? { en: g.en };
+    entry[g.lang] = g.path;
+    archive.set(g.key, entry);
+  }
+  for (const group of [...Object.values(LANG_GROUPS), ...archive.values()]) {
     const alts = Object.entries(group).map(([lang, path]) => ({ lang, path }));
     alts.push({ lang: "x-default", path: group.en });
     for (const { path } of Object.entries(group).map(([, path]) => ({ path }))) {
@@ -222,8 +231,10 @@ export async function generate({ distDir, refreshSnapshot = false, log = console
   const home = buildHome(ctx);
   const gamePages = buildGamePages(ctx);
   const intlPages = buildIntlGamePages(ctx);
-  const pages = [...gamePages, ...intlPages, ...quiz.pages, ...playerPages.pages, buildAbout(ctx)];
-  attachAlternates([home, ...pages]);
+  const frQuiz = buildIntlQuizArchive(archive, "fr");
+  const esQuiz = buildIntlQuizArchive(archive, "es");
+  const pages = [...gamePages, ...intlPages, ...quiz.pages, ...frQuiz.pages, ...esQuiz.pages, ...playerPages.pages, buildAbout(ctx)];
+  attachAlternates([home, ...pages], [...frQuiz.groups, ...esQuiz.groups]);
 
   // Preview cards: one per game (EN/FR/ES) and one per content section.
   const cardUrls = await renderCards(distDir, CARDS);
@@ -261,7 +272,7 @@ export async function generate({ distDir, refreshSnapshot = false, log = console
   writeFileSync(path.join(distDir, "sitemap.xml"), sitemapXml(entries));
 
   log(
-    `[seo] ${pages.length + 1} pages (archive: ${source}, ${quiz.recentDays.length} days; pairs ${playerPages.counts.pairs}, club×nation ${playerPages.counts.nations}, club hubs ${playerPages.counts.hubs}, career sets ${playerPages.counts.careerSets})`,
+    `[seo] ${pages.length + 1} pages (archive: ${source}, ${quiz.recentDays.length} days, fr ${frQuiz.dayCount}, es ${esQuiz.dayCount}; pairs ${playerPages.counts.pairs}, club×nation ${playerPages.counts.nations}, club hubs ${playerPages.counts.hubs}, career sets ${playerPages.counts.careerSets})`,
   );
   return { pages: [home, ...pages], source };
 }

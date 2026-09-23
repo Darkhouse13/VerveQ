@@ -30,6 +30,7 @@ const UI = {
     free: "Gratuit, sans inscription, directement dans le navigateur.",
     nav: [
       { href: "/fr/jeux/", label: "Jeux de foot" },
+      { href: "/fr/quiz-foot/", label: "Quiz foot" },
       { href: "/games/", label: "English" },
       { href: "/es/juegos/", label: "Español" },
     ],
@@ -43,6 +44,7 @@ const UI = {
     free: "Gratis, sin registro, directamente en el navegador.",
     nav: [
       { href: "/es/juegos/", label: "Juegos de fútbol" },
+      { href: "/es/quiz-futbol/", label: "Preguntas de fútbol" },
       { href: "/games/", label: "English" },
       { href: "/fr/jeux/", label: "Français" },
     ],
@@ -139,7 +141,7 @@ ${cta("/v2/daily?ref=seo_daily_fr", "Jouer au quiz du jour")}
 </ul>
 <h2>Les thèmes</h2>
 <p>Ligue 1, Premier League, Liga, Serie A, Bundesliga, Ligue des champions, Coupe du monde et Euro, records, transferts, entraîneurs : le quiz pioche dans une banque de questions vérifiées. Chaque jour mélange des questions faciles et une ou deux colles pour les vrais passionnés. Un 10/10 est rare.</p>
-<p>Tu as raté un jour ? Tous les quiz passés sont publiés avec leurs réponses dans les <a href="/football-quiz/">archives du quiz (en anglais)</a>.</p>`,
+<p>Tu as raté un jour ? Tous les quiz passés sont publiés avec leurs réponses dans les <a href="/fr/quiz-foot/">archives du quiz foot</a>.</p>`,
     faqs: [
       { q: "À quelle heure change le quiz foot du jour ?", a: "Un nouveau quiz est publié chaque jour à minuit UTC, soit 2 h du matin en France l'été et 1 h l'hiver." },
       { q: "Le quiz est-il gratuit ?", a: "Oui, entièrement gratuit, et tu peux jouer sans créer de compte." },
@@ -314,7 +316,7 @@ ${cta("/v2/daily?ref=seo_daily_es", "Jugar el quiz de hoy")}
 </ul>
 <h2>Temas</h2>
 <p>LaLiga, Premier League, Serie A, Bundesliga, Ligue 1, Champions League, Mundial, Eurocopa, Copa Libertadores, fichajes y récords: el quiz sale de un banco de preguntas verificadas, con preguntas fáciles y alguna reservada a los más futboleros.</p>
-<p>¿Te perdiste un día? Todos los quiz anteriores están publicados con sus respuestas en el <a href="/football-quiz/">archivo del quiz (en inglés)</a>.</p>`,
+<p>¿Te perdiste un día? Todos los quiz anteriores están publicados con sus respuestas en el <a href="/es/quiz-futbol/">archivo de preguntas de fútbol</a>.</p>`,
     faqs: [
       { q: "¿A qué hora cambia el quiz de fútbol diario?", a: "Cada día a medianoche UTC se publica un quiz nuevo." },
       { q: "¿Es gratis?", a: "Sí, totalmente gratis y puedes jugar sin crear una cuenta." },
