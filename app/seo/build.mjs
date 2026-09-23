@@ -26,6 +26,7 @@ import { buildPlayerPages } from "./pages/players.mjs";
 import { buildHome } from "./pages/home.mjs";
 import { buildIntlGamePages, LANG_GROUPS } from "./pages/gamesIntl.mjs";
 import { loadPlayers } from "./data.mjs";
+import { CARDS, cardFor, renderCards } from "./og.mjs";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const SNAPSHOT = path.join(HERE, "snapshots", "daily-quiz-archive.json");
@@ -222,6 +223,17 @@ export async function generate({ distDir, refreshSnapshot = false, log = console
   const intlPages = buildIntlGamePages(ctx);
   const pages = [...gamePages, ...intlPages, ...quiz.pages, ...playerPages.pages];
   attachAlternates([home, ...pages]);
+
+  // Preview cards: one per game (EN/FR/ES) and one per content section.
+  const cardUrls = await renderCards(distDir, CARDS);
+  const intlCard = new Map();
+  for (const [key, group] of Object.entries(LANG_GROUPS)) {
+    for (const lang of ["fr", "es"]) intlCard.set(group[lang], `${lang}-${key}`);
+  }
+  for (const p of pages) {
+    const id = intlCard.get(p.path) ?? cardFor(p.path);
+    if (id && cardUrls[id]) p.ogImage = cardUrls[id];
+  }
 
   const paths = new Set();
   for (const p of [home, ...pages]) {

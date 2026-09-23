@@ -99,7 +99,8 @@ export function renderHead(page) {
     `<meta name="description" content="${esc(page.description)}" />`,
     `<link rel="canonical" href="${esc(url)}" />`,
   ];
-  if (page.robots) lines.push(`<meta name="robots" content="${esc(page.robots)}" />`);
+  // Indexable pages allow large image previews (search thumbnails, Discover).
+  lines.push(`<meta name="robots" content="${esc(page.robots ?? "max-image-preview:large")}" />`);
   for (const alt of page.alternates ?? []) {
     lines.push(`<link rel="alternate" hreflang="${esc(alt.lang)}" href="${esc(abs(alt.path))}" />`);
   }
