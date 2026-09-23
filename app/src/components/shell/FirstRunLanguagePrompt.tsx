@@ -20,6 +20,7 @@ import { cn } from "@/lib/utils";
 import i18n, { SUPPORTED_LANGUAGES, LANGUAGE_AUTONYMS } from "@/i18n";
 import { V2_SHELL_ENABLED } from "@/lib/flags";
 import { chooseLanguage, hasChosenLanguage, markLanguageChosen } from "@/lib/languagePref";
+import { isLikelyBot, isSeoPath } from "@/lib/seoPages";
 
 // Public legal pages render flag-independently; never cover them with the prompt.
 const SUPPRESSED_PATHS = new Set(["/privacy", "/terms"]);
@@ -44,7 +45,11 @@ export function FirstRunLanguagePrompt() {
   // the `open` prop rather than an early return: unmounting a Radix dialog
   // WHILE open skips its close path (scroll/pointer-lock release), which is
   // exactly the "app stopped responding to clicks" failure mode.
-  const suppressed = SUPPRESSED_PATHS.has(location.pathname);
+  // Also never on the static SEO pages (they are English content pages; the
+  // prompt appears once the visitor taps into a game) and never for crawlers,
+  // which would otherwise index a modal over every page.
+  const suppressed =
+    SUPPRESSED_PATHS.has(location.pathname) || isSeoPath(location.pathname) || isLikelyBot();
 
   const active = i18n.resolvedLanguage ?? i18n.language;
 

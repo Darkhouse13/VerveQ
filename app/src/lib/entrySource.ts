@@ -17,7 +17,9 @@
  * are read here on the FIRST url seen by the tab, before any redirect runs, so
  * a redirect can never overwrite the real entry door.
  */
-export type EntrySource = "share-link" | "homepage" | "profile" | "direct";
+import { isSeoPath } from "@/lib/seoPages";
+
+export type EntrySource = "share-link" | "homepage" | "profile" | "seo" | "direct";
 
 const STORAGE_KEY = "vq_entry_source";
 
@@ -53,6 +55,10 @@ export function classifyEntrySource(
 
   // The landing pages proper. /play is an off-platform short link, so it is a
   // marketing door rather than the homepage.
+  // The static SEO layer (app/seo): search visitors land on a real page there
+  // and tap into the game client-side, so the first URL is the door.
+  if (isSeoPath(pathname)) return "seo";
+
   if (pathname === "/" || pathname === "/home" || pathname === "/v2") {
     return "homepage";
   }

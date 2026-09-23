@@ -1,4 +1,4 @@
-import { defineConfig } from "vite";
+import { defineConfig, type Plugin } from "vite";
 import react from "@vitejs/plugin-react";
 import { sentryVitePlugin } from "@sentry/vite-plugin";
 import { VitePWA } from "vite-plugin-pwa";
@@ -47,7 +47,8 @@ const SHARE_ROUTE_PATTERN = /^\/s\/d\//;
 // /games/* and the public legal pages are real static documents in public/
 // and must bypass the SPA fallback. Same for /s/r/:slug (App.tsx:579) — only
 // /s/d/ is proxied away from the SPA.
-const STATIC_PAGES_PATTERN = /^\/(?:games|privacy|terms)(?:\/|$)/;
+const STATIC_PAGES_PATTERN =
+  /^\/(?:games|football-quiz|who-played-for|career-path-quiz|privacy|terms)(?:\/|$)/;
 const STATIC_ASSET_DIR_PATTERN = /^\/(?:og|arena-logos)\//;
 const WEBMANIFEST_PATTERN = /^\/manifest\.webmanifest$/;
 // Mirrors deploy/nginx.conf's `location ~* \.(js|css|png|...)$` rule. Catches
@@ -70,6 +71,23 @@ const SENTRY_UPLOAD_ENABLED = Boolean(
     process.env.VITE_RELEASE_SHA,
 );
 
+// ── Static SEO layer ────────────────────────────────────────────────────────
+// seo/build.mjs turns the built shell into the indexable pages (/games/*, the
+// quiz archive, grid answers, career path quizzes), app-shell.html and the
+// sitemap. writeBundle runs after the bundle is on disk and BEFORE
+// vite-plugin-pwa's closeBundle, so the precache revisions below are computed
+// from the final index.html / app-shell.html.
+function seoStaticLayer(): Plugin {
+  return {
+    name: "verveq-seo-static-layer",
+    apply: "build",
+    async writeBundle(options) {
+      const { generate } = await import("./seo/build.mjs");
+      await generate({ distDir: options.dir ?? path.resolve(__dirname, "dist") });
+    },
+  };
+}
+
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
   server: {
@@ -84,6 +102,7 @@ export default defineConfig(({ mode }) => ({
   },
   plugins: [
     react(),
+    seoStaticLayer(),
     VitePWA({
       registerType: "autoUpdate",
       // Registration lives in src/main.tsx via `virtual:pwa-register`, so it
@@ -121,13 +140,17 @@ export default defineConfig(({ mode }) => ({
         // request.
         globPatterns: [
           "index.html",
+          "app-shell.html",
           "assets/**/*.{js,css,woff2}",
           "vq-logo.png",
           "pwa-*.png",
           "apple-touch-icon-*.png",
         ],
         cleanupOutdatedCaches: true,
-        navigateFallback: "/index.html",
+        // app-shell.html, not index.html: the homepage now carries its own
+        // server-rendered head and content (seo/build.mjs), which every other
+        // route must not inherit.
+        navigateFallback: "/app-shell.html",
         // Everything nginx serves from something other than the SPA shell.
         // Without these a navigation to any of them would be answered with
         // index.html out of the precache and soft-404 as the app.

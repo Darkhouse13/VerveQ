@@ -24,6 +24,7 @@ import { NeoButton } from "@/components/neo/NeoButton";
 import { NeoCard } from "@/components/neo/NeoCard";
 import { NeoLogo } from "@/components/neo/NeoLogo";
 import { ShellLayout } from "@/components/shell/ShellLayout";
+import { StaticSeoSlot } from "@/components/seo/SeoPageHost";
 import { SHELL_ROUTES } from "@/lib/shellRoutes";
 import { useMutation } from "convex/react";
 import {
@@ -94,7 +95,11 @@ export default function ColdEntryScreen() {
 
   if (phase === "orient") {
     return (
-      <ShellLayout hideNav center>
+      <ShellLayout hideNav scroll>
+        {/* The hero still owns the first screen (centered in it); the
+            homepage's server-rendered games/quiz/grid-answer links follow
+            below it, inside this scroll area (StaticSeoSlot). */}
+        <div className="min-h-full flex flex-col justify-center">
         <div className="w-full max-w-sm mx-auto flex flex-col items-center text-center">
           <NeoLogo size="sm" />
           <NeoBadge color="primary" rotated size="md" className="mt-6">
@@ -129,6 +134,8 @@ export default function ColdEntryScreen() {
             </button>
           </p>
         </div>
+        </div>
+        <StaticSeoSlot className="w-full mt-6" />
       </ShellLayout>
     );
   }

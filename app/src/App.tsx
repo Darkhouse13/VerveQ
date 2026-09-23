@@ -1,8 +1,8 @@
 import { Toaster as Sonner } from "@/components/ui/sonner";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { ConvexReactClient } from "convex/react";
 import { ConvexAuthProvider } from "@convex-dev/auth/react";
-import { Suspense } from "react";
+import { Suspense, type ReactNode } from "react";
 import { lazyWithRetry } from "./lib/lazyWithRetry";
 import { AuthProvider } from "./contexts/AuthContext";
 import { ProtectedRoute, UsernameRequiredRoute } from "./components/ProtectedRoute";
@@ -36,6 +36,8 @@ import { ShellGate } from "./components/shell/ShellGate";
 import { ShellLayout } from "./components/shell/ShellLayout";
 import { FirstRunLanguagePrompt } from "./components/shell/FirstRunLanguagePrompt";
 import { RouteMeta } from "./components/RouteMeta";
+import { SeoPageHost, SeoRouteOutlet } from "./components/seo/SeoPageHost";
+import { isOnStaticPage } from "./lib/seoPages";
 import {
   SessionRoute,
   UsernameOnlyRoute,
@@ -137,6 +139,21 @@ function LazyFallback() {
   );
 }
 
+/**
+ * The app's frame. On a static SEO page the frame holds only overlays (the
+ * page itself is the server-rendered #seo block after #root), so it must not
+ * claim a full screen of height above that content.
+ */
+function AppFrame({ children }: { children: ReactNode }) {
+  const { pathname } = useLocation();
+  const staticPage = isOnStaticPage(pathname);
+  return (
+    <div className={staticPage ? "max-w-md mx-auto relative" : "max-w-md mx-auto min-h-screen relative safe-pt"}>
+      {children}
+    </div>
+  );
+}
+
 const AppRoutes = () => (
   <ConvexAuthProvider client={convex}>
     <AuthProvider>
@@ -148,12 +165,15 @@ const AppRoutes = () => (
         {/* Per-route title/description/canonical. Without it every SPA route
             keeps the homepage head for the whole session. */}
         <RouteMeta />
+        {/* Static SEO layer bridge (app/seo/build.mjs): shows/hides the
+            server-rendered #seo block and routes its Play links client-side. */}
+        <SeoPageHost />
         {/* safe-pt covers the v1 screens, which render in normal document flow
             rather than inside one of the `fixed inset-0` shell frames. The
             frames are position:fixed and this wrapper creates no containing
             block for them (position:relative doesn't), so they keep their own
             inset and never double up with this one. */}
-        <div className="max-w-md mx-auto min-h-screen relative safe-pt">
+        <AppFrame>
           {/* One-time language chooser, overlays whatever screen loads first. */}
           <FirstRunLanguagePrompt />
           {/* Add-to-home-screen bar. Renders nothing unless the browser can
@@ -626,9 +646,14 @@ const AppRoutes = () => (
                 requirements; must render regardless of rollout state). */}
             <Route path="/privacy" element={<PrivacyScreen />} />
             <Route path="/terms" element={<TermsScreen />} />
+            {/* Static SEO layer — the page HTML is already in the document. */}
+            <Route path="/games/*" element={<SeoRouteOutlet />} />
+            <Route path="/football-quiz/*" element={<SeoRouteOutlet />} />
+            <Route path="/who-played-for/*" element={<SeoRouteOutlet />} />
+            <Route path="/career-path-quiz/*" element={<SeoRouteOutlet />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
-        </div>
+        </AppFrame>
       </BrowserRouter>
     </AuthProvider>
   </ConvexAuthProvider>

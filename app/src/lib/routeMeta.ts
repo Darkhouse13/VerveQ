@@ -28,7 +28,7 @@ export interface RouteMeta {
 export const DEFAULT_META: RouteMeta = {
   title: "Football Trivia & Quiz Games — Play Free | VerveQ",
   description:
-    "Free football trivia and quiz games: a daily quiz, initials survival, career-path guessing and head-to-head duels. Play in your browser, no sign-up.",
+    "Free football quiz games: a daily quiz, guess the footballer by career path, a football grid, higher or lower and 1v1 duels. No sign-up needed.",
 };
 
 /** Origin for self-referencing canonicals. Non-www — nginx 301s the www host. */
@@ -113,11 +113,28 @@ export function resolveRouteMeta(pathname: string): RouteMeta {
   return ROUTE_META[normalized] ?? DEFAULT_META;
 }
 
-/** Self-referencing canonical: origin + path, query and hash discarded. */
+/**
+ * SPA game routes whose indexable home is a static /games/ page (app/seo). The
+ * page is what ranks; the route is where the game runs once Play is tapped, so
+ * the route defers to it rather than competing with it.
+ */
+export const CANONICAL_OVERRIDES: Record<string, string> = {
+  "/v2/daily": "/games/daily-football-quiz/",
+  "/v2/daily-survival": "/games/football-survival/",
+  "/v2/career-path": "/games/career-path/",
+  "/v2/higher-lower": "/games/higher-or-lower/",
+  "/v2/verve-grid": "/games/football-grid/",
+  "/v2/duels": "/games/football-duels/",
+  "/v2/blitz": "/games/60-second-football-quiz/",
+};
+
+/** Canonical: origin + path (query and hash discarded), or the route's static page. */
 export function canonicalFor(pathname: string): string {
   const normalized =
     pathname.length > 1 && pathname.endsWith("/")
       ? pathname.replace(/\/+$/, "")
       : pathname;
+  const override = CANONICAL_OVERRIDES[normalized];
+  if (override) return `${CANONICAL_ORIGIN}${override}`;
   return `${CANONICAL_ORIGIN}${normalized === "/" ? "/" : normalized}`;
 }

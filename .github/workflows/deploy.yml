@@ -20,6 +20,13 @@ on:
     types: [completed]
     branches: [master]
   workflow_dispatch:
+  # Daily rebuild of the static SEO layer (app/seo/build.mjs): each night the
+  # just-closed daily quiz becomes a /football-quiz/<date>/ page and the
+  # sitemap's lastmod moves. Same code as master's last green Check — only the
+  # archive data (read from prod Convex at build time) is new. 00:20 UTC gives
+  # the midnight-UTC reset a margin.
+  schedule:
+    - cron: "20 0 * * *"
 
 # One production deploy at a time; let an in-flight one finish rather than
 # cancelling it mid-build.
@@ -35,6 +42,7 @@ jobs:
     # with extra steps. A manual dispatch has no parent run and must still pass.
     if: >-
       github.event_name == 'workflow_dispatch' ||
+      github.event_name == 'schedule' ||
       github.event.workflow_run.conclusion == 'success'
     steps:
       - name: Checkout
