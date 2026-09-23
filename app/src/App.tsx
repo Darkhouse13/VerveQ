@@ -651,6 +651,8 @@ const AppRoutes = () => (
             <Route path="/football-quiz/*" element={<SeoRouteOutlet />} />
             <Route path="/who-played-for/*" element={<SeoRouteOutlet />} />
             <Route path="/career-path-quiz/*" element={<SeoRouteOutlet />} />
+            <Route path="/fr/*" element={<SeoRouteOutlet />} />
+            <Route path="/es/*" element={<SeoRouteOutlet />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </AppFrame>

@@ -11,6 +11,8 @@
  * which has node but no tsx.
  */
 
+import { uiFor } from "./pages/gamesIntl.mjs";
+
 export const ORIGIN = "https://verveq.com";
 export const SITE_NAME = "VerveQ";
 export const DEFAULT_OG_IMAGE = `${ORIGIN}/og/home.png`;
@@ -129,6 +131,8 @@ const NAV = {
     { href: "/football-quiz/", label: "Quiz archive" },
     { href: "/career-path-quiz/", label: "Career path quiz" },
     { href: "/who-played-for/", label: "Who played for" },
+    { href: "/fr/jeux/", label: "FR" },
+    { href: "/es/juegos/", label: "ES" },
   ],
 };
 
@@ -161,10 +165,12 @@ export function renderBreadcrumbs(crumbs) {
  * Back — the block lives outside #root, so React never owns it.
  */
 export function renderBody(page) {
-  const nav = NAV.en
+  const ui = page.lang && page.lang !== "en" ? uiFor(page.lang) : null;
+  const nav = (ui ? ui.nav : NAV.en)
     .map((n) => `<a href="${n.href}">${esc(n.label)}</a>`)
     .join("");
-  const footer = FOOTER_LINKS.map((l) => `<a href="${l.href}">${esc(l.label)}</a>`).join("");
+  const footer = (ui ? ui.nav : FOOTER_LINKS).map((l) => `<a href="${l.href}">${esc(l.label)}</a>`).join("");
+  const footerIntro = ui ? esc(ui.footerIntro) : "VerveQ: free football trivia games in your browser.";
   return `    <!--seo:block-->
     <div id="seo" data-seo-path="${esc(page.path)}">
       ${page.hideHeader ? "" : `<header class="seo-top">
@@ -177,7 +183,7 @@ ${page.body}
       </main>
       <footer class="seo-foot">
         <nav class="seo-foot-links" aria-label="Football games">${footer}</nav>
-        <p>VerveQ: free football trivia games in your browser. <a href="/">Play</a> · <a href="/privacy">Privacy</a> · <a href="/terms">Terms</a></p>
+        <p>${footerIntro} <a href="/">Play</a> · <a href="/privacy">Privacy</a> · <a href="/terms">Terms</a></p>
       </footer>
     </div>
     <!--/seo:block-->

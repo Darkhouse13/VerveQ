@@ -17,6 +17,8 @@ export const SEO_PATH_PREFIXES = [
   "/football-quiz/",
   "/who-played-for/",
   "/career-path-quiz/",
+  "/fr/",
+  "/es/",
 ] as const;
 
 /** True for any path the static layer owns (trailing slash optional). */
@@ -55,9 +57,24 @@ const MODE_BY_GAME_SLUG: Record<string, string> = {
   "60-second-football-quiz": "blitz",
 };
 
+/** Mode from the page's own Play button — used for the FR/ES pages. */
+const MODE_BY_ROUTE: Record<string, string> = {
+  "/v2/daily": "daily",
+  "/v2/career-path": "career-path",
+  "/v2/verve-grid": "verve-grid",
+  "/v2/higher-lower": "higher-lower",
+  "/v2/daily-survival": "survival",
+  "/v2/blitz": "blitz",
+  "/v2/duels": "duel",
+};
+
 export function seoModeFor(pathname: string): string | null {
   const game = pathname.match(/^\/games\/([^/]+)\/?$/);
   if (game) return MODE_BY_GAME_SLUG[game[1]] ?? null;
+  if (/^\/(fr|es)\//.test(pathname) && typeof document !== "undefined") {
+    const href = document.querySelector("#seo a.seo-cta")?.getAttribute("href") ?? "";
+    return MODE_BY_ROUTE[href.split("?")[0]] ?? null;
+  }
   if (pathname.startsWith("/football-quiz/")) return "daily";
   if (pathname.startsWith("/who-played-for/")) return "verve-grid";
   if (pathname.startsWith("/career-path-quiz/")) return "career-path";
@@ -71,6 +88,8 @@ export function seoPageType(pathname: string): string {
   if (pathname.startsWith("/football-quiz/")) return "quiz_archive";
   if (pathname.startsWith("/who-played-for/")) return "grid_answers";
   if (pathname.startsWith("/career-path-quiz/")) return "career_path_quiz";
+  if (/^\/(fr\/jeux|es\/juegos)\/?$/.test(pathname)) return "games_hub";
+  if (/^\/(fr|es)\//.test(pathname)) return "game";
   return "other";
 }
 
@@ -80,4 +99,11 @@ const BOT_UA = /bot|crawl|spider|slurp|bingpreview|facebookexternalhit|embedly|q
 export function isLikelyBot(): boolean {
   if (typeof navigator === "undefined") return false;
   return BOT_UA.test(navigator.userAgent || "");
+}
+
+/** Language of a static page (its <html lang>), when it isn't English. */
+export function staticPageLanguage(): "fr" | "es" | null {
+  if (typeof document === "undefined" || !staticSeoPath()) return null;
+  const lang = document.documentElement.lang;
+  return lang === "fr" || lang === "es" ? lang : null;
 }

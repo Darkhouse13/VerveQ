@@ -24,7 +24,7 @@ import { NeoButton } from "@/components/neo/NeoButton";
 import { NeoCard } from "@/components/neo/NeoCard";
 import { NeoLogo } from "@/components/neo/NeoLogo";
 import { ShellLayout } from "@/components/shell/ShellLayout";
-import { StaticSeoSlot } from "@/components/seo/SeoPageHost";
+import { StaticSeoSlot } from "@/components/seo/StaticSeoSlot";
 import { SHELL_ROUTES } from "@/lib/shellRoutes";
 import { useMutation } from "convex/react";
 import {

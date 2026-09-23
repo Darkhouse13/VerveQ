@@ -9,10 +9,11 @@
  *   no page load (the bundle is already here).
  * - Starts the curiosity funnel on a static page's first render.
  */
-import { useEffect, useLayoutEffect, useRef } from "react";
+import { useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
-import { isOnStaticPage, isSeoPath, staticSeoPath } from "@/lib/seoPages";
+import { isOnStaticPage, isSeoPath, staticPageLanguage, staticSeoPath } from "@/lib/seoPages";
+import { chooseLanguage, hasChosenLanguage } from "@/lib/languagePref";
 import { startSeoFunnel } from "@/lib/seoFunnel";
 
 export function SeoPageHost() {
@@ -28,6 +29,13 @@ export function SeoPageHost() {
     el.style.display = visible ? "" : "none";
     document.documentElement.classList.toggle("seo-static-page", visible);
   }, [pathname]);
+
+  // A French/Spanish page is an explicit language signal: the game it
+  // launches should open in that language (unless the visitor already chose).
+  useEffect(() => {
+    const lang = staticPageLanguage();
+    if (lang && !hasChosenLanguage()) void chooseLanguage(lang);
+  }, []);
 
   // Client-side launch links.
   useEffect(() => {
@@ -73,30 +81,4 @@ export function SeoRouteOutlet() {
     if (!onPage) window.location.assign(`${pathname}${search}`);
   }, [onPage, pathname, search]);
   return null;
-}
-
-/**
- * Hosts the server-rendered `#seo` block INSIDE a React screen. The homepage's
- * landing is a fixed full-screen frame, so the block can't sit after #root
- * there (it would be covered: invisible to people, visible to crawlers — the
- * wrong way round). The landing renders this slot below its hero instead, and
- * the block moves into it: same HTML the crawler read, now visible and
- * scrollable. It moves back (hidden) when the slot unmounts.
- */
-export function StaticSeoSlot({ className }: { className?: string }) {
-  const ref = useRef<HTMLDivElement>(null);
-  useLayoutEffect(() => {
-    const el = document.getElementById("seo");
-    const host = ref.current;
-    if (!el || !host) return;
-    const parent = el.parentNode;
-    const next = el.nextSibling;
-    host.appendChild(el);
-    el.style.display = "";
-    return () => {
-      el.style.display = "none";
-      parent?.insertBefore(el, next);
-    };
-  }, []);
-  return <div ref={ref} className={className} />;
 }

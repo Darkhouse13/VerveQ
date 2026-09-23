@@ -24,6 +24,7 @@ import { buildGamePages } from "./pages/games.mjs";
 import { buildQuizArchive } from "./pages/quizArchive.mjs";
 import { buildPlayerPages } from "./pages/players.mjs";
 import { buildHome } from "./pages/home.mjs";
+import { buildIntlGamePages, LANG_GROUPS } from "./pages/gamesIntl.mjs";
 import { loadPlayers } from "./data.mjs";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
@@ -108,10 +109,25 @@ function initialsExamples() {
 
 // ── Assembly ────────────────────────────────────────────────────────────────
 
+/** hreflang: every member of a language group lists all members + x-default. */
+function attachAlternates(pages) {
+  const byPath = new Map(pages.map((p) => [p.path, p]));
+  for (const group of Object.values(LANG_GROUPS)) {
+    const alts = Object.entries(group).map(([lang, path]) => ({ lang, path }));
+    alts.push({ lang: "x-default", path: group.en });
+    for (const { path } of Object.entries(group).map(([, path]) => ({ path }))) {
+      const page = byPath.get(path);
+      if (!page) throw new Error(`[seo] hreflang group references missing page ${path}`);
+      page.alternates = alts;
+    }
+  }
+}
+
 function toHtml(template, page, { deferAppCss }) {
   let html = template.replace(HEAD_RE, `<!--seo:head:start-->\n${renderHead(page)}${page.extraHead ? `    ${page.extraHead}\n` : ""}    <!--seo:head:end-->\n`);
   if (!html.includes(BODY_MARK)) throw new Error("app shell is missing the <!--seo:body--> marker");
   html = html.replace(BODY_MARK, `${BODY_MARK}\n${renderBody(page)}`);
+  if (page.lang && page.lang !== "en") html = html.replace(/<html lang="en">/, `<html lang="${page.lang}">`);
   if (deferAppCss) {
     // The page is fully styled by its inline block; the app's stylesheet is
     // only needed once Play is tapped, so it must not block first paint.
@@ -157,6 +173,7 @@ function checkLinks(pages, extraPaths) {
       const href = m[1];
       if (known.has(href)) continue;
       if (/^\/(v2|compete|privacy|terms|play|weekend)(\/|$)/.test(href)) continue;
+      if (href === "/sitemap.xml") continue;
       broken.push(`${p.path} -> ${href}`);
     }
   }
@@ -184,7 +201,9 @@ export async function generate({ distDir, refreshSnapshot = false, log = console
   };
   const home = buildHome(ctx);
   const gamePages = buildGamePages(ctx);
-  const pages = [...gamePages, ...quiz.pages, ...playerPages.pages];
+  const intlPages = buildIntlGamePages(ctx);
+  const pages = [...gamePages, ...intlPages, ...quiz.pages, ...playerPages.pages];
+  attachAlternates([home, ...pages]);
 
   const paths = new Set();
   for (const p of [home, ...pages]) {
