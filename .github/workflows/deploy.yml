@@ -63,3 +63,23 @@ jobs:
           # so the literal "deploy" arg below is ignored — it just triggers the
           # pull + image build + container recreate, streaming logs back here.
           ssh -i ~/.ssh/id_deploy -o IdentitiesOnly=yes "root@${SSH_HOST}" deploy
+
+      # Announce the static SEO layer's URLs to IndexNow (Bing, Yandex, Seznam,
+      # Naver) so new pages — e.g. each night's closed quiz — are crawled
+      # without waiting for discovery. The key is public by design (served at
+      # /<key>.txt). Best-effort: a ping failure never fails the deploy.
+      - name: Ping IndexNow
+        continue-on-error: true
+        run: |
+          sleep 20
+          curl -fsS https://verveq.com/sitemap.xml | grep -o '<loc>[^<]*' | sed 's/<loc>//' > urls.txt
+          test "$(wc -l < urls.txt)" -gt 100
+          python3 - <<'PY'
+          import json, urllib.request
+          urls = [l.strip() for l in open("urls.txt") if l.strip()]
+          body = {"host": "verveq.com", "key": "14993c89de760998a4e887180efc0e53",
+                  "keyLocation": "https://verveq.com/14993c89de760998a4e887180efc0e53.txt", "urlList": urls}
+          req = urllib.request.Request("https://api.indexnow.org/indexnow", data=json.dumps(body).encode(),
+                                       headers={"Content-Type": "application/json; charset=utf-8"}, method="POST")
+          print(urllib.request.urlopen(req).status, len(urls))
+          PY
