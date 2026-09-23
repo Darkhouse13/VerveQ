@@ -20,7 +20,9 @@ async function init() {
     await resvg.initWasm(readFileSync(wasmPath));
     const src = readFileSync(path.resolve(HERE, "../convex/lib/shareCardFontData.ts"), "utf8");
     const b64 = src.match(/SHARE_CARD_FONT_BASE64\s*=\s*"([^"]+)"/)[1];
-    return { resvg, font: Buffer.from(b64, "base64") };
+    // A plain Uint8Array, not a Buffer: under vitest's jsdom realm resvg
+    // rejects a Node Buffer passed as a font.
+    return { resvg, font: Uint8Array.from(Buffer.from(b64, "base64")) };
   })();
   return ready;
 }
