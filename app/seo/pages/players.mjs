@@ -61,7 +61,7 @@ function titleFit(...candidates) {
   return candidates.find((t) => t.length <= 60) ?? candidates[candidates.length - 1];
 }
 
-export function buildPlayerPages() {
+export function buildPlayerPages({ quizQuestions = [] } = {}) {
   const { players, careerPaths } = loadPlayers();
   const clubMeta = new Map(); // slug -> {name, count}
   for (const p of players) for (const c of p.clubs) {
@@ -250,7 +250,7 @@ ${faqSection(faqs)}
     clubHubs.push({ slug, club, list });
   }
   const hubSlugs = new Set(clubHubs.map((h) => h.slug));
-  const careerSets = buildCareerSets(clubMeta, careerPaths);
+  const careerSets = buildCareerSets(clubMeta, careerPaths, quizQuestions, hubSlugs);
   const careerSetPaths = new Set(careerSets.sets.map((s) => s.path));
 
   const related = (pp) => {
@@ -338,7 +338,35 @@ function renderPathQuiz(list) {
     .join("\n");
 }
 
-function buildCareerSets(clubMeta, careerPaths) {
+// Extra spellings a question may use for a club (display name always counts).
+const CLUB_ALIASES = {
+  "manchester-united": ["Man Utd", "Man United"],
+  "manchester-city": ["Man City"],
+  "paris-saint-germain": ["PSG"],
+  tottenham: ["Spurs", "Tottenham Hotspur"],
+  "bayern-munich": ["Bayern"],
+  barcelona: ["Barça", "FC Barcelona"],
+  "atletico-madrid": ["Atletico Madrid"],
+};
+
+function questionsAboutClub(club, questions) {
+  const names = [club.name, ...(CLUB_ALIASES[club.slug] ?? [])].map((n) => n.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"));
+  const re = new RegExp(`(^|[^\\p{L}])(${names.join("|")})(?![\\p{L}])`, "u");
+  return questions.filter((q) => re.test(`${q.question} ${q.correctAnswer} ${q.explanation ?? ""}`));
+}
+
+function renderClubQuestions(qs) {
+  const letters = ["A", "B", "C", "D", "E", "F"];
+  return qs
+    .map((q, i) => {
+      const idx = q.options.indexOf(q.correctAnswer);
+      return `<div class="seo-q"><h3>${i + 1}. ${esc(q.question)}</h3><ol>${q.options.map((o) => `<li>${esc(o)}</li>`).join("")}</ol>
+<details class="seo-reveal"><summary>Show answer</summary><p><strong>${idx >= 0 ? `${letters[idx]}: ` : ""}${esc(q.correctAnswer)}</strong>.${q.explanation ? ` ${esc(q.explanation)}` : ""}</p></details></div>`;
+    })
+    .join("\n");
+}
+
+function buildCareerSets(clubMeta, careerPaths, quizQuestions = [], hubSlugs = new Set()) {
   const sets = [];
   const pages = [];
   const cpById = new Map(careerPaths.map((c) => [c.id, c]));
@@ -347,7 +375,7 @@ function buildCareerSets(clubMeta, careerPaths) {
     .filter((c) => c.paths.length >= 15)
     .sort((a, b) => b.paths.length - a.paths.length);
 
-  const mk = ({ slug, name, h1, lede, list, tag }) => {
+  const mk = ({ slug, name, h1, lede, list, tag, extra = "", titleOverride = null }) => {
     const path = `/career-path-quiz/${slug}/`;
     const crumbs = [HOME, CPQ, { name, path }];
     const faqs = [
@@ -356,7 +384,7 @@ function buildCareerSets(clubMeta, careerPaths) {
     ];
     pages.push({
       path,
-      title: titleFit(`${h1} | VerveQ`, h1),
+      title: titleOverride ?? titleFit(`${h1} | VerveQ`, h1),
       description: `${lede} Ten players, including ${list[0].answerName}'s path, with answers hidden until you reveal them.`.slice(0, 155),
       breadcrumbs: crumbs,
       jsonLd: [breadcrumbLd(crumbs), faqLd(faqs)],
@@ -365,6 +393,7 @@ function buildCareerSets(clubMeta, careerPaths) {
 <p class="seo-lede">${esc(lede)} Each player is shown as his clubs in order. Name him, then reveal the answer.</p>
 ${cta("/v2/career-path?ref=seo_cpq", "Play the full Career Path game")}</div>
 ${renderPathQuiz(list)}
+${extra}
 ${faqSection(faqs)}
 <div id="seo-cpq-links"></div>`,
     });
@@ -372,13 +401,24 @@ ${faqSection(faqs)}
   };
 
   for (const c of clubs.slice(0, 60)) {
+    const qs = questionsAboutClub(c, quizQuestions).slice(0, 12);
+    const extra = [
+      qs.length
+        ? `<h2>${esc(c.name)} quiz questions</h2><p>${qs.length} question${qs.length === 1 ? "" : "s"} about ${esc(c.name)} from VerveQ's <a href="/football-quiz/">daily football quiz archive</a>.</p>\n${renderClubQuestions(qs)}`
+        : "",
+      hubSlugs.has(c.slug)
+        ? `<h2>Who played for ${esc(c.name)}?</h2><p>Grid answers for every club and nationality pairing: <a href="/who-played-for/${c.slug}/">${esc(c.name)} football grid answers</a>.</p>`
+        : "",
+    ].join("\n");
     mk({
       slug: c.slug,
-      name: `${c.name} career path quiz`,
-      h1: `${c.name} Career Path Quiz: Guess the Player`,
-      lede: `Ten footballers who all played for ${c.name} at some point.`,
+      name: `${c.name} quiz`,
+      h1: `${c.name} Quiz: Guess the Player From His Career`,
+      titleOverride: titleFit(`${c.name} Quiz: Guess the Player From His Career | VerveQ`, `${c.name} Quiz: Career Paths${qs.length ? " and Questions" : ""} | VerveQ`, `${c.name} Quiz: Guess the Player | VerveQ`, `${c.name} Quiz | VerveQ`),
+      lede: `Ten footballers who all played for ${c.name}, shown by their career paths${qs.length ? `, plus ${qs.length} ${c.name} quiz question${qs.length === 1 ? "" : "s"} with answers` : ""}.`,
       list: pickTen(c.paths),
-      tag: "10 players",
+      tag: qs.length ? `10 players · ${qs.length} questions` : "10 players",
+      extra,
     });
   }
   for (const diff of ["easy", "medium", "hard"]) {

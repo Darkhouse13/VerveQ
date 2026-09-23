@@ -206,7 +206,8 @@ export async function generate({ distDir, refreshSnapshot = false, log = console
   const { archive, source } = await loadArchive({ refreshSnapshot });
   const { players, careerPaths } = loadPlayers();
   const quiz = buildQuizArchive(archive);
-  const playerPages = buildPlayerPages();
+  const uniqueQuestions = [...new Map(archive.days.flatMap((d) => d.questions).filter((q) => !q.imageUrl).map((q) => [q.question, q])).values()];
+  const playerPages = buildPlayerPages({ quizQuestions: uniqueQuestions });
   const ctx = {
     recentQuizDays: quiz.recentDays,
     topicPages: quiz.topicPages,
