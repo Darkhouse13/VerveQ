@@ -119,7 +119,21 @@ ${faqSection(faqs)}
   }
 
   // ── One page per closed day ──────────────────────────────────────────────
+  // The daily re-serves questions, so a day can be mostly repeats of earlier
+  // days. Only days whose quiz is mostly NEW content are indexable; the rest
+  // stay published (readers, internal links) as noindex and off the sitemap.
+  const MIN_FRESH_FOR_INDEX = 5;
+  const freshByDate = new Map();
+  {
+    const seen = new Set();
+    for (const day of [...days].reverse()) {
+      const keys = day.questions.map((q) => `${q.question}|${q.imageUrl ?? ""}`);
+      freshByDate.set(day.date, keys.filter((k) => !seen.has(k)).length);
+      keys.forEach((k) => seen.add(k));
+    }
+  }
   days.forEach((day, i) => {
+    const indexable = freshByDate.get(day.date) >= MIN_FRESH_FOR_INDEX;
     const newer = days[i - 1];
     const older = days[i + 1];
     const path = `/football-quiz/${day.date}/`;
@@ -137,6 +151,7 @@ ${faqSection(faqs)}
       description: `The VerveQ daily football quiz from ${long}: ${day.questions.length} questions with answers and explanations. ${firstQ}`.slice(0, 152).replace(/\s+\S*$/, "") + "…",
       breadcrumbs: crumbs,
       ogType: "article",
+      ...(indexable ? {} : { robots: "noindex, follow", noSitemap: true }),
       jsonLd: [
         breadcrumbLd(crumbs),
         {

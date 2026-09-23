@@ -239,7 +239,7 @@ export async function generate({ distDir, refreshSnapshot = false, log = console
   writeFileSync(templatePath, toHtml(template, home, { deferAppCss: false }));
 
   const today = new Date().toISOString().slice(0, 10);
-  const entries = [home, ...pages].map((p) => {
+  const entries = [home, ...pages].filter((p) => !p.noSitemap).map((p) => {
     const day = p.path.match(/^\/football-quiz\/(\d{4}-\d{2}-\d{2})\/$/);
     return { path: p.path, lastmod: day ? day[1] : today };
   });

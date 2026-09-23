@@ -137,6 +137,13 @@ describe("generated static surface", () => {
     }
   });
 
+  it("indexes only quiz days whose content is mostly new", () => {
+    const days = pages.filter((p) => /^\/football-quiz\/\d{4}-/.test(p));
+    const noindexed = days.filter((p) => html(p).includes('content="noindex, follow"'));
+    expect(noindexed.length).toBeGreaterThan(0);
+    expect(noindexed.length).toBeLessThan(days.length);
+  });
+
   it("never publishes today's daily quiz", () => {
     const today = new Date().toISOString().slice(0, 10);
     expect(pages).not.toContain(`/football-quiz/${today}/`);
@@ -164,7 +171,11 @@ describe("sitemap ↔ generated pages", () => {
 
   it("lists every generated page and the legal pages, and nothing dead", () => {
     const paths = new Set(locs.map((l) => new URL(l).pathname));
-    for (const p of pages) expect(paths.has(p), `${p} missing from sitemap`).toBe(true);
+    for (const p of pages) {
+      const noindex = html(p).includes('<meta name="robots" content="noindex');
+      // Indexable pages must be listed; noindex pages must not be.
+      expect(paths.has(p), `${p} sitemap membership vs noindex`).toBe(!noindex);
+    }
     expect(paths.has("/privacy")).toBe(true);
     expect(paths.has("/terms")).toBe(true);
     for (const p of paths) {
