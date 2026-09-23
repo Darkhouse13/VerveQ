@@ -48,7 +48,7 @@ const SHARE_ROUTE_PATTERN = /^\/s\/d\//;
 // and must bypass the SPA fallback. Same for /s/r/:slug (App.tsx:579) — only
 // /s/d/ is proxied away from the SPA.
 const STATIC_PAGES_PATTERN =
-  /^\/(?:games|football-quiz|who-played-for|career-path-quiz|fr|es|privacy|terms)(?:\/|$)/;
+  /^\/(?:games|football-quiz|who-played-for|career-path-quiz|fr|es|about|privacy|terms)(?:\/|$)/;
 const STATIC_ASSET_DIR_PATTERN = /^\/(?:og|arena-logos)\//;
 const WEBMANIFEST_PATTERN = /^\/manifest\.webmanifest$/;
 // Mirrors deploy/nginx.conf's `location ~* \.(js|css|png|...)$` rule. Catches

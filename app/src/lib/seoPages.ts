@@ -19,6 +19,7 @@ export const SEO_PATH_PREFIXES = [
   "/career-path-quiz/",
   "/fr/",
   "/es/",
+  "/about/",
 ] as const;
 
 /** True for any path the static layer owns (trailing slash optional). */

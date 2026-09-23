@@ -24,6 +24,7 @@ import {
   canonicalFor,
   CANONICAL_OVERRIDES,
 } from "@/lib/routeMeta";
+import { isSeoPath } from "@/lib/seoPages";
 
 const read = (p: string) => readFileSync(p, "utf8");
 
@@ -142,6 +143,10 @@ describe("generated static surface", () => {
     const noindexed = days.filter((p) => html(p).includes('content="noindex, follow"'));
     expect(noindexed.length).toBeGreaterThan(0);
     expect(noindexed.length).toBeLessThan(days.length);
+  });
+
+  it("registers every generated page with the SPA (else the app renders its 404 over it)", () => {
+    for (const p of pages.filter((x) => x !== "/")) expect(isSeoPath(p), p).toBe(true);
   });
 
   it("never publishes today's daily quiz", () => {

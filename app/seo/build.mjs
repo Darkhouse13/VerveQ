@@ -24,6 +24,7 @@ import { buildGamePages } from "./pages/games.mjs";
 import { buildQuizArchive } from "./pages/quizArchive.mjs";
 import { buildPlayerPages } from "./pages/players.mjs";
 import { buildHome } from "./pages/home.mjs";
+import { buildAbout } from "./pages/about.mjs";
 import { buildIntlGamePages, LANG_GROUPS } from "./pages/gamesIntl.mjs";
 import { loadPlayers } from "./data.mjs";
 import { CARDS, cardFor, renderCards } from "./og.mjs";
@@ -221,7 +222,7 @@ export async function generate({ distDir, refreshSnapshot = false, log = console
   const home = buildHome(ctx);
   const gamePages = buildGamePages(ctx);
   const intlPages = buildIntlGamePages(ctx);
-  const pages = [...gamePages, ...intlPages, ...quiz.pages, ...playerPages.pages];
+  const pages = [...gamePages, ...intlPages, ...quiz.pages, ...playerPages.pages, buildAbout(ctx)];
   attachAlternates([home, ...pages]);
 
   // Preview cards: one per game (EN/FR/ES) and one per content section.

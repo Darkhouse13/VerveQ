@@ -184,7 +184,7 @@ ${page.body}
       </main>
       <footer class="seo-foot">
         <nav class="seo-foot-links" aria-label="Football games">${footer}</nav>
-        <p>${footerIntro} <a href="/">Play</a> · <a href="/privacy">Privacy</a> · <a href="/terms">Terms</a></p>
+        <p>${footerIntro} <a href="/">Play</a> · <a href="/about/">About</a> · <a href="/privacy">Privacy</a> · <a href="/terms">Terms</a></p>
       </footer>
     </div>
     <!--/seo:block-->
