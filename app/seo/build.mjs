@@ -123,19 +123,36 @@ function attachAlternates(pages) {
   }
 }
 
+/**
+ * Static pages paint from their own HTML + inline CSS alone. Everything the
+ * app needs (its stylesheet, web fonts, the module bundle and its preloads) is
+ * only needed once Play is tapped, so none of it may compete with first paint
+ * on a slow phone:
+ *   - stylesheets (app CSS, Google Fonts) load non-blocking;
+ *   - modulepreloads are dropped;
+ *   - the bundle is injected after `load` when the browser is idle, or at the
+ *     first interaction, whichever comes first. A Play tap before it arrives is
+ *     just a normal link into the game.
+ */
+function deferApp(html) {
+  html = html.replace(
+    /<link rel="stylesheet" (crossorigin )?href="([^"]+)" ?\/?>/g,
+    (_m, co, href) =>
+      `<link rel="preload" as="style" ${co ?? ""}href="${href}" onload="this.onload=null;this.rel='stylesheet'"><noscript><link rel="stylesheet" ${co ?? ""}href="${href}"></noscript>`,
+  );
+  html = html.replace(/\s*<link rel="modulepreload"[^>]*>/g, "");
+  const entry = html.match(/<script type="module" crossorigin src="([^"]+)"><\/script>/);
+  if (!entry) throw new Error("[seo] app entry script not found in the built shell");
+  const loader = `<script>(function(){var d=0;function go(){if(d)return;d=1;var e=document.createElement("script");e.type="module";e.crossOrigin="";e.src=${JSON.stringify(entry[1])};document.head.appendChild(e);}addEventListener("load",function(){"requestIdleCallback"in window?requestIdleCallback(go,{timeout:2500}):setTimeout(go,1200)});["pointerdown","keydown","touchstart","scroll"].forEach(function(t){addEventListener(t,go,{once:true,passive:true})})})();</script>`;
+  return html.replace(entry[0], loader);
+}
+
 function toHtml(template, page, { deferAppCss }) {
   let html = template.replace(HEAD_RE, `<!--seo:head:start-->\n${renderHead(page)}${page.extraHead ? `    ${page.extraHead}\n` : ""}    <!--seo:head:end-->\n`);
   if (!html.includes(BODY_MARK)) throw new Error("app shell is missing the <!--seo:body--> marker");
   html = html.replace(BODY_MARK, `${BODY_MARK}\n${renderBody(page)}`);
   if (page.lang && page.lang !== "en") html = html.replace(/<html lang="en">/, `<html lang="${page.lang}">`);
-  if (deferAppCss) {
-    // The page is fully styled by its inline block; the app's stylesheet is
-    // only needed once Play is tapped, so it must not block first paint.
-    html = html.replace(
-      /<link rel="stylesheet" crossorigin href="(\/assets\/[^"]+\.css)">/g,
-      '<link rel="preload" as="style" crossorigin href="$1" onload="this.onload=null;this.rel=\'stylesheet\'"><noscript><link rel="stylesheet" crossorigin href="$1"></noscript>',
-    );
-  }
+  if (deferAppCss) html = deferApp(html);
   return html;
 }
 

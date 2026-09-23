@@ -48,7 +48,7 @@ function renderQuestion(q, n, { dateLink = null } = {}) {
   const letters = ["A", "B", "C", "D", "E", "F"];
   const opts = q.options.map((o) => `<li>${esc(o)}</li>`).join("");
   const img = q.imageUrl
-    ? `<p><img src="${esc(q.imageUrl)}" alt="Question ${n} image" loading="lazy" decoding="async" style="max-width:100%;max-height:260px;border:2px solid #121212;border-radius:8px;background:#fff"></p>`
+    ? `<p><img src="${esc(q.imageUrl)}" alt="Question ${n} image" loading="lazy" decoding="async" width="400" height="240" style="width:100%;max-width:400px;height:240px;object-fit:contain;border:2px solid #121212;border-radius:8px;background:#fff"></p>`
     : "";
   const idx = q.options.indexOf(q.correctAnswer);
   const letter = idx >= 0 ? `${letters[idx]}: ` : "";

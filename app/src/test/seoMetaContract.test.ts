@@ -116,7 +116,16 @@ describe("generated static surface", () => {
   });
 
   it("keeps the app bundle on every page so Play needs no page load", () => {
-    for (const p of pages) expect(html(p), p).toContain('src="/assets/index-test.js"');
+    for (const p of pages) expect(html(p), p).toContain("/assets/index-test.js");
+  });
+
+  it("defers every app asset on static pages so first paint is the page's own HTML", () => {
+    for (const p of pages.filter((x) => x !== "/")) {
+      const h = html(p);
+      expect(h, p).not.toContain('<script type="module"');
+      expect(h, p).not.toContain("modulepreload");
+      expect(h, p).not.toMatch(/<link rel="stylesheet" (crossorigin )?href="[^"]+"(?![^<]*<\/noscript>)/);
+    }
   });
 
   it("points every Play button at a route the app actually has", () => {

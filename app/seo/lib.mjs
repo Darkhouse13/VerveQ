@@ -211,6 +211,7 @@ export function linkGrid(links) {
 // Scoped to #seo so the app's Tailwind preflight (same document) can't leak in
 // or out. Brand tokens mirror src/index.css.
 export const SEO_CSS = `
+html,body{margin:0;background:#FFF7F0}
 #seo{--ink:#121212;--cream:#FFF7F0;--lime:#C6FF1A;--orange:#FF6A00;--yellow:#FFCD1A;--muted:#555;color:var(--ink);background:var(--cream);font-family:Inter,system-ui,-apple-system,"Segoe UI",sans-serif;line-height:1.6;font-size:16px}
 #seo *{box-sizing:border-box}
 #seo a{color:var(--ink)}
