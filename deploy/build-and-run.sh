@@ -81,8 +81,9 @@ if [[ -z "$CONVEX_URL" ]]; then
 fi
 
 # npm must not run as root in this repo: root-owned node_modules/refs have
-# broken hermes-side builds before. Drop to hermes for the bundle build;
-# docker steps below still need root.
+# broken server-side builds before. Drop to the build user (VERVEQ_BUILD_USER,
+# default deploy) for the bundle build; docker steps below still need root.
+BUILD_USER="${VERVEQ_BUILD_USER:-deploy}"
 ENV_PREFIX="VITE_CONVEX_URL='$CONVEX_URL' VITE_RELEASE_SHA='$RELEASE_SHA'"
 [[ -n "${VITE_CONVEX_SITE_URL:-}" ]] && ENV_PREFIX="$ENV_PREFIX VITE_CONVEX_SITE_URL='$VITE_CONVEX_SITE_URL'"
 [[ -n "${VITE_V2_SHELL_ENABLED:-}" ]] && ENV_PREFIX="$ENV_PREFIX VITE_V2_SHELL_ENABLED='$VITE_V2_SHELL_ENABLED'"
@@ -97,15 +98,15 @@ ENV_PREFIX="VITE_CONVEX_URL='$CONVEX_URL' VITE_RELEASE_SHA='$RELEASE_SHA'"
 [[ -n "${VITE_POSTHOG_HOST:-}" ]] && ENV_PREFIX="$ENV_PREFIX VITE_POSTHOG_HOST='$VITE_POSTHOG_HOST'"
 
 # Sentry source-map upload credentials (SENTRY_AUTH_TOKEN/SENTRY_ORG/
-# SENTRY_PROJECT, optionally VITE_SENTRY_DSN) live in a hermes-owned 0600 env
-# file and are sourced INSIDE the build shell — never inlined on a command
+# SENTRY_PROJECT, optionally VITE_SENTRY_DSN) live in a root:$BUILD_USER 0640
+# env file (VERVEQ_SENTRY_ENV_FILE, default /etc/verveq/sentry.env) and are sourced INSIDE the build shell — never inlined on a command
 # line (visible in /proc cmdline), never committed, never copied into the
 # image (the Dockerfile only takes app/dist). Missing file = build still
 # succeeds, just without map upload; vite then emits no maps at all.
-SENTRY_ENV_FILE="/home/hermes/.verveq-sentry-env"
+SENTRY_ENV_FILE="${VERVEQ_SENTRY_ENV_FILE:-/etc/verveq/sentry.env}"
 BUILD_CMD="cd '$REPO_ROOT/app' && npm ci && { if [ -f '$SENTRY_ENV_FILE' ]; then set -a; . '$SENTRY_ENV_FILE'; set +a; fi; } && $ENV_PREFIX npm run build"
 if [[ "$(id -u)" -eq 0 ]]; then
-  runuser -l hermes -c "$BUILD_CMD"
+  runuser -l "$BUILD_USER" -c "$BUILD_CMD"
 else
   bash -c "$BUILD_CMD"
 fi

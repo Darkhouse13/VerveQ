@@ -108,10 +108,10 @@ This is the mechanism `deploy.yml`'s SSH step drives on every master push
 (`deploy.yml:5-6`). Run it by hand only for an out-of-band or frontend-only
 publish, or to roll forward after a host move.
 
-From the repo root on the host (as root; the script drops to `hermes` for the npm build itself — root-run npm leaves root-owned files that break later hermes-side builds):
+From the repo root on the host (as root; the script drops to `deploy` — override with `VERVEQ_BUILD_USER` — for the npm build itself, since root-run npm leaves root-owned files that break later builds). The checkout lives at `/srv/verveq`, owned by `deploy`, whose login shell loads Node 22 via nvm to match CI. Sentry build credentials go in `/etc/verveq/sentry.env` (root:deploy 0640):
 
 ```bash
-cd /home/hermes/projects/verveq
+cd /srv/verveq
 export VITE_V2_SHELL_ENABLED=true
 export VITE_CONVEX_URL=https://different-lynx-153.convex.cloud
 export VITE_CONVEX_SITE_URL=https://different-lynx-153.convex.site
@@ -132,7 +132,7 @@ export VITE_CONVEX_SITE_URL=https://different-lynx-153.convex.site
 > ```
 
 This:
-1. Runs `npm ci` + `vite build` in `app/` (as `hermes`).
+1. Runs `npm ci` + `vite build` in `app/` (as `deploy`).
 2. Builds `verveq-web:<git-sha>-<stamp>` from `deploy/Dockerfile` (bundle + nginx conf baked in).
 3. Calls `deploy/recreate-from-image.sh`, which renames the running container to `verveq-web-prev-<stamp>` and keeps it **stopped** as the instant rollback, then recreates `verveq-web` from the fresh image with the full Traefik label set and `--restart unless-stopped`.
 4. Health-checks `http://127.0.0.1/healthz` inside the new container.
@@ -140,7 +140,7 @@ This:
 To redeploy an already-built image (e.g. promote a verified tag, or roll forward after a host move) without rebuilding:
 
 ```bash
-/home/hermes/projects/verveq/deploy/recreate-from-image.sh verveq-web:<tag>
+/srv/verveq/deploy/recreate-from-image.sh verveq-web:<tag>
 ```
 
 ## One-command rollback
@@ -154,7 +154,7 @@ docker rm -f verveq-web && docker rename verveq-web-prev-<STAMP> verveq-web && d
 Replace `<STAMP>` with the name printed during the failed publish (`docker ps -a --filter name=verveq-web-prev` lists them). Alternatively, recreate from any previous image tag:
 
 ```bash
-/home/hermes/projects/verveq/deploy/recreate-from-image.sh verveq-web:<previous-tag>
+/srv/verveq/deploy/recreate-from-image.sh verveq-web:<previous-tag>
 ```
 
 Prune `verveq-web-prev-*` containers and stale image tags only after the new release has soaked.
@@ -172,6 +172,8 @@ curl --resolve verveq.com:443:178.104.196.36 https://verveq.com/sitemap.xml
 Browser QA should walk `/privacy`, `/terms`, `/daily`, `/vervegrid`, `/v2/career-path`, `/higherlower`, `/arena/:code`, `/v2/arena`, `/v2/duels`, onboarding/upgrade validation states, and an unknown path. Capture final URL, visible content, console/page errors, failed requests, and non-2xx/3xx network responses.
 
 ## 2026-06-12 durable-cutover artifacts
+
+> **Gone as of 2026-09-25:** the images, containers and snapshot tar below were removed in a host cleanup (the `hermes` user and `/home/hermes` no longer exist). Kept for history only.
 
 Point-in-time recovery for the 7cd0687 release, in order of preference:
 
