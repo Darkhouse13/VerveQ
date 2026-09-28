@@ -64,7 +64,7 @@ const FRIEND_KEYS = ["duel", "arena"];
 // and it worked. The one organic run in the window reported honestly (8
 // questions, 53s, score 600). So Blitz is simply the least-reached mode here,
 // which is why it sits last — nothing more is claimed.
-const TODAY_KEYS = ["daily", "dailySurvival"];
+const TODAY_KEYS = ["daily", "dailySurvival", "whosOlder"];
 
 // ONE tile spec for every 2-col grid cell (CR-1). Content, not this floor, used
 // to set the height, which made rows of unequal height across sections; the

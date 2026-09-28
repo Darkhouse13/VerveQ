@@ -1,6 +1,6 @@
 import {
   Brain, Heart, Zap, TrendingUp, Grid3X3, Route, Timer, Swords, Users,
-  Lightbulb, Clock, CalendarHeart,
+  Lightbulb, Clock, CalendarHeart, Hourglass,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { SHELL_ROUTES } from "@/lib/shellRoutes";
@@ -67,6 +67,9 @@ export const COMPETE_MODE_TILES: ModeTile[] = [
   // Daily Survival: the shared one-attempt run on the Reveal Ladder engine.
   // Football-only by design, so the builder ignores the carried sport.
   { key: "dailySurvival", icon: CalendarHeart, color: "accent", to: () => "/v2/daily-survival" },
+  // Who's Older? — the reel format as a daily (ten shared pairs), then
+  // endless. Football-only; the builder ignores the carried sport.
+  { key: "whosOlder", icon: Hourglass, color: "pink", to: () => SHELL_ROUTES.whosOlderPlay },
   // Live Match is parked: nothing in the product can create a live match any
   // more (the challenge subsystem and createFromChallenge were removed), so
   // the tile would advertise a dead end. /v2/live-match stays routable as a

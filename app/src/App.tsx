@@ -16,6 +16,7 @@ import {
   EntryRoute,
   HomeRoute,
   PlayShortLinkRoute,
+  WhosOlderShortLinkRoute,
   WeekendShortLinkRoute,
 } from "./components/EntryRoutes";
 // Deep-link aliases: with the v2 shell live, v1 mode URLs (and spelling
@@ -93,6 +94,7 @@ const HigherLowerPlayScreen = lazyWithRetry(() => import("./pages/shell/play/Hig
 const CareerPathPlayScreen = lazyWithRetry(() => import("./pages/shell/play/CareerPathPlayScreen"));
 const VerveGridPlayScreen = lazyWithRetry(() => import("./pages/shell/play/VerveGridPlayScreen"));
 const DailyQuizPlayScreen = lazyWithRetry(() => import("./pages/shell/play/DailyQuizPlayScreen"));
+const WhosOlderPlayScreen = lazyWithRetry(() => import("./pages/shell/play/WhosOlderPlayScreen"));
 const ArenaPlayScreen = lazyWithRetry(() => import("./pages/shell/play/ArenaPlayScreen"));
 // THE WEEKEND (FW-GO: launched, publicly linked). Hub first, then the surfaces.
 const WeekendHubScreen = lazyWithRetry(() => import("./pages/shell/weekend/WeekendHubScreen"));
@@ -591,6 +593,13 @@ const AppRoutes = () => (
             {/* Daily Survival — the same SurvivalPlayScreen running the shared
                 daily queue. Username tier like the daily quiz: casual, no ELO. */}
             <Route path="/v2/daily-survival" element={<ShellGate><SessionRoute><SurvivalPlayScreen daily /></SessionRoute></ShellGate>} />
+            {/* WHO'S OLDER? — the daily twin of the reel format, then endless.
+                Username tier like the other dailies: casual, no ELO, so a reel
+                visitor plays on a silently-minted anonymous session. /older and
+                /whos-older are the caption short links (ref preserved). */}
+            <Route path="/v2/whos-older" element={<ShellGate><SessionRoute><WhosOlderPlayScreen /></SessionRoute></ShellGate>} />
+            <Route path="/older" element={<WhosOlderShortLinkRoute />} />
+            <Route path="/whos-older" element={<WhosOlderShortLinkRoute />} />
             {/* Arena (multi-user) is username-only playable; the screen onboards
                 inline so a shared invite link never drops its lobby code. */}
             <Route path="/v2/arena/:code" element={<ShellGate><ArenaPlayScreen /></ShellGate>} />

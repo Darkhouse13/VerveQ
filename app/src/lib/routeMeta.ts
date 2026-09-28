@@ -55,6 +55,11 @@ export const ROUTE_META: Record<string, RouteMeta> = {
     description:
       "One shared survival run per day: name players from their initials until you run out of lives. Same run for everyone, one attempt.",
   },
+  "/v2/whos-older": {
+    title: "Who's Older? — Daily Football Age Game | VerveQ",
+    description:
+      "Two footballers, tap the older one. Ten rounds a day, and the gap shrinks from years to days. Same pairs for everyone, then play endless.",
+  },
   "/v2/blitz": {
     title: "Blitz — 60-Second Football Quiz | VerveQ",
     description:

@@ -35,6 +35,8 @@ export type GameMode =
   | "career-path-ladder"
   | "higher-lower"
   | "verve-grid"
+  | "whos-older"
+  | "whos-older-endless"
   | "arena";
 
 export type GameResult = "win" | "loss" | "draw";

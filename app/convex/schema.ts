@@ -1163,6 +1163,39 @@ export default defineSchema({
     .index("by_user", ["userId"])
     .index("by_expiresAt", ["expiresAt"]),
 
+  // WHO'S OLDER? (convex/whosOlder.ts). One row per run. A "daily" row is the
+  // player's one attempt at that UTC date's shared ten pairs (unique per
+  // userId+dateKey by construction in startDaily); an "endless" row is a
+  // streak run, unlocked once the day's daily is complete. Birth dates live
+  // only here and in the reveal payloads — the client never sees the answer
+  // before it guesses.
+  whosOlderSessions: defineTable({
+    userId: v.id("users"),
+    kind: v.union(v.literal("daily"), v.literal("endless")),
+    dateKey: v.string(),
+    rounds: v.array(
+      v.object({
+        aId: v.string(),
+        aName: v.string(),
+        aDob: v.string(),
+        bId: v.string(),
+        bName: v.string(),
+        bDob: v.string(),
+        // Absent until answered. "timeout" = forfeited by leaving the tab.
+        guess: v.optional(v.union(v.literal("a"), v.literal("b"), v.literal("timeout"))),
+        correct: v.optional(v.boolean()),
+      }),
+    ),
+    current: v.number(),
+    score: v.number(),
+    status: v.union(v.literal("active"), v.literal("completed")),
+    startedAt: v.number(),
+    completedAt: v.optional(v.number()),
+  })
+    .index("by_user_kind_date", ["userId", "kind", "dateKey"])
+    .index("by_user_kind_score", ["userId", "kind", "score"])
+    .index("by_kind_date_status", ["kind", "dateKey", "status"]),
+
   verveGridSessions: defineTable({
     userId: v.optional(v.id("users")),
     sport: v.string(),

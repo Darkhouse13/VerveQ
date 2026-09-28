@@ -37,7 +37,7 @@ describe("compete grid advertises only startable modes", () => {
     expect(COMPETE_MODE_TILES.some((t) => t.key === "liveMatch")).toBe(false);
   });
 
-  it("still offers the ten live modes", () => {
+  it("still offers the eleven live modes", () => {
     expect(COMPETE_MODE_TILES.map((t) => t.key)).toEqual([
       "quiz",
       "arena",
@@ -50,6 +50,8 @@ describe("compete grid advertises only startable modes", () => {
       "daily",
       // Daily Survival shipped 2026-07: the shared one-attempt run.
       "dailySurvival",
+      // Who's Older? shipped 2026-09: the reel format as a daily + endless.
+      "whosOlder",
     ]);
   });
 

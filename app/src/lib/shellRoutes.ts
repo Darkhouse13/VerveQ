@@ -71,6 +71,8 @@ export const SHELL_ROUTES = {
   verveGridPlay: "/v2/verve-grid",
   /** Daily Challenge (quiz) on the shell — reuses QuizPlayView via the DAILY session. */
   dailyPlay: "/v2/daily",
+  /** WHO'S OLDER? — today's shared ten pairs, then endless. */
+  whosOlderPlay: "/v2/whos-older",
   /** `/v2/arena/:code` */
   arenaPlay: (code: string) => `/v2/arena/${code}`,
   /** THE WEEKEND hub (FW-GO) — the mode's public front door: budget squad,

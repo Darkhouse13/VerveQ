@@ -7,6 +7,7 @@ import {
   Crown,
   Flame,
   Hammer,
+  Hourglass,
   Lock,
   Route,
   Star,
@@ -30,7 +31,7 @@ import type { Id } from "../../../convex/_generated/dataModel";
 
 /**
  * v2 unified Home — rebuilt around the DAILY SLATE (2026-07 strategy cut):
- * TODAY's games (Daily Quiz + Daily Survival) lead beside COMPETE, then the
+ * TODAY's games (Daily Quiz, Daily Survival, Who's Older) lead beside COMPETE, then the
  * hooks strip (Duels/Arena/Quiz), the dark ladder card and the Forge. The
  * Learn pillar is parked — its routes stay live at /v2/learn, but the home no
  * longer advertises it (general knowledge is off-thesis for a football app).
@@ -59,6 +60,15 @@ function dailyResetCountdown(): string {
 /** Hard-shadow lift on hover, press-in on tap — the prototype's `.lift`. */
 const LIFT =
   "transition-transform hover:-translate-x-[2px] hover:-translate-y-[2px] active:translate-x-[2px] active:translate-y-[2px]";
+
+/**
+ * TODAY cards: the mobile column stacks icon over title; on desktop each card
+ * is a compact row (icon beside title). Three dailies fit the never-scroll md
+ * grid only this way — stacked, the third card pushed the grid to 935px and
+ * cut the bottom row off a 900px viewport (budget: 842px).
+ */
+const TODAY_CARD =
+  "p-4 md:px-4 md:py-3 flex flex-col md:flex-row md:items-center gap-1.5 md:gap-3 min-h-0 flex-1";
 
 const EYEBROW =
   "font-mono text-[11px] font-bold uppercase tracking-[0.16em] text-muted-foreground";
@@ -94,6 +104,8 @@ export default function ShellHomeScreen() {
     api.dailyChallenge.getAttemptStatus,
     hasUsername ? { sport: "football", mode: "survival" } : "skip",
   );
+  // Who's Older? — the reel format's daily twin.
+  const whosOlderToday = useQuery(api.whosOlder.getToday, hasUsername ? {} : "skip");
   const season = useQuery(
     api.seasonManager.getCurrentSeason,
     hasUsername ? {} : "skip",
@@ -121,6 +133,7 @@ export default function ShellHomeScreen() {
     dailySurvivalStatus?.forfeited === true;
   // Window shared with the backend's themed question pool (lib/daily.ts), so
   // the card renames itself exactly while the WC edition is being served.
+  const whosOlderPlayed = whosOlderToday?.daily?.status === "completed";
   const dailyIsWorldCup = isWorldCupEditionActive(dailySport, getTodayUTC());
   const seasonNumber =
     typeof season?.seasonNumber === "number" ? season.seasonNumber : null;
@@ -196,44 +209,71 @@ export default function ShellHomeScreen() {
             never-scroll 3-column grid (pillars · pillars/dailies · ladder/forge),
             ratios from the prototype (left 1.5fr split in two, right 1fr). */}
         <div className="flex flex-col gap-3 md:grid md:grid-cols-[3fr_3fr_4fr] md:grid-rows-[auto_auto] md:gap-4 md:content-start">
-          {/* TODAY pillar — the daily slate leads the home. Two cards, one
-              habit: the shared quiz and the shared survival run, both with
-              honest played/reset state read from the server. */}
+          {/* TODAY pillar — the daily slate leads the home. Three cards, one
+              habit: the shared quiz, the shared survival run and Who's Older,
+              all with honest played/reset state read from the server. */}
           <div className="flex flex-col gap-3 min-h-0">
             <p className={EYEBROW}>{t("home.today.eyebrow")}</p>
             <NeoCard
               color="yellow"
               shadow="lg"
               onClick={() => navigate(`${SHELL_ROUTES.dailyPlay}?sport=${dailySport}`)}
-              className={`p-4 flex flex-col gap-1.5 min-h-0 flex-1 ${LIFT}`}
+              className={`${TODAY_CARD} ${LIFT}`}
             >
-              <Star size={24} strokeWidth={2.5} />
-              <p className="font-heading font-black uppercase text-lg md:text-xl leading-none mt-auto">
-                {dailyIsWorldCup
-                  ? t("modes.daily.worldCupName")
-                  : t("modes.daily.name")}
-              </p>
-              <p className="font-mono text-[10.5px] uppercase text-muted-foreground">
-                {dailyPlayed
-                  ? t("home.hooks.played")
-                  : t("home.hooks.resetsIn", { time: dailyResetCountdown() })}
-              </p>
+              <Star size={24} strokeWidth={2.5} className="shrink-0" />
+              <div className="mt-auto md:mt-0 flex flex-col gap-1.5 min-w-0">
+                <p className="font-heading font-black uppercase text-lg md:text-xl leading-none">
+                  {dailyIsWorldCup
+                    ? t("modes.daily.worldCupName")
+                    : t("modes.daily.name")}
+                </p>
+                <p className="font-mono text-[10.5px] uppercase text-muted-foreground">
+                  {dailyPlayed
+                    ? t("home.hooks.played")
+                    : t("home.hooks.resetsIn", { time: dailyResetCountdown() })}
+                </p>
+              </div>
             </NeoCard>
             <NeoCard
               color="accent"
               shadow="lg"
               onClick={() => navigate("/v2/daily-survival")}
-              className={`p-4 flex flex-col gap-1.5 min-h-0 flex-1 ${LIFT}`}
+              className={`${TODAY_CARD} ${LIFT}`}
             >
-              <CalendarHeart size={24} strokeWidth={2.5} />
-              <p className="font-heading font-black uppercase text-lg md:text-xl leading-none mt-auto">
-                {t("modes.dailySurvival.name")}
-              </p>
-              <p className="font-mono text-[10.5px] uppercase text-muted-foreground">
-                {dailySurvivalPlayed
-                  ? t("home.hooks.played")
-                  : t("modes.dailySurvival.desc")}
-              </p>
+              <CalendarHeart size={24} strokeWidth={2.5} className="shrink-0" />
+              <div className="mt-auto md:mt-0 flex flex-col gap-1.5 min-w-0">
+                <p className="font-heading font-black uppercase text-lg md:text-xl leading-none">
+                  {t("modes.dailySurvival.name")}
+                </p>
+                <p className="font-mono text-[10.5px] uppercase text-muted-foreground">
+                  {dailySurvivalPlayed
+                    ? t("home.hooks.played")
+                    : t("modes.dailySurvival.desc")}
+                </p>
+              </div>
+            </NeoCard>
+            {/* WHO'S OLDER? — the format behind most of the account's reel
+                reach (2026-09: the top five posts of all time), now a daily
+                with endless unlocked after it. Played state says so, because
+                the card still leads somewhere: endless. */}
+            <NeoCard
+              color="pink"
+              shadow="lg"
+              onClick={() => navigate(SHELL_ROUTES.whosOlderPlay)}
+              className={`${TODAY_CARD} ${LIFT}`}
+              data-testid="home-whos-older-card"
+            >
+              <Hourglass size={24} strokeWidth={2.5} className="shrink-0" />
+              <div className="mt-auto md:mt-0 flex flex-col gap-1.5 min-w-0">
+                <p className="font-heading font-black uppercase text-lg md:text-xl leading-none">
+                  {t("modes.whosOlder.name")}
+                </p>
+                <p className="font-mono text-[10.5px] uppercase text-muted-foreground">
+                  {whosOlderPlayed
+                    ? t("modes.whosOlder.playedDesc")
+                    : t("modes.whosOlder.desc")}
+                </p>
+              </div>
             </NeoCard>
           </div>
 

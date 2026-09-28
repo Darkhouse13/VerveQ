@@ -129,6 +129,7 @@
     "careerPath": { "name": "Career Path", "desc": "Name the player from his clubs" },
     "daily": { "name": "Daily Challenge", "desc": "Same questions for everyone", "worldCupName": "World Cup Daily", "worldCupDesc": "World Cup questions all tournament — same for everyone" },
     "dailySurvival": { "name": "Daily Survival", "desc": "Today's shared run — one attempt" },
+    "whosOlder": {"name": "Who's Older?", "desc": "Tap the older player — 10 a day", "playedDesc": "Played · endless unlocked"},
     "arena": { "name": "Arena", "desc": "Group challenge rooms" },
     "duel": { "name": "Duels", "desc": "Head-to-head, send a link" },
     "knowledgeQuiz": { "name": "Knowledge Quiz", "desc": "Science, history & discoveries" },

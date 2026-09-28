@@ -21,3 +21,14 @@ export function playShortLinkTarget(search: string): string {
   }
   return `${SHELL_ROUTES.careerPathPlay}?${params.toString()}`;
 }
+
+/** `/older` → Who's Older, same attribution rule (a bare hit gets ref=older). */
+export const WHOS_OLDER_SHORT_LINK_DEFAULT_REF = "older";
+
+export function whosOlderShortLinkTarget(search: string): string {
+  const params = new URLSearchParams(search);
+  if (!params.get("ref") && !params.get("utm_source")) {
+    params.set("ref", WHOS_OLDER_SHORT_LINK_DEFAULT_REF);
+  }
+  return `${SHELL_ROUTES.whosOlderPlay}?${params.toString()}`;
+}

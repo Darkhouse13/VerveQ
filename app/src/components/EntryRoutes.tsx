@@ -29,7 +29,7 @@ import { Navigate, useLocation, useSearchParams } from "react-router-dom";
 import { Loader2 } from "lucide-react";
 import { V2_SHELL_ENABLED } from "@/lib/flags";
 import { SHELL_ROUTES } from "@/lib/shellRoutes";
-import { playShortLinkTarget } from "@/lib/playShortLink";
+import { playShortLinkTarget, whosOlderShortLinkTarget } from "@/lib/playShortLink";
 import { weekendShortLinkTarget } from "@/lib/weekendDeepLink";
 import { useAuth } from "@/contexts/AuthContext";
 import LoginScreen from "@/pages/LoginScreen";
@@ -85,6 +85,13 @@ export function HomeRoute() {
 export function PlayShortLinkRoute() {
   const { search } = useLocation();
   return <Navigate to={playShortLinkTarget(search)} replace />;
+}
+
+/** `/older` and `/whos-older` — the Who's Older reel-caption short links.
+ * Same attribution rule as /play: a bare hit gets ref=older. */
+export function WhosOlderShortLinkRoute() {
+  const { search } = useLocation();
+  return <Navigate to={whosOlderShortLinkTarget(search)} replace />;
 }
 
 /** `/weekend` — the off-platform short link for THE WEEKEND (reel captions,

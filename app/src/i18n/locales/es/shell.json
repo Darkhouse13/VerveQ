@@ -129,6 +129,7 @@
     "careerPath": { "name": "Trayectoria", "desc": "Nombra al jugador por sus clubes" },
     "daily": { "name": "Reto diario", "desc": "Las mismas preguntas para todos", "worldCupName": "Diario del Mundial", "worldCupDesc": "Preguntas del Mundial durante todo el torneo — las mismas para todos" },
     "dailySurvival": { "name": "Survival diario", "desc": "La partida de hoy, igual para todos — un intento" },
+    "whosOlder": {"name": "¿Quién es mayor?", "desc": "Toca al jugador mayor — 10 al día", "playedDesc": "Jugado · modo infinito desbloqueado"},
     "arena": { "name": "Arena", "desc": "Salas de desafío en grupo" },
     "duel": { "name": "Duelos", "desc": "Mano a mano, envía un enlace" },
     "knowledgeQuiz": { "name": "Quiz de cultura", "desc": "Ciencia, historia y descubrimientos" },

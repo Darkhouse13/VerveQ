@@ -273,6 +273,7 @@ app/convex/data/*
 !app/convex/data/playersSourced.json
 !app/convex/data/clubAliases.json
 !app/convex/data/playerAdditions.json
+!app/convex/data/whos_older_players.json
 !app/convex/data/football_player_metadata.json
 !app/convex/data/football_survival_index.json
 !app/convex/data/nba_player_metadata.json
