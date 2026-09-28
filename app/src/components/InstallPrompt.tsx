@@ -1,84 +1,63 @@
 /**
- * Install affordance — a small, dismissible bar pinned above the safe area.
+ * Install affordance — a small, dismissible bar rendered IN FLOW by
+ * ShellLayout, directly above the mobile nav, on hub screens only.
  *
  * Chromium gets a real install button (replaying the stashed
- * `beforeinstallprompt`); iOS Safari gets a one-line pointer at the Share
- * sheet, which is the only route it offers. Anything already installed, or
- * dismissed once, renders nothing forever — see lib/installPrompt.
+ * `beforeinstallprompt`, captured app-wide in lib/installPrompt); iOS Safari
+ * gets a one-line pointer at the Share sheet, which is the only route it
+ * offers. Anything already installed, or dismissed once, renders nothing
+ * forever — see lib/installPrompt.
  *
- * Purely additive: mounted alongside the other root-level overlays in App and
- * styled with its own classes plus the shared neo-* utilities. It changes no
- * existing chrome component.
+ * Why in flow and not an overlay: it used to be a `fixed bottom-0 z-50` bar
+ * mounted globally in App, which on iPhone Safari sat on top of every play
+ * screen's bottom-docked answer buttons ("Next", "Higher"/"Lower") and of the
+ * shell's own bottom nav until the player found the X. As a row in the shell
+ * column it takes its own height and covers nothing, and game screens (which
+ * hide the nav) never show it. Mobile only: installing is a phone pitch, and
+ * the desktop Home is height-budgeted.
  */
-import { useEffect, useState } from "react";
+import { useState, useSyncExternalStore } from "react";
 import { Download, Share, X } from "lucide-react";
 import {
+  getDeferredInstallPrompt,
   hasDismissedInstall,
   isIosSafari,
   isStandalone,
   markInstallDismissed,
-  type BeforeInstallPromptEvent,
+  subscribeInstallPrompt,
+  takeDeferredInstallPrompt,
 } from "@/lib/installPrompt";
 
-type Mode = "hidden" | "android" | "ios";
-
 export function InstallPrompt() {
-  const [mode, setMode] = useState<Mode>("hidden");
-  const [deferred, setDeferred] = useState<BeforeInstallPromptEvent | null>(null);
+  const deferred = useSyncExternalStore(subscribeInstallPrompt, getDeferredInstallPrompt);
+  const [dismissed, setDismissed] = useState(() => isStandalone() || hasDismissedInstall());
+  // No event ever arrives on iOS, so its hint is decided synchronously.
+  const [ios] = useState(() => isIosSafari());
 
-  useEffect(() => {
-    // Both paths share these gates, so settle them once before wiring anything.
-    if (isStandalone() || hasDismissedInstall()) return;
-
-    const onBeforeInstallPrompt = (event: Event) => {
-      // Chromium shows its own mini-infobar unless the event is cancelled;
-      // preventDefault is what hands the timing to this component.
-      event.preventDefault();
-      setDeferred(event as BeforeInstallPromptEvent);
-      setMode("android");
-    };
-    // Installing from anywhere (our button, or the browser's own menu) retires
-    // the affordance permanently.
-    const onInstalled = () => {
-      markInstallDismissed();
-      setMode("hidden");
-    };
-
-    window.addEventListener("beforeinstallprompt", onBeforeInstallPrompt);
-    window.addEventListener("appinstalled", onInstalled);
-
-    // No event will ever arrive on iOS, so its hint is decided synchronously.
-    if (isIosSafari()) setMode("ios");
-
-    return () => {
-      window.removeEventListener("beforeinstallprompt", onBeforeInstallPrompt);
-      window.removeEventListener("appinstalled", onInstalled);
-    };
-  }, []);
-
-  if (mode === "hidden") return null;
+  if (dismissed) return null;
+  const mode = deferred ? "android" : ios ? "ios" : null;
+  if (!mode) return null;
 
   const dismiss = () => {
     markInstallDismissed();
-    setMode("hidden");
+    setDismissed(true);
   };
 
   const install = async () => {
-    if (!deferred) return;
-    // The stashed event is single-use: whatever the user chooses, the
-    // affordance is done. Dismissing on "accepted" is redundant with
-    // `appinstalled` but fires sooner and covers browsers that skip it.
-    setMode("hidden");
-    markInstallDismissed();
-    await deferred.prompt();
-    setDeferred(null);
+    const event = takeDeferredInstallPrompt();
+    // Whatever the user chooses, the affordance is done. Dismissing on
+    // "accepted" is redundant with `appinstalled` but fires sooner and covers
+    // browsers that skip it.
+    dismiss();
+    await event?.prompt();
   };
 
   return (
     <div
-      className="vq-install-prompt fixed inset-x-0 bottom-0 z-50 px-3 pb-[calc(env(safe-area-inset-bottom)+0.75rem)]"
+      className="vq-install-prompt md:hidden shrink-0 w-full px-3 pt-1 pb-2"
       role="region"
       aria-label="Install VerveQ"
+      data-testid="install-prompt"
     >
       <div className="neo-border neo-shadow bg-card mx-auto flex max-w-md items-center gap-3 rounded-lg p-3">
         <span className="neo-border bg-accent shrink-0 rounded-full p-1.5">

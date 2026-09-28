@@ -85,3 +85,56 @@ export interface BeforeInstallPromptEvent extends Event {
   prompt: () => Promise<void>;
   userChoice: Promise<{ outcome: "accepted" | "dismissed" }>;
 }
+
+/*
+ * App-wide capture of Chromium's install event. It fires ONCE per page load,
+ * often before (or while) a screen that doesn't show the bar is mounted — a
+ * game, a sheet — so the banner can't own the listener: it only renders on
+ * hub screens (ShellLayout) and would miss the event entirely. main.tsx arms
+ * this before first render; the banner subscribes.
+ */
+let deferredPrompt: BeforeInstallPromptEvent | null = null;
+const promptListeners = new Set<() => void>();
+let captureArmed = false;
+
+function notifyPromptListeners(): void {
+  for (const listener of promptListeners) listener();
+}
+
+export function armInstallPromptCapture(win: Window = window): void {
+  if (captureArmed) return;
+  captureArmed = true;
+  win.addEventListener("beforeinstallprompt", (event) => {
+    // Chromium shows its own mini-infobar unless the event is cancelled;
+    // preventDefault is what hands the timing to the banner.
+    event.preventDefault();
+    deferredPrompt = event as BeforeInstallPromptEvent;
+    notifyPromptListeners();
+  });
+  // Installing from anywhere (our button, or the browser's own menu) retires
+  // the affordance permanently.
+  win.addEventListener("appinstalled", () => {
+    markInstallDismissed();
+    deferredPrompt = null;
+    notifyPromptListeners();
+  });
+}
+
+export function getDeferredInstallPrompt(): BeforeInstallPromptEvent | null {
+  return deferredPrompt;
+}
+
+/** The stashed event is single-use: hand it out once and forget it. */
+export function takeDeferredInstallPrompt(): BeforeInstallPromptEvent | null {
+  const event = deferredPrompt;
+  deferredPrompt = null;
+  notifyPromptListeners();
+  return event;
+}
+
+export function subscribeInstallPrompt(listener: () => void): () => void {
+  promptListeners.add(listener);
+  return () => {
+    promptListeners.delete(listener);
+  };
+}

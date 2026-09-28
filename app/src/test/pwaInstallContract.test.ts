@@ -13,7 +13,16 @@ import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { beforeEach, describe, expect, it } from "vitest";
-import { hasDismissedInstall, isIosSafari, isStandalone, markInstallDismissed } from "@/lib/installPrompt";
+import {
+  armInstallPromptCapture,
+  getDeferredInstallPrompt,
+  hasDismissedInstall,
+  isIosSafari,
+  isStandalone,
+  markInstallDismissed,
+  subscribeInstallPrompt,
+  takeDeferredInstallPrompt,
+} from "@/lib/installPrompt";
 
 const IPHONE_SAFARI =
   "Mozilla/5.0 (iPhone; CPU iPhone OS 17_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.5 Mobile/15E148 Safari/604.1";
@@ -67,6 +76,47 @@ describe("install affordance gating", () => {
     } finally {
       Storage.prototype.getItem = getItem;
     }
+  });
+});
+
+describe("install bar placement", () => {
+  const src = (rel: string) =>
+    readFileSync(path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..", rel), "utf8");
+
+  it("is never a global overlay that can cover a game's bottom-docked buttons", () => {
+    // Regression pin: it was a `fixed bottom-0 z-50` bar mounted in App, and on
+    // iPhone Safari it sat on top of every play screen's answer buttons.
+    expect(src("App.tsx")).not.toMatch(/<InstallPrompt\b/);
+    const bar = src("components/InstallPrompt.tsx");
+    expect(bar).not.toMatch(/className="[^"]*\bfixed\b/);
+  });
+
+  it("renders in flow in the shell column, only where the nav is shown", () => {
+    const layout = src("components/shell/ShellLayout.tsx");
+    expect(layout).toContain("{!hideNav && <InstallPrompt />}");
+    // Play screens use PlayStage, which is not a ShellLayout.
+    expect(src("components/shell/play/PlayStage.tsx")).not.toContain("InstallPrompt");
+  });
+
+  it("captures Chromium's one-shot event app-wide and hands it out once", () => {
+    localStorage.clear();
+    armInstallPromptCapture(window);
+    let notified = 0;
+    const unsubscribe = subscribeInstallPrompt(() => notified++);
+
+    const event = new Event("beforeinstallprompt", { cancelable: true });
+    window.dispatchEvent(event);
+    expect(event.defaultPrevented).toBe(true);
+    expect(getDeferredInstallPrompt()).toBe(event);
+    expect(takeDeferredInstallPrompt()).toBe(event);
+    expect(getDeferredInstallPrompt()).toBeNull();
+
+    window.dispatchEvent(new Event("beforeinstallprompt", { cancelable: true }));
+    window.dispatchEvent(new Event("appinstalled"));
+    expect(getDeferredInstallPrompt()).toBeNull();
+    expect(hasDismissedInstall()).toBe(true);
+    expect(notified).toBeGreaterThanOrEqual(3);
+    unsubscribe();
   });
 });
 

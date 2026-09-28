@@ -8,6 +8,7 @@ import { captureEntrySource } from "./lib/entrySource";
 import { armExitAbandonReporting } from "./lib/gameAnalytics";
 import { armPerfVitals } from "./lib/perfVitals";
 import { registerServiceWorker } from "./lib/pwa";
+import { armInstallPromptCapture } from "./lib/installPrompt";
 import "./index.css";
 
 // Before first render so global handlers catch everything from frame one.
@@ -29,6 +30,8 @@ armPerfVitals();
 // App-shell service worker (Workbox, autoUpdate). Production builds only —
 // no sw.js is emitted under `vite dev`. Never intercepts Convex or PostHog.
 registerServiceWorker();
+// Chromium's one-shot install event, stashed for the hub-screen install bar.
+armInstallPromptCapture();
 
 createRoot(document.getElementById("root")!).render(
   <I18nextProvider i18n={i18n}>

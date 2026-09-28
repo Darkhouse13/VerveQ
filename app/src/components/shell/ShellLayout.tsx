@@ -5,6 +5,7 @@ import { ArrowLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { ShellNav, ShellTopNav } from "./ShellNav";
 import { prefetchShellTabs } from "@/lib/shellPrefetch";
+import { InstallPrompt } from "@/components/InstallPrompt";
 
 interface ShellLayoutProps {
   /** Optional eyebrow title rendered in the header. */
@@ -192,6 +193,10 @@ export function ShellLayout({
       </main>
       </div>
 
+      {/* Install bar: a row of its own above the nav, so it takes height
+          instead of covering anything. Hub screens only — a screen that hides
+          the nav (every game) never shows it. */}
+      {!hideNav && <InstallPrompt />}
       {!hideNav && <ShellNav />}
     </div>
   );
