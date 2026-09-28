@@ -388,8 +388,6 @@
     "correct": "Correcto",
     "wrong": "Fallo",
     "forfeited": "Ronda perdida",
-    "next": "Siguiente",
-    "seeResult": "Ver resultado",
     "editionLabel": "¿Quién es mayor? n.º {{n}}",
     "standing_one": "Mejor que el {{pct}} % de {{count}} jugador de hoy",
     "standing_other": "Mejor que el {{pct}} % de los {{count}} jugadores de hoy",
@@ -413,6 +411,15 @@
     "guessFailed": "Tu respuesta no llegó — inténtalo de nuevo",
     "startFailedTitle": "No se pudo cargar el juego de hoy",
     "startFailedMessage": "El juego no se pudo cargar. Inténtalo de nuevo en un momento.",
-    "tryAgain": "Reintentar"
+    "tryAgain": "Reintentar",
+    "tier": {
+      "easy": "Fácil",
+      "close": "Ajustado",
+      "tight": "Muy ajustado",
+      "impossible": "Imposible"
+    },
+    "gapLabel": "DIFERENCIA",
+    "bestShort_one": "récord {{count}}",
+    "bestShort_other": "récord {{count}}"
   }
 }

@@ -388,8 +388,6 @@
     "correct": "Bonne réponse",
     "wrong": "Raté",
     "forfeited": "Manche perdue",
-    "next": "Suivant",
-    "seeResult": "Voir le résultat",
     "editionLabel": "Qui est le plus âgé ? n°{{n}}",
     "standing_one": "Mieux que {{pct}} % des {{count}} joueurs du jour",
     "standing_other": "Mieux que {{pct}} % des {{count}} joueurs du jour",
@@ -413,6 +411,15 @@
     "guessFailed": "Votre réponse n'est pas passée — réessayez",
     "startFailedTitle": "Impossible de charger le jeu du jour",
     "startFailedMessage": "Le jeu n'a pas pu se charger. Réessayez dans un instant.",
-    "tryAgain": "Réessayer"
+    "tryAgain": "Réessayer",
+    "tier": {
+      "easy": "Facile",
+      "close": "Serré",
+      "tight": "Très serré",
+      "impossible": "Impossible"
+    },
+    "gapLabel": "ÉCART",
+    "bestShort_one": "record {{count}}",
+    "bestShort_other": "record {{count}}"
   }
 }

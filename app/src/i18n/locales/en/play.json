@@ -388,8 +388,6 @@
     "correct": "Correct",
     "wrong": "Wrong",
     "forfeited": "Round forfeited",
-    "next": "Next",
-    "seeResult": "See result",
     "editionLabel": "Who's Older? #{{n}}",
     "standing_one": "Better than {{pct}}% of today's {{count}} player",
     "standing_other": "Better than {{pct}}% of today's {{count}} players",
@@ -413,6 +411,15 @@
     "guessFailed": "That answer didn't go through — try again",
     "startFailedTitle": "Couldn't Load Today's Game",
     "startFailedMessage": "Who's Older couldn't load right now. Try again in a moment.",
-    "tryAgain": "Try Again"
+    "tryAgain": "Try Again",
+    "tier": {
+      "easy": "Easy",
+      "close": "Close",
+      "tight": "Tight",
+      "impossible": "Impossible"
+    },
+    "gapLabel": "GAP",
+    "bestShort_one": "best {{count}}",
+    "bestShort_other": "best {{count}}"
   }
 }
