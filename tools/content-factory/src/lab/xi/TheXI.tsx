@@ -30,7 +30,7 @@ const SLOTS: Record<string, [number, number]> = {
   CB2: [0.645, 0.8],
   RB: [0.85, 0.7],
   CM1: [0.2, 0.5],
-  CM2: [0.5, 0.45],
+  CM2: [0.5, 0.48],
   CM3: [0.8, 0.5],
   LW: [0.16, 0.22],
   ST: [0.5, 0.14],
@@ -146,8 +146,8 @@ const Board: React.FC<{ mode: "names" | "reveal" }> = ({ mode }) => {
               return <Plate key={item.i} item={item} landed={landed} land={land} sh={sh} frame={abs} revealed={revealed} rv={rv} />;
             })}
             {revealed && (
-              <div style={{ position: "absolute", left: "50%", top: "50%", transform: `translate(-50%, -50%) rotate(${-5 + 2 * rv}deg) scale(${0.3 + 0.7 * rv})`, opacity: Math.min(1, rv * 2) }}>
-                <div style={{ background: COLORS.red, color: COLORS.cream, border: `7px solid ${COLORS.cream}`, borderRadius: 22, boxShadow: `14px 14px 0 ${COLORS.ink}`, padding: "26px 46px", fontFamily: FONTS.head, fontWeight: 700, fontSize: 92, letterSpacing: -4, whiteSpace: "nowrap", lineHeight: 0.95 }}>
+              <div style={{ position: "absolute", left: "50%", top: "32%", transform: `translate(-50%, -50%) rotate(${-3 + 1.5 * rv}deg) scale(${0.3 + 0.7 * rv})`, opacity: Math.min(1, rv * 2) }}>
+                <div style={{ background: COLORS.red, color: COLORS.cream, border: `7px solid ${COLORS.cream}`, borderRadius: 22, boxShadow: `14px 14px 0 ${COLORS.ink}`, padding: "20px 40px", fontFamily: FONTS.head, fontWeight: 700, fontSize: 74, letterSpacing: -4, whiteSpace: "nowrap", lineHeight: 0.95 }}>
                   {FACTS.clubShow}
                 </div>
               </div>
@@ -156,7 +156,7 @@ const Board: React.FC<{ mode: "names" | "reveal" }> = ({ mode }) => {
         </Middle>
         <Bottom>
           {revealed ? (
-            <div style={{ textAlign: "center", fontFamily: FONTS.mono, fontWeight: 700, fontSize: 24, letterSpacing: 3, color: COLORS.cream, opacity: Math.min(1, rv * 2) }}>EVERY ONE OF THEM. SAME SHIRT.</div>
+            <div style={{ textAlign: "center", fontFamily: FONTS.mono, fontWeight: 700, fontSize: 24, letterSpacing: 3, color: COLORS.cream, opacity: Math.min(1, rv * 2) }}>EVERY ONE OF THEM PLAYED THERE.</div>
           ) : (
             <div>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 8, fontFamily: FONTS.mono, fontWeight: 700, fontSize: 22, letterSpacing: 3, color: COLORS.cream }}>

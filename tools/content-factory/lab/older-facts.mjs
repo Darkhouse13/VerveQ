@@ -6,19 +6,27 @@
 //
 //   node lab/older-facts.mjs           # resolve what is missing, rebuild facts
 //   node lab/older-facts.mjs --check   # offline: re-assert facts.json vs cache
+//   node lab/older-facts.mjs --edition e2 [--check]
+//        pairs + display names from lab/editions/older-e2.json
+//
+// Second source (added 2026-09-25, owner asked for every name double-checked):
+// the English Wikipedia infobox birth date, reached through the Wikidata
+// enwiki sitelink, must equal the Wikidata date to the day.
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import path from "node:path";
-import { fileURLToPath } from "node:url";
+import { fileURLToPath, pathToFileURL } from "node:url";
 
 const dir = path.dirname(fileURLToPath(import.meta.url));
 const CACHE = path.join(dir, "older-dob-cache.json");
 const OUT = path.join(dir, "..", "src", "lab", "older", "facts.json");
 const UA = "VerveQ-content-factory/1.0 (https://verveq.com; fact gate)";
+const EDITION = process.argv.includes("--edition") ? process.argv[process.argv.indexOf("--edition") + 1] : "e1";
+const ED = EDITION === "e1" ? null : JSON.parse(readFileSync(path.join(dir, "editions", `older-${EDITION}.json`), "utf8"));
 
 // Round order IS the escalation: the gap between the two birth dates shrinks
 // every round (asserted below), from 17 years to nine days. `a` is the top
 // card, `b` the bottom card; who is older is computed, never written down.
-export const ROUNDS = [
+const ROUNDS_E1 = [
   { a: "Jude Bellingham", b: "Luka Modrić" },
   { a: "Harry Kane", b: "Erling Haaland" },
   { a: "Kylian Mbappé", b: "Neymar" },
@@ -32,7 +40,7 @@ export const ROUNDS = [
 ];
 
 // on-screen surnames (brand type, all caps) — display only, never a fact
-export const SHOW = {
+const SHOW_E1 = {
   "Jude Bellingham": "BELLINGHAM",
   "Luka Modrić": "MODRIĆ",
   "Lionel Messi": "MESSI",
@@ -50,6 +58,9 @@ export const SHOW = {
   "Vinícius Júnior": "VINÍCIUS",
 };
 
+export const ROUNDS = ED ? ED.rounds : ROUNDS_E1;
+export const SHOW = ED ? ED.show : SHOW_E1;
+
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const api = async (params) => {
   const url = `https://www.wikidata.org/w/api.php?${new URLSearchParams({ ...params, format: "json" })}`;
@@ -65,7 +76,7 @@ const api = async (params) => {
   throw new Error(`wikidata: gave up on ${url}`);
 };
 
-const resolve = async (name) => {
+export const resolve = async (name) => {
   const s = await api({ action: "wbsearchentities", search: name, language: "en", limit: "5" });
   const hit = (s.search ?? []).find((h) => /footballer|football player/i.test(h.description ?? ""));
   if (!hit) throw new Error(`wikidata: no footballer entity for "${name}": ${JSON.stringify(s.search?.map((h) => h.description))}`);
@@ -85,6 +96,26 @@ const resolve = async (name) => {
   return { name, qid: hit.id, label: ent.labels?.en?.value, description: hit.description, dob: `${m[1]}-${m[2]}-${m[3]}`, ref: `https://www.wikidata.org/wiki/${hit.id}#P569` };
 };
 
+// Wikipedia infobox: {{birth date and age|1985|2|5|df=y}} (or "birth date|…")
+export const wikipediaDob = async (qid) => {
+  const e = await api({ action: "wbgetentities", ids: qid, props: "sitelinks", sitefilter: "enwiki" });
+  const title = e.entities[qid]?.sitelinks?.enwiki?.title;
+  if (!title) throw new Error(`wikipedia: ${qid} has no enwiki sitelink`);
+  await sleep(1000);
+  const url = `https://en.wikipedia.org/w/api.php?${new URLSearchParams({ action: "parse", page: title, prop: "wikitext", section: "0", redirects: "1", format: "json" })}`;
+  for (let attempt = 0; attempt < 5; attempt++) {
+    const res = await fetch(url, { headers: { "User-Agent": UA } });
+    if (res.ok) {
+      const w = (await res.json()).parse?.wikitext?.["*"] ?? "";
+      const m = w.match(/\|\s*birth_date\s*=\s*\{\{\s*birth[ _]date(?: and age)?\s*\|(?:\s*(?:df|mf)\s*=\s*\w+\s*\|)?\s*(\d{4})\s*\|\s*(\d{1,2})\s*\|\s*(\d{1,2})/i);
+      if (!m) throw new Error(`wikipedia: no birth_date template in "${title}"`);
+      return { title, dob: `${m[1]}-${m[2].padStart(2, "0")}-${m[3].padStart(2, "0")}`, ref: `https://en.wikipedia.org/wiki/${encodeURIComponent(title.replace(/ /g, "_"))}` };
+    }
+    await sleep(4000 * (attempt + 1));
+  }
+  throw new Error(`wikipedia: gave up on ${title}`);
+};
+
 const daysBetween = (a, b) => Math.round((Date.parse(b + "T00:00:00Z") - Date.parse(a + "T00:00:00Z")) / 86400000);
 const MONTHS = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"];
 const pretty = (iso) => {
@@ -92,7 +123,7 @@ const pretty = (iso) => {
   return `${d} ${MONTHS[m - 1]} ${y}`;
 };
 // gap label — whole units only, rounded DOWN, so a label never overstates
-const gapLabel = (days) => {
+export const gapLabel = (days) => {
   if (days >= 365) {
     const y = Math.floor(days / 365.25);
     return `${y} YEAR${y === 1 ? "" : "S"}`;
@@ -105,7 +136,7 @@ const gapLabel = (days) => {
     const w = Math.floor(days / 7);
     return `${w} WEEKS`;
   }
-  return `${days} DAYS`;
+  return `${days} DAY${days === 1 ? "" : "S"}`;
 };
 
 const main = async () => {
@@ -120,6 +151,22 @@ const main = async () => {
     writeFileSync(CACHE, JSON.stringify(cache, null, 1));
     await sleep(1500);
   }
+  for (const n of names) {
+    if (cache[n].wikipedia) continue;
+    if (check) throw new Error(`older-facts --check: "${n}" has no Wikipedia date in the cache`);
+    console.log(`wikipedia ${n} …`);
+    cache[n].wikipedia = await wikipediaDob(cache[n].qid);
+    writeFileSync(CACHE, JSON.stringify(cache, null, 1));
+    await sleep(1500);
+  }
+  // namesake guard: a "(born 1985)" in the Wikidata description must match
+  const wrongYear = names.filter((n) => {
+    const m = (cache[n].description ?? "").match(/born (\d{4})/);
+    return m && m[1] !== cache[n].dob.slice(0, 4);
+  });
+  if (wrongYear.length) throw new Error(`description year ≠ birth year (wrong person?): ${wrongYear.map((n) => `${n} "${cache[n].description}" vs ${cache[n].dob}`).join("; ")}`);
+  const disagree = names.filter((n) => cache[n].wikipedia.dob !== cache[n].dob);
+  if (disagree.length) throw new Error(`Wikidata and Wikipedia disagree: ${disagree.map((n) => `${n} ${cache[n].dob} vs ${cache[n].wikipedia.dob}`).join("; ")}`);
   for (const n of names) if (!SHOW[n]) throw new Error(`no display name for ${n}`);
 
   const rounds = ROUNDS.map((r, i) => {
@@ -140,10 +187,10 @@ const main = async () => {
   for (let i = 1; i < rounds.length; i++) {
     if (rounds[i].gapDays >= rounds[i - 1].gapDays) throw new Error(`escalation broken at round ${i + 1}: ${rounds[i].gapDays}d after ${rounds[i - 1].gapDays}d`);
   }
-  const facts = { _doc: "Generated by lab/older-facts.mjs from Wikidata P569 (day precision). Do not edit — re-run the script.", source: "wikidata P569", rounds };
+  const facts = { _doc: "Generated by lab/older-facts.mjs from Wikidata P569 (day precision), cross-checked against the Wikipedia infobox. Do not edit — re-run the script.", edition: EDITION, source: "wikidata P569 + en.wikipedia birth_date", rounds };
   if (check) {
     const cur = JSON.parse(readFileSync(OUT, "utf8"));
-    if (JSON.stringify(cur.rounds) !== JSON.stringify(rounds)) throw new Error("older-facts --check: facts.json drifted from cache — re-run without --check");
+    if (cur.edition !== EDITION || JSON.stringify(cur.rounds) !== JSON.stringify(rounds)) throw new Error("older-facts --check: facts.json drifted from cache — re-run without --check");
     console.log(`older-facts: ${rounds.length} rounds re-asserted against the cache.`);
     return;
   }
@@ -152,7 +199,9 @@ const main = async () => {
   console.log(`→ ${OUT}`);
 };
 
-main().catch((e) => {
-  console.error(e);
-  process.exit(1);
-});
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
+  main().catch((e) => {
+    console.error(e);
+    process.exit(1);
+  });
+}

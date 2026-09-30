@@ -27,9 +27,12 @@ const GRID = JSON.parse(readFileSync(path.join(dir, "..", "src", "lab", "grid.js
 const GW = JSON.parse(readFileSync(path.join(dir, "..", "src", "lab", "guesswho", "facts.json"), "utf8"));
 const OL = JSON.parse(readFileSync(path.join(dir, "..", "src", "lab", "older", "facts.json"), "utf8"));
 const XI = JSON.parse(readFileSync(path.join(dir, "..", "src", "lab", "xi", "facts.json"), "utf8"));
+const LT = JSON.parse(readFileSync(path.join(dir, "..", "src", "lab", "letters", "facts.json"), "utf8"));
+const CO = JSON.parse(readFileSync(path.join(dir, "..", "src", "lab", "clubolder", "facts.json"), "utf8"));
 const FPS = GRID.fps;
 const date = process.argv[2] ?? new Date().toISOString().slice(0, 10);
-const OUT = path.join(dir, "..", "out", date, "lab");
+// LAB_VERIFY_OUT: where lab/concept-render.mjs put a later edition
+const OUT = process.env.LAB_VERIFY_OUT ?? path.join(dir, "..", "out", date, "lab");
 const STILLS = path.join(OUT, "stills");
 
 // scene tables derived from the grid — the same arithmetic the compositions use
@@ -42,6 +45,8 @@ const scenes = {
     return s;
   })(),
   "lab-older": [...OL.rounds.map((r) => ({ key: `r${r.n}`, dur: GRID.older.round })), { key: "closer", dur: GRID.older.closer }],
+  "lab-clubolder": [...CO.rounds.map((r) => ({ key: `r${r.n}`, dur: GRID.older.round })), { key: "closer", dur: GRID.older.closer }],
+  "lab-letters": [...LT.rounds.map((r) => ({ key: `r${r.n}`, dur: GRID.letters.round })), { key: "closer", dur: GRID.letters.closer }],
   "lab-xi": [{ key: "names", dur: XI.xi.length * GRID.xi.name }, { key: "reveal", dur: GRID.xi.reveal }, { key: "closer", dur: GRID.xi.closer }],
 };
 // busiest frame per reel: Q5 mid-flip (board + stamp + flipping tiles), R10
@@ -49,6 +54,8 @@ const scenes = {
 const DENSEST = {
   "lab-guesswho": 4 * GRID.guesswho.q + GRID.guesswho.flipStart + 8,
   "lab-older": 9 * GRID.older.round + GRID.older.gapAt + 16,
+  "lab-clubolder": 9 * GRID.older.round + GRID.older.gapAt + 16,
+  "lab-letters": 9 * GRID.letters.round + GRID.letters.revealAt + 40,
   "lab-xi": XI.xi.length * GRID.xi.name + 40,
 };
 

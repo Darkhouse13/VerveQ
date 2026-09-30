@@ -1,0 +1,7 @@
+{
+ "_comment": "TIER LIST timing truths (frames @30). Composition AND sound bed read this file. A static 9.0s board: shine sweeps every `sweep` frames from frame 0 (the hook law), the ask slams at `askAt`.",
+ "fps": 30,
+ "total": 270,
+ "sweep": 90,
+ "askAt": 150
+}

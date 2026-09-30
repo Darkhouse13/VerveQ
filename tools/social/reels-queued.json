@@ -1,0 +1,190 @@
+{
+  "2026-09-26:reel1": {
+    "concept": "older",
+    "edition": "e4"
+  },
+  "2026-09-26:reel2": {
+    "concept": "ladder"
+  },
+  "2026-09-26:reel3": {
+    "concept": "test",
+    "dir": "test-xi"
+  },
+  "2026-09-26:reel4": {
+    "concept": "older",
+    "edition": "e2"
+  },
+  "2026-09-27:reel1": {
+    "concept": "older",
+    "edition": "e5"
+  },
+  "2026-09-27:reel2": {
+    "concept": "imposter",
+    "edition": "e4"
+  },
+  "2026-09-27:reel3": {
+    "concept": "older",
+    "edition": "e6"
+  },
+  "2026-09-27:reel4": {
+    "concept": "imposter",
+    "edition": "e3"
+  },
+  "2026-09-28:reel1": {
+    "concept": "imposter",
+    "edition": "e5"
+  },
+  "2026-09-28:reel2": {
+    "concept": "older",
+    "edition": "e7"
+  },
+  "2026-09-28:reel3": {
+    "concept": "test",
+    "dir": "test-tierlist"
+  },
+  "2026-09-28:reel4": {
+    "concept": "older",
+    "edition": "e3"
+  },
+  "2026-09-29:reel1": {
+    "concept": "imposter",
+    "edition": "e6"
+  },
+  "2026-09-29:reel2": {
+    "concept": "ladder"
+  },
+  "2026-09-29:reel3": {
+    "concept": "older",
+    "edition": "e8"
+  },
+  "2026-09-29:reel4": {
+    "concept": "imposter",
+    "edition": "e7"
+  },
+  "2026-09-30:reel1": {
+    "concept": "older",
+    "edition": "e9"
+  },
+  "2026-09-30:reel2": {
+    "concept": "imposter",
+    "edition": "e8"
+  },
+  "2026-09-30:reel3": {
+    "concept": "test",
+    "dir": "test-xidebate"
+  },
+  "2026-09-30:reel4": {
+    "concept": "older",
+    "edition": "e10"
+  },
+  "2026-10-01:reel1": {
+    "concept": "imposter",
+    "edition": "e9"
+  },
+  "2026-10-01:reel2": {
+    "concept": "ladder"
+  },
+  "2026-10-01:reel3": {
+    "concept": "older",
+    "edition": "e11"
+  },
+  "2026-10-01:reel4": {
+    "concept": "imposter",
+    "edition": "e10"
+  },
+  "2026-10-02:reel1": {
+    "concept": "older",
+    "edition": "e12"
+  },
+  "2026-10-02:reel2": {
+    "concept": "imposter",
+    "edition": "e11"
+  },
+  "2026-10-02:reel3": {
+    "concept": "test",
+    "dir": "test-guesswho"
+  },
+  "2026-10-02:reel4": {
+    "concept": "imposter",
+    "edition": "e12"
+  },
+  "2026-10-03:reel1": {
+    "concept": "older",
+    "edition": "e13"
+  },
+  "2026-10-03:reel2": {
+    "concept": "ladder"
+  },
+  "2026-10-03:reel3": {
+    "concept": "imposter",
+    "edition": "e13"
+  },
+  "2026-10-03:reel4": {
+    "concept": "older",
+    "edition": "e14"
+  },
+  "2026-10-04:reel1": {
+    "concept": "imposter",
+    "edition": "e14"
+  },
+  "2026-10-04:reel2": {
+    "concept": "older",
+    "edition": "e15"
+  },
+  "2026-10-04:reel3": {
+    "concept": "imposter",
+    "edition": "e15"
+  },
+  "2026-10-04:reel4": {
+    "concept": "older",
+    "edition": "e16"
+  },
+  "2026-10-05:reel1": {
+    "concept": "older",
+    "edition": "e17"
+  },
+  "2026-10-05:reel2": {
+    "concept": "older",
+    "edition": "e18"
+  },
+  "2026-10-05:reel3": {
+    "concept": "older",
+    "edition": "e19"
+  },
+  "2026-10-05:reel4": {
+    "concept": "older",
+    "edition": "e20"
+  },
+  "2026-10-06:reel1": {
+    "concept": "older",
+    "edition": "e21"
+  },
+  "2026-10-06:reel2": {
+    "concept": "older",
+    "edition": "e22"
+  },
+  "2026-10-06:reel3": {
+    "concept": "older",
+    "edition": "e23"
+  },
+  "2026-10-06:reel4": {
+    "concept": "older",
+    "edition": "e24"
+  },
+  "2026-10-07:reel1": {
+    "concept": "older",
+    "edition": "e25"
+  },
+  "2026-10-07:reel2": {
+    "concept": "older",
+    "edition": "e26"
+  },
+  "2026-10-07:reel3": {
+    "concept": "older",
+    "edition": "e27"
+  },
+  "2026-10-07:reel4": {
+    "concept": "older",
+    "edition": "e28"
+  }
+}

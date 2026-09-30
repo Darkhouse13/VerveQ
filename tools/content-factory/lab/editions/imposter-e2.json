@@ -1,0 +1,183 @@
+{
+ "_doc": "SPOT THE IMPOSTER edition 2. Gate: node lab/imposter-facts.mjs --edition e2",
+ "rounds": [
+  {
+   "tier": "EASY",
+   "club": "liverpool",
+   "cards": [
+    "Mohamed Salah",
+    "Wayne Rooney",
+    "Fernando Torres",
+    "Xabi Alonso"
+   ],
+   "imp": "Wayne Rooney",
+   "real": "manutd"
+  },
+  {
+   "tier": "EASY",
+   "club": "realmadrid",
+   "cards": [
+    "Luka Modrić",
+    "Sergio Ramos",
+    "Lionel Messi",
+    "Cristiano Ronaldo"
+   ],
+   "imp": "Lionel Messi",
+   "real": "barcelona"
+  },
+  {
+   "tier": "MEDIUM",
+   "club": "arsenal",
+   "cards": [
+    "Mesut Özil",
+    "Cesc Fàbregas",
+    "Alexis Sánchez",
+    "John Terry"
+   ],
+   "imp": "John Terry",
+   "real": "chelsea"
+  },
+  {
+   "tier": "HARD",
+   "club": "milan",
+   "cards": [
+    "Alessandro Del Piero",
+    "David Beckham",
+    "Kaká",
+    "Ronaldinho"
+   ],
+   "imp": "Alessandro Del Piero",
+   "real": "juventus"
+  },
+  {
+   "tier": "HARD",
+   "club": "chelsea",
+   "cards": [
+    "Kevin De Bruyne",
+    "Juan Mata",
+    "Gareth Bale",
+    "Romelu Lukaku"
+   ],
+   "imp": "Gareth Bale",
+   "real": "realmadrid"
+  },
+  {
+   "tier": "IMPOSSIBLE",
+   "club": "barcelona",
+   "cards": [
+    "Lilian Thuram",
+    "Clarence Seedorf",
+    "Kevin-Prince Boateng",
+    "Marcus Rashford"
+   ],
+   "imp": "Clarence Seedorf",
+   "real": "milan",
+   "withheld": true
+  }
+ ],
+ "show": {
+  "Mohamed Salah": [
+   "Mohamed",
+   "SALAH"
+  ],
+  "Wayne Rooney": [
+   "Wayne",
+   "ROONEY"
+  ],
+  "Fernando Torres": [
+   "Fernando",
+   "TORRES"
+  ],
+  "Xabi Alonso": [
+   "Xabi",
+   "ALONSO"
+  ],
+  "Luka Modrić": [
+   "Luka",
+   "MODRIĆ"
+  ],
+  "Sergio Ramos": [
+   "Sergio",
+   "RAMOS"
+  ],
+  "Lionel Messi": [
+   "Lionel",
+   "MESSI"
+  ],
+  "Cristiano Ronaldo": [
+   "Cristiano",
+   "RONALDO"
+  ],
+  "Mesut Özil": [
+   "Mesut",
+   "ÖZIL"
+  ],
+  "Cesc Fàbregas": [
+   "Cesc",
+   "FÀBREGAS"
+  ],
+  "Alexis Sánchez": [
+   "Alexis",
+   "SÁNCHEZ"
+  ],
+  "John Terry": [
+   "John",
+   "TERRY"
+  ],
+  "Alessandro Del Piero": [
+   "Alessandro",
+   "DEL PIERO"
+  ],
+  "David Beckham": [
+   "David",
+   "BECKHAM"
+  ],
+  "Kaká": [
+   "",
+   "KAKÁ"
+  ],
+  "Ronaldinho": [
+   "",
+   "RONALDINHO"
+  ],
+  "Kevin De Bruyne": [
+   "Kevin",
+   "DE BRUYNE"
+  ],
+  "Juan Mata": [
+   "Juan",
+   "MATA"
+  ],
+  "Gareth Bale": [
+   "Gareth",
+   "BALE"
+  ],
+  "Romelu Lukaku": [
+   "Romelu",
+   "LUKAKU"
+  ],
+  "Lilian Thuram": [
+   "Lilian",
+   "THURAM"
+  ],
+  "Clarence Seedorf": [
+   "Clarence",
+   "SEEDORF"
+  ],
+  "Kevin-Prince Boateng": [
+   "Kevin-Prince",
+   "BOATENG"
+  ],
+  "Marcus Rashford": [
+   "Marcus",
+   "RASHFORD"
+  ]
+ },
+ "display": {
+  "Wayne Rooney": {
+   "nation": "England",
+   "position": "ATT"
+  }
+ },
+ "search": {}
+}

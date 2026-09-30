@@ -1,0 +1,22 @@
+{
+ "_doc": "WHO'S OLDER edition 3. Gate: node lab/older-facts.mjs --edition e3",
+ "rounds": [
+  { "a": "Zlatan Ibrahimović", "b": "Jamal Musiala" },
+  { "a": "Michael Olise", "b": "Manuel Neuer" },
+  { "a": "Ángel Di María", "b": "Julián Álvarez" },
+  { "a": "Bruno Guimarães", "b": "Sergio Busquets" },
+  { "a": "Casemiro", "b": "Enzo Fernández" },
+  { "a": "Phil Foden", "b": "Raheem Sterling" },
+  { "a": "Federico Valverde", "b": "Rodri" },
+  { "a": "Mohamed Salah", "b": "Neymar" },
+  { "a": "Ashley Cole", "b": "John Terry" },
+  { "a": "Ousmane Dembélé", "b": "Rúben Dias" }
+ ],
+ "show": {
+  "Zlatan Ibrahimović": "ZLATAN", "Jamal Musiala": "MUSIALA", "Michael Olise": "OLISE", "Manuel Neuer": "NEUER",
+  "Ángel Di María": "DI MARÍA", "Julián Álvarez": "ÁLVAREZ", "Bruno Guimarães": "GUIMARÃES", "Sergio Busquets": "BUSQUETS",
+  "Casemiro": "CASEMIRO", "Enzo Fernández": "ENZO", "Phil Foden": "FODEN", "Raheem Sterling": "STERLING",
+  "Federico Valverde": "VALVERDE", "Rodri": "RODRI", "Mohamed Salah": "SALAH", "Neymar": "NEYMAR",
+  "Ashley Cole": "A. COLE", "John Terry": "TERRY", "Ousmane Dembélé": "DEMBÉLÉ", "Rúben Dias": "RÚBEN DIAS"
+ }
+}

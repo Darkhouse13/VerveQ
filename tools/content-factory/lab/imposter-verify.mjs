@@ -15,7 +15,8 @@ const dir = path.dirname(fileURLToPath(import.meta.url));
 const GRID = JSON.parse(readFileSync(path.join(dir, "..", "src", "lab", "imposter", "grid.json"), "utf8"));
 const IM = JSON.parse(readFileSync(path.join(dir, "..", "src", "lab", "imposter", "facts.json"), "utf8"));
 const FPS = GRID.fps;
-const OUT = path.join(dir, "..", "out", "2026-09-23", "tests");
+// IMPOSTER_VERIFY_OUT: where lab/concept-render.mjs put a later edition
+const OUT = process.env.IMPOSTER_VERIFY_OUT ?? path.join(dir, "..", "out", "2026-09-23", "tests");
 const STILLS = path.join(OUT, "imposter-stills");
 
 const scenes = {

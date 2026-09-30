@@ -1,0 +1,190 @@
+{
+ "_doc": "SPOT THE IMPOSTER edition 3. Gate: node lab/imposter-facts.mjs --edition e3",
+ "rounds": [
+  {
+   "tier": "EASY",
+   "club": "manutd",
+   "cards": [
+    "Rio Ferdinand",
+    "Virgil van Dijk",
+    "Paul Pogba",
+    "Edinson Cavani"
+   ],
+   "imp": "Virgil van Dijk",
+   "real": "liverpool"
+  },
+  {
+   "tier": "EASY",
+   "club": "barcelona",
+   "cards": [
+    "Andrés Iniesta",
+    "Robert Lewandowski",
+    "Karim Benzema",
+    "Xavi"
+   ],
+   "imp": "Karim Benzema",
+   "real": "realmadrid"
+  },
+  {
+   "tier": "MEDIUM",
+   "club": "juventus",
+   "cards": [
+    "Carlos Tevez",
+    "Marco van Basten",
+    "Paulo Dybala",
+    "Arturo Vidal"
+   ],
+   "imp": "Marco van Basten",
+   "real": "milan"
+  },
+  {
+   "tier": "HARD",
+   "club": "inter",
+   "cards": [
+    "Rivaldo",
+    "Samuel Eto'o",
+    "Ronaldo Nazário",
+    "Christian Eriksen"
+   ],
+   "imp": "Rivaldo",
+   "real": "barcelona"
+  },
+  {
+   "tier": "HARD",
+   "club": "arsenal",
+   "cards": [
+    "Dennis Bergkamp",
+    "Olivier Giroud",
+    "Lukas Podolski",
+    "Ruud van Nistelrooy"
+   ],
+   "imp": "Ruud van Nistelrooy",
+   "real": "manutd"
+  },
+  {
+   "tier": "IMPOSSIBLE",
+   "club": "realmadrid",
+   "cards": [
+    "Emmanuel Adebayor",
+    "Dimitar Berbatov",
+    "Klaas-Jan Huntelaar",
+    "Nicolas Anelka"
+   ],
+   "imp": "Dimitar Berbatov",
+   "real": "manutd",
+   "withheld": true
+  }
+ ],
+ "show": {
+  "Rio Ferdinand": [
+   "Rio",
+   "FERDINAND"
+  ],
+  "Virgil van Dijk": [
+   "Virgil",
+   "VAN DIJK"
+  ],
+  "Paul Pogba": [
+   "Paul",
+   "POGBA"
+  ],
+  "Edinson Cavani": [
+   "Edinson",
+   "CAVANI"
+  ],
+  "Andrés Iniesta": [
+   "Andrés",
+   "INIESTA"
+  ],
+  "Robert Lewandowski": [
+   "Robert",
+   "LEWANDOWSKI"
+  ],
+  "Karim Benzema": [
+   "Karim",
+   "BENZEMA"
+  ],
+  "Xavi": [
+   "",
+   "XAVI"
+  ],
+  "Carlos Tevez": [
+   "Carlos",
+   "TEVEZ"
+  ],
+  "Marco van Basten": [
+   "Marco",
+   "VAN BASTEN"
+  ],
+  "Paulo Dybala": [
+   "Paulo",
+   "DYBALA"
+  ],
+  "Arturo Vidal": [
+   "Arturo",
+   "VIDAL"
+  ],
+  "Rivaldo": [
+   "",
+   "RIVALDO"
+  ],
+  "Samuel Eto'o": [
+   "Samuel",
+   "ETO'O"
+  ],
+  "Ronaldo Nazário": [
+   "",
+   "RONALDO"
+  ],
+  "Christian Eriksen": [
+   "Christian",
+   "ERIKSEN"
+  ],
+  "Dennis Bergkamp": [
+   "Dennis",
+   "BERGKAMP"
+  ],
+  "Olivier Giroud": [
+   "Olivier",
+   "GIROUD"
+  ],
+  "Lukas Podolski": [
+   "Lukas",
+   "PODOLSKI"
+  ],
+  "Ruud van Nistelrooy": [
+   "Ruud",
+   "VAN NISTELROOY"
+  ],
+  "Emmanuel Adebayor": [
+   "Emmanuel",
+   "ADEBAYOR"
+  ],
+  "Dimitar Berbatov": [
+   "Dimitar",
+   "BERBATOV"
+  ],
+  "Klaas-Jan Huntelaar": [
+   "Klaas-Jan",
+   "HUNTELAAR"
+  ],
+  "Nicolas Anelka": [
+   "Nicolas",
+   "ANELKA"
+  ]
+ },
+ "display": {
+  "Dimitar Berbatov": {
+   "nation": "Bulgaria",
+   "position": "ATT"
+  },
+  "Lukas Podolski": {
+   "nation": "Germany",
+   "position": "ATT"
+  }
+ },
+ "search": {
+  "Ronaldo Nazário": "Ronaldo Luís Nazário de Lima",
+  "Xavi": "Xavi Hernández"
+ }
+}

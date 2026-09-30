@@ -5,21 +5,36 @@
   "label": "Jude Bellingham",
   "description": "English footballer (born 2003)",
   "dob": "2003-06-29",
-  "ref": "https://www.wikidata.org/wiki/Q66241169#P569"
+  "ref": "https://www.wikidata.org/wiki/Q66241169#P569",
+  "wikipedia": {
+   "title": "Jude Bellingham",
+   "dob": "2003-06-29",
+   "ref": "https://en.wikipedia.org/wiki/Jude_Bellingham"
+  }
  },
  "Luka Modrić": {
   "name": "Luka Modrić",
   "qid": "Q483837",
   "description": "Croatian footballer (born 1985)",
   "dob": "1985-09-09",
-  "ref": "https://www.wikidata.org/wiki/Q483837#P569"
+  "ref": "https://www.wikidata.org/wiki/Q483837#P569",
+  "wikipedia": {
+   "title": "Luka Modrić",
+   "dob": "1985-09-09",
+   "ref": "https://en.wikipedia.org/wiki/Luka_Modri%C4%87"
+  }
  },
  "Lionel Messi": {
   "name": "Lionel Messi",
   "qid": "Q615",
   "description": "Argentine association football player (born 1987)",
   "dob": "1987-06-24",
-  "ref": "https://www.wikidata.org/wiki/Q615#P569"
+  "ref": "https://www.wikidata.org/wiki/Q615#P569",
+  "wikipedia": {
+   "title": "Lionel Messi",
+   "dob": "1987-06-24",
+   "ref": "https://en.wikipedia.org/wiki/Lionel_Messi"
+  }
  },
  "Cristiano Ronaldo": {
   "name": "Cristiano Ronaldo",
@@ -27,14 +42,24 @@
   "label": "Cristiano Ronaldo",
   "description": "Portuguese association football player (born 1985)",
   "dob": "1985-02-05",
-  "ref": "https://www.wikidata.org/wiki/Q11571#P569"
+  "ref": "https://www.wikidata.org/wiki/Q11571#P569",
+  "wikipedia": {
+   "title": "Cristiano Ronaldo",
+   "dob": "1985-02-05",
+   "ref": "https://en.wikipedia.org/wiki/Cristiano_Ronaldo"
+  }
  },
  "Kylian Mbappé": {
   "name": "Kylian Mbappé",
   "qid": "Q21621995",
   "description": "French association football player (born 1998)",
   "dob": "1998-12-20",
-  "ref": "https://www.wikidata.org/wiki/Q21621995#P569"
+  "ref": "https://www.wikidata.org/wiki/Q21621995#P569",
+  "wikipedia": {
+   "title": "Kylian Mbappé",
+   "dob": "1998-12-20",
+   "ref": "https://en.wikipedia.org/wiki/Kylian_Mbapp%C3%A9"
+  }
  },
  "Neymar": {
   "name": "Neymar",
@@ -42,7 +67,12 @@
   "label": "Neymar",
   "description": "Brazilian footballer (born 1992)",
   "dob": "1992-02-05",
-  "ref": "https://www.wikidata.org/wiki/Q142794#P569"
+  "ref": "https://www.wikidata.org/wiki/Q142794#P569",
+  "wikipedia": {
+   "title": "Neymar",
+   "dob": "1992-02-05",
+   "ref": "https://en.wikipedia.org/wiki/Neymar"
+  }
  },
  "Harry Kane": {
   "name": "Harry Kane",
@@ -50,7 +80,12 @@
   "label": "Harry Kane",
   "description": "English association football player (born 1993)",
   "dob": "1993-07-28",
-  "ref": "https://www.wikidata.org/wiki/Q969725#P569"
+  "ref": "https://www.wikidata.org/wiki/Q969725#P569",
+  "wikipedia": {
+   "title": "Harry Kane",
+   "dob": "1993-07-28",
+   "ref": "https://en.wikipedia.org/wiki/Harry_Kane"
+  }
  },
  "Erling Haaland": {
   "name": "Erling Haaland",
@@ -58,7 +93,12 @@
   "label": "Erling Haaland",
   "description": "Norwegian footballer (born 2000)",
   "dob": "2000-07-21",
-  "ref": "https://www.wikidata.org/wiki/Q28967995#P569"
+  "ref": "https://www.wikidata.org/wiki/Q28967995#P569",
+  "wikipedia": {
+   "title": "Erling Haaland",
+   "dob": "2000-07-21",
+   "ref": "https://en.wikipedia.org/wiki/Erling_Haaland"
+  }
  },
  "Robert Lewandowski": {
   "name": "Robert Lewandowski",
@@ -66,7 +106,12 @@
   "label": "Robert Lewandowski",
   "description": "Polish association football player (born 1988)",
   "dob": "1988-08-21",
-  "ref": "https://www.wikidata.org/wiki/Q151269#P569"
+  "ref": "https://www.wikidata.org/wiki/Q151269#P569",
+  "wikipedia": {
+   "title": "Robert Lewandowski",
+   "dob": "1988-08-21",
+   "ref": "https://en.wikipedia.org/wiki/Robert_Lewandowski"
+  }
  },
  "Karim Benzema": {
   "name": "Karim Benzema",
@@ -74,7 +119,12 @@
   "label": "Karim Benzema",
   "description": "French footballer (born 1987)",
   "dob": "1987-12-19",
-  "ref": "https://www.wikidata.org/wiki/Q1912#P569"
+  "ref": "https://www.wikidata.org/wiki/Q1912#P569",
+  "wikipedia": {
+   "title": "Karim Benzema",
+   "dob": "1987-12-19",
+   "ref": "https://en.wikipedia.org/wiki/Karim_Benzema"
+  }
  },
  "Mohamed Salah": {
   "name": "Mohamed Salah",
@@ -82,7 +132,12 @@
   "label": "Mohamed Salah",
   "description": "Egyptian association football player (born 1992)",
   "dob": "1992-06-15",
-  "ref": "https://www.wikidata.org/wiki/Q1354960#P569"
+  "ref": "https://www.wikidata.org/wiki/Q1354960#P569",
+  "wikipedia": {
+   "title": "Mohamed Salah",
+   "dob": "1992-06-15",
+   "ref": "https://en.wikipedia.org/wiki/Mohamed_Salah"
+  }
  },
  "Kevin De Bruyne": {
   "name": "Kevin De Bruyne",
@@ -90,7 +145,12 @@
   "label": "Kevin De Bruyne",
   "description": "Belgian association football player (born 1991)",
   "dob": "1991-06-28",
-  "ref": "https://www.wikidata.org/wiki/Q357984#P569"
+  "ref": "https://www.wikidata.org/wiki/Q357984#P569",
+  "wikipedia": {
+   "title": "Kevin De Bruyne",
+   "dob": "1991-06-28",
+   "ref": "https://en.wikipedia.org/wiki/Kevin_De_Bruyne"
+  }
  },
  "Antoine Griezmann": {
   "name": "Antoine Griezmann",
@@ -98,7 +158,12 @@
   "label": "Antoine Griezmann",
   "description": "French footballer (born 1991)",
   "dob": "1991-03-21",
-  "ref": "https://www.wikidata.org/wiki/Q455462#P569"
+  "ref": "https://www.wikidata.org/wiki/Q455462#P569",
+  "wikipedia": {
+   "title": "Antoine Griezmann",
+   "dob": "1991-03-21",
+   "ref": "https://en.wikipedia.org/wiki/Antoine_Griezmann"
+  }
  },
  "Son Heung-min": {
   "name": "Son Heung-min",
@@ -106,7 +171,12 @@
   "label": "Son Heung-min",
   "description": "South Korean association football player (born 1992)",
   "dob": "1992-07-08",
-  "ref": "https://www.wikidata.org/wiki/Q439722#P569"
+  "ref": "https://www.wikidata.org/wiki/Q439722#P569",
+  "wikipedia": {
+   "title": "Son Heung-min",
+   "dob": "1992-07-08",
+   "ref": "https://en.wikipedia.org/wiki/Son_Heung-min"
+  }
  },
  "Vinícius Júnior": {
   "name": "Vinícius Júnior",
@@ -114,6 +184,3457 @@
   "label": "Vinícius Júnior",
   "description": "Brazilian association football player (born 2000)",
   "dob": "2000-07-12",
-  "ref": "https://www.wikidata.org/wiki/Q28973866#P569"
+  "ref": "https://www.wikidata.org/wiki/Q28973866#P569",
+  "wikipedia": {
+   "title": "Vinícius Júnior",
+   "dob": "2000-07-12",
+   "ref": "https://en.wikipedia.org/wiki/Vin%C3%ADcius_J%C3%BAnior"
+  }
+ },
+ "Lamine Yamal": {
+  "name": "Lamine Yamal",
+  "qid": "Q113704154",
+  "label": "Lamine Yamal",
+  "description": "Spanish association football player (born 2007)",
+  "dob": "2007-07-13",
+  "ref": "https://www.wikidata.org/wiki/Q113704154#P569",
+  "wikipedia": {
+   "title": "Lamine Yamal",
+   "dob": "2007-07-13",
+   "ref": "https://en.wikipedia.org/wiki/Lamine_Yamal"
+  }
+ },
+ "Thomas Müller": {
+  "name": "Thomas Müller",
+  "qid": "Q43666",
+  "label": "Thomas Müller",
+  "description": "German association football player",
+  "dob": "1989-09-13",
+  "ref": "https://www.wikidata.org/wiki/Q43666#P569",
+  "wikipedia": {
+   "title": "Thomas Müller",
+   "dob": "1989-09-13",
+   "ref": "https://en.wikipedia.org/wiki/Thomas_M%C3%BCller"
+  }
+ },
+ "Kenan Yıldız": {
+  "name": "Kenan Yıldız",
+  "qid": "Q113184832",
+  "label": "Kenan Yıldız",
+  "description": "Turkish association football player (born 2005)",
+  "dob": "2005-05-04",
+  "ref": "https://www.wikidata.org/wiki/Q113184832#P569",
+  "wikipedia": {
+   "title": "Kenan Yıldız",
+   "dob": "2005-05-04",
+   "ref": "https://en.wikipedia.org/wiki/Kenan_Y%C4%B1ld%C4%B1z"
+  }
+ },
+ "Cole Palmer": {
+  "name": "Cole Palmer",
+  "qid": "Q99760796",
+  "label": "Cole Palmer",
+  "description": "English footballer (born 2002)",
+  "dob": "2002-05-06",
+  "ref": "https://www.wikidata.org/wiki/Q99760796#P569",
+  "wikipedia": {
+   "title": "Cole Palmer",
+   "dob": "2002-05-06",
+   "ref": "https://en.wikipedia.org/wiki/Cole_Palmer"
+  }
+ },
+ "Toni Kroos": {
+  "name": "Toni Kroos",
+  "qid": "Q131234",
+  "label": "Toni Kroos",
+  "description": "German former football player",
+  "dob": "1990-01-04",
+  "ref": "https://www.wikidata.org/wiki/Q131234#P569",
+  "wikipedia": {
+   "title": "Toni Kroos",
+   "dob": "1990-01-04",
+   "ref": "https://en.wikipedia.org/wiki/Toni_Kroos"
+  }
+ },
+ "Virgil van Dijk": {
+  "name": "Virgil van Dijk",
+  "qid": "Q133903",
+  "label": "Virgil van Dijk",
+  "description": "Dutch association football player (born 1991)",
+  "dob": "1991-07-08",
+  "ref": "https://www.wikidata.org/wiki/Q133903#P569",
+  "wikipedia": {
+   "title": "Virgil van Dijk",
+   "dob": "1991-07-08",
+   "ref": "https://en.wikipedia.org/wiki/Virgil_van_Dijk"
+  }
+ },
+ "Florian Wirtz": {
+  "name": "Florian Wirtz",
+  "qid": "Q94699949",
+  "label": "Florian Wirtz",
+  "description": "German association football player (born 2003)",
+  "dob": "2003-05-03",
+  "ref": "https://www.wikidata.org/wiki/Q94699949#P569",
+  "wikipedia": {
+   "title": "Florian Wirtz",
+   "dob": "2003-05-03",
+   "ref": "https://en.wikipedia.org/wiki/Florian_Wirtz"
+  }
+ },
+ "Pedri": {
+  "name": "Pedri",
+  "qid": "Q66606355",
+  "label": "Pedri",
+  "description": "Spanish association football player",
+  "dob": "2002-11-25",
+  "ref": "https://www.wikidata.org/wiki/Q66606355#P569",
+  "wikipedia": {
+   "title": "Pedri",
+   "dob": "2002-11-25",
+   "ref": "https://en.wikipedia.org/wiki/Pedri"
+  }
+ },
+ "Sadio Mané": {
+  "name": "Sadio Mané",
+  "qid": "Q209942",
+  "label": "Sadio Mané",
+  "description": "Senegalese footballer (born 1992)",
+  "dob": "1992-04-10",
+  "ref": "https://www.wikidata.org/wiki/Q209942#P569",
+  "wikipedia": {
+   "title": "Sadio Mané",
+   "dob": "1992-04-10",
+   "ref": "https://en.wikipedia.org/wiki/Sadio_Man%C3%A9"
+  }
+ },
+ "Declan Rice": {
+  "name": "Declan Rice",
+  "qid": "Q30007142",
+  "label": "Declan Rice",
+  "description": "English footballer (born 1999)",
+  "dob": "1999-01-14",
+  "ref": "https://www.wikidata.org/wiki/Q30007142#P569",
+  "wikipedia": {
+   "title": "Declan Rice",
+   "dob": "1999-01-14",
+   "ref": "https://en.wikipedia.org/wiki/Declan_Rice"
+  }
+ },
+ "Marcus Rashford": {
+  "name": "Marcus Rashford",
+  "qid": "Q22951255",
+  "label": "Marcus Rashford",
+  "description": "English footballer (born 1997)",
+  "dob": "1997-10-31",
+  "ref": "https://www.wikidata.org/wiki/Q22951255#P569",
+  "wikipedia": {
+   "title": "Marcus Rashford",
+   "dob": "1997-10-31",
+   "ref": "https://en.wikipedia.org/wiki/Marcus_Rashford"
+  }
+ },
+ "Jack Grealish": {
+  "name": "Jack Grealish",
+  "qid": "Q16056053",
+  "label": "Jack Grealish",
+  "description": "English association football player (born 1995)",
+  "dob": "1995-09-10",
+  "ref": "https://www.wikidata.org/wiki/Q16056053#P569",
+  "wikipedia": {
+   "title": "Jack Grealish",
+   "dob": "1995-09-10",
+   "ref": "https://en.wikipedia.org/wiki/Jack_Grealish"
+  }
+ },
+ "Romelu Lukaku": {
+  "name": "Romelu Lukaku",
+  "qid": "Q313316",
+  "label": "Romelu Lukaku",
+  "description": "Belgian footballer (born 1993)",
+  "dob": "1993-05-13",
+  "ref": "https://www.wikidata.org/wiki/Q313316#P569",
+  "wikipedia": {
+   "title": "Romelu Lukaku",
+   "dob": "1993-05-13",
+   "ref": "https://en.wikipedia.org/wiki/Romelu_Lukaku"
+  }
+ },
+ "Paul Pogba": {
+  "name": "Paul Pogba",
+  "qid": "Q129027",
+  "label": "Paul Pogba",
+  "description": "French footballer (born 1993)",
+  "dob": "1993-03-15",
+  "ref": "https://www.wikidata.org/wiki/Q129027#P569",
+  "wikipedia": {
+   "title": "Paul Pogba",
+   "dob": "1993-03-15",
+   "ref": "https://en.wikipedia.org/wiki/Paul_Pogba"
+  }
+ },
+ "Victor Osimhen": {
+  "name": "Victor Osimhen",
+  "qid": "Q25253293",
+  "label": "Victor Osimhen",
+  "description": "Nigerian footballer (born 1998)",
+  "dob": "1998-12-29",
+  "ref": "https://www.wikidata.org/wiki/Q25253293#P569",
+  "wikipedia": {
+   "title": "Victor Osimhen",
+   "dob": "1998-12-29",
+   "ref": "https://en.wikipedia.org/wiki/Victor_Osimhen"
+  }
+ },
+ "Alexis Mac Allister": {
+  "name": "Alexis Mac Allister",
+  "qid": "Q33297140",
+  "label": "Alexis Mac Allister",
+  "description": "Argentine association football player (born 1998)",
+  "dob": "1998-12-24",
+  "ref": "https://www.wikidata.org/wiki/Q33297140#P569",
+  "wikipedia": {
+   "title": "Alexis Mac Allister",
+   "dob": "1998-12-24",
+   "ref": "https://en.wikipedia.org/wiki/Alexis_Mac_Allister"
+  }
+ },
+ "Kai Havertz": {
+  "name": "Kai Havertz",
+  "qid": "Q27310755",
+  "label": "Kai Havertz",
+  "description": "German association football player (born 1999)",
+  "dob": "1999-06-11",
+  "ref": "https://www.wikidata.org/wiki/Q27310755#P569",
+  "wikipedia": {
+   "title": "Kai Havertz",
+   "dob": "1999-06-11",
+   "ref": "https://en.wikipedia.org/wiki/Kai_Havertz"
+  }
+ },
+ "Rafael Leão": {
+  "name": "Rafael Leão",
+  "qid": "Q30055335",
+  "label": "Rafael Leão",
+  "description": "Portuguese footballer (born 1999)",
+  "dob": "1999-06-10",
+  "ref": "https://www.wikidata.org/wiki/Q30055335#P569",
+  "wikipedia": {
+   "title": "Rafael Leão",
+   "dob": "1999-06-10",
+   "ref": "https://en.wikipedia.org/wiki/Rafael_Le%C3%A3o"
+  }
+ },
+ "Zlatan Ibrahimović": {
+  "name": "Zlatan Ibrahimović",
+  "qid": "Q46896",
+  "label": "Zlatan Ibrahimović",
+  "description": "Swedish association football player (born 1981)",
+  "dob": "1981-10-03",
+  "ref": "https://www.wikidata.org/wiki/Q46896#P569",
+  "wikipedia": {
+   "title": "Zlatan Ibrahimović",
+   "dob": "1981-10-03",
+   "ref": "https://en.wikipedia.org/wiki/Zlatan_Ibrahimovi%C4%87"
+  }
+ },
+ "Jamal Musiala": {
+  "name": "Jamal Musiala",
+  "qid": "Q96072055",
+  "label": "Jamal Musiala",
+  "description": "German footballer (born 2003)",
+  "dob": "2003-02-26",
+  "ref": "https://www.wikidata.org/wiki/Q96072055#P569",
+  "wikipedia": {
+   "title": "Jamal Musiala",
+   "dob": "2003-02-26",
+   "ref": "https://en.wikipedia.org/wiki/Jamal_Musiala"
+  }
+ },
+ "Michael Olise": {
+  "name": "Michael Olise",
+  "qid": "Q62050484",
+  "label": "Michael Olise",
+  "description": "French footballer (born 2001)",
+  "dob": "2001-12-12",
+  "ref": "https://www.wikidata.org/wiki/Q62050484#P569",
+  "wikipedia": {
+   "title": "Michael Olise",
+   "dob": "2001-12-12",
+   "ref": "https://en.wikipedia.org/wiki/Michael_Olise"
+  }
+ },
+ "Manuel Neuer": {
+  "name": "Manuel Neuer",
+  "qid": "Q107365",
+  "label": "Manuel Neuer",
+  "description": "German association football player (born 1986)",
+  "dob": "1986-03-27",
+  "ref": "https://www.wikidata.org/wiki/Q107365#P569",
+  "wikipedia": {
+   "title": "Manuel Neuer",
+   "dob": "1986-03-27",
+   "ref": "https://en.wikipedia.org/wiki/Manuel_Neuer"
+  }
+ },
+ "Ángel Di María": {
+  "name": "Ángel Di María",
+  "qid": "Q251683",
+  "label": "Ángel Di María",
+  "description": "Argentine footballer (born 1988)",
+  "dob": "1988-02-14",
+  "ref": "https://www.wikidata.org/wiki/Q251683#P569",
+  "wikipedia": {
+   "title": "Ángel Di María",
+   "dob": "1988-02-14",
+   "ref": "https://en.wikipedia.org/wiki/%C3%81ngel_Di_Mar%C3%ADa"
+  }
+ },
+ "Julián Álvarez": {
+  "name": "Julián Álvarez",
+  "qid": "Q59381180",
+  "label": "Julián Alvarez",
+  "description": "Argentine footballer (born 2000)",
+  "dob": "2000-01-31",
+  "ref": "https://www.wikidata.org/wiki/Q59381180#P569",
+  "wikipedia": {
+   "title": "Julián Alvarez",
+   "dob": "2000-01-31",
+   "ref": "https://en.wikipedia.org/wiki/Juli%C3%A1n_Alvarez"
+  }
+ },
+ "Bruno Guimarães": {
+  "name": "Bruno Guimarães",
+  "qid": "Q58323172",
+  "label": "Bruno Guimarães",
+  "description": "Brazilian footballer (born 1997)",
+  "dob": "1997-11-16",
+  "ref": "https://www.wikidata.org/wiki/Q58323172#P569",
+  "wikipedia": {
+   "title": "Bruno Guimarães",
+   "dob": "1997-11-16",
+   "ref": "https://en.wikipedia.org/wiki/Bruno_Guimar%C3%A3es"
+  }
+ },
+ "Sergio Busquets": {
+  "name": "Sergio Busquets",
+  "qid": "Q49704",
+  "label": "Sergio Busquets",
+  "description": "Spanish association football player (born 1988)",
+  "dob": "1988-07-16",
+  "ref": "https://www.wikidata.org/wiki/Q49704#P569",
+  "wikipedia": {
+   "title": "Sergio Busquets",
+   "dob": "1988-07-16",
+   "ref": "https://en.wikipedia.org/wiki/Sergio_Busquets"
+  }
+ },
+ "Casemiro": {
+  "name": "Casemiro",
+  "qid": "Q616664",
+  "label": "Casemiro",
+  "description": "Brazilian association football player",
+  "dob": "1992-02-23",
+  "ref": "https://www.wikidata.org/wiki/Q616664#P569",
+  "wikipedia": {
+   "title": "Casemiro",
+   "dob": "1992-02-23",
+   "ref": "https://en.wikipedia.org/wiki/Casemiro"
+  }
+ },
+ "Enzo Fernández": {
+  "name": "Enzo Fernández",
+  "qid": "Q96105248",
+  "label": "Enzo Fernández",
+  "description": "Argentine footballer (born 2001)",
+  "dob": "2001-01-17",
+  "ref": "https://www.wikidata.org/wiki/Q96105248#P569",
+  "wikipedia": {
+   "title": "Enzo Fernández",
+   "dob": "2001-01-17",
+   "ref": "https://en.wikipedia.org/wiki/Enzo_Fern%C3%A1ndez"
+  }
+ },
+ "Phil Foden": {
+  "name": "Phil Foden",
+  "qid": "Q30729096",
+  "label": "Phil Foden",
+  "description": "English footballer (born 2000)",
+  "dob": "2000-05-28",
+  "ref": "https://www.wikidata.org/wiki/Q30729096#P569",
+  "wikipedia": {
+   "title": "Phil Foden",
+   "dob": "2000-05-28",
+   "ref": "https://en.wikipedia.org/wiki/Phil_Foden"
+  }
+ },
+ "Raheem Sterling": {
+  "name": "Raheem Sterling",
+  "qid": "Q312157",
+  "label": "Raheem Sterling",
+  "description": "English association football player (born 1994)",
+  "dob": "1994-12-08",
+  "ref": "https://www.wikidata.org/wiki/Q312157#P569",
+  "wikipedia": {
+   "title": "Raheem Sterling",
+   "dob": "1994-12-08",
+   "ref": "https://en.wikipedia.org/wiki/Raheem_Sterling"
+  }
+ },
+ "Federico Valverde": {
+  "name": "Federico Valverde",
+  "qid": "Q19509544",
+  "label": "Federico Valverde",
+  "description": "Uruguayan professional footballer (born 1998)",
+  "dob": "1998-07-22",
+  "ref": "https://www.wikidata.org/wiki/Q19509544#P569",
+  "wikipedia": {
+   "title": "Federico Valverde",
+   "dob": "1998-07-22",
+   "ref": "https://en.wikipedia.org/wiki/Federico_Valverde"
+  }
+ },
+ "Rodri": {
+  "name": "Rodri",
+  "qid": "Q20994118",
+  "label": "Rodri",
+  "description": "Spanish association football player (born 1996)",
+  "dob": "1996-06-22",
+  "ref": "https://www.wikidata.org/wiki/Q20994118#P569",
+  "wikipedia": {
+   "title": "Rodri",
+   "dob": "1996-06-22",
+   "ref": "https://en.wikipedia.org/wiki/Rodri"
+  }
+ },
+ "Ashley Cole": {
+  "name": "Ashley Cole",
+  "qid": "Q133556",
+  "label": "Ashley Cole",
+  "description": "English association football player (born 1980)",
+  "dob": "1980-12-20",
+  "ref": "https://www.wikidata.org/wiki/Q133556#P569",
+  "wikipedia": {
+   "title": "Ashley Cole",
+   "dob": "1980-12-20",
+   "ref": "https://en.wikipedia.org/wiki/Ashley_Cole"
+  }
+ },
+ "John Terry": {
+  "name": "John Terry",
+  "qid": "Q83456",
+  "label": "John Terry",
+  "description": "English association football player (born 1980)",
+  "dob": "1980-12-07",
+  "ref": "https://www.wikidata.org/wiki/Q83456#P569",
+  "wikipedia": {
+   "title": "John Terry",
+   "dob": "1980-12-07",
+   "ref": "https://en.wikipedia.org/wiki/John_Terry"
+  }
+ },
+ "Ousmane Dembélé": {
+  "name": "Ousmane Dembélé",
+  "qid": "Q20851003",
+  "label": "Ousmane Dembélé",
+  "description": "French footballer (born 1997)",
+  "dob": "1997-05-15",
+  "ref": "https://www.wikidata.org/wiki/Q20851003#P569",
+  "wikipedia": {
+   "title": "Ousmane Dembélé",
+   "dob": "1997-05-15",
+   "ref": "https://en.wikipedia.org/wiki/Ousmane_Demb%C3%A9l%C3%A9"
+  }
+ },
+ "Rúben Dias": {
+  "name": "Rúben Dias",
+  "qid": "Q21621168",
+  "label": "Rúben Dias",
+  "description": "Portuguese footballer (born 1997)",
+  "dob": "1997-05-14",
+  "ref": "https://www.wikidata.org/wiki/Q21621168#P569",
+  "wikipedia": {
+   "title": "Rúben Dias",
+   "dob": "1997-05-14",
+   "ref": "https://en.wikipedia.org/wiki/R%C3%BAben_Dias"
+  }
+ },
+ "Pelé": {
+  "name": "Pelé",
+  "qid": "Q12897",
+  "label": "Pelé",
+  "description": "Brazilian footballer (1940–2022)",
+  "dob": "1940-10-23",
+  "ref": "https://www.wikidata.org/wiki/Q12897#P569",
+  "wikipedia": {
+   "title": "Pelé",
+   "dob": "1940-10-23",
+   "ref": "https://en.wikipedia.org/wiki/Pel%C3%A9"
+  }
+ },
+ "Diego Maradona": {
+  "name": "Diego Maradona",
+  "qid": "Q17515",
+  "label": "Diego Maradona",
+  "description": "Argentine football player and manager (1960–2020)",
+  "dob": "1960-10-30",
+  "ref": "https://www.wikidata.org/wiki/Q17515#P569",
+  "wikipedia": {
+   "title": "Diego Maradona",
+   "dob": "1960-10-30",
+   "ref": "https://en.wikipedia.org/wiki/Diego_Maradona"
+  }
+ },
+ "Zinedine Zidane": {
+  "name": "Zinedine Zidane",
+  "qid": "Q1835",
+  "label": "Zinedine Zidane",
+  "description": "French association football player and coach",
+  "dob": "1972-06-23",
+  "ref": "https://www.wikidata.org/wiki/Q1835#P569",
+  "wikipedia": {
+   "title": "Zinedine Zidane",
+   "dob": "1972-06-23",
+   "ref": "https://en.wikipedia.org/wiki/Zinedine_Zidane"
+  }
+ },
+ "David Beckham": {
+  "name": "David Beckham",
+  "qid": "Q10520",
+  "description": "English footballer (born 1975)",
+  "dob": "1975-05-02",
+  "ref": "https://www.wikidata.org/wiki/Q10520#P569",
+  "wikipedia": {
+   "title": "David Beckham",
+   "dob": "1975-05-02",
+   "ref": "https://en.wikipedia.org/wiki/David_Beckham"
+  }
+ },
+ "Johan Cruyff": {
+  "name": "Johan Cruyff",
+  "qid": "Q17163",
+  "label": "Johan Cruyff",
+  "description": "Dutch footballer and manager (1947–2016)",
+  "dob": "1947-04-25",
+  "ref": "https://www.wikidata.org/wiki/Q17163#P569",
+  "wikipedia": {
+   "title": "Johan Cruyff",
+   "dob": "1947-04-25",
+   "ref": "https://en.wikipedia.org/wiki/Johan_Cruyff"
+  }
+ },
+ "Ronaldo Nazário": {
+  "name": "Ronaldo Nazário",
+  "qid": "Q529207",
+  "label": "Ronaldo",
+  "description": "Brazilian association football player (born 1976)",
+  "dob": "1976-09-18",
+  "ref": "https://www.wikidata.org/wiki/Q529207#P569",
+  "wikipedia": {
+   "title": "Ronaldo (Brazilian footballer)",
+   "dob": "1976-09-18",
+   "ref": "https://en.wikipedia.org/wiki/Ronaldo_(Brazilian_footballer)"
+  }
+ },
+ "Franz Beckenbauer": {
+  "name": "Franz Beckenbauer",
+  "qid": "Q4457",
+  "label": "Franz Beckenbauer",
+  "description": "German sports official and association football player (1945–2024)",
+  "dob": "1945-09-11",
+  "ref": "https://www.wikidata.org/wiki/Q4457#P569",
+  "wikipedia": {
+   "title": "Franz Beckenbauer",
+   "dob": "1945-09-11",
+   "ref": "https://en.wikipedia.org/wiki/Franz_Beckenbauer"
+  }
+ },
+ "Ronaldinho": {
+  "name": "Ronaldinho",
+  "failed": "wikidata: no footballer entity for \"Ronaldinho\": [\"Mestre-Sala\",\"Brazilian samba musician\",\"Brazilian associaton fooball player (born 1980)\",\"1998 bootleg video"
+ },
+ "Luis Suárez": {
+  "name": "Luis Suárez",
+  "qid": "Q26517",
+  "label": "Luis Suárez",
+  "description": "Uruguayan association football player",
+  "dob": "1987-01-24",
+  "ref": "https://www.wikidata.org/wiki/Q26517#P569",
+  "wikipedia": {
+   "title": "Luis Suárez (Uruguayan footballer)",
+   "dob": "1987-01-24",
+   "ref": "https://en.wikipedia.org/wiki/Luis_Su%C3%A1rez_(Uruguayan_footballer)"
+  }
+ },
+ "Gianluigi Buffon": {
+  "name": "Gianluigi Buffon",
+  "qid": "Q68060",
+  "label": "Gianluigi Buffon",
+  "description": "former Italian footballer (born 1978)",
+  "dob": "1978-01-28",
+  "ref": "https://www.wikidata.org/wiki/Q68060#P569",
+  "wikipedia": {
+   "title": "Gianluigi Buffon",
+   "dob": "1978-01-28",
+   "ref": "https://en.wikipedia.org/wiki/Gianluigi_Buffon"
+  }
+ },
+ "Andrés Iniesta": {
+  "name": "Andrés Iniesta",
+  "qid": "Q43729",
+  "label": "Andrés Iniesta",
+  "description": "Spanish footballer and manager",
+  "dob": "1984-05-11",
+  "ref": "https://www.wikidata.org/wiki/Q43729#P569",
+  "wikipedia": {
+   "title": "Andrés Iniesta",
+   "dob": "1984-05-11",
+   "ref": "https://en.wikipedia.org/wiki/Andr%C3%A9s_Iniesta"
+  }
+ },
+ "Mesut Özil": {
+  "name": "Mesut Özil",
+  "qid": "Q83488",
+  "label": "Mesut Özil",
+  "description": "Turkish-German association football player",
+  "dob": "1988-10-15",
+  "ref": "https://www.wikidata.org/wiki/Q83488#P569",
+  "wikipedia": {
+   "title": "Mesut Özil",
+   "dob": "1988-10-15",
+   "ref": "https://en.wikipedia.org/wiki/Mesut_%C3%96zil"
+  }
+ },
+ "Frank Lampard": {
+  "name": "Frank Lampard",
+  "qid": "Q41533",
+  "label": "Frank Lampard",
+  "description": "English association football player and manager",
+  "dob": "1978-06-20",
+  "ref": "https://www.wikidata.org/wiki/Q41533#P569",
+  "wikipedia": {
+   "title": "Frank Lampard",
+   "dob": "1978-06-20",
+   "ref": "https://en.wikipedia.org/wiki/Frank_Lampard"
+  }
+ },
+ "Michel Platini": {
+  "name": "Michel Platini",
+  "qid": "Q4261",
+  "label": "Michel Platini",
+  "description": "French football player, manager and executive (born 1955)",
+  "dob": "1955-06-21",
+  "ref": "https://www.wikidata.org/wiki/Q4261#P569",
+  "wikipedia": {
+   "title": "Michel Platini",
+   "dob": "1955-06-21",
+   "ref": "https://en.wikipedia.org/wiki/Michel_Platini"
+  }
+ },
+ "Thierry Henry": {
+  "name": "Thierry Henry",
+  "qid": "Q45901",
+  "label": "Thierry Henry",
+  "description": "French association football player and manager (born 1977)",
+  "dob": "1977-08-17",
+  "ref": "https://www.wikidata.org/wiki/Q45901#P569",
+  "wikipedia": {
+   "title": "Thierry Henry",
+   "dob": "1977-08-17",
+   "ref": "https://en.wikipedia.org/wiki/Thierry_Henry"
+  }
+ },
+ "Wayne Rooney": {
+  "name": "Wayne Rooney",
+  "qid": "Q266613",
+  "label": "Wayne Rooney",
+  "description": "English footballer and manager",
+  "dob": "1985-10-24",
+  "ref": "https://www.wikidata.org/wiki/Q266613#P569",
+  "wikipedia": {
+   "title": "Wayne Rooney",
+   "dob": "1985-10-24",
+   "ref": "https://en.wikipedia.org/wiki/Wayne_Rooney"
+  }
+ },
+ "Miroslav Klose": {
+  "name": "Miroslav Klose",
+  "failed": "wikidata: no footballer entity for \"Miroslav Klose\": [\"German professional football manager and former player\"]"
+ },
+ "Iker Casillas": {
+  "name": "Iker Casillas",
+  "qid": "Q11584",
+  "label": "Iker Casillas",
+  "description": "Spanish association football player",
+  "dob": "1981-05-20",
+  "ref": "https://www.wikidata.org/wiki/Q11584#P569",
+  "wikipedia": {
+   "title": "Iker Casillas",
+   "dob": "1981-05-20",
+   "ref": "https://en.wikipedia.org/wiki/Iker_Casillas"
+  }
+ },
+ "Kaká": {
+  "name": "Kaká",
+  "qid": "Q531814",
+  "label": "Kaká",
+  "description": "Brazilian association football player (born 1982)",
+  "dob": "1982-04-22",
+  "ref": "https://www.wikidata.org/wiki/Q531814#P569",
+  "wikipedia": {
+   "title": "Kaká",
+   "dob": "1982-04-22",
+   "ref": "https://en.wikipedia.org/wiki/Kak%C3%A1"
+  }
+ },
+ "Robin van Persie": {
+  "name": "Robin van Persie",
+  "qid": "Q2339",
+  "label": "Robin van Persie",
+  "description": "Dutch association football player and manager",
+  "dob": "1983-08-06",
+  "ref": "https://www.wikidata.org/wiki/Q2339#P569",
+  "wikipedia": {
+   "title": "Robin van Persie",
+   "dob": "1983-08-06",
+   "ref": "https://en.wikipedia.org/wiki/Robin_van_Persie"
+  }
+ },
+ "Xavi": {
+  "name": "Xavi",
+  "failed": "wikidata: no footballer entity for \"Xavi\": [\"male given name\",\"male given name\",\"researcher\",\"researcher\",\"particle physicist in Germany\"]"
+ },
+ "Steven Gerrard": {
+  "name": "Steven Gerrard",
+  "qid": "Q459830",
+  "label": "Steven Gerrard",
+  "description": "English association football player and manager (born 1980)",
+  "dob": "1980-05-30",
+  "ref": "https://www.wikidata.org/wiki/Q459830#P569",
+  "wikipedia": {
+   "title": "Steven Gerrard",
+   "dob": "1980-05-30",
+   "ref": "https://en.wikipedia.org/wiki/Steven_Gerrard"
+  }
+ },
+ "Eusébio": {
+  "name": "Eusébio",
+  "qid": "Q162043",
+  "label": "Eusébio",
+  "description": "Portuguese footballer (1942–2014)",
+  "dob": "1942-01-25",
+  "ref": "https://www.wikidata.org/wiki/Q162043#P569",
+  "wikipedia": {
+   "title": "Eusébio",
+   "dob": "1942-01-25",
+   "ref": "https://en.wikipedia.org/wiki/Eus%C3%A9bio"
+  }
+ },
+ "Pep Guardiola": {
+  "name": "Pep Guardiola",
+  "qid": "Q696463",
+  "label": "Néstor Gorosito",
+  "description": "Argentine association football player",
+  "dob": "1964-05-14",
+  "ref": "https://www.wikidata.org/wiki/Q696463#P569",
+  "wikipedia": {
+   "title": "Néstor Gorosito",
+   "dob": "1964-05-14",
+   "ref": "https://en.wikipedia.org/wiki/N%C3%A9stor_Gorosito"
+  }
+ },
+ "George Weah": {
+  "name": "George Weah",
+  "failed": "wikidata: no footballer entity for \"George Weah\": [\"President of Liberia from 2018 to 2024 (born 1966)\",\"Liberian-American soccer player\",\"Wikimedia disambiguat"
+ },
+ "Gareth Bale": {
+  "name": "Gareth Bale",
+  "qid": "Q184586",
+  "label": "Gareth Bale",
+  "description": "Welsh association football player",
+  "dob": "1989-07-16",
+  "ref": "https://www.wikidata.org/wiki/Q184586#P569",
+  "wikipedia": {
+   "title": "Gareth Bale",
+   "dob": "1989-07-16",
+   "ref": "https://en.wikipedia.org/wiki/Gareth_Bale"
+  }
+ },
+ "Ferenc Puskás": {
+  "name": "Ferenc Puskás",
+  "qid": "Q482931",
+  "label": "Ferenc Puskás",
+  "description": "Hungarian association football player (1927–2006)",
+  "dob": "1927-04-01",
+  "ref": "https://www.wikidata.org/wiki/Q482931#P569",
+  "wikipedia": {
+   "title": "Ferenc Puskás",
+   "dob": "1927-04-01",
+   "ref": "https://en.wikipedia.org/wiki/Ferenc_Pusk%C3%A1s"
+  }
+ },
+ "Eden Hazard": {
+  "name": "Eden Hazard",
+  "qid": "Q214204",
+  "label": "Eden Hazard",
+  "description": "Belgian footballer (born 1991)",
+  "dob": "1991-01-07",
+  "ref": "https://www.wikidata.org/wiki/Q214204#P569",
+  "wikipedia": {
+   "title": "Eden Hazard",
+   "dob": "1991-01-07",
+   "ref": "https://en.wikipedia.org/wiki/Eden_Hazard"
+  }
+ },
+ "Arjen Robben": {
+  "name": "Arjen Robben",
+  "qid": "Q43913",
+  "label": "Arjen Robben",
+  "description": "Dutch association football player (born 1984)",
+  "dob": "1984-01-23",
+  "ref": "https://www.wikidata.org/wiki/Q43913#P569",
+  "wikipedia": {
+   "title": "Arjen Robben",
+   "dob": "1984-01-23",
+   "ref": "https://en.wikipedia.org/wiki/Arjen_Robben"
+  }
+ },
+ "Gerard Piqué": {
+  "name": "Gerard Piqué",
+  "qid": "Q17507",
+  "label": "Gerard Piqué",
+  "description": "Spanish association football player (born 1987)",
+  "dob": "1987-02-02",
+  "ref": "https://www.wikidata.org/wiki/Q17507#P569",
+  "wikipedia": {
+   "title": "Gerard Piqué",
+   "dob": "1987-02-02",
+   "ref": "https://en.wikipedia.org/wiki/Gerard_Piqu%C3%A9"
+  }
+ },
+ "Samuel Eto'o": {
+  "name": "Samuel Eto'o",
+  "qid": "Q1255625",
+  "label": "Samuel Eto'o",
+  "description": "Cameroonian association football player",
+  "dob": "1981-03-10",
+  "ref": "https://www.wikidata.org/wiki/Q1255625#P569",
+  "wikipedia": {
+   "title": "Samuel Eto'o",
+   "dob": "1981-03-10",
+   "ref": "https://en.wikipedia.org/wiki/Samuel_Eto'o"
+  }
+ },
+ "Lukas Podolski": {
+  "name": "Lukas Podolski",
+  "qid": "Q134976",
+  "label": "Lukas Podolski",
+  "description": "German association football player (born 1985)",
+  "dob": "1985-06-04",
+  "ref": "https://www.wikidata.org/wiki/Q134976#P569",
+  "wikipedia": {
+   "title": "Lukas Podolski",
+   "dob": "1985-06-04",
+   "ref": "https://en.wikipedia.org/wiki/Lukas_Podolski"
+  }
+ },
+ "Fernando Torres": {
+  "name": "Fernando Torres",
+  "qid": "Q42731",
+  "label": "Fernando Torres",
+  "description": "Spanish footballer and manager (born 1984)",
+  "dob": "1984-03-20",
+  "ref": "https://www.wikidata.org/wiki/Q42731#P569",
+  "wikipedia": {
+   "title": "Fernando Torres",
+   "dob": "1984-03-20",
+   "ref": "https://en.wikipedia.org/wiki/Fernando_Torres"
+  }
+ },
+ "Gerd Müller": {
+  "name": "Gerd Müller",
+  "qid": "Q43744",
+  "label": "Gerd Müller",
+  "description": "German footballer (1945–2021)",
+  "dob": "1945-11-03",
+  "ref": "https://www.wikidata.org/wiki/Q43744#P569",
+  "wikipedia": {
+   "title": "Gerd Müller",
+   "dob": "1945-11-03",
+   "ref": "https://en.wikipedia.org/wiki/Gerd_M%C3%BCller"
+  }
+ },
+ "Didier Drogba": {
+  "name": "Didier Drogba",
+  "qid": "Q48892",
+  "label": "Didier Drogba",
+  "description": "Ivorian and French association football player",
+  "dob": "1978-03-11",
+  "ref": "https://www.wikidata.org/wiki/Q48892#P569",
+  "wikipedia": {
+   "title": "Didier Drogba",
+   "dob": "1978-03-11",
+   "ref": "https://en.wikipedia.org/wiki/Didier_Drogba"
+  }
+ },
+ "Roberto Baggio": {
+  "name": "Roberto Baggio",
+  "qid": "Q67964",
+  "label": "Roberto Baggio",
+  "description": "Italian association football player (born 1967)",
+  "dob": "1967-02-18",
+  "ref": "https://www.wikidata.org/wiki/Q67964#P569",
+  "wikipedia": {
+   "title": "Roberto Baggio",
+   "dob": "1967-02-18",
+   "ref": "https://en.wikipedia.org/wiki/Roberto_Baggio"
+  }
+ },
+ "Sergio Agüero": {
+  "name": "Sergio Agüero",
+  "qid": "Q119562",
+  "label": "Sergio Agüero",
+  "description": "Argentine association football player",
+  "dob": "1988-06-02",
+  "ref": "https://www.wikidata.org/wiki/Q119562#P569",
+  "wikipedia": {
+   "title": "Sergio Agüero",
+   "dob": "1988-06-02",
+   "ref": "https://en.wikipedia.org/wiki/Sergio_Ag%C3%BCero"
+  }
+ },
+ "Alfredo Di Stéfano": {
+  "name": "Alfredo Di Stéfano",
+  "qid": "Q164546",
+  "label": "Alfredo Di Stéfano",
+  "description": "Argentine-Spanish association football player (1926–2014)",
+  "dob": "1926-07-04",
+  "ref": "https://www.wikidata.org/wiki/Q164546#P569",
+  "wikipedia": {
+   "title": "Alfredo Di Stéfano",
+   "dob": "1926-07-04",
+   "ref": "https://en.wikipedia.org/wiki/Alfredo_Di_St%C3%A9fano"
+  }
+ },
+ "James Rodríguez": {
+  "name": "James Rodríguez",
+  "qid": "Q368441",
+  "label": "James Rodríguez",
+  "description": "Colombian association football player",
+  "dob": "1991-07-12",
+  "ref": "https://www.wikidata.org/wiki/Q368441#P569",
+  "wikipedia": {
+   "title": "James Rodríguez",
+   "dob": "1991-07-12",
+   "ref": "https://en.wikipedia.org/wiki/James_Rodr%C3%ADguez"
+  }
+ },
+ "Sergio Ramos": {
+  "name": "Sergio Ramos",
+  "qid": "Q483309",
+  "description": "Spanish association football player (born 1986)",
+  "dob": "1986-03-30",
+  "ref": "https://www.wikidata.org/wiki/Q483309#P569",
+  "wikipedia": {
+   "title": "Sergio Ramos",
+   "dob": "1986-03-30",
+   "ref": "https://en.wikipedia.org/wiki/Sergio_Ramos"
+  }
+ },
+ "Mario Balotelli": {
+  "name": "Mario Balotelli",
+  "qid": "Q129700",
+  "label": "Mario Balotelli",
+  "description": "Italian association football player",
+  "dob": "1990-08-12",
+  "ref": "https://www.wikidata.org/wiki/Q129700#P569",
+  "wikipedia": {
+   "title": "Mario Balotelli",
+   "dob": "1990-08-12",
+   "ref": "https://en.wikipedia.org/wiki/Mario_Balotelli"
+  }
+ },
+ "Olivier Giroud": {
+  "name": "Olivier Giroud",
+  "qid": "Q1911",
+  "label": "Olivier Giroud",
+  "description": "French footballer (born 1986)",
+  "dob": "1986-09-30",
+  "ref": "https://www.wikidata.org/wiki/Q1911#P569",
+  "wikipedia": {
+   "title": "Olivier Giroud",
+   "dob": "1986-09-30",
+   "ref": "https://en.wikipedia.org/wiki/Olivier_Giroud"
+  }
+ },
+ "Franck Ribéry": {
+  "name": "Franck Ribéry",
+  "qid": "Q1918",
+  "label": "Franck Ribéry",
+  "description": "French footballer (born 1983)",
+  "dob": "1983-04-07",
+  "ref": "https://www.wikidata.org/wiki/Q1918#P569",
+  "wikipedia": {
+   "title": "Franck Ribéry",
+   "dob": "1983-04-07",
+   "ref": "https://en.wikipedia.org/wiki/Franck_Rib%C3%A9ry"
+  }
+ },
+ "Marco van Basten": {
+  "name": "Marco van Basten",
+  "qid": "Q483629",
+  "label": "Marco van Basten",
+  "description": "Dutch association football player and manager (born 1964)",
+  "dob": "1964-10-31",
+  "ref": "https://www.wikidata.org/wiki/Q483629#P569",
+  "wikipedia": {
+   "title": "Marco van Basten",
+   "dob": "1964-10-31",
+   "ref": "https://en.wikipedia.org/wiki/Marco_van_Basten"
+  }
+ },
+ "Thibaut Courtois": {
+  "name": "Thibaut Courtois",
+  "qid": "Q73360",
+  "label": "Thibaut Courtois",
+  "description": "Belgian association football player (born 1992)",
+  "dob": "1992-05-11",
+  "ref": "https://www.wikidata.org/wiki/Q73360#P569",
+  "wikipedia": {
+   "title": "Thibaut Courtois",
+   "dob": "1992-05-11",
+   "ref": "https://en.wikipedia.org/wiki/Thibaut_Courtois"
+  }
+ },
+ "Diego Forlán": {
+  "name": "Diego Forlán",
+  "qid": "Q261534",
+  "label": "Diego Forlán",
+  "description": "Uruguayan association football player and manager (born 1979)",
+  "dob": "1979-05-19",
+  "ref": "https://www.wikidata.org/wiki/Q261534#P569",
+  "wikipedia": {
+   "title": "Diego Forlán",
+   "dob": "1979-05-19",
+   "ref": "https://en.wikipedia.org/wiki/Diego_Forl%C3%A1n"
+  }
+ },
+ "Xabi Alonso": {
+  "name": "Xabi Alonso",
+  "failed": "wikidata: no footballer entity for \"Xabi Alonso\": [\"Spanish football manager and player\",\"Wikinews article\"]"
+ },
+ "Andriy Shevchenko": {
+  "name": "Andriy Shevchenko",
+  "qid": "Q41244",
+  "label": "Andriy Shevchenko",
+  "description": "Ukrainian association football player",
+  "dob": "1976-09-29",
+  "ref": "https://www.wikidata.org/wiki/Q41244#P569",
+  "wikipedia": {
+   "title": "Andriy Shevchenko",
+   "dob": "1976-09-29",
+   "ref": "https://en.wikipedia.org/wiki/Andriy_Shevchenko"
+  }
+ },
+ "Philipp Lahm": {
+  "name": "Philipp Lahm",
+  "qid": "Q43682",
+  "label": "Philipp Lahm",
+  "description": "German association football player",
+  "dob": "1983-11-11",
+  "ref": "https://www.wikidata.org/wiki/Q43682#P569",
+  "wikipedia": {
+   "title": "Philipp Lahm",
+   "dob": "1983-11-11",
+   "ref": "https://en.wikipedia.org/wiki/Philipp_Lahm"
+  }
+ },
+ "Cesc Fàbregas": {
+  "name": "Cesc Fàbregas",
+  "qid": "Q17499",
+  "label": "Cesc Fàbregas",
+  "description": "Spanish professional footballer player and manager",
+  "dob": "1987-05-04",
+  "ref": "https://www.wikidata.org/wiki/Q17499#P569",
+  "wikipedia": {
+   "title": "Cesc Fàbregas",
+   "dob": "1987-05-04",
+   "ref": "https://en.wikipedia.org/wiki/Cesc_F%C3%A0bregas"
+  }
+ },
+ "Lothar Matthäus": {
+  "name": "Lothar Matthäus",
+  "qid": "Q36386",
+  "label": "Lothar Matthäus",
+  "description": "German association football player, manager, and pundit (born 1961)",
+  "dob": "1961-03-21",
+  "ref": "https://www.wikidata.org/wiki/Q36386#P569",
+  "wikipedia": {
+   "title": "Lothar Matthäus",
+   "dob": "1961-03-21",
+   "ref": "https://en.wikipedia.org/wiki/Lothar_Matth%C3%A4us"
+  }
+ },
+ "Alessandro Del Piero": {
+  "name": "Alessandro Del Piero",
+  "qid": "Q624",
+  "label": "Alessandro Del Piero",
+  "description": "Italian association football player",
+  "dob": "1974-11-09",
+  "ref": "https://www.wikidata.org/wiki/Q624#P569",
+  "wikipedia": {
+   "title": "Alessandro Del Piero",
+   "dob": "1974-11-09",
+   "ref": "https://en.wikipedia.org/wiki/Alessandro_Del_Piero"
+  }
+ },
+ "David Villa": {
+  "name": "David Villa",
+  "qid": "Q83006",
+  "label": "David Villa",
+  "description": "Spanish footballer",
+  "dob": "1981-12-03",
+  "ref": "https://www.wikidata.org/wiki/Q83006#P569",
+  "wikipedia": {
+   "title": "David Villa",
+   "dob": "1981-12-03",
+   "ref": "https://en.wikipedia.org/wiki/David_Villa"
+  }
+ },
+ "Edinson Cavani": {
+  "name": "Edinson Cavani",
+  "qid": "Q167790",
+  "label": "Edinson Cavani",
+  "description": "Uruguayan association football player",
+  "dob": "1987-02-14",
+  "ref": "https://www.wikidata.org/wiki/Q167790#P569",
+  "wikipedia": {
+   "title": "Edinson Cavani",
+   "dob": "1987-02-14",
+   "ref": "https://en.wikipedia.org/wiki/Edinson_Cavani"
+  }
+ },
+ "Dani Alves": {
+  "name": "Dani Alves",
+  "qid": "Q172720",
+  "label": "Daniel Alves",
+  "description": "Brazilian footballer",
+  "dob": "1983-05-06",
+  "ref": "https://www.wikidata.org/wiki/Q172720#P569",
+  "wikipedia": {
+   "title": "Dani Alves",
+   "dob": "1983-05-06",
+   "ref": "https://en.wikipedia.org/wiki/Dani_Alves"
+  }
+ },
+ "Roberto Carlos": {
+  "name": "Roberto Carlos",
+  "qid": "Q429039",
+  "label": "Roberto Carlos",
+  "description": "Brazilian footballer",
+  "dob": "1973-04-10",
+  "ref": "https://www.wikidata.org/wiki/Q429039#P569",
+  "wikipedia": {
+   "title": "Roberto Carlos",
+   "dob": "1973-04-10",
+   "ref": "https://en.wikipedia.org/wiki/Roberto_Carlos"
+  }
+ },
+ "Andrea Pirlo": {
+  "name": "Andrea Pirlo",
+  "qid": "Q43926",
+  "label": "Andrea Pirlo",
+  "description": "Italian association football player and manager",
+  "dob": "1979-05-19",
+  "ref": "https://www.wikidata.org/wiki/Q43926#P569",
+  "wikipedia": {
+   "title": "Andrea Pirlo",
+   "dob": "1979-05-19",
+   "ref": "https://en.wikipedia.org/wiki/Andrea_Pirlo"
+  }
+ },
+ "Fabio Cannavaro": {
+  "name": "Fabio Cannavaro",
+  "qid": "Q102027",
+  "label": "Fabio Cannavaro",
+  "description": "Italian association football player and manager",
+  "dob": "1973-09-13",
+  "ref": "https://www.wikidata.org/wiki/Q102027#P569",
+  "wikipedia": {
+   "title": "Fabio Cannavaro",
+   "dob": "1973-09-13",
+   "ref": "https://en.wikipedia.org/wiki/Fabio_Cannavaro"
+  }
+ },
+ "Raúl": {
+  "name": "Raúl",
+  "qid": "Q4599",
+  "label": "Raúl Albiol",
+  "description": "Spanish association football player",
+  "dob": "1985-09-04",
+  "ref": "https://www.wikidata.org/wiki/Q4599#P569",
+  "wikipedia": {
+   "title": "Raúl Albiol",
+   "dob": "1985-09-04",
+   "ref": "https://en.wikipedia.org/wiki/Ra%C3%BAl_Albiol"
+  }
+ },
+ "Hugo Lloris": {
+  "name": "Hugo Lloris",
+  "qid": "Q1907",
+  "label": "Hugo Lloris",
+  "description": "French footballer (born 1986)",
+  "dob": "1986-12-26",
+  "ref": "https://www.wikidata.org/wiki/Q1907#P569",
+  "wikipedia": {
+   "title": "Hugo Lloris",
+   "dob": "1986-12-26",
+   "ref": "https://en.wikipedia.org/wiki/Hugo_Lloris"
+  }
+ },
+ "Ivan Rakitić": {
+  "name": "Ivan Rakitić",
+  "qid": "Q115453",
+  "label": "Ivan Rakitić",
+  "description": "Croatian footballer",
+  "dob": "1988-03-10",
+  "ref": "https://www.wikidata.org/wiki/Q115453#P569",
+  "wikipedia": {
+   "title": "Ivan Rakitić",
+   "dob": "1988-03-10",
+   "ref": "https://en.wikipedia.org/wiki/Ivan_Rakiti%C4%87"
+  }
+ },
+ "Oliver Kahn": {
+  "name": "Oliver Kahn",
+  "qid": "Q131261",
+  "label": "Oliver Kahn",
+  "description": "German association football player (born 1969)",
+  "dob": "1969-06-15",
+  "ref": "https://www.wikidata.org/wiki/Q131261#P569",
+  "wikipedia": {
+   "title": "Oliver Kahn",
+   "dob": "1969-06-15",
+   "ref": "https://en.wikipedia.org/wiki/Oliver_Kahn"
+  }
+ },
+ "David de Gea": {
+  "name": "David de Gea",
+  "qid": "Q150268",
+  "label": "David de Gea",
+  "description": "Spanish association football player",
+  "dob": "1990-11-07",
+  "ref": "https://www.wikidata.org/wiki/Q150268#P569",
+  "wikipedia": {
+   "title": "David de Gea",
+   "dob": "1990-11-07",
+   "ref": "https://en.wikipedia.org/wiki/David_de_Gea"
+  }
+ },
+ "Paolo Maldini": {
+  "name": "Paolo Maldini",
+  "qid": "Q483027",
+  "label": "Paolo Maldini",
+  "description": "Italian association football player (born 1968)",
+  "dob": "1968-06-26",
+  "ref": "https://www.wikidata.org/wiki/Q483027#P569",
+  "wikipedia": {
+   "title": "Paolo Maldini",
+   "dob": "1968-06-26",
+   "ref": "https://en.wikipedia.org/wiki/Paolo_Maldini"
+  }
+ },
+ "Michael Ballack": {
+  "name": "Michael Ballack",
+  "qid": "Q11948",
+  "label": "Michael Ballack",
+  "description": "German association football player (born 1976)",
+  "dob": "1976-09-26",
+  "ref": "https://www.wikidata.org/wiki/Q11948#P569",
+  "wikipedia": {
+   "title": "Michael Ballack",
+   "dob": "1976-09-26",
+   "ref": "https://en.wikipedia.org/wiki/Michael_Ballack"
+  }
+ },
+ "Eric Cantona": {
+  "name": "Eric Cantona",
+  "qid": "Q170328",
+  "label": "Eric Cantona",
+  "description": "French footballer and actor (born 1966)",
+  "dob": "1966-05-24",
+  "ref": "https://www.wikidata.org/wiki/Q170328#P569",
+  "wikipedia": {
+   "title": "Eric Cantona",
+   "dob": "1966-05-24",
+   "ref": "https://en.wikipedia.org/wiki/Eric_Cantona"
+  }
+ },
+ "Romário": {
+  "name": "Romário",
+  "qid": "Q178649",
+  "label": "Romário",
+  "description": "Former Brazilian footballer, politician and Senator of Brazil since 2015",
+  "dob": "1966-01-29",
+  "ref": "https://www.wikidata.org/wiki/Q178649#P569",
+  "wikipedia": {
+   "title": "Romário",
+   "dob": "1966-01-29",
+   "ref": "https://en.wikipedia.org/wiki/Rom%C3%A1rio"
+  }
+ },
+ "Jordi Alba": {
+  "name": "Jordi Alba",
+  "qid": "Q187159",
+  "label": "Jordi Alba",
+  "description": "Spanish association football player",
+  "dob": "1989-03-21",
+  "ref": "https://www.wikidata.org/wiki/Q187159#P569",
+  "wikipedia": {
+   "title": "Jordi Alba",
+   "dob": "1989-03-21",
+   "ref": "https://en.wikipedia.org/wiki/Jordi_Alba"
+  }
+ },
+ "Marcelo Vieira": {
+  "name": "Marcelo Vieira",
+  "qid": "Q38136",
+  "label": "Marcelo Vieira",
+  "description": "Brazilian association football player",
+  "dob": "1988-05-12",
+  "ref": "https://www.wikidata.org/wiki/Q38136#P569",
+  "wikipedia": {
+   "title": "Marcelo (footballer, born 1988)",
+   "dob": "1988-05-12",
+   "ref": "https://en.wikipedia.org/wiki/Marcelo_(footballer%2C_born_1988)"
+  }
+ },
+ "Luís Figo": {
+  "name": "Luís Figo",
+  "qid": "Q483145",
+  "label": "Luís Figo",
+  "description": "Portuguese football player (born 1972)",
+  "dob": "1972-11-04",
+  "ref": "https://www.wikidata.org/wiki/Q483145#P569",
+  "wikipedia": {
+   "title": "Luís Figo",
+   "dob": "1972-11-04",
+   "ref": "https://en.wikipedia.org/wiki/Lu%C3%ADs_Figo"
+  }
+ },
+ "Michael Owen": {
+  "name": "Michael Owen",
+  "qid": "Q128829",
+  "label": "Michael Owen",
+  "description": "English association football player",
+  "dob": "1979-12-14",
+  "ref": "https://www.wikidata.org/wiki/Q128829#P569",
+  "wikipedia": {
+   "title": "Michael Owen",
+   "dob": "1979-12-14",
+   "ref": "https://en.wikipedia.org/wiki/Michael_Owen"
+  }
+ },
+ "Garrincha": {
+  "name": "Garrincha",
+  "qid": "Q180642",
+  "label": "Garrincha",
+  "description": "Brazilian association football player (1933–1983)",
+  "dob": "1933-10-28",
+  "ref": "https://www.wikidata.org/wiki/Q180642#P569",
+  "wikipedia": {
+   "title": "Garrincha",
+   "dob": "1933-10-28",
+   "ref": "https://en.wikipedia.org/wiki/Garrincha"
+  }
+ },
+ "Rivaldo": {
+  "name": "Rivaldo",
+  "qid": "Q483577",
+  "label": "Rivaldo",
+  "description": "Brazilian association football player",
+  "dob": "1972-04-19",
+  "ref": "https://www.wikidata.org/wiki/Q483577#P569",
+  "wikipedia": {
+   "title": "Rivaldo",
+   "dob": "1972-04-19",
+   "ref": "https://en.wikipedia.org/wiki/Rivaldo"
+  }
+ },
+ "Jérôme Boateng": {
+  "name": "Jérôme Boateng",
+  "qid": "Q151260",
+  "label": "Jérôme Boateng",
+  "description": "German association football player",
+  "dob": "1988-09-03",
+  "ref": "https://www.wikidata.org/wiki/Q151260#P569",
+  "wikipedia": {
+   "title": "Jérôme Boateng",
+   "dob": "1988-09-03",
+   "ref": "https://en.wikipedia.org/wiki/J%C3%A9r%C3%B4me_Boateng"
+  }
+ },
+ "Hernán Crespo": {
+  "name": "Hernán Crespo",
+  "qid": "Q160206",
+  "label": "Hernán Crespo",
+  "description": "Argentine footballer",
+  "dob": "1975-07-05",
+  "ref": "https://www.wikidata.org/wiki/Q160206#P569",
+  "wikipedia": {
+   "title": "Hernán Crespo",
+   "dob": "1975-07-05",
+   "ref": "https://en.wikipedia.org/wiki/Hern%C3%A1n_Crespo"
+  }
+ },
+ "Paulo Dybala": {
+  "name": "Paulo Dybala",
+  "qid": "Q166317",
+  "label": "Paulo Dybala",
+  "description": "Argentine association football player (born 1993)",
+  "dob": "1993-11-15",
+  "ref": "https://www.wikidata.org/wiki/Q166317#P569",
+  "wikipedia": {
+   "title": "Paulo Dybala",
+   "dob": "1993-11-15",
+   "ref": "https://en.wikipedia.org/wiki/Paulo_Dybala"
+  }
+ },
+ "Raphaël Varane": {
+  "name": "Raphaël Varane",
+  "qid": "Q489039",
+  "label": "Raphaël Varane",
+  "description": "French footballer (born 1993)",
+  "dob": "1993-04-25",
+  "ref": "https://www.wikidata.org/wiki/Q489039#P569",
+  "wikipedia": {
+   "title": "Raphaël Varane",
+   "dob": "1993-04-25",
+   "ref": "https://en.wikipedia.org/wiki/Rapha%C3%ABl_Varane"
+  }
+ },
+ "Riyad Mahrez": {
+  "name": "Riyad Mahrez",
+  "qid": "Q8338725",
+  "label": "Riyad Mahrez",
+  "description": "Algerian footballer (born 1991)",
+  "dob": "1991-02-21",
+  "ref": "https://www.wikidata.org/wiki/Q8338725#P569",
+  "wikipedia": {
+   "title": "Riyad Mahrez",
+   "dob": "1991-02-21",
+   "ref": "https://en.wikipedia.org/wiki/Riyad_Mahrez"
+  }
+ },
+ "Wesley Sneijder": {
+  "name": "Wesley Sneijder",
+  "qid": "Q124086",
+  "label": "Wesley Sneijder",
+  "description": "Dutch association football player (born 1984)",
+  "dob": "1984-06-09",
+  "ref": "https://www.wikidata.org/wiki/Q124086#P569",
+  "wikipedia": {
+   "title": "Wesley Sneijder",
+   "dob": "1984-06-09",
+   "ref": "https://en.wikipedia.org/wiki/Wesley_Sneijder"
+  }
+ },
+ "Marco Reus": {
+  "name": "Marco Reus",
+  "qid": "Q152377",
+  "label": "Marco Reus",
+  "description": "German association football player (born 1989)",
+  "dob": "1989-05-31",
+  "ref": "https://www.wikidata.org/wiki/Q152377#P569",
+  "wikipedia": {
+   "title": "Marco Reus",
+   "dob": "1989-05-31",
+   "ref": "https://en.wikipedia.org/wiki/Marco_Reus"
+  }
+ },
+ "Nemanja Vidić": {
+  "name": "Nemanja Vidić",
+  "qid": "Q163564",
+  "label": "Nemanja Vidić",
+  "description": "Serbian association football player (born 1981)",
+  "dob": "1981-10-21",
+  "ref": "https://www.wikidata.org/wiki/Q163564#P569",
+  "wikipedia": {
+   "title": "Nemanja Vidić",
+   "dob": "1981-10-21",
+   "ref": "https://en.wikipedia.org/wiki/Nemanja_Vidi%C4%87"
+  }
+ },
+ "Dennis Bergkamp": {
+  "name": "Dennis Bergkamp",
+  "qid": "Q185389",
+  "label": "Dennis Bergkamp",
+  "description": "Dutch association football player (born 1969)",
+  "dob": "1969-05-10",
+  "ref": "https://www.wikidata.org/wiki/Q185389#P569",
+  "wikipedia": {
+   "title": "Dennis Bergkamp",
+   "dob": "1969-05-10",
+   "ref": "https://en.wikipedia.org/wiki/Dennis_Bergkamp"
+  }
+ },
+ "Edwin van der Sar": {
+  "name": "Edwin van der Sar",
+  "qid": "Q482955",
+  "label": "Edwin van der Sar",
+  "description": "Dutch association football player (born 1970)",
+  "dob": "1970-10-29",
+  "ref": "https://www.wikidata.org/wiki/Q482955#P569",
+  "wikipedia": {
+   "title": "Edwin van der Sar",
+   "dob": "1970-10-29",
+   "ref": "https://en.wikipedia.org/wiki/Edwin_van_der_Sar"
+  }
+ },
+ "Didier Deschamps": {
+  "name": "Didier Deschamps",
+  "qid": "Q508711",
+  "label": "Didier Deschamps",
+  "description": "French association football player and coach",
+  "dob": "1968-10-15",
+  "ref": "https://www.wikidata.org/wiki/Q508711#P569",
+  "wikipedia": {
+   "title": "Didier Deschamps",
+   "dob": "1968-10-15",
+   "ref": "https://en.wikipedia.org/wiki/Didier_Deschamps"
+  }
+ },
+ "Jürgen Klinsmann": {
+  "name": "Jürgen Klinsmann",
+  "qid": "Q57079",
+  "label": "Jürgen Klinsmann",
+  "description": "German footballer and manager",
+  "dob": "1964-07-30",
+  "ref": "https://www.wikidata.org/wiki/Q57079#P569",
+  "wikipedia": {
+   "title": "Jürgen Klinsmann",
+   "dob": "1964-07-30",
+   "ref": "https://en.wikipedia.org/wiki/J%C3%BCrgen_Klinsmann"
+  }
+ },
+ "Robinho": {
+  "name": "Robinho",
+  "qid": "Q58441",
+  "label": "Robinho",
+  "description": "Brazilian former association football player (born 1984)",
+  "dob": "1984-01-25",
+  "ref": "https://www.wikidata.org/wiki/Q58441#P569",
+  "wikipedia": {
+   "title": "Robinho",
+   "dob": "1984-01-25",
+   "ref": "https://en.wikipedia.org/wiki/Robinho"
+  }
+ },
+ "Mario Götze": {
+  "name": "Mario Götze",
+  "qid": "Q104454",
+  "label": "Mario Götze",
+  "description": "German association football player",
+  "dob": "1992-06-03",
+  "ref": "https://www.wikidata.org/wiki/Q104454#P569",
+  "wikipedia": {
+   "title": "Mario Götze",
+   "dob": "1992-06-03",
+   "ref": "https://en.wikipedia.org/wiki/Mario_G%C3%B6tze"
+  }
+ },
+ "David Silva": {
+  "name": "David Silva",
+  "qid": "Q161069",
+  "label": "David Silva",
+  "description": "Spanish association football player",
+  "dob": "1986-01-08",
+  "ref": "https://www.wikidata.org/wiki/Q161069#P569",
+  "wikipedia": {
+   "title": "David Silva",
+   "dob": "1986-01-08",
+   "ref": "https://en.wikipedia.org/wiki/David_Silva"
+  }
+ },
+ "N'Golo Kanté": {
+  "name": "N'Golo Kanté",
+  "qid": "Q16665941",
+  "label": "N'Golo Kanté",
+  "description": "French footballer (born 1991)",
+  "dob": "1991-03-29",
+  "ref": "https://www.wikidata.org/wiki/Q16665941#P569",
+  "wikipedia": {
+   "title": "N'Golo Kanté",
+   "dob": "1991-03-29",
+   "ref": "https://en.wikipedia.org/wiki/N'Golo_Kant%C3%A9"
+  }
+ },
+ "Diego Godín": {
+  "name": "Diego Godín",
+  "qid": "Q214903",
+  "label": "Diego Godín",
+  "description": "Uruguayan association football player (born 1986)",
+  "dob": "1986-02-16",
+  "ref": "https://www.wikidata.org/wiki/Q214903#P569",
+  "wikipedia": {
+   "title": "Diego Godín",
+   "dob": "1986-02-16",
+   "ref": "https://en.wikipedia.org/wiki/Diego_God%C3%ADn"
+  }
+ },
+ "Jordan Henderson": {
+  "name": "Jordan Henderson",
+  "qid": "Q273715",
+  "label": "Jordan Henderson",
+  "description": "English association football player (born 1990)",
+  "dob": "1990-06-17",
+  "ref": "https://www.wikidata.org/wiki/Q273715#P569",
+  "wikipedia": {
+   "title": "Jordan Henderson",
+   "dob": "1990-06-17",
+   "ref": "https://en.wikipedia.org/wiki/Jordan_Henderson"
+  }
+ },
+ "Bastian Schweinsteiger": {
+  "name": "Bastian Schweinsteiger",
+  "qid": "Q44298",
+  "label": "Bastian Schweinsteiger",
+  "description": "German association football player",
+  "dob": "1984-08-01",
+  "ref": "https://www.wikidata.org/wiki/Q44298#P569",
+  "wikipedia": {
+   "title": "Bastian Schweinsteiger",
+   "dob": "1984-08-01",
+   "ref": "https://en.wikipedia.org/wiki/Bastian_Schweinsteiger"
+  }
+ },
+ "Pepe": {
+  "name": "Pepe",
+  "qid": "Q485697",
+  "label": "Pepe",
+  "description": "Portuguese association football player",
+  "dob": "1984-02-26",
+  "ref": "https://www.wikidata.org/wiki/Q485697#P569",
+  "wikipedia": {
+   "title": "Pepe (footballer, born February 1983)",
+   "dob": "1983-02-26",
+   "ref": "https://en.wikipedia.org/wiki/Pepe_(footballer%2C_born_February_1983)"
+  }
+ },
+ "Carlos Tevez": {
+  "name": "Carlos Tevez",
+  "qid": "Q50600",
+  "label": "Carlos Tevez",
+  "description": "Argentine association football player",
+  "dob": "1984-02-05",
+  "ref": "https://www.wikidata.org/wiki/Q50600#P569",
+  "wikipedia": {
+   "title": "Carlos Tevez",
+   "dob": "1984-02-05",
+   "ref": "https://en.wikipedia.org/wiki/Carlos_Tevez"
+  }
+ },
+ "Mats Hummels": {
+  "name": "Mats Hummels",
+  "qid": "Q110053",
+  "label": "Mats Hummels",
+  "description": "German footballer (born 1988)",
+  "dob": "1988-12-16",
+  "ref": "https://www.wikidata.org/wiki/Q110053#P569",
+  "wikipedia": {
+   "title": "Mats Hummels",
+   "dob": "1988-12-16",
+   "ref": "https://en.wikipedia.org/wiki/Mats_Hummels"
+  }
+ },
+ "Pepe Reina": {
+  "name": "Pepe Reina",
+  "qid": "Q163666",
+  "label": "Pepe Reina",
+  "description": "Spanish association football player",
+  "dob": "1982-08-31",
+  "ref": "https://www.wikidata.org/wiki/Q163666#P569",
+  "wikipedia": {
+   "title": "Pepe Reina",
+   "dob": "1982-08-31",
+   "ref": "https://en.wikipedia.org/wiki/Pepe_Reina"
+  }
+ },
+ "Yaya Touré": {
+  "name": "Yaya Touré",
+  "qid": "Q184277",
+  "label": "Yaya Touré",
+  "description": "Ivorian association football player",
+  "dob": "1983-05-13",
+  "ref": "https://www.wikidata.org/wiki/Q184277#P569",
+  "wikipedia": {
+   "title": "Yaya Touré",
+   "dob": "1983-05-13",
+   "ref": "https://en.wikipedia.org/wiki/Yaya_Tour%C3%A9"
+  }
+ },
+ "Mario Mandžukić": {
+  "name": "Mario Mandžukić",
+  "qid": "Q187171",
+  "label": "Mario Mandžukić",
+  "description": "Croatian association football player (born 1986)",
+  "dob": "1986-05-21",
+  "ref": "https://www.wikidata.org/wiki/Q187171#P569",
+  "wikipedia": {
+   "title": "Mario Mandžukić",
+   "dob": "1986-05-21",
+   "ref": "https://en.wikipedia.org/wiki/Mario_Mand%C5%BEuki%C4%87"
+  }
+ },
+ "Keisuke Honda": {
+  "name": "Keisuke Honda",
+  "qid": "Q202054",
+  "label": "Keisuke Honda",
+  "description": "Japanese association football player (born 1986)",
+  "dob": "1986-06-13",
+  "ref": "https://www.wikidata.org/wiki/Q202054#P569",
+  "wikipedia": {
+   "title": "Keisuke Honda",
+   "dob": "1986-06-13",
+   "ref": "https://en.wikipedia.org/wiki/Keisuke_Honda"
+  }
+ },
+ "Philippe Coutinho": {
+  "name": "Philippe Coutinho",
+  "qid": "Q311872",
+  "label": "Philippe Coutinho",
+  "description": "Brazilian association football player",
+  "dob": "1992-06-12",
+  "ref": "https://www.wikidata.org/wiki/Q311872#P569",
+  "wikipedia": {
+   "title": "Philippe Coutinho",
+   "dob": "1992-06-12",
+   "ref": "https://en.wikipedia.org/wiki/Philippe_Coutinho"
+  }
+ },
+ "Ruud van Nistelrooy": {
+  "name": "Ruud van Nistelrooy",
+  "qid": "Q45626",
+  "label": "Ruud van Nistelrooy",
+  "description": "Dutch association football player and coach",
+  "dob": "1976-07-01",
+  "ref": "https://www.wikidata.org/wiki/Q45626#P569",
+  "wikipedia": {
+   "title": "Ruud van Nistelrooy",
+   "dob": "1976-07-01",
+   "ref": "https://en.wikipedia.org/wiki/Ruud_van_Nistelrooy"
+  }
+ },
+ "Petr Čech": {
+  "name": "Petr Čech",
+  "qid": "Q483137",
+  "label": "Petr Čech",
+  "description": "Czech footballer (born 1982)",
+  "dob": "1982-05-20",
+  "ref": "https://www.wikidata.org/wiki/Q483137#P569",
+  "wikipedia": {
+   "title": "Petr Čech",
+   "dob": "1982-05-20",
+   "ref": "https://en.wikipedia.org/wiki/Petr_%C4%8Cech"
+  }
+ },
+ "Alan Shearer": {
+  "name": "Alan Shearer",
+  "qid": "Q483583",
+  "label": "Alan Shearer",
+  "description": "English footballer",
+  "dob": "1970-08-13",
+  "ref": "https://www.wikidata.org/wiki/Q483583#P569",
+  "wikipedia": {
+   "title": "Alan Shearer",
+   "dob": "1970-08-13",
+   "ref": "https://en.wikipedia.org/wiki/Alan_Shearer"
+  }
+ },
+ "Gonzalo Higuaín": {
+  "name": "Gonzalo Higuaín",
+  "qid": "Q483846",
+  "label": "Gonzalo Higuaín",
+  "description": "Argentine association football player",
+  "dob": "1987-12-10",
+  "ref": "https://www.wikidata.org/wiki/Q483846#P569",
+  "wikipedia": {
+   "title": "Gonzalo Higuaín",
+   "dob": "1987-12-10",
+   "ref": "https://en.wikipedia.org/wiki/Gonzalo_Higua%C3%ADn"
+  }
+ },
+ "Sami Khedira": {
+  "name": "Sami Khedira",
+  "qid": "Q54094",
+  "label": "Sami Khedira",
+  "description": "German association football player",
+  "dob": "1987-04-04",
+  "ref": "https://www.wikidata.org/wiki/Q54094#P569",
+  "wikipedia": {
+   "title": "Sami Khedira",
+   "dob": "1987-04-04",
+   "ref": "https://en.wikipedia.org/wiki/Sami_Khedira"
+  }
+ },
+ "Javier Mascherano": {
+  "name": "Javier Mascherano",
+  "qid": "Q161571",
+  "label": "Javier Mascherano",
+  "description": "Argentine association football player and manager",
+  "dob": "1984-06-08",
+  "ref": "https://www.wikidata.org/wiki/Q161571#P569",
+  "wikipedia": {
+   "title": "Javier Mascherano",
+   "dob": "1984-06-08",
+   "ref": "https://en.wikipedia.org/wiki/Javier_Mascherano"
+  }
+ },
+ "Juan Mata": {
+  "name": "Juan Mata",
+  "qid": "Q168740",
+  "label": "Juan Mata Pata",
+  "description": "Spanish association football player (born 1988)",
+  "dob": "1988-04-28",
+  "ref": "https://www.wikidata.org/wiki/Q168740#P569",
+  "wikipedia": {
+   "title": "Juan Mata",
+   "dob": "1988-04-28",
+   "ref": "https://en.wikipedia.org/wiki/Juan_Mata"
+  }
+ },
+ "Ruud Gullit": {
+  "name": "Ruud Gullit",
+  "qid": "Q173972",
+  "label": "Ruud Gullit",
+  "description": "Dutch association football player and manager",
+  "dob": "1962-09-01",
+  "ref": "https://www.wikidata.org/wiki/Q173972#P569",
+  "wikipedia": {
+   "title": "Ruud Gullit",
+   "dob": "1962-09-01",
+   "ref": "https://en.wikipedia.org/wiki/Ruud_Gullit"
+  }
+ },
+ "Lilian Thuram": {
+  "name": "Lilian Thuram",
+  "qid": "Q180326",
+  "label": "Lilian Thuram",
+  "description": "French footballer (born 1972)",
+  "dob": "1972-01-01",
+  "ref": "https://www.wikidata.org/wiki/Q180326#P569",
+  "wikipedia": {
+   "title": "Lilian Thuram",
+   "dob": "1972-01-01",
+   "ref": "https://en.wikipedia.org/wiki/Lilian_Thuram"
+  }
+ },
+ "Alisson Becker": {
+  "name": "Alisson Becker",
+  "qid": "Q18237361",
+  "label": "Alisson Becker",
+  "description": "Brazilian association football player",
+  "dob": "1992-10-02",
+  "ref": "https://www.wikidata.org/wiki/Q18237361#P569",
+  "wikipedia": {
+   "title": "Alisson Becker",
+   "dob": "1992-10-02",
+   "ref": "https://en.wikipedia.org/wiki/Alisson_Becker"
+  }
+ },
+ "Arturo Vidal": {
+  "name": "Arturo Vidal",
+  "qid": "Q192671",
+  "label": "Arturo Vidal",
+  "description": "Chilean association football player",
+  "dob": "1987-05-22",
+  "ref": "https://www.wikidata.org/wiki/Q192671#P569",
+  "wikipedia": {
+   "title": "Arturo Vidal",
+   "dob": "1987-05-22",
+   "ref": "https://en.wikipedia.org/wiki/Arturo_Vidal"
+  }
+ },
+ "Zico": {
+  "name": "Zico",
+  "qid": "Q47526",
+  "label": "Zico",
+  "description": "Brazilian association football player and manager",
+  "dob": "1953-03-03",
+  "ref": "https://www.wikidata.org/wiki/Q47526#P569",
+  "wikipedia": {
+   "title": "Zico (footballer)",
+   "dob": "1953-03-03",
+   "ref": "https://en.wikipedia.org/wiki/Zico_(footballer)"
+  }
+ },
+ "Víctor Valdés": {
+  "name": "Víctor Valdés",
+  "qid": "Q47548",
+  "label": "Víctor Valdés",
+  "description": "Spanish association football player",
+  "dob": "1982-01-14",
+  "ref": "https://www.wikidata.org/wiki/Q47548#P569",
+  "wikipedia": {
+   "title": "Víctor Valdés",
+   "dob": "1982-01-14",
+   "ref": "https://en.wikipedia.org/wiki/V%C3%ADctor_Vald%C3%A9s"
+  }
+ },
+ "Nani": {
+  "name": "Nani",
+  "qid": "Q482947",
+  "label": "Nani",
+  "description": "Portuguese association football player",
+  "dob": "1986-11-17",
+  "ref": "https://www.wikidata.org/wiki/Q482947#P569",
+  "wikipedia": {
+   "title": "Nani (footballer)",
+   "dob": "1986-11-17",
+   "ref": "https://en.wikipedia.org/wiki/Nani_(footballer)"
+  }
+ },
+ "Rio Ferdinand": {
+  "name": "Rio Ferdinand",
+  "qid": "Q483417",
+  "label": "Rio Ferdinand",
+  "description": "English association football player (born 1978)",
+  "dob": "1978-11-07",
+  "ref": "https://www.wikidata.org/wiki/Q483417#P569",
+  "wikipedia": {
+   "title": "Rio Ferdinand",
+   "dob": "1978-11-07",
+   "ref": "https://en.wikipedia.org/wiki/Rio_Ferdinand"
+  }
+ },
+ "Alexis Sánchez": {
+  "name": "Alexis Sánchez",
+  "qid": "Q180553",
+  "label": "Alexis Sánchez",
+  "description": "Chilean footballer (born 1988)",
+  "dob": "1988-12-19",
+  "ref": "https://www.wikidata.org/wiki/Q180553#P569",
+  "wikipedia": {
+   "title": "Alexis Sánchez",
+   "dob": "1988-12-19",
+   "ref": "https://en.wikipedia.org/wiki/Alexis_S%C3%A1nchez"
+  }
+ },
+ "David Luiz": {
+  "name": "David Luiz",
+  "qid": "Q193706",
+  "label": "David Luiz",
+  "description": "Brazilian association football player",
+  "dob": "1987-04-22",
+  "ref": "https://www.wikidata.org/wiki/Q193706#P569",
+  "wikipedia": {
+   "title": "David Luiz",
+   "dob": "1987-04-22",
+   "ref": "https://en.wikipedia.org/wiki/David_Luiz"
+  }
+ },
+ "Thiago Silva": {
+  "name": "Thiago Silva",
+  "qid": "Q210453",
+  "label": "Thiago Silva",
+  "description": "Brazilian association football player",
+  "dob": "1984-09-22",
+  "ref": "https://www.wikidata.org/wiki/Q210453#P569",
+  "wikipedia": {
+   "title": "Thiago Silva",
+   "dob": "1984-09-22",
+   "ref": "https://en.wikipedia.org/wiki/Thiago_Silva"
+  }
+ },
+ "Pierre-Emerick Aubameyang": {
+  "name": "Pierre-Emerick Aubameyang",
+  "qid": "Q44977",
+  "label": "Pierre-Emerick Aubameyang",
+  "description": "Gabonese-French footballer (born 1989)",
+  "dob": "1989-06-18",
+  "ref": "https://www.wikidata.org/wiki/Q44977#P569",
+  "wikipedia": {
+   "title": "Pierre-Emerick Aubameyang",
+   "dob": "1989-06-18",
+   "ref": "https://en.wikipedia.org/wiki/Pierre-Emerick_Aubameyang"
+  }
+ },
+ "Diego Costa": {
+  "name": "Diego Costa",
+  "qid": "Q459707",
+  "label": "Diego Costa",
+  "description": "Brazilian association football player",
+  "dob": "1988-10-07",
+  "ref": "https://www.wikidata.org/wiki/Q459707#P569",
+  "wikipedia": {
+   "title": "Diego Costa",
+   "dob": "1988-10-07",
+   "ref": "https://en.wikipedia.org/wiki/Diego_Costa"
+  }
+ },
+ "Giorgio Chiellini": {
+  "name": "Giorgio Chiellini",
+  "qid": "Q80306",
+  "label": "Giorgio Chiellini",
+  "description": "Italian sports executive and former association football player",
+  "dob": "1984-08-14",
+  "ref": "https://www.wikidata.org/wiki/Q80306#P569",
+  "wikipedia": {
+   "title": "Giorgio Chiellini",
+   "dob": "1984-08-14",
+   "ref": "https://en.wikipedia.org/wiki/Giorgio_Chiellini"
+  }
+ },
+ "Hidetoshi Nakata": {
+  "name": "Hidetoshi Nakata",
+  "qid": "Q128725",
+  "label": "Hidetoshi Nakata",
+  "description": "Japanese association football player",
+  "dob": "1977-01-22",
+  "ref": "https://www.wikidata.org/wiki/Q128725#P569",
+  "wikipedia": {
+   "title": "Hidetoshi Nakata",
+   "dob": "1977-01-22",
+   "ref": "https://en.wikipedia.org/wiki/Hidetoshi_Nakata"
+  }
+ },
+ "Ivan Perišić": {
+  "name": "Ivan Perišić",
+  "qid": "Q161054",
+  "label": "Ivan Perišić",
+  "description": "Croatian footballer (born 1989)",
+  "dob": "1989-02-02",
+  "ref": "https://www.wikidata.org/wiki/Q161054#P569",
+  "wikipedia": {
+   "title": "Ivan Perišić",
+   "dob": "1989-02-02",
+   "ref": "https://en.wikipedia.org/wiki/Ivan_Peri%C5%A1i%C4%87"
+  }
+ },
+ "Hristo Stoichkov": {
+  "name": "Hristo Stoichkov",
+  "qid": "Q187125",
+  "label": "Hristo Stoichkov",
+  "description": "Bulgarian footballer and manager (born 1966)",
+  "dob": "1966-02-08",
+  "ref": "https://www.wikidata.org/wiki/Q187125#P569",
+  "wikipedia": {
+   "title": "Hristo Stoichkov",
+   "dob": "1966-02-08",
+   "ref": "https://en.wikipedia.org/wiki/Hristo_Stoichkov"
+  }
+ },
+ "Aaron Ramsey": {
+  "name": "Aaron Ramsey",
+  "qid": "Q213427",
+  "label": "Aaron Ramsey",
+  "description": "Welsh association football player and manager (born 1990)",
+  "dob": "1990-12-26",
+  "ref": "https://www.wikidata.org/wiki/Q213427#P569",
+  "wikipedia": {
+   "title": "Aaron Ramsey",
+   "dob": "1990-12-26",
+   "ref": "https://en.wikipedia.org/wiki/Aaron_Ramsey"
+  }
+ },
+ "Mario Gómez": {
+  "name": "Mario Gómez",
+  "qid": "Q45766",
+  "label": "Mario Gómez",
+  "description": "German-Spanish association football player (born 1985)",
+  "dob": "1985-07-10",
+  "ref": "https://www.wikidata.org/wiki/Q45766#P569",
+  "wikipedia": {
+   "title": "Mario Gómez",
+   "dob": "1985-07-10",
+   "ref": "https://en.wikipedia.org/wiki/Mario_G%C3%B3mez"
+  }
+ },
+ "Keylor Navas": {
+  "name": "Keylor Navas",
+  "qid": "Q969423",
+  "label": "Keylor Navas",
+  "description": "Costa Rican association football player",
+  "dob": "1986-12-15",
+  "ref": "https://www.wikidata.org/wiki/Q969423#P569",
+  "wikipedia": {
+   "title": "Keylor Navas",
+   "dob": "1986-12-15",
+   "ref": "https://en.wikipedia.org/wiki/Keylor_Navas"
+  }
+ },
+ "Michael Laudrup": {
+  "name": "Michael Laudrup",
+  "qid": "Q188720",
+  "label": "Michael Laudrup",
+  "description": "Danish association football player and coach",
+  "dob": "1964-06-15",
+  "ref": "https://www.wikidata.org/wiki/Q188720#P569",
+  "wikipedia": {
+   "title": "Michael Laudrup",
+   "dob": "1964-06-15",
+   "ref": "https://en.wikipedia.org/wiki/Michael_Laudrup"
+  }
+ },
+ "Wojciech Szczęsny": {
+  "name": "Wojciech Szczęsny",
+  "qid": "Q188997",
+  "label": "Wojciech Szczęsny",
+  "description": "Polish association football player",
+  "dob": "1990-04-18",
+  "ref": "https://www.wikidata.org/wiki/Q188997#P569",
+  "wikipedia": {
+   "title": "Wojciech Szczęsny",
+   "dob": "1990-04-18",
+   "ref": "https://en.wikipedia.org/wiki/Wojciech_Szcz%C4%99sny"
+  }
+ },
+ "Diogo Jota": {
+  "name": "Diogo Jota",
+  "qid": "Q19518278",
+  "label": "Diogo Jota",
+  "description": "Portuguese  footballer (1996-2025)",
+  "dob": "1996-12-04",
+  "ref": "https://www.wikidata.org/wiki/Q19518278#P569",
+  "wikipedia": {
+   "title": "Diogo Jota",
+   "dob": "1996-12-04",
+   "ref": "https://en.wikipedia.org/wiki/Diogo_Jota"
+  }
+ },
+ "Xherdan Shaqiri": {
+  "name": "Xherdan Shaqiri",
+  "qid": "Q252190",
+  "label": "Xherdan Shaqiri",
+  "description": "Swiss association football player",
+  "dob": "1991-10-10",
+  "ref": "https://www.wikidata.org/wiki/Q252190#P569",
+  "wikipedia": {
+   "title": "Xherdan Shaqiri",
+   "dob": "1991-10-10",
+   "ref": "https://en.wikipedia.org/wiki/Xherdan_Shaqiri"
+  }
+ },
+ "Achraf Hakimi": {
+  "name": "Achraf Hakimi",
+  "qid": "Q26932598",
+  "label": "Achraf Hakimi",
+  "description": "Moroccan-Spanish footballer (born 1998)",
+  "dob": "1998-11-04",
+  "ref": "https://www.wikidata.org/wiki/Q26932598#P569",
+  "wikipedia": {
+   "title": "Achraf Hakimi",
+   "dob": "1998-11-04",
+   "ref": "https://en.wikipedia.org/wiki/Achraf_Hakimi"
+  }
+ },
+ "Patrick Vieira": {
+  "name": "Patrick Vieira",
+  "qid": "Q46347",
+  "label": "Patrick Vieira",
+  "description": "French association football player and coach",
+  "dob": "1976-06-23",
+  "ref": "https://www.wikidata.org/wiki/Q46347#P569",
+  "wikipedia": {
+   "title": "Patrick Vieira",
+   "dob": "1976-06-23",
+   "ref": "https://en.wikipedia.org/wiki/Patrick_Vieira"
+  }
+ },
+ "Andrey Arshavin": {
+  "name": "Andrey Arshavin",
+  "qid": "Q47230",
+  "label": "Andrey Arshavin",
+  "description": "Russian association football player",
+  "dob": "1981-05-29",
+  "ref": "https://www.wikidata.org/wiki/Q47230#P569",
+  "wikipedia": {
+   "title": "Andrey Arshavin",
+   "dob": "1981-05-29",
+   "ref": "https://en.wikipedia.org/wiki/Andrey_Arshavin"
+  }
+ },
+ "Arda Turan": {
+  "name": "Arda Turan",
+  "qid": "Q487459",
+  "label": "Arda Turan",
+  "description": "Turkish association football player (born 1987)",
+  "dob": "1987-01-30",
+  "ref": "https://www.wikidata.org/wiki/Q487459#P569",
+  "wikipedia": {
+   "title": "Arda Turan",
+   "dob": "1987-01-30",
+   "ref": "https://en.wikipedia.org/wiki/Arda_Turan"
+  }
+ },
+ "Javier Zanetti": {
+  "name": "Javier Zanetti",
+  "qid": "Q52876",
+  "label": "Javier Zanetti",
+  "description": "Argentine association football player (born 1973)",
+  "dob": "1973-08-10",
+  "ref": "https://www.wikidata.org/wiki/Q52876#P569",
+  "wikipedia": {
+   "title": "Javier Zanetti",
+   "dob": "1973-08-10",
+   "ref": "https://en.wikipedia.org/wiki/Javier_Zanetti"
+  }
+ },
+ "Roberto Firmino": {
+  "name": "Roberto Firmino",
+  "qid": "Q602525",
+  "label": "Roberto Firmino",
+  "description": "Brazilian association football player",
+  "dob": "1991-10-02",
+  "ref": "https://www.wikidata.org/wiki/Q602525#P569",
+  "wikipedia": {
+   "title": "Roberto Firmino",
+   "dob": "1991-10-02",
+   "ref": "https://en.wikipedia.org/wiki/Roberto_Firmino"
+  }
+ },
+ "Ashley Young": {
+  "name": "Ashley Young",
+  "qid": "Q10602",
+  "label": "Ashley Young",
+  "description": "English association football player (born 1985)",
+  "dob": "1985-07-09",
+  "ref": "https://www.wikidata.org/wiki/Q10602#P569",
+  "wikipedia": {
+   "title": "Ashley Young",
+   "dob": "1985-07-09",
+   "ref": "https://en.wikipedia.org/wiki/Ashley_Young"
+  }
+ },
+ "Shinji Kagawa": {
+  "name": "Shinji Kagawa",
+  "qid": "Q154708",
+  "label": "Shinji Kagawa",
+  "description": "Japanese association football player",
+  "dob": "1989-03-17",
+  "ref": "https://www.wikidata.org/wiki/Q154708#P569",
+  "wikipedia": {
+   "title": "Shinji Kagawa",
+   "dob": "1989-03-17",
+   "ref": "https://en.wikipedia.org/wiki/Shinji_Kagawa"
+  }
+ },
+ "Marc-André ter Stegen": {
+  "name": "Marc-André ter Stegen",
+  "qid": "Q160472",
+  "label": "Marc-André ter Stegen",
+  "description": "German association football player",
+  "dob": "1992-04-30",
+  "ref": "https://www.wikidata.org/wiki/Q160472#P569",
+  "wikipedia": {
+   "title": "Marc-André ter Stegen",
+   "dob": "1992-04-30",
+   "ref": "https://en.wikipedia.org/wiki/Marc-Andr%C3%A9_ter_Stegen"
+  }
+ },
+ "Harry Maguire": {
+  "name": "Harry Maguire",
+  "qid": "Q165772",
+  "description": "English association football player (born 1993)",
+  "dob": "1993-03-05",
+  "ref": "https://www.wikidata.org/wiki/Q165772#P569",
+  "wikipedia": {
+   "title": "Harry Maguire",
+   "dob": "1993-03-05",
+   "ref": "https://en.wikipedia.org/wiki/Harry_Maguire"
+  }
+ },
+ "Frank Rijkaard": {
+  "name": "Frank Rijkaard",
+  "qid": "Q169098",
+  "label": "Frank Rijkaard",
+  "description": "Dutch association football player and manager",
+  "dob": "1962-09-30",
+  "ref": "https://www.wikidata.org/wiki/Q169098#P569",
+  "wikipedia": {
+   "title": "Frank Rijkaard",
+   "dob": "1962-09-30",
+   "ref": "https://en.wikipedia.org/wiki/Frank_Rijkaard"
+  }
+ },
+ "Nicolas Anelka": {
+  "name": "Nicolas Anelka",
+  "failed": "wikidata: no footballer entity for \"Nicolas Anelka\": [\"French football manager (born 1979)\",null]"
+ },
+ "Leonardo Bonucci": {
+  "name": "Leonardo Bonucci",
+  "qid": "Q208050",
+  "label": "Leonardo Bonucci",
+  "description": "Italian association football player",
+  "dob": "1987-05-01",
+  "ref": "https://www.wikidata.org/wiki/Q208050#P569",
+  "wikipedia": {
+   "title": "Leonardo Bonucci",
+   "dob": "1987-05-01",
+   "ref": "https://en.wikipedia.org/wiki/Leonardo_Bonucci"
+  }
+ },
+ "Dunga": {
+  "name": "Dunga",
+  "qid": "Q215890",
+  "label": "Dunga",
+  "description": "Brazilian association football player and manager (born 1963)",
+  "dob": "1963-10-31",
+  "ref": "https://www.wikidata.org/wiki/Q215890#P569",
+  "wikipedia": {
+   "title": "Dunga",
+   "dob": "1963-10-31",
+   "ref": "https://en.wikipedia.org/wiki/Dunga"
+  }
+ },
+ "Klaas-Jan Huntelaar": {
+  "name": "Klaas-Jan Huntelaar",
+  "qid": "Q26069",
+  "label": "Klaas-Jan Huntelaar",
+  "description": "Dutch association football player (born 1983)",
+  "dob": "1983-08-12",
+  "ref": "https://www.wikidata.org/wiki/Q26069#P569",
+  "wikipedia": {
+   "title": "Klaas-Jan Huntelaar",
+   "dob": "1983-08-12",
+   "ref": "https://en.wikipedia.org/wiki/Klaas-Jan_Huntelaar"
+  }
+ },
+ "Emmanuel Adebayor": {
+  "name": "Emmanuel Adebayor",
+  "failed": "wikidata: no footballer entity for \"Emmanuel Adebayor\": [\"Togolese soccer player\"]"
+ },
+ "Álvaro Morata": {
+  "name": "Álvaro Morata",
+  "qid": "Q48770",
+  "label": "Álvaro Morata",
+  "description": "Spanish footballer",
+  "dob": "1992-10-23",
+  "ref": "https://www.wikidata.org/wiki/Q48770#P569",
+  "wikipedia": {
+   "title": "Álvaro Morata",
+   "dob": "1992-10-23",
+   "ref": "https://en.wikipedia.org/wiki/%C3%81lvaro_Morata"
+  }
+ },
+ "Deco": {
+  "name": "Deco",
+  "qid": "Q659634",
+  "label": "Deco",
+  "description": "Portuguese footballer (born 1977)",
+  "dob": "1977-08-27",
+  "ref": "https://www.wikidata.org/wiki/Q659634#P569",
+  "wikipedia": {
+   "title": "Deco",
+   "dob": "1977-08-27",
+   "ref": "https://en.wikipedia.org/wiki/Deco"
+  }
+ },
+ "Edin Džeko": {
+  "name": "Edin Džeko",
+  "qid": "Q153786",
+  "label": "Edin Džeko",
+  "description": "Bosnian association football player",
+  "dob": "1986-03-17",
+  "ref": "https://www.wikidata.org/wiki/Q153786#P569",
+  "wikipedia": {
+   "title": "Edin Džeko",
+   "dob": "1986-03-17",
+   "ref": "https://en.wikipedia.org/wiki/Edin_D%C5%BEeko"
+  }
+ },
+ "Javier Hernández": {
+  "name": "Javier Hernández",
+  "qid": "Q165125",
+  "label": "Javier Hernández",
+  "description": "Mexican association football player (b. 1988)",
+  "dob": "1988-06-01",
+  "ref": "https://www.wikidata.org/wiki/Q165125#P569",
+  "wikipedia": {
+   "title": "Javier Hernández",
+   "dob": "1988-06-01",
+   "ref": "https://en.wikipedia.org/wiki/Javier_Hern%C3%A1ndez"
+  }
+ },
+ "Gabriel Batistuta": {
+  "name": "Gabriel Batistuta",
+  "qid": "Q170376",
+  "label": "Gabriel Batistuta",
+  "description": "Argentine association football player",
+  "dob": "1969-02-01",
+  "ref": "https://www.wikidata.org/wiki/Q170376#P569",
+  "wikipedia": {
+   "title": "Gabriel Batistuta",
+   "dob": "1969-02-01",
+   "ref": "https://en.wikipedia.org/wiki/Gabriel_Batistuta"
+  }
+ },
+ "Mario Kempes": {
+  "name": "Mario Kempes",
+  "qid": "Q180649",
+  "label": "Mario Kempes",
+  "description": "Argentine footballer (born 1954)",
+  "dob": "1954-07-15",
+  "ref": "https://www.wikidata.org/wiki/Q180649#P569",
+  "wikipedia": {
+   "title": "Mario Kempes",
+   "dob": "1954-07-15",
+   "ref": "https://en.wikipedia.org/wiki/Mario_Kempes"
+  }
+ },
+ "David Trezeguet": {
+  "name": "David Trezeguet",
+  "qid": "Q183967",
+  "label": "David Trezeguet",
+  "description": "French footballer (born 1977)",
+  "dob": "1977-10-15",
+  "ref": "https://www.wikidata.org/wiki/Q183967#P569",
+  "wikipedia": {
+   "title": "David Trezeguet",
+   "dob": "1977-10-15",
+   "ref": "https://en.wikipedia.org/wiki/David_Trezeguet"
+  }
+ },
+ "Memphis Depay": {
+  "name": "Memphis Depay",
+  "qid": "Q1894",
+  "label": "Memphis Depay",
+  "description": "Dutch association football player (born 1994)",
+  "dob": "1994-02-13",
+  "ref": "https://www.wikidata.org/wiki/Q1894#P569",
+  "wikipedia": {
+   "title": "Memphis Depay",
+   "dob": "1994-02-13",
+   "ref": "https://en.wikipedia.org/wiki/Memphis_Depay"
+  }
+ },
+ "Patrice Evra": {
+  "name": "Patrice Evra",
+  "qid": "Q1916",
+  "label": "Patrice Evra",
+  "description": "French footballer (born 1981)",
+  "dob": "1981-05-15",
+  "ref": "https://www.wikidata.org/wiki/Q1916#P569",
+  "wikipedia": {
+   "title": "Patrice Evra",
+   "dob": "1981-05-15",
+   "ref": "https://en.wikipedia.org/wiki/Patrice_Evra"
+  }
+ },
+ "Christian Eriksen": {
+  "name": "Christian Eriksen",
+  "qid": "Q294951",
+  "label": "Christian Eriksen",
+  "description": "Danish association football player",
+  "dob": "1992-02-14",
+  "ref": "https://www.wikidata.org/wiki/Q294951#P569",
+  "wikipedia": {
+   "title": "Christian Eriksen",
+   "dob": "1992-02-14",
+   "ref": "https://en.wikipedia.org/wiki/Christian_Eriksen"
+  }
+ },
+ "André Schürrle": {
+  "name": "André Schürrle",
+  "qid": "Q58377",
+  "label": "André Schürrle",
+  "description": "German association football player (born 1990)",
+  "dob": "1990-11-06",
+  "ref": "https://www.wikidata.org/wiki/Q58377#P569",
+  "wikipedia": {
+   "title": "André Schürrle",
+   "dob": "1990-11-06",
+   "ref": "https://en.wikipedia.org/wiki/Andr%C3%A9_Sch%C3%BCrrle"
+  }
+ },
+ "Hulk": {
+  "name": "Hulk",
+  "failed": "wikidata: no footballer entity for \"Hulk\": [\"fictional character in Marvel Comics\",\"2003 video game\",\"2003 edition\",\"American professional wrestler, actor and t"
+ },
+ "Filippo Inzaghi": {
+  "name": "Filippo Inzaghi",
+  "qid": "Q126503",
+  "label": "Filippo Inzaghi",
+  "description": "Italian footballer and manager",
+  "dob": "1973-08-09",
+  "ref": "https://www.wikidata.org/wiki/Q126503#P569",
+  "wikipedia": {
+   "title": "Filippo Inzaghi",
+   "dob": "1973-08-09",
+   "ref": "https://en.wikipedia.org/wiki/Filippo_Inzaghi"
+  }
+ },
+ "Samuel Umtiti": {
+  "name": "Samuel Umtiti",
+  "qid": "Q13308",
+  "label": "Samuel Umtiti",
+  "description": "French footballer (born 1993)",
+  "dob": "1993-11-14",
+  "ref": "https://www.wikidata.org/wiki/Q13308#P569",
+  "wikipedia": {
+   "title": "Samuel Umtiti",
+   "dob": "1993-11-14",
+   "ref": "https://en.wikipedia.org/wiki/Samuel_Umtiti"
+  }
+ },
+ "Joshua Kimmich": {
+  "name": "Joshua Kimmich",
+  "qid": "Q13865408",
+  "label": "Joshua Kimmich",
+  "description": "German association football player (born 1995)",
+  "dob": "1995-02-08",
+  "ref": "https://www.wikidata.org/wiki/Q13865408#P569",
+  "wikipedia": {
+   "title": "Joshua Kimmich",
+   "dob": "1995-02-08",
+   "ref": "https://en.wikipedia.org/wiki/Joshua_Kimmich"
+  }
+ },
+ "Dino Zoff": {
+  "name": "Dino Zoff",
+  "qid": "Q180661",
+  "label": "Dino Zoff",
+  "description": "Italian association football player and manager",
+  "dob": "1942-02-28",
+  "ref": "https://www.wikidata.org/wiki/Q180661#P569",
+  "wikipedia": {
+   "title": "Dino Zoff",
+   "dob": "1942-02-28",
+   "ref": "https://en.wikipedia.org/wiki/Dino_Zoff"
+  }
+ },
+ "Mikel Arteta": {
+  "name": "Mikel Arteta",
+  "failed": "wikidata: no footballer entity for \"Mikel Arteta\": [\"Spanish football manager\"]"
+ },
+ "Ronald Koeman": {
+  "name": "Ronald Koeman",
+  "qid": "Q192635",
+  "label": "Ronald Koeman",
+  "description": "Dutch football coach and former football player (born 1963)",
+  "dob": "1963-03-21",
+  "ref": "https://www.wikidata.org/wiki/Q192635#P569",
+  "wikipedia": {
+   "title": "Ronald Koeman",
+   "dob": "1963-03-21",
+   "ref": "https://en.wikipedia.org/wiki/Ronald_Koeman"
+  }
+ },
+ "Éric Abidal": {
+  "name": "Éric Abidal",
+  "qid": "Q1935",
+  "label": "Eric Abidal",
+  "description": "French footballer (born 1979)",
+  "dob": "1979-09-11",
+  "ref": "https://www.wikidata.org/wiki/Q1935#P569",
+  "wikipedia": {
+   "title": "Eric Abidal",
+   "dob": "1979-09-11",
+   "ref": "https://en.wikipedia.org/wiki/Eric_Abidal"
+  }
+ },
+ "Luis Enrique": {
+  "name": "Luis Enrique",
+  "qid": "Q222789",
+  "label": "Luis Enrique",
+  "description": "Spanish footballer and manager",
+  "dob": "1970-05-08",
+  "ref": "https://www.wikidata.org/wiki/Q222789#P569",
+  "wikipedia": {
+   "title": "Luis Enrique",
+   "dob": "1970-05-08",
+   "ref": "https://en.wikipedia.org/wiki/Luis_Enrique"
+  }
+ },
+ "Yuto Nagatomo": {
+  "name": "Yuto Nagatomo",
+  "qid": "Q281734",
+  "label": "Yūto Nagatomo",
+  "description": "Japanese association football player (born 1986)",
+  "dob": "1986-09-12",
+  "ref": "https://www.wikidata.org/wiki/Q281734#P569",
+  "wikipedia": {
+   "title": "Yūto Nagatomo",
+   "dob": "1986-09-12",
+   "ref": "https://en.wikipedia.org/wiki/Y%C5%ABto_Nagatomo"
+  }
+ },
+ "Michael Carrick": {
+  "name": "Michael Carrick",
+  "qid": "Q29566",
+  "label": "Michael Carrick",
+  "description": "English footballer and manager",
+  "dob": "1981-07-28",
+  "ref": "https://www.wikidata.org/wiki/Q29566#P569",
+  "wikipedia": {
+   "title": "Michael Carrick",
+   "dob": "1981-07-28",
+   "ref": "https://en.wikipedia.org/wiki/Michael_Carrick"
+  }
+ },
+ "Shinji Okazaki": {
+  "name": "Shinji Okazaki",
+  "qid": "Q310612",
+  "label": "Shinji Okazaki",
+  "description": "Japanese association football player",
+  "dob": "1986-04-16",
+  "ref": "https://www.wikidata.org/wiki/Q310612#P569",
+  "wikipedia": {
+   "title": "Shinji Okazaki",
+   "dob": "1986-04-16",
+   "ref": "https://en.wikipedia.org/wiki/Shinji_Okazaki"
+  }
+ },
+ "Park Ji-sung": {
+  "name": "Park Ji-sung",
+  "qid": "Q50603",
+  "label": "Park Ji-Sung",
+  "description": "South Korean association football player",
+  "dob": "1981-02-25",
+  "ref": "https://www.wikidata.org/wiki/Q50603#P569",
+  "wikipedia": {
+   "title": "Park Ji-sung",
+   "dob": "1981-03-30",
+   "ref": "https://en.wikipedia.org/wiki/Park_Ji-sung"
+  }
+ },
+ "Jordan Pickford": {
+  "name": "Jordan Pickford",
+  "qid": "Q13014035",
+  "label": "Jordan Pickford",
+  "description": "English footballer (born 1994)",
+  "dob": "1994-03-07",
+  "ref": "https://www.wikidata.org/wiki/Q13014035#P569",
+  "wikipedia": {
+   "title": "Jordan Pickford",
+   "dob": "1994-03-07",
+   "ref": "https://en.wikipedia.org/wiki/Jordan_Pickford"
+  }
+ },
+ "Radamel Falcao": {
+  "name": "Radamel Falcao",
+  "qid": "Q138172",
+  "label": "Radamel Falcao",
+  "description": "Colombian association football player",
+  "dob": "1986-02-10",
+  "ref": "https://www.wikidata.org/wiki/Q138172#P569",
+  "wikipedia": {
+   "title": "Radamel Falcao",
+   "dob": "1986-02-10",
+   "ref": "https://en.wikipedia.org/wiki/Radamel_Falcao"
+  }
+ },
+ "Rafael van der Vaart": {
+  "name": "Rafael van der Vaart",
+  "qid": "Q163974",
+  "label": "Rafael van der Vaart",
+  "description": "Dutch association football player (born 1983)",
+  "dob": "1983-02-11",
+  "ref": "https://www.wikidata.org/wiki/Q163974#P569",
+  "wikipedia": {
+   "title": "Rafael van der Vaart",
+   "dob": "1983-02-11",
+   "ref": "https://en.wikipedia.org/wiki/Rafael_van_der_Vaart"
+  }
+ },
+ "John Obi Mikel": {
+  "name": "John Obi Mikel",
+  "qid": "Q166984",
+  "label": "Mikel John Obi",
+  "description": "Nigerian association football player (born 1987)",
+  "dob": "1987-04-22",
+  "ref": "https://www.wikidata.org/wiki/Q166984#P569",
+  "wikipedia": {
+   "title": "Mikel John Obi",
+   "dob": "1987-04-22",
+   "ref": "https://en.wikipedia.org/wiki/Mikel_John_Obi"
+  }
+ },
+ "Vincent Kompany": {
+  "name": "Vincent Kompany",
+  "qid": "Q201381",
+  "label": "Vincent Kompany",
+  "description": "Belgian association football player and manager",
+  "dob": "1986-04-10",
+  "ref": "https://www.wikidata.org/wiki/Q201381#P569",
+  "wikipedia": {
+   "title": "Vincent Kompany",
+   "dob": "1986-04-10",
+   "ref": "https://en.wikipedia.org/wiki/Vincent_Kompany"
+  }
+ },
+ "Diego Simeone": {
+  "name": "Diego Simeone",
+  "qid": "Q258115",
+  "label": "Diego Simeone",
+  "description": "Argentine association football player and manager (born 1970)",
+  "dob": "1970-04-28",
+  "ref": "https://www.wikidata.org/wiki/Q258115#P569",
+  "wikipedia": {
+   "title": "Diego Simeone",
+   "dob": "1970-04-28",
+   "ref": "https://en.wikipedia.org/wiki/Diego_Simeone"
+  }
+ },
+ "Dirk Kuyt": {
+  "name": "Dirk Kuyt",
+  "qid": "Q294214",
+  "label": "Dirk Kuyt",
+  "description": "Dutch association football player (born 1980)",
+  "dob": "1980-07-22",
+  "ref": "https://www.wikidata.org/wiki/Q294214#P569",
+  "wikipedia": {
+   "title": "Dirk Kuyt",
+   "dob": "1980-07-22",
+   "ref": "https://en.wikipedia.org/wiki/Dirk_Kuyt"
+  }
+ },
+ "Theo Walcott": {
+  "name": "Theo Walcott",
+  "qid": "Q29516",
+  "label": "Theo Walcott",
+  "description": "English association football player (born 1989)",
+  "dob": "1989-03-16",
+  "ref": "https://www.wikidata.org/wiki/Q29516#P569",
+  "wikipedia": {
+   "title": "Theo Walcott",
+   "dob": "1989-03-16",
+   "ref": "https://en.wikipedia.org/wiki/Theo_Walcott"
+  }
+ },
+ "Julian Draxler": {
+  "name": "Julian Draxler",
+  "qid": "Q315697",
+  "label": "Julian Draxler",
+  "description": "German association football player",
+  "dob": "1993-09-20",
+  "ref": "https://www.wikidata.org/wiki/Q315697#P569",
+  "wikipedia": {
+   "title": "Julian Draxler",
+   "dob": "1993-09-20",
+   "ref": "https://en.wikipedia.org/wiki/Julian_Draxler"
+  }
+ },
+ "David Alaba": {
+  "name": "David Alaba",
+  "qid": "Q31981",
+  "label": "David Alaba",
+  "description": "Austrian footballer (born 1992)",
+  "dob": "1992-06-24",
+  "ref": "https://www.wikidata.org/wiki/Q31981#P569",
+  "wikipedia": {
+   "title": "David Alaba",
+   "dob": "1992-06-24",
+   "ref": "https://en.wikipedia.org/wiki/David_Alaba"
+  }
+ },
+ "Dejan Lovren": {
+  "name": "Dejan Lovren",
+  "qid": "Q349125",
+  "label": "Dejan Lovren",
+  "description": "Croatian association football player (born 1989)",
+  "dob": "1989-07-05",
+  "ref": "https://www.wikidata.org/wiki/Q349125#P569",
+  "wikipedia": {
+   "title": "Dejan Lovren",
+   "dob": "1989-07-05",
+   "ref": "https://en.wikipedia.org/wiki/Dejan_Lovren"
+  }
+ },
+ "Jamie Vardy": {
+  "name": "Jamie Vardy",
+  "qid": "Q6147586",
+  "label": "Jamie Vardy",
+  "description": "English association football player (born 1987)",
+  "dob": "1987-01-11",
+  "ref": "https://www.wikidata.org/wiki/Q6147586#P569",
+  "wikipedia": {
+   "title": "Jamie Vardy",
+   "dob": "1987-01-11",
+   "ref": "https://en.wikipedia.org/wiki/Jamie_Vardy"
+  }
+ },
+ "Takumi Minamino": {
+  "name": "Takumi Minamino",
+  "qid": "Q776878",
+  "label": "Takumi Minamino",
+  "description": "Japanese association football player (born 1995)",
+  "dob": "1995-01-16",
+  "ref": "https://www.wikidata.org/wiki/Q776878#P569",
+  "wikipedia": {
+   "title": "Takumi Minamino",
+   "dob": "1995-01-16",
+   "ref": "https://en.wikipedia.org/wiki/Takumi_Minamino"
+  }
+ },
+ "İlkay Gündoğan": {
+  "name": "İlkay Gündoğan",
+  "qid": "Q161089",
+  "label": "İlkay Gündoğan",
+  "description": "German footballer (born 1990)",
+  "dob": "1990-10-24",
+  "ref": "https://www.wikidata.org/wiki/Q161089#P569",
+  "wikipedia": {
+   "title": "İlkay Gündoğan",
+   "dob": "1990-10-24",
+   "ref": "https://en.wikipedia.org/wiki/%C4%B0lkay_G%C3%BCndo%C4%9Fan"
+  }
+ },
+ "Ole Gunnar Solskjær": {
+  "name": "Ole Gunnar Solskjær",
+  "failed": "wikidata: no footballer entity for \"Ole Gunnar Solskjær\": [\"Norwegian association football manager\"]"
+ },
+ "Gheorghe Hagi": {
+  "name": "Gheorghe Hagi",
+  "qid": "Q189892",
+  "label": "Gheorghe Hagi",
+  "description": "Romanian association football player and manager (born 1965)",
+  "dob": "1965-02-05",
+  "ref": "https://www.wikidata.org/wiki/Q189892#P569",
+  "wikipedia": {
+   "title": "Gheorghe Hagi",
+   "dob": "1965-02-05",
+   "ref": "https://en.wikipedia.org/wiki/Gheorghe_Hagi"
+  }
+ },
+ "César Azpilicueta": {
+  "name": "César Azpilicueta",
+  "qid": "Q294806",
+  "label": "César Azpilicueta",
+  "description": "Spanish association football player",
+  "dob": "1989-08-28",
+  "ref": "https://www.wikidata.org/wiki/Q294806#P569",
+  "wikipedia": {
+   "title": "César Azpilicueta",
+   "dob": "1989-08-28",
+   "ref": "https://en.wikipedia.org/wiki/C%C3%A9sar_Azpilicueta"
+  }
+ },
+ "Bruno Fernandes": {
+  "name": "Bruno Fernandes",
+  "qid": "Q4979316",
+  "label": "Bruno Fernandes",
+  "description": "Portuguese association football player (born 1994)",
+  "dob": "1994-09-08",
+  "ref": "https://www.wikidata.org/wiki/Q4979316#P569",
+  "wikipedia": {
+   "title": "Bruno Fernandes",
+   "dob": "1994-09-08",
+   "ref": "https://en.wikipedia.org/wiki/Bruno_Fernandes"
+  }
+ },
+ "Jens Lehmann": {
+  "name": "Jens Lehmann",
+  "qid": "Q57114",
+  "label": "Jens Lehmann",
+  "description": "German association football player (born 1969)",
+  "dob": "1969-11-10",
+  "ref": "https://www.wikidata.org/wiki/Q57114#P569",
+  "wikipedia": {
+   "title": "Jens Lehmann",
+   "dob": "1969-11-10",
+   "ref": "https://en.wikipedia.org/wiki/Jens_Lehmann"
+  }
+ },
+ "Per Mertesacker": {
+  "name": "Per Mertesacker",
+  "qid": "Q70550",
+  "label": "Per Mertesacker",
+  "description": "German association football player",
+  "dob": "1984-09-29",
+  "ref": "https://www.wikidata.org/wiki/Q70550#P569",
+  "wikipedia": {
+   "title": "Per Mertesacker",
+   "dob": "1984-09-29",
+   "ref": "https://en.wikipedia.org/wiki/Per_Mertesacker"
+  }
+ },
+ "Isco": {
+  "name": "Isco",
+  "qid": "Q80892",
+  "label": "Isco",
+  "description": "Spanish association football player",
+  "dob": "1992-04-21",
+  "ref": "https://www.wikidata.org/wiki/Q80892#P569",
+  "wikipedia": {
+   "title": "Isco",
+   "dob": "1992-04-21",
+   "ref": "https://en.wikipedia.org/wiki/Isco"
+  }
+ },
+ "Luke Shaw": {
+  "name": "Luke Shaw",
+  "qid": "Q93563",
+  "label": "Luke Shaw",
+  "description": "English association football player (born 1995)",
+  "dob": "1995-07-12",
+  "ref": "https://www.wikidata.org/wiki/Q93563#P569",
+  "wikipedia": {
+   "title": "Luke Shaw",
+   "dob": "1995-07-12",
+   "ref": "https://en.wikipedia.org/wiki/Luke_Shaw"
+  }
+ },
+ "Wataru Endo": {
+  "name": "Wataru Endo",
+  "qid": "Q10526787",
+  "label": "Wataru Endō",
+  "description": "Japanese association football player",
+  "dob": "1993-02-09",
+  "ref": "https://www.wikidata.org/wiki/Q10526787#P569",
+  "wikipedia": {
+   "title": "Wataru Endo",
+   "dob": "1993-02-09",
+   "ref": "https://en.wikipedia.org/wiki/Wataru_Endo"
+  }
+ },
+ "Dele Alli": {
+  "name": "Dele Alli",
+  "qid": "Q10553748",
+  "label": "Dele Alli",
+  "description": "English association football player",
+  "dob": "1996-04-11",
+  "ref": "https://www.wikidata.org/wiki/Q10553748#P569",
+  "wikipedia": {
+   "title": "Dele Alli",
+   "dob": "1996-04-11",
+   "ref": "https://en.wikipedia.org/wiki/Dele_Alli"
+  }
+ },
+ "Gennaro Gattuso": {
+  "name": "Gennaro Gattuso",
+  "qid": "Q116980",
+  "label": "Gennaro Gattuso",
+  "description": "Italian association football player and manager",
+  "dob": "1978-01-09",
+  "ref": "https://www.wikidata.org/wiki/Q116980#P569",
+  "wikipedia": {
+   "title": "Gennaro Gattuso",
+   "dob": "1978-01-09",
+   "ref": "https://en.wikipedia.org/wiki/Gennaro_Gattuso"
+  }
+ },
+ "Mauro Icardi": {
+  "name": "Mauro Icardi",
+  "qid": "Q136986",
+  "label": "Mauro Icardi",
+  "description": "Argentine association football player (born 1993)",
+  "dob": "1993-02-19",
+  "ref": "https://www.wikidata.org/wiki/Q136986#P569",
+  "wikipedia": {
+   "title": "Mauro Icardi",
+   "dob": "1993-02-19",
+   "ref": "https://en.wikipedia.org/wiki/Mauro_Icardi"
+  }
+ },
+ "Karl-Heinz Rummenigge": {
+  "name": "Karl-Heinz Rummenigge",
+  "qid": "Q152871",
+  "label": "Karl-Heinz Rummenigge",
+  "description": "German football executive and former football player",
+  "dob": "1955-09-25",
+  "ref": "https://www.wikidata.org/wiki/Q152871#P569",
+  "wikipedia": {
+   "title": "Karl-Heinz Rummenigge",
+   "dob": "1955-09-25",
+   "ref": "https://en.wikipedia.org/wiki/Karl-Heinz_Rummenigge"
+  }
+ },
+ "Pavel Nedvěd": {
+  "name": "Pavel Nedvěd",
+  "qid": "Q171295",
+  "label": "Pavel Nedvěd",
+  "description": "Czech association football player",
+  "dob": "1972-08-30",
+  "ref": "https://www.wikidata.org/wiki/Q171295#P569",
+  "wikipedia": {
+   "title": "Pavel Nedvěd",
+   "dob": "1972-08-30",
+   "ref": "https://en.wikipedia.org/wiki/Pavel_Nedv%C4%9Bd"
+  }
+ },
+ "Antonio Valencia": {
+  "name": "Antonio Valencia",
+  "qid": "Q174486",
+  "label": "Antonio Valencia",
+  "description": "portughez association football player",
+  "dob": "1985-08-04",
+  "ref": "https://www.wikidata.org/wiki/Q174486#P569",
+  "wikipedia": {
+   "title": "Antonio Valencia",
+   "dob": "1985-08-04",
+   "ref": "https://en.wikipedia.org/wiki/Antonio_Valencia"
+  }
+ },
+ "Thiago Alcântara": {
+  "name": "Thiago Alcântara",
+  "qid": "Q17493",
+  "label": "Thiago Alcântara",
+  "description": "Spanish association football player",
+  "dob": "1991-04-11",
+  "ref": "https://www.wikidata.org/wiki/Q17493#P569",
+  "wikipedia": {
+   "title": "Thiago Alcântara",
+   "dob": "1991-04-11",
+   "ref": "https://en.wikipedia.org/wiki/Thiago_Alc%C3%A2ntara"
+  }
+ },
+ "Branislav Ivanović": {
+  "name": "Branislav Ivanović",
+  "qid": "Q181921",
+  "label": "Branislav Ivanović",
+  "description": "Serbian association football player",
+  "dob": "1984-02-22",
+  "ref": "https://www.wikidata.org/wiki/Q181921#P569",
+  "wikipedia": {
+   "title": "Branislav Ivanović",
+   "dob": "1984-02-22",
+   "ref": "https://en.wikipedia.org/wiki/Branislav_Ivanovi%C4%87"
+  }
+ },
+ "Peter Schmeichel": {
+  "name": "Peter Schmeichel",
+  "qid": "Q182314",
+  "label": "Peter Schmeichel",
+  "description": "Danish association football player",
+  "dob": "1963-11-18",
+  "ref": "https://www.wikidata.org/wiki/Q182314#P569",
+  "wikipedia": {
+   "title": "Peter Schmeichel",
+   "dob": "1963-11-18",
+   "ref": "https://en.wikipedia.org/wiki/Peter_Schmeichel"
+  }
+ },
+ "Alberto Gilardino": {
+  "name": "Alberto Gilardino",
+  "qid": "Q182451",
+  "label": "Alberto Gilardino",
+  "description": "Italian association football player",
+  "dob": "1982-07-05",
+  "ref": "https://www.wikidata.org/wiki/Q182451#P569",
+  "wikipedia": {
+   "title": "Alberto Gilardino",
+   "dob": "1982-07-05",
+   "ref": "https://en.wikipedia.org/wiki/Alberto_Gilardino"
+  }
+ },
+ "Tim Cahill": {
+  "name": "Tim Cahill",
+  "qid": "Q187238",
+  "label": "Tim Cahill",
+  "description": "Australian association football player",
+  "dob": "1979-12-06",
+  "ref": "https://www.wikidata.org/wiki/Q187238#P569",
+  "wikipedia": {
+   "title": "Tim Cahill",
+   "dob": "1979-12-06",
+   "ref": "https://en.wikipedia.org/wiki/Tim_Cahill"
+  }
+ },
+ "Ricardo Quaresma": {
+  "name": "Ricardo Quaresma",
+  "failed": "wikidata: Ricardo Quaresma P569 precision 9, need day (11)"
+ },
+ "Davor Šuker": {
+  "name": "Davor Šuker",
+  "qid": "Q189217",
+  "label": "Davor Šuker",
+  "description": "Croatian footballer",
+  "dob": "1968-01-01",
+  "ref": "https://www.wikidata.org/wiki/Q189217#P569",
+  "wikipedia": {
+   "title": "Davor Šuker",
+   "dob": "1968-01-01",
+   "ref": "https://en.wikipedia.org/wiki/Davor_%C5%A0uker"
+  }
+ },
+ "Samir Nasri": {
+  "name": "Samir Nasri",
+  "qid": "Q1920",
+  "label": "Samir Nasri",
+  "description": "French footballer (born 1987)",
+  "dob": "1987-06-26",
+  "ref": "https://www.wikidata.org/wiki/Q1920#P569",
+  "wikipedia": {
+   "title": "Samir Nasri",
+   "dob": "1987-06-26",
+   "ref": "https://en.wikipedia.org/wiki/Samir_Nasri"
+  }
+ },
+ "Divock Origi": {
+  "name": "Divock Origi",
+  "qid": "Q4254043",
+  "label": "Divock Origi",
+  "description": "Belgian association football player (born 1995)",
+  "dob": "1995-04-18",
+  "ref": "https://www.wikidata.org/wiki/Q4254043#P569",
+  "wikipedia": {
+   "title": "Divock Origi",
+   "dob": "1995-04-18",
+   "ref": "https://en.wikipedia.org/wiki/Divock_Origi"
+  }
+ },
+ "Fábio Coentrão": {
+  "name": "Fábio Coentrão",
+  "qid": "Q484384",
+  "label": "Fábio Coentrão",
+  "description": "Portuguese footballer",
+  "dob": "1988-03-11",
+  "ref": "https://www.wikidata.org/wiki/Q484384#P569",
+  "wikipedia": {
+   "title": "Fábio Coentrão",
+   "dob": "1988-03-11",
+   "ref": "https://en.wikipedia.org/wiki/F%C3%A1bio_Coentr%C3%A3o"
+  }
+ },
+ "Clarence Seedorf": {
+  "name": "Clarence Seedorf",
+  "qid": "Q484909",
+  "label": "Clarence Seedorf",
+  "description": "Dutch association football player and manager",
+  "dob": "1976-04-01",
+  "ref": "https://www.wikidata.org/wiki/Q484909#P569",
+  "wikipedia": {
+   "title": "Clarence Seedorf",
+   "dob": "1976-04-01",
+   "ref": "https://en.wikipedia.org/wiki/Clarence_Seedorf"
+  }
+ },
+ "Nacho": {
+  "name": "Nacho",
+  "qid": "Q503137",
+  "label": "Nacho",
+  "description": "Spanish association football player",
+  "dob": "1990-01-18",
+  "ref": "https://www.wikidata.org/wiki/Q503137#P569",
+  "wikipedia": {
+   "title": "Nacho (footballer, born 1990)",
+   "dob": "1990-01-18",
+   "ref": "https://en.wikipedia.org/wiki/Nacho_(footballer%2C_born_1990)"
+  }
+ },
+ "Ricardo Carvalho": {
+  "name": "Ricardo Carvalho",
+  "qid": "Q570811",
+  "label": "Ricardo Carvalho",
+  "description": "Portuguese footballer",
+  "dob": "1978-05-18",
+  "ref": "https://www.wikidata.org/wiki/Q570811#P569",
+  "wikipedia": {
+   "title": "Ricardo Carvalho",
+   "dob": "1978-05-18",
+   "ref": "https://en.wikipedia.org/wiki/Ricardo_Carvalho"
+  }
+ },
+ "Antonio Rüdiger": {
+  "name": "Antonio Rüdiger",
+  "qid": "Q96755",
+  "label": "Antonio Rüdiger",
+  "description": "German association football player (born 1993)",
+  "dob": "1993-03-03",
+  "ref": "https://www.wikidata.org/wiki/Q96755#P569",
+  "wikipedia": {
+   "title": "Antonio Rüdiger",
+   "dob": "1993-03-03",
+   "ref": "https://en.wikipedia.org/wiki/Antonio_R%C3%BCdiger"
+  }
+ },
+ "Michael Essien": {
+  "name": "Michael Essien",
+  "qid": "Q969520",
+  "label": "Michael Essien",
+  "description": "Ghanaian footballer (born 1982)",
+  "dob": "1982-12-03",
+  "ref": "https://www.wikidata.org/wiki/Q969520#P569",
+  "wikipedia": {
+   "title": "Michael Essien",
+   "dob": "1982-12-03",
+   "ref": "https://en.wikipedia.org/wiki/Michael_Essien"
+  }
+ },
+ "Freddie Ljungberg": {
+  "name": "Freddie Ljungberg",
+  "qid": "Q10560",
+  "label": "Freddie Ljungberg",
+  "description": "Swedish association football player and manager",
+  "dob": "1977-04-16",
+  "ref": "https://www.wikidata.org/wiki/Q10560#P569",
+  "wikipedia": {
+   "title": "Freddie Ljungberg",
+   "dob": "1977-04-16",
+   "ref": "https://en.wikipedia.org/wiki/Freddie_Ljungberg"
+  }
+ },
+ "Jakub Błaszczykowski": {
+  "name": "Jakub Błaszczykowski",
+  "qid": "Q151025",
+  "description": "Polish association football player",
+  "dob": "1985-12-14",
+  "ref": "https://www.wikidata.org/wiki/Q151025#P569",
+  "wikipedia": {
+   "title": "Jakub Błaszczykowski",
+   "dob": "1985-12-14",
+   "ref": "https://en.wikipedia.org/wiki/Jakub_B%C5%82aszczykowski"
+  }
+ },
+ "Bukayo Saka": {
+  "name": "Bukayo Saka",
+  "qid": "Q59306386",
+  "label": "Bukayo Saka",
+  "description": "English footballer (born 2001)",
+  "dob": "2001-09-05",
+  "ref": "https://www.wikidata.org/wiki/Q59306386#P569",
+  "wikipedia": {
+   "title": "Bukayo Saka",
+   "dob": "2001-09-05",
+   "ref": "https://en.wikipedia.org/wiki/Bukayo_Saka"
+  }
+ },
+ "Khvicha Kvaratskhelia": {
+  "name": "Khvicha Kvaratskhelia",
+  "qid": "Q61780902",
+  "label": "Khvicha Kvaratskhelia",
+  "description": "Georgian footballer (born 2001)",
+  "dob": "2001-02-12",
+  "ref": "https://www.wikidata.org/wiki/Q61780902#P569",
+  "wikipedia": {
+   "title": "Khvicha Kvaratskhelia",
+   "dob": "2001-02-12",
+   "ref": "https://en.wikipedia.org/wiki/Khvicha_Kvaratskhelia"
+  }
+ },
+ "Lautaro Martínez": {
+  "name": "Lautaro Martínez",
+  "qid": "Q21484126",
+  "label": "Lautaro Martínez",
+  "description": "Argentine association football player (born 1997)",
+  "dob": "1997-08-22",
+  "ref": "https://www.wikidata.org/wiki/Q21484126#P569",
+  "wikipedia": {
+   "title": "Lautaro Martínez",
+   "dob": "1997-08-22",
+   "ref": "https://en.wikipedia.org/wiki/Lautaro_Mart%C3%ADnez"
+  }
+ },
+ "Martin Ødegaard": {
+  "name": "Martin Ødegaard",
+  "qid": "Q16902219",
+  "label": "Martin Ødegaard",
+  "description": "Norwegian footballer (born 1998)",
+  "dob": "1998-12-17",
+  "ref": "https://www.wikidata.org/wiki/Q16902219#P569",
+  "wikipedia": {
+   "title": "Martin Ødegaard",
+   "dob": "1998-12-17",
+   "ref": "https://en.wikipedia.org/wiki/Martin_%C3%98degaard"
+  }
+ },
+ "Alexander Isak": {
+  "name": "Alexander Isak",
+  "qid": "Q23759917",
+  "label": "Alexander Isak",
+  "description": "Swedish footballer (born 1999)",
+  "dob": "1999-09-21",
+  "ref": "https://www.wikidata.org/wiki/Q23759917#P569",
+  "wikipedia": {
+   "title": "Alexander Isak",
+   "dob": "1999-09-21",
+   "ref": "https://en.wikipedia.org/wiki/Alexander_Isak"
+  }
+ },
+ "Viktor Gyökeres": {
+  "name": "Viktor Gyökeres",
+  "qid": "Q47075606",
+  "label": "Viktor Gyökeres",
+  "description": "Swedish footballer (born 1998)",
+  "dob": "1998-06-04",
+  "ref": "https://www.wikidata.org/wiki/Q47075606#P569",
+  "wikipedia": {
+   "title": "Viktor Gyökeres",
+   "dob": "1998-06-04",
+   "ref": "https://en.wikipedia.org/wiki/Viktor_Gy%C3%B6keres"
+  }
+ },
+ "Dominik Szoboszlai": {
+  "name": "Dominik Szoboszlai",
+  "qid": "Q30134278",
+  "label": "Dominik Szoboszlai",
+  "description": "Hungarian association football player (born 2000)",
+  "dob": "2000-10-25",
+  "ref": "https://www.wikidata.org/wiki/Q30134278#P569",
+  "wikipedia": {
+   "title": "Dominik Szoboszlai",
+   "dob": "2000-10-25",
+   "ref": "https://en.wikipedia.org/wiki/Dominik_Szoboszlai"
+  }
+ },
+ "Luis Díaz": {
+  "name": "Luis Díaz",
+  "qid": "Q28531111",
+  "label": "Luis Díaz",
+  "description": "Colombian association football player (born 1997)",
+  "dob": "1997-01-13",
+  "ref": "https://www.wikidata.org/wiki/Q28531111#P569",
+  "wikipedia": {
+   "title": "Luis Díaz (footballer, born 1997)",
+   "dob": "1997-01-13",
+   "ref": "https://en.wikipedia.org/wiki/Luis_D%C3%ADaz_(footballer%2C_born_1997)"
+  }
+ },
+ "Darwin Núñez": {
+  "name": "Darwin Núñez",
+  "qid": "Q46372260",
+  "label": "Darwin Núñez",
+  "description": "Uruguayan association football player",
+  "dob": "1999-06-24",
+  "ref": "https://www.wikidata.org/wiki/Q46372260#P569",
+  "wikipedia": {
+   "title": "Darwin Núñez",
+   "dob": "1999-06-24",
+   "ref": "https://en.wikipedia.org/wiki/Darwin_N%C3%BA%C3%B1ez"
+  }
+ },
+ "Bernardo Silva": {
+  "name": "Bernardo Silva",
+  "qid": "Q15521306",
+  "label": "Bernardo Silva",
+  "description": "Portuguese association football player (born 1994)",
+  "dob": "1994-08-10",
+  "ref": "https://www.wikidata.org/wiki/Q15521306#P569",
+  "wikipedia": {
+   "title": "Bernardo Silva",
+   "dob": "1994-08-10",
+   "ref": "https://en.wikipedia.org/wiki/Bernardo_Silva"
+  }
+ },
+ "Trent Alexander-Arnold": {
+  "name": "Trent Alexander-Arnold",
+  "qid": "Q27569376",
+  "label": "Trent Alexander-Arnold",
+  "description": "English association football player (born 1998)",
+  "dob": "1998-10-07",
+  "ref": "https://www.wikidata.org/wiki/Q27569376#P569",
+  "wikipedia": {
+   "title": "Trent Alexander-Arnold",
+   "dob": "1998-10-07",
+   "ref": "https://en.wikipedia.org/wiki/Trent_Alexander-Arnold"
+  }
+ },
+ "Eduardo Camavinga": {
+  "name": "Eduardo Camavinga",
+  "qid": "Q62960177",
+  "label": "Eduardo Camavinga",
+  "description": "French footballer (born 2002)",
+  "dob": "2002-11-10",
+  "ref": "https://www.wikidata.org/wiki/Q62960177#P569",
+  "wikipedia": {
+   "title": "Eduardo Camavinga",
+   "dob": "2002-11-10",
+   "ref": "https://en.wikipedia.org/wiki/Eduardo_Camavinga"
+  }
+ },
+ "Aurélien Tchouaméni": {
+  "name": "Aurélien Tchouaméni",
+  "qid": "Q46951844",
+  "label": "Aurélien Tchouaméni",
+  "description": "French footballer (born 2000)",
+  "dob": "2000-01-27",
+  "ref": "https://www.wikidata.org/wiki/Q46951844#P569",
+  "wikipedia": {
+   "title": "Aurélien Tchouaméni",
+   "dob": "2000-01-27",
+   "ref": "https://en.wikipedia.org/wiki/Aur%C3%A9lien_Tchouam%C3%A9ni"
+  }
+ },
+ "Rodrygo": {
+  "name": "Rodrygo",
+  "qid": "Q42728914",
+  "label": "Rodrygo",
+  "description": "Brazilian association football player",
+  "dob": "2001-01-09",
+  "ref": "https://www.wikidata.org/wiki/Q42728914#P569",
+  "wikipedia": {
+   "title": "Rodrygo",
+   "dob": "2001-01-09",
+   "ref": "https://en.wikipedia.org/wiki/Rodrygo"
+  }
+ },
+ "Raphinha": {
+  "name": "Raphinha",
+  "qid": "Q28861547",
+  "label": "Raphinha",
+  "description": "Brazilian association football player (born 1996)",
+  "dob": "1996-12-14",
+  "ref": "https://www.wikidata.org/wiki/Q28861547#P569",
+  "wikipedia": {
+   "title": "Raphinha",
+   "dob": "1996-12-14",
+   "ref": "https://en.wikipedia.org/wiki/Raphinha"
+  }
+ },
+ "Gianluigi Donnarumma": {
+  "name": "Gianluigi Donnarumma",
+  "qid": "Q20830808",
+  "label": "Gianluigi Donnarumma",
+  "description": "Italian association football player (born 1999)",
+  "dob": "1999-02-25",
+  "ref": "https://www.wikidata.org/wiki/Q20830808#P569",
+  "wikipedia": {
+   "title": "Gianluigi Donnarumma",
+   "dob": "1999-02-25",
+   "ref": "https://en.wikipedia.org/wiki/Gianluigi_Donnarumma"
+  }
+ },
+ "Nicolò Barella": {
+  "name": "Nicolò Barella",
+  "qid": "Q20090225",
+  "label": "Nicolò Barella",
+  "description": "Italian association football player",
+  "dob": "1997-02-07",
+  "ref": "https://www.wikidata.org/wiki/Q20090225#P569",
+  "wikipedia": {
+   "title": "Nicolò Barella",
+   "dob": "1997-02-07",
+   "ref": "https://en.wikipedia.org/wiki/Nicol%C3%B2_Barella"
+  }
+ },
+ "Dušan Vlahović": {
+  "name": "Dušan Vlahović",
+  "qid": "Q23762815",
+  "label": "Dušan Vlahović",
+  "description": "Serbian footballer",
+  "dob": "2000-01-28",
+  "ref": "https://www.wikidata.org/wiki/Q23762815#P569",
+  "wikipedia": {
+   "title": "Dušan Vlahović",
+   "dob": "2000-01-28",
+   "ref": "https://en.wikipedia.org/wiki/Du%C5%A1an_Vlahovi%C4%87"
+  }
+ },
+ "Mason Mount": {
+  "name": "Mason Mount",
+  "qid": "Q38000669",
+  "label": "Mason Mount",
+  "description": "English association football player",
+  "dob": "1999-01-10",
+  "ref": "https://www.wikidata.org/wiki/Q38000669#P569",
+  "wikipedia": {
+   "title": "Mason Mount",
+   "dob": "1999-01-10",
+   "ref": "https://en.wikipedia.org/wiki/Mason_Mount"
+  }
+ },
+ "Leroy Sané": {
+  "name": "Leroy Sané",
+  "qid": "Q16499882",
+  "label": "Leroy Sané",
+  "description": "German association football player",
+  "dob": "1996-01-11",
+  "ref": "https://www.wikidata.org/wiki/Q16499882#P569",
+  "wikipedia": {
+   "title": "Leroy Sané",
+   "dob": "1996-01-11",
+   "ref": "https://en.wikipedia.org/wiki/Leroy_San%C3%A9"
+  }
  }
 }

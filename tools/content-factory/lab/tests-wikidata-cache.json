@@ -1,0 +1,7221 @@
+{
+ "players": {
+  "Ruud Gullit": {
+   "name": "Ruud Gullit",
+   "qid": "Q173972",
+   "label": "Ruud Gullit",
+   "description": "Dutch association football player and manager",
+   "enwiki": "Ruud Gullit",
+   "ref": "https://www.wikidata.org/wiki/Q173972",
+   "fetched": "2026-09-25",
+   "p54": [
+    {
+     "qid": "Q1811026",
+     "label": "Netherlands national under-21 football team",
+     "rank": "Normal",
+     "start": "1979",
+     "end": "1979",
+     "parents": [
+      {
+       "qid": "Q213116",
+       "label": "Royal Dutch Football Association"
+      }
+     ]
+    },
+    {
+     "qid": "Q1543",
+     "label": "AC Milan",
+     "rank": "Normal",
+     "start": "1987",
+     "end": "1993",
+     "parents": [
+      {
+       "qid": "Q116116844",
+       "label": "RedBird Capital Partners"
+      }
+     ]
+    },
+    {
+     "qid": "Q1543",
+     "label": "AC Milan",
+     "rank": "Normal",
+     "start": "1994",
+     "end": "1994",
+     "parents": [
+      {
+       "qid": "Q116116844",
+       "label": "RedBird Capital Partners"
+      }
+     ]
+    },
+    {
+     "qid": "Q9616",
+     "label": "Chelsea F.C.",
+     "rank": "Normal",
+     "start": "1995",
+     "end": "1998",
+     "parents": [
+      {
+       "qid": "Q120737993",
+       "label": "BlueCo"
+      }
+     ]
+    },
+    {
+     "qid": "Q47050",
+     "label": "Netherlands national association football team",
+     "rank": "Normal",
+     "start": "1981",
+     "end": "1994",
+     "parents": [
+      {
+       "qid": "Q213116",
+       "label": "Royal Dutch Football Association"
+      }
+     ]
+    },
+    {
+     "qid": "Q134241",
+     "label": "Feyenoord Rotterdam",
+     "rank": "Normal",
+     "start": "1982",
+     "end": "1985",
+     "parents": []
+    },
+    {
+     "qid": "Q478766",
+     "label": "AFC DWS",
+     "rank": "Normal",
+     "start": "1975",
+     "end": "1979",
+     "parents": []
+    },
+    {
+     "qid": "Q854141",
+     "label": "HFC Haarlem",
+     "rank": "Normal",
+     "start": "1979",
+     "end": "1982",
+     "parents": []
+    },
+    {
+     "qid": "Q1457",
+     "label": "U.C. Sampdoria",
+     "rank": "Normal",
+     "start": "1994",
+     "end": "1995",
+     "parents": []
+    },
+    {
+     "qid": "Q1457",
+     "label": "U.C. Sampdoria",
+     "rank": "Normal",
+     "start": "1993",
+     "end": "1994",
+     "parents": []
+    },
+    {
+     "qid": "Q11938",
+     "label": "PSV Eindhoven",
+     "rank": "Normal",
+     "start": "1985",
+     "end": "1987",
+     "parents": []
+    }
+   ],
+   "nationality": [
+    "Kingdom of the Netherlands",
+    "Netherlands"
+   ],
+   "sportNation": [
+    "Netherlands"
+   ],
+   "citizenship": [
+    "Kingdom of the Netherlands"
+   ],
+   "positions": [
+    "midfielder"
+   ]
+  },
+  "Pierre-Emerick Aubameyang": {
+   "name": "Pierre-Emerick Aubameyang",
+   "qid": "Q44977",
+   "label": "Pierre-Emerick Aubameyang",
+   "description": "Gabonese-French footballer (born 1989)",
+   "enwiki": "Pierre-Emerick Aubameyang",
+   "ref": "https://www.wikidata.org/wiki/Q44977",
+   "fetched": "2026-09-25",
+   "p54": [
+    {
+     "qid": "Q180305",
+     "label": "AS Monaco FC",
+     "rank": "Normal",
+     "start": "2010",
+     "end": "2011",
+     "parents": [
+      {
+       "qid": "Q16009112",
+       "label": "Association sportive de Monaco"
+      },
+      {
+       "qid": "Q668182",
+       "label": "House of Grimaldi"
+      },
+      {
+       "qid": "Q983847",
+       "label": "Dmitry Rybolovlev"
+      }
+     ]
+    },
+    {
+     "qid": "Q7156",
+     "label": "FC Barcelona",
+     "rank": "Normal",
+     "start": "2022",
+     "end": "2022",
+     "parents": [
+      {
+       "qid": "Q3091261",
+       "label": "FC Barcelona"
+      },
+      {
+       "qid": "Q3503804",
+       "label": "Supporters of FC Barcelona"
+      },
+      {
+       "qid": "Q9339070",
+       "label": "members of Fútbol Club Barcelona"
+      }
+     ]
+    },
+    {
+     "qid": "Q41420",
+     "label": "Borussia Dortmund",
+     "rank": "Normal",
+     "start": "2013",
+     "end": "2018",
+     "parents": [
+      {
+       "qid": "Q448445",
+       "label": "SDAX"
+      },
+      {
+       "qid": "Q874430",
+       "label": "CDAX"
+      },
+      {
+       "qid": "Q881201",
+       "label": "Reinhard Rauball"
+      }
+     ]
+    },
+    {
+     "qid": "Q286191",
+     "label": "Al Qadsiah FC",
+     "rank": "Normal",
+     "start": "2024",
+     "end": "2025",
+     "parents": []
+    },
+    {
+     "qid": "Q503317",
+     "label": "Dijon FCO",
+     "rank": "Normal",
+     "start": "2008",
+     "end": "2009",
+     "parents": []
+    },
+    {
+     "qid": "Q760736",
+     "label": "Stade Lavallois",
+     "rank": "Normal",
+     "start": "1999",
+     "end": "2001",
+     "parents": []
+    },
+    {
+     "qid": "Q8760",
+     "label": "Deportivo de A Coruña",
+     "rank": "Preferred",
+     "start": "2026",
+     "end": null,
+     "parents": []
+    },
+    {
+     "qid": "Q132885",
+     "label": "Olympique de Marseille",
+     "rank": "Normal",
+     "start": "2025",
+     "end": "2026",
+     "parents": [
+      {
+       "qid": "Q5488263",
+       "label": "Frank McCourt"
+      }
+     ]
+    },
+    {
+     "qid": "Q132885",
+     "label": "Olympique de Marseille",
+     "rank": "Normal",
+     "start": "2023",
+     "end": "2024",
+     "parents": [
+      {
+       "qid": "Q5488263",
+       "label": "Frank McCourt"
+      }
+     ]
+    },
+    {
+     "qid": "Q235416",
+     "label": "Gabon men's national football team",
+     "rank": "Normal",
+     "start": "2009",
+     "end": "2026",
+     "parents": [
+      {
+       "qid": "Q579192",
+       "label": "Gabonese Football Federation"
+      }
+     ]
+    },
+    {
+     "qid": "Q1277549",
+     "label": "France national under-21 association football team",
+     "rank": "Normal",
+     "start": "2009",
+     "end": "2009",
+     "parents": [
+      {
+       "qid": "Q244750",
+       "label": "French Football Federation"
+      }
+     ]
+    },
+    {
+     "qid": "Q2804483",
+     "label": "Gabon national under-23 association football team",
+     "rank": "Normal",
+     "start": "2012",
+     "end": "2012",
+     "parents": [
+      {
+       "qid": "Q579192",
+       "label": "Gabonese Football Federation"
+      }
+     ]
+    },
+    {
+     "qid": "Q1543",
+     "label": "AC Milan",
+     "rank": "Normal",
+     "start": "2007",
+     "end": "2011",
+     "parents": [
+      {
+       "qid": "Q116116844",
+       "label": "RedBird Capital Partners"
+      }
+     ]
+    },
+    {
+     "qid": "Q9616",
+     "label": "Chelsea F.C.",
+     "rank": "Normal",
+     "start": "2022",
+     "end": "2023",
+     "parents": [
+      {
+       "qid": "Q120737993",
+       "label": "BlueCo"
+      }
+     ]
+    },
+    {
+     "qid": "Q9617",
+     "label": "Arsenal F.C.",
+     "rank": "Normal",
+     "start": "2018",
+     "end": "2022",
+     "parents": [
+      {
+       "qid": "Q29438842",
+       "label": "Kroenke Sports & Entertainment"
+      }
+     ]
+    },
+    {
+     "qid": "Q19516",
+     "label": "Lille OSC",
+     "rank": "Normal",
+     "start": "2009",
+     "end": "2010",
+     "parents": [
+      {
+       "qid": "Q966594",
+       "label": "Gerard Lopez"
+      }
+     ]
+    },
+    {
+     "qid": "Q19521",
+     "label": "AS Saint-Étienne",
+     "rank": "Normal",
+     "start": "2011",
+     "end": "2013",
+     "parents": [
+      {
+       "qid": "Q3218108",
+       "label": "Larry Tanenbaum"
+      }
+     ]
+    }
+   ],
+   "nationality": [
+    "Spain",
+    "France",
+    "Gabon"
+   ],
+   "sportNation": [
+    "Gabon"
+   ],
+   "citizenship": [
+    "Spain",
+    "France",
+    "Gabon"
+   ],
+   "positions": [
+    "centre-forward"
+   ]
+  },
+  "Samuel Eto'o": {
+   "name": "Samuel Eto'o",
+   "qid": "Q1255625",
+   "label": "Samuel Eto'o",
+   "description": "Cameroonian association football player",
+   "enwiki": "Samuel Eto'o",
+   "ref": "https://www.wikidata.org/wiki/Q1255625",
+   "fetched": "2026-09-25",
+   "p54": [
+    {
+     "qid": "Q175309",
+     "label": "Cameroon men's national football team",
+     "rank": "Normal",
+     "start": "1997",
+     "end": "2014",
+     "parents": [
+      {
+       "qid": "Q921938",
+       "label": "Cameroonian Football Federation"
+      }
+     ]
+    },
+    {
+     "qid": "Q631",
+     "label": "Inter Milan",
+     "rank": "Normal",
+     "start": "2009",
+     "end": "2011",
+     "parents": [
+      {
+       "qid": "Q2008551",
+       "label": "Oaktree Capital Management"
+      }
+     ]
+    },
+    {
+     "qid": "Q5794",
+     "label": "Everton F.C.",
+     "rank": "Normal",
+     "start": "2014",
+     "end": "2015",
+     "parents": [
+      {
+       "qid": "Q861168",
+       "label": "Farhad Moshiri"
+      },
+      {
+       "qid": "Q104536386",
+       "label": "777 Partners"
+      }
+     ]
+    },
+    {
+     "qid": "Q7156",
+     "label": "FC Barcelona",
+     "rank": "Normal",
+     "start": "2004",
+     "end": "2009",
+     "parents": [
+      {
+       "qid": "Q3503804",
+       "label": "Supporters of FC Barcelona"
+      },
+      {
+       "qid": "Q9339070",
+       "label": "members of Fútbol Club Barcelona"
+      },
+      {
+       "qid": "Q3091261",
+       "label": "FC Barcelona"
+      }
+     ]
+    },
+    {
+     "qid": "Q8835",
+     "label": "RCD Mallorca",
+     "rank": "Normal",
+     "start": "2000",
+     "end": "2004",
+     "parents": [
+      {
+       "qid": "Q7349577",
+       "label": "Robert Sarver"
+      }
+     ]
+    },
+    {
+     "qid": "Q8835",
+     "label": "RCD Mallorca",
+     "rank": "Normal",
+     "start": "2000",
+     "end": "2000",
+     "parents": [
+      {
+       "qid": "Q7349577",
+       "label": "Robert Sarver"
+      }
+     ]
+    },
+    {
+     "qid": "Q9616",
+     "label": "Chelsea F.C.",
+     "rank": "Normal",
+     "start": "2013",
+     "end": "2014",
+     "parents": [
+      {
+       "qid": "Q120737993",
+       "label": "BlueCo"
+      }
+     ]
+    },
+    {
+     "qid": "Q19353",
+     "label": "FC Anzhi Makhachkala",
+     "rank": "Normal",
+     "start": "2011",
+     "end": "2013",
+     "parents": [
+      {
+       "qid": "Q447250",
+       "label": "Suleyman Kerimov"
+      }
+     ]
+    },
+    {
+     "qid": "Q8682",
+     "label": "Real Madrid Club de Fútbol",
+     "rank": "Normal",
+     "start": "1997",
+     "end": "2000",
+     "parents": [
+      {
+       "qid": "Q97241694",
+       "label": "Q97241694"
+      }
+     ]
+    },
+    {
+     "qid": "Q12217",
+     "label": "Real Madrid Castilla",
+     "rank": "Normal",
+     "start": "1996",
+     "end": "1997",
+     "parents": [
+      {
+       "qid": "Q8682",
+       "label": "Real Madrid Club de Fútbol"
+      }
+     ]
+    },
+    {
+     "qid": "Q513840",
+     "label": "Konyaspor",
+     "rank": "Normal",
+     "start": "2018",
+     "end": "2018",
+     "parents": []
+    },
+    {
+     "qid": "Q856119",
+     "label": "CD Leganés",
+     "rank": "Normal",
+     "start": "1997",
+     "end": "1998",
+     "parents": []
+    },
+    {
+     "qid": "Q1051203",
+     "label": "Qatar SC",
+     "rank": "Normal",
+     "start": "2018",
+     "end": "2019",
+     "parents": []
+    },
+    {
+     "qid": "Q1457",
+     "label": "U.C. Sampdoria",
+     "rank": "Normal",
+     "start": "2015",
+     "end": "2015",
+     "parents": []
+    },
+    {
+     "qid": "Q8780",
+     "label": "RCD Espanyol de Barcelona",
+     "rank": "Normal",
+     "start": "1999",
+     "end": "1999",
+     "parents": []
+    },
+    {
+     "qid": "Q43710",
+     "label": "Antalyaspor",
+     "rank": "Normal",
+     "start": "2015",
+     "end": "2018",
+     "parents": []
+    }
+   ],
+   "nationality": [
+    "Spain",
+    "Cameroon"
+   ],
+   "sportNation": [
+    "Cameroon"
+   ],
+   "citizenship": [
+    "Spain",
+    "Cameroon"
+   ],
+   "positions": [
+    "forward"
+   ]
+  },
+  "Filipe Luís": {
+   "name": "Filipe Luís",
+   "qid": "Q350547",
+   "label": "Filipe Luís",
+   "description": "Brazilian football coach and former association footballer",
+   "enwiki": "Filipe Luís",
+   "ref": "https://www.wikidata.org/wiki/Q350547",
+   "fetched": "2026-09-25",
+   "p54": [
+    {
+     "qid": "Q12217",
+     "label": "Real Madrid Castilla",
+     "rank": "Normal",
+     "start": "2005",
+     "end": "2006",
+     "parents": [
+      {
+       "qid": "Q8682",
+       "label": "Real Madrid Club de Fútbol"
+      }
+     ]
+    },
+    {
+     "qid": "Q81888",
+     "label": "AFC Ajax",
+     "rank": "Normal",
+     "start": "2004",
+     "end": "2005",
+     "parents": [
+      {
+       "qid": "Q2221214",
+       "label": "AFC Ajax N.V."
+      }
+     ]
+    },
+    {
+     "qid": "Q83459",
+     "label": "Brazil men's national football team",
+     "rank": "Normal",
+     "start": "2009",
+     "end": "2019",
+     "parents": [
+      {
+       "qid": "Q244754",
+       "label": "Brazilian Football Confederation"
+      }
+     ]
+    },
+    {
+     "qid": "Q2308235",
+     "label": "Brazil national under-20 football team",
+     "rank": "Normal",
+     "start": "2004",
+     "end": "2005",
+     "parents": [
+      {
+       "qid": "Q244754",
+       "label": "Brazilian Football Confederation"
+      }
+     ]
+    },
+    {
+     "qid": "Q8701",
+     "label": "Atlético Madrid",
+     "rank": "Normal",
+     "start": "2015",
+     "end": "2019",
+     "parents": [
+      {
+       "qid": "Q2457791",
+       "label": "Enrique Cerezo"
+      },
+      {
+       "qid": "Q5210937",
+       "label": "Wanda Group"
+      },
+      {
+       "qid": "Q6015638",
+       "label": "Andrés arcaya"
+      }
+     ]
+    },
+    {
+     "qid": "Q8701",
+     "label": "Atlético Madrid",
+     "rank": "Normal",
+     "start": "2010",
+     "end": "2014",
+     "parents": [
+      {
+       "qid": "Q2457791",
+       "label": "Enrique Cerezo"
+      },
+      {
+       "qid": "Q5210937",
+       "label": "Wanda Group"
+      },
+      {
+       "qid": "Q6015638",
+       "label": "Andrés arcaya"
+      }
+     ]
+    },
+    {
+     "qid": "Q9616",
+     "label": "Chelsea F.C.",
+     "rank": "Normal",
+     "start": "2014",
+     "end": "2015",
+     "parents": [
+      {
+       "qid": "Q120737993",
+       "label": "BlueCo"
+      }
+     ]
+    },
+    {
+     "qid": "Q218334",
+     "label": "Figueirense Futebol Clube",
+     "rank": "Normal",
+     "start": "2003",
+     "end": "2004",
+     "parents": []
+    },
+    {
+     "qid": "Q8760",
+     "label": "Deportivo de A Coruña",
+     "rank": "Normal",
+     "start": "2006",
+     "end": "2008",
+     "parents": []
+    },
+    {
+     "qid": "Q8760",
+     "label": "Deportivo de A Coruña",
+     "rank": "Normal",
+     "start": "2008",
+     "end": "2010",
+     "parents": []
+    },
+    {
+     "qid": "Q17479",
+     "label": "Clube de Regatas do Flamengo",
+     "rank": "Normal",
+     "start": "2019",
+     "end": "2023",
+     "parents": []
+    }
+   ],
+   "nationality": [
+    "Brazil"
+   ],
+   "sportNation": [
+    "Brazil"
+   ],
+   "citizenship": [
+    "Brazil"
+   ],
+   "positions": [
+    "full-back"
+   ]
+  },
+  "Mohamed Salah": {
+   "name": "Mohamed Salah",
+   "qid": "Q1354960",
+   "label": "Mohamed Salah",
+   "description": "Egyptian association football player (born 1992)",
+   "enwiki": "Mohamed Salah",
+   "ref": "https://www.wikidata.org/wiki/Q1354960",
+   "fetched": "2026-09-25",
+   "p54": [
+    {
+     "qid": "Q2739",
+     "label": "AS Roma",
+     "rank": "Normal",
+     "start": "2016",
+     "end": "2017",
+     "parents": [
+      {
+       "qid": "Q28053828",
+       "label": "NEEP Roma Holding"
+      }
+     ]
+    },
+    {
+     "qid": "Q2739",
+     "label": "AS Roma",
+     "rank": "Normal",
+     "start": "2015",
+     "end": "2016",
+     "parents": [
+      {
+       "qid": "Q28053828",
+       "label": "NEEP Roma Holding"
+      }
+     ]
+    },
+    {
+     "qid": "Q1130849",
+     "label": "Liverpool F.C.",
+     "rank": "Normal",
+     "start": "2017",
+     "end": "2026",
+     "parents": [
+      {
+       "qid": "Q1324524",
+       "label": "Fenway Sports Group"
+      }
+     ]
+    },
+    {
+     "qid": "Q2073915",
+     "label": "Al Mokawloon Al Arab SC",
+     "rank": "Normal",
+     "start": "2010",
+     "end": "2012",
+     "parents": [
+      {
+       "qid": "Q4783172",
+       "label": "Arab Contractors"
+      }
+     ]
+    },
+    {
+     "qid": "Q2052",
+     "label": "ACF Fiorentina",
+     "rank": "Normal",
+     "start": "2015",
+     "end": "2015",
+     "parents": [
+      {
+       "qid": "Q3939571",
+       "label": "Rocco Commisso"
+      }
+     ]
+    },
+    {
+     "qid": "Q9616",
+     "label": "Chelsea F.C.",
+     "rank": "Normal",
+     "start": "2014",
+     "end": "2015",
+     "parents": [
+      {
+       "qid": "Q120737993",
+       "label": "BlueCo"
+      }
+     ]
+    },
+    {
+     "qid": "Q28089",
+     "label": "Egypt men's national football team",
+     "rank": "Normal",
+     "start": "2011",
+     "end": "http",
+     "parents": [
+      {
+       "qid": "Q921881",
+       "label": "Egyptian Football Association"
+      }
+     ]
+    },
+    {
+     "qid": "Q189671",
+     "label": "FC Basel",
+     "rank": "Normal",
+     "start": "2012",
+     "end": "2014",
+     "parents": []
+    },
+    {
+     "qid": "Q192641",
+     "label": "Trabzonspor",
+     "rank": "Preferred",
+     "start": "2026",
+     "end": null,
+     "parents": []
+    }
+   ],
+   "nationality": [
+    "Egypt"
+   ],
+   "sportNation": [
+    "Egypt"
+   ],
+   "citizenship": [
+    "Egypt"
+   ],
+   "positions": [
+    "forward",
+    "wing half",
+    "winger"
+   ]
+  },
+  "Juan Cuadrado": {
+   "name": "Juan Cuadrado",
+   "qid": "Q509374",
+   "label": "Juan Cuadrado",
+   "description": "Colombian footballer",
+   "enwiki": "Juan Cuadrado",
+   "ref": "https://www.wikidata.org/wiki/Q509374",
+   "fetched": "2026-09-25",
+   "p54": [
+    {
+     "qid": "Q212564",
+     "label": "Colombia men's national football team",
+     "rank": "Normal",
+     "start": "2010",
+     "end": "2023",
+     "parents": [
+      {
+       "qid": "Q830922",
+       "label": "Colombian Football Federation"
+      }
+     ]
+    },
+    {
+     "qid": "Q631",
+     "label": "Inter Milan",
+     "rank": "Normal",
+     "start": "2023",
+     "end": "2024",
+     "parents": [
+      {
+       "qid": "Q2008551",
+       "label": "Oaktree Capital Management"
+      }
+     ]
+    },
+    {
+     "qid": "Q1422",
+     "label": "Juventus FC",
+     "rank": "Normal",
+     "start": "2017",
+     "end": "2023",
+     "parents": [
+      {
+       "qid": "Q208697",
+       "label": "financial market"
+      },
+      {
+       "qid": "Q1384140",
+       "label": "Exor"
+      },
+      {
+       "qid": "Q28860712",
+       "label": "Lindsell Train"
+      }
+     ]
+    },
+    {
+     "qid": "Q1422",
+     "label": "Juventus FC",
+     "rank": "Normal",
+     "start": "2015",
+     "end": "2017",
+     "parents": [
+      {
+       "qid": "Q208697",
+       "label": "financial market"
+      },
+      {
+       "qid": "Q1384140",
+       "label": "Exor"
+      },
+      {
+       "qid": "Q28860712",
+       "label": "Lindsell Train"
+      }
+     ]
+    },
+    {
+     "qid": "Q2052",
+     "label": "ACF Fiorentina",
+     "rank": "Normal",
+     "start": "2012",
+     "end": "2015",
+     "parents": [
+      {
+       "qid": "Q3939571",
+       "label": "Rocco Commisso"
+      }
+     ]
+    },
+    {
+     "qid": "Q2798",
+     "label": "Udinese Calcio",
+     "rank": "Normal",
+     "start": "2009",
+     "end": "2012",
+     "parents": [
+      {
+       "qid": "Q10628",
+       "label": "Giampaolo Pozzo"
+      }
+     ]
+    },
+    {
+     "qid": "Q9616",
+     "label": "Chelsea F.C.",
+     "rank": "Normal",
+     "start": "2015",
+     "end": "2017",
+     "parents": [
+      {
+       "qid": "Q120737993",
+       "label": "BlueCo"
+      }
+     ]
+    },
+    {
+     "qid": "Q289613",
+     "label": "Pisa SC",
+     "rank": "Normal",
+     "start": "2025",
+     "end": "2026",
+     "parents": []
+    },
+    {
+     "qid": "Q332527",
+     "label": "Deportivo Independiente Medellín",
+     "rank": "Normal",
+     "start": "2008",
+     "end": "2009",
+     "parents": []
+    },
+    {
+     "qid": "Q391984",
+     "label": "Millonarios",
+     "rank": "Preferred",
+     "start": "2026",
+     "end": null,
+     "parents": []
+    },
+    {
+     "qid": "Q1886",
+     "label": "Atalanta BC",
+     "rank": "Normal",
+     "start": "2024",
+     "end": "2025",
+     "parents": []
+    },
+    {
+     "qid": "Q13391",
+     "label": "US Lecce",
+     "rank": "Normal",
+     "start": "2011",
+     "end": "2012",
+     "parents": []
+    }
+   ],
+   "nationality": [
+    "Colombia"
+   ],
+   "sportNation": [
+    "Colombia"
+   ],
+   "citizenship": [
+    "Colombia"
+   ],
+   "positions": [
+    "full-back"
+   ]
+  },
+  "Michael Ballack": {
+   "name": "Michael Ballack",
+   "qid": "Q11948",
+   "label": "Michael Ballack",
+   "description": "German association football player (born 1976)",
+   "enwiki": "Michael Ballack",
+   "ref": "https://www.wikidata.org/wiki/Q11948",
+   "fetched": "2026-09-25",
+   "p54": [
+    {
+     "qid": "Q104761",
+     "label": "Bayer 04 Leverkusen",
+     "rank": "Normal",
+     "start": "1999",
+     "end": "2002",
+     "parents": [
+      {
+       "qid": "Q152051",
+       "label": "Bayer"
+      }
+     ]
+    },
+    {
+     "qid": "Q104761",
+     "label": "Bayer 04 Leverkusen",
+     "rank": "Normal",
+     "start": "2010",
+     "end": "2012",
+     "parents": [
+      {
+       "qid": "Q152051",
+       "label": "Bayer"
+      }
+     ]
+    },
+    {
+     "qid": "Q314851",
+     "label": "Germany national under-21 football team",
+     "rank": "Normal",
+     "start": "1996",
+     "end": "1998",
+     "parents": [
+      {
+       "qid": "Q154191",
+       "label": "German Football Association"
+      }
+     ]
+    },
+    {
+     "qid": "Q9616",
+     "label": "Chelsea F.C.",
+     "rank": "Normal",
+     "start": "2006",
+     "end": "2010",
+     "parents": [
+      {
+       "qid": "Q120737993",
+       "label": "BlueCo"
+      }
+     ]
+    },
+    {
+     "qid": "Q43310",
+     "label": "Germany men's national association football team",
+     "rank": "Normal",
+     "start": "1999",
+     "end": "2010",
+     "parents": [
+      {
+       "qid": "Q154191",
+       "label": "German Football Association"
+      }
+     ]
+    },
+    {
+     "qid": "Q16525407",
+     "label": "1. FC Kaiserslautern II",
+     "rank": "Normal",
+     "start": "1997",
+     "end": "1998",
+     "parents": [
+      {
+       "qid": "Q8466",
+       "label": "1. FC Kaiserslautern"
+      }
+     ]
+    },
+    {
+     "qid": "Q161554",
+     "label": "Chemnitzer FC",
+     "rank": "Normal",
+     "start": "1995",
+     "end": "1997",
+     "parents": []
+    },
+    {
+     "qid": "Q8466",
+     "label": "1. FC Kaiserslautern",
+     "rank": "Normal",
+     "start": "1997",
+     "end": "1999",
+     "parents": []
+    },
+    {
+     "qid": "Q15789",
+     "label": "FC Bayern Munich",
+     "rank": "Normal",
+     "start": "2002",
+     "end": "2006",
+     "parents": []
+    }
+   ],
+   "nationality": [
+    "Germany"
+   ],
+   "sportNation": [
+    "Germany"
+   ],
+   "citizenship": [
+    "Germany"
+   ],
+   "positions": [
+    "midfielder"
+   ]
+  },
+  "Thiago Silva": {
+   "name": "Thiago Silva",
+   "qid": "Q210453",
+   "label": "Thiago Silva",
+   "description": "Brazilian association football player",
+   "enwiki": "Thiago Silva",
+   "ref": "https://www.wikidata.org/wiki/Q210453",
+   "fetched": "2026-09-25",
+   "p54": [
+    {
+     "qid": "Q80987",
+     "label": "Fluminense F.C.",
+     "rank": "Preferred",
+     "start": "2026",
+     "end": null,
+     "parents": []
+    },
+    {
+     "qid": "Q80987",
+     "label": "Fluminense F.C.",
+     "rank": "Normal",
+     "start": "1998",
+     "end": "2000",
+     "parents": []
+    },
+    {
+     "qid": "Q80987",
+     "label": "Fluminense F.C.",
+     "rank": "Normal",
+     "start": "2006",
+     "end": "2008",
+     "parents": []
+    },
+    {
+     "qid": "Q80987",
+     "label": "Fluminense F.C.",
+     "rank": "Normal",
+     "start": "2001",
+     "end": "2001",
+     "parents": []
+    },
+    {
+     "qid": "Q80987",
+     "label": "Fluminense F.C.",
+     "rank": "Normal",
+     "start": "2024",
+     "end": "2025",
+     "parents": []
+    },
+    {
+     "qid": "Q128446",
+     "label": "FC Porto",
+     "rank": "Normal",
+     "start": "2026",
+     "end": "2026",
+     "parents": []
+    },
+    {
+     "qid": "Q128446",
+     "label": "FC Porto",
+     "rank": "Normal",
+     "start": "2004",
+     "end": "2005",
+     "parents": []
+    },
+    {
+     "qid": "Q910453",
+     "label": "Esporte Clube Juventude",
+     "rank": "Normal",
+     "start": "2003",
+     "end": "2004",
+     "parents": []
+    },
+    {
+     "qid": "Q4859851",
+     "label": "Barcelona Esporte Clube",
+     "rank": "Normal",
+     "start": "2000",
+     "end": "2001",
+     "parents": []
+    },
+    {
+     "qid": "Q5423714",
+     "label": "FC Porto B",
+     "rank": "Normal",
+     "start": "2004",
+     "end": "2005",
+     "parents": []
+    },
+    {
+     "qid": "Q7159367",
+     "label": "Pedrabranca Futebol Clube",
+     "rank": "Normal",
+     "start": "2002",
+     "end": "2003",
+     "parents": []
+    },
+    {
+     "qid": "Q83459",
+     "label": "Brazil men's national football team",
+     "rank": "Normal",
+     "start": "2008",
+     "end": "2022",
+     "parents": [
+      {
+       "qid": "Q244754",
+       "label": "Brazilian Football Confederation"
+      }
+     ]
+    },
+    {
+     "qid": "Q483020",
+     "label": "Paris Saint-Germain FC",
+     "rank": "Normal",
+     "start": "2012",
+     "end": "2020",
+     "parents": [
+      {
+       "qid": "Q28221762",
+       "label": "Qatar Sports Investments"
+      }
+     ]
+    },
+    {
+     "qid": "Q899189",
+     "label": "Brazil national under-23 football team",
+     "rank": "Normal",
+     "start": "2008",
+     "end": "2012",
+     "parents": [
+      {
+       "qid": "Q244754",
+       "label": "Brazilian Football Confederation"
+      }
+     ]
+    },
+    {
+     "qid": "Q1543",
+     "label": "AC Milan",
+     "rank": "Normal",
+     "start": "2009",
+     "end": "2012",
+     "parents": [
+      {
+       "qid": "Q116116844",
+       "label": "RedBird Capital Partners"
+      }
+     ]
+    },
+    {
+     "qid": "Q9616",
+     "label": "Chelsea F.C.",
+     "rank": "Normal",
+     "start": "2020",
+     "end": "2024",
+     "parents": [
+      {
+       "qid": "Q120737993",
+       "label": "BlueCo"
+      }
+     ]
+    },
+    {
+     "qid": "Q17497",
+     "label": "FC Dinamo Moscow",
+     "rank": "Normal",
+     "start": "2005",
+     "end": "2005",
+     "parents": [
+      {
+       "qid": "Q1269063",
+       "label": "Dynamo Sports Club"
+      }
+     ]
+    }
+   ],
+   "nationality": [
+    "France",
+    "Brazil"
+   ],
+   "sportNation": [
+    "Brazil"
+   ],
+   "citizenship": [
+    "France",
+    "Brazil"
+   ],
+   "positions": [
+    "centre-back"
+   ]
+  },
+  "Thibaut Courtois": {
+   "name": "Thibaut Courtois",
+   "qid": "Q73360",
+   "label": "Thibaut Courtois",
+   "description": "Belgian association football player (born 1992)",
+   "enwiki": "Thibaut Courtois",
+   "ref": "https://www.wikidata.org/wiki/Q73360",
+   "fetched": "2026-09-25",
+   "p54": [
+    {
+     "qid": "Q166776",
+     "label": "Belgium men's national football team",
+     "rank": "Normal",
+     "start": "2011",
+     "end": null,
+     "parents": [
+      {
+       "qid": "Q381124",
+       "label": "Royal Belgian Football Association"
+      }
+     ]
+    },
+    {
+     "qid": "Q15224541",
+     "label": "Belgium national under-18 football team",
+     "rank": "Normal",
+     "start": "2009",
+     "end": "2010",
+     "parents": [
+      {
+       "qid": "Q381124",
+       "label": "Royal Belgian Football Association"
+      }
+     ]
+    },
+    {
+     "qid": "Q8701",
+     "label": "Atlético Madrid",
+     "rank": "Normal",
+     "start": "2011",
+     "end": "2014",
+     "parents": [
+      {
+       "qid": "Q2457791",
+       "label": "Enrique Cerezo"
+      },
+      {
+       "qid": "Q5210937",
+       "label": "Wanda Group"
+      },
+      {
+       "qid": "Q6015638",
+       "label": "Andrés arcaya"
+      }
+     ]
+    },
+    {
+     "qid": "Q9616",
+     "label": "Chelsea F.C.",
+     "rank": "Normal",
+     "start": "2011",
+     "end": "2018",
+     "parents": [
+      {
+       "qid": "Q120737993",
+       "label": "BlueCo"
+      }
+     ]
+    },
+    {
+     "qid": "Q216032",
+     "label": "K.R.C. Genk",
+     "rank": "Normal",
+     "start": "2009",
+     "end": "2011",
+     "parents": []
+    },
+    {
+     "qid": "Q8682",
+     "label": "Real Madrid Club de Fútbol",
+     "rank": "Preferred",
+     "start": "2018",
+     "end": null,
+     "parents": [
+      {
+       "qid": "Q97241694",
+       "label": "Q97241694"
+      }
+     ]
+    }
+   ],
+   "nationality": [
+    "Belgium"
+   ],
+   "sportNation": [
+    "Belgium"
+   ],
+   "citizenship": [
+    "Belgium"
+   ],
+   "positions": [
+    "goalkeeper"
+   ]
+  },
+  "N'Golo Kanté": {
+   "name": "N'Golo Kanté",
+   "qid": "Q16665941",
+   "label": "N'Golo Kanté",
+   "description": "French footballer (born 1991)",
+   "enwiki": "N'Golo Kanté",
+   "ref": "https://www.wikidata.org/wiki/Q16665941",
+   "fetched": "2026-09-25",
+   "p54": [
+    {
+     "qid": "Q9616",
+     "label": "Chelsea F.C.",
+     "rank": "Normal",
+     "start": "2016",
+     "end": "2023",
+     "parents": [
+      {
+       "qid": "Q120737993",
+       "label": "BlueCo"
+      }
+     ]
+    },
+    {
+     "qid": "Q19481",
+     "label": "Leicester City F.C.",
+     "rank": "Normal",
+     "start": "2015",
+     "end": "2016",
+     "parents": [
+      {
+       "qid": "Q6411959",
+       "label": "King Power"
+      }
+     ]
+    },
+    {
+     "qid": "Q47774",
+     "label": "France men's national association football team",
+     "rank": "Normal",
+     "start": "2016",
+     "end": null,
+     "parents": [
+      {
+       "qid": "Q244750",
+       "label": "French Football Federation"
+      }
+     ]
+    },
+    {
+     "qid": "Q193377",
+     "label": "Stade Malherbe Caen",
+     "rank": "Normal",
+     "start": "2013",
+     "end": "2015",
+     "parents": []
+    },
+    {
+     "qid": "Q309400",
+     "label": "US Boulogne",
+     "rank": "Normal",
+     "start": "2011",
+     "end": "2013",
+     "parents": []
+    },
+    {
+     "qid": "Q309480",
+     "label": "Al Ittihad FC",
+     "rank": "Normal",
+     "start": "2023",
+     "end": "2026",
+     "parents": []
+    },
+    {
+     "qid": "Q6601875",
+     "label": "Fenerbahçe Istanbul",
+     "rank": "Preferred",
+     "start": "2026",
+     "end": null,
+     "parents": [
+      {
+       "qid": "Q19648",
+       "label": "Fenerbahçe SK"
+      }
+     ]
+    }
+   ],
+   "nationality": [
+    "France",
+    "Mali"
+   ],
+   "sportNation": [
+    "France"
+   ],
+   "citizenship": [
+    "France",
+    "Mali"
+   ],
+   "positions": [
+    "midfielder"
+   ]
+  },
+  "John Terry": {
+   "name": "John Terry",
+   "qid": "Q83456",
+   "label": "John Terry",
+   "description": "English association football player (born 1980)",
+   "enwiki": "John Terry",
+   "ref": "https://www.wikidata.org/wiki/Q83456",
+   "fetched": "2026-09-25",
+   "p54": [
+    {
+     "qid": "Q204238",
+     "label": "England national under-21 association football team",
+     "rank": "Normal",
+     "start": "2000",
+     "end": "2002",
+     "parents": [
+      {
+       "qid": "Q9500",
+       "label": "The Football Association"
+      }
+     ]
+    },
+    {
+     "qid": "Q9616",
+     "label": "Chelsea F.C.",
+     "rank": "Normal",
+     "start": "1998",
+     "end": "2017",
+     "parents": [
+      {
+       "qid": "Q120737993",
+       "label": "BlueCo"
+      }
+     ]
+    },
+    {
+     "qid": "Q18711",
+     "label": "Aston Villa F.C.",
+     "rank": "Normal",
+     "start": "2017",
+     "end": "2018",
+     "parents": [
+      {
+       "qid": "Q1431063",
+       "label": "Nassef Sawiris"
+      },
+      {
+       "qid": "Q20857914",
+       "label": "Wes Edens"
+      }
+     ]
+    },
+    {
+     "qid": "Q19490",
+     "label": "Nottingham Forest F.C.",
+     "rank": "Normal",
+     "start": "2000",
+     "end": "2000",
+     "parents": [
+      {
+       "qid": "Q3270870",
+       "label": "Evangelos Marinakis"
+      }
+     ]
+    },
+    {
+     "qid": "Q47762",
+     "label": "England men's national association football team",
+     "rank": "Normal",
+     "start": "2003",
+     "end": "2012",
+     "parents": [
+      {
+       "qid": "Q9500",
+       "label": "The Football Association"
+      }
+     ]
+    }
+   ],
+   "nationality": [
+    "United Kingdom",
+    "England"
+   ],
+   "sportNation": [
+    "England"
+   ],
+   "citizenship": [
+    "United Kingdom"
+   ],
+   "positions": [
+    "centre-back"
+   ]
+  },
+  "Luís Figo": {
+   "name": "Luís Figo",
+   "qid": "Q483145",
+   "label": "Luís Figo",
+   "description": "Portuguese football player (born 1972)",
+   "enwiki": "Luís Figo",
+   "ref": "https://www.wikidata.org/wiki/Q483145",
+   "fetched": "2026-09-25",
+   "p54": [
+    {
+     "qid": "Q267245",
+     "label": "Portugal men's national football team",
+     "rank": "normal",
+     "start": "1991",
+     "end": "2006",
+     "parents": [
+      {
+       "qid": "Q309005",
+       "label": "Portuguese Football Federation"
+      }
+     ]
+    },
+    {
+     "qid": "Q1630430",
+     "label": "Portugal national under-21 football team",
+     "rank": "normal",
+     "start": "1991",
+     "end": "1994",
+     "parents": [
+      {
+       "qid": "Q309005",
+       "label": "Portuguese Football Federation"
+      }
+     ]
+    },
+    {
+     "qid": "Q1772776",
+     "label": "Portugal national under-20 football team",
+     "rank": "normal",
+     "start": "1990",
+     "end": "1991",
+     "parents": [
+      {
+       "qid": "Q309005",
+       "label": "Portuguese Football Federation"
+      }
+     ]
+    },
+    {
+     "qid": "Q3590754",
+     "label": "Portugal national under-17 football team",
+     "rank": "normal",
+     "start": "1989",
+     "end": "1989",
+     "parents": [
+      {
+       "qid": "Q309005",
+       "label": "Portuguese Football Federation"
+      }
+     ]
+    },
+    {
+     "qid": "Q631",
+     "label": "Inter Milan",
+     "rank": "normal",
+     "start": "2005",
+     "end": "2009",
+     "parents": [
+      {
+       "qid": "Q2008551",
+       "label": "Oaktree Capital Management"
+      }
+     ]
+    },
+    {
+     "qid": "Q7156",
+     "label": "FC Barcelona",
+     "rank": "normal",
+     "start": "1995",
+     "end": "2000",
+     "parents": [
+      {
+       "qid": "Q3503804",
+       "label": "Supporters of FC Barcelona"
+      },
+      {
+       "qid": "Q9339070",
+       "label": "members of Fútbol Club Barcelona"
+      },
+      {
+       "qid": "Q3091261",
+       "label": "FC Barcelona"
+      }
+     ]
+    },
+    {
+     "qid": "Q8682",
+     "label": "Real Madrid Club de Fútbol",
+     "rank": "normal",
+     "start": "2000",
+     "end": "2005",
+     "parents": [
+      {
+       "qid": "Q97241694",
+       "label": "Q97241694"
+      }
+     ]
+    },
+    {
+     "qid": "Q75729",
+     "label": "Sporting CP",
+     "rank": "normal",
+     "start": "1989",
+     "end": "1995",
+     "parents": []
+    },
+    {
+     "qid": "Q3873511",
+     "label": "Portugal national under-18 football team",
+     "rank": "normal",
+     "start": "1988",
+     "end": "1990",
+     "parents": []
+    },
+    {
+     "qid": "Q7232579",
+     "label": "Portugal national under-16 football team",
+     "rank": "normal",
+     "start": "1988",
+     "end": "1989",
+     "parents": []
+    }
+   ],
+   "nationality": [
+    "Portugal"
+   ],
+   "sportNation": [
+    "Portugal"
+   ],
+   "citizenship": [
+    "Portugal"
+   ],
+   "positions": [
+    "wing half"
+   ]
+  },
+  "Mesut Özil": {
+   "name": "Mesut Özil",
+   "qid": "Q83488",
+   "label": "Mesut Özil",
+   "description": "Turkish-German association football player",
+   "enwiki": "Mesut Özil",
+   "ref": "https://www.wikidata.org/wiki/Q83488",
+   "fetched": "2026-09-25",
+   "p54": [
+    {
+     "qid": "Q314851",
+     "label": "Germany national under-21 football team",
+     "rank": "normal",
+     "start": "2007",
+     "end": "2009",
+     "parents": [
+      {
+       "qid": "Q154191",
+       "label": "German Football Association"
+      }
+     ]
+    },
+    {
+     "qid": "Q324854",
+     "label": "Germany national under-19 football team",
+     "rank": "normal",
+     "start": "2006",
+     "end": "2007",
+     "parents": [
+      {
+       "qid": "Q154191",
+       "label": "German Football Association"
+      }
+     ]
+    },
+    {
+     "qid": "Q9617",
+     "label": "Arsenal F.C.",
+     "rank": "normal",
+     "start": "2013",
+     "end": "2021",
+     "parents": [
+      {
+       "qid": "Q29438842",
+       "label": "Kroenke Sports & Entertainment"
+      }
+     ]
+    },
+    {
+     "qid": "Q32494",
+     "label": "Schalke 04",
+     "rank": "normal",
+     "start": "2006",
+     "end": "2008",
+     "parents": [
+      {
+       "qid": "Q1100117",
+       "label": "Clemens Tönnies"
+      }
+     ]
+    },
+    {
+     "qid": "Q43310",
+     "label": "Germany men's national association football team",
+     "rank": "normal",
+     "start": "2009",
+     "end": "2018",
+     "parents": [
+      {
+       "qid": "Q154191",
+       "label": "German Football Association"
+      }
+     ]
+    },
+    {
+     "qid": "Q51976",
+     "label": "SV Werder Bremen",
+     "rank": "normal",
+     "start": "2008",
+     "end": "2010",
+     "parents": [
+      {
+       "qid": "Q24249327",
+       "label": "Hubertus Hess-Grunewald"
+      }
+     ]
+    },
+    {
+     "qid": "Q6601875",
+     "label": "Fenerbahçe Istanbul",
+     "rank": "normal",
+     "start": "2021",
+     "end": "2022",
+     "parents": [
+      {
+       "qid": "Q19648",
+       "label": "Fenerbahçe SK"
+      }
+     ]
+    },
+    {
+     "qid": "Q8682",
+     "label": "Real Madrid Club de Fútbol",
+     "rank": "normal",
+     "start": "2009",
+     "end": "2013",
+     "parents": [
+      {
+       "qid": "Q97241694",
+       "label": "Q97241694"
+      }
+     ]
+    },
+    {
+     "qid": "Q857938",
+     "label": "İstanbul Başakşehir F.K.",
+     "rank": "normal",
+     "start": "2022",
+     "end": "2023",
+     "parents": []
+    }
+   ],
+   "nationality": [
+    "Turkey",
+    "Germany"
+   ],
+   "sportNation": [
+    "Germany"
+   ],
+   "citizenship": [
+    "Turkey",
+    "Germany"
+   ],
+   "positions": [
+    "midfielder",
+    "attacking midfielder"
+   ]
+  },
+  "Kaká": {
+   "name": "Kaká",
+   "qid": "Q531814",
+   "label": "Kaká",
+   "description": "Brazilian association football player (born 1982)",
+   "enwiki": "Kaká",
+   "ref": "https://www.wikidata.org/wiki/Q531814",
+   "fetched": "2026-09-25",
+   "p54": [
+    {
+     "qid": "Q8682",
+     "label": "Real Madrid Club de Fútbol",
+     "rank": "normal",
+     "start": "2009",
+     "end": "2013",
+     "parents": [
+      {
+       "qid": "Q97241694",
+       "label": "Q97241694"
+      }
+     ]
+    },
+    {
+     "qid": "Q83459",
+     "label": "Brazil men's national football team",
+     "rank": "normal",
+     "start": "2002",
+     "end": "2016",
+     "parents": [
+      {
+       "qid": "Q244754",
+       "label": "Brazilian Football Confederation"
+      }
+     ]
+    },
+    {
+     "qid": "Q2308235",
+     "label": "Brazil national under-20 football team",
+     "rank": "normal",
+     "start": "2000",
+     "end": "2001",
+     "parents": [
+      {
+       "qid": "Q244754",
+       "label": "Brazilian Football Confederation"
+      }
+     ]
+    },
+    {
+     "qid": "Q2308235",
+     "label": "Brazil national under-20 football team",
+     "rank": "normal",
+     "start": "2001",
+     "end": "2001",
+     "parents": [
+      {
+       "qid": "Q244754",
+       "label": "Brazilian Football Confederation"
+      }
+     ]
+    },
+    {
+     "qid": "Q1543",
+     "label": "AC Milan",
+     "rank": "normal",
+     "start": "2003",
+     "end": "2009",
+     "parents": [
+      {
+       "qid": "Q116116844",
+       "label": "RedBird Capital Partners"
+      }
+     ]
+    },
+    {
+     "qid": "Q1543",
+     "label": "AC Milan",
+     "rank": "normal",
+     "start": "2013",
+     "end": "2014",
+     "parents": [
+      {
+       "qid": "Q116116844",
+       "label": "RedBird Capital Partners"
+      }
+     ]
+    },
+    {
+     "qid": "Q15214308",
+     "label": "Orlando City SC",
+     "rank": "normal",
+     "start": "2014",
+     "end": "2017",
+     "parents": [
+      {
+       "qid": "Q18543",
+       "label": "Major League Soccer"
+      },
+      {
+       "qid": "Q134550821",
+       "label": "Orlando Sports Holdings"
+      }
+     ]
+    },
+    {
+     "qid": "Q38568",
+     "label": "São Paulo FC",
+     "rank": "normal",
+     "start": "2001",
+     "end": "2003",
+     "parents": []
+    },
+    {
+     "qid": "Q38568",
+     "label": "São Paulo FC",
+     "rank": "normal",
+     "start": "2014",
+     "end": "2014",
+     "parents": []
+    }
+   ],
+   "nationality": [
+    "Italy",
+    "Brazil"
+   ],
+   "sportNation": [
+    "Brazil"
+   ],
+   "citizenship": [
+    "Italy",
+    "Brazil"
+   ],
+   "positions": [
+    "midfielder"
+   ]
+  },
+  "Wayne Rooney": {
+   "name": "Wayne Rooney",
+   "qid": "Q266613",
+   "label": "Wayne Rooney",
+   "description": "English footballer and manager",
+   "enwiki": "Wayne Rooney",
+   "ref": "https://www.wikidata.org/wiki/Q266613",
+   "fetched": "2026-09-25",
+   "p54": [
+    {
+     "qid": "Q238593",
+     "label": "D.C. United",
+     "rank": "normal",
+     "start": "2018",
+     "end": "2019",
+     "parents": [
+      {
+       "qid": "Q1187973",
+       "label": "Eastern Conference"
+      },
+      {
+       "qid": "Q18543",
+       "label": "Major League Soccer"
+      }
+     ]
+    },
+    {
+     "qid": "Q18656",
+     "label": "Manchester United F.C.",
+     "rank": "normal",
+     "start": "2004",
+     "end": "2017",
+     "parents": [
+      {
+       "qid": "Q27346385",
+       "label": "Manchester United plc"
+      },
+      {
+       "qid": "Q673231",
+       "label": "Ineos"
+      },
+      {
+       "qid": "Q99870964",
+       "label": "Manchester United Limited"
+      }
+     ]
+    },
+    {
+     "qid": "Q2358861",
+     "label": "England national under-19 association football team",
+     "rank": "normal",
+     "start": "2002",
+     "end": "2003",
+     "parents": [
+      {
+       "qid": "Q9500",
+       "label": "The Football Association"
+      }
+     ]
+    },
+    {
+     "qid": "Q2752922",
+     "label": "England national under-17 association football team",
+     "rank": "normal",
+     "start": "2001",
+     "end": "2002",
+     "parents": [
+      {
+       "qid": "Q9500",
+       "label": "The Football Association"
+      }
+     ]
+    },
+    {
+     "qid": "Q5794",
+     "label": "Everton F.C.",
+     "rank": "normal",
+     "start": "2017",
+     "end": "2018",
+     "parents": [
+      {
+       "qid": "Q861168",
+       "label": "Farhad Moshiri"
+      },
+      {
+       "qid": "Q104536386",
+       "label": "777 Partners"
+      }
+     ]
+    },
+    {
+     "qid": "Q5794",
+     "label": "Everton F.C.",
+     "rank": "normal",
+     "start": "2002",
+     "end": "2004",
+     "parents": [
+      {
+       "qid": "Q861168",
+       "label": "Farhad Moshiri"
+      },
+      {
+       "qid": "Q104536386",
+       "label": "777 Partners"
+      }
+     ]
+    },
+    {
+     "qid": "Q19470",
+     "label": "Derby County F.C.",
+     "rank": "normal",
+     "start": "2019",
+     "end": "2021",
+     "parents": [
+      {
+       "qid": "Q30122352",
+       "label": "Mel Morris"
+      }
+     ]
+    },
+    {
+     "qid": "Q47762",
+     "label": "England men's national association football team",
+     "rank": "normal",
+     "start": "2003",
+     "end": "2018",
+     "parents": [
+      {
+       "qid": "Q9500",
+       "label": "The Football Association"
+      }
+     ]
+    }
+   ],
+   "nationality": [
+    "United Kingdom",
+    "England"
+   ],
+   "sportNation": [
+    "England"
+   ],
+   "citizenship": [
+    "United Kingdom"
+   ],
+   "positions": [
+    "forward",
+    "central midfielder"
+   ]
+  },
+  "Xabi Alonso": {
+   "name": "Xabi Alonso",
+   "qid": "Q208104",
+   "label": "Xabi Alonso",
+   "description": "Spanish football manager and player",
+   "enwiki": "Xabi Alonso",
+   "ref": "https://www.wikidata.org/wiki/Q208104",
+   "fetched": "2026-09-25",
+   "p54": [
+    {
+     "qid": "Q1067750",
+     "label": "Real Sociedad B",
+     "rank": "normal",
+     "start": "1999",
+     "end": "2000",
+     "parents": [
+      {
+       "qid": "Q10315",
+       "label": "Real Sociedad"
+      }
+     ]
+    },
+    {
+     "qid": "Q8682",
+     "label": "Real Madrid Club de Fútbol",
+     "rank": "normal",
+     "start": "2009",
+     "end": "2014",
+     "parents": [
+      {
+       "qid": "Q97241694",
+       "label": "Q97241694"
+      }
+     ]
+    },
+    {
+     "qid": "Q1129595",
+     "label": "Spain national under-21 association football team",
+     "rank": "normal",
+     "start": "2002",
+     "end": "2003",
+     "parents": [
+      {
+       "qid": "Q207615",
+       "label": "Royal Spanish Football Federation"
+      }
+     ]
+    },
+    {
+     "qid": "Q1130849",
+     "label": "Liverpool F.C.",
+     "rank": "normal",
+     "start": "2004",
+     "end": "2009",
+     "parents": [
+      {
+       "qid": "Q1324524",
+       "label": "Fenway Sports Group"
+      }
+     ]
+    },
+    {
+     "qid": "Q3589784",
+     "label": "Spain national under-18 football team",
+     "rank": "normal",
+     "start": "2000",
+     "end": "2000",
+     "parents": [
+      {
+       "qid": "Q207615",
+       "label": "Royal Spanish Football Federation"
+      }
+     ]
+    },
+    {
+     "qid": "Q42267",
+     "label": "Spain men's national football team",
+     "rank": "normal",
+     "start": "2003",
+     "end": "2014",
+     "parents": [
+      {
+       "qid": "Q207615",
+       "label": "Royal Spanish Football Federation"
+      }
+     ]
+    },
+    {
+     "qid": "Q738846",
+     "label": "Basque Country regional football team",
+     "rank": "normal",
+     "start": "2001",
+     "end": "2012",
+     "parents": []
+    },
+    {
+     "qid": "Q770740",
+     "label": "SD Eibar",
+     "rank": "normal",
+     "start": "2000",
+     "end": "2001",
+     "parents": []
+    },
+    {
+     "qid": "Q1967477",
+     "label": "Antiguoko",
+     "rank": "normal",
+     "start": "1990",
+     "end": "1999",
+     "parents": []
+    },
+    {
+     "qid": "Q10315",
+     "label": "Real Sociedad",
+     "rank": "normal",
+     "start": "2000",
+     "end": "2004",
+     "parents": []
+    },
+    {
+     "qid": "Q15789",
+     "label": "FC Bayern Munich",
+     "rank": "normal",
+     "start": "2014",
+     "end": "2017",
+     "parents": []
+    }
+   ],
+   "nationality": [
+    "Spain"
+   ],
+   "sportNation": [
+    "Spain"
+   ],
+   "citizenship": [
+    "Spain"
+   ],
+   "positions": [
+    "midfielder"
+   ]
+  },
+  "Gareth Bale": {
+   "name": "Gareth Bale",
+   "qid": "Q184586",
+   "label": "Gareth Bale",
+   "description": "Welsh association football player",
+   "enwiki": "Gareth Bale",
+   "ref": "https://www.wikidata.org/wiki/Q184586",
+   "fetched": "2026-09-25",
+   "p54": [
+    {
+     "qid": "Q18380286",
+     "label": "Los Angeles FC",
+     "rank": "normal",
+     "start": "2022",
+     "end": "2022",
+     "parents": [
+      {
+       "qid": "Q18543",
+       "label": "Major League Soccer"
+      },
+      {
+       "qid": "Q60047641",
+       "label": "Bennett Rosenthal"
+      }
+     ]
+    },
+    {
+     "qid": "Q180857",
+     "label": "Wales men's national association football team",
+     "rank": "normal",
+     "start": "2006",
+     "end": "2022",
+     "parents": [
+      {
+       "qid": "Q275173",
+       "label": "Football Association of Wales"
+      }
+     ]
+    },
+    {
+     "qid": "Q946297",
+     "label": "Wales national under-21 football team",
+     "rank": "normal",
+     "start": "2006",
+     "end": "2008",
+     "parents": [
+      {
+       "qid": "Q275173",
+       "label": "Football Association of Wales"
+      }
+     ]
+    },
+    {
+     "qid": "Q3590810",
+     "label": "Wales national under-19 football team",
+     "rank": "normal",
+     "start": "2005",
+     "end": "2005",
+     "parents": [
+      {
+       "qid": "Q275173",
+       "label": "Football Association of Wales"
+      }
+     ]
+    },
+    {
+     "qid": "Q3590809",
+     "label": "Wales national under-17 football team",
+     "rank": "normal",
+     "start": "2005",
+     "end": "2006",
+     "parents": [
+      {
+       "qid": "Q275173",
+       "label": "Football Association of Wales"
+      }
+     ]
+    },
+    {
+     "qid": "Q18741",
+     "label": "Tottenham Hotspur F.C.",
+     "rank": "normal",
+     "start": "2020",
+     "end": "2021",
+     "parents": [
+      {
+       "qid": "Q5323703",
+       "label": "ENIC Group"
+      }
+     ]
+    },
+    {
+     "qid": "Q18741",
+     "label": "Tottenham Hotspur F.C.",
+     "rank": "normal",
+     "start": "2007",
+     "end": "2013",
+     "parents": [
+      {
+       "qid": "Q5323703",
+       "label": "ENIC Group"
+      }
+     ]
+    },
+    {
+     "qid": "Q8682",
+     "label": "Real Madrid Club de Fútbol",
+     "rank": "normal",
+     "start": "2013",
+     "end": "2022",
+     "parents": [
+      {
+       "qid": "Q97241694",
+       "label": "Q97241694"
+      }
+     ]
+    },
+    {
+     "qid": "Q18732",
+     "label": "Southampton F.C.",
+     "rank": "normal",
+     "start": "2006",
+     "end": "2007",
+     "parents": []
+    }
+   ],
+   "nationality": [
+    "United Kingdom",
+    "Wales"
+   ],
+   "sportNation": [
+    "Wales"
+   ],
+   "citizenship": [
+    "United Kingdom"
+   ],
+   "positions": [
+    "wing half"
+   ]
+  },
+  "Cesc Fàbregas": {
+   "name": "Cesc Fàbregas",
+   "qid": "Q17499",
+   "label": "Cesc Fàbregas",
+   "description": "Spanish professional footballer player and manager",
+   "enwiki": "Cesc Fàbregas",
+   "ref": "https://www.wikidata.org/wiki/Q17499",
+   "fetched": "2026-09-25",
+   "p54": [
+    {
+     "qid": "Q7156",
+     "label": "FC Barcelona",
+     "rank": "normal",
+     "start": "2011",
+     "end": "2014",
+     "parents": [
+      {
+       "qid": "Q3091261",
+       "label": "FC Barcelona"
+      },
+      {
+       "qid": "Q3503804",
+       "label": "Supporters of FC Barcelona"
+      },
+      {
+       "qid": "Q9339070",
+       "label": "members of Fútbol Club Barcelona"
+      }
+     ]
+    },
+    {
+     "qid": "Q7156",
+     "label": "FC Barcelona",
+     "rank": "normal",
+     "start": "1997",
+     "end": "2003",
+     "parents": [
+      {
+       "qid": "Q3091261",
+       "label": "FC Barcelona"
+      },
+      {
+       "qid": "Q3503804",
+       "label": "Supporters of FC Barcelona"
+      },
+      {
+       "qid": "Q9339070",
+       "label": "members of Fútbol Club Barcelona"
+      }
+     ]
+    },
+    {
+     "qid": "Q180305",
+     "label": "AS Monaco FC",
+     "rank": "normal",
+     "start": "2019",
+     "end": "2022",
+     "parents": [
+      {
+       "qid": "Q668182",
+       "label": "House of Grimaldi"
+      },
+      {
+       "qid": "Q983847",
+       "label": "Dmitry Rybolovlev"
+      },
+      {
+       "qid": "Q16009112",
+       "label": "Association sportive de Monaco"
+      }
+     ]
+    },
+    {
+     "qid": "Q1129595",
+     "label": "Spain national under-21 association football team",
+     "rank": "normal",
+     "start": "2004",
+     "end": "2005",
+     "parents": [
+      {
+       "qid": "Q207615",
+       "label": "Royal Spanish Football Federation"
+      }
+     ]
+    },
+    {
+     "qid": "Q2310295",
+     "label": "Spain national under-17 association football team",
+     "rank": "normal",
+     "start": "2003",
+     "end": "2004",
+     "parents": [
+      {
+       "qid": "Q207615",
+       "label": "Royal Spanish Football Federation"
+      }
+     ]
+    },
+    {
+     "qid": "Q2356290",
+     "label": "Spain national under-20 football team",
+     "rank": "normal",
+     "start": "2005",
+     "end": "2005",
+     "parents": [
+      {
+       "qid": "Q207615",
+       "label": "Royal Spanish Football Federation"
+      }
+     ]
+    },
+    {
+     "qid": "Q3873503",
+     "label": "Spain national under-16 association football team",
+     "rank": "normal",
+     "start": "2002",
+     "end": "2003",
+     "parents": [
+      {
+       "qid": "Q207615",
+       "label": "Royal Spanish Football Federation"
+      }
+     ]
+    },
+    {
+     "qid": "Q9616",
+     "label": "Chelsea F.C.",
+     "rank": "normal",
+     "start": "2014",
+     "end": "2019",
+     "parents": [
+      {
+       "qid": "Q120737993",
+       "label": "BlueCo"
+      }
+     ]
+    },
+    {
+     "qid": "Q9617",
+     "label": "Arsenal F.C.",
+     "rank": "normal",
+     "start": "2003",
+     "end": "2011",
+     "parents": [
+      {
+       "qid": "Q29438842",
+       "label": "Kroenke Sports & Entertainment"
+      }
+     ]
+    },
+    {
+     "qid": "Q17228",
+     "label": "Catalonia national football team",
+     "rank": "normal",
+     "start": "2004",
+     "end": null,
+     "parents": [
+      {
+       "qid": "Q2606643",
+       "label": "Catalan Football Federation"
+      }
+     ]
+    },
+    {
+     "qid": "Q42267",
+     "label": "Spain men's national football team",
+     "rank": "normal",
+     "start": "2006",
+     "end": "2016",
+     "parents": [
+      {
+       "qid": "Q207615",
+       "label": "Royal Spanish Football Federation"
+      }
+     ]
+    },
+    {
+     "qid": "Q1120838",
+     "label": "Como 1907",
+     "rank": "normal",
+     "start": "2022",
+     "end": "2023",
+     "parents": []
+    },
+    {
+     "qid": "Q3160759",
+     "label": "CE Mataró",
+     "rank": "normal",
+     "start": "1995",
+     "end": "1997",
+     "parents": []
+    },
+    {
+     "qid": "Q4384231",
+     "label": "Arsenal F.C. Under-21s and Academy",
+     "rank": "normal",
+     "start": "2003",
+     "end": "2003",
+     "parents": [
+      {
+       "qid": "Q9617",
+       "label": "Arsenal F.C."
+      }
+     ]
+    },
+    {
+     "qid": "Q12110",
+     "label": "Arenys de Mar",
+     "rank": "normal",
+     "start": null,
+     "end": null,
+     "parents": [
+      {
+       "qid": "Q107554279",
+       "label": "Mancomunitat Intermunicipal d'Arenys de Mar-Arenys de Munt"
+      },
+      {
+       "qid": "Q107554299",
+       "label": "Mancomunitat d'infraestructura sanitària de l'Alt Maresme-Sector III-Litoral Nord"
+      },
+      {
+       "qid": "Q107554300",
+       "label": "Mancomunitat Intermunicipal d'abastament d'aigua de l'Alt Maresme"
+      }
+     ]
+    }
+   ],
+   "nationality": [
+    "Spain"
+   ],
+   "sportNation": [
+    "Spain"
+   ],
+   "citizenship": [
+    "Spain"
+   ],
+   "positions": [
+    "midfielder"
+   ]
+  },
+  "David Beckham": {
+   "name": "David Beckham",
+   "qid": "Q10520",
+   "description": "English footballer (born 1975)",
+   "enwiki": "David Beckham",
+   "ref": "https://www.wikidata.org/wiki/Q10520",
+   "fetched": "2026-09-25",
+   "p54": [
+    {
+     "qid": "Q8682",
+     "label": "Real Madrid Club de Fútbol",
+     "rank": "normal",
+     "start": "2003",
+     "end": "2007",
+     "parents": [
+      {
+       "qid": "Q97241694",
+       "label": "Q97241694"
+      }
+     ]
+    },
+    {
+     "qid": "Q204357",
+     "label": "LA Galaxy",
+     "rank": "normal",
+     "start": "2007",
+     "end": "2012",
+     "parents": [
+      {
+       "qid": "Q18543",
+       "label": "Major League Soccer"
+      },
+      {
+       "qid": "Q1133456",
+       "label": "Philip Anschutz"
+      }
+     ]
+    },
+    {
+     "qid": "Q18656",
+     "label": "Manchester United F.C.",
+     "rank": "normal",
+     "start": "1992",
+     "end": "2003",
+     "parents": [
+      {
+       "qid": "Q27346385",
+       "label": "Manchester United plc"
+      },
+      {
+       "qid": "Q673231",
+       "label": "Ineos"
+      },
+      {
+       "qid": "Q99870964",
+       "label": "Manchester United Limited"
+      }
+     ]
+    },
+    {
+     "qid": "Q19612",
+     "label": "Preston North End F.C.",
+     "rank": "normal",
+     "start": "1994",
+     "end": "1995",
+     "parents": []
+    },
+    {
+     "qid": "Q204238",
+     "label": "England national under-21 association football team",
+     "rank": "normal",
+     "start": "1994",
+     "end": "1996",
+     "parents": [
+      {
+       "qid": "Q9500",
+       "label": "The Football Association"
+      }
+     ]
+    },
+    {
+     "qid": "Q483020",
+     "label": "Paris Saint-Germain FC",
+     "rank": "normal",
+     "start": "2013",
+     "end": "2013",
+     "parents": [
+      {
+       "qid": "Q28221762",
+       "label": "Qatar Sports Investments"
+      }
+     ]
+    },
+    {
+     "qid": "Q1049171",
+     "label": "England national under-18 association football team",
+     "rank": "normal",
+     "start": "1992",
+     "end": "1993",
+     "parents": [
+      {
+       "qid": "Q9500",
+       "label": "The Football Association"
+      }
+     ]
+    },
+    {
+     "qid": "Q1543",
+     "label": "AC Milan",
+     "rank": "normal",
+     "start": "2010",
+     "end": "2010",
+     "parents": [
+      {
+       "qid": "Q116116844",
+       "label": "RedBird Capital Partners"
+      }
+     ]
+    },
+    {
+     "qid": "Q1543",
+     "label": "AC Milan",
+     "rank": "normal",
+     "start": "2009",
+     "end": "2009",
+     "parents": [
+      {
+       "qid": "Q116116844",
+       "label": "RedBird Capital Partners"
+      }
+     ]
+    },
+    {
+     "qid": "Q47762",
+     "label": "England men's national association football team",
+     "rank": "normal",
+     "start": "1996",
+     "end": "2009",
+     "parents": [
+      {
+       "qid": "Q9500",
+       "label": "The Football Association"
+      }
+     ]
+    }
+   ],
+   "nationality": [
+    "United Kingdom",
+    "England"
+   ],
+   "sportNation": [
+    "England"
+   ],
+   "citizenship": [
+    "United Kingdom"
+   ],
+   "positions": [
+    "midfielder"
+   ]
+  },
+  "Ronaldinho": {
+   "name": "Ronaldinho",
+   "qid": "Q39444",
+   "label": "Ronaldinho",
+   "description": "Brazilian associaton fooball player (born 1980)",
+   "enwiki": "Ronaldinho",
+   "ref": "https://www.wikidata.org/wiki/Q39444",
+   "fetched": "2026-09-25",
+   "p54": [
+    {
+     "qid": "Q7156",
+     "label": "FC Barcelona",
+     "rank": "normal",
+     "start": "2003",
+     "end": "2008",
+     "parents": [
+      {
+       "qid": "Q3091261",
+       "label": "FC Barcelona"
+      },
+      {
+       "qid": "Q3503804",
+       "label": "Supporters of FC Barcelona"
+      },
+      {
+       "qid": "Q9339070",
+       "label": "members of Fútbol Club Barcelona"
+      }
+     ]
+    },
+    {
+     "qid": "Q83459",
+     "label": "Brazil men's national football team",
+     "rank": "normal",
+     "start": "1999",
+     "end": "2013",
+     "parents": [
+      {
+       "qid": "Q244754",
+       "label": "Brazilian Football Confederation"
+      }
+     ]
+    },
+    {
+     "qid": "Q483020",
+     "label": "Paris Saint-Germain FC",
+     "rank": "normal",
+     "start": "2001",
+     "end": "2003",
+     "parents": [
+      {
+       "qid": "Q28221762",
+       "label": "Qatar Sports Investments"
+      }
+     ]
+    },
+    {
+     "qid": "Q606210",
+     "label": "Querétaro F.C.",
+     "rank": "normal",
+     "start": "2014",
+     "end": "2015",
+     "parents": [
+      {
+       "qid": "Q5886157",
+       "label": "Grupo Vazol"
+      }
+     ]
+    },
+    {
+     "qid": "Q899189",
+     "label": "Brazil national under-23 football team",
+     "rank": "normal",
+     "start": "2000",
+     "end": "2008",
+     "parents": [
+      {
+       "qid": "Q244754",
+       "label": "Brazilian Football Confederation"
+      }
+     ]
+    },
+    {
+     "qid": "Q2308235",
+     "label": "Brazil national under-20 football team",
+     "rank": "normal",
+     "start": "1999",
+     "end": "1999",
+     "parents": [
+      {
+       "qid": "Q244754",
+       "label": "Brazilian Football Confederation"
+      }
+     ]
+    },
+    {
+     "qid": "Q2402747",
+     "label": "Brazil national under-17 football team",
+     "rank": "normal",
+     "start": "1997",
+     "end": "1997",
+     "parents": [
+      {
+       "qid": "Q244754",
+       "label": "Brazilian Football Confederation"
+      }
+     ]
+    },
+    {
+     "qid": "Q4958687",
+     "label": "Brazil national under-15 football team",
+     "rank": "normal",
+     "start": null,
+     "end": null,
+     "parents": [
+      {
+       "qid": "Q244754",
+       "label": "Brazilian Football Confederation"
+      }
+     ]
+    },
+    {
+     "qid": "Q1543",
+     "label": "AC Milan",
+     "rank": "normal",
+     "start": "2008",
+     "end": "2010",
+     "parents": [
+      {
+       "qid": "Q116116844",
+       "label": "RedBird Capital Partners"
+      }
+     ]
+    },
+    {
+     "qid": "Q80987",
+     "label": "Fluminense F.C.",
+     "rank": "normal",
+     "start": "2015",
+     "end": "2015",
+     "parents": []
+    },
+    {
+     "qid": "Q221695",
+     "label": "Grêmio FBPA",
+     "rank": "normal",
+     "start": "1998",
+     "end": "2001",
+     "parents": []
+    },
+    {
+     "qid": "Q270995",
+     "label": "Clube Atlético Mineiro",
+     "rank": "normal",
+     "start": "2012",
+     "end": "2014",
+     "parents": []
+    },
+    {
+     "qid": "Q1349814",
+     "label": "S.C. Ravenna Sport",
+     "rank": "normal",
+     "start": "2026",
+     "end": null,
+     "parents": []
+    },
+    {
+     "qid": "Q17479",
+     "label": "Clube de Regatas do Flamengo",
+     "rank": "normal",
+     "start": "2011",
+     "end": "2012",
+     "parents": []
+    }
+   ],
+   "nationality": [
+    "Spain",
+    "Brazil"
+   ],
+   "sportNation": [
+    "Brazil"
+   ],
+   "citizenship": [
+    "Spain",
+    "Brazil"
+   ],
+   "positions": [
+    "winger"
+   ]
+  },
+  "Thierry Henry": {
+   "name": "Thierry Henry",
+   "qid": "Q45901",
+   "label": "Thierry Henry",
+   "description": "French association football player and manager (born 1977)",
+   "enwiki": "Thierry Henry",
+   "ref": "https://www.wikidata.org/wiki/Q45901",
+   "fetched": "2026-09-25",
+   "p54": [
+    {
+     "qid": "Q204220",
+     "label": "Red Bull New York",
+     "rank": "normal",
+     "start": "2010",
+     "end": "2014",
+     "parents": [
+      {
+       "qid": "Q18543",
+       "label": "Major League Soccer"
+      },
+      {
+       "qid": "Q698639",
+       "label": "Red Bull GmbH"
+      }
+     ]
+    },
+    {
+     "qid": "Q1422",
+     "label": "Juventus FC",
+     "rank": "normal",
+     "start": "1999",
+     "end": "1999",
+     "parents": [
+      {
+       "qid": "Q1384140",
+       "label": "Exor"
+      },
+      {
+       "qid": "Q208697",
+       "label": "financial market"
+      },
+      {
+       "qid": "Q28860712",
+       "label": "Lindsell Train"
+      }
+     ]
+    },
+    {
+     "qid": "Q7156",
+     "label": "FC Barcelona",
+     "rank": "normal",
+     "start": "2007",
+     "end": "2010",
+     "parents": [
+      {
+       "qid": "Q3091261",
+       "label": "FC Barcelona"
+      },
+      {
+       "qid": "Q3503804",
+       "label": "Supporters of FC Barcelona"
+      },
+      {
+       "qid": "Q9339070",
+       "label": "members of Fútbol Club Barcelona"
+      }
+     ]
+    },
+    {
+     "qid": "Q180305",
+     "label": "AS Monaco FC",
+     "rank": "normal",
+     "start": "1994",
+     "end": "1999",
+     "parents": [
+      {
+       "qid": "Q668182",
+       "label": "House of Grimaldi"
+      },
+      {
+       "qid": "Q983847",
+       "label": "Dmitry Rybolovlev"
+      },
+      {
+       "qid": "Q16009112",
+       "label": "Association sportive de Monaco"
+      }
+     ]
+    },
+    {
+     "qid": "Q1277549",
+     "label": "France national under-21 association football team",
+     "rank": "normal",
+     "start": "1997",
+     "end": "1999",
+     "parents": [
+      {
+       "qid": "Q244750",
+       "label": "French Football Federation"
+      }
+     ]
+    },
+    {
+     "qid": "Q1344163",
+     "label": "France national under-20 association football team",
+     "rank": "normal",
+     "start": "1997",
+     "end": "1998",
+     "parents": [
+      {
+       "qid": "Q244750",
+       "label": "French Football Federation"
+      }
+     ]
+    },
+    {
+     "qid": "Q1450557",
+     "label": "France national under-18 association football team",
+     "rank": "normal",
+     "start": "1995",
+     "end": "1996",
+     "parents": [
+      {
+       "qid": "Q244750",
+       "label": "French Football Federation"
+      }
+     ]
+    },
+    {
+     "qid": "Q1450568",
+     "label": "France national under-17 association football team",
+     "rank": "normal",
+     "start": "1994",
+     "end": "1995",
+     "parents": [
+      {
+       "qid": "Q244750",
+       "label": "French Football Federation"
+      }
+     ]
+    },
+    {
+     "qid": "Q2701714",
+     "label": "France national under-19 association football team",
+     "rank": "normal",
+     "start": "1996",
+     "end": "1997",
+     "parents": [
+      {
+       "qid": "Q244750",
+       "label": "French Football Federation"
+      }
+     ]
+    },
+    {
+     "qid": "Q3590033",
+     "label": "France national under-16 association football team",
+     "rank": "normal",
+     "start": "1993",
+     "end": "1994",
+     "parents": [
+      {
+       "qid": "Q244750",
+       "label": "French Football Federation"
+      }
+     ]
+    },
+    {
+     "qid": "Q9617",
+     "label": "Arsenal F.C.",
+     "rank": "normal",
+     "start": "1999",
+     "end": "2007",
+     "parents": [
+      {
+       "qid": "Q29438842",
+       "label": "Kroenke Sports & Entertainment"
+      }
+     ]
+    },
+    {
+     "qid": "Q9617",
+     "label": "Arsenal F.C.",
+     "rank": "normal",
+     "start": "2012",
+     "end": "2012",
+     "parents": [
+      {
+       "qid": "Q29438842",
+       "label": "Kroenke Sports & Entertainment"
+      }
+     ]
+    },
+    {
+     "qid": "Q47774",
+     "label": "France men's national association football team",
+     "rank": "normal",
+     "start": "1997",
+     "end": "2010",
+     "parents": [
+      {
+       "qid": "Q244750",
+       "label": "French Football Federation"
+      }
+     ]
+    }
+   ],
+   "nationality": [
+    "France"
+   ],
+   "sportNation": [
+    "France"
+   ],
+   "citizenship": [
+    "France"
+   ],
+   "positions": [
+    "forward"
+   ]
+  },
+  "Alan Shearer": {
+   "name": "Alan Shearer",
+   "qid": "Q483583",
+   "label": "Alan Shearer",
+   "description": "English footballer",
+   "enwiki": "Alan Shearer",
+   "ref": "https://www.wikidata.org/wiki/Q483583",
+   "fetched": "2026-09-25",
+   "p54": [
+    {
+     "qid": "Q18716",
+     "label": "Newcastle United F.C.",
+     "rank": "normal",
+     "start": "1996",
+     "end": "2006",
+     "parents": []
+    },
+    {
+     "qid": "Q18732",
+     "label": "Southampton F.C.",
+     "rank": "normal",
+     "start": "1988",
+     "end": "1992",
+     "parents": []
+    },
+    {
+     "qid": "Q204238",
+     "label": "England national under-21 association football team",
+     "rank": "normal",
+     "start": "1990",
+     "end": "1992",
+     "parents": [
+      {
+       "qid": "Q9500",
+       "label": "The Football Association"
+      }
+     ]
+    },
+    {
+     "qid": "Q1110944",
+     "label": "England national association football B team",
+     "rank": "normal",
+     "start": "1992",
+     "end": "1992",
+     "parents": [
+      {
+       "qid": "Q9500",
+       "label": "The Football Association"
+      }
+     ]
+    },
+    {
+     "qid": "Q19446",
+     "label": "Blackburn Rovers F.C.",
+     "rank": "normal",
+     "start": "1992",
+     "end": "1996",
+     "parents": [
+      {
+       "qid": "Q7907735",
+       "label": "V H Group"
+      }
+     ]
+    },
+    {
+     "qid": "Q47762",
+     "label": "England men's national association football team",
+     "rank": "normal",
+     "start": "1992",
+     "end": "2000",
+     "parents": [
+      {
+       "qid": "Q9500",
+       "label": "The Football Association"
+      }
+     ]
+    }
+   ],
+   "nationality": [
+    "United Kingdom",
+    "England"
+   ],
+   "sportNation": [
+    "England"
+   ],
+   "citizenship": [
+    "United Kingdom"
+   ],
+   "positions": [
+    "forward"
+   ]
+  },
+  "Sergio Agüero": {
+   "name": "Sergio Agüero",
+   "qid": "Q119562",
+   "label": "Sergio Agüero",
+   "description": "Argentine association football player",
+   "enwiki": "Sergio Agüero",
+   "ref": "https://www.wikidata.org/wiki/Q119562",
+   "fetched": "2026-09-25",
+   "p54": [
+    {
+     "qid": "Q214978",
+     "label": "Club Atlético Independiente",
+     "rank": "normal",
+     "start": "2003",
+     "end": "2006",
+     "parents": [
+      {
+       "qid": "Q2972901",
+       "label": "Big Five of Argentine Football"
+      }
+     ]
+    },
+    {
+     "qid": "Q7156",
+     "label": "FC Barcelona",
+     "rank": "normal",
+     "start": "2021",
+     "end": "2021",
+     "parents": [
+      {
+       "qid": "Q3091261",
+       "label": "FC Barcelona"
+      },
+      {
+       "qid": "Q3503804",
+       "label": "Supporters of FC Barcelona"
+      },
+      {
+       "qid": "Q9339070",
+       "label": "members of Fútbol Club Barcelona"
+      }
+     ]
+    },
+    {
+     "qid": "Q79800",
+     "label": "Argentina men's national football team",
+     "rank": "normal",
+     "start": "2006",
+     "end": "2021",
+     "parents": [
+      {
+       "qid": "Q496548",
+       "label": "Argentine Football Association"
+      }
+     ]
+    },
+    {
+     "qid": "Q1187790",
+     "label": "Argentina national under-20 football team",
+     "rank": "normal",
+     "start": "2005",
+     "end": "2007",
+     "parents": [
+      {
+       "qid": "Q496548",
+       "label": "Argentine Football Association"
+      }
+     ]
+    },
+    {
+     "qid": "Q2462207",
+     "label": "Argentina national under-23 football team",
+     "rank": "normal",
+     "start": "2008",
+     "end": "2008",
+     "parents": [
+      {
+       "qid": "Q496548",
+       "label": "Argentine Football Association"
+      }
+     ]
+    },
+    {
+     "qid": "Q2902690",
+     "label": "Argentina national under-17 football team",
+     "rank": "normal",
+     "start": "2004",
+     "end": "2004",
+     "parents": [
+      {
+       "qid": "Q496548",
+       "label": "Argentine Football Association"
+      }
+     ]
+    },
+    {
+     "qid": "Q8701",
+     "label": "Atlético Madrid",
+     "rank": "normal",
+     "start": "2006",
+     "end": "2011",
+     "parents": [
+      {
+       "qid": "Q2457791",
+       "label": "Enrique Cerezo"
+      },
+      {
+       "qid": "Q5210937",
+       "label": "Wanda Group"
+      },
+      {
+       "qid": "Q6015638",
+       "label": "Andrés arcaya"
+      }
+     ]
+    },
+    {
+     "qid": "Q50602",
+     "label": "Manchester City F.C.",
+     "rank": "normal",
+     "start": "2011",
+     "end": "2021",
+     "parents": [
+      {
+       "qid": "Q556607",
+       "label": "Mansour bin Zayed Al Nahyan"
+      },
+      {
+       "qid": "Q2405171",
+       "label": "City Football Group"
+      }
+     ]
+    }
+   ],
+   "nationality": [
+    "Argentina"
+   ],
+   "sportNation": [
+    "Argentina"
+   ],
+   "citizenship": [
+    "Argentina"
+   ],
+   "positions": [
+    "centre-forward"
+   ]
+  },
+  "Harry Kane": {
+   "name": "Harry Kane",
+   "qid": "Q969725",
+   "label": "Harry Kane",
+   "description": "English association football player (born 1993)",
+   "enwiki": "Harry Kane",
+   "ref": "https://www.wikidata.org/wiki/Q969725",
+   "fetched": "2026-09-25",
+   "p54": [
+    {
+     "qid": "Q204238",
+     "label": "England national under-21 association football team",
+     "rank": "normal",
+     "start": "2013",
+     "end": "2015",
+     "parents": [
+      {
+       "qid": "Q9500",
+       "label": "The Football Association"
+      }
+     ]
+    },
+    {
+     "qid": "Q1049176",
+     "label": "England national under-20 association football team",
+     "rank": "normal",
+     "start": "2013",
+     "end": "2013",
+     "parents": [
+      {
+       "qid": "Q9500",
+       "label": "The Football Association"
+      }
+     ]
+    },
+    {
+     "qid": "Q2358861",
+     "label": "England national under-19 association football team",
+     "rank": "normal",
+     "start": "2010",
+     "end": "2012",
+     "parents": [
+      {
+       "qid": "Q9500",
+       "label": "The Football Association"
+      }
+     ]
+    },
+    {
+     "qid": "Q2752922",
+     "label": "England national under-17 association football team",
+     "rank": "normal",
+     "start": "2010",
+     "end": "2010",
+     "parents": [
+      {
+       "qid": "Q9500",
+       "label": "The Football Association"
+      }
+     ]
+    },
+    {
+     "qid": "Q18721",
+     "label": "Norwich City F.C.",
+     "rank": "normal",
+     "start": "2012",
+     "end": "2013",
+     "parents": [
+      {
+       "qid": "Q1808967",
+       "label": "Delia Smith"
+      },
+      {
+       "qid": "Q6835467",
+       "label": "Michael Wynn-Jones"
+      }
+     ]
+    },
+    {
+     "qid": "Q18741",
+     "label": "Tottenham Hotspur F.C.",
+     "rank": "normal",
+     "start": "2009",
+     "end": "2023",
+     "parents": [
+      {
+       "qid": "Q5323703",
+       "label": "ENIC Group"
+      }
+     ]
+    },
+    {
+     "qid": "Q19481",
+     "label": "Leicester City F.C.",
+     "rank": "normal",
+     "start": "2013",
+     "end": "2013",
+     "parents": [
+      {
+       "qid": "Q6411959",
+       "label": "King Power"
+      }
+     ]
+    },
+    {
+     "qid": "Q47762",
+     "label": "England men's national association football team",
+     "rank": "normal",
+     "start": "2015",
+     "end": null,
+     "parents": [
+      {
+       "qid": "Q9500",
+       "label": "The Football Association"
+      }
+     ]
+    },
+    {
+     "qid": "Q15789",
+     "label": "FC Bayern Munich",
+     "rank": "preferred",
+     "start": "2023",
+     "end": null,
+     "parents": []
+    },
+    {
+     "qid": "Q19487",
+     "label": "Millwall F.C.",
+     "rank": "normal",
+     "start": "2012",
+     "end": "2012",
+     "parents": []
+    },
+    {
+     "qid": "Q19595",
+     "label": "Leyton Orient F.C.",
+     "rank": "normal",
+     "start": "2011",
+     "end": "2011",
+     "parents": []
+    }
+   ],
+   "nationality": [
+    "United Kingdom",
+    "England"
+   ],
+   "sportNation": [
+    "England"
+   ],
+   "citizenship": [
+    "United Kingdom"
+   ],
+   "positions": [
+    "forward"
+   ]
+  },
+  "Didier Drogba": {
+   "name": "Didier Drogba",
+   "qid": "Q48892",
+   "label": "Didier Drogba",
+   "description": "Ivorian and French association football player",
+   "enwiki": "Didier Drogba",
+   "ref": "https://www.wikidata.org/wiki/Q48892",
+   "fetched": "2026-09-25",
+   "p54": [
+    {
+     "qid": "Q495299",
+     "label": "Galatasaray S.K.",
+     "rank": "normal",
+     "start": "2013",
+     "end": "2014",
+     "parents": [
+      {
+       "qid": "Q43134",
+       "label": "Galatasaray SK"
+      }
+     ]
+    },
+    {
+     "qid": "Q167615",
+     "label": "CF Montréal",
+     "rank": "normal",
+     "start": "2015",
+     "end": "2016",
+     "parents": [
+      {
+       "qid": "Q18543",
+       "label": "Major League Soccer"
+      }
+     ]
+    },
+    {
+     "qid": "Q132885",
+     "label": "Olympique de Marseille",
+     "rank": "normal",
+     "start": "2003",
+     "end": "2004",
+     "parents": [
+      {
+       "qid": "Q5488263",
+       "label": "Frank McCourt"
+      }
+     ]
+    },
+    {
+     "qid": "Q175145",
+     "label": "Ivory Coast men's national football team",
+     "rank": "normal",
+     "start": "2002",
+     "end": "2014",
+     "parents": [
+      {
+       "qid": "Q923018",
+       "label": "Ivorian Football Federation"
+      }
+     ]
+    },
+    {
+     "qid": "Q725367",
+     "label": "Shanghai Shenhua F.C.",
+     "rank": "normal",
+     "start": "2012",
+     "end": "2013",
+     "parents": [
+      {
+       "qid": "Q15902946",
+       "label": "Greenland Holdings Corp., Ltd."
+      }
+     ]
+    },
+    {
+     "qid": "Q9616",
+     "label": "Chelsea F.C.",
+     "rank": "normal",
+     "start": "2014",
+     "end": "2015",
+     "parents": [
+      {
+       "qid": "Q120737993",
+       "label": "BlueCo"
+      }
+     ]
+    },
+    {
+     "qid": "Q9616",
+     "label": "Chelsea F.C.",
+     "rank": "normal",
+     "start": "2004",
+     "end": "2012",
+     "parents": [
+      {
+       "qid": "Q120737993",
+       "label": "BlueCo"
+      }
+     ]
+    },
+    {
+     "qid": "Q111516",
+     "label": "Phoenix Rising FC",
+     "rank": "normal",
+     "start": "2017",
+     "end": "2018",
+     "parents": []
+    },
+    {
+     "qid": "Q210864",
+     "label": "Le Mans F.C.",
+     "rank": "normal",
+     "start": "1998",
+     "end": "2002",
+     "parents": []
+    },
+    {
+     "qid": "Q459148",
+     "label": "En Avant de Guingamp",
+     "rank": "normal",
+     "start": "2002",
+     "end": "2003",
+     "parents": []
+    }
+   ],
+   "nationality": [
+    "France",
+    "Ivory Coast"
+   ],
+   "sportNation": [
+    "Ivory Coast"
+   ],
+   "citizenship": [
+    "France",
+    "Ivory Coast"
+   ],
+   "positions": [
+    "forward"
+   ]
+  },
+  "Erling Haaland": {
+   "name": "Erling Haaland",
+   "qid": "Q28967995",
+   "label": "Erling Haaland",
+   "description": "Norwegian footballer (born 2000)",
+   "enwiki": "Erling Haaland",
+   "ref": "https://www.wikidata.org/wiki/Q28967995",
+   "fetched": "2026-09-25",
+   "p54": [
+    {
+     "qid": "Q50602",
+     "label": "Manchester City F.C.",
+     "rank": "preferred",
+     "start": "2022",
+     "end": null,
+     "parents": [
+      {
+       "qid": "Q2405171",
+       "label": "City Football Group"
+      },
+      {
+       "qid": "Q556607",
+       "label": "Mansour bin Zayed Al Nahyan"
+      }
+     ]
+    },
+    {
+     "qid": "Q41420",
+     "label": "Borussia Dortmund",
+     "rank": "normal",
+     "start": "2020",
+     "end": "2022",
+     "parents": [
+      {
+       "qid": "Q448445",
+       "label": "SDAX"
+      },
+      {
+       "qid": "Q874430",
+       "label": "CDAX"
+      },
+      {
+       "qid": "Q881201",
+       "label": "Reinhard Rauball"
+      }
+     ]
+    },
+    {
+     "qid": "Q208552",
+     "label": "Molde FK",
+     "rank": "normal",
+     "start": "2017",
+     "end": "2019",
+     "parents": []
+    },
+    {
+     "qid": "Q995313",
+     "label": "Bryne FK",
+     "rank": "normal",
+     "start": "2016",
+     "end": "2017",
+     "parents": []
+    },
+    {
+     "qid": "Q184387",
+     "label": "Norway men's national association football team",
+     "rank": "normal",
+     "start": "2019",
+     "end": null,
+     "parents": [
+      {
+       "qid": "Q474952",
+       "label": "Norwegian Football Federation"
+      }
+     ]
+    },
+    {
+     "qid": "Q994811",
+     "label": "FC Red Bull Salzburg",
+     "rank": "normal",
+     "start": "2019",
+     "end": "2020",
+     "parents": [
+      {
+       "qid": "Q698639",
+       "label": "Red Bull GmbH"
+      }
+     ]
+    },
+    {
+     "qid": "Q2446294",
+     "label": "Norway national under-21 association football team",
+     "rank": "normal",
+     "start": "2018",
+     "end": "2018",
+     "parents": [
+      {
+       "qid": "Q474952",
+       "label": "Norwegian Football Federation"
+      }
+     ]
+    },
+    {
+     "qid": "Q3873545",
+     "label": "Norway national under-20 association football team",
+     "rank": "normal",
+     "start": "2019",
+     "end": "2019",
+     "parents": [
+      {
+       "qid": "Q474952",
+       "label": "Norwegian Football Federation"
+      }
+     ]
+    }
+   ],
+   "nationality": [
+    "Norway"
+   ],
+   "sportNation": [
+    "Norway"
+   ],
+   "citizenship": [
+    "Norway"
+   ],
+   "positions": [
+    "forward"
+   ]
+  },
+  "Luis Suárez": {
+   "name": "Luis Suárez",
+   "qid": "Q26517",
+   "label": "Luis Suárez",
+   "description": "Uruguayan association football player",
+   "enwiki": "Luis Suárez (Uruguayan footballer)",
+   "ref": "https://www.wikidata.org/wiki/Q26517",
+   "fetched": "2026-09-25",
+   "p54": [
+    {
+     "qid": "Q221695",
+     "label": "Grêmio FBPA",
+     "rank": "normal",
+     "start": "2023",
+     "end": "2023",
+     "parents": []
+    },
+    {
+     "qid": "Q499616",
+     "label": "Club Nacional de Football",
+     "rank": "normal",
+     "start": "2005",
+     "end": "2006",
+     "parents": []
+    },
+    {
+     "qid": "Q499616",
+     "label": "Club Nacional de Football",
+     "rank": "normal",
+     "start": "2022",
+     "end": "2022",
+     "parents": []
+    },
+    {
+     "qid": "Q24711",
+     "label": "FC Groningen",
+     "rank": "normal",
+     "start": "2006",
+     "end": "2007",
+     "parents": []
+    },
+    {
+     "qid": "Q81888",
+     "label": "AFC Ajax",
+     "rank": "normal",
+     "start": "2007",
+     "end": "2011",
+     "parents": [
+      {
+       "qid": "Q2221214",
+       "label": "AFC Ajax N.V."
+      }
+     ]
+    },
+    {
+     "qid": "Q134916",
+     "label": "Uruguay men's national football team",
+     "rank": "normal",
+     "start": "2007",
+     "end": "2024",
+     "parents": [
+      {
+       "qid": "Q722749",
+       "label": "Uruguayan Football Association"
+      }
+     ]
+    },
+    {
+     "qid": "Q1130849",
+     "label": "Liverpool F.C.",
+     "rank": "normal",
+     "start": "2011",
+     "end": "2014",
+     "parents": [
+      {
+       "qid": "Q1324524",
+       "label": "Fenway Sports Group"
+      }
+     ]
+    },
+    {
+     "qid": "Q2384857",
+     "label": "Uruguay Olympic football team",
+     "rank": "normal",
+     "start": "2012",
+     "end": "2012",
+     "parents": [
+      {
+       "qid": "Q722749",
+       "label": "Uruguayan Football Association"
+      }
+     ]
+    },
+    {
+     "qid": "Q2442864",
+     "label": "Uruguay national under-20 football team",
+     "rank": "normal",
+     "start": "2006",
+     "end": "2007",
+     "parents": [
+      {
+       "qid": "Q722749",
+       "label": "Uruguayan Football Association"
+      }
+     ]
+    },
+    {
+     "qid": "Q16844931",
+     "label": "Inter Miami CF",
+     "rank": "preferred",
+     "start": "2024",
+     "end": null,
+     "parents": [
+      {
+       "qid": "Q10520",
+       "label": "Q10520"
+      },
+      {
+       "qid": "Q367691",
+       "label": "Simon Fuller"
+      },
+      {
+       "qid": "Q717038",
+       "label": "Masayoshi Son"
+      },
+      {
+       "qid": "Q15728648",
+       "label": "Marcelo Claure"
+      },
+      {
+       "qid": "Q18543",
+       "label": "Major League Soccer"
+      }
+     ]
+    },
+    {
+     "qid": "Q7156",
+     "label": "FC Barcelona",
+     "rank": "normal",
+     "start": "2014",
+     "end": "2020",
+     "parents": [
+      {
+       "qid": "Q3503804",
+       "label": "Supporters of FC Barcelona"
+      },
+      {
+       "qid": "Q9339070",
+       "label": "members of Fútbol Club Barcelona"
+      },
+      {
+       "qid": "Q3091261",
+       "label": "FC Barcelona"
+      }
+     ]
+    },
+    {
+     "qid": "Q8701",
+     "label": "Atlético Madrid",
+     "rank": "normal",
+     "start": "2020",
+     "end": "2022",
+     "parents": [
+      {
+       "qid": "Q2457791",
+       "label": "Enrique Cerezo"
+      },
+      {
+       "qid": "Q5210937",
+       "label": "Wanda Group"
+      },
+      {
+       "qid": "Q6015638",
+       "label": "Andrés arcaya"
+      }
+     ]
+    }
+   ],
+   "nationality": [
+    "Uruguay"
+   ],
+   "sportNation": [
+    "Uruguay"
+   ],
+   "citizenship": [
+    "Uruguay"
+   ],
+   "positions": [
+    "forward"
+   ]
+  },
+  "Dennis Bergkamp": {
+   "name": "Dennis Bergkamp",
+   "qid": "Q185389",
+   "label": "Dennis Bergkamp",
+   "description": "Dutch association football player (born 1969)",
+   "enwiki": "Dennis Bergkamp",
+   "ref": "https://www.wikidata.org/wiki/Q185389",
+   "fetched": "2026-09-25",
+   "p54": [
+    {
+     "qid": "Q81888",
+     "label": "AFC Ajax",
+     "rank": "normal",
+     "start": "1986",
+     "end": "1993",
+     "parents": [
+      {
+       "qid": "Q2221214",
+       "label": "AFC Ajax N.V."
+      }
+     ]
+    },
+    {
+     "qid": "Q1811026",
+     "label": "Netherlands national under-21 football team",
+     "rank": "normal",
+     "start": "1989",
+     "end": "1989",
+     "parents": [
+      {
+       "qid": "Q213116",
+       "label": "Royal Dutch Football Association"
+      }
+     ]
+    },
+    {
+     "qid": "Q631",
+     "label": "Inter Milan",
+     "rank": "normal",
+     "start": "1993",
+     "end": "1995",
+     "parents": [
+      {
+       "qid": "Q2008551",
+       "label": "Oaktree Capital Management"
+      }
+     ]
+    },
+    {
+     "qid": "Q9617",
+     "label": "Arsenal F.C.",
+     "rank": "normal",
+     "start": "1995",
+     "end": "2006",
+     "parents": [
+      {
+       "qid": "Q29438842",
+       "label": "Kroenke Sports & Entertainment"
+      }
+     ]
+    },
+    {
+     "qid": "Q47050",
+     "label": "Netherlands national association football team",
+     "rank": "normal",
+     "start": "1990",
+     "end": "2000",
+     "parents": [
+      {
+       "qid": "Q213116",
+       "label": "Royal Dutch Football Association"
+      }
+     ]
+    }
+   ],
+   "nationality": [
+    "Kingdom of the Netherlands",
+    "Netherlands"
+   ],
+   "sportNation": [
+    "Netherlands"
+   ],
+   "citizenship": [
+    "Kingdom of the Netherlands"
+   ],
+   "positions": [
+    "forward"
+   ]
+  },
+  "Kevin De Bruyne": {
+   "name": "Kevin De Bruyne",
+   "qid": "Q357984",
+   "label": "Kevin De Bruyne",
+   "description": "Belgian association football player (born 1991)",
+   "enwiki": "Kevin De Bruyne",
+   "ref": "https://www.wikidata.org/wiki/Q357984",
+   "fetched": "2026-09-25",
+   "p54": [
+    {
+     "qid": "Q50602",
+     "label": "Manchester City F.C.",
+     "rank": "normal",
+     "start": "2015",
+     "end": "2025",
+     "parents": [
+      {
+       "qid": "Q2405171",
+       "label": "City Football Group"
+      },
+      {
+       "qid": "Q556607",
+       "label": "Mansour bin Zayed Al Nahyan"
+      }
+     ]
+    },
+    {
+     "qid": "Q101859",
+     "label": "VfL Wolfsburg",
+     "rank": "normal",
+     "start": "2014",
+     "end": "2015",
+     "parents": [
+      {
+       "qid": "Q156578",
+       "label": "Volkswagen Group"
+      }
+     ]
+    },
+    {
+     "qid": "Q166776",
+     "label": "Belgium men's national football team",
+     "rank": "normal",
+     "start": "2010",
+     "end": null,
+     "parents": [
+      {
+       "qid": "Q381124",
+       "label": "Royal Belgian Football Association"
+      }
+     ]
+    },
+    {
+     "qid": "Q815515",
+     "label": "Belgium national under-21 football team",
+     "rank": "normal",
+     "start": "2011",
+     "end": "2011",
+     "parents": [
+      {
+       "qid": "Q381124",
+       "label": "Royal Belgian Football Association"
+      }
+     ]
+    },
+    {
+     "qid": "Q3589896",
+     "label": "Belgium national under-19 football team",
+     "rank": "normal",
+     "start": "2009",
+     "end": "2009",
+     "parents": [
+      {
+       "qid": "Q381124",
+       "label": "Royal Belgian Football Association"
+      }
+     ]
+    },
+    {
+     "qid": "Q2641",
+     "label": "SSC Napoli",
+     "rank": "preferred",
+     "start": "2025",
+     "end": null,
+     "parents": [
+      {
+       "qid": "Q3745440",
+       "label": "Filmauro"
+      }
+     ]
+    },
+    {
+     "qid": "Q9616",
+     "label": "Chelsea F.C.",
+     "rank": "normal",
+     "start": "2012",
+     "end": "2014",
+     "parents": [
+      {
+       "qid": "Q120737993",
+       "label": "BlueCo"
+      }
+     ]
+    },
+    {
+     "qid": "Q51976",
+     "label": "SV Werder Bremen",
+     "rank": "normal",
+     "start": "2012",
+     "end": "2013",
+     "parents": [
+      {
+       "qid": "Q24249327",
+       "label": "Hubertus Hess-Grunewald"
+      }
+     ]
+    },
+    {
+     "qid": "Q216032",
+     "label": "K.R.C. Genk",
+     "rank": "normal",
+     "start": "2008",
+     "end": "2012",
+     "parents": []
+    }
+   ],
+   "nationality": [
+    "Belgium"
+   ],
+   "sportNation": [
+    "Belgium"
+   ],
+   "citizenship": [
+    "Belgium"
+   ],
+   "positions": [
+    "midfielder"
+   ]
+  },
+  "Robert Pires": {
+   "name": "Robert Pires",
+   "qid": "Q113156",
+   "label": "Robert Pires",
+   "description": "French footballer (born 1973)",
+   "enwiki": "Robert Pires",
+   "ref": "https://www.wikidata.org/wiki/Q113156",
+   "fetched": "2026-09-25",
+   "p54": [
+    {
+     "qid": "Q132885",
+     "label": "Olympique de Marseille",
+     "rank": "normal",
+     "start": "1998",
+     "end": "2000",
+     "parents": [
+      {
+       "qid": "Q5488263",
+       "label": "Frank McCourt"
+      }
+     ]
+    },
+    {
+     "qid": "Q1277549",
+     "label": "France national under-21 association football team",
+     "rank": "normal",
+     "start": "1994",
+     "end": "1996",
+     "parents": [
+      {
+       "qid": "Q244750",
+       "label": "French Football Federation"
+      }
+     ]
+    },
+    {
+     "qid": "Q1344163",
+     "label": "France national under-20 association football team",
+     "rank": "normal",
+     "start": "1993",
+     "end": "1994",
+     "parents": [
+      {
+       "qid": "Q244750",
+       "label": "French Football Federation"
+      }
+     ]
+    },
+    {
+     "qid": "Q9617",
+     "label": "Arsenal F.C.",
+     "rank": "normal",
+     "start": "2000",
+     "end": "2006",
+     "parents": [
+      {
+       "qid": "Q29438842",
+       "label": "Kroenke Sports & Entertainment"
+      }
+     ]
+    },
+    {
+     "qid": "Q12297",
+     "label": "Villarreal CF",
+     "rank": "normal",
+     "start": "2006",
+     "end": "2010",
+     "parents": [
+      {
+       "qid": "Q3780510",
+       "label": "Fernando Roig Alfonso"
+      }
+     ]
+    },
+    {
+     "qid": "Q18711",
+     "label": "Aston Villa F.C.",
+     "rank": "normal",
+     "start": "2010",
+     "end": "2011",
+     "parents": [
+      {
+       "qid": "Q1431063",
+       "label": "Nassef Sawiris"
+      },
+      {
+       "qid": "Q20857914",
+       "label": "Wes Edens"
+      }
+     ]
+    },
+    {
+     "qid": "Q47774",
+     "label": "France men's national association football team",
+     "rank": "normal",
+     "start": "1996",
+     "end": "2004",
+     "parents": [
+      {
+       "qid": "Q244750",
+       "label": "French Football Federation"
+      }
+     ]
+    },
+    {
+     "qid": "Q208228",
+     "label": "Stade de Reims",
+     "rank": "normal",
+     "start": "1991",
+     "end": "1992",
+     "parents": []
+    },
+    {
+     "qid": "Q221525",
+     "label": "FC Metz",
+     "rank": "normal",
+     "start": "1993",
+     "end": "1998",
+     "parents": []
+    },
+    {
+     "qid": "Q16839398",
+     "label": "FC Goa",
+     "rank": "normal",
+     "start": "2014",
+     "end": "2016",
+     "parents": []
+    }
+   ],
+   "nationality": [
+    "France"
+   ],
+   "sportNation": [
+    "France"
+   ],
+   "citizenship": [
+    "France"
+   ],
+   "positions": [
+    "midfielder",
+    "wing half"
+   ]
+  },
+  "Jack Grealish": {
+   "name": "Jack Grealish",
+   "qid": "Q16056053",
+   "label": "Jack Grealish",
+   "description": "English association football player (born 1995)",
+   "enwiki": "Jack Grealish",
+   "ref": "https://www.wikidata.org/wiki/Q16056053",
+   "fetched": "2026-09-25",
+   "p54": [
+    {
+     "qid": "Q50602",
+     "label": "Manchester City F.C.",
+     "rank": "normal",
+     "start": "2021",
+     "end": null,
+     "parents": [
+      {
+       "qid": "Q2405171",
+       "label": "City Football Group"
+      },
+      {
+       "qid": "Q556607",
+       "label": "Mansour bin Zayed Al Nahyan"
+      }
+     ]
+    },
+    {
+     "qid": "Q204238",
+     "label": "England national under-21 association football team",
+     "rank": "normal",
+     "start": "2016",
+     "end": "2017",
+     "parents": [
+      {
+       "qid": "Q9500",
+       "label": "The Football Association"
+      }
+     ]
+    },
+    {
+     "qid": "Q1672798",
+     "label": "Republic of Ireland national under-21 football team",
+     "rank": "normal",
+     "start": "2013",
+     "end": "2014",
+     "parents": [
+      {
+       "qid": "Q497782",
+       "label": "Football Association of Ireland"
+      }
+     ]
+    },
+    {
+     "qid": "Q3590338",
+     "label": "Republic of Ireland national under-17 football team",
+     "rank": "normal",
+     "start": "2011",
+     "end": "2012",
+     "parents": [
+      {
+       "qid": "Q497782",
+       "label": "Football Association of Ireland"
+      }
+     ]
+    },
+    {
+     "qid": "Q5794",
+     "label": "Everton F.C.",
+     "rank": "preferred",
+     "start": "2026",
+     "end": null,
+     "parents": [
+      {
+       "qid": "Q861168",
+       "label": "Farhad Moshiri"
+      },
+      {
+       "qid": "Q104536386",
+       "label": "777 Partners"
+      }
+     ]
+    },
+    {
+     "qid": "Q5794",
+     "label": "Everton F.C.",
+     "rank": "normal",
+     "start": "2025",
+     "end": "2026",
+     "parents": [
+      {
+       "qid": "Q861168",
+       "label": "Farhad Moshiri"
+      },
+      {
+       "qid": "Q104536386",
+       "label": "777 Partners"
+      }
+     ]
+    },
+    {
+     "qid": "Q18711",
+     "label": "Aston Villa F.C.",
+     "rank": "normal",
+     "start": "2012",
+     "end": "2021",
+     "parents": [
+      {
+       "qid": "Q1431063",
+       "label": "Nassef Sawiris"
+      },
+      {
+       "qid": "Q20857914",
+       "label": "Wes Edens"
+      }
+     ]
+    },
+    {
+     "qid": "Q19598",
+     "label": "Notts County F.C.",
+     "rank": "normal",
+     "start": "2013",
+     "end": "2014",
+     "parents": [
+      {
+       "qid": "Q7298212",
+       "label": "Ray Trew"
+      }
+     ]
+    },
+    {
+     "qid": "Q47762",
+     "label": "England men's national association football team",
+     "rank": "normal",
+     "start": "2020",
+     "end": null,
+     "parents": [
+      {
+       "qid": "Q9500",
+       "label": "The Football Association"
+      }
+     ]
+    },
+    {
+     "qid": "Q23930872",
+     "label": "Republic of Ireland national under-18 football team",
+     "rank": "normal",
+     "start": "2012",
+     "end": "2013",
+     "parents": []
+    }
+   ],
+   "nationality": [
+    "United Kingdom",
+    "England"
+   ],
+   "sportNation": [
+    "England"
+   ],
+   "citizenship": [
+    "United Kingdom"
+   ],
+   "positions": [
+    "winger",
+    "attacking midfielder"
+   ]
+  },
+  "Gilberto Silva": {
+   "name": "Gilberto Silva",
+   "qid": "Q190142",
+   "label": "Gilberto Silva",
+   "description": "Brazilian footballer",
+   "enwiki": "Gilberto Silva",
+   "ref": "https://www.wikidata.org/wiki/Q190142",
+   "fetched": "2026-09-25",
+   "p54": [
+    {
+     "qid": "Q83459",
+     "label": "Brazil men's national football team",
+     "rank": "normal",
+     "start": "2001",
+     "end": "2010",
+     "parents": [
+      {
+       "qid": "Q244754",
+       "label": "Brazilian Football Confederation"
+      }
+     ]
+    },
+    {
+     "qid": "Q4122219",
+     "label": "Panathinaikos F.C.",
+     "rank": "normal",
+     "start": "2008",
+     "end": "2011",
+     "parents": [
+      {
+       "qid": "Q16332938",
+       "label": "Yannis Alafouzos"
+      }
+     ]
+    },
+    {
+     "qid": "Q9617",
+     "label": "Arsenal F.C.",
+     "rank": "normal",
+     "start": "2002",
+     "end": "2008",
+     "parents": [
+      {
+       "qid": "Q29438842",
+       "label": "Kroenke Sports & Entertainment"
+      }
+     ]
+    },
+    {
+     "qid": "Q221695",
+     "label": "Grêmio FBPA",
+     "rank": "normal",
+     "start": "2011",
+     "end": "2012",
+     "parents": []
+    },
+    {
+     "qid": "Q270995",
+     "label": "Clube Atlético Mineiro",
+     "rank": "normal",
+     "start": "2013",
+     "end": "2013",
+     "parents": []
+    },
+    {
+     "qid": "Q270995",
+     "label": "Clube Atlético Mineiro",
+     "rank": "normal",
+     "start": "2000",
+     "end": "2002",
+     "parents": []
+    },
+    {
+     "qid": "Q270995",
+     "label": "Clube Atlético Mineiro",
+     "rank": "normal",
+     "start": "2012",
+     "end": "2013",
+     "parents": []
+    },
+    {
+     "qid": "Q338285",
+     "label": "América Futebol Clube",
+     "rank": "normal",
+     "start": "1997",
+     "end": "2000",
+     "parents": []
+    }
+   ],
+   "nationality": [
+    "Brazil"
+   ],
+   "sportNation": [
+    "Brazil"
+   ],
+   "citizenship": [
+    "Brazil"
+   ],
+   "positions": [
+    "midfielder"
+   ]
+  },
+  "İlkay Gündoğan": {
+   "name": "İlkay Gündoğan",
+   "qid": "Q161089",
+   "label": "İlkay Gündoğan",
+   "description": "German footballer (born 1990)",
+   "enwiki": "İlkay Gündoğan",
+   "ref": "https://www.wikidata.org/wiki/Q161089",
+   "fetched": "2026-09-25",
+   "p54": [
+    {
+     "qid": "Q7924284",
+     "label": "VfL Bochum II",
+     "rank": "normal",
+     "start": "2008",
+     "end": "2009",
+     "parents": [
+      {
+       "qid": "Q105861",
+       "label": "VfL Bochum"
+      }
+     ]
+    },
+    {
+     "qid": "Q7156",
+     "label": "FC Barcelona",
+     "rank": "normal",
+     "start": "2023",
+     "end": "2024",
+     "parents": [
+      {
+       "qid": "Q3091261",
+       "label": "FC Barcelona"
+      },
+      {
+       "qid": "Q3503804",
+       "label": "Supporters of FC Barcelona"
+      },
+      {
+       "qid": "Q9339070",
+       "label": "members of Fútbol Club Barcelona"
+      }
+     ]
+    },
+    {
+     "qid": "Q50602",
+     "label": "Manchester City F.C.",
+     "rank": "normal",
+     "start": "2016",
+     "end": "2023",
+     "parents": [
+      {
+       "qid": "Q2405171",
+       "label": "City Football Group"
+      },
+      {
+       "qid": "Q556607",
+       "label": "Mansour bin Zayed Al Nahyan"
+      }
+     ]
+    },
+    {
+     "qid": "Q50602",
+     "label": "Manchester City F.C.",
+     "rank": "normal",
+     "start": "2024",
+     "end": "2025",
+     "parents": [
+      {
+       "qid": "Q2405171",
+       "label": "City Football Group"
+      },
+      {
+       "qid": "Q556607",
+       "label": "Mansour bin Zayed Al Nahyan"
+      }
+     ]
+    },
+    {
+     "qid": "Q15786",
+     "label": "1. FC Nürnberg",
+     "rank": "normal",
+     "start": "2009",
+     "end": "2011",
+     "parents": []
+    },
+    {
+     "qid": "Q495299",
+     "label": "Galatasaray S.K.",
+     "rank": "preferred",
+     "start": "2025",
+     "end": null,
+     "parents": [
+      {
+       "qid": "Q43134",
+       "label": "Galatasaray SK"
+      }
+     ]
+    },
+    {
+     "qid": "Q865720",
+     "label": "Borussia Dortmund II",
+     "rank": "normal",
+     "start": "2012",
+     "end": "2012",
+     "parents": [
+      {
+       "qid": "Q41420",
+       "label": "Borussia Dortmund"
+      }
+     ]
+    },
+    {
+     "qid": "Q41420",
+     "label": "Borussia Dortmund",
+     "rank": "normal",
+     "start": "2011",
+     "end": "2016",
+     "parents": [
+      {
+       "qid": "Q448445",
+       "label": "SDAX"
+      },
+      {
+       "qid": "Q874430",
+       "label": "CDAX"
+      },
+      {
+       "qid": "Q881201",
+       "label": "Reinhard Rauball"
+      }
+     ]
+    },
+    {
+     "qid": "Q314851",
+     "label": "Germany national under-21 football team",
+     "rank": "normal",
+     "start": "2010",
+     "end": "2012",
+     "parents": [
+      {
+       "qid": "Q154191",
+       "label": "German Football Association"
+      }
+     ]
+    },
+    {
+     "qid": "Q316497",
+     "label": "Germany national under-20 football team",
+     "rank": "normal",
+     "start": "2009",
+     "end": "2010",
+     "parents": [
+      {
+       "qid": "Q154191",
+       "label": "German Football Association"
+      }
+     ]
+    },
+    {
+     "qid": "Q324854",
+     "label": "Germany national under-19 football team",
+     "rank": "normal",
+     "start": "2008",
+     "end": "2009",
+     "parents": [
+      {
+       "qid": "Q154191",
+       "label": "German Football Association"
+      }
+     ]
+    },
+    {
+     "qid": "Q2016992",
+     "label": "Germany national under-18 football team",
+     "rank": "normal",
+     "start": "2008",
+     "end": "2008",
+     "parents": [
+      {
+       "qid": "Q154191",
+       "label": "German Football Association"
+      }
+     ]
+    },
+    {
+     "qid": "Q43310",
+     "label": "Germany men's national association football team",
+     "rank": "normal",
+     "start": "2011",
+     "end": "2024",
+     "parents": [
+      {
+       "qid": "Q154191",
+       "label": "German Football Association"
+      }
+     ]
+    }
+   ],
+   "nationality": [
+    "Germany"
+   ],
+   "sportNation": [
+    "Germany"
+   ],
+   "citizenship": [
+    "Germany"
+   ],
+   "positions": [
+    "midfielder"
+   ]
+  },
+  "Patrick Vieira": {
+   "name": "Patrick Vieira",
+   "qid": "Q46347",
+   "label": "Patrick Vieira",
+   "description": "French association football player and coach",
+   "enwiki": "Patrick Vieira",
+   "ref": "https://www.wikidata.org/wiki/Q46347",
+   "fetched": "2026-09-25",
+   "p54": [
+    {
+     "qid": "Q1277549",
+     "label": "France national under-21 association football team",
+     "rank": "normal",
+     "start": "1995",
+     "end": "1996",
+     "parents": [
+      {
+       "qid": "Q244750",
+       "label": "French Football Federation"
+      }
+     ]
+    },
+    {
+     "qid": "Q631",
+     "label": "Inter Milan",
+     "rank": "normal",
+     "start": "2006",
+     "end": "2010",
+     "parents": [
+      {
+       "qid": "Q2008551",
+       "label": "Oaktree Capital Management"
+      }
+     ]
+    },
+    {
+     "qid": "Q1422",
+     "label": "Juventus FC",
+     "rank": "normal",
+     "start": "2005",
+     "end": "2006",
+     "parents": [
+      {
+       "qid": "Q208697",
+       "label": "financial market"
+      },
+      {
+       "qid": "Q1384140",
+       "label": "Exor"
+      },
+      {
+       "qid": "Q28860712",
+       "label": "Lindsell Train"
+      }
+     ]
+    },
+    {
+     "qid": "Q1543",
+     "label": "AC Milan",
+     "rank": "normal",
+     "start": "1995",
+     "end": "1996",
+     "parents": [
+      {
+       "qid": "Q116116844",
+       "label": "RedBird Capital Partners"
+      }
+     ]
+    },
+    {
+     "qid": "Q9617",
+     "label": "Arsenal F.C.",
+     "rank": "normal",
+     "start": "1996",
+     "end": "2005",
+     "parents": [
+      {
+       "qid": "Q29438842",
+       "label": "Kroenke Sports & Entertainment"
+      }
+     ]
+    },
+    {
+     "qid": "Q47774",
+     "label": "France men's national association football team",
+     "rank": "normal",
+     "start": "1997",
+     "end": "2009",
+     "parents": [
+      {
+       "qid": "Q244750",
+       "label": "French Football Federation"
+      }
+     ]
+    },
+    {
+     "qid": "Q50602",
+     "label": "Manchester City F.C.",
+     "rank": "normal",
+     "start": "2010",
+     "end": "2011",
+     "parents": [
+      {
+       "qid": "Q556607",
+       "label": "Mansour bin Zayed Al Nahyan"
+      },
+      {
+       "qid": "Q2405171",
+       "label": "City Football Group"
+      }
+     ]
+    },
+    {
+     "qid": "Q298267",
+     "label": "AS Cannes",
+     "rank": "normal",
+     "start": "1993",
+     "end": "1995",
+     "parents": []
+    }
+   ],
+   "nationality": [
+    "France"
+   ],
+   "sportNation": [
+    "France"
+   ],
+   "citizenship": [
+    "France"
+   ],
+   "positions": [
+    "defensive midfielder"
+   ]
+  },
+  "Rodri": {
+   "name": "Rodri",
+   "qid": "Q20994118",
+   "label": "Rodri",
+   "description": "Spanish association football player (born 1996)",
+   "enwiki": "Rodri",
+   "ref": "https://www.wikidata.org/wiki/Q20994118",
+   "fetched": "2026-09-25",
+   "p54": [
+    {
+     "qid": "Q7156",
+     "label": "FC Barcelona",
+     "rank": "preferred",
+     "start": "2026",
+     "end": null,
+     "parents": [
+      {
+       "qid": "Q3091261",
+       "label": "FC Barcelona"
+      },
+      {
+       "qid": "Q3503804",
+       "label": "Supporters of FC Barcelona"
+      },
+      {
+       "qid": "Q9339070",
+       "label": "members of Fútbol Club Barcelona"
+      }
+     ]
+    },
+    {
+     "qid": "Q50602",
+     "label": "Manchester City F.C.",
+     "rank": "normal",
+     "start": "2019",
+     "end": "2026",
+     "parents": [
+      {
+       "qid": "Q2405171",
+       "label": "City Football Group"
+      },
+      {
+       "qid": "Q556607",
+       "label": "Mansour bin Zayed Al Nahyan"
+      }
+     ]
+    },
+    {
+     "qid": "Q1094113",
+     "label": "Villarreal CF B",
+     "rank": "normal",
+     "start": "2015",
+     "end": "2015",
+     "parents": []
+    },
+    {
+     "qid": "Q2713491",
+     "label": "Spain national under-19 football team",
+     "rank": "normal",
+     "start": "2015",
+     "end": "2015",
+     "parents": [
+      {
+       "qid": "Q207615",
+       "label": "Royal Spanish Football Federation"
+      }
+     ]
+    },
+    {
+     "qid": "Q3873503",
+     "label": "Spain national under-16 association football team",
+     "rank": "normal",
+     "start": "2012",
+     "end": "2012",
+     "parents": [
+      {
+       "qid": "Q207615",
+       "label": "Royal Spanish Football Federation"
+      }
+     ]
+    },
+    {
+     "qid": "Q8701",
+     "label": "Atlético Madrid",
+     "rank": "normal",
+     "start": "2018",
+     "end": "2019",
+     "parents": [
+      {
+       "qid": "Q2457791",
+       "label": "Enrique Cerezo"
+      },
+      {
+       "qid": "Q5210937",
+       "label": "Wanda Group"
+      },
+      {
+       "qid": "Q6015638",
+       "label": "Andrés arcaya"
+      }
+     ]
+    },
+    {
+     "qid": "Q12297",
+     "label": "Villarreal CF",
+     "rank": "normal",
+     "start": "2015",
+     "end": "2018",
+     "parents": [
+      {
+       "qid": "Q3780510",
+       "label": "Fernando Roig Alfonso"
+      }
+     ]
+    },
+    {
+     "qid": "Q42267",
+     "label": "Spain men's national football team",
+     "rank": "normal",
+     "start": "2018",
+     "end": null,
+     "parents": [
+      {
+       "qid": "Q207615",
+       "label": "Royal Spanish Football Federation"
+      }
+     ]
+    }
+   ],
+   "nationality": [
+    "Spain"
+   ],
+   "sportNation": [
+    "Spain"
+   ],
+   "citizenship": [
+    "Spain"
+   ],
+   "positions": [
+    "defensive midfielder"
+   ]
+  },
+  "Freddie Ljungberg": {
+   "name": "Freddie Ljungberg",
+   "qid": "Q10560",
+   "label": "Freddie Ljungberg",
+   "description": "Swedish association football player and manager",
+   "enwiki": "Freddie Ljungberg",
+   "ref": "https://www.wikidata.org/wiki/Q10560",
+   "fetched": "2026-09-25",
+   "p54": [
+    {
+     "qid": "Q308683",
+     "label": "Chicago Fire FC",
+     "rank": "normal",
+     "start": "2010",
+     "end": "2011",
+     "parents": [
+      {
+       "qid": "Q18543",
+       "label": "Major League Soccer"
+      },
+      {
+       "qid": "Q6211110",
+       "label": "Joe Mansueto"
+      }
+     ]
+    },
+    {
+     "qid": "Q308683",
+     "label": "Chicago Fire FC",
+     "rank": "normal",
+     "start": "2010",
+     "end": "2010",
+     "parents": [
+      {
+       "qid": "Q18543",
+       "label": "Major League Soccer"
+      },
+      {
+       "qid": "Q6211110",
+       "label": "Joe Mansueto"
+      }
+     ]
+    },
+    {
+     "qid": "Q632511",
+     "label": "Seattle Sounders FC",
+     "rank": "normal",
+     "start": "2009",
+     "end": "2010",
+     "parents": [
+      {
+       "qid": "Q18543",
+       "label": "Major League Soccer"
+      },
+      {
+       "qid": "Q162005",
+       "label": "Paul Allen"
+      },
+      {
+       "qid": "Q357402",
+       "label": "Drew Carey"
+      },
+      {
+       "qid": "Q919992",
+       "label": "Joe Roth"
+      },
+      {
+       "qid": "Q4685084",
+       "label": "Adrian Hanauer"
+      }
+     ]
+    },
+    {
+     "qid": "Q584858",
+     "label": "Halmstads BK",
+     "rank": "normal",
+     "start": "1994",
+     "end": "1998",
+     "parents": []
+    },
+    {
+     "qid": "Q823384",
+     "label": "Shimizu S-Pulse",
+     "rank": "normal",
+     "start": "2011",
+     "end": "2012",
+     "parents": []
+    },
+    {
+     "qid": "Q160826",
+     "label": "Sweden men's national football team",
+     "rank": "normal",
+     "start": "1998",
+     "end": "2008",
+     "parents": [
+      {
+       "qid": "Q455428",
+       "label": "Swedish Football Association"
+      }
+     ]
+    },
+    {
+     "qid": "Q2255212",
+     "label": "Sweden national under-19 football team",
+     "rank": "normal",
+     "start": "1994",
+     "end": "1994",
+     "parents": [
+      {
+       "qid": "Q455428",
+       "label": "Swedish Football Association"
+      }
+     ]
+    },
+    {
+     "qid": "Q2255267",
+     "label": "Sweden national under-21 football team",
+     "rank": "normal",
+     "start": "1995",
+     "end": "1998",
+     "parents": [
+      {
+       "qid": "Q455428",
+       "label": "Swedish Football Association"
+      }
+     ]
+    },
+    {
+     "qid": "Q3590410",
+     "label": "Sweden national under-17 football team",
+     "rank": "normal",
+     "start": "1993",
+     "end": "1993",
+     "parents": [
+      {
+       "qid": "Q455428",
+       "label": "Swedish Football Association"
+      }
+     ]
+    },
+    {
+     "qid": "Q15120200",
+     "label": "Sweden national under-18 football team",
+     "rank": "normal",
+     "start": "1994",
+     "end": "1994",
+     "parents": [
+      {
+       "qid": "Q455428",
+       "label": "Swedish Football Association"
+      }
+     ]
+    },
+    {
+     "qid": "Q16845355",
+     "label": "Mumbai City FC",
+     "rank": "normal",
+     "start": "2014",
+     "end": "2014",
+     "parents": [
+      {
+       "qid": "Q1063412",
+       "label": "Q1063412"
+      }
+     ]
+    },
+    {
+     "qid": "Q9617",
+     "label": "Arsenal F.C.",
+     "rank": "normal",
+     "start": "1998",
+     "end": "2007",
+     "parents": [
+      {
+       "qid": "Q29438842",
+       "label": "Kroenke Sports & Entertainment"
+      }
+     ]
+    },
+    {
+     "qid": "Q18747",
+     "label": "West Ham United F.C.",
+     "rank": "normal",
+     "start": "2007",
+     "end": "2008",
+     "parents": [
+      {
+       "qid": "Q860329",
+       "label": "David Gold"
+      },
+      {
+       "qid": "Q1046824",
+       "label": "David Sullivan"
+      },
+      {
+       "qid": "Q47402605",
+       "label": "1890s holdings"
+      }
+     ]
+    },
+    {
+     "qid": "Q19593",
+     "label": "Celtic F.C.",
+     "rank": "normal",
+     "start": "2011",
+     "end": "2011",
+     "parents": [
+      {
+       "qid": "Q1200272",
+       "label": "Dermot Desmond"
+      },
+      {
+       "qid": "Q28860712",
+       "label": "Lindsell Train"
+      }
+     ]
+    }
+   ],
+   "nationality": [
+    "Sweden"
+   ],
+   "sportNation": [
+    "Sweden"
+   ],
+   "citizenship": [
+    "Sweden"
+   ],
+   "positions": [
+    "winger"
+   ]
+  },
+  "Bernardo Silva": {
+   "name": "Bernardo Silva",
+   "qid": "Q15521306",
+   "label": "Bernardo Silva",
+   "description": "Portuguese association football player (born 1994)",
+   "enwiki": "Bernardo Silva",
+   "ref": "https://www.wikidata.org/wiki/Q15521306",
+   "fetched": "2026-09-25",
+   "p54": [
+    {
+     "qid": "Q131499",
+     "label": "S.L. Benfica",
+     "rank": "normal",
+     "start": "2013",
+     "end": "2015",
+     "parents": [
+      {
+       "qid": "Q2895813",
+       "label": "S.L. Benfica"
+      }
+     ]
+    },
+    {
+     "qid": "Q180305",
+     "label": "AS Monaco FC",
+     "rank": "normal",
+     "start": "2015",
+     "end": "2017",
+     "parents": [
+      {
+       "qid": "Q16009112",
+       "label": "Association sportive de Monaco"
+      },
+      {
+       "qid": "Q668182",
+       "label": "House of Grimaldi"
+      },
+      {
+       "qid": "Q983847",
+       "label": "Dmitry Rybolovlev"
+      }
+     ]
+    },
+    {
+     "qid": "Q180305",
+     "label": "AS Monaco FC",
+     "rank": "normal",
+     "start": "2014",
+     "end": "2015",
+     "parents": [
+      {
+       "qid": "Q16009112",
+       "label": "Association sportive de Monaco"
+      },
+      {
+       "qid": "Q668182",
+       "label": "House of Grimaldi"
+      },
+      {
+       "qid": "Q983847",
+       "label": "Dmitry Rybolovlev"
+      }
+     ]
+    },
+    {
+     "qid": "Q8682",
+     "label": "Real Madrid Club de Fútbol",
+     "rank": "preferred",
+     "start": "2026",
+     "end": null,
+     "parents": [
+      {
+       "qid": "Q97241694",
+       "label": "Q97241694"
+      }
+     ]
+    },
+    {
+     "qid": "Q50602",
+     "label": "Manchester City F.C.",
+     "rank": "normal",
+     "start": "2017",
+     "end": "2026",
+     "parents": [
+      {
+       "qid": "Q2405171",
+       "label": "City Football Group"
+      },
+      {
+       "qid": "Q556607",
+       "label": "Mansour bin Zayed Al Nahyan"
+      }
+     ]
+    },
+    {
+     "qid": "Q7387221",
+     "label": "S.L. Benfica B",
+     "rank": "normal",
+     "start": "2013",
+     "end": "2015",
+     "parents": []
+    },
+    {
+     "qid": "Q267245",
+     "label": "Portugal men's national football team",
+     "rank": "normal",
+     "start": "2015",
+     "end": null,
+     "parents": [
+      {
+       "qid": "Q309005",
+       "label": "Portuguese Football Federation"
+      }
+     ]
+    },
+    {
+     "qid": "Q1630430",
+     "label": "Portugal national under-21 football team",
+     "rank": "normal",
+     "start": "2013",
+     "end": "2015",
+     "parents": [
+      {
+       "qid": "Q309005",
+       "label": "Portuguese Football Federation"
+      }
+     ]
+    },
+    {
+     "qid": "Q3873524",
+     "label": "Portugal national under-19 football team",
+     "rank": "normal",
+     "start": "2013",
+     "end": "2013",
+     "parents": [
+      {
+       "qid": "Q309005",
+       "label": "Portuguese Football Federation"
+      }
+     ]
+    }
+   ],
+   "nationality": [
+    "Portugal"
+   ],
+   "sportNation": [
+    "Portugal"
+   ],
+   "citizenship": [
+    "Portugal"
+   ],
+   "positions": [
+    "midfielder",
+    "wing half"
+   ]
+  },
+  "Ashley Cole": {
+   "name": "Ashley Cole",
+   "qid": "Q133556",
+   "label": "Ashley Cole",
+   "description": "English association football player (born 1980)",
+   "enwiki": "Ashley Cole",
+   "ref": "https://www.wikidata.org/wiki/Q133556",
+   "fetched": "2026-09-25",
+   "p54": [
+    {
+     "qid": "Q204238",
+     "label": "England national under-21 association football team",
+     "rank": "normal",
+     "start": "2002",
+     "end": "2002",
+     "parents": [
+      {
+       "qid": "Q9500",
+       "label": "The Football Association"
+      }
+     ]
+    },
+    {
+     "qid": "Q204357",
+     "label": "LA Galaxy",
+     "rank": "normal",
+     "start": "2016",
+     "end": "2018",
+     "parents": [
+      {
+       "qid": "Q1133456",
+       "label": "Philip Anschutz"
+      },
+      {
+       "qid": "Q18543",
+       "label": "Major League Soccer"
+      }
+     ]
+    },
+    {
+     "qid": "Q1049176",
+     "label": "England national under-20 association football team",
+     "rank": "normal",
+     "start": "1999",
+     "end": "1999",
+     "parents": [
+      {
+       "qid": "Q9500",
+       "label": "The Football Association"
+      }
+     ]
+    },
+    {
+     "qid": "Q2739",
+     "label": "AS Roma",
+     "rank": "normal",
+     "start": "2014",
+     "end": "2016",
+     "parents": [
+      {
+       "qid": "Q28053828",
+       "label": "NEEP Roma Holding"
+      }
+     ]
+    },
+    {
+     "qid": "Q9616",
+     "label": "Chelsea F.C.",
+     "rank": "normal",
+     "start": "2006",
+     "end": "2014",
+     "parents": [
+      {
+       "qid": "Q120737993",
+       "label": "BlueCo"
+      }
+     ]
+    },
+    {
+     "qid": "Q9617",
+     "label": "Arsenal F.C.",
+     "rank": "normal",
+     "start": "1998",
+     "end": "2006",
+     "parents": [
+      {
+       "qid": "Q29438842",
+       "label": "Kroenke Sports & Entertainment"
+      }
+     ]
+    },
+    {
+     "qid": "Q19467",
+     "label": "Crystal Palace F.C.",
+     "rank": "normal",
+     "start": "1999",
+     "end": "2000",
+     "parents": [
+      {
+       "qid": "Q6289885",
+       "label": "Josh Harris"
+      },
+      {
+       "qid": "Q16209431",
+       "label": "David Blitzer"
+      },
+      {
+       "qid": "Q23301488",
+       "label": "Steve Parish"
+      }
+     ]
+    },
+    {
+     "qid": "Q19470",
+     "label": "Derby County F.C.",
+     "rank": "normal",
+     "start": "2019",
+     "end": "2019",
+     "parents": [
+      {
+       "qid": "Q30122352",
+       "label": "Mel Morris"
+      }
+     ]
+    },
+    {
+     "qid": "Q47762",
+     "label": "England men's national association football team",
+     "rank": "normal",
+     "start": "2001",
+     "end": "2014",
+     "parents": [
+      {
+       "qid": "Q9500",
+       "label": "The Football Association"
+      }
+     ]
+    }
+   ],
+   "nationality": [
+    "United Kingdom",
+    "England"
+   ],
+   "sportNation": [
+    "England"
+   ],
+   "citizenship": [
+    "United Kingdom"
+   ],
+   "positions": [
+    "full-back"
+   ]
+  },
+  "Nathan Aké": {
+   "name": "Nathan Aké",
+   "qid": "Q1755683",
+   "label": "Nathan Aké",
+   "description": "Dutch footballer (born 1995)",
+   "enwiki": "Nathan Aké",
+   "ref": "https://www.wikidata.org/wiki/Q1755683",
+   "fetched": "2026-09-25",
+   "p54": [
+    {
+     "qid": "Q6601875",
+     "label": "Fenerbahçe Istanbul",
+     "rank": "preferred",
+     "start": "2026",
+     "end": null,
+     "parents": [
+      {
+       "qid": "Q19648",
+       "label": "Fenerbahçe SK"
+      }
+     ]
+    },
+    {
+     "qid": "Q50602",
+     "label": "Manchester City F.C.",
+     "rank": "normal",
+     "start": "2020",
+     "end": "2026",
+     "parents": [
+      {
+       "qid": "Q2405171",
+       "label": "City Football Group"
+      },
+      {
+       "qid": "Q556607",
+       "label": "Mansour bin Zayed Al Nahyan"
+      }
+     ]
+    },
+    {
+     "qid": "Q514714",
+     "label": "Netherlands national under-19 football team",
+     "rank": "normal",
+     "start": "2012",
+     "end": "2013",
+     "parents": [
+      {
+       "qid": "Q213116",
+       "label": "Royal Dutch Football Association"
+      }
+     ]
+    },
+    {
+     "qid": "Q601723",
+     "label": "Netherlands national under-17 football team",
+     "rank": "normal",
+     "start": "2011",
+     "end": "2012",
+     "parents": [
+      {
+       "qid": "Q213116",
+       "label": "Royal Dutch Football Association"
+      }
+     ]
+    },
+    {
+     "qid": "Q1811026",
+     "label": "Netherlands national under-21 football team",
+     "rank": "normal",
+     "start": "2013",
+     "end": "2016",
+     "parents": [
+      {
+       "qid": "Q213116",
+       "label": "Royal Dutch Football Association"
+      }
+     ]
+    },
+    {
+     "qid": "Q2714",
+     "label": "Watford F.C.",
+     "rank": "normal",
+     "start": "2015",
+     "end": "2016",
+     "parents": [
+      {
+       "qid": "Q10628",
+       "label": "Giampaolo Pozzo"
+      }
+     ]
+    },
+    {
+     "qid": "Q9616",
+     "label": "Chelsea F.C.",
+     "rank": "normal",
+     "start": "2012",
+     "end": "2017",
+     "parents": [
+      {
+       "qid": "Q120737993",
+       "label": "BlueCo"
+      }
+     ]
+    },
+    {
+     "qid": "Q18729",
+     "label": "Reading F.C.",
+     "rank": "normal",
+     "start": "2015",
+     "end": "2015",
+     "parents": [
+      {
+       "qid": "Q30169037",
+       "label": "Dai Yongge"
+      }
+     ]
+    },
+    {
+     "qid": "Q19568",
+     "label": "AFC Bournemouth",
+     "rank": "normal",
+     "start": "2017",
+     "end": "2020",
+     "parents": [
+      {
+       "qid": "Q16208626",
+       "label": "Maxim Demin"
+      }
+     ]
+    },
+    {
+     "qid": "Q19568",
+     "label": "AFC Bournemouth",
+     "rank": "normal",
+     "start": "2016",
+     "end": "2017",
+     "parents": [
+      {
+       "qid": "Q16208626",
+       "label": "Maxim Demin"
+      }
+     ]
+    },
+    {
+     "qid": "Q47050",
+     "label": "Netherlands national association football team",
+     "rank": "normal",
+     "start": "2017",
+     "end": null,
+     "parents": [
+      {
+       "qid": "Q213116",
+       "label": "Royal Dutch Football Association"
+      }
+     ]
+    }
+   ],
+   "nationality": [
+    "Kingdom of the Netherlands",
+    "Netherlands"
+   ],
+   "sportNation": [
+    "Netherlands"
+   ],
+   "citizenship": [
+    "Kingdom of the Netherlands"
+   ],
+   "positions": [
+    "defender"
+   ]
+  },
+  "Kolo Touré": {
+   "name": "Kolo Touré",
+   "qid": "Q147589",
+   "label": "Kolo Touré",
+   "description": "Ivorian association football manager (born 1981)",
+   "enwiki": "Kolo Touré",
+   "ref": "https://www.wikidata.org/wiki/Q147589",
+   "fetched": "2026-09-25",
+   "p54": [
+    {
+     "qid": "Q50602",
+     "label": "Manchester City F.C.",
+     "rank": "normal",
+     "start": "2009",
+     "end": "2013",
+     "parents": [
+      {
+       "qid": "Q2405171",
+       "label": "City Football Group"
+      },
+      {
+       "qid": "Q556607",
+       "label": "Mansour bin Zayed Al Nahyan"
+      }
+     ]
+    },
+    {
+     "qid": "Q175145",
+     "label": "Ivory Coast men's national football team",
+     "rank": "normal",
+     "start": "2000",
+     "end": "2015",
+     "parents": [
+      {
+       "qid": "Q923018",
+       "label": "Ivorian Football Federation"
+      }
+     ]
+    },
+    {
+     "qid": "Q1130849",
+     "label": "Liverpool F.C.",
+     "rank": "normal",
+     "start": "2013",
+     "end": "2016",
+     "parents": [
+      {
+       "qid": "Q1324524",
+       "label": "Fenway Sports Group"
+      }
+     ]
+    },
+    {
+     "qid": "Q9617",
+     "label": "Arsenal F.C.",
+     "rank": "normal",
+     "start": "2002",
+     "end": "2009",
+     "parents": [
+      {
+       "qid": "Q29438842",
+       "label": "Kroenke Sports & Entertainment"
+      }
+     ]
+    },
+    {
+     "qid": "Q19593",
+     "label": "Celtic F.C.",
+     "rank": "normal",
+     "start": "2016",
+     "end": "2017",
+     "parents": [
+      {
+       "qid": "Q1200272",
+       "label": "Dermot Desmond"
+      },
+      {
+       "qid": "Q28860712",
+       "label": "Lindsell Train"
+      }
+     ]
+    },
+    {
+     "qid": "Q852266",
+     "label": "ASEC Mimosas",
+     "rank": "normal",
+     "start": "1999",
+     "end": "2002",
+     "parents": []
+    }
+   ],
+   "nationality": [
+    "Ivory Coast"
+   ],
+   "sportNation": [
+    "Ivory Coast"
+   ],
+   "citizenship": [
+    "Ivory Coast"
+   ],
+   "positions": [
+    "centre-back",
+    "full-back"
+   ]
+  },
+  "John Stones": {
+   "name": "John Stones",
+   "qid": "Q2025900",
+   "label": "John Stones",
+   "description": "English footballer (born 1994)",
+   "enwiki": "John Stones",
+   "ref": "https://www.wikidata.org/wiki/Q2025900",
+   "fetched": "2026-09-25",
+   "p54": [
+    {
+     "qid": "Q204238",
+     "label": "England national under-21 association football team",
+     "rank": "normal",
+     "start": "2013",
+     "end": "2015",
+     "parents": [
+      {
+       "qid": "Q9500",
+       "label": "The Football Association"
+      }
+     ]
+    },
+    {
+     "qid": "Q1049176",
+     "label": "England national under-20 association football team",
+     "rank": "normal",
+     "start": "2013",
+     "end": "2013",
+     "parents": [
+      {
+       "qid": "Q9500",
+       "label": "The Football Association"
+      }
+     ]
+    },
+    {
+     "qid": "Q2358861",
+     "label": "England national under-19 association football team",
+     "rank": "normal",
+     "start": "2012",
+     "end": "2013",
+     "parents": [
+      {
+       "qid": "Q9500",
+       "label": "The Football Association"
+      }
+     ]
+    },
+    {
+     "qid": "Q631",
+     "label": "Inter Milan",
+     "rank": "preferred",
+     "start": "2026",
+     "end": null,
+     "parents": [
+      {
+       "qid": "Q2008551",
+       "label": "Oaktree Capital Management"
+      }
+     ]
+    },
+    {
+     "qid": "Q5794",
+     "label": "Everton F.C.",
+     "rank": "normal",
+     "start": "2013",
+     "end": "2016",
+     "parents": [
+      {
+       "qid": "Q861168",
+       "label": "Farhad Moshiri"
+      },
+      {
+       "qid": "Q104536386",
+       "label": "777 Partners"
+      }
+     ]
+    },
+    {
+     "qid": "Q47762",
+     "label": "England men's national association football team",
+     "rank": "normal",
+     "start": "2014",
+     "end": null,
+     "parents": [
+      {
+       "qid": "Q9500",
+       "label": "The Football Association"
+      }
+     ]
+    },
+    {
+     "qid": "Q50602",
+     "label": "Manchester City F.C.",
+     "rank": "normal",
+     "start": "2016",
+     "end": "2026",
+     "parents": [
+      {
+       "qid": "Q556607",
+       "label": "Mansour bin Zayed Al Nahyan"
+      },
+      {
+       "qid": "Q2405171",
+       "label": "City Football Group"
+      }
+     ]
+    },
+    {
+     "qid": "Q19442",
+     "label": "Barnsley F.C.",
+     "rank": "normal",
+     "start": "2011",
+     "end": "2013",
+     "parents": []
+    }
+   ],
+   "nationality": [
+    "United Kingdom",
+    "England"
+   ],
+   "sportNation": [
+    "England"
+   ],
+   "citizenship": [
+    "United Kingdom"
+   ],
+   "positions": [
+    "centre-back",
+    "defensive midfielder"
+   ]
+  },
+  "Sol Campbell": {
+   "name": "Sol Campbell",
+   "qid": "Q214734",
+   "label": "Sol Campbell",
+   "description": "English footballer and manager (born 1974)",
+   "enwiki": "Sol Campbell",
+   "ref": "https://www.wikidata.org/wiki/Q214734",
+   "fetched": "2026-09-25",
+   "p54": [
+    {
+     "qid": "Q18716",
+     "label": "Newcastle United F.C.",
+     "rank": "normal",
+     "start": "2010",
+     "end": "2011",
+     "parents": []
+    },
+    {
+     "qid": "Q204238",
+     "label": "England national under-21 association football team",
+     "rank": "normal",
+     "start": "1994",
+     "end": "1996",
+     "parents": [
+      {
+       "qid": "Q9500",
+       "label": "The Football Association"
+      }
+     ]
+    },
+    {
+     "qid": "Q1049171",
+     "label": "England national under-18 association football team",
+     "rank": "normal",
+     "start": null,
+     "end": null,
+     "parents": [
+      {
+       "qid": "Q9500",
+       "label": "The Football Association"
+      }
+     ]
+    },
+    {
+     "qid": "Q1110944",
+     "label": "England national association football B team",
+     "rank": "normal",
+     "start": "1994",
+     "end": "2006",
+     "parents": [
+      {
+       "qid": "Q9500",
+       "label": "The Football Association"
+      }
+     ]
+    },
+    {
+     "qid": "Q4201740",
+     "label": "England national under-16 association football team",
+     "rank": "normal",
+     "start": null,
+     "end": null,
+     "parents": [
+      {
+       "qid": "Q9500",
+       "label": "The Football Association"
+      }
+     ]
+    },
+    {
+     "qid": "Q9617",
+     "label": "Arsenal F.C.",
+     "rank": "normal",
+     "start": "2001",
+     "end": "2006",
+     "parents": [
+      {
+       "qid": "Q29438842",
+       "label": "Kroenke Sports & Entertainment"
+      }
+     ]
+    },
+    {
+     "qid": "Q9617",
+     "label": "Arsenal F.C.",
+     "rank": "normal",
+     "start": "2010",
+     "end": "2010",
+     "parents": [
+      {
+       "qid": "Q29438842",
+       "label": "Kroenke Sports & Entertainment"
+      }
+     ]
+    },
+    {
+     "qid": "Q18741",
+     "label": "Tottenham Hotspur F.C.",
+     "rank": "normal",
+     "start": "1992",
+     "end": "2001",
+     "parents": [
+      {
+       "qid": "Q5323703",
+       "label": "ENIC Group"
+      }
+     ]
+    },
+    {
+     "qid": "Q18747",
+     "label": "West Ham United F.C.",
+     "rank": "normal",
+     "start": null,
+     "end": null,
+     "parents": [
+      {
+       "qid": "Q860329",
+       "label": "David Gold"
+      },
+      {
+       "qid": "Q1046824",
+       "label": "David Sullivan"
+      },
+      {
+       "qid": "Q47402605",
+       "label": "1890s holdings"
+      }
+     ]
+    },
+    {
+     "qid": "Q19598",
+     "label": "Notts County F.C.",
+     "rank": "normal",
+     "start": "2009",
+     "end": "2009",
+     "parents": [
+      {
+       "qid": "Q7298212",
+       "label": "Ray Trew"
+      }
+     ]
+    },
+    {
+     "qid": "Q19604",
+     "label": "Portsmouth F.C.",
+     "rank": "normal",
+     "start": "2006",
+     "end": "2009",
+     "parents": [
+      {
+       "qid": "Q16255488",
+       "label": "The Tornante Company"
+      }
+     ]
+    },
+    {
+     "qid": "Q47762",
+     "label": "England men's national association football team",
+     "rank": "normal",
+     "start": "1996",
+     "end": "2007",
+     "parents": [
+      {
+       "qid": "Q9500",
+       "label": "The Football Association"
+      }
+     ]
+    }
+   ],
+   "nationality": [
+    "United Kingdom",
+    "England"
+   ],
+   "sportNation": [
+    "England"
+   ],
+   "citizenship": [
+    "United Kingdom"
+   ],
+   "positions": [
+    "centre-back"
+   ]
+  },
+  "Rúben Dias": {
+   "name": "Rúben Dias",
+   "qid": "Q21621168",
+   "label": "Rúben Dias",
+   "description": "Portuguese footballer (born 1997)",
+   "enwiki": "Rúben Dias",
+   "ref": "https://www.wikidata.org/wiki/Q21621168",
+   "fetched": "2026-09-25",
+   "p54": [
+    {
+     "qid": "Q267245",
+     "label": "Portugal men's national football team",
+     "rank": "normal",
+     "start": "2018",
+     "end": "http",
+     "parents": [
+      {
+       "qid": "Q309005",
+       "label": "Portuguese Football Federation"
+      }
+     ]
+    },
+    {
+     "qid": "Q1630430",
+     "label": "Portugal national under-21 football team",
+     "rank": "normal",
+     "start": "2017",
+     "end": "2017",
+     "parents": [
+      {
+       "qid": "Q309005",
+       "label": "Portuguese Football Federation"
+      }
+     ]
+    },
+    {
+     "qid": "Q1772776",
+     "label": "Portugal national under-20 football team",
+     "rank": "normal",
+     "start": "2016",
+     "end": "2017",
+     "parents": [
+      {
+       "qid": "Q309005",
+       "label": "Portuguese Football Federation"
+      }
+     ]
+    },
+    {
+     "qid": "Q3590754",
+     "label": "Portugal national under-17 football team",
+     "rank": "normal",
+     "start": "2013",
+     "end": "2014",
+     "parents": [
+      {
+       "qid": "Q309005",
+       "label": "Portuguese Football Federation"
+      }
+     ]
+    },
+    {
+     "qid": "Q3873524",
+     "label": "Portugal national under-19 football team",
+     "rank": "normal",
+     "start": "2014",
+     "end": "2016",
+     "parents": [
+      {
+       "qid": "Q309005",
+       "label": "Portuguese Football Federation"
+      }
+     ]
+    },
+    {
+     "qid": "Q50602",
+     "label": "Manchester City F.C.",
+     "rank": "preferred",
+     "start": "2020",
+     "end": null,
+     "parents": [
+      {
+       "qid": "Q556607",
+       "label": "Mansour bin Zayed Al Nahyan"
+      },
+      {
+       "qid": "Q2405171",
+       "label": "City Football Group"
+      }
+     ]
+    },
+    {
+     "qid": "Q131499",
+     "label": "S.L. Benfica",
+     "rank": "normal",
+     "start": "2017",
+     "end": "2020",
+     "parents": [
+      {
+       "qid": "Q2895813",
+       "label": "S.L. Benfica"
+      }
+     ]
+    },
+    {
+     "qid": "Q7232579",
+     "label": "Portugal national under-16 football team",
+     "rank": "normal",
+     "start": "2013",
+     "end": "2013",
+     "parents": []
+    },
+    {
+     "qid": "Q7387221",
+     "label": "S.L. Benfica B",
+     "rank": "normal",
+     "start": "2015",
+     "end": "2017",
+     "parents": []
+    }
+   ],
+   "nationality": [
+    "Portugal"
+   ],
+   "sportNation": [
+    "Portugal"
+   ],
+   "citizenship": [
+    "Portugal"
+   ],
+   "positions": [
+    "centre-back"
+   ]
+  },
+  "Lauren": {
+   "name": "Lauren",
+   "qid": "Q314755",
+   "label": "Lauren",
+   "description": "Cameroonian footballer (born 1977)",
+   "enwiki": "Lauren (Cameroonian footballer)",
+   "ref": "https://www.wikidata.org/wiki/Q314755",
+   "fetched": "2026-09-25",
+   "p54": [
+    {
+     "qid": "Q950835",
+     "label": "Betis",
+     "rank": "normal",
+     "start": "1996",
+     "end": "1997",
+     "parents": []
+    },
+    {
+     "qid": "Q5774165",
+     "label": "CD Utrera",
+     "rank": "normal",
+     "start": "1995",
+     "end": "1996",
+     "parents": []
+    },
+    {
+     "qid": "Q8823",
+     "label": "Levante UD",
+     "rank": "normal",
+     "start": "1997",
+     "end": "1998",
+     "parents": []
+    },
+    {
+     "qid": "Q10499",
+     "label": "Córdoba CF",
+     "rank": "normal",
+     "start": "2010",
+     "end": "2010",
+     "parents": []
+    },
+    {
+     "qid": "Q175309",
+     "label": "Cameroon men's national football team",
+     "rank": "normal",
+     "start": "1997",
+     "end": "2002",
+     "parents": [
+      {
+       "qid": "Q921938",
+       "label": "Cameroonian Football Federation"
+      }
+     ]
+    },
+    {
+     "qid": "Q3590623",
+     "label": "Cameroon national under-23 football team",
+     "rank": "normal",
+     "start": "2000",
+     "end": "2000",
+     "parents": [
+      {
+       "qid": "Q921938",
+       "label": "Cameroonian Football Federation"
+      }
+     ]
+    },
+    {
+     "qid": "Q8835",
+     "label": "RCD Mallorca",
+     "rank": "normal",
+     "start": "1998",
+     "end": "2000",
+     "parents": [
+      {
+       "qid": "Q7349577",
+       "label": "Robert Sarver"
+      }
+     ]
+    },
+    {
+     "qid": "Q9617",
+     "label": "Arsenal F.C.",
+     "rank": "normal",
+     "start": "2000",
+     "end": "2006",
+     "parents": [
+      {
+       "qid": "Q29438842",
+       "label": "Kroenke Sports & Entertainment"
+      }
+     ]
+    },
+    {
+     "qid": "Q19604",
+     "label": "Portsmouth F.C.",
+     "rank": "normal",
+     "start": "2006",
+     "end": "2009",
+     "parents": [
+      {
+       "qid": "Q16255488",
+       "label": "The Tornante Company"
+      }
+     ]
+    }
+   ],
+   "nationality": [
+    "Spain",
+    "Equatorial Guinea",
+    "Cameroon"
+   ],
+   "sportNation": [
+    "Cameroon"
+   ],
+   "citizenship": [
+    "Spain",
+    "Equatorial Guinea",
+    "Cameroon"
+   ],
+   "positions": [
+    "defender",
+    "full-back"
+   ]
+  },
+  "Kyle Walker": {
+   "name": "Kyle Walker",
+   "qid": "Q59108",
+   "label": "Kyle Walker",
+   "description": "English association football player (born 1990)",
+   "enwiki": "Kyle Walker",
+   "ref": "https://www.wikidata.org/wiki/Q59108",
+   "fetched": "2026-09-25",
+   "p54": [
+    {
+     "qid": "Q19458",
+     "label": "Burnley F.C.",
+     "rank": "preferred",
+     "start": "2025",
+     "end": null,
+     "parents": []
+    },
+    {
+     "qid": "Q48945",
+     "label": "Northampton Town F.C.",
+     "rank": "normal",
+     "start": "2008",
+     "end": "2008",
+     "parents": []
+    },
+    {
+     "qid": "Q18723",
+     "label": "Queens Park Rangers F.C.",
+     "rank": "normal",
+     "start": "2010",
+     "end": "2011",
+     "parents": [
+      {
+       "qid": "Q7852926",
+       "label": "Tune Group"
+      },
+      {
+       "qid": "Q173381",
+       "label": "Tony Fernandes"
+      }
+     ]
+    },
+    {
+     "qid": "Q50602",
+     "label": "Manchester City F.C.",
+     "rank": "normal",
+     "start": "2017",
+     "end": "2025",
+     "parents": [
+      {
+       "qid": "Q2405171",
+       "label": "City Football Group"
+      },
+      {
+       "qid": "Q556607",
+       "label": "Mansour bin Zayed Al Nahyan"
+      }
+     ]
+    },
+    {
+     "qid": "Q204238",
+     "label": "England national under-21 association football team",
+     "rank": "normal",
+     "start": "2010",
+     "end": "2011",
+     "parents": [
+      {
+       "qid": "Q9500",
+       "label": "The Football Association"
+      }
+     ]
+    },
+    {
+     "qid": "Q2358861",
+     "label": "England national under-19 association football team",
+     "rank": "normal",
+     "start": "2009",
+     "end": "2009",
+     "parents": [
+      {
+       "qid": "Q9500",
+       "label": "The Football Association"
+      }
+     ]
+    },
+    {
+     "qid": "Q1543",
+     "label": "AC Milan",
+     "rank": "normal",
+     "start": "2025",
+     "end": "2025",
+     "parents": [
+      {
+       "qid": "Q116116844",
+       "label": "RedBird Capital Partners"
+      }
+     ]
+    },
+    {
+     "qid": "Q18711",
+     "label": "Aston Villa F.C.",
+     "rank": "normal",
+     "start": "2011",
+     "end": "2011",
+     "parents": [
+      {
+       "qid": "Q1431063",
+       "label": "Nassef Sawiris"
+      },
+      {
+       "qid": "Q20857914",
+       "label": "Wes Edens"
+      }
+     ]
+    },
+    {
+     "qid": "Q18741",
+     "label": "Tottenham Hotspur F.C.",
+     "rank": "normal",
+     "start": "2009",
+     "end": "2017",
+     "parents": [
+      {
+       "qid": "Q5323703",
+       "label": "ENIC Group"
+      }
+     ]
+    },
+    {
+     "qid": "Q19607",
+     "label": "Sheffield United F.C.",
+     "rank": "normal",
+     "start": "2009",
+     "end": "2010",
+     "parents": [
+      {
+       "qid": "Q12224200",
+       "label": "Abdullah bin Mosaad bin Abdulaziz Al Saud"
+      }
+     ]
+    },
+    {
+     "qid": "Q19607",
+     "label": "Sheffield United F.C.",
+     "rank": "normal",
+     "start": "2008",
+     "end": "2009",
+     "parents": [
+      {
+       "qid": "Q12224200",
+       "label": "Abdullah bin Mosaad bin Abdulaziz Al Saud"
+      }
+     ]
+    },
+    {
+     "qid": "Q47762",
+     "label": "England men's national association football team",
+     "rank": "normal",
+     "start": "2011",
+     "end": "2025",
+     "parents": [
+      {
+       "qid": "Q9500",
+       "label": "The Football Association"
+      }
+     ]
+    }
+   ],
+   "nationality": [
+    "United Kingdom",
+    "England"
+   ],
+   "sportNation": [
+    "England"
+   ],
+   "citizenship": [
+    "United Kingdom"
+   ],
+   "positions": [
+    "full-back"
+   ]
+  },
+  "Jens Lehmann": {
+   "name": "Jens Lehmann",
+   "qid": "Q57114",
+   "label": "Jens Lehmann",
+   "description": "German association football player (born 1969)",
+   "enwiki": "Jens Lehmann",
+   "ref": "https://www.wikidata.org/wiki/Q57114",
+   "fetched": "2026-09-25",
+   "p54": [
+    {
+     "qid": "Q4512",
+     "label": "VfB Stuttgart",
+     "rank": "normal",
+     "start": "2008",
+     "end": "2010",
+     "parents": [
+      {
+       "qid": "Q113381117",
+       "label": "VfB Stuttgart 1893 AG"
+      },
+      {
+       "qid": "Q4527054",
+       "label": "Q4527054"
+      }
+     ]
+    },
+    {
+     "qid": "Q41420",
+     "label": "Borussia Dortmund",
+     "rank": "normal",
+     "start": "1999",
+     "end": "2003",
+     "parents": [
+      {
+       "qid": "Q448445",
+       "label": "SDAX"
+      },
+      {
+       "qid": "Q874430",
+       "label": "CDAX"
+      },
+      {
+       "qid": "Q881201",
+       "label": "Reinhard Rauball"
+      }
+     ]
+    },
+    {
+     "qid": "Q314851",
+     "label": "Germany national under-21 football team",
+     "rank": "normal",
+     "start": "1989",
+     "end": "1990",
+     "parents": [
+      {
+       "qid": "Q154191",
+       "label": "German Football Association"
+      }
+     ]
+    },
+    {
+     "qid": "Q314851",
+     "label": "Germany national under-21 football team",
+     "rank": "normal",
+     "start": "1990",
+     "end": "1991",
+     "parents": [
+      {
+       "qid": "Q154191",
+       "label": "German Football Association"
+      }
+     ]
+    },
+    {
+     "qid": "Q324854",
+     "label": "Germany national under-19 football team",
+     "rank": "normal",
+     "start": null,
+     "end": null,
+     "parents": [
+      {
+       "qid": "Q154191",
+       "label": "German Football Association"
+      }
+     ]
+    },
+    {
+     "qid": "Q1202757",
+     "label": "Germany Olympic football team",
+     "rank": "normal",
+     "start": "1990",
+     "end": "1992",
+     "parents": [
+      {
+       "qid": "Q154191",
+       "label": "German Football Association"
+      }
+     ]
+    },
+    {
+     "qid": "Q1543",
+     "label": "AC Milan",
+     "rank": "normal",
+     "start": "1998",
+     "end": "1998",
+     "parents": [
+      {
+       "qid": "Q116116844",
+       "label": "RedBird Capital Partners"
+      }
+     ]
+    },
+    {
+     "qid": "Q1543",
+     "label": "AC Milan",
+     "rank": "normal",
+     "start": "1998",
+     "end": "1999",
+     "parents": [
+      {
+       "qid": "Q116116844",
+       "label": "RedBird Capital Partners"
+      }
+     ]
+    },
+    {
+     "qid": "Q9617",
+     "label": "Arsenal F.C.",
+     "rank": "normal",
+     "start": "2003",
+     "end": "2008",
+     "parents": [
+      {
+       "qid": "Q29438842",
+       "label": "Kroenke Sports & Entertainment"
+      }
+     ]
+    },
+    {
+     "qid": "Q9617",
+     "label": "Arsenal F.C.",
+     "rank": "normal",
+     "start": "2011",
+     "end": "2011",
+     "parents": [
+      {
+       "qid": "Q29438842",
+       "label": "Kroenke Sports & Entertainment"
+      }
+     ]
+    },
+    {
+     "qid": "Q32494",
+     "label": "Schalke 04",
+     "rank": "normal",
+     "start": "1988",
+     "end": "1998",
+     "parents": [
+      {
+       "qid": "Q1100117",
+       "label": "Clemens Tönnies"
+      }
+     ]
+    },
+    {
+     "qid": "Q43310",
+     "label": "Germany men's national association football team",
+     "rank": "normal",
+     "start": "1998",
+     "end": "2008",
+     "parents": [
+      {
+       "qid": "Q154191",
+       "label": "German Football Association"
+      }
+     ]
+    }
+   ],
+   "nationality": [
+    "Germany"
+   ],
+   "sportNation": [
+    "Germany"
+   ],
+   "citizenship": [
+    "Germany"
+   ],
+   "positions": [
+    "goalkeeper"
+   ]
+  },
+  "Ederson": {
+   "name": "Ederson",
+   "qid": "Q17074511",
+   "label": "Ederson",
+   "description": "Brazilian goalkeeper",
+   "enwiki": "Ederson (footballer, born 1993)",
+   "ref": "https://www.wikidata.org/wiki/Q17074511",
+   "fetched": "2026-09-25",
+   "p54": [
+    {
+     "qid": "Q131499",
+     "label": "S.L. Benfica",
+     "rank": "normal",
+     "start": "2015",
+     "end": "2017",
+     "parents": [
+      {
+       "qid": "Q2895813",
+       "label": "S.L. Benfica"
+      }
+     ]
+    },
+    {
+     "qid": "Q6601875",
+     "label": "Fenerbahçe Istanbul",
+     "rank": "preferred",
+     "start": "2025",
+     "end": null,
+     "parents": [
+      {
+       "qid": "Q19648",
+       "label": "Fenerbahçe SK"
+      }
+     ]
+    },
+    {
+     "qid": "Q50602",
+     "label": "Manchester City F.C.",
+     "rank": "normal",
+     "start": "2017",
+     "end": "2025",
+     "parents": [
+      {
+       "qid": "Q2405171",
+       "label": "City Football Group"
+      },
+      {
+       "qid": "Q556607",
+       "label": "Mansour bin Zayed Al Nahyan"
+      }
+     ]
+    },
+    {
+     "qid": "Q622432",
+     "label": "Rio Ave F.C.",
+     "rank": "normal",
+     "start": "2012",
+     "end": "2015",
+     "parents": []
+    },
+    {
+     "qid": "Q3084434",
+     "label": "G.D. Ribeirão",
+     "rank": "normal",
+     "start": "2011",
+     "end": "2012",
+     "parents": []
+    },
+    {
+     "qid": "Q7387221",
+     "label": "S.L. Benfica B",
+     "rank": "normal",
+     "start": "2015",
+     "end": "2015",
+     "parents": []
+    },
+    {
+     "qid": "Q83459",
+     "label": "Brazil men's national football team",
+     "rank": "normal",
+     "start": "2017",
+     "end": null,
+     "parents": [
+      {
+       "qid": "Q244754",
+       "label": "Brazilian Football Confederation"
+      }
+     ]
+    },
+    {
+     "qid": "Q2308235",
+     "label": "Brazil national under-20 football team",
+     "rank": "normal",
+     "start": "2014",
+     "end": "2014",
+     "parents": [
+      {
+       "qid": "Q244754",
+       "label": "Brazilian Football Confederation"
+      }
+     ]
+    }
+   ],
+   "nationality": [
+    "Portugal",
+    "Brazil"
+   ],
+   "sportNation": [
+    "Brazil"
+   ],
+   "citizenship": [
+    "Portugal",
+    "Brazil"
+   ],
+   "positions": [
+    "goalkeeper"
+   ]
+  }
+ },
+ "clubs": {
+  "Q9616": "Chelsea F.C.",
+  "Q9617": "Arsenal F.C.",
+  "Q8682": "Real Madrid Club de Fútbol",
+  "Q7156": "FC Barcelona",
+  "Q1543": "AC Milan",
+  "Q483020": "Paris Saint-Germain FC",
+  "Q18716": "Newcastle United F.C.",
+  "Q50602": "Manchester City F.C.",
+  "Q18741": "Tottenham Hotspur F.C.",
+  "Q1130849": "Liverpool F.C.",
+  "Q18656": "Manchester United F.C."
+ }
+}

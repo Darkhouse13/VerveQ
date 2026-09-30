@@ -1,0 +1,30 @@
+{
+ "2003–04 FA Premier League": [
+  {
+   "item": "Q817262",
+   "winner": "Q9617",
+   "label": "Arsenal F.C."
+  }
+ ],
+ "2022–23 Premier League": [
+  {
+   "item": "Q111134726",
+   "winner": "Q50602",
+   "label": "Manchester City F.C."
+  }
+ ],
+ "2022–23 FA Cup": [
+  {
+   "item": "Q112183326",
+   "winner": "Q50602",
+   "label": "Manchester City F.C."
+  }
+ ],
+ "2022–23 UEFA Champions League": [
+  {
+   "item": "Q106086340",
+   "winner": "Q50602",
+   "label": "Manchester City F.C."
+  }
+ ]
+}

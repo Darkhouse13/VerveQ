@@ -1,0 +1,282 @@
+{
+ "FC Barcelona": {
+  "ok": true,
+  "qid": "Q7156",
+  "date": "1899-11-29",
+  "wikidata": "https://www.wikidata.org/wiki/Q7156#P571",
+  "wikipedia": "https://en.wikipedia.org/wiki/FC_Barcelona"
+ },
+ "Real Madrid CF": {
+  "ok": true,
+  "qid": "Q8682",
+  "date": "1902-03-06",
+  "wikidata": "https://www.wikidata.org/wiki/Q8682#P571",
+  "wikipedia": "https://en.wikipedia.org/wiki/Real_Madrid_CF"
+ },
+ "Atlético Madrid": {
+  "ok": false,
+  "why": "Q8701 P571 precision 9, need day (11)"
+ },
+ "Sevilla FC": {
+  "ok": false,
+  "why": "Q10329 P571 precision 9, need day (11)"
+ },
+ "Valencia CF": {
+  "ok": true,
+  "qid": "Q10333",
+  "date": "1919-03-18",
+  "wikidata": "https://www.wikidata.org/wiki/Q10333#P571",
+  "wikipedia": "https://en.wikipedia.org/wiki/Valencia_CF"
+ },
+ "Athletic Bilbao": {
+  "ok": true,
+  "qid": "Q8687",
+  "date": "1898-07-18",
+  "wikidata": "https://www.wikidata.org/wiki/Q8687#P571",
+  "wikipedia": "https://en.wikipedia.org/wiki/Athletic_Bilbao"
+ },
+ "Real Betis": {
+  "ok": false,
+  "why": "Q8723 P571 precision 9, need day (11)"
+ },
+ "Juventus FC": {
+  "ok": true,
+  "qid": "Q1422",
+  "date": "1897-11-01",
+  "wikidata": "https://www.wikidata.org/wiki/Q1422#P571",
+  "wikipedia": "https://en.wikipedia.org/wiki/Juventus_FC"
+ },
+ "AC Milan": {
+  "ok": false,
+  "why": "Wikidata 1899-12-16 ≠ Wikipedia 1899-12-18"
+ },
+ "Inter Milan": {
+  "ok": true,
+  "qid": "Q631",
+  "date": "1908-03-09",
+  "wikidata": "https://www.wikidata.org/wiki/Q631#P571",
+  "wikipedia": "https://en.wikipedia.org/wiki/Inter_Milan"
+ },
+ "SSC Napoli": {
+  "ok": false,
+  "why": "Q2641 has 2 candidate P571 claims"
+ },
+ "AS Roma": {
+  "ok": true,
+  "qid": "Q2739",
+  "date": "1927-06-07",
+  "wikidata": "https://www.wikidata.org/wiki/Q2739#P571",
+  "wikipedia": "https://en.wikipedia.org/wiki/AS_Roma"
+ },
+ "SS Lazio": {
+  "ok": true,
+  "qid": "Q2609",
+  "date": "1900-01-09",
+  "wikidata": "https://www.wikidata.org/wiki/Q2609#P571",
+  "wikipedia": "https://en.wikipedia.org/wiki/SS_Lazio"
+ },
+ "Genoa CFC": {
+  "ok": true,
+  "qid": "Q2074",
+  "date": "1893-09-07",
+  "wikidata": "https://www.wikidata.org/wiki/Q2074#P571",
+  "wikipedia": "https://en.wikipedia.org/wiki/Genoa_CFC"
+ },
+ "FC Bayern Munich": {
+  "ok": true,
+  "qid": "Q15789",
+  "date": "1900-02-27",
+  "wikidata": "https://www.wikidata.org/wiki/Q15789#P571",
+  "wikipedia": "https://en.wikipedia.org/wiki/FC_Bayern_Munich"
+ },
+ "Borussia Dortmund": {
+  "ok": true,
+  "qid": "Q41420",
+  "date": "1909-12-19",
+  "wikidata": "https://www.wikidata.org/wiki/Q41420#P571",
+  "wikipedia": "https://en.wikipedia.org/wiki/Borussia_Dortmund"
+ },
+ "Bayer 04 Leverkusen": {
+  "ok": false,
+  "why": "Q104761 P571 precision 9, need day (11)"
+ },
+ "FC Schalke 04": {
+  "ok": true,
+  "qid": "Q32494",
+  "date": "1904-05-04",
+  "wikidata": "https://www.wikidata.org/wiki/Q32494#P571",
+  "wikipedia": "https://en.wikipedia.org/wiki/FC_Schalke_04"
+ },
+ "Hamburger SV": {
+  "ok": false,
+  "why": "infobox founded \"{{Start date and age|df=yes|1887|9|29}}<br />(as SC Germania)<br />{{Start date and age|df=yes|1919|6|2}}<br />(as Hambu\" gives 2 day-precise dates"
+ },
+ "Paris Saint-Germain FC": {
+  "ok": true,
+  "qid": "Q483020",
+  "date": "1970-08-12",
+  "wikidata": "https://www.wikidata.org/wiki/Q483020#P571",
+  "wikipedia": "https://en.wikipedia.org/wiki/Paris_Saint-Germain_FC"
+ },
+ "Olympique de Marseille": {
+  "ok": true,
+  "qid": "Q132885",
+  "date": "1899-08-31",
+  "wikidata": "https://www.wikidata.org/wiki/Q132885#P571",
+  "wikipedia": "https://en.wikipedia.org/wiki/Olympique_de_Marseille"
+ },
+ "Olympique Lyonnais": {
+  "ok": false,
+  "why": "Q704 P571 precision 9, need day (11)"
+ },
+ "AS Monaco FC": {
+  "ok": true,
+  "qid": "Q180305",
+  "date": "1924-08-23",
+  "wikidata": "https://www.wikidata.org/wiki/Q180305#P571",
+  "wikipedia": "https://en.wikipedia.org/wiki/AS_Monaco_FC"
+ },
+ "Liverpool F.C.": {
+  "ok": true,
+  "qid": "Q1130849",
+  "date": "1892-06-03",
+  "wikidata": "https://www.wikidata.org/wiki/Q1130849#P571",
+  "wikipedia": "https://en.wikipedia.org/wiki/Liverpool_F.C."
+ },
+ "Manchester United F.C.": {
+  "ok": false,
+  "why": "Q18656 P571 precision 9, need day (11)"
+ },
+ "Manchester City F.C.": {
+  "ok": true,
+  "qid": "Q50602",
+  "date": "1894-04-16",
+  "wikidata": "https://www.wikidata.org/wiki/Q50602#P571",
+  "wikipedia": "https://en.wikipedia.org/wiki/Manchester_City_F.C."
+ },
+ "Arsenal F.C.": {
+  "ok": false,
+  "why": "Q9617 P571 precision 9, need day (11)"
+ },
+ "Chelsea F.C.": {
+  "ok": true,
+  "qid": "Q9616",
+  "date": "1905-03-10",
+  "wikidata": "https://www.wikidata.org/wiki/Q9616#P571",
+  "wikipedia": "https://en.wikipedia.org/wiki/Chelsea_F.C."
+ },
+ "Tottenham Hotspur F.C.": {
+  "ok": true,
+  "qid": "Q18741",
+  "date": "1882-09-05",
+  "wikidata": "https://www.wikidata.org/wiki/Q18741#P571",
+  "wikipedia": "https://en.wikipedia.org/wiki/Tottenham_Hotspur_F.C."
+ },
+ "Everton F.C.": {
+  "ok": false,
+  "why": "Q5794 P571 precision 9, need day (11)"
+ },
+ "Aston Villa F.C.": {
+  "ok": true,
+  "qid": "Q18711",
+  "date": "1874-11-21",
+  "wikidata": "https://www.wikidata.org/wiki/Q18711#P571",
+  "wikipedia": "https://en.wikipedia.org/wiki/Aston_Villa_F.C."
+ },
+ "Newcastle United F.C.": {
+  "ok": false,
+  "why": "Wikidata 1892-12-09 ≠ Wikipedia 1881-11-15"
+ },
+ "West Ham United F.C.": {
+  "ok": false,
+  "why": "Q18747 P571 precision 9, need day (11)"
+ },
+ "Celtic F.C.": {
+  "ok": false,
+  "why": "Q19593 P571 precision 9, need day (11)"
+ },
+ "Rangers F.C.": {
+  "ok": false,
+  "why": "Q19597 P571 precision 10, need day (11)"
+ },
+ "AFC Ajax": {
+  "ok": true,
+  "qid": "Q81888",
+  "date": "1900-03-18",
+  "wikidata": "https://www.wikidata.org/wiki/Q81888#P571",
+  "wikipedia": "https://en.wikipedia.org/wiki/AFC_Ajax"
+ },
+ "PSV Eindhoven": {
+  "ok": true,
+  "qid": "Q11938",
+  "date": "1913-08-31",
+  "wikidata": "https://www.wikidata.org/wiki/Q11938#P571",
+  "wikipedia": "https://en.wikipedia.org/wiki/PSV_Eindhoven"
+ },
+ "Feyenoord": {
+  "ok": true,
+  "qid": "Q134241",
+  "date": "1908-07-19",
+  "wikidata": "https://www.wikidata.org/wiki/Q134241#P571",
+  "wikipedia": "https://en.wikipedia.org/wiki/Feyenoord"
+ },
+ "S.L. Benfica": {
+  "ok": true,
+  "qid": "Q131499",
+  "date": "1904-02-28",
+  "wikidata": "https://www.wikidata.org/wiki/Q131499#P571",
+  "wikipedia": "https://en.wikipedia.org/wiki/S.L._Benfica"
+ },
+ "FC Porto": {
+  "ok": true,
+  "qid": "Q128446",
+  "date": "1893-09-28",
+  "wikidata": "https://www.wikidata.org/wiki/Q128446#P571",
+  "wikipedia": "https://en.wikipedia.org/wiki/FC_Porto"
+ },
+ "Sporting CP": {
+  "ok": true,
+  "qid": "Q75729",
+  "date": "1906-07-01",
+  "wikidata": "https://www.wikidata.org/wiki/Q75729#P571",
+  "wikipedia": "https://en.wikipedia.org/wiki/Sporting_CP"
+ },
+ "Galatasaray S.K. (football)": {
+  "ok": false,
+  "why": "Q495299 P571 precision 9, need day (11)"
+ },
+ "Fenerbahçe S.K. (football)": {
+  "ok": false,
+  "why": "Q6601875 P571 precision 9, need day (11)"
+ },
+ "Boca Juniors": {
+  "ok": true,
+  "qid": "Q170703",
+  "date": "1905-04-03",
+  "wikidata": "https://www.wikidata.org/wiki/Q170703#P571",
+  "wikipedia": "https://en.wikipedia.org/wiki/Boca_Juniors"
+ },
+ "Club Atlético River Plate": {
+  "ok": false,
+  "why": "infobox founded \"{{Start date and age|1901|5|25|df=yes}}{{refn|This was set as the official date of foundation by the club itself, statin\" gives 3 day-precise dates"
+ },
+ "CR Flamengo": {
+  "ok": false,
+  "why": "infobox founded \"{{start date and age|1895|11|17|df=y}} (rowing club)<br>{{Start date and age|1911|12|24|df=y}} (football department)\" gives 2 day-precise dates"
+ },
+ "Santos FC": {
+  "ok": true,
+  "qid": "Q80955",
+  "date": "1912-04-14",
+  "wikidata": "https://www.wikidata.org/wiki/Q80955#P571",
+  "wikipedia": "https://en.wikipedia.org/wiki/Santos_FC"
+ },
+ "Sociedade Esportiva Palmeiras": {
+  "ok": false,
+  "why": "no Wikidata item for enwiki \"Sociedade Esportiva Palmeiras\""
+ },
+ "Club América": {
+  "ok": false,
+  "why": "Q459090 P571 precision 9, need day (11)"
+ }
+}

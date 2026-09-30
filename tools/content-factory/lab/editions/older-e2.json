@@ -1,0 +1,22 @@
+{
+ "_doc": "WHO'S OLDER edition 2. Gate: node lab/older-facts.mjs --edition e2",
+ "rounds": [
+  { "a": "Lamine Yamal", "b": "Robert Lewandowski" },
+  { "a": "Thomas Müller", "b": "Kenan Yıldız" },
+  { "a": "Cole Palmer", "b": "Toni Kroos" },
+  { "a": "Virgil van Dijk", "b": "Florian Wirtz" },
+  { "a": "Pedri", "b": "Harry Kane" },
+  { "a": "Sadio Mané", "b": "Declan Rice" },
+  { "a": "Marcus Rashford", "b": "Jack Grealish" },
+  { "a": "Romelu Lukaku", "b": "Paul Pogba" },
+  { "a": "Victor Osimhen", "b": "Alexis Mac Allister" },
+  { "a": "Kai Havertz", "b": "Rafael Leão" }
+ ],
+ "show": {
+  "Lamine Yamal": "YAMAL", "Robert Lewandowski": "LEWANDOWSKI", "Thomas Müller": "MÜLLER", "Kenan Yıldız": "YILDIZ",
+  "Cole Palmer": "PALMER", "Toni Kroos": "KROOS", "Virgil van Dijk": "VAN DIJK", "Florian Wirtz": "WIRTZ",
+  "Pedri": "PEDRI", "Harry Kane": "KANE", "Sadio Mané": "MANÉ", "Declan Rice": "RICE",
+  "Marcus Rashford": "RASHFORD", "Jack Grealish": "GREALISH", "Romelu Lukaku": "LUKAKU", "Paul Pogba": "POGBA",
+  "Victor Osimhen": "OSIMHEN", "Alexis Mac Allister": "MAC ALLISTER", "Kai Havertz": "HAVERTZ", "Rafael Leão": "LEÃO"
+ }
+}

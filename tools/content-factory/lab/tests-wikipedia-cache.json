@@ -1,0 +1,2824 @@
+{
+ "infobox": {
+  "Thierry Henry": {
+   "title": "Thierry Henry",
+   "revid": 1376551955,
+   "ref": "https://en.wikipedia.org/wiki/Thierry_Henry",
+   "fetched": "2026-09-25",
+   "position": "[[Forward (association football)#Striker|Forward]]",
+   "clubs": [
+    {
+     "years": "1994–1995",
+     "raw": "[[AS Monaco FC|Monaco B]]",
+     "target": "AS Monaco FC",
+     "loan": false
+    },
+    {
+     "years": "1994–1999",
+     "raw": "[[AS Monaco FC|Monaco]]",
+     "target": "AS Monaco FC",
+     "loan": false
+    },
+    {
+     "years": "1999",
+     "raw": "[[Juventus FC|Juventus]]",
+     "target": "Juventus FC",
+     "loan": false
+    },
+    {
+     "years": "1999–2007",
+     "raw": "[[Arsenal F.C.|Arsenal]]",
+     "target": "Arsenal F.C.",
+     "loan": false
+    },
+    {
+     "years": "2007–2010",
+     "raw": "[[FC Barcelona|Barcelona]]",
+     "target": "FC Barcelona",
+     "loan": false
+    },
+    {
+     "years": "2010–2014",
+     "raw": "[[New York Red Bulls]]",
+     "target": "New York Red Bulls",
+     "loan": false
+    },
+    {
+     "years": "2012",
+     "raw": "→ [[Arsenal F.C.|Arsenal]] (loan)",
+     "target": "Arsenal F.C.",
+     "loan": true
+    }
+   ]
+  },
+  "Alan Shearer": {
+   "title": "Alan Shearer",
+   "revid": 1369817175,
+   "ref": "https://en.wikipedia.org/wiki/Alan_Shearer",
+   "fetched": "2026-09-25",
+   "position": "[[Striker (association football)|Striker]]",
+   "clubs": [
+    {
+     "years": "1988–1992",
+     "raw": "[[Southampton F.C.|Southampton]]",
+     "target": "Southampton F.C.",
+     "loan": false
+    },
+    {
+     "years": "1992–1996",
+     "raw": "[[Blackburn Rovers F.C.|Blackburn Rovers]]",
+     "target": "Blackburn Rovers F.C.",
+     "loan": false
+    },
+    {
+     "years": "1996–2006",
+     "raw": "[[Newcastle United F.C.|Newcastle United]]",
+     "target": "Newcastle United F.C.",
+     "loan": false
+    }
+   ]
+  },
+  "Sergio Agüero": {
+   "title": "Sergio Agüero",
+   "revid": 1376298969,
+   "ref": "https://en.wikipedia.org/wiki/Sergio_Ag%C3%BCero",
+   "fetched": "2026-09-25",
+   "position": "[[Forward (association football)#Striker|Striker]]",
+   "clubs": [
+    {
+     "years": "2003–2006",
+     "raw": "[[Club Atlético Independiente|Independiente]]",
+     "target": "Club Atlético Independiente",
+     "loan": false
+    },
+    {
+     "years": "2006–2011",
+     "raw": "[[Atlético Madrid]]",
+     "target": "Atlético Madrid",
+     "loan": false
+    },
+    {
+     "years": "2011–2021",
+     "raw": "[[Manchester City F.C.|Manchester City]]",
+     "target": "Manchester City F.C.",
+     "loan": false
+    },
+    {
+     "years": "2021",
+     "raw": "[[FC Barcelona|Barcelona]]",
+     "target": "FC Barcelona",
+     "loan": false
+    }
+   ]
+  },
+  "Harry Kane": {
+   "title": "Harry Kane",
+   "revid": 1376299906,
+   "ref": "https://en.wikipedia.org/wiki/Harry_Kane",
+   "fetched": "2026-09-25",
+   "position": "[[Striker (association football)|Striker]]",
+   "clubs": [
+    {
+     "years": "2009–2023",
+     "raw": "[[Tottenham Hotspur]]",
+     "target": "Tottenham Hotspur",
+     "loan": false
+    },
+    {
+     "years": "2011",
+     "raw": "→ [[Leyton Orient]] (loan)",
+     "target": "Leyton Orient",
+     "loan": true
+    },
+    {
+     "years": "2012",
+     "raw": "→ [[Millwall F.C.|Millwall]] (loan)",
+     "target": "Millwall F.C.",
+     "loan": true
+    },
+    {
+     "years": "2012–2013",
+     "raw": "→ [[Norwich City]] (loan)",
+     "target": "Norwich City",
+     "loan": true
+    },
+    {
+     "years": "2013",
+     "raw": "→ [[Leicester City]] (loan)",
+     "target": "Leicester City",
+     "loan": true
+    },
+    {
+     "years": "2023–",
+     "raw": "[[Bayern Munich]]",
+     "target": "Bayern Munich",
+     "loan": false
+    }
+   ]
+  },
+  "Didier Drogba": {
+   "title": "Didier Drogba",
+   "revid": 1372988062,
+   "ref": "https://en.wikipedia.org/wiki/Didier_Drogba",
+   "fetched": "2026-09-25",
+   "position": "[[Striker (association football)|Striker]]",
+   "clubs": [
+    {
+     "years": "1998–2002",
+     "raw": "[[Le Mans UC72|Le Mans]]",
+     "target": "Le Mans UC72",
+     "loan": false
+    },
+    {
+     "years": "2002–2003",
+     "raw": "[[En Avant Guingamp|Guingamp]]",
+     "target": "En Avant Guingamp",
+     "loan": false
+    },
+    {
+     "years": "2003–2004",
+     "raw": "[[Olympique de Marseille|Marseille]]",
+     "target": "Olympique de Marseille",
+     "loan": false
+    },
+    {
+     "years": "2004–2012",
+     "raw": "[[Chelsea F.C.|Chelsea]]",
+     "target": "Chelsea F.C.",
+     "loan": false
+    },
+    {
+     "years": "2012–2013",
+     "raw": "[[Shanghai Shenhua F.C.|Shanghai Shenhua]]",
+     "target": "Shanghai Shenhua F.C.",
+     "loan": false
+    },
+    {
+     "years": "2013–2014",
+     "raw": "[[Galatasaray S.K. (football)|Galatasaray]]",
+     "target": "Galatasaray S.K. (football)",
+     "loan": false
+    },
+    {
+     "years": "2014–2015",
+     "raw": "[[Chelsea F.C.|Chelsea]]",
+     "target": "Chelsea F.C.",
+     "loan": false
+    },
+    {
+     "years": "2015–2016",
+     "raw": "[[CF Montréal|Montreal Impact]]",
+     "target": "CF Montréal",
+     "loan": false
+    },
+    {
+     "years": "2017–2018",
+     "raw": "[[Phoenix Rising FC|Phoenix Rising]]",
+     "target": "Phoenix Rising FC",
+     "loan": false
+    }
+   ]
+  },
+  "Erling Haaland": {
+   "title": "Erling Haaland",
+   "revid": 1376544045,
+   "ref": "https://en.wikipedia.org/wiki/Erling_Haaland",
+   "fetched": "2026-09-25",
+   "position": "[[Striker (association football)|Striker]]",
+   "clubs": [
+    {
+     "years": "2015–2016",
+     "raw": "[[Bryne FK 2|Bryne 2]]",
+     "target": "Bryne FK 2",
+     "loan": false
+    },
+    {
+     "years": "2016–2017",
+     "raw": "[[Bryne FK|Bryne]]",
+     "target": "Bryne FK",
+     "loan": false
+    },
+    {
+     "years": "2017–2018",
+     "raw": "[[Molde FK 2|Molde 2]]",
+     "target": "Molde FK 2",
+     "loan": false
+    },
+    {
+     "years": "2017–2019",
+     "raw": "[[Molde FK|Molde]]",
+     "target": "Molde FK",
+     "loan": false
+    },
+    {
+     "years": "2019–2020",
+     "raw": "[[FC Red Bull Salzburg|Red Bull Salzburg]]",
+     "target": "FC Red Bull Salzburg",
+     "loan": false
+    },
+    {
+     "years": "2020–2022",
+     "raw": "[[Borussia Dortmund]]",
+     "target": "Borussia Dortmund",
+     "loan": false
+    },
+    {
+     "years": "2022–",
+     "raw": "[[Manchester City F.C.|Manchester City]]",
+     "target": "Manchester City F.C.",
+     "loan": false
+    }
+   ]
+  },
+  "Luis Suárez (Uruguayan footballer)": {
+   "title": "Luis Suárez (Uruguayan footballer)",
+   "revid": 1376526209,
+   "ref": "https://en.wikipedia.org/wiki/Luis_Su%C3%A1rez_(Uruguayan_footballer)",
+   "fetched": "2026-09-25",
+   "position": "[[Striker (association football)|Striker]]",
+   "clubs": [
+    {
+     "years": "2005–2006",
+     "raw": "[[Club Nacional de Football|Nacional]]",
+     "target": "Club Nacional de Football",
+     "loan": false
+    },
+    {
+     "years": "2006–2007",
+     "raw": "[[FC Groningen|Groningen]]",
+     "target": "FC Groningen",
+     "loan": false
+    },
+    {
+     "years": "2007–2011",
+     "raw": "[[AFC Ajax|Ajax]]",
+     "target": "AFC Ajax",
+     "loan": false
+    },
+    {
+     "years": "2011–2014",
+     "raw": "[[Liverpool F.C.|Liverpool]]",
+     "target": "Liverpool F.C.",
+     "loan": false
+    },
+    {
+     "years": "2014–2020",
+     "raw": "[[FC Barcelona|Barcelona]]",
+     "target": "FC Barcelona",
+     "loan": false
+    },
+    {
+     "years": "2020–2022",
+     "raw": "[[Atlético Madrid]]",
+     "target": "Atlético Madrid",
+     "loan": false
+    },
+    {
+     "years": "2022",
+     "raw": "[[Club Nacional de Football|Nacional]]",
+     "target": "Club Nacional de Football",
+     "loan": false
+    },
+    {
+     "years": "2023",
+     "raw": "[[Grêmio FBPA|Grêmio]]",
+     "target": "Grêmio FBPA",
+     "loan": false
+    },
+    {
+     "years": "2024–",
+     "raw": "[[Inter Miami CF|Inter Miami]]",
+     "target": "Inter Miami CF",
+     "loan": false
+    }
+   ]
+  },
+  "Wayne Rooney": {
+   "title": "Wayne Rooney",
+   "revid": 1376570353,
+   "ref": "https://en.wikipedia.org/wiki/Wayne_Rooney",
+   "fetched": "2026-09-25",
+   "position": "[[Forward (association football)|Forward]], [[midfielder]]<ref>{{cite web|title=Eye on England: Wayne Rooney is rewriting his legacy at Derby|url=https://www.thescore.com/engch/news/1980321|website=The Score|date=29 June 2020|access-date=1 July 2020|archive-date=30 October 2023|archive-url=https://web.archive.org/web/20231030223333/https://www.thescore.com/engch/news/1980321|url-status=live}}</ref>",
+   "clubs": [
+    {
+     "years": "2002–2004",
+     "raw": "[[Everton F.C.|Everton]]",
+     "target": "Everton F.C.",
+     "loan": false
+    },
+    {
+     "years": "2004–2017",
+     "raw": "[[Manchester United F.C.|Manchester United]]",
+     "target": "Manchester United F.C.",
+     "loan": false
+    },
+    {
+     "years": "2017–2018",
+     "raw": "[[Everton F.C.|Everton]]",
+     "target": "Everton F.C.",
+     "loan": false
+    },
+    {
+     "years": "2018–2019",
+     "raw": "[[D.C. United]]",
+     "target": "D.C. United",
+     "loan": false
+    },
+    {
+     "years": "2020–2021",
+     "raw": "[[Derby County F.C.|Derby County]]",
+     "target": "Derby County F.C.",
+     "loan": false
+    }
+   ]
+  },
+  "Dennis Bergkamp": {
+   "title": "Dennis Bergkamp",
+   "revid": 1375687669,
+   "ref": "https://en.wikipedia.org/wiki/Dennis_Bergkamp",
+   "fetched": "2026-09-25",
+   "position": "[[Forward (association football)|Forward]], [[attacking midfielder]]",
+   "clubs": [
+    {
+     "years": "1986–1993",
+     "raw": "[[AFC Ajax|Ajax]]",
+     "target": "AFC Ajax",
+     "loan": false
+    },
+    {
+     "years": "1993–1995",
+     "raw": "[[Inter Milan]]",
+     "target": "Inter Milan",
+     "loan": false
+    },
+    {
+     "years": "1995–2006",
+     "raw": "[[Arsenal F.C.|Arsenal]]",
+     "target": "Arsenal F.C.",
+     "loan": false
+    }
+   ]
+  },
+  "Kevin De Bruyne": {
+   "title": "Kevin De Bruyne",
+   "revid": 1376034428,
+   "ref": "https://en.wikipedia.org/wiki/Kevin_De_Bruyne",
+   "fetched": "2026-09-25",
+   "position": "[[Midfielder]]",
+   "clubs": [
+    {
+     "years": "2008–2012",
+     "raw": "[[KRC Genk|Genk]]",
+     "target": "KRC Genk",
+     "loan": false
+    },
+    {
+     "years": "2012–2014",
+     "raw": "[[Chelsea F.C.|Chelsea]]",
+     "target": "Chelsea F.C.",
+     "loan": false
+    },
+    {
+     "years": "2012–2013",
+     "raw": "→ [[SV Werder Bremen|Werder Bremen]] (loan)",
+     "target": "SV Werder Bremen",
+     "loan": true
+    },
+    {
+     "years": "2014–2015",
+     "raw": "[[VfL Wolfsburg]]",
+     "target": "VfL Wolfsburg",
+     "loan": false
+    },
+    {
+     "years": "2015–2025",
+     "raw": "[[Manchester City F.C.|Manchester City]]",
+     "target": "Manchester City F.C.",
+     "loan": false
+    },
+    {
+     "years": "2025–",
+     "raw": "[[SSC Napoli|Napoli]]",
+     "target": "SSC Napoli",
+     "loan": false
+    }
+   ]
+  },
+  "Robert Pires": {
+   "title": "Robert Pires",
+   "revid": 1367102434,
+   "ref": "https://en.wikipedia.org/wiki/Robert_Pires",
+   "fetched": "2026-09-25",
+   "position": "[[Winger (association football)|Winger]], [[attacking midfielder]]",
+   "clubs": [
+    {
+     "years": "1991–1992",
+     "raw": "[[Stade de Reims|Reims]]",
+     "target": "Stade de Reims",
+     "loan": false
+    },
+    {
+     "years": "1992–1993",
+     "raw": "[[FC Metz|Metz B]]",
+     "target": "FC Metz",
+     "loan": false
+    },
+    {
+     "years": "1993–1998",
+     "raw": "[[FC Metz|Metz]]",
+     "target": "FC Metz",
+     "loan": false
+    },
+    {
+     "years": "1998–2000",
+     "raw": "[[Olympique de Marseille|Marseille]]",
+     "target": "Olympique de Marseille",
+     "loan": false
+    },
+    {
+     "years": "2000–2006",
+     "raw": "[[Arsenal F.C.|Arsenal]]",
+     "target": "Arsenal F.C.",
+     "loan": false
+    },
+    {
+     "years": "2006–2010",
+     "raw": "[[Villarreal CF|Villarreal]]",
+     "target": "Villarreal CF",
+     "loan": false
+    },
+    {
+     "years": "2010–2011",
+     "raw": "[[Aston Villa F.C.|Aston Villa]]",
+     "target": "Aston Villa F.C.",
+     "loan": false
+    },
+    {
+     "years": "2014–2015",
+     "raw": "[[FC Goa|Goa]]",
+     "target": "FC Goa",
+     "loan": false
+    }
+   ]
+  },
+  "Jack Grealish": {
+   "title": "Jack Grealish",
+   "revid": 1376298684,
+   "ref": "https://en.wikipedia.org/wiki/Jack_Grealish",
+   "fetched": "2026-09-25",
+   "position": "[[Winger (association football)|Winger]]",
+   "clubs": [
+    {
+     "years": "2013–2021",
+     "raw": "[[Aston Villa F.C.|Aston Villa]]",
+     "target": "Aston Villa F.C.",
+     "loan": false
+    },
+    {
+     "years": "2013–2014",
+     "raw": "→ [[Notts County F.C.|Notts County]] (loan)",
+     "target": "Notts County F.C.",
+     "loan": true
+    },
+    {
+     "years": "2021–",
+     "raw": "[[Manchester City F.C.|Manchester City]]",
+     "target": "Manchester City F.C.",
+     "loan": false
+    },
+    {
+     "years": "2025–2026",
+     "raw": "→ [[Everton F.C.|Everton]] (loan)",
+     "target": "Everton F.C.",
+     "loan": true
+    },
+    {
+     "years": "2026–",
+     "raw": "→ [[Everton F.C.|Everton]] (loan)",
+     "target": "Everton F.C.",
+     "loan": true
+    }
+   ]
+  },
+  "Gilberto Silva": {
+   "title": "Gilberto Silva",
+   "revid": 1365968766,
+   "ref": "https://en.wikipedia.org/wiki/Gilberto_Silva",
+   "fetched": "2026-09-25",
+   "position": "[[Midfielder#Defensive midfielder|Defensive midfielder]]",
+   "clubs": [
+    {
+     "years": "1997–2000",
+     "raw": "[[América Futebol Clube (MG)|América Mineiro]]",
+     "target": "América Futebol Clube (MG)",
+     "loan": false
+    },
+    {
+     "years": "2000–2002",
+     "raw": "[[Clube Atlético Mineiro|Atlético Mineiro]]",
+     "target": "Clube Atlético Mineiro",
+     "loan": false
+    },
+    {
+     "years": "2002–2008",
+     "raw": "[[Arsenal F.C.|Arsenal]]",
+     "target": "Arsenal F.C.",
+     "loan": false
+    },
+    {
+     "years": "2008–2011",
+     "raw": "[[Panathinaikos F.C.|Panathinaikos]]",
+     "target": "Panathinaikos F.C.",
+     "loan": false
+    },
+    {
+     "years": "2011–2013",
+     "raw": "[[Grêmio Foot-Ball Porto Alegrense|Grêmio]]",
+     "target": "Grêmio Foot-Ball Porto Alegrense",
+     "loan": false
+    },
+    {
+     "years": "2013–2014",
+     "raw": "[[Clube Atlético Mineiro|Atlético Mineiro]]",
+     "target": "Clube Atlético Mineiro",
+     "loan": false
+    }
+   ]
+  },
+  "İlkay Gündoğan": {
+   "title": "İlkay Gündoğan",
+   "revid": 1372426668,
+   "ref": "https://en.wikipedia.org/wiki/%C4%B0lkay_G%C3%BCndo%C4%9Fan",
+   "fetched": "2026-09-25",
+   "position": "[[Midfielder]]",
+   "clubs": [
+    {
+     "years": "2008–2009",
+     "raw": "[[VfL Bochum II]]",
+     "target": "VfL Bochum II",
+     "loan": false
+    },
+    {
+     "years": "2009–2011",
+     "raw": "[[1. FC Nürnberg]]",
+     "target": "1. FC Nürnberg",
+     "loan": false
+    },
+    {
+     "years": "2011–2016",
+     "raw": "[[Borussia Dortmund]]",
+     "target": "Borussia Dortmund",
+     "loan": false
+    },
+    {
+     "years": "2012",
+     "raw": "[[Borussia Dortmund II]]",
+     "target": "Borussia Dortmund II",
+     "loan": false
+    },
+    {
+     "years": "2016–2023",
+     "raw": "[[Manchester City F.C.|Manchester City]]",
+     "target": "Manchester City F.C.",
+     "loan": false
+    },
+    {
+     "years": "2023–2024",
+     "raw": "[[FC Barcelona|Barcelona]]",
+     "target": "FC Barcelona",
+     "loan": false
+    },
+    {
+     "years": "2024–2025",
+     "raw": "[[Manchester City F.C.|Manchester City]]",
+     "target": "Manchester City F.C.",
+     "loan": false
+    },
+    {
+     "years": "2025–",
+     "raw": "[[Galatasaray S.K. (football)|Galatasaray]]",
+     "target": "Galatasaray S.K. (football)",
+     "loan": false
+    }
+   ]
+  },
+  "Patrick Vieira": {
+   "title": "Patrick Vieira",
+   "revid": 1376002918,
+   "ref": "https://en.wikipedia.org/wiki/Patrick_Vieira",
+   "fetched": "2026-09-25",
+   "position": "[[Midfielder]]",
+   "clubs": [
+    {
+     "years": "1993–1995",
+     "raw": "[[AS Cannes|Cannes]]",
+     "target": "AS Cannes",
+     "loan": false
+    },
+    {
+     "years": "1995–1996",
+     "raw": "[[AC Milan]]",
+     "target": "AC Milan",
+     "loan": false
+    },
+    {
+     "years": "1996–2005",
+     "raw": "[[Arsenal F.C.|Arsenal]]",
+     "target": "Arsenal F.C.",
+     "loan": false
+    },
+    {
+     "years": "2005–2006",
+     "raw": "[[Juventus FC|Juventus]]",
+     "target": "Juventus FC",
+     "loan": false
+    },
+    {
+     "years": "2006–2010",
+     "raw": "[[Inter Milan]]",
+     "target": "Inter Milan",
+     "loan": false
+    },
+    {
+     "years": "2010–2011",
+     "raw": "[[Manchester City F.C.|Manchester City]]",
+     "target": "Manchester City F.C.",
+     "loan": false
+    }
+   ]
+  },
+  "Rodri": {
+   "title": "Rodri",
+   "revid": 1375751906,
+   "ref": "https://en.wikipedia.org/wiki/Rodri",
+   "fetched": "2026-09-25",
+   "position": "[[Defensive midfielder]]<ref>{{cite news |url=https://www.theguardian.com/football/2019/jul/03/manchester-city-pay-rodri-release-clause-atletico-madrid-transfer-window-football |title=City's new £62.8m signing Rodri says Manchester may be getting 'more blue' |first1=Paul |last1=Wilson |first2=Jamie |last2=Jackson |newspaper=The Guardian |location=London |date=4 July 2019 |access-date=19 February 2020 |archive-date=19 February 2020 |archive-url=https://web.archive.org/web/20200219233910/https://www.theguardian.com/football/2019/jul/03/manchester-city-pay-rodri-release-clause-atletico-madrid-transfer-window-football |url-status=live }}</ref>",
+   "clubs": [
+    {
+     "years": "2015–2016",
+     "raw": "[[Villarreal CF B|Villarreal B]]",
+     "target": "Villarreal CF B",
+     "loan": false
+    },
+    {
+     "years": "2015–2018",
+     "raw": "[[Villarreal CF|Villarreal]]",
+     "target": "Villarreal CF",
+     "loan": false
+    },
+    {
+     "years": "2018–2019",
+     "raw": "[[Atlético Madrid]]",
+     "target": "Atlético Madrid",
+     "loan": false
+    },
+    {
+     "years": "2019–2026",
+     "raw": "[[Manchester City F.C.|Manchester City]]",
+     "target": "Manchester City F.C.",
+     "loan": false
+    },
+    {
+     "years": "2026–",
+     "raw": "[[FC Barcelona|Barcelona]]",
+     "target": "FC Barcelona",
+     "loan": false
+    }
+   ]
+  },
+  "Freddie Ljungberg": {
+   "title": "Freddie Ljungberg",
+   "revid": 1375678103,
+   "ref": "https://en.wikipedia.org/wiki/Freddie_Ljungberg",
+   "fetched": "2026-09-25",
+   "position": "[[Midfielder#Wide midfielder|Wide midfielder]], [[Midfielder#Winger|winger]]",
+   "clubs": [
+    {
+     "years": "1994–1998",
+     "raw": "[[Halmstads BK|Halmstad]]",
+     "target": "Halmstads BK",
+     "loan": false
+    },
+    {
+     "years": "1998–2007",
+     "raw": "[[Arsenal F.C.|Arsenal]]",
+     "target": "Arsenal F.C.",
+     "loan": false
+    },
+    {
+     "years": "2007–2008",
+     "raw": "[[West Ham United F.C.|West Ham United]]",
+     "target": "West Ham United F.C.",
+     "loan": false
+    },
+    {
+     "years": "2009–2010",
+     "raw": "[[Seattle Sounders FC]]",
+     "target": "Seattle Sounders FC",
+     "loan": false
+    },
+    {
+     "years": "2010",
+     "raw": "[[Chicago Fire FC|Chicago Fire]]",
+     "target": "Chicago Fire FC",
+     "loan": false
+    },
+    {
+     "years": "2011",
+     "raw": "[[Celtic F.C.|Celtic]]",
+     "target": "Celtic F.C.",
+     "loan": false
+    },
+    {
+     "years": "2011–2012",
+     "raw": "[[Shimizu S-Pulse]]",
+     "target": "Shimizu S-Pulse",
+     "loan": false
+    },
+    {
+     "years": "2014",
+     "raw": "[[Mumbai City FC|Mumbai City]]",
+     "target": "Mumbai City FC",
+     "loan": false
+    }
+   ]
+  },
+  "Bernardo Silva": {
+   "title": "Bernardo Silva",
+   "revid": 1375873201,
+   "ref": "https://en.wikipedia.org/wiki/Bernardo_Silva",
+   "fetched": "2026-09-25",
+   "position": "[[Midfielder]]",
+   "clubs": [
+    {
+     "years": "2013–2015",
+     "raw": "[[S.L. Benfica B|Benfica B]]",
+     "target": "S.L. Benfica B",
+     "loan": false
+    },
+    {
+     "years": "2013–2015",
+     "raw": "[[S.L. Benfica|Benfica]]",
+     "target": "S.L. Benfica",
+     "loan": false
+    },
+    {
+     "years": "2014–2015",
+     "raw": "→ [[AS Monaco FC|Monaco]] (loan)",
+     "target": "AS Monaco FC",
+     "loan": true
+    },
+    {
+     "years": "2015–2017",
+     "raw": "[[AS Monaco FC|Monaco]]",
+     "target": "AS Monaco FC",
+     "loan": false
+    },
+    {
+     "years": "2017–2026",
+     "raw": "[[Manchester City F.C.|Manchester City]]",
+     "target": "Manchester City F.C.",
+     "loan": false
+    },
+    {
+     "years": "2026–",
+     "raw": "[[Real Madrid CF|Real Madrid]]",
+     "target": "Real Madrid CF",
+     "loan": false
+    }
+   ]
+  },
+  "Ashley Cole": {
+   "title": "Ashley Cole",
+   "revid": 1376298411,
+   "ref": "https://en.wikipedia.org/wiki/Ashley_Cole",
+   "fetched": "2026-09-25",
+   "position": "[[Left-back]]",
+   "clubs": [
+    {
+     "years": "1999–2006",
+     "raw": "[[Arsenal F.C.|Arsenal]]",
+     "target": "Arsenal F.C.",
+     "loan": false
+    },
+    {
+     "years": "2000",
+     "raw": "→ [[Crystal Palace F.C.|Crystal Palace]] (loan)",
+     "target": "Crystal Palace F.C.",
+     "loan": true
+    },
+    {
+     "years": "2006–2014",
+     "raw": "[[Chelsea F.C.|Chelsea]]",
+     "target": "Chelsea F.C.",
+     "loan": false
+    },
+    {
+     "years": "2014–2016",
+     "raw": "[[A.S. Roma|Roma]]",
+     "target": "A.S. Roma",
+     "loan": false
+    },
+    {
+     "years": "2016–2018",
+     "raw": "[[LA Galaxy]]",
+     "target": "LA Galaxy",
+     "loan": false
+    },
+    {
+     "years": "2019",
+     "raw": "[[Derby County F.C.|Derby County]]",
+     "target": "Derby County F.C.",
+     "loan": false
+    }
+   ]
+  },
+  "Nathan Aké": {
+   "title": "Nathan Aké",
+   "revid": 1375850870,
+   "ref": "https://en.wikipedia.org/wiki/Nathan_Ak%C3%A9",
+   "fetched": "2026-09-25",
+   "position": "[[Centre-back]], [[left-back]]<ref>{{cite web |url=https://www.worldfootball.net/person/pe253515/nathan-ake/ |title=Nathan Aké: Profile |website=worldfootball.net |publisher=HEIM:SPIEL |access-date=5 November 2023 |archive-date=5 August 2023 |archive-url=https://web.archive.org/web/20230805015829/https://www.worldfootball.net/player_summary/nathan-ake/ |url-status=live }}</ref>",
+   "clubs": [
+    {
+     "years": "2012–2017",
+     "raw": "[[Chelsea F.C.|Chelsea]]",
+     "target": "Chelsea F.C.",
+     "loan": false
+    },
+    {
+     "years": "2015",
+     "raw": "→ [[Reading F.C.|Reading]] (loan)",
+     "target": "Reading F.C.",
+     "loan": true
+    },
+    {
+     "years": "2015–2016",
+     "raw": "→ [[Watford F.C.|Watford]] (loan)",
+     "target": "Watford F.C.",
+     "loan": true
+    },
+    {
+     "years": "2016–2017",
+     "raw": "→ [[AFC Bournemouth|Bournemouth]] (loan)",
+     "target": "AFC Bournemouth",
+     "loan": true
+    },
+    {
+     "years": "2017–2020",
+     "raw": "[[AFC Bournemouth|Bournemouth]]",
+     "target": "AFC Bournemouth",
+     "loan": false
+    },
+    {
+     "years": "2020–2026",
+     "raw": "[[Manchester City F.C.|Manchester City]]",
+     "target": "Manchester City F.C.",
+     "loan": false
+    },
+    {
+     "years": "2026–",
+     "raw": "[[Fenerbahçe S.K. (football)|Fenerbahçe]]",
+     "target": "Fenerbahçe S.K. (football)",
+     "loan": false
+    }
+   ]
+  },
+  "Kolo Touré": {
+   "title": "Kolo Touré",
+   "revid": 1361525471,
+   "ref": "https://en.wikipedia.org/wiki/Kolo_Tour%C3%A9",
+   "fetched": "2026-09-25",
+   "position": "[[Centre-back]]",
+   "clubs": [
+    {
+     "years": "1999–2002",
+     "raw": "[[ASEC Mimosas]]",
+     "target": "ASEC Mimosas",
+     "loan": false
+    },
+    {
+     "years": "2002–2009",
+     "raw": "[[Arsenal F.C.|Arsenal]]",
+     "target": "Arsenal F.C.",
+     "loan": false
+    },
+    {
+     "years": "2009–2013",
+     "raw": "[[Manchester City F.C.|Manchester City]]",
+     "target": "Manchester City F.C.",
+     "loan": false
+    },
+    {
+     "years": "2013–2016",
+     "raw": "[[Liverpool F.C.|Liverpool]]",
+     "target": "Liverpool F.C.",
+     "loan": false
+    },
+    {
+     "years": "2016–2017",
+     "raw": "[[Celtic F.C.|Celtic]]",
+     "target": "Celtic F.C.",
+     "loan": false
+    }
+   ]
+  },
+  "John Stones": {
+   "title": "John Stones",
+   "revid": 1376300020,
+   "ref": "https://en.wikipedia.org/wiki/John_Stones",
+   "fetched": "2026-09-25",
+   "position": "[[Centre-back]], [[defensive midfielder]]<ref>{{cite web |url=https://www.whoscored.com/Players/101374/Show/John-Stones |title=John Stones |website=WhoScored.com |access-date=10 June 2023}}</ref>",
+   "clubs": [
+    {
+     "years": "2012–2013",
+     "raw": "[[Barnsley F.C.|Barnsley]]",
+     "target": "Barnsley F.C.",
+     "loan": false
+    },
+    {
+     "years": "2013–2016",
+     "raw": "[[Everton F.C.|Everton]]",
+     "target": "Everton F.C.",
+     "loan": false
+    },
+    {
+     "years": "2016–2026",
+     "raw": "[[Manchester City F.C.|Manchester City]]",
+     "target": "Manchester City F.C.",
+     "loan": false
+    },
+    {
+     "years": "2026–",
+     "raw": "[[Inter Milan]]",
+     "target": "Inter Milan",
+     "loan": false
+    }
+   ]
+  },
+  "Sol Campbell": {
+   "title": "Sol Campbell",
+   "revid": 1374159265,
+   "ref": "https://en.wikipedia.org/wiki/Sol_Campbell",
+   "fetched": "2026-09-25",
+   "position": "[[Centre-back]]",
+   "clubs": [
+    {
+     "years": "1992–2001",
+     "raw": "[[Tottenham Hotspur F.C.|Tottenham Hotspur]]",
+     "target": "Tottenham Hotspur F.C.",
+     "loan": false
+    },
+    {
+     "years": "2001–2006",
+     "raw": "[[Arsenal F.C.|Arsenal]]",
+     "target": "Arsenal F.C.",
+     "loan": false
+    },
+    {
+     "years": "2006–2009",
+     "raw": "[[Portsmouth F.C.|Portsmouth]]",
+     "target": "Portsmouth F.C.",
+     "loan": false
+    },
+    {
+     "years": "2009",
+     "raw": "[[Notts County F.C.|Notts County]]",
+     "target": "Notts County F.C.",
+     "loan": false
+    },
+    {
+     "years": "2010",
+     "raw": "[[Arsenal F.C.|Arsenal]]",
+     "target": "Arsenal F.C.",
+     "loan": false
+    },
+    {
+     "years": "2010–2011",
+     "raw": "[[Newcastle United F.C.|Newcastle United]]",
+     "target": "Newcastle United F.C.",
+     "loan": false
+    }
+   ]
+  },
+  "Rúben Dias": {
+   "title": "Rúben Dias",
+   "revid": 1376300499,
+   "ref": "https://en.wikipedia.org/wiki/R%C3%BAben_Dias",
+   "fetched": "2026-09-25",
+   "position": "[[Centre-back]]<ref>{{cite web |url=https://www.worldfootball.net/person/pe349139/ruben-dias/ |title=Rúben Dias: Profile |website=WorldFootball.net |publisher=HEIM:SPIEL |access-date=28 September 2020}}</ref>",
+   "clubs": [
+    {
+     "years": "2015–2017",
+     "raw": "[[S.L. Benfica B|Benfica B]]",
+     "target": "S.L. Benfica B",
+     "loan": false
+    },
+    {
+     "years": "2017–2020",
+     "raw": "[[S.L. Benfica|Benfica]]",
+     "target": "S.L. Benfica",
+     "loan": false
+    },
+    {
+     "years": "2020–",
+     "raw": "[[Manchester City F.C.|Manchester City]]",
+     "target": "Manchester City F.C.",
+     "loan": false
+    }
+   ]
+  },
+  "Lauren (Cameroonian footballer)": {
+   "title": "Lauren (Cameroonian footballer)",
+   "revid": 1375936296,
+   "ref": "https://en.wikipedia.org/wiki/Lauren_(Cameroonian_footballer)",
+   "fetched": "2026-09-25",
+   "position": "[[Right-back]], [[Midfielder#Wide_midfielder|right midfielder]]",
+   "clubs": [
+    {
+     "years": "1995–1996",
+     "raw": "[[CD Utrera|Utrera]]",
+     "target": "CD Utrera",
+     "loan": false
+    },
+    {
+     "years": "1996–1997",
+     "raw": "[[Sevilla Atlético|Sevilla B]]",
+     "target": "Sevilla Atlético",
+     "loan": false
+    },
+    {
+     "years": "1997–1998",
+     "raw": "[[Levante UD|Levante]]",
+     "target": "Levante UD",
+     "loan": false
+    },
+    {
+     "years": "1998–2000",
+     "raw": "[[RCD Mallorca|Mallorca]]",
+     "target": "RCD Mallorca",
+     "loan": false
+    },
+    {
+     "years": "2000–2007",
+     "raw": "[[Arsenal F.C.|Arsenal]]",
+     "target": "Arsenal F.C.",
+     "loan": false
+    },
+    {
+     "years": "2007–2009",
+     "raw": "[[Portsmouth F.C.|Portsmouth]]",
+     "target": "Portsmouth F.C.",
+     "loan": false
+    },
+    {
+     "years": "2010",
+     "raw": "[[Córdoba CF|Córdoba]]",
+     "target": "Córdoba CF",
+     "loan": false
+    }
+   ]
+  },
+  "Kyle Walker": {
+   "title": "Kyle Walker",
+   "revid": 1375425100,
+   "ref": "https://en.wikipedia.org/wiki/Kyle_Walker",
+   "fetched": "2026-09-25",
+   "position": "[[Right-back]], [[Centre-back]]<ref name=\"Walkercentreback\">{{cite web|url=https://www.burnleyexpress.net/sport/football/burnley-fc/burnley-kyle-walker-centre-back-switch-8922738|title=Burnley's Kyle Walker opens up on his switch from right back to centre back|website=burnleyexpress.net|date=August 16, 2026|access-date=August 20, 2026|first=Matt|last=Scrafton|archive-date=22 August 2026|archive-url=https://web.archive.org/web/20260822235834/https://www.burnleyexpress.net/sport/football/burnley-fc/burnley-kyle-walker-centre-back-switch-8922738|url-status=live}}</ref>",
+   "clubs": [
+    {
+     "years": "2008–2009",
+     "raw": "[[Sheffield United F.C.|Sheffield United]]",
+     "target": "Sheffield United F.C.",
+     "loan": false
+    },
+    {
+     "years": "2008",
+     "raw": "→ [[Northampton Town F.C.|Northampton Town]] (loan)",
+     "target": "Northampton Town F.C.",
+     "loan": true
+    },
+    {
+     "years": "2009–2017",
+     "raw": "[[Tottenham Hotspur F.C.|Tottenham Hotspur]]",
+     "target": "Tottenham Hotspur F.C.",
+     "loan": false
+    },
+    {
+     "years": "2009–2010",
+     "raw": "→ [[Sheffield United F.C.|Sheffield United]] (loan)",
+     "target": "Sheffield United F.C.",
+     "loan": true
+    },
+    {
+     "years": "2010–2011",
+     "raw": "→ [[Queens Park Rangers F.C.|Queens Park Rangers]] (loan)",
+     "target": "Queens Park Rangers F.C.",
+     "loan": true
+    },
+    {
+     "years": "2011",
+     "raw": "→ [[Aston Villa F.C.|Aston Villa]] (loan)",
+     "target": "Aston Villa F.C.",
+     "loan": true
+    },
+    {
+     "years": "2017–2025",
+     "raw": "[[Manchester City F.C.|Manchester City]]",
+     "target": "Manchester City F.C.",
+     "loan": false
+    },
+    {
+     "years": "2025",
+     "raw": "→ [[AC Milan]] (loan)",
+     "target": "AC Milan",
+     "loan": true
+    },
+    {
+     "years": "2025–",
+     "raw": "[[Burnley F.C.|Burnley]]",
+     "target": "Burnley F.C.",
+     "loan": false
+    }
+   ]
+  },
+  "Jens Lehmann": {
+   "title": "Jens Lehmann",
+   "revid": 1373362749,
+   "ref": "https://en.wikipedia.org/wiki/Jens_Lehmann",
+   "fetched": "2026-09-25",
+   "position": "[[Goalkeeper (association football)|Goalkeeper]]",
+   "clubs": [
+    {
+     "years": "1987–1998",
+     "raw": "[[FC Schalke 04|Schalke 04]]",
+     "target": "FC Schalke 04",
+     "loan": false
+    },
+    {
+     "years": "1998–1999",
+     "raw": "[[AC Milan]]",
+     "target": "AC Milan",
+     "loan": false
+    },
+    {
+     "years": "1999–2003",
+     "raw": "[[Borussia Dortmund]]",
+     "target": "Borussia Dortmund",
+     "loan": false
+    },
+    {
+     "years": "2003–2008",
+     "raw": "[[Arsenal F.C.|Arsenal]]",
+     "target": "Arsenal F.C.",
+     "loan": false
+    },
+    {
+     "years": "2008–2010",
+     "raw": "[[VfB Stuttgart]]",
+     "target": "VfB Stuttgart",
+     "loan": false
+    },
+    {
+     "years": "2011",
+     "raw": "[[Arsenal F.C.|Arsenal]]",
+     "target": "Arsenal F.C.",
+     "loan": false
+    }
+   ]
+  },
+  "Ederson (footballer, born 1993)": {
+   "title": "Ederson (footballer, born 1993)",
+   "revid": 1376555106,
+   "ref": "https://en.wikipedia.org/wiki/Ederson_(footballer%2C_born_1993)",
+   "fetched": "2026-09-25",
+   "position": "[[Goalkeeper (association football)|Goalkeeper]]",
+   "clubs": [
+    {
+     "years": "2011–2013",
+     "raw": "[[G.D. Ribeirão|Ribeirão]]",
+     "target": "G.D. Ribeirão",
+     "loan": false
+    },
+    {
+     "years": "2013–2015",
+     "raw": "[[Rio Ave F.C.|Rio Ave]]",
+     "target": "Rio Ave F.C.",
+     "loan": false
+    },
+    {
+     "years": "2015–2017",
+     "raw": "[[S.L. Benfica|Benfica]]",
+     "target": "S.L. Benfica",
+     "loan": false
+    },
+    {
+     "years": "2017–2025",
+     "raw": "[[Manchester City F.C.|Manchester City]]",
+     "target": "Manchester City F.C.",
+     "loan": false
+    },
+    {
+     "years": "2025–",
+     "raw": "[[Fenerbahçe S.K. (football)|Fenerbahçe]]",
+     "target": "Fenerbahçe S.K. (football)",
+     "loan": false
+    }
+   ]
+  },
+  "Ruud Gullit": {
+   "title": "Ruud Gullit",
+   "revid": 1374666919,
+   "ref": "https://en.wikipedia.org/wiki/Ruud_Gullit",
+   "fetched": "2026-09-25",
+   "position": "[[Midfielder]]",
+   "clubs": [
+    {
+     "years": "1979–1982",
+     "raw": "[[HFC Haarlem|Haarlem]]",
+     "target": "HFC Haarlem",
+     "loan": false
+    },
+    {
+     "years": "1982–1985",
+     "raw": "[[Feyenoord]]",
+     "target": "Feyenoord",
+     "loan": false
+    },
+    {
+     "years": "1985–1987",
+     "raw": "[[PSV Eindhoven|PSV]]",
+     "target": "PSV Eindhoven",
+     "loan": false
+    },
+    {
+     "years": "1987–1994",
+     "raw": "[[AC Milan]]",
+     "target": "AC Milan",
+     "loan": false
+    },
+    {
+     "years": "1993–1994",
+     "raw": "→ [[UC Sampdoria|Sampdoria]] (loan)",
+     "target": "UC Sampdoria",
+     "loan": true
+    },
+    {
+     "years": "1994–1995",
+     "raw": "[[UC Sampdoria|Sampdoria]]",
+     "target": "UC Sampdoria",
+     "loan": false
+    },
+    {
+     "years": "1995–1998",
+     "raw": "[[Chelsea F.C.|Chelsea]]",
+     "target": "Chelsea F.C.",
+     "loan": false
+    }
+   ]
+  },
+  "Pierre-Emerick Aubameyang": {
+   "title": "Pierre-Emerick Aubameyang",
+   "revid": 1376669581,
+   "ref": "https://en.wikipedia.org/wiki/Pierre-Emerick_Aubameyang",
+   "fetched": "2026-09-25",
+   "position": "[[Striker (association football)|Striker]]",
+   "clubs": [
+    {
+     "years": "2008–2011",
+     "raw": "[[AC Milan]]",
+     "target": "AC Milan",
+     "loan": false
+    },
+    {
+     "years": "2008–2009",
+     "raw": "→ [[Dijon FCO|Dijon]] (loan)",
+     "target": "Dijon FCO",
+     "loan": true
+    },
+    {
+     "years": "2009–2010",
+     "raw": "→ [[Lille OSC|Lille]] (loan)",
+     "target": "Lille OSC",
+     "loan": true
+    },
+    {
+     "years": "2010–2011",
+     "raw": "→ [[AS Monaco FC|Monaco]] (loan)",
+     "target": "AS Monaco FC",
+     "loan": true
+    },
+    {
+     "years": "2011–2013",
+     "raw": "[[AS Saint-Étienne|Saint-Étienne]]",
+     "target": "AS Saint-Étienne",
+     "loan": false
+    },
+    {
+     "years": "2011",
+     "raw": "[[AS Saint-Étienne II|Saint-Étienne II]]",
+     "target": "AS Saint-Étienne II",
+     "loan": false
+    },
+    {
+     "years": "2013–2018",
+     "raw": "[[Borussia Dortmund]]",
+     "target": "Borussia Dortmund",
+     "loan": false
+    },
+    {
+     "years": "2018–2022",
+     "raw": "[[Arsenal F.C.|Arsenal]]",
+     "target": "Arsenal F.C.",
+     "loan": false
+    },
+    {
+     "years": "2022",
+     "raw": "[[FC Barcelona|Barcelona]]",
+     "target": "FC Barcelona",
+     "loan": false
+    },
+    {
+     "years": "2022–2023",
+     "raw": "[[Chelsea F.C.|Chelsea]]",
+     "target": "Chelsea F.C.",
+     "loan": false
+    },
+    {
+     "years": "2023–2024",
+     "raw": "[[Olympique de Marseille|Marseille]]",
+     "target": "Olympique de Marseille",
+     "loan": false
+    },
+    {
+     "years": "2024–2025",
+     "raw": "[[Al Qadsiah FC|Al-Qadsiah]]",
+     "target": "Al Qadsiah FC",
+     "loan": false
+    },
+    {
+     "years": "2025–2026",
+     "raw": "[[Olympique de Marseille|Marseille]]",
+     "target": "Olympique de Marseille",
+     "loan": false
+    },
+    {
+     "years": "2026–",
+     "raw": "[[Deportivo de A Coruña|Deportivo A Coruña]]",
+     "target": "Deportivo de A Coruña",
+     "loan": false
+    }
+   ]
+  },
+  "Samuel Eto'o": {
+   "title": "Samuel Eto'o",
+   "revid": 1375586880,
+   "ref": "https://en.wikipedia.org/wiki/Samuel_Eto'o",
+   "fetched": "2026-09-25",
+   "position": "[[Forward (association football)#Striker|Striker]]",
+   "clubs": [
+    {
+     "years": "1997–2000",
+     "raw": "[[Real Madrid CF|Real Madrid]]",
+     "target": "Real Madrid CF",
+     "loan": false
+    },
+    {
+     "years": "1997–1998",
+     "raw": "→ [[CD Leganés|Leganés]] (loan)",
+     "target": "CD Leganés",
+     "loan": true
+    },
+    {
+     "years": "1999",
+     "raw": "→ [[RCD Espanyol|Espanyol]] (loan)",
+     "target": "RCD Espanyol",
+     "loan": true
+    },
+    {
+     "years": "2000",
+     "raw": "→ [[RCD Mallorca|Mallorca]] (loan)",
+     "target": "RCD Mallorca",
+     "loan": true
+    },
+    {
+     "years": "2000–2004",
+     "raw": "[[RCD Mallorca|Mallorca]]",
+     "target": "RCD Mallorca",
+     "loan": false
+    },
+    {
+     "years": "2004–2009",
+     "raw": "[[FC Barcelona|Barcelona]]",
+     "target": "FC Barcelona",
+     "loan": false
+    },
+    {
+     "years": "2009–2011",
+     "raw": "[[Inter Milan]]",
+     "target": "Inter Milan",
+     "loan": false
+    },
+    {
+     "years": "2011–2013",
+     "raw": "[[FC Anzhi Makhachkala|Anzhi Makhachkala]]",
+     "target": "FC Anzhi Makhachkala",
+     "loan": false
+    },
+    {
+     "years": "2013–2014",
+     "raw": "[[Chelsea F.C.|Chelsea]]",
+     "target": "Chelsea F.C.",
+     "loan": false
+    },
+    {
+     "years": "2014–2015",
+     "raw": "[[Everton F.C.|Everton]]",
+     "target": "Everton F.C.",
+     "loan": false
+    },
+    {
+     "years": "2015",
+     "raw": "[[U.C. Sampdoria|Sampdoria]]",
+     "target": "U.C. Sampdoria",
+     "loan": false
+    },
+    {
+     "years": "2015–2018",
+     "raw": "[[Antalyaspor]]",
+     "target": "Antalyaspor",
+     "loan": false
+    },
+    {
+     "years": "2018",
+     "raw": "[[Konyaspor]]",
+     "target": "Konyaspor",
+     "loan": false
+    },
+    {
+     "years": "2018–2019",
+     "raw": "[[Qatar SC]]",
+     "target": "Qatar SC",
+     "loan": false
+    }
+   ]
+  },
+  "Filipe Luís": {
+   "title": "Filipe Luís",
+   "revid": 1376298813,
+   "ref": "https://en.wikipedia.org/wiki/Filipe_Lu%C3%ADs",
+   "fetched": "2026-09-25",
+   "position": "[[Defender (association football)#Full-back|Left back]]",
+   "clubs": [
+    {
+     "years": "2003–2004",
+     "raw": "[[Figueirense FC|Figueirense]]",
+     "target": "Figueirense FC",
+     "loan": false
+    },
+    {
+     "years": "2004–2008",
+     "raw": "[[AFC Ajax|Ajax]]",
+     "target": "AFC Ajax",
+     "loan": false
+    },
+    {
+     "years": "2005–2006",
+     "raw": "→ [[Real Madrid Castilla|Real Madrid B]] (loan)",
+     "target": "Real Madrid Castilla",
+     "loan": true
+    },
+    {
+     "years": "2006–2008",
+     "raw": "→ [[Deportivo de La Coruña|Deportivo La Coruña]] (loan)",
+     "target": "Deportivo de La Coruña",
+     "loan": true
+    },
+    {
+     "years": "2008–2010",
+     "raw": "[[Deportivo de La Coruña|Deportivo La Coruña]]",
+     "target": "Deportivo de La Coruña",
+     "loan": false
+    },
+    {
+     "years": "2010–2014",
+     "raw": "[[Atlético Madrid]]",
+     "target": "Atlético Madrid",
+     "loan": false
+    },
+    {
+     "years": "2014–2015",
+     "raw": "[[Chelsea F.C.|Chelsea]]",
+     "target": "Chelsea F.C.",
+     "loan": false
+    },
+    {
+     "years": "2015–2019",
+     "raw": "[[Atlético Madrid]]",
+     "target": "Atlético Madrid",
+     "loan": false
+    },
+    {
+     "years": "2019–2023",
+     "raw": "[[CR Flamengo|Flamengo]]",
+     "target": "CR Flamengo",
+     "loan": false
+    }
+   ]
+  },
+  "Mohamed Salah": {
+   "title": "Mohamed Salah",
+   "revid": 1376299746,
+   "ref": "https://en.wikipedia.org/wiki/Mohamed_Salah",
+   "fetched": "2026-09-25",
+   "position": "[[Right winger]]",
+   "clubs": [
+    {
+     "years": "2010–2012",
+     "raw": "[[Al Mokawloon Al Arab SC|Al-Mokawloon]]",
+     "target": "Al Mokawloon Al Arab SC",
+     "loan": false
+    },
+    {
+     "years": "2012–2014",
+     "raw": "[[FC Basel|Basel]]",
+     "target": "FC Basel",
+     "loan": false
+    },
+    {
+     "years": "2014–2016",
+     "raw": "[[Chelsea F.C.|Chelsea]]",
+     "target": "Chelsea F.C.",
+     "loan": false
+    },
+    {
+     "years": "2015",
+     "raw": "→ [[ACF Fiorentina|Fiorentina]] (loan)",
+     "target": "ACF Fiorentina",
+     "loan": true
+    },
+    {
+     "years": "2015–2016",
+     "raw": "→ [[AS Roma|Roma]] (loan)",
+     "target": "AS Roma",
+     "loan": true
+    },
+    {
+     "years": "2016–2017",
+     "raw": "[[AS Roma|Roma]]",
+     "target": "AS Roma",
+     "loan": false
+    },
+    {
+     "years": "2017–2026",
+     "raw": "[[Liverpool F.C.|Liverpool]]",
+     "target": "Liverpool F.C.",
+     "loan": false
+    },
+    {
+     "years": "2026–",
+     "raw": "[[Trabzonspor]]",
+     "target": "Trabzonspor",
+     "loan": false
+    }
+   ]
+  },
+  "Juan Cuadrado": {
+   "title": "Juan Cuadrado",
+   "revid": 1376022704,
+   "ref": "https://en.wikipedia.org/wiki/Juan_Cuadrado",
+   "fetched": "2026-09-25",
+   "position": "[[Winger (association football)|Winger]], [[right-back]]",
+   "clubs": [
+    {
+     "years": "2008–2009",
+     "raw": "[[Independiente Medellín]]",
+     "target": "Independiente Medellín",
+     "loan": false
+    },
+    {
+     "years": "2009–2012",
+     "raw": "[[Udinese Calcio|Udinese]]",
+     "target": "Udinese Calcio",
+     "loan": false
+    },
+    {
+     "years": "2011–2012",
+     "raw": "→ [[US Lecce|Lecce]] (loan)",
+     "target": "US Lecce",
+     "loan": true
+    },
+    {
+     "years": "2012–2015",
+     "raw": "[[ACF Fiorentina|Fiorentina]]",
+     "target": "ACF Fiorentina",
+     "loan": false
+    },
+    {
+     "years": "2015–2017",
+     "raw": "[[Chelsea F.C.|Chelsea]]",
+     "target": "Chelsea F.C.",
+     "loan": false
+    },
+    {
+     "years": "2015–2017",
+     "raw": "→ [[Juventus FC|Juventus]] (loan)",
+     "target": "Juventus FC",
+     "loan": true
+    },
+    {
+     "years": "2017–2023",
+     "raw": "[[Juventus FC|Juventus]]",
+     "target": "Juventus FC",
+     "loan": false
+    },
+    {
+     "years": "2023–2024",
+     "raw": "[[Inter Milan]]",
+     "target": "Inter Milan",
+     "loan": false
+    },
+    {
+     "years": "2024–2025",
+     "raw": "[[Atalanta BC|Atalanta]]",
+     "target": "Atalanta BC",
+     "loan": false
+    },
+    {
+     "years": "2025–2026",
+     "raw": "[[Pisa SC|Pisa]]",
+     "target": "Pisa SC",
+     "loan": false
+    },
+    {
+     "years": "2026–",
+     "raw": "[[Millonarios F.C.|Millonarios]]",
+     "target": "Millonarios F.C.",
+     "loan": false
+    }
+   ]
+  },
+  "Michael Ballack": {
+   "title": "Michael Ballack",
+   "revid": 1374668265,
+   "ref": "https://en.wikipedia.org/wiki/Michael_Ballack",
+   "fetched": "2026-09-25",
+   "position": "[[Midfielder]]",
+   "clubs": [
+    {
+     "years": "1995–1997",
+     "raw": "[[Chemnitzer FC II]]",
+     "target": "Chemnitzer FC II",
+     "loan": false
+    },
+    {
+     "years": "1995–1997",
+     "raw": "[[Chemnitzer FC]]",
+     "target": "Chemnitzer FC",
+     "loan": false
+    },
+    {
+     "years": "1997–1998",
+     "raw": "[[1. FC Kaiserslautern II]]",
+     "target": "1. FC Kaiserslautern II",
+     "loan": false
+    },
+    {
+     "years": "1997–1999",
+     "raw": "[[1. FC Kaiserslautern]]",
+     "target": "1. FC Kaiserslautern",
+     "loan": false
+    },
+    {
+     "years": "1999–2002",
+     "raw": "[[Bayer 04 Leverkusen|Bayer Leverkusen]]",
+     "target": "Bayer 04 Leverkusen",
+     "loan": false
+    },
+    {
+     "years": "2002–2006",
+     "raw": "[[FC Bayern Munich|Bayern Munich]]",
+     "target": "FC Bayern Munich",
+     "loan": false
+    },
+    {
+     "years": "2006–2010",
+     "raw": "[[Chelsea F.C.|Chelsea]]",
+     "target": "Chelsea F.C.",
+     "loan": false
+    },
+    {
+     "years": "2010–2012",
+     "raw": "[[Bayer 04 Leverkusen|Bayer Leverkusen]]",
+     "target": "Bayer 04 Leverkusen",
+     "loan": false
+    }
+   ]
+  },
+  "Thiago Silva": {
+   "title": "Thiago Silva",
+   "revid": 1375928765,
+   "ref": "https://en.wikipedia.org/wiki/Thiago_Silva",
+   "fetched": "2026-09-25",
+   "position": "[[Centre-back]]",
+   "clubs": [
+    {
+     "years": "2002–2003",
+     "raw": "[[Pedrabranca Futebol Clube|RS Futebol]]",
+     "target": "Pedrabranca Futebol Clube",
+     "loan": false
+    },
+    {
+     "years": "2004",
+     "raw": "[[Esporte Clube Juventude|Juventude]]",
+     "target": "Esporte Clube Juventude",
+     "loan": false
+    },
+    {
+     "years": "2004–2005",
+     "raw": "[[FC Porto B|Porto B]]",
+     "target": "FC Porto B",
+     "loan": false
+    },
+    {
+     "years": "2005–2006",
+     "raw": "[[FC Dynamo Moscow|Dynamo Moscow]]",
+     "target": "FC Dynamo Moscow",
+     "loan": false
+    },
+    {
+     "years": "2006–2008",
+     "raw": "[[Fluminense FC|Fluminense]]",
+     "target": "Fluminense FC",
+     "loan": false
+    },
+    {
+     "years": "2009–2012",
+     "raw": "[[AC Milan|Milan]]",
+     "target": "AC Milan",
+     "loan": false
+    },
+    {
+     "years": "2012–2020",
+     "raw": "[[Paris Saint-Germain FC|Paris Saint-Germain]]",
+     "target": "Paris Saint-Germain FC",
+     "loan": false
+    },
+    {
+     "years": "2020–2024",
+     "raw": "[[Chelsea F.C.|Chelsea]]",
+     "target": "Chelsea F.C.",
+     "loan": false
+    },
+    {
+     "years": "2024–2025",
+     "raw": "[[Fluminense FC|Fluminense]]",
+     "target": "Fluminense FC",
+     "loan": false
+    },
+    {
+     "years": "2026",
+     "raw": "[[FC Porto|Porto]]",
+     "target": "FC Porto",
+     "loan": false
+    },
+    {
+     "years": "2026–",
+     "raw": "[[Fluminense FC|Fluminense]]",
+     "target": "Fluminense FC",
+     "loan": false
+    }
+   ]
+  },
+  "Thibaut Courtois": {
+   "title": "Thibaut Courtois",
+   "revid": 1376213138,
+   "ref": "https://en.wikipedia.org/wiki/Thibaut_Courtois",
+   "fetched": "2026-09-25",
+   "position": "[[Goalkeeper (association football)|Goalkeeper]]",
+   "clubs": [
+    {
+     "years": "2009–2011",
+     "raw": "[[KRC Genk|Genk]]",
+     "target": "KRC Genk",
+     "loan": false
+    },
+    {
+     "years": "2011–2018",
+     "raw": "[[Chelsea F.C.|Chelsea]]",
+     "target": "Chelsea F.C.",
+     "loan": false
+    },
+    {
+     "years": "2011–2014",
+     "raw": "→ [[Atlético Madrid]] (loan)",
+     "target": "Atlético Madrid",
+     "loan": true
+    },
+    {
+     "years": "2018–",
+     "raw": "[[Real Madrid CF|Real Madrid]]",
+     "target": "Real Madrid CF",
+     "loan": false
+    }
+   ]
+  },
+  "N'Golo Kanté": {
+   "title": "N'Golo Kanté",
+   "revid": 1375851062,
+   "ref": "https://en.wikipedia.org/wiki/N'Golo_Kant%C3%A9",
+   "fetched": "2026-09-25",
+   "position": "[[Defensive midfielder]]",
+   "clubs": [
+    {
+     "years": "2012–2013",
+     "raw": "[[US Boulogne|Boulogne]]",
+     "target": "US Boulogne",
+     "loan": false
+    },
+    {
+     "years": "2013–2015",
+     "raw": "[[Stade Malherbe Caen|Caen]]",
+     "target": "Stade Malherbe Caen",
+     "loan": false
+    },
+    {
+     "years": "2015–2016",
+     "raw": "[[Leicester City F.C.|Leicester City]]",
+     "target": "Leicester City F.C.",
+     "loan": false
+    },
+    {
+     "years": "2016–2023",
+     "raw": "[[Chelsea F.C.|Chelsea]]",
+     "target": "Chelsea F.C.",
+     "loan": false
+    },
+    {
+     "years": "2023–2026",
+     "raw": "[[Al-Ittihad Club (Jeddah)|Al-Ittihad]]",
+     "target": "Al-Ittihad Club (Jeddah)",
+     "loan": false
+    },
+    {
+     "years": "2026–",
+     "raw": "[[Fenerbahçe S.K. (football)|Fenerbahçe]]",
+     "target": "Fenerbahçe S.K. (football)",
+     "loan": false
+    }
+   ]
+  },
+  "John Terry": {
+   "title": "John Terry",
+   "revid": 1364479295,
+   "ref": "https://en.wikipedia.org/wiki/John_Terry",
+   "fetched": "2026-09-25",
+   "position": "[[Centre-back]]",
+   "clubs": [
+    {
+     "years": "1998–2017",
+     "raw": "[[Chelsea F.C.|Chelsea]]",
+     "target": "Chelsea F.C.",
+     "loan": false
+    },
+    {
+     "years": "2000",
+     "raw": "→ [[Nottingham Forest F.C.|Nottingham Forest]] (loan)",
+     "target": "Nottingham Forest F.C.",
+     "loan": true
+    },
+    {
+     "years": "2017–2018",
+     "raw": "[[Aston Villa F.C.|Aston Villa]]",
+     "target": "Aston Villa F.C.",
+     "loan": false
+    }
+   ]
+  },
+  "Luís Figo": {
+   "title": "Luís Figo",
+   "revid": 1376298099,
+   "ref": "https://en.wikipedia.org/wiki/Lu%C3%ADs_Figo",
+   "fetched": "2026-09-25",
+   "position": "[[Winger (association football)|Winger]]",
+   "clubs": [
+    {
+     "years": "1989–1995",
+     "raw": "[[Sporting CP]]",
+     "target": "Sporting CP",
+     "loan": false
+    },
+    {
+     "years": "1995–2000",
+     "raw": "[[FC Barcelona|Barcelona]]",
+     "target": "FC Barcelona",
+     "loan": false
+    },
+    {
+     "years": "2000–2005",
+     "raw": "[[Real Madrid CF|Real Madrid]]",
+     "target": "Real Madrid CF",
+     "loan": false
+    },
+    {
+     "years": "2005–2009",
+     "raw": "[[Inter Milan]]",
+     "target": "Inter Milan",
+     "loan": false
+    }
+   ]
+  },
+  "Mesut Özil": {
+   "title": "Mesut Özil",
+   "revid": 1375868640,
+   "ref": "https://en.wikipedia.org/wiki/Mesut_%C3%96zil",
+   "fetched": "2026-09-25",
+   "position": "[[Attacking midfielder]]",
+   "clubs": [
+    {
+     "years": "2005",
+     "raw": "[[FC Schalke 04 II|Schalke 04 II]]",
+     "target": "FC Schalke 04 II",
+     "loan": false
+    },
+    {
+     "years": "2006–2008",
+     "raw": "[[FC Schalke 04|Schalke 04]]",
+     "target": "FC Schalke 04",
+     "loan": false
+    },
+    {
+     "years": "2008–2010",
+     "raw": "[[SV Werder Bremen|Werder Bremen]]",
+     "target": "SV Werder Bremen",
+     "loan": false
+    },
+    {
+     "years": "2010–2013",
+     "raw": "[[Real Madrid CF|Real Madrid]]",
+     "target": "Real Madrid CF",
+     "loan": false
+    },
+    {
+     "years": "2013–2021",
+     "raw": "[[Arsenal F.C.|Arsenal]]",
+     "target": "Arsenal F.C.",
+     "loan": false
+    },
+    {
+     "years": "2021–2022",
+     "raw": "[[Fenerbahçe S.K. (football)|Fenerbahçe]]",
+     "target": "Fenerbahçe S.K. (football)",
+     "loan": false
+    },
+    {
+     "years": "2022–2023",
+     "raw": "[[İstanbul Başakşehir F.K.|İstanbul Başakşehir]]",
+     "target": "İstanbul Başakşehir F.K.",
+     "loan": false
+    }
+   ]
+  },
+  "Kaká": {
+   "title": "Kaká",
+   "revid": 1376298627,
+   "ref": "https://en.wikipedia.org/wiki/Kak%C3%A1",
+   "fetched": "2026-09-25",
+   "position": "[[Attacking midfielder]]",
+   "clubs": [
+    {
+     "years": "2000–2003",
+     "raw": "[[São Paulo FC|São Paulo]]",
+     "target": "São Paulo FC",
+     "loan": false
+    },
+    {
+     "years": "2003–2009",
+     "raw": "[[AC Milan]]",
+     "target": "AC Milan",
+     "loan": false
+    },
+    {
+     "years": "2009–2013",
+     "raw": "[[Real Madrid CF|Real Madrid]]",
+     "target": "Real Madrid CF",
+     "loan": false
+    },
+    {
+     "years": "2013–2014",
+     "raw": "[[AC Milan]]",
+     "target": "AC Milan",
+     "loan": false
+    },
+    {
+     "years": "2014–2017",
+     "raw": "[[Orlando City SC|Orlando City]]",
+     "target": "Orlando City SC",
+     "loan": false
+    },
+    {
+     "years": "2014",
+     "raw": "→ [[São Paulo FC|São Paulo]] (loan)",
+     "target": "São Paulo FC",
+     "loan": true
+    }
+   ]
+  },
+  "Xabi Alonso": {
+   "title": "Xabi Alonso",
+   "revid": 1375605883,
+   "ref": "https://en.wikipedia.org/wiki/Xabi_Alonso",
+   "fetched": "2026-09-25",
+   "position": "[[Midfielder]]",
+   "clubs": [
+    {
+     "years": "1999–2000",
+     "raw": "[[Real Sociedad B]]",
+     "target": "Real Sociedad B",
+     "loan": false
+    },
+    {
+     "years": "1999–2004",
+     "raw": "[[Real Sociedad]]",
+     "target": "Real Sociedad",
+     "loan": false
+    },
+    {
+     "years": "2000–2001",
+     "raw": "→ [[SD Eibar|Eibar]] (loan)",
+     "target": "SD Eibar",
+     "loan": true
+    },
+    {
+     "years": "2004–2009",
+     "raw": "[[Liverpool F.C.|Liverpool]]",
+     "target": "Liverpool F.C.",
+     "loan": false
+    },
+    {
+     "years": "2009–2014",
+     "raw": "[[Real Madrid CF|Real Madrid]]",
+     "target": "Real Madrid CF",
+     "loan": false
+    },
+    {
+     "years": "2014–2017",
+     "raw": "[[FC Bayern Munich|Bayern Munich]]",
+     "target": "FC Bayern Munich",
+     "loan": false
+    }
+   ]
+  },
+  "Gareth Bale": {
+   "title": "Gareth Bale",
+   "revid": 1376285810,
+   "ref": "https://en.wikipedia.org/wiki/Gareth_Bale",
+   "fetched": "2026-09-25",
+   "position": "[[Right winger]], [[Forward (association football)|forward]]",
+   "clubs": [
+    {
+     "years": "2006–2007",
+     "raw": "[[Southampton F.C.|Southampton]]",
+     "target": "Southampton F.C.",
+     "loan": false
+    },
+    {
+     "years": "2007–2013",
+     "raw": "[[Tottenham Hotspur F.C.|Tottenham Hotspur]]",
+     "target": "Tottenham Hotspur F.C.",
+     "loan": false
+    },
+    {
+     "years": "2013–2022",
+     "raw": "[[Real Madrid CF|Real Madrid]]",
+     "target": "Real Madrid CF",
+     "loan": false
+    },
+    {
+     "years": "2020–2021",
+     "raw": "→ [[Tottenham Hotspur F.C.|Tottenham Hotspur]] (loan)",
+     "target": "Tottenham Hotspur F.C.",
+     "loan": true
+    },
+    {
+     "years": "2022–2023",
+     "raw": "[[Los Angeles FC]]",
+     "target": "Los Angeles FC",
+     "loan": false
+    }
+   ]
+  },
+  "Cesc Fàbregas": {
+   "title": "Cesc Fàbregas",
+   "revid": 1376298796,
+   "ref": "https://en.wikipedia.org/wiki/Cesc_F%C3%A0bregas",
+   "fetched": "2026-09-25",
+   "position": "[[Central midfielder]]",
+   "clubs": [
+    {
+     "years": "2003–2011",
+     "raw": "[[Arsenal F.C.|Arsenal]]",
+     "target": "Arsenal F.C.",
+     "loan": false
+    },
+    {
+     "years": "2011–2014",
+     "raw": "[[FC Barcelona|Barcelona]]",
+     "target": "FC Barcelona",
+     "loan": false
+    },
+    {
+     "years": "2014–2019",
+     "raw": "[[Chelsea F.C.|Chelsea]]",
+     "target": "Chelsea F.C.",
+     "loan": false
+    },
+    {
+     "years": "2019–2022",
+     "raw": "[[AS Monaco FC|Monaco]]",
+     "target": "AS Monaco FC",
+     "loan": false
+    },
+    {
+     "years": "2022",
+     "raw": "[[AS Monaco Reserves and Academy|Monaco B]]",
+     "target": "AS Monaco Reserves and Academy",
+     "loan": false
+    },
+    {
+     "years": "2022–2023",
+     "raw": "[[Como 1907|Como]]",
+     "target": "Como 1907",
+     "loan": false
+    }
+   ]
+  },
+  "David Beckham": {
+   "title": "David Beckham",
+   "revid": 1374946014,
+   "ref": "https://en.wikipedia.org/wiki/David_Beckham",
+   "fetched": "2026-09-25",
+   "position": "[[Midfielder]]",
+   "clubs": [
+    {
+     "years": "1992–2003",
+     "raw": "[[Manchester United F.C.|Manchester United]]",
+     "target": "Manchester United F.C.",
+     "loan": false
+    },
+    {
+     "years": "1995",
+     "raw": "→ [[Preston North End F.C.|Preston North End]] (loan)",
+     "target": "Preston North End F.C.",
+     "loan": true
+    },
+    {
+     "years": "2003–2007",
+     "raw": "[[Real Madrid CF|Real Madrid]]",
+     "target": "Real Madrid CF",
+     "loan": false
+    },
+    {
+     "years": "2007–2012",
+     "raw": "[[LA Galaxy]]",
+     "target": "LA Galaxy",
+     "loan": false
+    },
+    {
+     "years": "2009",
+     "raw": "→ [[AC Milan]] (loan)",
+     "target": "AC Milan",
+     "loan": true
+    },
+    {
+     "years": "2010",
+     "raw": "→ [[AC Milan]] (loan)",
+     "target": "AC Milan",
+     "loan": true
+    },
+    {
+     "years": "2013",
+     "raw": "[[Paris Saint-Germain FC|Paris Saint-Germain]]",
+     "target": "Paris Saint-Germain FC",
+     "loan": false
+    }
+   ]
+  },
+  "Ronaldinho": {
+   "title": "Ronaldinho",
+   "revid": 1376298501,
+   "ref": "https://en.wikipedia.org/wiki/Ronaldinho",
+   "fetched": "2026-09-25",
+   "position": "[[Attacking midfielder]], [[left winger]]",
+   "clubs": [
+    {
+     "years": "1998–2001",
+     "raw": "[[Grêmio Foot-Ball Porto Alegrense|Grêmio]]",
+     "target": "Grêmio Foot-Ball Porto Alegrense",
+     "loan": false
+    },
+    {
+     "years": "2001–2003",
+     "raw": "[[Paris Saint-Germain F.C.|Paris Saint-Germain]]",
+     "target": "Paris Saint-Germain F.C.",
+     "loan": false
+    },
+    {
+     "years": "2003–2008",
+     "raw": "[[FC Barcelona|Barcelona]]",
+     "target": "FC Barcelona",
+     "loan": false
+    },
+    {
+     "years": "2008–2011",
+     "raw": "[[AC Milan]]",
+     "target": "AC Milan",
+     "loan": false
+    },
+    {
+     "years": "2011–2012",
+     "raw": "[[Clube de Regatas do Flamengo|Flamengo]]",
+     "target": "Clube de Regatas do Flamengo",
+     "loan": false
+    },
+    {
+     "years": "2012–2014",
+     "raw": "[[Clube Atlético Mineiro|Atlético Mineiro]]",
+     "target": "Clube Atlético Mineiro",
+     "loan": false
+    },
+    {
+     "years": "2014–2015",
+     "raw": "[[Querétaro F.C.|Querétaro]]",
+     "target": "Querétaro F.C.",
+     "loan": false
+    },
+    {
+     "years": "2015",
+     "raw": "[[Fluminense FC|Fluminense]]",
+     "target": "Fluminense FC",
+     "loan": false
+    },
+    {
+     "years": "2026–",
+     "raw": "[[Ravenna FC|Ravenna]]",
+     "target": "Ravenna FC",
+     "loan": false
+    }
+   ]
+  }
+ },
+ "titleQid": {
+  "HFC Haarlem": "Q854141",
+  "Feyenoord": "Q134241",
+  "PSV Eindhoven": "Q11938",
+  "AC Milan": "Q1543",
+  "UC Sampdoria": "Q1457",
+  "Chelsea F.C.": "Q9616",
+  "Dijon FCO": "Q503317",
+  "Lille OSC": "Q19516",
+  "AS Monaco FC": "Q180305",
+  "AS Saint-Étienne": "Q19521",
+  "AS Saint-Étienne II": "Q19521",
+  "Borussia Dortmund": "Q41420",
+  "Arsenal F.C.": "Q9617",
+  "FC Barcelona": "Q7156",
+  "Olympique de Marseille": "Q132885",
+  "Al Qadsiah FC": "Q286191",
+  "Deportivo de A Coruña": "Q8760",
+  "Real Madrid CF": "Q8682",
+  "CD Leganés": "Q856119",
+  "RCD Espanyol": "Q8780",
+  "RCD Mallorca": "Q8835",
+  "Inter Milan": "Q631",
+  "FC Anzhi Makhachkala": "Q19353",
+  "Everton F.C.": "Q5794",
+  "U.C. Sampdoria": "Q1457",
+  "Antalyaspor": "Q43710",
+  "Konyaspor": "Q513840",
+  "Qatar SC": "Q1051203",
+  "Figueirense FC": "Q218334",
+  "AFC Ajax": "Q81888",
+  "Real Madrid Castilla": "Q12217",
+  "Deportivo de La Coruña": "Q8760",
+  "Atlético Madrid": "Q8701",
+  "CR Flamengo": "Q17479",
+  "Al Mokawloon Al Arab SC": "Q2073915",
+  "FC Basel": "Q189671",
+  "ACF Fiorentina": "Q2052",
+  "AS Roma": "Q2739",
+  "Liverpool F.C.": "Q1130849",
+  "Trabzonspor": "Q192641",
+  "Independiente Medellín": "Q332527",
+  "Udinese Calcio": "Q2798",
+  "US Lecce": "Q13391",
+  "Juventus FC": "Q1422",
+  "Atalanta BC": "Q1886",
+  "Pisa SC": "Q289613",
+  "Millonarios F.C.": "Q391984",
+  "Chemnitzer FC II": "Q161554",
+  "Chemnitzer FC": "Q161554",
+  "1. FC Kaiserslautern II": "Q16525407",
+  "1. FC Kaiserslautern": "Q8466",
+  "Bayer 04 Leverkusen": "Q104761",
+  "FC Bayern Munich": "Q15789",
+  "Pedrabranca Futebol Clube": "Q7159367",
+  "Esporte Clube Juventude": "Q910453",
+  "FC Porto B": "Q5423714",
+  "FC Dynamo Moscow": "Q17497",
+  "Fluminense FC": "Q80987",
+  "Paris Saint-Germain FC": "Q483020",
+  "FC Porto": "Q128446",
+  "KRC Genk": "Q216032",
+  "US Boulogne": "Q309400",
+  "Stade Malherbe Caen": "Q193377",
+  "Leicester City F.C.": "Q19481",
+  "Al-Ittihad Club (Jeddah)": "Q309480",
+  "Fenerbahçe S.K. (football)": "Q6601875",
+  "Nottingham Forest F.C.": "Q19490",
+  "Aston Villa F.C.": "Q18711",
+  "Sporting CP": "Q75729",
+  "FC Schalke 04 II": "Q3736767",
+  "FC Schalke 04": "Q32494",
+  "SV Werder Bremen": "Q51976",
+  "İstanbul Başakşehir F.K.": "Q857938",
+  "São Paulo FC": "Q38568",
+  "Orlando City SC": "Q15214308",
+  "Manchester United F.C.": "Q18656",
+  "D.C. United": "Q238593",
+  "Derby County F.C.": "Q19470",
+  "Real Sociedad B": "Q1067750",
+  "Real Sociedad": "Q10315",
+  "SD Eibar": "Q770740",
+  "Southampton F.C.": "Q18732",
+  "Tottenham Hotspur F.C.": "Q18741",
+  "Los Angeles FC": "Q18380286",
+  "AS Monaco Reserves and Academy": "Q118875411",
+  "Como 1907": "Q1120838",
+  "Preston North End F.C.": "Q19612",
+  "LA Galaxy": "Q204357",
+  "Grêmio Foot-Ball Porto Alegrense": "Q221695",
+  "Paris Saint-Germain F.C.": "Q483020",
+  "Clube de Regatas do Flamengo": "Q17479",
+  "Clube Atlético Mineiro": "Q270995",
+  "Querétaro F.C.": "Q606210",
+  "Ravenna FC": "Q1349814",
+  "New York Red Bulls": "Q204220",
+  "Blackburn Rovers F.C.": "Q19446",
+  "Newcastle United F.C.": "Q18716",
+  "Club Atlético Independiente": "Q214978",
+  "Manchester City F.C.": "Q50602",
+  "Tottenham Hotspur": "Q18741",
+  "Leyton Orient": "Q19595",
+  "Millwall F.C.": "Q19487",
+  "Norwich City": "Q18721",
+  "Leicester City": "Q19481",
+  "Bayern Munich": "Q15789",
+  "Le Mans UC72": "Q210864",
+  "En Avant Guingamp": "Q459148",
+  "Shanghai Shenhua F.C.": "Q725367",
+  "Galatasaray S.K. (football)": "Q495299",
+  "CF Montréal": "Q167615",
+  "Phoenix Rising FC": "Q111516",
+  "Bryne FK 2": "Q7315281",
+  "Bryne FK": "Q995313",
+  "Molde FK 2": "Q60739903",
+  "Molde FK": "Q208552",
+  "FC Red Bull Salzburg": "Q994811",
+  "Club Nacional de Football": "Q499616",
+  "FC Groningen": "Q24711",
+  "Grêmio FBPA": "Q221695",
+  "Inter Miami CF": "Q16844931",
+  "Jens Lehmann": "Q57114",
+  "Ashley Cole": "Q133556",
+  "Patrick Vieira": "Q46347",
+  "Martin Keown": "Q314405",
+  "Robert Pires": "Q113156",
+  "Freddie Ljungberg": "Q10560",
+  "Francis Jeffers": "Q952335",
+  "José Antonio Reyes": "Q276399",
+  "Dennis Bergkamp": "Q185389",
+  "Sylvain Wiltord": "Q217760",
+  "Lauren (Cameroonian footballer)": "Q314755",
+  "Thierry Henry": "Q45901",
+  "Ray Parlour": "Q377746",
+  "Giovanni van Bronckhorst": "Q173360",
+  "Edu (footballer, born 1978)": "Q314750",
+  "Pascal Cygan": "Q180276",
+  "Gilberto Silva": "Q190142",
+  "Gaël Clichy": "Q1929",
+  "Sol Campbell": "Q214734",
+  "Nwankwo Kanu": "Q599675",
+  "Stathis Tavlaridis": "Q391248",
+  "Kolo Touré": "Q147589",
+  "Jérémie Aliadière": "Q319180",
+  "Michal Papadopulos": "Q953497",
+  "Graham Stack (footballer)": "Q1345122",
+  "David Bentley": "Q310055",
+  "Justin Hoyte": "Q319164",
+  "Frank Simek": "Q346009",
+  "John Spicer (footballer)": "Q6258664",
+  "Jerome Thomas": "Q2663282",
+  "Quincy Owusu-Abeyie": "Q313140",
+  "Ólafur Ingi Skúlason": "Q293007",
+  "Ryan Smith (footballer)": "Q1387139",
+  "Cesc Fàbregas": "Q17499",
+  "Stefan Ortega": "Q821646",
+  "Ederson (footballer, born 1993)": "Q17074511",
+  "Scott Carson": "Q295627",
+  "Kyle Walker": "Q59108",
+  "Rúben Dias": "Q21621168",
+  "John Stones": "Q2025900",
+  "Nathan Aké": "Q1755683",
+  "João Cancelo": "Q6298063",
+  "Aymeric Laporte": "Q3855340",
+  "Sergio Gómez (footballer, born 2000)": "Q30346413",
+  "Benjamin Mendy": "Q2896171",
+  "Manuel Akanji": "Q19938984",
+  "Shea Charles": "Q112214607",
+  "Josh Wilson-Esbrand": "Q105477902",
+  "Rico Lewis": "Q113509374",
+  "Kalvin Phillips": "Q20641319",
+  "İlkay Gündoğan": "Q161089",
+  "Jack Grealish": "Q16056053",
+  "Rodri (footballer, born 1996)": "Q20994118",
+  "Kevin De Bruyne": "Q357984",
+  "Bernardo Silva": "Q15521306",
+  "Máximo Perrone": "Q112338635",
+  "Phil Foden": "Q30729096",
+  "Cole Palmer": "Q99760796",
+  "Erling Haaland": "Q28967995",
+  "Julián Álvarez": "Q59381180",
+  "Riyad Mahrez": "Q8338725",
+  "Kayky": "Q105969622",
+  "Liam Delap": "Q99584177",
+  "VfL Wolfsburg": "Q101859",
+  "SSC Napoli": "Q2641",
+  "Stade de Reims": "Q208228",
+  "FC Metz": "Q221525",
+  "Villarreal CF": "Q12297",
+  "FC Goa": "Q16839398",
+  "Notts County F.C.": "Q19598",
+  "América Futebol Clube (MG)": "Q338285",
+  "Panathinaikos F.C.": "Q4122219",
+  "VfL Bochum II": "Q7924284",
+  "1. FC Nürnberg": "Q15786",
+  "Borussia Dortmund II": "Q865720",
+  "AS Cannes": "Q298267",
+  "Villarreal CF B": "Q1094113",
+  "Halmstads BK": "Q584858",
+  "West Ham United F.C.": "Q18747",
+  "Seattle Sounders FC": "Q632511",
+  "Chicago Fire FC": "Q308683",
+  "Celtic F.C.": "Q19593",
+  "Shimizu S-Pulse": "Q823384",
+  "Mumbai City FC": "Q16845355",
+  "S.L. Benfica B": "Q7387221",
+  "S.L. Benfica": "Q131499",
+  "Crystal Palace F.C.": "Q19467",
+  "A.S. Roma": "Q2739",
+  "Reading F.C.": "Q18729",
+  "Watford F.C.": "Q2714",
+  "AFC Bournemouth": "Q19568",
+  "ASEC Mimosas": "Q852266",
+  "Barnsley F.C.": "Q19442",
+  "Portsmouth F.C.": "Q19604",
+  "CD Utrera": "Q5774165",
+  "Sevilla Atlético": "Q950835",
+  "Levante UD": "Q8823",
+  "Córdoba CF": "Q10499",
+  "Sheffield United F.C.": "Q19607",
+  "Northampton Town F.C.": "Q48945",
+  "Queens Park Rangers F.C.": "Q18723",
+  "Burnley F.C.": "Q19458",
+  "VfB Stuttgart": "Q4512",
+  "G.D. Ribeirão": "Q3084434",
+  "Rio Ave F.C.": "Q622432"
+ },
+ "seasons": {
+  "2003–04 Arsenal F.C. season": {
+   "title": "2003–04 Arsenal F.C. season",
+   "revid": 1374051020,
+   "section": "==Player statistics==",
+   "ref": "https://en.wikipedia.org/wiki/2003%E2%80%9304_Arsenal_F.C._season",
+   "fetched": "2026-09-25",
+   "rows": [
+    {
+     "target": "Jens Lehmann",
+     "pos": "GK"
+    },
+    {
+     "target": "Ashley Cole",
+     "pos": "DF"
+    },
+    {
+     "target": "Patrick Vieira",
+     "pos": "MF"
+    },
+    {
+     "target": "Martin Keown",
+     "pos": "DF"
+    },
+    {
+     "target": "Robert Pires",
+     "pos": "MF"
+    },
+    {
+     "target": "Freddie Ljungberg",
+     "pos": "MF"
+    },
+    {
+     "target": "Francis Jeffers",
+     "pos": "FW"
+    },
+    {
+     "target": "José Antonio Reyes",
+     "pos": "FW"
+    },
+    {
+     "target": "Dennis Bergkamp",
+     "pos": "FW"
+    },
+    {
+     "target": "Sylvain Wiltord",
+     "pos": "FW"
+    },
+    {
+     "target": "Lauren (Cameroonian footballer)",
+     "pos": "DF"
+    },
+    {
+     "target": "Thierry Henry",
+     "pos": "FW"
+    },
+    {
+     "target": "Ray Parlour",
+     "pos": "MF"
+    },
+    {
+     "target": "Giovanni van Bronckhorst",
+     "pos": "MF"
+    },
+    {
+     "target": "Edu (footballer, born 1978)",
+     "pos": "MF"
+    },
+    {
+     "target": "Pascal Cygan",
+     "pos": "DF"
+    },
+    {
+     "target": "Gilberto Silva",
+     "pos": "MF"
+    },
+    {
+     "target": "Gaël Clichy",
+     "pos": "DF"
+    },
+    {
+     "target": "Sol Campbell",
+     "pos": "DF"
+    },
+    {
+     "target": "Nwankwo Kanu",
+     "pos": "FW"
+    },
+    {
+     "target": "Stathis Tavlaridis",
+     "pos": "DF"
+    },
+    {
+     "target": "Kolo Touré",
+     "pos": "DF"
+    },
+    {
+     "target": "Jérémie Aliadière",
+     "pos": "FW"
+    },
+    {
+     "target": "Michal Papadopulos",
+     "pos": "FW"
+    },
+    {
+     "target": "Graham Stack (footballer)",
+     "pos": "GK"
+    },
+    {
+     "target": "David Bentley",
+     "pos": "MF"
+    },
+    {
+     "target": "Justin Hoyte",
+     "pos": "DF"
+    },
+    {
+     "target": "Frank Simek",
+     "pos": "DF"
+    },
+    {
+     "target": "John Spicer (footballer)",
+     "pos": "FW"
+    },
+    {
+     "target": "Jerome Thomas",
+     "pos": "MF"
+    },
+    {
+     "target": "Quincy Owusu-Abeyie",
+     "pos": "FW"
+    },
+    {
+     "target": "Ólafur Ingi Skúlason",
+     "pos": "MF"
+    },
+    {
+     "target": "Ryan Smith (footballer)",
+     "pos": "FW"
+    },
+    {
+     "target": "Cesc Fàbregas",
+     "pos": "MF"
+    }
+   ],
+   "extra": {
+    "rounds": 38,
+    "won": 26,
+    "drawn": 12,
+    "lost": 0
+   }
+  },
+  "2022–23 Manchester City F.C. season": {
+   "title": "2022–23 Manchester City F.C. season",
+   "revid": 1373251244,
+   "section": "==First-team squad==",
+   "ref": "https://en.wikipedia.org/wiki/2022%E2%80%9323_Manchester_City_F.C._season",
+   "fetched": "2026-09-25",
+   "rows": [
+    {
+     "target": "Stefan Ortega",
+     "pos": "[[Goalkeeper (association football)|GK]]"
+    },
+    {
+     "target": "Ederson (footballer, born 1993)",
+     "pos": "[[Goalkeeper (association football)|GK]]"
+    },
+    {
+     "target": "Scott Carson",
+     "pos": "[[Goalkeeper (association football)|GK]]"
+    },
+    {
+     "target": "Kyle Walker",
+     "pos": "[[Right back (association football)|RB]] / [[Centre-back|CB]]"
+    },
+    {
+     "target": "Rúben Dias",
+     "pos": "[[Centre-back|CB]]"
+    },
+    {
+     "target": "John Stones",
+     "pos": "[[Centre-back|CB]] / [[Right back (association football)|RB]] / [[Defensive midfielder|DM]]"
+    },
+    {
+     "target": "Nathan Aké",
+     "pos": "[[Centre-back|CB]] / [[Left back (association football)|LB]]"
+    },
+    {
+     "target": "João Cancelo",
+     "pos": "[[Left back (association football)|LB]] / [[Right back (association football)|RB]]"
+    },
+    {
+     "target": "Aymeric Laporte",
+     "pos": "[[Centre-back|CB]] / [[Left-Back|LB]]"
+    },
+    {
+     "target": "Sergio Gómez (footballer, born 2000)",
+     "pos": "[[Left back (association football)|LB]] / [[Attacking midfielder|AM]]"
+    },
+    {
+     "target": "Benjamin Mendy",
+     "pos": "[[Left back (association football)|LB]]"
+    },
+    {
+     "target": "Manuel Akanji",
+     "pos": "[[Centre-back|CB]] / [[Right back (association football)|RB]] / [[Left-Back|LB]]"
+    },
+    {
+     "target": "Shea Charles",
+     "pos": "[[Defensive Midfielder|DM]] / [[Centre-back|CB]]"
+    },
+    {
+     "target": "Josh Wilson-Esbrand",
+     "pos": "[[Left back (association football)|LB]]"
+    },
+    {
+     "target": "Rico Lewis",
+     "pos": "[[Right back (association football)|RB]] / [[Defensive Midfielder|DM]]"
+    },
+    {
+     "target": "Josh Wilson-Esbrand",
+     "pos": "[[Left back (association football)|LB]]"
+    },
+    {
+     "target": "Kalvin Phillips",
+     "pos": "[[Defensive midfielder|DM]] / [[Centre midfielder|CM]]"
+    },
+    {
+     "target": "İlkay Gündoğan",
+     "pos": "[[Centre midfielder|CM]] / [[Defensive midfielder|DM]]"
+    },
+    {
+     "target": "Jack Grealish",
+     "pos": "[[Left winger (football)|LW]] / [[Attacking midfielder|AM]]"
+    },
+    {
+     "target": "Rodri (footballer, born 1996)",
+     "pos": "[[Defensive midfielder|DM]]"
+    },
+    {
+     "target": "Kevin De Bruyne",
+     "pos": "[[Central midfielder|CM]] / [[Attacking midfielder|AM]]"
+    },
+    {
+     "target": "Bernardo Silva",
+     "pos": "[[Central midfielder|CM]] / [[Attacking midfielder|AM]] / [[Right winger (football)|RW]]"
+    },
+    {
+     "target": "Máximo Perrone",
+     "pos": "[[Defensive midfielder|DM]] / [[Centre midfielder|CM]]"
+    },
+    {
+     "target": "Phil Foden",
+     "pos": "[[Attacking midfielder|AM]] / [[Central midfielder|CM]] / [[Left winger (football)|LW]] / [[Right winger (football)|RW]] / [[Forward (football)|FW]]"
+    },
+    {
+     "target": "Cole Palmer",
+     "pos": "[[Attacking midfielder|AM]] / [[Right winger (football)|RW]] / [[Left winger|LW]]"
+    },
+    {
+     "target": "Erling Haaland",
+     "pos": "[[Striker (association football)|ST]]"
+    },
+    {
+     "target": "Julián Álvarez",
+     "pos": "[[Striker (association football)|ST]] / [[Left winger (football)|LW]] / [[Right winger (football)|RW]]"
+    },
+    {
+     "target": "Riyad Mahrez",
+     "pos": "[[Right winger (football)|RW]]"
+    },
+    {
+     "target": "Kayky",
+     "pos": "[[Right winger (association football)|RW]]"
+    },
+    {
+     "target": "Liam Delap",
+     "pos": "[[Striker (association football)|ST]]"
+    }
+   ],
+   "extra": {
+    "trebleSection": true,
+    "trebleText": "\nOn 3 June, City secured the [[Double (association football)#England|league and FA Cup double]] for the second time in their history by beating city rivals Manchester United 2–1 in the first-ever Manchester derby cup final. İlkay Gündoğan scored both goals for the Blues, the first one after just 12 seconds, making it the fastest in [[List of FA Cup finals|FA Cup final]] history.\n\nOn 10 June, Manchester City faced [[Inter Milan]] in the Champions League final, aiming to end the 53-year European trophy drought and secure the [[Treble (association football)#Continental trebles|continental treble]], and the match was a tense and close affair. City began the final with Kyle Walker unexpectedly left on the bench in favour of Nathan Aké; Inter retained the same starting line-up that had played in previous rounds. The two sides had scoring chances early in the first half, but Inter's [[André Onana]] made two saves to prevent City from taking the lead. A misplayed pass from Ederson in the 26th minute was stolen by [[Nicolò Barella]], but his shot over the goalkeeper missed. De Bruyne would leave the match in the 36th minute with a hamstring injury, and he was replaced by Phil Foden. The first half ended scoreless, with Inter playi"
+   }
+  }
+ }
+}

@@ -1,19 +1,26 @@
 // Keeps the VerveQ feed queue topped up without anyone running anything.
 //
-//   node tools/social/autofill.mjs [--dry]
+//   node tools/social/autofill.mjs [--dry] [--days 7]
 //
 // Run daily by the systemd user timer `verveq-social-autofill` (see
-// tools/social/systemd/). Rendering needs Remotion, Chrome, the Convex CLI
-// and the rendered ladder reels, all of which live on this machine — the
-// server only publishes. So this job runs HERE and pushes to the box.
+// tools/social/systemd/). Rendering needs Remotion, Chrome and the rendered
+// ladder reels, all of which live on this machine — the server only
+// publishes. So this job runs HERE and pushes to the box.
 //
-// Each run looks at the last day queued locally. When fewer than MIN_BUFFER
-// days remain it renders the gap up to TARGET_BUFFER days ahead (carousel +
-// quiz via posts.mjs, ladder via queue.mjs fill-ladder), then pushes, which
-// schedules everything in Postiz straight away. Every step is idempotent, so
-// a missed day (machine off) is simply caught up on the next run.
+// The feed (owner, 2026-09-25): FOUR reels a day — reel1 08:30, reel2 12:30,
+// reel3 17:30, reel4 20:30. Quiz cards and the daily carousel are retired;
+// the weekly Sunday carousel was retired too (owner, 2026-09-28 — 23 and 45
+// views against 2K+ for every reel). The ladder and SPOT THE IMPOSTER were
+// retired 2026-09-30 (owner: both milked to the max; WHO'S OLDER drew 16K).
+//   every 4th reel     a new-concept TEST (out/concepts/test-*/ not yet queued),
+//                      i.e. 17:30 daily (owner 2026-09-30: 1 in 4, for diversity)
+//   every other slot   WHO'S OLDER, a FRESH edition each time: the generator
+//                      picks it, the two-source fact gate must pass,
+//                      lab/concept-render.mjs renders + verifies it.
+// Every step is idempotent: a filled slot is never refilled, so a missed day
+// (machine off) is simply caught up on the next run.
 import { spawnSync } from "node:child_process";
-import { existsSync, readdirSync } from "node:fs";
+import { existsSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -21,42 +28,96 @@ const HERE = dirname(fileURLToPath(import.meta.url));
 const REPO = resolve(HERE, "../..");
 const FACTORY = join(REPO, "tools/content-factory");
 const QUEUE = join(FACTORY, "out/social");
-const MIN_BUFFER = 5;
-const TARGET_BUFFER = 8;
+const CONCEPTS = join(FACTORY, "out/concepts");
+const EDITIONS = join(FACTORY, "lab/editions");
+const LEDGER = join(HERE, "reels-queued.json");
 const dry = process.argv.includes("--dry");
+const DAYS = process.argv.includes("--days") ? Number(process.argv[process.argv.indexOf("--days") + 1]) : 7;
+const EPOCH = "2026-09-26"; // reel index 0 = this day's 08:30 slot
 
-const iso = (ms) => new Date(ms).toISOString().slice(0, 10);
 const DAY = 86_400_000;
-const stamp = () => new Date().toISOString();
-const log = (m) => console.log(`${stamp()} [autofill] ${m}`);
-
-function run(cmd, args, cwd) {
+const iso = (ms) => new Date(ms).toISOString().slice(0, 10);
+const log = (m) => console.log(`${new Date().toISOString()} [autofill] ${m}`);
+const run = (cmd, args, cwd) => {
   log(`$ ${cmd} ${args.join(" ")}`);
-  if (dry) return;
+  if (dry) return true;
   const r = spawnSync(cmd, args, { cwd, stdio: "inherit" });
-  if (r.status !== 0) throw new Error(`${cmd} ${args.join(" ")} exited ${r.status}`);
-}
+  return r.status === 0;
+};
+const must = (cmd, args, cwd) => {
+  if (!run(cmd, args, cwd)) throw new Error(`${cmd} ${args.join(" ")} failed`);
+};
+
+const ledger = existsSync(LEDGER) ? JSON.parse(readFileSync(LEDGER, "utf8")) : {};
+const saveLedger = () => !dry && writeFileSync(LEDGER, JSON.stringify(ledger, null, 2) + "\n");
+
+// which folders fill each reel time (legacy names still count)
+const SLOT_ALIASES = { reel1: ["reel1"], reel2: ["reel2", "ladder"], reel3: ["reel3"], reel4: ["reel4", "concept"] };
+const filled = (date, slot) => SLOT_ALIASES[slot].some((s) => existsSync(join(QUEUE, date, s, "post.json")));
+
+const nextEdition = (concept) => {
+  const nums = readdirSync(EDITIONS).map((f) => f.match(new RegExp(`^${concept}-e(\\d+)\\.json$`))?.[1]).filter(Boolean).map(Number);
+  return `e${Math.max(3, ...nums) + 1}`;
+};
+const freeTest = () => {
+  if (!existsSync(CONCEPTS)) return null;
+  const used = new Set(Object.values(ledger).filter((v) => v.concept === "test").map((v) => v.dir));
+  // alternate formats: the least-tested family goes next (test-letters-e2 is family "letters")
+  const family = (d) => d.replace(/^test-/, "").replace(/-e\d+$/, "");
+  const runs = {};
+  for (const d of used) runs[family(d)] = (runs[family(d)] ?? 0) + 1;
+  const dirs = readdirSync(CONCEPTS)
+    .filter((d) => d.startsWith("test-") && !used.has(d))
+    .sort((a, b) => (runs[family(a)] ?? 0) - (runs[family(b)] ?? 0) || a.localeCompare(b));
+  for (const d of dirs) {
+    const mp4 = readdirSync(join(CONCEPTS, d)).find((f) => f.endsWith(".mp4"));
+    if (mp4 && existsSync(join(CONCEPTS, d, mp4.replace(/\.mp4$/, ".txt")))) return { dir: d, mp4: join(CONCEPTS, d, mp4), txt: join(CONCEPTS, d, mp4.replace(/\.mp4$/, ".txt")) };
+  }
+  return null;
+};
+
+// one fresh edition: generate (gate runs inside), render (gate + verify again)
+const freshReel = (concept) => {
+  for (let attempt = 0; attempt < 3; attempt++) {
+    const ed = nextEdition(concept);
+    if (!run("node", ["lab/older-generate.mjs", ed, "--seed", String(Date.now() % 100000 + attempt)], FACTORY)) continue;
+    if (!run("node", ["lab/concept-render.mjs", concept, ed], FACTORY)) continue;
+    const dir = join(CONCEPTS, `${concept}-${ed}`);
+    return { ed, mp4: join(dir, "lab-older.mp4"), txt: join(dir, "lab-older.txt") };
+  }
+  return null;
+};
 
 const today = iso(Date.now());
-const queued = existsSync(QUEUE)
-  ? readdirSync(QUEUE).filter((d) => /^\d{4}-\d{2}-\d{2}$/.test(d) && existsSync(join(QUEUE, d, "carousel", "post.json"))).sort()
-  : [];
-const last = queued.length ? queued[queued.length - 1] : iso(Date.now());
-const bufferDays = Math.round((Date.parse(last) - Date.parse(today)) / DAY);
-log(`today ${today}, last queued ${last}, ${bufferDays} day(s) ahead`);
+const days = Array.from({ length: DAYS }, (_, i) => iso(Date.parse(today) + (i + 1) * DAY));
+log(`filling ${days[0]} … ${days[days.length - 1]}`);
 
-if (bufferDays >= MIN_BUFFER) {
-  log(`buffer is ${bufferDays} ≥ ${MIN_BUFFER} — nothing to render; pushing to catch any day the publisher has not scheduled yet`);
-  run("node", ["tools/social/queue.mjs", "push", today, last], REPO);
-  process.exit(0);
+for (const date of days) {
+  for (const [i, slot] of ["reel1", "reel2", "reel3", "reel4"].entries()) {
+    if (filled(date, slot)) continue;
+    const index = Math.round((Date.parse(date) - Date.parse(EPOCH)) / DAY) * 4 + i;
+    const key = `${date}:${slot}`;
+    if (index % 4 === 2) {
+      const t = freeTest();
+      if (t) {
+        must("node", ["tools/social/queue.mjs", "add-reel", date, slot, t.mp4, t.txt], REPO);
+        ledger[key] = { concept: "test", dir: t.dir };
+        saveLedger();
+        continue;
+      }
+      log(`${key}: WARNING no unused concept test in out/concepts/test-* — build one; a concept reel takes the slot`);
+    }
+    const concept = "older";
+    const reel = dry ? { ed: "(dry)", mp4: "", txt: "" } : freshReel(concept);
+    if (!reel) {
+      log(`${key}: WARNING could not build a ${concept} edition — slot left empty`);
+      continue;
+    }
+    if (!dry) must("node", ["tools/social/queue.mjs", "add-reel", date, slot, reel.mp4, reel.txt], REPO);
+    ledger[key] = { concept, edition: reel.ed };
+    saveLedger();
+  }
 }
 
-const from = iso(Math.max(Date.parse(last), Date.parse(today)) + DAY);
-const days = Math.min(7, Math.round((Date.parse(today) + TARGET_BUFFER * DAY - Date.parse(from)) / DAY) + 1);
-const to = iso(Date.parse(from) + (days - 1) * DAY);
-log(`rendering ${days} day(s): ${from} … ${to}`);
-
-run("node", ["posts.mjs", "--from", from, "--days", String(days)], FACTORY);
-run("node", ["tools/social/queue.mjs", "fill-ladder", from, String(days)], REPO);
-run("node", ["tools/social/queue.mjs", "push", today, to], REPO);
+must("node", ["tools/social/queue.mjs", "push", today, days[days.length - 1]], REPO);
 log("done");

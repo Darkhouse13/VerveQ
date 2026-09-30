@@ -1,0 +1,702 @@
+{
+ "_doc": "MISSING LETTERS — spelling = Wikidata label = enwiki title; nation clue = Wikidata P1532. Built by lab/letters-facts.mjs.",
+ "edition": "e4",
+ "rounds": [
+  {
+   "n": 1,
+   "tier": "EASY",
+   "name": "Robert Lewandowski",
+   "nation": "Poland",
+   "qid": "Q151269",
+   "ref": "https://www.wikidata.org/wiki/Q151269#P569",
+   "wikipedia": "https://en.wikipedia.org/wiki/Robert_Lewandowski",
+   "fameRank": 18,
+   "words": [
+    [
+     {
+      "c": "R",
+      "hide": false
+     },
+     {
+      "c": "O",
+      "hide": true
+     },
+     {
+      "c": "B",
+      "hide": true
+     },
+     {
+      "c": "E",
+      "hide": false
+     },
+     {
+      "c": "R",
+      "hide": true
+     },
+     {
+      "c": "T",
+      "hide": false
+     }
+    ],
+    [
+     {
+      "c": "L",
+      "hide": false
+     },
+     {
+      "c": "E",
+      "hide": false
+     },
+     {
+      "c": "W",
+      "hide": false
+     },
+     {
+      "c": "A",
+      "hide": true
+     },
+     {
+      "c": "N",
+      "hide": false
+     },
+     {
+      "c": "D",
+      "hide": false
+     },
+     {
+      "c": "O",
+      "hide": false
+     },
+     {
+      "c": "W",
+      "hide": true
+     },
+     {
+      "c": "S",
+      "hide": true
+     },
+     {
+      "c": "K",
+      "hide": false
+     },
+     {
+      "c": "I",
+      "hide": false
+     }
+    ]
+   ]
+  },
+  {
+   "n": 2,
+   "tier": "EASY",
+   "name": "Diego Maradona",
+   "nation": "Argentina",
+   "qid": "Q17515",
+   "ref": "https://www.wikidata.org/wiki/Q17515#P569",
+   "wikipedia": "https://en.wikipedia.org/wiki/Diego_Maradona",
+   "fameRank": 4,
+   "words": [
+    [
+     {
+      "c": "D",
+      "hide": false
+     },
+     {
+      "c": "I",
+      "hide": true
+     },
+     {
+      "c": "E",
+      "hide": false
+     },
+     {
+      "c": "G",
+      "hide": false
+     },
+     {
+      "c": "O",
+      "hide": true
+     }
+    ],
+    [
+     {
+      "c": "M",
+      "hide": false
+     },
+     {
+      "c": "A",
+      "hide": false
+     },
+     {
+      "c": "R",
+      "hide": true
+     },
+     {
+      "c": "A",
+      "hide": true
+     },
+     {
+      "c": "D",
+      "hide": false
+     },
+     {
+      "c": "O",
+      "hide": false
+     },
+     {
+      "c": "N",
+      "hide": false
+     },
+     {
+      "c": "A",
+      "hide": false
+     }
+    ]
+   ]
+  },
+  {
+   "n": 3,
+   "tier": "EASY",
+   "name": "Steven Gerrard",
+   "nation": "England",
+   "qid": "Q459830",
+   "ref": "https://www.wikidata.org/wiki/Q459830#P569",
+   "wikipedia": "https://en.wikipedia.org/wiki/Steven_Gerrard",
+   "fameRank": 33,
+   "words": [
+    [
+     {
+      "c": "S",
+      "hide": false
+     },
+     {
+      "c": "T",
+      "hide": false
+     },
+     {
+      "c": "E",
+      "hide": false
+     },
+     {
+      "c": "V",
+      "hide": false
+     },
+     {
+      "c": "E",
+      "hide": true
+     },
+     {
+      "c": "N",
+      "hide": false
+     }
+    ],
+    [
+     {
+      "c": "G",
+      "hide": false
+     },
+     {
+      "c": "E",
+      "hide": false
+     },
+     {
+      "c": "R",
+      "hide": false
+     },
+     {
+      "c": "R",
+      "hide": true
+     },
+     {
+      "c": "A",
+      "hide": true
+     },
+     {
+      "c": "R",
+      "hide": true
+     },
+     {
+      "c": "D",
+      "hide": false
+     }
+    ]
+   ]
+  },
+  {
+   "n": 4,
+   "tier": "MEDIUM",
+   "name": "Gareth Bale",
+   "nation": "Wales",
+   "qid": "Q184586",
+   "ref": "https://www.wikidata.org/wiki/Q184586#P569",
+   "wikipedia": "https://en.wikipedia.org/wiki/Gareth_Bale",
+   "fameRank": 37,
+   "words": [
+    [
+     {
+      "c": "G",
+      "hide": false
+     },
+     {
+      "c": "A",
+      "hide": true
+     },
+     {
+      "c": "R",
+      "hide": true
+     },
+     {
+      "c": "E",
+      "hide": true
+     },
+     {
+      "c": "T",
+      "hide": false
+     },
+     {
+      "c": "H",
+      "hide": false
+     }
+    ],
+    [
+     {
+      "c": "B",
+      "hide": false
+     },
+     {
+      "c": "A",
+      "hide": true
+     },
+     {
+      "c": "L",
+      "hide": false
+     },
+     {
+      "c": "E",
+      "hide": true
+     }
+    ]
+   ]
+  },
+  {
+   "n": 5,
+   "tier": "MEDIUM",
+   "name": "Roberto Carlos",
+   "nation": "Brazil",
+   "qid": "Q429039",
+   "ref": "https://www.wikidata.org/wiki/Q429039#P569",
+   "wikipedia": "https://en.wikipedia.org/wiki/Roberto_Carlos",
+   "fameRank": 78,
+   "words": [
+    [
+     {
+      "c": "R",
+      "hide": false
+     },
+     {
+      "c": "O",
+      "hide": true
+     },
+     {
+      "c": "B",
+      "hide": true
+     },
+     {
+      "c": "E",
+      "hide": false
+     },
+     {
+      "c": "R",
+      "hide": false
+     },
+     {
+      "c": "T",
+      "hide": false
+     },
+     {
+      "c": "O",
+      "hide": false
+     }
+    ],
+    [
+     {
+      "c": "C",
+      "hide": false
+     },
+     {
+      "c": "A",
+      "hide": false
+     },
+     {
+      "c": "R",
+      "hide": true
+     },
+     {
+      "c": "L",
+      "hide": true
+     },
+     {
+      "c": "O",
+      "hide": true
+     },
+     {
+      "c": "S",
+      "hide": true
+     }
+    ]
+   ]
+  },
+  {
+   "n": 6,
+   "tier": "MEDIUM",
+   "name": "Michel Platini",
+   "nation": "France",
+   "qid": "Q4261",
+   "ref": "https://www.wikidata.org/wiki/Q4261#P569",
+   "wikipedia": "https://en.wikipedia.org/wiki/Michel_Platini",
+   "fameRank": 22,
+   "words": [
+    [
+     {
+      "c": "M",
+      "hide": false
+     },
+     {
+      "c": "I",
+      "hide": true
+     },
+     {
+      "c": "C",
+      "hide": true
+     },
+     {
+      "c": "H",
+      "hide": true
+     },
+     {
+      "c": "E",
+      "hide": true
+     },
+     {
+      "c": "L",
+      "hide": false
+     }
+    ],
+    [
+     {
+      "c": "P",
+      "hide": false
+     },
+     {
+      "c": "L",
+      "hide": false
+     },
+     {
+      "c": "A",
+      "hide": true
+     },
+     {
+      "c": "T",
+      "hide": false
+     },
+     {
+      "c": "I",
+      "hide": false
+     },
+     {
+      "c": "N",
+      "hide": false
+     },
+     {
+      "c": "I",
+      "hide": true
+     }
+    ]
+   ]
+  },
+  {
+   "n": 7,
+   "tier": "HARD",
+   "name": "Lukas Podolski",
+   "nation": "Germany",
+   "qid": "Q134976",
+   "ref": "https://www.wikidata.org/wiki/Q134976#P569",
+   "wikipedia": "https://en.wikipedia.org/wiki/Lukas_Podolski",
+   "fameRank": 47,
+   "words": [
+    [
+     {
+      "c": "L",
+      "hide": false
+     },
+     {
+      "c": "U",
+      "hide": true
+     },
+     {
+      "c": "K",
+      "hide": true
+     },
+     {
+      "c": "A",
+      "hide": true
+     },
+     {
+      "c": "S",
+      "hide": false
+     }
+    ],
+    [
+     {
+      "c": "P",
+      "hide": false
+     },
+     {
+      "c": "O",
+      "hide": true
+     },
+     {
+      "c": "D",
+      "hide": false
+     },
+     {
+      "c": "O",
+      "hide": true
+     },
+     {
+      "c": "L",
+      "hide": true
+     },
+     {
+      "c": "S",
+      "hide": true
+     },
+     {
+      "c": "K",
+      "hide": false
+     },
+     {
+      "c": "I",
+      "hide": true
+     }
+    ]
+   ]
+  },
+  {
+   "n": 8,
+   "tier": "HARD",
+   "name": "Robin van Persie",
+   "nation": "Netherlands",
+   "qid": "Q2339",
+   "ref": "https://www.wikidata.org/wiki/Q2339#P569",
+   "wikipedia": "https://en.wikipedia.org/wiki/Robin_van_Persie",
+   "fameRank": 31,
+   "words": [
+    [
+     {
+      "c": "R",
+      "hide": false
+     },
+     {
+      "c": "O",
+      "hide": true
+     },
+     {
+      "c": "B",
+      "hide": true
+     },
+     {
+      "c": "I",
+      "hide": true
+     },
+     {
+      "c": "N",
+      "hide": true
+     }
+    ],
+    [
+     {
+      "c": "V",
+      "hide": false
+     },
+     {
+      "c": "A",
+      "hide": true
+     },
+     {
+      "c": "N",
+      "hide": false
+     }
+    ],
+    [
+     {
+      "c": "P",
+      "hide": false
+     },
+     {
+      "c": "E",
+      "hide": true
+     },
+     {
+      "c": "R",
+      "hide": true
+     },
+     {
+      "c": "S",
+      "hide": false
+     },
+     {
+      "c": "I",
+      "hide": true
+     },
+     {
+      "c": "E",
+      "hide": false
+     }
+    ]
+   ]
+  },
+  {
+   "n": 9,
+   "tier": "HARD",
+   "name": "Virgil van Dijk",
+   "nation": "Netherlands",
+   "qid": "Q133903",
+   "ref": "https://www.wikidata.org/wiki/Q133903#P569",
+   "wikipedia": "https://en.wikipedia.org/wiki/Virgil_van_Dijk",
+   "fameRank": 145,
+   "words": [
+    [
+     {
+      "c": "V",
+      "hide": false
+     },
+     {
+      "c": "I",
+      "hide": true
+     },
+     {
+      "c": "R",
+      "hide": true
+     },
+     {
+      "c": "G",
+      "hide": true
+     },
+     {
+      "c": "I",
+      "hide": true
+     },
+     {
+      "c": "L",
+      "hide": true
+     }
+    ],
+    [
+     {
+      "c": "V",
+      "hide": false
+     },
+     {
+      "c": "A",
+      "hide": true
+     },
+     {
+      "c": "N",
+      "hide": false
+     }
+    ],
+    [
+     {
+      "c": "D",
+      "hide": false
+     },
+     {
+      "c": "I",
+      "hide": true
+     },
+     {
+      "c": "J",
+      "hide": false
+     },
+     {
+      "c": "K",
+      "hide": true
+     }
+    ]
+   ]
+  },
+  {
+   "n": 10,
+   "tier": "IMPOSSIBLE",
+   "name": "Wesley Sneijder",
+   "nation": "Netherlands",
+   "qid": "Q124086",
+   "ref": "https://www.wikidata.org/wiki/Q124086#P569",
+   "wikipedia": "https://en.wikipedia.org/wiki/Wesley_Sneijder",
+   "fameRank": 104,
+   "words": [
+    [
+     {
+      "c": "W",
+      "hide": true
+     },
+     {
+      "c": "E",
+      "hide": true
+     },
+     {
+      "c": "S",
+      "hide": true
+     },
+     {
+      "c": "L",
+      "hide": true
+     },
+     {
+      "c": "E",
+      "hide": false
+     },
+     {
+      "c": "Y",
+      "hide": false
+     }
+    ],
+    [
+     {
+      "c": "S",
+      "hide": false
+     },
+     {
+      "c": "N",
+      "hide": true
+     },
+     {
+      "c": "E",
+      "hide": true
+     },
+     {
+      "c": "I",
+      "hide": false
+     },
+     {
+      "c": "J",
+      "hide": true
+     },
+     {
+      "c": "D",
+      "hide": true
+     },
+     {
+      "c": "E",
+      "hide": true
+     },
+     {
+      "c": "R",
+      "hide": true
+     }
+    ]
+   ]
+  }
+ ]
+}

@@ -1,6 +1,6 @@
 // Local side of the VerveQ feed: put content in the queue on the box.
 //
-//   node tools/social/queue.mjs add-reel <date> <ladder|concept> <video.mp4> <caption.txt>
+//   node tools/social/queue.mjs add-reel <date> <reel1..reel4|ladder|concept> <video.mp4> <caption.txt>
 //        copies a rendered reel into the local queue tree (checks 1080×1920 H.264)
 //   node tools/social/queue.mjs push <from> [to]
 //        uploads out/social/<from…to> to the box, then runs the publisher so the
@@ -27,7 +27,7 @@ const HOST = process.env.VERVEQ_SOCIAL_HOST || "hetzner";
 const REMOTE = "/data/verveq-social";
 const RUNNER = "runner-"; // container name prefix, resolved with the service uuid below
 const RUNNER_SERVICE = "eroglu2ngnvl30b1w88y1pig"; // Coolify project verveq → social-runner
-const REEL_SLOTS = new Set(["ladder", "concept"]);
+const REEL_SLOTS = new Set(["reel1", "reel2", "reel3", "reel4", "ladder", "concept"]);
 const FACTORY_OUT = resolve(HERE, "../content-factory/out");
 const LADDER_POOL = join(HERE, "ladder-pool.json");
 const LADDER_POSTED = join(HERE, "ladder-posted.json");

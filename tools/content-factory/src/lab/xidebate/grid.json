@@ -1,0 +1,9 @@
+{
+ "_comment": "XI DEBATE timing truths (frames @30). Composition AND sound bed read this file. Pairs land every `step` frames from `landAt` in ORDER (headliners first); the open question slams at `askAt` and holds to `total` (16.0s).",
+ "fps": 30,
+ "total": 480,
+ "landAt": -8,
+ "step": 22,
+ "askAt": 262,
+ "order": ["ST_R", "ST_L", "CM_R", "RM", "LM", "CM_L", "CB_R", "CB_L", "RB", "LB", "GK"]
+}

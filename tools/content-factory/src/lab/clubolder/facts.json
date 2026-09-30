@@ -1,0 +1,296 @@
+{
+ "_doc": "WHICH CLUB IS OLDER? — founding dates double-sourced (Wikidata P571 = enwiki infobox, to the day). Built by lab/clubolder-facts.mjs.",
+ "edition": "e4",
+ "rounds": [
+  {
+   "n": 1,
+   "a": {
+    "name": "Valencia CF",
+    "show": "VALENCIA",
+    "bg": "#ee7f00",
+    "fg": "#fff",
+    "founded": "1919-03-18",
+    "date": "18 MAR 1919",
+    "qid": "Q10333",
+    "ref": "https://www.wikidata.org/wiki/Q10333#P571",
+    "wikipedia": "https://en.wikipedia.org/wiki/Valencia_CF"
+   },
+   "b": {
+    "name": "Tottenham Hotspur F.C.",
+    "show": "TOTTENHAM",
+    "bg": "#f4f1ea",
+    "fg": "#132257",
+    "founded": "1882-09-05",
+    "date": "5 SEP 1882",
+    "qid": "Q18741",
+    "ref": "https://www.wikidata.org/wiki/Q18741#P571",
+    "wikipedia": "https://en.wikipedia.org/wiki/Tottenham_Hotspur_F.C."
+   },
+   "older": "b",
+   "gapDays": 13342,
+   "gap": "36 YEARS",
+   "key": "Tottenham Hotspur F.C. | Valencia CF"
+  },
+  {
+   "n": 2,
+   "a": {
+    "name": "Aston Villa F.C.",
+    "show": "ASTON VILLA",
+    "bg": "#670e36",
+    "fg": "#95bfe5",
+    "founded": "1874-11-21",
+    "date": "21 NOV 1874",
+    "qid": "Q18711",
+    "ref": "https://www.wikidata.org/wiki/Q18711#P571",
+    "wikipedia": "https://en.wikipedia.org/wiki/Aston_Villa_F.C."
+   },
+   "b": {
+    "name": "Juventus FC",
+    "show": "JUVENTUS",
+    "bg": "#111111",
+    "fg": "#fff",
+    "founded": "1897-11-01",
+    "date": "1 NOV 1897",
+    "qid": "Q1422",
+    "ref": "https://www.wikidata.org/wiki/Q1422#P571",
+    "wikipedia": "https://en.wikipedia.org/wiki/Juventus_FC"
+   },
+   "older": "a",
+   "gapDays": 8381,
+   "gap": "22 YEARS",
+   "key": "Aston Villa F.C. | Juventus FC"
+  },
+  {
+   "n": 3,
+   "a": {
+    "name": "Santos FC",
+    "show": "SANTOS",
+    "bg": "#f4f1ea",
+    "fg": "#111",
+    "founded": "1912-04-14",
+    "date": "14 APR 1912",
+    "qid": "Q80955",
+    "ref": "https://www.wikidata.org/wiki/Q80955#P571",
+    "wikipedia": "https://en.wikipedia.org/wiki/Santos_FC"
+   },
+   "b": {
+    "name": "AS Roma",
+    "show": "ROMA",
+    "bg": "#8e1f2f",
+    "fg": "#f0bc42",
+    "founded": "1927-06-07",
+    "date": "7 JUN 1927",
+    "qid": "Q2739",
+    "ref": "https://www.wikidata.org/wiki/Q2739#P571",
+    "wikipedia": "https://en.wikipedia.org/wiki/AS_Roma"
+   },
+   "older": "a",
+   "gapDays": 5532,
+   "gap": "15 YEARS",
+   "key": "AS Roma | Santos FC"
+  },
+  {
+   "n": 4,
+   "a": {
+    "name": "FC Bayern Munich",
+    "show": "BAYERN",
+    "bg": "#dc052d",
+    "fg": "#fff",
+    "founded": "1900-02-27",
+    "date": "27 FEB 1900",
+    "qid": "Q15789",
+    "ref": "https://www.wikidata.org/wiki/Q15789#P571",
+    "wikipedia": "https://en.wikipedia.org/wiki/FC_Bayern_Munich"
+   },
+   "b": {
+    "name": "Borussia Dortmund",
+    "show": "DORTMUND",
+    "bg": "#fde100",
+    "fg": "#111",
+    "founded": "1909-12-19",
+    "date": "19 DEC 1909",
+    "qid": "Q41420",
+    "ref": "https://www.wikidata.org/wiki/Q41420#P571",
+    "wikipedia": "https://en.wikipedia.org/wiki/Borussia_Dortmund"
+   },
+   "older": "a",
+   "gapDays": 3582,
+   "gap": "9 YEARS",
+   "key": "Borussia Dortmund | FC Bayern Munich"
+  },
+  {
+   "n": 5,
+   "a": {
+    "name": "Boca Juniors",
+    "show": "BOCA",
+    "bg": "#103f79",
+    "fg": "#f3b229",
+    "founded": "1905-04-03",
+    "date": "3 APR 1905",
+    "qid": "Q170703",
+    "ref": "https://www.wikidata.org/wiki/Q170703#P571",
+    "wikipedia": "https://en.wikipedia.org/wiki/Boca_Juniors"
+   },
+   "b": {
+    "name": "Olympique de Marseille",
+    "show": "MARSEILLE",
+    "bg": "#2faee0",
+    "fg": "#fff",
+    "founded": "1899-08-31",
+    "date": "31 AUG 1899",
+    "qid": "Q132885",
+    "ref": "https://www.wikidata.org/wiki/Q132885#P571",
+    "wikipedia": "https://en.wikipedia.org/wiki/Olympique_de_Marseille"
+   },
+   "older": "b",
+   "gapDays": 2041,
+   "gap": "5 YEARS",
+   "key": "Boca Juniors | Olympique de Marseille"
+  },
+  {
+   "n": 6,
+   "a": {
+    "name": "Real Madrid CF",
+    "show": "REAL MADRID",
+    "bg": "#f4f1ea",
+    "fg": "#1b1f5e",
+    "founded": "1902-03-06",
+    "date": "6 MAR 1902",
+    "qid": "Q8682",
+    "ref": "https://www.wikidata.org/wiki/Q8682#P571",
+    "wikipedia": "https://en.wikipedia.org/wiki/Real_Madrid_CF"
+   },
+   "b": {
+    "name": "Athletic Bilbao",
+    "show": "ATHLETIC",
+    "bg": "#ee2523",
+    "fg": "#fff",
+    "founded": "1898-07-18",
+    "date": "18 JUL 1898",
+    "qid": "Q8687",
+    "ref": "https://www.wikidata.org/wiki/Q8687#P571",
+    "wikipedia": "https://en.wikipedia.org/wiki/Athletic_Bilbao"
+   },
+   "older": "b",
+   "gapDays": 1326,
+   "gap": "3 YEARS",
+   "key": "Athletic Bilbao | Real Madrid CF"
+  },
+  {
+   "n": 7,
+   "a": {
+    "name": "Sporting CP",
+    "show": "SPORTING",
+    "bg": "#008057",
+    "fg": "#fff",
+    "founded": "1906-07-01",
+    "date": "1 JUL 1906",
+    "qid": "Q75729",
+    "ref": "https://www.wikidata.org/wiki/Q75729#P571",
+    "wikipedia": "https://en.wikipedia.org/wiki/Sporting_CP"
+   },
+   "b": {
+    "name": "Feyenoord",
+    "show": "FEYENOORD",
+    "bg": "#e0001a",
+    "fg": "#fff",
+    "founded": "1908-07-19",
+    "date": "19 JUL 1908",
+    "qid": "Q134241",
+    "ref": "https://www.wikidata.org/wiki/Q134241#P571",
+    "wikipedia": "https://en.wikipedia.org/wiki/Feyenoord"
+   },
+   "older": "a",
+   "gapDays": 749,
+   "gap": "2 YEARS",
+   "key": "Feyenoord | Sporting CP"
+  },
+  {
+   "n": 8,
+   "a": {
+    "name": "S.L. Benfica",
+    "show": "BENFICA",
+    "bg": "#e20e0e",
+    "fg": "#fff",
+    "founded": "1904-02-28",
+    "date": "28 FEB 1904",
+    "qid": "Q131499",
+    "ref": "https://www.wikidata.org/wiki/Q131499#P571",
+    "wikipedia": "https://en.wikipedia.org/wiki/S.L._Benfica"
+   },
+   "b": {
+    "name": "Chelsea F.C.",
+    "show": "CHELSEA",
+    "bg": "#034694",
+    "fg": "#fff",
+    "founded": "1905-03-10",
+    "date": "10 MAR 1905",
+    "qid": "Q9616",
+    "ref": "https://www.wikidata.org/wiki/Q9616#P571",
+    "wikipedia": "https://en.wikipedia.org/wiki/Chelsea_F.C."
+   },
+   "older": "a",
+   "gapDays": 376,
+   "gap": "1 YEAR",
+   "key": "Chelsea F.C. | S.L. Benfica"
+  },
+  {
+   "n": 9,
+   "a": {
+    "name": "AFC Ajax",
+    "show": "AJAX",
+    "bg": "#d2122e",
+    "fg": "#fff",
+    "founded": "1900-03-18",
+    "date": "18 MAR 1900",
+    "qid": "Q81888",
+    "ref": "https://www.wikidata.org/wiki/Q81888#P571",
+    "wikipedia": "https://en.wikipedia.org/wiki/AFC_Ajax"
+   },
+   "b": {
+    "name": "FC Barcelona",
+    "show": "BARCELONA",
+    "bg": "#a50044",
+    "fg": "#fff",
+    "founded": "1899-11-29",
+    "date": "29 NOV 1899",
+    "qid": "Q7156",
+    "ref": "https://www.wikidata.org/wiki/Q7156#P571",
+    "wikipedia": "https://en.wikipedia.org/wiki/FC_Barcelona"
+   },
+   "older": "b",
+   "gapDays": 109,
+   "gap": "3 MONTHS",
+   "key": "AFC Ajax | FC Barcelona"
+  },
+  {
+   "n": 10,
+   "a": {
+    "name": "FC Porto",
+    "show": "PORTO",
+    "bg": "#00428c",
+    "fg": "#fff",
+    "founded": "1893-09-28",
+    "date": "28 SEP 1893",
+    "qid": "Q128446",
+    "ref": "https://www.wikidata.org/wiki/Q128446#P571",
+    "wikipedia": "https://en.wikipedia.org/wiki/FC_Porto"
+   },
+   "b": {
+    "name": "Genoa CFC",
+    "show": "GENOA",
+    "bg": "#a1182e",
+    "fg": "#fff",
+    "founded": "1893-09-07",
+    "date": "7 SEP 1893",
+    "qid": "Q2074",
+    "ref": "https://www.wikidata.org/wiki/Q2074#P571",
+    "wikipedia": "https://en.wikipedia.org/wiki/Genoa_CFC"
+   },
+   "older": "b",
+   "gapDays": 21,
+   "gap": "3 WEEKS",
+   "key": "FC Porto | Genoa CFC"
+  }
+ ]
+}

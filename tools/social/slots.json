@@ -1,17 +1,25 @@
 {
   "version": 1,
-  "note": "VerveQ four-a-day feed on Instagram + the Facebook Page, published through VerveQ's OWN Postiz (postiz.verveq.com — never Terralore's). Times are first-guess defaults for a UK/European football audience: still in the morning commute, ladder reel at lunch, quiz after work, concept reel in the evening peak. Facebook runs 10 minutes behind Instagram so the two media fetches never collide. Channel ids are pinned: the publisher posts to these two integrations and nothing else.",
+  "note": "VerveQ four-a-day feed on Instagram + the Facebook Page, published through VerveQ's OWN Postiz (postiz.verveq.com — never Terralore's). Times are first-guess defaults for a UK/European football audience: still in the morning commute, ladder reel at lunch, quiz after work, concept reel in the evening peak. Facebook runs 10 minutes behind Instagram so the two media fetches never collide. Channel ids are pinned: the publisher posts to these two integrations and nothing else. 2026-09-25 (owner): four REELS a day (reel1 08:30, reel2 12:30, reel3 17:30, reel4 20:30), ladder reels at most Tue/Thu/Sat in the 12:30 slot, one carousel a week (weekly, Sunday 10:30), quiz cards retired. 2026-09-28 (owner): the weekly carousel is retired too — reels only. The legacy slot names stay valid for posts queued before the switch; a day never uses ladder and reel2, or concept and reel4, together.",
   "timezone": "Europe/London",
   "channels": {
     "instagram": "cmubpeexo0005o184xq3e7yzc",
     "facebook": "cmubpcsuc0001o1841pfivzmo"
   },
-  "platformOffsetMinutes": { "instagram": 0, "facebook": 10 },
+  "platformOffsetMinutes": {
+    "instagram": 0,
+    "facebook": 10
+  },
   "slots": {
-    "carousel": "08:30",
+    "reel1": "08:30",
+    "reel2": "12:30",
     "ladder": "12:30",
-    "question": "17:30",
-    "concept": "20:30"
+    "reel3": "17:30",
+    "reel4": "20:30",
+    "concept": "20:30",
+    "weekly": "10:30",
+    "carousel": "08:30",
+    "question": "17:30"
   },
   "lookaheadDays": 7
 }
