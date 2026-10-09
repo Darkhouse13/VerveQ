@@ -232,4 +232,45 @@ http.route({
   }),
 });
 
+// ── Who's Older reminder unsubscribe: /whos-older/unsubscribe?t=TOKEN ──
+// GET is the link in the email body (a tiny confirmation page); POST is the
+// RFC 8058 one-click unsubscribe mail clients send from the List-Unsubscribe
+// header. Both are idempotent and never reveal whether a token exists.
+
+function unsubscribePage(): Response {
+  const html = `<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Unsubscribed · VerveQ</title></head>
+<body style="margin:0;background:#111;color:#fff8f0;font-family:Arial,Helvetica,sans-serif;display:flex;min-height:100vh;align-items:center;justify-content:center">
+<div style="max-width:420px;padding:24px;text-align:center"><p style="font-family:'Courier New',monospace;color:#c6ff1a;letter-spacing:3px;font-weight:bold">VERVEQ</p>
+<h1 style="font-size:26px">You're unsubscribed.</h1><p style="color:#cfc8c0;line-height:1.5">No more Who's Older? reminders. You can switch them back on from any finished daily.</p>
+<p><a href="https://verveq.com/older" style="color:#c6ff1a;font-weight:bold">Play today's game</a></p></div></body></html>`;
+  return new Response(html, {
+    status: 200,
+    headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "no-store" },
+  });
+}
+
+async function handleReminderUnsubscribe(ctx: ActionCtx, request: Request): Promise<Response> {
+  const token = new URL(request.url).searchParams.get("t") ?? "";
+  if (token.length >= 32 && token.length <= 128) {
+    try {
+      await ctx.runMutation(internal.whosOlderReminders.unsubscribeByToken, { token });
+    } catch (err) {
+      console.error("[whos-older/unsubscribe] failed:", err);
+    }
+  }
+  return request.method === "POST" ? new Response(null, { status: 200 }) : unsubscribePage();
+}
+
+http.route({
+  path: "/whos-older/unsubscribe",
+  method: "GET",
+  handler: httpAction(handleReminderUnsubscribe),
+});
+
+http.route({
+  path: "/whos-older/unsubscribe",
+  method: "POST",
+  handler: httpAction(handleReminderUnsubscribe),
+});
+
 export default http;

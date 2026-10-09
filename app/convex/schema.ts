@@ -1169,10 +1169,15 @@ export default defineSchema({
   // streak run, unlocked once the day's daily is complete. Birth dates live
   // only here and in the reveal payloads — the client never sees the answer
   // before it guesses.
+  //
+  // A "challenge" row is a friend replaying a PAST date's daily from a
+  // challenge link (whosOlderChallenges): the sender's frozen rounds, same
+  // ten pairs, scored /10. A challenge for TODAY is just the player's daily.
   whosOlderSessions: defineTable({
     userId: v.id("users"),
-    kind: v.union(v.literal("daily"), v.literal("endless")),
+    kind: v.union(v.literal("daily"), v.literal("endless"), v.literal("challenge")),
     dateKey: v.string(),
+    challengeId: v.optional(v.id("whosOlderChallenges")),
     rounds: v.array(
       v.object({
         aId: v.string(),
@@ -1195,6 +1200,64 @@ export default defineSchema({
     .index("by_user_kind_date", ["userId", "kind", "dateKey"])
     .index("by_user_kind_score", ["userId", "kind", "score"])
     .index("by_kind_date_status", ["kind", "dateKey", "status"]),
+
+  // WHO'S OLDER? retention loop (lib/whosOlderRetention.ts).
+  // A challenge is a finished daily turned into a "beat my score" link: one
+  // row per sender session (idempotent), the friends' answers in
+  // whosOlderChallengeResults.
+  whosOlderChallenges: defineTable({
+    fromUserId: v.id("users"),
+    sessionId: v.id("whosOlderSessions"),
+    dateKey: v.string(),
+    score: v.number(),
+    total: v.number(),
+    createdAt: v.number(),
+  })
+    .index("by_session", ["sessionId"])
+    .index("by_from_created", ["fromUserId", "createdAt"]),
+
+  whosOlderChallengeResults: defineTable({
+    challengeId: v.id("whosOlderChallenges"),
+    userId: v.id("users"),
+    sessionId: v.id("whosOlderSessions"),
+    score: v.number(),
+    total: v.number(),
+    createdAt: v.number(),
+  })
+    .index("by_challenge", ["challengeId"])
+    .index("by_challenge_user", ["challengeId", "userId"]),
+
+  // Daily email reminder, double opt-in: nothing is sent until `confirmedAt`.
+  // `token` is the secret in every email link (confirm, open, unsubscribe).
+  // The address is one row however many browsers it was entered from; the
+  // browsers it was claimed in are whosOlderReminderLinks, which is how a
+  // streak survives the jump from Instagram's in-app browser to the phone's
+  // own browser when the player opens the email.
+  whosOlderReminders: defineTable({
+    email: v.string(),
+    token: v.string(),
+    timeZone: v.string(),
+    createdByUserId: v.id("users"),
+    createdAt: v.number(),
+    confirmSentAt: v.optional(v.number()),
+    confirmedAt: v.optional(v.number()),
+    unsubscribedAt: v.optional(v.number()),
+    lastSentDateKey: v.optional(v.string()),
+    lastSentAt: v.optional(v.number()),
+    sentCount: v.number(),
+  })
+    .index("by_email", ["email"])
+    .index("by_token", ["token"])
+    .index("by_creator_created", ["createdByUserId", "createdAt"])
+    .index("by_unsubscribed_confirmed", ["unsubscribedAt", "confirmedAt"]),
+
+  whosOlderReminderLinks: defineTable({
+    reminderId: v.id("whosOlderReminders"),
+    userId: v.id("users"),
+    createdAt: v.number(),
+  })
+    .index("by_user", ["userId"])
+    .index("by_reminder", ["reminderId"]),
 
   verveGridSessions: defineTable({
     userId: v.optional(v.id("users")),

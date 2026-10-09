@@ -10,17 +10,25 @@
  *
  * Daily first: everyone gets the same ten pairs per UTC date, one attempt,
  * scored /10 with a shareable emoji row. Finishing it unlocks ENDLESS — fresh
- * pairs until the first wrong answer. Every decision is server-authoritative
+ * pairs until the first wrong answer.
+ *
+ * The retention loop sits on the daily's result card (WhosOlderRetention.tsx):
+ * the daily STREAK with a live countdown to the next edition, the EMAIL
+ * REMINDER sign-up, and the CHALLENGE — sharing turns the result into a
+ * `/older?c=<id>` link. A friend opening it plays the same ten pairs (today's
+ * daily, or the sender's frozen past date as a "challenge" run) under a
+ * score-to-beat banner and finishes on a head-to-head. Reminder emails land
+ * here with `?rt=<token>`, which links this browser to the subscription. Every decision is server-authoritative
  * (convex/whosOlder.ts): the client is dealt NAMES only and learns the birth
  * dates from the reveal after it has answered.
  */
 import { useCallback, useEffect, useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useMutation, useQuery } from "convex/react";
 import type { FunctionReturnType } from "convex/server";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
-import { Check, Flame, Infinity as InfinityIcon, Share2, X } from "lucide-react";
+import { CalendarDays, Check, Flame, Infinity as InfinityIcon, Swords, X } from "lucide-react";
 import { NeoCard } from "@/components/neo/NeoCard";
 import { NeoButton } from "@/components/neo/NeoButton";
 import { PlayStage } from "@/components/shell/play/PlayStage";
@@ -28,6 +36,14 @@ import { MetricsPanel, AmbientStrip } from "@/components/shell/play/ambient";
 import { SHELL_ROUTES } from "@/lib/shellRoutes";
 import { getShareBaseUrl } from "@/lib/shareBase";
 import { useAntiCheat } from "@/hooks/useAntiCheat";
+import { track } from "@/lib/analytics";
+import {
+  ChallengeBanner,
+  ChallengeResults,
+  HeadToHead,
+  ReminderCard,
+  StreakBlock,
+} from "@/components/shell/play/whosOlder/WhosOlderRetention";
 import { useAuth } from "@/contexts/AuthContext";
 import {
   startRun,
@@ -88,12 +104,27 @@ export default function WhosOlderPlayScreen() {
   const { t, i18n } = useTranslation("play");
   const navigate = useNavigate();
   const { accountState } = useAuth();
+  const [searchParams] = useSearchParams();
+  const challengeParam = searchParams.get("c");
 
   const startDailyMut = useMutation(api.whosOlder.startDaily);
   const startEndlessMut = useMutation(api.whosOlder.startEndless);
+  const startChallengeMut = useMutation(api.whosOlder.startChallenge);
+  const createChallengeMut = useMutation(api.whosOlder.createChallenge);
+  const recordChallengeMut = useMutation(api.whosOlder.recordChallengeResult);
+  const claimTokenMut = useMutation(api.whosOlderReminders.claimToken);
   const guessMut = useMutation(api.whosOlder.guess);
-  // Reactive: the result card's standing and best streak update live.
+  // Reactive: the result card's standing, streak, reminder and challenge
+  // results update live.
   const today = useQuery(api.whosOlder.getToday, {});
+  const challengeInfo = useQuery(
+    api.whosOlder.getChallenge,
+    challengeParam ? { challengeId: challengeParam } : "skip",
+  );
+  // A challenge only frames the game for a friend; the sender's own link is
+  // just their daily.
+  const challenge = challengeInfo && !challengeInfo.own ? challengeInfo : null;
+  const [challengeVerdict, setChallengeVerdict] = useState<"won" | "lost" | "tie" | null>(null);
 
   const [view, setView] = useState<SessionView | null>(null);
   const [reveal, setReveal] = useState<Reveal | null>(null);
@@ -127,6 +158,28 @@ export default function WhosOlderPlayScreen() {
     [t],
   );
 
+  // A reminder email link: `?rt=<token>` (+ `confirm=1` from the confirmation
+  // email). Claimed once, then stripped from the address bar so a copied URL
+  // never carries the token.
+  const claimed = useRef(false);
+  useEffect(() => {
+    if (claimed.current) return;
+    const token = searchParams.get("rt");
+    if (!token) return;
+    claimed.current = true;
+    const confirm = searchParams.get("confirm") === "1";
+    void claimTokenMut({ token, confirm })
+      .then((res) => {
+        track("whos_older_reminder_claimed", { confirmed: res.confirmed, ok: res.ok });
+        if (res.confirmed) toast.success(t("whosOlder.reminderConfirmed"));
+      })
+      .catch((err) => console.error("Reminder link failed:", err));
+    const url = new URL(window.location.href);
+    url.searchParams.delete("rt");
+    url.searchParams.delete("confirm");
+    window.history.replaceState(window.history.state, "", `${url.pathname}${url.search}`);
+  }, [searchParams, claimTokenMut, t]);
+
   const loadDaily = useCallback(async () => {
     setStatus("loading");
     try {
@@ -147,14 +200,63 @@ export default function WhosOlderPlayScreen() {
     }
   }, [startDailyMut]);
 
+  /** A past date's challenge: the sender's ten pairs as this player's run. */
+  const loadChallenge = useCallback(
+    async (challengeId: NonNullable<typeof challenge>["challengeId"]) => {
+      setStatus("loading");
+      try {
+        const res = await startChallengeMut({ challengeId });
+        if (res.created) {
+          startRun(res.session.sessionId, "whos-older-challenge", {
+            accountState: accountStateRef.current,
+          });
+        }
+        setView(res.session);
+        setReveal(null);
+        setStatus("ready");
+      } catch (err) {
+        console.error("Challenge failed to start:", err);
+        await loadDaily();
+      }
+    },
+    [startChallengeMut, loadDaily],
+  );
+
   // One provision per arrival — a re-created closure (locale switch) is not a
-  // new game.
+  // new game. A challenge link waits for its challenge to resolve: a past
+  // date plays the sender's pairs, anything else plays today's daily.
   const autoStarted = useRef(false);
   useEffect(() => {
     if (autoStarted.current) return;
+    if (challengeParam && challengeInfo === undefined) return;
     autoStarted.current = true;
-    void loadDaily();
-  }, [loadDaily]);
+    if (challengeInfo) {
+      track("whos_older_challenge_opened", { is_today: challengeInfo.isToday, own: challengeInfo.own });
+    }
+    if (challenge && !challenge.isToday) void loadChallenge(challenge.challengeId);
+    else void loadDaily();
+  }, [challengeParam, challengeInfo, challenge, loadChallenge, loadDaily]);
+
+  // File a finished run of the challenge's date against it (the server reads
+  // the score from the session). A player who already had an answer on file
+  // gets their verdict straight from the challenge.
+  const filedChallenge = useRef(false);
+  useEffect(() => {
+    if (!challenge || !view || filedChallenge.current) return;
+    if (challenge.myResult) {
+      setChallengeVerdict(challenge.myResult.verdict);
+      return;
+    }
+    if (view.kind === "endless" || view.status !== "completed" || view.dateKey !== challenge.dateKey) return;
+    filedChallenge.current = true;
+    void recordChallengeMut({ challengeId: challenge.challengeId, sessionId: view.sessionId })
+      .then((res) => {
+        if (!res.verdict) return;
+        setChallengeVerdict(res.verdict);
+        if (res.recorded) track("whos_older_challenge_finished", { verdict: res.verdict, is_today: challenge.isToday });
+      })
+      .catch((err) => console.error("Challenge result failed:", err));
+  }, [challenge, view, recordChallengeMut]);
 
   const liveSessionRef = useRef<string | null>(null);
   liveSessionRef.current = view?.status === "active" ? view.sessionId : null;
@@ -259,9 +361,20 @@ export default function WhosOlderPlayScreen() {
     toast.warning(t("whosOlder.tabSwitchWarning"), { duration: 4000 });
   }, [view?.status, t]);
 
+  // Sharing a finished daily IS the challenge: the link replays the same ten
+  // pairs for whoever opens it. If the challenge cannot be minted the plain
+  // result link still goes out.
   const share = async (daily: SessionView) => {
-    const text = `${t("whosOlder.shareTitle", { n: daily.edition, score: daily.score, total: daily.totalRounds ?? daily.history.length })}\n${emojiRow(daily.history)}`;
-    const url = `${getShareBaseUrl()}/v2/whos-older?ref=whos_older_share`;
+    const total = daily.totalRounds ?? daily.history.length;
+    let url = `${getShareBaseUrl()}/older?ref=whos_older_share`;
+    try {
+      const { challengeId } = await createChallengeMut({ sessionId: daily.sessionId });
+      url = `${getShareBaseUrl()}/older?c=${challengeId}&ref=whos_older_challenge`;
+      track("whos_older_challenge_shared", { edition: daily.edition, score: daily.score });
+    } catch (err) {
+      console.error("Challenge link failed:", err);
+    }
+    const text = `${t("whosOlder.challengeText", { n: daily.edition, score: daily.score, total })}\n${emojiRow(daily.history)}`;
     if (navigator.share) {
       try {
         await navigator.share({ title: t("whosOlder.title"), text, url });
@@ -301,12 +414,20 @@ export default function WhosOlderPlayScreen() {
   }
 
 
-  const isDaily = view.kind === "daily";
+  // A challenge run is scored and shaped exactly like a daily.
+  const isDaily = view.kind !== "endless";
+  // A past date — a challenge run, or an old daily a challenge link reopened —
+  // is not today's result: no streak, no standing, and it points at today.
+  const isChallengeRun =
+    view.kind === "challenge" || (view.kind === "daily" && today != null && view.dateKey !== today.dateKey);
+  const challengeHere = challenge && view.dateKey === challenge.dateKey && isDaily ? challenge : null;
   // A best of 0 is not worth a line; the streak only shows once it means something.
   const bestEndless = today?.bestEndless ? today.bestEndless : null;
-  const subtitle = isDaily
-    ? t("whosOlder.dailySubtitle", { n: view.edition })
-    : t("whosOlder.endlessSubtitle");
+  const subtitle = isChallengeRun
+    ? t("whosOlder.challengeSubtitle", { n: view.edition })
+    : isDaily
+      ? t("whosOlder.dailySubtitle", { n: view.edition })
+      : t("whosOlder.endlessSubtitle");
   const metrics = isDaily ? { score: view.score } : { streak: view.score };
   const progress =
     isDaily && view.totalRounds
@@ -317,11 +438,15 @@ export default function WhosOlderPlayScreen() {
   if (view.status === "completed" && !reveal) {
     if (isDaily) {
       const daily = view;
-      const standing = today?.standing ?? null;
+      const standing = isChallengeRun ? null : (today?.standing ?? null);
       const showStanding = standing && standing.finishers >= MIN_FINISHERS_FOR_STANDING;
+      const streak = !isChallengeRun && today?.streak?.playedToday ? today.streak : null;
       return (
         <PlayStage theme={THEME} title={t("whosOlder.title")} subtitle={subtitle} onExit={exit} exitLabel={t("whosOlder.home")}>
           <div className="flex flex-col gap-3 py-2">
+            {challengeHere && challengeVerdict && (
+              <HeadToHead challenge={challengeHere} myScore={daily.score} verdict={challengeVerdict} />
+            )}
             <div className="neo-border border-black neo-shadow-lg rounded-lg bg-electric-blue text-white text-center py-6 px-4">
               <p className="font-mono text-[11px] font-bold uppercase tracking-[0.16em] opacity-90">
                 {t("whosOlder.editionLabel", { n: daily.edition })}
@@ -341,26 +466,40 @@ export default function WhosOlderPlayScreen() {
                   })}
                 </p>
               )}
-              <p className="font-mono text-[10.5px] uppercase mt-3 opacity-90">
-                {t("whosOlder.nextIn", { time: nextEditionCountdown() })}
-              </p>
+              {!streak && !isChallengeRun && (
+                <p className="font-mono text-[10.5px] uppercase mt-3 opacity-90">
+                  {t("whosOlder.nextIn", { time: nextEditionCountdown() })}
+                </p>
+              )}
             </div>
 
-            <div className="grid grid-cols-2 gap-3">
-              <NeoButton variant="pink" size="lg" onClick={() => share(daily)}>
-                <Share2 size={18} className="mr-1.5" />
-                {t("whosOlder.share")}
+            {streak && <StreakBlock current={streak.current} best={streak.best} />}
+
+            {isChallengeRun ? (
+              <NeoButton variant="accent" size="lg" onClick={loadDaily} data-testid="whos-older-play-today">
+                <CalendarDays size={18} className="mr-1.5" />
+                {t("whosOlder.playToday", { n: today?.edition ?? "" })}
               </NeoButton>
-              <NeoButton variant="accent" size="lg" onClick={startEndless} disabled={busy}>
-                <InfinityIcon size={18} className="mr-1.5" />
-                {t("whosOlder.playEndless")}
-              </NeoButton>
-            </div>
-            {bestEndless != null && (
+            ) : (
+              <div className="grid grid-cols-2 gap-3">
+                <NeoButton variant="pink" size="lg" onClick={() => share(daily)} data-testid="whos-older-challenge-share">
+                  <Swords size={18} className="mr-1.5" />
+                  {t("whosOlder.challengeCta")}
+                </NeoButton>
+                <NeoButton variant="accent" size="lg" onClick={startEndless} disabled={busy}>
+                  <InfinityIcon size={18} className="mr-1.5" />
+                  {t("whosOlder.playEndless")}
+                </NeoButton>
+              </div>
+            )}
+            {!isChallengeRun && bestEndless != null && (
               <p className="text-center font-mono text-[11px] uppercase text-accent">
                 {t("whosOlder.bestStreak", { count: bestEndless })}
               </p>
             )}
+
+            {today?.reminder && <ReminderCard reminder={today.reminder} />}
+            {!isChallengeRun && today?.challenges && <ChallengeResults challenges={today.challenges} />}
 
             {/* The ten answers — each row carries its verdict colour. */}
             <ol className="space-y-2">
@@ -516,6 +655,7 @@ export default function WhosOlderPlayScreen() {
         />
       )}
       <div className="flex flex-col h-full">
+        {challengeHere && <ChallengeBanner challenge={challengeHere} />}
         {/* Escalation chip + progress: the reel's top line. */}
         <div className="shrink-0 flex items-center justify-between gap-2 mb-2">
           <span

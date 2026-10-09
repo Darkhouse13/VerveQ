@@ -99,5 +99,10 @@ crons.cron("fantasy-season-stats-sweep", "23 3 * * 2", internal.fantasySeasonSta
 // :10/:25/:40/:55 scoring pass, the :02/:17/:32/:47 settle and the
 // :07/:22/:37/:52 court resolve. A no-op with no open gameweek.
 crons.cron("fantasy-availability-sweep", "43 * * * *", internal.fantasyAvailability.refreshAvailability, {});
+// Who's Older? daily email reminder (whosOlderReminders.ts): hourly, so each
+// subscriber is mailed once per edition in their own local morning. :13 sits
+// clear of every fantasy minute above and of the 00:xx daily jobs. A run with
+// nobody due costs one query and sends nothing.
+crons.cron("whos-older-reminders", "13 * * * *", internal.whosOlderReminders.sendDueReminders, {});
 
 export default crons;

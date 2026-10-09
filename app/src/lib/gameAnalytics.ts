@@ -37,6 +37,7 @@ export type GameMode =
   | "verve-grid"
   | "whos-older"
   | "whos-older-endless"
+  | "whos-older-challenge"
   | "arena";
 
 export type GameResult = "win" | "loss" | "draw";

@@ -17,6 +17,11 @@ import {
   type WhosOlderPair,
   type WhosOlderPlayer,
 } from "./lib/whosOlder";
+import {
+  challengeVerdict,
+  computeDailyStreak,
+  maskEmail,
+} from "./lib/whosOlderRetention";
 import players from "./data/whos_older_players.json";
 import type { Doc, Id } from "./_generated/dataModel";
 
@@ -63,7 +68,7 @@ function publicView(session: SessionDoc) {
     status: session.status,
     score: session.score,
     roundIndex: session.current,
-    totalRounds: session.kind === "daily" ? session.rounds.length : null,
+    totalRounds: session.kind === "endless" ? null : session.rounds.length,
     pending: pending ? { a: { name: pending.aName }, b: { name: pending.bName } } : null,
     history: session.rounds.slice(0, session.current).map(revealOf),
   };
@@ -88,6 +93,105 @@ async function findDaily(ctx: Pick<QueryCtx, "db">, userId: Id<"users">, dateKey
     .first();
 }
 
+/**
+ * Every account this player's streak spans: their own, plus — once they have
+ * opened a reminder email link — every browser that claimed the same address.
+ * The jump from Instagram's in-app browser to the phone's own one mints a new
+ * anonymous account; the reminder link is what stitches the two back together.
+ */
+async function streakUserIds(ctx: Pick<QueryCtx, "db">, userId: Id<"users">) {
+  const ids = new Set<Id<"users">>([userId]);
+  const link = await ctx.db
+    .query("whosOlderReminderLinks")
+    .withIndex("by_user", (q) => q.eq("userId", userId))
+    .first();
+  if (link) {
+    const links = await ctx.db
+      .query("whosOlderReminderLinks")
+      .withIndex("by_reminder", (q) => q.eq("reminderId", link.reminderId))
+      .take(20);
+    for (const l of links) ids.add(l.userId);
+  }
+  return [...ids];
+}
+
+/** Dates (UTC keys) on which any of these accounts finished the daily. */
+export async function finishedDailyDates(ctx: Pick<QueryCtx, "db">, userIds: Id<"users">[]) {
+  const dates: string[] = [];
+  for (const uid of userIds) {
+    const rows = await ctx.db
+      .query("whosOlderSessions")
+      .withIndex("by_user_kind_date", (q) => q.eq("userId", uid).eq("kind", "daily"))
+      .collect();
+    for (const r of rows) if (r.status === "completed") dates.push(r.dateKey);
+  }
+  return dates;
+}
+
+async function displayName(ctx: Pick<QueryCtx, "db">, userId: Id<"users">) {
+  const user = await ctx.db.get(userId);
+  return user?.username ?? null;
+}
+
+/** The reminder this player sees on the result card: claimed, or created here and pending. */
+async function reminderStatus(ctx: Pick<QueryCtx, "db">, userId: Id<"users">) {
+  const link = await ctx.db
+    .query("whosOlderReminderLinks")
+    .withIndex("by_user", (q) => q.eq("userId", userId))
+    .first();
+  const reminder = link
+    ? await ctx.db.get(link.reminderId)
+    : await ctx.db
+        .query("whosOlderReminders")
+        .withIndex("by_creator_created", (q) => q.eq("createdByUserId", userId))
+        .order("desc")
+        .first();
+  if (!reminder || reminder.unsubscribedAt) return { state: "none" as const, email: null };
+  return {
+    state: reminder.confirmedAt ? ("on" as const) : ("pending" as const),
+    email: maskEmail(reminder.email),
+  };
+}
+
+const CHALLENGE_LOOKBACK_MS = 7 * 24 * 60 * 60 * 1000;
+
+/** The player's challenges from the last week and who took them. */
+async function myChallenges(ctx: Pick<QueryCtx, "db">, userId: Id<"users">) {
+  const since = Date.now() - CHALLENGE_LOOKBACK_MS;
+  const challenges = await ctx.db
+    .query("whosOlderChallenges")
+    .withIndex("by_from_created", (q) => q.eq("fromUserId", userId).gt("createdAt", since))
+    .order("desc")
+    .take(10);
+  const out = [];
+  for (const c of challenges) {
+    const results = await ctx.db
+      .query("whosOlderChallengeResults")
+      .withIndex("by_challenge", (q) => q.eq("challengeId", c._id))
+      .take(50);
+    if (results.length === 0) continue;
+    out.push({
+      challengeId: c._id,
+      edition: editionNumberForDate(c.dateKey),
+      score: c.score,
+      total: c.total,
+      results: await Promise.all(
+        results
+          .sort((a, b) => b.createdAt - a.createdAt)
+          .map(async (r) => ({
+            name: await displayName(ctx, r.userId),
+            score: r.score,
+            total: r.total,
+            // From the SENDER's side: did this friend beat me?
+            beatYou: challengeVerdict(r.score, c.score) === "won",
+            tie: r.score === c.score,
+          })),
+      ),
+    });
+  }
+  return out;
+}
+
 /** Where a finished daily score sits among everyone who finished that date. */
 async function dailyStanding(ctx: Pick<QueryCtx, "db">, dateKey: string, score: number) {
   const finished = await ctx.db
@@ -109,7 +213,17 @@ export const getToday = query({
     const dateKey = getTodayUTC();
     const base = { dateKey, edition: editionNumberForDate(dateKey) };
     const userId = await getAuthUserId(ctx);
-    if (!userId) return { ...base, daily: null, standing: null, bestEndless: null };
+    if (!userId) {
+      return {
+        ...base,
+        daily: null,
+        standing: null,
+        bestEndless: null,
+        streak: null,
+        reminder: null,
+        challenges: [],
+      };
+    }
 
     const daily = await findDaily(ctx, userId, dateKey);
     const best = await ctx.db
@@ -123,6 +237,12 @@ export const getToday = query({
       standing:
         daily?.status === "completed" ? await dailyStanding(ctx, dateKey, daily.score) : null,
       bestEndless: best ? best.score : null,
+      streak: computeDailyStreak(
+        await finishedDailyDates(ctx, await streakUserIds(ctx, userId)),
+        dateKey,
+      ),
+      reminder: await reminderStatus(ctx, userId),
+      challenges: await myChallenges(ctx, userId),
     };
   },
 });
@@ -228,7 +348,7 @@ export const guess = mutation({
     const score = session.score + (correct ? 1 : 0);
 
     let finished: boolean;
-    if (session.kind === "daily") {
+    if (session.kind !== "endless") {
       finished = current >= rounds.length;
     } else if (!correct) {
       finished = true;
@@ -255,5 +375,154 @@ export const guess = mutation({
       reveal: revealOf(rounds[session.current]),
       session: publicView(updated),
     };
+  },
+});
+
+// ── Challenge a friend ──────────────────────────────────────────────────────
+
+/**
+ * Turn the caller's finished daily into a challenge link. Idempotent per
+ * session: sharing twice hands out the same link, so every friend's result
+ * lands on one row.
+ */
+export const createChallenge = mutation({
+  args: { sessionId: v.id("whosOlderSessions") },
+  handler: async (ctx, { sessionId }) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) throw new Error("Not authenticated");
+    const session = await loadOwned(ctx, sessionId, userId);
+    if (session.kind !== "daily" || session.status !== "completed") {
+      throw new Error("Only a finished daily can be a challenge");
+    }
+    const existing = await ctx.db
+      .query("whosOlderChallenges")
+      .withIndex("by_session", (q) => q.eq("sessionId", sessionId))
+      .first();
+    if (existing) return { challengeId: existing._id };
+    const challengeId = await ctx.db.insert("whosOlderChallenges", {
+      fromUserId: userId,
+      sessionId,
+      dateKey: session.dateKey,
+      score: session.score,
+      total: session.rounds.length,
+      createdAt: Date.now(),
+    });
+    return { challengeId };
+  },
+});
+
+/**
+ * What a challenge link shows before play: who set it, the score to beat, and
+ * — once this player has an answer for that date — the head-to-head. Unknown
+ * or malformed ids read as null (the link simply opens today's daily).
+ */
+export const getChallenge = query({
+  args: { challengeId: v.string() },
+  handler: async (ctx, { challengeId }) => {
+    const id = ctx.db.normalizeId("whosOlderChallenges", challengeId);
+    if (!id) return null;
+    const challenge = await ctx.db.get(id);
+    if (!challenge) return null;
+    const userId = await getAuthUserId(ctx);
+    const own = userId === challenge.fromUserId;
+    const result =
+      userId && !own
+        ? await ctx.db
+            .query("whosOlderChallengeResults")
+            .withIndex("by_challenge_user", (q) => q.eq("challengeId", id).eq("userId", userId))
+            .first()
+        : null;
+    return {
+      challengeId: id,
+      fromName: await displayName(ctx, challenge.fromUserId),
+      edition: editionNumberForDate(challenge.dateKey),
+      dateKey: challenge.dateKey,
+      isToday: challenge.dateKey === getTodayUTC(),
+      score: challenge.score,
+      total: challenge.total,
+      own,
+      myResult: result
+        ? { score: result.score, total: result.total, verdict: challengeVerdict(result.score, challenge.score) }
+        : null,
+    };
+  },
+});
+
+/**
+ * Play a challenge from a PAST date: the sender's frozen ten pairs, answers
+ * wiped. One run per player per date — a second challenge for a date they
+ * already played resumes (or re-shows) that run. A challenge for today is not
+ * started here: the client plays the ordinary daily, which is the same pairs.
+ */
+export const startChallenge = mutation({
+  args: { challengeId: v.id("whosOlderChallenges") },
+  handler: async (ctx, { challengeId }) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) throw new Error("Not authenticated");
+    await assertSessionUser(ctx, userId);
+    const challenge = await ctx.db.get(challengeId);
+    if (!challenge) throw new Error("Challenge not found");
+    if (challenge.dateKey === getTodayUTC()) throw new Error("Today's challenge is today's daily");
+
+    // Already answered that date — as its daily back then, or as a challenge.
+    for (const kind of ["daily", "challenge"] as const) {
+      const prior = await ctx.db
+        .query("whosOlderSessions")
+        .withIndex("by_user_kind_date", (q) =>
+          q.eq("userId", userId).eq("kind", kind).eq("dateKey", challenge.dateKey),
+        )
+        .first();
+      if (prior) return { created: false, session: publicView(prior) };
+    }
+
+    const source = await ctx.db.get(challenge.sessionId);
+    if (!source) throw new Error("Challenge not found");
+    const sessionId = await ctx.db.insert("whosOlderSessions", {
+      userId,
+      kind: "challenge",
+      dateKey: challenge.dateKey,
+      challengeId,
+      rounds: source.rounds.map(({ guess: _g, correct: _c, ...pair }) => pair),
+      current: 0,
+      score: 0,
+      status: "active",
+      startedAt: Date.now(),
+    });
+    return { created: true, session: publicView((await ctx.db.get(sessionId))!) };
+  },
+});
+
+/**
+ * File the caller's finished run of the challenge's date against it. The
+ * score is read from the session, never taken from the client; the sender
+ * cannot answer their own challenge. Re-filing is a no-op.
+ */
+export const recordChallengeResult = mutation({
+  args: { challengeId: v.id("whosOlderChallenges"), sessionId: v.id("whosOlderSessions") },
+  handler: async (ctx, { challengeId, sessionId }) => {
+    const userId = await getAuthUserId(ctx);
+    if (!userId) throw new Error("Not authenticated");
+    const challenge = await ctx.db.get(challengeId);
+    if (!challenge) throw new Error("Challenge not found");
+    if (challenge.fromUserId === userId) return { recorded: false, verdict: null };
+    const session = await loadOwned(ctx, sessionId, userId);
+    if (session.kind === "endless" || session.status !== "completed" || session.dateKey !== challenge.dateKey) {
+      throw new Error("That run does not answer this challenge");
+    }
+    const verdict = challengeVerdict(session.score, challenge.score);
+    const existing = await ctx.db
+      .query("whosOlderChallengeResults")
+      .withIndex("by_challenge_user", (q) => q.eq("challengeId", challengeId).eq("userId", userId))
+      .first();
+    if (existing) return { recorded: false, verdict };
+    await ctx.db.insert("whosOlderChallengeResults", {
+      challengeId,
+      userId,
+      sessionId,
+      score: session.score,
+      total: session.rounds.length,
+      createdAt: Date.now(),
+    });
+    return { recorded: true, verdict };
   },
 });

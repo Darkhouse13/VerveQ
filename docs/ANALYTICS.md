@@ -167,6 +167,25 @@ Draft picks, votes and court filings deliberately carry no events yet: each is
 a high-frequency in-mode action whose honest measure is the server's own
 tables, and instrumenting them is a product decision, not a default.
 
+#### Who's Older? retention loop
+
+The streak, email reminder and challenge on the daily's result card
+(`WhosOlderPlayScreen.tsx`, `components/shell/play/whosOlder/`). A challenge
+run reports `game_started` with `mode: "whos-older-challenge"`. Challenge ids
+(`c=`) and reminder tokens (`rt=`) never reach a pageview — `scrubSearch`
+keeps `ref`/`utm_*` only — so arrivals are told apart by `ref=whos_older_challenge`
+and `utm_medium=reminder|confirm`.
+
+| Event | Fires when | Properties |
+| --- | --- | --- |
+| `whos_older_challenge_shared` | `whosOlder.createChallenge` **resolves** and the share sheet / clipboard is handed the link | `edition`, `score` |
+| `whos_older_challenge_opened` | a `?c=` link's challenge resolves on arrival | `is_today`, `own` |
+| `whos_older_challenge_finished` | `whosOlder.recordChallengeResult` files a **new** result | `verdict` (`won` \| `lost` \| `tie`), `is_today` |
+| `whos_older_reminder_shown` | the reminder sign-up card first renders for a player with no reminder | — |
+| `whos_older_reminder_subscribed` | `whosOlderReminders.subscribe` **resolves** | `state` (`pending` \| `on`) |
+| `whos_older_reminder_claimed` | a `?rt=` email link is claimed | `confirmed`, `ok` |
+| `whos_older_reminder_turned_off` | "Turn off" is pressed on the result card | — |
+
 #### Paid direct-to-builder entry (WKND-ENTRY)
 
 `/weekend?start=budget` — the campaign-link variant of the short link — lands
