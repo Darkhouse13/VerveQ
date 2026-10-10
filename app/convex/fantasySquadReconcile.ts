@@ -36,6 +36,7 @@ import { internalAction, internalQuery } from "./_generated/server";
 import { internal } from "./_generated/api";
 import {
   ApiFootballClient,
+  ApiFootballError,
   credentialsFromEnv,
   fetchPlayerSeason,
   fetchSquad,
@@ -45,6 +46,8 @@ import { normalizePlayerName } from "./lib/fantasyPlayerName";
 
 const CHUNK = 50;
 const MAX_OUTGOING_FRACTION = 0.15;
+/** More failed club reads than this is an outage, not one bad club — abort. */
+const MAX_FAILED_CLUBS = 10;
 
 type Position = "GK" | "DEF" | "MID" | "ATT";
 
@@ -90,6 +93,8 @@ export interface ReconcileReport {
   dryRun: boolean;
   clubsRead: number;
   clubsSkippedEmpty: string[];
+  clubsSkippedFailed: string[];
+  seasonLookupsFailed: string[];
   callsMade: number;
   planned: {
     moves: number;
@@ -120,10 +125,24 @@ export const reconcileSquads = internalAction({
     const feedClubOf = new Map<string, { clubId: string; clubName: string; name: string; position: Position | null }>();
     const readClubs = new Set<string>();
     const skippedEmpty: string[] = [];
+    const skippedFailed: string[] = [];
     let callsMade = 0;
 
     for (const club of clubs) {
-      const squads = await fetchSquad(client, Number(club.clubId));
+      // A single club the provider errors on (its "5xEr" bug, seen for clubs
+      // 45 and 535 on 2026-10-10) must not abort the run. A skipped club is
+      // never in readClubs, so none of its players can be inferred outgoing.
+      let squads: Awaited<ReturnType<typeof fetchSquad>>;
+      try {
+        squads = await fetchSquad(client, Number(club.clubId));
+      } catch (cause) {
+        if (!(cause instanceof ApiFootballError)) throw cause;
+        callsMade += 1;
+        skippedFailed.push(club.clubId);
+        console.error(`[FW-T2] squad read failed for club ${club.clubId}: ${cause.message}`);
+        if (skippedFailed.length > MAX_FAILED_CLUBS) throw cause;
+        continue;
+      }
       callsMade += 1;
       const players = squads[0]?.players ?? [];
       if (players.length === 0) {
@@ -198,12 +217,24 @@ export const reconcileSquads = internalAction({
     // Our side: active at a club we read, listed nowhere we read — verified
     // against his season record before anything is written.
     let keptBySeason = 0;
+    const seasonLookupsFailed: string[] = [];
     let movedBySeason = 0;
     for (const own of ours) {
       if (!own.active || !readClubs.has(own.clubId)) continue;
       if (feedClubOf.has(own.providerPlayerId)) continue;
 
-      const seasonRows = await fetchPlayerSeason(client, own.providerPlayerId, CURRENT_API_SEASON);
+      let seasonRows: Awaited<ReturnType<typeof fetchPlayerSeason>>;
+      try {
+        seasonRows = await fetchPlayerSeason(client, own.providerPlayerId, CURRENT_API_SEASON);
+      } catch (cause) {
+        // Same provider bug as the squad reads: no evidence, so he stays put.
+        if (!(cause instanceof ApiFootballError)) throw cause;
+        callsMade += 1;
+        seasonLookupsFailed.push(own.providerPlayerId);
+        console.error(`[FW-T2] season lookup failed for player ${own.providerPlayerId}: ${cause.message}`);
+        if (seasonLookupsFailed.length > MAX_FAILED_CLUBS) throw cause;
+        continue;
+      }
       callsMade += 1;
       const coveredTeams = new Set<string>();
       for (const row of seasonRows) {
@@ -271,7 +302,7 @@ export const reconcileSquads = internalAction({
         : null;
 
     console.log(
-      `[FW-T2] squad reconcile ${day}: ${readClubs.size} clubs read (${skippedEmpty.length} empty), ` +
+      `[FW-T2] squad reconcile ${day}: ${readClubs.size} clubs read (${skippedEmpty.length} empty, ${skippedFailed.length} failed), ` +
         `${planned.moves} moves, ${planned.outgoing} outgoing, ${planned.incomingNew} new, ${positionless} positionless skipped` +
         (refused === null ? "" : ` — ${refused}`),
     );
@@ -325,6 +356,8 @@ export const reconcileSquads = internalAction({
       dryRun: dryRun === true,
       clubsRead: readClubs.size,
       clubsSkippedEmpty: skippedEmpty,
+      clubsSkippedFailed: skippedFailed,
+      seasonLookupsFailed,
       callsMade,
       planned,
       applied,
