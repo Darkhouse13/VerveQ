@@ -60,6 +60,11 @@ export const ROUTE_META: Record<string, RouteMeta> = {
     description:
       "Two footballers, tap the older one. Ten rounds a day, and the gap shrinks from years to days. Same pairs for everyone, then play endless.",
   },
+  "/v2/missing-letters": {
+    title: "Missing Letters — Daily Guess the Footballer Game | VerveQ",
+    description:
+      "Name the footballer from the missing letters. Ten names a day, easy to impossible, with a nation clue. Same names for everyone, then play endless.",
+  },
   "/v2/blitz": {
     title: "Blitz — 60-Second Football Quiz | VerveQ",
     description:

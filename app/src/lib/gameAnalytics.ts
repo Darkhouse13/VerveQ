@@ -38,6 +38,9 @@ export type GameMode =
   | "whos-older"
   | "whos-older-endless"
   | "whos-older-challenge"
+  | "missing-letters"
+  | "missing-letters-endless"
+  | "missing-letters-challenge"
   | "arena";
 
 export type GameResult = "win" | "loss" | "draw";

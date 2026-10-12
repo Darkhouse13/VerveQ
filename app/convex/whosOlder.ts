@@ -17,11 +17,13 @@ import {
   type WhosOlderPair,
   type WhosOlderPlayer,
 } from "./lib/whosOlder";
+import { challengeVerdict, computeDailyStreak } from "./lib/whosOlderRetention";
 import {
-  challengeVerdict,
-  computeDailyStreak,
-  maskEmail,
-} from "./lib/whosOlderRetention";
+  displayName,
+  finishedDailyDates,
+  reminderStatus,
+  streakUserIds,
+} from "./lib/dailyGames";
 import players from "./data/whos_older_players.json";
 import type { Doc, Id } from "./_generated/dataModel";
 
@@ -91,66 +93,6 @@ async function findDaily(ctx: Pick<QueryCtx, "db">, userId: Id<"users">, dateKey
       q.eq("userId", userId).eq("kind", "daily").eq("dateKey", dateKey),
     )
     .first();
-}
-
-/**
- * Every account this player's streak spans: their own, plus — once they have
- * opened a reminder email link — every browser that claimed the same address.
- * The jump from Instagram's in-app browser to the phone's own one mints a new
- * anonymous account; the reminder link is what stitches the two back together.
- */
-async function streakUserIds(ctx: Pick<QueryCtx, "db">, userId: Id<"users">) {
-  const ids = new Set<Id<"users">>([userId]);
-  const link = await ctx.db
-    .query("whosOlderReminderLinks")
-    .withIndex("by_user", (q) => q.eq("userId", userId))
-    .first();
-  if (link) {
-    const links = await ctx.db
-      .query("whosOlderReminderLinks")
-      .withIndex("by_reminder", (q) => q.eq("reminderId", link.reminderId))
-      .take(20);
-    for (const l of links) ids.add(l.userId);
-  }
-  return [...ids];
-}
-
-/** Dates (UTC keys) on which any of these accounts finished the daily. */
-export async function finishedDailyDates(ctx: Pick<QueryCtx, "db">, userIds: Id<"users">[]) {
-  const dates: string[] = [];
-  for (const uid of userIds) {
-    const rows = await ctx.db
-      .query("whosOlderSessions")
-      .withIndex("by_user_kind_date", (q) => q.eq("userId", uid).eq("kind", "daily"))
-      .collect();
-    for (const r of rows) if (r.status === "completed") dates.push(r.dateKey);
-  }
-  return dates;
-}
-
-async function displayName(ctx: Pick<QueryCtx, "db">, userId: Id<"users">) {
-  const user = await ctx.db.get(userId);
-  return user?.username ?? null;
-}
-
-/** The reminder this player sees on the result card: claimed, or created here and pending. */
-async function reminderStatus(ctx: Pick<QueryCtx, "db">, userId: Id<"users">) {
-  const link = await ctx.db
-    .query("whosOlderReminderLinks")
-    .withIndex("by_user", (q) => q.eq("userId", userId))
-    .first();
-  const reminder = link
-    ? await ctx.db.get(link.reminderId)
-    : await ctx.db
-        .query("whosOlderReminders")
-        .withIndex("by_creator_created", (q) => q.eq("createdByUserId", userId))
-        .order("desc")
-        .first();
-  if (!reminder || reminder.unsubscribedAt) return { state: "none" as const, email: null };
-  return {
-    state: reminder.confirmedAt ? ("on" as const) : ("pending" as const),
-    email: maskEmail(reminder.email),
-  };
 }
 
 const CHALLENGE_LOOKBACK_MS = 7 * 24 * 60 * 60 * 1000;
@@ -238,10 +180,10 @@ export const getToday = query({
         daily?.status === "completed" ? await dailyStanding(ctx, dateKey, daily.score) : null,
       bestEndless: best ? best.score : null,
       streak: computeDailyStreak(
-        await finishedDailyDates(ctx, await streakUserIds(ctx, userId)),
+        await finishedDailyDates(ctx, "older", await streakUserIds(ctx, "older", userId)),
         dateKey,
       ),
-      reminder: await reminderStatus(ctx, userId),
+      reminder: await reminderStatus(ctx, "older", userId),
       challenges: await myChallenges(ctx, userId),
     };
   },

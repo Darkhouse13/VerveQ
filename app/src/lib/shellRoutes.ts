@@ -73,6 +73,8 @@ export const SHELL_ROUTES = {
   dailyPlay: "/v2/daily",
   /** WHO'S OLDER? — today's shared ten pairs, then endless. */
   whosOlderPlay: "/v2/whos-older",
+  /** MISSING LETTERS — today's shared ten boards, then endless. */
+  missingLettersPlay: "/v2/missing-letters",
   /** `/v2/arena/:code` */
   arenaPlay: (code: string) => `/v2/arena/${code}`,
   /** THE WEEKEND hub (FW-GO) — the mode's public front door: budget squad,

@@ -128,8 +128,12 @@
    * lime as the working accent (the OLDER stamp, the primary CTA). Borders go
    * warm-light for the chrome (Quit, secondary buttons) so it reads on the
    * dark ground; the player cards draw their own ink borders.
+   *
+   * MISSING LETTERS (`.theme-letters`) is the same reel family on the same
+   * ground — cream tiles, lime fills — so it shares the tokens.
    */
-  .theme-older {
+  .theme-older,
+  .theme-letters {
     --background: 0 0% 7%;
     --foreground: 30 100% 97%;
 
@@ -536,4 +540,14 @@
 .animate-older-flash { animation: older-flash 0.45s ease-out forwards; }
 @media (prefers-reduced-motion: reduce) {
   .animate-older-in-top, .animate-older-in-bottom, .animate-older-flash { animation: none; }
+}
+
+/* MISSING LETTERS — the blank the next key fills breathes lime. */
+@keyframes letters-cursor {
+  0%, 100% { box-shadow: 0 0 0 0 hsl(75 100% 55% / 0.55); }
+  50% { box-shadow: 0 0 0 4px hsl(75 100% 55% / 0); }
+}
+.letters-cursor { animation: letters-cursor 1.1s ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce) {
+  .letters-cursor { animation: none; }
 }

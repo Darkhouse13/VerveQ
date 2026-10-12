@@ -29,7 +29,11 @@ import { Navigate, useLocation, useSearchParams } from "react-router-dom";
 import { Loader2 } from "lucide-react";
 import { V2_SHELL_ENABLED } from "@/lib/flags";
 import { SHELL_ROUTES } from "@/lib/shellRoutes";
-import { playShortLinkTarget, whosOlderShortLinkTarget } from "@/lib/playShortLink";
+import {
+  missingLettersShortLinkTarget,
+  playShortLinkTarget,
+  whosOlderShortLinkTarget,
+} from "@/lib/playShortLink";
 import { weekendShortLinkTarget } from "@/lib/weekendDeepLink";
 import { useAuth } from "@/contexts/AuthContext";
 import LoginScreen from "@/pages/LoginScreen";
@@ -92,6 +96,13 @@ export function PlayShortLinkRoute() {
 export function WhosOlderShortLinkRoute() {
   const { search } = useLocation();
   return <Navigate to={whosOlderShortLinkTarget(search)} replace />;
+}
+
+/** `/letters` and `/missing-letters` — the Missing Letters reel-caption short
+ * links. Same attribution rule: a bare hit gets ref=letters. */
+export function MissingLettersShortLinkRoute() {
+  const { search } = useLocation();
+  return <Navigate to={missingLettersShortLinkTarget(search)} replace />;
 }
 
 /** `/weekend` — the off-platform short link for THE WEEKEND (reel captions,

@@ -186,6 +186,26 @@ and `utm_medium=reminder|confirm`.
 | `whos_older_reminder_claimed` | a `?rt=` email link is claimed | `confirmed`, `ok` |
 | `whos_older_reminder_turned_off` | "Turn off" is pressed on the result card | — |
 
+#### Missing Letters (daily + end game)
+
+The twin of Who's Older (`MissingLettersPlayScreen.tsx`, launched 2026-10-12).
+Runs report `game_started` / `game_completed` / `game_abandoned` with `mode`
+`missing-letters` (the daily), `missing-letters-endless` and
+`missing-letters-challenge`. Arrivals: the `/letters` short link mints
+`ref=letters` (preserved when `ref`/`utm_*` is already set), challenge links
+carry `ref=missing_letters_challenge`, reminder emails `utm_campaign=missing_letters_daily|missing_letters_reminder`.
+The end-game events mirror Who's Older's, same firing rules and properties:
+
+| Event | Mirrors |
+| --- | --- |
+| `missing_letters_challenge_shared` | `whos_older_challenge_shared` |
+| `missing_letters_challenge_opened` | `whos_older_challenge_opened` |
+| `missing_letters_challenge_finished` | `whos_older_challenge_finished` |
+| `missing_letters_reminder_shown` | `whos_older_reminder_shown` |
+| `missing_letters_reminder_subscribed` | `whos_older_reminder_subscribed` |
+| `missing_letters_reminder_claimed` | `whos_older_reminder_claimed` |
+| `missing_letters_reminder_turned_off` | `whos_older_reminder_turned_off` |
+
 #### Paid direct-to-builder entry (WKND-ENTRY)
 
 `/weekend?start=budget` — the campaign-link variant of the short link — lands

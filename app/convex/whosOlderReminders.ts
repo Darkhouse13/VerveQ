@@ -14,6 +14,11 @@
  * played today or have been dormant for two weeks. One-click unsubscribe is
  * the http route /whos-older/unsubscribe (also the List-Unsubscribe header).
  *
+ * Two games share this module (lib/dailyGames.ts): Who's Older? (`game`
+ * absent on the row) and Missing Letters (`game: "letters"`). A reminder is
+ * per address PER GAME — its copy, its link (/older or /letters) and the
+ * streak it reports are that game's.
+ *
  * Env: RESEND_API_KEY + EMAIL_FROM (shared with the auth/ops emails);
  * SHARE_PUBLIC_BASE_URL for the links (defaults to https://verveq.com).
  */
@@ -29,7 +34,15 @@ import {
 import { internal } from "./_generated/api";
 import type { Id } from "./_generated/dataModel";
 import { assertSessionUser } from "./lib/authz";
-import { editionNumberForDate } from "./lib/whosOlder";
+import {
+  challengeResultsSince,
+  currentReminder,
+  editionFor,
+  finishedDailyDates,
+  gameField,
+  gameOf,
+  type DailyGame,
+} from "./lib/dailyGames";
 import {
   REMINDER_CONFIRM_RESEND_MS,
   REMINDER_SIGNUPS_PER_DAY,
@@ -39,9 +52,37 @@ import {
   reminderDue,
   safeTimeZone,
 } from "./lib/whosOlderRetention";
-import { finishedDailyDates } from "./whosOlder";
 
 const DAY_MS = 24 * 60 * 60 * 1000;
+
+const gameArg = v.optional(v.union(v.literal("older"), v.literal("letters")));
+
+/** Per-game email copy and landing path. */
+const GAME_MAIL: Record<
+  DailyGame,
+  {
+    path: string;
+    title: string;
+    campaign: string;
+    pitch: string;
+    footer: string;
+  }
+> = {
+  older: {
+    path: "/older",
+    title: "Who's Older?",
+    campaign: "whos_older",
+    pitch: "Ten new pairs. The gap shrinks every round, from years to days.",
+    footer: "You asked for a daily Who's Older? reminder at verveq.com. One email a day, only on days you haven't played yet.",
+  },
+  letters: {
+    path: "/letters",
+    title: "Missing Letters",
+    campaign: "missing_letters",
+    pitch: "Ten new names with letters missing. Easy to impossible.",
+    footer: "You asked for a daily Missing Letters reminder at verveq.com. One email a day, only on days you haven't played yet.",
+  },
+};
 
 function publicBase(): string {
   return (process.env.SHARE_PUBLIC_BASE_URL || "https://verveq.com").replace(/\/+$/, "");
@@ -56,9 +97,9 @@ export function unsubscribeUrl(token: string): string {
   return `${siteBase()}/whos-older/unsubscribe?t=${encodeURIComponent(token)}`;
 }
 
-function playUrl(token: string, extra: Record<string, string>): string {
+function playUrl(game: DailyGame, token: string, extra: Record<string, string>): string {
   const params = new URLSearchParams({ rt: token, ...extra });
-  return `${publicBase()}/older?${params.toString()}`;
+  return `${publicBase()}${GAME_MAIL[game].path}?${params.toString()}`;
 }
 
 function randomToken(): string {
@@ -67,17 +108,22 @@ function randomToken(): string {
 
 async function linkUser(
   ctx: Pick<MutationCtx, "db">,
-  reminderId: Id<"whosOlderReminders">,
+  reminder: { _id: Id<"whosOlderReminders">; game?: "letters" },
   userId: Id<"users">,
 ) {
   const existing = await ctx.db
     .query("whosOlderReminderLinks")
-    .withIndex("by_user", (q) => q.eq("userId", userId))
+    .withIndex("by_user_game", (q) => q.eq("userId", userId).eq("game", reminder.game))
     .first();
-  if (existing?.reminderId === reminderId) return;
-  // A browser belongs to one address: the latest one it claimed wins.
+  if (existing?.reminderId === reminder._id) return;
+  // A browser belongs to one address per game: the latest one it claimed wins.
   if (existing) await ctx.db.delete(existing._id);
-  await ctx.db.insert("whosOlderReminderLinks", { reminderId, userId, createdAt: Date.now() });
+  await ctx.db.insert("whosOlderReminderLinks", {
+    ...(reminder.game ? { game: reminder.game } : {}),
+    reminderId: reminder._id,
+    userId,
+    createdAt: Date.now(),
+  });
 }
 
 // ── Player-facing ───────────────────────────────────────────────────────────
@@ -89,8 +135,9 @@ async function linkUser(
  * client maps to copy: invalid_email, rate_limited.
  */
 export const subscribe = mutation({
-  args: { email: v.string(), timeZone: v.optional(v.string()) },
-  handler: async (ctx, { email: raw, timeZone }) => {
+  args: { email: v.string(), timeZone: v.optional(v.string()), game: gameArg },
+  handler: async (ctx, { email: raw, timeZone, game: gameIn }) => {
+    const game = gameIn ?? "older";
     const userId = await getAuthUserId(ctx);
     if (!userId) throw new Error("Not authenticated");
     await assertSessionUser(ctx, userId);
@@ -99,14 +146,14 @@ export const subscribe = mutation({
 
     const recent = await ctx.db
       .query("whosOlderReminders")
-      .withIndex("by_creator_created", (q) =>
-        q.eq("createdByUserId", userId).gt("createdAt", Date.now() - DAY_MS),
+      .withIndex("by_creator_game_created", (q) =>
+        q.eq("createdByUserId", userId).eq("game", gameField(game)).gt("createdAt", Date.now() - DAY_MS),
       )
       .take(REMINDER_SIGNUPS_PER_DAY + 1);
     const tz = safeTimeZone(timeZone);
     const existing = await ctx.db
       .query("whosOlderReminders")
-      .withIndex("by_email", (q) => q.eq("email", email))
+      .withIndex("by_email_game", (q) => q.eq("email", email).eq("game", gameField(game)))
       .first();
 
     if (existing) {
@@ -131,6 +178,7 @@ export const subscribe = mutation({
 
     if (recent.length >= REMINDER_SIGNUPS_PER_DAY) throw new ConvexError({ code: "rate_limited" });
     const reminderId = await ctx.db.insert("whosOlderReminders", {
+      ...(gameField(game) ? { game: gameField(game) } : {}),
       email,
       token: randomToken(),
       timeZone: tz,
@@ -153,40 +201,30 @@ export const subscribe = mutation({
 export const claimToken = mutation({
   args: { token: v.string(), confirm: v.optional(v.boolean()) },
   handler: async (ctx, { token, confirm }) => {
-    if (token.length < 32 || token.length > 128) return { ok: false, confirmed: false };
+    if (token.length < 32 || token.length > 128) return { ok: false, confirmed: false, game: null };
     const reminder = await ctx.db
       .query("whosOlderReminders")
       .withIndex("by_token", (q) => q.eq("token", token))
       .first();
-    if (!reminder || reminder.unsubscribedAt) return { ok: false, confirmed: false };
+    if (!reminder || reminder.unsubscribedAt) return { ok: false, confirmed: false, game: null };
     const newlyConfirmed = Boolean(confirm) && !reminder.confirmedAt;
     if (newlyConfirmed) {
       await ctx.db.patch(reminder._id, { confirmedAt: Date.now() });
-      await linkUser(ctx, reminder._id, reminder.createdByUserId);
+      await linkUser(ctx, reminder, reminder.createdByUserId);
     }
     const userId = await getAuthUserId(ctx);
-    if (userId && (reminder.confirmedAt || newlyConfirmed)) await linkUser(ctx, reminder._id, userId);
-    return { ok: true, confirmed: newlyConfirmed };
+    if (userId && (reminder.confirmedAt || newlyConfirmed)) await linkUser(ctx, reminder, userId);
+    return { ok: true, confirmed: newlyConfirmed, game: gameOf(reminder.game) };
   },
 });
 
 /** "Turn off" on the result card: stops the caller's reminder. */
 export const unsubscribeMine = mutation({
-  args: {},
-  handler: async (ctx) => {
+  args: { game: gameArg },
+  handler: async (ctx, { game }) => {
     const userId = await getAuthUserId(ctx);
     if (!userId) throw new Error("Not authenticated");
-    const link = await ctx.db
-      .query("whosOlderReminderLinks")
-      .withIndex("by_user", (q) => q.eq("userId", userId))
-      .first();
-    const reminder = link
-      ? await ctx.db.get(link.reminderId)
-      : await ctx.db
-          .query("whosOlderReminders")
-          .withIndex("by_creator_created", (q) => q.eq("createdByUserId", userId))
-          .order("desc")
-          .first();
+    const reminder = await currentReminder(ctx, game ?? "older", userId);
     if (reminder && !reminder.unsubscribedAt) {
       await ctx.db.patch(reminder._id, { unsubscribedAt: Date.now() });
     }
@@ -203,9 +241,9 @@ export const unsubscribeByToken = internalMutation({
       .query("whosOlderReminders")
       .withIndex("by_token", (q) => q.eq("token", token))
       .first();
-    if (!reminder) return { ok: false };
+    if (!reminder) return { ok: false, game: null };
     if (!reminder.unsubscribedAt) await ctx.db.patch(reminder._id, { unsubscribedAt: Date.now() });
-    return { ok: true };
+    return { ok: true, game: gameOf(reminder.game) };
   },
 });
 
@@ -228,12 +266,13 @@ export const dueReminders = internalQuery({
     const due = [];
     for (const r of confirmed) {
       if (r.lastSentDateKey === todayKey) continue;
+      const game = gameOf(r.game);
       const links = await ctx.db
         .query("whosOlderReminderLinks")
         .withIndex("by_reminder", (q) => q.eq("reminderId", r._id))
         .take(20);
       const userIds = [...new Set([r.createdByUserId, ...links.map((l) => l.userId)])];
-      const dates = await finishedDailyDates(ctx, userIds);
+      const dates = await finishedDailyDates(ctx, game, userIds);
       const streak = computeDailyStreak(dates, todayKey);
       const last = dates.length ? dates.reduce((a, b) => (a > b ? a : b)) : null;
       if (
@@ -252,22 +291,14 @@ export const dueReminders = internalQuery({
       // Friends who took this player's challenges since the last email — or,
       // for the first one, since sign-up (a friend often answers before the
       // player gets round to confirming).
-      let friends = 0;
-      const since = r.lastSentAt ?? r.createdAt;
-      for (const uid of userIds) {
-        const challenges = await ctx.db
-          .query("whosOlderChallenges")
-          .withIndex("by_from_created", (q) => q.eq("fromUserId", uid).gt("createdAt", nowMs - 8 * DAY_MS))
-          .take(10);
-        for (const c of challenges) {
-          const results = await ctx.db
-            .query("whosOlderChallengeResults")
-            .withIndex("by_challenge", (q) => q.eq("challengeId", c._id))
-            .take(50);
-          friends += results.filter((x) => x.createdAt > since).length;
-        }
-      }
-      due.push({ reminderId: r._id, email: r.email, token: r.token, streak: streak.current, friends });
+      const friends = await challengeResultsSince(
+        ctx,
+        game,
+        userIds,
+        nowMs - 8 * DAY_MS,
+        r.lastSentAt ?? r.createdAt,
+      );
+      due.push({ reminderId: r._id, game, email: r.email, token: r.token, streak: streak.current, friends });
     }
     return { todayKey, due };
   },
@@ -330,26 +361,26 @@ async function sendMail(to: string, subject: string, body: { text: string; html:
   return true;
 }
 
-const FOOTER = "You asked for a daily Who's Older? reminder at verveq.com. One email a day, only on days you haven't played yet.";
-
 export const sendConfirmation = internalAction({
   args: { reminderId: v.id("whosOlderReminders") },
   handler: async (ctx, { reminderId }) => {
     const r = await ctx.runQuery(internal.whosOlderReminders.getForSend, { reminderId });
     if (!r || r.unsubscribedAt || r.confirmedAt) return;
+    const game = gameOf(r.game);
+    const mail = GAME_MAIL[game];
     const unsub = unsubscribeUrl(r.token);
     const body = renderEmail({
       heading: "One tap and you're in.",
       lines: [
-        "Confirm and we'll email you when each new Who's Older? goes live, so your streak never dies by accident.",
+        `Confirm and we'll email you when each new ${mail.title} goes live, so your streak never dies by accident.`,
         "Didn't ask for this? Ignore this email and you'll never hear from us.",
       ],
       button: "Yes, remind me",
-      href: playUrl(r.token, { confirm: "1", utm_source: "email", utm_medium: "confirm", utm_campaign: "whos_older_reminder" }),
-      footer: FOOTER,
+      href: playUrl(game, r.token, { confirm: "1", utm_source: "email", utm_medium: "confirm", utm_campaign: `${mail.campaign}_reminder` }),
+      footer: mail.footer,
       unsubscribe: unsub,
     });
-    await sendMail(r.email, "Confirm your daily Who's Older? reminder", body, unsub);
+    await sendMail(r.email, `Confirm your daily ${mail.title} reminder`, body, unsub);
   },
 });
 
@@ -360,28 +391,29 @@ export const sendDueReminders = internalAction({
     const nowMs = Date.now();
     const { todayKey, due } = await ctx.runQuery(internal.whosOlderReminders.dueReminders, { nowMs });
     if (due.length === 0) return { sent: 0 };
-    const edition = editionNumberForDate(todayKey);
     const left = hoursMinutesUntilMidnightUTC(nowMs);
     let sent = 0;
     for (const d of due) {
+      const mail = GAME_MAIL[d.game];
+      const edition = editionFor(d.game, todayKey);
       const unsub = unsubscribeUrl(d.token);
       const lines = [
         d.streak > 0
           ? `🔥 You're on a ${d.streak}-day streak. Play in the next ${left} to make it ${d.streak + 1}.`
-          : "Ten new pairs. The gap shrinks every round, from years to days.",
+          : mail.pitch,
       ];
       if (d.friends > 0) {
         lines.push(`${d.friends} ${d.friends === 1 ? "friend has" : "friends have"} taken your challenge. See how you compare after today's game.`);
       }
       const body = renderEmail({
-        heading: `Who's Older? #${edition} is live`,
+        heading: `${mail.title} #${edition} is live`,
         lines,
         button: `Play #${edition}`,
-        href: playUrl(d.token, { utm_source: "email", utm_medium: "reminder", utm_campaign: "whos_older_daily" }),
-        footer: FOOTER,
+        href: playUrl(d.game, d.token, { utm_source: "email", utm_medium: "reminder", utm_campaign: `${mail.campaign}_daily` }),
+        footer: mail.footer,
         unsubscribe: unsub,
       });
-      const subject = d.streak > 0 ? `🔥 Day ${d.streak + 1}? Who's Older? #${edition} is live` : `Who's Older? #${edition} is live`;
+      const subject = d.streak > 0 ? `🔥 Day ${d.streak + 1}? ${mail.title} #${edition} is live` : `${mail.title} #${edition} is live`;
       if (await sendMail(d.email, subject, body, unsub)) {
         await ctx.runMutation(internal.whosOlderReminders.markSent, { reminderId: d.reminderId, dateKey: todayKey });
         sent++;

@@ -8,6 +8,7 @@ import {
   Flame,
   Hammer,
   Hourglass,
+  Type,
   Lock,
   Route,
   Star,
@@ -31,7 +32,7 @@ import type { Id } from "../../../convex/_generated/dataModel";
 
 /**
  * v2 unified Home — rebuilt around the DAILY SLATE (2026-07 strategy cut):
- * TODAY's games (Daily Quiz, Daily Survival, Who's Older) lead beside COMPETE, then the
+ * TODAY's games (Daily Quiz, Daily Survival, Who's Older, Missing Letters) lead beside COMPETE, then the
  * hooks strip (Duels/Arena/Quiz), the dark ladder card and the Forge. The
  * Learn pillar is parked — its routes stay live at /v2/learn, but the home no
  * longer advertises it (general knowledge is off-thesis for a football app).
@@ -65,10 +66,12 @@ const LIFT =
  * TODAY cards: the mobile column stacks icon over title; on desktop each card
  * is a compact row (icon beside title). Three dailies fit the never-scroll md
  * grid only this way — stacked, the third card pushed the grid to 935px and
- * cut the bottom row off a 900px viewport (budget: 842px).
+ * cut the bottom row off a 900px viewport (budget: 842px). The fourth daily
+ * (Missing Letters, 2026-10) took the rows' vertical padding and the column
+ * gap down a notch on md: at the three-card spacing it measured 911px.
  */
 const TODAY_CARD =
-  "p-4 md:px-4 md:py-3 flex flex-col md:flex-row md:items-center gap-1.5 md:gap-3 min-h-0 flex-1";
+  "p-4 md:px-4 md:py-1.5 flex flex-col md:flex-row md:items-center gap-1.5 md:gap-3 min-h-0 flex-1";
 
 const EYEBROW =
   "font-mono text-[11px] font-bold uppercase tracking-[0.16em] text-muted-foreground";
@@ -106,6 +109,8 @@ export default function ShellHomeScreen() {
   );
   // Who's Older? — the reel format's daily twin.
   const whosOlderToday = useQuery(api.whosOlder.getToday, hasUsername ? {} : "skip");
+  // Missing Letters — the twin of the reel the feed runs three times a day.
+  const missingLettersToday = useQuery(api.missingLetters.getToday, hasUsername ? {} : "skip");
   const season = useQuery(
     api.seasonManager.getCurrentSeason,
     hasUsername ? {} : "skip",
@@ -134,6 +139,7 @@ export default function ShellHomeScreen() {
   // Window shared with the backend's themed question pool (lib/daily.ts), so
   // the card renames itself exactly while the WC edition is being served.
   const whosOlderPlayed = whosOlderToday?.daily?.status === "completed";
+  const missingLettersPlayed = missingLettersToday?.daily?.status === "completed";
   const dailyIsWorldCup = isWorldCupEditionActive(dailySport, getTodayUTC());
   const seasonNumber =
     typeof season?.seasonNumber === "number" ? season.seasonNumber : null;
@@ -212,7 +218,7 @@ export default function ShellHomeScreen() {
           {/* TODAY pillar — the daily slate leads the home. Three cards, one
               habit: the shared quiz, the shared survival run and Who's Older,
               all with honest played/reset state read from the server. */}
-          <div className="flex flex-col gap-3 min-h-0">
+          <div className="flex flex-col gap-3 md:gap-2 min-h-0">
             <p className={EYEBROW}>{t("home.today.eyebrow")}</p>
             <NeoCard
               color="yellow"
@@ -221,7 +227,7 @@ export default function ShellHomeScreen() {
               className={`${TODAY_CARD} ${LIFT}`}
             >
               <Star size={24} strokeWidth={2.5} className="shrink-0" />
-              <div className="mt-auto md:mt-0 flex flex-col gap-1.5 min-w-0">
+              <div className="mt-auto md:mt-0 flex flex-col gap-1.5 md:gap-1 min-w-0">
                 <p className="font-heading font-black uppercase text-lg md:text-xl leading-none">
                   {dailyIsWorldCup
                     ? t("modes.daily.worldCupName")
@@ -241,7 +247,7 @@ export default function ShellHomeScreen() {
               className={`${TODAY_CARD} ${LIFT}`}
             >
               <CalendarHeart size={24} strokeWidth={2.5} className="shrink-0" />
-              <div className="mt-auto md:mt-0 flex flex-col gap-1.5 min-w-0">
+              <div className="mt-auto md:mt-0 flex flex-col gap-1.5 md:gap-1 min-w-0">
                 <p className="font-heading font-black uppercase text-lg md:text-xl leading-none">
                   {t("modes.dailySurvival.name")}
                 </p>
@@ -264,7 +270,7 @@ export default function ShellHomeScreen() {
               data-testid="home-whos-older-card"
             >
               <Hourglass size={24} strokeWidth={2.5} className="shrink-0" />
-              <div className="mt-auto md:mt-0 flex flex-col gap-1.5 min-w-0">
+              <div className="mt-auto md:mt-0 flex flex-col gap-1.5 md:gap-1 min-w-0">
                 <p className="font-heading font-black uppercase text-lg md:text-xl leading-none">
                   {t("modes.whosOlder.name")}
                 </p>
@@ -272,6 +278,27 @@ export default function ShellHomeScreen() {
                   {whosOlderPlayed
                     ? t("modes.whosOlder.playedDesc")
                     : t("modes.whosOlder.desc")}
+                </p>
+              </div>
+            </NeoCard>
+            {/* MISSING LETTERS — the reel format that took over three of the
+                feed's four daily slots (2026-10), as a daily + endless. */}
+            <NeoCard
+              color="blue"
+              shadow="lg"
+              onClick={() => navigate(SHELL_ROUTES.missingLettersPlay)}
+              className={`${TODAY_CARD} ${LIFT}`}
+              data-testid="home-missing-letters-card"
+            >
+              <Type size={24} strokeWidth={2.5} className="shrink-0" />
+              <div className="mt-auto md:mt-0 flex flex-col gap-1.5 md:gap-1 min-w-0">
+                <p className="font-heading font-black uppercase text-lg md:text-xl leading-none">
+                  {t("modes.missingLetters.name")}
+                </p>
+                <p className="font-mono text-[10.5px] uppercase opacity-80">
+                  {missingLettersPlayed
+                    ? t("modes.missingLetters.playedDesc")
+                    : t("modes.missingLetters.desc")}
                 </p>
               </div>
             </NeoCard>

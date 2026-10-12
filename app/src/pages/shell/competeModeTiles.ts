@@ -1,6 +1,6 @@
 import {
   Brain, Heart, Zap, TrendingUp, Grid3X3, Route, Timer, Swords, Users,
-  Lightbulb, Clock, CalendarHeart, Hourglass,
+  Lightbulb, Clock, CalendarHeart, Hourglass, Type,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { SHELL_ROUTES } from "@/lib/shellRoutes";
@@ -70,6 +70,9 @@ export const COMPETE_MODE_TILES: ModeTile[] = [
   // Who's Older? — the reel format as a daily (ten shared pairs), then
   // endless. Football-only; the builder ignores the carried sport.
   { key: "whosOlder", icon: Hourglass, color: "pink", to: () => SHELL_ROUTES.whosOlderPlay },
+  // Missing Letters — the reel the feed runs three times a day, as a daily
+  // (ten shared boards) then endless. Football-only.
+  { key: "missingLetters", icon: Type, color: "blue", to: () => SHELL_ROUTES.missingLettersPlay },
   // Live Match is parked: nothing in the product can create a live match any
   // more (the challenge subsystem and createFromChallenge were removed), so
   // the tile would advertise a dead end. /v2/live-match stays routable as a

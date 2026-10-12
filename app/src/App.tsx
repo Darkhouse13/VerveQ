@@ -16,6 +16,7 @@ import {
   HomeRoute,
   PlayShortLinkRoute,
   WhosOlderShortLinkRoute,
+  MissingLettersShortLinkRoute,
   WeekendShortLinkRoute,
 } from "./components/EntryRoutes";
 // Deep-link aliases: with the v2 shell live, v1 mode URLs (and spelling
@@ -94,6 +95,7 @@ const CareerPathPlayScreen = lazyWithRetry(() => import("./pages/shell/play/Care
 const VerveGridPlayScreen = lazyWithRetry(() => import("./pages/shell/play/VerveGridPlayScreen"));
 const DailyQuizPlayScreen = lazyWithRetry(() => import("./pages/shell/play/DailyQuizPlayScreen"));
 const WhosOlderPlayScreen = lazyWithRetry(() => import("./pages/shell/play/WhosOlderPlayScreen"));
+const MissingLettersPlayScreen = lazyWithRetry(() => import("./pages/shell/play/MissingLettersPlayScreen"));
 const ArenaPlayScreen = lazyWithRetry(() => import("./pages/shell/play/ArenaPlayScreen"));
 // THE WEEKEND (FW-GO: launched, publicly linked). Hub first, then the surfaces.
 const WeekendHubScreen = lazyWithRetry(() => import("./pages/shell/weekend/WeekendHubScreen"));
@@ -599,6 +601,12 @@ const AppRoutes = () => (
             <Route path="/v2/whos-older" element={<ShellGate><SessionRoute><WhosOlderPlayScreen /></SessionRoute></ShellGate>} />
             <Route path="/older" element={<WhosOlderShortLinkRoute />} />
             <Route path="/whos-older" element={<WhosOlderShortLinkRoute />} />
+            {/* MISSING LETTERS — the daily twin of the reel the feed runs three
+                times a day, then endless. Same tier and short-link rules as
+                Who's Older: /letters and /missing-letters (ref preserved). */}
+            <Route path="/v2/missing-letters" element={<ShellGate><SessionRoute><MissingLettersPlayScreen /></SessionRoute></ShellGate>} />
+            <Route path="/letters" element={<MissingLettersShortLinkRoute />} />
+            <Route path="/missing-letters" element={<MissingLettersShortLinkRoute />} />
             {/* Arena (multi-user) is username-only playable; the screen onboards
                 inline so a shared invite link never drops its lobby code. */}
             <Route path="/v2/arena/:code" element={<ShellGate><ArenaPlayScreen /></ShellGate>} />

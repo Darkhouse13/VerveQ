@@ -1,0 +1,1304 @@
+[
+ {
+  "id": "Q11571",
+  "name": "Cristiano Ronaldo",
+  "nation": "Portugal",
+  "fame": 2
+ },
+ {
+  "id": "Q17515",
+  "name": "Diego Maradona",
+  "nation": "Argentina",
+  "fame": 4
+ },
+ {
+  "id": "Q142794",
+  "name": "Neymar",
+  "nation": "Brazil",
+  "fame": 5
+ },
+ {
+  "id": "Q1835",
+  "name": "Zinedine Zidane",
+  "nation": "France",
+  "fame": 6
+ },
+ {
+  "id": "Q17163",
+  "name": "Johan Cruyff",
+  "nation": "Netherlands",
+  "fame": 9
+ },
+ {
+  "id": "Q46896",
+  "name": "Zlatan Ibrahimović",
+  "nation": "Sweden",
+  "fame": 11
+ },
+ {
+  "id": "Q68060",
+  "name": "Gianluigi Buffon",
+  "nation": "Italy",
+  "fame": 16
+ },
+ {
+  "id": "Q1912",
+  "name": "Karim Benzema",
+  "nation": "France",
+  "fame": 17
+ },
+ {
+  "id": "Q151269",
+  "name": "Robert Lewandowski",
+  "nation": "Poland",
+  "fame": 18
+ },
+ {
+  "id": "Q43729",
+  "name": "Andrés Iniesta",
+  "nation": "Spain",
+  "fame": 19
+ },
+ {
+  "id": "Q83488",
+  "name": "Mesut Özil",
+  "nation": "Germany",
+  "fame": 20
+ },
+ {
+  "id": "Q41533",
+  "name": "Frank Lampard",
+  "nation": "England",
+  "fame": 21
+ },
+ {
+  "id": "Q4261",
+  "name": "Michel Platini",
+  "nation": "France",
+  "fame": 22
+ },
+ {
+  "id": "Q45901",
+  "name": "Thierry Henry",
+  "nation": "France",
+  "fame": 23
+ },
+ {
+  "id": "Q1354960",
+  "name": "Mohamed Salah",
+  "nation": "Egypt",
+  "fame": 24
+ },
+ {
+  "id": "Q266613",
+  "name": "Wayne Rooney",
+  "nation": "England",
+  "fame": 25
+ },
+ {
+  "id": "Q11584",
+  "name": "Iker Casillas",
+  "nation": "Spain",
+  "fame": 27
+ },
+ {
+  "id": "Q455462",
+  "name": "Antoine Griezmann",
+  "nation": "France",
+  "fame": 28
+ },
+ {
+  "id": "Q107365",
+  "name": "Manuel Neuer",
+  "nation": "Germany",
+  "fame": 29
+ },
+ {
+  "id": "Q2339",
+  "name": "Robin van Persie",
+  "nation": "Netherlands",
+  "fame": 31
+ },
+ {
+  "id": "Q459830",
+  "name": "Steven Gerrard",
+  "nation": "England",
+  "fame": 33
+ },
+ {
+  "id": "Q162043",
+  "name": "Eusébio",
+  "nation": "Portugal",
+  "fame": 34
+ },
+ {
+  "id": "Q184586",
+  "name": "Gareth Bale",
+  "nation": "Wales",
+  "fame": 37
+ },
+ {
+  "id": "Q43666",
+  "name": "Thomas Müller",
+  "nation": "Germany",
+  "fame": 38
+ },
+ {
+  "id": "Q482931",
+  "name": "Ferenc Puskás",
+  "nation": "Hungary",
+  "fame": 39
+ },
+ {
+  "id": "Q969725",
+  "name": "Harry Kane",
+  "nation": "England",
+  "fame": 40
+ },
+ {
+  "id": "Q129027",
+  "name": "Paul Pogba",
+  "nation": "France",
+  "fame": 41
+ },
+ {
+  "id": "Q214204",
+  "name": "Eden Hazard",
+  "nation": "Belgium",
+  "fame": 42
+ },
+ {
+  "id": "Q28967995",
+  "name": "Erling Haaland",
+  "nation": "Norway",
+  "fame": 43
+ },
+ {
+  "id": "Q43913",
+  "name": "Arjen Robben",
+  "nation": "Netherlands",
+  "fame": 44
+ },
+ {
+  "id": "Q17507",
+  "name": "Gerard Piqué",
+  "nation": "Spain",
+  "fame": 45
+ },
+ {
+  "id": "Q1255625",
+  "name": "Samuel Eto'o",
+  "nation": "Cameroon",
+  "fame": 46
+ },
+ {
+  "id": "Q134976",
+  "name": "Lukas Podolski",
+  "nation": "Germany",
+  "fame": 47
+ },
+ {
+  "id": "Q209942",
+  "name": "Sadio Mané",
+  "nation": "Senegal",
+  "fame": 48
+ },
+ {
+  "id": "Q357984",
+  "name": "Kevin De Bruyne",
+  "nation": "Belgium",
+  "fame": 49
+ },
+ {
+  "id": "Q42731",
+  "name": "Fernando Torres",
+  "nation": "Spain",
+  "fame": 50
+ },
+ {
+  "id": "Q43744",
+  "name": "Gerd Müller",
+  "nation": "Germany",
+  "fame": 51
+ },
+ {
+  "id": "Q48892",
+  "name": "Didier Drogba",
+  "nation": "Ivory Coast",
+  "fame": 52
+ },
+ {
+  "id": "Q67964",
+  "name": "Roberto Baggio",
+  "nation": "Italy",
+  "fame": 53
+ },
+ {
+  "id": "Q119562",
+  "name": "Sergio Agüero",
+  "nation": "Argentina",
+  "fame": 54
+ },
+ {
+  "id": "Q164546",
+  "name": "Alfredo Di Stéfano",
+  "nation": "Spain",
+  "fame": 55
+ },
+ {
+  "id": "Q368441",
+  "name": "James Rodríguez",
+  "nation": "Colombia",
+  "fame": 56
+ },
+ {
+  "id": "Q129700",
+  "name": "Mario Balotelli",
+  "nation": "Italy",
+  "fame": 58
+ },
+ {
+  "id": "Q1911",
+  "name": "Olivier Giroud",
+  "nation": "France",
+  "fame": 59
+ },
+ {
+  "id": "Q1918",
+  "name": "Franck Ribéry",
+  "nation": "France",
+  "fame": 60
+ },
+ {
+  "id": "Q313316",
+  "name": "Romelu Lukaku",
+  "nation": "Belgium",
+  "fame": 61
+ },
+ {
+  "id": "Q483629",
+  "name": "Marco van Basten",
+  "nation": "Netherlands",
+  "fame": 62
+ },
+ {
+  "id": "Q73360",
+  "name": "Thibaut Courtois",
+  "nation": "Belgium",
+  "fame": 63
+ },
+ {
+  "id": "Q261534",
+  "name": "Diego Forlán",
+  "nation": "Uruguay",
+  "fame": 64
+ },
+ {
+  "id": "Q41244",
+  "name": "Andriy Shevchenko",
+  "nation": "Ukraine",
+  "fame": 66
+ },
+ {
+  "id": "Q43682",
+  "name": "Philipp Lahm",
+  "nation": "Germany",
+  "fame": 67
+ },
+ {
+  "id": "Q131234",
+  "name": "Toni Kroos",
+  "nation": "Germany",
+  "fame": 68
+ },
+ {
+  "id": "Q17499",
+  "name": "Cesc Fàbregas",
+  "nation": "Spain",
+  "fame": 69
+ },
+ {
+  "id": "Q20851003",
+  "name": "Ousmane Dembélé",
+  "nation": "France",
+  "fame": 70
+ },
+ {
+  "id": "Q22951255",
+  "name": "Marcus Rashford",
+  "nation": "England",
+  "fame": 71
+ },
+ {
+  "id": "Q36386",
+  "name": "Lothar Matthäus",
+  "nation": "Germany",
+  "fame": 72
+ },
+ {
+  "id": "Q624",
+  "name": "Alessandro Del Piero",
+  "nation": "Italy",
+  "fame": 73
+ },
+ {
+  "id": "Q83006",
+  "name": "David Villa",
+  "nation": "Spain",
+  "fame": 74
+ },
+ {
+  "id": "Q167790",
+  "name": "Edinson Cavani",
+  "nation": "Uruguay",
+  "fame": 75
+ },
+ {
+  "id": "Q251683",
+  "name": "Ángel Di María",
+  "nation": "Argentina",
+  "fame": 77
+ },
+ {
+  "id": "Q429039",
+  "name": "Roberto Carlos",
+  "nation": "Brazil",
+  "fame": 78
+ },
+ {
+  "id": "Q43926",
+  "name": "Andrea Pirlo",
+  "nation": "Italy",
+  "fame": 79
+ },
+ {
+  "id": "Q102027",
+  "name": "Fabio Cannavaro",
+  "nation": "Italy",
+  "fame": 80
+ },
+ {
+  "id": "Q1907",
+  "name": "Hugo Lloris",
+  "nation": "France",
+  "fame": 82
+ },
+ {
+  "id": "Q49704",
+  "name": "Sergio Busquets",
+  "nation": "Spain",
+  "fame": 83
+ },
+ {
+  "id": "Q115453",
+  "name": "Ivan Rakitić",
+  "nation": "Croatia",
+  "fame": 84
+ },
+ {
+  "id": "Q131261",
+  "name": "Oliver Kahn",
+  "nation": "Germany",
+  "fame": 85
+ },
+ {
+  "id": "Q150268",
+  "name": "David de Gea",
+  "nation": "Spain",
+  "fame": 86
+ },
+ {
+  "id": "Q483027",
+  "name": "Paolo Maldini",
+  "nation": "Italy",
+  "fame": 87
+ },
+ {
+  "id": "Q11948",
+  "name": "Michael Ballack",
+  "nation": "Germany",
+  "fame": 88
+ },
+ {
+  "id": "Q170328",
+  "name": "Eric Cantona",
+  "nation": "France",
+  "fame": 89
+ },
+ {
+  "id": "Q178649",
+  "name": "Romário",
+  "nation": "Brazil",
+  "fame": 90
+ },
+ {
+  "id": "Q187159",
+  "name": "Jordi Alba",
+  "nation": "Spain",
+  "fame": 91
+ },
+ {
+  "id": "Q28973866",
+  "name": "Vinícius Júnior",
+  "nation": "Brazil",
+  "fame": 92
+ },
+ {
+  "id": "Q483145",
+  "name": "Luís Figo",
+  "nation": "Portugal",
+  "fame": 94
+ },
+ {
+  "id": "Q128829",
+  "name": "Michael Owen",
+  "nation": "England",
+  "fame": 95
+ },
+ {
+  "id": "Q180642",
+  "name": "Garrincha",
+  "nation": "Brazil",
+  "fame": 96
+ },
+ {
+  "id": "Q483577",
+  "name": "Rivaldo",
+  "nation": "Brazil",
+  "fame": 97
+ },
+ {
+  "id": "Q83456",
+  "name": "John Terry",
+  "nation": "England",
+  "fame": 98
+ },
+ {
+  "id": "Q151260",
+  "name": "Jérôme Boateng",
+  "nation": "Germany",
+  "fame": 99
+ },
+ {
+  "id": "Q160206",
+  "name": "Hernán Crespo",
+  "nation": "Argentina",
+  "fame": 100
+ },
+ {
+  "id": "Q166317",
+  "name": "Paulo Dybala",
+  "nation": "Argentina",
+  "fame": 101
+ },
+ {
+  "id": "Q489039",
+  "name": "Raphaël Varane",
+  "nation": "France",
+  "fame": 102
+ },
+ {
+  "id": "Q8338725",
+  "name": "Riyad Mahrez",
+  "nation": "Algeria",
+  "fame": 103
+ },
+ {
+  "id": "Q124086",
+  "name": "Wesley Sneijder",
+  "nation": "Netherlands",
+  "fame": 104
+ },
+ {
+  "id": "Q152377",
+  "name": "Marco Reus",
+  "nation": "Germany",
+  "fame": 105
+ },
+ {
+  "id": "Q163564",
+  "name": "Nemanja Vidić",
+  "nation": "Serbia",
+  "fame": 106
+ },
+ {
+  "id": "Q185389",
+  "name": "Dennis Bergkamp",
+  "nation": "Netherlands",
+  "fame": 107
+ },
+ {
+  "id": "Q439722",
+  "name": "Son Heung-min",
+  "nation": "South Korea",
+  "fame": 108
+ },
+ {
+  "id": "Q482955",
+  "name": "Edwin van der Sar",
+  "nation": "Netherlands",
+  "fame": 109
+ },
+ {
+  "id": "Q508711",
+  "name": "Didier Deschamps",
+  "nation": "France",
+  "fame": 110
+ },
+ {
+  "id": "Q57079",
+  "name": "Jürgen Klinsmann",
+  "nation": "Germany",
+  "fame": 111
+ },
+ {
+  "id": "Q58441",
+  "name": "Robinho",
+  "nation": "Brazil",
+  "fame": 112
+ },
+ {
+  "id": "Q616664",
+  "name": "Casemiro",
+  "nation": "Brazil",
+  "fame": 113
+ },
+ {
+  "id": "Q104454",
+  "name": "Mario Götze",
+  "nation": "Germany",
+  "fame": 114
+ },
+ {
+  "id": "Q161069",
+  "name": "David Silva",
+  "nation": "Spain",
+  "fame": 115
+ },
+ {
+  "id": "Q16665941",
+  "name": "N'Golo Kanté",
+  "nation": "France",
+  "fame": 116
+ },
+ {
+  "id": "Q214903",
+  "name": "Diego Godín",
+  "nation": "Uruguay",
+  "fame": 117
+ },
+ {
+  "id": "Q273715",
+  "name": "Jordan Henderson",
+  "nation": "England",
+  "fame": 118
+ },
+ {
+  "id": "Q44298",
+  "name": "Bastian Schweinsteiger",
+  "nation": "Germany",
+  "fame": 119
+ },
+ {
+  "id": "Q50600",
+  "name": "Carlos Tevez",
+  "nation": "Argentina",
+  "fame": 121
+ },
+ {
+  "id": "Q66241169",
+  "name": "Jude Bellingham",
+  "nation": "England",
+  "fame": 122
+ },
+ {
+  "id": "Q110053",
+  "name": "Mats Hummels",
+  "nation": "Germany",
+  "fame": 123
+ },
+ {
+  "id": "Q163666",
+  "name": "Pepe Reina",
+  "nation": "Spain",
+  "fame": 124
+ },
+ {
+  "id": "Q184277",
+  "name": "Yaya Touré",
+  "nation": "Ivory Coast",
+  "fame": 125
+ },
+ {
+  "id": "Q187171",
+  "name": "Mario Mandžukić",
+  "nation": "Croatia",
+  "fame": 126
+ },
+ {
+  "id": "Q202054",
+  "name": "Keisuke Honda",
+  "nation": "Japan",
+  "fame": 127
+ },
+ {
+  "id": "Q311872",
+  "name": "Philippe Coutinho",
+  "nation": "Brazil",
+  "fame": 128
+ },
+ {
+  "id": "Q312157",
+  "name": "Raheem Sterling",
+  "nation": "England",
+  "fame": 129
+ },
+ {
+  "id": "Q45626",
+  "name": "Ruud van Nistelrooy",
+  "nation": "Netherlands",
+  "fame": 130
+ },
+ {
+  "id": "Q483137",
+  "name": "Petr Čech",
+  "nation": "Czech Republic",
+  "fame": 131
+ },
+ {
+  "id": "Q483583",
+  "name": "Alan Shearer",
+  "nation": "England",
+  "fame": 132
+ },
+ {
+  "id": "Q483846",
+  "name": "Gonzalo Higuaín",
+  "nation": "Argentina",
+  "fame": 133
+ },
+ {
+  "id": "Q54094",
+  "name": "Sami Khedira",
+  "nation": "Germany",
+  "fame": 134
+ },
+ {
+  "id": "Q161571",
+  "name": "Javier Mascherano",
+  "nation": "Argentina",
+  "fame": 135
+ },
+ {
+  "id": "Q173972",
+  "name": "Ruud Gullit",
+  "nation": "Netherlands",
+  "fame": 137
+ },
+ {
+  "id": "Q180326",
+  "name": "Lilian Thuram",
+  "nation": "France",
+  "fame": 138
+ },
+ {
+  "id": "Q18237361",
+  "name": "Alisson Becker",
+  "nation": "Brazil",
+  "fame": 139
+ },
+ {
+  "id": "Q192671",
+  "name": "Arturo Vidal",
+  "nation": "Chile",
+  "fame": 140
+ },
+ {
+  "id": "Q47548",
+  "name": "Víctor Valdés",
+  "nation": "Spain",
+  "fame": 142
+ },
+ {
+  "id": "Q483417",
+  "name": "Rio Ferdinand",
+  "nation": "England",
+  "fame": 144
+ },
+ {
+  "id": "Q133903",
+  "name": "Virgil van Dijk",
+  "nation": "Netherlands",
+  "fame": 145
+ },
+ {
+  "id": "Q180553",
+  "name": "Alexis Sánchez",
+  "nation": "Chile",
+  "fame": 146
+ },
+ {
+  "id": "Q193706",
+  "name": "David Luiz",
+  "nation": "Brazil",
+  "fame": 147
+ },
+ {
+  "id": "Q210453",
+  "name": "Thiago Silva",
+  "nation": "Brazil",
+  "fame": 148
+ },
+ {
+  "id": "Q44977",
+  "name": "Pierre-Emerick Aubameyang",
+  "nation": "Gabon",
+  "fame": 149
+ },
+ {
+  "id": "Q459707",
+  "name": "Diego Costa",
+  "nation": "Spain",
+  "fame": 150
+ },
+ {
+  "id": "Q80306",
+  "name": "Giorgio Chiellini",
+  "nation": "Italy",
+  "fame": 151
+ },
+ {
+  "id": "Q128725",
+  "name": "Hidetoshi Nakata",
+  "nation": "Japan",
+  "fame": 152
+ },
+ {
+  "id": "Q161054",
+  "name": "Ivan Perišić",
+  "nation": "Croatia",
+  "fame": 153
+ },
+ {
+  "id": "Q187125",
+  "name": "Hristo Stoichkov",
+  "nation": "Bulgaria",
+  "fame": 154
+ },
+ {
+  "id": "Q213427",
+  "name": "Aaron Ramsey",
+  "nation": "Wales",
+  "fame": 155
+ },
+ {
+  "id": "Q45766",
+  "name": "Mario Gómez",
+  "nation": "Germany",
+  "fame": 156
+ },
+ {
+  "id": "Q969423",
+  "name": "Keylor Navas",
+  "nation": "Costa Rica",
+  "fame": 157
+ },
+ {
+  "id": "Q133556",
+  "name": "Ashley Cole",
+  "nation": "England",
+  "fame": 158
+ },
+ {
+  "id": "Q188720",
+  "name": "Michael Laudrup",
+  "nation": "Denmark",
+  "fame": 159
+ },
+ {
+  "id": "Q188997",
+  "name": "Wojciech Szczęsny",
+  "nation": "Poland",
+  "fame": 160
+ },
+ {
+  "id": "Q19518278",
+  "name": "Diogo Jota",
+  "nation": "Portugal",
+  "fame": 161
+ },
+ {
+  "id": "Q252190",
+  "name": "Xherdan Shaqiri",
+  "nation": "Switzerland",
+  "fame": 162
+ },
+ {
+  "id": "Q26932598",
+  "name": "Achraf Hakimi",
+  "nation": "Morocco",
+  "fame": 163
+ },
+ {
+  "id": "Q46347",
+  "name": "Patrick Vieira",
+  "nation": "France",
+  "fame": 164
+ },
+ {
+  "id": "Q47230",
+  "name": "Andrey Arshavin",
+  "nation": "Russia",
+  "fame": 165
+ },
+ {
+  "id": "Q487459",
+  "name": "Arda Turan",
+  "nation": "Turkey",
+  "fame": 166
+ },
+ {
+  "id": "Q52876",
+  "name": "Javier Zanetti",
+  "nation": "Argentina",
+  "fame": 167
+ },
+ {
+  "id": "Q602525",
+  "name": "Roberto Firmino",
+  "nation": "Brazil",
+  "fame": 168
+ },
+ {
+  "id": "Q10602",
+  "name": "Ashley Young",
+  "nation": "England",
+  "fame": 169
+ },
+ {
+  "id": "Q154708",
+  "name": "Shinji Kagawa",
+  "nation": "Japan",
+  "fame": 170
+ },
+ {
+  "id": "Q160472",
+  "name": "Marc-André ter Stegen",
+  "nation": "Germany",
+  "fame": 171
+ },
+ {
+  "id": "Q169098",
+  "name": "Frank Rijkaard",
+  "nation": "Netherlands",
+  "fame": 173
+ },
+ {
+  "id": "Q208050",
+  "name": "Leonardo Bonucci",
+  "nation": "Italy",
+  "fame": 175
+ },
+ {
+  "id": "Q215890",
+  "name": "Dunga",
+  "nation": "Brazil",
+  "fame": 176
+ },
+ {
+  "id": "Q26069",
+  "name": "Klaas-Jan Huntelaar",
+  "nation": "Netherlands",
+  "fame": 177
+ },
+ {
+  "id": "Q48770",
+  "name": "Álvaro Morata",
+  "nation": "Spain",
+  "fame": 179
+ },
+ {
+  "id": "Q153786",
+  "name": "Edin Džeko",
+  "nation": "Bosnia and Herzegovina",
+  "fame": 181
+ },
+ {
+  "id": "Q165125",
+  "name": "Javier Hernández",
+  "nation": "Mexico",
+  "fame": 182
+ },
+ {
+  "id": "Q170376",
+  "name": "Gabriel Batistuta",
+  "nation": "Argentina",
+  "fame": 183
+ },
+ {
+  "id": "Q180649",
+  "name": "Mario Kempes",
+  "nation": "Argentina",
+  "fame": 184
+ },
+ {
+  "id": "Q183967",
+  "name": "David Trezeguet",
+  "nation": "France",
+  "fame": 185
+ },
+ {
+  "id": "Q1894",
+  "name": "Memphis Depay",
+  "nation": "Netherlands",
+  "fame": 186
+ },
+ {
+  "id": "Q1916",
+  "name": "Patrice Evra",
+  "nation": "France",
+  "fame": 187
+ },
+ {
+  "id": "Q294951",
+  "name": "Christian Eriksen",
+  "nation": "Denmark",
+  "fame": 188
+ },
+ {
+  "id": "Q58377",
+  "name": "André Schürrle",
+  "nation": "Germany",
+  "fame": 189
+ },
+ {
+  "id": "Q126503",
+  "name": "Filippo Inzaghi",
+  "nation": "Italy",
+  "fame": 191
+ },
+ {
+  "id": "Q13308",
+  "name": "Samuel Umtiti",
+  "nation": "France",
+  "fame": 192
+ },
+ {
+  "id": "Q13865408",
+  "name": "Joshua Kimmich",
+  "nation": "Germany",
+  "fame": 193
+ },
+ {
+  "id": "Q180661",
+  "name": "Dino Zoff",
+  "nation": "Italy",
+  "fame": 194
+ },
+ {
+  "id": "Q192635",
+  "name": "Ronald Koeman",
+  "nation": "Netherlands",
+  "fame": 196
+ },
+ {
+  "id": "Q20994118",
+  "name": "Rodri",
+  "nation": "Spain",
+  "fame": 198
+ },
+ {
+  "id": "Q222789",
+  "name": "Luis Enrique",
+  "nation": "Spain",
+  "fame": 199
+ },
+ {
+  "id": "Q29566",
+  "name": "Michael Carrick",
+  "nation": "England",
+  "fame": 201
+ },
+ {
+  "id": "Q310612",
+  "name": "Shinji Okazaki",
+  "nation": "Japan",
+  "fame": 202
+ },
+ {
+  "id": "Q13014035",
+  "name": "Jordan Pickford",
+  "nation": "England",
+  "fame": 204
+ },
+ {
+  "id": "Q138172",
+  "name": "Radamel Falcao",
+  "nation": "Colombia",
+  "fame": 205
+ },
+ {
+  "id": "Q163974",
+  "name": "Rafael van der Vaart",
+  "nation": "Netherlands",
+  "fame": 206
+ },
+ {
+  "id": "Q201381",
+  "name": "Vincent Kompany",
+  "nation": "Belgium",
+  "fame": 208
+ },
+ {
+  "id": "Q258115",
+  "name": "Diego Simeone",
+  "nation": "Argentina",
+  "fame": 209
+ },
+ {
+  "id": "Q294214",
+  "name": "Dirk Kuyt",
+  "nation": "Netherlands",
+  "fame": 210
+ },
+ {
+  "id": "Q29516",
+  "name": "Theo Walcott",
+  "nation": "England",
+  "fame": 211
+ },
+ {
+  "id": "Q315697",
+  "name": "Julian Draxler",
+  "nation": "Germany",
+  "fame": 212
+ },
+ {
+  "id": "Q31981",
+  "name": "David Alaba",
+  "nation": "Austria",
+  "fame": 213
+ },
+ {
+  "id": "Q349125",
+  "name": "Dejan Lovren",
+  "nation": "Croatia",
+  "fame": 214
+ },
+ {
+  "id": "Q6147586",
+  "name": "Jamie Vardy",
+  "nation": "England",
+  "fame": 215
+ },
+ {
+  "id": "Q776878",
+  "name": "Takumi Minamino",
+  "nation": "Japan",
+  "fame": 216
+ },
+ {
+  "id": "Q161089",
+  "name": "İlkay Gündoğan",
+  "nation": "Germany",
+  "fame": 217
+ },
+ {
+  "id": "Q189892",
+  "name": "Gheorghe Hagi",
+  "nation": "Romania",
+  "fame": 219
+ },
+ {
+  "id": "Q4979316",
+  "name": "Bruno Fernandes",
+  "nation": "Portugal",
+  "fame": 221
+ },
+ {
+  "id": "Q57114",
+  "name": "Jens Lehmann",
+  "nation": "Germany",
+  "fame": 222
+ },
+ {
+  "id": "Q70550",
+  "name": "Per Mertesacker",
+  "nation": "Germany",
+  "fame": 223
+ },
+ {
+  "id": "Q93563",
+  "name": "Luke Shaw",
+  "nation": "England",
+  "fame": 225
+ },
+ {
+  "id": "Q10553748",
+  "name": "Dele Alli",
+  "nation": "England",
+  "fame": 227
+ },
+ {
+  "id": "Q116980",
+  "name": "Gennaro Gattuso",
+  "nation": "Italy",
+  "fame": 228
+ },
+ {
+  "id": "Q136986",
+  "name": "Mauro Icardi",
+  "nation": "Argentina",
+  "fame": 229
+ },
+ {
+  "id": "Q152871",
+  "name": "Karl-Heinz Rummenigge",
+  "nation": "Germany",
+  "fame": 230
+ },
+ {
+  "id": "Q171295",
+  "name": "Pavel Nedvěd",
+  "nation": "Czech Republic",
+  "fame": 231
+ },
+ {
+  "id": "Q174486",
+  "name": "Antonio Valencia",
+  "nation": "Ecuador",
+  "fame": 232
+ },
+ {
+  "id": "Q17493",
+  "name": "Thiago Alcântara",
+  "nation": "Spain",
+  "fame": 233
+ },
+ {
+  "id": "Q181921",
+  "name": "Branislav Ivanović",
+  "nation": "Serbia",
+  "fame": 234
+ },
+ {
+  "id": "Q182314",
+  "name": "Peter Schmeichel",
+  "nation": "Denmark",
+  "fame": 235
+ },
+ {
+  "id": "Q182451",
+  "name": "Alberto Gilardino",
+  "nation": "Italy",
+  "fame": 236
+ },
+ {
+  "id": "Q187238",
+  "name": "Tim Cahill",
+  "nation": "Australia",
+  "fame": 237
+ },
+ {
+  "id": "Q189217",
+  "name": "Davor Šuker",
+  "nation": "Croatia",
+  "fame": 239
+ },
+ {
+  "id": "Q1920",
+  "name": "Samir Nasri",
+  "nation": "France",
+  "fame": 240
+ },
+ {
+  "id": "Q27310755",
+  "name": "Kai Havertz",
+  "nation": "Germany",
+  "fame": 241
+ },
+ {
+  "id": "Q4254043",
+  "name": "Divock Origi",
+  "nation": "Belgium",
+  "fame": 242
+ },
+ {
+  "id": "Q484384",
+  "name": "Fábio Coentrão",
+  "nation": "Portugal",
+  "fame": 243
+ },
+ {
+  "id": "Q484909",
+  "name": "Clarence Seedorf",
+  "nation": "Netherlands",
+  "fame": 244
+ },
+ {
+  "id": "Q570811",
+  "name": "Ricardo Carvalho",
+  "nation": "Portugal",
+  "fame": 246
+ },
+ {
+  "id": "Q96755",
+  "name": "Antonio Rüdiger",
+  "nation": "Germany",
+  "fame": 247
+ },
+ {
+  "id": "Q969520",
+  "name": "Michael Essien",
+  "nation": "Ghana",
+  "fame": 248
+ },
+ {
+  "id": "Q10560",
+  "name": "Freddie Ljungberg",
+  "nation": "Sweden",
+  "fame": 249
+ },
+ {
+  "id": "Q19509544",
+  "name": "Federico Valverde",
+  "nation": "Uruguay",
+  "fame": 257
+ },
+ {
+  "id": "Q20830808",
+  "name": "Gianluigi Donnarumma",
+  "nation": "Italy",
+  "fame": 259
+ },
+ {
+  "id": "Q16499882",
+  "name": "Leroy Sané",
+  "nation": "Germany",
+  "fame": 271
+ },
+ {
+  "id": "Q21484126",
+  "name": "Lautaro Martínez",
+  "nation": "Argentina",
+  "fame": 281
+ },
+ {
+  "id": "Q27569376",
+  "name": "Trent Alexander-Arnold",
+  "nation": "England",
+  "fame": 284
+ },
+ {
+  "id": "Q16902219",
+  "name": "Martin Ødegaard",
+  "nation": "Norway",
+  "fame": 289
+ },
+ {
+  "id": "Q15521306",
+  "name": "Bernardo Silva",
+  "nation": "Portugal",
+  "fame": 300
+ }
+]

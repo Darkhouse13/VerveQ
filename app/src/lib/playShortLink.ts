@@ -32,3 +32,14 @@ export function whosOlderShortLinkTarget(search: string): string {
   }
   return `${SHELL_ROUTES.whosOlderPlay}?${params.toString()}`;
 }
+
+/** `/letters` → Missing Letters, same attribution rule (a bare hit gets ref=letters). */
+export const MISSING_LETTERS_SHORT_LINK_DEFAULT_REF = "letters";
+
+export function missingLettersShortLinkTarget(search: string): string {
+  const params = new URLSearchParams(search);
+  if (!params.get("ref") && !params.get("utm_source")) {
+    params.set("ref", MISSING_LETTERS_SHORT_LINK_DEFAULT_REF);
+  }
+  return `${SHELL_ROUTES.missingLettersPlay}?${params.toString()}`;
+}

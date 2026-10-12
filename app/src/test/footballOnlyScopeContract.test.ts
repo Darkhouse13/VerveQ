@@ -37,7 +37,7 @@ describe("compete grid advertises only startable modes", () => {
     expect(COMPETE_MODE_TILES.some((t) => t.key === "liveMatch")).toBe(false);
   });
 
-  it("still offers the eleven live modes", () => {
+  it("still offers the twelve live modes", () => {
     expect(COMPETE_MODE_TILES.map((t) => t.key)).toEqual([
       "quiz",
       "arena",
@@ -52,6 +52,8 @@ describe("compete grid advertises only startable modes", () => {
       "dailySurvival",
       // Who's Older? shipped 2026-09: the reel format as a daily + endless.
       "whosOlder",
+      // Missing Letters shipped 2026-10: the reel format as a daily + endless.
+      "missingLetters",
     ]);
   });
 

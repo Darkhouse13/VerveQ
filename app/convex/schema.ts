@@ -1233,7 +1233,13 @@ export default defineSchema({
   // browsers it was claimed in are whosOlderReminderLinks, which is how a
   // streak survives the jump from Instagram's in-app browser to the phone's
   // own browser when the player opens the email.
+  //
+  // Since MISSING LETTERS (2026-10-12) the same tables carry both daily games:
+  // `game` is absent for Who's Older (every row written before it existed) and
+  // "letters" for Missing Letters. An address can hold one reminder per game,
+  // and a browser one link per game.
   whosOlderReminders: defineTable({
+    game: v.optional(v.literal("letters")),
     email: v.string(),
     token: v.string(),
     timeZone: v.string(),
@@ -1246,18 +1252,76 @@ export default defineSchema({
     lastSentAt: v.optional(v.number()),
     sentCount: v.number(),
   })
-    .index("by_email", ["email"])
+    .index("by_email_game", ["email", "game"])
     .index("by_token", ["token"])
-    .index("by_creator_created", ["createdByUserId", "createdAt"])
+    .index("by_creator_game_created", ["createdByUserId", "game", "createdAt"])
     .index("by_unsubscribed_confirmed", ["unsubscribedAt", "confirmedAt"]),
 
   whosOlderReminderLinks: defineTable({
+    game: v.optional(v.literal("letters")),
     reminderId: v.id("whosOlderReminders"),
     userId: v.id("users"),
     createdAt: v.number(),
   })
-    .index("by_user", ["userId"])
+    .index("by_user_game", ["userId", "game"])
     .index("by_reminder", ["reminderId"]),
+
+  // MISSING LETTERS (convex/missingLetters.ts) — Who's Older's twin tables,
+  // same row model: "daily" = the player's one attempt at that UTC date's
+  // shared ten boards, "endless" = a run unlocked by finishing it, "challenge"
+  // = a friend replaying a PAST date's frozen boards from a challenge link.
+  // The answer (`name`) lives only here and in reveal payloads; a pending
+  // board reaches the client as tiles with the blanks nulled out.
+  missingLettersSessions: defineTable({
+    userId: v.id("users"),
+    kind: v.union(v.literal("daily"), v.literal("endless"), v.literal("challenge")),
+    dateKey: v.string(),
+    challengeId: v.optional(v.id("missingLettersChallenges")),
+    rounds: v.array(
+      v.object({
+        id: v.string(),
+        name: v.string(),
+        nation: v.string(),
+        tier: v.union(v.literal("easy"), v.literal("medium"), v.literal("hard"), v.literal("impossible")),
+        hidden: v.array(v.number()),
+        // Absent until answered: the letters typed into the blanks, in order,
+        // or a forfeit ("skip" = gave up, "timeout" = left the tab).
+        guess: v.optional(v.string()),
+        forfeit: v.optional(v.union(v.literal("skip"), v.literal("timeout"))),
+        correct: v.optional(v.boolean()),
+      }),
+    ),
+    current: v.number(),
+    score: v.number(),
+    status: v.union(v.literal("active"), v.literal("completed")),
+    startedAt: v.number(),
+    completedAt: v.optional(v.number()),
+  })
+    .index("by_user_kind_date", ["userId", "kind", "dateKey"])
+    .index("by_user_kind_score", ["userId", "kind", "score"])
+    .index("by_kind_date_status", ["kind", "dateKey", "status"]),
+
+  missingLettersChallenges: defineTable({
+    fromUserId: v.id("users"),
+    sessionId: v.id("missingLettersSessions"),
+    dateKey: v.string(),
+    score: v.number(),
+    total: v.number(),
+    createdAt: v.number(),
+  })
+    .index("by_session", ["sessionId"])
+    .index("by_from_created", ["fromUserId", "createdAt"]),
+
+  missingLettersChallengeResults: defineTable({
+    challengeId: v.id("missingLettersChallenges"),
+    userId: v.id("users"),
+    sessionId: v.id("missingLettersSessions"),
+    score: v.number(),
+    total: v.number(),
+    createdAt: v.number(),
+  })
+    .index("by_challenge", ["challengeId"])
+    .index("by_challenge_user", ["challengeId", "userId"]),
 
   verveGridSessions: defineTable({
     userId: v.optional(v.id("users")),
