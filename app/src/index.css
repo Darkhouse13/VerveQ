@@ -156,6 +156,38 @@
     --neo-shadow-color: 0 0% 0%;
   }
 
+  /*
+   * MISSING LETTERS runs the same family a notch quieter (owner, 2026-10-12:
+   * "too bright"): every loud token loses saturation and some lightness, so
+   * the result card, buttons, verdict rows and tier chips sit back on the ink
+   * ground instead of glowing. Who's Older keeps the full-volume palette.
+   */
+  .theme-letters {
+    --primary: 74 62% 52%;
+    --accent: 74 62% 52%;
+    --ring: 74 62% 52%;
+    --electric-blue: 212 58% 45%;
+    --hot-pink: 322 52% 52%;
+    --yellow: 44 70% 52%;
+    --success: 150 48% 37%;
+    --destructive: 2 60% 52%;
+  }
+
+  /*
+   * Scrollbars on the daily-game stages (Who's Older, Missing Letters): the
+   * thin, arrowless, muted-cream thumb the WEEKEND uses on its dark ground,
+   * instead of the platform's grey-and-white bar. Standard properties only
+   * (Chrome 121+ ignores ::-webkit-scrollbar once these are set); not
+   * inherited in Firefox, hence the `*` descendant.
+   */
+  .theme-older,
+  .theme-older *,
+  .theme-letters,
+  .theme-letters * {
+    scrollbar-width: thin;
+    scrollbar-color: hsl(30 30% 62% / 0.35) transparent;
+  }
+
   .theme-learn {
     --background: 40 80% 94%;        /* cream */
     --foreground: 20 30% 14%;
