@@ -1,0 +1,75 @@
+{
+ "edition": "e4",
+ "secret": "Arjen Robben",
+ "board": [
+  [
+   "Zlatan Ibrahimović",
+   "IBRAHIMOVIĆ"
+  ],
+  [
+   "Neymar",
+   "NEYMAR"
+  ],
+  [
+   "Ferenc Puskás",
+   "PUSKÁS"
+  ],
+  [
+   "Romelu Lukaku",
+   "LUKAKU"
+  ],
+  [
+   "Thibaut Courtois",
+   "COURTOIS"
+  ],
+  [
+   "Michael Laudrup",
+   "LAUDRUP"
+  ],
+  [
+   "Arjen Robben",
+   "ROBBEN"
+  ],
+  [
+   "Gonzalo Higuaín",
+   "HIGUAÍN"
+  ],
+  [
+   "Nicolas Anelka",
+   "ANELKA"
+  ]
+ ],
+ "questions": [
+  {
+   "text": "IS HE BELGIAN?",
+   "kind": "nation",
+   "arg": "Belgium"
+  },
+  {
+   "text": "PLAYED FOR REAL MADRID?",
+   "kind": "club",
+   "arg": "realmadrid"
+  },
+  {
+   "text": "PLAYED FOR BARCELONA?",
+   "kind": "club",
+   "arg": "barcelona"
+  },
+  {
+   "text": "PLAYED FOR CHELSEA?",
+   "kind": "club",
+   "arg": "chelsea"
+  },
+  {
+   "text": "PLAYED FOR MAN CITY?",
+   "kind": "club",
+   "arg": "mancity"
+  },
+  {
+   "text": "PLAYED FOR AC MILAN?",
+   "kind": "club",
+   "arg": "milan",
+   "withheld": true
+  }
+ ]
+}

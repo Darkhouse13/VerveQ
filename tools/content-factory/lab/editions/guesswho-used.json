@@ -1,0 +1,107 @@
+[
+ {
+  "edition": "e1",
+  "secret": "David Beckham",
+  "board": [
+   "Luís Figo",
+   "Mesut Özil",
+   "Kaká",
+   "Wayne Rooney",
+   "Xabi Alonso",
+   "Gareth Bale",
+   "Cesc Fàbregas",
+   "David Beckham",
+   "Ronaldinho"
+  ]
+ },
+ {
+  "edition": "e2",
+  "secret": "Thierry Henry",
+  "board": [
+   "Luis Suárez",
+   "Manuel Neuer",
+   "Thierry Henry",
+   "Lionel Messi",
+   "Alexis Sánchez",
+   "Cristiano Ronaldo",
+   "Ferenc Puskás",
+   "Deco",
+   "Diogo Jota"
+  ]
+ },
+ {
+  "edition": "e3",
+  "secret": "Kaká",
+  "board": [
+   "Sadio Mané",
+   "Thibaut Courtois",
+   "Michael Owen",
+   "Eden Hazard",
+   "Kaká",
+   "Álvaro Morata",
+   "Karim Benzema",
+   "Pepe",
+   "Olivier Giroud"
+  ]
+ },
+ {
+  "edition": "e6",
+  "secret": "Eden Hazard",
+  "board": [
+   "Eden Hazard",
+   "Mohamed Salah",
+   "Álvaro Morata",
+   "Kevin De Bruyne",
+   "Luís Figo",
+   "Kylian Mbappé",
+   "Eusébio",
+   "Dennis Bergkamp",
+   "Alexis Sánchez"
+  ]
+ },
+ {
+  "edition": "e4",
+  "secret": "Arjen Robben",
+  "board": [
+   "Zlatan Ibrahimović",
+   "Neymar",
+   "Ferenc Puskás",
+   "Romelu Lukaku",
+   "Thibaut Courtois",
+   "Michael Laudrup",
+   "Arjen Robben",
+   "Gonzalo Higuaín",
+   "Nicolas Anelka"
+  ]
+ },
+ {
+  "edition": "e5",
+  "secret": "Ronaldo Nazário",
+  "board": [
+   "Luka Modrić",
+   "Ronaldo Nazário",
+   "David Beckham",
+   "Lionel Messi",
+   "Rivaldo",
+   "Pierre-Emerick Aubameyang",
+   "Kylian Mbappé",
+   "Klaas-Jan Huntelaar",
+   "Fernando Torres"
+  ]
+ },
+ {
+  "edition": "e7",
+  "secret": "Cesc Fàbregas",
+  "board": [
+   "Samuel Eto'o",
+   "Diego Maradona",
+   "Michel Platini",
+   "Cesc Fàbregas",
+   "Philippe Coutinho",
+   "Cristiano Ronaldo",
+   "Jordan Henderson",
+   "Yaya Touré",
+   "Ronald Koeman"
+  ]
+ }
+]

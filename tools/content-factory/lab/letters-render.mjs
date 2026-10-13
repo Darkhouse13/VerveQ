@@ -21,7 +21,7 @@ await renderTest({
       "",
       "Your score, 0 to 10, in the comments. No Googling.",
       "",
-      "Play today's Who's Older free → verveq.com/older",
+      "Play today's Missing Letters free → verveq.com/letters",
       "",
       "#football #footballquiz #footballtrivia #guesstheplayer #premierleague",
       "",

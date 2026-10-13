@@ -1,0 +1,75 @@
+{
+ "edition": "e2",
+ "secret": "Thierry Henry",
+ "board": [
+  [
+   "Luis Suárez",
+   "SUÁREZ"
+  ],
+  [
+   "Manuel Neuer",
+   "NEUER"
+  ],
+  [
+   "Thierry Henry",
+   "HENRY"
+  ],
+  [
+   "Lionel Messi",
+   "MESSI"
+  ],
+  [
+   "Alexis Sánchez",
+   "SÁNCHEZ"
+  ],
+  [
+   "Cristiano Ronaldo",
+   "RONALDO"
+  ],
+  [
+   "Ferenc Puskás",
+   "PUSKÁS"
+  ],
+  [
+   "Deco",
+   "DECO"
+  ],
+  [
+   "Diogo Jota",
+   "JOTA"
+  ]
+ ],
+ "questions": [
+  {
+   "text": "PLAYED FOR REAL MADRID?",
+   "kind": "club",
+   "arg": "realmadrid"
+  },
+  {
+   "text": "IS HE PORTUGUESE?",
+   "kind": "nation",
+   "arg": "Portugal"
+  },
+  {
+   "text": "PLAYED FOR BARCELONA?",
+   "kind": "club",
+   "arg": "barcelona"
+  },
+  {
+   "text": "IS HE URUGUAYAN?",
+   "kind": "nation",
+   "arg": "Uruguay"
+  },
+  {
+   "text": "PLAYED FOR ARSENAL?",
+   "kind": "club",
+   "arg": "arsenal"
+  },
+  {
+   "text": "PLAYED FOR MAN UNITED?",
+   "kind": "club",
+   "arg": "manutd",
+   "withheld": true
+  }
+ ]
+}

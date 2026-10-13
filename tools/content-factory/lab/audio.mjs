@@ -31,9 +31,10 @@ const clock = (mix, from, to, gainLo = 0.32, gainHi = 0.55) => {
   for (let f = to - 30 + 7; f < to; f += 15) mix.add(tick(), f, gainHi * 0.8);
 };
 
-export const ensureLabGuessWhoAudio = () => {
+// force: the bed follows the board (answers, flip count), so every edition re-mixes it
+export const ensureLabGuessWhoAudio = (force = false) => {
   const name = "lab-guesswho";
-  if (!fresh(name)) return;
+  if (!force && !fresh(name)) return;
   const G = GRID.guesswho;
   const N = GW.questions.length;
   const starts = [];

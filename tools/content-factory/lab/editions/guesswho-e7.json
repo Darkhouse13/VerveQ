@@ -1,0 +1,75 @@
+{
+ "edition": "e7",
+ "secret": "Cesc Fàbregas",
+ "board": [
+  [
+   "Samuel Eto'o",
+   "ETO'O"
+  ],
+  [
+   "Diego Maradona",
+   "MARADONA"
+  ],
+  [
+   "Michel Platini",
+   "PLATINI"
+  ],
+  [
+   "Cesc Fàbregas",
+   "FÀBREGAS"
+  ],
+  [
+   "Philippe Coutinho",
+   "COUTINHO"
+  ],
+  [
+   "Cristiano Ronaldo",
+   "RONALDO"
+  ],
+  [
+   "Jordan Henderson",
+   "HENDERSON"
+  ],
+  [
+   "Yaya Touré",
+   "TOURÉ"
+  ],
+  [
+   "Ronald Koeman",
+   "KOEMAN"
+  ]
+ ],
+ "questions": [
+  {
+   "text": "PLAYED FOR LIVERPOOL?",
+   "kind": "club",
+   "arg": "liverpool"
+  },
+  {
+   "text": "PLAYED FOR BARCELONA?",
+   "kind": "club",
+   "arg": "barcelona"
+  },
+  {
+   "text": "PLAYED FOR MAN CITY?",
+   "kind": "club",
+   "arg": "mancity"
+  },
+  {
+   "text": "IS HE DUTCH?",
+   "kind": "nation",
+   "arg": "Netherlands"
+  },
+  {
+   "text": "PLAYED FOR CHELSEA?",
+   "kind": "club",
+   "arg": "chelsea"
+  },
+  {
+   "text": "PLAYED FOR ARSENAL?",
+   "kind": "club",
+   "arg": "arsenal",
+   "withheld": true
+  }
+ ]
+}

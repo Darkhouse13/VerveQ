@@ -1,0 +1,75 @@
+{
+ "edition": "e3",
+ "secret": "Kaká",
+ "board": [
+  [
+   "Sadio Mané",
+   "MANÉ"
+  ],
+  [
+   "Thibaut Courtois",
+   "COURTOIS"
+  ],
+  [
+   "Michael Owen",
+   "OWEN"
+  ],
+  [
+   "Eden Hazard",
+   "HAZARD"
+  ],
+  [
+   "Kaká",
+   "KAKÁ"
+  ],
+  [
+   "Álvaro Morata",
+   "MORATA"
+  ],
+  [
+   "Karim Benzema",
+   "BENZEMA"
+  ],
+  [
+   "Pepe",
+   "PEPE"
+  ],
+  [
+   "Olivier Giroud",
+   "GIROUD"
+  ]
+ ],
+ "questions": [
+  {
+   "text": "PLAYED FOR LIVERPOOL?",
+   "kind": "club",
+   "arg": "liverpool"
+  },
+  {
+   "text": "IS HE BELGIAN?",
+   "kind": "nation",
+   "arg": "Belgium"
+  },
+  {
+   "text": "IS HE PORTUGUESE?",
+   "kind": "nation",
+   "arg": "Portugal"
+  },
+  {
+   "text": "PLAYED FOR AC MILAN?",
+   "kind": "club",
+   "arg": "milan"
+  },
+  {
+   "text": "PLAYED FOR REAL MADRID?",
+   "kind": "club",
+   "arg": "realmadrid"
+  },
+  {
+   "text": "PLAYED FOR CHELSEA?",
+   "kind": "club",
+   "arg": "chelsea",
+   "withheld": true
+  }
+ ]
+}

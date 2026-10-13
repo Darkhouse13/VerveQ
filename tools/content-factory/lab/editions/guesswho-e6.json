@@ -1,0 +1,75 @@
+{
+ "edition": "e6",
+ "secret": "Eden Hazard",
+ "board": [
+  [
+   "Eden Hazard",
+   "HAZARD"
+  ],
+  [
+   "Mohamed Salah",
+   "SALAH"
+  ],
+  [
+   "Álvaro Morata",
+   "MORATA"
+  ],
+  [
+   "Kevin De Bruyne",
+   "DE BRUYNE"
+  ],
+  [
+   "Luís Figo",
+   "FIGO"
+  ],
+  [
+   "Kylian Mbappé",
+   "MBAPPÉ"
+  ],
+  [
+   "Eusébio",
+   "EUSÉBIO"
+  ],
+  [
+   "Dennis Bergkamp",
+   "BERGKAMP"
+  ],
+  [
+   "Alexis Sánchez",
+   "SÁNCHEZ"
+  ]
+ ],
+ "questions": [
+  {
+   "text": "PLAYED FOR ARSENAL?",
+   "kind": "club",
+   "arg": "arsenal"
+  },
+  {
+   "text": "IS HE PORTUGUESE?",
+   "kind": "nation",
+   "arg": "Portugal"
+  },
+  {
+   "text": "PLAYED FOR CHELSEA?",
+   "kind": "club",
+   "arg": "chelsea"
+  },
+  {
+   "text": "PLAYED FOR MAN CITY?",
+   "kind": "club",
+   "arg": "mancity"
+  },
+  {
+   "text": "PLAYED FOR REAL MADRID?",
+   "kind": "club",
+   "arg": "realmadrid"
+  },
+  {
+   "text": "PLAYED FOR AC MILAN?",
+   "kind": "club",
+   "arg": "milan",
+   "withheld": true
+  }
+ ]
+}

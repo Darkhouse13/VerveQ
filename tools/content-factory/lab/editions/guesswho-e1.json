@@ -1,0 +1,23 @@
+{
+ "edition": "e1",
+ "secret": "David Beckham",
+ "board": [
+  ["Luís Figo", "FIGO"],
+  ["Mesut Özil", "ÖZIL"],
+  ["Kaká", "KAKÁ"],
+  ["Wayne Rooney", "ROONEY"],
+  ["Xabi Alonso", "XABI ALONSO"],
+  ["Gareth Bale", "BALE"],
+  ["Cesc Fàbregas", "FÀBREGAS"],
+  ["David Beckham", "BECKHAM"],
+  ["Ronaldinho", "RONALDINHO"]
+ ],
+ "questions": [
+  { "text": "PLAYED FOR ARSENAL?", "kind": "club", "arg": "arsenal" },
+  { "text": "PLAYED FOR REAL MADRID?", "kind": "club", "arg": "realmadrid" },
+  { "text": "PLAYED FOR BARCELONA?", "kind": "club", "arg": "barcelona" },
+  { "text": "IS HE SPANISH?", "kind": "nation", "arg": "Spain" },
+  { "text": "PLAYED FOR AC MILAN?", "kind": "club", "arg": "milan" },
+  { "text": "PLAYED FOR PSG?", "kind": "club", "arg": "psg", "withheld": true }
+ ]
+}

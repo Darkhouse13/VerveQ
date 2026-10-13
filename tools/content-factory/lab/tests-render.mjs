@@ -11,7 +11,7 @@
 // (--check) → sound bed → Remotion render → caption → facts.json copy →
 // delivery gate. Out to out/concepts/test-<name>/. Nothing is queued/posted.
 import path from "node:path";
-import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { spawnSync } from "node:child_process";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { bundle } from "@remotion/bundler";
@@ -60,6 +60,9 @@ export const renderTest = async (cfg) => {
       }
     },
   });
+  // the bundle copies all of public/ (~330 MB) into /tmp, a RAM disk here —
+  // autofill renders several a day, so drop it once the frames are out
+  if (serveUrl.startsWith("/tmp/")) rmSync(serveUrl, { recursive: true, force: true });
   writeFileSync(out.replace(/\.mp4$/, ".txt"), cfg.caption(facts));
   writeFileSync(path.join(outDir, "facts.json"), JSON.stringify(facts, null, 1));
   console.log(`\n  → ${out} (+ caption .txt, facts.json, gate.log)`);
@@ -70,7 +73,7 @@ export const renderTest = async (cfg) => {
 };
 
 const TAIL = ["", "Play the daily football quiz free at verveq.com", ""];
-const LAB = {
+export const LAB = {
   xi: {
     test: "xi",
     gate: "xi-facts.mjs",

@@ -1,0 +1,75 @@
+{
+ "edition": "e5",
+ "secret": "Ronaldo Nazário",
+ "board": [
+  [
+   "Luka Modrić",
+   "MODRIĆ"
+  ],
+  [
+   "Ronaldo Nazário",
+   "RONALDO"
+  ],
+  [
+   "David Beckham",
+   "BECKHAM"
+  ],
+  [
+   "Lionel Messi",
+   "MESSI"
+  ],
+  [
+   "Rivaldo",
+   "RIVALDO"
+  ],
+  [
+   "Pierre-Emerick Aubameyang",
+   "AUBAMEYANG"
+  ],
+  [
+   "Kylian Mbappé",
+   "MBAPPÉ"
+  ],
+  [
+   "Klaas-Jan Huntelaar",
+   "HUNTELAAR"
+  ],
+  [
+   "Fernando Torres",
+   "TORRES"
+  ]
+ ],
+ "questions": [
+  {
+   "text": "PLAYED FOR AC MILAN?",
+   "kind": "club",
+   "arg": "milan"
+  },
+  {
+   "text": "PLAYED FOR CHELSEA?",
+   "kind": "club",
+   "arg": "chelsea"
+  },
+  {
+   "text": "PLAYED FOR REAL MADRID?",
+   "kind": "club",
+   "arg": "realmadrid"
+  },
+  {
+   "text": "IS HE CROATIAN?",
+   "kind": "nation",
+   "arg": "Croatia"
+  },
+  {
+   "text": "IS HE ENGLISH?",
+   "kind": "nation",
+   "arg": "England"
+  },
+  {
+   "text": "PLAYED FOR BARCELONA?",
+   "kind": "club",
+   "arg": "barcelona",
+   "withheld": true
+  }
+ ]
+}
