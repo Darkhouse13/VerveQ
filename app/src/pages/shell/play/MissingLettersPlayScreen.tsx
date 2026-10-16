@@ -29,7 +29,7 @@ import { useMutation, useQuery } from "convex/react";
 import type { FunctionReturnType } from "convex/server";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
-import { CalendarDays, Check, Delete, Flame, Infinity as InfinityIcon, Swords, X } from "lucide-react";
+import { CalendarDays, Check, Share2, Delete, Flame, Infinity as InfinityIcon, Swords, X } from "lucide-react";
 import { NeoCard } from "@/components/neo/NeoCard";
 import { NeoButton } from "@/components/neo/NeoButton";
 import { PlayStage } from "@/components/shell/play/PlayStage";
@@ -45,6 +45,9 @@ import {
   ReminderCard,
   StreakBlock,
 } from "@/components/shell/play/whosOlder/WhosOlderRetention";
+import { FollowCard, ShareSheet, StreakLinkOffer } from "@/components/shell/play/whosOlder/DailyShare";
+import { isInstagramInAppBrowser, isInstagramVisitor } from "@/lib/dailyShare";
+import { useStreakLinkClaim } from "@/hooks/useStreakLinkClaim";
 import { useAuth } from "@/contexts/AuthContext";
 import {
   startRun,
@@ -161,6 +164,8 @@ export default function MissingLettersPlayScreen() {
   // email). Claimed once, then stripped from the address bar so a copied URL
   // never carries the token.
   const claimed = useRef(false);
+  // The daily waits for the claim: a browser it links to may already have finished today's.
+  const [reminderLinkSettled, setReminderLinkSettled] = useState(() => !searchParams.has("rt"));
   useEffect(() => {
     if (claimed.current) return;
     const token = searchParams.get("rt");
@@ -172,12 +177,16 @@ export default function MissingLettersPlayScreen() {
         track("missing_letters_reminder_claimed", { confirmed: res.confirmed, ok: res.ok });
         if (res.confirmed) toast.success(t("missingLetters.reminderConfirmed"));
       })
-      .catch((err) => console.error("Reminder link failed:", err));
+      .catch((err) => console.error("Reminder link failed:", err))
+      .finally(() => setReminderLinkSettled(true));
     const url = new URL(window.location.href);
     url.searchParams.delete("rt");
     url.searchParams.delete("confirm");
     window.history.replaceState(window.history.state, "", `${url.pathname}${url.search}`);
   }, [searchParams, claimTokenMut, t]);
+
+  // A streak link from another browser (`?st=`): join this browser to it.
+  const streakLinkSettled = useStreakLinkClaim("letters");
 
   const loadDaily = useCallback(async () => {
     setStatus("loading");
@@ -228,13 +237,14 @@ export default function MissingLettersPlayScreen() {
   useEffect(() => {
     if (autoStarted.current) return;
     if (challengeParam && challengeInfo === undefined) return;
+    if (!streakLinkSettled || !reminderLinkSettled) return;
     autoStarted.current = true;
     if (challengeInfo) {
       track("missing_letters_challenge_opened", { is_today: challengeInfo.isToday, own: challengeInfo.own });
     }
     if (challenge && !challenge.isToday) void loadChallenge(challenge.challengeId);
     else void loadDaily();
-  }, [challengeParam, challengeInfo, challenge, loadChallenge, loadDaily]);
+  }, [challengeParam, challengeInfo, challenge, loadChallenge, loadDaily, streakLinkSettled, reminderLinkSettled]);
 
   // File a finished run of the challenge's date against it (the server reads
   // the score from the session). A player who already had an answer on file
@@ -437,31 +447,16 @@ export default function MissingLettersPlayScreen() {
 
   // Sharing a finished daily IS the challenge: the link replays the same ten
   // boards for whoever opens it. If the challenge cannot be minted the plain
-  // result link still goes out.
-  const share = async (daily: SessionView) => {
-    const total = daily.totalRounds ?? daily.history.length;
-    let url = `${getShareBaseUrl()}/letters?ref=missing_letters_share`;
+  // result link still goes out. The share sheet calls this once as it opens.
+  const [shareOpen, setShareOpen] = useState(false);
+  const makeShareLink = async (daily: SessionView) => {
     try {
       const { challengeId } = await createChallengeMut({ sessionId: daily.sessionId });
-      url = `${getShareBaseUrl()}/letters?c=${challengeId}&ref=missing_letters_challenge`;
       track("missing_letters_challenge_shared", { edition: daily.edition, score: daily.score });
+      return `${getShareBaseUrl()}/letters?c=${challengeId}&ref=missing_letters_challenge`;
     } catch (err) {
       console.error("Challenge link failed:", err);
-    }
-    const text = `${t("missingLetters.challengeText", { n: daily.edition, score: daily.score, total })}\n${emojiRow(daily.history)}`;
-    if (navigator.share) {
-      try {
-        await navigator.share({ title: t("missingLetters.title"), text, url });
-        return;
-      } catch (error) {
-        if (error instanceof DOMException && error.name === "AbortError") return;
-      }
-    }
-    try {
-      await navigator.clipboard.writeText(`${text}\n${url}`);
-      toast.success(t("missingLetters.copied"));
-    } catch {
-      toast.error(t("missingLetters.shareFailed"));
+      return `${getShareBaseUrl()}/letters?ref=missing_letters_share`;
     }
   };
 
@@ -546,24 +541,41 @@ export default function MissingLettersPlayScreen() {
               )}
             </div>
 
-            {streak && <StreakBlock game="letters" current={streak.current} best={streak.best} />}
-
             {isChallengeRun ? (
               <NeoButton variant="accent" size="lg" onClick={loadDaily} data-testid="missing-letters-play-today">
                 <CalendarDays size={18} className="mr-1.5" />
                 {t("missingLetters.playToday", { n: today?.edition ?? "" })}
               </NeoButton>
             ) : (
-              <div className="grid grid-cols-2 gap-3">
-                <NeoButton variant="pink" size="lg" onClick={() => share(daily)} data-testid="missing-letters-challenge-share">
-                  <Swords size={18} className="mr-1.5" />
-                  {t("missingLetters.challengeCta")}
-                </NeoButton>
-                <NeoButton variant="accent" size="lg" onClick={startEndless} disabled={busy} data-testid="missing-letters-endless">
-                  <InfinityIcon size={18} className="mr-1.5" />
-                  {t("missingLetters.playEndless")}
-                </NeoButton>
-              </div>
+              <NeoButton
+                variant="pink"
+                size="lg"
+                className="w-full"
+                onClick={() => {
+                  track("missing_letters_share_pressed", { edition: daily.edition, score: daily.score });
+                  setShareOpen(true);
+                }}
+                data-testid="missing-letters-challenge-share"
+              >
+                <Share2 size={18} className="mr-1.5" />
+                {t("dailyShare.cta")}
+              </NeoButton>
+            )}
+
+            {streak && <StreakBlock game="letters" current={streak.current} best={streak.best} />}
+            {streak && isInstagramInAppBrowser() && <StreakLinkOffer game="letters" streak={streak.current} />}
+            {!isChallengeRun && (
+              <NeoButton
+                variant="outline"
+                size="lg"
+                className="w-full"
+                onClick={startEndless}
+                disabled={busy}
+                data-testid="missing-letters-endless"
+              >
+                <InfinityIcon size={18} className="mr-1.5" />
+                {t("missingLetters.playEndless")}
+              </NeoButton>
             )}
             {!isChallengeRun && bestEndless != null && (
               <p className="text-center font-mono text-[11px] uppercase text-accent">
@@ -571,8 +583,24 @@ export default function MissingLettersPlayScreen() {
               </p>
             )}
 
-            {today?.reminder && <ReminderCard game="letters" reminder={today.reminder} />}
+            {!isChallengeRun && isInstagramVisitor() && <FollowCard game="letters" />}
+            {today?.reminder && <ReminderCard game="letters" reminder={today.reminder} collapsed />}
             {!isChallengeRun && today?.challenges && <ChallengeResults game="letters" challenges={today.challenges} />}
+            {!isChallengeRun && (
+              <ShareSheet
+                game="letters"
+                open={shareOpen}
+                onOpenChange={setShareOpen}
+                makeLink={() => makeShareLink(daily)}
+                result={{
+                  edition: daily.edition,
+                  score: daily.score,
+                  total: daily.totalRounds ?? daily.history.length,
+                  history: daily.history,
+                  standingPct: showStanding ? Math.round((standing.below / standing.finishers) * 100) : null,
+                }}
+              />
+            )}
 
             {/* The ten names — each row carries its verdict colour. */}
             <ol className="space-y-2" data-testid="missing-letters-answers">

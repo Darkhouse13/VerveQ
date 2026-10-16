@@ -51,13 +51,15 @@ export async function finishedDailyDates(ctx: Db, game: DailyGame, userIds: Id<"
 }
 
 /**
- * Every account this player's streak spans: their own, plus — once they have
- * opened a reminder email link — every browser that claimed the same address.
- * The jump from Instagram's in-app browser to the phone's own one mints a new
- * anonymous account; the reminder link is what stitches the two back together.
+ * Every account this player's streak spans: their own, plus every browser
+ * joined to it — by a copied streak link (dailyStreakLinks, either game) or by
+ * opening a reminder email for this game (whosOlderReminderLinks). The jump
+ * from Instagram's in-app browser to the phone's own one mints a new
+ * anonymous account; these links stitch the two back together.
  */
 export async function streakUserIds(ctx: Db, game: DailyGame, userId: Id<"users">) {
   const ids = new Set<Id<"users">>([userId]);
+  for (const id of await streakGroupMembers(ctx, userId)) ids.add(id);
   const link = await ctx.db
     .query("whosOlderReminderLinks")
     .withIndex("by_user_game", (q) => q.eq("userId", userId).eq("game", gameField(game)))
@@ -70,6 +72,24 @@ export async function streakUserIds(ctx: Db, game: DailyGame, userId: Id<"users"
     for (const l of links) ids.add(l.userId);
   }
   return [...ids];
+}
+
+/** This account's streak-link group: its id and every account in it (none → null, [itself]). */
+export async function streakGroupOf(ctx: Db, userId: Id<"users">) {
+  const link = await ctx.db
+    .query("dailyStreakLinks")
+    .withIndex("by_user", (q) => q.eq("userId", userId))
+    .first();
+  if (!link) return { groupId: null, members: [userId] };
+  const rows = await ctx.db
+    .query("dailyStreakLinks")
+    .withIndex("by_group", (q) => q.eq("groupId", link.groupId))
+    .take(20);
+  return { groupId: link.groupId, members: rows.map((r) => r.userId) };
+}
+
+async function streakGroupMembers(ctx: Db, userId: Id<"users">) {
+  return (await streakGroupOf(ctx, userId)).members;
 }
 
 /** The caller's reminder for this game: the one their browser claimed, else the latest they created. */

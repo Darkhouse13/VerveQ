@@ -32,8 +32,8 @@ function convex(args: string[]): string {
 }
 
 /** A fresh visitor whose `navigator.share` records what it was handed. */
-async function visitor(browser: Browser, viewport = { width: 390, height: 844 }): Promise<Page> {
-  const context = await browser.newContext({ timezoneId: "Europe/London", viewport });
+async function visitor(browser: Browser, viewport = { width: 390, height: 844 }, userAgent?: string): Promise<Page> {
+  const context = await browser.newContext({ timezoneId: "Europe/London", viewport, ...(userAgent ? { userAgent } : {}) });
   await context.addInitScript(() => {
     localStorage.setItem("verveq_lang_chosen", "1");
     localStorage.setItem("i18nextLng", "en");
@@ -115,7 +115,9 @@ test("daily, challenge, reminder and endless", async ({ browser }) => {
   }
   expect(rounds).toBe(10);
   await expect(a.getByTestId("missing-letters-streak")).toContainText(/1-day streak/i, { timeout: 15_000 });
-  await expect(a.getByTestId("missing-letters-reminder-form")).toBeVisible();
+  // The email reminder starts as one line (RETURN_LOOP).
+  await expect(a.getByTestId("missing-letters-reminder-expand")).toBeVisible();
+  await expect(a.getByTestId("missing-letters-reminder-form")).toHaveCount(0);
   await a.screenshot({ path: `${SHOTS}/a-result.png`, fullPage: true });
   const names = (await a.getByTestId("missing-letters-answers").locator("li").allInnerTexts()).map(
     (t) => t.split("·")[0].trim(),
@@ -124,14 +126,25 @@ test("daily, challenge, reminder and endless", async ({ browser }) => {
 
   // ── A: challenge a friend ──
   await a.getByTestId("missing-letters-challenge-share").click();
+  await expect(a.getByTestId("missing-letters-share-sheet")).toBeVisible();
+  await a.screenshot({ path: `${SHOTS}/a-share-sheet.png` });
+  await a.getByTestId("missing-letters-share-friend").click();
   await expect
     .poll(() => a.evaluate(() => (window as unknown as { __shared?: ShareData }).__shared?.url ?? null))
     .toMatch(/\/letters\?c=[a-z0-9]+&ref=missing_letters_challenge$/);
   const shared = await a.evaluate(() => (window as unknown as { __shared: ShareData }).__shared);
-  expect(shared.text).toMatch(/^Missing Letters #\d+: I got \d+\/10\. Beat me 👇\n[🟩🟥]{10}$/u);
+  expect(shared.text).toMatch(/^Missing Letters #\d+ · \d+\/10\n[🟩🟥]{3} [🟩🟥]{3} [🟩🟥]{3} [🟩🟥](\nBetter than \d+% of today's players)?$/u);
+  // ── A: the story image (no file sharing in headless Chromium → the save sheet) ──
+  await a.getByRole("button", { name: "Close" }).click();
+  await a.getByTestId("missing-letters-challenge-share").click();
+  await a.getByTestId("missing-letters-share-story").click();
+  await expect(a.getByTestId("missing-letters-story-image")).toBeVisible();
+  await a.screenshot({ path: `${SHOTS}/a-story-sheet.png` });
+  await a.getByRole("button", { name: "Close" }).click();
   const challengePath = new URL(shared.url!).pathname + new URL(shared.url!).search;
 
   // ── A: reminder sign-up (pending until confirmed) ──
+  await a.getByTestId("missing-letters-reminder-expand").click();
   await a.getByPlaceholder("you@email.com").fill(email);
   await a.getByRole("button", { name: "Remind me" }).click();
   await expect(a.getByTestId("missing-letters-reminder-pending")).toContainText("@resend.dev");
@@ -212,3 +225,65 @@ test("daily, challenge, reminder and endless", async ({ browser }) => {
   expect(page).toContain("No more Missing Letters reminders");
   expect(page).toContain("https://verveq.com/letters");
 });
+
+/** Instagram's in-app browser on an iPhone, as PostHog records it. */
+const INSTAGRAM_UA =
+  "Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/15E148 Instagram 350.0.0.25.112 (iPhone15,2; iOS 18_0; en_US; en; scale=3.00; 1179x2556)";
+
+// RETURN_LOOP part C: a streak built inside Instagram's browser follows the
+// player to their phone's own browser through a copied link.
+test("streak link carries the streak to another browser", async ({ browser }) => {
+  test.setTimeout(180_000);
+  const startedAt = Date.now();
+
+  // ── A: the daily, inside Instagram's in-app browser ──
+  const a = await visitor(browser, undefined, INSTAGRAM_UA);
+  await a.context().grantPermissions(["clipboard-read", "clipboard-write"], { origin: "http://localhost:5173" });
+  await a.goto("/letters?utm_source=ig&utm_medium=bio");
+  await expect(board(a)).toBeVisible({ timeout: 30_000 });
+  while (await nextBoard(a)) await guessBlind(a);
+  await expect(a.getByTestId("missing-letters-streak")).toContainText(/1-day streak/i, { timeout: 15_000 });
+  await expect(a.getByTestId("missing-letters-follow")).toBeVisible();
+  await expect(a.getByTestId("missing-letters-streak-link")).toBeVisible();
+  await a.screenshot({ path: `${SHOTS}/streak-link-offer.png`, fullPage: true });
+
+  await a.getByTestId("missing-letters-streak-link-copy").click();
+  const linkBox = a.getByTestId("missing-letters-streak-link-url");
+  await expect(linkBox).toBeVisible({ timeout: 15_000 });
+  const link = await linkBox.inputValue();
+  expect(link).toMatch(/\/letters\?st=[a-f0-9]{64}&ref=streak_link$/);
+  await a.screenshot({ path: `${SHOTS}/streak-link-copied.png` });
+
+  // ── B: the phone's own browser opens it ──
+  const b = await visitor(browser);
+  const target = new URL(link);
+  await b.goto(`${target.pathname}${target.search}`);
+  await expect(b.getByText("Streak connected. It follows you here now.")).toBeVisible({ timeout: 30_000 });
+  await expect(b).not.toHaveURL(/st=/);
+  await b.screenshot({ path: `${SHOTS}/streak-link-claimed.png` });
+
+  // The two browsers are now one streak group.
+  const rows = convex(["data", "dailyStreakLinks", "--limit", "200", "--format", "jsonLines"])
+    .trim()
+    .split("\n")
+    .filter(Boolean)
+    .map((l) => JSON.parse(l) as { groupId: string; userId: string; createdAt: number })
+    .filter((r) => r.createdAt >= startedAt);
+  const groups = new Map<string, string[]>();
+  for (const r of rows) groups.set(r.groupId, [...(groups.get(r.groupId) ?? []), r.userId]);
+  expect([...groups.values()].some((members) => members.length === 2)).toBe(true);
+
+  // ── B: today's daily is already done in A — B opens on that result, not a new board ──
+  await expect(b.getByTestId("missing-letters-streak")).toContainText(/1-day streak/i, { timeout: 30_000 });
+  await expect(b.getByTestId("missing-letters-answers").locator("li")).toHaveCount(10);
+  await expect(b.getByTestId("missing-letters-keyboard")).toHaveCount(0);
+  // Not inside Instagram: no follow card, no streak-link offer.
+  await expect(b.getByTestId("missing-letters-streak-link")).toHaveCount(0);
+  await expect(b.getByTestId("missing-letters-follow")).toHaveCount(0);
+  await b.screenshot({ path: `${SHOTS}/streak-link-b-result.png`, fullPage: true });
+  // Endless stays unlocked from A's finished daily.
+  await b.getByTestId("missing-letters-endless").click();
+  await expect(board(b)).toBeVisible({ timeout: 15_000 });
+  await expect(b.getByText(/^Endless$/).first()).toBeVisible();
+});
+

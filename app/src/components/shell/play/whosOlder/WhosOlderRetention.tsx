@@ -74,7 +74,20 @@ function errorCode(err: unknown): string | null {
   return null;
 }
 
-export function ReminderCard({ reminder, game = "older" }: { reminder: ReminderState; game?: DailyGame }) {
+/**
+ * `collapsed` (the result screens since RETURN_LOOP, 2026-10-16): with no
+ * reminder yet the form starts as one line, "Or get an email reminder", and
+ * `*_reminder_shown` fires only once that line is opened into the form.
+ */
+export function ReminderCard({
+  reminder,
+  game = "older",
+  collapsed = false,
+}: {
+  reminder: ReminderState;
+  game?: DailyGame;
+  collapsed?: boolean;
+}) {
   const { t } = useTranslation("play");
   const { ns, tid, events } = GAME_UI[game];
   // Who's Older's calls stay exactly as they were: no `game` means "older".
@@ -84,13 +97,14 @@ export function ReminderCard({ reminder, game = "older" }: { reminder: ReminderS
   const [email, setEmail] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [expanded, setExpanded] = useState(!collapsed);
 
   const shown = useRef(false);
   useEffect(() => {
-    if (shown.current || reminder.state !== "none") return;
+    if (shown.current || reminder.state !== "none" || !expanded) return;
     shown.current = true;
     track(events.reminderShown);
-  }, [reminder.state, events]);
+  }, [reminder.state, events, expanded]);
 
   const submit = async (e: FormEvent) => {
     e.preventDefault();
@@ -140,6 +154,20 @@ export function ReminderCard({ reminder, game = "older" }: { reminder: ReminderS
           </button>
         )}
       </div>
+    );
+  }
+
+  if (!expanded) {
+    return (
+      <button
+        type="button"
+        data-testid={`${tid}-reminder-expand`}
+        onClick={() => setExpanded(true)}
+        className="inline-flex items-center justify-center gap-2 py-1 text-sm text-muted-foreground underline underline-offset-4 hover:text-foreground"
+      >
+        <Mail size={16} className="shrink-0" />
+        {t("dailyShare.reminderCollapsed")}
+      </button>
     );
   }
 

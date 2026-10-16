@@ -178,13 +178,17 @@ and `utm_medium=reminder|confirm`.
 
 | Event | Fires when | Properties |
 | --- | --- | --- |
-| `whos_older_challenge_shared` | `whosOlder.createChallenge` **resolves** and the share sheet / clipboard is handed the link | `edition`, `score` |
+| `whos_older_challenge_shared` | `whosOlder.createChallenge` **resolves** (since 2026-10-16: as the share sheet opens, before the player picks how to share) | `edition`, `score` |
 | `whos_older_challenge_opened` | a `?c=` link's challenge resolves on arrival | `is_today`, `own` |
 | `whos_older_challenge_finished` | `whosOlder.recordChallengeResult` files a **new** result | `verdict` (`won` \| `lost` \| `tie`), `is_today` |
-| `whos_older_reminder_shown` | the reminder sign-up card first renders for a player with no reminder | — |
+| `whos_older_reminder_shown` | the reminder sign-up form first renders for a player with no reminder (since 2026-10-16 it starts collapsed to one line, so this fires when that line is opened) | — |
 | `whos_older_reminder_subscribed` | `whosOlderReminders.subscribe` **resolves** | `state` (`pending` \| `on`) |
 | `whos_older_reminder_claimed` | a `?rt=` email link is claimed | `confirmed`, `ok` |
 | `whos_older_reminder_turned_off` | "Turn off" is pressed on the result card | — |
+| `whos_older_share_pressed` | "Share result" is pressed (opens the share sheet) | `edition`, `score` |
+| `whos_older_share_sent` | a share goes out: the native share resolves, the clipboard write succeeds, the image is handed to the native share, or the press-and-hold image sheet opens | `method` (`native` \| `clipboard` \| `image_native` \| `image_sheet`), `edition` |
+| `whos_older_follow_shown` | the "Follow @playverveq" card first renders (Instagram visitors only: in-app user agent or instagram.com referrer) | — |
+| `whos_older_follow_clicked` | its Follow link is pressed | — |
 
 #### Missing Letters (daily + end game)
 
@@ -205,6 +209,22 @@ The end-game events mirror Who's Older's, same firing rules and properties:
 | `missing_letters_reminder_subscribed` | `whos_older_reminder_subscribed` |
 | `missing_letters_reminder_claimed` | `whos_older_reminder_claimed` |
 | `missing_letters_reminder_turned_off` | `whos_older_reminder_turned_off` |
+| `missing_letters_share_pressed` | `whos_older_share_pressed` |
+| `missing_letters_share_sent` | `whos_older_share_sent` |
+| `missing_letters_follow_shown` | `whos_older_follow_shown` |
+| `missing_letters_follow_clicked` | `whos_older_follow_clicked` |
+
+#### Streak links (both daily games)
+
+Carrying a daily streak to another browser without an email
+(`convex/dailyStreakLinks.ts`, docs/RETURN_LOOP.md part C). The link is
+`/older|/letters?st=<token>&ref=streak_link`; the token never reaches a
+pageview (`scrubSearch`), so arrivals show as `ref=streak_link`.
+
+| Event | Fires when | Properties |
+| --- | --- | --- |
+| `daily_streak_link_created` | "Copy link" mints a token (Instagram in-app browser only) | `game`, `streak`, `copied` (false = the clipboard refused and the link was shown to copy by hand) |
+| `daily_streak_link_claimed` | a `?st=` link's claim **resolves** | `game`, `ok`, then `accounts` + `already_linked` on success or `reason` (`unknown` \| `signed_out` \| `expired` \| `used_up` \| `group_full`) |
 
 #### Paid direct-to-builder entry (WKND-ENTRY)
 

@@ -70,19 +70,32 @@ test("streak, challenge and reminder loop", async ({ browser }) => {
   await a.goto("/older?utm_source=ig&utm_medium=bio");
   await playThrough(a);
   await expect(a.getByTestId("whos-older-streak")).toContainText(/1-day streak/i, { timeout: 15_000 });
-  await expect(a.getByTestId("whos-older-reminder-form")).toBeVisible();
+  // The email reminder starts as one line (RETURN_LOOP).
+  await expect(a.getByTestId("whos-older-reminder-expand")).toBeVisible();
+  await expect(a.getByTestId("whos-older-reminder-form")).toHaveCount(0);
   await a.screenshot({ path: `${SHOTS}/a-result.png`, fullPage: true });
 
   // ── A: challenge a friend ──
   await a.getByTestId("whos-older-challenge-share").click();
+  await expect(a.getByTestId("whos-older-share-sheet")).toBeVisible();
+  await a.screenshot({ path: `${SHOTS}/a-share-sheet.png` });
+  await a.getByTestId("whos-older-share-friend").click();
   await expect.poll(() => a.evaluate(() => (window as unknown as { __shared?: ShareData }).__shared?.url ?? null)).toMatch(
     /\/older\?c=[a-z0-9]+&ref=whos_older_challenge$/,
   );
   const shared = await a.evaluate(() => (window as unknown as { __shared: ShareData }).__shared);
-  expect(shared.text).toMatch(/I got \d+\/10\. Beat me/);
+  expect(shared.text).toMatch(/^Who's Older\? #\d+ · \d+\/10\n[🟩🟥]{3} [🟩🟥]{3} [🟩🟥]{3} [🟩🟥](\nBetter than \d+% of today's players)?$/u);
+  // ── A: the story image (no file sharing in headless Chromium → the save sheet) ──
+  await a.getByRole("button", { name: "Close" }).click();
+  await a.getByTestId("whos-older-challenge-share").click();
+  await a.getByTestId("whos-older-share-story").click();
+  await expect(a.getByTestId("whos-older-story-image")).toBeVisible();
+  await a.screenshot({ path: `${SHOTS}/a-story-sheet.png` });
+  await a.getByRole("button", { name: "Close" }).click();
   const challengePath = new URL(shared.url!).pathname + new URL(shared.url!).search;
 
   // ── A: reminder sign-up (pending until confirmed) ──
+  await a.getByTestId("whos-older-reminder-expand").click();
   await a.getByPlaceholder("you@email.com").fill(email);
   await a.getByRole("button", { name: "Remind me" }).click();
   await expect(a.getByTestId("whos-older-reminder-pending")).toContainText("@resend.dev");
@@ -115,7 +128,8 @@ test("streak, challenge and reminder loop", async ({ browser }) => {
   await c.goto(`/older?rt=${row!.token}&confirm=1&utm_source=email&utm_medium=confirm`);
   await expect(c.getByText("Reminders on. See you tomorrow 🔥")).toBeVisible({ timeout: 30_000 });
   expect(c.url()).not.toContain("rt=");
-  await playThrough(c);
+  // The email linked C to A, who already finished today: C opens on A's result.
+  await expect(c.getByTestId("whos-older-card-a")).toHaveCount(0);
   await expect(c.getByTestId("whos-older-reminder-on")).toContainText("@resend.dev", { timeout: 15_000 });
   // A sees the confirmation too (same address, reactive).
   await expect(a.getByTestId("whos-older-reminder-on")).toBeVisible({ timeout: 15_000 });

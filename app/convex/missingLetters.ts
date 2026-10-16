@@ -101,6 +101,23 @@ async function findDaily(ctx: Pick<QueryCtx, "db">, userId: Id<"users">, dateKey
     .first();
 }
 
+/**
+ * Today's daily for this player: their own, else one a linked browser already
+ * finished (streak or reminder links, lib/dailyGames.ts streakUserIds). A
+ * daily finished inside Instagram's browser isn't dealt again in Safari: the
+ * player sees that result, and Endless stays unlocked.
+ */
+async function findPlayerDaily(ctx: Pick<QueryCtx, "db">, userId: Id<"users">, dateKey: string) {
+  const own = await findDaily(ctx, userId, dateKey);
+  if (own) return own;
+  for (const id of await streakUserIds(ctx, "letters", userId)) {
+    if (id === userId) continue;
+    const linked = await findDaily(ctx, id, dateKey);
+    if (linked?.status === "completed") return linked;
+  }
+  return null;
+}
+
 const CHALLENGE_LOOKBACK_MS = 7 * 24 * 60 * 60 * 1000;
 
 /** The player's challenges from the last week and who took them. */
@@ -173,7 +190,7 @@ export const getToday = query({
       };
     }
 
-    const daily = await findDaily(ctx, userId, dateKey);
+    const daily = await findPlayerDaily(ctx, userId, dateKey);
     const best = await ctx.db
       .query("missingLettersSessions")
       .withIndex("by_user_kind_score", (q) => q.eq("userId", userId).eq("kind", "endless"))
@@ -204,7 +221,7 @@ export const startDaily = mutation({
     await assertSessionUser(ctx, userId);
 
     const dateKey = getTodayUTC();
-    const existing = await findDaily(ctx, userId, dateKey);
+    const existing = await findPlayerDaily(ctx, userId, dateKey);
     if (existing) return { created: false, session: publicView(existing) };
 
     const boards = buildDailyBoards(POOL, dateKey);
@@ -234,7 +251,7 @@ export const startEndless = mutation({
     await assertSessionUser(ctx, userId);
 
     const dateKey = getTodayUTC();
-    const daily = await findDaily(ctx, userId, dateKey);
+    const daily = await findPlayerDaily(ctx, userId, dateKey);
     if (daily?.status !== "completed") {
       throw new Error("Finish today's Missing Letters to unlock endless");
     }
@@ -335,7 +352,14 @@ export const createChallenge = mutation({
   handler: async (ctx, { sessionId }) => {
     const userId = await getAuthUserId(ctx);
     if (!userId) throw new Error("Not authenticated");
-    const session = await loadOwned(ctx, sessionId, userId);
+    // A daily a linked browser finished is this player's too (findPlayerDaily).
+    const session = await ctx.db.get(sessionId);
+    if (
+      !session ||
+      (session.userId !== userId && !(await streakUserIds(ctx, "letters", userId)).includes(session.userId))
+    ) {
+      throw new Error("Session not found");
+    }
     if (session.kind !== "daily" || session.status !== "completed") {
       throw new Error("Only a finished daily can be a challenge");
     }

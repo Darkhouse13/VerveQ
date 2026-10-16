@@ -529,5 +529,31 @@
     "blankLabel": "Lettre manquante {{n}}",
     "tapToContinue": "Touchez pour continuer",
     "itWas": "C'était {{name}}"
+  },
+  "dailyShare": {
+    "cta": "Partager le résultat",
+    "sheetTitle": "Partage ton résultat",
+    "friend": "Envoyer à un ami",
+    "story": "Publier en story",
+    "storyHint": "Appuie longuement sur l'image pour l'enregistrer, puis ajoute-la à ta story.",
+    "storyAlt": "Carte de résultat {{title}} n°{{n}}",
+    "storyCta": "Tu peux faire mieux ?",
+    "text": "{{title}} #{{n}} · {{score}}/{{total}}",
+    "standing": "Mieux que {{pct}} % des joueurs du jour",
+    "followTitle": "Un nouveau jeu chaque matin sur @{{handle}}",
+    "followBody": "Abonne-toi pour voir le jeu de demain dans ton fil.",
+    "followCta": "Suivre @{{handle}}",
+    "reminderCollapsed": "Ou reçois un rappel par e-mail",
+    "keepTitle": "Tu joueras sur Safari ou Chrome la prochaine fois ?",
+    "keepBody_one": "Garde ta série de {{count}} jour : copie ce lien et ouvre-le là-bas.",
+    "keepBody_other": "Garde ta série de {{count}} jours : copie ce lien et ouvre-le là-bas.",
+    "keepCta": "Copier le lien",
+    "keepCopied": "Copié. Colle-le dans Safari ou Chrome.",
+    "keepManual": "Copie ce lien et ouvre-le dans Safari ou Chrome.",
+    "keepFailed": "Impossible de créer le lien. Réessaie.",
+    "keepRateLimited": "Tu as créé beaucoup de liens aujourd'hui. Utilise celui déjà copié.",
+    "linkConnected": "Série connectée. Elle te suit ici maintenant.",
+    "linkExpired": "Ce lien de série a expiré. Copies-en un nouveau là où tu joues.",
+    "linkUsedUp": "Ce lien de série ne peut plus servir. Copies-en un nouveau."
   }
 }

@@ -529,5 +529,31 @@
     "blankLabel": "Missing letter {{n}}",
     "tapToContinue": "Tap to continue",
     "itWas": "It was {{name}}"
+  },
+  "dailyShare": {
+    "cta": "Share result",
+    "sheetTitle": "Share your result",
+    "friend": "Send to a friend",
+    "story": "Post to your story",
+    "storyHint": "Press and hold the image to save it, then add it to your story.",
+    "storyAlt": "{{title}} #{{n}} result card",
+    "storyCta": "Can you beat it?",
+    "text": "{{title}} #{{n}} · {{score}}/{{total}}",
+    "standing": "Better than {{pct}}% of today's players",
+    "followTitle": "New puzzle every morning on @{{handle}}",
+    "followBody": "Follow us so tomorrow's game shows up in your feed.",
+    "followCta": "Follow @{{handle}}",
+    "reminderCollapsed": "Or get an email reminder",
+    "keepTitle": "Playing in Safari or Chrome next time?",
+    "keepBody_one": "Take your {{count}}-day streak with you: copy this link and open it there.",
+    "keepBody_other": "Take your {{count}}-day streak with you: copy this link and open it there.",
+    "keepCta": "Copy link",
+    "keepCopied": "Copied. Paste it into Safari or Chrome.",
+    "keepManual": "Copy this link and open it in Safari or Chrome.",
+    "keepFailed": "Couldn't make the link. Try again.",
+    "keepRateLimited": "You've made a lot of links today. Use one you already copied.",
+    "linkConnected": "Streak connected. It follows you here now.",
+    "linkExpired": "That streak link has expired. Copy a new one from where you play.",
+    "linkUsedUp": "That streak link can't be used any more. Copy a new one."
   }
 }

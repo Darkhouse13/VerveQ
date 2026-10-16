@@ -1266,6 +1266,33 @@ export default defineSchema({
     .index("by_user_game", ["userId", "game"])
     .index("by_reminder", ["reminderId"]),
 
+  // STREAK LINKS (docs/RETURN_LOOP.md part C) — carrying a daily-game streak
+  // from one browser to another without an email. Every browser is its own
+  // anonymous account; a player who copies a link out of Instagram's in-app
+  // browser and opens it in Safari/Chrome joins the two accounts into one
+  // group, and the streak (lib/dailyGames.ts streakUserIds) counts every
+  // account in it. Per player, not per game: one group serves both games.
+  // `groupId` is the id of the account that started the group, as a string.
+  dailyStreakLinks: defineTable({
+    groupId: v.string(),
+    userId: v.id("users"),
+    createdAt: v.number(),
+  })
+    .index("by_user", ["userId"])
+    .index("by_group", ["groupId"]),
+
+  // A copied streak link: `token` is its secret (`?st=`), good for 7 days and
+  // a few claims, minted at most a few times a day per account.
+  dailyStreakTransfers: defineTable({
+    token: v.string(),
+    fromUserId: v.id("users"),
+    createdAt: v.number(),
+    expiresAt: v.number(),
+    claimCount: v.number(),
+  })
+    .index("by_token", ["token"])
+    .index("by_from_created", ["fromUserId", "createdAt"]),
+
   // MISSING LETTERS (convex/missingLetters.ts) — Who's Older's twin tables,
   // same row model: "daily" = the player's one attempt at that UTC date's
   // shared ten boards, "endless" = a run unlocked by finishing it, "challenge"

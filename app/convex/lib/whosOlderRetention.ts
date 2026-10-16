@@ -132,3 +132,46 @@ export function challengeVerdict(mine: number, theirs: number): ChallengeVerdict
   if (mine < theirs) return "lost";
   return "tie";
 }
+
+// ── Streak links (docs/RETURN_LOOP.md part C) ───────────────────────────────
+
+/** A copied streak link works for a week … */
+export const STREAK_TRANSFER_TTL_MS = 7 * 24 * 60 * 60 * 1000;
+/** … for at most this many browsers … */
+export const STREAK_TRANSFER_MAX_CLAIMS = 3;
+/** … and an account mints at most this many a day. */
+export const STREAK_TRANSFERS_PER_DAY = 5;
+/** One player's browsers: a phone's in-app and own browser, a laptop, a spare. */
+export const STREAK_GROUP_MAX = 5;
+
+export type StreakTransferState = "ok" | "expired" | "used_up" | "own";
+
+export function streakTransferState(
+  transfer: { fromUserId: string; expiresAt: number; claimCount: number },
+  claimerId: string,
+  now: number,
+): StreakTransferState {
+  if (transfer.fromUserId === claimerId) return "own";
+  if (now > transfer.expiresAt) return "expired";
+  if (transfer.claimCount >= STREAK_TRANSFER_MAX_CLAIMS) return "used_up";
+  return "ok";
+}
+
+/**
+ * Joining two accounts' streak groups. Each side is its group (id + members),
+ * or a lone account with no group yet (`groupId: null`, members = [itself]).
+ * The merged group keeps the sender's group id when it has one, else the
+ * claimer's, else starts one named after the sender. Refused past the cap, so
+ * a shared link can't pool a crowd into one streak.
+ */
+export function planStreakMerge(
+  from: { userId: string; groupId: string | null; members: string[] },
+  to: { userId: string; groupId: string | null; members: string[] },
+): { ok: true; groupId: string; members: string[]; alreadyLinked: boolean } | { ok: false; reason: "group_full" } {
+  if (from.groupId && from.groupId === to.groupId) {
+    return { ok: true, groupId: from.groupId, members: [...new Set(from.members)], alreadyLinked: true };
+  }
+  const members = [...new Set([...from.members, ...to.members])];
+  if (members.length > STREAK_GROUP_MAX) return { ok: false, reason: "group_full" };
+  return { ok: true, groupId: from.groupId ?? to.groupId ?? from.userId, members, alreadyLinked: false };
+}

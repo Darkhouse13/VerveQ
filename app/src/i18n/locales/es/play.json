@@ -529,5 +529,31 @@
     "blankLabel": "Letra perdida {{n}}",
     "tapToContinue": "Toca para continuar",
     "itWas": "Era {{name}}"
+  },
+  "dailyShare": {
+    "cta": "Compartir resultado",
+    "sheetTitle": "Comparte tu resultado",
+    "friend": "Enviar a un amigo",
+    "story": "Publicar en historia",
+    "storyHint": "Mantén pulsada la imagen para guardarla y luego añádela a tu historia.",
+    "storyAlt": "Tarjeta de resultado de {{title}} n.º {{n}}",
+    "storyCta": "¿Puedes superarlo?",
+    "text": "{{title}} #{{n}} · {{score}}/{{total}}",
+    "standing": "Mejor que el {{pct}} % de los jugadores de hoy",
+    "followTitle": "Un juego nuevo cada mañana en @{{handle}}",
+    "followBody": "Síguenos para ver el juego de mañana en tu feed.",
+    "followCta": "Seguir a @{{handle}}",
+    "reminderCollapsed": "O recibe un recordatorio por correo",
+    "keepTitle": "¿La próxima vez juegas en Safari o Chrome?",
+    "keepBody_one": "Llévate tu racha de {{count}} día: copia este enlace y ábrelo allí.",
+    "keepBody_other": "Llévate tu racha de {{count}} días: copia este enlace y ábrelo allí.",
+    "keepCta": "Copiar enlace",
+    "keepCopied": "Copiado. Pégalo en Safari o Chrome.",
+    "keepManual": "Copia este enlace y ábrelo en Safari o Chrome.",
+    "keepFailed": "No se pudo crear el enlace. Inténtalo de nuevo.",
+    "keepRateLimited": "Has creado muchos enlaces hoy. Usa uno que ya copiaste.",
+    "linkConnected": "Racha conectada. Ahora te sigue aquí.",
+    "linkExpired": "Ese enlace de racha ha caducado. Copia uno nuevo desde donde juegas.",
+    "linkUsedUp": "Ese enlace de racha ya no se puede usar. Copia uno nuevo."
   }
 }
