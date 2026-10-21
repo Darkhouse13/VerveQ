@@ -130,6 +130,12 @@ describe("App.tsx deep-link wiring (source contract)", () => {
     );
   });
 
+  it("wires /rivals/:opponentUserId through the id-preserving redirect", () => {
+    expect(appSource).toMatch(
+      /path="\/rivals\/:opponentUserId" element=\{<LegacyRivalRedirect \/>\}/,
+    );
+  });
+
   it("registers the v2 arena hub and legal pages", () => {
     expect(appSource).toContain('path="/v2/arena"');
     expect(appSource).toContain('path="/privacy"');

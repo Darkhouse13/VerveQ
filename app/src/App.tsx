@@ -23,7 +23,7 @@ import {
 // Deep-link aliases: legacy v1 mode URLs (and spelling variants like
 // /vervegrid) forward to the shell surface for that mode so shared links land
 // on the mode they name.
-import { LegacyRedirect, LegacyArenaCodeRedirect } from "./components/LegacyRedirect";
+import { LegacyRedirect, LegacyArenaCodeRedirect, LegacyRivalRedirect } from "./components/LegacyRedirect";
 // v1 screens still live in production (embedded in the shell or reused by the
 // v2 play flow) stay statically imported.
 import OnboardingScreen from "./pages/OnboardingScreen";
@@ -35,7 +35,6 @@ import BlitzResultScreen from "./pages/BlitzResultScreen";
 import ForgeScreen from "./pages/ForgeScreen";
 import NotFound from "./pages/NotFound";
 import { ShellGate } from "./components/shell/ShellGate";
-import { ShellLayout } from "./components/shell/ShellLayout";
 import { FirstRunLanguagePrompt } from "./components/shell/FirstRunLanguagePrompt";
 import { RouteMeta } from "./components/RouteMeta";
 import { SeoPageHost, SeoRouteOutlet } from "./components/seo/SeoPageHost";
@@ -231,14 +230,8 @@ const AppRoutes = () => (
             <Route path="/arena" element={<LegacyRedirect to="/v2/arena" />} />
             <Route path="/arena/:code" element={<LegacyArenaCodeRedirect />} />
             <Route path="/rivals" element={<LegacyRedirect to="/v2/rivals" />} />
-            <Route
-              path="/rivals/:opponentUserId"
-              element={
-                <UsernameRequiredRoute>
-                  <RivalDetailScreen />
-                </UsernameRequiredRoute>
-              }
-            />
+            {/* The v1 rival page redirects into the shell one, keeping its id. */}
+            <Route path="/rivals/:opponentUserId" element={<LegacyRivalRedirect />} />
             <Route path="/daily-quiz" element={<LegacyRedirect to="/v2/daily?sport=football" />} />
             {/* /daily is the natural name for the Daily challenge. */}
             <Route path="/daily" element={<LegacyRedirect to="/v2/daily?sport=football" />} />
@@ -325,16 +318,15 @@ const AppRoutes = () => (
                 </ShellGate>
               }
             />
-            {/* Contained legacy surfaces — the existing v1 screens embedded in
-                the shell chrome (v2 nav retained, v1 bottom nav suppressed) so a
-                shell nav target or Compete tile never drops the user back into
-                the v1 app. Gating mirrors the old v1 routes. */}
+            {/* Duels, Rivals and the Forge — shell-native screens (VerveQ ONE
+                P3.3) that render their own ShellLayout. Gating mirrors the old
+                v1 routes. */}
             <Route
               path="/v2/duels"
               element={
                 <ShellGate>
                   <UsernameOnlyRoute>
-                    <ShellLayout embed><ChallengeScreen embedded /></ShellLayout>
+                    <ChallengeScreen />
                   </UsernameOnlyRoute>
                 </ShellGate>
               }
@@ -344,7 +336,7 @@ const AppRoutes = () => (
               element={
                 <ShellGate>
                   <UsernameOnlyRoute>
-                    <ShellLayout embed><DuelHistoryScreen embedded /></ShellLayout>
+                    <DuelHistoryScreen />
                   </UsernameOnlyRoute>
                 </ShellGate>
               }
@@ -374,7 +366,7 @@ const AppRoutes = () => (
               element={
                 <ShellGate>
                   <FullAccountRoute>
-                    <ShellLayout embed><ForgeScreen embedded /></ShellLayout>
+                    <ForgeScreen />
                   </FullAccountRoute>
                 </ShellGate>
               }
@@ -388,7 +380,7 @@ const AppRoutes = () => (
               element={
                 <ShellGate>
                   <UsernameOnlyRoute>
-                    <ShellLayout embed><RivalsListScreen embedded /></ShellLayout>
+                    <RivalsListScreen />
                   </UsernameOnlyRoute>
                 </ShellGate>
               }
@@ -398,7 +390,7 @@ const AppRoutes = () => (
               element={
                 <ShellGate>
                   <UsernameOnlyRoute>
-                    <ShellLayout embed><RivalDetailScreen embedded /></ShellLayout>
+                    <RivalDetailScreen />
                   </UsernameOnlyRoute>
                 </ShellGate>
               }

@@ -1,14 +1,22 @@
+/**
+ * Duel link landing (`/duel/:linkCode`) — the cold entry for a friend's duel.
+ * Shell-native since VerveQ ONE P3.3: every phase (intro, play, the guest's
+ * claim prompt) renders in StageFrame on the Duels accent, one lime action each.
+ */
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useMutation } from "convex/react";
 import { useTranslation } from "react-i18next";
-import { Swords, ArrowRight, Sparkles } from "lucide-react";
+import { Swords, ArrowRight, Sparkles, Copy } from "lucide-react";
 import { notify } from "@/lib/notify";
 import { friendlyError } from "@/lib/errors";
 
-import { NeoCard } from "@/components/neo/NeoCard";
-import { NeoButton } from "@/components/neo/NeoButton";
-import { NeoBadge } from "@/components/neo/NeoBadge";
+import { ResultScreen } from "@/components/shell/play/result/ResultScreen";
+import { ResultActions } from "@/components/shell/play/result/ResultActions";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { DuelFrame, DuelHero, LoadingLine } from "@/components/shell/duels/DuelParts";
+import { SHELL_ROUTES } from "@/lib/shellRoutes";
 import { api } from "../../convex/_generated/api";
 import type { Id } from "../../convex/_generated/dataModel";
 import { useAuth } from "@/contexts/AuthContext";
@@ -173,29 +181,27 @@ export default function DuelLinkScreen() {
 
   if (!linkCode) return null;
 
+  const goHome = () => navigate("/home");
+
   if (phase === "loading") {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <p className="font-heading font-bold animate-pulse">{t("duelLink.loading")}</p>
-      </div>
+      <DuelFrame onExit={goHome}>
+        <LoadingLine>{t("duelLink.loading")}</LoadingLine>
+      </DuelFrame>
     );
   }
 
   if (phase === "error") {
     return (
-      <div className="min-h-screen bg-background px-5 py-8 flex flex-col items-center justify-center">
-        <NeoCard shadow="lg" className="w-full max-w-md text-center py-8">
-          <p className="font-heading font-bold text-lg mb-2">
-            {t("duelLink.linkUnavailableTitle")}
-          </p>
-          <p className="text-xs text-muted-foreground mb-4 break-words">
-            {errorMsg}
-          </p>
-          <NeoButton variant="primary" size="full" onClick={() => navigate("/home")}>
+      <DuelFrame onExit={goHome}>
+        <Card elevation="lifted" padding="lg" className="mt-6 text-center" data-testid="duel-link-error">
+          <p className="mb-2 font-heading text-title-sm font-bold">{t("duelLink.linkUnavailableTitle")}</p>
+          <p className="mb-5 break-words text-body-sm text-muted-foreground">{errorMsg}</p>
+          <Button variant="primary" size="lg" block onClick={goHome}>
             {t("duelLink.goHome")}
-          </NeoButton>
-        </NeoCard>
-      </div>
+          </Button>
+        </Card>
+      </DuelFrame>
     );
   }
 
@@ -204,24 +210,19 @@ export default function DuelLinkScreen() {
   // The challenger opening their own link.
   if (view.role === "challenger") {
     return (
-      <div className="min-h-screen bg-background px-5 py-6 pb-24">
-        <NeoCard shadow="lg" className="text-center py-6">
-          <p className="font-heading font-bold text-lg">{t("duelLink.yourDuelTitle")}</p>
-          <p className="text-sm text-muted-foreground mt-1">
-            {t("duelLink.yourDuelSubtitle")}
-          </p>
-        </NeoCard>
-        <div className="mt-5 space-y-3">
-          <NeoButton
-            variant="primary"
-            size="full"
-            onClick={() => navigate(`/duel/play/${view.duelId}`)}
-          >
+      <DuelFrame onExit={() => navigate(SHELL_ROUTES.duels)}>
+        <div className="flex flex-col gap-4 py-2" data-testid="duel-link-own">
+          <Card elevation="lifted" padding="lg" className="text-center">
+            <p className="font-heading text-title-sm font-bold">{t("duelLink.yourDuelTitle")}</p>
+            <p className="mt-1 text-body-sm text-muted-foreground">{t("duelLink.yourDuelSubtitle")}</p>
+          </Card>
+          <Button variant="primary" size="lg" block onClick={() => navigate(`/duel/play/${view.duelId}`)}>
             {t("duelLink.seeProgress")}
-          </NeoButton>
-          <NeoButton
+          </Button>
+          <Button
             variant="secondary"
-            size="full"
+            size="md"
+            block
             onClick={async () => {
               try {
                 await navigator.clipboard.writeText(buildShareUrl(linkCode));
@@ -231,23 +232,16 @@ export default function DuelLinkScreen() {
               }
             }}
           >
+            <Copy size={18} aria-hidden="true" />
             {t("duelLink.copyLink")}
-          </NeoButton>
-          <NeoButton variant="ghost" size="full" onClick={() => navigate("/challenge")}>
-            {t("duelLink.back")}
-          </NeoButton>
+          </Button>
         </div>
-      </div>
+      </DuelFrame>
     );
   }
 
   if (phase === "intro") {
-    return (
-      <IntroScreen
-        view={view}
-        onStart={() => setPhase("playing")}
-      />
-    );
+    return <IntroScreen view={view} onStart={() => setPhase("playing")} onExit={goHome} />;
   }
 
   if (phase === "playing") {
@@ -278,7 +272,7 @@ export default function DuelLinkScreen() {
           }
           navigate(`/?mode=signup&from=duel`);
         }}
-        onSkip={() => navigate("/home")}
+        onSkip={goHome}
       />
     );
   }
@@ -295,44 +289,37 @@ export default function DuelLinkScreen() {
 function IntroScreen({
   view,
   onStart,
+  onExit,
 }: {
   view: DuelView;
   onStart: () => void;
+  onExit: () => void;
 }) {
   const { t } = useTranslation("screens");
   const challenger = view.challenger.displayName;
   const { isAuthenticated, isGuest } = useAuth();
   const signedIn = isAuthenticated && !isGuest;
   return (
-    <div className="min-h-screen bg-background px-5 py-8 flex flex-col items-center pb-20">
-      <NeoCard shadow="lg" className="w-full max-w-md text-center py-8">
-        <Swords size={32} strokeWidth={2.5} className="mx-auto mb-3" />
-        <NeoBadge color="primary" rotated size="md" className="text-base px-4">
-          {t("duelLink.duelIncoming")}
-        </NeoBadge>
-        <h1 className="font-heading font-bold text-2xl mt-4">
-          {t("duelLink.challengedYou", { challenger })}
-        </h1>
-        <p className="text-sm text-muted-foreground mt-2">
-          {topicLabel(view, t)} · {formatModeLabel(view.mode, t)} · {view.difficulty[0].toUpperCase() + view.difficulty.slice(1)}
-        </p>
-        <p className="text-xs text-muted-foreground mt-1">
-          {t("duelLink.questionCount", { count: view.questionCount })}
-        </p>
-      </NeoCard>
-
-      <div className="w-full max-w-md mt-6 space-y-3">
-        <NeoButton variant="primary" size="full" onClick={onStart}>
-          <ArrowRight size={18} strokeWidth={3} />
-          {t("duelLink.playNow")}
-        </NeoButton>
-        {!signedIn && (
-          <p className="text-[11px] text-center text-muted-foreground">
-            {t("duelLink.guestHint")}
+    <DuelFrame onExit={onExit}>
+      <div className="flex flex-col gap-4 py-2" data-testid="duel-link-intro">
+        <Card tone="mode" elevation="lifted" padding="lg" className="text-center">
+          <Swords size={32} strokeWidth={2.5} className="mx-auto mb-3" aria-hidden="true" />
+          <p className="font-mono text-eyebrow font-bold uppercase">{t("duelLink.duelIncoming")}</p>
+          <h1 className="mt-2 font-heading text-title-lg font-bold">{t("duelLink.challengedYou", { challenger })}</h1>
+          <p className="mt-3 text-body-sm font-bold">
+            {topicLabel(view, t)} · {formatModeLabel(view.mode, t)} ·{" "}
+            {view.difficulty[0].toUpperCase() + view.difficulty.slice(1)}
           </p>
-        )}
+          <p className="mt-1 text-body-sm">{t("duelLink.questionCount", { count: view.questionCount })}</p>
+        </Card>
+
+        <Button variant="primary" size="lg" block onClick={onStart} data-testid="duel-link-play">
+          <ArrowRight size={20} strokeWidth={3} aria-hidden="true" />
+          {t("duelLink.playNow")}
+        </Button>
+        {!signedIn && <p className="text-center text-meta text-muted-foreground">{t("duelLink.guestHint")}</p>}
       </div>
-    </div>
+    </DuelFrame>
   );
 }
 
@@ -350,36 +337,32 @@ function ConvertPrompt({
   const { t } = useTranslation("screens");
   const opponent = view.role === "challenger" ? view.opponent.displayName : view.challenger.displayName;
   return (
-    <div className="min-h-screen bg-background px-5 py-8 flex flex-col items-center pb-20">
-      <NeoCard shadow="lg" className="w-full max-w-md text-center py-8">
-        <Sparkles size={28} strokeWidth={2.5} className="mx-auto mb-3" />
-        <NeoBadge color="success" rotated size="md" className="text-base px-4">
-          {t("duelLink.niceRound")}
-        </NeoBadge>
-        <p className="font-mono font-bold text-4xl mt-4">
-          {view.myResult.score}
-        </p>
-        <p className="text-xs text-muted-foreground mt-1">{t("duelLink.yourScore")}</p>
-        <p className="text-xs mt-3">
-          {t("duelLink.versusOpponent", { opponent })}{" "}
-          <span className="font-mono font-bold">{view.opponentResult.score}</span>
-        </p>
-        <p className="font-heading font-bold text-lg mt-5">
-          {t("duelLink.claimScoreTitle")}
-        </p>
-        <p className="text-sm text-muted-foreground mt-1">
-          {t("duelLink.claimScoreSubtitle")}
-        </p>
-      </NeoCard>
-
-      <div className="w-full max-w-md mt-6 space-y-3">
-        <NeoButton variant="primary" size="full" onClick={onSignUp}>
-          {t("duelLink.createAccount")}
-        </NeoButton>
-        <NeoButton variant="ghost" size="full" onClick={onSkip}>
-          {t("duelLink.maybeLater")}
-        </NeoButton>
-      </div>
-    </div>
+    <DuelFrame onExit={onSkip}>
+      <ResultScreen
+        testId="duel-link-claim"
+        hero={
+          <DuelHero
+            eyebrow={t("duelLink.niceRound")}
+            headline={t("duelLink.claimScoreTitle")}
+            myScore={view.myResult.score}
+            opponentScore={view.opponentResult.score}
+            youLabel={t("duelLink.yourScore")}
+            opponentLabel={`@${opponent}`}
+          />
+        }
+        status={<p className="text-center text-body-sm text-muted-foreground">{t("duelLink.claimScoreSubtitle")}</p>}
+        actions={
+          <ResultActions
+            primary={{
+              label: t("duelLink.createAccount"),
+              icon: <Sparkles size={18} aria-hidden="true" />,
+              onClick: onSignUp,
+              testId: "duel-link-signup",
+            }}
+            secondary={[{ label: t("duelLink.maybeLater"), onClick: onSkip, testId: "duel-link-skip" }]}
+          />
+        }
+      />
+    </DuelFrame>
   );
 }

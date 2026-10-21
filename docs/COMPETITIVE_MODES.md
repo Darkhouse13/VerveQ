@@ -14,8 +14,8 @@ describes the v2 surface.
 
 - The shell nav exposes one competitive entry: `Compete` -> `/compete`
   (`app/src/components/shell/ShellNav.tsx`). There is no `Challenge` tab. The v1
-  `BottomNav` still lists `Challenge` -> `/challenge`, but that route redirects
-  to `/v2/duels` while the shell flag is on.
+  `BottomNav` was deleted in VerveQ ONE P3.3; `/challenge` redirects to
+  `/v2/duels`.
 - The live head-to-head routes are `/v2/duels`, `/v2/duels/history`, `/v2/arena`,
   `/v2/arena/:code`, `/v2/rivals`, and `/v2/rivals/:opponentUserId`. All except
   `/v2/arena/:code` are wrapped in `ShellGate` + `UsernameOnlyRoute`, so a

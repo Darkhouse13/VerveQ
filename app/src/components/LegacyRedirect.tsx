@@ -24,3 +24,10 @@ export function LegacyArenaCodeRedirect() {
   const { code = "" } = useParams<{ code: string }>();
   return <Navigate to={`/v2/arena/${code}`} replace />;
 }
+
+/** Legacy rival pages: `/rivals/:opponentUserId` lands on the shell rival
+ * page (`/v2/rivals/:opponentUserId`), keeping the opponent id. */
+export function LegacyRivalRedirect() {
+  const { opponentUserId = "" } = useParams<{ opponentUserId: string }>();
+  return <Navigate to={`/v2/rivals/${opponentUserId}`} replace />;
+}
