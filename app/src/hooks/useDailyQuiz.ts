@@ -18,7 +18,7 @@ import { useMutation, useQuery } from "convex/react";
 import { usePreferredDailySport } from "@/hooks/usePreferredDailySport";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
-import { friendlyError } from "@/lib/errors";
+import { friendlyError, isAlreadyAttemptedError } from "@/lib/errors";
 import { api } from "../../convex/_generated/api";
 import { useAntiCheat } from "@/hooks/useAntiCheat";
 import { useAuth } from "@/contexts/AuthContext";
@@ -140,8 +140,7 @@ export function useDailyQuiz(): DailyQuizState {
         setLoading(false);
         startTime.current = Date.now();
       } catch (e) {
-        const msg = e instanceof Error ? e.message : "Failed";
-        if (msg.includes("Already attempted")) {
+        if (isAlreadyAttemptedError(e)) {
           toast.error(t("dailyQuiz.alreadyPlayed"));
           navigate(SHELL_ROUTES.home, { replace: true });
         } else {

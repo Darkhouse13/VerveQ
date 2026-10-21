@@ -40,6 +40,7 @@ import {
 import { api } from "../../../../convex/_generated/api";
 import type { Id } from "../../../../convex/_generated/dataModel";
 import type { GameResultState } from "@/types/api";
+import { isAlreadyAttemptedError } from "@/lib/errors";
 import {
   Dialog,
   DialogContent,
@@ -270,8 +271,7 @@ export default function SurvivalPlayScreen({ daily = false }: { daily?: boolean 
       } catch (error) {
         if (
           daily &&
-          error instanceof Error &&
-          /already attempted/i.test(error.message)
+          isAlreadyAttemptedError(error)
         ) {
           setPlayedToday(true);
           setLoading(false);

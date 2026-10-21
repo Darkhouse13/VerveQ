@@ -1,4 +1,5 @@
 import { internalMutation, mutation, query, type MutationCtx } from "./_generated/server";
+import { alreadyAttemptedError } from "./lib/dailyAttemptErrors";
 import { v } from "convex/values";
 import { getAuthUserId } from "@convex-dev/auth/server";
 // The daily is IDENTITY-tier (FR-1B): it is the habit loop, it never writes
@@ -564,7 +565,7 @@ export const startAttempt = mutation({
 
     if (existing) {
       if (!canRestartAttempt(existing, now)) {
-        throw new Error("Already attempted today's challenge");
+        throw alreadyAttemptedError();
       }
 
       await ctx.db.patch(existing._id, {

@@ -156,3 +156,28 @@ export function friendlyError(
   // fallback supplied by the call site.
   return fallback;
 }
+
+/**
+ * The `code` a server mutation threw as `ConvexError({ code, … })`, or null.
+ * A ConvexError's `data` is the only payload production Convex lets through —
+ * a plain Error's message arrives redacted to "Server Error" — so codes are the
+ * reliable way to branch on a server failure. Duck-typed rather than
+ * `instanceof ConvexError` so a second copy of `convex/values` can't break it.
+ */
+export function convexErrorCode(error: unknown): string | null {
+  if (!error || typeof error !== "object" || !("data" in error)) return null;
+  const data = (error as { data?: unknown }).data;
+  if (!data || typeof data !== "object" || !("code" in data)) return null;
+  const code = (data as { code?: unknown }).code;
+  return typeof code === "string" ? code : null;
+}
+
+/**
+ * True when a daily start failed because today's attempt is already used.
+ * Matches the server's `already_attempted` code (convex/lib/dailyAttemptErrors)
+ * and, for older deployments and dev, the legacy message.
+ */
+export function isAlreadyAttemptedError(error: unknown): boolean {
+  if (convexErrorCode(error) === "already_attempted") return true;
+  return error instanceof Error && /already attempted/i.test(error.message);
+}

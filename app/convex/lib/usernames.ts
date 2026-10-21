@@ -1,5 +1,7 @@
 import type { Doc, Id } from "../_generated/dataModel";
 import type { MutationCtx, QueryCtx } from "../_generated/server";
+import { ConvexError } from "convex/values";
+import { isBlockedName } from "./usernameBlocklist";
 
 const USERNAME_RE = /^[a-z0-9_]{3,24}$/;
 
@@ -90,6 +92,14 @@ export async function claimUsernameForUser(
   const username = normalizeUsername(rawUsername);
   if (!isValidUsername(username)) {
     throw new Error("Username must be 3-24 lowercase letters, numbers, or underscores.");
+  }
+  if (isBlockedName(username)) {
+    // ConvexError so the code survives prod redaction; the client maps
+    // `invalid_username` to its own safe copy.
+    throw new ConvexError({
+      code: "invalid_username",
+      message: "That username isn't allowed. Choose another one.",
+    });
   }
 
   const existingOwners = await getExistingUsernameOwners(ctx, username);

@@ -1,4 +1,5 @@
 import { mutation, query, type MutationCtx } from "./_generated/server";
+import { alreadyAttemptedError } from "./lib/dailyAttemptErrors";
 import { v } from "convex/values";
 import { getAuthUserId } from "@convex-dev/auth/server";
 import { findBestMatch } from "./lib/fuzzy";
@@ -1316,7 +1317,7 @@ export const startDailyGame = mutation({
           completedAt: Date.now(),
         });
       }
-      throw new Error("Already attempted today's challenge");
+      throw alreadyAttemptedError();
     }
 
     const daily = await ensureDailySurvivalChallenge(ctx, date);

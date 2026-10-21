@@ -10,6 +10,7 @@ import {
   isValidUsername,
   normalizeUsername,
 } from "./lib/usernames";
+import { cleanDisplayName } from "./lib/usernameBlocklist";
 import { describePasswordReason, validatePassword } from "./lib/passwordPolicy";
 import { assertClientSport } from "./lib/sports";
 
@@ -127,8 +128,8 @@ export const ensureProfile = mutation({
       if (existing?.isGuest !== args.isGuest) {
         updates.isGuest = args.isGuest;
       }
-      if (!existing?.displayName && args.displayName) {
-        updates.displayName = args.displayName;
+      if (!existing?.displayName && cleanDisplayName(args.displayName)) {
+        updates.displayName = cleanDisplayName(args.displayName);
       }
       if (existing?.totalGames === undefined) {
         updates.totalGames = 0;
@@ -142,7 +143,7 @@ export const ensureProfile = mutation({
 
     await ctx.db.patch(userId, {
       username: candidate,
-      displayName: args.displayName ?? existing?.displayName ?? candidate,
+      displayName: cleanDisplayName(args.displayName) ?? existing?.displayName ?? candidate,
       isGuest: args.isGuest,
       totalGames: existing?.totalGames ?? 0,
     });
@@ -191,7 +192,7 @@ export const claimUsernameOnly = mutation({
     const { username } = await claimUsernameForUser(ctx, args.username, userId);
     await ctx.db.patch(userId, {
       username,
-      displayName: args.displayName?.trim() || existing.displayName || username,
+      displayName: cleanDisplayName(args.displayName) || existing.displayName || username,
       isGuest: false,
       totalGames: existing.totalGames ?? 0,
     });
@@ -390,7 +391,7 @@ export const upgradeUsernameOnly = mutation({
 
     await ctx.db.patch(userId, {
       email,
-      displayName: args.displayName?.trim() || existing.displayName || existing.username,
+      displayName: cleanDisplayName(args.displayName) || existing.displayName || existing.username,
       isGuest: false,
       isAnonymous: false,
       totalGames: existing.totalGames ?? 0,
