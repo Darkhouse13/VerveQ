@@ -4,13 +4,7 @@ import { NeoButton } from "@/components/neo/NeoButton";
 import { NeoAvatar } from "@/components/neo/NeoAvatar";
 import { NeoBadge } from "@/components/neo/NeoBadge";
 import { BottomNav } from "@/components/neo/BottomNav";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-} from "@/components/ui/dialog";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Lock, Trophy, Zap, Target, Flame, Star, Calendar, UserPlus } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useQuery } from "convex/react";
@@ -375,30 +369,16 @@ export default function ProfileScreen({ embedded = false }: { embedded?: boolean
         </div>
       </div>
 
-      <Dialog open={signOutConfirmOpen} onOpenChange={setSignOutConfirmOpen}>
-        <DialogContent className="neo-border bg-card">
-          <DialogHeader>
-            <DialogTitle className="font-heading uppercase">Sign out?</DialogTitle>
-            <DialogDescription className="text-sm">
-              You'll return to the sign-in screen. Your account is saved, and
-              you can sign back in anytime to see your ELO, achievements, and
-              ranks.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="flex gap-3 mt-4">
-            <NeoButton
-              variant="secondary"
-              size="full"
-              onClick={() => setSignOutConfirmOpen(false)}
-            >
-              Cancel
-            </NeoButton>
-            <NeoButton variant="danger" size="full" onClick={handleSignOut}>
-              Sign Out
-            </NeoButton>
-          </div>
-        </DialogContent>
-      </Dialog>
+      <ConfirmDialog
+        open={signOutConfirmOpen}
+        onOpenChange={setSignOutConfirmOpen}
+        title="Sign out?"
+        description="You'll return to the sign-in screen. Your account is saved, and you can sign back in anytime to see your ELO, achievements, and ranks."
+        cancelLabel="Cancel"
+        confirmLabel="Sign Out"
+        danger
+        onConfirm={handleSignOut}
+      />
 
       {!embedded && <BottomNav />}
     </div>

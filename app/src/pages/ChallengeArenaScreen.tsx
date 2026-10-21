@@ -33,6 +33,8 @@ import { NeoButton } from "@/components/neo/NeoButton";
 import { NeoBadge } from "@/components/neo/NeoBadge";
 import { NeoInput } from "@/components/neo/NeoInput";
 import { QuestionImage } from "@/components/QuestionImage";
+import { Sheet } from "@/components/ui/sheet";
+import { OverlayDismiss } from "@/components/ui/overlay";
 import { useAuth } from "@/contexts/AuthContext";
 import { api } from "../../convex/_generated/api";
 import type { Id } from "../../convex/_generated/dataModel";
@@ -404,111 +406,80 @@ function ArenaHeader({
 }
 
 function ArenaHelpModal({ onClose }: { onClose: () => void }) {
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose();
-    };
-    window.addEventListener("keydown", onKey);
-    const previousOverflow = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-    return () => {
-      window.removeEventListener("keydown", onKey);
-      document.body.style.overflow = previousOverflow;
-    };
-  }, [onClose]);
-
   return (
-    <div
-      role="dialog"
-      aria-modal="true"
-      aria-label="How Challenge Arena works"
-      className="fixed inset-0 z-50 bg-background/80 backdrop-blur-sm flex items-end sm:items-center justify-center px-4 py-6"
-      onClick={onClose}
+    <Sheet
+      open
+      onOpenChange={(next) => !next && onClose()}
+      mdCenter
+      title="How the Arena works"
+      closeLabel="Close help"
+      className="max-w-md"
     >
-      <div
-        className="w-full max-w-md animate-slide-up"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <NeoCard shadow="lg" className="relative py-5">
-          <button
-            type="button"
-            onClick={onClose}
-            aria-label="Close help"
-            className="absolute top-3 right-3 neo-border neo-shadow rounded-full w-8 h-8 bg-background cursor-pointer active:neo-shadow-pressed inline-flex items-center justify-center"
-          >
-            <X size={14} strokeWidth={3} />
-          </button>
-          <div className="pr-8">
-            <NeoBadge color="primary" rotated size="md" className="text-base">
-              How the Arena works
-            </NeoBadge>
-          </div>
-          <ul className="mt-4 space-y-2.5 text-sm leading-snug">
-            <li className="flex items-start gap-2">
-              <span className="neo-border rounded-full w-6 h-6 shrink-0 flex items-center justify-center font-mono font-bold text-[11px] bg-card">
-                ▶
-              </span>
-              <span>
-                <span className="font-heading font-bold">Rounds of rapid-fire questions.</span>{" "}
-                Each round runs a single subject back-to-back.
-              </span>
-            </li>
-            <li className="flex items-start gap-2">
-              <span className="neo-border rounded-full w-6 h-6 shrink-0 flex items-center justify-center font-mono font-bold text-[11px] bg-card">
-                ☰
-              </span>
-              <span>
-                <span className="font-heading font-bold">The host picks the format.</span>{" "}
-                Rounds and subjects are chosen when the arena is created — see the next one on the break screen.
-              </span>
-            </li>
-            <li className="flex items-start gap-2">
-              <span className="neo-border rounded-full w-6 h-6 shrink-0 flex items-center justify-center font-mono font-bold text-[11px] bg-card">
-                ☝︎
-              </span>
-              <span>
-                <span className="font-heading font-bold">Tap to answer.</span>{" "}
-                Your pick locks in the moment you tap — there's no confirm button.
-              </span>
-            </li>
-            <li className="flex items-start gap-2">
-              <span className="neo-border rounded-full w-6 h-6 shrink-0 flex items-center justify-center font-mono font-bold text-[11px] bg-card">
-                ⚡
-              </span>
-              <span>
-                <span className="font-heading font-bold">Fastest correct scores most.</span>{" "}
-                Wrong or missed answers score 0.
-              </span>
-            </li>
-            <li className="flex items-start gap-2">
-              <span className="neo-border rounded-full w-6 h-6 shrink-0 flex items-center justify-center font-mono font-bold text-[11px] bg-card">
-                ✓
-              </span>
-              <span>
-                <span className="font-heading font-bold">Ready up to start.</span>{" "}
-                The host kicks it off once everyone in the lobby is ready.
-              </span>
-            </li>
-            <li className="flex items-start gap-2">
-              <span className="neo-border rounded-full w-6 h-6 shrink-0 flex items-center justify-center font-mono font-bold text-[11px] bg-card">
-                ↩
-              </span>
-              <span>
-                <span className="font-heading font-bold">Leave anytime.</span>{" "}
-                You can drop out from the header — the rest of the room keeps playing.
-              </span>
-            </li>
-          </ul>
-          <button
-            type="button"
-            onClick={onClose}
-            className="mt-5 w-full neo-border neo-shadow rounded-lg py-2.5 bg-primary text-primary-foreground font-heading font-bold text-sm uppercase cursor-pointer active:neo-shadow-pressed"
-          >
-            Got it
-          </button>
-        </NeoCard>
-      </div>
-    </div>
+      <ul className="space-y-2.5 text-sm leading-snug">
+        <li className="flex items-start gap-2">
+          <span className="neo-border rounded-full w-6 h-6 shrink-0 flex items-center justify-center font-mono font-bold text-[11px] bg-card">
+            ▶
+          </span>
+          <span>
+            <span className="font-heading font-bold">Rounds of rapid-fire questions.</span>{" "}
+            Each round runs a single subject back-to-back.
+          </span>
+        </li>
+        <li className="flex items-start gap-2">
+          <span className="neo-border rounded-full w-6 h-6 shrink-0 flex items-center justify-center font-mono font-bold text-[11px] bg-card">
+            ☰
+          </span>
+          <span>
+            <span className="font-heading font-bold">The host picks the format.</span>{" "}
+            Rounds and subjects are chosen when the arena is created — see the next one on the break screen.
+          </span>
+        </li>
+        <li className="flex items-start gap-2">
+          <span className="neo-border rounded-full w-6 h-6 shrink-0 flex items-center justify-center font-mono font-bold text-[11px] bg-card">
+            ☝︎
+          </span>
+          <span>
+            <span className="font-heading font-bold">Tap to answer.</span>{" "}
+            Your pick locks in the moment you tap — there's no confirm button.
+          </span>
+        </li>
+        <li className="flex items-start gap-2">
+          <span className="neo-border rounded-full w-6 h-6 shrink-0 flex items-center justify-center font-mono font-bold text-[11px] bg-card">
+            ⚡
+          </span>
+          <span>
+            <span className="font-heading font-bold">Fastest correct scores most.</span>{" "}
+            Wrong or missed answers score 0.
+          </span>
+        </li>
+        <li className="flex items-start gap-2">
+          <span className="neo-border rounded-full w-6 h-6 shrink-0 flex items-center justify-center font-mono font-bold text-[11px] bg-card">
+            ✓
+          </span>
+          <span>
+            <span className="font-heading font-bold">Ready up to start.</span>{" "}
+            The host kicks it off once everyone in the lobby is ready.
+          </span>
+        </li>
+        <li className="flex items-start gap-2">
+          <span className="neo-border rounded-full w-6 h-6 shrink-0 flex items-center justify-center font-mono font-bold text-[11px] bg-card">
+            ↩
+          </span>
+          <span>
+            <span className="font-heading font-bold">Leave anytime.</span>{" "}
+            You can drop out from the header — the rest of the room keeps playing.
+          </span>
+        </li>
+      </ul>
+      <OverlayDismiss asChild>
+        <button
+          type="button"
+          className="w-full neo-border neo-shadow rounded-lg py-2.5 bg-primary text-primary-foreground font-heading font-bold text-sm uppercase cursor-pointer active:neo-shadow-pressed"
+        >
+          Got it
+        </button>
+      </OverlayDismiss>
+    </Sheet>
   );
 }
 

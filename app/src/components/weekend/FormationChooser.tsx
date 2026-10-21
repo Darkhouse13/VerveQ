@@ -18,8 +18,8 @@
  */
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import * as DialogPrimitive from "@radix-ui/react-dialog";
-import { ChevronDown, Lock, X } from "lucide-react";
+import { ChevronDown, Lock } from "lucide-react";
+import { Sheet } from "@/components/ui/sheet";
 import { SLOT_ROLES, type SlotRole } from "../../../convex/lib/fantasyConstants";
 import {
   FORMATION_CATALOGUE,
@@ -195,49 +195,31 @@ export function FormationSection({
         <ChevronDown size={13} strokeWidth={3} aria-hidden />
       </button>
 
-      {/* Bottom sheet on the raw Radix primitives (the DrawSheet precedent):
-          components/ui/dialog is centre-anchored with centre-anchored motion;
-          this is bottom-anchored with its own slide-up. The primitives still
-          carry the focus trap, Escape, scroll lock and aria wiring. */}
-      <DialogPrimitive.Root open={open} onOpenChange={setOpen}>
-        <DialogPrimitive.Portal>
-          <DialogPrimitive.Overlay className="fixed inset-0 z-50 bg-black/80 data-[state=open]:animate-in data-[state=open]:fade-in-0" />
-          <DialogPrimitive.Content
-            data-testid="formation-sheet"
-            className="theme-weekend weekend-sheet-in fixed bottom-0 left-1/2 -translate-x-1/2 z-50 w-full max-w-sm neo-border neo-shadow-lg rounded-t-xl border-b-0 bg-background text-foreground p-5 pb-[max(1.5rem,env(safe-area-inset-bottom))] flex flex-col gap-4 max-h-[80dvh] overflow-y-auto"
-          >
-            <div className="flex items-start justify-between gap-2">
-              <DialogPrimitive.Title className="font-heading font-bold text-lg">
-                {t("weekend.shapeSheetTitle", {
-                  defaultValue: "Your shape & finishers",
-                })}
-              </DialogPrimitive.Title>
-              <DialogPrimitive.Close
-                className="neo-border rounded bg-card p-1 shrink-0 active:neo-shadow-pressed"
-                aria-label={t("common.close", { defaultValue: "Close" })}
-              >
-                <X size={14} strokeWidth={3} />
-              </DialogPrimitive.Close>
-            </div>
-            <FormationChooser
-              selectedName={displayFormation?.name ?? null}
-              disabledNames={disabledNames}
-              busy={busy}
-              onSelectFormation={(formation) => {
-                setOpen(false);
-                if (sameShape(formation.shape, shape)) {
-                  onRelayout(formation);
-                  return;
-                }
-                const plan = planFormationChange(slots, formation.shape);
-                if (plan.ok) onShapePlan(formation, plan);
-              }}
-              finishers={finishers}
-              onFinisherRole={onFinisherRole}
-            />
-          </DialogPrimitive.Content>
-        </DialogPrimitive.Portal>
-      </DialogPrimitive.Root>
+      <Sheet
+        open={open}
+        onOpenChange={setOpen}
+        testId="formation-sheet"
+        title={t("weekend.shapeSheetTitle", {
+          defaultValue: "Your shape & finishers",
+        })}
+      >
+        <FormationChooser
+          selectedName={displayFormation?.name ?? null}
+          disabledNames={disabledNames}
+          busy={busy}
+          onSelectFormation={(formation) => {
+            setOpen(false);
+            if (sameShape(formation.shape, shape)) {
+              onRelayout(formation);
+              return;
+            }
+            const plan = planFormationChange(slots, formation.shape);
+            if (plan.ok) onShapePlan(formation, plan);
+          }}
+          finishers={finishers}
+          onFinisherRole={onFinisherRole}
+        />
+      </Sheet>
     </div>
   );
 }

@@ -20,6 +20,7 @@ import type { ReactNode } from "react";
 import { LogOut } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
+import { ThemeScope } from "@/components/ui/theme-scope";
 
 interface PlayStageProps {
   /** Eyebrow/title shown in the fixed header. */
@@ -71,6 +72,7 @@ export function PlayStage({
   const { t } = useTranslation("play");
   const resolvedExitLabel = exitLabel ?? t("stage.exit");
   return (
+    <ThemeScope theme={theme}>
     <div
       className={cn(
         theme,
@@ -151,5 +153,6 @@ export function PlayStage({
         )}
       </main>
     </div>
+    </ThemeScope>
   );
 }

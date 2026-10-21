@@ -1,13 +1,13 @@
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useMutation, useQuery } from "convex/react";
-import * as DialogPrimitive from "@radix-ui/react-dialog";
-import { ChevronRight, Heart, Lock, X } from "lucide-react";
+import { ChevronRight, Heart, Lock } from "lucide-react";
 import { toast } from "sonner";
 import { api } from "../../../convex/_generated/api";
 import { NeoCard } from "@/components/neo/NeoCard";
 import { NeoButton } from "@/components/neo/NeoButton";
 import { NeoInput } from "@/components/neo/NeoInput";
+import { Sheet } from "@/components/ui/sheet";
 import { leagueName } from "@/lib/leagueNames";
 import { friendlyError } from "@/lib/errors";
 
@@ -163,125 +163,111 @@ export function FavoriteClubCard() {
         />
       </NeoCard>
 
-      <DialogPrimitive.Root
+      <Sheet
         open={open}
         onOpenChange={(next) => {
           if (!next) close();
           else setOpen(true);
         }}
+        testId="favorite-club-sheet"
+        // The club list scrolls on its own under the search field.
+        className="gap-3 max-h-[70dvh] overflow-y-visible"
+        titleClassName="whitespace-normal"
+        title={
+          candidate === null
+            ? t("weekend.favoriteClubTitle", {
+                defaultValue: "Favorite club",
+              })
+            : t("weekend.favoriteClubConfirmTitle", {
+                defaultValue: "{{club}}, for good?",
+                club: candidate.name,
+              })
+        }
       >
-        <DialogPrimitive.Portal>
-          <DialogPrimitive.Overlay className="fixed inset-0 z-50 bg-black/80 data-[state=open]:animate-in data-[state=open]:fade-in-0" />
-          <DialogPrimitive.Content
-            data-testid="favorite-club-sheet"
-            aria-describedby={undefined}
-            className="theme-weekend weekend-sheet-in fixed bottom-0 left-1/2 -translate-x-1/2 z-50 w-full max-w-sm neo-border neo-shadow-lg rounded-t-xl border-b-0 bg-background text-foreground p-5 pb-[max(1.5rem,env(safe-area-inset-bottom))] flex flex-col gap-3 max-h-[70dvh]"
-          >
-            <div className="flex items-start justify-between gap-2">
-              <DialogPrimitive.Title className="font-heading font-bold text-lg">
-                {candidate === null
-                  ? t("weekend.favoriteClubTitle", {
-                      defaultValue: "Favorite club",
-                    })
-                  : t("weekend.favoriteClubConfirmTitle", {
-                      defaultValue: "{{club}}, for good?",
-                      club: candidate.name,
-                    })}
-              </DialogPrimitive.Title>
-              <DialogPrimitive.Close
-                className="neo-border rounded bg-card p-1 shrink-0 active:neo-shadow-pressed"
-                aria-label={t("common.close", { defaultValue: "Close" })}
-              >
-                <X size={14} strokeWidth={3} />
-              </DialogPrimitive.Close>
+        {candidate === null ? (
+          <>
+            <p
+              className="neo-border rounded-lg bg-destructive/15 px-3 py-2 text-xs font-bold leading-snug"
+              data-testid="favorite-club-warning"
+            >
+              {t("weekend.favoriteClubWarning", {
+                defaultValue:
+                  "Choose carefully: your favorite club is permanent. It can never be changed — not next gameweek, not next season.",
+              })}
+            </p>
+            <NeoInput
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              data-testid="favorite-club-search"
+              placeholder={t("weekend.searchClubs", {
+                defaultValue: "Search clubs…",
+              })}
+            />
+            <div className="flex flex-col gap-1 overflow-y-auto min-h-0">
+              {groups.map((group) => (
+                <div key={group.leagueId}>
+                  <p className="font-mono text-[10px] font-bold uppercase tracking-[0.16em] text-muted-foreground pt-2 pb-1">
+                    {leagueName(group.leagueId)}
+                  </p>
+                  <div className="flex flex-col gap-1">
+                    {group.clubs.map((club) => (
+                      <button
+                        key={club.clubId}
+                        type="button"
+                        onClick={() => setCandidate(club)}
+                        className="flex items-center justify-between gap-2 neo-border rounded px-3 py-2 text-left font-heading font-bold text-sm bg-card active:neo-shadow-pressed"
+                      >
+                        <span className="truncate">{club.name}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              ))}
+              {groups.length === 0 && (
+                <p className="text-[11px] text-muted-foreground text-center py-4">
+                  {t("weekend.noClubsMatch", {
+                    defaultValue: "No club matches that.",
+                  })}
+                </p>
+              )}
             </div>
-
-            {candidate === null ? (
-              <>
-                <p
-                  className="neo-border rounded-lg bg-destructive/15 px-3 py-2 text-xs font-bold leading-snug"
-                  data-testid="favorite-club-warning"
-                >
-                  {t("weekend.favoriteClubWarning", {
-                    defaultValue:
-                      "Choose carefully: your favorite club is permanent. It can never be changed — not next gameweek, not next season.",
-                  })}
-                </p>
-                <NeoInput
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  data-testid="favorite-club-search"
-                  placeholder={t("weekend.searchClubs", {
-                    defaultValue: "Search clubs…",
-                  })}
-                />
-                <div className="flex flex-col gap-1 overflow-y-auto min-h-0">
-                  {groups.map((group) => (
-                    <div key={group.leagueId}>
-                      <p className="font-mono text-[10px] font-bold uppercase tracking-[0.16em] text-muted-foreground pt-2 pb-1">
-                        {leagueName(group.leagueId)}
-                      </p>
-                      <div className="flex flex-col gap-1">
-                        {group.clubs.map((club) => (
-                          <button
-                            key={club.clubId}
-                            type="button"
-                            onClick={() => setCandidate(club)}
-                            className="flex items-center justify-between gap-2 neo-border rounded px-3 py-2 text-left font-heading font-bold text-sm bg-card active:neo-shadow-pressed"
-                          >
-                            <span className="truncate">{club.name}</span>
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  ))}
-                  {groups.length === 0 && (
-                    <p className="text-[11px] text-muted-foreground text-center py-4">
-                      {t("weekend.noClubsMatch", {
-                        defaultValue: "No club matches that.",
-                      })}
-                    </p>
-                  )}
-                </div>
-              </>
-            ) : (
-              <>
-                <p
-                  className="text-sm leading-snug"
-                  data-testid="favorite-club-confirm-body"
-                >
-                  {t("weekend.favoriteClubConfirmBody", {
-                    defaultValue:
-                      "You'll be able to field 4 {{club}} players instead of 3 in every squad from now on. This choice is permanent and can never be changed.",
-                    club: candidate.name,
-                  })}
-                </p>
-                <div className="flex gap-2">
-                  <NeoButton
-                    variant="outline"
-                    className="flex-1"
-                    disabled={busy}
-                    onClick={() => setCandidate(null)}
-                  >
-                    {t("weekend.favoriteClubBack", { defaultValue: "Back" })}
-                  </NeoButton>
-                  <NeoButton
-                    variant="primary"
-                    className="flex-1"
-                    disabled={busy}
-                    data-testid="favorite-club-confirm"
-                    onClick={() => void confirm()}
-                  >
-                    {t("weekend.favoriteClubConfirm", {
-                      defaultValue: "Confirm, for good",
-                    })}
-                  </NeoButton>
-                </div>
-              </>
-            )}
-          </DialogPrimitive.Content>
-        </DialogPrimitive.Portal>
-      </DialogPrimitive.Root>
+          </>
+        ) : (
+          <>
+            <p
+              className="text-sm leading-snug"
+              data-testid="favorite-club-confirm-body"
+            >
+              {t("weekend.favoriteClubConfirmBody", {
+                defaultValue:
+                  "You'll be able to field 4 {{club}} players instead of 3 in every squad from now on. This choice is permanent and can never be changed.",
+                club: candidate.name,
+              })}
+            </p>
+            <div className="flex gap-2">
+              <NeoButton
+                variant="outline"
+                className="flex-1"
+                disabled={busy}
+                onClick={() => setCandidate(null)}
+              >
+                {t("weekend.favoriteClubBack", { defaultValue: "Back" })}
+              </NeoButton>
+              <NeoButton
+                variant="primary"
+                className="flex-1"
+                disabled={busy}
+                data-testid="favorite-club-confirm"
+                onClick={() => void confirm()}
+              >
+                {t("weekend.favoriteClubConfirm", {
+                  defaultValue: "Confirm, for good",
+                })}
+              </NeoButton>
+            </div>
+          </>
+        )}
+      </Sheet>
     </>
   );
 }

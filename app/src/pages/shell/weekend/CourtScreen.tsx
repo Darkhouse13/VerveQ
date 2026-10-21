@@ -198,8 +198,8 @@ export function FileClaimDialog({
 
   return (
     <Dialog open={open} onOpenChange={(next) => !next && onClose()}>
-      <DialogContent className="theme-weekend neo-border neo-shadow-lg rounded-xl bg-background max-w-sm mx-auto max-h-[85dvh] flex flex-col">
-        <DialogTitle className="font-heading font-bold text-lg">
+      <DialogContent className="max-w-sm max-h-[85dvh] flex flex-col">
+        <DialogTitle className="pr-10">
           {t("weekend.fileClaim", { defaultValue: "File a claim" })}
         </DialogTitle>
 

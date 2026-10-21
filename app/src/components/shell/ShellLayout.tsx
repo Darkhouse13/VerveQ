@@ -6,6 +6,7 @@ import { useNavigate } from "react-router-dom";
 import { ShellNav, ShellTopNav } from "./ShellNav";
 import { prefetchShellTabs } from "@/lib/shellPrefetch";
 import { InstallPrompt } from "@/components/InstallPrompt";
+import { ThemeScope } from "@/components/ui/theme-scope";
 
 interface ShellLayoutProps {
   /** Optional eyebrow title rendered in the header. */
@@ -82,6 +83,9 @@ export function ShellLayout({
   }, []);
 
   return (
+    // ThemeScope: sheets and dialogs opened in here portal out of this div;
+    // the scope hands them its palette (ui/theme-scope).
+    <ThemeScope theme={theme}>
     <div
       className={cn(
         theme,
@@ -199,5 +203,6 @@ export function ShellLayout({
       {!hideNav && <InstallPrompt />}
       {!hideNav && <ShellNav />}
     </div>
+    </ThemeScope>
   );
 }

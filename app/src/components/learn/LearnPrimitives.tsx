@@ -5,6 +5,7 @@
  */
 import { type ReactNode } from "react";
 import { cn } from "@/lib/utils";
+import { ThemeScope } from "@/components/ui/theme-scope";
 
 /**
  * Full-height container that applies the Learn palette and the desktop
@@ -12,6 +13,7 @@ import { cn } from "@/lib/utils";
  */
 export function LearnShell({ children }: { children: ReactNode }) {
   return (
+    <ThemeScope theme="theme-learn">
     <div
       className={cn(
         "theme-learn bg-background text-foreground shell-canvas-bg flex flex-col",
@@ -30,6 +32,7 @@ export function LearnShell({ children }: { children: ReactNode }) {
         {children}
       </div>
     </div>
+    </ThemeScope>
   );
 }
 

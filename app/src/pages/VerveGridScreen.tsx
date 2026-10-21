@@ -407,7 +407,7 @@ export default function VerveGridScreen() {
 
       {/* Search modal */}
       <Dialog open={searchOpen} onOpenChange={setSearchOpen}>
-        <DialogContent className="neo-border neo-shadow-lg rounded-xl bg-background max-w-sm mx-auto">
+        <DialogContent className="max-w-sm">
           <DialogHeader>
             <DialogTitle className="font-heading font-bold">
               Search Player

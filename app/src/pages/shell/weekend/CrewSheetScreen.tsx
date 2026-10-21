@@ -21,8 +21,7 @@ import { api } from "../../../../convex/_generated/api";
 import type { Id } from "../../../../convex/_generated/dataModel";
 import type { SlotRole } from "../../../../convex/lib/fantasyConstants";
 import { NeoCard } from "@/components/neo/NeoCard";
-import { NeoButton } from "@/components/neo/NeoButton";
-import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { ShellLayout } from "@/components/shell/ShellLayout";
 import { SHELL_ROUTES } from "@/lib/shellRoutes";
 import { friendlyError } from "@/lib/errors";
@@ -310,48 +309,26 @@ export default function CrewSheetScreen() {
             />
             </>
             )}
-            <Dialog
+            <ConfirmDialog
               open={confirmShape !== null}
               onOpenChange={(next) => !next && setConfirmShape(null)}
-            >
-              <DialogContent className="theme-weekend neo-border neo-shadow-lg rounded-xl bg-background max-w-sm mx-auto">
-                <DialogTitle className="font-heading font-bold text-lg">
-                  {t("weekend.shapeConfirmTitle", {
-                    defaultValue: "Switch to {{label}}?",
-                    label: confirmShape?.name ?? "",
-                  })}
-                </DialogTitle>
-                <p className="text-sm">
-                  {t("weekend.crewShapeConfirmBody", {
-                    defaultValue:
-                      "Your 13 all stay on the sheet, but {{names}} would field out of listed position — ×0.75 risk if the verdict agrees.",
-                    names: confirmShape?.names.join(", ") ?? "",
-                  })}
-                </p>
-                <div className="flex gap-2">
-                  <NeoButton
-                    variant="outline"
-                    size="sm"
-                    className="flex-1"
-                    onClick={() => setConfirmShape(null)}
-                  >
-                    {t("weekend.shapeConfirmCancel", { defaultValue: "Keep shape" })}
-                  </NeoButton>
-                  <NeoButton
-                    variant="primary"
-                    size="sm"
-                    className="flex-1"
-                    onClick={() => {
-                      const pending = confirmShape;
-                      setConfirmShape(null);
-                      if (pending !== null) runShapeChange(pending.plan, pending.name);
-                    }}
-                  >
-                    {t("weekend.shapeConfirmGo", { defaultValue: "Switch shape" })}
-                  </NeoButton>
-                </div>
-              </DialogContent>
-            </Dialog>
+              title={t("weekend.shapeConfirmTitle", {
+                defaultValue: "Switch to {{label}}?",
+                label: confirmShape?.name ?? "",
+              })}
+              description={t("weekend.crewShapeConfirmBody", {
+                defaultValue:
+                  "Your 13 all stay on the sheet, but {{names}} would field out of listed position — ×0.75 risk if the verdict agrees.",
+                names: confirmShape?.names.join(", ") ?? "",
+              })}
+              cancelLabel={t("weekend.shapeConfirmCancel", { defaultValue: "Keep shape" })}
+              confirmLabel={t("weekend.shapeConfirmGo", { defaultValue: "Switch shape" })}
+              onConfirm={() => {
+                const pending = confirmShape;
+                setConfirmShape(null);
+                if (pending !== null) runShapeChange(pending.plan, pending.name);
+              }}
+            />
           </>
         ) : null}
       </div>

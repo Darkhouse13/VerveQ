@@ -148,7 +148,7 @@ export function ShareSheet({
         className={`${ui.theme} bg-background text-foreground border-[3px] border-border rounded-lg max-w-[min(28rem,calc(100vw-2rem))] max-h-[90dvh] overflow-y-auto`}
         data-testid={`${ui.tid}-share-sheet`}
       >
-        <DialogTitle className="font-heading font-black uppercase text-xl">{t("dailyShare.sheetTitle")}</DialogTitle>
+        <DialogTitle className="font-heading font-black uppercase text-xl pr-10">{t("dailyShare.sheetTitle")}</DialogTitle>
         <DialogDescription className="sr-only">{t("dailyShare.sheetTitle")}</DialogDescription>
         {showImage && story ? (
           <div className="grid gap-3">

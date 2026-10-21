@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { useMutation } from "convex/react";
-import { ChevronLeft, X } from "lucide-react";
 import { toast } from "sonner";
 import { useTranslation } from "react-i18next";
 import { friendlyError } from "@/lib/errors";
@@ -8,6 +7,7 @@ import { friendlyError } from "@/lib/errors";
 import { NeoCard } from "@/components/neo/NeoCard";
 import { NeoButton } from "@/components/neo/NeoButton";
 import { NeoBadge } from "@/components/neo/NeoBadge";
+import { FullscreenFlow } from "@/components/ui/fullscreen-flow";
 import { api } from "../../../convex/_generated/api";
 import { formatCategoryLabel } from "@/lib/duel";
 import type { Id } from "../../../convex/_generated/dataModel";
@@ -162,143 +162,135 @@ export default function CreateDuelModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-background overflow-y-auto safe-pt safe-pb">
-      <div className="max-w-md mx-auto min-h-screen flex flex-col">
-        <div className="flex items-center justify-between px-5 pt-4 pb-2">
-          <button
-            type="button"
-            onClick={goBack}
-            className="neo-border neo-shadow rounded-lg p-2 bg-background cursor-pointer active:neo-shadow-pressed"
-            aria-label={t("createDuel.backAria")}
-          >
-            {step === "kind" ? <X size={18} strokeWidth={2.5} /> : <ChevronLeft size={18} strokeWidth={2.5} />}
-          </button>
-          <p className="font-heading font-bold text-sm uppercase">{headerTitle}</p>
-          <div className="w-9" />
-        </div>
+    <FullscreenFlow
+      onClose={onClose}
+      title={headerTitle}
+      // The first step closes the flow; later steps step back.
+      onBack={step === "kind" ? undefined : goBack}
+      backLabel={t("createDuel.backAria")}
+      closeLabel={t("createDuel.backAria")}
+    >
+      <div className="px-5 py-4 flex-1 space-y-4">
+        {step === "kind" && (
+          <div className="space-y-3">
+            <NeoCard
+              color="primary"
+              onClick={() => handleSelectKind("sports")}
+              className="flex items-center justify-between"
+            >
+              <div>
+                <p className="font-heading font-bold">{t("createDuel.kindSportsTitle")}</p>
+                <p className="text-xs opacity-90">{t("createDuel.kindSportsDesc")}</p>
+              </div>
+              <span className="text-2xl">🏆</span>
+            </NeoCard>
+            <NeoCard
+              color="blue"
+              onClick={() => handleSelectKind("knowledge")}
+              className="flex items-center justify-between"
+            >
+              <div>
+                <p className="font-heading font-bold">{t("createDuel.kindKnowledgeTitle")}</p>
+                <p className="text-xs opacity-90">{t("createDuel.kindKnowledgeDesc")}</p>
+              </div>
+              <span className="text-2xl">🧠</span>
+            </NeoCard>
+            <NeoCard
+              color="accent"
+              onClick={() => handleSelectKind("came_first")}
+              className="flex items-center justify-between"
+            >
+              <div>
+                <p className="font-heading font-bold">{t("createDuel.kindCameFirstTitle")}</p>
+                <p className="text-xs opacity-90">{t("createDuel.kindCameFirstDesc")}</p>
+              </div>
+              <span className="text-2xl">⏳</span>
+            </NeoCard>
+          </div>
+        )}
 
-        <div className="px-5 py-4 flex-1 space-y-4">
-          {step === "kind" && (
-            <div className="space-y-3">
-              <NeoCard
-                color="primary"
-                onClick={() => handleSelectKind("sports")}
-                className="flex items-center justify-between"
-              >
-                <div>
-                  <p className="font-heading font-bold">{t("createDuel.kindSportsTitle")}</p>
-                  <p className="text-xs opacity-90">{t("createDuel.kindSportsDesc")}</p>
-                </div>
-                <span className="text-2xl">🏆</span>
-              </NeoCard>
-              <NeoCard
-                color="blue"
-                onClick={() => handleSelectKind("knowledge")}
-                className="flex items-center justify-between"
-              >
-                <div>
-                  <p className="font-heading font-bold">{t("createDuel.kindKnowledgeTitle")}</p>
-                  <p className="text-xs opacity-90">{t("createDuel.kindKnowledgeDesc")}</p>
-                </div>
-                <span className="text-2xl">🧠</span>
-              </NeoCard>
-              <NeoCard
-                color="accent"
-                onClick={() => handleSelectKind("came_first")}
-                className="flex items-center justify-between"
-              >
-                <div>
-                  <p className="font-heading font-bold">{t("createDuel.kindCameFirstTitle")}</p>
-                  <p className="text-xs opacity-90">{t("createDuel.kindCameFirstDesc")}</p>
-                </div>
-                <span className="text-2xl">⏳</span>
-              </NeoCard>
-            </div>
-          )}
-
-          {step === "topic" && (
-            <div>
-              {kind === "sports" && (
-                <div className="grid grid-cols-2 gap-3">
-                  {SPORTS.map((s) => (
-                    <NeoCard
-                      key={s.key}
-                      color={sport === s.key ? "primary" : "default"}
-                      onClick={() => handleSelectTopic(s.key)}
-                      className="flex flex-col items-center gap-2 py-6"
-                    >
-                      <span className="text-4xl">{s.emoji}</span>
-                      <p className="font-heading font-bold text-sm">
-                        {t(`createDuel.sport_${s.key}`, { defaultValue: s.label })}
-                      </p>
-                    </NeoCard>
-                  ))}
-                </div>
-              )}
-              {kind === "knowledge" && (
-                <div className="grid grid-cols-2 gap-2">
+        {step === "topic" && (
+          <div>
+            {kind === "sports" && (
+              <div className="grid grid-cols-2 gap-3">
+                {SPORTS.map((s) => (
                   <NeoCard
-                    color={!category ? "primary" : "default"}
-                    onClick={() => handleSelectTopic("")}
+                    key={s.key}
+                    color={sport === s.key ? "primary" : "default"}
+                    onClick={() => handleSelectTopic(s.key)}
+                    className="flex flex-col items-center gap-2 py-6"
+                  >
+                    <span className="text-4xl">{s.emoji}</span>
+                    <p className="font-heading font-bold text-sm">
+                      {t(`createDuel.sport_${s.key}`, { defaultValue: s.label })}
+                    </p>
+                  </NeoCard>
+                ))}
+              </div>
+            )}
+            {kind === "knowledge" && (
+              <div className="grid grid-cols-2 gap-2">
+                <NeoCard
+                  color={!category ? "primary" : "default"}
+                  onClick={() => handleSelectTopic("")}
+                  className="text-center py-4"
+                >
+                  <p className="font-heading font-bold text-sm">{t("createDuel.categoryMixed")}</p>
+                  <p className="text-[10px] opacity-80">{t("createDuel.categoryMixedDesc")}</p>
+                </NeoCard>
+                {KNOWLEDGE_CATEGORIES.map((c) => (
+                  <NeoCard
+                    key={c}
+                    color={category === c ? "primary" : "default"}
+                    onClick={() => handleSelectTopic(c)}
                     className="text-center py-4"
                   >
-                    <p className="font-heading font-bold text-sm">{t("createDuel.categoryMixed")}</p>
-                    <p className="text-[10px] opacity-80">{t("createDuel.categoryMixedDesc")}</p>
+                    <p className="font-heading font-bold text-xs">
+                      {formatCategoryLabel(c)}
+                    </p>
                   </NeoCard>
-                  {KNOWLEDGE_CATEGORIES.map((c) => (
-                    <NeoCard
-                      key={c}
-                      color={category === c ? "primary" : "default"}
-                      onClick={() => handleSelectTopic(c)}
-                      className="text-center py-4"
-                    >
-                      <p className="font-heading font-bold text-xs">
-                        {formatCategoryLabel(c)}
-                      </p>
-                    </NeoCard>
-                  ))}
-                </div>
-              )}
-            </div>
-          )}
+                ))}
+              </div>
+            )}
+          </div>
+        )}
 
-          {step === "difficulty" && (
-            <div className="space-y-3">
-              {DIFFICULTIES.map((d) => (
-                <NeoCard
-                  key={d.key}
-                  color={difficulty === d.key ? d.color : "default"}
-                  onClick={() => setDifficulty(d.key)}
-                  className="flex items-center justify-between"
-                >
-                  <p className="font-heading font-bold">
-                    {t(`createDuel.difficulty_${d.key}`, { defaultValue: d.label })}
-                  </p>
-                  <NeoBadge color={d.color} size="sm">{d.key}</NeoBadge>
-                </NeoCard>
-              ))}
-
-              {/* Set expectations: there is no "choose opponent" step — you
-                  play first and invite afterwards from the results screen. */}
-              <NeoCard color="default" className="text-left">
-                <p className="font-heading font-bold text-sm">{t("createDuel.playNowInviteAfterTitle")}</p>
-                <p className="text-xs text-muted-foreground mt-1">
-                  {t("createDuel.playNowInviteAfterDesc")}
-                </p>
-              </NeoCard>
-
-              <NeoButton
-                variant="primary"
-                size="full"
-                disabled={submitting}
-                onClick={handlePlay}
+        {step === "difficulty" && (
+          <div className="space-y-3">
+            {DIFFICULTIES.map((d) => (
+              <NeoCard
+                key={d.key}
+                color={difficulty === d.key ? d.color : "default"}
+                onClick={() => setDifficulty(d.key)}
+                className="flex items-center justify-between"
               >
-                {submitting ? t("createDuel.starting") : t("createDuel.playDuel")}
-              </NeoButton>
-            </div>
-          )}
-        </div>
+                <p className="font-heading font-bold">
+                  {t(`createDuel.difficulty_${d.key}`, { defaultValue: d.label })}
+                </p>
+                <NeoBadge color={d.color} size="sm">{d.key}</NeoBadge>
+              </NeoCard>
+            ))}
+
+            {/* Set expectations: there is no "choose opponent" step — you
+                play first and invite afterwards from the results screen. */}
+            <NeoCard color="default" className="text-left">
+              <p className="font-heading font-bold text-sm">{t("createDuel.playNowInviteAfterTitle")}</p>
+              <p className="text-xs text-muted-foreground mt-1">
+                {t("createDuel.playNowInviteAfterDesc")}
+              </p>
+            </NeoCard>
+
+            <NeoButton
+              variant="primary"
+              size="full"
+              disabled={submitting}
+              onClick={handlePlay}
+            >
+              {submitting ? t("createDuel.starting") : t("createDuel.playDuel")}
+            </NeoButton>
+          </div>
+        )}
       </div>
-    </div>
+    </FullscreenFlow>
   );
 }

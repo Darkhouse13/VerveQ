@@ -103,16 +103,6 @@
   );
 }
 
-/* F1b / F7 — bottom sheet entrance. */
-@keyframes draw-sheet-in {
-  0% { transform: translate(-50%, 100%); }
-  100% { transform: translate(-50%, 0); }
-}
-
-.draw-sheet-in {
-  animation: draw-sheet-in 0.22s cubic-bezier(0.22, 0.9, 0.3, 1) both;
-}
-
 /* F4 — coach mark entrance. */
 @keyframes draw-coach-in {
   0% { transform: translateY(-6px) scale(0.96); opacity: 0; }
@@ -130,7 +120,6 @@
 @media (prefers-reduced-motion: reduce) {
   .draw-ghost-seg,
   .draw-ghost-chip,
-  .draw-sheet-in,
   .draw-coach-in,
   .draw-reveal-land,
   .draw-reveal-stamp,

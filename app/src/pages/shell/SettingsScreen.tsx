@@ -26,13 +26,7 @@ import {
   DAILY_SUBJECTS,
   usePreferredDailySport,
 } from "@/hooks/usePreferredDailySport";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-} from "@/components/ui/dialog";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { ShellLayout } from "@/components/shell/ShellLayout";
 import { LanguageSwitcher } from "@/components/shell/LanguageSwitcher";
 import { SHELL_ROUTES } from "@/lib/shellRoutes";
@@ -262,42 +256,28 @@ export default function SettingsScreen() {
       </div>
 
       {signedIn && (
-      <Dialog open={signOutOpen} onOpenChange={setSignOutOpen}>
-        <DialogContent className="neo-border bg-card">
-          <DialogHeader>
-            <DialogTitle className="font-heading uppercase">
-              {t("profile.signOutConfirmTitle")}
-            </DialogTitle>
-            <DialogDescription className="text-sm">
-              {guest
-                ? t("profile.signOutConfirmBodyGuest")
-                : t("profile.signOutConfirmBody")}
-            </DialogDescription>
-          </DialogHeader>
-          <div className="flex gap-3 mt-4">
-            <NeoButton
-              variant="secondary"
-              size="full"
-              onClick={() => setSignOutOpen(false)}
-            >
-              {t("profile.cancel")}
-            </NeoButton>
-            <NeoButton
-              variant="danger"
-              size="full"
-              onClick={async () => {
-                setSignOutOpen(false);
-                await logout();
-                navigate("/", { replace: true });
-              }}
-            >
-              {guest
-                ? t("profile.signOutConfirmCtaGuest")
-                : t("profile.signOutConfirmCta")}
-            </NeoButton>
-          </div>
-        </DialogContent>
-      </Dialog>
+      <ConfirmDialog
+        open={signOutOpen}
+        onOpenChange={setSignOutOpen}
+        title={t("profile.signOutConfirmTitle")}
+        description={
+          guest
+            ? t("profile.signOutConfirmBodyGuest")
+            : t("profile.signOutConfirmBody")
+        }
+        cancelLabel={t("profile.cancel")}
+        confirmLabel={
+          guest
+            ? t("profile.signOutConfirmCtaGuest")
+            : t("profile.signOutConfirmCta")
+        }
+        danger
+        onConfirm={async () => {
+          setSignOutOpen(false);
+          await logout();
+          navigate("/", { replace: true });
+        }}
+      />
       )}
     </ShellLayout>
   );

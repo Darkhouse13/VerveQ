@@ -2,14 +2,7 @@ import { useState } from "react";
 import { ArrowLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-} from "@/components/ui/dialog";
-import { NeoButton } from "@/components/neo/NeoButton";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 
 interface ExitGameButtonProps {
   title?: string;
@@ -60,26 +53,16 @@ export function ExitGameButton({
         <ArrowLeft size={20} strokeWidth={2.5} />
       </button>
 
-      <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="neo-border bg-card">
-          <DialogHeader>
-            <DialogTitle className="font-heading uppercase">{resolvedTitle}</DialogTitle>
-            <DialogDescription className="text-sm">{resolvedDescription}</DialogDescription>
-          </DialogHeader>
-          <div className="flex gap-3 mt-4">
-            <NeoButton
-              variant="secondary"
-              size="full"
-              onClick={() => setOpen(false)}
-            >
-              {t("exitGame.keepPlaying")}
-            </NeoButton>
-            <NeoButton variant="danger" size="full" onClick={handleConfirm}>
-              {t("exitGame.quit")}
-            </NeoButton>
-          </div>
-        </DialogContent>
-      </Dialog>
+      <ConfirmDialog
+        open={open}
+        onOpenChange={setOpen}
+        title={resolvedTitle}
+        description={resolvedDescription}
+        cancelLabel={t("exitGame.keepPlaying")}
+        confirmLabel={t("exitGame.quit")}
+        danger
+        onConfirm={() => void handleConfirm()}
+      />
     </>
   );
 }
