@@ -89,4 +89,18 @@ void i18n
       : undefined,
   });
 
+/**
+ * Keep `<html lang>` in step with the UI language, so screen readers, browser
+ * translation and hyphenation treat French and Spanish players as such (it
+ * was hardcoded "en"). Static SEO pages carry their own server-set lang next
+ * to the #seo block, so they are left alone.
+ */
+function syncHtmlLang(lng?: string) {
+  if (typeof document === "undefined" || !lng) return;
+  if (document.getElementById("seo")) return;
+  document.documentElement.lang = lng.split("-")[0];
+}
+i18n.on("languageChanged", syncHtmlLang);
+i18n.on("initialized", () => syncHtmlLang(i18n.resolvedLanguage ?? i18n.language));
+
 export default i18n;

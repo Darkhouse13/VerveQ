@@ -28,6 +28,8 @@
     "draw:layoutcheck": "npx tsx scripts/drawSim/layoutcheck.ts",
     "fantasy:scoring-gate": "npx tsx scripts/fantasyScoringRegression.ts",
     "design:baseline": "node scripts/designRatchet.mjs --write",
+    "design:floors": "node scripts/designFloors.mjs",
+    "og:render": "node scripts/renderOgCards.mjs",
     "test": "vitest run",
     "test:watch": "vitest"
   },

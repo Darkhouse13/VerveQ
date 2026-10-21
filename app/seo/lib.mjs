@@ -12,10 +12,11 @@
  */
 
 import { uiFor } from "./pages/gamesIntl.mjs";
+import { HOME_CARD } from "./entries.mjs";
 
 export const ORIGIN = "https://verveq.com";
 export const SITE_NAME = "VerveQ";
-export const DEFAULT_OG_IMAGE = `${ORIGIN}/og/home.png`;
+export const DEFAULT_OG_IMAGE = `${ORIGIN}${HOME_CARD.image}`;
 
 export function esc(value) {
   return String(value ?? "")

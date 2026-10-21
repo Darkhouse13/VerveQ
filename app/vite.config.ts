@@ -115,7 +115,7 @@ export default defineConfig(({ mode }) => ({
         name: "VerveQ",
         short_name: "VerveQ",
         description:
-          "Prove you know more than your mates — head-to-head football trivia. Play free, no sign-up.",
+          "Daily football games. Who's Older, Missing Letters, Career Path and more. Can you beat it?",
         start_url: "/",
         scope: "/",
         display: "standalone",

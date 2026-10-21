@@ -8,6 +8,9 @@
  * Emits into dist/:
  *   index.html                 homepage: shell + home head + static block
  *   app-shell.html             SPA fallback for every other route (noindex)
+ *   entry/<id>.html            the same shell with a mode's link-preview card,
+ *                              served for that mode's entry paths (entries.mjs,
+ *                              deploy/nginx.conf `$spa_shell`)
  *   games/**, football-quiz/**, who-played-for/**, career-path-quiz/**
  *   sitemap.xml                every generated page
  *
@@ -19,7 +22,7 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { ORIGIN, renderBody, renderHead } from "./lib.mjs";
+import { ORIGIN, esc, renderBody, renderHead } from "./lib.mjs";
 import { buildGamePages } from "./pages/games.mjs";
 import { buildQuizArchive } from "./pages/quizArchive.mjs";
 import { buildIntlQuizArchive } from "./pages/quizArchiveIntl.mjs";
@@ -29,6 +32,7 @@ import { buildAbout } from "./pages/about.mjs";
 import { buildIntlGamePages, LANG_GROUPS } from "./pages/gamesIntl.mjs";
 import { loadPlayers } from "./data.mjs";
 import { CARDS, cardFor, renderCards } from "./og.mjs";
+import { ENTRY_CARDS, HOME_CARD } from "./entries.mjs";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const SNAPSHOT = path.join(HERE, "snapshots", "daily-quiz-archive.json");
@@ -167,17 +171,32 @@ function toHtml(template, page, { deferAppCss }) {
   return html;
 }
 
-function appShell(template) {
+/**
+ * The SPA shell (noindex) with one preview card's og:/twitter: tags. The
+ * default card goes into app-shell.html; each entry card into entry/<id>.html.
+ */
+function appShell(template, card = HOME_CARD) {
+  const image = `${ORIGIN}${card.image}`;
+  const url = card.paths ? `${ORIGIN}${card.paths[0]}` : null;
   const head = [
     `<title>VerveQ — Football Trivia Games</title>`,
     `<meta name="description" content="Free football trivia games: daily quiz, career path, football grid, higher or lower and duels." />`,
     // The SPA's routes are not the indexable surface — the static pages are.
     `<meta name="robots" content="noindex, follow" />`,
     `<meta property="og:site_name" content="VerveQ" />`,
-    `<meta property="og:title" content="VerveQ — Settle it" />`,
-    `<meta property="og:description" content="Prove you know more than your mates — head-to-head football trivia. Play free, no sign-up." />`,
-    `<meta property="og:image" content="${ORIGIN}/og/home.png" />`,
+    `<meta property="og:type" content="website" />`,
+    ...(url ? [`<meta property="og:url" content="${esc(url)}" />`] : []),
+    `<meta property="og:title" content="${esc(card.ogTitle)}" />`,
+    `<meta property="og:description" content="${esc(card.ogDescription)}" />`,
+    `<meta property="og:image" content="${esc(image)}" />`,
+    `<meta property="og:image:type" content="image/png" />`,
+    `<meta property="og:image:width" content="1200" />`,
+    `<meta property="og:image:height" content="630" />`,
+    `<meta property="og:image:alt" content="${esc(card.imageAlt)}" />`,
     `<meta name="twitter:card" content="summary_large_image" />`,
+    `<meta name="twitter:title" content="${esc(card.ogTitle)}" />`,
+    `<meta name="twitter:description" content="${esc(card.ogDescription)}" />`,
+    `<meta name="twitter:image" content="${esc(image)}" />`,
   ]
     .map((l) => `    ${l}`)
     .join("\n");
@@ -261,6 +280,10 @@ export async function generate({ distDir, refreshSnapshot = false, log = console
     writeFileSync(out, toHtml(template, page, { deferAppCss: true }));
   }
   writeFileSync(path.join(distDir, "app-shell.html"), appShell(template));
+  mkdirSync(path.join(distDir, "entry"), { recursive: true });
+  for (const card of ENTRY_CARDS) {
+    writeFileSync(path.join(distDir, "entry", `${card.id}.html`), appShell(template, card));
+  }
   writeFileSync(templatePath, toHtml(template, home, { deferAppCss: false }));
 
   const today = new Date().toISOString().slice(0, 10);

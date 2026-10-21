@@ -111,6 +111,7 @@ const RivalDetailScreen = lazyWithRetry(() =>
 // bundle; with the flag off the route just bounces to "/".
 const DrawScreen = lazyWithRetry(() => import("./pages/draw/DrawScreen"));
 const DrawMockHarness = lazyWithRetry(() => import("./pages/draw/DrawMockHarness"));
+const KitchenSink = lazyWithRetry(() => import("./pages/dev/KitchenSink"));
 const DrawShareLanding = lazyWithRetry(() => import("./pages/draw/DrawShareLanding"));
 
 const convex = new ConvexReactClient(
@@ -505,6 +506,8 @@ const AppRoutes = () => (
             {/* DEV-only mock harness (Ticket G3): LocalMockApi-driven, for
                 visual QA of the c13-2 UI. Redirects home in prod builds. */}
             <Route path="/draw-harness" element={<DrawMockHarness />} />
+            {/* DEV-only design-system kitchen sink (VerveQ ONE P1.8). Redirects home in prod. */}
+            <Route path="/dev/kitchen-sink" element={<KitchenSink />} />
             {/* Public legal pages — no auth, no flag gate (launch/app-store
                 requirements; must render regardless of rollout state). */}
             <Route path="/privacy" element={<PrivacyScreen />} />

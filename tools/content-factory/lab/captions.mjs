@@ -3,8 +3,18 @@
 // then one tagged link. No product pitch: the standalone promo lane is
 // retired and these are participation formats. Links carry utm_campaign=lab26
 // and a per-reel utm_content so the three concepts can be read apart.
+// Each reel links to the game it shows (every lab link used to go to Career
+// Path, so Who's Older viewers landed in the wrong game). Guess Who has no
+// game yet, so it opens Home.
+const LANDING = {
+  "lab-older": "/older",
+  "lab-xi": "/play",
+  "lab-guesswho": "/",
+  // Bio links match the Instagram bio, which converts best on /older.
+  bio: "/older",
+};
 const UTM = (source, content) =>
-  `https://verveq.com/v2/career-path?utm_source=${source}&utm_medium=social&utm_campaign=lab26&utm_content=${content}`;
+  `https://verveq.com${LANDING[content] ?? "/"}?utm_source=${source}&utm_medium=social&utm_campaign=lab26&utm_content=${content}`;
 
 const linkBlock = (slug) =>
   [
