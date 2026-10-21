@@ -1,4 +1,9 @@
 import { useState, useEffect, useRef } from "react";
+import { useTranslation } from "react-i18next";
+import { StageTimer } from "@/components/shell/play/StageSignals";
+
+/** The Blitz window; the server's `endTimeMs` is the authority on what is left. */
+const BLITZ_WINDOW_SECONDS = 60;
 
 interface BlitzClockProps {
   endTimeMs: number;
@@ -6,18 +11,20 @@ interface BlitzClockProps {
   penaltyFlash: boolean;
   /**
    * Optional, additive: fires every tick with the whole seconds remaining so a
-   * caller (e.g. the v2 shell's ambient rail) can mirror the countdown without
-   * running a second timer. The legacy screen omits it and is unaffected.
+   * caller can mirror the countdown without running a second timer.
    */
   onTick?: (remaining: number) => void;
 }
 
 /**
- * Blitz's countdown — the run's one clock (VerveQ ONE P3.1). The last ten
- * seconds pulse in the mode accent; red stays reserved for the -3s penalty,
- * which is a wrong answer.
+ * Blitz's countdown — the run's one clock, drawn with the shared StageTimer
+ * (VerveQ ONE P3.1/P3.2: one countdown component across modes). This keeps
+ * only the timing: it counts down to the server's `endTimeMs` and fires
+ * `onExpired` at zero. The last ten seconds invert the pill; red stays
+ * reserved for the -3s penalty, which is a wrong answer.
  */
 export function BlitzClock({ endTimeMs, onExpired, penaltyFlash, onTick }: BlitzClockProps) {
+  const { t } = useTranslation("play");
   const [remaining, setRemaining] = useState(() =>
     Math.max(0, Math.ceil((endTimeMs - Date.now()) / 1000)),
   );
@@ -42,22 +49,19 @@ export function BlitzClock({ endTimeMs, onExpired, penaltyFlash, onTick }: Blitz
     return () => clearInterval(id);
   }, [endTimeMs, onExpired, onTick]);
 
-  const isUrgent = remaining <= 10;
-  const mins = Math.floor(remaining / 60);
-  const secs = remaining % 60;
-  const display = `${mins}:${secs.toString().padStart(2, "0")}`;
-
   return (
-    <div className="relative text-center">
-      <p
-        className={`font-mono font-bold text-score tabular-nums transition-colors ${
-          isUrgent ? "text-mode-accent animate-pulse-urgent motion-reduce:animate-none" : "text-foreground"
-        }`}
-      >
-        {display}
-      </p>
+    <div className="relative">
+      <StageTimer
+        seconds={remaining}
+        fraction={remaining / BLITZ_WINDOW_SECONDS}
+        label={t("ambient.seconds", { seconds: remaining })}
+        urgentAt={10}
+      />
       {penaltyFlash && (
-        <span className="absolute inset-0 flex items-center justify-center font-mono font-bold text-title-lg text-verdict-wrong animate-flash-red">
+        <span
+          aria-hidden="true"
+          className="pointer-events-none absolute -top-1 left-1/2 -translate-x-1/2 rounded-md bg-verdict-wrong px-2 font-mono font-bold text-body-sm text-ink animate-flash-red"
+        >
           -3s
         </span>
       )}

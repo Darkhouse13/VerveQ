@@ -242,7 +242,8 @@ describe("in-play verdict pattern (source contracts)", () => {
 
   it("Survival puts every verdict in one slot — no banner, no verdict toasts — and keeps lime for Submit", () => {
     const source = readFileSync("src/pages/shell/play/SurvivalPlayScreen.tsx", "utf8");
-    expect(source).toContain("<VerdictSlot verdict={verdict} />");
+    expect(source).toContain("<SurvivalVerdict verdict={verdict} />");
+    expect(source).toMatch(/<VerdictSlot[^>]*testId="survival-verdict"/);
     expect(source).not.toContain("setFeedback");
     for (const key of ["surnameAccepted", "typoAccepted", "hiddenAnswerFound", "plusOneLife", "closeCheckSpelling"]) {
       expect(source, key).not.toMatch(new RegExp(`notify\\.\\w+\\(\\s*t\\("survival\\.${key}`));
@@ -253,9 +254,11 @@ describe("in-play verdict pattern (source contracts)", () => {
     expect(source).not.toContain("bg-primary");
   });
 
-  it("Blitz runs one countdown — no second timer bar", () => {
+  it("Blitz runs one countdown — the shared StageTimer, no second timer bar", () => {
     const source = readFileSync("src/pages/shell/play/BlitzPlayScreen.tsx", "utf8");
+    const clock = readFileSync("src/components/BlitzClock.tsx", "utf8");
     expect(source).toContain("<BlitzClock");
+    expect(clock).toContain("<StageTimer");
     expect(source).not.toContain("timeFraction");
     expect(source).not.toContain("AmbientStrip");
   });

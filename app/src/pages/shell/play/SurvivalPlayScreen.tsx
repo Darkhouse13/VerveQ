@@ -28,13 +28,14 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useMutation } from "convex/react";
 import { notify } from "@/lib/notify";
-import { Check, Coins, Flame, Zap, X } from "lucide-react";
+import { Check, Coins, Flame, Zap } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { NeoButton } from "@/components/neo/NeoButton";
 import { NeoInput } from "@/components/neo/NeoInput";
 import { PlayStage } from "@/components/shell/play/PlayStage";
 import { StageScore } from "@/components/shell/play/StageParts";
+import { RevealedAnswer, VerdictBadge, VerdictSlot } from "@/components/shell/play/StageSignals";
 import { MetricsPanel } from "@/components/shell/play/ambient";
 import {
   DailySurvivalResult,
@@ -151,11 +152,11 @@ type Verdict =
   | { kind: "wrong"; answer: string };
 
 /**
- * The verdict slot: one fixed-height line above the input, so nothing jumps
- * and nothing doubles up as a toast. Green and red only for right and wrong;
- * a close call is neutral (it costs nothing).
+ * The verdict, in the shared fixed slot (StageSignals) above the input, so
+ * nothing jumps and nothing doubles up as a toast: ✓ / ✕ with the right answer
+ * revealed in green. A close call is neutral (it costs nothing).
  */
-function VerdictSlot({ verdict }: { verdict: Verdict | null }) {
+function SurvivalVerdict({ verdict }: { verdict: Verdict | null }) {
   const { t } = useTranslation("play");
   let body: ReactNode = null;
   if (verdict?.kind === "close") {
@@ -166,28 +167,30 @@ function VerdictSlot({ verdict }: { verdict: Verdict | null }) {
     );
   } else if (verdict?.kind === "right") {
     body = (
-      <div className="flex flex-col items-center gap-1">
-        <Badge tone="right" shape="tag" size="md" stamp className="normal-case text-body-sm animate-badge-land motion-reduce:animate-none">
-          <Check size={16} strokeWidth={3} aria-hidden="true" />
-          {t("survival.correctPoints", { answer: verdict.answer, points: verdict.points })}
-        </Badge>
+      <>
+        <VerdictBadge right testId="survival-right">
+          {t("result.right")} · {t("result.pts", { score: `+${verdict.points}` })}
+        </VerdictBadge>
+        <RevealedAnswer>{verdict.answer}</RevealedAnswer>
         {verdict.notes.length > 0 && (
-          <p className="text-meta font-bold text-muted-foreground">{verdict.notes.join(" · ")}</p>
+          <p className="basis-full text-meta font-bold text-muted-foreground">{verdict.notes.join(" · ")}</p>
         )}
-      </div>
+      </>
     );
   } else if (verdict?.kind === "wrong") {
     body = (
-      <Badge tone="wrong" shape="tag" size="md" stamp className="normal-case text-body-sm animate-badge-land motion-reduce:animate-none">
-        <X size={16} strokeWidth={3} aria-hidden="true" />
-        {t("survival.wrong", { answer: verdict.answer })}
-      </Badge>
+      <>
+        <VerdictBadge right={false} testId="survival-wrong">
+          {t("result.wrong")}
+        </VerdictBadge>
+        <RevealedAnswer>{verdict.answer}</RevealedAnswer>
+      </>
     );
   }
   return (
-    <div className="mb-3 flex min-h-14 items-center justify-center text-center" aria-live="polite" data-testid="survival-verdict">
+    <VerdictSlot className="mb-3 min-h-14" testId="survival-verdict">
       {body}
-    </div>
+    </VerdictSlot>
   );
 }
 
@@ -717,7 +720,7 @@ function SurvivalRun({
           </div>
         )}
 
-        <VerdictSlot verdict={verdict} />
+        <SurvivalVerdict verdict={verdict} />
 
         {/* Input — a close call shakes it */}
         <NeoInput

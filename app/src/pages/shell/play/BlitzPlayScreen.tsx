@@ -1,8 +1,8 @@
 /**
  * Blitz (solo) on the v2 shell — the same centered-column "prototype layout" as
- * QuizPlayScreen, with Blitz's signature 60s countdown as the hero of the
- * answering column. It is the run's ONE clock: the header carries the score,
- * and no second timer bar repeats the countdown. Grading, scoring, and the
+ * QuizPlayScreen, with the 60s countdown on top of the answering column. It is
+ * the run's ONE clock, drawn with the shared StageTimer (via BlitzClock): the
+ * header carries the score, and no second timer bar repeats the countdown. Grading, scoring, and the
  * clock are fully server-authoritative via `useSoloBlitz` (no correctness
  * logic on this screen).
  *
