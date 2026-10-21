@@ -4,17 +4,17 @@ import { sentryVitePlugin } from "@sentry/vite-plugin";
 import { VitePWA } from "vite-plugin-pwa";
 import path from "path";
 
-// Near-black brand ink: `--foreground` / `--border` / `--neo-shadow-color` are
-// all `0 0% 7%` in src/index.css. Drives the manifest's theme_color and the
+// Near-black brand ink: `--ink` / `--background` are `0 0% 7%` in
+// src/index.css. Drives the manifest's theme_color and the
 // <meta name="theme-color"> in index.html, so the browser chrome reads as the
-// neo-brutalist frame around the app.
+// frame around the app.
 const BRAND_INK = "#121212";
 
-// The shell's actual canvas: `--background` is `30 100% 97%` in src/index.css
-// (:root — note `.dark` is never applied, so this is what every session
-// paints). The splash screen uses it rather than the ink so the handoff from
-// splash to first render is a continuation instead of a black-to-cream flash.
-const BRAND_CANVAS = "#FFF7F0";
+// The shell's actual canvas: since VerveQ ONE decision 1 every route paints
+// the ink ground (`:root --background` is `0 0% 7%`), so the splash screen is
+// ink too and the handoff from splash to first render is a continuation
+// instead of a cream-to-black flash.
+const BRAND_CANVAS = BRAND_INK;
 
 // Origins the service worker must never intercept, cache, or fallback-route.
 // Convex carries every query/mutation/action plus auth; a cached or

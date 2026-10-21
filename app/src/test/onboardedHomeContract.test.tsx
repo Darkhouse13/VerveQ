@@ -138,4 +138,33 @@ describe("onboarded home (username-only session)", () => {
     expect(screen.getByRole("button", { name: "auth.signIn" })).toBeTruthy();
     expect(queryMock.calls.every(([, args]) => args === "skip")).toBe(true);
   });
+
+  // VerveQ ONE P2.5: the header tells the truth. A silently minted anonymous
+  // session with no username used to get a "P" avatar for a "Player" that
+  // does not exist; Settings says "You're not signed in" for the same state.
+  it("shows a Guest chip (not an avatar, not SIGN IN) for a session without a username", () => {
+    authMock.value = { user: { _id: "u9" }, hasUsername: false, accountState: "needsUsername" };
+    renderHome();
+
+    expect(screen.getByTestId("home-guest-chip").textContent).toContain("home.guestChip");
+    expect(screen.queryByRole("button", { name: "Player" })).toBeNull();
+    expect(screen.queryByRole("button", { name: "auth.signIn" })).toBeNull();
+    // Today's state is read for ANY session: a reel visitor plays Who's Older
+    // with no username, and the tile must still show it.
+    expect(queryMock.calls.some(([, args]) => typeof args === "object" && args !== null)).toBe(true);
+  });
+
+  it("puts TODAY first: the four dailies render before THE WEEKEND card", () => {
+    authMock.value = usernameOnlyAuth;
+    const { container } = renderHome();
+    const html = container.innerHTML;
+    const today = [
+      "home-whos-older-card",
+      "home-missing-letters-card",
+      "home-daily-card",
+      "home-daily-survival-card",
+    ].map((id) => html.indexOf(`data-testid="${id}"`));
+    const weekend = html.indexOf('data-testid="home-weekend-card"');
+    expect(today.every((i) => i >= 0 && i < weekend)).toBe(true);
+  });
 });

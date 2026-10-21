@@ -1,10 +1,11 @@
 /**
  * Compete hero tier (CR-1) — the two flagship cards above the mode sections.
  *
- * Both are full-width, near-black, lime-typed cards in the Profile rank-card /
- * HomeWeekendCard family, so the top of Compete reads as "the big things"
- * before the mode catalogue starts. Neither carries a section label — the tier
- * IS the label.
+ * Both are full-width raised surfaces with a lime OUTLINE (decision 12: THE
+ * WEEKEND and THE DRAW wear the outline, never a fill), the same family as
+ * HomeWeekendCard, so the top of Compete reads as "the big things" before the
+ * mode catalogue starts. Neither carries a section label — the tier IS the
+ * label.
  *
  * THE WEEKEND is LIVE (FW-GO): the card navigates straight to the mode's hub.
  * The pre-launch waitlist dialog this card used to open shipped with FW-P1 and
@@ -30,9 +31,8 @@ import { track } from "@/lib/analytics";
 import { SHELL_ROUTES } from "@/lib/shellRoutes";
 
 /**
- * The shared flagship shell. `bg-foreground` + `text-accent` is the ranked-card
- * palette one step louder; the title uses the HomeWeekendCard display ramp
- * (34px → 42px) so the Compete tile and the surface it opens read as one thing.
+ * The shared flagship shell: the raised surface with a lime outline and a lime
+ * eyebrow; the title is cream, so lime stays the one action color.
  */
 function HeroCard({
   icon: Icon,
@@ -55,18 +55,18 @@ function HeroCard({
   return (
     <NeoCard
       shadow="lg"
-      className="bg-foreground text-background flex flex-col cursor-pointer"
+      className="!border-lime flex flex-col cursor-pointer"
       onClick={onClick}
       data-testid={testId}
     >
       <div className="flex items-center justify-between gap-3">
-        <p className="font-mono text-[11px] font-bold uppercase tracking-[0.16em] text-accent flex items-center gap-1.5 min-w-0">
+        <p className="font-mono text-eyebrow font-bold uppercase text-lime flex items-center gap-1.5 min-w-0">
           <Icon size={12} strokeWidth={3} className="shrink-0" />
           <span className="truncate">{eyebrow}</span>
         </p>
         {badge}
       </div>
-      <p className="font-heading font-black uppercase leading-[0.95] text-[34px] md:text-[42px] text-accent mt-2">
+      <p className="font-heading font-bold uppercase leading-none text-[34px] md:text-display mt-2">
         {title}
       </p>
       <p className="font-heading font-bold text-base md:text-lg leading-tight mt-2">
@@ -91,7 +91,7 @@ export function WeekendHeroCard() {
       title="The Weekend"
       sub="Eight leagues, one squad."
       badge={
-        <NeoBadge color="accent" className="border-background shrink-0">
+        <NeoBadge color="accent" className="shrink-0">
           Live
         </NeoBadge>
       }

@@ -46,19 +46,16 @@
     <!--seo:head:end-->
     <!-- Google Analytics loads after first paint: src/lib/ga4.ts -->
     <!--
-      Ink first paint for the routes that run on the ink ground (the daily
-      games, THE DRAW, THE WEEKEND): most new players arrive on these from a
-      reel, and used to see a cream page with a spinner before the dark game.
-      The skeleton shows until React renders into #root; main.tsx then drops
-      the class.
+      Ink first paint: every app route runs on the ink ground (VerveQ ONE
+      decision 1), so the page and a skeleton paint ink until React renders
+      into #root (main.tsx then drops the class). The static SEO pages are the
+      one exception: they are cream documents whose content sits after #root,
+      so the skeleton must not cover them.
     -->
     <script>
-      (function () {
-        var p = location.pathname;
-        if (/^\/(older|whos-older|letters|missing-letters|draw|weekend)(\/|$)|^\/v2\/(whos-older|missing-letters|weekend)(\/|$)/.test(p)) {
-          document.documentElement.className += " boot-ink";
-        }
-      })();
+      if (!/^\/(games|football-quiz|who-played-for|career-path-quiz|fr|es|about)(\/|$)/.test(location.pathname)) {
+        document.documentElement.className += " boot-ink";
+      }
     </script>
     <style>
       html.boot-ink, html.boot-ink body { background: #121212; }

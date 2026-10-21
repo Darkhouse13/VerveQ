@@ -68,6 +68,12 @@ export default {
           DEFAULT: "hsl(var(--action))",
           foreground: "hsl(var(--action-foreground))",
         },
+        // Mode accent (decision 12: Career Path, Quiz, Survival, VerveGrid).
+        // Replaces Tailwind's default orange scale, which nothing used.
+        orange: {
+          DEFAULT: "hsl(var(--orange))",
+          foreground: "hsl(var(--ink))",
+        },
         // Answer feedback only. Named `verdict-*` because `text-right` /
         // `bg-right` are already alignment / position utilities.
         verdict: {

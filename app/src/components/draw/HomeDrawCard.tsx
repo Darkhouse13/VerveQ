@@ -40,7 +40,7 @@ import { api } from "../../../convex/_generated/api";
 import { cn } from "@/lib/utils";
 import { NeoBadge } from "@/components/neo/NeoBadge";
 import { NeoButton } from "@/components/neo/NeoButton";
-import { NeoCard } from "@/components/neo/NeoCard";
+import { Card } from "@/components/ui/card";
 import { archetypeMeta } from "./meta";
 import { OUTCOME_LABEL } from "./share";
 
@@ -88,11 +88,13 @@ export function HomeDrawCardView({ today, rank, now, onOpen }: HomeDrawCardViewP
         : "See result";
   return (
     // The bottom spacing lives on the card's own root so its absence leaves
-    // no trace in the Home column.
-    <div className="shrink-0 pb-3 md:pb-4" data-testid="home-draw-card">
-      <NeoCard color="primary" shadow="lg" className="flex flex-col gap-3 p-4">
+    // no trace in the Home column. From md up it shares a row with THE
+    // WEEKEND card. Decision 12: a lime OUTLINE on the raised surface, never
+    // a fill (it used to be the orange primary, which is lime on ink).
+    <div className="shrink-0 pb-3 md:flex-[2] md:min-w-0" data-testid="home-draw-card">
+      <Card elevation="lifted" padding="md" className="!border-lime h-full flex flex-col gap-3">
         <div className="flex items-center justify-between gap-2">
-          <p className="font-mono text-[11px] font-bold uppercase tracking-[0.16em] opacity-80">
+          <p className="font-mono text-eyebrow font-bold uppercase text-lime">
             The Draw · Board #{today.boardNumber}
           </p>
           {today.playState === "done" && (
@@ -105,7 +107,10 @@ export function HomeDrawCardView({ today, rank, now, onOpen }: HomeDrawCardViewP
 
         {today.playState === "unplayed" && (
           <>
-            <p className="font-heading font-black uppercase text-2xl md:text-3xl leading-none">
+            {/* From md up the card shares a row with THE WEEKEND, and the
+                eyebrow already names the board: the headline drops out there
+                to keep Home inside its height budget. */}
+            <p className="font-heading font-bold uppercase text-title-lg leading-none md:hidden">
               Today's board #{today.boardNumber}
             </p>
             {/* Design contract: the whole gauntlet (names + thresholds) is
@@ -116,7 +121,7 @@ export function HomeDrawCardView({ today, rank, now, onOpen }: HomeDrawCardViewP
                 return (
                   <div
                     key={fixture.index}
-                    className="neo-border rounded-md bg-card text-card-foreground flex-1 min-w-0 flex flex-col items-center gap-0.5 px-1 py-1.5"
+                    className="neo-border rounded-md bg-background text-foreground flex-1 min-w-0 flex flex-col items-center gap-0.5 px-1 py-1.5"
                     data-testid={`home-draw-fixture-${fixture.index}`}
                   >
                     <span className="flex items-center gap-0.5">
@@ -138,11 +143,11 @@ export function HomeDrawCardView({ today, rank, now, onOpen }: HomeDrawCardViewP
 
         {today.playState === "in_progress" && run && (
           <>
-            <p className="font-heading font-black uppercase text-2xl md:text-3xl leading-none">
+            <p className="font-heading font-bold uppercase text-title-lg leading-none">
               Run in progress
             </p>
             <div data-testid="home-draw-progress">
-              <p className="font-mono text-[11px] font-bold uppercase opacity-80">
+              <p className="font-mono text-eyebrow font-bold uppercase text-muted-foreground">
                 {progressLine(run, today)}
               </p>
               <div className="flex gap-1 mt-1.5" aria-hidden>
@@ -151,7 +156,7 @@ export function HomeDrawCardView({ today, rank, now, onOpen }: HomeDrawCardViewP
                     key={fixture.index}
                     className={cn(
                       "neo-border h-1.5 flex-1 rounded-full",
-                      fixture.index < run.rounds.length ? "bg-yellow" : "bg-card/60",
+                      fixture.index < run.rounds.length ? "bg-yellow" : "bg-muted",
                     )}
                   />
                 ))}
@@ -164,13 +169,13 @@ export function HomeDrawCardView({ today, rank, now, onOpen }: HomeDrawCardViewP
           <>
             <div>
               <p
-                className="font-heading font-black uppercase text-2xl md:text-3xl leading-none"
+                className="font-heading font-bold uppercase text-title-lg leading-none"
                 data-testid="home-draw-outcome"
               >
                 {OUTCOME_LABEL[run.outcome ?? "banked"]}
               </p>
               <p
-                className="font-mono font-black text-3xl md:text-4xl leading-none mt-1"
+                className="font-mono font-bold text-display leading-none mt-1"
                 data-testid="home-draw-score"
               >
                 {Math.round(run.finalScore ?? 0).toLocaleString("en-US")}
@@ -181,7 +186,6 @@ export function HomeDrawCardView({ today, rank, now, onOpen }: HomeDrawCardViewP
               {rank !== null ? (
                 <NeoBadge
                   color="muted"
-                  className="bg-card text-foreground"
                   data-testid="home-draw-rank"
                 >
                   Rank #{rank.toLocaleString("en-US")}
@@ -190,7 +194,7 @@ export function HomeDrawCardView({ today, rank, now, onOpen }: HomeDrawCardViewP
                 <span />
               )}
               <span
-                className="font-mono font-bold text-xs opacity-80"
+                className="font-mono font-bold text-meta text-muted-foreground"
                 data-testid="home-draw-countdown"
               >
                 Next board {formatCountdown(today.nextBoardAt - now)}
@@ -201,14 +205,14 @@ export function HomeDrawCardView({ today, rank, now, onOpen }: HomeDrawCardViewP
 
         <NeoButton
           variant="secondary"
-          size="lg"
-          className="w-full"
+          size="md"
+          className="w-full mt-auto"
           onClick={onOpen}
           data-testid="home-draw-cta"
         >
           {cta}
         </NeoButton>
-      </NeoCard>
+      </Card>
     </div>
   );
 }

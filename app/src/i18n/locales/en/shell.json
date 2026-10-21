@@ -71,7 +71,8 @@
       "lockedInChip": "{{count}} locked in",
       "dueChip": "{{count}} due today"
     },
-    "today": { "eyebrow": "Today's games — same for everyone" },
+    "today": { "eyebrow": "Today's games — same for everyone", "score": "{{score}}/{{total}} today", "inProgress": "In progress" },
+    "guestChip": "Guest",
     "mostPlayed": { "eyebrow": "Most played" },
     "hooks": {
       "eyebrow": "Daily hooks · keep the streak",

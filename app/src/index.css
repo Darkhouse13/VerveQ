@@ -53,13 +53,22 @@
    * VerveQ ONE tokens (owner-approved 2026-10-21; plan:
    * https://claude.ai/artifact/W3A4W3iZhsbLqGVbDUevCa).
    *
-   * One schema, two grounds:
-   *  - `:root` — cream hubs (Home, Compete, quizzes). Moving to ink surface
-   *    by surface in Phases 2–3, after which this becomes the ink default.
-   *  - `.theme-ink` — the brand ground: ink #121212, cream text, lime #C6FF1A
-   *    as the one action color. THE WEEKEND, Who's Older, Missing Letters and
-   *    Ranks already run on it; `.theme-weekend`/`.theme-older`/
-   *    `.theme-letters` are aliases kept so their wrappers need no edit.
+   * Decision 1, "Theme A": ONE ground for the whole app.
+   *  - `:root` — the brand ground: ink #121212, cream text, lime #C6FF1A as
+   *    the one action color. Every route paints this by default — Instagram
+   *    traffic lands on an ink daily game, and Home must not flip to a second
+   *    brand when they tap it.
+   *  - `.theme-paper` — cream, for long-form READING cards only (rules,
+   *    how-to-play, legal text). Never a page ground.
+   *  - `.theme-ink` and its aliases `.theme-weekend`/`.theme-older`/
+   *    `.theme-letters` restate the ground. They are explicit markers now,
+   *    kept so wrappers that set them need no edit, and so a surface nested in
+   *    a `.theme-paper` card can switch back to ink.
+   *
+   * Borders go warm-light so the brutalist chrome reads on ink; offset shadows
+   * stay near-black and lime never casts one (R4: lime halos were glare on
+   * phones). Lime is for the one action and small accents, never a large fill
+   * — mode identity comes from the mode accents (blue/pink/yellow/orange).
    *
    * Text on any colored fill is INK, never white: white measured 2.0–3.7:1 on
    * every fill (fails AA); ink passes 5.7–17.7:1.
@@ -69,18 +78,25 @@
     --ink: 0 0% 7%;
     --cream: 30 100% 97%;
     --lime: 75 100% 55%;       /* the one lime */
+    --orange: 25 100% 50%;     /* mode accent (decision 12), no longer the primary */
+  }
 
-    --background: 30 100% 97%;
-    --foreground: 0 0% 7%;
+  :root,
+  .theme-ink,
+  .theme-weekend,
+  .theme-older,
+  .theme-letters {
+    --background: 0 0% 7%;
+    --foreground: 30 100% 97%;
 
-    --card: 30 100% 97%;
-    --card-foreground: 0 0% 7%;
+    --card: 0 0% 12%;
+    --card-foreground: 30 100% 97%;
 
-    --primary: 25 100% 50%;
+    --primary: 75 100% 55%;
     --primary-foreground: 0 0% 7%;
 
-    --muted: 30 18% 88%;
-    --muted-foreground: 0 0% 18%;
+    --muted: 0 0% 18%;
+    --muted-foreground: 30 20% 72%;
 
     --accent: 75 100% 55%;
     --accent-foreground: 0 0% 7%;
@@ -100,9 +116,9 @@
     --yellow: 47 100% 55%;
     --yellow-foreground: 0 0% 7%;
 
-    --border: 0 0% 7%;
-    --input: 0 0% 7%;
-    --ring: 25 100% 50%;
+    --border: 30 40% 90%;
+    --input: 30 40% 90%;
+    --ring: 75 100% 55%;
 
     /* Roles used by the new primitives (components/ui). */
     --action: var(--lime);               /* the one thing to tap */
@@ -111,63 +127,62 @@
     --wrong: 1 100% 60%;
     --paper: var(--cream);               /* long-form reading cards */
     --paper-foreground: var(--ink);
-    --mode-accent: var(--primary);       /* set per mode on its frame */
+    --mode-accent: var(--orange);        /* set per mode on its frame */
 
     --radius: 8px;
 
     --neo-border: 2px;
     --neo-shadow-x: 4px;
     --neo-shadow-y: 4px;
-    --neo-shadow-color: 0 0% 7%;
-  }
-
-  /*
-   * The brand ground. Borders go warm-light so the brutalist chrome reads on
-   * ink; offset shadows stay near-black and lime never casts one (R4: lime
-   * halos were glare on phones). Lime is for the one action and small
-   * accents, never a large fill — that usage rule replaced Missing Letters'
-   * separate desaturated palette (decision 2).
-   */
-  .theme-ink,
-  .theme-weekend,
-  .theme-older,
-  .theme-letters {
-    --background: 0 0% 7%;
-    --foreground: 30 100% 97%;
-
-    --card: 0 0% 12%;
-    --card-foreground: 30 100% 97%;
-
-    --primary: 75 100% 55%;
-    --primary-foreground: 0 0% 7%;
-
-    --accent: 75 100% 55%;
-    --accent-foreground: 0 0% 7%;
-
-    --muted: 0 0% 18%;
-    --muted-foreground: 30 20% 72%;
-
-    --border: 30 40% 90%;
-    --input: 30 40% 90%;
-    --ring: 75 100% 55%;
-
     --neo-shadow-color: 0 0% 0%;
   }
 
   /*
-   * Thin, arrowless, muted-cream scrollbars on the ink ground instead of the
-   * platform's grey-and-white bar. Standard properties only (Chrome 121+
-   * ignores ::-webkit-scrollbar once these are set); not inherited in
-   * Firefox, hence the `*` descendant.
+   * The reading card: the old cream hub values, scoped to a card. Ink text
+   * and ink chrome on cream; its one action (rare on a reading card) keeps
+   * the orange it always had on cream, where lime has no edge.
    */
-  .theme-ink,
-  .theme-ink *,
-  .theme-older,
-  .theme-older *,
-  .theme-letters,
-  .theme-letters * {
+  .theme-paper {
+    --background: 30 100% 97%;
+    --foreground: 0 0% 7%;
+
+    --card: 30 100% 97%;
+    --card-foreground: 0 0% 7%;
+
+    --primary: 25 100% 50%;
+    --primary-foreground: 0 0% 7%;
+
+    --muted: 30 18% 88%;
+    --muted-foreground: 0 0% 18%;
+
+    --border: 0 0% 7%;
+    --input: 0 0% 7%;
+    --ring: 25 100% 50%;
+
+    --neo-shadow-color: 0 0% 7%;
+  }
+
+  /*
+   * Thin, arrowless, muted-cream scrollbars on the ink ground instead of the
+   * platform's grey-and-white bar — everywhere, now that ink is everywhere.
+   * Standard properties only (Chrome 121+ ignores ::-webkit-scrollbar once
+   * these are set); not inherited in Firefox, hence the `*` descendant.
+   */
+  :root,
+  :root * {
     scrollbar-width: thin;
     scrollbar-color: hsl(30 30% 62% / 0.35) transparent;
+  }
+
+  /*
+   * The static SEO pages (seo/build.mjs) are cream documents with their own
+   * scoped stylesheet; the app CSS loads underneath them and must not paint
+   * the ink ground around their block. SeoPageHost sets the class while the
+   * static block is the visible page.
+   */
+  html.seo-static-page,
+  html.seo-static-page body {
+    background-color: hsl(var(--cream));
   }
 
   /*
@@ -199,6 +214,11 @@
     --muted: 38 40% 86%;
     --muted-foreground: 22 18% 32%;
 
+    /* Ink chrome, as it had on the cream :root before the ink flip. */
+    --border: 0 0% 7%;
+    --input: 0 0% 7%;
+    --neo-shadow-color: 0 0% 7%;
+
     --ring: 22 95% 54%;
   }
 }
@@ -219,7 +239,7 @@
 
   /*
    * One visible focus ring for every keyboard-focused control (only 6 files
-   * styled focus before). Uses the theme ring: orange on cream, lime on ink.
+   * styled focus before). Uses the theme ring: lime on ink, orange on paper.
    * Mouse and touch never trigger :focus-visible on buttons.
    */
   :focus-visible {
@@ -269,6 +289,18 @@
 
   .neo-card {
     @apply neo-border neo-shadow rounded-lg;
+  }
+
+  /*
+   * A colored fill (mode accent, legacy NeoCard colors): its words are ink,
+   * so secondary text inside it must be a dark muted too. Without this,
+   * `text-muted-foreground` inside a yellow tile resolves to the ink ground's
+   * light muted cream and vanishes on the fill. Only the muted token moves:
+   * children that pair bg-background/text-foreground (icon chips) keep the
+   * ground's pair and stay legible as a dark chip on the fill.
+   */
+  .on-fill {
+    --muted-foreground: 0 0% 18%;
   }
 
   /*
@@ -418,7 +450,7 @@
   }
 
   /*
-   * The shell's content scroller on desktop: a thin brand-orange thumb on a
+   * The shell's content scroller on desktop: a thin muted-cream thumb on a
    * transparent track instead of the platform's grey bar. Touch devices keep
    * no visible bar (.scrollbar-none), so this only switches on from md.
    * Standard properties only: since Chrome 121, setting scrollbar-color /
@@ -429,17 +461,13 @@
   @media (min-width: 768px) {
     .scrollbar-shell {
       scrollbar-width: thin;
-      scrollbar-color: hsl(var(--primary)) transparent;
+      scrollbar-color: hsl(30 30% 62% / 0.4) transparent;
       /* Reserve the (transparent) gutter so content doesn't shift sideways
          between tabs that scroll and tabs that don't. */
       scrollbar-gutter: stable;
     }
     .scrollbar-shell::-webkit-scrollbar {
       display: block;
-    }
-    /* WEEKEND keeps its own muted thumb on the dark surfaces. */
-    .theme-weekend .scrollbar-shell {
-      scrollbar-color: hsl(30 30% 62% / 0.4) transparent;
     }
   }
 

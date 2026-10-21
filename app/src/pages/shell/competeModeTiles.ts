@@ -4,13 +4,13 @@ import {
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { SHELL_ROUTES } from "@/lib/shellRoutes";
-
-type NeoColor = "primary" | "accent" | "blue" | "pink" | "yellow" | "success";
+import type { ModeAccent } from "@/components/ui/mode-tile";
 
 export interface ModeTile {
   key: string;
   icon: LucideIcon;
-  color: NeoColor;
+  /** The mode's accent (decision 12) — the same color on every surface. */
+  color: ModeAccent;
   /** Builds the EXISTING, proven deep link for the chosen sport. */
   to: (sport: string) => string;
   /**
@@ -38,20 +38,20 @@ export const COMPETE_MODE_TILES: ModeTile[] = [
   // Quiz is migrated to the v2 shell's centered-column "prototype layout". It
   // routes through the existing difficulty picker (target=v2) so the player
   // chooses a difficulty rather than defaulting to intermediate.
-  { key: "quiz", icon: Brain, color: "accent", ranked: true, to: (s) => `/difficulty?sport=${s}&mode=quiz&target=v2` },
+  { key: "quiz", icon: Brain, color: "orange", ranked: true, to: (s) => `/difficulty?sport=${s}&mode=quiz&target=v2` },
   // Arena and Duels are DISTINCT flows: Arena is the group-challenge-room
   // experience (create/join a room by code — its own shell hub), Duels is
   // head-to-head send-a-link via the Challenge hub embedded in the shell.
   { key: "arena", icon: Swords, color: "pink", to: () => SHELL_ROUTES.arena },
-  { key: "duel", icon: Users, color: "yellow", to: () => SHELL_ROUTES.duels },
+  { key: "duel", icon: Users, color: "pink", to: () => SHELL_ROUTES.duels },
   // Survival + Blitz are migrated to the shell prototype layout (solo).
   // Survival is RANKED: its finalizer (convex/games.ts `completeSurvival`)
   // asserts ranked eligibility and writes `userRatings` with mode "survival",
   // and its route is `FullAccountRoute` like Quiz's — the two ranked modes gate
   // identically. Daily Survival is explicitly exempt server-side (games.ts:198-202
   // rejects `dailyDate` runs), which is why that tile belongs in TODAY, not here.
-  { key: "survival", icon: Heart, color: "primary", ranked: true, to: (s) => `/v2/survival?sport=${s}` },
-  { key: "blitz", icon: Zap, color: "pink", to: (s) => `/v2/blitz?sport=${s}` },
+  { key: "survival", icon: Heart, color: "orange", ranked: true, to: (s) => `/v2/survival?sport=${s}` },
+  { key: "blitz", icon: Zap, color: "yellow", to: (s) => `/v2/blitz?sport=${s}` },
   // Higher/Lower + VerveGrid launch DIRECTLY, like Career Path. They used to
   // route via the shared difficulty picker, which cost a cold visitor an extra
   // screen before the mode and — while that picker was still gated — dropped
@@ -59,20 +59,20 @@ export const COMPETE_MODE_TILES: ModeTile[] = [
   // self-manage the tier: `parseDifficulty(null)` defaults to easy
   // (lib/difficulty.ts), which is the tier the picker's own default led with.
   // The picker stays reachable at /difficulty for the modes that still use it.
-  { key: "higherLower", icon: TrendingUp, color: "success", to: (s) => `/v2/higher-lower?sport=${s}` },
-  { key: "verveGrid", icon: Grid3X3, color: "blue", to: (s) => `/v2/verve-grid?sport=${s}` },
-  { key: "careerPath", icon: Route, color: "yellow", to: (s) => `/v2/career-path?sport=${s}` },
+  { key: "higherLower", icon: TrendingUp, color: "blue", to: (s) => `/v2/higher-lower?sport=${s}` },
+  { key: "verveGrid", icon: Grid3X3, color: "orange", to: (s) => `/v2/verve-grid?sport=${s}` },
+  { key: "careerPath", icon: Route, color: "orange", to: (s) => `/v2/career-path?sport=${s}` },
   // Daily is migrated to the shell — reuses the Quiz prototype layout via the DAILY session.
-  { key: "daily", icon: Timer, color: "primary", to: (s) => `/v2/daily?sport=${s}` },
+  { key: "daily", icon: Timer, color: "yellow", to: (s) => `/v2/daily?sport=${s}` },
   // Daily Survival: the shared one-attempt run on the Reveal Ladder engine.
   // Football-only by design, so the builder ignores the carried sport.
-  { key: "dailySurvival", icon: CalendarHeart, color: "accent", to: () => "/v2/daily-survival" },
+  { key: "dailySurvival", icon: CalendarHeart, color: "yellow", to: () => "/v2/daily-survival" },
   // Who's Older? — the reel format as a daily (ten shared pairs), then
   // endless. Football-only; the builder ignores the carried sport.
-  { key: "whosOlder", icon: Hourglass, color: "pink", to: () => SHELL_ROUTES.whosOlderPlay },
+  { key: "whosOlder", icon: Hourglass, color: "blue", to: () => SHELL_ROUTES.whosOlderPlay },
   // Missing Letters — the reel the feed runs three times a day, as a daily
   // (ten shared boards) then endless. Football-only.
-  { key: "missingLetters", icon: Type, color: "blue", to: () => SHELL_ROUTES.missingLettersPlay },
+  { key: "missingLetters", icon: Type, color: "pink", to: () => SHELL_ROUTES.missingLettersPlay },
   // Live Match is parked: nothing in the product can create a live match any
   // more (the challenge subsystem and createFromChallenge were removed), so
   // the tile would advertise a dead end. /v2/live-match stays routable as a
@@ -89,7 +89,7 @@ export const COMPETE_MODE_TILES: ModeTile[] = [
 // regardless of the difficulty the picker hands it (quizSessions.getQuestion).
 export const COMPETE_KNOWLEDGE_TILES: ModeTile[] = [
   { key: "knowledgeQuiz", icon: Lightbulb, color: "blue", to: () => `/difficulty?sport=knowledge&mode=quiz&target=v2` },
-  { key: "cameFirst", icon: Clock, color: "primary", to: () => `/difficulty?sport=knowledge&mode=came_first&target=v2` },
+  { key: "cameFirst", icon: Clock, color: "yellow", to: () => `/difficulty?sport=knowledge&mode=came_first&target=v2` },
 ];
 
 // The ranked modes (finishing them moves ELO), in grid order. DERIVED from the

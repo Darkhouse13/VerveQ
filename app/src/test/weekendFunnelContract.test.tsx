@@ -11,9 +11,9 @@
  *     short-link traffic is never bucketed as direct; incoming utm_* params
  *     survive untouched.
  *
- *  2. Old `?w=1` links still reorder Home (WEEKEND card first) — the param
- *     outlives the link that minted it, so nothing breaks for pre-launch
- *     captions that shipped with `/v2?w=1`.
+ *  2. Home order: TODAY leads, THE WEEKEND follows (owner decision 10,
+ *     VerveQ ONE), then THE DRAW. Old `?w=1` links cannot reorder anything —
+ *     the param outlives the link that minted it, so it must stay a no-op.
  *
  *  3. The Home entry card renders in both orders without any server read —
  *     the launched mode's entry point cannot be gated off by a backend
@@ -137,7 +137,7 @@ describe("/weekend?start=budget (WKND-ENTRY: paid direct-to-builder)", () => {
 });
 
 // ---------------------------------------------------------------------------
-// 2. Home card order — THE WEEKEND leads, and ?w=1 cannot change that
+// 2. Home card order — TODAY leads, THE WEEKEND follows, ?w=1 changes nothing
 // ---------------------------------------------------------------------------
 
 const authMock = vi.hoisted(() => ({ value: {} as Record<string, unknown> }));
@@ -226,7 +226,7 @@ afterEach(() => {
 });
 
 describe("Home card order", () => {
-  /** DOM position of the two hero cards, or -1 when a card is absent. */
+  /** DOM position of the Today row and the two hero cards, or -1 when absent. */
   async function renderHomeAt(path: string) {
     const { container } = render(
       <MemoryRouter initialEntries={[path]}>
@@ -238,31 +238,35 @@ describe("Home card order", () => {
     await act(async () => {});
     const html = container.innerHTML;
     return {
+      today: html.indexOf('data-testid="home-whos-older-card"'),
       weekend: html.indexOf('data-testid="home-weekend-card"'),
       draw: html.indexOf('data-testid="home-draw-card"'),
     };
   }
 
-  // THE WEEKEND LEADS HOME UNCONDITIONALLY. This pair used to pin the
-  // opposite — Draw-first by default, WEEKEND-first only under `?w=1` — which
-  // was set before either mode had numbers. THE WEEKEND is now the most
-  // revisited surface in the app and the destination of every ad that
-  // converts, while THE DRAW is dark on prod and fires no analytics events at
-  // all, so no reading of the data puts it above the flagship. The `?w=1`
-  // case is kept as a REGRESSION GUARD rather than deleted: old short links
-  // still carry the param, and it must not be able to reorder anything now
-  // that there is nothing left to swap.
-  it("leads with the WEEKEND card on an ordinary visit", async () => {
-    const { weekend, draw } = await renderHomeAt("/v2");
+  // TODAY LEADS HOME, THE WEEKEND FOLLOWS. This pair used to pin "THE WEEKEND
+  // leads Home unconditionally" (2026-08: the most revisited surface, the
+  // destination of every converting ad). Owner decision 10 (VerveQ ONE,
+  // 2026-10) reverses it: most new players now arrive from an Instagram reel
+  // into Who's Older or Missing Letters and tap HOME, and with the WEEKEND
+  // hero and the Draw card on top the dailies sat on the second screen at
+  // exactly the moment we want a second game played. So the daily row comes
+  // first for everyone, the WEEKEND hero second, THE DRAW after it. The
+  // `?w=1` case stays as a REGRESSION GUARD: old short links still carry the
+  // param, and it must not be able to reorder anything.
+  it("leads with TODAY, then the WEEKEND card, then THE DRAW", async () => {
+    const { today, weekend, draw } = await renderHomeAt("/v2");
+    expect(today).toBeGreaterThanOrEqual(0);
     expect(weekend).toBeGreaterThanOrEqual(0);
     expect(draw).toBeGreaterThanOrEqual(0);
+    expect(today).toBeLessThan(weekend);
     expect(weekend).toBeLessThan(draw);
   });
 
-  it("still leads with the WEEKEND card on a ?w=1 visit (old links are a no-op for order)", async () => {
-    const { weekend, draw } = await renderHomeAt("/v2?w=1");
-    expect(weekend).toBeGreaterThanOrEqual(0);
-    expect(draw).toBeGreaterThanOrEqual(0);
+  it("keeps the same order on a ?w=1 visit (old links are a no-op for order)", async () => {
+    const { today, weekend, draw } = await renderHomeAt("/v2?w=1");
+    expect(today).toBeGreaterThanOrEqual(0);
+    expect(today).toBeLessThan(weekend);
     expect(weekend).toBeLessThan(draw);
   });
 

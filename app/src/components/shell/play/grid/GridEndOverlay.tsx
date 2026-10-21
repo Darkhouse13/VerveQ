@@ -66,7 +66,7 @@ export function GridEndOverlay({
         <div
           className={cn(
             "px-5 py-4 border-b-[3px] border-border",
-            allSolved ? "bg-success text-success-foreground" : "bg-foreground text-background",
+            allSolved ? "bg-success text-success-foreground" : "bg-muted text-foreground",
           )}
         >
           <p className="text-[10px] font-heading font-bold uppercase tracking-wide opacity-85">

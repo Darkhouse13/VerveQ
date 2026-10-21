@@ -25,8 +25,9 @@ export function BottomNav() {
   return (
     // Same near-black treatment as the v2 ShellNav, kept in step so the
     // rollback seam doesn't hand back a cream bar. See ShellNav for why the
-    // surface changed and why the inset absorbs rather than stacks.
-    <nav className="fixed bottom-0 left-0 right-0 z-50 border-t-[3px] border-background/40 bg-foreground pb-[max(0.625rem,env(safe-area-inset-bottom))]">
+    // surface changed and why the inset absorbs rather than stacks. On the
+    // ink ground `bg-foreground` IS cream, so the bar is the ground itself.
+    <nav className="fixed bottom-0 left-0 right-0 z-50 border-t-2 border-border/20 bg-background pb-[max(0.625rem,env(safe-area-inset-bottom))]">
       <div className="flex max-w-md mx-auto">
         {tabs.map((tab) => {
           const active = location.pathname === tab.path;
@@ -37,7 +38,7 @@ export function BottomNav() {
               onClick={() => navigate(tab.path)}
               className={cn(
                 "flex-1 flex flex-col items-center gap-0.5 pt-2.5 transition-colors relative cursor-pointer",
-                active ? "text-accent" : "text-background/60"
+                active ? "text-accent" : "text-muted-foreground"
               )}
             >
               {active && (

@@ -71,7 +71,8 @@
       "lockedInChip": "{{count}} acquis",
       "dueChip": "{{count}} à réviser aujourd'hui"
     },
-    "today": { "eyebrow": "Les jeux du jour — les mêmes pour tous" },
+    "today": { "eyebrow": "Les jeux du jour — les mêmes pour tous", "score": "{{score}}/{{total}} aujourd'hui", "inProgress": "En cours" },
+    "guestChip": "Invité",
     "mostPlayed": { "eyebrow": "Les plus joués" },
     "hooks": {
       "eyebrow": "Défis du jour · garde la série",

@@ -19,7 +19,7 @@ const cardVariants = cva("neo-border rounded-lg", {
       default: "bg-card text-card-foreground",
       paper: "bg-paper text-paper-foreground",
       inverse: "bg-foreground text-background",
-      mode: "bg-mode-accent text-ink",
+      mode: "bg-mode-accent text-ink on-fill",
     },
     elevation: {
       flat: "",

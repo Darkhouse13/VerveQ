@@ -15,7 +15,7 @@
 import { createContext, useContext, type ReactNode } from "react";
 
 /** Theme classes that redefine the colour tokens (src/index.css). */
-const CARRIED = /^theme-(?:ink|weekend|older|letters|learn)$/;
+const CARRIED = /^theme-(?:ink|weekend|older|letters|learn|paper)$/;
 
 /** The carried palette classes in `className`, or null when there are none. */
 // eslint-disable-next-line react-refresh/only-export-components

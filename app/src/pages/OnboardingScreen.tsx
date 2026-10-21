@@ -10,7 +10,7 @@ const steps = [
     titleKey: "welcomeTitle",
     features: [
       { icon: Trophy, key: "elo", color: "primary" as const },
-      { icon: Gamepad2, key: "modes", color: "accent" as const },
+      { icon: Gamepad2, key: "modes", color: "yellow" as const },
       { icon: Star, key: "achievements", color: "blue" as const },
     ],
   },
@@ -18,7 +18,7 @@ const steps = [
     titleKey: "pickSportTitle",
     sports: [
       { emoji: "⚽", name: "Football", key: "football", color: "success" as const },
-      { emoji: "🎾", name: "Tennis", key: "tennis", color: "accent" as const },
+      { emoji: "🎾", name: "Tennis", key: "tennis", color: "yellow" as const },
       { emoji: "🏀", name: "Basketball", key: "basketball", color: "primary" as const },
       { emoji: "🏈", name: "More Coming", key: "moreComing", color: "default" as const },
     ],

@@ -173,7 +173,7 @@ export function GridBoard({ rows, cols, cells, gameOver, shakeCellIndex, onPick,
       }}
     >
       {/* corner mark */}
-      <div className="bg-foreground text-background flex flex-col items-center justify-center gap-0.5">
+      <div className="bg-card text-card-foreground flex flex-col items-center justify-center gap-0.5">
         <span className="font-heading text-yellow" style={{ fontSize: compact ? 16 : 22 }}>
           ▦
         </span>

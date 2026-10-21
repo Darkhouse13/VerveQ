@@ -27,13 +27,16 @@ type NeoCardProps = NeoCardDivProps | NeoCardButtonProps;
  */
 const LEGACY_FILL = {
   default: "",
-  primary: "bg-primary text-primary-foreground",
-  accent: "bg-accent text-accent-foreground",
-  blue: "bg-electric-blue text-electric-blue-foreground",
-  pink: "bg-hot-pink text-hot-pink-foreground",
-  yellow: "bg-yellow text-yellow-foreground",
-  success: "bg-success text-success-foreground",
-  destructive: "bg-destructive text-destructive-foreground",
+  // On the ink ground `primary` is lime, the action color, and a lime card
+  // is a large lime fill (R4). This fill was orange on the cream hubs, so it
+  // stays orange: a mode accent with ink text.
+  primary: "bg-orange text-orange-foreground on-fill",
+  accent: "bg-accent text-accent-foreground on-fill",
+  blue: "bg-electric-blue text-electric-blue-foreground on-fill",
+  pink: "bg-hot-pink text-hot-pink-foreground on-fill",
+  yellow: "bg-yellow text-yellow-foreground on-fill",
+  success: "bg-success text-success-foreground on-fill",
+  destructive: "bg-destructive text-destructive-foreground on-fill",
 } as const;
 
 const ELEVATION: Record<NonNullable<NeoCardCommonProps["shadow"]>, CardElevation> = {

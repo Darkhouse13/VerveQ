@@ -107,7 +107,7 @@ export function FirstRunLanguagePrompt() {
                 className={cn(
                   "flex-1 neo-border rounded-lg px-2 py-3 font-heading font-bold text-[13px] transition-all",
                   selected
-                    ? "bg-foreground text-background neo-shadow"
+                    ? "bg-primary text-primary-foreground neo-shadow"
                     : "bg-card active:neo-shadow-pressed",
                 )}
               >

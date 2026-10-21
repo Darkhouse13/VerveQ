@@ -56,28 +56,33 @@ export function HomeWeekendCard() {
     navigate(SHELL_ROUTES.weekend);
   };
 
+  // Decision 12: THE WEEKEND wears a lime OUTLINE on the raised surface, not
+  // a fill — its identity is the pitch, and lime stays free for the one
+  // action (the Play button). It follows TODAY on Home (decision 10); from md
+  // up it shares a row with THE DRAW card, so the pitch bullets drop out
+  // there to keep Home inside its never-scroll height budget.
   return (
-    <div className="shrink-0 pb-3 md:pb-4" data-testid="home-weekend-card">
-      <div className="neo-border neo-shadow-lg rounded-lg bg-foreground text-background p-4 md:p-5 flex flex-col md:flex-row md:items-center gap-4 md:gap-6">
+    <div className="shrink-0 pb-3 md:flex-[3] md:min-w-0" data-testid="home-weekend-card">
+      <div className="neo-border !border-lime neo-shadow-lg rounded-lg bg-card text-card-foreground p-4 md:p-5 h-full flex flex-col md:flex-row md:items-center gap-4 md:gap-5">
         {/* Pitch column */}
         <div className="min-w-0 md:flex-1">
-          <p className="font-mono text-[11px] font-bold uppercase tracking-[0.16em] text-accent flex items-center gap-1.5">
-            <CalendarRange size={12} strokeWidth={3} />
+          <p className="font-mono text-eyebrow font-bold uppercase text-lime flex items-center gap-1.5">
+            <CalendarRange size={12} strokeWidth={3} aria-hidden />
             {tr("weekend.homeEyebrow", "New mode · Live now")}
           </p>
-          <p className="font-heading font-black uppercase leading-[0.95] text-[34px] md:text-[42px] text-accent mt-1.5">
+          <p className="font-heading font-bold uppercase leading-none text-[34px] md:text-display mt-1.5">
             {tr("weekend.hubTitle", "The Weekend")}
           </p>
-          <p className="font-heading font-bold text-base md:text-lg leading-tight mt-2">
+          <p className="font-heading font-bold text-body md:text-title-sm leading-tight mt-2">
             {tr("weekend.homeHeadline", "Draft the whole European football weekend.")}
           </p>
-          <ul className="mt-3 flex flex-col gap-1.5">
+          <ul className="mt-3 flex flex-col gap-1.5 md:hidden">
             {bullets.map((line) => (
               <li
                 key={line}
-                className="font-mono text-[11px] uppercase tracking-wide text-background/70 flex gap-2"
+                className="font-mono text-eyebrow uppercase text-muted-foreground flex gap-2"
               >
-                <span aria-hidden className="text-accent">
+                <span aria-hidden className="text-lime">
                   ■
                 </span>
                 <span>{line}</span>
@@ -87,19 +92,16 @@ export function HomeWeekendCard() {
         </div>
 
         {/* Action column */}
-        <div className="md:w-[300px] md:shrink-0 flex flex-col gap-2">
-          {/* The card is ink, so its action takes the ink theme's lime. */}
-          <div className="theme-ink">
-            <NeoButton
-              variant="primary"
-              size="full"
-              onClick={enter}
-              data-testid="weekend-cta-play"
-            >
-              {tr("weekend.homePlay", "Play now")}
-            </NeoButton>
-          </div>
-          <p className="font-mono text-[10.5px] uppercase text-background/60">
+        <div className="md:w-[240px] md:shrink-0 flex flex-col gap-2">
+          <NeoButton
+            variant="primary"
+            size="full"
+            onClick={enter}
+            data-testid="weekend-cta-play"
+          >
+            {tr("weekend.homePlay", "Play now")}
+          </NeoButton>
+          <p className="font-mono text-eyebrow uppercase text-muted-foreground">
             {tr("weekend.homeNote", "Budget squad or crew draft — fresh board every weekend.")}
           </p>
         </div>

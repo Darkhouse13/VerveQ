@@ -64,25 +64,25 @@ export function GridStage({ vm, subtitle, onExit, onHome, header }: GridStagePro
   return (
     <div className="w-full bg-background text-foreground shell-canvas-bg flex flex-col fixed inset-0 z-40 h-[100dvh] overflow-hidden safe-pb">
       {/* broadcast bar. Unlike the other frames the top inset goes on the
-          header rather than the frame: the bar is bg-foreground against a
-          bg-background frame, so padding the frame would strand a pale strip
-          above it. Padding the header carries its own dark fill up under the
-          iOS status bar instead. */}
-      <header className="shrink-0 w-full bg-foreground text-background border-b-2 border-black safe-pt">
+          header rather than the frame: padding the header carries its own fill
+          up under the iOS status bar. On the ink ground the bar is the ground
+          itself with a rule under it, like every other play header — it was
+          bg-foreground, which is cream on ink. */}
+      <header className="shrink-0 w-full bg-background text-foreground border-b-2 border-border safe-pt">
         <div className="flex items-center gap-3 px-4 py-2.5 md:px-6">
           <button
             type="button"
             onClick={onExit}
-            className="neo-border rounded-lg px-2.5 py-2 bg-foreground text-background border-background/30 shrink-0 cursor-pointer inline-flex items-center gap-1.5"
+            className="neo-border rounded-lg px-2.5 py-2 bg-card text-card-foreground shrink-0 cursor-pointer inline-flex items-center gap-1.5"
           >
             <LogOut size={14} strokeWidth={3} />
             <span className="text-[10px] font-heading font-bold uppercase">{t("grid.leave")}</span>
           </button>
-          <span className="neo-border rounded-full bg-electric-blue text-electric-blue-foreground border-background px-2.5 py-1 font-heading font-bold uppercase tracking-wide text-[10px] inline-flex items-center gap-1 shrink-0">
+          <span className="neo-border rounded-full bg-electric-blue text-electric-blue-foreground px-2.5 py-1 font-heading font-bold uppercase tracking-wide text-[10px] inline-flex items-center gap-1 shrink-0">
             ▦ VerveGrid
           </span>
           {subtitle && (
-            <span className="hidden md:inline font-mono text-xs text-background/70 truncate">{subtitle}</span>
+            <span className="hidden md:inline font-mono text-xs text-muted-foreground truncate">{subtitle}</span>
           )}
         </div>
       </header>

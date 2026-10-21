@@ -71,7 +71,7 @@ exports[`HomeDrawCard — no layout shift for non-draw users > flag off: Home re
           class="flex items-center gap-1"
         >
           <button
-            class="inline-flex items-center gap-2 px-4 py-2 rounded-lg font-heading font-bold text-sm uppercase tracking-wide transition-all cursor-pointer active:opacity-60 neo-border neo-shadow bg-primary text-primary-foreground"
+            class="inline-flex items-center gap-2 px-4 py-2 rounded-lg font-heading font-bold text-sm uppercase tracking-wide transition-all cursor-pointer active:opacity-60 neo-border neo-shadow bg-card text-lime"
           >
             <svg
               class="lucide lucide-house"
@@ -229,7 +229,7 @@ exports[`HomeDrawCard — no layout shift for non-draw users > flag off: Home re
           class="min-h-full md:min-h-0 flex flex-col"
         >
           <div
-            class="flex items-center justify-between md:justify-end pt-4 pb-3 md:pt-5 md:pb-4 shrink-0"
+            class="flex items-center justify-between md:justify-end pt-4 pb-3 md:pt-3 md:pb-1 shrink-0"
           >
             <span
               class="inline-flex items-center gap-2.5 md:hidden"
@@ -288,7 +288,7 @@ exports[`HomeDrawCard — no layout shift for non-draw users > flag off: Home re
             >
               <button
                 aria-label="zara"
-                class="transition-transform hover:-translate-x-[2px] hover:-translate-y-[2px] active:translate-x-[2px] active:translate-y-[2px]"
+                class="rounded-full transition-transform duration-press active:translate-x-0.5 active:translate-y-0.5"
                 type="button"
               >
                 <div
@@ -299,234 +299,35 @@ exports[`HomeDrawCard — no layout shift for non-draw users > flag off: Home re
               </button>
             </div>
           </div>
-          <div
-            class="shrink-0 pb-3 md:pb-4"
-            data-testid="home-weekend-card"
+          <section
+            aria-labelledby="home-today"
+            class="shrink-0 flex flex-col gap-2 pb-4 md:pb-3"
           >
             <div
-              class="neo-border neo-shadow-lg rounded-lg bg-foreground text-background p-4 md:p-5 flex flex-col md:flex-row md:items-center gap-4 md:gap-6"
-            >
-              <div
-                class="min-w-0 md:flex-1"
-              >
-                <p
-                  class="font-mono text-[11px] font-bold uppercase tracking-[0.16em] text-accent flex items-center gap-1.5"
-                >
-                  <svg
-                    class="lucide lucide-calendar-range"
-                    fill="none"
-                    height="12"
-                    stroke="currentColor"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="3"
-                    viewBox="0 0 24 24"
-                    width="12"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <rect
-                      height="18"
-                      rx="2"
-                      width="18"
-                      x="3"
-                      y="4"
-                    />
-                    <path
-                      d="M16 2v4"
-                    />
-                    <path
-                      d="M3 10h18"
-                    />
-                    <path
-                      d="M8 2v4"
-                    />
-                    <path
-                      d="M17 14h-6"
-                    />
-                    <path
-                      d="M13 18H7"
-                    />
-                    <path
-                      d="M7 14h.01"
-                    />
-                    <path
-                      d="M17 18h.01"
-                    />
-                  </svg>
-                  New mode · Live now
-                </p>
-                <p
-                  class="font-heading font-black uppercase leading-[0.95] text-[34px] md:text-[42px] text-accent mt-1.5"
-                >
-                  The Weekend
-                </p>
-                <p
-                  class="font-heading font-bold text-base md:text-lg leading-tight mt-2"
-                >
-                  Draft the whole European football weekend.
-                </p>
-                <ul
-                  class="mt-3 flex flex-col gap-1.5"
-                >
-                  <li
-                    class="font-mono text-[11px] uppercase tracking-wide text-background/70 flex gap-2"
-                  >
-                    <span
-                      aria-hidden="true"
-                      class="text-accent"
-                    >
-                      ■
-                    </span>
-                    <span>
-                      Eight leagues, one squad
-                    </span>
-                  </li>
-                  <li
-                    class="font-mono text-[11px] uppercase tracking-wide text-background/70 flex gap-2"
-                  >
-                    <span
-                      aria-hidden="true"
-                      class="text-accent"
-                    >
-                      ■
-                    </span>
-                    <span>
-                      The crowd rates the players, not an algorithm
-                    </span>
-                  </li>
-                  <li
-                    class="font-mono text-[11px] uppercase tracking-wide text-background/70 flex gap-2"
-                  >
-                    <span
-                      aria-hidden="true"
-                      class="text-accent"
-                    >
-                      ■
-                    </span>
-                    <span>
-                      Fresh draft every week, no season-long grind
-                    </span>
-                  </li>
-                </ul>
-              </div>
-              <div
-                class="md:w-[300px] md:shrink-0 flex flex-col gap-2"
-              >
-                <div
-                  class="theme-ink"
-                >
-                  <button
-                    class="relative inline-flex select-none items-center justify-center gap-2 rounded-lg font-heading font-bold transition duration-press neo-border bg-primary text-primary-foreground min-h-14 px-6 py-3 text-body w-full cursor-pointer neo-shadow enabled:active:translate-x-0.5 enabled:active:translate-y-0.5 enabled:active:neo-shadow-sm hover:brightness-105 uppercase tracking-wide"
-                    data-testid="weekend-cta-play"
-                    type="button"
-                  >
-                    Play now
-                  </button>
-                </div>
-                <p
-                  class="font-mono text-[10.5px] uppercase text-background/60"
-                >
-                  Budget squad or crew draft — fresh board every weekend.
-                </p>
-              </div>
-            </div>
-          </div>
-          <div
-            class="flex flex-col gap-3 md:grid md:grid-cols-[3fr_3fr_4fr] md:grid-rows-[auto_auto] md:gap-4 md:content-start"
-          >
-            <div
-              class="flex flex-col gap-3 md:gap-2 min-h-0"
+              class="flex items-baseline justify-between gap-3"
             >
               <p
-                class="font-mono text-[11px] font-bold uppercase tracking-[0.16em] text-muted-foreground"
+                class="font-mono text-eyebrow uppercase text-muted-foreground font-bold"
+                id="home-today"
               >
                 home.today.eyebrow
               </p>
-              <button
-                class="neo-border rounded-lg neo-shadow-lg w-full text-left cursor-pointer duration-press enabled:active:translate-x-0.5 enabled:active:translate-y-0.5 enabled:active:neo-shadow-sm disabled:cursor-not-allowed bg-yellow text-yellow-foreground p-4 md:px-4 md:py-1.5 flex flex-col md:flex-row md:items-center gap-1.5 md:gap-3 min-h-0 flex-1 transition-transform hover:-translate-x-[2px] hover:-translate-y-[2px] active:translate-x-[2px] active:translate-y-[2px]"
-                type="button"
+              <span
+                class="font-mono text-eyebrow uppercase text-muted-foreground shrink-0 tabular-nums"
               >
-                <svg
-                  class="lucide lucide-star shrink-0"
-                  fill="none"
-                  height="24"
-                  stroke="currentColor"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2.5"
-                  viewBox="0 0 24 24"
-                  width="24"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path
-                    d="M11.525 2.295a.53.53 0 0 1 .95 0l2.31 4.679a2.123 2.123 0 0 0 1.595 1.16l5.166.756a.53.53 0 0 1 .294.904l-3.736 3.638a2.123 2.123 0 0 0-.611 1.878l.882 5.14a.53.53 0 0 1-.771.56l-4.618-2.428a2.122 2.122 0 0 0-1.973 0L6.396 21.01a.53.53 0 0 1-.77-.56l.881-5.139a2.122 2.122 0 0 0-.611-1.879L2.16 9.795a.53.53 0 0 1 .294-.906l5.165-.755a2.122 2.122 0 0 0 1.597-1.16z"
-                  />
-                </svg>
-                <div
-                  class="mt-auto md:mt-0 flex flex-col gap-1.5 md:gap-1 min-w-0"
-                >
-                  <p
-                    class="font-heading font-black uppercase text-lg md:text-xl leading-none"
-                  >
-                    modes.daily.name
-                  </p>
-                  <p
-                    class="font-mono text-[10.5px] uppercase text-muted-foreground"
-                  >
-                    home.hooks.resetsIn
-                  </p>
-                </div>
-              </button>
+                home.hooks.resetsIn
+              </span>
+            </div>
+            <div
+              class="grid grid-cols-2 md:grid-cols-4 gap-3"
+            >
               <button
-                class="neo-border rounded-lg neo-shadow-lg w-full text-left cursor-pointer duration-press enabled:active:translate-x-0.5 enabled:active:translate-y-0.5 enabled:active:neo-shadow-sm disabled:cursor-not-allowed bg-accent text-accent-foreground p-4 md:px-4 md:py-1.5 flex flex-col md:flex-row md:items-center gap-1.5 md:gap-3 min-h-0 flex-1 transition-transform hover:-translate-x-[2px] hover:-translate-y-[2px] active:translate-x-[2px] active:translate-y-[2px]"
-                type="button"
-              >
-                <svg
-                  class="lucide lucide-calendar-heart shrink-0"
-                  fill="none"
-                  height="24"
-                  stroke="currentColor"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  stroke-width="2.5"
-                  viewBox="0 0 24 24"
-                  width="24"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path
-                    d="M3 10h18V6a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h7"
-                  />
-                  <path
-                    d="M8 2v4"
-                  />
-                  <path
-                    d="M16 2v4"
-                  />
-                  <path
-                    d="M21.29 14.7a2.43 2.43 0 0 0-2.65-.52c-.3.12-.57.3-.8.53l-.34.34-.35-.34a2.43 2.43 0 0 0-2.65-.53c-.3.12-.56.3-.79.53-.95.94-1 2.53.2 3.74L17.5 22l3.6-3.55c1.2-1.21 1.14-2.8.19-3.74Z"
-                  />
-                </svg>
-                <div
-                  class="mt-auto md:mt-0 flex flex-col gap-1.5 md:gap-1 min-w-0"
-                >
-                  <p
-                    class="font-heading font-black uppercase text-lg md:text-xl leading-none"
-                  >
-                    modes.dailySurvival.name
-                  </p>
-                  <p
-                    class="font-mono text-[10.5px] uppercase text-muted-foreground"
-                  >
-                    modes.dailySurvival.desc
-                  </p>
-                </div>
-              </button>
-              <button
-                class="neo-border rounded-lg neo-shadow-lg w-full text-left cursor-pointer duration-press enabled:active:translate-x-0.5 enabled:active:translate-y-0.5 enabled:active:neo-shadow-sm disabled:cursor-not-allowed bg-hot-pink text-hot-pink-foreground p-4 md:px-4 md:py-1.5 flex flex-col md:flex-row md:items-center gap-1.5 md:gap-3 min-h-0 flex-1 transition-transform hover:-translate-x-[2px] hover:-translate-y-[2px] active:translate-x-[2px] active:translate-y-[2px]"
+                class="neo-border rounded-lg neo-shadow p-4 w-full text-left cursor-pointer transition duration-press enabled:active:translate-x-0.5 enabled:active:translate-y-0.5 enabled:active:neo-shadow-sm disabled:cursor-not-allowed bg-electric-blue text-ink on-fill flex flex-col gap-1.5 min-h-[132px]"
                 data-testid="home-whos-older-card"
                 type="button"
               >
                 <svg
+                  aria-hidden="true"
                   class="lucide lucide-hourglass shrink-0"
                   fill="none"
                   height="24"
@@ -551,27 +352,28 @@ exports[`HomeDrawCard — no layout shift for non-draw users > flag off: Home re
                     d="M7 2v4.172a2 2 0 0 0 .586 1.414L12 12l4.414-4.414A2 2 0 0 0 17 6.172V2"
                   />
                 </svg>
-                <div
-                  class="mt-auto md:mt-0 flex flex-col gap-1.5 md:gap-1 min-w-0"
+                <span
+                  class="mt-auto flex min-w-0 flex-col gap-1"
                 >
-                  <p
-                    class="font-heading font-black uppercase text-lg md:text-xl leading-none"
+                  <span
+                    class="font-heading text-title-sm font-bold leading-tight"
                   >
                     modes.whosOlder.name
-                  </p>
-                  <p
-                    class="font-mono text-[10.5px] uppercase text-muted-foreground"
+                  </span>
+                  <span
+                    class="text-meta leading-snug text-muted-foreground"
                   >
                     modes.whosOlder.desc
-                  </p>
-                </div>
+                  </span>
+                </span>
               </button>
               <button
-                class="neo-border rounded-lg neo-shadow-lg w-full text-left cursor-pointer duration-press enabled:active:translate-x-0.5 enabled:active:translate-y-0.5 enabled:active:neo-shadow-sm disabled:cursor-not-allowed bg-electric-blue text-electric-blue-foreground p-4 md:px-4 md:py-1.5 flex flex-col md:flex-row md:items-center gap-1.5 md:gap-3 min-h-0 flex-1 transition-transform hover:-translate-x-[2px] hover:-translate-y-[2px] active:translate-x-[2px] active:translate-y-[2px]"
+                class="neo-border rounded-lg neo-shadow p-4 w-full text-left cursor-pointer transition duration-press enabled:active:translate-x-0.5 enabled:active:translate-y-0.5 enabled:active:neo-shadow-sm disabled:cursor-not-allowed bg-hot-pink text-ink on-fill flex flex-col gap-1.5 min-h-[132px]"
                 data-testid="home-missing-letters-card"
                 type="button"
               >
                 <svg
+                  aria-hidden="true"
                   class="lucide lucide-type shrink-0"
                   fill="none"
                   height="24"
@@ -599,37 +401,29 @@ exports[`HomeDrawCard — no layout shift for non-draw users > flag off: Home re
                     y2="20"
                   />
                 </svg>
-                <div
-                  class="mt-auto md:mt-0 flex flex-col gap-1.5 md:gap-1 min-w-0"
+                <span
+                  class="mt-auto flex min-w-0 flex-col gap-1"
                 >
-                  <p
-                    class="font-heading font-black uppercase text-lg md:text-xl leading-none"
+                  <span
+                    class="font-heading text-title-sm font-bold leading-tight"
                   >
                     modes.missingLetters.name
-                  </p>
-                  <p
-                    class="font-mono text-[10.5px] uppercase opacity-80"
+                  </span>
+                  <span
+                    class="text-meta leading-snug text-muted-foreground"
                   >
                     modes.missingLetters.desc
-                  </p>
-                </div>
+                  </span>
+                </span>
               </button>
-            </div>
-            <div
-              class="flex flex-col gap-3 min-h-0 md:col-start-3 md:row-start-2"
-            >
-              <p
-                class="font-mono text-[11px] font-bold uppercase tracking-[0.16em] text-muted-foreground"
-              >
-                home.mostPlayed.eyebrow
-              </p>
               <button
-                class="neo-border rounded-lg neo-shadow-lg w-full text-left cursor-pointer duration-press enabled:active:translate-x-0.5 enabled:active:translate-y-0.5 enabled:active:neo-shadow-sm disabled:cursor-not-allowed bg-yellow text-yellow-foreground p-4 flex flex-col gap-1.5 min-h-0 flex-1 transition-transform hover:-translate-x-[2px] hover:-translate-y-[2px] active:translate-x-[2px] active:translate-y-[2px]"
-                data-testid="home-career-path-card"
+                class="neo-border rounded-lg neo-shadow p-4 w-full text-left cursor-pointer transition duration-press enabled:active:translate-x-0.5 enabled:active:translate-y-0.5 enabled:active:neo-shadow-sm disabled:cursor-not-allowed bg-yellow text-ink on-fill flex flex-col gap-1.5 min-h-[132px]"
+                data-testid="home-daily-card"
                 type="button"
               >
                 <svg
-                  class="lucide lucide-route"
+                  aria-hidden="true"
+                  class="lucide lucide-star shrink-0"
                   fill="none"
                   height="24"
                   stroke="currentColor"
@@ -640,76 +434,300 @@ exports[`HomeDrawCard — no layout shift for non-draw users > flag off: Home re
                   width="24"
                   xmlns="http://www.w3.org/2000/svg"
                 >
-                  <circle
-                    cx="6"
-                    cy="19"
-                    r="3"
-                  />
                   <path
-                    d="M9 19h8.5a3.5 3.5 0 0 0 0-7h-11a3.5 3.5 0 0 1 0-7H15"
-                  />
-                  <circle
-                    cx="18"
-                    cy="5"
-                    r="3"
+                    d="M11.525 2.295a.53.53 0 0 1 .95 0l2.31 4.679a2.123 2.123 0 0 0 1.595 1.16l5.166.756a.53.53 0 0 1 .294.904l-3.736 3.638a2.123 2.123 0 0 0-.611 1.878l.882 5.14a.53.53 0 0 1-.771.56l-4.618-2.428a2.122 2.122 0 0 0-1.973 0L6.396 21.01a.53.53 0 0 1-.77-.56l.881-5.139a2.122 2.122 0 0 0-.611-1.879L2.16 9.795a.53.53 0 0 1 .294-.906l5.165-.755a2.122 2.122 0 0 0 1.597-1.16z"
                   />
                 </svg>
-                <p
-                  class="font-heading font-black uppercase text-lg md:text-xl leading-none mt-auto"
+                <span
+                  class="mt-auto flex min-w-0 flex-col gap-1"
                 >
-                  modes.careerPath.name
-                </p>
-                <p
-                  class="font-mono text-[10.5px] uppercase text-muted-foreground"
+                  <span
+                    class="font-heading text-title-sm font-bold leading-tight"
+                  >
+                    modes.daily.name
+                  </span>
+                  <span
+                    class="text-meta leading-snug text-muted-foreground"
+                  >
+                    modes.daily.desc
+                  </span>
+                </span>
+              </button>
+              <button
+                class="neo-border rounded-lg neo-shadow p-4 w-full text-left cursor-pointer transition duration-press enabled:active:translate-x-0.5 enabled:active:translate-y-0.5 enabled:active:neo-shadow-sm disabled:cursor-not-allowed bg-yellow text-ink on-fill flex flex-col gap-1.5 min-h-[132px]"
+                data-testid="home-daily-survival-card"
+                type="button"
+              >
+                <svg
+                  aria-hidden="true"
+                  class="lucide lucide-calendar-heart shrink-0"
+                  fill="none"
+                  height="24"
+                  stroke="currentColor"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  stroke-width="2.5"
+                  viewBox="0 0 24 24"
+                  width="24"
+                  xmlns="http://www.w3.org/2000/svg"
                 >
-                  modes.careerPath.desc
-                </p>
+                  <path
+                    d="M3 10h18V6a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h7"
+                  />
+                  <path
+                    d="M8 2v4"
+                  />
+                  <path
+                    d="M16 2v4"
+                  />
+                  <path
+                    d="M21.29 14.7a2.43 2.43 0 0 0-2.65-.52c-.3.12-.57.3-.8.53l-.34.34-.35-.34a2.43 2.43 0 0 0-2.65-.53c-.3.12-.56.3-.79.53-.95.94-1 2.53.2 3.74L17.5 22l3.6-3.55c1.2-1.21 1.14-2.8.19-3.74Z"
+                  />
+                </svg>
+                <span
+                  class="mt-auto flex min-w-0 flex-col gap-1"
+                >
+                  <span
+                    class="font-heading text-title-sm font-bold leading-tight"
+                  >
+                    modes.dailySurvival.name
+                  </span>
+                  <span
+                    class="text-meta leading-snug text-muted-foreground"
+                  >
+                    modes.dailySurvival.desc
+                  </span>
+                </span>
               </button>
             </div>
+          </section>
+          <div
+            class="shrink-0 flex flex-col md:flex-row md:items-stretch md:gap-4"
+          >
+            <div
+              class="shrink-0 pb-3 md:flex-[3] md:min-w-0"
+              data-testid="home-weekend-card"
+            >
+              <div
+                class="neo-border !border-lime neo-shadow-lg rounded-lg bg-card text-card-foreground p-4 md:p-5 h-full flex flex-col md:flex-row md:items-center gap-4 md:gap-5"
+              >
+                <div
+                  class="min-w-0 md:flex-1"
+                >
+                  <p
+                    class="font-mono text-eyebrow font-bold uppercase text-lime flex items-center gap-1.5"
+                  >
+                    <svg
+                      aria-hidden="true"
+                      class="lucide lucide-calendar-range"
+                      fill="none"
+                      height="12"
+                      stroke="currentColor"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="3"
+                      viewBox="0 0 24 24"
+                      width="12"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <rect
+                        height="18"
+                        rx="2"
+                        width="18"
+                        x="3"
+                        y="4"
+                      />
+                      <path
+                        d="M16 2v4"
+                      />
+                      <path
+                        d="M3 10h18"
+                      />
+                      <path
+                        d="M8 2v4"
+                      />
+                      <path
+                        d="M17 14h-6"
+                      />
+                      <path
+                        d="M13 18H7"
+                      />
+                      <path
+                        d="M7 14h.01"
+                      />
+                      <path
+                        d="M17 18h.01"
+                      />
+                    </svg>
+                    New mode · Live now
+                  </p>
+                  <p
+                    class="font-heading font-bold uppercase leading-none text-[34px] md:text-display mt-1.5"
+                  >
+                    The Weekend
+                  </p>
+                  <p
+                    class="font-heading font-bold text-body md:text-title-sm leading-tight mt-2"
+                  >
+                    Draft the whole European football weekend.
+                  </p>
+                  <ul
+                    class="mt-3 flex flex-col gap-1.5 md:hidden"
+                  >
+                    <li
+                      class="font-mono text-eyebrow uppercase text-muted-foreground flex gap-2"
+                    >
+                      <span
+                        aria-hidden="true"
+                        class="text-lime"
+                      >
+                        ■
+                      </span>
+                      <span>
+                        Eight leagues, one squad
+                      </span>
+                    </li>
+                    <li
+                      class="font-mono text-eyebrow uppercase text-muted-foreground flex gap-2"
+                    >
+                      <span
+                        aria-hidden="true"
+                        class="text-lime"
+                      >
+                        ■
+                      </span>
+                      <span>
+                        The crowd rates the players, not an algorithm
+                      </span>
+                    </li>
+                    <li
+                      class="font-mono text-eyebrow uppercase text-muted-foreground flex gap-2"
+                    >
+                      <span
+                        aria-hidden="true"
+                        class="text-lime"
+                      >
+                        ■
+                      </span>
+                      <span>
+                        Fresh draft every week, no season-long grind
+                      </span>
+                    </li>
+                  </ul>
+                </div>
+                <div
+                  class="md:w-[240px] md:shrink-0 flex flex-col gap-2"
+                >
+                  <button
+                    class="relative inline-flex select-none items-center justify-center gap-2 rounded-lg font-heading font-bold transition duration-press neo-border bg-primary text-primary-foreground min-h-14 px-6 py-3 text-body w-full cursor-pointer neo-shadow enabled:active:translate-x-0.5 enabled:active:translate-y-0.5 enabled:active:neo-shadow-sm hover:brightness-105 uppercase tracking-wide"
+                    data-testid="weekend-cta-play"
+                    type="button"
+                  >
+                    Play now
+                  </button>
+                  <p
+                    class="font-mono text-eyebrow uppercase text-muted-foreground"
+                  >
+                    Budget squad or crew draft — fresh board every weekend.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div
+            class="flex flex-col gap-3 md:grid md:grid-cols-[3fr_3fr_4fr] md:grid-rows-[auto_auto] md:gap-3 md:content-start"
+          >
             <button
-              class="neo-border rounded-lg neo-shadow-lg w-full text-left cursor-pointer duration-press enabled:active:translate-x-0.5 enabled:active:translate-y-0.5 enabled:active:neo-shadow-sm disabled:cursor-not-allowed bg-primary text-primary-foreground p-5 flex flex-col min-h-0 overflow-hidden transition-transform hover:-translate-x-[2px] hover:-translate-y-[2px] active:translate-x-[2px] active:translate-y-[2px]"
+              class="neo-border rounded-lg neo-shadow-lg p-4 w-full text-left cursor-pointer transition duration-press enabled:active:translate-x-0.5 enabled:active:translate-y-0.5 enabled:active:neo-shadow-sm disabled:cursor-not-allowed bg-orange text-ink on-fill flex flex-col gap-1.5 md:col-start-1 md:row-start-1 min-h-[120px]"
+              data-testid="home-career-path-card"
+              type="button"
+            >
+              <svg
+                aria-hidden="true"
+                class="lucide lucide-route shrink-0"
+                fill="none"
+                height="24"
+                stroke="currentColor"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2.5"
+                viewBox="0 0 24 24"
+                width="24"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <circle
+                  cx="6"
+                  cy="19"
+                  r="3"
+                />
+                <path
+                  d="M9 19h8.5a3.5 3.5 0 0 0 0-7h-11a3.5 3.5 0 0 1 0-7H15"
+                />
+                <circle
+                  cx="18"
+                  cy="5"
+                  r="3"
+                />
+              </svg>
+              <span
+                class="mt-auto flex min-w-0 flex-col gap-1"
+              >
+                <span
+                  class="font-heading text-title-sm font-bold leading-tight"
+                >
+                  modes.careerPath.name
+                </span>
+                <span
+                  class="text-meta leading-snug text-muted-foreground"
+                >
+                  modes.careerPath.desc
+                </span>
+              </span>
+            </button>
+            <button
+              class="neo-border rounded-lg bg-card text-card-foreground neo-shadow-lg w-full text-left cursor-pointer transition duration-press enabled:active:translate-x-0.5 enabled:active:translate-y-0.5 enabled:active:neo-shadow-sm disabled:cursor-not-allowed p-4 md:p-5 flex flex-col min-h-0 overflow-hidden md:col-start-2 md:row-start-1"
               type="button"
             >
               <div
                 class="flex items-start justify-between"
               >
                 <span
-                  class="neo-border neo-shadow-sm inline-flex items-center gap-1 font-heading font-bold uppercase px-2.5 py-0.5 text-eyebrow rounded-full bg-foreground text-background"
+                  class="neo-border neo-shadow-sm inline-flex items-center gap-1 font-heading font-bold uppercase bg-yellow text-yellow-foreground px-2.5 py-0.5 text-eyebrow rounded-full"
                 >
                   home.pillars.competeChip
                 </span>
                 <span
                   aria-hidden="true"
-                  class="text-[26px] leading-none"
+                  class="text-title leading-none"
                 >
                   ⚡
                 </span>
               </div>
               <p
-                class="font-heading font-black uppercase text-[34px] md:text-[46px] leading-[0.95] mt-auto pt-3"
+                class="font-heading font-bold uppercase text-title-lg leading-none mt-auto pt-3"
               >
                 home.pillars.competeTitle
               </p>
               <p
-                class="text-sm font-medium opacity-90 mt-2 max-w-[280px]"
+                class="text-body-sm text-muted-foreground mt-1.5 max-w-[280px] md:max-w-none"
               >
                 home.pillars.competeBody
               </p>
               <div
-                class="flex flex-wrap items-center gap-2 mt-3.5"
+                class="flex flex-wrap items-center gap-2 mt-3"
               >
                 <span
-                  class="neo-border neo-shadow-sm inline-flex items-center gap-1 font-heading font-bold uppercase px-2.5 py-0.5 text-eyebrow rounded-full bg-card text-foreground"
+                  class="neo-border neo-shadow-sm inline-flex items-center gap-1 font-heading font-bold uppercase bg-muted text-muted-foreground px-2.5 py-0.5 text-eyebrow rounded-full"
                 >
                   home.stats.unranked
                 </span>
               </div>
             </button>
             <div
-              class="flex flex-col gap-2.5 min-h-0 md:col-span-2 md:col-start-1 md:row-start-2"
+              class="flex flex-col gap-2 min-h-0 md:col-span-3 md:row-start-2"
             >
               <p
-                class="font-mono text-[11px] font-bold uppercase tracking-[0.16em] text-muted-foreground"
+                class="font-mono text-eyebrow uppercase text-muted-foreground font-bold"
               >
                 <span
                   class="md:hidden"
@@ -723,22 +741,23 @@ exports[`HomeDrawCard — no layout shift for non-draw users > flag off: Home re
                 </span>
               </p>
               <div
-                class="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-3.5"
+                class="grid grid-cols-2 md:grid-cols-4 gap-3"
               >
                 <button
-                  class="neo-border rounded-lg bg-card text-card-foreground neo-shadow w-full text-left cursor-pointer duration-press enabled:active:translate-x-0.5 enabled:active:translate-y-0.5 enabled:active:neo-shadow-sm disabled:cursor-not-allowed p-3.5 flex flex-col gap-1.5 min-h-0 transition-transform hover:-translate-x-[2px] hover:-translate-y-[2px] active:translate-x-[2px] active:translate-y-[2px]"
+                  class="neo-border rounded-lg neo-shadow w-full text-left cursor-pointer transition duration-press enabled:active:translate-x-0.5 enabled:active:translate-y-0.5 enabled:active:neo-shadow-sm disabled:cursor-not-allowed bg-orange text-ink on-fill flex flex-col gap-1.5 p-3.5"
                   type="button"
                 >
                   <svg
-                    class="lucide lucide-brain"
+                    aria-hidden="true"
+                    class="lucide lucide-brain shrink-0"
                     fill="none"
-                    height="22"
+                    height="24"
                     stroke="currentColor"
                     stroke-linecap="round"
                     stroke-linejoin="round"
                     stroke-width="2.5"
                     viewBox="0 0 24 24"
-                    width="22"
+                    width="24"
                     xmlns="http://www.w3.org/2000/svg"
                   >
                     <path
@@ -769,31 +788,36 @@ exports[`HomeDrawCard — no layout shift for non-draw users > flag off: Home re
                       d="M19.967 17.484A4 4 0 0 1 18 18"
                     />
                   </svg>
-                  <p
-                    class="font-heading font-bold text-base leading-none"
+                  <span
+                    class="mt-auto flex min-w-0 flex-col gap-1"
                   >
-                    modes.quiz.name
-                  </p>
-                  <p
-                    class="font-mono text-[10.5px] uppercase text-muted-foreground"
-                  >
-                    home.hooks.quizSub
-                  </p>
+                    <span
+                      class="font-heading text-title-sm font-bold leading-tight"
+                    >
+                      modes.quiz.name
+                    </span>
+                    <span
+                      class="text-meta leading-snug text-muted-foreground"
+                    >
+                      home.hooks.quizSub
+                    </span>
+                  </span>
                 </button>
                 <button
-                  class="neo-border rounded-lg neo-shadow w-full text-left cursor-pointer duration-press enabled:active:translate-x-0.5 enabled:active:translate-y-0.5 enabled:active:neo-shadow-sm disabled:cursor-not-allowed bg-hot-pink text-hot-pink-foreground p-3.5 flex flex-col gap-1.5 min-h-0 transition-transform hover:-translate-x-[2px] hover:-translate-y-[2px] active:translate-x-[2px] active:translate-y-[2px]"
+                  class="neo-border rounded-lg neo-shadow w-full text-left cursor-pointer transition duration-press enabled:active:translate-x-0.5 enabled:active:translate-y-0.5 enabled:active:neo-shadow-sm disabled:cursor-not-allowed bg-hot-pink text-ink on-fill flex flex-col gap-1.5 p-3.5"
                   type="button"
                 >
                   <svg
-                    class="lucide lucide-users"
+                    aria-hidden="true"
+                    class="lucide lucide-users shrink-0"
                     fill="none"
-                    height="22"
+                    height="24"
                     stroke="currentColor"
                     stroke-linecap="round"
                     stroke-linejoin="round"
                     stroke-width="2.5"
                     viewBox="0 0 24 24"
-                    width="22"
+                    width="24"
                     xmlns="http://www.w3.org/2000/svg"
                   >
                     <path
@@ -811,31 +835,36 @@ exports[`HomeDrawCard — no layout shift for non-draw users > flag off: Home re
                       d="M16 3.13a4 4 0 0 1 0 7.75"
                     />
                   </svg>
-                  <p
-                    class="font-heading font-bold text-base leading-none"
+                  <span
+                    class="mt-auto flex min-w-0 flex-col gap-1"
                   >
-                    modes.duel.name
-                  </p>
-                  <p
-                    class="font-mono text-[10.5px] uppercase text-muted-foreground"
-                  >
-                    modes.duel.desc
-                  </p>
+                    <span
+                      class="font-heading text-title-sm font-bold leading-tight"
+                    >
+                      modes.duel.name
+                    </span>
+                    <span
+                      class="text-meta leading-snug text-muted-foreground"
+                    >
+                      modes.duel.desc
+                    </span>
+                  </span>
                 </button>
                 <button
-                  class="neo-border rounded-lg bg-card text-card-foreground neo-shadow w-full text-left cursor-pointer duration-press enabled:active:translate-x-0.5 enabled:active:translate-y-0.5 enabled:active:neo-shadow-sm disabled:cursor-not-allowed p-3.5 flex flex-col gap-1.5 min-h-0 transition-transform hover:-translate-x-[2px] hover:-translate-y-[2px] active:translate-x-[2px] active:translate-y-[2px]"
+                  class="neo-border rounded-lg neo-shadow w-full text-left cursor-pointer transition duration-press enabled:active:translate-x-0.5 enabled:active:translate-y-0.5 enabled:active:neo-shadow-sm disabled:cursor-not-allowed bg-hot-pink text-ink on-fill flex flex-col gap-1.5 p-3.5"
                   type="button"
                 >
                   <svg
-                    class="lucide lucide-swords"
+                    aria-hidden="true"
+                    class="lucide lucide-swords shrink-0"
                     fill="none"
-                    height="22"
+                    height="24"
                     stroke="currentColor"
                     stroke-linecap="round"
                     stroke-linejoin="round"
                     stroke-width="2.5"
                     viewBox="0 0 24 24"
-                    width="22"
+                    width="24"
                     xmlns="http://www.w3.org/2000/svg"
                   >
                     <polyline
@@ -881,31 +910,36 @@ exports[`HomeDrawCard — no layout shift for non-draw users > flag off: Home re
                       y2="21"
                     />
                   </svg>
-                  <p
-                    class="font-heading font-bold text-base leading-none"
+                  <span
+                    class="mt-auto flex min-w-0 flex-col gap-1"
                   >
-                    modes.arena.name
-                  </p>
-                  <p
-                    class="font-mono text-[10.5px] uppercase text-muted-foreground"
-                  >
-                    modes.arena.desc
-                  </p>
+                    <span
+                      class="font-heading text-title-sm font-bold leading-tight"
+                    >
+                      modes.arena.name
+                    </span>
+                    <span
+                      class="text-meta leading-snug text-muted-foreground"
+                    >
+                      modes.arena.desc
+                    </span>
+                  </span>
                 </button>
                 <button
-                  class="neo-border rounded-lg neo-shadow w-full text-left cursor-pointer duration-press enabled:active:translate-x-0.5 enabled:active:translate-y-0.5 enabled:active:neo-shadow-sm disabled:cursor-not-allowed bg-hot-pink text-hot-pink-foreground p-3.5 flex flex-col gap-1.5 min-h-0 transition-transform hover:-translate-x-[2px] hover:-translate-y-[2px] active:translate-x-[2px] active:translate-y-[2px]"
+                  class="neo-border rounded-lg neo-shadow w-full text-left cursor-pointer transition duration-press enabled:active:translate-x-0.5 enabled:active:translate-y-0.5 enabled:active:neo-shadow-sm disabled:cursor-not-allowed bg-card text-card-foreground flex flex-col gap-1.5 p-3.5"
                   type="button"
                 >
                   <svg
-                    class="lucide lucide-hammer"
+                    aria-hidden="true"
+                    class="lucide lucide-hammer shrink-0"
                     fill="none"
-                    height="22"
+                    height="24"
                     stroke="currentColor"
                     stroke-linecap="round"
                     stroke-linejoin="round"
                     stroke-width="2.5"
                     viewBox="0 0 24 24"
-                    width="22"
+                    width="24"
                     xmlns="http://www.w3.org/2000/svg"
                   >
                     <path
@@ -918,45 +952,49 @@ exports[`HomeDrawCard — no layout shift for non-draw users > flag off: Home re
                       d="m21.5 11.5-1.914-1.914A2 2 0 0 1 19 8.172V7l-2.26-2.26a6 6 0 0 0-4.202-1.756L9 2.96l.92.82A6.18 6.18 0 0 1 12 8.4V10l2 2h1.172a2 2 0 0 1 1.414.586L18.5 14.5"
                     />
                   </svg>
-                  <p
-                    class="font-heading font-bold text-base leading-none"
+                  <span
+                    class="mt-auto flex min-w-0 flex-col gap-1"
                   >
-                    forge.title
-                  </p>
-                  <p
-                    class="font-mono text-[10.5px] uppercase text-muted-foreground"
-                  >
-                    forge.subtitle
-                  </p>
+                    <span
+                      class="font-heading text-title-sm font-bold leading-tight"
+                    >
+                      forge.title
+                    </span>
+                    <span
+                      class="text-meta leading-snug text-muted-foreground"
+                    >
+                      forge.subtitle
+                    </span>
+                  </span>
                 </button>
               </div>
             </div>
             <button
-              class="neo-border neo-shadow-lg rounded-lg bg-foreground text-background text-left w-full p-[18px] flex flex-col min-h-0 overflow-hidden md:col-start-3 md:row-start-1 transition-transform hover:-translate-x-[2px] hover:-translate-y-[2px] active:translate-x-[2px] active:translate-y-[2px]"
+              class="neo-border rounded-lg bg-card text-card-foreground neo-shadow-lg w-full text-left cursor-pointer transition duration-press enabled:active:translate-x-0.5 enabled:active:translate-y-0.5 enabled:active:neo-shadow-sm disabled:cursor-not-allowed p-[18px] flex flex-col min-h-0 overflow-hidden md:col-start-3 md:row-start-1"
               type="button"
             >
               <div
                 class="flex items-center justify-between gap-2"
               >
                 <span
-                  class="font-mono text-[11px] font-bold uppercase tracking-[0.16em] text-yellow"
+                  class="font-mono text-eyebrow uppercase font-bold text-yellow"
                 >
                   ranks.ladder
                 </span>
                 <span
-                  class="rounded-full border-2 border-background bg-yellow text-yellow-foreground px-3 py-1 font-heading font-bold uppercase tracking-wide text-[10px]"
+                  class="neo-border neo-shadow-sm inline-flex items-center gap-1 font-heading font-bold uppercase bg-yellow text-yellow-foreground px-2.5 py-0.5 text-eyebrow rounded-full"
                 >
                   ranks.rankedChip
                 </span>
               </div>
               <div
-                class="flex items-center gap-3 mt-3 md:mt-4"
+                class="flex items-center gap-3 mt-3"
               >
                 <div
-                  class="neo-border border-background/40 bg-background/15 w-[50px] h-[50px] md:w-[62px] md:h-[62px] shrink-0 rounded-[10px] -rotate-6 grid place-items-center"
+                  class="neo-border bg-muted w-[50px] h-[50px] shrink-0 rounded-lg -rotate-6 grid place-items-center"
                 >
                   <svg
-                    class="lucide lucide-lock text-background/70"
+                    class="lucide lucide-lock text-muted-foreground"
                     fill="none"
                     height="24"
                     stroke="currentColor"
@@ -984,25 +1022,25 @@ exports[`HomeDrawCard — no layout shift for non-draw users > flag off: Home re
                   class="min-w-0"
                 >
                   <p
-                    class="font-heading font-black text-2xl md:text-3xl leading-none"
+                    class="font-heading font-bold text-title-lg leading-none"
                   >
                     ranks.locked.title
                   </p>
                   <p
-                    class="font-mono text-xs text-yellow mt-1"
+                    class="font-mono text-meta text-yellow mt-1"
                   >
                     ranks.locked.chip
                   </p>
                 </div>
               </div>
               <div
-                class="h-3 border-2 border-background/40 rounded-full mt-3 overflow-hidden"
+                class="h-3 neo-border rounded-full mt-3 overflow-hidden"
               />
               <div
-                class="flex items-center justify-between mt-auto pt-3.5"
+                class="flex items-center justify-between mt-auto pt-3"
               >
                 <span
-                  class="flex items-baseline gap-1.5 font-mono text-[11px] text-background/60"
+                  class="flex items-baseline gap-1.5 font-mono text-meta text-muted-foreground"
                 >
                   <span>
                     ranks.eloRating
@@ -1012,7 +1050,7 @@ exports[`HomeDrawCard — no layout shift for non-draw users > flag off: Home re
                   </span>
                 </span>
                 <span
-                  class="font-heading font-bold text-[13px] uppercase text-yellow"
+                  class="font-heading font-bold text-meta uppercase text-yellow"
                 >
                   home.ranksCard.view
                    →
@@ -1021,7 +1059,7 @@ exports[`HomeDrawCard — no layout shift for non-draw users > flag off: Home re
             </button>
           </div>
           <p
-            class="shrink-0 text-center text-[11px] text-muted-foreground pt-3.5 pb-1"
+            class="shrink-0 text-center text-meta text-muted-foreground pt-3 pb-1"
           >
             home.supportCoffeePrefix
              
