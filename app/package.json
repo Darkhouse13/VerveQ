@@ -27,6 +27,7 @@
     "draw:sweep": "npx tsx scripts/drawSim/sweep.ts",
     "draw:layoutcheck": "npx tsx scripts/drawSim/layoutcheck.ts",
     "fantasy:scoring-gate": "npx tsx scripts/fantasyScoringRegression.ts",
+    "design:baseline": "node scripts/designRatchet.mjs --write",
     "test": "vitest run",
     "test:watch": "vitest"
   },

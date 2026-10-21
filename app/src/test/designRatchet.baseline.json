@@ -1,0 +1,795 @@
+{
+  "src/App.tsx": {
+    "fixedInset": 1
+  },
+  "src/components/CountdownOverlay.tsx": {
+    "fixedInset": 1
+  },
+  "src/components/DailyBanner.tsx": {
+    "roundedXl": 1,
+    "opacityText": 1
+  },
+  "src/components/DecayWarningBanner.tsx": {
+    "roundedXl": 1
+  },
+  "src/components/ExitGameButton.tsx": {
+    "rawButton": 1,
+    "transitionAll": 1
+  },
+  "src/components/ImageDropzone.tsx": {
+    "textPx": 1,
+    "rawButton": 1,
+    "transitionAll": 1,
+    "opacityText": 1
+  },
+  "src/components/InstallPrompt.tsx": {
+    "rawButton": 2
+  },
+  "src/components/ProtectedRoute.tsx": {
+    "roundedXl": 1
+  },
+  "src/components/RoundResult.tsx": {
+    "fixedInset": 1
+  },
+  "src/components/SeasonBanner.tsx": {
+    "roundedXl": 1
+  },
+  "src/components/draw/CardDetailSheet.tsx": {
+    "textPx": 2
+  },
+  "src/components/draw/ClearanceMeter.tsx": {
+    "textPx": 4
+  },
+  "src/components/draw/CoachMark.tsx": {
+    "textPx": 3,
+    "rawButton": 1,
+    "opacityText": 1
+  },
+  "src/components/draw/DraftProjection.tsx": {
+    "textPx": 4
+  },
+  "src/components/draw/DraftStage.tsx": {
+    "textPx": 3,
+    "rawButton": 1
+  },
+  "src/components/draw/DrawCardFace.tsx": {
+    "textPx": 10
+  },
+  "src/components/draw/DrawSheet.tsx": {
+    "textPx": 1,
+    "radixDialog": 1,
+    "fixedInset": 1,
+    "fontBlack": 1
+  },
+  "src/components/draw/DrawTopBar.tsx": {
+    "textPx": 1,
+    "rawButton": 1
+  },
+  "src/components/draw/FixtureSheet.tsx": {
+    "textPx": 2
+  },
+  "src/components/draw/FixtureStrip.tsx": {
+    "textPx": 4,
+    "rawButton": 1
+  },
+  "src/components/draw/HomeDrawCard.tsx": {
+    "textPx": 3,
+    "fontBlack": 4,
+    "opacityText": 3,
+    "trackingArbitrary": 1
+  },
+  "src/components/draw/NextFixtureLine.tsx": {
+    "textPx": 4,
+    "rawButton": 1
+  },
+  "src/components/draw/PickImpact.tsx": {
+    "textPx": 4,
+    "opacityText": 1
+  },
+  "src/components/draw/ResolutionLedger.tsx": {
+    "textPx": 2
+  },
+  "src/components/draw/ResultStage.tsx": {
+    "textPx": 3,
+    "rawButton": 1,
+    "toast": 3,
+    "fontBlack": 1,
+    "opacityText": 2
+  },
+  "src/components/draw/RoundStage.tsx": {
+    "textPx": 14,
+    "rawButton": 2
+  },
+  "src/components/draw/ShareCard.tsx": {
+    "textPx": 3,
+    "roundedXl": 1,
+    "fontBlack": 1,
+    "opacityText": 2
+  },
+  "src/components/draw/SynergyMeters.tsx": {
+    "textPx": 2
+  },
+  "src/components/draw/draw.css": {
+    "colorFn": 7
+  },
+  "src/components/learn/LearnPrimitives.tsx": {
+    "textPx": 2,
+    "fixedInset": 1,
+    "trackingArbitrary": 1
+  },
+  "src/components/learn/QuestionTypes.tsx": {
+    "textPx": 2,
+    "rawButton": 3,
+    "roundedXl": 4,
+    "transitionAll": 1,
+    "fontBlack": 1,
+    "opacityText": 1
+  },
+  "src/components/learn/TeachingReveal.tsx": {
+    "textPx": 10,
+    "colorFn": 1,
+    "rawButton": 6,
+    "roundedXl": 7,
+    "transitionAll": 2,
+    "opacityText": 1
+  },
+  "src/components/neo/BottomNav.tsx": {
+    "textPx": 2,
+    "rawButton": 1
+  },
+  "src/components/neo/NeoBadge.tsx": {
+    "textPx": 1
+  },
+  "src/components/neo/NeoButton.tsx": {
+    "rawButton": 1,
+    "transitionAll": 1
+  },
+  "src/components/neo/NeoCard.tsx": {
+    "rawButton": 1,
+    "transitionAll": 1
+  },
+  "src/components/neo/NeoInput.tsx": {
+    "transitionAll": 1
+  },
+  "src/components/shell/FirstRunLanguagePrompt.tsx": {
+    "textPx": 1,
+    "rawButton": 1,
+    "transitionAll": 1
+  },
+  "src/components/shell/LanguageSwitcher.tsx": {
+    "textPx": 2,
+    "rawButton": 1,
+    "transitionAll": 1
+  },
+  "src/components/shell/ShellLayout.tsx": {
+    "rawButton": 1,
+    "fixedInset": 2,
+    "transitionAll": 1
+  },
+  "src/components/shell/ShellNav.tsx": {
+    "textPx": 1,
+    "colorFn": 4,
+    "rawButton": 3,
+    "transitionAll": 1,
+    "opacityText": 2
+  },
+  "src/components/shell/ShellRouteGuards.tsx": {
+    "rawButton": 1,
+    "roundedXl": 1
+  },
+  "src/components/shell/onboarding/ClaimNamePrompt.tsx": {
+    "rawButton": 1,
+    "opacityText": 1
+  },
+  "src/components/shell/onboarding/UpgradeAccountForm.tsx": {
+    "textPx": 1,
+    "opacityText": 1
+  },
+  "src/components/shell/onboarding/UsernameOnlyOnboarding.tsx": {
+    "textPx": 1,
+    "opacityText": 1
+  },
+  "src/components/shell/play/PlayStage.tsx": {
+    "textPx": 2,
+    "rawButton": 1,
+    "fixedInset": 2,
+    "opacityText": 1
+  },
+  "src/components/shell/play/QuizPlayView.tsx": {
+    "rawButton": 1,
+    "transitionAll": 1,
+    "opacityText": 1
+  },
+  "src/components/shell/play/TierControl.tsx": {
+    "textPx": 2,
+    "rawButton": 1,
+    "transitionAll": 1,
+    "opacityText": 1,
+    "trackingArbitrary": 1
+  },
+  "src/components/shell/play/ambient/MetricsPanel.tsx": {
+    "textPx": 1
+  },
+  "src/components/shell/play/ambient/ProgressPanel.tsx": {
+    "textPx": 1
+  },
+  "src/components/shell/play/ambient/RosterPanel.tsx": {
+    "textPx": 4,
+    "opacityText": 1
+  },
+  "src/components/shell/play/ambient/StandingsPanel.tsx": {
+    "textPx": 2
+  },
+  "src/components/shell/play/ambient/grid/GridPickLogPanel.tsx": {
+    "textPx": 6,
+    "roundedXl": 1
+  },
+  "src/components/shell/play/ambient/grid/GridRunPanel.tsx": {
+    "textPx": 8,
+    "roundedXl": 2,
+    "opacityText": 2
+  },
+  "src/components/shell/play/ambient/grid/GridStrip.tsx": {
+    "textPx": 1,
+    "opacityText": 1
+  },
+  "src/components/shell/play/grid/GridBoard.tsx": {
+    "textPx": 2,
+    "rawButton": 1,
+    "roundedXl": 1,
+    "opacityText": 1
+  },
+  "src/components/shell/play/grid/GridEndOverlay.tsx": {
+    "textPx": 4,
+    "rawButton": 3,
+    "fixedInset": 1,
+    "roundedXl": 1,
+    "opacityText": 2
+  },
+  "src/components/shell/play/grid/GridSearchSheet.tsx": {
+    "textPx": 5,
+    "rawButton": 2,
+    "fixedInset": 1,
+    "roundedXl": 1,
+    "opacityText": 1
+  },
+  "src/components/shell/play/grid/GridStage.tsx": {
+    "textPx": 2,
+    "borderBlack": 1,
+    "rawButton": 1,
+    "fixedInset": 2
+  },
+  "src/components/shell/play/whosOlder/DailyShare.tsx": {
+    "borderBlack": 3,
+    "toast": 3,
+    "fontBlack": 2
+  },
+  "src/components/shell/play/whosOlder/WhosOlderRetention.tsx": {
+    "textPx": 6,
+    "shadowArbitrary": 1,
+    "borderBlack": 8,
+    "hex": 1,
+    "rawButton": 2,
+    "fontBlack": 5,
+    "opacityText": 4
+  },
+  "src/components/ui/dialog.tsx": {
+    "radixDialog": 1,
+    "fixedInset": 1,
+    "opacityText": 1
+  },
+  "src/components/weekend/FavoriteClubCard.tsx": {
+    "textPx": 4,
+    "rawButton": 1,
+    "toast": 2,
+    "radixDialog": 1,
+    "fixedInset": 1,
+    "trackingArbitrary": 1
+  },
+  "src/components/weekend/FormationChooser.tsx": {
+    "textPx": 7,
+    "rawButton": 1,
+    "radixDialog": 1,
+    "fixedInset": 1,
+    "opacityText": 1,
+    "trackingArbitrary": 4
+  },
+  "src/components/weekend/HomeWeekendCard.tsx": {
+    "textPx": 5,
+    "fontBlack": 1,
+    "trackingArbitrary": 1
+  },
+  "src/components/weekend/PitchView.tsx": {
+    "textPx": 6,
+    "colorFn": 35,
+    "rawButton": 1,
+    "roundedXl": 3,
+    "transitionAll": 1,
+    "opacityText": 2,
+    "trackingArbitrary": 2
+  },
+  "src/components/weekend/PlayerSheet.tsx": {
+    "textPx": 20,
+    "trackingArbitrary": 4
+  },
+  "src/components/weekend/SquadLedgerView.tsx": {
+    "textPx": 5,
+    "trackingArbitrary": 2
+  },
+  "src/components/weekend/SquadTabs.tsx": {
+    "textPx": 1,
+    "rawButton": 1,
+    "opacityText": 1,
+    "trackingArbitrary": 1
+  },
+  "src/components/weekend/WeekendLeaguesLine.tsx": {
+    "textPx": 1,
+    "rawButton": 1,
+    "opacityText": 1,
+    "trackingArbitrary": 1
+  },
+  "src/components/weekend/WeekendSheet.tsx": {
+    "textPx": 1,
+    "radixDialog": 1,
+    "fixedInset": 1,
+    "trackingArbitrary": 1
+  },
+  "src/hooks/useAntiCheat.ts": {
+    "toast": 1
+  },
+  "src/hooks/useDailyQuiz.ts": {
+    "toast": 5
+  },
+  "src/hooks/useSoloBlitz.ts": {
+    "toast": 2
+  },
+  "src/hooks/useSoloQuiz.ts": {
+    "toast": 4
+  },
+  "src/hooks/useStreakLinkClaim.ts": {
+    "toast": 3
+  },
+  "src/hooks/useVerveGrid.ts": {
+    "toast": 4
+  },
+  "src/index.css": {
+    "hex": 4,
+    "colorFn": 20
+  },
+  "src/lib/dailyShare.ts": {
+    "hex": 19
+  },
+  "src/lib/rankedLadder.ts": {
+    "hex": 4
+  },
+  "src/lib/receiptImage.ts": {
+    "hex": 9,
+    "colorFn": 4
+  },
+  "src/pages/BlitzResultScreen.tsx": {
+    "textPx": 1,
+    "opacityText": 1
+  },
+  "src/pages/BlitzScreen.tsx": {
+    "rawButton": 1,
+    "toast": 2,
+    "transitionAll": 1,
+    "opacityText": 1
+  },
+  "src/pages/ChallengeArenaScreen.tsx": {
+    "textPx": 54,
+    "rawButton": 7,
+    "toast": 20,
+    "fixedInset": 1,
+    "transitionAll": 1,
+    "opacityText": 13,
+    "trackingArbitrary": 6
+  },
+  "src/pages/ChallengeScreen.tsx": {
+    "textPx": 10,
+    "rawButton": 4,
+    "toast": 1
+  },
+  "src/pages/DailyQuizScreen.tsx": {
+    "rawButton": 1,
+    "toast": 5,
+    "transitionAll": 1,
+    "opacityText": 1
+  },
+  "src/pages/DailyResultScreen.tsx": {
+    "textPx": 2,
+    "toast": 3,
+    "opacityText": 2
+  },
+  "src/pages/DifficultyScreen.tsx": {
+    "rawButton": 1,
+    "transitionAll": 1,
+    "opacityText": 1
+  },
+  "src/pages/DuelHistoryScreen.tsx": {
+    "textPx": 6,
+    "rawButton": 2,
+    "transitionAll": 1,
+    "opacityText": 3
+  },
+  "src/pages/DuelLinkScreen.tsx": {
+    "textPx": 1,
+    "toast": 4
+  },
+  "src/pages/DuelPlayScreen.tsx": {
+    "textPx": 3,
+    "rawButton": 2,
+    "toast": 6,
+    "transitionAll": 1,
+    "opacityText": 1
+  },
+  "src/pages/DuelResultScreen.tsx": {
+    "textPx": 3,
+    "rawButton": 2,
+    "toast": 9,
+    "opacityText": 6
+  },
+  "src/pages/ForgeScreen.tsx": {
+    "textPx": 2,
+    "rawButton": 5,
+    "toast": 10,
+    "transitionAll": 7
+  },
+  "src/pages/HigherLowerScreen.tsx": {
+    "toast": 1,
+    "transitionAll": 1,
+    "fontBlack": 1,
+    "opacityText": 2
+  },
+  "src/pages/HomeScreen.tsx": {
+    "textPx": 3,
+    "roundedXl": 9,
+    "opacityText": 14
+  },
+  "src/pages/LeaderboardScreen.tsx": {
+    "textPx": 1,
+    "rawButton": 1,
+    "transitionAll": 1
+  },
+  "src/pages/LearnNodePickerScreen.tsx": {
+    "transitionAll": 1,
+    "opacityText": 1
+  },
+  "src/pages/LearnPrototypeScreen.tsx": {
+    "textPx": 1,
+    "rawButton": 1,
+    "transitionAll": 1,
+    "opacityText": 1
+  },
+  "src/pages/LoginScreen.tsx": {
+    "rawButton": 5,
+    "toast": 2
+  },
+  "src/pages/NotFound.tsx": {
+    "shadowArbitrary": 3,
+    "roundedXl": 3,
+    "fontBlack": 2
+  },
+  "src/pages/OnboardingScreen.tsx": {
+    "rawButton": 1,
+    "transitionAll": 1,
+    "opacityText": 2
+  },
+  "src/pages/ProfileScreen.tsx": {
+    "textPx": 3,
+    "toast": 2,
+    "transitionAll": 1,
+    "opacityText": 2
+  },
+  "src/pages/QuizScreen.tsx": {
+    "rawButton": 1,
+    "toast": 4,
+    "transitionAll": 1,
+    "opacityText": 1
+  },
+  "src/pages/ResultScreen.tsx": {
+    "textPx": 6,
+    "rawButton": 1,
+    "toast": 1,
+    "opacityText": 4
+  },
+  "src/pages/RivalsScreen.tsx": {
+    "textPx": 1,
+    "rawButton": 4,
+    "toast": 3
+  },
+  "src/pages/SportSelectScreen.tsx": {
+    "rawButton": 2,
+    "roundedXl": 1,
+    "transitionAll": 3
+  },
+  "src/pages/SurvivalScreen.tsx": {
+    "toast": 10,
+    "roundedXl": 1
+  },
+  "src/pages/VerveGridScreen.tsx": {
+    "textPx": 6,
+    "toast": 2,
+    "roundedXl": 1,
+    "transitionAll": 1
+  },
+  "src/pages/arena/CreateArenaModal.tsx": {
+    "textPx": 6,
+    "rawButton": 4,
+    "toast": 1,
+    "fixedInset": 1,
+    "roundedXl": 1,
+    "opacityText": 4
+  },
+  "src/pages/arena/JoinArenaModal.tsx": {
+    "rawButton": 1,
+    "fixedInset": 1,
+    "trackingArbitrary": 1
+  },
+  "src/pages/challenge/CreateDuelModal.tsx": {
+    "textPx": 1,
+    "rawButton": 1,
+    "toast": 1,
+    "fixedInset": 1,
+    "opacityText": 1
+  },
+  "src/pages/draw/DrawScreen.tsx": {
+    "textPx": 3,
+    "fixedInset": 2,
+    "fontBlack": 1,
+    "opacityText": 2
+  },
+  "src/pages/draw/DrawShareLanding.tsx": {
+    "textPx": 1
+  },
+  "src/pages/legal/LegalLayout.tsx": {
+    "transitionAll": 1
+  },
+  "src/pages/shell/ArenaHubScreen.tsx": {
+    "roundedXl": 1,
+    "opacityText": 1
+  },
+  "src/pages/shell/ColdEntryScreen.tsx": {
+    "textPx": 2,
+    "rawButton": 4,
+    "transitionAll": 1,
+    "opacityText": 1
+  },
+  "src/pages/shell/CompeteHeroCards.tsx": {
+    "textPx": 3,
+    "fontBlack": 1,
+    "trackingArbitrary": 1
+  },
+  "src/pages/shell/CompeteModeGridScreen.tsx": {
+    "textPx": 5,
+    "rawButton": 1,
+    "roundedXl": 1,
+    "opacityText": 3,
+    "trackingArbitrary": 1
+  },
+  "src/pages/shell/RanksScreen.tsx": {
+    "textPx": 27,
+    "hex": 6,
+    "colorFn": 1,
+    "roundedXl": 2,
+    "trackingArbitrary": 1
+  },
+  "src/pages/shell/SettingsScreen.tsx": {
+    "textPx": 11,
+    "rawButton": 1,
+    "toast": 2,
+    "transitionAll": 4,
+    "opacityText": 1
+  },
+  "src/pages/shell/ShellHomeScreen.tsx": {
+    "textPx": 18,
+    "rawButton": 2,
+    "roundedXl": 2,
+    "fontBlack": 10,
+    "opacityText": 1,
+    "trackingArbitrary": 2
+  },
+  "src/pages/shell/ShellLeaderboardScreen.tsx": {
+    "textPx": 12,
+    "rawButton": 1,
+    "transitionAll": 1,
+    "opacityText": 3,
+    "trackingArbitrary": 2
+  },
+  "src/pages/shell/ShellProfileScreen.tsx": {
+    "textPx": 25,
+    "hex": 1,
+    "colorFn": 1,
+    "rawButton": 1,
+    "toast": 1,
+    "roundedXl": 3,
+    "transitionAll": 1,
+    "opacityText": 1
+  },
+  "src/pages/shell/WelcomeScreen.tsx": {
+    "rawButton": 1
+  },
+  "src/pages/shell/learn/LearnEntryScreen.tsx": {
+    "textPx": 11,
+    "rawButton": 6,
+    "roundedXl": 6,
+    "fontBlack": 2,
+    "opacityText": 2
+  },
+  "src/pages/shell/learn/LearnMasteryScreen.tsx": {
+    "textPx": 5,
+    "rawButton": 3,
+    "roundedXl": 4,
+    "fontBlack": 3,
+    "opacityText": 1
+  },
+  "src/pages/shell/learn/LearnReviewScreen.tsx": {
+    "textPx": 2,
+    "rawButton": 2,
+    "roundedXl": 4,
+    "opacityText": 1
+  },
+  "src/pages/shell/learn/LearnRunnerScreen.tsx": {
+    "textPx": 8,
+    "rawButton": 6,
+    "roundedXl": 8,
+    "transitionAll": 1,
+    "opacityText": 1
+  },
+  "src/pages/shell/play/ArenaPlayScreen.tsx": {
+    "textPx": 9,
+    "rawButton": 2,
+    "toast": 7,
+    "transitionAll": 1,
+    "opacityText": 2
+  },
+  "src/pages/shell/play/BlitzPlayScreen.tsx": {
+    "rawButton": 1,
+    "transitionAll": 1,
+    "opacityText": 1
+  },
+  "src/pages/shell/play/CareerPathClassicGame.tsx": {
+    "textPx": 1,
+    "toast": 4,
+    "opacityText": 4
+  },
+  "src/pages/shell/play/CareerPathLadderGame.tsx": {
+    "textPx": 1,
+    "toast": 2,
+    "opacityText": 2
+  },
+  "src/pages/shell/play/CareerPathPlayScreen.tsx": {
+    "opacityText": 2
+  },
+  "src/pages/shell/play/HigherLowerPlayScreen.tsx": {
+    "textPx": 2,
+    "toast": 1,
+    "transitionAll": 1,
+    "opacityText": 2
+  },
+  "src/pages/shell/play/MissingLettersPlayScreen.tsx": {
+    "textPx": 9,
+    "shadowArbitrary": 8,
+    "borderBlack": 15,
+    "hex": 8,
+    "colorFn": 2,
+    "rawButton": 3,
+    "toast": 5,
+    "fixedInset": 1,
+    "fontBlack": 9,
+    "opacityText": 3,
+    "trackingArbitrary": 4
+  },
+  "src/pages/shell/play/SurvivalPlayScreen.tsx": {
+    "toast": 11,
+    "roundedXl": 1
+  },
+  "src/pages/shell/play/WhosOlderPlayScreen.tsx": {
+    "textPx": 9,
+    "shadowArbitrary": 11,
+    "borderBlack": 14,
+    "hex": 11,
+    "colorFn": 1,
+    "rawButton": 1,
+    "toast": 5,
+    "fixedInset": 1,
+    "roundedXl": 2,
+    "fontBlack": 8,
+    "opacityText": 2,
+    "trackingArbitrary": 4
+  },
+  "src/pages/shell/weekend/BudgetSquadScreen.tsx": {
+    "textPx": 26,
+    "rawButton": 5,
+    "toast": 3,
+    "radixDialog": 1,
+    "fixedInset": 1,
+    "roundedXl": 3,
+    "opacityText": 4,
+    "trackingArbitrary": 6
+  },
+  "src/pages/shell/weekend/CourtScreen.tsx": {
+    "textPx": 11,
+    "toast": 1,
+    "roundedXl": 1,
+    "trackingArbitrary": 1
+  },
+  "src/pages/shell/weekend/CrewCommandScreen.tsx": {
+    "textPx": 14,
+    "rawButton": 6,
+    "toast": 7,
+    "radixDialog": 1,
+    "fixedInset": 3,
+    "opacityText": 5,
+    "trackingArbitrary": 7
+  },
+  "src/pages/shell/weekend/CrewCompetitionPanel.tsx": {
+    "textPx": 16,
+    "rawButton": 1,
+    "toast": 1,
+    "opacityText": 6,
+    "trackingArbitrary": 6
+  },
+  "src/pages/shell/weekend/CrewScreen.tsx": {
+    "textPx": 4,
+    "rawButton": 3,
+    "toast": 1,
+    "opacityText": 1,
+    "trackingArbitrary": 1
+  },
+  "src/pages/shell/weekend/CrewSheetScreen.tsx": {
+    "textPx": 1,
+    "toast": 3,
+    "roundedXl": 1,
+    "trackingArbitrary": 1
+  },
+  "src/pages/shell/weekend/DraftRoomScreen.tsx": {
+    "textPx": 15,
+    "rawButton": 5,
+    "toast": 5,
+    "opacityText": 4,
+    "trackingArbitrary": 1
+  },
+  "src/pages/shell/weekend/FixturesScreen.tsx": {
+    "textPx": 3,
+    "trackingArbitrary": 3
+  },
+  "src/pages/shell/weekend/VoteScreen.tsx": {
+    "textPx": 12,
+    "rawButton": 2,
+    "toast": 7,
+    "roundedXl": 1,
+    "opacityText": 5,
+    "trackingArbitrary": 3
+  },
+  "src/pages/shell/weekend/WeekendCrewsScreen.tsx": {
+    "textPx": 2,
+    "toast": 2,
+    "roundedXl": 1,
+    "opacityText": 1,
+    "trackingArbitrary": 2
+  },
+  "src/pages/shell/weekend/WeekendHowToPlayScreen.tsx": {
+    "textPx": 1,
+    "trackingArbitrary": 1
+  },
+  "src/pages/shell/weekend/WeekendHubScreen.tsx": {
+    "textPx": 22,
+    "rawButton": 4,
+    "opacityText": 6,
+    "trackingArbitrary": 12
+  },
+  "src/pages/shell/weekend/WeekendLeaderboardScreen.tsx": {
+    "textPx": 23,
+    "rawButton": 2,
+    "transitionAll": 2,
+    "opacityText": 4,
+    "trackingArbitrary": 17
+  },
+  "src/pages/shell/weekend/WeekendReceiptScreen.tsx": {
+    "textPx": 10,
+    "toast": 2,
+    "roundedXl": 1,
+    "trackingArbitrary": 8
+  }
+}

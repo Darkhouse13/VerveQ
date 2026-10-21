@@ -15,6 +15,19 @@ Please delete options that are not relevant.
 - [ ] Breaking change (fix or feature that would cause existing functionality to not work as expected)
 - [ ] This change requires a documentation update
 
+## Design checklist (VerveQ ONE)
+
+For any change a player can see. Rules: `docs/APP_OVERVIEW.md` → Design System.
+
+- [ ] **One brand:** ink ground, cream only as a reading card, one logo
+- [ ] **Color has a job:** lime only for the one main action; green/red only for right/wrong; mode colors only on mode tiles; text on any colored fill is ink
+- [ ] **Same job, same component:** exit, progress, timer, verdict, score, end screen and share use the shared primitives
+- [ ] **Every game ends the same way:** score → streak/rank → share → next game
+- [ ] **Readable inside Instagram (390×664):** text ≥ 12px, tap targets ≥ 44px, AA contrast, main action above the fold
+- [ ] **One shell:** hub screens in HubFrame, games in StageFrame; no new v1 screens
+- [ ] **Plain words:** a cold visitor understands every label; numbers carry units
+- [ ] `npm run check` passes, including the design ratchet (`npm run design:baseline` after a reduction)
+
 ## How Has This Been Tested?
 
 Please describe the tests that you ran to verify your changes. Provide instructions so we can reproduce. Please also list any relevant details for your test configuration.
