@@ -2,7 +2,6 @@ import type { Config } from "tailwindcss";
 import tailwindcssAnimate from "tailwindcss-animate";
 
 export default {
-  darkMode: ["class"],
   content: ["./pages/**/*.{ts,tsx}", "./components/**/*.{ts,tsx}", "./app/**/*.{ts,tsx}", "./src/**/*.{ts,tsx}"],
   prefix: "",
   theme: {
@@ -16,7 +15,7 @@ export default {
     extend: {
       fontFamily: {
         heading: ["Space Grotesk", "sans-serif"],
-        body: ["Inter", "sans-serif"],
+        body: ["Space Grotesk", "sans-serif"],
         mono: ["JetBrains Mono", "monospace"],
       },
       colors: {
@@ -61,6 +60,53 @@ export default {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
+        // VerveQ ONE roles (see src/index.css). New code reaches for these.
+        ink: "hsl(var(--ink))",
+        cream: "hsl(var(--cream))",
+        lime: "hsl(var(--lime))",
+        action: {
+          DEFAULT: "hsl(var(--action))",
+          foreground: "hsl(var(--action-foreground))",
+        },
+        // Answer feedback only. Named `verdict-*` because `text-right` /
+        // `bg-right` are already alignment / position utilities.
+        verdict: {
+          right: "hsl(var(--right))",
+          wrong: "hsl(var(--wrong))",
+        },
+        paper: {
+          DEFAULT: "hsl(var(--paper))",
+          foreground: "hsl(var(--paper-foreground))",
+        },
+        "mode-accent": "hsl(var(--mode-accent))",
+      },
+      // The type scale (spec: 12px floor, eyebrow only). Replaces the
+      // one-off text-[Npx] sizes the design ratchet counts down.
+      fontSize: {
+        eyebrow: ["12px", { lineHeight: "16px", letterSpacing: "0.12em" }],
+        meta: ["13px", { lineHeight: "18px" }],
+        "body-sm": ["14px", { lineHeight: "20px" }],
+        body: ["16px", { lineHeight: "24px" }],
+        "title-sm": ["18px", { lineHeight: "24px" }],
+        title: ["22px", { lineHeight: "28px" }],
+        "title-lg": ["28px", { lineHeight: "32px" }],
+        display: ["40px", { lineHeight: "44px" }],
+        score: ["64px", { lineHeight: "64px" }],
+      },
+      // Named layers. Every overlay sat on z-50 before; sheets, toasts and
+      // flashes now stack in a known order.
+      zIndex: {
+        raised: "10",
+        nav: "30",
+        frame: "40",
+        overlay: "50",
+        sheet: "60",
+        toast: "70",
+      },
+      transitionDuration: {
+        press: "120ms",
+        ui: "200ms",
+        reveal: "400ms",
       },
       borderRadius: {
         lg: "var(--radius)",
@@ -73,10 +119,6 @@ export default {
           "60%": { transform: "scale(1.2) rotate(3deg)", opacity: "1" },
           "100%": { transform: "scale(1) rotate(-2deg)", opacity: "1" },
         },
-        "slide-up": {
-          "0%": { transform: "translateY(20px)", opacity: "0" },
-          "100%": { transform: "translateY(0)", opacity: "1" },
-        },
         "pulse-score": {
           "0%, 100%": { transform: "scale(1)" },
           "50%": { transform: "scale(1.05)" },
@@ -84,7 +126,6 @@ export default {
       },
       animation: {
         "badge-land": "badge-land 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards",
-        "slide-up": "slide-up 0.3s ease-out forwards",
         "pulse-score": "pulse-score 1s ease-in-out infinite",
       },
     },

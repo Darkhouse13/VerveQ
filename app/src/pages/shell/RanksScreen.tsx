@@ -462,7 +462,7 @@ export default function RanksScreen() {
 
   return (
     <ShellLayout
-      theme="dark"
+      theme="theme-ink"
       title={t("ranks.title")}
       subtitle={
         seasonNumber != null

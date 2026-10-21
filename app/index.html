@@ -21,9 +21,10 @@
     <meta name="apple-mobile-web-app-title" content="VerveQ" />
     <!-- Matches the manifest's theme_color (near-black brand ink #121212). -->
     <meta name="theme-color" content="#121212" />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600;700&display=swap" />
+    <!-- Self-hosted brand fonts (@font-face in src/index.css). Only the
+         Latin Space Grotesk file is preloaded: it carries the first screen.
+         JetBrains Mono and the Latin Extended files load when used. -->
+    <link rel="preload" href="/fonts/space-grotesk-latin.woff2" as="font" type="font/woff2" crossorigin />
     <!--seo:head:start-->
     <title>Football Trivia & Quiz Games — Play Free | VerveQ</title>
     <meta name="description" content="Free football quiz games: a daily quiz, guess the footballer by career path, a football grid, higher or lower and 1v1 duels. No sign-up needed.">

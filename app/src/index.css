@@ -1,3 +1,46 @@
+/*
+ * Brand fonts, self-hosted (VerveQ ONE decision 4): Space Grotesk for
+ * display, headings and body; JetBrains Mono for numbers and eyebrow labels.
+ * Variable files (Space Grotesk 300–700, JetBrains Mono 100–800), split by
+ * unicode-range so Latin Extended downloads only for names that need it.
+ * Licenses: public/fonts/LICENSE-*.txt (SIL OFL 1.1).
+ */
+@font-face {
+  font-family: 'Space Grotesk';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 300 700;
+  src: url('/fonts/space-grotesk-latin.woff2') format('woff2-variations');
+  unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;
+}
+
+@font-face {
+  font-family: 'Space Grotesk';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 300 700;
+  src: url('/fonts/space-grotesk-latin-ext.woff2') format('woff2-variations');
+  unicode-range: U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF;
+}
+
+@font-face {
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 100 800;
+  src: url('/fonts/jetbrains-mono-latin.woff2') format('woff2-variations');
+  unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;
+}
+
+@font-face {
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-display: swap;
+  font-weight: 100 800;
+  src: url('/fonts/jetbrains-mono-latin-ext.woff2') format('woff2-variations');
+  unicode-range: U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF;
+}
+
 /* Fonts are loaded from index.html (<link rel="stylesheet">, with preconnect):
    an @import here is only discovered after the bundled CSS downloads, which
    serializes CSS -> fonts CSS -> woff2 on every cold load. */
@@ -6,7 +49,27 @@
 @tailwind utilities;
 
 @layer base {
+  /*
+   * VerveQ ONE tokens (owner-approved 2026-10-21; plan:
+   * https://claude.ai/artifact/W3A4W3iZhsbLqGVbDUevCa).
+   *
+   * One schema, two grounds:
+   *  - `:root` — cream hubs (Home, Compete, quizzes). Moving to ink surface
+   *    by surface in Phases 2–3, after which this becomes the ink default.
+   *  - `.theme-ink` — the brand ground: ink #121212, cream text, lime #C6FF1A
+   *    as the one action color. THE WEEKEND, Who's Older, Missing Letters and
+   *    Ranks already run on it; `.theme-weekend`/`.theme-older`/
+   *    `.theme-letters` are aliases kept so their wrappers need no edit.
+   *
+   * Text on any colored fill is INK, never white: white measured 2.0–3.7:1 on
+   * every fill (fails AA); ink passes 5.7–17.7:1.
+   */
   :root {
+    /* Brand constants — the same values in every theme. */
+    --ink: 0 0% 7%;
+    --cream: 30 100% 97%;
+    --lime: 75 100% 55%;       /* the one lime */
+
     --background: 30 100% 97%;
     --foreground: 0 0% 7%;
 
@@ -14,7 +77,7 @@
     --card-foreground: 0 0% 7%;
 
     --primary: 25 100% 50%;
-    --primary-foreground: 0 0% 100%;
+    --primary-foreground: 0 0% 7%;
 
     --muted: 30 18% 88%;
     --muted-foreground: 0 0% 18%;
@@ -23,18 +86,17 @@
     --accent-foreground: 0 0% 7%;
 
     --destructive: 1 100% 60%;
-    --destructive-foreground: 0 0% 100%;
+    --destructive-foreground: 0 0% 7%;
 
     --success: 152 100% 41%;
-    --success-foreground: 0 0% 100%;
+    --success-foreground: 0 0% 7%;
 
     --hot-pink: 318 100% 62%;
-    --hot-pink-foreground: 0 0% 100%;
+    --hot-pink-foreground: 0 0% 7%;
 
     --electric-blue: 209 100% 50%;
-    --electric-blue-foreground: 0 0% 100%;
+    --electric-blue-foreground: 0 0% 7%;
 
-    /* UNIFIED palette — vivid yellow accent (Compete/shell). */
     --yellow: 47 100% 55%;
     --yellow-foreground: 0 0% 7%;
 
@@ -42,96 +104,32 @@
     --input: 0 0% 7%;
     --ring: 25 100% 50%;
 
+    /* Roles used by the new primitives (components/ui). */
+    --action: var(--lime);               /* the one thing to tap */
+    --action-foreground: var(--ink);
+    --right: 152 100% 41%;               /* answer feedback only */
+    --wrong: 1 100% 60%;
+    --paper: var(--cream);               /* long-form reading cards */
+    --paper-foreground: var(--ink);
+    --mode-accent: var(--primary);       /* set per mode on its frame */
+
     --radius: 8px;
 
     --neo-border: 2px;
     --neo-shadow-x: 4px;
     --neo-shadow-y: 4px;
     --neo-shadow-color: 0 0% 7%;
-
-  }
-
-  .dark {
-    --background: 0 0% 8%;
-    --foreground: 30 100% 97%;
-
-    --card: 0 0% 11%;
-    --card-foreground: 30 100% 97%;
-
-    --primary: 25 100% 50%;
-    --primary-foreground: 0 0% 100%;
-
-    --muted: 0 0% 18%;
-    --muted-foreground: 30 18% 75%;
-
-    --accent: 75 100% 55%;
-    --accent-foreground: 0 0% 7%;
-
-    --destructive: 1 100% 60%;
-    --destructive-foreground: 0 0% 100%;
-
-    --border: 0 0% 80%;
-    --input: 0 0% 80%;
-    --ring: 25 100% 50%;
-
-    --neo-shadow-color: 0 0% 80%;
   }
 
   /*
-   * WARM Learn sub-palette. Applied via a container class (`.theme-learn`) so
-   * only the Learn pillar reskins — Compete/shell keep the UNIFIED palette.
-   * Overrides the same HSL token slots the Neo* components already read, so
-   * every primitive (NeoCard/NeoButton/NeoBadge) reskins for free. The
-   * neo-brutalist language (black borders, hard offset shadow) is unchanged —
-   * only the hues shift to cream / warm-orange / lime-green / coral.
+   * The brand ground. Borders go warm-light so the brutalist chrome reads on
+   * ink; offset shadows stay near-black and lime never casts one (R4: lime
+   * halos were glare on phones). Lime is for the one action and small
+   * accents, never a large fill — that usage rule replaced Missing Letters'
+   * separate desaturated palette (decision 2).
    */
-  /*
-   * DARK-FIRST WEEKEND palette (FW-POLISH O3, owner ruling D1). Applied via
-   * `.theme-weekend` on WEEKEND route containers ONLY — every other mode
-   * keeps its palette untouched. Same Neo primitives (chunky borders, hard
-   * offset shadows); the canvas flips near-black (#0d0d0d family), lime
-   * #c6ff00 becomes the working accent (primary AND accent slots), and
-   * borders go warm-light so the brutalist ink reads on the dark ground.
-   * Offset shadows cast NEAR-BLACK (FW-POLISH-2 R4): lime halos behind
-   * saturated cards on the dark canvas were glare on phone eyes — lime
-   * survives only as the working accent (chips, CTAs, badges). Cream
-   * survives as ink, as the player chips on the pitch (explicit fills in
-   * PitchView), and inside the vivid door cards — the inversion of the old
-   * 70%-cream surface ratio.
-   */
-  .theme-weekend {
-    --background: 0 0% 5%;          /* #0d0d0d */
-    --foreground: 30 100% 97%;      /* cream ink */
-
-    --card: 0 0% 11%;               /* elevated near-black */
-    --card-foreground: 30 100% 97%;
-
-    --primary: 74 100% 50%;         /* lime #c6ff00 */
-    --primary-foreground: 0 0% 5%;
-
-    --accent: 74 100% 50%;
-    --accent-foreground: 0 0% 5%;
-
-    --muted: 0 0% 17%;
-    --muted-foreground: 30 20% 72%;
-
-    --border: 30 40% 90%;           /* warm-light brutalist ink */
-    --input: 30 40% 90%;
-    --ring: 74 100% 50%;
-
-    --neo-shadow-color: 0 0% 0%; /* quiet dark offsets — never lime (R4) */
-  }
-
-  /*
-   * WHO'S OLDER? stage (`.theme-older`). The app twin of the reel, so it wears
-   * the reel's look: an ink ground, a blue card over a pink card, cream ink,
-   * lime as the working accent (the OLDER stamp, the primary CTA). Borders go
-   * warm-light for the chrome (Quit, secondary buttons) so it reads on the
-   * dark ground; the player cards draw their own ink borders.
-   *
-   * MISSING LETTERS (`.theme-letters`) is the same reel family on the same
-   * ground — cream tiles, lime fills — so it shares the tokens.
-   */
+  .theme-ink,
+  .theme-weekend,
   .theme-older,
   .theme-letters {
     --background: 0 0% 7%;
@@ -157,29 +155,13 @@
   }
 
   /*
-   * MISSING LETTERS runs the same family a notch quieter (owner, 2026-10-12:
-   * "too bright"): every loud token loses saturation and some lightness, so
-   * the result card, buttons, verdict rows and tier chips sit back on the ink
-   * ground instead of glowing. Who's Older keeps the full-volume palette.
+   * Thin, arrowless, muted-cream scrollbars on the ink ground instead of the
+   * platform's grey-and-white bar. Standard properties only (Chrome 121+
+   * ignores ::-webkit-scrollbar once these are set); not inherited in
+   * Firefox, hence the `*` descendant.
    */
-  .theme-letters {
-    --primary: 74 62% 52%;
-    --accent: 74 62% 52%;
-    --ring: 74 62% 52%;
-    --electric-blue: 212 58% 45%;
-    --hot-pink: 322 52% 52%;
-    --yellow: 44 70% 52%;
-    --success: 150 48% 37%;
-    --destructive: 2 60% 52%;
-  }
-
-  /*
-   * Scrollbars on the daily-game stages (Who's Older, Missing Letters): the
-   * thin, arrowless, muted-cream thumb the WEEKEND uses on its dark ground,
-   * instead of the platform's grey-and-white bar. Standard properties only
-   * (Chrome 121+ ignores ::-webkit-scrollbar once these are set); not
-   * inherited in Firefox, hence the `*` descendant.
-   */
+  .theme-ink,
+  .theme-ink *,
   .theme-older,
   .theme-older *,
   .theme-letters,
@@ -188,27 +170,31 @@
     scrollbar-color: hsl(30 30% 62% / 0.35) transparent;
   }
 
+  /*
+   * Learn keeps its warm palette until Phase 4 folds it into a paper card.
+   * Same rule as everywhere: ink text on every fill.
+   */
   .theme-learn {
-    --background: 40 80% 94%;        /* cream */
+    --background: 40 80% 94%;
     --foreground: 20 30% 14%;
 
-    --card: 40 86% 97%;             /* lighter cream */
+    --card: 40 86% 97%;
     --card-foreground: 20 30% 14%;
 
-    --primary: 22 95% 54%;          /* warm orange */
-    --primary-foreground: 0 0% 100%;
+    --primary: 22 95% 54%;
+    --primary-foreground: 0 0% 7%;
 
-    --accent: 92 60% 50%;           /* lime green */
+    --accent: 92 60% 50%;
     --accent-foreground: 20 30% 14%;
 
-    --success: 92 60% 46%;          /* lime green (deeper) */
-    --success-foreground: 0 0% 100%;
+    --success: 92 60% 46%;
+    --success-foreground: 0 0% 7%;
 
-    --hot-pink: 8 88% 66%;          /* coral occupies the "pink" slot */
-    --hot-pink-foreground: 0 0% 100%;
+    --hot-pink: 8 88% 66%;
+    --hot-pink-foreground: 0 0% 7%;
 
-    --destructive: 8 88% 60%;       /* coral */
-    --destructive-foreground: 0 0% 100%;
+    --destructive: 8 88% 60%;
+    --destructive-foreground: 0 0% 7%;
 
     --muted: 38 40% 86%;
     --muted-foreground: 22 18% 32%;
@@ -229,6 +215,33 @@
 
   h1, h2, h3, h4, h5, h6 {
     @apply font-heading font-bold;
+  }
+
+  /*
+   * One visible focus ring for every keyboard-focused control (only 6 files
+   * styled focus before). Uses the theme ring: orange on cream, lime on ink.
+   * Mouse and touch never trigger :focus-visible on buttons.
+   */
+  :focus-visible {
+    outline: 3px solid hsl(var(--ring));
+    outline-offset: 2px;
+  }
+}
+
+/*
+ * Reduced motion, globally: overshoot stamps, pulses, spins and infinite
+ * loops become a near-instant fade. Specific rules further down still apply;
+ * this catches every animation they missed (badge-land, animate-pulse,
+ * pulse-score, animate-in/out, spin).
+ */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
 }
 
@@ -361,7 +374,7 @@
   }
 
   .font-body {
-    font-family: 'Inter', sans-serif;
+    font-family: 'Space Grotesk', sans-serif;
   }
 
   .font-mono {
