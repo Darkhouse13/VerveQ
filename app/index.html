@@ -45,6 +45,35 @@
     <meta name="twitter:image" content="https://verveq.com/og/home.png" />
     <!--seo:head:end-->
     <!-- Google Analytics loads after first paint: src/lib/ga4.ts -->
+    <!--
+      Ink first paint for the routes that run on the ink ground (the daily
+      games, THE DRAW, THE WEEKEND): most new players arrive on these from a
+      reel, and used to see a cream page with a spinner before the dark game.
+      The skeleton shows until React renders into #root; main.tsx then drops
+      the class.
+    -->
+    <script>
+      (function () {
+        var p = location.pathname;
+        if (/^\/(older|whos-older|letters|missing-letters|draw|weekend)(\/|$)|^\/v2\/(whos-older|missing-letters|weekend)(\/|$)/.test(p)) {
+          document.documentElement.className += " boot-ink";
+        }
+      })();
+    </script>
+    <style>
+      html.boot-ink, html.boot-ink body { background: #121212; }
+      html.boot-ink #root:empty { position: fixed; inset: 0; padding: 72px 20px 0; }
+      html.boot-ink #root:empty::before,
+      html.boot-ink #root:empty::after {
+        content: ""; display: block; height: 36vh; max-height: 300px; margin: 0 auto 16px;
+        max-width: 420px; border-radius: 8px; border: 2px solid rgba(255, 247, 240, 0.12);
+        background: #1f1f1f; animation: boot-pulse 1.2s ease-in-out infinite alternate;
+      }
+      @keyframes boot-pulse { from { opacity: 0.55; } to { opacity: 1; } }
+      @media (prefers-reduced-motion: reduce) {
+        html.boot-ink #root:empty::before, html.boot-ink #root:empty::after { animation: none; }
+      }
+    </style>
   </head>
 
   <body>

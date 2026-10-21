@@ -3,6 +3,8 @@ import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-route
 import { ConvexReactClient } from "convex/react";
 import { ConvexAuthProvider } from "@convex-dev/auth/react";
 import { Suspense, type ReactNode } from "react";
+import { isInkEntryPath } from "./lib/inkEntry";
+import { InkLoader } from "./components/shell/InkLoader";
 import { lazyWithRetry } from "./lib/lazyWithRetry";
 import { AuthProvider } from "./contexts/AuthContext";
 import { ProtectedRoute, UsernameRequiredRoute } from "./components/ProtectedRoute";
@@ -135,6 +137,7 @@ const convex = new ConvexReactClient(
 );
 
 function LazyFallback() {
+  if (isInkEntryPath(window.location.pathname)) return <InkLoader />;
   return (
     <div className="min-h-screen bg-background flex items-center justify-center">
       <p className="font-heading font-bold animate-pulse">Loading…</p>

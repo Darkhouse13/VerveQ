@@ -5,6 +5,7 @@ import i18n from "./i18n";
 import { initSentry } from "./lib/sentry";
 import { initAnalytics } from "./lib/analytics";
 import { armGa4 } from "./lib/ga4";
+import { prefetchEntryRoute } from "./lib/inkEntry";
 import { captureEntrySource } from "./lib/entrySource";
 import { armExitAbandonReporting } from "./lib/gameAnalytics";
 import { armPerfVitals } from "./lib/perfVitals";
@@ -37,8 +38,14 @@ registerServiceWorker();
 // Chromium's one-shot install event, stashed for the hub-screen install bar.
 armInstallPromptCapture();
 
+// Reel traffic lands on a daily game: fetch its screen alongside the guest
+// sign-in instead of after it.
+prefetchEntryRoute(window.location.pathname);
+
 createRoot(document.getElementById("root")!).render(
   <I18nextProvider i18n={i18n}>
     <App />
   </I18nextProvider>,
 );
+// The ink boot skeleton (index.html) has done its job once React paints.
+requestAnimationFrame(() => document.documentElement.classList.remove("boot-ink"));
