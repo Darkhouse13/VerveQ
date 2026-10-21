@@ -3,7 +3,6 @@ import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useMutation, useQuery } from "convex/react";
-import * as DialogPrimitive from "@radix-ui/react-dialog";
 import {
   Bell,
   Check,
@@ -15,7 +14,6 @@ import {
   Trash2,
   UserMinus,
   Users,
-  X,
 } from "lucide-react";
 import { toast } from "sonner";
 import { api } from "../../../../convex/_generated/api";
@@ -23,6 +21,8 @@ import { NeoBadge } from "@/components/neo/NeoBadge";
 import { NeoButton } from "@/components/neo/NeoButton";
 import { NeoCard } from "@/components/neo/NeoCard";
 import { NeoInput } from "@/components/neo/NeoInput";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import { Sheet } from "@/components/ui/sheet";
 import { ShellLayout } from "@/components/shell/ShellLayout";
 import { friendlyError } from "@/lib/errors";
 import { SHELL_ROUTES } from "@/lib/shellRoutes";
@@ -294,52 +294,43 @@ export default function CrewCommandScreen() {
         </section>
       </div>
 
-      <DialogPrimitive.Root open={infoOpen} onOpenChange={setInfoOpen}>
-        <DialogPrimitive.Portal>
-          <DialogPrimitive.Overlay className="fixed inset-0 z-50 bg-black/80" />
-          <DialogPrimitive.Content className="theme-weekend fixed bottom-0 left-1/2 z-50 w-full max-w-sm -translate-x-1/2 rounded-t-xl border-b-0 bg-background p-5 pb-[max(1.5rem,env(safe-area-inset-bottom))] neo-border neo-shadow-lg">
-            <div className="flex items-start justify-between gap-2">
-              <DialogPrimitive.Title className="font-heading text-lg font-bold">{t("weekend.crewCommandHowTitle", { defaultValue: "How Crew Command works" })}</DialogPrimitive.Title>
-              <DialogPrimitive.Close aria-label={t("common.close", { defaultValue: "Close" })} className="rounded bg-card p-1 neo-border"><X size={14} /></DialogPrimitive.Close>
-            </div>
-            <div className="mt-3 flex flex-col gap-3 text-sm text-muted-foreground">
-              <p><strong className="text-foreground">{t("weekend.draftLabel", { defaultValue: "Draft:" })}</strong> {t("weekend.crewCommandDraftBody", { defaultValue: "open the weekly room, then manage its time and eight seats in the lobby." })}</p>
-              <p><strong className="text-foreground">{t("weekend.inviteLabel", { defaultValue: "Invite:" })}</strong> {t("weekend.crewCommandInviteBody", { defaultValue: "share the permanent crew link or code." })}</p>
-              <p><strong className="text-foreground">{t("weekend.membersLabel", { defaultValue: "Members:" })}</strong> {t("weekend.crewCommandMembersBody", { defaultValue: "remove inactive people without erasing past results." })}</p>
-              <p><strong className="text-foreground">{t("weekend.ownershipLabel", { defaultValue: "Ownership:" })}</strong> {t("weekend.crewCommandOwnershipBody", { defaultValue: "leaving transfers control; deletion is available only before the first completed draft." })}</p>
-            </div>
-          </DialogPrimitive.Content>
-        </DialogPrimitive.Portal>
-      </DialogPrimitive.Root>
+      <Sheet open={infoOpen} onOpenChange={setInfoOpen} title={t("weekend.crewCommandHowTitle", { defaultValue: "How Crew Command works" })}>
+        <div className="flex flex-col gap-3 text-sm text-muted-foreground">
+          <p><strong className="text-foreground">{t("weekend.draftLabel", { defaultValue: "Draft:" })}</strong> {t("weekend.crewCommandDraftBody", { defaultValue: "open the weekly room, then manage its time and eight seats in the lobby." })}</p>
+          <p><strong className="text-foreground">{t("weekend.inviteLabel", { defaultValue: "Invite:" })}</strong> {t("weekend.crewCommandInviteBody", { defaultValue: "share the permanent crew link or code." })}</p>
+          <p><strong className="text-foreground">{t("weekend.membersLabel", { defaultValue: "Members:" })}</strong> {t("weekend.crewCommandMembersBody", { defaultValue: "remove inactive people without erasing past results." })}</p>
+          <p><strong className="text-foreground">{t("weekend.ownershipLabel", { defaultValue: "Ownership:" })}</strong> {t("weekend.crewCommandOwnershipBody", { defaultValue: "leaving transfers control; deletion is available only before the first completed draft." })}</p>
+        </div>
+      </Sheet>
 
-      <DialogPrimitive.Root open={memberToRemove !== null} onOpenChange={(open) => !open && setMemberToRemove(null)}>
-        <DialogPrimitive.Portal>
-          <DialogPrimitive.Overlay className="fixed inset-0 z-50 bg-black/80" />
-          <DialogPrimitive.Content className="theme-weekend fixed bottom-0 left-1/2 z-50 w-full max-w-sm -translate-x-1/2 rounded-t-xl border-b-0 bg-background p-5 pb-[max(1.5rem,env(safe-area-inset-bottom))] neo-border neo-shadow-lg">
-            <DialogPrimitive.Title className="font-heading text-lg font-bold">{t("weekend.removeMemberTitle", { defaultValue: "Remove {{name}}?", name: memberToRemove?.name ?? "" })}</DialogPrimitive.Title>
-            <p className="mt-2 text-sm text-muted-foreground">{t("weekend.removeMemberBody", { defaultValue: "They leave the crew and any unstarted lobby seat. Their past results remain." })}</p>
-            <div className="mt-4 grid grid-cols-2 gap-2">
-              <NeoButton variant="outline" size="md" onClick={() => setMemberToRemove(null)}>{t("common.cancel", { defaultValue: "Cancel" })}</NeoButton>
-              <NeoButton variant="danger" size="md" disabled={busy} onClick={() => void handleRemoveMember()}>{t("weekend.remove", { defaultValue: "Remove" })}</NeoButton>
-            </div>
-          </DialogPrimitive.Content>
-        </DialogPrimitive.Portal>
-      </DialogPrimitive.Root>
+      <ConfirmDialog
+        presentation="sheet"
+        open={memberToRemove !== null}
+        onOpenChange={(open) => !open && setMemberToRemove(null)}
+        title={t("weekend.removeMemberTitle", { defaultValue: "Remove {{name}}?", name: memberToRemove?.name ?? "" })}
+        description={t("weekend.removeMemberBody", { defaultValue: "They leave the crew and any unstarted lobby seat. Their past results remain." })}
+        cancelLabel={t("common.cancel", { defaultValue: "Cancel" })}
+        confirmLabel={t("weekend.remove", { defaultValue: "Remove" })}
+        danger
+        busy={busy}
+        onConfirm={() => void handleRemoveMember()}
+      />
 
-      <DialogPrimitive.Root open={deleteOpen} onOpenChange={setDeleteOpen}>
-        <DialogPrimitive.Portal>
-          <DialogPrimitive.Overlay className="fixed inset-0 z-50 bg-black/80" />
-          <DialogPrimitive.Content data-testid="crew-delete-sheet" className="theme-weekend fixed bottom-0 left-1/2 z-50 w-full max-w-sm -translate-x-1/2 rounded-t-xl border-b-0 bg-background p-5 pb-[max(1.5rem,env(safe-area-inset-bottom))] neo-border neo-shadow-lg">
-            <DialogPrimitive.Title className="font-heading text-lg font-bold">{t("weekend.deleteCrewTitle", { defaultValue: "Delete this crew?" })}</DialogPrimitive.Title>
-            <p className="mt-2 text-sm text-muted-foreground">{t("weekend.deleteCrewBody", { defaultValue: "This removes the crew for everyone. It cannot be undone." })}</p>
-            <label htmlFor="crew-delete-confirm" className="mb-1.5 mt-4 block font-mono text-[11px] font-bold uppercase text-muted-foreground">{t("weekend.deleteCrewConfirmLabel", { defaultValue: "Type DELETE to confirm" })}</label>
-            <NeoInput id="crew-delete-confirm" data-testid="crew-delete-confirm-input" value={deleteConfirmText} onChange={(event) => setDeleteConfirmText(event.target.value)} placeholder="DELETE" />
-            <NeoButton variant="danger" size="full" className="mt-4" data-testid="crew-delete-confirm" disabled={busy || deleteConfirmText.trim() !== "DELETE"} onClick={() => void handleDeleteCrew()}>
-              <Trash2 size={16} className="mr-1.5" />{t("weekend.deleteCrewForever", { defaultValue: "Delete crew forever" })}
-            </NeoButton>
-          </DialogPrimitive.Content>
-        </DialogPrimitive.Portal>
-      </DialogPrimitive.Root>
+      <Sheet
+        open={deleteOpen}
+        onOpenChange={setDeleteOpen}
+        testId="crew-delete-sheet"
+        title={t("weekend.deleteCrewTitle", { defaultValue: "Delete this crew?" })}
+        description={t("weekend.deleteCrewBody", { defaultValue: "This removes the crew for everyone. It cannot be undone." })}
+      >
+        <div>
+          <label htmlFor="crew-delete-confirm" className="mb-1.5 block font-mono text-[11px] font-bold uppercase text-muted-foreground">{t("weekend.deleteCrewConfirmLabel", { defaultValue: "Type DELETE to confirm" })}</label>
+          <NeoInput id="crew-delete-confirm" data-testid="crew-delete-confirm-input" value={deleteConfirmText} onChange={(event) => setDeleteConfirmText(event.target.value)} placeholder="DELETE" />
+        </div>
+        <NeoButton variant="danger" size="full" data-testid="crew-delete-confirm" disabled={busy || deleteConfirmText.trim() !== "DELETE"} onClick={() => void handleDeleteCrew()}>
+          <Trash2 size={16} className="mr-1.5" />{t("weekend.deleteCrewForever", { defaultValue: "Delete crew forever" })}
+        </NeoButton>
+      </Sheet>
     </ShellLayout>
   );
 }

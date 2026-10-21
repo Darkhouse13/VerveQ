@@ -351,13 +351,6 @@
     background: transparent;
   }
 
-  /* THE WEEKEND formation chooser bottom sheet (FW-POLISH-2 R1): slides up
-     from the foot, preserving the centring translate — the DrawSheet motion,
-     weekend-local. */
-  .weekend-sheet-in {
-    animation: weekend-sheet-in 0.22s cubic-bezier(0.22, 0.9, 0.3, 1) both;
-  }
-
   /* Big-desktop canvas backdrop (≥1440px): a faint dot grid in the foreground
      ink so the space around the height-bounded shell reads as a designed
      surface rather than empty background. Width-gated so phone/tablet/laptop
@@ -518,11 +511,6 @@
   100% { transform: translateY(-40px); opacity: 0; }
 }
 
-@keyframes weekend-sheet-in {
-  0% { transform: translate(-50%, 100%); }
-  100% { transform: translate(-50%, 0); }
-}
-
 @keyframes weekend-chip-in {
   0% { opacity: 0; transform: translateY(-7px) scale(0.85); }
   100% { opacity: 1; transform: none; }
@@ -549,7 +537,6 @@
   .animate-shake-horizontal,
   .animate-float-up,
   .animate-slide-up,
-  .weekend-sheet-in,
   .weekend-chip-in,
   .weekend-score-in {
     animation-duration: 0.01s;

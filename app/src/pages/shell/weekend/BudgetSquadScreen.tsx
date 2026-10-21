@@ -26,7 +26,6 @@ import { useTranslation } from "react-i18next";
 import { useConvex, useMutation, useQuery } from "convex/react";
 import type { FunctionReturnType } from "convex/server";
 import { toast } from "sonner";
-import * as DialogPrimitive from "@radix-ui/react-dialog";
 import { ArrowLeftRight, Check, ChevronDown, ChevronRight, Lock, Plus, X } from "lucide-react";
 import { matchesNameSearch } from "../../../../convex/lib/fantasyPlayerName";
 import {
@@ -66,6 +65,8 @@ import {
   FormationSection,
 } from "@/components/weekend/FormationChooser";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import { Sheet } from "@/components/ui/sheet";
 import { ShellLayout } from "@/components/shell/ShellLayout";
 import { SHELL_ROUTES } from "@/lib/shellRoutes";
 import { friendlyError } from "@/lib/errors";
@@ -582,7 +583,7 @@ export function PickerPanel({
        carries min-w-0 on its wrapper, which is why only the dialog broke. */
     <div className="flex flex-col gap-4 min-h-0 min-w-0">
         {host === "dialog" ? (
-          <DialogTitle className="font-heading font-bold text-lg" data-testid="picker-prompt">
+          <DialogTitle className="pr-10" data-testid="picker-prompt">
             {prompt}
           </DialogTitle>
         ) : (
@@ -824,151 +825,138 @@ export function PickerPanel({
             affordance (O3): "All positions" clears the slot pre-filter so the
             deliberate mismatch pick FW-1 permits stays reachable without a
             tab row. */}
-        <DialogPrimitive.Root
+        <Sheet
           open={filterSheet !== null}
           onOpenChange={(next) => !next && setFilterSheet(null)}
+          testId="picker-filter-sheet"
+          // The list scrolls on its own between the search and the footer.
+          className="gap-3 max-h-[70dvh] overflow-y-visible"
+          title={
+            filterSheet === "club"
+              ? t("weekend.filterClubTitle", { defaultValue: "Filter by club" })
+              : t("weekend.filterLeagueTitle", { defaultValue: "Filter by league" })
+          }
         >
-          <DialogPrimitive.Portal>
-            <DialogPrimitive.Overlay className="fixed inset-0 z-50 bg-black/80 data-[state=open]:animate-in data-[state=open]:fade-in-0" />
-            <DialogPrimitive.Content
-              data-testid="picker-filter-sheet"
-              className="theme-weekend weekend-sheet-in fixed bottom-0 left-1/2 -translate-x-1/2 z-50 w-full max-w-sm neo-border neo-shadow-lg rounded-t-xl border-b-0 bg-background text-foreground p-5 pb-[max(1.5rem,env(safe-area-inset-bottom))] flex flex-col gap-3 max-h-[70dvh]"
-            >
-              <div className="flex items-start justify-between gap-2">
-                <DialogPrimitive.Title className="font-heading font-bold text-lg">
-                  {filterSheet === "club"
-                    ? t("weekend.filterClubTitle", { defaultValue: "Filter by club" })
-                    : t("weekend.filterLeagueTitle", { defaultValue: "Filter by league" })}
-                </DialogPrimitive.Title>
-                <DialogPrimitive.Close
-                  className="neo-border rounded bg-card p-1 shrink-0 active:neo-shadow-pressed"
-                  aria-label={t("common.close", { defaultValue: "Close" })}
+
+          {filterSheet === "club" && (
+            <NeoInput
+              value={clubSearch}
+              onChange={(e) => setClubSearch(e.target.value)}
+              data-testid="picker-club-search"
+              placeholder={t("weekend.searchClubs", { defaultValue: "Search clubs…" })}
+            />
+          )}
+
+          <div className="flex flex-col gap-1 overflow-y-auto min-h-0">
+            {filterSheet === "league" ? (
+              <>
+                <SheetRow
+                  selected={leagueFilter === null}
+                  onClick={() => {
+                    setLeagueFilter(null);
+                    setFilterSheet(null);
+                  }}
                 >
-                  <X size={14} strokeWidth={3} />
-                </DialogPrimitive.Close>
-              </div>
-
-              {filterSheet === "club" && (
-                <NeoInput
-                  value={clubSearch}
-                  onChange={(e) => setClubSearch(e.target.value)}
-                  data-testid="picker-club-search"
-                  placeholder={t("weekend.searchClubs", { defaultValue: "Search clubs…" })}
-                />
-              )}
-
-              <div className="flex flex-col gap-1 overflow-y-auto min-h-0">
-                {filterSheet === "league" ? (
-                  <>
-                    <SheetRow
-                      selected={leagueFilter === null}
-                      onClick={() => {
-                        setLeagueFilter(null);
-                        setFilterSheet(null);
-                      }}
-                    >
-                      {t("weekend.allLeagues", { defaultValue: "All leagues" })}
-                    </SheetRow>
-                    {clubCatalogue.map((group) => (
-                      <SheetRow
-                        key={group.leagueId}
-                        selected={leagueFilter === group.leagueId}
-                        onClick={() => {
-                          setLeagueFilter(group.leagueId);
-                          if (
-                            clubFilter !== null &&
-                            !group.clubs.some((c) => c.clubId === clubFilter)
-                          ) {
-                            setClubFilter(null);
-                          }
-                          setFilterSheet(null);
-                        }}
-                      >
-                        {leagueName(group.leagueId)}
-                      </SheetRow>
-                    ))}
-                  </>
-                ) : (
-                  <>
-                    <SheetRow
-                      selected={clubFilter === null}
-                      onClick={() => {
-                        setClubFilter(null);
-                        setFilterSheet(null);
-                      }}
-                    >
-                      {t("weekend.allClubs", { defaultValue: "All clubs" })}
-                    </SheetRow>
-                    {(leagueFilter === null
-                      ? clubCatalogue
-                      : clubCatalogue.filter((g) => g.leagueId === leagueFilter)
-                    ).map((group) => {
-                      const needle = clubSearch.trim().toLowerCase();
-                      const clubs =
-                        needle.length === 0
-                          ? group.clubs
-                          : group.clubs.filter((c) =>
-                              c.name.toLowerCase().includes(needle),
-                            );
-                      if (clubs.length === 0) return null;
-                      return (
-                        <div key={group.leagueId}>
-                          <p className="font-mono text-[10px] font-bold uppercase tracking-[0.16em] text-muted-foreground pt-2 pb-1">
-                            {leagueName(group.leagueId)}
-                          </p>
-                          <div className="flex flex-col gap-1">
-                            {clubs.map((club) => (
-                              <SheetRow
-                                key={club.clubId}
-                                selected={clubFilter === club.clubId}
-                                onClick={() => {
-                                  setClubFilter(club.clubId);
-                                  setLeagueFilter(group.leagueId);
-                                  setFilterSheet(null);
-                                }}
-                              >
-                                {club.name}
-                              </SheetRow>
-                            ))}
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </>
-                )}
-              </div>
-
-              {/* The O3 mismatch affordance belongs to a SLOT context — the
-                  idle browse has no pre-filter to clear, so it hides there. */}
-              {!browse && (
-                <div className="border-t-2 border-border pt-3">
-                  <button
-                    type="button"
-                    data-testid="picker-all-positions"
-                    aria-pressed={allPositions}
+                  {t("weekend.allLeagues", { defaultValue: "All leagues" })}
+                </SheetRow>
+                {clubCatalogue.map((group) => (
+                  <SheetRow
+                    key={group.leagueId}
+                    selected={leagueFilter === group.leagueId}
                     onClick={() => {
-                      setAllPositions((v) => !v);
+                      setLeagueFilter(group.leagueId);
+                      if (
+                        clubFilter !== null &&
+                        !group.clubs.some((c) => c.clubId === clubFilter)
+                      ) {
+                        setClubFilter(null);
+                      }
                       setFilterSheet(null);
                     }}
-                    className="flex w-full items-center justify-between gap-2 text-left active:opacity-60"
                   >
-                    <span>
-                      <span className="block font-heading font-bold text-sm">
-                        {t("weekend.allPositions", { defaultValue: "All positions" })}
-                      </span>
-                      <span className="block text-[11px] text-muted-foreground">
-                        {t("weekend.allPositionsBody", {
-                          defaultValue: "Out-of-position picks carry the ×0.75 risk.",
-                        })}
-                      </span>
-                    </span>
-                    {allPositions && <Check size={16} strokeWidth={3} aria-hidden />}
-                  </button>
-                </div>
-              )}
-            </DialogPrimitive.Content>
-          </DialogPrimitive.Portal>
-        </DialogPrimitive.Root>
+                    {leagueName(group.leagueId)}
+                  </SheetRow>
+                ))}
+              </>
+            ) : (
+              <>
+                <SheetRow
+                  selected={clubFilter === null}
+                  onClick={() => {
+                    setClubFilter(null);
+                    setFilterSheet(null);
+                  }}
+                >
+                  {t("weekend.allClubs", { defaultValue: "All clubs" })}
+                </SheetRow>
+                {(leagueFilter === null
+                  ? clubCatalogue
+                  : clubCatalogue.filter((g) => g.leagueId === leagueFilter)
+                ).map((group) => {
+                  const needle = clubSearch.trim().toLowerCase();
+                  const clubs =
+                    needle.length === 0
+                      ? group.clubs
+                      : group.clubs.filter((c) =>
+                          c.name.toLowerCase().includes(needle),
+                        );
+                  if (clubs.length === 0) return null;
+                  return (
+                    <div key={group.leagueId}>
+                      <p className="font-mono text-[10px] font-bold uppercase tracking-[0.16em] text-muted-foreground pt-2 pb-1">
+                        {leagueName(group.leagueId)}
+                      </p>
+                      <div className="flex flex-col gap-1">
+                        {clubs.map((club) => (
+                          <SheetRow
+                            key={club.clubId}
+                            selected={clubFilter === club.clubId}
+                            onClick={() => {
+                              setClubFilter(club.clubId);
+                              setLeagueFilter(group.leagueId);
+                              setFilterSheet(null);
+                            }}
+                          >
+                            {club.name}
+                          </SheetRow>
+                        ))}
+                      </div>
+                    </div>
+                  );
+                })}
+              </>
+            )}
+          </div>
+
+          {/* The O3 mismatch affordance belongs to a SLOT context — the
+              idle browse has no pre-filter to clear, so it hides there. */}
+          {!browse && (
+            <div className="border-t-2 border-border pt-3">
+              <button
+                type="button"
+                data-testid="picker-all-positions"
+                aria-pressed={allPositions}
+                onClick={() => {
+                  setAllPositions((v) => !v);
+                  setFilterSheet(null);
+                }}
+                className="flex w-full items-center justify-between gap-2 text-left active:opacity-60"
+              >
+                <span>
+                  <span className="block font-heading font-bold text-sm">
+                    {t("weekend.allPositions", { defaultValue: "All positions" })}
+                  </span>
+                  <span className="block text-[11px] text-muted-foreground">
+                    {t("weekend.allPositionsBody", {
+                      defaultValue: "Out-of-position picks carry the ×0.75 risk.",
+                    })}
+                  </span>
+                </span>
+                {allPositions && <Check size={16} strokeWidth={3} aria-hidden />}
+              </button>
+            </div>
+          )}
+        </Sheet>
 
         {/* FW-SCOUT: player detail sheet, from the row body. */}
         <PlayerSheet
@@ -1010,7 +998,7 @@ export function PlayerPickerDialog({
 }) {
   return (
     <Dialog open={open} onOpenChange={(next) => !next && onClose()}>
-      <DialogContent className="theme-weekend neo-border neo-shadow-lg rounded-xl bg-background max-w-sm mx-auto max-h-[85dvh] flex flex-col">
+      <DialogContent className="max-w-sm max-h-[85dvh] flex flex-col">
         <PickerPanel
           host="dialog"
           slotRole={slotRole}
@@ -1159,10 +1147,10 @@ export function SquadView({
         open={sheetSlot !== null}
         onOpenChange={(next) => !next && setSheetSlot(null)}
       >
-        <DialogContent className="theme-weekend neo-border neo-shadow-lg rounded-xl bg-background max-w-sm mx-auto">
+        <DialogContent className="max-w-sm">
           {sheet !== undefined && sheet.playerId !== null && (
             <>
-              <DialogTitle className="font-heading font-bold text-lg pr-8">
+              <DialogTitle className="pr-10">
                 {sheet.playerName ?? "…"}
               </DialogTitle>
               <div className="flex items-center gap-2 flex-wrap">
@@ -1777,48 +1765,26 @@ export default function BudgetSquadScreen() {
                 onClose={() => setPickerSlot(null)}
               />
             )}
-            <Dialog
+            <ConfirmDialog
               open={confirmShape !== null}
               onOpenChange={(next) => !next && setConfirmShape(null)}
-            >
-              <DialogContent className="theme-weekend neo-border neo-shadow-lg rounded-xl bg-background max-w-sm mx-auto">
-                <DialogTitle className="font-heading font-bold text-lg">
-                  {t("weekend.shapeConfirmTitle", {
-                    defaultValue: "Switch to {{label}}?",
-                    label: confirmShape?.name ?? "",
-                  })}
-                </DialogTitle>
-                <p className="text-sm">
-                  {t("weekend.shapeConfirmBody", {
-                    defaultValue:
-                      "This shape has no room for {{names}} — they'll wait on the touchline, one tap from coming back on.",
-                    names: confirmShape?.names.join(", ") ?? "",
-                  })}
-                </p>
-                <div className="flex gap-2">
-                  <NeoButton
-                    variant="outline"
-                    size="sm"
-                    className="flex-1"
-                    onClick={() => setConfirmShape(null)}
-                  >
-                    {t("weekend.shapeConfirmCancel", { defaultValue: "Keep shape" })}
-                  </NeoButton>
-                  <NeoButton
-                    variant="primary"
-                    size="sm"
-                    className="flex-1"
-                    onClick={() => {
-                      const pending = confirmShape;
-                      setConfirmShape(null);
-                      if (pending !== null) runShapeChange(pending.plan, pending.name);
-                    }}
-                  >
-                    {t("weekend.shapeConfirmGo", { defaultValue: "Switch shape" })}
-                  </NeoButton>
-                </div>
-              </DialogContent>
-            </Dialog>
+              title={t("weekend.shapeConfirmTitle", {
+                defaultValue: "Switch to {{label}}?",
+                label: confirmShape?.name ?? "",
+              })}
+              description={t("weekend.shapeConfirmBody", {
+                defaultValue:
+                  "This shape has no room for {{names}} — they'll wait on the touchline, one tap from coming back on.",
+                names: confirmShape?.names.join(", ") ?? "",
+              })}
+              cancelLabel={t("weekend.shapeConfirmCancel", { defaultValue: "Keep shape" })}
+              confirmLabel={t("weekend.shapeConfirmGo", { defaultValue: "Switch shape" })}
+              onConfirm={() => {
+                const pending = confirmShape;
+                setConfirmShape(null);
+                if (pending !== null) runShapeChange(pending.plan, pending.name);
+              }}
+            />
               </>
             )}
           </>

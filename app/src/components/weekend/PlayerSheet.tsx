@@ -26,7 +26,7 @@ import type { ReactNode } from "react";
 import { api } from "../../../convex/_generated/api";
 import { formatPoints } from "../../../convex/lib/fantasyScoring";
 import { NeoBadge } from "@/components/neo/NeoBadge";
-import { WeekendSheet } from "@/components/weekend/WeekendSheet";
+import { Sheet } from "@/components/ui/sheet";
 import { track } from "@/lib/analytics";
 import {
   availabilityBadgeLabel,
@@ -112,7 +112,7 @@ export function PlayerSheet({
   const loading = open && card === undefined;
 
   return (
-    <WeekendSheet
+    <Sheet
       open={open}
       onOpenChange={(next) => {
         if (!next) onClose();
@@ -173,7 +173,7 @@ export function PlayerSheet({
           <HistoryBlock card={card} />
         </>
       )}
-    </WeekendSheet>
+    </Sheet>
   );
 }
 

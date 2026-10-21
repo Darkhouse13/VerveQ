@@ -5,9 +5,13 @@
  * cross-player percentile is shown — the existing backend does not expose a
  * pick-share / solver-distribution metric, so it is omitted rather than
  * fabricated. Missed squares stay hidden on the board behind this overlay.
+ *
+ * A ui/dialog with no corner close: Escape means "review board" (the same
+ * dismissal the text link offers), and a backdrop tap does nothing, as before.
  */
 import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/utils";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 
 interface GridEndOverlayProps {
   allSolved: boolean;
@@ -52,8 +56,13 @@ export function GridEndOverlay({
 }: GridEndOverlayProps) {
   const { t } = useTranslation("play");
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-foreground/60 p-5">
-      <div className="w-full max-w-sm bg-background neo-border neo-shadow-lg rounded-xl overflow-hidden animate-slide-up">
+    <Dialog open onOpenChange={(next) => !next && onReview()}>
+      <DialogContent
+        hideClose
+        aria-describedby={undefined}
+        onPointerDownOutside={(e) => e.preventDefault()}
+        className="max-w-sm gap-0 overflow-hidden p-0"
+      >
         <div
           className={cn(
             "px-5 py-4 border-b-[3px] border-border",
@@ -63,11 +72,11 @@ export function GridEndOverlay({
           <p className="text-[10px] font-heading font-bold uppercase tracking-wide opacity-85">
             {allSolved ? t("grid.gridComplete") : t("grid.outOfGuesses")}
           </p>
-          <p className="font-heading font-bold text-3xl leading-none mt-1.5">
+          <DialogTitle className="text-3xl leading-none mt-1.5">
             {allSolved
               ? t("grid.perfectScore", { total: totalCells })
               : t("grid.filledScore", { correct: correctCount, total: totalCells })}
-          </p>
+          </DialogTitle>
         </div>
 
         <div className="p-5 space-y-3">
@@ -104,7 +113,7 @@ export function GridEndOverlay({
             {t("grid.noAnswersRevealed")}
           </p>
         </div>
-      </div>
-    </div>
+      </DialogContent>
+    </Dialog>
   );
 }

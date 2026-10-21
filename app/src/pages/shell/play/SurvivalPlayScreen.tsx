@@ -48,6 +48,7 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 
 interface ChallengeData {
   initials: string;
@@ -753,33 +754,19 @@ export default function SurvivalPlayScreen({ daily = false }: { daily?: boolean 
       </div>
 
       {/* Daily runs are one a day, so cashing out asks first. */}
-      <Dialog open={confirmCashOut} onOpenChange={setConfirmCashOut}>
-        <DialogContent className="neo-border neo-shadow-lg max-w-sm bg-card text-card-foreground">
-          <DialogHeader>
-            <DialogTitle className="font-heading text-xl text-center">
-              {t("survival.cashOutConfirmTitle")}
-            </DialogTitle>
-            <DialogDescription className="text-center text-sm mt-2">
-              {t("survival.cashOutConfirmBody")}
-            </DialogDescription>
-          </DialogHeader>
-          <div className="flex flex-col gap-2 mt-2">
-            <NeoButton
-              variant="primary"
-              size="full"
-              onClick={() => {
-                setConfirmCashOut(false);
-                void handleCashOut();
-              }}
-            >
-              {t("survival.cashOutConfirmYes")}
-            </NeoButton>
-            <NeoButton variant="secondary" size="full" onClick={() => setConfirmCashOut(false)}>
-              {t("survival.cashOutConfirmNo")}
-            </NeoButton>
-          </div>
-        </DialogContent>
-      </Dialog>
+      <ConfirmDialog
+        open={confirmCashOut}
+        onOpenChange={setConfirmCashOut}
+        title={t("survival.cashOutConfirmTitle")}
+        description={t("survival.cashOutConfirmBody")}
+        confirmLabel={t("survival.cashOutConfirmYes")}
+        cancelLabel={t("survival.cashOutConfirmNo")}
+        stacked
+        onConfirm={() => {
+          setConfirmCashOut(false);
+          void handleCashOut();
+        }}
+      />
 
       {/* Anti-cheat modal: warning (pot floored) vs penalty (life lost) */}
       <Dialog

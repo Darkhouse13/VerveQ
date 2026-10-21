@@ -14,9 +14,6 @@
   "src/components/ProtectedRoute.tsx": {
     "roundedXl": 1
   },
-  "src/components/RoundResult.tsx": {
-    "fixedInset": 1
-  },
   "src/components/draw/CardDetailSheet.tsx": {
     "textPx": 2
   },
@@ -37,12 +34,6 @@
   },
   "src/components/draw/DrawCardFace.tsx": {
     "textPx": 10
-  },
-  "src/components/draw/DrawSheet.tsx": {
-    "textPx": 1,
-    "radixDialog": 1,
-    "fixedInset": 1,
-    "fontBlack": 1
   },
   "src/components/draw/DrawTopBar.tsx": {
     "textPx": 1,
@@ -211,15 +202,11 @@
   "src/components/shell/play/grid/GridEndOverlay.tsx": {
     "textPx": 4,
     "rawButton": 3,
-    "fixedInset": 1,
-    "roundedXl": 1,
     "opacityText": 2
   },
   "src/components/shell/play/grid/GridSearchSheet.tsx": {
-    "textPx": 5,
-    "rawButton": 2,
-    "fixedInset": 1,
-    "roundedXl": 1,
+    "textPx": 4,
+    "rawButton": 1,
     "opacityText": 1
   },
   "src/components/shell/play/grid/GridStage.tsx": {
@@ -242,23 +229,18 @@
     "fontBlack": 5,
     "opacityText": 4
   },
-  "src/components/ui/dialog.tsx": {
-    "fixedInset": 1,
-    "opacityText": 1
+  "src/components/ui/overlay.tsx": {
+    "fixedInset": 1
   },
   "src/components/weekend/FavoriteClubCard.tsx": {
     "textPx": 4,
     "rawButton": 1,
     "toast": 2,
-    "radixDialog": 1,
-    "fixedInset": 1,
     "trackingArbitrary": 1
   },
   "src/components/weekend/FormationChooser.tsx": {
     "textPx": 7,
     "rawButton": 1,
-    "radixDialog": 1,
-    "fixedInset": 1,
     "opacityText": 1,
     "trackingArbitrary": 4
   },
@@ -294,12 +276,6 @@
     "textPx": 1,
     "rawButton": 1,
     "opacityText": 1,
-    "trackingArbitrary": 1
-  },
-  "src/components/weekend/WeekendSheet.tsx": {
-    "textPx": 1,
-    "radixDialog": 1,
-    "fixedInset": 1,
     "trackingArbitrary": 1
   },
   "src/hooks/useAntiCheat.ts": {
@@ -415,22 +391,16 @@
   },
   "src/pages/arena/CreateArenaModal.tsx": {
     "textPx": 6,
-    "rawButton": 4,
+    "rawButton": 3,
     "toast": 1,
-    "fixedInset": 1,
-    "roundedXl": 1,
     "opacityText": 4
   },
   "src/pages/arena/JoinArenaModal.tsx": {
-    "rawButton": 1,
-    "fixedInset": 1,
     "trackingArbitrary": 1
   },
   "src/pages/challenge/CreateDuelModal.tsx": {
     "textPx": 1,
-    "rawButton": 1,
     "toast": 1,
-    "fixedInset": 1,
     "opacityText": 1
   },
   "src/pages/draw/DrawScreen.tsx": {
@@ -602,24 +572,18 @@
     "textPx": 26,
     "rawButton": 5,
     "toast": 3,
-    "radixDialog": 1,
-    "fixedInset": 1,
-    "roundedXl": 3,
     "opacityText": 4,
     "trackingArbitrary": 6
   },
   "src/pages/shell/weekend/CourtScreen.tsx": {
     "textPx": 11,
     "toast": 1,
-    "roundedXl": 1,
     "trackingArbitrary": 1
   },
   "src/pages/shell/weekend/CrewCommandScreen.tsx": {
     "textPx": 14,
     "rawButton": 6,
     "toast": 7,
-    "radixDialog": 1,
-    "fixedInset": 3,
     "opacityText": 5,
     "trackingArbitrary": 7
   },
@@ -640,7 +604,6 @@
   "src/pages/shell/weekend/CrewSheetScreen.tsx": {
     "textPx": 1,
     "toast": 3,
-    "roundedXl": 1,
     "trackingArbitrary": 1
   },
   "src/pages/shell/weekend/DraftRoomScreen.tsx": {
