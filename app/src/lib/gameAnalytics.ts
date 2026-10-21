@@ -41,7 +41,8 @@ export type GameMode =
   | "missing-letters"
   | "missing-letters-endless"
   | "missing-letters-challenge"
-  | "arena";
+  | "arena"
+  | "draw";
 
 export type GameResult = "win" | "loss" | "draw";
 

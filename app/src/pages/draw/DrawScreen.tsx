@@ -43,6 +43,8 @@ import { RoundStage } from "@/components/draw/RoundStage";
 import { ResultStage } from "@/components/draw/ResultStage";
 import { LAYOUT } from "@/components/draw/layout";
 import "@/components/draw/draw.css";
+import { abandonRun, completeRun, noteQuestionAnswered, startRun } from "@/lib/gameAnalytics";
+import type { AccountState } from "@/contexts/AuthContext";
 
 type Stage = "loading" | "entry" | "play" | "result" | "error";
 
@@ -50,6 +52,8 @@ interface DrawExperienceProps {
   api: DrawApi;
   /** Per-beat duration of the staged reveal (Ticket G3); tests pass 0. */
   revealMs?: number;
+  /** Analytics identity state; omitted by tests and harnesses. */
+  accountState?: AccountState;
 }
 
 /**
@@ -90,7 +94,7 @@ function messageOf(error: unknown): string {
 }
 
 /** The full mock-driven experience. Exported ungated for component tests. */
-export function DrawExperience({ api, revealMs = 380 }: DrawExperienceProps) {
+export function DrawExperience({ api, revealMs = 380, accountState }: DrawExperienceProps) {
   const navigate = useNavigate();
   const [stage, setStage] = useState<Stage>("loading");
   const [today, setToday] = useState<DrawToday | null>(null);
@@ -104,6 +108,10 @@ export function DrawExperience({ api, revealMs = 380 }: DrawExperienceProps) {
   // taps landing in the same frame (choice submission ordering contract).
   const busyRef = useRef(false);
   const [reloadKey, setReloadKey] = useState(0);
+  const runKeyRef = useRef<string | null>(null);
+
+  // Leaving mid-run reports an abandon; a finished run is ignored.
+  useEffect(() => () => abandonRun(runKeyRef.current), []);
 
   useEffect(() => {
     let cancelled = false;
@@ -151,6 +159,11 @@ export function DrawExperience({ api, revealMs = 380 }: DrawExperienceProps) {
     try {
       const v = await api.startRun();
       setView(v);
+      // One board per day, so the board number keys the run.
+      if (v.phase !== "done" && accountState) {
+        runKeyRef.current = `draw-${v.boardNumber}`;
+        startRun(runKeyRef.current, "draw", { accountState, startTrigger: "user_action" });
+      }
       if (v.phase === "done") {
         await loadResult();
       } else {
@@ -165,7 +178,7 @@ export function DrawExperience({ api, revealMs = 380 }: DrawExperienceProps) {
       busyRef.current = false;
       setBusy(false);
     }
-  }, [api, loadResult]);
+  }, [api, loadResult, accountState]);
 
   const submit = useCallback(
     async (choice: Choice) => {
@@ -173,7 +186,15 @@ export function DrawExperience({ api, revealMs = 380 }: DrawExperienceProps) {
       busyRef.current = true;
       setBusy(true);
       try {
-        setView(await api.submitChoice(choice));
+        const next = await api.submitChoice(choice);
+        setView(next);
+        noteQuestionAnswered(runKeyRef.current);
+        if (next.phase === "done") {
+          completeRun(runKeyRef.current, {
+            score: next.finalScore ?? Math.round(next.cumulative),
+            result: next.outcome === "busted" ? "loss" : "win",
+          });
+        }
       } catch (e: unknown) {
         // Includes the B2 replay-gate reject, where the server deliberately
         // wrote no result: retry re-reads the authoritative run state rather
@@ -434,5 +455,5 @@ function DrawScreenInner() {
     );
   }
 
-  return <DrawExperience api={api} />;
+  return <DrawExperience api={api} accountState={accountState} />;
 }

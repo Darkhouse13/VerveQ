@@ -184,6 +184,7 @@ export default function SurvivalPlayScreen({ daily = false }: { daily?: boolean 
   );
   const [shakeKey, setShakeKey] = useState(0);
   const [endingRun, setEndingRun] = useState(false);
+  const [confirmCashOut, setConfirmCashOut] = useState(false);
 
   const startTime = useRef(Date.now());
 
@@ -743,13 +744,42 @@ export default function SurvivalPlayScreen({ daily = false }: { daily?: boolean 
           <NeoButton
             variant="accent"
             size="md"
-            onClick={handleCashOut}
+            onClick={daily ? () => setConfirmCashOut(true) : handleCashOut}
             disabled={endingRun}
           >
             {endingRun ? t("survival.cashingOut") : t("survival.cashOut")}
           </NeoButton>
         </div>
       </div>
+
+      {/* Daily runs are one a day, so cashing out asks first. */}
+      <Dialog open={confirmCashOut} onOpenChange={setConfirmCashOut}>
+        <DialogContent className="neo-border neo-shadow-lg max-w-sm bg-card text-card-foreground">
+          <DialogHeader>
+            <DialogTitle className="font-heading text-xl text-center">
+              {t("survival.cashOutConfirmTitle")}
+            </DialogTitle>
+            <DialogDescription className="text-center text-sm mt-2">
+              {t("survival.cashOutConfirmBody")}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex flex-col gap-2 mt-2">
+            <NeoButton
+              variant="primary"
+              size="full"
+              onClick={() => {
+                setConfirmCashOut(false);
+                void handleCashOut();
+              }}
+            >
+              {t("survival.cashOutConfirmYes")}
+            </NeoButton>
+            <NeoButton variant="secondary" size="full" onClick={() => setConfirmCashOut(false)}>
+              {t("survival.cashOutConfirmNo")}
+            </NeoButton>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {/* Anti-cheat modal: warning (pot floored) vs penalty (life lost) */}
       <Dialog

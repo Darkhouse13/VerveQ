@@ -481,7 +481,7 @@ export default function CareerPathLadderGame({ onChooseMode }: { onChooseMode: (
             ) : (
               <div key={`${row.name}-${row.position}`} className="flex items-center gap-3">
                 <div className="neo-border flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-background">
-                  <span className="font-mono text-sm font-bold">{row.position}</span>
+                  <span className="font-mono text-sm font-bold text-foreground">{row.position}</span>
                 </div>
                 <div className="flex min-w-0 items-center gap-2">
                   <Shirt size={14} className="shrink-0 opacity-70" />
