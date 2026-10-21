@@ -154,8 +154,7 @@ describe("who am i stays removed", () => {
       "src/lib/shellRoutes.ts",
       "src/pages/shell/competeModeTiles.ts",
       "src/pages/shell/CompeteModeGridScreen.tsx",
-      "src/pages/SportSelectScreen.tsx",
-      "src/pages/HomeScreen.tsx",
+      "src/pages/shell/ShellHomeScreen.tsx",
     ]) {
       const source = read(file);
       expect(source).not.toContain("who-am-i");

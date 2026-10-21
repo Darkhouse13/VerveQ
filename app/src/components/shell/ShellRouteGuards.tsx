@@ -21,8 +21,7 @@
  *    account" upgrade CTA (mirroring the server's rejection); visitors with no
  *    username are routed through onboarding first.
  *
- * Both assume they render INSIDE `ShellGate`, so when the v2 flag is off these
- * routes never mount (the shell redirects to /home).
+ * Both render INSIDE `ShellGate`.
  */
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { Navigate, useLocation, useNavigate } from "react-router-dom";

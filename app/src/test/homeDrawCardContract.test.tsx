@@ -29,12 +29,6 @@ vi.mock("@/lib/flags", () => ({
   get DRAW_ENABLED() {
     return flagsMock.draw;
   },
-  get V2_SHELL_ENABLED() {
-    return true;
-  },
-  get LEARN_ENABLED() {
-    return false;
-  },
 }));
 
 const authMock = vi.hoisted(() => ({ value: {} as Record<string, unknown> }));

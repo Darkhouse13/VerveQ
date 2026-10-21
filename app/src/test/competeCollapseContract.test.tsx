@@ -14,20 +14,9 @@
  *     and Duels reachable from the landing screen (they were the collapsed
  *     category step's tiles) and route every tile to an existing deep link.
  */
-import { describe, it, expect, beforeEach, vi } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
 import { MemoryRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
-
-const flagMock = vi.hoisted(() => ({ enabled: true }));
-
-vi.mock("@/lib/flags", () => ({
-  get V2_SHELL_ENABLED() {
-    return flagMock.enabled;
-  },
-  get LEARN_ENABLED() {
-    return false;
-  },
-}));
 
 // Stub the grid screen for the routing layer — the routing decision under test
 // lives in the route table, not the screen.
@@ -50,7 +39,6 @@ function renderAt(path: string) {
   return render(
     <MemoryRouter initialEntries={[path]}>
       <Routes>
-        <Route path="/home" element={<div data-testid="v1-home">V1 HOME</div>} />
         <Route path="/compete" element={<ShellGate><CompeteModeGridScreen /></ShellGate>} />
         <Route path="/compete/sport" element={<ShellGate><Navigate to="/compete" replace /></ShellGate>} />
         <Route path="/compete/sport/:sport" element={<ShellGate><Navigate to="/compete" replace /></ShellGate>} />
@@ -62,11 +50,7 @@ function renderAt(path: string) {
 
 const pathname = () => screen.getByTestId("pathname").textContent;
 
-describe("compete collapse — flag ON", () => {
-  beforeEach(() => {
-    flagMock.enabled = true;
-  });
-
+describe("compete collapse", () => {
   it("/compete lands directly on the mode grid (ONE step)", () => {
     renderAt("/compete");
     expect(screen.getByTestId("mode-grid")).toBeTruthy();
@@ -84,22 +68,6 @@ describe("compete collapse — flag ON", () => {
       const { unmount } = renderAt(path);
       expect(screen.getByTestId("mode-grid")).toBeTruthy();
       expect(pathname()).toBe("/compete");
-      unmount();
-    }
-  });
-});
-
-describe("compete collapse — flag OFF (rollback)", () => {
-  beforeEach(() => {
-    flagMock.enabled = false;
-  });
-
-  it("the whole /compete surface redirects to /home", () => {
-    for (const path of ["/compete", "/compete/sport", "/compete/sport/football"]) {
-      const { unmount } = renderAt(path);
-      expect(screen.getByTestId("v1-home")).toBeTruthy();
-      expect(screen.queryByTestId("mode-grid")).toBeNull();
-      expect(pathname()).toBe("/home");
       unmount();
     }
   });

@@ -112,7 +112,6 @@ From the repo root on the host (as root; the script drops to `deploy` — overri
 
 ```bash
 cd /srv/verveq
-export VITE_V2_SHELL_ENABLED=true
 export VITE_CONVEX_URL=https://different-lynx-153.convex.cloud
 export VITE_CONVEX_SITE_URL=https://different-lynx-153.convex.site
 ./deploy/build-and-run.sh

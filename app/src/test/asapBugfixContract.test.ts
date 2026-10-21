@@ -23,7 +23,7 @@ const read = (path: string) => readFileSync(path, "utf8");
 
 describe("ASAP bugfix contracts", () => {
   it("daily quiz keeps the revealed check result when submitAnswer updates the attempt timer", () => {
-    const source = read("src/pages/DailyQuizScreen.tsx");
+    const source = read("src/hooks/useDailyQuiz.ts");
 
     expect(source).toContain("lastDailyQuestionKey");
     expect(source).toContain("dailyQuestion.checksum");
@@ -31,22 +31,20 @@ describe("ASAP bugfix contracts", () => {
   });
 
   it("regular and daily quiz submit immediately on option tap with no confirm button", () => {
-    const quizSource = read("src/pages/QuizScreen.tsx");
-    const dailySource = read("src/pages/DailyQuizScreen.tsx");
+    const quizSource = read("src/hooks/useSoloQuiz.ts");
+    const dailySource = read("src/hooks/useDailyQuiz.ts");
+    const viewSource = read("src/components/shell/play/QuizPlayView.tsx");
 
     for (const source of [quizSource, dailySource]) {
-      expect(source).toContain("const handleOptionClick = (idx: number) => {");
       expect(source).toContain("void handleCheck(idx)");
-      expect(source).toContain("onClick={() => handleOptionClick(idx)}");
-      expect(source).not.toContain("onClick={() => handleCheck()}");
-      expect(source).not.toContain(">Check Answer<");
     }
+    expect(viewSource).not.toContain(">Check Answer<");
   });
 
 
   it("regular and daily quiz suppress duplicate same-render answer submits on the client", () => {
-    const quizSource = read("src/pages/QuizScreen.tsx");
-    const dailySource = read("src/pages/DailyQuizScreen.tsx");
+    const quizSource = read("src/hooks/useSoloQuiz.ts");
+    const dailySource = read("src/hooks/useDailyQuiz.ts");
 
     for (const source of [quizSource, dailySource]) {
       expect(source).toContain("answerSubmitInFlight");
@@ -173,31 +171,14 @@ describe("ASAP bugfix contracts", () => {
   });
 
   it("VerveGrid does not search and suggest players after only two letters", () => {
-    const source = read("src/pages/VerveGridScreen.tsx");
+    const source = read("src/hooks/useVerveGrid.ts");
 
     expect(source).toContain("GRID_SEARCH_MIN_CHARS = 3");
     expect(source).not.toContain("debouncedQuery.length >= 2");
-    expect(source).toContain("Type at least {GRID_SEARCH_MIN_CHARS} characters");
-  });
-
-  it("daily quit confirms the promised forfeit mutation before leaving", () => {
-    const source = read("src/pages/DailyQuizScreen.tsx");
-
-    expect(source).toContain("onConfirm={async () =>");
-    expect(source).toContain("await forfeitMut({ attemptId })");
-    expect(source).toContain("setForfeited(true)");
-  });
-
-  it("home game cards do not nest real buttons inside clickable cards", () => {
-    const source = read("src/pages/HomeScreen.tsx");
-
-    expect(source).not.toContain("<NeoButton variant=\"primary\" size=\"sm\">");
-    expect(source).not.toContain("<NeoButton variant=\"accent\" size=\"sm\">");
-    expect(source).toContain("<span className=\"neo-border font-heading font-bold uppercase");
   });
 
   it("VerveGrid treats any answered cell as locked, including wrong guesses", () => {
-    const clientSource = read("src/pages/VerveGridScreen.tsx");
+    const clientSource = read("src/hooks/useVerveGrid.ts");
     const serverSource = read("convex/verveGrid.ts");
 
     expect(clientSource).toContain("cells[cellIndex]?.correct !== undefined");
@@ -228,8 +209,8 @@ describe("ASAP bugfix contracts", () => {
 
 
   it("regular and daily quiz auto-advance two seconds after the tap-submitted reveal", () => {
-    const quizSource = read("src/pages/QuizScreen.tsx");
-    const dailySource = read("src/pages/DailyQuizScreen.tsx");
+    const quizSource = read("src/hooks/useSoloQuiz.ts");
+    const dailySource = read("src/hooks/useDailyQuiz.ts");
 
     for (const source of [quizSource, dailySource]) {
       expect(source).not.toContain("handleRevealedScreenTap");
@@ -254,21 +235,12 @@ describe("ASAP bugfix contracts", () => {
   });
 
 
-  it("home Daily Quiz routes to the daily quiz flow instead of regular quiz mode", () => {
-    const homeSource = read("src/pages/HomeScreen.tsx");
-    const sportSelectSource = read("src/pages/SportSelectScreen.tsx");
-
-    expect(homeSource).toContain('navigate("/sport-select?mode=daily-quiz")');
-    expect(sportSelectSource).toContain('mode === "daily-quiz"');
-    expect(sportSelectSource).toContain('navigate(`/daily-quiz?sport=${selected}`)');
-  });
-
-
   it("quiz auto-advance does not expose manual continue or confirm tap targets", () => {
-    const quizSource = read("src/pages/QuizScreen.tsx");
-    const dailySource = read("src/pages/DailyQuizScreen.tsx");
+    const quizSource = read("src/hooks/useSoloQuiz.ts");
+    const dailySource = read("src/hooks/useDailyQuiz.ts");
+    const viewSource = read("src/components/shell/play/QuizPlayView.tsx");
 
-    for (const source of [quizSource, dailySource]) {
+    for (const source of [quizSource, dailySource, viewSource]) {
       expect(source).not.toContain("React.PointerEvent<HTMLDivElement>");
       expect(source).not.toContain("continueInFlight");
       expect(source).not.toContain("void handleContinue()");
@@ -286,15 +258,15 @@ describe("ASAP bugfix contracts", () => {
   });
 
   it("quiz answer controls fire submission directly on tap with no confirm button", () => {
-    const quizSource = read("src/pages/QuizScreen.tsx");
-    const dailySource = read("src/pages/DailyQuizScreen.tsx");
+    const quizSource = read("src/hooks/useSoloQuiz.ts");
+    const dailySource = read("src/hooks/useDailyQuiz.ts");
+    const viewSource = read("src/components/shell/play/QuizPlayView.tsx");
 
     for (const source of [quizSource, dailySource]) {
-      expect(source).toContain("handleOptionClick(idx)");
       expect(source).toContain("void handleCheck(idx)");
-      expect(source).toContain("disabled={revealed || checking}");
-      expect(source).not.toContain("selected === null || checking || revealed");
     }
+    expect(viewSource).toContain("disabled={q.revealed || q.checking}");
+    expect(viewSource).not.toContain("selected === null || checking || revealed");
   });
 
   it("blitz endGame finalizes a run at the buzzer despite minor client/server clock skew", async () => {
@@ -374,55 +346,42 @@ describe("ASAP bugfix contracts", () => {
   });
 
   it("blitz finish retries endGame once before falling back to the home page", () => {
-    const hookSource = read("src/hooks/useSoloBlitz.ts");
-    const legacySource = read("src/pages/BlitzScreen.tsx");
+    const source = read("src/hooks/useSoloBlitz.ts");
 
-    for (const source of [hookSource, legacySource]) {
-      // The retry must sit between the first finalize and the home fallback.
-      const firstEnd = source.indexOf("await endGameMut({ sessionId: sid })");
-      const home = source.indexOf('navigate("/home")');
-      expect(firstEnd).toBeGreaterThan(-1);
-      expect(home).toBeGreaterThan(firstEnd);
-      // Two finalize attempts wrapped in nested try/catch, one delayed retry.
-      expect(source.match(/endGameMut\(\{ sessionId: sid \}\)/g)?.length).toBe(2);
-      expect(source).toContain("setTimeout(r, 1200)");
-    }
+    // The retry must sit between the first finalize and the home fallback.
+    const firstEnd = source.indexOf("await endGameMut({ sessionId: sid })");
+    const home = source.indexOf('navigate("/home")');
+    expect(firstEnd).toBeGreaterThan(-1);
+    expect(home).toBeGreaterThan(firstEnd);
+    // Two finalize attempts wrapped in nested try/catch, one delayed retry.
+    expect(source.match(/endGameMut\(\{ sessionId: sid \}\)/g)?.length).toBe(2);
+    expect(source).toContain("setTimeout(r, 1200)");
   });
 
   it("blitz reveals the server verdict before flipping `revealed`, so a correct pick never flashes red first", () => {
-    const hookSource = read("src/hooks/useSoloBlitz.ts");
-    const legacySource = read("src/pages/BlitzScreen.tsx");
+    const source = read("src/hooks/useSoloBlitz.ts");
 
-    for (const source of [hookSource, legacySource]) {
-      const answerSet = source.indexOf("setRevealedAnswer(res.correctAnswer)");
-      const revealSet = source.indexOf("setRevealed(true)");
-      expect(answerSet).toBeGreaterThan(-1);
-      expect(revealSet).toBeGreaterThan(-1);
-      // The correct answer is known BEFORE the reveal flips on.
-      expect(answerSet).toBeLessThan(revealSet);
-      // A double-tap guard replaces the old "reveal immediately" lock.
-      expect(source).toContain("answerSubmitInFlight.current");
-      expect(source).toContain("setChecking(true)");
-      expect(source).toContain("setChecking(false)");
-    }
+    const answerSet = source.indexOf("setRevealedAnswer(res.correctAnswer)");
+    const revealSet = source.indexOf("setRevealed(true)");
+    expect(answerSet).toBeGreaterThan(-1);
+    expect(revealSet).toBeGreaterThan(-1);
+    // The correct answer is known BEFORE the reveal flips on.
+    expect(answerSet).toBeLessThan(revealSet);
+    // A double-tap guard replaces the old "reveal immediately" lock.
+    expect(source).toContain("answerSubmitInFlight.current");
+    expect(source).toContain("setChecking(true)");
+    expect(source).toContain("setChecking(false)");
   });
 
   it("blitz options show a neutral 'selected' state while checking, never red before grading", () => {
     const v2Source = read("src/pages/shell/play/BlitzPlayScreen.tsx");
-    const legacySource = read("src/pages/BlitzScreen.tsx");
 
-    // v2 shell (production) — the picked option (before reveal) is primary, not
-    // destructive. Whitespace-tolerant so indentation/line-endings don't matter.
+    // The picked option (before reveal) is primary, not destructive.
+    // Whitespace-tolerant so indentation/line-endings don't matter.
     expect(v2Source).toMatch(
       /b\.selected === idx\s*\?\s*"bg-primary text-primary-foreground"/,
     );
     expect(v2Source).toContain("disabled={b.revealed || b.checking}");
-
-    // Legacy screen mirrors the same pending style + checking lock.
-    expect(legacySource).toMatch(
-      /idx === selected\s*\?\s*"bg-primary text-primary-foreground"/,
-    );
-    expect(legacySource).toContain("disabled={revealed || checking}");
   });
 
 });

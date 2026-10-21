@@ -44,19 +44,12 @@ describe("knowledge expansion contract", () => {
   });
 
   it("exposes knowledge as a first-class quiz topic without routing survival into non-sport data", () => {
-    const home = readFileSync("src/pages/HomeScreen.tsx", "utf8");
-    const sportSelect = readFileSync("src/pages/SportSelectScreen.tsx", "utf8");
+    const tiles = readFileSync("src/pages/shell/competeModeTiles.ts", "utf8");
     const challenge = readFileSync("src/pages/ChallengeScreen.tsx", "utf8");
     const createDuel = readFileSync("src/pages/challenge/CreateDuelModal.tsx", "utf8");
     const screens = JSON.parse(readFileSync("src/i18n/locales/en/screens.json", "utf8"));
 
-    expect(home).toContain("Knowledge Mode");
-    expect(home).toContain("/difficulty?sport=knowledge&mode=quiz");
-    expect(sportSelect).toContain("knowledge:");
-    expect(sportSelect).toContain("Pick a Topic");
-    expect(sportSelect).toContain("const availableTopics = isFootballOnlyMode");
-    expect(sportSelect).toContain("isSurvivalMode");
-    expect(sportSelect).toContain('["football", "tennis", "basketball"]');
+    expect(tiles).toContain("/difficulty?sport=knowledge&mode=quiz");
     expect(challenge).toContain("api.duels.listMine");
     // i18n: the "New Duel" CTA moved to a locale key; verify both the key
     // wiring in source and that the English copy is intact.
@@ -70,18 +63,14 @@ describe("knowledge expansion contract", () => {
   });
 
   it("uses Topic language on broad quiz surfaces while preserving sport as the internal key", () => {
-    const sportSelect = readFileSync("src/pages/SportSelectScreen.tsx", "utf8");
     const challenge = readFileSync("src/pages/ChallengeScreen.tsx", "utf8");
     const createDuel = readFileSync("src/pages/challenge/CreateDuelModal.tsx", "utf8");
     const result = readFileSync("src/pages/ResultScreen.tsx", "utf8");
     const dailyResult = readFileSync("src/pages/DailyResultScreen.tsx", "utf8");
     const blitzResult = readFileSync("src/pages/BlitzResultScreen.tsx", "utf8");
-    const profile = readFileSync("src/pages/ProfileScreen.tsx", "utf8");
+    const profile = readFileSync("src/pages/shell/ShellProfileScreen.tsx", "utf8");
     const screens = JSON.parse(readFileSync("src/i18n/locales/en/screens.json", "utf8"));
 
-    expect(sportSelect).toContain("topicMeta");
-    expect(sportSelect).toContain("availableTopics");
-    expect(sportSelect).toContain("Pick a Topic");
     expect(createDuel).toContain("KNOWLEDGE_CATEGORIES");
     expect(createDuel).toContain("createDuel.headerPickCategory");
     expect(screens.createDuel.headerPickCategory).toBe("Pick a category");
@@ -101,10 +90,9 @@ describe("knowledge expansion contract", () => {
     expect(screens.dailyResult.statTopic).toBe("Topic");
     expect(blitzResult).toContain('{ label: t("blitzResult.statTopic"), value: state.sport');
     expect(screens.blitzResult.statTopic).toBe("Topic");
-    expect(profile).toContain('{ label: "Fav Topic"');
+    expect(profile).toContain('t("profile.stats.favTopic")');
 
     // Keep existing Convex/API compatibility for now; this is a user-facing rename, not a schema migration.
-    expect(sportSelect).toContain('navigate(`/difficulty?sport=${selected}&mode=${mode}`)');
     expect(createDuel).toContain("sport: sport ?? undefined");
   });
 });

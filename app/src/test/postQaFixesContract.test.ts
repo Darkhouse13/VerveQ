@@ -5,7 +5,7 @@ const read = (path: string) => readFileSync(path, "utf8");
 
 describe("post-QA regression contracts", () => {
   it("Daily Quiz stops the live question query before navigating to completed results", () => {
-    const source = read("src/pages/DailyQuizScreen.tsx");
+    const source = read("src/hooks/useDailyQuiz.ts");
     expect(source).toContain("attemptFinished");
     expect(source).toContain("attemptId && !attemptFinished && questionNum < MAX_QUESTIONS");
     expect(source).toContain("setAttemptFinished(true)");
@@ -13,16 +13,15 @@ describe("post-QA regression contracts", () => {
   });
 
   it("Higher or Lower has an immediate pointer guard so touch clicks cannot appear inert or double-submit", () => {
-    const source = read("src/pages/HigherLowerScreen.tsx");
+    const source = read("src/pages/shell/play/HigherLowerPlayScreen.tsx");
     expect(source).toContain("guessInFlight");
     expect(source).toContain("onPointerDownCapture");
     expect(source).toContain("event.preventDefault()");
   });
 
-  it("/ranks is a protected alias for the leaderboard screen", () => {
+  it("/ranks is an alias for the shell Ranks screen", () => {
     const source = read("src/App.tsx");
-    expect(source).toContain("path=\"/ranks\"");
-    expect(source).toMatch(/path="\/ranks"[\s\S]*<LeaderboardScreen \/>/);
+    expect(source).toContain('path="/ranks" element={<LegacyRedirect to="/v2/ranks" />}');
   });
 
   it("The Forge lock screen displays the same default unrated ELO as Profile", () => {
@@ -48,13 +47,8 @@ describe("post-QA regression contracts", () => {
 
 it("keeps used daily attempts from advertising as new or re-calling startAttempt", async () => {
   const fs = await import("node:fs/promises");
-  const banner = await fs.readFile(`${process.cwd()}/src/components/DailyBanner.tsx`, "utf8");
-  const daily = await fs.readFile(`${process.cwd()}/src/pages/DailyQuizScreen.tsx`, "utf8");
+  const daily = await fs.readFile(`${process.cwd()}/src/hooks/useDailyQuiz.ts`, "utf8");
 
-  expect(banner).toContain("const statusLoading = !isGuest && quizStatus === undefined");
-  expect(banner).toContain("const hasPlayed = !isGuest && quizStatus !== null && quizStatus !== undefined");
-  expect(banner).toContain("disabled={statusLoading}");
-  expect(banner).toContain("Attempt used");
   expect(daily).toContain("const attemptStatus = useQuery(api.dailyChallenge.getAttemptStatus");
   expect(daily).toContain("const startAttemptInFlight = useRef(false)");
   expect(daily).toContain("const localAttemptSport = useRef<string | null>(null)");

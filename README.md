@@ -2,7 +2,7 @@
 
 VerveQ is a trivia platform — football at its core, now spanning general-knowledge subjects — built on React 18 + Vite with a Convex backend. It is live at [verveq.com](https://verveq.com).
 
-The production surface is the **v2 shell** (`VITE_V2_SHELL_ENABLED=true`, baked at deploy time). Legacy v1 screens are kept behind redirects as a rollback seam and never render in production.
+The app has one surface: the **v2 shell**. Legacy v1 mode URLs redirect into it.
 
 ## What's in the app
 

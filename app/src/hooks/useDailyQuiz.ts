@@ -2,7 +2,7 @@
  * useDailyQuiz — the Daily Challenge (quiz) game loop, shaped to the shared
  * `SoloQuizState` so it can drive the exact same `QuizPlayView` as solo Quiz.
  *
- * This is a faithful port of the live `DailyQuizScreen` loop: every decision
+ * This is a faithful port of the former v1 `DailyQuizScreen` loop: every decision
  * stays server-authoritative and the Daily GATING is preserved EXACTLY —
  * `dailyChallenge.getOrCreateChallenge / startAttempt / getQuestion (the daily
  * set, by attempt + index) / submitAnswer / completeAttempt`, the

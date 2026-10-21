@@ -4,8 +4,7 @@
  * it overlays whatever screen loads first (cold entry, login, or the shell).
  *
  * Shown once, for everyone, gated by the explicit-choice flag in lib/languagePref
- * (set on pick OR on dismiss), so it never reappears. v2-shell only — when the
- * shell flag is off the app is English-only and there is nothing to choose.
+ * (set on pick OR on dismiss), so it never reappears.
  *
  * Deliberately uses NO i18n namespace: the heading is statically tri-lingual and
  * the options are autonyms, so the prompt reads regardless of the detected
@@ -18,7 +17,6 @@ import { Globe } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
 import i18n, { SUPPORTED_LANGUAGES, LANGUAGE_AUTONYMS } from "@/i18n";
-import { V2_SHELL_ENABLED } from "@/lib/flags";
 import { chooseLanguage, hasChosenLanguage, markLanguageChosen } from "@/lib/languagePref";
 import { isLikelyBot, isSeoPath } from "@/lib/seoPages";
 
@@ -27,7 +25,7 @@ const SUPPRESSED_PATHS = new Set(["/privacy", "/terms"]);
 
 export function FirstRunLanguagePrompt() {
   const location = useLocation();
-  const [open, setOpen] = useState(() => V2_SHELL_ENABLED && !hasChosenLanguage());
+  const [open, setOpen] = useState(() => !hasChosenLanguage());
 
   // Insurance against the modal's body locks outliving it: Radix dialogs put
   // pointer-events:none on <body> while open, and an abrupt teardown mid-open

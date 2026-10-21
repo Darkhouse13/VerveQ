@@ -5,7 +5,7 @@
  * the real app against the DEV deployment and drives real flows, so it runs on
  * demand, with the flag on:
  *
- *   VITE_ANONYMOUS_FIRST_ENABLED=true VITE_V2_SHELL_ENABLED=true \
+ *   VITE_ANONYMOUS_FIRST_ENABLED=true \
  *     npx playwright test e2e/anonymousFirst.spec.ts
  *
  * Every test starts from a genuinely cold visitor: Playwright gives each test a

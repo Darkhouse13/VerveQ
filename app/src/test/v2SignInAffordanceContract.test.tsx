@@ -7,28 +7,21 @@
  * existing v1 password login at `/?mode=signin` (no new sign-in form is built).
  *
  *  - logged out  → the control is visible and reaches `/?mode=signin`, which
- *    (flag on) `EntryRoute` resolves to the v1 LoginScreen.
+ *    `EntryRoute` resolves to the v1 LoginScreen.
  *  - signed in   → the control is absent (the avatar shows instead).
  *
  * Heavy deps (Convex query, i18n, the real auth context) are mocked so the test
  * asserts the affordance + routing, not screen internals.
  */
-import { describe, it, expect, beforeEach, vi } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 import { render, screen, fireEvent } from "@testing-library/react";
 import { MemoryRouter, Routes, Route, useLocation } from "react-router-dom";
 
-const flagMock = vi.hoisted(() => ({ enabled: true }));
 const authMock = vi.hoisted(() => ({
   value: {} as Record<string, unknown>,
 }));
 
 vi.mock("@/lib/flags", () => ({
-  get V2_SHELL_ENABLED() {
-    return flagMock.enabled;
-  },
-  get LEARN_ENABLED() {
-    return false;
-  },
   // THE DRAW home card (Ticket H) stays dark here: flag off ⇒ it renders
   // nothing and fires no query.
   get DRAW_ENABLED() {
@@ -57,9 +50,6 @@ vi.mock("@/contexts/AuthContext", () => ({
 
 vi.mock("@/pages/LoginScreen", () => ({
   default: () => <div data-testid="v1-login">LOGIN</div>,
-}));
-vi.mock("@/pages/HomeScreen", () => ({
-  default: () => <div data-testid="v1-home">V1 HOME</div>,
 }));
 
 import ShellHomeScreen from "@/pages/shell/ShellHomeScreen";
@@ -94,10 +84,6 @@ const fullAccount = {
 };
 
 describe("v2 sign-in affordance — ShellHomeScreen", () => {
-  beforeEach(() => {
-    flagMock.enabled = true;
-  });
-
   it("shows Sign in when logged out and reaches /?mode=signin → v1 LoginScreen", () => {
     authMock.value = loggedOut;
     renderHome();

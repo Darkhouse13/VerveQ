@@ -20,21 +20,21 @@ describe("Knowledge Which Came First mode", () => {
   });
 
   it("routes solo Knowledge Which Came First through quiz sessions with a distinct mode", () => {
-    const home = readFileSync("src/pages/HomeScreen.tsx", "utf8");
+    const tiles = readFileSync("src/pages/shell/competeModeTiles.ts", "utf8");
     const app = readFileSync("src/App.tsx", "utf8");
     const difficulty = readFileSync("src/pages/DifficultyScreen.tsx", "utf8");
-    const quizScreen = readFileSync("src/pages/QuizScreen.tsx", "utf8");
+    const quizHook = readFileSync("src/hooks/useSoloQuiz.ts", "utf8");
     const quizSessions = readFileSync("convex/quizSessions.ts", "utf8");
     const games = readFileSync("convex/games.ts", "utf8");
 
-    expect(home).toContain("Which Came First?");
-    expect(app).toContain('path="/quiz"');
+    expect(tiles).toContain("/difficulty?sport=knowledge&mode=came_first");
+    expect(app).toContain('path="/v2/quiz"');
     // DifficultyScreen routes the came_first variant distinctly. Asserts the
     // real branch (not a planted URL fragment) so the picker keeps preserving
     // the Which Came First mode into the quiz deep link.
     expect(difficulty).toContain('mode === "came_first" ? "came_first" : "quiz"');
-    expect(quizScreen).toContain('const mode = params.get("mode") || "quiz"');
-    expect(quizScreen).toContain("mode: mode === \"came_first\" ? \"came_first\" : \"quiz\"");
+    expect(quizHook).toContain('const mode = params.get("mode") || "quiz"');
+    expect(quizHook).toContain('mode: isCameFirst ? "came_first" : "quiz"');
     expect(quizSessions).toContain("mode: v.optional(v.string())");
     expect(quizSessions).toContain('session.mode === "came_first"');
     expect(games).toContain("const mode = session.mode ?? \"quiz\"");

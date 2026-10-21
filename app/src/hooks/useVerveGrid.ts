@@ -1,7 +1,7 @@
 /**
  * useVerveGrid — server-authoritative driver for the v2 VerveGrid stage.
  *
- * A faithful port of the live `VerveGridScreen` game loop onto a clean
+ * A faithful port of the former v1 `VerveGridScreen` game loop onto a clean
  * view-model so the bespoke `GridStage` is presentation-only. Every decision
  * stays on the server and the backend is UNTOUCHED:
  *   - `verveGrid.startSession`   picks a curated board (football only)

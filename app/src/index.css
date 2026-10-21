@@ -381,15 +381,6 @@
     font-family: 'JetBrains Mono', monospace;
   }
 
-  .sticker {
-    @apply neo-border neo-shadow rounded-full px-3 py-1 font-heading font-bold text-xs uppercase;
-  }
-
-  .sticker-rotated {
-    @apply sticker;
-    transform: rotate(-2deg);
-  }
-
   .animate-shake {
     animation: screen-shake 0.5s ease-in-out;
   }

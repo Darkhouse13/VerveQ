@@ -1,9 +1,9 @@
 /**
  * WHO'S OLDER? retention loop — streak, email reminder, challenge — end to end
  * against the DEV Convex deployment. Not part of `npm run check` (same rule as
- * the other e2e specs): run on demand with the shell + anonymous-first flags:
+ * the other e2e specs): run on demand with the anonymous-first flag:
  *
- *   VITE_ANONYMOUS_FIRST_ENABLED=true VITE_V2_SHELL_ENABLED=true \
+ *   VITE_ANONYMOUS_FIRST_ENABLED=true \
  *     npx playwright test e2e/whosOlderRetention.spec.ts
  *
  * Three cold visitors, each a fresh context (= a fresh anonymous account):

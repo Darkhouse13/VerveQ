@@ -1,7 +1,7 @@
 /**
  * useSoloBlitz — the solo Blitz game loop, server-authoritative and presentation
  * free, so the v2 shell's `BlitzPlayScreen` can drive the exact same backend flow
- * the legacy `BlitzScreen` runs inline.
+ * the former v1 `BlitzScreen` ran inline.
  *
  * Every correctness/score/clock decision is the server's: `blitz.start`,
  * `blitz.getQuestion`, `blitz.submitAnswer`, and `blitz.endGame` are called

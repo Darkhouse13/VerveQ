@@ -5,9 +5,9 @@ const read = (path: string) => readFileSync(path, "utf8");
 
 describe("game mode pending feedback contract", () => {
   it("Higher or Lower shows immediate checking feedback after a guess click", () => {
-    const source = read("src/pages/HigherLowerScreen.tsx");
+    const source = read("src/pages/shell/play/HigherLowerPlayScreen.tsx");
 
-    expect(source).toContain("Checking...");
+    expect(source).toContain('t("higherLower.checking")');
     expect(source).toContain("pendingGuess");
   });
 
@@ -22,9 +22,9 @@ describe("game mode pending feedback contract", () => {
   });
 
   it("Survival help action shows immediate loading feedback while the ladder mutation is in flight", () => {
-    const source = read("src/pages/SurvivalScreen.tsx");
+    const source = read("src/pages/shell/play/SurvivalPlayScreen.tsx");
 
     expect(source).toContain("helpLoading");
-    expect(source).toContain("Getting Help...");
+    expect(source).toContain('t("survival.gettingHelp")');
   });
 });
