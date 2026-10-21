@@ -781,7 +781,7 @@ signed-out visitor). Source of truth for both tables is
 | 5 | Difficulty | `/difficulty` | Choose easy, medium, or hard (quiz only) |
 | 6 | Quiz | `/quiz` | 10-question timed quiz gameplay |
 | 7 | Survival | `/survival` | Initials guessing gameplay |
-| 8 | Results | `/results` | Post-game score, grade, ELO change |
+| 8 | ~~Results~~ | ~~`/results`~~ | **Retired 2026-10 (VerveQ ONE P3.1)** — redirects to `/compete`; Quiz/Survival show their result in place |
 | 9 | Leaderboard | `/leaderboard` | Global rankings with filters |
 | 10 | Profile | `/profile` | Personal stats, achievements, history |
 | 11 | Challenge / Duel Hub | `/challenge` | Async duel inbox (Your Turn / Awaiting / Resolved) + New Duel flow |
@@ -791,9 +791,9 @@ signed-out visitor). Source of truth for both tables is
 | 15 | Rivals | `/rivals` | Head-to-head ledger across all opponents |
 | 16 | Rival Detail | `/rivals/:opponentUserId` | Per-rival W-L-D, streak, one-tap rematch |
 | 17 | Daily Quiz | `/daily-quiz` | Daily quiz challenge |
-| 18 | Daily Results | `/daily-results` | Daily challenge results |
+| 18 | ~~Daily Results~~ | ~~`/daily-results`~~ | **Retired 2026-10** — redirects to `/home`; both dailies show their result in place |
 | 19 | Blitz | `/blitz` | 60-second speed quiz |
-| 20 | Blitz Results | `/blitz-results` | Blitz mode results |
+| 20 | ~~Blitz Results~~ | ~~`/blitz-results`~~ | **Retired 2026-10** — redirects to `/compete`; Blitz shows its result in place |
 | 21 | ~~Waiting Room~~ | ~~`/waiting-room`~~ | **Removed 2026-07** — falls through to NotFound |
 | 22 | ~~Live Match~~ | ~~`/live-match`~~ | **Removed 2026-07** — falls through to NotFound |
 | 23 | Forge | `/forge` | Community question editor and reviewer |

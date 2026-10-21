@@ -14,22 +14,16 @@ describe("challenge rivalries v1 contract", () => {
     expect(types).toContain("recentMatches?:");
   });
 
-  it("keeps historical rivalry context on challenge results without re-surfacing live rematches", () => {
-    const resultScreen = readFileSync("src/pages/ResultScreen.tsx", "utf8");
-    const screens = JSON.parse(readFileSync("src/i18n/locales/en/screens.json", "utf8"));
+  it("never re-surfaces live rematches on the solo result screens", () => {
+    // The v1 ResultScreen (the last place historic rivalry context rendered)
+    // was retired by VerveQ ONE P3.1; the shell's solo results must not grow
+    // the old rematch prompts back.
+    const results = readFileSync("src/components/shell/play/result/ModeResults.tsx", "utf8");
 
-    // i18n: the rivalry card labels moved to locale keys; verify both the key
-    // wiring in source and that the English copy is intact.
-    expect(resultScreen).toContain("result.rivalry");
-    expect(screens.result.rivalry).toBe("Rivalry");
-    expect(resultScreen).toContain("result.streakCardLabel");
-    expect(screens.result.streakCardLabel).toBe("Streak");
-    expect(resultScreen).toContain("result.lastFive");
-    expect(screens.result.lastFive).toBe("Last 5");
-    expect(resultScreen).not.toContain("getChallengeAgainLabel");
-    expect(resultScreen).not.toContain("Get Revenge");
-    expect(resultScreen).not.toContain("Defend Your Win");
-    expect(resultScreen).not.toContain("Run It Back");
-    expect(resultScreen).not.toContain("Best of 3?");
+    expect(results).not.toContain("getChallengeAgainLabel");
+    expect(results).not.toContain("Get Revenge");
+    expect(results).not.toContain("Defend Your Win");
+    expect(results).not.toContain("Run It Back");
+    expect(results).not.toContain("Best of 3?");
   });
 });

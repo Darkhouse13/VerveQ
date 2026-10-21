@@ -23,19 +23,15 @@ import {
 // Deep-link aliases: legacy v1 mode URLs (and spelling variants like
 // /vervegrid) forward to the shell surface for that mode so shared links land
 // on the mode they name.
-import { LegacyRedirect, LegacyArenaCodeRedirect } from "./components/LegacyRedirect";
+import { LegacyRedirect, LegacyArenaCodeRedirect, LegacyRivalRedirect } from "./components/LegacyRedirect";
 // v1 screens still live in production (embedded in the shell or reused by the
 // v2 play flow) stay statically imported.
 import OnboardingScreen from "./pages/OnboardingScreen";
 import DifficultyScreen from "./pages/DifficultyScreen";
-import ResultScreen from "./pages/ResultScreen";
 import ChallengeScreen from "./pages/ChallengeScreen";
-import DailyResultScreen from "./pages/DailyResultScreen";
-import BlitzResultScreen from "./pages/BlitzResultScreen";
 import ForgeScreen from "./pages/ForgeScreen";
 import NotFound from "./pages/NotFound";
 import { ShellGate } from "./components/shell/ShellGate";
-import { ShellLayout } from "./components/shell/ShellLayout";
 import { FirstRunLanguagePrompt } from "./components/shell/FirstRunLanguagePrompt";
 import { RouteMeta } from "./components/RouteMeta";
 import { SeoPageHost, SeoRouteOutlet } from "./components/seo/SeoPageHost";
@@ -193,14 +189,13 @@ const AppRoutes = () => (
             <Route path="/difficulty" element={<DifficultyScreen />} />
             <Route path="/quiz" element={<LegacyRedirect to="/v2/quiz?sport=football" />} />
             <Route path="/survival" element={<LegacyRedirect to="/v2/survival?sport=football" />} />
-            <Route
-              path="/results"
-              element={
-                <ProtectedRoute>
-                  <ResultScreen />
-                </ProtectedRoute>
-              }
-            />
+            {/* The v1 result pages are retired (VerveQ ONE P3.1): every solo
+                mode shows its result in place, inside its own frame, so these
+                paths only catch stale links and history entries. A result
+                page with no run behind it has nothing to show, so each lands
+                where its mode lives: the mode grid, or Home's Today row for
+                the dailies. */}
+            <Route path="/results" element={<LegacyRedirect to="/compete" />} />
             <Route path="/profile" element={<LegacyRedirect to="/v2/profile" />} />
             <Route path="/challenge" element={<LegacyRedirect to="/v2/duels" />} />
             {/* Bare /duel(s) name the head-to-head surface; only the deeper
@@ -229,44 +224,14 @@ const AppRoutes = () => (
             <Route path="/arena" element={<LegacyRedirect to="/v2/arena" />} />
             <Route path="/arena/:code" element={<LegacyArenaCodeRedirect />} />
             <Route path="/rivals" element={<LegacyRedirect to="/v2/rivals" />} />
-            <Route
-              path="/rivals/:opponentUserId"
-              element={
-                <UsernameRequiredRoute>
-                  <RivalDetailScreen />
-                </UsernameRequiredRoute>
-              }
-            />
+            {/* The v1 rival page redirects into the shell one, keeping its id. */}
+            <Route path="/rivals/:opponentUserId" element={<LegacyRivalRedirect />} />
             <Route path="/daily-quiz" element={<LegacyRedirect to="/v2/daily?sport=football" />} />
             {/* /daily is the natural name for the Daily challenge. */}
             <Route path="/daily" element={<LegacyRedirect to="/v2/daily?sport=football" />} />
-            <Route
-              path="/daily-results"
-              element={
-                /* The exit screen of a SessionRoute mode, so it sits on the
-                   same tier as the mode itself. Under the v1 username gate an
-                   anonymous player finished their run and hit a wall instead of
-                   their score — and the post-run claim prompt, which lives on
-                   this screen, could never render. */
-                <SessionRoute>
-                  <DailyResultScreen />
-                </SessionRoute>
-              }
-            />
+            <Route path="/daily-results" element={<LegacyRedirect to="/home" />} />
             <Route path="/blitz" element={<LegacyRedirect to="/v2/blitz?sport=football" />} />
-            <Route
-              path="/blitz-results"
-              element={
-                /* The exit screen of a SessionRoute mode, so it sits on the
-                   same tier as the mode itself. Under the v1 username gate an
-                   anonymous player finished their run and hit a wall instead of
-                   their score — and the post-run claim prompt, which lives on
-                   this screen, could never render. */
-                <SessionRoute>
-                  <BlitzResultScreen />
-                </SessionRoute>
-              }
-            />
+            <Route path="/blitz-results" element={<LegacyRedirect to="/compete" />} />
             {/* Live Match was removed 2026-07: nothing in the product could
                 create a match (the challenge subsystem went in PR #11), so the
                 viewer routes advertised a dead end. Old /live-match and
@@ -326,16 +291,15 @@ const AppRoutes = () => (
                 </ShellGate>
               }
             />
-            {/* Contained legacy surfaces — the existing v1 screens embedded in
-                the shell chrome (v2 nav retained, v1 bottom nav suppressed) so a
-                shell nav target or Compete tile never drops the user back into
-                the v1 app. Gating mirrors the old v1 routes. */}
+            {/* Duels, Rivals and the Forge — shell-native screens (VerveQ ONE
+                P3.3) that render their own ShellLayout. Gating mirrors the old
+                v1 routes. */}
             <Route
               path="/v2/duels"
               element={
                 <ShellGate>
                   <UsernameOnlyRoute>
-                    <ShellLayout embed><ChallengeScreen embedded /></ShellLayout>
+                    <ChallengeScreen />
                   </UsernameOnlyRoute>
                 </ShellGate>
               }
@@ -345,7 +309,7 @@ const AppRoutes = () => (
               element={
                 <ShellGate>
                   <UsernameOnlyRoute>
-                    <ShellLayout embed><DuelHistoryScreen embedded /></ShellLayout>
+                    <DuelHistoryScreen />
                   </UsernameOnlyRoute>
                 </ShellGate>
               }
@@ -375,7 +339,7 @@ const AppRoutes = () => (
               element={
                 <ShellGate>
                   <FullAccountRoute>
-                    <ShellLayout embed><ForgeScreen embedded /></ShellLayout>
+                    <ForgeScreen />
                   </FullAccountRoute>
                 </ShellGate>
               }
@@ -385,7 +349,7 @@ const AppRoutes = () => (
               element={
                 <ShellGate>
                   <UsernameOnlyRoute>
-                    <ShellLayout embed><RivalsListScreen embedded /></ShellLayout>
+                    <RivalsListScreen />
                   </UsernameOnlyRoute>
                 </ShellGate>
               }
@@ -395,7 +359,7 @@ const AppRoutes = () => (
               element={
                 <ShellGate>
                   <UsernameOnlyRoute>
-                    <ShellLayout embed><RivalDetailScreen embedded /></ShellLayout>
+                    <RivalDetailScreen />
                   </UsernameOnlyRoute>
                 </ShellGate>
               }

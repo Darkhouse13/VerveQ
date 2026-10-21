@@ -16,8 +16,8 @@
 import { Navigate, useNavigate, useSearchParams } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { Loader2, LogIn, UserPlus, Zap } from "lucide-react";
-import { NeoCard } from "@/components/neo/NeoCard";
-import { NeoButton } from "@/components/neo/NeoButton";
+import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { BrandMark } from "@/components/ui/BrandMark";
 import { ShellLayout } from "@/components/shell/ShellLayout";
 import { SHELL_ROUTES } from "@/lib/shellRoutes";
@@ -38,9 +38,11 @@ export default function AccountChoiceScreen() {
 
   if (accountState === "loading") {
     return (
-      <div className="min-h-[100dvh] bg-background flex items-center justify-center">
-        <Loader2 className="animate-spin" size={28} strokeWidth={2.5} />
-      </div>
+      <ShellLayout hideNav center>
+        <div className="flex justify-center">
+          <Loader2 className="animate-spin" size={28} strokeWidth={2.5} aria-label="Loading" />
+        </div>
+      </ShellLayout>
     );
   }
 
@@ -48,50 +50,53 @@ export default function AccountChoiceScreen() {
   if (hasUsername) return <Navigate to={next} replace />;
 
   return (
-    <ShellLayout hideNav center back onBack={() => navigate(SHELL_ROUTES.home)}>
-      <div className="w-full max-w-sm mx-auto">
-        <NeoCard shadow="lg" className="p-6">
+    <ShellLayout hideNav back onBack={() => navigate(SHELL_ROUTES.home)}>
+      <div className="mx-auto flex min-h-full w-full max-w-sm flex-col justify-center py-2">
+        <Card elevation="lifted" padding="lg">
           <div className="flex justify-center mb-4">
             <BrandMark variant="mark" size="md" />
           </div>
-          <h1 className="text-2xl font-heading font-bold text-center mb-2">
+          <h1 className="mb-2 text-center font-heading text-title font-bold">
             {t("account.title")}
           </h1>
-          <p className="text-sm text-muted-foreground text-center mb-6">
+          <p className="mb-6 text-center text-body-sm text-muted-foreground">
             {t("account.body")}
           </p>
           <div className="flex flex-col gap-3">
-            <NeoButton
+            <Button
               variant="primary"
-              size="full"
+              size="lg"
+              block
               onClick={() => navigate(`/?mode=signup&next=${encodedNext}`)}
             >
-              <UserPlus size={18} strokeWidth={2.5} className="mr-2" />
+              <UserPlus size={18} strokeWidth={2.5} aria-hidden="true" />
               {t("account.create")}
-            </NeoButton>
-            <NeoButton
+            </Button>
+            <Button
               variant="secondary"
-              size="full"
+              size="md"
+              block
               onClick={() => navigate(`/?mode=signin&next=${encodedNext}`)}
             >
-              <LogIn size={18} strokeWidth={2.5} className="mr-2" />
+              <LogIn size={18} strokeWidth={2.5} aria-hidden="true" />
               {t("account.signIn")}
-            </NeoButton>
-            <NeoButton
+            </Button>
+            <Button
               variant="secondary"
-              size="full"
+              size="md"
+              block
               onClick={() =>
                 navigate(`${SHELL_ROUTES.welcome}?next=${encodedNext}`)
               }
             >
-              <Zap size={18} strokeWidth={2.5} className="mr-2" />
+              <Zap size={18} strokeWidth={2.5} aria-hidden="true" />
               {t("account.guest")}
-            </NeoButton>
+            </Button>
           </div>
-          <p className="mt-4 text-center text-xs text-muted-foreground">
+          <p className="mt-4 text-center text-meta text-muted-foreground">
             {t("account.guestNote")}
           </p>
-        </NeoCard>
+        </Card>
       </div>
     </ShellLayout>
   );

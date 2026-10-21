@@ -18,6 +18,8 @@ export interface SegmentedProps<T extends string> {
 /**
  * Segmented — a row of 44px tabs for switching one view. role=tablist/tab with
  * aria-selected; arrow keys move between segments (roving tabindex).
+ * The selected segment is a cream chip, never lime: lime is reserved for the
+ * one main action on the screen, which often sits right below a Segmented.
  */
 function Segmented<T extends string>({
   options,
@@ -60,7 +62,7 @@ function Segmented<T extends string>({
             onKeyDown={(event) => onKeyDown(event, index)}
             className={cn(
               "min-h-11 flex-1 cursor-pointer rounded-md px-4 font-heading text-body-sm font-bold transition-colors duration-ui",
-              selected ? "bg-primary text-primary-foreground" : "bg-transparent text-foreground hover:bg-muted",
+              selected ? "bg-foreground text-background" : "bg-transparent text-foreground hover:bg-muted",
             )}
           >
             {option.label}

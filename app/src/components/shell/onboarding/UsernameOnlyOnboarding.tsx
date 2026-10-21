@@ -22,9 +22,9 @@ import {
 } from "react";
 import { useTranslation } from "react-i18next";
 import { Loader2 } from "lucide-react";
-import { NeoCard } from "@/components/neo/NeoCard";
-import { NeoButton } from "@/components/neo/NeoButton";
-import { NeoInput } from "@/components/neo/NeoInput";
+import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { BrandMark } from "@/components/ui/BrandMark";
 import { useAuth, AuthError } from "@/contexts/AuthContext";
 import { track } from "@/lib/analytics";
@@ -164,20 +164,18 @@ export function UsernameOnlyOnboarding({
 
   return (
     <div className="w-full max-w-sm mx-auto">
-      <NeoCard shadow="lg" className="p-6">
+      <Card elevation="lifted" padding="lg">
         <div className="flex flex-col items-center text-center gap-3 mb-5">
           <BrandMark variant="mark" size="lg" />
           <div>
-            <h1 className="text-2xl font-heading font-bold tracking-tight">
-              {headingText}
-            </h1>
-            <p className="text-sm text-muted-foreground mt-1">{subheadingText}</p>
+            <h1 className="font-heading text-title font-bold">{headingText}</h1>
+            <p className="mt-1 text-body-sm text-muted-foreground">{subheadingText}</p>
           </div>
         </div>
 
         <form onSubmit={(e) => void handleSubmit(e)} className="space-y-3">
           <div>
-            <NeoInput
+            <Input
               type="text"
               autoComplete="username"
               autoCapitalize="none"
@@ -200,13 +198,13 @@ export function UsernameOnlyOnboarding({
             />
             {/* The rule lives AT the field, always visible — the user learns
                 what a valid username is before the error, not from it. */}
-            <p className="text-xs text-muted-foreground font-heading text-center mt-1.5">
+            <p className="mt-1.5 text-center text-meta text-muted-foreground">
               {t("usernameOnboard.rule", {
                 defaultValue:
                   "3–24 characters: lowercase letters, numbers, underscores.",
               })}
             </p>
-            <p className="text-xs text-muted-foreground font-heading text-center mt-0.5">
+            <p className="mt-0.5 text-center text-meta text-muted-foreground">
               {t("usernameOnboard.handle", {
                 defaultValue: "Your handle: @{{handle}}",
                 handle:
@@ -219,32 +217,32 @@ export function UsernameOnlyOnboarding({
           {error && (
             <div
               role="alert"
-              className="text-sm text-destructive font-heading text-center"
+              className="text-center text-body-sm font-bold text-destructive"
             >
               {error}
             </div>
           )}
 
-          <NeoButton
+          <Button
             type="submit"
             variant="primary"
-            size="full"
-            disabled={submitting || !valid}
-            className="disabled:opacity-60"
+            size="lg"
+            block
+            disabled={!valid}
+            loading={submitting}
+            aria-label={submitting ? t("usernameOnboard.settingUp", { defaultValue: "Setting up…" }) : undefined}
           >
-            {submitting
-              ? t("usernameOnboard.settingUp", { defaultValue: "Setting up…" })
-              : submitText}
-          </NeoButton>
+            {submitText}
+          </Button>
         </form>
 
-        <p className="text-[11px] text-muted-foreground text-center mt-4 leading-snug">
+        <p className="mt-4 text-center text-meta text-muted-foreground">
           {t("usernameOnboard.footer", {
             defaultValue:
               "Username-only play is casual and unranked. You can add an email and password later to save your progress and go ranked.",
           })}
         </p>
-      </NeoCard>
+      </Card>
     </div>
   );
 }

@@ -171,9 +171,8 @@ The frontend touches the following functions directly:
   the rivals list, and the per-rival detail.
 - `notifications.unreadCount` — read by the Duel Hub itself
   (`ChallengeScreen.tsx:72`) to decide whether to mark all read on open. It also
-  drove an unread badge on the v1 `BottomNav` Challenge tab, but the live v2
-  `ShellNav` has no Challenge tab and renders no badge, so that surface is dead
-  with v1.
+  drove an unread badge on the v1 `BottomNav` Challenge tab (deleted in VerveQ
+  ONE P3.3); the Duels hub header now shows the unread count itself.
 - `notifications.markAllRead` — fired when the user opens the hub.
 
 ### Guest link bridge — tab-local, never auto-account

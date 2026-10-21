@@ -1,43 +1,59 @@
+/**
+ * The Forge (`/v2/forge`) — write questions for the community pool and review
+ * other players' submissions. Shell-native (VerveQ ONE P3.3): ShellLayout with
+ * a back to Profile (the Forge's entry), a Segmented for Submit / Review / My
+ * submissions, form fields on the ui primitives, and one lime action — Submit
+ * question — on the Submit tab.
+ */
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useQuery, useMutation } from "convex/react";
 import { api } from "../../convex/_generated/api";
 import { friendlyError } from "@/lib/errors";
-import { NeoCard } from "@/components/neo/NeoCard";
-import { NeoButton } from "@/components/neo/NeoButton";
-import { NeoBadge } from "@/components/neo/NeoBadge";
-import { NeoInput } from "@/components/neo/NeoInput";
-import { BottomNav } from "@/components/neo/BottomNav";
+import { ShellLayout } from "@/components/shell/ShellLayout";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Input, Textarea } from "@/components/ui/input";
+import { Segmented } from "@/components/ui/segmented";
+import { IconButton } from "@/components/ui/icon-button";
 import { ImageDropzone } from "@/components/ImageDropzone";
 import { QuestionImage } from "@/components/QuestionImage";
 import { ImageZoomModal } from "@/components/ImageZoomModal";
-import {
-  ArrowLeft,
-  Lock,
-  Hammer,
-  ThumbsUp,
-  ThumbsDown,
-  Send,
-  CheckCircle,
-  XCircle,
-  Clock,
-} from "lucide-react";
+import { LoadingLine } from "@/components/shell/duels/DuelParts";
+import { Lock, ThumbsUp, ThumbsDown, Send, Check, CheckCircle, XCircle, Clock } from "lucide-react";
 import { notify } from "@/lib/notify";
+import { cn } from "@/lib/utils";
+import { SHELL_ROUTES } from "@/lib/shellRoutes";
 import type { Id } from "../../convex/_generated/dataModel";
 import { useAuth } from "@/contexts/AuthContext";
 
 type Tab = "submit" | "review" | "submissions";
 
 // Football-only: submissions target the one live sport.
-const SPORTS = [{ name: "football", emoji: "\u26BD" }];
+const SPORTS = [{ name: "football", label: "Football" }];
 
 const DIFFICULTIES = ["easy", "intermediate", "hard"] as const;
+const DIFFICULTY_LABELS: Record<(typeof DIFFICULTIES)[number], string> = {
+  easy: "Easy",
+  intermediate: "Medium",
+  hard: "Hard",
+};
 
-export default function ForgeScreen({ embedded = false }: { embedded?: boolean } = {}) {
+const LETTERS = ["A", "B", "C", "D"];
+
+const TITLE = "The Forge";
+
+function useBackToProfile() {
   const navigate = useNavigate();
+  return () => navigate(SHELL_ROUTES.profile);
+}
+
+export default function ForgeScreen() {
   const { isGuest, isUsernameOnly } = useAuth();
   const [activeTab, setActiveTab] = useState<Tab>("submit");
+  const back = useBackToProfile();
 
   const access = useQuery(api.forge.canAccess, isGuest ? "skip" : {});
 
@@ -59,11 +75,9 @@ export default function ForgeScreen({ embedded = false }: { embedded?: boolean }
 
   if (access === undefined) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <p className="font-heading font-bold text-lg animate-pulse">
-          Loading The Forge...
-        </p>
-      </div>
+      <ShellLayout title={TITLE} back onBack={back}>
+        <LoadingLine>Loading The Forge…</LoadingLine>
+      </ShellLayout>
     );
   }
 
@@ -71,53 +85,27 @@ export default function ForgeScreen({ embedded = false }: { embedded?: boolean }
     return <ForgeLockScreen currentElo={access.currentElo} />;
   }
 
-  const tabs: { key: Tab; label: string }[] = [
-    { key: "submit", label: "Submit" },
-    { key: "review", label: "Review" },
-    { key: "submissions", label: "My Submissions" },
-  ];
-
   return (
-    <div className={embedded ? "" : "min-h-screen bg-background pb-20"}>
-      {/* Header */}
-      <div className="flex items-center gap-3 px-5 pt-5 pb-3">
-        <button onClick={() => navigate(-1)} className="cursor-pointer">
-          <ArrowLeft size={24} strokeWidth={2.5} />
-        </button>
-        <div className="flex items-center gap-2">
-          <Hammer size={24} strokeWidth={2.5} className="text-primary" />
-          <h1 className="font-heading font-bold text-xl">THE FORGE</h1>
-        </div>
-      </div>
+    <ShellLayout title={TITLE} subtitle="Write questions for everyone to play" back onBack={back}>
+      <div className="flex flex-col gap-4 py-1 md:mx-auto md:max-w-xl" data-testid="forge">
+        <Segmented<Tab>
+          aria-label="The Forge"
+          block
+          value={activeTab}
+          onChange={setActiveTab}
+          options={[
+            { value: "submit", label: "Submit" },
+            { value: "review", label: "Review" },
+            { value: "submissions", label: "My submissions" },
+          ]}
+          className="[&>button]:px-2"
+        />
 
-      {/* Tabs */}
-      <div className="flex gap-2 px-5 mb-5">
-        {tabs.map((t) => (
-          <button
-            key={t.key}
-            onClick={() => setActiveTab(t.key)}
-            className={`neo-border rounded-full px-3 py-1 text-xs uppercase font-heading font-bold transition-all cursor-pointer ${
-              activeTab === t.key
-                ? "bg-primary text-primary-foreground neo-shadow"
-                : "bg-background text-foreground"
-            }`}
-          >
-            {t.label}
-          </button>
-        ))}
-      </div>
-
-      {/* Tab Content */}
-      <div className="px-5">
-        {activeTab === "submit" && (
-          <SubmitTab onSuccess={() => setActiveTab("submissions")} />
-        )}
+        {activeTab === "submit" && <SubmitTab onSuccess={() => setActiveTab("submissions")} />}
         {activeTab === "review" && <ReviewTab />}
         {activeTab === "submissions" && <MySubmissionsTab />}
       </div>
-
-      {!embedded && <BottomNav />}
-    </div>
+    </ShellLayout>
   );
 }
 
@@ -132,61 +120,69 @@ function ForgeLockScreen({
   message?: string;
   hideElo?: boolean;
 }) {
-  const navigate = useNavigate();
+  const back = useBackToProfile();
   const displayElo = Math.max(Math.round(currentElo), 1200);
   // Contract marker: const displayElo = Math.round(currentElo);
   const progress = Math.min((displayElo / 1500) * 100, 100);
 
   return (
-    <div className="min-h-screen bg-background flex flex-col items-center justify-center px-5">
-      <NeoCard shadow="lg" className="w-full text-center">
-        <div className="neo-border rounded-full w-16 h-16 flex items-center justify-center bg-muted mx-auto mb-4">
-          <Lock size={32} strokeWidth={2.5} />
-        </div>
-        <h2 className="font-heading font-bold text-2xl mb-2">
-          THE FORGE IS LOCKED
-        </h2>
-        <p className="text-sm text-muted-foreground mb-4">
-          {message ?? (
-            <>
-              Reach <span className="font-bold text-primary">Gold Tier (1500 ELO)</span> in
-              any sport to unlock The Forge and create questions for the community.
-            </>
-          )}
-        </p>
+    <ShellLayout title={TITLE} back onBack={back}>
+      <div className="flex min-h-full flex-col justify-center py-2 md:mx-auto md:max-w-md">
+        <Card elevation="lifted" padding="lg" className="text-center" data-testid="forge-locked">
+          <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-muted neo-border">
+            <Lock size={30} strokeWidth={2.5} aria-hidden="true" />
+          </div>
+          <h2 className="mb-2 font-heading text-title font-bold">The Forge is locked</h2>
+          <p className="mb-5 text-body-sm text-muted-foreground">
+            {message ?? (
+              <>
+                Reach <span className="font-bold text-foreground">Gold Tier (1500 ELO)</span> in any sport to unlock
+                The Forge and create questions for the community.
+              </>
+            )}
+          </p>
 
-        {!hideElo && (
-          <>
-            <div className="mb-2">
-              <p className="font-mono font-bold text-3xl">{displayElo.toLocaleString()}</p>
-              <p className="text-xs text-muted-foreground uppercase">Current ELO</p>
-            </div>
-
-            <div className="neo-border rounded-full h-3 bg-muted mb-1">
+          {!hideElo && (
+            <div className="mb-5">
+              <p className="font-mono text-title-lg font-bold tabular-nums">{displayElo.toLocaleString()}</p>
+              <p className="font-mono text-eyebrow uppercase text-muted-foreground">Current ELO</p>
               <div
-                className="bg-primary h-full rounded-full transition-all"
-                style={{ width: `${progress}%` }}
-              />
+                className="mt-3 h-3 rounded-full bg-muted neo-border"
+                role="progressbar"
+                aria-valuemin={0}
+                aria-valuemax={1500}
+                aria-valuenow={displayElo}
+              >
+                <div className="h-full rounded-full bg-foreground" style={{ width: `${progress}%` }} />
+              </div>
+              <p className="mt-1.5 text-meta text-muted-foreground">
+                {Math.max(1500 - displayElo, 0).toLocaleString()} ELO to go
+              </p>
             </div>
-            <p className="text-[10px] text-muted-foreground mb-5">
-              {Math.max(1500 - displayElo, 0).toLocaleString()} ELO to go
-            </p>
-          </>
-        )}
+          )}
 
-        <NeoButton variant="secondary" size="full" onClick={() => navigate(-1)}>
-          Go Back
-        </NeoButton>
-      </NeoCard>
-    </div>
+          <Button variant="secondary" size="md" block onClick={back}>
+            Go back
+          </Button>
+        </Card>
+      </div>
+    </ShellLayout>
   );
 }
 
 // ── Submit Tab ──
 
+function FieldLabel({ htmlFor, children }: { htmlFor?: string; children: React.ReactNode }) {
+  return (
+    <label htmlFor={htmlFor} className="mb-2 block font-heading text-body-sm font-bold">
+      {children}
+    </label>
+  );
+}
+
 function SubmitTab({ onSuccess }: { onSuccess: () => void }) {
   const { t } = useTranslation("screens");
-  const [sport, setSport] = useState(SPORTS[0].name);
+  const [sport] = useState(SPORTS[0].name);
   const [category, setCategory] = useState("");
   const [difficulty, setDifficulty] = useState<(typeof DIFFICULTIES)[number]>("intermediate");
   const [questionText, setQuestionText] = useState("");
@@ -239,139 +235,94 @@ function SubmitTab({ onSuccess }: { onSuccess: () => void }) {
   };
 
   return (
-    <div className="space-y-4">
-      {/* Sport */}
-      <div>
-        <p className="font-heading font-bold text-xs uppercase mb-2">Sport</p>
-        <div className="flex gap-2">
-          {SPORTS.map((s) => (
-            <button
-              key={s.name}
-              onClick={() => setSport(s.name)}
-              className={`neo-border rounded-full px-3 py-1.5 text-xs uppercase font-heading font-bold cursor-pointer transition-all ${
-                sport === s.name
-                  ? "bg-primary text-primary-foreground neo-shadow"
-                  : "bg-background text-foreground"
-              }`}
-            >
-              {s.emoji} {s.name}
-            </button>
-          ))}
-        </div>
+    <div className="flex flex-col gap-4" data-testid="forge-submit">
+      <div className="flex items-center gap-2">
+        <span className="font-heading text-body-sm font-bold">Sport</span>
+        <Badge tone="neutral" shape="tag">{SPORTS[0].label}</Badge>
       </div>
 
-      {/* Category */}
       <div>
-        <p className="font-heading font-bold text-xs uppercase mb-2">Category</p>
-        <NeoInput
+        <FieldLabel htmlFor="forge-category">Category</FieldLabel>
+        <Input
+          id="forge-category"
           placeholder={t("forge.topicPlaceholder")}
           value={category}
           onChange={(e) => setCategory(e.target.value)}
         />
       </div>
 
-      {/* Difficulty */}
       <div>
-        <p className="font-heading font-bold text-xs uppercase mb-2">Difficulty</p>
-        <div className="flex gap-2">
-          {DIFFICULTIES.map((d) => (
-            <button
-              key={d}
-              onClick={() => setDifficulty(d)}
-              className={`neo-border rounded-full px-3 py-1.5 text-xs uppercase font-heading font-bold cursor-pointer transition-all ${
-                difficulty === d
-                  ? "bg-primary text-primary-foreground neo-shadow"
-                  : "bg-background text-foreground"
-              }`}
-            >
-              {d}
-            </button>
-          ))}
-        </div>
+        <FieldLabel>Difficulty</FieldLabel>
+        <Segmented<(typeof DIFFICULTIES)[number]>
+          aria-label="Difficulty"
+          block
+          value={difficulty}
+          onChange={setDifficulty}
+          options={DIFFICULTIES.map((d) => ({ value: d, label: DIFFICULTY_LABELS[d] }))}
+        />
       </div>
 
-      {/* Question */}
       <div>
-        <p className="font-heading font-bold text-xs uppercase mb-2">Question</p>
-        <textarea
+        <FieldLabel htmlFor="forge-question">Question</FieldLabel>
+        <Textarea
+          id="forge-question"
           value={questionText}
           onChange={(e) => setQuestionText(e.target.value)}
           placeholder={t("forge.questionPlaceholder")}
           rows={3}
-          className="neo-border neo-shadow rounded-lg px-4 py-3 font-body text-base bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary w-full transition-all resize-none"
+          className="resize-none"
         />
       </div>
 
-      {/* Options */}
       <div>
-        <p className="font-heading font-bold text-xs uppercase mb-2">
-          Answers (tap to mark correct)
-        </p>
-        <div className="space-y-2">
-          {options.map((opt, idx) => (
-            <div key={idx} className="flex items-center gap-2">
-              <button
-                onClick={() => setCorrectIdx(idx)}
-                className={`neo-border rounded-full w-8 h-8 flex items-center justify-center shrink-0 cursor-pointer transition-all ${
-                  correctIdx === idx
-                    ? "bg-success text-success-foreground"
-                    : "bg-background text-foreground"
-                }`}
-              >
-                {correctIdx === idx ? (
-                  <CheckCircle size={16} strokeWidth={3} />
-                ) : (
-                  <span className="font-heading font-bold text-xs">
-                    {["A", "B", "C", "D"][idx]}
-                  </span>
-                )}
-              </button>
-              <NeoInput
-                placeholder={t("forge.optionPlaceholder", { letter: ["A", "B", "C", "D"][idx] })}
-                value={opt}
-                onChange={(e) => updateOption(idx, e.target.value)}
-              />
-            </div>
-          ))}
+        <FieldLabel>Answers (tap a letter to mark the correct one)</FieldLabel>
+        <div className="flex flex-col gap-2.5">
+          {options.map((opt, idx) => {
+            const isCorrect = correctIdx === idx;
+            return (
+              <div key={idx} className="flex items-center gap-2">
+                <IconButton
+                  variant="secondary"
+                  aria-label={`Mark answer ${LETTERS[idx]} correct`}
+                  aria-pressed={isCorrect}
+                  onClick={() => setCorrectIdx(idx)}
+                  className={cn("font-heading text-body-sm font-bold", isCorrect && "bg-verdict-right text-ink enabled:hover:bg-verdict-right")}
+                >
+                  {isCorrect ? <Check strokeWidth={3} aria-hidden="true" /> : LETTERS[idx]}
+                </IconButton>
+                <Input
+                  aria-label={t("forge.optionPlaceholder", { letter: LETTERS[idx] })}
+                  placeholder={t("forge.optionPlaceholder", { letter: LETTERS[idx] })}
+                  value={opt}
+                  onChange={(e) => updateOption(idx, e.target.value)}
+                />
+              </div>
+            );
+          })}
         </div>
       </div>
 
-      {/* Explanation */}
       <div>
-        <p className="font-heading font-bold text-xs uppercase mb-2">
-          Explanation (optional)
-        </p>
-        <textarea
+        <FieldLabel htmlFor="forge-explanation">Explanation (optional)</FieldLabel>
+        <Textarea
+          id="forge-explanation"
           value={explanation}
           onChange={(e) => setExplanation(e.target.value)}
           placeholder={t("forge.explanationPlaceholder")}
           rows={2}
-          className="neo-border neo-shadow rounded-lg px-4 py-3 font-body text-base bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary w-full transition-all resize-none"
+          className="resize-none"
         />
       </div>
 
-      {/* Image Upload */}
       <div>
-        <p className="font-heading font-bold text-xs uppercase mb-2">
-          Image (optional)
-        </p>
-        <ImageDropzone
-          imageId={imageId}
-          onUpload={setImageId}
-          onRemove={() => setImageId(null)}
-        />
+        <FieldLabel>Image (optional)</FieldLabel>
+        <ImageDropzone imageId={imageId} onUpload={setImageId} onRemove={() => setImageId(null)} />
       </div>
 
-      {/* Submit */}
-      <NeoButton
-        variant="primary"
-        size="full"
-        onClick={handleSubmit}
-        disabled={submitting}
-      >
-        <Send size={18} strokeWidth={2.5} />
-        {submitting ? "Submitting..." : "Submit Question"}
-      </NeoButton>
+      <Button variant="primary" size="lg" block onClick={handleSubmit} loading={submitting} data-testid="forge-submit-button">
+        <Send size={18} strokeWidth={2.5} aria-hidden="true" />
+        Submit question
+      </Button>
     </div>
   );
 }
@@ -384,10 +335,7 @@ function ReviewTab() {
   const [voting, setVoting] = useState<string | null>(null);
   const [zoomImage, setZoomImage] = useState<string | null>(null);
 
-  const handleVote = async (
-    submissionId: Id<"questionSubmissions">,
-    vote: "approve" | "reject",
-  ) => {
+  const handleVote = async (submissionId: Id<"questionSubmissions">, vote: "approve" | "reject") => {
     setVoting(submissionId);
     try {
       const res = await voteMut({ submissionId, vote });
@@ -406,91 +354,54 @@ function ReviewTab() {
   };
 
   if (queue === undefined) {
-    return (
-      <p className="font-heading font-bold text-sm animate-pulse text-center py-10">
-        Loading review queue...
-      </p>
-    );
+    return <LoadingLine>Loading review queue…</LoadingLine>;
   }
 
   if (queue.length === 0) {
     return (
-      <NeoCard className="text-center py-10">
-        <p className="font-heading font-bold text-sm">
-          No questions to review right now
-        </p>
-        <p className="text-xs text-muted-foreground mt-1">
-          Check back later for new submissions
-        </p>
-      </NeoCard>
+      <Card elevation="flat" padding="lg" className="text-center">
+        <p className="font-heading text-body-sm font-bold">No questions to review right now</p>
+        <p className="mt-1 text-meta text-muted-foreground">Check back later for new submissions</p>
+      </Card>
     );
   }
 
   return (
-    <div className="space-y-4">
+    <div className="flex flex-col gap-4">
       {queue.map((s) => (
-        <NeoCard key={s._id} shadow="lg" className="space-y-3">
-          {/* Badges */}
-          <div className="flex gap-2 flex-wrap">
-            <NeoBadge color="primary" size="sm">
-              {s.sport}
-            </NeoBadge>
-            <NeoBadge color="blue" size="sm">
-              {s.category}
-            </NeoBadge>
-            <NeoBadge color="accent" size="sm" rotated>
-              {s.difficulty}
-            </NeoBadge>
+        <Card key={s._id} elevation="raised" className="flex flex-col gap-3">
+          <div className="flex flex-wrap gap-2">
+            <Badge tone="neutral">{s.sport}</Badge>
+            <Badge tone="neutral">{s.category}</Badge>
+            <Badge tone="muted">{s.difficulty}</Badge>
           </div>
 
-          {/* Image */}
-          {s.imageUrl && (
-            <QuestionImage
-              imageUrl={s.imageUrl}
-              onZoom={() => setZoomImage(s.imageUrl)}
-            />
-          )}
+          {s.imageUrl && <QuestionImage imageUrl={s.imageUrl} onZoom={() => setZoomImage(s.imageUrl)} />}
 
-          {/* Question */}
-          <p className="font-heading font-bold text-lg leading-tight">
-            {s.question}
-          </p>
+          <p className="font-heading text-title-sm font-bold">{s.question}</p>
 
-          {/* Options */}
-          <div className="space-y-1.5">
-            {s.options.map((opt, idx) => (
-              <div
-                key={idx}
-                className={`neo-border rounded-lg px-3 py-2 text-sm font-body ${
-                  opt === s.correctAnswer
-                    ? "bg-success/10 border-success"
-                    : "bg-muted/30"
-                }`}
-              >
-                <span className="font-heading font-bold text-xs mr-2">
-                  {["A", "B", "C", "D"][idx]}
-                </span>
-                {opt}
-                {opt === s.correctAnswer && (
-                  <CheckCircle
-                    size={14}
-                    strokeWidth={3}
-                    className="inline ml-2 text-success"
-                  />
-                )}
-              </div>
-            ))}
-          </div>
+          <ul className="flex flex-col gap-1.5">
+            {s.options.map((opt, idx) => {
+              const right = opt === s.correctAnswer;
+              return (
+                <li
+                  key={idx}
+                  className={cn(
+                    "flex items-center gap-2 rounded-lg px-3 py-2 text-body-sm neo-border",
+                    right ? "border-verdict-right" : "border-border/30",
+                  )}
+                >
+                  <span className="font-heading text-meta font-bold text-muted-foreground">{LETTERS[idx]}</span>
+                  <span className="min-w-0 flex-1">{opt}</span>
+                  {right && <CheckCircle size={16} strokeWidth={3} className="shrink-0 text-verdict-right" aria-label="Correct answer" />}
+                </li>
+              );
+            })}
+          </ul>
 
-          {/* Explanation */}
-          {s.explanation && (
-            <p className="text-xs text-muted-foreground italic">
-              {s.explanation}
-            </p>
-          )}
+          {s.explanation && <p className="text-meta italic text-muted-foreground">{s.explanation}</p>}
 
-          {/* Meta */}
-          <div className="flex items-center justify-between text-xs text-muted-foreground">
+          <div className="flex items-center justify-between text-meta text-muted-foreground">
             <span>by @{s.authorUsername}</span>
             <span className="font-mono font-bold">
               Score: {s.netVotes > 0 ? "+" : ""}
@@ -498,58 +409,36 @@ function ReviewTab() {
             </span>
           </div>
 
-          {/* Vote Buttons */}
-          {s.userVote ? (
-            <div className="flex gap-2">
-              <NeoButton
-                variant={s.userVote === "approve" ? "success" : "secondary"}
-                size="full"
-                disabled
-              >
-                <ThumbsUp size={18} strokeWidth={2.5} />
-                APPROVE
-              </NeoButton>
-              <NeoButton
-                variant={s.userVote === "reject" ? "danger" : "secondary"}
-                size="full"
-                disabled
-              >
-                <ThumbsDown size={18} strokeWidth={2.5} />
-                REJECT
-              </NeoButton>
-            </div>
-          ) : (
-            <div className="flex gap-2">
-              <NeoButton
-                variant="success"
-                size="full"
-                disabled={voting === s._id}
-                onClick={() => handleVote(s._id, "approve")}
-              >
-                <ThumbsUp size={18} strokeWidth={2.5} />
-                APPROVE
-              </NeoButton>
-              <NeoButton
-                variant="danger"
-                size="full"
-                disabled={voting === s._id}
-                onClick={() => handleVote(s._id, "reject")}
-              >
-                <ThumbsDown size={18} strokeWidth={2.5} />
-                REJECT
-              </NeoButton>
-            </div>
-          )}
-        </NeoCard>
+          <div className="grid grid-cols-2 gap-2">
+            <Button
+              variant="secondary"
+              size="md"
+              block
+              aria-pressed={s.userVote === "approve"}
+              disabled={!!s.userVote || voting === s._id}
+              onClick={() => handleVote(s._id, "approve")}
+              className={cn(s.userVote === "approve" && "bg-verdict-right text-ink")}
+            >
+              <ThumbsUp size={18} strokeWidth={2.5} aria-hidden="true" />
+              Approve
+            </Button>
+            <Button
+              variant="secondary"
+              size="md"
+              block
+              aria-pressed={s.userVote === "reject"}
+              disabled={!!s.userVote || voting === s._id}
+              onClick={() => handleVote(s._id, "reject")}
+              className={cn(s.userVote === "reject" && "bg-verdict-wrong text-ink")}
+            >
+              <ThumbsDown size={18} strokeWidth={2.5} aria-hidden="true" />
+              Reject
+            </Button>
+          </div>
+        </Card>
       ))}
 
-      {zoomImage && (
-        <ImageZoomModal
-          imageUrl={zoomImage}
-          open={!!zoomImage}
-          onClose={() => setZoomImage(null)}
-        />
-      )}
+      {zoomImage && <ImageZoomModal imageUrl={zoomImage} open={!!zoomImage} onClose={() => setZoomImage(null)} />}
     </div>
   );
 }
@@ -560,23 +449,15 @@ function MySubmissionsTab() {
   const submissions = useQuery(api.forge.getMySubmissions);
 
   if (submissions === undefined) {
-    return (
-      <p className="font-heading font-bold text-sm animate-pulse text-center py-10">
-        Loading submissions...
-      </p>
-    );
+    return <LoadingLine>Loading submissions…</LoadingLine>;
   }
 
   if (submissions.length === 0) {
     return (
-      <NeoCard className="text-center py-10">
-        <p className="font-heading font-bold text-sm">
-          You haven't submitted any questions yet
-        </p>
-        <p className="text-xs text-muted-foreground mt-1">
-          Switch to the Submit tab to create your first question
-        </p>
-      </NeoCard>
+      <Card elevation="flat" padding="lg" className="text-center">
+        <p className="font-heading text-body-sm font-bold">You haven't submitted any questions yet</p>
+        <p className="mt-1 text-meta text-muted-foreground">Switch to the Submit tab to create your first question</p>
+      </Card>
     );
   }
 
@@ -584,24 +465,24 @@ function MySubmissionsTab() {
     switch (status) {
       case "pending":
         return (
-          <NeoBadge color="primary" size="sm">
-            <Clock size={10} strokeWidth={3} className="inline mr-1" />
-            PENDING
-          </NeoBadge>
+          <Badge tone="neutral">
+            <Clock size={12} strokeWidth={3} aria-hidden="true" />
+            Pending
+          </Badge>
         );
       case "approved":
         return (
-          <NeoBadge color="success" size="sm">
-            <CheckCircle size={10} strokeWidth={3} className="inline mr-1" />
-            APPROVED
-          </NeoBadge>
+          <Badge tone="right">
+            <CheckCircle size={12} strokeWidth={3} aria-hidden="true" />
+            Approved
+          </Badge>
         );
       case "rejected":
         return (
-          <NeoBadge color="destructive" size="sm">
-            <XCircle size={10} strokeWidth={3} className="inline mr-1" />
-            REJECTED
-          </NeoBadge>
+          <Badge tone="wrong">
+            <XCircle size={12} strokeWidth={3} aria-hidden="true" />
+            Rejected
+          </Badge>
         );
       default:
         return null;
@@ -609,29 +490,25 @@ function MySubmissionsTab() {
   };
 
   return (
-    <div className="space-y-3">
+    <div className="flex flex-col gap-3">
       {submissions.map((s) => (
-        <NeoCard key={s._id}>
-          <div className="flex items-start justify-between gap-2 mb-2">
-            <div className="flex gap-1.5 flex-wrap">
-              <NeoBadge color="blue" size="sm">
-                {s.sport}
-              </NeoBadge>
+        <Card key={s._id} elevation="flat">
+          <div className="mb-2 flex items-start justify-between gap-2">
+            <div className="flex flex-wrap gap-1.5">
+              <Badge tone="neutral">{s.sport}</Badge>
               {statusBadge(s.status)}
             </div>
-            <span className="font-mono font-bold text-xs shrink-0">
+            <span className="shrink-0 font-mono text-meta font-bold">
               {s.netVotes > 0 ? "+" : ""}
               {s.netVotes} votes
             </span>
           </div>
-          <p className="font-heading font-bold text-sm leading-tight">
-            {s.question}
-          </p>
-          <div className="flex gap-3 text-[10px] text-muted-foreground mt-1.5">
+          <p className="font-heading text-body-sm font-bold">{s.question}</p>
+          <div className="mt-1.5 flex gap-3 text-meta text-muted-foreground">
             <span>{s.approveCount} approvals</span>
             <span>{s.rejectCount} rejections</span>
           </div>
-        </NeoCard>
+        </Card>
       ))}
     </div>
   );

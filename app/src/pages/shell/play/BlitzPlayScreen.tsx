@@ -1,55 +1,42 @@
 /**
  * Blitz (solo) on the v2 shell — the same centered-column "prototype layout" as
- * QuizPlayScreen, with Blitz's signature 60s countdown as the hero of the
- * answering column. The ambient rail stays light: score + a depleting timer bar
- * that mirrors the server clock. Grading, scoring, and the clock are fully
- * server-authoritative via `useSoloBlitz` (no correctness logic on this screen).
+ * QuizPlayScreen, with the 60s countdown on top of the answering column. It is
+ * the run's ONE clock, drawn with the shared StageTimer (via BlitzClock): the
+ * header carries the score, and no second timer bar repeats the countdown. Grading, scoring, and the
+ * clock are fully server-authoritative via `useSoloBlitz` (no correctness
+ * logic on this screen).
+ *
+ * The run ends in place on the shared ResultScreen (VerveQ ONE P3.1); "Play
+ * again" mounts a fresh run, which starts a fresh server session.
  */
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { Check, X } from "lucide-react";
-import { NeoCard } from "@/components/neo/NeoCard";
+import { Zap } from "lucide-react";
+import { Card } from "@/components/ui/card";
 import { BlitzClock } from "@/components/BlitzClock";
 import { QuestionImage } from "@/components/QuestionImage";
 import { ImageZoomModal } from "@/components/ImageZoomModal";
 import { PlayStage } from "@/components/shell/play/PlayStage";
-import { MetricsPanel, AmbientStrip } from "@/components/shell/play/ambient";
+import { StageScore } from "@/components/shell/play/StageParts";
+import { AnswerOption } from "@/components/shell/play/AnswerOption";
+import { answerState } from "@/components/shell/play/answerState";
+import { MetricsPanel } from "@/components/shell/play/ambient";
+import { BlitzResult, type BlitzResultData } from "@/components/shell/play/result/ModeResults";
 import { SHELL_ROUTES } from "@/lib/shellRoutes";
 import { useSoloBlitz } from "@/hooks/useSoloBlitz";
 
 const LETTERS = ["A", "B", "C", "D"];
-// The Blitz window is 60s; the ambient bar shows the live fraction remaining.
-const BLITZ_WINDOW_SECONDS = 60;
 
-export default function BlitzPlayScreen() {
+function BlitzRun({ onFinish, onExit }: { onFinish: (result: BlitzResultData) => void; onExit: () => void }) {
   const { t } = useTranslation("play");
-  const navigate = useNavigate();
-  const b = useSoloBlitz();
-  const [remaining, setRemaining] = useState(BLITZ_WINDOW_SECONDS);
-
-  const optionStyle = (idx: number) => {
-    // Before the verdict lands, show the picked option as "selected" (primary),
-    // never red — grading colours only apply once the server answer is known.
-    if (!b.revealed)
-      return b.selected === idx
-        ? "bg-primary text-primary-foreground"
-        : "bg-card text-card-foreground";
-    if (idx === b.correctIdx) return "bg-success text-success-foreground";
-    if (idx === b.selected) return "bg-destructive text-destructive-foreground";
-    return "bg-muted text-muted-foreground opacity-50";
-  };
-
-  const metrics = {
-    score: b.score,
-    timeFraction: Math.max(0, Math.min(1, remaining / BLITZ_WINDOW_SECONDS)),
-  };
+  const b = useSoloBlitz(onFinish);
 
   if (b.loading) {
     return (
-      <PlayStage title="Blitz" onExit={() => navigate(SHELL_ROUTES.home)}>
+      <PlayStage mode="blitz" title="Blitz" onExit={onExit}>
         <div className="flex items-center justify-center py-16">
-          <p className="font-heading font-bold text-lg animate-pulse">
+          <p className="font-heading font-bold text-title-sm animate-pulse motion-reduce:animate-none">
             {t("blitz.starting")}
           </p>
         </div>
@@ -59,24 +46,26 @@ export default function BlitzPlayScreen() {
 
   return (
     <PlayStage
+      mode="blitz"
       title="Blitz"
       subtitle={t("blitz.subtitle")}
-      onExit={() => navigate(SHELL_ROUTES.home)}
+      onExit={onExit}
       exitLabel={t("blitz.quit")}
-      strip={<AmbientStrip metrics={metrics} />}
-      right={<MetricsPanel metrics={metrics} />}
+      score={
+        <StageScore
+          icon={<Zap size={16} strokeWidth={3} />}
+          value={b.score}
+          label={t("stage.scoreLabel", { value: b.score })}
+        />
+      }
+      right={<MetricsPanel metrics={{ score: b.score }} />}
     >
       <div className={`flex flex-col ${b.shaking ? "animate-shake" : ""}`}>
         <div className="mb-3">
-          <BlitzClock
-            endTimeMs={b.endTimeMs}
-            onExpired={b.onExpired}
-            penaltyFlash={b.penaltyFlash}
-            onTick={setRemaining}
-          />
+          <BlitzClock endTimeMs={b.endTimeMs} onExpired={b.onExpired} penaltyFlash={b.penaltyFlash} />
         </div>
 
-        <NeoCard shadow="lg" className="mb-3">
+        <Card elevation="lifted" className="mb-3">
           {b.question?.imageUrl && (
             <div className="mb-3">
               <QuestionImage
@@ -86,31 +75,24 @@ export default function BlitzPlayScreen() {
               />
             </div>
           )}
-          <p className="font-heading font-bold text-xl leading-tight">
+          <p className="font-heading font-bold text-title-sm leading-tight">
             {b.question?.question}
           </p>
-        </NeoCard>
+        </Card>
 
-        <div className="space-y-2">
+        <div className="space-y-2" aria-live="polite">
           {b.question?.options.map((opt, idx) => (
-            <button
+            <AnswerOption
               key={idx}
-              type="button"
+              letter={LETTERS[idx]}
+              label={opt}
+              // Before the verdict lands the pick is "pending" — flat and
+              // neutral, never red and never a lit button; grading colours
+              // only apply once the server answer is known.
+              state={answerState(idx, b)}
               disabled={b.revealed || b.checking}
               onClick={() => b.onOption(idx)}
-              className={`w-full neo-border neo-shadow rounded-lg p-4 flex items-center gap-3 text-left transition-all cursor-pointer ${!b.revealed && !b.checking ? "active:neo-shadow-pressed" : ""} ${optionStyle(idx)}`}
-            >
-              <span className="neo-border rounded-full w-8 h-8 flex items-center justify-center font-heading font-bold text-xs bg-background text-foreground shrink-0">
-                {b.revealed && idx === b.correctIdx ? (
-                  <Check size={16} strokeWidth={3} />
-                ) : b.revealed && idx === b.selected ? (
-                  <X size={16} strokeWidth={3} />
-                ) : (
-                  LETTERS[idx]
-                )}
-              </span>
-              <span className="font-heading font-bold text-sm">{opt}</span>
-            </button>
+            />
           ))}
         </div>
       </div>
@@ -124,4 +106,25 @@ export default function BlitzPlayScreen() {
       )}
     </PlayStage>
   );
+}
+
+export default function BlitzPlayScreen() {
+  const navigate = useNavigate();
+  const [result, setResult] = useState<BlitzResultData | null>(null);
+  const [run, setRun] = useState(0);
+  const exit = () => navigate(SHELL_ROUTES.home);
+
+  if (result) {
+    return (
+      <BlitzResult
+        result={result}
+        onExit={exit}
+        onPlayAgain={() => {
+          setResult(null);
+          setRun((n) => n + 1);
+        }}
+      />
+    );
+  }
+  return <BlitzRun key={run} onFinish={setResult} onExit={exit} />;
 }

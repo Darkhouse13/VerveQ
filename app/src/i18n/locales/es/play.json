@@ -59,6 +59,9 @@
     "tabSwitchWarning": "No cambies de pestaña — tu racha terminará",
     "higher": "Más",
     "lower": "Menos",
+    "correct": "Correcto",
+    "wrong": "Incorrecto",
+    "shareText": "Hice {{score}} puntos en Más o Menos de VerveQ ⚽\n¿Puedes superarme?",
     "checking": "Comprobando...",
     "gameOver": "¡Fin del juego!",
     "finalScore": "Puntuación final",
@@ -96,6 +99,8 @@
     "surnameAccepted": "APELLIDO ACEPTADO: {{answer}}",
     "hiddenAnswerFound": "¡RESPUESTA OCULTA ENCONTRADA!",
     "plusOneLife": "+1 VIDA",
+    "livesDetail_one": "{{count}} vida",
+    "livesDetail_other": "{{count}} vidas",
     "failedToSubmit": "No se pudo enviar la respuesta",
     "failedToGetHelp": "No se pudo obtener ayuda",
     "failedToSkip": "No se pudo saltar",
@@ -168,6 +173,12 @@
     "ladderModeMeta": "10 trayectorias · 30 s cada una",
     "advertisedBadge": "De nuestros reels",
     "changeMode": "Cambiar modo",
+    "quitLadder": {
+      "title": "¿Dejar el reto?",
+      "body": "Vas por la trayectoria {{round}} de 10. Esta partida termina aquí.",
+      "confirm": "Salir",
+      "cancel": "Seguir jugando"
+    },
     "loadingLadder": "Cargando trayectoria {{round}} de 10…",
     "ladderRoundSubtitle": "Reto de 10 Trayectorias · {{round}}/{{total}}",
     "ladderProgressLabel": "Progreso del reto de trayectorias",
@@ -266,6 +277,13 @@
     "onboardSubmit": "Únete a la arena",
     "joinFailed": "No se pudo unir a esta arena. Comprueba el código e inténtalo de nuevo.",
     "leaveFailed": "No se pudo salir",
+    "quit": "Salir",
+    "quitConfirm": {
+      "title": "¿Salir de esta arena?",
+      "body": "Abandonarás la partida en curso.",
+      "confirm": "Salir",
+      "cancel": "Seguir jugando"
+    },
     "rematchReady": "Sala de revancha lista",
     "rematchFailed": "La revancha falló",
     "linkCopied": "Enlace copiado",
@@ -308,6 +326,20 @@
   },
   "grid": {
     "leave": "Salir",
+    "quit": "Salir",
+    "quitConfirm": {
+      "title": "¿Dejar esta cuadrícula?",
+      "body": "Tus elecciones hasta ahora no contarán.",
+      "confirm": "Salir",
+      "cancel": "Seguir jugando"
+    },
+    "verdictRight": "{{name}} vale",
+    "verdictWrong": "{{name}} no encaja",
+    "guessesLabel_one": "Queda {{count}} intento",
+    "guessesLabel_other": "Quedan {{count}} intentos",
+    "pointsTotal": "{{points}} puntos",
+    "seeResult": "Ver resultado",
+    "shareText": "Completé {{correct}}/{{total}} en la VerveGrid de VerveQ ⚽ ({{points}} puntos)\n{{board}}\n¿Puedes superarme?",
     "missed": "FALLADO",
     "lockedIn": "bloqueado",
     "tapToPick": "Toca para elegir",
@@ -319,7 +351,7 @@
     "cells": "Casillas",
     "newGrid": "Nueva cuadrícula",
     "home": "Inicio",
-    "reviewBoard": "Revisar tablero ↑",
+    "reviewBoard": "Revisar tablero",
     "noAnswersRevealed": "Las casillas falladas quedan ocultas — no se revelan respuestas.",
     "fillThisSquare": "Rellena esta casilla",
     "close": "Cerrar",
@@ -576,6 +608,8 @@
     "nextToday": "Siguiente hoy",
     "answers": "Tus respuestas",
     "squares": "{{score}} de {{total}} acertadas",
+    "shareCopied": "Resultado copiado. ¡Envíaselo a un amigo!",
+    "shareFailed": "No se pudo compartir el resultado. Inténtalo de nuevo.",
     "next": {
       "older": {
         "title": "¿Quién es mayor?",
@@ -588,7 +622,58 @@
       "home": {
         "title": "Más juegos hoy",
         "body": "El resto de hoy está en Jugar."
+      },
+      "quiz": {
+        "title": "Reto diario",
+        "body": "10 preguntas. Un intento al día."
+      },
+      "survival": {
+        "title": "Survival diario",
+        "body": "Las mismas 10 rondas para todos."
       }
+    },
+    "home": "Inicio",
+    "shareCopied": "Resultado copiado. Pégalo donde quieras.",
+    "shareFailed": "No se pudo copiar tu resultado.",
+    "playAgain": "Jugar otra vez",
+    "details": "Detalles",
+    "right": "Acierto",
+    "wrong": "Fallo",
+    "question": "Pregunta {{n}}",
+    "seconds": "{{value}} s",
+    "pts": "{{score}} pts",
+    "pointsCaption": "Puntos",
+    "nextDailyIn": "Siguiente diario en {{time}}",
+    "rating": {
+      "up": "Rating +{{change}}",
+      "down": "Rating −{{change}}",
+      "same": "Rating sin cambios",
+      "now": "ahora {{elo}}"
+    },
+    "eyebrow": {
+      "survival": "Fin de la partida",
+      "dailyQuiz": "Reto diario · {{date}}",
+      "dailyQuizWorldCup": "Diario del Mundial · {{date}}",
+      "dailySurvival": "Survival diario · {{date}}",
+      "blitz": "60 segundos"
+    },
+    "line": {
+      "survival": "{{correct}} aciertos · ronda {{round}} alcanzada",
+      "blitz": "{{correct}} aciertos · {{wrong}} fallos",
+      "forfeited": "Partida perdida"
+    },
+    "stat": {
+      "correct": "Aciertos",
+      "wrong": "Fallos",
+      "rounds": "Ronda alcanzada",
+      "accuracy": "Precisión",
+      "avgTime": "Tiempo medio",
+      "topic": "Tema"
+    },
+    "shareText": {
+      "quiz": "VerveQ Quiz — {{correct}}/{{total}} · {{score}} pts\n{{emoji}}\n¿Crees que me ganas? {{url}}",
+      "survival": "VerveQ Supervivencia — {{score}} pts · ronda {{round}} alcanzada\n¿Crees que me ganas? {{url}}",
+      "blitz": "VerveQ Blitz — {{score}} pts en 60 segundos ({{correct}} aciertos)\n¿Crees que me ganas? {{url}}"
     }
   }
 }

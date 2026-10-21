@@ -18,16 +18,18 @@ export interface DifficultyStyle {
   textClass: string;
 }
 
+// Neutral token surfaces: the Grid accent marks the rare tier; green and red
+// stay reserved for right and wrong.
 const STYLES: Record<GridCellDifficulty, DifficultyStyle> = {
   rare: {
     label: "RARE",
-    badgeClass: "bg-hot-pink text-hot-pink-foreground border-border",
-    textClass: "text-hot-pink",
+    badgeClass: "bg-mode-accent text-ink border-border",
+    textClass: "text-mode-accent",
   },
   uncommon: {
     label: "UNCOMMON",
-    badgeClass: "bg-electric-blue text-electric-blue-foreground border-border",
-    textClass: "text-electric-blue",
+    badgeClass: "bg-card text-card-foreground border-border",
+    textClass: "text-foreground",
   },
   common: {
     label: "COMMON",

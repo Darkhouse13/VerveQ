@@ -65,9 +65,8 @@ describe("knowledge expansion contract", () => {
   it("uses Topic language on broad quiz surfaces while preserving sport as the internal key", () => {
     const challenge = readFileSync("src/pages/ChallengeScreen.tsx", "utf8");
     const createDuel = readFileSync("src/pages/challenge/CreateDuelModal.tsx", "utf8");
-    const result = readFileSync("src/pages/ResultScreen.tsx", "utf8");
-    const dailyResult = readFileSync("src/pages/DailyResultScreen.tsx", "utf8");
-    const blitzResult = readFileSync("src/pages/BlitzResultScreen.tsx", "utf8");
+    const results = readFileSync("src/components/shell/play/result/ModeResults.tsx", "utf8");
+    const play = JSON.parse(readFileSync("src/i18n/locales/en/play.json", "utf8"));
     const profile = readFileSync("src/pages/shell/ShellProfileScreen.tsx", "utf8");
     const screens = JSON.parse(readFileSync("src/i18n/locales/en/screens.json", "utf8"));
 
@@ -84,12 +83,10 @@ describe("knowledge expansion contract", () => {
     // i18n: the "Topic" stat labels on the result surfaces moved to locale keys.
     // The "Topic" wording IS the contract here, so assert the en-locale VALUE
     // says "Topic" (not Sport) and that the internal sport key is still the value.
-    expect(result).toContain('{ label: t("result.statTopic"), value: state.sport');
-    expect(screens.result.statTopic).toBe("Topic");
-    expect(dailyResult).toContain('{ label: t("dailyResult.statTopic"), value: state.sport');
-    expect(screens.dailyResult.statTopic).toBe("Topic");
-    expect(blitzResult).toContain('{ label: t("blitzResult.statTopic"), value: state.sport');
-    expect(screens.blitzResult.statTopic).toBe("Topic");
+    // Since VerveQ ONE P3.1 every solo result shows it in its details rows,
+    // from the internal sport key.
+    expect(results.match(/\[t\("result\.stat\.topic"\), topicLabel\(result\.sport\)\]/g)?.length).toBe(4);
+    expect(play.result.stat.topic).toBe("Topic");
     expect(profile).toContain('t("profile.stats.favTopic")');
 
     // Keep existing Convex/API compatibility for now; this is a user-facing rename, not a schema migration.

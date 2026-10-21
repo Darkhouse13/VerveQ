@@ -223,14 +223,14 @@ test.describe("FR-1B anonymous-first", () => {
     // score rather than a zero.
     const deadline = Date.now() + 70_000;
     while (Date.now() < deadline) {
-      if (await page.getByText(/blitz score/i).count()) break;
+      if (await page.getByTestId("blitz-result").count()) break;
       const choice = page
         .locator('button:has(span:text-matches("^[ABCD]$"))')
         .first();
       if (await choice.count()) await choice.click({ timeout: 2_000 }).catch(() => {});
       await page.waitForTimeout(900);
     }
-    await expect(page.getByText(/blitz score/i).first()).toBeVisible({
+    await expect(page.getByTestId("blitz-result")).toBeVisible({
       timeout: 60_000,
     });
 
@@ -240,9 +240,11 @@ test.describe("FR-1B anonymous-first", () => {
       page.getByText(/you're not on the board yet/i).first(),
     ).toBeVisible();
 
+    // One quiet line until asked (VerveQ ONE P3.1); the form opens in place.
+    await page.getByTestId("claim-name-open").click();
     const name = freshName("fr1b");
     await page.getByLabel("Username").fill(name);
-    await page.getByRole("button", { name: /claim my name/i }).click();
+    await page.getByTestId("claim-name-form").getByRole("button", { name: /claim my name/i }).click();
 
     await expect(
       page.getByText(new RegExp(`on the board as @${name}`, "i")),

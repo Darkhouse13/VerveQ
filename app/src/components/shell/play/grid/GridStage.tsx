@@ -1,35 +1,40 @@
 /**
- * GridStage — the bespoke VerveGrid in-game layout for the v2 shell.
+ * GridStage — VerveGrid in play, on the shared StageFrame (VerveQ ONE P3.2).
  *
- * Unlike the shared `PlayStage` (a phone-width answering column flanked by
- * rails), the grid is its own thing: the 3×3 board is the wide centerpiece.
+ * The 3×3 board is the answering centerpiece and owns the prompt (the row ×
+ * column criteria). The frame carries the canonical pieces: Quit (confirm
+ * once a pick would be lost), the points as ☆ score top right, and ONE
+ * progress row — the nine guesses, a verdict dot per pick. Under the board a
+ * fixed verdict row says whether the last pick counts; a wrong pick is a game
+ * event, not a toast. On desktop the rails stay ambient (your-run stats left,
+ * your picks right) and content-blind by contract (answer-leak guard).
  *
- *  - Desktop: `fixed inset-0`, never scrolls. A 3-column frame — your-run stats +
- *    how-it-works (left), the board (center), your pick log (right).
- *  - Mobile: a compact HUD strip above the board, which takes the focus.
- *
- * The board owns the prompt (the row × column criteria). The rails are ambient
- * (status + your picks) and content-blind by contract (answer-leak guard).
+ * At game over the board gives way to the shared ResultScreen; "Review board"
+ * brings the final board back (missed cells stay hidden).
  */
 import { useEffect, useState, type ReactNode } from "react";
 import { useTranslation } from "react-i18next";
-import { LogOut } from "lucide-react";
-import { GridRunPanel, GridPickLogPanel, GridStrip } from "@/components/shell/play/ambient/grid";
+import { Star, Trophy } from "lucide-react";
+import { notify } from "@/lib/notify";
+import { buildGridSharePayload, gridEmojiBoard, shareResult } from "@/lib/gameShare";
+import { Button } from "@/components/ui/button";
+import { PlayStage } from "@/components/shell/play/PlayStage";
+import { StageScore, StepDots } from "@/components/shell/play/StageParts";
+import { RevealedAnswer, VerdictBadge, VerdictSlot } from "@/components/shell/play/StageSignals";
+import { GridRunPanel, GridPickLogPanel } from "@/components/shell/play/ambient/grid";
 import type { GridRunStats, GridPickItem } from "@/components/shell/play/ambient/grid";
 import { GridBoard } from "./GridBoard";
 import { GridSearchSheet } from "./GridSearchSheet";
-import { GridEndOverlay } from "./GridEndOverlay";
+import { GridResult } from "./GridResult";
 import type { VerveGridViewModel } from "@/hooks/useVerveGrid";
 
 interface GridStageProps {
   vm: VerveGridViewModel;
   subtitle?: string;
   onExit: () => void;
-  onHome: () => void;
   /**
-   * Optional pre-board slot, above the HUD strip on mobile and above the board
-   * on desktop. Used for the pre-run tier picker; the stage stays presentation
-   * -only and does not know what the node means.
+   * Optional pre-board slot above the board. Used for the pre-run tier picker;
+   * the stage stays presentation-only and does not know what the node means.
    */
   header?: ReactNode;
 }
@@ -49,7 +54,7 @@ function useIsCompact(): boolean {
   return compact;
 }
 
-export function GridStage({ vm, subtitle, onExit, onHome, header }: GridStageProps) {
+export function GridStage({ vm, subtitle, onExit, header }: GridStageProps) {
   const { t } = useTranslation("play");
   const isCompact = useIsCompact();
   const stats: GridRunStats = {
@@ -61,53 +66,85 @@ export function GridStage({ vm, subtitle, onExit, onHome, header }: GridStagePro
   };
   const picks: GridPickItem[] = vm.picks;
 
+  // "Review board" hides the result to show the final board; a new result
+  // (a new grid finished) brings it back.
+  const [reviewing, setReviewing] = useState(false);
+  useEffect(() => {
+    setReviewing(false);
+  }, [vm.gameOver, vm.allSolved, vm.correctCount, vm.points]);
+
+  const cellVerdicts = vm.cells.map((c) => c.correct);
+  const totalGuesses = vm.guessResults.length + vm.remainingGuesses;
+
+  const handleShare = async () => {
+    const text = t("grid.shareText", {
+      correct: vm.correctCount,
+      total: vm.totalCells,
+      points: vm.points,
+      board: gridEmojiBoard(cellVerdicts),
+    });
+    const outcome = await shareResult(buildGridSharePayload(text));
+    if (outcome === "copied") notify.success(t("result.shareCopied"));
+    if (outcome === "failed") notify.error(t("result.shareFailed"));
+  };
+
+  // A locked-in pick is progress a quit throws away.
+  const exitConfirm =
+    !vm.gameOver && vm.guessResults.length > 0
+      ? {
+          title: t("grid.quitConfirm.title"),
+          description: t("grid.quitConfirm.body"),
+          confirmLabel: t("grid.quitConfirm.confirm"),
+          cancelLabel: t("grid.quitConfirm.cancel"),
+        }
+      : undefined;
+
+  const showResult = vm.gameOver && !reviewing;
+  const verdict = vm.lastVerdict;
+
   return (
-    <div className="w-full bg-background text-foreground shell-canvas-bg flex flex-col fixed inset-0 z-40 h-[100dvh] overflow-hidden safe-pb">
-      {/* broadcast bar. Unlike the other frames the top inset goes on the
-          header rather than the frame: padding the header carries its own fill
-          up under the iOS status bar. On the ink ground the bar is the ground
-          itself with a rule under it, like every other play header — it was
-          bg-foreground, which is cream on ink. */}
-      <header className="shrink-0 w-full bg-background text-foreground border-b-2 border-border safe-pt">
-        <div className="flex items-center gap-3 px-4 py-2.5 md:px-6">
-          <button
-            type="button"
-            onClick={onExit}
-            className="neo-border rounded-lg px-2.5 py-2 bg-card text-card-foreground shrink-0 cursor-pointer inline-flex items-center gap-1.5"
-          >
-            <LogOut size={14} strokeWidth={3} />
-            <span className="text-[10px] font-heading font-bold uppercase">{t("grid.leave")}</span>
-          </button>
-          <span className="neo-border rounded-full bg-electric-blue text-electric-blue-foreground px-2.5 py-1 font-heading font-bold uppercase tracking-wide text-[10px] inline-flex items-center gap-1 shrink-0">
-            ▦ VerveGrid
-          </span>
-          {subtitle && (
-            <span className="hidden md:inline font-mono text-xs text-muted-foreground truncate">{subtitle}</span>
-          )}
-        </div>
-      </header>
-
-      {/* desktop: 3-col never-scroll | mobile: strip + board */}
-      {/* Large desktop: bound the stage to a laptop-equivalent frame and center
-          it, so the board scales like on a laptop instead of ballooning and the
-          rails stay near the board on ultra-wide screens. */}
-      <main className="flex-1 min-h-0 w-full md:grid md:grid-cols-[17rem_1fr_17rem] md:gap-5 md:p-5 flex flex-col xl:max-h-[50rem] xl:my-auto min-[1440px]:max-w-7xl min-[1440px]:mx-auto">
-        {/* left rail (desktop only) */}
-        <aside className="hidden md:block md:overflow-y-auto md:min-h-0 scrollbar-none">
-          <GridRunPanel stats={stats} />
-        </aside>
-
-        {/* mobile HUD strip */}
-        <div className="md:hidden px-3 pt-3">
-          {header}
-          <GridStrip stats={stats} />
-        </div>
-
-        {/* board centerpiece — top-aligned on mobile so the board sits directly
-            under the HUD strip (no mid-screen gap); centered on desktop. */}
-        <div className="flex-1 min-h-0 flex flex-col items-stretch md:items-stretch justify-start md:justify-center p-3 md:p-0 overflow-hidden">
-          {header && <div className="hidden md:block shrink-0">{header}</div>}
-          <div className="w-full min-w-0 max-w-[32rem] md:max-w-none md:flex-1 md:min-h-0 mx-auto grid place-items-center">
+    <PlayStage
+      mode="grid"
+      title="VerveGrid"
+      subtitle={subtitle}
+      onExit={onExit}
+      exitLabel={t("grid.quit")}
+      exitConfirm={exitConfirm}
+      score={
+        <StageScore
+          icon={<Star size={16} strokeWidth={3} />}
+          value={vm.points}
+          label={t("stage.scoreLabel", { value: vm.points })}
+        />
+      }
+      progress={
+        showResult ? undefined : (
+          <StepDots
+            total={Math.max(totalGuesses, vm.guessResults.length)}
+            results={vm.guessResults}
+            current={vm.guessResults.length}
+            label={t("grid.guessesLabel", { count: vm.remainingGuesses })}
+          />
+        )
+      }
+      left={<GridRunPanel stats={stats} />}
+      right={<GridPickLogPanel picks={picks} totalCells={vm.totalCells} />}
+    >
+      {showResult ? (
+        <GridResult
+          allSolved={vm.allSolved}
+          correctCount={vm.correctCount}
+          totalCells={vm.totalCells}
+          points={vm.points}
+          cells={cellVerdicts}
+          onShare={() => void handleShare()}
+          onNewGrid={vm.startGame}
+          onReview={() => setReviewing(true)}
+        />
+      ) : (
+        <div className="flex flex-col">
+          {header && <div className="shrink-0">{header}</div>}
+          <div className="w-full grid place-items-center">
             <GridBoard
               rows={vm.rows}
               cols={vm.cols}
@@ -118,13 +155,30 @@ export function GridStage({ vm, subtitle, onExit, onHome, header }: GridStagePro
               compact={isCompact}
             />
           </div>
-        </div>
 
-        {/* right rail (desktop only) */}
-        <aside className="hidden md:block md:min-h-0">
-          <GridPickLogPanel picks={picks} totalCells={vm.totalCells} />
-        </aside>
-      </main>
+          {/* The verdict row: did the last pick count? The answer pool never
+              reaches the client, so a wrong pick reveals nothing more. */}
+          <VerdictSlot className="mt-3" testId="grid-verdict">
+            {vm.gameOver ? (
+              <Button variant="secondary" size="md" onClick={() => setReviewing(false)} data-testid="grid-see-result">
+                <Trophy size={18} aria-hidden="true" />
+                {t("grid.seeResult")}
+              </Button>
+            ) : verdict ? (
+              <>
+                <VerdictBadge right={verdict.correct}>
+                  {verdict.correct
+                    ? t("grid.verdictRight", { name: verdict.name })
+                    : t("grid.verdictWrong", { name: verdict.name })}
+                </VerdictBadge>
+                {verdict.correct && verdict.points != null && (
+                  <RevealedAnswer className="font-mono text-body-sm">+{verdict.points}</RevealedAnswer>
+                )}
+              </>
+            ) : null}
+          </VerdictSlot>
+        </div>
+      )}
 
       <GridSearchSheet
         open={vm.searchOpen}
@@ -138,57 +192,6 @@ export function GridStage({ vm, subtitle, onExit, onHome, header }: GridStagePro
         onSelect={vm.selectPlayer}
         onClose={vm.closeSheet}
       />
-
-      {vm.gameOver && (
-        <GridEndOverlayGate
-          allSolved={vm.allSolved}
-          correctCount={vm.correctCount}
-          totalCells={vm.totalCells}
-          points={vm.points}
-          onNewGrid={vm.startGame}
-          onHome={onHome}
-        />
-      )}
-    </div>
-  );
-}
-
-/**
- * Local gate so "Review board" can dismiss the overlay to inspect the final
- * board (missed cells stay hidden) without ending the dismissed state on every
- * re-render. Kept inline to avoid leaking dismiss state into the hook.
- */
-function GridEndOverlayGate({
-  allSolved,
-  correctCount,
-  totalCells,
-  points,
-  onNewGrid,
-  onHome,
-}: {
-  allSolved: boolean;
-  correctCount: number;
-  totalCells: number;
-  points: number;
-  onNewGrid: () => void;
-  onHome: () => void;
-}) {
-  const [open, setOpen] = useState(true);
-  // Re-open whenever a new game-over result arrives.
-  useEffect(() => {
-    setOpen(true);
-  }, [allSolved, correctCount, points]);
-
-  if (!open) return null;
-  return (
-    <GridEndOverlay
-      allSolved={allSolved}
-      correctCount={correctCount}
-      totalCells={totalCells}
-      points={points}
-      onReview={() => setOpen(false)}
-      onNewGrid={onNewGrid}
-      onHome={onHome}
-    />
+    </PlayStage>
   );
 }

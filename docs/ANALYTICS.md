@@ -85,6 +85,24 @@ Two behaviours worth knowing:
   none; treat absence as a value. (The funnel's `exit_before_play` is the
   exception — it always carries one.)
 
+#### Solo results (Quiz, Survival, Daily Quiz, Daily Survival, Blitz)
+
+Since VerveQ ONE P3.1 (2026-10-22) these modes show their result **in place**
+on the mode's own route (`/v2/quiz`, `/v2/survival`, `/v2/daily`,
+`/v2/daily-survival`, `/v2/blitz`). The v1 pages `/results`, `/daily-results`
+and `/blitz-results` are redirects now, so **their `$pageview`s stop** — read
+finishes from `game_completed`, not from a result-page pageview.
+
+| Event | Fires when | Properties |
+| --- | --- | --- |
+| `result_share_pressed` | "Share result" is pressed on a solo result | `mode` (`quiz` \| `survival` \| `daily-quiz` \| `daily-survival` \| `blitz`), `score` |
+| `result_share_sent` | the native share resolves or the clipboard write succeeds (a dismissed share sheet sends nothing) | `mode`, `method` (`native` \| `clipboard`) |
+| `daily_next_today_clicked` | the "Next today" card is tapped (shared with the twin dailies) | `from` (the mode slug above, or `older` / `letters`), `to` (`older` \| `letters` \| `quiz` \| `survival` \| `home`) |
+
+Share links keep `ref=…_share`, which `entry_source` counts as `share-link`:
+`daily_share` (both dailies, unchanged), `blitz_share`, `quiz_share`,
+`survival_share`.
+
 ### Identity
 
 | Event | Fires when | Properties |

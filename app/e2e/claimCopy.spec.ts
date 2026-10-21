@@ -7,6 +7,9 @@
  * greps prove the strings; only a render proves the DAILY path actually
  * selects the no-board variant rather than falling through to the Blitz one.
  *
+ * Since VerveQ ONE P3.1 the result renders in place (no /daily-results hop)
+ * and the prompt is one quiet line until "Claim my name" is tapped.
+ *
  * Run with the flag on, against DEV:
  *   VITE_ANONYMOUS_FIRST_ENABLED=true \
  *     npx playwright test e2e/claimCopy.spec.ts
@@ -27,10 +30,8 @@ const BOARD_WORDS =
   /board|leaderboard|duel|arena|tabla|clasific|classement|duelo|arène/i;
 
 async function assertNoBoardPromise(page: Page, label: string) {
-  const card = page
-    .locator("div")
-    .filter({ hasText: /claim my name/i })
-    .last();
+  await page.getByTestId("claim-name-open").click();
+  const card = page.getByTestId("claim-name-form");
   const copy = await card.innerText();
   // Scope to the prompt card: the surrounding result screen legitimately
   // contains other words, and asserting on the whole body would be noise.
@@ -46,8 +47,8 @@ async function assertNoBoardPromise(page: Page, label: string) {
   expect(promptCopy).toContain(
     "Claim a name and your streak and history stick with you.",
   );
-  expect(promptCopy).toContain("CLAIM MY NAME");
-  expect(promptCopy).toContain("keep playing");
+  expect(promptCopy).toMatch(/claim my name/i);
+  expect(promptCopy).toMatch(/keep playing/i);
 }
 
 test("daily quiz: claim prompt names no board", async ({ page }) => {
@@ -59,8 +60,7 @@ test("daily quiz: claim prompt names no board", async ({ page }) => {
   // Play the 10-question daily out. Answering is the only way to reach the
   // result screen the prompt lives on.
   for (let i = 0; i < 12; i++) {
-    if (await page.getByText(/daily challenge complete/i).count()) break;
-    if (page.url().includes("/daily-results")) break;
+    if (await page.getByTestId("daily-quiz-result").count()) break;
     const choice = page
       .locator('button:has(span:text-matches("^[ABCD]$"))')
       .first();
@@ -72,7 +72,7 @@ test("daily quiz: claim prompt names no board", async ({ page }) => {
     await page.waitForTimeout(2_200);
   }
 
-  await expect(page).toHaveURL(/\/daily-results/, { timeout: 60_000 });
+  await expect(page.getByTestId("daily-quiz-result")).toBeVisible({ timeout: 60_000 });
   await expect(page.getByText(/claim my name/i)).toBeVisible({
     timeout: 30_000,
   });
@@ -96,14 +96,15 @@ test("daily survival: claim prompt names no board", async ({ page }) => {
   // completed daily attempt — exactly the state the prompt is written for —
   // and it gets there without depending on knowing any answers.
   await page.getByRole("button", { name: /cash out/i }).click();
-  for (let i = 0; i < 20 && !page.url().includes("/daily-results"); i++) {
+  const result = page.getByTestId("daily-survival-result");
+  for (let i = 0; i < 20 && !(await result.count()); i++) {
     // Some builds confirm the cash-out; accept either shape.
     const confirm = page.getByRole("button", { name: /cash out|confirm|yes/i });
     if (await confirm.count()) await confirm.last().click().catch(() => {});
     await page.waitForTimeout(1_500);
   }
 
-  await expect(page).toHaveURL(/\/daily-results/, { timeout: 60_000 });
+  await expect(result).toBeVisible({ timeout: 60_000 });
   await expect(page.getByText(/claim my name/i)).toBeVisible({
     timeout: 30_000,
   });
