@@ -12,9 +12,60 @@ exports[`HomeDrawCard — no layout shift for non-draw users > flag off: Home re
         class="mx-auto w-full max-w-6xl flex items-center gap-2 px-8 py-3"
       >
         <button
-          class="font-heading font-bold text-lg tracking-tight mr-4 cursor-pointer"
+          class="mr-4 cursor-pointer rounded-lg"
         >
-          VerveQ
+          <span
+            class="inline-flex items-center gap-2.5"
+          >
+            <svg
+              aria-hidden="true"
+              class="shrink-0 w-10 h-10"
+              focusable="false"
+              viewBox="0 0 64 64"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <g
+                transform="rotate(-4 32 32)"
+              >
+                <rect
+                  class="fill-ink"
+                  height="56"
+                  rx="12"
+                  width="56"
+                  x="4"
+                  y="4"
+                />
+                <rect
+                  class="fill-none stroke-border"
+                  height="54.5"
+                  rx="11.25"
+                  stroke-opacity="0.2"
+                  stroke-width="1.5"
+                  width="54.5"
+                  x="4.75"
+                  y="4.75"
+                />
+                <g
+                  class="fill-lime"
+                  transform="translate(12.192 42.2) scale(0.032)"
+                >
+                  <path
+                    d="M196 0 18 -700H154L302 -85H316L464 -700H600L422 0Z"
+                    transform="translate(0 0)"
+                  />
+                  <path
+                    d="M338 14Q206 14 128 -58.5Q50 -131 50 -266V-434Q50 -569 128 -641.5Q206 -714 338 -714Q470 -714 548 -641.5Q626 -569 626 -434V-266Q626 -131 548 -58.5Q470 14 338 14ZM338 -104Q412 -104 453 -147Q494 -190 494 -262V-438Q494 -510 453 -553Q412 -596 338 -596Q265 -596 223.5 -553Q182 -510 182 -438V-262Q182 -190 223.5 -147Q265 -104 338 -104ZM384 180Q335 180 304.5 149.5Q274 119 274 68V0H402V48Q402 78 430 78H489V180Z"
+                    transform="translate(594 0)"
+                  />
+                </g>
+              </g>
+            </svg>
+            <span
+              class="font-mono font-bold uppercase tracking-brand whitespace-nowrap -mr-[0.18em] leading-none text-meta"
+            >
+              VerveQ
+            </span>
+          </span>
         </button>
         <div
           class="flex items-center gap-1"
@@ -178,28 +229,60 @@ exports[`HomeDrawCard — no layout shift for non-draw users > flag off: Home re
           class="min-h-full md:min-h-0 flex flex-col"
         >
           <div
-            class="flex items-center justify-between pt-4 pb-3 md:pt-5 md:pb-4 shrink-0"
+            class="flex items-center justify-between md:justify-end pt-4 pb-3 md:pt-5 md:pb-4 shrink-0"
           >
-            <div
-              class="flex items-center gap-2.5"
+            <span
+              class="inline-flex items-center gap-2.5 md:hidden"
             >
-              <div
+              <svg
                 aria-hidden="true"
-                class="neo-border w-8 h-8 md:w-10 md:h-10 rounded-lg bg-foreground text-background grid place-items-center font-heading font-black text-lg md:text-xl -rotate-[4deg]"
+                class="shrink-0 w-10 h-10"
+                focusable="false"
+                viewBox="0 0 64 64"
+                xmlns="http://www.w3.org/2000/svg"
               >
-                V
-              </div>
-              <span
-                class="font-heading font-black text-xl md:text-2xl tracking-tight"
-              >
-                Verve
-                <span
-                  class="text-primary"
+                <g
+                  transform="rotate(-4 32 32)"
                 >
-                  Q
-                </span>
+                  <rect
+                    class="fill-ink"
+                    height="56"
+                    rx="12"
+                    width="56"
+                    x="4"
+                    y="4"
+                  />
+                  <rect
+                    class="fill-none stroke-border"
+                    height="54.5"
+                    rx="11.25"
+                    stroke-opacity="0.2"
+                    stroke-width="1.5"
+                    width="54.5"
+                    x="4.75"
+                    y="4.75"
+                  />
+                  <g
+                    class="fill-lime"
+                    transform="translate(12.192 42.2) scale(0.032)"
+                  >
+                    <path
+                      d="M196 0 18 -700H154L302 -85H316L464 -700H600L422 0Z"
+                      transform="translate(0 0)"
+                    />
+                    <path
+                      d="M338 14Q206 14 128 -58.5Q50 -131 50 -266V-434Q50 -569 128 -641.5Q206 -714 338 -714Q470 -714 548 -641.5Q626 -569 626 -434V-266Q626 -131 548 -58.5Q470 14 338 14ZM338 -104Q412 -104 453 -147Q494 -190 494 -262V-438Q494 -510 453 -553Q412 -596 338 -596Q265 -596 223.5 -553Q182 -510 182 -438V-262Q182 -190 223.5 -147Q265 -104 338 -104ZM384 180Q335 180 304.5 149.5Q274 119 274 68V0H402V48Q402 78 430 78H489V180Z"
+                      transform="translate(594 0)"
+                    />
+                  </g>
+                </g>
+              </svg>
+              <span
+                class="font-mono font-bold uppercase tracking-brand whitespace-nowrap -mr-[0.18em] leading-none text-meta"
+              >
+                VerveQ
               </span>
-            </div>
+            </span>
             <div
               class="flex items-center gap-2"
             >

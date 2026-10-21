@@ -1,4 +1,4 @@
-import { NeoLogo } from "@/components/neo/NeoLogo";
+import { BrandMark } from "@/components/ui/BrandMark";
 import { NeoButton } from "@/components/neo/NeoButton";
 import { NeoInput } from "@/components/neo/NeoInput";
 import { useNavigate, useSearchParams } from "react-router-dom";
@@ -222,7 +222,7 @@ export default function LoginScreen() {
   if (authLoading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
-        <NeoLogo size="lg" />
+        <BrandMark variant="mark" size="lg" />
       </div>
     );
   }
@@ -235,10 +235,12 @@ export default function LoginScreen() {
   return (
     <div className="min-h-screen bg-background flex flex-col items-center justify-center px-6 py-12">
       <div className="flex flex-col items-center gap-6 w-full max-w-sm animate-slide-up">
-        <NeoLogo size="lg" />
+        <BrandMark variant="mark" size="lg" />
         <div className="text-center">
-          <h1 className="text-4xl font-heading font-bold tracking-tight">VerveQ</h1>
-          <p className="text-muted-foreground font-heading text-lg mt-1">
+          <h1>
+            <BrandMark variant="wordmark" size="lg" />
+          </h1>
+          <p className="text-muted-foreground font-heading text-lg mt-2">
             Prove Your Sports IQ
           </p>
         </div>

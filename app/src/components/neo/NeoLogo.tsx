@@ -1,4 +1,4 @@
-import { cn } from "@/lib/utils";
+import { BrandMark } from "@/components/ui/BrandMark";
 
 interface NeoLogoProps {
   size?: "sm" | "md" | "lg";
@@ -6,21 +6,16 @@ interface NeoLogoProps {
 }
 
 const sizeMap = {
-  sm: "w-12 h-12",
-  md: "w-20 h-20",
-  lg: "w-28 h-28",
-};
+  sm: "md",
+  md: "lg",
+  lg: "lg",
+} as const;
 
+/**
+ * @deprecated Use `<BrandMark />` from `@/components/ui/BrandMark`. Kept as a
+ * thin wrapper so old call sites still compile; it renders the brand mark,
+ * not the retired PNG disc.
+ */
 export function NeoLogo({ size = "md", className }: NeoLogoProps) {
-  return (
-    <img
-      src="/vq-logo.png"
-      alt="VerveQ"
-      className={cn(
-        "neo-border neo-shadow-lg rounded-full object-cover",
-        sizeMap[size],
-        className
-      )}
-    />
-  );
+  return <BrandMark variant="mark" size={sizeMap[size]} className={className} />;
 }

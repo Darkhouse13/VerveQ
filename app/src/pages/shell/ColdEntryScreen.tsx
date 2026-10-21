@@ -22,7 +22,7 @@ import { ArrowRight, Check, Sparkles, X } from "lucide-react";
 import { NeoBadge } from "@/components/neo/NeoBadge";
 import { NeoButton } from "@/components/neo/NeoButton";
 import { NeoCard } from "@/components/neo/NeoCard";
-import { NeoLogo } from "@/components/neo/NeoLogo";
+import { BrandMark } from "@/components/ui/BrandMark";
 import { ShellLayout } from "@/components/shell/ShellLayout";
 import { StaticSeoSlot } from "@/components/seo/StaticSeoSlot";
 import { SHELL_ROUTES } from "@/lib/shellRoutes";
@@ -101,7 +101,7 @@ export default function ColdEntryScreen() {
             below it, inside this scroll area (StaticSeoSlot). */}
         <div className="min-h-full flex flex-col justify-center">
         <div className="w-full max-w-sm mx-auto flex flex-col items-center text-center">
-          <NeoLogo size="sm" />
+          <BrandMark variant="lockup" size="md" />
           <NeoBadge color="primary" rotated size="md" className="mt-6">
             {t("landing.eyebrow")}
           </NeoBadge>

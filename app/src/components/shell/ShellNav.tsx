@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { SHELL_ROUTES } from "@/lib/shellRoutes";
+import { BrandMark } from "@/components/ui/BrandMark";
 
 interface NavTab {
   path: string;
@@ -115,9 +116,9 @@ export function ShellTopNav() {
       <div className="mx-auto w-full max-w-6xl flex items-center gap-2 px-8 py-3">
         <button
           onClick={() => navigate(SHELL_ROUTES.home)}
-          className="font-heading font-bold text-lg tracking-tight mr-4 cursor-pointer"
+          className="mr-4 cursor-pointer rounded-lg"
         >
-          VerveQ
+          <BrandMark variant="lockup" size="md" />
         </button>
         <div className="flex items-center gap-1">
           {tabs.map((tab) => {
